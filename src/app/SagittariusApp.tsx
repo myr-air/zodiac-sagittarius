@@ -39,8 +39,8 @@ const seedSuggestions: Suggestion[] = [
 export function SagittariusApp() {
   const [trip, setTrip] = useState(seedTrip);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [selectedDay, setSelectedDay] = useState("2025-05-16");
-  const [selectedPlanVariantId, setSelectedPlanVariantId] = useState(seedTrip.activePlanVariantId);
+  const selectedDay = "2025-05-16";
+  const selectedPlanVariantId = seedTrip.activePlanVariantId;
   const [currentMemberId, setCurrentMemberId] = useState(seedTrip.members[0].id);
   const [selectedItemId, setSelectedItemId] = useState("item-dimdim");
 
@@ -101,12 +101,8 @@ export function SagittariusApp() {
         <CommandBar
           trip={trip}
           currentMemberId={currentMember.id}
-          selectedDay={selectedDay}
-          selectedPlanVariantId={selectedPlanVariantId}
           canEdit={canEdit}
           onChangeMember={setCurrentMemberId}
-          onChangeDay={setSelectedDay}
-          onChangePlan={setSelectedPlanVariantId}
           onAddStop={addStop}
         />
         <div className="workspace-grid">

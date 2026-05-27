@@ -23,6 +23,8 @@ describe("Sagittarius cockpit UI", () => {
     expect(screen.getByRole("columnheader", { name: /^เวลา$/i })).toBeInTheDocument();
     expect(screen.getByRole("columnheader", { name: /แผนที่ \/ ลิงก์/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Select stop Dim Dim Sum/i })).toBeInTheDocument();
+    expect(screen.queryByLabelText(/Plan variant/i)).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/Selected day/i)).not.toBeInTheDocument();
   });
 
   it("collapses the left rail and keeps labels accessible", async () => {
