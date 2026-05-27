@@ -59,21 +59,6 @@ export function SagittariusApp() {
   const selectedItem = planItems.find((item) => item.id === selectedItemId) ?? planItems[0];
   const expenseSummary = useMemo(() => buildExpenseSummary(trip.expenses, currentMember.id), [currentMember.id, trip.expenses]);
 
-  function duplicateItem(itemId: string) {
-    if (!canEdit) return;
-    const source = planItems.find((item) => item.id === itemId);
-    if (!source) return;
-    const duplicate: ItineraryItem = {
-      ...source,
-      id: nextLocalItemId(trip.itineraryItems, "item-copy"),
-      activity: `${source.activity} copy`,
-      sortOrder: source.sortOrder + 10,
-      version: 1,
-      updatedAt: localMutationTimestamp,
-    };
-    commitTrip((current) => ({ ...current, itineraryItems: [...current.itineraryItems, duplicate] }), duplicate.id);
-  }
-
   function addStop() {
     if (!canEdit) return;
     setDialogState({ mode: "create" });
@@ -81,6 +66,44 @@ export function SagittariusApp() {
 
   function selectItem(itemId: string) {
     setSelectedItemId(itemId);
+    setContextRailOpen(true);
+  }
+
+  function moveItem(draggedItemId: string, targetItemId: string) {
+    if (!canEdit || draggedItemId === targetItemId) return;
+
+    commitTrip((current) => {
+      const draggedItem = current.itineraryItems.find((item) => item.id === draggedItemId);
+      const targetItem = current.itineraryItems.find((item) => item.id === targetItemId);
+
+      if (!draggedItem || !targetItem || draggedItem.planVariantId !== selectedPlanVariantId || targetItem.planVariantId !== selectedPlanVariantId) {
+        return current;
+      }
+
+      const targetDayItems = current.itineraryItems
+        .filter((item) => item.planVariantId === targetItem.planVariantId && item.day === targetItem.day && item.id !== draggedItemId)
+        .sort((a, b) => a.sortOrder - b.sortOrder || a.startTime.localeCompare(b.startTime));
+      const targetIndex = targetDayItems.findIndex((item) => item.id === targetItemId);
+
+      if (targetIndex < 0) return current;
+
+      const nextDayItems = [
+        ...targetDayItems.slice(0, targetIndex),
+        {
+          ...draggedItem,
+          day: targetItem.day,
+          updatedAt: localMutationTimestamp,
+          version: draggedItem.version + 1,
+        },
+        ...targetDayItems.slice(targetIndex),
+      ].map((item, index) => ({ ...item, sortOrder: (index + 1) * 100 }));
+      const nextItemsById = new Map(nextDayItems.map((item) => [item.id, item]));
+
+      return {
+        ...current,
+        itineraryItems: current.itineraryItems.map((item) => nextItemsById.get(item.id) ?? item),
+      };
+    }, draggedItemId);
     setContextRailOpen(true);
   }
 
@@ -197,7 +220,7 @@ export function SagittariusApp() {
             startDate={trip.startDate}
             selectedItemId={selectedItem.id}
             onSelectItem={selectItem}
-            onDuplicateItem={duplicateItem}
+            onMoveItem={moveItem}
           />
           {contextRailOpen ? (
             <ContextRail

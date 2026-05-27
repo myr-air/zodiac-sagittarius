@@ -584,19 +584,12 @@ button:disabled,
 }
 
 .workspace-grid {
+  position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 380px;
+  grid-template-columns: minmax(0, 1fr);
   height: calc(100vh - 62px);
   min-height: 0;
   overflow: hidden;
-}
-
-.workspace-grid[data-context-rail="closed"] {
-  grid-template-columns: minmax(0, 1fr);
-}
-
-.workspace-grid[data-context-rail="closed"] .table-panel {
-  border-right: 0;
 }
 
 .table-panel {
@@ -604,7 +597,6 @@ button:disabled,
   min-height: 0;
   height: 100%;
   overflow: hidden;
-  border-right: 1px solid var(--color-border);
   background: var(--color-surface);
 }
 
@@ -695,11 +687,6 @@ button:disabled,
 .smart-table th:nth-child(8),
 .smart-table td:nth-child(8) {
   width: 118px;
-}
-
-.smart-table th:nth-child(9),
-.smart-table td:nth-child(9) {
-  width: 78px;
   border-right: 0;
 }
 
@@ -722,6 +709,7 @@ button:disabled,
 
 .day-row th {
   height: 39px;
+  padding: 0 10px;
   background: var(--color-surface);
 }
 
@@ -731,6 +719,23 @@ button:disabled,
   gap: 9px;
   min-width: 0;
   color: #334155;
+}
+
+.day-toggle {
+  width: 100%;
+  height: 39px;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  text-align: left;
+}
+
+.day-toggle .icon {
+  transition: transform 140ms ease;
+}
+
+.day-toggle[aria-expanded="true"] .icon {
+  transform: rotate(90deg);
 }
 
 .day-row-content strong {
@@ -764,9 +769,29 @@ button:disabled,
   box-shadow: inset -1px 0 0 var(--color-primary), inset 0 1px 0 var(--color-primary), inset 0 -1px 0 var(--color-primary);
 }
 
-.drag-cell,
-.row-actions > .icon {
+.drag-cell {
   color: var(--color-text-subtle);
+}
+
+.drag-handle {
+  display: inline-grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-subtle);
+  background: transparent;
+  transition: color 140ms ease, background 140ms ease;
+}
+
+.drag-handle:hover:not(:disabled) {
+  color: var(--color-primary-strong);
+  background: var(--color-primary-soft);
+}
+
+.drag-handle:disabled {
+  opacity: 0.42;
 }
 
 .time-cell {
@@ -818,31 +843,6 @@ button:disabled,
   color: var(--color-text-subtle);
 }
 
-.row-actions {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-}
-
-.row-actions .button {
-  width: 26px;
-  min-height: 26px;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  box-shadow: none;
-}
-
-.row-more {
-  display: grid;
-  place-items: center;
-  width: 24px;
-  height: 24px;
-  border: 0;
-  color: #0f172a;
-  background: transparent;
-}
-
 .add-row td {
   height: 34px;
   background: var(--color-surface);
@@ -860,11 +860,17 @@ button:disabled,
 }
 
 .context-rail {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 3;
   width: 380px;
+  max-width: min(380px, calc(100% - 24px));
   height: 100%;
   min-width: 0;
   min-height: 0;
   background: var(--color-surface);
+  box-shadow: -18px 0 36px rgb(15 23 42 / 0.1);
 }
 
 .rail-inspector {
@@ -1363,7 +1369,10 @@ button:disabled,
   }
 
   .context-rail {
+    position: static;
     width: 100%;
+    max-width: none;
+    box-shadow: none;
   }
 
   .rail-inspector {

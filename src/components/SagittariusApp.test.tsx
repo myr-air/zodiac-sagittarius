@@ -1,4 +1,4 @@
-import { render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 import { SagittariusApp } from "@/src/app/SagittariusApp";
@@ -23,6 +23,9 @@ describe("Sagittarius cockpit UI", () => {
     expect(screen.getByRole("columnheader", { name: /^เวลา$/i })).toBeInTheDocument();
     expect(screen.getByRole("columnheader", { name: /แผนที่ \/ ลิงก์/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Select stop Dim Dim Sum/i })).toBeInTheDocument();
+    expect(screen.queryByRole("columnheader", { name: /ตั้งค่าตาราง/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Duplicate Dim Dim Sum/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /More actions for Dim Dim Sum/i })).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/Plan variant/i)).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/Selected day/i)).not.toBeInTheDocument();
   });
@@ -85,6 +88,38 @@ describe("Sagittarius cockpit UI", () => {
     expect(within(context).getAllByText(/The Peak Tram/i).length).toBeGreaterThan(0);
   });
 
+  it("collapses and expands day groups", async () => {
+    const user = userEvent.setup();
+    render(<SagittariusApp />);
+
+    await user.click(screen.getByRole("button", { name: /Collapse Day 2/i }));
+
+    expect(screen.queryByRole("button", { name: /Select stop Dim Dim Sum/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Select stop Victoria Peak/i })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: /Expand Day 2/i }));
+
+    expect(screen.getByRole("button", { name: /Select stop Dim Dim Sum/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Select stop Victoria Peak/i })).toBeInTheDocument();
+  });
+
+  it("reorders itinerary rows with drag and drop", () => {
+    render(<SagittariusApp />);
+
+    const dataTransfer = createDataTransfer();
+    const victoriaSelectBefore = screen.getByRole("button", { name: /Select stop Victoria Peak/i });
+    const dimDimSelectBefore = screen.getByRole("button", { name: /Select stop Dim Dim Sum/i });
+    expect(dimDimSelectBefore.compareDocumentPosition(victoriaSelectBefore) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+
+    fireEvent.dragStart(screen.getByRole("button", { name: /Drag Victoria Peak/i }), { dataTransfer });
+    fireEvent.dragOver(screen.getByRole("button", { name: /Select stop Dim Dim Sum/i }), { dataTransfer });
+    fireEvent.drop(screen.getByRole("button", { name: /Select stop Dim Dim Sum/i }), { dataTransfer });
+
+    const victoriaSelectAfter = screen.getByRole("button", { name: /Select stop Victoria Peak/i });
+    const dimDimSelectAfter = screen.getByRole("button", { name: /Select stop Dim Dim Sum/i });
+    expect(victoriaSelectAfter.compareDocumentPosition(dimDimSelectAfter) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
   it("changes edit affordances by role capability", async () => {
     const user = userEvent.setup();
     render(<SagittariusApp />);
@@ -142,3 +177,14 @@ describe("Sagittarius cockpit UI", () => {
     expect(within(context).getByRole("heading", { name: /Dim Dim Sum revised/i })).toBeInTheDocument();
   });
 });
+
+function createDataTransfer() {
+  const values = new Map<string, string>();
+
+  return {
+    dropEffect: "move",
+    effectAllowed: "move",
+    getData: (type: string) => values.get(type) ?? "",
+    setData: (type: string, value: string) => values.set(type, value),
+  };
+}

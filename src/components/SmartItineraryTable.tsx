@@ -1,6 +1,6 @@
+import { useState, type DragEvent } from "react";
 import type { ItineraryAdvisory, ItineraryItem, TripRole } from "@/src/trip/types";
 import { formatDayLabel, groupItemsByDay } from "@/src/trip/itinerary";
-import { Button } from "./ui";
 import { Icon } from "./icons";
 
 interface SmartItineraryTableProps {
@@ -9,12 +9,17 @@ interface SmartItineraryTableProps {
   startDate: string;
   selectedItemId: string;
   onSelectItem: (itemId: string) => void;
-  onDuplicateItem: (itemId: string) => void;
+  onMoveItem: (draggedItemId: string, targetItemId: string) => void;
 }
 
-export function SmartItineraryTable({ items, role, startDate, selectedItemId, onSelectItem, onDuplicateItem }: SmartItineraryTableProps) {
+export function SmartItineraryTable({ items, role, startDate, selectedItemId, onSelectItem, onMoveItem }: SmartItineraryTableProps) {
   const groups = groupItemsByDay(items);
   const canEdit = role === "owner" || role === "organizer";
+  const [collapsedDays, setCollapsedDays] = useState<string[]>([]);
+
+  function toggleDay(day: string) {
+    setCollapsedDays((current) => (current.includes(day) ? current.filter((item) => item !== day) : [...current, day]));
+  }
 
   return (
     <section className="table-panel" aria-labelledby="smart-itinerary-heading" aria-label="Smart itinerary table" id="itinerary">
@@ -37,19 +42,20 @@ export function SmartItineraryTable({ items, role, startDate, selectedItemId, on
               <th>ระยะเวลา</th>
               <th>การเดินทาง</th>
               <th>คำเตือน</th>
-              <th aria-label="ตั้งค่าตาราง"><Icon name="settings" /></th>
             </tr>
           </thead>
           <tbody>
             {groups.map((group) => (
               <DayGroup
                 canEdit={canEdit}
+                collapsed={collapsedDays.includes(group.day)}
                 group={group}
                 key={group.day}
                 selectedItemId={selectedItemId}
                 startDate={startDate}
-                onDuplicateItem={onDuplicateItem}
+                onMoveItem={onMoveItem}
                 onSelectItem={onSelectItem}
+                onToggleDay={toggleDay}
               />
             ))}
           </tbody>
@@ -64,73 +70,110 @@ function DayGroup({
   startDate,
   selectedItemId,
   canEdit,
+  collapsed,
   onSelectItem,
-  onDuplicateItem,
+  onMoveItem,
+  onToggleDay,
 }: {
   group: { day: string; items: ItineraryItem[]; warningCount: number };
   startDate: string;
   selectedItemId: string;
   canEdit: boolean;
+  collapsed: boolean;
   onSelectItem: (itemId: string) => void;
-  onDuplicateItem: (itemId: string) => void;
+  onMoveItem: (draggedItemId: string, targetItemId: string) => void;
+  onToggleDay: (day: string) => void;
 }) {
+  function handleDragStart(event: DragEvent<HTMLButtonElement>, itemId: string) {
+    event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.setData("text/plain", itemId);
+  }
+
+  function handleDragOver(event: DragEvent<HTMLElement>) {
+    if (!canEdit) return;
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "move";
+  }
+
+  function handleDrop(event: DragEvent<HTMLElement>, targetItemId: string) {
+    if (!canEdit) return;
+    event.preventDefault();
+    const draggedItemId = event.dataTransfer.getData("text/plain");
+    if (draggedItemId && draggedItemId !== targetItemId) onMoveItem(draggedItemId, targetItemId);
+  }
+
+  const dayLabel = formatDayLabel(group.day, startDate);
+
   return (
     <>
       <tr className="day-row">
-        <th colSpan={9}>
-          <div className="day-row-content">
+        <th colSpan={8}>
+          <button
+            type="button"
+            className="day-row-content day-toggle"
+            aria-expanded={!collapsed}
+            aria-label={`${collapsed ? "Expand" : "Collapse"} ${dayLabel}`}
+            onClick={() => onToggleDay(group.day)}
+          >
             <Icon name="chevronRight" />
-            <strong>{formatDayLabel(group.day, startDate)}</strong>
+            <strong>{dayLabel}</strong>
             <span>·</span>
             <span>{formatThaiDate(group.day)}</span>
             <span className="day-route">{dayRouteLabel(group.day)}</span>
-          </div>
+          </button>
         </th>
       </tr>
-      {group.items.map((item) => (
-        <tr className={selectedItemId === item.id ? "data-row data-row--selected" : "data-row"} key={item.id}>
-          <td className="drag-cell"><Icon name="drag" /></td>
-          <td className="time-cell">{item.startTime || "—"}</td>
-          <td className="activity-cell">
-            <button
-              type="button"
-              className="row-select"
-              aria-pressed={selectedItemId === item.id}
-              aria-label={`Select stop ${item.activity}`}
-              onClick={() => onSelectItem(item.id)}
+      {collapsed ? null : (
+        <>
+          {group.items.map((item) => (
+            <tr
+              className={selectedItemId === item.id ? "data-row data-row--selected" : "data-row"}
+              key={item.id}
+              onDragOver={handleDragOver}
+              onDrop={(event) => handleDrop(event, item.id)}
             >
-              <strong>{item.activity}</strong>
-              <span>{item.place}</span>
-            </button>
-          </td>
-          <td>{activityTypeLabel(item.activityType)}</td>
-          <td><a href={item.mapLink || "#"}>{item.linkLabel || "แผนที่"}</a></td>
-          <td>{formatDuration(item.durationMinutes)}</td>
-          <td>{item.transportation || "—"}</td>
-          <td><AdvisorySummary advisories={item.advisories ?? []} /></td>
-          <td className="row-actions">
-            <Button
-              type="button"
-              variant="ghost"
-              disabled={!canEdit}
-              aria-label={`Duplicate ${item.activity}`}
-              onClick={() => onDuplicateItem(item.id)}
-            >
-              <Icon name="copy" />
-            </Button>
-            <Icon name="drag" />
-            <button type="button" className="row-more" aria-label={`More actions for ${item.activity}`}>
-              <Icon name="dots" />
-            </button>
-          </td>
-        </tr>
-      ))}
-      <tr className="add-row">
-        <td />
-        <td colSpan={8}>
-          <button type="button"><Icon name="plus" /> เพิ่มกิจกรรม</button>
-        </td>
-      </tr>
+              <td className="drag-cell">
+                <button
+                  type="button"
+                  className="drag-handle"
+                  draggable={canEdit}
+                  disabled={!canEdit}
+                  aria-label={`Drag ${item.activity}`}
+                  onDragStart={(event) => handleDragStart(event, item.id)}
+                >
+                  <Icon name="drag" />
+                </button>
+              </td>
+              <td className="time-cell">{item.startTime || "—"}</td>
+              <td className="activity-cell">
+                <button
+                  type="button"
+                  className="row-select"
+                  aria-pressed={selectedItemId === item.id}
+                  aria-label={`Select stop ${item.activity}`}
+                  onClick={() => onSelectItem(item.id)}
+                  onDragOver={handleDragOver}
+                  onDrop={(event) => handleDrop(event, item.id)}
+                >
+                  <strong>{item.activity}</strong>
+                  <span>{item.place}</span>
+                </button>
+              </td>
+              <td>{activityTypeLabel(item.activityType)}</td>
+              <td><a href={item.mapLink || "#"}>{item.linkLabel || "แผนที่"}</a></td>
+              <td>{formatDuration(item.durationMinutes)}</td>
+              <td>{item.transportation || "—"}</td>
+              <td><AdvisorySummary advisories={item.advisories ?? []} /></td>
+            </tr>
+          ))}
+          <tr className="add-row">
+            <td />
+            <td colSpan={7}>
+              <button type="button"><Icon name="plus" /> เพิ่มกิจกรรม</button>
+            </td>
+          </tr>
+        </>
+      )}
     </>
   );
 }

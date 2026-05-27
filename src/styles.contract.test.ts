@@ -32,8 +32,14 @@ describe("Calm Travel Ops CSS contract", () => {
   it("locks the reference cockpit dimensions for pixel QA", () => {
     expect(css).toMatch(/\.app-layout\s*{[^}]*grid-template-columns:\s*228px minmax\(0,\s*1fr\)/s);
     expect(css).toMatch(/\.top-app-bar\s*{[^}]*min-height:\s*62px/s);
-    expect(css).toMatch(/\.workspace-grid\s*{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\) 380px/s);
+    expect(css).toMatch(/\.workspace-grid\s*{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)/s);
     expect(css).toMatch(/\.context-rail\s*{[^}]*width:\s*380px/s);
+  });
+
+  it("overlays the right context rail instead of shrinking the table", () => {
+    expect(css).toMatch(/\.workspace-grid\s*{[^}]*position:\s*relative/s);
+    expect(css).toMatch(/\.context-rail\s*{[^}]*position:\s*absolute/s);
+    expect(css).toMatch(/\.context-rail\s*{[^}]*right:\s*0/s);
   });
 
   it("keeps the collapsed navigation expand control visible", () => {
