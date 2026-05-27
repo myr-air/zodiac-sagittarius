@@ -633,8 +633,11 @@ button:disabled,
 }
 
 .table-scroll {
+  height: calc(100% - 43px);
   max-width: 100%;
+  min-height: 0;
   overflow-x: auto;
+  overflow-y: auto;
 }
 
 .smart-table {

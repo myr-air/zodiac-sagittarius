@@ -60,6 +60,20 @@ describe("Sagittarius cockpit UI", () => {
     expect(container.querySelector(".workspace-grid")).toHaveAttribute("data-context-rail", "open");
   });
 
+  it("opens the right context drawer when selecting a row while details are hidden", async () => {
+    const user = userEvent.setup();
+    const { container } = render(<SagittariusApp />);
+
+    await user.click(screen.getByRole("button", { name: /Close details/i }));
+    expect(container.querySelector(".workspace-grid")).toHaveAttribute("data-context-rail", "closed");
+
+    await user.click(screen.getByRole("button", { name: /Select stop Victoria Peak/i }));
+
+    const context = screen.getByRole("complementary", { name: /Planning context/i });
+    expect(container.querySelector(".workspace-grid")).toHaveAttribute("data-context-rail", "open");
+    expect(within(context).getByRole("heading", { name: /Victoria Peak/i })).toBeInTheDocument();
+  });
+
   it("uses selected table row to drive the right context rail", async () => {
     const user = userEvent.setup();
     render(<SagittariusApp />);

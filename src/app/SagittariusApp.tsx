@@ -79,6 +79,11 @@ export function SagittariusApp() {
     setDialogState({ mode: "create" });
   }
 
+  function selectItem(itemId: string) {
+    setSelectedItemId(itemId);
+    setContextRailOpen(true);
+  }
+
   function createStop(values: StopFormValues) {
     const nextItem: ItineraryItem = {
       id: nextLocalItemId(trip.itineraryItems, "item-new"),
@@ -191,7 +196,7 @@ export function SagittariusApp() {
             role={currentMember.role}
             startDate={trip.startDate}
             selectedItemId={selectedItem.id}
-            onSelectItem={setSelectedItemId}
+            onSelectItem={selectItem}
             onDuplicateItem={duplicateItem}
           />
           {contextRailOpen ? (
