@@ -46,12 +46,9 @@ describe("Sagittarius cockpit UI", () => {
     expect(screen.getByRole("button", { name: /Collapse navigation/i })).toHaveAttribute("aria-expanded", "true");
   });
 
-  it("collapses and reopens the right context drawer so the table can expand", async () => {
+  it("starts with the right context drawer hidden so the table can expand", async () => {
     const user = userEvent.setup();
     const { container } = render(<SagittariusApp />);
-
-    expect(screen.getByRole("complementary", { name: /Planning context/i })).toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: /Close details/i }));
 
     expect(screen.queryByRole("complementary", { name: /Planning context/i })).not.toBeInTheDocument();
     expect(container.querySelector(".workspace-grid")).toHaveAttribute("data-context-rail", "closed");
@@ -67,7 +64,6 @@ describe("Sagittarius cockpit UI", () => {
     const user = userEvent.setup();
     const { container } = render(<SagittariusApp />);
 
-    await user.click(screen.getByRole("button", { name: /Close details/i }));
     expect(container.querySelector(".workspace-grid")).toHaveAttribute("data-context-rail", "closed");
 
     await user.click(screen.getByRole("button", { name: /Select stop Victoria Peak/i }));
@@ -89,10 +85,8 @@ describe("Sagittarius cockpit UI", () => {
   });
 
   it("opens details when clicking anywhere on an itinerary row", async () => {
-    const user = userEvent.setup();
     const { container } = render(<SagittariusApp />);
 
-    await user.click(screen.getByRole("button", { name: /Close details/i }));
     expect(container.querySelector(".workspace-grid")).toHaveAttribute("data-context-rail", "closed");
 
     fireEvent.click(screen.getByRole("row", { name: /Open details for Victoria Peak/i }));
@@ -106,6 +100,7 @@ describe("Sagittarius cockpit UI", () => {
     const user = userEvent.setup();
     const { container } = render(<SagittariusApp />);
 
+    await user.click(screen.getByRole("button", { name: /Open details/i }));
     expect(container.querySelector(".workspace-grid")).toHaveAttribute("data-context-rail", "open");
 
     await user.click(screen.getByRole("region", { name: /Smart itinerary table/i }));
@@ -117,6 +112,8 @@ describe("Sagittarius cockpit UI", () => {
   it("keeps the right context drawer open when clicking inside it", async () => {
     const user = userEvent.setup();
     const { container } = render(<SagittariusApp />);
+
+    await user.click(screen.getByRole("button", { name: /Open details/i }));
     const context = screen.getByRole("complementary", { name: /Planning context/i });
 
     await user.click(context);
@@ -215,6 +212,7 @@ describe("Sagittarius cockpit UI", () => {
     const user = userEvent.setup();
     render(<SagittariusApp />);
 
+    await user.click(screen.getByRole("button", { name: /Open details/i }));
     await user.click(screen.getByRole("button", { name: /แก้ไขรายละเอียด/i }));
 
     const dialog = screen.getByRole("dialog", { name: /แก้ไขรายละเอียด/i });

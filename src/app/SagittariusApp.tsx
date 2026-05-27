@@ -42,8 +42,8 @@ const localMutationTimestamp = "2026-05-28T00:00:00.000Z";
 export function SagittariusApp() {
   const [tripState, setTripState] = useState<{ trip: Trip; past: Trip[]; future: Trip[] }>({ trip: seedTrip, past: [], future: [] });
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [contextRailOpen, setContextRailOpen] = useState(true);
-  const [contextRailMounted, setContextRailMounted] = useState(true);
+  const [contextRailOpen, setContextRailOpen] = useState(false);
+  const [contextRailMounted, setContextRailMounted] = useState(false);
   const selectedDay = "2025-05-16";
   const selectedPlanVariantId = seedTrip.activePlanVariantId;
   const [currentMemberId, setCurrentMemberId] = useState(seedTrip.members[0].id);
