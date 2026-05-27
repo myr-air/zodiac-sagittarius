@@ -7,10 +7,22 @@ describe("Sagittarius cockpit UI", () => {
   it("opens directly into the planning cockpit instead of a marketing landing page", () => {
     render(<SagittariusApp />);
 
-    expect(screen.getByRole("heading", { name: /Hong Kong \+ Shenzhen planning cockpit/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /Hong Kong \+ Shenzhen Trip/i })).toBeInTheDocument();
     expect(screen.getByRole("navigation", { name: /Sagittarius planning navigation/i })).toBeInTheDocument();
     expect(screen.getByRole("region", { name: /Smart itinerary table/i })).toBeInTheDocument();
     expect(screen.queryByText(/hero/i)).not.toBeInTheDocument();
+  });
+
+  it("matches the dense planning cockpit skeleton from the reference", () => {
+    render(<SagittariusApp />);
+
+    expect(screen.getByRole("banner", { name: /Trip command bar/i })).toHaveClass("top-app-bar");
+    expect(screen.getByRole("link", { name: /แผนการเดินทาง/i })).toHaveClass("rail-link--active");
+    expect(screen.getByRole("tablist", { name: /Planning views/i })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: /Smart Itinerary Table/i })).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("columnheader", { name: /^เวลา$/i })).toBeInTheDocument();
+    expect(screen.getByRole("columnheader", { name: /แผนที่ \/ ลิงก์/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Select stop Dim Dim Sum/i })).toBeInTheDocument();
   });
 
   it("collapses the left rail and keeps labels accessible", async () => {
@@ -28,22 +40,22 @@ describe("Sagittarius cockpit UI", () => {
     const user = userEvent.setup();
     render(<SagittariusApp />);
 
-    await user.click(screen.getByRole("button", { name: /Select stop Avenue of Stars walk/i }));
+    await user.click(screen.getByRole("button", { name: /Select stop Victoria Peak/i }));
 
     const context = screen.getByRole("complementary", { name: /Planning context/i });
-    expect(within(context).getByRole("heading", { name: /Avenue of Stars walk/i })).toBeInTheDocument();
-    expect(within(context).getByText(/Tsim Sha Tsui promenade/i)).toBeInTheDocument();
+    expect(within(context).getByRole("heading", { name: /Victoria Peak/i })).toBeInTheDocument();
+    expect(within(context).getAllByText(/The Peak Tram/i).length).toBeGreaterThan(0);
   });
 
   it("changes edit affordances by role capability", async () => {
     const user = userEvent.setup();
     render(<SagittariusApp />);
 
-    expect(screen.getByRole("button", { name: /Add stop/i })).toBeEnabled();
+    expect(screen.getByRole("button", { name: /เพิ่มสถานที่ \/ กิจกรรม/i })).toBeEnabled();
 
     await user.selectOptions(screen.getByLabelText(/Role preview/i), "member-viewer");
 
-    expect(screen.getByRole("button", { name: /Add stop/i })).toBeDisabled();
+    expect(screen.getByRole("button", { name: /เพิ่มสถานที่ \/ กิจกรรม/i })).toBeDisabled();
     expect(screen.getByText(/editing requires organizer access/i)).toBeInTheDocument();
   });
 });

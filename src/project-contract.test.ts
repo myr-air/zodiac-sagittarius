@@ -26,4 +26,16 @@ describe("Sagittarius project scaffold", () => {
     expect(css).toContain("--color-route: #2563eb");
     expect(css).toContain("--color-warning: #f97316");
   });
+
+  it("documents the future Rust/PostgreSQL API data contract", () => {
+    const spec = readFileSync("docs/api-data-spec.md", "utf8");
+
+    expect(spec).toContain("CREATE TABLE trips");
+    expect(spec).toContain("CREATE TABLE itinerary_items");
+    expect(spec).toContain("GET /v1/trips/:tripId");
+    expect(spec).toContain("PATCH /v1/itinerary-items/:itemId");
+    expect(spec).toContain("wss://api.sagittarius.local/v1/trips/:tripId/ws");
+    expect(spec).toContain("itinerary_item.updated");
+    expect(spec).toContain("clientMutationId");
+  });
 });

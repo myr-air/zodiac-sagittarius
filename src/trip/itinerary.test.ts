@@ -17,41 +17,46 @@ describe("itinerary planning domain", () => {
     const groups = groupItemsByDay(items);
 
     expect(getTripDates(seedTrip.startDate, seedTrip.endDate)).toEqual([
-      "2026-06-18",
-      "2026-06-19",
-      "2026-06-20",
-      "2026-06-21",
-      "2026-06-22",
+      "2025-05-15",
+      "2025-05-16",
+      "2025-05-17",
+      "2025-05-18",
+      "2025-05-19",
+      "2025-05-20",
     ]);
-    expect(groups[0]?.day).toBe("2026-06-18");
+    expect(groups[0]?.day).toBe("2025-05-15");
     expect(groups[0]?.items.map((item) => item.id)).toEqual([
-      "item-dmk-checkin",
-      "item-flight-hkg",
-      "item-lan-fong-yuen",
+      "item-flight-bkk-hkg",
+      "item-arrive-hkg",
+      "item-airport-express",
+      "item-hotel-checkin",
       "item-avenue-stars",
+      "item-symphony-lights",
+      "item-temple-street",
     ]);
   });
 
   it("finds validation issues without relying on color alone", () => {
-    const dayItems = sortItemsForDay(seedTrip.itineraryItems, "2026-06-18");
-    const missing = dayItems.find((item) => item.id === "item-dmk-checkin");
-    const overlapping = dayItems.find((item) => item.id === "item-lan-fong-yuen");
+    const dayItems = sortItemsForDay(seedTrip.itineraryItems, "2025-05-16");
+    const missing = seedTrip.itineraryItems.find((item) => item.id === "item-arrive-hkg");
+    const dimsum = dayItems.find((item) => item.id === "item-dimdim")!;
+    const overlapFixture = { ...dimsum, id: "item-overlap-fixture", startTime: "09:00", durationMinutes: 90 };
 
-    expect(validateItineraryItem(missing!, dayItems).map((warning) => warning.code)).toContain("missing-start-time");
-    expect(validateItineraryItem(overlapping!, dayItems).map((warning) => warning.code)).toContain("overlap");
-    expect(validateItineraryItem(overlapping!, dayItems)[0]?.message).toMatch(/overlaps|เวลา/i);
+    expect(validateItineraryItem(missing!, [missing!]).map((warning) => warning.code)).toContain("missing-duration");
+    expect(validateItineraryItem(dimsum, [...dayItems, overlapFixture]).map((warning) => warning.code)).toContain("overlap");
+    expect(validateItineraryItem(dimsum, [...dayItems, overlapFixture])[0]?.message).toMatch(/overlaps|เวลา/i);
   });
 
   it("derives now and next for the on-trip context", () => {
-    const state = getNowNext(seedTrip.itineraryItems, "2026-06-18", "13:45");
+    const state = getNowNext(seedTrip.itineraryItems, "2025-05-16", "09:10");
 
-    expect(state.current?.id).toBe("item-lan-fong-yuen");
-    expect(state.next?.id).toBe("item-avenue-stars");
+    expect(state.current?.id).toBe("item-dimdim");
+    expect(state.next?.id).toBe("item-victoria-peak");
     expect(state.fallbackReason).toBeNull();
   });
 
   it("detects stale suggestion conflicts and approves fresh suggestions", () => {
-    const target = seedTrip.itineraryItems.find((item) => item.id === "item-lan-fong-yuen")!;
+    const target = seedTrip.itineraryItems.find((item) => item.id === "item-dimdim")!;
     const conflicted = detectSuggestionConflict(seedTrip.itineraryItems, {
       id: "suggestion-stale",
       tripId: seedTrip.id,

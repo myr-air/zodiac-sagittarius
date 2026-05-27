@@ -1,30 +1,29 @@
 import type { Member, Suggestion } from "@/src/trip/types";
-import { Badge, Panel } from "./ui";
 import { Icon } from "./icons";
 
 export function SuggestionPanel({ suggestions, members }: { suggestions: Suggestion[]; members: Member[] }) {
   const openSuggestions = suggestions.filter((suggestion) => suggestion.status === "pending" || suggestion.status === "conflicted");
 
   return (
-    <Panel className="context-module" aria-label="Suggestion queue">
+    <section className="detail-section suggestion-module" aria-label="Suggestion queue">
       <div className="module-title-row">
-        <span className="section-kicker">Review queue</span>
-        <Icon name="lightbulb" />
+        <h3>คำแนะนำ ({openSuggestions.length})</h3>
+        <button type="button">ดูเพิ่มเติม</button>
       </div>
       <div className="suggestion-list">
         {openSuggestions.map((suggestion) => {
           const proposer = members.find((member) => member.id === suggestion.proposerId);
           return (
-            <article className="suggestion-item" key={suggestion.id}>
+            <article className={`suggestion-item suggestion-item--${suggestion.status}`} key={suggestion.id}>
+              <Icon name={suggestion.status === "conflicted" ? "alertCircle" : "check"} />
               <div>
-                <strong>{suggestion.proposedPatch.activity ?? "Plan change"}</strong>
+                <strong>{suggestion.proposedPatch.activity ?? "แนะนำให้จองคิวล่วงหน้า"}</strong>
                 <span>{proposer?.displayName ?? "Traveler"} suggested an update</span>
               </div>
-              <Badge tone={suggestion.status === "conflicted" ? "warning" : "primary"}>{suggestion.status}</Badge>
             </article>
           );
         })}
       </div>
-    </Panel>
+    </section>
   );
 }

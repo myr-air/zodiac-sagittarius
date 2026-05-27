@@ -11,25 +11,25 @@ import type { ItineraryItem, Suggestion, TripRole } from "@/src/trip/types";
 
 const seedSuggestions: Suggestion[] = [
   {
-    id: "suggestion-rain-backup",
+    id: "suggestion-rating",
     tripId: seedTrip.id,
     proposerId: "member-beam",
     type: "edit",
-    targetItemId: "item-avenue-stars",
+    targetItemId: "item-dimdim",
     planVariantId: seedTrip.activePlanVariantId,
-    proposedPatch: { activity: "Move Avenue of Stars after rain window" },
+    proposedPatch: { note: "ร้านนี้ได้รับคะแนนสูง 4.3/5 จาก 8,332 รีวิว" },
     sourceVersion: 1,
     status: "pending",
     createdAt: "2026-05-27T13:00:00.000Z",
   },
   {
-    id: "suggestion-lunch-conflict",
+    id: "suggestion-booking",
     tripId: seedTrip.id,
     proposerId: "member-nam",
     type: "edit",
-    targetItemId: "item-lan-fong-yuen",
+    targetItemId: "item-dimdim",
     planVariantId: seedTrip.activePlanVariantId,
-    proposedPatch: { startTime: "14:30" },
+    proposedPatch: { note: "แนะนำให้จองคิวล่วงหน้า โดยเฉพาะช่วงสุดสัปดาห์" },
     sourceVersion: 2,
     status: "conflicted",
     createdAt: "2026-05-27T14:00:00.000Z",
@@ -39,10 +39,10 @@ const seedSuggestions: Suggestion[] = [
 export function SagittariusApp() {
   const [trip, setTrip] = useState(seedTrip);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [selectedDay, setSelectedDay] = useState(seedTrip.startDate);
+  const [selectedDay, setSelectedDay] = useState("2025-05-16");
   const [selectedPlanVariantId, setSelectedPlanVariantId] = useState(seedTrip.activePlanVariantId);
   const [currentMemberId, setCurrentMemberId] = useState(seedTrip.members[0].id);
-  const [selectedItemId, setSelectedItemId] = useState("item-lan-fong-yuen");
+  const [selectedItemId, setSelectedItemId] = useState("item-dimdim");
 
   const currentMember = trip.members.find((member) => member.id === currentMemberId) ?? trip.members[0];
   const canEdit = canEditItinerary(currentMember.role);
@@ -80,9 +80,12 @@ export function SagittariusApp() {
       activity: "New planning stop",
       activityType: "experience",
       place: "Add place",
+      linkLabel: "แผนที่",
       mapLink: "",
+      address: "",
       durationMinutes: 45,
       transportation: "Add route",
+      advisories: [],
       note: "Draft row added locally before backend sync.",
       createdBy: currentMember.id,
       updatedAt: new Date().toISOString(),
@@ -93,7 +96,7 @@ export function SagittariusApp() {
   }
 
   return (
-    <AppShell collapsed={sidebarCollapsed} currentMember={currentMember} onToggleCollapsed={() => setSidebarCollapsed((current) => !current)}>
+    <AppShell collapsed={sidebarCollapsed} currentMember={currentMember} trip={trip} onToggleCollapsed={() => setSidebarCollapsed((current) => !current)}>
       <main className="workspace-shell">
         <CommandBar
           trip={trip}
@@ -117,13 +120,10 @@ export function SagittariusApp() {
           />
           <ContextRail
             trip={trip}
-            items={planItems}
             selectedItem={selectedItem}
-            selectedDay={selectedDay}
             currentMember={currentMember}
             suggestions={seedSuggestions}
             expenseSummary={expenseSummary}
-            onSelectItem={setSelectedItemId}
           />
         </div>
       </main>

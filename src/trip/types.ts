@@ -13,6 +13,14 @@ export type PlanVariantKind = "main" | "backup" | "draft" | "split";
 
 export type ActivityType = "travel" | "food" | "shopping" | "attraction" | "experience" | "stay";
 
+export type AdvisorySeverity = "info" | "warning" | "critical";
+
+export interface ItineraryAdvisory {
+  code: string;
+  label: string;
+  severity: AdvisorySeverity;
+}
+
 export interface Member {
   id: string;
   displayName: string;
@@ -44,10 +52,13 @@ export interface ItineraryItem {
   activity: string;
   activityType: ActivityType;
   place: string;
+  linkLabel: string;
   mapLink: string;
   coordinates?: ItineraryCoordinates;
+  address?: string;
   durationMinutes: number | null;
   transportation: string;
+  advisories?: ItineraryAdvisory[];
   note: string;
   createdBy: string;
   updatedAt: string;
