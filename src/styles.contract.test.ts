@@ -14,7 +14,7 @@ describe("Calm Travel Ops CSS contract", () => {
   it("contains horizontal scrolling to the smart table viewport", () => {
     expect(css).toMatch(/body\s*{[^}]*overflow-x:\s*hidden/s);
     expect(css).toMatch(/\.table-scroll\s*{[^}]*overflow-x:\s*auto/s);
-    expect(css).toMatch(/\.smart-table\s*{[^}]*min-width:\s*920px/s);
+    expect(css).toMatch(/\.smart-table\s*{[^}]*min-width:\s*800px/s);
   });
 
   it("defines desktop, tablet, mobile, focus, and reduced-motion states", () => {

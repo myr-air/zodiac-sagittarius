@@ -475,8 +475,9 @@ textarea {
 
 .smart-table {
   width: 100%;
-  min-width: 920px;
+  min-width: 800px;
   border-collapse: collapse;
+  table-layout: fixed;
   font-size: 13px;
 }
 
@@ -496,6 +497,24 @@ textarea {
   background: var(--color-surface-subtle);
   font-size: 12px;
   font-weight: 850;
+}
+
+.smart-table th:last-child,
+.smart-table td:last-child {
+  position: sticky;
+  right: 0;
+  z-index: 2;
+  background: var(--color-surface);
+  box-shadow: -8px 0 16px rgb(15 23 42 / 0.05);
+}
+
+.smart-table thead th:last-child {
+  z-index: 3;
+  background: var(--color-surface-subtle);
+}
+
+.data-row--selected td:last-child {
+  background: var(--color-primary-soft);
 }
 
 .day-row th {
@@ -811,6 +830,6 @@ textarea {
   }
 
   .smart-table {
-    min-width: 840px;
+    min-width: 800px;
   }
 }
