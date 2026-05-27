@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AppShell } from "@/src/components/AppShell";
 import { CommandBar } from "@/src/components/CommandBar";
 import { ContextRail } from "@/src/components/ContextRail";
@@ -43,6 +43,7 @@ export function SagittariusApp() {
   const [tripState, setTripState] = useState<{ trip: Trip; past: Trip[]; future: Trip[] }>({ trip: seedTrip, past: [], future: [] });
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [contextRailOpen, setContextRailOpen] = useState(true);
+  const [contextRailMounted, setContextRailMounted] = useState(true);
   const selectedDay = "2025-05-16";
   const selectedPlanVariantId = seedTrip.activePlanVariantId;
   const [currentMemberId, setCurrentMemberId] = useState(seedTrip.members[0].id);
@@ -59,6 +60,17 @@ export function SagittariusApp() {
   const selectedItem = planItems.find((item) => item.id === selectedItemId) ?? planItems[0];
   const expenseSummary = useMemo(() => buildExpenseSummary(trip.expenses, currentMember.id), [currentMember.id, trip.expenses]);
 
+  useEffect(() => {
+    if (contextRailOpen) return undefined;
+    const timeout = window.setTimeout(() => setContextRailMounted(false), 900);
+    return () => window.clearTimeout(timeout);
+  }, [contextRailOpen]);
+
+  function setContextRailVisibility(open: boolean) {
+    if (open) setContextRailMounted(true);
+    setContextRailOpen(open);
+  }
+
   function addStop() {
     if (!canEdit) return;
     setDialogState({ mode: "create" });
@@ -66,7 +78,7 @@ export function SagittariusApp() {
 
   function selectItem(itemId: string) {
     setSelectedItemId(itemId);
-    setContextRailOpen(true);
+    setContextRailVisibility(true);
   }
 
   function moveItem(draggedItemId: string, targetItemId: string) {
@@ -104,7 +116,7 @@ export function SagittariusApp() {
         itineraryItems: current.itineraryItems.map((item) => nextItemsById.get(item.id) ?? item),
       };
     }, draggedItemId);
-    setContextRailOpen(true);
+    setContextRailVisibility(true);
   }
 
   function createStop(values: StopFormValues) {
@@ -211,7 +223,7 @@ export function SagittariusApp() {
           onAddStop={addStop}
           onUndo={undo}
           onRedo={redo}
-          onToggleContextRail={() => setContextRailOpen((current) => !current)}
+          onToggleContextRail={() => setContextRailVisibility(!contextRailOpen)}
         />
         <div className="workspace-grid" data-context-rail={contextRailOpen ? "open" : "closed"}>
           <SmartItineraryTable
@@ -222,7 +234,7 @@ export function SagittariusApp() {
             onSelectItem={selectItem}
             onMoveItem={moveItem}
           />
-          {contextRailOpen ? (
+          {contextRailMounted ? (
             <ContextRail
               trip={trip}
               selectedItem={selectedItem}
@@ -230,8 +242,9 @@ export function SagittariusApp() {
               suggestions={seedSuggestions}
               expenseSummary={expenseSummary}
               canEdit={canEdit}
+              open={contextRailOpen}
               onEditSelected={() => setDialogState({ mode: "edit", item: selectedItem })}
-              onClose={() => setContextRailOpen(false)}
+              onClose={() => setContextRailVisibility(false)}
             />
           ) : null}
         </div>

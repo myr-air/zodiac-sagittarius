@@ -42,6 +42,16 @@ describe("Calm Travel Ops CSS contract", () => {
     expect(css).toMatch(/\.context-rail\s*{[^}]*right:\s*0/s);
   });
 
+  it("animates row drag previews, day collapse, and drawer transitions", () => {
+    expect(css).toContain("@keyframes drawer-slide-in");
+    expect(css).toMatch(/\.context-rail\s*{[^}]*transition:\s*transform 220ms ease,\s*opacity 180ms ease,\s*box-shadow 220ms ease/s);
+    expect(css).toMatch(/\.context-rail\[data-state="closed"\]\s*{[^}]*transform:\s*translateX\(24px\)/s);
+    expect(css).toMatch(/\.context-rail\s*{[^}]*box-shadow:\s*-28px 0 54px rgb\(15 23 42 \/ 0\.18\)/s);
+    expect(css).toMatch(/\.data-row\s*{[^}]*cursor:\s*pointer/s);
+    expect(css).toMatch(/\.data-row--drop-target td\s*{[^}]*box-shadow:\s*inset 0 2px 0 var\(--color-primary\)/s);
+    expect(css).toMatch(/\.day-group\[data-state="closed"\]\s+\.data-row td\s*{[^}]*height:\s*0/s);
+  });
+
   it("keeps the collapsed navigation expand control visible", () => {
     expect(css).not.toMatch(/\.side-rail\[data-collapsed="true"\]\s+\.rail-toggle\s*{[^}]*display:\s*none/s);
     expect(css).toMatch(/\.side-rail\[data-collapsed="true"\]\s+\.rail-toggle\s*{[^}]*display:\s*(inline-flex|grid|flex)/s);

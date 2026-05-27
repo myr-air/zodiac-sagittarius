@@ -1,4 +1,4 @@
-import { useState, type DragEvent } from "react";
+import { useState, type DragEvent, type KeyboardEvent, type MouseEvent } from "react";
 import type { ItineraryAdvisory, ItineraryItem, TripRole } from "@/src/trip/types";
 import { formatDayLabel, groupItemsByDay } from "@/src/trip/itinerary";
 import { Icon } from "./icons";
@@ -16,9 +16,37 @@ export function SmartItineraryTable({ items, role, startDate, selectedItemId, on
   const groups = groupItemsByDay(items);
   const canEdit = role === "owner" || role === "organizer";
   const [collapsedDays, setCollapsedDays] = useState<string[]>([]);
+  const [dragState, setDragState] = useState<{ draggedItemId: string | null; overItemId: string | null }>({ draggedItemId: null, overItemId: null });
 
   function toggleDay(day: string) {
     setCollapsedDays((current) => (current.includes(day) ? current.filter((item) => item !== day) : [...current, day]));
+  }
+
+  function startDrag(event: DragEvent<HTMLButtonElement>, itemId: string) {
+    event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.setData("text/plain", itemId);
+    setDragState({ draggedItemId: itemId, overItemId: null });
+  }
+
+  function previewDrop(event: DragEvent<HTMLElement>, targetItemId: string) {
+    if (!canEdit) return;
+    const draggedItemId = dragState.draggedItemId ?? event.dataTransfer.getData("text/plain");
+    if (!draggedItemId || draggedItemId === targetItemId) return;
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "move";
+    setDragState((current) => (current.overItemId === targetItemId ? current : { draggedItemId, overItemId: targetItemId }));
+  }
+
+  function dropItem(event: DragEvent<HTMLElement>, targetItemId: string) {
+    if (!canEdit) return;
+    event.preventDefault();
+    const draggedItemId = event.dataTransfer.getData("text/plain");
+    if (draggedItemId && draggedItemId !== targetItemId) onMoveItem(draggedItemId, targetItemId);
+    clearDragPreview();
+  }
+
+  function clearDragPreview() {
+    setDragState({ draggedItemId: null, overItemId: null });
   }
 
   return (
@@ -44,21 +72,23 @@ export function SmartItineraryTable({ items, role, startDate, selectedItemId, on
               <th>คำเตือน</th>
             </tr>
           </thead>
-          <tbody>
-            {groups.map((group) => (
-              <DayGroup
-                canEdit={canEdit}
-                collapsed={collapsedDays.includes(group.day)}
-                group={group}
-                key={group.day}
-                selectedItemId={selectedItemId}
-                startDate={startDate}
-                onMoveItem={onMoveItem}
-                onSelectItem={onSelectItem}
-                onToggleDay={toggleDay}
-              />
-            ))}
-          </tbody>
+          {groups.map((group) => (
+            <DayGroup
+              canEdit={canEdit}
+              collapsed={collapsedDays.includes(group.day)}
+              dragState={dragState}
+              group={group}
+              key={group.day}
+              selectedItemId={selectedItemId}
+              startDate={startDate}
+              onClearDragPreview={clearDragPreview}
+              onDropItem={dropItem}
+              onPreviewDrop={previewDrop}
+              onSelectItem={onSelectItem}
+              onStartDrag={startDrag}
+              onToggleDay={toggleDay}
+            />
+          ))}
         </table>
       </div>
     </section>
@@ -71,8 +101,12 @@ function DayGroup({
   selectedItemId,
   canEdit,
   collapsed,
+  dragState,
+  onClearDragPreview,
+  onDropItem,
+  onPreviewDrop,
   onSelectItem,
-  onMoveItem,
+  onStartDrag,
   onToggleDay,
 }: {
   group: { day: string; items: ItineraryItem[]; warningCount: number };
@@ -80,32 +114,30 @@ function DayGroup({
   selectedItemId: string;
   canEdit: boolean;
   collapsed: boolean;
+  dragState: { draggedItemId: string | null; overItemId: string | null };
+  onClearDragPreview: () => void;
+  onDropItem: (event: DragEvent<HTMLElement>, targetItemId: string) => void;
+  onPreviewDrop: (event: DragEvent<HTMLElement>, targetItemId: string) => void;
   onSelectItem: (itemId: string) => void;
-  onMoveItem: (draggedItemId: string, targetItemId: string) => void;
+  onStartDrag: (event: DragEvent<HTMLButtonElement>, itemId: string) => void;
   onToggleDay: (day: string) => void;
 }) {
-  function handleDragStart(event: DragEvent<HTMLButtonElement>, itemId: string) {
-    event.dataTransfer.effectAllowed = "move";
-    event.dataTransfer.setData("text/plain", itemId);
+  function handleRowClick(event: MouseEvent<HTMLTableRowElement>, itemId: string) {
+    if (shouldIgnoreRowClick(event.target)) return;
+    onSelectItem(itemId);
   }
 
-  function handleDragOver(event: DragEvent<HTMLElement>) {
-    if (!canEdit) return;
+  function handleRowKeyDown(event: KeyboardEvent<HTMLTableRowElement>, itemId: string) {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    if (shouldIgnoreRowClick(event.target)) return;
     event.preventDefault();
-    event.dataTransfer.dropEffect = "move";
-  }
-
-  function handleDrop(event: DragEvent<HTMLElement>, targetItemId: string) {
-    if (!canEdit) return;
-    event.preventDefault();
-    const draggedItemId = event.dataTransfer.getData("text/plain");
-    if (draggedItemId && draggedItemId !== targetItemId) onMoveItem(draggedItemId, targetItemId);
+    onSelectItem(itemId);
   }
 
   const dayLabel = formatDayLabel(group.day, startDate);
 
   return (
-    <>
+    <tbody className="day-group" data-state={collapsed ? "closed" : "open"}>
       <tr className="day-row">
         <th colSpan={8}>
           <button
@@ -123,59 +155,80 @@ function DayGroup({
           </button>
         </th>
       </tr>
-      {collapsed ? null : (
-        <>
-          {group.items.map((item) => (
-            <tr
-              className={selectedItemId === item.id ? "data-row data-row--selected" : "data-row"}
-              key={item.id}
-              onDragOver={handleDragOver}
-              onDrop={(event) => handleDrop(event, item.id)}
+      {group.items.map((item) => (
+        <tr
+          aria-hidden={collapsed}
+          aria-label={`Open details for ${item.activity}`}
+          className={getRowClassName(item, selectedItemId, dragState)}
+          key={item.id}
+          tabIndex={collapsed ? -1 : 0}
+          onClick={(event) => handleRowClick(event, item.id)}
+          onDragOver={(event) => onPreviewDrop(event, item.id)}
+          onDrop={(event) => onDropItem(event, item.id)}
+          onKeyDown={(event) => handleRowKeyDown(event, item.id)}
+        >
+          <td className="drag-cell">
+            <button
+              type="button"
+              className="drag-handle"
+              draggable={canEdit && !collapsed}
+              disabled={!canEdit}
+              tabIndex={collapsed ? -1 : undefined}
+              aria-label={`Drag ${item.activity}`}
+              onDragEnd={onClearDragPreview}
+              onDragStart={(event) => onStartDrag(event, item.id)}
             >
-              <td className="drag-cell">
-                <button
-                  type="button"
-                  className="drag-handle"
-                  draggable={canEdit}
-                  disabled={!canEdit}
-                  aria-label={`Drag ${item.activity}`}
-                  onDragStart={(event) => handleDragStart(event, item.id)}
-                >
-                  <Icon name="drag" />
-                </button>
-              </td>
-              <td className="time-cell">{item.startTime || "—"}</td>
-              <td className="activity-cell">
-                <button
-                  type="button"
-                  className="row-select"
-                  aria-pressed={selectedItemId === item.id}
-                  aria-label={`Select stop ${item.activity}`}
-                  onClick={() => onSelectItem(item.id)}
-                  onDragOver={handleDragOver}
-                  onDrop={(event) => handleDrop(event, item.id)}
-                >
-                  <strong>{item.activity}</strong>
-                  <span>{item.place}</span>
-                </button>
-              </td>
-              <td>{activityTypeLabel(item.activityType)}</td>
-              <td><a href={item.mapLink || "#"}>{item.linkLabel || "แผนที่"}</a></td>
-              <td>{formatDuration(item.durationMinutes)}</td>
-              <td>{item.transportation || "—"}</td>
-              <td><AdvisorySummary advisories={item.advisories ?? []} /></td>
-            </tr>
-          ))}
-          <tr className="add-row">
-            <td />
-            <td colSpan={7}>
-              <button type="button"><Icon name="plus" /> เพิ่มกิจกรรม</button>
-            </td>
-          </tr>
-        </>
-      )}
-    </>
+              <Icon name="drag" />
+            </button>
+          </td>
+          <td className="time-cell">{item.startTime || "—"}</td>
+          <td className="activity-cell">
+            <button
+              type="button"
+              className="row-select"
+              aria-pressed={selectedItemId === item.id}
+              aria-label={`Select stop ${item.activity}`}
+              tabIndex={collapsed ? -1 : undefined}
+              onClick={() => onSelectItem(item.id)}
+              onDragOver={(event) => onPreviewDrop(event, item.id)}
+              onDrop={(event) => onDropItem(event, item.id)}
+            >
+              <strong>{item.activity}</strong>
+              <span>{item.place}</span>
+            </button>
+          </td>
+          <td>{activityTypeLabel(item.activityType)}</td>
+          <td><a href={item.mapLink || "#"} tabIndex={collapsed ? -1 : undefined}>{item.linkLabel || "แผนที่"}</a></td>
+          <td>{formatDuration(item.durationMinutes)}</td>
+          <td>{item.transportation || "—"}</td>
+          <td><AdvisorySummary advisories={item.advisories ?? []} /></td>
+        </tr>
+      ))}
+      <tr aria-hidden={collapsed} className="add-row">
+        <td />
+        <td colSpan={7}>
+          <button type="button" tabIndex={collapsed ? -1 : undefined}><Icon name="plus" /> เพิ่มกิจกรรม</button>
+        </td>
+      </tr>
+    </tbody>
   );
+}
+
+function getRowClassName(
+  item: ItineraryItem,
+  selectedItemId: string,
+  dragState: { draggedItemId: string | null; overItemId: string | null },
+): string {
+  return [
+    "data-row",
+    selectedItemId === item.id ? "data-row--selected" : null,
+    dragState.draggedItemId === item.id ? "data-row--dragging" : null,
+    dragState.overItemId === item.id ? "data-row--drop-target" : null,
+  ].filter(Boolean).join(" ");
+}
+
+function shouldIgnoreRowClick(target: EventTarget | null): boolean {
+  return target instanceof HTMLElement && Boolean(target.closest("a, button"));
 }
 
 function AdvisorySummary({ advisories }: { advisories: ItineraryAdvisory[] }) {

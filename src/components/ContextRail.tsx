@@ -11,17 +11,18 @@ interface ContextRailProps {
   suggestions: Suggestion[];
   expenseSummary: ExpenseSummary;
   canEdit: boolean;
+  open: boolean;
   onEditSelected: () => void;
   onClose: () => void;
 }
 
-export function ContextRail({ trip, selectedItem, currentMember, suggestions, expenseSummary, canEdit, onEditSelected, onClose }: ContextRailProps) {
+export function ContextRail({ trip, selectedItem, currentMember, suggestions, expenseSummary, canEdit, open, onEditSelected, onClose }: ContextRailProps) {
   const selectedEnd = formatEndTime(selectedItem.startTime, selectedItem.durationMinutes);
   const groupSpend = expenseSummary.groupSpend.toLocaleString("en-HK");
   const perPerson = Math.round(expenseSummary.groupSpend / Math.max(1, trip.members.length - 1)).toLocaleString("en-HK");
 
   return (
-    <aside className="context-rail" aria-label="Planning context">
+    <aside className={open ? "context-rail context-rail--open" : "context-rail context-rail--closed"} data-state={open ? "open" : "closed"} aria-hidden={!open} aria-label="Planning context">
       <div className="rail-inspector">
         <div className="inspector-title">
           <h2>{selectedItem.activity}</h2>

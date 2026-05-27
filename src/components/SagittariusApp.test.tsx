@@ -88,6 +88,20 @@ describe("Sagittarius cockpit UI", () => {
     expect(within(context).getAllByText(/The Peak Tram/i).length).toBeGreaterThan(0);
   });
 
+  it("opens details when clicking anywhere on an itinerary row", async () => {
+    const user = userEvent.setup();
+    const { container } = render(<SagittariusApp />);
+
+    await user.click(screen.getByRole("button", { name: /Close details/i }));
+    expect(container.querySelector(".workspace-grid")).toHaveAttribute("data-context-rail", "closed");
+
+    fireEvent.click(screen.getByRole("row", { name: /Open details for Victoria Peak/i }));
+
+    const context = screen.getByRole("complementary", { name: /Planning context/i });
+    expect(within(context).getByRole("heading", { name: /Victoria Peak/i })).toBeInTheDocument();
+    expect(container.querySelector(".workspace-grid")).toHaveAttribute("data-context-rail", "open");
+  });
+
   it("collapses and expands day groups", async () => {
     const user = userEvent.setup();
     render(<SagittariusApp />);
@@ -118,6 +132,24 @@ describe("Sagittarius cockpit UI", () => {
     const victoriaSelectAfter = screen.getByRole("button", { name: /Select stop Victoria Peak/i });
     const dimDimSelectAfter = screen.getByRole("button", { name: /Select stop Dim Dim Sum/i });
     expect(victoriaSelectAfter.compareDocumentPosition(dimDimSelectAfter) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it("shows a drop preview before placing a dragged itinerary row", () => {
+    render(<SagittariusApp />);
+
+    const dataTransfer = createDataTransfer();
+    const victoriaRow = screen.getByRole("button", { name: /Select stop Victoria Peak/i }).closest("tr");
+    const dimDimRow = screen.getByRole("button", { name: /Select stop Dim Dim Sum/i }).closest("tr");
+
+    fireEvent.dragStart(screen.getByRole("button", { name: /Drag Victoria Peak/i }), { dataTransfer });
+    fireEvent.dragOver(dimDimRow!, { dataTransfer });
+
+    expect(victoriaRow).toHaveClass("data-row--dragging");
+    expect(dimDimRow).toHaveClass("data-row--drop-target");
+
+    fireEvent.drop(dimDimRow!, { dataTransfer });
+
+    expect(dimDimRow).not.toHaveClass("data-row--drop-target");
   });
 
   it("changes edit affordances by role capability", async () => {
