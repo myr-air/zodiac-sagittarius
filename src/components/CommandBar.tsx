@@ -6,16 +6,24 @@ interface CommandBarProps {
   trip: Trip;
   currentMemberId: string;
   canEdit: boolean;
+  canUndo: boolean;
+  canRedo: boolean;
   onChangeMember: (memberId: string) => void;
   onAddStop: () => void;
+  onUndo: () => void;
+  onRedo: () => void;
 }
 
 export function CommandBar({
   trip,
   currentMemberId,
   canEdit,
+  canUndo,
+  canRedo,
   onChangeMember,
   onAddStop,
+  onUndo,
+  onRedo,
 }: CommandBarProps) {
   const currentMember = trip.members.find((member) => member.id === currentMemberId) as Member;
 
@@ -43,10 +51,10 @@ export function CommandBar({
           เพิ่มสถานที่ / กิจกรรม
         </Button>
 
-        <button className="icon-button" type="button" aria-label="Undo">
+        <button className="icon-button" type="button" aria-label="Undo" disabled={!canUndo} onClick={onUndo}>
           <Icon name="undo" />
         </button>
-        <button className="icon-button" type="button" aria-label="Redo">
+        <button className="icon-button" type="button" aria-label="Redo" disabled={!canRedo} onClick={onRedo}>
           <Icon name="redo" />
         </button>
         <button className="icon-button" type="button" aria-label="More actions">

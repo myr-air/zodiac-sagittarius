@@ -60,4 +60,49 @@ describe("Sagittarius cockpit UI", () => {
     expect(screen.getByRole("button", { name: /เพิ่มสถานที่ \/ กิจกรรม/i })).toBeDisabled();
     expect(screen.getByText(/editing requires organizer access/i)).toBeInTheDocument();
   });
+
+  it("adds a new itinerary stop from the header action", async () => {
+    const user = userEvent.setup();
+    render(<SagittariusApp />);
+
+    await user.click(screen.getByRole("button", { name: /เพิ่มสถานที่ \/ กิจกรรม/i }));
+
+    const dialog = screen.getByRole("dialog", { name: /เพิ่มกิจกรรม/i });
+    await user.clear(within(dialog).getByLabelText(/^เวลา$/i));
+    await user.type(within(dialog).getByLabelText(/^เวลา$/i), "16:45");
+    await user.clear(within(dialog).getByLabelText(/กิจกรรม/i));
+    await user.type(within(dialog).getByLabelText(/กิจกรรม/i), "Coffee break at K11 Musea");
+    await user.clear(within(dialog).getByLabelText(/สถานที่/i));
+    await user.type(within(dialog).getByLabelText(/สถานที่/i), "K11 Musea");
+    await user.clear(within(dialog).getByLabelText(/^ระยะเวลา$/i));
+    await user.type(within(dialog).getByLabelText(/^ระยะเวลา$/i), "45");
+    await user.clear(within(dialog).getByLabelText(/การเดินทาง/i));
+    await user.type(within(dialog).getByLabelText(/การเดินทาง/i), "เดิน");
+    await user.click(within(dialog).getByRole("button", { name: /บันทึกกิจกรรม/i }));
+
+    expect(screen.queryByRole("dialog", { name: /เพิ่มกิจกรรม/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Select stop Coffee break at K11 Musea/i })).toBeInTheDocument();
+    expect(within(screen.getByRole("complementary", { name: /Planning context/i })).getByRole("heading", { name: /Coffee break at K11 Musea/i })).toBeInTheDocument();
+  });
+
+  it("edits the selected stop and supports undo redo", async () => {
+    const user = userEvent.setup();
+    render(<SagittariusApp />);
+
+    await user.click(screen.getByRole("button", { name: /แก้ไขรายละเอียด/i }));
+
+    const dialog = screen.getByRole("dialog", { name: /แก้ไขรายละเอียด/i });
+    await user.clear(within(dialog).getByLabelText(/กิจกรรม/i));
+    await user.type(within(dialog).getByLabelText(/กิจกรรม/i), "Dim Dim Sum revised");
+    await user.click(within(dialog).getByRole("button", { name: /บันทึกการแก้ไข/i }));
+
+    const context = screen.getByRole("complementary", { name: /Planning context/i });
+    expect(within(context).getByRole("heading", { name: /Dim Dim Sum revised/i })).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: /Undo/i }));
+    expect(within(context).getByRole("heading", { name: /Dim Dim Sum ที่ Tim Ho Wan/i })).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: /Redo/i }));
+    expect(within(context).getByRole("heading", { name: /Dim Dim Sum revised/i })).toBeInTheDocument();
+  });
 });

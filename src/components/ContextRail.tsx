@@ -10,9 +10,11 @@ interface ContextRailProps {
   currentMember: Member;
   suggestions: Suggestion[];
   expenseSummary: ExpenseSummary;
+  canEdit: boolean;
+  onEditSelected: () => void;
 }
 
-export function ContextRail({ trip, selectedItem, currentMember, suggestions, expenseSummary }: ContextRailProps) {
+export function ContextRail({ trip, selectedItem, currentMember, suggestions, expenseSummary, canEdit, onEditSelected }: ContextRailProps) {
   const selectedEnd = formatEndTime(selectedItem.startTime, selectedItem.durationMinutes);
   const groupSpend = expenseSummary.groupSpend.toLocaleString("en-HK");
   const perPerson = Math.round(expenseSummary.groupSpend / Math.max(1, trip.members.length - 1)).toLocaleString("en-HK");
@@ -46,7 +48,7 @@ export function ContextRail({ trip, selectedItem, currentMember, suggestions, ex
             <span className="map-poi map-poi-2">Jordan</span>
             <span className="map-marker"><Icon name="location" /></span>
           </div>
-          <Button type="button" variant="secondary">แก้ไขรายละเอียด</Button>
+          <Button type="button" variant="secondary" disabled={!canEdit} onClick={onEditSelected}>แก้ไขรายละเอียด</Button>
         </section>
 
         <SuggestionPanel suggestions={suggestions} members={trip.members} />

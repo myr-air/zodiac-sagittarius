@@ -5,9 +5,10 @@ import { AppShell } from "@/src/components/AppShell";
 import { CommandBar } from "@/src/components/CommandBar";
 import { ContextRail } from "@/src/components/ContextRail";
 import { SmartItineraryTable } from "@/src/components/SmartItineraryTable";
+import { StopDialog, type StopFormValues } from "@/src/components/StopDialog";
 import { buildExpenseSummary } from "@/src/trip/expenses";
 import { seedTrip } from "@/src/trip/seed";
-import type { ItineraryItem, Suggestion, TripRole } from "@/src/trip/types";
+import type { ItineraryItem, Suggestion, Trip, TripRole } from "@/src/trip/types";
 
 const seedSuggestions: Suggestion[] = [
   {
@@ -36,14 +37,18 @@ const seedSuggestions: Suggestion[] = [
   },
 ];
 
+const localMutationTimestamp = "2026-05-28T00:00:00.000Z";
+
 export function SagittariusApp() {
-  const [trip, setTrip] = useState(seedTrip);
+  const [tripState, setTripState] = useState<{ trip: Trip; past: Trip[]; future: Trip[] }>({ trip: seedTrip, past: [], future: [] });
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const selectedDay = "2025-05-16";
   const selectedPlanVariantId = seedTrip.activePlanVariantId;
   const [currentMemberId, setCurrentMemberId] = useState(seedTrip.members[0].id);
   const [selectedItemId, setSelectedItemId] = useState("item-dimdim");
+  const [dialogState, setDialogState] = useState<{ mode: "create" } | { mode: "edit"; item: ItineraryItem } | null>(null);
 
+  const trip = tripState.trip;
   const currentMember = trip.members.find((member) => member.id === currentMemberId) ?? trip.members[0];
   const canEdit = canEditItinerary(currentMember.role);
   const planItems = useMemo(
@@ -59,40 +64,108 @@ export function SagittariusApp() {
     if (!source) return;
     const duplicate: ItineraryItem = {
       ...source,
-      id: `item-copy-${Date.now()}`,
+      id: nextLocalItemId(trip.itineraryItems, "item-copy"),
       activity: `${source.activity} copy`,
       sortOrder: source.sortOrder + 10,
       version: 1,
-      updatedAt: new Date().toISOString(),
+      updatedAt: localMutationTimestamp,
     };
-    setTrip((current) => ({ ...current, itineraryItems: [...current.itineraryItems, duplicate] }));
+    commitTrip((current) => ({ ...current, itineraryItems: [...current.itineraryItems, duplicate] }), duplicate.id);
   }
 
   function addStop() {
     if (!canEdit) return;
+    setDialogState({ mode: "create" });
+  }
+
+  function createStop(values: StopFormValues) {
     const nextItem: ItineraryItem = {
-      id: `item-new-${Date.now()}`,
+      id: nextLocalItemId(trip.itineraryItems, "item-new"),
       tripId: trip.id,
       planVariantId: selectedPlanVariantId,
       day: selectedDay,
-      sortOrder: Date.now(),
-      startTime: "16:30",
-      activity: "New planning stop",
-      activityType: "experience",
-      place: "Add place",
+      sortOrder: getNextSortOrder(planItems, selectedDay),
+      startTime: values.startTime,
+      activity: values.activity,
+      activityType: values.activityType,
+      place: values.place,
       linkLabel: "แผนที่",
-      mapLink: "",
-      address: "",
-      durationMinutes: 45,
-      transportation: "Add route",
+      mapLink: buildMapLink(values.place),
+      address: values.place,
+      durationMinutes: values.durationMinutes,
+      transportation: values.transportation,
       advisories: [],
-      note: "Draft row added locally before backend sync.",
+      note: values.note,
       createdBy: currentMember.id,
-      updatedAt: new Date().toISOString(),
+      updatedAt: localMutationTimestamp,
       version: 1,
     };
-    setTrip((current) => ({ ...current, itineraryItems: [...current.itineraryItems, nextItem] }));
-    setSelectedItemId(nextItem.id);
+    commitTrip((current) => ({ ...current, itineraryItems: [...current.itineraryItems, nextItem] }), nextItem.id);
+    setDialogState(null);
+  }
+
+  function updateSelectedStop(values: StopFormValues) {
+    if (dialogState?.mode !== "edit") return;
+    const itemId = dialogState.item.id;
+    commitTrip((current) => ({
+      ...current,
+      itineraryItems: current.itineraryItems.map((item) =>
+        item.id === itemId
+          ? {
+              ...item,
+              startTime: values.startTime,
+              activity: values.activity,
+              activityType: values.activityType,
+              place: values.place,
+              mapLink: item.mapLink || buildMapLink(values.place),
+              address: values.place,
+              durationMinutes: values.durationMinutes,
+              transportation: values.transportation,
+              note: values.note,
+              updatedAt: localMutationTimestamp,
+              version: item.version + 1,
+            }
+          : item,
+      ),
+    }));
+    setSelectedItemId(itemId);
+    setDialogState(null);
+  }
+
+  function commitTrip(updater: (current: Trip) => Trip, nextSelectedItemId?: string) {
+    setTripState((current) => {
+      const nextTrip = updater(current.trip);
+      return {
+        trip: nextTrip,
+        past: [...current.past, current.trip].slice(-20),
+        future: [],
+      };
+    });
+    if (nextSelectedItemId) setSelectedItemId(nextSelectedItemId);
+  }
+
+  function undo() {
+    setTripState((current) => {
+      const previous = current.past.at(-1);
+      if (!previous) return current;
+      return {
+        trip: previous,
+        past: current.past.slice(0, -1),
+        future: [current.trip, ...current.future].slice(0, 20),
+      };
+    });
+  }
+
+  function redo() {
+    setTripState((current) => {
+      const next = current.future[0];
+      if (!next) return current;
+      return {
+        trip: next,
+        past: [...current.past, current.trip].slice(-20),
+        future: current.future.slice(1),
+      };
+    });
   }
 
   return (
@@ -102,8 +175,12 @@ export function SagittariusApp() {
           trip={trip}
           currentMemberId={currentMember.id}
           canEdit={canEdit}
+          canUndo={tripState.past.length > 0}
+          canRedo={tripState.future.length > 0}
           onChangeMember={setCurrentMemberId}
           onAddStop={addStop}
+          onUndo={undo}
+          onRedo={redo}
         />
         <div className="workspace-grid">
           <SmartItineraryTable
@@ -120,8 +197,19 @@ export function SagittariusApp() {
             currentMember={currentMember}
             suggestions={seedSuggestions}
             expenseSummary={expenseSummary}
+            canEdit={canEdit}
+            onEditSelected={() => setDialogState({ mode: "edit", item: selectedItem })}
           />
         </div>
+        {dialogState ? (
+          <StopDialog
+            key={dialogState.mode === "edit" ? `edit-${dialogState.item.id}` : "create-stop"}
+            mode={dialogState.mode}
+            initialItem={dialogState.mode === "edit" ? dialogState.item : undefined}
+            onClose={() => setDialogState(null)}
+            onSubmit={dialogState.mode === "edit" ? updateSelectedStop : createStop}
+          />
+        ) : null}
       </main>
     </AppShell>
   );
@@ -129,4 +217,26 @@ export function SagittariusApp() {
 
 function canEditItinerary(role: TripRole): boolean {
   return role === "owner" || role === "organizer";
+}
+
+function getNextSortOrder(items: ItineraryItem[], day: string): number {
+  const dayOrders = items.filter((item) => item.day === day).map((item) => item.sortOrder);
+  return dayOrders.length ? Math.max(...dayOrders) + 100 : 100;
+}
+
+function buildMapLink(place: string): string {
+  return place ? `https://maps.google.com/?q=${encodeURIComponent(place)}` : "";
+}
+
+function nextLocalItemId(items: ItineraryItem[], prefix: string): string {
+  const existingIds = new Set(items.map((item) => item.id));
+  let index = items.filter((item) => item.id.startsWith(`${prefix}-`)).length + 1;
+  let id = `${prefix}-${index}`;
+
+  while (existingIds.has(id)) {
+    index += 1;
+    id = `${prefix}-${index}`;
+  }
+
+  return id;
 }

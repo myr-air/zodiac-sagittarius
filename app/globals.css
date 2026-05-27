@@ -1169,6 +1169,106 @@ button:disabled,
   color: var(--color-text);
 }
 
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgb(15 23 42 / 0.28);
+}
+
+.stop-dialog {
+  width: min(620px, 100%);
+  max-height: calc(100vh - 40px);
+  overflow: auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: 0 24px 70px rgb(15 23 42 / 0.22);
+}
+
+.dialog-title-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 34px;
+  align-items: center;
+  gap: 12px;
+  min-height: 54px;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.dialog-title-row h2 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 16px;
+  line-height: 22px;
+  font-weight: 850;
+}
+
+.dialog-title-row button {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 0;
+  color: var(--color-text-muted);
+  background: transparent;
+  transform: rotate(180deg);
+}
+
+.stop-form {
+  display: grid;
+  gap: 16px;
+  padding: 16px;
+}
+
+.dialog-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.dialog-grid label {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.dialog-grid label span {
+  color: var(--color-text-muted);
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.dialog-field-wide {
+  grid-column: 1 / -1;
+}
+
+.dialog-grid input,
+.dialog-grid select,
+.dialog-grid textarea {
+  width: 100%;
+  min-height: 38px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  color: var(--color-text);
+  background: var(--color-surface);
+  font-size: 13px;
+}
+
+.dialog-grid textarea {
+  resize: vertical;
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -1324,5 +1424,18 @@ button:disabled,
   .inspector-tabs {
     gap: 18px;
     overflow-x: auto;
+  }
+
+  .modal-backdrop {
+    align-items: end;
+    padding: 10px;
+  }
+
+  .dialog-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dialog-actions {
+    display: grid;
   }
 }
