@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { AppShell } from "@/src/components/AppShell";
 import { CommandBar } from "@/src/components/CommandBar";
 import { ContextRail } from "@/src/components/ContextRail";
@@ -66,10 +66,30 @@ export function SagittariusApp() {
     return () => window.clearTimeout(timeout);
   }, [contextRailOpen]);
 
-  function setContextRailVisibility(open: boolean) {
+  const setContextRailVisibility = useCallback((open: boolean) => {
     if (open) setContextRailMounted(true);
     setContextRailOpen(open);
-  }
+  }, []);
+
+  useEffect(() => {
+    if (!contextRailOpen) return undefined;
+
+    function closeContextRailFromOutside(event: Event) {
+      if (!(event.target instanceof Element)) return;
+      if (event.target.closest(".context-rail")) return;
+      if (event.target.closest(".top-app-bar, .side-rail")) return;
+      if (event.target.closest('[role="dialog"]')) return;
+      if (event.target.closest(".data-row")) return;
+      setContextRailVisibility(false);
+    }
+
+    document.addEventListener("pointerdown", closeContextRailFromOutside);
+    document.addEventListener("click", closeContextRailFromOutside);
+    return () => {
+      document.removeEventListener("pointerdown", closeContextRailFromOutside);
+      document.removeEventListener("click", closeContextRailFromOutside);
+    };
+  }, [contextRailOpen, setContextRailVisibility]);
 
   function addStop() {
     if (!canEdit) return;
@@ -142,6 +162,7 @@ export function SagittariusApp() {
       version: 1,
     };
     commitTrip((current) => ({ ...current, itineraryItems: [...current.itineraryItems, nextItem] }), nextItem.id);
+    setContextRailVisibility(true);
     setDialogState(null);
   }
 
@@ -170,6 +191,7 @@ export function SagittariusApp() {
       ),
     }));
     setSelectedItemId(itemId);
+    setContextRailVisibility(true);
     setDialogState(null);
   }
 

@@ -102,6 +102,29 @@ describe("Sagittarius cockpit UI", () => {
     expect(container.querySelector(".workspace-grid")).toHaveAttribute("data-context-rail", "open");
   });
 
+  it("closes the right context drawer when clicking outside it", async () => {
+    const user = userEvent.setup();
+    const { container } = render(<SagittariusApp />);
+
+    expect(container.querySelector(".workspace-grid")).toHaveAttribute("data-context-rail", "open");
+
+    await user.click(screen.getByRole("region", { name: /Smart itinerary table/i }));
+
+    expect(container.querySelector(".workspace-grid")).toHaveAttribute("data-context-rail", "closed");
+    expect(screen.queryByRole("complementary", { name: /Planning context/i })).not.toBeInTheDocument();
+  });
+
+  it("keeps the right context drawer open when clicking inside it", async () => {
+    const user = userEvent.setup();
+    const { container } = render(<SagittariusApp />);
+    const context = screen.getByRole("complementary", { name: /Planning context/i });
+
+    await user.click(context);
+
+    expect(container.querySelector(".workspace-grid")).toHaveAttribute("data-context-rail", "open");
+    expect(screen.getByRole("complementary", { name: /Planning context/i })).toBeInTheDocument();
+  });
+
   it("collapses and expands day groups", async () => {
     const user = userEvent.setup();
     render(<SagittariusApp />);
