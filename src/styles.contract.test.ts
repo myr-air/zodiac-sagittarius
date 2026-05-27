@@ -30,4 +30,9 @@ describe("Calm Travel Ops CSS contract", () => {
     expect(css).toMatch(/\.workspace-grid\s*{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\) 380px/s);
     expect(css).toMatch(/\.context-rail\s*{[^}]*width:\s*380px/s);
   });
+
+  it("keeps the collapsed navigation expand control visible", () => {
+    expect(css).not.toMatch(/\.side-rail\[data-collapsed="true"\]\s+\.rail-toggle\s*{[^}]*display:\s*none/s);
+    expect(css).toMatch(/\.side-rail\[data-collapsed="true"\]\s+\.rail-toggle\s*{[^}]*display:\s*(inline-flex|grid|flex)/s);
+  });
 });

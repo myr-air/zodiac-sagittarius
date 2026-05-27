@@ -8,10 +8,12 @@ interface CommandBarProps {
   canEdit: boolean;
   canUndo: boolean;
   canRedo: boolean;
+  contextRailOpen: boolean;
   onChangeMember: (memberId: string) => void;
   onAddStop: () => void;
   onUndo: () => void;
   onRedo: () => void;
+  onToggleContextRail: () => void;
 }
 
 export function CommandBar({
@@ -20,10 +22,12 @@ export function CommandBar({
   canEdit,
   canUndo,
   canRedo,
+  contextRailOpen,
   onChangeMember,
   onAddStop,
   onUndo,
   onRedo,
+  onToggleContextRail,
 }: CommandBarProps) {
   const currentMember = trip.members.find((member) => member.id === currentMemberId) as Member;
 
@@ -51,6 +55,16 @@ export function CommandBar({
           เพิ่มสถานที่ / กิจกรรม
         </Button>
 
+        <button
+          className="icon-button details-toggle-button"
+          type="button"
+          aria-expanded={contextRailOpen}
+          aria-label={contextRailOpen ? "Hide details panel" : "Open details"}
+          onClick={onToggleContextRail}
+          title={contextRailOpen ? "Hide details panel" : "Open details"}
+        >
+          <Icon name="panel" />
+        </button>
         <button className="icon-button" type="button" aria-label="Undo" disabled={!canUndo} onClick={onUndo}>
           <Icon name="undo" />
         </button>

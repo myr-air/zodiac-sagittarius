@@ -12,9 +12,10 @@ interface ContextRailProps {
   expenseSummary: ExpenseSummary;
   canEdit: boolean;
   onEditSelected: () => void;
+  onClose: () => void;
 }
 
-export function ContextRail({ trip, selectedItem, currentMember, suggestions, expenseSummary, canEdit, onEditSelected }: ContextRailProps) {
+export function ContextRail({ trip, selectedItem, currentMember, suggestions, expenseSummary, canEdit, onEditSelected, onClose }: ContextRailProps) {
   const selectedEnd = formatEndTime(selectedItem.startTime, selectedItem.durationMinutes);
   const groupSpend = expenseSummary.groupSpend.toLocaleString("en-HK");
   const perPerson = Math.round(expenseSummary.groupSpend / Math.max(1, trip.members.length - 1)).toLocaleString("en-HK");
@@ -24,7 +25,7 @@ export function ContextRail({ trip, selectedItem, currentMember, suggestions, ex
       <div className="rail-inspector">
         <div className="inspector-title">
           <h2>{selectedItem.activity}</h2>
-          <button type="button" aria-label="Close details"><Icon name="chevronRight" /></button>
+          <button type="button" aria-label="Close details" onClick={onClose}><Icon name="chevronRight" /></button>
         </div>
 
         <div className="inspector-tabs" role="tablist" aria-label="Stop detail tabs">

@@ -42,6 +42,7 @@ const localMutationTimestamp = "2026-05-28T00:00:00.000Z";
 export function SagittariusApp() {
   const [tripState, setTripState] = useState<{ trip: Trip; past: Trip[]; future: Trip[] }>({ trip: seedTrip, past: [], future: [] });
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [contextRailOpen, setContextRailOpen] = useState(true);
   const selectedDay = "2025-05-16";
   const selectedPlanVariantId = seedTrip.activePlanVariantId;
   const [currentMemberId, setCurrentMemberId] = useState(seedTrip.members[0].id);
@@ -177,12 +178,14 @@ export function SagittariusApp() {
           canEdit={canEdit}
           canUndo={tripState.past.length > 0}
           canRedo={tripState.future.length > 0}
+          contextRailOpen={contextRailOpen}
           onChangeMember={setCurrentMemberId}
           onAddStop={addStop}
           onUndo={undo}
           onRedo={redo}
+          onToggleContextRail={() => setContextRailOpen((current) => !current)}
         />
-        <div className="workspace-grid">
+        <div className="workspace-grid" data-context-rail={contextRailOpen ? "open" : "closed"}>
           <SmartItineraryTable
             items={planItems}
             role={currentMember.role}
@@ -191,15 +194,18 @@ export function SagittariusApp() {
             onSelectItem={setSelectedItemId}
             onDuplicateItem={duplicateItem}
           />
-          <ContextRail
-            trip={trip}
-            selectedItem={selectedItem}
-            currentMember={currentMember}
-            suggestions={seedSuggestions}
-            expenseSummary={expenseSummary}
-            canEdit={canEdit}
-            onEditSelected={() => setDialogState({ mode: "edit", item: selectedItem })}
-          />
+          {contextRailOpen ? (
+            <ContextRail
+              trip={trip}
+              selectedItem={selectedItem}
+              currentMember={currentMember}
+              suggestions={seedSuggestions}
+              expenseSummary={expenseSummary}
+              canEdit={canEdit}
+              onEditSelected={() => setDialogState({ mode: "edit", item: selectedItem })}
+              onClose={() => setContextRailOpen(false)}
+            />
+          ) : null}
         </div>
         {dialogState ? (
           <StopDialog

@@ -36,6 +36,28 @@ describe("Sagittarius cockpit UI", () => {
     const nav = screen.getByRole("navigation", { name: /Sagittarius planning navigation/i });
     expect(nav).toHaveAttribute("data-collapsed", "true");
     expect(screen.getByRole("button", { name: /Expand navigation/i })).toHaveAttribute("aria-expanded", "false");
+
+    await user.click(screen.getByRole("button", { name: /Expand navigation/i }));
+
+    expect(nav).toHaveAttribute("data-collapsed", "false");
+    expect(screen.getByRole("button", { name: /Collapse navigation/i })).toHaveAttribute("aria-expanded", "true");
+  });
+
+  it("collapses and reopens the right context drawer so the table can expand", async () => {
+    const user = userEvent.setup();
+    const { container } = render(<SagittariusApp />);
+
+    expect(screen.getByRole("complementary", { name: /Planning context/i })).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: /Close details/i }));
+
+    expect(screen.queryByRole("complementary", { name: /Planning context/i })).not.toBeInTheDocument();
+    expect(container.querySelector(".workspace-grid")).toHaveAttribute("data-context-rail", "closed");
+    expect(screen.getByRole("button", { name: /Open details/i })).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: /Open details/i }));
+
+    expect(screen.getByRole("complementary", { name: /Planning context/i })).toBeInTheDocument();
+    expect(container.querySelector(".workspace-grid")).toHaveAttribute("data-context-rail", "open");
   });
 
   it("uses selected table row to drive the right context rail", async () => {
