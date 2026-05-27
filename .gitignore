@@ -1,0 +1,9 @@
+.DS_Store
+.next/
+.storybook-static/
+coverage/
+node_modules/
+playwright-report/
+test-results/
+*.log
+package-lock.json
