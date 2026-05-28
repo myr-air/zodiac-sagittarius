@@ -38,6 +38,23 @@ export function claimTripParticipant(trip: Trip, memberId: string, password: str
   };
 }
 
+export function resetTripParticipantClaim(trip: Trip, memberId: string): Trip {
+  return {
+    ...trip,
+    members: trip.members.map((member) =>
+      member.id === memberId
+        ? {
+            ...member,
+            claimPasswordHash: null,
+            claimedAt: null,
+            lastSeenAt: null,
+            presence: "offline",
+          }
+        : member,
+    ),
+  };
+}
+
 export function verifyTripParticipantPassword(member: Member, password: string): boolean {
   return Boolean(member.claimPasswordHash) && member.claimPasswordHash === hashLocalSecret(password.trim());
 }

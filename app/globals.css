@@ -446,7 +446,8 @@ button:disabled,
 }
 
 .rail-summary button,
-.invite-button {
+.invite-button,
+.reset-claim-button {
   min-height: 32px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
@@ -2110,11 +2111,19 @@ button:disabled,
 
 .person-row {
   display: grid;
-  grid-template-columns: 30px minmax(0, 1fr) auto;
+  grid-template-columns: 30px minmax(0, 1fr) auto auto;
   gap: 10px;
+  align-items: center;
   color: var(--color-text-muted);
   font-size: 11px;
   line-height: 16px;
+}
+
+.reset-claim-button {
+  min-height: 28px;
+  padding: 0 9px;
+  color: var(--color-warning-strong);
+  font-size: 11px;
 }
 
 .presence-pill {

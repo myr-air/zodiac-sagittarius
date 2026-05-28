@@ -4,6 +4,7 @@ import {
   canTripRole,
   claimTripParticipant,
   createTripParticipantSession,
+  resetTripParticipantClaim,
   verifyTripCredentials,
   verifyTripParticipantPassword,
 } from "./auth";
@@ -47,5 +48,16 @@ describe("trip participant auth", () => {
     expect(canTripRole("traveler", "editItinerary")).toBe(false);
     expect(canTripRole("viewer", "viewPlan")).toBe(true);
     expect(canTripRole("viewer", "createSuggestion")).toBe(false);
+  });
+
+  it("lets organizers reset a participant claim when someone picked the wrong identity", () => {
+    const claimed = claimTripParticipant(seedTrip, "member-nam", "old-pin");
+    const reset = resetTripParticipantClaim(claimed, "member-nam");
+    const member = reset.members.find((candidate) => candidate.id === "member-nam");
+
+    expect(member?.claimPasswordHash).toBeNull();
+    expect(member?.claimedAt).toBeNull();
+    expect(member?.lastSeenAt).toBeNull();
+    expect(member?.presence).toBe("offline");
   });
 });

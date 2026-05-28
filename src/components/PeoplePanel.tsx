@@ -1,6 +1,16 @@
 import type { Member } from "@/src/trip/types";
 
-export function PeoplePanel({ members, currentMemberId, canManagePeople = false }: { members: Member[]; currentMemberId: string; canManagePeople?: boolean }) {
+export function PeoplePanel({
+  members,
+  currentMemberId,
+  canManagePeople = false,
+  onResetMemberClaim,
+}: {
+  members: Member[];
+  currentMemberId: string;
+  canManagePeople?: boolean;
+  onResetMemberClaim?: (memberId: string) => void;
+}) {
   return (
     <section className="detail-section people-module" aria-label="People and presence">
       <h3>สมาชิกและสถานะ</h3>
@@ -17,6 +27,11 @@ export function PeoplePanel({ members, currentMemberId, canManagePeople = false 
             <span className={`presence-pill presence-pill--${member.presence}`}>
               {member.presence === "online" ? "ออนไลน์" : member.presence === "away" ? "ออฟไลน์ 1 ชม." : "ออฟไลน์"}
             </span>
+            {canManagePeople && member.claimPasswordHash ? (
+              <button className="reset-claim-button" type="button" onClick={() => onResetMemberClaim?.(member.id)}>
+                รีเซ็ตรหัส
+              </button>
+            ) : null}
           </div>
         ))}
       </div>

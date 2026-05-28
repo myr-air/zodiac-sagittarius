@@ -14,10 +14,22 @@ interface ContextRailProps {
   canEdit: boolean;
   open: boolean;
   onEditSelected: () => void;
+  onResetMemberClaim: (memberId: string) => void;
   onClose: () => void;
 }
 
-export function ContextRail({ trip, selectedItem, currentMember, suggestions, expenseSummary, canEdit, open, onEditSelected, onClose }: ContextRailProps) {
+export function ContextRail({
+  trip,
+  selectedItem,
+  currentMember,
+  suggestions,
+  expenseSummary,
+  canEdit,
+  open,
+  onEditSelected,
+  onResetMemberClaim,
+  onClose,
+}: ContextRailProps) {
   const selectedEnd = formatEndTime(selectedItem.startTime, selectedItem.durationMinutes);
   const groupSpend = expenseSummary.groupSpend.toLocaleString("en-HK");
   const perPerson = Math.round(expenseSummary.groupSpend / Math.max(1, trip.members.length - 1)).toLocaleString("en-HK");
@@ -75,7 +87,12 @@ export function ContextRail({ trip, selectedItem, currentMember, suggestions, ex
           <Button type="button" variant="secondary" disabled={!canEdit}>เพิ่ม/แก้ไขค่าใช้จ่าย</Button>
         </section>
 
-        <PeoplePanel members={trip.members.filter((member) => member.id !== "member-viewer")} currentMemberId={currentMember.id} canManagePeople={canEdit} />
+        <PeoplePanel
+          members={trip.members.filter((member) => member.id !== "member-viewer")}
+          currentMemberId={currentMember.id}
+          canManagePeople={canEdit}
+          onResetMemberClaim={onResetMemberClaim}
+        />
       </div>
     </aside>
   );
