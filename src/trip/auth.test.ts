@@ -5,6 +5,8 @@ import {
   claimTripParticipant,
   createTripParticipantSession,
   resetTripParticipantClaim,
+  setTripParticipantAccessStatus,
+  updateTripParticipantRole,
   verifyTripCredentials,
   verifyTripParticipantPassword,
 } from "./auth";
@@ -58,6 +60,25 @@ describe("trip participant auth", () => {
     expect(member?.claimPasswordHash).toBeNull();
     expect(member?.claimedAt).toBeNull();
     expect(member?.lastSeenAt).toBeNull();
+    expect(member?.presence).toBe("offline");
+  });
+
+  it("updates participant roles without demoting the owner", () => {
+    const updated = updateTripParticipantRole(seedTrip, "member-nam", "organizer");
+    const ownerAttempt = updateTripParticipantRole(updated, "member-aom", "viewer");
+
+    expect(updated.members.find((member) => member.id === "member-nam")?.role).toBe("organizer");
+    expect(ownerAttempt.members.find((member) => member.id === "member-aom")?.role).toBe("owner");
+  });
+
+  it("disables participant access and clears their claim", () => {
+    const claimed = claimTripParticipant(seedTrip, "member-nam", "old-pin");
+    const disabled = setTripParticipantAccessStatus(claimed, "member-nam", "disabled");
+    const member = disabled.members.find((candidate) => candidate.id === "member-nam");
+
+    expect(member?.accessStatus).toBe("disabled");
+    expect(member?.claimPasswordHash).toBeNull();
+    expect(member?.claimedAt).toBeNull();
     expect(member?.presence).toBe("offline");
   });
 });

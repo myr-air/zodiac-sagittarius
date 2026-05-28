@@ -61,6 +61,23 @@ describe("TripJoinGate", () => {
 
     expect(onAuthenticated).toHaveBeenCalledWith(expect.objectContaining({ memberId: "member-beam" }));
   });
+
+  it("does not allow disabled participants to claim or login", async () => {
+    const user = userEvent.setup();
+    const disabledTrip = {
+      ...seedTrip,
+      members: seedTrip.members.map((member) =>
+        member.id === "member-nam" ? { ...member, accessStatus: "disabled" as const } : member,
+      ),
+    };
+    render(<TripJoinGate trip={disabledTrip} onTripChange={vi.fn()} onAuthenticated={vi.fn()} />);
+
+    await enterTripRoom(user);
+
+    const disabledParticipant = screen.getByRole("button", { name: /Explorer Friend/i });
+    expect(disabledParticipant).toBeDisabled();
+    expect(disabledParticipant).toHaveTextContent(/Disabled/i);
+  });
 });
 
 async function enterTripRoom(user: ReturnType<typeof userEvent.setup>) {

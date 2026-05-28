@@ -1,4 +1,4 @@
-import type { Member, Trip, TripCapability, TripJoinCredential, TripParticipantSession, TripRole } from "./types";
+import type { Member, Trip, TripCapability, TripJoinCredential, TripMemberAccessStatus, TripParticipantSession, TripRole } from "./types";
 
 export const localTripJoinId = "HK-SZ-2025";
 export const localTripJoinPassword = "dim-sum-run";
@@ -26,13 +26,41 @@ export function claimTripParticipant(trip: Trip, memberId: string, password: str
   return {
     ...trip,
     members: trip.members.map((member) => {
-      if (member.id !== memberId || member.claimPasswordHash) return member;
+      if (member.id !== memberId || member.claimPasswordHash || isTripParticipantDisabled(member)) return member;
       return {
         ...member,
         claimPasswordHash: hashLocalSecret(trimmedPassword),
         claimedAt: new Date().toISOString(),
         lastSeenAt: new Date().toISOString(),
         presence: "online",
+      };
+    }),
+  };
+}
+
+export function updateTripParticipantRole(trip: Trip, memberId: string, role: Exclude<TripRole, "owner">): Trip {
+  return {
+    ...trip,
+    members: trip.members.map((member) => {
+      if (member.id !== memberId || member.role === "owner") return member;
+      return { ...member, role };
+    }),
+  };
+}
+
+export function setTripParticipantAccessStatus(trip: Trip, memberId: string, accessStatus: TripMemberAccessStatus): Trip {
+  return {
+    ...trip,
+    members: trip.members.map((member) => {
+      if (member.id !== memberId || member.role === "owner") return member;
+      if (accessStatus === "active") return { ...member, accessStatus };
+      return {
+        ...member,
+        accessStatus,
+        claimPasswordHash: null,
+        claimedAt: null,
+        lastSeenAt: null,
+        presence: "offline",
       };
     }),
   };
@@ -56,7 +84,7 @@ export function resetTripParticipantClaim(trip: Trip, memberId: string): Trip {
 }
 
 export function verifyTripParticipantPassword(member: Member, password: string): boolean {
-  return Boolean(member.claimPasswordHash) && member.claimPasswordHash === hashLocalSecret(password.trim());
+  return !isTripParticipantDisabled(member) && Boolean(member.claimPasswordHash) && member.claimPasswordHash === hashLocalSecret(password.trim());
 }
 
 export function createTripParticipantSession(trip: Trip, memberId: string): TripParticipantSession {
@@ -70,7 +98,12 @@ export function createTripParticipantSession(trip: Trip, memberId: string): Trip
 
 export function findSessionMember(trip: Trip, session: TripParticipantSession | null): Member | null {
   if (!session || session.tripId !== trip.id) return null;
-  return trip.members.find((member) => member.id === session.memberId) ?? null;
+  const member = trip.members.find((candidate) => candidate.id === session.memberId) ?? null;
+  return member && !isTripParticipantDisabled(member) ? member : null;
+}
+
+export function isTripParticipantDisabled(member: Member): boolean {
+  return member.accessStatus === "disabled";
 }
 
 export function hashLocalSecret(secret: string): string {

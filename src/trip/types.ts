@@ -1,4 +1,5 @@
 export type TripRole = "owner" | "organizer" | "traveler" | "viewer";
+export type TripMemberAccessStatus = "active" | "disabled";
 
 export type TripCapability =
   | "viewPlan"
@@ -31,6 +32,7 @@ export interface Member {
   claimPasswordHash?: string | null;
   claimedAt?: string | null;
   lastSeenAt?: string | null;
+  accessStatus?: TripMemberAccessStatus;
 }
 
 export interface PlanVariant {

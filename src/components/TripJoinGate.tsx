@@ -6,6 +6,7 @@ import { Badge, Button } from "./ui";
 import {
   claimTripParticipant,
   createTripParticipantSession,
+  isTripParticipantDisabled,
   verifyTripCredentials,
   verifyTripParticipantPassword,
 } from "@/src/trip/auth";
@@ -41,6 +42,7 @@ export function TripJoinGate({ trip, onTripChange, onAuthenticated }: TripJoinGa
   }
 
   function selectMember(member: Member) {
+    if (isTripParticipantDisabled(member)) return;
     setSelectedMemberId(member.id);
     setParticipantPassword("");
     setError(null);
@@ -121,6 +123,7 @@ export function TripJoinGate({ trip, onTripChange, onAuthenticated }: TripJoinGa
               {trip.members.map((member) => (
                 <button
                   className="participant-card"
+                  disabled={isTripParticipantDisabled(member)}
                   data-selected={member.id === selectedMemberId ? "true" : "false"}
                   key={member.id}
                   type="button"
@@ -133,8 +136,8 @@ export function TripJoinGate({ trip, onTripChange, onAuthenticated }: TripJoinGa
                     <strong>{member.displayName}</strong>
                     <small>{roleLabel(member.role)}</small>
                   </span>
-                  <Badge tone={member.claimPasswordHash ? "success" : "warning"}>
-                    {member.claimPasswordHash ? "Claimed" : "First entry"}
+                  <Badge tone={isTripParticipantDisabled(member) ? "danger" : member.claimPasswordHash ? "success" : "warning"}>
+                    {isTripParticipantDisabled(member) ? "Disabled" : member.claimPasswordHash ? "Claimed" : "First entry"}
                   </Badge>
                 </button>
               ))}

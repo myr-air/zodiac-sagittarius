@@ -9,11 +9,18 @@ import { SmartItineraryTable } from "@/src/components/SmartItineraryTable";
 import { StopDialog, type StopFormValues } from "@/src/components/StopDialog";
 import { TimelineView } from "@/src/components/TimelineView";
 import { TripJoinGate } from "@/src/components/TripJoinGate";
-import { canTripRole, findSessionMember, resetTripParticipantClaim, tripParticipantSessionStorageKey } from "@/src/trip/auth";
+import {
+  canTripRole,
+  findSessionMember,
+  resetTripParticipantClaim,
+  setTripParticipantAccessStatus,
+  tripParticipantSessionStorageKey,
+  updateTripParticipantRole,
+} from "@/src/trip/auth";
 import { buildExpenseSummary } from "@/src/trip/expenses";
 import { tripStorageKey } from "@/src/trip/repository";
 import { seedTrip } from "@/src/trip/seed";
-import type { ItineraryItem, Suggestion, Trip, TripParticipantSession, TripRole } from "@/src/trip/types";
+import type { ItineraryItem, Suggestion, Trip, TripMemberAccessStatus, TripParticipantSession, TripRole } from "@/src/trip/types";
 
 const seedSuggestions: Suggestion[] = [
   {
@@ -289,6 +296,16 @@ export function SagittariusApp({ initialView = "itinerary", requireJoin = false 
     commitTrip((current) => resetTripParticipantClaim(current, memberId));
   }
 
+  function changeMemberRole(memberId: string, role: Exclude<TripRole, "owner">) {
+    if (!canTripRole(currentMember.role, "managePeople")) return;
+    commitTrip((current) => updateTripParticipantRole(current, memberId, role));
+  }
+
+  function changeMemberAccessStatus(memberId: string, accessStatus: TripMemberAccessStatus) {
+    if (!canTripRole(currentMember.role, "managePeople")) return;
+    commitTrip((current) => setTripParticipantAccessStatus(current, memberId, accessStatus));
+  }
+
   if (requireJoin && !sessionMember) {
     return <TripJoinGate trip={trip} onTripChange={replaceTripFromJoin} onAuthenticated={authenticateParticipant} />;
   }
@@ -355,6 +372,8 @@ export function SagittariusApp({ initialView = "itinerary", requireJoin = false 
               canEdit={canEdit}
               open={contextRailOpen}
               onEditSelected={() => setDialogState({ mode: "edit", item: selectedItem })}
+              onChangeMemberAccessStatus={changeMemberAccessStatus}
+              onChangeMemberRole={changeMemberRole}
               onResetMemberClaim={resetMemberClaim}
               onClose={() => setContextRailVisibility(false)}
             />

@@ -45,6 +45,7 @@ CREATE TABLE trip_members (
   user_id uuid,
   display_name text NOT NULL,
   role text NOT NULL CHECK (role IN ('owner', 'organizer', 'traveler', 'viewer')),
+  access_status text NOT NULL DEFAULT 'active' CHECK (access_status IN ('active', 'disabled')),
   claim_password_hash text,
   claimed_at timestamptz,
   last_seen_at timestamptz,
@@ -239,6 +240,7 @@ Example PATCH:
 - `GET /v1/trips/:tripId/members`
 - `POST /v1/trips/:tripId/invitations`
 - `PATCH /v1/trips/:tripId/members/:memberId`
+  Organizer/owner only; updates display name, role, or access status. Disabling a member revokes active sessions and clears guest claim credentials.
 - `POST /v1/trips/:tripId/presence`
 
 ## Role Capability Matrix

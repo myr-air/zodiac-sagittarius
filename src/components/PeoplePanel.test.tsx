@@ -27,4 +27,26 @@ describe("PeoplePanel", () => {
 
     expect(onResetMemberClaim).toHaveBeenCalledWith("member-nam");
   });
+
+  it("lets organizers change roles and disable participant access", async () => {
+    const user = userEvent.setup();
+    const onChangeMemberRole = vi.fn();
+    const onChangeMemberAccessStatus = vi.fn();
+
+    render(
+      <PeoplePanel
+        members={seedTrip.members}
+        currentMemberId="member-aom"
+        canManagePeople
+        onChangeMemberAccessStatus={onChangeMemberAccessStatus}
+        onChangeMemberRole={onChangeMemberRole}
+      />,
+    );
+
+    await user.selectOptions(screen.getByLabelText(/Role for Explorer Friend/i), "organizer");
+    await user.click(screen.getByRole("button", { name: /ปิดสิทธิ์ Explorer Friend/i }));
+
+    expect(onChangeMemberRole).toHaveBeenCalledWith("member-nam", "organizer");
+    expect(onChangeMemberAccessStatus).toHaveBeenCalledWith("member-nam", "disabled");
+  });
 });

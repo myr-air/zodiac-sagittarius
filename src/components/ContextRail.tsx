@@ -1,4 +1,4 @@
-import type { ExpenseSummary, ItineraryItem, Member, Suggestion, Trip } from "@/src/trip/types";
+import type { ExpenseSummary, ItineraryItem, Member, Suggestion, Trip, TripMemberAccessStatus, TripRole } from "@/src/trip/types";
 import { Button } from "./ui";
 import { Icon } from "./icons";
 import { SuggestionPanel } from "./SuggestionPanel";
@@ -14,6 +14,8 @@ interface ContextRailProps {
   canEdit: boolean;
   open: boolean;
   onEditSelected: () => void;
+  onChangeMemberAccessStatus: (memberId: string, accessStatus: TripMemberAccessStatus) => void;
+  onChangeMemberRole: (memberId: string, role: Exclude<TripRole, "owner">) => void;
   onResetMemberClaim: (memberId: string) => void;
   onClose: () => void;
 }
@@ -27,6 +29,8 @@ export function ContextRail({
   canEdit,
   open,
   onEditSelected,
+  onChangeMemberAccessStatus,
+  onChangeMemberRole,
   onResetMemberClaim,
   onClose,
 }: ContextRailProps) {
@@ -91,6 +95,8 @@ export function ContextRail({
           members={trip.members.filter((member) => member.id !== "member-viewer")}
           currentMemberId={currentMember.id}
           canManagePeople={canEdit}
+          onChangeMemberAccessStatus={onChangeMemberAccessStatus}
+          onChangeMemberRole={onChangeMemberRole}
           onResetMemberClaim={onResetMemberClaim}
         />
       </div>
