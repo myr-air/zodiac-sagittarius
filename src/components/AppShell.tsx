@@ -17,7 +17,7 @@ const navItems = [
   { id: "bookings", label: "รายการจอง", icon: "table" as const, href: "/itinerary" },
   { id: "alerts", label: "การแจ้งเตือน", icon: "alertCircle" as const, count: 3, href: "/itinerary" },
   { id: "tasks", label: "งาน", icon: "check" as const, href: "/itinerary" },
-  { id: "members", label: "สมาชิก", icon: "users" as const, href: "/itinerary" },
+  { id: "members", label: "สมาชิก", icon: "users" as const, href: "/members" },
   { id: "settings", label: "ตั้งค่า", icon: "settings" as const, href: "/itinerary" },
 ];
 

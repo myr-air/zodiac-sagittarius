@@ -7,6 +7,7 @@ import {
   findSessionMember,
   linkTripParticipantToUser,
   resetTripParticipantClaim,
+  setTripParticipantPassword,
   setTripParticipantAccessStatus,
   updateTripParticipantRole,
   verifyTripCredentials,
@@ -64,6 +65,16 @@ describe("trip participant auth", () => {
     expect(member?.claimedAt).toBeNull();
     expect(member?.lastSeenAt).toBeNull();
     expect(member?.presence).toBe("offline");
+  });
+
+  it("lets a participant change their password", () => {
+    const changed = setTripParticipantPassword(seedTrip, "member-aom", "new-owner-pin");
+    const member = changed.members.find((candidate) => candidate.id === "member-aom");
+
+    expect(member?.claimPasswordHash).toBeTruthy();
+    expect(member?.claimedAt).toBeTruthy();
+    expect(member?.lastSeenAt).toBeTruthy();
+    expect(verifyTripParticipantPassword(member!, "new-owner-pin")).toBe(true);
   });
 
   it("updates participant roles without demoting the owner", () => {

@@ -38,6 +38,29 @@ export function claimTripParticipant(trip: Trip, memberId: string, password: str
   };
 }
 
+export function createTripParticipant(trip: Trip, input: { displayName: string; role: Exclude<TripRole, "owner"> }): Trip {
+  const displayName = input.displayName.trim();
+  if (!displayName) return trip;
+
+  return {
+    ...trip,
+    members: [
+      ...trip.members,
+      {
+        id: nextTripMemberId(trip.members, displayName),
+        displayName,
+        role: input.role,
+        presence: "offline",
+        color: nextTripMemberColor(trip.members.length),
+        claimPasswordHash: null,
+        claimedAt: null,
+        lastSeenAt: null,
+        accessStatus: "active",
+      },
+    ],
+  };
+}
+
 export function updateTripParticipantRole(trip: Trip, memberId: string, role: Exclude<TripRole, "owner">): Trip {
   return {
     ...trip,
@@ -80,6 +103,26 @@ export function resetTripParticipantClaim(trip: Trip, memberId: string): Trip {
           }
         : member,
     ),
+  };
+}
+
+export function setTripParticipantPassword(trip: Trip, memberId: string, password: string): Trip {
+  const trimmedPassword = password.trim();
+  if (trimmedPassword.length < 4) return trip;
+  const changedAt = new Date().toISOString();
+
+  return {
+    ...trip,
+    members: trip.members.map((member) => {
+      if (member.id !== memberId || isTripParticipantDisabled(member)) return member;
+      return {
+        ...member,
+        claimPasswordHash: hashLocalSecret(trimmedPassword),
+        claimedAt: member.claimedAt ?? changedAt,
+        lastSeenAt: changedAt,
+        presence: "online",
+      };
+    }),
   };
 }
 
@@ -143,4 +186,27 @@ export function hashLocalSecret(secret: string): string {
 
 function normalizeJoinId(joinId: string): string {
   return joinId.trim().toUpperCase();
+}
+
+function nextTripMemberId(members: Member[], displayName: string): string {
+  const slug = displayName
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "") || "member";
+  const existingIds = new Set(members.map((member) => member.id));
+  let candidate = `member-${slug}`;
+  let index = 2;
+
+  while (existingIds.has(candidate)) {
+    candidate = `member-${slug}-${index}`;
+    index += 1;
+  }
+
+  return candidate;
+}
+
+function nextTripMemberColor(index: number): string {
+  const palette = ["#0f766e", "#2563eb", "#f97316", "#64748b", "#7c3aed", "#db2777", "#0891b2", "#ca8a04"];
+  return palette[index % palette.length];
 }

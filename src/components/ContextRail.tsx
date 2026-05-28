@@ -1,47 +1,36 @@
-import type { ExpenseSummary, ItineraryItem, Member, Suggestion, Trip, TripMemberAccessStatus, TripRole } from "@/src/trip/types";
+import type { ExpenseSummary, ItineraryItem, Suggestion, Trip } from "@/src/trip/types";
 import { Button } from "./ui";
 import { Icon } from "./icons";
 import { SuggestionPanel } from "./SuggestionPanel";
-import { PeoplePanel } from "./PeoplePanel";
 import { activityTypeLabel, formatDuration, formatEndTime } from "./itineraryDisplay";
 
 interface ContextRailProps {
   trip: Trip;
   selectedItem: ItineraryItem;
-  currentMember: Member;
   suggestions: Suggestion[];
   expenseSummary: ExpenseSummary;
   canEdit: boolean;
   canCreateSuggestion: boolean;
   canReviewSuggestions: boolean;
   canEditExpenses: boolean;
-  canManagePeople: boolean;
   open: boolean;
   onEditSelected: () => void;
   onSuggestSelected: () => void;
-  onChangeMemberAccessStatus: (memberId: string, accessStatus: TripMemberAccessStatus) => void;
-  onChangeMemberRole: (memberId: string, role: Exclude<TripRole, "owner">) => void;
-  onResetMemberClaim: (memberId: string) => void;
   onClose: () => void;
 }
 
 export function ContextRail({
   trip,
   selectedItem,
-  currentMember,
   suggestions,
   expenseSummary,
   canEdit,
   canCreateSuggestion,
   canReviewSuggestions,
   canEditExpenses,
-  canManagePeople,
   open,
   onEditSelected,
   onSuggestSelected,
-  onChangeMemberAccessStatus,
-  onChangeMemberRole,
-  onResetMemberClaim,
   onClose,
 }: ContextRailProps) {
   const selectedEnd = formatEndTime(selectedItem.startTime, selectedItem.durationMinutes);
@@ -105,14 +94,6 @@ export function ContextRail({
           <Button type="button" variant="secondary" disabled={!canEditExpenses}>เพิ่ม/แก้ไขค่าใช้จ่าย</Button>
         </section>
 
-        <PeoplePanel
-          members={trip.members.filter((member) => member.id !== "member-viewer")}
-          currentMemberId={currentMember.id}
-          canManagePeople={canManagePeople}
-          onChangeMemberAccessStatus={onChangeMemberAccessStatus}
-          onChangeMemberRole={onChangeMemberRole}
-          onResetMemberClaim={onResetMemberClaim}
-        />
       </div>
     </aside>
   );

@@ -9,10 +9,13 @@ import { SmartItineraryTable } from "@/src/components/SmartItineraryTable";
 import { StopDialog, type StopFormValues } from "@/src/components/StopDialog";
 import { TimelineView } from "@/src/components/TimelineView";
 import { TripJoinGate } from "@/src/components/TripJoinGate";
+import { TripMembersPage } from "@/src/components/TripMembersPage";
 import {
   canTripRole,
+  createTripParticipant,
   findSessionMember,
   resetTripParticipantClaim,
+  setTripParticipantPassword,
   setTripParticipantAccessStatus,
   tripParticipantSessionStorageKey,
   updateTripParticipantRole,
@@ -51,7 +54,7 @@ const seedSuggestions: Suggestion[] = [
 
 const localMutationTimestamp = "2026-05-28T00:00:00.000Z";
 
-export type PlanningView = "itinerary" | "map" | "timeline";
+export type PlanningView = "itinerary" | "map" | "timeline" | "members";
 
 interface SagittariusAppProps {
   initialView?: PlanningView;
@@ -60,7 +63,7 @@ interface SagittariusAppProps {
 
 export function SagittariusApp({ initialView = "itinerary", requireJoin = false }: SagittariusAppProps) {
   const [tripState, setTripState] = useState<{ trip: Trip; past: Trip[]; future: Trip[] }>(() => ({
-    trip: loadPersistedTrip() ?? seedTrip,
+    trip: seedTrip,
     past: [],
     future: [],
   }));
@@ -91,20 +94,22 @@ export function SagittariusApp({ initialView = "itinerary", requireJoin = false 
   const expenseSummary = useMemo(() => buildExpenseSummary(trip.expenses, currentMember.id), [currentMember.id, trip.expenses]);
 
   useEffect(() => {
-    const storage = getBrowserLocalStorage();
-    if (!requireJoin || !storage) return;
-    const rawSession = storage.getItem(tripParticipantSessionStorageKey);
-    if (!rawSession) return;
-    try {
-      const parsedSession = JSON.parse(rawSession) as TripParticipantSession;
-      if (findSessionMember(trip, parsedSession)) {
-        setParticipantSession(parsedSession);
-        setCurrentMemberId(parsedSession.memberId);
+    const timeout = window.setTimeout(() => {
+      const persistedTrip = loadPersistedTrip();
+      const nextTrip = persistedTrip ?? seedTrip;
+      const persistedSession = loadPersistedParticipantSession(requireJoin, nextTrip);
+
+      if (persistedTrip) {
+        setTripState({ trip: persistedTrip, past: [], future: [] });
       }
-    } catch {
-      storage.removeItem(tripParticipantSessionStorageKey);
-    }
-  }, [requireJoin, trip]);
+      if (persistedSession) {
+        setParticipantSession(persistedSession);
+        setCurrentMemberId(persistedSession.memberId);
+      }
+    }, 0);
+
+    return () => window.clearTimeout(timeout);
+  }, [requireJoin]);
 
   useEffect(() => {
     if (contextRailOpen) return undefined;
@@ -311,6 +316,16 @@ export function SagittariusApp({ initialView = "itinerary", requireJoin = false 
     commitTrip((current) => setTripParticipantAccessStatus(current, memberId, accessStatus));
   }
 
+  function changeMemberPassword(memberId: string, password: string) {
+    if (memberId !== currentMember.id) return;
+    commitTrip((current) => setTripParticipantPassword(current, memberId, password));
+  }
+
+  function createMember(input: { displayName: string; role: Exclude<TripRole, "owner"> }) {
+    if (!canTripRole(currentMember.role, "managePeople")) return;
+    commitTrip((current) => createTripParticipant(current, input));
+  }
+
   function suggestSelectedStop() {
     if (!canCreateSuggestion || !selectedItem) return;
     setSuggestions((current) => [
@@ -345,24 +360,38 @@ export function SagittariusApp({ initialView = "itinerary", requireJoin = false 
       onToggleCollapsed={() => setSidebarCollapsed((current) => !current)}
     >
       <main className="workspace-shell">
-        <CommandBar
-          trip={trip}
-          currentMemberId={currentMember.id}
-          canEdit={canEdit}
-          canUndo={tripState.past.length > 0}
-          canRedo={tripState.future.length > 0}
-          contextRailOpen={contextRailOpen}
-          showDetailsToggle={initialView !== "map"}
-          canSwitchMember={!requireJoin || canTripRole(currentMember.role, "managePeople")}
-          onChangeMember={setCurrentMemberId}
-          onAddStop={addStop}
-          onUndo={undo}
-          onRedo={redo}
-          onToggleContextRail={() => setContextRailVisibility(!contextRailOpen)}
-        />
-        <div className="workspace-grid" data-context-rail={contextRailOpen ? "open" : "closed"}>
-          <div className="planning-main">
-            {initialView === "itinerary" ? (
+        {initialView === "members" ? null : (
+          <CommandBar
+            trip={trip}
+            currentMemberId={currentMember.id}
+            canEdit={canEdit}
+            canUndo={tripState.past.length > 0}
+            canRedo={tripState.future.length > 0}
+            contextRailOpen={contextRailOpen}
+            showDetailsToggle={initialView !== "map"}
+            canSwitchMember={!requireJoin || canTripRole(currentMember.role, "managePeople")}
+            onChangeMember={setCurrentMemberId}
+            onAddStop={addStop}
+            onUndo={undo}
+            onRedo={redo}
+            onToggleContextRail={() => setContextRailVisibility(!contextRailOpen)}
+          />
+        )}
+        {initialView === "members" ? (
+          <TripMembersPage
+            trip={trip}
+            currentMember={currentMember}
+            canManagePeople={canManagePeople}
+            onChangeMemberAccessStatus={changeMemberAccessStatus}
+            onChangeMemberPassword={changeMemberPassword}
+            onChangeMemberRole={changeMemberRole}
+            onCreateMember={createMember}
+            onResetMemberClaim={resetMemberClaim}
+          />
+        ) : (
+          <div className="workspace-grid" data-context-rail={contextRailOpen ? "open" : "closed"}>
+            <div className="planning-main">
+              {initialView === "itinerary" ? (
               <SmartItineraryTable
                 items={planItems}
                 role={currentMember.role}
@@ -371,44 +400,40 @@ export function SagittariusApp({ initialView = "itinerary", requireJoin = false 
                 onSelectItem={selectItem}
                 onMoveItem={moveItem}
               />
-            ) : null}
-            {initialView === "map" ? (
+              ) : null}
+              {initialView === "map" ? (
               <RouteMapView
                 items={planItems}
                 startDate={trip.startDate}
               />
-            ) : null}
-            {initialView === "timeline" ? (
+              ) : null}
+              {initialView === "timeline" ? (
               <TimelineView
                 items={planItems}
                 selectedItemId={selectedItem.id}
                 startDate={trip.startDate}
                 onSelectItem={selectItem}
               />
+              ) : null}
+            </div>
+            {initialView !== "map" && contextRailMounted ? (
+              <ContextRail
+                trip={trip}
+                selectedItem={selectedItem}
+                suggestions={suggestions}
+                expenseSummary={expenseSummary}
+                canEdit={canEdit}
+                canCreateSuggestion={canCreateSuggestion}
+                canReviewSuggestions={canReviewSuggestions}
+                canEditExpenses={canEditExpenses}
+                open={contextRailOpen}
+                onEditSelected={() => setDialogState({ mode: "edit", item: selectedItem })}
+                onSuggestSelected={suggestSelectedStop}
+                onClose={() => setContextRailVisibility(false)}
+              />
             ) : null}
           </div>
-          {initialView !== "map" && contextRailMounted ? (
-            <ContextRail
-              trip={trip}
-              selectedItem={selectedItem}
-              currentMember={currentMember}
-              suggestions={suggestions}
-              expenseSummary={expenseSummary}
-              canEdit={canEdit}
-              canCreateSuggestion={canCreateSuggestion}
-              canReviewSuggestions={canReviewSuggestions}
-              canEditExpenses={canEditExpenses}
-              canManagePeople={canManagePeople}
-              open={contextRailOpen}
-              onEditSelected={() => setDialogState({ mode: "edit", item: selectedItem })}
-              onSuggestSelected={suggestSelectedStop}
-              onChangeMemberAccessStatus={changeMemberAccessStatus}
-              onChangeMemberRole={changeMemberRole}
-              onResetMemberClaim={resetMemberClaim}
-              onClose={() => setContextRailVisibility(false)}
-            />
-          ) : null}
-        </div>
+        )}
         {dialogState ? (
           <StopDialog
             key={dialogState.mode === "edit" ? `edit-${dialogState.item.id}` : "create-stop"}
@@ -470,6 +495,20 @@ function loadPersistedTrip(): Trip | null {
     return JSON.parse(rawTrip) as Trip;
   } catch {
     getBrowserLocalStorage()?.removeItem(tripStorageKey);
+    return null;
+  }
+}
+
+function loadPersistedParticipantSession(requireJoin: boolean, trip: Trip): TripParticipantSession | null {
+  const storage = getBrowserLocalStorage();
+  if (!requireJoin || !storage) return null;
+  const rawSession = storage.getItem(tripParticipantSessionStorageKey);
+  if (!rawSession) return null;
+  try {
+    const parsedSession = JSON.parse(rawSession) as TripParticipantSession;
+    return findSessionMember(trip, parsedSession) ? parsedSession : null;
+  } catch {
+    storage.removeItem(tripParticipantSessionStorageKey);
     return null;
   }
 }
