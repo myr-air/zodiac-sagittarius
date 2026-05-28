@@ -310,6 +310,19 @@ describe("Sagittarius cockpit UI", () => {
     expect(screen.getByText(/editing requires organizer access/i)).toBeInTheDocument();
   });
 
+  it("lets travelers submit a suggestion instead of directly editing a stop", async () => {
+    const user = userEvent.setup();
+    render(<SagittariusApp />);
+
+    await user.selectOptions(screen.getByLabelText(/Role preview/i), "member-nam");
+    await user.click(screen.getByRole("button", { name: /Open details/i }));
+    await user.click(screen.getByRole("button", { name: /เสนอแก้ไข/i }));
+
+    expect(screen.getByText(/คำแนะนำ \(3\)/i)).toBeInTheDocument();
+    expect(screen.getByText(/Explorer Friend suggested an update/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /ปรับเวลาอัตโนมัติ/i })).toBeDisabled();
+  });
+
   it("adds a new itinerary stop from the header action", async () => {
     const user = userEvent.setup();
     render(<SagittariusApp />);

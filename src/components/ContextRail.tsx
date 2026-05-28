@@ -12,8 +12,13 @@ interface ContextRailProps {
   suggestions: Suggestion[];
   expenseSummary: ExpenseSummary;
   canEdit: boolean;
+  canCreateSuggestion: boolean;
+  canReviewSuggestions: boolean;
+  canEditExpenses: boolean;
+  canManagePeople: boolean;
   open: boolean;
   onEditSelected: () => void;
+  onSuggestSelected: () => void;
   onChangeMemberAccessStatus: (memberId: string, accessStatus: TripMemberAccessStatus) => void;
   onChangeMemberRole: (memberId: string, role: Exclude<TripRole, "owner">) => void;
   onResetMemberClaim: (memberId: string) => void;
@@ -27,8 +32,13 @@ export function ContextRail({
   suggestions,
   expenseSummary,
   canEdit,
+  canCreateSuggestion,
+  canReviewSuggestions,
+  canEditExpenses,
+  canManagePeople,
   open,
   onEditSelected,
+  onSuggestSelected,
   onChangeMemberAccessStatus,
   onChangeMemberRole,
   onResetMemberClaim,
@@ -67,7 +77,11 @@ export function ContextRail({
             <span className="map-poi map-poi-2">Jordan</span>
             <span className="map-marker"><Icon name="location" /></span>
           </div>
-          <Button type="button" variant="secondary" disabled={!canEdit} onClick={onEditSelected}>แก้ไขรายละเอียด</Button>
+          {canEdit ? (
+            <Button type="button" variant="secondary" onClick={onEditSelected}>แก้ไขรายละเอียด</Button>
+          ) : (
+            <Button type="button" variant="secondary" disabled={!canCreateSuggestion} onClick={onSuggestSelected}>เสนอแก้ไข</Button>
+          )}
         </section>
 
         <SuggestionPanel suggestions={suggestions} members={trip.members} />
@@ -76,7 +90,7 @@ export function ContextRail({
           <h3>ความขัดแย้ง</h3>
           <div className="conflict-row">
             <span><Icon name="alertCircle" /> Victoria Peak อาจหนาแน่นช่วง 10:00–12:00</span>
-            <Button type="button" variant="ghost">ปรับเวลาอัตโนมัติ</Button>
+            <Button type="button" variant="ghost" disabled={!canReviewSuggestions}>ปรับเวลาอัตโนมัติ</Button>
           </div>
         </section>
 
@@ -88,13 +102,13 @@ export function ContextRail({
             <span>รวมสำหรับ {trip.members.length - 1} คน</span>
             <strong>HK${groupSpend}</strong>
           </div>
-          <Button type="button" variant="secondary" disabled={!canEdit}>เพิ่ม/แก้ไขค่าใช้จ่าย</Button>
+          <Button type="button" variant="secondary" disabled={!canEditExpenses}>เพิ่ม/แก้ไขค่าใช้จ่าย</Button>
         </section>
 
         <PeoplePanel
           members={trip.members.filter((member) => member.id !== "member-viewer")}
           currentMemberId={currentMember.id}
-          canManagePeople={canEdit}
+          canManagePeople={canManagePeople}
           onChangeMemberAccessStatus={onChangeMemberAccessStatus}
           onChangeMemberRole={onChangeMemberRole}
           onResetMemberClaim={onResetMemberClaim}

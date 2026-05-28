@@ -38,7 +38,7 @@ const seedSuggestions: Suggestion[] = [
   {
     id: "suggestion-booking",
     tripId: seedTrip.id,
-    proposerId: "member-nam",
+    proposerId: "member-beam",
     type: "edit",
     targetItemId: "item-dimdim",
     planVariantId: seedTrip.activePlanVariantId,
@@ -65,6 +65,7 @@ export function SagittariusApp({ initialView = "itinerary", requireJoin = false 
     future: [],
   }));
   const [participantSession, setParticipantSession] = useState<TripParticipantSession | null>(null);
+  const [suggestions, setSuggestions] = useState<Suggestion[]>(seedSuggestions);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [contextRailOpen, setContextRailOpen] = useState(false);
   const [contextRailMounted, setContextRailMounted] = useState(false);
@@ -77,7 +78,11 @@ export function SagittariusApp({ initialView = "itinerary", requireJoin = false 
   const trip = tripState.trip;
   const sessionMember = findSessionMember(trip, participantSession);
   const currentMember = sessionMember ?? trip.members.find((member) => member.id === currentMemberId) ?? trip.members[0];
-  const canEdit = canEditItinerary(currentMember.role);
+  const canEdit = canTripRole(currentMember.role, "editItinerary");
+  const canCreateSuggestion = canTripRole(currentMember.role, "createSuggestion");
+  const canReviewSuggestions = canTripRole(currentMember.role, "reviewSuggestions");
+  const canEditExpenses = canTripRole(currentMember.role, "editExpenses");
+  const canManagePeople = canTripRole(currentMember.role, "managePeople");
   const planItems = useMemo(
     () => trip.itineraryItems.filter((item) => item.planVariantId === selectedPlanVariantId),
     [selectedPlanVariantId, trip.itineraryItems],
@@ -306,6 +311,26 @@ export function SagittariusApp({ initialView = "itinerary", requireJoin = false 
     commitTrip((current) => setTripParticipantAccessStatus(current, memberId, accessStatus));
   }
 
+  function suggestSelectedStop() {
+    if (!canCreateSuggestion || !selectedItem) return;
+    setSuggestions((current) => [
+      ...current,
+      {
+        id: nextLocalSuggestionId(current),
+        tripId: trip.id,
+        proposerId: currentMember.id,
+        type: "edit",
+        targetItemId: selectedItem.id,
+        planVariantId: selectedItem.planVariantId,
+        proposedPatch: { activity: selectedItem.activity },
+        sourceVersion: selectedItem.version,
+        status: "pending",
+        createdAt: new Date().toISOString(),
+      },
+    ]);
+    setContextRailVisibility(true);
+  }
+
   if (requireJoin && !sessionMember) {
     return <TripJoinGate trip={trip} onTripChange={replaceTripFromJoin} onAuthenticated={authenticateParticipant} />;
   }
@@ -367,11 +392,16 @@ export function SagittariusApp({ initialView = "itinerary", requireJoin = false 
               trip={trip}
               selectedItem={selectedItem}
               currentMember={currentMember}
-              suggestions={seedSuggestions}
+              suggestions={suggestions}
               expenseSummary={expenseSummary}
               canEdit={canEdit}
+              canCreateSuggestion={canCreateSuggestion}
+              canReviewSuggestions={canReviewSuggestions}
+              canEditExpenses={canEditExpenses}
+              canManagePeople={canManagePeople}
               open={contextRailOpen}
               onEditSelected={() => setDialogState({ mode: "edit", item: selectedItem })}
+              onSuggestSelected={suggestSelectedStop}
               onChangeMemberAccessStatus={changeMemberAccessStatus}
               onChangeMemberRole={changeMemberRole}
               onResetMemberClaim={resetMemberClaim}
@@ -393,10 +423,6 @@ export function SagittariusApp({ initialView = "itinerary", requireJoin = false 
   );
 }
 
-function canEditItinerary(role: TripRole): boolean {
-  return role === "owner" || role === "organizer";
-}
-
 function getNextSortOrder(items: ItineraryItem[], day: string): number {
   const dayOrders = items.filter((item) => item.day === day).map((item) => item.sortOrder);
   return dayOrders.length ? Math.max(...dayOrders) + 100 : 100;
@@ -414,6 +440,19 @@ function nextLocalItemId(items: ItineraryItem[], prefix: string): string {
   while (existingIds.has(id)) {
     index += 1;
     id = `${prefix}-${index}`;
+  }
+
+  return id;
+}
+
+function nextLocalSuggestionId(suggestions: Suggestion[]): string {
+  const existingIds = new Set(suggestions.map((suggestion) => suggestion.id));
+  let index = suggestions.filter((suggestion) => suggestion.id.startsWith("suggestion-local-")).length + 1;
+  let id = `suggestion-local-${index}`;
+
+  while (existingIds.has(id)) {
+    index += 1;
+    id = `suggestion-local-${index}`;
   }
 
   return id;

@@ -4,6 +4,8 @@ import {
   canTripRole,
   claimTripParticipant,
   createTripParticipantSession,
+  findSessionMember,
+  linkTripParticipantToUser,
   resetTripParticipantClaim,
   setTripParticipantAccessStatus,
   updateTripParticipantRole,
@@ -34,6 +36,7 @@ describe("trip participant auth", () => {
     expect(verifyTripParticipantPassword(member!, "my-trip-pin")).toBe(true);
     expect(session).toMatchObject({ tripId: seedTrip.id, memberId: "member-nam" });
     expect(session.sessionToken).toMatch(/^local_/);
+    expect(session.expiresAt).toBeTruthy();
   });
 
   it("rejects an existing participant password when someone tries to impersonate them", () => {
@@ -80,5 +83,23 @@ describe("trip participant auth", () => {
     expect(member?.claimPasswordHash).toBeNull();
     expect(member?.claimedAt).toBeNull();
     expect(member?.presence).toBe("offline");
+  });
+
+  it("rejects expired participant sessions", () => {
+    const expiredSession = createTripParticipantSession(seedTrip, "member-nam", {
+      now: new Date("2026-05-28T00:00:00.000Z"),
+      rememberDays: -1,
+    });
+
+    expect(expiredSession.expiresAt).toBe("2026-05-27T00:00:00.000Z");
+    expect(findSessionMember(seedTrip, expiredSession, new Date("2026-05-28T00:00:00.000Z"))).toBeNull();
+  });
+
+  it("links a guest participant to a permanent account", () => {
+    const linked = linkTripParticipantToUser(seedTrip, "member-nam", "user-018");
+    const member = linked.members.find((candidate) => candidate.id === "member-nam");
+
+    expect(member?.userId).toBe("user-018");
+    expect(member?.claimedAt).toBeTruthy();
   });
 });

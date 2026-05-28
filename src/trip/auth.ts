@@ -87,23 +87,49 @@ export function verifyTripParticipantPassword(member: Member, password: string):
   return !isTripParticipantDisabled(member) && Boolean(member.claimPasswordHash) && member.claimPasswordHash === hashLocalSecret(password.trim());
 }
 
-export function createTripParticipantSession(trip: Trip, memberId: string): TripParticipantSession {
+interface TripParticipantSessionOptions {
+  now?: Date;
+  rememberDays?: number;
+}
+
+export function createTripParticipantSession(trip: Trip, memberId: string, options: TripParticipantSessionOptions = {}): TripParticipantSession {
+  const now = options.now ?? new Date();
+  const rememberDays = options.rememberDays ?? 30;
+  const expiresAt = new Date(now.getTime() + rememberDays * 24 * 60 * 60 * 1000);
   return {
     tripId: trip.id,
     memberId,
-    sessionToken: `local_${trip.id}_${memberId}_${Date.now().toString(36)}`,
-    createdAt: new Date().toISOString(),
+    sessionToken: `local_${trip.id}_${memberId}_${now.getTime().toString(36)}`,
+    createdAt: now.toISOString(),
+    expiresAt: expiresAt.toISOString(),
   };
 }
 
-export function findSessionMember(trip: Trip, session: TripParticipantSession | null): Member | null {
+export function findSessionMember(trip: Trip, session: TripParticipantSession | null, now = new Date()): Member | null {
   if (!session || session.tripId !== trip.id) return null;
+  if (Date.parse(session.expiresAt) <= now.getTime()) return null;
   const member = trip.members.find((candidate) => candidate.id === session.memberId) ?? null;
   return member && !isTripParticipantDisabled(member) ? member : null;
 }
 
 export function isTripParticipantDisabled(member: Member): boolean {
   return member.accessStatus === "disabled";
+}
+
+export function linkTripParticipantToUser(trip: Trip, memberId: string, userId: string): Trip {
+  const linkedAt = new Date().toISOString();
+  return {
+    ...trip,
+    members: trip.members.map((member) => {
+      if (member.id !== memberId || isTripParticipantDisabled(member)) return member;
+      return {
+        ...member,
+        userId,
+        claimedAt: member.claimedAt ?? linkedAt,
+        lastSeenAt: linkedAt,
+      };
+    }),
+  };
 }
 
 export function hashLocalSecret(secret: string): string {

@@ -105,6 +105,7 @@ export interface TripParticipantSession {
   memberId: string;
   sessionToken: string;
   createdAt: string;
+  expiresAt: string;
 }
 
 export type ValidationWarningCode =
