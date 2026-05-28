@@ -4,11 +4,15 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { AppShell } from "@/src/components/AppShell";
 import { CommandBar } from "@/src/components/CommandBar";
 import { ContextRail } from "@/src/components/ContextRail";
+import { RouteMapView } from "@/src/components/RouteMapView";
 import { SmartItineraryTable } from "@/src/components/SmartItineraryTable";
 import { StopDialog, type StopFormValues } from "@/src/components/StopDialog";
+import { TimelineView } from "@/src/components/TimelineView";
+import { TripJoinGate } from "@/src/components/TripJoinGate";
+import { canTripRole, findSessionMember, tripParticipantSessionStorageKey } from "@/src/trip/auth";
 import { buildExpenseSummary } from "@/src/trip/expenses";
 import { seedTrip } from "@/src/trip/seed";
-import type { ItineraryItem, Suggestion, Trip, TripRole } from "@/src/trip/types";
+import type { ItineraryItem, Suggestion, Trip, TripParticipantSession, TripRole } from "@/src/trip/types";
 
 const seedSuggestions: Suggestion[] = [
   {
@@ -39,19 +43,28 @@ const seedSuggestions: Suggestion[] = [
 
 const localMutationTimestamp = "2026-05-28T00:00:00.000Z";
 
-export function SagittariusApp() {
+export type PlanningView = "itinerary" | "map" | "timeline";
+
+interface SagittariusAppProps {
+  initialView?: PlanningView;
+  requireJoin?: boolean;
+}
+
+export function SagittariusApp({ initialView = "itinerary", requireJoin = false }: SagittariusAppProps) {
   const [tripState, setTripState] = useState<{ trip: Trip; past: Trip[]; future: Trip[] }>({ trip: seedTrip, past: [], future: [] });
+  const [participantSession, setParticipantSession] = useState<TripParticipantSession | null>(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [contextRailOpen, setContextRailOpen] = useState(false);
   const [contextRailMounted, setContextRailMounted] = useState(false);
   const selectedDay = "2025-05-16";
-  const selectedPlanVariantId = seedTrip.activePlanVariantId;
+  const selectedPlanVariantId = tripState.trip.activePlanVariantId;
   const [currentMemberId, setCurrentMemberId] = useState(seedTrip.members[0].id);
   const [selectedItemId, setSelectedItemId] = useState("item-dimdim");
   const [dialogState, setDialogState] = useState<{ mode: "create" } | { mode: "edit"; item: ItineraryItem } | null>(null);
 
   const trip = tripState.trip;
-  const currentMember = trip.members.find((member) => member.id === currentMemberId) ?? trip.members[0];
+  const sessionMember = findSessionMember(trip, participantSession);
+  const currentMember = sessionMember ?? trip.members.find((member) => member.id === currentMemberId) ?? trip.members[0];
   const canEdit = canEditItinerary(currentMember.role);
   const planItems = useMemo(
     () => trip.itineraryItems.filter((item) => item.planVariantId === selectedPlanVariantId),
@@ -59,6 +72,22 @@ export function SagittariusApp() {
   );
   const selectedItem = planItems.find((item) => item.id === selectedItemId) ?? planItems[0];
   const expenseSummary = useMemo(() => buildExpenseSummary(trip.expenses, currentMember.id), [currentMember.id, trip.expenses]);
+
+  useEffect(() => {
+    const storage = getBrowserLocalStorage();
+    if (!requireJoin || !storage) return;
+    const rawSession = storage.getItem(tripParticipantSessionStorageKey);
+    if (!rawSession) return;
+    try {
+      const parsedSession = JSON.parse(rawSession) as TripParticipantSession;
+      if (findSessionMember(trip, parsedSession)) {
+        setParticipantSession(parsedSession);
+        setCurrentMemberId(parsedSession.memberId);
+      }
+    } catch {
+      storage.removeItem(tripParticipantSessionStorageKey);
+    }
+  }, [requireJoin, trip]);
 
   useEffect(() => {
     if (contextRailOpen) return undefined;
@@ -231,8 +260,28 @@ export function SagittariusApp() {
     });
   }
 
+  function authenticateParticipant(session: TripParticipantSession) {
+    setParticipantSession(session);
+    setCurrentMemberId(session.memberId);
+    getBrowserLocalStorage()?.setItem(tripParticipantSessionStorageKey, JSON.stringify(session));
+  }
+
+  function replaceTripFromJoin(nextTrip: Trip) {
+    setTripState({ trip: nextTrip, past: [], future: [] });
+  }
+
+  if (requireJoin && !sessionMember) {
+    return <TripJoinGate trip={trip} onTripChange={replaceTripFromJoin} onAuthenticated={authenticateParticipant} />;
+  }
+
   return (
-    <AppShell collapsed={sidebarCollapsed} currentMember={currentMember} trip={trip} onToggleCollapsed={() => setSidebarCollapsed((current) => !current)}>
+    <AppShell
+      activeView={initialView}
+      collapsed={sidebarCollapsed}
+      currentMember={currentMember}
+      trip={trip}
+      onToggleCollapsed={() => setSidebarCollapsed((current) => !current)}
+    >
       <main className="workspace-shell">
         <CommandBar
           trip={trip}
@@ -241,6 +290,8 @@ export function SagittariusApp() {
           canUndo={tripState.past.length > 0}
           canRedo={tripState.future.length > 0}
           contextRailOpen={contextRailOpen}
+          showDetailsToggle={initialView !== "map"}
+          canSwitchMember={!requireJoin || canTripRole(currentMember.role, "managePeople")}
           onChangeMember={setCurrentMemberId}
           onAddStop={addStop}
           onUndo={undo}
@@ -248,15 +299,33 @@ export function SagittariusApp() {
           onToggleContextRail={() => setContextRailVisibility(!contextRailOpen)}
         />
         <div className="workspace-grid" data-context-rail={contextRailOpen ? "open" : "closed"}>
-          <SmartItineraryTable
-            items={planItems}
-            role={currentMember.role}
-            startDate={trip.startDate}
-            selectedItemId={selectedItem.id}
-            onSelectItem={selectItem}
-            onMoveItem={moveItem}
-          />
-          {contextRailMounted ? (
+          <div className="planning-main">
+            {initialView === "itinerary" ? (
+              <SmartItineraryTable
+                items={planItems}
+                role={currentMember.role}
+                startDate={trip.startDate}
+                selectedItemId={selectedItem.id}
+                onSelectItem={selectItem}
+                onMoveItem={moveItem}
+              />
+            ) : null}
+            {initialView === "map" ? (
+              <RouteMapView
+                items={planItems}
+                startDate={trip.startDate}
+              />
+            ) : null}
+            {initialView === "timeline" ? (
+              <TimelineView
+                items={planItems}
+                selectedItemId={selectedItem.id}
+                startDate={trip.startDate}
+                onSelectItem={selectItem}
+              />
+            ) : null}
+          </div>
+          {initialView !== "map" && contextRailMounted ? (
             <ContextRail
               trip={trip}
               selectedItem={selectedItem}
@@ -308,4 +377,9 @@ function nextLocalItemId(items: ItineraryItem[], prefix: string): string {
   }
 
   return id;
+}
+
+function getBrowserLocalStorage(): Storage | null {
+  if (typeof window === "undefined" || !("localStorage" in window) || !window.localStorage) return null;
+  return window.localStorage;
 }

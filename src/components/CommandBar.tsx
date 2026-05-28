@@ -9,6 +9,8 @@ interface CommandBarProps {
   canUndo: boolean;
   canRedo: boolean;
   contextRailOpen: boolean;
+  showDetailsToggle?: boolean;
+  canSwitchMember?: boolean;
   onChangeMember: (memberId: string) => void;
   onAddStop: () => void;
   onUndo: () => void;
@@ -23,6 +25,8 @@ export function CommandBar({
   canUndo,
   canRedo,
   contextRailOpen,
+  showDetailsToggle = true,
+  canSwitchMember = true,
   onChangeMember,
   onAddStop,
   onUndo,
@@ -55,16 +59,18 @@ export function CommandBar({
           เพิ่มสถานที่ / กิจกรรม
         </Button>
 
-        <button
-          className="icon-button details-toggle-button"
-          type="button"
-          aria-expanded={contextRailOpen}
-          aria-label={contextRailOpen ? "Hide details panel" : "Open details"}
-          onClick={onToggleContextRail}
-          title={contextRailOpen ? "Hide details panel" : "Open details"}
-        >
-          <Icon name="panel" />
-        </button>
+        {showDetailsToggle ? (
+          <button
+            className="icon-button details-toggle-button"
+            type="button"
+            aria-expanded={contextRailOpen}
+            aria-label={contextRailOpen ? "Hide details panel" : "Open details"}
+            onClick={onToggleContextRail}
+            title={contextRailOpen ? "Hide details panel" : "Open details"}
+          >
+            <Icon name="panel" />
+          </button>
+        ) : null}
         <button className="icon-button" type="button" aria-label="Undo" disabled={!canUndo} onClick={onUndo}>
           <Icon name="undo" />
         </button>
@@ -76,14 +82,16 @@ export function CommandBar({
         </button>
       </div>
 
-      <label className="sr-only">
-        Role preview
-        <select value={currentMember.id} onChange={(event) => onChangeMember(event.target.value)}>
-          {trip.members.map((member) => (
-            <option value={member.id} key={member.id}>{member.displayName} / {member.role}</option>
-          ))}
-        </select>
-      </label>
+      {canSwitchMember ? (
+        <label className="sr-only">
+          Role preview
+          <select value={currentMember.id} onChange={(event) => onChangeMember(event.target.value)}>
+            {trip.members.map((member) => (
+              <option value={member.id} key={member.id}>{member.displayName} / {member.role}</option>
+            ))}
+          </select>
+        </label>
+      ) : null}
 
       {!canEdit ? (
         <p className="capability-note" role="status">

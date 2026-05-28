@@ -13,12 +13,13 @@ describe("Calm Travel Ops CSS contract", () => {
 
   it("contains horizontal scrolling to the smart table viewport", () => {
     expect(css).toMatch(/body\s*{[^}]*overflow-x:\s*hidden/s);
+    expect(css).toMatch(/\.planning-main\s*{[^}]*overflow-y:\s*auto/s);
     expect(css).toMatch(/\.table-scroll\s*{[^}]*overflow-x:\s*auto/s);
     expect(css).toMatch(/\.smart-table\s*{[^}]*min-width:\s*960px/s);
   });
 
   it("keeps vertical scrolling inside the smart table viewport", () => {
-    expect(css).toMatch(/\.table-scroll\s*{[^}]*height:\s*calc\(100% - 43px\)/s);
+    expect(css).toMatch(/\.table-scroll\s*{[^}]*height:\s*100%/s);
     expect(css).toMatch(/\.table-scroll\s*{[^}]*overflow-y:\s*auto/s);
   });
 
@@ -40,6 +41,16 @@ describe("Calm Travel Ops CSS contract", () => {
     expect(css).toMatch(/\.workspace-grid\s*{[^}]*position:\s*relative/s);
     expect(css).toMatch(/\.context-rail\s*{[^}]*position:\s*absolute/s);
     expect(css).toMatch(/\.context-rail\s*{[^}]*right:\s*0/s);
+  });
+
+  it("defines itinerary-driven map and timeline surfaces", () => {
+    expect(css).toMatch(/\.route-map-panel\s*{[^}]*grid-template-rows:\s*auto minmax\(0,\s*1fr\)/s);
+    expect(css).toMatch(/\.route-map-layout\s*{[^}]*height:\s*100%/s);
+    expect(css).toMatch(/\.route-map-canvas\s*{[^}]*min-height:\s*520px/s);
+    expect(css).toMatch(/\.map-day-filter\s*{[^}]*position:\s*absolute/s);
+    expect(css).toMatch(/\.route-live-map\s*{[^}]*position:\s*absolute/s);
+    expect(css).toMatch(/\.timeline-infographic-hero\s*{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s+auto/s);
+    expect(css).toMatch(/\.timeline-stop-button\s*{[^}]*grid-template-columns:\s*56px 34px minmax\(0,\s*1fr\)/s);
   });
 
   it("animates row drag previews, day collapse, and drawer transitions", () => {

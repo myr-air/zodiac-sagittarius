@@ -15,7 +15,7 @@ describe("Sagittarius project scaffold", () => {
   });
 
   it("uses Next App Router and the production app entry", () => {
-    expect(readFileSync("app/page.tsx", "utf8")).toContain("<SagittariusApp />");
+    expect(readFileSync("app/page.tsx", "utf8")).toContain("<SagittariusApp requireJoin />");
     expect(readFileSync("app/layout.tsx", "utf8")).toContain("Sagittarius");
   });
 
@@ -33,6 +33,8 @@ describe("Sagittarius project scaffold", () => {
     expect(spec).toContain("CREATE TABLE trips");
     expect(spec).toContain("CREATE TABLE itinerary_items");
     expect(spec).toContain("GET /v1/trips/:tripId");
+    expect(spec).toContain("POST /v1/trips/join");
+    expect(spec).toContain("CREATE TABLE trip_member_sessions");
     expect(spec).toContain("PATCH /v1/itinerary-items/:itemId");
     expect(spec).toContain("wss://api.sagittarius.local/v1/trips/:tripId/ws");
     expect(spec).toContain("itinerary_item.updated");

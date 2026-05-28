@@ -27,6 +27,10 @@ export interface Member {
   role: TripRole;
   presence: "online" | "away" | "offline";
   color: string;
+  userId?: string | null;
+  claimPasswordHash?: string | null;
+  claimedAt?: string | null;
+  lastSeenAt?: string | null;
 }
 
 export interface PlanVariant {
@@ -76,6 +80,8 @@ export interface Expense {
 
 export interface Trip {
   id: string;
+  joinId: string;
+  joinPasswordHash: string;
   name: string;
   destinationLabel: string;
   startDate: string;
@@ -85,6 +91,18 @@ export interface Trip {
   members: Member[];
   itineraryItems: ItineraryItem[];
   expenses: Expense[];
+}
+
+export interface TripJoinCredential {
+  joinId: string;
+  password: string;
+}
+
+export interface TripParticipantSession {
+  tripId: string;
+  memberId: string;
+  sessionToken: string;
+  createdAt: string;
 }
 
 export type ValidationWarningCode =

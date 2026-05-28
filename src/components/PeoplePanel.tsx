@@ -1,6 +1,6 @@
 import type { Member } from "@/src/trip/types";
 
-export function PeoplePanel({ members, currentMemberId }: { members: Member[]; currentMemberId: string }) {
+export function PeoplePanel({ members, currentMemberId, canManagePeople = false }: { members: Member[]; currentMemberId: string; canManagePeople?: boolean }) {
   return (
     <section className="detail-section people-module" aria-label="People and presence">
       <h3>สมาชิกและสถานะ</h3>
@@ -20,14 +20,14 @@ export function PeoplePanel({ members, currentMemberId }: { members: Member[]; c
           </div>
         ))}
       </div>
-      <button className="invite-button" type="button">เชิญสมาชิก</button>
+      <button className="invite-button" type="button" disabled={!canManagePeople}>เชิญสมาชิก</button>
     </section>
   );
 }
 
 function roleLabel(role: Member["role"]): string {
   if (role === "owner") return "เจ้าของแผน";
-  if (role === "organizer") return "แก้ไข";
-  if (role === "traveler") return "ดูได้";
+  if (role === "organizer") return "ผู้จัดทริป";
+  if (role === "traveler") return "ผู้ร่วมเดินทาง";
   return "ดูได้";
 }

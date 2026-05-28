@@ -1,25 +1,28 @@
 import type { ReactNode } from "react";
+import Link from "next/link";
+import type { PlanningView } from "@/src/app/SagittariusApp";
 import type { Member, Trip } from "@/src/trip/types";
 import { getTripDates } from "@/src/trip/itinerary";
 import { Icon } from "./icons";
 
 const navItems = [
-  { id: "overview", label: "ภาพรวมแผน", icon: "home" as const },
-  { id: "itinerary", label: "แผนการเดินทาง", icon: "calendar" as const },
-  { id: "map", label: "แผนที่", icon: "map" as const },
-  { id: "timeline", label: "ไทม์ไลน์", icon: "list" as const },
-  { id: "places", label: "สถานที่", icon: "location" as const },
-  { id: "notes", label: "โน้ต", icon: "note" as const },
-  { id: "documents", label: "เอกสาร", icon: "document" as const },
-  { id: "budget", label: "งบประมาณ", icon: "wallet" as const },
-  { id: "bookings", label: "รายการจอง", icon: "table" as const },
-  { id: "alerts", label: "การแจ้งเตือน", icon: "alertCircle" as const, count: 3 },
-  { id: "tasks", label: "งาน", icon: "check" as const },
-  { id: "members", label: "สมาชิก", icon: "users" as const },
-  { id: "settings", label: "ตั้งค่า", icon: "settings" as const },
+  { id: "overview", label: "ภาพรวมแผน", icon: "home" as const, href: "/" },
+  { id: "itinerary", label: "แผนการเดินทาง", icon: "calendar" as const, href: "/itinerary" },
+  { id: "map", label: "แผนที่", icon: "map" as const, href: "/map" },
+  { id: "timeline", label: "ไทม์ไลน์", icon: "list" as const, href: "/timeline" },
+  { id: "places", label: "สถานที่", icon: "location" as const, href: "/itinerary" },
+  { id: "notes", label: "โน้ต", icon: "note" as const, href: "/itinerary" },
+  { id: "documents", label: "เอกสาร", icon: "document" as const, href: "/itinerary" },
+  { id: "budget", label: "งบประมาณ", icon: "wallet" as const, href: "/itinerary" },
+  { id: "bookings", label: "รายการจอง", icon: "table" as const, href: "/itinerary" },
+  { id: "alerts", label: "การแจ้งเตือน", icon: "alertCircle" as const, count: 3, href: "/itinerary" },
+  { id: "tasks", label: "งาน", icon: "check" as const, href: "/itinerary" },
+  { id: "members", label: "สมาชิก", icon: "users" as const, href: "/itinerary" },
+  { id: "settings", label: "ตั้งค่า", icon: "settings" as const, href: "/itinerary" },
 ];
 
 interface AppShellProps {
+  activeView: PlanningView;
   children: ReactNode;
   collapsed: boolean;
   currentMember: Member;
@@ -27,7 +30,7 @@ interface AppShellProps {
   onToggleCollapsed: () => void;
 }
 
-export function AppShell({ children, collapsed, currentMember, trip, onToggleCollapsed }: AppShellProps) {
+export function AppShell({ activeView, children, collapsed, currentMember, trip, onToggleCollapsed }: AppShellProps) {
   const tripDays = getTripDates(trip.startDate, trip.endDate).length;
 
   return (
@@ -57,16 +60,17 @@ export function AppShell({ children, collapsed, currentMember, trip, onToggleCol
 
         <div className="rail-links">
           {navItems.map((item) => (
-            <a
-              className={item.id === "itinerary" ? "rail-link rail-link--active" : "rail-link"}
-              href={`#${item.id}`}
+            <Link
+              aria-current={item.id === activeView ? "page" : undefined}
+              className={item.id === activeView ? "rail-link rail-link--active" : "rail-link"}
+              href={item.href}
               key={item.id}
               title={item.label}
             >
               <Icon name={item.icon} />
               <span>{item.label}</span>
               {item.count ? <em>{item.count}</em> : null}
-            </a>
+            </Link>
           ))}
         </div>
 

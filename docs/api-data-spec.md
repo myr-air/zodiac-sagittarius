@@ -17,6 +17,8 @@ Version: 2026-05-27.
 - Money is stored as integer minor units: `amountMinor`, plus `currency`.
 - Soft deletes use `deleted_at`; normal list endpoints omit deleted rows.
 - Every write accepts `clientMutationId` for idempotency and UI reconciliation.
+- Trips have a room-level join credential (`join_id` + `join_password_hash`) before member selection.
+- Guest trip participants claim a `trip_members` row with a per-trip password/PIN; permanent accounts can later link to the same row through `user_id`.
 
 ## PostgreSQL Storage Model
 
@@ -27,6 +29,8 @@ CREATE TABLE trips (
   destination_label text NOT NULL,
   start_date date NOT NULL,
   end_date date NOT NULL,
+  join_id text NOT NULL UNIQUE,
+  join_password_hash text NOT NULL,
   active_plan_variant_id uuid,
   owner_member_id uuid NOT NULL,
   created_at timestamptz NOT NULL DEFAULT now(),
@@ -41,10 +45,23 @@ CREATE TABLE trip_members (
   user_id uuid,
   display_name text NOT NULL,
   role text NOT NULL CHECK (role IN ('owner', 'organizer', 'traveler', 'viewer')),
+  claim_password_hash text,
+  claimed_at timestamptz,
+  last_seen_at timestamptz,
   presence text NOT NULL DEFAULT 'offline',
   color text NOT NULL,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE trip_member_sessions (
+  id uuid PRIMARY KEY,
+  trip_id uuid NOT NULL REFERENCES trips(id),
+  member_id uuid NOT NULL REFERENCES trip_members(id),
+  session_token_hash text NOT NULL UNIQUE,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  expires_at timestamptz NOT NULL,
+  revoked_at timestamptz
 );
 
 CREATE TABLE plan_variants (
@@ -144,6 +161,10 @@ CREATE INDEX itinerary_items_trip_plan_day_sort_idx
 CREATE INDEX suggestions_trip_status_idx
   ON suggestions (trip_id, status, created_at DESC);
 
+CREATE INDEX trip_member_sessions_member_active_idx
+  ON trip_member_sessions (member_id, expires_at DESC)
+  WHERE revoked_at IS NULL;
+
 CREATE INDEX realtime_events_trip_created_idx
   ON realtime_events (trip_id, created_at DESC);
 ```
@@ -203,10 +224,34 @@ Example PATCH:
 
 ### Members And Presence
 
+- `POST /v1/trips/join`
+  Verifies `{ joinId, tripPassword }` and returns safe trip metadata plus claimable members.
+- `GET /v1/trips/:tripId/claimable-members`
+  Returns member identity choices after the room-level credential is accepted.
+- `POST /v1/trips/:tripId/members/:memberId/claim`
+  First-time guest participant claim with `{ participantPassword }`; stores a password hash and returns a member session.
+- `POST /v1/trips/:tripId/members/:memberId/login`
+  Verifies an existing participant password and returns a member session.
+- `POST /v1/trips/:tripId/member-session/logout`
+  Revokes the current guest member session.
+- `POST /v1/trips/:tripId/members/:memberId/reset-claim`
+  Organizer/owner only; clears `claim_password_hash`, `claimed_at`, and active sessions for the member.
 - `GET /v1/trips/:tripId/members`
 - `POST /v1/trips/:tripId/invitations`
 - `PATCH /v1/trips/:tripId/members/:memberId`
 - `POST /v1/trips/:tripId/presence`
+
+## Role Capability Matrix
+
+| Capability | Owner | Organizer | Traveler | Viewer |
+| --- | --- | --- | --- | --- |
+| View trip plan | Yes | Yes | Yes | Yes |
+| Edit itinerary directly | Yes | Yes | No | No |
+| Create suggestions | Yes | Yes | Yes | No |
+| Review suggestions | Yes | Yes | No | No |
+| View expense summary | Yes | Yes | Yes | No |
+| Edit expenses | Yes | Yes | No | No |
+| Manage participants | Yes | Yes | No | No |
 
 ## WebSocket
 

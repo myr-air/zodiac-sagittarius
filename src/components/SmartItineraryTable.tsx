@@ -2,6 +2,7 @@ import { useState, type DragEvent, type KeyboardEvent, type MouseEvent } from "r
 import type { ItineraryAdvisory, ItineraryItem, TripRole } from "@/src/trip/types";
 import { formatDayLabel, groupItemsByDay } from "@/src/trip/itinerary";
 import { Icon } from "./icons";
+import { activityTypeLabel, dayRouteLabel, formatDuration, formatThaiDate } from "./itineraryDisplay";
 
 interface SmartItineraryTableProps {
   items: ItineraryItem[];
@@ -50,13 +51,7 @@ export function SmartItineraryTable({ items, role, startDate, selectedItemId, on
   }
 
   return (
-    <section className="table-panel" aria-labelledby="smart-itinerary-heading" aria-label="Smart itinerary table" id="itinerary">
-      <div className="view-tabs" role="tablist" aria-label="Planning views">
-        <button type="button" role="tab" aria-selected="true" id="smart-itinerary-heading">Smart Itinerary Table</button>
-        <button type="button" role="tab" aria-selected="false">ไทม์ไลน์</button>
-        <button type="button" role="tab" aria-selected="false">ปรับเวลาอัตโนมัติ <span aria-hidden="true">✦</span></button>
-      </div>
-
+    <section className="table-panel" aria-label="Smart itinerary table" id="itinerary">
       <div className="table-scroll" tabIndex={0} aria-label="Scrollable itinerary rows">
         <table className="smart-table">
           <caption className="sr-only">Trip itinerary rows grouped by day.</caption>
@@ -239,36 +234,4 @@ function AdvisorySummary({ advisories }: { advisories: ItineraryAdvisory[] }) {
       <span>{advisories[0]?.label}</span>
     </span>
   );
-}
-
-function activityTypeLabel(type: ItineraryItem["activityType"]): string {
-  const labels: Record<ItineraryItem["activityType"], string> = {
-    travel: "เดินทาง",
-    food: "อาหาร",
-    shopping: "ช้อปปิ้ง",
-    attraction: "สถานที่",
-    experience: "กิจกรรม",
-    stay: "ที่พัก",
-  };
-  return labels[type];
-}
-
-function formatDuration(minutes: number | null): string {
-  if (!minutes) return "—";
-  if (minutes < 60) return `${minutes} นาที`;
-  if (minutes % 60 === 0) return `${minutes / 60} ชม.`;
-  return `${Math.floor(minutes / 60)} ชม. ${minutes % 60} นาที`;
-}
-
-function formatThaiDate(day: string): string {
-  const date = new Date(`${day}T00:00:00`);
-  const weekdays = ["อา.", "จ.", "อ.", "พ.", "พฤ.", "ศ.", "ส."];
-  return `${date.getDate()} พ.ค. (${weekdays[date.getDay()]})`;
-}
-
-function dayRouteLabel(day: string): string {
-  if (day === "2025-05-15") return "Bangkok → Hong Kong";
-  if (day === "2025-05-16") return "Hong Kong City Day";
-  if (day === "2025-05-17") return "Hong Kong → Shenzhen";
-  return "Trip day";
 }

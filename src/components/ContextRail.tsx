@@ -3,6 +3,7 @@ import { Button } from "./ui";
 import { Icon } from "./icons";
 import { SuggestionPanel } from "./SuggestionPanel";
 import { PeoplePanel } from "./PeoplePanel";
+import { activityTypeLabel, formatDuration, formatEndTime } from "./itineraryDisplay";
 
 interface ContextRailProps {
   trip: Trip;
@@ -71,38 +72,11 @@ export function ContextRail({ trip, selectedItem, currentMember, suggestions, ex
             <span>รวมสำหรับ {trip.members.length - 1} คน</span>
             <strong>HK${groupSpend}</strong>
           </div>
-          <Button type="button" variant="secondary">เพิ่ม/แก้ไขค่าใช้จ่าย</Button>
+          <Button type="button" variant="secondary" disabled={!canEdit}>เพิ่ม/แก้ไขค่าใช้จ่าย</Button>
         </section>
 
-        <PeoplePanel members={trip.members.filter((member) => member.id !== "member-viewer")} currentMemberId={currentMember.id} />
+        <PeoplePanel members={trip.members.filter((member) => member.id !== "member-viewer")} currentMemberId={currentMember.id} canManagePeople={canEdit} />
       </div>
     </aside>
   );
-}
-
-function activityTypeLabel(type: ItineraryItem["activityType"]): string {
-  const labels: Record<ItineraryItem["activityType"], string> = {
-    travel: "เดินทาง",
-    food: "อาหาร",
-    shopping: "ช้อปปิ้ง",
-    attraction: "สถานที่",
-    experience: "กิจกรรม",
-    stay: "ที่พัก",
-  };
-  return labels[type];
-}
-
-function formatDuration(minutes: number | null): string {
-  if (!minutes) return "—";
-  if (minutes % 60 === 0) return `${minutes / 60} ชม.`;
-  return `${Math.floor(minutes / 60)} ชม. ${minutes % 60} นาที`;
-}
-
-function formatEndTime(startTime: string, minutes: number | null): string {
-  if (!minutes || !startTime) return "—";
-  const [hour = "0", minute = "0"] = startTime.split(":");
-  const total = Number(hour) * 60 + Number(minute) + minutes;
-  const endHour = Math.floor(total / 60) % 24;
-  const endMinute = total % 60;
-  return `${String(endHour).padStart(2, "0")}:${String(endMinute).padStart(2, "0")}`;
 }

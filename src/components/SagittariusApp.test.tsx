@@ -4,12 +4,33 @@ import { describe, expect, it } from "vitest";
 import { SagittariusApp } from "@/src/app/SagittariusApp";
 
 describe("Sagittarius cockpit UI", () => {
+  it("can require trip participant authentication before opening the cockpit", async () => {
+    const user = userEvent.setup();
+    render(<SagittariusApp requireJoin />);
+
+    expect(screen.getByRole("main", { name: /Join trip/i })).toBeInTheDocument();
+    expect(screen.queryByRole("navigation", { name: /Sagittarius planning navigation/i })).not.toBeInTheDocument();
+
+    await user.type(screen.getByLabelText(/Trip ID/i), "HK-SZ-2025");
+    await user.type(screen.getByLabelText(/Trip password/i), "dim-sum-run");
+    await user.click(screen.getByRole("button", { name: /เข้าห้อง trip/i }));
+    await user.click(screen.getByRole("button", { name: /Explorer Friend/i }));
+    await user.type(screen.getByLabelText(/ตั้งรหัสสำหรับ Explorer Friend/i), "traveler-pin");
+    await user.click(screen.getByRole("button", { name: /เริ่มใช้งาน/i }));
+
+    expect(screen.getByRole("navigation", { name: /Sagittarius planning navigation/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /Hong Kong \+ Shenzhen Trip/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /เพิ่มสถานที่ \/ กิจกรรม/i })).toBeDisabled();
+  });
+
   it("opens directly into the planning cockpit instead of a marketing landing page", () => {
     render(<SagittariusApp />);
 
     expect(screen.getByRole("heading", { name: /Hong Kong \+ Shenzhen Trip/i })).toBeInTheDocument();
     expect(screen.getByRole("navigation", { name: /Sagittarius planning navigation/i })).toBeInTheDocument();
     expect(screen.getByRole("region", { name: /Smart itinerary table/i })).toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: /Route map/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: /Trip timeline/i })).not.toBeInTheDocument();
     expect(screen.queryByText(/hero/i)).not.toBeInTheDocument();
   });
 
@@ -18,8 +39,8 @@ describe("Sagittarius cockpit UI", () => {
 
     expect(screen.getByRole("banner", { name: /Trip command bar/i })).toHaveClass("top-app-bar");
     expect(screen.getByRole("link", { name: /แผนการเดินทาง/i })).toHaveClass("rail-link--active");
-    expect(screen.getByRole("tablist", { name: /Planning views/i })).toBeInTheDocument();
-    expect(screen.getByRole("tab", { name: /Smart Itinerary Table/i })).toHaveAttribute("aria-selected", "true");
+    expect(screen.queryByRole("tablist", { name: /Planning views/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("tab", { name: /Smart Itinerary Table/i })).not.toBeInTheDocument();
     expect(screen.getByRole("columnheader", { name: /^เวลา$/i })).toBeInTheDocument();
     expect(screen.getByRole("columnheader", { name: /แผนที่ \/ ลิงก์/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Select stop Dim Dim Sum/i })).toBeInTheDocument();
@@ -28,6 +49,68 @@ describe("Sagittarius cockpit UI", () => {
     expect(screen.queryByRole("button", { name: /More actions for Dim Dim Sum/i })).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/Plan variant/i)).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/Selected day/i)).not.toBeInTheDocument();
+  }, 10_000);
+
+  it("renders only the surface that belongs to the current URL view", () => {
+    const { rerender } = render(<SagittariusApp />);
+
+    expect(screen.getByRole("region", { name: /Smart itinerary table/i })).toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: /Route map/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: /Trip timeline/i })).not.toBeInTheDocument();
+
+    rerender(<SagittariusApp initialView="map" />);
+
+    const map = screen.getByRole("region", { name: /Route map/i });
+    expect(screen.queryByRole("region", { name: /Smart itinerary table/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: /Trip timeline/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Open details/i })).not.toBeInTheDocument();
+    expect(within(map).getByRole("button", { name: /ทุกวัน/i })).toBeInTheDocument();
+    expect(within(map).getByRole("button", { name: /Day 2/i })).toBeInTheDocument();
+    expect(within(map).queryByRole("button", { name: /โหลด OpenFreeMap/i })).not.toBeInTheDocument();
+    expect(within(map).queryByRole("button", { name: /Select map stop Victoria Peak/i })).not.toBeInTheDocument();
+    expect(within(map).queryByRole("button", { name: /Select route stop Dim Dim Sum/i })).not.toBeInTheDocument();
+
+    rerender(<SagittariusApp initialView="timeline" />);
+
+    const timeline = screen.getByRole("region", { name: /Timeline/i });
+
+    expect(screen.queryByRole("region", { name: /Smart itinerary table/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: /Route map/i })).not.toBeInTheDocument();
+    expect(within(timeline).getByRole("button", { name: /Select timeline stop Dim Dim Sum/i })).toBeInTheDocument();
+    expect(within(timeline).getAllByText(/Hong Kong City Day/i).length).toBeGreaterThan(0);
+  });
+
+  it("can start on real route paths with the right surface first", () => {
+    const { rerender } = render(<SagittariusApp initialView="map" />);
+
+    const navigation = screen.getByRole("navigation", { name: /Sagittarius planning navigation/i });
+    expect(within(navigation).getByRole("link", { name: /แผนที่/i })).toHaveClass("rail-link--active");
+    expect(document.querySelector(".planning-main")?.firstElementChild).toHaveClass("route-map-panel");
+    expect(screen.queryByRole("region", { name: /Smart itinerary table/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: /Trip timeline/i })).not.toBeInTheDocument();
+
+    rerender(<SagittariusApp initialView="timeline" />);
+
+    expect(within(navigation).getByRole("link", { name: /ไทม์ไลน์/i })).toHaveClass("rail-link--active");
+    expect(document.querySelector(".planning-main")?.firstElementChild).toHaveClass("timeline-panel");
+    expect(screen.queryByRole("region", { name: /Smart itinerary table/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: /Route map/i })).not.toBeInTheDocument();
+  });
+
+  it("uses timeline selections for details while map day filters stay local", async () => {
+    const user = userEvent.setup();
+    const { unmount } = render(<SagittariusApp initialView="timeline" />);
+
+    await user.click(within(screen.getByRole("region", { name: /Timeline/i })).getByRole("button", { name: /Select timeline stop Victoria Peak/i }));
+    expect(within(screen.getByRole("complementary", { name: /Planning context/i })).getByRole("heading", { name: /Victoria Peak/i })).toBeInTheDocument();
+
+    unmount();
+    render(<SagittariusApp initialView="map" />);
+
+    expect(screen.queryByRole("button", { name: /Open details/i })).not.toBeInTheDocument();
+    await user.click(within(screen.getByRole("region", { name: /Route map/i })).getByRole("button", { name: /Day 2/i }));
+    expect(screen.queryByRole("complementary", { name: /Planning context/i })).not.toBeInTheDocument();
+    expect(screen.getByText(/6\/15 stops visible/i)).toBeInTheDocument();
   });
 
   it("collapses the left rail and keeps labels accessible", async () => {
