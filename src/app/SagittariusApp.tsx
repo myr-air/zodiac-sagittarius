@@ -11,6 +11,7 @@ import { TimelineView } from "@/src/components/TimelineView";
 import { TripJoinGate } from "@/src/components/TripJoinGate";
 import { canTripRole, findSessionMember, resetTripParticipantClaim, tripParticipantSessionStorageKey } from "@/src/trip/auth";
 import { buildExpenseSummary } from "@/src/trip/expenses";
+import { tripStorageKey } from "@/src/trip/repository";
 import { seedTrip } from "@/src/trip/seed";
 import type { ItineraryItem, Suggestion, Trip, TripParticipantSession, TripRole } from "@/src/trip/types";
 
@@ -51,7 +52,11 @@ interface SagittariusAppProps {
 }
 
 export function SagittariusApp({ initialView = "itinerary", requireJoin = false }: SagittariusAppProps) {
-  const [tripState, setTripState] = useState<{ trip: Trip; past: Trip[]; future: Trip[] }>({ trip: seedTrip, past: [], future: [] });
+  const [tripState, setTripState] = useState<{ trip: Trip; past: Trip[]; future: Trip[] }>(() => ({
+    trip: loadPersistedTrip() ?? seedTrip,
+    past: [],
+    future: [],
+  }));
   const [participantSession, setParticipantSession] = useState<TripParticipantSession | null>(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [contextRailOpen, setContextRailOpen] = useState(false);
@@ -227,6 +232,7 @@ export function SagittariusApp({ initialView = "itinerary", requireJoin = false 
   function commitTrip(updater: (current: Trip) => Trip, nextSelectedItemId?: string) {
     setTripState((current) => {
       const nextTrip = updater(current.trip);
+      persistTripDraft(nextTrip);
       return {
         trip: nextTrip,
         past: [...current.past, current.trip].slice(-20),
@@ -274,6 +280,7 @@ export function SagittariusApp({ initialView = "itinerary", requireJoin = false 
   }
 
   function replaceTripFromJoin(nextTrip: Trip) {
+    persistTripDraft(nextTrip);
     setTripState({ trip: nextTrip, past: [], future: [] });
   }
 
@@ -396,4 +403,19 @@ function nextLocalItemId(items: ItineraryItem[], prefix: string): string {
 function getBrowserLocalStorage(): Storage | null {
   if (typeof window === "undefined" || !("localStorage" in window) || !window.localStorage) return null;
   return window.localStorage;
+}
+
+function loadPersistedTrip(): Trip | null {
+  const rawTrip = getBrowserLocalStorage()?.getItem(tripStorageKey);
+  if (!rawTrip) return null;
+  try {
+    return JSON.parse(rawTrip) as Trip;
+  } catch {
+    getBrowserLocalStorage()?.removeItem(tripStorageKey);
+    return null;
+  }
+}
+
+function persistTripDraft(trip: Trip) {
+  getBrowserLocalStorage()?.setItem(tripStorageKey, JSON.stringify(trip));
 }

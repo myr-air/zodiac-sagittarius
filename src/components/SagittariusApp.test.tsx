@@ -41,6 +41,31 @@ describe("Sagittarius cockpit UI", () => {
     expect(screen.queryByRole("navigation", { name: /Sagittarius planning navigation/i })).not.toBeInTheDocument();
   });
 
+  it("persists guest participant claims across a fresh app mount", async () => {
+    const user = userEvent.setup();
+    installLocalStorageStub();
+    const { unmount } = render(<SagittariusApp requireJoin />);
+
+    await user.type(screen.getByLabelText(/Trip ID/i), "HK-SZ-2025");
+    await user.type(screen.getByLabelText(/Trip password/i), "dim-sum-run");
+    await user.click(screen.getByRole("button", { name: /เข้าห้อง trip/i }));
+    await user.click(screen.getByRole("button", { name: /Explorer Friend/i }));
+    await user.type(screen.getByLabelText(/ตั้งรหัสสำหรับ Explorer Friend/i), "traveler-pin");
+    await user.click(screen.getByRole("button", { name: /เริ่มใช้งาน/i }));
+    await user.click(screen.getByRole("button", { name: /เปลี่ยนตัวตน/i }));
+
+    unmount();
+    render(<SagittariusApp requireJoin />);
+
+    await user.type(screen.getByLabelText(/Trip ID/i), "HK-SZ-2025");
+    await user.type(screen.getByLabelText(/Trip password/i), "dim-sum-run");
+    await user.click(screen.getByRole("button", { name: /เข้าห้อง trip/i }));
+    await user.click(screen.getByRole("button", { name: /Explorer Friend/i }));
+
+    expect(screen.getByLabelText(/รหัสของ Explorer Friend/i)).toBeInTheDocument();
+    expect(screen.queryByLabelText(/ตั้งรหัสสำหรับ Explorer Friend/i)).not.toBeInTheDocument();
+  });
+
   it("opens directly into the planning cockpit instead of a marketing landing page", () => {
     render(<SagittariusApp />);
 
@@ -341,4 +366,17 @@ function createDataTransfer() {
     getData: (type: string) => values.get(type) ?? "",
     setData: (type: string, value: string) => values.set(type, value),
   };
+}
+
+function installLocalStorageStub() {
+  const values = new Map<string, string>();
+  Object.defineProperty(window, "localStorage", {
+    configurable: true,
+    value: {
+      getItem: (key: string) => values.get(key) ?? null,
+      setItem: (key: string, value: string) => values.set(key, value),
+      removeItem: (key: string) => values.delete(key),
+      clear: () => values.clear(),
+    },
+  });
 }
