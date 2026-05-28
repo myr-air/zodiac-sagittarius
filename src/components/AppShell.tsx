@@ -26,11 +26,12 @@ interface AppShellProps {
   children: ReactNode;
   collapsed: boolean;
   currentMember: Member;
+  onLeaveParticipantSession?: () => void;
   trip: Trip;
   onToggleCollapsed: () => void;
 }
 
-export function AppShell({ activeView, children, collapsed, currentMember, trip, onToggleCollapsed }: AppShellProps) {
+export function AppShell({ activeView, children, collapsed, currentMember, onLeaveParticipantSession, trip, onToggleCollapsed }: AppShellProps) {
   const tripDays = getTripDates(trip.startDate, trip.endDate).length;
 
   return (
@@ -88,13 +89,26 @@ export function AppShell({ activeView, children, collapsed, currentMember, trip,
           </span>
           <div>
             <strong>{currentMember.displayName}</strong>
-            <span>เจ้าของแผน</span>
+            <span>{roleLabel(currentMember.role)}</span>
           </div>
-          <Icon name="chevronRight" />
+          {onLeaveParticipantSession ? (
+            <button className="member-switch-button" type="button" onClick={onLeaveParticipantSession}>
+              เปลี่ยนตัวตน
+            </button>
+          ) : (
+            <Icon name="chevronRight" />
+          )}
         </div>
       </nav>
 
       {children}
     </div>
   );
+}
+
+function roleLabel(role: Member["role"]): string {
+  if (role === "owner") return "เจ้าของแผน";
+  if (role === "organizer") return "ผู้จัดทริป";
+  if (role === "traveler") return "ผู้ร่วมเดินทาง";
+  return "ผู้ชม";
 }

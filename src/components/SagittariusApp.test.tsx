@@ -23,6 +23,24 @@ describe("Sagittarius cockpit UI", () => {
     expect(screen.getByRole("button", { name: /เพิ่มสถานที่ \/ กิจกรรม/i })).toBeDisabled();
   });
 
+  it("lets a guest participant leave their local session and choose another identity", async () => {
+    const user = userEvent.setup();
+    render(<SagittariusApp requireJoin />);
+
+    await user.type(screen.getByLabelText(/Trip ID/i), "HK-SZ-2025");
+    await user.type(screen.getByLabelText(/Trip password/i), "dim-sum-run");
+    await user.click(screen.getByRole("button", { name: /เข้าห้อง trip/i }));
+    await user.click(screen.getByRole("button", { name: /Explorer Friend/i }));
+    await user.type(screen.getByLabelText(/ตั้งรหัสสำหรับ Explorer Friend/i), "traveler-pin");
+    await user.click(screen.getByRole("button", { name: /เริ่มใช้งาน/i }));
+
+    await user.click(screen.getByRole("button", { name: /เปลี่ยนตัวตน/i }));
+
+    expect(screen.getByRole("main", { name: /Join trip/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /เข้าห้อง trip/i })).toBeInTheDocument();
+    expect(screen.queryByRole("navigation", { name: /Sagittarius planning navigation/i })).not.toBeInTheDocument();
+  });
+
   it("opens directly into the planning cockpit instead of a marketing landing page", () => {
     render(<SagittariusApp />);
 

@@ -266,6 +266,13 @@ export function SagittariusApp({ initialView = "itinerary", requireJoin = false 
     getBrowserLocalStorage()?.setItem(tripParticipantSessionStorageKey, JSON.stringify(session));
   }
 
+  function leaveParticipantSession() {
+    setParticipantSession(null);
+    setCurrentMemberId(seedTrip.members[0].id);
+    setContextRailVisibility(false);
+    getBrowserLocalStorage()?.removeItem(tripParticipantSessionStorageKey);
+  }
+
   function replaceTripFromJoin(nextTrip: Trip) {
     setTripState({ trip: nextTrip, past: [], future: [] });
   }
@@ -284,6 +291,7 @@ export function SagittariusApp({ initialView = "itinerary", requireJoin = false 
       activeView={initialView}
       collapsed={sidebarCollapsed}
       currentMember={currentMember}
+      onLeaveParticipantSession={requireJoin ? leaveParticipantSession : undefined}
       trip={trip}
       onToggleCollapsed={() => setSidebarCollapsed((current) => !current)}
     >

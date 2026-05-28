@@ -459,7 +459,7 @@ button:disabled,
 
 .member-card {
   display: grid;
-  grid-template-columns: 34px minmax(0, 1fr) 18px;
+  grid-template-columns: 34px minmax(0, 1fr) auto;
   align-items: center;
   gap: 10px;
   min-height: 82px;
@@ -493,6 +493,18 @@ button:disabled,
   color: var(--color-text-muted);
 }
 
+.member-switch-button {
+  min-height: 28px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 0 8px;
+  color: var(--color-primary-strong);
+  background: var(--color-surface);
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
 .person-avatar {
   width: 30px;
   height: 30px;
@@ -505,7 +517,8 @@ button:disabled,
 .side-rail[data-collapsed="true"] .rail-link em,
 .side-rail[data-collapsed="true"] .rail-summary,
 .side-rail[data-collapsed="true"] .member-card div,
-.side-rail[data-collapsed="true"] .member-card > .icon {
+.side-rail[data-collapsed="true"] .member-card > .icon,
+.side-rail[data-collapsed="true"] .member-switch-button {
   display: none;
 }
 
