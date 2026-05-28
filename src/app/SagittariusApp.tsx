@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { AppShell } from "@/src/components/AppShell";
 import { CommandBar } from "@/src/components/CommandBar";
 import { ContextRail } from "@/src/components/ContextRail";
+import { OverviewPage } from "@/src/components/OverviewPage";
 import { RouteMapView } from "@/src/components/RouteMapView";
 import { SmartItineraryTable } from "@/src/components/SmartItineraryTable";
 import { StopDialog, type StopFormValues } from "@/src/components/StopDialog";
@@ -23,7 +24,7 @@ import {
 import { buildExpenseSummary } from "@/src/trip/expenses";
 import { tripStorageKey } from "@/src/trip/repository";
 import { seedTrip } from "@/src/trip/seed";
-import type { ItineraryItem, Suggestion, Trip, TripMemberAccessStatus, TripParticipantSession, TripRole } from "@/src/trip/types";
+import type { ItineraryItem, Suggestion, Trip, TripMemberAccessStatus, TripParticipantSession, TripRole, TripTask } from "@/src/trip/types";
 
 const seedSuggestions: Suggestion[] = [
   {
@@ -52,16 +53,22 @@ const seedSuggestions: Suggestion[] = [
   },
 ];
 
+const seedTasks: TripTask[] = [
+  { id: "task-esim", title: "ซื้อ eSIM", status: "open", visibility: "private", createdBy: "member-aom", assigneeId: "member-aom" },
+  { id: "task-peak-tram", title: "จอง Peak Tram", status: "done", visibility: "shared", createdBy: "member-beam", assigneeId: "member-beam", relatedItemId: "item-peak" },
+  { id: "task-expenses", title: "สรุปค่าใช้จ่ายวันแรก", status: "open", visibility: "shared", createdBy: "member-beam", assigneeId: "member-beam" },
+];
+
 const localMutationTimestamp = "2026-05-28T00:00:00.000Z";
 
-export type PlanningView = "itinerary" | "map" | "timeline" | "members";
+export type PlanningView = "overview" | "itinerary" | "map" | "timeline" | "members";
 
 interface SagittariusAppProps {
   initialView?: PlanningView;
   requireJoin?: boolean;
 }
 
-export function SagittariusApp({ initialView = "itinerary", requireJoin = false }: SagittariusAppProps) {
+export function SagittariusApp({ initialView = "overview", requireJoin = false }: SagittariusAppProps) {
   const [tripState, setTripState] = useState<{ trip: Trip; past: Trip[]; future: Trip[] }>(() => ({
     trip: seedTrip,
     past: [],
@@ -69,6 +76,7 @@ export function SagittariusApp({ initialView = "itinerary", requireJoin = false 
   }));
   const [participantSession, setParticipantSession] = useState<TripParticipantSession | null>(null);
   const [suggestions, setSuggestions] = useState<Suggestion[]>(seedSuggestions);
+  const [tasks, setTasks] = useState<TripTask[]>(seedTasks);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [contextRailOpen, setContextRailOpen] = useState(false);
   const [contextRailMounted, setContextRailMounted] = useState(false);
@@ -346,6 +354,36 @@ export function SagittariusApp({ initialView = "itinerary", requireJoin = false 
     setContextRailVisibility(true);
   }
 
+  function createTask(input: { title: string; visibility: TripTask["visibility"]; assigneeId?: string | null }) {
+    const title = input.title.trim();
+    if (!title) return;
+    const visibility = input.visibility;
+    setTasks((current) => [
+      ...current,
+      {
+        id: nextLocalTaskId(current),
+        title,
+        status: "open",
+        visibility,
+        createdBy: currentMember.id,
+        assigneeId: visibility === "shared" ? input.assigneeId || null : currentMember.id,
+      },
+    ]);
+  }
+
+  function toggleTaskStatus(taskId: string) {
+    setTasks((current) =>
+      current.map((task) =>
+        task.id === taskId
+          ? {
+              ...task,
+              status: task.status === "done" ? "open" : "done",
+            }
+          : task,
+      ),
+    );
+  }
+
   if (requireJoin && !sessionMember) {
     return <TripJoinGate trip={trip} onTripChange={replaceTripFromJoin} onAuthenticated={authenticateParticipant} />;
   }
@@ -360,7 +398,7 @@ export function SagittariusApp({ initialView = "itinerary", requireJoin = false 
       onToggleCollapsed={() => setSidebarCollapsed((current) => !current)}
     >
       <main className="workspace-shell">
-        {initialView === "members" ? null : (
+        {initialView === "members" || initialView === "overview" ? null : (
           <CommandBar
             trip={trip}
             currentMemberId={currentMember.id}
@@ -387,6 +425,17 @@ export function SagittariusApp({ initialView = "itinerary", requireJoin = false 
             onChangeMemberRole={changeMemberRole}
             onCreateMember={createMember}
             onResetMemberClaim={resetMemberClaim}
+          />
+        ) : initialView === "overview" ? (
+          <OverviewPage
+            trip={trip}
+            currentMemberId={currentMember.id}
+            expenseSummary={expenseSummary}
+            items={planItems}
+            suggestions={suggestions}
+            tasks={tasks}
+            onCreateTask={createTask}
+            onToggleTaskStatus={toggleTaskStatus}
           />
         ) : (
           <div className="workspace-grid" data-context-rail={contextRailOpen ? "open" : "closed"}>
@@ -478,6 +527,19 @@ function nextLocalSuggestionId(suggestions: Suggestion[]): string {
   while (existingIds.has(id)) {
     index += 1;
     id = `suggestion-local-${index}`;
+  }
+
+  return id;
+}
+
+function nextLocalTaskId(tasks: TripTask[]): string {
+  const existingIds = new Set(tasks.map((task) => task.id));
+  let index = tasks.filter((task) => task.id.startsWith("task-local-")).length + 1;
+  let id = `task-local-${index}`;
+
+  while (existingIds.has(id)) {
+    index += 1;
+    id = `task-local-${index}`;
   }
 
   return id;

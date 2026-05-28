@@ -22,7 +22,8 @@ describe("Sagittarius cockpit UI", () => {
 
     expect(screen.getByRole("navigation", { name: /Sagittarius planning navigation/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /Hong Kong \+ Shenzhen Trip/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /เพิ่มสถานที่ \/ กิจกรรม/i })).toBeDisabled();
+    expect(screen.getByRole("region", { name: /Trip overview/i })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /เพิ่มสถานที่ \/ กิจกรรม/i })).not.toBeInTheDocument();
   }, 10_000);
 
   it("lets a guest participant leave their local session and choose another identity", async () => {
@@ -68,19 +69,79 @@ describe("Sagittarius cockpit UI", () => {
     expect(screen.queryByLabelText(/ตั้งรหัสสำหรับ Explorer Friend/i)).not.toBeInTheDocument();
   });
 
-  it("opens directly into the planning cockpit instead of a marketing landing page", () => {
+  it("opens directly into the trip overview instead of a marketing landing page", () => {
     render(<SagittariusApp />);
 
     expect(screen.getByRole("heading", { name: /Hong Kong \+ Shenzhen Trip/i })).toBeInTheDocument();
     expect(screen.getByRole("navigation", { name: /Sagittarius planning navigation/i })).toBeInTheDocument();
-    expect(screen.getByRole("region", { name: /Smart itinerary table/i })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: /Trip overview/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /คุมทริปให้พร้อม/i })).toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: /Smart itinerary table/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("region", { name: /Route map/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("region", { name: /Trip timeline/i })).not.toBeInTheDocument();
     expect(screen.queryByText(/hero/i)).not.toBeInTheDocument();
   });
 
-  it("matches the dense planning cockpit skeleton from the reference", () => {
+  it("manages trip tasks from the overview checklist", async () => {
+    const user = userEvent.setup();
     render(<SagittariusApp />);
+
+    expect(screen.getByRole("region", { name: /Trip readiness/i })).toBeInTheDocument();
+    const tasks = screen.getByRole("region", { name: /Trip checklist/i });
+    expect(within(tasks).getByRole("button", { name: /ของฉัน/i })).toHaveClass("overview-task-filter--active");
+    expect(within(tasks).getAllByText(/ส่วนตัว/i).length).toBeGreaterThan(0);
+    expect(within(tasks).getAllByText(/แชร์ในทริป/i).length).toBeGreaterThan(0);
+    expect(within(tasks).getByRole("checkbox", { name: /ซื้อ eSIM/i })).not.toBeChecked();
+
+    await user.type(within(tasks).getByLabelText(/เพิ่มเช็กลิสต์/i), "แลกเงิน HKD");
+    await user.selectOptions(within(tasks).getByLabelText(/เก็บไว้ที่/i), "shared");
+    await user.selectOptions(within(tasks).getByLabelText(/ให้ใครดูแล/i), "member-nam");
+    await user.click(within(tasks).getByRole("button", { name: /เพิ่มเช็กลิสต์/i }));
+
+    const newTask = within(tasks).getByRole("listitem", { name: /แลกเงิน HKD/i });
+    expect(within(newTask).getByText(/Explorer Friend/i)).toBeInTheDocument();
+    expect(within(newTask).getByText(/แชร์ในทริป/i)).toBeInTheDocument();
+
+    await user.click(within(newTask).getByRole("checkbox", { name: /แลกเงิน HKD/i }));
+    expect(within(newTask).getByRole("checkbox", { name: /แลกเงิน HKD/i })).toBeChecked();
+
+    await user.click(within(tasks).getByRole("button", { name: /เสร็จแล้ว/i }));
+
+    expect(within(tasks).getByText(/แลกเงิน HKD/i)).toBeInTheDocument();
+    expect(within(tasks).queryByText(/ซื้อ eSIM/i)).not.toBeInTheDocument();
+
+    await user.click(within(tasks).getByRole("button", { name: /แชร์ในทริป/i }));
+    expect(within(tasks).getByText(/จอง Peak Tram/i)).toBeInTheDocument();
+
+    await user.click(within(tasks).getByRole("button", { name: /ของฉัน/i }));
+    await user.click(within(tasks).getByRole("button", { name: /ทุกสถานะ/i }));
+    expect(within(tasks).getByText(/ซื้อ eSIM/i)).toBeInTheDocument();
+    expect(within(tasks).queryByText(/จอง Peak Tram/i)).not.toBeInTheDocument();
+  });
+
+  it("keeps the left navigation simple and only links to implemented views", () => {
+    render(<SagittariusApp />);
+
+    const navigation = screen.getByRole("navigation", { name: /Sagittarius planning navigation/i });
+    const railLinks = navigation.querySelector(".rail-links");
+    expect(railLinks).not.toBeNull();
+    const links = within(railLinks as HTMLElement).getAllByRole("link");
+
+    expect(links.map((link) => link.textContent?.trim())).toEqual([
+      "ภาพรวม",
+      "แผนการเดินทาง",
+      "แผนที่",
+      "ไทม์ไลน์",
+      "สมาชิก",
+    ]);
+    expect(within(navigation).getByRole("link", { name: /ภาพรวม/i })).toHaveClass("rail-link--active");
+    expect(within(navigation).queryByRole("link", { name: /งบประมาณ/i })).not.toBeInTheDocument();
+    expect(within(navigation).queryByRole("link", { name: /รายการจอง/i })).not.toBeInTheDocument();
+    expect(within(navigation).queryByRole("link", { name: /ตั้งค่า/i })).not.toBeInTheDocument();
+  });
+
+  it("matches the dense planning cockpit skeleton from the reference", () => {
+    render(<SagittariusApp initialView="itinerary" />);
 
     expect(screen.getByRole("banner", { name: /Trip command bar/i })).toHaveClass("top-app-bar");
     expect(screen.getByRole("link", { name: /แผนการเดินทาง/i })).toHaveClass("rail-link--active");
@@ -97,7 +158,7 @@ describe("Sagittarius cockpit UI", () => {
   }, 10_000);
 
   it("renders only the surface that belongs to the current URL view", () => {
-    const { rerender } = render(<SagittariusApp />);
+    const { rerender } = render(<SagittariusApp initialView="itinerary" />);
 
     expect(screen.getByRole("region", { name: /Smart itinerary table/i })).toBeInTheDocument();
     expect(screen.queryByRole("region", { name: /Route map/i })).not.toBeInTheDocument();
@@ -260,7 +321,7 @@ describe("Sagittarius cockpit UI", () => {
 
   it("collapses the left rail and keeps labels accessible", async () => {
     const user = userEvent.setup();
-    render(<SagittariusApp />);
+    render(<SagittariusApp initialView="itinerary" />);
 
     await user.click(screen.getByRole("button", { name: /Collapse navigation/i }));
 
@@ -276,7 +337,7 @@ describe("Sagittarius cockpit UI", () => {
 
   it("starts with the right context drawer hidden so the table can expand", async () => {
     const user = userEvent.setup();
-    const { container } = render(<SagittariusApp />);
+    const { container } = render(<SagittariusApp initialView="itinerary" />);
 
     expect(screen.queryByRole("complementary", { name: /Planning context/i })).not.toBeInTheDocument();
     expect(container.querySelector(".workspace-grid")).toHaveAttribute("data-context-rail", "closed");
@@ -290,7 +351,7 @@ describe("Sagittarius cockpit UI", () => {
 
   it("opens the right context drawer when selecting a row while details are hidden", async () => {
     const user = userEvent.setup();
-    const { container } = render(<SagittariusApp />);
+    const { container } = render(<SagittariusApp initialView="itinerary" />);
 
     expect(container.querySelector(".workspace-grid")).toHaveAttribute("data-context-rail", "closed");
 
@@ -303,7 +364,7 @@ describe("Sagittarius cockpit UI", () => {
 
   it("keeps trip member management out of the right context drawer", async () => {
     const user = userEvent.setup();
-    render(<SagittariusApp />);
+    render(<SagittariusApp initialView="itinerary" />);
 
     await user.click(screen.getByRole("button", { name: /Open details/i }));
 
@@ -314,7 +375,7 @@ describe("Sagittarius cockpit UI", () => {
 
   it("uses selected table row to drive the right context rail", async () => {
     const user = userEvent.setup();
-    render(<SagittariusApp />);
+    render(<SagittariusApp initialView="itinerary" />);
 
     await user.click(screen.getByRole("button", { name: /Select stop Victoria Peak/i }));
 
@@ -324,7 +385,7 @@ describe("Sagittarius cockpit UI", () => {
   });
 
   it("opens details when clicking anywhere on an itinerary row", async () => {
-    const { container } = render(<SagittariusApp />);
+    const { container } = render(<SagittariusApp initialView="itinerary" />);
 
     expect(container.querySelector(".workspace-grid")).toHaveAttribute("data-context-rail", "closed");
 
@@ -337,7 +398,7 @@ describe("Sagittarius cockpit UI", () => {
 
   it("closes the right context drawer when clicking outside it", async () => {
     const user = userEvent.setup();
-    const { container } = render(<SagittariusApp />);
+    const { container } = render(<SagittariusApp initialView="itinerary" />);
 
     await user.click(screen.getByRole("button", { name: /Open details/i }));
     expect(container.querySelector(".workspace-grid")).toHaveAttribute("data-context-rail", "open");
@@ -350,7 +411,7 @@ describe("Sagittarius cockpit UI", () => {
 
   it("keeps the right context drawer open when clicking inside it", async () => {
     const user = userEvent.setup();
-    const { container } = render(<SagittariusApp />);
+    const { container } = render(<SagittariusApp initialView="itinerary" />);
 
     await user.click(screen.getByRole("button", { name: /Open details/i }));
     const context = screen.getByRole("complementary", { name: /Planning context/i });
@@ -363,7 +424,7 @@ describe("Sagittarius cockpit UI", () => {
 
   it("collapses and expands day groups", async () => {
     const user = userEvent.setup();
-    render(<SagittariusApp />);
+    render(<SagittariusApp initialView="itinerary" />);
 
     await user.click(screen.getByRole("button", { name: /Collapse Day 2/i }));
 
@@ -377,7 +438,7 @@ describe("Sagittarius cockpit UI", () => {
   });
 
   it("reorders itinerary rows with drag and drop", () => {
-    render(<SagittariusApp />);
+    render(<SagittariusApp initialView="itinerary" />);
 
     const dataTransfer = createDataTransfer();
     const victoriaSelectBefore = screen.getByRole("button", { name: /Select stop Victoria Peak/i });
@@ -394,7 +455,7 @@ describe("Sagittarius cockpit UI", () => {
   });
 
   it("shows a drop preview before placing a dragged itinerary row", () => {
-    render(<SagittariusApp />);
+    render(<SagittariusApp initialView="itinerary" />);
 
     const dataTransfer = createDataTransfer();
     const victoriaRow = screen.getByRole("button", { name: /Select stop Victoria Peak/i }).closest("tr");
@@ -413,7 +474,7 @@ describe("Sagittarius cockpit UI", () => {
 
   it("changes edit affordances by role capability", async () => {
     const user = userEvent.setup();
-    render(<SagittariusApp />);
+    render(<SagittariusApp initialView="itinerary" />);
 
     expect(screen.getByRole("button", { name: /เพิ่มสถานที่ \/ กิจกรรม/i })).toBeEnabled();
 
@@ -425,7 +486,7 @@ describe("Sagittarius cockpit UI", () => {
 
   it("lets travelers submit a suggestion instead of directly editing a stop", async () => {
     const user = userEvent.setup();
-    render(<SagittariusApp />);
+    render(<SagittariusApp initialView="itinerary" />);
 
     await user.selectOptions(screen.getByLabelText(/Role preview/i), "member-nam");
     await user.click(screen.getByRole("button", { name: /Open details/i }));
@@ -438,7 +499,7 @@ describe("Sagittarius cockpit UI", () => {
 
   it("adds a new itinerary stop from the header action", async () => {
     const user = userEvent.setup();
-    render(<SagittariusApp />);
+    render(<SagittariusApp initialView="itinerary" />);
 
     await user.click(screen.getByRole("button", { name: /เพิ่มสถานที่ \/ กิจกรรม/i }));
 
@@ -462,7 +523,7 @@ describe("Sagittarius cockpit UI", () => {
 
   it("edits the selected stop and supports undo redo", async () => {
     const user = userEvent.setup();
-    render(<SagittariusApp />);
+    render(<SagittariusApp initialView="itinerary" />);
 
     await user.click(screen.getByRole("button", { name: /Open details/i }));
     await user.click(screen.getByRole("button", { name: /แก้ไขรายละเอียด/i }));

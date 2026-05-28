@@ -80,6 +80,19 @@ export interface Expense {
   category: "food" | "transport" | "tickets" | "stay" | "shopping" | "settlement";
 }
 
+export type TripTaskStatus = "open" | "done";
+export type TripTaskVisibility = "private" | "shared";
+
+export interface TripTask {
+  id: string;
+  title: string;
+  status: TripTaskStatus;
+  visibility: TripTaskVisibility;
+  createdBy: string;
+  assigneeId?: string | null;
+  relatedItemId?: string | null;
+}
+
 export interface Trip {
   id: string;
   joinId: string;

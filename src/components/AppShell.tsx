@@ -6,19 +6,11 @@ import { getTripDates } from "@/src/trip/itinerary";
 import { Icon } from "./icons";
 
 const navItems = [
-  { id: "overview", label: "ภาพรวมแผน", icon: "home" as const, href: "/" },
+  { id: "overview", label: "ภาพรวม", icon: "home" as const, href: "/" },
   { id: "itinerary", label: "แผนการเดินทาง", icon: "calendar" as const, href: "/itinerary" },
   { id: "map", label: "แผนที่", icon: "map" as const, href: "/map" },
   { id: "timeline", label: "ไทม์ไลน์", icon: "list" as const, href: "/timeline" },
-  { id: "places", label: "สถานที่", icon: "location" as const, href: "/itinerary" },
-  { id: "notes", label: "โน้ต", icon: "note" as const, href: "/itinerary" },
-  { id: "documents", label: "เอกสาร", icon: "document" as const, href: "/itinerary" },
-  { id: "budget", label: "งบประมาณ", icon: "wallet" as const, href: "/itinerary" },
-  { id: "bookings", label: "รายการจอง", icon: "table" as const, href: "/itinerary" },
-  { id: "alerts", label: "การแจ้งเตือน", icon: "alertCircle" as const, count: 3, href: "/itinerary" },
-  { id: "tasks", label: "งาน", icon: "check" as const, href: "/itinerary" },
   { id: "members", label: "สมาชิก", icon: "users" as const, href: "/members" },
-  { id: "settings", label: "ตั้งค่า", icon: "settings" as const, href: "/itinerary" },
 ];
 
 interface AppShellProps {
@@ -70,7 +62,6 @@ export function AppShell({ activeView, children, collapsed, currentMember, onLea
             >
               <Icon name={item.icon} />
               <span>{item.label}</span>
-              {item.count ? <em>{item.count}</em> : null}
             </Link>
           ))}
         </div>
@@ -78,9 +69,8 @@ export function AppShell({ activeView, children, collapsed, currentMember, onLea
         <div className="rail-summary" aria-label="สรุปแผน">
           <strong>สรุปแผน</strong>
           <span><Icon name="calendar" /> {tripDays} วัน 5 คืน</span>
-          <span><Icon name="location" /> {trip.itineraryItems.length + 5} สถานที่</span>
-          <span><Icon name="wallet" /> ¥4,860.00</span>
-          <button type="button">ดูสรุปรายละเอียด</button>
+          <span><Icon name="location" /> {trip.itineraryItems.length} สถานที่</span>
+          <Link href="/" className="rail-summary-link">ดูสรุปรายละเอียด</Link>
         </div>
 
         <div className="member-card">

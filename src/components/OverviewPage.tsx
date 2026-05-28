@@ -1,0 +1,371 @@
+import { type FormEvent, useMemo, useState } from "react";
+import type { ExpenseSummary, ItineraryItem, Member, Suggestion, Trip, TripTask } from "@/src/trip/types";
+import { formatDayLabel, getTripDates, validateItineraryItem } from "@/src/trip/itinerary";
+import { Icon } from "./icons";
+
+interface OverviewPageProps {
+  trip: Trip;
+  currentMemberId: string;
+  expenseSummary: ExpenseSummary;
+  items: ItineraryItem[];
+  suggestions: Suggestion[];
+  tasks: TripTask[];
+  onCreateTask: (input: { title: string; visibility: TripTask["visibility"]; assigneeId?: string | null }) => void;
+  onToggleTaskStatus: (taskId: string) => void;
+}
+
+export function OverviewPage({ trip, currentMemberId, expenseSummary, items, suggestions, tasks, onCreateTask, onToggleTaskStatus }: OverviewPageProps) {
+  const [taskScope, setTaskScope] = useState<"mine" | "trip" | "all">("mine");
+  const [taskStatusFilter, setTaskStatusFilter] = useState<"all" | "open" | "done">("all");
+  const [newTaskTitle, setNewTaskTitle] = useState("");
+  const [newTaskVisibility, setNewTaskVisibility] = useState<TripTask["visibility"]>("private");
+  const [newTaskAssigneeId, setNewTaskAssigneeId] = useState("");
+  const tripDays = getTripDates(trip.startDate, trip.endDate);
+  const sortedItems = useMemo(() => items.slice().sort((a, b) => a.day.localeCompare(b.day) || a.sortOrder - b.sortOrder || a.startTime.localeCompare(b.startTime)), [items]);
+  const nextStop = sortedItems[0];
+  const warningCount = items.reduce((total, item) => total + validateItineraryItem(item, items.filter((candidate) => candidate.day === item.day)).length, 0);
+  const pendingSuggestions = suggestions.filter((suggestion) => suggestion.status === "pending").length;
+  const activeMembers = trip.members.filter((member) => member.id !== "member-viewer" && member.accessStatus !== "disabled").length;
+  const currentMember = trip.members.find((member) => member.id === currentMemberId);
+  const roleLens = overviewRoleLens(currentMember);
+  const isManagerLens = roleLens === "manager";
+  const isTravelerLens = roleLens === "traveler";
+  const isViewerLens = roleLens === "viewer";
+  const assignableMembers = trip.members.filter((member) => member.id !== "member-viewer" && member.accessStatus !== "disabled");
+  const myOpenTasks = tasks.filter((task) => task.status === "open" && isMyTask(task, currentMemberId)).length;
+  const sharedOpenTasks = tasks.filter((task) => task.status === "open" && task.visibility === "shared").length;
+  const foodStops = sortedItems.filter((item) => item.activityType === "food").slice(0, 3);
+  const tripHighlights = sortedItems.filter((item) => ["attraction", "experience", "shopping"].includes(item.activityType)).slice(0, 4);
+  const viewerHighlights = sortedItems.filter((item) => item.activityType !== "travel").slice(0, 5);
+  const visibleTasks = useMemo(
+    () =>
+      tasks.filter((task) => {
+        if (taskScope === "mine" && !isMyTask(task, currentMemberId)) return false;
+        if (taskScope === "trip" && task.visibility !== "shared") return false;
+        if (taskStatusFilter === "open") return task.status === "open";
+        if (taskStatusFilter === "done") return task.status === "done";
+        return true;
+      }),
+    [currentMemberId, taskScope, taskStatusFilter, tasks],
+  );
+
+  function submitTask(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const title = newTaskTitle.trim();
+    if (!title) return;
+    onCreateTask({ title, visibility: newTaskVisibility, assigneeId: newTaskAssigneeId || null });
+    setNewTaskTitle("");
+    setNewTaskVisibility("private");
+    setNewTaskAssigneeId("");
+    setTaskScope(newTaskVisibility === "shared" ? "trip" : "mine");
+    setTaskStatusFilter("all");
+  }
+
+  return (
+    <section className="overview-page" aria-label="Trip overview">
+      <header className="overview-header">
+        <div>
+          <p className="eyebrow">Trip overview</p>
+          <h1>{trip.name}</h1>
+          <h2>{roleHeading(roleLens)}</h2>
+          <span>{trip.destinationLabel}</span>
+        </div>
+        <div className="overview-current-user">
+          {currentMember ? (
+            <>
+              <span className="person-avatar" style={{ backgroundColor: currentMember.color }} aria-hidden="true">
+                {currentMember.displayName.slice(0, 1)}
+              </span>
+              <div>
+                <strong>{currentMember.displayName}</strong>
+                <span>{trip.destinationLabel}</span>
+              </div>
+            </>
+          ) : null}
+        </div>
+      </header>
+
+      <div className="overview-stat-grid" aria-label="Trip summary">
+        <OverviewStat icon="calendar" label="ระยะทริป" value={`${tripDays.length} วัน`} />
+        <OverviewStat icon="location" label="กิจกรรมในแผน" value={`${items.length} จุด`} />
+        <OverviewStat icon="wallet" label="ค่าใช้จ่ายรวม" value={`HK$${expenseSummary.groupSpend.toLocaleString("en-HK")}`} />
+        <OverviewStat icon="users" label="สมาชิกที่ใช้งาน" value={`${activeMembers} คน`} />
+      </div>
+
+      <div className="overview-grid">
+        {isTravelerLens ? (
+          <>
+            <section className="overview-panel overview-panel--wide" aria-label="Next important stop">
+              <div className="overview-panel-title">
+                <Icon name="route" />
+                <h2>จุดแรกในแผน</h2>
+              </div>
+              {nextStop ? (
+                <div className="overview-next-stop">
+                  <strong>{nextStop.activity}</strong>
+                  <span>{formatDayLabel(nextStop.day, trip.startDate)} · {nextStop.startTime} · {nextStop.place}</span>
+                  <p>{nextStop.transportation || nextStop.note || "ดูรายละเอียดในแผนการเดินทาง"}</p>
+                </div>
+              ) : (
+                <p className="overview-muted">ยังไม่มี itinerary ในแผนนี้</p>
+              )}
+            </section>
+
+            <section className="overview-panel overview-panel--wide" aria-label="Traveler highlights">
+              <div className="overview-panel-title">
+                <Icon name="location" />
+                <h2>ที่เที่ยวและของกินที่รออยู่</h2>
+              </div>
+              <OverviewStopList items={[...foodStops, ...tripHighlights].slice(0, 5)} startDate={trip.startDate} />
+            </section>
+
+            <section className="overview-panel overview-task-panel" aria-label="My travel checklist">
+              <div className="overview-panel-title">
+                <Icon name="check" />
+                <h2>เช็กลิสต์ของฉัน</h2>
+              </div>
+              <div className="overview-task-toolbar">
+                <div className="overview-task-filters" role="group" aria-label="Checklist status filters">
+                  <button className={taskStatusFilter === "all" ? "overview-task-filter overview-task-filter--active" : "overview-task-filter"} type="button" onClick={() => setTaskStatusFilter("all")}>ทั้งหมด</button>
+                  <button className={taskStatusFilter === "open" ? "overview-task-filter overview-task-filter--active" : "overview-task-filter"} type="button" onClick={() => setTaskStatusFilter("open")}>ยังไม่ได้ทำ</button>
+                  <button className={taskStatusFilter === "done" ? "overview-task-filter overview-task-filter--active" : "overview-task-filter"} type="button" onClick={() => setTaskStatusFilter("done")}>เรียบร้อย</button>
+                </div>
+              </div>
+              <form className="overview-task-form overview-task-form--personal" onSubmit={submitTask}>
+                <label>
+                  <span>เพิ่มของที่ต้องเตรียม</span>
+                  <input value={newTaskTitle} onChange={(event) => setNewTaskTitle(event.target.value)} placeholder="เช่น เตรียมปลั๊กแปลง" />
+                </label>
+                <button type="submit" disabled={!newTaskTitle.trim()}>เพิ่ม</button>
+              </form>
+              {visibleTasks.length ? (
+                <ul className="overview-task-list">
+                  {visibleTasks.map((task) => (
+                    <li className="overview-task-item" key={task.id} aria-label={task.title} data-status={task.status}>
+                      <label>
+                        <input type="checkbox" checked={task.status === "done"} onChange={() => onToggleTaskStatus(task.id)} />
+                        <span>{task.title}</span>
+                      </label>
+                      <div className="overview-task-meta">
+                        <small className={`overview-task-scope overview-task-scope--${task.visibility}`}>{task.visibility === "private" ? "ส่วนตัว" : "แชร์ในทริป"}</small>
+                        <small>{assigneeLabel(task, trip)}</small>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="overview-muted">ยังไม่มีเช็กลิสต์ของคุณ</p>
+              )}
+            </section>
+
+            <section className="overview-panel" aria-label="Trip money snapshot">
+              <div className="overview-panel-title">
+                <Icon name="wallet" />
+                <h2>เงินทริปของฉัน</h2>
+              </div>
+              <strong>{expenseSummary.currentUserNetLabel}</strong>
+              <span>{expenseSummary.settlementSuggestions.length} รายการชำระคืนที่แนะนำ</span>
+            </section>
+          </>
+        ) : null}
+
+        {isViewerLens ? (
+          <>
+            <section className="overview-panel overview-panel--wide" aria-label="Read-only trip snapshot">
+              <div className="overview-panel-title">
+                <Icon name="location" />
+                <h2>ภาพรวมที่จะได้เจอ</h2>
+              </div>
+              <OverviewStopList items={viewerHighlights} startDate={trip.startDate} />
+            </section>
+
+            <section className="overview-panel" aria-label="Next important stop">
+              <div className="overview-panel-title">
+                <Icon name="route" />
+                <h2>จุดถัดไป</h2>
+              </div>
+              {nextStop ? (
+                <div className="overview-next-stop">
+                  <strong>{nextStop.activity}</strong>
+                  <span>{formatDayLabel(nextStop.day, trip.startDate)} · {nextStop.startTime} · {nextStop.place}</span>
+                  <p>{nextStop.transportation || "ดูรายละเอียดในแผนการเดินทาง"}</p>
+                </div>
+              ) : (
+                <p className="overview-muted">ยังไม่มี itinerary ในแผนนี้</p>
+              )}
+            </section>
+
+            <section className="overview-panel" aria-label="Budget snapshot">
+              <div className="overview-panel-title">
+                <Icon name="wallet" />
+                <h2>งบทริปโดยรวม</h2>
+              </div>
+              <strong>HK${expenseSummary.groupSpend.toLocaleString("en-HK")}</strong>
+              <span>สรุปรายจ่ายรวมของทริป</span>
+            </section>
+          </>
+        ) : null}
+
+        {isManagerLens ? (
+          <>
+            <section className="overview-panel overview-panel--wide" aria-label="Next important stop">
+          <div className="overview-panel-title">
+            <Icon name="route" />
+            <h2>จุดถัดไปในแผน</h2>
+          </div>
+          {nextStop ? (
+            <div className="overview-next-stop">
+              <strong>{nextStop.activity}</strong>
+              <span>{formatDayLabel(nextStop.day, trip.startDate)} · {nextStop.startTime} · {nextStop.place}</span>
+              <p>{nextStop.transportation || "ยังไม่มีข้อมูลการเดินทาง"}</p>
+            </div>
+          ) : (
+            <p className="overview-muted">ยังไม่มี itinerary ในแผนนี้</p>
+          )}
+            </section>
+
+            <section className="overview-panel overview-panel--health" aria-label="Trip readiness">
+          <div className="overview-panel-title">
+            <Icon name="check" />
+            <h2>ความพร้อมก่อนเดินทาง</h2>
+          </div>
+          <div className="overview-health-grid">
+            <span><strong>{myOpenTasks}</strong> เช็กลิสต์ของฉัน</span>
+            <span><strong>{sharedOpenTasks}</strong> เช็กลิสต์ที่แชร์</span>
+            <span><strong>{pendingSuggestions}</strong> เรื่องรอคุย</span>
+          </div>
+            </section>
+
+            <section className="overview-panel" aria-label="Planning alerts">
+          <div className="overview-panel-title">
+            <Icon name="alertCircle" />
+            <h2>การแจ้งเตือน</h2>
+          </div>
+          <strong>{warningCount + pendingSuggestions}</strong>
+          <span>{warningCount} จุดควรตรวจ และ {pendingSuggestions} ข้อเสนอรอพิจารณา</span>
+            </section>
+
+            <section className="overview-panel" aria-label="Budget snapshot">
+          <div className="overview-panel-title">
+            <Icon name="wallet" />
+            <h2>งบประมาณ</h2>
+          </div>
+          <strong>{expenseSummary.currentUserNetLabel}</strong>
+          <span>{expenseSummary.settlementSuggestions.length} รายการชำระคืนที่แนะนำ</span>
+            </section>
+
+            <section className="overview-panel overview-task-panel" aria-label="Trip checklist">
+          <div className="overview-panel-title">
+            <Icon name="check" />
+            <h2>เช็กลิสต์ทริป</h2>
+          </div>
+          <div className="overview-task-toolbar">
+            <div className="overview-task-filters" role="group" aria-label="Checklist scope filters">
+              <button className={taskScope === "mine" ? "overview-task-filter overview-task-filter--active" : "overview-task-filter"} type="button" onClick={() => setTaskScope("mine")}>ของฉัน</button>
+              <button className={taskScope === "trip" ? "overview-task-filter overview-task-filter--active" : "overview-task-filter"} type="button" onClick={() => setTaskScope("trip")}>แชร์ในทริป</button>
+              <button className={taskScope === "all" ? "overview-task-filter overview-task-filter--active" : "overview-task-filter"} type="button" onClick={() => setTaskScope("all")}>ทั้งหมด</button>
+            </div>
+            <div className="overview-task-filters" role="group" aria-label="Checklist status filters">
+              <button className={taskStatusFilter === "all" ? "overview-task-filter overview-task-filter--active" : "overview-task-filter"} type="button" onClick={() => setTaskStatusFilter("all")}>ทุกสถานะ</button>
+              <button className={taskStatusFilter === "open" ? "overview-task-filter overview-task-filter--active" : "overview-task-filter"} type="button" onClick={() => setTaskStatusFilter("open")}>ค้าง</button>
+              <button className={taskStatusFilter === "done" ? "overview-task-filter overview-task-filter--active" : "overview-task-filter"} type="button" onClick={() => setTaskStatusFilter("done")}>เสร็จแล้ว</button>
+            </div>
+          </div>
+          <form className="overview-task-form" onSubmit={submitTask}>
+            <label>
+              <span>เพิ่มเช็กลิสต์</span>
+              <input value={newTaskTitle} onChange={(event) => setNewTaskTitle(event.target.value)} placeholder="เช่น จองร้านอาหาร" />
+            </label>
+            <label>
+              <span>เก็บไว้ที่</span>
+              <select value={newTaskVisibility} onChange={(event) => setNewTaskVisibility(event.target.value as TripTask["visibility"])}>
+                <option value="private">ส่วนตัว</option>
+                <option value="shared">แชร์ในทริป</option>
+              </select>
+            </label>
+            <label>
+              <span>ให้ใครดูแล</span>
+              <select value={newTaskAssigneeId} disabled={newTaskVisibility === "private"} onChange={(event) => setNewTaskAssigneeId(event.target.value)}>
+                <option value="">ยังไม่ระบุ</option>
+                {assignableMembers.map((member) => (
+                  <option key={member.id} value={member.id}>{member.displayName}</option>
+                ))}
+              </select>
+            </label>
+            <button type="submit" disabled={!newTaskTitle.trim()}>เพิ่มเช็กลิสต์</button>
+          </form>
+          {visibleTasks.length ? (
+            <ul className="overview-task-list">
+              {visibleTasks.map((task) => (
+                <li className="overview-task-item" key={task.id} aria-label={task.title} data-status={task.status}>
+                  <label>
+                    <input type="checkbox" checked={task.status === "done"} onChange={() => onToggleTaskStatus(task.id)} />
+                    <span>{task.title}</span>
+                  </label>
+                  <div className="overview-task-meta">
+                    <small className={`overview-task-scope overview-task-scope--${task.visibility}`}>{task.visibility === "private" ? "ส่วนตัว" : "แชร์ในทริป"}</small>
+                    <small>{assigneeLabel(task, trip)}</small>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="overview-muted">ไม่มีงานในตัวกรองนี้</p>
+          )}
+            </section>
+          </>
+        ) : null}
+      </div>
+    </section>
+  );
+}
+
+type OverviewRoleLens = "manager" | "traveler" | "viewer";
+
+function overviewRoleLens(member?: Member): OverviewRoleLens {
+  if (member?.role === "owner" || member?.role === "organizer") return "manager";
+  if (member?.role === "traveler") return "traveler";
+  return "viewer";
+}
+
+function roleHeading(roleLens: OverviewRoleLens): string {
+  if (roleLens === "manager") return "คุมทริปให้พร้อม";
+  if (roleLens === "traveler") return "เที่ยวอะไรต่อ";
+  return "ดูภาพรวมทริป";
+}
+
+function OverviewStopList({ items, startDate }: { items: ItineraryItem[]; startDate: string }) {
+  if (!items.length) return <p className="overview-muted">ยังไม่มีไฮไลต์ในแผนนี้</p>;
+
+  return (
+    <ul className="overview-stop-list">
+      {items.map((item) => (
+        <li key={item.id}>
+          <span>{formatDayLabel(item.day, startDate)} · {item.startTime}</span>
+          <strong>{item.activity}</strong>
+          <small>{item.place}</small>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function isMyTask(task: TripTask, currentMemberId: string): boolean {
+  return task.createdBy === currentMemberId || task.assigneeId === currentMemberId;
+}
+
+function assigneeLabel(task: TripTask, trip: Trip): string {
+  if (task.visibility === "private") return "ของฉัน";
+  if (!task.assigneeId) return "ยังไม่ระบุผู้รับผิดชอบ";
+  return trip.members.find((member) => member.id === task.assigneeId)?.displayName ?? "สมาชิกในทริป";
+}
+
+function OverviewStat({ icon, label, value }: { icon: "calendar" | "location" | "users" | "wallet"; label: string; value: string }) {
+  return (
+    <div className="overview-stat">
+      <Icon name={icon} />
+      <span>{label}</span>
+      <strong>{value}</strong>
+    </div>
+  );
+}
