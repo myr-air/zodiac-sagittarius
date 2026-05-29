@@ -660,8 +660,8 @@ async fn account_trip_history_filters_disabled_members_and_deleted_trips(pool: s
     let (stats_status, stats): (StatusCode, Value) = response_json(stats_response).await;
 
     assert_eq!(stats_status, StatusCode::OK);
-    assert_eq!(stats["tripsTotal"], 3);
-    assert_eq!(stats["tripsOwned"], 2);
+    assert_eq!(stats["tripsTotal"], 1);
+    assert_eq!(stats["tripsOwned"], 1);
     assert_eq!(stats["activeTrips"], 1);
 }
 

@@ -150,7 +150,7 @@ async fn assert_invalid_request(response: Response<axum::body::Body>) {
 }
 
 #[sqlx::test(migrations = "../../migrations")]
-async fn email_login_start_creates_dev_challenge(pool: sqlx::PgPool) {
+async fn email_login_start_creates_and_reuses_active_challenge(pool: sqlx::PgPool) {
     let app = support::app(pool.clone());
 
     let (body, dev_code) = start_email_login_with_code(&pool, app, " Aom@Example.COM ").await;
@@ -175,8 +175,18 @@ async fn email_login_start_creates_dev_challenge(pool: sqlx::PgPool) {
 
     let (second_body, second_code) =
         start_email_login_with_code(&pool, support::app(pool.clone()), "aom@example.com").await;
-    assert_ne!(second_body["challengeId"], body["challengeId"]);
-    assert_eq!(second_code.len(), 6);
+    assert_eq!(second_body["challengeId"], body["challengeId"]);
+    assert_eq!(second_code, dev_code);
+
+    let outbox_count: i64 = sqlx::query_scalar(
+        "select count(*)
+         from email_login_outbox
+         where normalized_email = 'aom@example.com'",
+    )
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(outbox_count, 1);
 }
 
 #[sqlx::test(migrations = "../../migrations")]
@@ -636,7 +646,7 @@ async fn repeated_wrong_codes_lock_email_login_challenge(pool: sqlx::PgPool) {
     assert!(locked.2.is_none());
 
     let correct_after_lock = post_json(
-        app,
+        app.clone(),
         "/v1/account/email-login/finish",
         json!({
             "challengeId": start["challengeId"],
@@ -647,6 +657,31 @@ async fn repeated_wrong_codes_lock_email_login_challenge(pool: sqlx::PgPool) {
     )
     .await;
     assert_eq!(correct_after_lock.status(), StatusCode::UNAUTHORIZED);
+
+    let fresh_start_while_locked = post_json(
+        app.clone(),
+        "/v1/account/email-login/start",
+        json!({"email": " AOM@example.com "}),
+    )
+    .await;
+    assert_eq!(fresh_start_while_locked.status(), StatusCode::UNAUTHORIZED);
+
+    sqlx::query(
+        "update email_login_challenges
+         set expires_at = now() - interval '1 minute'
+         where id = $1",
+    )
+    .bind(challenge_id)
+    .execute(&pool)
+    .await
+    .unwrap();
+
+    let (fresh_start_after_expiry, _fresh_code) =
+        start_email_login_with_code(&pool, app, "aom@example.com").await;
+    assert_ne!(
+        fresh_start_after_expiry["challengeId"],
+        start["challengeId"]
+    );
 }
 
 #[sqlx::test(migrations = "../../migrations")]

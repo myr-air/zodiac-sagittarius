@@ -55,6 +55,27 @@ pub async fn lock_email_login_challenge(
     .await
 }
 
+pub async fn lock_active_email_login_challenge_for_email(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    normalized_email: &str,
+    now: OffsetDateTime,
+) -> Result<Option<EmailLoginChallengeRecord>, sqlx::Error> {
+    sqlx::query_as::<_, EmailLoginChallengeRecord>(
+        "select id, normalized_email, code_hash, attempt_count, expires_at, locked_at, consumed_at
+         from email_login_challenges
+         where normalized_email = $1
+           and consumed_at is null
+           and expires_at > $2
+         order by created_at desc
+         limit 1
+         for update",
+    )
+    .bind(normalized_email)
+    .bind(now)
+    .fetch_optional(&mut **tx)
+    .await
+}
+
 pub async fn insert_email_login_outbox(
     tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
     message: NewEmailLoginOutbox<'_>,
@@ -349,8 +370,15 @@ pub async fn get_account_trip_stats(
 ) -> Result<AccountTripStatsRecord, sqlx::Error> {
     sqlx::query_as::<_, AccountTripStatsRecord>(
         "select
-           count(trip_members.id) as trips_total,
-           count(trip_members.id) filter (where trip_members.role = 'owner') as trips_owned,
+           count(trip_members.id) filter (
+             where trip_members.access_status = 'active'
+               and trips.deleted_at is null
+           ) as trips_total,
+           count(trip_members.id) filter (
+             where trip_members.role = 'owner'
+               and trip_members.access_status = 'active'
+               and trips.deleted_at is null
+           ) as trips_owned,
            count(trip_members.id) filter (
              where trip_members.access_status = 'active'
                and trips.deleted_at is null

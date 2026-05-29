@@ -51,11 +51,33 @@ pub async fn start_email_login(
     email: &str,
 ) -> Result<EmailLoginStartResponse, ServiceError> {
     let normalized_email = normalize_email(email)?;
+    let now = OffsetDateTime::now_utc();
+    let mut tx = pool.begin().await?;
+
+    if let Some(active_challenge) =
+        db::account_queries::lock_active_email_login_challenge_for_email(
+            &mut tx,
+            &normalized_email,
+            now,
+        )
+        .await?
+    {
+        if active_challenge.locked_at.is_some()
+            || active_challenge.attempt_count >= MAX_EMAIL_LOGIN_ATTEMPTS
+        {
+            return Err(ServiceError::Unauthenticated);
+        }
+        tx.commit().await?;
+        return Ok(EmailLoginStartResponse {
+            challenge_id: active_challenge.id,
+            expires_at: format_timestamp(active_challenge.expires_at),
+        });
+    }
+
     let challenge_id = Uuid::now_v7();
     let code = generate_email_login_code();
     let code_hash = hash_email_login_code(challenge_id, &code);
-    let expires_at = OffsetDateTime::now_utc() + CHALLENGE_TTL;
-    let mut tx = pool.begin().await?;
+    let expires_at = now + CHALLENGE_TTL;
 
     db::account_queries::insert_email_login_challenge(
         &mut tx,
