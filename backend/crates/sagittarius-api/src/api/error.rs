@@ -22,22 +22,27 @@ pub async fn not_found() -> impl IntoResponse {
 
 impl IntoResponse for ServiceError {
     fn into_response(self) -> axum::response::Response {
-        let (status, code) = match self {
-            ServiceError::InvalidRequest(_) => (StatusCode::BAD_REQUEST, "invalid_request"),
-            ServiceError::Unauthenticated => (StatusCode::UNAUTHORIZED, "unauthenticated"),
-            ServiceError::Forbidden => (StatusCode::FORBIDDEN, "forbidden"),
-            ServiceError::NotFound => (StatusCode::NOT_FOUND, "not_found"),
-            ServiceError::VersionConflict => (StatusCode::CONFLICT, "version_conflict"),
-            ServiceError::Database(_) => (StatusCode::INTERNAL_SERVER_ERROR, "database_error"),
+        let (status, code, message) = match self {
+            ServiceError::InvalidRequest(_) => {
+                (StatusCode::BAD_REQUEST, "invalid_request", self.to_string())
+            }
+            ServiceError::Unauthenticated => (
+                StatusCode::UNAUTHORIZED,
+                "unauthenticated",
+                self.to_string(),
+            ),
+            ServiceError::Forbidden => (StatusCode::FORBIDDEN, "forbidden", self.to_string()),
+            ServiceError::NotFound => (StatusCode::NOT_FOUND, "not_found", self.to_string()),
+            ServiceError::VersionConflict => {
+                (StatusCode::CONFLICT, "version_conflict", self.to_string())
+            }
+            ServiceError::Database(_) => (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "database_error",
+                "database error".to_string(),
+            ),
         };
 
-        (
-            status,
-            Json(ErrorBody {
-                code,
-                message: self.to_string(),
-            }),
-        )
-            .into_response()
+        (status, Json(ErrorBody { code, message })).into_response()
     }
 }

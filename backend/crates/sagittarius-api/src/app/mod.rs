@@ -15,7 +15,7 @@ pub struct AppState {
 impl AppState {
     pub fn test() -> Self {
         Self {
-            realtime: RealtimeHub::default(),
+            realtime: RealtimeHub,
         }
     }
 }
