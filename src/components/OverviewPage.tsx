@@ -34,6 +34,8 @@ export function OverviewPage({ trip, currentMemberId, expenseSummary, items, sug
   const assignableMembers = trip.members.filter((member) => member.id !== "member-viewer" && member.accessStatus !== "disabled");
   const myOpenTasks = tasks.filter((task) => task.status === "open" && isMyTask(task, currentMemberId)).length;
   const sharedOpenTasks = tasks.filter((task) => task.status === "open" && task.visibility === "shared").length;
+  const bookingTasks = tasks.filter((task) => task.kind === "booking" || task.relatedItemId || task.title.includes("จอง"));
+  const nextDayItems = nextStop ? sortedItems.filter((item) => item.day === nextStop.day).slice(0, 4) : [];
   const foodStops = sortedItems.filter((item) => item.activityType === "food").slice(0, 3);
   const tripHighlights = sortedItems.filter((item) => ["attraction", "experience", "shopping"].includes(item.activityType)).slice(0, 4);
   const viewerHighlights = sortedItems.filter((item) => item.activityType !== "travel").slice(0, 5);
@@ -95,10 +97,10 @@ export function OverviewPage({ trip, currentMemberId, expenseSummary, items, sug
       <div className="overview-grid">
         {isTravelerLens ? (
           <>
-            <section className="overview-panel overview-panel--wide" aria-label="Next important stop">
+            <section className="overview-panel overview-panel--wide" aria-label="Today and next focus">
               <div className="overview-panel-title">
                 <Icon name="route" />
-                <h2>จุดแรกในแผน</h2>
+                <h2>วันนี้ต้องโฟกัส</h2>
               </div>
               {nextStop ? (
                 <div className="overview-next-stop">
@@ -109,6 +111,7 @@ export function OverviewPage({ trip, currentMemberId, expenseSummary, items, sug
               ) : (
                 <p className="overview-muted">ยังไม่มี itinerary ในแผนนี้</p>
               )}
+              <OverviewFocusList items={nextDayItems} startDate={trip.startDate} />
             </section>
 
             <section className="overview-panel overview-panel--wide" aria-label="Traveler highlights">
@@ -208,10 +211,10 @@ export function OverviewPage({ trip, currentMemberId, expenseSummary, items, sug
 
         {isManagerLens ? (
           <>
-            <section className="overview-panel overview-panel--wide" aria-label="Next important stop">
+            <section className="overview-panel overview-panel--wide" aria-label="Today and next focus">
           <div className="overview-panel-title">
             <Icon name="route" />
-            <h2>จุดถัดไปในแผน</h2>
+            <h2>วันนี้ต้องโฟกัส</h2>
           </div>
           {nextStop ? (
             <div className="overview-next-stop">
@@ -222,6 +225,7 @@ export function OverviewPage({ trip, currentMemberId, expenseSummary, items, sug
           ) : (
             <p className="overview-muted">ยังไม่มี itinerary ในแผนนี้</p>
           )}
+          <OverviewFocusList items={nextDayItems} startDate={trip.startDate} />
             </section>
 
             <section className="overview-panel overview-panel--health" aria-label="Trip readiness">
@@ -234,6 +238,27 @@ export function OverviewPage({ trip, currentMemberId, expenseSummary, items, sug
             <span><strong>{sharedOpenTasks}</strong> เช็กลิสต์ที่แชร์</span>
             <span><strong>{pendingSuggestions}</strong> เรื่องรอคุย</span>
           </div>
+            </section>
+
+            <section className="overview-panel overview-panel--wide" aria-label="Booking and prep tracker">
+          <div className="overview-panel-title">
+            <Icon name="check" />
+            <h2>การจองและเตรียมตัว</h2>
+          </div>
+          <ul className="overview-task-list">
+            {bookingTasks.map((task) => (
+              <li className="overview-task-item" key={task.id} aria-label={task.title} data-status={task.status}>
+                <label>
+                  <input type="checkbox" checked={task.status === "done"} onChange={() => onToggleTaskStatus(task.id)} />
+                  <span>{task.title}</span>
+                </label>
+                <div className="overview-task-meta">
+                  <small className="overview-task-scope overview-task-scope--shared">{task.kind === "booking" ? "การจอง" : "เตรียมตัว"}</small>
+                  <small>{task.relatedItemId ? stopLabel(task.relatedItemId, items) : assigneeLabel(task, trip)}</small>
+                </div>
+              </li>
+            ))}
+          </ul>
             </section>
 
             <section className="overview-panel" aria-label="Planning alerts">
@@ -348,6 +373,25 @@ function OverviewStopList({ items, startDate }: { items: ItineraryItem[]; startD
       ))}
     </ul>
   );
+}
+
+function OverviewFocusList({ items, startDate }: { items: ItineraryItem[]; startDate: string }) {
+  if (items.length <= 1) return null;
+
+  return (
+    <ul className="overview-focus-list" aria-label="Today focus stops">
+      {items.slice(1).map((item) => (
+        <li key={item.id}>
+          <span>{formatDayLabel(item.day, startDate)} · {item.startTime}</span>
+          <strong>{item.activity}</strong>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function stopLabel(itemId: string, items: ItineraryItem[]): string {
+  return items.find((item) => item.id === itemId)?.activity ?? "จุดในแผน";
 }
 
 function isMyTask(task: TripTask, currentMemberId: string): boolean {

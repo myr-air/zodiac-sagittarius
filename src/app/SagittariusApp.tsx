@@ -24,7 +24,8 @@ import {
 import { buildExpenseSummary } from "@/src/trip/expenses";
 import { tripStorageKey } from "@/src/trip/repository";
 import { seedTrip } from "@/src/trip/seed";
-import type { ItineraryItem, Suggestion, Trip, TripMemberAccessStatus, TripParticipantSession, TripRole, TripTask } from "@/src/trip/types";
+import { approveSuggestion } from "@/src/trip/suggestions";
+import type { ItineraryItem, StopNote, Suggestion, Trip, TripMemberAccessStatus, TripParticipantSession, TripRole, TripTask } from "@/src/trip/types";
 
 const seedSuggestions: Suggestion[] = [
   {
@@ -35,7 +36,7 @@ const seedSuggestions: Suggestion[] = [
     targetItemId: "item-dimdim",
     planVariantId: seedTrip.activePlanVariantId,
     proposedPatch: { note: "ร้านนี้ได้รับคะแนนสูง 4.3/5 จาก 8,332 รีวิว" },
-    sourceVersion: 1,
+    sourceVersion: 4,
     status: "pending",
     createdAt: "2026-05-27T13:00:00.000Z",
   },
@@ -54,12 +55,23 @@ const seedSuggestions: Suggestion[] = [
 ];
 
 const seedTasks: TripTask[] = [
-  { id: "task-esim", title: "ซื้อ eSIM", status: "open", visibility: "private", createdBy: "member-aom", assigneeId: "member-aom" },
-  { id: "task-peak-tram", title: "จอง Peak Tram", status: "done", visibility: "shared", createdBy: "member-beam", assigneeId: "member-beam", relatedItemId: "item-peak" },
-  { id: "task-expenses", title: "สรุปค่าใช้จ่ายวันแรก", status: "open", visibility: "shared", createdBy: "member-beam", assigneeId: "member-beam" },
+  { id: "task-esim", title: "ซื้อ eSIM", status: "open", visibility: "private", kind: "prep", createdBy: "member-aom", assigneeId: "member-aom" },
+  { id: "task-peak-tram", title: "จอง Peak Tram", status: "done", visibility: "shared", kind: "booking", createdBy: "member-beam", assigneeId: "member-beam", relatedItemId: "item-victoria-peak" },
+  { id: "task-dimdim-booking", title: "ยืนยันคิว Dim Dim Sum", status: "open", visibility: "shared", kind: "booking", createdBy: "member-beam", assigneeId: "member-beam", relatedItemId: "item-dimdim" },
+  { id: "task-expenses", title: "สรุปค่าใช้จ่ายวันแรก", status: "open", visibility: "shared", kind: "prep", createdBy: "member-beam", assigneeId: "member-beam" },
 ];
 
 const localMutationTimestamp = "2026-05-28T00:00:00.000Z";
+const seedStopNotes: StopNote[] = [
+  {
+    id: "note-dimdim-1",
+    tripId: seedTrip.id,
+    itemId: "item-dimdim",
+    authorId: "member-beam",
+    body: "ลองไปเช้าหน่อย ถ้าคิวยาวให้สลับกับ coffee break",
+    createdAt: "2026-05-27T12:30:00.000Z",
+  },
+];
 
 export type PlanningView = "overview" | "itinerary" | "map" | "timeline" | "members";
 
@@ -77,6 +89,7 @@ export function SagittariusApp({ initialView = "overview", requireJoin = false }
   const [participantSession, setParticipantSession] = useState<TripParticipantSession | null>(null);
   const [suggestions, setSuggestions] = useState<Suggestion[]>(seedSuggestions);
   const [tasks, setTasks] = useState<TripTask[]>(seedTasks);
+  const [stopNotes, setStopNotes] = useState<StopNote[]>(seedStopNotes);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [contextRailOpen, setContextRailOpen] = useState(false);
   const [contextRailMounted, setContextRailMounted] = useState(false);
@@ -365,6 +378,7 @@ export function SagittariusApp({ initialView = "overview", requireJoin = false }
         title,
         status: "open",
         visibility,
+        kind: "prep",
         createdBy: currentMember.id,
         assigneeId: visibility === "shared" ? input.assigneeId || null : currentMember.id,
       },
@@ -384,9 +398,45 @@ export function SagittariusApp({ initialView = "overview", requireJoin = false }
     );
   }
 
+  function createStopNote(input: { itemId: string; body: string }) {
+    const body = input.body.trim();
+    if (!body || !canCreateSuggestion && !canEdit) return;
+    setStopNotes((current) => [
+      ...current,
+      {
+        id: nextLocalStopNoteId(current),
+        tripId: trip.id,
+        itemId: input.itemId,
+        authorId: currentMember.id,
+        body,
+        createdAt: new Date().toISOString(),
+      },
+    ]);
+  }
+
+  function reviewSuggestion(suggestionId: string, decision: "approved" | "rejected") {
+    if (!canReviewSuggestions) return;
+    if (decision === "rejected") {
+      setSuggestions((current) => current.map((suggestion) => (suggestion.id === suggestionId ? { ...suggestion, status: "rejected" } : suggestion)));
+      return;
+    }
+
+    const suggestion = suggestions.find((candidate) => candidate.id === suggestionId);
+    if (!suggestion) return;
+    const result = approveSuggestion(trip.itineraryItems, suggestion);
+    if (result.status === "approved") {
+      commitTrip((current) => ({ ...current, itineraryItems: result.items }));
+    }
+    setSuggestions((current) => current.map((candidate) => (candidate.id === suggestionId ? result.suggestion : candidate)));
+  }
+
   if (requireJoin && !sessionMember) {
     return <TripJoinGate trip={trip} onTripChange={replaceTripFromJoin} onAuthenticated={authenticateParticipant} />;
   }
+
+  const isPlanningView = initialView === "itinerary" || initialView === "map" || initialView === "timeline";
+  const supportsContextRail = initialView === "itinerary" || initialView === "timeline";
+  const showItineraryActions = isPlanningView;
 
   return (
     <AppShell
@@ -398,49 +448,49 @@ export function SagittariusApp({ initialView = "overview", requireJoin = false }
       onToggleCollapsed={() => setSidebarCollapsed((current) => !current)}
     >
       <main className="workspace-shell">
-        {initialView === "members" || initialView === "overview" ? null : (
-          <CommandBar
-            trip={trip}
-            currentMemberId={currentMember.id}
-            canEdit={canEdit}
-            canUndo={tripState.past.length > 0}
-            canRedo={tripState.future.length > 0}
-            contextRailOpen={contextRailOpen}
-            showDetailsToggle={initialView !== "map"}
-            canSwitchMember={!requireJoin || canTripRole(currentMember.role, "managePeople")}
-            onChangeMember={setCurrentMemberId}
-            onAddStop={addStop}
-            onUndo={undo}
-            onRedo={redo}
-            onToggleContextRail={() => setContextRailVisibility(!contextRailOpen)}
-          />
-        )}
-        {initialView === "members" ? (
-          <TripMembersPage
-            trip={trip}
-            currentMember={currentMember}
-            canManagePeople={canManagePeople}
-            onChangeMemberAccessStatus={changeMemberAccessStatus}
-            onChangeMemberPassword={changeMemberPassword}
-            onChangeMemberRole={changeMemberRole}
-            onCreateMember={createMember}
-            onResetMemberClaim={resetMemberClaim}
-          />
-        ) : initialView === "overview" ? (
-          <OverviewPage
-            trip={trip}
-            currentMemberId={currentMember.id}
-            expenseSummary={expenseSummary}
-            items={planItems}
-            suggestions={suggestions}
-            tasks={tasks}
-            onCreateTask={createTask}
-            onToggleTaskStatus={toggleTaskStatus}
-          />
-        ) : (
-          <div className="workspace-grid" data-context-rail={contextRailOpen ? "open" : "closed"}>
-            <div className="planning-main">
-              {initialView === "itinerary" ? (
+        <CommandBar
+          trip={trip}
+          currentMemberId={currentMember.id}
+          canEdit={canEdit}
+          canUndo={tripState.past.length > 0}
+          canRedo={tripState.future.length > 0}
+          contextRailOpen={contextRailOpen}
+          showAddStop={showItineraryActions}
+          showDetailsToggle={supportsContextRail}
+          showHistoryControls={showItineraryActions}
+          showMoreActions={showItineraryActions}
+          canSwitchMember={!requireJoin || canTripRole(currentMember.role, "managePeople")}
+          onChangeMember={setCurrentMemberId}
+          onAddStop={addStop}
+          onUndo={undo}
+          onRedo={redo}
+          onToggleContextRail={() => setContextRailVisibility(!contextRailOpen)}
+        />
+        <div className="workspace-grid" data-context-rail={contextRailOpen ? "open" : "closed"}>
+          <div className="planning-main">
+            {initialView === "members" ? (
+              <TripMembersPage
+                trip={trip}
+                currentMember={currentMember}
+                canManagePeople={canManagePeople}
+                onChangeMemberAccessStatus={changeMemberAccessStatus}
+                onChangeMemberPassword={changeMemberPassword}
+                onChangeMemberRole={changeMemberRole}
+                onCreateMember={createMember}
+                onResetMemberClaim={resetMemberClaim}
+              />
+            ) : initialView === "overview" ? (
+              <OverviewPage
+                trip={trip}
+                currentMemberId={currentMember.id}
+                expenseSummary={expenseSummary}
+                items={planItems}
+                suggestions={suggestions}
+                tasks={tasks}
+                onCreateTask={createTask}
+                onToggleTaskStatus={toggleTaskStatus}
+              />
+            ) : initialView === "itinerary" ? (
               <SmartItineraryTable
                 items={planItems}
                 role={currentMember.role}
@@ -449,40 +499,43 @@ export function SagittariusApp({ initialView = "overview", requireJoin = false }
                 onSelectItem={selectItem}
                 onMoveItem={moveItem}
               />
-              ) : null}
-              {initialView === "map" ? (
+            ) : initialView === "map" ? (
               <RouteMapView
                 items={planItems}
                 startDate={trip.startDate}
               />
-              ) : null}
-              {initialView === "timeline" ? (
+            ) : (
               <TimelineView
                 items={planItems}
                 selectedItemId={selectedItem.id}
                 startDate={trip.startDate}
                 onSelectItem={selectItem}
               />
-              ) : null}
-            </div>
-            {initialView !== "map" && contextRailMounted ? (
-              <ContextRail
-                trip={trip}
-                selectedItem={selectedItem}
-                suggestions={suggestions}
-                expenseSummary={expenseSummary}
-                canEdit={canEdit}
-                canCreateSuggestion={canCreateSuggestion}
-                canReviewSuggestions={canReviewSuggestions}
-                canEditExpenses={canEditExpenses}
-                open={contextRailOpen}
-                onEditSelected={() => setDialogState({ mode: "edit", item: selectedItem })}
-                onSuggestSelected={suggestSelectedStop}
-                onClose={() => setContextRailVisibility(false)}
-              />
-            ) : null}
+            )}
           </div>
-        )}
+          {supportsContextRail && contextRailMounted ? (
+            <ContextRail
+              trip={trip}
+              selectedItem={selectedItem}
+              suggestions={suggestions}
+              stopNotes={stopNotes}
+              tasks={tasks}
+              currentMember={currentMember}
+              expenseSummary={expenseSummary}
+              canEdit={canEdit}
+              canCreateSuggestion={canCreateSuggestion}
+              canReviewSuggestions={canReviewSuggestions}
+              canEditExpenses={canEditExpenses}
+              open={contextRailOpen}
+              onCreateNote={createStopNote}
+              onEditSelected={() => setDialogState({ mode: "edit", item: selectedItem })}
+              onReviewSuggestion={reviewSuggestion}
+              onSuggestSelected={suggestSelectedStop}
+              onToggleTaskStatus={toggleTaskStatus}
+              onClose={() => setContextRailVisibility(false)}
+            />
+          ) : null}
+        </div>
         {dialogState ? (
           <StopDialog
             key={dialogState.mode === "edit" ? `edit-${dialogState.item.id}` : "create-stop"}
@@ -540,6 +593,19 @@ function nextLocalTaskId(tasks: TripTask[]): string {
   while (existingIds.has(id)) {
     index += 1;
     id = `task-local-${index}`;
+  }
+
+  return id;
+}
+
+function nextLocalStopNoteId(notes: StopNote[]): string {
+  const existingIds = new Set(notes.map((note) => note.id));
+  let index = notes.filter((note) => note.id.startsWith("note-local-")).length + 1;
+  let id = `note-local-${index}`;
+
+  while (existingIds.has(id)) {
+    index += 1;
+    id = `note-local-${index}`;
   }
 
   return id;

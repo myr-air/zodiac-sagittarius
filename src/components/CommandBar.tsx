@@ -9,7 +9,10 @@ interface CommandBarProps {
   canUndo: boolean;
   canRedo: boolean;
   contextRailOpen: boolean;
+  showAddStop?: boolean;
   showDetailsToggle?: boolean;
+  showHistoryControls?: boolean;
+  showMoreActions?: boolean;
   canSwitchMember?: boolean;
   onChangeMember: (memberId: string) => void;
   onAddStop: () => void;
@@ -25,7 +28,10 @@ export function CommandBar({
   canUndo,
   canRedo,
   contextRailOpen,
+  showAddStop = true,
   showDetailsToggle = true,
+  showHistoryControls = true,
+  showMoreActions = true,
   canSwitchMember = true,
   onChangeMember,
   onAddStop,
@@ -54,10 +60,12 @@ export function CommandBar({
           <span>บันทึกแล้ว 2 นาทีที่แล้ว</span>
         </div>
 
-        <Button type="button" onClick={onAddStop} disabled={!canEdit} className="add-stop-button">
-          <Icon name="plus" />
-          เพิ่มสถานที่ / กิจกรรม
-        </Button>
+        {showAddStop ? (
+          <Button type="button" onClick={onAddStop} disabled={!canEdit} className="add-stop-button">
+            <Icon name="plus" />
+            เพิ่มสถานที่ / กิจกรรม
+          </Button>
+        ) : null}
 
         {showDetailsToggle ? (
           <button
@@ -71,15 +79,21 @@ export function CommandBar({
             <Icon name="panel" />
           </button>
         ) : null}
-        <button className="icon-button" type="button" aria-label="Undo" disabled={!canUndo} onClick={onUndo}>
-          <Icon name="undo" />
-        </button>
-        <button className="icon-button" type="button" aria-label="Redo" disabled={!canRedo} onClick={onRedo}>
-          <Icon name="redo" />
-        </button>
-        <button className="icon-button" type="button" aria-label="More actions">
-          <Icon name="dots" />
-        </button>
+        {showHistoryControls ? (
+          <>
+            <button className="icon-button" type="button" aria-label="Undo" disabled={!canUndo} onClick={onUndo}>
+              <Icon name="undo" />
+            </button>
+            <button className="icon-button" type="button" aria-label="Redo" disabled={!canRedo} onClick={onRedo}>
+              <Icon name="redo" />
+            </button>
+          </>
+        ) : null}
+        {showMoreActions ? (
+          <button className="icon-button" type="button" aria-label="More actions">
+            <Icon name="dots" />
+          </button>
+        ) : null}
       </div>
 
       {canSwitchMember ? (

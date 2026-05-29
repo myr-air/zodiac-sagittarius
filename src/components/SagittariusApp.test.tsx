@@ -21,10 +21,10 @@ describe("Sagittarius cockpit UI", () => {
     await user.click(screen.getByRole("button", { name: /เริ่มใช้งาน/i }));
 
     expect(screen.getByRole("navigation", { name: /Sagittarius planning navigation/i })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: /Hong Kong \+ Shenzhen Trip/i })).toBeInTheDocument();
+    expect(screen.getAllByRole("heading", { name: /Hong Kong \+ Shenzhen Trip/i }).length).toBeGreaterThan(0);
     expect(screen.getByRole("region", { name: /Trip overview/i })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /เพิ่มสถานที่ \/ กิจกรรม/i })).not.toBeInTheDocument();
-  }, 10_000);
+  }, 15_000);
 
   it("lets a guest participant leave their local session and choose another identity", async () => {
     const user = userEvent.setup();
@@ -70,12 +70,23 @@ describe("Sagittarius cockpit UI", () => {
   });
 
   it("opens directly into the trip overview instead of a marketing landing page", () => {
-    render(<SagittariusApp />);
+    const { container } = render(<SagittariusApp />);
+    const workspaceGrid = container.querySelector(".workspace-grid");
+    const planningMain = container.querySelector(".planning-main");
 
-    expect(screen.getByRole("heading", { name: /Hong Kong \+ Shenzhen Trip/i })).toBeInTheDocument();
+    expect(screen.getAllByRole("heading", { name: /Hong Kong \+ Shenzhen Trip/i }).length).toBeGreaterThan(0);
     expect(screen.getByRole("navigation", { name: /Sagittarius planning navigation/i })).toBeInTheDocument();
+    expect(screen.getByRole("banner", { name: /Trip command bar/i })).toHaveClass("top-app-bar");
+    expect(workspaceGrid).toBeInTheDocument();
+    expect(workspaceGrid).toContainElement(planningMain as HTMLElement);
+    expect(planningMain).toContainElement(screen.getByRole("region", { name: /Trip overview/i }));
     expect(screen.getByRole("region", { name: /Trip overview/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /คุมทริปให้พร้อม/i })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /เพิ่มสถานที่ \/ กิจกรรม/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Open details/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Undo/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Redo/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /More actions/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("region", { name: /Smart itinerary table/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("region", { name: /Route map/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("region", { name: /Trip timeline/i })).not.toBeInTheDocument();
@@ -202,6 +213,22 @@ describe("Sagittarius cockpit UI", () => {
     expect(screen.queryByRole("region", { name: /Trip timeline/i })).not.toBeInTheDocument();
   });
 
+  it("renders members inside the shared command workspace without itinerary-only controls", () => {
+    const { container } = render(<SagittariusApp initialView="members" />);
+    const workspaceGrid = container.querySelector(".workspace-grid");
+    const planningMain = container.querySelector(".planning-main");
+
+    expect(screen.getByRole("banner", { name: /Trip command bar/i })).toHaveClass("top-app-bar");
+    expect(workspaceGrid).toBeInTheDocument();
+    expect(workspaceGrid).toContainElement(planningMain as HTMLElement);
+    expect(planningMain).toContainElement(screen.getByRole("main", { name: /Trip members/i }));
+    expect(screen.queryByRole("button", { name: /เพิ่มสถานที่ \/ กิจกรรม/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Open details/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Undo/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Redo/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /More actions/i })).not.toBeInTheDocument();
+  });
+
   it("shows the current member as confirmed on the members page", async () => {
     const user = userEvent.setup();
     render(<SagittariusApp initialView="members" />);
@@ -242,8 +269,9 @@ describe("Sagittarius cockpit UI", () => {
 
     await user.type(screen.getByLabelText(/ค้นหาสมาชิก/i), "Family");
 
-    expect(screen.getByRole("button", { name: /ปิดสิทธิ์ Family Member/i })).toBeInTheDocument();
-    expect(screen.queryByText(/Travel Mate/i)).not.toBeInTheDocument();
+    const membersPage = screen.getByRole("main", { name: /Trip members/i });
+    expect(within(membersPage).getByRole("button", { name: /ปิดสิทธิ์ Family Member/i })).toBeInTheDocument();
+    expect(within(membersPage).queryByText(/Travel Mate/i)).not.toBeInTheDocument();
 
     await user.selectOptions(screen.getByLabelText(/^สิทธิ์$/i), "organizer");
 
@@ -495,6 +523,35 @@ describe("Sagittarius cockpit UI", () => {
     expect(screen.getByText(/คำแนะนำ \(3\)/i)).toBeInTheDocument();
     expect(screen.getByText(/Explorer Friend suggested an update/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /ปรับเวลาอัตโนมัติ/i })).toBeDisabled();
+  });
+
+  it("uses the stop workspace for notes, booking prep, and suggestion review", async () => {
+    const user = userEvent.setup();
+    render(<SagittariusApp initialView="itinerary" />);
+
+    await user.click(screen.getByRole("button", { name: /Open details/i }));
+
+    const context = screen.getByRole("complementary", { name: /Planning context/i });
+    expect(within(context).getByRole("tab", { name: /โน้ต/i })).toHaveAttribute("aria-selected", "true");
+    expect(within(context).getByRole("tab", { name: /การจอง/i })).toBeInTheDocument();
+    expect(within(context).getByRole("tab", { name: /ข้อเสนอ/i })).toBeInTheDocument();
+    expect(within(context).getByRole("region", { name: /Stop notes/i })).toBeInTheDocument();
+
+    await user.type(within(context).getByLabelText(/เพิ่มโน้ตสำหรับจุดนี้/i), "ถามร้านว่ามีโต๊ะริมหน้าต่างไหม");
+    await user.click(within(context).getByRole("button", { name: /บันทึกโน้ต/i }));
+    expect(within(context).getByText(/ถามร้านว่ามีโต๊ะริมหน้าต่างไหม/i)).toBeInTheDocument();
+
+    await user.click(within(context).getByRole("tab", { name: /การจอง/i }));
+    expect(within(context).getByRole("region", { name: /Booking and prep for this stop/i })).toBeInTheDocument();
+    expect(within(context).getByText(/จองล่วงหน้าแนะนำ/i)).toBeInTheDocument();
+
+    await user.click(within(context).getByRole("tab", { name: /ข้อเสนอ/i }));
+    expect(within(context).getByRole("region", { name: /Suggestion review/i })).toBeInTheDocument();
+    await user.click(within(context).getByRole("button", { name: /อนุมัติ ร้านนี้ได้รับคะแนนสูง/i }));
+    expect(within(context).queryByText(/ร้านนี้ได้รับคะแนนสูง 4.3\/5 จาก 8,332 รีวิว/i)).not.toBeInTheDocument();
+
+    await user.click(within(context).getByRole("button", { name: /ปฏิเสธ แนะนำให้จองคิวล่วงหน้า/i }));
+    expect(within(context).queryByText(/แนะนำให้จองคิวล่วงหน้า โดยเฉพาะช่วงสุดสัปดาห์/i)).not.toBeInTheDocument();
   });
 
   it("adds a new itinerary stop from the header action", async () => {

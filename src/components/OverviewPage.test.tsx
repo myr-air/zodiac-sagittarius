@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { buildExpenseSummary } from "@/src/trip/expenses";
 import { seedTrip } from "@/src/trip/seed";
@@ -12,9 +12,21 @@ const seedTasks: TripTask[] = [
 ];
 
 describe("OverviewPage role lenses", () => {
+  it("combines today focus and booking prep for managers", () => {
+    renderOverview("member-beam");
+
+    expect(screen.getByRole("region", { name: /Today and next focus/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /วันนี้ต้องโฟกัส/i })).toBeInTheDocument();
+    expect(screen.getByText(/เดินทางออกจากกรุงเทพฯ \(BKK\)/i)).toBeInTheDocument();
+    const tracker = screen.getByRole("region", { name: /Booking and prep tracker/i });
+    expect(tracker).toBeInTheDocument();
+    expect(within(tracker).getByText(/จอง Peak Tram/i)).toBeInTheDocument();
+  });
+
   it("prioritizes where to go and what to eat for travelers", () => {
     renderOverview("member-nam");
 
+    expect(screen.getByRole("region", { name: /Today and next focus/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /เที่ยวอะไรต่อ/i })).toBeInTheDocument();
     expect(screen.getByRole("region", { name: /Traveler highlights/i })).toBeInTheDocument();
     expect(screen.getByText(/อาหารเย็นที่ Temple Street Night Market/i)).toBeInTheDocument();
