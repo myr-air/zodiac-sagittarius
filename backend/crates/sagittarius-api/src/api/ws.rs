@@ -69,30 +69,53 @@ async fn stream_trip_events(
     trip_id: Uuid,
     after_event_id: Option<Uuid>,
 ) {
+    let mut receiver = realtime.subscribe();
     let Ok(replay_events) = load_events_after(&pool, trip_id, after_event_id).await else {
         let _ = socket.send(Message::Close(None)).await;
         return;
     };
 
+    let mut last_sent_event_id = after_event_id;
     for event in replay_events {
         if send_event(&mut socket, &event).await.is_err() {
             return;
         }
+        last_sent_event_id = Some(event.event_id);
     }
 
-    let mut receiver = realtime.subscribe();
     loop {
         match receiver.recv().await {
-            Ok(event) if event.trip_id == trip_id => {
+            Ok(event)
+                if should_send_live_event(
+                    trip_id,
+                    event.trip_id,
+                    event.event_id,
+                    last_sent_event_id,
+                ) =>
+            {
                 if send_event(&mut socket, &event).await.is_err() {
                     return;
                 }
+                last_sent_event_id = Some(event.event_id);
             }
             Ok(_) => {}
-            Err(broadcast::error::RecvError::Lagged(_)) => {}
+            Err(broadcast::error::RecvError::Lagged(_)) => {
+                let _ = socket.send(Message::Close(None)).await;
+                return;
+            }
             Err(broadcast::error::RecvError::Closed) => return,
         }
     }
+}
+
+pub fn should_send_live_event(
+    subscribed_trip_id: Uuid,
+    event_trip_id: Uuid,
+    event_id: Uuid,
+    last_sent_event_id: Option<Uuid>,
+) -> bool {
+    subscribed_trip_id == event_trip_id
+        && last_sent_event_id.is_none_or(|last_sent_event_id| event_id > last_sent_event_id)
 }
 
 async fn send_event(socket: &mut WebSocket, event: &RealtimeEvent) -> Result<(), axum::Error> {
