@@ -16,12 +16,13 @@ import type { Member, Trip, TripParticipantSession } from "@/src/trip/types";
 interface TripJoinGateProps {
   trip?: Trip;
   apiClient?: TripApiClient;
+  embedded?: boolean;
   onTripChange: (trip: Trip) => void;
   onAuthenticated: (session: TripParticipantSession) => void;
   onCockpitLoaded?: (cockpit: TripCockpit) => void;
 }
 
-export function TripJoinGate({ trip, apiClient, onTripChange, onAuthenticated, onCockpitLoaded }: TripJoinGateProps) {
+export function TripJoinGate({ trip, apiClient, embedded = false, onTripChange, onAuthenticated, onCockpitLoaded }: TripJoinGateProps) {
   const [step, setStep] = useState<"room" | "participant">("room");
   const [joinId, setJoinId] = useState("");
   const [tripPassword, setTripPassword] = useState("");
@@ -124,8 +125,10 @@ export function TripJoinGate({ trip, apiClient, onTripChange, onAuthenticated, o
     }
   }
 
+  const PageElement = embedded ? "section" : "main";
+
   return (
-    <main className="join-page" aria-label="Join trip">
+    <PageElement className="join-page" aria-label="Join trip">
       <section className="join-shell">
         <div className="join-hero">
           <div className="join-mark" aria-hidden="true">
@@ -219,7 +222,7 @@ export function TripJoinGate({ trip, apiClient, onTripChange, onAuthenticated, o
           </div>
         )}
       </section>
-    </main>
+    </PageElement>
   );
 }
 

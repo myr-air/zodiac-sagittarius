@@ -2,15 +2,18 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AppShell } from "@/src/components/AppShell";
+import { AccountAccessPanel } from "@/src/components/AccountAccessPanel";
 import { ContextRail } from "@/src/components/ContextRail";
 import { OverviewPage } from "@/src/components/OverviewPage";
 import { RouteMapView } from "@/src/components/RouteMapView";
 import { SmartItineraryTable } from "@/src/components/SmartItineraryTable";
 import { StopDialog, type StopFormValues } from "@/src/components/StopDialog";
 import { TimelineView } from "@/src/components/TimelineView";
-import { TripJoinGate } from "@/src/components/TripJoinGate";
 import { TripMembersPage } from "@/src/components/TripMembersPage";
+import { Button } from "@/src/components/ui";
+import { Icon } from "@/src/components/icons";
 import { createTripApiClient, type TripApiClient, type TripCockpit } from "@/src/trip/api-client";
+import { createAccountApiClient, type AccountSession } from "@/src/account/api-client";
 import {
   canTripRole,
   createTripParticipant,
@@ -29,6 +32,7 @@ import { approveSuggestion } from "@/src/trip/suggestions";
 import type { ExpenseSummary, ItineraryItem, StopNote, Suggestion, Trip, TripMemberAccessStatus, TripParticipantSession, TripRole, TripTask } from "@/src/trip/types";
 
 const localMutationTimestamp = "2026-05-28T00:00:00.000Z";
+const accountSessionStorageKey = "sagittarius-account-session";
 
 export type PlanningView = "overview" | "itinerary" | "map" | "timeline" | "members";
 
@@ -45,12 +49,18 @@ export function SagittariusApp({ initialView = "overview", requireJoin = false, 
     () => apiClient ?? (dataSource === "api" ? createTripApiClient({ baseUrl: process.env.NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL ?? "" }) : undefined),
     [apiClient, dataSource],
   );
+  const accountClient = useMemo(
+    () => createAccountApiClient({ baseUrl: process.env.NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL ?? "" }),
+    [],
+  );
   const [tripState, setTripState] = useState<{ trip: Trip; past: Trip[]; future: Trip[] }>(() => ({
     trip: seedTrip,
     past: [],
     future: [],
   }));
   const [participantSession, setParticipantSession] = useState<TripParticipantSession | null>(null);
+  const [accountSession, setAccountSession] = useState<AccountSession | null>(() => loadPersistedAccountSession());
+  const [accountClaimState, setAccountClaimState] = useState<{ status: "idle" | "saving"; message: string | null }>({ status: "idle", message: null });
   const [suggestions, setSuggestions] = useState<Suggestion[]>(() => tripFixtureSuggestions.map((suggestion) => ({ ...suggestion })));
   const [tasks, setTasks] = useState<TripTask[]>(() => tripFixtureTasks.map((task) => ({ ...task })));
   const [stopNotes, setStopNotes] = useState<StopNote[]>(() => tripFixtureStopNotes.map((note) => ({ ...note })));
@@ -103,6 +113,10 @@ export function SagittariusApp({ initialView = "overview", requireJoin = false, 
 
     return () => window.clearTimeout(timeout);
   }, [requireJoin]);
+
+  useEffect(() => {
+    persistAccountSession(accountSession);
+  }, [accountSession]);
 
   useEffect(() => {
     if (!isApiMode || !participantSession || !resolvedApiClient) return undefined;
@@ -357,6 +371,37 @@ export function SagittariusApp({ initialView = "overview", requireJoin = false, 
     setBackendExpenseSummary(cockpit.expenseSummary);
   }
 
+  async function claimCurrentMemberToAccount() {
+    if (!accountSession || !participantSession || !resolvedApiClient) return;
+    setAccountClaimState({ status: "saving", message: null });
+    try {
+      await accountClient.claimMember(
+        accountSession.sessionToken,
+        participantSession.tripId,
+        participantSession.memberId,
+        participantSession.sessionToken,
+      );
+      const cockpit = await resolvedApiClient.loadTrip(participantSession.tripId, participantSession.sessionToken);
+      replaceCockpitFromApi(cockpit);
+      setAccountClaimState({ status: "idle", message: "ผูก temp identity เข้ากับ account แล้ว" });
+    } catch (caught) {
+      setAccountClaimState({ status: "idle", message: caught instanceof Error ? caught.message : "Claim account ไม่สำเร็จ" });
+    }
+  }
+
+  async function transferOwnerToAccountMember(targetMemberId: string) {
+    if (!accountSession || !participantSession || !resolvedApiClient) return;
+    setAccountClaimState({ status: "saving", message: null });
+    try {
+      await accountClient.transferOwner(accountSession.sessionToken, participantSession.tripId, targetMemberId);
+      const cockpit = await resolvedApiClient.loadTrip(participantSession.tripId, participantSession.sessionToken);
+      replaceCockpitFromApi(cockpit);
+      setAccountClaimState({ status: "idle", message: "โอนสิทธิ owner แล้ว trip ยังมี owner 1 คนเสมอ" });
+    } catch (caught) {
+      setAccountClaimState({ status: "idle", message: caught instanceof Error ? caught.message : "โอน owner ไม่สำเร็จ" });
+    }
+  }
+
   function resetMemberClaim(memberId: string) {
     /* v8 ignore next */
     if (!canManagePeople) return;
@@ -531,12 +576,15 @@ export function SagittariusApp({ initialView = "overview", requireJoin = false, 
 
   if (requireJoin && !sessionMember) {
     return (
-      <TripJoinGate
+      <AccountAccessPanel
+        accountClient={accountClient}
+        accountSession={accountSession}
         apiClient={resolvedApiClient}
         trip={resolvedApiClient ? undefined : trip}
-        onTripChange={replaceTripFromJoin}
+        onAccountSessionChange={setAccountSession}
         onAuthenticated={authenticateParticipant}
         onCockpitLoaded={replaceCockpitFromApi}
+        onTripChange={replaceTripFromJoin}
       />
     );
   }
@@ -553,6 +601,27 @@ export function SagittariusApp({ initialView = "overview", requireJoin = false, 
       onToggleCollapsed={() => setSidebarCollapsed((current) => !current)}
     >
       <main className="workspace-shell">
+        {requireJoin ? (
+          <div className="account-claim-banner">
+            <div>
+              <strong>{accountSession ? "Account connected" : "Temp access"}</strong>
+              <span>
+                {accountSession
+                  ? currentMember.userId
+                    ? "This trip identity is already linked."
+                    : "Claim this temp trip identity to keep history and stats."
+                  : "Login from the access screen to claim this identity later."}
+              </span>
+            </div>
+            {accountSession && participantSession && !currentMember.userId ? (
+              <Button type="button" variant="secondary" onClick={() => void claimCurrentMemberToAccount()} disabled={accountClaimState.status === "saving"}>
+                <Icon name="check" />
+                Claim identity
+              </Button>
+            ) : null}
+            {accountClaimState.message ? <span className="account-claim-message">{accountClaimState.message}</span> : null}
+          </div>
+        ) : null}
         {(!requireJoin || canManagePeople) ? (
           <label className="sr-only">
             Role preview
@@ -575,6 +644,11 @@ export function SagittariusApp({ initialView = "overview", requireJoin = false, 
                 onChangeMemberRole={changeMemberRole}
                 onCreateMember={createMember}
                 onResetMemberClaim={resetMemberClaim}
+                onTransferOwnership={
+                  currentMember.role === "owner" && accountSession && participantSession && resolvedApiClient
+                    ? transferOwnerToAccountMember
+                    : undefined
+                }
               />
             ) : initialView === "overview" ? (
               <OverviewPage
@@ -764,6 +838,34 @@ function loadPersistedParticipantSession(requireJoin: boolean, trip: Trip): Trip
   } catch {
     storage.removeItem(tripParticipantSessionStorageKey);
     return null;
+  }
+}
+
+function loadPersistedAccountSession(): AccountSession | null {
+  const storage = getBrowserLocalStorage();
+  if (!storage) return null;
+  const rawSession = storage.getItem(accountSessionStorageKey);
+  if (!rawSession) return null;
+  try {
+    const session = JSON.parse(rawSession) as AccountSession;
+    if (session.kind !== "trusted" || Date.parse(session.expiresAt) <= Date.now()) {
+      storage.removeItem(accountSessionStorageKey);
+      return null;
+    }
+    return session;
+  } catch {
+    storage.removeItem(accountSessionStorageKey);
+    return null;
+  }
+}
+
+function persistAccountSession(session: AccountSession | null) {
+  const storage = getBrowserLocalStorage();
+  if (!storage) return;
+  if (session?.kind === "trusted") {
+    storage.setItem(accountSessionStorageKey, JSON.stringify(session));
+  } else {
+    storage.removeItem(accountSessionStorageKey);
   }
 }
 

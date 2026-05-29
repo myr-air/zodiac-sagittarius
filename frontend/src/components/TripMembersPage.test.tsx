@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { seedTrip } from "@/src/trip/seed";
@@ -14,6 +14,7 @@ function renderMembers(overrides: Partial<Parameters<typeof TripMembersPage>[0]>
     onChangeMemberRole: vi.fn(),
     onCreateMember: vi.fn(),
     onResetMemberClaim: vi.fn(),
+    onTransferOwnership: vi.fn(),
     ...overrides,
   };
   render(<TripMembersPage {...props} />);
@@ -56,6 +57,28 @@ describe("TripMembersPage", () => {
     expect(props.onCreateMember).toHaveBeenCalledWith({ displayName: "Guide", role: "organizer" });
 
     prompt.mockRestore();
+    confirm.mockRestore();
+  });
+
+  it("lets owners transfer ownership only to active account-linked members", async () => {
+    const user = userEvent.setup();
+    const confirm = vi.spyOn(window, "confirm").mockReturnValue(true);
+    const accountLinkedTrip = {
+      ...seedTrip,
+      members: seedTrip.members.map((member) => {
+        if (member.id === "member-nam") return { ...member, userId: "user-nam" };
+        if (member.id === "member-family") return { ...member, userId: "user-family", accessStatus: "disabled" as const };
+        return member;
+      }),
+    };
+    const props = renderMembers({ trip: accountLinkedTrip });
+
+    await user.click(screen.getByRole("button", { name: /โอน owner ให้ Explorer Friend/i }));
+
+    expect(confirm).toHaveBeenCalledWith(expect.stringContaining("Explorer Friend"));
+    expect(props.onTransferOwnership).toHaveBeenCalledWith("member-nam");
+    expect(screen.queryByRole("button", { name: /โอน owner ให้ Family Member/i })).not.toBeInTheDocument();
+
     confirm.mockRestore();
   });
 

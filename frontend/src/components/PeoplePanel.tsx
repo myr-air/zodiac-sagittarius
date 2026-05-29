@@ -10,6 +10,7 @@ export function PeoplePanel({
   onChangeMemberRole,
   onResetFilters,
   onResetMemberClaim,
+  onTransferOwnership,
 }: {
   members: Member[];
   currentMemberId: string;
@@ -20,6 +21,7 @@ export function PeoplePanel({
   onChangeMemberRole?: (memberId: string, role: Exclude<TripRole, "owner">) => void;
   onResetFilters?: () => void;
   onResetMemberClaim?: (memberId: string) => void;
+  onTransferOwnership?: (targetMemberId: string) => void;
 }) {
   return (
     <section className="detail-section people-module" aria-label="People and presence">
@@ -34,6 +36,13 @@ export function PeoplePanel({
         ) : members.map((member) => {
           const joined = Boolean(member.claimPasswordHash) || member.id === currentMemberId;
           const canChangePassword = member.id === currentMemberId || Boolean(member.claimPasswordHash);
+          const canTransferOwner = Boolean(
+            onTransferOwnership &&
+            member.id !== currentMemberId &&
+            member.role !== "owner" &&
+            member.accessStatus !== "disabled" &&
+            member.userId,
+          );
 
           return (
           <div className="person-row" data-access-status={member.accessStatus ?? "active"} key={member.id}>
@@ -83,6 +92,15 @@ export function PeoplePanel({
                     onClick={() => onChangeMemberAccessStatus?.(member.id, member.accessStatus === "disabled" ? "active" : "disabled")}
                   >
                     {member.accessStatus === "disabled" ? `เปิดสิทธิ์ ${member.displayName}` : `ปิดสิทธิ์ ${member.displayName}`}
+                  </button>
+                ) : null}
+                {canTransferOwner ? (
+                  <button
+                    className="reset-claim-button"
+                    type="button"
+                    onClick={() => onTransferOwnership?.(member.id)}
+                  >
+                    โอน owner ให้ {member.displayName}
                   </button>
                 ) : null}
               </div>

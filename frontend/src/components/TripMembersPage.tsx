@@ -14,6 +14,7 @@ interface TripMembersPageProps {
   onChangeMemberRole: (memberId: string, role: Exclude<TripRole, "owner">) => void;
   onCreateMember: (input: { displayName: string; role: Exclude<TripRole, "owner"> }) => void;
   onResetMemberClaim: (memberId: string) => void;
+  onTransferOwnership?: (targetMemberId: string) => void;
 }
 
 export function TripMembersPage({
@@ -25,6 +26,7 @@ export function TripMembersPage({
   onChangeMemberRole,
   onCreateMember,
   onResetMemberClaim,
+  onTransferOwnership,
 }: TripMembersPageProps) {
   const [query, setQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState<"all" | TripRole>("all");
@@ -92,6 +94,15 @@ export function TripMembersPage({
     const actionLabel = accessStatus === "disabled" ? "ปิดสิทธิ์" : "เปิดสิทธิ์";
     if (window.confirm(`${actionLabel} ${member.displayName}?`)) {
       onChangeMemberAccessStatus(memberId, accessStatus);
+    }
+  }
+
+  function confirmTransferOwnership(memberId: string) {
+    const member = visibleMembers.find((candidate) => candidate.id === memberId);
+    /* v8 ignore next */
+    if (!member) return;
+    if (window.confirm(`โอนสิทธิ owner ให้ ${member.displayName}? สมาชิกเป้าหมายต้องมี account แล้ว`)) {
+      onTransferOwnership?.(memberId);
     }
   }
 
@@ -255,6 +266,7 @@ export function TripMembersPage({
         onChangeMemberRole={onChangeMemberRole}
         onResetFilters={resetFilters}
         onResetMemberClaim={confirmResetClaim}
+        onTransferOwnership={onTransferOwnership ? confirmTransferOwnership : undefined}
       />
     </section>
   );

@@ -240,6 +240,277 @@ button:disabled,
   gap: 10px;
 }
 
+.account-page {
+  min-height: 100vh;
+  padding: 28px;
+  background:
+    var(--paper-grain),
+    var(--watercolor-page-wash),
+    var(--color-page);
+}
+
+.account-shell {
+  width: min(100%, 1180px);
+  margin: 0 auto;
+  display: grid;
+  gap: 16px;
+}
+
+.account-hero,
+.account-card {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: rgb(255 255 255 / 0.93);
+  box-shadow: var(--shadow-panel);
+}
+
+.account-hero {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+  padding: 18px;
+}
+
+.account-hero h1 {
+  margin: 0;
+  color: var(--color-text);
+  font-size: 30px;
+  line-height: 38px;
+}
+
+.account-hero p:not(.join-eyebrow) {
+  margin: 4px 0 0;
+  max-width: 720px;
+  color: var(--color-text-muted);
+  font-size: 14px;
+  line-height: 22px;
+}
+
+.account-hero-mark {
+  width: 52px;
+  height: 52px;
+}
+
+.account-mode-tabs {
+  display: inline-grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  width: min(100%, 420px);
+  padding: 4px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+}
+
+.account-tab {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 0;
+  border-radius: var(--radius-md);
+  color: var(--color-text-muted);
+  background: transparent;
+  font-weight: 800;
+  transition: background 180ms ease, color 180ms ease;
+}
+
+.account-tab--active {
+  color: var(--color-primary-strong);
+  background: var(--color-primary-soft);
+}
+
+.account-grid,
+.account-dashboard {
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+  gap: 14px;
+  align-items: start;
+}
+
+.account-dashboard {
+  grid-template-columns: minmax(280px, 0.8fr) minmax(0, 1.2fr);
+}
+
+.account-card {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+}
+
+.account-form label,
+.account-two-col label {
+  display: grid;
+  gap: 6px;
+  color: var(--color-text-muted);
+  font-size: 13px;
+  font-weight: 750;
+}
+
+.account-form input {
+  min-height: 42px;
+  width: 100%;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  padding: 0 12px;
+  color: var(--color-text);
+  background: var(--color-surface);
+}
+
+.account-check {
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+}
+
+.account-check input {
+  width: 18px;
+  min-height: 18px;
+}
+
+.account-panel-heading,
+.account-profile-row,
+.account-trip-row,
+.account-claim-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.account-panel-heading > span,
+.account-trip-icon {
+  width: 36px;
+  height: 36px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-md);
+  color: var(--color-primary-strong);
+  background: var(--color-primary-soft);
+}
+
+.account-panel-heading strong,
+.account-profile-row strong,
+.account-trip-row strong {
+  display: block;
+  color: var(--color-text);
+}
+
+.account-panel-heading small,
+.account-profile-row span,
+.account-trip-row span,
+.account-empty,
+.account-claim-banner span {
+  color: var(--color-text-muted);
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.account-stat-grid,
+.account-settings-grid,
+.account-two-col {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.account-stat,
+.account-setting-line {
+  min-height: 66px;
+  display: grid;
+  align-content: center;
+  gap: 2px;
+  padding: 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-subtle);
+}
+
+.account-stat strong {
+  color: var(--color-text);
+  font-size: 24px;
+  line-height: 28px;
+}
+
+.account-stat span,
+.account-setting-line span {
+  color: var(--color-text-muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.account-setting-line strong {
+  color: var(--color-text);
+  font-size: 14px;
+}
+
+.account-trip-list {
+  display: grid;
+  gap: 8px;
+}
+
+.account-trip-row {
+  min-height: 62px;
+  padding: 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-subtle);
+}
+
+.account-trip-row .badge,
+.account-profile-row .badge {
+  margin-left: auto;
+}
+
+.account-create-trip {
+  grid-row: span 2;
+}
+
+.account-success {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--color-success-border);
+  border-radius: var(--radius-md);
+  color: var(--color-success);
+  background: var(--color-success-soft);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.account-shell .join-page {
+  min-height: auto;
+  display: block;
+  padding: 0;
+  background: transparent;
+}
+
+.account-shell .join-shell {
+  width: 100%;
+  box-shadow: var(--shadow-panel);
+}
+
+.account-claim-banner {
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding: 12px;
+  border: 1px solid var(--color-route-border);
+  border-radius: var(--radius-lg);
+  background: rgb(239 246 255 / 0.86);
+}
+
+.account-claim-banner strong {
+  display: block;
+  color: var(--color-route);
+}
+
+.account-claim-message {
+  font-weight: 800;
+}
+
 .participant-card {
   min-height: 72px;
   display: grid;

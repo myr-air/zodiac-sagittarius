@@ -41,7 +41,7 @@ describe("Sagittarius cockpit UI", () => {
     const user = userEvent.setup();
     render(<SagittariusApp requireJoin />);
 
-    expect(screen.getByRole("main", { name: /Join trip/i })).toBeInTheDocument();
+    expect(screen.getByRole("main", { name: /Account access/i })).toBeInTheDocument();
     expect(screen.queryByRole("navigation", { name: /Sagittarius planning navigation/i })).not.toBeInTheDocument();
 
     await user.type(screen.getByLabelText(/Trip ID/i), "HK-SZ-2025");
@@ -70,7 +70,7 @@ describe("Sagittarius cockpit UI", () => {
 
     await user.click(screen.getByRole("button", { name: /เปลี่ยนตัวตน/i }));
 
-    expect(screen.getByRole("main", { name: /Join trip/i })).toBeInTheDocument();
+    expect(screen.getByRole("main", { name: /Account access/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /เข้าห้อง trip/i })).toBeInTheDocument();
     expect(screen.queryByRole("navigation", { name: /Sagittarius planning navigation/i })).not.toBeInTheDocument();
   });
@@ -98,6 +98,42 @@ describe("Sagittarius cockpit UI", () => {
 
     expect(screen.getByLabelText(/รหัสของ Explorer Friend/i)).toBeInTheDocument();
     expect(screen.queryByLabelText(/ตั้งรหัสสำหรับ Explorer Friend/i)).not.toBeInTheDocument();
+  });
+
+  it("does not restore temporary or expired account sessions from local storage", () => {
+    const storage = installLocalStorageStub();
+    storage.setItem(
+      "sagittarius-account-session",
+      JSON.stringify({
+        userId: "user-temp",
+        sessionToken: "temporary-account-token",
+        kind: "temporary",
+        createdAt: "2026-05-29T00:00:00.000Z",
+        expiresAt: "2099-06-28T00:00:00.000Z",
+      }),
+    );
+
+    const { unmount } = render(<SagittariusApp requireJoin />);
+
+    expect(screen.getByRole("tab", { name: /Temp access/i })).toHaveAttribute("aria-selected", "true");
+    expect(storage.getItem("sagittarius-account-session")).toBeNull();
+
+    unmount();
+    storage.setItem(
+      "sagittarius-account-session",
+      JSON.stringify({
+        userId: "user-expired",
+        sessionToken: "expired-account-token",
+        kind: "trusted",
+        createdAt: "2020-05-29T00:00:00.000Z",
+        expiresAt: "2020-06-28T00:00:00.000Z",
+      }),
+    );
+
+    render(<SagittariusApp requireJoin />);
+
+    expect(screen.getByRole("tab", { name: /Temp access/i })).toHaveAttribute("aria-selected", "true");
+    expect(storage.getItem("sagittarius-account-session")).toBeNull();
   });
 
   it("creates overview tasks through the API client after backend login", async () => {
@@ -702,7 +738,7 @@ describe("Sagittarius cockpit UI", () => {
 
     render(<SagittariusApp initialView="members" requireJoin />);
 
-    expect(screen.getByRole("main", { name: /Join trip/i })).toBeInTheDocument();
+    expect(screen.getByRole("main", { name: /Account access/i })).toBeInTheDocument();
     expect(screen.queryByRole("navigation", { name: /Sagittarius planning navigation/i })).not.toBeInTheDocument();
     expect(await screen.findByRole("navigation", { name: /Sagittarius planning navigation/i })).toBeInTheDocument();
   });
@@ -816,7 +852,7 @@ describe("Sagittarius cockpit UI", () => {
       expect(storage.getItem("sagittarius:trip-draft")).toBeNull();
       expect(storage.getItem(tripParticipantSessionStorageKey)).toBeNull();
     });
-    expect(screen.getByRole("main", { name: /Join trip/i })).toBeInTheDocument();
+    expect(screen.getByRole("main", { name: /Account access/i })).toBeInTheDocument();
   });
 
   it("keeps undo and redo harmless when there is no history", async () => {
