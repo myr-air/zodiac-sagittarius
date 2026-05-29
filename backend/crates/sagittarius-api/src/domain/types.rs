@@ -133,6 +133,55 @@ pub struct TripSummary {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub struct AccountTripCreateResponse {
+    pub trip: TripSummary,
+    pub owner_member_id: Uuid,
+    pub member_session: MemberSession,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AccountTripSummary {
+    pub id: Uuid,
+    pub name: String,
+    pub destination_label: String,
+    pub start_date: Date,
+    pub end_date: Date,
+    pub role: TripRole,
+    pub member_id: Uuid,
+    pub owner_member_id: Uuid,
+    pub joined_at: String,
+    pub is_owner: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AccountTripStats {
+    pub trips_total: i64,
+    pub trips_owned: i64,
+    pub active_trips: i64,
+    pub temp_claims_completed: i64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AccountMemberClaimResponse {
+    pub trip_id: Uuid,
+    pub member_id: Uuid,
+    pub user_id: Uuid,
+    pub role: TripRole,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OwnerTransferResponse {
+    pub trip_id: Uuid,
+    pub previous_owner_member_id: Uuid,
+    pub new_owner_member_id: Uuid,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ClaimableMember {
     pub id: Uuid,
     pub trip_id: Uuid,
@@ -348,5 +397,104 @@ mod account_type_tests {
         assert_eq!(value["challengeId"], credential_id.to_string());
         assert_eq!(value["challenge"], "challenge-payload");
         assert_eq!(value["expiresAt"], "2026-05-30T00:05:00Z");
+
+        let trip_id = Uuid::parse_str("018f4e80-0000-7000-a000-000000000003").unwrap();
+        let member_id = Uuid::parse_str("018f4e80-0000-7000-a000-000000000004").unwrap();
+        let owner_member_id = Uuid::parse_str("018f4e80-0000-7000-a000-000000000005").unwrap();
+        let new_owner_member_id = Uuid::parse_str("018f4e80-0000-7000-a000-000000000006").unwrap();
+        let plan_variant_id = Uuid::parse_str("018f4e80-0000-7000-a000-000000000007").unwrap();
+        let start_date = Date::from_calendar_date(2026, time::Month::June, 1).unwrap();
+        let end_date = Date::from_calendar_date(2026, time::Month::June, 8).unwrap();
+
+        let account_trip = AccountTripSummary {
+            id: trip_id,
+            name: "Chiang Mai".to_string(),
+            destination_label: "Chiang Mai, Thailand".to_string(),
+            start_date,
+            end_date,
+            role: TripRole::Owner,
+            member_id,
+            owner_member_id,
+            joined_at: "2026-05-30T02:00:00Z".to_string(),
+            is_owner: true,
+        };
+        let value = serde_json::to_value(account_trip).unwrap();
+        assert_eq!(value["destinationLabel"], "Chiang Mai, Thailand");
+        assert_eq!(
+            value["startDate"],
+            serde_json::to_value(start_date).unwrap()
+        );
+        assert_eq!(value["endDate"], serde_json::to_value(end_date).unwrap());
+        assert_eq!(value["memberId"], member_id.to_string());
+        assert_eq!(value["ownerMemberId"], owner_member_id.to_string());
+        assert_eq!(value["joinedAt"], "2026-05-30T02:00:00Z");
+        assert_eq!(value["isOwner"], true);
+
+        let account_trip_stats = AccountTripStats {
+            trips_total: 3,
+            trips_owned: 1,
+            active_trips: 2,
+            temp_claims_completed: 4,
+        };
+        let value = serde_json::to_value(account_trip_stats).unwrap();
+        assert_eq!(value["tripsTotal"], 3);
+        assert_eq!(value["tripsOwned"], 1);
+        assert_eq!(value["activeTrips"], 2);
+        assert_eq!(value["tempClaimsCompleted"], 4);
+
+        let member_claim = AccountMemberClaimResponse {
+            trip_id,
+            member_id,
+            user_id,
+            role: TripRole::Traveler,
+        };
+        let value = serde_json::to_value(member_claim).unwrap();
+        assert_eq!(value["tripId"], trip_id.to_string());
+        assert_eq!(value["memberId"], member_id.to_string());
+        assert_eq!(value["userId"], user_id.to_string());
+        assert_eq!(value["role"], "traveler");
+
+        let owner_transfer = OwnerTransferResponse {
+            trip_id,
+            previous_owner_member_id: owner_member_id,
+            new_owner_member_id,
+        };
+        let value = serde_json::to_value(owner_transfer).unwrap();
+        assert_eq!(value["tripId"], trip_id.to_string());
+        assert_eq!(value["previousOwnerMemberId"], owner_member_id.to_string());
+        assert_eq!(value["newOwnerMemberId"], new_owner_member_id.to_string());
+
+        let account_trip_create = AccountTripCreateResponse {
+            trip: TripSummary {
+                id: trip_id,
+                name: "Chiang Mai".to_string(),
+                destination_label: "Chiang Mai, Thailand".to_string(),
+                start_date,
+                end_date,
+                join_id: "CM2026".to_string(),
+                active_plan_variant_id: Some(plan_variant_id),
+                owner_member_id,
+                version: 1,
+            },
+            owner_member_id,
+            member_session: MemberSession {
+                trip_id,
+                member_id: owner_member_id,
+                session_token: "member-session-token".to_string(),
+                created_at: "2026-05-30T02:00:00Z".to_string(),
+                expires_at: "2026-06-06T02:00:00Z".to_string(),
+            },
+        };
+        let value = serde_json::to_value(account_trip_create).unwrap();
+        assert_eq!(value["trip"]["destinationLabel"], "Chiang Mai, Thailand");
+        assert_eq!(value["ownerMemberId"], owner_member_id.to_string());
+        assert_eq!(
+            value["memberSession"]["memberId"],
+            owner_member_id.to_string()
+        );
+        assert_eq!(
+            value["memberSession"]["sessionToken"],
+            "member-session-token"
+        );
     }
 }
