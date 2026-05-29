@@ -597,7 +597,13 @@ async fn repeated_wrong_codes_lock_email_login_challenge(pool: sqlx::PgPool) {
     let (start, code) = start_email_login_with_code(&pool, app.clone(), "aom@example.com").await;
     let challenge_id = Uuid::parse_str(start["challengeId"].as_str().unwrap()).unwrap();
 
-    for wrong_code in ["000000", "000001", "000002", "000003", "000004"] {
+    let wrong_codes: Vec<String> = (0..)
+        .map(|candidate| format!("{candidate:06}"))
+        .filter(|candidate| candidate != &code)
+        .take(5)
+        .collect();
+
+    for wrong_code in wrong_codes {
         let wrong = post_json(
             app.clone(),
             "/v1/account/email-login/finish",
