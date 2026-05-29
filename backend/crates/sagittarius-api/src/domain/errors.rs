@@ -12,6 +12,8 @@ pub enum ServiceError {
     NotFound,
     #[error("identity already linked")]
     IdentityAlreadyLinked,
+    #[error("trip join id already exists")]
+    TripJoinIdAlreadyExists,
     #[error("owner transfer invalid")]
     OwnerTransferInvalid,
     #[error("version conflict")]

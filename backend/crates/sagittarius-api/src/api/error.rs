@@ -47,6 +47,12 @@ impl IntoResponse for ServiceError {
                 self.to_string(),
                 None,
             ),
+            ServiceError::TripJoinIdAlreadyExists => (
+                StatusCode::CONFLICT,
+                "trip_join_id_already_exists",
+                self.to_string(),
+                None,
+            ),
             ServiceError::OwnerTransferInvalid => (
                 StatusCode::CONFLICT,
                 "owner_transfer_invalid",

@@ -129,6 +129,32 @@ fn date_value(year: i32, month: Month, day: u8) -> Value {
     serde_json::to_value(Date::from_calendar_date(year, month, day).unwrap()).unwrap()
 }
 
+async fn create_account_trip(
+    pool: &sqlx::PgPool,
+    auth: &str,
+    join_id: &str,
+    join_password: &str,
+) -> (StatusCode, Value) {
+    let app = support::app(pool.clone());
+    let response = post_json_with_auth(
+        app,
+        "/v1/account/trips",
+        Some(auth),
+        json!({
+            "name": format!("{join_id} Food Run"),
+            "destinationLabel": "Chiang Mai, Thailand",
+            "startDate": date_value(2026, Month::November, 4),
+            "endDate": date_value(2026, Month::November, 8),
+            "ownerDisplayName": "Aom",
+            "joinId": join_id,
+            "joinPassword": join_password
+        }),
+    )
+    .await;
+
+    response_json(response).await
+}
+
 #[sqlx::test(migrations = "../../migrations")]
 async fn account_user_can_create_trip_and_becomes_owner(pool: sqlx::PgPool) {
     let session = login_account(&pool, "owner@example.com", false, "").await;
@@ -284,6 +310,94 @@ async fn account_user_can_create_trip_and_becomes_owner(pool: sqlx::PgPool) {
     assert_eq!(audit.2, Some(user_id));
     assert_eq!(audit.3, Some(owner_member_id));
     assert_eq!(audit.4, "trip.created");
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn account_trip_join_password_hash_uses_random_salt_and_remains_joinable(pool: sqlx::PgPool) {
+    let session = login_account(&pool, "owner@example.com", false, "").await;
+    let auth = format!("Bearer {}", session["sessionToken"].as_str().unwrap());
+
+    let (first_status, first_body) =
+        create_account_trip(&pool, &auth, "random-salt-1", "shared-password-2026").await;
+    assert_eq!(first_status, StatusCode::OK);
+    let (second_status, second_body) =
+        create_account_trip(&pool, &auth, "random-salt-2", "shared-password-2026").await;
+    assert_eq!(second_status, StatusCode::OK);
+
+    let first_trip_id = Uuid::parse_str(first_body["trip"]["id"].as_str().unwrap()).unwrap();
+    let second_trip_id = Uuid::parse_str(second_body["trip"]["id"].as_str().unwrap()).unwrap();
+    let first_hash: String = sqlx::query_scalar(
+        "select join_password_hash
+         from trips
+         where id = $1",
+    )
+    .bind(first_trip_id)
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    let second_hash: String = sqlx::query_scalar(
+        "select join_password_hash
+         from trips
+         where id = $1",
+    )
+    .bind(second_trip_id)
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_ne!(first_hash, second_hash);
+
+    for join_id in ["random-salt-1", "random-salt-2"] {
+        let app = support::app(pool.clone());
+        let (status, body): (StatusCode, Value) = post_json_response(
+            app,
+            "/v1/trips/join",
+            json!({
+                "joinId": join_id,
+                "tripPassword": "shared-password-2026"
+            }),
+        )
+        .await;
+        assert_eq!(status, StatusCode::OK);
+        assert_eq!(body["trip"]["joinId"], join_id.to_ascii_uppercase());
+    }
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn duplicate_account_trip_join_id_returns_stable_conflict(pool: sqlx::PgPool) {
+    let session = login_account(&pool, "owner@example.com", false, "").await;
+    let auth = format!("Bearer {}", session["sessionToken"].as_str().unwrap());
+
+    let (first_status, _) =
+        create_account_trip(&pool, &auth, "dupe-join-id", "rice-noodle-2026").await;
+    assert_eq!(first_status, StatusCode::OK);
+    let (second_status, second_body) =
+        create_account_trip(&pool, &auth, " DUPE-JOIN-ID ", "rice-noodle-2027").await;
+
+    assert_eq!(second_status, StatusCode::CONFLICT);
+    assert_eq!(second_body["code"], "trip_join_id_already_exists");
+
+    let trip_count: i64 = sqlx::query_scalar(
+        "select count(*)
+         from trips
+         where join_id = 'DUPE-JOIN-ID'",
+    )
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(trip_count, 1);
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn account_trip_creation_rejects_oversized_join_password(pool: sqlx::PgPool) {
+    let session = login_account(&pool, "owner@example.com", false, "").await;
+    let auth = format!("Bearer {}", session["sessionToken"].as_str().unwrap());
+    let oversized_password = "p".repeat(257);
+
+    let (status, body) =
+        create_account_trip(&pool, &auth, "oversized-password", &oversized_password).await;
+
+    assert_eq!(status, StatusCode::BAD_REQUEST);
+    assert_eq!(body["code"], "invalid_request");
 }
 
 #[sqlx::test(migrations = "../../migrations")]

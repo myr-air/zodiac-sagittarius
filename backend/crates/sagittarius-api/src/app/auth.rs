@@ -136,7 +136,7 @@ pub async fn logout_session(
     Ok(())
 }
 
-fn hash_secret(secret: &str) -> Result<String, ServiceError> {
+pub(crate) fn hash_secret(secret: &str) -> Result<String, ServiceError> {
     let salt = SaltString::generate(&mut OsRng);
     hash_secret_with_salt_string(secret, &salt)
 }

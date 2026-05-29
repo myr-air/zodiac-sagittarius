@@ -31,6 +31,7 @@ const MAX_TRUSTED_DEVICE_LABEL_LENGTH: usize = 120;
 const MAX_TRIP_TEXT_LENGTH: usize = 120;
 const MAX_JOIN_ID_LENGTH: usize = 32;
 const MIN_JOIN_PASSWORD_LENGTH: usize = 8;
+const MAX_JOIN_PASSWORD_LENGTH: usize = 256;
 const MEMBER_SESSION_TTL: Duration = Duration::days(30);
 const DEFAULT_OWNER_COLOR: &str = "#0f766e";
 
@@ -208,7 +209,7 @@ pub async fn create_trip(
     let owner_member_id = Uuid::now_v7();
     let active_plan_variant_id = Uuid::now_v7();
     let now = OffsetDateTime::now_utc();
-    let join_password_hash = crate::app::auth::hash_session_token(&join_password)?;
+    let join_password_hash = crate::app::auth::hash_secret(&join_password)?;
     let mut tx = pool.begin().await?;
 
     db::account_queries::defer_constraints(&mut tx).await?;
@@ -226,7 +227,8 @@ pub async fn create_trip(
             owner_member_id,
         },
     )
-    .await?;
+    .await
+    .map_err(map_account_trip_insert_error)?;
     db::account_queries::insert_account_owner_member(
         &mut tx,
         NewAccountTripOwnerMember {
@@ -457,11 +459,29 @@ fn validate_join_id(join_id: &str) -> Result<String, ServiceError> {
 
 fn validate_join_password(join_password: &str) -> Result<String, ServiceError> {
     let trimmed = join_password.trim();
-    if trimmed.len() < MIN_JOIN_PASSWORD_LENGTH {
+    if trimmed.len() < MIN_JOIN_PASSWORD_LENGTH || trimmed.len() > MAX_JOIN_PASSWORD_LENGTH {
         return Err(ServiceError::InvalidRequest("join password is invalid"));
     }
 
     Ok(trimmed.to_string())
+}
+
+fn map_account_trip_insert_error(error: sqlx::Error) -> ServiceError {
+    if is_unique_violation_on_constraint(&error, "trips_join_id_key") {
+        ServiceError::TripJoinIdAlreadyExists
+    } else {
+        ServiceError::Database(error)
+    }
+}
+
+fn is_unique_violation_on_constraint(error: &sqlx::Error, constraint: &str) -> bool {
+    match error {
+        sqlx::Error::Database(database_error) => {
+            database_error.code().as_deref() == Some("23505")
+                && database_error.constraint() == Some(constraint)
+        }
+        _ => false,
+    }
 }
 
 fn hash_session_token(session_token: &str) -> Result<String, ServiceError> {
