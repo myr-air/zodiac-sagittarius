@@ -4,6 +4,7 @@
 storybook-static/
 .superpowers/
 .worktrees/
+backend/target/
 coverage/
 node_modules/
 playwright-report/
