@@ -127,6 +127,45 @@ pub struct NewUserSession<'a> {
     pub expires_at: OffsetDateTime,
 }
 
+pub struct NewAccountTrip<'a> {
+    pub id: Uuid,
+    pub name: &'a str,
+    pub destination_label: &'a str,
+    pub start_date: Date,
+    pub end_date: Date,
+    pub join_id: &'a str,
+    pub join_password_hash: &'a str,
+    pub active_plan_variant_id: Uuid,
+    pub owner_member_id: Uuid,
+}
+
+pub struct NewAccountTripOwnerMember<'a> {
+    pub id: Uuid,
+    pub trip_id: Uuid,
+    pub user_id: Uuid,
+    pub display_name: &'a str,
+    pub color: &'a str,
+    pub claimed_at: OffsetDateTime,
+}
+
+pub struct NewAccountPlanVariant<'a> {
+    pub id: Uuid,
+    pub trip_id: Uuid,
+    pub name: &'a str,
+    pub kind: &'a str,
+    pub description: &'a str,
+}
+
+pub struct NewAccountAuditEvent {
+    pub id: Uuid,
+    pub user_id: Uuid,
+    pub trip_id: Uuid,
+    pub actor_user_id: Uuid,
+    pub actor_member_id: Uuid,
+    pub event_type: &'static str,
+    pub payload: serde_json::Value,
+}
+
 #[derive(Debug, Clone, FromRow)]
 pub struct ActiveUserSessionRecord {
     pub user_id: Uuid,

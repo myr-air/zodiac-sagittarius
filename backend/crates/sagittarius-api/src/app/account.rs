@@ -6,14 +6,16 @@ use time::{Duration, OffsetDateTime};
 use uuid::Uuid;
 
 use crate::db::models::{
-    AccountProfileRecord, NewEmailLoginOutbox, NewTrustedDevice, NewUser, NewUserEmail,
+    AccountProfileRecord, NewAccountAuditEvent, NewAccountPlanVariant, NewAccountTrip,
+    NewAccountTripOwnerMember, NewEmailLoginOutbox, NewTrustedDevice, NewUser, NewUserEmail,
     NewUserSession, PasskeyRecord, TrustedDeviceRecord,
 };
 use crate::db::{self, PgPool};
 use crate::domain::errors::ServiceError;
 use crate::domain::types::{
-    AccountProfile, AccountSession, AccountSessionKind, AccountSettings, EmailLoginStartResponse,
-    PasskeyChallengeResponse, PasskeySummary, TrustedDeviceSummary,
+    AccountProfile, AccountSession, AccountSessionKind, AccountSettings, AccountTripCreateResponse,
+    EmailLoginStartResponse, MemberSession, PasskeyChallengeResponse, PasskeySummary, TripSummary,
+    TrustedDeviceSummary,
 };
 
 const CHALLENGE_TTL: Duration = Duration::minutes(10);
@@ -26,6 +28,21 @@ const DEFAULT_TRUSTED_DEVICE_LABEL: &str = "Trusted device";
 const MAX_EMAIL_LOGIN_ATTEMPTS: i32 = 5;
 const MAX_EMAIL_LENGTH: usize = 254;
 const MAX_TRUSTED_DEVICE_LABEL_LENGTH: usize = 120;
+const MAX_TRIP_TEXT_LENGTH: usize = 120;
+const MAX_JOIN_ID_LENGTH: usize = 32;
+const MIN_JOIN_PASSWORD_LENGTH: usize = 8;
+const MEMBER_SESSION_TTL: Duration = Duration::days(30);
+const DEFAULT_OWNER_COLOR: &str = "#0f766e";
+
+pub struct AccountTripCreateInput {
+    pub name: String,
+    pub destination_label: String,
+    pub start_date: time::Date,
+    pub end_date: time::Date,
+    pub owner_display_name: String,
+    pub join_id: String,
+    pub join_password: String,
+}
 
 pub async fn start_email_login(
     pool: &PgPool,
@@ -169,6 +186,93 @@ pub async fn authenticate_user_session(
     Ok(session.user_id)
 }
 
+pub async fn create_trip(
+    pool: &PgPool,
+    session_token: &str,
+    input: AccountTripCreateInput,
+) -> Result<AccountTripCreateResponse, ServiceError> {
+    let user_id = authenticate_user_session(pool, session_token).await?;
+    let name = validate_trip_text(&input.name, "trip name")?;
+    let destination_label = validate_trip_text(&input.destination_label, "destination label")?;
+    let owner_display_name = validate_trip_text(&input.owner_display_name, "owner display name")?;
+    let join_id = validate_join_id(&input.join_id)?;
+    let join_password = validate_join_password(&input.join_password)?;
+
+    if input.start_date > input.end_date {
+        return Err(ServiceError::InvalidRequest(
+            "start date must be on or before end date",
+        ));
+    }
+
+    let trip_id = Uuid::now_v7();
+    let owner_member_id = Uuid::now_v7();
+    let active_plan_variant_id = Uuid::now_v7();
+    let now = OffsetDateTime::now_utc();
+    let join_password_hash = crate::app::auth::hash_session_token(&join_password)?;
+    let mut tx = pool.begin().await?;
+
+    db::account_queries::defer_constraints(&mut tx).await?;
+    let trip = db::account_queries::insert_account_trip(
+        &mut tx,
+        NewAccountTrip {
+            id: trip_id,
+            name: &name,
+            destination_label: &destination_label,
+            start_date: input.start_date,
+            end_date: input.end_date,
+            join_id: &join_id,
+            join_password_hash: &join_password_hash,
+            active_plan_variant_id,
+            owner_member_id,
+        },
+    )
+    .await?;
+    db::account_queries::insert_account_owner_member(
+        &mut tx,
+        NewAccountTripOwnerMember {
+            id: owner_member_id,
+            trip_id,
+            user_id,
+            display_name: &owner_display_name,
+            color: DEFAULT_OWNER_COLOR,
+            claimed_at: now,
+        },
+    )
+    .await?;
+    db::account_queries::insert_account_plan_variant(
+        &mut tx,
+        NewAccountPlanVariant {
+            id: active_plan_variant_id,
+            trip_id,
+            name: "Main",
+            kind: "main",
+            description: "Primary plan",
+        },
+    )
+    .await?;
+    let member_session = create_member_session(&mut tx, trip_id, owner_member_id).await?;
+    db::account_queries::insert_account_audit_event(
+        &mut tx,
+        NewAccountAuditEvent {
+            id: Uuid::now_v7(),
+            user_id,
+            trip_id,
+            actor_user_id: user_id,
+            actor_member_id: owner_member_id,
+            event_type: "trip.created",
+            payload: serde_json::json!({}),
+        },
+    )
+    .await?;
+    tx.commit().await?;
+
+    Ok(AccountTripCreateResponse {
+        trip: TripSummary::from(trip),
+        owner_member_id,
+        member_session,
+    })
+}
+
 pub async fn load_settings(
     pool: &PgPool,
     session_token: &str,
@@ -301,6 +405,63 @@ fn generate_secure_token() -> String {
     let mut bytes = [0u8; 32];
     rand::rng().fill_bytes(&mut bytes);
     URL_SAFE_NO_PAD.encode(bytes)
+}
+
+async fn create_member_session(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    trip_id: Uuid,
+    member_id: Uuid,
+) -> Result<MemberSession, ServiceError> {
+    let session_token = generate_secure_token();
+    let session_token_hash = crate::app::auth::hash_session_token(&session_token)?;
+    let created_at = OffsetDateTime::now_utc();
+    let expires_at = created_at + MEMBER_SESSION_TTL;
+
+    db::queries::insert_member_session(
+        tx,
+        Uuid::now_v7(),
+        trip_id,
+        member_id,
+        &session_token_hash,
+        created_at,
+        expires_at,
+    )
+    .await?;
+
+    Ok(MemberSession {
+        trip_id,
+        member_id,
+        session_token,
+        created_at: format_timestamp(created_at),
+        expires_at: format_timestamp(expires_at),
+    })
+}
+
+fn validate_trip_text(value: &str, field: &'static str) -> Result<String, ServiceError> {
+    let trimmed = value.trim();
+    if trimmed.is_empty() || trimmed.chars().count() > MAX_TRIP_TEXT_LENGTH {
+        return Err(ServiceError::InvalidRequest(field));
+    }
+
+    Ok(trimmed.to_string())
+}
+
+fn validate_join_id(join_id: &str) -> Result<String, ServiceError> {
+    let normalized = join_id.trim().to_ascii_uppercase();
+    if normalized.is_empty() || normalized.chars().count() > MAX_JOIN_ID_LENGTH {
+        return Err(ServiceError::InvalidRequest("join id is invalid"));
+    }
+
+    Ok(normalized)
+}
+
+fn validate_join_password(join_password: &str) -> Result<String, ServiceError> {
+    let trimmed = join_password.trim();
+    if trimmed.len() < MIN_JOIN_PASSWORD_LENGTH {
+        return Err(ServiceError::InvalidRequest("join password is invalid"));
+    }
+
+    Ok(trimmed.to_string())
 }
 
 fn hash_session_token(session_token: &str) -> Result<String, ServiceError> {

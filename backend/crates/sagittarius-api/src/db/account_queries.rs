@@ -3,9 +3,10 @@ use uuid::Uuid;
 
 use crate::db::PgPool;
 use crate::db::models::{
-    AccountProfileRecord, ActiveUserSessionRecord, EmailLoginChallengeRecord, NewEmailLoginOutbox,
-    NewTrustedDevice, NewUser, NewUserEmail, NewUserSession, PasskeyRecord, TrustedDeviceRecord,
-    UserEmailRecord,
+    AccountProfileRecord, ActiveUserSessionRecord, EmailLoginChallengeRecord, NewAccountAuditEvent,
+    NewAccountPlanVariant, NewAccountTrip, NewAccountTripOwnerMember, NewEmailLoginOutbox,
+    NewTrustedDevice, NewUser, NewUserEmail, NewUserSession, PasskeyRecord, TripAuthRecord,
+    TrustedDeviceRecord, UserEmailRecord,
 };
 
 pub async fn insert_email_login_challenge(
@@ -321,4 +322,120 @@ pub async fn revoke_user_session(
     .await?;
 
     Ok(result.rows_affected())
+}
+
+pub async fn defer_constraints(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+) -> Result<(), sqlx::Error> {
+    sqlx::query("set constraints all deferred")
+        .execute(&mut **tx)
+        .await?;
+
+    Ok(())
+}
+
+pub async fn insert_account_trip(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    trip: NewAccountTrip<'_>,
+) -> Result<TripAuthRecord, sqlx::Error> {
+    sqlx::query_as::<_, TripAuthRecord>(
+        "insert into trips (
+           id,
+           name,
+           destination_label,
+           start_date,
+           end_date,
+           join_id,
+           join_password_hash,
+           active_plan_variant_id,
+           owner_member_id
+         )
+         values ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+         returning
+           id,
+           name,
+           destination_label,
+           start_date,
+           end_date,
+           join_id,
+           join_password_hash,
+           active_plan_variant_id,
+           owner_member_id,
+           version",
+    )
+    .bind(trip.id)
+    .bind(trip.name)
+    .bind(trip.destination_label)
+    .bind(trip.start_date)
+    .bind(trip.end_date)
+    .bind(trip.join_id)
+    .bind(trip.join_password_hash)
+    .bind(trip.active_plan_variant_id)
+    .bind(trip.owner_member_id)
+    .fetch_one(&mut **tx)
+    .await
+}
+
+pub async fn insert_account_owner_member(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    member: NewAccountTripOwnerMember<'_>,
+) -> Result<(), sqlx::Error> {
+    sqlx::query(
+        "insert into trip_members (
+           id, trip_id, user_id, display_name, role, access_status, claimed_at, color
+         )
+         values ($1, $2, $3, $4, 'owner', 'active', $5, $6)",
+    )
+    .bind(member.id)
+    .bind(member.trip_id)
+    .bind(member.user_id)
+    .bind(member.display_name)
+    .bind(member.claimed_at)
+    .bind(member.color)
+    .execute(&mut **tx)
+    .await?;
+
+    Ok(())
+}
+
+pub async fn insert_account_plan_variant(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    plan_variant: NewAccountPlanVariant<'_>,
+) -> Result<(), sqlx::Error> {
+    sqlx::query(
+        "insert into plan_variants (id, trip_id, name, kind, description)
+         values ($1, $2, $3, $4, $5)",
+    )
+    .bind(plan_variant.id)
+    .bind(plan_variant.trip_id)
+    .bind(plan_variant.name)
+    .bind(plan_variant.kind)
+    .bind(plan_variant.description)
+    .execute(&mut **tx)
+    .await?;
+
+    Ok(())
+}
+
+pub async fn insert_account_audit_event(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    event: NewAccountAuditEvent,
+) -> Result<(), sqlx::Error> {
+    sqlx::query(
+        "insert into account_audit_events (
+           id, user_id, trip_id, actor_user_id, actor_member_id, event_type, payload
+         )
+         values ($1, $2, $3, $4, $5, $6, $7)",
+    )
+    .bind(event.id)
+    .bind(event.user_id)
+    .bind(event.trip_id)
+    .bind(event.actor_user_id)
+    .bind(event.actor_member_id)
+    .bind(event.event_type)
+    .bind(event.payload)
+    .execute(&mut **tx)
+    .await?;
+
+    Ok(())
 }
