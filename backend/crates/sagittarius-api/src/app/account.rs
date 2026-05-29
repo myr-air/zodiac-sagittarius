@@ -13,8 +13,9 @@ use crate::db::models::{
 use crate::db::{self, PgPool};
 use crate::domain::errors::ServiceError;
 use crate::domain::types::{
-    AccountProfile, AccountSession, AccountSessionKind, AccountSettings, AccountTripCreateResponse,
-    EmailLoginStartResponse, MemberSession, PasskeyChallengeResponse, PasskeySummary, TripSummary,
+    AccountMemberClaimResponse, AccountProfile, AccountSession, AccountSessionKind,
+    AccountSettings, AccountTripCreateResponse, EmailLoginStartResponse, MemberSession,
+    PasskeyChallengeResponse, PasskeySummary, TripMemberAccessStatus, TripSummary,
     TrustedDeviceSummary,
 };
 
@@ -272,6 +273,64 @@ pub async fn create_trip(
         trip: TripSummary::from(trip),
         owner_member_id,
         member_session,
+    })
+}
+
+pub async fn claim_member(
+    pool: &PgPool,
+    session_token: &str,
+    trip_id: Uuid,
+    member_id: Uuid,
+    member_session_token: &str,
+) -> Result<AccountMemberClaimResponse, ServiceError> {
+    let user_id = authenticate_user_session(pool, session_token).await?;
+    let member_session_token_hash = crate::app::auth::hash_session_token(member_session_token)?;
+    let mut tx = pool.begin().await?;
+    let member_session =
+        db::queries::find_active_member_session_in_tx(&mut tx, trip_id, &member_session_token_hash)
+            .await?
+            .ok_or(ServiceError::Unauthenticated)?;
+
+    if member_session.member_id != member_id {
+        return Err(ServiceError::Unauthenticated);
+    }
+
+    let member = db::queries::lock_member(&mut tx, trip_id, member_id)
+        .await?
+        .ok_or(ServiceError::NotFound)?;
+
+    if member.access_status == TripMemberAccessStatus::Disabled {
+        return Err(ServiceError::Forbidden);
+    }
+
+    if db::account_queries::get_member_user_id(&mut tx, trip_id, member_id)
+        .await?
+        .is_some()
+    {
+        return Err(ServiceError::IdentityAlreadyLinked);
+    }
+
+    db::account_queries::link_member_to_account_user(&mut tx, trip_id, member_id, user_id).await?;
+    db::account_queries::insert_account_audit_event(
+        &mut tx,
+        NewAccountAuditEvent {
+            id: Uuid::now_v7(),
+            user_id,
+            trip_id,
+            actor_user_id: user_id,
+            actor_member_id: member_id,
+            event_type: "member.claimed_account",
+            payload: serde_json::json!({}),
+        },
+    )
+    .await?;
+    tx.commit().await?;
+
+    Ok(AccountMemberClaimResponse {
+        trip_id,
+        member_id,
+        user_id,
+        role: member.role,
     })
 }
 

@@ -439,3 +439,43 @@ pub async fn insert_account_audit_event(
 
     Ok(())
 }
+
+pub async fn get_member_user_id(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    trip_id: Uuid,
+    member_id: Uuid,
+) -> Result<Option<Uuid>, sqlx::Error> {
+    let row: (Option<Uuid>,) = sqlx::query_as(
+        "select user_id
+         from trip_members
+         where trip_id = $1 and id = $2",
+    )
+    .bind(trip_id)
+    .bind(member_id)
+    .fetch_one(&mut **tx)
+    .await?;
+
+    Ok(row.0)
+}
+
+pub async fn link_member_to_account_user(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    trip_id: Uuid,
+    member_id: Uuid,
+    user_id: Uuid,
+) -> Result<(), sqlx::Error> {
+    sqlx::query(
+        "update trip_members
+         set user_id = $1,
+             claimed_at = coalesce(claimed_at, now()),
+             updated_at = now()
+         where trip_id = $2 and id = $3",
+    )
+    .bind(user_id)
+    .bind(trip_id)
+    .bind(member_id)
+    .execute(&mut **tx)
+    .await?;
+
+    Ok(())
+}

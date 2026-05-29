@@ -1,6 +1,6 @@
 use axum::Json;
-use axum::extract::State;
 use axum::extract::rejection::JsonRejection;
+use axum::extract::{Path, State};
 use axum::http::StatusCode;
 use serde::Deserialize;
 use time::Date;
@@ -11,8 +11,8 @@ use crate::app;
 use crate::app::AppState;
 use crate::domain::errors::ServiceError;
 use crate::domain::types::{
-    AccountSession, AccountSettings, AccountTripCreateResponse, EmailLoginStartResponse,
-    PasskeyChallengeResponse,
+    AccountMemberClaimResponse, AccountSession, AccountSettings, AccountTripCreateResponse,
+    EmailLoginStartResponse, PasskeyChallengeResponse,
 };
 
 #[derive(Debug, Deserialize)]
@@ -40,6 +40,12 @@ pub struct AccountTripCreateRequest {
     pub owner_display_name: String,
     pub join_id: String,
     pub join_password: String,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AccountMemberClaimRequest {
+    pub member_session_token: String,
 }
 
 pub async fn start_email_login(
@@ -108,6 +114,26 @@ pub async fn create_trip(
             join_id: request.join_id,
             join_password: request.join_password,
         },
+    )
+    .await?;
+
+    Ok(Json(response))
+}
+
+pub async fn claim_member(
+    State(state): State<AppState>,
+    BearerToken(session_token): BearerToken,
+    Path((trip_id, member_id)): Path<(Uuid, Uuid)>,
+    request: Result<Json<AccountMemberClaimRequest>, JsonRejection>,
+) -> Result<Json<AccountMemberClaimResponse>, ServiceError> {
+    let Json(request) =
+        request.map_err(|_| ServiceError::InvalidRequest("json payload is invalid"))?;
+    let response = app::account::claim_member(
+        &state.pool,
+        &session_token,
+        trip_id,
+        member_id,
+        &request.member_session_token,
     )
     .await?;
 

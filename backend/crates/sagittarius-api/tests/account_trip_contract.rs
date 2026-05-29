@@ -46,6 +46,25 @@ async fn post_json_with_auth(
         .unwrap()
 }
 
+async fn post_raw_with_auth(
+    app: axum::Router,
+    uri: &str,
+    authorization: Option<&str>,
+    body: &'static str,
+) -> Response<axum::body::Body> {
+    let mut request = Request::builder()
+        .method(Method::POST)
+        .uri(uri)
+        .header(header::CONTENT_TYPE, "application/json");
+    if let Some(authorization) = authorization {
+        request = request.header(header::AUTHORIZATION, authorization);
+    }
+
+    app.oneshot(request.body(Body::from(body)).unwrap())
+        .await
+        .unwrap()
+}
+
 async fn get_with_auth(
     app: axum::Router,
     uri: &str,
@@ -153,6 +172,23 @@ async fn create_account_trip(
     .await;
 
     response_json(response).await
+}
+
+async fn legacy_claim_member_session(
+    pool: &sqlx::PgPool,
+    member_id: &str,
+    participant_password: &str,
+) -> Value {
+    let app = support::app(pool.clone());
+    let (status, body): (StatusCode, Value) = post_json_response(
+        app,
+        &format!("/v1/trips/{}/members/{member_id}/claim", support::TRIP_ID),
+        json!({"participantPassword": participant_password}),
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK);
+
+    body
 }
 
 #[sqlx::test(migrations = "../../migrations")]
@@ -443,4 +479,138 @@ async fn account_trip_creation_validates_dates_and_auth(pool: sqlx::PgPool) {
     let (status, body): (StatusCode, Value) = response_json(response).await;
     assert_eq!(status, StatusCode::BAD_REQUEST);
     assert_eq!(body["code"], "invalid_request");
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn account_claims_existing_temp_member_after_member_session_proof(pool: sqlx::PgPool) {
+    support::seed_trip(&pool).await;
+    let member_session = legacy_claim_member_session(&pool, support::TRAVELER_ID, "1234").await;
+    let member_session_token = member_session["sessionToken"].as_str().unwrap();
+    let session = login_account(&pool, "traveler@example.com", false, "").await;
+    let user_id = Uuid::parse_str(session["userId"].as_str().unwrap()).unwrap();
+    let auth = format!("Bearer {}", session["sessionToken"].as_str().unwrap());
+    let trip_id = Uuid::parse_str(support::TRIP_ID).unwrap();
+    let member_id = Uuid::parse_str(support::TRAVELER_ID).unwrap();
+
+    let response = post_json_with_auth(
+        support::app(pool.clone()),
+        &format!("/v1/account/trips/{trip_id}/members/{member_id}/claim"),
+        Some(&auth),
+        json!({"memberSessionToken": member_session_token}),
+    )
+    .await;
+    let (status, body): (StatusCode, Value) = response_json(response).await;
+
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(body["tripId"], support::TRIP_ID);
+    assert_eq!(body["memberId"], support::TRAVELER_ID);
+    assert_eq!(body["userId"], user_id.to_string());
+    assert_eq!(body["role"], "traveler");
+
+    let member: (Option<Uuid>, bool) = sqlx::query_as(
+        "select user_id, claimed_at is not null
+         from trip_members
+         where trip_id = $1 and id = $2",
+    )
+    .bind(trip_id)
+    .bind(member_id)
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(member.0, Some(user_id));
+    assert!(member.1);
+
+    let audit: (
+        Option<Uuid>,
+        Option<Uuid>,
+        Option<Uuid>,
+        Option<Uuid>,
+        String,
+        Value,
+    ) = sqlx::query_as(
+        "select user_id, trip_id, actor_user_id, actor_member_id, event_type, payload
+         from account_audit_events
+         where trip_id = $1 and event_type = 'member.claimed_account'",
+    )
+    .bind(trip_id)
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(audit.0, Some(user_id));
+    assert_eq!(audit.1, Some(trip_id));
+    assert_eq!(audit.2, Some(user_id));
+    assert_eq!(audit.3, Some(member_id));
+    assert_eq!(audit.4, "member.claimed_account");
+    assert_eq!(audit.5, json!({}));
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn account_claim_rejects_wrong_session_and_already_linked_member(pool: sqlx::PgPool) {
+    support::seed_trip(&pool).await;
+    let traveler_session = legacy_claim_member_session(&pool, support::TRAVELER_ID, "1234").await;
+    let organizer_session = legacy_claim_member_session(&pool, support::ORGANIZER_ID, "5678").await;
+    let account_session = login_account(&pool, "traveler@example.com", false, "").await;
+    let auth = format!(
+        "Bearer {}",
+        account_session["sessionToken"].as_str().unwrap()
+    );
+    let trip_id = Uuid::parse_str(support::TRIP_ID).unwrap();
+    let traveler_id = Uuid::parse_str(support::TRAVELER_ID).unwrap();
+    let organizer_id = Uuid::parse_str(support::ORGANIZER_ID).unwrap();
+
+    let missing_bearer = post_json_with_auth(
+        support::app(pool.clone()),
+        &format!("/v1/account/trips/{trip_id}/members/{traveler_id}/claim"),
+        None,
+        json!({"memberSessionToken": traveler_session["sessionToken"]}),
+    )
+    .await;
+    let (missing_status, missing_body): (StatusCode, Value) = response_json(missing_bearer).await;
+    assert_eq!(missing_status, StatusCode::UNAUTHORIZED);
+    assert_eq!(missing_body["code"], "unauthenticated");
+
+    let malformed = post_raw_with_auth(
+        support::app(pool.clone()),
+        &format!("/v1/account/trips/{trip_id}/members/{traveler_id}/claim"),
+        Some(&auth),
+        "{",
+    )
+    .await;
+    let (malformed_status, malformed_body): (StatusCode, Value) = response_json(malformed).await;
+    assert_eq!(malformed_status, StatusCode::BAD_REQUEST);
+    assert_eq!(malformed_body["code"], "invalid_request");
+
+    let wrong_session = post_json_with_auth(
+        support::app(pool.clone()),
+        &format!("/v1/account/trips/{trip_id}/members/{traveler_id}/claim"),
+        Some(&auth),
+        json!({"memberSessionToken": organizer_session["sessionToken"]}),
+    )
+    .await;
+    let (wrong_status, wrong_body): (StatusCode, Value) = response_json(wrong_session).await;
+    assert_eq!(wrong_status, StatusCode::UNAUTHORIZED);
+    assert_eq!(wrong_body["code"], "unauthenticated");
+
+    sqlx::query(
+        "update trip_members
+         set user_id = $1, claimed_at = coalesce(claimed_at, now())
+         where trip_id = $2 and id = $3",
+    )
+    .bind(Uuid::parse_str(account_session["userId"].as_str().unwrap()).unwrap())
+    .bind(trip_id)
+    .bind(organizer_id)
+    .execute(&pool)
+    .await
+    .unwrap();
+
+    let already_linked = post_json_with_auth(
+        support::app(pool.clone()),
+        &format!("/v1/account/trips/{trip_id}/members/{organizer_id}/claim"),
+        Some(&auth),
+        json!({"memberSessionToken": organizer_session["sessionToken"]}),
+    )
+    .await;
+    let (linked_status, linked_body): (StatusCode, Value) = response_json(already_linked).await;
+    assert_eq!(linked_status, StatusCode::CONFLICT);
+    assert_eq!(linked_body["code"], "identity_already_linked");
 }
