@@ -214,7 +214,7 @@ pub async fn list_trusted_devices(
          from trusted_devices
          where user_id = $1
            and revoked_at is null
-         order by last_seen_at desc nulls last, created_at desc, id asc",
+         order by coalesce(last_seen_at, created_at) desc, created_at desc, id asc",
     )
     .bind(user_id)
     .fetch_all(pool)
@@ -229,7 +229,7 @@ pub async fn list_passkeys(
         "select id, nickname, created_at, last_used_at
          from webauthn_credentials
          where user_id = $1
-         order by last_used_at desc nulls last, created_at desc, id asc",
+         order by coalesce(last_used_at, created_at) desc, created_at desc, id asc",
     )
     .bind(user_id)
     .fetch_all(pool)

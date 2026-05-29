@@ -170,11 +170,7 @@ pub async fn load_settings(
 pub async fn logout_user_session(pool: &PgPool, session_token: &str) -> Result<(), ServiceError> {
     authenticate_user_session(pool, session_token).await?;
     let session_token_hash = hash_session_token(session_token)?;
-    let rows_affected = db::account_queries::revoke_user_session(pool, &session_token_hash).await?;
-
-    if rows_affected == 0 {
-        return Err(ServiceError::Unauthenticated);
-    }
+    db::account_queries::revoke_user_session(pool, &session_token_hash).await?;
 
     Ok(())
 }

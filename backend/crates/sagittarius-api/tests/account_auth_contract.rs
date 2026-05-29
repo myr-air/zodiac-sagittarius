@@ -859,6 +859,76 @@ async fn revoked_trusted_device_is_hidden_from_account_settings(pool: sqlx::PgPo
 }
 
 #[sqlx::test(migrations = "../../migrations")]
+async fn trusted_devices_order_by_latest_seen_or_created_and_omit_revoked(pool: sqlx::PgPool) {
+    let session = login_account(&pool, "aom@example.com", true, "Recently seen").await;
+    let token = session["sessionToken"].as_str().unwrap();
+    let user_id = Uuid::parse_str(session["userId"].as_str().unwrap()).unwrap();
+
+    sqlx::query(
+        "update trusted_devices
+         set user_agent = 'Safari',
+             created_at = '2026-05-30T00:00:00Z',
+             last_seen_at = '2026-05-30T02:00:00Z'
+         where user_id = $1",
+    )
+    .bind(user_id)
+    .execute(&pool)
+    .await
+    .unwrap();
+    sqlx::query(
+        "insert into trusted_devices (id, user_id, label, user_agent, created_at, last_seen_at)
+         values
+           (
+             gen_random_uuid(), $1, 'Fresh created fallback', 'Firefox',
+             '2026-05-30T03:00:00Z', null
+           ),
+           (
+             gen_random_uuid(), $1, 'Older seen', 'Chrome',
+             '2026-05-30T00:30:00Z', '2026-05-30T01:00:00Z'
+           ),
+           (
+             gen_random_uuid(), $1, 'Revoked newest', 'Old Browser',
+             '2026-05-30T04:00:00Z', '2026-05-30T04:00:00Z'
+           )",
+    )
+    .bind(user_id)
+    .execute(&pool)
+    .await
+    .unwrap();
+    sqlx::query(
+        "update trusted_devices
+         set revoked_at = '2026-05-30T04:30:00Z'
+         where user_id = $1 and label = 'Revoked newest'",
+    )
+    .bind(user_id)
+    .execute(&pool)
+    .await
+    .unwrap();
+
+    let (status, body) = response_json(
+        get_with_auth(
+            support::app(pool),
+            "/v1/account/settings",
+            Some(&format!("Bearer {token}")),
+        )
+        .await,
+    )
+    .await;
+
+    assert_eq!(status, StatusCode::OK);
+    let labels: Vec<&str> = body["trustedDevices"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|device| device["label"].as_str().unwrap())
+        .collect();
+    assert_eq!(
+        labels,
+        vec!["Fresh created fallback", "Recently seen", "Older seen"]
+    );
+}
+
+#[sqlx::test(migrations = "../../migrations")]
 async fn passkeys_serialize_last_used_at_in_account_settings(pool: sqlx::PgPool) {
     let session = login_account(&pool, "aom@example.com", false, "").await;
     let token = session["sessionToken"].as_str().unwrap();
@@ -892,4 +962,58 @@ async fn passkeys_serialize_last_used_at_in_account_settings(pool: sqlx::PgPool)
     assert_eq!(body["passkeys"].as_array().unwrap().len(), 1);
     assert_eq!(body["passkeys"][0]["nickname"], "Aom MacBook");
     assert_eq!(body["passkeys"][0]["lastUsedAt"], "2026-05-30T02:00:00Z");
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn passkeys_order_by_latest_used_or_created_and_serialize_null_last_used_at(
+    pool: sqlx::PgPool,
+) {
+    let session = login_account(&pool, "aom@example.com", false, "").await;
+    let token = session["sessionToken"].as_str().unwrap();
+    let user_id = Uuid::parse_str(session["userId"].as_str().unwrap()).unwrap();
+
+    sqlx::query(
+        "insert into webauthn_credentials (
+           id, user_id, credential_id, public_key, nickname, created_at, last_used_at
+         )
+         values
+           (
+             gen_random_uuid(), $1, 'credential-fresh-created', '{}'::jsonb,
+             'Fresh created fallback', '2026-05-30T03:00:00Z', null
+           ),
+           (
+             gen_random_uuid(), $1, 'credential-recently-used', '{}'::jsonb,
+             'Recently used', '2026-05-30T00:00:00Z', '2026-05-30T02:00:00Z'
+           ),
+           (
+             gen_random_uuid(), $1, 'credential-older-used', '{}'::jsonb,
+             'Older used', '2026-05-30T00:30:00Z', '2026-05-30T01:00:00Z'
+           )",
+    )
+    .bind(user_id)
+    .execute(&pool)
+    .await
+    .unwrap();
+
+    let (status, body) = response_json(
+        get_with_auth(
+            support::app(pool),
+            "/v1/account/settings",
+            Some(&format!("Bearer {token}")),
+        )
+        .await,
+    )
+    .await;
+
+    assert_eq!(status, StatusCode::OK);
+    let passkeys = body["passkeys"].as_array().unwrap();
+    let nicknames: Vec<&str> = passkeys
+        .iter()
+        .map(|passkey| passkey["nickname"].as_str().unwrap())
+        .collect();
+    assert_eq!(
+        nicknames,
+        vec!["Fresh created fallback", "Recently used", "Older used"]
+    );
+    assert_eq!(passkeys[0]["lastUsedAt"], Value::Null);
 }
