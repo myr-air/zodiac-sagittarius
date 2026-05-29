@@ -1,13 +1,15 @@
 use axum::Json;
 use axum::extract::State;
 use axum::extract::rejection::JsonRejection;
+use axum::http::StatusCode;
 use serde::Deserialize;
 use uuid::Uuid;
 
+use crate::api::extractors::BearerToken;
 use crate::app;
 use crate::app::AppState;
 use crate::domain::errors::ServiceError;
-use crate::domain::types::{AccountSession, EmailLoginStartResponse};
+use crate::domain::types::{AccountSession, AccountSettings, EmailLoginStartResponse};
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -51,4 +53,31 @@ pub async fn finish_email_login(
     .await?;
 
     Ok(Json(response))
+}
+
+pub async fn get_me(
+    State(state): State<AppState>,
+    BearerToken(session_token): BearerToken,
+) -> Result<Json<AccountSettings>, ServiceError> {
+    let settings = app::account::load_settings(&state.pool, &session_token).await?;
+
+    Ok(Json(settings))
+}
+
+pub async fn get_settings(
+    State(state): State<AppState>,
+    BearerToken(session_token): BearerToken,
+) -> Result<Json<AccountSettings>, ServiceError> {
+    let settings = app::account::load_settings(&state.pool, &session_token).await?;
+
+    Ok(Json(settings))
+}
+
+pub async fn logout_session(
+    State(state): State<AppState>,
+    BearerToken(session_token): BearerToken,
+) -> Result<StatusCode, ServiceError> {
+    app::account::logout_user_session(&state.pool, &session_token).await?;
+
+    Ok(StatusCode::NO_CONTENT)
 }

@@ -118,6 +118,38 @@ pub struct NewUserSession<'a> {
 }
 
 #[derive(Debug, Clone, FromRow)]
+pub struct ActiveUserSessionRecord {
+    pub user_id: Uuid,
+}
+
+#[derive(Debug, Clone, FromRow)]
+pub struct AccountProfileRecord {
+    pub id: Uuid,
+    pub display_name: String,
+    pub avatar_color: String,
+    pub locale: String,
+    pub timezone: String,
+    pub primary_email: Option<String>,
+}
+
+#[derive(Debug, Clone, FromRow)]
+pub struct TrustedDeviceRecord {
+    pub id: Uuid,
+    pub label: String,
+    pub user_agent: String,
+    pub created_at: OffsetDateTime,
+    pub last_seen_at: Option<OffsetDateTime>,
+}
+
+#[derive(Debug, Clone, FromRow)]
+pub struct PasskeyRecord {
+    pub id: Uuid,
+    pub nickname: String,
+    pub created_at: OffsetDateTime,
+    pub last_used_at: Option<OffsetDateTime>,
+}
+
+#[derive(Debug, Clone, FromRow)]
 pub struct TripMemberRecord {
     pub id: Uuid,
     pub trip_id: Uuid,

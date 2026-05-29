@@ -3,8 +3,8 @@ use uuid::Uuid;
 
 use crate::db::PgPool;
 use crate::db::models::{
-    EmailLoginChallengeRecord, NewTrustedDevice, NewUser, NewUserEmail, NewUserSession,
-    UserEmailRecord,
+    AccountProfileRecord, ActiveUserSessionRecord, EmailLoginChallengeRecord, NewTrustedDevice,
+    NewUser, NewUserEmail, NewUserSession, PasskeyRecord, TrustedDeviceRecord, UserEmailRecord,
 };
 
 pub async fn insert_email_login_challenge(
@@ -157,4 +157,98 @@ pub async fn insert_user_session(
     .await?;
 
     Ok(())
+}
+
+pub async fn find_active_user_session(
+    pool: &PgPool,
+    session_token_hash: &str,
+) -> Result<Option<ActiveUserSessionRecord>, sqlx::Error> {
+    sqlx::query_as::<_, ActiveUserSessionRecord>(
+        "select s.user_id
+         from user_sessions s
+         join users u on u.id = s.user_id
+         where s.session_token_hash = $1
+           and s.revoked_at is null
+           and s.expires_at > now()
+           and u.disabled_at is null",
+    )
+    .bind(session_token_hash)
+    .fetch_optional(pool)
+    .await
+}
+
+pub async fn get_user_profile(
+    pool: &PgPool,
+    user_id: Uuid,
+) -> Result<Option<AccountProfileRecord>, sqlx::Error> {
+    sqlx::query_as::<_, AccountProfileRecord>(
+        "select
+           u.id,
+           u.display_name,
+           u.avatar_color,
+           u.locale,
+           u.timezone,
+           primary_email.email as primary_email
+         from users u
+         left join lateral (
+           select email
+           from user_emails
+           where user_id = u.id and verified_at is not null
+           order by created_at asc, id asc
+           limit 1
+         ) primary_email on true
+         where u.id = $1
+           and u.disabled_at is null",
+    )
+    .bind(user_id)
+    .fetch_optional(pool)
+    .await
+}
+
+pub async fn list_trusted_devices(
+    pool: &PgPool,
+    user_id: Uuid,
+) -> Result<Vec<TrustedDeviceRecord>, sqlx::Error> {
+    sqlx::query_as::<_, TrustedDeviceRecord>(
+        "select id, label, user_agent, created_at, last_seen_at
+         from trusted_devices
+         where user_id = $1
+           and revoked_at is null
+         order by last_seen_at desc nulls last, created_at desc, id asc",
+    )
+    .bind(user_id)
+    .fetch_all(pool)
+    .await
+}
+
+pub async fn list_passkeys(
+    pool: &PgPool,
+    user_id: Uuid,
+) -> Result<Vec<PasskeyRecord>, sqlx::Error> {
+    sqlx::query_as::<_, PasskeyRecord>(
+        "select id, nickname, created_at, last_used_at
+         from webauthn_credentials
+         where user_id = $1
+         order by last_used_at desc nulls last, created_at desc, id asc",
+    )
+    .bind(user_id)
+    .fetch_all(pool)
+    .await
+}
+
+pub async fn revoke_user_session(
+    pool: &PgPool,
+    session_token_hash: &str,
+) -> Result<u64, sqlx::Error> {
+    let result = sqlx::query(
+        "update user_sessions
+         set revoked_at = now()
+         where session_token_hash = $1
+           and revoked_at is null",
+    )
+    .bind(session_token_hash)
+    .execute(pool)
+    .await?;
+
+    Ok(result.rows_affected())
 }

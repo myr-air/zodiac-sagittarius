@@ -6,10 +6,16 @@ use time::format_description::well_known::Rfc3339;
 use time::{Duration, OffsetDateTime};
 use uuid::Uuid;
 
-use crate::db::models::{NewTrustedDevice, NewUser, NewUserEmail, NewUserSession};
+use crate::db::models::{
+    AccountProfileRecord, NewTrustedDevice, NewUser, NewUserEmail, NewUserSession, PasskeyRecord,
+    TrustedDeviceRecord,
+};
 use crate::db::{self, PgPool};
 use crate::domain::errors::ServiceError;
-use crate::domain::types::{AccountSession, AccountSessionKind, EmailLoginStartResponse};
+use crate::domain::types::{
+    AccountProfile, AccountSession, AccountSessionKind, AccountSettings, EmailLoginStartResponse,
+    PasskeySummary, TrustedDeviceSummary,
+};
 
 const CHALLENGE_TTL: Duration = Duration::minutes(10);
 const TEMPORARY_SESSION_TTL: Duration = Duration::days(1);
@@ -123,6 +129,54 @@ pub async fn finish_email_login(
         created_at: format_timestamp(now),
         expires_at: format_timestamp(expires_at),
     })
+}
+
+pub async fn authenticate_user_session(
+    pool: &PgPool,
+    session_token: &str,
+) -> Result<Uuid, ServiceError> {
+    let session_token_hash = hash_session_token(session_token)?;
+    let session = db::account_queries::find_active_user_session(pool, &session_token_hash)
+        .await?
+        .ok_or(ServiceError::Unauthenticated)?;
+
+    Ok(session.user_id)
+}
+
+pub async fn load_settings(
+    pool: &PgPool,
+    session_token: &str,
+) -> Result<AccountSettings, ServiceError> {
+    let user_id = authenticate_user_session(pool, session_token).await?;
+    let profile = db::account_queries::get_user_profile(pool, user_id)
+        .await?
+        .ok_or(ServiceError::Unauthenticated)?;
+    let passkeys = db::account_queries::list_passkeys(pool, user_id).await?;
+    let trusted_devices = db::account_queries::list_trusted_devices(pool, user_id).await?;
+
+    Ok(AccountSettings {
+        profile: account_profile_from_record(profile),
+        passkeys: passkeys
+            .into_iter()
+            .map(passkey_summary_from_record)
+            .collect(),
+        trusted_devices: trusted_devices
+            .into_iter()
+            .map(trusted_device_summary_from_record)
+            .collect(),
+    })
+}
+
+pub async fn logout_user_session(pool: &PgPool, session_token: &str) -> Result<(), ServiceError> {
+    authenticate_user_session(pool, session_token).await?;
+    let session_token_hash = hash_session_token(session_token)?;
+    let rows_affected = db::account_queries::revoke_user_session(pool, &session_token_hash).await?;
+
+    if rows_affected == 0 {
+        return Err(ServiceError::Unauthenticated);
+    }
+
+    Ok(())
 }
 
 async fn find_or_create_user(
@@ -257,6 +311,36 @@ fn normalized_device_label(device_label: &str) -> String {
         DEFAULT_TRUSTED_DEVICE_LABEL.to_string()
     } else {
         label.to_string()
+    }
+}
+
+fn account_profile_from_record(record: AccountProfileRecord) -> AccountProfile {
+    AccountProfile {
+        id: record.id,
+        display_name: record.display_name,
+        avatar_color: record.avatar_color,
+        locale: record.locale,
+        timezone: record.timezone,
+        primary_email: record.primary_email,
+    }
+}
+
+fn trusted_device_summary_from_record(record: TrustedDeviceRecord) -> TrustedDeviceSummary {
+    TrustedDeviceSummary {
+        id: record.id,
+        label: record.label,
+        user_agent: record.user_agent,
+        created_at: format_timestamp(record.created_at),
+        last_seen_at: record.last_seen_at.map(format_timestamp),
+    }
+}
+
+fn passkey_summary_from_record(record: PasskeyRecord) -> PasskeySummary {
+    PasskeySummary {
+        id: record.id,
+        nickname: record.nickname,
+        created_at: format_timestamp(record.created_at),
+        last_used_at: record.last_used_at.map(format_timestamp),
     }
 }
 
