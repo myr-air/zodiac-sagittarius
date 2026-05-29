@@ -63,6 +63,29 @@ async fn account_identity_migration_creates_indexes(pool: sqlx::PgPool) {
 }
 
 #[sqlx::test(migrations = "../../migrations")]
+async fn account_trip_indexes_exist(pool: sqlx::PgPool) {
+    let index_names: Vec<String> = sqlx::query_scalar(
+        "select indexname::text
+         from pg_indexes
+         where schemaname = 'public'
+         order by indexname",
+    )
+    .fetch_all(&pool)
+    .await
+    .unwrap();
+
+    for index_name in [
+        "trip_members_trip_user_idx",
+        "account_audit_events_actor_user_created_idx",
+    ] {
+        assert!(
+            index_names.contains(&index_name.to_string()),
+            "missing index {index_name}"
+        );
+    }
+}
+
+#[sqlx::test(migrations = "../../migrations")]
 async fn trip_members_user_id_references_users(pool: sqlx::PgPool) {
     support::seed_trip(&pool).await;
 
@@ -76,6 +99,26 @@ async fn trip_members_user_id_references_users(pool: sqlx::PgPool) {
     .await;
 
     assert!(result.is_err(), "trip member accepted a missing user_id");
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn trip_owner_pointer_must_reference_owner_role(pool: sqlx::PgPool) {
+    support::seed_trip(&pool).await;
+
+    let result = sqlx::query(
+        "update trips
+         set owner_member_id = $1::uuid
+         where id = $2::uuid",
+    )
+    .bind(support::ORGANIZER_ID)
+    .bind(support::TRIP_ID)
+    .execute(&pool)
+    .await;
+
+    assert!(
+        result.is_err(),
+        "trip owner pointer accepted a non-owner member"
+    );
 }
 
 #[sqlx::test(migrations = "../../migrations")]

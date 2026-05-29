@@ -130,6 +130,10 @@ CREATE TABLE account_audit_events (
 CREATE INDEX account_audit_events_user_created_idx
   ON account_audit_events (user_id, created_at DESC);
 
+CREATE INDEX account_audit_events_actor_user_created_idx
+  ON account_audit_events (actor_user_id, created_at DESC)
+  WHERE actor_user_id IS NOT NULL;
+
 ALTER TABLE trip_members
   ADD CONSTRAINT trip_members_user_id_fkey
   FOREIGN KEY (user_id) REFERENCES users(id);
@@ -142,6 +146,37 @@ CREATE INDEX trip_members_user_id_idx
   ON trip_members (user_id)
   WHERE user_id IS NOT NULL;
 
+CREATE INDEX trip_members_trip_user_idx
+  ON trip_members (trip_id, user_id)
+  WHERE user_id IS NOT NULL;
+
 CREATE UNIQUE INDEX trip_members_one_owner_per_trip_idx
   ON trip_members (trip_id)
   WHERE role = 'owner';
+
+CREATE FUNCTION enforce_trip_owner_member()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM trip_members
+    WHERE id = NEW.owner_member_id
+      AND trip_id = NEW.id
+      AND role = 'owner'
+      AND access_status = 'active'
+  ) THEN
+    RAISE EXCEPTION 'trip owner_member_id must reference an active owner member'
+      USING ERRCODE = '23514';
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
+
+CREATE CONSTRAINT TRIGGER trips_owner_member_must_be_active_owner
+  AFTER INSERT OR UPDATE OF owner_member_id, id ON trips
+  DEFERRABLE INITIALLY DEFERRED
+  FOR EACH ROW
+  EXECUTE FUNCTION enforce_trip_owner_member();
