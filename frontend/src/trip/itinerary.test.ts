@@ -98,9 +98,8 @@ describe("itinerary planning domain", () => {
     });
 
     expect(repository.describeSource()).toEqual({
-      mode: "local",
-      futureRestBase: "/trips/:tripId",
-      futureWebSocketEvents: expect.arrayContaining(["trip.updated", "presence.updated"]),
+      mode: "demo",
+      restBase: "demo-fixture",
     });
   });
 });

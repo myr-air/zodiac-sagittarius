@@ -12,6 +12,8 @@
     "storybook": "STORYBOOK_DISABLE_TELEMETRY=1 storybook dev -p 6006",
     "build-storybook": "STORYBOOK_DISABLE_TELEMETRY=1 storybook build",
     "test": "vitest --project unit run",
+    "test:e2e:real": "SAGITTARIUS_E2E_REQUIRED=1 vitest --project unit run src/trip/real-api.e2e.test.ts",
+    "test:e2e:local": "bun run scripts/run-local-real-api-e2e.ts",
     "test:storybook": "vitest --project storybook run",
     "test:watch": "vitest",
     "typecheck": "next typegen && tsc --noEmit",

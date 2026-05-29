@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { expect } from "storybook/test";
-import { tripFixture } from "@/src/trip/fixtures";
+import { tripFixture } from "@/src/demo/trip-fixtures";
 import { AppShell } from "./AppShell";
 import { OverviewPage } from "./OverviewPage";
 

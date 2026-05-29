@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { expect } from "storybook/test";
-import { buildEmptyTripFixture, tripFixture } from "@/src/trip/fixtures";
+import { buildEmptyTripFixture, tripFixture } from "@/src/demo/trip-fixtures";
 import { TimelineView } from "./TimelineView";
 
 const noop = () => {};

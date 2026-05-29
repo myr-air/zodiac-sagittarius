@@ -8,9 +8,14 @@ pub mod trips;
 pub mod ws;
 
 use axum::{
+    http::{
+        Method,
+        header::{AUTHORIZATION, CONTENT_TYPE},
+    },
     Router,
     routing::{get, patch, post},
 };
+use tower_http::cors::{AllowOrigin, CorsLayer};
 
 use crate::app::AppState;
 
@@ -51,5 +56,11 @@ pub fn router(state: AppState) -> Router {
             post(join::logout),
         )
         .fallback(error::not_found)
+        .layer(
+            CorsLayer::new()
+                .allow_origin(AllowOrigin::mirror_request())
+                .allow_methods([Method::GET, Method::POST, Method::PATCH, Method::OPTIONS])
+                .allow_headers([AUTHORIZATION, CONTENT_TYPE]),
+        )
         .with_state(state)
 }

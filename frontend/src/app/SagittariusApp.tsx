@@ -10,6 +10,7 @@ import { StopDialog, type StopFormValues } from "@/src/components/StopDialog";
 import { TimelineView } from "@/src/components/TimelineView";
 import { TripJoinGate } from "@/src/components/TripJoinGate";
 import { TripMembersPage } from "@/src/components/TripMembersPage";
+import { createTripApiClient, type TripApiClient, type TripCockpit } from "@/src/trip/api-client";
 import {
   canTripRole,
   createTripParticipant,
@@ -21,11 +22,11 @@ import {
   updateTripParticipantRole,
 } from "@/src/trip/auth";
 import { buildExpenseSummary } from "@/src/trip/expenses";
-import { tripFixtureStopNotes, tripFixtureSuggestions, tripFixtureTasks } from "@/src/trip/fixtures";
+import { tripFixtureStopNotes, tripFixtureSuggestions, tripFixtureTasks } from "@/src/demo/trip-fixtures";
 import { tripStorageKey } from "@/src/trip/repository";
 import { seedTrip } from "@/src/trip/seed";
 import { approveSuggestion } from "@/src/trip/suggestions";
-import type { ItineraryItem, StopNote, Suggestion, Trip, TripMemberAccessStatus, TripParticipantSession, TripRole, TripTask } from "@/src/trip/types";
+import type { ExpenseSummary, ItineraryItem, StopNote, Suggestion, Trip, TripMemberAccessStatus, TripParticipantSession, TripRole, TripTask } from "@/src/trip/types";
 
 const localMutationTimestamp = "2026-05-28T00:00:00.000Z";
 
@@ -34,9 +35,15 @@ export type PlanningView = "overview" | "itinerary" | "map" | "timeline" | "memb
 interface SagittariusAppProps {
   initialView?: PlanningView;
   requireJoin?: boolean;
+  dataSource?: "api" | "demo";
+  apiClient?: TripApiClient;
 }
 
-export function SagittariusApp({ initialView = "overview", requireJoin = false }: SagittariusAppProps) {
+export function SagittariusApp({ initialView = "overview", requireJoin = false, dataSource = "demo", apiClient }: SagittariusAppProps) {
+  const resolvedApiClient = useMemo(
+    () => apiClient ?? (dataSource === "api" ? createTripApiClient({ baseUrl: process.env.NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL ?? "" }) : undefined),
+    [apiClient, dataSource],
+  );
   const [tripState, setTripState] = useState<{ trip: Trip; past: Trip[]; future: Trip[] }>(() => ({
     trip: seedTrip,
     past: [],
@@ -46,6 +53,7 @@ export function SagittariusApp({ initialView = "overview", requireJoin = false }
   const [suggestions, setSuggestions] = useState<Suggestion[]>(() => tripFixtureSuggestions.map((suggestion) => ({ ...suggestion })));
   const [tasks, setTasks] = useState<TripTask[]>(() => tripFixtureTasks.map((task) => ({ ...task })));
   const [stopNotes, setStopNotes] = useState<StopNote[]>(() => tripFixtureStopNotes.map((note) => ({ ...note })));
+  const [backendExpenseSummary, setBackendExpenseSummary] = useState<ExpenseSummary | null>(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [contextRailOpen, setContextRailOpen] = useState(false);
   const [contextRailMounted, setContextRailMounted] = useState(false);
@@ -58,17 +66,22 @@ export function SagittariusApp({ initialView = "overview", requireJoin = false }
   const trip = tripState.trip;
   const sessionMember = findSessionMember(trip, participantSession);
   const currentMember = sessionMember ?? trip.members.find((member) => member.id === currentMemberId) ?? trip.members[0];
+  const isApiMode = dataSource === "api";
   const canEdit = canTripRole(currentMember.role, "editItinerary");
   const canCreateSuggestion = canTripRole(currentMember.role, "createSuggestion");
   const canReviewSuggestions = canTripRole(currentMember.role, "reviewSuggestions");
-  const canEditExpenses = canTripRole(currentMember.role, "editExpenses");
-  const canManagePeople = canTripRole(currentMember.role, "managePeople");
+  const canEditExpenses = !isApiMode && canTripRole(currentMember.role, "editExpenses");
+  const canManagePeople = !isApiMode && canTripRole(currentMember.role, "managePeople");
+  const canCreateStopNote = !isApiMode && (canCreateSuggestion || canEdit);
   const planItems = useMemo(
     () => trip.itineraryItems.filter((item) => item.planVariantId === selectedPlanVariantId),
     [selectedPlanVariantId, trip.itineraryItems],
   );
   const selectedItem = planItems.find((item) => item.id === selectedItemId) ?? planItems[0];
-  const expenseSummary = useMemo(() => buildExpenseSummary(trip.expenses, currentMember.id), [currentMember.id, trip.expenses]);
+  const expenseSummary = useMemo(
+    () => backendExpenseSummary ?? buildExpenseSummary(trip.expenses, currentMember.id),
+    [backendExpenseSummary, currentMember.id, trip.expenses],
+  );
 
   useEffect(() => {
     const timeout = window.setTimeout(() => {
@@ -87,6 +100,26 @@ export function SagittariusApp({ initialView = "overview", requireJoin = false }
 
     return () => window.clearTimeout(timeout);
   }, [requireJoin]);
+
+  useEffect(() => {
+    if (!isApiMode || !participantSession || !resolvedApiClient) return undefined;
+    let cancelled = false;
+
+    void resolvedApiClient
+      .loadTrip(participantSession.tripId, participantSession.sessionToken)
+      .then((cockpit) => {
+        if (cancelled) return;
+        setTripState({ trip: cockpit.trip, past: [], future: [] });
+        setSuggestions(cockpit.suggestions);
+        setTasks(cockpit.tasks);
+        setStopNotes(cockpit.stopNotes);
+        setBackendExpenseSummary(cockpit.expenseSummary);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isApiMode, participantSession, resolvedApiClient]);
 
   useEffect(() => {
     if (contextRailOpen) return undefined;
@@ -194,9 +227,36 @@ export function SagittariusApp({ initialView = "overview", requireJoin = false }
     setDialogState(null);
   }
 
-  function updateSelectedStop(values: StopFormValues) {
+  async function updateSelectedStop(values: StopFormValues) {
     if (dialogState?.mode !== "edit") return;
     const itemId = dialogState.item.id;
+    if (dataSource === "api" && resolvedApiClient && participantSession) {
+      const patchedItem = await resolvedApiClient.patchItineraryItem(itemId, participantSession.sessionToken, {
+        clientMutationId: nextClientMutationId("itinerary-patch"),
+        expectedVersion: dialogState.item.version,
+        patch: {
+          startTime: values.startTime,
+          activity: values.activity,
+          activityType: values.activityType,
+          place: values.place,
+          mapLink: dialogState.item.mapLink || buildMapLink(values.place),
+          durationMinutes: values.durationMinutes,
+          transportation: values.transportation,
+          note: values.note,
+        },
+      });
+      setTripState((current) => ({
+        ...current,
+        trip: {
+          ...current.trip,
+          itineraryItems: current.trip.itineraryItems.map((item) => (item.id === itemId ? patchedItem : item)),
+        },
+      }));
+      setSelectedItemId(itemId);
+      setContextRailVisibility(true);
+      setDialogState(null);
+      return;
+    }
     commitTrip((current) => ({
       ...current,
       itineraryItems: current.itineraryItems.map((item) =>
@@ -274,37 +334,58 @@ export function SagittariusApp({ initialView = "overview", requireJoin = false }
   }
 
   function replaceTripFromJoin(nextTrip: Trip) {
-    persistTripDraft(nextTrip);
+    if (dataSource !== "api") persistTripDraft(nextTrip);
     setTripState({ trip: nextTrip, past: [], future: [] });
   }
 
+  function replaceCockpitFromApi(cockpit: TripCockpit) {
+    setTripState({ trip: cockpit.trip, past: [], future: [] });
+    setSuggestions(cockpit.suggestions);
+    setTasks(cockpit.tasks);
+    setStopNotes(cockpit.stopNotes);
+    setBackendExpenseSummary(cockpit.expenseSummary);
+  }
+
   function resetMemberClaim(memberId: string) {
-    if (!canTripRole(currentMember.role, "managePeople")) return;
+    if (!canManagePeople) return;
     commitTrip((current) => resetTripParticipantClaim(current, memberId));
   }
 
   function changeMemberRole(memberId: string, role: Exclude<TripRole, "owner">) {
-    if (!canTripRole(currentMember.role, "managePeople")) return;
+    if (!canManagePeople) return;
     commitTrip((current) => updateTripParticipantRole(current, memberId, role));
   }
 
   function changeMemberAccessStatus(memberId: string, accessStatus: TripMemberAccessStatus) {
-    if (!canTripRole(currentMember.role, "managePeople")) return;
+    if (!canManagePeople) return;
     commitTrip((current) => setTripParticipantAccessStatus(current, memberId, accessStatus));
   }
 
   function changeMemberPassword(memberId: string, password: string) {
-    if (memberId !== currentMember.id) return;
+    if (!canManagePeople || memberId !== currentMember.id) return;
     commitTrip((current) => setTripParticipantPassword(current, memberId, password));
   }
 
   function createMember(input: { displayName: string; role: Exclude<TripRole, "owner"> }) {
-    if (!canTripRole(currentMember.role, "managePeople")) return;
+    if (!canManagePeople) return;
     commitTrip((current) => createTripParticipant(current, input));
   }
 
-  function suggestSelectedStop() {
+  async function suggestSelectedStop() {
     if (!canCreateSuggestion || !selectedItem) return;
+    if (dataSource === "api" && resolvedApiClient && participantSession) {
+      const suggestion = await resolvedApiClient.createSuggestion(trip.id, participantSession.sessionToken, {
+        clientMutationId: nextClientMutationId("suggestion-create"),
+        type: "edit",
+        targetItemId: selectedItem.id,
+        planVariantId: selectedItem.planVariantId,
+        proposedPatch: { activity: selectedItem.activity },
+        sourceVersion: selectedItem.version,
+      });
+      setSuggestions((current) => [...current, suggestion]);
+      setContextRailVisibility(true);
+      return;
+    }
     setSuggestions((current) => [
       ...current,
       {
@@ -323,10 +404,22 @@ export function SagittariusApp({ initialView = "overview", requireJoin = false }
     setContextRailVisibility(true);
   }
 
-  function createTask(input: { title: string; visibility: TripTask["visibility"]; assigneeId?: string | null }) {
+  async function createTask(input: { title: string; visibility: TripTask["visibility"]; assigneeId?: string | null }) {
     const title = input.title.trim();
     if (!title) return;
     const visibility = input.visibility;
+    if (dataSource === "api" && resolvedApiClient && participantSession) {
+      const task = await resolvedApiClient.createTask(trip.id, participantSession.sessionToken, {
+        clientMutationId: nextClientMutationId("task-create"),
+        title,
+        visibility,
+        kind: "prep",
+        assigneeId: visibility === "shared" ? input.assigneeId || null : currentMember.id,
+        relatedItemId: null,
+      });
+      setTasks((current) => [...current, task]);
+      return;
+    }
     setTasks((current) => [
       ...current,
       {
@@ -341,7 +434,18 @@ export function SagittariusApp({ initialView = "overview", requireJoin = false }
     ]);
   }
 
-  function toggleTaskStatus(taskId: string) {
+  async function toggleTaskStatus(taskId: string) {
+    if (dataSource === "api" && resolvedApiClient && participantSession) {
+      const task = tasks.find((candidate) => candidate.id === taskId);
+      if (!task) return;
+      const nextTask = await resolvedApiClient.patchTask(taskId, participantSession.sessionToken, {
+        clientMutationId: nextClientMutationId("task-patch"),
+        expectedVersion: task.version ?? 1,
+        patch: { status: task.status === "done" ? "open" : "done" },
+      });
+      setTasks((current) => current.map((candidate) => (candidate.id === taskId ? nextTask : candidate)));
+      return;
+    }
     setTasks((current) =>
       current.map((task) =>
         task.id === taskId
@@ -356,7 +460,7 @@ export function SagittariusApp({ initialView = "overview", requireJoin = false }
 
   function createStopNote(input: { itemId: string; body: string }) {
     const body = input.body.trim();
-    if (!body || !canCreateSuggestion && !canEdit) return;
+    if (!body || !canCreateStopNote) return;
     setStopNotes((current) => [
       ...current,
       {
@@ -370,8 +474,16 @@ export function SagittariusApp({ initialView = "overview", requireJoin = false }
     ]);
   }
 
-  function reviewSuggestion(suggestionId: string, decision: "approved" | "rejected") {
+  async function reviewSuggestion(suggestionId: string, decision: "approved" | "rejected") {
     if (!canReviewSuggestions) return;
+    if (dataSource === "api" && resolvedApiClient && participantSession) {
+      const suggestion =
+        decision === "approved"
+          ? await resolvedApiClient.approveSuggestion(suggestionId, participantSession.sessionToken)
+          : await resolvedApiClient.rejectSuggestion(suggestionId, participantSession.sessionToken);
+      setSuggestions((current) => current.map((candidate) => (candidate.id === suggestionId ? suggestion : candidate)));
+      return;
+    }
     if (decision === "rejected") {
       setSuggestions((current) => current.map((suggestion) => (suggestion.id === suggestionId ? { ...suggestion, status: "rejected" } : suggestion)));
       return;
@@ -387,7 +499,15 @@ export function SagittariusApp({ initialView = "overview", requireJoin = false }
   }
 
   if (requireJoin && !sessionMember) {
-    return <TripJoinGate trip={trip} onTripChange={replaceTripFromJoin} onAuthenticated={authenticateParticipant} />;
+    return (
+      <TripJoinGate
+        apiClient={resolvedApiClient}
+        trip={resolvedApiClient ? undefined : trip}
+        onTripChange={replaceTripFromJoin}
+        onAuthenticated={authenticateParticipant}
+        onCockpitLoaded={replaceCockpitFromApi}
+      />
+    );
   }
 
   const supportsContextRail = initialView === "itinerary" || initialView === "timeline";
@@ -402,7 +522,7 @@ export function SagittariusApp({ initialView = "overview", requireJoin = false }
       onToggleCollapsed={() => setSidebarCollapsed((current) => !current)}
     >
       <main className="workspace-shell">
-        {(!requireJoin || canTripRole(currentMember.role, "managePeople")) ? (
+        {(!requireJoin || canManagePeople) ? (
           <label className="sr-only">
             Role preview
             <select value={currentMember.id} onChange={(event) => setCurrentMemberId(event.target.value)}>
@@ -439,6 +559,7 @@ export function SagittariusApp({ initialView = "overview", requireJoin = false }
             ) : initialView === "itinerary" ? (
               <SmartItineraryTable
                 canRedo={tripState.future.length > 0}
+                canRestructure={!isApiMode}
                 canUndo={tripState.past.length > 0}
                 contextRailOpen={contextRailOpen}
                 endDate={trip.endDate}
@@ -484,6 +605,7 @@ export function SagittariusApp({ initialView = "overview", requireJoin = false }
               currentMember={currentMember}
               expenseSummary={expenseSummary}
               canEdit={canEdit}
+              canCreateNote={canCreateStopNote}
               canCreateSuggestion={canCreateSuggestion}
               canReviewSuggestions={canReviewSuggestions}
               canEditExpenses={canEditExpenses}
@@ -570,6 +692,11 @@ function nextLocalStopNoteId(notes: StopNote[]): string {
   }
 
   return id;
+}
+
+function nextClientMutationId(prefix: string): string {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) return `${prefix}-${crypto.randomUUID()}`;
+  return `${prefix}-${Date.now().toString(36)}`;
 }
 
 function getBrowserLocalStorage(): Storage | null {

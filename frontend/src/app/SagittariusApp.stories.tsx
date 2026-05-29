@@ -14,6 +14,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Cockpit: Story = {};
+export const ApiJoin: Story = { args: { requireJoin: true, dataSource: "api" } };
 export const Owner: Story = { args: { initialView: "overview" } };
 export const Itinerary: Story = { args: { initialView: "itinerary" } };
 export const Timeline: Story = { args: { initialView: "timeline" } };

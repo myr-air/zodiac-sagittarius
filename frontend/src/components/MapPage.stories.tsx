@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import { tripFixture } from "@/src/trip/fixtures";
+import { tripFixture } from "@/src/demo/trip-fixtures";
 import { RouteMapView } from "./RouteMapView";
 
 const meta = {

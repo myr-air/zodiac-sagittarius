@@ -113,7 +113,7 @@ export function TripMembersPage({
   }
 
   return (
-    <main className="members-page" aria-label="Trip members">
+    <section className="members-page" aria-label="Trip members">
       <PageHeader
         title="สมาชิกในทริป"
         subtitle={trip.name}
@@ -250,7 +250,7 @@ export function TripMembersPage({
         onResetFilters={resetFilters}
         onResetMemberClaim={confirmResetClaim}
       />
-    </main>
+    </section>
   );
 }
 

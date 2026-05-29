@@ -37,6 +37,16 @@ describe("frontend core freeze contract", () => {
     expect(storybookPreview).toContain('initialize({ onUnhandledRequest: "bypass" })');
     expect(storybookPreview).toContain("mswLoader");
     expect(mswHandlers).toContain("export const mswHandlers");
+    expect(mswHandlers).toContain('http.post("*/v1/trips/join"');
+    expect(mswHandlers).toContain('http.get("*/v1/trips/:tripId"');
+    expect(mswHandlers).toContain('http.post("*/v1/trips/:tripId/members/:memberId/claim"');
+    expect(mswHandlers).toContain('http.patch("*/v1/itinerary-items/:itemId"');
+    expect(mswHandlers).toContain('http.post("*/v1/trips/:tripId/suggestions"');
+    expect(mswHandlers).toContain('http.post("*/v1/suggestions/:suggestionId/approve"');
+    expect(mswHandlers).toContain('http.post("*/v1/suggestions/:suggestionId/reject"');
+    expect(mswHandlers).toContain('http.post("*/v1/trips/:tripId/tasks"');
+    expect(mswHandlers).toContain('http.patch("*/v1/tasks/:taskId"');
+    expect(mswHandlers).not.toContain("http.all");
   });
 
   it("requires backend-driven changes instead of new frontend-only scope", () => {

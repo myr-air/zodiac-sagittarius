@@ -1795,7 +1795,7 @@ span.member-state-pill {
 }
 
 .button--danger {
-  color: var(--color-danger);
+  color: #b91c1c;
   border-color: var(--color-danger-border);
   background: var(--color-danger-soft);
 }

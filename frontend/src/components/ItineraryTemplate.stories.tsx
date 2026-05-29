@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { expect } from "storybook/test";
-import { buildDenseTripFixture, tripFixture } from "@/src/trip/fixtures";
+import { buildDenseTripFixture, tripFixture } from "@/src/demo/trip-fixtures";
 import { SmartItineraryTable } from "./SmartItineraryTable";
 
 const noop = () => {};

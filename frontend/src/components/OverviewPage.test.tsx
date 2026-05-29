@@ -2,7 +2,7 @@ import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { buildExpenseSummary } from "@/src/trip/expenses";
-import { tripFixtureTasks } from "@/src/trip/fixtures";
+import { tripFixtureTasks } from "@/src/demo/trip-fixtures";
 import { seedTrip } from "@/src/trip/seed";
 import { OverviewPage } from "./OverviewPage";
 

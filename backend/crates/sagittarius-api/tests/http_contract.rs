@@ -1,5 +1,8 @@
 use axum::{body::Body, response::IntoResponse};
-use http::{Request, StatusCode, header::CONTENT_TYPE};
+use http::{
+    Request, StatusCode,
+    header::{ACCESS_CONTROL_ALLOW_ORIGIN, ACCESS_CONTROL_REQUEST_METHOD, CONTENT_TYPE, ORIGIN},
+};
 use sagittarius_api::domain::errors::ServiceError;
 use serde_json::Value;
 use tower::ServiceExt;
@@ -55,6 +58,29 @@ async fn unknown_route_returns_json_not_found() {
 
     assert_eq!(body["code"], "not_found");
     assert_eq!(body["message"], "not found");
+}
+
+#[tokio::test]
+async fn cors_preflight_allows_frontend_to_call_api() {
+    let app = sagittarius_api::api::router(sagittarius_api::app::AppState::test());
+    let response = app
+        .oneshot(
+            Request::builder()
+                .method("OPTIONS")
+                .uri("/v1/trips/join")
+                .header(ORIGIN, "http://127.0.0.1:5180")
+                .header(ACCESS_CONTROL_REQUEST_METHOD, "POST")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::OK);
+    assert_eq!(
+        response.headers().get(ACCESS_CONTROL_ALLOW_ORIGIN).unwrap(),
+        "http://127.0.0.1:5180"
+    );
 }
 
 #[tokio::test]

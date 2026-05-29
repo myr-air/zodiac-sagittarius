@@ -74,6 +74,7 @@ export function RouteMapView({ endDate, items, startDate, tripName }: RouteMapVi
     if (process.env.NODE_ENV === "test") return undefined;
 
     let disposed = false;
+    let liveMapContainer: HTMLDivElement | null = null;
     const markers = markersRef.current;
 
     async function mountLiveMap() {
@@ -83,6 +84,9 @@ export function RouteMapView({ endDate, items, startDate, tripName }: RouteMapVi
         const maplibregl = await import("maplibre-gl");
         const container = mapContainerRef.current;
         if (!container || disposed) return;
+        liveMapContainer = container;
+        container.inert = true;
+        container.tabIndex = -1;
 
         const map = new maplibregl.Map({
           attributionControl: { compact: true },
@@ -95,6 +99,7 @@ export function RouteMapView({ endDate, items, startDate, tripName }: RouteMapVi
 
         mapRef.current = map;
         map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
+        removeMapChromeFromTabOrder(container);
 
         liveRoutePoints.forEach((point, index) => {
           const coordinates = point.item.coordinates;
@@ -155,6 +160,7 @@ export function RouteMapView({ endDate, items, startDate, tripName }: RouteMapVi
             });
           });
           fitLiveRoute(map, activeDayRef.current === "all" ? liveRoutePoints : liveRoutePoints.filter((point) => point.item.day === activeDayRef.current));
+          removeMapChromeFromTabOrder(container);
           setLiveMapState("ready");
         });
 
@@ -174,6 +180,9 @@ export function RouteMapView({ endDate, items, startDate, tripName }: RouteMapVi
       markers.clear();
       mapRef.current?.remove();
       mapRef.current = null;
+      if (liveMapContainer) {
+        liveMapContainer.inert = false;
+      }
     };
   }, [liveRoutePoints, routeDayGroups]);
 
@@ -214,7 +223,7 @@ export function RouteMapView({ endDate, items, startDate, tripName }: RouteMapVi
       />
 
       <div className="route-map-layout">
-        <div className="route-map-canvas" role="img" aria-label="Map preview of the Hong Kong and Shenzhen itinerary route">
+        <div className="route-map-canvas" aria-label="Map preview of the Hong Kong and Shenzhen itinerary route">
           <div className="map-day-filter" aria-label="เลือกวันบนแผนที่">
             <button
               type="button"
@@ -338,6 +347,12 @@ function fitLiveRoute(map: import("maplibre-gl").Map, points: RoutePoint[]) {
   const coordinate = pointsWithCoordinates[0]?.item.coordinates;
   if (!coordinate) return;
   map.flyTo({ center: [coordinate.lng, coordinate.lat], essential: false, zoom: 13 });
+}
+
+function removeMapChromeFromTabOrder(container: HTMLElement) {
+  container.querySelectorAll<HTMLElement>("a, button, input, select, textarea, [tabindex]").forEach((element) => {
+    element.tabIndex = -1;
+  });
 }
 
 function hasCoordinates(coordinate: ItineraryItem["coordinates"]): coordinate is NonNullable<ItineraryItem["coordinates"]> {

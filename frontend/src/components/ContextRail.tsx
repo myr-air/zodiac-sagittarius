@@ -13,6 +13,7 @@ interface ContextRailProps {
   currentMember: Member;
   expenseSummary: ExpenseSummary;
   canEdit: boolean;
+  canCreateNote: boolean;
   canCreateSuggestion: boolean;
   canReviewSuggestions: boolean;
   canEditExpenses: boolean;
@@ -34,6 +35,7 @@ export function ContextRail({
   currentMember,
   expenseSummary,
   canEdit,
+  canCreateNote,
   canCreateSuggestion,
   canReviewSuggestions,
   canEditExpenses,
@@ -128,10 +130,10 @@ export function ContextRail({
             <form className="stop-note-form" onSubmit={submitNote}>
               <label>
                 <span>เพิ่มโน้ตสำหรับจุดนี้</span>
-                <textarea value={noteBody} disabled={!canCreateSuggestion && !canEdit} onChange={(event) => setNoteBody(event.target.value)} rows={3} />
+                <textarea value={noteBody} disabled={!canCreateNote} onChange={(event) => setNoteBody(event.target.value)} rows={3} />
               </label>
               <span className="stop-note-author">บันทึกในชื่อ {currentMember.displayName}</span>
-              <Button type="submit" variant="secondary" disabled={!noteBody.trim() || (!canCreateSuggestion && !canEdit)}>บันทึกโน้ต</Button>
+              <Button type="submit" variant="secondary" disabled={!canCreateNote || !noteBody.trim()}>บันทึกโน้ต</Button>
             </form>
           </section>
         ) : null}

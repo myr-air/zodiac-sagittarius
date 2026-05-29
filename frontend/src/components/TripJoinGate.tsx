@@ -10,35 +10,59 @@ import {
   verifyTripCredentials,
   verifyTripParticipantPassword,
 } from "@/src/trip/auth";
+import { TripApiError, type JoinTripResponse, type TripApiClient, type TripCockpit } from "@/src/trip/api-client";
 import type { Member, Trip, TripParticipantSession } from "@/src/trip/types";
 
 interface TripJoinGateProps {
-  trip: Trip;
+  trip?: Trip;
+  apiClient?: TripApiClient;
   onTripChange: (trip: Trip) => void;
   onAuthenticated: (session: TripParticipantSession) => void;
+  onCockpitLoaded?: (cockpit: TripCockpit) => void;
 }
 
-export function TripJoinGate({ trip, onTripChange, onAuthenticated }: TripJoinGateProps) {
+export function TripJoinGate({ trip, apiClient, onTripChange, onAuthenticated, onCockpitLoaded }: TripJoinGateProps) {
   const [step, setStep] = useState<"room" | "participant">("room");
   const [joinId, setJoinId] = useState("");
   const [tripPassword, setTripPassword] = useState("");
+  const [joinedTrip, setJoinedTrip] = useState<Trip | null>(null);
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
   const [participantPassword, setParticipantPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const activeTrip = apiClient ? joinedTrip : trip ?? null;
 
   const selectedMember = useMemo(
-    () => trip.members.find((member) => member.id === selectedMemberId) ?? null,
-    [selectedMemberId, trip.members],
+    () => activeTrip?.members.find((member) => member.id === selectedMemberId) ?? null,
+    [activeTrip, selectedMemberId],
   );
 
-  function submitTripRoom(event: FormEvent<HTMLFormElement>) {
+  async function submitTripRoom(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!verifyTripCredentials(trip, { joinId, password: tripPassword })) {
-      setError("Trip ID หรือ password ไม่ถูกต้อง");
-      return;
+    setIsSubmitting(true);
+    try {
+      if (apiClient) {
+        const response = await apiClient.joinTrip({ joinId, password: tripPassword });
+        const nextTrip = tripFromJoinResponse(response);
+        setJoinedTrip(nextTrip);
+        setSelectedMemberId(null);
+        setError(null);
+        setStep("participant");
+        return;
+      }
+
+      if (!activeTrip || !verifyTripCredentials(activeTrip, { joinId, password: tripPassword })) {
+        setError("Trip ID หรือ password ไม่ถูกต้อง");
+        return;
+      }
+      setError(null);
+      setStep("participant");
+    } catch (caught) {
+      setError(errorMessage(caught, "Trip ID หรือ password ไม่ถูกต้อง"));
+    } finally {
+      setIsSubmitting(false);
     }
-    setError(null);
-    setStep("participant");
   }
 
   function selectMember(member: Member) {
@@ -48,28 +72,51 @@ export function TripJoinGate({ trip, onTripChange, onAuthenticated }: TripJoinGa
     setError(null);
   }
 
-  function submitParticipant(event: FormEvent<HTMLFormElement>) {
+  async function submitParticipant(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!selectedMember) return;
+    if (!selectedMember || !activeTrip) return;
+    setIsSubmitting(true);
 
-    if (selectedMember.claimPasswordHash) {
-      if (!verifyTripParticipantPassword(selectedMember, participantPassword)) {
-        setError("รหัสไม่ถูกต้อง");
+    try {
+      if (apiClient) {
+        let session: TripParticipantSession;
+        try {
+          session = await apiClient.claimMember(activeTrip.id, selectedMember.id, participantPassword);
+        } catch (caught) {
+          if (!(caught instanceof TripApiError) || caught.code !== "invalid_request") throw caught;
+          session = await apiClient.loginMember(activeTrip.id, selectedMember.id, participantPassword);
+        }
+        const cockpit = await apiClient.loadTrip(activeTrip.id, session.sessionToken);
+        setJoinedTrip(cockpit.trip);
+        onTripChange(cockpit.trip);
+        onAuthenticated(session);
+        onCockpitLoaded?.(cockpit);
         return;
       }
-      onAuthenticated(createTripParticipantSession(trip, selectedMember.id));
-      return;
-    }
 
-    const claimedTrip = claimTripParticipant(trip, selectedMember.id, participantPassword);
-    const claimedMember = claimedTrip.members.find((member) => member.id === selectedMember.id);
-    if (!claimedMember?.claimPasswordHash) {
-      setError("ตั้งรหัสอย่างน้อย 4 ตัวอักษร");
-      return;
-    }
+      if (selectedMember.claimPasswordHash) {
+        if (!verifyTripParticipantPassword(selectedMember, participantPassword)) {
+          setError("รหัสไม่ถูกต้อง");
+          return;
+        }
+        onAuthenticated(createTripParticipantSession(activeTrip, selectedMember.id));
+        return;
+      }
 
-    onTripChange(claimedTrip);
-    onAuthenticated(createTripParticipantSession(claimedTrip, selectedMember.id));
+      const claimedTrip = claimTripParticipant(activeTrip, selectedMember.id, participantPassword);
+      const claimedMember = claimedTrip.members.find((member) => member.id === selectedMember.id);
+      if (!claimedMember?.claimPasswordHash) {
+        setError("ตั้งรหัสอย่างน้อย 4 ตัวอักษร");
+        return;
+      }
+
+      onTripChange(claimedTrip);
+      onAuthenticated(createTripParticipantSession(claimedTrip, selectedMember.id));
+    } catch (caught) {
+      setError(errorMessage(caught, "รหัสไม่ถูกต้อง"));
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -112,7 +159,7 @@ export function TripJoinGate({ trip, onTripChange, onAuthenticated }: TripJoinGa
                 autoComplete="current-password"
               />
             </label>
-            <Button type="submit" className="join-submit">
+            <Button type="submit" className="join-submit" disabled={isSubmitting}>
               <Icon name="check" />
               เข้าห้อง trip
             </Button>
@@ -120,7 +167,7 @@ export function TripJoinGate({ trip, onTripChange, onAuthenticated }: TripJoinGa
         ) : (
           <div className="participant-step">
             <div className="participant-grid" aria-label="รายชื่อสมาชิกใน trip">
-              {trip.members.map((member) => (
+              {(activeTrip?.members ?? []).map((member) => (
                 <button
                   className="participant-card"
                   disabled={isTripParticipantDisabled(member)}
@@ -158,7 +205,7 @@ export function TripJoinGate({ trip, onTripChange, onAuthenticated }: TripJoinGa
                     autoComplete="current-password"
                   />
                 </label>
-                <Button type="submit" className="join-submit">
+                <Button type="submit" className="join-submit" disabled={isSubmitting}>
                   <Icon name="check" />
                   {selectedMember.claimPasswordHash ? "ยืนยันตัวตน" : "เริ่มใช้งาน"}
                 </Button>
@@ -176,4 +223,37 @@ function roleLabel(role: Member["role"]): string {
   if (role === "organizer") return "Organizer";
   if (role === "traveler") return "Traveller";
   return "Viewer";
+}
+
+function tripFromJoinResponse(response: JoinTripResponse): Trip {
+  return {
+    id: response.trip.id,
+    joinId: response.trip.joinId,
+    joinPasswordHash: "",
+    name: response.trip.name,
+    destinationLabel: response.trip.destinationLabel,
+    startDate: response.trip.startDate,
+    endDate: response.trip.endDate,
+    activePlanVariantId: response.trip.activePlanVariantId ?? "",
+    planVariants: [],
+    members: response.claimableMembers.map((member) => ({
+      id: member.id,
+      displayName: member.displayName,
+      role: member.role,
+      presence: member.presence,
+      color: member.color,
+      userId: member.userId,
+      claimedAt: member.claimedAt,
+      lastSeenAt: member.lastSeenAt,
+      accessStatus: member.accessStatus,
+    })),
+    itineraryItems: [],
+    expenses: [],
+  };
+}
+
+function errorMessage(caught: unknown, fallback: string): string {
+  if (caught instanceof TripApiError) return caught.message;
+  if (caught instanceof Error) return caught.message;
+  return fallback;
 }

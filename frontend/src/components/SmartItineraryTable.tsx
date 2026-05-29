@@ -8,6 +8,7 @@ import { activityTypeLabel, dayRouteLabel, formatDuration, formatThaiDate } from
 
 interface SmartItineraryTableProps {
   canRedo: boolean;
+  canRestructure?: boolean;
   canUndo: boolean;
   contextRailOpen: boolean;
   endDate: string;
@@ -26,6 +27,7 @@ interface SmartItineraryTableProps {
 
 export function SmartItineraryTable({
   canRedo,
+  canRestructure = true,
   canUndo,
   contextRailOpen,
   endDate,
@@ -43,6 +45,7 @@ export function SmartItineraryTable({
 }: SmartItineraryTableProps) {
   const groups = groupItemsByDay(items);
   const canEdit = role === "owner" || role === "organizer";
+  const canRestructureItems = canEdit && canRestructure;
   const warningCount = items.reduce((total, item) => total + (item.advisories?.length ?? 0), 0);
   const totalMinutes = items.reduce((total, item) => total + (item.durationMinutes ?? 0), 0);
   const [collapsedDays, setCollapsedDays] = useState<string[]>([]);
@@ -59,7 +62,7 @@ export function SmartItineraryTable({
   }
 
   function previewDrop(event: DragEvent<HTMLElement>, targetItemId: string) {
-    if (!canEdit) return;
+    if (!canRestructureItems) return;
     const draggedItemId = dragState.draggedItemId ?? event.dataTransfer.getData("text/plain");
     if (!draggedItemId || draggedItemId === targetItemId) return;
     event.preventDefault();
@@ -68,7 +71,7 @@ export function SmartItineraryTable({
   }
 
   function dropItem(event: DragEvent<HTMLElement>, targetItemId: string) {
-    if (!canEdit) return;
+    if (!canRestructureItems) return;
     event.preventDefault();
     const draggedItemId = event.dataTransfer.getData("text/plain");
     if (draggedItemId && draggedItemId !== targetItemId) onMoveItem(draggedItemId, targetItemId);
@@ -94,7 +97,7 @@ export function SmartItineraryTable({
         )}
         aside={(
           <div className="page-header-actions" role="group" aria-label="Itinerary actions">
-            <Button type="button" onClick={onAddStop} disabled={!canEdit} className="add-stop-button">
+            <Button type="button" onClick={onAddStop} disabled={!canRestructureItems} className="add-stop-button">
               <Icon name="plus" />
               เพิ่มสถานที่ / กิจกรรม
             </Button>
@@ -123,7 +126,9 @@ export function SmartItineraryTable({
           <caption className="sr-only">Trip itinerary rows grouped by day.</caption>
           <thead>
             <tr>
-              <th aria-label="จัดลำดับ" />
+              <th>
+                <span className="sr-only">จัดลำดับ</span>
+              </th>
               <th>เวลา</th>
               <th>กิจกรรม / สถานที่</th>
               <th>ประเภท</th>
@@ -135,7 +140,7 @@ export function SmartItineraryTable({
           </thead>
           {groups.map((group) => (
             <DayGroup
-              canEdit={canEdit}
+              canEdit={canRestructureItems}
               collapsed={collapsedDays.includes(group.day)}
               dragState={dragState}
               group={group}

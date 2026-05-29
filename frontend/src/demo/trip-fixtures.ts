@@ -1,6 +1,6 @@
-import { buildExpenseSummary } from "./expenses";
-import { seedTrip } from "./seed";
-import type { StopNote, Suggestion, Trip, TripTask } from "./types";
+import { buildExpenseSummary } from "../trip/expenses";
+import { seedTrip } from "../trip/seed";
+import type { StopNote, Suggestion, Trip, TripTask } from "../trip/types";
 
 export type TripFixtureRole = "owner" | "organizer" | "traveler" | "viewer";
 

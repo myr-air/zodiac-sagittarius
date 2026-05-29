@@ -93,6 +93,7 @@ export interface TripTask {
   createdBy: string;
   assigneeId?: string | null;
   relatedItemId?: string | null;
+  version?: number;
 }
 
 export interface StopNote {

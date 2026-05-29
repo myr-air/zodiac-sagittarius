@@ -267,7 +267,7 @@ Run:
 rtk cargo test --manifest-path backend/crates/sagittarius-api/Cargo.toml permissions_contract -- --nocapture
 ```
 
-Expected: FAIL because `TripRole`, `Capability`, and `can` are not implemented.
+Expected: FAIL because `TripRole`, `Capability`, and `can` are not present at this plan step.
 
 - [ ] **Step 3: Implement domain types and capability checks**
 
@@ -701,7 +701,7 @@ Run:
 rtk cargo test --manifest-path backend/crates/sagittarius-api/Cargo.toml http_contract -- --nocapture
 ```
 
-Expected: FAIL because `api::router` and `AppState::test` are not implemented.
+Expected: FAIL because `api::router` and `AppState::test` are not present at this plan step.
 
 - [ ] **Step 3: Implement app state, router, and error response**
 
@@ -928,7 +928,7 @@ Run:
 rtk env DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/sagittarius_test cargo test --manifest-path backend/crates/sagittarius-api/Cargo.toml join_session_contract -- --nocapture
 ```
 
-Expected: FAIL because support fixture helpers and auth endpoints are not implemented.
+Expected: FAIL because support fixture helpers and auth endpoints are not present at this plan step.
 
 - [ ] **Step 3: Implement fixture helpers and auth routes**
 
@@ -1684,7 +1684,7 @@ Run:
 rtk env DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/sagittarius_test cargo test --manifest-path backend/crates/sagittarius-api/Cargo.toml realtime_contract -- --nocapture
 ```
 
-Expected: FAIL because event replay is not implemented.
+Expected: FAIL because event replay is not present at this plan step.
 
 - [ ] **Step 3: Implement event envelopes, replay, and WebSocket route**
 

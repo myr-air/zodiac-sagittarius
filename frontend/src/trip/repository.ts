@@ -7,9 +7,8 @@ export interface TripRepository {
   saveTrip(trip: Trip): void;
   clearDraft(): void;
   describeSource(): {
-    mode: "local";
-    futureRestBase: "/trips/:tripId";
-    futureWebSocketEvents: string[];
+    mode: "demo";
+    restBase: "demo-fixture";
   };
 }
 
@@ -32,19 +31,8 @@ export function createLocalTripRepository(storageKey: string, storage: TripStora
     },
     describeSource() {
       return {
-        mode: "local",
-        futureRestBase: "/trips/:tripId",
-        futureWebSocketEvents: [
-          "trip.updated",
-          "plan.updated",
-          "itinerary_item.created",
-          "itinerary_item.updated",
-          "itinerary_item.deleted",
-          "suggestion.created",
-          "suggestion.resolved",
-          "presence.updated",
-          "expense.summary_updated",
-        ],
+        mode: "demo",
+        restBase: "demo-fixture",
       };
     },
   };

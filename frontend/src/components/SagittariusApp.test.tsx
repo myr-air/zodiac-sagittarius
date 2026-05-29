@@ -1,9 +1,11 @@
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { SagittariusApp } from "@/src/app/SagittariusApp";
+import type { TripApiClient, TripCockpit } from "@/src/trip/api-client";
 import { tripParticipantSessionStorageKey } from "@/src/trip/auth";
 import { seedTrip } from "@/src/trip/seed";
+import type { Trip } from "@/src/trip/types";
 
 describe("Sagittarius cockpit UI", () => {
   it("can require trip participant authentication before opening the cockpit", async () => {
@@ -67,6 +69,361 @@ describe("Sagittarius cockpit UI", () => {
 
     expect(screen.getByLabelText(/รหัสของ Explorer Friend/i)).toBeInTheDocument();
     expect(screen.queryByLabelText(/ตั้งรหัสสำหรับ Explorer Friend/i)).not.toBeInTheDocument();
+  });
+
+  it("creates overview tasks through the API client after backend login", async () => {
+    const user = userEvent.setup();
+    const ownerTrip = {
+      ...seedTrip,
+      joinPasswordHash: "",
+      members: [{ ...seedTrip.members[0], claimPasswordHash: null }],
+    };
+    const cockpit: TripCockpit = {
+      trip: ownerTrip,
+      suggestions: [],
+      tasks: [],
+      stopNotes: [],
+      expenseSummary: null,
+    };
+    const apiClient: TripApiClient = {
+      joinTrip: vi.fn().mockResolvedValue({
+        trip: {
+          id: ownerTrip.id,
+          name: ownerTrip.name,
+          destinationLabel: ownerTrip.destinationLabel,
+          startDate: ownerTrip.startDate,
+          endDate: ownerTrip.endDate,
+          joinId: ownerTrip.joinId,
+          activePlanVariantId: ownerTrip.activePlanVariantId,
+          ownerMemberId: ownerTrip.members[0].id,
+          version: 1,
+        },
+        claimableMembers: [
+          {
+            id: ownerTrip.members[0].id,
+            tripId: ownerTrip.id,
+            displayName: ownerTrip.members[0].displayName,
+            role: "owner",
+            accessStatus: "active",
+            presence: "offline",
+            color: ownerTrip.members[0].color,
+            userId: null,
+            claimedAt: null,
+            lastSeenAt: null,
+          },
+        ],
+      }),
+      claimMember: vi.fn().mockResolvedValue({
+        tripId: ownerTrip.id,
+        memberId: ownerTrip.members[0].id,
+        sessionToken: "session-token",
+        createdAt: "2026-05-29T00:00:00.000Z",
+        expiresAt: "2026-06-28T00:00:00.000Z",
+      }),
+      loginMember: vi.fn(),
+      logout: vi.fn(),
+      loadTrip: vi.fn().mockResolvedValue(cockpit),
+      createTask: vi.fn().mockResolvedValue({
+        id: "task-api-created",
+        title: "แลกเงิน HKD",
+        status: "open",
+        visibility: "shared",
+        kind: "prep",
+        createdBy: ownerTrip.members[0].id,
+        assigneeId: ownerTrip.members[0].id,
+        relatedItemId: null,
+        version: 1,
+      }),
+      patchTask: vi.fn(),
+      patchItineraryItem: vi.fn(),
+      createSuggestion: vi.fn(),
+      approveSuggestion: vi.fn(),
+      rejectSuggestion: vi.fn(),
+    };
+
+    render(<SagittariusApp requireJoin dataSource="api" apiClient={apiClient} />);
+
+    await user.type(screen.getByLabelText(/Trip ID/i), "HK-SZ-2025");
+    await user.type(screen.getByLabelText(/Trip password/i), "dim-sum-run");
+    await user.click(screen.getByRole("button", { name: /เข้าห้อง trip/i }));
+    await user.click(await screen.findByRole("button", { name: /Demo Traveler/i }));
+    await user.type(screen.getByLabelText(/ตั้งรหัสสำหรับ Demo Traveler/i), "owner-pin");
+    await user.click(screen.getByRole("button", { name: /เริ่มใช้งาน/i }));
+
+    const tasks = await screen.findByRole("region", { name: /Trip checklist/i });
+    await user.click(within(tasks).getByRole("button", { name: /เพิ่มเช็กลิสต์/i }));
+    const taskDialog = screen.getByRole("dialog", { name: /เพิ่มเช็กลิสต์/i });
+    await user.type(within(taskDialog).getByLabelText(/เพิ่มเช็กลิสต์/i), "แลกเงิน HKD");
+    await user.selectOptions(within(taskDialog).getByLabelText(/เก็บไว้ที่/i), "shared");
+    await user.click(within(taskDialog).getByRole("button", { name: /เพิ่มเช็กลิสต์/i }));
+
+    expect(apiClient.createTask).toHaveBeenCalledWith(
+      ownerTrip.id,
+      "session-token",
+      expect.objectContaining({ title: "แลกเงิน HKD", visibility: "shared", assigneeId: null }),
+    );
+    expect(within(tasks).getByText(/แลกเงิน HKD/i)).toBeInTheDocument();
+  });
+
+  it("hydrates a persisted API session from the backend", async () => {
+    installLocalStorageStub();
+    const apiTrip = {
+      ...seedTrip,
+      name: "Persisted API Trip",
+      joinPasswordHash: "",
+      members: [{ ...seedTrip.members[0], claimPasswordHash: null }],
+    };
+    window.localStorage.setItem(
+      tripParticipantSessionStorageKey,
+      JSON.stringify({
+        tripId: apiTrip.id,
+        memberId: apiTrip.members[0].id,
+        sessionToken: "persisted-session-token",
+        createdAt: "2026-05-29T00:00:00.000Z",
+        expiresAt: "2026-06-28T00:00:00.000Z",
+      }),
+    );
+    const apiClient = createApiClientForTrip(apiTrip);
+
+    render(<SagittariusApp requireJoin dataSource="api" initialView="overview" apiClient={apiClient} />);
+
+    await waitFor(() => expect(apiClient.loadTrip).toHaveBeenCalledWith(apiTrip.id, "persisted-session-token"));
+    expect(await screen.findByRole("heading", { name: /Persisted API Trip/i })).toBeInTheDocument();
+  });
+
+  it("edits itinerary stops and resolves suggestions through the API client after backend login", async () => {
+    const user = userEvent.setup();
+    installLocalStorageStub();
+    const selectedItem = seedTrip.itineraryItems.find((item) => item.id === "item-dimdim")!;
+    const ownerTrip = {
+      ...seedTrip,
+      joinPasswordHash: "",
+      members: seedTrip.members.slice(0, 2).map((member) => ({ ...member, claimPasswordHash: null })),
+    };
+    const pendingSuggestion = {
+      id: "suggestion-api-review",
+      tripId: ownerTrip.id,
+      proposerId: ownerTrip.members[1].id,
+      type: "edit" as const,
+      targetItemId: selectedItem.id,
+      planVariantId: selectedItem.planVariantId,
+      proposedPatch: { note: "Book ahead from API" },
+      sourceVersion: selectedItem.version,
+      status: "pending" as const,
+      createdAt: "2026-05-29T00:00:00.000Z",
+    };
+    const patchedItem = {
+      ...selectedItem,
+      activity: "Dim Dim Sum API revised",
+      updatedAt: "2026-05-29T00:00:00.000Z",
+      version: selectedItem.version + 1,
+    };
+    const cockpit: TripCockpit = {
+      trip: ownerTrip,
+      suggestions: [pendingSuggestion],
+      tasks: [],
+      stopNotes: [],
+      expenseSummary: null,
+    };
+    const apiClient: TripApiClient = {
+      joinTrip: vi.fn().mockResolvedValue({
+        trip: {
+          id: ownerTrip.id,
+          name: ownerTrip.name,
+          destinationLabel: ownerTrip.destinationLabel,
+          startDate: ownerTrip.startDate,
+          endDate: ownerTrip.endDate,
+          joinId: ownerTrip.joinId,
+          activePlanVariantId: ownerTrip.activePlanVariantId,
+          ownerMemberId: ownerTrip.members[0].id,
+          version: 1,
+        },
+        claimableMembers: ownerTrip.members.map((member) => ({
+          id: member.id,
+          tripId: ownerTrip.id,
+          displayName: member.displayName,
+          role: member.role,
+          accessStatus: "active",
+          presence: member.presence,
+          color: member.color,
+          userId: null,
+          claimedAt: null,
+          lastSeenAt: null,
+        })),
+      }),
+      claimMember: vi.fn().mockResolvedValue({
+        tripId: ownerTrip.id,
+        memberId: ownerTrip.members[0].id,
+        sessionToken: "session-token",
+        createdAt: "2026-05-29T00:00:00.000Z",
+        expiresAt: "2026-06-28T00:00:00.000Z",
+      }),
+      loginMember: vi.fn(),
+      logout: vi.fn(),
+      loadTrip: vi.fn().mockResolvedValue(cockpit),
+      createTask: vi.fn(),
+      patchTask: vi.fn(),
+      patchItineraryItem: vi.fn().mockResolvedValue(patchedItem),
+      createSuggestion: vi.fn(),
+      approveSuggestion: vi.fn().mockResolvedValue({ ...pendingSuggestion, status: "approved" }),
+      rejectSuggestion: vi.fn(),
+    };
+
+    render(<SagittariusApp requireJoin dataSource="api" initialView="itinerary" apiClient={apiClient} />);
+
+    await user.type(screen.getByLabelText(/Trip ID/i), "HK-SZ-2025");
+    await user.type(screen.getByLabelText(/Trip password/i), "dim-sum-run");
+    await user.click(screen.getByRole("button", { name: /เข้าห้อง trip/i }));
+    await user.click(await screen.findByRole("button", { name: /Demo Traveler/i }));
+    await user.type(screen.getByLabelText(/ตั้งรหัสสำหรับ Demo Traveler/i), "owner-pin");
+    await user.click(screen.getByRole("button", { name: /เริ่มใช้งาน/i }));
+
+    await user.click(await screen.findByRole("button", { name: /Open details/i }));
+    await user.click(screen.getByRole("button", { name: /แก้ไขรายละเอียด/i }));
+    const dialog = screen.getByRole("dialog", { name: /แก้ไขรายละเอียด/i });
+    await user.clear(within(dialog).getByLabelText(/กิจกรรม/i));
+    await user.type(within(dialog).getByLabelText(/กิจกรรม/i), "Dim Dim Sum API revised");
+    await user.click(within(dialog).getByRole("button", { name: /บันทึกการแก้ไข/i }));
+
+    expect(apiClient.patchItineraryItem).toHaveBeenCalledWith(
+      selectedItem.id,
+      "session-token",
+      expect.objectContaining({
+        expectedVersion: selectedItem.version,
+        patch: expect.objectContaining({ activity: "Dim Dim Sum API revised" }),
+      }),
+    );
+    expect(within(screen.getByRole("complementary", { name: /Planning context/i })).getByRole("heading", { name: /Dim Dim Sum API revised/i })).toBeInTheDocument();
+
+    const context = screen.getByRole("complementary", { name: /Planning context/i });
+    await user.click(within(context).getByRole("tab", { name: /ข้อเสนอ/i }));
+    await user.click(within(context).getByRole("button", { name: /อนุมัติ Book ahead from API/i }));
+
+    expect(apiClient.approveSuggestion).toHaveBeenCalledWith(pendingSuggestion.id, "session-token");
+    expect(within(context).queryByText(/Book ahead from API/i)).not.toBeInTheDocument();
+  });
+
+  it("creates traveler suggestions through the API client after backend login", async () => {
+    const user = userEvent.setup();
+    installLocalStorageStub();
+    const selectedItem = seedTrip.itineraryItems.find((item) => item.id === "item-dimdim")!;
+    const traveler = { ...seedTrip.members.find((member) => member.id === "member-nam")!, claimPasswordHash: null };
+    const travelerTrip = { ...seedTrip, joinPasswordHash: "", members: [traveler] };
+    const cockpit: TripCockpit = {
+      trip: travelerTrip,
+      suggestions: [],
+      tasks: [],
+      stopNotes: [],
+      expenseSummary: null,
+    };
+    const apiSuggestion = {
+      id: "suggestion-api-created",
+      tripId: travelerTrip.id,
+      proposerId: traveler.id,
+      type: "edit" as const,
+      targetItemId: selectedItem.id,
+      planVariantId: selectedItem.planVariantId,
+      proposedPatch: { activity: selectedItem.activity },
+      sourceVersion: selectedItem.version,
+      status: "pending" as const,
+      createdAt: "2026-05-29T00:00:00.000Z",
+    };
+    const apiClient: TripApiClient = {
+      joinTrip: vi.fn().mockResolvedValue({
+        trip: {
+          id: travelerTrip.id,
+          name: travelerTrip.name,
+          destinationLabel: travelerTrip.destinationLabel,
+          startDate: travelerTrip.startDate,
+          endDate: travelerTrip.endDate,
+          joinId: travelerTrip.joinId,
+          activePlanVariantId: travelerTrip.activePlanVariantId,
+          ownerMemberId: traveler.id,
+          version: 1,
+        },
+        claimableMembers: [{
+          id: traveler.id,
+          tripId: travelerTrip.id,
+          displayName: traveler.displayName,
+          role: traveler.role,
+          accessStatus: "active",
+          presence: traveler.presence,
+          color: traveler.color,
+          userId: null,
+          claimedAt: null,
+          lastSeenAt: null,
+        }],
+      }),
+      claimMember: vi.fn().mockResolvedValue({
+        tripId: travelerTrip.id,
+        memberId: traveler.id,
+        sessionToken: "traveler-session-token",
+        createdAt: "2026-05-29T00:00:00.000Z",
+        expiresAt: "2026-06-28T00:00:00.000Z",
+      }),
+      loginMember: vi.fn(),
+      logout: vi.fn(),
+      loadTrip: vi.fn().mockResolvedValue(cockpit),
+      createTask: vi.fn(),
+      patchTask: vi.fn(),
+      patchItineraryItem: vi.fn(),
+      createSuggestion: vi.fn().mockResolvedValue(apiSuggestion),
+      approveSuggestion: vi.fn(),
+      rejectSuggestion: vi.fn(),
+    };
+
+    render(<SagittariusApp requireJoin dataSource="api" initialView="itinerary" apiClient={apiClient} />);
+
+    await user.type(screen.getByLabelText(/Trip ID/i), "HK-SZ-2025");
+    await user.type(screen.getByLabelText(/Trip password/i), "dim-sum-run");
+    await user.click(screen.getByRole("button", { name: /เข้าห้อง trip/i }));
+    await user.click(await screen.findByRole("button", { name: /Explorer Friend/i }));
+    await user.type(screen.getByLabelText(/ตั้งรหัสสำหรับ Explorer Friend/i), "traveler-pin");
+    await user.click(screen.getByRole("button", { name: /เริ่มใช้งาน/i }));
+    await user.click(await screen.findByRole("button", { name: /Open details/i }));
+    await user.click(screen.getByRole("button", { name: /เสนอแก้ไข/i }));
+
+    expect(apiClient.createSuggestion).toHaveBeenCalledWith(
+      travelerTrip.id,
+      "traveler-session-token",
+      expect.objectContaining({
+        type: "edit",
+        targetItemId: selectedItem.id,
+        sourceVersion: selectedItem.version,
+        proposedPatch: { activity: selectedItem.activity },
+      }),
+    );
+    expect(screen.getByText(/Explorer Friend suggested an update/i)).toBeInTheDocument();
+  });
+
+  it("keeps future write-only surfaces read-only in API mode until backend routes exist", async () => {
+    const user = userEvent.setup();
+    installLocalStorageStub();
+    const ownerTrip = {
+      ...seedTrip,
+      joinPasswordHash: "",
+      members: [{ ...seedTrip.members[0], claimPasswordHash: null }],
+    };
+    const itineraryClient = createApiClientForTrip(ownerTrip);
+    const { unmount } = render(<SagittariusApp requireJoin dataSource="api" initialView="itinerary" apiClient={itineraryClient} />);
+
+    await loginApiTrip(user);
+    expect(screen.getByRole("button", { name: /เพิ่มสถานที่ \/ กิจกรรม/i })).toBeDisabled();
+    await user.click(await screen.findByRole("button", { name: /Open details/i }));
+
+    const context = screen.getByRole("complementary", { name: /Planning context/i });
+    expect(within(context).getByLabelText(/เพิ่มโน้ตสำหรับจุดนี้/i)).toBeDisabled();
+    expect(within(context).getByRole("button", { name: /บันทึกโน้ต/i })).toBeDisabled();
+    expect(within(context).getByRole("button", { name: /เพิ่ม\/แก้ไขค่าใช้จ่าย/i })).toBeDisabled();
+    unmount();
+    window.localStorage.clear();
+
+    const membersClient = createApiClientForTrip(ownerTrip);
+    render(<SagittariusApp requireJoin dataSource="api" initialView="members" apiClient={membersClient} />);
+    await loginApiTrip(user);
+
+    expect(screen.getByRole("button", { name: /เปิดฟอร์มเพิ่มสมาชิก/i })).toBeDisabled();
+    expect(screen.getByRole("button", { name: /คัดลอกลิงก์เชิญ/i })).toBeDisabled();
   });
 
   it("opens directly into the trip overview instead of a marketing landing page", () => {
@@ -214,7 +571,7 @@ describe("Sagittarius cockpit UI", () => {
 
     expect(membersLink).toHaveClass("rail-link--active");
     expect(membersLink).toHaveAttribute("href", "/members");
-    expect(screen.getByRole("main", { name: /Trip members/i })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: /Trip members/i })).toBeInTheDocument();
     expect(screen.getByRole("region", { name: /People and presence/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /สมาชิกในทริป/i })).toBeInTheDocument();
     expect(screen.queryByRole("region", { name: /Smart itinerary table/i })).not.toBeInTheDocument();
@@ -233,7 +590,7 @@ describe("Sagittarius cockpit UI", () => {
     expect(workspaceGrid).toBeInTheDocument();
     expect(workspaceGrid).toHaveAttribute("data-command-bar", "hidden");
     expect(workspaceGrid).toContainElement(planningMain as HTMLElement);
-    expect(planningMain).toContainElement(screen.getByRole("main", { name: /Trip members/i }));
+    expect(planningMain).toContainElement(screen.getByRole("region", { name: /Trip members/i }));
     expect(screen.queryByRole("button", { name: /เพิ่มสถานที่ \/ กิจกรรม/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /Open details/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /Undo/i })).not.toBeInTheDocument();
@@ -281,7 +638,7 @@ describe("Sagittarius cockpit UI", () => {
 
     await user.type(screen.getByLabelText(/ค้นหาสมาชิก/i), "Family");
 
-    const membersPage = screen.getByRole("main", { name: /Trip members/i });
+    const membersPage = screen.getByRole("region", { name: /Trip members/i });
     expect(within(membersPage).getByRole("button", { name: /ปิดสิทธิ์ Family Member/i })).toBeInTheDocument();
     expect(within(membersPage).queryByText(/Travel Mate/i)).not.toBeInTheDocument();
 
@@ -649,4 +1006,67 @@ function installLocalStorageStub() {
       clear: () => values.clear(),
     },
   });
+}
+
+async function loginApiTrip(user: ReturnType<typeof userEvent.setup>) {
+  await user.type(screen.getByLabelText(/Trip ID/i), "HK-SZ-2025");
+  await user.type(screen.getByLabelText(/Trip password/i), "dim-sum-run");
+  await user.click(screen.getByRole("button", { name: /เข้าห้อง trip/i }));
+  await user.click(await screen.findByRole("button", { name: /Demo Traveler/i }));
+  await user.type(screen.getByLabelText(/ตั้งรหัสสำหรับ Demo Traveler/i), "owner-pin");
+  await user.click(screen.getByRole("button", { name: /เริ่มใช้งาน/i }));
+}
+
+function createApiClientForTrip(trip: Trip): TripApiClient {
+  const cockpit: TripCockpit = {
+    trip,
+    suggestions: [],
+    tasks: [],
+    stopNotes: [],
+    expenseSummary: null,
+  };
+
+  return {
+    joinTrip: vi.fn().mockResolvedValue({
+      trip: {
+        id: trip.id,
+        name: trip.name,
+        destinationLabel: trip.destinationLabel,
+        startDate: trip.startDate,
+        endDate: trip.endDate,
+        joinId: trip.joinId,
+        activePlanVariantId: trip.activePlanVariantId,
+        ownerMemberId: trip.members[0].id,
+        version: 1,
+      },
+      claimableMembers: trip.members.map((member) => ({
+        id: member.id,
+        tripId: trip.id,
+        displayName: member.displayName,
+        role: member.role,
+        accessStatus: member.accessStatus ?? "active",
+        presence: member.presence,
+        color: member.color,
+        userId: member.userId ?? null,
+        claimedAt: member.claimedAt ?? null,
+        lastSeenAt: member.lastSeenAt ?? null,
+      })),
+    }),
+    claimMember: vi.fn().mockResolvedValue({
+      tripId: trip.id,
+      memberId: trip.members[0].id,
+      sessionToken: "session-token",
+      createdAt: "2026-05-29T00:00:00.000Z",
+      expiresAt: "2026-06-28T00:00:00.000Z",
+    }),
+    loginMember: vi.fn(),
+    logout: vi.fn(),
+    loadTrip: vi.fn().mockResolvedValue(cockpit),
+    createTask: vi.fn(),
+    patchTask: vi.fn(),
+    patchItineraryItem: vi.fn(),
+    createSuggestion: vi.fn(),
+    approveSuggestion: vi.fn(),
+    rejectSuggestion: vi.fn(),
+  };
 }

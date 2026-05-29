@@ -1,5 +1,5 @@
 import { SagittariusApp } from "@/src/app/SagittariusApp";
 
 export default function Page() {
-  return <SagittariusApp requireJoin />;
+  return <SagittariusApp requireJoin dataSource="api" />;
 }

@@ -41,7 +41,7 @@ describe("Sagittarius project scaffold", () => {
   });
 
   it("uses Next App Router and the production app entry", () => {
-    expect(readFileSync(join(frontendRoot, "app/page.tsx"), "utf8")).toContain("<SagittariusApp requireJoin />");
+    expect(readFileSync(join(frontendRoot, "app/page.tsx"), "utf8")).toContain('<SagittariusApp requireJoin dataSource="api" />');
     expect(readFileSync(join(frontendRoot, "app/layout.tsx"), "utf8")).toContain("Sagittarius");
   });
 
@@ -53,7 +53,7 @@ describe("Sagittarius project scaffold", () => {
     expect(css).toContain("--color-warning: #f97316");
   });
 
-  it("documents the future Rust/PostgreSQL API data contract", () => {
+  it("documents the Rust/PostgreSQL API data contract", () => {
     const spec = readFileSync(join(repoRoot, "docs/api-data-spec.md"), "utf8");
 
     expect(spec).toContain("CREATE TABLE trips");
@@ -72,5 +72,17 @@ describe("Sagittarius project scaffold", () => {
 
     expect(makefile).toContain("TEST_DATABASE_URL := postgres://postgres:postgres@127.0.0.1:5432/sagittarius_test");
     expect(makefile).toContain("DATABASE_URL=$(TEST_DATABASE_URL) cargo test --manifest-path $(BACKEND_MANIFEST)");
+  });
+
+  it("keeps the real API e2e runnable from a seeded local backend", () => {
+    const packageJson = JSON.parse(readFileSync(join(frontendRoot, "package.json"), "utf8")) as {
+      scripts?: Record<string, string>;
+    };
+    const makefile = readFileSync(join(repoRoot, "Makefile"), "utf8");
+
+    expect(packageJson.scripts?.["test:e2e:local"]).toBe("bun run scripts/run-local-real-api-e2e.ts");
+    expect(existsSync(join(frontendRoot, "scripts/run-local-real-api-e2e.ts"))).toBe(true);
+    expect(makefile).toContain("frontend-e2e-local:");
+    expect(makefile).toContain("bun run test:e2e:local");
   });
 });
