@@ -82,6 +82,7 @@ pub struct EmailLoginChallengeRecord {
 #[derive(Debug, Clone, FromRow)]
 pub struct UserEmailRecord {
     pub user_id: Uuid,
+    pub disabled_at: Option<OffsetDateTime>,
 }
 
 pub struct NewUser<'a> {

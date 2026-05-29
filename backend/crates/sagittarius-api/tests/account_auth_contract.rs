@@ -325,6 +325,106 @@ async fn preexisting_normalized_email_resumes_existing_user(pool: sqlx::PgPool) 
 }
 
 #[sqlx::test(migrations = "../../migrations")]
+async fn disabled_user_email_login_is_forbidden_and_creates_no_session(pool: sqlx::PgPool) {
+    let disabled_user_id = Uuid::parse_str("018f4e80-0000-7000-a000-000000000001").unwrap();
+    sqlx::query(
+        "insert into users (id, display_name, avatar_color, disabled_at)
+         values ($1, 'Aom Disabled', '#0f766e', now())",
+    )
+    .bind(disabled_user_id)
+    .execute(&pool)
+    .await
+    .unwrap();
+    sqlx::query(
+        "insert into user_emails (id, user_id, email, normalized_email, verified_at)
+         values (gen_random_uuid(), $1, 'aom@example.com', 'aom@example.com', now())",
+    )
+    .bind(disabled_user_id)
+    .execute(&pool)
+    .await
+    .unwrap();
+
+    let app = support::app(pool.clone());
+    let (_, start): (StatusCode, Value) = post_json_response(
+        app.clone(),
+        "/v1/account/email-login/start",
+        json!({"email":"aom@example.com"}),
+    )
+    .await;
+    let (finish_status, body): (StatusCode, Value) = post_json_response(
+        app,
+        "/v1/account/email-login/finish",
+        json!({
+            "challengeId": start["challengeId"],
+            "code": start["devCode"],
+            "trustDevice": false,
+            "deviceLabel": ""
+        }),
+    )
+    .await;
+
+    assert_eq!(finish_status, StatusCode::FORBIDDEN);
+    assert_eq!(body["code"], "forbidden");
+    let session_count: i64 =
+        sqlx::query_scalar("select count(*) from user_sessions where user_id = $1")
+            .bind(disabled_user_id)
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+    assert_eq!(session_count, 0);
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn successful_email_login_verifies_existing_unverified_email(pool: sqlx::PgPool) {
+    let existing_user_id = Uuid::parse_str("018f4e80-0000-7000-a000-000000000001").unwrap();
+    sqlx::query(
+        "insert into users (id, display_name, avatar_color)
+         values ($1, 'Aom Unverified', '#0f766e')",
+    )
+    .bind(existing_user_id)
+    .execute(&pool)
+    .await
+    .unwrap();
+    sqlx::query(
+        "insert into user_emails (id, user_id, email, normalized_email, verified_at)
+         values (gen_random_uuid(), $1, 'aom@example.com', 'aom@example.com', null)",
+    )
+    .bind(existing_user_id)
+    .execute(&pool)
+    .await
+    .unwrap();
+
+    let app = support::app(pool.clone());
+    let (_, start): (StatusCode, Value) = post_json_response(
+        app.clone(),
+        "/v1/account/email-login/start",
+        json!({"email":" Aom@Example.COM "}),
+    )
+    .await;
+    let (finish_status, session): (StatusCode, Value) = post_json_response(
+        app,
+        "/v1/account/email-login/finish",
+        json!({
+            "challengeId": start["challengeId"],
+            "code": start["devCode"],
+            "trustDevice": false,
+            "deviceLabel": ""
+        }),
+    )
+    .await;
+
+    assert_eq!(finish_status, StatusCode::OK);
+    assert_eq!(session["userId"], existing_user_id.to_string());
+    let verified_at: Option<time::OffsetDateTime> =
+        sqlx::query_scalar("select verified_at from user_emails where user_id = $1")
+            .bind(existing_user_id)
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+    assert!(verified_at.is_some());
+}
+
+#[sqlx::test(migrations = "../../migrations")]
 async fn trusted_login_creates_trusted_device_and_session(pool: sqlx::PgPool) {
     let app = support::app(pool.clone());
     let (_, start): (StatusCode, Value) = post_json_response(

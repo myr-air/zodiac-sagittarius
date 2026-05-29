@@ -156,6 +156,10 @@ async fn find_or_create_user(
         db::account_queries::delete_user(tx, user_id).await?;
     }
 
+    if record.disabled_at.is_some() {
+        return Err(ServiceError::Forbidden);
+    }
+
     Ok(record.user_id)
 }
 

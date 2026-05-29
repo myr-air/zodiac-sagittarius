@@ -66,11 +66,18 @@ pub async fn insert_user_email_or_resume(
     user_email: NewUserEmail<'_>,
 ) -> Result<UserEmailRecord, sqlx::Error> {
     sqlx::query_as::<_, UserEmailRecord>(
-        "insert into user_emails (id, user_id, email, normalized_email, verified_at)
-         values ($1, $2, $3, $4, $5)
-         on conflict (normalized_email) do update
-         set normalized_email = excluded.normalized_email
-         returning user_id",
+        "with upserted as (
+           insert into user_emails (id, user_id, email, normalized_email, verified_at)
+           values ($1, $2, $3, $4, $5)
+           on conflict (normalized_email) do update
+           set
+             normalized_email = excluded.normalized_email,
+             verified_at = coalesce(user_emails.verified_at, excluded.verified_at)
+           returning user_id
+         )
+         select upserted.user_id, users.disabled_at
+         from upserted
+         join users on users.id = upserted.user_id",
     )
     .bind(user_email.id)
     .bind(user_email.user_id)
