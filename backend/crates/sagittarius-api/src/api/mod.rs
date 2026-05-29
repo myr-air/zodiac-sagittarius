@@ -7,13 +7,29 @@ pub mod tasks;
 pub mod trips;
 pub mod ws;
 
-use axum::{Router, routing::get};
+use axum::{
+    Router,
+    routing::{get, post},
+};
 
 use crate::app::AppState;
 
 pub fn router(state: AppState) -> Router {
     Router::new()
         .route("/v1/health", get(|| async { "ok" }))
+        .route("/v1/trips/join", post(join::join_trip))
+        .route(
+            "/v1/trips/{trip_id}/members/{member_id}/claim",
+            post(join::claim_member),
+        )
+        .route(
+            "/v1/trips/{trip_id}/members/{member_id}/login",
+            post(join::login_member),
+        )
+        .route(
+            "/v1/trips/{trip_id}/member-session/logout",
+            post(join::logout),
+        )
         .fallback(error::not_found)
         .with_state(state)
 }

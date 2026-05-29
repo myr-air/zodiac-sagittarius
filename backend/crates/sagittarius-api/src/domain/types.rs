@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 use sqlx::Type;
+use time::Date;
 use uuid::Uuid;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Type)]
@@ -42,4 +43,35 @@ pub struct MemberSession {
     pub session_token: String,
     pub created_at: String,
     pub expires_at: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TripSummary {
+    pub id: Uuid,
+    pub name: String,
+    pub destination_label: String,
+    pub start_date: Date,
+    pub end_date: Date,
+    pub join_id: String,
+    pub active_plan_variant_id: Option<Uuid>,
+    pub owner_member_id: Uuid,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ClaimableMember {
+    pub id: Uuid,
+    pub trip_id: Uuid,
+    pub display_name: String,
+    pub role: TripRole,
+    pub access_status: TripMemberAccessStatus,
+    pub color: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct JoinTripResponse {
+    pub trip: TripSummary,
+    pub claimable_members: Vec<ClaimableMember>,
 }
