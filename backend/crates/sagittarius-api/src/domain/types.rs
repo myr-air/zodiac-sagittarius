@@ -46,6 +46,78 @@ pub struct MemberSession {
     pub expires_at: String,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
+#[sqlx(type_name = "text", rename_all = "lowercase")]
+pub enum AccountSessionKind {
+    Temporary,
+    Trusted,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AccountSession {
+    pub user_id: Uuid,
+    pub session_token: String,
+    pub kind: AccountSessionKind,
+    pub created_at: String,
+    pub expires_at: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AccountProfile {
+    pub id: Uuid,
+    pub display_name: String,
+    pub avatar_color: String,
+    pub locale: String,
+    pub timezone: String,
+    pub primary_email: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TrustedDeviceSummary {
+    pub id: Uuid,
+    pub label: String,
+    pub user_agent: String,
+    pub created_at: String,
+    pub last_seen_at: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PasskeySummary {
+    pub id: Uuid,
+    pub nickname: String,
+    pub created_at: String,
+    pub last_used_at: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AccountSettings {
+    pub profile: AccountProfile,
+    pub passkeys: Vec<PasskeySummary>,
+    pub trusted_devices: Vec<TrustedDeviceSummary>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct EmailLoginStartResponse {
+    pub challenge_id: Uuid,
+    pub expires_at: String,
+    pub dev_code: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PasskeyChallengeResponse {
+    pub challenge_id: Uuid,
+    pub challenge: String,
+    pub expires_at: String,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TripSummary {
@@ -193,4 +265,56 @@ pub struct TripCockpit {
     pub suggestions: Vec<SuggestionSummary>,
     pub tasks: Vec<TripTaskSummary>,
     pub expense_summary: Option<ExpenseSummary>,
+}
+
+#[cfg(test)]
+mod account_type_tests {
+    use super::*;
+
+    #[test]
+    fn account_session_kind_serializes_as_camel_case() {
+        assert_eq!(
+            serde_json::to_value(AccountSessionKind::Temporary).unwrap(),
+            serde_json::json!("temporary")
+        );
+        assert_eq!(
+            serde_json::to_value(AccountSessionKind::Trusted).unwrap(),
+            serde_json::json!("trusted")
+        );
+    }
+
+    #[test]
+    fn account_dtos_serialize_with_camel_case_fields() {
+        let user_id = Uuid::parse_str("018f4e80-0000-7000-a000-000000000001").unwrap();
+        let credential_id = Uuid::parse_str("018f4e80-0000-7000-a000-000000000002").unwrap();
+        let settings = AccountSettings {
+            profile: AccountProfile {
+                id: user_id,
+                display_name: "Aom".to_string(),
+                avatar_color: "#0f766e".to_string(),
+                locale: "th-TH".to_string(),
+                timezone: "Asia/Bangkok".to_string(),
+                primary_email: Some("aom@example.com".to_string()),
+            },
+            passkeys: vec![PasskeySummary {
+                id: credential_id,
+                nickname: "MacBook".to_string(),
+                created_at: "2026-05-30T00:00:00Z".to_string(),
+                last_used_at: None,
+            }],
+            trusted_devices: vec![TrustedDeviceSummary {
+                id: credential_id,
+                label: "MacBook".to_string(),
+                user_agent: "Safari".to_string(),
+                created_at: "2026-05-30T00:00:00Z".to_string(),
+                last_seen_at: Some("2026-05-30T01:00:00Z".to_string()),
+            }],
+        };
+
+        let value = serde_json::to_value(settings).unwrap();
+        assert_eq!(value["profile"]["displayName"], "Aom");
+        assert_eq!(value["profile"]["primaryEmail"], "aom@example.com");
+        assert_eq!(value["trustedDevices"][0]["userAgent"], "Safari");
+        assert_eq!(value["passkeys"][0]["lastUsedAt"], serde_json::Value::Null);
+    }
 }

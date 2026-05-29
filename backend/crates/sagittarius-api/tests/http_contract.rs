@@ -104,3 +104,24 @@ async fn database_errors_do_not_leak_details() {
             .contains("no rows returned")
     );
 }
+
+#[tokio::test]
+async fn account_conflict_errors_return_stable_codes() {
+    let identity_response = ServiceError::IdentityAlreadyLinked.into_response();
+    assert_eq!(identity_response.status(), StatusCode::CONFLICT);
+    let identity_body = axum::body::to_bytes(identity_response.into_body(), usize::MAX)
+        .await
+        .unwrap();
+    let identity_body: Value = serde_json::from_slice(&identity_body).unwrap();
+    assert_eq!(identity_body["code"], "identity_already_linked");
+    assert_eq!(identity_body["message"], "identity already linked");
+
+    let owner_response = ServiceError::OwnerTransferInvalid.into_response();
+    assert_eq!(owner_response.status(), StatusCode::CONFLICT);
+    let owner_body = axum::body::to_bytes(owner_response.into_body(), usize::MAX)
+        .await
+        .unwrap();
+    let owner_body: Value = serde_json::from_slice(&owner_body).unwrap();
+    assert_eq!(owner_body["code"], "owner_transfer_invalid");
+    assert_eq!(owner_body["message"], "owner transfer invalid");
+}

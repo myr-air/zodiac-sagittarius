@@ -10,6 +10,10 @@ pub enum ServiceError {
     Forbidden,
     #[error("not found")]
     NotFound,
+    #[error("identity already linked")]
+    IdentityAlreadyLinked,
+    #[error("owner transfer invalid")]
+    OwnerTransferInvalid,
     #[error("version conflict")]
     VersionConflict,
     #[error("version conflict")]

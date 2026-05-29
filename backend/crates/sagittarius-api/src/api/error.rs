@@ -41,6 +41,18 @@ impl IntoResponse for ServiceError {
             ),
             ServiceError::Forbidden => (StatusCode::FORBIDDEN, "forbidden", self.to_string(), None),
             ServiceError::NotFound => (StatusCode::NOT_FOUND, "not_found", self.to_string(), None),
+            ServiceError::IdentityAlreadyLinked => (
+                StatusCode::CONFLICT,
+                "identity_already_linked",
+                self.to_string(),
+                None,
+            ),
+            ServiceError::OwnerTransferInvalid => (
+                StatusCode::CONFLICT,
+                "owner_transfer_invalid",
+                self.to_string(),
+                None,
+            ),
             ServiceError::VersionConflict => (
                 StatusCode::CONFLICT,
                 "version_conflict",
