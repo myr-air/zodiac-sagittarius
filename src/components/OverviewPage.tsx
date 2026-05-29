@@ -2,6 +2,7 @@ import { type FormEvent, useMemo, useState } from "react";
 import type { ExpenseSummary, ItineraryItem, Member, Suggestion, Trip, TripTask } from "@/src/trip/types";
 import { formatDayLabel, getTripDates, validateItineraryItem } from "@/src/trip/itinerary";
 import { Icon } from "./icons";
+import { formatTripRange, PageHeader, PageUserCard } from "./PageHeader";
 
 interface OverviewPageProps {
   trip: Trip;
@@ -17,6 +18,7 @@ interface OverviewPageProps {
 export function OverviewPage({ trip, currentMemberId, expenseSummary, items, suggestions, tasks, onCreateTask, onToggleTaskStatus }: OverviewPageProps) {
   const [taskScope, setTaskScope] = useState<"mine" | "trip" | "all">("mine");
   const [taskStatusFilter, setTaskStatusFilter] = useState<"all" | "open" | "done">("all");
+  const [isTaskDialogOpen, setIsTaskDialogOpen] = useState(false);
   const [newTaskTitle, setNewTaskTitle] = useState("");
   const [newTaskVisibility, setNewTaskVisibility] = useState<TripTask["visibility"]>("private");
   const [newTaskAssigneeId, setNewTaskAssigneeId] = useState("");
@@ -34,7 +36,6 @@ export function OverviewPage({ trip, currentMemberId, expenseSummary, items, sug
   const assignableMembers = trip.members.filter((member) => member.id !== "member-viewer" && member.accessStatus !== "disabled");
   const myOpenTasks = tasks.filter((task) => task.status === "open" && isMyTask(task, currentMemberId)).length;
   const sharedOpenTasks = tasks.filter((task) => task.status === "open" && task.visibility === "shared").length;
-  const bookingTasks = tasks.filter((task) => task.kind === "booking" || task.relatedItemId || task.title.includes("จอง"));
   const nextDayItems = nextStop ? sortedItems.filter((item) => item.day === nextStop.day).slice(0, 4) : [];
   const foodStops = sortedItems.filter((item) => item.activityType === "food").slice(0, 3);
   const tripHighlights = sortedItems.filter((item) => ["attraction", "experience", "shopping"].includes(item.activityType)).slice(0, 4);
@@ -61,31 +62,30 @@ export function OverviewPage({ trip, currentMemberId, expenseSummary, items, sug
     setNewTaskAssigneeId("");
     setTaskScope(newTaskVisibility === "shared" ? "trip" : "mine");
     setTaskStatusFilter("all");
+    setIsTaskDialogOpen(false);
+  }
+
+  function closeTaskDialog() {
+    setIsTaskDialogOpen(false);
+    setNewTaskTitle("");
+    setNewTaskVisibility("private");
+    setNewTaskAssigneeId("");
   }
 
   return (
     <section className="overview-page" aria-label="Trip overview">
-      <header className="overview-header">
-        <div>
-          <p className="eyebrow">Trip overview</p>
-          <h1>{trip.name}</h1>
-          <h2>{roleHeading(roleLens)}</h2>
-          <span>{trip.destinationLabel}</span>
-        </div>
-        <div className="overview-current-user">
-          {currentMember ? (
-            <>
-              <span className="person-avatar" style={{ backgroundColor: currentMember.color }} aria-hidden="true">
-                {currentMember.displayName.slice(0, 1)}
-              </span>
-              <div>
-                <strong>{currentMember.displayName}</strong>
-                <span>{trip.destinationLabel}</span>
-              </div>
-            </>
-          ) : null}
-        </div>
-      </header>
+      <PageHeader
+        title={roleHeading(roleLens)}
+        subtitle={trip.name}
+        meta={(
+          <>
+            <span><Icon name="calendar" /> {formatTripRange(trip.startDate, trip.endDate)}</span>
+            <span><Icon name="location" /> {trip.destinationLabel}</span>
+            <span><Icon name="users" /> {activeMembers} สมาชิก</span>
+          </>
+        )}
+        aside={currentMember ? <PageUserCard color={currentMember.color} name={currentMember.displayName} label={trip.destinationLabel} /> : null}
+      />
 
       <div className="overview-stat-grid" aria-label="Trip summary">
         <OverviewStat icon="calendar" label="ระยะทริป" value={`${tripDays.length} วัน`} />
@@ -240,27 +240,6 @@ export function OverviewPage({ trip, currentMemberId, expenseSummary, items, sug
           </div>
             </section>
 
-            <section className="overview-panel overview-panel--wide" aria-label="Booking and prep tracker">
-          <div className="overview-panel-title">
-            <Icon name="check" />
-            <h2>การจองและเตรียมตัว</h2>
-          </div>
-          <ul className="overview-task-list">
-            {bookingTasks.map((task) => (
-              <li className="overview-task-item" key={task.id} aria-label={task.title} data-status={task.status}>
-                <label>
-                  <input type="checkbox" checked={task.status === "done"} onChange={() => onToggleTaskStatus(task.id)} />
-                  <span>{task.title}</span>
-                </label>
-                <div className="overview-task-meta">
-                  <small className="overview-task-scope overview-task-scope--shared">{task.kind === "booking" ? "การจอง" : "เตรียมตัว"}</small>
-                  <small>{task.relatedItemId ? stopLabel(task.relatedItemId, items) : assigneeLabel(task, trip)}</small>
-                </div>
-              </li>
-            ))}
-          </ul>
-            </section>
-
             <section className="overview-panel" aria-label="Planning alerts">
           <div className="overview-panel-title">
             <Icon name="alertCircle" />
@@ -282,7 +261,7 @@ export function OverviewPage({ trip, currentMemberId, expenseSummary, items, sug
             <section className="overview-panel overview-task-panel" aria-label="Trip checklist">
           <div className="overview-panel-title">
             <Icon name="check" />
-            <h2>เช็กลิสต์ทริป</h2>
+            <h2>เช็กลิสต์ทริปและการเตรียมตัว</h2>
           </div>
           <div className="overview-task-toolbar">
             <div className="overview-task-filters" role="group" aria-label="Checklist scope filters">
@@ -295,30 +274,10 @@ export function OverviewPage({ trip, currentMemberId, expenseSummary, items, sug
               <button className={taskStatusFilter === "open" ? "overview-task-filter overview-task-filter--active" : "overview-task-filter"} type="button" onClick={() => setTaskStatusFilter("open")}>ค้าง</button>
               <button className={taskStatusFilter === "done" ? "overview-task-filter overview-task-filter--active" : "overview-task-filter"} type="button" onClick={() => setTaskStatusFilter("done")}>เสร็จแล้ว</button>
             </div>
+            <button className="overview-task-add-button" type="button" aria-label="เพิ่มเช็กลิสต์" title="เพิ่มเช็กลิสต์" onClick={() => setIsTaskDialogOpen(true)}>
+              <span aria-hidden="true">+</span>
+            </button>
           </div>
-          <form className="overview-task-form" onSubmit={submitTask}>
-            <label>
-              <span>เพิ่มเช็กลิสต์</span>
-              <input value={newTaskTitle} onChange={(event) => setNewTaskTitle(event.target.value)} placeholder="เช่น จองร้านอาหาร" />
-            </label>
-            <label>
-              <span>เก็บไว้ที่</span>
-              <select value={newTaskVisibility} onChange={(event) => setNewTaskVisibility(event.target.value as TripTask["visibility"])}>
-                <option value="private">ส่วนตัว</option>
-                <option value="shared">แชร์ในทริป</option>
-              </select>
-            </label>
-            <label>
-              <span>ให้ใครดูแล</span>
-              <select value={newTaskAssigneeId} disabled={newTaskVisibility === "private"} onChange={(event) => setNewTaskAssigneeId(event.target.value)}>
-                <option value="">ยังไม่ระบุ</option>
-                {assignableMembers.map((member) => (
-                  <option key={member.id} value={member.id}>{member.displayName}</option>
-                ))}
-              </select>
-            </label>
-            <button type="submit" disabled={!newTaskTitle.trim()}>เพิ่มเช็กลิสต์</button>
-          </form>
           {visibleTasks.length ? (
             <ul className="overview-task-list">
               {visibleTasks.map((task) => (
@@ -329,7 +288,8 @@ export function OverviewPage({ trip, currentMemberId, expenseSummary, items, sug
                   </label>
                   <div className="overview-task-meta">
                     <small className={`overview-task-scope overview-task-scope--${task.visibility}`}>{task.visibility === "private" ? "ส่วนตัว" : "แชร์ในทริป"}</small>
-                    <small>{assigneeLabel(task, trip)}</small>
+                    <small>{taskKindLabel(task)}</small>
+                    <small>{task.relatedItemId ? stopLabel(task.relatedItemId, items) : assigneeLabel(task, trip)}</small>
                   </div>
                 </li>
               ))}
@@ -341,6 +301,48 @@ export function OverviewPage({ trip, currentMemberId, expenseSummary, items, sug
           </>
         ) : null}
       </div>
+      {isTaskDialogOpen ? (
+        <div className="modal-backdrop" role="presentation">
+          <section className="stop-dialog overview-task-dialog" role="dialog" aria-modal="true" aria-labelledby="task-dialog-title">
+            <div className="dialog-title-row">
+              <h2 id="task-dialog-title">เพิ่มเช็กลิสต์</h2>
+              <button type="button" aria-label="ปิดฟอร์ม" onClick={closeTaskDialog}>
+                <Icon name="x" />
+              </button>
+            </div>
+
+            <form className="overview-task-form overview-task-form--dialog" onSubmit={submitTask}>
+              <div className="dialog-grid">
+                <label className="dialog-field-wide">
+                  <span>เพิ่มเช็กลิสต์</span>
+                  <input value={newTaskTitle} onChange={(event) => setNewTaskTitle(event.target.value)} placeholder="เช่น จองร้านอาหาร" />
+                </label>
+                <label>
+                  <span>เก็บไว้ที่</span>
+                  <select value={newTaskVisibility} onChange={(event) => setNewTaskVisibility(event.target.value as TripTask["visibility"])}>
+                    <option value="private">ส่วนตัว</option>
+                    <option value="shared">แชร์ในทริป</option>
+                  </select>
+                </label>
+                <label>
+                  <span>ให้ใครดูแล</span>
+                  <select value={newTaskAssigneeId} disabled={newTaskVisibility === "private"} onChange={(event) => setNewTaskAssigneeId(event.target.value)}>
+                    <option value="">ยังไม่ระบุ</option>
+                    {assignableMembers.map((member) => (
+                      <option key={member.id} value={member.id}>{member.displayName}</option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+
+              <div className="dialog-actions">
+                <button className="button button--ghost" type="button" onClick={closeTaskDialog}>ยกเลิก</button>
+                <button className="button button--primary" type="submit" disabled={!newTaskTitle.trim()}>เพิ่มเช็กลิสต์</button>
+              </div>
+            </form>
+          </section>
+        </div>
+      ) : null}
     </section>
   );
 }
@@ -392,6 +394,11 @@ function OverviewFocusList({ items, startDate }: { items: ItineraryItem[]; start
 
 function stopLabel(itemId: string, items: ItineraryItem[]): string {
   return items.find((item) => item.id === itemId)?.activity ?? "จุดในแผน";
+}
+
+function taskKindLabel(task: TripTask): string {
+  if (task.kind === "booking" || task.relatedItemId || task.title.includes("จอง")) return "การจอง";
+  return "เตรียมตัว";
 }
 
 function isMyTask(task: TripTask, currentMemberId: string): boolean {

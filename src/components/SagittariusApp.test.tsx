@@ -76,7 +76,8 @@ describe("Sagittarius cockpit UI", () => {
 
     expect(screen.getAllByRole("heading", { name: /Hong Kong \+ Shenzhen Trip/i }).length).toBeGreaterThan(0);
     expect(screen.getByRole("navigation", { name: /Sagittarius planning navigation/i })).toBeInTheDocument();
-    expect(screen.getByRole("banner", { name: /Trip command bar/i })).toHaveClass("top-app-bar");
+    expect(screen.queryByRole("banner", { name: /Trip command bar/i })).not.toBeInTheDocument();
+    expect(container.querySelector(".page-header")).toHaveTextContent("คุมทริปให้พร้อม");
     expect(workspaceGrid).toBeInTheDocument();
     expect(workspaceGrid).toContainElement(planningMain as HTMLElement);
     expect(planningMain).toContainElement(screen.getByRole("region", { name: /Trip overview/i }));
@@ -104,10 +105,17 @@ describe("Sagittarius cockpit UI", () => {
     expect(within(tasks).getAllByText(/แชร์ในทริป/i).length).toBeGreaterThan(0);
     expect(within(tasks).getByRole("checkbox", { name: /ซื้อ eSIM/i })).not.toBeChecked();
 
-    await user.type(within(tasks).getByLabelText(/เพิ่มเช็กลิสต์/i), "แลกเงิน HKD");
-    await user.selectOptions(within(tasks).getByLabelText(/เก็บไว้ที่/i), "shared");
-    await user.selectOptions(within(tasks).getByLabelText(/ให้ใครดูแล/i), "member-nam");
-    await user.click(within(tasks).getByRole("button", { name: /เพิ่มเช็กลิสต์/i }));
+    const addTaskButton = within(tasks).getByRole("button", { name: /เพิ่มเช็กลิสต์/i });
+    expect(addTaskButton.textContent?.trim()).toBe("+");
+    await user.click(addTaskButton);
+
+    const taskDialog = screen.getByRole("dialog", { name: /เพิ่มเช็กลิสต์/i });
+    await user.type(within(taskDialog).getByLabelText(/เพิ่มเช็กลิสต์/i), "แลกเงิน HKD");
+    await user.selectOptions(within(taskDialog).getByLabelText(/เก็บไว้ที่/i), "shared");
+    await user.selectOptions(within(taskDialog).getByLabelText(/ให้ใครดูแล/i), "member-nam");
+    await user.click(within(taskDialog).getByRole("button", { name: /เพิ่มเช็กลิสต์/i }));
+
+    expect(screen.queryByRole("dialog", { name: /เพิ่มเช็กลิสต์/i })).not.toBeInTheDocument();
 
     const newTask = within(tasks).getByRole("listitem", { name: /แลกเงิน HKD/i });
     expect(within(newTask).getByText(/Explorer Friend/i)).toBeInTheDocument();
@@ -154,7 +162,8 @@ describe("Sagittarius cockpit UI", () => {
   it("matches the dense planning cockpit skeleton from the reference", () => {
     render(<SagittariusApp initialView="itinerary" />);
 
-    expect(screen.getByRole("banner", { name: /Trip command bar/i })).toHaveClass("top-app-bar");
+    expect(screen.queryByRole("banner", { name: /Trip command bar/i })).not.toBeInTheDocument();
+    expect(document.querySelector(".page-header")).toHaveTextContent("แผนการเดินทาง");
     expect(screen.getByRole("link", { name: /แผนการเดินทาง/i })).toHaveClass("rail-link--active");
     expect(screen.queryByRole("tablist", { name: /Planning views/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("tab", { name: /Smart Itinerary Table/i })).not.toBeInTheDocument();
@@ -213,13 +222,16 @@ describe("Sagittarius cockpit UI", () => {
     expect(screen.queryByRole("region", { name: /Trip timeline/i })).not.toBeInTheDocument();
   });
 
-  it("renders members inside the shared command workspace without itinerary-only controls", () => {
+  it("renders members with a single page header and without itinerary-only controls", () => {
     const { container } = render(<SagittariusApp initialView="members" />);
     const workspaceGrid = container.querySelector(".workspace-grid");
     const planningMain = container.querySelector(".planning-main");
 
-    expect(screen.getByRole("banner", { name: /Trip command bar/i })).toHaveClass("top-app-bar");
+    expect(screen.queryByRole("banner", { name: /Trip command bar/i })).not.toBeInTheDocument();
+    expect(container.querySelector(".page-header")).toHaveTextContent("Hong Kong + Shenzhen Trip");
+    expect(container.querySelector(".page-header")).toHaveTextContent("15–20 พ.ค. 2025");
     expect(workspaceGrid).toBeInTheDocument();
+    expect(workspaceGrid).toHaveAttribute("data-command-bar", "hidden");
     expect(workspaceGrid).toContainElement(planningMain as HTMLElement);
     expect(planningMain).toContainElement(screen.getByRole("main", { name: /Trip members/i }));
     expect(screen.queryByRole("button", { name: /เพิ่มสถานที่ \/ กิจกรรม/i })).not.toBeInTheDocument();

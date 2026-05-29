@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AppShell } from "@/src/components/AppShell";
-import { CommandBar } from "@/src/components/CommandBar";
 import { ContextRail } from "@/src/components/ContextRail";
 import { OverviewPage } from "@/src/components/OverviewPage";
 import { RouteMapView } from "@/src/components/RouteMapView";
@@ -149,7 +148,7 @@ export function SagittariusApp({ initialView = "overview", requireJoin = false }
     function closeContextRailFromOutside(event: Event) {
       if (!(event.target instanceof Element)) return;
       if (event.target.closest(".context-rail")) return;
-      if (event.target.closest(".top-app-bar, .side-rail")) return;
+      if (event.target.closest(".page-header, .side-rail")) return;
       if (event.target.closest('[role="dialog"]')) return;
       if (event.target.closest(".data-row")) return;
       setContextRailVisibility(false);
@@ -434,9 +433,7 @@ export function SagittariusApp({ initialView = "overview", requireJoin = false }
     return <TripJoinGate trip={trip} onTripChange={replaceTripFromJoin} onAuthenticated={authenticateParticipant} />;
   }
 
-  const isPlanningView = initialView === "itinerary" || initialView === "map" || initialView === "timeline";
   const supportsContextRail = initialView === "itinerary" || initialView === "timeline";
-  const showItineraryActions = isPlanningView;
 
   return (
     <AppShell
@@ -448,25 +445,17 @@ export function SagittariusApp({ initialView = "overview", requireJoin = false }
       onToggleCollapsed={() => setSidebarCollapsed((current) => !current)}
     >
       <main className="workspace-shell">
-        <CommandBar
-          trip={trip}
-          currentMemberId={currentMember.id}
-          canEdit={canEdit}
-          canUndo={tripState.past.length > 0}
-          canRedo={tripState.future.length > 0}
-          contextRailOpen={contextRailOpen}
-          showAddStop={showItineraryActions}
-          showDetailsToggle={supportsContextRail}
-          showHistoryControls={showItineraryActions}
-          showMoreActions={showItineraryActions}
-          canSwitchMember={!requireJoin || canTripRole(currentMember.role, "managePeople")}
-          onChangeMember={setCurrentMemberId}
-          onAddStop={addStop}
-          onUndo={undo}
-          onRedo={redo}
-          onToggleContextRail={() => setContextRailVisibility(!contextRailOpen)}
-        />
-        <div className="workspace-grid" data-context-rail={contextRailOpen ? "open" : "closed"}>
+        {(!requireJoin || canTripRole(currentMember.role, "managePeople")) ? (
+          <label className="sr-only">
+            Role preview
+            <select value={currentMember.id} onChange={(event) => setCurrentMemberId(event.target.value)}>
+              {trip.members.map((member) => (
+                <option value={member.id} key={member.id}>{member.displayName} / {member.role}</option>
+              ))}
+            </select>
+          </label>
+        ) : null}
+        <div className="workspace-grid" data-context-rail={contextRailOpen ? "open" : "closed"} data-command-bar="hidden">
           <div className="planning-main">
             {initialView === "members" ? (
               <TripMembersPage
@@ -492,24 +481,39 @@ export function SagittariusApp({ initialView = "overview", requireJoin = false }
               />
             ) : initialView === "itinerary" ? (
               <SmartItineraryTable
+                canRedo={tripState.future.length > 0}
+                canUndo={tripState.past.length > 0}
+                contextRailOpen={contextRailOpen}
+                endDate={trip.endDate}
                 items={planItems}
                 role={currentMember.role}
                 startDate={trip.startDate}
                 selectedItemId={selectedItem.id}
+                tripName={trip.name}
+                onAddStop={addStop}
                 onSelectItem={selectItem}
                 onMoveItem={moveItem}
+                onRedo={redo}
+                onToggleContextRail={() => setContextRailVisibility(!contextRailOpen)}
+                onUndo={undo}
               />
             ) : initialView === "map" ? (
               <RouteMapView
+                endDate={trip.endDate}
                 items={planItems}
                 startDate={trip.startDate}
+                tripName={trip.name}
               />
             ) : (
               <TimelineView
+                contextRailOpen={contextRailOpen}
+                endDate={trip.endDate}
                 items={planItems}
                 selectedItemId={selectedItem.id}
                 startDate={trip.startDate}
+                tripName={trip.name}
                 onSelectItem={selectItem}
+                onToggleContextRail={() => setContextRailVisibility(!contextRailOpen)}
               />
             )}
           </div>

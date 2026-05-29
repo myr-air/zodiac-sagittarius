@@ -32,7 +32,7 @@ describe("Calm Travel Ops CSS contract", () => {
 
   it("locks the reference cockpit dimensions for pixel QA", () => {
     expect(css).toMatch(/\.app-layout\s*{[^}]*grid-template-columns:\s*228px minmax\(0,\s*1fr\)/s);
-    expect(css).toMatch(/\.top-app-bar\s*{[^}]*min-height:\s*62px/s);
+    expect(css).toMatch(/\.page-header\s*{[^}]*min-height:\s*126px/s);
     expect(css).toMatch(/\.workspace-grid\s*{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)/s);
     expect(css).toMatch(/\.context-rail\s*{[^}]*width:\s*380px/s);
   });
@@ -49,7 +49,6 @@ describe("Calm Travel Ops CSS contract", () => {
     expect(css).toMatch(/\.route-map-canvas\s*{[^}]*min-height:\s*520px/s);
     expect(css).toMatch(/\.map-day-filter\s*{[^}]*position:\s*absolute/s);
     expect(css).toMatch(/\.route-live-map\s*{[^}]*position:\s*absolute/s);
-    expect(css).toMatch(/\.timeline-infographic-hero\s*{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s+auto/s);
     expect(css).toMatch(/\.timeline-stop-button\s*{[^}]*grid-template-columns:\s*56px 34px minmax\(0,\s*1fr\)/s);
   });
 

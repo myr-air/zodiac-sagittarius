@@ -1,6 +1,7 @@
 import { type FormEvent, useMemo, useState } from "react";
 import type { Member, Trip, TripMemberAccessStatus, TripRole } from "@/src/trip/types";
 import { Icon } from "./icons";
+import { formatTripRange, PageHeader, PageUserCard } from "./PageHeader";
 import { PeoplePanel } from "./PeoplePanel";
 
 interface TripMembersPageProps {
@@ -112,22 +113,17 @@ export function TripMembersPage({
 
   return (
     <main className="members-page" aria-label="Trip members">
-      <header className="members-page-header">
-        <div>
-          <p className="eyebrow">Trip members</p>
-          <h1>สมาชิกในทริป</h1>
-          <span>{trip.name}</span>
-        </div>
-        <div className="members-current-user">
-          <span className="person-avatar" style={{ backgroundColor: currentMember.color }} aria-hidden="true">
-            {currentMember.displayName.slice(0, 1)}
-          </span>
-          <div>
-            <strong>{currentMember.displayName}</strong>
-            <span>{canManagePeople ? "จัดการสมาชิกได้" : "ดูรายชื่อสมาชิก"}</span>
-          </div>
-        </div>
-      </header>
+      <PageHeader
+        title="สมาชิกในทริป"
+        subtitle={trip.name}
+        meta={(
+          <>
+            <span><Icon name="calendar" /> {formatTripRange(trip.startDate, trip.endDate)}</span>
+            <span><Icon name="users" /> {visibleMembers.length} สมาชิก</span>
+          </>
+        )}
+        aside={<PageUserCard color={currentMember.color} name={currentMember.displayName} label={canManagePeople ? "จัดการสมาชิกได้" : "ดูรายชื่อสมาชิก"} />}
+      />
 
       <section className="member-stat-grid" aria-label="Member summary">
         <div className="member-stat">

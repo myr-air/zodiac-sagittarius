@@ -2,48 +2,55 @@ import type { ItineraryItem } from "@/src/trip/types";
 import { formatDayLabel, groupItemsByDay } from "@/src/trip/itinerary";
 import { Badge } from "./ui";
 import { Icon } from "./icons";
+import { formatTripRange, PageHeader } from "./PageHeader";
 import { activityTypeLabel, dayRouteLabel, formatDuration, formatEndTime, formatThaiDate } from "./itineraryDisplay";
 
 interface TimelineViewProps {
+  contextRailOpen: boolean;
+  endDate: string;
   items: ItineraryItem[];
   selectedItemId: string;
   startDate: string;
+  tripName: string;
   onSelectItem: (itemId: string) => void;
+  onToggleContextRail: () => void;
 }
 
-export function TimelineView({ items, selectedItemId, startDate, onSelectItem }: TimelineViewProps) {
+export function TimelineView({ contextRailOpen, endDate, items, selectedItemId, startDate, tripName, onSelectItem, onToggleContextRail }: TimelineViewProps) {
   const groups = groupItemsByDay(items);
   const warningCount = items.reduce((total, item) => total + (item.advisories?.length ?? 0), 0);
   const totalMinutes = items.reduce((total, item) => total + (item.durationMinutes ?? 0), 0);
   const primaryRoute = groups.map((group) => dayRouteLabel(group.day)).join(" / ");
 
   return (
-    <section className="timeline-panel timeline-panel--presentation" id="timeline" aria-labelledby="timeline-heading" aria-label="Trip timeline">
-      <header className="surface-header">
-        <div>
-          <span className="section-kicker"><Icon name="list" /> ไทม์ไลน์</span>
-          <h2 id="timeline-heading">Tour timeline</h2>
-        </div>
-        <div className="surface-metrics" aria-label="Timeline summary">
-          <Badge tone="primary">{groups.length} days</Badge>
-          <Badge tone="route">{items.length} stops</Badge>
-          <Badge tone={warningCount ? "warning" : "success"}>{warningCount} warnings</Badge>
-          <Badge tone="neutral">{formatDuration(totalMinutes)} planned</Badge>
-        </div>
-      </header>
-
-      <div className="timeline-infographic-hero" aria-label="Timeline presentation summary">
-        <div>
-          <span className="timeline-deck-label">Customer handout</span>
-          <h3>Hong Kong + Shenzhen at a glance</h3>
-          <p>{primaryRoute}</p>
-        </div>
-        <div className="timeline-hero-stats">
-          <span><strong>{groups.length}</strong> วัน</span>
-          <span><strong>{items.length}</strong> stops</span>
-          <span><strong>{formatDuration(totalMinutes)}</strong> planned</span>
-        </div>
-      </div>
+    <section className="timeline-panel" id="timeline" aria-labelledby="timeline-heading" aria-label="Trip timeline">
+      <PageHeader
+        title="ไทม์ไลน์"
+        subtitle={tripName}
+        description={primaryRoute}
+        meta={(
+          <>
+            <span><Icon name="calendar" /> {formatTripRange(startDate, endDate)}</span>
+            <span><Icon name="route" /> {groups.length} วัน / {items.length} stops</span>
+            <span><Icon name="warning" /> {warningCount} warnings</span>
+            <span><Icon name="clock" /> {formatDuration(totalMinutes)} planned</span>
+          </>
+        )}
+        aside={(
+          <div className="page-header-actions" role="group" aria-label="Timeline actions">
+            <button
+              className="icon-button details-toggle-button"
+              type="button"
+              aria-expanded={contextRailOpen}
+              aria-label={contextRailOpen ? "Hide details panel" : "Open details"}
+              onClick={onToggleContextRail}
+              title={contextRailOpen ? "Hide details panel" : "Open details"}
+            >
+              <Icon name="panel" />
+            </button>
+          </div>
+        )}
+      />
 
       <div className="timeline-grid">
         {groups.map((group) => (

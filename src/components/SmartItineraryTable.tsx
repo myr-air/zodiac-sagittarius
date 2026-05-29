@@ -1,21 +1,50 @@
 import { useState, type DragEvent, type KeyboardEvent, type MouseEvent } from "react";
 import type { ItineraryAdvisory, ItineraryItem, TripRole } from "@/src/trip/types";
 import { formatDayLabel, groupItemsByDay } from "@/src/trip/itinerary";
+import { Button } from "./ui";
 import { Icon } from "./icons";
+import { formatTripRange, PageHeader } from "./PageHeader";
 import { activityTypeLabel, dayRouteLabel, formatDuration, formatThaiDate } from "./itineraryDisplay";
 
 interface SmartItineraryTableProps {
+  canRedo: boolean;
+  canUndo: boolean;
+  contextRailOpen: boolean;
+  endDate: string;
   items: ItineraryItem[];
   role: TripRole;
   startDate: string;
   selectedItemId: string;
+  tripName: string;
+  onAddStop: () => void;
   onSelectItem: (itemId: string) => void;
   onMoveItem: (draggedItemId: string, targetItemId: string) => void;
+  onRedo: () => void;
+  onToggleContextRail: () => void;
+  onUndo: () => void;
 }
 
-export function SmartItineraryTable({ items, role, startDate, selectedItemId, onSelectItem, onMoveItem }: SmartItineraryTableProps) {
+export function SmartItineraryTable({
+  canRedo,
+  canUndo,
+  contextRailOpen,
+  endDate,
+  items,
+  role,
+  startDate,
+  selectedItemId,
+  tripName,
+  onAddStop,
+  onSelectItem,
+  onMoveItem,
+  onRedo,
+  onToggleContextRail,
+  onUndo,
+}: SmartItineraryTableProps) {
   const groups = groupItemsByDay(items);
   const canEdit = role === "owner" || role === "organizer";
+  const warningCount = items.reduce((total, item) => total + (item.advisories?.length ?? 0), 0);
+  const totalMinutes = items.reduce((total, item) => total + (item.durationMinutes ?? 0), 0);
   const [collapsedDays, setCollapsedDays] = useState<string[]>([]);
   const [dragState, setDragState] = useState<{ draggedItemId: string | null; overItemId: string | null }>({ draggedItemId: null, overItemId: null });
 
@@ -52,6 +81,43 @@ export function SmartItineraryTable({ items, role, startDate, selectedItemId, on
 
   return (
     <section className="table-panel" aria-label="Smart itinerary table" id="itinerary">
+      <PageHeader
+        title="แผนการเดินทาง"
+        subtitle={tripName}
+        meta={(
+          <>
+            <span><Icon name="calendar" /> {formatTripRange(startDate, endDate)}</span>
+            <span><Icon name="route" /> {groups.length} วัน / {items.length} stops</span>
+            <span><Icon name="warning" /> {warningCount} warnings</span>
+            <span><Icon name="clock" /> {formatDuration(totalMinutes)} planned</span>
+          </>
+        )}
+        aside={(
+          <div className="page-header-actions" role="group" aria-label="Itinerary actions">
+            <Button type="button" onClick={onAddStop} disabled={!canEdit} className="add-stop-button">
+              <Icon name="plus" />
+              เพิ่มสถานที่ / กิจกรรม
+            </Button>
+            <button
+              className="icon-button details-toggle-button"
+              type="button"
+              aria-expanded={contextRailOpen}
+              aria-label={contextRailOpen ? "Hide details panel" : "Open details"}
+              onClick={onToggleContextRail}
+              title={contextRailOpen ? "Hide details panel" : "Open details"}
+            >
+              <Icon name="panel" />
+            </button>
+            <button className="icon-button" type="button" aria-label="Undo" disabled={!canUndo} onClick={onUndo}>
+              <Icon name="undo" />
+            </button>
+            <button className="icon-button" type="button" aria-label="Redo" disabled={!canRedo} onClick={onRedo}>
+              <Icon name="redo" />
+            </button>
+            {!canEdit ? <p className="page-header-note">Editing requires organizer access.</p> : null}
+          </div>
+        )}
+      />
       <div className="table-scroll" tabIndex={0} aria-label="Scrollable itinerary rows">
         <table className="smart-table">
           <caption className="sr-only">Trip itinerary rows grouped by day.</caption>
@@ -199,12 +265,6 @@ function DayGroup({
           <td><AdvisorySummary advisories={item.advisories ?? []} /></td>
         </tr>
       ))}
-      <tr aria-hidden={collapsed} className="add-row">
-        <td />
-        <td colSpan={7}>
-          <button type="button" tabIndex={collapsed ? -1 : undefined}><Icon name="plus" /> เพิ่มกิจกรรม</button>
-        </td>
-      </tr>
     </tbody>
   );
 }

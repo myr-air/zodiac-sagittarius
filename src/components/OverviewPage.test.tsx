@@ -1,4 +1,5 @@
 import { render, screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { buildExpenseSummary } from "@/src/trip/expenses";
 import { seedTrip } from "@/src/trip/seed";
@@ -12,15 +13,17 @@ const seedTasks: TripTask[] = [
 ];
 
 describe("OverviewPage role lenses", () => {
-  it("combines today focus and booking prep for managers", () => {
+  it("combines booking prep into the trip checklist for managers", () => {
     renderOverview("member-beam");
 
     expect(screen.getByRole("region", { name: /Today and next focus/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /วันนี้ต้องโฟกัส/i })).toBeInTheDocument();
     expect(screen.getByText(/เดินทางออกจากกรุงเทพฯ \(BKK\)/i)).toBeInTheDocument();
-    const tracker = screen.getByRole("region", { name: /Booking and prep tracker/i });
-    expect(tracker).toBeInTheDocument();
-    expect(within(tracker).getByText(/จอง Peak Tram/i)).toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: /Booking and prep tracker/i })).not.toBeInTheDocument();
+    const checklist = screen.getByRole("region", { name: /Trip checklist/i });
+    expect(within(checklist).getByRole("heading", { name: /เช็กลิสต์ทริปและการเตรียมตัว/i })).toBeInTheDocument();
+    expect(within(checklist).getByText(/จอง Peak Tram/i)).toBeInTheDocument();
+    expect(within(checklist).getByText(/การจอง/i)).toBeInTheDocument();
   });
 
   it("prioritizes where to go and what to eat for travelers", () => {
@@ -35,13 +38,17 @@ describe("OverviewPage role lenses", () => {
     expect(screen.queryByLabelText(/ให้ใครดูแล/i)).not.toBeInTheDocument();
   });
 
-  it("prioritizes control and shared preparation for organizers", () => {
+  it("prioritizes control and shared preparation for organizers", async () => {
+    const user = userEvent.setup();
     renderOverview("member-beam");
 
     expect(screen.getByRole("heading", { name: /คุมทริปให้พร้อม/i })).toBeInTheDocument();
     expect(screen.getByRole("region", { name: /Trip readiness/i })).toBeInTheDocument();
-    expect(screen.getByRole("region", { name: /Trip checklist/i })).toBeInTheDocument();
-    expect(screen.getByLabelText(/ให้ใครดูแล/i)).toBeInTheDocument();
+    const checklist = screen.getByRole("region", { name: /Trip checklist/i });
+    expect(checklist).toBeInTheDocument();
+    expect(screen.queryByLabelText(/ให้ใครดูแล/i)).not.toBeInTheDocument();
+    await user.click(within(checklist).getByRole("button", { name: /เพิ่มเช็กลิสต์/i }));
+    expect(within(screen.getByRole("dialog", { name: /เพิ่มเช็กลิสต์/i })).getByLabelText(/ให้ใครดูแล/i)).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /การแจ้งเตือน/i })).toBeInTheDocument();
   });
 

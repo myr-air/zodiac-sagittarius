@@ -31,7 +31,8 @@ type IconName =
   | "utensils"
   | "users"
   | "wallet"
-  | "warning";
+  | "warning"
+  | "x";
 
 export function Icon({ name, className, ...props }: SVGProps<SVGSVGElement> & { name: IconName }) {
   const common = {
@@ -78,5 +79,6 @@ export function Icon({ name, className, ...props }: SVGProps<SVGSVGElement> & { 
   if (name === "utensils") return <svg {...common}><path d="M4 3v7a3 3 0 0 0 6 0V3M7 3v18M21 3v18M15 3v7a4 4 0 0 0 4 4h2" /></svg>;
   if (name === "users") return <svg {...common}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" /></svg>;
   if (name === "wallet") return <svg {...common}><path d="M20 7H5a3 3 0 0 0 0 6h15v6H5a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3h13a2 2 0 0 1 2 2v1Z" /><path d="M16 13h.01" /></svg>;
+  if (name === "x") return <svg {...common}><path d="M18 6 6 18M6 6l12 12" /></svg>;
   return <svg {...common}><path d="M12 9v4M12 17h.01" /><path d="M10.3 3.9 2.8 17a2 2 0 0 0 1.7 3h15a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z" /></svg>;
 }

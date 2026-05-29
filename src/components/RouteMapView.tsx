@@ -1,12 +1,14 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import type { ItineraryItem } from "@/src/trip/types";
 import { formatDayLabel, groupItemsByDay } from "@/src/trip/itinerary";
-import { Badge } from "./ui";
 import { Icon } from "./icons";
+import { formatTripRange, PageHeader } from "./PageHeader";
 
 interface RouteMapViewProps {
+  endDate: string;
   items: ItineraryItem[];
   startDate: string;
+  tripName: string;
 }
 
 interface RoutePoint {
@@ -35,9 +37,9 @@ type DayColorStyle = CSSProperties & {
 
 type DayFilter = "all" | string;
 
-const routeDayColors = ["#2563eb", "#0f766e", "#f97316", "#9333ea", "#dc2626", "#0891b2"];
+const routeDayColors = ["#2563eb", "#0f766e", "#f97316", "#0891b2", "#16a34a", "#dc2626"];
 
-export function RouteMapView({ items, startDate }: RouteMapViewProps) {
+export function RouteMapView({ endDate, items, startDate, tripName }: RouteMapViewProps) {
   const groups = useMemo(() => groupItemsByDay(items), [items]);
   const routePoints = useMemo(() => buildRoutePoints(items), [items]);
   const routeDayGroups = useMemo(() => buildRouteDayGroups(groups, routePoints, startDate), [groups, routePoints, startDate]);
@@ -196,17 +198,18 @@ export function RouteMapView({ items, startDate }: RouteMapViewProps) {
 
   return (
     <section className="route-map-panel" id="map" aria-labelledby="route-map-heading" aria-label="Route map">
-      <header className="surface-header">
-        <div>
-          <span className="section-kicker"><Icon name="map" /> แผนที่</span>
-          <h2 id="route-map-heading">Route map</h2>
-        </div>
-        <div className="surface-metrics" aria-label="Route map summary">
-          <Badge tone="route">{visibleRoutePoints.length}/{routePoints.length} stops visible</Badge>
-          <Badge tone="warning">{warningCount} warnings</Badge>
-          <Badge tone="primary">{activeDayLabel(activeDay, routeDayGroups)}</Badge>
-        </div>
-      </header>
+      <PageHeader
+        title="แผนที่"
+        subtitle={tripName}
+        meta={(
+          <>
+            <span><Icon name="calendar" /> {formatTripRange(startDate, endDate)}</span>
+            <span><Icon name="location" /> {visibleRoutePoints.length}/{routePoints.length} stops visible</span>
+            <span><Icon name="warning" /> {warningCount} warnings</span>
+            <span><Icon name="route" /> {activeDayLabel(activeDay, routeDayGroups)}</span>
+          </>
+        )}
+      />
 
       <div className="route-map-layout">
         <div className="route-map-canvas" role="img" aria-label="Map preview of the Hong Kong and Shenzhen itinerary route">
