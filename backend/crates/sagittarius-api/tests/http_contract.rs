@@ -5,6 +5,28 @@ use serde_json::Value;
 use tower::ServiceExt;
 
 #[tokio::test]
+async fn health_returns_ok() {
+    let app = sagittarius_api::api::router(sagittarius_api::app::AppState::test());
+    let response = app
+        .oneshot(
+            Request::builder()
+                .uri("/v1/health")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::OK);
+
+    let body = axum::body::to_bytes(response.into_body(), usize::MAX)
+        .await
+        .unwrap();
+
+    assert_eq!(&body[..], b"ok");
+}
+
+#[tokio::test]
 async fn unknown_route_returns_json_not_found() {
     let app = sagittarius_api::api::router(sagittarius_api::app::AppState::test());
     let response = app
