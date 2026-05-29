@@ -566,6 +566,20 @@ describe("Sagittarius cockpit UI", () => {
     expect(within(context).queryByText(/แนะนำให้จองคิวล่วงหน้า โดยเฉพาะช่วงสุดสัปดาห์/i)).not.toBeInTheDocument();
   });
 
+  it("renders fixture-backed suggestions and tasks in planning views", async () => {
+    const user = userEvent.setup();
+    render(<SagittariusApp initialView="itinerary" />);
+
+    await user.click(screen.getByRole("button", { name: /Open details/i }));
+
+    const context = screen.getByRole("complementary", { name: /Planning context/i });
+    await user.click(within(context).getByRole("tab", { name: /ข้อเสนอ/i }));
+    expect(within(context).getAllByText(/ร้านนี้ได้รับคะแนนสูง 4\.3\/5/i).length).toBeGreaterThan(0);
+
+    await user.click(within(context).getByRole("tab", { name: /การจอง/i }));
+    expect(within(context).getByText(/ยืนยันคิว Dim Dim Sum/i)).toBeInTheDocument();
+  });
+
   it("adds a new itinerary stop from the header action", async () => {
     const user = userEvent.setup();
     render(<SagittariusApp initialView="itinerary" />);
