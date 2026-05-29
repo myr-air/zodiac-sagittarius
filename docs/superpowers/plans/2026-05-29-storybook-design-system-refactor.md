@@ -85,7 +85,7 @@ describe("trip fixtures", () => {
 Run:
 
 ```bash
-rtk bun test src/trip/fixtures.test.ts
+rtk bun run test -- src/trip/fixtures.test.ts
 ```
 
 Expected: FAIL because `src/trip/fixtures.ts` does not exist.
@@ -230,7 +230,7 @@ Pass `tasks={tripFixtureTasks}` in `renderOverview`.
 Run:
 
 ```bash
-rtk bun test src/trip/fixtures.test.ts src/components/OverviewPage.test.tsx
+rtk bun run test -- src/trip/fixtures.test.ts src/components/OverviewPage.test.tsx
 ```
 
 Expected: PASS.
@@ -277,7 +277,7 @@ it("keeps motif motion reduced-motion safe", () => {
 Run:
 
 ```bash
-rtk bun test src/styles.contract.test.ts
+rtk bun run test -- src/styles.contract.test.ts
 ```
 
 Expected: FAIL because the new accent tokens and motif classes do not exist.
@@ -439,7 +439,7 @@ export const TimelineMoment: Story = {
 Run:
 
 ```bash
-rtk bun test src/styles.contract.test.ts
+rtk bun run test -- src/styles.contract.test.ts
 ```
 
 Expected: PASS.
@@ -521,7 +521,7 @@ describe("Storybook template catalog", () => {
 Run:
 
 ```bash
-rtk bun test src/storybook.contract.test.ts
+rtk bun run test -- src/storybook.contract.test.ts
 ```
 
 Expected: FAIL because the required stories do not exist yet.
@@ -686,7 +686,7 @@ backgrounds: {
 Run:
 
 ```bash
-rtk bun test src/storybook.contract.test.ts
+rtk bun run test -- src/storybook.contract.test.ts
 ```
 
 Expected: FAIL with missing `Templates/*` and `Pages/*` categories. This failure is the red state for later template story tasks.
@@ -730,7 +730,7 @@ it("renders the overview from shared fixture data", () => {
 Run:
 
 ```bash
-rtk bun test src/components/OverviewPage.test.tsx
+rtk bun run test -- src/components/OverviewPage.test.tsx
 ```
 
 Expected: PASS before extraction, establishing behavior to preserve.
@@ -884,7 +884,7 @@ export const Owner: Story = {
 Run:
 
 ```bash
-rtk bun test src/components/OverviewPage.test.tsx src/storybook.contract.test.ts
+rtk bun run test -- src/components/OverviewPage.test.tsx src/storybook.contract.test.ts
 ```
 
 Expected: Storybook contract still FAILS only for remaining page/template categories. Overview tests PASS.
@@ -1235,7 +1235,7 @@ export const Mobile: Story = { args: { ...Owner.args, collapsed: true } };
 Run:
 
 ```bash
-rtk bun test src/storybook.contract.test.ts
+rtk bun run test -- src/storybook.contract.test.ts
 ```
 
 Expected: PASS after all required categories and state exports exist.
@@ -1245,7 +1245,7 @@ Expected: PASS after all required categories and state exports exist.
 Run:
 
 ```bash
-rtk bun test src/components/SagittariusApp.test.tsx src/components/OverviewPage.test.tsx
+rtk bun run test -- src/components/SagittariusApp.test.tsx src/components/OverviewPage.test.tsx
 ```
 
 Expected: PASS.
@@ -1323,7 +1323,7 @@ Use `Dim Dim Sum` as the stable fixture-backed assertion when the suggestion not
 Run:
 
 ```bash
-rtk bun test src/components/SagittariusApp.test.tsx
+rtk bun run test -- src/components/SagittariusApp.test.tsx
 ```
 
 Expected: PASS.
@@ -1347,7 +1347,7 @@ rtk git commit -m "refactor: align app stories with shared fixtures"
 Run:
 
 ```bash
-rtk bun test
+rtk bun run test
 rtk bun run lint
 rtk bun run typecheck
 rtk bun run build
@@ -1422,8 +1422,8 @@ Verify stories exist and render for:
 For every failure, make the smallest aligned fix and rerun the relevant command. Examples:
 
 ```bash
-rtk bun test src/storybook.contract.test.ts
-rtk bun test src/components/SagittariusApp.test.tsx
+rtk bun run test -- src/storybook.contract.test.ts
+rtk bun run test -- src/components/SagittariusApp.test.tsx
 rtk bun run build-storybook
 ```
 
