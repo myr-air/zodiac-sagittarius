@@ -181,6 +181,26 @@ pub async fn find_active_member_session_in_tx(
     .await
 }
 
+pub async fn find_unexpired_member_session_in_tx(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    trip_id: Uuid,
+    token_hash: &str,
+) -> Result<Option<AuthenticatedMemberSessionRecord>, sqlx::Error> {
+    sqlx::query_as::<_, AuthenticatedMemberSessionRecord>(
+        "select s.trip_id, s.member_id, m.role
+         from trip_member_sessions s
+         join trip_members m on m.id = s.member_id and m.trip_id = s.trip_id
+         where s.trip_id = $1
+           and s.session_token_hash = $2
+           and s.revoked_at is null
+           and s.expires_at > now()",
+    )
+    .bind(trip_id)
+    .bind(token_hash)
+    .fetch_optional(&mut **tx)
+    .await
+}
+
 pub async fn list_trip_members(
     pool: &PgPool,
     trip_id: Uuid,

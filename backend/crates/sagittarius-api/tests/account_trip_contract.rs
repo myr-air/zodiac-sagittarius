@@ -545,6 +545,67 @@ async fn account_claims_existing_temp_member_after_member_session_proof(pool: sq
 }
 
 #[sqlx::test(migrations = "../../migrations")]
+async fn account_claim_for_disabled_member_returns_forbidden_after_session_proof(
+    pool: sqlx::PgPool,
+) {
+    support::seed_trip(&pool).await;
+    let member_session = legacy_claim_member_session(&pool, support::TRAVELER_ID, "1234").await;
+    let member_session_token = member_session["sessionToken"].as_str().unwrap();
+    let member_session_hash =
+        sagittarius_api::app::auth::hash_session_token_for_tests(member_session_token);
+    let trip_id = Uuid::parse_str(support::TRIP_ID).unwrap();
+    let member_id = Uuid::parse_str(support::TRAVELER_ID).unwrap();
+
+    let session_exists_before_disable: bool = sqlx::query_scalar(
+        "select exists (
+           select 1
+           from trip_member_sessions
+           where trip_id = $1
+             and member_id = $2
+             and session_token_hash = $3
+             and revoked_at is null
+             and expires_at > now()
+         )",
+    )
+    .bind(trip_id)
+    .bind(member_id)
+    .bind(member_session_hash)
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert!(session_exists_before_disable);
+
+    sqlx::query(
+        "update trip_members
+         set access_status = 'disabled'
+         where trip_id = $1 and id = $2",
+    )
+    .bind(trip_id)
+    .bind(member_id)
+    .execute(&pool)
+    .await
+    .unwrap();
+
+    let account_session = login_account(&pool, "traveler@example.com", false, "").await;
+    let auth = format!(
+        "Bearer {}",
+        account_session["sessionToken"].as_str().unwrap()
+    );
+
+    let response = post_json_with_auth(
+        support::app(pool.clone()),
+        &format!("/v1/account/trips/{trip_id}/members/{member_id}/claim"),
+        Some(&auth),
+        json!({"memberSessionToken": member_session_token}),
+    )
+    .await;
+    let (status, body): (StatusCode, Value) = response_json(response).await;
+
+    assert_eq!(status, StatusCode::FORBIDDEN);
+    assert_eq!(body["code"], "forbidden");
+}
+
+#[sqlx::test(migrations = "../../migrations")]
 async fn account_claim_rejects_wrong_session_and_already_linked_member(pool: sqlx::PgPool) {
     support::seed_trip(&pool).await;
     let traveler_session = legacy_claim_member_session(&pool, support::TRAVELER_ID, "1234").await;

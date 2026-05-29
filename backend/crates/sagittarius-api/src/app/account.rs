@@ -286,10 +286,13 @@ pub async fn claim_member(
     let user_id = authenticate_user_session(pool, session_token).await?;
     let member_session_token_hash = crate::app::auth::hash_session_token(member_session_token)?;
     let mut tx = pool.begin().await?;
-    let member_session =
-        db::queries::find_active_member_session_in_tx(&mut tx, trip_id, &member_session_token_hash)
-            .await?
-            .ok_or(ServiceError::Unauthenticated)?;
+    let member_session = db::queries::find_unexpired_member_session_in_tx(
+        &mut tx,
+        trip_id,
+        &member_session_token_hash,
+    )
+    .await?
+    .ok_or(ServiceError::Unauthenticated)?;
 
     if member_session.member_id != member_id {
         return Err(ServiceError::Unauthenticated);
