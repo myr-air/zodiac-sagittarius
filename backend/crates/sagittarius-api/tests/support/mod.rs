@@ -145,3 +145,25 @@ pub async fn seed_tasks(pool: &PgPool) {
     .await
     .unwrap();
 }
+
+pub async fn seed_suggestion(pool: &PgPool, source_version: i64) -> Uuid {
+    let id = Uuid::now_v7();
+    sqlx::query(
+        "insert into suggestions (
+           id, trip_id, plan_variant_id, proposer_id, type, target_item_id, proposed_patch,
+           source_version, status
+         )
+         values ($1, $2, $3, $4, 'edit', $5, $6, $7, 'pending')",
+    )
+    .bind(id)
+    .bind(Uuid::parse_str(TRIP_ID).unwrap())
+    .bind(Uuid::parse_str(PLAN_ID).unwrap())
+    .bind(Uuid::parse_str(TRAVELER_ID).unwrap())
+    .bind(Uuid::parse_str(ITEM_ID).unwrap())
+    .bind(serde_json::json!({"note":"approved note"}))
+    .bind(source_version)
+    .execute(pool)
+    .await
+    .unwrap();
+    id
+}

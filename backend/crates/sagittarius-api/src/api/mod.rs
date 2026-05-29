@@ -24,6 +24,18 @@ pub fn router(state: AppState) -> Router {
             patch(itinerary::patch_itinerary_item),
         )
         .route(
+            "/v1/trips/{trip_id}/suggestions",
+            post(suggestions::create_suggestion),
+        )
+        .route(
+            "/v1/suggestions/{suggestion_id}/approve",
+            post(suggestions::approve_suggestion),
+        )
+        .route(
+            "/v1/suggestions/{suggestion_id}/reject",
+            post(suggestions::reject_suggestion),
+        )
+        .route(
             "/v1/trips/{trip_id}/members/{member_id}/claim",
             post(join::claim_member),
         )

@@ -212,6 +212,17 @@ impl From<SuggestionRecord> for SuggestionSummary {
     }
 }
 
+pub struct NewSuggestion<'a> {
+    pub id: Uuid,
+    pub trip_id: Uuid,
+    pub plan_variant_id: Uuid,
+    pub proposer_id: Uuid,
+    pub r#type: &'a str,
+    pub target_item_id: Option<Uuid>,
+    pub proposed_patch: serde_json::Value,
+    pub source_version: Option<i64>,
+}
+
 #[derive(Debug, Clone, FromRow)]
 pub struct TripTaskRecord {
     pub id: Uuid,
