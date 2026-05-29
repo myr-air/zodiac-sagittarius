@@ -167,6 +167,27 @@ pub struct NewAccountAuditEvent {
 }
 
 #[derive(Debug, Clone, FromRow)]
+pub struct AccountTripRecord {
+    pub id: Uuid,
+    pub name: String,
+    pub destination_label: String,
+    pub start_date: Date,
+    pub end_date: Date,
+    pub role: TripRole,
+    pub member_id: Uuid,
+    pub owner_member_id: Uuid,
+    pub joined_at: OffsetDateTime,
+}
+
+#[derive(Debug, Clone, FromRow)]
+pub struct AccountTripStatsRecord {
+    pub trips_total: i64,
+    pub trips_owned: i64,
+    pub active_trips: i64,
+    pub temp_claims_completed: i64,
+}
+
+#[derive(Debug, Clone, FromRow)]
 pub struct ActiveUserSessionRecord {
     pub user_id: Uuid,
 }

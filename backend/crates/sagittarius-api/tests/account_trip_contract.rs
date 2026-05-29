@@ -506,6 +506,119 @@ async fn account_trip_creation_validates_dates_and_auth(pool: sqlx::PgPool) {
 }
 
 #[sqlx::test(migrations = "../../migrations")]
+async fn account_can_list_trip_history_and_stats(pool: sqlx::PgPool) {
+    let session = login_account(&pool, "owner@example.com", false, "").await;
+    let auth = format!("Bearer {}", session["sessionToken"].as_str().unwrap());
+    let (create_status, create_body) =
+        create_account_trip(&pool, &auth, "history-stats", "rice-noodle-2026").await;
+    assert_eq!(create_status, StatusCode::OK);
+    let trip_id = create_body["trip"]["id"].as_str().unwrap();
+    let owner_member_id = create_body["ownerMemberId"].as_str().unwrap();
+
+    let trips_response =
+        get_with_auth(support::app(pool.clone()), "/v1/account/trips", Some(&auth)).await;
+    let (trips_status, trips): (StatusCode, Value) = response_json(trips_response).await;
+
+    assert_eq!(trips_status, StatusCode::OK);
+    let trips = trips.as_array().unwrap();
+    assert_eq!(trips.len(), 1);
+    assert_eq!(trips[0]["id"], trip_id);
+    assert_eq!(trips[0]["name"], "history-stats Food Run");
+    assert_eq!(trips[0]["destinationLabel"], "Chiang Mai, Thailand");
+    assert_eq!(trips[0]["startDate"], date_value(2026, Month::November, 4));
+    assert_eq!(trips[0]["endDate"], date_value(2026, Month::November, 8));
+    assert_eq!(trips[0]["role"], "owner");
+    assert_eq!(trips[0]["memberId"], owner_member_id);
+    assert_eq!(trips[0]["ownerMemberId"], owner_member_id);
+    assert_eq!(trips[0]["isOwner"], true);
+    assert!(trips[0]["joinedAt"].as_str().unwrap().ends_with('Z'));
+
+    let stats_response =
+        get_with_auth(support::app(pool.clone()), "/v1/account/stats", Some(&auth)).await;
+    let (stats_status, stats): (StatusCode, Value) = response_json(stats_response).await;
+
+    assert_eq!(stats_status, StatusCode::OK);
+    assert_eq!(stats["tripsTotal"], 1);
+    assert_eq!(stats["tripsOwned"], 1);
+    assert_eq!(stats["activeTrips"], 1);
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn account_trip_history_filters_disabled_members_and_deleted_trips(pool: sqlx::PgPool) {
+    let session = login_account(&pool, "owner@example.com", false, "").await;
+    let user_id = Uuid::parse_str(session["userId"].as_str().unwrap()).unwrap();
+    let auth = format!("Bearer {}", session["sessionToken"].as_str().unwrap());
+    let other_session = login_account(&pool, "other-owner@example.com", false, "").await;
+    let other_auth = format!("Bearer {}", other_session["sessionToken"].as_str().unwrap());
+    let (active_status, active_body) =
+        create_account_trip(&pool, &auth, "active-history", "rice-noodle-2026").await;
+    assert_eq!(active_status, StatusCode::OK);
+    let (disabled_status, disabled_body) =
+        create_account_trip(&pool, &other_auth, "disabled-history", "rice-noodle-2026").await;
+    assert_eq!(disabled_status, StatusCode::OK);
+    let (deleted_status, deleted_body) =
+        create_account_trip(&pool, &auth, "deleted-history", "rice-noodle-2026").await;
+    assert_eq!(deleted_status, StatusCode::OK);
+
+    let active_trip_id = Uuid::parse_str(active_body["trip"]["id"].as_str().unwrap()).unwrap();
+    let disabled_trip_id = Uuid::parse_str(disabled_body["trip"]["id"].as_str().unwrap()).unwrap();
+    let disabled_member_id =
+        insert_account_linked_member(&pool, disabled_trip_id, Some(user_id), "Aom Disabled").await;
+    let deleted_trip_id = Uuid::parse_str(deleted_body["trip"]["id"].as_str().unwrap()).unwrap();
+
+    sqlx::query(
+        "update trip_members
+         set access_status = 'disabled'
+         where trip_id = $1 and id = $2",
+    )
+    .bind(disabled_trip_id)
+    .bind(disabled_member_id)
+    .execute(&pool)
+    .await
+    .unwrap();
+    sqlx::query(
+        "update trips
+         set deleted_at = now()
+         where id = $1",
+    )
+    .bind(deleted_trip_id)
+    .execute(&pool)
+    .await
+    .unwrap();
+
+    let trips_response =
+        get_with_auth(support::app(pool.clone()), "/v1/account/trips", Some(&auth)).await;
+    let (trips_status, trips): (StatusCode, Value) = response_json(trips_response).await;
+
+    assert_eq!(trips_status, StatusCode::OK);
+    let trips = trips.as_array().unwrap();
+    assert_eq!(trips.len(), 1);
+    assert_eq!(trips[0]["id"], active_trip_id.to_string());
+
+    let stats_response =
+        get_with_auth(support::app(pool.clone()), "/v1/account/stats", Some(&auth)).await;
+    let (stats_status, stats): (StatusCode, Value) = response_json(stats_response).await;
+
+    assert_eq!(stats_status, StatusCode::OK);
+    assert_eq!(stats["tripsTotal"], 3);
+    assert_eq!(stats["tripsOwned"], 2);
+    assert_eq!(stats["activeTrips"], 1);
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn account_trip_history_and_stats_require_bearer(pool: sqlx::PgPool) {
+    let trips_response = get_with_auth(support::app(pool.clone()), "/v1/account/trips", None).await;
+    let (trips_status, trips_body): (StatusCode, Value) = response_json(trips_response).await;
+    assert_eq!(trips_status, StatusCode::UNAUTHORIZED);
+    assert_eq!(trips_body["code"], "unauthenticated");
+
+    let stats_response = get_with_auth(support::app(pool), "/v1/account/stats", None).await;
+    let (stats_status, stats_body): (StatusCode, Value) = response_json(stats_response).await;
+    assert_eq!(stats_status, StatusCode::UNAUTHORIZED);
+    assert_eq!(stats_body["code"], "unauthenticated");
+}
+
+#[sqlx::test(migrations = "../../migrations")]
 async fn account_claims_existing_temp_member_after_member_session_proof(pool: sqlx::PgPool) {
     support::seed_trip(&pool).await;
     let member_session = legacy_claim_member_session(&pool, support::TRAVELER_ID, "1234").await;

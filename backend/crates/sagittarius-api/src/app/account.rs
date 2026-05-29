@@ -6,17 +6,17 @@ use time::{Duration, OffsetDateTime};
 use uuid::Uuid;
 
 use crate::db::models::{
-    AccountProfileRecord, NewAccountAuditEvent, NewAccountPlanVariant, NewAccountTrip,
-    NewAccountTripOwnerMember, NewEmailLoginOutbox, NewTrustedDevice, NewUser, NewUserEmail,
-    NewUserSession, PasskeyRecord, TrustedDeviceRecord,
+    AccountProfileRecord, AccountTripRecord, AccountTripStatsRecord, NewAccountAuditEvent,
+    NewAccountPlanVariant, NewAccountTrip, NewAccountTripOwnerMember, NewEmailLoginOutbox,
+    NewTrustedDevice, NewUser, NewUserEmail, NewUserSession, PasskeyRecord, TrustedDeviceRecord,
 };
 use crate::db::{self, PgPool};
 use crate::domain::errors::ServiceError;
 use crate::domain::types::{
     AccountMemberClaimResponse, AccountProfile, AccountSession, AccountSessionKind,
-    AccountSettings, AccountTripCreateResponse, EmailLoginStartResponse, MemberSession,
-    OwnerTransferResponse, PasskeyChallengeResponse, PasskeySummary, TripMemberAccessStatus,
-    TripRole, TripSummary, TrustedDeviceSummary,
+    AccountSettings, AccountTripCreateResponse, AccountTripStats, AccountTripSummary,
+    EmailLoginStartResponse, MemberSession, OwnerTransferResponse, PasskeyChallengeResponse,
+    PasskeySummary, TripMemberAccessStatus, TripRole, TripSummary, TrustedDeviceSummary,
 };
 
 const CHALLENGE_TTL: Duration = Duration::minutes(10);
@@ -274,6 +274,26 @@ pub async fn create_trip(
         owner_member_id,
         member_session,
     })
+}
+
+pub async fn list_trips(
+    pool: &PgPool,
+    session_token: &str,
+) -> Result<Vec<AccountTripSummary>, ServiceError> {
+    let user_id = authenticate_user_session(pool, session_token).await?;
+    let trips = db::account_queries::list_account_trips(pool, user_id).await?;
+
+    Ok(trips.into_iter().map(account_trip_from_record).collect())
+}
+
+pub async fn load_stats(
+    pool: &PgPool,
+    session_token: &str,
+) -> Result<AccountTripStats, ServiceError> {
+    let user_id = authenticate_user_session(pool, session_token).await?;
+    let stats = db::account_queries::get_account_trip_stats(pool, user_id).await?;
+
+    Ok(account_trip_stats_from_record(stats))
 }
 
 pub async fn claim_member(
@@ -719,6 +739,32 @@ fn trusted_device_summary_from_record(record: TrustedDeviceRecord) -> TrustedDev
         user_agent: record.user_agent,
         created_at: format_timestamp(record.created_at),
         last_seen_at: record.last_seen_at.map(format_timestamp),
+    }
+}
+
+fn account_trip_from_record(record: AccountTripRecord) -> AccountTripSummary {
+    let is_owner = record.member_id == record.owner_member_id;
+
+    AccountTripSummary {
+        id: record.id,
+        name: record.name,
+        destination_label: record.destination_label,
+        start_date: record.start_date,
+        end_date: record.end_date,
+        role: record.role,
+        member_id: record.member_id,
+        owner_member_id: record.owner_member_id,
+        joined_at: format_timestamp(record.joined_at),
+        is_owner,
+    }
+}
+
+fn account_trip_stats_from_record(record: AccountTripStatsRecord) -> AccountTripStats {
+    AccountTripStats {
+        trips_total: record.trips_total,
+        trips_owned: record.trips_owned,
+        active_trips: record.active_trips,
+        temp_claims_completed: record.temp_claims_completed,
     }
 }
 

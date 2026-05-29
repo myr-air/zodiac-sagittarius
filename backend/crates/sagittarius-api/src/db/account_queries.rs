@@ -3,10 +3,10 @@ use uuid::Uuid;
 
 use crate::db::PgPool;
 use crate::db::models::{
-    AccountProfileRecord, ActiveUserSessionRecord, EmailLoginChallengeRecord, NewAccountAuditEvent,
-    NewAccountPlanVariant, NewAccountTrip, NewAccountTripOwnerMember, NewEmailLoginOutbox,
-    NewTrustedDevice, NewUser, NewUserEmail, NewUserSession, PasskeyRecord, TripAuthRecord,
-    TrustedDeviceRecord, UserEmailRecord,
+    AccountProfileRecord, AccountTripRecord, AccountTripStatsRecord, ActiveUserSessionRecord,
+    EmailLoginChallengeRecord, NewAccountAuditEvent, NewAccountPlanVariant, NewAccountTrip,
+    NewAccountTripOwnerMember, NewEmailLoginOutbox, NewTrustedDevice, NewUser, NewUserEmail,
+    NewUserSession, PasskeyRecord, TripAuthRecord, TrustedDeviceRecord, UserEmailRecord,
 };
 use crate::domain::types::{TripMemberAccessStatus, TripRole};
 
@@ -311,6 +311,62 @@ pub async fn list_passkeys(
     )
     .bind(user_id)
     .fetch_all(pool)
+    .await
+}
+
+pub async fn list_account_trips(
+    pool: &PgPool,
+    user_id: Uuid,
+) -> Result<Vec<AccountTripRecord>, sqlx::Error> {
+    sqlx::query_as::<_, AccountTripRecord>(
+        "select
+           trips.id,
+           trips.name,
+           trips.destination_label,
+           trips.start_date,
+           trips.end_date,
+           trip_members.role,
+           trip_members.id as member_id,
+           trips.owner_member_id,
+           coalesce(trip_members.claimed_at, trip_members.created_at) as joined_at
+         from trip_members
+         join trips on trips.id = trip_members.trip_id
+         where trip_members.user_id = $1
+           and trip_members.access_status = 'active'
+           and trips.deleted_at is null
+         order by coalesce(trip_members.claimed_at, trip_members.created_at) desc,
+                  trips.created_at desc,
+                  trips.id asc",
+    )
+    .bind(user_id)
+    .fetch_all(pool)
+    .await
+}
+
+pub async fn get_account_trip_stats(
+    pool: &PgPool,
+    user_id: Uuid,
+) -> Result<AccountTripStatsRecord, sqlx::Error> {
+    sqlx::query_as::<_, AccountTripStatsRecord>(
+        "select
+           count(trip_members.id) as trips_total,
+           count(trip_members.id) filter (where trip_members.role = 'owner') as trips_owned,
+           count(trip_members.id) filter (
+             where trip_members.access_status = 'active'
+               and trips.deleted_at is null
+           ) as active_trips,
+           (
+             select count(account_audit_events.id)
+             from account_audit_events
+             where account_audit_events.actor_user_id = $1
+               and account_audit_events.event_type = 'member.claimed_account'
+           ) as temp_claims_completed
+         from trip_members
+         join trips on trips.id = trip_members.trip_id
+         where trip_members.user_id = $1",
+    )
+    .bind(user_id)
+    .fetch_one(pool)
     .await
 }
 

@@ -12,7 +12,8 @@ use crate::app::AppState;
 use crate::domain::errors::ServiceError;
 use crate::domain::types::{
     AccountMemberClaimResponse, AccountSession, AccountSettings, AccountTripCreateResponse,
-    EmailLoginStartResponse, OwnerTransferResponse, PasskeyChallengeResponse,
+    AccountTripStats, AccountTripSummary, EmailLoginStartResponse, OwnerTransferResponse,
+    PasskeyChallengeResponse,
 };
 
 #[derive(Debug, Deserialize)]
@@ -122,6 +123,24 @@ pub async fn create_trip(
         },
     )
     .await?;
+
+    Ok(Json(response))
+}
+
+pub async fn list_trips(
+    State(state): State<AppState>,
+    BearerToken(session_token): BearerToken,
+) -> Result<Json<Vec<AccountTripSummary>>, ServiceError> {
+    let response = app::account::list_trips(&state.pool, &session_token).await?;
+
+    Ok(Json(response))
+}
+
+pub async fn get_stats(
+    State(state): State<AppState>,
+    BearerToken(session_token): BearerToken,
+) -> Result<Json<AccountTripStats>, ServiceError> {
+    let response = app::account::load_stats(&state.pool, &session_token).await?;
 
     Ok(Json(response))
 }
