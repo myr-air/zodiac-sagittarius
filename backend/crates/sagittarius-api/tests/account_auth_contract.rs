@@ -883,6 +883,14 @@ async fn trusted_devices_order_by_latest_seen_or_created_and_omit_revoked(pool: 
              '2026-05-30T03:00:00Z', null
            ),
            (
+             '018f4e80-0000-7000-a000-000000000012', $1, 'Tie high UUID', 'Edge',
+             '2026-05-30T00:45:00Z', '2026-05-30T02:30:00Z'
+           ),
+           (
+             '018f4e80-0000-7000-a000-000000000011', $1, 'Tie low UUID', 'Edge',
+             '2026-05-30T00:45:00Z', '2026-05-30T02:30:00Z'
+           ),
+           (
              gen_random_uuid(), $1, 'Older seen', 'Chrome',
              '2026-05-30T00:30:00Z', '2026-05-30T01:00:00Z'
            ),
@@ -924,7 +932,27 @@ async fn trusted_devices_order_by_latest_seen_or_created_and_omit_revoked(pool: 
         .collect();
     assert_eq!(
         labels,
-        vec!["Fresh created fallback", "Recently seen", "Older seen"]
+        vec![
+            "Fresh created fallback",
+            "Tie low UUID",
+            "Tie high UUID",
+            "Recently seen",
+            "Older seen"
+        ]
+    );
+    let tie_ids: Vec<&str> = body["trustedDevices"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter(|device| device["label"].as_str().unwrap().starts_with("Tie "))
+        .map(|device| device["id"].as_str().unwrap())
+        .collect();
+    assert_eq!(
+        tie_ids,
+        vec![
+            "018f4e80-0000-7000-a000-000000000011",
+            "018f4e80-0000-7000-a000-000000000012"
+        ]
     );
 }
 
@@ -982,6 +1010,16 @@ async fn passkeys_order_by_latest_used_or_created_and_serialize_null_last_used_a
              'Fresh created fallback', '2026-05-30T03:00:00Z', null
            ),
            (
+             '018f4e80-0000-7000-a000-000000000022', $1, 'credential-tie-high',
+             '{}'::jsonb, 'Tie high UUID', '2026-05-30T00:45:00Z',
+             '2026-05-30T02:30:00Z'
+           ),
+           (
+             '018f4e80-0000-7000-a000-000000000021', $1, 'credential-tie-low',
+             '{}'::jsonb, 'Tie low UUID', '2026-05-30T00:45:00Z',
+             '2026-05-30T02:30:00Z'
+           ),
+           (
              gen_random_uuid(), $1, 'credential-recently-used', '{}'::jsonb,
              'Recently used', '2026-05-30T00:00:00Z', '2026-05-30T02:00:00Z'
            ),
@@ -1013,7 +1051,25 @@ async fn passkeys_order_by_latest_used_or_created_and_serialize_null_last_used_a
         .collect();
     assert_eq!(
         nicknames,
-        vec!["Fresh created fallback", "Recently used", "Older used"]
+        vec![
+            "Fresh created fallback",
+            "Tie low UUID",
+            "Tie high UUID",
+            "Recently used",
+            "Older used"
+        ]
     );
     assert_eq!(passkeys[0]["lastUsedAt"], Value::Null);
+    let tie_ids: Vec<&str> = passkeys
+        .iter()
+        .filter(|passkey| passkey["nickname"].as_str().unwrap().starts_with("Tie "))
+        .map(|passkey| passkey["id"].as_str().unwrap())
+        .collect();
+    assert_eq!(
+        tie_ids,
+        vec![
+            "018f4e80-0000-7000-a000-000000000021",
+            "018f4e80-0000-7000-a000-000000000022"
+        ]
+    );
 }
