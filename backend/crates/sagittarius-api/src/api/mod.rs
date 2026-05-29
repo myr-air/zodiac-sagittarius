@@ -33,6 +33,10 @@ pub fn router(state: AppState) -> Router {
         )
         .route("/v1/account/me", get(account::get_me))
         .route("/v1/account/settings", get(account::get_settings))
+        .route(
+            "/v1/account/passkeys/register/start",
+            post(account::start_passkey_registration),
+        )
         .route("/v1/account/sessions/logout", post(account::logout_session))
         .route("/v1/trips/join", post(join::join_trip))
         .route("/v1/trips/{trip_id}", get(trips::load_trip))

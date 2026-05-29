@@ -14,10 +14,11 @@ use crate::db::{self, PgPool};
 use crate::domain::errors::ServiceError;
 use crate::domain::types::{
     AccountProfile, AccountSession, AccountSessionKind, AccountSettings, EmailLoginStartResponse,
-    PasskeySummary, TrustedDeviceSummary,
+    PasskeyChallengeResponse, PasskeySummary, TrustedDeviceSummary,
 };
 
 const CHALLENGE_TTL: Duration = Duration::minutes(10);
+const PASSKEY_CHALLENGE_TTL: Duration = Duration::minutes(5);
 const TEMPORARY_SESSION_TTL: Duration = Duration::days(1);
 const TRUSTED_SESSION_TTL: Duration = Duration::days(30);
 const SESSION_TOKEN_SALT: &[u8] = b"sagittarius-account-session-token";
@@ -167,6 +168,32 @@ pub async fn load_settings(
     })
 }
 
+pub async fn start_passkey_registration(
+    pool: &PgPool,
+    session_token: &str,
+) -> Result<PasskeyChallengeResponse, ServiceError> {
+    let user_id = authenticate_user_session(pool, session_token).await?;
+    let challenge_id = Uuid::now_v7();
+    let challenge = generate_secure_token();
+    let expires_at = OffsetDateTime::now_utc() + PASSKEY_CHALLENGE_TTL;
+
+    db::account_queries::insert_webauthn_challenge(
+        pool,
+        challenge_id,
+        user_id,
+        &challenge,
+        "register",
+        expires_at,
+    )
+    .await?;
+
+    Ok(PasskeyChallengeResponse {
+        challenge_id,
+        challenge,
+        expires_at: format_timestamp(expires_at),
+    })
+}
+
 pub async fn logout_user_session(pool: &PgPool, session_token: &str) -> Result<(), ServiceError> {
     authenticate_user_session(pool, session_token).await?;
     let session_token_hash = hash_session_token(session_token)?;
@@ -273,6 +300,10 @@ fn verify_secret(secret: &str, hash: &str) -> bool {
 }
 
 fn generate_session_token() -> String {
+    generate_secure_token()
+}
+
+fn generate_secure_token() -> String {
     let mut bytes = [0u8; 32];
     rand::rng().fill_bytes(&mut bytes);
     URL_SAFE_NO_PAD.encode(bytes)

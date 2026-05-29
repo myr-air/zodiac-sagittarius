@@ -236,6 +236,29 @@ pub async fn list_passkeys(
     .await
 }
 
+pub async fn insert_webauthn_challenge(
+    pool: &PgPool,
+    id: Uuid,
+    user_id: Uuid,
+    challenge: &str,
+    purpose: &str,
+    expires_at: OffsetDateTime,
+) -> Result<(), sqlx::Error> {
+    sqlx::query(
+        "insert into webauthn_challenges (id, user_id, challenge, purpose, expires_at)
+         values ($1, $2, $3, $4, $5)",
+    )
+    .bind(id)
+    .bind(user_id)
+    .bind(challenge)
+    .bind(purpose)
+    .bind(expires_at)
+    .execute(pool)
+    .await?;
+
+    Ok(())
+}
+
 pub async fn revoke_user_session(
     pool: &PgPool,
     session_token_hash: &str,

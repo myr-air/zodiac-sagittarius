@@ -9,7 +9,9 @@ use crate::api::extractors::BearerToken;
 use crate::app;
 use crate::app::AppState;
 use crate::domain::errors::ServiceError;
-use crate::domain::types::{AccountSession, AccountSettings, EmailLoginStartResponse};
+use crate::domain::types::{
+    AccountSession, AccountSettings, EmailLoginStartResponse, PasskeyChallengeResponse,
+};
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -71,6 +73,15 @@ pub async fn get_settings(
     let settings = app::account::load_settings(&state.pool, &session_token).await?;
 
     Ok(Json(settings))
+}
+
+pub async fn start_passkey_registration(
+    State(state): State<AppState>,
+    BearerToken(session_token): BearerToken,
+) -> Result<Json<PasskeyChallengeResponse>, ServiceError> {
+    let response = app::account::start_passkey_registration(&state.pool, &session_token).await?;
+
+    Ok(Json(response))
 }
 
 pub async fn logout_session(

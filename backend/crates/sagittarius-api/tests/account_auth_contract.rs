@@ -1073,3 +1073,167 @@ async fn passkeys_order_by_latest_used_or_created_and_serialize_null_last_used_a
         ]
     );
 }
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn authenticated_user_can_start_passkey_registration_challenge(pool: sqlx::PgPool) {
+    let session = login_account(&pool, "aom@example.com", false, "").await;
+    let token = session["sessionToken"].as_str().unwrap();
+    let user_id = Uuid::parse_str(session["userId"].as_str().unwrap()).unwrap();
+    let before_request = time::OffsetDateTime::now_utc();
+
+    let (status, body) = response_json(
+        post_with_auth(
+            support::app(pool.clone()),
+            "/v1/account/passkeys/register/start",
+            Some(&format!("Bearer {token}")),
+        )
+        .await,
+    )
+    .await;
+
+    assert_eq!(status, StatusCode::OK);
+    let challenge_id = Uuid::parse_str(body["challengeId"].as_str().unwrap()).unwrap();
+    let challenge = body["challenge"].as_str().unwrap();
+    assert!(!challenge.is_empty());
+    assert!(body["expiresAt"].as_str().unwrap().contains('T'));
+
+    let row: (
+        Uuid,
+        String,
+        String,
+        time::OffsetDateTime,
+        Option<time::OffsetDateTime>,
+    ) = sqlx::query_as(
+        "select user_id, challenge, purpose, expires_at, consumed_at
+         from webauthn_challenges
+         where id = $1",
+    )
+    .bind(challenge_id)
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+
+    assert_eq!(row.0, user_id);
+    assert_eq!(row.1, challenge);
+    assert_eq!(row.2, "register");
+    assert!(row.3 > before_request + time::Duration::minutes(4));
+    assert!(row.3 <= before_request + time::Duration::minutes(6));
+    assert!(row.4.is_none());
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn missing_bearer_on_passkey_registration_start_returns_stable_unauthenticated(
+    pool: sqlx::PgPool,
+) {
+    let (status, body) = response_json(
+        post_with_auth(
+            support::app(pool),
+            "/v1/account/passkeys/register/start",
+            None,
+        )
+        .await,
+    )
+    .await;
+
+    assert_eq!(status, StatusCode::UNAUTHORIZED);
+    assert_eq!(body["code"], "unauthenticated");
+    assert_eq!(body["message"], "unauthenticated");
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn revoked_or_expired_session_cannot_start_passkey_registration_challenge(
+    pool: sqlx::PgPool,
+) {
+    let revoked = login_account(&pool, "revoked@example.com", false, "").await;
+    let revoked_token = revoked["sessionToken"].as_str().unwrap();
+    let revoked_user_id = Uuid::parse_str(revoked["userId"].as_str().unwrap()).unwrap();
+    sqlx::query(
+        "update user_sessions
+         set revoked_at = now()
+         where user_id = $1",
+    )
+    .bind(revoked_user_id)
+    .execute(&pool)
+    .await
+    .unwrap();
+
+    let (revoked_status, revoked_body) = response_json(
+        post_with_auth(
+            support::app(pool.clone()),
+            "/v1/account/passkeys/register/start",
+            Some(&format!("Bearer {revoked_token}")),
+        )
+        .await,
+    )
+    .await;
+    assert_eq!(revoked_status, StatusCode::UNAUTHORIZED);
+    assert_eq!(revoked_body["code"], "unauthenticated");
+
+    let expired = login_account(&pool, "expired@example.com", false, "").await;
+    let expired_token = expired["sessionToken"].as_str().unwrap();
+    let expired_user_id = Uuid::parse_str(expired["userId"].as_str().unwrap()).unwrap();
+    sqlx::query(
+        "update user_sessions
+         set expires_at = now() - interval '1 minute'
+         where user_id = $1",
+    )
+    .bind(expired_user_id)
+    .execute(&pool)
+    .await
+    .unwrap();
+
+    let (expired_status, expired_body) = response_json(
+        post_with_auth(
+            support::app(pool.clone()),
+            "/v1/account/passkeys/register/start",
+            Some(&format!("Bearer {expired_token}")),
+        )
+        .await,
+    )
+    .await;
+    assert_eq!(expired_status, StatusCode::UNAUTHORIZED);
+    assert_eq!(expired_body["code"], "unauthenticated");
+
+    let challenge_count: i64 = sqlx::query_scalar("select count(*) from webauthn_challenges")
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+    assert_eq!(challenge_count, 0);
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn multiple_passkey_registration_starts_create_unique_challenges(pool: sqlx::PgPool) {
+    let session = login_account(&pool, "aom@example.com", false, "").await;
+    let token = session["sessionToken"].as_str().unwrap();
+    let authorization = format!("Bearer {token}");
+
+    let (first_status, first) = response_json(
+        post_with_auth(
+            support::app(pool.clone()),
+            "/v1/account/passkeys/register/start",
+            Some(&authorization),
+        )
+        .await,
+    )
+    .await;
+    let (second_status, second) = response_json(
+        post_with_auth(
+            support::app(pool.clone()),
+            "/v1/account/passkeys/register/start",
+            Some(&authorization),
+        )
+        .await,
+    )
+    .await;
+
+    assert_eq!(first_status, StatusCode::OK);
+    assert_eq!(second_status, StatusCode::OK);
+    assert_ne!(first["challengeId"], second["challengeId"]);
+    assert_ne!(first["challenge"], second["challenge"]);
+
+    let challenge_count: i64 = sqlx::query_scalar("select count(*) from webauthn_challenges")
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+    assert_eq!(challenge_count, 2);
+}
