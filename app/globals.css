@@ -28,6 +28,11 @@
   --color-success: #16a34a;
   --color-success-soft: #f0fdf4;
   --color-success-border: #bbf7d0;
+  --color-sunshine: #facc15;
+  --color-sky: #38bdf8;
+  --color-postcard: #fff7ed;
+  --color-coral: #fb7185;
+  --color-mint: #a7f3d0;
   --shadow-panel: 0 14px 32px rgb(15 23 42 / 0.05);
   --radius-sm: 4px;
   --radius-md: 6px;
@@ -267,6 +272,75 @@ button:disabled,
   width: 18px;
   height: 18px;
   flex: 0 0 auto;
+}
+
+.travel-motif {
+  position: relative;
+  min-width: 180px;
+  min-height: 88px;
+  color: var(--color-route);
+}
+
+.travel-motif-path {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  fill: none;
+}
+
+.travel-motif-path path {
+  stroke: currentColor;
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-dasharray: 8 10;
+}
+
+.travel-motif-path circle {
+  fill: var(--color-surface);
+  stroke: currentColor;
+  stroke-width: 3;
+}
+
+.travel-motif-postcard,
+.travel-motif-pin {
+  position: absolute;
+  display: block;
+  border: 1px solid var(--color-warning-border);
+  background: var(--color-postcard);
+  box-shadow: 0 10px 24px rgb(15 23 42 / 0.08);
+}
+
+.travel-motif-postcard {
+  right: 18px;
+  bottom: 8px;
+  width: 54px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  transform: rotate(-4deg);
+}
+
+.travel-motif-pin {
+  left: 34px;
+  top: 8px;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px 999px 999px 4px;
+  background: var(--color-sunshine);
+  transform: rotate(-45deg);
+}
+
+.travel-motif--sunshine {
+  color: var(--color-warning);
+}
+
+.travel-motif--postcard {
+  color: var(--color-primary);
+}
+
+.travel-motif--timeline {
+  min-width: 220px;
 }
 
 .app-layout {
@@ -3347,7 +3421,9 @@ span.member-state-pill {
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
-  *::after {
+  *::after,
+  .travel-motif,
+  .travel-motif * {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     scroll-behavior: auto !important;

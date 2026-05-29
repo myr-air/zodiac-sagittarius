@@ -11,6 +11,20 @@ describe("Calm Travel Ops CSS contract", () => {
     expect(css).not.toContain("#6b38d4");
   });
 
+  it("defines Friendly Trip Studio accents and motif classes", () => {
+    expect(css).toContain("--color-sunshine: #facc15");
+    expect(css).toContain("--color-sky: #38bdf8");
+    expect(css).toContain("--color-postcard: #fff7ed");
+    expect(css).toContain("--color-coral: #fb7185");
+    expect(css).toMatch(/\.travel-motif\s*{/s);
+    expect(css).toMatch(/\.travel-motif-path\s*{/s);
+    expect(css).toMatch(/\.travel-motif-postcard\s*{/s);
+  });
+
+  it("keeps motif motion reduced-motion safe", () => {
+    expect(css).toMatch(/@media \(prefers-reduced-motion: reduce\)[\s\S]*\.travel-motif/s);
+  });
+
   it("contains horizontal scrolling to the smart table viewport", () => {
     expect(css).toMatch(/body\s*{[^}]*overflow-x:\s*hidden/s);
     expect(css).toMatch(/\.planning-main\s*{[^}]*overflow-y:\s*auto/s);
