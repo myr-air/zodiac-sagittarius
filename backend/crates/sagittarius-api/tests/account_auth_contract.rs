@@ -76,6 +76,57 @@ async fn post_with_auth(
         .unwrap()
 }
 
+async fn patch_json_with_auth(
+    app: axum::Router,
+    uri: &str,
+    authorization: Option<&str>,
+    body: Value,
+) -> Response<axum::body::Body> {
+    let mut request = Request::builder()
+        .method(Method::PATCH)
+        .uri(uri)
+        .header(header::CONTENT_TYPE, "application/json");
+    if let Some(authorization) = authorization {
+        request = request.header(header::AUTHORIZATION, authorization);
+    }
+
+    app.oneshot(request.body(Body::from(body.to_string())).unwrap())
+        .await
+        .unwrap()
+}
+
+async fn patch_raw_with_auth(
+    app: axum::Router,
+    uri: &str,
+    authorization: Option<&str>,
+    body: Body,
+) -> Response<axum::body::Body> {
+    let mut request = Request::builder()
+        .method(Method::PATCH)
+        .uri(uri)
+        .header(header::CONTENT_TYPE, "application/json");
+    if let Some(authorization) = authorization {
+        request = request.header(header::AUTHORIZATION, authorization);
+    }
+
+    app.oneshot(request.body(body).unwrap()).await.unwrap()
+}
+
+async fn delete_with_auth(
+    app: axum::Router,
+    uri: &str,
+    authorization: Option<&str>,
+) -> Response<axum::body::Body> {
+    let mut request = Request::builder().method(Method::DELETE).uri(uri);
+    if let Some(authorization) = authorization {
+        request = request.header(header::AUTHORIZATION, authorization);
+    }
+
+    app.oneshot(request.body(Body::empty()).unwrap())
+        .await
+        .unwrap()
+}
+
 async fn response_json(response: Response<axum::body::Body>) -> (StatusCode, Value) {
     let status = response.status();
     let bytes = to_bytes(response.into_body(), 65536).await.unwrap();
@@ -86,6 +137,116 @@ async fn response_json(response: Response<axum::body::Body>) -> (StatusCode, Val
     };
 
     (status, body)
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn account_settings_can_update_profile_fields(pool: sqlx::PgPool) {
+    let session = login_account(&pool, "settings-owner@example.com", true, "Settings laptop").await;
+    let token = session["sessionToken"].as_str().unwrap();
+    let authorization = format!("Bearer {token}");
+
+    let (status, body) = response_json(
+        patch_json_with_auth(
+            support::app(pool.clone()),
+            "/v1/account/settings",
+            Some(&authorization),
+            json!({
+                "displayName": "  Aom Updated  ",
+                "avatarColor": "#ABCDEF",
+                "locale": "en-US",
+                "timezone": "Asia/Tokyo"
+            }),
+        )
+        .await,
+    )
+    .await;
+
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(body["profile"]["displayName"], "Aom Updated");
+    assert_eq!(body["profile"]["avatarColor"], "#abcdef");
+    assert_eq!(body["profile"]["locale"], "en-US");
+    assert_eq!(body["profile"]["timezone"], "Asia/Tokyo");
+    assert_eq!(
+        body["profile"]["primaryEmail"],
+        "settings-owner@example.com"
+    );
+    assert_eq!(body["trustedDevices"].as_array().unwrap().len(), 1);
+
+    let stored = sqlx::query_as::<_, (String, String, String, String)>(
+        "select display_name, avatar_color, locale, timezone
+         from users
+         where id = $1",
+    )
+    .bind(Uuid::parse_str(session["userId"].as_str().unwrap()).unwrap())
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(
+        stored,
+        (
+            "Aom Updated".to_string(),
+            "#abcdef".to_string(),
+            "en-US".to_string(),
+            "Asia/Tokyo".to_string()
+        )
+    );
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn account_settings_update_validates_payload_and_auth(pool: sqlx::PgPool) {
+    let session = login_account(&pool, "settings-invalid@example.com", false, "").await;
+    let authorization = format!("Bearer {}", session["sessionToken"].as_str().unwrap());
+
+    let malformed = response_json(
+        patch_raw_with_auth(
+            support::app(pool.clone()),
+            "/v1/account/settings",
+            Some(&authorization),
+            Body::from("{"),
+        )
+        .await,
+    )
+    .await;
+    assert_eq!(malformed.0, StatusCode::BAD_REQUEST);
+    assert_eq!(malformed.1["code"], "invalid_request");
+
+    for payload in [
+        json!({"displayName": "", "avatarColor": "#abcdef", "locale": "th-TH", "timezone": "Asia/Bangkok"}),
+        json!({"displayName": "Aom", "avatarColor": "teal", "locale": "th-TH", "timezone": "Asia/Bangkok"}),
+        json!({"displayName": "Aom", "avatarColor": "#abcdef", "locale": "", "timezone": "Asia/Bangkok"}),
+        json!({"displayName": "Aom", "avatarColor": "#abcdef", "locale": "th-TH", "timezone": ""}),
+    ] {
+        let (status, body) = response_json(
+            patch_json_with_auth(
+                support::app(pool.clone()),
+                "/v1/account/settings",
+                Some(&authorization),
+                payload,
+            )
+            .await,
+        )
+        .await;
+        assert_eq!(status, StatusCode::BAD_REQUEST);
+        assert_eq!(body["code"], "invalid_request");
+    }
+
+    let (missing_auth_status, missing_auth_body) = response_json(
+        patch_json_with_auth(
+            support::app(pool),
+            "/v1/account/settings",
+            None,
+            json!({
+                "displayName": "Aom",
+                "avatarColor": "#abcdef",
+                "locale": "th-TH",
+                "timezone": "Asia/Bangkok"
+            }),
+        )
+        .await,
+    )
+    .await;
+    assert_eq!(missing_auth_status, StatusCode::UNAUTHORIZED);
+    assert_eq!(missing_auth_body["code"], "unauthenticated");
 }
 
 async fn login_account(
@@ -894,6 +1055,117 @@ async fn revoked_trusted_device_invalidates_attached_session(pool: sqlx::PgPool)
 
     assert_eq!(status, StatusCode::UNAUTHORIZED);
     assert_eq!(body["code"], "unauthenticated");
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn account_can_revoke_trusted_device_from_settings(pool: sqlx::PgPool) {
+    let first_session = login_account(&pool, "devices@example.com", true, "Laptop").await;
+    let first_token = first_session["sessionToken"].as_str().unwrap().to_string();
+    let user_id = Uuid::parse_str(first_session["userId"].as_str().unwrap()).unwrap();
+    let second_session = login_account(&pool, "devices@example.com", true, "Tablet").await;
+    let second_token = second_session["sessionToken"].as_str().unwrap();
+    let second_authorization = format!("Bearer {second_token}");
+    let laptop_device_id = sqlx::query_as::<_, (Uuid,)>(
+        "select id
+         from trusted_devices
+         where user_id = $1 and label = 'Laptop'",
+    )
+    .bind(user_id)
+    .fetch_one(&pool)
+    .await
+    .unwrap()
+    .0;
+
+    let (status, body) = response_json(
+        delete_with_auth(
+            support::app(pool.clone()),
+            &format!("/v1/account/trusted-devices/{laptop_device_id}"),
+            Some(&second_authorization),
+        )
+        .await,
+    )
+    .await;
+
+    assert_eq!(status, StatusCode::NO_CONTENT);
+    assert_eq!(body, Value::Null);
+
+    let (settings_status, settings_body) = response_json(
+        get_with_auth(
+            support::app(pool.clone()),
+            "/v1/account/settings",
+            Some(&second_authorization),
+        )
+        .await,
+    )
+    .await;
+    assert_eq!(settings_status, StatusCode::OK);
+    assert_eq!(settings_body["trustedDevices"].as_array().unwrap().len(), 1);
+    assert_eq!(settings_body["trustedDevices"][0]["label"], "Tablet");
+
+    let revoked_auth = format!("Bearer {first_token}");
+    let (revoked_status, revoked_body) = response_json(
+        get_with_auth(support::app(pool), "/v1/account/me", Some(&revoked_auth)).await,
+    )
+    .await;
+    assert_eq!(revoked_status, StatusCode::UNAUTHORIZED);
+    assert_eq!(revoked_body["code"], "unauthenticated");
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn trusted_device_revoke_requires_owner_and_existing_device(pool: sqlx::PgPool) {
+    let owner_session =
+        login_account(&pool, "device-owner@example.com", true, "Owner laptop").await;
+    let other_session =
+        login_account(&pool, "device-other@example.com", true, "Other laptop").await;
+    let owner_auth = format!("Bearer {}", owner_session["sessionToken"].as_str().unwrap());
+    let other_user_id = Uuid::parse_str(other_session["userId"].as_str().unwrap()).unwrap();
+    let other_device_id = sqlx::query_as::<_, (Uuid,)>(
+        "select id
+         from trusted_devices
+         where user_id = $1",
+    )
+    .bind(other_user_id)
+    .fetch_one(&pool)
+    .await
+    .unwrap()
+    .0;
+
+    let (foreign_status, foreign_body) = response_json(
+        delete_with_auth(
+            support::app(pool.clone()),
+            &format!("/v1/account/trusted-devices/{other_device_id}"),
+            Some(&owner_auth),
+        )
+        .await,
+    )
+    .await;
+    assert_eq!(foreign_status, StatusCode::NOT_FOUND);
+    assert_eq!(foreign_body["code"], "not_found");
+
+    let unknown_id = Uuid::now_v7();
+    let (unknown_status, unknown_body) = response_json(
+        delete_with_auth(
+            support::app(pool.clone()),
+            &format!("/v1/account/trusted-devices/{unknown_id}"),
+            Some(&owner_auth),
+        )
+        .await,
+    )
+    .await;
+    assert_eq!(unknown_status, StatusCode::NOT_FOUND);
+    assert_eq!(unknown_body["code"], "not_found");
+
+    let (missing_auth_status, missing_auth_body) = response_json(
+        delete_with_auth(
+            support::app(pool),
+            &format!("/v1/account/trusted-devices/{other_device_id}"),
+            None,
+        )
+        .await,
+    )
+    .await;
+    assert_eq!(missing_auth_status, StatusCode::UNAUTHORIZED);
+    assert_eq!(missing_auth_body["code"], "unauthenticated");
 }
 
 #[sqlx::test(migrations = "../../migrations")]

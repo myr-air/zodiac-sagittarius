@@ -316,6 +316,51 @@ pub async fn get_user_profile(
     .await
 }
 
+pub async fn update_user_profile(
+    pool: &PgPool,
+    user_id: Uuid,
+    display_name: &str,
+    avatar_color: &str,
+    locale: &str,
+    timezone: &str,
+) -> Result<Option<AccountProfileRecord>, sqlx::Error> {
+    sqlx::query_as::<_, AccountProfileRecord>(
+        "with updated as (
+           update users
+           set display_name = $2,
+               avatar_color = $3,
+               locale = $4,
+               timezone = $5,
+               updated_at = now()
+           where id = $1
+             and disabled_at is null
+           returning id, display_name, avatar_color, locale, timezone
+         )
+         select
+           updated.id,
+           updated.display_name,
+           updated.avatar_color,
+           updated.locale,
+           updated.timezone,
+           primary_email.email as primary_email
+         from updated
+         left join lateral (
+           select email
+           from user_emails
+           where user_id = updated.id and verified_at is not null
+           order by created_at asc, id asc
+           limit 1
+         ) primary_email on true",
+    )
+    .bind(user_id)
+    .bind(display_name)
+    .bind(avatar_color)
+    .bind(locale)
+    .bind(timezone)
+    .fetch_optional(pool)
+    .await
+}
+
 pub async fn list_trusted_devices(
     pool: &PgPool,
     user_id: Uuid,
@@ -330,6 +375,26 @@ pub async fn list_trusted_devices(
     .bind(user_id)
     .fetch_all(pool)
     .await
+}
+
+pub async fn revoke_trusted_device_for_user(
+    pool: &PgPool,
+    user_id: Uuid,
+    trusted_device_id: Uuid,
+) -> Result<u64, sqlx::Error> {
+    let result = sqlx::query(
+        "update trusted_devices
+         set revoked_at = now()
+         where id = $1
+           and user_id = $2
+           and revoked_at is null",
+    )
+    .bind(trusted_device_id)
+    .bind(user_id)
+    .execute(pool)
+    .await?;
+
+    Ok(result.rows_affected())
 }
 
 pub async fn list_passkeys(

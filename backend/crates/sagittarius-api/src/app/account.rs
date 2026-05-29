@@ -29,6 +29,9 @@ const DEFAULT_TRUSTED_DEVICE_LABEL: &str = "Trusted device";
 const MAX_EMAIL_LOGIN_ATTEMPTS: i32 = 5;
 const MAX_EMAIL_LENGTH: usize = 254;
 const MAX_TRUSTED_DEVICE_LABEL_LENGTH: usize = 120;
+const MAX_ACCOUNT_DISPLAY_NAME_LENGTH: usize = 80;
+const MAX_ACCOUNT_LOCALE_LENGTH: usize = 32;
+const MAX_ACCOUNT_TIMEZONE_LENGTH: usize = 64;
 const MAX_TRIP_TEXT_LENGTH: usize = 120;
 const MAX_JOIN_ID_LENGTH: usize = 32;
 const MIN_JOIN_PASSWORD_LENGTH: usize = 8;
@@ -44,6 +47,13 @@ pub struct AccountTripCreateInput {
     pub owner_display_name: String,
     pub join_id: String,
     pub join_password: String,
+}
+
+pub struct AccountSettingsUpdateInput {
+    pub display_name: String,
+    pub avatar_color: String,
+    pub locale: String,
+    pub timezone: String,
 }
 
 pub async fn start_email_login(
@@ -484,6 +494,43 @@ pub async fn load_settings(
     })
 }
 
+pub async fn update_settings(
+    pool: &PgPool,
+    session_token: &str,
+    input: AccountSettingsUpdateInput,
+) -> Result<AccountSettings, ServiceError> {
+    let user_id = authenticate_user_session(pool, session_token).await?;
+    let display_name = validate_account_text(
+        &input.display_name,
+        MAX_ACCOUNT_DISPLAY_NAME_LENGTH,
+        "display name is invalid",
+    )?;
+    let avatar_color = validate_avatar_color(&input.avatar_color)?;
+    let locale = validate_account_text(
+        &input.locale,
+        MAX_ACCOUNT_LOCALE_LENGTH,
+        "locale is invalid",
+    )?;
+    let timezone = validate_account_text(
+        &input.timezone,
+        MAX_ACCOUNT_TIMEZONE_LENGTH,
+        "timezone is invalid",
+    )?;
+
+    db::account_queries::update_user_profile(
+        pool,
+        user_id,
+        &display_name,
+        &avatar_color,
+        &locale,
+        &timezone,
+    )
+    .await?
+    .ok_or(ServiceError::Unauthenticated)?;
+
+    load_settings(pool, session_token).await
+}
+
 pub async fn start_passkey_registration(
     pool: &PgPool,
     session_token: &str,
@@ -508,6 +555,22 @@ pub async fn start_passkey_registration(
         challenge,
         expires_at: format_timestamp(expires_at),
     })
+}
+
+pub async fn revoke_trusted_device(
+    pool: &PgPool,
+    session_token: &str,
+    trusted_device_id: Uuid,
+) -> Result<(), ServiceError> {
+    let user_id = authenticate_user_session(pool, session_token).await?;
+    let rows =
+        db::account_queries::revoke_trusted_device_for_user(pool, user_id, trusted_device_id)
+            .await?;
+    if rows == 0 {
+        return Err(ServiceError::NotFound);
+    }
+
+    Ok(())
 }
 
 pub async fn logout_user_session(pool: &PgPool, session_token: &str) -> Result<(), ServiceError> {
@@ -737,6 +800,32 @@ fn normalized_device_label(device_label: &str) -> Result<String, ServiceError> {
             "trusted device label is too long",
         ))
     }
+}
+
+fn validate_account_text(
+    value: &str,
+    max_length: usize,
+    field: &'static str,
+) -> Result<String, ServiceError> {
+    let trimmed = value.trim();
+    if trimmed.is_empty() || trimmed.chars().count() > max_length {
+        return Err(ServiceError::InvalidRequest(field));
+    }
+
+    Ok(trimmed.to_string())
+}
+
+fn validate_avatar_color(value: &str) -> Result<String, ServiceError> {
+    let trimmed = value.trim();
+    let bytes = trimmed.as_bytes();
+    if bytes.len() == 7
+        && bytes[0] == b'#'
+        && bytes[1..].iter().all(|byte| byte.is_ascii_hexdigit())
+    {
+        return Ok(trimmed.to_ascii_lowercase());
+    }
+
+    Err(ServiceError::InvalidRequest("avatar color is invalid"))
 }
 
 fn account_profile_from_record(record: AccountProfileRecord) -> AccountProfile {

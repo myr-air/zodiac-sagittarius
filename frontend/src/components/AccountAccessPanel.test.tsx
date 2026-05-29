@@ -6,6 +6,7 @@ import type {
   AccountApiClient,
   AccountSession,
   AccountSettings,
+  AccountSettingsUpdateRequest,
   AccountTripCreateRequest,
   AccountTripStats,
   AccountTripSummary,
@@ -65,6 +66,28 @@ describe("AccountAccessPanel", () => {
     expect(screen.getByText("Profile & settings")).toBeInTheDocument();
     expect(screen.getByText("Seoul Spring")).toBeInTheDocument();
 
+    const settingsCard = screen.getByText("Profile & settings").closest("section") as HTMLElement;
+    await user.clear(within(settingsCard).getByLabelText(/Display name/i));
+    await user.type(within(settingsCard).getByLabelText(/Display name/i), "Aom Updated");
+    await user.clear(within(settingsCard).getByLabelText(/Avatar color/i));
+    await user.type(within(settingsCard).getByLabelText(/Avatar color/i), "#abcdef");
+    await user.clear(within(settingsCard).getByLabelText(/Locale/i));
+    await user.type(within(settingsCard).getByLabelText(/Locale/i), "en-US");
+    await user.clear(within(settingsCard).getByLabelText(/Timezone/i));
+    await user.type(within(settingsCard).getByLabelText(/Timezone/i), "Asia/Tokyo");
+    await user.click(within(settingsCard).getByRole("button", { name: /Save settings/i }));
+
+    expect(accountClient.updateSettings).toHaveBeenCalledWith("account-session", {
+      displayName: "Aom Updated",
+      avatarColor: "#abcdef",
+      locale: "en-US",
+      timezone: "Asia/Tokyo",
+    });
+    expect(await screen.findByText("บันทึก profile และ settings แล้ว")).toBeInTheDocument();
+
+    await user.click(within(settingsCard).getByRole("button", { name: /Revoke/i }));
+    expect(accountClient.revokeTrustedDevice).toHaveBeenCalledWith("account-session", "device-laptop");
+
     const createForm = screen.getByText("Create trip").closest("form") as HTMLFormElement;
     await user.type(within(createForm).getByLabelText(/Trip name/i), "Taipei Food Run");
     await user.type(within(createForm).getByLabelText(/Destination/i), "Taipei");
@@ -122,6 +145,15 @@ function createAccountClient(): AccountApiClient {
       expiresAt: "2026-06-29T08:00:00.000Z",
     }),
     loadSettings: vi.fn().mockResolvedValue(accountSettings),
+    updateSettings: vi.fn().mockImplementation((_sessionToken: string, request: AccountSettingsUpdateRequest) =>
+      Promise.resolve({
+        ...accountSettings,
+        profile: {
+          ...accountSettings.profile,
+          ...request,
+        },
+      }),
+    ),
     listTrips: vi.fn().mockResolvedValue([accountTrip]),
     loadStats: vi.fn().mockResolvedValue(accountStats),
     createTrip: vi.fn().mockImplementation((_sessionToken: string, request: AccountTripCreateRequest) =>
@@ -158,6 +190,7 @@ function createAccountClient(): AccountApiClient {
       challenge: "opaque",
       expiresAt: "2026-05-30T09:00:00.000Z",
     }),
+    revokeTrustedDevice: vi.fn().mockResolvedValue(undefined),
     logout: vi.fn().mockResolvedValue(undefined),
   };
 }
@@ -172,7 +205,15 @@ const accountSettings: AccountSettings = {
     primaryEmail: "aom@example.test",
   },
   passkeys: [],
-  trustedDevices: [],
+  trustedDevices: [
+    {
+      id: "device-laptop",
+      label: "Aom laptop",
+      userAgent: "Safari",
+      createdAt: "2026-05-30T08:00:00.000Z",
+      lastSeenAt: "2026-05-30T08:30:00.000Z",
+    },
+  ],
 };
 
 const accountTrip: AccountTripSummary = {

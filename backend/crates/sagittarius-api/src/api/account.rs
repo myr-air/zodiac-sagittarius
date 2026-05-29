@@ -55,6 +55,15 @@ pub struct OwnerTransferRequest {
     pub target_member_id: Uuid,
 }
 
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AccountSettingsUpdateRequest {
+    pub display_name: String,
+    pub avatar_color: String,
+    pub locale: String,
+    pub timezone: String,
+}
+
 pub async fn start_email_login(
     State(state): State<AppState>,
     request: Result<Json<EmailLoginStartRequest>, JsonRejection>,
@@ -98,6 +107,28 @@ pub async fn get_settings(
     BearerToken(session_token): BearerToken,
 ) -> Result<Json<AccountSettings>, ServiceError> {
     let settings = app::account::load_settings(&state.pool, &session_token).await?;
+
+    Ok(Json(settings))
+}
+
+pub async fn update_settings(
+    State(state): State<AppState>,
+    BearerToken(session_token): BearerToken,
+    request: Result<Json<AccountSettingsUpdateRequest>, JsonRejection>,
+) -> Result<Json<AccountSettings>, ServiceError> {
+    let Json(request) =
+        request.map_err(|_| ServiceError::InvalidRequest("json payload is invalid"))?;
+    let settings = app::account::update_settings(
+        &state.pool,
+        &session_token,
+        app::account::AccountSettingsUpdateInput {
+            display_name: request.display_name,
+            avatar_color: request.avatar_color,
+            locale: request.locale,
+            timezone: request.timezone,
+        },
+    )
+    .await?;
 
     Ok(Json(settings))
 }
@@ -198,6 +229,16 @@ pub async fn logout_session(
     BearerToken(session_token): BearerToken,
 ) -> Result<StatusCode, ServiceError> {
     app::account::logout_user_session(&state.pool, &session_token).await?;
+
+    Ok(StatusCode::NO_CONTENT)
+}
+
+pub async fn revoke_trusted_device(
+    State(state): State<AppState>,
+    BearerToken(session_token): BearerToken,
+    Path(trusted_device_id): Path<Uuid>,
+) -> Result<StatusCode, ServiceError> {
+    app::account::revoke_trusted_device(&state.pool, &session_token, trusted_device_id).await?;
 
     Ok(StatusCode::NO_CONTENT)
 }

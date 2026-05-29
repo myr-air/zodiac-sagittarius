@@ -161,13 +161,11 @@ describe("itinerary planning domain", () => {
       [
         {
           id: "expense-1",
-          tripId: seedTrip.id,
           title: "Taxi",
           amount: 100.005,
           paidBy: "member-aom",
           splits: { "member-aom": 50.005, "member-beam": 50 },
-          currency: "HKD",
-          createdAt: "2026-05-29T00:00:00.000Z",
+          category: "transport",
         },
       ],
       "member-beam",
@@ -180,26 +178,22 @@ describe("itinerary planning domain", () => {
     expect(buildExpenseSummary([
       {
         id: "expense-mismatch",
-        tripId: seedTrip.id,
         title: "Refunded deposit",
         amount: 100,
         paidBy: "member-aom",
         splits: { "member-aom": 90 },
-        currency: "HKD",
-        createdAt: "2026-05-29T00:00:00.000Z",
+        category: "settlement",
       },
     ], "member-aom").groupSpend).toBe(100);
 
     const currentMemberPaidOnly = buildExpenseSummary([
       {
         id: "expense-paid-only",
-        tripId: seedTrip.id,
         title: "Deposit",
         amount: 25,
         paidBy: "member-aom",
         splits: {},
-        currency: "HKD",
-        createdAt: "2026-05-29T00:00:00.000Z",
+        category: "stay",
       },
     ], "member-aom");
     expect(currentMemberPaidOnly.currentUserNetLabel).toBe("You are owed HK$25.00");
@@ -207,13 +201,11 @@ describe("itinerary planning domain", () => {
     const zeroSettlement = buildExpenseSummary([
       {
         id: "expense-zero-share",
-        tripId: seedTrip.id,
         title: "Zero adjustment",
         amount: 0,
         paidBy: "member-aom",
         splits: { "member-aom": 0 },
-        currency: "HKD",
-        createdAt: "2026-05-29T00:00:00.000Z",
+        category: "settlement",
       },
     ], "member-aom");
     expect(zeroSettlement.settlementSuggestions).toEqual([]);

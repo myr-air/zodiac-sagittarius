@@ -76,6 +76,13 @@ export interface AccountTripCreateRequest {
   joinPassword: string;
 }
 
+export interface AccountSettingsUpdateRequest {
+  displayName: string;
+  avatarColor: string;
+  locale: string;
+  timezone: string;
+}
+
 export interface AccountTripCreateResponse {
   trip: TripSummaryResponse;
   ownerMemberId: string;
@@ -102,12 +109,14 @@ export interface AccountApiClient {
     deviceLabel: string;
   }): Promise<AccountSession>;
   loadSettings(sessionToken: string): Promise<AccountSettings>;
+  updateSettings(sessionToken: string, request: AccountSettingsUpdateRequest): Promise<AccountSettings>;
   listTrips(sessionToken: string): Promise<AccountTripSummary[]>;
   loadStats(sessionToken: string): Promise<AccountTripStats>;
   createTrip(sessionToken: string, request: AccountTripCreateRequest): Promise<AccountTripCreateResponse>;
   claimMember(sessionToken: string, tripId: string, memberId: string, memberSessionToken: string): Promise<void>;
   transferOwner(sessionToken: string, tripId: string, targetMemberId: string): Promise<OwnerTransferResponse>;
   startPasskeyRegistration(sessionToken: string): Promise<{ challengeId: string; challenge: string; expiresAt: string }>;
+  revokeTrustedDevice(sessionToken: string, trustedDeviceId: string): Promise<void>;
   logout(sessionToken: string): Promise<void>;
 }
 
@@ -155,6 +164,13 @@ export function createAccountApiClient(options: AccountApiClientOptions = {}): A
         headers: authHeaders(sessionToken),
       });
     },
+    updateSettings(sessionToken, settingsRequest) {
+      return request<AccountSettings>("/v1/account/settings", {
+        method: "PATCH",
+        headers: authHeaders(sessionToken),
+        body: JSON.stringify(settingsRequest),
+      });
+    },
     listTrips(sessionToken) {
       return request<AccountTripSummary[]>("/v1/account/trips", {
         method: "GET",
@@ -191,6 +207,12 @@ export function createAccountApiClient(options: AccountApiClientOptions = {}): A
     startPasskeyRegistration(sessionToken) {
       return request<{ challengeId: string; challenge: string; expiresAt: string }>("/v1/account/passkeys/register/start", {
         method: "POST",
+        headers: authHeaders(sessionToken),
+      });
+    },
+    async revokeTrustedDevice(sessionToken, trustedDeviceId) {
+      await request<void>(`/v1/account/trusted-devices/${encodePath(trustedDeviceId)}`, {
+        method: "DELETE",
         headers: authHeaders(sessionToken),
       });
     },

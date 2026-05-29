@@ -5,6 +5,7 @@ import type {
   AccountApiClient,
   AccountSession,
   AccountSettings,
+  AccountSettingsUpdateRequest,
   AccountTripCreateRequest,
   AccountTripStats,
   AccountTripSummary,
@@ -151,6 +152,7 @@ export function AccountAccessPanel({
             settings={settings}
             stats={stats}
             trips={trips}
+            onSettingsChanged={setSettings}
             onCreatedTrip={async (session) => {
               onAuthenticated(session);
               if (apiClient) {
@@ -279,6 +281,7 @@ function AccountDashboard({
   onError,
   onLogout,
   onMessage,
+  onSettingsChanged,
   settings,
   stats,
   trips,
@@ -290,6 +293,7 @@ function AccountDashboard({
   onError: (message: string | null) => void;
   onLogout: () => Promise<void>;
   onMessage: (message: string | null) => void;
+  onSettingsChanged: (settings: AccountSettings) => void;
   settings: AccountSettings | null;
   stats: AccountTripStats | null;
   trips: AccountTripSummary[];
@@ -419,13 +423,19 @@ function AccountDashboard({
       </section>
 
       <section className="account-card account-settings-card">
-        <PanelHeading icon="settings" title="Profile & settings" detail="Local account security state" />
-        <div className="account-settings-grid">
-          <SettingLine label="Locale" value={settings?.profile.locale ?? "th-TH"} />
-          <SettingLine label="Timezone" value={settings?.profile.timezone ?? "Asia/Bangkok"} />
-          <SettingLine label="Passkeys" value={`${settings?.passkeys.length ?? 0}`} />
-          <SettingLine label="Trusted devices" value={`${settings?.trustedDevices.length ?? 0}`} />
-        </div>
+        <PanelHeading icon="settings" title="Profile & settings" detail="Manage local account profile and trusted devices" />
+        {settings ? (
+          <AccountSettingsEditor
+            accountClient={accountClient}
+            accountSession={accountSession}
+            settings={settings}
+            onError={onError}
+            onMessage={onMessage}
+            onSettingsChanged={onSettingsChanged}
+          />
+        ) : (
+          <p className="account-empty">Loading account settings.</p>
+        )}
         <Button
           type="button"
           variant="secondary"
@@ -441,6 +451,115 @@ function AccountDashboard({
         </Button>
       </section>
     </div>
+  );
+}
+
+function AccountSettingsEditor({
+  accountClient,
+  accountSession,
+  onError,
+  onMessage,
+  onSettingsChanged,
+  settings,
+}: {
+  accountClient: AccountApiClient;
+  accountSession: AccountSession;
+  onError: (message: string | null) => void;
+  onMessage: (message: string | null) => void;
+  onSettingsChanged: (settings: AccountSettings) => void;
+  settings: AccountSettings;
+}) {
+  const [form, setForm] = useState<AccountSettingsUpdateRequest>(() => profileToForm(settings));
+  const [isSaving, setIsSaving] = useState(false);
+  const [revokingDeviceId, setRevokingDeviceId] = useState<string | null>(null);
+
+  async function submitSettings(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setIsSaving(true);
+    try {
+      const nextSettings = await accountClient.updateSettings(accountSession.sessionToken, form);
+      onSettingsChanged(nextSettings);
+      setForm(profileToForm(nextSettings));
+      onMessage("บันทึก profile และ settings แล้ว");
+      onError(null);
+    } catch (caught) {
+      onError(errorMessage(caught, "บันทึก settings ไม่สำเร็จ"));
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  async function revokeDevice(deviceId: string) {
+    setRevokingDeviceId(deviceId);
+    try {
+      await accountClient.revokeTrustedDevice(accountSession.sessionToken, deviceId);
+      const nextSettings = await accountClient.loadSettings(accountSession.sessionToken);
+      onSettingsChanged(nextSettings);
+      onMessage("ยกเลิก trusted device แล้ว");
+      onError(null);
+    } catch (caught) {
+      onError(errorMessage(caught, "ยกเลิก trusted device ไม่สำเร็จ"));
+    } finally {
+      setRevokingDeviceId(null);
+    }
+  }
+
+  return (
+    <>
+      <form className="account-form account-settings-form" onSubmit={submitSettings}>
+        <div className="account-two-col">
+          <label>
+            <span>Display name *</span>
+            <input value={form.displayName} onChange={(event) => setForm((current) => ({ ...current, displayName: event.target.value }))} required />
+          </label>
+          <label>
+            <span>Avatar color *</span>
+            <input
+              value={form.avatarColor}
+              onChange={(event) => setForm((current) => ({ ...current, avatarColor: event.target.value }))}
+              pattern="#[0-9a-fA-F]{6}"
+              required
+            />
+          </label>
+          <label>
+            <span>Locale *</span>
+            <input value={form.locale} onChange={(event) => setForm((current) => ({ ...current, locale: event.target.value }))} required />
+          </label>
+          <label>
+            <span>Timezone *</span>
+            <input value={form.timezone} onChange={(event) => setForm((current) => ({ ...current, timezone: event.target.value }))} required />
+          </label>
+        </div>
+        <Button type="submit" disabled={isSaving}>
+          <Icon name="check" />
+          Save settings
+        </Button>
+      </form>
+
+      <div className="account-settings-grid">
+        <SettingLine label="Passkeys" value={`${settings.passkeys.length}`} />
+        <SettingLine label="Trusted devices" value={`${settings.trustedDevices.length}`} />
+      </div>
+
+      <div className="account-device-list" aria-label="Trusted devices">
+        {settings.trustedDevices.length ? (
+          settings.trustedDevices.map((device) => (
+            <div className="account-device-row" key={device.id}>
+              <div>
+                <strong>{device.label}</strong>
+                <span>{device.userAgent || "Unknown browser"} · {device.lastSeenAt ? formatDateTime(device.lastSeenAt) : formatDateTime(device.createdAt)}</span>
+              </div>
+              <Button type="button" variant="secondary" onClick={() => void revokeDevice(device.id)} disabled={revokingDeviceId === device.id}>
+                <Icon name="x" />
+                Revoke
+              </Button>
+            </div>
+          ))
+        ) : (
+          <p className="account-empty">No trusted devices.</p>
+        )}
+      </div>
+    </>
   );
 }
 
@@ -490,4 +609,13 @@ function errorMessage(caught: unknown, fallback: string): string {
 
 function formatDateTime(value: string): string {
   return new Intl.DateTimeFormat("th-TH", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
+}
+
+function profileToForm(settings: AccountSettings): AccountSettingsUpdateRequest {
+  return {
+    displayName: settings.profile.displayName,
+    avatarColor: settings.profile.avatarColor,
+    locale: settings.profile.locale,
+    timezone: settings.profile.timezone,
+  };
 }

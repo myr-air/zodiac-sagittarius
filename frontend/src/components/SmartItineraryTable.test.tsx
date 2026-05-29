@@ -31,14 +31,15 @@ function renderTable(overrides: Partial<Parameters<typeof SmartItineraryTable>[0
 describe("SmartItineraryTable", () => {
   it("selects rows with keyboard but ignores nested links and buttons", async () => {
     const user = userEvent.setup();
-    const props = renderTable();
+    const onSelectItem = vi.fn();
+    const props = renderTable({ onSelectItem });
     const row = screen.getByRole("row", { name: /Open details for Dim Dim Sum/i });
 
     fireEvent.keyDown(row, { key: "Tab" });
     fireEvent.keyDown(row, { key: "Enter" });
     expect(props.onSelectItem).toHaveBeenCalledWith("item-dimdim");
 
-    props.onSelectItem.mockClear();
+    onSelectItem.mockClear();
     fireEvent.keyDown(within(row).getByRole("link", { name: /แผนที่/i }), { key: "Enter", bubbles: true });
     expect(props.onSelectItem).not.toHaveBeenCalled();
 

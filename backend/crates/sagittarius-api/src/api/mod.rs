@@ -14,7 +14,7 @@ use axum::{
         Method,
         header::{AUTHORIZATION, CONTENT_TYPE},
     },
-    routing::{get, patch, post},
+    routing::{delete, get, patch, post},
 };
 use tower_http::cors::{AllowOrigin, CorsLayer};
 
@@ -32,7 +32,14 @@ pub fn router(state: AppState) -> Router {
             post(account::finish_email_login),
         )
         .route("/v1/account/me", get(account::get_me))
-        .route("/v1/account/settings", get(account::get_settings))
+        .route(
+            "/v1/account/settings",
+            get(account::get_settings).patch(account::update_settings),
+        )
+        .route(
+            "/v1/account/trusted-devices/{trusted_device_id}",
+            delete(account::revoke_trusted_device),
+        )
         .route(
             "/v1/account/trips",
             post(account::create_trip).get(account::list_trips),
@@ -88,7 +95,13 @@ pub fn router(state: AppState) -> Router {
         .layer(
             CorsLayer::new()
                 .allow_origin(AllowOrigin::mirror_request())
-                .allow_methods([Method::GET, Method::POST, Method::PATCH, Method::OPTIONS])
+                .allow_methods([
+                    Method::DELETE,
+                    Method::GET,
+                    Method::POST,
+                    Method::PATCH,
+                    Method::OPTIONS,
+                ])
                 .allow_headers([AUTHORIZATION, CONTENT_TYPE]),
         )
         .with_state(state)

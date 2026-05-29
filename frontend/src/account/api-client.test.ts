@@ -49,15 +49,59 @@ describe("Account API client", () => {
     expect(JSON.parse(String(fetchImpl.mock.calls[0][1]?.body))).not.toHaveProperty("devCode");
   });
 
-  it("loads account settings, trip history, and stats with bearer auth", async () => {
+  it("loads and updates account settings with bearer auth", async () => {
+    const updatedSettings = {
+      profile: {
+        ...accountProfile,
+        displayName: "Aom Updated",
+        avatarColor: "#abcdef",
+        locale: "en-US",
+        timezone: "Asia/Tokyo",
+      },
+      passkeys: [],
+      trustedDevices: [],
+    };
     const fetchImpl = vi
       .fn()
       .mockResolvedValueOnce(jsonResponse({ profile: accountProfile, passkeys: [], trustedDevices: [] }))
+      .mockResolvedValueOnce(jsonResponse(updatedSettings));
+    const client = createAccountApiClient({ baseUrl: "https://api.example.test", fetchImpl });
+
+    await expect(client.loadSettings("account-session")).resolves.toMatchObject({ profile: accountProfile });
+    await expect(
+      client.updateSettings("account-session", {
+        displayName: "Aom Updated",
+        avatarColor: "#abcdef",
+        locale: "en-US",
+        timezone: "Asia/Tokyo",
+      }),
+    ).resolves.toEqual(updatedSettings);
+
+    for (const call of fetchImpl.mock.calls) {
+      expect(call[1]?.headers).toMatchObject({ Authorization: "Bearer account-session" });
+    }
+    expect(fetchImpl).toHaveBeenNthCalledWith(
+      2,
+      "https://api.example.test/v1/account/settings",
+      expect.objectContaining({
+        method: "PATCH",
+        body: JSON.stringify({
+          displayName: "Aom Updated",
+          avatarColor: "#abcdef",
+          locale: "en-US",
+          timezone: "Asia/Tokyo",
+        }),
+      }),
+    );
+  });
+
+  it("loads trip history and stats with bearer auth", async () => {
+    const fetchImpl = vi
+      .fn()
       .mockResolvedValueOnce(jsonResponse([accountTrip]))
       .mockResolvedValueOnce(jsonResponse({ tripsTotal: 1, tripsOwned: 1, activeTrips: 1, tempClaimsCompleted: 0 }));
     const client = createAccountApiClient({ baseUrl: "https://api.example.test", fetchImpl });
 
-    await expect(client.loadSettings("account-session")).resolves.toMatchObject({ profile: accountProfile });
     await expect(client.listTrips("account-session")).resolves.toEqual([accountTrip]);
     await expect(client.loadStats("account-session")).resolves.toMatchObject({ tripsOwned: 1 });
 
@@ -142,21 +186,31 @@ describe("Account API client", () => {
     );
   });
 
-  it("starts passkey registration, logs out, and preserves backend error details", async () => {
+  it("starts passkey registration, revokes trusted devices, logs out, and preserves backend error details", async () => {
     const fetchImpl = vi
       .fn()
       .mockResolvedValueOnce(jsonResponse({ challengeId: "passkey-challenge", challenge: "opaque", expiresAt: "2026-05-30T09:00:00.000Z" }))
+      .mockResolvedValueOnce(new Response(null, { status: 204 }))
       .mockResolvedValueOnce(new Response(null, { status: 204 }))
       .mockResolvedValueOnce(jsonResponse({ code: "invalid_credentials", message: "bad code" }, 401));
     const client = createAccountApiClient({ fetchImpl });
 
     await expect(client.startPasskeyRegistration("account-session")).resolves.toMatchObject({ challengeId: "passkey-challenge" });
+    await expect(client.revokeTrustedDevice("account-session", "device/with space")).resolves.toBeUndefined();
     await expect(client.logout("account-session")).resolves.toBeUndefined();
     await expect(client.startEmailLogin("bad@example.test")).rejects.toMatchObject({
       code: "invalid_credentials",
       message: "bad code",
       status: 401,
     });
+    expect(fetchImpl).toHaveBeenNthCalledWith(
+      2,
+      "/v1/account/trusted-devices/device%2Fwith%20space",
+      expect.objectContaining({
+        method: "DELETE",
+        headers: expect.objectContaining({ Authorization: "Bearer account-session" }),
+      }),
+    );
   });
 
   it("uses fallback error details when the backend returns malformed errors", async () => {
