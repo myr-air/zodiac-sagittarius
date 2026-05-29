@@ -3,6 +3,7 @@
 .storybook-static/
 storybook-static/
 .superpowers/
+.worktrees/
 coverage/
 node_modules/
 playwright-report/
