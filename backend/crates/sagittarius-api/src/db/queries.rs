@@ -213,6 +213,24 @@ pub async fn list_plan_variants(
     .await
 }
 
+pub async fn plan_variant_exists_for_trip(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    trip_id: Uuid,
+    plan_variant_id: Uuid,
+) -> Result<bool, sqlx::Error> {
+    sqlx::query_scalar(
+        "select exists (
+           select 1
+           from plan_variants
+           where trip_id = $1 and id = $2
+         )",
+    )
+    .bind(trip_id)
+    .bind(plan_variant_id)
+    .fetch_one(&mut **tx)
+    .await
+}
+
 pub async fn list_itinerary_items(
     pool: &PgPool,
     trip_id: Uuid,

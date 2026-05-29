@@ -40,6 +40,8 @@ pub async fn create_suggestion(
         return Err(ServiceError::VersionConflict);
     }
 
+    validate_suggestion_references(&mut tx, session.trip_id, &request).await?;
+
     let suggestion = db::queries::insert_suggestion(
         &mut tx,
         NewSuggestion {
@@ -106,6 +108,11 @@ pub async fn approve_suggestion(
         .ok_or(ServiceError::NotFound)?;
     if item.trip_id != suggestion.trip_id {
         return Err(ServiceError::NotFound);
+    }
+    if item.plan_variant_id != suggestion.plan_variant_id {
+        return Err(ServiceError::InvalidRequest(
+            "suggestion target item plan variant does not match",
+        ));
     }
 
     if suggestion.source_version != Some(item.version) {
@@ -181,6 +188,39 @@ fn validate_suggestion_request(request: &CreateSuggestionRequest) -> Result<(), 
         "add" | "delete" | "reorder" => Ok(()),
         _ => Err(ServiceError::InvalidRequest("suggestion type is invalid")),
     }
+}
+
+async fn validate_suggestion_references(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    trip_id: Uuid,
+    request: &CreateSuggestionRequest,
+) -> Result<(), ServiceError> {
+    let plan_exists =
+        db::queries::plan_variant_exists_for_trip(tx, trip_id, request.plan_variant_id).await?;
+    if !plan_exists {
+        return Err(ServiceError::NotFound);
+    }
+
+    if request.r#type != "edit" {
+        return Ok(());
+    }
+
+    let target_item_id = request
+        .target_item_id
+        .ok_or(ServiceError::InvalidRequest("target_item_id is required"))?;
+    let target = db::queries::lock_itinerary_item(tx, target_item_id)
+        .await?
+        .ok_or(ServiceError::NotFound)?;
+    if target.trip_id != trip_id {
+        return Err(ServiceError::NotFound);
+    }
+    if target.plan_variant_id != request.plan_variant_id {
+        return Err(ServiceError::InvalidRequest(
+            "target item plan variant does not match",
+        ));
+    }
+
+    Ok(())
 }
 
 fn suggestion_patch(suggestion: &SuggestionRecord) -> Result<ItineraryItemPatch, ServiceError> {

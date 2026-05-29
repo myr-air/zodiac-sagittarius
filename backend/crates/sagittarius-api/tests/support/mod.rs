@@ -10,6 +10,7 @@ pub const TRAVELER_ID: &str = "018f4e81-77a4-7b8f-b3bd-0d0f493ac563";
 pub const VIEWER_ID: &str = "018f4e81-77a4-7b8f-b3bd-0d0f493ac564";
 pub const TRIP_ID: &str = "018f4e80-5788-7de0-a45c-8a555d17fc2d";
 pub const PLAN_ID: &str = "018f4e82-3000-7c00-b111-000000000001";
+pub const ALT_PLAN_ID: &str = "018f4e82-3000-7c00-b111-000000000002";
 pub const ITEM_ID: &str = "018f4e83-5410-7d8b-8f25-fd52c5e7bd1f";
 
 pub fn app(pool: PgPool) -> Router {
@@ -147,6 +148,28 @@ pub async fn seed_tasks(pool: &PgPool) {
 }
 
 pub async fn seed_suggestion(pool: &PgPool, source_version: i64) -> Uuid {
+    seed_suggestion_for_plan(pool, PLAN_ID, source_version).await
+}
+
+pub async fn seed_plan_variant(pool: &PgPool) -> Uuid {
+    let plan_id = Uuid::parse_str(ALT_PLAN_ID).unwrap();
+    sqlx::query(
+        "insert into plan_variants (id, trip_id, name, kind, description)
+         values ($1, $2, 'Alternate', 'draft', 'Alternate plan')",
+    )
+    .bind(plan_id)
+    .bind(Uuid::parse_str(TRIP_ID).unwrap())
+    .execute(pool)
+    .await
+    .unwrap();
+    plan_id
+}
+
+pub async fn seed_suggestion_for_plan(
+    pool: &PgPool,
+    plan_variant_id: &str,
+    source_version: i64,
+) -> Uuid {
     let id = Uuid::now_v7();
     sqlx::query(
         "insert into suggestions (
@@ -157,7 +180,7 @@ pub async fn seed_suggestion(pool: &PgPool, source_version: i64) -> Uuid {
     )
     .bind(id)
     .bind(Uuid::parse_str(TRIP_ID).unwrap())
-    .bind(Uuid::parse_str(PLAN_ID).unwrap())
+    .bind(Uuid::parse_str(plan_variant_id).unwrap())
     .bind(Uuid::parse_str(TRAVELER_ID).unwrap())
     .bind(Uuid::parse_str(ITEM_ID).unwrap())
     .bind(serde_json::json!({"note":"approved note"}))
