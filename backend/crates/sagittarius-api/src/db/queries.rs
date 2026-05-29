@@ -3,8 +3,9 @@ use uuid::Uuid;
 
 use crate::db::PgPool;
 use crate::db::models::{
-    AuthenticatedMemberSessionRecord, ExpenseSplitRecord, ItineraryItemRecord, PlanVariantRecord,
-    SuggestionRecord, TripAuthRecord, TripMemberAuthRecord, TripMemberRecord, TripTaskRecord,
+    AuthenticatedMemberSessionRecord, ExpenseSplitRecord, ItineraryItemRecord, NewRealtimeEvent,
+    PlanVariantRecord, RealtimeEventRecord, SuggestionRecord, TripAuthRecord, TripMemberAuthRecord,
+    TripMemberRecord, TripTaskRecord,
 };
 
 pub async fn find_trip_by_join_id(
@@ -159,6 +160,27 @@ pub async fn find_active_member_session(
     .await
 }
 
+pub async fn find_active_member_session_in_tx(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    trip_id: Uuid,
+    token_hash: &str,
+) -> Result<Option<AuthenticatedMemberSessionRecord>, sqlx::Error> {
+    sqlx::query_as::<_, AuthenticatedMemberSessionRecord>(
+        "select s.trip_id, s.member_id, m.role
+         from trip_member_sessions s
+         join trip_members m on m.id = s.member_id and m.trip_id = s.trip_id
+         where s.trip_id = $1
+           and s.session_token_hash = $2
+           and s.revoked_at is null
+           and s.expires_at > now()
+           and m.access_status = 'active'",
+    )
+    .bind(trip_id)
+    .bind(token_hash)
+    .fetch_optional(&mut **tx)
+    .await
+}
+
 pub async fn list_trip_members(
     pool: &PgPool,
     trip_id: Uuid,
@@ -212,6 +234,68 @@ pub async fn list_itinerary_items(
     .await
 }
 
+pub async fn lock_itinerary_item(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    item_id: Uuid,
+) -> Result<Option<ItineraryItemRecord>, sqlx::Error> {
+    sqlx::query_as::<_, ItineraryItemRecord>(
+        "select
+           id, trip_id, plan_variant_id, day, sort_order,
+           to_char(start_time, 'HH24:MI') as start_time,
+           activity, activity_type, place, link_label, map_link, address,
+           latitude::float8 as latitude, longitude::float8 as longitude,
+           duration_minutes, transportation, advisories, note, created_by,
+           updated_at::text as updated_at, version
+         from itinerary_items
+         where id = $1 and deleted_at is null
+         for update",
+    )
+    .bind(item_id)
+    .fetch_optional(&mut **tx)
+    .await
+}
+
+pub async fn update_itinerary_item(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    item_id: Uuid,
+    patch: &crate::domain::patches::ItineraryItemPatch,
+    next_version: i64,
+) -> Result<Option<ItineraryItemRecord>, sqlx::Error> {
+    sqlx::query_as::<_, ItineraryItemRecord>(
+        "update itinerary_items
+         set start_time = coalesce($2::time, start_time),
+             duration_minutes = coalesce($3, duration_minutes),
+             activity = coalesce($4, activity),
+             activity_type = coalesce($5, activity_type),
+             place = coalesce($6, place),
+             map_link = coalesce($7, map_link),
+             transportation = coalesce($8, transportation),
+             note = coalesce($9, note),
+             version = $10,
+             updated_at = now()
+         where id = $1 and deleted_at is null
+         returning
+           id, trip_id, plan_variant_id, day, sort_order,
+           to_char(start_time, 'HH24:MI') as start_time,
+           activity, activity_type, place, link_label, map_link, address,
+           latitude::float8 as latitude, longitude::float8 as longitude,
+           duration_minutes, transportation, advisories, note, created_by,
+           updated_at::text as updated_at, version",
+    )
+    .bind(item_id)
+    .bind(patch.start_time.as_deref())
+    .bind(patch.duration_minutes)
+    .bind(patch.activity.as_deref())
+    .bind(patch.activity_type.as_deref())
+    .bind(patch.place.as_deref())
+    .bind(patch.map_link.as_deref())
+    .bind(patch.transportation.as_deref())
+    .bind(patch.note.as_deref())
+    .bind(next_version)
+    .fetch_optional(&mut **tx)
+    .await
+}
+
 pub async fn list_suggestions(
     pool: &PgPool,
     trip_id: Uuid,
@@ -262,5 +346,32 @@ pub async fn list_expense_splits(
     )
     .bind(trip_id)
     .fetch_all(pool)
+    .await
+}
+
+pub async fn insert_realtime_event(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    event: NewRealtimeEvent<'_>,
+) -> Result<RealtimeEventRecord, sqlx::Error> {
+    sqlx::query_as::<_, RealtimeEventRecord>(
+        "insert into realtime_events (
+           id, trip_id, aggregate_type, event_type, aggregate_id, version, payload,
+           client_mutation_id, created_by
+         )
+         values ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+         returning
+           id, trip_id, aggregate_type, event_type, aggregate_id, version, payload,
+           client_mutation_id, created_by, created_at::text as created_at",
+    )
+    .bind(Uuid::now_v7())
+    .bind(event.trip_id)
+    .bind(event.aggregate_type)
+    .bind(event.event_type)
+    .bind(event.aggregate_id)
+    .bind(event.version)
+    .bind(event.payload)
+    .bind(event.client_mutation_id)
+    .bind(event.created_by)
+    .fetch_one(&mut **tx)
     .await
 }
