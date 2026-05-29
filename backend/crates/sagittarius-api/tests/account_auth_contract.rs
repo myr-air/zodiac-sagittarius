@@ -777,6 +777,27 @@ async fn malformed_bearer_header_on_account_me_returns_stable_unauthenticated(po
 }
 
 #[sqlx::test(migrations = "../../migrations")]
+async fn malformed_bearer_on_passkey_registration_start_returns_stable_unauthenticated(
+    pool: sqlx::PgPool,
+) {
+    for authorization in ["Token abc", "Bearer "] {
+        let (status, body) = response_json(
+            post_with_auth(
+                support::app(pool.clone()),
+                "/v1/account/passkeys/register/start",
+                Some(authorization),
+            )
+            .await,
+        )
+        .await;
+
+        assert_eq!(status, StatusCode::UNAUTHORIZED);
+        assert_eq!(body["code"], "unauthenticated");
+        assert_eq!(body["message"], "unauthenticated");
+    }
+}
+
+#[sqlx::test(migrations = "../../migrations")]
 async fn logout_revokes_current_account_session(pool: sqlx::PgPool) {
     let session = login_account(&pool, "aom@example.com", false, "").await;
     let token = session["sessionToken"].as_str().unwrap();
@@ -796,6 +817,23 @@ async fn logout_revokes_current_account_session(pool: sqlx::PgPool) {
     .await;
     assert_eq!(status, StatusCode::UNAUTHORIZED);
     assert_eq!(body["code"], "unauthenticated");
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn logout_with_unknown_session_returns_stable_unauthenticated(pool: sqlx::PgPool) {
+    let (status, body) = response_json(
+        post_with_auth(
+            support::app(pool),
+            "/v1/account/sessions/logout",
+            Some("Bearer unknown-session-token"),
+        )
+        .await,
+    )
+    .await;
+
+    assert_eq!(status, StatusCode::UNAUTHORIZED);
+    assert_eq!(body["code"], "unauthenticated");
+    assert_eq!(body["message"], "unauthenticated");
 }
 
 #[sqlx::test(migrations = "../../migrations")]
@@ -825,6 +863,36 @@ async fn expired_user_session_cannot_load_account_me(pool: sqlx::PgPool) {
 
     assert_eq!(status, StatusCode::UNAUTHORIZED);
     assert_eq!(body["code"], "unauthenticated");
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn expired_user_session_cannot_load_account_settings(pool: sqlx::PgPool) {
+    let session = login_account(&pool, "settings-expired@example.com", false, "").await;
+    let token = session["sessionToken"].as_str().unwrap();
+
+    sqlx::query(
+        "update user_sessions
+         set expires_at = now() - interval '1 minute'
+         where user_id = $1",
+    )
+    .bind(Uuid::parse_str(session["userId"].as_str().unwrap()).unwrap())
+    .execute(&pool)
+    .await
+    .unwrap();
+
+    let (status, body) = response_json(
+        get_with_auth(
+            support::app(pool),
+            "/v1/account/settings",
+            Some(&format!("Bearer {token}")),
+        )
+        .await,
+    )
+    .await;
+
+    assert_eq!(status, StatusCode::UNAUTHORIZED);
+    assert_eq!(body["code"], "unauthenticated");
+    assert_eq!(body["message"], "unauthenticated");
 }
 
 #[sqlx::test(migrations = "../../migrations")]
