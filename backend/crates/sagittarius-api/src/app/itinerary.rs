@@ -32,6 +32,17 @@ pub async fn patch_itinerary_item(
         return Err(ServiceError::Forbidden);
     }
 
+    if db::queries::realtime_event_exists_for_client_mutation(
+        &mut tx,
+        existing.trip_id,
+        session.member_id,
+        &request.client_mutation_id,
+    )
+    .await?
+    {
+        return Err(ServiceError::VersionConflict);
+    }
+
     if existing.version != request.expected_version {
         return Err(ServiceError::VersionConflict);
     }

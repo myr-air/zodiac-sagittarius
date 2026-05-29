@@ -38,6 +38,10 @@ impl ItineraryItemPatch {
             ));
         }
 
+        if let Some(activity_type) = &self.activity_type {
+            validate_activity_type(activity_type)?;
+        }
+
         Ok(())
     }
 }
@@ -63,4 +67,11 @@ fn validate_hh_mm(value: &str) -> Result<(), ServiceError> {
     }
 
     Ok(())
+}
+
+fn validate_activity_type(value: &str) -> Result<(), ServiceError> {
+    match value {
+        "travel" | "food" | "shopping" | "attraction" | "experience" | "stay" => Ok(()),
+        _ => Err(ServiceError::InvalidRequest("activity_type is invalid")),
+    }
 }

@@ -21,7 +21,7 @@ pub async fn insert(
     tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
     event: EventWrite<'_>,
 ) -> Result<EventEnvelope, ServiceError> {
-    let record = db::queries::insert_realtime_event(
+    let record = match db::queries::insert_realtime_event(
         tx,
         NewRealtimeEvent {
             trip_id: event.trip_id,
@@ -34,7 +34,12 @@ pub async fn insert(
             created_by: event.created_by,
         },
     )
-    .await?;
+    .await
+    {
+        Ok(record) => record,
+        Err(error) if is_unique_violation(&error) => return Err(ServiceError::VersionConflict),
+        Err(error) => return Err(error.into()),
+    };
 
     Ok(EventEnvelope {
         id: record.id,
@@ -48,4 +53,12 @@ pub async fn insert(
         created_by: record.created_by,
         created_at: record.created_at,
     })
+}
+
+fn is_unique_violation(error: &sqlx::Error) -> bool {
+    matches!(
+        error,
+        sqlx::Error::Database(database_error)
+            if database_error.code().as_deref() == Some("23505")
+    )
 }

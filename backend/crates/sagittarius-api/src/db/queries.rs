@@ -296,6 +296,26 @@ pub async fn update_itinerary_item(
     .await
 }
 
+pub async fn realtime_event_exists_for_client_mutation(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    trip_id: Uuid,
+    created_by: Uuid,
+    client_mutation_id: &str,
+) -> Result<bool, sqlx::Error> {
+    sqlx::query_scalar(
+        "select exists (
+           select 1
+           from realtime_events
+           where trip_id = $1 and created_by = $2 and client_mutation_id = $3
+         )",
+    )
+    .bind(trip_id)
+    .bind(created_by)
+    .bind(client_mutation_id)
+    .fetch_one(&mut **tx)
+    .await
+}
+
 pub async fn list_suggestions(
     pool: &PgPool,
     trip_id: Uuid,
