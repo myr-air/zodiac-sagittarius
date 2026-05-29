@@ -316,5 +316,39 @@ mod account_type_tests {
         assert_eq!(value["profile"]["primaryEmail"], "aom@example.com");
         assert_eq!(value["trustedDevices"][0]["userAgent"], "Safari");
         assert_eq!(value["passkeys"][0]["lastUsedAt"], serde_json::Value::Null);
+
+        let session = AccountSession {
+            user_id,
+            session_token: "session-token".to_string(),
+            kind: AccountSessionKind::Trusted,
+            created_at: "2026-05-30T00:00:00Z".to_string(),
+            expires_at: "2026-05-31T00:00:00Z".to_string(),
+        };
+        let value = serde_json::to_value(session).unwrap();
+        assert_eq!(value["userId"], user_id.to_string());
+        assert_eq!(value["sessionToken"], "session-token");
+        assert_eq!(value["kind"], "trusted");
+        assert_eq!(value["createdAt"], "2026-05-30T00:00:00Z");
+        assert_eq!(value["expiresAt"], "2026-05-31T00:00:00Z");
+
+        let email_login_start = EmailLoginStartResponse {
+            challenge_id: credential_id,
+            expires_at: "2026-05-30T00:05:00Z".to_string(),
+            dev_code: "123456".to_string(),
+        };
+        let value = serde_json::to_value(email_login_start).unwrap();
+        assert_eq!(value["challengeId"], credential_id.to_string());
+        assert_eq!(value["expiresAt"], "2026-05-30T00:05:00Z");
+        assert_eq!(value["devCode"], "123456");
+
+        let passkey_challenge = PasskeyChallengeResponse {
+            challenge_id: credential_id,
+            challenge: "challenge-payload".to_string(),
+            expires_at: "2026-05-30T00:05:00Z".to_string(),
+        };
+        let value = serde_json::to_value(passkey_challenge).unwrap();
+        assert_eq!(value["challengeId"], credential_id.to_string());
+        assert_eq!(value["challenge"], "challenge-payload");
+        assert_eq!(value["expiresAt"], "2026-05-30T00:05:00Z");
     }
 }
