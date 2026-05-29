@@ -40,4 +40,14 @@ describe("Sagittarius project scaffold", () => {
     expect(spec).toContain("itinerary_item.updated");
     expect(spec).toContain("clientMutationId");
   });
+
+  it("documents the backend vertical slice verification command", () => {
+    const packageJson = JSON.parse(readFileSync("package.json", "utf8")) as {
+      scripts?: Record<string, string>;
+    };
+
+    expect(packageJson.scripts?.["verify:backend"]).toBe(
+      "rtk env DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/sagittarius_test cargo test --manifest-path backend/Cargo.toml",
+    );
+  });
 });
