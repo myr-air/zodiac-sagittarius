@@ -44,7 +44,7 @@ Run this command before backend integration branches merge frontend-touching
 changes:
 
 ```bash
-rtk bun run verify:frontend
+rtk make frontend-verify
 ```
 
 The command expands to:

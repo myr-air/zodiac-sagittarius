@@ -1,11 +1,19 @@
 import { readFileSync } from "node:fs";
+import { dirname, join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
+const testDir = dirname(fileURLToPath(import.meta.url));
+const frontendRoot = resolve(testDir, "..");
+const repoRoot = resolve(frontendRoot, "..");
+
 describe("frontend core freeze contract", () => {
-  const freezeDoc = readFileSync("docs/frontend-core-freeze.md", "utf8");
-  const packageJson = JSON.parse(readFileSync("package.json", "utf8")) as { scripts?: Record<string, string> };
-  const storybookPreview = readFileSync(".storybook/preview.ts", "utf8");
-  const mswHandlers = readFileSync(".storybook/msw-handlers.ts", "utf8");
+  const freezeDoc = readFileSync(join(repoRoot, "docs/frontend-core-freeze.md"), "utf8");
+  const packageJson = JSON.parse(readFileSync(join(frontendRoot, "package.json"), "utf8")) as {
+    scripts?: Record<string, string>;
+  };
+  const storybookPreview = readFileSync(join(frontendRoot, ".storybook/preview.ts"), "utf8");
+  const mswHandlers = readFileSync(join(frontendRoot, ".storybook/msw-handlers.ts"), "utf8");
 
   it("documents the frontend as frozen for backend integration", () => {
     expect(freezeDoc).toContain("Status: frozen for backend integration.");
@@ -20,7 +28,7 @@ describe("frontend core freeze contract", () => {
     expect(packageJson.scripts?.["verify:frontend"]).toBe(
       "bun run lint && bun run typecheck && bun run test && bun run test:storybook && bun run build && bun run build-storybook",
     );
-    expect(freezeDoc).toContain("rtk bun run verify:frontend");
+    expect(freezeDoc).toContain("rtk make frontend-verify");
   });
 
   it("keeps Storybook wired as the stable template source", () => {
