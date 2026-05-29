@@ -8,6 +8,8 @@
 
 **Tech Stack:** Rust 1.95 workspace, axum, sqlx/PostgreSQL migrations and `#[sqlx::test]`, argon2 hashing helpers already in `app::auth`, uuid v7, time, serde.
 
+**Quality Gate:** New account backend code must reach 100% line and function coverage for this slice, account error-handler variants must have explicit response tests, and the final task includes an aggressive review/refactor pass before the slice can be considered complete.
+
 ---
 
 ## Scope Check
@@ -1803,35 +1805,86 @@ Expected: commit succeeds.
 
 ---
 
-### Task 7: Full Backend Verification
+### Task 7: Full Backend Verification, Coverage, And Refactor Review
 
 **Files:**
-- No source changes expected.
+- Modify: `backend/crates/sagittarius-api/tests/http_contract.rs` if account error-handler coverage is missing.
+- Modify account source files only if coverage/refactor review finds dead branches, duplicated logic, or untested error paths.
 
-- [ ] **Step 1: Run account-focused tests**
+- [ ] **Step 1: Add account error-handler contract cases**
 
-Run:
+If Task 2 added `ServiceError::IdentityAlreadyLinked` and `ServiceError::OwnerTransferInvalid`,
+extend `backend/crates/sagittarius-api/tests/http_contract.rs` with:
 
-```bash
-cd backend
-rtk cargo test -p sagittarius-api --test account_schema_contract
-rtk cargo test -p sagittarius-api --test account_auth_contract
+```rust
+#[tokio::test]
+async fn account_conflict_errors_return_stable_codes() {
+    let identity_response = ServiceError::IdentityAlreadyLinked.into_response();
+    assert_eq!(identity_response.status(), StatusCode::CONFLICT);
+    let identity_body = axum::body::to_bytes(identity_response.into_body(), usize::MAX)
+        .await
+        .unwrap();
+    let identity_body: Value = serde_json::from_slice(&identity_body).unwrap();
+    assert_eq!(identity_body["code"], "identity_already_linked");
+    assert_eq!(identity_body["message"], "identity already linked");
+
+    let owner_response = ServiceError::OwnerTransferInvalid.into_response();
+    assert_eq!(owner_response.status(), StatusCode::CONFLICT);
+    let owner_body = axum::body::to_bytes(owner_response.into_body(), usize::MAX)
+        .await
+        .unwrap();
+    let owner_body: Value = serde_json::from_slice(&owner_body).unwrap();
+    assert_eq!(owner_body["code"], "owner_transfer_invalid");
+    assert_eq!(owner_body["message"], "owner transfer invalid");
+}
 ```
 
-Expected: both commands PASS.
-
-- [ ] **Step 2: Run full backend tests**
-
 Run:
 
 ```bash
 cd backend
-rtk cargo test -p sagittarius-api
+rtk cargo test -p sagittarius-api --test http_contract account_conflict_errors_return_stable_codes
 ```
 
 Expected: PASS.
 
-- [ ] **Step 3: Confirm no third-party provider dependency was added**
+- [ ] **Step 2: Run account-focused tests**
+
+Run:
+
+```bash
+cd backend
+DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/sagittarius_test rtk cargo test -p sagittarius-api --test account_schema_contract
+DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/sagittarius_test rtk cargo test -p sagittarius-api --test account_auth_contract
+```
+
+Expected: both commands PASS.
+
+- [ ] **Step 3: Run full backend tests**
+
+Run:
+
+```bash
+cd backend
+DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/sagittarius_test rtk cargo test -p sagittarius-api
+```
+
+Expected: PASS.
+
+- [ ] **Step 4: Run 100% coverage gate**
+
+Run:
+
+```bash
+cd backend
+DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/sagittarius_test rtk cargo llvm-cov -p sagittarius-api --fail-under-lines 100 --fail-under-functions 100
+```
+
+Expected: PASS with 100% line and function coverage. If it fails, inspect the
+uncovered lines and either add focused tests or refactor unreachable branches
+out of the account slice. Do not lower the threshold.
+
+- [ ] **Step 5: Confirm no third-party provider dependency was added**
 
 Run:
 
@@ -1841,7 +1894,33 @@ rtk rg -n "sendgrid|resend|postmark|auth0|clerk|supabase_auth|firebase|oauth|pro
 
 Expected: no matches except documentation comments that explicitly say providers are not used.
 
-- [ ] **Step 4: Commit any verification-only cleanup**
+- [ ] **Step 6: Run aggressive review/refactor pass**
+
+Review the account identity slice with this checklist and make scoped refactors
+before completion:
+
+- account auth code has no duplicated token hashing, timestamp formatting, or
+  challenge consumption logic that can be extracted locally without obscuring
+  intent;
+- error handling returns stable `ServiceError` variants and avoids leaking SQL
+  details;
+- account SQL helpers have single-purpose names and no ad hoc string parsing;
+- tests cover success, invalid input, wrong/reused credentials, revoked session,
+  expired session or challenge, missing bearer token, and account error response
+  mapping;
+- no account code introduces a runtime third-party provider dependency.
+
+Run after any refactor:
+
+```bash
+cd backend
+DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/sagittarius_test rtk cargo test -p sagittarius-api
+DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/sagittarius_test rtk cargo llvm-cov -p sagittarius-api --fail-under-lines 100 --fail-under-functions 100
+```
+
+Expected: both commands PASS.
+
+- [ ] **Step 7: Commit any verification-only cleanup**
 
 Run:
 

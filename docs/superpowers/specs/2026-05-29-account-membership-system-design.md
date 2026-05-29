@@ -426,6 +426,8 @@ Backend contract tests:
 - email login creates or resumes a user and returns temporary/trusted sessions;
 - passkey challenge lifecycle rejects expired or consumed challenges;
 - account session lookup rejects revoked and expired sessions;
+- account error responses cover every `ServiceError` variant introduced for
+  account identity and ownership;
 - account user creates a trip and becomes the linked owner member;
 - guest member can link to account idempotently;
 - guest member cannot link to another account once linked;
@@ -451,8 +453,13 @@ Frontend tests:
 Verification:
 
 - backend tests for account and ownership contracts;
+- 100% line/function coverage for code introduced in each account slice, with
+  documented exclusions only for generated code or unreachable process entry
+  points;
 - frontend unit tests for account UX;
 - lint and typecheck;
+- aggressive post-implementation review and refactor pass before claiming the
+  system complete;
 - rendered desktop and mobile QA for login, settings, trips, and members owner
   transfer states.
 
