@@ -25,6 +25,17 @@ describe("Calm Travel Ops CSS contract", () => {
     expect(css).toMatch(/@media \(prefers-reduced-motion: reduce\)[\s\S]*\.travel-motif/s);
   });
 
+  it("adds subtle watercolor paper texture without image assets", () => {
+    expect(css).toContain("--color-paper-warm: #fffaf0");
+    expect(css).toContain("--paper-grain:");
+    expect(css).toContain("--watercolor-page-wash:");
+    expect(css).toContain("--watercolor-surface-wash:");
+    expect(css).toMatch(/body\s*{[^}]*var\(--paper-grain\)[^}]*var\(--watercolor-page-wash\)/s);
+    expect(css).toMatch(/\.page-header\s*{[^}]*var\(--watercolor-surface-wash\)[^}]*var\(--paper-grain\)/s);
+    expect(css).toMatch(/\.travel-motif::before\s*{[^}]*radial-gradient/s);
+    expect(css).not.toMatch(/url\(["']?.*paper/i);
+  });
+
   it("contains horizontal scrolling to the smart table viewport", () => {
     expect(css).toMatch(/body\s*{[^}]*overflow-x:\s*hidden/s);
     expect(css).toMatch(/\.planning-main\s*{[^}]*overflow-y:\s*auto/s);
