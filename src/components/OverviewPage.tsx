@@ -2,6 +2,7 @@ import { type FormEvent, useMemo, useState } from "react";
 import type { ExpenseSummary, ItineraryItem, Member, Suggestion, Trip, TripTask } from "@/src/trip/types";
 import { formatDayLabel, getTripDates, validateItineraryItem } from "@/src/trip/itinerary";
 import { Icon } from "./icons";
+import { TravelMotif } from "./motifs";
 import { formatTripRange, PageHeader, PageUserCard } from "./PageHeader";
 
 interface OverviewPageProps {
@@ -84,6 +85,7 @@ export function OverviewPage({ trip, currentMemberId, expenseSummary, items, sug
             <span><Icon name="users" /> {activeMembers} สมาชิก</span>
           </>
         )}
+        motif={<TravelMotif tone="postcard" />}
         aside={currentMember ? <PageUserCard color={currentMember.color} name={currentMember.displayName} label={trip.destinationLabel} /> : null}
       />
 

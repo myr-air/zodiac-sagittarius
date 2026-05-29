@@ -7,9 +7,10 @@ interface PageHeaderProps {
   description?: string;
   meta?: ReactNode;
   aside?: ReactNode;
+  motif?: ReactNode;
 }
 
-export function PageHeader({ eyebrow, title, subtitle, description, meta, aside }: PageHeaderProps) {
+export function PageHeader({ eyebrow, title, subtitle, description, meta, aside, motif }: PageHeaderProps) {
   return (
     <header className="page-header">
       <div className="page-header-copy">
@@ -19,6 +20,7 @@ export function PageHeader({ eyebrow, title, subtitle, description, meta, aside 
         {description ? <p className="page-header-description">{description}</p> : null}
         {meta ? <div className="page-header-meta">{meta}</div> : null}
       </div>
+      {motif ? <div className="page-header-motif">{motif}</div> : null}
       {aside}
     </header>
   );

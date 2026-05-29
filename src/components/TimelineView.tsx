@@ -2,6 +2,7 @@ import type { ItineraryItem } from "@/src/trip/types";
 import { formatDayLabel, groupItemsByDay } from "@/src/trip/itinerary";
 import { Badge } from "./ui";
 import { Icon } from "./icons";
+import { TimelineMotif } from "./motifs";
 import { formatTripRange, PageHeader } from "./PageHeader";
 import { activityTypeLabel, dayRouteLabel, formatDuration, formatEndTime, formatThaiDate } from "./itineraryDisplay";
 
@@ -36,6 +37,7 @@ export function TimelineView({ contextRailOpen, endDate, items, selectedItemId, 
             <span><Icon name="clock" /> {formatDuration(totalMinutes)} planned</span>
           </>
         )}
+        motif={<TimelineMotif />}
         aside={(
           <div className="page-header-actions" role="group" aria-label="Timeline actions">
             <button

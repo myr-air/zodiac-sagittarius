@@ -1,6 +1,7 @@
 import { type FormEvent, useMemo, useState } from "react";
 import type { Member, Trip, TripMemberAccessStatus, TripRole } from "@/src/trip/types";
 import { Icon } from "./icons";
+import { TravelMotif } from "./motifs";
 import { formatTripRange, PageHeader, PageUserCard } from "./PageHeader";
 import { PeoplePanel } from "./PeoplePanel";
 
@@ -122,6 +123,7 @@ export function TripMembersPage({
             <span><Icon name="users" /> {visibleMembers.length} สมาชิก</span>
           </>
         )}
+        motif={<TravelMotif tone="sunshine" />}
         aside={<PageUserCard color={currentMember.color} name={currentMember.displayName} label={canManagePeople ? "จัดการสมาชิกได้" : "ดูรายชื่อสมาชิก"} />}
       />
 

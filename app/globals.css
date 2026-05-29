@@ -725,6 +725,13 @@ button:disabled,
   color: var(--color-text-muted);
 }
 
+.page-header-motif {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  max-width: 240px;
+}
+
 .page-current-user {
   display: grid;
   grid-template-columns: 40px minmax(0, 1fr);
@@ -3609,6 +3616,10 @@ span.member-state-pill {
   .page-header h1 {
     font-size: 22px;
     line-height: 30px;
+  }
+
+  .page-header-motif {
+    display: none;
   }
 
   .page-current-user {

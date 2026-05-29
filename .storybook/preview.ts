@@ -10,6 +10,12 @@ const preview: Preview = {
         date: /Date$/i,
       },
     },
+    backgrounds: {
+      options: {
+        studio: { name: "Friendly Trip Studio", value: "#f8fafc" },
+        white: { name: "White", value: "#ffffff" },
+      },
+    },
     a11y: {
       test: "todo",
     },

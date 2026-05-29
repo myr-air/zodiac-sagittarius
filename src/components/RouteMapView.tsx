@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react"
 import type { ItineraryItem } from "@/src/trip/types";
 import { formatDayLabel, groupItemsByDay } from "@/src/trip/itinerary";
 import { Icon } from "./icons";
+import { TravelMotif } from "./motifs";
 import { formatTripRange, PageHeader } from "./PageHeader";
 
 interface RouteMapViewProps {
@@ -209,6 +210,7 @@ export function RouteMapView({ endDate, items, startDate, tripName }: RouteMapVi
             <span><Icon name="route" /> {activeDayLabel(activeDay, routeDayGroups)}</span>
           </>
         )}
+        motif={<TravelMotif tone="route" />}
       />
 
       <div className="route-map-layout">
