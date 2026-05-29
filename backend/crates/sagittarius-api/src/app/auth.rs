@@ -155,8 +155,12 @@ fn generate_session_token() -> String {
     URL_SAFE_NO_PAD.encode(bytes)
 }
 
-fn hash_session_token(session_token: &str) -> Result<String, ServiceError> {
+pub(crate) fn hash_session_token(session_token: &str) -> Result<String, ServiceError> {
     hash_secret_with_salt(session_token, SESSION_TOKEN_SALT)
+}
+
+pub fn hash_session_token_for_tests(session_token: &str) -> String {
+    hash_session_token(session_token).expect("static session token salt should hash")
 }
 
 async fn create_session(

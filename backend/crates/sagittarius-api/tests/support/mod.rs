@@ -107,3 +107,41 @@ pub async fn claim_member(pool: &PgPool, member_id: &str, password: &str, access
     .await
     .unwrap();
 }
+
+pub async fn create_session(pool: &PgPool, member_id: &str) -> String {
+    let token = format!("test-token-{member_id}");
+    sqlx::query(
+        "insert into trip_member_sessions (
+           id, trip_id, member_id, session_token_hash, expires_at
+         )
+         values (gen_random_uuid(), $1, $2, $3, now() + interval '30 days')",
+    )
+    .bind(Uuid::parse_str(TRIP_ID).unwrap())
+    .bind(Uuid::parse_str(member_id).unwrap())
+    .bind(sagittarius_api::app::auth::hash_session_token_for_tests(
+        &token,
+    ))
+    .execute(pool)
+    .await
+    .unwrap();
+
+    token
+}
+
+pub async fn seed_tasks(pool: &PgPool) {
+    sqlx::query(
+        "insert into trip_tasks (
+           id, trip_id, title, status, visibility, kind, created_by, assignee_id
+         )
+         values
+           (gen_random_uuid(), $1, 'Buy eSIM', 'open', 'private', 'prep', $2, $2),
+           (gen_random_uuid(), $1, 'Book Peak Tram', 'done', 'shared', 'booking', $3, $3),
+           (gen_random_uuid(), $1, 'Private owner task', 'open', 'private', 'prep', $3, $3)",
+    )
+    .bind(Uuid::parse_str(TRIP_ID).unwrap())
+    .bind(Uuid::parse_str(TRAVELER_ID).unwrap())
+    .bind(Uuid::parse_str(ORGANIZER_ID).unwrap())
+    .execute(pool)
+    .await
+    .unwrap();
+}

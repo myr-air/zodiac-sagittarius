@@ -2,7 +2,11 @@ use sqlx::FromRow;
 use time::{Date, OffsetDateTime};
 use uuid::Uuid;
 
-use crate::domain::types::{ClaimableMember, TripMemberAccessStatus, TripRole, TripSummary};
+use crate::domain::types::{
+    ClaimableMember, ItineraryCoordinates, ItineraryItemSummary, PlanVariantSummary,
+    SuggestionSummary, TripMemberAccessStatus, TripMemberSummary, TripRole, TripSummary,
+    TripTaskSummary,
+};
 
 #[derive(Debug, Clone, FromRow)]
 pub struct TripAuthRecord {
@@ -15,6 +19,7 @@ pub struct TripAuthRecord {
     pub join_password_hash: String,
     pub active_plan_variant_id: Option<Uuid>,
     pub owner_member_id: Uuid,
+    pub version: i64,
 }
 
 impl From<TripAuthRecord> for TripSummary {
@@ -28,6 +33,7 @@ impl From<TripAuthRecord> for TripSummary {
             join_id: record.join_id,
             active_plan_variant_id: record.active_plan_variant_id,
             owner_member_id: record.owner_member_id,
+            version: record.version,
         }
     }
 }
@@ -55,4 +61,191 @@ impl From<TripMemberAuthRecord> for ClaimableMember {
             color: record.color,
         }
     }
+}
+
+#[derive(Debug, Clone, FromRow)]
+pub struct AuthenticatedMemberSessionRecord {
+    pub trip_id: Uuid,
+    pub member_id: Uuid,
+    pub role: TripRole,
+}
+
+#[derive(Debug, Clone, FromRow)]
+pub struct TripMemberRecord {
+    pub id: Uuid,
+    pub trip_id: Uuid,
+    pub display_name: String,
+    pub role: TripRole,
+    pub access_status: TripMemberAccessStatus,
+    pub presence: String,
+    pub color: String,
+    pub user_id: Option<Uuid>,
+    pub claimed_at: Option<String>,
+    pub last_seen_at: Option<String>,
+}
+
+impl From<TripMemberRecord> for TripMemberSummary {
+    fn from(record: TripMemberRecord) -> Self {
+        Self {
+            id: record.id,
+            trip_id: record.trip_id,
+            display_name: record.display_name,
+            role: record.role,
+            access_status: record.access_status,
+            presence: record.presence,
+            color: record.color,
+            user_id: record.user_id,
+            claimed_at: record.claimed_at,
+            last_seen_at: record.last_seen_at,
+        }
+    }
+}
+
+#[derive(Debug, Clone, FromRow)]
+pub struct PlanVariantRecord {
+    pub id: Uuid,
+    pub trip_id: Uuid,
+    pub name: String,
+    pub kind: String,
+    pub description: String,
+    pub version: i64,
+}
+
+impl From<PlanVariantRecord> for PlanVariantSummary {
+    fn from(record: PlanVariantRecord) -> Self {
+        Self {
+            id: record.id,
+            trip_id: record.trip_id,
+            name: record.name,
+            kind: record.kind,
+            description: record.description,
+            version: record.version,
+        }
+    }
+}
+
+#[derive(Debug, Clone, FromRow)]
+pub struct ItineraryItemRecord {
+    pub id: Uuid,
+    pub trip_id: Uuid,
+    pub plan_variant_id: Uuid,
+    pub day: Date,
+    pub sort_order: i32,
+    pub start_time: Option<String>,
+    pub activity: String,
+    pub activity_type: String,
+    pub place: String,
+    pub link_label: String,
+    pub map_link: String,
+    pub address: Option<String>,
+    pub latitude: Option<f64>,
+    pub longitude: Option<f64>,
+    pub duration_minutes: Option<i32>,
+    pub transportation: String,
+    pub advisories: serde_json::Value,
+    pub note: String,
+    pub created_by: Uuid,
+    pub updated_at: String,
+    pub version: i64,
+}
+
+impl From<ItineraryItemRecord> for ItineraryItemSummary {
+    fn from(record: ItineraryItemRecord) -> Self {
+        let coordinates = match (record.latitude, record.longitude) {
+            (Some(lat), Some(lng)) => Some(ItineraryCoordinates { lat, lng }),
+            _ => None,
+        };
+
+        Self {
+            id: record.id,
+            trip_id: record.trip_id,
+            plan_variant_id: record.plan_variant_id,
+            day: record.day,
+            sort_order: record.sort_order,
+            start_time: record.start_time,
+            activity: record.activity,
+            activity_type: record.activity_type,
+            place: record.place,
+            link_label: record.link_label,
+            map_link: record.map_link,
+            coordinates,
+            address: record.address,
+            duration_minutes: record.duration_minutes,
+            transportation: record.transportation,
+            advisories: record.advisories,
+            note: record.note,
+            created_by: record.created_by,
+            updated_at: record.updated_at,
+            version: record.version,
+        }
+    }
+}
+
+#[derive(Debug, Clone, FromRow)]
+pub struct SuggestionRecord {
+    pub id: Uuid,
+    pub trip_id: Uuid,
+    pub plan_variant_id: Uuid,
+    pub proposer_id: Uuid,
+    pub r#type: String,
+    pub target_item_id: Option<Uuid>,
+    pub proposed_patch: serde_json::Value,
+    pub source_version: Option<i64>,
+    pub status: String,
+    pub created_at: String,
+}
+
+impl From<SuggestionRecord> for SuggestionSummary {
+    fn from(record: SuggestionRecord) -> Self {
+        Self {
+            id: record.id,
+            trip_id: record.trip_id,
+            plan_variant_id: record.plan_variant_id,
+            proposer_id: record.proposer_id,
+            r#type: record.r#type,
+            target_item_id: record.target_item_id,
+            proposed_patch: record.proposed_patch,
+            source_version: record.source_version,
+            status: record.status,
+            created_at: record.created_at,
+        }
+    }
+}
+
+#[derive(Debug, Clone, FromRow)]
+pub struct TripTaskRecord {
+    pub id: Uuid,
+    pub trip_id: Uuid,
+    pub title: String,
+    pub status: String,
+    pub visibility: String,
+    pub kind: Option<String>,
+    pub created_by: Uuid,
+    pub assignee_id: Option<Uuid>,
+    pub related_item_id: Option<Uuid>,
+    pub version: i64,
+}
+
+impl From<TripTaskRecord> for TripTaskSummary {
+    fn from(record: TripTaskRecord) -> Self {
+        Self {
+            id: record.id,
+            trip_id: record.trip_id,
+            title: record.title,
+            status: record.status,
+            visibility: record.visibility,
+            kind: record.kind,
+            created_by: record.created_by,
+            assignee_id: record.assignee_id,
+            related_item_id: record.related_item_id,
+            version: record.version,
+        }
+    }
+}
+
+#[derive(Debug, Clone, FromRow)]
+pub struct ExpenseSplitRecord {
+    pub paid_by: Uuid,
+    pub amount_minor: i32,
+    pub splits: serde_json::Value,
 }

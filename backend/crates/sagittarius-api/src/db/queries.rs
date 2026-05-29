@@ -2,7 +2,10 @@ use time::OffsetDateTime;
 use uuid::Uuid;
 
 use crate::db::PgPool;
-use crate::db::models::{TripAuthRecord, TripMemberAuthRecord};
+use crate::db::models::{
+    AuthenticatedMemberSessionRecord, ExpenseSplitRecord, ItineraryItemRecord, PlanVariantRecord,
+    SuggestionRecord, TripAuthRecord, TripMemberAuthRecord, TripMemberRecord, TripTaskRecord,
+};
 
 pub async fn find_trip_by_join_id(
     pool: &PgPool,
@@ -11,11 +14,27 @@ pub async fn find_trip_by_join_id(
     sqlx::query_as::<_, TripAuthRecord>(
         "select
            id, name, destination_label, start_date, end_date, join_id, join_password_hash,
-           active_plan_variant_id, owner_member_id
+           active_plan_variant_id, owner_member_id, version
          from trips
          where join_id = $1 and deleted_at is null",
     )
     .bind(join_id)
+    .fetch_optional(pool)
+    .await
+}
+
+pub async fn find_trip_by_id(
+    pool: &PgPool,
+    trip_id: Uuid,
+) -> Result<Option<TripAuthRecord>, sqlx::Error> {
+    sqlx::query_as::<_, TripAuthRecord>(
+        "select
+           id, name, destination_label, start_date, end_date, join_id, join_password_hash,
+           active_plan_variant_id, owner_member_id, version
+         from trips
+         where id = $1 and deleted_at is null",
+    )
+    .bind(trip_id)
     .fetch_optional(pool)
     .await
 }
@@ -117,4 +136,131 @@ pub async fn revoke_member_session(
     .await?;
 
     Ok(result.rows_affected())
+}
+
+pub async fn find_active_member_session(
+    pool: &PgPool,
+    trip_id: Uuid,
+    token_hash: &str,
+) -> Result<Option<AuthenticatedMemberSessionRecord>, sqlx::Error> {
+    sqlx::query_as::<_, AuthenticatedMemberSessionRecord>(
+        "select s.trip_id, s.member_id, m.role
+         from trip_member_sessions s
+         join trip_members m on m.id = s.member_id and m.trip_id = s.trip_id
+         where s.trip_id = $1
+           and s.session_token_hash = $2
+           and s.revoked_at is null
+           and s.expires_at > now()
+           and m.access_status = 'active'",
+    )
+    .bind(trip_id)
+    .bind(token_hash)
+    .fetch_optional(pool)
+    .await
+}
+
+pub async fn list_trip_members(
+    pool: &PgPool,
+    trip_id: Uuid,
+) -> Result<Vec<TripMemberRecord>, sqlx::Error> {
+    sqlx::query_as::<_, TripMemberRecord>(
+        "select
+           id, trip_id, display_name, role, access_status, presence, color, user_id,
+           claimed_at::text as claimed_at, last_seen_at::text as last_seen_at
+         from trip_members
+         where trip_id = $1
+         order by created_at, display_name",
+    )
+    .bind(trip_id)
+    .fetch_all(pool)
+    .await
+}
+
+pub async fn list_plan_variants(
+    pool: &PgPool,
+    trip_id: Uuid,
+) -> Result<Vec<PlanVariantRecord>, sqlx::Error> {
+    sqlx::query_as::<_, PlanVariantRecord>(
+        "select id, trip_id, name, kind, description, version
+         from plan_variants
+         where trip_id = $1
+         order by created_at, name",
+    )
+    .bind(trip_id)
+    .fetch_all(pool)
+    .await
+}
+
+pub async fn list_itinerary_items(
+    pool: &PgPool,
+    trip_id: Uuid,
+) -> Result<Vec<ItineraryItemRecord>, sqlx::Error> {
+    sqlx::query_as::<_, ItineraryItemRecord>(
+        "select
+           id, trip_id, plan_variant_id, day, sort_order,
+           to_char(start_time, 'HH24:MI') as start_time,
+           activity, activity_type, place, link_label, map_link, address,
+           latitude::float8 as latitude, longitude::float8 as longitude,
+           duration_minutes, transportation, advisories, note, created_by,
+           updated_at::text as updated_at, version
+         from itinerary_items
+         where trip_id = $1 and deleted_at is null
+         order by day, sort_order, created_at",
+    )
+    .bind(trip_id)
+    .fetch_all(pool)
+    .await
+}
+
+pub async fn list_suggestions(
+    pool: &PgPool,
+    trip_id: Uuid,
+) -> Result<Vec<SuggestionRecord>, sqlx::Error> {
+    sqlx::query_as::<_, SuggestionRecord>(
+        "select
+           id, trip_id, plan_variant_id, proposer_id, type, target_item_id, proposed_patch,
+           source_version, status, created_at::text as created_at
+         from suggestions
+         where trip_id = $1
+         order by created_at desc",
+    )
+    .bind(trip_id)
+    .fetch_all(pool)
+    .await
+}
+
+pub async fn list_visible_tasks(
+    pool: &PgPool,
+    trip_id: Uuid,
+    member_id: Uuid,
+) -> Result<Vec<TripTaskRecord>, sqlx::Error> {
+    sqlx::query_as::<_, TripTaskRecord>(
+        "select
+           id, trip_id, title, status, visibility, kind, created_by, assignee_id,
+           related_item_id, version
+         from trip_tasks
+         where trip_id = $1
+           and deleted_at is null
+           and (visibility = 'shared' or created_by = $2 or assignee_id = $2)
+         order by updated_at desc, title",
+    )
+    .bind(trip_id)
+    .bind(member_id)
+    .fetch_all(pool)
+    .await
+}
+
+pub async fn list_expense_splits(
+    pool: &PgPool,
+    trip_id: Uuid,
+) -> Result<Vec<ExpenseSplitRecord>, sqlx::Error> {
+    sqlx::query_as::<_, ExpenseSplitRecord>(
+        "select paid_by, amount_minor, splits
+         from expenses
+         where trip_id = $1 and deleted_at is null
+         order by created_at",
+    )
+    .bind(trip_id)
+    .fetch_all(pool)
+    .await
 }

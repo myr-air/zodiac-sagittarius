@@ -18,6 +18,7 @@ pub fn router(state: AppState) -> Router {
     Router::new()
         .route("/v1/health", get(|| async { "ok" }))
         .route("/v1/trips/join", post(join::join_trip))
+        .route("/v1/trips/{trip_id}", get(trips::load_trip))
         .route(
             "/v1/trips/{trip_id}/members/{member_id}/claim",
             post(join::claim_member),
