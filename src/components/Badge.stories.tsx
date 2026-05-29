@@ -1,10 +1,12 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import { expect } from "storybook/test";
 import { Badge, Panel } from "./ui";
 
 const meta = {
   title: "Design System/Badges",
   component: Badge,
   parameters: { layout: "centered" },
+  tags: ["ai-generated"],
 } satisfies Meta<typeof Badge>;
 
 export default meta;
@@ -25,4 +27,7 @@ export const Gallery: Story = {
       <Badge tone="success">พร้อมแล้ว</Badge>
     </Panel>
   ),
+  play: async ({ canvas }) => {
+    await expect(canvas.getByText("พร้อมแล้ว")).toHaveClass("badge--success");
+  },
 };

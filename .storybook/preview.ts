@@ -1,7 +1,13 @@
 import type { Preview } from "@storybook/nextjs-vite";
+import "maplibre-gl/dist/maplibre-gl.css";
 import "../app/globals.css";
+import { initialize, mswLoader } from "msw-storybook-addon";
+import { mswHandlers } from "./msw-handlers";
+
+initialize({ onUnhandledRequest: "bypass" });
 
 const preview: Preview = {
+  loaders: [mswLoader],
   parameters: {
     actions: { argTypesRegex: "^on.*" },
     controls: {
@@ -19,6 +25,13 @@ const preview: Preview = {
     a11y: {
       test: "todo",
     },
+    msw: {
+      handlers: mswHandlers,
+    },
+  },
+  async beforeEach() {
+    localStorage.removeItem("sagittarius:trip-draft");
+    localStorage.removeItem("sagittarius:trip-participant-session");
   },
 };
 

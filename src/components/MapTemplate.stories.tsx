@@ -6,6 +6,7 @@ const meta = {
   title: "Templates/Map",
   component: RouteMapView,
   parameters: { layout: "fullscreen" },
+  tags: ["ai-generated"],
 } satisfies Meta<typeof RouteMapView>;
 
 export default meta;

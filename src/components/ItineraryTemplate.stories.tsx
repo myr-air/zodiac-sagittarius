@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import { expect } from "storybook/test";
 import { buildDenseTripFixture, tripFixture } from "@/src/trip/fixtures";
 import { SmartItineraryTable } from "./SmartItineraryTable";
 
@@ -8,6 +9,7 @@ const meta = {
   title: "Templates/Itinerary",
   component: SmartItineraryTable,
   parameters: { layout: "fullscreen" },
+  tags: ["ai-generated"],
 } satisfies Meta<typeof SmartItineraryTable>;
 
 export default meta;
@@ -31,6 +33,9 @@ export const Owner: Story = {
     onRedo: noop,
     onToggleContextRail: noop,
     onUndo: noop,
+  },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole("button", { name: /Select stop Dim Dim Sum/i })).toHaveAttribute("aria-pressed", "true");
   },
 };
 

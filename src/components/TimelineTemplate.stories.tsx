@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import { expect } from "storybook/test";
 import { buildEmptyTripFixture, tripFixture } from "@/src/trip/fixtures";
 import { TimelineView } from "./TimelineView";
 
@@ -8,6 +9,7 @@ const meta = {
   title: "Templates/Timeline",
   component: TimelineView,
   parameters: { layout: "fullscreen" },
+  tags: ["ai-generated"],
 } satisfies Meta<typeof TimelineView>;
 
 export default meta;
@@ -24,6 +26,9 @@ export const Owner: Story = {
     tripName: tripFixture.trip.name,
     onSelectItem: noop,
     onToggleContextRail: noop,
+  },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole("button", { name: /Dim Dim Sum/i })).toHaveAttribute("aria-pressed", "true");
   },
 };
 

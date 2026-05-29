@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import { expect } from "storybook/test";
 import { tripFixture } from "@/src/trip/fixtures";
 import { TripMembersPage } from "./TripMembersPage";
 
@@ -8,6 +9,7 @@ const meta = {
   title: "Templates/Members",
   component: TripMembersPage,
   parameters: { layout: "fullscreen" },
+  tags: ["ai-generated"],
 } satisfies Meta<typeof TripMembersPage>;
 
 export default meta;
@@ -24,6 +26,10 @@ export const Owner: Story = {
     onChangeMemberRole: noop,
     onCreateMember: noop,
     onResetMemberClaim: noop,
+  },
+  play: async ({ canvas, userEvent }) => {
+    await userEvent.selectOptions(canvas.getByLabelText(/สถานะ/i), "pending");
+    await expect(canvas.getByText("Explorer Friend")).toBeVisible();
   },
 };
 

@@ -7,6 +7,7 @@ const meta = {
   title: "Templates/Overview",
   component: OverviewPage,
   parameters: { layout: "fullscreen" },
+  tags: ["ai-generated"],
 } satisfies Meta<typeof OverviewPage>;
 
 export default meta;

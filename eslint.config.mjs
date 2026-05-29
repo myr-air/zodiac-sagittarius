@@ -9,6 +9,7 @@ const config = [
       ".storybook-static/**",
       "node_modules/**",
       "coverage/**",
+      "public/mockServiceWorker.js",
       "next-env.d.ts",
     ],
   },

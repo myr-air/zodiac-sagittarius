@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import { expect } from "storybook/test";
 import { tripFixture } from "@/src/trip/fixtures";
 import { AppShell } from "./AppShell";
 import { OverviewPage } from "./OverviewPage";
@@ -7,6 +8,7 @@ const meta = {
   title: "Templates/Workspace Shell",
   component: AppShell,
   parameters: { layout: "fullscreen" },
+  tags: ["ai-generated"],
 } satisfies Meta<typeof AppShell>;
 
 export default meta;
@@ -38,6 +40,9 @@ export const Owner: Story = {
         </div>
       </main>
     ),
+  },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole("link", { name: /ภาพรวม/i })).toHaveAttribute("aria-current", "page");
   },
 };
 
