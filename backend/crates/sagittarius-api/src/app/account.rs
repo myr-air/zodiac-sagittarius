@@ -629,21 +629,16 @@ fn validate_join_password(join_password: &str) -> Result<String, ServiceError> {
 }
 
 fn map_account_trip_insert_error(error: sqlx::Error) -> ServiceError {
-    if is_unique_violation_on_constraint(&error, "trips_join_id_key") {
-        ServiceError::TripJoinIdAlreadyExists
-    } else {
-        ServiceError::Database(error)
+    let duplicate_join_id = is_unique_violation_on_constraint(&error, "trips_join_id_key");
+    let mut mapped_error = ServiceError::Database(error);
+    if duplicate_join_id {
+        mapped_error = ServiceError::TripJoinIdAlreadyExists;
     }
+    mapped_error
 }
 
 fn is_unique_violation_on_constraint(error: &sqlx::Error, constraint: &str) -> bool {
-    match error {
-        sqlx::Error::Database(database_error) => {
-            database_error.code().as_deref() == Some("23505")
-                && database_error.constraint() == Some(constraint)
-        }
-        _ => false,
-    }
+    matches!(error, sqlx::Error::Database(database_error) if database_error.code().as_deref() == Some("23505") && database_error.constraint() == Some(constraint))
 }
 
 fn hash_session_token(session_token: &str) -> Result<String, ServiceError> {

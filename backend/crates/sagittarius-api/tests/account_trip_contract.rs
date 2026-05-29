@@ -461,6 +461,66 @@ async fn account_trip_creation_rejects_oversized_join_password(pool: sqlx::PgPoo
 }
 
 #[sqlx::test(migrations = "../../migrations")]
+async fn account_trip_creation_validates_text_and_join_id(pool: sqlx::PgPool) {
+    let session = login_account(&pool, "owner@example.com", false, "").await;
+    let auth = format!("Bearer {}", session["sessionToken"].as_str().unwrap());
+    let oversized_name = "x".repeat(121);
+    let oversized_join_id = "x".repeat(33);
+
+    let cases = [
+        json!({
+            "name": " ",
+            "destinationLabel": "Chiang Mai, Thailand",
+            "startDate": date_value(2026, Month::November, 4),
+            "endDate": date_value(2026, Month::November, 8),
+            "ownerDisplayName": "Aom",
+            "joinId": "valid-empty-name",
+            "joinPassword": "rice-noodle-2026"
+        }),
+        json!({
+            "name": oversized_name,
+            "destinationLabel": "Chiang Mai, Thailand",
+            "startDate": date_value(2026, Month::November, 4),
+            "endDate": date_value(2026, Month::November, 8),
+            "ownerDisplayName": "Aom",
+            "joinId": "valid-oversized-name",
+            "joinPassword": "rice-noodle-2026"
+        }),
+        json!({
+            "name": "Chiang Mai",
+            "destinationLabel": "Chiang Mai, Thailand",
+            "startDate": date_value(2026, Month::November, 4),
+            "endDate": date_value(2026, Month::November, 8),
+            "ownerDisplayName": "Aom",
+            "joinId": " ",
+            "joinPassword": "rice-noodle-2026"
+        }),
+        json!({
+            "name": "Chiang Mai",
+            "destinationLabel": "Chiang Mai, Thailand",
+            "startDate": date_value(2026, Month::November, 4),
+            "endDate": date_value(2026, Month::November, 8),
+            "ownerDisplayName": "Aom",
+            "joinId": oversized_join_id,
+            "joinPassword": "rice-noodle-2026"
+        }),
+    ];
+
+    for payload in cases {
+        let response = post_json_with_auth(
+            support::app(pool.clone()),
+            "/v1/account/trips",
+            Some(&auth),
+            payload,
+        )
+        .await;
+        let (status, body): (StatusCode, Value) = response_json(response).await;
+        assert_eq!(status, StatusCode::BAD_REQUEST);
+        assert_eq!(body["code"], "invalid_request");
+    }
+}
+
+#[sqlx::test(migrations = "../../migrations")]
 async fn account_trip_creation_validates_dates_and_auth(pool: sqlx::PgPool) {
     let app = support::app(pool.clone());
     let response = post_json_with_auth(
