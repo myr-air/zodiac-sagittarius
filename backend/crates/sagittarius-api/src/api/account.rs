@@ -12,7 +12,7 @@ use crate::app::AppState;
 use crate::domain::errors::ServiceError;
 use crate::domain::types::{
     AccountMemberClaimResponse, AccountSession, AccountSettings, AccountTripCreateResponse,
-    EmailLoginStartResponse, PasskeyChallengeResponse,
+    EmailLoginStartResponse, OwnerTransferResponse, PasskeyChallengeResponse,
 };
 
 #[derive(Debug, Deserialize)]
@@ -46,6 +46,12 @@ pub struct AccountTripCreateRequest {
 #[serde(rename_all = "camelCase")]
 pub struct AccountMemberClaimRequest {
     pub member_session_token: String,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OwnerTransferRequest {
+    pub target_member_id: Uuid,
 }
 
 pub async fn start_email_login(
@@ -134,6 +140,25 @@ pub async fn claim_member(
         trip_id,
         member_id,
         &request.member_session_token,
+    )
+    .await?;
+
+    Ok(Json(response))
+}
+
+pub async fn transfer_owner(
+    State(state): State<AppState>,
+    BearerToken(session_token): BearerToken,
+    Path(trip_id): Path<Uuid>,
+    request: Result<Json<OwnerTransferRequest>, JsonRejection>,
+) -> Result<Json<OwnerTransferResponse>, ServiceError> {
+    let Json(request) =
+        request.map_err(|_| ServiceError::InvalidRequest("json payload is invalid"))?;
+    let response = app::account::transfer_trip_owner(
+        &state.pool,
+        &session_token,
+        trip_id,
+        request.target_member_id,
     )
     .await?;
 

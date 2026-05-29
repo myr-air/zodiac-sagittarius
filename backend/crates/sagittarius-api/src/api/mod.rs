@@ -35,6 +35,10 @@ pub fn router(state: AppState) -> Router {
         .route("/v1/account/settings", get(account::get_settings))
         .route("/v1/account/trips", post(account::create_trip))
         .route(
+            "/v1/account/trips/{trip_id}/owner-transfer",
+            post(account::transfer_owner),
+        )
+        .route(
             "/v1/account/trips/{trip_id}/members/{member_id}/claim",
             post(account::claim_member),
         )

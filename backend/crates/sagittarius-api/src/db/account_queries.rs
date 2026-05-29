@@ -8,6 +8,15 @@ use crate::db::models::{
     NewTrustedDevice, NewUser, NewUserEmail, NewUserSession, PasskeyRecord, TripAuthRecord,
     TrustedDeviceRecord, UserEmailRecord,
 };
+use crate::domain::types::{TripMemberAccessStatus, TripRole};
+
+#[derive(Debug, Clone, sqlx::FromRow)]
+pub struct OwnerTransferMemberRecord {
+    pub id: Uuid,
+    pub user_id: Option<Uuid>,
+    pub role: TripRole,
+    pub access_status: TripMemberAccessStatus,
+}
 
 pub async fn insert_email_login_challenge(
     tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
@@ -222,6 +231,26 @@ pub async fn find_active_user_session(
     )
     .bind(session_token_hash)
     .fetch_optional(pool)
+    .await
+}
+
+pub async fn find_active_user_session_in_tx(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    session_token_hash: &str,
+) -> Result<Option<ActiveUserSessionRecord>, sqlx::Error> {
+    sqlx::query_as::<_, ActiveUserSessionRecord>(
+        "select s.user_id
+         from user_sessions s
+         join users u on u.id = s.user_id
+         left join trusted_devices td on td.id = s.trusted_device_id
+         where s.session_token_hash = $1
+           and s.revoked_at is null
+           and s.expires_at > now()
+           and u.disabled_at is null
+           and (s.trusted_device_id is null or td.revoked_at is null)",
+    )
+    .bind(session_token_hash)
+    .fetch_optional(&mut **tx)
     .await
 }
 
@@ -474,6 +503,79 @@ pub async fn link_member_to_account_user(
     .bind(user_id)
     .bind(trip_id)
     .bind(member_id)
+    .execute(&mut **tx)
+    .await?;
+
+    Ok(())
+}
+
+pub async fn lock_current_owner_member(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    trip_id: Uuid,
+) -> Result<Option<OwnerTransferMemberRecord>, sqlx::Error> {
+    sqlx::query_as::<_, OwnerTransferMemberRecord>(
+        "select id, user_id, role, access_status
+         from trip_members
+         where trip_id = $1 and role = 'owner'
+         for update",
+    )
+    .bind(trip_id)
+    .fetch_optional(&mut **tx)
+    .await
+}
+
+pub async fn lock_owner_transfer_target_member(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    trip_id: Uuid,
+    member_id: Uuid,
+) -> Result<Option<OwnerTransferMemberRecord>, sqlx::Error> {
+    sqlx::query_as::<_, OwnerTransferMemberRecord>(
+        "select id, user_id, role, access_status
+         from trip_members
+         where trip_id = $1 and id = $2
+         for update",
+    )
+    .bind(trip_id)
+    .bind(member_id)
+    .fetch_optional(&mut **tx)
+    .await
+}
+
+pub async fn update_trip_member_role(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    trip_id: Uuid,
+    member_id: Uuid,
+    role: TripRole,
+) -> Result<(), sqlx::Error> {
+    sqlx::query(
+        "update trip_members
+         set role = $1,
+             updated_at = now()
+         where trip_id = $2 and id = $3",
+    )
+    .bind(role)
+    .bind(trip_id)
+    .bind(member_id)
+    .execute(&mut **tx)
+    .await?;
+
+    Ok(())
+}
+
+pub async fn update_trip_owner_member(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    trip_id: Uuid,
+    owner_member_id: Uuid,
+) -> Result<(), sqlx::Error> {
+    sqlx::query(
+        "update trips
+         set owner_member_id = $1,
+             updated_at = now(),
+             version = version + 1
+         where id = $2",
+    )
+    .bind(owner_member_id)
+    .bind(trip_id)
     .execute(&mut **tx)
     .await?;
 

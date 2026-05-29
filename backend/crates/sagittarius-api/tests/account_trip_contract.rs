@@ -174,6 +174,30 @@ async fn create_account_trip(
     response_json(response).await
 }
 
+async fn insert_account_linked_member(
+    pool: &sqlx::PgPool,
+    trip_id: Uuid,
+    user_id: Option<Uuid>,
+    display_name: &str,
+) -> Uuid {
+    let member_id = Uuid::now_v7();
+    sqlx::query(
+        "insert into trip_members (
+           id, trip_id, user_id, display_name, role, access_status, claimed_at, color
+         )
+         values ($1, $2, $3, $4, 'organizer', 'active', case when $3 is null then null else now() end, '#2563eb')",
+    )
+    .bind(member_id)
+    .bind(trip_id)
+    .bind(user_id)
+    .bind(display_name)
+    .execute(pool)
+    .await
+    .unwrap();
+
+    member_id
+}
+
 async fn legacy_claim_member_session(
     pool: &sqlx::PgPool,
     member_id: &str,
@@ -674,4 +698,189 @@ async fn account_claim_rejects_wrong_session_and_already_linked_member(pool: sql
     let (linked_status, linked_body): (StatusCode, Value) = response_json(already_linked).await;
     assert_eq!(linked_status, StatusCode::CONFLICT);
     assert_eq!(linked_body["code"], "identity_already_linked");
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn owner_can_transfer_ownership_to_account_linked_member(pool: sqlx::PgPool) {
+    let owner_session = login_account(&pool, "owner@example.com", false, "").await;
+    let owner_user_id = Uuid::parse_str(owner_session["userId"].as_str().unwrap()).unwrap();
+    let owner_auth = format!("Bearer {}", owner_session["sessionToken"].as_str().unwrap());
+    let (_, trip_body) =
+        create_account_trip(&pool, &owner_auth, "owner-transfer", "rice-noodle-2026").await;
+    let trip_id = Uuid::parse_str(trip_body["trip"]["id"].as_str().unwrap()).unwrap();
+    let old_owner_member_id =
+        Uuid::parse_str(trip_body["ownerMemberId"].as_str().unwrap()).unwrap();
+    let target_session = login_account(&pool, "target@example.com", false, "").await;
+    let target_user_id = Uuid::parse_str(target_session["userId"].as_str().unwrap()).unwrap();
+    let target_member_id =
+        insert_account_linked_member(&pool, trip_id, Some(target_user_id), "Ben").await;
+
+    let response = post_json_with_auth(
+        support::app(pool.clone()),
+        &format!("/v1/account/trips/{trip_id}/owner-transfer"),
+        Some(&owner_auth),
+        json!({"targetMemberId": target_member_id}),
+    )
+    .await;
+    let (status, body): (StatusCode, Value) = response_json(response).await;
+
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(body["tripId"], trip_id.to_string());
+    assert_eq!(
+        body["previousOwnerMemberId"],
+        old_owner_member_id.to_string()
+    );
+    assert_eq!(body["newOwnerMemberId"], target_member_id.to_string());
+
+    let old_owner_role: String = sqlx::query_scalar(
+        "select role
+         from trip_members
+         where trip_id = $1 and id = $2",
+    )
+    .bind(trip_id)
+    .bind(old_owner_member_id)
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(old_owner_role, "organizer");
+
+    let target_role: String = sqlx::query_scalar(
+        "select role
+         from trip_members
+         where trip_id = $1 and id = $2",
+    )
+    .bind(trip_id)
+    .bind(target_member_id)
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(target_role, "owner");
+
+    let persisted_owner_member_id: Uuid = sqlx::query_scalar(
+        "select owner_member_id
+         from trips
+         where id = $1",
+    )
+    .bind(trip_id)
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(persisted_owner_member_id, target_member_id);
+
+    let owner_count: i64 = sqlx::query_scalar(
+        "select count(*)
+         from trip_members
+         where trip_id = $1 and role = 'owner'",
+    )
+    .bind(trip_id)
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(owner_count, 1);
+
+    let audit: (
+        Option<Uuid>,
+        Option<Uuid>,
+        Option<Uuid>,
+        Option<Uuid>,
+        String,
+        Value,
+    ) = sqlx::query_as(
+        "select user_id, trip_id, actor_user_id, actor_member_id, event_type, payload
+         from account_audit_events
+         where trip_id = $1 and event_type = 'owner.transferred'",
+    )
+    .bind(trip_id)
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(audit.0, Some(target_user_id));
+    assert_eq!(audit.1, Some(trip_id));
+    assert_eq!(audit.2, Some(owner_user_id));
+    assert_eq!(audit.3, Some(old_owner_member_id));
+    assert_eq!(audit.4, "owner.transferred");
+    assert_eq!(audit.5, json!({}));
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn owner_transfer_requires_current_owner_and_account_target(pool: sqlx::PgPool) {
+    let owner_session = login_account(&pool, "owner@example.com", false, "").await;
+    let owner_auth = format!("Bearer {}", owner_session["sessionToken"].as_str().unwrap());
+    let (_, trip_body) = create_account_trip(
+        &pool,
+        &owner_auth,
+        "owner-transfer-auth",
+        "rice-noodle-2026",
+    )
+    .await;
+    let trip_id = Uuid::parse_str(trip_body["trip"]["id"].as_str().unwrap()).unwrap();
+    let target_session = login_account(&pool, "target@example.com", false, "").await;
+    let target_user_id = Uuid::parse_str(target_session["userId"].as_str().unwrap()).unwrap();
+    let target_auth = format!(
+        "Bearer {}",
+        target_session["sessionToken"].as_str().unwrap()
+    );
+    let target_member_id =
+        insert_account_linked_member(&pool, trip_id, Some(target_user_id), "Ben").await;
+
+    let non_owner_response = post_json_with_auth(
+        support::app(pool.clone()),
+        &format!("/v1/account/trips/{trip_id}/owner-transfer"),
+        Some(&target_auth),
+        json!({"targetMemberId": target_member_id}),
+    )
+    .await;
+    let (non_owner_status, non_owner_body): (StatusCode, Value) =
+        response_json(non_owner_response).await;
+    assert_eq!(non_owner_status, StatusCode::FORBIDDEN);
+    assert_eq!(non_owner_body["code"], "forbidden");
+
+    let unlinked_member_id = insert_account_linked_member(&pool, trip_id, None, "No Account").await;
+    let unlinked_response = post_json_with_auth(
+        support::app(pool.clone()),
+        &format!("/v1/account/trips/{trip_id}/owner-transfer"),
+        Some(&owner_auth),
+        json!({"targetMemberId": unlinked_member_id}),
+    )
+    .await;
+    let (unlinked_status, unlinked_body): (StatusCode, Value) =
+        response_json(unlinked_response).await;
+    assert_eq!(unlinked_status, StatusCode::CONFLICT);
+    assert_eq!(unlinked_body["code"], "owner_transfer_invalid");
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn owner_transfer_rejects_malformed_request(pool: sqlx::PgPool) {
+    let owner_session = login_account(&pool, "owner@example.com", false, "").await;
+    let owner_auth = format!("Bearer {}", owner_session["sessionToken"].as_str().unwrap());
+    let (_, trip_body) = create_account_trip(
+        &pool,
+        &owner_auth,
+        "owner-transfer-json",
+        "rice-noodle-2026",
+    )
+    .await;
+    let trip_id = Uuid::parse_str(trip_body["trip"]["id"].as_str().unwrap()).unwrap();
+
+    let missing = post_json_with_auth(
+        support::app(pool.clone()),
+        &format!("/v1/account/trips/{trip_id}/owner-transfer"),
+        Some(&owner_auth),
+        json!({}),
+    )
+    .await;
+    let (missing_status, missing_body): (StatusCode, Value) = response_json(missing).await;
+    assert_eq!(missing_status, StatusCode::BAD_REQUEST);
+    assert_eq!(missing_body["code"], "invalid_request");
+
+    let malformed = post_raw_with_auth(
+        support::app(pool.clone()),
+        &format!("/v1/account/trips/{trip_id}/owner-transfer"),
+        Some(&owner_auth),
+        "{",
+    )
+    .await;
+    let (malformed_status, malformed_body): (StatusCode, Value) = response_json(malformed).await;
+    assert_eq!(malformed_status, StatusCode::BAD_REQUEST);
+    assert_eq!(malformed_body["code"], "invalid_request");
 }

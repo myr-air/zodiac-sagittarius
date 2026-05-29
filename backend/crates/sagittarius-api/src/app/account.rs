@@ -15,8 +15,8 @@ use crate::domain::errors::ServiceError;
 use crate::domain::types::{
     AccountMemberClaimResponse, AccountProfile, AccountSession, AccountSessionKind,
     AccountSettings, AccountTripCreateResponse, EmailLoginStartResponse, MemberSession,
-    PasskeyChallengeResponse, PasskeySummary, TripMemberAccessStatus, TripSummary,
-    TrustedDeviceSummary,
+    OwnerTransferResponse, PasskeyChallengeResponse, PasskeySummary, TripMemberAccessStatus,
+    TripRole, TripSummary, TrustedDeviceSummary,
 };
 
 const CHALLENGE_TTL: Duration = Duration::minutes(10);
@@ -334,6 +334,89 @@ pub async fn claim_member(
         member_id,
         user_id,
         role: member.role,
+    })
+}
+
+pub async fn transfer_trip_owner(
+    pool: &PgPool,
+    session_token: &str,
+    trip_id: Uuid,
+    target_member_id: Uuid,
+) -> Result<OwnerTransferResponse, ServiceError> {
+    let session_token_hash = hash_session_token(session_token)?;
+    let mut tx = pool.begin().await?;
+
+    db::account_queries::defer_constraints(&mut tx).await?;
+    let user_id = db::account_queries::find_active_user_session_in_tx(&mut tx, &session_token_hash)
+        .await?
+        .ok_or(ServiceError::Unauthenticated)?
+        .user_id;
+    let current_owner = db::account_queries::lock_current_owner_member(&mut tx, trip_id)
+        .await?
+        .ok_or(ServiceError::Forbidden)?;
+
+    if current_owner.access_status != TripMemberAccessStatus::Active
+        || current_owner.user_id != Some(user_id)
+    {
+        return Err(ServiceError::Forbidden);
+    }
+
+    let target_member =
+        db::account_queries::lock_owner_transfer_target_member(&mut tx, trip_id, target_member_id)
+            .await?
+            .ok_or(ServiceError::OwnerTransferInvalid)?;
+
+    if target_member.id == current_owner.id {
+        tx.commit().await?;
+        return Ok(OwnerTransferResponse {
+            trip_id,
+            previous_owner_member_id: current_owner.id,
+            new_owner_member_id: target_member.id,
+        });
+    }
+
+    let Some(target_user_id) = target_member.user_id else {
+        return Err(ServiceError::OwnerTransferInvalid);
+    };
+
+    if target_member.access_status != TripMemberAccessStatus::Active {
+        return Err(ServiceError::OwnerTransferInvalid);
+    }
+
+    db::account_queries::update_trip_member_role(
+        &mut tx,
+        trip_id,
+        current_owner.id,
+        TripRole::Organizer,
+    )
+    .await?;
+    db::account_queries::update_trip_member_role(
+        &mut tx,
+        trip_id,
+        target_member.id,
+        TripRole::Owner,
+    )
+    .await?;
+    db::account_queries::update_trip_owner_member(&mut tx, trip_id, target_member.id).await?;
+    db::account_queries::insert_account_audit_event(
+        &mut tx,
+        NewAccountAuditEvent {
+            id: Uuid::now_v7(),
+            user_id: target_user_id,
+            trip_id,
+            actor_user_id: user_id,
+            actor_member_id: current_owner.id,
+            event_type: "owner.transferred",
+            payload: serde_json::json!({}),
+        },
+    )
+    .await?;
+    tx.commit().await?;
+
+    Ok(OwnerTransferResponse {
+        trip_id,
+        previous_owner_member_id: current_owner.id,
+        new_owner_member_id: target_member.id,
     })
 }
 
