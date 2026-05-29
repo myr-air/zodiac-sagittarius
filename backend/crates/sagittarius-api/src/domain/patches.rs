@@ -208,3 +208,151 @@ where
 {
     Option::<Uuid>::deserialize(deserializer).map(Some)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json::json;
+
+    fn invalid_message(result: Result<(), ServiceError>) -> &'static str {
+        match result {
+            Err(ServiceError::InvalidRequest(message)) => message,
+            other => panic!("expected invalid request, got {other:?}"),
+        }
+    }
+
+    #[test]
+    #[should_panic(expected = "expected invalid request")]
+    fn invalid_message_panics_for_non_invalid_request() {
+        invalid_message(Ok(()));
+    }
+
+    #[test]
+    fn itinerary_patch_accepts_valid_time_activity_type_and_duration() {
+        let patch = ItineraryItemPatch {
+            start_time: Some("09:30".to_string()),
+            duration_minutes: Some(45),
+            activity_type: Some("experience".to_string()),
+            ..ItineraryItemPatch::default()
+        };
+
+        assert!(patch.validate().is_ok());
+    }
+
+    #[test]
+    fn itinerary_patch_rejects_bad_time_shapes_and_ranges() {
+        for value in ["0930", "9:30", "09:3", "aa:30", "09:bb", "24:00", "23:60"] {
+            let patch = ItineraryItemPatch {
+                start_time: Some(value.to_string()),
+                ..ItineraryItemPatch::default()
+            };
+
+            assert_eq!(
+                invalid_message(patch.validate()),
+                "start_time must be HH:MM"
+            );
+        }
+    }
+
+    #[test]
+    fn itinerary_patch_rejects_bad_duration_and_activity_type() {
+        let bad_duration = ItineraryItemPatch {
+            duration_minutes: Some(0),
+            ..ItineraryItemPatch::default()
+        };
+        assert_eq!(
+            invalid_message(bad_duration.validate()),
+            "duration_minutes must be greater than zero"
+        );
+
+        let bad_type = ItineraryItemPatch {
+            activity_type: Some("museum".to_string()),
+            ..ItineraryItemPatch::default()
+        };
+        assert_eq!(
+            invalid_message(bad_type.validate()),
+            "activity_type is invalid"
+        );
+    }
+
+    #[test]
+    fn task_create_validation_covers_required_fields_and_enums() {
+        let valid = CreateTaskRequest {
+            client_mutation_id: "task-create".to_string(),
+            title: "Book ferry".to_string(),
+            visibility: "shared".to_string(),
+            kind: Some("booking".to_string()),
+            assignee_id: None,
+            related_item_id: None,
+        };
+        assert!(valid.validate().is_ok());
+
+        let mut missing_mutation = valid.clone();
+        missing_mutation.client_mutation_id = "  ".to_string();
+        assert_eq!(
+            invalid_message(missing_mutation.validate()),
+            "client_mutation_id is required"
+        );
+
+        let mut missing_title = valid.clone();
+        missing_title.title = " ".to_string();
+        assert_eq!(
+            invalid_message(missing_title.validate()),
+            "task title is required"
+        );
+
+        let mut bad_visibility = valid.clone();
+        bad_visibility.visibility = "team".to_string();
+        assert_eq!(
+            invalid_message(bad_visibility.validate()),
+            "task visibility is invalid"
+        );
+
+        let mut bad_kind = valid;
+        bad_kind.kind = Some("errand".to_string());
+        assert_eq!(invalid_message(bad_kind.validate()), "task kind is invalid");
+    }
+
+    #[test]
+    fn task_patch_validation_covers_status_empty_and_nullable_uuid_fields() {
+        let assignee = Uuid::now_v7();
+        let patch: PatchTaskRequest = serde_json::from_value(json!({
+            "clientMutationId": "task-patch",
+            "expectedVersion": 3,
+            "patch": {
+                "title": " Updated title ",
+                "status": "done",
+                "assigneeId": assignee,
+                "relatedItemId": null
+            }
+        }))
+        .unwrap();
+        assert_eq!(patch.expected_version, 3);
+        assert_eq!(patch.patch.assignee_id, Some(Some(assignee)));
+        assert_eq!(patch.patch.related_item_id, Some(None));
+        assert!(patch.validate().is_ok());
+
+        let empty_patch = PatchTaskRequest {
+            client_mutation_id: "task-patch-empty".to_string(),
+            expected_version: 1,
+            patch: TaskPatch::default(),
+        };
+        assert_eq!(
+            invalid_message(empty_patch.validate()),
+            "task patch is empty"
+        );
+
+        let bad_status = PatchTaskRequest {
+            client_mutation_id: "task-patch-bad-status".to_string(),
+            expected_version: 1,
+            patch: TaskPatch {
+                status: Some("blocked".to_string()),
+                ..TaskPatch::default()
+            },
+        };
+        assert_eq!(
+            invalid_message(bad_status.validate()),
+            "task status is invalid"
+        );
+    }
+}

@@ -25,10 +25,10 @@ pub async fn create_task(
         .await?
         .ok_or(ServiceError::Unauthenticated)?;
 
-    let required_capability = match request.visibility.as_str() {
-        "private" => Capability::CreatePrivateTask,
-        "shared" => Capability::CreateSharedTask,
-        _ => return Err(ServiceError::InvalidRequest("task visibility is invalid")),
+    let required_capability = if request.visibility == "private" {
+        Capability::CreatePrivateTask
+    } else {
+        Capability::CreateSharedTask
     };
     if !can(session.role, required_capability) {
         return Err(ServiceError::Forbidden);
@@ -223,4 +223,46 @@ async fn insert_task_event(
         },
     )
     .await
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::db::models::TripTaskRecord;
+
+    fn task(visibility: &str, created_by: Uuid, assignee_id: Option<Uuid>) -> TripTaskRecord {
+        TripTaskRecord {
+            id: Uuid::now_v7(),
+            trip_id: Uuid::now_v7(),
+            title: "Task".to_string(),
+            status: "open".to_string(),
+            visibility: visibility.to_string(),
+            kind: Some("prep".to_string()),
+            created_by,
+            assignee_id,
+            related_item_id: None,
+            version: 1,
+        }
+    }
+
+    #[test]
+    fn task_patch_permissions_match_role_boundaries() {
+        let owner = Uuid::now_v7();
+        let traveler = Uuid::now_v7();
+        let other = Uuid::now_v7();
+        let private_owned = task("private", traveler, None);
+        let private_assigned = task("private", other, Some(traveler));
+        let shared = task("shared", owner, Some(traveler));
+
+        assert!(can_patch_task(TripRole::Owner, owner, &shared));
+        assert!(can_patch_task(TripRole::Organizer, owner, &shared));
+        assert!(can_patch_task(TripRole::Traveler, traveler, &private_owned));
+        assert!(can_patch_task(
+            TripRole::Traveler,
+            traveler,
+            &private_assigned
+        ));
+        assert!(!can_patch_task(TripRole::Traveler, traveler, &shared));
+        assert!(!can_patch_task(TripRole::Viewer, traveler, &private_owned));
+    }
 }

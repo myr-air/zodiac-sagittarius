@@ -296,3 +296,45 @@ pub struct NewRealtimeEvent<'a> {
     pub client_mutation_id: Option<&'a str>,
     pub created_by: Option<Uuid>,
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json::json;
+
+    fn itinerary_record(latitude: Option<f64>, longitude: Option<f64>) -> ItineraryItemRecord {
+        ItineraryItemRecord {
+            id: Uuid::now_v7(),
+            trip_id: Uuid::now_v7(),
+            plan_variant_id: Uuid::now_v7(),
+            day: Date::from_calendar_date(2026, time::Month::May, 29).unwrap(),
+            sort_order: 1,
+            start_time: "09:00".to_string(),
+            activity: "Breakfast".to_string(),
+            activity_type: "food".to_string(),
+            place: "Central".to_string(),
+            link_label: String::new(),
+            map_link: String::new(),
+            address: Some("Hong Kong".to_string()),
+            latitude,
+            longitude,
+            duration_minutes: Some(45),
+            transportation: "walk".to_string(),
+            advisories: json!([]),
+            note: "Bring cash".to_string(),
+            created_by: Uuid::now_v7(),
+            updated_at: "2026-05-29T00:00:00Z".to_string(),
+            version: 1,
+        }
+    }
+
+    #[test]
+    fn itinerary_summary_includes_coordinates_only_when_both_parts_exist() {
+        let with_coordinates =
+            ItineraryItemSummary::from(itinerary_record(Some(22.3), Some(114.2)));
+        assert_eq!(with_coordinates.coordinates.unwrap().lat, 22.3);
+
+        let missing_longitude = ItineraryItemSummary::from(itinerary_record(Some(22.3), None));
+        assert!(missing_longitude.coordinates.is_none());
+    }
+}

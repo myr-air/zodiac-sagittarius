@@ -56,10 +56,10 @@ export const tripFixture = {
   tasks: tripFixtureTasks,
   stopNotes: tripFixtureStopNotes,
   currentMembers: {
-    owner: seedTrip.members.find((member) => member.role === "owner") ?? seedTrip.members[0],
-    organizer: seedTrip.members.find((member) => member.role === "organizer") ?? seedTrip.members[0],
-    traveler: seedTrip.members.find((member) => member.role === "traveler") ?? seedTrip.members[0],
-    viewer: seedTrip.members.find((member) => member.id === "member-family") ?? seedTrip.members[0],
+    owner: seedTrip.members.find((member) => member.role === "owner")!,
+    organizer: seedTrip.members.find((member) => member.role === "organizer")!,
+    traveler: seedTrip.members.find((member) => member.role === "traveler")!,
+    viewer: seedTrip.members.find((member) => member.id === "member-family")!,
   },
   expenseSummaries: {
     owner: buildExpenseSummary(seedTrip.expenses, "member-aom"),

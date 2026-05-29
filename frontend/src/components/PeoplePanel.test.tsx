@@ -108,6 +108,79 @@ describe("PeoplePanel", () => {
     confirm.mockRestore();
   });
 
+  it("confirms reset, re-enable, and invite copy error paths", async () => {
+    const user = userEvent.setup();
+    const onResetMemberClaim = vi.fn();
+    const onChangeMemberAccessStatus = vi.fn();
+    const confirm = vi.spyOn(window, "confirm").mockReturnValue(true);
+    const writeText = vi.fn().mockRejectedValue(new Error("denied"));
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: { writeText },
+    });
+    const trip = {
+      ...seedTrip,
+      members: seedTrip.members.map((member) => {
+        if (member.id === "member-nam") return { ...member, claimPasswordHash: "local_hash_old", claimedAt: "2026-05-28T00:00:00.000Z" };
+        if (member.id === "member-family") return { ...member, accessStatus: "disabled" as const };
+        return member;
+      }),
+    };
+
+    render(
+      <TripMembersPage
+        trip={trip}
+        currentMember={trip.members[0]}
+        canManagePeople
+        onChangeMemberAccessStatus={onChangeMemberAccessStatus}
+        onChangeMemberPassword={vi.fn()}
+        onChangeMemberRole={vi.fn()}
+        onCreateMember={vi.fn()}
+        onResetMemberClaim={onResetMemberClaim}
+      />,
+    );
+
+    await user.click(screen.getByRole("button", { name: /รีเซ็ตรหัสผ่าน Explorer Friend/i }));
+    await user.click(screen.getByRole("button", { name: /เปิดสิทธิ์ Family Member/i }));
+    await user.click(screen.getByRole("button", { name: /คัดลอกลิงก์เชิญ/i }));
+
+    expect(confirm).toHaveBeenCalledWith(expect.stringContaining("Explorer Friend"));
+    expect(onResetMemberClaim).toHaveBeenCalledWith("member-nam");
+    expect(onChangeMemberAccessStatus).toHaveBeenCalledWith("member-family", "active");
+    expect(screen.getByText("คัดลอกไม่สำเร็จ")).toBeInTheDocument();
+
+    confirm.mockRestore();
+  });
+
+  it("ignores null password prompts and blank new-member submissions", async () => {
+    const user = userEvent.setup();
+    const onChangeMemberPassword = vi.fn();
+    const onCreateMember = vi.fn();
+    const prompt = vi.spyOn(window, "prompt").mockReturnValue(null);
+
+    render(
+      <TripMembersPage
+        trip={seedTrip}
+        currentMember={seedTrip.members[0]}
+        canManagePeople
+        onChangeMemberAccessStatus={vi.fn()}
+        onChangeMemberPassword={onChangeMemberPassword}
+        onChangeMemberRole={vi.fn()}
+        onCreateMember={onCreateMember}
+        onResetMemberClaim={vi.fn()}
+      />,
+    );
+
+    await user.click(screen.getByRole("button", { name: /เปลี่ยนรหัสผ่าน Demo Traveler/i }));
+    await user.click(screen.getByRole("button", { name: /เปิดฟอร์มเพิ่มสมาชิก/i }));
+    expect(screen.getByRole("button", { name: /บันทึกสมาชิก/i })).toBeDisabled();
+
+    expect(onChangeMemberPassword).not.toHaveBeenCalled();
+    expect(onCreateMember).not.toHaveBeenCalled();
+
+    prompt.mockRestore();
+  });
+
   it("asks the owner for a new password before changing it", async () => {
     const user = userEvent.setup();
     const onChangeMemberPassword = vi.fn();

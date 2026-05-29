@@ -183,6 +183,76 @@ pub async fn seed_plan_variant(pool: &PgPool) -> Uuid {
     plan_id
 }
 
+pub async fn seed_other_trip_item(pool: &PgPool) -> Uuid {
+    let trip_id = Uuid::parse_str("018f4e80-5788-7de0-a45c-8a555d17fc2e").unwrap();
+    let owner_id = Uuid::parse_str("018f4e81-77a4-7b8f-b3bd-0d0f493ac565").unwrap();
+    let plan_id = Uuid::parse_str("018f4e82-3000-7c00-b111-000000000003").unwrap();
+    let item_id = Uuid::parse_str("018f4e83-5410-7d8b-8f25-fd52c5e7bd20").unwrap();
+
+    let mut tx = pool.begin().await.unwrap();
+    sqlx::query("set constraints all deferred")
+        .execute(&mut *tx)
+        .await
+        .unwrap();
+    sqlx::query(
+        "insert into trips (
+           id, name, destination_label, start_date, end_date, join_id, join_password_hash,
+           active_plan_variant_id, owner_member_id
+         )
+         values (
+           $1, 'Macau Side Trip', 'Macau', '2025-05-21', '2025-05-22',
+           'MO-2025', $2, $3, $4
+         )",
+    )
+    .bind(trip_id)
+    .bind(sagittarius_api::app::auth::hash_secret_for_tests(
+        "egg-tart-run",
+    ))
+    .bind(plan_id)
+    .bind(owner_id)
+    .execute(&mut *tx)
+    .await
+    .unwrap();
+    sqlx::query(
+        "insert into trip_members (id, trip_id, display_name, role, color)
+         values ($1, $2, 'Other Owner', 'owner', '#0f766e')",
+    )
+    .bind(owner_id)
+    .bind(trip_id)
+    .execute(&mut *tx)
+    .await
+    .unwrap();
+    sqlx::query(
+        "insert into plan_variants (id, trip_id, name, kind, description)
+         values ($1, $2, 'Other Main', 'main', 'Other trip plan')",
+    )
+    .bind(plan_id)
+    .bind(trip_id)
+    .execute(&mut *tx)
+    .await
+    .unwrap();
+    sqlx::query(
+        "insert into itinerary_items (
+           id, trip_id, plan_variant_id, day, sort_order, start_time, activity, activity_type,
+           place, map_link, duration_minutes, transportation, note, created_by, version
+         )
+         values (
+           $1, $2, $3, '2025-05-21', 100, '10:00', 'Egg Tart', 'food',
+           'Taipa', 'https://maps.google.com', 30, 'walk', 'other trip item', $4, 1
+         )",
+    )
+    .bind(item_id)
+    .bind(trip_id)
+    .bind(plan_id)
+    .bind(owner_id)
+    .execute(&mut *tx)
+    .await
+    .unwrap();
+    tx.commit().await.unwrap();
+
+    item_id
+}
+
 pub async fn seed_suggestion_for_plan(
     pool: &PgPool,
     plan_variant_id: &str,

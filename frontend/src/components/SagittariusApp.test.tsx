@@ -1,13 +1,42 @@
-import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
-import { SagittariusApp } from "@/src/app/SagittariusApp";
+import {
+  SagittariusApp,
+  nextClientMutationId,
+  nextLocalItemId,
+  nextLocalStopNoteId,
+  nextLocalSuggestionId,
+  nextLocalTaskId,
+  replaceSuggestionById,
+} from "@/src/app/SagittariusApp";
 import type { TripApiClient, TripCockpit } from "@/src/trip/api-client";
 import { tripParticipantSessionStorageKey } from "@/src/trip/auth";
 import { seedTrip } from "@/src/trip/seed";
-import type { Trip } from "@/src/trip/types";
+import type { ItineraryItem, StopNote, Suggestion, Trip, TripTask } from "@/src/trip/types";
 
 describe("Sagittarius cockpit UI", () => {
+  it("generates collision-free local ids and falls back when randomUUID is unavailable", () => {
+    expect(nextLocalTaskId([{ id: "task-local-1" }, { id: "task-local-2" }] as TripTask[])).toBe("task-local-3");
+    expect(nextLocalTaskId([{ id: "task-local-1" }, { id: "task-local-3" }] as TripTask[])).toBe("task-local-4");
+    expect(nextLocalItemId([{ id: "item-local-1" }, { id: "item-local-3" }] as ItineraryItem[], "item-local")).toBe("item-local-4");
+    expect(nextLocalSuggestionId([{ id: "suggestion-local-1" }, { id: "suggestion-local-3" }] as Suggestion[])).toBe("suggestion-local-4");
+    expect(nextLocalStopNoteId([{ id: "note-local-1" }, { id: "note-local-2" }] as StopNote[])).toBe("note-local-3");
+    expect(nextLocalStopNoteId([{ id: "note-local-1" }, { id: "note-local-3" }] as StopNote[])).toBe("note-local-4");
+    expect(replaceSuggestionById(
+      [{ id: "suggestion-a", status: "pending" }, { id: "suggestion-b", status: "pending" }] as Suggestion[],
+      "suggestion-b",
+      { id: "suggestion-b", status: "approved" } as Suggestion,
+    )).toEqual([{ id: "suggestion-a", status: "pending" }, { id: "suggestion-b", status: "approved" }]);
+
+    vi.stubGlobal("crypto", {});
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-05-29T00:00:00.000Z"));
+    expect(nextClientMutationId("task")).toBe(`task-${Date.now().toString(36)}`);
+    vi.unstubAllGlobals();
+    vi.useRealTimers();
+  });
+
   it("can require trip participant authentication before opening the cockpit", async () => {
     const user = userEvent.setup();
     render(<SagittariusApp requireJoin />);
@@ -134,7 +163,17 @@ describe("Sagittarius cockpit UI", () => {
         relatedItemId: null,
         version: 1,
       }),
-      patchTask: vi.fn(),
+      patchTask: vi.fn().mockResolvedValue({
+        id: "task-api-created",
+        title: "แลกเงิน HKD",
+        status: "done",
+        visibility: "shared",
+        kind: "prep",
+        createdBy: ownerTrip.members[0].id,
+        assigneeId: null,
+        relatedItemId: null,
+        version: 2,
+      }),
       patchItineraryItem: vi.fn(),
       createSuggestion: vi.fn(),
       approveSuggestion: vi.fn(),
@@ -163,6 +202,14 @@ describe("Sagittarius cockpit UI", () => {
       expect.objectContaining({ title: "แลกเงิน HKD", visibility: "shared", assigneeId: null }),
     );
     expect(within(tasks).getByText(/แลกเงิน HKD/i)).toBeInTheDocument();
+
+    await user.click(within(tasks).getByRole("checkbox", { name: /แลกเงิน HKD/i }));
+
+    expect(apiClient.patchTask).toHaveBeenCalledWith(
+      "task-api-created",
+      "session-token",
+      expect.objectContaining({ expectedVersion: 1, patch: { status: "done" } }),
+    );
   });
 
   it("hydrates a persisted API session from the backend", async () => {
@@ -189,6 +236,34 @@ describe("Sagittarius cockpit UI", () => {
 
     await waitFor(() => expect(apiClient.loadTrip).toHaveBeenCalledWith(apiTrip.id, "persisted-session-token"));
     expect(await screen.findByRole("heading", { name: /Persisted API Trip/i })).toBeInTheDocument();
+  });
+
+  it("ignores late API hydration when the app unmounts during a persisted session load", async () => {
+    installLocalStorageStub();
+    const deferred = createDeferred<TripCockpit>();
+    window.localStorage.setItem(
+      tripParticipantSessionStorageKey,
+      JSON.stringify({
+        tripId: seedTrip.id,
+        memberId: seedTrip.members[0].id,
+        sessionToken: "slow-session-token",
+        createdAt: "2026-05-29T00:00:00.000Z",
+        expiresAt: "2026-06-28T00:00:00.000Z",
+      }),
+    );
+    const apiClient = createApiClientForTrip(seedTrip);
+    vi.mocked(apiClient.loadTrip).mockReturnValue(deferred.promise);
+
+    const { unmount } = render(<SagittariusApp requireJoin dataSource="api" initialView="overview" apiClient={apiClient} />);
+
+    await waitFor(() => expect(apiClient.loadTrip).toHaveBeenCalledWith(seedTrip.id, "slow-session-token"));
+    unmount();
+    await act(async () => {
+      deferred.resolve({ trip: { ...seedTrip, name: "Too Late Trip" }, suggestions: [], tasks: [], stopNotes: [], expenseSummary: null });
+      await deferred.promise;
+    });
+
+    expect(screen.queryByText(/Too Late Trip/i)).not.toBeInTheDocument();
   });
 
   it("edits itinerary stops and resolves suggestions through the API client after backend login", async () => {
@@ -683,6 +758,105 @@ describe("Sagittarius cockpit UI", () => {
     expect(within(newMemberRow as HTMLElement).getByText(/รอเข้าร่วม/i)).toBeInTheDocument();
   });
 
+  it("manages member roles, access, claim reset, and current member password from the app state", async () => {
+    const user = userEvent.setup();
+    const confirm = vi.spyOn(window, "confirm").mockReturnValue(true);
+    const prompt = vi.spyOn(window, "prompt").mockReturnValue("owner-new-pin");
+    render(<SagittariusApp initialView="members" />);
+
+    await user.selectOptions(screen.getByLabelText(/Role for Explorer Friend/i), "organizer");
+    expect(screen.getByText("Explorer Friend").closest(".person-row")).toHaveTextContent("ผู้จัดทริป");
+
+    await user.click(screen.getByRole("button", { name: /ปิดสิทธิ์ Explorer Friend/i }));
+    expect(screen.getByRole("button", { name: /เปิดสิทธิ์ Explorer Friend/i })).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: /เปิดสิทธิ์ Explorer Friend/i }));
+    expect(screen.getByRole("button", { name: /ปิดสิทธิ์ Explorer Friend/i })).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: /เปลี่ยนรหัสผ่าน Demo Traveler/i }));
+
+    expect(prompt).toHaveBeenCalledWith(expect.stringContaining("Demo Traveler"));
+    expect(confirm).toHaveBeenCalledWith(expect.stringContaining("Explorer Friend"));
+
+    prompt.mockRestore();
+    confirm.mockRestore();
+  });
+
+  it("resets a claimed non-owner member loaded from a persisted draft", async () => {
+    const user = userEvent.setup();
+    const confirm = vi.spyOn(window, "confirm").mockReturnValue(true);
+    const storage = installLocalStorageStub();
+    storage.setItem("sagittarius:trip-draft", JSON.stringify({
+      ...seedTrip,
+      members: seedTrip.members.map((member) =>
+        member.id === "member-beam"
+          ? { ...member, claimPasswordHash: "local_hash_old", claimedAt: "2026-05-28T00:00:00.000Z" }
+          : member,
+      ),
+    }));
+
+    render(<SagittariusApp initialView="members" />);
+
+    await user.click(await screen.findByRole("button", { name: /รีเซ็ตรหัสผ่าน Travel Mate/i }));
+
+    expect(confirm).toHaveBeenCalledWith(expect.stringContaining("Travel Mate"));
+    await waitFor(() => expect(screen.queryByRole("button", { name: /รีเซ็ตรหัสผ่าน Travel Mate/i })).not.toBeInTheDocument());
+
+    confirm.mockRestore();
+  });
+
+  it("cleans corrupt persisted drafts and participant sessions before opening", async () => {
+    const storage = installLocalStorageStub();
+    storage.setItem("sagittarius:trip-draft", "{");
+    storage.setItem(tripParticipantSessionStorageKey, "{");
+
+    render(<SagittariusApp requireJoin />);
+
+    await waitFor(() => {
+      expect(storage.getItem("sagittarius:trip-draft")).toBeNull();
+      expect(storage.getItem(tripParticipantSessionStorageKey)).toBeNull();
+    });
+    expect(screen.getByRole("main", { name: /Join trip/i })).toBeInTheDocument();
+  });
+
+  it("keeps undo and redo harmless when there is no history", async () => {
+    const user = userEvent.setup();
+    render(<SagittariusApp initialView="itinerary" />);
+
+    const undoButton = screen.getByRole("button", { name: /Undo/i });
+    const redoButton = screen.getByRole("button", { name: /Redo/i });
+    expect(undoButton).toBeDisabled();
+    expect(redoButton).toBeDisabled();
+    (undoButton as HTMLButtonElement).disabled = false;
+    (redoButton as HTMLButtonElement).disabled = false;
+    fireEvent.click(undoButton);
+    fireEvent.click(redoButton);
+    await user.click(screen.getByRole("button", { name: /Open details/i }));
+    expect(screen.getByRole("complementary", { name: /Planning context/i })).toBeInTheDocument();
+  });
+
+  it("keeps read-only forced actions from mutating itinerary or suggestions", async () => {
+    const user = userEvent.setup();
+    render(<SagittariusApp initialView="itinerary" />);
+
+    await user.selectOptions(screen.getByLabelText(/Role preview/i), "member-viewer");
+    const addStopButton = screen.getByRole("button", { name: /เพิ่มสถานที่ \/ กิจกรรม/i });
+    (addStopButton as HTMLButtonElement).disabled = false;
+    fireEvent.click(addStopButton);
+    expect(screen.queryByRole("dialog", { name: /เพิ่มกิจกรรม/i })).not.toBeInTheDocument();
+
+    const dataTransfer = createDataTransfer();
+    dataTransfer.setData("text/plain", "missing-item");
+    fireEvent.drop(screen.getByRole("button", { name: /Select stop Dim Dim Sum/i }).closest("tr")!, { dataTransfer });
+    expect(screen.getByRole("button", { name: /Select stop Dim Dim Sum/i })).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: /Open details/i }));
+    const suggestButton = screen.getByRole("button", { name: /เสนอแก้ไข/i });
+    (suggestButton as HTMLButtonElement).disabled = false;
+    fireEvent.click(suggestButton);
+    expect(screen.queryByText(/Viewer Guest suggested an update/i)).not.toBeInTheDocument();
+  });
+
   it("can start on real route paths with the right surface first", () => {
     const { rerender } = render(<SagittariusApp initialView="map" />);
 
@@ -714,6 +888,22 @@ describe("Sagittarius cockpit UI", () => {
     await user.click(within(screen.getByRole("region", { name: /Route map/i })).getByRole("button", { name: /Day 2/i }));
     expect(screen.queryByRole("complementary", { name: /Planning context/i })).not.toBeInTheDocument();
     expect(screen.getByText(/6\/15 stops visible/i)).toBeInTheDocument();
+  });
+
+  it("toggles timeline details and closes the context rail from its own control", async () => {
+    const user = userEvent.setup();
+    const { unmount } = render(<SagittariusApp initialView="timeline" />);
+
+    await user.click(screen.getByRole("button", { name: /Open details/i }));
+    expect(screen.getByRole("complementary", { name: /Planning context/i })).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: /Close details/i }));
+    expect(screen.queryByRole("complementary", { name: /Planning context/i })).not.toBeInTheDocument();
+
+    unmount();
+    render(<SagittariusApp initialView="itinerary" />);
+    await user.click(screen.getByRole("button", { name: /เพิ่มสถานที่ \/ กิจกรรม/i }));
+    await user.click(screen.getByRole("button", { name: /ยกเลิก/i }));
+    expect(screen.queryByRole("dialog", { name: /เพิ่มกิจกรรม/i })).not.toBeInTheDocument();
   });
 
   it("collapses the left rail and keeps labels accessible", async () => {
@@ -804,6 +994,40 @@ describe("Sagittarius cockpit UI", () => {
 
     expect(container.querySelector(".workspace-grid")).toHaveAttribute("data-context-rail", "closed");
     expect(screen.queryByRole("complementary", { name: /Planning context/i })).not.toBeInTheDocument();
+  });
+
+  it("keeps the context drawer mounted during the close animation and ignores non-element document events", async () => {
+    const { container } = render(<SagittariusApp initialView="itinerary" />);
+
+    fireEvent.click(screen.getByRole("button", { name: /Open details/i }));
+    expect(await screen.findByRole("complementary", { name: /Planning context/i })).toBeInTheDocument();
+
+    document.dispatchEvent(new Event("click"));
+    expect(container.querySelector(".workspace-grid")).toHaveAttribute("data-context-rail", "open");
+
+    vi.useFakeTimers();
+    try {
+      fireEvent.click(screen.getByRole("region", { name: /Smart itinerary table/i }));
+      expect(container.querySelector(".workspace-grid")).toHaveAttribute("data-context-rail", "closed");
+      expect(container.querySelector(".context-rail")).toHaveAttribute("data-state", "closed");
+
+      act(() => {
+        vi.advanceTimersByTime(900);
+      });
+      expect(screen.queryByRole("complementary", { name: /Planning context/i })).not.toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("does not close the context drawer for clicks that originate on itinerary rows", () => {
+    const { container } = render(<SagittariusApp initialView="itinerary" />);
+
+    fireEvent.click(screen.getByRole("button", { name: /Open details/i }));
+    fireEvent.click(screen.getByRole("row", { name: /Open details for Victoria Peak/i }));
+
+    expect(container.querySelector(".workspace-grid")).toHaveAttribute("data-context-rail", "open");
+    expect(within(screen.getByRole("complementary", { name: /Planning context/i })).getByRole("heading", { name: /Victoria Peak/i })).toBeInTheDocument();
   });
 
   it("keeps the right context drawer open when clicking inside it", async () => {
@@ -997,15 +1221,17 @@ function createDataTransfer() {
 
 function installLocalStorageStub() {
   const values = new Map<string, string>();
+  const storage = {
+    getItem: (key: string) => values.get(key) ?? null,
+    setItem: (key: string, value: string) => values.set(key, value),
+    removeItem: (key: string) => values.delete(key),
+    clear: () => values.clear(),
+  };
   Object.defineProperty(window, "localStorage", {
     configurable: true,
-    value: {
-      getItem: (key: string) => values.get(key) ?? null,
-      setItem: (key: string, value: string) => values.set(key, value),
-      removeItem: (key: string) => values.delete(key),
-      clear: () => values.clear(),
-    },
+    value: storage,
   });
+  return storage;
 }
 
 async function loginApiTrip(user: ReturnType<typeof userEvent.setup>) {
@@ -1069,4 +1295,14 @@ function createApiClientForTrip(trip: Trip): TripApiClient {
     approveSuggestion: vi.fn(),
     rejectSuggestion: vi.fn(),
   };
+}
+
+function createDeferred<T>() {
+  let resolve!: (value: T) => void;
+  let reject!: (reason?: unknown) => void;
+  const promise = new Promise<T>((innerResolve, innerReject) => {
+    resolve = innerResolve;
+    reject = innerReject;
+  });
+  return { promise, reject, resolve };
 }

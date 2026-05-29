@@ -24,9 +24,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     )
     .execute(&pool)
     .await?;
-    sqlx::raw_sql(include_str!("../../../../migrations/0001_backend_vertical_slice.sql"))
-        .execute(&pool)
-        .await?;
+    sqlx::raw_sql(include_str!(
+        "../../../../migrations/0001_backend_vertical_slice.sql"
+    ))
+    .execute(&pool)
+    .await?;
 
     seed_trip(&pool).await?;
     seed_tasks(&pool).await?;

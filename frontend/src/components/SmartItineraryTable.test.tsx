@@ -1,0 +1,94 @@
+import { fireEvent, render, screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { describe, expect, it, vi } from "vitest";
+import { tripFixture } from "@/src/demo/trip-fixtures";
+import { SmartItineraryTable } from "./SmartItineraryTable";
+
+function renderTable(overrides: Partial<Parameters<typeof SmartItineraryTable>[0]> = {}) {
+  const props: Parameters<typeof SmartItineraryTable>[0] = {
+    canRedo: false,
+    canRestructure: true,
+    canUndo: false,
+    contextRailOpen: false,
+    endDate: tripFixture.trip.endDate,
+    items: tripFixture.planItems,
+    role: "owner",
+    startDate: tripFixture.trip.startDate,
+    selectedItemId: tripFixture.planItems[0].id,
+    tripName: tripFixture.trip.name,
+    onAddStop: vi.fn(),
+    onSelectItem: vi.fn(),
+    onMoveItem: vi.fn(),
+    onRedo: vi.fn(),
+    onToggleContextRail: vi.fn(),
+    onUndo: vi.fn(),
+    ...overrides,
+  };
+  render(<SmartItineraryTable {...props} />);
+  return props;
+}
+
+describe("SmartItineraryTable", () => {
+  it("selects rows with keyboard but ignores nested links and buttons", async () => {
+    const user = userEvent.setup();
+    const props = renderTable();
+    const row = screen.getByRole("row", { name: /Open details for Dim Dim Sum/i });
+
+    fireEvent.keyDown(row, { key: "Tab" });
+    fireEvent.keyDown(row, { key: "Enter" });
+    expect(props.onSelectItem).toHaveBeenCalledWith("item-dimdim");
+
+    props.onSelectItem.mockClear();
+    fireEvent.keyDown(within(row).getByRole("link", { name: /แผนที่/i }), { key: "Enter", bubbles: true });
+    expect(props.onSelectItem).not.toHaveBeenCalled();
+
+    await user.click(screen.getByRole("button", { name: /Collapse Day 2/i }));
+    expect(document.querySelector('tr[aria-label*="Dim Dim Sum"]')).toHaveAttribute("aria-hidden", "true");
+  });
+
+  it("prevents dragging when role or restructure settings disallow editing", () => {
+    renderTable({ role: "viewer", canRestructure: false });
+
+    expect(screen.getByRole("button", { name: /เพิ่มสถานที่/i })).toBeDisabled();
+    expect(screen.getByText("Editing requires organizer access.")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Drag Dim Dim Sum/i })).toBeDisabled();
+  });
+
+  it("ignores drag previews and drops that cannot move an item", () => {
+    const props = renderTable({ canRestructure: false });
+    const dataTransfer = createDataTransfer();
+    const row = screen.getByRole("button", { name: /Select stop Dim Dim Sum/i }).closest("tr")!;
+
+    fireEvent.dragOver(row, { dataTransfer });
+    fireEvent.drop(row, { dataTransfer });
+
+    expect(props.onMoveItem).not.toHaveBeenCalled();
+    expect(row).not.toHaveClass("data-row--drop-target");
+  });
+
+  it("ignores missing and self-targeted drag payloads", () => {
+    const props = renderTable();
+    const row = screen.getByRole("button", { name: /Select stop Dim Dim Sum/i }).closest("tr")!;
+
+    fireEvent.dragOver(row, { dataTransfer: createDataTransfer() });
+    expect(row).not.toHaveClass("data-row--drop-target");
+
+    const selfTransfer = createDataTransfer();
+    selfTransfer.setData("text/plain", "item-dimdim");
+    fireEvent.dragOver(row, { dataTransfer: selfTransfer });
+    fireEvent.drop(row, { dataTransfer: selfTransfer });
+
+    expect(props.onMoveItem).not.toHaveBeenCalled();
+  });
+});
+
+function createDataTransfer() {
+  const values = new Map<string, string>();
+
+  return {
+    dropEffect: "move",
+    effectAllowed: "move",
+    getData: (type: string) => values.get(type) ?? "",
+    setData: (type: string, value: string) => values.set(type, value),
+  };
+}

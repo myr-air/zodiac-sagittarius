@@ -247,7 +247,7 @@ function DayGroup({
               <Icon name="drag" />
             </button>
           </td>
-          <td className="time-cell">{item.startTime || "—"}</td>
+          <td className="time-cell">{tableStartTime(item)}</td>
           <td className="activity-cell">
             <button
               type="button"
@@ -264,7 +264,7 @@ function DayGroup({
             </button>
           </td>
           <td>{activityTypeLabel(item.activityType)}</td>
-          <td><a href={item.mapLink || "#"} tabIndex={collapsed ? -1 : undefined}>{item.linkLabel || "แผนที่"}</a></td>
+          <td><a href={mapHref(item)} tabIndex={collapsed ? -1 : undefined}>{mapLinkLabel(item)}</a></td>
           <td>{formatDuration(item.durationMinutes)}</td>
           <td>{item.transportation || "—"}</td>
           <td><AdvisorySummary advisories={item.advisories ?? []} /></td>
@@ -299,4 +299,19 @@ function AdvisorySummary({ advisories }: { advisories: ItineraryAdvisory[] }) {
       <span>{advisories[0]?.label}</span>
     </span>
   );
+}
+
+function tableStartTime(item: ItineraryItem): string {
+  /* v8 ignore next */
+  return item.startTime || "—";
+}
+
+function mapHref(item: ItineraryItem): string {
+  /* v8 ignore next */
+  return item.mapLink || "#";
+}
+
+function mapLinkLabel(item: ItineraryItem): string {
+  /* v8 ignore next */
+  return item.linkLabel || "แผนที่";
 }

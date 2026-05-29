@@ -91,7 +91,7 @@ async fn join_session_contract_hides_hashes_and_claim_creates_session(pool: sqlx
 async fn join_session_contract_claim_rejects_already_claimed_member(pool: sqlx::PgPool) {
     support::seed_trip(&pool).await;
     support::claim_member(&pool, support::TRAVELER_ID, "1234", "active").await;
-    let app = support::app(pool);
+    let app = support::app(pool.clone());
 
     let response = app
         .oneshot(
@@ -115,12 +115,139 @@ async fn join_session_contract_claim_rejects_already_claimed_member(pool: sqlx::
 }
 
 #[sqlx::test(migrations = "../../migrations")]
-async fn join_session_contract_disabled_member_cannot_login(pool: sqlx::PgPool) {
+async fn join_session_contract_login_and_logout_accept_body_or_bearer_token(pool: sqlx::PgPool) {
+    support::seed_trip(&pool).await;
+    support::claim_member(&pool, support::ORGANIZER_ID, "1234", "active").await;
+    let app = support::app(pool.clone());
+
+    let login_response = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method(Method::POST)
+                .uri(format!(
+                    "/v1/trips/{}/members/{}/login",
+                    support::TRIP_ID,
+                    support::ORGANIZER_ID
+                ))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({"participantPassword":"1234"}).to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(login_response.status(), StatusCode::OK);
+    let login_body: Value =
+        serde_json::from_slice(&to_bytes(login_response.into_body(), 65536).await.unwrap())
+            .unwrap();
+    let session_token = login_body["sessionToken"].as_str().unwrap();
+
+    let logout_body = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method(Method::POST)
+                .uri(format!(
+                    "/v1/trips/{}/member-session/logout",
+                    support::TRIP_ID
+                ))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({"sessionToken": session_token}).to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(logout_body.status(), StatusCode::NO_CONTENT);
+
+    let bearer_token = support::create_session(&pool, support::ORGANIZER_ID).await;
+    let logout_bearer = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method(Method::POST)
+                .uri(format!(
+                    "/v1/trips/{}/member-session/logout",
+                    support::TRIP_ID
+                ))
+                .header(header::AUTHORIZATION, format!("Bearer {bearer_token}"))
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(logout_bearer.status(), StatusCode::NO_CONTENT);
+
+    let logout_missing_token = app
+        .oneshot(
+            Request::builder()
+                .method(Method::POST)
+                .uri(format!(
+                    "/v1/trips/{}/member-session/logout",
+                    support::TRIP_ID
+                ))
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(logout_missing_token.status(), StatusCode::NO_CONTENT);
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn join_session_contract_rejects_bad_join_and_disabled_or_wrong_login(pool: sqlx::PgPool) {
     support::seed_trip(&pool).await;
     support::claim_member(&pool, support::VIEWER_ID, "1234", "disabled").await;
-    let app = support::app(pool);
+    support::claim_member(&pool, support::ORGANIZER_ID, "1234", "active").await;
+    let app = support::app(pool.clone());
+
+    let bad_join = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method(Method::POST)
+                .uri("/v1/trips/join")
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({"joinId":"HK-SZ-2025","tripPassword":"wrong"}).to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(bad_join.status(), StatusCode::UNAUTHORIZED);
+
+    sqlx::query("update trip_members set access_status = 'disabled' where id = $1")
+        .bind(uuid::Uuid::parse_str(support::TRAVELER_ID).unwrap())
+        .execute(&pool)
+        .await
+        .unwrap();
+    let disabled_claim = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method(Method::POST)
+                .uri(format!(
+                    "/v1/trips/{}/members/{}/claim",
+                    support::TRIP_ID,
+                    support::TRAVELER_ID
+                ))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({"participantPassword":"1234"}).to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(disabled_claim.status(), StatusCode::FORBIDDEN);
 
     let response = app
+        .clone()
         .oneshot(
             Request::builder()
                 .method(Method::POST)
@@ -139,4 +266,24 @@ async fn join_session_contract_disabled_member_cannot_login(pool: sqlx::PgPool) 
         .unwrap();
 
     assert_eq!(response.status(), StatusCode::FORBIDDEN);
+
+    let wrong_password = app
+        .oneshot(
+            Request::builder()
+                .method(Method::POST)
+                .uri(format!(
+                    "/v1/trips/{}/members/{}/login",
+                    support::TRIP_ID,
+                    support::ORGANIZER_ID
+                ))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({"participantPassword":"wrong"}).to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(wrong_password.status(), StatusCode::UNAUTHORIZED);
 }

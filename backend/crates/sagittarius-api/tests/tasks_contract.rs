@@ -132,3 +132,254 @@ async fn tasks_contract_viewer_cannot_create_task(pool: sqlx::PgPool) {
         .unwrap();
     assert_eq!(response.status(), StatusCode::FORBIDDEN);
 }
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn tasks_contract_shared_tasks_validate_references_and_duplicate_mutations(
+    pool: sqlx::PgPool,
+) {
+    support::seed_trip(&pool).await;
+    let organizer = support::create_session(&pool, support::ORGANIZER_ID).await;
+    let app = support::app(pool.clone());
+
+    let created = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method(Method::POST)
+                .uri(format!("/v1/trips/{}/tasks", support::TRIP_ID))
+                .header(header::AUTHORIZATION, format!("Bearer {organizer}"))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({
+                        "clientMutationId": "web-task-shared",
+                        "title": "Confirm Dim Dim Sum",
+                        "visibility": "shared",
+                        "kind": "booking",
+                        "assigneeId": support::TRAVELER_ID,
+                        "relatedItemId": support::ITEM_ID
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(created.status(), StatusCode::CREATED);
+    let body: Value =
+        serde_json::from_slice(&to_bytes(created.into_body(), 65536).await.unwrap()).unwrap();
+    assert_eq!(body["assigneeId"], support::TRAVELER_ID);
+    assert_eq!(body["relatedItemId"], support::ITEM_ID);
+    let task_id = body["id"].as_str().unwrap();
+
+    let duplicate = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method(Method::POST)
+                .uri(format!("/v1/trips/{}/tasks", support::TRIP_ID))
+                .header(header::AUTHORIZATION, format!("Bearer {organizer}"))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({
+                        "clientMutationId": "web-task-shared",
+                        "title": "Duplicate",
+                        "visibility": "shared"
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(duplicate.status(), StatusCode::CONFLICT);
+
+    let missing_assignee = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method(Method::POST)
+                .uri(format!("/v1/trips/{}/tasks", support::TRIP_ID))
+                .header(header::AUTHORIZATION, format!("Bearer {organizer}"))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({
+                        "clientMutationId": "web-task-missing-assignee",
+                        "title": "Missing assignee",
+                        "visibility": "shared",
+                        "assigneeId": Uuid::now_v7()
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(missing_assignee.status(), StatusCode::NOT_FOUND);
+
+    let missing_related_item = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method(Method::POST)
+                .uri(format!("/v1/trips/{}/tasks", support::TRIP_ID))
+                .header(header::AUTHORIZATION, format!("Bearer {organizer}"))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({
+                        "clientMutationId": "web-task-missing-item",
+                        "title": "Missing item",
+                        "visibility": "shared",
+                        "relatedItemId": Uuid::now_v7()
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(missing_related_item.status(), StatusCode::NOT_FOUND);
+
+    let traveler = support::create_session(&pool, support::TRAVELER_ID).await;
+    let forbidden_patch = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method(Method::PATCH)
+                .uri(format!("/v1/tasks/{task_id}"))
+                .header(header::AUTHORIZATION, format!("Bearer {traveler}"))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({
+                        "clientMutationId": "web-task-forbidden-patch",
+                        "expectedVersion": 1,
+                        "patch": { "status": "done" }
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(forbidden_patch.status(), StatusCode::FORBIDDEN);
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn tasks_contract_patch_rejects_unknown_task_duplicate_mutation_and_bad_references(
+    pool: sqlx::PgPool,
+) {
+    support::seed_trip(&pool).await;
+    let traveler = support::create_session(&pool, support::TRAVELER_ID).await;
+    let app = support::app(pool);
+
+    let unknown_task = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method(Method::PATCH)
+                .uri(format!("/v1/tasks/{}", Uuid::now_v7()))
+                .header(header::AUTHORIZATION, format!("Bearer {traveler}"))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({
+                        "clientMutationId": "web-task-unknown",
+                        "expectedVersion": 1,
+                        "patch": { "status": "done" }
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(unknown_task.status(), StatusCode::NOT_FOUND);
+
+    let created = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method(Method::POST)
+                .uri(format!("/v1/trips/{}/tasks", support::TRIP_ID))
+                .header(header::AUTHORIZATION, format!("Bearer {traveler}"))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({
+                        "clientMutationId": "web-task-private-ref",
+                        "title": "Private prep",
+                        "visibility": "private"
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(created.status(), StatusCode::CREATED);
+    let body: Value =
+        serde_json::from_slice(&to_bytes(created.into_body(), 65536).await.unwrap()).unwrap();
+    let task_id = body["id"].as_str().unwrap();
+
+    let missing_related_item = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method(Method::PATCH)
+                .uri(format!("/v1/tasks/{task_id}"))
+                .header(header::AUTHORIZATION, format!("Bearer {traveler}"))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({
+                        "clientMutationId": "web-task-patch-missing-item",
+                        "expectedVersion": 1,
+                        "patch": { "relatedItemId": Uuid::now_v7() }
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(missing_related_item.status(), StatusCode::NOT_FOUND);
+
+    let updated = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method(Method::PATCH)
+                .uri(format!("/v1/tasks/{task_id}"))
+                .header(header::AUTHORIZATION, format!("Bearer {traveler}"))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({
+                        "clientMutationId": "web-task-patch-clear",
+                        "expectedVersion": 1,
+                        "patch": { "assigneeId": null, "relatedItemId": null, "title": "Private prep updated" }
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(updated.status(), StatusCode::OK);
+
+    let duplicate_patch = app
+        .oneshot(
+            Request::builder()
+                .method(Method::PATCH)
+                .uri(format!("/v1/tasks/{task_id}"))
+                .header(header::AUTHORIZATION, format!("Bearer {traveler}"))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({
+                        "clientMutationId": "web-task-patch-clear",
+                        "expectedVersion": 2,
+                        "patch": { "status": "done" }
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(duplicate_patch.status(), StatusCode::CONFLICT);
+}

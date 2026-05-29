@@ -142,3 +142,22 @@ async fn trip_load_contract_requires_bearer_session(pool: sqlx::PgPool) {
 
     assert_eq!(response.status(), StatusCode::UNAUTHORIZED);
 }
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn trip_load_contract_rejects_empty_bearer_token(pool: sqlx::PgPool) {
+    support::seed_trip(&pool).await;
+    let app = support::app(pool);
+
+    let response = app
+        .oneshot(
+            Request::builder()
+                .uri(format!("/v1/trips/{}", support::TRIP_ID))
+                .header(header::AUTHORIZATION, "Bearer ")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::UNAUTHORIZED);
+}

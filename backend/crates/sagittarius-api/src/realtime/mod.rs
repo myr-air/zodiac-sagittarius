@@ -34,6 +34,11 @@ impl Default for RealtimeHub {
 }
 
 impl RealtimeHub {
+    pub fn with_capacity(capacity: usize) -> Self {
+        let (sender, _) = broadcast::channel(capacity);
+        Self { sender }
+    }
+
     pub fn subscribe(&self) -> broadcast::Receiver<RealtimeEvent> {
         self.sender.subscribe()
     }

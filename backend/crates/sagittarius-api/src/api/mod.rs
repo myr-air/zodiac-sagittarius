@@ -8,11 +8,11 @@ pub mod trips;
 pub mod ws;
 
 use axum::{
+    Router,
     http::{
         Method,
         header::{AUTHORIZATION, CONTENT_TYPE},
     },
-    Router,
     routing::{get, patch, post},
 };
 use tower_http::cors::{AllowOrigin, CorsLayer};

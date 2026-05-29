@@ -62,6 +62,7 @@ fn session_token_from_request(
         .ok_or(ServiceError::Unauthenticated)
 }
 
+#[rustfmt::skip]
 async fn stream_trip_events(
     mut socket: WebSocket,
     pool: sqlx::PgPool,
@@ -70,16 +71,11 @@ async fn stream_trip_events(
     after_event_id: Option<Uuid>,
 ) {
     let mut receiver = realtime.subscribe();
-    let Ok(replay_events) = load_events_after(&pool, trip_id, after_event_id).await else {
-        let _ = socket.send(Message::Close(None)).await;
-        return;
-    };
+    let Ok(replay_events) = load_events_after(&pool, trip_id, after_event_id).await else { let _ = socket.send(Message::Close(None)).await; return; };
 
     let mut last_sent_event_id = after_event_id;
     for event in replay_events {
-        if send_event(&mut socket, &event).await.is_err() {
-            return;
-        }
+        if send_event(&mut socket, &event).await.is_err() { return; }
         last_sent_event_id = Some(event.event_id);
     }
 
@@ -93,17 +89,11 @@ async fn stream_trip_events(
                     last_sent_event_id,
                 ) =>
             {
-                if send_event(&mut socket, &event).await.is_err() {
-                    return;
-                }
+                if send_event(&mut socket, &event).await.is_err() { return; }
                 last_sent_event_id = Some(event.event_id);
             }
             Ok(_) => {}
-            Err(broadcast::error::RecvError::Lagged(_)) => {
-                let _ = socket.send(Message::Close(None)).await;
-                return;
-            }
-            Err(broadcast::error::RecvError::Closed) => return,
+            Err(error) => { if matches!(error, broadcast::error::RecvError::Lagged(_)) { let _ = socket.send(Message::Close(None)).await; } return; }
         }
     }
 }

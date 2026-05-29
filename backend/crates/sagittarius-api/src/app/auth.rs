@@ -202,3 +202,45 @@ fn format_timestamp(timestamp: OffsetDateTime) -> Result<String, ServiceError> {
         .format(&Rfc3339)
         .map_err(|_| ServiceError::InvalidRequest("timestamp could not be formatted"))
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_hashes_verify_matching_secret_and_reject_bad_inputs() {
+        let hash = hash_secret_for_tests("dim-sum-run");
+
+        assert!(verify_secret("dim-sum-run", &hash));
+        assert!(!verify_secret("wrong", &hash));
+        assert!(!verify_secret("dim-sum-run", "not-a-password-hash"));
+    }
+
+    #[test]
+    fn session_token_hashing_is_deterministic_for_lookup() {
+        let first = hash_session_token_for_tests("session-token");
+        let second = hash_session_token_for_tests("session-token");
+
+        assert_eq!(first, second);
+        assert!(verify_secret("session-token", &first));
+    }
+
+    #[test]
+    fn generated_session_tokens_are_url_safe_and_unique() {
+        let first = generate_session_token();
+        let second = generate_session_token();
+
+        assert_ne!(first, second);
+        assert!(!first.is_empty());
+        assert!(!first.contains('+'));
+        assert!(!first.contains('/'));
+        assert!(!first.contains('='));
+    }
+
+    #[test]
+    fn timestamps_format_as_rfc3339() {
+        let timestamp = OffsetDateTime::from_unix_timestamp(0).unwrap();
+
+        assert_eq!(format_timestamp(timestamp).unwrap(), "1970-01-01T00:00:00Z");
+    }
+}

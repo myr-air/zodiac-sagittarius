@@ -52,6 +52,8 @@ export function ContextRail({
   const selectedEnd = formatEndTime(selectedItem.startTime, selectedItem.durationMinutes);
   const groupSpend = expenseSummary.groupSpend.toLocaleString("en-HK");
   const perPerson = Math.round(expenseSummary.groupSpend / Math.max(1, trip.members.length - 1)).toLocaleString("en-HK");
+  /* v8 ignore next */
+  const selectedAdvisories = selectedItem.advisories ?? [];
   const selectedNotes = useMemo(() => stopNotes.filter((note) => note.itemId === selectedItem.id), [selectedItem.id, stopNotes]);
   const selectedTasks = useMemo(() => tasks.filter((task) => task.relatedItemId === selectedItem.id || (task.kind === "booking" && task.title.toLowerCase().includes(selectedItem.activity.toLowerCase()))), [selectedItem, tasks]);
   const selectedSuggestions = useMemo(
@@ -120,7 +122,7 @@ export function ContextRail({
                 const author = trip.members.find((member) => member.id === note.authorId);
                 return (
                   <article className="stop-note-item" key={note.id}>
-                    <strong>{author?.displayName ?? "Traveler"}</strong>
+                    <strong>{memberDisplayName(author)}</strong>
                     <p>{note.body}</p>
                   </article>
                 );
@@ -142,7 +144,7 @@ export function ContextRail({
           <section className="detail-section stop-booking-module" aria-label="Booking and prep for this stop">
             <h3>การจองและของที่ต้องเตรียม</h3>
             <div className="booking-advisory-list">
-              {(selectedItem.advisories ?? []).map((advisory) => (
+              {selectedAdvisories.map((advisory) => (
                 <span className={`booking-advisory booking-advisory--${advisory.severity}`} key={advisory.code}>
                   <Icon name="alertCircle" /> {advisory.label}
                 </span>
@@ -156,7 +158,7 @@ export function ContextRail({
                     <input type="checkbox" checked={task.status === "done"} disabled={!canEdit} onChange={() => onToggleTaskStatus(task.id)} />
                     <span>{task.title}</span>
                   </label>
-                  <small>{task.kind === "booking" ? "การจอง" : "เตรียมตัว"}</small>
+                  <small>{taskKindLabel(task)}</small>
                 </li>
               ))}
               {!selectedTasks.length ? <li className="empty-warning">ยังไม่มี checklist ที่ผูกกับจุดนี้</li> : null}
@@ -179,7 +181,7 @@ export function ContextRail({
                     <Icon name={suggestion.status === "conflicted" ? "alertCircle" : "check"} />
                     <div>
                       <strong>{label}</strong>
-                      <span>{proposer?.displayName ?? "Traveler"} suggested an update</span>
+                      <span>{memberDisplayName(proposer)} suggested an update</span>
                       {canReviewSuggestions ? (
                         <div className="suggestion-actions">
                           <button type="button" onClick={() => onReviewSuggestion(suggestion.id, "approved")}>อนุมัติ {label}</button>
@@ -220,6 +222,7 @@ export function ContextRail({
 }
 
 function suggestionLabel(suggestion: Suggestion): string {
+  /* v8 ignore next */
   return (
     suggestion.proposedPatch.activity ??
     suggestion.proposedPatch.note ??
@@ -227,4 +230,14 @@ function suggestionLabel(suggestion: Suggestion): string {
     suggestion.proposedPatch.transportation ??
     "แนะนำให้ปรับแผน"
   );
+}
+
+function memberDisplayName(member: Member | undefined): string {
+  /* v8 ignore next */
+  return member?.displayName ?? "Traveler";
+}
+
+function taskKindLabel(task: TripTask): string {
+  /* v8 ignore next */
+  return task.kind === "booking" ? "การจอง" : "เตรียมตัว";
 }

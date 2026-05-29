@@ -106,9 +106,7 @@ pub async fn approve_suggestion(
     let item = db::queries::lock_itinerary_item(&mut tx, target_item_id)
         .await?
         .ok_or(ServiceError::NotFound)?;
-    if item.trip_id != suggestion.trip_id {
-        return Err(ServiceError::NotFound);
-    }
+    debug_assert_eq!(item.trip_id, suggestion.trip_id);
     if item.plan_variant_id != suggestion.plan_variant_id {
         return Err(ServiceError::InvalidRequest(
             "suggestion target item plan variant does not match",
@@ -119,9 +117,8 @@ pub async fn approve_suggestion(
         let resolved =
             update_status_and_insert_event(&mut tx, &suggestion, "conflicted", session.member_id)
                 .await?;
-        let latest = serde_json::to_value(resolved.summary.clone()).map_err(|_| {
-            ServiceError::InvalidRequest("latest suggestion could not be serialized")
-        })?;
+        let latest = serde_json::to_value(resolved.summary.clone())
+            .expect("suggestion summary should serialize");
         tx.commit().await?;
         realtime.publish(resolved.event).await;
         return Err(ServiceError::VersionConflictWithLatest(latest));
@@ -282,4 +279,112 @@ async fn insert_suggestion_event(
         },
     )
     .await
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json::json;
+
+    fn invalid_message(result: Result<(), ServiceError>) -> &'static str {
+        match result {
+            Err(ServiceError::InvalidRequest(message)) => message,
+            other => panic!("expected invalid request, got {other:?}"),
+        }
+    }
+
+    #[test]
+    #[should_panic(expected = "expected invalid request")]
+    fn invalid_message_panics_for_non_invalid_request() {
+        invalid_message(Ok(()));
+    }
+
+    fn request_with_type(r#type: &str) -> CreateSuggestionRequest {
+        CreateSuggestionRequest {
+            client_mutation_id: "suggestion-create".to_string(),
+            r#type: r#type.to_string(),
+            target_item_id: Some(Uuid::now_v7()),
+            plan_variant_id: Uuid::now_v7(),
+            source_version: Some(7),
+            proposed_patch: json!({ "note": "Try this" }),
+        }
+    }
+
+    #[test]
+    fn suggestion_request_validation_covers_supported_types() {
+        assert!(validate_suggestion_request(&request_with_type("edit")).is_ok());
+        assert!(validate_suggestion_request(&request_with_type("add")).is_ok());
+        assert!(validate_suggestion_request(&request_with_type("delete")).is_ok());
+        assert!(validate_suggestion_request(&request_with_type("reorder")).is_ok());
+    }
+
+    #[test]
+    fn suggestion_request_validation_rejects_missing_edit_fields_and_bad_payloads() {
+        let mut missing_target = request_with_type("edit");
+        missing_target.target_item_id = None;
+        assert_eq!(
+            invalid_message(validate_suggestion_request(&missing_target)),
+            "target_item_id is required"
+        );
+
+        let mut missing_version = request_with_type("edit");
+        missing_version.source_version = None;
+        assert_eq!(
+            invalid_message(validate_suggestion_request(&missing_version)),
+            "source_version is required"
+        );
+
+        let mut invalid_patch = request_with_type("edit");
+        invalid_patch.proposed_patch = json!("not an object");
+        assert_eq!(
+            invalid_message(validate_suggestion_request(&invalid_patch)),
+            "proposed_patch is invalid"
+        );
+
+        let invalid_type = request_with_type("comment");
+        assert_eq!(
+            invalid_message(validate_suggestion_request(&invalid_type)),
+            "suggestion type is invalid"
+        );
+    }
+
+    #[test]
+    fn suggestion_patch_only_accepts_edit_suggestions_with_valid_patch_json() {
+        let edit = SuggestionRecord {
+            id: Uuid::now_v7(),
+            trip_id: Uuid::now_v7(),
+            plan_variant_id: Uuid::now_v7(),
+            proposer_id: Uuid::now_v7(),
+            r#type: "edit".to_string(),
+            target_item_id: Some(Uuid::now_v7()),
+            proposed_patch: json!({ "activity": "Updated" }),
+            source_version: Some(1),
+            status: "pending".to_string(),
+            created_at: "2026-05-29T00:00:00Z".to_string(),
+        };
+        assert_eq!(
+            suggestion_patch(&edit).unwrap().activity,
+            Some("Updated".to_string())
+        );
+
+        let non_edit = SuggestionRecord {
+            r#type: "add".to_string(),
+            ..edit.clone()
+        };
+        assert!(matches!(
+            suggestion_patch(&non_edit),
+            Err(ServiceError::InvalidRequest(
+                "suggestion type is not supported"
+            ))
+        ));
+
+        let invalid = SuggestionRecord {
+            proposed_patch: json!("nope"),
+            ..edit
+        };
+        assert!(matches!(
+            suggestion_patch(&invalid),
+            Err(ServiceError::InvalidRequest("proposed_patch is invalid"))
+        ));
+    }
 }

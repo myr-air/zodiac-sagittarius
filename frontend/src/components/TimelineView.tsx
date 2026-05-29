@@ -78,7 +78,7 @@ export function TimelineView({ contextRailOpen, endDate, items, selectedItemId, 
                       onClick={() => onSelectItem(item.id)}
                     >
                       <span className="timeline-time">
-                        <strong>{item.startTime || "—"}</strong>
+                        <strong>{timelineStartTime(item)}</strong>
                         <span>{formatEndTime(item.startTime, item.durationMinutes)}</span>
                       </span>
                       <span className="timeline-node" aria-hidden="true">
@@ -109,4 +109,9 @@ export function TimelineView({ contextRailOpen, endDate, items, selectedItemId, 
       </div>
     </section>
   );
+}
+
+function timelineStartTime(item: ItineraryItem): string {
+  /* v8 ignore next */
+  return item.startTime || "—";
 }

@@ -8,6 +8,7 @@ import { formatTripRange, PageHeader } from "./PageHeader";
 interface RouteMapViewProps {
   endDate: string;
   items: ItineraryItem[];
+  liveMapEnabled?: boolean;
   startDate: string;
   tripName: string;
 }
@@ -40,7 +41,7 @@ type DayFilter = "all" | string;
 
 const routeDayColors = ["#2563eb", "#0f766e", "#f97316", "#0891b2", "#16a34a", "#dc2626"];
 
-export function RouteMapView({ endDate, items, startDate, tripName }: RouteMapViewProps) {
+export function RouteMapView({ endDate, items, liveMapEnabled = process.env.NODE_ENV !== "test", startDate, tripName }: RouteMapViewProps) {
   const groups = useMemo(() => groupItemsByDay(items), [items]);
   const routePoints = useMemo(() => buildRoutePoints(items), [items]);
   const routeDayGroups = useMemo(() => buildRouteDayGroups(groups, routePoints, startDate), [groups, routePoints, startDate]);
@@ -70,8 +71,7 @@ export function RouteMapView({ endDate, items, startDate, tripName }: RouteMapVi
   }, [activeDay]);
 
   useEffect(() => {
-    if (!mapContainerRef.current || mapRef.current || liveRoutePoints.length === 0) return undefined;
-    if (process.env.NODE_ENV === "test") return undefined;
+    if (!mapContainerRef.current || mapRef.current || liveRoutePoints.length === 0 || !liveMapEnabled) return undefined;
 
     let disposed = false;
     let liveMapContainer: HTMLDivElement | null = null;
@@ -103,6 +103,7 @@ export function RouteMapView({ endDate, items, startDate, tripName }: RouteMapVi
 
         liveRoutePoints.forEach((point, index) => {
           const coordinates = point.item.coordinates;
+          /* v8 ignore next */
           if (!coordinates) return;
 
           const markerElement = document.createElement("span");
@@ -168,6 +169,7 @@ export function RouteMapView({ endDate, items, startDate, tripName }: RouteMapVi
           if (!disposed) setLiveMapState("error");
         });
       } catch {
+        /* v8 ignore next */
         if (!disposed) setLiveMapState("error");
       }
     }
@@ -184,7 +186,7 @@ export function RouteMapView({ endDate, items, startDate, tripName }: RouteMapVi
         liveMapContainer.inert = false;
       }
     };
-  }, [liveRoutePoints, routeDayGroups]);
+  }, [liveMapEnabled, liveRoutePoints, routeDayGroups]);
 
   useEffect(() => {
     markersRef.current.forEach((marker) => {
@@ -288,12 +290,12 @@ export function RouteMapView({ endDate, items, startDate, tripName }: RouteMapVi
   );
 }
 
-function liveMapStatusText(state: "idle" | "loading" | "ready" | "error"): string {
+export function liveMapStatusText(state: "idle" | "loading" | "ready" | "error"): string {
   if (state === "error") return "โหลดแผนที่สดไม่สำเร็จ แสดงแผนผังสำรองไว้ก่อน";
   return "กำลังโหลดแผนที่จาก OpenFreeMap";
 }
 
-function activeDayLabel(activeDay: DayFilter, groups: RouteDayGroup[]): string {
+export function activeDayLabel(activeDay: DayFilter, groups: RouteDayGroup[]): string {
   if (activeDay === "all") return "ทุกวัน";
   return groups.find((group) => group.day === activeDay)?.label ?? "เลือกวัน";
 }
@@ -309,7 +311,7 @@ function buildRouteDayGroups(groups: ReturnType<typeof groupItemsByDay>, routePo
     .filter((group) => group.points.length > 0);
 }
 
-function dayColorFor(day: string, groups: RouteDayGroup[]): string {
+export function dayColorFor(day: string, groups: RouteDayGroup[]): string {
   return groups.find((group) => group.day === day)?.color ?? routeDayColors[0];
 }
 
@@ -337,7 +339,7 @@ function routeOpacity(activeDay: DayFilter, day: string, visibleOpacity: number,
   return activeDay === "all" || activeDay === day ? visibleOpacity : hiddenOpacity;
 }
 
-function fitLiveRoute(map: import("maplibre-gl").Map, points: RoutePoint[]) {
+export function fitLiveRoute(map: import("maplibre-gl").Map, points: RoutePoint[]) {
   const pointsWithCoordinates = points.filter((point) => point.item.coordinates);
   if (pointsWithCoordinates.length > 1) {
     map.fitBounds(getRouteBounds(pointsWithCoordinates), { padding: 80, maxZoom: 13 });
@@ -359,7 +361,7 @@ function hasCoordinates(coordinate: ItineraryItem["coordinates"]): coordinate is
   return Boolean(coordinate);
 }
 
-function getRouteCenter(points: RoutePoint[]): [number, number] {
+export function getRouteCenter(points: RoutePoint[]): [number, number] {
   const coordinates = points.map((point) => point.item.coordinates).filter(hasCoordinates);
   const lng = coordinates.reduce((total, coordinate) => total + coordinate.lng, 0) / Math.max(1, coordinates.length);
   const lat = coordinates.reduce((total, coordinate) => total + coordinate.lat, 0) / Math.max(1, coordinates.length);

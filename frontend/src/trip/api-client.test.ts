@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { createTripApiClient, type TripCockpitResponse } from "./api-client";
+import { createTripApiClient, mapCockpitResponse, type TripCockpitResponse } from "./api-client";
 
 const cockpitResponse: TripCockpitResponse = {
   trip: {
@@ -148,6 +148,94 @@ describe("Trip API client", () => {
       message: "invalid credentials",
       status: 401,
     });
+  });
+
+  it("uses fallback error details when the backend returns a malformed error body", async () => {
+    const fetchImpl = vi.fn().mockResolvedValueOnce(new Response("not-json", { status: 502 }));
+    const client = createTripApiClient({ fetchImpl });
+
+    await expect(client.joinTrip({ joinId: "HK-SZ-2025", password: "dim-sum-run" })).rejects.toMatchObject({
+      code: "request_failed",
+      message: "request failed with 502",
+      status: 502,
+    });
+  });
+
+  it("uses default fetch and fills partial backend error bodies", async () => {
+    const fetchImpl = vi.fn().mockResolvedValueOnce(jsonResponse({ code: "forbidden" }, 403));
+    vi.stubGlobal("fetch", fetchImpl);
+    const client = createTripApiClient();
+
+    await expect(client.joinTrip({ joinId: "HK-SZ-2025", password: "dim-sum-run" })).rejects.toMatchObject({
+      code: "forbidden",
+      message: "request failed with 403",
+      status: 403,
+    });
+
+    expect(fetchImpl).toHaveBeenCalledWith(
+      "/v1/trips/join",
+      expect.objectContaining({ method: "POST" }),
+    );
+    vi.unstubAllGlobals();
+  });
+
+  it("fills missing backend error codes while preserving messages", async () => {
+    const fetchImpl = vi.fn().mockResolvedValueOnce(jsonResponse({ message: "not allowed" }, 403));
+    const client = createTripApiClient({ fetchImpl });
+
+    await expect(client.joinTrip({ joinId: "HK-SZ-2025", password: "dim-sum-run" })).rejects.toMatchObject({
+      code: "request_failed",
+      message: "not allowed",
+      status: 403,
+    });
+  });
+
+  it("logs out through an encoded trip session route and accepts 204 responses", async () => {
+    const fetchImpl = vi.fn().mockResolvedValueOnce(new Response(null, { status: 204 }));
+    const client = createTripApiClient({ baseUrl: "https://api.example.test/", fetchImpl });
+
+    await expect(client.logout("trip/with space", "session-token")).resolves.toBeUndefined();
+
+    expect(fetchImpl).toHaveBeenCalledWith(
+      "https://api.example.test/v1/trips/trip%2Fwith%20space/member-session/logout",
+      expect.objectContaining({
+        method: "POST",
+        headers: expect.objectContaining({ Authorization: "Bearer session-token" }),
+        body: JSON.stringify({ sessionToken: "session-token" }),
+      }),
+    );
+  });
+
+  it("logs into an existing participant through the encoded member route", async () => {
+    const session = {
+      tripId: "trip/with space",
+      memberId: "member/beam",
+      sessionToken: "session-token",
+      createdAt: "2026-05-29T00:00:00.000Z",
+      expiresAt: "2026-06-28T00:00:00.000Z",
+    };
+    const fetchImpl = vi.fn().mockResolvedValueOnce(jsonResponse(session));
+    const client = createTripApiClient({ baseUrl: "https://api.example.test", fetchImpl });
+
+    await expect(client.loginMember("trip/with space", "member/beam", "old-pin")).resolves.toEqual(session);
+
+    expect(fetchImpl).toHaveBeenCalledWith(
+      "https://api.example.test/v1/trips/trip%2Fwith%20space/members/member%2Fbeam/login",
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({ participantPassword: "old-pin" }),
+      }),
+    );
+  });
+
+  it("falls back to an empty active plan id when the backend has no active or listed variant", () => {
+    const cockpit = mapCockpitResponse({
+      ...cockpitResponse,
+      trip: { ...cockpitResponse.trip, activePlanVariantId: null },
+      planVariants: [],
+    });
+
+    expect(cockpit.trip.activePlanVariantId).toBe("");
   });
 
   it("creates and patches tasks through authenticated backend routes", async () => {

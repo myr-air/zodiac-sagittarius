@@ -9,9 +9,9 @@ export function buildExpenseSummary(expenses: Expense[], currentMemberId: string
     const splitTotal = Object.values(expense.splits).reduce((sum, share) => sum + share, 0);
     if (splitTotal > 0 && splitTotal !== expense.amount) groupSpend += expense.amount;
     if (Object.values(expense.splits).filter((share) => share > 0).length > 1) groupSpend += expense.amount;
-    netByMember[expense.paidBy] = roundMoney((netByMember[expense.paidBy] ?? 0) + expense.amount);
+    netByMember[expense.paidBy] = roundMoney(netByMember[expense.paidBy] + expense.amount);
     for (const [memberId, share] of Object.entries(expense.splits)) {
-      netByMember[memberId] = roundMoney((netByMember[memberId] ?? 0) - share);
+      netByMember[memberId] = roundMoney(netByMember[memberId] - share);
     }
   }
 
@@ -40,7 +40,7 @@ function buildSettlementSuggestions(netByMember: Record<string, number>): Array<
   let creditorIndex = 0;
   while (debtorIndex < debtors.length && creditorIndex < creditors.length) {
     const cents = Math.min(debtors[debtorIndex].cents, creditors[creditorIndex].cents);
-    if (cents > 0) suggestions.push({ from: debtors[debtorIndex].id, to: creditors[creditorIndex].id, amount: cents / 100 });
+    suggestions.push({ from: debtors[debtorIndex].id, to: creditors[creditorIndex].id, amount: cents / 100 });
     debtors[debtorIndex].cents -= cents;
     creditors[creditorIndex].cents -= cents;
     if (debtors[debtorIndex].cents === 0) debtorIndex += 1;

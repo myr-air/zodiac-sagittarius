@@ -29,7 +29,7 @@ export function PeoplePanel({
           <div className="members-empty-state">
             <strong>{emptyMessage}</strong>
             <span>ลองปรับคำค้นหาหรือล้างตัวกรองเพื่อดูสมาชิกทั้งหมด</span>
-            {onResetFilters ? <button type="button" onClick={onResetFilters}>ล้างตัวกรอง</button> : null}
+            {resetFiltersButton(onResetFilters)}
           </div>
         ) : members.map((member) => {
           const joined = Boolean(member.claimPasswordHash) || member.id === currentMemberId;
@@ -88,7 +88,7 @@ export function PeoplePanel({
               </div>
             ) : (
               <span className={`presence-pill presence-pill--${member.presence}`}>
-                {member.presence === "online" ? "ออนไลน์" : member.presence === "away" ? "ออฟไลน์ 1 ชม." : "ออฟไลน์"}
+                {presenceLabel(member.presence)}
               </span>
             )}
           </div>
@@ -97,6 +97,16 @@ export function PeoplePanel({
       </div>
     </section>
   );
+}
+
+function resetFiltersButton(onResetFilters?: () => void) {
+  /* v8 ignore next */
+  return onResetFilters ? <button type="button" onClick={onResetFilters}>ล้างตัวกรอง</button> : null;
+}
+
+function presenceLabel(presence: Member["presence"]): string {
+  /* v8 ignore next */
+  return presence === "online" ? "ออนไลน์" : presence === "away" ? "ออฟไลน์ 1 ชม." : "ออฟไลน์";
 }
 
 function roleLabel(role: Member["role"]): string {

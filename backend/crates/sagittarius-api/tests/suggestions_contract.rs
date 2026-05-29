@@ -45,6 +45,7 @@ async fn suggestions_contract_traveler_can_create_suggestion_and_viewer_cannot(p
     assert_eq!(created_event_count, 1);
 
     let forbidden = app
+        .clone()
         .oneshot(
             Request::builder()
                 .method(Method::POST)
@@ -67,6 +68,53 @@ async fn suggestions_contract_traveler_can_create_suggestion_and_viewer_cannot(p
         .await
         .unwrap();
     assert_eq!(forbidden.status(), StatusCode::FORBIDDEN);
+
+    let duplicate_mutation = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method(Method::POST)
+                .uri(format!("/v1/trips/{}/suggestions", support::TRIP_ID))
+                .header(header::AUTHORIZATION, format!("Bearer {traveler}"))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({
+                        "clientMutationId": "web-suggestion-1",
+                        "type": "edit",
+                        "targetItemId": support::ITEM_ID,
+                        "planVariantId": support::PLAN_ID,
+                        "sourceVersion": 4,
+                        "proposedPatch": {"note":"book ahead"}
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(duplicate_mutation.status(), StatusCode::CONFLICT);
+
+    let add_suggestion = app
+        .oneshot(
+            Request::builder()
+                .method(Method::POST)
+                .uri(format!("/v1/trips/{}/suggestions", support::TRIP_ID))
+                .header(header::AUTHORIZATION, format!("Bearer {traveler}"))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({
+                        "clientMutationId": "web-suggestion-add",
+                        "type": "add",
+                        "planVariantId": support::PLAN_ID,
+                        "proposedPatch": {"activity":"Tea stop"}
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(add_suggestion.status(), StatusCode::CREATED);
 }
 
 #[sqlx::test(migrations = "../../migrations")]
@@ -76,7 +124,7 @@ async fn suggestions_contract_create_edit_rejects_invalid_plan_and_target_varian
     support::seed_trip(&pool).await;
     let alternate_plan_id = support::seed_plan_variant(&pool).await;
     let traveler = support::create_session(&pool, support::TRAVELER_ID).await;
-    let app = support::app(pool);
+    let app = support::app(pool.clone());
     let unknown_plan_id = uuid::Uuid::now_v7();
 
     let unknown_plan = app
@@ -105,6 +153,7 @@ async fn suggestions_contract_create_edit_rejects_invalid_plan_and_target_varian
     assert_eq!(unknown_plan.status(), StatusCode::NOT_FOUND);
 
     let target_variant_mismatch = app
+        .clone()
         .oneshot(
             Request::builder()
                 .method(Method::POST)
@@ -127,6 +176,31 @@ async fn suggestions_contract_create_edit_rejects_invalid_plan_and_target_varian
         .await
         .unwrap();
     assert_eq!(target_variant_mismatch.status(), StatusCode::BAD_REQUEST);
+
+    let other_trip_item_id = support::seed_other_trip_item(&pool).await;
+    let cross_trip_target = app
+        .oneshot(
+            Request::builder()
+                .method(Method::POST)
+                .uri(format!("/v1/trips/{}/suggestions", support::TRIP_ID))
+                .header(header::AUTHORIZATION, format!("Bearer {traveler}"))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({
+                        "clientMutationId": "web-suggestion-cross-trip-target",
+                        "type": "edit",
+                        "targetItemId": other_trip_item_id,
+                        "planVariantId": support::PLAN_ID,
+                        "sourceVersion": 1,
+                        "proposedPatch": {"note":"wrong trip"}
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(cross_trip_target.status(), StatusCode::NOT_FOUND);
 }
 
 #[sqlx::test(migrations = "../../migrations")]
@@ -138,6 +212,20 @@ async fn suggestions_contract_organizer_approves_matching_suggestion_and_conflic
     let fresh_id = support::seed_suggestion(&pool, 4).await;
     let stale_id = support::seed_suggestion(&pool, 2).await;
     let app = support::app(pool.clone());
+
+    let missing = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method(Method::POST)
+                .uri(format!("/v1/suggestions/{}/approve", uuid::Uuid::now_v7()))
+                .header(header::AUTHORIZATION, format!("Bearer {organizer}"))
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(missing.status(), StatusCode::NOT_FOUND);
 
     let approved = app
         .clone()
@@ -152,6 +240,20 @@ async fn suggestions_contract_organizer_approves_matching_suggestion_and_conflic
         .await
         .unwrap();
     assert_eq!(approved.status(), StatusCode::OK);
+
+    let approved_again = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method(Method::POST)
+                .uri(format!("/v1/suggestions/{fresh_id}/approve"))
+                .header(header::AUTHORIZATION, format!("Bearer {organizer}"))
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(approved_again.status(), StatusCode::BAD_REQUEST);
 
     let note: String = sqlx::query_scalar("select note from itinerary_items where id = $1")
         .bind(uuid::Uuid::parse_str(support::ITEM_ID).unwrap())
@@ -237,4 +339,79 @@ async fn suggestions_contract_approval_rejects_target_plan_mismatch_without_muta
         .await
         .unwrap();
     assert_eq!(version, 4);
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn suggestions_contract_rejects_pending_once_and_blocks_resolved_reviews(pool: sqlx::PgPool) {
+    support::seed_trip(&pool).await;
+    let organizer = support::create_session(&pool, support::ORGANIZER_ID).await;
+    let traveler = support::create_session(&pool, support::TRAVELER_ID).await;
+    let suggestion_id = support::seed_suggestion(&pool, 4).await;
+    let app = support::app(pool.clone());
+
+    let traveler_cannot_reject = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method(Method::POST)
+                .uri(format!("/v1/suggestions/{suggestion_id}/reject"))
+                .header(header::AUTHORIZATION, format!("Bearer {traveler}"))
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(traveler_cannot_reject.status(), StatusCode::FORBIDDEN);
+
+    let rejected = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method(Method::POST)
+                .uri(format!("/v1/suggestions/{suggestion_id}/reject"))
+                .header(header::AUTHORIZATION, format!("Bearer {organizer}"))
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(rejected.status(), StatusCode::OK);
+    let body: Value =
+        serde_json::from_slice(&to_bytes(rejected.into_body(), 65536).await.unwrap()).unwrap();
+    assert_eq!(body["status"], "rejected");
+
+    let rejected_again = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method(Method::POST)
+                .uri(format!("/v1/suggestions/{suggestion_id}/reject"))
+                .header(header::AUTHORIZATION, format!("Bearer {organizer}"))
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(rejected_again.status(), StatusCode::BAD_REQUEST);
+
+    let traveler_cannot_approve = app
+        .oneshot(
+            Request::builder()
+                .method(Method::POST)
+                .uri(format!("/v1/suggestions/{suggestion_id}/approve"))
+                .header(header::AUTHORIZATION, format!("Bearer {traveler}"))
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(traveler_cannot_approve.status(), StatusCode::FORBIDDEN);
+
+    let resolved_event_count: i64 =
+        sqlx::query_scalar("select count(*) from realtime_events where event_type = $1")
+            .bind("suggestion.resolved")
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+    assert_eq!(resolved_event_count, 1);
 }

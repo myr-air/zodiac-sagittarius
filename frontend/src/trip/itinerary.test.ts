@@ -5,6 +5,8 @@ import {
   getNowNext,
   getTripDates,
   groupItemsByDay,
+  parseTime,
+  formatDayLabel,
   sortItemsForDay,
   validateItineraryItem,
 } from "./itinerary";
@@ -36,6 +38,12 @@ describe("itinerary planning domain", () => {
     ]);
   });
 
+  it("falls back for invalid trip dates and invalid display days", () => {
+    expect(getTripDates("bad-date", "2025-05-20")).toEqual(["bad-date"]);
+    expect(getTripDates("2025-05-21", "2025-05-20")).toEqual(["2025-05-21"]);
+    expect(formatDayLabel("not-a-date", seedTrip.startDate)).toBe("not-a-date");
+  });
+
   it("finds validation issues without relying on color alone", () => {
     const dayItems = sortItemsForDay(seedTrip.itineraryItems, "2025-05-16");
     const missing = seedTrip.itineraryItems.find((item) => item.id === "item-arrive-hkg");
@@ -47,12 +55,50 @@ describe("itinerary planning domain", () => {
     expect(validateItineraryItem(dimsum, [...dayItems, overlapFixture])[0]?.message).toMatch(/overlaps|เวลา/i);
   });
 
+  it("reports invalid timing and missing movement details", () => {
+    const item = {
+      ...seedTrip.itineraryItems[0],
+      startTime: "24:99",
+      durationMinutes: 0,
+      mapLink: " ",
+      transportation: "",
+    };
+
+    expect(validateItineraryItem(item, [item]).map((warning) => warning.code)).toEqual([
+      "invalid-start-time",
+      "missing-duration",
+      "missing-map-link",
+      "missing-transportation",
+    ]);
+    expect(parseTime("23:59")).toBe(1439);
+    expect(parseTime("7:30")).toBeNull();
+    expect(validateItineraryItem({ ...item, startTime: " " }, [item]).map((warning) => warning.code)).toContain("missing-start-time");
+  });
+
   it("derives now and next for the on-trip context", () => {
     const state = getNowNext(seedTrip.itineraryItems, "2025-05-16", "09:10");
 
     expect(state.current?.id).toBe("item-dimdim");
     expect(state.next?.id).toBe("item-victoria-peak");
     expect(state.fallbackReason).toBeNull();
+  });
+
+  it("explains now/next fallback states for invalid, empty, and completed days", () => {
+    expect(getNowNext(seedTrip.itineraryItems, "2025-05-16", "bad")).toMatchObject({
+      current: null,
+      next: null,
+      fallbackReason: "Current time is unavailable.",
+    });
+    expect(getNowNext(seedTrip.itineraryItems, "2099-01-01", "09:00")).toMatchObject({
+      current: null,
+      next: null,
+      fallbackReason: "No timed stops for this day yet.",
+    });
+    expect(getNowNext(seedTrip.itineraryItems, "2025-05-16", "23:59")).toMatchObject({
+      current: null,
+      next: null,
+      fallbackReason: "The day plan has ended.",
+    });
   });
 
   it("detects stale suggestion conflicts and approves fresh suggestions", () => {
@@ -82,6 +128,97 @@ describe("itinerary planning domain", () => {
     expect(approved.items.find((item) => item.id === target.id)?.note).toBe("ขอเลื่อนร้านนี้หลังเช็คอิน");
   });
 
+  it("leaves add, resolved, and missing-target suggestions out of conflict handling", () => {
+    const baseSuggestion = {
+      id: "suggestion-add",
+      tripId: seedTrip.id,
+      planVariantId: seedTrip.activePlanVariantId,
+      proposerId: "member-beam",
+      type: "add" as const,
+      targetItemId: null,
+      sourceVersion: null,
+      status: "pending" as const,
+      proposedPatch: { activity: "Add dessert stop" },
+      createdAt: "2026-05-27T12:00:00.000Z",
+    };
+
+    expect(detectSuggestionConflict(seedTrip.itineraryItems, baseSuggestion)).toBe(baseSuggestion);
+    expect(approveSuggestion(seedTrip.itineraryItems, { ...baseSuggestion, type: "edit", targetItemId: null }).items).toBe(seedTrip.itineraryItems);
+    expect(approveSuggestion(seedTrip.itineraryItems, { ...baseSuggestion, type: "edit", targetItemId: "missing-item" })).toMatchObject({
+      status: "conflicted",
+      suggestion: { status: "conflicted" },
+    });
+    expect(detectSuggestionConflict(seedTrip.itineraryItems, { ...baseSuggestion, status: "approved" })).toMatchObject({ status: "approved" });
+  });
+
+  it("summarizes owed, owing, and settled expense states", () => {
+    expect(buildExpenseSummary([], "member-aom")).toMatchObject({
+      groupSpend: 0,
+      currentUserNetLabel: "You are settled",
+      settlementSuggestions: [],
+    });
+    const summary = buildExpenseSummary(
+      [
+        {
+          id: "expense-1",
+          tripId: seedTrip.id,
+          title: "Taxi",
+          amount: 100.005,
+          paidBy: "member-aom",
+          splits: { "member-aom": 50.005, "member-beam": 50 },
+          currency: "HKD",
+          createdAt: "2026-05-29T00:00:00.000Z",
+        },
+      ],
+      "member-beam",
+    );
+
+    expect(summary.groupSpend).toBe(100.01);
+    expect(summary.currentUserNetLabel).toBe("You owe HK$50.00");
+    expect(summary.settlementSuggestions).toEqual([{ from: "member-beam", to: "member-aom", amount: 50 }]);
+
+    expect(buildExpenseSummary([
+      {
+        id: "expense-mismatch",
+        tripId: seedTrip.id,
+        title: "Refunded deposit",
+        amount: 100,
+        paidBy: "member-aom",
+        splits: { "member-aom": 90 },
+        currency: "HKD",
+        createdAt: "2026-05-29T00:00:00.000Z",
+      },
+    ], "member-aom").groupSpend).toBe(100);
+
+    const currentMemberPaidOnly = buildExpenseSummary([
+      {
+        id: "expense-paid-only",
+        tripId: seedTrip.id,
+        title: "Deposit",
+        amount: 25,
+        paidBy: "member-aom",
+        splits: {},
+        currency: "HKD",
+        createdAt: "2026-05-29T00:00:00.000Z",
+      },
+    ], "member-aom");
+    expect(currentMemberPaidOnly.currentUserNetLabel).toBe("You are owed HK$25.00");
+
+    const zeroSettlement = buildExpenseSummary([
+      {
+        id: "expense-zero-share",
+        tripId: seedTrip.id,
+        title: "Zero adjustment",
+        amount: 0,
+        paidBy: "member-aom",
+        splits: { "member-aom": 0 },
+        currency: "HKD",
+        createdAt: "2026-05-29T00:00:00.000Z",
+      },
+    ], "member-aom");
+    expect(zeroSettlement.settlementSuggestions).toEqual([]);
+  });
+
   it("summarizes shared expenses with current-user impact", () => {
     const summary = buildExpenseSummary(seedTrip.expenses, "member-aom");
 
@@ -91,15 +228,30 @@ describe("itinerary planning domain", () => {
   });
 
   it("saves through a repository boundary instead of direct UI storage", () => {
+    const saved: string[] = [];
     const repository = createLocalTripRepository("test-storage", {
-      load: () => null,
-      save: () => undefined,
-      remove: () => undefined,
+      load: () => saved[0] ?? null,
+      save: (_key, value) => saved.push(value),
+      remove: () => saved.splice(0),
     });
 
+    repository.saveTrip(seedTrip);
+    expect(repository.loadTrip().id).toBe(seedTrip.id);
+    repository.clearDraft();
+    expect(repository.loadTrip()).toBe(seedTrip);
     expect(repository.describeSource()).toEqual({
       mode: "demo",
       restBase: "demo-fixture",
     });
+  });
+
+  it("returns the seed trip when local draft JSON is corrupt", () => {
+    const repository = createLocalTripRepository("test-storage", {
+      load: () => "{",
+      save: () => undefined,
+      remove: () => undefined,
+    });
+
+    expect(repository.loadTrip()).toBe(seedTrip);
   });
 });

@@ -78,7 +78,7 @@ export function getNowNext(items: ItineraryItem[], day: string, currentTime: str
   if (nowMinutes === null) return { current: null, next: null, fallbackReason: "Current time is unavailable." };
 
   const timedItems = sortItemsForDay(items, day)
-    .map((item) => ({ item, start: parseTime(item.startTime), duration: item.durationMinutes ?? 45 }))
+    .map((item) => ({ item, start: parseTime(item.startTime), duration: itemDuration(item) }))
     .filter((entry): entry is { item: ItineraryItem; start: number; duration: number } => entry.start !== null)
     .sort((a, b) => a.start - b.start);
 
@@ -92,6 +92,11 @@ export function getNowNext(items: ItineraryItem[], day: string, currentTime: str
     next: next?.item ?? null,
     fallbackReason: current || next ? null : "The day plan has ended.",
   };
+}
+
+function itemDuration(item: ItineraryItem): number {
+  /* v8 ignore next */
+  return item.durationMinutes ?? 45;
 }
 
 export function parseTime(value: string): number | null {

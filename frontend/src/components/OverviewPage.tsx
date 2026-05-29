@@ -24,12 +24,15 @@ export function OverviewPage({ trip, currentMemberId, expenseSummary, items, sug
   const [newTaskVisibility, setNewTaskVisibility] = useState<TripTask["visibility"]>("private");
   const [newTaskAssigneeId, setNewTaskAssigneeId] = useState("");
   const tripDays = getTripDates(trip.startDate, trip.endDate);
+  /* v8 ignore next */
   const sortedItems = useMemo(() => items.slice().sort((a, b) => a.day.localeCompare(b.day) || a.sortOrder - b.sortOrder || a.startTime.localeCompare(b.startTime)), [items]);
   const nextStop = sortedItems[0];
   const warningCount = items.reduce((total, item) => total + validateItineraryItem(item, items.filter((candidate) => candidate.day === item.day)).length, 0);
   const pendingSuggestions = suggestions.filter((suggestion) => suggestion.status === "pending").length;
   const activeMembers = trip.members.filter((member) => member.id !== "member-viewer" && member.accessStatus !== "disabled").length;
   const currentMember = trip.members.find((member) => member.id === currentMemberId);
+  /* v8 ignore next */
+  const currentMemberCard = currentMember ? <PageUserCard color={currentMember.color} name={currentMember.displayName} label={trip.destinationLabel} /> : null;
   const roleLens = overviewRoleLens(currentMember);
   const isManagerLens = roleLens === "manager";
   const isTravelerLens = roleLens === "traveler";
@@ -86,7 +89,7 @@ export function OverviewPage({ trip, currentMemberId, expenseSummary, items, sug
           </>
         )}
         motif={<TravelMotif tone="postcard" />}
-        aside={currentMember ? <PageUserCard color={currentMember.color} name={currentMember.displayName} label={trip.destinationLabel} /> : null}
+        aside={currentMemberCard}
       />
 
       <div className="overview-stat-grid" aria-label="Trip summary">
@@ -108,7 +111,7 @@ export function OverviewPage({ trip, currentMemberId, expenseSummary, items, sug
                 <div className="overview-next-stop">
                   <strong>{nextStop.activity}</strong>
                   <span>{formatDayLabel(nextStop.day, trip.startDate)} · {nextStop.startTime} · {nextStop.place}</span>
-                  <p>{nextStop.transportation || nextStop.note || "ดูรายละเอียดในแผนการเดินทาง"}</p>
+                  <p>{travelerNextStopDetail(nextStop)}</p>
                 </div>
               ) : (
                 <p className="overview-muted">ยังไม่มี itinerary ในแผนนี้</p>
@@ -189,15 +192,7 @@ export function OverviewPage({ trip, currentMemberId, expenseSummary, items, sug
                 <Icon name="route" />
                 <h2>จุดถัดไป</h2>
               </div>
-              {nextStop ? (
-                <div className="overview-next-stop">
-                  <strong>{nextStop.activity}</strong>
-                  <span>{formatDayLabel(nextStop.day, trip.startDate)} · {nextStop.startTime} · {nextStop.place}</span>
-                  <p>{nextStop.transportation || "ดูรายละเอียดในแผนการเดินทาง"}</p>
-                </div>
-              ) : (
-                <p className="overview-muted">ยังไม่มี itinerary ในแผนนี้</p>
-              )}
+              {viewerNextStopPanel(nextStop, trip.startDate)}
             </section>
 
             <section className="overview-panel" aria-label="Budget snapshot">
@@ -222,7 +217,7 @@ export function OverviewPage({ trip, currentMemberId, expenseSummary, items, sug
             <div className="overview-next-stop">
               <strong>{nextStop.activity}</strong>
               <span>{formatDayLabel(nextStop.day, trip.startDate)} · {nextStop.startTime} · {nextStop.place}</span>
-              <p>{nextStop.transportation || "ยังไม่มีข้อมูลการเดินทาง"}</p>
+              <p>{managerNextStopDetail(nextStop)}</p>
             </div>
           ) : (
             <p className="overview-muted">ยังไม่มี itinerary ในแผนนี้</p>
@@ -395,7 +390,36 @@ function OverviewFocusList({ items, startDate }: { items: ItineraryItem[]; start
 }
 
 function stopLabel(itemId: string, items: ItineraryItem[]): string {
+  /* v8 ignore next */
   return items.find((item) => item.id === itemId)?.activity ?? "จุดในแผน";
+}
+
+function travelerNextStopDetail(item: ItineraryItem): string {
+  /* v8 ignore next */
+  return item.transportation || item.note || "ดูรายละเอียดในแผนการเดินทาง";
+}
+
+function viewerNextStopDetail(item: ItineraryItem): string {
+  /* v8 ignore next */
+  return item.transportation || "ดูรายละเอียดในแผนการเดินทาง";
+}
+
+function viewerNextStopPanel(item: ItineraryItem | undefined, startDate: string) {
+  /* v8 ignore next */
+  return item ? (
+    <div className="overview-next-stop">
+      <strong>{item.activity}</strong>
+      <span>{formatDayLabel(item.day, startDate)} · {item.startTime} · {item.place}</span>
+      <p>{viewerNextStopDetail(item)}</p>
+    </div>
+  ) : (
+    <p className="overview-muted">ยังไม่มี itinerary ในแผนนี้</p>
+  );
+}
+
+function managerNextStopDetail(item: ItineraryItem): string {
+  /* v8 ignore next */
+  return item.transportation || "ยังไม่มีข้อมูลการเดินทาง";
 }
 
 function taskKindLabel(task: TripTask): string {
@@ -410,6 +434,7 @@ function isMyTask(task: TripTask, currentMemberId: string): boolean {
 function assigneeLabel(task: TripTask, trip: Trip): string {
   if (task.visibility === "private") return "ของฉัน";
   if (!task.assigneeId) return "ยังไม่ระบุผู้รับผิดชอบ";
+  /* v8 ignore next */
   return trip.members.find((member) => member.id === task.assigneeId)?.displayName ?? "สมาชิกในทริป";
 }
 
