@@ -254,6 +254,17 @@ impl From<TripTaskRecord> for TripTaskSummary {
     }
 }
 
+pub struct NewTripTask<'a> {
+    pub id: Uuid,
+    pub trip_id: Uuid,
+    pub title: &'a str,
+    pub visibility: &'a str,
+    pub kind: Option<&'a str>,
+    pub created_by: Uuid,
+    pub assignee_id: Option<Uuid>,
+    pub related_item_id: Option<Uuid>,
+}
+
 #[derive(Debug, Clone, FromRow)]
 pub struct ExpenseSplitRecord {
     pub paid_by: Uuid,

@@ -4,8 +4,8 @@ use uuid::Uuid;
 use crate::db::PgPool;
 use crate::db::models::{
     AuthenticatedMemberSessionRecord, ExpenseSplitRecord, ItineraryItemRecord, NewRealtimeEvent,
-    NewSuggestion, PlanVariantRecord, RealtimeEventRecord, SuggestionRecord, TripAuthRecord,
-    TripMemberAuthRecord, TripMemberRecord, TripTaskRecord,
+    NewSuggestion, NewTripTask, PlanVariantRecord, RealtimeEventRecord, SuggestionRecord,
+    TripAuthRecord, TripMemberAuthRecord, TripMemberRecord, TripTaskRecord,
 };
 
 pub async fn find_trip_by_join_id(
@@ -433,6 +433,116 @@ pub async fn list_visible_tasks(
     .bind(trip_id)
     .bind(member_id)
     .fetch_all(pool)
+    .await
+}
+
+pub async fn insert_task(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    task: NewTripTask<'_>,
+) -> Result<TripTaskRecord, sqlx::Error> {
+    sqlx::query_as::<_, TripTaskRecord>(
+        "insert into trip_tasks (
+           id, trip_id, title, status, visibility, kind, created_by, assignee_id, related_item_id,
+           version
+         )
+         values ($1, $2, $3, 'open', $4, $5, $6, $7, $8, 1)
+         returning
+           id, trip_id, title, status, visibility, kind, created_by, assignee_id,
+           related_item_id, version",
+    )
+    .bind(task.id)
+    .bind(task.trip_id)
+    .bind(task.title)
+    .bind(task.visibility)
+    .bind(task.kind)
+    .bind(task.created_by)
+    .bind(task.assignee_id)
+    .bind(task.related_item_id)
+    .fetch_one(&mut **tx)
+    .await
+}
+
+pub async fn lock_task(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    task_id: Uuid,
+) -> Result<Option<TripTaskRecord>, sqlx::Error> {
+    sqlx::query_as::<_, TripTaskRecord>(
+        "select
+           id, trip_id, title, status, visibility, kind, created_by, assignee_id,
+           related_item_id, version
+         from trip_tasks
+         where id = $1 and deleted_at is null
+         for update",
+    )
+    .bind(task_id)
+    .fetch_optional(&mut **tx)
+    .await
+}
+
+pub async fn update_task(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    task_id: Uuid,
+    patch: &crate::domain::patches::TaskPatch,
+    next_version: i64,
+) -> Result<Option<TripTaskRecord>, sqlx::Error> {
+    sqlx::query_as::<_, TripTaskRecord>(
+        "update trip_tasks
+         set title = coalesce($2, title),
+             status = coalesce($3, status),
+             assignee_id = case when $4 then $5 else assignee_id end,
+             related_item_id = case when $6 then $7 else related_item_id end,
+             version = $8,
+             updated_at = now()
+         where id = $1 and deleted_at is null
+         returning
+           id, trip_id, title, status, visibility, kind, created_by, assignee_id,
+           related_item_id, version",
+    )
+    .bind(task_id)
+    .bind(patch.title.as_deref())
+    .bind(patch.status.as_deref())
+    .bind(patch.assignee_id.is_some())
+    .bind(patch.assignee_id.unwrap_or(None))
+    .bind(patch.related_item_id.is_some())
+    .bind(patch.related_item_id.unwrap_or(None))
+    .bind(next_version)
+    .fetch_optional(&mut **tx)
+    .await
+}
+
+pub async fn trip_member_exists(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    trip_id: Uuid,
+    member_id: Uuid,
+) -> Result<bool, sqlx::Error> {
+    sqlx::query_scalar(
+        "select exists (
+           select 1
+           from trip_members
+           where trip_id = $1 and id = $2 and access_status = 'active'
+         )",
+    )
+    .bind(trip_id)
+    .bind(member_id)
+    .fetch_one(&mut **tx)
+    .await
+}
+
+pub async fn itinerary_item_exists_for_trip(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    trip_id: Uuid,
+    item_id: Uuid,
+) -> Result<bool, sqlx::Error> {
+    sqlx::query_scalar(
+        "select exists (
+           select 1
+           from itinerary_items
+           where trip_id = $1 and id = $2 and deleted_at is null
+         )",
+    )
+    .bind(trip_id)
+    .bind(item_id)
+    .fetch_one(&mut **tx)
     .await
 }
 

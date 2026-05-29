@@ -27,6 +27,8 @@ pub fn router(state: AppState) -> Router {
             "/v1/trips/{trip_id}/suggestions",
             post(suggestions::create_suggestion),
         )
+        .route("/v1/trips/{trip_id}/tasks", post(tasks::create_task))
+        .route("/v1/tasks/{task_id}", patch(tasks::patch_task))
         .route(
             "/v1/suggestions/{suggestion_id}/approve",
             post(suggestions::approve_suggestion),
