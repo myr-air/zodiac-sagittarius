@@ -38,7 +38,7 @@ pub async fn start_email_login(
 
     Ok(EmailLoginStartResponse {
         challenge_id,
-        expires_at: format_timestamp(expires_at)?,
+        expires_at: format_timestamp(expires_at),
         dev_code,
     })
 }
@@ -120,8 +120,8 @@ pub async fn finish_email_login(
         user_id,
         session_token,
         kind,
-        created_at: format_timestamp(now)?,
-        expires_at: format_timestamp(expires_at)?,
+        created_at: format_timestamp(now),
+        expires_at: format_timestamp(expires_at),
     })
 }
 
@@ -130,12 +130,6 @@ async fn find_or_create_user(
     normalized_email: &str,
     verified_at: OffsetDateTime,
 ) -> Result<Uuid, ServiceError> {
-    if let Some(record) =
-        db::account_queries::find_user_email_by_normalized_email(tx, normalized_email).await?
-    {
-        return Ok(record.user_id);
-    }
-
     let user_id = Uuid::now_v7();
     db::account_queries::insert_user(
         tx,
@@ -146,7 +140,7 @@ async fn find_or_create_user(
         },
     )
     .await?;
-    db::account_queries::insert_user_email(
+    let record = db::account_queries::insert_user_email_or_resume(
         tx,
         NewUserEmail {
             id: Uuid::now_v7(),
@@ -158,7 +152,11 @@ async fn find_or_create_user(
     )
     .await?;
 
-    Ok(user_id)
+    if record.user_id != user_id {
+        db::account_queries::delete_user(tx, user_id).await?;
+    }
+
+    Ok(record.user_id)
 }
 
 fn normalize_email(email: &str) -> Result<String, ServiceError> {
@@ -258,8 +256,8 @@ fn normalized_device_label(device_label: &str) -> String {
     }
 }
 
-fn format_timestamp(timestamp: OffsetDateTime) -> Result<String, ServiceError> {
+fn format_timestamp(timestamp: OffsetDateTime) -> String {
     timestamp
         .format(&Rfc3339)
-        .map_err(|_| ServiceError::InvalidRequest("timestamp could not be formatted"))
+        .expect("rfc3339 timestamp should format")
 }

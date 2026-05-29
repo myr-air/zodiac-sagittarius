@@ -61,18 +61,23 @@ pub async fn consume_email_login_challenge(
     Ok(())
 }
 
-pub async fn find_user_email_by_normalized_email(
+pub async fn insert_user_email_or_resume(
     tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
-    normalized_email: &str,
-) -> Result<Option<UserEmailRecord>, sqlx::Error> {
+    user_email: NewUserEmail<'_>,
+) -> Result<UserEmailRecord, sqlx::Error> {
     sqlx::query_as::<_, UserEmailRecord>(
-        "select user_id
-         from user_emails
-         where normalized_email = $1
-         for update",
+        "insert into user_emails (id, user_id, email, normalized_email, verified_at)
+         values ($1, $2, $3, $4, $5)
+         on conflict (normalized_email) do update
+         set normalized_email = excluded.normalized_email
+         returning user_id",
     )
-    .bind(normalized_email)
-    .fetch_optional(&mut **tx)
+    .bind(user_email.id)
+    .bind(user_email.user_id)
+    .bind(user_email.email)
+    .bind(user_email.normalized_email)
+    .bind(user_email.verified_at)
+    .fetch_one(&mut **tx)
     .await
 }
 
@@ -93,21 +98,14 @@ pub async fn insert_user(
     Ok(())
 }
 
-pub async fn insert_user_email(
+pub async fn delete_user(
     tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
-    user_email: NewUserEmail<'_>,
+    user_id: Uuid,
 ) -> Result<(), sqlx::Error> {
-    sqlx::query(
-        "insert into user_emails (id, user_id, email, normalized_email, verified_at)
-         values ($1, $2, $3, $4, $5)",
-    )
-    .bind(user_email.id)
-    .bind(user_email.user_id)
-    .bind(user_email.email)
-    .bind(user_email.normalized_email)
-    .bind(user_email.verified_at)
-    .execute(&mut **tx)
-    .await?;
+    sqlx::query("delete from users where id = $1")
+        .bind(user_id)
+        .execute(&mut **tx)
+        .await?;
 
     Ok(())
 }
