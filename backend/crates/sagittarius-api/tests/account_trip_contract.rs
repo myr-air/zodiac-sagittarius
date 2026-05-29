@@ -850,6 +850,115 @@ async fn owner_transfer_requires_current_owner_and_account_target(pool: sqlx::Pg
 }
 
 #[sqlx::test(migrations = "../../migrations")]
+async fn owner_transfer_rejects_disabled_account_target_and_preserves_roles(pool: sqlx::PgPool) {
+    let owner_session = login_account(&pool, "owner@example.com", false, "").await;
+    let owner_auth = format!("Bearer {}", owner_session["sessionToken"].as_str().unwrap());
+    let (_, trip_body) = create_account_trip(
+        &pool,
+        &owner_auth,
+        "owner-transfer-disabled",
+        "rice-noodle-2026",
+    )
+    .await;
+    let trip_id = Uuid::parse_str(trip_body["trip"]["id"].as_str().unwrap()).unwrap();
+    let owner_member_id = Uuid::parse_str(trip_body["ownerMemberId"].as_str().unwrap()).unwrap();
+    let target_session = login_account(&pool, "target@example.com", false, "").await;
+    let target_user_id = Uuid::parse_str(target_session["userId"].as_str().unwrap()).unwrap();
+    let target_member_id =
+        insert_account_linked_member(&pool, trip_id, Some(target_user_id), "Ben").await;
+
+    sqlx::query(
+        "update users
+         set disabled_at = now()
+         where id = $1",
+    )
+    .bind(target_user_id)
+    .execute(&pool)
+    .await
+    .unwrap();
+
+    let response = post_json_with_auth(
+        support::app(pool.clone()),
+        &format!("/v1/account/trips/{trip_id}/owner-transfer"),
+        Some(&owner_auth),
+        json!({"targetMemberId": target_member_id}),
+    )
+    .await;
+    let (status, body): (StatusCode, Value) = response_json(response).await;
+
+    assert_eq!(status, StatusCode::CONFLICT);
+    assert_eq!(body["code"], "owner_transfer_invalid");
+
+    let roles: Vec<(Uuid, String)> = sqlx::query_as(
+        "select id, role
+         from trip_members
+         where trip_id = $1 and id = any($2)
+         order by id",
+    )
+    .bind(trip_id)
+    .bind(vec![owner_member_id, target_member_id])
+    .fetch_all(&pool)
+    .await
+    .unwrap();
+    assert_eq!(
+        roles,
+        vec![
+            (owner_member_id, "owner".to_string()),
+            (target_member_id, "organizer".to_string())
+        ]
+    );
+
+    let persisted_owner_member_id: Uuid = sqlx::query_scalar(
+        "select owner_member_id
+         from trips
+         where id = $1",
+    )
+    .bind(trip_id)
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(persisted_owner_member_id, owner_member_id);
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn owner_transfer_rejects_self_transfer(pool: sqlx::PgPool) {
+    let owner_session = login_account(&pool, "owner@example.com", false, "").await;
+    let owner_auth = format!("Bearer {}", owner_session["sessionToken"].as_str().unwrap());
+    let (_, trip_body) = create_account_trip(
+        &pool,
+        &owner_auth,
+        "owner-transfer-self",
+        "rice-noodle-2026",
+    )
+    .await;
+    let trip_id = Uuid::parse_str(trip_body["trip"]["id"].as_str().unwrap()).unwrap();
+    let owner_member_id = Uuid::parse_str(trip_body["ownerMemberId"].as_str().unwrap()).unwrap();
+
+    let response = post_json_with_auth(
+        support::app(pool.clone()),
+        &format!("/v1/account/trips/{trip_id}/owner-transfer"),
+        Some(&owner_auth),
+        json!({"targetMemberId": owner_member_id}),
+    )
+    .await;
+    let (status, body): (StatusCode, Value) = response_json(response).await;
+
+    assert_eq!(status, StatusCode::CONFLICT);
+    assert_eq!(body["code"], "owner_transfer_invalid");
+
+    let audit_count: i64 = sqlx::query_scalar(
+        "select count(*)
+         from account_audit_events
+         where trip_id = $1 and event_type = 'owner.transferred'",
+    )
+    .bind(trip_id)
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(audit_count, 0);
+}
+
+#[sqlx::test(migrations = "../../migrations")]
 async fn owner_transfer_rejects_malformed_request(pool: sqlx::PgPool) {
     let owner_session = login_account(&pool, "owner@example.com", false, "").await;
     let owner_auth = format!("Bearer {}", owner_session["sessionToken"].as_str().unwrap());

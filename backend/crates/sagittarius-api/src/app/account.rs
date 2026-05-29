@@ -361,25 +361,22 @@ pub async fn transfer_trip_owner(
         return Err(ServiceError::Forbidden);
     }
 
+    if target_member_id == current_owner.id {
+        return Err(ServiceError::OwnerTransferInvalid);
+    }
+
     let target_member =
         db::account_queries::lock_owner_transfer_target_member(&mut tx, trip_id, target_member_id)
             .await?
             .ok_or(ServiceError::OwnerTransferInvalid)?;
 
-    if target_member.id == current_owner.id {
-        tx.commit().await?;
-        return Ok(OwnerTransferResponse {
-            trip_id,
-            previous_owner_member_id: current_owner.id,
-            new_owner_member_id: target_member.id,
-        });
-    }
-
     let Some(target_user_id) = target_member.user_id else {
         return Err(ServiceError::OwnerTransferInvalid);
     };
 
-    if target_member.access_status != TripMemberAccessStatus::Active {
+    if target_member.access_status != TripMemberAccessStatus::Active
+        || target_member.user_disabled_at.is_some()
+    {
         return Err(ServiceError::OwnerTransferInvalid);
     }
 

@@ -14,6 +14,7 @@ use crate::domain::types::{TripMemberAccessStatus, TripRole};
 pub struct OwnerTransferMemberRecord {
     pub id: Uuid,
     pub user_id: Option<Uuid>,
+    pub user_disabled_at: Option<OffsetDateTime>,
     pub role: TripRole,
     pub access_status: TripMemberAccessStatus,
 }
@@ -514,10 +515,16 @@ pub async fn lock_current_owner_member(
     trip_id: Uuid,
 ) -> Result<Option<OwnerTransferMemberRecord>, sqlx::Error> {
     sqlx::query_as::<_, OwnerTransferMemberRecord>(
-        "select id, user_id, role, access_status
+        "select
+           trip_members.id,
+           trip_members.user_id,
+           users.disabled_at as user_disabled_at,
+           trip_members.role,
+           trip_members.access_status
          from trip_members
-         where trip_id = $1 and role = 'owner'
-         for update",
+         left join users on users.id = trip_members.user_id
+         where trip_members.trip_id = $1 and trip_members.role = 'owner'
+         for update of trip_members",
     )
     .bind(trip_id)
     .fetch_optional(&mut **tx)
@@ -530,10 +537,16 @@ pub async fn lock_owner_transfer_target_member(
     member_id: Uuid,
 ) -> Result<Option<OwnerTransferMemberRecord>, sqlx::Error> {
     sqlx::query_as::<_, OwnerTransferMemberRecord>(
-        "select id, user_id, role, access_status
+        "select
+           trip_members.id,
+           trip_members.user_id,
+           users.disabled_at as user_disabled_at,
+           trip_members.role,
+           trip_members.access_status
          from trip_members
-         where trip_id = $1 and id = $2
-         for update",
+         left join users on users.id = trip_members.user_id
+         where trip_members.trip_id = $1 and trip_members.id = $2
+         for update of trip_members",
     )
     .bind(trip_id)
     .bind(member_id)
