@@ -44,10 +44,12 @@ This keeps the trip domain stable:
 
 ## Non-Goals
 
-The first implementation does not need production email delivery, billing,
-external OAuth providers, team/workspace billing, or notification delivery. It
-exposes email-code issuance through deterministic test/dev behavior while
-keeping the API shape ready for a real mailer.
+The first implementation must not depend on third-party providers. It does not
+include production email delivery, billing, external OAuth providers,
+team/workspace billing, hosted authentication providers, or notification
+delivery. Email-code issuance uses deterministic test/dev behavior and passkey
+work uses browser/platform WebAuthn APIs plus local backend storage and
+verification seams.
 
 The first pass does not need cross-device push notifications or account
 deletion hard-delete. Account deletion is explicitly outside this spec because
@@ -199,7 +201,7 @@ Email login is passwordless:
 1. User enters email.
 2. Backend normalizes email and creates `email_login_challenges`.
 3. In dev/test the challenge code is returned or logged through a test-only
-   path; production deployments plug a mailer into the same app service.
+   path. No third-party mail provider is wired in this implementation.
 4. User submits code.
 5. Backend consumes the challenge, creates or finds the user, verifies the email
    if needed, and returns a user session.
@@ -209,10 +211,10 @@ or wrong challenges return `401 unauthenticated` with the same user-facing copy.
 
 ## Passkeys
 
-Passkeys use WebAuthn challenge/verify endpoints. The first implementation can
-store credential public key material as JSON and keep verification behind a
-small domain interface so the exact WebAuthn crate can be swapped without
-spreading dependency details through the app.
+Passkeys use WebAuthn challenge/verify endpoints without a hosted auth
+provider. The first implementation can store credential public key material as
+JSON and keep verification behind a small local domain interface so dependency
+details do not spread through the app.
 
 Required flows:
 
