@@ -131,7 +131,7 @@ pub struct ItineraryItemRecord {
     pub plan_variant_id: Uuid,
     pub day: Date,
     pub sort_order: i32,
-    pub start_time: Option<String>,
+    pub start_time: String,
     pub activity: String,
     pub activity_type: String,
     pub place: String,

@@ -123,7 +123,9 @@ pub async fn patch_task(
     }
 
     if existing.version != request.expected_version {
-        return Err(ServiceError::VersionConflict);
+        let latest = serde_json::to_value(TripTaskSummary::from(existing))
+            .map_err(|_| ServiceError::InvalidRequest("latest task could not be serialized"))?;
+        return Err(ServiceError::VersionConflictWithLatest(latest));
     }
 
     validate_patch_references(&mut tx, existing.trip_id, &request.patch).await?;

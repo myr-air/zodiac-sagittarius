@@ -119,9 +119,12 @@ pub async fn approve_suggestion(
         let resolved =
             update_status_and_insert_event(&mut tx, &suggestion, "conflicted", session.member_id)
                 .await?;
+        let latest = serde_json::to_value(resolved.summary.clone()).map_err(|_| {
+            ServiceError::InvalidRequest("latest suggestion could not be serialized")
+        })?;
         tx.commit().await?;
         realtime.publish(resolved.event).await;
-        return Err(ServiceError::VersionConflict);
+        return Err(ServiceError::VersionConflictWithLatest(latest));
     }
 
     let patch = suggestion_patch(&suggestion)?;

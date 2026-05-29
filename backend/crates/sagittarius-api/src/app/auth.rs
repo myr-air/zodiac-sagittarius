@@ -36,7 +36,8 @@ pub async fn join_trip(
     join_id: &str,
     trip_password: &str,
 ) -> Result<JoinTripResponse, ServiceError> {
-    let trip = db::queries::find_trip_by_join_id(pool, join_id)
+    let normalized_join_id = join_id.trim().to_ascii_uppercase();
+    let trip = db::queries::find_trip_by_join_id(pool, &normalized_join_id)
         .await?
         .ok_or(ServiceError::NotFound)?;
 
@@ -72,8 +73,11 @@ pub async fn claim_member(
     }
 
     match member.claim_password_hash.as_deref() {
-        Some(password_hash) if verify_secret(participant_password, password_hash) => {}
-        Some(_) => return Err(ServiceError::Unauthenticated),
+        Some(_) => {
+            return Err(ServiceError::InvalidRequest(
+                "member has already been claimed",
+            ));
+        }
         None => {
             let password_hash = hash_secret(participant_password)?;
             db::queries::set_member_claim_password(&mut tx, trip_id, member_id, &password_hash)

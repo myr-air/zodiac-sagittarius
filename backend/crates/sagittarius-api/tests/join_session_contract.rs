@@ -38,7 +38,7 @@ async fn join_session_contract_hides_hashes_and_claim_creates_session(pool: sqlx
                 .uri("/v1/trips/join")
                 .header(header::CONTENT_TYPE, "application/json")
                 .body(Body::from(
-                    json!({"joinId":"HK-SZ-2025","tripPassword":"dim-sum-run"}).to_string(),
+                    json!({"joinId":" hk-sz-2025 ","tripPassword":"dim-sum-run"}).to_string(),
                 ))
                 .unwrap(),
         )
@@ -85,6 +85,33 @@ async fn join_session_contract_hides_hashes_and_claim_creates_session(pool: sqlx
     assert_eq!(claim_body["memberId"], support::TRAVELER_ID);
     assert!(claim_body["sessionToken"].as_str().unwrap().len() >= 32);
     assert_hash_fields_absent(&claim_body);
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn join_session_contract_claim_rejects_already_claimed_member(pool: sqlx::PgPool) {
+    support::seed_trip(&pool).await;
+    support::claim_member(&pool, support::TRAVELER_ID, "1234", "active").await;
+    let app = support::app(pool);
+
+    let response = app
+        .oneshot(
+            Request::builder()
+                .method(Method::POST)
+                .uri(format!(
+                    "/v1/trips/{}/members/{}/claim",
+                    support::TRIP_ID,
+                    support::TRAVELER_ID
+                ))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({"participantPassword":"1234"}).to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::BAD_REQUEST);
 }
 
 #[sqlx::test(migrations = "../../migrations")]

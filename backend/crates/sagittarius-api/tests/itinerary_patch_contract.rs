@@ -73,6 +73,11 @@ async fn itinerary_patch_contract_organizer_can_patch_item_and_stale_patch_confl
         .await
         .unwrap();
     assert_eq!(stale.status(), StatusCode::CONFLICT);
+    let stale_body: Value =
+        serde_json::from_slice(&to_bytes(stale.into_body(), 65536).await.unwrap()).unwrap();
+    assert_eq!(stale_body["code"], "version_conflict");
+    assert_eq!(stale_body["latest"]["id"], support::ITEM_ID);
+    assert_eq!(stale_body["latest"]["version"], 5);
 }
 
 #[sqlx::test(migrations = "../../migrations")]

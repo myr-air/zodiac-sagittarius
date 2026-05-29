@@ -1,8 +1,8 @@
 mod support;
 
-use axum::body::Body;
+use axum::body::{Body, to_bytes};
 use http::{Method, Request, StatusCode, header};
-use serde_json::json;
+use serde_json::{Value, json};
 use tower::ServiceExt;
 
 #[sqlx::test(migrations = "../../migrations")]
@@ -179,6 +179,11 @@ async fn suggestions_contract_organizer_approves_matching_suggestion_and_conflic
         .await
         .unwrap();
     assert_eq!(conflicted.status(), StatusCode::CONFLICT);
+    let conflicted_body: Value =
+        serde_json::from_slice(&to_bytes(conflicted.into_body(), 65536).await.unwrap()).unwrap();
+    assert_eq!(conflicted_body["code"], "version_conflict");
+    assert_eq!(conflicted_body["latest"]["id"], stale_id.to_string());
+    assert_eq!(conflicted_body["latest"]["status"], "conflicted");
 
     let stale_status: String = sqlx::query_scalar("select status from suggestions where id = $1")
         .bind(stale_id)

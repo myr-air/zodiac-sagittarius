@@ -12,6 +12,8 @@ pub enum ServiceError {
     NotFound,
     #[error("version conflict")]
     VersionConflict,
+    #[error("version conflict")]
+    VersionConflictWithLatest(serde_json::Value),
     #[error("database error: {0}")]
     Database(#[from] sqlx::Error),
 }

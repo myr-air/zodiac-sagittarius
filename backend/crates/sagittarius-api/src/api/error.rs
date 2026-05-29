@@ -1,5 +1,6 @@
 use axum::{Json, http::StatusCode, response::IntoResponse};
 use serde::Serialize;
+use serde_json::Value;
 
 use crate::domain::errors::ServiceError;
 
@@ -8,6 +9,8 @@ use crate::domain::errors::ServiceError;
 pub struct ErrorBody {
     pub code: &'static str,
     pub message: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub latest: Option<Value>,
 }
 
 pub async fn not_found() -> impl IntoResponse {
@@ -16,33 +19,56 @@ pub async fn not_found() -> impl IntoResponse {
         Json(ErrorBody {
             code: "not_found",
             message: "not found".to_string(),
+            latest: None,
         }),
     )
 }
 
 impl IntoResponse for ServiceError {
     fn into_response(self) -> axum::response::Response {
-        let (status, code, message) = match self {
-            ServiceError::InvalidRequest(_) => {
-                (StatusCode::BAD_REQUEST, "invalid_request", self.to_string())
-            }
+        let (status, code, message, latest) = match self {
+            ServiceError::InvalidRequest(_) => (
+                StatusCode::BAD_REQUEST,
+                "invalid_request",
+                self.to_string(),
+                None,
+            ),
             ServiceError::Unauthenticated => (
                 StatusCode::UNAUTHORIZED,
                 "unauthenticated",
                 self.to_string(),
+                None,
             ),
-            ServiceError::Forbidden => (StatusCode::FORBIDDEN, "forbidden", self.to_string()),
-            ServiceError::NotFound => (StatusCode::NOT_FOUND, "not_found", self.to_string()),
-            ServiceError::VersionConflict => {
-                (StatusCode::CONFLICT, "version_conflict", self.to_string())
-            }
+            ServiceError::Forbidden => (StatusCode::FORBIDDEN, "forbidden", self.to_string(), None),
+            ServiceError::NotFound => (StatusCode::NOT_FOUND, "not_found", self.to_string(), None),
+            ServiceError::VersionConflict => (
+                StatusCode::CONFLICT,
+                "version_conflict",
+                self.to_string(),
+                None,
+            ),
+            ServiceError::VersionConflictWithLatest(latest) => (
+                StatusCode::CONFLICT,
+                "version_conflict",
+                "version conflict".to_string(),
+                Some(latest),
+            ),
             ServiceError::Database(_) => (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 "database_error",
                 "database error".to_string(),
+                None,
             ),
         };
 
-        (status, Json(ErrorBody { code, message })).into_response()
+        (
+            status,
+            Json(ErrorBody {
+                code,
+                message,
+                latest,
+            }),
+        )
+            .into_response()
     }
 }

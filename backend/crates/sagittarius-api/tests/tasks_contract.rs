@@ -41,6 +41,7 @@ async fn tasks_contract_traveler_creates_and_updates_own_private_task(pool: sqlx
     assert_eq!(body["version"], json!(1));
 
     let updated = app
+        .clone()
         .oneshot(
             Request::builder()
                 .method(Method::PATCH)
@@ -64,6 +65,32 @@ async fn tasks_contract_traveler_creates_and_updates_own_private_task(pool: sqlx
         serde_json::from_slice(&to_bytes(updated.into_body(), 65536).await.unwrap()).unwrap();
     assert_eq!(body["status"], json!("done"));
     assert_eq!(body["version"], json!(2));
+
+    let stale = app
+        .oneshot(
+            Request::builder()
+                .method(Method::PATCH)
+                .uri(format!("/v1/tasks/{task_id}"))
+                .header(header::AUTHORIZATION, format!("Bearer {token}"))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({
+                        "clientMutationId": "web-task-stale",
+                        "expectedVersion": 1,
+                        "patch": { "status": "open" }
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(stale.status(), StatusCode::CONFLICT);
+    let stale_body: Value =
+        serde_json::from_slice(&to_bytes(stale.into_body(), 65536).await.unwrap()).unwrap();
+    assert_eq!(stale_body["code"], "version_conflict");
+    assert_eq!(stale_body["latest"]["id"], task_id);
+    assert_eq!(stale_body["latest"]["version"], json!(2));
 
     let event_count: i64 = sqlx::query_scalar(
         "select count(*)

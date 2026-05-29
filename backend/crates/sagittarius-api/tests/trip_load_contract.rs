@@ -96,6 +96,35 @@ async fn trip_load_contract_viewer_hides_expense_summary_and_private_tasks(pool:
 }
 
 #[sqlx::test(migrations = "../../migrations")]
+async fn trip_load_contract_serializes_missing_start_time_as_empty_string(pool: sqlx::PgPool) {
+    support::seed_trip(&pool).await;
+    sqlx::query("update itinerary_items set start_time = null where id = $1")
+        .bind(uuid::Uuid::parse_str(support::ITEM_ID).unwrap())
+        .execute(&pool)
+        .await
+        .unwrap();
+    let traveler_token = support::create_session(&pool, support::TRAVELER_ID).await;
+    let app = support::app(pool);
+
+    let response = app
+        .oneshot(
+            Request::builder()
+                .method(Method::GET)
+                .uri(format!("/v1/trips/{}", support::TRIP_ID))
+                .header(header::AUTHORIZATION, format!("Bearer {traveler_token}"))
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::OK);
+    let body: Value =
+        serde_json::from_slice(&to_bytes(response.into_body(), 131072).await.unwrap()).unwrap();
+    assert_eq!(body["itineraryItems"][0]["startTime"], "");
+}
+
+#[sqlx::test(migrations = "../../migrations")]
 async fn trip_load_contract_requires_bearer_session(pool: sqlx::PgPool) {
     support::seed_trip(&pool).await;
     let app = support::app(pool);

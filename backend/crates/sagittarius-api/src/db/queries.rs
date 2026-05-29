@@ -238,7 +238,7 @@ pub async fn list_itinerary_items(
     sqlx::query_as::<_, ItineraryItemRecord>(
         "select
            id, trip_id, plan_variant_id, day, sort_order,
-           to_char(start_time, 'HH24:MI') as start_time,
+           coalesce(to_char(start_time, 'HH24:MI'), '') as start_time,
            activity, activity_type, place, link_label, map_link, address,
            latitude::float8 as latitude, longitude::float8 as longitude,
            duration_minutes, transportation, advisories, note, created_by,
@@ -259,7 +259,7 @@ pub async fn lock_itinerary_item(
     sqlx::query_as::<_, ItineraryItemRecord>(
         "select
            id, trip_id, plan_variant_id, day, sort_order,
-           to_char(start_time, 'HH24:MI') as start_time,
+           coalesce(to_char(start_time, 'HH24:MI'), '') as start_time,
            activity, activity_type, place, link_label, map_link, address,
            latitude::float8 as latitude, longitude::float8 as longitude,
            duration_minutes, transportation, advisories, note, created_by,
@@ -294,7 +294,7 @@ pub async fn update_itinerary_item(
          where id = $1 and deleted_at is null
          returning
            id, trip_id, plan_variant_id, day, sort_order,
-           to_char(start_time, 'HH24:MI') as start_time,
+           coalesce(to_char(start_time, 'HH24:MI'), '') as start_time,
            activity, activity_type, place, link_label, map_link, address,
            latitude::float8 as latitude, longitude::float8 as longitude,
            duration_minutes, transportation, advisories, note, created_by,
