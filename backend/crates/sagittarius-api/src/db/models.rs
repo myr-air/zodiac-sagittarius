@@ -3,9 +3,9 @@ use time::{Date, OffsetDateTime};
 use uuid::Uuid;
 
 use crate::domain::types::{
-    ClaimableMember, ItineraryCoordinates, ItineraryItemSummary, PlanVariantSummary,
-    SuggestionSummary, TripMemberAccessStatus, TripMemberSummary, TripRole, TripSummary,
-    TripTaskSummary,
+    AccountSessionKind, ClaimableMember, ItineraryCoordinates, ItineraryItemSummary,
+    PlanVariantSummary, SuggestionSummary, TripMemberAccessStatus, TripMemberSummary, TripRole,
+    TripSummary, TripTaskSummary,
 };
 
 #[derive(Debug, Clone, FromRow)]
@@ -68,6 +68,52 @@ pub struct AuthenticatedMemberSessionRecord {
     pub trip_id: Uuid,
     pub member_id: Uuid,
     pub role: TripRole,
+}
+
+#[derive(Debug, Clone, FromRow)]
+pub struct EmailLoginChallengeRecord {
+    pub id: Uuid,
+    pub normalized_email: String,
+    pub code_hash: String,
+    pub expires_at: OffsetDateTime,
+    pub consumed_at: Option<OffsetDateTime>,
+}
+
+#[derive(Debug, Clone, FromRow)]
+pub struct UserEmailRecord {
+    pub user_id: Uuid,
+}
+
+pub struct NewUser<'a> {
+    pub id: Uuid,
+    pub display_name: &'a str,
+    pub avatar_color: &'a str,
+}
+
+pub struct NewUserEmail<'a> {
+    pub id: Uuid,
+    pub user_id: Uuid,
+    pub email: &'a str,
+    pub normalized_email: &'a str,
+    pub verified_at: OffsetDateTime,
+}
+
+pub struct NewTrustedDevice<'a> {
+    pub id: Uuid,
+    pub user_id: Uuid,
+    pub label: &'a str,
+    pub created_at: OffsetDateTime,
+    pub last_seen_at: OffsetDateTime,
+}
+
+pub struct NewUserSession<'a> {
+    pub id: Uuid,
+    pub user_id: Uuid,
+    pub trusted_device_id: Option<Uuid>,
+    pub session_token_hash: &'a str,
+    pub kind: AccountSessionKind,
+    pub created_at: OffsetDateTime,
+    pub expires_at: OffsetDateTime,
 }
 
 #[derive(Debug, Clone, FromRow)]

@@ -1,3 +1,4 @@
+pub mod account;
 pub mod error;
 pub mod extractors;
 pub mod itinerary;
@@ -22,6 +23,14 @@ use crate::app::AppState;
 pub fn router(state: AppState) -> Router {
     Router::new()
         .route("/v1/health", get(|| async { "ok" }))
+        .route(
+            "/v1/account/email-login/start",
+            post(account::start_email_login),
+        )
+        .route(
+            "/v1/account/email-login/finish",
+            post(account::finish_email_login),
+        )
         .route("/v1/trips/join", post(join::join_trip))
         .route("/v1/trips/{trip_id}", get(trips::load_trip))
         .route("/v1/trips/{trip_id}/ws", get(ws::trip_ws))

@@ -1,0 +1,155 @@
+use time::OffsetDateTime;
+use uuid::Uuid;
+
+use crate::db::PgPool;
+use crate::db::models::{
+    EmailLoginChallengeRecord, NewTrustedDevice, NewUser, NewUserEmail, NewUserSession,
+    UserEmailRecord,
+};
+
+pub async fn insert_email_login_challenge(
+    pool: &PgPool,
+    id: Uuid,
+    normalized_email: &str,
+    code_hash: &str,
+    expires_at: OffsetDateTime,
+) -> Result<(), sqlx::Error> {
+    sqlx::query(
+        "insert into email_login_challenges (id, normalized_email, code_hash, expires_at)
+         values ($1, $2, $3, $4)",
+    )
+    .bind(id)
+    .bind(normalized_email)
+    .bind(code_hash)
+    .bind(expires_at)
+    .execute(pool)
+    .await?;
+
+    Ok(())
+}
+
+pub async fn lock_email_login_challenge(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    challenge_id: Uuid,
+) -> Result<Option<EmailLoginChallengeRecord>, sqlx::Error> {
+    sqlx::query_as::<_, EmailLoginChallengeRecord>(
+        "select id, normalized_email, code_hash, expires_at, consumed_at
+         from email_login_challenges
+         where id = $1
+         for update",
+    )
+    .bind(challenge_id)
+    .fetch_optional(&mut **tx)
+    .await
+}
+
+pub async fn consume_email_login_challenge(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    challenge_id: Uuid,
+    consumed_at: OffsetDateTime,
+) -> Result<(), sqlx::Error> {
+    sqlx::query(
+        "update email_login_challenges
+         set consumed_at = $2
+         where id = $1",
+    )
+    .bind(challenge_id)
+    .bind(consumed_at)
+    .execute(&mut **tx)
+    .await?;
+
+    Ok(())
+}
+
+pub async fn find_user_email_by_normalized_email(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    normalized_email: &str,
+) -> Result<Option<UserEmailRecord>, sqlx::Error> {
+    sqlx::query_as::<_, UserEmailRecord>(
+        "select user_id
+         from user_emails
+         where normalized_email = $1
+         for update",
+    )
+    .bind(normalized_email)
+    .fetch_optional(&mut **tx)
+    .await
+}
+
+pub async fn insert_user(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    user: NewUser<'_>,
+) -> Result<(), sqlx::Error> {
+    sqlx::query(
+        "insert into users (id, display_name, avatar_color)
+         values ($1, $2, $3)",
+    )
+    .bind(user.id)
+    .bind(user.display_name)
+    .bind(user.avatar_color)
+    .execute(&mut **tx)
+    .await?;
+
+    Ok(())
+}
+
+pub async fn insert_user_email(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    user_email: NewUserEmail<'_>,
+) -> Result<(), sqlx::Error> {
+    sqlx::query(
+        "insert into user_emails (id, user_id, email, normalized_email, verified_at)
+         values ($1, $2, $3, $4, $5)",
+    )
+    .bind(user_email.id)
+    .bind(user_email.user_id)
+    .bind(user_email.email)
+    .bind(user_email.normalized_email)
+    .bind(user_email.verified_at)
+    .execute(&mut **tx)
+    .await?;
+
+    Ok(())
+}
+
+pub async fn insert_trusted_device(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    device: NewTrustedDevice<'_>,
+) -> Result<(), sqlx::Error> {
+    sqlx::query(
+        "insert into trusted_devices (id, user_id, label, created_at, last_seen_at)
+         values ($1, $2, $3, $4, $5)",
+    )
+    .bind(device.id)
+    .bind(device.user_id)
+    .bind(device.label)
+    .bind(device.created_at)
+    .bind(device.last_seen_at)
+    .execute(&mut **tx)
+    .await?;
+
+    Ok(())
+}
+
+pub async fn insert_user_session(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    session: NewUserSession<'_>,
+) -> Result<(), sqlx::Error> {
+    sqlx::query(
+        "insert into user_sessions (
+           id, user_id, trusted_device_id, session_token_hash, kind, created_at, expires_at
+         )
+         values ($1, $2, $3, $4, $5, $6, $7)",
+    )
+    .bind(session.id)
+    .bind(session.user_id)
+    .bind(session.trusted_device_id)
+    .bind(session.session_token_hash)
+    .bind(session.kind)
+    .bind(session.created_at)
+    .bind(session.expires_at)
+    .execute(&mut **tx)
+    .await?;
+
+    Ok(())
+}
