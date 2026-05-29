@@ -55,6 +55,18 @@ pub async fn lock_email_login_challenge(
     .await
 }
 
+pub async fn lock_email_login_start_for_email(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    normalized_email: &str,
+) -> Result<(), sqlx::Error> {
+    sqlx::query("select pg_advisory_xact_lock(hashtextextended($1, 0))")
+        .bind(normalized_email)
+        .execute(&mut **tx)
+        .await?;
+
+    Ok(())
+}
+
 pub async fn lock_active_email_login_challenge_for_email(
     tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
     normalized_email: &str,

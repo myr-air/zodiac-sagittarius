@@ -54,6 +54,7 @@ pub async fn start_email_login(
     let now = OffsetDateTime::now_utc();
     let mut tx = pool.begin().await?;
 
+    db::account_queries::lock_email_login_start_for_email(&mut tx, &normalized_email).await?;
     if let Some(active_challenge) =
         db::account_queries::lock_active_email_login_challenge_for_email(
             &mut tx,
@@ -798,4 +799,15 @@ fn format_timestamp(timestamp: OffsetDateTime) -> String {
     timestamp
         .format(&Rfc3339)
         .expect("rfc3339 timestamp should format")
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn account_trip_insert_error_falls_back_to_database_error() {
+        let error = map_account_trip_insert_error(sqlx::Error::RowNotFound);
+        assert!(error.to_string().starts_with("database error"));
+    }
 }

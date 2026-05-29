@@ -190,6 +190,40 @@ async fn email_login_start_creates_and_reuses_active_challenge(pool: sqlx::PgPoo
 }
 
 #[sqlx::test(migrations = "../../migrations")]
+async fn concurrent_email_login_starts_reuse_one_active_challenge(pool: sqlx::PgPool) {
+    let first = post_json(
+        support::app(pool.clone()),
+        "/v1/account/email-login/start",
+        json!({"email": "race@example.com"}),
+    );
+    let second = post_json(
+        support::app(pool.clone()),
+        "/v1/account/email-login/start",
+        json!({"email": " RACE@example.com "}),
+    );
+
+    let (first_response, second_response) = tokio::join!(first, second);
+    let (first_status, first_body) = response_json(first_response).await;
+    let (second_status, second_body) = response_json(second_response).await;
+
+    assert_eq!(first_status, StatusCode::OK);
+    assert_eq!(second_status, StatusCode::OK);
+    assert_eq!(first_body["challengeId"], second_body["challengeId"]);
+    assert!(first_body.get("devCode").is_none());
+    assert!(second_body.get("devCode").is_none());
+
+    let outbox_count: i64 = sqlx::query_scalar(
+        "select count(*)
+         from email_login_outbox
+         where normalized_email = 'race@example.com'",
+    )
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(outbox_count, 1);
+}
+
+#[sqlx::test(migrations = "../../migrations")]
 async fn malformed_or_missing_json_uses_stable_error_envelope(pool: sqlx::PgPool) {
     let app = support::app(pool);
 
