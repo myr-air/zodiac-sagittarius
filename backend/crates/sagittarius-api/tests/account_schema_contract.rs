@@ -154,6 +154,58 @@ async fn owner_members_cannot_be_disabled(pool: sqlx::PgPool) {
 }
 
 #[sqlx::test(migrations = "../../migrations")]
+async fn current_owner_member_cannot_be_demoted(pool: sqlx::PgPool) {
+    support::seed_trip(&pool).await;
+
+    let organizer_result = sqlx::query(
+        "update trip_members
+         set role = 'organizer'
+         where id = $1::uuid",
+    )
+    .bind(support::OWNER_ID)
+    .execute(&pool)
+    .await;
+
+    assert!(
+        organizer_result.is_err(),
+        "current owner member was demoted to organizer"
+    );
+
+    let viewer_result = sqlx::query(
+        "update trip_members
+         set role = 'viewer'
+         where id = $1::uuid",
+    )
+    .bind(support::OWNER_ID)
+    .execute(&pool)
+    .await;
+
+    assert!(
+        viewer_result.is_err(),
+        "current owner member was demoted to viewer"
+    );
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn current_owner_pointer_cannot_become_disabled_non_owner(pool: sqlx::PgPool) {
+    support::seed_trip(&pool).await;
+
+    let result = sqlx::query(
+        "update trip_members
+         set role = 'organizer', access_status = 'disabled'
+         where id = $1::uuid",
+    )
+    .bind(support::OWNER_ID)
+    .execute(&pool)
+    .await;
+
+    assert!(
+        result.is_err(),
+        "current owner pointer accepted a disabled non-owner member"
+    );
+}
+
+#[sqlx::test(migrations = "../../migrations")]
 async fn trusted_sessions_cannot_use_another_users_device(pool: sqlx::PgPool) {
     sqlx::query(
         "insert into users (id, display_name, avatar_color)

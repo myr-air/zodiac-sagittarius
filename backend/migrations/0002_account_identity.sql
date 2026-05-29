@@ -154,18 +154,71 @@ CREATE UNIQUE INDEX trip_members_one_owner_per_trip_idx
   ON trip_members (trip_id)
   WHERE role = 'owner';
 
+CREATE FUNCTION trip_owner_member_is_active_owner(check_trip_id uuid, check_owner_member_id uuid)
+RETURNS boolean
+LANGUAGE sql
+STABLE
+AS $$
+  SELECT EXISTS (
+    SELECT 1
+    FROM trip_members
+    WHERE id = check_owner_member_id
+      AND trip_id = check_trip_id
+      AND role = 'owner'
+      AND access_status = 'active'
+  );
+$$;
+
 CREATE FUNCTION enforce_trip_owner_member()
 RETURNS trigger
 LANGUAGE plpgsql
 AS $$
 BEGIN
-  IF NOT EXISTS (
+  IF NOT trip_owner_member_is_active_owner(NEW.id, NEW.owner_member_id) THEN
+    RAISE EXCEPTION 'trip owner_member_id must reference an active owner member'
+      USING ERRCODE = '23514';
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
+
+CREATE FUNCTION enforce_referenced_trip_owner_member()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  IF TG_OP = 'DELETE' THEN
+    IF EXISTS (
+      SELECT 1
+      FROM trips
+      WHERE id = OLD.trip_id
+        AND owner_member_id = OLD.id
+    ) THEN
+      RAISE EXCEPTION 'trip owner_member_id must reference an active owner member'
+        USING ERRCODE = '23514';
+    END IF;
+
+    RETURN OLD;
+  END IF;
+
+  IF EXISTS (
     SELECT 1
-    FROM trip_members
-    WHERE id = NEW.owner_member_id
-      AND trip_id = NEW.id
-      AND role = 'owner'
-      AND access_status = 'active'
+    FROM trips
+    WHERE id = OLD.trip_id
+      AND owner_member_id = OLD.id
+      AND NOT trip_owner_member_is_active_owner(id, owner_member_id)
+  ) THEN
+    RAISE EXCEPTION 'trip owner_member_id must reference an active owner member'
+      USING ERRCODE = '23514';
+  END IF;
+
+  IF EXISTS (
+    SELECT 1
+    FROM trips
+    WHERE id = NEW.trip_id
+      AND owner_member_id = NEW.id
+      AND NOT trip_owner_member_is_active_owner(id, owner_member_id)
   ) THEN
     RAISE EXCEPTION 'trip owner_member_id must reference an active owner member'
       USING ERRCODE = '23514';
@@ -180,3 +233,22 @@ CREATE CONSTRAINT TRIGGER trips_owner_member_must_be_active_owner
   DEFERRABLE INITIALLY DEFERRED
   FOR EACH ROW
   EXECUTE FUNCTION enforce_trip_owner_member();
+
+CREATE CONSTRAINT TRIGGER trip_members_referenced_owner_must_remain_active_owner
+  AFTER UPDATE OF role, access_status, trip_id, id OR DELETE ON trip_members
+  DEFERRABLE INITIALLY DEFERRED
+  FOR EACH ROW
+  EXECUTE FUNCTION enforce_referenced_trip_owner_member();
+
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1
+    FROM trips
+    WHERE NOT trip_owner_member_is_active_owner(id, owner_member_id)
+  ) THEN
+    RAISE EXCEPTION 'existing trip owner_member_id must reference an active owner member'
+      USING ERRCODE = '23514';
+  END IF;
+END;
+$$;
