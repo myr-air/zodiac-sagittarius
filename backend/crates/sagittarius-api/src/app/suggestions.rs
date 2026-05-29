@@ -8,7 +8,7 @@ use crate::domain::capabilities::can;
 use crate::domain::errors::ServiceError;
 use crate::domain::patches::{CreateSuggestionRequest, ItineraryItemPatch};
 use crate::domain::types::{Capability, SuggestionSummary};
-use crate::realtime::{EventEnvelope, RealtimeHub};
+use crate::realtime::{RealtimeEvent, RealtimeHub};
 
 pub async fn create_suggestion(
     pool: &PgPool,
@@ -236,7 +236,7 @@ fn suggestion_patch(suggestion: &SuggestionRecord) -> Result<ItineraryItemPatch,
 
 struct ResolvedSuggestion {
     summary: SuggestionSummary,
-    event: EventEnvelope,
+    event: RealtimeEvent,
 }
 
 async fn update_status_and_insert_event(
@@ -262,7 +262,7 @@ async fn insert_suggestion_event(
     suggestion: &SuggestionSummary,
     client_mutation_id: Option<&str>,
     created_by: Option<Uuid>,
-) -> Result<EventEnvelope, ServiceError> {
+) -> Result<RealtimeEvent, ServiceError> {
     let payload = serde_json::to_value(suggestion)
         .map_err(|_| ServiceError::InvalidRequest("event payload could not be serialized"))?;
     events::insert(

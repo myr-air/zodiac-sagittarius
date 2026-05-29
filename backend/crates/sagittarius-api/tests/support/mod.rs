@@ -147,6 +147,24 @@ pub async fn seed_tasks(pool: &PgPool) {
     .unwrap();
 }
 
+pub async fn insert_event(pool: &PgPool, event_type: &str) -> Uuid {
+    let id = Uuid::now_v7();
+    sqlx::query(
+        "insert into realtime_events (
+           id, trip_id, aggregate_type, event_type, aggregate_id, version, payload, created_by
+         )
+         values ($1, $2, 'task', $3, gen_random_uuid(), 1, '{}'::jsonb, $4)",
+    )
+    .bind(id)
+    .bind(Uuid::parse_str(TRIP_ID).unwrap())
+    .bind(event_type)
+    .bind(Uuid::parse_str(ORGANIZER_ID).unwrap())
+    .execute(pool)
+    .await
+    .unwrap();
+    id
+}
+
 pub async fn seed_suggestion(pool: &PgPool, source_version: i64) -> Uuid {
     seed_suggestion_for_plan(pool, PLAN_ID, source_version).await
 }

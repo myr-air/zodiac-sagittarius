@@ -19,6 +19,7 @@ pub fn router(state: AppState) -> Router {
         .route("/v1/health", get(|| async { "ok" }))
         .route("/v1/trips/join", post(join::join_trip))
         .route("/v1/trips/{trip_id}", get(trips::load_trip))
+        .route("/v1/trips/{trip_id}/ws", get(ws::trip_ws))
         .route(
             "/v1/itinerary-items/{item_id}",
             patch(itinerary::patch_itinerary_item),

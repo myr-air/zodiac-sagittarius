@@ -4,7 +4,7 @@ use uuid::Uuid;
 use crate::db;
 use crate::db::models::NewRealtimeEvent;
 use crate::domain::errors::ServiceError;
-use crate::realtime::EventEnvelope;
+use crate::realtime::RealtimeEvent;
 
 pub struct EventWrite<'a> {
     pub trip_id: Uuid,
@@ -20,7 +20,7 @@ pub struct EventWrite<'a> {
 pub async fn insert(
     tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
     event: EventWrite<'_>,
-) -> Result<EventEnvelope, ServiceError> {
+) -> Result<RealtimeEvent, ServiceError> {
     let record = match db::queries::insert_realtime_event(
         tx,
         NewRealtimeEvent {
@@ -41,18 +41,7 @@ pub async fn insert(
         Err(error) => return Err(error.into()),
     };
 
-    Ok(EventEnvelope {
-        id: record.id,
-        trip_id: record.trip_id,
-        aggregate_type: record.aggregate_type,
-        event_type: record.event_type,
-        aggregate_id: record.aggregate_id,
-        version: record.version,
-        payload: record.payload,
-        client_mutation_id: record.client_mutation_id,
-        created_by: record.created_by,
-        created_at: record.created_at,
-    })
+    Ok(RealtimeEvent::from(record))
 }
 
 fn is_unique_violation(error: &sqlx::Error) -> bool {

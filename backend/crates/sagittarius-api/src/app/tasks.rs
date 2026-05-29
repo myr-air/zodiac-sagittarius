@@ -8,7 +8,7 @@ use crate::domain::capabilities::can;
 use crate::domain::errors::ServiceError;
 use crate::domain::patches::{CreateTaskRequest, PatchTaskRequest, TaskPatch};
 use crate::domain::types::{Capability, TripRole, TripTaskSummary};
-use crate::realtime::{EventEnvelope, RealtimeHub};
+use crate::realtime::{RealtimeEvent, RealtimeHub};
 
 pub async fn create_task(
     pool: &PgPool,
@@ -204,7 +204,7 @@ async fn insert_task_event(
     task: &TripTaskSummary,
     client_mutation_id: Option<&str>,
     created_by: Option<Uuid>,
-) -> Result<EventEnvelope, ServiceError> {
+) -> Result<RealtimeEvent, ServiceError> {
     let payload = serde_json::to_value(task)
         .map_err(|_| ServiceError::InvalidRequest("event payload could not be serialized"))?;
     events::insert(

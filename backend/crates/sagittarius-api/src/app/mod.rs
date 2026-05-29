@@ -18,7 +18,7 @@ impl AppState {
     pub fn with_pool(pool: PgPool) -> Self {
         Self {
             pool,
-            realtime: RealtimeHub,
+            realtime: RealtimeHub::default(),
         }
     }
 
