@@ -1,0 +1,31 @@
+[package]
+name = "sagittarius-api"
+version = "0.1.0"
+edition = "2024"
+license.workspace = true
+publish.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+argon2 = { version = "0.5", features = ["password-hash"] }
+async-trait = "0.1"
+axum = { version = "0.8", features = ["json", "macros", "ws"] }
+base64 = "0.22"
+futures-util = "0.3"
+http = "1"
+rand = "0.9"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sqlx = { version = "0.8", features = ["runtime-tokio-rustls", "postgres", "uuid", "time", "json"] }
+thiserror = "2"
+time = { version = "0.3", features = ["formatting", "macros", "parsing", "serde"] }
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "signal", "sync"] }
+tower-http = { version = "0.6", features = ["cors", "trace"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+uuid = { version = "1", features = ["v7", "serde"] }
+
+[dev-dependencies]
+tower = { version = "0.5", features = ["util"] }
+tokio-tungstenite = "0.27"
+url = "2"

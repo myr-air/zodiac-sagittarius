@@ -1,0 +1,9 @@
+[workspace]
+resolver = "3"
+members = ["crates/sagittarius-api"]
+
+[workspace.package]
+edition = "2024"
+license = "UNLICENSED"
+publish = false
+rust-version = "1.95"
