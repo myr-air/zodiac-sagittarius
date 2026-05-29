@@ -76,15 +76,19 @@ CREATE INDEX trusted_devices_user_active_idx
   ON trusted_devices (user_id, last_seen_at DESC)
   WHERE revoked_at IS NULL;
 
+ALTER TABLE trusted_devices
+  ADD CONSTRAINT trusted_devices_id_user_id_key UNIQUE (id, user_id);
+
 CREATE TABLE user_sessions (
   id uuid PRIMARY KEY,
   user_id uuid NOT NULL REFERENCES users(id),
-  trusted_device_id uuid REFERENCES trusted_devices(id),
+  trusted_device_id uuid,
   session_token_hash text NOT NULL,
   kind text NOT NULL CHECK (kind IN ('temporary', 'trusted')),
   created_at timestamptz NOT NULL DEFAULT now(),
   expires_at timestamptz NOT NULL,
-  revoked_at timestamptz
+  revoked_at timestamptz,
+  FOREIGN KEY (trusted_device_id, user_id) REFERENCES trusted_devices(id, user_id)
 );
 
 CREATE UNIQUE INDEX user_sessions_token_hash_idx
@@ -111,6 +115,10 @@ CREATE INDEX account_audit_events_user_created_idx
 ALTER TABLE trip_members
   ADD CONSTRAINT trip_members_user_id_fkey
   FOREIGN KEY (user_id) REFERENCES users(id);
+
+ALTER TABLE trip_members
+  ADD CONSTRAINT trip_members_owner_must_be_active
+  CHECK (role <> 'owner' OR access_status <> 'disabled');
 
 CREATE INDEX trip_members_user_id_idx
   ON trip_members (user_id)

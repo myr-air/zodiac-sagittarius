@@ -43,6 +43,9 @@ async fn account_identity_migration_creates_indexes(pool: sqlx::PgPool) {
 
     for index_name in [
         "user_emails_normalized_email_idx",
+        "email_login_challenges_email_active_idx",
+        "webauthn_challenges_challenge_active_idx",
+        "webauthn_credentials_credential_id_idx",
         "user_sessions_token_hash_idx",
         "user_sessions_user_active_idx",
         "trusted_devices_user_active_idx",
@@ -87,4 +90,66 @@ async fn only_one_owner_role_is_allowed_per_trip(pool: sqlx::PgPool) {
     .await;
 
     assert!(result.is_err(), "trip accepted two owner members");
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn owner_members_cannot_be_disabled(pool: sqlx::PgPool) {
+    support::seed_trip(&pool).await;
+
+    let result = sqlx::query(
+        "update trip_members
+         set access_status = 'disabled'
+         where id = $1::uuid",
+    )
+    .bind(support::OWNER_ID)
+    .execute(&pool)
+    .await;
+
+    assert!(result.is_err(), "trip owner member was disabled");
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn trusted_sessions_cannot_use_another_users_device(pool: sqlx::PgPool) {
+    sqlx::query(
+        "insert into users (id, display_name, avatar_color)
+         values
+           ('018f4e80-0000-7000-a000-000000000001'::uuid, 'User A', '#0f766e'),
+           ('018f4e80-0000-7000-a000-000000000002'::uuid, 'User B', '#2563eb')",
+    )
+    .execute(&pool)
+    .await
+    .unwrap();
+
+    sqlx::query(
+        "insert into trusted_devices (id, user_id, label)
+         values (
+           '018f4e80-0000-7000-a000-000000000101'::uuid,
+           '018f4e80-0000-7000-a000-000000000001'::uuid,
+           'User A laptop'
+         )",
+    )
+    .execute(&pool)
+    .await
+    .unwrap();
+
+    let result = sqlx::query(
+        "insert into user_sessions (
+           id, user_id, trusted_device_id, session_token_hash, kind, expires_at
+         )
+         values (
+           '018f4e80-0000-7000-a000-000000000201'::uuid,
+           '018f4e80-0000-7000-a000-000000000002'::uuid,
+           '018f4e80-0000-7000-a000-000000000101'::uuid,
+           'cross-user-device-session',
+           'trusted',
+           now() + interval '30 days'
+         )",
+    )
+    .execute(&pool)
+    .await;
+
+    assert!(
+        result.is_err(),
+        "trusted session accepted another user's device"
+    );
 }
