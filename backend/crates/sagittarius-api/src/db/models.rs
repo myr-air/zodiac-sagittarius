@@ -99,6 +99,14 @@ pub struct NewUserEmail<'a> {
     pub verified_at: OffsetDateTime,
 }
 
+pub struct NewEmailLoginOutbox<'a> {
+    pub id: Uuid,
+    pub challenge_id: Uuid,
+    pub normalized_email: &'a str,
+    pub code: &'a str,
+    pub expires_at: OffsetDateTime,
+}
+
 pub struct NewTrustedDevice<'a> {
     pub id: Uuid,
     pub user_id: Uuid,

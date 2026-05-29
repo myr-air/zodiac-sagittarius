@@ -107,7 +107,6 @@ pub struct AccountSettings {
 pub struct EmailLoginStartResponse {
     pub challenge_id: Uuid,
     pub expires_at: String,
-    pub dev_code: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -334,12 +333,11 @@ mod account_type_tests {
         let email_login_start = EmailLoginStartResponse {
             challenge_id: credential_id,
             expires_at: "2026-05-30T00:05:00Z".to_string(),
-            dev_code: "123456".to_string(),
         };
         let value = serde_json::to_value(email_login_start).unwrap();
         assert_eq!(value["challengeId"], credential_id.to_string());
         assert_eq!(value["expiresAt"], "2026-05-30T00:05:00Z");
-        assert_eq!(value["devCode"], "123456");
+        assert!(value.get("devCode").is_none());
 
         let passkey_challenge = PasskeyChallengeResponse {
             challenge_id: credential_id,

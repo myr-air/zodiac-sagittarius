@@ -3,12 +3,13 @@ use uuid::Uuid;
 
 use crate::db::PgPool;
 use crate::db::models::{
-    AccountProfileRecord, ActiveUserSessionRecord, EmailLoginChallengeRecord, NewTrustedDevice,
-    NewUser, NewUserEmail, NewUserSession, PasskeyRecord, TrustedDeviceRecord, UserEmailRecord,
+    AccountProfileRecord, ActiveUserSessionRecord, EmailLoginChallengeRecord, NewEmailLoginOutbox,
+    NewTrustedDevice, NewUser, NewUserEmail, NewUserSession, PasskeyRecord, TrustedDeviceRecord,
+    UserEmailRecord,
 };
 
 pub async fn insert_email_login_challenge(
-    pool: &PgPool,
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
     id: Uuid,
     normalized_email: &str,
     code_hash: &str,
@@ -22,7 +23,7 @@ pub async fn insert_email_login_challenge(
     .bind(normalized_email)
     .bind(code_hash)
     .bind(expires_at)
-    .execute(pool)
+    .execute(&mut **tx)
     .await?;
 
     Ok(())
@@ -41,6 +42,25 @@ pub async fn lock_email_login_challenge(
     .bind(challenge_id)
     .fetch_optional(&mut **tx)
     .await
+}
+
+pub async fn insert_email_login_outbox(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    message: NewEmailLoginOutbox<'_>,
+) -> Result<(), sqlx::Error> {
+    sqlx::query(
+        "insert into email_login_outbox (id, challenge_id, normalized_email, code, expires_at)
+         values ($1, $2, $3, $4, $5)",
+    )
+    .bind(message.id)
+    .bind(message.challenge_id)
+    .bind(message.normalized_email)
+    .bind(message.code)
+    .bind(message.expires_at)
+    .execute(&mut **tx)
+    .await?;
+
+    Ok(())
 }
 
 pub async fn consume_email_login_challenge(
@@ -167,10 +187,12 @@ pub async fn find_active_user_session(
         "select s.user_id
          from user_sessions s
          join users u on u.id = s.user_id
+         left join trusted_devices td on td.id = s.trusted_device_id
          where s.session_token_hash = $1
            and s.revoked_at is null
            and s.expires_at > now()
-           and u.disabled_at is null",
+           and u.disabled_at is null
+           and (s.trusted_device_id is null or td.revoked_at is null)",
     )
     .bind(session_token_hash)
     .fetch_optional(pool)

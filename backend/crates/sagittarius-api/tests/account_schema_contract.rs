@@ -16,6 +16,7 @@ async fn account_identity_migration_creates_tables(pool: sqlx::PgPool) {
         "users",
         "user_emails",
         "email_login_challenges",
+        "email_login_outbox",
         "webauthn_challenges",
         "webauthn_credentials",
         "trusted_devices",
@@ -44,6 +45,7 @@ async fn account_identity_migration_creates_indexes(pool: sqlx::PgPool) {
     for index_name in [
         "user_emails_normalized_email_idx",
         "email_login_challenges_email_active_idx",
+        "email_login_outbox_challenge_idx",
         "webauthn_challenges_challenge_active_idx",
         "webauthn_credentials_credential_id_idx",
         "user_sessions_token_hash_idx",
@@ -151,5 +153,70 @@ async fn trusted_sessions_cannot_use_another_users_device(pool: sqlx::PgPool) {
     assert!(
         result.is_err(),
         "trusted session accepted another user's device"
+    );
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn session_kind_must_match_trusted_device_presence(pool: sqlx::PgPool) {
+    sqlx::query(
+        "insert into users (id, display_name, avatar_color)
+         values ('018f4e80-0000-7000-a000-000000000001'::uuid, 'User A', '#0f766e')",
+    )
+    .execute(&pool)
+    .await
+    .unwrap();
+
+    sqlx::query(
+        "insert into trusted_devices (id, user_id, label)
+         values (
+           '018f4e80-0000-7000-a000-000000000101'::uuid,
+           '018f4e80-0000-7000-a000-000000000001'::uuid,
+           'User A laptop'
+         )",
+    )
+    .execute(&pool)
+    .await
+    .unwrap();
+
+    let trusted_without_device = sqlx::query(
+        "insert into user_sessions (
+           id, user_id, trusted_device_id, session_token_hash, kind, expires_at
+         )
+         values (
+           '018f4e80-0000-7000-a000-000000000201'::uuid,
+           '018f4e80-0000-7000-a000-000000000001'::uuid,
+           null,
+           'trusted-without-device',
+           'trusted',
+           now() + interval '30 days'
+         )",
+    )
+    .execute(&pool)
+    .await;
+
+    assert!(
+        trusted_without_device.is_err(),
+        "trusted session accepted a missing trusted_device_id"
+    );
+
+    let temporary_with_device = sqlx::query(
+        "insert into user_sessions (
+           id, user_id, trusted_device_id, session_token_hash, kind, expires_at
+         )
+         values (
+           '018f4e80-0000-7000-a000-000000000202'::uuid,
+           '018f4e80-0000-7000-a000-000000000001'::uuid,
+           '018f4e80-0000-7000-a000-000000000101'::uuid,
+           'temporary-with-device',
+           'temporary',
+           now() + interval '1 day'
+         )",
+    )
+    .execute(&pool)
+    .await;
+
+    assert!(
+        temporary_with_device.is_err(),
+        "temporary session accepted a trusted_device_id"
     );
 }

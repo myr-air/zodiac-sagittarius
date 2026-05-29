@@ -1,14 +1,13 @@
-use argon2::password_hash::{PasswordHash, SaltString, rand_core::OsRng};
-use argon2::{Argon2, PasswordHasher, PasswordVerifier};
 use base64::{Engine as _, engine::general_purpose::URL_SAFE_NO_PAD};
 use rand::RngCore;
+use sha2::{Digest, Sha256};
 use time::format_description::well_known::Rfc3339;
 use time::{Duration, OffsetDateTime};
 use uuid::Uuid;
 
 use crate::db::models::{
-    AccountProfileRecord, NewTrustedDevice, NewUser, NewUserEmail, NewUserSession, PasskeyRecord,
-    TrustedDeviceRecord,
+    AccountProfileRecord, NewEmailLoginOutbox, NewTrustedDevice, NewUser, NewUserEmail,
+    NewUserSession, PasskeyRecord, TrustedDeviceRecord,
 };
 use crate::db::{self, PgPool};
 use crate::domain::errors::ServiceError;
@@ -21,8 +20,11 @@ const CHALLENGE_TTL: Duration = Duration::minutes(10);
 const PASSKEY_CHALLENGE_TTL: Duration = Duration::minutes(5);
 const TEMPORARY_SESSION_TTL: Duration = Duration::days(1);
 const TRUSTED_SESSION_TTL: Duration = Duration::days(30);
+const EMAIL_LOGIN_CODE_SALT: &[u8] = b"sagittarius-email-login-code";
 const SESSION_TOKEN_SALT: &[u8] = b"sagittarius-account-session-token";
 const DEFAULT_TRUSTED_DEVICE_LABEL: &str = "Trusted device";
+const MAX_EMAIL_LENGTH: usize = 254;
+const MAX_TRUSTED_DEVICE_LABEL_LENGTH: usize = 120;
 
 pub async fn start_email_login(
     pool: &PgPool,
@@ -30,23 +32,35 @@ pub async fn start_email_login(
 ) -> Result<EmailLoginStartResponse, ServiceError> {
     let normalized_email = normalize_email(email)?;
     let challenge_id = Uuid::now_v7();
-    let dev_code = deterministic_dev_code(&normalized_email);
-    let code_hash = hash_secret(&dev_code)?;
+    let code = generate_email_login_code();
+    let code_hash = hash_email_login_code(challenge_id, &code);
     let expires_at = OffsetDateTime::now_utc() + CHALLENGE_TTL;
+    let mut tx = pool.begin().await?;
 
     db::account_queries::insert_email_login_challenge(
-        pool,
+        &mut tx,
         challenge_id,
         &normalized_email,
         &code_hash,
         expires_at,
     )
     .await?;
+    db::account_queries::insert_email_login_outbox(
+        &mut tx,
+        NewEmailLoginOutbox {
+            id: Uuid::now_v7(),
+            challenge_id,
+            normalized_email: &normalized_email,
+            code: &code,
+            expires_at,
+        },
+    )
+    .await?;
+    tx.commit().await?;
 
     Ok(EmailLoginStartResponse {
         challenge_id,
         expires_at: format_timestamp(expires_at),
-        dev_code,
     })
 }
 
@@ -70,7 +84,7 @@ pub async fn finish_email_login(
         return Err(ServiceError::Unauthenticated);
     }
 
-    if !verify_secret(code.trim(), &challenge.code_hash) {
+    if !verify_email_login_code(challenge_id, code.trim(), &challenge.code_hash) {
         return Err(ServiceError::Unauthenticated);
     }
 
@@ -83,7 +97,7 @@ pub async fn finish_email_login(
     };
     let trusted_device_id = if trust_device {
         let trusted_device_id = Uuid::now_v7();
-        let label = normalized_device_label(device_label);
+        let label = normalized_device_label(device_label)?;
         db::account_queries::insert_trusted_device(
             &mut tx,
             NewTrustedDevice {
@@ -242,7 +256,7 @@ async fn find_or_create_user(
 
 fn normalize_email(email: &str) -> Result<String, ServiceError> {
     let normalized = email.trim().to_ascii_lowercase();
-    if is_valid_email(&normalized) {
+    if normalized.len() <= MAX_EMAIL_LENGTH && is_valid_email(&normalized) {
         Ok(normalized)
     } else {
         Err(ServiceError::InvalidRequest("email is invalid"))
@@ -262,41 +276,10 @@ fn is_valid_email(email: &str) -> bool {
         && email.matches('@').count() == 1
 }
 
-fn deterministic_dev_code(normalized_email: &str) -> String {
-    let mut hash = 0xcbf29ce484222325u64;
-    for byte in normalized_email.as_bytes().iter().copied() {
-        hash ^= u64::from(byte);
-        hash = hash.wrapping_mul(0x100000001b3);
-    }
-
-    format!("{:06}", hash % 1_000_000)
-}
-
-fn hash_secret(secret: &str) -> Result<String, ServiceError> {
-    let salt = SaltString::generate(&mut OsRng);
-    hash_secret_with_salt_string(secret, &salt)
-}
-
-fn hash_secret_with_salt(secret: &str, salt: &[u8]) -> Result<String, ServiceError> {
-    let salt = SaltString::encode_b64(salt).map_err(|_| ServiceError::InvalidRequest("salt"))?;
-    hash_secret_with_salt_string(secret, &salt)
-}
-
-fn hash_secret_with_salt_string(secret: &str, salt: &SaltString) -> Result<String, ServiceError> {
-    Argon2::default()
-        .hash_password(secret.as_bytes(), salt)
-        .map(|hash| hash.to_string())
-        .map_err(|_| ServiceError::InvalidRequest("secret could not be hashed"))
-}
-
-fn verify_secret(secret: &str, hash: &str) -> bool {
-    let Ok(parsed_hash) = PasswordHash::new(hash) else {
-        return false;
-    };
-
-    Argon2::default()
-        .verify_password(secret.as_bytes(), &parsed_hash)
-        .is_ok()
+fn generate_email_login_code() -> String {
+    let mut bytes = [0u8; 4];
+    rand::rng().fill_bytes(&mut bytes);
+    format!("{:06}", u32::from_le_bytes(bytes) % 1_000_000)
 }
 
 fn generate_session_token() -> String {
@@ -310,7 +293,42 @@ fn generate_secure_token() -> String {
 }
 
 fn hash_session_token(session_token: &str) -> Result<String, ServiceError> {
-    hash_secret_with_salt(session_token, SESSION_TOKEN_SALT)
+    Ok(hash_secret_digest(
+        SESSION_TOKEN_SALT,
+        session_token.as_bytes(),
+    ))
+}
+
+fn hash_email_login_code(challenge_id: Uuid, code: &str) -> String {
+    let mut bytes = Vec::with_capacity(16 + code.len());
+    bytes.extend_from_slice(challenge_id.as_bytes());
+    bytes.extend_from_slice(code.as_bytes());
+    hash_secret_digest(EMAIL_LOGIN_CODE_SALT, &bytes)
+}
+
+fn verify_email_login_code(challenge_id: Uuid, code: &str, expected_hash: &str) -> bool {
+    constant_time_eq(
+        hash_email_login_code(challenge_id, code).as_bytes(),
+        expected_hash.as_bytes(),
+    )
+}
+
+fn hash_secret_digest(salt: &[u8], secret: &[u8]) -> String {
+    let mut hasher = Sha256::new();
+    hasher.update(salt);
+    hasher.update(secret);
+    URL_SAFE_NO_PAD.encode(hasher.finalize())
+}
+
+fn constant_time_eq(left: &[u8], right: &[u8]) -> bool {
+    let max_len = left.len().max(right.len());
+    let mut diff = left.len() ^ right.len();
+    for index in 0..max_len {
+        let left_byte = left.get(index).copied().unwrap_or(0);
+        let right_byte = right.get(index).copied().unwrap_or(0);
+        diff |= usize::from(left_byte ^ right_byte);
+    }
+    diff == 0
 }
 
 fn display_name_from_email(normalized_email: &str) -> &str {
@@ -332,12 +350,20 @@ fn avatar_color_for_email(normalized_email: &str) -> &'static str {
     COLORS[index]
 }
 
-fn normalized_device_label(device_label: &str) -> String {
+fn normalized_device_label(device_label: &str) -> Result<String, ServiceError> {
     let label = device_label.trim();
-    if label.is_empty() {
-        DEFAULT_TRUSTED_DEVICE_LABEL.to_string()
+    let label = if label.is_empty() {
+        DEFAULT_TRUSTED_DEVICE_LABEL
     } else {
-        label.to_string()
+        label
+    };
+
+    if label.len() <= MAX_TRUSTED_DEVICE_LABEL_LENGTH {
+        Ok(label.to_string())
+    } else {
+        Err(ServiceError::InvalidRequest(
+            "trusted device label is too long",
+        ))
     }
 }
 

@@ -34,6 +34,18 @@ CREATE INDEX email_login_challenges_email_active_idx
   ON email_login_challenges (normalized_email, expires_at DESC)
   WHERE consumed_at IS NULL;
 
+CREATE TABLE email_login_outbox (
+  id uuid PRIMARY KEY,
+  challenge_id uuid NOT NULL REFERENCES email_login_challenges(id) ON DELETE CASCADE,
+  normalized_email text NOT NULL,
+  code text NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  expires_at timestamptz NOT NULL
+);
+
+CREATE UNIQUE INDEX email_login_outbox_challenge_idx
+  ON email_login_outbox (challenge_id);
+
 CREATE TABLE webauthn_challenges (
   id uuid PRIMARY KEY,
   user_id uuid REFERENCES users(id),
@@ -88,6 +100,10 @@ CREATE TABLE user_sessions (
   created_at timestamptz NOT NULL DEFAULT now(),
   expires_at timestamptz NOT NULL,
   revoked_at timestamptz,
+  CONSTRAINT user_sessions_kind_device_match CHECK (
+    (kind = 'trusted' AND trusted_device_id IS NOT NULL)
+    OR (kind = 'temporary' AND trusted_device_id IS NULL)
+  ),
   FOREIGN KEY (trusted_device_id, user_id) REFERENCES trusted_devices(id, user_id)
 );
 

@@ -95,18 +95,13 @@ async fn login_account(
     device_label: &str,
 ) -> Value {
     let app = support::app(pool.clone());
-    let (_, start): (StatusCode, Value) = post_json_response(
-        app.clone(),
-        "/v1/account/email-login/start",
-        json!({"email": email}),
-    )
-    .await;
+    let (start, code) = start_email_login_with_code(pool, app.clone(), email).await;
     let (status, session): (StatusCode, Value) = post_json_response(
         app,
         "/v1/account/email-login/finish",
         json!({
             "challengeId": start["challengeId"],
-            "code": start["devCode"],
+            "code": code,
             "trustDevice": trust_device,
             "deviceLabel": device_label
         }),
@@ -115,6 +110,36 @@ async fn login_account(
     assert_eq!(status, StatusCode::OK);
 
     session
+}
+
+async fn start_email_login_with_code(
+    pool: &sqlx::PgPool,
+    app: axum::Router,
+    email: &str,
+) -> (Value, String) {
+    let (status, body): (StatusCode, Value) = post_json_response(
+        app,
+        "/v1/account/email-login/start",
+        json!({"email": email}),
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(
+        body.get("devCode").is_none(),
+        "email login code must not be exposed in the public response"
+    );
+    let challenge_id = Uuid::parse_str(body["challengeId"].as_str().unwrap()).unwrap();
+    let code = sqlx::query_scalar(
+        "select code
+         from email_login_outbox
+         where challenge_id = $1",
+    )
+    .bind(challenge_id)
+    .fetch_one(pool)
+    .await
+    .unwrap();
+
+    (body, code)
 }
 
 async fn assert_invalid_request(response: Response<axum::body::Body>) {
@@ -128,16 +153,9 @@ async fn assert_invalid_request(response: Response<axum::body::Body>) {
 async fn email_login_start_creates_dev_challenge(pool: sqlx::PgPool) {
     let app = support::app(pool.clone());
 
-    let (status, body): (StatusCode, Value) = post_json_response(
-        app,
-        "/v1/account/email-login/start",
-        json!({"email":" Aom@Example.COM "}),
-    )
-    .await;
+    let (body, dev_code) = start_email_login_with_code(&pool, app, " Aom@Example.COM ").await;
 
-    assert_eq!(status, StatusCode::OK);
     assert!(Uuid::parse_str(body["challengeId"].as_str().unwrap()).is_ok());
-    let dev_code = body["devCode"].as_str().unwrap();
     assert_eq!(dev_code.len(), 6);
     assert!(dev_code.chars().all(|ch| ch.is_ascii_digit()));
     assert!(body["expiresAt"].as_str().unwrap().contains('T'));
@@ -155,14 +173,10 @@ async fn email_login_start_creates_dev_challenge(pool: sqlx::PgPool) {
     assert_eq!(challenge.0, "aom@example.com");
     assert_ne!(challenge.1, dev_code);
 
-    let (second_status, second_body): (StatusCode, Value) = post_json_response(
-        support::app(pool),
-        "/v1/account/email-login/start",
-        json!({"email":"aom@example.com"}),
-    )
-    .await;
-    assert_eq!(second_status, StatusCode::OK);
-    assert_eq!(second_body["devCode"], dev_code);
+    let (second_body, second_code) =
+        start_email_login_with_code(&pool, support::app(pool.clone()), "aom@example.com").await;
+    assert_ne!(second_body["challengeId"], body["challengeId"]);
+    assert_eq!(second_code.len(), 6);
 }
 
 #[sqlx::test(migrations = "../../migrations")]
@@ -204,14 +218,25 @@ async fn invalid_email_start_returns_invalid_request(pool: sqlx::PgPool) {
 }
 
 #[sqlx::test(migrations = "../../migrations")]
-async fn expired_challenge_is_rejected_and_not_consumed(pool: sqlx::PgPool) {
-    let app = support::app(pool.clone());
-    let (_, start): (StatusCode, Value) = post_json_response(
-        app.clone(),
+async fn oversized_email_start_returns_invalid_request(pool: sqlx::PgPool) {
+    let app = support::app(pool);
+    let long_email = format!("{}@example.com", "a".repeat(244));
+
+    let (status, body): (StatusCode, Value) = post_json_response(
+        app,
         "/v1/account/email-login/start",
-        json!({"email":"aom@example.com"}),
+        json!({"email": long_email}),
     )
     .await;
+
+    assert_eq!(status, StatusCode::BAD_REQUEST);
+    assert_eq!(body["code"], "invalid_request");
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn expired_challenge_is_rejected_and_not_consumed(pool: sqlx::PgPool) {
+    let app = support::app(pool.clone());
+    let (start, code) = start_email_login_with_code(&pool, app.clone(), "aom@example.com").await;
     let challenge_id = Uuid::parse_str(start["challengeId"].as_str().unwrap()).unwrap();
 
     sqlx::query(
@@ -229,7 +254,7 @@ async fn expired_challenge_is_rejected_and_not_consumed(pool: sqlx::PgPool) {
         "/v1/account/email-login/finish",
         json!({
             "challengeId": start["challengeId"],
-            "code": start["devCode"],
+            "code": code,
             "trustDevice": false,
             "deviceLabel": ""
         }),
@@ -249,12 +274,7 @@ async fn expired_challenge_is_rejected_and_not_consumed(pool: sqlx::PgPool) {
 #[sqlx::test(migrations = "../../migrations")]
 async fn malformed_stored_code_hash_is_rejected_and_not_consumed(pool: sqlx::PgPool) {
     let app = support::app(pool.clone());
-    let (_, start): (StatusCode, Value) = post_json_response(
-        app.clone(),
-        "/v1/account/email-login/start",
-        json!({"email":"aom@example.com"}),
-    )
-    .await;
+    let (start, code) = start_email_login_with_code(&pool, app.clone(), "aom@example.com").await;
     let challenge_id = Uuid::parse_str(start["challengeId"].as_str().unwrap()).unwrap();
 
     sqlx::query(
@@ -272,7 +292,7 @@ async fn malformed_stored_code_hash_is_rejected_and_not_consumed(pool: sqlx::PgP
         "/v1/account/email-login/finish",
         json!({
             "challengeId": start["challengeId"],
-            "code": start["devCode"],
+            "code": code,
             "trustDevice": false,
             "deviceLabel": ""
         }),
@@ -292,20 +312,14 @@ async fn malformed_stored_code_hash_is_rejected_and_not_consumed(pool: sqlx::PgP
 #[sqlx::test(migrations = "../../migrations")]
 async fn email_login_finish_creates_user_and_temporary_session(pool: sqlx::PgPool) {
     let app = support::app(pool.clone());
-    let (start_status, start): (StatusCode, Value) = post_json_response(
-        app.clone(),
-        "/v1/account/email-login/start",
-        json!({"email":"aom@example.com"}),
-    )
-    .await;
-    assert_eq!(start_status, StatusCode::OK);
+    let (start, code) = start_email_login_with_code(&pool, app.clone(), "aom@example.com").await;
 
     let (finish_status, session): (StatusCode, Value) = post_json_response(
         app,
         "/v1/account/email-login/finish",
         json!({
             "challengeId": start["challengeId"],
-            "code": start["devCode"],
+            "code": code,
             "trustDevice": false,
             "deviceLabel": ""
         }),
@@ -368,18 +382,13 @@ async fn preexisting_normalized_email_resumes_existing_user(pool: sqlx::PgPool) 
     .unwrap();
 
     let app = support::app(pool.clone());
-    let (_, start): (StatusCode, Value) = post_json_response(
-        app.clone(),
-        "/v1/account/email-login/start",
-        json!({"email":" Aom@Example.COM "}),
-    )
-    .await;
+    let (start, code) = start_email_login_with_code(&pool, app.clone(), " Aom@Example.COM ").await;
     let (finish_status, session): (StatusCode, Value) = post_json_response(
         app,
         "/v1/account/email-login/finish",
         json!({
             "challengeId": start["challengeId"],
-            "code": start["devCode"],
+            "code": code,
             "trustDevice": false,
             "deviceLabel": ""
         }),
@@ -416,18 +425,13 @@ async fn disabled_user_email_login_is_forbidden_and_creates_no_session(pool: sql
     .unwrap();
 
     let app = support::app(pool.clone());
-    let (_, start): (StatusCode, Value) = post_json_response(
-        app.clone(),
-        "/v1/account/email-login/start",
-        json!({"email":"aom@example.com"}),
-    )
-    .await;
+    let (start, code) = start_email_login_with_code(&pool, app.clone(), "aom@example.com").await;
     let (finish_status, body): (StatusCode, Value) = post_json_response(
         app,
         "/v1/account/email-login/finish",
         json!({
             "challengeId": start["challengeId"],
-            "code": start["devCode"],
+            "code": code,
             "trustDevice": false,
             "deviceLabel": ""
         }),
@@ -466,18 +470,13 @@ async fn successful_email_login_verifies_existing_unverified_email(pool: sqlx::P
     .unwrap();
 
     let app = support::app(pool.clone());
-    let (_, start): (StatusCode, Value) = post_json_response(
-        app.clone(),
-        "/v1/account/email-login/start",
-        json!({"email":" Aom@Example.COM "}),
-    )
-    .await;
+    let (start, code) = start_email_login_with_code(&pool, app.clone(), " Aom@Example.COM ").await;
     let (finish_status, session): (StatusCode, Value) = post_json_response(
         app,
         "/v1/account/email-login/finish",
         json!({
             "challengeId": start["challengeId"],
-            "code": start["devCode"],
+            "code": code,
             "trustDevice": false,
             "deviceLabel": ""
         }),
@@ -498,19 +497,14 @@ async fn successful_email_login_verifies_existing_unverified_email(pool: sqlx::P
 #[sqlx::test(migrations = "../../migrations")]
 async fn trusted_login_creates_trusted_device_and_session(pool: sqlx::PgPool) {
     let app = support::app(pool.clone());
-    let (_, start): (StatusCode, Value) = post_json_response(
-        app.clone(),
-        "/v1/account/email-login/start",
-        json!({"email":"aom@example.com"}),
-    )
-    .await;
+    let (start, code) = start_email_login_with_code(&pool, app.clone(), "aom@example.com").await;
 
     let (finish_status, session): (StatusCode, Value) = post_json_response(
         app,
         "/v1/account/email-login/finish",
         json!({
             "challengeId": start["challengeId"],
-            "code": start["devCode"],
+            "code": code,
             "trustDevice": true,
             "deviceLabel": "Aom laptop"
         }),
@@ -547,16 +541,11 @@ async fn trusted_login_creates_trusted_device_and_session(pool: sqlx::PgPool) {
 
 #[sqlx::test(migrations = "../../migrations")]
 async fn reused_code_is_rejected_after_success(pool: sqlx::PgPool) {
-    let app = support::app(pool);
-    let (_, start): (StatusCode, Value) = post_json_response(
-        app.clone(),
-        "/v1/account/email-login/start",
-        json!({"email":"aom@example.com"}),
-    )
-    .await;
+    let app = support::app(pool.clone());
+    let (start, code) = start_email_login_with_code(&pool, app.clone(), "aom@example.com").await;
     let finish = json!({
         "challengeId": start["challengeId"],
-        "code": start["devCode"],
+        "code": code,
         "trustDevice": false,
         "deviceLabel": ""
     });
@@ -576,12 +565,7 @@ async fn reused_code_is_rejected_after_success(pool: sqlx::PgPool) {
 #[sqlx::test(migrations = "../../migrations")]
 async fn wrong_code_is_rejected_and_does_not_consume_challenge(pool: sqlx::PgPool) {
     let app = support::app(pool.clone());
-    let (_, start): (StatusCode, Value) = post_json_response(
-        app.clone(),
-        "/v1/account/email-login/start",
-        json!({"email":"aom@example.com"}),
-    )
-    .await;
+    let (start, _) = start_email_login_with_code(&pool, app.clone(), "aom@example.com").await;
 
     let challenge_id = Uuid::parse_str(start["challengeId"].as_str().unwrap()).unwrap();
     let wrong = post_json(
@@ -609,37 +593,29 @@ async fn wrong_code_is_rejected_and_does_not_consume_challenge(pool: sqlx::PgPoo
 
 #[sqlx::test(migrations = "../../migrations")]
 async fn same_normalized_email_resumes_same_user(pool: sqlx::PgPool) {
-    let app = support::app(pool);
-    let (_, first_start): (StatusCode, Value) = post_json_response(
-        app.clone(),
-        "/v1/account/email-login/start",
-        json!({"email":" Aom@Example.COM "}),
-    )
-    .await;
+    let app = support::app(pool.clone());
+    let (first_start, first_code) =
+        start_email_login_with_code(&pool, app.clone(), " Aom@Example.COM ").await;
     let (_, first_session): (StatusCode, Value) = post_json_response(
         app.clone(),
         "/v1/account/email-login/finish",
         json!({
             "challengeId": first_start["challengeId"],
-            "code": first_start["devCode"],
+            "code": first_code,
             "trustDevice": false,
             "deviceLabel": ""
         }),
     )
     .await;
 
-    let (_, second_start): (StatusCode, Value) = post_json_response(
-        app.clone(),
-        "/v1/account/email-login/start",
-        json!({"email":"aom@example.com"}),
-    )
-    .await;
+    let (second_start, second_code) =
+        start_email_login_with_code(&pool, app.clone(), "aom@example.com").await;
     let (_, second_session): (StatusCode, Value) = post_json_response(
         app,
         "/v1/account/email-login/finish",
         json!({
             "challengeId": second_start["challengeId"],
-            "code": second_start["devCode"],
+            "code": second_code,
             "trustDevice": false,
             "deviceLabel": ""
         }),
@@ -652,18 +628,13 @@ async fn same_normalized_email_resumes_same_user(pool: sqlx::PgPool) {
 #[sqlx::test(migrations = "../../migrations")]
 async fn empty_trusted_device_label_defaults_to_trusted_device(pool: sqlx::PgPool) {
     let app = support::app(pool.clone());
-    let (_, start): (StatusCode, Value) = post_json_response(
-        app.clone(),
-        "/v1/account/email-login/start",
-        json!({"email":"aom@example.com"}),
-    )
-    .await;
+    let (start, code) = start_email_login_with_code(&pool, app.clone(), "aom@example.com").await;
     let (_, session): (StatusCode, Value) = post_json_response(
         app,
         "/v1/account/email-login/finish",
         json!({
             "challengeId": start["challengeId"],
-            "code": start["devCode"],
+            "code": code,
             "trustDevice": true,
             "deviceLabel": " "
         }),
@@ -678,6 +649,27 @@ async fn empty_trusted_device_label_defaults_to_trusted_device(pool: sqlx::PgPoo
         .unwrap();
 
     assert_eq!(label, "Trusted device");
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn oversized_trusted_device_label_returns_invalid_request(pool: sqlx::PgPool) {
+    let app = support::app(pool.clone());
+    let (start, code) = start_email_login_with_code(&pool, app.clone(), "aom@example.com").await;
+
+    let (status, body): (StatusCode, Value) = post_json_response(
+        app,
+        "/v1/account/email-login/finish",
+        json!({
+            "challengeId": start["challengeId"],
+            "code": code,
+            "trustDevice": true,
+            "deviceLabel": "x".repeat(121)
+        }),
+    )
+    .await;
+
+    assert_eq!(status, StatusCode::BAD_REQUEST);
+    assert_eq!(body["code"], "invalid_request");
 }
 
 #[sqlx::test(migrations = "../../migrations")]
@@ -745,6 +737,36 @@ async fn trusted_session_can_load_settings_with_trusted_device(pool: sqlx::PgPoo
             .unwrap()
             .contains('T')
     );
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn revoked_trusted_device_invalidates_attached_session(pool: sqlx::PgPool) {
+    let session = login_account(&pool, "aom@example.com", true, "Aom laptop").await;
+    let token = session["sessionToken"].as_str().unwrap();
+    let user_id = Uuid::parse_str(session["userId"].as_str().unwrap()).unwrap();
+
+    sqlx::query(
+        "update trusted_devices
+         set revoked_at = now()
+         where user_id = $1",
+    )
+    .bind(user_id)
+    .execute(&pool)
+    .await
+    .unwrap();
+
+    let (status, body) = response_json(
+        get_with_auth(
+            support::app(pool),
+            "/v1/account/me",
+            Some(&format!("Bearer {token}")),
+        )
+        .await,
+    )
+    .await;
+
+    assert_eq!(status, StatusCode::UNAUTHORIZED);
+    assert_eq!(body["code"], "unauthenticated");
 }
 
 #[sqlx::test(migrations = "../../migrations")]
