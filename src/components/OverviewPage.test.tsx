@@ -2,15 +2,9 @@ import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { buildExpenseSummary } from "@/src/trip/expenses";
+import { tripFixtureTasks } from "@/src/trip/fixtures";
 import { seedTrip } from "@/src/trip/seed";
-import type { TripTask } from "@/src/trip/types";
 import { OverviewPage } from "./OverviewPage";
-
-const seedTasks: TripTask[] = [
-  { id: "task-esim", title: "ซื้อ eSIM", status: "open", visibility: "private", createdBy: "member-aom", assigneeId: "member-aom" },
-  { id: "task-peak-tram", title: "จอง Peak Tram", status: "done", visibility: "shared", createdBy: "member-beam", assigneeId: "member-beam" },
-  { id: "task-expenses", title: "สรุปค่าใช้จ่ายวันแรก", status: "open", visibility: "shared", createdBy: "member-beam", assigneeId: "member-beam" },
-];
 
 describe("OverviewPage role lenses", () => {
   it("combines booking prep into the trip checklist for managers", () => {
@@ -23,7 +17,7 @@ describe("OverviewPage role lenses", () => {
     const checklist = screen.getByRole("region", { name: /Trip checklist/i });
     expect(within(checklist).getByRole("heading", { name: /เช็กลิสต์ทริปและการเตรียมตัว/i })).toBeInTheDocument();
     expect(within(checklist).getByText(/จอง Peak Tram/i)).toBeInTheDocument();
-    expect(within(checklist).getByText(/การจอง/i)).toBeInTheDocument();
+    expect(within(checklist).getAllByText(/การจอง/i).length).toBeGreaterThan(0);
   });
 
   it("prioritizes where to go and what to eat for travelers", () => {
@@ -70,7 +64,7 @@ function renderOverview(currentMemberId: string) {
       expenseSummary={buildExpenseSummary(seedTrip.expenses, currentMemberId)}
       items={seedTrip.itineraryItems}
       suggestions={[]}
-      tasks={seedTasks}
+      tasks={tripFixtureTasks}
       trip={seedTrip}
       onCreateTask={vi.fn()}
       onToggleTaskStatus={vi.fn()}

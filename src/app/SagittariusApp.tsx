@@ -21,56 +21,13 @@ import {
   updateTripParticipantRole,
 } from "@/src/trip/auth";
 import { buildExpenseSummary } from "@/src/trip/expenses";
+import { tripFixtureStopNotes, tripFixtureSuggestions, tripFixtureTasks } from "@/src/trip/fixtures";
 import { tripStorageKey } from "@/src/trip/repository";
 import { seedTrip } from "@/src/trip/seed";
 import { approveSuggestion } from "@/src/trip/suggestions";
 import type { ItineraryItem, StopNote, Suggestion, Trip, TripMemberAccessStatus, TripParticipantSession, TripRole, TripTask } from "@/src/trip/types";
 
-const seedSuggestions: Suggestion[] = [
-  {
-    id: "suggestion-rating",
-    tripId: seedTrip.id,
-    proposerId: "member-beam",
-    type: "edit",
-    targetItemId: "item-dimdim",
-    planVariantId: seedTrip.activePlanVariantId,
-    proposedPatch: { note: "ร้านนี้ได้รับคะแนนสูง 4.3/5 จาก 8,332 รีวิว" },
-    sourceVersion: 4,
-    status: "pending",
-    createdAt: "2026-05-27T13:00:00.000Z",
-  },
-  {
-    id: "suggestion-booking",
-    tripId: seedTrip.id,
-    proposerId: "member-beam",
-    type: "edit",
-    targetItemId: "item-dimdim",
-    planVariantId: seedTrip.activePlanVariantId,
-    proposedPatch: { note: "แนะนำให้จองคิวล่วงหน้า โดยเฉพาะช่วงสุดสัปดาห์" },
-    sourceVersion: 2,
-    status: "conflicted",
-    createdAt: "2026-05-27T14:00:00.000Z",
-  },
-];
-
-const seedTasks: TripTask[] = [
-  { id: "task-esim", title: "ซื้อ eSIM", status: "open", visibility: "private", kind: "prep", createdBy: "member-aom", assigneeId: "member-aom" },
-  { id: "task-peak-tram", title: "จอง Peak Tram", status: "done", visibility: "shared", kind: "booking", createdBy: "member-beam", assigneeId: "member-beam", relatedItemId: "item-victoria-peak" },
-  { id: "task-dimdim-booking", title: "ยืนยันคิว Dim Dim Sum", status: "open", visibility: "shared", kind: "booking", createdBy: "member-beam", assigneeId: "member-beam", relatedItemId: "item-dimdim" },
-  { id: "task-expenses", title: "สรุปค่าใช้จ่ายวันแรก", status: "open", visibility: "shared", kind: "prep", createdBy: "member-beam", assigneeId: "member-beam" },
-];
-
 const localMutationTimestamp = "2026-05-28T00:00:00.000Z";
-const seedStopNotes: StopNote[] = [
-  {
-    id: "note-dimdim-1",
-    tripId: seedTrip.id,
-    itemId: "item-dimdim",
-    authorId: "member-beam",
-    body: "ลองไปเช้าหน่อย ถ้าคิวยาวให้สลับกับ coffee break",
-    createdAt: "2026-05-27T12:30:00.000Z",
-  },
-];
 
 export type PlanningView = "overview" | "itinerary" | "map" | "timeline" | "members";
 
@@ -86,9 +43,9 @@ export function SagittariusApp({ initialView = "overview", requireJoin = false }
     future: [],
   }));
   const [participantSession, setParticipantSession] = useState<TripParticipantSession | null>(null);
-  const [suggestions, setSuggestions] = useState<Suggestion[]>(seedSuggestions);
-  const [tasks, setTasks] = useState<TripTask[]>(seedTasks);
-  const [stopNotes, setStopNotes] = useState<StopNote[]>(seedStopNotes);
+  const [suggestions, setSuggestions] = useState<Suggestion[]>(() => tripFixtureSuggestions.map((suggestion) => ({ ...suggestion })));
+  const [tasks, setTasks] = useState<TripTask[]>(() => tripFixtureTasks.map((task) => ({ ...task })));
+  const [stopNotes, setStopNotes] = useState<StopNote[]>(() => tripFixtureStopNotes.map((note) => ({ ...note })));
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [contextRailOpen, setContextRailOpen] = useState(false);
   const [contextRailMounted, setContextRailMounted] = useState(false);
