@@ -34,7 +34,7 @@ pub async fn lock_email_login_challenge(
     challenge_id: Uuid,
 ) -> Result<Option<EmailLoginChallengeRecord>, sqlx::Error> {
     sqlx::query_as::<_, EmailLoginChallengeRecord>(
-        "select id, normalized_email, code_hash, expires_at, consumed_at
+        "select id, normalized_email, code_hash, attempt_count, expires_at, locked_at, consumed_at
          from email_login_challenges
          where id = $1
          for update",
@@ -57,6 +57,31 @@ pub async fn insert_email_login_outbox(
     .bind(message.normalized_email)
     .bind(message.code)
     .bind(message.expires_at)
+    .execute(&mut **tx)
+    .await?;
+
+    Ok(())
+}
+
+pub async fn record_email_login_failed_attempt(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    challenge_id: Uuid,
+    lock_after_attempts: i32,
+    locked_at: OffsetDateTime,
+) -> Result<(), sqlx::Error> {
+    sqlx::query(
+        "update email_login_challenges
+         set
+           attempt_count = attempt_count + 1,
+           locked_at = case
+             when attempt_count + 1 >= $2 then coalesce(locked_at, $3)
+             else locked_at
+           end
+         where id = $1",
+    )
+    .bind(challenge_id)
+    .bind(lock_after_attempts)
+    .bind(locked_at)
     .execute(&mut **tx)
     .await?;
 

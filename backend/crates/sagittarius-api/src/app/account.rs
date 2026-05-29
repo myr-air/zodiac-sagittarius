@@ -23,6 +23,7 @@ const TRUSTED_SESSION_TTL: Duration = Duration::days(30);
 const EMAIL_LOGIN_CODE_SALT: &[u8] = b"sagittarius-email-login-code";
 const SESSION_TOKEN_SALT: &[u8] = b"sagittarius-account-session-token";
 const DEFAULT_TRUSTED_DEVICE_LABEL: &str = "Trusted device";
+const MAX_EMAIL_LOGIN_ATTEMPTS: i32 = 5;
 const MAX_EMAIL_LENGTH: usize = 254;
 const MAX_TRUSTED_DEVICE_LABEL_LENGTH: usize = 120;
 
@@ -79,12 +80,22 @@ pub async fn finish_email_login(
 
     if challenge.id != challenge_id
         || challenge.consumed_at.is_some()
+        || challenge.locked_at.is_some()
+        || challenge.attempt_count >= MAX_EMAIL_LOGIN_ATTEMPTS
         || challenge.expires_at <= now
     {
         return Err(ServiceError::Unauthenticated);
     }
 
     if !verify_email_login_code(challenge_id, code.trim(), &challenge.code_hash) {
+        db::account_queries::record_email_login_failed_attempt(
+            &mut tx,
+            challenge_id,
+            MAX_EMAIL_LOGIN_ATTEMPTS,
+            now,
+        )
+        .await?;
+        tx.commit().await?;
         return Err(ServiceError::Unauthenticated);
     }
 

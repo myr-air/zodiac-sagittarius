@@ -75,7 +75,9 @@ pub struct EmailLoginChallengeRecord {
     pub id: Uuid,
     pub normalized_email: String,
     pub code_hash: String,
+    pub attempt_count: i32,
     pub expires_at: OffsetDateTime,
+    pub locked_at: Option<OffsetDateTime>,
     pub consumed_at: Option<OffsetDateTime>,
 }
 

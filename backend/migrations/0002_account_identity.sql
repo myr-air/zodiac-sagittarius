@@ -25,6 +25,8 @@ CREATE TABLE email_login_challenges (
   id uuid PRIMARY KEY,
   normalized_email text NOT NULL,
   code_hash text NOT NULL,
+  attempt_count integer NOT NULL DEFAULT 0,
+  locked_at timestamptz,
   created_at timestamptz NOT NULL DEFAULT now(),
   expires_at timestamptz NOT NULL,
   consumed_at timestamptz

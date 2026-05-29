@@ -592,6 +592,58 @@ async fn wrong_code_is_rejected_and_does_not_consume_challenge(pool: sqlx::PgPoo
 }
 
 #[sqlx::test(migrations = "../../migrations")]
+async fn repeated_wrong_codes_lock_email_login_challenge(pool: sqlx::PgPool) {
+    let app = support::app(pool.clone());
+    let (start, code) = start_email_login_with_code(&pool, app.clone(), "aom@example.com").await;
+    let challenge_id = Uuid::parse_str(start["challengeId"].as_str().unwrap()).unwrap();
+
+    for wrong_code in ["000000", "000001", "000002", "000003", "000004"] {
+        let wrong = post_json(
+            app.clone(),
+            "/v1/account/email-login/finish",
+            json!({
+                "challengeId": start["challengeId"],
+                "code": wrong_code,
+                "trustDevice": false,
+                "deviceLabel": ""
+            }),
+        )
+        .await;
+        assert_eq!(wrong.status(), StatusCode::UNAUTHORIZED);
+    }
+
+    let locked: (
+        i32,
+        Option<time::OffsetDateTime>,
+        Option<time::OffsetDateTime>,
+    ) = sqlx::query_as(
+        "select attempt_count, locked_at, consumed_at
+             from email_login_challenges
+             where id = $1",
+    )
+    .bind(challenge_id)
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(locked.0, 5);
+    assert!(locked.1.is_some());
+    assert!(locked.2.is_none());
+
+    let correct_after_lock = post_json(
+        app,
+        "/v1/account/email-login/finish",
+        json!({
+            "challengeId": start["challengeId"],
+            "code": code,
+            "trustDevice": false,
+            "deviceLabel": ""
+        }),
+    )
+    .await;
+    assert_eq!(correct_after_lock.status(), StatusCode::UNAUTHORIZED);
+}
+
+#[sqlx::test(migrations = "../../migrations")]
 async fn same_normalized_email_resumes_same_user(pool: sqlx::PgPool) {
     let app = support::app(pool.clone());
     let (first_start, first_code) =
