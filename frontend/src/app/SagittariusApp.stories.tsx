@@ -17,7 +17,18 @@ const storyTripId = "trip-1";
 
 export const Cockpit: Story = {};
 export const ApiJoin: Story = { args: { accessMode: "trip-access", requireJoin: true, dataSource: "api" } };
-export const DemoJoin: Story = { args: { accessMode: "trip-access", requireJoin: true, dataSource: "demo", initialJoinCode: localTripJoinId } };
+export const JoinWithDemoCredentials: Story = {
+  args: { accessMode: "trip-access", requireJoin: true, dataSource: "api", initialJoinCode: localTripJoinId },
+  parameters: {
+    nextjs: { navigation: { pathname: "/join" } },
+  },
+};
+export const PublicEntry: Story = {
+  args: { accessMode: "account-login", requireJoin: true, dataSource: "api" },
+  parameters: {
+    nextjs: { navigation: { pathname: "/" } },
+  },
+};
 export const AccountLogin: Story = {
   args: { accessMode: "account-login", requireJoin: true, dataSource: "api" },
   parameters: {

@@ -146,7 +146,6 @@ export function AccountAccessPanel({
         {mode === "temp" ? (
           <TripJoinGate
             apiClient={apiClient}
-            demoHref={apiClient ? "/join/demo" : undefined}
             embedded
             initialJoinCode={initialJoinCode}
             trip={trip}

@@ -137,17 +137,38 @@ describe("TripJoinGate", () => {
     expect(screen.getByRole("alert")).toHaveTextContent("Trip ID หรือ password ไม่ถูกต้อง");
   });
 
-  it("offers demo access when the API join flow is unavailable", () => {
+  it("does not offer a separate demo access link", () => {
     render(
       <TripJoinGate
         apiClient={createApiClient()}
-        demoHref="/join/demo"
+        trip={seedTrip}
         onTripChange={vi.fn()}
         onAuthenticated={vi.fn()}
       />,
     );
 
-    expect(screen.getByRole("link", { name: /เปิด demo trip/i })).toHaveAttribute("href", "/join/demo");
+    expect(screen.queryByRole("link", { name: /เปิด demo trip/i })).not.toBeInTheDocument();
+  });
+
+  it("uses the local demo trip from the same join form before falling through to the API", async () => {
+    const user = userEvent.setup();
+    const apiClient = createApiClient();
+
+    render(
+      <TripJoinGate
+        apiClient={apiClient}
+        trip={seedTrip}
+        onTripChange={vi.fn()}
+        onAuthenticated={vi.fn()}
+      />,
+    );
+
+    await user.type(screen.getByLabelText(/Trip ID/i), "DEMO-TRIP");
+    await user.type(screen.getByLabelText(/Trip password/i), "demo-trip-pass");
+    await user.click(screen.getByRole("button", { name: /เข้าห้อง trip/i }));
+
+    expect(apiClient.joinTrip).not.toHaveBeenCalled();
+    expect(screen.getByRole("heading", { name: /เลือกตัวตน/i })).toBeInTheDocument();
   });
 
   it("does not show raw numeric API errors to join users", async () => {

@@ -57,6 +57,23 @@ describe("Sagittarius cockpit UI", () => {
     expect(screen.queryByRole("button", { name: /เพิ่มสถานที่ \/ กิจกรรม/i })).not.toBeInTheDocument();
   }, 15_000);
 
+  it("lets demo credentials enter through the canonical API join route without calling the backend", async () => {
+    const user = userEvent.setup();
+    const apiClient = createApiClientForTrip(seedTrip);
+    render(<SagittariusApp accessMode="trip-access" requireJoin dataSource="api" apiClient={apiClient} />);
+
+    await user.type(screen.getByLabelText(/Trip ID/i), "DEMO-TRIP");
+    await user.type(screen.getByLabelText(/Trip password/i), "demo-trip-pass");
+    await user.click(screen.getByRole("button", { name: /เข้าห้อง trip/i }));
+    await user.click(screen.getByRole("button", { name: /Explorer Friend/i }));
+    await user.type(screen.getByLabelText(/ตั้งรหัสสำหรับ Explorer Friend/i), "traveler-pin");
+    await user.click(screen.getByRole("button", { name: /เริ่มใช้งาน/i }));
+
+    expect(apiClient.joinTrip).not.toHaveBeenCalled();
+    expect(apiClient.loadTrip).not.toHaveBeenCalled();
+    expect(screen.getByRole("navigation", { name: /Sagittarius planning navigation/i })).toBeInTheDocument();
+  });
+
   it("lets a guest participant leave their local session and choose another identity", async () => {
     const user = userEvent.setup();
     const confirm = vi.spyOn(window, "confirm").mockReturnValue(true);

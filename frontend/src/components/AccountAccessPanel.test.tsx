@@ -136,6 +136,7 @@ describe("AccountAccessPanel", () => {
     expect(screen.queryByRole("tablist", { name: /Access mode/i })).not.toBeInTheDocument();
     expect(screen.getByRole("main", { name: /Trip access/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /เข้าห้อง trip/i })).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /เปิด demo trip/i })).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/Email/i)).not.toBeInTheDocument();
   });
 

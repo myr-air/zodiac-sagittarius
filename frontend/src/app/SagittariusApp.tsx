@@ -90,7 +90,8 @@ export function SagittariusApp({
   const sessionMember = findSessionMember(trip, participantSession);
   /* v8 ignore next */
   const currentMember = sessionMember ?? trip.members.find((member) => member.id === currentMemberId) ?? trip.members[0];
-  const isApiMode = dataSource === "api";
+  const isLocalParticipantSession = participantSession?.sessionToken.startsWith("local_") ?? false;
+  const isApiMode = dataSource === "api" && !isLocalParticipantSession;
   const canEdit = canTripRole(currentMember.role, "editItinerary");
   const canCreateSuggestion = canTripRole(currentMember.role, "createSuggestion");
   const canReviewSuggestions = canTripRole(currentMember.role, "reviewSuggestions");
@@ -273,7 +274,7 @@ export function SagittariusApp({
     /* v8 ignore next */
     if (dialogState?.mode !== "edit") return;
     const itemId = dialogState.item.id;
-    if (dataSource === "api" && resolvedApiClient && participantSession) {
+    if (isApiMode && resolvedApiClient && participantSession) {
       const patchedItem = await resolvedApiClient.patchItineraryItem(trip.id, itemId, participantSession.sessionToken, {
         clientMutationId: nextClientMutationId("itinerary-patch"),
         expectedVersion: dialogState.item.version,
@@ -381,7 +382,7 @@ export function SagittariusApp({
   }
 
   function replaceTripFromJoin(nextTrip: Trip) {
-    if (dataSource !== "api") persistTripDraft(nextTrip);
+    if (!isApiMode) persistTripDraft(nextTrip);
     setTripState({ trip: nextTrip, past: [], future: [] });
   }
 
@@ -457,7 +458,7 @@ export function SagittariusApp({
   async function suggestSelectedStop() {
     /* v8 ignore next */
     if (!canCreateSuggestion || !selectedItem) return;
-    if (dataSource === "api" && resolvedApiClient && participantSession) {
+    if (isApiMode && resolvedApiClient && participantSession) {
       const suggestion = await resolvedApiClient.createSuggestion(trip.id, participantSession.sessionToken, {
         clientMutationId: nextClientMutationId("suggestion-create"),
         type: "edit",
@@ -493,7 +494,7 @@ export function SagittariusApp({
     /* v8 ignore next */
     if (!title) return;
     const visibility = input.visibility;
-    if (dataSource === "api" && resolvedApiClient && participantSession) {
+    if (isApiMode && resolvedApiClient && participantSession) {
       const task = await resolvedApiClient.createTask(trip.id, participantSession.sessionToken, {
         clientMutationId: nextClientMutationId("task-create"),
         title,
@@ -522,7 +523,7 @@ export function SagittariusApp({
   }
 
   async function toggleTaskStatus(taskId: string) {
-    if (dataSource === "api" && resolvedApiClient && participantSession) {
+    if (isApiMode && resolvedApiClient && participantSession) {
       const task = tasks.find((candidate) => candidate.id === taskId);
       /* v8 ignore next */
       if (!task) return;
@@ -570,7 +571,7 @@ export function SagittariusApp({
   async function reviewSuggestion(suggestionId: string, decision: "approved" | "rejected") {
     /* v8 ignore next */
     if (!canReviewSuggestions) return;
-    if (dataSource === "api" && resolvedApiClient && participantSession) {
+    if (isApiMode && resolvedApiClient && participantSession) {
       let suggestion: Suggestion;
       /* v8 ignore else */
       if (decision === "approved") {
@@ -604,7 +605,7 @@ export function SagittariusApp({
         accountSession={accountSession}
         apiClient={resolvedApiClient}
         initialJoinCode={initialJoinCode}
-        trip={resolvedApiClient ? undefined : trip}
+        trip={routeTripId ? undefined : trip}
         onAccountSessionChange={setAccountSession}
         onAuthenticated={authenticateParticipant}
         onCockpitLoaded={replaceCockpitFromApi}

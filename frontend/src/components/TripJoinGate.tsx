@@ -16,7 +16,6 @@ import type { Member, Trip, TripParticipantSession } from "@/src/trip/types";
 interface TripJoinGateProps {
   trip?: Trip;
   apiClient?: TripApiClient;
-  demoHref?: string;
   embedded?: boolean;
   initialJoinCode?: string;
   onTripChange: (trip: Trip) => void;
@@ -24,7 +23,7 @@ interface TripJoinGateProps {
   onCockpitLoaded?: (cockpit: TripCockpit) => void;
 }
 
-export function TripJoinGate({ trip, apiClient, demoHref, embedded = false, initialJoinCode, onTripChange, onAuthenticated, onCockpitLoaded }: TripJoinGateProps) {
+export function TripJoinGate({ trip, apiClient, embedded = false, initialJoinCode, onTripChange, onAuthenticated, onCockpitLoaded }: TripJoinGateProps) {
   const [step, setStep] = useState<"room" | "participant">("room");
   const [joinId, setJoinId] = useState(initialJoinCode ?? "");
   const [tripPassword, setTripPassword] = useState("");
@@ -36,7 +35,7 @@ export function TripJoinGate({ trip, apiClient, demoHref, embedded = false, init
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   /* v8 ignore next */
-  const activeTrip = apiClient ? joinedTrip : trip ?? null;
+  const activeTrip = joinedTrip ?? trip ?? null;
 
   const selectedMember = useMemo(
     () => activeTrip?.members.find((member) => member.id === selectedMemberId) ?? null,
@@ -49,6 +48,15 @@ export function TripJoinGate({ trip, apiClient, demoHref, embedded = false, init
     event.preventDefault();
     setIsSubmitting(true);
     try {
+      if (trip && verifyTripCredentials(trip, { joinId, password: tripPassword })) {
+        setJoinedTrip(trip);
+        setJoinSessionToken(null);
+        setSelectedMemberId(null);
+        setError(null);
+        setStep("participant");
+        return;
+      }
+
       if (apiClient) {
         setJoinSessionToken(null);
         const response = await apiClient.joinTrip({ joinId, password: tripPassword });
@@ -89,12 +97,7 @@ export function TripJoinGate({ trip, apiClient, demoHref, embedded = false, init
     setIsSubmitting(true);
 
     try {
-      if (apiClient) {
-        if (!joinSessionToken) {
-          setError("Trip session หมดอายุ กรุณาเข้าห้อง trip อีกครั้ง");
-          setStep("room");
-          return;
-        }
+      if (apiClient && joinSessionToken) {
         let session: TripParticipantSession;
         try {
           session = await apiClient.claimMember(activeTrip.id, selectedMember.id, participantPassword, joinSessionToken);
@@ -182,12 +185,6 @@ export function TripJoinGate({ trip, apiClient, demoHref, embedded = false, init
               <Icon name="check" />
               เข้าห้อง trip
             </Button>
-            {demoHref ? (
-              <a className="button button--secondary join-submit" href={demoHref}>
-                <Icon name="route" />
-                เปิด demo trip
-              </a>
-            ) : null}
           </form>
         ) : (
           <div className="participant-step">

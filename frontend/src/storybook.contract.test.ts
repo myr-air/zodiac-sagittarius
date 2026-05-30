@@ -46,11 +46,13 @@ describe("Storybook template catalog", () => {
   it("documents split account and trip access routes", () => {
     const stories = storyText();
     [
+      "PublicEntry",
       "AccountLogin",
       "AccountRegister",
       "AccountTrips",
       "AccountNewTrip",
       "TripAccess",
+      "JoinWithDemoCredentials",
       "TripAccessWithJoinCode",
       "TripOverviewAccess",
       "TripItineraryAccess",
@@ -64,6 +66,7 @@ describe("Storybook template catalog", () => {
     expect(stories).toContain('accessMode: "account-register"');
     expect(stories).toContain('accessMode: "trip-access"');
     expect(stories).toContain('initialJoinCode: localTripJoinId');
+    expect(stories).toContain('pathname: "/join"');
     expect(stories).toContain('pathname: `/join/${localTripJoinId}`');
   });
 

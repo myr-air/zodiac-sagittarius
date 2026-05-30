@@ -51,6 +51,8 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "app/trips/[tripId]/members/page.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "app/join/page.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "app/join/[joinCode]/page.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "app/join/demo/page.tsx"))).toBe(false);
+    expect(readFileSync(join(frontendRoot, "app/join/[joinCode]/page.tsx"), "utf8")).toContain('redirect("/join")');
     expect(readFileSync(join(frontendRoot, "app/layout.tsx"), "utf8")).toContain("Sagittarius");
   });
 
