@@ -24,11 +24,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     )
     .execute(&pool)
     .await?;
-    sqlx::raw_sql(include_str!(
-        "../../../../migrations/0001_backend_vertical_slice.sql"
-    ))
-    .execute(&pool)
-    .await?;
+    for migration in [
+        include_str!("../../../../migrations/0001_backend_vertical_slice.sql"),
+        include_str!("../../../../migrations/0002_account_identity.sql"),
+        include_str!("../../../../migrations/0003_trip_join_sessions.sql"),
+    ] {
+        sqlx::raw_sql(migration).execute(&pool).await?;
+    }
 
     seed_trip(&pool).await?;
     seed_tasks(&pool).await?;
