@@ -11,7 +11,8 @@ describe("StopDialog", () => {
 
     fireEvent.change(screen.getByLabelText("กิจกรรม"), { target: { value: "  Dessert stop  " } });
     fireEvent.change(screen.getByLabelText("สถานที่"), { target: { value: "  Central  " } });
-    fireEvent.change(screen.getByLabelText("ระยะเวลา"), { target: { value: "0" } });
+    fireEvent.change(screen.getByLabelText("ชั่วโมง"), { target: { value: "0" } });
+    fireEvent.change(screen.getByLabelText("นาที"), { target: { value: "0" } });
     fireEvent.change(screen.getByLabelText("ประเภท"), { target: { value: "food" } });
     fireEvent.change(screen.getByLabelText("การเดินทาง"), { target: { value: "  walk  " } });
     fireEvent.change(screen.getByLabelText("โน้ต"), { target: { value: "  book ahead  " } });
@@ -37,5 +38,16 @@ describe("StopDialog", () => {
     await userEvent.click(screen.getByRole("button", { name: "ยกเลิก" }));
     await userEvent.click(screen.getByRole("button", { name: "ปิดฟอร์ม" }));
     expect(onClose).toHaveBeenCalledTimes(2);
+  });
+
+  it("uses native time input, split duration controls, and a standard close icon", () => {
+    render(<StopDialog mode="create" onClose={vi.fn()} onSubmit={vi.fn()} />);
+
+    expect(screen.getByLabelText("เวลา")).toHaveAttribute("type", "time");
+    expect(screen.getByLabelText("เวลา")).toHaveAttribute("id", "stop-start-time");
+    expect(screen.getByText("เวลา").closest("label")).toHaveAttribute("for", "stop-start-time");
+    expect(screen.getByLabelText("ชั่วโมง")).toBeInTheDocument();
+    expect(screen.getByLabelText("นาที")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "ปิดฟอร์ม" }).querySelector("svg path")).toHaveAttribute("d", "M18 6 6 18M6 6l12 12");
   });
 });

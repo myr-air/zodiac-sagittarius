@@ -162,6 +162,7 @@ export function RouteMapView({ endDate, items, liveMapEnabled = process.env.NODE
           });
           fitLiveRoute(map, activeDayRef.current === "all" ? liveRoutePoints : liveRoutePoints.filter((point) => point.item.day === activeDayRef.current));
           removeMapChromeFromTabOrder(container);
+          container.inert = false;
           setLiveMapState("ready");
         });
 

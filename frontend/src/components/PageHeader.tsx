@@ -49,6 +49,12 @@ export function PageUserCard({ color, label, name }: PageUserCardProps) {
 export function formatTripRange(startDate: string, endDate: string): string {
   const start = new Date(`${startDate}T00:00:00`);
   const end = new Date(`${endDate}T00:00:00`);
+  if (start.getFullYear() !== end.getFullYear()) {
+    return `${start.getDate()} ${formatThaiMonth(start)} ${start.getFullYear()} – ${end.getDate()} ${formatThaiMonth(end)} ${end.getFullYear()}`;
+  }
+  if (start.getMonth() !== end.getMonth()) {
+    return `${start.getDate()} ${formatThaiMonth(start)} – ${end.getDate()} ${formatThaiMonth(end)} ${end.getFullYear()}`;
+  }
   return `${start.getDate()}–${end.getDate()} ${formatThaiMonth(end)} ${end.getFullYear()}`;
 }
 

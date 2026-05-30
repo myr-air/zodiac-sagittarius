@@ -1,4 +1,4 @@
-import { useState, type DragEvent, type KeyboardEvent, type MouseEvent } from "react";
+import { useState, type DragEvent } from "react";
 import type { ItineraryAdvisory, ItineraryItem, TripRole } from "@/src/trip/types";
 import { formatDayLabel, groupItemsByDay } from "@/src/trip/itinerary";
 import { Button } from "./ui";
@@ -149,6 +149,7 @@ export function SmartItineraryTable({
               startDate={startDate}
               onClearDragPreview={clearDragPreview}
               onDropItem={dropItem}
+              onMoveItem={onMoveItem}
               onPreviewDrop={previewDrop}
               onSelectItem={onSelectItem}
               onStartDrag={startDrag}
@@ -170,6 +171,7 @@ function DayGroup({
   dragState,
   onClearDragPreview,
   onDropItem,
+  onMoveItem,
   onPreviewDrop,
   onSelectItem,
   onStartDrag,
@@ -183,23 +185,12 @@ function DayGroup({
   dragState: { draggedItemId: string | null; overItemId: string | null };
   onClearDragPreview: () => void;
   onDropItem: (event: DragEvent<HTMLElement>, targetItemId: string) => void;
+  onMoveItem: (draggedItemId: string, targetItemId: string) => void;
   onPreviewDrop: (event: DragEvent<HTMLElement>, targetItemId: string) => void;
   onSelectItem: (itemId: string) => void;
   onStartDrag: (event: DragEvent<HTMLButtonElement>, itemId: string) => void;
   onToggleDay: (day: string) => void;
 }) {
-  function handleRowClick(event: MouseEvent<HTMLTableRowElement>, itemId: string) {
-    if (shouldIgnoreRowClick(event.target)) return;
-    onSelectItem(itemId);
-  }
-
-  function handleRowKeyDown(event: KeyboardEvent<HTMLTableRowElement>, itemId: string) {
-    if (event.key !== "Enter" && event.key !== " ") return;
-    if (shouldIgnoreRowClick(event.target)) return;
-    event.preventDefault();
-    onSelectItem(itemId);
-  }
-
   const dayLabel = formatDayLabel(group.day, startDate);
 
   return (
@@ -221,31 +212,56 @@ function DayGroup({
           </button>
         </th>
       </tr>
-      {group.items.map((item) => (
+      {group.items.map((item, itemIndex) => (
         <tr
           aria-hidden={collapsed}
           aria-label={`Open details for ${item.activity}`}
           className={getRowClassName(item, selectedItemId, dragState)}
           key={item.id}
-          tabIndex={collapsed ? -1 : 0}
-          onClick={(event) => handleRowClick(event, item.id)}
           onDragOver={(event) => onPreviewDrop(event, item.id)}
           onDrop={(event) => onDropItem(event, item.id)}
-          onKeyDown={(event) => handleRowKeyDown(event, item.id)}
         >
           <td className="drag-cell">
-            <button
-              type="button"
-              className="drag-handle"
-              draggable={canEdit && !collapsed}
-              disabled={!canEdit}
-              tabIndex={collapsed ? -1 : undefined}
-              aria-label={`Drag ${item.activity}`}
-              onDragEnd={onClearDragPreview}
-              onDragStart={(event) => onStartDrag(event, item.id)}
-            >
-              <Icon name="drag" />
-            </button>
+            <div className="reorder-controls">
+              <button
+                type="button"
+                className="drag-handle"
+                draggable={canEdit && !collapsed}
+                disabled={!canEdit}
+                tabIndex={collapsed ? -1 : undefined}
+                aria-label={`Drag ${item.activity}`}
+                onDragEnd={onClearDragPreview}
+                onDragStart={(event) => onStartDrag(event, item.id)}
+              >
+                <Icon name="drag" />
+              </button>
+              <button
+                type="button"
+                className="reorder-button"
+                disabled={!canEdit || itemIndex === 0}
+                tabIndex={collapsed ? -1 : undefined}
+                aria-label={`ย้าย ${item.activity} ขึ้น`}
+                onClick={() => {
+                  const previousItem = group.items[itemIndex - 1];
+                  if (previousItem) onMoveItem(item.id, previousItem.id);
+                }}
+              >
+                <Icon name="chevronLeft" />
+              </button>
+              <button
+                type="button"
+                className="reorder-button"
+                disabled={!canEdit || itemIndex >= group.items.length - 1}
+                tabIndex={collapsed ? -1 : undefined}
+                aria-label={`ย้าย ${item.activity} ลง`}
+                onClick={() => {
+                  const nextItem = group.items[itemIndex + 1];
+                  if (nextItem) onMoveItem(nextItem.id, item.id);
+                }}
+              >
+                <Icon name="chevronRight" />
+              </button>
+            </div>
           </td>
           <td className="time-cell">{tableStartTime(item)}</td>
           <td className="activity-cell">
@@ -285,10 +301,6 @@ function getRowClassName(
     dragState.draggedItemId === item.id ? "data-row--dragging" : null,
     dragState.overItemId === item.id ? "data-row--drop-target" : null,
   ].filter(Boolean).join(" ");
-}
-
-function shouldIgnoreRowClick(target: EventTarget | null): boolean {
-  return target instanceof HTMLElement && Boolean(target.closest("a, button"));
 }
 
 function AdvisorySummary({ advisories }: { advisories: ItineraryAdvisory[] }) {

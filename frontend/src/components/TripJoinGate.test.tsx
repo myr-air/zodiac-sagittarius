@@ -20,6 +20,30 @@ describe("TripJoinGate", () => {
     expect(screen.getByLabelText(/Trip password/i)).toHaveAttribute("autocomplete", "current-password");
   });
 
+  it("uses Thai participant status copy and lets users reveal password fields", async () => {
+    const user = userEvent.setup();
+    render(<TripJoinGate trip={seedTrip} onTripChange={vi.fn()} onAuthenticated={vi.fn()} />);
+
+    const roomPassword = screen.getByLabelText(/Trip password/i);
+    expect(roomPassword).toHaveAttribute("type", "password");
+    await user.click(screen.getByRole("button", { name: /แสดงรหัสห้อง trip/i }));
+    expect(roomPassword).toHaveAttribute("type", "text");
+
+    await enterTripRoom(user);
+
+    expect(screen.getAllByText("ยังไม่ได้ตั้งรหัส").length).toBeGreaterThan(0);
+    expect(screen.queryByText("First entry")).not.toBeInTheDocument();
+    expect(screen.queryByText("Claimed")).not.toBeInTheDocument();
+    expect(screen.queryByText("Disabled")).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: /Explorer Friend/i }));
+    expect(screen.getByText(/รหัสนี้เป็นรหัสส่วนตัว/i)).toBeInTheDocument();
+    const participantPassword = screen.getByLabelText(/ตั้งรหัสสำหรับ Explorer Friend/i);
+    expect(participantPassword).toHaveAttribute("type", "password");
+    await user.click(screen.getByRole("button", { name: /แสดงรหัสสมาชิก/i }));
+    expect(participantPassword).toHaveAttribute("type", "text");
+  });
+
   it("requires the trip id and trip password before choosing a participant", async () => {
     const user = userEvent.setup();
     render(<TripJoinGate trip={seedTrip} onTripChange={vi.fn()} onAuthenticated={vi.fn()} />);
@@ -106,7 +130,7 @@ describe("TripJoinGate", () => {
 
     const disabledParticipant = screen.getByRole("button", { name: /Explorer Friend/i });
     expect(disabledParticipant).toBeDisabled();
-    expect(disabledParticipant).toHaveTextContent(/Disabled/i);
+    expect(disabledParticipant).toHaveTextContent(/ปิดสิทธิ์/i);
     (disabledParticipant as HTMLButtonElement).disabled = false;
     await user.click(disabledParticipant);
     expect(screen.queryByRole("group", { name: /Explorer Friend/i })).not.toBeInTheDocument();

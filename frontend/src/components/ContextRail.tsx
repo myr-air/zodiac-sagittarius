@@ -19,10 +19,12 @@ interface ContextRailProps {
   canEditExpenses: boolean;
   open: boolean;
   onCreateNote: (input: { itemId: string; body: string }) => void;
+  onDeleteNote: (noteId: string) => void;
   onEditSelected: () => void;
   onReviewSuggestion: (suggestionId: string, decision: "approved" | "rejected") => void;
   onSuggestSelected: () => void;
   onToggleTaskStatus: (taskId: string) => void;
+  onUpdateNote: (input: { noteId: string; body: string }) => void;
   onClose: () => void;
 }
 
@@ -41,14 +43,18 @@ export function ContextRail({
   canEditExpenses,
   open,
   onCreateNote,
+  onDeleteNote,
   onEditSelected,
   onReviewSuggestion,
   onSuggestSelected,
   onToggleTaskStatus,
+  onUpdateNote,
   onClose,
 }: ContextRailProps) {
   const [activeTab, setActiveTab] = useState<"notes" | "booking" | "suggestions">("notes");
   const [noteBody, setNoteBody] = useState("");
+  const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
+  const [editingNoteBody, setEditingNoteBody] = useState("");
   const selectedEnd = formatEndTime(selectedItem.startTime, selectedItem.durationMinutes);
   const groupSpend = expenseSummary.groupSpend.toLocaleString("en-HK");
   const perPerson = Math.round(expenseSummary.groupSpend / Math.max(1, trip.members.length - 1)).toLocaleString("en-HK");
@@ -67,6 +73,20 @@ export function ContextRail({
     if (!body) return;
     onCreateNote({ itemId: selectedItem.id, body });
     setNoteBody("");
+  }
+
+  function startEditingNote(note: StopNote) {
+    setEditingNoteId(note.id);
+    setEditingNoteBody(note.body);
+  }
+
+  function submitNoteEdit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const body = editingNoteBody.trim();
+    if (!editingNoteId || !body) return;
+    onUpdateNote({ noteId: editingNoteId, body });
+    setEditingNoteId(null);
+    setEditingNoteBody("");
   }
 
   return (
@@ -120,10 +140,36 @@ export function ContextRail({
             <div className="stop-note-list">
               {selectedNotes.map((note) => {
                 const author = trip.members.find((member) => member.id === note.authorId);
+                const canManageNote = canEdit || note.authorId === currentMember.id;
                 return (
                   <article className="stop-note-item" key={note.id}>
-                    <strong>{memberDisplayName(author)}</strong>
-                    <p>{note.body}</p>
+                    <div className="stop-note-header">
+                      <strong>{memberDisplayName(author)}</strong>
+                      {canManageNote ? (
+                        <span className="stop-note-actions">
+                          <button type="button" aria-label={`แก้ไขโน้ต ${memberDisplayName(author)}`} onClick={() => startEditingNote(note)}>
+                            <Icon name="edit" />
+                          </button>
+                          <button type="button" aria-label={`ลบโน้ต ${memberDisplayName(author)}`} onClick={() => onDeleteNote(note.id)}>
+                            <Icon name="trash" />
+                          </button>
+                        </span>
+                      ) : null}
+                    </div>
+                    {editingNoteId === note.id ? (
+                      <form className="stop-note-edit-form" onSubmit={submitNoteEdit}>
+                        <label>
+                          <span>แก้ไขโน้ต</span>
+                          <textarea value={editingNoteBody} onChange={(event) => setEditingNoteBody(event.target.value)} rows={3} />
+                        </label>
+                        <div className="stop-note-edit-actions">
+                          <Button type="button" variant="ghost" onClick={() => setEditingNoteId(null)}>ยกเลิก</Button>
+                          <Button type="submit" variant="secondary" disabled={!editingNoteBody.trim()}>บันทึกการแก้ไขโน้ต</Button>
+                        </div>
+                      </form>
+                    ) : (
+                      <p>{note.body}</p>
+                    )}
                   </article>
                 );
               })}

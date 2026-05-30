@@ -38,5 +38,6 @@ export function formatEndTime(startTime: string, minutes: number | null): string
 export function formatThaiDate(day: string): string {
   const date = new Date(`${day}T00:00:00`);
   const weekdays = ["อา.", "จ.", "อ.", "พ.", "พฤ.", "ศ.", "ส."];
-  return `${date.getDate()} พ.ค. (${weekdays[date.getDay()]})`;
+  const months = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
+  return `${date.getDate()} ${months[date.getMonth()] ?? ""} (${weekdays[date.getDay()]})`;
 }

@@ -13,16 +13,18 @@ interface OverviewPageProps {
   suggestions: Suggestion[];
   tasks: TripTask[];
   onCreateTask: (input: { title: string; visibility: TripTask["visibility"]; assigneeId?: string | null }) => void;
+  onOpenExpenses?: () => void;
   onToggleTaskStatus: (taskId: string) => void;
 }
 
-export function OverviewPage({ trip, currentMemberId, expenseSummary, items, suggestions, tasks, onCreateTask, onToggleTaskStatus }: OverviewPageProps) {
+export function OverviewPage({ trip, currentMemberId, expenseSummary, items, suggestions, tasks, onCreateTask, onOpenExpenses, onToggleTaskStatus }: OverviewPageProps) {
   const [taskScope, setTaskScope] = useState<"mine" | "trip" | "all">("mine");
   const [taskStatusFilter, setTaskStatusFilter] = useState<"all" | "open" | "done">("all");
   const [isTaskDialogOpen, setIsTaskDialogOpen] = useState(false);
   const [newTaskTitle, setNewTaskTitle] = useState("");
   const [newTaskVisibility, setNewTaskVisibility] = useState<TripTask["visibility"]>("private");
   const [newTaskAssigneeId, setNewTaskAssigneeId] = useState("");
+  const [undoTask, setUndoTask] = useState<TripTask | null>(null);
   const tripDays = getTripDates(trip.startDate, trip.endDate);
   /* v8 ignore next */
   const sortedItems = useMemo(() => items.slice().sort((a, b) => a.day.localeCompare(b.day) || a.sortOrder - b.sortOrder || a.startTime.localeCompare(b.startTime)), [items]);
@@ -74,6 +76,21 @@ export function OverviewPage({ trip, currentMemberId, expenseSummary, items, sug
     setNewTaskTitle("");
     setNewTaskVisibility("private");
     setNewTaskAssigneeId("");
+  }
+
+  function toggleTask(task: TripTask) {
+    onToggleTaskStatus(task.id);
+    setUndoTask(task);
+  }
+
+  function undoTaskToggle() {
+    if (!undoTask) return;
+    onToggleTaskStatus(undoTask.id);
+    setUndoTask(null);
+  }
+
+  function openExpenses() {
+    onOpenExpenses?.();
   }
 
   return (
@@ -151,7 +168,7 @@ export function OverviewPage({ trip, currentMemberId, expenseSummary, items, sug
                   {visibleTasks.map((task) => (
                     <li className="overview-task-item" key={task.id} aria-label={task.title} data-status={task.status}>
                       <label>
-                        <input type="checkbox" checked={task.status === "done"} onChange={() => onToggleTaskStatus(task.id)} />
+                        <input type="checkbox" checked={task.status === "done"} onChange={() => toggleTask(task)} />
                         <span>{task.title}</span>
                       </label>
                       <div className="overview-task-meta">
@@ -166,14 +183,14 @@ export function OverviewPage({ trip, currentMemberId, expenseSummary, items, sug
               )}
             </section>
 
-            <section className="overview-panel" aria-label="Trip money snapshot">
+            <button className="overview-panel overview-panel--button" type="button" aria-label="เปิดค่าใช้จ่าย" onClick={openExpenses}>
               <div className="overview-panel-title">
                 <Icon name="wallet" />
                 <h2>เงินทริปของฉัน</h2>
               </div>
               <strong>{expenseSummary.currentUserNetLabel}</strong>
               <span>{expenseSummary.settlementSuggestions.length} รายการชำระคืนที่แนะนำ</span>
-            </section>
+            </button>
           </>
         ) : null}
 
@@ -195,14 +212,14 @@ export function OverviewPage({ trip, currentMemberId, expenseSummary, items, sug
               {viewerNextStopPanel(nextStop, trip.startDate)}
             </section>
 
-            <section className="overview-panel" aria-label="Budget snapshot">
+            <button className="overview-panel overview-panel--button" type="button" aria-label="เปิดค่าใช้จ่าย" onClick={openExpenses}>
               <div className="overview-panel-title">
                 <Icon name="wallet" />
                 <h2>งบทริปโดยรวม</h2>
               </div>
               <strong>HK${expenseSummary.groupSpend.toLocaleString("en-HK")}</strong>
               <span>สรุปรายจ่ายรวมของทริป</span>
-            </section>
+            </button>
           </>
         ) : null}
 
@@ -246,14 +263,14 @@ export function OverviewPage({ trip, currentMemberId, expenseSummary, items, sug
           <span>{warningCount} จุดควรตรวจ และ {pendingSuggestions} ข้อเสนอรอพิจารณา</span>
             </section>
 
-            <section className="overview-panel" aria-label="Budget snapshot">
+            <button className="overview-panel overview-panel--button" type="button" aria-label="เปิดค่าใช้จ่าย" onClick={openExpenses}>
           <div className="overview-panel-title">
             <Icon name="wallet" />
             <h2>งบประมาณ</h2>
           </div>
           <strong>{expenseSummary.currentUserNetLabel}</strong>
           <span>{expenseSummary.settlementSuggestions.length} รายการชำระคืนที่แนะนำ</span>
-            </section>
+            </button>
 
             <section className="overview-panel overview-task-panel" aria-label="Trip checklist">
           <div className="overview-panel-title">
@@ -280,7 +297,7 @@ export function OverviewPage({ trip, currentMemberId, expenseSummary, items, sug
               {visibleTasks.map((task) => (
                 <li className="overview-task-item" key={task.id} aria-label={task.title} data-status={task.status}>
                   <label>
-                    <input type="checkbox" checked={task.status === "done"} onChange={() => onToggleTaskStatus(task.id)} />
+                    <input type="checkbox" checked={task.status === "done"} onChange={() => toggleTask(task)} />
                     <span>{task.title}</span>
                   </label>
                   <div className="overview-task-meta">
@@ -338,6 +355,12 @@ export function OverviewPage({ trip, currentMemberId, expenseSummary, items, sug
               </div>
             </form>
           </section>
+        </div>
+      ) : null}
+      {undoTask ? (
+        <div className="overview-undo-toast" role="status">
+          <span>เปลี่ยนสถานะ {undoTask.title} แล้ว</span>
+          <button type="button" onClick={undoTaskToggle}>เลิกทำ</button>
         </div>
       ) : null}
     </section>

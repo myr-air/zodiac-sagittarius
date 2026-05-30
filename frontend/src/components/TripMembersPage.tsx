@@ -1,4 +1,4 @@
-import { type FormEvent, useMemo, useState } from "react";
+import { type FormEvent, useEffect, useMemo, useState } from "react";
 import { appRoutes } from "@/src/routes/app-routes";
 import type { Member, Trip, TripMemberAccessStatus, TripRole } from "@/src/trip/types";
 import { Icon } from "./icons";
@@ -60,6 +60,12 @@ export function TripMembersPage({
       }),
     [currentMember.id, query, roleFilter, statusFilter, visibleMembers],
   );
+
+  useEffect(() => {
+    if (copyState === "idle") return undefined;
+    const timeout = window.setTimeout(() => setCopyState("idle"), 2500);
+    return () => window.clearTimeout(timeout);
+  }, [copyState]);
 
   async function copyInviteLink() {
     /* v8 ignore next */

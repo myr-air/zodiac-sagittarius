@@ -174,6 +174,7 @@ describe("RouteMapView", () => {
     );
 
     await waitFor(() => expect(maplibreMock.maps[0]?.addLayer).toHaveBeenCalled());
+    expect(document.querySelector(".route-live-map")).not.toHaveProperty("inert", true);
     expect(document.querySelector(".route-live-map button")).toHaveAttribute("tabindex", "-1");
     expect(maplibreMock.markers.length).toBeGreaterThan(1);
 

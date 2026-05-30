@@ -31,6 +31,8 @@ export function TripJoinGate({ trip, apiClient, embedded = false, initialJoinCod
   const [joinSessionToken, setJoinSessionToken] = useState<string | null>(null);
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
   const [participantPassword, setParticipantPassword] = useState("");
+  const [showTripPassword, setShowTripPassword] = useState(false);
+  const [showParticipantPassword, setShowParticipantPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -87,6 +89,7 @@ export function TripJoinGate({ trip, apiClient, embedded = false, initialJoinCod
     if (isTripParticipantDisabled(member)) return;
     setSelectedMemberId(member.id);
     setParticipantPassword("");
+    setShowParticipantPassword(false);
     setError(null);
   }
 
@@ -173,13 +176,23 @@ export function TripJoinGate({ trip, apiClient, embedded = false, initialJoinCod
             </label>
             <label>
               <span>Trip password</span>
-              <input
-                value={tripPassword}
-                onChange={(event) => setTripPassword(event.target.value)}
-                type="password"
-                autoComplete="current-password"
-                required
-              />
+              <span className="password-input-row">
+                <input
+                  value={tripPassword}
+                  onChange={(event) => setTripPassword(event.target.value)}
+                  type={showTripPassword ? "text" : "password"}
+                  autoComplete="current-password"
+                  required
+                />
+                <button
+                  type="button"
+                  className="password-visibility-button"
+                  aria-label={showTripPassword ? "ซ่อนรหัสห้อง trip" : "แสดงรหัสห้อง trip"}
+                  onClick={() => setShowTripPassword((current) => !current)}
+                >
+                  <Icon name={showTripPassword ? "eyeOff" : "eye"} />
+                </button>
+              </span>
             </label>
             <Button type="submit" className="join-submit" disabled={isSubmitting}>
               <Icon name="check" />
@@ -210,7 +223,7 @@ export function TripJoinGate({ trip, apiClient, embedded = false, initialJoinCod
                     <small>{roleLabel(member.role)}</small>
                   </span>
                   <Badge tone={isTripParticipantDisabled(member) ? "danger" : member.claimPasswordHash ? "success" : "warning"}>
-                    {isTripParticipantDisabled(member) ? "Disabled" : member.claimPasswordHash ? "Claimed" : "First entry"}
+                    {participantStatusLabel(member)}
                   </Badge>
                 </button>
               ))}
@@ -227,10 +240,23 @@ export function TripJoinGate({ trip, apiClient, embedded = false, initialJoinCod
                   <input
                     value={participantPassword}
                     onChange={(event) => setParticipantPassword(event.target.value)}
-                    type="password"
+                    type={showParticipantPassword ? "text" : "password"}
                     autoComplete="current-password"
                   />
+                  <button
+                    type="button"
+                    className="password-visibility-button"
+                    aria-label={showParticipantPassword ? "ซ่อนรหัสสมาชิก" : "แสดงรหัสสมาชิก"}
+                    onClick={() => setShowParticipantPassword((current) => !current)}
+                  >
+                    <Icon name={showParticipantPassword ? "eyeOff" : "eye"} />
+                  </button>
                 </label>
+                {!selectedMember.claimPasswordHash ? (
+                  <p className="participant-auth-help">
+                    รหัสนี้เป็นรหัสส่วนตัวของคุณ ไม่ใช่รหัสห้อง trip ใช้ป้องกันไม่ให้คนอื่นเลือกตัวตนของคุณภายหลัง
+                  </p>
+                ) : null}
                 <Button type="submit" className="join-submit" disabled={isSubmitting}>
                   <Icon name="check" />
                   {selectedMember.claimPasswordHash ? "ยืนยันตัวตน" : "เริ่มใช้งาน"}
@@ -245,10 +271,16 @@ export function TripJoinGate({ trip, apiClient, embedded = false, initialJoinCod
 }
 
 function roleLabel(role: Member["role"]): string {
-  if (role === "owner") return "Owner";
-  if (role === "organizer") return "Organizer";
-  if (role === "traveler") return "Traveller";
-  return "Viewer";
+  if (role === "owner") return "เจ้าของ";
+  if (role === "organizer") return "ผู้จัดทริป";
+  if (role === "traveler") return "ผู้ร่วมทริป";
+  return "ผู้ดู";
+}
+
+function participantStatusLabel(member: Member): string {
+  if (isTripParticipantDisabled(member)) return "ปิดสิทธิ์";
+  if (member.claimPasswordHash) return "ตั้งรหัสแล้ว";
+  return "ยังไม่ได้ตั้งรหัส";
 }
 
 function tripFromJoinResponse(response: JoinTripResponse): Trip {

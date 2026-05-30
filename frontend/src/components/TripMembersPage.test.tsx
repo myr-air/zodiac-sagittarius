@@ -1,6 +1,6 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { seedTrip } from "@/src/trip/seed";
 import { TripMembersPage } from "./TripMembersPage";
 
@@ -22,6 +22,10 @@ function renderMembers(overrides: Partial<Parameters<typeof TripMembersPage>[0]>
 }
 
 describe("TripMembersPage", () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it("handles successful member-management actions", async () => {
     const user = userEvent.setup();
     const writeText = vi.fn().mockResolvedValue(undefined);
@@ -148,5 +152,25 @@ describe("TripMembersPage", () => {
 
     expect(screen.getByRole("status")).toHaveTextContent("อ่านอย่างเดียว");
     expect(props.onCreateMember).not.toHaveBeenCalled();
+  });
+
+  it("resets invite copy feedback after a short confirmation window", async () => {
+    vi.useFakeTimers();
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: { writeText: vi.fn().mockResolvedValue(undefined) },
+    });
+    renderMembers();
+
+    fireEvent.click(screen.getByRole("button", { name: /คัดลอกลิงก์เชิญ/i }));
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(screen.getByRole("status")).toHaveTextContent("คัดลอกแล้ว");
+
+    act(() => {
+      vi.advanceTimersByTime(2500);
+    });
+    expect(screen.getByRole("status")).toHaveTextContent("พร้อมเชิญสมาชิก");
   });
 });

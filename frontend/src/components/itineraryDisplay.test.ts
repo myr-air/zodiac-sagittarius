@@ -22,4 +22,9 @@ describe("itinerary display formatting", () => {
   it("formats Thai fixture dates", () => {
     expect(formatThaiDate("2025-05-16")).toContain("พ.ค.");
   });
+
+  it("formats Thai dates with the actual month from the date", () => {
+    expect(formatThaiDate("2025-06-02")).toBe("2 มิ.ย. (จ.)");
+    expect(formatThaiDate("2025-12-31")).toBe("31 ธ.ค. (พ.)");
+  });
 });

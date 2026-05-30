@@ -34,6 +34,7 @@ export const Owner: Story = {
               suggestions={tripFixture.suggestions}
               tasks={tripFixture.tasks}
               onCreateTask={() => {}}
+              onOpenExpenses={() => {}}
               onToggleTaskStatus={() => {}}
             />
           </div>

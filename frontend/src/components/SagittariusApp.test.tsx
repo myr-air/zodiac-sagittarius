@@ -449,6 +449,29 @@ describe("Sagittarius cockpit UI", () => {
     expect(screen.queryByText(/Too Late Trip/i)).not.toBeInTheDocument();
   });
 
+  it("recovers to access instead of hanging when persisted API hydration fails", async () => {
+    installLocalStorageStub();
+    window.localStorage.setItem(
+      tripParticipantSessionStorageKey,
+      JSON.stringify({
+        tripId: seedTrip.id,
+        memberId: seedTrip.members[0].id,
+        sessionToken: "expired-session-token",
+        createdAt: "2026-05-29T00:00:00.000Z",
+        expiresAt: "2026-06-28T00:00:00.000Z",
+      }),
+    );
+    const apiClient = createApiClientForTrip(seedTrip);
+    vi.mocked(apiClient.loadTrip).mockRejectedValue(new Error("session expired"));
+
+    render(<SagittariusApp requireJoin dataSource="api" initialView="overview" apiClient={apiClient} />);
+
+    await waitFor(() => expect(apiClient.loadTrip).toHaveBeenCalledWith(seedTrip.id, "expired-session-token"));
+    expect(await screen.findByRole("main", { name: /Account access/i })).toBeInTheDocument();
+    expect(screen.getByRole("alert")).toHaveTextContent(/โหลดข้อมูลทริปไม่สำเร็จ/i);
+    expect(window.localStorage.getItem(tripParticipantSessionStorageKey)).toBeNull();
+  });
+
   it("edits itinerary stops and resolves suggestions through the API client after backend login", async () => {
     const user = userEvent.setup();
     installLocalStorageStub();
@@ -1159,12 +1182,12 @@ describe("Sagittarius cockpit UI", () => {
     expect(within(context).getAllByText(/The Peak Tram/i).length).toBeGreaterThan(0);
   });
 
-  it("opens details when clicking anywhere on an itinerary row", async () => {
+  it("opens details from the explicit itinerary row selection control", async () => {
     const { container } = render(<SagittariusApp initialView="itinerary" />);
 
     expect(container.querySelector(".workspace-grid")).toHaveAttribute("data-context-rail", "closed");
 
-    fireEvent.click(screen.getByRole("row", { name: /Open details for Victoria Peak/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Select stop Victoria Peak/i }));
 
     const context = screen.getByRole("complementary", { name: /Planning context/i });
     expect(within(context).getByRole("heading", { name: /Victoria Peak/i })).toBeInTheDocument();
@@ -1215,7 +1238,7 @@ describe("Sagittarius cockpit UI", () => {
     fireEvent.click(screen.getByRole("row", { name: /Open details for Victoria Peak/i }));
 
     expect(container.querySelector(".workspace-grid")).toHaveAttribute("data-context-rail", "open");
-    expect(within(screen.getByRole("complementary", { name: /Planning context/i })).getByRole("heading", { name: /Victoria Peak/i })).toBeInTheDocument();
+    expect(within(screen.getByRole("complementary", { name: /Planning context/i })).getByRole("heading", { name: /Dim Dim Sum/i })).toBeInTheDocument();
   });
 
   it("keeps the right context drawer open when clicking inside it", async () => {
@@ -1362,8 +1385,9 @@ describe("Sagittarius cockpit UI", () => {
     await user.type(within(dialog).getByLabelText(/กิจกรรม/i), "Coffee break at K11 Musea");
     await user.clear(within(dialog).getByLabelText(/สถานที่/i));
     await user.type(within(dialog).getByLabelText(/สถานที่/i), "K11 Musea");
-    await user.clear(within(dialog).getByLabelText(/^ระยะเวลา$/i));
-    await user.type(within(dialog).getByLabelText(/^ระยะเวลา$/i), "45");
+    await user.clear(within(dialog).getByLabelText(/^ชั่วโมง$/i));
+    await user.type(within(dialog).getByLabelText(/^ชั่วโมง$/i), "0");
+    await user.selectOptions(within(dialog).getByLabelText(/^นาที$/i), "45");
     await user.clear(within(dialog).getByLabelText(/การเดินทาง/i));
     await user.type(within(dialog).getByLabelText(/การเดินทาง/i), "เดิน");
     await user.click(within(dialog).getByRole("button", { name: /บันทึกกิจกรรม/i }));

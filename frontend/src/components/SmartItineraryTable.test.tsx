@@ -29,22 +29,36 @@ function renderTable(overrides: Partial<Parameters<typeof SmartItineraryTable>[0
 }
 
 describe("SmartItineraryTable", () => {
-  it("selects rows with keyboard but ignores nested links and buttons", async () => {
+  it("uses explicit controls for row selection instead of making table rows interactive", async () => {
     const user = userEvent.setup();
     const onSelectItem = vi.fn();
     const props = renderTable({ onSelectItem });
-    const row = screen.getByRole("row", { name: /Open details for Dim Dim Sum/i });
+    const row = screen.getByRole("row", { name: /Dim Dim Sum/i });
 
-    fireEvent.keyDown(row, { key: "Tab" });
+    expect(row).not.toHaveAttribute("tabindex");
     fireEvent.keyDown(row, { key: "Enter" });
-    expect(props.onSelectItem).toHaveBeenCalledWith("item-dimdim");
+    expect(props.onSelectItem).not.toHaveBeenCalled();
 
+    await user.click(within(row).getByRole("button", { name: /Select stop Dim Dim Sum/i }));
+    expect(props.onSelectItem).toHaveBeenCalledWith("item-dimdim");
+    expect(within(row).getByText("Shop G72, G/F, The Elements")).toBeVisible();
     onSelectItem.mockClear();
     fireEvent.keyDown(within(row).getByRole("link", { name: /แผนที่/i }), { key: "Enter", bubbles: true });
     expect(props.onSelectItem).not.toHaveBeenCalled();
 
     await user.click(screen.getByRole("button", { name: /Collapse Day 2/i }));
     expect(document.querySelector('tr[aria-label*="Dim Dim Sum"]')).toHaveAttribute("aria-hidden", "true");
+  });
+
+  it("offers button-based reorder controls for touch and keyboard users", async () => {
+    const user = userEvent.setup();
+    const props = renderTable();
+    const row = screen.getByRole("row", { name: /Dim Dim Sum/i });
+
+    expect(within(row).getByRole("button", { name: /ย้าย .*Dim Dim Sum.*ขึ้น/i })).toBeDisabled();
+    await user.click(within(row).getByRole("button", { name: /ย้าย .*Dim Dim Sum.*ลง/i }));
+
+    expect(props.onMoveItem).toHaveBeenCalledWith("item-victoria-peak", "item-dimdim");
   });
 
   it("prevents dragging when role or restructure settings disallow editing", () => {

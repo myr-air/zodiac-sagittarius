@@ -48,6 +48,7 @@ describe("OverviewPage role lenses", () => {
         ]}
         trip={seedTrip}
         onCreateTask={onCreateTask}
+        onOpenExpenses={vi.fn()}
         onToggleTaskStatus={onToggleTaskStatus}
       />,
     );
@@ -58,6 +59,9 @@ describe("OverviewPage role lenses", () => {
     await user.click(within(checklist).getByRole("button", { name: /เรียบร้อย/i }));
     expect(within(checklist).getByText("Download tickets")).toBeInTheDocument();
     await user.click(within(checklist).getByRole("checkbox", { name: "Download tickets" }));
+    expect(onToggleTaskStatus).toHaveBeenCalledWith("task-done");
+    expect(screen.getByRole("status")).toHaveTextContent(/เปลี่ยนสถานะ Download tickets แล้ว/i);
+    await user.click(screen.getByRole("button", { name: /เลิกทำ/i }));
     expect(onToggleTaskStatus).toHaveBeenCalledWith("task-done");
 
     await user.click(within(checklist).getByRole("button", { name: /ทั้งหมด/i }));
@@ -102,6 +106,7 @@ describe("OverviewPage role lenses", () => {
         tasks={[]}
         trip={{ ...seedTrip, itineraryItems: [] }}
         onCreateTask={vi.fn()}
+        onOpenExpenses={vi.fn()}
         onToggleTaskStatus={vi.fn()}
       />,
     );
@@ -123,6 +128,7 @@ describe("OverviewPage role lenses", () => {
         tasks={[]}
         trip={{ ...seedTrip, itineraryItems: [] }}
         onCreateTask={onCreateTask}
+        onOpenExpenses={vi.fn()}
         onToggleTaskStatus={vi.fn()}
       />,
     );
@@ -154,6 +160,7 @@ describe("OverviewPage role lenses", () => {
         tasks={tripFixtureTasks}
         trip={seedTrip}
         onCreateTask={onCreateTask}
+        onOpenExpenses={vi.fn()}
         onToggleTaskStatus={onToggleTaskStatus}
       />,
     );
@@ -183,6 +190,7 @@ describe("OverviewPage role lenses", () => {
 });
 
 function renderOverview(currentMemberId: string) {
+  const onOpenExpenses = vi.fn();
   render(
     <OverviewPage
       currentMemberId={currentMemberId}
@@ -192,7 +200,20 @@ function renderOverview(currentMemberId: string) {
       tasks={tripFixtureTasks}
       trip={seedTrip}
       onCreateTask={vi.fn()}
+      onOpenExpenses={onOpenExpenses}
       onToggleTaskStatus={vi.fn()}
     />,
   );
+  return { onOpenExpenses };
 }
+
+describe("OverviewPage budget shortcuts", () => {
+  it("opens the expense workspace from manager and traveler budget cards", async () => {
+    const user = userEvent.setup();
+    const { onOpenExpenses } = renderOverview("member-beam");
+
+    await user.click(screen.getByRole("button", { name: /เปิดค่าใช้จ่าย/i }));
+
+    expect(onOpenExpenses).toHaveBeenCalled();
+  });
+});

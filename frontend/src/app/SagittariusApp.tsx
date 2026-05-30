@@ -70,6 +70,7 @@ export function SagittariusApp({
     future: [],
   }));
   const [participantSession, setParticipantSession] = useState<TripParticipantSession | null>(null);
+  const [accessError, setAccessError] = useState<string | null>(null);
   const [accountSession, setAccountSession] = useState<AccountSession | null>(null);
   const [accountSessionLoaded, setAccountSessionLoaded] = useState(false);
   const [accountClaimState, setAccountClaimState] = useState<{ status: "idle" | "saving"; message: string | null }>({ status: "idle", message: null });
@@ -154,6 +155,12 @@ export function SagittariusApp({
         setTasks(cockpit.tasks);
         setStopNotes(cockpit.stopNotes);
         setBackendExpenseSummary(cockpit.expenseSummary);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        getBrowserLocalStorage()?.removeItem(tripParticipantSessionStorageKey);
+        setParticipantSession(null);
+        setAccessError("โหลดข้อมูลทริปไม่สำเร็จ กรุณาเข้าห้อง trip ใหม่อีกครั้ง");
       });
 
     return () => {
@@ -369,6 +376,7 @@ export function SagittariusApp({
   }
 
   function authenticateParticipant(session: TripParticipantSession) {
+    setAccessError(null);
     setParticipantSession(session);
     setCurrentMemberId(session.memberId);
     getBrowserLocalStorage()?.setItem(tripParticipantSessionStorageKey, JSON.stringify(session));
@@ -568,6 +576,32 @@ export function SagittariusApp({
     ]);
   }
 
+  function updateStopNote(input: { noteId: string; body: string }) {
+    const body = input.body.trim();
+    if (!body) return;
+    setStopNotes((current) =>
+      current.map((note) =>
+        note.id === input.noteId && (note.authorId === currentMember.id || canEdit)
+          ? { ...note, body }
+          : note,
+      ),
+    );
+  }
+
+  function deleteStopNote(noteId: string) {
+    setStopNotes((current) => current.filter((note) => note.id !== noteId || (note.authorId !== currentMember.id && !canEdit)));
+  }
+
+  function openExpensesWorkspace() {
+    if (supportsContextRail) {
+      setContextRailVisibility(true);
+      return;
+    }
+    if (typeof window !== "undefined") {
+      window.location.href = `/trips/${trip.id}/itinerary`;
+    }
+  }
+
   async function reviewSuggestion(suggestionId: string, decision: "approved" | "rejected") {
     /* v8 ignore next */
     if (!canReviewSuggestions) return;
@@ -604,6 +638,7 @@ export function SagittariusApp({
         accountClient={accountClient}
         accountSession={accountSession}
         apiClient={resolvedApiClient}
+        initialError={accessError}
         initialJoinCode={initialJoinCode}
         trip={routeTripId ? undefined : trip}
         onAccountSessionChange={setAccountSession}
@@ -647,10 +682,10 @@ export function SagittariusApp({
             {accountClaimState.message ? <span className="account-claim-message">{accountClaimState.message}</span> : null}
           </div>
         ) : null}
-        {(!requireJoin || canManagePeople) ? (
-          <label className="sr-only">
-            Role preview
-            <select value={currentMember.id} onChange={(event) => setCurrentMemberId(event.target.value)}>
+        {dataSource === "demo" && (!requireJoin || canManagePeople) ? (
+          <label className="role-preview-toolbar">
+            <span>ดูในบทบาท</span>
+            <select aria-label="Role preview" value={currentMember.id} onChange={(event) => setCurrentMemberId(event.target.value)}>
               {trip.members.map((member) => (
                 <option value={member.id} key={member.id}>{member.displayName} / {member.role}</option>
               ))}
@@ -683,6 +718,7 @@ export function SagittariusApp({
                 items={planItems}
                 suggestions={suggestions}
                 tasks={tasks}
+                onOpenExpenses={openExpensesWorkspace}
                 onCreateTask={createTask}
                 onToggleTaskStatus={toggleTaskStatus}
               />
@@ -741,10 +777,12 @@ export function SagittariusApp({
               canEditExpenses={canEditExpenses}
               open={contextRailOpen}
               onCreateNote={createStopNote}
+              onDeleteNote={deleteStopNote}
               onEditSelected={() => setDialogState({ mode: "edit", item: selectedItem })}
               onReviewSuggestion={reviewSuggestion}
               onSuggestSelected={suggestSelectedStop}
               onToggleTaskStatus={toggleTaskStatus}
+              onUpdateNote={updateStopNote}
               onClose={() => setContextRailVisibility(false)}
             />
           ) : null}

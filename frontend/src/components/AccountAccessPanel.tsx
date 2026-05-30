@@ -22,6 +22,7 @@ interface AccountAccessPanelProps {
   accountClient: AccountApiClient;
   accountSession: AccountSession | null;
   apiClient?: TripApiClient;
+  initialError?: string | null;
   initialJoinCode?: string;
   trip?: Trip;
   onAccountSessionChange: (session: AccountSession | null) => void;
@@ -47,6 +48,7 @@ export function AccountAccessPanel({
   accountClient,
   accountSession,
   apiClient,
+  initialError,
   initialJoinCode,
   onAccountSessionChange,
   onAuthenticated,
@@ -62,6 +64,7 @@ export function AccountAccessPanel({
   const [stats, setStats] = useState<AccountTripStats | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const displayError = error ?? initialError ?? null;
 
   useEffect(() => {
     if (!accountSession) {
@@ -141,7 +144,7 @@ export function AccountAccessPanel({
         ) : null}
 
         {message ? <StatusMessage tone="success">{message}</StatusMessage> : null}
-        {error ? <StatusMessage tone="danger">{error}</StatusMessage> : null}
+        {displayError ? <StatusMessage tone="danger">{displayError}</StatusMessage> : null}
 
         {mode === "temp" ? (
           <TripJoinGate
@@ -236,6 +239,10 @@ function EmailLoginPanel({
 
   async function submitEmail(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    await requestEmailCode();
+  }
+
+  async function requestEmailCode() {
     setIsSubmitting(true);
     try {
       const nextChallenge = await accountClient.startEmailLogin(email);
@@ -299,7 +306,7 @@ function EmailLoginPanel({
   const trustDeviceFields = (
     <label className="account-check">
       <input checked={trustDevice} onChange={(event) => setTrustDevice(event.target.checked)} type="checkbox" />
-      Trust this PC
+      เชื่อถืออุปกรณ์นี้
     </label>
   );
 
@@ -308,7 +315,7 @@ function EmailLoginPanel({
       <form className="account-card account-form" onSubmit={challenge ? submitCode : submitEmail}>
         <PanelHeading
           icon={challenge ? "settings" : "users"}
-          title={challenge ? "Verify code" : "Email login"}
+          title={challenge ? "ยืนยันรหัส" : "เข้าสู่ระบบด้วยอีเมล"}
           detail={challenge ? `หมดอายุ ${formatDateTime(challenge.expiresAt)}` : "ส่งรหัสเข้าอีเมลของคุณก่อน แล้วค่อยยืนยันในขั้นถัดไป"}
         />
         {challenge ? (
@@ -318,13 +325,16 @@ function EmailLoginPanel({
               <strong>{email}</strong>
             </div>
             <label>
-              <span>Code *</span>
+              <span>รหัสยืนยัน *</span>
               <input value={code} onChange={(event) => setCode(event.target.value)} inputMode="numeric" autoComplete="one-time-code" required />
             </label>
             {trustDeviceFields}
             <Button type="submit" disabled={isSubmitting}>
               <Icon name="check" />
               {flow === "register" ? "สร้าง account" : "เข้า account"}
+            </Button>
+            <Button type="button" variant="secondary" disabled={isSubmitting} onClick={() => void requestEmailCode()}>
+              ส่งรหัสอีกครั้ง
             </Button>
             <Button type="button" variant="secondary" disabled={isSubmitting} onClick={resetChallenge}>
               เปลี่ยนอีเมล
@@ -336,7 +346,7 @@ function EmailLoginPanel({
               <span>ยืนยันรหัสได้หลังจากส่ง email code</span>
             </div>
             <label>
-              <span>Email *</span>
+              <span>อีเมล *</span>
               <input value={email} onChange={(event) => setEmail(event.target.value)} type="email" autoComplete="email" required />
             </label>
             {trustDeviceFields}
@@ -347,6 +357,19 @@ function EmailLoginPanel({
           </>
         )}
       </form>
+      {!challenge ? (
+        <p className="account-flow-switch">
+          {flow === "register" ? (
+            <>
+              มีบัญชีแล้ว? <a href="/login">เข้าสู่ระบบ</a>
+            </>
+          ) : (
+            <>
+              ยังไม่มีบัญชี? <a href="/register">สมัครใช้งาน</a>
+            </>
+          )}
+        </p>
+      ) : null}
       {!challenge ? (
         <section className="account-card account-form account-passkey-card" role="region" aria-label="Passkey login">
           <PanelHeading icon="key" title="Passkey login" detail="ใช้ passkey ของ browser เพื่อเข้า account หลังกรอกอีเมล" />

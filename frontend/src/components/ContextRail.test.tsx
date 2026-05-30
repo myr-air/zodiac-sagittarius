@@ -22,7 +22,9 @@ function renderRail(overrides: Partial<Parameters<typeof ContextRail>[0]> = {}) 
     canEditExpenses: true,
     open: true,
     onCreateNote: vi.fn(),
+    onDeleteNote: vi.fn(),
     onEditSelected: vi.fn(),
+    onUpdateNote: vi.fn(),
     onReviewSuggestion: vi.fn(),
     onSuggestSelected: vi.fn(),
     onToggleTaskStatus: vi.fn(),
@@ -90,5 +92,22 @@ describe("ContextRail", () => {
     fireEvent.submit(screen.getByLabelText("เพิ่มโน้ตสำหรับจุดนี้").closest("form")!);
 
     expect(props.onCreateNote).not.toHaveBeenCalled();
+  });
+
+  it("lets the current note owner edit and delete their stop notes", async () => {
+    const user = userEvent.setup();
+    const props = renderRail({
+      currentMember: tripFixture.trip.members.find((member) => member.id === "member-beam")!,
+    });
+
+    await user.click(screen.getByRole("button", { name: /แก้ไขโน้ต/i }));
+    await user.clear(screen.getByLabelText("แก้ไขโน้ต"));
+    await user.type(screen.getByLabelText("แก้ไขโน้ต"), "Updated queue plan");
+    await user.click(screen.getByRole("button", { name: /บันทึกการแก้ไขโน้ต/i }));
+
+    expect(props.onUpdateNote).toHaveBeenCalledWith({ noteId: "note-dimdim-1", body: "Updated queue plan" });
+
+    await user.click(screen.getByRole("button", { name: /ลบโน้ต/i }));
+    expect(props.onDeleteNote).toHaveBeenCalledWith("note-dimdim-1");
   });
 });
