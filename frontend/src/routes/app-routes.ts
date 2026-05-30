@@ -7,10 +7,11 @@ function segment(value: string): string {
 export const appRoutes = {
   home: () => "/",
   login: () => "/login",
+  register: () => "/register",
   account: () => "/account",
   trips: () => "/trips",
   newTrip: () => "/trips/new",
-  join: (joinCode: string) => `/join/${segment(joinCode)}`,
+  join: (joinCode?: string) => (joinCode ? `/join/${segment(joinCode)}` : "/join"),
   tripOverview: (tripId: string) => `/trips/${segment(tripId)}`,
   tripItinerary: (tripId: string) => `/trips/${segment(tripId)}/itinerary`,
   tripMap: (tripId: string) => `/trips/${segment(tripId)}/map`,

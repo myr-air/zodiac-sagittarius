@@ -339,6 +339,29 @@ button:disabled,
   padding: 16px;
 }
 
+.account-login-flow {
+  width: min(100%, 560px);
+}
+
+.account-step-summary {
+  display: grid;
+  gap: 4px;
+  padding: 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-primary-soft);
+  color: var(--color-text-muted);
+  font-size: 13px;
+  font-weight: 750;
+}
+
+.account-step-summary strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--color-primary-strong);
+  font-size: 15px;
+}
+
 .account-form label,
 .account-two-col label {
   display: grid;

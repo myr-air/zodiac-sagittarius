@@ -42,10 +42,7 @@ const MIN_JOIN_PASSWORD_LENGTH: usize = 8;
 const MAX_JOIN_PASSWORD_LENGTH: usize = 256;
 const MEMBER_SESSION_TTL: Duration = Duration::days(30);
 const DEFAULT_OWNER_COLOR: &str = "#0f766e";
-const PASSKEY_ALLOWED_ORIGINS: &[(&str, &str)] = &[
-    ("http://localhost:5180", "localhost"),
-    ("http://127.0.0.1:5180", "127.0.0.1"),
-];
+const PASSKEY_ALLOWED_ORIGINS: &[&str] = &["localhost", "127.0.0.1", "0.0.0.0"];
 const WEBAUTHN_FLAG_USER_PRESENT: u8 = 0x01;
 const WEBAUTHN_FLAG_USER_VERIFIED: u8 = 0x04;
 const WEBAUTHN_FLAG_ATTESTED_CREDENTIAL_DATA: u8 = 0x40;
@@ -87,6 +84,7 @@ pub struct PasskeyLoginFinishInput {
 
 pub async fn start_email_login(
     pool: &PgPool,
+    email_delivery: &crate::app::email::EmailDelivery,
     email: &str,
 ) -> Result<EmailLoginStartResponse, ServiceError> {
     let normalized_email = normalize_email(email)?;
@@ -107,7 +105,20 @@ pub async fn start_email_login(
         {
             return Err(ServiceError::Unauthenticated);
         }
+        let code = db::account_queries::find_email_login_outbox_code_for_challenge(
+            &mut tx,
+            active_challenge.id,
+        )
+        .await?;
         tx.commit().await?;
+        email_delivery
+            .send_login_code(
+                &normalized_email,
+                &code,
+                active_challenge.id,
+                &format_timestamp(active_challenge.expires_at),
+            )
+            .await?;
         return Ok(EmailLoginStartResponse {
             challenge_id: active_challenge.id,
             expires_at: format_timestamp(active_challenge.expires_at),
@@ -139,6 +150,15 @@ pub async fn start_email_login(
     )
     .await?;
     tx.commit().await?;
+
+    email_delivery
+        .send_login_code(
+            &normalized_email,
+            &code,
+            challenge_id,
+            &format_timestamp(expires_at),
+        )
+        .await?;
 
     Ok(EmailLoginStartResponse {
         challenge_id,
@@ -1141,10 +1161,39 @@ fn verify_authenticator_data(
     Ok(())
 }
 
-fn allowed_passkey_origin(origin: &str) -> Option<&'static str> {
-    PASSKEY_ALLOWED_ORIGINS
-        .iter()
-        .find_map(|(allowed_origin, rp_id)| (*allowed_origin == origin).then_some(*rp_id))
+fn allowed_passkey_origin(origin: &str) -> Option<String> {
+    let (scheme, rest) = origin.split_once("://")?;
+    if scheme != "http" && scheme != "https" {
+        return None;
+    }
+    let host = rest.split('/').next().unwrap_or("");
+    let host = host.split(':').next().unwrap_or(host).to_ascii_lowercase();
+    if host.is_empty() {
+        return None;
+    }
+
+    let allowed = std::env::var("PASSKEY_ALLOWED_ORIGINS")
+        .map(|value| {
+            value
+                .split(',')
+                .map(|entry| entry.trim().to_ascii_lowercase())
+                .filter(|entry| !entry.is_empty())
+                .collect::<Vec<_>>()
+        })
+        .unwrap_or_else(|_| {
+            PASSKEY_ALLOWED_ORIGINS
+                .iter()
+                .copied()
+                .map(ToString::to_string)
+                .collect::<Vec<_>>()
+        });
+
+    let wildcard_allowed = allowed.iter().any(|entry| entry == "*" || entry == &host);
+    let subdomain_allowed = allowed.iter().any(|entry| {
+        entry.starts_with("*.") && host.ends_with(&entry["*.".len()..]) && host.len() > entry.len() - 2
+    });
+
+    (wildcard_allowed || subdomain_allowed).then_some(host)
 }
 
 fn verify_passkey_signature(
@@ -1336,10 +1385,15 @@ mod tests {
     use super::*;
     use p256::ecdsa::SigningKey;
     use sqlx::error::{DatabaseError, ErrorKind};
+    use std::env;
     use std::borrow::Cow;
     use std::collections::BTreeMap;
+    use std::panic::{self, AssertUnwindSafe};
     use std::error::Error;
+    use std::sync::Mutex;
     use std::fmt;
+
+    static PASSKEY_ORIGIN_ALLOWLIST_MUTEX: Mutex<()> = Mutex::new(());
 
     #[test]
     fn account_trip_insert_error_falls_back_to_database_error() {
@@ -1386,6 +1440,69 @@ mod tests {
             Box::new(error).into_error().to_string(),
             "fake unique violation"
         );
+    }
+
+    fn with_passkey_origin_allowlist<R>(value: &str, test: impl FnOnce() -> R) -> R {
+        let _guard = PASSKEY_ORIGIN_ALLOWLIST_MUTEX.lock().unwrap();
+        let previous = env::var("PASSKEY_ALLOWED_ORIGINS").ok();
+        // SAFETY: test code is single-threaded and the process-wide env is restored before returning.
+        unsafe {
+            env::set_var("PASSKEY_ALLOWED_ORIGINS", value);
+        }
+        let result = panic::catch_unwind(AssertUnwindSafe(test));
+        match previous {
+            Some(raw) => {
+                // SAFETY: restoring the env is intentionally scoped to this test helper.
+                unsafe {
+                    env::set_var("PASSKEY_ALLOWED_ORIGINS", raw);
+                }
+            }
+            None => {
+                // SAFETY: restoring the env is intentionally scoped to this test helper.
+                unsafe {
+                    env::remove_var("PASSKEY_ALLOWED_ORIGINS");
+                }
+            }
+        }
+        match result {
+            Ok(value) => value,
+            Err(payload) => panic::resume_unwind(payload),
+        }
+    }
+
+    #[test]
+    fn passkey_origin_uses_explicit_allowed_origins() {
+        with_passkey_origin_allowlist("example.com,127.0.0.1", || {
+            assert_eq!(
+                allowed_passkey_origin("https://example.com:5180/path"),
+                Some("example.com".to_string())
+            );
+            assert_eq!(
+                allowed_passkey_origin("http://127.0.0.1:5180"),
+                Some("127.0.0.1".to_string())
+            );
+            assert_eq!(allowed_passkey_origin("https://localhost:5180"), None);
+        });
+    }
+
+    #[test]
+    fn passkey_origin_respects_subdomain_wildcards() {
+        with_passkey_origin_allowlist("*.example.test,localhost", || {
+            assert_eq!(
+                allowed_passkey_origin("https://foo.example.test"),
+                Some("foo.example.test".to_string())
+            );
+            assert_eq!(allowed_passkey_origin("https://example.test"), None);
+        });
+    }
+
+    #[test]
+    fn passkey_origin_rejects_invalid_or_empty_values() {
+        with_passkey_origin_allowlist("", || {
+            assert_eq!(allowed_passkey_origin("https://localhost:5180"), None);
+            assert_eq!(allowed_passkey_origin("ftp://127.0.0.1:5180"), None);
+            assert_eq!(allowed_passkey_origin("localhost"), None);
+        });
     }
 
     #[test]

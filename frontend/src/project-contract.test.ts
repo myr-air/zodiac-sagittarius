@@ -42,11 +42,14 @@ describe("Sagittarius project scaffold", () => {
 
   it("uses Next App Router with trip-scoped production routes", () => {
     expect(readFileSync(join(frontendRoot, "app/page.tsx"), "utf8")).toContain('redirect("/trips")');
+    expect(existsSync(join(frontendRoot, "app/login/page.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "app/register/page.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "app/trips/[tripId]/page.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "app/trips/[tripId]/itinerary/page.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "app/trips/[tripId]/map/page.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "app/trips/[tripId]/timeline/page.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "app/trips/[tripId]/members/page.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "app/join/page.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "app/join/[joinCode]/page.tsx"))).toBe(true);
     expect(readFileSync(join(frontendRoot, "app/layout.tsx"), "utf8")).toContain("Sagittarius");
   });
@@ -77,8 +80,8 @@ describe("Sagittarius project scaffold", () => {
   it("documents the backend vertical slice verification command", () => {
     const makefile = readFileSync(join(repoRoot, "Makefile"), "utf8");
 
-    expect(makefile).toContain("TEST_DATABASE_URL := postgres://postgres:postgres@127.0.0.1:5432/sagittarius_test");
-    expect(makefile).toContain("DATABASE_URL=$(TEST_DATABASE_URL) cargo test --manifest-path $(BACKEND_MANIFEST)");
+    expect(makefile).toContain("TEST_DATABASE_URL ?= postgres://postgres:postgres@127.0.0.1:5432/sagittarius_test");
+    expect(makefile).toContain('DATABASE_URL="$(TEST_DATABASE_URL)" cargo test --manifest-path $(BACKEND_MANIFEST)');
   });
 
   it("keeps the real API e2e runnable from a seeded local backend", () => {

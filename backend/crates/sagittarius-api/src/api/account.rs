@@ -98,7 +98,12 @@ pub async fn start_email_login(
 ) -> Result<Json<EmailLoginStartResponse>, ServiceError> {
     let Json(request) =
         request.map_err(|_| ServiceError::InvalidRequest("json payload is invalid"))?;
-    let response = app::account::start_email_login(&state.pool, &request.email).await?;
+    let response = app::account::start_email_login(
+        &state.pool,
+        &state.email_delivery,
+        &request.email,
+    )
+    .await?;
 
     Ok(Json(response))
 }

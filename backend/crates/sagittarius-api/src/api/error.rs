@@ -47,6 +47,14 @@ impl IntoResponse for ServiceError {
                 self.to_string(),
                 None,
             ),
+            ServiceError::EmailDelivery(message) => {
+                (
+                    StatusCode::BAD_GATEWAY,
+                    "email_delivery_failed",
+                    message,
+                    None,
+                )
+            }
             ServiceError::TripJoinIdAlreadyExists => (
                 StatusCode::CONFLICT,
                 "trip_join_id_already_exists",

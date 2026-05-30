@@ -42,4 +42,15 @@ describe("Storybook template catalog", () => {
       expect(stories).toContain(`export const ${stateName}`);
     });
   });
+
+  it("documents split account and trip access routes", () => {
+    const stories = storyText();
+    ["AccountLogin", "AccountRegister", "TripAccess", "TripAccessWithJoinCode"].forEach((stateName) => {
+      expect(stories).toContain(`export const ${stateName}`);
+    });
+    expect(stories).toContain('accessMode: "account-login"');
+    expect(stories).toContain('accessMode: "account-register"');
+    expect(stories).toContain('accessMode: "trip-access"');
+    expect(stories).toContain('initialJoinCode: "HK-SZ-2025"');
+  });
 });

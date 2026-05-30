@@ -20,7 +20,7 @@ export default defineConfig({
           globals: true,
           setupFiles: ["./vitest.setup.ts"],
           testTimeout: 15_000,
-          exclude: ["**/*.stories.*", "**/node_modules/**", "**/.next/**", "**/storybook-static/**"],
+          exclude: ["**/*.stories.*", "**/node_modules/**", "**/.next/**", "**/storybook-static/**", "tests/**"],
         },
       },
       {

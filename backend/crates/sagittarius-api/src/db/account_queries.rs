@@ -108,6 +108,20 @@ pub async fn insert_email_login_outbox(
     Ok(())
 }
 
+pub async fn find_email_login_outbox_code_for_challenge(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    challenge_id: Uuid,
+) -> Result<String, sqlx::Error> {
+    sqlx::query_scalar(
+        "select code
+         from email_login_outbox
+         where challenge_id = $1",
+    )
+    .bind(challenge_id)
+    .fetch_one(&mut **tx)
+    .await
+}
+
 pub async fn record_email_login_failed_attempt(
     tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
     challenge_id: Uuid,

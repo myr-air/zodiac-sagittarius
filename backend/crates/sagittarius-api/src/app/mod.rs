@@ -1,4 +1,5 @@
 pub mod account;
+pub mod email;
 pub mod auth;
 pub mod events;
 pub mod itinerary;
@@ -13,6 +14,7 @@ use crate::realtime::RealtimeHub;
 pub struct AppState {
     pub pool: PgPool,
     pub realtime: RealtimeHub,
+    pub email_delivery: email::EmailDelivery,
 }
 
 impl AppState {
@@ -20,6 +22,7 @@ impl AppState {
         Self {
             pool,
             realtime: RealtimeHub::default(),
+            email_delivery: email::EmailDelivery::from_env(),
         }
     }
 

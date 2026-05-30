@@ -17,6 +17,9 @@ playwright-report/
 frontend/playwright-report/
 test-results/
 frontend/test-results/
+frontend/scripts/run-e2e-review.ts
+frontend/scripts/run-login-e2e-review.ts
+frontend/tests/passkey-setup-playwright.spec.ts
 *.log
 package-lock.json
 tsconfig.tsbuildinfo

@@ -43,9 +43,18 @@ interface SagittariusAppProps {
   apiClient?: TripApiClient;
   routeTripId?: string;
   initialJoinCode?: string;
+  accessMode?: "combined" | "account-login" | "account-register" | "trip-access";
 }
 
-export function SagittariusApp({ initialView = "overview", requireJoin = false, dataSource = "demo", apiClient, routeTripId, initialJoinCode }: SagittariusAppProps) {
+export function SagittariusApp({
+  initialView = "overview",
+  requireJoin = false,
+  dataSource = "demo",
+  apiClient,
+  routeTripId,
+  initialJoinCode,
+  accessMode = "combined",
+}: SagittariusAppProps) {
   /* v8 ignore next 3 */
   const resolvedApiClient = useMemo(
     () => apiClient ?? (dataSource === "api" ? createTripApiClient({ baseUrl: process.env.NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL ?? "" }) : undefined),
@@ -61,8 +70,8 @@ export function SagittariusApp({ initialView = "overview", requireJoin = false, 
     future: [],
   }));
   const [participantSession, setParticipantSession] = useState<TripParticipantSession | null>(null);
-  const [accountSession, setAccountSession] = useState<AccountSession | null>(null);
-  const [accountSessionLoaded, setAccountSessionLoaded] = useState(false);
+  const [accountSession, setAccountSession] = useState<AccountSession | null>(() => loadPersistedAccountSession());
+  const [accountSessionLoaded, setAccountSessionLoaded] = useState(() => typeof window !== "undefined");
   const [accountClaimState, setAccountClaimState] = useState<{ status: "idle" | "saving"; message: string | null }>({ status: "idle", message: null });
   const [suggestions, setSuggestions] = useState<Suggestion[]>(() => tripFixtureSuggestions.map((suggestion) => ({ ...suggestion })));
   const [tasks, setTasks] = useState<TripTask[]>(() => tripFixtureTasks.map((task) => ({ ...task })));
@@ -118,13 +127,13 @@ export function SagittariusApp({ initialView = "overview", requireJoin = false, 
   }, [isApiMode, requireJoin, routeTripId]);
 
   useEffect(() => {
+    if (accountSessionLoaded) return;
     const timeout = window.setTimeout(() => {
       setAccountSession(loadPersistedAccountSession());
       setAccountSessionLoaded(true);
     }, 0);
-
     return () => window.clearTimeout(timeout);
-  }, []);
+  }, [accountSessionLoaded]);
 
   useEffect(() => {
     if (!accountSessionLoaded) return;
@@ -590,6 +599,7 @@ export function SagittariusApp({ initialView = "overview", requireJoin = false, 
   if (requireJoin && !sessionMember) {
     return (
       <AccountAccessPanel
+        accessMode={accessMode}
         accountClient={accountClient}
         accountSession={accountSession}
         apiClient={resolvedApiClient}
@@ -618,19 +628,19 @@ export function SagittariusApp({ initialView = "overview", requireJoin = false, 
         {requireJoin ? (
           <div className="account-claim-banner">
             <div>
-              <strong>{accountSession ? "Account connected" : "Temp access"}</strong>
+              <strong>{accountSession ? "เชื่อมต่อ account แล้ว" : "เข้าแบบ temp"}</strong>
               <span>
                 {accountSession
                   ? currentMember.userId
-                    ? "This trip identity is already linked."
-                    : "Claim this temp trip identity to keep history and stats."
-                  : "Login from the access screen to claim this identity later."}
+                    ? "ตัวตนนี้ผูกกับ account แล้ว"
+                    : "ผูกตัวตน temp นี้กับ account เพื่อเก็บประวัติและสถิติ"
+                  : "เข้าสู่ระบบจากหน้า access เพื่อผูก identity นี้กับ account ภายหลัง"}
               </span>
             </div>
             {accountSession && participantSession && !currentMember.userId ? (
               <Button type="button" variant="secondary" onClick={() => void claimCurrentMemberToAccount()} disabled={accountClaimState.status === "saving"}>
                 <Icon name="check" />
-                Claim identity
+                ผูกตัวตน
               </Button>
             ) : null}
             {accountClaimState.message ? <span className="account-claim-message">{accountClaimState.message}</span> : null}
