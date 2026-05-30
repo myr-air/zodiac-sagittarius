@@ -70,8 +70,8 @@ export function SagittariusApp({
     future: [],
   }));
   const [participantSession, setParticipantSession] = useState<TripParticipantSession | null>(null);
-  const [accountSession, setAccountSession] = useState<AccountSession | null>(() => loadPersistedAccountSession());
-  const [accountSessionLoaded, setAccountSessionLoaded] = useState(() => typeof window !== "undefined");
+  const [accountSession, setAccountSession] = useState<AccountSession | null>(null);
+  const [accountSessionLoaded, setAccountSessionLoaded] = useState(false);
   const [accountClaimState, setAccountClaimState] = useState<{ status: "idle" | "saving"; message: string | null }>({ status: "idle", message: null });
   const [suggestions, setSuggestions] = useState<Suggestion[]>(() => tripFixtureSuggestions.map((suggestion) => ({ ...suggestion })));
   const [tasks, setTasks] = useState<TripTask[]>(() => tripFixtureTasks.map((task) => ({ ...task })));
