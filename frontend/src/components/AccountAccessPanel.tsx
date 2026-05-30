@@ -18,6 +18,7 @@ import { Icon } from "./icons";
 import { TripJoinGate } from "./TripJoinGate";
 
 interface AccountAccessPanelProps {
+  accessMode?: "combined" | "account-login" | "account-register" | "trip-access";
   accountClient: AccountApiClient;
   accountSession: AccountSession | null;
   apiClient?: TripApiClient;
@@ -42,6 +43,7 @@ const defaultTripForm = (): AccountTripCreateRequest => ({
 });
 
 export function AccountAccessPanel({
+  accessMode = "combined",
   accountClient,
   accountSession,
   apiClient,
@@ -52,7 +54,9 @@ export function AccountAccessPanel({
   onTripChange,
   trip,
 }: AccountAccessPanelProps) {
-  const [mode, setMode] = useState<AccessMode>(() => (accountSession ? "account" : "temp"));
+  const forcedMode = accessMode === "trip-access" ? "temp" : accessMode === "combined" ? null : "account";
+  const [selectedMode, setSelectedMode] = useState<AccessMode>(() => (accountSession ? "account" : "temp"));
+  const mode = forcedMode ?? (accountSession ? "account" : selectedMode);
   const [settings, setSettings] = useState<AccountSettings | null>(null);
   const [trips, setTrips] = useState<AccountTripSummary[]>([]);
   const [stats, setStats] = useState<AccountTripStats | null>(null);
@@ -98,41 +102,43 @@ export function AccountAccessPanel({
   }
 
   return (
-    <main className="account-page" aria-label="Account access">
+    <main className="account-page" aria-label={mainLabel(accessMode)}>
       <section className="account-shell">
         <div className="account-hero">
           <div className="join-mark account-hero-mark" aria-hidden="true">
             <Icon name="route" />
           </div>
           <div>
-            <p className="join-eyebrow">Sagittarius account</p>
-            <h1>จัดการ trip ด้วย account หรือเข้าแบบ temp</h1>
-            <p>Account จะเก็บประวัติ สถิติ และสิทธิ owner ส่วน temp access ยังใช้เข้าทริปเดิมได้ทันที</p>
+            <p className="join-eyebrow">Sagittarius access</p>
+            <h1>{heroTitle(accessMode)}</h1>
+            <p>{heroDetail(accessMode)}</p>
           </div>
         </div>
 
-        <div className="account-mode-tabs" role="tablist" aria-label="Access mode">
-          <button
-            type="button"
-            role="tab"
-            aria-selected={mode === "account"}
-            className={mode === "account" ? "account-tab account-tab--active" : "account-tab"}
-            onClick={() => setMode("account")}
-          >
-            <Icon name="users" />
-            Account
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={mode === "temp"}
-            className={mode === "temp" ? "account-tab account-tab--active" : "account-tab"}
-            onClick={() => setMode("temp")}
-          >
-            <Icon name="clock" />
-            Temp access
-          </button>
-        </div>
+        {accessMode === "combined" ? (
+          <div className="account-mode-tabs" role="tablist" aria-label="Access mode">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={mode === "account"}
+              className={mode === "account" ? "account-tab account-tab--active" : "account-tab"}
+              onClick={() => setSelectedMode("account")}
+            >
+              <Icon name="users" />
+              Account
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={mode === "temp"}
+              className={mode === "temp" ? "account-tab account-tab--active" : "account-tab"}
+              onClick={() => setSelectedMode("temp")}
+            >
+              <Icon name="clock" />
+              Temp access
+            </button>
+          </div>
+        ) : null}
 
         {message ? <StatusMessage tone="success">{message}</StatusMessage> : null}
         {error ? <StatusMessage tone="danger">{error}</StatusMessage> : null}
@@ -140,6 +146,7 @@ export function AccountAccessPanel({
         {mode === "temp" ? (
           <TripJoinGate
             apiClient={apiClient}
+            demoHref={apiClient ? "/join/demo" : undefined}
             embedded
             initialJoinCode={initialJoinCode}
             trip={trip}
@@ -176,6 +183,7 @@ export function AccountAccessPanel({
           />
         ) : (
           <EmailLoginPanel
+            flow={accessMode === "account-register" ? "register" : "login"}
             accountClient={accountClient}
             onLoggedIn={(session) => {
               onAccountSessionChange(session);
@@ -189,11 +197,34 @@ export function AccountAccessPanel({
   );
 }
 
+function mainLabel(accessMode: AccountAccessPanelProps["accessMode"]): string {
+  if (accessMode === "account-login") return "Account login";
+  if (accessMode === "account-register") return "Account register";
+  if (accessMode === "trip-access") return "Trip access";
+  return "Account access";
+}
+
+function heroTitle(accessMode: AccountAccessPanelProps["accessMode"]): string {
+  if (accessMode === "account-login") return "เข้าสู่ account";
+  if (accessMode === "account-register") return "สร้าง account";
+  if (accessMode === "trip-access") return "เข้า trip แบบ temp access";
+  return "จัดการ trip ด้วย account หรือเข้าแบบ temp";
+}
+
+function heroDetail(accessMode: AccountAccessPanelProps["accessMode"]): string {
+  if (accessMode === "account-login") return "ใช้ email code หรือ passkey เพื่อกลับเข้า account ที่ผูกกับ trip ของคุณ";
+  if (accessMode === "account-register") return "สร้าง account ด้วย email code เพื่อเก็บประวัติ trip สถิติ และสิทธิ owner";
+  if (accessMode === "trip-access") return "กรอก Trip ID และ password เพื่อเข้า trip เดิมโดยไม่ต้องใช้ account";
+  return "Account จะเก็บประวัติ สถิติ และสิทธิ owner ส่วน temp access ยังใช้เข้าทริปเดิมได้ทันที";
+}
+
 function EmailLoginPanel({
+  flow,
   accountClient,
   onError,
   onLoggedIn,
 }: {
+  flow: "login" | "register";
   accountClient: AccountApiClient;
   onError: (message: string | null) => void;
   onLoggedIn: (session: AccountSession) => void;
@@ -201,7 +232,6 @@ function EmailLoginPanel({
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [trustDevice, setTrustDevice] = useState(true);
-  const [deviceLabel, setDeviceLabel] = useState("");
   const [challenge, setChallenge] = useState<EmailLoginStartResponse | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -228,7 +258,7 @@ function EmailLoginPanel({
         challengeId: challenge.challengeId,
         code,
         trustDevice,
-        deviceLabel,
+        deviceLabel: "",
       });
       onLoggedIn(session);
     } catch (caught) {
@@ -250,7 +280,7 @@ function EmailLoginPanel({
         authenticatorData: arrayBufferToBase64Url(credential.response.authenticatorData),
         signature: arrayBufferToBase64Url(credential.response.signature),
         trustDevice,
-        deviceLabel,
+        deviceLabel: "",
       });
       onLoggedIn(session);
       onError(null);
@@ -261,45 +291,72 @@ function EmailLoginPanel({
     }
   }
 
-  return (
-    <div className="account-grid">
-      <form className="account-card account-form" onSubmit={submitEmail}>
-        <PanelHeading icon="users" title="Email login" detail="รับรหัสจาก local email outbox แล้วกรอกต่อในขั้นถัดไป" />
-        <label>
-          <span>Email *</span>
-          <input value={email} onChange={(event) => setEmail(event.target.value)} type="email" autoComplete="email" required />
-        </label>
-        <Button type="submit" disabled={isSubmitting}>
-          <Icon name="check" />
-          ส่งรหัส login
-        </Button>
-        <Button type="button" variant="secondary" disabled={!email || isSubmitting} onClick={() => void signInWithPasskey()}>
-          <Icon name="settings" />
-          เข้า account ด้วย passkey
-        </Button>
-      </form>
+  function resetChallenge() {
+    setChallenge(null);
+    setCode("");
+    onError(null);
+  }
 
-      <form className="account-card account-form" onSubmit={submitCode}>
-        <PanelHeading icon="settings" title="Verify code" detail={challenge ? `หมดอายุ ${formatDateTime(challenge.expiresAt)}` : "เริ่มจาก email ก่อน"} />
-        <label>
-          <span>Code *</span>
-          <input value={code} onChange={(event) => setCode(event.target.value)} inputMode="numeric" autoComplete="one-time-code" required />
-        </label>
-        <label className="account-check">
-          <input checked={trustDevice} onChange={(event) => setTrustDevice(event.target.checked)} type="checkbox" />
-          Trust this PC
-        </label>
-        {trustDevice ? (
-          <label>
-            <span>Device label</span>
-            <input value={deviceLabel} onChange={(event) => setDeviceLabel(event.target.value)} autoComplete="off" placeholder="MacBook, office PC" />
-          </label>
-        ) : null}
-        <Button type="submit" disabled={!challenge || isSubmitting}>
-          <Icon name="check" />
-          เข้า account
-        </Button>
+  const trustDeviceFields = (
+    <label className="account-check">
+      <input checked={trustDevice} onChange={(event) => setTrustDevice(event.target.checked)} type="checkbox" />
+      Trust this PC
+    </label>
+  );
+
+  return (
+    <div className="account-login-flow">
+      <form className="account-card account-form" onSubmit={challenge ? submitCode : submitEmail}>
+        <PanelHeading
+          icon={challenge ? "settings" : "users"}
+          title={challenge ? "Verify code" : "Email login"}
+          detail={challenge ? `หมดอายุ ${formatDateTime(challenge.expiresAt)}` : "ส่งรหัสเข้าอีเมลของคุณก่อน แล้วค่อยยืนยันในขั้นถัดไป"}
+        />
+        {challenge ? (
+          <>
+            <div className="account-step-summary">
+              <span>ส่งรหัสไปที่</span>
+              <strong>{email}</strong>
+            </div>
+            <label>
+              <span>Code *</span>
+              <input value={code} onChange={(event) => setCode(event.target.value)} inputMode="numeric" autoComplete="one-time-code" required />
+            </label>
+            {trustDeviceFields}
+            <Button type="submit" disabled={isSubmitting}>
+              <Icon name="check" />
+              {flow === "register" ? "สร้าง account" : "เข้า account"}
+            </Button>
+            <Button type="button" variant="secondary" disabled={isSubmitting} onClick={resetChallenge}>
+              เปลี่ยนอีเมล
+            </Button>
+          </>
+        ) : (
+          <>
+            <div className="account-step-summary">
+              <span>ยืนยันรหัสได้หลังจากส่ง email code</span>
+            </div>
+            <label>
+              <span>Email *</span>
+              <input value={email} onChange={(event) => setEmail(event.target.value)} type="email" autoComplete="email" required />
+            </label>
+            {trustDeviceFields}
+            <Button type="submit" disabled={isSubmitting}>
+              <Icon name="check" />
+              {flow === "register" ? "ส่งรหัส register" : "ส่งรหัส login"}
+            </Button>
+          </>
+        )}
       </form>
+      {!challenge ? (
+        <section className="account-card account-form account-passkey-card" role="region" aria-label="Passkey login">
+          <PanelHeading icon="key" title="Passkey login" detail="ใช้ passkey ของ browser เพื่อเข้า account หลังกรอกอีเมล" />
+          <Button type="button" variant="secondary" disabled={!email || isSubmitting} onClick={() => void signInWithPasskey()}>
+            <Icon name="key" />
+            เข้า account ด้วย passkey
+          </Button>
+        </section>
+      ) : null}
     </div>
   );
 }
@@ -438,7 +495,12 @@ function AccountDashboard({
           </label>
           <label>
             <span>Join ID *</span>
-            <input value={tripForm.joinId} onChange={(event) => setTripForm((current) => ({ ...current, joinId: event.target.value }))} required />
+            <input
+              value={tripForm.joinId}
+              onChange={(event) => setTripForm((current) => ({ ...current, joinId: event.target.value }))}
+              autoComplete="username"
+              required
+            />
           </label>
         </div>
         <label>
@@ -499,7 +561,7 @@ function AccountDashboard({
           disabled={!settings}
           onClick={() => void registerPasskey()}
         >
-          <Icon name="settings" />
+          <Icon name="key" />
           Start passkey setup
         </Button>
       </section>
@@ -664,8 +726,16 @@ function StatusMessage({ children, tone }: { children: ReactNode; tone: "danger"
 }
 
 function errorMessage(caught: unknown, fallback: string): string {
-  if (caught instanceof Error && caught.message) return caught.message;
+  if (caught instanceof Error && caught.message) return friendlyErrorText(caught.message, fallback);
   return fallback;
+}
+
+function friendlyErrorText(message: string, fallback: string): string {
+  const normalized = message.trim();
+  if (normalized === "404") return "ไม่พบข้อมูลที่ต้องการ กรุณาตรวจสอบอีกครั้ง";
+  if (normalized === "401" || normalized === "403") return "สิทธิ์ไม่ถูกต้อง กรุณาเข้าสู่ระบบใหม่";
+  if (!normalized || /^\d{3}$/.test(normalized)) return fallback;
+  return normalized;
 }
 
 function formatDateTime(value: string): string {
@@ -684,16 +754,20 @@ function profileToForm(settings: AccountSettings): AccountSettingsUpdateRequest 
 async function createPasskeyCredential(challenge: string, settings: AccountSettings) {
   const credentials = assertCredentialApi();
   const userName = settings.profile.primaryEmail ?? settings.profile.displayName;
+  const rpId = getPasskeyRpId();
   const credential = await credentials.create({
     publicKey: {
       challenge: base64UrlToArrayBuffer(challenge),
-      rp: { name: "Sagittarius" },
+      rp: { name: "Sagittarius", ...(rpId ? { id: rpId } : {}) },
       user: {
         id: new TextEncoder().encode(settings.profile.id),
         name: userName,
         displayName: settings.profile.displayName,
       },
-      pubKeyCredParams: [{ type: "public-key", alg: -7 }],
+      pubKeyCredParams: [
+        { type: "public-key", alg: -7 },
+        { type: "public-key", alg: -257 },
+      ],
       authenticatorSelection: {
         residentKey: "preferred",
         userVerification: "required",
@@ -758,6 +832,15 @@ function isAssertionCredential(credential: Credential | null): credential is Ass
     credential.response.authenticatorData instanceof ArrayBuffer &&
     credential.response.signature instanceof ArrayBuffer
   );
+}
+
+function getPasskeyRpId(): string | null {
+  const rpHost = window.location.hostname;
+  if (!rpHost) return null;
+  if (rpHost === "localhost") return rpHost;
+  if (/^\d+\.\d+\.\d+\.\d+$/.test(rpHost)) return null;
+  if (/^([0-9a-fA-F:]+)$/.test(rpHost)) return null;
+  return rpHost;
 }
 
 function isPublicKeyCredential(credential: Credential | null): credential is PublicKeyCredential {

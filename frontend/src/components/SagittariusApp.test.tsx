@@ -59,6 +59,7 @@ describe("Sagittarius cockpit UI", () => {
 
   it("lets a guest participant leave their local session and choose another identity", async () => {
     const user = userEvent.setup();
+    const confirm = vi.spyOn(window, "confirm").mockReturnValue(true);
     render(<SagittariusApp requireJoin />);
 
     await user.type(screen.getByLabelText(/Trip ID/i), "HK-SZ-2025");
@@ -70,6 +71,7 @@ describe("Sagittarius cockpit UI", () => {
 
     await user.click(screen.getByRole("button", { name: /เปลี่ยนตัวตน/i }));
 
+    expect(confirm).toHaveBeenCalledWith(expect.stringContaining("Explorer Friend"));
     expect(screen.getByRole("main", { name: /Account access/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /เข้าห้อง trip/i })).toBeInTheDocument();
     expect(screen.queryByRole("navigation", { name: /Sagittarius planning navigation/i })).not.toBeInTheDocument();
@@ -77,6 +79,7 @@ describe("Sagittarius cockpit UI", () => {
 
   it("persists guest participant claims across a fresh app mount", async () => {
     const user = userEvent.setup();
+    vi.spyOn(window, "confirm").mockReturnValue(true);
     installLocalStorageStub();
     const { unmount } = render(<SagittariusApp requireJoin />);
 
@@ -134,6 +137,76 @@ describe("Sagittarius cockpit UI", () => {
 
     expect(screen.getByRole("tab", { name: /Temp access/i })).toHaveAttribute("aria-selected", "true");
     await waitFor(() => expect(storage.getItem("sagittarius-account-session")).toBeNull());
+  });
+
+  it("hydrates a trusted account session on startup and renders account mode", async () => {
+    const storage = installLocalStorageStub();
+    storage.setItem(
+      "sagittarius-account-session",
+      JSON.stringify({
+        userId: "11111111-1111-1111-1111-111111111111",
+        sessionToken: "playwright-account-session",
+        kind: "trusted",
+        trustedDeviceId: "device-1",
+        createdAt: "2026-05-30T10:00:00.000Z",
+        expiresAt: "2030-01-01T10:00:00.000Z",
+      }),
+    );
+
+    const fetchSpy = vi.spyOn(globalThis, "fetch").mockImplementation(async (input) => {
+      const request = input instanceof Request ? input.url : String(input);
+
+      if (request.includes("/api/v1/account") && !request.includes("/api/v1/account/trips") && !request.includes("/api/v1/account/trip-stats")) {
+        return new Response(
+          JSON.stringify({
+            profile: {
+              id: "11111111-1111-1111-1111-111111111111",
+              displayName: "Aom",
+              avatarColor: "#0f766e",
+              locale: "en-US",
+              timezone: "UTC",
+              primaryEmail: "aom@example.com",
+            },
+            passkeys: [],
+            trustedDevices: [],
+          }),
+          { status: 200, headers: { "content-type": "application/json" } },
+        );
+      }
+
+      if (request.includes("/api/v1/account/trips")) {
+        return new Response(JSON.stringify([]), { status: 200, headers: { "content-type": "application/json" } });
+      }
+
+      if (request.includes("/api/v1/account/trip-stats")) {
+        return new Response(
+          JSON.stringify({
+            tripsTotal: 0,
+            tripsOwned: 0,
+            activeTrips: 0,
+            tempClaimsCompleted: 0,
+          }),
+          { status: 200, headers: { "content-type": "application/json" } },
+        );
+      }
+
+      return new Response(JSON.stringify({}), { status: 404, headers: { "content-type": "application/json" }, statusText: "not found" });
+    });
+
+    try {
+      render(<SagittariusApp requireJoin dataSource="api" />);
+
+      expect(await screen.findByText("Profile & settings")).toBeInTheDocument();
+      expect(screen.getByRole("tab", { name: /^Account$/i })).toHaveAttribute("aria-selected", "true");
+      expect(screen.getByRole("tab", { name: /Temp access/i })).toHaveAttribute("aria-selected", "false");
+      expect(screen.getByRole("button", { name: /Start passkey setup/i })).toBeInTheDocument();
+      expect(screen.queryByLabelText(/Trip ID/i)).not.toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: /ส่งรหัส login/i })).not.toBeInTheDocument();
+      expect(fetchSpy).toHaveBeenCalledTimes(3);
+    } finally {
+      storage.clear();
+      fetchSpy.mockRestore();
+    }
   });
 
   it("creates overview tasks through the API client after backend login", async () => {

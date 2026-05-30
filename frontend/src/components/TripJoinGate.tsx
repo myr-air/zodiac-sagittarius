@@ -16,6 +16,7 @@ import type { Member, Trip, TripParticipantSession } from "@/src/trip/types";
 interface TripJoinGateProps {
   trip?: Trip;
   apiClient?: TripApiClient;
+  demoHref?: string;
   embedded?: boolean;
   initialJoinCode?: string;
   onTripChange: (trip: Trip) => void;
@@ -23,7 +24,7 @@ interface TripJoinGateProps {
   onCockpitLoaded?: (cockpit: TripCockpit) => void;
 }
 
-export function TripJoinGate({ trip, apiClient, embedded = false, initialJoinCode, onTripChange, onAuthenticated, onCockpitLoaded }: TripJoinGateProps) {
+export function TripJoinGate({ trip, apiClient, demoHref, embedded = false, initialJoinCode, onTripChange, onAuthenticated, onCockpitLoaded }: TripJoinGateProps) {
   const [step, setStep] = useState<"room" | "participant">("room");
   const [joinId, setJoinId] = useState(initialJoinCode ?? "");
   const [tripPassword, setTripPassword] = useState("");
@@ -165,7 +166,7 @@ export function TripJoinGate({ trip, apiClient, embedded = false, initialJoinCod
           <form className="join-form" onSubmit={submitTripRoom}>
             <label>
               <span>Trip ID</span>
-              <input value={joinId} onChange={(event) => setJoinId(event.target.value)} autoComplete="off" />
+              <input value={joinId} onChange={(event) => setJoinId(event.target.value)} autoComplete="username" required />
             </label>
             <label>
               <span>Trip password</span>
@@ -174,15 +175,26 @@ export function TripJoinGate({ trip, apiClient, embedded = false, initialJoinCod
                 onChange={(event) => setTripPassword(event.target.value)}
                 type="password"
                 autoComplete="current-password"
+                required
               />
             </label>
             <Button type="submit" className="join-submit" disabled={isSubmitting}>
               <Icon name="check" />
               เข้าห้อง trip
             </Button>
+            {demoHref ? (
+              <a className="button button--secondary join-submit" href={demoHref}>
+                <Icon name="route" />
+                เปิด demo trip
+              </a>
+            ) : null}
           </form>
         ) : (
           <div className="participant-step">
+            <button type="button" className="join-back" onClick={() => setStep('room')}>
+              <Icon name="chevronLeft" />
+              เปลี่ยน trip
+            </button>
             <div className="participant-grid" aria-label="รายชื่อสมาชิกใน trip">
               {participantMembers.map((member) => (
                 <button
@@ -271,7 +283,22 @@ function tripFromJoinResponse(response: JoinTripResponse): Trip {
 }
 
 function errorMessage(caught: unknown, fallback: string): string {
-  if (caught instanceof TripApiError) return caught.message;
-  if (caught instanceof Error) return caught.message;
+  if (caught instanceof TripApiError) {
+    if (caught.status === 404) return 'ไม่พบห้อง trip นี้ ลองตรวจสอบ Trip ID อีกครั้ง';
+    if (caught.status === 401 || caught.status === 403) return 'Trip ID หรือ password ไม่ถูกต้อง';
+    return friendlyErrorText(caught.message, fallback);
+  }
+  if (caught instanceof Error) {
+    if (caught.message.includes('fetch') || caught.message.includes('Failed')) return 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ กรุณาลองใหม่';
+    return friendlyErrorText(caught.message, fallback);
+  }
   return fallback;
+}
+
+function friendlyErrorText(message: string, fallback: string): string {
+  const normalized = message.trim();
+  if (normalized === "404") return "ไม่พบห้อง trip นี้ ลองตรวจสอบ Trip ID อีกครั้ง";
+  if (normalized === "401" || normalized === "403") return "Trip ID หรือ password ไม่ถูกต้อง";
+  if (!normalized || /^\d{3}$/.test(normalized)) return fallback;
+  return normalized;
 }

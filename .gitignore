@@ -7,8 +7,10 @@ frontend/storybook-static/
 .superpowers/
 .worktrees/
 backend/target/
+backend/.env
 coverage/
 frontend/coverage/
+frontend/scratch/
 node_modules/
 frontend/node_modules/
 playwright-report/

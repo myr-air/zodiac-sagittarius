@@ -18,7 +18,14 @@ interface AppShellProps {
 
 export function AppShell({ activeView, children, collapsed, currentMember, onLeaveParticipantSession, trip, onToggleCollapsed }: AppShellProps) {
   const tripDays = getTripDates(trip.startDate, trip.endDate).length;
+  const tripNights = Math.max(0, tripDays - 1);
   const navItems = tripWorkspaceNavItems(trip.id);
+
+  function confirmLeaveParticipantSession() {
+    if (!onLeaveParticipantSession) return;
+    const confirmed = window.confirm(`เปลี่ยนตัวตนจาก ${currentMember.displayName}? คุณจะต้องยืนยันตัวตนใหม่เพื่อกลับเข้ามา`);
+    if (confirmed) onLeaveParticipantSession();
+  }
 
   return (
     <div className="app-layout" data-sidebar-collapsed={collapsed ? "true" : "false"}>
@@ -62,7 +69,7 @@ export function AppShell({ activeView, children, collapsed, currentMember, onLea
 
         <div className="rail-summary" aria-label="สรุปแผน">
           <strong>สรุปแผน</strong>
-          <span><Icon name="calendar" /> {tripDays} วัน 5 คืน</span>
+          <span><Icon name="calendar" /> {tripDays} วัน {tripNights} คืน</span>
           <span><Icon name="location" /> {trip.itineraryItems.length} สถานที่</span>
           <Link href={appRoutes.tripOverview(trip.id)} className="rail-summary-link">ดูสรุปรายละเอียด</Link>
         </div>
@@ -76,7 +83,7 @@ export function AppShell({ activeView, children, collapsed, currentMember, onLea
             <span>{roleLabel(currentMember.role)}</span>
           </div>
           {onLeaveParticipantSession ? (
-            <button className="member-switch-button" type="button" onClick={onLeaveParticipantSession}>
+            <button className="member-switch-button" type="button" onClick={confirmLeaveParticipantSession}>
               เปลี่ยนตัวตน
             </button>
           ) : (

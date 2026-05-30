@@ -40,8 +40,140 @@ describe("AccountAccessPanel", () => {
 
     expect(screen.getByRole("heading", { name: /จัดการ trip ด้วย account/i })).toBeInTheDocument();
     expect(screen.getByLabelText(/Email/i)).toHaveAttribute("autocomplete", "email");
-    expect(screen.getByLabelText(/Code/i)).toHaveAttribute("autocomplete", "one-time-code");
+    expect(screen.queryByLabelText(/Code/i)).not.toBeInTheDocument();
+    expect(screen.getByText(/ยืนยันรหัสได้หลังจากส่ง email code/i)).toBeInTheDocument();
     expect(screen.getByRole("checkbox", { name: /Trust this PC/i })).toBeChecked();
+    expect(screen.queryByLabelText(/Device label/i)).not.toBeInTheDocument();
+
+    await user.type(screen.getByLabelText(/Email/i), "aom@example.test");
+    await user.click(screen.getByRole("button", { name: /ส่งรหัส login/i }));
+
+    expect(await screen.findByLabelText(/Code/i)).toHaveAttribute("autocomplete", "one-time-code");
+    expect(screen.queryByText(/ยืนยันรหัสได้หลังจากส่ง email code/i)).not.toBeInTheDocument();
+    expect(screen.getByText(/aom@example.test/i)).toBeInTheDocument();
+    expect(screen.queryByLabelText(/Device label/i)).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: /เปลี่ยนอีเมล/i }));
+
+    expect(screen.queryByLabelText(/Code/i)).not.toBeInTheDocument();
+    expect(screen.getByText(/ยืนยันรหัสได้หลังจากส่ง email code/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Email/i)).toHaveValue("aom@example.test");
+  });
+
+  it("separates passkey access from email verification with a key icon", async () => {
+    const user = userEvent.setup();
+    render(
+      <AccountAccessPanel
+        accountClient={createAccountClient()}
+        accountSession={null}
+        trip={seedTrip}
+        onAccountSessionChange={vi.fn()}
+        onAuthenticated={vi.fn()}
+        onTripChange={vi.fn()}
+      />,
+    );
+
+    await user.click(screen.getByRole("tab", { name: /^Account$/i }));
+
+    const passkeyPanel = screen.getByRole("region", { name: /Passkey login/i });
+    expect(within(passkeyPanel).getByRole("button", { name: /เข้า account ด้วย passkey/i })).toBeDisabled();
+    expect(within(passkeyPanel).getAllByTestId("icon-key").length).toBeGreaterThan(0);
+  });
+
+  it("renders account login without exposing trip access tabs on the login path", () => {
+    render(
+      <AccountAccessPanel
+        accessMode="account-login"
+        accountClient={createAccountClient()}
+        accountSession={null}
+        trip={seedTrip}
+        onAccountSessionChange={vi.fn()}
+        onAuthenticated={vi.fn()}
+        onTripChange={vi.fn()}
+      />,
+    );
+
+    expect(screen.queryByRole("tablist", { name: /Access mode/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("main", { name: /Account login/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /เข้าสู่ account/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /ส่งรหัส login/i })).toBeInTheDocument();
+    expect(screen.queryByLabelText(/Trip ID/i)).not.toBeInTheDocument();
+  });
+
+  it("renders account registration as a separate account entry path", () => {
+    render(
+      <AccountAccessPanel
+        accessMode="account-register"
+        accountClient={createAccountClient()}
+        accountSession={null}
+        trip={seedTrip}
+        onAccountSessionChange={vi.fn()}
+        onAuthenticated={vi.fn()}
+        onTripChange={vi.fn()}
+      />,
+    );
+
+    expect(screen.queryByRole("tablist", { name: /Access mode/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("main", { name: /Account register/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /สร้าง account/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /ส่งรหัส register/i })).toBeInTheDocument();
+    expect(screen.queryByLabelText(/Trip ID/i)).not.toBeInTheDocument();
+  });
+
+  it("renders trip access without exposing account login tabs on the join path", () => {
+    render(
+      <AccountAccessPanel
+        accessMode="trip-access"
+        accountClient={createAccountClient()}
+        accountSession={null}
+        trip={seedTrip}
+        onAccountSessionChange={vi.fn()}
+        onAuthenticated={vi.fn()}
+        onTripChange={vi.fn()}
+      />,
+    );
+
+    expect(screen.queryByRole("tablist", { name: /Access mode/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("main", { name: /Trip access/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /เข้าห้อง trip/i })).toBeInTheDocument();
+    expect(screen.queryByLabelText(/Email/i)).not.toBeInTheDocument();
+  });
+
+  it("auto-switches to account mode when accountSession appears", async () => {
+    const view = render(
+      <AccountAccessPanel
+        accountClient={createAccountClient()}
+        accountSession={null}
+        trip={seedTrip}
+        onAccountSessionChange={vi.fn()}
+        onAuthenticated={vi.fn()}
+        onTripChange={vi.fn()}
+      />,
+    );
+
+    expect(view.getByRole("tab", { name: /^Temp access$/i })).toHaveClass("account-tab--active");
+
+    view.rerender(
+      <AccountAccessPanel
+        accountClient={createAccountClient()}
+        accountSession={{
+          userId: "11111111-1111-1111-1111-111111111111",
+          sessionToken: "playwright-account-session",
+          kind: "trusted",
+          trustedDeviceId: "device-1",
+          createdAt: "2026-05-30T10:00:00.000Z",
+          expiresAt: "2030-01-01T10:00:00.000Z",
+        }}
+        trip={seedTrip}
+        onAccountSessionChange={vi.fn()}
+        onAuthenticated={vi.fn()}
+        onTripChange={vi.fn()}
+      />,
+    );
+
+    expect(view.getByRole("tab", { name: /^Account$/i })).toHaveClass("account-tab--active");
+    expect(await view.findByText("Aom")).toBeInTheDocument();
+    expect(view.getByRole("button", { name: /Start passkey setup/i })).toBeInTheDocument();
   });
 
   it("logs in by email, loads settings/history/stats, and creates an owner trip", async () => {
@@ -55,14 +187,13 @@ describe("AccountAccessPanel", () => {
     await user.type(screen.getByLabelText(/Email/i), "aom@example.test");
     await user.click(screen.getByRole("button", { name: /ส่งรหัส login/i }));
     await user.type(screen.getByLabelText(/Code/i), "123456");
-    await user.type(screen.getByLabelText(/Device label/i), "MacBook");
     await user.click(screen.getByRole("button", { name: /^เข้า account$/i }));
 
     expect(accountClient.finishEmailLogin).toHaveBeenCalledWith({
       challengeId: "login-challenge",
       code: "123456",
       trustDevice: true,
-      deviceLabel: "MacBook",
+      deviceLabel: "",
     });
     expect(await screen.findByText("Aom")).toBeInTheDocument();
     expect(screen.getByText("aom@example.test")).toBeInTheDocument();
@@ -100,8 +231,11 @@ describe("AccountAccessPanel", () => {
         attestation: "none",
         challenge: bytes([1, 2, 3, 4]),
         authenticatorSelection: expect.objectContaining({ userVerification: "required" }),
-        rp: { name: "Sagittarius" },
-        pubKeyCredParams: [{ type: "public-key", alg: -7 }],
+        rp: expect.objectContaining({ name: "Sagittarius" }),
+        pubKeyCredParams: expect.arrayContaining([
+          expect.objectContaining({ type: "public-key", alg: -7 }),
+          expect.objectContaining({ type: "public-key", alg: -257 }),
+        ]),
         user: expect.objectContaining({
           name: "aom@example.test",
           displayName: "Aom",
@@ -118,6 +252,8 @@ describe("AccountAccessPanel", () => {
     expect(await screen.findByText("สร้าง passkey แล้ว ใช้ login ได้ทันที")).toBeInTheDocument();
 
     const createForm = screen.getByText("Create trip").closest("form") as HTMLFormElement;
+    expect(within(createForm).getByLabelText(/Join ID/i)).toHaveAttribute("autocomplete", "username");
+    expect(within(createForm).getByLabelText(/Join password/i)).toHaveAttribute("autocomplete", "new-password");
     await user.type(within(createForm).getByLabelText(/Trip name/i), "Taipei Food Run");
     await user.type(within(createForm).getByLabelText(/Destination/i), "Taipei");
     await user.clear(within(createForm).getByLabelText(/Start date/i));
@@ -160,8 +296,7 @@ describe("AccountAccessPanel", () => {
 
     await user.click(screen.getByRole("tab", { name: /^Account$/i }));
     await user.type(screen.getByLabelText(/Email/i), "aom@example.test");
-    await user.clear(screen.getByLabelText(/Device label/i));
-    await user.type(screen.getByLabelText(/Device label/i), "Studio PC");
+    expect(screen.queryByLabelText(/Device label/i)).not.toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: /เข้า account ด้วย passkey/i }));
 
     expect(accountClient.startPasskeyLogin).toHaveBeenCalledWith("aom@example.test");
@@ -179,7 +314,7 @@ describe("AccountAccessPanel", () => {
       authenticatorData: "DQ4",
       signature: "DxA",
       trustDevice: true,
-      deviceLabel: "Studio PC",
+      deviceLabel: "",
     });
     await waitFor(() => expect(onAccountSessionChange).toHaveBeenCalledWith(expect.objectContaining({ sessionToken: "passkey-session" })));
   });

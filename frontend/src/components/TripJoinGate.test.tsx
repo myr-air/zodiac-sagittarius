@@ -13,6 +13,13 @@ describe("TripJoinGate", () => {
     expect(screen.getByLabelText(/Trip ID/i)).toHaveValue("HK-SZ-2025");
   });
 
+  it("marks trip room credentials with browser password-manager autocomplete hints", () => {
+    render(<TripJoinGate trip={seedTrip} onTripChange={vi.fn()} onAuthenticated={vi.fn()} />);
+
+    expect(screen.getByLabelText(/Trip ID/i)).toHaveAttribute("autocomplete", "username");
+    expect(screen.getByLabelText(/Trip password/i)).toHaveAttribute("autocomplete", "current-password");
+  });
+
   it("requires the trip id and trip password before choosing a participant", async () => {
     const user = userEvent.setup();
     render(<TripJoinGate trip={seedTrip} onTripChange={vi.fn()} onAuthenticated={vi.fn()} />);
@@ -128,6 +135,35 @@ describe("TripJoinGate", () => {
     await user.click(screen.getByRole("button", { name: /เข้าห้อง trip/i }));
 
     expect(screen.getByRole("alert")).toHaveTextContent("Trip ID หรือ password ไม่ถูกต้อง");
+  });
+
+  it("offers demo access when the API join flow is unavailable", () => {
+    render(
+      <TripJoinGate
+        apiClient={createApiClient()}
+        demoHref="/join/demo"
+        onTripChange={vi.fn()}
+        onAuthenticated={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByRole("link", { name: /เปิด demo trip/i })).toHaveAttribute("href", "/join/demo");
+  });
+
+  it("does not show raw numeric API errors to join users", async () => {
+    const user = userEvent.setup();
+    const apiClient = createApiClient({
+      joinTrip: vi.fn().mockRejectedValue(new Error("404")),
+    });
+
+    render(<TripJoinGate apiClient={apiClient} onTripChange={vi.fn()} onAuthenticated={vi.fn()} />);
+
+    await user.type(screen.getByLabelText(/Trip ID/i), "HK-SZ-2025");
+    await user.type(screen.getByLabelText(/Trip password/i), "bad");
+    await user.click(screen.getByRole("button", { name: /เข้าห้อง trip/i }));
+
+    expect(screen.getByRole("alert")).toHaveTextContent("ไม่พบห้อง trip นี้ ลองตรวจสอบ Trip ID อีกครั้ง");
+    expect(screen.getByRole("alert")).not.toHaveTextContent(/^404$/);
   });
 
   it("uses the backend API client to join, claim, and hydrate the real cockpit", async () => {
@@ -269,7 +305,7 @@ describe("TripJoinGate", () => {
     await user.type(screen.getByLabelText(/Trip ID/i), "HK-SZ-2025");
     await user.type(screen.getByLabelText(/Trip password/i), "bad");
     await user.click(screen.getByRole("button", { name: /เข้าห้อง trip/i }));
-    expect(screen.getByRole("alert")).toHaveTextContent("No trip room");
+    expect(screen.getByRole("alert")).toHaveTextContent("Trip ID หรือ password ไม่ถูกต้อง");
 
     await user.clear(screen.getByLabelText(/Trip password/i));
     await user.type(screen.getByLabelText(/Trip password/i), "dim-sum-run");
@@ -342,4 +378,21 @@ async function enterTripRoom(user: ReturnType<typeof userEvent.setup>) {
   await user.type(screen.getByLabelText(/Trip ID/i), "HK-SZ-2025");
   await user.type(screen.getByLabelText(/Trip password/i), "dim-sum-run");
   await user.click(screen.getByRole("button", { name: /เข้าห้อง trip/i }));
+}
+
+function createApiClient(overrides: Partial<TripApiClient> = {}): TripApiClient {
+  return {
+    joinTrip: vi.fn(),
+    claimMember: vi.fn(),
+    loginMember: vi.fn(),
+    logout: vi.fn(),
+    loadTrip: vi.fn(),
+    createTask: vi.fn(),
+    patchTask: vi.fn(),
+    patchItineraryItem: vi.fn(),
+    createSuggestion: vi.fn(),
+    approveSuggestion: vi.fn(),
+    rejectSuggestion: vi.fn(),
+    ...overrides,
+  };
 }

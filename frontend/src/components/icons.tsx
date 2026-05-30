@@ -14,6 +14,7 @@ type IconName =
   | "drag"
   | "external"
   | "home"
+  | "key"
   | "layout"
   | "lightbulb"
   | "list"
@@ -62,6 +63,7 @@ export function Icon({ name, className, ...props }: SVGProps<SVGSVGElement> & { 
   if (name === "drag") return <svg {...common}><path d="M9 5h.01M15 5h.01M9 12h.01M15 12h.01M9 19h.01M15 19h.01" /></svg>;
   if (name === "external") return <svg {...common}><path d="M15 3h6v6M10 14 21 3" /><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /></svg>;
   if (name === "home") return <svg {...common}><path d="m3 11 9-8 9 8" /><path d="M5 10v10h14V10M9 20v-6h6v6" /></svg>;
+  if (name === "key") return <svg {...common} data-testid="icon-key"><circle cx="7.5" cy="15.5" r="4.5" /><path d="m10.7 12.3 8.8-8.8M15 8l2 2M17.5 5.5l2 2" /></svg>;
   if (name === "layout") return <svg {...common}><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M8 3v18M3 9h18" /></svg>;
   if (name === "lightbulb") return <svg {...common}><path d="M9 18h6M10 22h4M8.5 14.5a6 6 0 1 1 7 0c-.9.7-1.5 1.7-1.5 2.5h-4c0-.8-.6-1.8-1.5-2.5Z" /></svg>;
   if (name === "list") return <svg {...common}><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" /></svg>;
