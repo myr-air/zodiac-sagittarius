@@ -1,7 +1,7 @@
 import type { Member, Trip, TripCapability, TripJoinCredential, TripMemberAccessStatus, TripParticipantSession, TripRole } from "./types";
 
-export const localTripJoinId = "HK-SZ-2025";
-export const localTripJoinPassword = "dim-sum-run";
+export const localTripJoinId = "DEMO-TRIP";
+export const localTripJoinPassword = "demo-trip-pass";
 export const tripParticipantSessionStorageKey = "sagittarius:trip-participant-session";
 
 const roleCapabilities: Record<TripRole, TripCapability[]> = {

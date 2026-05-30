@@ -51,6 +51,7 @@ describe("Storybook template catalog", () => {
     expect(stories).toContain('accessMode: "account-login"');
     expect(stories).toContain('accessMode: "account-register"');
     expect(stories).toContain('accessMode: "trip-access"');
-    expect(stories).toContain('initialJoinCode: "HK-SZ-2025"');
+    expect(stories).toContain('initialJoinCode: localTripJoinId');
+    expect(stories).toContain('pathname: `/join/${localTripJoinId}`');
   });
 });

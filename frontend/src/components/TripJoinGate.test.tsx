@@ -24,7 +24,7 @@ describe("TripJoinGate", () => {
     const user = userEvent.setup();
     render(<TripJoinGate trip={seedTrip} onTripChange={vi.fn()} onAuthenticated={vi.fn()} />);
 
-    await user.type(screen.getByLabelText(/Trip ID/i), "HK-SZ-2025");
+    await user.type(screen.getByLabelText(/Trip ID/i), "DEMO-TRIP");
     await user.type(screen.getByLabelText(/Trip password/i), "wrong");
     await user.click(screen.getByRole("button", { name: /เข้าห้อง trip/i }));
 
@@ -32,7 +32,7 @@ describe("TripJoinGate", () => {
     expect(screen.queryByRole("heading", { name: /เลือกตัวตน/i })).not.toBeInTheDocument();
 
     await user.clear(screen.getByLabelText(/Trip password/i));
-    await user.type(screen.getByLabelText(/Trip password/i), "dim-sum-run");
+    await user.type(screen.getByLabelText(/Trip password/i), "demo-trip-pass");
     await user.click(screen.getByRole("button", { name: /เข้าห้อง trip/i }));
 
     expect(screen.getByRole("heading", { name: /เลือกตัวตน/i })).toBeInTheDocument();
@@ -375,8 +375,8 @@ describe("TripJoinGate", () => {
 });
 
 async function enterTripRoom(user: ReturnType<typeof userEvent.setup>) {
-  await user.type(screen.getByLabelText(/Trip ID/i), "HK-SZ-2025");
-  await user.type(screen.getByLabelText(/Trip password/i), "dim-sum-run");
+  await user.type(screen.getByLabelText(/Trip ID/i), "DEMO-TRIP");
+  await user.type(screen.getByLabelText(/Trip password/i), "demo-trip-pass");
   await user.click(screen.getByRole("button", { name: /เข้าห้อง trip/i }));
 }
 

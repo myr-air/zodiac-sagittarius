@@ -17,10 +17,11 @@ import {
 } from "./auth";
 
 describe("trip participant auth", () => {
-  it("accepts the trip join id and trip password before participant selection", () => {
-    expect(verifyTripCredentials(seedTrip, { joinId: "HK-SZ-2025", password: "dim-sum-run" })).toBe(true);
-    expect(verifyTripCredentials(seedTrip, { joinId: " hk-sz-2025 ", password: " dim-sum-run " })).toBe(true);
-    expect(verifyTripCredentials(seedTrip, { joinId: "HK-SZ-2025", password: "wrong" })).toBe(false);
+  it("accepts the special demo trip id and password before participant selection", () => {
+    expect(verifyTripCredentials(seedTrip, { joinId: "DEMO-TRIP", password: "demo-trip-pass" })).toBe(true);
+    expect(verifyTripCredentials(seedTrip, { joinId: " demo-trip ", password: " demo-trip-pass " })).toBe(true);
+    expect(verifyTripCredentials(seedTrip, { joinId: "HK-SZ-2025", password: "dim-sum-run" })).toBe(false);
+    expect(verifyTripCredentials(seedTrip, { joinId: "DEMO-TRIP", password: "wrong" })).toBe(false);
   });
 
   it("claims an unclaimed participant with a password and creates a local session", () => {
