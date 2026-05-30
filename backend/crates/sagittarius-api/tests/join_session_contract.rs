@@ -25,30 +25,37 @@ fn assert_hash_fields_absent(value: &Value) {
     }
 }
 
-#[sqlx::test(migrations = "../../migrations")]
-async fn join_session_contract_hides_hashes_and_claim_creates_session(pool: sqlx::PgPool) {
-    support::seed_trip(&pool).await;
-    let app = support::app(pool.clone());
-
+async fn join_room(app: &axum::Router) -> Value {
     let join_response = app
         .clone()
         .oneshot(
             Request::builder()
                 .method(Method::POST)
-                .uri("/v1/trips/join")
+                .uri("/api/v1/trip-join-sessions")
                 .header(header::CONTENT_TYPE, "application/json")
                 .body(Body::from(
-                    json!({"joinId":" hk-sz-2025 ","tripPassword":"dim-sum-run"}).to_string(),
+                    json!({"joinCode":" hk-sz-2025 ","tripPassword":"dim-sum-run"}).to_string(),
                 ))
                 .unwrap(),
         )
         .await
         .unwrap();
     assert_eq!(join_response.status(), StatusCode::OK);
-    let join_body: Value =
-        serde_json::from_slice(&to_bytes(join_response.into_body(), 65536).await.unwrap()).unwrap();
+
+    serde_json::from_slice(&to_bytes(join_response.into_body(), 65536).await.unwrap()).unwrap()
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn join_session_contract_hides_hashes_and_claim_creates_session(pool: sqlx::PgPool) {
+    support::seed_trip(&pool).await;
+    let app = support::app(pool.clone());
+
+    let join_body = join_room(&app).await;
+    let join_session_token = join_body["joinSessionToken"].as_str().unwrap();
     assert_eq!(join_body["trip"]["id"], support::TRIP_ID);
     assert_eq!(join_body["trip"]["joinId"], "HK-SZ-2025");
+    assert!(!join_session_token.is_empty());
+    assert!(join_body["expiresAt"].as_str().unwrap().contains('T'));
     assert!(join_body["trip"].get("joinPasswordHash").is_none());
     assert!(join_body["claimableMembers"].as_array().unwrap().len() >= 3);
     assert!(
@@ -65,13 +72,14 @@ async fn join_session_contract_hides_hashes_and_claim_creates_session(pool: sqlx
             Request::builder()
                 .method(Method::POST)
                 .uri(format!(
-                    "/v1/trips/{}/members/{}/claim",
+                    "/api/v1/trips/{}/members/{}/claims",
                     support::TRIP_ID,
                     support::TRAVELER_ID
                 ))
                 .header(header::CONTENT_TYPE, "application/json")
                 .body(Body::from(
-                    json!({"participantPassword":"1234"}).to_string(),
+                    json!({"participantPassword":"1234","joinSessionToken":join_session_token})
+                        .to_string(),
                 ))
                 .unwrap(),
         )
@@ -92,13 +100,42 @@ async fn join_session_contract_claim_rejects_already_claimed_member(pool: sqlx::
     support::seed_trip(&pool).await;
     support::claim_member(&pool, support::TRAVELER_ID, "1234", "active").await;
     let app = support::app(pool.clone());
+    let join_body = join_room(&app).await;
+    let join_session_token = join_body["joinSessionToken"].as_str().unwrap();
 
     let response = app
         .oneshot(
             Request::builder()
                 .method(Method::POST)
                 .uri(format!(
-                    "/v1/trips/{}/members/{}/claim",
+                    "/api/v1/trips/{}/members/{}/claims",
+                    support::TRIP_ID,
+                    support::TRAVELER_ID
+                ))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({"participantPassword":"1234","joinSessionToken":join_session_token})
+                        .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::BAD_REQUEST);
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn join_session_contract_claim_requires_join_session_token(pool: sqlx::PgPool) {
+    support::seed_trip(&pool).await;
+    let app = support::app(pool.clone());
+
+    let response = app
+        .oneshot(
+            Request::builder()
+                .method(Method::POST)
+                .uri(format!(
+                    "/api/v1/trips/{}/members/{}/claims",
                     support::TRIP_ID,
                     support::TRAVELER_ID
                 ))
@@ -111,14 +148,16 @@ async fn join_session_contract_claim_rejects_already_claimed_member(pool: sqlx::
         .await
         .unwrap();
 
-    assert_eq!(response.status(), StatusCode::BAD_REQUEST);
+    assert_eq!(response.status(), StatusCode::UNAUTHORIZED);
 }
 
 #[sqlx::test(migrations = "../../migrations")]
-async fn join_session_contract_login_and_logout_accept_body_or_bearer_token(pool: sqlx::PgPool) {
+async fn join_session_contract_login_and_logout_use_join_and_member_tokens(pool: sqlx::PgPool) {
     support::seed_trip(&pool).await;
     support::claim_member(&pool, support::ORGANIZER_ID, "1234", "active").await;
     let app = support::app(pool.clone());
+    let join_body = join_room(&app).await;
+    let join_session_token = join_body["joinSessionToken"].as_str().unwrap();
 
     let login_response = app
         .clone()
@@ -126,13 +165,17 @@ async fn join_session_contract_login_and_logout_accept_body_or_bearer_token(pool
             Request::builder()
                 .method(Method::POST)
                 .uri(format!(
-                    "/v1/trips/{}/members/{}/login",
-                    support::TRIP_ID,
-                    support::ORGANIZER_ID
+                    "/api/v1/trips/{}/member-sessions",
+                    support::TRIP_ID
                 ))
                 .header(header::CONTENT_TYPE, "application/json")
                 .body(Body::from(
-                    json!({"participantPassword":"1234"}).to_string(),
+                    json!({
+                        "memberId": support::ORGANIZER_ID,
+                        "participantPassword":"1234",
+                        "joinSessionToken": join_session_token
+                    })
+                    .to_string(),
                 ))
                 .unwrap(),
         )
@@ -149,15 +192,13 @@ async fn join_session_contract_login_and_logout_accept_body_or_bearer_token(pool
         .clone()
         .oneshot(
             Request::builder()
-                .method(Method::POST)
+                .method(Method::DELETE)
                 .uri(format!(
-                    "/v1/trips/{}/member-session/logout",
+                    "/api/v1/trips/{}/member-sessions/current",
                     support::TRIP_ID
                 ))
-                .header(header::CONTENT_TYPE, "application/json")
-                .body(Body::from(
-                    json!({"sessionToken": session_token}).to_string(),
-                ))
+                .header(header::AUTHORIZATION, format!("Bearer {session_token}"))
+                .body(Body::empty())
                 .unwrap(),
         )
         .await
@@ -169,9 +210,9 @@ async fn join_session_contract_login_and_logout_accept_body_or_bearer_token(pool
         .clone()
         .oneshot(
             Request::builder()
-                .method(Method::POST)
+                .method(Method::DELETE)
                 .uri(format!(
-                    "/v1/trips/{}/member-session/logout",
+                    "/api/v1/trips/{}/member-sessions/current",
                     support::TRIP_ID
                 ))
                 .header(header::AUTHORIZATION, format!("Bearer {bearer_token}"))
@@ -185,9 +226,9 @@ async fn join_session_contract_login_and_logout_accept_body_or_bearer_token(pool
     let logout_missing_token = app
         .oneshot(
             Request::builder()
-                .method(Method::POST)
+                .method(Method::DELETE)
                 .uri(format!(
-                    "/v1/trips/{}/member-session/logout",
+                    "/api/v1/trips/{}/member-sessions/current",
                     support::TRIP_ID
                 ))
                 .body(Body::empty())
@@ -195,7 +236,7 @@ async fn join_session_contract_login_and_logout_accept_body_or_bearer_token(pool
         )
         .await
         .unwrap();
-    assert_eq!(logout_missing_token.status(), StatusCode::NO_CONTENT);
+    assert_eq!(logout_missing_token.status(), StatusCode::UNAUTHORIZED);
 }
 
 #[sqlx::test(migrations = "../../migrations")]
@@ -210,16 +251,18 @@ async fn join_session_contract_rejects_bad_join_and_disabled_or_wrong_login(pool
         .oneshot(
             Request::builder()
                 .method(Method::POST)
-                .uri("/v1/trips/join")
+                .uri("/api/v1/trip-join-sessions")
                 .header(header::CONTENT_TYPE, "application/json")
                 .body(Body::from(
-                    json!({"joinId":"HK-SZ-2025","tripPassword":"wrong"}).to_string(),
+                    json!({"joinCode":"HK-SZ-2025","tripPassword":"wrong"}).to_string(),
                 ))
                 .unwrap(),
         )
         .await
         .unwrap();
     assert_eq!(bad_join.status(), StatusCode::UNAUTHORIZED);
+    let join_body = join_room(&app).await;
+    let join_session_token = join_body["joinSessionToken"].as_str().unwrap();
 
     sqlx::query("update trip_members set access_status = 'disabled' where id = $1")
         .bind(uuid::Uuid::parse_str(support::TRAVELER_ID).unwrap())
@@ -232,13 +275,14 @@ async fn join_session_contract_rejects_bad_join_and_disabled_or_wrong_login(pool
             Request::builder()
                 .method(Method::POST)
                 .uri(format!(
-                    "/v1/trips/{}/members/{}/claim",
+                    "/api/v1/trips/{}/members/{}/claims",
                     support::TRIP_ID,
                     support::TRAVELER_ID
                 ))
                 .header(header::CONTENT_TYPE, "application/json")
                 .body(Body::from(
-                    json!({"participantPassword":"1234"}).to_string(),
+                    json!({"participantPassword":"1234","joinSessionToken":join_session_token})
+                        .to_string(),
                 ))
                 .unwrap(),
         )
@@ -252,13 +296,17 @@ async fn join_session_contract_rejects_bad_join_and_disabled_or_wrong_login(pool
             Request::builder()
                 .method(Method::POST)
                 .uri(format!(
-                    "/v1/trips/{}/members/{}/login",
-                    support::TRIP_ID,
-                    support::VIEWER_ID
+                    "/api/v1/trips/{}/member-sessions",
+                    support::TRIP_ID
                 ))
                 .header(header::CONTENT_TYPE, "application/json")
                 .body(Body::from(
-                    json!({"participantPassword":"1234"}).to_string(),
+                    json!({
+                        "memberId": support::VIEWER_ID,
+                        "participantPassword":"1234",
+                        "joinSessionToken": join_session_token
+                    })
+                    .to_string(),
                 ))
                 .unwrap(),
         )
@@ -272,13 +320,17 @@ async fn join_session_contract_rejects_bad_join_and_disabled_or_wrong_login(pool
             Request::builder()
                 .method(Method::POST)
                 .uri(format!(
-                    "/v1/trips/{}/members/{}/login",
-                    support::TRIP_ID,
-                    support::ORGANIZER_ID
+                    "/api/v1/trips/{}/member-sessions",
+                    support::TRIP_ID
                 ))
                 .header(header::CONTENT_TYPE, "application/json")
                 .body(Body::from(
-                    json!({"participantPassword":"wrong"}).to_string(),
+                    json!({
+                        "memberId": support::ORGANIZER_ID,
+                        "participantPassword":"wrong",
+                        "joinSessionToken": join_session_token
+                    })
+                    .to_string(),
                 ))
                 .unwrap(),
         )

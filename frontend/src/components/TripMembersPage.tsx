@@ -1,4 +1,5 @@
 import { type FormEvent, useMemo, useState } from "react";
+import { appRoutes } from "@/src/routes/app-routes";
 import type { Member, Trip, TripMemberAccessStatus, TripRole } from "@/src/trip/types";
 import { Icon } from "./icons";
 import { TravelMotif } from "./motifs";
@@ -279,5 +280,5 @@ function isMemberJoined(member: Member, currentMemberId: string): boolean {
 function buildInviteLink(joinId: string): string {
   /* v8 ignore next */
   const baseUrl = typeof window === "undefined" ? "" : window.location.origin;
-  return `${baseUrl}/members?trip=${encodeURIComponent(joinId)}`;
+  return `${baseUrl}${appRoutes.join(joinId)}`;
 }

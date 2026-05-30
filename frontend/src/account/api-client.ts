@@ -1,5 +1,6 @@
 import type { TripParticipantSession, TripRole } from "@/src/trip/types";
 import { TripApiError, type TripSummaryResponse } from "@/src/trip/api-client";
+import { accountApiRoutes } from "./api-routes";
 
 export type AccountSessionKind = "temporary" | "trusted";
 
@@ -175,97 +176,97 @@ export function createAccountApiClient(options: AccountApiClientOptions = {}): A
 
   return {
     startEmailLogin(email) {
-      return request<EmailLoginStartResponse>("/v1/account/email-login/start", {
+      return request<EmailLoginStartResponse>(accountApiRoutes.emailChallenges(), {
         method: "POST",
         body: JSON.stringify({ email }),
       });
     },
     startPasskeyLogin(email) {
-      return request<PasskeyLoginStartResponse>("/v1/account/passkeys/login/start", {
+      return request<PasskeyLoginStartResponse>(accountApiRoutes.passkeyLoginOptions(), {
         method: "POST",
         body: JSON.stringify({ email }),
       });
     },
     finishPasskeyLogin(input) {
-      return request<AccountSession>("/v1/account/passkeys/login/finish", {
+      return request<AccountSession>(accountApiRoutes.passkeyLoginSessions(), {
         method: "POST",
         body: JSON.stringify(input),
       });
     },
     finishEmailLogin(input) {
-      return request<AccountSession>("/v1/account/email-login/finish", {
+      return request<AccountSession>(accountApiRoutes.emailSessions(), {
         method: "POST",
         body: JSON.stringify(input),
       });
     },
     loadSettings(sessionToken) {
-      return request<AccountSettings>("/v1/account/settings", {
+      return request<AccountSettings>(accountApiRoutes.account(), {
         method: "GET",
         headers: authHeaders(sessionToken),
       });
     },
     updateSettings(sessionToken, settingsRequest) {
-      return request<AccountSettings>("/v1/account/settings", {
+      return request<AccountSettings>(accountApiRoutes.account(), {
         method: "PATCH",
         headers: authHeaders(sessionToken),
         body: JSON.stringify(settingsRequest),
       });
     },
     listTrips(sessionToken) {
-      return request<AccountTripSummary[]>("/v1/account/trips", {
+      return request<AccountTripSummary[]>(accountApiRoutes.accountTrips(), {
         method: "GET",
         headers: authHeaders(sessionToken),
       });
     },
     loadStats(sessionToken) {
-      return request<AccountTripStats>("/v1/account/stats", {
+      return request<AccountTripStats>(accountApiRoutes.accountTripStats(), {
         method: "GET",
         headers: authHeaders(sessionToken),
       });
     },
     createTrip(sessionToken, tripRequest) {
-      return request<AccountTripCreateResponse>("/v1/account/trips", {
+      return request<AccountTripCreateResponse>(accountApiRoutes.accountTrips(), {
         method: "POST",
         headers: authHeaders(sessionToken),
         body: JSON.stringify(tripRequest),
       });
     },
     async claimMember(sessionToken, tripId, memberId, memberSessionToken) {
-      await request<void>(`/v1/account/trips/${encodePath(tripId)}/members/${encodePath(memberId)}/claim`, {
+      await request<void>(accountApiRoutes.memberAccountLink(tripId, memberId), {
         method: "POST",
         headers: authHeaders(sessionToken),
         body: JSON.stringify({ memberSessionToken }),
       });
     },
     transferOwner(sessionToken, tripId, targetMemberId) {
-      return request<OwnerTransferResponse>(`/v1/account/trips/${encodePath(tripId)}/owner-transfer`, {
+      return request<OwnerTransferResponse>(accountApiRoutes.ownershipTransfers(tripId), {
         method: "POST",
         headers: authHeaders(sessionToken),
         body: JSON.stringify({ targetMemberId }),
       });
     },
     startPasskeyRegistration(sessionToken) {
-      return request<PasskeyChallengeResponse>("/v1/account/passkeys/register/start", {
+      return request<PasskeyChallengeResponse>(accountApiRoutes.passkeyRegistrationOptions(), {
         method: "POST",
         headers: authHeaders(sessionToken),
       });
     },
     finishPasskeyRegistration(sessionToken, input) {
-      return request<PasskeySummary>("/v1/account/passkeys/register/finish", {
+      return request<PasskeySummary>(accountApiRoutes.passkeys(), {
         method: "POST",
         headers: authHeaders(sessionToken),
         body: JSON.stringify(input),
       });
     },
     async revokeTrustedDevice(sessionToken, trustedDeviceId) {
-      await request<void>(`/v1/account/trusted-devices/${encodePath(trustedDeviceId)}`, {
+      await request<void>(accountApiRoutes.trustedDevice(trustedDeviceId), {
         method: "DELETE",
         headers: authHeaders(sessionToken),
       });
     },
     async logout(sessionToken) {
-      await request<void>("/v1/account/sessions/logout", {
-        method: "POST",
+      await request<void>(accountApiRoutes.accountSession(), {
+        method: "DELETE",
         headers: authHeaders(sessionToken),
       });
     },
@@ -284,8 +285,4 @@ async function toApiError(response: Response): Promise<TripApiError> {
 
 function trimTrailingSlash(value: string): string {
   return value.endsWith("/") ? value.slice(0, -1) : value;
-}
-
-function encodePath(value: string): string {
-  return encodeURIComponent(value);
 }

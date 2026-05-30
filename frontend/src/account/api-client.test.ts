@@ -28,7 +28,7 @@ describe("Account API client", () => {
 
     expect(fetchImpl).toHaveBeenNthCalledWith(
       1,
-      "https://api.example.test/v1/account/email-login/start",
+      "https://api.example.test/api/v1/auth/email/challenges",
       expect.objectContaining({
         method: "POST",
         body: JSON.stringify({ email: "aom@example.test" }),
@@ -36,7 +36,7 @@ describe("Account API client", () => {
     );
     expect(fetchImpl).toHaveBeenNthCalledWith(
       2,
-      "https://api.example.test/v1/account/email-login/finish",
+      "https://api.example.test/api/v1/auth/email/sessions",
       expect.objectContaining({
         method: "POST",
         body: JSON.stringify({
@@ -83,7 +83,7 @@ describe("Account API client", () => {
     }
     expect(fetchImpl).toHaveBeenNthCalledWith(
       2,
-      "https://api.example.test/v1/account/settings",
+      "https://api.example.test/api/v1/account",
       expect.objectContaining({
         method: "PATCH",
         body: JSON.stringify({
@@ -160,7 +160,7 @@ describe("Account API client", () => {
 
     expect(fetchImpl).toHaveBeenNthCalledWith(
       1,
-      "https://api.example.test/v1/account/trips",
+      "https://api.example.test/api/v1/account/trips",
       expect.objectContaining({
         method: "POST",
         headers: expect.objectContaining({ Authorization: "Bearer account-session" }),
@@ -169,7 +169,7 @@ describe("Account API client", () => {
     );
     expect(fetchImpl).toHaveBeenNthCalledWith(
       2,
-      "https://api.example.test/v1/account/trips/trip%2Fwith%20space/members/member%2Faom/claim",
+      "https://api.example.test/api/v1/trips/trip%2Fwith%20space/members/member%2Faom/account-links",
       expect.objectContaining({
         method: "POST",
         headers: expect.objectContaining({ Authorization: "Bearer account-session" }),
@@ -178,7 +178,7 @@ describe("Account API client", () => {
     );
     expect(fetchImpl).toHaveBeenNthCalledWith(
       3,
-      "https://api.example.test/v1/account/trips/trip%2Fwith%20space/owner-transfer",
+      "https://api.example.test/api/v1/trips/trip%2Fwith%20space/ownership-transfers",
       expect.objectContaining({
         method: "POST",
         headers: expect.objectContaining({ Authorization: "Bearer account-session" }),
@@ -224,7 +224,7 @@ describe("Account API client", () => {
 
     expect(fetchImpl).toHaveBeenNthCalledWith(
       2,
-      "/v1/account/passkeys/register/finish",
+      "/api/v1/account/passkeys",
       expect.objectContaining({
         method: "POST",
         headers: expect.objectContaining({ Authorization: "Bearer account-session" }),
@@ -232,7 +232,7 @@ describe("Account API client", () => {
     );
     expect(fetchImpl).toHaveBeenNthCalledWith(
       3,
-      "/v1/account/passkeys/login/start",
+      "/api/v1/auth/passkeys/options",
       expect.objectContaining({
         method: "POST",
         body: JSON.stringify({ email: "aom@example.test" }),
@@ -240,7 +240,7 @@ describe("Account API client", () => {
     );
     expect(fetchImpl).toHaveBeenNthCalledWith(
       4,
-      "/v1/account/passkeys/login/finish",
+      "/api/v1/auth/passkeys/sessions",
       expect.objectContaining({
         method: "POST",
         body: JSON.stringify({
@@ -273,7 +273,7 @@ describe("Account API client", () => {
     });
     expect(fetchImpl).toHaveBeenNthCalledWith(
       1,
-      "/v1/account/trusted-devices/device%2Fwith%20space",
+      "/api/v1/account/trusted-devices/device%2Fwith%20space",
       expect.objectContaining({
         method: "DELETE",
         headers: expect.objectContaining({ Authorization: "Bearer account-session" }),

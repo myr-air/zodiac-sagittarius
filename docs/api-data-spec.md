@@ -1,7 +1,7 @@
 # Sagittarius API Data Spec
 
-Status: frontend contract draft, ready for Rust + PostgreSQL backend design.
-Version: 2026-05-27.
+Status: canonical routing and data contract for frontend/backend integration.
+Version: 2026-05-30.
 
 ## Goals
 
@@ -63,6 +63,15 @@ CREATE TABLE trip_member_sessions (
   created_at timestamptz NOT NULL DEFAULT now(),
   expires_at timestamptz NOT NULL,
   revoked_at timestamptz
+);
+
+CREATE TABLE trip_join_sessions (
+  id uuid PRIMARY KEY,
+  trip_id uuid NOT NULL REFERENCES trips(id),
+  join_session_token_hash text NOT NULL UNIQUE,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  expires_at timestamptz NOT NULL,
+  consumed_at timestamptz
 );
 
 CREATE TABLE plan_variants (
@@ -166,33 +175,74 @@ CREATE INDEX trip_member_sessions_member_active_idx
   ON trip_member_sessions (member_id, expires_at DESC)
   WHERE revoked_at IS NULL;
 
+CREATE INDEX trip_join_sessions_trip_active_idx
+  ON trip_join_sessions (trip_id, expires_at DESC)
+  WHERE consumed_at IS NULL;
+
 CREATE INDEX realtime_events_trip_created_idx
   ON realtime_events (trip_id, created_at DESC);
 ```
 
 ## REST API
 
-Base path: `/v1`.
+Base path: `/api/v1`.
+
+### Health
+
+- `GET /api/v1/health`
+  Returns `ok` for local liveness checks.
+
+### Account Auth
+
+- `POST /api/v1/auth/email/challenges`
+  Starts provider-free email-code login.
+- `POST /api/v1/auth/email/sessions`
+  Finishes email-code login and creates an account session.
+- `POST /api/v1/auth/passkeys/options`
+  Starts passkey login.
+- `POST /api/v1/auth/passkeys/sessions`
+  Finishes passkey login and creates an account session.
+- `DELETE /api/v1/account/session`
+  Revokes the current account bearer session.
+
+### Account Resources
+
+- `GET /api/v1/account`
+  Returns the current account profile, passkeys, and trusted devices.
+- `PATCH /api/v1/account`
+  Updates current account profile settings.
+- `GET /api/v1/account/trips`
+  Lists trips visible through the current account identity.
+- `POST /api/v1/account/trips`
+  Creates an account-owned trip and owner member session.
+- `GET /api/v1/account/trip-stats`
+  Returns account trip summary counters.
+- `POST /api/v1/account/passkeys/options`
+  Starts passkey registration for the current account.
+- `POST /api/v1/account/passkeys`
+  Finishes passkey registration for the current account.
+- `DELETE /api/v1/account/trusted-devices/:trustedDeviceId`
+  Revokes one trusted device.
 
 ### Trips
 
-- `GET /v1/trips/:tripId`
+- `GET /api/v1/trips/:tripId`
   Returns the full planning cockpit payload: trip, members, variants, itinerary items, suggestions, and expense summary.
-- `PATCH /v1/trips/:tripId`
+- `PATCH /api/v1/trips/:tripId`
   Updates trip metadata and active plan variant.
 
 ### Plan Variants
 
-- `POST /v1/trips/:tripId/plan-variants`
-- `PATCH /v1/plan-variants/:planVariantId`
-- `POST /v1/plan-variants/:planVariantId/publish`
+- `POST /api/v1/trips/:tripId/plan-variants`
+- `PATCH /api/v1/trips/:tripId/plan-variants/:planVariantId`
+- `POST /api/v1/trips/:tripId/plan-variants/:planVariantId/publications`
 
 ### Itinerary Items
 
-- `POST /v1/trips/:tripId/itinerary-items`
-- `PATCH /v1/itinerary-items/:itemId`
-- `DELETE /v1/itinerary-items/:itemId`
-- `POST /v1/trips/:tripId/itinerary-items/reorder`
+- `POST /api/v1/trips/:tripId/itinerary-items`
+- `PATCH /api/v1/trips/:tripId/itinerary-items/:itemId`
+- `DELETE /api/v1/trips/:tripId/itinerary-items/:itemId`
+- `PATCH /api/v1/trips/:tripId/itinerary-items/order`
 
 Example PATCH:
 
@@ -212,36 +262,38 @@ Example PATCH:
 
 ### Suggestions
 
-- `POST /v1/trips/:tripId/suggestions`
-- `POST /v1/suggestions/:suggestionId/approve`
-- `POST /v1/suggestions/:suggestionId/reject`
+- `POST /api/v1/trips/:tripId/suggestions`
+- `PATCH /api/v1/trips/:tripId/suggestions/:suggestionId`
+  Resolves a suggestion with `{ status: "approved" | "rejected" }`.
 
 ### Expenses
 
-- `GET /v1/trips/:tripId/expenses/summary`
-- `POST /v1/trips/:tripId/expenses`
-- `PATCH /v1/expenses/:expenseId`
-- `DELETE /v1/expenses/:expenseId`
+- `GET /api/v1/trips/:tripId/expenses/summary`
+- `POST /api/v1/trips/:tripId/expenses`
+- `PATCH /api/v1/trips/:tripId/expenses/:expenseId`
+- `DELETE /api/v1/trips/:tripId/expenses/:expenseId`
 
 ### Members And Presence
 
-- `POST /v1/trips/join`
-  Verifies `{ joinId, tripPassword }` and returns safe trip metadata plus claimable members.
-- `GET /v1/trips/:tripId/claimable-members`
-  Returns member identity choices after the room-level credential is accepted.
-- `POST /v1/trips/:tripId/members/:memberId/claim`
+- `POST /api/v1/trip-join-sessions`
+  Verifies `{ joinCode, tripPassword }` and returns safe trip metadata, claimable members, and a short-lived `joinSessionToken`.
+- `POST /api/v1/trips/:tripId/members/:memberId/claims`
   First-time guest participant claim with `{ participantPassword }`; stores a password hash and returns a member session.
-- `POST /v1/trips/:tripId/members/:memberId/login`
-  Verifies an existing participant password and returns a member session.
-- `POST /v1/trips/:tripId/member-session/logout`
+- `POST /api/v1/trips/:tripId/member-sessions`
+  Verifies an existing participant password with `{ memberId, participantPassword, joinSessionToken }` and returns a member session.
+- `DELETE /api/v1/trips/:tripId/member-sessions/current`
   Revokes the current guest member session.
-- `POST /v1/trips/:tripId/members/:memberId/reset-claim`
+- `POST /api/v1/trips/:tripId/members/:memberId/claim-resets`
   Organizer/owner only; clears `claim_password_hash`, `claimed_at`, and active sessions for the member.
-- `GET /v1/trips/:tripId/members`
-- `POST /v1/trips/:tripId/invitations`
-- `PATCH /v1/trips/:tripId/members/:memberId`
+- `GET /api/v1/trips/:tripId/members`
+- `POST /api/v1/trips/:tripId/members`
+- `PATCH /api/v1/trips/:tripId/members/:memberId`
   Organizer/owner only; updates display name, role, or access status. Disabling a member revokes active sessions and clears guest claim credentials.
-- `POST /v1/trips/:tripId/presence`
+- `POST /api/v1/trips/:tripId/members/:memberId/account-links`
+  Links the current account to a trip member using a member session token.
+- `POST /api/v1/trips/:tripId/ownership-transfers`
+  Transfers owner role to the target member.
+- `POST /api/v1/trips/:tripId/presence`
 
 ## Role Capability Matrix
 
@@ -259,7 +311,7 @@ Example PATCH:
 
 Endpoint:
 
-`wss://api.sagittarius.local/v1/trips/:tripId/ws`
+`wss://api.sagittarius.local/api/v1/trips/:tripId/events/stream`
 
 Client subscribes after REST bootstrap. The server should replay missed events using `Last-Event-Id` or `?afterEventId=`.
 

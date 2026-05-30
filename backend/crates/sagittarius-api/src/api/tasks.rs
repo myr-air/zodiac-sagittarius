@@ -29,13 +29,14 @@ pub async fn create_task(
 
 pub async fn patch_task(
     State(state): State<AppState>,
-    Path(task_id): Path<Uuid>,
+    Path((trip_id, task_id)): Path<(Uuid, Uuid)>,
     BearerToken(session_token): BearerToken,
     Json(request): Json<PatchTaskRequest>,
 ) -> Result<Json<TripTaskSummary>, ServiceError> {
     let task = app::tasks::patch_task(
         &state.pool,
         &state.realtime,
+        trip_id,
         task_id,
         &session_token,
         request,

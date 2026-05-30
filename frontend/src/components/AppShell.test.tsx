@@ -57,4 +57,25 @@ describe("AppShell", () => {
 
     expect(screen.getByText("Travel Mate").closest(".member-card")).toHaveTextContent("ผู้จัดทริป");
   });
+
+  it("links workspace navigation to the active trip route scope", () => {
+    render(
+      <AppShell
+        activeView="itinerary"
+        collapsed={false}
+        currentMember={seedTrip.members[0]}
+        onToggleCollapsed={vi.fn()}
+        trip={seedTrip}
+      >
+        <main>content</main>
+      </AppShell>,
+    );
+
+    expect(screen.getByRole("link", { name: /ภาพรวม/ })).toHaveAttribute("href", "/trips/trip-hong-kong-shenzhen");
+    expect(screen.getByRole("link", { name: /แผนการเดินทาง/ })).toHaveAttribute("href", "/trips/trip-hong-kong-shenzhen/itinerary");
+    expect(screen.getByRole("link", { name: /แผนที่/ })).toHaveAttribute("href", "/trips/trip-hong-kong-shenzhen/map");
+    expect(screen.getByRole("link", { name: /ไทม์ไลน์/ })).toHaveAttribute("href", "/trips/trip-hong-kong-shenzhen/timeline");
+    expect(screen.getByRole("link", { name: /สมาชิก/ })).toHaveAttribute("href", "/trips/trip-hong-kong-shenzhen/members");
+    expect(screen.getByRole("link", { name: "ดูสรุปรายละเอียด" })).toHaveAttribute("href", "/trips/trip-hong-kong-shenzhen");
+  });
 });

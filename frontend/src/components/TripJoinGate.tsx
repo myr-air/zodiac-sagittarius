@@ -17,16 +17,18 @@ interface TripJoinGateProps {
   trip?: Trip;
   apiClient?: TripApiClient;
   embedded?: boolean;
+  initialJoinCode?: string;
   onTripChange: (trip: Trip) => void;
   onAuthenticated: (session: TripParticipantSession) => void;
   onCockpitLoaded?: (cockpit: TripCockpit) => void;
 }
 
-export function TripJoinGate({ trip, apiClient, embedded = false, onTripChange, onAuthenticated, onCockpitLoaded }: TripJoinGateProps) {
+export function TripJoinGate({ trip, apiClient, embedded = false, initialJoinCode, onTripChange, onAuthenticated, onCockpitLoaded }: TripJoinGateProps) {
   const [step, setStep] = useState<"room" | "participant">("room");
-  const [joinId, setJoinId] = useState("");
+  const [joinId, setJoinId] = useState(initialJoinCode ?? "");
   const [tripPassword, setTripPassword] = useState("");
   const [joinedTrip, setJoinedTrip] = useState<Trip | null>(null);
+  const [joinSessionToken, setJoinSessionToken] = useState<string | null>(null);
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
   const [participantPassword, setParticipantPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -47,9 +49,11 @@ export function TripJoinGate({ trip, apiClient, embedded = false, onTripChange, 
     setIsSubmitting(true);
     try {
       if (apiClient) {
+        setJoinSessionToken(null);
         const response = await apiClient.joinTrip({ joinId, password: tripPassword });
         const nextTrip = tripFromJoinResponse(response);
         setJoinedTrip(nextTrip);
+        setJoinSessionToken(response.joinSessionToken);
         setSelectedMemberId(null);
         setError(null);
         setStep("participant");
@@ -85,12 +89,17 @@ export function TripJoinGate({ trip, apiClient, embedded = false, onTripChange, 
 
     try {
       if (apiClient) {
+        if (!joinSessionToken) {
+          setError("Trip session หมดอายุ กรุณาเข้าห้อง trip อีกครั้ง");
+          setStep("room");
+          return;
+        }
         let session: TripParticipantSession;
         try {
-          session = await apiClient.claimMember(activeTrip.id, selectedMember.id, participantPassword);
+          session = await apiClient.claimMember(activeTrip.id, selectedMember.id, participantPassword, joinSessionToken);
         } catch (caught) {
           if (!(caught instanceof TripApiError) || caught.code !== "invalid_request") throw caught;
-          session = await apiClient.loginMember(activeTrip.id, selectedMember.id, participantPassword);
+          session = await apiClient.loginMember(activeTrip.id, selectedMember.id, participantPassword, joinSessionToken);
         }
         const cockpit = await apiClient.loadTrip(activeTrip.id, session.sessionToken);
         setJoinedTrip(cockpit.trip);

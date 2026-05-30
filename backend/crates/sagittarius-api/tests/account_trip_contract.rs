@@ -100,7 +100,7 @@ async fn login_account(
     let (start, code) = start_email_login_with_code(pool, app.clone(), email).await;
     let (status, session): (StatusCode, Value) = post_json_response(
         app,
-        "/v1/account/email-login/finish",
+        "/api/v1/auth/email/sessions",
         json!({
             "challengeId": start["challengeId"],
             "code": code,
@@ -121,7 +121,7 @@ async fn start_email_login_with_code(
 ) -> (Value, String) {
     let (status, body): (StatusCode, Value) = post_json_response(
         app,
-        "/v1/account/email-login/start",
+        "/api/v1/auth/email/challenges",
         json!({"email": email}),
     )
     .await;
@@ -157,7 +157,7 @@ async fn create_account_trip(
     let app = support::app(pool.clone());
     let response = post_json_with_auth(
         app,
-        "/v1/account/trips",
+        "/api/v1/account/trips",
         Some(auth),
         json!({
             "name": format!("{join_id} Food Run"),
@@ -204,10 +204,25 @@ async fn legacy_claim_member_session(
     participant_password: &str,
 ) -> Value {
     let app = support::app(pool.clone());
+    let (join_status, join_body): (StatusCode, Value) = post_json_response(
+        app.clone(),
+        "/api/v1/trip-join-sessions",
+        json!({"joinCode": "HK-SZ-2025", "tripPassword": "dim-sum-run"}),
+    )
+    .await;
+    assert_eq!(join_status, StatusCode::OK);
+    let join_session_token = join_body["joinSessionToken"].as_str().unwrap();
+
     let (status, body): (StatusCode, Value) = post_json_response(
         app,
-        &format!("/v1/trips/{}/members/{member_id}/claim", support::TRIP_ID),
-        json!({"participantPassword": participant_password}),
+        &format!(
+            "/api/v1/trips/{}/members/{member_id}/claims",
+            support::TRIP_ID
+        ),
+        json!({
+            "participantPassword": participant_password,
+            "joinSessionToken": join_session_token
+        }),
     )
     .await;
     assert_eq!(status, StatusCode::OK);
@@ -224,7 +239,7 @@ async fn account_user_can_create_trip_and_becomes_owner(pool: sqlx::PgPool) {
 
     let response = post_json_with_auth(
         app,
-        "/v1/account/trips",
+        "/api/v1/account/trips",
         Some(&auth),
         json!({
             "name": " Chiang Mai Food Run ",
@@ -410,9 +425,9 @@ async fn account_trip_join_password_hash_uses_random_salt_and_remains_joinable(p
         let app = support::app(pool.clone());
         let (status, body): (StatusCode, Value) = post_json_response(
             app,
-            "/v1/trips/join",
+            "/api/v1/trip-join-sessions",
             json!({
-                "joinId": join_id,
+                "joinCode": join_id,
                 "tripPassword": "shared-password-2026"
             }),
         )
@@ -509,7 +524,7 @@ async fn account_trip_creation_validates_text_and_join_id(pool: sqlx::PgPool) {
     for payload in cases {
         let response = post_json_with_auth(
             support::app(pool.clone()),
-            "/v1/account/trips",
+            "/api/v1/account/trips",
             Some(&auth),
             payload,
         )
@@ -525,7 +540,7 @@ async fn account_trip_creation_validates_dates_and_auth(pool: sqlx::PgPool) {
     let app = support::app(pool.clone());
     let response = post_json_with_auth(
         app,
-        "/v1/account/trips",
+        "/api/v1/account/trips",
         None,
         json!({
             "name": "Chiang Mai",
@@ -547,7 +562,7 @@ async fn account_trip_creation_validates_dates_and_auth(pool: sqlx::PgPool) {
     let app = support::app(pool);
     let response = post_json_with_auth(
         app,
-        "/v1/account/trips",
+        "/api/v1/account/trips",
         Some(&auth),
         json!({
             "name": "Chiang Mai",
@@ -575,8 +590,12 @@ async fn account_can_list_trip_history_and_stats(pool: sqlx::PgPool) {
     let trip_id = create_body["trip"]["id"].as_str().unwrap();
     let owner_member_id = create_body["ownerMemberId"].as_str().unwrap();
 
-    let trips_response =
-        get_with_auth(support::app(pool.clone()), "/v1/account/trips", Some(&auth)).await;
+    let trips_response = get_with_auth(
+        support::app(pool.clone()),
+        "/api/v1/account/trips",
+        Some(&auth),
+    )
+    .await;
     let (trips_status, trips): (StatusCode, Value) = response_json(trips_response).await;
 
     assert_eq!(trips_status, StatusCode::OK);
@@ -593,8 +612,12 @@ async fn account_can_list_trip_history_and_stats(pool: sqlx::PgPool) {
     assert_eq!(trips[0]["isOwner"], true);
     assert!(trips[0]["joinedAt"].as_str().unwrap().ends_with('Z'));
 
-    let stats_response =
-        get_with_auth(support::app(pool.clone()), "/v1/account/stats", Some(&auth)).await;
+    let stats_response = get_with_auth(
+        support::app(pool.clone()),
+        "/api/v1/account/trip-stats",
+        Some(&auth),
+    )
+    .await;
     let (stats_status, stats): (StatusCode, Value) = response_json(stats_response).await;
 
     assert_eq!(stats_status, StatusCode::OK);
@@ -646,8 +669,12 @@ async fn account_trip_history_filters_disabled_members_and_deleted_trips(pool: s
     .await
     .unwrap();
 
-    let trips_response =
-        get_with_auth(support::app(pool.clone()), "/v1/account/trips", Some(&auth)).await;
+    let trips_response = get_with_auth(
+        support::app(pool.clone()),
+        "/api/v1/account/trips",
+        Some(&auth),
+    )
+    .await;
     let (trips_status, trips): (StatusCode, Value) = response_json(trips_response).await;
 
     assert_eq!(trips_status, StatusCode::OK);
@@ -655,8 +682,12 @@ async fn account_trip_history_filters_disabled_members_and_deleted_trips(pool: s
     assert_eq!(trips.len(), 1);
     assert_eq!(trips[0]["id"], active_trip_id.to_string());
 
-    let stats_response =
-        get_with_auth(support::app(pool.clone()), "/v1/account/stats", Some(&auth)).await;
+    let stats_response = get_with_auth(
+        support::app(pool.clone()),
+        "/api/v1/account/trip-stats",
+        Some(&auth),
+    )
+    .await;
     let (stats_status, stats): (StatusCode, Value) = response_json(stats_response).await;
 
     assert_eq!(stats_status, StatusCode::OK);
@@ -667,12 +698,14 @@ async fn account_trip_history_filters_disabled_members_and_deleted_trips(pool: s
 
 #[sqlx::test(migrations = "../../migrations")]
 async fn account_trip_history_and_stats_require_bearer(pool: sqlx::PgPool) {
-    let trips_response = get_with_auth(support::app(pool.clone()), "/v1/account/trips", None).await;
+    let trips_response =
+        get_with_auth(support::app(pool.clone()), "/api/v1/account/trips", None).await;
     let (trips_status, trips_body): (StatusCode, Value) = response_json(trips_response).await;
     assert_eq!(trips_status, StatusCode::UNAUTHORIZED);
     assert_eq!(trips_body["code"], "unauthenticated");
 
-    let stats_response = get_with_auth(support::app(pool), "/v1/account/stats", None).await;
+    let stats_response =
+        get_with_auth(support::app(pool), "/api/v1/account/trip-stats", None).await;
     let (stats_status, stats_body): (StatusCode, Value) = response_json(stats_response).await;
     assert_eq!(stats_status, StatusCode::UNAUTHORIZED);
     assert_eq!(stats_body["code"], "unauthenticated");
@@ -691,7 +724,7 @@ async fn account_claims_existing_temp_member_after_member_session_proof(pool: sq
 
     let response = post_json_with_auth(
         support::app(pool.clone()),
-        &format!("/v1/account/trips/{trip_id}/members/{member_id}/claim"),
+        &format!("/api/v1/trips/{trip_id}/members/{member_id}/account-links"),
         Some(&auth),
         json!({"memberSessionToken": member_session_token}),
     )
@@ -791,7 +824,7 @@ async fn account_claim_for_disabled_member_returns_forbidden_after_session_proof
 
     let response = post_json_with_auth(
         support::app(pool.clone()),
-        &format!("/v1/account/trips/{trip_id}/members/{member_id}/claim"),
+        &format!("/api/v1/trips/{trip_id}/members/{member_id}/account-links"),
         Some(&auth),
         json!({"memberSessionToken": member_session_token}),
     )
@@ -818,7 +851,7 @@ async fn account_claim_rejects_wrong_session_and_already_linked_member(pool: sql
 
     let missing_bearer = post_json_with_auth(
         support::app(pool.clone()),
-        &format!("/v1/account/trips/{trip_id}/members/{traveler_id}/claim"),
+        &format!("/api/v1/trips/{trip_id}/members/{traveler_id}/account-links"),
         None,
         json!({"memberSessionToken": traveler_session["sessionToken"]}),
     )
@@ -829,7 +862,7 @@ async fn account_claim_rejects_wrong_session_and_already_linked_member(pool: sql
 
     let malformed = post_raw_with_auth(
         support::app(pool.clone()),
-        &format!("/v1/account/trips/{trip_id}/members/{traveler_id}/claim"),
+        &format!("/api/v1/trips/{trip_id}/members/{traveler_id}/account-links"),
         Some(&auth),
         "{",
     )
@@ -840,7 +873,7 @@ async fn account_claim_rejects_wrong_session_and_already_linked_member(pool: sql
 
     let wrong_session = post_json_with_auth(
         support::app(pool.clone()),
-        &format!("/v1/account/trips/{trip_id}/members/{traveler_id}/claim"),
+        &format!("/api/v1/trips/{trip_id}/members/{traveler_id}/account-links"),
         Some(&auth),
         json!({"memberSessionToken": organizer_session["sessionToken"]}),
     )
@@ -863,7 +896,7 @@ async fn account_claim_rejects_wrong_session_and_already_linked_member(pool: sql
 
     let already_linked = post_json_with_auth(
         support::app(pool.clone()),
-        &format!("/v1/account/trips/{trip_id}/members/{organizer_id}/claim"),
+        &format!("/api/v1/trips/{trip_id}/members/{organizer_id}/account-links"),
         Some(&auth),
         json!({"memberSessionToken": organizer_session["sessionToken"]}),
     )
@@ -890,7 +923,7 @@ async fn owner_can_transfer_ownership_to_account_linked_member(pool: sqlx::PgPoo
 
     let response = post_json_with_auth(
         support::app(pool.clone()),
-        &format!("/v1/account/trips/{trip_id}/owner-transfer"),
+        &format!("/api/v1/trips/{trip_id}/ownership-transfers"),
         Some(&owner_auth),
         json!({"targetMemberId": target_member_id}),
     )
@@ -998,7 +1031,7 @@ async fn owner_transfer_requires_current_owner_and_account_target(pool: sqlx::Pg
 
     let non_owner_response = post_json_with_auth(
         support::app(pool.clone()),
-        &format!("/v1/account/trips/{trip_id}/owner-transfer"),
+        &format!("/api/v1/trips/{trip_id}/ownership-transfers"),
         Some(&target_auth),
         json!({"targetMemberId": target_member_id}),
     )
@@ -1011,7 +1044,7 @@ async fn owner_transfer_requires_current_owner_and_account_target(pool: sqlx::Pg
     let unlinked_member_id = insert_account_linked_member(&pool, trip_id, None, "No Account").await;
     let unlinked_response = post_json_with_auth(
         support::app(pool.clone()),
-        &format!("/v1/account/trips/{trip_id}/owner-transfer"),
+        &format!("/api/v1/trips/{trip_id}/ownership-transfers"),
         Some(&owner_auth),
         json!({"targetMemberId": unlinked_member_id}),
     )
@@ -1052,7 +1085,7 @@ async fn owner_transfer_rejects_disabled_account_target_and_preserves_roles(pool
 
     let response = post_json_with_auth(
         support::app(pool.clone()),
-        &format!("/v1/account/trips/{trip_id}/owner-transfer"),
+        &format!("/api/v1/trips/{trip_id}/ownership-transfers"),
         Some(&owner_auth),
         json!({"targetMemberId": target_member_id}),
     )
@@ -1109,7 +1142,7 @@ async fn owner_transfer_rejects_self_transfer(pool: sqlx::PgPool) {
 
     let response = post_json_with_auth(
         support::app(pool.clone()),
-        &format!("/v1/account/trips/{trip_id}/owner-transfer"),
+        &format!("/api/v1/trips/{trip_id}/ownership-transfers"),
         Some(&owner_auth),
         json!({"targetMemberId": owner_member_id}),
     )
@@ -1146,7 +1179,7 @@ async fn owner_transfer_rejects_malformed_request(pool: sqlx::PgPool) {
 
     let missing = post_json_with_auth(
         support::app(pool.clone()),
-        &format!("/v1/account/trips/{trip_id}/owner-transfer"),
+        &format!("/api/v1/trips/{trip_id}/ownership-transfers"),
         Some(&owner_auth),
         json!({}),
     )
@@ -1157,7 +1190,7 @@ async fn owner_transfer_rejects_malformed_request(pool: sqlx::PgPool) {
 
     let malformed = post_raw_with_auth(
         support::app(pool.clone()),
-        &format!("/v1/account/trips/{trip_id}/owner-transfer"),
+        &format!("/api/v1/trips/{trip_id}/ownership-transfers"),
         Some(&owner_auth),
         "{",
     )

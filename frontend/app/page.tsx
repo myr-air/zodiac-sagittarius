@@ -1,5 +1,5 @@
-import { SagittariusApp } from "@/src/app/SagittariusApp";
+import { redirect } from "next/navigation";
 
 export default function Page() {
-  return <SagittariusApp requireJoin dataSource="api" />;
+  redirect("/trips");
 }

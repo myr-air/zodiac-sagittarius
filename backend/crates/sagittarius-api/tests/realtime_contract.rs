@@ -140,7 +140,7 @@ async fn websocket_route_replays_stored_events_and_streams_live_events(pool: sql
     });
 
     let url = format!(
-        "ws://{address}/v1/trips/{}/ws?token={token}",
+        "ws://{address}/api/v1/trips/{}/events/stream?token={token}",
         support::TRIP_ID
     );
     let (mut socket, _) = connect_async(url).await.unwrap();
@@ -217,7 +217,10 @@ async fn websocket_route_accepts_bearer_header_session(pool: sqlx::PgPool) {
         axum::serve(listener, app).await.unwrap();
     });
 
-    let url = format!("ws://{address}/v1/trips/{}/ws", support::TRIP_ID);
+    let url = format!(
+        "ws://{address}/api/v1/trips/{}/events/stream",
+        support::TRIP_ID
+    );
     let mut request = url.into_client_request().unwrap();
     request
         .headers_mut()
@@ -269,7 +272,7 @@ async fn websocket_route_closes_when_live_receiver_lags(pool: sqlx::PgPool) {
     });
 
     let url = format!(
-        "ws://{address}/v1/trips/{}/ws?token={token}",
+        "ws://{address}/api/v1/trips/{}/events/stream?token={token}",
         support::TRIP_ID
     );
     let (mut socket, _) = connect_async(url).await.unwrap();

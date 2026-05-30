@@ -88,7 +88,12 @@ describe("Trip API client", () => {
   it("joins, claims, and loads the backend cockpit through stable v1 routes", async () => {
     const fetchImpl = vi
       .fn()
-      .mockResolvedValueOnce(jsonResponse({ trip: cockpitResponse.trip, claimableMembers: cockpitResponse.members }))
+      .mockResolvedValueOnce(jsonResponse({
+        trip: cockpitResponse.trip,
+        claimableMembers: cockpitResponse.members,
+        joinSessionToken: "join-session-token",
+        expiresAt: "2026-05-29T00:20:00.000Z",
+      }))
       .mockResolvedValueOnce(jsonResponse({
         tripId: cockpitResponse.trip.id,
         memberId: cockpitResponse.members[0].id,
@@ -100,22 +105,22 @@ describe("Trip API client", () => {
     const client = createTripApiClient({ baseUrl: "https://api.example.test", fetchImpl });
 
     const join = await client.joinTrip({ joinId: "HK-SZ-2025", password: "dim-sum-run" });
-    const session = await client.claimMember(join.trip.id, join.claimableMembers[0].id, "owner-pin");
+    const session = await client.claimMember(join.trip.id, join.claimableMembers[0].id, "owner-pin", join.joinSessionToken);
     const cockpit = await client.loadTrip(join.trip.id, session.sessionToken);
 
     expect(fetchImpl).toHaveBeenNthCalledWith(
       1,
-      "https://api.example.test/v1/trips/join",
-      expect.objectContaining({ method: "POST", body: JSON.stringify({ joinId: "HK-SZ-2025", tripPassword: "dim-sum-run" }) }),
+      "https://api.example.test/api/v1/trip-join-sessions",
+      expect.objectContaining({ method: "POST", body: JSON.stringify({ joinCode: "HK-SZ-2025", tripPassword: "dim-sum-run" }) }),
     );
     expect(fetchImpl).toHaveBeenNthCalledWith(
       2,
-      `https://api.example.test/v1/trips/${cockpitResponse.trip.id}/members/${cockpitResponse.members[0].id}/claim`,
-      expect.objectContaining({ method: "POST", body: JSON.stringify({ participantPassword: "owner-pin" }) }),
+      `https://api.example.test/api/v1/trips/${cockpitResponse.trip.id}/members/${cockpitResponse.members[0].id}/claims`,
+      expect.objectContaining({ method: "POST", body: JSON.stringify({ participantPassword: "owner-pin", joinSessionToken: "join-session-token" }) }),
     );
     expect(fetchImpl).toHaveBeenNthCalledWith(
       3,
-      `https://api.example.test/v1/trips/${cockpitResponse.trip.id}`,
+      `https://api.example.test/api/v1/trips/${cockpitResponse.trip.id}`,
       expect.objectContaining({ method: "GET", headers: expect.objectContaining({ Authorization: "Bearer session-token" }) }),
     );
     expect(cockpit.trip).toMatchObject({
@@ -173,7 +178,7 @@ describe("Trip API client", () => {
     });
 
     expect(fetchImpl).toHaveBeenCalledWith(
-      "/v1/trips/join",
+      "/api/v1/trip-join-sessions",
       expect.objectContaining({ method: "POST" }),
     );
     vi.unstubAllGlobals();
@@ -197,11 +202,10 @@ describe("Trip API client", () => {
     await expect(client.logout("trip/with space", "session-token")).resolves.toBeUndefined();
 
     expect(fetchImpl).toHaveBeenCalledWith(
-      "https://api.example.test/v1/trips/trip%2Fwith%20space/member-session/logout",
+      "https://api.example.test/api/v1/trips/trip%2Fwith%20space/member-sessions/current",
       expect.objectContaining({
-        method: "POST",
+        method: "DELETE",
         headers: expect.objectContaining({ Authorization: "Bearer session-token" }),
-        body: JSON.stringify({ sessionToken: "session-token" }),
       }),
     );
   });
@@ -217,13 +221,13 @@ describe("Trip API client", () => {
     const fetchImpl = vi.fn().mockResolvedValueOnce(jsonResponse(session));
     const client = createTripApiClient({ baseUrl: "https://api.example.test", fetchImpl });
 
-    await expect(client.loginMember("trip/with space", "member/beam", "old-pin")).resolves.toEqual(session);
+    await expect(client.loginMember("trip/with space", "member/beam", "old-pin", "join-session-token")).resolves.toEqual(session);
 
     expect(fetchImpl).toHaveBeenCalledWith(
-      "https://api.example.test/v1/trips/trip%2Fwith%20space/members/member%2Fbeam/login",
+      "https://api.example.test/api/v1/trips/trip%2Fwith%20space/member-sessions",
       expect.objectContaining({
         method: "POST",
-        body: JSON.stringify({ participantPassword: "old-pin" }),
+        body: JSON.stringify({ memberId: "member/beam", participantPassword: "old-pin", joinSessionToken: "join-session-token" }),
       }),
     );
   });
@@ -258,7 +262,7 @@ describe("Trip API client", () => {
       assigneeId: cockpitResponse.members[0].id,
       relatedItemId: null,
     });
-    const doneTask = await client.patchTask(task.id, "session-token", {
+    const doneTask = await client.patchTask(cockpitResponse.trip.id, task.id, "session-token", {
       clientMutationId: "web-task-2",
       expectedVersion: 1,
       patch: { status: "done" },
@@ -266,7 +270,7 @@ describe("Trip API client", () => {
 
     expect(fetchImpl).toHaveBeenNthCalledWith(
       1,
-      `https://api.example.test/v1/trips/${cockpitResponse.trip.id}/tasks`,
+      `https://api.example.test/api/v1/trips/${cockpitResponse.trip.id}/tasks`,
       expect.objectContaining({
         method: "POST",
         headers: expect.objectContaining({ Authorization: "Bearer session-token" }),
@@ -274,7 +278,7 @@ describe("Trip API client", () => {
     );
     expect(fetchImpl).toHaveBeenNthCalledWith(
       2,
-      `https://api.example.test/v1/tasks/${createdTask.id}`,
+      `https://api.example.test/api/v1/trips/${cockpitResponse.trip.id}/tasks/${createdTask.id}`,
       expect.objectContaining({
         method: "PATCH",
         body: JSON.stringify({ clientMutationId: "web-task-2", expectedVersion: 1, patch: { status: "done" } }),
@@ -313,7 +317,7 @@ describe("Trip API client", () => {
       .mockResolvedValueOnce(jsonResponse(rejectedSuggestion));
     const client = createTripApiClient({ baseUrl: "https://api.example.test", fetchImpl });
 
-    const item = await client.patchItineraryItem(patchedItem.id, "session-token", {
+    const item = await client.patchItineraryItem(cockpitResponse.trip.id, patchedItem.id, "session-token", {
       clientMutationId: "web-item-1",
       expectedVersion: 4,
       patch: { startTime: "09:00", durationMinutes: 75 },
@@ -326,12 +330,12 @@ describe("Trip API client", () => {
       sourceVersion: 5,
       proposedPatch: { note: "Book ahead" },
     });
-    const approved = await client.approveSuggestion(suggestion.id, "session-token");
-    const rejected = await client.rejectSuggestion(rejectedSuggestion.id, "session-token");
+    const approved = await client.approveSuggestion(cockpitResponse.trip.id, suggestion.id, "session-token");
+    const rejected = await client.rejectSuggestion(cockpitResponse.trip.id, rejectedSuggestion.id, "session-token");
 
     expect(fetchImpl).toHaveBeenNthCalledWith(
       1,
-      `https://api.example.test/v1/itinerary-items/${patchedItem.id}`,
+      `https://api.example.test/api/v1/trips/${cockpitResponse.trip.id}/itinerary-items/${patchedItem.id}`,
       expect.objectContaining({
         method: "PATCH",
         headers: expect.objectContaining({ Authorization: "Bearer session-token" }),
@@ -340,18 +344,26 @@ describe("Trip API client", () => {
     );
     expect(fetchImpl).toHaveBeenNthCalledWith(
       2,
-      `https://api.example.test/v1/trips/${cockpitResponse.trip.id}/suggestions`,
+      `https://api.example.test/api/v1/trips/${cockpitResponse.trip.id}/suggestions`,
       expect.objectContaining({ method: "POST", headers: expect.objectContaining({ Authorization: "Bearer session-token" }) }),
     );
     expect(fetchImpl).toHaveBeenNthCalledWith(
       3,
-      `https://api.example.test/v1/suggestions/${createdSuggestion.id}/approve`,
-      expect.objectContaining({ method: "POST", headers: expect.objectContaining({ Authorization: "Bearer session-token" }) }),
+      `https://api.example.test/api/v1/trips/${cockpitResponse.trip.id}/suggestions/${createdSuggestion.id}`,
+      expect.objectContaining({
+        method: "PATCH",
+        headers: expect.objectContaining({ Authorization: "Bearer session-token" }),
+        body: JSON.stringify({ status: "approved" }),
+      }),
     );
     expect(fetchImpl).toHaveBeenNthCalledWith(
       4,
-      `https://api.example.test/v1/suggestions/${rejectedSuggestion.id}/reject`,
-      expect.objectContaining({ method: "POST", headers: expect.objectContaining({ Authorization: "Bearer session-token" }) }),
+      `https://api.example.test/api/v1/trips/${cockpitResponse.trip.id}/suggestions/${rejectedSuggestion.id}`,
+      expect.objectContaining({
+        method: "PATCH",
+        headers: expect.objectContaining({ Authorization: "Bearer session-token" }),
+        body: JSON.stringify({ status: "rejected" }),
+      }),
     );
     expect(item).toMatchObject({ id: patchedItem.id, startTime: "09:00", durationMinutes: 75, version: 5 });
     expect(suggestion).toMatchObject({ id: createdSuggestion.id, status: "pending" });

@@ -212,6 +212,8 @@ pub struct ClaimableMember {
 pub struct JoinTripResponse {
     pub trip: TripSummary,
     pub claimable_members: Vec<ClaimableMember>,
+    pub join_session_token: String,
+    pub expires_at: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

@@ -41,9 +41,11 @@ interface SagittariusAppProps {
   requireJoin?: boolean;
   dataSource?: "api" | "demo";
   apiClient?: TripApiClient;
+  routeTripId?: string;
+  initialJoinCode?: string;
 }
 
-export function SagittariusApp({ initialView = "overview", requireJoin = false, dataSource = "demo", apiClient }: SagittariusAppProps) {
+export function SagittariusApp({ initialView = "overview", requireJoin = false, dataSource = "demo", apiClient, routeTripId, initialJoinCode }: SagittariusAppProps) {
   /* v8 ignore next 3 */
   const resolvedApiClient = useMemo(
     () => apiClient ?? (dataSource === "api" ? createTripApiClient({ baseUrl: process.env.NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL ?? "" }) : undefined),
@@ -101,7 +103,7 @@ export function SagittariusApp({ initialView = "overview", requireJoin = false, 
     const timeout = window.setTimeout(() => {
       const persistedTrip = loadPersistedTrip();
       const nextTrip = persistedTrip ?? seedTrip;
-      const persistedSession = loadPersistedParticipantSession(requireJoin, nextTrip, isApiMode);
+      const persistedSession = loadPersistedParticipantSession(requireJoin, nextTrip, isApiMode, routeTripId);
 
       if (persistedTrip) {
         setTripState({ trip: persistedTrip, past: [], future: [] });
@@ -113,7 +115,7 @@ export function SagittariusApp({ initialView = "overview", requireJoin = false, 
     }, 0);
 
     return () => window.clearTimeout(timeout);
-  }, [isApiMode, requireJoin]);
+  }, [isApiMode, requireJoin, routeTripId]);
 
   useEffect(() => {
     const timeout = window.setTimeout(() => {
@@ -263,7 +265,7 @@ export function SagittariusApp({ initialView = "overview", requireJoin = false, 
     if (dialogState?.mode !== "edit") return;
     const itemId = dialogState.item.id;
     if (dataSource === "api" && resolvedApiClient && participantSession) {
-      const patchedItem = await resolvedApiClient.patchItineraryItem(itemId, participantSession.sessionToken, {
+      const patchedItem = await resolvedApiClient.patchItineraryItem(trip.id, itemId, participantSession.sessionToken, {
         clientMutationId: nextClientMutationId("itinerary-patch"),
         expectedVersion: dialogState.item.version,
         patch: {
@@ -515,7 +517,7 @@ export function SagittariusApp({ initialView = "overview", requireJoin = false, 
       const task = tasks.find((candidate) => candidate.id === taskId);
       /* v8 ignore next */
       if (!task) return;
-      const nextTask = await resolvedApiClient.patchTask(taskId, participantSession.sessionToken, {
+      const nextTask = await resolvedApiClient.patchTask(trip.id, taskId, participantSession.sessionToken, {
         clientMutationId: nextClientMutationId("task-patch"),
         /* v8 ignore next */
         expectedVersion: task.version ?? 1,
@@ -563,10 +565,10 @@ export function SagittariusApp({ initialView = "overview", requireJoin = false, 
       let suggestion: Suggestion;
       /* v8 ignore else */
       if (decision === "approved") {
-        suggestion = await resolvedApiClient.approveSuggestion(suggestionId, participantSession.sessionToken);
+        suggestion = await resolvedApiClient.approveSuggestion(trip.id, suggestionId, participantSession.sessionToken);
       } else {
         /* v8 ignore next */
-        suggestion = await resolvedApiClient.rejectSuggestion(suggestionId, participantSession.sessionToken);
+        suggestion = await resolvedApiClient.rejectSuggestion(trip.id, suggestionId, participantSession.sessionToken);
       }
       setSuggestions((current) => replaceSuggestionById(current, suggestionId, suggestion));
     } else if (decision === "rejected") {
@@ -591,6 +593,7 @@ export function SagittariusApp({ initialView = "overview", requireJoin = false, 
         accountClient={accountClient}
         accountSession={accountSession}
         apiClient={resolvedApiClient}
+        initialJoinCode={initialJoinCode}
         trip={resolvedApiClient ? undefined : trip}
         onAccountSessionChange={setAccountSession}
         onAuthenticated={authenticateParticipant}
@@ -837,13 +840,14 @@ function loadPersistedTrip(): Trip | null {
   }
 }
 
-function loadPersistedParticipantSession(requireJoin: boolean, trip: Trip, isApiMode = false): TripParticipantSession | null {
+function loadPersistedParticipantSession(requireJoin: boolean, trip: Trip, isApiMode = false, routeTripId?: string): TripParticipantSession | null {
   const storage = getBrowserLocalStorage();
   if (!requireJoin || !storage) return null;
   const rawSession = storage.getItem(tripParticipantSessionStorageKey);
   if (!rawSession) return null;
   try {
     const parsedSession = JSON.parse(rawSession) as TripParticipantSession;
+    if (routeTripId && parsedSession.tripId !== routeTripId) return null;
     /* v8 ignore next */
     return isApiMode || findSessionMember(trip, parsedSession) ? parsedSession : null;
   } catch {

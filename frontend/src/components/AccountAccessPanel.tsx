@@ -21,6 +21,7 @@ interface AccountAccessPanelProps {
   accountClient: AccountApiClient;
   accountSession: AccountSession | null;
   apiClient?: TripApiClient;
+  initialJoinCode?: string;
   trip?: Trip;
   onAccountSessionChange: (session: AccountSession | null) => void;
   onAuthenticated: (session: TripParticipantSession) => void;
@@ -44,6 +45,7 @@ export function AccountAccessPanel({
   accountClient,
   accountSession,
   apiClient,
+  initialJoinCode,
   onAccountSessionChange,
   onAuthenticated,
   onCockpitLoaded,
@@ -139,6 +141,7 @@ export function AccountAccessPanel({
           <TripJoinGate
             apiClient={apiClient}
             embedded
+            initialJoinCode={initialJoinCode}
             trip={trip}
             onAuthenticated={onAuthenticated}
             onCockpitLoaded={onCockpitLoaded}

@@ -16,7 +16,7 @@ async fn trip_load_contract_returns_cockpit_payload_and_filters_private_tasks(po
         .oneshot(
             Request::builder()
                 .method(Method::GET)
-                .uri(format!("/v1/trips/{}", support::TRIP_ID))
+                .uri(format!("/api/v1/trips/{}", support::TRIP_ID))
                 .header(header::AUTHORIZATION, format!("Bearer {traveler_token}"))
                 .body(Body::empty())
                 .unwrap(),
@@ -73,7 +73,7 @@ async fn trip_load_contract_viewer_hides_expense_summary_and_private_tasks(pool:
         .oneshot(
             Request::builder()
                 .method(Method::GET)
-                .uri(format!("/v1/trips/{}", support::TRIP_ID))
+                .uri(format!("/api/v1/trips/{}", support::TRIP_ID))
                 .header(header::AUTHORIZATION, format!("Bearer {viewer_token}"))
                 .body(Body::empty())
                 .unwrap(),
@@ -110,7 +110,7 @@ async fn trip_load_contract_serializes_missing_start_time_as_empty_string(pool: 
         .oneshot(
             Request::builder()
                 .method(Method::GET)
-                .uri(format!("/v1/trips/{}", support::TRIP_ID))
+                .uri(format!("/api/v1/trips/{}", support::TRIP_ID))
                 .header(header::AUTHORIZATION, format!("Bearer {traveler_token}"))
                 .body(Body::empty())
                 .unwrap(),
@@ -133,7 +133,7 @@ async fn trip_load_contract_requires_bearer_session(pool: sqlx::PgPool) {
         .oneshot(
             Request::builder()
                 .method(Method::GET)
-                .uri(format!("/v1/trips/{}", support::TRIP_ID))
+                .uri(format!("/api/v1/trips/{}", support::TRIP_ID))
                 .body(Body::empty())
                 .unwrap(),
         )
@@ -151,7 +151,7 @@ async fn trip_load_contract_rejects_empty_bearer_token(pool: sqlx::PgPool) {
     let response = app
         .oneshot(
             Request::builder()
-                .uri(format!("/v1/trips/{}", support::TRIP_ID))
+                .uri(format!("/api/v1/trips/{}", support::TRIP_ID))
                 .header(header::AUTHORIZATION, "Bearer ")
                 .body(Body::empty())
                 .unwrap(),

@@ -75,6 +75,7 @@ pub async fn create_suggestion(
 pub async fn approve_suggestion(
     pool: &PgPool,
     realtime: &RealtimeHub,
+    trip_id: Uuid,
     suggestion_id: Uuid,
     session_token: &str,
 ) -> Result<SuggestionSummary, ServiceError> {
@@ -83,6 +84,9 @@ pub async fn approve_suggestion(
     let suggestion = db::queries::lock_suggestion(&mut tx, suggestion_id)
         .await?
         .ok_or(ServiceError::NotFound)?;
+    if suggestion.trip_id != trip_id {
+        return Err(ServiceError::NotFound);
+    }
     let session =
         db::queries::find_active_member_session_in_tx(&mut tx, suggestion.trip_id, &token_hash)
             .await?
@@ -141,6 +145,7 @@ pub async fn approve_suggestion(
 pub async fn reject_suggestion(
     pool: &PgPool,
     realtime: &RealtimeHub,
+    trip_id: Uuid,
     suggestion_id: Uuid,
     session_token: &str,
 ) -> Result<SuggestionSummary, ServiceError> {
@@ -149,6 +154,9 @@ pub async fn reject_suggestion(
     let suggestion = db::queries::lock_suggestion(&mut tx, suggestion_id)
         .await?
         .ok_or(ServiceError::NotFound)?;
+    if suggestion.trip_id != trip_id {
+        return Err(ServiceError::NotFound);
+    }
     let session =
         db::queries::find_active_member_session_in_tx(&mut tx, suggestion.trip_id, &token_hash)
             .await?

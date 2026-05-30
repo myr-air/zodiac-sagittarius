@@ -19,7 +19,11 @@ async fn itinerary_patch_contract_organizer_can_patch_item_and_stale_patch_confl
         .oneshot(
             Request::builder()
                 .method(Method::PATCH)
-                .uri(format!("/v1/itinerary-items/{}", support::ITEM_ID))
+                .uri(format!(
+                    "/api/v1/trips/{}/itinerary-items/{}",
+                    support::TRIP_ID,
+                    support::ITEM_ID
+                ))
                 .header(header::AUTHORIZATION, format!("Bearer {token}"))
                 .header(header::CONTENT_TYPE, "application/json")
                 .body(Body::from(
@@ -55,7 +59,11 @@ async fn itinerary_patch_contract_organizer_can_patch_item_and_stale_patch_confl
         .oneshot(
             Request::builder()
                 .method(Method::PATCH)
-                .uri(format!("/v1/itinerary-items/{}", support::ITEM_ID))
+                .uri(format!(
+                    "/api/v1/trips/{}/itinerary-items/{}",
+                    support::TRIP_ID,
+                    support::ITEM_ID
+                ))
                 .header(header::AUTHORIZATION, format!("Bearer {token}"))
                 .header(header::CONTENT_TYPE, "application/json")
                 .body(Body::from(
@@ -89,7 +97,11 @@ async fn itinerary_patch_contract_traveler_cannot_patch_item(pool: sqlx::PgPool)
         .oneshot(
             Request::builder()
                 .method(Method::PATCH)
-                .uri(format!("/v1/itinerary-items/{}", support::ITEM_ID))
+                .uri(format!(
+                    "/api/v1/trips/{}/itinerary-items/{}",
+                    support::TRIP_ID,
+                    support::ITEM_ID
+                ))
                 .header(header::AUTHORIZATION, format!("Bearer {token}"))
                 .header(header::CONTENT_TYPE, "application/json")
                 .body(Body::from(
@@ -120,7 +132,11 @@ async fn itinerary_patch_contract_invalid_activity_type_returns_invalid_request(
         .oneshot(
             Request::builder()
                 .method(Method::PATCH)
-                .uri(format!("/v1/itinerary-items/{}", support::ITEM_ID))
+                .uri(format!(
+                    "/api/v1/trips/{}/itinerary-items/{}",
+                    support::TRIP_ID,
+                    support::ITEM_ID
+                ))
                 .header(header::AUTHORIZATION, format!("Bearer {token}"))
                 .header(header::CONTENT_TYPE, "application/json")
                 .body(Body::from(
@@ -155,7 +171,11 @@ async fn itinerary_patch_contract_duplicate_client_mutation_id_conflicts(pool: s
         .oneshot(
             Request::builder()
                 .method(Method::PATCH)
-                .uri(format!("/v1/itinerary-items/{}", support::ITEM_ID))
+                .uri(format!(
+                    "/api/v1/trips/{}/itinerary-items/{}",
+                    support::TRIP_ID,
+                    support::ITEM_ID
+                ))
                 .header(header::AUTHORIZATION, format!("Bearer {token}"))
                 .header(header::CONTENT_TYPE, "application/json")
                 .body(Body::from(
@@ -178,7 +198,11 @@ async fn itinerary_patch_contract_duplicate_client_mutation_id_conflicts(pool: s
         .oneshot(
             Request::builder()
                 .method(Method::PATCH)
-                .uri(format!("/v1/itinerary-items/{}", support::ITEM_ID))
+                .uri(format!(
+                    "/api/v1/trips/{}/itinerary-items/{}",
+                    support::TRIP_ID,
+                    support::ITEM_ID
+                ))
                 .header(header::AUTHORIZATION, format!("Bearer {token}"))
                 .header(header::CONTENT_TYPE, "application/json")
                 .body(Body::from(

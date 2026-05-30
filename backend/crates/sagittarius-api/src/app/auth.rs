@@ -15,7 +15,9 @@ use crate::domain::types::{
 
 const TEST_SECRET_SALT: &[u8] = b"sagittarius-test-salt";
 const SESSION_TOKEN_SALT: &[u8] = b"sagittarius-session-token";
+const JOIN_SESSION_TOKEN_SALT: &[u8] = b"sagittarius-join-session";
 const SESSION_TTL: Duration = Duration::days(30);
+const JOIN_SESSION_TTL: Duration = Duration::minutes(20);
 
 pub fn hash_secret_for_tests(secret: &str) -> String {
     hash_secret_with_salt(secret, TEST_SECRET_SALT).expect("static test salt should hash")
@@ -50,11 +52,37 @@ pub async fn join_trip(
         .into_iter()
         .map(ClaimableMember::from)
         .collect();
+    let join_session_token = generate_session_token();
+    let join_session_token_hash = hash_join_session_token(&join_session_token)?;
+    let expires_at = OffsetDateTime::now_utc() + JOIN_SESSION_TTL;
+    db::queries::insert_trip_join_session(
+        pool,
+        Uuid::now_v7(),
+        trip.id,
+        &join_session_token_hash,
+        expires_at,
+    )
+    .await?;
 
     Ok(JoinTripResponse {
         trip: TripSummary::from(trip),
         claimable_members,
+        join_session_token,
+        expires_at: format_timestamp(expires_at)?,
     })
+}
+
+pub async fn verify_join_session(
+    pool: &PgPool,
+    trip_id: Uuid,
+    join_session_token: &str,
+) -> Result<(), ServiceError> {
+    let token_hash = hash_join_session_token(join_session_token)?;
+    db::queries::find_active_trip_join_session(pool, trip_id, &token_hash)
+        .await?
+        .ok_or(ServiceError::Unauthenticated)?;
+
+    Ok(())
 }
 
 pub async fn claim_member(
@@ -161,6 +189,10 @@ fn generate_session_token() -> String {
 
 pub(crate) fn hash_session_token(session_token: &str) -> Result<String, ServiceError> {
     hash_secret_with_salt(session_token, SESSION_TOKEN_SALT)
+}
+
+pub(crate) fn hash_join_session_token(session_token: &str) -> Result<String, ServiceError> {
+    hash_secret_with_salt(session_token, JOIN_SESSION_TOKEN_SALT)
 }
 
 pub fn hash_session_token_for_tests(session_token: &str) -> String {

@@ -91,6 +91,7 @@ pub async fn create_task(
 pub async fn patch_task(
     pool: &PgPool,
     realtime: &RealtimeHub,
+    trip_id: Uuid,
     task_id: Uuid,
     session_token: &str,
     request: PatchTaskRequest,
@@ -102,6 +103,9 @@ pub async fn patch_task(
     let existing = db::queries::lock_task(&mut tx, task_id)
         .await?
         .ok_or(ServiceError::NotFound)?;
+    if existing.trip_id != trip_id {
+        return Err(ServiceError::NotFound);
+    }
     let session =
         db::queries::find_active_member_session_in_tx(&mut tx, existing.trip_id, &token_hash)
             .await?

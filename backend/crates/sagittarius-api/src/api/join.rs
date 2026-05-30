@@ -1,9 +1,10 @@
 use axum::extract::{Path, State};
-use axum::http::{HeaderMap, StatusCode, header};
+use axum::http::StatusCode;
 use axum::{Json, response::IntoResponse};
 use serde::Deserialize;
 use uuid::Uuid;
 
+use crate::api::extractors::BearerToken;
 use crate::app;
 use crate::app::AppState;
 use crate::domain::errors::ServiceError;
@@ -12,7 +13,7 @@ use crate::domain::types::{JoinTripResponse, MemberSession};
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct JoinRequest {
-    pub join_id: String,
+    pub join_code: String,
     pub trip_password: String,
 }
 
@@ -20,12 +21,15 @@ pub struct JoinRequest {
 #[serde(rename_all = "camelCase")]
 pub struct ParticipantPasswordRequest {
     pub participant_password: String,
+    pub join_session_token: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct LogoutRequest {
-    pub session_token: Option<String>,
+pub struct LoginMemberRequest {
+    pub member_id: Uuid,
+    pub participant_password: String,
+    pub join_session_token: Option<String>,
 }
 
 pub async fn join_trip(
@@ -33,7 +37,7 @@ pub async fn join_trip(
     Json(request): Json<JoinRequest>,
 ) -> Result<Json<JoinTripResponse>, ServiceError> {
     let response =
-        app::auth::join_trip(&state.pool, &request.join_id, &request.trip_password).await?;
+        app::auth::join_trip(&state.pool, &request.join_code, &request.trip_password).await?;
 
     Ok(Json(response))
 }
@@ -43,6 +47,12 @@ pub async fn claim_member(
     Path((trip_id, member_id)): Path<(Uuid, Uuid)>,
     Json(request): Json<ParticipantPasswordRequest>,
 ) -> Result<Json<MemberSession>, ServiceError> {
+    let join_session_token = request
+        .join_session_token
+        .as_deref()
+        .filter(|token| !token.is_empty())
+        .ok_or(ServiceError::Unauthenticated)?;
+    app::auth::verify_join_session(&state.pool, trip_id, join_session_token).await?;
     let response = app::auth::claim_member(
         &state.pool,
         trip_id,
@@ -56,13 +66,19 @@ pub async fn claim_member(
 
 pub async fn login_member(
     State(state): State<AppState>,
-    Path((trip_id, member_id)): Path<(Uuid, Uuid)>,
-    Json(request): Json<ParticipantPasswordRequest>,
+    Path(trip_id): Path<Uuid>,
+    Json(request): Json<LoginMemberRequest>,
 ) -> Result<Json<MemberSession>, ServiceError> {
+    let join_session_token = request
+        .join_session_token
+        .as_deref()
+        .filter(|token| !token.is_empty())
+        .ok_or(ServiceError::Unauthenticated)?;
+    app::auth::verify_join_session(&state.pool, trip_id, join_session_token).await?;
     let response = app::auth::login_member(
         &state.pool,
         trip_id,
-        member_id,
+        request.member_id,
         &request.participant_password,
     )
     .await?;
@@ -73,21 +89,9 @@ pub async fn login_member(
 pub async fn logout(
     State(state): State<AppState>,
     Path(trip_id): Path<Uuid>,
-    headers: HeaderMap,
-    request: Option<Json<LogoutRequest>>,
+    BearerToken(session_token): BearerToken,
 ) -> Result<impl IntoResponse, ServiceError> {
-    let posted_token = request
-        .as_ref()
-        .and_then(|Json(request)| request.session_token.as_deref());
-    let bearer_token = bearer_token(&headers);
-    let session_token = posted_token.or(bearer_token);
-
-    app::auth::logout_session(&state.pool, trip_id, session_token).await?;
+    app::auth::logout_session(&state.pool, trip_id, Some(&session_token)).await?;
 
     Ok(StatusCode::NO_CONTENT)
-}
-
-fn bearer_token(headers: &HeaderMap) -> Option<&str> {
-    let value = headers.get(header::AUTHORIZATION)?.to_str().ok()?;
-    value.strip_prefix("Bearer ")
 }

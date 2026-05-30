@@ -1,17 +1,10 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import type { PlanningView } from "@/src/app/SagittariusApp";
+import { appRoutes, tripWorkspaceNavItems } from "@/src/routes/app-routes";
 import type { Member, Trip } from "@/src/trip/types";
 import { getTripDates } from "@/src/trip/itinerary";
 import { Icon } from "./icons";
-
-const navItems = [
-  { id: "overview", label: "ภาพรวม", icon: "home" as const, href: "/" },
-  { id: "itinerary", label: "แผนการเดินทาง", icon: "calendar" as const, href: "/itinerary" },
-  { id: "map", label: "แผนที่", icon: "map" as const, href: "/map" },
-  { id: "timeline", label: "ไทม์ไลน์", icon: "list" as const, href: "/timeline" },
-  { id: "members", label: "สมาชิก", icon: "users" as const, href: "/members" },
-];
 
 interface AppShellProps {
   activeView: PlanningView;
@@ -25,6 +18,7 @@ interface AppShellProps {
 
 export function AppShell({ activeView, children, collapsed, currentMember, onLeaveParticipantSession, trip, onToggleCollapsed }: AppShellProps) {
   const tripDays = getTripDates(trip.startDate, trip.endDate).length;
+  const navItems = tripWorkspaceNavItems(trip.id);
 
   return (
     <div className="app-layout" data-sidebar-collapsed={collapsed ? "true" : "false"}>
@@ -70,7 +64,7 @@ export function AppShell({ activeView, children, collapsed, currentMember, onLea
           <strong>สรุปแผน</strong>
           <span><Icon name="calendar" /> {tripDays} วัน 5 คืน</span>
           <span><Icon name="location" /> {trip.itineraryItems.length} สถานที่</span>
-          <Link href="/" className="rail-summary-link">ดูสรุปรายละเอียด</Link>
+          <Link href={appRoutes.tripOverview(trip.id)} className="rail-summary-link">ดูสรุปรายละเอียด</Link>
         </div>
 
         <div className="member-card">

@@ -5,6 +5,17 @@ use http::{Method, Request, StatusCode, header};
 use serde_json::{Value, json};
 use tower::ServiceExt;
 
+fn review_uri(suggestion_id: impl std::fmt::Display) -> String {
+    format!(
+        "/api/v1/trips/{}/suggestions/{suggestion_id}",
+        support::TRIP_ID
+    )
+}
+
+fn review_body(status: &str) -> Body {
+    Body::from(json!({ "status": status }).to_string())
+}
+
 #[sqlx::test(migrations = "../../migrations")]
 async fn suggestions_contract_traveler_can_create_suggestion_and_viewer_cannot(pool: sqlx::PgPool) {
     support::seed_trip(&pool).await;
@@ -17,7 +28,7 @@ async fn suggestions_contract_traveler_can_create_suggestion_and_viewer_cannot(p
         .oneshot(
             Request::builder()
                 .method(Method::POST)
-                .uri(format!("/v1/trips/{}/suggestions", support::TRIP_ID))
+                .uri(format!("/api/v1/trips/{}/suggestions", support::TRIP_ID))
                 .header(header::AUTHORIZATION, format!("Bearer {traveler}"))
                 .header(header::CONTENT_TYPE, "application/json")
                 .body(Body::from(
@@ -49,7 +60,7 @@ async fn suggestions_contract_traveler_can_create_suggestion_and_viewer_cannot(p
         .oneshot(
             Request::builder()
                 .method(Method::POST)
-                .uri(format!("/v1/trips/{}/suggestions", support::TRIP_ID))
+                .uri(format!("/api/v1/trips/{}/suggestions", support::TRIP_ID))
                 .header(header::AUTHORIZATION, format!("Bearer {viewer}"))
                 .header(header::CONTENT_TYPE, "application/json")
                 .body(Body::from(
@@ -74,7 +85,7 @@ async fn suggestions_contract_traveler_can_create_suggestion_and_viewer_cannot(p
         .oneshot(
             Request::builder()
                 .method(Method::POST)
-                .uri(format!("/v1/trips/{}/suggestions", support::TRIP_ID))
+                .uri(format!("/api/v1/trips/{}/suggestions", support::TRIP_ID))
                 .header(header::AUTHORIZATION, format!("Bearer {traveler}"))
                 .header(header::CONTENT_TYPE, "application/json")
                 .body(Body::from(
@@ -98,7 +109,7 @@ async fn suggestions_contract_traveler_can_create_suggestion_and_viewer_cannot(p
         .oneshot(
             Request::builder()
                 .method(Method::POST)
-                .uri(format!("/v1/trips/{}/suggestions", support::TRIP_ID))
+                .uri(format!("/api/v1/trips/{}/suggestions", support::TRIP_ID))
                 .header(header::AUTHORIZATION, format!("Bearer {traveler}"))
                 .header(header::CONTENT_TYPE, "application/json")
                 .body(Body::from(
@@ -132,7 +143,7 @@ async fn suggestions_contract_create_edit_rejects_invalid_plan_and_target_varian
         .oneshot(
             Request::builder()
                 .method(Method::POST)
-                .uri(format!("/v1/trips/{}/suggestions", support::TRIP_ID))
+                .uri(format!("/api/v1/trips/{}/suggestions", support::TRIP_ID))
                 .header(header::AUTHORIZATION, format!("Bearer {traveler}"))
                 .header(header::CONTENT_TYPE, "application/json")
                 .body(Body::from(
@@ -157,7 +168,7 @@ async fn suggestions_contract_create_edit_rejects_invalid_plan_and_target_varian
         .oneshot(
             Request::builder()
                 .method(Method::POST)
-                .uri(format!("/v1/trips/{}/suggestions", support::TRIP_ID))
+                .uri(format!("/api/v1/trips/{}/suggestions", support::TRIP_ID))
                 .header(header::AUTHORIZATION, format!("Bearer {traveler}"))
                 .header(header::CONTENT_TYPE, "application/json")
                 .body(Body::from(
@@ -182,7 +193,7 @@ async fn suggestions_contract_create_edit_rejects_invalid_plan_and_target_varian
         .oneshot(
             Request::builder()
                 .method(Method::POST)
-                .uri(format!("/v1/trips/{}/suggestions", support::TRIP_ID))
+                .uri(format!("/api/v1/trips/{}/suggestions", support::TRIP_ID))
                 .header(header::AUTHORIZATION, format!("Bearer {traveler}"))
                 .header(header::CONTENT_TYPE, "application/json")
                 .body(Body::from(
@@ -217,10 +228,11 @@ async fn suggestions_contract_organizer_approves_matching_suggestion_and_conflic
         .clone()
         .oneshot(
             Request::builder()
-                .method(Method::POST)
-                .uri(format!("/v1/suggestions/{}/approve", uuid::Uuid::now_v7()))
+                .method(Method::PATCH)
+                .uri(review_uri(uuid::Uuid::now_v7()))
                 .header(header::AUTHORIZATION, format!("Bearer {organizer}"))
-                .body(Body::empty())
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(review_body("approved"))
                 .unwrap(),
         )
         .await
@@ -231,10 +243,11 @@ async fn suggestions_contract_organizer_approves_matching_suggestion_and_conflic
         .clone()
         .oneshot(
             Request::builder()
-                .method(Method::POST)
-                .uri(format!("/v1/suggestions/{fresh_id}/approve"))
+                .method(Method::PATCH)
+                .uri(review_uri(fresh_id))
                 .header(header::AUTHORIZATION, format!("Bearer {organizer}"))
-                .body(Body::empty())
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(review_body("approved"))
                 .unwrap(),
         )
         .await
@@ -245,10 +258,11 @@ async fn suggestions_contract_organizer_approves_matching_suggestion_and_conflic
         .clone()
         .oneshot(
             Request::builder()
-                .method(Method::POST)
-                .uri(format!("/v1/suggestions/{fresh_id}/approve"))
+                .method(Method::PATCH)
+                .uri(review_uri(fresh_id))
                 .header(header::AUTHORIZATION, format!("Bearer {organizer}"))
-                .body(Body::empty())
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(review_body("approved"))
                 .unwrap(),
         )
         .await
@@ -272,10 +286,11 @@ async fn suggestions_contract_organizer_approves_matching_suggestion_and_conflic
     let conflicted = app
         .oneshot(
             Request::builder()
-                .method(Method::POST)
-                .uri(format!("/v1/suggestions/{stale_id}/approve"))
+                .method(Method::PATCH)
+                .uri(review_uri(stale_id))
                 .header(header::AUTHORIZATION, format!("Bearer {organizer}"))
-                .body(Body::empty())
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(review_body("approved"))
                 .unwrap(),
         )
         .await
@@ -316,10 +331,11 @@ async fn suggestions_contract_approval_rejects_target_plan_mismatch_without_muta
     let response = app
         .oneshot(
             Request::builder()
-                .method(Method::POST)
-                .uri(format!("/v1/suggestions/{malformed_id}/approve"))
+                .method(Method::PATCH)
+                .uri(review_uri(malformed_id))
                 .header(header::AUTHORIZATION, format!("Bearer {organizer}"))
-                .body(Body::empty())
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(review_body("approved"))
                 .unwrap(),
         )
         .await
@@ -353,10 +369,11 @@ async fn suggestions_contract_rejects_pending_once_and_blocks_resolved_reviews(p
         .clone()
         .oneshot(
             Request::builder()
-                .method(Method::POST)
-                .uri(format!("/v1/suggestions/{suggestion_id}/reject"))
+                .method(Method::PATCH)
+                .uri(review_uri(suggestion_id))
                 .header(header::AUTHORIZATION, format!("Bearer {traveler}"))
-                .body(Body::empty())
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(review_body("rejected"))
                 .unwrap(),
         )
         .await
@@ -367,10 +384,11 @@ async fn suggestions_contract_rejects_pending_once_and_blocks_resolved_reviews(p
         .clone()
         .oneshot(
             Request::builder()
-                .method(Method::POST)
-                .uri(format!("/v1/suggestions/{suggestion_id}/reject"))
+                .method(Method::PATCH)
+                .uri(review_uri(suggestion_id))
                 .header(header::AUTHORIZATION, format!("Bearer {organizer}"))
-                .body(Body::empty())
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(review_body("rejected"))
                 .unwrap(),
         )
         .await
@@ -384,10 +402,11 @@ async fn suggestions_contract_rejects_pending_once_and_blocks_resolved_reviews(p
         .clone()
         .oneshot(
             Request::builder()
-                .method(Method::POST)
-                .uri(format!("/v1/suggestions/{suggestion_id}/reject"))
+                .method(Method::PATCH)
+                .uri(review_uri(suggestion_id))
                 .header(header::AUTHORIZATION, format!("Bearer {organizer}"))
-                .body(Body::empty())
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(review_body("rejected"))
                 .unwrap(),
         )
         .await
@@ -397,10 +416,11 @@ async fn suggestions_contract_rejects_pending_once_and_blocks_resolved_reviews(p
     let traveler_cannot_approve = app
         .oneshot(
             Request::builder()
-                .method(Method::POST)
-                .uri(format!("/v1/suggestions/{suggestion_id}/approve"))
+                .method(Method::PATCH)
+                .uri(review_uri(suggestion_id))
                 .header(header::AUTHORIZATION, format!("Bearer {traveler}"))
-                .body(Body::empty())
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(review_body("approved"))
                 .unwrap(),
         )
         .await

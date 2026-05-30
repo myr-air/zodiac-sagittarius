@@ -7,6 +7,12 @@ import { TripApiError, type TripApiClient, type TripCockpit } from "@/src/trip/a
 import { seedTrip } from "@/src/trip/seed";
 
 describe("TripJoinGate", () => {
+  it("prefills the join code from invite route params", () => {
+    render(<TripJoinGate trip={seedTrip} initialJoinCode="HK-SZ-2025" onTripChange={vi.fn()} onAuthenticated={vi.fn()} />);
+
+    expect(screen.getByLabelText(/Trip ID/i)).toHaveValue("HK-SZ-2025");
+  });
+
   it("requires the trip id and trip password before choosing a participant", async () => {
     const user = userEvent.setup();
     render(<TripJoinGate trip={seedTrip} onTripChange={vi.fn()} onAuthenticated={vi.fn()} />);
@@ -166,6 +172,8 @@ describe("TripJoinGate", () => {
             lastSeenAt: null,
           },
         ],
+        joinSessionToken: "join-session-token",
+        expiresAt: "2026-05-29T00:20:00.000Z",
       }),
       claimMember: vi.fn().mockResolvedValue({
         tripId: cockpit.trip.id,
@@ -205,7 +213,7 @@ describe("TripJoinGate", () => {
     await user.click(screen.getByRole("button", { name: /เริ่มใช้งาน|ยืนยันตัวตน/i }));
 
     expect(apiClient.joinTrip).toHaveBeenCalledWith({ joinId: "HK-SZ-2025", password: "dim-sum-run" });
-    expect(apiClient.claimMember).toHaveBeenCalledWith(cockpit.trip.id, cockpit.trip.members[0].id, "owner-pin");
+    expect(apiClient.claimMember).toHaveBeenCalledWith(cockpit.trip.id, cockpit.trip.members[0].id, "owner-pin", "join-session-token");
     expect(apiClient.loadTrip).toHaveBeenCalledWith(cockpit.trip.id, "session-token");
     expect(onTripChange).toHaveBeenCalledWith(cockpit.trip);
     expect(onAuthenticated).toHaveBeenCalledWith(expect.objectContaining({ sessionToken: "session-token" }));
@@ -241,6 +249,8 @@ describe("TripJoinGate", () => {
             claimedAt: null,
             lastSeenAt: null,
           }],
+          joinSessionToken: "join-session-token",
+          expiresAt: "2026-05-29T00:20:00.000Z",
         }),
       claimMember: vi.fn().mockRejectedValue(new TripApiError({ code: "invalid_request", message: "Already claimed", status: 400 })),
       loginMember: vi.fn().mockRejectedValue(new Error("Backend login unavailable")),
@@ -268,7 +278,7 @@ describe("TripJoinGate", () => {
     await user.type(screen.getByLabelText(/รหัสสำหรับ Demo Traveler/i), "owner-pin");
     await user.click(screen.getByRole("button", { name: /เริ่มใช้งาน|ยืนยันตัวตน/i }));
 
-    expect(apiClient.loginMember).toHaveBeenCalledWith(seedTrip.id, "member-aom", "owner-pin");
+    expect(apiClient.loginMember).toHaveBeenCalledWith(seedTrip.id, "member-aom", "owner-pin", "join-session-token");
     expect(screen.getByRole("alert")).toHaveTextContent("Backend login unavailable");
   });
 
@@ -299,6 +309,8 @@ describe("TripJoinGate", () => {
           claimedAt: null,
           lastSeenAt: null,
         }],
+        joinSessionToken: "join-session-token",
+        expiresAt: "2026-05-29T00:20:00.000Z",
       }),
       claimMember: vi.fn().mockRejectedValue(new TripApiError({ code: "server_error", message: "Claim service down", status: 500 })),
       loginMember: vi.fn(),

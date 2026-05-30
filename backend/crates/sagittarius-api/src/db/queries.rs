@@ -121,6 +121,46 @@ pub async fn insert_member_session(
     Ok(())
 }
 
+pub async fn insert_trip_join_session(
+    pool: &PgPool,
+    join_session_id: Uuid,
+    trip_id: Uuid,
+    token_hash: &str,
+    expires_at: OffsetDateTime,
+) -> Result<(), sqlx::Error> {
+    sqlx::query(
+        "insert into trip_join_sessions (id, trip_id, join_session_token_hash, expires_at)
+         values ($1, $2, $3, $4)",
+    )
+    .bind(join_session_id)
+    .bind(trip_id)
+    .bind(token_hash)
+    .bind(expires_at)
+    .execute(pool)
+    .await?;
+
+    Ok(())
+}
+
+pub async fn find_active_trip_join_session(
+    pool: &PgPool,
+    trip_id: Uuid,
+    token_hash: &str,
+) -> Result<Option<Uuid>, sqlx::Error> {
+    sqlx::query_scalar::<_, Uuid>(
+        "select trip_id
+         from trip_join_sessions
+         where trip_id = $1
+           and join_session_token_hash = $2
+           and consumed_at is null
+           and expires_at > now()",
+    )
+    .bind(trip_id)
+    .bind(token_hash)
+    .fetch_optional(pool)
+    .await
+}
+
 pub async fn revoke_member_session(
     pool: &PgPool,
     trip_id: Uuid,

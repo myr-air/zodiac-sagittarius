@@ -40,8 +40,14 @@ describe("Sagittarius project scaffold", () => {
     expect(readFileSync(join(frontendRoot, ".storybook/main.ts"), "utf8")).toContain("@storybook/nextjs-vite");
   });
 
-  it("uses Next App Router and the production app entry", () => {
-    expect(readFileSync(join(frontendRoot, "app/page.tsx"), "utf8")).toContain('<SagittariusApp requireJoin dataSource="api" />');
+  it("uses Next App Router with trip-scoped production routes", () => {
+    expect(readFileSync(join(frontendRoot, "app/page.tsx"), "utf8")).toContain('redirect("/trips")');
+    expect(existsSync(join(frontendRoot, "app/trips/[tripId]/page.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "app/trips/[tripId]/itinerary/page.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "app/trips/[tripId]/map/page.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "app/trips/[tripId]/timeline/page.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "app/trips/[tripId]/members/page.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "app/join/[joinCode]/page.tsx"))).toBe(true);
     expect(readFileSync(join(frontendRoot, "app/layout.tsx"), "utf8")).toContain("Sagittarius");
   });
 
@@ -58,11 +64,12 @@ describe("Sagittarius project scaffold", () => {
 
     expect(spec).toContain("CREATE TABLE trips");
     expect(spec).toContain("CREATE TABLE itinerary_items");
-    expect(spec).toContain("GET /v1/trips/:tripId");
-    expect(spec).toContain("POST /v1/trips/join");
+    expect(spec).toContain("GET /api/v1/trips/:tripId");
+    expect(spec).toContain("POST /api/v1/trip-join-sessions");
     expect(spec).toContain("CREATE TABLE trip_member_sessions");
-    expect(spec).toContain("PATCH /v1/itinerary-items/:itemId");
-    expect(spec).toContain("wss://api.sagittarius.local/v1/trips/:tripId/ws");
+    expect(spec).toContain("CREATE TABLE trip_join_sessions");
+    expect(spec).toContain("PATCH /api/v1/trips/:tripId/itinerary-items/:itemId");
+    expect(spec).toContain("wss://api.sagittarius.local/api/v1/trips/:tripId/events/stream");
     expect(spec).toContain("itinerary_item.updated");
     expect(spec).toContain("clientMutationId");
   });

@@ -43,14 +43,14 @@ async function waitForHealth(baseUrl: string) {
   const deadline = Date.now() + 20_000;
   while (Date.now() < deadline) {
     try {
-      const response = await fetch(`${baseUrl}/v1/health`);
+      const response = await fetch(`${baseUrl}/api/v1/health`);
       if (response.ok) return;
     } catch {
       await delay(250);
     }
   }
 
-  throw new Error(`Timed out waiting for ${baseUrl}/v1/health`);
+  throw new Error(`Timed out waiting for ${baseUrl}/api/v1/health`);
 }
 
 async function run(command: string, args: string[], env: Record<string, string>) {

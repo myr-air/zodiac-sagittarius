@@ -22,99 +22,89 @@ use crate::app::AppState;
 
 pub fn router(state: AppState) -> Router {
     Router::new()
-        .route("/v1/health", get(|| async { "ok" }))
+        .nest("/api/v1", api_v1())
+        .fallback(error::not_found)
+        .layer(cors_layer())
+        .with_state(state)
+}
+
+fn api_v1() -> Router<AppState> {
+    Router::new()
+        .route("/health", get(|| async { "ok" }))
+        .route("/auth/email/challenges", post(account::start_email_login))
+        .route("/auth/email/sessions", post(account::finish_email_login))
         .route(
-            "/v1/account/email-login/start",
-            post(account::start_email_login),
-        )
-        .route(
-            "/v1/account/email-login/finish",
-            post(account::finish_email_login),
-        )
-        .route("/v1/account/me", get(account::get_me))
-        .route(
-            "/v1/account/settings",
+            "/account",
             get(account::get_settings).patch(account::update_settings),
         )
         .route(
-            "/v1/account/trusted-devices/{trusted_device_id}",
+            "/account/trusted-devices/{trusted_device_id}",
             delete(account::revoke_trusted_device),
         )
         .route(
-            "/v1/account/trips",
+            "/account/trips",
             post(account::create_trip).get(account::list_trips),
         )
-        .route("/v1/account/stats", get(account::get_stats))
+        .route("/account/trip-stats", get(account::get_stats))
         .route(
-            "/v1/account/trips/{trip_id}/owner-transfer",
+            "/trips/{trip_id}/ownership-transfers",
             post(account::transfer_owner),
         )
         .route(
-            "/v1/account/trips/{trip_id}/members/{member_id}/claim",
+            "/trips/{trip_id}/members/{member_id}/account-links",
             post(account::claim_member),
         )
         .route(
-            "/v1/account/passkeys/register/start",
+            "/account/passkeys/options",
             post(account::start_passkey_registration),
         )
         .route(
-            "/v1/account/passkeys/register/finish",
+            "/account/passkeys",
             post(account::finish_passkey_registration),
         )
+        .route("/auth/passkeys/options", post(account::start_passkey_login))
         .route(
-            "/v1/account/passkeys/login/start",
-            post(account::start_passkey_login),
-        )
-        .route(
-            "/v1/account/passkeys/login/finish",
+            "/auth/passkeys/sessions",
             post(account::finish_passkey_login),
         )
-        .route("/v1/account/sessions/logout", post(account::logout_session))
-        .route("/v1/trips/join", post(join::join_trip))
-        .route("/v1/trips/{trip_id}", get(trips::load_trip))
-        .route("/v1/trips/{trip_id}/ws", get(ws::trip_ws))
+        .route("/account/session", delete(account::logout_session))
+        .route("/trip-join-sessions", post(join::join_trip))
+        .route("/trips/{trip_id}", get(trips::load_trip))
+        .route("/trips/{trip_id}/events/stream", get(ws::trip_ws))
         .route(
-            "/v1/itinerary-items/{item_id}",
+            "/trips/{trip_id}/itinerary-items/{item_id}",
             patch(itinerary::patch_itinerary_item),
         )
         .route(
-            "/v1/trips/{trip_id}/suggestions",
+            "/trips/{trip_id}/suggestions",
             post(suggestions::create_suggestion),
         )
-        .route("/v1/trips/{trip_id}/tasks", post(tasks::create_task))
-        .route("/v1/tasks/{task_id}", patch(tasks::patch_task))
+        .route("/trips/{trip_id}/tasks", post(tasks::create_task))
+        .route("/trips/{trip_id}/tasks/{task_id}", patch(tasks::patch_task))
         .route(
-            "/v1/suggestions/{suggestion_id}/approve",
-            post(suggestions::approve_suggestion),
+            "/trips/{trip_id}/suggestions/{suggestion_id}",
+            patch(suggestions::patch_suggestion),
         )
         .route(
-            "/v1/suggestions/{suggestion_id}/reject",
-            post(suggestions::reject_suggestion),
-        )
-        .route(
-            "/v1/trips/{trip_id}/members/{member_id}/claim",
+            "/trips/{trip_id}/members/{member_id}/claims",
             post(join::claim_member),
         )
+        .route("/trips/{trip_id}/member-sessions", post(join::login_member))
         .route(
-            "/v1/trips/{trip_id}/members/{member_id}/login",
-            post(join::login_member),
+            "/trips/{trip_id}/member-sessions/current",
+            delete(join::logout),
         )
-        .route(
-            "/v1/trips/{trip_id}/member-session/logout",
-            post(join::logout),
-        )
-        .fallback(error::not_found)
-        .layer(
-            CorsLayer::new()
-                .allow_origin(AllowOrigin::mirror_request())
-                .allow_methods([
-                    Method::DELETE,
-                    Method::GET,
-                    Method::POST,
-                    Method::PATCH,
-                    Method::OPTIONS,
-                ])
-                .allow_headers([AUTHORIZATION, CONTENT_TYPE]),
-        )
-        .with_state(state)
+}
+
+fn cors_layer() -> CorsLayer {
+    CorsLayer::new()
+        .allow_origin(AllowOrigin::mirror_request())
+        .allow_methods([
+            Method::DELETE,
+            Method::GET,
+            Method::POST,
+            Method::PATCH,
+            Method::OPTIONS,
+        ])
+        .allow_headers([AUTHORIZATION, CONTENT_TYPE])
 }

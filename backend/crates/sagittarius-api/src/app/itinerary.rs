@@ -12,6 +12,7 @@ use crate::realtime::RealtimeHub;
 pub async fn patch_itinerary_item(
     pool: &PgPool,
     realtime: &RealtimeHub,
+    trip_id: Uuid,
     item_id: Uuid,
     session_token: &str,
     request: PatchItineraryItemRequest,
@@ -23,6 +24,9 @@ pub async fn patch_itinerary_item(
     let existing = db::queries::lock_itinerary_item(&mut tx, item_id)
         .await?
         .ok_or(ServiceError::NotFound)?;
+    if existing.trip_id != trip_id {
+        return Err(ServiceError::NotFound);
+    }
     let session =
         db::queries::find_active_member_session_in_tx(&mut tx, existing.trip_id, &token_hash)
             .await?

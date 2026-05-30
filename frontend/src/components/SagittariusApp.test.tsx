@@ -177,6 +177,8 @@ describe("Sagittarius cockpit UI", () => {
             lastSeenAt: null,
           },
         ],
+        joinSessionToken: "join-session-token",
+        expiresAt: "2026-05-29T00:20:00.000Z",
       }),
       claimMember: vi.fn().mockResolvedValue({
         tripId: ownerTrip.id,
@@ -242,6 +244,7 @@ describe("Sagittarius cockpit UI", () => {
     await user.click(within(tasks).getByRole("checkbox", { name: /แลกเงิน HKD/i }));
 
     expect(apiClient.patchTask).toHaveBeenCalledWith(
+      ownerTrip.id,
       "task-api-created",
       "session-token",
       expect.objectContaining({ expectedVersion: 1, patch: { status: "done" } }),
@@ -395,6 +398,8 @@ describe("Sagittarius cockpit UI", () => {
           claimedAt: null,
           lastSeenAt: null,
         })),
+        joinSessionToken: "join-session-token",
+        expiresAt: "2026-05-29T00:20:00.000Z",
       }),
       claimMember: vi.fn().mockResolvedValue({
         tripId: ownerTrip.id,
@@ -431,6 +436,7 @@ describe("Sagittarius cockpit UI", () => {
     await user.click(within(dialog).getByRole("button", { name: /บันทึกการแก้ไข/i }));
 
     expect(apiClient.patchItineraryItem).toHaveBeenCalledWith(
+      ownerTrip.id,
       selectedItem.id,
       "session-token",
       expect.objectContaining({
@@ -444,7 +450,7 @@ describe("Sagittarius cockpit UI", () => {
     await user.click(within(context).getByRole("tab", { name: /ข้อเสนอ/i }));
     await user.click(within(context).getByRole("button", { name: /อนุมัติ Book ahead from API/i }));
 
-    expect(apiClient.approveSuggestion).toHaveBeenCalledWith(pendingSuggestion.id, "session-token");
+    expect(apiClient.approveSuggestion).toHaveBeenCalledWith(ownerTrip.id, pendingSuggestion.id, "session-token");
     expect(within(context).queryByText(/Book ahead from API/i)).not.toBeInTheDocument();
   });
 
@@ -498,6 +504,8 @@ describe("Sagittarius cockpit UI", () => {
           claimedAt: null,
           lastSeenAt: null,
         }],
+        joinSessionToken: "join-session-token",
+        expiresAt: "2026-05-29T00:20:00.000Z",
       }),
       claimMember: vi.fn().mockResolvedValue({
         tripId: travelerTrip.id,
@@ -715,7 +723,7 @@ describe("Sagittarius cockpit UI", () => {
     const membersLink = within(navigation).getByRole("link", { name: /สมาชิก/i });
 
     expect(membersLink).toHaveClass("rail-link--active");
-    expect(membersLink).toHaveAttribute("href", "/members");
+    expect(membersLink).toHaveAttribute("href", "/trips/trip-hong-kong-shenzhen/members");
     expect(screen.getByRole("region", { name: /Trip members/i })).toBeInTheDocument();
     expect(screen.getByRole("region", { name: /People and presence/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /สมาชิกในทริป/i })).toBeInTheDocument();
@@ -809,7 +817,7 @@ describe("Sagittarius cockpit UI", () => {
 
     await user.click(screen.getByRole("button", { name: /คัดลอกลิงก์เชิญ/i }));
 
-    expect(writeText).toHaveBeenCalledWith(expect.stringContaining("/members?trip=HK-SZ-2025"));
+    expect(writeText).toHaveBeenCalledWith(expect.stringContaining("/join/HK-SZ-2025"));
     expect(screen.getByText(/คัดลอกแล้ว/i)).toBeInTheDocument();
   });
 
@@ -1347,6 +1355,8 @@ function createApiClientForTrip(trip: Trip): TripApiClient {
         claimedAt: member.claimedAt ?? null,
         lastSeenAt: member.lastSeenAt ?? null,
       })),
+      joinSessionToken: "join-session-token",
+      expiresAt: "2026-05-29T00:20:00.000Z",
     }),
     claimMember: vi.fn().mockResolvedValue({
       tripId: trip.id,

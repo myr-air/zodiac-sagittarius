@@ -38,7 +38,7 @@ describe("TripMembersPage", () => {
     const props = renderMembers({ trip: claimedTrip });
 
     await user.click(screen.getByRole("button", { name: /คัดลอกลิงก์เชิญ/i }));
-    expect(writeText).toHaveBeenCalledWith(expect.stringContaining("/members?trip=HK-SZ-2025"));
+    expect(writeText).toHaveBeenCalledWith(expect.stringContaining("/join/HK-SZ-2025"));
     expect(screen.getByRole("status")).toHaveTextContent("คัดลอกแล้ว");
 
     await user.click(screen.getByRole("button", { name: /รีเซ็ตรหัสผ่าน Travel Mate/i }));

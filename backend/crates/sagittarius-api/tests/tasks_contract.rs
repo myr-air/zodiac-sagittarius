@@ -17,7 +17,7 @@ async fn tasks_contract_traveler_creates_and_updates_own_private_task(pool: sqlx
         .oneshot(
             Request::builder()
                 .method(Method::POST)
-                .uri(format!("/v1/trips/{}/tasks", support::TRIP_ID))
+                .uri(format!("/api/v1/trips/{}/tasks", support::TRIP_ID))
                 .header(header::AUTHORIZATION, format!("Bearer {token}"))
                 .header(header::CONTENT_TYPE, "application/json")
                 .body(Body::from(
@@ -45,7 +45,10 @@ async fn tasks_contract_traveler_creates_and_updates_own_private_task(pool: sqlx
         .oneshot(
             Request::builder()
                 .method(Method::PATCH)
-                .uri(format!("/v1/tasks/{task_id}"))
+                .uri(format!(
+                    "/api/v1/trips/{}/tasks/{task_id}",
+                    support::TRIP_ID
+                ))
                 .header(header::AUTHORIZATION, format!("Bearer {token}"))
                 .header(header::CONTENT_TYPE, "application/json")
                 .body(Body::from(
@@ -70,7 +73,10 @@ async fn tasks_contract_traveler_creates_and_updates_own_private_task(pool: sqlx
         .oneshot(
             Request::builder()
                 .method(Method::PATCH)
-                .uri(format!("/v1/tasks/{task_id}"))
+                .uri(format!(
+                    "/api/v1/trips/{}/tasks/{task_id}",
+                    support::TRIP_ID
+                ))
                 .header(header::AUTHORIZATION, format!("Bearer {token}"))
                 .header(header::CONTENT_TYPE, "application/json")
                 .body(Body::from(
@@ -115,7 +121,7 @@ async fn tasks_contract_viewer_cannot_create_task(pool: sqlx::PgPool) {
         .oneshot(
             Request::builder()
                 .method(Method::POST)
-                .uri(format!("/v1/trips/{}/tasks", support::TRIP_ID))
+                .uri(format!("/api/v1/trips/{}/tasks", support::TRIP_ID))
                 .header(header::AUTHORIZATION, format!("Bearer {token}"))
                 .header(header::CONTENT_TYPE, "application/json")
                 .body(Body::from(
@@ -146,7 +152,7 @@ async fn tasks_contract_shared_tasks_validate_references_and_duplicate_mutations
         .oneshot(
             Request::builder()
                 .method(Method::POST)
-                .uri(format!("/v1/trips/{}/tasks", support::TRIP_ID))
+                .uri(format!("/api/v1/trips/{}/tasks", support::TRIP_ID))
                 .header(header::AUTHORIZATION, format!("Bearer {organizer}"))
                 .header(header::CONTENT_TYPE, "application/json")
                 .body(Body::from(
@@ -176,7 +182,7 @@ async fn tasks_contract_shared_tasks_validate_references_and_duplicate_mutations
         .oneshot(
             Request::builder()
                 .method(Method::POST)
-                .uri(format!("/v1/trips/{}/tasks", support::TRIP_ID))
+                .uri(format!("/api/v1/trips/{}/tasks", support::TRIP_ID))
                 .header(header::AUTHORIZATION, format!("Bearer {organizer}"))
                 .header(header::CONTENT_TYPE, "application/json")
                 .body(Body::from(
@@ -198,7 +204,7 @@ async fn tasks_contract_shared_tasks_validate_references_and_duplicate_mutations
         .oneshot(
             Request::builder()
                 .method(Method::POST)
-                .uri(format!("/v1/trips/{}/tasks", support::TRIP_ID))
+                .uri(format!("/api/v1/trips/{}/tasks", support::TRIP_ID))
                 .header(header::AUTHORIZATION, format!("Bearer {organizer}"))
                 .header(header::CONTENT_TYPE, "application/json")
                 .body(Body::from(
@@ -221,7 +227,7 @@ async fn tasks_contract_shared_tasks_validate_references_and_duplicate_mutations
         .oneshot(
             Request::builder()
                 .method(Method::POST)
-                .uri(format!("/v1/trips/{}/tasks", support::TRIP_ID))
+                .uri(format!("/api/v1/trips/{}/tasks", support::TRIP_ID))
                 .header(header::AUTHORIZATION, format!("Bearer {organizer}"))
                 .header(header::CONTENT_TYPE, "application/json")
                 .body(Body::from(
@@ -245,7 +251,10 @@ async fn tasks_contract_shared_tasks_validate_references_and_duplicate_mutations
         .oneshot(
             Request::builder()
                 .method(Method::PATCH)
-                .uri(format!("/v1/tasks/{task_id}"))
+                .uri(format!(
+                    "/api/v1/trips/{}/tasks/{task_id}",
+                    support::TRIP_ID
+                ))
                 .header(header::AUTHORIZATION, format!("Bearer {traveler}"))
                 .header(header::CONTENT_TYPE, "application/json")
                 .body(Body::from(
@@ -276,7 +285,11 @@ async fn tasks_contract_patch_rejects_unknown_task_duplicate_mutation_and_bad_re
         .oneshot(
             Request::builder()
                 .method(Method::PATCH)
-                .uri(format!("/v1/tasks/{}", Uuid::now_v7()))
+                .uri(format!(
+                    "/api/v1/trips/{}/tasks/{}",
+                    support::TRIP_ID,
+                    Uuid::now_v7()
+                ))
                 .header(header::AUTHORIZATION, format!("Bearer {traveler}"))
                 .header(header::CONTENT_TYPE, "application/json")
                 .body(Body::from(
@@ -298,7 +311,7 @@ async fn tasks_contract_patch_rejects_unknown_task_duplicate_mutation_and_bad_re
         .oneshot(
             Request::builder()
                 .method(Method::POST)
-                .uri(format!("/v1/trips/{}/tasks", support::TRIP_ID))
+                .uri(format!("/api/v1/trips/{}/tasks", support::TRIP_ID))
                 .header(header::AUTHORIZATION, format!("Bearer {traveler}"))
                 .header(header::CONTENT_TYPE, "application/json")
                 .body(Body::from(
@@ -323,7 +336,10 @@ async fn tasks_contract_patch_rejects_unknown_task_duplicate_mutation_and_bad_re
         .oneshot(
             Request::builder()
                 .method(Method::PATCH)
-                .uri(format!("/v1/tasks/{task_id}"))
+                .uri(format!(
+                    "/api/v1/trips/{}/tasks/{task_id}",
+                    support::TRIP_ID
+                ))
                 .header(header::AUTHORIZATION, format!("Bearer {traveler}"))
                 .header(header::CONTENT_TYPE, "application/json")
                 .body(Body::from(
@@ -345,7 +361,7 @@ async fn tasks_contract_patch_rejects_unknown_task_duplicate_mutation_and_bad_re
         .oneshot(
             Request::builder()
                 .method(Method::PATCH)
-                .uri(format!("/v1/tasks/{task_id}"))
+                .uri(format!("/api/v1/trips/{}/tasks/{task_id}", support::TRIP_ID))
                 .header(header::AUTHORIZATION, format!("Bearer {traveler}"))
                 .header(header::CONTENT_TYPE, "application/json")
                 .body(Body::from(
@@ -366,7 +382,10 @@ async fn tasks_contract_patch_rejects_unknown_task_duplicate_mutation_and_bad_re
         .oneshot(
             Request::builder()
                 .method(Method::PATCH)
-                .uri(format!("/v1/tasks/{task_id}"))
+                .uri(format!(
+                    "/api/v1/trips/{}/tasks/{task_id}",
+                    support::TRIP_ID
+                ))
                 .header(header::AUTHORIZATION, format!("Bearer {traveler}"))
                 .header(header::CONTENT_TYPE, "application/json")
                 .body(Body::from(

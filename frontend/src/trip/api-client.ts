@@ -16,6 +16,7 @@ import type {
   EditableSuggestionPatch,
   SuggestionType,
 } from "./types";
+import { tripApiRoutes } from "./api-routes";
 
 export interface TripApiClientOptions {
   baseUrl?: string;
@@ -99,6 +100,8 @@ export interface TripCockpitResponse {
 export interface JoinTripResponse {
   trip: TripSummaryResponse;
   claimableMembers: TripMemberResponse[];
+  joinSessionToken: string;
+  expiresAt: string;
 }
 
 export interface TripCockpit {
@@ -123,16 +126,16 @@ export class TripApiError extends Error {
 
 export interface TripApiClient {
   joinTrip(credentials: TripJoinCredential): Promise<JoinTripResponse>;
-  claimMember(tripId: string, memberId: string, participantPassword: string): Promise<TripParticipantSession>;
-  loginMember(tripId: string, memberId: string, participantPassword: string): Promise<TripParticipantSession>;
+  claimMember(tripId: string, memberId: string, participantPassword: string, joinSessionToken: string): Promise<TripParticipantSession>;
+  loginMember(tripId: string, memberId: string, participantPassword: string, joinSessionToken: string): Promise<TripParticipantSession>;
   logout(tripId: string, sessionToken: string): Promise<void>;
   loadTrip(tripId: string, sessionToken: string): Promise<TripCockpit>;
   createTask(tripId: string, sessionToken: string, request: CreateTaskApiRequest): Promise<TripTask>;
-  patchTask(taskId: string, sessionToken: string, request: PatchTaskApiRequest): Promise<TripTask>;
-  patchItineraryItem(itemId: string, sessionToken: string, request: PatchItineraryItemApiRequest): Promise<ItineraryItem>;
+  patchTask(tripId: string, taskId: string, sessionToken: string, request: PatchTaskApiRequest): Promise<TripTask>;
+  patchItineraryItem(tripId: string, itemId: string, sessionToken: string, request: PatchItineraryItemApiRequest): Promise<ItineraryItem>;
   createSuggestion(tripId: string, sessionToken: string, request: CreateSuggestionApiRequest): Promise<Suggestion>;
-  approveSuggestion(suggestionId: string, sessionToken: string): Promise<Suggestion>;
-  rejectSuggestion(suggestionId: string, sessionToken: string): Promise<Suggestion>;
+  approveSuggestion(tripId: string, suggestionId: string, sessionToken: string): Promise<Suggestion>;
+  rejectSuggestion(tripId: string, suggestionId: string, sessionToken: string): Promise<Suggestion>;
 }
 
 export interface CreateTaskApiRequest {
@@ -188,55 +191,54 @@ export function createTripApiClient(options: TripApiClientOptions = {}): TripApi
 
   return {
     joinTrip(credentials) {
-      return request<JoinTripResponse>("/v1/trips/join", {
+      return request<JoinTripResponse>(tripApiRoutes.joinSession(), {
         method: "POST",
-        body: JSON.stringify({ joinId: credentials.joinId, tripPassword: credentials.password }),
+        body: JSON.stringify({ joinCode: credentials.joinId, tripPassword: credentials.password }),
       });
     },
-    claimMember(tripId, memberId, participantPassword) {
-      return request<TripParticipantSession>(`/v1/trips/${encodePath(tripId)}/members/${encodePath(memberId)}/claim`, {
+    claimMember(tripId, memberId, participantPassword, joinSessionToken) {
+      return request<TripParticipantSession>(tripApiRoutes.claimMember(tripId, memberId), {
         method: "POST",
-        body: JSON.stringify({ participantPassword }),
+        body: JSON.stringify({ participantPassword, joinSessionToken }),
       });
     },
-    loginMember(tripId, memberId, participantPassword) {
-      return request<TripParticipantSession>(`/v1/trips/${encodePath(tripId)}/members/${encodePath(memberId)}/login`, {
+    loginMember(tripId, memberId, participantPassword, joinSessionToken) {
+      return request<TripParticipantSession>(tripApiRoutes.memberSessions(tripId), {
         method: "POST",
-        body: JSON.stringify({ participantPassword }),
+        body: JSON.stringify({ memberId, participantPassword, joinSessionToken }),
       });
     },
     async logout(tripId, sessionToken) {
-      await request<void>(`/v1/trips/${encodePath(tripId)}/member-session/logout`, {
-        method: "POST",
+      await request<void>(tripApiRoutes.currentMemberSession(tripId), {
+        method: "DELETE",
         headers: { Authorization: `Bearer ${sessionToken}` },
-        body: JSON.stringify({ sessionToken }),
       });
     },
     async loadTrip(tripId, sessionToken) {
-      const cockpit = await request<TripCockpitResponse>(`/v1/trips/${encodePath(tripId)}`, {
+      const cockpit = await request<TripCockpitResponse>(tripApiRoutes.trip(tripId), {
         method: "GET",
         headers: { Authorization: `Bearer ${sessionToken}` },
       });
       return mapCockpitResponse(cockpit);
     },
     async createTask(tripId, sessionToken, taskRequest) {
-      const task = await request<TripTaskResponse>(`/v1/trips/${encodePath(tripId)}/tasks`, {
+      const task = await request<TripTaskResponse>(tripApiRoutes.tasks(tripId), {
         method: "POST",
         headers: { Authorization: `Bearer ${sessionToken}` },
         body: JSON.stringify(taskRequest),
       });
       return mapTask(task);
     },
-    async patchTask(taskId, sessionToken, taskRequest) {
-      const task = await request<TripTaskResponse>(`/v1/tasks/${encodePath(taskId)}`, {
+    async patchTask(tripId, taskId, sessionToken, taskRequest) {
+      const task = await request<TripTaskResponse>(tripApiRoutes.task(tripId, taskId), {
         method: "PATCH",
         headers: { Authorization: `Bearer ${sessionToken}` },
         body: JSON.stringify(taskRequest),
       });
       return mapTask(task);
     },
-    async patchItineraryItem(itemId, sessionToken, itemRequest) {
-      const item = await request<ItineraryItemResponse>(`/v1/itinerary-items/${encodePath(itemId)}`, {
+    async patchItineraryItem(tripId, itemId, sessionToken, itemRequest) {
+      const item = await request<ItineraryItemResponse>(tripApiRoutes.itineraryItem(tripId, itemId), {
         method: "PATCH",
         headers: { Authorization: `Bearer ${sessionToken}` },
         body: JSON.stringify(itemRequest),
@@ -244,22 +246,24 @@ export function createTripApiClient(options: TripApiClientOptions = {}): TripApi
       return mapItineraryItem(item);
     },
     createSuggestion(tripId, sessionToken, suggestionRequest) {
-      return request<Suggestion>(`/v1/trips/${encodePath(tripId)}/suggestions`, {
+      return request<Suggestion>(tripApiRoutes.suggestions(tripId), {
         method: "POST",
         headers: { Authorization: `Bearer ${sessionToken}` },
         body: JSON.stringify(suggestionRequest),
       });
     },
-    approveSuggestion(suggestionId, sessionToken) {
-      return request<Suggestion>(`/v1/suggestions/${encodePath(suggestionId)}/approve`, {
-        method: "POST",
+    approveSuggestion(tripId, suggestionId, sessionToken) {
+      return request<Suggestion>(tripApiRoutes.suggestion(tripId, suggestionId), {
+        method: "PATCH",
         headers: { Authorization: `Bearer ${sessionToken}` },
+        body: JSON.stringify({ status: "approved" }),
       });
     },
-    rejectSuggestion(suggestionId, sessionToken) {
-      return request<Suggestion>(`/v1/suggestions/${encodePath(suggestionId)}/reject`, {
-        method: "POST",
+    rejectSuggestion(tripId, suggestionId, sessionToken) {
+      return request<Suggestion>(tripApiRoutes.suggestion(tripId, suggestionId), {
+        method: "PATCH",
         headers: { Authorization: `Bearer ${sessionToken}` },
+        body: JSON.stringify({ status: "rejected" }),
       });
     },
   };
@@ -343,10 +347,6 @@ async function toTripApiError(response: Response): Promise<TripApiError> {
     message: body.message ?? fallback.message,
     status: response.status,
   });
-}
-
-function encodePath(segment: string): string {
-  return encodeURIComponent(segment);
 }
 
 function trimTrailingSlash(value: string): string {

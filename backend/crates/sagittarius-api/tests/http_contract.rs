@@ -13,7 +13,7 @@ async fn health_returns_ok() {
     let response = app
         .oneshot(
             Request::builder()
-                .uri("/v1/health")
+                .uri("/api/v1/health")
                 .body(Body::empty())
                 .unwrap(),
         )
@@ -35,7 +35,7 @@ async fn unknown_route_returns_json_not_found() {
     let response = app
         .oneshot(
             Request::builder()
-                .uri("/v1/missing")
+                .uri("/api/v1/missing")
                 .body(Body::empty())
                 .unwrap(),
         )
@@ -67,7 +67,7 @@ async fn cors_preflight_allows_frontend_to_call_api() {
         .oneshot(
             Request::builder()
                 .method("OPTIONS")
-                .uri("/v1/trips/join")
+                .uri("/api/v1/trip-join-sessions")
                 .header(ORIGIN, "http://127.0.0.1:5180")
                 .header(ACCESS_CONTROL_REQUEST_METHOD, "POST")
                 .body(Body::empty())

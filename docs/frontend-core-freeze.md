@@ -8,7 +8,8 @@ treated as the stable baseline while backend work begins.
 
 ## Frozen Surface
 
-- App shell, navigation, page routes, and responsive workspace layout.
+- App shell, navigation behavior, existing workspace components, and responsive
+  workspace layout.
 - Design tokens, watercolor-paper visual treatment, motifs, and shared page
   header language.
 - Storybook taxonomy: `Design System/*`, `Templates/*`, `Pages/*`, and the
@@ -22,6 +23,8 @@ treated as the stable baseline while backend work begins.
 
 - API client wiring, request state, mutation state, optimistic updates, and
   backend error handling.
+- Route path rebaselining required by the canonical frontend/backend routing
+  redesign.
 - MSW handlers that mirror real backend contracts for Storybook and browser
   tests.
 - Loading, empty, permission-denied, offline, stale-data, and conflict states
@@ -32,7 +35,8 @@ treated as the stable baseline while backend work begins.
 
 ## Deferred Until After Backend Slice
 
-- New top-level frontend pages or major page re-layouts.
+- New top-level frontend pages or major page re-layouts unrelated to the
+  routing redesign.
 - New visual themes, large palette changes, or illustration systems outside
   the current watercolor-paper treatment.
 - New client-only planning features that are not driven by a backend contract.
@@ -62,8 +66,8 @@ truth for component and page states.
 
 ## Backend Handoff Notes
 
-- `docs/api-data-spec.md` is the current frontend contract draft for Rust and
-  PostgreSQL backend design.
+- `docs/api-data-spec.md` is the canonical frontend/backend routing and data
+  contract for Rust and PostgreSQL backend design.
 - Keep fixtures deterministic until API-backed state replaces each slice.
 - Move mocks into `.storybook/msw-handlers.ts` as backend endpoints become
   real; avoid broad catch-all handlers.

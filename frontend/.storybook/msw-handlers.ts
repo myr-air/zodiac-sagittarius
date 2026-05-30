@@ -22,18 +22,20 @@ const storybookItineraryItems: ItineraryItem[] = seedTrip.itineraryItems.map((it
 const storybookSuggestions: Suggestion[] = tripFixtureSuggestions.map((suggestion) => ({ ...suggestion }));
 
 export const mswHandlers = [
-  http.post("*/v1/trips/join", async ({ request }) => {
-    const body = await request.json().catch(() => null) as { joinId?: string; tripPassword?: string } | null;
-    if (body?.joinId?.trim().toUpperCase() !== seedTrip.joinId || body.tripPassword !== "dim-sum-run") {
+  http.post("*/api/v1/trip-join-sessions", async ({ request }) => {
+    const body = await request.json().catch(() => null) as { joinCode?: string; tripPassword?: string } | null;
+    if (body?.joinCode?.trim().toUpperCase() !== seedTrip.joinId || body.tripPassword !== "dim-sum-run") {
       return HttpResponse.json({ code: "unauthenticated", message: "unauthenticated" }, { status: 401 });
     }
 
     return HttpResponse.json({
       trip: tripSummary(),
       claimableMembers: seedTrip.members.map(memberSummary),
+      joinSessionToken: "storybook-join-session-token",
+      expiresAt: "2026-05-29T00:20:00.000Z",
     });
   }),
-  http.post("*/v1/trips/:tripId/members/:memberId/claim", ({ params }) => {
+  http.post("*/api/v1/trips/:tripId/members/:memberId/claims", ({ params }) => {
     if (params.tripId !== seedTrip.id) return HttpResponse.json({ code: "not_found", message: "not found" }, { status: 404 });
 
     return HttpResponse.json({
@@ -41,15 +43,16 @@ export const mswHandlers = [
       memberId: String(params.memberId),
     });
   }),
-  http.post("*/v1/trips/:tripId/members/:memberId/login", ({ params }) => {
+  http.post("*/api/v1/trips/:tripId/member-sessions", async ({ params, request }) => {
     if (params.tripId !== seedTrip.id) return HttpResponse.json({ code: "not_found", message: "not found" }, { status: 404 });
+    const body = await request.json().catch(() => null) as { memberId?: string } | null;
 
     return HttpResponse.json({
       ...storybookSession,
-      memberId: String(params.memberId),
+      memberId: body?.memberId ?? storybookSession.memberId,
     });
   }),
-  http.get("*/v1/trips/:tripId", ({ params, request }) => {
+  http.get("*/api/v1/trips/:tripId", ({ params, request }) => {
     if (params.tripId !== seedTrip.id) return HttpResponse.json({ code: "not_found", message: "not found" }, { status: 404 });
     if (!request.headers.get("authorization")?.startsWith("Bearer ")) {
       return HttpResponse.json({ code: "unauthenticated", message: "unauthenticated" }, { status: 401 });
@@ -70,7 +73,8 @@ export const mswHandlers = [
       expenseSummary: buildExpenseSummary(seedTrip.expenses, seedTrip.members[0].id),
     });
   }),
-  http.patch("*/v1/itinerary-items/:itemId", async ({ params, request }) => {
+  http.patch("*/api/v1/trips/:tripId/itinerary-items/:itemId", async ({ params, request }) => {
+    if (params.tripId !== seedTrip.id) return HttpResponse.json({ code: "not_found", message: "not found" }, { status: 404 });
     const body = await request.json() as { patch?: Partial<ItineraryItem>; expectedVersion?: number };
     const index = storybookItineraryItems.findIndex((item) => item.id === params.itemId);
     if (index < 0) return HttpResponse.json({ code: "not_found", message: "not found" }, { status: 404 });
@@ -86,7 +90,7 @@ export const mswHandlers = [
     };
     return HttpResponse.json(storybookItineraryItems[index]);
   }),
-  http.post("*/v1/trips/:tripId/suggestions", async ({ params, request }) => {
+  http.post("*/api/v1/trips/:tripId/suggestions", async ({ params, request }) => {
     if (params.tripId !== seedTrip.id) return HttpResponse.json({ code: "not_found", message: "not found" }, { status: 404 });
     const body = await request.json() as Partial<Suggestion>;
     const suggestion = {
@@ -104,13 +108,12 @@ export const mswHandlers = [
     storybookSuggestions.push(suggestion);
     return HttpResponse.json(suggestion, { status: 201 });
   }),
-  http.post("*/v1/suggestions/:suggestionId/approve", ({ params }) => {
-    return resolveStorybookSuggestion(params.suggestionId, "approved");
+  http.patch("*/api/v1/trips/:tripId/suggestions/:suggestionId", async ({ params, request }) => {
+    if (params.tripId !== seedTrip.id) return HttpResponse.json({ code: "not_found", message: "not found" }, { status: 404 });
+    const body = await request.json() as { status?: "approved" | "rejected" };
+    return resolveStorybookSuggestion(params.suggestionId, body.status ?? "rejected");
   }),
-  http.post("*/v1/suggestions/:suggestionId/reject", ({ params }) => {
-    return resolveStorybookSuggestion(params.suggestionId, "rejected");
-  }),
-  http.post("*/v1/trips/:tripId/tasks", async ({ params, request }) => {
+  http.post("*/api/v1/trips/:tripId/tasks", async ({ params, request }) => {
     if (params.tripId !== seedTrip.id) return HttpResponse.json({ code: "not_found", message: "not found" }, { status: 404 });
     const body = await request.json() as Partial<TripTask>;
     const task = {
@@ -128,7 +131,8 @@ export const mswHandlers = [
     storybookTasks.push(task);
     return HttpResponse.json(task, { status: 201 });
   }),
-  http.patch("*/v1/tasks/:taskId", async ({ params, request }) => {
+  http.patch("*/api/v1/trips/:tripId/tasks/:taskId", async ({ params, request }) => {
+    if (params.tripId !== seedTrip.id) return HttpResponse.json({ code: "not_found", message: "not found" }, { status: 404 });
     const body = await request.json() as { patch?: Partial<TripTask> };
     const index = storybookTasks.findIndex((task) => task.id === params.taskId);
     if (index < 0) return HttpResponse.json({ code: "not_found", message: "not found" }, { status: 404 });
@@ -139,7 +143,7 @@ export const mswHandlers = [
     };
     return HttpResponse.json(storybookTasks[index]);
   }),
-  http.post("*/v1/trips/:tripId/member-session/logout", () => new HttpResponse(null, { status: 204 })),
+  http.delete("*/api/v1/trips/:tripId/member-sessions/current", () => new HttpResponse(null, { status: 204 })),
 ];
 
 function tripSummary() {

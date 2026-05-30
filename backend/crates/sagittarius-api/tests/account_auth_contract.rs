@@ -174,7 +174,7 @@ async fn account_settings_can_update_profile_fields(pool: sqlx::PgPool) {
     let (status, body) = response_json(
         patch_json_with_auth(
             support::app(pool.clone()),
-            "/v1/account/settings",
+            "/api/v1/account",
             Some(&authorization),
             json!({
                 "displayName": "  Aom Updated  ",
@@ -226,7 +226,7 @@ async fn account_settings_update_validates_payload_and_auth(pool: sqlx::PgPool) 
     let malformed = response_json(
         patch_raw_with_auth(
             support::app(pool.clone()),
-            "/v1/account/settings",
+            "/api/v1/account",
             Some(&authorization),
             Body::from("{"),
         )
@@ -245,7 +245,7 @@ async fn account_settings_update_validates_payload_and_auth(pool: sqlx::PgPool) 
         let (status, body) = response_json(
             patch_json_with_auth(
                 support::app(pool.clone()),
-                "/v1/account/settings",
+                "/api/v1/account",
                 Some(&authorization),
                 payload,
             )
@@ -259,7 +259,7 @@ async fn account_settings_update_validates_payload_and_auth(pool: sqlx::PgPool) 
     let (missing_auth_status, missing_auth_body) = response_json(
         patch_json_with_auth(
             support::app(pool),
-            "/v1/account/settings",
+            "/api/v1/account",
             None,
             json!({
                 "displayName": "Aom",
@@ -285,7 +285,7 @@ async fn login_account(
     let (start, code) = start_email_login_with_code(pool, app.clone(), email).await;
     let (status, session): (StatusCode, Value) = post_json_response(
         app,
-        "/v1/account/email-login/finish",
+        "/api/v1/auth/email/sessions",
         json!({
             "challengeId": start["challengeId"],
             "code": code,
@@ -306,7 +306,7 @@ async fn start_email_login_with_code(
 ) -> (Value, String) {
     let (status, body): (StatusCode, Value) = post_json_response(
         app,
-        "/v1/account/email-login/start",
+        "/api/v1/auth/email/challenges",
         json!({"email": email}),
     )
     .await;
@@ -380,12 +380,12 @@ async fn email_login_start_creates_and_reuses_active_challenge(pool: sqlx::PgPoo
 async fn concurrent_email_login_starts_reuse_one_active_challenge(pool: sqlx::PgPool) {
     let first = post_json(
         support::app(pool.clone()),
-        "/v1/account/email-login/start",
+        "/api/v1/auth/email/challenges",
         json!({"email": "race@example.com"}),
     );
     let second = post_json(
         support::app(pool.clone()),
-        "/v1/account/email-login/start",
+        "/api/v1/auth/email/challenges",
         json!({"email": " RACE@example.com "}),
     );
 
@@ -414,22 +414,21 @@ async fn concurrent_email_login_starts_reuse_one_active_challenge(pool: sqlx::Pg
 async fn malformed_or_missing_json_uses_stable_error_envelope(pool: sqlx::PgPool) {
     let app = support::app(pool);
 
-    let missing_start = post_raw(app.clone(), "/v1/account/email-login/start", Body::empty()).await;
+    let missing_start = post_raw(app.clone(), "/api/v1/auth/email/challenges", Body::empty()).await;
     assert_invalid_request(missing_start).await;
 
     let malformed_start = post_raw(
         app.clone(),
-        "/v1/account/email-login/start",
+        "/api/v1/auth/email/challenges",
         Body::from("{"),
     )
     .await;
     assert_invalid_request(malformed_start).await;
 
-    let missing_finish =
-        post_raw(app.clone(), "/v1/account/email-login/finish", Body::empty()).await;
+    let missing_finish = post_raw(app.clone(), "/api/v1/auth/email/sessions", Body::empty()).await;
     assert_invalid_request(missing_finish).await;
 
-    let malformed_finish = post_raw(app, "/v1/account/email-login/finish", Body::from("{")).await;
+    let malformed_finish = post_raw(app, "/api/v1/auth/email/sessions", Body::from("{")).await;
     assert_invalid_request(malformed_finish).await;
 }
 
@@ -439,7 +438,7 @@ async fn invalid_email_start_returns_invalid_request(pool: sqlx::PgPool) {
 
     let (status, body): (StatusCode, Value) = post_json_response(
         app,
-        "/v1/account/email-login/start",
+        "/api/v1/auth/email/challenges",
         json!({"email":"not-an-email"}),
     )
     .await;
@@ -455,7 +454,7 @@ async fn oversized_email_start_returns_invalid_request(pool: sqlx::PgPool) {
 
     let (status, body): (StatusCode, Value) = post_json_response(
         app,
-        "/v1/account/email-login/start",
+        "/api/v1/auth/email/challenges",
         json!({"email": long_email}),
     )
     .await;
@@ -482,7 +481,7 @@ async fn expired_challenge_is_rejected_and_not_consumed(pool: sqlx::PgPool) {
 
     let response = post_json(
         app,
-        "/v1/account/email-login/finish",
+        "/api/v1/auth/email/sessions",
         json!({
             "challengeId": start["challengeId"],
             "code": code,
@@ -520,7 +519,7 @@ async fn malformed_stored_code_hash_is_rejected_and_not_consumed(pool: sqlx::PgP
 
     let response = post_json(
         app,
-        "/v1/account/email-login/finish",
+        "/api/v1/auth/email/sessions",
         json!({
             "challengeId": start["challengeId"],
             "code": code,
@@ -547,7 +546,7 @@ async fn email_login_finish_creates_user_and_temporary_session(pool: sqlx::PgPoo
 
     let (finish_status, session): (StatusCode, Value) = post_json_response(
         app,
-        "/v1/account/email-login/finish",
+        "/api/v1/auth/email/sessions",
         json!({
             "challengeId": start["challengeId"],
             "code": code,
@@ -617,7 +616,7 @@ async fn preexisting_normalized_email_resumes_existing_user(pool: sqlx::PgPool) 
     let (start, code) = start_email_login_with_code(&pool, app.clone(), " Aom@Example.COM ").await;
     let (finish_status, session): (StatusCode, Value) = post_json_response(
         app,
-        "/v1/account/email-login/finish",
+        "/api/v1/auth/email/sessions",
         json!({
             "challengeId": start["challengeId"],
             "code": code,
@@ -660,7 +659,7 @@ async fn disabled_user_email_login_is_forbidden_and_creates_no_session(pool: sql
     let (start, code) = start_email_login_with_code(&pool, app.clone(), "aom@example.com").await;
     let (finish_status, body): (StatusCode, Value) = post_json_response(
         app,
-        "/v1/account/email-login/finish",
+        "/api/v1/auth/email/sessions",
         json!({
             "challengeId": start["challengeId"],
             "code": code,
@@ -705,7 +704,7 @@ async fn successful_email_login_verifies_existing_unverified_email(pool: sqlx::P
     let (start, code) = start_email_login_with_code(&pool, app.clone(), " Aom@Example.COM ").await;
     let (finish_status, session): (StatusCode, Value) = post_json_response(
         app,
-        "/v1/account/email-login/finish",
+        "/api/v1/auth/email/sessions",
         json!({
             "challengeId": start["challengeId"],
             "code": code,
@@ -733,7 +732,7 @@ async fn trusted_login_creates_trusted_device_and_session(pool: sqlx::PgPool) {
 
     let (finish_status, session): (StatusCode, Value) = post_json_response(
         app,
-        "/v1/account/email-login/finish",
+        "/api/v1/auth/email/sessions",
         json!({
             "challengeId": start["challengeId"],
             "code": code,
@@ -783,15 +782,10 @@ async fn reused_code_is_rejected_after_success(pool: sqlx::PgPool) {
         "deviceLabel": ""
     });
 
-    let first = post_json(
-        app.clone(),
-        "/v1/account/email-login/finish",
-        finish.clone(),
-    )
-    .await;
+    let first = post_json(app.clone(), "/api/v1/auth/email/sessions", finish.clone()).await;
     assert_eq!(first.status(), StatusCode::OK);
 
-    let second = post_json(app, "/v1/account/email-login/finish", finish).await;
+    let second = post_json(app, "/api/v1/auth/email/sessions", finish).await;
     assert_eq!(second.status(), StatusCode::UNAUTHORIZED);
 }
 
@@ -803,7 +797,7 @@ async fn wrong_code_is_rejected_and_does_not_consume_challenge(pool: sqlx::PgPoo
     let challenge_id = Uuid::parse_str(start["challengeId"].as_str().unwrap()).unwrap();
     let wrong = post_json(
         app,
-        "/v1/account/email-login/finish",
+        "/api/v1/auth/email/sessions",
         json!({
             "challengeId": start["challengeId"],
             "code": "000000",
@@ -839,7 +833,7 @@ async fn repeated_wrong_codes_lock_email_login_challenge(pool: sqlx::PgPool) {
     for wrong_code in wrong_codes {
         let wrong = post_json(
             app.clone(),
-            "/v1/account/email-login/finish",
+            "/api/v1/auth/email/sessions",
             json!({
                 "challengeId": start["challengeId"],
                 "code": wrong_code,
@@ -870,7 +864,7 @@ async fn repeated_wrong_codes_lock_email_login_challenge(pool: sqlx::PgPool) {
 
     let correct_after_lock = post_json(
         app.clone(),
-        "/v1/account/email-login/finish",
+        "/api/v1/auth/email/sessions",
         json!({
             "challengeId": start["challengeId"],
             "code": code,
@@ -883,7 +877,7 @@ async fn repeated_wrong_codes_lock_email_login_challenge(pool: sqlx::PgPool) {
 
     let fresh_start_while_locked = post_json(
         app.clone(),
-        "/v1/account/email-login/start",
+        "/api/v1/auth/email/challenges",
         json!({"email": " AOM@example.com "}),
     )
     .await;
@@ -914,7 +908,7 @@ async fn same_normalized_email_resumes_same_user(pool: sqlx::PgPool) {
         start_email_login_with_code(&pool, app.clone(), " Aom@Example.COM ").await;
     let (_, first_session): (StatusCode, Value) = post_json_response(
         app.clone(),
-        "/v1/account/email-login/finish",
+        "/api/v1/auth/email/sessions",
         json!({
             "challengeId": first_start["challengeId"],
             "code": first_code,
@@ -928,7 +922,7 @@ async fn same_normalized_email_resumes_same_user(pool: sqlx::PgPool) {
         start_email_login_with_code(&pool, app.clone(), "aom@example.com").await;
     let (_, second_session): (StatusCode, Value) = post_json_response(
         app,
-        "/v1/account/email-login/finish",
+        "/api/v1/auth/email/sessions",
         json!({
             "challengeId": second_start["challengeId"],
             "code": second_code,
@@ -947,7 +941,7 @@ async fn empty_trusted_device_label_defaults_to_trusted_device(pool: sqlx::PgPoo
     let (start, code) = start_email_login_with_code(&pool, app.clone(), "aom@example.com").await;
     let (_, session): (StatusCode, Value) = post_json_response(
         app,
-        "/v1/account/email-login/finish",
+        "/api/v1/auth/email/sessions",
         json!({
             "challengeId": start["challengeId"],
             "code": code,
@@ -974,7 +968,7 @@ async fn oversized_trusted_device_label_returns_invalid_request(pool: sqlx::PgPo
 
     let (status, body): (StatusCode, Value) = post_json_response(
         app,
-        "/v1/account/email-login/finish",
+        "/api/v1/auth/email/sessions",
         json!({
             "challengeId": start["challengeId"],
             "code": code,
@@ -996,7 +990,7 @@ async fn active_temporary_session_can_load_account_me(pool: sqlx::PgPool) {
     let (status, body) = response_json(
         get_with_auth(
             support::app(pool),
-            "/v1/account/me",
+            "/api/v1/account",
             Some(&format!("Bearer {token}")),
         )
         .await,
@@ -1030,7 +1024,7 @@ async fn trusted_session_can_load_settings_with_trusted_device(pool: sqlx::PgPoo
     let (status, body) = response_json(
         get_with_auth(
             support::app(pool),
-            "/v1/account/settings",
+            "/api/v1/account",
             Some(&format!("Bearer {token}")),
         )
         .await,
@@ -1074,7 +1068,7 @@ async fn revoked_trusted_device_invalidates_attached_session(pool: sqlx::PgPool)
     let (status, body) = response_json(
         get_with_auth(
             support::app(pool),
-            "/v1/account/me",
+            "/api/v1/account",
             Some(&format!("Bearer {token}")),
         )
         .await,
@@ -1107,7 +1101,7 @@ async fn account_can_revoke_trusted_device_from_settings(pool: sqlx::PgPool) {
     let (status, body) = response_json(
         delete_with_auth(
             support::app(pool.clone()),
-            &format!("/v1/account/trusted-devices/{laptop_device_id}"),
+            &format!("/api/v1/account/trusted-devices/{laptop_device_id}"),
             Some(&second_authorization),
         )
         .await,
@@ -1120,7 +1114,7 @@ async fn account_can_revoke_trusted_device_from_settings(pool: sqlx::PgPool) {
     let (settings_status, settings_body) = response_json(
         get_with_auth(
             support::app(pool.clone()),
-            "/v1/account/settings",
+            "/api/v1/account",
             Some(&second_authorization),
         )
         .await,
@@ -1132,7 +1126,7 @@ async fn account_can_revoke_trusted_device_from_settings(pool: sqlx::PgPool) {
 
     let revoked_auth = format!("Bearer {first_token}");
     let (revoked_status, revoked_body) = response_json(
-        get_with_auth(support::app(pool), "/v1/account/me", Some(&revoked_auth)).await,
+        get_with_auth(support::app(pool), "/api/v1/account", Some(&revoked_auth)).await,
     )
     .await;
     assert_eq!(revoked_status, StatusCode::UNAUTHORIZED);
@@ -1161,7 +1155,7 @@ async fn trusted_device_revoke_requires_owner_and_existing_device(pool: sqlx::Pg
     let (foreign_status, foreign_body) = response_json(
         delete_with_auth(
             support::app(pool.clone()),
-            &format!("/v1/account/trusted-devices/{other_device_id}"),
+            &format!("/api/v1/account/trusted-devices/{other_device_id}"),
             Some(&owner_auth),
         )
         .await,
@@ -1174,7 +1168,7 @@ async fn trusted_device_revoke_requires_owner_and_existing_device(pool: sqlx::Pg
     let (unknown_status, unknown_body) = response_json(
         delete_with_auth(
             support::app(pool.clone()),
-            &format!("/v1/account/trusted-devices/{unknown_id}"),
+            &format!("/api/v1/account/trusted-devices/{unknown_id}"),
             Some(&owner_auth),
         )
         .await,
@@ -1186,7 +1180,7 @@ async fn trusted_device_revoke_requires_owner_and_existing_device(pool: sqlx::Pg
     let (missing_auth_status, missing_auth_body) = response_json(
         delete_with_auth(
             support::app(pool),
-            &format!("/v1/account/trusted-devices/{other_device_id}"),
+            &format!("/api/v1/account/trusted-devices/{other_device_id}"),
             None,
         )
         .await,
@@ -1199,7 +1193,7 @@ async fn trusted_device_revoke_requires_owner_and_existing_device(pool: sqlx::Pg
 #[sqlx::test(migrations = "../../migrations")]
 async fn missing_bearer_token_on_account_me_returns_stable_unauthenticated(pool: sqlx::PgPool) {
     let (status, body) =
-        response_json(get_with_auth(support::app(pool), "/v1/account/me", None).await).await;
+        response_json(get_with_auth(support::app(pool), "/api/v1/account", None).await).await;
 
     assert_eq!(status, StatusCode::UNAUTHORIZED);
     assert_eq!(body["code"], "unauthenticated");
@@ -1212,7 +1206,7 @@ async fn malformed_bearer_header_on_account_me_returns_stable_unauthenticated(po
         let (status, body) = response_json(
             get_with_auth(
                 support::app(pool.clone()),
-                "/v1/account/me",
+                "/api/v1/account",
                 Some(authorization),
             )
             .await,
@@ -1233,7 +1227,7 @@ async fn malformed_bearer_on_passkey_registration_start_returns_stable_unauthent
         let (status, body) = response_json(
             post_with_auth(
                 support::app(pool.clone()),
-                "/v1/account/passkeys/register/start",
+                "/api/v1/account/passkeys/options",
                 Some(authorization),
             )
             .await,
@@ -1252,16 +1246,16 @@ async fn logout_revokes_current_account_session(pool: sqlx::PgPool) {
     let token = session["sessionToken"].as_str().unwrap();
     let authorization = format!("Bearer {token}");
 
-    let logout = post_with_auth(
+    let logout = delete_with_auth(
         support::app(pool.clone()),
-        "/v1/account/sessions/logout",
+        "/api/v1/account/session",
         Some(&authorization),
     )
     .await;
     assert_eq!(logout.status(), StatusCode::NO_CONTENT);
 
     let (status, body) = response_json(
-        get_with_auth(support::app(pool), "/v1/account/me", Some(&authorization)).await,
+        get_with_auth(support::app(pool), "/api/v1/account", Some(&authorization)).await,
     )
     .await;
     assert_eq!(status, StatusCode::UNAUTHORIZED);
@@ -1271,9 +1265,9 @@ async fn logout_revokes_current_account_session(pool: sqlx::PgPool) {
 #[sqlx::test(migrations = "../../migrations")]
 async fn logout_with_unknown_session_returns_stable_unauthenticated(pool: sqlx::PgPool) {
     let (status, body) = response_json(
-        post_with_auth(
+        delete_with_auth(
             support::app(pool),
-            "/v1/account/sessions/logout",
+            "/api/v1/account/session",
             Some("Bearer unknown-session-token"),
         )
         .await,
@@ -1303,7 +1297,7 @@ async fn expired_user_session_cannot_load_account_me(pool: sqlx::PgPool) {
     let (status, body) = response_json(
         get_with_auth(
             support::app(pool),
-            "/v1/account/me",
+            "/api/v1/account",
             Some(&format!("Bearer {token}")),
         )
         .await,
@@ -1332,7 +1326,7 @@ async fn expired_user_session_cannot_load_account_settings(pool: sqlx::PgPool) {
     let (status, body) = response_json(
         get_with_auth(
             support::app(pool),
-            "/v1/account/settings",
+            "/api/v1/account",
             Some(&format!("Bearer {token}")),
         )
         .await,
@@ -1362,7 +1356,7 @@ async fn revoked_trusted_device_is_hidden_from_account_settings(pool: sqlx::PgPo
     let (status, body) = response_json(
         get_with_auth(
             support::app(pool),
-            "/v1/account/settings",
+            "/api/v1/account",
             Some(&format!("Bearer {token}")),
         )
         .await,
@@ -1433,7 +1427,7 @@ async fn trusted_devices_order_by_latest_seen_or_created_and_omit_revoked(pool: 
     let (status, body) = response_json(
         get_with_auth(
             support::app(pool),
-            "/v1/account/settings",
+            "/api/v1/account",
             Some(&format!("Bearer {token}")),
         )
         .await,
@@ -1496,7 +1490,7 @@ async fn passkeys_serialize_last_used_at_in_account_settings(pool: sqlx::PgPool)
     let (status, body) = response_json(
         get_with_auth(
             support::app(pool),
-            "/v1/account/me",
+            "/api/v1/account",
             Some(&format!("Bearer {token}")),
         )
         .await,
@@ -1553,7 +1547,7 @@ async fn passkeys_order_by_latest_used_or_created_and_serialize_null_last_used_a
     let (status, body) = response_json(
         get_with_auth(
             support::app(pool),
-            "/v1/account/settings",
+            "/api/v1/account",
             Some(&format!("Bearer {token}")),
         )
         .await,
@@ -1601,7 +1595,7 @@ async fn authenticated_user_can_start_passkey_registration_challenge(pool: sqlx:
     let (status, body) = response_json(
         post_with_auth(
             support::app(pool.clone()),
-            "/v1/account/passkeys/register/start",
+            "/api/v1/account/passkeys/options",
             Some(&format!("Bearer {token}")),
         )
         .await,
@@ -1643,12 +1637,7 @@ async fn missing_bearer_on_passkey_registration_start_returns_stable_unauthentic
     pool: sqlx::PgPool,
 ) {
     let (status, body) = response_json(
-        post_with_auth(
-            support::app(pool),
-            "/v1/account/passkeys/register/start",
-            None,
-        )
-        .await,
+        post_with_auth(support::app(pool), "/api/v1/account/passkeys/options", None).await,
     )
     .await;
 
@@ -1677,7 +1666,7 @@ async fn revoked_or_expired_session_cannot_start_passkey_registration_challenge(
     let (revoked_status, revoked_body) = response_json(
         post_with_auth(
             support::app(pool.clone()),
-            "/v1/account/passkeys/register/start",
+            "/api/v1/account/passkeys/options",
             Some(&format!("Bearer {revoked_token}")),
         )
         .await,
@@ -1702,7 +1691,7 @@ async fn revoked_or_expired_session_cannot_start_passkey_registration_challenge(
     let (expired_status, expired_body) = response_json(
         post_with_auth(
             support::app(pool.clone()),
-            "/v1/account/passkeys/register/start",
+            "/api/v1/account/passkeys/options",
             Some(&format!("Bearer {expired_token}")),
         )
         .await,
@@ -1727,7 +1716,7 @@ async fn multiple_passkey_registration_starts_create_unique_challenges(pool: sql
     let (first_status, first) = response_json(
         post_with_auth(
             support::app(pool.clone()),
-            "/v1/account/passkeys/register/start",
+            "/api/v1/account/passkeys/options",
             Some(&authorization),
         )
         .await,
@@ -1736,7 +1725,7 @@ async fn multiple_passkey_registration_starts_create_unique_challenges(pool: sql
     let (second_status, second) = response_json(
         post_with_auth(
             support::app(pool.clone()),
-            "/v1/account/passkeys/register/start",
+            "/api/v1/account/passkeys/options",
             Some(&authorization),
         )
         .await,
@@ -1767,7 +1756,7 @@ async fn passkey_registration_finish_stores_credential_and_login_verifies_signat
     let (start_status, start) = response_json(
         post_with_auth(
             support::app(pool.clone()),
-            "/v1/account/passkeys/register/start",
+            "/api/v1/account/passkeys/options",
             Some(&authorization),
         )
         .await,
@@ -1787,7 +1776,7 @@ async fn passkey_registration_finish_stores_credential_and_login_verifies_signat
     let (finish_status, finish_body) = response_json(
         post_json_with_auth(
             support::app(pool.clone()),
-            "/v1/account/passkeys/register/finish",
+            "/api/v1/account/passkeys",
             Some(&authorization),
             registration,
         )
@@ -1802,7 +1791,7 @@ async fn passkey_registration_finish_stores_credential_and_login_verifies_signat
     let (settings_status, settings_body) = response_json(
         get_with_auth(
             support::app(pool.clone()),
-            "/v1/account/settings",
+            "/api/v1/account",
             Some(&authorization),
         )
         .await,
@@ -1815,7 +1804,7 @@ async fn passkey_registration_finish_stores_credential_and_login_verifies_signat
     let (login_start_status, login_start) = response_json(
         post_json(
             support::app(pool.clone()),
-            "/v1/account/passkeys/login/start",
+            "/api/v1/auth/passkeys/options",
             json!({"email": "passkey@example.com"}),
         )
         .await,
@@ -1839,7 +1828,7 @@ async fn passkey_registration_finish_stores_credential_and_login_verifies_signat
     let (login_finish_status, login_session) = response_json(
         post_json(
             support::app(pool.clone()),
-            "/v1/account/passkeys/login/finish",
+            "/api/v1/auth/passkeys/sessions",
             login_finish,
         )
         .await,
@@ -1864,7 +1853,7 @@ async fn passkey_registration_finish_stores_credential_and_login_verifies_signat
     let (_, replay_start) = response_json(
         post_json(
             support::app(pool.clone()),
-            "/v1/account/passkeys/login/start",
+            "/api/v1/auth/passkeys/options",
             json!({"email": "passkey@example.com"}),
         )
         .await,
@@ -1882,7 +1871,7 @@ async fn passkey_registration_finish_stores_credential_and_login_verifies_signat
     let (replay_status, replay_body) = response_json(
         post_json(
             support::app(pool.clone()),
-            "/v1/account/passkeys/login/finish",
+            "/api/v1/auth/passkeys/sessions",
             replay_finish,
         )
         .await,
@@ -1894,7 +1883,7 @@ async fn passkey_registration_finish_stores_credential_and_login_verifies_signat
     let (_, duplicate_start) = response_json(
         post_with_auth(
             support::app(pool.clone()),
-            "/v1/account/passkeys/register/start",
+            "/api/v1/account/passkeys/options",
             Some(&authorization),
         )
         .await,
@@ -1910,7 +1899,7 @@ async fn passkey_registration_finish_stores_credential_and_login_verifies_signat
     let (duplicate_status, duplicate_body) = response_json(
         post_json_with_auth(
             support::app(pool.clone()),
-            "/v1/account/passkeys/register/finish",
+            "/api/v1/account/passkeys",
             Some(&authorization),
             duplicate_registration,
         )
@@ -1930,7 +1919,7 @@ async fn passkey_registration_and_login_reject_invalid_proofs(pool: sqlx::PgPool
     let (_, start) = response_json(
         post_with_auth(
             support::app(pool.clone()),
-            "/v1/account/passkeys/register/start",
+            "/api/v1/account/passkeys/options",
             Some(&authorization),
         )
         .await,
@@ -1940,7 +1929,7 @@ async fn passkey_registration_and_login_reject_invalid_proofs(pool: sqlx::PgPool
     let malformed_finish = response_json(
         post_json_with_auth(
             support::app(pool.clone()),
-            "/v1/account/passkeys/register/finish",
+            "/api/v1/account/passkeys",
             Some(&authorization),
             json!({"challengeId": start["challengeId"]}),
         )
@@ -1964,7 +1953,7 @@ async fn passkey_registration_and_login_reject_invalid_proofs(pool: sqlx::PgPool
     let (missing_origin_status, missing_origin_body) = response_json(
         post_json_with_auth(
             support::app(pool.clone()),
-            "/v1/account/passkeys/register/finish",
+            "/api/v1/account/passkeys",
             Some(&authorization),
             missing_origin_payload,
         )
@@ -1989,7 +1978,7 @@ async fn passkey_registration_and_login_reject_invalid_proofs(pool: sqlx::PgPool
     let (wrong_origin_status, wrong_origin_body) = response_json(
         post_json_with_auth(
             support::app(pool.clone()),
-            "/v1/account/passkeys/register/finish",
+            "/api/v1/account/passkeys",
             Some(&authorization),
             wrong_origin_payload,
         )
@@ -2012,7 +2001,7 @@ async fn passkey_registration_and_login_reject_invalid_proofs(pool: sqlx::PgPool
     let (missing_attested_flag_status, missing_attested_flag_body) = response_json(
         post_json_with_auth(
             support::app(pool.clone()),
-            "/v1/account/passkeys/register/finish",
+            "/api/v1/account/passkeys",
             Some(&authorization),
             missing_attested_flag_payload,
         )
@@ -2037,7 +2026,7 @@ async fn passkey_registration_and_login_reject_invalid_proofs(pool: sqlx::PgPool
     let (missing_user_verified_status, missing_user_verified_body) = response_json(
         post_json_with_auth(
             support::app(pool.clone()),
-            "/v1/account/passkeys/register/finish",
+            "/api/v1/account/passkeys",
             Some(&authorization),
             missing_user_verified_payload,
         )
@@ -2058,7 +2047,7 @@ async fn passkey_registration_and_login_reject_invalid_proofs(pool: sqlx::PgPool
     let (non_map_attestation_status, non_map_attestation_body) = response_json(
         post_json_with_auth(
             support::app(pool.clone()),
-            "/v1/account/passkeys/register/finish",
+            "/api/v1/account/passkeys",
             Some(&authorization),
             non_map_attestation_payload,
         )
@@ -2081,7 +2070,7 @@ async fn passkey_registration_and_login_reject_invalid_proofs(pool: sqlx::PgPool
     let (auth_data_wrong_type_status, auth_data_wrong_type_body) = response_json(
         post_json_with_auth(
             support::app(pool.clone()),
-            "/v1/account/passkeys/register/finish",
+            "/api/v1/account/passkeys",
             Some(&authorization),
             auth_data_wrong_type_payload,
         )
@@ -2102,7 +2091,7 @@ async fn passkey_registration_and_login_reject_invalid_proofs(pool: sqlx::PgPool
     let (short_auth_data_status, short_auth_data_body) = response_json(
         post_json_with_auth(
             support::app(pool.clone()),
-            "/v1/account/passkeys/register/finish",
+            "/api/v1/account/passkeys",
             Some(&authorization),
             short_auth_data_payload,
         )
@@ -2127,7 +2116,7 @@ async fn passkey_registration_and_login_reject_invalid_proofs(pool: sqlx::PgPool
     let (short_registration_status, short_registration_body) = response_json(
         post_json_with_auth(
             support::app(pool.clone()),
-            "/v1/account/passkeys/register/finish",
+            "/api/v1/account/passkeys",
             Some(&authorization),
             short_registration_payload,
         )
@@ -2155,7 +2144,7 @@ async fn passkey_registration_and_login_reject_invalid_proofs(pool: sqlx::PgPool
     let (missing_public_key_status, missing_public_key_body) = response_json(
         post_json_with_auth(
             support::app(pool.clone()),
-            "/v1/account/passkeys/register/finish",
+            "/api/v1/account/passkeys",
             Some(&authorization),
             missing_public_key_payload,
         )
@@ -2178,7 +2167,7 @@ async fn passkey_registration_and_login_reject_invalid_proofs(pool: sqlx::PgPool
     let (mismatched_credential_status, mismatched_credential_body) = response_json(
         post_json_with_auth(
             support::app(pool.clone()),
-            "/v1/account/passkeys/register/finish",
+            "/api/v1/account/passkeys",
             Some(&authorization),
             mismatched_credential_payload,
         )
@@ -2204,7 +2193,7 @@ async fn passkey_registration_and_login_reject_invalid_proofs(pool: sqlx::PgPool
     let (non_map_cose_status, non_map_cose_body) = response_json(
         post_json_with_auth(
             support::app(pool.clone()),
-            "/v1/account/passkeys/register/finish",
+            "/api/v1/account/passkeys",
             Some(&authorization),
             non_map_cose_payload,
         )
@@ -2230,7 +2219,7 @@ async fn passkey_registration_and_login_reject_invalid_proofs(pool: sqlx::PgPool
     let (wrong_cose_value_type_status, wrong_cose_value_type_body) = response_json(
         post_json_with_auth(
             support::app(pool.clone()),
-            "/v1/account/passkeys/register/finish",
+            "/api/v1/account/passkeys",
             Some(&authorization),
             wrong_cose_value_type_payload,
         )
@@ -2256,7 +2245,7 @@ async fn passkey_registration_and_login_reject_invalid_proofs(pool: sqlx::PgPool
     let (wrong_cose_status, wrong_cose_body) = response_json(
         post_json_with_auth(
             support::app(pool.clone()),
-            "/v1/account/passkeys/register/finish",
+            "/api/v1/account/passkeys",
             Some(&authorization),
             wrong_cose_metadata_payload,
         )
@@ -2276,7 +2265,7 @@ async fn passkey_registration_and_login_reject_invalid_proofs(pool: sqlx::PgPool
     let (wrong_status, wrong_body) = response_json(
         post_json_with_auth(
             support::app(pool.clone()),
-            "/v1/account/passkeys/register/finish",
+            "/api/v1/account/passkeys",
             Some(&authorization),
             wrong_challenge_payload,
         )
@@ -2296,7 +2285,7 @@ async fn passkey_registration_and_login_reject_invalid_proofs(pool: sqlx::PgPool
     let (valid_status, _) = response_json(
         post_json_with_auth(
             support::app(pool.clone()),
-            "/v1/account/passkeys/register/finish",
+            "/api/v1/account/passkeys",
             Some(&authorization),
             valid_payload,
         )
@@ -2308,7 +2297,7 @@ async fn passkey_registration_and_login_reject_invalid_proofs(pool: sqlx::PgPool
     let missing_email = response_json(
         post_json(
             support::app(pool.clone()),
-            "/v1/account/passkeys/login/start",
+            "/api/v1/auth/passkeys/options",
             json!({"email": "missing@example.com"}),
         )
         .await,
@@ -2320,7 +2309,7 @@ async fn passkey_registration_and_login_reject_invalid_proofs(pool: sqlx::PgPool
     let (_, login_start) = response_json(
         post_json(
             support::app(pool.clone()),
-            "/v1/account/passkeys/login/start",
+            "/api/v1/auth/passkeys/options",
             json!({"email": "passkey-invalid@example.com"}),
         )
         .await,
@@ -2338,7 +2327,7 @@ async fn passkey_registration_and_login_reject_invalid_proofs(pool: sqlx::PgPool
     let (short_login_auth_data_status, short_login_auth_data_body) = response_json(
         post_json(
             support::app(pool.clone()),
-            "/v1/account/passkeys/login/finish",
+            "/api/v1/auth/passkeys/sessions",
             short_login_auth_data_payload,
         )
         .await,
@@ -2359,7 +2348,7 @@ async fn passkey_registration_and_login_reject_invalid_proofs(pool: sqlx::PgPool
     let (wrong_rp_hash_status, wrong_rp_hash_body) = response_json(
         post_json(
             support::app(pool.clone()),
-            "/v1/account/passkeys/login/finish",
+            "/api/v1/auth/passkeys/sessions",
             wrong_rp_hash_payload,
         )
         .await,
@@ -2380,7 +2369,7 @@ async fn passkey_registration_and_login_reject_invalid_proofs(pool: sqlx::PgPool
     let (missing_user_present_status, missing_user_present_body) = response_json(
         post_json(
             support::app(pool.clone()),
-            "/v1/account/passkeys/login/finish",
+            "/api/v1/auth/passkeys/sessions",
             missing_user_present_payload,
         )
         .await,
@@ -2401,7 +2390,7 @@ async fn passkey_registration_and_login_reject_invalid_proofs(pool: sqlx::PgPool
     let (missing_user_verified_status, missing_user_verified_body) = response_json(
         post_json(
             support::app(pool.clone()),
-            "/v1/account/passkeys/login/finish",
+            "/api/v1/auth/passkeys/sessions",
             missing_user_verified_payload,
         )
         .await,
@@ -2423,7 +2412,7 @@ async fn passkey_registration_and_login_reject_invalid_proofs(pool: sqlx::PgPool
     let (wrong_signature_status, wrong_signature_body) = response_json(
         post_json(
             support::app(pool),
-            "/v1/account/passkeys/login/finish",
+            "/api/v1/auth/passkeys/sessions",
             wrong_signature_payload,
         )
         .await,
@@ -2440,7 +2429,7 @@ async fn passkey_login_start_for_account_without_passkeys_is_unauthenticated(poo
     let response = response_json(
         post_json(
             support::app(pool),
-            "/v1/account/passkeys/login/start",
+            "/api/v1/auth/passkeys/options",
             json!({"email": "no-passkeys@example.com"}),
         )
         .await,
@@ -2460,7 +2449,7 @@ async fn passkey_login_finish_rejects_user_disabled_after_challenge_start(pool: 
     let (_, start) = response_json(
         post_with_auth(
             support::app(pool.clone()),
-            "/v1/account/passkeys/register/start",
+            "/api/v1/account/passkeys/options",
             Some(&authorization),
         )
         .await,
@@ -2476,7 +2465,7 @@ async fn passkey_login_finish_rejects_user_disabled_after_challenge_start(pool: 
     let (valid_status, _) = response_json(
         post_json_with_auth(
             support::app(pool.clone()),
-            "/v1/account/passkeys/register/finish",
+            "/api/v1/account/passkeys",
             Some(&authorization),
             valid_payload,
         )
@@ -2488,7 +2477,7 @@ async fn passkey_login_finish_rejects_user_disabled_after_challenge_start(pool: 
     let (_, login_start) = response_json(
         post_json(
             support::app(pool.clone()),
-            "/v1/account/passkeys/login/start",
+            "/api/v1/auth/passkeys/options",
             json!({"email": "passkey-disabled@example.com"}),
         )
         .await,
@@ -2512,7 +2501,7 @@ async fn passkey_login_finish_rejects_user_disabled_after_challenge_start(pool: 
     let (finish_status, finish_body) = response_json(
         post_json(
             support::app(pool),
-            "/v1/account/passkeys/login/finish",
+            "/api/v1/auth/passkeys/sessions",
             login_finish,
         )
         .await,

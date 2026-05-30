@@ -23,10 +23,10 @@ describe.skipIf(!required && !hasCredentials)("real Sagittarius API e2e", () => 
 
     let session;
     try {
-      session = await client.claimMember(join.trip.id, member.id, participantPassword);
+      session = await client.claimMember(join.trip.id, member.id, participantPassword, join.joinSessionToken);
     } catch (caught) {
       if (!(caught instanceof TripApiError) || caught.code !== "invalid_request") throw caught;
-      session = await client.loginMember(join.trip.id, member.id, participantPassword);
+      session = await client.loginMember(join.trip.id, member.id, participantPassword, join.joinSessionToken);
     }
 
     const cockpit = await client.loadTrip(join.trip.id, session.sessionToken);
