@@ -45,7 +45,19 @@ describe("Storybook template catalog", () => {
 
   it("documents split account and trip access routes", () => {
     const stories = storyText();
-    ["AccountLogin", "AccountRegister", "TripAccess", "TripAccessWithJoinCode"].forEach((stateName) => {
+    [
+      "AccountLogin",
+      "AccountRegister",
+      "AccountTrips",
+      "AccountNewTrip",
+      "TripAccess",
+      "TripAccessWithJoinCode",
+      "TripOverviewAccess",
+      "TripItineraryAccess",
+      "TripMapAccess",
+      "TripTimelineAccess",
+      "TripMembersAccess",
+    ].forEach((stateName) => {
       expect(stories).toContain(`export const ${stateName}`);
     });
     expect(stories).toContain('accessMode: "account-login"');
@@ -53,5 +65,15 @@ describe("Storybook template catalog", () => {
     expect(stories).toContain('accessMode: "trip-access"');
     expect(stories).toContain('initialJoinCode: localTripJoinId');
     expect(stories).toContain('pathname: `/join/${localTripJoinId}`');
+  });
+
+  it("requires access-gated app stories to declare an explicit access mode", () => {
+    const appStories = readFileSync(join("src", "app", "SagittariusApp.stories.tsx"), "utf8");
+    const gatedStoryLines = appStories.split("\n").filter((line) => line.includes("requireJoin: true"));
+
+    expect(gatedStoryLines.length).toBeGreaterThan(0);
+    gatedStoryLines.forEach((line) => {
+      expect(line).toContain("accessMode:");
+    });
   });
 });

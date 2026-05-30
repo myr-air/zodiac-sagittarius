@@ -54,6 +54,27 @@ describe("Sagittarius project scaffold", () => {
     expect(readFileSync(join(frontendRoot, "app/layout.tsx"), "utf8")).toContain("Sagittarius");
   });
 
+  it("keeps account and trip access separated on production page routes", () => {
+    [
+      "app/trips/page.tsx",
+      "app/trips/new/page.tsx",
+    ].forEach((routeFile) => {
+      expect(readFileSync(join(frontendRoot, routeFile), "utf8")).toContain('accessMode="account-login"');
+    });
+
+    [
+      "app/join/page.tsx",
+      "app/join/[joinCode]/page.tsx",
+      "app/trips/[tripId]/page.tsx",
+      "app/trips/[tripId]/itinerary/page.tsx",
+      "app/trips/[tripId]/map/page.tsx",
+      "app/trips/[tripId]/timeline/page.tsx",
+      "app/trips/[tripId]/members/page.tsx",
+    ].forEach((routeFile) => {
+      expect(readFileSync(join(frontendRoot, routeFile), "utf8")).toContain('accessMode="trip-access"');
+    });
+  });
+
   it("keeps the Calm Travel Ops design tokens in globals", () => {
     const css = readFileSync(join(frontendRoot, "app/globals.css"), "utf8");
 
