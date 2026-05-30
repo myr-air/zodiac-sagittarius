@@ -9,6 +9,7 @@ describe("Account API client", () => {
       userId: "user-aom",
       sessionToken: "account-session",
       kind: "trusted" as const,
+      trustedDeviceId: "device-laptop",
       createdAt: "2026-05-30T08:00:00.000Z",
       expiresAt: "2026-06-29T08:00:00.000Z",
     };
@@ -186,16 +187,83 @@ describe("Account API client", () => {
     );
   });
 
-  it("starts passkey registration, revokes trusted devices, logs out, and preserves backend error details", async () => {
+  it("runs passkey registration and login routes without a provider", async () => {
     const fetchImpl = vi
       .fn()
       .mockResolvedValueOnce(jsonResponse({ challengeId: "passkey-challenge", challenge: "opaque", expiresAt: "2026-05-30T09:00:00.000Z" }))
+      .mockResolvedValueOnce(jsonResponse({ id: "passkey-id", nickname: "Aom MacBook", createdAt: "2026-05-30T08:00:00.000Z", lastUsedAt: null }))
+      .mockResolvedValueOnce(jsonResponse({ challengeId: "login-challenge", challenge: "login-opaque", expiresAt: "2026-05-30T09:00:00.000Z", allowCredentials: [{ credentialId: "credential-id" }] }))
+      .mockResolvedValueOnce(jsonResponse({
+        userId: "user-aom",
+        sessionToken: "passkey-session",
+        kind: "temporary",
+        trustedDeviceId: null,
+        createdAt: "2026-05-30T08:00:00.000Z",
+        expiresAt: "2026-05-31T08:00:00.000Z",
+      }));
+    const client = createAccountApiClient({ fetchImpl });
+
+    await expect(client.startPasskeyRegistration("account-session")).resolves.toMatchObject({ challengeId: "passkey-challenge" });
+    await expect(client.finishPasskeyRegistration("account-session", {
+      challengeId: "passkey-challenge",
+      credentialId: "credential-id",
+      clientDataJson: "client-data",
+      attestationObject: "attestation",
+      nickname: "Aom MacBook",
+    })).resolves.toMatchObject({ nickname: "Aom MacBook" });
+    await expect(client.startPasskeyLogin("aom@example.test")).resolves.toMatchObject({ allowCredentials: [{ credentialId: "credential-id" }] });
+    await expect(client.finishPasskeyLogin({
+      challengeId: "login-challenge",
+      credentialId: "credential-id",
+      clientDataJson: "client-data",
+      authenticatorData: "authenticator-data",
+      signature: "signature",
+      trustDevice: false,
+      deviceLabel: "",
+    })).resolves.toMatchObject({ sessionToken: "passkey-session" });
+
+    expect(fetchImpl).toHaveBeenNthCalledWith(
+      2,
+      "/v1/account/passkeys/register/finish",
+      expect.objectContaining({
+        method: "POST",
+        headers: expect.objectContaining({ Authorization: "Bearer account-session" }),
+      }),
+    );
+    expect(fetchImpl).toHaveBeenNthCalledWith(
+      3,
+      "/v1/account/passkeys/login/start",
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({ email: "aom@example.test" }),
+      }),
+    );
+    expect(fetchImpl).toHaveBeenNthCalledWith(
+      4,
+      "/v1/account/passkeys/login/finish",
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({
+          challengeId: "login-challenge",
+          credentialId: "credential-id",
+          clientDataJson: "client-data",
+          authenticatorData: "authenticator-data",
+          signature: "signature",
+          trustDevice: false,
+          deviceLabel: "",
+        }),
+      }),
+    );
+  });
+
+  it("revokes trusted devices, logs out, and preserves backend error details", async () => {
+    const fetchImpl = vi
+      .fn()
       .mockResolvedValueOnce(new Response(null, { status: 204 }))
       .mockResolvedValueOnce(new Response(null, { status: 204 }))
       .mockResolvedValueOnce(jsonResponse({ code: "invalid_credentials", message: "bad code" }, 401));
     const client = createAccountApiClient({ fetchImpl });
 
-    await expect(client.startPasskeyRegistration("account-session")).resolves.toMatchObject({ challengeId: "passkey-challenge" });
     await expect(client.revokeTrustedDevice("account-session", "device/with space")).resolves.toBeUndefined();
     await expect(client.logout("account-session")).resolves.toBeUndefined();
     await expect(client.startEmailLogin("bad@example.test")).rejects.toMatchObject({
@@ -204,7 +272,7 @@ describe("Account API client", () => {
       status: 401,
     });
     expect(fetchImpl).toHaveBeenNthCalledWith(
-      2,
+      1,
       "/v1/account/trusted-devices/device%2Fwith%20space",
       expect.objectContaining({
         method: "DELETE",

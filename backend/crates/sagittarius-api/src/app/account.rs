@@ -1,5 +1,8 @@
 use base64::{Engine as _, engine::general_purpose::URL_SAFE_NO_PAD};
+use p256::ecdsa::signature::Verifier;
+use p256::ecdsa::{Signature, VerifyingKey};
 use rand::RngCore;
+use serde_json::Value;
 use sha2::{Digest, Sha256};
 use time::format_description::well_known::Rfc3339;
 use time::{Duration, OffsetDateTime};
@@ -16,7 +19,8 @@ use crate::domain::types::{
     AccountMemberClaimResponse, AccountProfile, AccountSession, AccountSessionKind,
     AccountSettings, AccountTripCreateResponse, AccountTripStats, AccountTripSummary,
     EmailLoginStartResponse, MemberSession, OwnerTransferResponse, PasskeyChallengeResponse,
-    PasskeySummary, TripMemberAccessStatus, TripRole, TripSummary, TrustedDeviceSummary,
+    PasskeyCredentialDescriptor, PasskeyLoginStartResponse, PasskeySummary, TripMemberAccessStatus,
+    TripRole, TripSummary, TrustedDeviceSummary,
 };
 
 const CHALLENGE_TTL: Duration = Duration::minutes(10);
@@ -38,6 +42,13 @@ const MIN_JOIN_PASSWORD_LENGTH: usize = 8;
 const MAX_JOIN_PASSWORD_LENGTH: usize = 256;
 const MEMBER_SESSION_TTL: Duration = Duration::days(30);
 const DEFAULT_OWNER_COLOR: &str = "#0f766e";
+const PASSKEY_ALLOWED_ORIGINS: &[(&str, &str)] = &[
+    ("http://localhost:5180", "localhost"),
+    ("http://127.0.0.1:5180", "127.0.0.1"),
+];
+const WEBAUTHN_FLAG_USER_PRESENT: u8 = 0x01;
+const WEBAUTHN_FLAG_USER_VERIFIED: u8 = 0x04;
+const WEBAUTHN_FLAG_ATTESTED_CREDENTIAL_DATA: u8 = 0x40;
 
 pub struct AccountTripCreateInput {
     pub name: String,
@@ -54,6 +65,24 @@ pub struct AccountSettingsUpdateInput {
     pub avatar_color: String,
     pub locale: String,
     pub timezone: String,
+}
+
+pub struct PasskeyRegistrationFinishInput {
+    pub challenge_id: Uuid,
+    pub credential_id: String,
+    pub client_data_json: String,
+    pub attestation_object: String,
+    pub nickname: String,
+}
+
+pub struct PasskeyLoginFinishInput {
+    pub challenge_id: Uuid,
+    pub credential_id: String,
+    pub client_data_json: String,
+    pub authenticator_data: String,
+    pub signature: String,
+    pub trust_device: bool,
+    pub device_label: String,
 }
 
 pub async fn start_email_login(
@@ -153,6 +182,19 @@ pub async fn finish_email_login(
 
     db::account_queries::consume_email_login_challenge(&mut tx, challenge_id, now).await?;
     let user_id = find_or_create_user(&mut tx, &challenge.normalized_email, now).await?;
+    let session = create_user_session(&mut tx, user_id, trust_device, device_label, now).await?;
+    tx.commit().await?;
+
+    Ok(session)
+}
+
+async fn create_user_session(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    user_id: Uuid,
+    trust_device: bool,
+    device_label: &str,
+    now: OffsetDateTime,
+) -> Result<AccountSession, ServiceError> {
     let kind = if trust_device {
         AccountSessionKind::Trusted
     } else {
@@ -162,7 +204,7 @@ pub async fn finish_email_login(
         let trusted_device_id = Uuid::now_v7();
         let label = normalized_device_label(device_label)?;
         db::account_queries::insert_trusted_device(
-            &mut tx,
+            tx,
             NewTrustedDevice {
                 id: trusted_device_id,
                 user_id,
@@ -186,7 +228,7 @@ pub async fn finish_email_login(
         };
 
     db::account_queries::insert_user_session(
-        &mut tx,
+        tx,
         NewUserSession {
             id: Uuid::now_v7(),
             user_id,
@@ -198,12 +240,12 @@ pub async fn finish_email_login(
         },
     )
     .await?;
-    tx.commit().await?;
 
     Ok(AccountSession {
         user_id,
         session_token,
         kind,
+        trusted_device_id,
         created_at: format_timestamp(now),
         expires_at: format_timestamp(expires_at),
     })
@@ -557,6 +599,147 @@ pub async fn start_passkey_registration(
     })
 }
 
+pub async fn finish_passkey_registration(
+    pool: &PgPool,
+    session_token: &str,
+    input: PasskeyRegistrationFinishInput,
+) -> Result<PasskeySummary, ServiceError> {
+    let session_token_hash = hash_session_token(session_token)?;
+    let now = OffsetDateTime::now_utc();
+    let mut tx = pool.begin().await?;
+    let user_id = db::account_queries::find_active_user_session_in_tx(&mut tx, &session_token_hash)
+        .await?
+        .ok_or(ServiceError::Unauthenticated)?
+        .user_id;
+    let (_, expected_challenge) =
+        db::account_queries::lock_webauthn_challenge(&mut tx, input.challenge_id, "register", now)
+            .await?
+            .filter(|(challenge_user_id, _)| *challenge_user_id == user_id)
+            .ok_or(ServiceError::Unauthenticated)?;
+
+    let origin = verify_client_data_json(
+        &input.client_data_json,
+        "webauthn.create",
+        &expected_challenge,
+    )?;
+    let credential_public_key =
+        parse_registration_attestation(&input.attestation_object, &input.credential_id, &origin)?;
+    let nickname = validate_account_text(&input.nickname, 80, "passkey nickname is invalid")?;
+    let credential_record_id = Uuid::now_v7();
+    db::account_queries::insert_webauthn_credential(
+        &mut tx,
+        credential_record_id,
+        user_id,
+        &input.credential_id,
+        serde_json::json!({
+            "alg": "ES256",
+            "coseKey": URL_SAFE_NO_PAD.encode(&credential_public_key),
+        }),
+        &nickname,
+    )
+    .await
+    .map_err(map_passkey_insert_error)?;
+    db::account_queries::consume_webauthn_challenge(&mut tx, input.challenge_id, now).await?;
+    tx.commit().await?;
+
+    Ok(PasskeySummary {
+        id: credential_record_id,
+        nickname,
+        created_at: format_timestamp(now),
+        last_used_at: None,
+    })
+}
+
+pub async fn start_passkey_login(
+    pool: &PgPool,
+    email: &str,
+) -> Result<PasskeyLoginStartResponse, ServiceError> {
+    let normalized_email = normalize_email(email)?;
+    let (user_id, credential_ids) =
+        db::account_queries::list_passkey_credential_ids_for_email(pool, &normalized_email)
+            .await?
+            .filter(|(_, credential_ids)| !credential_ids.is_empty())
+            .ok_or(ServiceError::Unauthenticated)?;
+    let challenge_id = Uuid::now_v7();
+    let challenge = generate_secure_token();
+    let expires_at = OffsetDateTime::now_utc() + PASSKEY_CHALLENGE_TTL;
+
+    db::account_queries::insert_webauthn_challenge(
+        pool,
+        challenge_id,
+        user_id,
+        &challenge,
+        "login",
+        expires_at,
+    )
+    .await?;
+
+    Ok(PasskeyLoginStartResponse {
+        challenge_id,
+        challenge,
+        expires_at: format_timestamp(expires_at),
+        allow_credentials: credential_ids
+            .into_iter()
+            .map(|credential_id| PasskeyCredentialDescriptor { credential_id })
+            .collect(),
+    })
+}
+
+pub async fn finish_passkey_login(
+    pool: &PgPool,
+    input: PasskeyLoginFinishInput,
+) -> Result<AccountSession, ServiceError> {
+    let now = OffsetDateTime::now_utc();
+    let mut tx = pool.begin().await?;
+    let (challenge_user_id, expected_challenge) =
+        db::account_queries::lock_webauthn_challenge(&mut tx, input.challenge_id, "login", now)
+            .await?
+            .ok_or(ServiceError::Unauthenticated)?;
+    let credential = db::account_queries::lock_passkey_credential(&mut tx, &input.credential_id)
+        .await?
+        .filter(|credential| credential.user_id == challenge_user_id)
+        .ok_or(ServiceError::Unauthenticated)?;
+    db::account_queries::lock_active_user(&mut tx, credential.user_id)
+        .await?
+        .ok_or(ServiceError::Unauthenticated)?;
+
+    let origin =
+        verify_client_data_json(&input.client_data_json, "webauthn.get", &expected_challenge)?;
+    let authenticator_data = decode_base64url(&input.authenticator_data)?;
+    verify_authenticator_data(&authenticator_data, &origin, false)?;
+    let signature = decode_base64url(&input.signature)?;
+    let sign_count = parse_authenticator_sign_count(&authenticator_data)?;
+    verify_passkey_signature(
+        &credential.public_key,
+        &authenticator_data,
+        &input.client_data_json,
+        &signature,
+    )?;
+    if credential.sign_count > 0 && sign_count <= credential.sign_count {
+        return Err(ServiceError::Unauthenticated);
+    }
+
+    db::account_queries::update_passkey_credential_usage(
+        &mut tx,
+        &credential.credential_id,
+        sign_count,
+        now,
+    )
+    .await?;
+    db::account_queries::consume_webauthn_challenge(&mut tx, input.challenge_id, now).await?;
+    let session = create_user_session(
+        &mut tx,
+        credential.user_id,
+        input.trust_device,
+        &input.device_label,
+        now,
+    )
+    .await?;
+    tx.commit().await?;
+
+    Ok(session)
+}
+
 pub async fn revoke_trusted_device(
     pool: &PgPool,
     session_token: &str,
@@ -716,11 +899,10 @@ fn validate_join_password(join_password: &str) -> Result<String, ServiceError> {
 
 fn map_account_trip_insert_error(error: sqlx::Error) -> ServiceError {
     let duplicate_join_id = is_unique_violation_on_constraint(&error, "trips_join_id_key");
-    let mut mapped_error = ServiceError::Database(error);
-    if duplicate_join_id {
-        mapped_error = ServiceError::TripJoinIdAlreadyExists;
-    }
-    mapped_error
+    let database_error = ServiceError::Database(error);
+    duplicate_join_id
+        .then_some(ServiceError::TripJoinIdAlreadyExists)
+        .unwrap_or(database_error)
 }
 
 fn is_unique_violation_on_constraint(error: &sqlx::Error, constraint: &str) -> bool {
@@ -828,6 +1010,265 @@ fn validate_avatar_color(value: &str) -> Result<String, ServiceError> {
     Err(ServiceError::InvalidRequest("avatar color is invalid"))
 }
 
+fn verify_client_data_json(
+    encoded_client_data_json: &str,
+    expected_type: &str,
+    expected_challenge: &str,
+) -> Result<String, ServiceError> {
+    let client_data_json = decode_base64url(encoded_client_data_json)?;
+    let value: Value = serde_json::from_slice(&client_data_json)
+        .map_err(|_| ServiceError::InvalidRequest("client data json is invalid"))?;
+    let challenge =
+        value
+            .get("challenge")
+            .and_then(Value::as_str)
+            .ok_or(ServiceError::InvalidRequest(
+                "client data challenge is invalid",
+            ))?;
+    let credential_type = value
+        .get("type")
+        .and_then(Value::as_str)
+        .ok_or(ServiceError::InvalidRequest("client data type is invalid"))?;
+    let origin =
+        value
+            .get("origin")
+            .and_then(Value::as_str)
+            .ok_or(ServiceError::InvalidRequest(
+                "client data origin is invalid",
+            ))?;
+    if challenge != expected_challenge || credential_type != expected_type {
+        return Err(ServiceError::Unauthenticated);
+    }
+    if allowed_passkey_origin(origin).is_none() {
+        return Err(ServiceError::Unauthenticated);
+    }
+
+    Ok(origin.to_string())
+}
+
+fn parse_registration_attestation(
+    encoded_attestation_object: &str,
+    expected_credential_id: &str,
+    origin: &str,
+) -> Result<Vec<u8>, ServiceError> {
+    let attestation_object = decode_base64url(encoded_attestation_object)?;
+    let value: serde_cbor::Value = serde_cbor::from_slice(&attestation_object)
+        .map_err(|_| ServiceError::InvalidRequest("attestation object is invalid"))?;
+    let auth_data = cbor_map_text_bytes(&value, "authData").ok_or(ServiceError::InvalidRequest(
+        "authenticator data is invalid",
+    ))?;
+    parse_registration_authenticator_data(auth_data, expected_credential_id, origin)
+}
+
+fn parse_registration_authenticator_data(
+    auth_data: &[u8],
+    expected_credential_id: &str,
+    origin: &str,
+) -> Result<Vec<u8>, ServiceError> {
+    const ATTESTED_CREDENTIAL_DATA_OFFSET: usize = 37;
+    const AAGUID_LENGTH: usize = 16;
+    verify_authenticator_data(auth_data, origin, true)?;
+    if auth_data.len() < ATTESTED_CREDENTIAL_DATA_OFFSET + AAGUID_LENGTH + 2 {
+        return Err(ServiceError::InvalidRequest(
+            "authenticator data is invalid",
+        ));
+    }
+
+    let credential_length_offset = ATTESTED_CREDENTIAL_DATA_OFFSET + AAGUID_LENGTH;
+    let credential_id_length = u16::from_be_bytes([
+        auth_data[credential_length_offset],
+        auth_data[credential_length_offset + 1],
+    ]) as usize;
+    let credential_id_offset = credential_length_offset + 2;
+    let credential_public_key_offset = credential_id_offset + credential_id_length;
+    if auth_data.len() <= credential_public_key_offset {
+        return Err(ServiceError::InvalidRequest(
+            "authenticator data is invalid",
+        ));
+    }
+
+    let credential_id =
+        URL_SAFE_NO_PAD.encode(&auth_data[credential_id_offset..credential_public_key_offset]);
+    if credential_id != expected_credential_id {
+        return Err(ServiceError::Unauthenticated);
+    }
+    let credential_public_key = auth_data[credential_public_key_offset..].to_vec();
+    cose_es256_verifying_key(&credential_public_key)?;
+
+    Ok(credential_public_key)
+}
+
+fn parse_authenticator_sign_count(authenticator_data: &[u8]) -> Result<i64, ServiceError> {
+    if authenticator_data.len() < 37 {
+        return Err(ServiceError::InvalidRequest(
+            "authenticator data is invalid",
+        ));
+    }
+    Ok(u32::from_be_bytes([
+        authenticator_data[33],
+        authenticator_data[34],
+        authenticator_data[35],
+        authenticator_data[36],
+    ]) as i64)
+}
+
+fn verify_authenticator_data(
+    authenticator_data: &[u8],
+    origin: &str,
+    require_attested_credential_data: bool,
+) -> Result<(), ServiceError> {
+    if authenticator_data.len() < 37 {
+        return Err(ServiceError::InvalidRequest(
+            "authenticator data is invalid",
+        ));
+    }
+    let rp_id = allowed_passkey_origin(origin).ok_or(ServiceError::Unauthenticated)?;
+    let expected_rp_id_hash = Sha256::digest(rp_id.as_bytes());
+    if authenticator_data[..32] != expected_rp_id_hash[..] {
+        return Err(ServiceError::Unauthenticated);
+    }
+    let flags = authenticator_data[32];
+    if flags & WEBAUTHN_FLAG_USER_PRESENT == 0 {
+        return Err(ServiceError::Unauthenticated);
+    }
+    if flags & WEBAUTHN_FLAG_USER_VERIFIED == 0 {
+        return Err(ServiceError::Unauthenticated);
+    }
+    if require_attested_credential_data && flags & WEBAUTHN_FLAG_ATTESTED_CREDENTIAL_DATA == 0 {
+        return Err(ServiceError::Unauthenticated);
+    }
+
+    Ok(())
+}
+
+fn allowed_passkey_origin(origin: &str) -> Option<&'static str> {
+    PASSKEY_ALLOWED_ORIGINS
+        .iter()
+        .find_map(|(allowed_origin, rp_id)| (*allowed_origin == origin).then_some(*rp_id))
+}
+
+fn verify_passkey_signature(
+    public_key: &Value,
+    authenticator_data: &[u8],
+    encoded_client_data_json: &str,
+    signature: &[u8],
+) -> Result<(), ServiceError> {
+    let cose_key =
+        public_key
+            .get("coseKey")
+            .and_then(Value::as_str)
+            .ok_or(ServiceError::InvalidRequest(
+                "passkey public key is invalid",
+            ))?;
+    let verifying_key = cose_es256_verifying_key(&decode_base64url(cose_key)?)?;
+    let client_data_json = decode_base64url(encoded_client_data_json)?;
+    let client_data_hash = Sha256::digest(client_data_json);
+    let mut signed_data = Vec::with_capacity(authenticator_data.len() + client_data_hash.len());
+    signed_data.extend_from_slice(authenticator_data);
+    signed_data.extend_from_slice(&client_data_hash);
+    let signature = Signature::from_der(signature).map_err(|_| ServiceError::Unauthenticated)?;
+    verifying_key
+        .verify(&signed_data, &signature)
+        .map_err(|_| ServiceError::Unauthenticated)
+}
+
+fn cose_es256_verifying_key(cose_key: &[u8]) -> Result<VerifyingKey, ServiceError> {
+    let value: serde_cbor::Value = serde_cbor::from_slice(cose_key)
+        .map_err(|_| ServiceError::InvalidRequest("passkey public key is invalid"))?;
+    let x = cbor_map_int_bytes(&value, -2)
+        .filter(|bytes| bytes.len() == 32)
+        .ok_or(ServiceError::InvalidRequest(
+            "passkey public key is invalid",
+        ))?;
+    let y = cbor_map_int_bytes(&value, -3)
+        .filter(|bytes| bytes.len() == 32)
+        .ok_or(ServiceError::InvalidRequest(
+            "passkey public key is invalid",
+        ))?;
+    if cbor_map_int_integer(&value, 1) != Some(2)
+        || cbor_map_int_integer(&value, 3) != Some(-7)
+        || cbor_map_int_integer(&value, -1) != Some(1)
+    {
+        return Err(ServiceError::InvalidRequest(
+            "passkey public key is invalid",
+        ));
+    }
+    let mut sec1 = Vec::with_capacity(65);
+    sec1.push(0x04);
+    sec1.extend_from_slice(x);
+    sec1.extend_from_slice(y);
+
+    VerifyingKey::from_sec1_bytes(&sec1)
+        .map_err(|_| ServiceError::InvalidRequest("passkey public key is invalid"))
+}
+
+fn cbor_map_text_bytes<'a>(value: &'a serde_cbor::Value, key: &str) -> Option<&'a [u8]> {
+    let serde_cbor::Value::Map(map) = value else {
+        return None;
+    };
+    map.iter().find_map(|(candidate_key, candidate_value)| {
+        if matches!(candidate_key, serde_cbor::Value::Text(text) if text == key) {
+            if let serde_cbor::Value::Bytes(bytes) = candidate_value {
+                Some(bytes.as_slice())
+            } else {
+                None
+            }
+        } else {
+            None
+        }
+    })
+}
+
+fn cbor_map_int_bytes(value: &serde_cbor::Value, key: i128) -> Option<&[u8]> {
+    let serde_cbor::Value::Map(map) = value else {
+        return None;
+    };
+    map.iter().find_map(|(candidate_key, candidate_value)| {
+        if matches!(candidate_key, serde_cbor::Value::Integer(integer) if *integer == key) {
+            if let serde_cbor::Value::Bytes(bytes) = candidate_value {
+                Some(bytes.as_slice())
+            } else {
+                None
+            }
+        } else {
+            None
+        }
+    })
+}
+
+fn cbor_map_int_integer(value: &serde_cbor::Value, key: i128) -> Option<i128> {
+    let serde_cbor::Value::Map(map) = value else {
+        return None;
+    };
+    map.iter().find_map(|(candidate_key, candidate_value)| {
+        if matches!(candidate_key, serde_cbor::Value::Integer(integer) if *integer == key) {
+            if let serde_cbor::Value::Integer(integer) = candidate_value {
+                Some(*integer)
+            } else {
+                None
+            }
+        } else {
+            None
+        }
+    })
+}
+
+fn decode_base64url(value: &str) -> Result<Vec<u8>, ServiceError> {
+    URL_SAFE_NO_PAD
+        .decode(value)
+        .map_err(|_| ServiceError::InvalidRequest("base64url value is invalid"))
+}
+
+fn map_passkey_insert_error(error: sqlx::Error) -> ServiceError {
+    let duplicate_passkey =
+        is_unique_violation_on_constraint(&error, "webauthn_credentials_credential_id_idx");
+    duplicate_passkey
+        .then_some(ServiceError::InvalidRequest(
+            "passkey credential already exists",
+        ))
+        .unwrap_or(ServiceError::Database(error))
+}
+
 fn account_profile_from_record(record: AccountProfileRecord) -> AccountProfile {
     AccountProfile {
         id: record.id,
@@ -893,10 +1334,292 @@ fn format_timestamp(timestamp: OffsetDateTime) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use p256::ecdsa::SigningKey;
+    use sqlx::error::{DatabaseError, ErrorKind};
+    use std::borrow::Cow;
+    use std::collections::BTreeMap;
+    use std::error::Error;
+    use std::fmt;
 
     #[test]
     fn account_trip_insert_error_falls_back_to_database_error() {
         let error = map_account_trip_insert_error(sqlx::Error::RowNotFound);
         assert!(error.to_string().starts_with("database error"));
+    }
+
+    #[test]
+    fn account_trip_insert_error_maps_duplicate_join_id() {
+        let error = map_account_trip_insert_error(unique_database_error("trips_join_id_key"));
+        assert!(matches!(error, ServiceError::TripJoinIdAlreadyExists));
+    }
+
+    #[test]
+    fn passkey_insert_error_falls_back_to_database_error() {
+        let error = map_passkey_insert_error(sqlx::Error::RowNotFound);
+        assert!(error.to_string().starts_with("database error"));
+    }
+
+    #[test]
+    fn passkey_insert_error_maps_duplicate_credential() {
+        let error = map_passkey_insert_error(unique_database_error(
+            "webauthn_credentials_credential_id_idx",
+        ));
+        assert!(matches!(
+            error,
+            ServiceError::InvalidRequest("passkey credential already exists")
+        ));
+    }
+
+    #[test]
+    fn fake_database_error_exposes_sqlx_database_error_contract() {
+        let mut error = FakeDatabaseError {
+            constraint: "constraint_name",
+        };
+
+        assert_eq!(error.message(), "fake unique violation");
+        assert_eq!(error.code().as_deref(), Some("23505"));
+        assert_eq!(error.constraint(), Some("constraint_name"));
+        assert_eq!(error.kind(), ErrorKind::UniqueViolation);
+        assert_eq!(error.as_error().to_string(), "fake unique violation");
+        assert_eq!(error.as_error_mut().to_string(), "fake unique violation");
+        assert_eq!(
+            Box::new(error).into_error().to_string(),
+            "fake unique violation"
+        );
+    }
+
+    #[test]
+    fn passkey_authenticator_data_validation_accepts_valid_registration() {
+        let signing_key = SigningKey::from_slice(&[7; 32]).unwrap();
+        let credential_id = b"unit-passkey-credential";
+        let mut auth_data = passkey_authenticator_data(8, 0x45);
+        auth_data.extend_from_slice(&[0; 16]);
+        auth_data.extend_from_slice(&(credential_id.len() as u16).to_be_bytes());
+        auth_data.extend_from_slice(credential_id);
+        auth_data.extend_from_slice(&cose_key(&signing_key));
+        let encoded_credential_id = URL_SAFE_NO_PAD.encode(credential_id);
+
+        assert_eq!(
+            parse_registration_authenticator_data(
+                &auth_data,
+                &encoded_credential_id,
+                "http://localhost:5180",
+            )
+            .unwrap(),
+            cose_key(&signing_key)
+        );
+        assert_eq!(parse_authenticator_sign_count(&auth_data).unwrap(), 8);
+    }
+
+    #[test]
+    fn passkey_authenticator_data_validation_rejects_wrong_rp_and_flags() {
+        assert!(
+            verify_authenticator_data(
+                &passkey_authenticator_data(0, 0x05),
+                "https://evil.example.test",
+                false,
+            )
+            .is_err()
+        );
+        assert!(
+            verify_authenticator_data(
+                &passkey_authenticator_data(0, 0x05),
+                "http://127.0.0.1:5180",
+                false,
+            )
+            .is_err()
+        );
+        assert!(
+            verify_authenticator_data(
+                &passkey_authenticator_data(0, 0x04),
+                "http://localhost:5180",
+                false,
+            )
+            .is_err()
+        );
+        assert!(
+            verify_authenticator_data(
+                &passkey_authenticator_data(0, 0x01),
+                "http://localhost:5180",
+                true,
+            )
+            .is_err()
+        );
+        assert!(
+            verify_authenticator_data(
+                &passkey_authenticator_data(0, 0x41),
+                "http://localhost:5180",
+                true,
+            )
+            .is_err()
+        );
+    }
+
+    #[test]
+    fn passkey_authenticator_data_validation_covers_malformed_shapes() {
+        assert!(parse_authenticator_sign_count(&[0; 36]).is_err());
+        assert!(verify_authenticator_data(&[0; 36], "http://localhost:5180", false).is_err());
+
+        let mut short_registration = passkey_authenticator_data(0, 0x45);
+        assert!(
+            parse_registration_authenticator_data(
+                &short_registration,
+                "credential",
+                "http://localhost:5180",
+            )
+            .is_err()
+        );
+
+        short_registration.extend_from_slice(&[0; 16]);
+        short_registration.extend_from_slice(&1_u16.to_be_bytes());
+        assert!(
+            parse_registration_authenticator_data(
+                &short_registration,
+                "credential",
+                "http://localhost:5180",
+            )
+            .is_err()
+        );
+
+        short_registration.push(b'x');
+        short_registration.push(0);
+        assert!(
+            parse_registration_authenticator_data(
+                &short_registration,
+                "different",
+                "http://localhost:5180",
+            )
+            .is_err()
+        );
+    }
+
+    #[test]
+    fn passkey_cbor_helpers_handle_non_maps_and_values() {
+        let not_map = serde_cbor::Value::Bool(false);
+        assert!(cbor_map_text_bytes(&not_map, "authData").is_none());
+        assert!(cbor_map_int_bytes(&not_map, -2).is_none());
+        assert!(cbor_map_int_integer(&not_map, 1).is_none());
+
+        let map = serde_cbor::Value::Map(
+            [
+                (
+                    serde_cbor::Value::Text("authData".to_string()),
+                    serde_cbor::Value::Bytes(vec![1, 2, 3]),
+                ),
+                (
+                    serde_cbor::Value::Integer(-2),
+                    serde_cbor::Value::Bytes(vec![4, 5, 6]),
+                ),
+                (serde_cbor::Value::Integer(1), serde_cbor::Value::Integer(2)),
+            ]
+            .into_iter()
+            .collect(),
+        );
+        assert_eq!(
+            cbor_map_text_bytes(&map, "authData"),
+            Some([1, 2, 3].as_slice())
+        );
+        assert_eq!(cbor_map_int_bytes(&map, -2), Some([4, 5, 6].as_slice()));
+        assert_eq!(cbor_map_int_integer(&map, 1), Some(2));
+
+        let wrong_value_types = serde_cbor::Value::Map(
+            [
+                (
+                    serde_cbor::Value::Text("authData".to_string()),
+                    serde_cbor::Value::Integer(1),
+                ),
+                (
+                    serde_cbor::Value::Integer(-2),
+                    serde_cbor::Value::Integer(2),
+                ),
+                (
+                    serde_cbor::Value::Integer(1),
+                    serde_cbor::Value::Bytes(vec![3]),
+                ),
+            ]
+            .into_iter()
+            .collect(),
+        );
+        assert!(cbor_map_text_bytes(&wrong_value_types, "authData").is_none());
+        assert!(cbor_map_int_bytes(&wrong_value_types, -2).is_none());
+        assert!(cbor_map_int_integer(&wrong_value_types, 1).is_none());
+    }
+
+    fn passkey_authenticator_data(sign_count: u32, flags: u8) -> Vec<u8> {
+        let mut auth_data = vec![0; 37];
+        auth_data[..32].copy_from_slice(&Sha256::digest(b"localhost"));
+        auth_data[32] = flags;
+        auth_data[33..37].copy_from_slice(&sign_count.to_be_bytes());
+        auth_data
+    }
+
+    fn cose_key(signing_key: &SigningKey) -> Vec<u8> {
+        let encoded_point = signing_key.verifying_key().to_encoded_point(false);
+        let mut map = BTreeMap::new();
+        map.insert(serde_cbor::Value::Integer(1), serde_cbor::Value::Integer(2));
+        map.insert(
+            serde_cbor::Value::Integer(3),
+            serde_cbor::Value::Integer(-7),
+        );
+        map.insert(
+            serde_cbor::Value::Integer(-1),
+            serde_cbor::Value::Integer(1),
+        );
+        map.insert(
+            serde_cbor::Value::Integer(-2),
+            serde_cbor::Value::Bytes(encoded_point.x().unwrap().to_vec()),
+        );
+        map.insert(
+            serde_cbor::Value::Integer(-3),
+            serde_cbor::Value::Bytes(encoded_point.y().unwrap().to_vec()),
+        );
+        serde_cbor::to_vec(&serde_cbor::Value::Map(map)).unwrap()
+    }
+
+    fn unique_database_error(constraint: &'static str) -> sqlx::Error {
+        sqlx::Error::Database(Box::new(FakeDatabaseError { constraint }))
+    }
+
+    #[derive(Debug)]
+    struct FakeDatabaseError {
+        constraint: &'static str,
+    }
+
+    impl fmt::Display for FakeDatabaseError {
+        fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+            formatter.write_str("fake unique violation")
+        }
+    }
+
+    impl Error for FakeDatabaseError {}
+
+    impl DatabaseError for FakeDatabaseError {
+        fn message(&self) -> &str {
+            "fake unique violation"
+        }
+
+        fn code(&self) -> Option<Cow<'_, str>> {
+            Some(Cow::Borrowed("23505"))
+        }
+
+        fn as_error(&self) -> &(dyn Error + Send + Sync + 'static) {
+            self
+        }
+
+        fn as_error_mut(&mut self) -> &mut (dyn Error + Send + Sync + 'static) {
+            self
+        }
+
+        fn into_error(self: Box<Self>) -> Box<dyn Error + Send + Sync + 'static> {
+            self
+        }
+
+        fn constraint(&self) -> Option<&str> {
+            Some(self.constraint)
+        }
+
+        fn kind(&self) -> ErrorKind {
+            ErrorKind::UniqueViolation
+        }
     }
 }

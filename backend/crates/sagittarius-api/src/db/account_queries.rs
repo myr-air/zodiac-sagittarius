@@ -6,7 +6,8 @@ use crate::db::models::{
     AccountProfileRecord, AccountTripRecord, AccountTripStatsRecord, ActiveUserSessionRecord,
     EmailLoginChallengeRecord, NewAccountAuditEvent, NewAccountPlanVariant, NewAccountTrip,
     NewAccountTripOwnerMember, NewEmailLoginOutbox, NewTrustedDevice, NewUser, NewUserEmail,
-    NewUserSession, PasskeyRecord, TripAuthRecord, TrustedDeviceRecord, UserEmailRecord,
+    NewUserSession, PasskeyCredentialRecord, PasskeyRecord, TripAuthRecord, TrustedDeviceRecord,
+    UserEmailRecord,
 };
 use crate::domain::types::{TripMemberAccessStatus, TripRole};
 
@@ -288,6 +289,22 @@ pub async fn find_active_user_session_in_tx(
     .await
 }
 
+pub async fn lock_active_user(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    user_id: Uuid,
+) -> Result<Option<Uuid>, sqlx::Error> {
+    sqlx::query_scalar::<_, Uuid>(
+        "select id
+         from users
+         where id = $1
+           and disabled_at is null
+         for update",
+    )
+    .bind(user_id)
+    .fetch_optional(&mut **tx)
+    .await
+}
+
 pub async fn get_user_profile(
     pool: &PgPool,
     user_id: Uuid,
@@ -493,6 +510,128 @@ pub async fn insert_webauthn_challenge(
     .bind(purpose)
     .bind(expires_at)
     .execute(pool)
+    .await?;
+
+    Ok(())
+}
+
+pub async fn lock_webauthn_challenge(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    challenge_id: Uuid,
+    purpose: &str,
+    now: OffsetDateTime,
+) -> Result<Option<(Uuid, String)>, sqlx::Error> {
+    sqlx::query_as::<_, (Uuid, String)>(
+        "select user_id, challenge
+         from webauthn_challenges
+         where id = $1
+           and purpose = $2
+           and consumed_at is null
+           and expires_at > $3
+         for update",
+    )
+    .bind(challenge_id)
+    .bind(purpose)
+    .bind(now)
+    .fetch_optional(&mut **tx)
+    .await
+}
+
+pub async fn consume_webauthn_challenge(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    challenge_id: Uuid,
+    consumed_at: OffsetDateTime,
+) -> Result<(), sqlx::Error> {
+    sqlx::query(
+        "update webauthn_challenges
+         set consumed_at = $2
+         where id = $1",
+    )
+    .bind(challenge_id)
+    .bind(consumed_at)
+    .execute(&mut **tx)
+    .await?;
+
+    Ok(())
+}
+
+pub async fn insert_webauthn_credential(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    id: Uuid,
+    user_id: Uuid,
+    credential_id: &str,
+    public_key: serde_json::Value,
+    nickname: &str,
+) -> Result<(), sqlx::Error> {
+    sqlx::query(
+        "insert into webauthn_credentials (id, user_id, credential_id, public_key, nickname)
+         values ($1, $2, $3, $4, $5)",
+    )
+    .bind(id)
+    .bind(user_id)
+    .bind(credential_id)
+    .bind(public_key)
+    .bind(nickname)
+    .execute(&mut **tx)
+    .await?;
+
+    Ok(())
+}
+
+pub async fn list_passkey_credential_ids_for_email(
+    pool: &PgPool,
+    normalized_email: &str,
+) -> Result<Option<(Uuid, Vec<String>)>, sqlx::Error> {
+    sqlx::query_as::<_, (Uuid, Vec<String>)>(
+        "select users.id, coalesce(
+             array_agg(webauthn_credentials.credential_id order by webauthn_credentials.created_at desc)
+               filter (where webauthn_credentials.credential_id is not null),
+             array[]::text[]
+         )
+         from user_emails
+         join users on users.id = user_emails.user_id
+         left join webauthn_credentials on webauthn_credentials.user_id = users.id
+         where user_emails.normalized_email = $1
+           and user_emails.verified_at is not null
+           and users.disabled_at is null
+         group by users.id",
+    )
+    .bind(normalized_email)
+    .fetch_optional(pool)
+    .await
+}
+
+pub async fn lock_passkey_credential(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    credential_id: &str,
+) -> Result<Option<PasskeyCredentialRecord>, sqlx::Error> {
+    sqlx::query_as::<_, PasskeyCredentialRecord>(
+        "select id, user_id, credential_id, public_key, sign_count
+         from webauthn_credentials
+         where credential_id = $1
+         for update",
+    )
+    .bind(credential_id)
+    .fetch_optional(&mut **tx)
+    .await
+}
+
+pub async fn update_passkey_credential_usage(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    credential_id: &str,
+    sign_count: i64,
+    last_used_at: OffsetDateTime,
+) -> Result<(), sqlx::Error> {
+    sqlx::query(
+        "update webauthn_credentials
+         set sign_count = $2,
+             last_used_at = $3
+         where credential_id = $1",
+    )
+    .bind(credential_id)
+    .bind(sign_count)
+    .bind(last_used_at)
+    .execute(&mut **tx)
     .await?;
 
     Ok(())

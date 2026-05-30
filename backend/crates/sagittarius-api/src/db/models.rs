@@ -220,6 +220,15 @@ pub struct PasskeyRecord {
 }
 
 #[derive(Debug, Clone, FromRow)]
+pub struct PasskeyCredentialRecord {
+    pub id: Uuid,
+    pub user_id: Uuid,
+    pub credential_id: String,
+    pub public_key: serde_json::Value,
+    pub sign_count: i64,
+}
+
+#[derive(Debug, Clone, FromRow)]
 pub struct TripMemberRecord {
     pub id: Uuid,
     pub trip_id: Uuid,

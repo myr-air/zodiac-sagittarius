@@ -57,6 +57,18 @@ pub fn router(state: AppState) -> Router {
             "/v1/account/passkeys/register/start",
             post(account::start_passkey_registration),
         )
+        .route(
+            "/v1/account/passkeys/register/finish",
+            post(account::finish_passkey_registration),
+        )
+        .route(
+            "/v1/account/passkeys/login/start",
+            post(account::start_passkey_login),
+        )
+        .route(
+            "/v1/account/passkeys/login/finish",
+            post(account::finish_passkey_login),
+        )
         .route("/v1/account/sessions/logout", post(account::logout_session))
         .route("/v1/trips/join", post(join::join_trip))
         .route("/v1/trips/{trip_id}", get(trips::load_trip))

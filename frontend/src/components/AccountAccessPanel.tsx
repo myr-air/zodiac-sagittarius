@@ -167,6 +167,7 @@ export function AccountAccessPanel({
               onAccountSessionChange(null);
               setMessage("ออกจาก account แล้ว");
             }}
+            onSessionCleared={() => onAccountSessionChange(null)}
             onMessage={setMessage}
             onError={setError}
           />
@@ -234,6 +235,29 @@ function EmailLoginPanel({
     }
   }
 
+  async function signInWithPasskey() {
+    setIsSubmitting(true);
+    try {
+      const loginStart = await accountClient.startPasskeyLogin(email);
+      const credential = await getPasskeyCredential(loginStart.challenge, loginStart.allowCredentials.map((credential) => credential.credentialId));
+      const session = await accountClient.finishPasskeyLogin({
+        challengeId: loginStart.challengeId,
+        credentialId: arrayBufferToBase64Url(credential.rawId),
+        clientDataJson: arrayBufferToBase64Url(credential.response.clientDataJSON),
+        authenticatorData: arrayBufferToBase64Url(credential.response.authenticatorData),
+        signature: arrayBufferToBase64Url(credential.response.signature),
+        trustDevice,
+        deviceLabel,
+      });
+      onLoggedIn(session);
+      onError(null);
+    } catch (caught) {
+      onError(errorMessage(caught, "เข้า account ด้วย passkey ไม่สำเร็จ"));
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
   return (
     <div className="account-grid">
       <form className="account-card account-form" onSubmit={submitEmail}>
@@ -245,6 +269,10 @@ function EmailLoginPanel({
         <Button type="submit" disabled={isSubmitting}>
           <Icon name="check" />
           ส่งรหัส login
+        </Button>
+        <Button type="button" variant="secondary" disabled={!email || isSubmitting} onClick={() => void signInWithPasskey()}>
+          <Icon name="settings" />
+          เข้า account ด้วย passkey
         </Button>
       </form>
 
@@ -280,6 +308,7 @@ function AccountDashboard({
   onCreatedTrip,
   onError,
   onLogout,
+  onSessionCleared,
   onMessage,
   onSettingsChanged,
   settings,
@@ -292,6 +321,7 @@ function AccountDashboard({
   onCreatedTrip: (session: TripParticipantSession) => Promise<void>;
   onError: (message: string | null) => void;
   onLogout: () => Promise<void>;
+  onSessionCleared: () => void;
   onMessage: (message: string | null) => void;
   onSettingsChanged: (settings: AccountSettings) => void;
   settings: AccountSettings | null;
@@ -315,6 +345,29 @@ function AccountDashboard({
       onError(errorMessage(caught, "สร้าง trip ไม่สำเร็จ"));
     } finally {
       setIsSubmitting(false);
+    }
+  }
+
+  async function registerPasskey() {
+    if (!settings) return;
+    try {
+      const registrationStart = await accountClient.startPasskeyRegistration(accountSession.sessionToken);
+      const credential = await createPasskeyCredential(registrationStart.challenge, settings);
+      const passkey = await accountClient.finishPasskeyRegistration(accountSession.sessionToken, {
+        challengeId: registrationStart.challengeId,
+        credentialId: arrayBufferToBase64Url(credential.rawId),
+        clientDataJson: arrayBufferToBase64Url(credential.response.clientDataJSON),
+        attestationObject: arrayBufferToBase64Url(credential.response.attestationObject),
+        nickname: `${settings.profile.displayName} passkey`,
+      });
+      onSettingsChanged({
+        ...settings,
+        passkeys: [passkey, ...settings.passkeys.filter((candidate) => candidate.id !== passkey.id)],
+      });
+      onMessage("สร้าง passkey แล้ว ใช้ login ได้ทันที");
+      onError(null);
+    } catch (caught) {
+      onError(errorMessage(caught, "สร้าง passkey ไม่สำเร็จ"));
     }
   }
 
@@ -431,6 +484,7 @@ function AccountDashboard({
             settings={settings}
             onError={onError}
             onMessage={onMessage}
+            onSessionCleared={onSessionCleared}
             onSettingsChanged={onSettingsChanged}
           />
         ) : (
@@ -439,12 +493,8 @@ function AccountDashboard({
         <Button
           type="button"
           variant="secondary"
-          onClick={() =>
-            accountClient
-              .startPasskeyRegistration(accountSession.sessionToken)
-              .then(() => onMessage("สร้าง passkey registration challenge แล้ว"))
-              .catch((caught) => onError(errorMessage(caught, "เริ่ม passkey registration ไม่สำเร็จ")))
-          }
+          disabled={!settings}
+          onClick={() => void registerPasskey()}
         >
           <Icon name="settings" />
           Start passkey setup
@@ -459,6 +509,7 @@ function AccountSettingsEditor({
   accountSession,
   onError,
   onMessage,
+  onSessionCleared,
   onSettingsChanged,
   settings,
 }: {
@@ -466,6 +517,7 @@ function AccountSettingsEditor({
   accountSession: AccountSession;
   onError: (message: string | null) => void;
   onMessage: (message: string | null) => void;
+  onSessionCleared: () => void;
   onSettingsChanged: (settings: AccountSettings) => void;
   settings: AccountSettings;
 }) {
@@ -493,6 +545,12 @@ function AccountSettingsEditor({
     setRevokingDeviceId(deviceId);
     try {
       await accountClient.revokeTrustedDevice(accountSession.sessionToken, deviceId);
+      if (accountSession.trustedDeviceId === deviceId) {
+        onSessionCleared();
+        onMessage("ยกเลิก trusted device นี้แล้ว กรุณา login ใหม่");
+        onError(null);
+        return;
+      }
       const nextSettings = await accountClient.loadSettings(accountSession.sessionToken);
       onSettingsChanged(nextSettings);
       onMessage("ยกเลิก trusted device แล้ว");
@@ -618,4 +676,116 @@ function profileToForm(settings: AccountSettings): AccountSettingsUpdateRequest 
     locale: settings.profile.locale,
     timezone: settings.profile.timezone,
   };
+}
+
+async function createPasskeyCredential(challenge: string, settings: AccountSettings) {
+  const credentials = assertCredentialApi();
+  const userName = settings.profile.primaryEmail ?? settings.profile.displayName;
+  const credential = await credentials.create({
+    publicKey: {
+      challenge: base64UrlToArrayBuffer(challenge),
+      rp: { name: "Sagittarius" },
+      user: {
+        id: new TextEncoder().encode(settings.profile.id),
+        name: userName,
+        displayName: settings.profile.displayName,
+      },
+      pubKeyCredParams: [{ type: "public-key", alg: -7 }],
+      authenticatorSelection: {
+        residentKey: "preferred",
+        userVerification: "required",
+      },
+      attestation: "none",
+      timeout: 60_000,
+    },
+  });
+
+  if (!isRegistrationCredential(credential)) {
+    throw new Error("Browser did not return a passkey registration credential");
+  }
+
+  return credential;
+}
+
+async function getPasskeyCredential(challenge: string, credentialIds: string[]) {
+  const credentials = assertCredentialApi();
+  const credential = await credentials.get({
+    publicKey: {
+      challenge: base64UrlToArrayBuffer(challenge),
+      allowCredentials: credentialIds.map((credentialId) => ({
+        type: "public-key",
+        id: base64UrlToArrayBuffer(credentialId),
+      })),
+      userVerification: "required",
+      timeout: 60_000,
+    },
+  });
+
+  if (!isAssertionCredential(credential)) {
+    throw new Error("Browser did not return a passkey login credential");
+  }
+
+  return credential;
+}
+
+type RegistrationCredential = PublicKeyCredential & {
+  response: AuthenticatorAttestationResponse;
+};
+
+type AssertionCredential = PublicKeyCredential & {
+  response: AuthenticatorAssertionResponse;
+};
+
+function assertCredentialApi(): CredentialsContainer {
+  if (typeof navigator === "undefined" || !navigator.credentials) {
+    throw new Error("This browser does not support passkeys");
+  }
+  return navigator.credentials;
+}
+
+function isRegistrationCredential(credential: Credential | null): credential is RegistrationCredential {
+  return isPublicKeyCredential(credential) && "attestationObject" in credential.response && credential.response.attestationObject instanceof ArrayBuffer;
+}
+
+function isAssertionCredential(credential: Credential | null): credential is AssertionCredential {
+  return (
+    isPublicKeyCredential(credential) &&
+    "authenticatorData" in credential.response &&
+    "signature" in credential.response &&
+    credential.response.authenticatorData instanceof ArrayBuffer &&
+    credential.response.signature instanceof ArrayBuffer
+  );
+}
+
+function isPublicKeyCredential(credential: Credential | null): credential is PublicKeyCredential {
+  return (
+    !!credential &&
+    "rawId" in credential &&
+    credential.rawId instanceof ArrayBuffer &&
+    "response" in credential &&
+    typeof credential.response === "object" &&
+    credential.response !== null &&
+    "clientDataJSON" in credential.response &&
+    credential.response.clientDataJSON instanceof ArrayBuffer
+  );
+}
+
+function base64UrlToArrayBuffer(value: string): ArrayBuffer {
+  const normalized = value.replace(/-/g, "+").replace(/_/g, "/");
+  const padded = normalized.padEnd(normalized.length + ((4 - (normalized.length % 4)) % 4), "=");
+  const binary = atob(padded);
+  const bytes = new Uint8Array(binary.length);
+  for (let index = 0; index < binary.length; index += 1) {
+    bytes[index] = binary.charCodeAt(index);
+  }
+  return bytes.buffer;
+}
+
+function arrayBufferToBase64Url(buffer: ArrayBuffer): string {
+  const bytes = new Uint8Array(buffer);
+  let binary = "";
+  for (const byte of bytes) {
+    binary += String.fromCharCode(byte);
+  }
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/u, "");
 }

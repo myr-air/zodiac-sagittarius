@@ -4064,6 +4064,45 @@ span.member-state-pill {
     width: 100%;
   }
 
+  .account-grid,
+  .account-dashboard,
+  .account-two-col {
+    grid-template-columns: 1fr;
+  }
+
+  .account-create-trip {
+    grid-row: auto;
+  }
+
+  .account-panel-heading,
+  .account-profile-row,
+  .account-trip-row,
+  .account-device-row,
+  .account-claim-banner {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .account-panel-heading > div,
+  .account-profile-row > div,
+  .account-trip-row > div,
+  .account-device-row > div,
+  .account-claim-banner > div {
+    min-width: 0;
+  }
+
+  .account-panel-heading small,
+  .account-profile-row span,
+  .account-trip-row span,
+  .account-device-row span {
+    overflow-wrap: anywhere;
+  }
+
+  .account-trip-row .badge,
+  .account-profile-row .badge {
+    margin-left: 0;
+  }
+
   .members-page .member-controls > * {
     flex: 1 1 150px;
   }

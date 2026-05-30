@@ -13,7 +13,7 @@ use crate::domain::errors::ServiceError;
 use crate::domain::types::{
     AccountMemberClaimResponse, AccountSession, AccountSettings, AccountTripCreateResponse,
     AccountTripStats, AccountTripSummary, EmailLoginStartResponse, OwnerTransferResponse,
-    PasskeyChallengeResponse,
+    PasskeyChallengeResponse, PasskeyLoginStartResponse, PasskeySummary,
 };
 
 #[derive(Debug, Deserialize)]
@@ -62,6 +62,34 @@ pub struct AccountSettingsUpdateRequest {
     pub avatar_color: String,
     pub locale: String,
     pub timezone: String,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PasskeyRegistrationFinishRequest {
+    pub challenge_id: Uuid,
+    pub credential_id: String,
+    pub client_data_json: String,
+    pub attestation_object: String,
+    pub nickname: String,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PasskeyLoginStartRequest {
+    pub email: String,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PasskeyLoginFinishRequest {
+    pub challenge_id: Uuid,
+    pub credential_id: String,
+    pub client_data_json: String,
+    pub authenticator_data: String,
+    pub signature: String,
+    pub trust_device: bool,
+    pub device_label: String,
 }
 
 pub async fn start_email_login(
@@ -220,6 +248,63 @@ pub async fn start_passkey_registration(
     BearerToken(session_token): BearerToken,
 ) -> Result<Json<PasskeyChallengeResponse>, ServiceError> {
     let response = app::account::start_passkey_registration(&state.pool, &session_token).await?;
+
+    Ok(Json(response))
+}
+
+pub async fn finish_passkey_registration(
+    State(state): State<AppState>,
+    BearerToken(session_token): BearerToken,
+    request: Result<Json<PasskeyRegistrationFinishRequest>, JsonRejection>,
+) -> Result<Json<PasskeySummary>, ServiceError> {
+    let Json(request) =
+        request.map_err(|_| ServiceError::InvalidRequest("json payload is invalid"))?;
+    let response = app::account::finish_passkey_registration(
+        &state.pool,
+        &session_token,
+        app::account::PasskeyRegistrationFinishInput {
+            challenge_id: request.challenge_id,
+            credential_id: request.credential_id,
+            client_data_json: request.client_data_json,
+            attestation_object: request.attestation_object,
+            nickname: request.nickname,
+        },
+    )
+    .await?;
+
+    Ok(Json(response))
+}
+
+pub async fn start_passkey_login(
+    State(state): State<AppState>,
+    request: Result<Json<PasskeyLoginStartRequest>, JsonRejection>,
+) -> Result<Json<PasskeyLoginStartResponse>, ServiceError> {
+    let Json(request) =
+        request.map_err(|_| ServiceError::InvalidRequest("json payload is invalid"))?;
+    let response = app::account::start_passkey_login(&state.pool, &request.email).await?;
+
+    Ok(Json(response))
+}
+
+pub async fn finish_passkey_login(
+    State(state): State<AppState>,
+    request: Result<Json<PasskeyLoginFinishRequest>, JsonRejection>,
+) -> Result<Json<AccountSession>, ServiceError> {
+    let Json(request) =
+        request.map_err(|_| ServiceError::InvalidRequest("json payload is invalid"))?;
+    let response = app::account::finish_passkey_login(
+        &state.pool,
+        app::account::PasskeyLoginFinishInput {
+            challenge_id: request.challenge_id,
+            credential_id: request.credential_id,
+            client_data_json: request.client_data_json,
+            authenticator_data: request.authenticator_data,
+            signature: request.signature,
+            trust_device: request.trust_device,
+            device_label: request.device_label,
+        },
+    )
+    .await?;
 
     Ok(Json(response))
 }

@@ -60,6 +60,7 @@ pub struct AccountSession {
     pub user_id: Uuid,
     pub session_token: String,
     pub kind: AccountSessionKind,
+    pub trusted_device_id: Option<Uuid>,
     pub created_at: String,
     pub expires_at: String,
 }
@@ -115,6 +116,21 @@ pub struct PasskeyChallengeResponse {
     pub challenge_id: Uuid,
     pub challenge: String,
     pub expires_at: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PasskeyCredentialDescriptor {
+    pub credential_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PasskeyLoginStartResponse {
+    pub challenge_id: Uuid,
+    pub challenge: String,
+    pub expires_at: String,
+    pub allow_credentials: Vec<PasskeyCredentialDescriptor>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -369,6 +385,7 @@ mod account_type_tests {
             user_id,
             session_token: "session-token".to_string(),
             kind: AccountSessionKind::Trusted,
+            trusted_device_id: Some(credential_id),
             created_at: "2026-05-30T00:00:00Z".to_string(),
             expires_at: "2026-05-31T00:00:00Z".to_string(),
         };
@@ -376,6 +393,7 @@ mod account_type_tests {
         assert_eq!(value["userId"], user_id.to_string());
         assert_eq!(value["sessionToken"], "session-token");
         assert_eq!(value["kind"], "trusted");
+        assert_eq!(value["trustedDeviceId"], credential_id.to_string());
         assert_eq!(value["createdAt"], "2026-05-30T00:00:00Z");
         assert_eq!(value["expiresAt"], "2026-05-31T00:00:00Z");
 

@@ -59,7 +59,8 @@ export function SagittariusApp({ initialView = "overview", requireJoin = false, 
     future: [],
   }));
   const [participantSession, setParticipantSession] = useState<TripParticipantSession | null>(null);
-  const [accountSession, setAccountSession] = useState<AccountSession | null>(() => loadPersistedAccountSession());
+  const [accountSession, setAccountSession] = useState<AccountSession | null>(null);
+  const [accountSessionLoaded, setAccountSessionLoaded] = useState(false);
   const [accountClaimState, setAccountClaimState] = useState<{ status: "idle" | "saving"; message: string | null }>({ status: "idle", message: null });
   const [suggestions, setSuggestions] = useState<Suggestion[]>(() => tripFixtureSuggestions.map((suggestion) => ({ ...suggestion })));
   const [tasks, setTasks] = useState<TripTask[]>(() => tripFixtureTasks.map((task) => ({ ...task })));
@@ -100,7 +101,7 @@ export function SagittariusApp({ initialView = "overview", requireJoin = false, 
     const timeout = window.setTimeout(() => {
       const persistedTrip = loadPersistedTrip();
       const nextTrip = persistedTrip ?? seedTrip;
-      const persistedSession = loadPersistedParticipantSession(requireJoin, nextTrip);
+      const persistedSession = loadPersistedParticipantSession(requireJoin, nextTrip, isApiMode);
 
       if (persistedTrip) {
         setTripState({ trip: persistedTrip, past: [], future: [] });
@@ -112,11 +113,21 @@ export function SagittariusApp({ initialView = "overview", requireJoin = false, 
     }, 0);
 
     return () => window.clearTimeout(timeout);
-  }, [requireJoin]);
+  }, [isApiMode, requireJoin]);
 
   useEffect(() => {
+    const timeout = window.setTimeout(() => {
+      setAccountSession(loadPersistedAccountSession());
+      setAccountSessionLoaded(true);
+    }, 0);
+
+    return () => window.clearTimeout(timeout);
+  }, []);
+
+  useEffect(() => {
+    if (!accountSessionLoaded) return;
     persistAccountSession(accountSession);
-  }, [accountSession]);
+  }, [accountSession, accountSessionLoaded]);
 
   useEffect(() => {
     if (!isApiMode || !participantSession || !resolvedApiClient) return undefined;
@@ -826,7 +837,7 @@ function loadPersistedTrip(): Trip | null {
   }
 }
 
-function loadPersistedParticipantSession(requireJoin: boolean, trip: Trip): TripParticipantSession | null {
+function loadPersistedParticipantSession(requireJoin: boolean, trip: Trip, isApiMode = false): TripParticipantSession | null {
   const storage = getBrowserLocalStorage();
   if (!requireJoin || !storage) return null;
   const rawSession = storage.getItem(tripParticipantSessionStorageKey);
@@ -834,7 +845,7 @@ function loadPersistedParticipantSession(requireJoin: boolean, trip: Trip): Trip
   try {
     const parsedSession = JSON.parse(rawSession) as TripParticipantSession;
     /* v8 ignore next */
-    return findSessionMember(trip, parsedSession) ? parsedSession : null;
+    return isApiMode || findSessionMember(trip, parsedSession) ? parsedSession : null;
   } catch {
     storage.removeItem(tripParticipantSessionStorageKey);
     return null;

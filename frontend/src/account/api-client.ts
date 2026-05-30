@@ -16,6 +16,7 @@ export interface AccountSession {
   userId: string;
   sessionToken: string;
   kind: AccountSessionKind;
+  trustedDeviceId: string | null;
   createdAt: string;
   expiresAt: string;
 }
@@ -66,6 +67,16 @@ export interface EmailLoginStartResponse {
   expiresAt: string;
 }
 
+export interface PasskeyChallengeResponse {
+  challengeId: string;
+  challenge: string;
+  expiresAt: string;
+}
+
+export interface PasskeyLoginStartResponse extends PasskeyChallengeResponse {
+  allowCredentials: Array<{ credentialId: string }>;
+}
+
 export interface AccountTripCreateRequest {
   name: string;
   destinationLabel: string;
@@ -102,6 +113,16 @@ export interface AccountApiClientOptions {
 
 export interface AccountApiClient {
   startEmailLogin(email: string): Promise<EmailLoginStartResponse>;
+  startPasskeyLogin(email: string): Promise<PasskeyLoginStartResponse>;
+  finishPasskeyLogin(input: {
+    challengeId: string;
+    credentialId: string;
+    clientDataJson: string;
+    authenticatorData: string;
+    signature: string;
+    trustDevice: boolean;
+    deviceLabel: string;
+  }): Promise<AccountSession>;
   finishEmailLogin(input: {
     challengeId: string;
     code: string;
@@ -115,7 +136,14 @@ export interface AccountApiClient {
   createTrip(sessionToken: string, request: AccountTripCreateRequest): Promise<AccountTripCreateResponse>;
   claimMember(sessionToken: string, tripId: string, memberId: string, memberSessionToken: string): Promise<void>;
   transferOwner(sessionToken: string, tripId: string, targetMemberId: string): Promise<OwnerTransferResponse>;
-  startPasskeyRegistration(sessionToken: string): Promise<{ challengeId: string; challenge: string; expiresAt: string }>;
+  startPasskeyRegistration(sessionToken: string): Promise<PasskeyChallengeResponse>;
+  finishPasskeyRegistration(sessionToken: string, input: {
+    challengeId: string;
+    credentialId: string;
+    clientDataJson: string;
+    attestationObject: string;
+    nickname: string;
+  }): Promise<PasskeySummary>;
   revokeTrustedDevice(sessionToken: string, trustedDeviceId: string): Promise<void>;
   logout(sessionToken: string): Promise<void>;
 }
@@ -150,6 +178,18 @@ export function createAccountApiClient(options: AccountApiClientOptions = {}): A
       return request<EmailLoginStartResponse>("/v1/account/email-login/start", {
         method: "POST",
         body: JSON.stringify({ email }),
+      });
+    },
+    startPasskeyLogin(email) {
+      return request<PasskeyLoginStartResponse>("/v1/account/passkeys/login/start", {
+        method: "POST",
+        body: JSON.stringify({ email }),
+      });
+    },
+    finishPasskeyLogin(input) {
+      return request<AccountSession>("/v1/account/passkeys/login/finish", {
+        method: "POST",
+        body: JSON.stringify(input),
       });
     },
     finishEmailLogin(input) {
@@ -205,9 +245,16 @@ export function createAccountApiClient(options: AccountApiClientOptions = {}): A
       });
     },
     startPasskeyRegistration(sessionToken) {
-      return request<{ challengeId: string; challenge: string; expiresAt: string }>("/v1/account/passkeys/register/start", {
+      return request<PasskeyChallengeResponse>("/v1/account/passkeys/register/start", {
         method: "POST",
         headers: authHeaders(sessionToken),
+      });
+    },
+    finishPasskeyRegistration(sessionToken, input) {
+      return request<PasskeySummary>("/v1/account/passkeys/register/finish", {
+        method: "POST",
+        headers: authHeaders(sessionToken),
+        body: JSON.stringify(input),
       });
     },
     async revokeTrustedDevice(sessionToken, trustedDeviceId) {

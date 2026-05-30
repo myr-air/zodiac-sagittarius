@@ -100,7 +100,7 @@ describe("Sagittarius cockpit UI", () => {
     expect(screen.queryByLabelText(/ตั้งรหัสสำหรับ Explorer Friend/i)).not.toBeInTheDocument();
   });
 
-  it("does not restore temporary or expired account sessions from local storage", () => {
+  it("does not restore temporary or expired account sessions from local storage", async () => {
     const storage = installLocalStorageStub();
     storage.setItem(
       "sagittarius-account-session",
@@ -116,7 +116,7 @@ describe("Sagittarius cockpit UI", () => {
     const { unmount } = render(<SagittariusApp requireJoin />);
 
     expect(screen.getByRole("tab", { name: /Temp access/i })).toHaveAttribute("aria-selected", "true");
-    expect(storage.getItem("sagittarius-account-session")).toBeNull();
+    await waitFor(() => expect(storage.getItem("sagittarius-account-session")).toBeNull());
 
     unmount();
     storage.setItem(
@@ -133,7 +133,7 @@ describe("Sagittarius cockpit UI", () => {
     render(<SagittariusApp requireJoin />);
 
     expect(screen.getByRole("tab", { name: /Temp access/i })).toHaveAttribute("aria-selected", "true");
-    expect(storage.getItem("sagittarius-account-session")).toBeNull();
+    await waitFor(() => expect(storage.getItem("sagittarius-account-session")).toBeNull());
   });
 
   it("creates overview tasks through the API client after backend login", async () => {
@@ -272,6 +272,40 @@ describe("Sagittarius cockpit UI", () => {
 
     await waitFor(() => expect(apiClient.loadTrip).toHaveBeenCalledWith(apiTrip.id, "persisted-session-token"));
     expect(await screen.findByRole("heading", { name: /Persisted API Trip/i })).toBeInTheDocument();
+  });
+
+  it("hydrates a persisted API session before the backend trip is in local state", async () => {
+    installLocalStorageStub();
+    const apiTrip = {
+      ...seedTrip,
+      id: "018fc9c4-9cf0-7384-93ee-9bdc9c8d8f11",
+      name: "Account Created API Trip",
+      joinId: "ACCOUNT-CREATED",
+      joinPasswordHash: "",
+      members: [{
+        ...seedTrip.members[0],
+        id: "018fc9c4-9cf0-7384-93ee-9bdc9c8d8f22",
+        tripId: "018fc9c4-9cf0-7384-93ee-9bdc9c8d8f11",
+        displayName: "Account Owner",
+        claimPasswordHash: null,
+      }],
+    };
+    window.localStorage.setItem(
+      tripParticipantSessionStorageKey,
+      JSON.stringify({
+        tripId: apiTrip.id,
+        memberId: apiTrip.members[0].id,
+        sessionToken: "account-created-session-token",
+        createdAt: "2026-05-29T00:00:00.000Z",
+        expiresAt: "2026-06-28T00:00:00.000Z",
+      }),
+    );
+    const apiClient = createApiClientForTrip(apiTrip);
+
+    render(<SagittariusApp requireJoin dataSource="api" initialView="members" apiClient={apiClient} />);
+
+    await waitFor(() => expect(apiClient.loadTrip).toHaveBeenCalledWith(apiTrip.id, "account-created-session-token"));
+    expect(await screen.findByRole("heading", { name: /Account Created API Trip/i })).toBeInTheDocument();
   });
 
   it("ignores late API hydration when the app unmounts during a persisted session load", async () => {

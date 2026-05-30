@@ -1,11 +1,18 @@
 mod support;
 
 use axum::body::{Body, to_bytes};
+use base64::{Engine as _, engine::general_purpose::URL_SAFE_NO_PAD};
 use http::{Method, Request, Response, StatusCode, header};
+use p256::ecdsa::signature::Signer;
+use p256::ecdsa::{Signature, SigningKey};
 use serde::de::DeserializeOwned;
 use serde_json::{Value, json};
+use sha2::{Digest, Sha256};
 use tower::ServiceExt;
 use uuid::Uuid;
+
+const PASSKEY_ORIGIN: &str = "http://localhost:5180";
+const PASSKEY_RP_ID: &str = "localhost";
 
 async fn post_json(app: axum::Router, uri: &str, body: Value) -> Response<axum::body::Body> {
     app.oneshot(
@@ -72,6 +79,25 @@ async fn post_with_auth(
     }
 
     app.oneshot(request.body(Body::empty()).unwrap())
+        .await
+        .unwrap()
+}
+
+async fn post_json_with_auth(
+    app: axum::Router,
+    uri: &str,
+    authorization: Option<&str>,
+    body: Value,
+) -> Response<axum::body::Body> {
+    let mut request = Request::builder()
+        .method(Method::POST)
+        .uri(uri)
+        .header(header::CONTENT_TYPE, "application/json");
+    if let Some(authorization) = authorization {
+        request = request.header(header::AUTHORIZATION, authorization);
+    }
+
+    app.oneshot(request.body(Body::from(body.to_string())).unwrap())
         .await
         .unwrap()
 }
@@ -533,6 +559,7 @@ async fn email_login_finish_creates_user_and_temporary_session(pool: sqlx::PgPoo
 
     assert_eq!(finish_status, StatusCode::OK);
     assert_eq!(session["kind"], "temporary");
+    assert_eq!(session["trustedDeviceId"], Value::Null);
     let user_id = Uuid::parse_str(session["userId"].as_str().unwrap()).unwrap();
     let session_token = session["sessionToken"].as_str().unwrap();
     assert!(!session_token.is_empty());
@@ -730,6 +757,7 @@ async fn trusted_login_creates_trusted_device_and_session(pool: sqlx::PgPool) {
     .await
     .unwrap();
     assert_eq!(device.1, "Aom laptop");
+    assert_eq!(session["trustedDeviceId"], device.0.to_string());
 
     let session_kind: String = sqlx::query_scalar(
         "select kind
@@ -1725,4 +1753,1002 @@ async fn multiple_passkey_registration_starts_create_unique_challenges(pool: sql
         .await
         .unwrap();
     assert_eq!(challenge_count, 2);
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn passkey_registration_finish_stores_credential_and_login_verifies_signature(
+    pool: sqlx::PgPool,
+) {
+    let session = login_account(&pool, "passkey@example.com", false, "").await;
+    let token = session["sessionToken"].as_str().unwrap();
+    let authorization = format!("Bearer {token}");
+    let signing_key = SigningKey::from_slice(&[7; 32]).unwrap();
+    let credential_id_bytes = b"credential-passkey-aom";
+    let (start_status, start) = response_json(
+        post_with_auth(
+            support::app(pool.clone()),
+            "/v1/account/passkeys/register/start",
+            Some(&authorization),
+        )
+        .await,
+    )
+    .await;
+    assert_eq!(start_status, StatusCode::OK);
+    let challenge_id = start["challengeId"].as_str().unwrap();
+    let challenge = start["challenge"].as_str().unwrap();
+    let registration = registration_finish_payload(
+        challenge_id,
+        challenge,
+        &signing_key,
+        credential_id_bytes,
+        "Aom MacBook",
+    );
+
+    let (finish_status, finish_body) = response_json(
+        post_json_with_auth(
+            support::app(pool.clone()),
+            "/v1/account/passkeys/register/finish",
+            Some(&authorization),
+            registration,
+        )
+        .await,
+    )
+    .await;
+
+    assert_eq!(finish_status, StatusCode::OK);
+    assert_eq!(finish_body["nickname"], "Aom MacBook");
+    assert_eq!(finish_body["lastUsedAt"], Value::Null);
+
+    let (settings_status, settings_body) = response_json(
+        get_with_auth(
+            support::app(pool.clone()),
+            "/v1/account/settings",
+            Some(&authorization),
+        )
+        .await,
+    )
+    .await;
+    assert_eq!(settings_status, StatusCode::OK);
+    assert_eq!(settings_body["passkeys"].as_array().unwrap().len(), 1);
+    assert_eq!(settings_body["passkeys"][0]["nickname"], "Aom MacBook");
+
+    let (login_start_status, login_start) = response_json(
+        post_json(
+            support::app(pool.clone()),
+            "/v1/account/passkeys/login/start",
+            json!({"email": "passkey@example.com"}),
+        )
+        .await,
+    )
+    .await;
+    assert_eq!(login_start_status, StatusCode::OK);
+    assert_eq!(
+        login_start["allowCredentials"][0]["credentialId"],
+        URL_SAFE_NO_PAD.encode(credential_id_bytes)
+    );
+
+    let login_finish = passkey_login_finish_payload(
+        login_start["challengeId"].as_str().unwrap(),
+        login_start["challenge"].as_str().unwrap(),
+        &signing_key,
+        credential_id_bytes,
+        1,
+        true,
+        "Passkey laptop",
+    );
+    let (login_finish_status, login_session) = response_json(
+        post_json(
+            support::app(pool.clone()),
+            "/v1/account/passkeys/login/finish",
+            login_finish,
+        )
+        .await,
+    )
+    .await;
+    assert_eq!(login_finish_status, StatusCode::OK);
+    assert_eq!(login_session["kind"], "trusted");
+    assert_eq!(login_session["userId"], session["userId"]);
+
+    let row: (i64, Option<time::OffsetDateTime>) = sqlx::query_as(
+        "select sign_count, last_used_at
+         from webauthn_credentials
+         where credential_id = $1",
+    )
+    .bind(URL_SAFE_NO_PAD.encode(credential_id_bytes))
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(row.0, 1);
+    assert!(row.1.is_some());
+
+    let (_, replay_start) = response_json(
+        post_json(
+            support::app(pool.clone()),
+            "/v1/account/passkeys/login/start",
+            json!({"email": "passkey@example.com"}),
+        )
+        .await,
+    )
+    .await;
+    let replay_finish = passkey_login_finish_payload(
+        replay_start["challengeId"].as_str().unwrap(),
+        replay_start["challenge"].as_str().unwrap(),
+        &signing_key,
+        credential_id_bytes,
+        1,
+        false,
+        "",
+    );
+    let (replay_status, replay_body) = response_json(
+        post_json(
+            support::app(pool.clone()),
+            "/v1/account/passkeys/login/finish",
+            replay_finish,
+        )
+        .await,
+    )
+    .await;
+    assert_eq!(replay_status, StatusCode::UNAUTHORIZED);
+    assert_eq!(replay_body["code"], "unauthenticated");
+
+    let (_, duplicate_start) = response_json(
+        post_with_auth(
+            support::app(pool.clone()),
+            "/v1/account/passkeys/register/start",
+            Some(&authorization),
+        )
+        .await,
+    )
+    .await;
+    let duplicate_registration = registration_finish_payload(
+        duplicate_start["challengeId"].as_str().unwrap(),
+        duplicate_start["challenge"].as_str().unwrap(),
+        &signing_key,
+        credential_id_bytes,
+        "Aom Duplicate",
+    );
+    let (duplicate_status, duplicate_body) = response_json(
+        post_json_with_auth(
+            support::app(pool.clone()),
+            "/v1/account/passkeys/register/finish",
+            Some(&authorization),
+            duplicate_registration,
+        )
+        .await,
+    )
+    .await;
+    assert_eq!(duplicate_status, StatusCode::BAD_REQUEST);
+    assert_eq!(duplicate_body["code"], "invalid_request");
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn passkey_registration_and_login_reject_invalid_proofs(pool: sqlx::PgPool) {
+    let session = login_account(&pool, "passkey-invalid@example.com", false, "").await;
+    let authorization = format!("Bearer {}", session["sessionToken"].as_str().unwrap());
+    let signing_key = SigningKey::from_slice(&[8; 32]).unwrap();
+    let credential_id_bytes = b"credential-invalid-aom";
+    let (_, start) = response_json(
+        post_with_auth(
+            support::app(pool.clone()),
+            "/v1/account/passkeys/register/start",
+            Some(&authorization),
+        )
+        .await,
+    )
+    .await;
+
+    let malformed_finish = response_json(
+        post_json_with_auth(
+            support::app(pool.clone()),
+            "/v1/account/passkeys/register/finish",
+            Some(&authorization),
+            json!({"challengeId": start["challengeId"]}),
+        )
+        .await,
+    )
+    .await;
+    assert_eq!(malformed_finish.0, StatusCode::BAD_REQUEST);
+    assert_eq!(malformed_finish.1["code"], "invalid_request");
+
+    let missing_origin_payload = registration_finish_payload(
+        start["challengeId"].as_str().unwrap(),
+        start["challenge"].as_str().unwrap(),
+        &signing_key,
+        credential_id_bytes,
+        "Aom MacBook",
+    )
+    .with_client_data_json(encoded_client_data_json_without_origin(
+        "webauthn.create",
+        start["challenge"].as_str().unwrap(),
+    ));
+    let (missing_origin_status, missing_origin_body) = response_json(
+        post_json_with_auth(
+            support::app(pool.clone()),
+            "/v1/account/passkeys/register/finish",
+            Some(&authorization),
+            missing_origin_payload,
+        )
+        .await,
+    )
+    .await;
+    assert_eq!(missing_origin_status, StatusCode::BAD_REQUEST);
+    assert_eq!(missing_origin_body["code"], "invalid_request");
+
+    let wrong_origin_payload = registration_finish_payload(
+        start["challengeId"].as_str().unwrap(),
+        start["challenge"].as_str().unwrap(),
+        &signing_key,
+        credential_id_bytes,
+        "Aom MacBook",
+    )
+    .with_client_data_json(encoded_client_data_json_with_origin(
+        "webauthn.create",
+        start["challenge"].as_str().unwrap(),
+        "https://evil.example.test",
+    ));
+    let (wrong_origin_status, wrong_origin_body) = response_json(
+        post_json_with_auth(
+            support::app(pool.clone()),
+            "/v1/account/passkeys/register/finish",
+            Some(&authorization),
+            wrong_origin_payload,
+        )
+        .await,
+    )
+    .await;
+    assert_eq!(wrong_origin_status, StatusCode::UNAUTHORIZED);
+    assert_eq!(wrong_origin_body["code"], "unauthenticated");
+
+    let missing_attested_flag_payload = registration_finish_payload(
+        start["challengeId"].as_str().unwrap(),
+        start["challenge"].as_str().unwrap(),
+        &signing_key,
+        credential_id_bytes,
+        "Aom MacBook",
+    )
+    .with_attestation_object(attestation_object_with_auth_data(login_authenticator_data(
+        0,
+    )));
+    let (missing_attested_flag_status, missing_attested_flag_body) = response_json(
+        post_json_with_auth(
+            support::app(pool.clone()),
+            "/v1/account/passkeys/register/finish",
+            Some(&authorization),
+            missing_attested_flag_payload,
+        )
+        .await,
+    )
+    .await;
+    assert_eq!(missing_attested_flag_status, StatusCode::UNAUTHORIZED);
+    assert_eq!(missing_attested_flag_body["code"], "unauthenticated");
+
+    let missing_user_verified_payload = registration_finish_payload(
+        start["challengeId"].as_str().unwrap(),
+        start["challenge"].as_str().unwrap(),
+        &signing_key,
+        credential_id_bytes,
+        "Aom MacBook",
+    )
+    .with_attestation_object(attestation_object_with_auth_data({
+        let mut auth_data = registration_authenticator_data(&signing_key, credential_id_bytes);
+        auth_data[32] = 0x41;
+        auth_data
+    }));
+    let (missing_user_verified_status, missing_user_verified_body) = response_json(
+        post_json_with_auth(
+            support::app(pool.clone()),
+            "/v1/account/passkeys/register/finish",
+            Some(&authorization),
+            missing_user_verified_payload,
+        )
+        .await,
+    )
+    .await;
+    assert_eq!(missing_user_verified_status, StatusCode::UNAUTHORIZED);
+    assert_eq!(missing_user_verified_body["code"], "unauthenticated");
+
+    let non_map_attestation_payload = registration_finish_payload(
+        start["challengeId"].as_str().unwrap(),
+        start["challenge"].as_str().unwrap(),
+        &signing_key,
+        credential_id_bytes,
+        "Aom MacBook",
+    )
+    .with_attestation_object(serde_cbor::to_vec(&serde_cbor::Value::Bool(false)).unwrap());
+    let (non_map_attestation_status, non_map_attestation_body) = response_json(
+        post_json_with_auth(
+            support::app(pool.clone()),
+            "/v1/account/passkeys/register/finish",
+            Some(&authorization),
+            non_map_attestation_payload,
+        )
+        .await,
+    )
+    .await;
+    assert_eq!(non_map_attestation_status, StatusCode::BAD_REQUEST);
+    assert_eq!(non_map_attestation_body["code"], "invalid_request");
+
+    let auth_data_wrong_type_payload = registration_finish_payload(
+        start["challengeId"].as_str().unwrap(),
+        start["challenge"].as_str().unwrap(),
+        &signing_key,
+        credential_id_bytes,
+        "Aom MacBook",
+    )
+    .with_attestation_object(attestation_object_with_auth_data_value(
+        serde_cbor::Value::Integer(1),
+    ));
+    let (auth_data_wrong_type_status, auth_data_wrong_type_body) = response_json(
+        post_json_with_auth(
+            support::app(pool.clone()),
+            "/v1/account/passkeys/register/finish",
+            Some(&authorization),
+            auth_data_wrong_type_payload,
+        )
+        .await,
+    )
+    .await;
+    assert_eq!(auth_data_wrong_type_status, StatusCode::BAD_REQUEST);
+    assert_eq!(auth_data_wrong_type_body["code"], "invalid_request");
+
+    let short_auth_data_payload = registration_finish_payload(
+        start["challengeId"].as_str().unwrap(),
+        start["challenge"].as_str().unwrap(),
+        &signing_key,
+        credential_id_bytes,
+        "Aom MacBook",
+    )
+    .with_attestation_object(attestation_object_with_auth_data(vec![0; 36]));
+    let (short_auth_data_status, short_auth_data_body) = response_json(
+        post_json_with_auth(
+            support::app(pool.clone()),
+            "/v1/account/passkeys/register/finish",
+            Some(&authorization),
+            short_auth_data_payload,
+        )
+        .await,
+    )
+    .await;
+    assert_eq!(short_auth_data_status, StatusCode::BAD_REQUEST);
+    assert_eq!(short_auth_data_body["code"], "invalid_request");
+
+    let short_registration_payload = registration_finish_payload(
+        start["challengeId"].as_str().unwrap(),
+        start["challenge"].as_str().unwrap(),
+        &signing_key,
+        credential_id_bytes,
+        "Aom MacBook",
+    )
+    .with_attestation_object(attestation_object_with_auth_data({
+        let mut auth_data = login_authenticator_data(0);
+        auth_data[32] = 0x45;
+        auth_data
+    }));
+    let (short_registration_status, short_registration_body) = response_json(
+        post_json_with_auth(
+            support::app(pool.clone()),
+            "/v1/account/passkeys/register/finish",
+            Some(&authorization),
+            short_registration_payload,
+        )
+        .await,
+    )
+    .await;
+    assert_eq!(short_registration_status, StatusCode::BAD_REQUEST);
+    assert_eq!(short_registration_body["code"], "invalid_request");
+
+    let missing_public_key_payload = registration_finish_payload(
+        start["challengeId"].as_str().unwrap(),
+        start["challenge"].as_str().unwrap(),
+        &signing_key,
+        credential_id_bytes,
+        "Aom MacBook",
+    )
+    .with_attestation_object(attestation_object_with_auth_data({
+        let mut auth_data = login_authenticator_data(0);
+        auth_data[32] = 0x45;
+        auth_data.extend_from_slice(&[0; 16]);
+        auth_data.extend_from_slice(&(credential_id_bytes.len() as u16).to_be_bytes());
+        auth_data.extend_from_slice(credential_id_bytes);
+        auth_data
+    }));
+    let (missing_public_key_status, missing_public_key_body) = response_json(
+        post_json_with_auth(
+            support::app(pool.clone()),
+            "/v1/account/passkeys/register/finish",
+            Some(&authorization),
+            missing_public_key_payload,
+        )
+        .await,
+    )
+    .await;
+    assert_eq!(missing_public_key_status, StatusCode::BAD_REQUEST);
+    assert_eq!(missing_public_key_body["code"], "invalid_request");
+
+    let mismatched_credential_payload = registration_finish_payload(
+        start["challengeId"].as_str().unwrap(),
+        start["challenge"].as_str().unwrap(),
+        &signing_key,
+        credential_id_bytes,
+        "Aom MacBook",
+    )
+    .with_attestation_object(attestation_object_with_auth_data(
+        registration_authenticator_data(&signing_key, b"different-credential"),
+    ));
+    let (mismatched_credential_status, mismatched_credential_body) = response_json(
+        post_json_with_auth(
+            support::app(pool.clone()),
+            "/v1/account/passkeys/register/finish",
+            Some(&authorization),
+            mismatched_credential_payload,
+        )
+        .await,
+    )
+    .await;
+    assert_eq!(mismatched_credential_status, StatusCode::UNAUTHORIZED);
+    assert_eq!(mismatched_credential_body["code"], "unauthenticated");
+
+    let non_map_cose_payload = registration_finish_payload(
+        start["challengeId"].as_str().unwrap(),
+        start["challenge"].as_str().unwrap(),
+        &signing_key,
+        credential_id_bytes,
+        "Aom MacBook",
+    )
+    .with_attestation_object(attestation_object_with_auth_data(
+        registration_authenticator_data_with_cose(
+            credential_id_bytes,
+            &serde_cbor::to_vec(&serde_cbor::Value::Bool(false)).unwrap(),
+        ),
+    ));
+    let (non_map_cose_status, non_map_cose_body) = response_json(
+        post_json_with_auth(
+            support::app(pool.clone()),
+            "/v1/account/passkeys/register/finish",
+            Some(&authorization),
+            non_map_cose_payload,
+        )
+        .await,
+    )
+    .await;
+    assert_eq!(non_map_cose_status, StatusCode::BAD_REQUEST);
+    assert_eq!(non_map_cose_body["code"], "invalid_request");
+
+    let wrong_cose_value_type_payload = registration_finish_payload(
+        start["challengeId"].as_str().unwrap(),
+        start["challenge"].as_str().unwrap(),
+        &signing_key,
+        credential_id_bytes,
+        "Aom MacBook",
+    )
+    .with_attestation_object(attestation_object_with_auth_data(
+        registration_authenticator_data_with_cose(
+            credential_id_bytes,
+            &cose_key_with_wrong_value_types(&signing_key),
+        ),
+    ));
+    let (wrong_cose_value_type_status, wrong_cose_value_type_body) = response_json(
+        post_json_with_auth(
+            support::app(pool.clone()),
+            "/v1/account/passkeys/register/finish",
+            Some(&authorization),
+            wrong_cose_value_type_payload,
+        )
+        .await,
+    )
+    .await;
+    assert_eq!(wrong_cose_value_type_status, StatusCode::BAD_REQUEST);
+    assert_eq!(wrong_cose_value_type_body["code"], "invalid_request");
+
+    let wrong_cose_metadata_payload = registration_finish_payload(
+        start["challengeId"].as_str().unwrap(),
+        start["challenge"].as_str().unwrap(),
+        &signing_key,
+        credential_id_bytes,
+        "Aom MacBook",
+    )
+    .with_attestation_object(attestation_object_with_auth_data(
+        registration_authenticator_data_with_cose(
+            credential_id_bytes,
+            &cose_key_with_metadata(&signing_key, 2, -8, 1),
+        ),
+    ));
+    let (wrong_cose_status, wrong_cose_body) = response_json(
+        post_json_with_auth(
+            support::app(pool.clone()),
+            "/v1/account/passkeys/register/finish",
+            Some(&authorization),
+            wrong_cose_metadata_payload,
+        )
+        .await,
+    )
+    .await;
+    assert_eq!(wrong_cose_status, StatusCode::BAD_REQUEST);
+    assert_eq!(wrong_cose_body["code"], "invalid_request");
+
+    let wrong_challenge_payload = registration_finish_payload(
+        start["challengeId"].as_str().unwrap(),
+        "wrong-challenge",
+        &signing_key,
+        credential_id_bytes,
+        "Aom MacBook",
+    );
+    let (wrong_status, wrong_body) = response_json(
+        post_json_with_auth(
+            support::app(pool.clone()),
+            "/v1/account/passkeys/register/finish",
+            Some(&authorization),
+            wrong_challenge_payload,
+        )
+        .await,
+    )
+    .await;
+    assert_eq!(wrong_status, StatusCode::UNAUTHORIZED);
+    assert_eq!(wrong_body["code"], "unauthenticated");
+
+    let valid_payload = registration_finish_payload(
+        start["challengeId"].as_str().unwrap(),
+        start["challenge"].as_str().unwrap(),
+        &signing_key,
+        credential_id_bytes,
+        "Aom MacBook",
+    );
+    let (valid_status, _) = response_json(
+        post_json_with_auth(
+            support::app(pool.clone()),
+            "/v1/account/passkeys/register/finish",
+            Some(&authorization),
+            valid_payload,
+        )
+        .await,
+    )
+    .await;
+    assert_eq!(valid_status, StatusCode::OK);
+
+    let missing_email = response_json(
+        post_json(
+            support::app(pool.clone()),
+            "/v1/account/passkeys/login/start",
+            json!({"email": "missing@example.com"}),
+        )
+        .await,
+    )
+    .await;
+    assert_eq!(missing_email.0, StatusCode::UNAUTHORIZED);
+    assert_eq!(missing_email.1["code"], "unauthenticated");
+
+    let (_, login_start) = response_json(
+        post_json(
+            support::app(pool.clone()),
+            "/v1/account/passkeys/login/start",
+            json!({"email": "passkey-invalid@example.com"}),
+        )
+        .await,
+    )
+    .await;
+    let short_login_auth_data_payload = passkey_login_finish_payload_with_authenticator_data(
+        login_start["challengeId"].as_str().unwrap(),
+        login_start["challenge"].as_str().unwrap(),
+        &signing_key,
+        credential_id_bytes,
+        vec![0; 36],
+        false,
+        "",
+    );
+    let (short_login_auth_data_status, short_login_auth_data_body) = response_json(
+        post_json(
+            support::app(pool.clone()),
+            "/v1/account/passkeys/login/finish",
+            short_login_auth_data_payload,
+        )
+        .await,
+    )
+    .await;
+    assert_eq!(short_login_auth_data_status, StatusCode::BAD_REQUEST);
+    assert_eq!(short_login_auth_data_body["code"], "invalid_request");
+
+    let wrong_rp_hash_payload = passkey_login_finish_payload_with_authenticator_data(
+        login_start["challengeId"].as_str().unwrap(),
+        login_start["challenge"].as_str().unwrap(),
+        &signing_key,
+        credential_id_bytes,
+        login_authenticator_data_with_rp_id(1, "127.0.0.1"),
+        false,
+        "",
+    );
+    let (wrong_rp_hash_status, wrong_rp_hash_body) = response_json(
+        post_json(
+            support::app(pool.clone()),
+            "/v1/account/passkeys/login/finish",
+            wrong_rp_hash_payload,
+        )
+        .await,
+    )
+    .await;
+    assert_eq!(wrong_rp_hash_status, StatusCode::UNAUTHORIZED);
+    assert_eq!(wrong_rp_hash_body["code"], "unauthenticated");
+
+    let missing_user_present_payload = passkey_login_finish_payload_with_authenticator_data(
+        login_start["challengeId"].as_str().unwrap(),
+        login_start["challenge"].as_str().unwrap(),
+        &signing_key,
+        credential_id_bytes,
+        login_authenticator_data_with_flags(1, 0),
+        false,
+        "",
+    );
+    let (missing_user_present_status, missing_user_present_body) = response_json(
+        post_json(
+            support::app(pool.clone()),
+            "/v1/account/passkeys/login/finish",
+            missing_user_present_payload,
+        )
+        .await,
+    )
+    .await;
+    assert_eq!(missing_user_present_status, StatusCode::UNAUTHORIZED);
+    assert_eq!(missing_user_present_body["code"], "unauthenticated");
+
+    let missing_user_verified_payload = passkey_login_finish_payload_with_authenticator_data(
+        login_start["challengeId"].as_str().unwrap(),
+        login_start["challenge"].as_str().unwrap(),
+        &signing_key,
+        credential_id_bytes,
+        login_authenticator_data_with_flags(1, 0x01),
+        false,
+        "",
+    );
+    let (missing_user_verified_status, missing_user_verified_body) = response_json(
+        post_json(
+            support::app(pool.clone()),
+            "/v1/account/passkeys/login/finish",
+            missing_user_verified_payload,
+        )
+        .await,
+    )
+    .await;
+    assert_eq!(missing_user_verified_status, StatusCode::UNAUTHORIZED);
+    assert_eq!(missing_user_verified_body["code"], "unauthenticated");
+
+    let wrong_signing_key = SigningKey::from_slice(&[9; 32]).unwrap();
+    let wrong_signature_payload = passkey_login_finish_payload(
+        login_start["challengeId"].as_str().unwrap(),
+        login_start["challenge"].as_str().unwrap(),
+        &wrong_signing_key,
+        credential_id_bytes,
+        1,
+        false,
+        "",
+    );
+    let (wrong_signature_status, wrong_signature_body) = response_json(
+        post_json(
+            support::app(pool),
+            "/v1/account/passkeys/login/finish",
+            wrong_signature_payload,
+        )
+        .await,
+    )
+    .await;
+    assert_eq!(wrong_signature_status, StatusCode::UNAUTHORIZED);
+    assert_eq!(wrong_signature_body["code"], "unauthenticated");
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn passkey_login_start_for_account_without_passkeys_is_unauthenticated(pool: sqlx::PgPool) {
+    let _session = login_account(&pool, "no-passkeys@example.com", false, "").await;
+
+    let response = response_json(
+        post_json(
+            support::app(pool),
+            "/v1/account/passkeys/login/start",
+            json!({"email": "no-passkeys@example.com"}),
+        )
+        .await,
+    )
+    .await;
+
+    assert_eq!(response.0, StatusCode::UNAUTHORIZED);
+    assert_eq!(response.1["code"], "unauthenticated");
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn passkey_login_finish_rejects_user_disabled_after_challenge_start(pool: sqlx::PgPool) {
+    let session = login_account(&pool, "passkey-disabled@example.com", false, "").await;
+    let authorization = format!("Bearer {}", session["sessionToken"].as_str().unwrap());
+    let signing_key = SigningKey::from_slice(&[10; 32]).unwrap();
+    let credential_id_bytes = b"credential-disabled-aom";
+    let (_, start) = response_json(
+        post_with_auth(
+            support::app(pool.clone()),
+            "/v1/account/passkeys/register/start",
+            Some(&authorization),
+        )
+        .await,
+    )
+    .await;
+    let valid_payload = registration_finish_payload(
+        start["challengeId"].as_str().unwrap(),
+        start["challenge"].as_str().unwrap(),
+        &signing_key,
+        credential_id_bytes,
+        "Aom MacBook",
+    );
+    let (valid_status, _) = response_json(
+        post_json_with_auth(
+            support::app(pool.clone()),
+            "/v1/account/passkeys/register/finish",
+            Some(&authorization),
+            valid_payload,
+        )
+        .await,
+    )
+    .await;
+    assert_eq!(valid_status, StatusCode::OK);
+
+    let (_, login_start) = response_json(
+        post_json(
+            support::app(pool.clone()),
+            "/v1/account/passkeys/login/start",
+            json!({"email": "passkey-disabled@example.com"}),
+        )
+        .await,
+    )
+    .await;
+    sqlx::query("update users set disabled_at = now() where id = $1")
+        .bind(Uuid::parse_str(session["userId"].as_str().unwrap()).unwrap())
+        .execute(&pool)
+        .await
+        .unwrap();
+
+    let login_finish = passkey_login_finish_payload(
+        login_start["challengeId"].as_str().unwrap(),
+        login_start["challenge"].as_str().unwrap(),
+        &signing_key,
+        credential_id_bytes,
+        1,
+        false,
+        "",
+    );
+    let (finish_status, finish_body) = response_json(
+        post_json(
+            support::app(pool),
+            "/v1/account/passkeys/login/finish",
+            login_finish,
+        )
+        .await,
+    )
+    .await;
+    assert_eq!(finish_status, StatusCode::UNAUTHORIZED);
+    assert_eq!(finish_body["code"], "unauthenticated");
+}
+
+fn registration_finish_payload(
+    challenge_id: &str,
+    challenge: &str,
+    signing_key: &SigningKey,
+    credential_id: &[u8],
+    nickname: &str,
+) -> Value {
+    let credential_id_encoded = URL_SAFE_NO_PAD.encode(credential_id);
+    json!({
+        "challengeId": challenge_id,
+        "credentialId": credential_id_encoded,
+        "clientDataJson": encoded_client_data_json("webauthn.create", challenge),
+        "attestationObject": URL_SAFE_NO_PAD.encode(attestation_object(signing_key, credential_id)),
+        "nickname": nickname
+    })
+}
+
+fn passkey_login_finish_payload(
+    challenge_id: &str,
+    challenge: &str,
+    signing_key: &SigningKey,
+    credential_id: &[u8],
+    sign_count: u32,
+    trust_device: bool,
+    device_label: &str,
+) -> Value {
+    passkey_login_finish_payload_with_authenticator_data(
+        challenge_id,
+        challenge,
+        signing_key,
+        credential_id,
+        login_authenticator_data(sign_count),
+        trust_device,
+        device_label,
+    )
+}
+
+fn passkey_login_finish_payload_with_authenticator_data(
+    challenge_id: &str,
+    challenge: &str,
+    signing_key: &SigningKey,
+    credential_id: &[u8],
+    authenticator_data: Vec<u8>,
+    trust_device: bool,
+    device_label: &str,
+) -> Value {
+    let client_data_json = encoded_client_data_json("webauthn.get", challenge);
+    let client_data_hash = Sha256::digest(URL_SAFE_NO_PAD.decode(&client_data_json).unwrap());
+    let mut signed_data = Vec::with_capacity(authenticator_data.len() + client_data_hash.len());
+    signed_data.extend_from_slice(&authenticator_data);
+    signed_data.extend_from_slice(&client_data_hash);
+    let signature: Signature = signing_key.sign(&signed_data);
+
+    json!({
+        "challengeId": challenge_id,
+        "credentialId": URL_SAFE_NO_PAD.encode(credential_id),
+        "clientDataJson": client_data_json,
+        "authenticatorData": URL_SAFE_NO_PAD.encode(authenticator_data),
+        "signature": URL_SAFE_NO_PAD.encode(signature.to_der().as_bytes()),
+        "trustDevice": trust_device,
+        "deviceLabel": device_label
+    })
+}
+
+fn encoded_client_data_json(credential_type: &str, challenge: &str) -> String {
+    encoded_client_data_json_with_origin(credential_type, challenge, PASSKEY_ORIGIN)
+}
+
+fn encoded_client_data_json_with_origin(
+    credential_type: &str,
+    challenge: &str,
+    origin: &str,
+) -> String {
+    URL_SAFE_NO_PAD.encode(
+        json!({
+            "type": credential_type,
+            "challenge": challenge,
+            "origin": origin
+        })
+        .to_string(),
+    )
+}
+
+fn encoded_client_data_json_without_origin(credential_type: &str, challenge: &str) -> String {
+    URL_SAFE_NO_PAD.encode(
+        json!({
+            "type": credential_type,
+            "challenge": challenge
+        })
+        .to_string(),
+    )
+}
+
+fn attestation_object(signing_key: &SigningKey, credential_id: &[u8]) -> Vec<u8> {
+    attestation_object_with_auth_data(registration_authenticator_data(signing_key, credential_id))
+}
+
+fn attestation_object_with_auth_data(auth_data: Vec<u8>) -> Vec<u8> {
+    attestation_object_with_auth_data_value(serde_cbor::Value::Bytes(auth_data))
+}
+
+fn attestation_object_with_auth_data_value(auth_data: serde_cbor::Value) -> Vec<u8> {
+    let mut map = std::collections::BTreeMap::new();
+    map.insert(
+        serde_cbor::Value::Text("fmt".to_string()),
+        serde_cbor::Value::Text("none".to_string()),
+    );
+    map.insert(
+        serde_cbor::Value::Text("attStmt".to_string()),
+        serde_cbor::Value::Map(std::collections::BTreeMap::new()),
+    );
+    map.insert(serde_cbor::Value::Text("authData".to_string()), auth_data);
+    serde_cbor::to_vec(&serde_cbor::Value::Map(map)).unwrap()
+}
+
+fn registration_authenticator_data(signing_key: &SigningKey, credential_id: &[u8]) -> Vec<u8> {
+    registration_authenticator_data_with_cose(credential_id, &cose_key(signing_key))
+}
+
+fn registration_authenticator_data_with_cose(credential_id: &[u8], cose_key: &[u8]) -> Vec<u8> {
+    let mut auth_data = login_authenticator_data(0);
+    auth_data[32] = 0x45;
+    auth_data.extend_from_slice(&[0; 16]);
+    auth_data.extend_from_slice(&(credential_id.len() as u16).to_be_bytes());
+    auth_data.extend_from_slice(credential_id);
+    auth_data.extend_from_slice(cose_key);
+    auth_data
+}
+
+fn login_authenticator_data(sign_count: u32) -> Vec<u8> {
+    login_authenticator_data_with_flags(sign_count, 0x05)
+}
+
+fn login_authenticator_data_with_flags(sign_count: u32, flags: u8) -> Vec<u8> {
+    login_authenticator_data_with_rp_id_and_flags(sign_count, PASSKEY_RP_ID, flags)
+}
+
+fn login_authenticator_data_with_rp_id(sign_count: u32, rp_id: &str) -> Vec<u8> {
+    login_authenticator_data_with_rp_id_and_flags(sign_count, rp_id, 0x05)
+}
+
+fn login_authenticator_data_with_rp_id_and_flags(
+    sign_count: u32,
+    rp_id: &str,
+    flags: u8,
+) -> Vec<u8> {
+    let mut auth_data = vec![0; 37];
+    auth_data[..32].copy_from_slice(&Sha256::digest(rp_id.as_bytes()));
+    auth_data[32] = flags;
+    auth_data[33..37].copy_from_slice(&sign_count.to_be_bytes());
+    auth_data
+}
+
+fn cose_key(signing_key: &SigningKey) -> Vec<u8> {
+    cose_key_with_metadata(signing_key, 2, -7, 1)
+}
+
+fn cose_key_with_metadata(
+    signing_key: &SigningKey,
+    key_type: i128,
+    alg: i128,
+    curve: i128,
+) -> Vec<u8> {
+    let encoded_point = signing_key.verifying_key().to_encoded_point(false);
+    let mut map = std::collections::BTreeMap::new();
+    map.insert(
+        serde_cbor::Value::Integer(1),
+        serde_cbor::Value::Integer(key_type),
+    );
+    map.insert(
+        serde_cbor::Value::Integer(3),
+        serde_cbor::Value::Integer(alg),
+    );
+    map.insert(
+        serde_cbor::Value::Integer(-1),
+        serde_cbor::Value::Integer(curve),
+    );
+    map.insert(
+        serde_cbor::Value::Integer(-2),
+        serde_cbor::Value::Bytes(encoded_point.x().unwrap().to_vec()),
+    );
+    map.insert(
+        serde_cbor::Value::Integer(-3),
+        serde_cbor::Value::Bytes(encoded_point.y().unwrap().to_vec()),
+    );
+    serde_cbor::to_vec(&serde_cbor::Value::Map(map)).unwrap()
+}
+
+fn cose_key_with_wrong_value_types(signing_key: &SigningKey) -> Vec<u8> {
+    let encoded_point = signing_key.verifying_key().to_encoded_point(false);
+    let mut map = std::collections::BTreeMap::new();
+    map.insert(
+        serde_cbor::Value::Integer(1),
+        serde_cbor::Value::Bytes(vec![2]),
+    );
+    map.insert(
+        serde_cbor::Value::Integer(3),
+        serde_cbor::Value::Integer(-7),
+    );
+    map.insert(
+        serde_cbor::Value::Integer(-1),
+        serde_cbor::Value::Integer(1),
+    );
+    map.insert(
+        serde_cbor::Value::Integer(-2),
+        serde_cbor::Value::Integer(2),
+    );
+    map.insert(
+        serde_cbor::Value::Integer(-3),
+        serde_cbor::Value::Bytes(encoded_point.y().unwrap().to_vec()),
+    );
+    serde_cbor::to_vec(&serde_cbor::Value::Map(map)).unwrap()
+}
+
+trait PasskeyPayloadExt {
+    fn with_client_data_json(self, client_data_json: String) -> Self;
+    fn with_attestation_object(self, attestation_object: Vec<u8>) -> Self;
+}
+
+impl PasskeyPayloadExt for Value {
+    fn with_client_data_json(mut self, client_data_json: String) -> Self {
+        self["clientDataJson"] = json!(client_data_json);
+        self
+    }
+
+    fn with_attestation_object(mut self, attestation_object: Vec<u8>) -> Self {
+        self["attestationObject"] = json!(URL_SAFE_NO_PAD.encode(attestation_object));
+        self
+    }
 }
