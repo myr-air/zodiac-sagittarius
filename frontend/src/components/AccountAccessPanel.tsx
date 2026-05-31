@@ -16,6 +16,9 @@ import type { Trip, TripParticipantSession } from "@/src/trip/types";
 import { Badge, Button } from "./ui";
 import { Icon } from "./icons";
 import { TripJoinGate } from "./TripJoinGate";
+import { LanguageSwitch } from "@/src/i18n/LanguageSwitch";
+import { useI18n } from "@/src/i18n/I18nProvider";
+import type { Messages } from "@/src/i18n/messages";
 
 interface AccountAccessPanelProps {
   accessMode?: "combined" | "account-login" | "account-register" | "trip-access";
@@ -56,6 +59,7 @@ export function AccountAccessPanel({
   onTripChange,
   trip,
 }: AccountAccessPanelProps) {
+  const { t } = useI18n();
   const forcedMode = accessMode === "trip-access" ? "temp" : accessMode === "combined" ? null : "account";
   const [selectedMode, setSelectedMode] = useState<AccessMode>(() => (accountSession ? "account" : "temp"));
   const mode = forcedMode ?? (accountSession ? "account" : selectedMode);
@@ -85,13 +89,13 @@ export function AccountAccessPanel({
       })
       .catch((caught) => {
         if (cancelled) return;
-        setError(errorMessage(caught, "โหลดข้อมูล account ไม่สำเร็จ"));
+        setError(errorMessage(caught, t.access.messages.accountLoadFailed));
       });
 
     return () => {
       cancelled = true;
     };
-  }, [accountClient, accountSession]);
+  }, [accountClient, accountSession, t.access.messages.accountLoadFailed]);
 
   async function refreshAccount(sessionToken: string) {
     const [nextSettings, nextTrips, nextStats] = await Promise.all([
@@ -105,21 +109,22 @@ export function AccountAccessPanel({
   }
 
   return (
-    <main className="account-page" aria-label={mainLabel(accessMode)}>
+    <main className="account-page" aria-label={mainLabel(accessMode, t.access.mainLabels)}>
       <section className="account-shell">
         <div className="account-hero">
           <div className="join-mark account-hero-mark" aria-hidden="true">
             <Icon name="route" />
           </div>
           <div>
-            <p className="join-eyebrow">Sagittarius access</p>
-            <h1>{heroTitle(accessMode)}</h1>
-            <p>{heroDetail(accessMode)}</p>
+            <p className="join-eyebrow">{t.access.eyebrow}</p>
+            <h1>{heroTitle(accessMode, t.access.titles)}</h1>
+            <p>{heroDetail(accessMode, t.access.details)}</p>
+            <LanguageSwitch className="access-language-switch" />
           </div>
         </div>
 
         {accessMode === "combined" ? (
-          <div className="account-mode-tabs" role="tablist" aria-label="Access mode">
+          <div className="account-mode-tabs" role="tablist" aria-label={t.access.tabs.label}>
             <button
               type="button"
               role="tab"
@@ -128,7 +133,7 @@ export function AccountAccessPanel({
               onClick={() => setSelectedMode("account")}
             >
               <Icon name="users" />
-              Account
+              {t.access.tabs.account}
             </button>
             <button
               type="button"
@@ -138,7 +143,7 @@ export function AccountAccessPanel({
               onClick={() => setSelectedMode("temp")}
             >
               <Icon name="clock" />
-              Temp access
+              {t.access.tabs.temp}
             </button>
           </div>
         ) : null}
@@ -177,7 +182,7 @@ export function AccountAccessPanel({
             onLogout={async () => {
               await accountClient.logout(accountSession.sessionToken);
               onAccountSessionChange(null);
-              setMessage("ออกจาก account แล้ว");
+              setMessage(t.access.messages.loggedOut);
             }}
             onSessionCleared={() => onAccountSessionChange(null)}
             onMessage={setMessage}
@@ -189,7 +194,7 @@ export function AccountAccessPanel({
             accountClient={accountClient}
             onLoggedIn={(session) => {
               onAccountSessionChange(session);
-              setMessage(session.kind === "trusted" ? "เข้าสู่ระบบแบบ trusted device แล้ว" : "เข้าสู่ระบบแบบ temporary แล้ว");
+              setMessage(session.kind === "trusted" ? t.access.messages.trustedLogin : t.access.messages.temporaryLogin);
             }}
             onError={setError}
           />
@@ -199,25 +204,25 @@ export function AccountAccessPanel({
   );
 }
 
-function mainLabel(accessMode: AccountAccessPanelProps["accessMode"]): string {
-  if (accessMode === "account-login") return "Account login";
-  if (accessMode === "account-register") return "Account register";
-  if (accessMode === "trip-access") return "Trip access";
-  return "Account access";
+function mainLabel(accessMode: AccountAccessPanelProps["accessMode"], labels: Messages["access"]["mainLabels"]): string {
+  if (accessMode === "account-login") return labels.accountLogin;
+  if (accessMode === "account-register") return labels.accountRegister;
+  if (accessMode === "trip-access") return labels.tripAccess;
+  return labels.combined;
 }
 
-function heroTitle(accessMode: AccountAccessPanelProps["accessMode"]): string {
-  if (accessMode === "account-login") return "เข้าสู่ account";
-  if (accessMode === "account-register") return "สร้าง account";
-  if (accessMode === "trip-access") return "เข้า trip แบบ temp access";
-  return "จัดการ trip ด้วย account หรือเข้าแบบ temp";
+function heroTitle(accessMode: AccountAccessPanelProps["accessMode"], titles: Messages["access"]["titles"]): string {
+  if (accessMode === "account-login") return titles.accountLogin;
+  if (accessMode === "account-register") return titles.accountRegister;
+  if (accessMode === "trip-access") return titles.tripAccess;
+  return titles.combined;
 }
 
-function heroDetail(accessMode: AccountAccessPanelProps["accessMode"]): string {
-  if (accessMode === "account-login") return "ใช้ email code หรือ passkey เพื่อกลับเข้า account ที่ผูกกับ trip ของคุณ";
-  if (accessMode === "account-register") return "สร้าง account ด้วย email code เพื่อเก็บประวัติ trip สถิติ และสิทธิ owner";
-  if (accessMode === "trip-access") return "กรอก Trip ID และ password เพื่อเข้า trip เดิมโดยไม่ต้องใช้ account";
-  return "Account จะเก็บประวัติ สถิติ และสิทธิ owner ส่วน temp access ยังใช้เข้าทริปเดิมได้ทันที";
+function heroDetail(accessMode: AccountAccessPanelProps["accessMode"], details: Messages["access"]["details"]): string {
+  if (accessMode === "account-login") return details.accountLogin;
+  if (accessMode === "account-register") return details.accountRegister;
+  if (accessMode === "trip-access") return details.tripAccess;
+  return details.combined;
 }
 
 function EmailLoginPanel({

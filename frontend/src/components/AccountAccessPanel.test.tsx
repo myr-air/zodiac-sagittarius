@@ -1,7 +1,7 @@
-import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { act, fireEvent, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { useState } from "react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { type ReactElement, useState } from "react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type {
   AccountApiClient,
   AccountSession,
@@ -13,9 +13,25 @@ import type {
 } from "@/src/account/api-client";
 import { seedTrip } from "@/src/trip/seed";
 import type { TripParticipantSession } from "@/src/trip/types";
+import { I18nProvider } from "@/src/i18n/I18nProvider";
+import { renderWithI18n } from "@/src/i18n/test-utils";
 import { AccountAccessPanel } from "./AccountAccessPanel";
 
+function render(ui: ReactElement) {
+  const result = renderWithI18n(ui);
+  const originalRerender = result.rerender;
+
+  return {
+    ...result,
+    rerender: (nextUi: ReactElement) => originalRerender(<I18nProvider>{nextUi}</I18nProvider>),
+  };
+}
+
 describe("AccountAccessPanel", () => {
+  beforeEach(() => {
+    installLocalStorageStub();
+  });
+
   afterEach(() => {
     vi.restoreAllMocks();
     vi.useRealTimers();
@@ -36,11 +52,11 @@ describe("AccountAccessPanel", () => {
     );
 
     expect(screen.getByRole("tab", { name: /Temp access/i })).toHaveClass("account-tab--active");
-    expect(screen.getByRole("heading", { name: /เข้าห้อง trip/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /Enter trip room/i })).toBeInTheDocument();
 
     await user.click(screen.getByRole("tab", { name: /^Account$/i }));
 
-    expect(screen.getByRole("heading", { name: /จัดการ trip ด้วย account/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /Manage trips with an account/i })).toBeInTheDocument();
     expect(screen.getByLabelText(/อีเมล/i)).toHaveAttribute("autocomplete", "email");
     expect(screen.queryByLabelText(/รหัสยืนยัน/i)).not.toBeInTheDocument();
     expect(screen.getByText(/ยืนยันรหัสได้หลังจากส่ง email code/i)).toBeInTheDocument();
@@ -162,7 +178,7 @@ describe("AccountAccessPanel", () => {
 
     expect(screen.queryByRole("tablist", { name: /Access mode/i })).not.toBeInTheDocument();
     expect(screen.getByRole("main", { name: /Account login/i })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: /เข้าสู่ account/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /Sign in to your account/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /ส่งรหัส login/i })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /สมัครใช้งาน/i })).toHaveAttribute("href", "/register");
     expect(screen.queryByLabelText(/Trip ID/i)).not.toBeInTheDocument();
@@ -183,7 +199,7 @@ describe("AccountAccessPanel", () => {
 
     expect(screen.queryByRole("tablist", { name: /Access mode/i })).not.toBeInTheDocument();
     expect(screen.getByRole("main", { name: /Account register/i })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: /สร้าง account/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /Create an account/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /ส่งรหัส register/i })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /เข้าสู่ระบบ/i })).toHaveAttribute("href", "/login");
     expect(screen.queryByLabelText(/Trip ID/i)).not.toBeInTheDocument();
@@ -204,7 +220,7 @@ describe("AccountAccessPanel", () => {
 
     expect(screen.queryByRole("tablist", { name: /Access mode/i })).not.toBeInTheDocument();
     expect(screen.getByRole("main", { name: /Trip access/i })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: /เข้าห้อง trip/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /Enter trip room/i })).toBeInTheDocument();
     expect(screen.queryByRole("link", { name: /เปิด demo trip/i })).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/Email/i)).not.toBeInTheDocument();
   });
@@ -422,6 +438,21 @@ describe("AccountAccessPanel", () => {
     expect(await screen.findByText("ยกเลิก trusted device นี้แล้ว กรุณา login ใหม่")).toBeInTheDocument();
   });
 });
+
+function installLocalStorageStub() {
+  const values = new Map<string, string>();
+  const storage = {
+    getItem: (key: string) => values.get(key) ?? null,
+    setItem: (key: string, value: string) => values.set(key, value),
+    removeItem: (key: string) => values.delete(key),
+    clear: () => values.clear(),
+  };
+  Object.defineProperty(window, "localStorage", {
+    configurable: true,
+    value: storage,
+  });
+  return storage;
+}
 
 function AccountHarness({
   accountClient,

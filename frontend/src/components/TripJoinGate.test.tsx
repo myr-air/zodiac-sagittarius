@@ -1,12 +1,38 @@
-import { render, screen, within } from "@testing-library/react";
+import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { TripJoinGate } from "./TripJoinGate";
 import { claimTripParticipant } from "@/src/trip/auth";
 import { TripApiError, type TripApiClient, type TripCockpit } from "@/src/trip/api-client";
+import { renderWithI18n } from "@/src/i18n/test-utils";
 import { seedTrip } from "@/src/trip/seed";
 
+const render = renderWithI18n;
+
 describe("TripJoinGate", () => {
+  beforeEach(() => {
+    installLocalStorageStub();
+  });
+
+  it("renders the join flow in English by default and switches to Thai", async () => {
+    const user = userEvent.setup();
+    renderWithI18n(
+      <TripJoinGate
+        trip={seedTrip}
+        onTripChange={() => {}}
+        onAuthenticated={() => {}}
+      />,
+    );
+
+    expect(screen.getByRole("heading", { name: /Enter trip room/i })).toBeInTheDocument();
+    expect(screen.getByLabelText(/Trip ID/i)).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "ภาษาไทย" }));
+
+    expect(screen.getByRole("heading", { name: /เข้าห้อง trip/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /เข้าห้อง trip/i })).toBeInTheDocument();
+  });
+
   it("prefills the join code from invite route params", () => {
     render(<TripJoinGate trip={seedTrip} initialJoinCode="HK-SZ-2025" onTripChange={vi.fn()} onAuthenticated={vi.fn()} />);
 
@@ -17,30 +43,30 @@ describe("TripJoinGate", () => {
     render(<TripJoinGate trip={seedTrip} onTripChange={vi.fn()} onAuthenticated={vi.fn()} />);
 
     expect(screen.getByLabelText(/Trip ID/i)).toHaveAttribute("autocomplete", "username");
-    expect(screen.getByLabelText(/Trip password/i)).toHaveAttribute("autocomplete", "current-password");
+    expect(screen.getByLabelText(/^Trip password$/i)).toHaveAttribute("autocomplete", "current-password");
   });
 
-  it("uses Thai participant status copy and lets users reveal password fields", async () => {
+  it("uses English participant status copy and lets users reveal password fields", async () => {
     const user = userEvent.setup();
     render(<TripJoinGate trip={seedTrip} onTripChange={vi.fn()} onAuthenticated={vi.fn()} />);
 
-    const roomPassword = screen.getByLabelText(/Trip password/i);
+    const roomPassword = screen.getByLabelText(/^Trip password$/i);
     expect(roomPassword).toHaveAttribute("type", "password");
-    await user.click(screen.getByRole("button", { name: /แสดงรหัสห้อง trip/i }));
+    await user.click(screen.getByRole("button", { name: /Show trip password/i }));
     expect(roomPassword).toHaveAttribute("type", "text");
 
     await enterTripRoom(user);
 
-    expect(screen.getAllByText("ยังไม่ได้ตั้งรหัส").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Ready").length).toBeGreaterThan(0);
     expect(screen.queryByText("First entry")).not.toBeInTheDocument();
     expect(screen.queryByText("Claimed")).not.toBeInTheDocument();
     expect(screen.queryByText("Disabled")).not.toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: /Explorer Friend/i }));
-    expect(screen.getByText(/รหัสนี้เป็นรหัสส่วนตัว/i)).toBeInTheDocument();
-    const participantPassword = screen.getByLabelText(/ตั้งรหัสสำหรับ Explorer Friend/i);
+    expect(screen.getByText(/This is your personal password/i)).toBeInTheDocument();
+    const participantPassword = screen.getByLabelText(/Set password for Explorer Friend/i);
     expect(participantPassword).toHaveAttribute("type", "password");
-    await user.click(screen.getByRole("button", { name: /แสดงรหัสสมาชิก/i }));
+    await user.click(screen.getByRole("button", { name: /Show participant password/i }));
     expect(participantPassword).toHaveAttribute("type", "text");
   });
 
@@ -61,17 +87,17 @@ describe("TripJoinGate", () => {
     render(<TripJoinGate trip={seedTrip} onTripChange={vi.fn()} onAuthenticated={vi.fn()} />);
 
     await user.type(screen.getByLabelText(/Trip ID/i), "DEMO-TRIP");
-    await user.type(screen.getByLabelText(/Trip password/i), "wrong");
-    await user.click(screen.getByRole("button", { name: /เข้าห้อง trip/i }));
+    await user.type(screen.getByLabelText(/^Trip password$/i), "wrong");
+    await user.click(screen.getByRole("button", { name: /Enter trip/i }));
 
-    expect(screen.getByRole("alert")).toHaveTextContent(/Trip ID หรือ password ไม่ถูกต้อง/i);
-    expect(screen.queryByRole("heading", { name: /เลือกตัวตน/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("alert")).toHaveTextContent(/Trip ID or password is incorrect/i);
+    expect(screen.queryByRole("heading", { name: /Choose identity/i })).not.toBeInTheDocument();
 
-    await user.clear(screen.getByLabelText(/Trip password/i));
-    await user.type(screen.getByLabelText(/Trip password/i), "demo-trip-pass");
-    await user.click(screen.getByRole("button", { name: /เข้าห้อง trip/i }));
+    await user.clear(screen.getByLabelText(/^Trip password$/i));
+    await user.type(screen.getByLabelText(/^Trip password$/i), "demo-trip-pass");
+    await user.click(screen.getByRole("button", { name: /Enter trip/i }));
 
-    expect(screen.getByRole("heading", { name: /เลือกตัวตน/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /Choose identity/i })).toBeInTheDocument();
   });
 
   it("claims a participant on first entry and returns a local session", async () => {
@@ -82,8 +108,8 @@ describe("TripJoinGate", () => {
 
     await enterTripRoom(user);
     await user.click(screen.getByRole("button", { name: /Explorer Friend/i }));
-    await user.type(screen.getByLabelText(/ตั้งรหัสสำหรับ Explorer Friend/i), "traveler-pin");
-    await user.click(screen.getByRole("button", { name: /เริ่มใช้งาน/i }));
+    await user.type(screen.getByLabelText(/Set password for Explorer Friend/i), "traveler-pin");
+    await user.click(screen.getByRole("button", { name: /Start/i }));
 
     expect(onTripChange).toHaveBeenCalled();
     expect(onAuthenticated).toHaveBeenCalledWith(expect.objectContaining({ tripId: seedTrip.id, memberId: "member-nam" }));
@@ -97,10 +123,10 @@ describe("TripJoinGate", () => {
 
     await enterTripRoom(user);
     await user.click(screen.getByRole("button", { name: /Explorer Friend/i }));
-    await user.type(screen.getByLabelText(/ตั้งรหัสสำหรับ Explorer Friend/i), "123");
-    await user.click(screen.getByRole("button", { name: /เริ่มใช้งาน/i }));
+    await user.type(screen.getByLabelText(/Set password for Explorer Friend/i), "123");
+    await user.click(screen.getByRole("button", { name: /Start/i }));
 
-    expect(screen.getByRole("alert")).toHaveTextContent("ตั้งรหัสอย่างน้อย 4 ตัวอักษร");
+    expect(screen.getByRole("alert")).toHaveTextContent("Set a password with at least 4 characters.");
     expect(onTripChange).not.toHaveBeenCalled();
     expect(onAuthenticated).not.toHaveBeenCalled();
   });
@@ -115,15 +141,15 @@ describe("TripJoinGate", () => {
     await user.click(screen.getByRole("button", { name: /Travel Mate/i }));
     const authPanel = screen.getByRole("group", { name: /Travel Mate/i });
 
-    await user.type(within(authPanel).getByLabelText(/รหัสของ Travel Mate/i), "wrong");
-    await user.click(within(authPanel).getByRole("button", { name: /ยืนยันตัวตน/i }));
+    await user.type(within(authPanel).getByLabelText(/Travel Mate's password/i), "wrong");
+    await user.click(within(authPanel).getByRole("button", { name: /Confirm/i }));
 
-    expect(screen.getByRole("alert")).toHaveTextContent(/รหัสไม่ถูกต้อง/i);
+    expect(screen.getByRole("alert")).toHaveTextContent(/Password is incorrect/i);
     expect(onAuthenticated).not.toHaveBeenCalled();
 
-    await user.clear(within(authPanel).getByLabelText(/รหัสของ Travel Mate/i));
-    await user.type(within(authPanel).getByLabelText(/รหัสของ Travel Mate/i), "beam-pin");
-    await user.click(within(authPanel).getByRole("button", { name: /ยืนยันตัวตน/i }));
+    await user.clear(within(authPanel).getByLabelText(/Travel Mate's password/i));
+    await user.type(within(authPanel).getByLabelText(/Travel Mate's password/i), "beam-pin");
+    await user.click(within(authPanel).getByRole("button", { name: /Confirm/i }));
 
     expect(onAuthenticated).toHaveBeenCalledWith(expect.objectContaining({ memberId: "member-beam" }));
   });
@@ -142,7 +168,7 @@ describe("TripJoinGate", () => {
 
     const disabledParticipant = screen.getByRole("button", { name: /Explorer Friend/i });
     expect(disabledParticipant).toBeDisabled();
-    expect(disabledParticipant).toHaveTextContent(/ปิดสิทธิ์/i);
+    expect(disabledParticipant).toHaveTextContent(/Disabled/i);
     (disabledParticipant as HTMLButtonElement).disabled = false;
     await user.click(disabledParticipant);
     expect(screen.queryByRole("group", { name: /Explorer Friend/i })).not.toBeInTheDocument();
@@ -167,10 +193,10 @@ describe("TripJoinGate", () => {
     render(<TripJoinGate apiClient={apiClient} onTripChange={vi.fn()} onAuthenticated={vi.fn()} />);
 
     await user.type(screen.getByLabelText(/Trip ID/i), "HK-SZ-2025");
-    await user.type(screen.getByLabelText(/Trip password/i), "bad");
-    await user.click(screen.getByRole("button", { name: /เข้าห้อง trip/i }));
+    await user.type(screen.getByLabelText(/^Trip password$/i), "bad");
+    await user.click(screen.getByRole("button", { name: /Enter trip/i }));
 
-    expect(screen.getByRole("alert")).toHaveTextContent("Trip ID หรือ password ไม่ถูกต้อง");
+    expect(screen.getByRole("alert")).toHaveTextContent("Trip ID or password is incorrect.");
   });
 
   it("does not offer a separate demo access link", () => {
@@ -200,11 +226,11 @@ describe("TripJoinGate", () => {
     );
 
     await user.type(screen.getByLabelText(/Trip ID/i), "DEMO-TRIP");
-    await user.type(screen.getByLabelText(/Trip password/i), "demo-trip-pass");
-    await user.click(screen.getByRole("button", { name: /เข้าห้อง trip/i }));
+    await user.type(screen.getByLabelText(/^Trip password$/i), "demo-trip-pass");
+    await user.click(screen.getByRole("button", { name: /Enter trip/i }));
 
     expect(apiClient.joinTrip).not.toHaveBeenCalled();
-    expect(screen.getByRole("heading", { name: /เลือกตัวตน/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /Choose identity/i })).toBeInTheDocument();
   });
 
   it("does not show raw numeric API errors to join users", async () => {
@@ -216,10 +242,10 @@ describe("TripJoinGate", () => {
     render(<TripJoinGate apiClient={apiClient} onTripChange={vi.fn()} onAuthenticated={vi.fn()} />);
 
     await user.type(screen.getByLabelText(/Trip ID/i), "HK-SZ-2025");
-    await user.type(screen.getByLabelText(/Trip password/i), "bad");
-    await user.click(screen.getByRole("button", { name: /เข้าห้อง trip/i }));
+    await user.type(screen.getByLabelText(/^Trip password$/i), "bad");
+    await user.click(screen.getByRole("button", { name: /Enter trip/i }));
 
-    expect(screen.getByRole("alert")).toHaveTextContent("ไม่พบห้อง trip นี้ ลองตรวจสอบ Trip ID อีกครั้ง");
+    expect(screen.getByRole("alert")).toHaveTextContent("Trip ID or password is incorrect.");
     expect(screen.getByRole("alert")).not.toHaveTextContent(/^404$/);
   });
 
@@ -299,11 +325,11 @@ describe("TripJoinGate", () => {
     );
 
     await user.type(screen.getByLabelText(/Trip ID/i), "HK-SZ-2025");
-    await user.type(screen.getByLabelText(/Trip password/i), "dim-sum-run");
-    await user.click(screen.getByRole("button", { name: /เข้าห้อง trip/i }));
+    await user.type(screen.getByLabelText(/^Trip password$/i), "dim-sum-run");
+    await user.click(screen.getByRole("button", { name: /Enter trip/i }));
     await user.click(await screen.findByRole("button", { name: /Aom/i }));
-    await user.type(screen.getByLabelText(/รหัสสำหรับ Aom/i), "owner-pin");
-    await user.click(screen.getByRole("button", { name: /เริ่มใช้งาน|ยืนยันตัวตน/i }));
+    await user.type(screen.getByLabelText(/Set password for Aom/i), "owner-pin");
+    await user.click(screen.getByRole("button", { name: /Start|Confirm/i }));
 
     expect(apiClient.joinTrip).toHaveBeenCalledWith({ joinId: "HK-SZ-2025", password: "dim-sum-run" });
     expect(apiClient.claimMember).toHaveBeenCalledWith(cockpit.trip.id, cockpit.trip.members[0].id, "owner-pin", "join-session-token");
@@ -360,16 +386,16 @@ describe("TripJoinGate", () => {
     render(<TripJoinGate apiClient={apiClient} onTripChange={vi.fn()} onAuthenticated={vi.fn()} />);
 
     await user.type(screen.getByLabelText(/Trip ID/i), "HK-SZ-2025");
-    await user.type(screen.getByLabelText(/Trip password/i), "bad");
-    await user.click(screen.getByRole("button", { name: /เข้าห้อง trip/i }));
-    expect(screen.getByRole("alert")).toHaveTextContent("Trip ID หรือ password ไม่ถูกต้อง");
+    await user.type(screen.getByLabelText(/^Trip password$/i), "bad");
+    await user.click(screen.getByRole("button", { name: /Enter trip/i }));
+    expect(screen.getByRole("alert")).toHaveTextContent("Trip ID or password is incorrect.");
 
-    await user.clear(screen.getByLabelText(/Trip password/i));
-    await user.type(screen.getByLabelText(/Trip password/i), "dim-sum-run");
-    await user.click(screen.getByRole("button", { name: /เข้าห้อง trip/i }));
+    await user.clear(screen.getByLabelText(/^Trip password$/i));
+    await user.type(screen.getByLabelText(/^Trip password$/i), "dim-sum-run");
+    await user.click(screen.getByRole("button", { name: /Enter trip/i }));
     await user.click(await screen.findByRole("button", { name: /Demo Traveler/i }));
-    await user.type(screen.getByLabelText(/รหัสสำหรับ Demo Traveler/i), "owner-pin");
-    await user.click(screen.getByRole("button", { name: /เริ่มใช้งาน|ยืนยันตัวตน/i }));
+    await user.type(screen.getByLabelText(/Set password for Demo Traveler/i), "owner-pin");
+    await user.click(screen.getByRole("button", { name: /Start|Confirm/i }));
 
     expect(apiClient.loginMember).toHaveBeenCalledWith(seedTrip.id, "member-aom", "owner-pin", "join-session-token");
     expect(screen.getByRole("alert")).toHaveTextContent("Backend login unavailable");
@@ -420,11 +446,11 @@ describe("TripJoinGate", () => {
     render(<TripJoinGate apiClient={apiClient} onTripChange={vi.fn()} onAuthenticated={vi.fn()} />);
 
     await user.type(screen.getByLabelText(/Trip ID/i), "HK-SZ-2025");
-    await user.type(screen.getByLabelText(/Trip password/i), "dim-sum-run");
-    await user.click(screen.getByRole("button", { name: /เข้าห้อง trip/i }));
+    await user.type(screen.getByLabelText(/^Trip password$/i), "dim-sum-run");
+    await user.click(screen.getByRole("button", { name: /Enter trip/i }));
     await user.click(await screen.findByRole("button", { name: /Demo Traveler/i }));
-    await user.type(screen.getByLabelText(/รหัสสำหรับ Demo Traveler/i), "owner-pin");
-    await user.click(screen.getByRole("button", { name: /เริ่มใช้งาน|ยืนยันตัวตน/i }));
+    await user.type(screen.getByLabelText(/Set password for Demo Traveler/i), "owner-pin");
+    await user.click(screen.getByRole("button", { name: /Start|Confirm/i }));
 
     expect(apiClient.loginMember).not.toHaveBeenCalled();
     expect(screen.getByRole("alert")).toHaveTextContent("Claim service down");
@@ -433,8 +459,23 @@ describe("TripJoinGate", () => {
 
 async function enterTripRoom(user: ReturnType<typeof userEvent.setup>) {
   await user.type(screen.getByLabelText(/Trip ID/i), "DEMO-TRIP");
-  await user.type(screen.getByLabelText(/Trip password/i), "demo-trip-pass");
-  await user.click(screen.getByRole("button", { name: /เข้าห้อง trip/i }));
+  await user.type(screen.getByLabelText(/^Trip password$/i), "demo-trip-pass");
+  await user.click(screen.getByRole("button", { name: /Enter trip/i }));
+}
+
+function installLocalStorageStub() {
+  const values = new Map<string, string>();
+  const storage = {
+    getItem: (key: string) => values.get(key) ?? null,
+    setItem: (key: string, value: string) => values.set(key, value),
+    removeItem: (key: string) => values.delete(key),
+    clear: () => values.clear(),
+  };
+  Object.defineProperty(window, "localStorage", {
+    configurable: true,
+    value: storage,
+  });
+  return storage;
 }
 
 function createApiClient(overrides: Partial<TripApiClient> = {}): TripApiClient {
