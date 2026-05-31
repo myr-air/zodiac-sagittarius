@@ -235,7 +235,7 @@ describe("Sagittarius cockpit UI", () => {
       expect(screen.getByRole("tab", { name: /Temp access/i })).toHaveAttribute("aria-selected", "false");
       expect(screen.getByRole("button", { name: /Start passkey setup/i })).toBeInTheDocument();
       expect(screen.queryByLabelText(/Trip ID/i)).not.toBeInTheDocument();
-      expect(screen.queryByRole("button", { name: /ส่งรหัส login/i })).not.toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: /ส่งรหัส sign-in/i })).not.toBeInTheDocument();
       await waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(3));
     } finally {
       storage.clear();
