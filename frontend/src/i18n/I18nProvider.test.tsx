@@ -1,5 +1,6 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { renderToString } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { I18nProvider, useI18n } from "./I18nProvider";
 import { LanguageSwitch } from "./LanguageSwitch";
@@ -59,11 +60,35 @@ describe("I18nProvider", () => {
       </I18nProvider>,
     );
 
+    await screen.findByText("ภาพรวม");
     expect(screen.getByTestId("locale")).toHaveTextContent("th");
-    expect(screen.getByText("ภาพรวม")).toBeInTheDocument();
   });
 
-  it("falls back to English for an unknown stored locale", () => {
+  it("renders English markup before loading a stored Thai locale after mount", async () => {
+    localStorage.setItem("sagittarius-locale", "th");
+
+    const html = renderToString(
+      <I18nProvider>
+        <Probe />
+      </I18nProvider>,
+    );
+
+    expect(html).toContain("en");
+    expect(html).toContain("Overview");
+    expect(html).not.toContain("ภาพรวม");
+
+    render(
+      <I18nProvider>
+        <Probe />
+      </I18nProvider>,
+    );
+
+    await screen.findByText("ภาพรวม");
+    expect(screen.getByTestId("locale")).toHaveTextContent("th");
+    expect(document.documentElement).toHaveAttribute("lang", "th");
+  });
+
+  it("falls back to English for an unknown stored locale", async () => {
     localStorage.setItem("sagittarius-locale", "fr");
 
     render(
@@ -74,6 +99,7 @@ describe("I18nProvider", () => {
 
     expect(screen.getByTestId("locale")).toHaveTextContent("en");
     expect(screen.getByText("Overview")).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByTestId("locale")).toHaveTextContent("en"));
   });
 
   it("keeps the selected locale in memory when persistence fails", async () => {
