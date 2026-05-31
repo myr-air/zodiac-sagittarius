@@ -610,7 +610,7 @@ function AccountDashboard({
                   <strong>{trip.name}</strong>
                   <span>{trip.destinationLabel} · {trip.startDate} - {trip.endDate}</span>
                 </div>
-                <Badge tone={trip.isOwner ? "success" : "neutral"}>{trip.isOwner ? t.access.dashboard.history.owner : trip.role}</Badge>
+                <Badge tone={trip.isOwner ? "success" : "neutral"}>{trip.isOwner ? t.access.dashboard.history.owner : t.appShell.roles[trip.role]}</Badge>
               </article>
             ))}
           </div>

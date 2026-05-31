@@ -292,6 +292,9 @@ describe("AccountAccessPanel", () => {
     expect(screen.getByText("Trusted PC")).toBeInTheDocument();
     expect(screen.getByText("Profile & settings")).toBeInTheDocument();
     expect(screen.getByText("Seoul Spring")).toBeInTheDocument();
+    expect(screen.getByText("Taipei Shared")).toBeInTheDocument();
+    expect(screen.getByText("Traveler")).toBeInTheDocument();
+    expect(screen.queryByText("traveler")).not.toBeInTheDocument();
 
     const settingsCard = screen.getByText("Profile & settings").closest("section") as HTMLElement;
     fireEvent.change(within(settingsCard).getByLabelText(/Display name/i), { target: { value: "Aom Updated" } });
@@ -504,7 +507,7 @@ function createAccountClient(): AccountApiClient {
         },
       }),
     ),
-    listTrips: vi.fn().mockResolvedValue([accountTrip]),
+    listTrips: vi.fn().mockResolvedValue([accountTrip, accountTravelerTrip]),
     loadStats: vi.fn().mockResolvedValue(accountStats),
     createTrip: vi.fn().mockImplementation((_sessionToken: string, request: AccountTripCreateRequest) =>
       Promise.resolve({
@@ -635,8 +638,21 @@ const accountTrip: AccountTripSummary = {
   isOwner: true,
 };
 
+const accountTravelerTrip: AccountTripSummary = {
+  id: "trip-traveler",
+  name: "Taipei Shared",
+  destinationLabel: "Taipei",
+  startDate: "2026-07-01",
+  endDate: "2026-07-04",
+  role: "traveler",
+  memberId: "member-traveler",
+  ownerMemberId: "member-owner",
+  joinedAt: "2026-05-30T08:00:00.000Z",
+  isOwner: false,
+};
+
 const accountStats: AccountTripStats = {
-  tripsTotal: 1,
+  tripsTotal: 2,
   tripsOwned: 1,
   activeTrips: 1,
   tempClaimsCompleted: 0,
