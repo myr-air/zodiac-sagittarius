@@ -5087,6 +5087,16 @@ span.member-state-pill {
     padding: 0;
   }
 
+  .side-rail .side-rail-language {
+    align-self: center;
+    margin-inline: 0;
+  }
+
+  .side-rail .language-switch-option {
+    min-width: 27px;
+    padding-inline: 0;
+  }
+
   .side-rail .member-card {
     display: flex;
     justify-content: center;
