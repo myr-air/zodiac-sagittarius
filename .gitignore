@@ -24,3 +24,12 @@ frontend/tests/passkey-setup-playwright.spec.ts
 package-lock.json
 tsconfig.tsbuildinfo
 frontend/tsconfig.tsbuildinfo
+
+# Local QA artifacts
+chrome-profile/
+cockpit_overview.png
+itinerary.png
+login_page.png
+map.png
+members.png
+timeline.png
