@@ -39,5 +39,13 @@ export const Owner: Story = {
   },
 };
 
+export const OwnerThai: Story = {
+  args: Owner.args,
+  parameters: { locale: "th" },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole("button", { name: /เลือกจุด Dim Dim Sum/i })).toHaveAttribute("aria-pressed", "true");
+  },
+};
+
 export const Viewer: Story = { args: { ...Owner.args, role: "viewer" } };
 export const Dense: Story = { args: { ...Owner.args, items: buildDenseTripFixture().itineraryItems } };

@@ -43,8 +43,17 @@ export const Owner: Story = {
     ),
   },
   play: async ({ canvas }) => {
-    await expect(canvas.getByRole("link", { name: /ภาพรวม/i })).toHaveAttribute("aria-current", "page");
+    await expect(canvas.getByRole("link", { name: /Overview/i })).toHaveAttribute("aria-current", "page");
   },
 };
 
 export const Mobile: Story = { args: { ...Owner.args, collapsed: true } };
+
+export const OwnerThai: Story = {
+  args: Owner.args,
+  parameters: { locale: "th" },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole("navigation", { name: /เมนูวางแผน Sagittarius/i })).toBeVisible();
+    await expect(canvas.getByRole("link", { name: /ภาพรวม/i })).toHaveAttribute("aria-current", "page");
+  },
+};

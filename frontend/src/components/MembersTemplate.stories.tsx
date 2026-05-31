@@ -28,8 +28,16 @@ export const Owner: Story = {
     onResetMemberClaim: noop,
   },
   play: async ({ canvas, userEvent }) => {
-    await userEvent.selectOptions(canvas.getByLabelText(/สถานะ/i), "pending");
+    await userEvent.selectOptions(canvas.getByRole("combobox", { name: /^Status$/i }), "pending");
     await expect(canvas.getByText("Explorer Friend")).toBeVisible();
+  },
+};
+
+export const OwnerThai: Story = {
+  args: Owner.args,
+  parameters: { locale: "th" },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole("region", { name: /สมาชิกทริป/i })).toBeVisible();
   },
 };
 

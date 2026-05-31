@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import { expect } from "storybook/test";
 import { buildEmptyTripFixture, tripFixture } from "@/src/demo/trip-fixtures";
 import { buildExpenseSummary } from "@/src/trip/expenses";
 import { OverviewPage } from "./OverviewPage";
@@ -32,6 +33,14 @@ export const Traveler: Story = {
     ...Owner.args,
     currentMemberId: tripFixture.currentMembers.traveler.id,
     expenseSummary: tripFixture.expenseSummaries.traveler,
+  },
+};
+
+export const OwnerThai: Story = {
+  args: Owner.args,
+  parameters: { locale: "th" },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole("region", { name: /เช็กลิสต์ของทริป/i })).toBeVisible();
   },
 };
 

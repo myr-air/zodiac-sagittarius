@@ -32,4 +32,13 @@ export const Owner: Story = {
   },
 };
 
+export const OwnerThai: Story = {
+  args: Owner.args,
+  parameters: { locale: "th" },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole("region", { name: /ไทม์ไลน์ทริป/i })).toBeVisible();
+    await expect(canvas.getByRole("button", { name: /เลือกจุดในไทม์ไลน์ Dim Dim Sum/i })).toHaveAttribute("aria-pressed", "true");
+  },
+};
+
 export const Empty: Story = { args: { ...Owner.args, items: buildEmptyTripFixture().itineraryItems, selectedItemId: "" } };

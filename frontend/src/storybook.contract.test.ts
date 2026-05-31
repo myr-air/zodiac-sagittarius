@@ -39,9 +39,19 @@ describe("Storybook template catalog", () => {
 
   it("documents role and density states", () => {
     const stories = storyText();
-    ["Owner", "Traveler", "Viewer", "Empty", "Dense", "Mobile"].forEach((stateName) => {
+    ["Owner", "OwnerThai", "Traveler", "Viewer", "Empty", "Dense", "Mobile"].forEach((stateName) => {
       expect(stories).toContain(`export const ${stateName}`);
     });
+  });
+
+  it("wraps stories in bilingual i18n controls with English as the default", () => {
+    const preview = readFileSync(join(".storybook", "preview.ts"), "utf8");
+    const stories = storyText();
+
+    expect(preview).toContain("I18nProvider");
+    expect(preview).toContain("globalTypes");
+    expect(preview).toContain("defaultValue: defaultLocale");
+    expect(stories).toContain('parameters: { locale: "th" }');
   });
 
   it("documents split account and trip access routes", () => {

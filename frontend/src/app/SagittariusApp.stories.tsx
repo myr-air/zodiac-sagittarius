@@ -96,6 +96,7 @@ export const TripMembersAccess: Story = {
   },
 };
 export const Owner: Story = { args: { initialView: "overview" } };
+export const OwnerThai: Story = { args: { initialView: "overview" }, parameters: { locale: "th" } };
 export const Itinerary: Story = { args: { initialView: "itinerary" } };
 export const Timeline: Story = { args: { initialView: "timeline" } };
 export const Map: Story = { args: { initialView: "map" } };
