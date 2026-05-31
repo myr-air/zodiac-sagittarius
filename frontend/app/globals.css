@@ -1831,6 +1831,44 @@ button:disabled,
   overflow-y: auto;
 }
 
+.language-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--border-subtle, var(--color-border));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface, var(--color-surface)) 88%, transparent);
+}
+
+.language-switch-option {
+  min-width: 38px;
+  min-height: 28px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-muted, var(--color-text-muted));
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.language-switch-option--active {
+  background: var(--text-strong, var(--color-text));
+  color: var(--surface, var(--color-surface));
+}
+
+.side-rail-language {
+  margin: 8px 14px 4px;
+  align-self: flex-start;
+}
+
+.side-rail[data-collapsed="true"] .side-rail-language {
+  align-self: center;
+  margin-inline: 0;
+}
+
 .rail-link {
   position: relative;
   min-height: 40px;

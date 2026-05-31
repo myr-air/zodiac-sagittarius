@@ -26,12 +26,20 @@ interface TripWorkspaceNavItem {
   href: string;
 }
 
-export function tripWorkspaceNavItems(tripId: string): TripWorkspaceNavItem[] {
+export interface TripWorkspaceNavLabels {
+  overview: string;
+  itinerary: string;
+  map: string;
+  timeline: string;
+  members: string;
+}
+
+export function tripWorkspaceNavItems(tripId: string, labels: TripWorkspaceNavLabels): TripWorkspaceNavItem[] {
   return [
-    { id: "overview", label: "ภาพรวม", icon: "home", href: appRoutes.tripOverview(tripId) },
-    { id: "itinerary", label: "แผนการเดินทาง", icon: "calendar", href: appRoutes.tripItinerary(tripId) },
-    { id: "map", label: "แผนที่", icon: "map", href: appRoutes.tripMap(tripId) },
-    { id: "timeline", label: "ไทม์ไลน์", icon: "list", href: appRoutes.tripTimeline(tripId) },
-    { id: "members", label: "สมาชิก", icon: "users", href: appRoutes.tripMembers(tripId) },
+    { id: "overview", label: labels.overview, icon: "home", href: appRoutes.tripOverview(tripId) },
+    { id: "itinerary", label: labels.itinerary, icon: "calendar", href: appRoutes.tripItinerary(tripId) },
+    { id: "map", label: labels.map, icon: "map", href: appRoutes.tripMap(tripId) },
+    { id: "timeline", label: labels.timeline, icon: "list", href: appRoutes.tripTimeline(tripId) },
+    { id: "members", label: labels.members, icon: "users", href: appRoutes.tripMembers(tripId) },
   ];
 }

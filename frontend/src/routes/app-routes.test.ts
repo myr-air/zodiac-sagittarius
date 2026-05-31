@@ -1,6 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { appRoutes, tripWorkspaceNavItems } from "@/src/routes/app-routes";
 
+const labels = {
+  overview: "Overview",
+  itinerary: "Itinerary",
+  map: "Map",
+  timeline: "Timeline",
+  members: "Members",
+};
+
 describe("app route helpers", () => {
   it("builds trip-scoped workspace paths", () => {
     expect(appRoutes.login()).toBe("/login");
@@ -16,7 +24,7 @@ describe("app route helpers", () => {
   });
 
   it("keeps workspace nav tied to a trip id", () => {
-    expect(tripWorkspaceNavItems("trip-1").map((item) => item.href)).toEqual([
+    expect(tripWorkspaceNavItems("trip-1", labels).map((item) => item.href)).toEqual([
       "/trips/trip-1",
       "/trips/trip-1/itinerary",
       "/trips/trip-1/map",
