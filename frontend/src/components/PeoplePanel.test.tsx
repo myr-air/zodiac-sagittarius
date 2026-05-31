@@ -1,9 +1,12 @@
-import { render, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
+import { renderWithI18n } from "@/src/i18n/test-utils";
 import { PeoplePanel } from "./PeoplePanel";
 import { TripMembersPage } from "./TripMembersPage";
 import { seedTrip } from "@/src/trip/seed";
+
+const render = (ui: Parameters<typeof renderWithI18n>[0]) => renderWithI18n(ui, { locale: "th" });
 
 describe("PeoplePanel", () => {
   it("lets organizers reset a claimed participant password", async () => {

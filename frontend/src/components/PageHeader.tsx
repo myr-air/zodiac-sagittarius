@@ -50,6 +50,10 @@ export function PageUserCard({ color, label, name }: PageUserCardProps) {
 export function formatTripRange(startDate: string, endDate: string, locale: Locale = "en"): string {
   const start = new Date(`${startDate}T00:00:00.000Z`);
   const end = new Date(`${endDate}T00:00:00.000Z`);
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+    return `${startDate} – ${endDate}`;
+  }
+
   if (locale === "th") {
     if (start.getFullYear() !== end.getFullYear()) {
       return `${start.getUTCDate()} ${formatThaiMonth(start)} ${start.getUTCFullYear()} – ${end.getUTCDate()} ${formatThaiMonth(end)} ${end.getUTCFullYear()}`;
