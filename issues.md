@@ -12,13 +12,16 @@
 สถานะนี้อัปเดตจากการแก้ใน codebase วันที่ 2026-05-31 และใช้เป็นแหล่งอ้างอิงเร็วว่า issue ในไฟล์นี้ถูกจัดการครบหรือยัง
 
 ### Onboarding & Authentication
+- [x] เพิ่ม password fallback สำหรับ account login/register ด้วย backend route จริง (`/api/v1/auth/password/sessions`) และเก็บ `password_hash`
 - [x] เพิ่มปุ่ม `ส่งรหัสอีกครั้ง` ใน email verification flow
+- [x] เพิ่ม resend countdown/cooldown ให้ผู้ใช้เห็นเวลารอก่อนส่งรหัสซ้ำ
 - [x] เพิ่ม quick switch ระหว่าง `/login` และ `/register`
 - [x] แปล field labels หลักเป็นไทย (`อีเมล`, `รหัสยืนยัน`, `เชื่อถืออุปกรณ์นี้`)
 - [x] จำกัดและจัดกลาง card ของ login/register และ join ให้ขนาดสม่ำเสมอ
 - [x] เพิ่ม password visibility toggle สำหรับ trip password และ member password
 - [x] แปล role/status badge ใน join flow เป็นไทย
 - [x] เพิ่ม helper text อธิบายรหัสส่วนตัวของสมาชิกใน first-entry flow
+- [x] ย้าย/แสดง member password form ต่อจาก member card ที่เลือกทันที เพื่อไม่ให้ซ่อนท้ายลิสต์
 
 ### UX/UI Issues
 - [x] แก้ double-password confusion ด้วย helper text
@@ -39,6 +42,8 @@
 ### User Friction
 - [x] reset invite copy feedback หลัง 2.5 วินาที
 - [x] ทำ budget widget ให้เป็น action เปิด expenses workspace
+- [x] เพิ่ม shortcut ใน side navigation ไปยังค่าใช้จ่าย
+- [x] เพิ่มปุ่ม `เพิ่มค่าใช้จ่ายทั่วไป` สำหรับค่าใช้จ่ายที่ไม่ผูกกับ stop รายชั่วโมง
 - [x] เพิ่ม edit/delete ให้ stop notes ของเจ้าของ note หรือผู้มีสิทธิ์แก้
 - [x] แก้ double-scrollbar trap โดยให้ planning shell เป็น vertical scroll หลัก และ table scroll รับผิดชอบแนวนอน
 - [x] เพิ่ม undo toast หลัง toggle checklist task
@@ -50,11 +55,29 @@
 
 ### Verification
 - [x] Unit/component/contract tests ครอบคลุม regression ที่แก้
+- [x] Backend contract tests ครอบคลุม password fallback register/login, password hash, invalid payload, และ wrong password
+- [x] Frontend tests ครอบคลุม resend cooldown, password fallback, selected member auth placement, expense shortcut, และ side-nav expense entry
 - [x] Frontend verification suite ผ่าน (`lint`, `typecheck`, unit tests, Storybook tests, Next build, Storybook build)
 - [x] Browser smoke QA สำหรับ `/login`, `/register`, `/join` และ itinerary fixture
 - [x] Real backend end-to-end flow ผ่านครบด้วย database + Rust API จริง
+- [x] Migration/bootstrap path ครอบคลุม schema เก่าและ local e2e seed: `db-init`, `db-init-test`, และ `seed_e2e` apply `0004_account_password_auth.sql`
 
 ### Real Backend QA Evidence
+- [x] `rtk make frontend-verify` ผ่านหลังเพิ่ม password fallback, resend countdown, inline member auth form, expense nav/shortcut, overview expense rail, และ mobile rail overflow fix
+  - Unit: `26 passed | 1 skipped`, `223 passed | 1 skipped`
+  - Storybook tests: `17 passed`, `58 passed`
+  - Next production build: passed
+  - Storybook build: passed
+- [x] `rtk make backend-test` ผ่านหลังเพิ่ม password fallback, migration `0004_account_password_auth.sql`, idempotent migration guard, และ `seed_e2e` migration update
+- [x] `rtk make frontend-e2e-local SAGITTARIUS_BIND_ADDR=127.0.0.1:5201` ผ่านหลัง `seed_e2e` apply migration 0004: seed `sagittarius_test`, start Rust API จริง, join trip, hydrate cockpit, create task
+- [x] Direct API QA ยืนยัน password endpoint บน Rust server จริง: `POST /api/v1/auth/password/sessions` ตอบ `200` หลัง seed/migration path ล่าสุด
+- [x] Playwright browser QA ผ่านบน production Next build ที่ฝัง `NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL=http://127.0.0.1:5196`
+  - Frontend: `http://127.0.0.1:5202`
+  - Backend: `http://127.0.0.1:5196`
+  - Flow: `/register` → password register → backend password login check → `/join/HK-SZ-2025` → claim participant → overview → side-nav `ค่าใช้จ่าย` → expense rail → `เพิ่มค่าใช้จ่ายทั่วไป`
+  - Checks: password login API ตอบ `200`, selected member auth panel อยู่ติดกับ card, expense rail visible, `เพิ่มค่าใช้จ่ายทั่วไป` ไม่ปิด rail, mobile viewport `390x844` ไม่มี horizontal document overflow (`scrollWidth=clientWidth=390`, `offenders=[]`)
+  - Console/page/network errors: none
+  - Screenshots: `/tmp/sagittarius-real-browser-desktop-after-fix.png`, `/tmp/sagittarius-real-browser-mobile-after-fix.png`
 - [x] `rtk make frontend-e2e-local SAGITTARIUS_BIND_ADDR=127.0.0.1:5191` ผ่าน: seed `sagittarius_test`, start Rust API จริง, join trip, hydrate cockpit, create task
 - [x] `rtk make backend-test` ผ่าน: backend unit + contract/integration tests ทั้งหมด
 - [x] Browser/Playwright real-backend flow ผ่านบน production Next server ที่ชี้ไป Rust API จริง:

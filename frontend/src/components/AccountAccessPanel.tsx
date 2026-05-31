@@ -232,10 +232,20 @@ function EmailLoginPanel({
   onLoggedIn: (session: AccountSession) => void;
 }) {
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [code, setCode] = useState("");
   const [trustDevice, setTrustDevice] = useState(true);
   const [challenge, setChallenge] = useState<EmailLoginStartResponse | null>(null);
+  const [resendCooldown, setResendCooldown] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (!challenge || resendCooldown <= 0) return undefined;
+    const timer = window.setInterval(() => {
+      setResendCooldown((current) => Math.max(0, current - 1));
+    }, 1000);
+    return () => window.clearInterval(timer);
+  }, [challenge, resendCooldown]);
 
   async function submitEmail(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -247,6 +257,7 @@ function EmailLoginPanel({
     try {
       const nextChallenge = await accountClient.startEmailLogin(email);
       setChallenge(nextChallenge);
+      setResendCooldown(30);
       onError(null);
     } catch (caught) {
       onError(errorMessage(caught, "เริ่ม login ไม่สำเร็จ"));
@@ -269,6 +280,25 @@ function EmailLoginPanel({
       onLoggedIn(session);
     } catch (caught) {
       onError(errorMessage(caught, "รหัสยืนยันไม่ถูกต้อง"));
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  async function signInWithPassword() {
+    setIsSubmitting(true);
+    try {
+      const session = await accountClient.finishPasswordLogin({
+        flow,
+        email,
+        password,
+        trustDevice,
+        deviceLabel: "",
+      });
+      onLoggedIn(session);
+      onError(null);
+    } catch (caught) {
+      onError(errorMessage(caught, flow === "register" ? "สร้าง account ด้วยรหัสผ่านไม่สำเร็จ" : "เข้า account ด้วยรหัสผ่านไม่สำเร็จ"));
     } finally {
       setIsSubmitting(false);
     }
@@ -300,6 +330,7 @@ function EmailLoginPanel({
   function resetChallenge() {
     setChallenge(null);
     setCode("");
+    setResendCooldown(0);
     onError(null);
   }
 
@@ -333,8 +364,9 @@ function EmailLoginPanel({
               <Icon name="check" />
               {flow === "register" ? "สร้าง account" : "เข้า account"}
             </Button>
-            <Button type="button" variant="secondary" disabled={isSubmitting} onClick={() => void requestEmailCode()}>
+            <Button type="button" variant="secondary" disabled={isSubmitting || resendCooldown > 0} onClick={() => void requestEmailCode()}>
               ส่งรหัสอีกครั้ง
+              {resendCooldown > 0 ? `ได้ใน ${resendCooldown} วินาที` : ""}
             </Button>
             <Button type="button" variant="secondary" disabled={isSubmitting} onClick={resetChallenge}>
               เปลี่ยนอีเมล
@@ -349,10 +381,23 @@ function EmailLoginPanel({
               <span>อีเมล *</span>
               <input value={email} onChange={(event) => setEmail(event.target.value)} type="email" autoComplete="email" required />
             </label>
+            <label>
+              <span>รหัสผ่าน</span>
+              <input
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                type="password"
+                autoComplete={flow === "register" ? "new-password" : "current-password"}
+              />
+            </label>
             {trustDeviceFields}
             <Button type="submit" disabled={isSubmitting}>
               <Icon name="check" />
               {flow === "register" ? "ส่งรหัส register" : "ส่งรหัส login"}
+            </Button>
+            <Button type="button" variant="secondary" disabled={!email || password.length < 8 || isSubmitting} onClick={() => void signInWithPassword()}>
+              <Icon name="key" />
+              {flow === "register" ? "สร้าง account ด้วยรหัสผ่าน" : "เข้า account ด้วยรหัสผ่าน"}
             </Button>
           </>
         )}

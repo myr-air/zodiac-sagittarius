@@ -6,8 +6,8 @@ use crate::db::models::{
     AccountProfileRecord, AccountTripRecord, AccountTripStatsRecord, ActiveUserSessionRecord,
     EmailLoginChallengeRecord, NewAccountAuditEvent, NewAccountPlanVariant, NewAccountTrip,
     NewAccountTripOwnerMember, NewEmailLoginOutbox, NewTrustedDevice, NewUser, NewUserEmail,
-    NewUserSession, PasskeyCredentialRecord, PasskeyRecord, TripAuthRecord, TrustedDeviceRecord,
-    UserEmailRecord,
+    NewUserSession, PasskeyCredentialRecord, PasskeyRecord, PasswordLoginUserRecord,
+    TripAuthRecord, TrustedDeviceRecord, UserEmailRecord,
 };
 use crate::domain::types::{TripMemberAccessStatus, TripRole};
 
@@ -203,6 +203,40 @@ pub async fn insert_user(
     .bind(user.id)
     .bind(user.display_name)
     .bind(user.avatar_color)
+    .execute(&mut **tx)
+    .await?;
+
+    Ok(())
+}
+
+pub async fn find_password_login_user_for_email(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    normalized_email: &str,
+) -> Result<Option<PasswordLoginUserRecord>, sqlx::Error> {
+    sqlx::query_as::<_, PasswordLoginUserRecord>(
+        "select ue.user_id, u.password_hash, u.disabled_at
+         from user_emails ue
+         join users u on u.id = ue.user_id
+         where ue.normalized_email = $1
+         for update of u",
+    )
+    .bind(normalized_email)
+    .fetch_optional(&mut **tx)
+    .await
+}
+
+pub async fn update_user_password_hash(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    user_id: Uuid,
+    password_hash: &str,
+) -> Result<(), sqlx::Error> {
+    sqlx::query(
+        "update users
+         set password_hash = $2, updated_at = now()
+         where id = $1",
+    )
+    .bind(user_id)
+    .bind(password_hash)
     .execute(&mut **tx)
     .await?;
 

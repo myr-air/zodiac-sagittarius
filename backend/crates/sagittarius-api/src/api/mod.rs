@@ -34,6 +34,10 @@ fn api_v1() -> Router<AppState> {
         .route("/auth/email/challenges", post(account::start_email_login))
         .route("/auth/email/sessions", post(account::finish_email_login))
         .route(
+            "/auth/password/sessions",
+            post(account::finish_password_login),
+        )
+        .route(
             "/account",
             get(account::get_settings).patch(account::update_settings),
         )

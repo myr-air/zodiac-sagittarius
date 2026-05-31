@@ -114,6 +114,13 @@ export interface AccountApiClientOptions {
 
 export interface AccountApiClient {
   startEmailLogin(email: string): Promise<EmailLoginStartResponse>;
+  finishPasswordLogin(input: {
+    flow: "login" | "register";
+    email: string;
+    password: string;
+    trustDevice: boolean;
+    deviceLabel: string;
+  }): Promise<AccountSession>;
   startPasskeyLogin(email: string): Promise<PasskeyLoginStartResponse>;
   finishPasskeyLogin(input: {
     challengeId: string;
@@ -185,6 +192,12 @@ export function createAccountApiClient(options: AccountApiClientOptions = {}): A
       return request<PasskeyLoginStartResponse>(accountApiRoutes.passkeyLoginOptions(), {
         method: "POST",
         body: JSON.stringify({ email }),
+      });
+    },
+    finishPasswordLogin(input) {
+      return request<AccountSession>(accountApiRoutes.passwordSessions(), {
+        method: "POST",
+        body: JSON.stringify(input),
       });
     },
     finishPasskeyLogin(input) {

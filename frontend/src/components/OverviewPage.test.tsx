@@ -216,4 +216,13 @@ describe("OverviewPage budget shortcuts", () => {
 
     expect(onOpenExpenses).toHaveBeenCalled();
   });
+
+  it("offers an explicit shortcut for logging general trip expenses", async () => {
+    const user = userEvent.setup();
+    const { onOpenExpenses } = renderOverview("member-beam");
+
+    await user.click(screen.getByRole("button", { name: /เพิ่มค่าใช้จ่ายทั่วไป/i }));
+
+    expect(onOpenExpenses).toHaveBeenCalled();
+  });
 });

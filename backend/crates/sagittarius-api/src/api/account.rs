@@ -33,6 +33,16 @@ pub struct EmailLoginFinishRequest {
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub struct PasswordLoginRequest {
+    pub flow: String,
+    pub email: String,
+    pub password: String,
+    pub trust_device: bool,
+    pub device_label: String,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct AccountTripCreateRequest {
     pub name: String,
     pub destination_label: String,
@@ -98,12 +108,8 @@ pub async fn start_email_login(
 ) -> Result<Json<EmailLoginStartResponse>, ServiceError> {
     let Json(request) =
         request.map_err(|_| ServiceError::InvalidRequest("json payload is invalid"))?;
-    let response = app::account::start_email_login(
-        &state.pool,
-        &state.email_delivery,
-        &request.email,
-    )
-    .await?;
+    let response =
+        app::account::start_email_login(&state.pool, &state.email_delivery, &request.email).await?;
 
     Ok(Json(response))
 }
@@ -120,6 +126,36 @@ pub async fn finish_email_login(
         &request.code,
         request.trust_device,
         &request.device_label,
+    )
+    .await?;
+
+    Ok(Json(response))
+}
+
+pub async fn finish_password_login(
+    State(state): State<AppState>,
+    request: Result<Json<PasswordLoginRequest>, JsonRejection>,
+) -> Result<Json<AccountSession>, ServiceError> {
+    let Json(request) =
+        request.map_err(|_| ServiceError::InvalidRequest("json payload is invalid"))?;
+    let flow = match request.flow.as_str() {
+        "login" => app::account::PasswordLoginFlow::Login,
+        "register" => app::account::PasswordLoginFlow::Register,
+        _ => {
+            return Err(ServiceError::InvalidRequest(
+                "password auth flow is invalid",
+            ));
+        }
+    };
+    let response = app::account::finish_password_login(
+        &state.pool,
+        app::account::PasswordLoginInput {
+            flow,
+            email: request.email,
+            password: request.password,
+            trust_device: request.trust_device,
+            device_label: request.device_label,
+        },
     )
     .await?;
 

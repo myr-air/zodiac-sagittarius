@@ -61,11 +61,13 @@ describe("AppShell", () => {
   });
 
   it("links workspace navigation to the active trip route scope", () => {
+    const onOpenExpenses = vi.fn();
     render(
       <AppShell
         activeView="itinerary"
         collapsed={false}
         currentMember={seedTrip.members[0]}
+        onOpenExpenses={onOpenExpenses}
         onToggleCollapsed={vi.fn()}
         trip={seedTrip}
       >
@@ -78,6 +80,7 @@ describe("AppShell", () => {
     expect(screen.getByRole("link", { name: /แผนที่/ })).toHaveAttribute("href", "/trips/trip-hong-kong-shenzhen/map");
     expect(screen.getByRole("link", { name: /ไทม์ไลน์/ })).toHaveAttribute("href", "/trips/trip-hong-kong-shenzhen/timeline");
     expect(screen.getByRole("link", { name: /สมาชิก/ })).toHaveAttribute("href", "/trips/trip-hong-kong-shenzhen/members");
+    expect(screen.getByRole("button", { name: /ค่าใช้จ่าย/ })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "ดูสรุปรายละเอียด" })).toHaveAttribute("href", "/trips/trip-hong-kong-shenzhen");
   });
 });

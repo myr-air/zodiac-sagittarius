@@ -44,6 +44,18 @@ describe("TripJoinGate", () => {
     expect(participantPassword).toHaveAttribute("type", "text");
   });
 
+  it("keeps the selected participant password form adjacent to the selected card", async () => {
+    const user = userEvent.setup();
+    render(<TripJoinGate trip={seedTrip} onTripChange={vi.fn()} onAuthenticated={vi.fn()} />);
+
+    await enterTripRoom(user);
+    await user.click(screen.getByRole("button", { name: /Explorer Friend/i }));
+
+    const selectedCard = screen.getByRole("button", { name: /Explorer Friend/i });
+    const authPanel = screen.getByRole("group", { name: /Explorer Friend/i });
+    expect(selectedCard.nextElementSibling).toBe(authPanel);
+  });
+
   it("requires the trip id and trip password before choosing a participant", async () => {
     const user = userEvent.setup();
     render(<TripJoinGate trip={seedTrip} onTripChange={vi.fn()} onAuthenticated={vi.fn()} />);

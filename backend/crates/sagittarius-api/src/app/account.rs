@@ -32,6 +32,8 @@ const SESSION_TOKEN_SALT: &[u8] = b"sagittarius-account-session-token";
 const DEFAULT_TRUSTED_DEVICE_LABEL: &str = "Trusted device";
 const MAX_EMAIL_LOGIN_ATTEMPTS: i32 = 5;
 const MAX_EMAIL_LENGTH: usize = 254;
+const MIN_ACCOUNT_PASSWORD_LENGTH: usize = 8;
+const MAX_ACCOUNT_PASSWORD_LENGTH: usize = 256;
 const MAX_TRUSTED_DEVICE_LABEL_LENGTH: usize = 120;
 const MAX_ACCOUNT_DISPLAY_NAME_LENGTH: usize = 80;
 const MAX_ACCOUNT_LOCALE_LENGTH: usize = 32;
@@ -80,6 +82,19 @@ pub struct PasskeyLoginFinishInput {
     pub signature: String,
     pub trust_device: bool,
     pub device_label: String,
+}
+
+pub struct PasswordLoginInput {
+    pub flow: PasswordLoginFlow,
+    pub email: String,
+    pub password: String,
+    pub trust_device: bool,
+    pub device_label: String,
+}
+
+pub enum PasswordLoginFlow {
+    Login,
+    Register,
 }
 
 pub async fn start_email_login(
@@ -203,6 +218,71 @@ pub async fn finish_email_login(
     db::account_queries::consume_email_login_challenge(&mut tx, challenge_id, now).await?;
     let user_id = find_or_create_user(&mut tx, &challenge.normalized_email, now).await?;
     let session = create_user_session(&mut tx, user_id, trust_device, device_label, now).await?;
+    tx.commit().await?;
+
+    Ok(session)
+}
+
+pub async fn finish_password_login(
+    pool: &PgPool,
+    input: PasswordLoginInput,
+) -> Result<AccountSession, ServiceError> {
+    let normalized_email = normalize_email(&input.email)?;
+    let password = validate_account_password(&input.password)?;
+    let now = OffsetDateTime::now_utc();
+    let mut tx = pool.begin().await?;
+
+    db::account_queries::lock_email_login_start_for_email(&mut tx, &normalized_email).await?;
+    let existing =
+        db::account_queries::find_password_login_user_for_email(&mut tx, &normalized_email).await?;
+    let user_id = match input.flow {
+        PasswordLoginFlow::Login => {
+            let record = existing.ok_or(ServiceError::Unauthenticated)?;
+            if record.disabled_at.is_some() {
+                return Err(ServiceError::Forbidden);
+            }
+            let Some(stored_hash) = record.password_hash else {
+                return Err(ServiceError::Unauthenticated);
+            };
+            if !crate::app::auth::verify_secret(&password, &stored_hash) {
+                return Err(ServiceError::Unauthenticated);
+            }
+            record.user_id
+        }
+        PasswordLoginFlow::Register => {
+            if let Some(record) = existing {
+                if record.disabled_at.is_some() {
+                    return Err(ServiceError::Forbidden);
+                }
+                if record.password_hash.is_some() {
+                    return Err(ServiceError::Unauthenticated);
+                }
+                let password_hash = crate::app::auth::hash_secret(&password)?;
+                db::account_queries::update_user_password_hash(
+                    &mut tx,
+                    record.user_id,
+                    &password_hash,
+                )
+                .await?;
+                record.user_id
+            } else {
+                let user_id = find_or_create_user(&mut tx, &normalized_email, now).await?;
+                let password_hash = crate::app::auth::hash_secret(&password)?;
+                db::account_queries::update_user_password_hash(&mut tx, user_id, &password_hash)
+                    .await?;
+                user_id
+            }
+        }
+    };
+
+    let session = create_user_session(
+        &mut tx,
+        user_id,
+        input.trust_device,
+        &input.device_label,
+        now,
+    )
+    .await?;
     tx.commit().await?;
 
     Ok(session)
@@ -917,6 +997,15 @@ fn validate_join_password(join_password: &str) -> Result<String, ServiceError> {
     Ok(trimmed.to_string())
 }
 
+fn validate_account_password(password: &str) -> Result<String, ServiceError> {
+    let trimmed = password.trim();
+    if trimmed.len() < MIN_ACCOUNT_PASSWORD_LENGTH || trimmed.len() > MAX_ACCOUNT_PASSWORD_LENGTH {
+        return Err(ServiceError::InvalidRequest("password is invalid"));
+    }
+
+    Ok(trimmed.to_string())
+}
+
 fn map_account_trip_insert_error(error: sqlx::Error) -> ServiceError {
     let duplicate_join_id = is_unique_violation_on_constraint(&error, "trips_join_id_key");
     let database_error = ServiceError::Database(error);
@@ -1190,7 +1279,9 @@ fn allowed_passkey_origin(origin: &str) -> Option<String> {
 
     let wildcard_allowed = allowed.iter().any(|entry| entry == "*" || entry == &host);
     let subdomain_allowed = allowed.iter().any(|entry| {
-        entry.starts_with("*.") && host.ends_with(&entry["*.".len()..]) && host.len() > entry.len() - 2
+        entry.starts_with("*.")
+            && host.ends_with(&entry["*.".len()..])
+            && host.len() > entry.len() - 2
     });
 
     (wildcard_allowed || subdomain_allowed).then_some(host)
@@ -1385,13 +1476,13 @@ mod tests {
     use super::*;
     use p256::ecdsa::SigningKey;
     use sqlx::error::{DatabaseError, ErrorKind};
-    use std::env;
     use std::borrow::Cow;
     use std::collections::BTreeMap;
-    use std::panic::{self, AssertUnwindSafe};
+    use std::env;
     use std::error::Error;
-    use std::sync::Mutex;
     use std::fmt;
+    use std::panic::{self, AssertUnwindSafe};
+    use std::sync::Mutex;
 
     static PASSKEY_ORIGIN_ALLOWLIST_MUTEX: Mutex<()> = Mutex::new(());
 

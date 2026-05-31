@@ -240,6 +240,10 @@ button:disabled,
   gap: 10px;
 }
 
+.participant-grid .participant-auth {
+  grid-column: 1 / -1;
+}
+
 .home-page {
   min-height: 100vh;
   overflow: hidden;
@@ -1838,6 +1842,15 @@ button:disabled,
   font-weight: 650;
   text-decoration: none;
   transition: background 160ms ease, color 160ms ease;
+}
+
+.rail-link-button {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
 }
 
 .rail-link:hover {
@@ -5157,6 +5170,10 @@ span.member-state-pill {
   .rail-link {
     flex: 0 0 auto;
     min-height: 38px;
+  }
+
+  .rail-link-button {
+    width: auto;
   }
 
   .rail-link span {

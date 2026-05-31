@@ -337,6 +337,90 @@ async fn assert_invalid_request(response: Response<axum::body::Body>) {
 }
 
 #[sqlx::test(migrations = "../../migrations")]
+async fn password_auth_registers_and_logs_in_without_email_code(pool: sqlx::PgPool) {
+    let app = support::app(pool.clone());
+    let (status, session): (StatusCode, Value) = post_json_response(
+        app.clone(),
+        "/api/v1/auth/password/sessions",
+        json!({
+            "flow": "register",
+            "email": " Password.Owner@Example.COM ",
+            "password": "correct-horse-battery",
+            "trustDevice": true,
+            "deviceLabel": "Password laptop"
+        }),
+    )
+    .await;
+
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(session["kind"], "trusted");
+    assert!(session["sessionToken"].as_str().unwrap().len() > 20);
+
+    let stored = sqlx::query_as::<_, (String, String, Option<String>)>(
+        "select ue.normalized_email, u.display_name, u.password_hash
+         from user_emails ue
+         join users u on u.id = ue.user_id
+         where ue.normalized_email = $1",
+    )
+    .bind("password.owner@example.com")
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(stored.0, "password.owner@example.com");
+    assert_eq!(stored.1, "password.owner");
+    let password_hash = stored.2.expect("password registration should store a hash");
+    assert_ne!(password_hash, "correct-horse-battery");
+    assert!(password_hash.starts_with("$argon2"));
+
+    let (login_status, login_session): (StatusCode, Value) = post_json_response(
+        app.clone(),
+        "/api/v1/auth/password/sessions",
+        json!({
+            "flow": "login",
+            "email": "password.owner@example.com",
+            "password": "correct-horse-battery",
+            "trustDevice": false,
+            "deviceLabel": ""
+        }),
+    )
+    .await;
+    assert_eq!(login_status, StatusCode::OK);
+    assert_eq!(login_session["kind"], "temporary");
+    assert_eq!(login_session["userId"], session["userId"]);
+
+    let (wrong_status, wrong_body): (StatusCode, Value) = post_json_response(
+        app,
+        "/api/v1/auth/password/sessions",
+        json!({
+            "flow": "login",
+            "email": "password.owner@example.com",
+            "password": "wrong-password",
+            "trustDevice": false,
+            "deviceLabel": ""
+        }),
+    )
+    .await;
+    assert_eq!(wrong_status, StatusCode::UNAUTHORIZED);
+    assert_eq!(wrong_body["code"], "unauthenticated");
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn password_auth_validates_payload(pool: sqlx::PgPool) {
+    let app = support::app(pool.clone());
+
+    for payload in [
+        json!({"flow": "register", "email": "not-an-email", "password": "long-enough", "trustDevice": false, "deviceLabel": ""}),
+        json!({"flow": "register", "email": "short@example.com", "password": "short", "trustDevice": false, "deviceLabel": ""}),
+        json!({"flow": "unknown", "email": "owner@example.com", "password": "long-enough", "trustDevice": false, "deviceLabel": ""}),
+    ] {
+        let (status, body): (StatusCode, Value) =
+            post_json_response(app.clone(), "/api/v1/auth/password/sessions", payload).await;
+        assert_eq!(status, StatusCode::BAD_REQUEST);
+        assert_eq!(body["code"], "invalid_request");
+    }
+}
+
+#[sqlx::test(migrations = "../../migrations")]
 async fn email_login_start_creates_and_reuses_active_challenge(pool: sqlx::PgPool) {
     let app = support::app(pool.clone());
 

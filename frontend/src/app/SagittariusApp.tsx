@@ -99,6 +99,7 @@ export function SagittariusApp({
   const canEditExpenses = !isApiMode && canTripRole(currentMember.role, "editExpenses");
   const canManagePeople = !isApiMode && canTripRole(currentMember.role, "managePeople");
   const canCreateStopNote = !isApiMode && (canCreateSuggestion || canEdit);
+  const supportsContextRail = initialView === "overview" || initialView === "itinerary" || initialView === "timeline";
   const planItems = useMemo(
     () => trip.itineraryItems.filter((item) => item.planVariantId === selectedPlanVariantId),
     [selectedPlanVariantId, trip.itineraryItems],
@@ -178,6 +179,14 @@ export function SagittariusApp({
     if (open) setContextRailMounted(true);
     setContextRailOpen(open);
   }, []);
+
+  useEffect(() => {
+    if (!supportsContextRail || typeof window === "undefined") return;
+    if (window.sessionStorage.getItem("sagittarius-open-expenses") !== trip.id) return;
+    window.sessionStorage.removeItem("sagittarius-open-expenses");
+    const timeout = window.setTimeout(() => setContextRailVisibility(true), 0);
+    return () => window.clearTimeout(timeout);
+  }, [setContextRailVisibility, supportsContextRail, trip.id]);
 
   useEffect(() => {
     if (!contextRailOpen) return undefined;
@@ -598,6 +607,7 @@ export function SagittariusApp({
       return;
     }
     if (typeof window !== "undefined") {
+      window.sessionStorage.setItem("sagittarius-open-expenses", trip.id);
       window.location.href = `/trips/${trip.id}/itinerary`;
     }
   }
@@ -649,14 +659,13 @@ export function SagittariusApp({
     );
   }
 
-  const supportsContextRail = initialView === "itinerary" || initialView === "timeline";
-
   return (
     <AppShell
       activeView={initialView}
       collapsed={sidebarCollapsed}
       currentMember={currentMember}
       onLeaveParticipantSession={requireJoin ? leaveParticipantSession : undefined}
+      onOpenExpenses={openExpensesWorkspace}
       trip={trip}
       onToggleCollapsed={() => setSidebarCollapsed((current) => !current)}
     >

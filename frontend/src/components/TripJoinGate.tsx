@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { Fragment, FormEvent, useMemo, useState } from "react";
 import { Icon } from "./icons";
 import { Badge, Button } from "./ui";
 import {
@@ -207,62 +207,62 @@ export function TripJoinGate({ trip, apiClient, embedded = false, initialJoinCod
             </button>
             <div className="participant-grid" aria-label="รายชื่อสมาชิกใน trip">
               {participantMembers.map((member) => (
-                <button
-                  className="participant-card"
-                  disabled={isTripParticipantDisabled(member)}
-                  data-selected={member.id === selectedMemberId ? "true" : "false"}
-                  key={member.id}
-                  type="button"
-                  onClick={() => selectMember(member)}
-                >
-                  <span className="person-avatar" style={{ backgroundColor: member.color }} aria-hidden="true">
-                    {member.displayName.slice(0, 1)}
-                  </span>
-                  <span>
-                    <strong>{member.displayName}</strong>
-                    <small>{roleLabel(member.role)}</small>
-                  </span>
-                  <Badge tone={isTripParticipantDisabled(member) ? "danger" : member.claimPasswordHash ? "success" : "warning"}>
-                    {participantStatusLabel(member)}
-                  </Badge>
-                </button>
+                <Fragment key={member.id}>
+                  <button
+                    className="participant-card"
+                    disabled={isTripParticipantDisabled(member)}
+                    data-selected={member.id === selectedMemberId ? "true" : "false"}
+                    type="button"
+                    onClick={() => selectMember(member)}
+                  >
+                    <span className="person-avatar" style={{ backgroundColor: member.color }} aria-hidden="true">
+                      {member.displayName.slice(0, 1)}
+                    </span>
+                    <span>
+                      <strong>{member.displayName}</strong>
+                      <small>{roleLabel(member.role)}</small>
+                    </span>
+                    <Badge tone={isTripParticipantDisabled(member) ? "danger" : member.claimPasswordHash ? "success" : "warning"}>
+                      {participantStatusLabel(member)}
+                    </Badge>
+                  </button>
+                  {selectedMember?.id === member.id ? (
+                    <form className="participant-auth" role="group" aria-label={selectedMember.displayName} onSubmit={submitParticipant}>
+                      <label>
+                        <span>
+                          {selectedMember.claimPasswordHash
+                            ? `รหัสของ ${selectedMember.displayName}`
+                            : `ตั้งรหัสสำหรับ ${selectedMember.displayName}`}
+                        </span>
+                        <input
+                          value={participantPassword}
+                          onChange={(event) => setParticipantPassword(event.target.value)}
+                          type={showParticipantPassword ? "text" : "password"}
+                          autoComplete="current-password"
+                        />
+                        <button
+                          type="button"
+                          className="password-visibility-button"
+                          aria-label={showParticipantPassword ? "ซ่อนรหัสสมาชิก" : "แสดงรหัสสมาชิก"}
+                          onClick={() => setShowParticipantPassword((current) => !current)}
+                        >
+                          <Icon name={showParticipantPassword ? "eyeOff" : "eye"} />
+                        </button>
+                      </label>
+                      {!selectedMember.claimPasswordHash ? (
+                        <p className="participant-auth-help">
+                          รหัสนี้เป็นรหัสส่วนตัวของคุณ ไม่ใช่รหัสห้อง trip ใช้ป้องกันไม่ให้คนอื่นเลือกตัวตนของคุณภายหลัง
+                        </p>
+                      ) : null}
+                      <Button type="submit" className="join-submit" disabled={isSubmitting}>
+                        <Icon name="check" />
+                        {selectedMember.claimPasswordHash ? "ยืนยันตัวตน" : "เริ่มใช้งาน"}
+                      </Button>
+                    </form>
+                  ) : null}
+                </Fragment>
               ))}
             </div>
-
-            {selectedMember ? (
-              <form className="participant-auth" role="group" aria-label={selectedMember.displayName} onSubmit={submitParticipant}>
-                <label>
-                  <span>
-                    {selectedMember.claimPasswordHash
-                      ? `รหัสของ ${selectedMember.displayName}`
-                      : `ตั้งรหัสสำหรับ ${selectedMember.displayName}`}
-                  </span>
-                  <input
-                    value={participantPassword}
-                    onChange={(event) => setParticipantPassword(event.target.value)}
-                    type={showParticipantPassword ? "text" : "password"}
-                    autoComplete="current-password"
-                  />
-                  <button
-                    type="button"
-                    className="password-visibility-button"
-                    aria-label={showParticipantPassword ? "ซ่อนรหัสสมาชิก" : "แสดงรหัสสมาชิก"}
-                    onClick={() => setShowParticipantPassword((current) => !current)}
-                  >
-                    <Icon name={showParticipantPassword ? "eyeOff" : "eye"} />
-                  </button>
-                </label>
-                {!selectedMember.claimPasswordHash ? (
-                  <p className="participant-auth-help">
-                    รหัสนี้เป็นรหัสส่วนตัวของคุณ ไม่ใช่รหัสห้อง trip ใช้ป้องกันไม่ให้คนอื่นเลือกตัวตนของคุณภายหลัง
-                  </p>
-                ) : null}
-                <Button type="submit" className="join-submit" disabled={isSubmitting}>
-                  <Icon name="check" />
-                  {selectedMember.claimPasswordHash ? "ยืนยันตัวตน" : "เริ่มใช้งาน"}
-                </Button>
-              </form>
-            ) : null}
           </div>
         )}
       </section>

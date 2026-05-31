@@ -191,6 +191,15 @@ export function OverviewPage({ trip, currentMemberId, expenseSummary, items, sug
               <strong>{expenseSummary.currentUserNetLabel}</strong>
               <span>{expenseSummary.settlementSuggestions.length} รายการชำระคืนที่แนะนำ</span>
             </button>
+
+            <button className="overview-panel overview-panel--button" type="button" aria-label="เพิ่มค่าใช้จ่ายทั่วไป" onClick={openExpenses}>
+              <div className="overview-panel-title">
+                <Icon name="plus" />
+                <h2>เพิ่มค่าใช้จ่ายทั่วไป</h2>
+              </div>
+              <strong>ตั๋วเครื่องบิน โรงแรม ค่าใช้จ่ายรวม</strong>
+              <span>เปิด workspace ค่าใช้จ่ายของทริป</span>
+            </button>
           </>
         ) : null}
 
@@ -219,6 +228,15 @@ export function OverviewPage({ trip, currentMemberId, expenseSummary, items, sug
               </div>
               <strong>HK${expenseSummary.groupSpend.toLocaleString("en-HK")}</strong>
               <span>สรุปรายจ่ายรวมของทริป</span>
+            </button>
+
+            <button className="overview-panel overview-panel--button" type="button" aria-label="เพิ่มค่าใช้จ่ายทั่วไป" onClick={openExpenses}>
+              <div className="overview-panel-title">
+                <Icon name="plus" />
+                <h2>เพิ่มค่าใช้จ่ายทั่วไป</h2>
+              </div>
+              <strong>ตั๋วเครื่องบิน โรงแรม ค่าใช้จ่ายรวม</strong>
+              <span>เปิด workspace ค่าใช้จ่ายของทริป</span>
             </button>
           </>
         ) : null}
@@ -270,6 +288,15 @@ export function OverviewPage({ trip, currentMemberId, expenseSummary, items, sug
           </div>
           <strong>{expenseSummary.currentUserNetLabel}</strong>
           <span>{expenseSummary.settlementSuggestions.length} รายการชำระคืนที่แนะนำ</span>
+            </button>
+
+            <button className="overview-panel overview-panel--button" type="button" aria-label="เพิ่มค่าใช้จ่ายทั่วไป" onClick={openExpenses}>
+          <div className="overview-panel-title">
+            <Icon name="plus" />
+            <h2>เพิ่มค่าใช้จ่ายทั่วไป</h2>
+          </div>
+          <strong>ตั๋วเครื่องบิน โรงแรม ค่าใช้จ่ายรวม</strong>
+          <span>เปิด workspace ค่าใช้จ่ายของทริป</span>
             </button>
 
             <section className="overview-panel overview-task-panel" aria-label="Trip checklist">

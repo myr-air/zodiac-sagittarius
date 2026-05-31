@@ -87,6 +87,13 @@ pub struct UserEmailRecord {
     pub disabled_at: Option<OffsetDateTime>,
 }
 
+#[derive(Debug, Clone, FromRow)]
+pub struct PasswordLoginUserRecord {
+    pub user_id: Uuid,
+    pub password_hash: Option<String>,
+    pub disabled_at: Option<OffsetDateTime>,
+}
+
 pub struct NewUser<'a> {
     pub id: Uuid,
     pub display_name: &'a str,

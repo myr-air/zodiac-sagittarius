@@ -1,4 +1,4 @@
-import { render, screen, waitFor, within } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useState } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -18,6 +18,7 @@ import { AccountAccessPanel } from "./AccountAccessPanel";
 describe("AccountAccessPanel", () => {
   afterEach(() => {
     vi.restoreAllMocks();
+    vi.useRealTimers();
   });
 
   it("keeps temp access as the fast default while exposing account login", async () => {
@@ -53,14 +54,77 @@ describe("AccountAccessPanel", () => {
     expect(screen.queryByText(/ยืนยันรหัสได้หลังจากส่ง email code/i)).not.toBeInTheDocument();
     expect(screen.getByText(/aom@example.test/i)).toBeInTheDocument();
     expect(screen.queryByLabelText(/Device label/i)).not.toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: /ส่งรหัสอีกครั้ง/i }));
-    expect(accountClient.startEmailLogin).toHaveBeenCalledTimes(2);
+    expect(screen.getByRole("button", { name: /ส่งรหัสอีกครั้งได้ใน 30 วินาที/i })).toBeDisabled();
 
     await user.click(screen.getByRole("button", { name: /เปลี่ยนอีเมล/i }));
 
     expect(screen.queryByLabelText(/รหัสยืนยัน/i)).not.toBeInTheDocument();
     expect(screen.getByText(/ยืนยันรหัสได้หลังจากส่ง email code/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/อีเมล/i)).toHaveValue("aom@example.test");
+  });
+
+  it("enables resend after the email code cooldown finishes", async () => {
+    const accountClient = createAccountClient();
+    const intervalCallbacks: Array<() => void> = [];
+    vi.spyOn(window, "setInterval").mockImplementation((callback) => {
+      intervalCallbacks.push(callback as () => void);
+      return intervalCallbacks.length as unknown as ReturnType<typeof window.setInterval>;
+    });
+    vi.spyOn(window, "clearInterval").mockImplementation(() => undefined);
+    render(
+      <AccountAccessPanel
+        accessMode="account-login"
+        accountClient={accountClient}
+        accountSession={null}
+        trip={seedTrip}
+        onAccountSessionChange={vi.fn()}
+        onAuthenticated={vi.fn()}
+        onTripChange={vi.fn()}
+      />,
+    );
+
+    fireEvent.change(screen.getByLabelText(/อีเมล/i), { target: { value: "aom@example.test" } });
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: /ส่งรหัส login/i }));
+    });
+    expect(screen.getByLabelText(/รหัสยืนยัน/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /ส่งรหัสอีกครั้งได้ใน 30 วินาที/i })).toBeDisabled();
+
+    for (let count = 0; count < 30; count += 1) {
+      act(() => intervalCallbacks.at(-1)?.());
+    }
+
+    expect(screen.getByRole("button", { name: /ส่งรหัสอีกครั้ง$/i })).toBeEnabled();
+  });
+
+  it("logs in and registers with a password fallback instead of forcing OTP", async () => {
+    const user = userEvent.setup();
+    const accountClient = createAccountClient();
+    const onAccountSessionChange = vi.fn();
+    render(
+      <AccountAccessPanel
+        accessMode="account-login"
+        accountClient={accountClient}
+        accountSession={null}
+        trip={seedTrip}
+        onAccountSessionChange={onAccountSessionChange}
+        onAuthenticated={vi.fn()}
+        onTripChange={vi.fn()}
+      />,
+    );
+
+    await user.type(screen.getByLabelText(/อีเมล/i), "aom@example.test");
+    await user.type(screen.getByLabelText(/^รหัสผ่าน$/i), "account-secret");
+    await user.click(screen.getByRole("button", { name: /เข้า account ด้วยรหัสผ่าน/i }));
+
+    expect(accountClient.finishPasswordLogin).toHaveBeenCalledWith({
+      flow: "login",
+      email: "aom@example.test",
+      password: "account-secret",
+      trustDevice: true,
+      deviceLabel: "",
+    });
+    expect(onAccountSessionChange).toHaveBeenCalledWith(expect.objectContaining({ sessionToken: "account-session" }));
   });
 
   it("separates passkey access from email verification with a key icon", async () => {
@@ -384,6 +448,14 @@ function createAccountClient(): AccountApiClient {
   return {
     startEmailLogin: vi.fn().mockResolvedValue({ challengeId: "login-challenge", expiresAt: "2026-05-30T09:00:00.000Z" }),
     finishEmailLogin: vi.fn().mockResolvedValue({
+      userId: "user-aom",
+      sessionToken: "account-session",
+      kind: "trusted",
+      trustedDeviceId: "device-current",
+      createdAt: "2026-05-30T08:00:00.000Z",
+      expiresAt: "2026-06-29T08:00:00.000Z",
+    }),
+    finishPasswordLogin: vi.fn().mockResolvedValue({
       userId: "user-aom",
       sessionToken: "account-session",
       kind: "trusted",

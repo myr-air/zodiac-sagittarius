@@ -12,11 +12,12 @@ interface AppShellProps {
   collapsed: boolean;
   currentMember: Member;
   onLeaveParticipantSession?: () => void;
+  onOpenExpenses?: () => void;
   trip: Trip;
   onToggleCollapsed: () => void;
 }
 
-export function AppShell({ activeView, children, collapsed, currentMember, onLeaveParticipantSession, trip, onToggleCollapsed }: AppShellProps) {
+export function AppShell({ activeView, children, collapsed, currentMember, onLeaveParticipantSession, onOpenExpenses, trip, onToggleCollapsed }: AppShellProps) {
   const tripDays = getTripDates(trip.startDate, trip.endDate).length;
   const tripNights = Math.max(0, tripDays - 1);
   const navItems = tripWorkspaceNavItems(trip.id);
@@ -65,6 +66,12 @@ export function AppShell({ activeView, children, collapsed, currentMember, onLea
               <span>{item.label}</span>
             </Link>
           ))}
+          {onOpenExpenses ? (
+            <button className="rail-link rail-link-button" type="button" onClick={onOpenExpenses} title="ค่าใช้จ่าย">
+              <Icon name="wallet" />
+              <span>ค่าใช้จ่าย</span>
+            </button>
+          ) : null}
         </div>
 
         <div className="rail-summary" aria-label="สรุปแผน">

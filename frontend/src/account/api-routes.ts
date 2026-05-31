@@ -5,6 +5,7 @@ function encodePathSegment(segment: string): string {
 export const accountApiRoutes = {
   emailChallenges: () => "/api/v1/auth/email/challenges",
   emailSessions: () => "/api/v1/auth/email/sessions",
+  passwordSessions: () => "/api/v1/auth/password/sessions",
   passkeyLoginOptions: () => "/api/v1/auth/passkeys/options",
   passkeyLoginSessions: () => "/api/v1/auth/passkeys/sessions",
   account: () => "/api/v1/account",
