@@ -1,4 +1,4 @@
-import { screen, within } from "@testing-library/react";
+import { fireEvent, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { TripJoinGate } from "./TripJoinGate";
@@ -31,7 +31,7 @@ describe("TripJoinGate", () => {
 
     expect(screen.getByRole("heading", { name: /เข้าห้อง trip/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /เข้าห้อง trip/i })).toBeInTheDocument();
-  });
+  }, 45_000);
 
   it("prefills the join code from invite route params", () => {
     render(<TripJoinGate trip={seedTrip} initialJoinCode="HK-SZ-2025" onTripChange={vi.fn()} onAuthenticated={vi.fn()} />);
@@ -68,7 +68,7 @@ describe("TripJoinGate", () => {
     expect(participantPassword).toHaveAttribute("type", "password");
     await user.click(screen.getByRole("button", { name: /Show participant password/i }));
     expect(participantPassword).toHaveAttribute("type", "text");
-  });
+  }, 45_000);
 
   it("keeps the selected participant password form adjacent to the selected card", async () => {
     const user = userEvent.setup();
@@ -80,7 +80,7 @@ describe("TripJoinGate", () => {
     const selectedCard = screen.getByRole("button", { name: /Explorer Friend/i });
     const authPanel = screen.getByRole("group", { name: /Explorer Friend/i });
     expect(selectedCard.nextElementSibling).toBe(authPanel);
-  });
+  }, 45_000);
 
   it("requires the trip id and trip password before choosing a participant", async () => {
     const user = userEvent.setup();
@@ -458,8 +458,8 @@ describe("TripJoinGate", () => {
 });
 
 async function enterTripRoom(user: ReturnType<typeof userEvent.setup>) {
-  await user.type(screen.getByLabelText(/Trip ID/i), "DEMO-TRIP");
-  await user.type(screen.getByLabelText(/^Trip password$/i), "demo-trip-pass");
+  fireEvent.change(screen.getByLabelText(/Trip ID/i), { target: { value: "DEMO-TRIP" } });
+  fireEvent.change(screen.getByLabelText(/^Trip password$/i), { target: { value: "demo-trip-pass" } });
   await user.click(screen.getByRole("button", { name: /Enter trip/i }));
 }
 

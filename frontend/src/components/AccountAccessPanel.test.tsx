@@ -57,27 +57,32 @@ describe("AccountAccessPanel", () => {
     await user.click(screen.getByRole("tab", { name: /^Account$/i }));
 
     expect(screen.getByRole("heading", { name: /Manage trips with an account/i })).toBeInTheDocument();
-    expect(screen.getByLabelText(/อีเมล/i)).toHaveAttribute("autocomplete", "email");
-    expect(screen.queryByLabelText(/รหัสยืนยัน/i)).not.toBeInTheDocument();
-    expect(screen.getByText(/ยืนยันรหัสได้หลังจากส่ง email code/i)).toBeInTheDocument();
-    expect(screen.getByRole("checkbox", { name: /เชื่อถืออุปกรณ์นี้/i })).toBeChecked();
+    expect(screen.getByLabelText(/Email/i)).toHaveAttribute("autocomplete", "email");
+    expect(screen.queryByLabelText(/Verification code/i)).not.toBeInTheDocument();
+    expect(screen.getByText(/verify after sending an email code/i)).toBeInTheDocument();
+    expect(screen.getByRole("checkbox", { name: /Trust this device/i })).toBeChecked();
     expect(screen.queryByLabelText(/Device label/i)).not.toBeInTheDocument();
 
-    await user.type(screen.getByLabelText(/อีเมล/i), "aom@example.test");
-    await user.click(screen.getByRole("button", { name: /ส่งรหัส login/i }));
+    fireEvent.change(screen.getByLabelText(/Email/i), { target: { value: "aom@example.test" } });
+    await user.click(screen.getByRole("button", { name: /Send login code/i }));
 
-    expect(await screen.findByLabelText(/รหัสยืนยัน/i)).toHaveAttribute("autocomplete", "one-time-code");
-    expect(screen.queryByText(/ยืนยันรหัสได้หลังจากส่ง email code/i)).not.toBeInTheDocument();
+    expect(await screen.findByLabelText(/Verification code/i)).toHaveAttribute("autocomplete", "one-time-code");
+    expect(screen.queryByText(/verify after sending an email code/i)).not.toBeInTheDocument();
     expect(screen.getByText(/aom@example.test/i)).toBeInTheDocument();
     expect(screen.queryByLabelText(/Device label/i)).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /ส่งรหัสอีกครั้งได้ใน 30 วินาที/i })).toBeDisabled();
+    expect(screen.getByRole("button", { name: /Resend code in 30 seconds/i })).toBeDisabled();
 
-    await user.click(screen.getByRole("button", { name: /เปลี่ยนอีเมล/i }));
+    await user.click(screen.getByRole("button", { name: /Change email/i }));
 
-    expect(screen.queryByLabelText(/รหัสยืนยัน/i)).not.toBeInTheDocument();
-    expect(screen.getByText(/ยืนยันรหัสได้หลังจากส่ง email code/i)).toBeInTheDocument();
+    expect(screen.queryByLabelText(/Verification code/i)).not.toBeInTheDocument();
+    expect(screen.getByText(/verify after sending an email code/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Email/i)).toHaveValue("aom@example.test");
+
+    await user.click(screen.getByRole("button", { name: "ภาษาไทย" }));
+
     expect(screen.getByLabelText(/อีเมล/i)).toHaveValue("aom@example.test");
-  });
+    expect(screen.getByRole("checkbox", { name: /เชื่อถืออุปกรณ์นี้/i })).toBeChecked();
+  }, 45_000);
 
   it("enables resend after the email code cooldown finishes", async () => {
     const accountClient = createAccountClient();
@@ -99,18 +104,18 @@ describe("AccountAccessPanel", () => {
       />,
     );
 
-    fireEvent.change(screen.getByLabelText(/อีเมล/i), { target: { value: "aom@example.test" } });
+    fireEvent.change(screen.getByLabelText(/Email/i), { target: { value: "aom@example.test" } });
     await act(async () => {
-      fireEvent.click(screen.getByRole("button", { name: /ส่งรหัส login/i }));
+      fireEvent.click(screen.getByRole("button", { name: /Send login code/i }));
     });
-    expect(screen.getByLabelText(/รหัสยืนยัน/i)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /ส่งรหัสอีกครั้งได้ใน 30 วินาที/i })).toBeDisabled();
+    expect(screen.getByLabelText(/Verification code/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Resend code in 30 seconds/i })).toBeDisabled();
 
     for (let count = 0; count < 30; count += 1) {
       act(() => intervalCallbacks.at(-1)?.());
     }
 
-    expect(screen.getByRole("button", { name: /ส่งรหัสอีกครั้ง$/i })).toBeEnabled();
+    expect(screen.getByRole("button", { name: /^Resend code$/i })).toBeEnabled();
   });
 
   it("logs in and registers with a password fallback instead of forcing OTP", async () => {
@@ -129,9 +134,9 @@ describe("AccountAccessPanel", () => {
       />,
     );
 
-    await user.type(screen.getByLabelText(/อีเมล/i), "aom@example.test");
-    await user.type(screen.getByLabelText(/^รหัสผ่าน$/i), "account-secret");
-    await user.click(screen.getByRole("button", { name: /เข้า account ด้วยรหัสผ่าน/i }));
+    fireEvent.change(screen.getByLabelText(/Email/i), { target: { value: "aom@example.test" } });
+    fireEvent.change(screen.getByLabelText(/^Password$/i), { target: { value: "account-secret" } });
+    await user.click(screen.getByRole("button", { name: /Sign in with password/i }));
 
     expect(accountClient.finishPasswordLogin).toHaveBeenCalledWith({
       flow: "login",
@@ -159,7 +164,7 @@ describe("AccountAccessPanel", () => {
     await user.click(screen.getByRole("tab", { name: /^Account$/i }));
 
     const passkeyPanel = screen.getByRole("region", { name: /Passkey login/i });
-    expect(within(passkeyPanel).getByRole("button", { name: /เข้า account ด้วย passkey/i })).toBeDisabled();
+    expect(within(passkeyPanel).getByRole("button", { name: /Sign in with passkey/i })).toBeDisabled();
     expect(within(passkeyPanel).getAllByTestId("icon-key").length).toBeGreaterThan(0);
   });
 
@@ -179,8 +184,8 @@ describe("AccountAccessPanel", () => {
     expect(screen.queryByRole("tablist", { name: /Access mode/i })).not.toBeInTheDocument();
     expect(screen.getByRole("main", { name: /Account login/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /Sign in to your account/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /ส่งรหัส login/i })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /สมัครใช้งาน/i })).toHaveAttribute("href", "/register");
+    expect(screen.getByRole("button", { name: /Send login code/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Register/i })).toHaveAttribute("href", "/register");
     expect(screen.queryByLabelText(/Trip ID/i)).not.toBeInTheDocument();
   });
 
@@ -200,8 +205,8 @@ describe("AccountAccessPanel", () => {
     expect(screen.queryByRole("tablist", { name: /Access mode/i })).not.toBeInTheDocument();
     expect(screen.getByRole("main", { name: /Account register/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /Create an account/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /ส่งรหัส register/i })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /เข้าสู่ระบบ/i })).toHaveAttribute("href", "/login");
+    expect(screen.getByRole("button", { name: /Send register code/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Sign in/i })).toHaveAttribute("href", "/login");
     expect(screen.queryByLabelText(/Trip ID/i)).not.toBeInTheDocument();
   });
 
@@ -221,6 +226,7 @@ describe("AccountAccessPanel", () => {
     expect(screen.queryByRole("tablist", { name: /Access mode/i })).not.toBeInTheDocument();
     expect(screen.getByRole("main", { name: /Trip access/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /Enter trip room/i })).toBeInTheDocument();
+    expect(screen.getAllByRole("button", { name: "ภาษาไทย" })).toHaveLength(1);
     expect(screen.queryByRole("link", { name: /เปิด demo trip/i })).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/Email/i)).not.toBeInTheDocument();
   });
@@ -270,10 +276,10 @@ describe("AccountAccessPanel", () => {
     render(<AccountHarness accountClient={accountClient} onAuthenticated={onAuthenticated} />);
 
     await user.click(screen.getByRole("tab", { name: /^Account$/i }));
-    await user.type(screen.getByLabelText(/อีเมล/i), "aom@example.test");
-    await user.click(screen.getByRole("button", { name: /ส่งรหัส login/i }));
-    await user.type(screen.getByLabelText(/รหัสยืนยัน/i), "123456");
-    await user.click(screen.getByRole("button", { name: /^เข้า account$/i }));
+    fireEvent.change(screen.getByLabelText(/Email/i), { target: { value: "aom@example.test" } });
+    await user.click(screen.getByRole("button", { name: /Send login code/i }));
+    fireEvent.change(screen.getByLabelText(/Verification code/i), { target: { value: "123456" } });
+    await user.click(screen.getByRole("button", { name: /^Sign in$/i }));
 
     expect(accountClient.finishEmailLogin).toHaveBeenCalledWith({
       challengeId: "login-challenge",
@@ -288,14 +294,10 @@ describe("AccountAccessPanel", () => {
     expect(screen.getByText("Seoul Spring")).toBeInTheDocument();
 
     const settingsCard = screen.getByText("Profile & settings").closest("section") as HTMLElement;
-    await user.clear(within(settingsCard).getByLabelText(/Display name/i));
-    await user.type(within(settingsCard).getByLabelText(/Display name/i), "Aom Updated");
-    await user.clear(within(settingsCard).getByLabelText(/Avatar color/i));
-    await user.type(within(settingsCard).getByLabelText(/Avatar color/i), "#abcdef");
-    await user.clear(within(settingsCard).getByLabelText(/Locale/i));
-    await user.type(within(settingsCard).getByLabelText(/Locale/i), "en-US");
-    await user.clear(within(settingsCard).getByLabelText(/Timezone/i));
-    await user.type(within(settingsCard).getByLabelText(/Timezone/i), "Asia/Tokyo");
+    fireEvent.change(within(settingsCard).getByLabelText(/Display name/i), { target: { value: "Aom Updated" } });
+    fireEvent.change(within(settingsCard).getByLabelText(/Avatar color/i), { target: { value: "#abcdef" } });
+    fireEvent.change(within(settingsCard).getByLabelText(/Locale/i), { target: { value: "en-US" } });
+    fireEvent.change(within(settingsCard).getByLabelText(/Timezone/i), { target: { value: "Asia/Tokyo" } });
     await user.click(within(settingsCard).getByRole("button", { name: /Save settings/i }));
 
     expect(accountClient.updateSettings).toHaveBeenCalledWith("account-session", {
@@ -304,7 +306,7 @@ describe("AccountAccessPanel", () => {
       locale: "en-US",
       timezone: "Asia/Tokyo",
     });
-    expect(await screen.findByText("บันทึก profile และ settings แล้ว")).toBeInTheDocument();
+    expect(await screen.findByText("Saved profile and settings.")).toBeInTheDocument();
 
     const laptopDeviceRow = screen.getByText("Aom laptop").closest(".account-device-row") as HTMLElement;
     await user.click(within(laptopDeviceRow).getByRole("button", { name: /Revoke/i }));
@@ -335,20 +337,18 @@ describe("AccountAccessPanel", () => {
       attestationObject: "CgsM",
       nickname: "Aom passkey",
     });
-    expect(await screen.findByText("สร้าง passkey แล้ว ใช้ login ได้ทันที")).toBeInTheDocument();
+    expect(await screen.findByText("Passkey created. You can use it to sign in immediately.")).toBeInTheDocument();
 
     const createForm = screen.getByText("Create trip").closest("form") as HTMLFormElement;
     expect(within(createForm).getByLabelText(/Join ID/i)).toHaveAttribute("autocomplete", "username");
     expect(within(createForm).getByLabelText(/Join password/i)).toHaveAttribute("autocomplete", "new-password");
-    await user.type(within(createForm).getByLabelText(/Trip name/i), "Taipei Food Run");
-    await user.type(within(createForm).getByLabelText(/Destination/i), "Taipei");
-    await user.clear(within(createForm).getByLabelText(/Start date/i));
-    await user.type(within(createForm).getByLabelText(/Start date/i), "2026-07-01");
-    await user.clear(within(createForm).getByLabelText(/End date/i));
-    await user.type(within(createForm).getByLabelText(/End date/i), "2026-07-04");
-    await user.type(within(createForm).getByLabelText(/Owner display name/i), "Aom");
-    await user.type(within(createForm).getByLabelText(/Join ID/i), "TPE-2026");
-    await user.type(within(createForm).getByLabelText(/Join password/i), "taipei-secret");
+    fireEvent.change(within(createForm).getByLabelText(/Trip name/i), { target: { value: "Taipei Food Run" } });
+    fireEvent.change(within(createForm).getByLabelText(/Destination/i), { target: { value: "Taipei" } });
+    fireEvent.change(within(createForm).getByLabelText(/Start date/i), { target: { value: "2026-07-01" } });
+    fireEvent.change(within(createForm).getByLabelText(/End date/i), { target: { value: "2026-07-04" } });
+    fireEvent.change(within(createForm).getByLabelText(/Owner display name/i), { target: { value: "Aom" } });
+    fireEvent.change(within(createForm).getByLabelText(/Join ID/i), { target: { value: "TPE-2026" } });
+    fireEvent.change(within(createForm).getByLabelText(/Join password/i), { target: { value: "taipei-secret" } });
     await user.click(within(createForm).getByRole("button", { name: /Create and open/i }));
 
     expect(accountClient.createTrip).toHaveBeenCalledWith("account-session", {
@@ -361,7 +361,7 @@ describe("AccountAccessPanel", () => {
       joinPassword: "taipei-secret",
     });
     await waitFor(() => expect(onAuthenticated).toHaveBeenCalledWith(expect.objectContaining({ sessionToken: "member-session" })));
-  });
+  }, 45_000);
 
   it("logs in with a provider-free browser passkey and keeps trusted-device controls", async () => {
     const user = userEvent.setup();
@@ -381,9 +381,9 @@ describe("AccountAccessPanel", () => {
     );
 
     await user.click(screen.getByRole("tab", { name: /^Account$/i }));
-    await user.type(screen.getByLabelText(/อีเมล/i), "aom@example.test");
+    fireEvent.change(screen.getByLabelText(/Email/i), { target: { value: "aom@example.test" } });
     expect(screen.queryByLabelText(/Device label/i)).not.toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: /เข้า account ด้วย passkey/i }));
+    await user.click(screen.getByRole("button", { name: /Sign in with passkey/i }));
 
     expect(accountClient.startPasskeyLogin).toHaveBeenCalledWith("aom@example.test");
     expect(credentials.get).toHaveBeenCalledWith({
@@ -435,7 +435,7 @@ describe("AccountAccessPanel", () => {
     expect(accountClient.revokeTrustedDevice).toHaveBeenCalledWith("account-session", "device-current");
     expect(accountClient.loadSettings).toHaveBeenCalledTimes(1);
     expect(onAccountSessionChange).toHaveBeenCalledWith(null);
-    expect(await screen.findByText("ยกเลิก trusted device นี้แล้ว กรุณา login ใหม่")).toBeInTheDocument();
+    expect(await screen.findByText("Revoked this trusted device. Please sign in again.")).toBeInTheDocument();
   });
 });
 

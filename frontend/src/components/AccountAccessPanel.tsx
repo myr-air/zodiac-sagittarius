@@ -60,6 +60,7 @@ export function AccountAccessPanel({
   trip,
 }: AccountAccessPanelProps) {
   const { t } = useI18n();
+  const accessMessages = t.access.messages;
   const forcedMode = accessMode === "trip-access" ? "temp" : accessMode === "combined" ? null : "account";
   const [selectedMode, setSelectedMode] = useState<AccessMode>(() => (accountSession ? "account" : "temp"));
   const mode = forcedMode ?? (accountSession ? "account" : selectedMode);
@@ -89,13 +90,13 @@ export function AccountAccessPanel({
       })
       .catch((caught) => {
         if (cancelled) return;
-        setError(errorMessage(caught, t.access.messages.accountLoadFailed));
+        setError(errorMessage(caught, accessMessages.accountLoadFailed, accessMessages));
       });
 
     return () => {
       cancelled = true;
     };
-  }, [accountClient, accountSession, t.access.messages.accountLoadFailed]);
+  }, [accessMessages, accountClient, accountSession]);
 
   async function refreshAccount(sessionToken: string) {
     const [nextSettings, nextTrips, nextStats] = await Promise.all([
@@ -236,6 +237,7 @@ function EmailLoginPanel({
   onError: (message: string | null) => void;
   onLoggedIn: (session: AccountSession) => void;
 }) {
+  const { locale, t } = useI18n();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [code, setCode] = useState("");
@@ -265,7 +267,7 @@ function EmailLoginPanel({
       setResendCooldown(30);
       onError(null);
     } catch (caught) {
-      onError(errorMessage(caught, "เริ่ม login ไม่สำเร็จ"));
+      onError(errorMessage(caught, t.access.emailLogin.errors.startFailed, t.access.messages));
     } finally {
       setIsSubmitting(false);
     }
@@ -284,7 +286,7 @@ function EmailLoginPanel({
       });
       onLoggedIn(session);
     } catch (caught) {
-      onError(errorMessage(caught, "รหัสยืนยันไม่ถูกต้อง"));
+      onError(errorMessage(caught, t.access.emailLogin.errors.invalidCode, t.access.messages));
     } finally {
       setIsSubmitting(false);
     }
@@ -303,7 +305,7 @@ function EmailLoginPanel({
       onLoggedIn(session);
       onError(null);
     } catch (caught) {
-      onError(errorMessage(caught, flow === "register" ? "สร้าง account ด้วยรหัสผ่านไม่สำเร็จ" : "เข้า account ด้วยรหัสผ่านไม่สำเร็จ"));
+      onError(errorMessage(caught, flow === "register" ? t.access.emailLogin.errors.passwordRegisterFailed : t.access.emailLogin.errors.passwordLoginFailed, t.access.messages));
     } finally {
       setIsSubmitting(false);
     }
@@ -326,7 +328,7 @@ function EmailLoginPanel({
       onLoggedIn(session);
       onError(null);
     } catch (caught) {
-      onError(errorMessage(caught, "เข้า account ด้วย passkey ไม่สำเร็จ"));
+      onError(errorMessage(caught, t.access.emailLogin.errors.passkeyLoginFailed, t.access.messages));
     } finally {
       setIsSubmitting(false);
     }
@@ -342,7 +344,7 @@ function EmailLoginPanel({
   const trustDeviceFields = (
     <label className="account-check">
       <input checked={trustDevice} onChange={(event) => setTrustDevice(event.target.checked)} type="checkbox" />
-      เชื่อถืออุปกรณ์นี้
+      {t.access.emailLogin.trustDevice}
     </label>
   );
 
@@ -351,43 +353,43 @@ function EmailLoginPanel({
       <form className="account-card account-form" onSubmit={challenge ? submitCode : submitEmail}>
         <PanelHeading
           icon={challenge ? "settings" : "users"}
-          title={challenge ? "ยืนยันรหัส" : "เข้าสู่ระบบด้วยอีเมล"}
-          detail={challenge ? `หมดอายุ ${formatDateTime(challenge.expiresAt)}` : "ส่งรหัสเข้าอีเมลของคุณก่อน แล้วค่อยยืนยันในขั้นถัดไป"}
+          title={challenge ? t.access.emailLogin.verifyTitle : t.access.emailLogin.emailTitle}
+          detail={challenge ? t.access.emailLogin.expiresAt({ value: formatDateTime(challenge.expiresAt, locale) }) : t.access.emailLogin.emailDetail}
         />
         {challenge ? (
           <>
             <div className="account-step-summary">
-              <span>ส่งรหัสไปที่</span>
+              <span>{t.access.emailLogin.sentCodeTo}</span>
               <strong>{email}</strong>
             </div>
             <label>
-              <span>รหัสยืนยัน *</span>
+              <span>{t.access.emailLogin.verificationCode}</span>
               <input value={code} onChange={(event) => setCode(event.target.value)} inputMode="numeric" autoComplete="one-time-code" required />
             </label>
             {trustDeviceFields}
             <Button type="submit" disabled={isSubmitting}>
               <Icon name="check" />
-              {flow === "register" ? "สร้าง account" : "เข้า account"}
+              {flow === "register" ? t.access.emailLogin.createAccount : t.access.emailLogin.signInAccount}
             </Button>
             <Button type="button" variant="secondary" disabled={isSubmitting || resendCooldown > 0} onClick={() => void requestEmailCode()}>
-              ส่งรหัสอีกครั้ง
-              {resendCooldown > 0 ? `ได้ใน ${resendCooldown} วินาที` : ""}
+              {t.access.emailLogin.resendCode}
+              {resendCooldown > 0 ? t.access.emailLogin.resendCooldown({ seconds: resendCooldown }) : ""}
             </Button>
             <Button type="button" variant="secondary" disabled={isSubmitting} onClick={resetChallenge}>
-              เปลี่ยนอีเมล
+              {t.access.emailLogin.changeEmail}
             </Button>
           </>
         ) : (
           <>
             <div className="account-step-summary">
-              <span>ยืนยันรหัสได้หลังจากส่ง email code</span>
+              <span>{t.access.emailLogin.readyForCode}</span>
             </div>
             <label>
-              <span>อีเมล *</span>
+              <span>{t.access.emailLogin.email}</span>
               <input value={email} onChange={(event) => setEmail(event.target.value)} type="email" autoComplete="email" required />
             </label>
             <label>
-              <span>รหัสผ่าน</span>
+              <span>{t.access.emailLogin.password}</span>
               <input
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
@@ -398,11 +400,11 @@ function EmailLoginPanel({
             {trustDeviceFields}
             <Button type="submit" disabled={isSubmitting}>
               <Icon name="check" />
-              {flow === "register" ? "ส่งรหัส register" : "ส่งรหัส login"}
+              {flow === "register" ? t.access.emailLogin.sendRegisterCode : t.access.emailLogin.sendLoginCode}
             </Button>
             <Button type="button" variant="secondary" disabled={!email || password.length < 8 || isSubmitting} onClick={() => void signInWithPassword()}>
               <Icon name="key" />
-              {flow === "register" ? "สร้าง account ด้วยรหัสผ่าน" : "เข้า account ด้วยรหัสผ่าน"}
+              {flow === "register" ? t.access.emailLogin.createWithPassword : t.access.emailLogin.signInWithPassword}
             </Button>
           </>
         )}
@@ -411,21 +413,21 @@ function EmailLoginPanel({
         <p className="account-flow-switch">
           {flow === "register" ? (
             <>
-              มีบัญชีแล้ว? <a href="/login">เข้าสู่ระบบ</a>
+              {t.access.emailLogin.hasAccount} <a href="/login">{t.access.emailLogin.signInLink}</a>
             </>
           ) : (
             <>
-              ยังไม่มีบัญชี? <a href="/register">สมัครใช้งาน</a>
+              {t.access.emailLogin.noAccount} <a href="/register">{t.access.emailLogin.registerLink}</a>
             </>
           )}
         </p>
       ) : null}
       {!challenge ? (
-        <section className="account-card account-form account-passkey-card" role="region" aria-label="Passkey login">
-          <PanelHeading icon="key" title="Passkey login" detail="ใช้ passkey ของ browser เพื่อเข้า account หลังกรอกอีเมล" />
+        <section className="account-card account-form account-passkey-card" role="region" aria-label={t.access.emailLogin.passkeyLabel}>
+          <PanelHeading icon="key" title={t.access.emailLogin.passkeyTitle} detail={t.access.emailLogin.passkeyDetail} />
           <Button type="button" variant="secondary" disabled={!email || isSubmitting} onClick={() => void signInWithPasskey()}>
             <Icon name="key" />
-            เข้า account ด้วย passkey
+            {t.access.emailLogin.passkeyButton}
           </Button>
         </section>
       ) : null}
@@ -460,9 +462,10 @@ function AccountDashboard({
   stats: AccountTripStats | null;
   trips: AccountTripSummary[];
 }) {
+  const { t } = useI18n();
   const [tripForm, setTripForm] = useState(defaultTripForm);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const sessionKindLabel = accountSession.kind === "trusted" ? "Trusted PC" : "Temp account session";
+  const sessionKindLabel = accountSession.kind === "trusted" ? t.access.dashboard.sessionKinds.trusted : t.access.dashboard.sessionKinds.temporary;
 
   async function submitTrip(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -471,10 +474,10 @@ function AccountDashboard({
       const response = await accountClient.createTrip(accountSession.sessionToken, tripForm);
       await onCreatedTrip(response.memberSession);
       setTripForm(defaultTripForm());
-      onMessage("สร้าง trip และเปิดใน cockpit แล้ว");
+      onMessage(t.access.dashboard.createTrip.success);
       onError(null);
     } catch (caught) {
-      onError(errorMessage(caught, "สร้าง trip ไม่สำเร็จ"));
+      onError(errorMessage(caught, t.access.dashboard.createTrip.error, t.access.messages));
     } finally {
       setIsSubmitting(false);
     }
@@ -496,10 +499,10 @@ function AccountDashboard({
         ...settings,
         passkeys: [passkey, ...settings.passkeys.filter((candidate) => candidate.id !== passkey.id)],
       });
-      onMessage("สร้าง passkey แล้ว ใช้ login ได้ทันที");
+      onMessage(t.access.settings.messages.passkeyCreated);
       onError(null);
     } catch (caught) {
-      onError(errorMessage(caught, "สร้าง passkey ไม่สำเร็จ"));
+      onError(errorMessage(caught, t.access.settings.messages.passkeyFailed, t.access.messages));
     }
   }
 
@@ -508,35 +511,35 @@ function AccountDashboard({
       <section className="account-card account-profile-card">
         <div className="account-profile-row">
           <span className="person-avatar" style={{ backgroundColor: settings?.profile.avatarColor ?? "#0f766e" }} aria-hidden="true">
-            {(settings?.profile.displayName ?? "A").slice(0, 1)}
+            {(settings?.profile.displayName ?? t.access.dashboard.fallbackName).slice(0, 1)}
           </span>
           <div>
-            <strong>{settings?.profile.displayName ?? "Account"}</strong>
-            <span>{settings?.profile.primaryEmail ?? "No email loaded"}</span>
+            <strong>{settings?.profile.displayName ?? t.access.dashboard.fallbackName}</strong>
+            <span>{settings?.profile.primaryEmail ?? t.access.dashboard.noEmail}</span>
           </div>
           <Badge tone={accountSession.kind === "trusted" ? "success" : "warning"}>{sessionKindLabel}</Badge>
         </div>
         <div className="account-stat-grid">
-          <Stat label="Trips" value={stats?.tripsTotal ?? 0} />
-          <Stat label="Owned" value={stats?.tripsOwned ?? 0} />
-          <Stat label="Active" value={stats?.activeTrips ?? 0} />
-          <Stat label="Claims" value={stats?.tempClaimsCompleted ?? 0} />
+          <Stat label={t.access.dashboard.stats.trips} value={stats?.tripsTotal ?? 0} />
+          <Stat label={t.access.dashboard.stats.owned} value={stats?.tripsOwned ?? 0} />
+          <Stat label={t.access.dashboard.stats.active} value={stats?.activeTrips ?? 0} />
+          <Stat label={t.access.dashboard.stats.claims} value={stats?.tempClaimsCompleted ?? 0} />
         </div>
         <Button type="button" variant="secondary" onClick={() => void onLogout()}>
           <Icon name="x" />
-          Logout
+          {t.access.dashboard.logout}
         </Button>
       </section>
 
       <form className="account-card account-form account-create-trip" onSubmit={submitTrip}>
-        <PanelHeading icon="plus" title="Create trip" detail="Account creator becomes owner and gets a member session immediately" />
+        <PanelHeading icon="plus" title={t.access.dashboard.createTrip.title} detail={t.access.dashboard.createTrip.detail} />
         <div className="account-two-col">
           <label>
-            <span>Trip name *</span>
+            <span>{t.access.dashboard.createTrip.labels.name}</span>
             <input value={tripForm.name} onChange={(event) => setTripForm((current) => ({ ...current, name: event.target.value }))} required />
           </label>
           <label>
-            <span>Destination *</span>
+            <span>{t.access.dashboard.createTrip.labels.destination}</span>
             <input
               value={tripForm.destinationLabel}
               onChange={(event) => setTripForm((current) => ({ ...current, destinationLabel: event.target.value }))}
@@ -544,7 +547,7 @@ function AccountDashboard({
             />
           </label>
           <label>
-            <span>Start date *</span>
+            <span>{t.access.dashboard.createTrip.labels.startDate}</span>
             <input
               value={tripForm.startDate}
               onChange={(event) => setTripForm((current) => ({ ...current, startDate: event.target.value }))}
@@ -553,11 +556,11 @@ function AccountDashboard({
             />
           </label>
           <label>
-            <span>End date *</span>
+            <span>{t.access.dashboard.createTrip.labels.endDate}</span>
             <input value={tripForm.endDate} onChange={(event) => setTripForm((current) => ({ ...current, endDate: event.target.value }))} type="date" required />
           </label>
           <label>
-            <span>Owner display name *</span>
+            <span>{t.access.dashboard.createTrip.labels.ownerDisplayName}</span>
             <input
               value={tripForm.ownerDisplayName}
               onChange={(event) => setTripForm((current) => ({ ...current, ownerDisplayName: event.target.value }))}
@@ -566,7 +569,7 @@ function AccountDashboard({
             />
           </label>
           <label>
-            <span>Join ID *</span>
+            <span>{t.access.dashboard.createTrip.labels.joinId}</span>
             <input
               value={tripForm.joinId}
               onChange={(event) => setTripForm((current) => ({ ...current, joinId: event.target.value }))}
@@ -576,7 +579,7 @@ function AccountDashboard({
           </label>
         </div>
         <label>
-          <span>Join password *</span>
+          <span>{t.access.dashboard.createTrip.labels.joinPassword}</span>
           <input
             value={tripForm.joinPassword}
             onChange={(event) => setTripForm((current) => ({ ...current, joinPassword: event.target.value }))}
@@ -588,12 +591,16 @@ function AccountDashboard({
         </label>
         <Button type="submit" disabled={isSubmitting}>
           <Icon name="check" />
-          Create and open
+          {t.access.dashboard.createTrip.submit}
         </Button>
       </form>
 
       <section className="account-card account-history">
-        <PanelHeading icon="clock" title="Trip history" detail={isLoading ? "Loading account trips" : `${trips.length} visible trips`} />
+        <PanelHeading
+          icon="clock"
+          title={t.access.dashboard.history.title}
+          detail={isLoading ? t.access.dashboard.history.loading : t.access.dashboard.history.visibleTrips({ count: trips.length })}
+        />
         {trips.length ? (
           <div className="account-trip-list">
             {trips.map((trip) => (
@@ -603,17 +610,17 @@ function AccountDashboard({
                   <strong>{trip.name}</strong>
                   <span>{trip.destinationLabel} · {trip.startDate} - {trip.endDate}</span>
                 </div>
-                <Badge tone={trip.isOwner ? "success" : "neutral"}>{trip.isOwner ? "Owner" : trip.role}</Badge>
+                <Badge tone={trip.isOwner ? "success" : "neutral"}>{trip.isOwner ? t.access.dashboard.history.owner : trip.role}</Badge>
               </article>
             ))}
           </div>
         ) : (
-          <p className="account-empty">No account trips yet.</p>
+          <p className="account-empty">{t.access.dashboard.history.empty}</p>
         )}
       </section>
 
       <section className="account-card account-settings-card">
-        <PanelHeading icon="settings" title="Profile & settings" detail="Manage local account profile and trusted devices" />
+        <PanelHeading icon="settings" title={t.access.settings.title} detail={t.access.settings.detail} />
         {settings ? (
           <AccountSettingsEditor
             accountClient={accountClient}
@@ -625,7 +632,7 @@ function AccountDashboard({
             onSettingsChanged={onSettingsChanged}
           />
         ) : (
-          <p className="account-empty">Loading account settings.</p>
+          <p className="account-empty">{t.access.settings.loading}</p>
         )}
         <Button
           type="button"
@@ -634,7 +641,7 @@ function AccountDashboard({
           onClick={() => void registerPasskey()}
         >
           <Icon name="key" />
-          Start passkey setup
+          {t.access.settings.startPasskeySetup}
         </Button>
       </section>
     </div>
@@ -658,6 +665,7 @@ function AccountSettingsEditor({
   onSettingsChanged: (settings: AccountSettings) => void;
   settings: AccountSettings;
 }) {
+  const { locale, t } = useI18n();
   const [form, setForm] = useState<AccountSettingsUpdateRequest>(() => profileToForm(settings));
   const [isSaving, setIsSaving] = useState(false);
   const [revokingDeviceId, setRevokingDeviceId] = useState<string | null>(null);
@@ -669,10 +677,10 @@ function AccountSettingsEditor({
       const nextSettings = await accountClient.updateSettings(accountSession.sessionToken, form);
       onSettingsChanged(nextSettings);
       setForm(profileToForm(nextSettings));
-      onMessage("บันทึก profile และ settings แล้ว");
+      onMessage(t.access.settings.messages.saved);
       onError(null);
     } catch (caught) {
-      onError(errorMessage(caught, "บันทึก settings ไม่สำเร็จ"));
+      onError(errorMessage(caught, t.access.settings.messages.saveFailed, t.access.messages));
     } finally {
       setIsSaving(false);
     }
@@ -684,16 +692,16 @@ function AccountSettingsEditor({
       await accountClient.revokeTrustedDevice(accountSession.sessionToken, deviceId);
       if (accountSession.trustedDeviceId === deviceId) {
         onSessionCleared();
-        onMessage("ยกเลิก trusted device นี้แล้ว กรุณา login ใหม่");
+        onMessage(t.access.settings.messages.currentDeviceRevoked);
         onError(null);
         return;
       }
       const nextSettings = await accountClient.loadSettings(accountSession.sessionToken);
       onSettingsChanged(nextSettings);
-      onMessage("ยกเลิก trusted device แล้ว");
+      onMessage(t.access.settings.messages.deviceRevoked);
       onError(null);
     } catch (caught) {
-      onError(errorMessage(caught, "ยกเลิก trusted device ไม่สำเร็จ"));
+      onError(errorMessage(caught, t.access.settings.messages.revokeFailed, t.access.messages));
     } finally {
       setRevokingDeviceId(null);
     }
@@ -704,11 +712,11 @@ function AccountSettingsEditor({
       <form className="account-form account-settings-form" onSubmit={submitSettings}>
         <div className="account-two-col">
           <label>
-            <span>Display name *</span>
+            <span>{t.access.settings.form.displayName}</span>
             <input value={form.displayName} onChange={(event) => setForm((current) => ({ ...current, displayName: event.target.value }))} required />
           </label>
           <label>
-            <span>Avatar color *</span>
+            <span>{t.access.settings.form.avatarColor}</span>
             <input
               value={form.avatarColor}
               onChange={(event) => setForm((current) => ({ ...current, avatarColor: event.target.value }))}
@@ -717,41 +725,44 @@ function AccountSettingsEditor({
             />
           </label>
           <label>
-            <span>Locale *</span>
+            <span>{t.access.settings.form.locale}</span>
             <input value={form.locale} onChange={(event) => setForm((current) => ({ ...current, locale: event.target.value }))} required />
           </label>
           <label>
-            <span>Timezone *</span>
+            <span>{t.access.settings.form.timezone}</span>
             <input value={form.timezone} onChange={(event) => setForm((current) => ({ ...current, timezone: event.target.value }))} required />
           </label>
         </div>
         <Button type="submit" disabled={isSaving}>
           <Icon name="check" />
-          Save settings
+          {t.access.settings.form.save}
         </Button>
       </form>
 
       <div className="account-settings-grid">
-        <SettingLine label="Passkeys" value={`${settings.passkeys.length}`} />
-        <SettingLine label="Trusted devices" value={`${settings.trustedDevices.length}`} />
+        <SettingLine label={t.access.settings.passkeys} value={`${settings.passkeys.length}`} />
+        <SettingLine label={t.access.settings.trustedDevices} value={`${settings.trustedDevices.length}`} />
       </div>
 
-      <div className="account-device-list" aria-label="Trusted devices">
+      <div className="account-device-list" aria-label={t.access.settings.trustedDevicesLabel}>
         {settings.trustedDevices.length ? (
           settings.trustedDevices.map((device) => (
             <div className="account-device-row" key={device.id}>
               <div>
                 <strong>{device.label}</strong>
-                <span>{device.userAgent || "Unknown browser"} · {device.lastSeenAt ? formatDateTime(device.lastSeenAt) : formatDateTime(device.createdAt)}</span>
+                <span>
+                  {device.userAgent || t.access.settings.unknownBrowser} ·{" "}
+                  {device.lastSeenAt ? formatDateTime(device.lastSeenAt, locale) : formatDateTime(device.createdAt, locale)}
+                </span>
               </div>
               <Button type="button" variant="secondary" onClick={() => void revokeDevice(device.id)} disabled={revokingDeviceId === device.id}>
                 <Icon name="x" />
-                Revoke
+                {t.access.settings.revoke}
               </Button>
             </div>
           ))
         ) : (
-          <p className="account-empty">No trusted devices.</p>
+          <p className="account-empty">{t.access.settings.noTrustedDevices}</p>
         )}
       </div>
     </>
@@ -797,21 +808,21 @@ function StatusMessage({ children, tone }: { children: ReactNode; tone: "danger"
   );
 }
 
-function errorMessage(caught: unknown, fallback: string): string {
-  if (caught instanceof Error && caught.message) return friendlyErrorText(caught.message, fallback);
+function errorMessage(caught: unknown, fallback: string, labels: Messages["access"]["messages"]): string {
+  if (caught instanceof Error && caught.message) return friendlyErrorText(caught.message, fallback, labels);
   return fallback;
 }
 
-function friendlyErrorText(message: string, fallback: string): string {
+function friendlyErrorText(message: string, fallback: string, labels: Messages["access"]["messages"]): string {
   const normalized = message.trim();
-  if (normalized === "404") return "ไม่พบข้อมูลที่ต้องการ กรุณาตรวจสอบอีกครั้ง";
-  if (normalized === "401" || normalized === "403") return "สิทธิ์ไม่ถูกต้อง กรุณาเข้าสู่ระบบใหม่";
+  if (normalized === "404") return labels.notFound;
+  if (normalized === "401" || normalized === "403") return labels.unauthorized;
   if (!normalized || /^\d{3}$/.test(normalized)) return fallback;
   return normalized;
 }
 
-function formatDateTime(value: string): string {
-  return new Intl.DateTimeFormat("th-TH", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
+function formatDateTime(value: string, locale: "en" | "th"): string {
+  return new Intl.DateTimeFormat(locale === "th" ? "th-TH" : "en-US", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
 }
 
 function profileToForm(settings: AccountSettings): AccountSettingsUpdateRequest {

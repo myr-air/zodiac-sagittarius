@@ -27,7 +27,7 @@ interface TripJoinGateProps {
 }
 
 export function TripJoinGate({ trip, apiClient, embedded = false, initialJoinCode, onTripChange, onAuthenticated, onCockpitLoaded }: TripJoinGateProps) {
-  const { locale, t } = useI18n();
+  const { t } = useI18n();
   const [step, setStep] = useState<"room" | "participant">("room");
   const [joinId, setJoinId] = useState(initialJoinCode ?? "");
   const [tripPassword, setTripPassword] = useState("");
@@ -158,7 +158,7 @@ export function TripJoinGate({ trip, apiClient, embedded = false, initialJoinCod
             <p className="join-eyebrow">{t.join.eyebrow}</p>
             <h1>{step === "room" ? t.join.roomTitle : t.join.participantTitle}</h1>
             <p>{step === "room" ? t.join.roomDetail : t.join.participantDetail}</p>
-            <LanguageSwitch className="access-language-switch" />
+            {!embedded ? <LanguageSwitch className="access-language-switch" /> : null}
           </div>
         </div>
 
@@ -252,9 +252,7 @@ export function TripJoinGate({ trip, apiClient, embedded = false, initialJoinCod
                       </label>
                       {!selectedMember.claimPasswordHash ? (
                         <p className="participant-auth-help">
-                          {locale === "th"
-                            ? "รหัสนี้เป็นรหัสส่วนตัวของคุณ ไม่ใช่รหัสห้อง trip ใช้ป้องกันไม่ให้คนอื่นเลือกตัวตนของคุณภายหลัง"
-                            : "This is your personal password, not the trip room password. It keeps other people from choosing your identity later."}
+                          {t.join.participantHelp}
                         </p>
                       ) : null}
                       <Button type="submit" className="join-submit" disabled={isSubmitting}>
