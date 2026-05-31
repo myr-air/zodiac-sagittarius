@@ -24,7 +24,7 @@ describe("frontend core freeze contract", () => {
   });
 
   it("keeps one frontend verification command for freeze gates", () => {
-    expect(packageJson.scripts?.["test:storybook"]).toBe("vitest --project storybook run");
+    expect(packageJson.scripts?.["test:storybook"]).toBe("NODE_OPTIONS=--no-warnings vitest --project storybook run");
     expect(packageJson.scripts?.["verify:frontend"]).toBe(
       "bun run lint && bun run typecheck && bun run test && bun run test:storybook && bun run build && bun run build-storybook",
     );
