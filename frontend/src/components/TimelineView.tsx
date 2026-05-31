@@ -61,7 +61,7 @@ export function TimelineView({ contextRailOpen, endDate, items, selectedItemId, 
           <article className="timeline-day" key={group.day}>
             <header className="timeline-day-header">
               <div>
-                <strong>{formatDayLabel(group.day, startDate)}</strong>
+                <strong>{formatDayLabel(group.day, startDate, locale)}</strong>
                 <span>{formatThaiDate(group.day, locale)}</span>
               </div>
               <Badge tone="route">{dayRouteLabel(group.day, locale)}</Badge>

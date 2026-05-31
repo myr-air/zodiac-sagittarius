@@ -31,7 +31,7 @@ describe("SuggestionPanel", () => {
 
     expect(screen.getByRole("heading", { name: "คำแนะนำ (3)" })).toBeInTheDocument();
     expect(screen.getAllByText("แนะนำให้จองคิวล่วงหน้า")).toHaveLength(3);
-    expect(screen.getByText("Traveler suggested an update")).toBeInTheDocument();
+    expect(screen.getByText("ผู้ร่วมเดินทาง เสนอการปรับแผน")).toBeInTheDocument();
     expect(screen.queryByText("Hidden approved item")).not.toBeInTheDocument();
   });
 });

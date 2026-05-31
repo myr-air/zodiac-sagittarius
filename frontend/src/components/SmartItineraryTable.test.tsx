@@ -71,14 +71,14 @@ describe("SmartItineraryTable", () => {
     fireEvent.keyDown(row, { key: "Enter" });
     expect(props.onSelectItem).not.toHaveBeenCalled();
 
-    fireEvent.click(within(row).getByRole("button", { name: /Select stop Dim Dim Sum/i }));
+    fireEvent.click(within(row).getByRole("button", { name: /เลือกจุด Dim Dim Sum/i }));
     expect(props.onSelectItem).toHaveBeenCalledWith("item-dimdim");
     expect(within(row).getByText("Shop G72, G/F, The Elements")).toBeVisible();
     onSelectItem.mockClear();
     fireEvent.keyDown(within(row).getByRole("link", { name: /แผนที่/i }), { key: "Enter", bubbles: true });
     expect(props.onSelectItem).not.toHaveBeenCalled();
 
-    fireEvent.click(screen.getByRole("button", { name: /Collapse Day 2/i }));
+    fireEvent.click(screen.getByRole("button", { name: /ย่อ วันที่ 2/i }));
     expect(document.querySelector('tr[aria-label*="Dim Dim Sum"]')).toHaveAttribute("aria-hidden", "true");
   });
 
@@ -97,14 +97,14 @@ describe("SmartItineraryTable", () => {
     renderTable({ role: "viewer", canRestructure: false });
 
     expect(screen.getByRole("button", { name: /เพิ่มสถานที่/i })).toBeDisabled();
-    expect(screen.getByText("Editing requires organizer access.")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Drag Dim Dim Sum/i })).toBeDisabled();
+    expect(screen.getByText("ต้องมีสิทธิ์ผู้จัดทริปจึงจะแก้ไขได้")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /ลาก Dim Dim Sum/i })).toBeDisabled();
   });
 
   it("ignores drag previews and drops that cannot move an item", () => {
     const props = renderTable({ canRestructure: false });
     const dataTransfer = createDataTransfer();
-    const row = screen.getByRole("button", { name: /Select stop Dim Dim Sum/i }).closest("tr")!;
+    const row = screen.getByRole("button", { name: /เลือกจุด Dim Dim Sum/i }).closest("tr")!;
 
     fireEvent.dragOver(row, { dataTransfer });
     fireEvent.drop(row, { dataTransfer });
@@ -115,7 +115,7 @@ describe("SmartItineraryTable", () => {
 
   it("ignores missing and self-targeted drag payloads", () => {
     const props = renderTable();
-    const row = screen.getByRole("button", { name: /Select stop Dim Dim Sum/i }).closest("tr")!;
+    const row = screen.getByRole("button", { name: /เลือกจุด Dim Dim Sum/i }).closest("tr")!;
 
     fireEvent.dragOver(row, { dataTransfer: createDataTransfer() });
     expect(row).not.toHaveClass("data-row--drop-target");

@@ -40,11 +40,11 @@ describe("OverviewPage role lenses", () => {
   it("combines booking prep into the trip checklist for managers", () => {
     renderOverview("member-beam");
 
-    expect(screen.getByRole("region", { name: /Today and next focus/i })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: /วันนี้และจุดถัดไป/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /วันนี้ต้องโฟกัส/i })).toBeInTheDocument();
     expect(screen.getByText(/เดินทางออกจากกรุงเทพฯ \(BKK\)/i)).toBeInTheDocument();
-    expect(screen.queryByRole("region", { name: /Booking and prep tracker/i })).not.toBeInTheDocument();
-    const checklist = screen.getByRole("region", { name: /Trip checklist/i });
+    expect(screen.queryByRole("region", { name: /ตัวติดตามการจองและเตรียมตัว/i })).not.toBeInTheDocument();
+    const checklist = screen.getByRole("region", { name: /เช็กลิสต์ของทริป/i });
     expect(within(checklist).getByRole("heading", { name: /เช็กลิสต์ทริปและการเตรียมตัว/i })).toBeInTheDocument();
     expect(within(checklist).getByText(/จอง Peak Tram/i)).toBeInTheDocument();
     expect(within(checklist).getAllByText(/การจอง/i).length).toBeGreaterThan(0);
@@ -53,12 +53,12 @@ describe("OverviewPage role lenses", () => {
   it("prioritizes where to go and what to eat for travelers", () => {
     renderOverview("member-nam");
 
-    expect(screen.getByRole("region", { name: /Today and next focus/i })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: /วันนี้และจุดถัดไป/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /มุมมองการเดินทางของฉัน/i })).toBeInTheDocument();
-    expect(screen.getByRole("region", { name: /Traveler highlights/i })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: /ไฮไลต์ของนักเดินทาง/i })).toBeInTheDocument();
     expect(screen.getByText(/อาหารเย็นที่ Temple Street Night Market/i)).toBeInTheDocument();
     expect(screen.getByText(/Dim Dim Sum ที่ Tim Ho Wan/i)).toBeInTheDocument();
-    expect(screen.queryByRole("region", { name: /Trip readiness/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: /ความพร้อมของทริป/i })).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/ให้ใครดูแล/i)).not.toBeInTheDocument();
   });
 
@@ -83,7 +83,7 @@ describe("OverviewPage role lenses", () => {
       />,
     );
 
-    const checklist = screen.getByRole("region", { name: /My travel checklist/i });
+    const checklist = screen.getByRole("region", { name: /เช็กลิสต์เดินทางของฉัน/i });
     await user.click(within(checklist).getByRole("button", { name: /ยังไม่ได้ทำ/i }));
     expect(within(checklist).getByText("Pack adapter")).toBeInTheDocument();
     await user.click(within(checklist).getByRole("button", { name: /เรียบร้อย/i }));
@@ -107,8 +107,8 @@ describe("OverviewPage role lenses", () => {
     renderOverview("member-beam");
 
     expect(screen.getByRole("heading", { name: /ศูนย์จัดการทริป/i })).toBeInTheDocument();
-    expect(screen.getByRole("region", { name: /Trip readiness/i })).toBeInTheDocument();
-    const checklist = screen.getByRole("region", { name: /Trip checklist/i });
+    expect(screen.getByRole("region", { name: /ความพร้อมของทริป/i })).toBeInTheDocument();
+    const checklist = screen.getByRole("region", { name: /เช็กลิสต์ของทริป/i });
     expect(checklist).toBeInTheDocument();
     expect(screen.queryByLabelText(/ให้ใครดูแล/i)).not.toBeInTheDocument();
     await user.click(within(checklist).getByRole("button", { name: /เพิ่มเช็กลิสต์/i }));
@@ -120,8 +120,8 @@ describe("OverviewPage role lenses", () => {
     renderOverview("member-family");
 
     expect(screen.getByRole("heading", { name: /ภาพรวมทริป/i })).toBeInTheDocument();
-    expect(screen.getByRole("region", { name: /Read-only trip snapshot/i })).toBeInTheDocument();
-    expect(screen.queryByRole("region", { name: /Trip checklist/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("region", { name: /ภาพรวมทริปแบบอ่านอย่างเดียว/i })).toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: /เช็กลิสต์ของทริป/i })).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/เพิ่มเช็กลิสต์/i)).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /เพิ่มเช็กลิสต์/i })).not.toBeInTheDocument();
   });
@@ -195,7 +195,7 @@ describe("OverviewPage role lenses", () => {
       />,
     );
 
-    const checklist = screen.getByRole("region", { name: /Trip checklist/i });
+    const checklist = screen.getByRole("region", { name: /เช็กลิสต์ของทริป/i });
     await user.click(within(checklist).getByRole("button", { name: /เพิ่มเช็กลิสต์/i }));
     const dialog = screen.getByRole("dialog", { name: /เพิ่มเช็กลิสต์/i });
     await user.type(within(dialog).getByLabelText(/เพิ่มเช็กลิสต์/i), "Confirm ferry");

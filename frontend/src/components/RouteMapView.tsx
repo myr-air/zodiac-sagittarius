@@ -46,7 +46,7 @@ export function RouteMapView({ endDate, items, liveMapEnabled = process.env.NODE
   const { locale, t } = useI18n();
   const groups = useMemo(() => groupItemsByDay(items), [items]);
   const routePoints = useMemo(() => buildRoutePoints(items), [items]);
-  const routeDayGroups = useMemo(() => buildRouteDayGroups(groups, routePoints, startDate), [groups, routePoints, startDate]);
+  const routeDayGroups = useMemo(() => buildRouteDayGroups(groups, routePoints, startDate, locale), [groups, locale, routePoints, startDate]);
   const [activeDay, setActiveDay] = useState<DayFilter>("all");
   const visibleRouteDayGroups = useMemo(
     () => routeDayGroups.filter((group) => activeDay === "all" || group.day === activeDay),
@@ -256,7 +256,7 @@ export function RouteMapView({ endDate, items, liveMapEnabled = process.env.NODE
           {liveMapState !== "error" ? (
             <>
               <div className="route-live-map" ref={mapContainerRef} aria-hidden="true" />
-              {liveMapState !== "ready" ? <p className="route-map-status">{liveMapStatusText(liveMapState, locale)}</p> : null}
+              {liveMapState !== "ready" ? <p className="route-map-status">{liveMapStatusText(liveMapState, t.map.liveLoading, t.map.liveError)}</p> : null}
             </>
           ) : (
             <>
@@ -293,9 +293,9 @@ export function RouteMapView({ endDate, items, liveMapEnabled = process.env.NODE
   );
 }
 
-export function liveMapStatusText(state: "idle" | "loading" | "ready" | "error", locale: "en" | "th" = "en"): string {
-  if (state === "error") return locale === "th" ? "โหลดแผนที่สดไม่สำเร็จ แสดงแผนผังสำรองไว้ก่อน" : "Could not load the live map. Showing the fallback route diagram.";
-  return locale === "th" ? "กำลังโหลดแผนที่จาก OpenFreeMap" : "Loading map from OpenFreeMap";
+export function liveMapStatusText(state: "idle" | "loading" | "ready" | "error", loadingLabel = "Loading map from OpenFreeMap", errorLabel = "Could not load the live map. Showing the fallback route diagram."): string {
+  if (state === "error") return errorLabel;
+  return loadingLabel;
 }
 
 export function activeDayLabel(activeDay: DayFilter, groups: RouteDayGroup[], allDays = "All days", chooseDay = "Choose day"): string {
@@ -303,12 +303,12 @@ export function activeDayLabel(activeDay: DayFilter, groups: RouteDayGroup[], al
   return groups.find((group) => group.day === activeDay)?.label ?? chooseDay;
 }
 
-function buildRouteDayGroups(groups: ReturnType<typeof groupItemsByDay>, routePoints: RoutePoint[], startDate: string): RouteDayGroup[] {
+function buildRouteDayGroups(groups: ReturnType<typeof groupItemsByDay>, routePoints: RoutePoint[], startDate: string, locale: "en" | "th"): RouteDayGroup[] {
   return groups
     .map((group, index) => ({
       color: routeDayColors[index % routeDayColors.length],
       day: group.day,
-      label: formatDayLabel(group.day, startDate),
+      label: formatDayLabel(group.day, startDate, locale),
       points: routePoints.filter((point) => point.item.day === group.day),
     }))
     .filter((group) => group.points.length > 0);

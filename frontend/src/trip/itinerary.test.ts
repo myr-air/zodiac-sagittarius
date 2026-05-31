@@ -44,6 +44,11 @@ describe("itinerary planning domain", () => {
     expect(formatDayLabel("not-a-date", seedTrip.startDate)).toBe("not-a-date");
   });
 
+  it("formats day labels in the active locale", () => {
+    expect(formatDayLabel("2025-05-16", seedTrip.startDate)).toBe("Day 2");
+    expect(formatDayLabel("2025-05-17", seedTrip.startDate, "th")).toBe("วันที่ 3");
+  });
+
   it("finds validation issues without relying on color alone", () => {
     const dayItems = sortItemsForDay(seedTrip.itineraryItems, "2025-05-16");
     const missing = seedTrip.itineraryItems.find((item) => item.id === "item-arrive-hkg");

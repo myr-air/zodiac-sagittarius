@@ -20,7 +20,7 @@ export function SuggestionPanel({ suggestions, members }: { suggestions: Suggest
               <Icon name={suggestion.status === "conflicted" ? "alertCircle" : "check"} />
               <div>
                 <strong>{suggestion.proposedPatch.activity ?? t.suggestions.fallback}</strong>
-                <span>{t.suggestions.suggestedUpdate({ name: proposer?.displayName ?? "Traveler" })}</span>
+                <span>{t.suggestions.suggestedUpdate({ name: proposer?.displayName ?? t.appShell.roles.traveler })}</span>
               </div>
             </article>
           );

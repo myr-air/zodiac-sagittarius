@@ -146,13 +146,13 @@ export function ContextRail({
                 return (
                   <article className="stop-note-item" key={note.id}>
                     <div className="stop-note-header">
-                      <strong>{memberDisplayName(author)}</strong>
+                      <strong>{memberDisplayName(author, t.appShell.roles.traveler)}</strong>
                       {canManageNote ? (
                         <span className="stop-note-actions">
-                          <button type="button" aria-label={t.contextRail.notes.editBy({ name: memberDisplayName(author) })} onClick={() => startEditingNote(note)}>
+                          <button type="button" aria-label={t.contextRail.notes.editBy({ name: memberDisplayName(author, t.appShell.roles.traveler) })} onClick={() => startEditingNote(note)}>
                             <Icon name="edit" />
                           </button>
-                          <button type="button" aria-label={t.contextRail.notes.deleteBy({ name: memberDisplayName(author) })} onClick={() => onDeleteNote(note.id)}>
+                          <button type="button" aria-label={t.contextRail.notes.deleteBy({ name: memberDisplayName(author, t.appShell.roles.traveler) })} onClick={() => onDeleteNote(note.id)}>
                             <Icon name="trash" />
                           </button>
                         </span>
@@ -229,7 +229,7 @@ export function ContextRail({
                     <Icon name={suggestion.status === "conflicted" ? "alertCircle" : "check"} />
                     <div>
                       <strong>{label}</strong>
-                      <span>{t.contextRail.suggestions.suggestedUpdate({ name: memberDisplayName(proposer) })}</span>
+                      <span>{t.contextRail.suggestions.suggestedUpdate({ name: memberDisplayName(proposer, t.appShell.roles.traveler) })}</span>
                       {canReviewSuggestions ? (
                         <div className="suggestion-actions">
                           <button type="button" onClick={() => onReviewSuggestion(suggestion.id, "approved")}>{t.contextRail.suggestions.approve({ label })}</button>
@@ -280,9 +280,9 @@ function suggestionLabel(suggestion: Suggestion, fallback: string): string {
   );
 }
 
-function memberDisplayName(member: Member | undefined): string {
+function memberDisplayName(member: Member | undefined, fallback: string): string {
   /* v8 ignore next */
-  return member?.displayName ?? "Traveler";
+  return member?.displayName ?? fallback;
 }
 
 function taskKindLabel(task: TripTask, labels: { booking: string; prep: string }): string {

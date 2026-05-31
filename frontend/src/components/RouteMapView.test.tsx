@@ -95,11 +95,11 @@ describe("RouteMapView", () => {
     expect(screen.getByText(/จุดที่แสดง/)).toHaveTextContent(`${regionalItems.length}/${regionalItems.length} จุดที่แสดง`);
     expect(screen.getByText("กำลังโหลดแผนที่จาก OpenFreeMap")).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: /Day 2/ }));
+    fireEvent.click(screen.getByRole("button", { name: /วันที่ 2/ }));
 
     const dayTwoCount = regionalItems.filter((item) => item.day === "2025-05-16").length;
     expect(screen.getByText(/จุดที่แสดง/)).toHaveTextContent(`${dayTwoCount}/${regionalItems.length} จุดที่แสดง`);
-    expect(screen.getAllByText(/Day 2/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/วันที่ 2/).length).toBeGreaterThan(0);
 
     fireEvent.click(screen.getByRole("button", { name: "ทุกวัน" }));
     expect(screen.getByText(/จุดที่แสดง/)).toHaveTextContent(`${regionalItems.length}/${regionalItems.length} จุดที่แสดง`);
@@ -116,7 +116,7 @@ describe("RouteMapView", () => {
     );
 
     expect(screen.getByText("0/0 จุดที่แสดง")).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /Day 1/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /วันที่ 1/ })).not.toBeInTheDocument();
   });
 
   it("projects stops without coordinates onto fallback route points", () => {
@@ -181,7 +181,7 @@ describe("RouteMapView", () => {
     expect(document.querySelector(".route-live-map button")).toHaveAttribute("tabindex", "-1");
     expect(maplibreMock.markers.length).toBeGreaterThan(1);
 
-    await userEvent.click(screen.getByRole("button", { name: /Day 2/ }));
+    await userEvent.click(screen.getByRole("button", { name: /วันที่ 2/ }));
 
     expect(maplibreMock.maps[0]?.setPaintProperty).toHaveBeenCalled();
     expect(maplibreMock.maps[0]?.fitBounds).toHaveBeenCalled();
@@ -206,7 +206,7 @@ describe("RouteMapView", () => {
     );
 
     await vi.dynamicImportSettled();
-    fireEvent.click(screen.getByRole("button", { name: /Day 2/ }));
+    fireEvent.click(screen.getByRole("button", { name: /วันที่ 2/ }));
 
     await waitFor(() => expect(maplibreMock.maps[0]?.fitBounds).toHaveBeenCalled());
   });
@@ -244,7 +244,7 @@ describe("RouteMapView", () => {
     await waitFor(() => expect(maplibreMock.maps[0]).toBeTruthy());
     maplibreMock.maps[0]!.getLayer.mockReturnValue(false);
 
-    await user.click(screen.getByRole("button", { name: /Day 2/ }));
+    await user.click(screen.getByRole("button", { name: /วันที่ 2/ }));
 
     expect(maplibreMock.maps[0]!.setPaintProperty).not.toHaveBeenCalled();
 
@@ -322,7 +322,7 @@ describe("RouteMapView", () => {
   });
 
   it("exercises route map helper fallbacks directly", () => {
-    expect(liveMapStatusText("error", "th")).toBe("โหลดแผนที่สดไม่สำเร็จ แสดงแผนผังสำรองไว้ก่อน");
+    expect(liveMapStatusText("error", "กำลังโหลด", "โหลดไม่สำเร็จ")).toBe("โหลดไม่สำเร็จ");
     expect(activeDayLabel("missing-day", [], "ทุกวัน", "เลือกวัน")).toBe("เลือกวัน");
     expect(dayColorFor("missing-day", [])).toBe("#2563eb");
 

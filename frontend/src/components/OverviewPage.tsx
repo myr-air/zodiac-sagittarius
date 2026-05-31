@@ -1,6 +1,7 @@
 import { type FormEvent, useMemo, useState } from "react";
 import type { ExpenseSummary, ItineraryItem, Member, Suggestion, Trip, TripTask } from "@/src/trip/types";
 import { useI18n } from "@/src/i18n/I18nProvider";
+import type { Locale } from "@/src/i18n/types";
 import { formatDayLabel, getTripDates, validateItineraryItem } from "@/src/trip/itinerary";
 import { Icon } from "./icons";
 import { TravelMotif } from "./motifs";
@@ -129,13 +130,13 @@ export function OverviewPage({ trip, currentMemberId, expenseSummary, items, sug
               {nextStop ? (
                 <div className="overview-next-stop">
                   <strong>{nextStop.activity}</strong>
-                  <span>{formatDayLabel(nextStop.day, trip.startDate)} · {nextStop.startTime} · {nextStop.place}</span>
+                  <span>{formatDayLabel(nextStop.day, trip.startDate, locale)} · {nextStop.startTime} · {nextStop.place}</span>
                   <p>{travelerNextStopDetail(nextStop, t.overview.focusDetails.travelerFallback)}</p>
                 </div>
               ) : (
                 <p className="overview-muted">{t.overview.empty.itinerary}</p>
               )}
-              <OverviewFocusList items={nextDayItems} startDate={trip.startDate} />
+              <OverviewFocusList items={nextDayItems} startDate={trip.startDate} locale={locale} label={t.overview.sections.todayFocusStops} />
             </section>
 
             <section className="overview-panel overview-panel--wide" aria-label={t.overview.sections.travelerHighlights}>
@@ -143,7 +144,7 @@ export function OverviewPage({ trip, currentMemberId, expenseSummary, items, sug
                 <Icon name="location" />
                 <h2>{t.overview.headings.highlights}</h2>
               </div>
-              <OverviewStopList items={[...foodStops, ...tripHighlights].slice(0, 5)} startDate={trip.startDate} emptyMessage={t.overview.empty.highlights} />
+              <OverviewStopList items={[...foodStops, ...tripHighlights].slice(0, 5)} startDate={trip.startDate} locale={locale} emptyMessage={t.overview.empty.highlights} />
             </section>
 
             <section className="overview-panel overview-task-panel" aria-label={t.overview.sections.travelChecklist}>
@@ -212,7 +213,7 @@ export function OverviewPage({ trip, currentMemberId, expenseSummary, items, sug
                 <Icon name="location" />
                 <h2>{t.overview.headings.viewerSnapshot}</h2>
               </div>
-              <OverviewStopList items={viewerHighlights} startDate={trip.startDate} emptyMessage={t.overview.empty.highlights} />
+              <OverviewStopList items={viewerHighlights} startDate={trip.startDate} locale={locale} emptyMessage={t.overview.empty.highlights} />
             </section>
 
             <section className="overview-panel" aria-label={t.overview.sections.nextStop}>
@@ -220,7 +221,7 @@ export function OverviewPage({ trip, currentMemberId, expenseSummary, items, sug
                 <Icon name="route" />
                 <h2>{t.overview.headings.nextStop}</h2>
               </div>
-              {viewerNextStopPanel(nextStop, trip.startDate, t.overview.empty.itinerary, t.overview.focusDetails.viewerFallback)}
+              {viewerNextStopPanel(nextStop, trip.startDate, locale, t.overview.empty.itinerary, t.overview.focusDetails.viewerFallback)}
             </section>
 
             <button className="overview-panel overview-panel--button" type="button" aria-label={t.overview.money.openExpenses} onClick={openExpenses}>
@@ -253,13 +254,13 @@ export function OverviewPage({ trip, currentMemberId, expenseSummary, items, sug
           {nextStop ? (
             <div className="overview-next-stop">
               <strong>{nextStop.activity}</strong>
-              <span>{formatDayLabel(nextStop.day, trip.startDate)} · {nextStop.startTime} · {nextStop.place}</span>
+              <span>{formatDayLabel(nextStop.day, trip.startDate, locale)} · {nextStop.startTime} · {nextStop.place}</span>
               <p>{managerNextStopDetail(nextStop, t.overview.focusDetails.managerFallback)}</p>
             </div>
           ) : (
             <p className="overview-muted">{t.overview.empty.itinerary}</p>
           )}
-          <OverviewFocusList items={nextDayItems} startDate={trip.startDate} />
+          <OverviewFocusList items={nextDayItems} startDate={trip.startDate} locale={locale} label={t.overview.sections.todayFocusStops} />
             </section>
 
             <section className="overview-panel overview-panel--health" aria-label={t.overview.sections.readiness}>
@@ -404,14 +405,14 @@ function overviewRoleLens(member?: Member): OverviewRoleLens {
   return "viewer";
 }
 
-function OverviewStopList({ items, startDate, emptyMessage }: { items: ItineraryItem[]; startDate: string; emptyMessage: string }) {
+function OverviewStopList({ items, startDate, locale, emptyMessage }: { items: ItineraryItem[]; startDate: string; locale: Locale; emptyMessage: string }) {
   if (!items.length) return <p className="overview-muted">{emptyMessage}</p>;
 
   return (
     <ul className="overview-stop-list">
       {items.map((item) => (
         <li key={item.id}>
-          <span>{formatDayLabel(item.day, startDate)} · {item.startTime}</span>
+          <span>{formatDayLabel(item.day, startDate, locale)} · {item.startTime}</span>
           <strong>{item.activity}</strong>
           <small>{item.place}</small>
         </li>
@@ -420,14 +421,14 @@ function OverviewStopList({ items, startDate, emptyMessage }: { items: Itinerary
   );
 }
 
-function OverviewFocusList({ items, startDate }: { items: ItineraryItem[]; startDate: string }) {
+function OverviewFocusList({ items, startDate, locale, label }: { items: ItineraryItem[]; startDate: string; locale: Locale; label: string }) {
   if (items.length <= 1) return null;
 
   return (
-    <ul className="overview-focus-list" aria-label="Today focus stops">
+    <ul className="overview-focus-list" aria-label={label}>
       {items.slice(1).map((item) => (
         <li key={item.id}>
-          <span>{formatDayLabel(item.day, startDate)} · {item.startTime}</span>
+          <span>{formatDayLabel(item.day, startDate, locale)} · {item.startTime}</span>
           <strong>{item.activity}</strong>
         </li>
       ))}
@@ -450,12 +451,12 @@ function viewerNextStopDetail(item: ItineraryItem, fallback: string): string {
   return item.transportation || fallback;
 }
 
-function viewerNextStopPanel(item: ItineraryItem | undefined, startDate: string, emptyMessage: string, detailFallback: string) {
+function viewerNextStopPanel(item: ItineraryItem | undefined, startDate: string, locale: Locale, emptyMessage: string, detailFallback: string) {
   /* v8 ignore next */
   return item ? (
     <div className="overview-next-stop">
       <strong>{item.activity}</strong>
-      <span>{formatDayLabel(item.day, startDate)} · {item.startTime} · {item.place}</span>
+      <span>{formatDayLabel(item.day, startDate, locale)} · {item.startTime} · {item.place}</span>
       <p>{viewerNextStopDetail(item, detailFallback)}</p>
     </div>
   ) : (

@@ -40,7 +40,7 @@ describe("ContextRail", () => {
   it("creates notes, switches booking tasks, and reviews suggestions", async () => {
     const props = renderRail();
 
-    fireEvent.click(screen.getByRole("button", { name: "Close details" }));
+    fireEvent.click(screen.getByRole("button", { name: "ปิดรายละเอียด" }));
     expect(props.onClose).toHaveBeenCalled();
 
     fireEvent.click(screen.getByRole("button", { name: "บันทึกโน้ต" }));
@@ -51,7 +51,7 @@ describe("ContextRail", () => {
     expect(props.onCreateNote).toHaveBeenCalledWith({ itemId: selectedItem.id, body: "call restaurant" });
 
     fireEvent.click(screen.getByRole("tab", { name: "การจอง" }));
-    const bookingPanel = screen.getByRole("region", { name: "Booking and prep for this stop" });
+    const bookingPanel = screen.getByRole("region", { name: "การจองและการเตรียมตัวของจุดนี้" });
     fireEvent.click(within(bookingPanel).getByRole("checkbox", { name: /ยืนยันคิว Dim Dim Sum/ }));
     expect(props.onToggleTaskStatus).toHaveBeenCalledWith("task-dimdim-booking");
 
@@ -62,7 +62,7 @@ describe("ContextRail", () => {
     expect(props.onReviewSuggestion).toHaveBeenCalledWith(tripFixture.suggestions[0].id, "rejected");
 
     fireEvent.click(screen.getByRole("tab", { name: "โน้ต" }));
-    expect(screen.getByRole("region", { name: "Stop notes" })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "โน้ตของจุดนี้" })).toBeInTheDocument();
   }, 30_000);
 
   it("uses suggestion mode and read-only fallbacks when editing is unavailable", async () => {

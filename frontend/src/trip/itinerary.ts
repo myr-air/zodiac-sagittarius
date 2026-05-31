@@ -1,3 +1,4 @@
+import type { Locale } from "@/src/i18n/types";
 import type { ItineraryItem, NowNextState, ValidationWarning } from "./types";
 
 export function getTripDates(startDate: string, endDate: string): string[] {
@@ -105,10 +106,10 @@ export function parseTime(value: string): number | null {
   return Number(match[1]) * 60 + Number(match[2]);
 }
 
-export function formatDayLabel(day: string, startDate: string): string {
+export function formatDayLabel(day: string, startDate: string, locale: Locale = "en"): string {
   const start = new Date(`${startDate}T00:00:00Z`);
   const current = new Date(`${day}T00:00:00Z`);
   if (Number.isNaN(start.getTime()) || Number.isNaN(current.getTime())) return day;
   const dayNumber = Math.round((current.getTime() - start.getTime()) / 86_400_000) + 1;
-  return `Day ${dayNumber}`;
+  return locale === "th" ? `วันที่ ${dayNumber}` : `Day ${dayNumber}`;
 }

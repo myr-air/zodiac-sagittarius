@@ -236,7 +236,7 @@ describe("Sagittarius cockpit UI", () => {
       expect(screen.getByRole("button", { name: /Start passkey setup/i })).toBeInTheDocument();
       expect(screen.queryByLabelText(/Trip ID/i)).not.toBeInTheDocument();
       expect(screen.queryByRole("button", { name: /ส่งรหัส login/i })).not.toBeInTheDocument();
-      expect(fetchSpy).toHaveBeenCalledTimes(3);
+      await waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(3));
     } finally {
       storage.clear();
       fetchSpy.mockRestore();
@@ -334,7 +334,7 @@ describe("Sagittarius cockpit UI", () => {
     fireEvent.change(screen.getByLabelText(/ตั้งรหัสสำหรับ Demo Traveler/i), { target: { value: "owner-pin" } });
     await user.click(screen.getByRole("button", { name: /เริ่มใช้งาน/i }));
 
-    const tasks = await screen.findByRole("region", { name: /Trip checklist/i });
+    const tasks = await screen.findByRole("region", { name: /เช็กลิสต์ของทริป/i });
     await user.click(within(tasks).getByRole("button", { name: /เพิ่มเช็กลิสต์/i }));
     const taskDialog = screen.getByRole("dialog", { name: /เพิ่มเช็กลิสต์/i });
     await user.type(within(taskDialog).getByLabelText(/เพิ่มเช็กลิสต์/i), "แลกเงิน HKD");
@@ -578,7 +578,7 @@ describe("Sagittarius cockpit UI", () => {
     await user.type(screen.getByLabelText(/ตั้งรหัสสำหรับ Demo Traveler/i), "owner-pin");
     await user.click(screen.getByRole("button", { name: /เริ่มใช้งาน/i }));
 
-    await user.click(await screen.findByRole("button", { name: /Open details/i }));
+    await user.click(await screen.findByRole("button", { name: /เปิดรายละเอียด/i }));
     await user.click(screen.getByRole("button", { name: /แก้ไขรายละเอียด/i }));
     const dialog = screen.getByRole("dialog", { name: /แก้ไขรายละเอียด/i });
     await user.clear(within(dialog).getByLabelText(/กิจกรรม/i));
@@ -594,9 +594,9 @@ describe("Sagittarius cockpit UI", () => {
         patch: expect.objectContaining({ activity: "Dim Dim Sum API revised" }),
       }),
     );
-    expect(within(screen.getByRole("complementary", { name: /Planning context/i })).getByRole("heading", { name: /Dim Dim Sum API revised/i })).toBeInTheDocument();
+    expect(within(screen.getByRole("complementary", { name: /ข้อมูลประกอบการวางแผน/i })).getByRole("heading", { name: /Dim Dim Sum API revised/i })).toBeInTheDocument();
 
-    const context = screen.getByRole("complementary", { name: /Planning context/i });
+    const context = screen.getByRole("complementary", { name: /ข้อมูลประกอบการวางแผน/i });
     await user.click(within(context).getByRole("tab", { name: /ข้อเสนอ/i }));
     await user.click(within(context).getByRole("button", { name: /อนุมัติ Book ahead from API/i }));
 
@@ -683,7 +683,7 @@ describe("Sagittarius cockpit UI", () => {
     await user.click(await screen.findByRole("button", { name: /Explorer Friend/i }));
     await user.type(screen.getByLabelText(/ตั้งรหัสสำหรับ Explorer Friend/i), "traveler-pin");
     await user.click(screen.getByRole("button", { name: /เริ่มใช้งาน/i }));
-    await user.click(await screen.findByRole("button", { name: /Open details/i }));
+    await user.click(await screen.findByRole("button", { name: /เปิดรายละเอียด/i }));
     await user.click(screen.getByRole("button", { name: /เสนอแก้ไข/i }));
 
     expect(apiClient.createSuggestion).toHaveBeenCalledWith(
@@ -696,7 +696,7 @@ describe("Sagittarius cockpit UI", () => {
         proposedPatch: { activity: selectedItem.activity },
       }),
     );
-    expect(screen.getByText(/Explorer Friend suggested an update/i)).toBeInTheDocument();
+    expect(screen.getByText(/Explorer Friend เสนอการปรับแผน/i)).toBeInTheDocument();
   });
 
   it("keeps future write-only surfaces read-only in API mode until backend routes exist", async () => {
@@ -712,9 +712,9 @@ describe("Sagittarius cockpit UI", () => {
 
     await loginApiTrip(user);
     expect(screen.getByRole("button", { name: /เพิ่มสถานที่ \/ กิจกรรม/i })).toBeDisabled();
-    await user.click(await screen.findByRole("button", { name: /Open details/i }));
+    await user.click(await screen.findByRole("button", { name: /เปิดรายละเอียด/i }));
 
-    const context = screen.getByRole("complementary", { name: /Planning context/i });
+    const context = screen.getByRole("complementary", { name: /ข้อมูลประกอบการวางแผน/i });
     expect(within(context).getByLabelText(/เพิ่มโน้ตสำหรับจุดนี้/i)).toBeDisabled();
     expect(within(context).getByRole("button", { name: /บันทึกโน้ต/i })).toBeDisabled();
     expect(within(context).getByRole("button", { name: /เพิ่ม\/แก้ไขค่าใช้จ่าย/i })).toBeDisabled();
@@ -744,13 +744,13 @@ describe("Sagittarius cockpit UI", () => {
     expect(screen.getByRole("region", { name: /Trip overview/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /ศูนย์จัดการทริป/i })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /เพิ่มสถานที่ \/ กิจกรรม/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /Open details/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /Undo/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /Redo/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /เปิดรายละเอียด/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /เลิกทำ/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /ทำซ้ำ/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /More actions/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole("region", { name: /Smart itinerary table/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole("region", { name: /Route map/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole("region", { name: /Trip timeline/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: /ตารางแผนการเดินทาง/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: /แผนที่เส้นทาง/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: /ไทม์ไลน์ทริป/i })).not.toBeInTheDocument();
     expect(screen.queryByText(/hero/i)).not.toBeInTheDocument();
   });
 
@@ -758,8 +758,8 @@ describe("Sagittarius cockpit UI", () => {
     const user = userEvent.setup();
     render(<SagittariusApp />);
 
-    expect(screen.getByRole("region", { name: /Trip readiness/i })).toBeInTheDocument();
-    const tasks = screen.getByRole("region", { name: /Trip checklist/i });
+    expect(screen.getByRole("region", { name: /ความพร้อมของทริป/i })).toBeInTheDocument();
+    const tasks = screen.getByRole("region", { name: /เช็กลิสต์ของทริป/i });
     expect(within(tasks).getByRole("button", { name: /ของฉัน/i })).toHaveClass("overview-task-filter--active");
     expect(within(tasks).getAllByText(/ส่วนตัว/i).length).toBeGreaterThan(0);
     expect(within(tasks).getAllByText(/แชร์ในทริป/i).length).toBeGreaterThan(0);
@@ -829,7 +829,7 @@ describe("Sagittarius cockpit UI", () => {
     expect(screen.queryByRole("tab", { name: /Smart Itinerary Table/i })).not.toBeInTheDocument();
     expect(screen.getByRole("columnheader", { name: /^เวลา$/i })).toBeInTheDocument();
     expect(screen.getByRole("columnheader", { name: /แผนที่ \/ ลิงก์/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Select stop Dim Dim Sum/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /เลือกจุด Dim Dim Sum/i })).toBeInTheDocument();
     expect(screen.queryByRole("columnheader", { name: /ตั้งค่าตาราง/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /Duplicate Dim Dim Sum/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /More actions for Dim Dim Sum/i })).not.toBeInTheDocument();
@@ -840,29 +840,29 @@ describe("Sagittarius cockpit UI", () => {
   it("renders only the surface that belongs to the current URL view", () => {
     const { rerender } = render(<SagittariusApp initialView="itinerary" />);
 
-    expect(screen.getByRole("region", { name: /Smart itinerary table/i })).toBeInTheDocument();
-    expect(screen.queryByRole("region", { name: /Route map/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole("region", { name: /Trip timeline/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("region", { name: /ตารางแผนการเดินทาง/i })).toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: /แผนที่เส้นทาง/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: /ไทม์ไลน์ทริป/i })).not.toBeInTheDocument();
 
     rerender(<SagittariusApp initialView="map" />);
 
-    const map = screen.getByRole("region", { name: /Route map/i });
-    expect(screen.queryByRole("region", { name: /Smart itinerary table/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole("region", { name: /Trip timeline/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /Open details/i })).not.toBeInTheDocument();
+    const map = screen.getByRole("region", { name: /แผนที่เส้นทาง/i });
+    expect(screen.queryByRole("region", { name: /ตารางแผนการเดินทาง/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: /ไทม์ไลน์ทริป/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /เปิดรายละเอียด/i })).not.toBeInTheDocument();
     expect(within(map).getByRole("button", { name: /ทุกวัน/i })).toBeInTheDocument();
-    expect(within(map).getByRole("button", { name: /Day 2/i })).toBeInTheDocument();
+    expect(within(map).getByRole("button", { name: /วันที่ 2/i })).toBeInTheDocument();
     expect(within(map).queryByRole("button", { name: /โหลด OpenFreeMap/i })).not.toBeInTheDocument();
     expect(within(map).queryByRole("button", { name: /Select map stop Victoria Peak/i })).not.toBeInTheDocument();
     expect(within(map).queryByRole("button", { name: /Select route stop Dim Dim Sum/i })).not.toBeInTheDocument();
 
     rerender(<SagittariusApp initialView="timeline" />);
 
-    const timeline = screen.getByRole("region", { name: /Timeline/i });
+    const timeline = screen.getByRole("region", { name: /ไทม์ไลน์ทริป/i });
 
-    expect(screen.queryByRole("region", { name: /Smart itinerary table/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole("region", { name: /Route map/i })).not.toBeInTheDocument();
-    expect(within(timeline).getByRole("button", { name: /Select timeline stop Dim Dim Sum/i })).toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: /ตารางแผนการเดินทาง/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: /แผนที่เส้นทาง/i })).not.toBeInTheDocument();
+    expect(within(timeline).getByRole("button", { name: /เลือกจุดในไทม์ไลน์ Dim Dim Sum/i })).toBeInTheDocument();
     expect(within(timeline).getAllByText(/Hong Kong City Day/i).length).toBeGreaterThan(0);
   });
 
@@ -874,12 +874,12 @@ describe("Sagittarius cockpit UI", () => {
 
     expect(membersLink).toHaveClass("rail-link--active");
     expect(membersLink).toHaveAttribute("href", "/trips/trip-hong-kong-shenzhen/members");
-    expect(screen.getByRole("region", { name: /Trip members/i })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: /สมาชิกทริป/i })).toBeInTheDocument();
     expect(screen.getByRole("region", { name: /People and presence/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /สมาชิกในทริป/i })).toBeInTheDocument();
-    expect(screen.queryByRole("region", { name: /Smart itinerary table/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole("region", { name: /Route map/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole("region", { name: /Trip timeline/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: /ตารางแผนการเดินทาง/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: /แผนที่เส้นทาง/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: /ไทม์ไลน์ทริป/i })).not.toBeInTheDocument();
   });
 
   it("renders members with a single page header and without itinerary-only controls", () => {
@@ -893,11 +893,11 @@ describe("Sagittarius cockpit UI", () => {
     expect(workspaceGrid).toBeInTheDocument();
     expect(workspaceGrid).toHaveAttribute("data-command-bar", "hidden");
     expect(workspaceGrid).toContainElement(planningMain as HTMLElement);
-    expect(planningMain).toContainElement(screen.getByRole("region", { name: /Trip members/i }));
+    expect(planningMain).toContainElement(screen.getByRole("region", { name: /สมาชิกทริป/i }));
     expect(screen.queryByRole("button", { name: /เพิ่มสถานที่ \/ กิจกรรม/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /Open details/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /Undo/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /Redo/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /เปิดรายละเอียด/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /เลิกทำ/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /ทำซ้ำ/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /More actions/i })).not.toBeInTheDocument();
   });
 
@@ -941,7 +941,7 @@ describe("Sagittarius cockpit UI", () => {
 
     await user.type(screen.getByLabelText(/ค้นหาสมาชิก/i), "Family");
 
-    const membersPage = screen.getByRole("region", { name: /Trip members/i });
+    const membersPage = screen.getByRole("region", { name: /สมาชิกทริป/i });
     expect(within(membersPage).getByRole("button", { name: /ปิดสิทธิ์ Family Member/i })).toBeInTheDocument();
     expect(within(membersPage).queryByText(/Travel Mate/i)).not.toBeInTheDocument();
 
@@ -1051,16 +1051,16 @@ describe("Sagittarius cockpit UI", () => {
     const user = userEvent.setup();
     render(<SagittariusApp initialView="itinerary" />);
 
-    const undoButton = screen.getByRole("button", { name: /Undo/i });
-    const redoButton = screen.getByRole("button", { name: /Redo/i });
+    const undoButton = screen.getByRole("button", { name: /เลิกทำ/i });
+    const redoButton = screen.getByRole("button", { name: /ทำซ้ำ/i });
     expect(undoButton).toBeDisabled();
     expect(redoButton).toBeDisabled();
     (undoButton as HTMLButtonElement).disabled = false;
     (redoButton as HTMLButtonElement).disabled = false;
     fireEvent.click(undoButton);
     fireEvent.click(redoButton);
-    await user.click(screen.getByRole("button", { name: /Open details/i }));
-    expect(screen.getByRole("complementary", { name: /Planning context/i })).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: /เปิดรายละเอียด/i }));
+    expect(screen.getByRole("complementary", { name: /ข้อมูลประกอบการวางแผน/i })).toBeInTheDocument();
   });
 
   it("keeps read-only forced actions from mutating itinerary or suggestions", async () => {
@@ -1075,10 +1075,10 @@ describe("Sagittarius cockpit UI", () => {
 
     const dataTransfer = createDataTransfer();
     dataTransfer.setData("text/plain", "missing-item");
-    fireEvent.drop(screen.getByRole("button", { name: /Select stop Dim Dim Sum/i }).closest("tr")!, { dataTransfer });
-    expect(screen.getByRole("button", { name: /Select stop Dim Dim Sum/i })).toBeInTheDocument();
+    fireEvent.drop(screen.getByRole("button", { name: /เลือกจุด Dim Dim Sum/i }).closest("tr")!, { dataTransfer });
+    expect(screen.getByRole("button", { name: /เลือกจุด Dim Dim Sum/i })).toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: /Open details/i }));
+    await user.click(screen.getByRole("button", { name: /เปิดรายละเอียด/i }));
     const suggestButton = screen.getByRole("button", { name: /เสนอแก้ไข/i });
     (suggestButton as HTMLButtonElement).disabled = false;
     fireEvent.click(suggestButton);
@@ -1091,30 +1091,30 @@ describe("Sagittarius cockpit UI", () => {
     const navigation = screen.getByRole("navigation", { name: /เมนูวางแผน Sagittarius/i });
     expect(within(navigation).getByRole("link", { name: /แผนที่/i })).toHaveClass("rail-link--active");
     expect(document.querySelector(".planning-main")?.firstElementChild).toHaveClass("route-map-panel");
-    expect(screen.queryByRole("region", { name: /Smart itinerary table/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole("region", { name: /Trip timeline/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: /ตารางแผนการเดินทาง/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: /ไทม์ไลน์ทริป/i })).not.toBeInTheDocument();
 
     rerender(<SagittariusApp initialView="timeline" />);
 
     expect(within(navigation).getByRole("link", { name: /ไทม์ไลน์/i })).toHaveClass("rail-link--active");
     expect(document.querySelector(".planning-main")?.firstElementChild).toHaveClass("timeline-panel");
-    expect(screen.queryByRole("region", { name: /Smart itinerary table/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole("region", { name: /Route map/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: /ตารางแผนการเดินทาง/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: /แผนที่เส้นทาง/i })).not.toBeInTheDocument();
   });
 
   it("uses timeline selections for details while map day filters stay local", async () => {
     const user = userEvent.setup();
     const { unmount } = render(<SagittariusApp initialView="timeline" />);
 
-    await user.click(within(screen.getByRole("region", { name: /Timeline/i })).getByRole("button", { name: /Select timeline stop Victoria Peak/i }));
-    expect(within(screen.getByRole("complementary", { name: /Planning context/i })).getByRole("heading", { name: /Victoria Peak/i })).toBeInTheDocument();
+    await user.click(within(screen.getByRole("region", { name: /ไทม์ไลน์ทริป/i })).getByRole("button", { name: /เลือกจุดในไทม์ไลน์ Victoria Peak/i }));
+    expect(within(screen.getByRole("complementary", { name: /ข้อมูลประกอบการวางแผน/i })).getByRole("heading", { name: /Victoria Peak/i })).toBeInTheDocument();
 
     unmount();
     render(<SagittariusApp initialView="map" />);
 
-    expect(screen.queryByRole("button", { name: /Open details/i })).not.toBeInTheDocument();
-    await user.click(within(screen.getByRole("region", { name: /Route map/i })).getByRole("button", { name: /Day 2/i }));
-    expect(screen.queryByRole("complementary", { name: /Planning context/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /เปิดรายละเอียด/i })).not.toBeInTheDocument();
+    await user.click(within(screen.getByRole("region", { name: /แผนที่เส้นทาง/i })).getByRole("button", { name: /วันที่ 2/i }));
+    expect(screen.queryByRole("complementary", { name: /ข้อมูลประกอบการวางแผน/i })).not.toBeInTheDocument();
     expect(screen.getByText(/6\/15 จุดที่แสดง/i)).toBeInTheDocument();
   });
 
@@ -1122,10 +1122,10 @@ describe("Sagittarius cockpit UI", () => {
     const user = userEvent.setup();
     const { unmount } = render(<SagittariusApp initialView="timeline" />);
 
-    await user.click(screen.getByRole("button", { name: /Open details/i }));
-    expect(screen.getByRole("complementary", { name: /Planning context/i })).toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: /Close details/i }));
-    expect(screen.queryByRole("complementary", { name: /Planning context/i })).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: /เปิดรายละเอียด/i }));
+    expect(screen.getByRole("complementary", { name: /ข้อมูลประกอบการวางแผน/i })).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: /ปิดรายละเอียด/i }));
+    expect(screen.queryByRole("complementary", { name: /ข้อมูลประกอบการวางแผน/i })).not.toBeInTheDocument();
 
     unmount();
     render(<SagittariusApp initialView="itinerary" />);
@@ -1154,13 +1154,13 @@ describe("Sagittarius cockpit UI", () => {
     const user = userEvent.setup();
     const { container } = render(<SagittariusApp initialView="itinerary" />);
 
-    expect(screen.queryByRole("complementary", { name: /Planning context/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("complementary", { name: /ข้อมูลประกอบการวางแผน/i })).not.toBeInTheDocument();
     expect(container.querySelector(".workspace-grid")).toHaveAttribute("data-context-rail", "closed");
-    expect(screen.getByRole("button", { name: /Open details/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /เปิดรายละเอียด/i })).toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: /Open details/i }));
+    await user.click(screen.getByRole("button", { name: /เปิดรายละเอียด/i }));
 
-    expect(screen.getByRole("complementary", { name: /Planning context/i })).toBeInTheDocument();
+    expect(screen.getByRole("complementary", { name: /ข้อมูลประกอบการวางแผน/i })).toBeInTheDocument();
     expect(container.querySelector(".workspace-grid")).toHaveAttribute("data-context-rail", "open");
   });
 
@@ -1170,9 +1170,9 @@ describe("Sagittarius cockpit UI", () => {
 
     expect(container.querySelector(".workspace-grid")).toHaveAttribute("data-context-rail", "closed");
 
-    await user.click(screen.getByRole("button", { name: /Select stop Victoria Peak/i }));
+    await user.click(screen.getByRole("button", { name: /เลือกจุด Victoria Peak/i }));
 
-    const context = screen.getByRole("complementary", { name: /Planning context/i });
+    const context = screen.getByRole("complementary", { name: /ข้อมูลประกอบการวางแผน/i });
     expect(container.querySelector(".workspace-grid")).toHaveAttribute("data-context-rail", "open");
     expect(within(context).getByRole("heading", { name: /Victoria Peak/i })).toBeInTheDocument();
   });
@@ -1181,9 +1181,9 @@ describe("Sagittarius cockpit UI", () => {
     const user = userEvent.setup();
     render(<SagittariusApp initialView="itinerary" />);
 
-    await user.click(screen.getByRole("button", { name: /Open details/i }));
+    await user.click(screen.getByRole("button", { name: /เปิดรายละเอียด/i }));
 
-    const context = screen.getByRole("complementary", { name: /Planning context/i });
+    const context = screen.getByRole("complementary", { name: /ข้อมูลประกอบการวางแผน/i });
     expect(within(context).queryByRole("region", { name: /People and presence/i })).not.toBeInTheDocument();
     expect(within(context).queryByRole("heading", { name: /สมาชิกและสถานะ/i })).not.toBeInTheDocument();
   });
@@ -1192,9 +1192,9 @@ describe("Sagittarius cockpit UI", () => {
     const user = userEvent.setup();
     render(<SagittariusApp initialView="itinerary" />);
 
-    await user.click(screen.getByRole("button", { name: /Select stop Victoria Peak/i }));
+    await user.click(screen.getByRole("button", { name: /เลือกจุด Victoria Peak/i }));
 
-    const context = screen.getByRole("complementary", { name: /Planning context/i });
+    const context = screen.getByRole("complementary", { name: /ข้อมูลประกอบการวางแผน/i });
     expect(within(context).getByRole("heading", { name: /Victoria Peak/i })).toBeInTheDocument();
     expect(within(context).getAllByText(/The Peak Tram/i).length).toBeGreaterThan(0);
   });
@@ -1204,9 +1204,9 @@ describe("Sagittarius cockpit UI", () => {
 
     expect(container.querySelector(".workspace-grid")).toHaveAttribute("data-context-rail", "closed");
 
-    fireEvent.click(screen.getByRole("button", { name: /Select stop Victoria Peak/i }));
+    fireEvent.click(screen.getByRole("button", { name: /เลือกจุด Victoria Peak/i }));
 
-    const context = screen.getByRole("complementary", { name: /Planning context/i });
+    const context = screen.getByRole("complementary", { name: /ข้อมูลประกอบการวางแผน/i });
     expect(within(context).getByRole("heading", { name: /Victoria Peak/i })).toBeInTheDocument();
     expect(container.querySelector(".workspace-grid")).toHaveAttribute("data-context-rail", "open");
   });
@@ -1215,34 +1215,34 @@ describe("Sagittarius cockpit UI", () => {
     const user = userEvent.setup();
     const { container } = render(<SagittariusApp initialView="itinerary" />);
 
-    await user.click(screen.getByRole("button", { name: /Open details/i }));
+    await user.click(screen.getByRole("button", { name: /เปิดรายละเอียด/i }));
     expect(container.querySelector(".workspace-grid")).toHaveAttribute("data-context-rail", "open");
 
-    await user.click(screen.getByRole("region", { name: /Smart itinerary table/i }));
+    await user.click(screen.getByRole("region", { name: /ตารางแผนการเดินทาง/i }));
 
     expect(container.querySelector(".workspace-grid")).toHaveAttribute("data-context-rail", "closed");
-    expect(screen.queryByRole("complementary", { name: /Planning context/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("complementary", { name: /ข้อมูลประกอบการวางแผน/i })).not.toBeInTheDocument();
   });
 
   it("keeps the context drawer mounted during the close animation and ignores non-element document events", async () => {
     const { container } = render(<SagittariusApp initialView="itinerary" />);
 
-    fireEvent.click(screen.getByRole("button", { name: /Open details/i }));
-    expect(await screen.findByRole("complementary", { name: /Planning context/i })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /เปิดรายละเอียด/i }));
+    expect(await screen.findByRole("complementary", { name: /ข้อมูลประกอบการวางแผน/i })).toBeInTheDocument();
 
     document.dispatchEvent(new Event("click"));
     expect(container.querySelector(".workspace-grid")).toHaveAttribute("data-context-rail", "open");
 
     vi.useFakeTimers();
     try {
-      fireEvent.click(screen.getByRole("region", { name: /Smart itinerary table/i }));
+      fireEvent.click(screen.getByRole("region", { name: /ตารางแผนการเดินทาง/i }));
       expect(container.querySelector(".workspace-grid")).toHaveAttribute("data-context-rail", "closed");
       expect(container.querySelector(".context-rail")).toHaveAttribute("data-state", "closed");
 
       act(() => {
         vi.advanceTimersByTime(900);
       });
-      expect(screen.queryByRole("complementary", { name: /Planning context/i })).not.toBeInTheDocument();
+      expect(screen.queryByRole("complementary", { name: /ข้อมูลประกอบการวางแผน/i })).not.toBeInTheDocument();
     } finally {
       vi.useRealTimers();
     }
@@ -1251,55 +1251,55 @@ describe("Sagittarius cockpit UI", () => {
   it("does not close the context drawer for clicks that originate on itinerary rows", () => {
     const { container } = render(<SagittariusApp initialView="itinerary" />);
 
-    fireEvent.click(screen.getByRole("button", { name: /Open details/i }));
-    fireEvent.click(screen.getByRole("row", { name: /Open details for Victoria Peak/i }));
+    fireEvent.click(screen.getByRole("button", { name: /เปิดรายละเอียด/i }));
+    fireEvent.click(screen.getByRole("row", { name: /เปิดรายละเอียดของ Victoria Peak/i }));
 
     expect(container.querySelector(".workspace-grid")).toHaveAttribute("data-context-rail", "open");
-    expect(within(screen.getByRole("complementary", { name: /Planning context/i })).getByRole("heading", { name: /Dim Dim Sum/i })).toBeInTheDocument();
+    expect(within(screen.getByRole("complementary", { name: /ข้อมูลประกอบการวางแผน/i })).getByRole("heading", { name: /Dim Dim Sum/i })).toBeInTheDocument();
   });
 
   it("keeps the right context drawer open when clicking inside it", async () => {
     const user = userEvent.setup();
     const { container } = render(<SagittariusApp initialView="itinerary" />);
 
-    await user.click(screen.getByRole("button", { name: /Open details/i }));
-    const context = screen.getByRole("complementary", { name: /Planning context/i });
+    await user.click(screen.getByRole("button", { name: /เปิดรายละเอียด/i }));
+    const context = screen.getByRole("complementary", { name: /ข้อมูลประกอบการวางแผน/i });
 
     await user.click(context);
 
     expect(container.querySelector(".workspace-grid")).toHaveAttribute("data-context-rail", "open");
-    expect(screen.getByRole("complementary", { name: /Planning context/i })).toBeInTheDocument();
+    expect(screen.getByRole("complementary", { name: /ข้อมูลประกอบการวางแผน/i })).toBeInTheDocument();
   });
 
   it("collapses and expands day groups", async () => {
     const user = userEvent.setup();
     render(<SagittariusApp initialView="itinerary" />);
 
-    await user.click(screen.getByRole("button", { name: /Collapse Day 2/i }));
+    await user.click(screen.getByRole("button", { name: /ย่อ วันที่ 2/i }));
 
-    expect(screen.queryByRole("button", { name: /Select stop Dim Dim Sum/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /Select stop Victoria Peak/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /เลือกจุด Dim Dim Sum/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /เลือกจุด Victoria Peak/i })).not.toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: /Expand Day 2/i }));
+    await user.click(screen.getByRole("button", { name: /ขยาย วันที่ 2/i }));
 
-    expect(screen.getByRole("button", { name: /Select stop Dim Dim Sum/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Select stop Victoria Peak/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /เลือกจุด Dim Dim Sum/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /เลือกจุด Victoria Peak/i })).toBeInTheDocument();
   });
 
   it("reorders itinerary rows with drag and drop", () => {
     render(<SagittariusApp initialView="itinerary" />);
 
     const dataTransfer = createDataTransfer();
-    const victoriaSelectBefore = screen.getByRole("button", { name: /Select stop Victoria Peak/i });
-    const dimDimSelectBefore = screen.getByRole("button", { name: /Select stop Dim Dim Sum/i });
+    const victoriaSelectBefore = screen.getByRole("button", { name: /เลือกจุด Victoria Peak/i });
+    const dimDimSelectBefore = screen.getByRole("button", { name: /เลือกจุด Dim Dim Sum/i });
     expect(dimDimSelectBefore.compareDocumentPosition(victoriaSelectBefore) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
 
-    fireEvent.dragStart(screen.getByRole("button", { name: /Drag Victoria Peak/i }), { dataTransfer });
-    fireEvent.dragOver(screen.getByRole("button", { name: /Select stop Dim Dim Sum/i }), { dataTransfer });
-    fireEvent.drop(screen.getByRole("button", { name: /Select stop Dim Dim Sum/i }), { dataTransfer });
+    fireEvent.dragStart(screen.getByRole("button", { name: /ลาก Victoria Peak/i }), { dataTransfer });
+    fireEvent.dragOver(screen.getByRole("button", { name: /เลือกจุด Dim Dim Sum/i }), { dataTransfer });
+    fireEvent.drop(screen.getByRole("button", { name: /เลือกจุด Dim Dim Sum/i }), { dataTransfer });
 
-    const victoriaSelectAfter = screen.getByRole("button", { name: /Select stop Victoria Peak/i });
-    const dimDimSelectAfter = screen.getByRole("button", { name: /Select stop Dim Dim Sum/i });
+    const victoriaSelectAfter = screen.getByRole("button", { name: /เลือกจุด Victoria Peak/i });
+    const dimDimSelectAfter = screen.getByRole("button", { name: /เลือกจุด Dim Dim Sum/i });
     expect(victoriaSelectAfter.compareDocumentPosition(dimDimSelectAfter) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
@@ -1307,10 +1307,10 @@ describe("Sagittarius cockpit UI", () => {
     render(<SagittariusApp initialView="itinerary" />);
 
     const dataTransfer = createDataTransfer();
-    const victoriaRow = screen.getByRole("button", { name: /Select stop Victoria Peak/i }).closest("tr");
-    const dimDimRow = screen.getByRole("button", { name: /Select stop Dim Dim Sum/i }).closest("tr");
+    const victoriaRow = screen.getByRole("button", { name: /เลือกจุด Victoria Peak/i }).closest("tr");
+    const dimDimRow = screen.getByRole("button", { name: /เลือกจุด Dim Dim Sum/i }).closest("tr");
 
-    fireEvent.dragStart(screen.getByRole("button", { name: /Drag Victoria Peak/i }), { dataTransfer });
+    fireEvent.dragStart(screen.getByRole("button", { name: /ลาก Victoria Peak/i }), { dataTransfer });
     fireEvent.dragOver(dimDimRow!, { dataTransfer });
 
     expect(victoriaRow).toHaveClass("data-row--dragging");
@@ -1330,7 +1330,7 @@ describe("Sagittarius cockpit UI", () => {
     await user.selectOptions(screen.getByLabelText(/Role preview/i), "member-viewer");
 
     expect(screen.getByRole("button", { name: /เพิ่มสถานที่ \/ กิจกรรม/i })).toBeDisabled();
-    expect(screen.getByText(/editing requires organizer access/i)).toBeInTheDocument();
+    expect(screen.getByText(/ต้องมีสิทธิ์ผู้จัดทริปจึงจะแก้ไขได้/i)).toBeInTheDocument();
   });
 
   it("lets travelers submit a suggestion instead of directly editing a stop", async () => {
@@ -1338,11 +1338,11 @@ describe("Sagittarius cockpit UI", () => {
     render(<SagittariusApp initialView="itinerary" />);
 
     await user.selectOptions(screen.getByLabelText(/Role preview/i), "member-nam");
-    await user.click(screen.getByRole("button", { name: /Open details/i }));
+    await user.click(screen.getByRole("button", { name: /เปิดรายละเอียด/i }));
     await user.click(screen.getByRole("button", { name: /เสนอแก้ไข/i }));
 
     expect(screen.getByText(/คำแนะนำ \(3\)/i)).toBeInTheDocument();
-    expect(screen.getByText(/Explorer Friend suggested an update/i)).toBeInTheDocument();
+    expect(screen.getByText(/Explorer Friend เสนอการปรับแผน/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /ปรับเวลาอัตโนมัติ/i })).toBeDisabled();
   });
 
@@ -1350,24 +1350,24 @@ describe("Sagittarius cockpit UI", () => {
     const user = userEvent.setup();
     render(<SagittariusApp initialView="itinerary" />);
 
-    await user.click(screen.getByRole("button", { name: /Open details/i }));
+    await user.click(screen.getByRole("button", { name: /เปิดรายละเอียด/i }));
 
-    const context = screen.getByRole("complementary", { name: /Planning context/i });
+    const context = screen.getByRole("complementary", { name: /ข้อมูลประกอบการวางแผน/i });
     expect(within(context).getByRole("tab", { name: /โน้ต/i })).toHaveAttribute("aria-selected", "true");
     expect(within(context).getByRole("tab", { name: /การจอง/i })).toBeInTheDocument();
     expect(within(context).getByRole("tab", { name: /ข้อเสนอ/i })).toBeInTheDocument();
-    expect(within(context).getByRole("region", { name: /Stop notes/i })).toBeInTheDocument();
+    expect(within(context).getByRole("region", { name: /โน้ตของจุดนี้/i })).toBeInTheDocument();
 
     await user.type(within(context).getByLabelText(/เพิ่มโน้ตสำหรับจุดนี้/i), "ถามร้านว่ามีโต๊ะริมหน้าต่างไหม");
     await user.click(within(context).getByRole("button", { name: /บันทึกโน้ต/i }));
     expect(within(context).getByText(/ถามร้านว่ามีโต๊ะริมหน้าต่างไหม/i)).toBeInTheDocument();
 
     await user.click(within(context).getByRole("tab", { name: /การจอง/i }));
-    expect(within(context).getByRole("region", { name: /Booking and prep for this stop/i })).toBeInTheDocument();
+    expect(within(context).getByRole("region", { name: /การจองและการเตรียมตัวของจุดนี้/i })).toBeInTheDocument();
     expect(within(context).getByText(/จองล่วงหน้าแนะนำ/i)).toBeInTheDocument();
 
     await user.click(within(context).getByRole("tab", { name: /ข้อเสนอ/i }));
-    expect(within(context).getByRole("region", { name: /Suggestion review/i })).toBeInTheDocument();
+    expect(within(context).getByRole("region", { name: /ตรวจข้อเสนอ/i })).toBeInTheDocument();
     await user.click(within(context).getByRole("button", { name: /อนุมัติ ร้านนี้ได้รับคะแนนสูง/i }));
     expect(within(context).queryByText(/ร้านนี้ได้รับคะแนนสูง 4.3\/5 จาก 8,332 รีวิว/i)).not.toBeInTheDocument();
 
@@ -1379,9 +1379,9 @@ describe("Sagittarius cockpit UI", () => {
     const user = userEvent.setup();
     render(<SagittariusApp initialView="itinerary" />);
 
-    await user.click(screen.getByRole("button", { name: /Open details/i }));
+    await user.click(screen.getByRole("button", { name: /เปิดรายละเอียด/i }));
 
-    const context = screen.getByRole("complementary", { name: /Planning context/i });
+    const context = screen.getByRole("complementary", { name: /ข้อมูลประกอบการวางแผน/i });
     await user.click(within(context).getByRole("tab", { name: /ข้อเสนอ/i }));
     expect(within(context).getAllByText(/ร้านนี้ได้รับคะแนนสูง 4\.3\/5/i).length).toBeGreaterThan(0);
 
@@ -1410,15 +1410,15 @@ describe("Sagittarius cockpit UI", () => {
     await user.click(within(dialog).getByRole("button", { name: /บันทึกกิจกรรม/i }));
 
     expect(screen.queryByRole("dialog", { name: /เพิ่มกิจกรรม/i })).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Select stop Coffee break at K11 Musea/i })).toBeInTheDocument();
-    expect(within(screen.getByRole("complementary", { name: /Planning context/i })).getByRole("heading", { name: /Coffee break at K11 Musea/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /เลือกจุด Coffee break at K11 Musea/i })).toBeInTheDocument();
+    expect(within(screen.getByRole("complementary", { name: /ข้อมูลประกอบการวางแผน/i })).getByRole("heading", { name: /Coffee break at K11 Musea/i })).toBeInTheDocument();
   });
 
   it("edits the selected stop and supports undo redo", async () => {
     const user = userEvent.setup();
     render(<SagittariusApp initialView="itinerary" />);
 
-    await user.click(screen.getByRole("button", { name: /Open details/i }));
+    await user.click(screen.getByRole("button", { name: /เปิดรายละเอียด/i }));
     await user.click(screen.getByRole("button", { name: /แก้ไขรายละเอียด/i }));
 
     const dialog = screen.getByRole("dialog", { name: /แก้ไขรายละเอียด/i });
@@ -1426,13 +1426,13 @@ describe("Sagittarius cockpit UI", () => {
     await user.type(within(dialog).getByLabelText(/กิจกรรม/i), "Dim Dim Sum revised");
     await user.click(within(dialog).getByRole("button", { name: /บันทึกการแก้ไข/i }));
 
-    const context = screen.getByRole("complementary", { name: /Planning context/i });
+    const context = screen.getByRole("complementary", { name: /ข้อมูลประกอบการวางแผน/i });
     expect(within(context).getByRole("heading", { name: /Dim Dim Sum revised/i })).toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: /Undo/i }));
+    await user.click(screen.getByRole("button", { name: /เลิกทำ/i }));
     expect(within(context).getByRole("heading", { name: /Dim Dim Sum ที่ Tim Ho Wan/i })).toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: /Redo/i }));
+    await user.click(screen.getByRole("button", { name: /ทำซ้ำ/i }));
     expect(within(context).getByRole("heading", { name: /Dim Dim Sum revised/i })).toBeInTheDocument();
   });
 });

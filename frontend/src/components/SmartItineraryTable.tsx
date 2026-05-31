@@ -201,7 +201,7 @@ function DayGroup({
   onStartDrag: (event: DragEvent<HTMLButtonElement>, itemId: string) => void;
   onToggleDay: (day: string) => void;
 }) {
-  const dayLabel = formatDayLabel(group.day, startDate);
+  const dayLabel = formatDayLabel(group.day, startDate, locale);
 
   return (
     <tbody className="day-group" data-state={collapsed ? "closed" : "open"}>
