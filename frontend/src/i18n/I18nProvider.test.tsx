@@ -75,15 +75,47 @@ describe("I18nProvider", () => {
     expect(screen.getByTestId("locale")).toHaveTextContent("en");
     expect(screen.getByText("Overview")).toBeInTheDocument();
   });
+
+  it("keeps the selected locale in memory when persistence fails", async () => {
+    const user = userEvent.setup();
+    localStorage.clear();
+    localStorage.setWriteFailure(true);
+
+    try {
+      render(
+        <I18nProvider>
+          <Probe />
+        </I18nProvider>,
+      );
+
+      await user.click(screen.getByRole("button", { name: "ภาษาไทย" }));
+
+      expect(screen.getByTestId("locale")).toHaveTextContent("th");
+      expect(screen.getByText("ภาพรวม")).toBeInTheDocument();
+      expect(document.documentElement).toHaveAttribute("lang", "th");
+      expect(localStorage.getItem("sagittarius-locale")).toBeNull();
+    } finally {
+      localStorage.setWriteFailure(false);
+    }
+  });
 });
 
 function installLocalStorageStub() {
   const values = new Map<string, string>();
+  let failWrites = false;
   const storage = {
     getItem: (key: string) => values.get(key) ?? null,
-    setItem: (key: string, value: string) => values.set(key, value),
+    setItem: (key: string, value: string) => {
+      if (failWrites) {
+        throw new Error("Storage write failed");
+      }
+      values.set(key, value);
+    },
     removeItem: (key: string) => values.delete(key),
     clear: () => values.clear(),
+    setWriteFailure: (shouldFail: boolean) => {
+      failWrites = shouldFail;
+    },
   };
 
   Object.defineProperty(window, "localStorage", {

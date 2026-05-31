@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, type ReactNode, useContext, useEffect, useMemo, useSyncExternalStore } from "react";
+import { createContext, type ReactNode, useContext, useEffect, useMemo, useState } from "react";
 import { getMessages, type Messages } from "./messages";
 import { defaultLocale, isLocale, type Locale } from "./types";
 
@@ -14,25 +14,36 @@ interface I18nContextValue {
 
 const I18nContext = createContext<I18nContextValue | null>(null);
 
-let memoryLocale: Locale = defaultLocale;
-const localeListeners = new Set<() => void>();
-
 export function I18nProvider({ children }: { children: ReactNode }) {
-  const locale = useSyncExternalStore(subscribeLocale, readStoredLocale, getServerLocale);
+  const [locale, setLocaleState] = useState<Locale>(() => readStoredLocale());
 
   useEffect(() => {
     document.documentElement.lang = locale;
   }, [locale]);
 
+  useEffect(() => {
+    function handleStorage(event: StorageEvent) {
+      if (event.key !== localeStorageKey) {
+        return;
+      }
+
+      setLocaleState(isLocale(event.newValue) ? event.newValue : defaultLocale);
+    }
+
+    window.addEventListener("storage", handleStorage);
+    return () => {
+      window.removeEventListener("storage", handleStorage);
+    };
+  }, []);
+
   const value = useMemo<I18nContextValue>(() => {
     function setLocale(nextLocale: Locale) {
-      memoryLocale = nextLocale;
+      setLocaleState(nextLocale);
       try {
         window.localStorage.setItem(localeStorageKey, nextLocale);
       } catch {
         // Keep the in-memory language switch working when storage is blocked.
       }
-      emitLocaleChange();
     }
 
     return { locale, setLocale, t: getMessages(locale) };
@@ -51,28 +62,13 @@ export function useI18n(): I18nContextValue {
 
 function readStoredLocale(): Locale {
   if (typeof window === "undefined") {
-    return getServerLocale();
+    return defaultLocale;
   }
 
   try {
     const stored = window.localStorage.getItem(localeStorageKey);
     return isLocale(stored) ? stored : defaultLocale;
   } catch {
-    return memoryLocale;
+    return defaultLocale;
   }
-}
-
-function getServerLocale(): Locale {
-  return defaultLocale;
-}
-
-function subscribeLocale(listener: () => void) {
-  localeListeners.add(listener);
-  return () => {
-    localeListeners.delete(listener);
-  };
-}
-
-function emitLocaleChange() {
-  localeListeners.forEach((listener) => listener());
 }
