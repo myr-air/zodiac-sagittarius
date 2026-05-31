@@ -36,6 +36,13 @@ interface AccountAccessPanelProps {
 
 type AccessMode = "account" | "temp";
 
+const ACCESS_ERROR_CODES = {
+  accountLoadFailed: "account-load-failed",
+  passkeyRegistrationCredential: "passkey-registration-credential",
+  passkeyLoginCredential: "passkey-login-credential",
+  passkeyUnsupported: "passkey-unsupported",
+} as const;
+
 const defaultTripForm = (): AccountTripCreateRequest => ({
   name: "",
   destinationLabel: "",
@@ -69,7 +76,7 @@ export function AccountAccessPanel({
   const [stats, setStats] = useState<AccountTripStats | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const displayError = error ?? initialError ?? null;
+  const displayError = localizeAccessError(error ?? initialError ?? null, accessMessages);
 
   useEffect(() => {
     if (!accountSession) {
@@ -90,13 +97,13 @@ export function AccountAccessPanel({
       })
       .catch((caught) => {
         if (cancelled) return;
-        setError(errorMessage(caught, accessMessages.accountLoadFailed, accessMessages));
+        setError(rawErrorMessage(caught, ACCESS_ERROR_CODES.accountLoadFailed));
       });
 
     return () => {
       cancelled = true;
     };
-  }, [accessMessages, accountClient, accountSession]);
+  }, [accountClient, accountSession]);
 
   async function refreshAccount(sessionToken: string) {
     const [nextSettings, nextTrips, nextStats] = await Promise.all([
@@ -809,12 +816,25 @@ function StatusMessage({ children, tone }: { children: ReactNode; tone: "danger"
 }
 
 function errorMessage(caught: unknown, fallback: string, labels: Messages["access"]["messages"]): string {
-  if (caught instanceof Error && caught.message) return friendlyErrorText(caught.message, fallback, labels);
+  return localizeAccessError(rawErrorMessage(caught, fallback), labels) ?? fallback;
+}
+
+function rawErrorMessage(caught: unknown, fallback: string): string {
+  if (caught instanceof Error && caught.message) return caught.message;
   return fallback;
+}
+
+function localizeAccessError(message: string | null, labels: Messages["access"]["messages"]): string | null {
+  if (!message) return null;
+  return friendlyErrorText(message, message, labels);
 }
 
 function friendlyErrorText(message: string, fallback: string, labels: Messages["access"]["messages"]): string {
   const normalized = message.trim();
+  if (normalized === ACCESS_ERROR_CODES.accountLoadFailed) return labels.accountLoadFailed;
+  if (normalized === ACCESS_ERROR_CODES.passkeyRegistrationCredential) return labels.passkeyRegistrationCredential;
+  if (normalized === ACCESS_ERROR_CODES.passkeyLoginCredential) return labels.passkeyLoginCredential;
+  if (normalized === ACCESS_ERROR_CODES.passkeyUnsupported) return labels.passkeyUnsupported;
   if (normalized === "404") return labels.notFound;
   if (normalized === "401" || normalized === "403") return labels.unauthorized;
   if (!normalized || /^\d{3}$/.test(normalized)) return fallback;
@@ -861,7 +881,7 @@ async function createPasskeyCredential(challenge: string, settings: AccountSetti
   });
 
   if (!isRegistrationCredential(credential)) {
-    throw new Error("Browser did not return a passkey registration credential");
+    throw new Error(ACCESS_ERROR_CODES.passkeyRegistrationCredential);
   }
 
   return credential;
@@ -882,7 +902,7 @@ async function getPasskeyCredential(challenge: string, credentialIds: string[]) 
   });
 
   if (!isAssertionCredential(credential)) {
-    throw new Error("Browser did not return a passkey login credential");
+    throw new Error(ACCESS_ERROR_CODES.passkeyLoginCredential);
   }
 
   return credential;
@@ -898,7 +918,7 @@ type AssertionCredential = PublicKeyCredential & {
 
 function assertCredentialApi(): CredentialsContainer {
   if (typeof navigator === "undefined" || !navigator.credentials) {
-    throw new Error("This browser does not support passkeys");
+    throw new Error(ACCESS_ERROR_CODES.passkeyUnsupported);
   }
   return navigator.credentials;
 }

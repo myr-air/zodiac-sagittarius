@@ -98,6 +98,9 @@ export const messages = {
         temporaryLogin: "Signed in temporarily.",
         notFound: "Could not find the requested data. Please check again.",
         unauthorized: "Access is not valid. Please sign in again.",
+        passkeyRegistrationCredential: "Browser did not return a passkey registration credential.",
+        passkeyLoginCredential: "Browser did not return a passkey login credential.",
+        passkeyUnsupported: "This browser does not support passkeys.",
       },
       emailLogin: {
         errors: {
@@ -330,6 +333,9 @@ export const messages = {
         temporaryLogin: "เข้าสู่ระบบแบบ temporary แล้ว",
         notFound: "ไม่พบข้อมูลที่ต้องการ กรุณาตรวจสอบอีกครั้ง",
         unauthorized: "สิทธิ์ไม่ถูกต้อง กรุณาเข้าสู่ระบบใหม่",
+        passkeyRegistrationCredential: "Browser ไม่ได้ส่งข้อมูล passkey registration กลับมา",
+        passkeyLoginCredential: "Browser ไม่ได้ส่งข้อมูล passkey login กลับมา",
+        passkeyUnsupported: "Browser นี้ไม่รองรับ passkey",
       },
       emailLogin: {
         errors: {

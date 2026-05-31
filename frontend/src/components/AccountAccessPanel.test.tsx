@@ -268,6 +268,40 @@ describe("AccountAccessPanel", () => {
     expect(view.getByRole("button", { name: /Start passkey setup/i })).toBeInTheDocument();
   });
 
+  it("does not reload account dashboard data when switching language", async () => {
+    const user = userEvent.setup();
+    const accountClient = createAccountClient();
+    render(
+      <AccountAccessPanel
+        accountClient={accountClient}
+        accountSession={{
+          userId: "11111111-1111-1111-1111-111111111111",
+          sessionToken: "playwright-account-session",
+          kind: "trusted",
+          trustedDeviceId: "device-1",
+          createdAt: "2026-05-30T10:00:00.000Z",
+          expiresAt: "2030-01-01T10:00:00.000Z",
+        }}
+        trip={seedTrip}
+        onAccountSessionChange={vi.fn()}
+        onAuthenticated={vi.fn()}
+        onTripChange={vi.fn()}
+      />,
+    );
+
+    expect(await screen.findByText("Aom")).toBeInTheDocument();
+    expect(accountClient.loadSettings).toHaveBeenCalledTimes(1);
+    expect(accountClient.listTrips).toHaveBeenCalledTimes(1);
+    expect(accountClient.loadStats).toHaveBeenCalledTimes(1);
+
+    await user.click(screen.getByRole("button", { name: "ภาษาไทย" }));
+
+    expect(await screen.findByText("ผู้ร่วมเดินทาง")).toBeInTheDocument();
+    expect(accountClient.loadSettings).toHaveBeenCalledTimes(1);
+    expect(accountClient.listTrips).toHaveBeenCalledTimes(1);
+    expect(accountClient.loadStats).toHaveBeenCalledTimes(1);
+  });
+
   it("logs in by email, loads settings/history/stats, and creates an owner trip", async () => {
     const user = userEvent.setup();
     const accountClient = createAccountClient();
