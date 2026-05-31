@@ -41,7 +41,8 @@ describe("Sagittarius project scaffold", () => {
   });
 
   it("uses Next App Router with trip-scoped production routes", () => {
-    expect(readFileSync(join(frontendRoot, "app/page.tsx"), "utf8")).toContain('redirect("/login")');
+    expect(readFileSync(join(frontendRoot, "app/page.tsx"), "utf8")).toContain("HomeLanding");
+    expect(readFileSync(join(frontendRoot, "src/components/HomeLanding.tsx"), "utf8")).toContain("วางแผนทริปกับเพื่อน");
     expect(existsSync(join(frontendRoot, "app/login/page.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "app/register/page.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "app/trips/[tripId]/page.tsx"))).toBe(true);

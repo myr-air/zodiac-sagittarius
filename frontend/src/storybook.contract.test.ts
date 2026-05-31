@@ -33,6 +33,7 @@ describe("Storybook template catalog", () => {
       "Pages/Timeline",
       "Pages/Map",
       "Pages/Members",
+      "Pages/Home Landing",
     ].forEach((title) => expect(stories).toContain(`title: "${title}"`));
   });
 
