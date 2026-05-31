@@ -5,7 +5,6 @@ import Link from "next/link";
 import type { PlanningView } from "@/src/app/SagittariusApp";
 import { LanguageSwitch } from "@/src/i18n/LanguageSwitch";
 import { useI18n } from "@/src/i18n/I18nProvider";
-import { getMessages, type Messages } from "@/src/i18n/messages";
 import { appRoutes, tripWorkspaceNavItems } from "@/src/routes/app-routes";
 import type { Member, Trip } from "@/src/trip/types";
 import { getTripDates } from "@/src/trip/itinerary";
@@ -23,7 +22,7 @@ interface AppShellProps {
 }
 
 export function AppShell({ activeView, children, collapsed, currentMember, onLeaveParticipantSession, onOpenExpenses, trip, onToggleCollapsed }: AppShellProps) {
-  const { hasI18nProvider, t } = useAppShellTranslations();
+  const { t } = useI18n();
   const tripDays = getTripDates(trip.startDate, trip.endDate).length;
   const tripNights = Math.max(0, tripDays - 1);
   const navItems = tripWorkspaceNavItems(trip.id, t.routes);
@@ -80,7 +79,7 @@ export function AppShell({ activeView, children, collapsed, currentMember, onLea
           ) : null}
         </div>
 
-        {hasI18nProvider ? <LanguageSwitch className="side-rail-language" /> : null}
+        <LanguageSwitch className="side-rail-language" />
 
         <div className="rail-summary" aria-label={t.appShell.planSummary}>
           <strong>{t.appShell.planSummary}</strong>
@@ -115,25 +114,3 @@ export function AppShell({ activeView, children, collapsed, currentMember, onLea
 function roleLabel(role: Member["role"], roles: Record<Member["role"], string>): string {
   return roles[role];
 }
-
-function useAppShellTranslations(): { hasI18nProvider: boolean; t: Messages } {
-  try {
-    return { hasI18nProvider: true, t: useI18n().t };
-  } catch (error) {
-    if (!(error instanceof Error) || error.message !== "useI18n must be used within I18nProvider") {
-      throw error;
-    }
-
-    return { hasI18nProvider: false, t: legacyAppShellMessages };
-  }
-}
-
-const legacyAppShellMessages: Messages = {
-  ...getMessages("th"),
-  appShell: {
-    ...getMessages("th").appShell,
-    navLabel: "Sagittarius planning navigation",
-    expandNavigation: "Expand navigation",
-    collapseNavigation: "Collapse navigation",
-  },
-};

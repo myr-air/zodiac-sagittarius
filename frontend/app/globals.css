@@ -1869,6 +1869,11 @@ button:disabled,
   margin-inline: 0;
 }
 
+.side-rail[data-collapsed="true"] .language-switch-option {
+  min-width: 27px;
+  padding-inline: 0;
+}
+
 .rail-link {
   position: relative;
   min-height: 40px;
