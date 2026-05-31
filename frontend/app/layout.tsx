@@ -4,8 +4,8 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Sagittarius Travel Planning Cockpit",
-  description: "A production-oriented collaborative travel planning cockpit.",
+  title: "Joii Travel Planning",
+  description: "A friendly collaborative trip planner for decisions, routes, checklists, and shared plans.",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

@@ -861,7 +861,7 @@ async function createPasskeyCredential(challenge: string, settings: AccountSetti
   const credential = await credentials.create({
     publicKey: {
       challenge: base64UrlToArrayBuffer(challenge),
-      rp: { name: "Sagittarius", ...(rpId ? { id: rpId } : {}) },
+      rp: { name: "Joii", ...(rpId ? { id: rpId } : {}) },
       user: {
         id: new TextEncoder().encode(settings.profile.id),
         name: userName,

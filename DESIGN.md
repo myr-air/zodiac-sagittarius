@@ -1,28 +1,33 @@
 ---
-name: Sagittarius Travel Planning Cockpit
+name: Joii Travel Planning Cockpit
 status: approved-design-source-of-truth
-lastUpdated: 2026-05-27
+lastUpdated: 2026-06-01
 inspiredBy:
   - https://getdesign.md/
   - /Users/xiivth/workspaces/zodiac/joii/DESIGN.md
   - /Users/xiivth/workspaces/zodiac/taurus/README.md
   - /Users/xiivth/workspaces/zodiac/taurus/src/trip/components/TripWorkspace.tsx
-productType: desktop-first collaborative travel planning web app
+productType: public landing page + desktop-first collaborative travel planning web app
 projectCodename: Sagittarius
+publicBrand: Joii
 zodiacRationale: Sagittarius / ราศีธนู fits travel, exploration, long-range planning, and route decisions.
 backendPlan: REST + WebSocket + Rust + PostgreSQL, built after frontend
 ---
 
-# Sagittarius Travel Planning Cockpit Design System
+# Joii Travel Planning Cockpit Design System
 
-This file is the UI source of truth for the new production-oriented travel
-planning frontend in `/Users/xiivth/workspaces/zodiac/sagittarius`.
+This file is the UI source of truth for the public landing page and the
+production-oriented travel planning frontend in
+`/Users/xiivth/workspaces/zodiac/sagittarius`.
 
 The product combines:
 
 - Joii's friendly, clean group-trip identity and component discipline.
 - Taurus' serious planning workflow: smart itinerary table, plan variants,
   suggestions, map context, role-aware views, and local draft persistence.
+- A public landing surface that introduces the product with artful travel
+  imagery, then hands users into login or trip access without extra navigation
+  noise.
 - A calmer production visual language suitable for long desktop planning
   sessions before the mobile trip mode is developed.
 
@@ -44,18 +49,18 @@ Primary job:
   is the source of truth, while map, suggestions, conflicts, budget, and people
   context stay visible nearby.
 
-Non-goals for this frontend pass:
+Non-goals for the planning cockpit:
 
 - Do not build the backend.
 - Do not optimize for mobile trip mode yet.
-- Do not create a marketing landing page.
 - Do not make a decorative dashboard that hides editing behind extra clicks.
 
 ## 2. Experience Principles
 
 1. Desktop planning first.
-   The app opens into the planning cockpit, not a public homepage or mobile
-   trip-day view.
+   The public root opens into the Joii landing page. Authenticated and
+   trip-access routes open into the planning cockpit, not a mobile trip-day
+   view.
 
 2. Smart Table is the source of truth.
    Itinerary edits, day structure, ordering, validation, plan variants, and
@@ -76,7 +81,7 @@ Non-goals for this frontend pass:
 
 ## 3. Visual Theme
 
-Theme name: **Calm Travel Ops**.
+App theme name: **Calm Travel Ops**.
 
 The UI should feel like a refined travel operations desk: clear, quietly warm,
 professional, and supportive. It should not feel like a toy prototype, a dense
@@ -100,6 +105,38 @@ Avoid:
 - Large hero sections.
 - Marketing copy inside the app shell.
 - One-note color palettes.
+
+### Public Landing Theme
+
+Landing theme name: **Postcard Atlas**.
+
+The landing page may be more visual and editorial than the cockpit, but it must
+still feel calm, useful, and product-connected. It should look like a refined
+travel notebook with real destination atmosphere: bright paper, teal routes,
+warm coral/amber accents, and generated scenic thumbnails.
+
+Landing rules:
+
+- Header is intentionally minimal: Joii brand, EN/TH language switch, `Log in`,
+  and `Trip access`. English is the default landing language.
+- Do not expose `Sagittarius` as the public app name on the landing page;
+  Sagittarius is the local project codename.
+- Do not add full navigation links to the landing header.
+- Desktop may show the product preview and secondary hero actions.
+- Mobile hides the product preview and hero buttons because the header actions
+  already provide the main choices.
+- Use bitmap travel art for empty destination thumbnails; do not leave gradient
+  placeholder blocks in production landing UI.
+- Generated landing art should avoid text, logos, close-up faces, and heavy
+  shadows.
+- Hero background may use broad lat/long-style grid lines, two or three soft
+  watercolor blooms, and one clear atlas-style route line behind the content.
+  Avoid decorative pattern noise that does not communicate travel planning.
+- Do not place decorative map or plane icons around the hero title; the route
+  line and grid carry the map metaphor.
+- SVG brand icons may be sourced from [theSVG](https://thesvg.org/) for footer
+  or external-source links. Generic UI controls should continue using the local
+  app icon set for consistency.
 
 ## 4. Color Tokens
 
@@ -151,6 +188,9 @@ Color usage:
 - Danger red: destructive actions only.
 - Success green: completed, approved, settled.
 - Muted slate: secondary text, helper text, quiet metadata.
+- Landing accent balance: teal remains the action color, sky blue supports route
+  and map surfaces, coral and amber add travel warmth, and mint keeps the page
+  fresh. Avoid letting any one hue dominate the public page.
 
 ## 5. Typography
 
@@ -231,7 +271,7 @@ The left rail is a first-class UI state.
 Expanded state:
 
 - Width: 220px.
-- Shows Sagittarius brand, trip identity, nav labels, role/profile summary, and key
+- Shows Joii brand, trip identity, nav labels, role/profile summary, and key
   secondary actions.
 
 Collapsed state:

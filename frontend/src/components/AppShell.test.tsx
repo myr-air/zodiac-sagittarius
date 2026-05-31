@@ -110,13 +110,13 @@ describe("AppShell", () => {
       </AppShell>,
     );
 
-    expect(screen.getByRole("navigation", { name: /Sagittarius planning navigation/i })).toBeInTheDocument();
+    expect(screen.getByRole("navigation", { name: /Joii planning navigation/i })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Overview/i })).toHaveAttribute("href", "/trips/trip-hong-kong-shenzhen");
     expect(screen.getByText("Traveler")).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "ภาษาไทย" }));
 
-    expect(screen.getByRole("navigation", { name: /เมนูวางแผน Sagittarius/i })).toBeInTheDocument();
+    expect(screen.getByRole("navigation", { name: /เมนูวางแผน Joii/i })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /ภาพรวม/i })).toHaveAttribute("href", "/trips/trip-hong-kong-shenzhen");
     expect(screen.getByText("ผู้ร่วมเดินทาง")).toBeInTheDocument();
   });

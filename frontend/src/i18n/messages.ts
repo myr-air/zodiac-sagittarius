@@ -32,8 +32,108 @@ export const messages = {
         copyFailed: "Copy failed",
       },
     },
+    homeLanding: {
+      navLabel: "Joii landing navigation",
+      brandHomeLabel: "Joii home",
+      actions: {
+        login: "Log in",
+        tripAccess: "Trip access",
+        createTrip: "Create trip",
+        startPlanning: "Start planning",
+        joinTrip: "Join trip",
+        createAccount: "Create account",
+      },
+      hero: {
+        title: "Plan trips with friends easier and more fun",
+        titleLines: {
+          first: "Plan trips with friends",
+          second: "easier and more fun",
+        },
+        detail:
+          "Joii brings chat, ideas, itinerary, map, checklist, and budget into one calm space so everyone can decide faster and keep the plan clear.",
+        socialLabel: "Social proof",
+        socialProof: "Built for friend groups who need one clear source of truth before the flight.",
+      },
+      preview: {
+        label: "Product preview",
+        tripTitle: "Japan: Tokyo - Kamakura",
+        tripMeta: "12 - 16 June 2026 · 5 days · 4 friends",
+        sectionsLabel: "Trip workspace sections",
+        sections: {
+          overview: "Overview",
+          itinerary: "Itinerary",
+          map: "Map",
+          budget: "Budget",
+          checklist: "Checklist",
+        },
+        days: {
+          first: {
+            day: "Day 1",
+            title: "Arrive Tokyo",
+            detail: "Narita, dinner, first walk",
+          },
+          second: {
+            day: "Day 2",
+            title: "Classic Kamakura",
+            detail: "Temple route and seaside",
+          },
+          third: {
+            day: "Day 3",
+            title: "Food crawl",
+            detail: "Markets, cafes, late train",
+          },
+          fourth: {
+            day: "Day 4",
+            title: "Free day",
+            detail: "Split plans, shared notes",
+          },
+        },
+        mapLabel: "Route map preview",
+        mapAria: "A calm route map from Tokyo to Kamakura",
+        mapStops: {
+          tokyo: "Tokyo",
+          yokohama: "Yokohama",
+          kamakura: "Kamakura",
+        },
+        checklistProgress: "66% done",
+        checklistItems: {
+          flights: "Book flights",
+          hotel: "Reserve hotel",
+          cash: "Exchange cash",
+          packing: "Share packing list",
+        },
+      },
+      workflow: {
+        titleLead: "Plan trips in",
+        titleHighlight: "3 simple steps",
+        detail: "Collaborate easily with your travel buddies in a beautiful, fluid workspace.",
+        steps: {
+          invite: {
+            title: "Invite & Create",
+            text: "Start a new trip and invite your friends to join the planning workspace instantly.",
+          },
+          plan: {
+            title: "Plan & Organize",
+            text: "Add places, create checklists, and divide budget seamlessly in one view.",
+          },
+          travel: {
+            title: "Travel Together",
+            text: "Everything is ready. Hit the road and create unforgettable memories together.",
+          },
+        },
+      },
+      finalCta: {
+        label: "Final call to action",
+        title: "Ready to make group trips feel calmer?",
+        detail: "Start from an empty plan or join with a code. Everyone sees the same plan, tasks, budget, and route.",
+      },
+      footer: {
+        copy: "Beautiful planning for group trips. Built for calm decisions before the journey.",
+        svgSource: "SVG source",
+      },
+    },
     appShell: {
-      navLabel: "Sagittarius planning navigation",
+      navLabel: "Joii planning navigation",
       nav: {
         overview: "Overview",
         itinerary: "Itinerary",
@@ -373,7 +473,7 @@ export const messages = {
         accountRegister: "Account register",
         tripAccess: "Trip access",
       },
-      eyebrow: "Sagittarius access",
+      eyebrow: "Joii access",
       titles: {
         combined: "Manage trips with an account or temporary access",
         accountLogin: "Sign in to your account",
@@ -508,7 +608,7 @@ export const messages = {
     },
     join: {
       pageLabel: "Join trip",
-      eyebrow: "Sagittarius trip access",
+      eyebrow: "Joii trip access",
       roomTitle: "Enter trip room",
       participantTitle: "Choose identity",
       roomDetail: "Enter this plan's Trip ID and password before choosing a member.",
@@ -569,8 +669,108 @@ export const messages = {
         copyFailed: "คัดลอกไม่สำเร็จ",
       },
     },
+    homeLanding: {
+      navLabel: "เมนูหน้าแรก Joii",
+      brandHomeLabel: "หน้าแรก Joii",
+      actions: {
+        login: "Log in",
+        tripAccess: "Trip access",
+        createTrip: "Create trip",
+        startPlanning: "เริ่มวางแผน",
+        joinTrip: "Join trip",
+        createAccount: "Create account",
+      },
+      hero: {
+        title: "วางแผนทริปกับเพื่อนง่ายขึ้น สนุกขึ้น",
+        titleLines: {
+          first: "วางแผนทริปกับเพื่อน",
+          second: "ง่ายขึ้น สนุกขึ้น",
+        },
+        detail:
+          "Joii รวม chat, idea, itinerary, map, checklist และ budget ไว้ใน space เดียว เพื่อให้ทุกคนตัดสินใจเร็วขึ้นและเที่ยวด้วยกันแบบไม่หลุด plan.",
+        socialLabel: "Social proof",
+        socialProof: "สร้างมาเพื่อ group เพื่อนที่ต้องการ source of truth เดียวก่อนขึ้นเครื่อง.",
+      },
+      preview: {
+        label: "ตัวอย่าง product",
+        tripTitle: "Japan: Tokyo - Kamakura",
+        tripMeta: "12 - 16 June 2026 · 5 days · 4 friends",
+        sectionsLabel: "เมนู workspace ของ trip",
+        sections: {
+          overview: "Overview",
+          itinerary: "Itinerary",
+          map: "Map",
+          budget: "Budget",
+          checklist: "Checklist",
+        },
+        days: {
+          first: {
+            day: "Day 1",
+            title: "ถึง Tokyo",
+            detail: "Narita, dinner, first walk",
+          },
+          second: {
+            day: "Day 2",
+            title: "Classic Kamakura",
+            detail: "Temple route and seaside",
+          },
+          third: {
+            day: "Day 3",
+            title: "Food crawl",
+            detail: "Markets, cafes, late train",
+          },
+          fourth: {
+            day: "Day 4",
+            title: "Free day",
+            detail: "แยก plan แล้วรวม note",
+          },
+        },
+        mapLabel: "ตัวอย่าง route map",
+        mapAria: "แผนที่ route จาก Tokyo ไป Kamakura",
+        mapStops: {
+          tokyo: "Tokyo",
+          yokohama: "Yokohama",
+          kamakura: "Kamakura",
+        },
+        checklistProgress: "ทำแล้ว 66%",
+        checklistItems: {
+          flights: "Book flights",
+          hotel: "Reserve hotel",
+          cash: "Exchange cash",
+          packing: "Share packing list",
+        },
+      },
+      workflow: {
+        titleLead: "Plan trips in",
+        titleHighlight: "3 simple steps",
+        detail: "ทำงานร่วมกับเพื่อนร่วมทริปใน workspace ที่สวย ลื่น และเข้าใจง่าย.",
+        steps: {
+          invite: {
+            title: "Invite & Create",
+            text: "เริ่ม trip ใหม่ แล้วชวนเพื่อนเข้ามาวางแผนด้วยกันได้ทันที.",
+          },
+          plan: {
+            title: "Plan & Organize",
+            text: "เพิ่มสถานที่ ทำ checklist และแบ่ง budget ได้ในมุมมองเดียว.",
+          },
+          travel: {
+            title: "Travel Together",
+            text: "ทุกอย่างพร้อมแล้ว ออกเดินทางและสร้าง memory ดี ๆ ด้วยกัน.",
+          },
+        },
+      },
+      finalCta: {
+        label: "Final call to action",
+        title: "พร้อมทำให้ group trip นิ่งขึ้นไหม?",
+        detail: "Start จาก empty plan หรือ join ด้วย code. ทุกคนเห็น same plan, same tasks, same budget, same route.",
+      },
+      footer: {
+        copy: "Beautiful planning สำหรับ group trip ช่วยให้ตัดสินใจนิ่งขึ้นก่อนออกเดินทาง.",
+        svgSource: "SVG source",
+      },
+    },
     appShell: {
-      navLabel: "เมนูวางแผน Sagittarius",
+      navLabel: "เมนูวางแผน Joii",
       nav: {
         overview: "ภาพรวม",
         itinerary: "แผนการเดินทาง",
@@ -910,7 +1110,7 @@ export const messages = {
         accountRegister: "Account register",
         tripAccess: "Trip access",
       },
-      eyebrow: "Sagittarius access",
+      eyebrow: "Joii access",
       titles: {
         combined: "จัดการ trip ด้วย account หรือเข้าแบบ temp",
         accountLogin: "เข้าสู่ account",
@@ -1044,7 +1244,7 @@ export const messages = {
     },
     join: {
       pageLabel: "Join trip",
-      eyebrow: "Sagittarius trip access",
+      eyebrow: "Joii trip access",
       roomTitle: "เข้าห้อง trip",
       participantTitle: "เลือกตัวตน",
       roomDetail: "กรอก Trip ID และ password ของแผนนี้ก่อนเลือกสมาชิก",

@@ -42,7 +42,7 @@ export function AppShell({ activeView, children, collapsed, currentMember, onLea
               <Icon name="route" />
             </div>
             <div className="brand-copy">
-              <strong>Sagittarius</strong>
+              <strong>Joii</strong>
             </div>
           </div>
 

@@ -59,7 +59,7 @@ describe("Sagittarius cockpit UI", () => {
     render(<SagittariusApp requireJoin />);
 
     expect(screen.getByRole("main", { name: /Account access/i })).toBeInTheDocument();
-    expect(screen.queryByRole("navigation", { name: /เมนูวางแผน Sagittarius/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("navigation", { name: /เมนูวางแผน Joii/i })).not.toBeInTheDocument();
 
     fireEvent.change(screen.getByLabelText(/Trip ID/i), { target: { value: "DEMO-TRIP" } });
     fireEvent.change(screen.getByLabelText(/^Trip password$/i), { target: { value: "demo-trip-pass" } });
@@ -68,7 +68,7 @@ describe("Sagittarius cockpit UI", () => {
     fireEvent.change(screen.getByLabelText(/ตั้งรหัสสำหรับ Explorer Friend/i), { target: { value: "traveler-pin" } });
     await user.click(screen.getByRole("button", { name: /เริ่มใช้งาน/i }));
 
-    expect(screen.getByRole("navigation", { name: /เมนูวางแผน Sagittarius/i })).toBeInTheDocument();
+    expect(screen.getByRole("navigation", { name: /เมนูวางแผน Joii/i })).toBeInTheDocument();
     expect(screen.getAllByRole("heading", { name: /Hong Kong \+ Shenzhen Trip/i }).length).toBeGreaterThan(0);
     expect(screen.getByRole("region", { name: /Trip overview/i })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /เพิ่มสถานที่ \/ กิจกรรม/i })).not.toBeInTheDocument();
@@ -88,7 +88,7 @@ describe("Sagittarius cockpit UI", () => {
 
     expect(apiClient.joinTrip).not.toHaveBeenCalled();
     expect(apiClient.loadTrip).not.toHaveBeenCalled();
-    expect(screen.getByRole("navigation", { name: /เมนูวางแผน Sagittarius/i })).toBeInTheDocument();
+    expect(screen.getByRole("navigation", { name: /เมนูวางแผน Joii/i })).toBeInTheDocument();
   }, 45_000);
 
   it("lets a guest participant leave their local session and choose another identity", async () => {
@@ -108,7 +108,7 @@ describe("Sagittarius cockpit UI", () => {
     expect(confirm).toHaveBeenCalledWith(expect.stringContaining("Explorer Friend"));
     expect(screen.getByRole("main", { name: /Account access/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /เข้าห้อง trip/i })).toBeInTheDocument();
-    expect(screen.queryByRole("navigation", { name: /เมนูวางแผน Sagittarius/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("navigation", { name: /เมนูวางแผน Joii/i })).not.toBeInTheDocument();
   }, 45_000);
 
   it("persists guest participant claims across a fresh app mount", async () => {
@@ -735,7 +735,7 @@ describe("Sagittarius cockpit UI", () => {
     const planningMain = container.querySelector(".planning-main");
 
     expect(screen.getAllByRole("heading", { name: /Hong Kong \+ Shenzhen Trip/i }).length).toBeGreaterThan(0);
-    expect(screen.getByRole("navigation", { name: /เมนูวางแผน Sagittarius/i })).toBeInTheDocument();
+    expect(screen.getByRole("navigation", { name: /เมนูวางแผน Joii/i })).toBeInTheDocument();
     expect(screen.queryByRole("banner", { name: /Trip command bar/i })).not.toBeInTheDocument();
     expect(container.querySelector(".page-header")).toHaveTextContent("ศูนย์จัดการทริป");
     expect(workspaceGrid).toBeInTheDocument();
@@ -801,7 +801,7 @@ describe("Sagittarius cockpit UI", () => {
   it("keeps the left navigation simple and only links to implemented views", () => {
     render(<SagittariusApp />);
 
-    const navigation = screen.getByRole("navigation", { name: /เมนูวางแผน Sagittarius/i });
+    const navigation = screen.getByRole("navigation", { name: /เมนูวางแผน Joii/i });
     const railLinks = navigation.querySelector(".rail-links");
     expect(railLinks).not.toBeNull();
     const links = within(railLinks as HTMLElement).getAllByRole("link");
@@ -869,7 +869,7 @@ describe("Sagittarius cockpit UI", () => {
   it("renders trip members as their own workspace page", () => {
     render(<SagittariusApp initialView="members" />);
 
-    const navigation = screen.getByRole("navigation", { name: /เมนูวางแผน Sagittarius/i });
+    const navigation = screen.getByRole("navigation", { name: /เมนูวางแผน Joii/i });
     const membersLink = within(navigation).getByRole("link", { name: /สมาชิก/i });
 
     expect(membersLink).toHaveClass("rail-link--active");
@@ -931,8 +931,8 @@ describe("Sagittarius cockpit UI", () => {
     render(<SagittariusApp initialView="members" requireJoin />);
 
     expect(screen.getByRole("main", { name: /Account access/i })).toBeInTheDocument();
-    expect(screen.queryByRole("navigation", { name: /เมนูวางแผน Sagittarius/i })).not.toBeInTheDocument();
-    expect(await screen.findByRole("navigation", { name: /เมนูวางแผน Sagittarius/i })).toBeInTheDocument();
+    expect(screen.queryByRole("navigation", { name: /เมนูวางแผน Joii/i })).not.toBeInTheDocument();
+    expect(await screen.findByRole("navigation", { name: /เมนูวางแผน Joii/i })).toBeInTheDocument();
   });
 
   it("filters trip members and can reset an empty member search", async () => {
@@ -1088,7 +1088,7 @@ describe("Sagittarius cockpit UI", () => {
   it("can start on real route paths with the right surface first", () => {
     const { rerender } = render(<SagittariusApp initialView="map" />);
 
-    const navigation = screen.getByRole("navigation", { name: /เมนูวางแผน Sagittarius/i });
+    const navigation = screen.getByRole("navigation", { name: /เมนูวางแผน Joii/i });
     expect(within(navigation).getByRole("link", { name: /แผนที่/i })).toHaveClass("rail-link--active");
     expect(document.querySelector(".planning-main")?.firstElementChild).toHaveClass("route-map-panel");
     expect(screen.queryByRole("region", { name: /ตารางแผนการเดินทาง/i })).not.toBeInTheDocument();
@@ -1140,7 +1140,7 @@ describe("Sagittarius cockpit UI", () => {
 
     await user.click(screen.getByRole("button", { name: /ย่อเมนู/i }));
 
-    const nav = screen.getByRole("navigation", { name: /เมนูวางแผน Sagittarius/i });
+    const nav = screen.getByRole("navigation", { name: /เมนูวางแผน Joii/i });
     expect(nav).toHaveAttribute("data-collapsed", "true");
     expect(screen.getByRole("button", { name: /ขยายเมนู/i })).toHaveAttribute("aria-expanded", "false");
 

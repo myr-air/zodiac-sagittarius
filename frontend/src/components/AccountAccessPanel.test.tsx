@@ -356,7 +356,7 @@ describe("AccountAccessPanel", () => {
         attestation: "none",
         challenge: bytes([1, 2, 3, 4]),
         authenticatorSelection: expect.objectContaining({ userVerification: "required" }),
-        rp: expect.objectContaining({ name: "Sagittarius" }),
+        rp: expect.objectContaining({ name: "Joii" }),
         pubKeyCredParams: expect.arrayContaining([
           expect.objectContaining({ type: "public-key", alg: -7 }),
           expect.objectContaining({ type: "public-key", alg: -257 }),
