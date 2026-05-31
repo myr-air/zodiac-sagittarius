@@ -1,6 +1,7 @@
 import { type FormEvent, useEffect, useMemo, useState } from "react";
 import { appRoutes } from "@/src/routes/app-routes";
 import type { Member, Trip, TripMemberAccessStatus, TripRole } from "@/src/trip/types";
+import { useI18n } from "@/src/i18n/I18nProvider";
 import { Icon } from "./icons";
 import { TravelMotif } from "./motifs";
 import { formatTripRange, PageHeader, PageUserCard } from "./PageHeader";
@@ -29,6 +30,7 @@ export function TripMembersPage({
   onResetMemberClaim,
   onTransferOwnership,
 }: TripMembersPageProps) {
+  const { locale, t } = useI18n();
   const [query, setQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState<"all" | TripRole>("all");
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "disabled" | "claimed" | "pending">("all");
@@ -89,7 +91,7 @@ export function TripMembersPage({
     /* v8 ignore next */
     if (!member) return;
     /* v8 ignore next */
-    if (window.confirm(`รีเซ็ตรหัสของ ${member.displayName}? สมาชิกคนนี้จะต้องตั้งรหัสใหม่อีกครั้ง`)) {
+    if (window.confirm(t.members.confirm.resetClaim({ name: member.displayName }))) {
       onResetMemberClaim(memberId);
     }
   }
@@ -98,8 +100,8 @@ export function TripMembersPage({
     const member = visibleMembers.find((candidate) => candidate.id === memberId);
     /* v8 ignore next */
     if (!member) return;
-    const actionLabel = accessStatus === "disabled" ? "ปิดสิทธิ์" : "เปิดสิทธิ์";
-    if (window.confirm(`${actionLabel} ${member.displayName}?`)) {
+    const actionLabel = accessStatus === "disabled" ? t.members.confirm.disable : t.members.confirm.enable;
+    if (window.confirm(t.members.confirm.access({ action: actionLabel, name: member.displayName }))) {
       onChangeMemberAccessStatus(memberId, accessStatus);
     }
   }
@@ -108,7 +110,7 @@ export function TripMembersPage({
     const member = visibleMembers.find((candidate) => candidate.id === memberId);
     /* v8 ignore next */
     if (!member) return;
-    if (window.confirm(`โอนสิทธิ owner ให้ ${member.displayName}? สมาชิกเป้าหมายต้องมี account แล้ว`)) {
+    if (window.confirm(t.members.confirm.transferOwner({ name: member.displayName }))) {
       onTransferOwnership?.(memberId);
     }
   }
@@ -117,10 +119,10 @@ export function TripMembersPage({
     const member = visibleMembers.find((candidate) => candidate.id === memberId);
     /* v8 ignore next */
     if (!member) return;
-    const password = window.prompt(`ตั้งรหัสผ่านใหม่ของ ${member.displayName} (อย่างน้อย 4 ตัวอักษร)`);
+    const password = window.prompt(t.members.confirm.passwordPrompt({ name: member.displayName }));
     if (password === null) return;
     if (password.trim().length < 4) {
-      window.alert("รหัสผ่านต้องมีอย่างน้อย 4 ตัวอักษร");
+      window.alert(t.members.confirm.passwordTooShort);
       return;
     }
     onChangeMemberPassword(memberId, password);
@@ -137,80 +139,80 @@ export function TripMembersPage({
   }
 
   return (
-    <section className="members-page" aria-label="Trip members">
+    <section className="members-page" aria-label={t.members.pageLabel}>
       <PageHeader
-        title="สมาชิกในทริป"
+        title={t.members.title}
         subtitle={trip.name}
         meta={(
           <>
-            <span><Icon name="calendar" /> {formatTripRange(trip.startDate, trip.endDate)}</span>
-            <span><Icon name="users" /> {visibleMembers.length} สมาชิก</span>
+            <span><Icon name="calendar" /> {formatTripRange(trip.startDate, trip.endDate, locale)}</span>
+            <span><Icon name="users" /> {t.dates.memberCount({ count: visibleMembers.length })}</span>
           </>
         )}
         motif={<TravelMotif tone="sunshine" />}
-        aside={<PageUserCard color={currentMember.color} name={currentMember.displayName} label={canManagePeople ? "จัดการสมาชิกได้" : "ดูรายชื่อสมาชิก"} />}
+        aside={<PageUserCard color={currentMember.color} name={currentMember.displayName} label={canManagePeople ? t.members.canManage : t.members.readOnly} />}
       />
 
-      <section className="member-stat-grid" aria-label="Member summary">
+      <section className="member-stat-grid" aria-label={t.members.summaryLabel}>
         <div className="member-stat">
           <Icon name="users" />
-          <span>สมาชิกทั้งหมด</span>
+          <span>{t.members.stats.total}</span>
           <strong>{visibleMembers.length}</strong>
         </div>
         <div className="member-stat">
           <Icon name="check" />
-          <span>เปิดสิทธิ์</span>
+          <span>{t.members.stats.active}</span>
           <strong>{activeMembers}</strong>
         </div>
         <div className="member-stat">
           <Icon name="warning" />
-          <span>รอเข้าร่วม</span>
+          <span>{t.members.stats.pending}</span>
           <strong>{pendingMembers}</strong>
         </div>
         <div className="member-stat">
           <Icon name="check" />
-          <span>ยืนยันแล้ว</span>
+          <span>{t.members.stats.joined}</span>
           <strong>{joinedMembers}</strong>
         </div>
         <div className="member-stat">
           <Icon name="alertCircle" />
-          <span>ปิดสิทธิ์</span>
+          <span>{t.members.stats.disabled}</span>
           <strong>{disabledMembers}</strong>
         </div>
       </section>
 
-      <section className="member-command-bar" aria-label="Member command bar">
+      <section className="member-command-bar" aria-label={t.members.commandBar}>
         <div className="member-command-fields">
           <label>
-            <span>ค้นหาสมาชิก</span>
-            <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="ชื่อสมาชิก" />
+            <span>{t.members.fields.search}</span>
+            <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder={t.members.fields.searchPlaceholder} />
           </label>
           <label>
-            <span>สิทธิ์</span>
+            <span>{t.members.fields.role}</span>
             <select value={roleFilter} onChange={(event) => setRoleFilter(event.target.value as "all" | TripRole)}>
-              <option value="all">ทุกสิทธิ์</option>
-              <option value="owner">Owner</option>
-              <option value="organizer">Organizer</option>
-              <option value="traveler">Traveller</option>
-              <option value="viewer">Viewer</option>
+              <option value="all">{t.members.filters.allRoles}</option>
+              <option value="owner">{t.appShell.roles.owner}</option>
+              <option value="organizer">{t.appShell.roles.organizer}</option>
+              <option value="traveler">{t.appShell.roles.traveler}</option>
+              <option value="viewer">{t.appShell.roles.viewer}</option>
             </select>
           </label>
           <label>
-            <span>สถานะ</span>
+            <span>{t.members.fields.status}</span>
             <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as "all" | "active" | "disabled" | "claimed" | "pending")}>
-              <option value="all">ทุกสถานะ</option>
-              <option value="active">เปิดสิทธิ์</option>
-              <option value="disabled">ปิดสิทธิ์</option>
-              <option value="claimed">ยืนยันแล้ว</option>
-              <option value="pending">รอเข้าร่วม</option>
+              <option value="all">{t.members.filters.allStatuses}</option>
+              <option value="active">{t.common.status.active}</option>
+              <option value="disabled">{t.common.status.disabled}</option>
+              <option value="claimed">{t.join.memberStatus.claimed}</option>
+              <option value="pending">{t.common.status.pending}</option>
             </select>
           </label>
         </div>
         <div className="member-command-actions">
-          <button className="member-filter-reset" type="button" onClick={resetFilters}>ล้างตัวกรอง</button>
+          <button className="member-filter-reset" type="button" onClick={resetFilters}>{t.members.actions.clear}</button>
           <button className="invite-copy-button" type="button" disabled={!canManagePeople} onClick={copyInviteLink}>
             <Icon name="copy" />
-            คัดลอกลิงก์เชิญ
+            {t.members.actions.copyInvite}
           </button>
           <button
             aria-expanded={createPanelOpen}
@@ -220,44 +222,44 @@ export function TripMembersPage({
             onClick={() => setCreatePanelOpen((current) => !current)}
           >
             <Icon name="plus" />
-            {createPanelOpen ? "ปิดฟอร์มเพิ่มสมาชิก" : "เปิดฟอร์มเพิ่มสมาชิก"}
+            {createPanelOpen ? t.members.actions.closeCreate : t.members.actions.openCreate}
           </button>
         </div>
         <div className="member-command-meta">
           <code>{inviteLink}</code>
           <span className={`copy-feedback copy-feedback--${copyState}`} role="status">
-            {copyState === "copied" ? "คัดลอกแล้ว" : copyState === "error" ? "คัดลอกไม่สำเร็จ" : canManagePeople ? "พร้อมเชิญสมาชิก" : "อ่านอย่างเดียว"}
+            {copyState === "copied" ? t.common.status.copied : copyState === "error" ? t.common.status.copyFailed : canManagePeople ? t.members.copy.ready : t.members.copy.readOnly}
           </span>
         </div>
       </section>
 
       {createPanelOpen ? (
-        <section className="member-create-panel" aria-label="Create trip member">
+        <section className="member-create-panel" aria-label={t.members.createLabel}>
           <form className="member-create-form" onSubmit={submitNewMember}>
             <label>
-              <span>ชื่อสมาชิกใหม่</span>
+              <span>{t.members.fields.newName}</span>
               <input
                 disabled={!canManagePeople}
                 value={newMemberName}
                 onChange={(event) => setNewMemberName(event.target.value)}
-                placeholder="เช่น New Cousin"
+                placeholder={t.members.fields.newNamePlaceholder}
               />
             </label>
             <label>
-              <span>สิทธิ์สมาชิกใหม่</span>
+              <span>{t.members.fields.newRole}</span>
               <select
                 disabled={!canManagePeople}
                 value={newMemberRole}
                 onChange={(event) => setNewMemberRole(event.target.value as Exclude<TripRole, "owner">)}
               >
-                <option value="organizer">Organizer</option>
-                <option value="traveler">Traveller</option>
-                <option value="viewer">Viewer</option>
+                <option value="organizer">{t.appShell.roles.organizer}</option>
+                <option value="traveler">{t.appShell.roles.traveler}</option>
+                <option value="viewer">{t.appShell.roles.viewer}</option>
               </select>
             </label>
             <button className="member-create-button" type="submit" disabled={!canManagePeople || !newMemberName.trim()}>
               <Icon name="check" />
-              บันทึกสมาชิก
+              {t.members.actions.saveMember}
             </button>
           </form>
         </section>
@@ -267,7 +269,7 @@ export function TripMembersPage({
         members={filteredMembers}
         currentMemberId={currentMember.id}
         canManagePeople={canManagePeople}
-        emptyMessage="ไม่พบสมาชิกที่ตรงกับตัวกรอง"
+        emptyMessage={t.members.empty}
         onChangeMemberAccessStatus={confirmChangeAccessStatus}
         onChangeCurrentMemberPassword={promptChangePassword}
         onChangeMemberRole={onChangeMemberRole}

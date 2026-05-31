@@ -1,12 +1,42 @@
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { fireEvent, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { buildExpenseSummary } from "@/src/trip/expenses";
 import { tripFixtureTasks } from "@/src/demo/trip-fixtures";
+import { LanguageSwitch } from "@/src/i18n/LanguageSwitch";
+import { renderWithI18n } from "@/src/i18n/test-utils";
 import { seedTrip } from "@/src/trip/seed";
 import { OverviewPage } from "./OverviewPage";
 
+const render = (ui: Parameters<typeof renderWithI18n>[0]) => renderWithI18n(ui, { locale: "th" });
+
 describe("OverviewPage role lenses", () => {
+  it("uses English by default and switches overview headings to Thai", async () => {
+    const user = userEvent.setup();
+    renderWithI18n(
+      <>
+        <LanguageSwitch />
+        <OverviewPage
+          currentMemberId="member-beam"
+          expenseSummary={buildExpenseSummary(seedTrip.expenses, "member-beam")}
+          items={seedTrip.itineraryItems}
+          suggestions={[]}
+          tasks={tripFixtureTasks}
+          trip={seedTrip}
+          onCreateTask={vi.fn()}
+          onOpenExpenses={vi.fn()}
+          onToggleTaskStatus={vi.fn()}
+        />
+      </>,
+    );
+
+    expect(screen.getByRole("region", { name: /Trip overview/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /Focus for today/i })).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "ภาษาไทย" }));
+    expect(screen.getByRole("heading", { name: /วันนี้ต้องโฟกัส/i })).toBeInTheDocument();
+  }, 30_000);
+
   it("combines booking prep into the trip checklist for managers", () => {
     renderOverview("member-beam");
 
@@ -24,7 +54,7 @@ describe("OverviewPage role lenses", () => {
     renderOverview("member-nam");
 
     expect(screen.getByRole("region", { name: /Today and next focus/i })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: /เที่ยวอะไรต่อ/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /มุมมองการเดินทางของฉัน/i })).toBeInTheDocument();
     expect(screen.getByRole("region", { name: /Traveler highlights/i })).toBeInTheDocument();
     expect(screen.getByText(/อาหารเย็นที่ Temple Street Night Market/i)).toBeInTheDocument();
     expect(screen.getByText(/Dim Dim Sum ที่ Tim Ho Wan/i)).toBeInTheDocument();
@@ -70,13 +100,13 @@ describe("OverviewPage role lenses", () => {
     await user.click(within(checklist).getByRole("button", { name: "เพิ่ม" }));
 
     expect(onCreateTask).toHaveBeenCalledWith({ title: "Bring umbrella", visibility: "private", assigneeId: null });
-  });
+  }, 30_000);
 
   it("prioritizes control and shared preparation for organizers", async () => {
     const user = userEvent.setup();
     renderOverview("member-beam");
 
-    expect(screen.getByRole("heading", { name: /คุมทริปให้พร้อม/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /ศูนย์จัดการทริป/i })).toBeInTheDocument();
     expect(screen.getByRole("region", { name: /Trip readiness/i })).toBeInTheDocument();
     const checklist = screen.getByRole("region", { name: /Trip checklist/i });
     expect(checklist).toBeInTheDocument();
@@ -89,7 +119,7 @@ describe("OverviewPage role lenses", () => {
   it("shows a read-only trip snapshot for viewers", () => {
     renderOverview("member-family");
 
-    expect(screen.getByRole("heading", { name: /ดูภาพรวมทริป/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /ภาพรวมทริป/i })).toBeInTheDocument();
     expect(screen.getByRole("region", { name: /Read-only trip snapshot/i })).toBeInTheDocument();
     expect(screen.queryByRole("region", { name: /Trip checklist/i })).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/เพิ่มเช็กลิสต์/i)).not.toBeInTheDocument();

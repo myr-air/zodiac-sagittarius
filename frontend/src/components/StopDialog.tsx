@@ -1,7 +1,9 @@
 import { useState, type FormEvent } from "react";
 import type { ActivityType, ItineraryItem } from "@/src/trip/types";
+import { useI18n } from "@/src/i18n/I18nProvider";
 import { Button } from "./ui";
 import { Icon } from "./icons";
+import { activityTypeLabel } from "./itineraryDisplay";
 
 export interface StopFormValues {
   startTime: string;
@@ -20,14 +22,7 @@ interface StopDialogProps {
   onSubmit: (values: StopFormValues) => void;
 }
 
-const activityTypeOptions: Array<{ value: ActivityType; label: string }> = [
-  { value: "food", label: "อาหาร" },
-  { value: "attraction", label: "สถานที่" },
-  { value: "experience", label: "กิจกรรม" },
-  { value: "travel", label: "เดินทาง" },
-  { value: "shopping", label: "ช้อปปิ้ง" },
-  { value: "stay", label: "ที่พัก" },
-];
+const activityTypeOptions: ActivityType[] = ["food", "attraction", "experience", "travel", "shopping", "stay"];
 
 const fieldIds = {
   activity: "stop-activity",
@@ -41,6 +36,7 @@ const fieldIds = {
 };
 
 export function StopDialog({ mode, initialItem, onClose, onSubmit }: StopDialogProps) {
+  const { locale, t } = useI18n();
   const [values, setValues] = useState<StopFormValues>(() => ({
     startTime: initialItem?.startTime ?? "16:30",
     activity: initialItem?.activity ?? "",
@@ -51,7 +47,7 @@ export function StopDialog({ mode, initialItem, onClose, onSubmit }: StopDialogP
     note: initialItem?.note ?? "",
   }));
 
-  const title = mode === "create" ? "เพิ่มกิจกรรม" : "แก้ไขรายละเอียด";
+  const title = mode === "create" ? t.stopDialog.titles.create : t.stopDialog.titles.edit;
 
   function update<K extends keyof StopFormValues>(key: K, value: StopFormValues[K]) {
     setValues((current) => ({ ...current, [key]: value }));
@@ -78,7 +74,7 @@ export function StopDialog({ mode, initialItem, onClose, onSubmit }: StopDialogP
       <section className="stop-dialog" role="dialog" aria-modal="true" aria-labelledby="stop-dialog-title">
         <div className="dialog-title-row">
           <h2 id="stop-dialog-title">{title}</h2>
-          <button type="button" aria-label="ปิดฟอร์ม" onClick={onClose}>
+          <button type="button" aria-label={t.stopDialog.closeForm} onClick={onClose}>
             <Icon name="x" />
           </button>
         </div>
@@ -86,11 +82,11 @@ export function StopDialog({ mode, initialItem, onClose, onSubmit }: StopDialogP
         <form className="stop-form" onSubmit={handleSubmit}>
           <div className="dialog-grid">
             <label htmlFor={fieldIds.startTime}>
-              <span>เวลา</span>
+              <span>{t.stopDialog.fields.time}</span>
               <input id={fieldIds.startTime} type="time" value={values.startTime} onChange={(event) => update("startTime", event.target.value)} required />
             </label>
             <label htmlFor={fieldIds.durationHours}>
-              <span>ชั่วโมง</span>
+              <span>{t.stopDialog.fields.hours}</span>
               <input
                 id={fieldIds.durationHours}
                 min={0}
@@ -101,7 +97,7 @@ export function StopDialog({ mode, initialItem, onClose, onSubmit }: StopDialogP
               />
             </label>
             <label htmlFor={fieldIds.durationMinutes}>
-              <span>นาที</span>
+              <span>{t.stopDialog.fields.minutes}</span>
               <select
                 id={fieldIds.durationMinutes}
                 value={values.durationMinutes % 60}
@@ -113,34 +109,34 @@ export function StopDialog({ mode, initialItem, onClose, onSubmit }: StopDialogP
               </select>
             </label>
             <label className="dialog-field-wide" htmlFor={fieldIds.activity}>
-              <span>กิจกรรม</span>
+              <span>{t.stopDialog.fields.activity}</span>
               <input id={fieldIds.activity} value={values.activity} onChange={(event) => update("activity", event.target.value)} required />
             </label>
             <label htmlFor={fieldIds.activityType}>
-              <span>ประเภท</span>
+              <span>{t.stopDialog.fields.type}</span>
               <select id={fieldIds.activityType} value={values.activityType} onChange={(event) => update("activityType", event.target.value as ActivityType)}>
                 {activityTypeOptions.map((option) => (
-                  <option value={option.value} key={option.value}>{option.label}</option>
+                  <option value={option} key={option}>{activityTypeLabel(option, locale)}</option>
                 ))}
               </select>
             </label>
             <label htmlFor={fieldIds.place}>
-              <span>สถานที่</span>
+              <span>{t.stopDialog.fields.place}</span>
               <input id={fieldIds.place} value={values.place} onChange={(event) => update("place", event.target.value)} required />
             </label>
             <label className="dialog-field-wide" htmlFor={fieldIds.transportation}>
-              <span>การเดินทาง</span>
+              <span>{t.stopDialog.fields.transportation}</span>
               <input id={fieldIds.transportation} value={values.transportation} onChange={(event) => update("transportation", event.target.value)} />
             </label>
             <label className="dialog-field-wide" htmlFor={fieldIds.note}>
-              <span>โน้ต</span>
+              <span>{t.stopDialog.fields.note}</span>
               <textarea id={fieldIds.note} value={values.note} onChange={(event) => update("note", event.target.value)} rows={3} />
             </label>
           </div>
 
           <div className="dialog-actions">
-            <Button type="button" variant="ghost" onClick={onClose}>ยกเลิก</Button>
-            <Button type="submit">{mode === "create" ? "บันทึกกิจกรรม" : "บันทึกการแก้ไข"}</Button>
+            <Button type="button" variant="ghost" onClick={onClose}>{t.stopDialog.actions.cancel}</Button>
+            <Button type="submit">{mode === "create" ? t.stopDialog.actions.create : t.stopDialog.actions.edit}</Button>
           </div>
         </form>
       </section>

@@ -1,7 +1,8 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { tripFixture } from "@/src/demo/trip-fixtures";
+import { renderWithI18n } from "@/src/i18n/test-utils";
 import {
   activeDayLabel,
   dayColorFor,
@@ -10,6 +11,8 @@ import {
   liveMapStatusText,
   RouteMapView,
 } from "./RouteMapView";
+
+const render = (ui: Parameters<typeof renderWithI18n>[0]) => renderWithI18n(ui, { locale: "th" });
 
 const maplibreMock = vi.hoisted(() => ({
   maps: [] as Array<{
@@ -89,17 +92,17 @@ describe("RouteMapView", () => {
     );
 
     expect(screen.getByRole("heading", { name: "แผนที่" })).toBeInTheDocument();
-    expect(screen.getByText(/stops visible/)).toHaveTextContent(`${regionalItems.length}/${regionalItems.length} stops visible`);
+    expect(screen.getByText(/จุดที่แสดง/)).toHaveTextContent(`${regionalItems.length}/${regionalItems.length} จุดที่แสดง`);
     expect(screen.getByText("กำลังโหลดแผนที่จาก OpenFreeMap")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: /Day 2/ }));
 
     const dayTwoCount = regionalItems.filter((item) => item.day === "2025-05-16").length;
-    expect(screen.getByText(/stops visible/)).toHaveTextContent(`${dayTwoCount}/${regionalItems.length} stops visible`);
+    expect(screen.getByText(/จุดที่แสดง/)).toHaveTextContent(`${dayTwoCount}/${regionalItems.length} จุดที่แสดง`);
     expect(screen.getAllByText(/Day 2/).length).toBeGreaterThan(0);
 
-    await userEvent.click(screen.getByRole("button", { name: "ทุกวัน" }));
-    expect(screen.getByText(/stops visible/)).toHaveTextContent(`${regionalItems.length}/${regionalItems.length} stops visible`);
+    fireEvent.click(screen.getByRole("button", { name: "ทุกวัน" }));
+    expect(screen.getByText(/จุดที่แสดง/)).toHaveTextContent(`${regionalItems.length}/${regionalItems.length} จุดที่แสดง`);
   });
 
   it("handles empty route data without map day choices", () => {
@@ -112,7 +115,7 @@ describe("RouteMapView", () => {
       />,
     );
 
-    expect(screen.getByText("0/0 stops visible")).toBeInTheDocument();
+    expect(screen.getByText("0/0 จุดที่แสดง")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /Day 1/ })).not.toBeInTheDocument();
   });
 
@@ -126,7 +129,7 @@ describe("RouteMapView", () => {
       />,
     );
 
-    expect(screen.getByText("3/3 stops visible")).toBeInTheDocument();
+    expect(screen.getByText("3/3 จุดที่แสดง")).toBeInTheDocument();
     expect(screen.getByText("กำลังโหลดแผนที่จาก OpenFreeMap")).toBeInTheDocument();
   });
 
@@ -319,8 +322,8 @@ describe("RouteMapView", () => {
   });
 
   it("exercises route map helper fallbacks directly", () => {
-    expect(liveMapStatusText("error")).toBe("โหลดแผนที่สดไม่สำเร็จ แสดงแผนผังสำรองไว้ก่อน");
-    expect(activeDayLabel("missing-day", [])).toBe("เลือกวัน");
+    expect(liveMapStatusText("error", "th")).toBe("โหลดแผนที่สดไม่สำเร็จ แสดงแผนผังสำรองไว้ก่อน");
+    expect(activeDayLabel("missing-day", [], "ทุกวัน", "เลือกวัน")).toBe("เลือกวัน");
     expect(dayColorFor("missing-day", [])).toBe("#2563eb");
 
     const map = { flyTo: vi.fn(), fitBounds: vi.fn() };

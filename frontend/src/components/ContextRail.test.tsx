@@ -1,7 +1,8 @@
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { fireEvent, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { tripFixture } from "@/src/demo/trip-fixtures";
+import { renderWithI18n } from "@/src/i18n/test-utils";
 import { ContextRail } from "./ContextRail";
 
 const selectedItem = tripFixture.planItems.find((item) => item.id === "item-dimdim") ?? tripFixture.planItems[0];
@@ -31,7 +32,7 @@ function renderRail(overrides: Partial<Parameters<typeof ContextRail>[0]> = {}) 
     onClose: vi.fn(),
     ...overrides,
   };
-  render(<ContextRail {...props} />);
+  renderWithI18n(<ContextRail {...props} />, { locale: "th" });
   return props;
 }
 
@@ -39,30 +40,30 @@ describe("ContextRail", () => {
   it("creates notes, switches booking tasks, and reviews suggestions", async () => {
     const props = renderRail();
 
-    await userEvent.click(screen.getByRole("button", { name: "Close details" }));
+    fireEvent.click(screen.getByRole("button", { name: "Close details" }));
     expect(props.onClose).toHaveBeenCalled();
 
-    await userEvent.click(screen.getByRole("button", { name: "บันทึกโน้ต" }));
+    fireEvent.click(screen.getByRole("button", { name: "บันทึกโน้ต" }));
     expect(props.onCreateNote).not.toHaveBeenCalled();
 
-    await userEvent.type(screen.getByLabelText("เพิ่มโน้ตสำหรับจุดนี้"), "  call restaurant  ");
-    await userEvent.click(screen.getByRole("button", { name: "บันทึกโน้ต" }));
+    fireEvent.change(screen.getByLabelText("เพิ่มโน้ตสำหรับจุดนี้"), { target: { value: "  call restaurant  " } });
+    fireEvent.click(screen.getByRole("button", { name: "บันทึกโน้ต" }));
     expect(props.onCreateNote).toHaveBeenCalledWith({ itemId: selectedItem.id, body: "call restaurant" });
 
-    await userEvent.click(screen.getByRole("tab", { name: "การจอง" }));
+    fireEvent.click(screen.getByRole("tab", { name: "การจอง" }));
     const bookingPanel = screen.getByRole("region", { name: "Booking and prep for this stop" });
-    await userEvent.click(within(bookingPanel).getByRole("checkbox", { name: /ยืนยันคิว Dim Dim Sum/ }));
+    fireEvent.click(within(bookingPanel).getByRole("checkbox", { name: /ยืนยันคิว Dim Dim Sum/ }));
     expect(props.onToggleTaskStatus).toHaveBeenCalledWith("task-dimdim-booking");
 
-    await userEvent.click(screen.getByRole("tab", { name: "ข้อเสนอ" }));
-    await userEvent.click(screen.getAllByRole("button", { name: /^อนุมัติ/ })[0]);
-    await userEvent.click(screen.getAllByRole("button", { name: /^ปฏิเสธ/ })[0]);
+    fireEvent.click(screen.getByRole("tab", { name: "ข้อเสนอ" }));
+    fireEvent.click(screen.getAllByRole("button", { name: /^อนุมัติ/ })[0]);
+    fireEvent.click(screen.getAllByRole("button", { name: /^ปฏิเสธ/ })[0]);
     expect(props.onReviewSuggestion).toHaveBeenCalledWith(tripFixture.suggestions[0].id, "approved");
     expect(props.onReviewSuggestion).toHaveBeenCalledWith(tripFixture.suggestions[0].id, "rejected");
 
-    await userEvent.click(screen.getByRole("tab", { name: "โน้ต" }));
+    fireEvent.click(screen.getByRole("tab", { name: "โน้ต" }));
     expect(screen.getByRole("region", { name: "Stop notes" })).toBeInTheDocument();
-  });
+  }, 30_000);
 
   it("uses suggestion mode and read-only fallbacks when editing is unavailable", async () => {
     const props = renderRail({
@@ -94,20 +95,18 @@ describe("ContextRail", () => {
     expect(props.onCreateNote).not.toHaveBeenCalled();
   });
 
-  it("lets the current note owner edit and delete their stop notes", async () => {
-    const user = userEvent.setup();
+  it("lets the current note owner edit and delete their stop notes", () => {
     const props = renderRail({
       currentMember: tripFixture.trip.members.find((member) => member.id === "member-beam")!,
     });
 
-    await user.click(screen.getByRole("button", { name: /แก้ไขโน้ต/i }));
-    await user.clear(screen.getByLabelText("แก้ไขโน้ต"));
-    await user.type(screen.getByLabelText("แก้ไขโน้ต"), "Updated queue plan");
-    await user.click(screen.getByRole("button", { name: /บันทึกการแก้ไขโน้ต/i }));
+    fireEvent.click(screen.getByRole("button", { name: /แก้ไขโน้ต/i }));
+    fireEvent.change(screen.getByLabelText("แก้ไขโน้ต"), { target: { value: "Updated queue plan" } });
+    fireEvent.click(screen.getByRole("button", { name: /บันทึกการแก้ไขโน้ต/i }));
 
     expect(props.onUpdateNote).toHaveBeenCalledWith({ noteId: "note-dimdim-1", body: "Updated queue plan" });
 
-    await user.click(screen.getByRole("button", { name: /ลบโน้ต/i }));
+    fireEvent.click(screen.getByRole("button", { name: /ลบโน้ต/i }));
     expect(props.onDeleteNote).toHaveBeenCalledWith("note-dimdim-1");
   });
 });

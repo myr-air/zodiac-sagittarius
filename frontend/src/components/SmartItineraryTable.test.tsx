@@ -1,7 +1,9 @@
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { fireEvent, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { tripFixture } from "@/src/demo/trip-fixtures";
+import { LanguageSwitch } from "@/src/i18n/LanguageSwitch";
+import { renderWithI18n } from "@/src/i18n/test-utils";
 import { SmartItineraryTable } from "./SmartItineraryTable";
 
 function renderTable(overrides: Partial<Parameters<typeof SmartItineraryTable>[0]> = {}) {
@@ -24,13 +26,43 @@ function renderTable(overrides: Partial<Parameters<typeof SmartItineraryTable>[0
     onUndo: vi.fn(),
     ...overrides,
   };
-  render(<SmartItineraryTable {...props} />);
+  renderWithI18n(<SmartItineraryTable {...props} />, { locale: "th" });
   return props;
 }
 
 describe("SmartItineraryTable", () => {
-  it("uses explicit controls for row selection instead of making table rows interactive", async () => {
-    const user = userEvent.setup();
+  it("uses English itinerary shell labels by default and Thai after switching", () => {
+    renderWithI18n(
+      <>
+        <LanguageSwitch />
+        <SmartItineraryTable
+          canRedo={false}
+          canRestructure
+          canUndo={false}
+          contextRailOpen={false}
+          endDate={tripFixture.trip.endDate}
+          items={tripFixture.planItems}
+          role="owner"
+          startDate={tripFixture.trip.startDate}
+          selectedItemId={tripFixture.planItems[0].id}
+          tripName={tripFixture.trip.name}
+          onAddStop={vi.fn()}
+          onSelectItem={vi.fn()}
+          onMoveItem={vi.fn()}
+          onRedo={vi.fn()}
+          onToggleContextRail={vi.fn()}
+          onUndo={vi.fn()}
+        />
+      </>,
+    );
+
+    const actions = screen.getByRole("group", { name: /Itinerary actions/i });
+    expect(within(actions).getByRole("button", { name: /Add stop or activity/i })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "ภาษาไทย" }));
+    expect(within(actions).getByRole("button", { name: /เพิ่มสถานที่ \/ กิจกรรม/i })).toBeInTheDocument();
+  }, 30_000);
+
+  it("uses explicit controls for row selection instead of making table rows interactive", () => {
     const onSelectItem = vi.fn();
     const props = renderTable({ onSelectItem });
     const row = screen.getByRole("row", { name: /Dim Dim Sum/i });
@@ -39,14 +71,14 @@ describe("SmartItineraryTable", () => {
     fireEvent.keyDown(row, { key: "Enter" });
     expect(props.onSelectItem).not.toHaveBeenCalled();
 
-    await user.click(within(row).getByRole("button", { name: /Select stop Dim Dim Sum/i }));
+    fireEvent.click(within(row).getByRole("button", { name: /Select stop Dim Dim Sum/i }));
     expect(props.onSelectItem).toHaveBeenCalledWith("item-dimdim");
     expect(within(row).getByText("Shop G72, G/F, The Elements")).toBeVisible();
     onSelectItem.mockClear();
     fireEvent.keyDown(within(row).getByRole("link", { name: /แผนที่/i }), { key: "Enter", bubbles: true });
     expect(props.onSelectItem).not.toHaveBeenCalled();
 
-    await user.click(screen.getByRole("button", { name: /Collapse Day 2/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Collapse Day 2/i }));
     expect(document.querySelector('tr[aria-label*="Dim Dim Sum"]')).toHaveAttribute("aria-hidden", "true");
   });
 

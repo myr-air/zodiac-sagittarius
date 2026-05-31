@@ -1,5 +1,8 @@
 import { useState, type DragEvent } from "react";
 import type { ItineraryAdvisory, ItineraryItem, TripRole } from "@/src/trip/types";
+import { useI18n } from "@/src/i18n/I18nProvider";
+import type { Messages } from "@/src/i18n/messages";
+import type { Locale } from "@/src/i18n/types";
 import { formatDayLabel, groupItemsByDay } from "@/src/trip/itinerary";
 import { Button } from "./ui";
 import { Icon } from "./icons";
@@ -43,6 +46,7 @@ export function SmartItineraryTable({
   onToggleContextRail,
   onUndo,
 }: SmartItineraryTableProps) {
+  const { locale, t } = useI18n();
   const groups = groupItemsByDay(items);
   const canEdit = role === "owner" || role === "organizer";
   const canRestructureItems = canEdit && canRestructure;
@@ -83,59 +87,59 @@ export function SmartItineraryTable({
   }
 
   return (
-    <section className="table-panel" aria-label="Smart itinerary table" id="itinerary">
+    <section className="table-panel" aria-label={t.itinerary.pageLabel} id="itinerary">
       <PageHeader
-        title="แผนการเดินทาง"
+        title={t.itinerary.title}
         subtitle={tripName}
         meta={(
           <>
-            <span><Icon name="calendar" /> {formatTripRange(startDate, endDate)}</span>
-            <span><Icon name="route" /> {groups.length} วัน / {items.length} stops</span>
-            <span><Icon name="warning" /> {warningCount} warnings</span>
-            <span><Icon name="clock" /> {formatDuration(totalMinutes)} planned</span>
+            <span><Icon name="calendar" /> {formatTripRange(startDate, endDate, locale)}</span>
+            <span><Icon name="route" /> {t.itinerary.dayItems({ days: groups.length, stops: items.length })}</span>
+            <span><Icon name="warning" /> {t.dates.warningCount({ count: warningCount })}</span>
+            <span><Icon name="clock" /> {formatDuration(totalMinutes, locale)} {t.dates.planned}</span>
           </>
         )}
         aside={(
-          <div className="page-header-actions" role="group" aria-label="Itinerary actions">
+          <div className="page-header-actions" role="group" aria-label={t.itinerary.actionsLabel}>
             <Button type="button" onClick={onAddStop} disabled={!canRestructureItems} className="add-stop-button">
               <Icon name="plus" />
-              เพิ่มสถานที่ / กิจกรรม
+              {t.itinerary.addStop}
             </Button>
             <button
               className="icon-button details-toggle-button"
               type="button"
               aria-expanded={contextRailOpen}
-              aria-label={contextRailOpen ? "Hide details panel" : "Open details"}
+              aria-label={contextRailOpen ? t.itinerary.hideDetails : t.itinerary.openDetails}
               onClick={onToggleContextRail}
-              title={contextRailOpen ? "Hide details panel" : "Open details"}
+              title={contextRailOpen ? t.itinerary.hideDetails : t.itinerary.openDetails}
             >
               <Icon name="panel" />
             </button>
-            <button className="icon-button" type="button" aria-label="Undo" disabled={!canUndo} onClick={onUndo}>
+            <button className="icon-button" type="button" aria-label={t.itinerary.undo} disabled={!canUndo} onClick={onUndo}>
               <Icon name="undo" />
             </button>
-            <button className="icon-button" type="button" aria-label="Redo" disabled={!canRedo} onClick={onRedo}>
+            <button className="icon-button" type="button" aria-label={t.itinerary.redo} disabled={!canRedo} onClick={onRedo}>
               <Icon name="redo" />
             </button>
-            {!canEdit ? <p className="page-header-note">Editing requires organizer access.</p> : null}
+            {!canEdit ? <p className="page-header-note">{t.itinerary.editRequiresOrganizer}</p> : null}
           </div>
         )}
       />
-      <div className="table-scroll" tabIndex={0} aria-label="Scrollable itinerary rows">
+      <div className="table-scroll" tabIndex={0} aria-label={t.itinerary.scrollLabel}>
         <table className="smart-table">
-          <caption className="sr-only">Trip itinerary rows grouped by day.</caption>
+          <caption className="sr-only">{t.itinerary.caption}</caption>
           <thead>
             <tr>
               <th>
-                <span className="sr-only">จัดลำดับ</span>
+                <span className="sr-only">{t.itinerary.headers.reorder}</span>
               </th>
-              <th>เวลา</th>
-              <th>กิจกรรม / สถานที่</th>
-              <th>ประเภท</th>
-              <th>แผนที่ / ลิงก์</th>
-              <th>ระยะเวลา</th>
-              <th>การเดินทาง</th>
-              <th>คำเตือน</th>
+              <th>{t.itinerary.headers.time}</th>
+              <th>{t.itinerary.headers.activity}</th>
+              <th>{t.itinerary.headers.type}</th>
+              <th>{t.itinerary.headers.map}</th>
+              <th>{t.itinerary.headers.duration}</th>
+              <th>{t.itinerary.headers.transport}</th>
+              <th>{t.itinerary.headers.warnings}</th>
             </tr>
           </thead>
           {groups.map((group) => (
@@ -144,6 +148,8 @@ export function SmartItineraryTable({
               collapsed={collapsedDays.includes(group.day)}
               dragState={dragState}
               group={group}
+              itineraryLabels={t.itinerary}
+              locale={locale}
               key={group.day}
               selectedItemId={selectedItemId}
               startDate={startDate}
@@ -164,6 +170,8 @@ export function SmartItineraryTable({
 
 function DayGroup({
   group,
+  itineraryLabels,
+  locale,
   startDate,
   selectedItemId,
   canEdit,
@@ -178,6 +186,8 @@ function DayGroup({
   onToggleDay,
 }: {
   group: { day: string; items: ItineraryItem[]; warningCount: number };
+  itineraryLabels: Messages["itinerary"];
+  locale: Locale;
   startDate: string;
   selectedItemId: string;
   canEdit: boolean;
@@ -201,21 +211,21 @@ function DayGroup({
             type="button"
             className="day-row-content day-toggle"
             aria-expanded={!collapsed}
-            aria-label={`${collapsed ? "Expand" : "Collapse"} ${dayLabel}`}
+            aria-label={collapsed ? itineraryLabels.dayToggle.expand({ day: dayLabel }) : itineraryLabels.dayToggle.collapse({ day: dayLabel })}
             onClick={() => onToggleDay(group.day)}
           >
             <Icon name="chevronRight" />
             <strong>{dayLabel}</strong>
             <span>·</span>
-            <span>{formatThaiDate(group.day)}</span>
-            <span className="day-route">{dayRouteLabel(group.day)}</span>
+            <span>{formatThaiDate(group.day, locale)}</span>
+            <span className="day-route">{dayRouteLabel(group.day, locale)}</span>
           </button>
         </th>
       </tr>
       {group.items.map((item, itemIndex) => (
         <tr
           aria-hidden={collapsed}
-          aria-label={`Open details for ${item.activity}`}
+          aria-label={itineraryLabels.row.openDetails({ activity: item.activity })}
           className={getRowClassName(item, selectedItemId, dragState)}
           key={item.id}
           onDragOver={(event) => onPreviewDrop(event, item.id)}
@@ -229,7 +239,7 @@ function DayGroup({
                 draggable={canEdit && !collapsed}
                 disabled={!canEdit}
                 tabIndex={collapsed ? -1 : undefined}
-                aria-label={`Drag ${item.activity}`}
+                aria-label={itineraryLabels.row.drag({ activity: item.activity })}
                 onDragEnd={onClearDragPreview}
                 onDragStart={(event) => onStartDrag(event, item.id)}
               >
@@ -240,7 +250,7 @@ function DayGroup({
                 className="reorder-button"
                 disabled={!canEdit || itemIndex === 0}
                 tabIndex={collapsed ? -1 : undefined}
-                aria-label={`ย้าย ${item.activity} ขึ้น`}
+                aria-label={itineraryLabels.row.moveUp({ activity: item.activity })}
                 onClick={() => {
                   const previousItem = group.items[itemIndex - 1];
                   if (previousItem) onMoveItem(item.id, previousItem.id);
@@ -253,7 +263,7 @@ function DayGroup({
                 className="reorder-button"
                 disabled={!canEdit || itemIndex >= group.items.length - 1}
                 tabIndex={collapsed ? -1 : undefined}
-                aria-label={`ย้าย ${item.activity} ลง`}
+                aria-label={itineraryLabels.row.moveDown({ activity: item.activity })}
                 onClick={() => {
                   const nextItem = group.items[itemIndex + 1];
                   if (nextItem) onMoveItem(nextItem.id, item.id);
@@ -269,7 +279,7 @@ function DayGroup({
               type="button"
               className="row-select"
               aria-pressed={selectedItemId === item.id}
-              aria-label={`Select stop ${item.activity}`}
+              aria-label={itineraryLabels.row.select({ activity: item.activity })}
               tabIndex={collapsed ? -1 : undefined}
               onClick={() => onSelectItem(item.id)}
               onDragOver={(event) => onPreviewDrop(event, item.id)}
@@ -279,9 +289,9 @@ function DayGroup({
               <span>{item.place}</span>
             </button>
           </td>
-          <td>{activityTypeLabel(item.activityType)}</td>
-          <td><a href={mapHref(item)} tabIndex={collapsed ? -1 : undefined}>{mapLinkLabel(item)}</a></td>
-          <td>{formatDuration(item.durationMinutes)}</td>
+          <td>{activityTypeLabel(item.activityType, locale)}</td>
+          <td><a href={mapHref(item)} tabIndex={collapsed ? -1 : undefined}>{mapLinkLabel(item, itineraryLabels.row.mapFallback)}</a></td>
+          <td>{formatDuration(item.durationMinutes, locale)}</td>
           <td>{item.transportation || "—"}</td>
           <td><AdvisorySummary advisories={item.advisories ?? []} /></td>
         </tr>
@@ -323,7 +333,7 @@ function mapHref(item: ItineraryItem): string {
   return item.mapLink || "#";
 }
 
-function mapLinkLabel(item: ItineraryItem): string {
+function mapLinkLabel(item: ItineraryItem, fallback: string): string {
   /* v8 ignore next */
-  return item.linkLabel || "แผนที่";
+  return item.linkLabel || fallback;
 }

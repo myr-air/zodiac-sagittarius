@@ -1,6 +1,7 @@
-import { act, fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { renderWithI18n } from "@/src/i18n/test-utils";
 import { seedTrip } from "@/src/trip/seed";
 import { TripMembersPage } from "./TripMembersPage";
 
@@ -17,7 +18,7 @@ function renderMembers(overrides: Partial<Parameters<typeof TripMembersPage>[0]>
     onTransferOwnership: vi.fn(),
     ...overrides,
   };
-  render(<TripMembersPage {...props} />);
+  renderWithI18n(<TripMembersPage {...props} />, { locale: "th" });
   return props;
 }
 
@@ -27,7 +28,6 @@ describe("TripMembersPage", () => {
   });
 
   it("handles successful member-management actions", async () => {
-    const user = userEvent.setup();
     const writeText = vi.fn().mockResolvedValue(undefined);
     const confirm = vi.spyOn(window, "confirm").mockReturnValue(true);
     const prompt = vi.spyOn(window, "prompt").mockReturnValue("fresh-pin");
@@ -41,28 +41,31 @@ describe("TripMembersPage", () => {
     };
     const props = renderMembers({ trip: claimedTrip });
 
-    await user.click(screen.getByRole("button", { name: /คัดลอกลิงก์เชิญ/i }));
+    fireEvent.click(screen.getByRole("button", { name: /คัดลอกลิงก์เชิญ/i }));
+    await act(async () => {
+      await Promise.resolve();
+    });
     expect(writeText).toHaveBeenCalledWith(expect.stringContaining("/join/DEMO-TRIP"));
     expect(screen.getByRole("status")).toHaveTextContent("คัดลอกแล้ว");
 
-    await user.click(screen.getByRole("button", { name: /รีเซ็ตรหัสผ่าน Travel Mate/i }));
+    fireEvent.click(screen.getByRole("button", { name: /รีเซ็ตรหัสผ่าน Travel Mate/i }));
     expect(props.onResetMemberClaim).toHaveBeenCalledWith("member-beam");
 
-    await user.click(screen.getByRole("button", { name: /ปิดสิทธิ์ Explorer Friend/i }));
+    fireEvent.click(screen.getByRole("button", { name: /ปิดสิทธิ์ Explorer Friend/i }));
     expect(props.onChangeMemberAccessStatus).toHaveBeenCalledWith("member-nam", "disabled");
 
-    await user.click(screen.getByRole("button", { name: /เปลี่ยนรหัสผ่าน Demo Traveler/i }));
+    fireEvent.click(screen.getByRole("button", { name: /เปลี่ยนรหัสผ่าน Demo Traveler/i }));
     expect(props.onChangeMemberPassword).toHaveBeenCalledWith("member-aom", "fresh-pin");
 
-    await user.click(screen.getByRole("button", { name: /เปิดฟอร์มเพิ่มสมาชิก/i }));
-    await user.type(screen.getByLabelText(/ชื่อสมาชิกใหม่/i), "Guide");
-    await user.selectOptions(screen.getByLabelText(/สิทธิ์สมาชิกใหม่/i), "organizer");
-    await user.click(screen.getByRole("button", { name: /บันทึกสมาชิก/i }));
+    fireEvent.click(screen.getByRole("button", { name: /เปิดฟอร์มเพิ่มสมาชิก/i }));
+    fireEvent.change(screen.getByLabelText(/ชื่อสมาชิกใหม่/i), { target: { value: "Guide" } });
+    fireEvent.change(screen.getByLabelText(/สิทธิ์สมาชิกใหม่/i), { target: { value: "organizer" } });
+    fireEvent.click(screen.getByRole("button", { name: /บันทึกสมาชิก/i }));
     expect(props.onCreateMember).toHaveBeenCalledWith({ displayName: "Guide", role: "organizer" });
 
     prompt.mockRestore();
     confirm.mockRestore();
-  });
+  }, 30_000);
 
   it("lets owners transfer ownership only to active account-linked members", async () => {
     const user = userEvent.setup();

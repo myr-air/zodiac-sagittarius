@@ -14,18 +14,18 @@ interface I18nContextValue {
 
 const I18nContext = createContext<I18nContextValue | null>(null);
 
-export function I18nProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>(defaultLocale);
+export function I18nProvider({ children, initialLocale = defaultLocale }: { children: ReactNode; initialLocale?: Locale }) {
+  const [locale, setLocaleState] = useState<Locale>(initialLocale);
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
-      setLocaleState(readStoredLocale());
+      setLocaleState(readStoredLocale(initialLocale));
     }, 0);
 
     return () => {
       window.clearTimeout(timeoutId);
     };
-  }, []);
+  }, [initialLocale]);
 
   useEffect(() => {
     document.documentElement.lang = locale;
@@ -70,15 +70,15 @@ export function useI18n(): I18nContextValue {
   return value;
 }
 
-function readStoredLocale(): Locale {
+function readStoredLocale(fallback: Locale = defaultLocale): Locale {
   if (typeof window === "undefined") {
-    return defaultLocale;
+    return fallback;
   }
 
   try {
     const stored = window.localStorage.getItem(localeStorageKey);
-    return isLocale(stored) ? stored : defaultLocale;
+    return isLocale(stored) ? stored : fallback;
   } catch {
-    return defaultLocale;
+    return fallback;
   }
 }

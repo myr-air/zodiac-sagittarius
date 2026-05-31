@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import type { ItineraryItem } from "@/src/trip/types";
+import { useI18n } from "@/src/i18n/I18nProvider";
 import { formatDayLabel, groupItemsByDay } from "@/src/trip/itinerary";
 import { Icon } from "./icons";
 import { TravelMotif } from "./motifs";
@@ -42,6 +43,7 @@ type DayFilter = "all" | string;
 const routeDayColors = ["#2563eb", "#0f766e", "#f97316", "#0891b2", "#16a34a", "#dc2626"];
 
 export function RouteMapView({ endDate, items, liveMapEnabled = process.env.NODE_ENV !== "test", startDate, tripName }: RouteMapViewProps) {
+  const { locale, t } = useI18n();
   const groups = useMemo(() => groupItemsByDay(items), [items]);
   const routePoints = useMemo(() => buildRoutePoints(items), [items]);
   const routeDayGroups = useMemo(() => buildRouteDayGroups(groups, routePoints, startDate), [groups, routePoints, startDate]);
@@ -210,31 +212,31 @@ export function RouteMapView({ endDate, items, liveMapEnabled = process.env.NODE
   }, [activeDay, liveMapState, routeDayGroups, visibleLiveRoutePoints]);
 
   return (
-    <section className="route-map-panel" id="map" aria-labelledby="route-map-heading" aria-label="Route map">
+    <section className="route-map-panel" id="map" aria-labelledby="route-map-heading" aria-label={t.map.pageLabel}>
       <PageHeader
-        title="แผนที่"
+        title={t.map.title}
         subtitle={tripName}
         meta={(
           <>
-            <span><Icon name="calendar" /> {formatTripRange(startDate, endDate)}</span>
-            <span><Icon name="location" /> {visibleRoutePoints.length}/{routePoints.length} stops visible</span>
-            <span><Icon name="warning" /> {warningCount} warnings</span>
-            <span><Icon name="route" /> {activeDayLabel(activeDay, routeDayGroups)}</span>
+            <span><Icon name="calendar" /> {formatTripRange(startDate, endDate, locale)}</span>
+            <span><Icon name="location" /> {t.dates.visibleStops({ visible: visibleRoutePoints.length, total: routePoints.length })}</span>
+            <span><Icon name="warning" /> {t.dates.warningCount({ count: warningCount })}</span>
+            <span><Icon name="route" /> {activeDayLabel(activeDay, routeDayGroups, t.map.allDays, t.map.chooseDay)}</span>
           </>
         )}
         motif={<TravelMotif tone="route" />}
       />
 
       <div className="route-map-layout">
-        <div className="route-map-canvas" aria-label="Map preview of the Hong Kong and Shenzhen itinerary route">
-          <div className="map-day-filter" aria-label="เลือกวันบนแผนที่">
+        <div className="route-map-canvas" aria-label={t.map.canvasLabel}>
+          <div className="map-day-filter" aria-label={t.map.filterLabel}>
             <button
               type="button"
               className={activeDay === "all" ? "map-day-filter-button map-day-filter-button--active" : "map-day-filter-button"}
               aria-pressed={activeDay === "all"}
               onClick={() => setActiveDay("all")}
             >
-              ทุกวัน
+              {t.map.allDays}
             </button>
             {routeDayGroups.map((group) => (
               <button
@@ -254,7 +256,7 @@ export function RouteMapView({ endDate, items, liveMapEnabled = process.env.NODE
           {liveMapState !== "error" ? (
             <>
               <div className="route-live-map" ref={mapContainerRef} aria-hidden="true" />
-              {liveMapState !== "ready" ? <p className="route-map-status">{liveMapStatusText(liveMapState)}</p> : null}
+              {liveMapState !== "ready" ? <p className="route-map-status">{liveMapStatusText(liveMapState, locale)}</p> : null}
             </>
           ) : (
             <>
@@ -284,21 +286,21 @@ export function RouteMapView({ endDate, items, liveMapEnabled = process.env.NODE
               ))}
             </>
           )}
-          <p className="map-source-note">Live tiles: OpenFreeMap + OpenStreetMap data · Renderer: MapLibre GL JS</p>
+          <p className="map-source-note">{t.map.sourceNote}</p>
         </div>
       </div>
     </section>
   );
 }
 
-export function liveMapStatusText(state: "idle" | "loading" | "ready" | "error"): string {
-  if (state === "error") return "โหลดแผนที่สดไม่สำเร็จ แสดงแผนผังสำรองไว้ก่อน";
-  return "กำลังโหลดแผนที่จาก OpenFreeMap";
+export function liveMapStatusText(state: "idle" | "loading" | "ready" | "error", locale: "en" | "th" = "en"): string {
+  if (state === "error") return locale === "th" ? "โหลดแผนที่สดไม่สำเร็จ แสดงแผนผังสำรองไว้ก่อน" : "Could not load the live map. Showing the fallback route diagram.";
+  return locale === "th" ? "กำลังโหลดแผนที่จาก OpenFreeMap" : "Loading map from OpenFreeMap";
 }
 
-export function activeDayLabel(activeDay: DayFilter, groups: RouteDayGroup[]): string {
-  if (activeDay === "all") return "ทุกวัน";
-  return groups.find((group) => group.day === activeDay)?.label ?? "เลือกวัน";
+export function activeDayLabel(activeDay: DayFilter, groups: RouteDayGroup[], allDays = "All days", chooseDay = "Choose day"): string {
+  if (activeDay === "all") return allDays;
+  return groups.find((group) => group.day === activeDay)?.label ?? chooseDay;
 }
 
 function buildRouteDayGroups(groups: ReturnType<typeof groupItemsByDay>, routePoints: RoutePoint[], startDate: string): RouteDayGroup[] {

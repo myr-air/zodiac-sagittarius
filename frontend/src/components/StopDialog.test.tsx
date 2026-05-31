@@ -1,8 +1,11 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { tripFixture } from "@/src/demo/trip-fixtures";
+import { renderWithI18n } from "@/src/i18n/test-utils";
 import { StopDialog } from "./StopDialog";
+
+const render = (ui: Parameters<typeof renderWithI18n>[0]) => renderWithI18n(ui, { locale: "th" });
 
 describe("StopDialog", () => {
   it("trims submitted values and clamps invalid durations", async () => {

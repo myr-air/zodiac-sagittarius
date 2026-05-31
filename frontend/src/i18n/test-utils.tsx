@@ -8,14 +8,15 @@ interface RenderWithI18nOptions extends RenderOptions {
 }
 
 export function renderWithI18n(ui: ReactElement, { locale, ...options }: RenderWithI18nOptions = {}) {
-  const previousLocale = window.localStorage.getItem(localeStorageKey);
-  window.localStorage.removeItem(localeStorageKey);
+  const storage = window.localStorage;
+  const previousLocale = storage?.getItem(localeStorageKey) ?? null;
+  storage?.removeItem(localeStorageKey);
 
   if (locale) {
-    window.localStorage.setItem(localeStorageKey, locale);
+    storage?.setItem(localeStorageKey, locale);
   }
 
-  const result = render(<I18nProvider>{ui}</I18nProvider>, options);
+  const result = render(<I18nProvider initialLocale={locale}>{ui}</I18nProvider>, options);
   const originalUnmount = result.unmount;
 
   return {
@@ -23,9 +24,9 @@ export function renderWithI18n(ui: ReactElement, { locale, ...options }: RenderW
     unmount: () => {
       originalUnmount();
       if (previousLocale !== null) {
-        window.localStorage.setItem(localeStorageKey, previousLocale);
+        storage?.setItem(localeStorageKey, previousLocale);
       } else {
-        window.localStorage.removeItem(localeStorageKey);
+        storage?.removeItem(localeStorageKey);
       }
     },
   };

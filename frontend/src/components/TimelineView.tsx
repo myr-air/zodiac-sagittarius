@@ -1,4 +1,5 @@
 import type { ItineraryItem } from "@/src/trip/types";
+import { useI18n } from "@/src/i18n/I18nProvider";
 import { formatDayLabel, groupItemsByDay } from "@/src/trip/itinerary";
 import { Badge } from "./ui";
 import { Icon } from "./icons";
@@ -18,35 +19,36 @@ interface TimelineViewProps {
 }
 
 export function TimelineView({ contextRailOpen, endDate, items, selectedItemId, startDate, tripName, onSelectItem, onToggleContextRail }: TimelineViewProps) {
+  const { locale, t } = useI18n();
   const groups = groupItemsByDay(items);
   const warningCount = items.reduce((total, item) => total + (item.advisories?.length ?? 0), 0);
   const totalMinutes = items.reduce((total, item) => total + (item.durationMinutes ?? 0), 0);
-  const primaryRoute = groups.map((group) => dayRouteLabel(group.day)).join(" / ");
+  const primaryRoute = groups.map((group) => dayRouteLabel(group.day, locale)).join(" / ");
 
   return (
-    <section className="timeline-panel" id="timeline" aria-labelledby="timeline-heading" aria-label="Trip timeline">
+    <section className="timeline-panel" id="timeline" aria-labelledby="timeline-heading" aria-label={t.timeline.pageLabel}>
       <PageHeader
-        title="ไทม์ไลน์"
+        title={t.timeline.title}
         subtitle={tripName}
         description={primaryRoute}
         meta={(
           <>
-            <span><Icon name="calendar" /> {formatTripRange(startDate, endDate)}</span>
-            <span><Icon name="route" /> {groups.length} วัน / {items.length} stops</span>
-            <span><Icon name="warning" /> {warningCount} warnings</span>
-            <span><Icon name="clock" /> {formatDuration(totalMinutes)} planned</span>
+            <span><Icon name="calendar" /> {formatTripRange(startDate, endDate, locale)}</span>
+            <span><Icon name="route" /> {t.timeline.dayItems({ days: groups.length, stops: items.length })}</span>
+            <span><Icon name="warning" /> {t.dates.warningCount({ count: warningCount })}</span>
+            <span><Icon name="clock" /> {formatDuration(totalMinutes, locale)} {t.dates.planned}</span>
           </>
         )}
         motif={<TimelineMotif />}
         aside={(
-          <div className="page-header-actions" role="group" aria-label="Timeline actions">
+          <div className="page-header-actions" role="group" aria-label={t.timeline.actionsLabel}>
             <button
               className="icon-button details-toggle-button"
               type="button"
               aria-expanded={contextRailOpen}
-              aria-label={contextRailOpen ? "Hide details panel" : "Open details"}
+              aria-label={contextRailOpen ? t.itinerary.hideDetails : t.itinerary.openDetails}
               onClick={onToggleContextRail}
-              title={contextRailOpen ? "Hide details panel" : "Open details"}
+              title={contextRailOpen ? t.itinerary.hideDetails : t.itinerary.openDetails}
             >
               <Icon name="panel" />
             </button>
@@ -60,9 +62,9 @@ export function TimelineView({ contextRailOpen, endDate, items, selectedItemId, 
             <header className="timeline-day-header">
               <div>
                 <strong>{formatDayLabel(group.day, startDate)}</strong>
-                <span>{formatThaiDate(group.day)}</span>
+                <span>{formatThaiDate(group.day, locale)}</span>
               </div>
-              <Badge tone="route">{dayRouteLabel(group.day)}</Badge>
+              <Badge tone="route">{dayRouteLabel(group.day, locale)}</Badge>
             </header>
 
             <ol className="timeline-stop-list">
@@ -73,7 +75,7 @@ export function TimelineView({ contextRailOpen, endDate, items, selectedItemId, 
                     <button
                       type="button"
                       className="timeline-stop-button"
-                      aria-label={`Select timeline stop ${item.activity}`}
+                      aria-label={t.timeline.selectStop({ activity: item.activity })}
                       aria-pressed={selected}
                       onClick={() => onSelectItem(item.id)}
                     >
@@ -89,8 +91,8 @@ export function TimelineView({ contextRailOpen, endDate, items, selectedItemId, 
                         <span>{item.place}</span>
                       </span>
                       <span className="timeline-meta">
-                        <span>{activityTypeLabel(item.activityType)}</span>
-                        <span>{formatDuration(item.durationMinutes)}</span>
+                        <span>{activityTypeLabel(item.activityType, locale)}</span>
+                        <span>{formatDuration(item.durationMinutes, locale)}</span>
                         {item.transportation ? <span>{item.transportation}</span> : null}
                       </span>
                       {item.advisories?.length ? (
