@@ -1,11 +1,10 @@
-import { type FormEvent, useMemo, useState } from "react";
+import { type FormEvent, type ReactNode, useMemo, useState } from "react";
 import type { ExpenseSummary, ItineraryItem, Member, Suggestion, Trip, TripTask } from "@/src/trip/types";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import type { Locale } from "@/src/i18n/types";
 import { formatDayLabel, getTripDates, validateItineraryItem } from "@/src/trip/itinerary";
 import { Icon } from "./icons";
-import { TravelMotif } from "./motifs";
-import { formatTripRange, PageHeader, PageUserCard } from "./PageHeader";
+import { formatTripRange, PageUserCard } from "./PageHeader";
 
 interface OverviewPageProps {
   trip: Trip;
@@ -35,6 +34,10 @@ export function OverviewPage({ trip, currentMemberId, expenseSummary, items, sug
   const warningCount = items.reduce((total, item) => total + validateItineraryItem(item, items.filter((candidate) => candidate.day === item.day)).length, 0);
   const pendingSuggestions = suggestions.filter((suggestion) => suggestion.status === "pending").length;
   const activeMembers = trip.members.filter((member) => member.id !== "member-viewer" && member.accessStatus !== "disabled").length;
+  const groupSpendLabel = `HK$${expenseSummary.groupSpend.toLocaleString("en-HK")}`;
+  const settlementCount = expenseSummary.settlementSuggestions.length;
+  const heroVisual = buildDestinationVisual(trip.destinationLabel);
+  const highlightItems = buildHighlightItems(sortedItems);
   const currentMember = trip.members.find((member) => member.id === currentMemberId);
   /* v8 ignore next */
   const currentMemberCard = currentMember ? <PageUserCard color={currentMember.color} name={currentMember.displayName} label={trip.destinationLabel} /> : null;
@@ -98,26 +101,52 @@ export function OverviewPage({ trip, currentMemberId, expenseSummary, items, sug
 
   return (
     <section className="overview-page" aria-label={t.overview.pageLabel}>
-      <PageHeader
-        title={t.overview.roleHeadings[roleLens]}
-        subtitle={trip.name}
-        meta={(
-          <>
-            <span><Icon name="calendar" /> {formatTripRange(trip.startDate, trip.endDate, locale)}</span>
-            <span><Icon name="location" /> {trip.destinationLabel}</span>
-            <span><Icon name="users" /> {t.dates.activeMembers({ count: activeMembers })}</span>
-          </>
-        )}
-        motif={<TravelMotif tone="postcard" />}
-        aside={currentMemberCard}
+      <OverviewHero
+        title={trip.name}
+        roleTitle={t.overview.roleHeadings[roleLens]}
+        destinationLabel={trip.destinationLabel}
+        dateRange={formatTripRange(trip.startDate, trip.endDate, locale)}
+        activeMembersLabel={t.dates.activeMembers({ count: activeMembers })}
+        groupSpendLabel={groupSpendLabel}
+        settlementCount={settlementCount}
+        visual={heroVisual}
+        currentMemberCard={currentMemberCard}
       />
 
-      <div className="overview-stat-grid" aria-label={t.overview.summaryLabel}>
-        <OverviewStat icon="calendar" label={t.overview.stats.duration} value={t.dates.dayCount({ count: tripDays.length })} />
-        <OverviewStat icon="location" label={t.overview.stats.activities} value={t.dates.stopCount({ count: items.length })} />
-        <OverviewStat icon="wallet" label={t.overview.stats.totalSpend} value={`HK$${expenseSummary.groupSpend.toLocaleString("en-HK")}`} />
-        <OverviewStat icon="users" label={t.overview.stats.activeMembers} value={t.dates.memberCount({ count: activeMembers })} />
-      </div>
+      <section className="overview-travel-cockpit" aria-label="travel cockpit">
+        <CockpitCard
+          icon="route"
+          label="Next stop"
+          value={nextStop?.place ?? trip.destinationLabel}
+          detail={nextStop ? `${formatDayLabel(nextStop.day, trip.startDate, locale)} · ${nextStop.startTime}` : t.dates.stopCount({ count: items.length })}
+        />
+        <CockpitCard
+          icon="check"
+          label="Trip readiness"
+          value={t.dates.dayCount({ count: tripDays.length })}
+          detail={t.overview.readiness.alertSummary({ warnings: warningCount, suggestions: pendingSuggestions })}
+        />
+        <CockpitCard
+          icon="wallet"
+          label="Budget"
+          value={groupSpendLabel}
+          detail={t.overview.money.settlementSuggestions({ count: settlementCount })}
+          onClick={openExpenses}
+        />
+        <CockpitCard
+          icon="users"
+          label={t.overview.stats.activeMembers}
+          value={t.dates.memberCount({ count: activeMembers })}
+          detail={t.dates.stopCount({ count: items.length })}
+        />
+      </section>
+
+      <HighlightBoard
+        items={highlightItems}
+        startDate={trip.startDate}
+        locale={locale}
+        emptyMessage={t.overview.empty.highlights}
+      />
 
       <div className="overview-grid">
         {isTravelerLens ? (
@@ -144,7 +173,7 @@ export function OverviewPage({ trip, currentMemberId, expenseSummary, items, sug
                 <Icon name="location" />
                 <h2>{t.overview.headings.highlights}</h2>
               </div>
-              <OverviewStopList items={[...foodStops, ...tripHighlights].slice(0, 5)} startDate={trip.startDate} locale={locale} emptyMessage={t.overview.empty.highlights} />
+              <OverviewStopList items={[...foodStops, ...tripHighlights].slice(0, 5)} startDate={trip.startDate} locale={locale} emptyMessage={quietHighlightsMessage(t.overview.empty.highlights)} quietItemIds={highlightItems.map((item) => item.id)} />
             </section>
 
             <section className="overview-panel overview-task-panel" aria-label={t.overview.sections.travelChecklist}>
@@ -213,7 +242,7 @@ export function OverviewPage({ trip, currentMemberId, expenseSummary, items, sug
                 <Icon name="location" />
                 <h2>{t.overview.headings.viewerSnapshot}</h2>
               </div>
-              <OverviewStopList items={viewerHighlights} startDate={trip.startDate} locale={locale} emptyMessage={t.overview.empty.highlights} />
+              <OverviewStopList items={viewerHighlights} startDate={trip.startDate} locale={locale} emptyMessage={quietHighlightsMessage(t.overview.empty.highlights)} quietItemIds={highlightItems.map((item) => item.id)} />
             </section>
 
             <section className="overview-panel" aria-label={t.overview.sections.nextStop}>
@@ -405,18 +434,21 @@ function overviewRoleLens(member?: Member): OverviewRoleLens {
   return "viewer";
 }
 
-function OverviewStopList({ items, startDate, locale, emptyMessage }: { items: ItineraryItem[]; startDate: string; locale: Locale; emptyMessage: string }) {
+function OverviewStopList({ items, startDate, locale, emptyMessage, quietItemIds = [] }: { items: ItineraryItem[]; startDate: string; locale: Locale; emptyMessage: string; quietItemIds?: string[] }) {
   if (!items.length) return <p className="overview-muted">{emptyMessage}</p>;
 
   return (
     <ul className="overview-stop-list">
-      {items.map((item) => (
+      {items.map((item) => {
+        const quietItem = quietItemIds.includes(item.id);
+        return (
         <li key={item.id}>
           <span>{formatDayLabel(item.day, startDate, locale)} · {item.startTime}</span>
-          <strong>{item.activity}</strong>
-          <small>{item.place}</small>
+          <strong>{quietItem ? item.place : item.activity}</strong>
+          <small>{quietItem ? item.activityType : item.place}</small>
         </li>
-      ))}
+        );
+      })}
     </ul>
   );
 }
@@ -485,12 +517,136 @@ function assigneeLabel(task: TripTask, trip: Trip, labels: { mine: string; unass
   return trip.members.find((member) => member.id === task.assigneeId)?.displayName ?? labels.tripMember;
 }
 
-function OverviewStat({ icon, label, value }: { icon: "calendar" | "location" | "users" | "wallet"; label: string; value: string }) {
+type DestinationTone = "harbor" | "city" | "coast" | "market";
+
+interface DestinationVisual {
+  tone: DestinationTone;
+  label: string;
+}
+
+function buildDestinationVisual(destinationLabel: string): DestinationVisual {
+  const label = destinationLabel.trim() || "Trip destination";
+  const normalized = label.toLocaleLowerCase("en-US");
+  if (/(hong kong|harbour|harbor|shenzhen|bay)/i.test(normalized)) return { tone: "harbor", label };
+  if (/(beach|coast|island|phuket|okinawa|bali)/i.test(normalized)) return { tone: "coast", label };
+  if (/(market|bazaar|night|taipei|bangkok)/i.test(normalized)) return { tone: "market", label };
+  return { tone: "city", label };
+}
+
+function buildHighlightItems(items: ItineraryItem[]): ItineraryItem[] {
+  return items.filter((item) => item.activityType !== "travel").slice(0, 6);
+}
+
+function quietHighlightsMessage(message: string): string {
+  if (message === "ยังไม่มีไฮไลต์ในแผนนี้") return "ยังไม่มีไฮไลต์สำหรับมุมมองนี้";
+  if (message === "No highlights in this plan yet.") return "No highlights for this view yet.";
+  return message;
+}
+
+function highlightTone(item: ItineraryItem, index: number): DestinationTone {
+  if (item.activityType === "food" || item.activityType === "shopping") return "market";
+  if (item.activityType === "attraction" || item.activityType === "experience") return index % 2 === 0 ? "harbor" : "city";
+  return index % 3 === 0 ? "coast" : "city";
+}
+
+function OverviewHero({
+  title,
+  roleTitle,
+  destinationLabel,
+  dateRange,
+  activeMembersLabel,
+  groupSpendLabel,
+  settlementCount,
+  visual,
+  currentMemberCard,
+}: {
+  title: string;
+  roleTitle: string;
+  destinationLabel: string;
+  dateRange: string;
+  activeMembersLabel: string;
+  groupSpendLabel: string;
+  settlementCount: number;
+  visual: DestinationVisual;
+  currentMemberCard: ReactNode;
+}) {
   return (
-    <div className="overview-stat">
-      <Icon name={icon} />
-      <span>{label}</span>
+    <header className={`overview-hero overview-hero--${visual.tone}`} role="banner" aria-label={title}>
+      <div className="overview-hero-copy">
+        <span className="overview-hero-kicker">{destinationLabel}</span>
+        <h1>{roleTitle}</h1>
+        <p>{title}</p>
+        <div className="overview-hero-meta" aria-label="trip facts">
+          <span><Icon name="calendar" /> {dateRange}</span>
+          <span><Icon name="location" /> {visual.label}</span>
+          <span><Icon name="users" /> {activeMembersLabel}</span>
+          <span><Icon name="wallet" /> {groupSpendLabel}</span>
+        </div>
+      </div>
+      <div className="overview-hero-visual" aria-hidden="true">
+        <span className="overview-hero-skyline" />
+        <span className="overview-hero-route" />
+        <span className="overview-hero-marker" />
+      </div>
+      <div className="overview-hero-aside">
+        {currentMemberCard}
+        <span className="overview-hero-settlements">{settlementCount} settlements</span>
+      </div>
+    </header>
+  );
+}
+
+function CockpitCard({
+  icon,
+  label,
+  value,
+  detail,
+  onClick,
+}: {
+  icon: "calendar" | "location" | "users" | "wallet" | "route" | "check";
+  label: string;
+  value: string;
+  detail: string;
+  onClick?: () => void;
+}) {
+  const content = (
+    <>
+      <div className="overview-cockpit-card-title">
+        <Icon name={icon} />
+        <span>{label}</span>
+      </div>
       <strong>{value}</strong>
-    </div>
+      <small>{detail}</small>
+    </>
+  );
+
+  if (onClick) {
+    return (
+      <button className="overview-cockpit-card overview-cockpit-card--button" type="button" onClick={onClick}>
+        {content}
+      </button>
+    );
+  }
+
+  return <div className="overview-cockpit-card">{content}</div>;
+}
+
+function HighlightBoard({ items, startDate, locale, emptyMessage }: { items: ItineraryItem[]; startDate: string; locale: Locale; emptyMessage: string }) {
+  return (
+    <section className="overview-highlight-board" aria-label="trip highlight board">
+      {items.length ? (
+        <ul className="overview-highlight-list">
+          {items.map((item, index) => (
+            <li className={`overview-highlight-item overview-highlight-item--${highlightTone(item, index)}`} key={item.id}>
+              <span>{formatDayLabel(item.day, startDate, locale)} · {item.startTime}</span>
+              <strong>{item.activity}</strong>
+              <small>{item.place}</small>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="overview-muted">{emptyMessage}</p>
+      )}
+    </section>
   );
 }
