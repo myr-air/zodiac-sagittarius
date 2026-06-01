@@ -85,6 +85,7 @@ describe("Storybook template catalog", () => {
     expect(stories).toContain('accessMode: "account-portal"');
     expect(stories).toContain('accessMode: "trip-access"');
     expect(stories).toContain('portalSection: "trips"');
+    expect(stories).toContain('portalSection: "new-trip"');
     expect(stories).toContain('portalSection: "explorer"');
     expect(stories).toContain('portalSection: "todos"');
     expect(stories).toContain('portalSection: "vault"');

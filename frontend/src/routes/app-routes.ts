@@ -10,6 +10,7 @@ export const appRoutes = {
   register: () => "/register",
   portal: () => "/portal",
   portalMyTrips: () => "/portal/my-trips",
+  portalNewTrip: () => "/portal/trips/new",
   portalExplorer: () => "/portal/explorer",
   portalToDos: () => "/portal/to-dos",
   portalVault: () => "/portal/vault",

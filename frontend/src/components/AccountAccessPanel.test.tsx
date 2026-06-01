@@ -159,9 +159,8 @@ describe("AccountAccessPanel", () => {
       trustDevice: true,
       deviceLabel: "",
     });
-    expect(screen.getByText("Signed in")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /Open account portal/i })).toHaveAttribute("href", "#account-portal");
     await waitFor(() => expect(onAccountSessionChange).toHaveBeenCalledWith(expect.objectContaining({ sessionToken: "account-session" })), { timeout: 2_000 });
+    expect(screen.queryByRole("link", { name: /Open account portal/i })).not.toBeInTheDocument();
   });
 
   it("separates passkey access from email verification with a key icon", async () => {
@@ -396,6 +395,7 @@ describe("AccountAccessPanel", () => {
   it("renders each split portal section from its own route state", async () => {
     const sections = [
       { section: "trips" as const, nav: /My Trips/i, visible: "Seoul Spring", hidden: "User data stats and session status." },
+      { section: "new-trip" as const, nav: /My Trips/i, visible: "Trip builder", hidden: "User data stats and session status." },
       { section: "explorer" as const, nav: /Explorer/i, visible: "Upcoming trips", hidden: "Trusted PC" },
       { section: "todos" as const, nav: /Trip To-dos/i, visible: "Book train", hidden: "User data stats and session status." },
       { section: "vault" as const, nav: /Travel Vault/i, visible: "Passport note", hidden: "User data stats and session status." },

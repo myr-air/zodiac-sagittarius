@@ -53,6 +53,12 @@ export const AccountPortalMyTrips: Story = {
     nextjs: { navigation: { pathname: "/portal/my-trips" } },
   },
 };
+export const AccountPortalNewTrip: Story = {
+  args: { accessMode: "account-portal", portalSection: "new-trip", requireJoin: true, dataSource: "api" },
+  parameters: {
+    nextjs: { navigation: { pathname: "/portal/trips/new" } },
+  },
+};
 export const AccountPortalExplorer: Story = {
   args: { accessMode: "account-portal", portalSection: "explorer", requireJoin: true, dataSource: "api" },
   parameters: {

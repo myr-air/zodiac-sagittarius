@@ -1,13 +1,22 @@
-import type { ButtonHTMLAttributes, HTMLAttributes, ReactNode } from "react";
+import { cloneElement, isValidElement } from "react";
+import type { ButtonHTMLAttributes, HTMLAttributes, ReactElement, ReactNode } from "react";
 
 export function Button({
+  asChild = false,
   children,
   variant = "primary",
   className = "",
   ...props
-}: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: "primary" | "secondary" | "ghost" | "danger" }) {
+}: ButtonHTMLAttributes<HTMLButtonElement> & { asChild?: boolean; variant?: "primary" | "secondary" | "ghost" | "danger" }) {
+  const nextClassName = ["button", `button--${variant}`, className].filter(Boolean).join(" ");
+  if (asChild && isValidElement<{ className?: string }>(children)) {
+    return cloneElement(children as ReactElement<{ className?: string }>, {
+      className: [nextClassName, children.props.className].filter(Boolean).join(" "),
+    });
+  }
+
   return (
-    <button className={["button", `button--${variant}`, className].filter(Boolean).join(" ")} {...props}>
+    <button className={nextClassName} {...props}>
       {children}
     </button>
   );

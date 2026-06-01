@@ -36,7 +36,7 @@ const localMutationTimestamp = "2026-05-28T00:00:00.000Z";
 const accountSessionStorageKey = "sagittarius-account-session";
 
 export type PlanningView = "overview" | "itinerary" | "map" | "timeline" | "members";
-type PortalSection = "dashboard" | "trips" | "explorer" | "todos" | "vault" | "settings" | "sign-out";
+type PortalSection = "dashboard" | "trips" | "new-trip" | "explorer" | "todos" | "vault" | "settings" | "sign-out";
 
 interface SagittariusAppProps {
   initialView?: PlanningView;
@@ -658,6 +658,7 @@ export function SagittariusApp({
         accessMode={accessMode}
         accountClient={accountClient}
         accountSession={accountSession}
+        accountSessionLoaded={accountSessionLoaded}
         accountSuccessRedirectHref={accountSuccessRedirectHref}
         portalSection={portalSection}
         apiClient={resolvedApiClient}

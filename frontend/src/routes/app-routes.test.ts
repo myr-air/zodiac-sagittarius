@@ -15,6 +15,7 @@ describe("app route helpers", () => {
     expect(appRoutes.register()).toBe("/register");
     expect(appRoutes.portal()).toBe("/portal");
     expect(appRoutes.portalMyTrips()).toBe("/portal/my-trips");
+    expect(appRoutes.portalNewTrip()).toBe("/portal/trips/new");
     expect(appRoutes.portalExplorer()).toBe("/portal/explorer");
     expect(appRoutes.portalToDos()).toBe("/portal/to-dos");
     expect(appRoutes.portalVault()).toBe("/portal/vault");
