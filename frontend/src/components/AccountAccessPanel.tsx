@@ -909,6 +909,12 @@ function AccountDashboard({
                     <span>{trip.destinationLabel} · {trip.startDate} - {trip.endDate}</span>
                   </div>
                   <Badge tone={trip.isOwner ? "success" : "neutral"}>{trip.isOwner ? t.access.dashboard.history.owner : t.appShell.roles[trip.role]}</Badge>
+                  <Button asChild variant="secondary">
+                    <Link href={appRoutes.tripOverview(trip.id)}>
+                      <Icon name="chevronRight" />
+                      Open
+                    </Link>
+                  </Button>
                 </article>
               ))}
             </div>

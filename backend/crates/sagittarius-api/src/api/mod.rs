@@ -49,6 +49,10 @@ fn api_v1() -> Router<AppState> {
             "/account/trips",
             post(account::create_trip).get(account::list_trips),
         )
+        .route(
+            "/account/trips/{trip_id}/member-sessions",
+            post(account::create_trip_member_session),
+        )
         .route("/account/trip-stats", get(account::get_stats))
         .route("/account/explorer", get(account::get_explorer))
         .route("/account/to-dos", get(account::list_todos))

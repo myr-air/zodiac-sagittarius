@@ -768,6 +768,46 @@ async fn account_can_list_trip_history_and_stats(pool: sqlx::PgPool) {
 }
 
 #[sqlx::test(migrations = "../../migrations")]
+async fn account_can_open_linked_trip_without_trip_password(pool: sqlx::PgPool) {
+    let session = login_account(&pool, "owner-open@example.com", false, "").await;
+    let auth = format!("Bearer {}", session["sessionToken"].as_str().unwrap());
+    let (create_status, create_body) =
+        create_account_trip(&pool, &auth, "account-open", "rice-noodle-2026").await;
+    assert_eq!(create_status, StatusCode::OK);
+    let trip_id = create_body["trip"]["id"].as_str().unwrap();
+    let owner_member_id = create_body["ownerMemberId"].as_str().unwrap();
+
+    let session_response = post_json_with_auth(
+        support::app(pool.clone()),
+        &format!("/api/v1/account/trips/{trip_id}/member-sessions"),
+        Some(&auth),
+        json!({}),
+    )
+    .await;
+    let (session_status, member_session): (StatusCode, Value) =
+        response_json(session_response).await;
+
+    assert_eq!(session_status, StatusCode::OK);
+    assert_eq!(member_session["tripId"], trip_id);
+    assert_eq!(member_session["memberId"], owner_member_id);
+    assert!(!member_session["sessionToken"].as_str().unwrap().is_empty());
+
+    let trip_response = get_with_auth(
+        support::app(pool),
+        &format!("/api/v1/trips/{trip_id}"),
+        Some(&format!(
+            "Bearer {}",
+            member_session["sessionToken"].as_str().unwrap()
+        )),
+    )
+    .await;
+    let (trip_status, trip_body): (StatusCode, Value) = response_json(trip_response).await;
+
+    assert_eq!(trip_status, StatusCode::OK);
+    assert_eq!(trip_body["trip"]["id"], trip_id);
+}
+
+#[sqlx::test(migrations = "../../migrations")]
 async fn account_trip_history_filters_disabled_members_and_deleted_trips(pool: sqlx::PgPool) {
     let session = login_account(&pool, "owner@example.com", false, "").await;
     let user_id = Uuid::parse_str(session["userId"].as_str().unwrap()).unwrap();

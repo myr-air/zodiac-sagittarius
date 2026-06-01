@@ -260,6 +260,201 @@ describe("Sagittarius cockpit UI", () => {
     }
   });
 
+  it("keeps account portal routes in the portal even when a trip session is persisted", async () => {
+    const storage = installLocalStorageStub();
+    storage.setItem(
+      "sagittarius-account-session",
+      JSON.stringify({
+        userId: "11111111-1111-1111-1111-111111111111",
+        sessionToken: "playwright-account-session",
+        kind: "trusted",
+        trustedDeviceId: "device-1",
+        createdAt: "2026-05-30T10:00:00.000Z",
+        expiresAt: "2030-01-01T10:00:00.000Z",
+      }),
+    );
+    storage.setItem(
+      tripParticipantSessionStorageKey,
+      JSON.stringify({
+        tripId: seedTrip.id,
+        memberId: seedTrip.members[0].id,
+        sessionToken: "persisted-trip-session",
+        createdAt: "2026-05-29T00:00:00.000Z",
+        expiresAt: "2026-06-28T00:00:00.000Z",
+      }),
+    );
+    const fetchSpy = vi.spyOn(globalThis, "fetch").mockImplementation(async (input) => {
+      const request = input instanceof Request ? input.url : String(input);
+
+      if (request.includes("/api/v1/account") && !request.includes("/api/v1/account/trips") && !request.includes("/api/v1/account/trip-stats")) {
+        return new Response(
+          JSON.stringify({
+            profile: {
+              id: "11111111-1111-1111-1111-111111111111",
+              displayName: "Aom",
+              avatarColor: "#0f766e",
+              locale: "en-US",
+              timezone: "UTC",
+              primaryEmail: "aom@example.com",
+            },
+            passkeys: [],
+            trustedDevices: [],
+          }),
+          { status: 200, headers: { "content-type": "application/json" } },
+        );
+      }
+
+      if (request.includes("/api/v1/account/trips")) {
+        return new Response(JSON.stringify([{
+          id: seedTrip.id,
+          name: "Portal Trip",
+          destinationLabel: "Hong Kong",
+          countries: ["Hong Kong"],
+          startDate: "2026-06-18",
+          endDate: "2026-06-23",
+          role: "owner",
+          memberId: seedTrip.members[0].id,
+          ownerMemberId: seedTrip.members[0].id,
+          joinedAt: "2026-05-30T08:00:00.000Z",
+          isOwner: true,
+        }]), { status: 200, headers: { "content-type": "application/json" } });
+      }
+
+      if (request.includes("/api/v1/account/trip-stats")) {
+        return new Response(JSON.stringify({ tripsTotal: 1, tripsOwned: 1, activeTrips: 1, tempClaimsCompleted: 0 }), { status: 200, headers: { "content-type": "application/json" } });
+      }
+
+      if (request.includes("/api/v1/account/explorer")) {
+        return new Response(JSON.stringify({ upcomingTrips: 1, ownedTrips: 1, destinationCount: 1, nextTrip: null }), { status: 200, headers: { "content-type": "application/json" } });
+      }
+
+      if (request.includes("/api/v1/account/to-dos") || request.includes("/api/v1/account/vault")) {
+        return new Response(JSON.stringify([]), { status: 200, headers: { "content-type": "application/json" } });
+      }
+
+      return new Response(JSON.stringify({}), { status: 404, headers: { "content-type": "application/json" } });
+    });
+
+    try {
+      render(<SagittariusApp accessMode="account-portal" portalSection="trips" requireJoin dataSource="api" apiClient={createApiClientForTrip(seedTrip)} />);
+
+      expect(await screen.findByText("Portal Trip")).toBeInTheDocument();
+      expect(screen.getByRole("navigation", { name: /Portal navigation/i })).toBeInTheDocument();
+      expect(screen.queryByRole("navigation", { name: /เมนูวางแผน Joii/i })).not.toBeInTheDocument();
+      expect(screen.queryByText("Command center")).not.toBeInTheDocument();
+    } finally {
+      storage.clear();
+      fetchSpy.mockRestore();
+    }
+  });
+
+  it("opens an account-linked trip route without asking for trip credentials", async () => {
+    const storage = installLocalStorageStub();
+    storage.setItem(
+      "sagittarius-account-session",
+      JSON.stringify({
+        userId: "11111111-1111-1111-1111-111111111111",
+        sessionToken: "playwright-account-session",
+        kind: "trusted",
+        trustedDeviceId: "device-1",
+        createdAt: "2026-05-30T10:00:00.000Z",
+        expiresAt: "2030-01-01T10:00:00.000Z",
+      }),
+    );
+    const apiClient = createApiClientForTrip(seedTrip);
+    const fetchSpy = vi.spyOn(globalThis, "fetch").mockImplementation(async (input) => {
+      const request = input instanceof Request ? input.url : String(input);
+
+      if (request.includes(`/api/v1/account/trips/${seedTrip.id}/member-sessions`)) {
+        return new Response(
+          JSON.stringify({
+            tripId: seedTrip.id,
+            memberId: seedTrip.members[0].id,
+            sessionToken: "account-member-session",
+            createdAt: "2026-05-30T08:00:00.000Z",
+            expiresAt: "2026-06-29T08:00:00.000Z",
+          }),
+          { status: 200, headers: { "content-type": "application/json" } },
+        );
+      }
+
+      return new Response(JSON.stringify([]), { status: 200, headers: { "content-type": "application/json" } });
+    });
+
+    try {
+      render(<SagittariusApp accessMode="trip-access" requireJoin dataSource="api" routeTripId={seedTrip.id} apiClient={apiClient} />);
+
+      expect(screen.getByRole("main", { name: /Opening trip/i })).toBeInTheDocument();
+      expect(screen.queryByLabelText(/Trip ID/i)).not.toBeInTheDocument();
+      await waitFor(() => expect(apiClient.loadTrip).toHaveBeenCalledWith(seedTrip.id, "account-member-session"));
+      expect(await screen.findByRole("navigation", { name: /เมนูวางแผน Joii/i })).toBeInTheDocument();
+      expect(screen.getByRole("link", { name: /ภาพรวม/i })).toHaveAttribute("aria-current", "page");
+      expect(screen.queryByLabelText(/Trip ID/i)).not.toBeInTheDocument();
+      expect(storage.getItem(tripParticipantSessionStorageKey)).toContain("account-member-session");
+      expect(fetchSpy).toHaveBeenCalledWith(
+        expect.stringContaining(`/api/v1/account/trips/${seedTrip.id}/member-sessions`),
+        expect.objectContaining({
+          method: "POST",
+          headers: expect.objectContaining({ Authorization: "Bearer playwright-account-session" }),
+        }),
+      );
+    } finally {
+      storage.clear();
+      fetchSpy.mockRestore();
+    }
+  });
+
+  it("switches trip workspace navigation without reloading the backend cockpit", async () => {
+    const user = userEvent.setup();
+    const storage = installLocalStorageStub();
+    storage.setItem(
+      tripParticipantSessionStorageKey,
+      JSON.stringify({
+        tripId: seedTrip.id,
+        memberId: seedTrip.members[0].id,
+        sessionToken: "persisted-trip-session",
+        createdAt: "2026-05-29T00:00:00.000Z",
+        expiresAt: "2026-06-28T00:00:00.000Z",
+      }),
+    );
+    window.history.pushState(null, "", `/trips/${seedTrip.id}`);
+    const apiClient = createApiClientForTrip(seedTrip);
+
+    render(<SagittariusApp accessMode="trip-access" requireJoin dataSource="api" routeTripId={seedTrip.id} apiClient={apiClient} />);
+
+    await waitFor(() => expect(apiClient.loadTrip).toHaveBeenCalledTimes(1));
+    await user.click(screen.getByRole("link", { name: /แผนการเดินทาง/i }));
+
+    expect(window.location.pathname).toBe(`/trips/${seedTrip.id}/itinerary`);
+    expect(screen.getByRole("link", { name: /แผนการเดินทาง/i })).toHaveAttribute("aria-current", "page");
+    expect(apiClient.loadTrip).toHaveBeenCalledTimes(1);
+  });
+
+  it("opens an empty trip timeline without a selected itinerary item", async () => {
+    const storage = installLocalStorageStub();
+    const emptyTrip = {
+      ...seedTrip,
+      id: "019e83ac-ed69-7df3-9354-b27359800374",
+      itineraryItems: [],
+      members: [{ ...seedTrip.members[0], tripId: "019e83ac-ed69-7df3-9354-b27359800374" }],
+    };
+    storage.setItem(
+      tripParticipantSessionStorageKey,
+      JSON.stringify({
+        tripId: emptyTrip.id,
+        memberId: emptyTrip.members[0].id,
+        sessionToken: "empty-trip-session",
+        createdAt: "2026-05-29T00:00:00.000Z",
+        expiresAt: "2026-06-28T00:00:00.000Z",
+      }),
+    );
+
+    render(<SagittariusApp accessMode="trip-access" initialView="timeline" requireJoin dataSource="api" routeTripId={emptyTrip.id} apiClient={createApiClientForTrip(emptyTrip)} />);
+
+    expect(await screen.findByRole("region", { name: /ไทม์ไลน์ทริป/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /ไทม์ไลน์/i })).toHaveAttribute("aria-current", "page");
+  });
+
   it("creates overview tasks through the API client after backend login", async () => {
     const user = userEvent.setup();
     const ownerTrip = {

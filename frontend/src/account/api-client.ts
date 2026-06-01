@@ -186,6 +186,7 @@ export interface AccountApiClient {
   listVault(sessionToken: string): Promise<AccountVaultItemSummary[]>;
   createVaultItem(sessionToken: string, request: AccountVaultItemCreateRequest): Promise<AccountVaultItemSummary>;
   createTrip(sessionToken: string, request: AccountTripCreateRequest): Promise<AccountTripCreateResponse>;
+  createTripMemberSession(sessionToken: string, tripId: string): Promise<TripParticipantSession>;
   claimMember(sessionToken: string, tripId: string, memberId: string, memberSessionToken: string): Promise<void>;
   transferOwner(sessionToken: string, tripId: string, targetMemberId: string): Promise<OwnerTransferResponse>;
   startPasskeyRegistration(sessionToken: string): Promise<PasskeyChallengeResponse>;
@@ -311,6 +312,12 @@ export function createAccountApiClient(options: AccountApiClientOptions = {}): A
         method: "POST",
         headers: authHeaders(sessionToken),
         body: JSON.stringify(tripRequest),
+      });
+    },
+    createTripMemberSession(sessionToken, tripId) {
+      return request<TripParticipantSession>(accountApiRoutes.accountTripMemberSessions(tripId), {
+        method: "POST",
+        headers: authHeaders(sessionToken),
       });
     },
     async claimMember(sessionToken, tripId, memberId, memberSessionToken) {

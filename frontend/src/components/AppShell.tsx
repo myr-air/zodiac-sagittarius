@@ -16,12 +16,13 @@ interface AppShellProps {
   collapsed: boolean;
   currentMember: Member;
   onLeaveParticipantSession?: () => void;
+  onNavigateView?: (view: PlanningView, href: string) => void;
   onOpenExpenses?: () => void;
   trip: Trip;
   onToggleCollapsed: () => void;
 }
 
-export function AppShell({ activeView, children, collapsed, currentMember, onLeaveParticipantSession, onOpenExpenses, trip, onToggleCollapsed }: AppShellProps) {
+export function AppShell({ activeView, children, collapsed, currentMember, onLeaveParticipantSession, onNavigateView, onOpenExpenses, trip, onToggleCollapsed }: AppShellProps) {
   const { t } = useI18n();
   const tripDays = getTripDates(trip.startDate, trip.endDate).length;
   const tripNights = Math.max(0, tripDays - 1);
@@ -60,16 +61,20 @@ export function AppShell({ activeView, children, collapsed, currentMember, onLea
 
         <div className="rail-links">
           {navItems.map((item) => (
-            <Link
+            <a
               aria-current={item.id === activeView ? "page" : undefined}
               className={item.id === activeView ? "rail-link rail-link--active" : "rail-link"}
               href={item.href}
               key={item.id}
+              onClick={onNavigateView ? (event) => {
+                event.preventDefault();
+                onNavigateView(item.id, item.href);
+              } : undefined}
               title={item.label}
             >
               <Icon name={item.icon} />
               <span>{item.label}</span>
-            </Link>
+            </a>
           ))}
           {onOpenExpenses ? (
             <button className="rail-link rail-link-button" type="button" onClick={onOpenExpenses} title={t.appShell.nav.expenses}>

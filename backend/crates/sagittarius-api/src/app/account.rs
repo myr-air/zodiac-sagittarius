@@ -471,6 +471,24 @@ pub async fn list_trips(
     Ok(trips.into_iter().map(account_trip_from_record).collect())
 }
 
+pub async fn create_trip_member_session(
+    pool: &PgPool,
+    session_token: &str,
+    trip_id: Uuid,
+) -> Result<MemberSession, ServiceError> {
+    let user_id = authenticate_user_session(pool, session_token).await?;
+    let mut tx = pool.begin().await?;
+    let member_id =
+        db::account_queries::find_active_account_member_id_in_tx(&mut tx, user_id, trip_id)
+            .await?
+            .ok_or(ServiceError::Forbidden)?;
+    let member_session = create_member_session(&mut tx, trip_id, member_id).await?;
+
+    tx.commit().await?;
+
+    Ok(member_session)
+}
+
 pub async fn load_stats(
     pool: &PgPool,
     session_token: &str,

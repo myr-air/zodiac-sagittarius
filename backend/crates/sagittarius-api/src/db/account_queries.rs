@@ -652,6 +652,27 @@ pub async fn account_has_active_trip_membership(
     .await
 }
 
+pub async fn find_active_account_member_id_in_tx(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    user_id: Uuid,
+    trip_id: Uuid,
+) -> Result<Option<Uuid>, sqlx::Error> {
+    sqlx::query_scalar(
+        "select trip_members.id
+         from trip_members
+         join trips on trips.id = trip_members.trip_id
+         where trip_members.user_id = $1
+           and trip_members.trip_id = $2
+           and trip_members.access_status = 'active'
+           and trips.deleted_at is null
+         limit 1",
+    )
+    .bind(user_id)
+    .bind(trip_id)
+    .fetch_optional(&mut **tx)
+    .await
+}
+
 pub async fn insert_account_vault_item(
     pool: &PgPool,
     item: NewAccountVaultItem<'_>,

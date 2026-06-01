@@ -80,10 +80,12 @@ export function SagittariusApp({
   const [accountSession, setAccountSession] = useState<AccountSession | null>(null);
   const [accountSessionLoaded, setAccountSessionLoaded] = useState(false);
   const [accountClaimState, setAccountClaimState] = useState<{ status: "idle" | "saving"; message: string | null }>({ status: "idle", message: null });
+  const [accountTripAccessDeniedRouteId, setAccountTripAccessDeniedRouteId] = useState<string | null>(null);
   const [suggestions, setSuggestions] = useState<Suggestion[]>(() => tripFixtureSuggestions.map((suggestion) => ({ ...suggestion })));
   const [tasks, setTasks] = useState<TripTask[]>(() => tripFixtureTasks.map((task) => ({ ...task })));
   const [stopNotes, setStopNotes] = useState<StopNote[]>(() => tripFixtureStopNotes.map((note) => ({ ...note })));
   const [backendExpenseSummary, setBackendExpenseSummary] = useState<ExpenseSummary | null>(null);
+  const [workspaceNavigation, setWorkspaceNavigation] = useState<{ initialView: PlanningView; routeTripId?: string; view: PlanningView } | null>(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [contextRailOpen, setContextRailOpen] = useState(false);
   const [contextRailMounted, setContextRailMounted] = useState(false);
@@ -94,6 +96,10 @@ export function SagittariusApp({
   const [dialogState, setDialogState] = useState<{ mode: "create" } | { mode: "edit"; item: ItineraryItem } | null>(null);
 
   const trip = tripState.trip;
+  const currentView =
+    workspaceNavigation && workspaceNavigation.initialView === initialView && workspaceNavigation.routeTripId === routeTripId
+      ? workspaceNavigation.view
+      : initialView;
   const sessionMember = findSessionMember(trip, participantSession);
   /* v8 ignore next */
   const currentMember = sessionMember ?? trip.members.find((member) => member.id === currentMemberId) ?? trip.members[0];
@@ -105,13 +111,14 @@ export function SagittariusApp({
   const canEditExpenses = !isApiMode && canTripRole(currentMember.role, "editExpenses");
   const canManagePeople = !isApiMode && canTripRole(currentMember.role, "managePeople");
   const canCreateStopNote = !isApiMode && (canCreateSuggestion || canEdit);
-  const supportsContextRail = initialView === "overview" || initialView === "itinerary" || initialView === "timeline";
+  const supportsContextRail = currentView === "overview" || currentView === "itinerary" || currentView === "timeline";
   const planItems = useMemo(
     () => trip.itineraryItems.filter((item) => item.planVariantId === selectedPlanVariantId),
     [selectedPlanVariantId, trip.itineraryItems],
   );
   /* v8 ignore next */
   const selectedItem = planItems.find((item) => item.id === selectedItemId) ?? planItems[0];
+  const selectedItemIdForView = selectedItem?.id ?? "";
   const expenseSummary = useMemo(
     () => backendExpenseSummary ?? buildExpenseSummary(trip.expenses, currentMember.id),
     [backendExpenseSummary, currentMember.id, trip.expenses],
@@ -148,6 +155,31 @@ export function SagittariusApp({
     if (!accountSessionLoaded) return;
     persistAccountSession(accountSession);
   }, [accountSession, accountSessionLoaded]);
+
+  useEffect(() => {
+    if (!isApiMode || !routeTripId || !accountSessionLoaded || !accountSession || participantSession) return undefined;
+    let cancelled = false;
+
+    void accountClient
+      .createTripMemberSession(accountSession.sessionToken, routeTripId)
+      .then((session) => {
+        if (cancelled) return;
+        setAccountTripAccessDeniedRouteId(null);
+        setAccessError(null);
+        setParticipantSession(session);
+        setCurrentMemberId(session.memberId);
+        getBrowserLocalStorage()?.setItem(tripParticipantSessionStorageKey, JSON.stringify(session));
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setAccountTripAccessDeniedRouteId(routeTripId);
+        getBrowserLocalStorage()?.removeItem(tripParticipantSessionStorageKey);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [accountClient, accountSession, accountSessionLoaded, isApiMode, participantSession, routeTripId]);
 
   const changeAccountSession = useCallback((session: AccountSession | null) => {
     setAccountSession(session);
@@ -190,6 +222,14 @@ export function SagittariusApp({
     if (open) setContextRailMounted(true);
     setContextRailOpen(open);
   }, []);
+
+  const navigateWorkspaceView = useCallback((view: PlanningView, href: string) => {
+    setWorkspaceNavigation({ initialView, routeTripId, view });
+    setContextRailVisibility(false);
+    if (typeof window !== "undefined" && window.location.pathname !== href) {
+      window.history.pushState(null, "", href);
+    }
+  }, [initialView, routeTripId, setContextRailVisibility]);
 
   useEffect(() => {
     if (!supportsContextRail || typeof window === "undefined") return;
@@ -652,6 +692,38 @@ export function SagittariusApp({
     }
   }
 
+  const isAccountTripAccessPending =
+    requireJoin &&
+    isApiMode &&
+    Boolean(routeTripId) &&
+    !sessionMember &&
+    (!accountSessionLoaded || Boolean(accountSession && accountTripAccessDeniedRouteId !== routeTripId));
+
+  if (isAccountTripAccessPending) {
+    return <TripAccessLoadingFrame />;
+  }
+
+  if (accessMode === "account-portal") {
+    return (
+      <AccountAccessPanel
+        accessMode={accessMode}
+        accountClient={accountClient}
+        accountSession={accountSession}
+        accountSessionLoaded={accountSessionLoaded}
+        accountSuccessRedirectHref={accountSuccessRedirectHref}
+        portalSection={portalSection}
+        apiClient={resolvedApiClient}
+        initialError={accessError}
+        initialJoinCode={initialJoinCode}
+        trip={trip}
+        onAccountSessionChange={changeAccountSession}
+        onAuthenticated={authenticateParticipant}
+        onCockpitLoaded={replaceCockpitFromApi}
+        onTripChange={replaceTripFromJoin}
+      />
+    );
+  }
+
   if (requireJoin && !sessionMember) {
     return (
       <AccountAccessPanel
@@ -675,10 +747,11 @@ export function SagittariusApp({
 
   return (
     <AppShell
-      activeView={initialView}
+      activeView={currentView}
       collapsed={sidebarCollapsed}
       currentMember={currentMember}
       onLeaveParticipantSession={requireJoin ? leaveParticipantSession : undefined}
+      onNavigateView={navigateWorkspaceView}
       onOpenExpenses={openExpensesWorkspace}
       trip={trip}
       onToggleCollapsed={() => setSidebarCollapsed((current) => !current)}
@@ -717,7 +790,7 @@ export function SagittariusApp({
         ) : null}
         <div className="workspace-grid" data-context-rail={contextRailOpen ? "open" : "closed"} data-command-bar="hidden">
           <div className="planning-main">
-            {initialView === "members" ? (
+            {currentView === "members" ? (
               <TripMembersPage
                 trip={trip}
                 currentMember={currentMember}
@@ -733,7 +806,7 @@ export function SagittariusApp({
                     : undefined
                 }
               />
-            ) : initialView === "overview" ? (
+            ) : currentView === "overview" ? (
               <OverviewPage
                 trip={trip}
                 currentMemberId={currentMember.id}
@@ -745,7 +818,7 @@ export function SagittariusApp({
                 onCreateTask={createTask}
                 onToggleTaskStatus={toggleTaskStatus}
               />
-            ) : initialView === "itinerary" ? (
+            ) : currentView === "itinerary" ? (
               <SmartItineraryTable
                 canRedo={tripState.future.length > 0}
                 canRestructure={!isApiMode}
@@ -755,7 +828,7 @@ export function SagittariusApp({
                 items={planItems}
                 role={currentMember.role}
                 startDate={trip.startDate}
-                selectedItemId={selectedItem.id}
+                selectedItemId={selectedItemIdForView}
                 tripName={trip.name}
                 onAddStop={addStop}
                 onSelectItem={selectItem}
@@ -764,7 +837,7 @@ export function SagittariusApp({
                 onToggleContextRail={() => setContextRailVisibility(!contextRailOpen)}
                 onUndo={undo}
               />
-            ) : initialView === "map" ? (
+            ) : currentView === "map" ? (
               <RouteMapView
                 endDate={trip.endDate}
                 items={planItems}
@@ -776,7 +849,7 @@ export function SagittariusApp({
                 contextRailOpen={contextRailOpen}
                 endDate={trip.endDate}
                 items={planItems}
-                selectedItemId={selectedItem.id}
+                selectedItemId={selectedItemIdForView}
                 startDate={trip.startDate}
                 tripName={trip.name}
                 onSelectItem={selectItem}
@@ -784,7 +857,7 @@ export function SagittariusApp({
               />
             )}
           </div>
-          {supportsContextRail && contextRailMounted ? (
+          {supportsContextRail && contextRailMounted && selectedItem ? (
             <ContextRail
               trip={trip}
               selectedItem={selectedItem}
@@ -894,6 +967,18 @@ export function nextClientMutationId(prefix: string): string {
 
 export function replaceSuggestionById(suggestions: Suggestion[], suggestionId: string, replacement: Suggestion): Suggestion[] {
   return suggestions.map((candidate) => (candidate.id === suggestionId ? replacement : candidate));
+}
+
+function TripAccessLoadingFrame() {
+  return (
+    <main className="account-page account-page--portal" aria-busy="true" aria-label="Opening trip">
+      <section className="account-card portal-loading-card">
+        <span className="portal-skeleton portal-skeleton--title" />
+        <span className="portal-skeleton portal-skeleton--line" />
+        <span className="portal-skeleton portal-skeleton--block" />
+      </section>
+    </main>
+  );
 }
 
 function getBrowserLocalStorage(): Storage | null {

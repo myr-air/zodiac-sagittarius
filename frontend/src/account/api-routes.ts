@@ -10,6 +10,7 @@ export const accountApiRoutes = {
   passkeyLoginSessions: () => "/api/v1/auth/passkeys/sessions",
   account: () => "/api/v1/account",
   accountTrips: () => "/api/v1/account/trips",
+  accountTripMemberSessions: (tripId: string) => `/api/v1/account/trips/${encodePathSegment(tripId)}/member-sessions`,
   accountTripStats: () => "/api/v1/account/trip-stats",
   accountExplorer: () => "/api/v1/account/explorer",
   accountToDos: () => "/api/v1/account/to-dos",

@@ -433,6 +433,37 @@ describe("AccountAccessPanel", () => {
     }
   });
 
+  it("keeps portal trip rows on the page until the explicit open action", async () => {
+    const accountClient = createAccountClient();
+    render(
+      <AccountAccessPanel
+        accessMode="account-portal"
+        accountClient={accountClient}
+        accountSession={{
+          userId: "user-aom",
+          sessionToken: "account-session",
+          kind: "trusted",
+          trustedDeviceId: "device-current",
+          createdAt: "2026-05-30T08:00:00.000Z",
+          expiresAt: "2026-06-29T08:00:00.000Z",
+        }}
+        portalSection="trips"
+        trip={seedTrip}
+        onAccountSessionChange={vi.fn()}
+        onAuthenticated={vi.fn()}
+        onTripChange={vi.fn()}
+      />,
+    );
+
+    const ownerTripRow = (await screen.findByText("Seoul Spring")).closest(".account-trip-row") as HTMLElement;
+    const travelerTripRow = screen.getByText("Taipei Shared").closest(".account-trip-row") as HTMLElement;
+
+    expect(ownerTripRow).not.toHaveAttribute("href");
+    expect(travelerTripRow).not.toHaveAttribute("href");
+    expect(within(ownerTripRow).getByRole("link", { name: /Open/i })).toHaveAttribute("href", "/trips/trip-id");
+    expect(within(travelerTripRow).getByRole("link", { name: /Open/i })).toHaveAttribute("href", "/trips/trip-traveler");
+  });
+
   it("keeps portal to-dos visible when another portal API fails", async () => {
     const accountClient = createAccountClient();
     vi.mocked(accountClient.listVault).mockRejectedValueOnce(new Error("database error"));
@@ -675,6 +706,13 @@ function createAccountClient(): AccountApiClient {
         },
       }),
     ),
+    createTripMemberSession: vi.fn().mockResolvedValue({
+      tripId: "trip-id",
+      memberId: "member-owner",
+      sessionToken: "member-session",
+      createdAt: "2026-05-30T08:00:00.000Z",
+      expiresAt: "2026-06-29T08:00:00.000Z",
+    }),
     claimMember: vi.fn().mockResolvedValue(undefined),
     transferOwner: vi.fn().mockResolvedValue({
       tripId: "trip-id",
