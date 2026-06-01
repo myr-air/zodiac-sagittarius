@@ -217,7 +217,7 @@ export function OverviewPage({ trip, currentMemberId, expenseSummary, items, sug
               )}
             </section>
 
-            <button className="overview-panel overview-panel--button" type="button" aria-label={t.overview.money.openExpenses} aria-labelledby="overview-traveler-budget-title" onClick={openExpenses}>
+            <button className="overview-panel overview-panel--button" type="button" onClick={openExpenses}>
               <div className="overview-panel-title">
                 <Icon name="wallet" />
                 <h2 id="overview-traveler-budget-title">{t.overview.expenses}</h2>
@@ -255,7 +255,7 @@ export function OverviewPage({ trip, currentMemberId, expenseSummary, items, sug
               {viewerNextStopPanel(nextStop, trip.startDate, locale, t.overview.empty.itinerary, t.overview.focusDetails.viewerFallback)}
             </section>
 
-            <button className="overview-panel overview-panel--button" type="button" aria-label={t.overview.money.openExpenses} aria-labelledby="overview-viewer-budget-title" onClick={openExpenses}>
+            <button className="overview-panel overview-panel--button" type="button" onClick={openExpenses}>
               <div className="overview-panel-title">
                 <Icon name="wallet" />
                 <h2 id="overview-viewer-budget-title">{t.overview.headings.overallBudget}</h2>
@@ -315,7 +315,7 @@ export function OverviewPage({ trip, currentMemberId, expenseSummary, items, sug
           <span>{t.overview.readiness.alertSummary({ warnings: warningCount, suggestions: pendingSuggestions })}</span>
             </section>
 
-            <button className="overview-panel overview-panel--button" type="button" aria-label={t.overview.money.openExpenses} aria-labelledby="overview-manager-budget-title" onClick={openExpenses}>
+            <button className="overview-panel overview-panel--button" type="button" onClick={openExpenses}>
           <div className="overview-panel-title">
             <Icon name="wallet" />
             <h2 id="overview-manager-budget-title">{t.overview.headings.budget}</h2>
