@@ -121,12 +121,6 @@ export function OverviewPage({ trip, currentMemberId, expenseSummary, items, sug
           detail={nextStop ? `${formatDayLabel(nextStop.day, trip.startDate, locale)} · ${nextStop.startTime}` : t.dates.stopCount({ count: items.length })}
         />
         <CockpitCard
-          icon="check"
-          label="Trip readiness"
-          value={t.dates.dayCount({ count: tripDays.length })}
-          detail={t.overview.readiness.alertSummary({ warnings: warningCount, suggestions: pendingSuggestions })}
-        />
-        <CockpitCard
           icon="wallet"
           label="Budget"
           ariaLabel={t.overview.money.openExpenses}
@@ -136,9 +130,9 @@ export function OverviewPage({ trip, currentMemberId, expenseSummary, items, sug
         />
         <CockpitCard
           icon="users"
-          label={t.overview.stats.activeMembers}
+          label="Crew & readiness"
           value={t.dates.memberCount({ count: activeMembers })}
-          detail={t.dates.stopCount({ count: items.length })}
+          detail={`${t.dates.dayCount({ count: tripDays.length })} · ${t.overview.readiness.alertSummary({ warnings: warningCount, suggestions: pendingSuggestions })}`}
         />
       </section>
 
@@ -304,24 +298,6 @@ export function OverviewPage({ trip, currentMemberId, expenseSummary, items, sug
             <span><strong>{pendingSuggestions}</strong> {t.overview.readiness.pendingSuggestions}</span>
           </div>
             </section>
-
-            <section className="overview-panel" aria-label={t.overview.sections.alerts}>
-          <div className="overview-panel-title">
-            <Icon name="alertCircle" />
-            <h2>{t.overview.headings.alerts}</h2>
-          </div>
-          <strong>{warningCount + pendingSuggestions}</strong>
-          <span>{t.overview.readiness.alertSummary({ warnings: warningCount, suggestions: pendingSuggestions })}</span>
-            </section>
-
-            <button className="overview-panel overview-panel--button" type="button" onClick={openExpenses}>
-          <div className="overview-panel-title">
-            <Icon name="wallet" />
-            <h2 id="overview-manager-budget-title">{t.overview.headings.budget}</h2>
-          </div>
-          <strong>{expenseSummary.currentUserNetLabel}</strong>
-          <span>{t.overview.money.settlementSuggestions({ count: expenseSummary.settlementSuggestions.length })}</span>
-            </button>
 
             <button className="overview-panel overview-panel--button" type="button" aria-label={t.overview.generalExpense} onClick={openExpenses}>
           <div className="overview-panel-title">
@@ -532,7 +508,8 @@ function buildDestinationVisual(destinationLabel: string): DestinationVisual {
 }
 
 function buildHighlightItems(items: ItineraryItem[]): ItineraryItem[] {
-  return items.filter((item) => item.activityType !== "travel").slice(0, 6);
+  const preferredItems = items.filter((item) => ["food", "attraction", "experience", "shopping"].includes(item.activityType));
+  return (preferredItems.length ? preferredItems : items.filter((item) => item.activityType !== "travel")).slice(0, 4);
 }
 
 function photoBoardEmptyMessage(message: string): string {

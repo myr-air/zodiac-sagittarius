@@ -5316,15 +5316,15 @@ button:disabled,
   --overview-hero-ink: #11323d;
   position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1.06fr) minmax(260px, 0.74fr) minmax(220px, 0.52fr);
-  gap: 18px;
+  grid-template-columns: minmax(0, 1.1fr) minmax(240px, 0.66fr) minmax(210px, 0.5fr);
+  gap: 16px;
   align-items: stretch;
   overflow: hidden;
-  min-height: 286px;
-  margin: 0 0 14px;
+  min-height: 250px;
+  margin: 0 0 12px;
   border: 1px solid color-mix(in srgb, var(--overview-hero-accent) 18%, var(--color-border));
   border-radius: var(--radius-lg);
-  padding: 22px;
+  padding: 20px;
   background:
     linear-gradient(120deg, rgb(255 255 255 / 0.9), rgb(255 255 255 / 0.54) 42%, transparent 74%),
     linear-gradient(180deg, var(--overview-hero-sky) 0%, #ffffff 47%, var(--overview-hero-ground) 100%);
@@ -5369,7 +5369,7 @@ button:disabled,
 .overview-hero-copy {
   display: grid;
   align-content: center;
-  gap: 10px;
+  gap: 8px;
   max-width: 720px;
 }
 
@@ -5439,7 +5439,7 @@ button:disabled,
 .overview-hero-visual {
   position: relative;
   z-index: 1;
-  min-height: 226px;
+  min-height: 196px;
   overflow: hidden;
   border: 1px solid rgb(255 255 255 / 0.56);
   border-radius: var(--radius-lg);
@@ -5535,7 +5535,7 @@ button:disabled,
 .overview-cockpit,
 .overview-travel-cockpit {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
   width: 100%;
   margin: 0 0 14px;
@@ -5634,7 +5634,7 @@ button:disabled,
 .overview-highlight-grid,
 .overview-highlight-list {
   display: grid;
-  grid-template-columns: repeat(6, minmax(132px, 1fr));
+  grid-template-columns: repeat(4, minmax(150px, 1fr));
   gap: 10px;
   margin: 0;
   padding: 0;

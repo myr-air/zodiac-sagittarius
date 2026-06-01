@@ -47,12 +47,13 @@ describe("OverviewPage role lenses", () => {
 
     const cockpit = screen.getByRole("region", { name: /travel cockpit/i });
     expect(within(cockpit).getByText(/Next stop/i)).toBeInTheDocument();
-    expect(within(cockpit).getByText(/Trip readiness/i)).toBeInTheDocument();
     expect(within(cockpit).getByText(/Budget/i)).toBeInTheDocument();
+    expect(within(cockpit).getByText(/Crew & readiness/i)).toBeInTheDocument();
 
     const board = screen.getByRole("region", { name: /trip highlight board/i });
     expect(within(board).getByText(/Dim Dim Sum ที่ Tim Ho Wan/i)).toBeInTheDocument();
     expect(within(board).getByText(/อาหารเย็นที่ Temple Street Night Market/i)).toBeInTheDocument();
+    expect(within(board).getAllByRole("listitem")).toHaveLength(4);
   });
 
   it("keeps the photo-first overview useful for empty trips", () => {
@@ -152,7 +153,8 @@ describe("OverviewPage role lenses", () => {
     expect(screen.queryByLabelText(/ให้ใครดูแล/i)).not.toBeInTheDocument();
     await user.click(within(checklist).getByRole("button", { name: /เพิ่มเช็กลิสต์/i }));
     expect(within(screen.getByRole("dialog", { name: /เพิ่มเช็กลิสต์/i })).getByLabelText(/ให้ใครดูแล/i)).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: /การแจ้งเตือน/i })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: /การแจ้งเตือน/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: /งบประมาณ/i })).not.toBeInTheDocument();
   });
 
   it("shows a read-only trip snapshot for viewers", () => {
