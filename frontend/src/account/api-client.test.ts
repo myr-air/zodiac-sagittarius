@@ -111,6 +111,68 @@ describe("Account API client", () => {
     }
   });
 
+  it("loads split portal explorer, to-dos, and vault APIs with bearer auth", async () => {
+    const explorer = { upcomingTrips: 1, ownedTrips: 1, destinationCount: 1, nextTrip: accountTrip };
+    const todo = {
+      id: "todo-1",
+      tripId: "trip-id",
+      tripName: "Seoul Spring",
+      title: "Book train",
+      status: "open",
+      visibility: "shared",
+      kind: "booking",
+      assigneeId: null,
+      relatedItemId: null,
+      version: 1,
+    };
+    const vault = {
+      id: "vault-1",
+      tripId: null,
+      tripName: null,
+      kind: "file",
+      title: "Tickets",
+      detail: "PDF copy",
+      externalUrl: "https://example.test/tickets.pdf",
+      source: "vault",
+      createdAt: "2026-05-30T08:00:00.000Z",
+    };
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValueOnce(jsonResponse(explorer))
+      .mockResolvedValueOnce(jsonResponse([todo]))
+      .mockResolvedValueOnce(jsonResponse([vault]))
+      .mockResolvedValueOnce(jsonResponse(vault, 201));
+    const client = createAccountApiClient({ baseUrl: "https://api.example.test", fetchImpl });
+
+    await expect(client.loadExplorer("account-session")).resolves.toEqual(explorer);
+    await expect(client.listToDos("account-session")).resolves.toEqual([todo]);
+    await expect(client.listVault("account-session")).resolves.toEqual([vault]);
+    await expect(
+      client.createVaultItem("account-session", {
+        kind: "file",
+        title: "Tickets",
+        detail: "PDF copy",
+        externalUrl: "https://example.test/tickets.pdf",
+      }),
+    ).resolves.toEqual(vault);
+
+    expect(fetchImpl.mock.calls.map((call) => call[0])).toEqual([
+      "https://api.example.test/api/v1/account/explorer",
+      "https://api.example.test/api/v1/account/to-dos",
+      "https://api.example.test/api/v1/account/vault",
+      "https://api.example.test/api/v1/account/vault",
+    ]);
+    expect(fetchImpl.mock.calls[3][1]).toMatchObject({
+      method: "POST",
+      body: JSON.stringify({
+        kind: "file",
+        title: "Tickets",
+        detail: "PDF copy",
+        externalUrl: "https://example.test/tickets.pdf",
+      }),
+    });
+  });
+
   it("creates account-owned trips, claims temp members, and transfers owner", async () => {
     const createResponse = {
       trip: {

@@ -60,6 +60,13 @@ describe("Storybook template catalog", () => {
       "PublicEntry",
       "AccountLogin",
       "AccountRegister",
+      "AccountPortal",
+      "AccountPortalMyTrips",
+      "AccountPortalExplorer",
+      "AccountPortalToDos",
+      "AccountPortalVault",
+      "AccountPortalSettings",
+      "AccountPortalSignOut",
       "AccountTrips",
       "AccountNewTrip",
       "TripAccess",
@@ -75,7 +82,14 @@ describe("Storybook template catalog", () => {
     });
     expect(stories).toContain('accessMode: "account-login"');
     expect(stories).toContain('accessMode: "account-register"');
+    expect(stories).toContain('accessMode: "account-portal"');
     expect(stories).toContain('accessMode: "trip-access"');
+    expect(stories).toContain('portalSection: "trips"');
+    expect(stories).toContain('portalSection: "explorer"');
+    expect(stories).toContain('portalSection: "todos"');
+    expect(stories).toContain('portalSection: "vault"');
+    expect(stories).toContain('portalSection: "settings"');
+    expect(stories).toContain('portalSection: "sign-out"');
     expect(stories).toContain('initialJoinCode: localTripJoinId');
     expect(stories).toContain('pathname: "/join"');
     expect(stories).toContain('pathname: `/join/${localTripJoinId}`');

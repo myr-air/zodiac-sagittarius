@@ -4,10 +4,11 @@ use uuid::Uuid;
 use crate::db::PgPool;
 use crate::db::models::{
     AccountProfileRecord, AccountTripRecord, AccountTripStatsRecord, ActiveUserSessionRecord,
-    EmailLoginChallengeRecord, NewAccountAuditEvent, NewAccountPlanVariant, NewAccountTrip,
-    NewAccountTripOwnerMember, NewEmailLoginOutbox, NewTrustedDevice, NewUser, NewUserEmail,
-    NewUserSession, PasskeyCredentialRecord, PasskeyRecord, PasswordLoginUserRecord,
-    TripAuthRecord, TrustedDeviceRecord, UserEmailRecord,
+    AccountTodoRecord, AccountVaultItemRecord, EmailLoginChallengeRecord, NewAccountAuditEvent,
+    NewAccountPlanVariant, NewAccountTrip, NewAccountTripOwnerMember, NewAccountVaultItem,
+    NewEmailLoginOutbox, NewTrustedDevice, NewUser, NewUserEmail, NewUserSession,
+    PasskeyCredentialRecord, PasskeyRecord, PasswordLoginUserRecord, TripAuthRecord,
+    TrustedDeviceRecord, UserEmailRecord,
 };
 use crate::domain::types::{TripMemberAccessStatus, TripRole};
 
@@ -536,6 +537,129 @@ pub async fn get_account_trip_stats(
          where trip_members.user_id = $1",
     )
     .bind(user_id)
+    .fetch_one(pool)
+    .await
+}
+
+pub async fn list_account_todos(
+    pool: &PgPool,
+    user_id: Uuid,
+) -> Result<Vec<AccountTodoRecord>, sqlx::Error> {
+    sqlx::query_as::<_, AccountTodoRecord>(
+        "select
+           tasks.id,
+           tasks.trip_id,
+           trips.name as trip_name,
+           tasks.title,
+           tasks.status,
+           tasks.visibility,
+           tasks.kind,
+           tasks.assignee_id,
+           tasks.related_item_id,
+           tasks.version
+         from trip_members me
+         join trips on trips.id = me.trip_id
+         join trip_tasks tasks on tasks.trip_id = me.trip_id
+         where me.user_id = $1
+           and me.access_status = 'active'
+           and trips.deleted_at is null
+           and tasks.deleted_at is null
+           and (tasks.visibility = 'shared' or tasks.created_by = me.id or tasks.assignee_id = me.id)
+         order by
+           case tasks.status when 'open' then 0 else 1 end,
+           tasks.updated_at desc,
+           tasks.title asc",
+    )
+    .bind(user_id)
+    .fetch_all(pool)
+    .await
+}
+
+pub async fn list_account_vault_items(
+    pool: &PgPool,
+    user_id: Uuid,
+) -> Result<Vec<AccountVaultItemRecord>, sqlx::Error> {
+    sqlx::query_as::<_, AccountVaultItemRecord>(
+        "select
+           item.id,
+           item.trip_id,
+           trips.name as trip_name,
+           item.kind,
+           item.title,
+           item.detail,
+           item.external_url,
+           item.source,
+           item.created_at
+         from (
+           select
+             account_vault_items.id,
+             account_vault_items.trip_id,
+             account_vault_items.kind,
+             account_vault_items.title,
+             account_vault_items.detail,
+             account_vault_items.external_url,
+             'vault'::text as source,
+             account_vault_items.created_at
+           from account_vault_items
+           where account_vault_items.user_id = $1
+             and account_vault_items.deleted_at is null
+           union all
+           select
+             itinerary_items.id,
+             itinerary_items.trip_id,
+             'note'::text as kind,
+             itinerary_items.activity as title,
+             itinerary_items.note as detail,
+             null::text as external_url,
+             'itinerary'::text as source,
+             itinerary_items.updated_at as created_at
+           from trip_members me
+           join itinerary_items on itinerary_items.trip_id = me.trip_id
+           join trips visible_trips on visible_trips.id = me.trip_id
+           where me.user_id = $1
+             and me.access_status = 'active'
+             and visible_trips.deleted_at is null
+             and itinerary_items.deleted_at is null
+             and btrim(itinerary_items.note) <> ''
+         ) item
+         left join trips on trips.id = item.trip_id
+         order by item.created_at desc, item.title asc",
+    )
+    .bind(user_id)
+    .fetch_all(pool)
+    .await
+}
+
+pub async fn insert_account_vault_item(
+    pool: &PgPool,
+    item: NewAccountVaultItem<'_>,
+) -> Result<AccountVaultItemRecord, sqlx::Error> {
+    sqlx::query_as::<_, AccountVaultItemRecord>(
+        "with inserted as (
+           insert into account_vault_items (id, user_id, trip_id, kind, title, detail, external_url)
+           values ($1, $2, $3, $4, $5, $6, $7)
+           returning id, trip_id, kind, title, detail, external_url, created_at
+         )
+         select
+           inserted.id,
+           inserted.trip_id,
+           trips.name as trip_name,
+           inserted.kind,
+           inserted.title,
+           inserted.detail,
+           inserted.external_url,
+           'vault'::text as source,
+           inserted.created_at
+         from inserted
+         left join trips on trips.id = inserted.trip_id",
+    )
+    .bind(item.id)
+    .bind(item.user_id)
+    .bind(item.trip_id)
+    .bind(item.kind)
+    .bind(item.title)
+    .bind(item.detail)
+    .bind(item.external_url)
     .fetch_one(pool)
     .await
 }

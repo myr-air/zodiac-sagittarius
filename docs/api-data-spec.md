@@ -153,6 +153,19 @@ CREATE TABLE documents (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 
+CREATE TABLE account_vault_items (
+  id uuid PRIMARY KEY,
+  user_id uuid NOT NULL REFERENCES users(id),
+  trip_id uuid REFERENCES trips(id),
+  kind text NOT NULL CHECK (kind IN ('note', 'file')),
+  title text NOT NULL,
+  detail text NOT NULL DEFAULT '',
+  external_url text,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  deleted_at timestamptz
+);
+
 CREATE TABLE realtime_events (
   id uuid PRIMARY KEY,
   trip_id uuid NOT NULL REFERENCES trips(id),
@@ -217,6 +230,14 @@ Base path: `/api/v1`.
   Creates an account-owned trip and owner member session.
 - `GET /api/v1/account/trip-stats`
   Returns account trip summary counters.
+- `GET /api/v1/account/explorer`
+  Returns portal explorer counters and the next upcoming account-visible trip.
+- `GET /api/v1/account/to-dos`
+  Lists shared or assigned trip tasks visible to the current account.
+- `GET /api/v1/account/vault`
+  Lists account vault notes/files plus visible itinerary notes.
+- `POST /api/v1/account/vault`
+  Creates a personal account vault note or file link.
 - `POST /api/v1/account/passkeys/options`
   Starts passkey registration for the current account.
 - `POST /api/v1/account/passkeys`

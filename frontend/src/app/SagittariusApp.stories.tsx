@@ -41,6 +41,48 @@ export const AccountRegister: Story = {
     nextjs: { navigation: { pathname: "/register" } },
   },
 };
+export const AccountPortal: Story = {
+  args: { accessMode: "account-portal", requireJoin: true, dataSource: "api" },
+  parameters: {
+    nextjs: { navigation: { pathname: "/portal" } },
+  },
+};
+export const AccountPortalMyTrips: Story = {
+  args: { accessMode: "account-portal", portalSection: "trips", requireJoin: true, dataSource: "api" },
+  parameters: {
+    nextjs: { navigation: { pathname: "/portal/my-trips" } },
+  },
+};
+export const AccountPortalExplorer: Story = {
+  args: { accessMode: "account-portal", portalSection: "explorer", requireJoin: true, dataSource: "api" },
+  parameters: {
+    nextjs: { navigation: { pathname: "/portal/explorer" } },
+  },
+};
+export const AccountPortalToDos: Story = {
+  args: { accessMode: "account-portal", portalSection: "todos", requireJoin: true, dataSource: "api" },
+  parameters: {
+    nextjs: { navigation: { pathname: "/portal/to-dos" } },
+  },
+};
+export const AccountPortalVault: Story = {
+  args: { accessMode: "account-portal", portalSection: "vault", requireJoin: true, dataSource: "api" },
+  parameters: {
+    nextjs: { navigation: { pathname: "/portal/vault" } },
+  },
+};
+export const AccountPortalSettings: Story = {
+  args: { accessMode: "account-portal", portalSection: "settings", requireJoin: true, dataSource: "api" },
+  parameters: {
+    nextjs: { navigation: { pathname: "/portal/settings" } },
+  },
+};
+export const AccountPortalSignOut: Story = {
+  args: { accessMode: "account-portal", portalSection: "sign-out", requireJoin: true, dataSource: "api" },
+  parameters: {
+    nextjs: { navigation: { pathname: "/portal/sign-out" } },
+  },
+};
 export const AccountTrips: Story = {
   args: { accessMode: "account-login", requireJoin: true, dataSource: "api" },
   parameters: {

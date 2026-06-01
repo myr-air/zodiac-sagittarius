@@ -12,7 +12,8 @@ use crate::app::AppState;
 use crate::domain::errors::ServiceError;
 use crate::domain::types::{
     AccountMemberClaimResponse, AccountSession, AccountSettings, AccountTripCreateResponse,
-    AccountTripStats, AccountTripSummary, EmailLoginStartResponse, OwnerTransferResponse,
+    AccountTripStats, AccountTripSummary, AccountExplorerSummary, AccountTodoSummary,
+    AccountVaultItemSummary, EmailLoginStartResponse, OwnerTransferResponse,
     PasskeyChallengeResponse, PasskeyLoginStartResponse, PasskeySummary,
 };
 
@@ -72,6 +73,16 @@ pub struct AccountSettingsUpdateRequest {
     pub avatar_color: String,
     pub locale: String,
     pub timezone: String,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AccountVaultItemCreateRequest {
+    pub trip_id: Option<Uuid>,
+    pub kind: String,
+    pub title: String,
+    pub detail: String,
+    pub external_url: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -243,6 +254,56 @@ pub async fn get_stats(
     let response = app::account::load_stats(&state.pool, &session_token).await?;
 
     Ok(Json(response))
+}
+
+pub async fn get_explorer(
+    State(state): State<AppState>,
+    BearerToken(session_token): BearerToken,
+) -> Result<Json<AccountExplorerSummary>, ServiceError> {
+    let response = app::account::load_explorer(&state.pool, &session_token).await?;
+
+    Ok(Json(response))
+}
+
+pub async fn list_todos(
+    State(state): State<AppState>,
+    BearerToken(session_token): BearerToken,
+) -> Result<Json<Vec<AccountTodoSummary>>, ServiceError> {
+    let response = app::account::list_todos(&state.pool, &session_token).await?;
+
+    Ok(Json(response))
+}
+
+pub async fn list_vault_items(
+    State(state): State<AppState>,
+    BearerToken(session_token): BearerToken,
+) -> Result<Json<Vec<AccountVaultItemSummary>>, ServiceError> {
+    let response = app::account::list_vault_items(&state.pool, &session_token).await?;
+
+    Ok(Json(response))
+}
+
+pub async fn create_vault_item(
+    State(state): State<AppState>,
+    BearerToken(session_token): BearerToken,
+    request: Result<Json<AccountVaultItemCreateRequest>, JsonRejection>,
+) -> Result<(StatusCode, Json<AccountVaultItemSummary>), ServiceError> {
+    let Json(request) =
+        request.map_err(|_| ServiceError::InvalidRequest("json payload is invalid"))?;
+    let response = app::account::create_vault_item(
+        &state.pool,
+        &session_token,
+        app::account::AccountVaultItemCreateInput {
+            trip_id: request.trip_id,
+            kind: request.kind,
+            title: request.title,
+            detail: request.detail,
+            external_url: request.external_url,
+        },
+    )
+    .await?;
+
+    Ok((StatusCode::CREATED, Json(response)))
 }
 
 pub async fn claim_member(

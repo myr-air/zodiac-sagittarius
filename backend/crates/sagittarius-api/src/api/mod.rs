@@ -50,6 +50,12 @@ fn api_v1() -> Router<AppState> {
             post(account::create_trip).get(account::list_trips),
         )
         .route("/account/trip-stats", get(account::get_stats))
+        .route("/account/explorer", get(account::get_explorer))
+        .route("/account/to-dos", get(account::list_todos))
+        .route(
+            "/account/vault",
+            get(account::list_vault_items).post(account::create_vault_item),
+        )
         .route(
             "/trips/{trip_id}/ownership-transfers",
             post(account::transfer_owner),

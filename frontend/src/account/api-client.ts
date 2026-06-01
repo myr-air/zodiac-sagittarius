@@ -42,6 +42,46 @@ export interface AccountTripStats {
   tempClaimsCompleted: number;
 }
 
+export interface AccountExplorerSummary {
+  upcomingTrips: number;
+  ownedTrips: number;
+  destinationCount: number;
+  nextTrip: AccountTripSummary | null;
+}
+
+export interface AccountTodoSummary {
+  id: string;
+  tripId: string;
+  tripName: string;
+  title: string;
+  status: "open" | "done";
+  visibility: "private" | "shared";
+  kind: string | null;
+  assigneeId: string | null;
+  relatedItemId: string | null;
+  version: number;
+}
+
+export interface AccountVaultItemSummary {
+  id: string;
+  tripId: string | null;
+  tripName: string | null;
+  kind: "note" | "file";
+  title: string;
+  detail: string;
+  externalUrl: string | null;
+  source: "vault" | "itinerary";
+  createdAt: string;
+}
+
+export interface AccountVaultItemCreateRequest {
+  tripId?: string | null;
+  kind: "note" | "file";
+  title: string;
+  detail: string;
+  externalUrl?: string | null;
+}
+
 export interface PasskeySummary {
   id: string;
   nickname: string;
@@ -141,6 +181,10 @@ export interface AccountApiClient {
   updateSettings(sessionToken: string, request: AccountSettingsUpdateRequest): Promise<AccountSettings>;
   listTrips(sessionToken: string): Promise<AccountTripSummary[]>;
   loadStats(sessionToken: string): Promise<AccountTripStats>;
+  loadExplorer(sessionToken: string): Promise<AccountExplorerSummary>;
+  listToDos(sessionToken: string): Promise<AccountTodoSummary[]>;
+  listVault(sessionToken: string): Promise<AccountVaultItemSummary[]>;
+  createVaultItem(sessionToken: string, request: AccountVaultItemCreateRequest): Promise<AccountVaultItemSummary>;
   createTrip(sessionToken: string, request: AccountTripCreateRequest): Promise<AccountTripCreateResponse>;
   claimMember(sessionToken: string, tripId: string, memberId: string, memberSessionToken: string): Promise<void>;
   transferOwner(sessionToken: string, tripId: string, targetMemberId: string): Promise<OwnerTransferResponse>;
@@ -235,6 +279,31 @@ export function createAccountApiClient(options: AccountApiClientOptions = {}): A
       return request<AccountTripStats>(accountApiRoutes.accountTripStats(), {
         method: "GET",
         headers: authHeaders(sessionToken),
+      });
+    },
+    loadExplorer(sessionToken) {
+      return request<AccountExplorerSummary>(accountApiRoutes.accountExplorer(), {
+        method: "GET",
+        headers: authHeaders(sessionToken),
+      });
+    },
+    listToDos(sessionToken) {
+      return request<AccountTodoSummary[]>(accountApiRoutes.accountToDos(), {
+        method: "GET",
+        headers: authHeaders(sessionToken),
+      });
+    },
+    listVault(sessionToken) {
+      return request<AccountVaultItemSummary[]>(accountApiRoutes.accountVault(), {
+        method: "GET",
+        headers: authHeaders(sessionToken),
+      });
+    },
+    createVaultItem(sessionToken, vaultRequest) {
+      return request<AccountVaultItemSummary>(accountApiRoutes.accountVault(), {
+        method: "POST",
+        headers: authHeaders(sessionToken),
+        body: JSON.stringify(vaultRequest),
       });
     },
     createTrip(sessionToken, tripRequest) {

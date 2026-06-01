@@ -224,19 +224,36 @@ describe("Sagittarius cockpit UI", () => {
         );
       }
 
+      if (request.includes("/api/v1/account/explorer")) {
+        return new Response(
+          JSON.stringify({
+            upcomingTrips: 0,
+            ownedTrips: 0,
+            destinationCount: 0,
+            nextTrip: null,
+          }),
+          { status: 200, headers: { "content-type": "application/json" } },
+        );
+      }
+
+      if (request.includes("/api/v1/account/to-dos") || request.includes("/api/v1/account/vault")) {
+        return new Response(JSON.stringify([]), { status: 200, headers: { "content-type": "application/json" } });
+      }
+
       return new Response(JSON.stringify({}), { status: 404, headers: { "content-type": "application/json" }, statusText: "not found" });
     });
 
     try {
       render(<SagittariusApp requireJoin dataSource="api" />);
 
-      expect(await screen.findByText("Profile & settings")).toBeInTheDocument();
+      expect(await screen.findByText("User data stats และ session status")).toBeInTheDocument();
+      expect(screen.getAllByText("Dashboard").length).toBeGreaterThan(0);
       expect(screen.getByRole("tab", { name: /^Account$/i })).toHaveAttribute("aria-selected", "true");
       expect(screen.getByRole("tab", { name: /Temp access/i })).toHaveAttribute("aria-selected", "false");
-      expect(screen.getByRole("button", { name: /Start passkey setup/i })).toBeInTheDocument();
+      expect(screen.getByRole("link", { name: /^Settings$/i })).toHaveAttribute("href", "/portal/settings");
       expect(screen.queryByLabelText(/Trip ID/i)).not.toBeInTheDocument();
       expect(screen.queryByRole("button", { name: /ส่งรหัส sign-in/i })).not.toBeInTheDocument();
-      await waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(3));
+      await waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(6));
     } finally {
       storage.clear();
       fetchSpy.mockRestore();

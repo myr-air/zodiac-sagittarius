@@ -1628,6 +1628,23 @@ button:disabled,
   margin: 0 auto;
   display: grid;
   gap: 16px;
+  position: relative;
+}
+
+.account-shell::before {
+  content: "";
+  position: absolute;
+  inset: -18px;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 18% 24%, rgb(14 165 233 / 0.09), transparent 28%),
+    radial-gradient(ellipse at 72% 36%, rgb(244 114 182 / 0.08), transparent 30%),
+    radial-gradient(ellipse at 42% 78%, rgb(34 197 94 / 0.08), transparent 28%);
+  filter: blur(10px);
+}
+
+.account-shell > * {
+  position: relative;
 }
 
 .account-shell--entry {
@@ -1806,7 +1823,95 @@ button:disabled,
 }
 
 .account-dashboard {
-  grid-template-columns: minmax(280px, 0.8fr) minmax(0, 1.2fr);
+  grid-template-columns: 220px minmax(0, 1fr);
+  align-items: start;
+}
+
+.portal-nav {
+  position: sticky;
+  top: 16px;
+  display: grid;
+  gap: 14px;
+  padding: 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-soft);
+}
+
+.portal-nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.portal-nav-brand strong,
+.portal-nav-brand span {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.portal-nav-brand strong {
+  color: var(--color-text);
+}
+
+.portal-nav-brand span {
+  color: var(--color-text-muted);
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.portal-nav-links,
+.portal-content {
+  display: grid;
+  gap: 10px;
+}
+
+.portal-content {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+}
+
+.portal-nav-link {
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  padding: 0 10px;
+  color: var(--color-text-muted);
+  background: transparent;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 850;
+  text-align: left;
+  text-decoration: none;
+}
+
+.portal-nav-link:hover,
+.portal-nav-link:focus-visible,
+.portal-nav-link--active {
+  border-color: var(--color-primary-border);
+  color: var(--color-primary-strong);
+  background: var(--color-primary-soft);
+}
+
+.portal-nav-signout {
+  cursor: pointer;
+}
+
+.account-profile-card,
+.account-create-trip,
+.account-settings-card,
+.portal-feature-card,
+.account-history {
+  grid-column: span 2;
 }
 
 .account-card {
@@ -1908,7 +2013,8 @@ button:disabled,
   font-weight: 750;
 }
 
-.account-form input {
+.account-form input,
+.account-form select {
   min-height: 46px;
   width: 100%;
   border: 1px solid var(--color-border-strong);
@@ -1919,11 +2025,13 @@ button:disabled,
   transition: border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
 }
 
-.account-form input:hover {
+.account-form input:hover,
+.account-form select:hover {
   border-color: color-mix(in srgb, var(--color-primary) 36%, var(--color-border-strong));
 }
 
-.account-form input:focus {
+.account-form input:focus,
+.account-form select:focus {
   border-color: var(--color-primary);
   box-shadow: 0 0 0 4px rgb(15 118 110 / 0.12);
 }
@@ -2067,7 +2175,7 @@ button:disabled,
 }
 
 .account-create-trip {
-  grid-row: span 2;
+  grid-row: auto;
 }
 
 .account-success {
@@ -5908,9 +6016,22 @@ span.member-state-pill {
 
   .account-grid,
   .account-dashboard,
+  .portal-content,
   .account-shell--entry,
   .account-two-col {
     grid-template-columns: 1fr;
+  }
+
+  .portal-nav {
+    position: static;
+  }
+
+  .account-profile-card,
+  .account-create-trip,
+  .account-settings-card,
+  .portal-feature-card,
+  .account-history {
+    grid-column: auto;
   }
 
   .account-page--entry {

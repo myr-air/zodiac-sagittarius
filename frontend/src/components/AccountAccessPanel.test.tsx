@@ -231,6 +231,39 @@ describe("AccountAccessPanel", () => {
     expect(screen.queryByLabelText(/Trip ID/i)).not.toBeInTheDocument();
   });
 
+  it("registers with a trusted account session so split portal routes can reload", async () => {
+    const user = userEvent.setup();
+    const accountClient = createAccountClient();
+    const onAccountSessionChange = vi.fn();
+
+    render(
+      <AccountAccessPanel
+        accessMode="account-register"
+        accountClient={accountClient}
+        accountSession={null}
+        trip={seedTrip}
+        onAccountSessionChange={onAccountSessionChange}
+        onAuthenticated={vi.fn()}
+        onTripChange={vi.fn()}
+      />,
+    );
+
+    fireEvent.change(screen.getByLabelText(/Email/i), { target: { value: "new-aom@example.test" } });
+    await user.click(screen.getByRole("button", { name: /Continue/i }));
+    await user.click(screen.getByRole("button", { name: /Create account with password/i }));
+    fireEvent.change(screen.getByLabelText(/^Password$/i), { target: { value: "account-secret" } });
+    await user.click(screen.getByRole("button", { name: /Create account with password/i }));
+
+    expect(accountClient.finishPasswordLogin).toHaveBeenCalledWith({
+      flow: "register",
+      email: "new-aom@example.test",
+      password: "account-secret",
+      trustDevice: true,
+      deviceLabel: "",
+    });
+    await waitFor(() => expect(onAccountSessionChange).toHaveBeenCalledWith(expect.objectContaining({ kind: "trusted" })));
+  });
+
   it("renders trip access without exposing account login tabs on the join path", () => {
     render(
       <AccountAccessPanel
@@ -286,7 +319,7 @@ describe("AccountAccessPanel", () => {
 
     expect(view.getByRole("tab", { name: /^Account$/i })).toHaveClass("account-tab--active");
     expect(await view.findByText("Aom")).toBeInTheDocument();
-    expect(view.getByRole("button", { name: /Start passkey setup/i })).toBeInTheDocument();
+    expect(view.getByRole("link", { name: /Settings/i })).toHaveAttribute("href", "/portal/settings");
   });
 
   it("does not reload account dashboard data when switching language", async () => {
@@ -317,7 +350,7 @@ describe("AccountAccessPanel", () => {
 
     await user.click(screen.getByRole("button", { name: "ภาษาไทย" }));
 
-    expect(await screen.findByText("ผู้ร่วมเดินทาง")).toBeInTheDocument();
+    expect(await screen.findByText("User data stats และ session status")).toBeInTheDocument();
     expect(accountClient.loadSettings).toHaveBeenCalledTimes(1);
     expect(accountClient.listTrips).toHaveBeenCalledTimes(1);
     expect(accountClient.loadStats).toHaveBeenCalledTimes(1);
@@ -343,84 +376,91 @@ describe("AccountAccessPanel", () => {
       trustDevice: true,
       deviceLabel: "",
     });
-    expect(await screen.findByText("Aom")).toBeInTheDocument();
-    expect(screen.getByText("aom@example.test")).toBeInTheDocument();
+    expect(await screen.findByText("Aom", {}, { timeout: 3_000 })).toBeInTheDocument();
+    expect(screen.getAllByText("aom@example.test").length).toBeGreaterThan(0);
     expect(screen.getByText("Trusted PC")).toBeInTheDocument();
-    expect(screen.getByText("Profile & settings")).toBeInTheDocument();
-    expect(screen.getByText("Seoul Spring")).toBeInTheDocument();
-    expect(screen.getByText("Taipei Shared")).toBeInTheDocument();
-    expect(screen.getByText("Traveler")).toBeInTheDocument();
-    expect(screen.queryByText("traveler")).not.toBeInTheDocument();
-
-    const settingsCard = screen.getByText("Profile & settings").closest("section") as HTMLElement;
-    fireEvent.change(within(settingsCard).getByLabelText(/Display name/i), { target: { value: "Aom Updated" } });
-    fireEvent.change(within(settingsCard).getByLabelText(/Avatar color/i), { target: { value: "#abcdef" } });
-    fireEvent.change(within(settingsCard).getByLabelText(/Locale/i), { target: { value: "en-US" } });
-    fireEvent.change(within(settingsCard).getByLabelText(/Timezone/i), { target: { value: "Asia/Tokyo" } });
-    await user.click(within(settingsCard).getByRole("button", { name: /Save settings/i }));
-
-    expect(accountClient.updateSettings).toHaveBeenCalledWith("account-session", {
-      displayName: "Aom Updated",
-      avatarColor: "#abcdef",
-      locale: "en-US",
-      timezone: "Asia/Tokyo",
-    });
-    expect(await screen.findByText("Saved profile and settings.")).toBeInTheDocument();
-
-    const laptopDeviceRow = screen.getByText("Aom laptop").closest(".account-device-row") as HTMLElement;
-    await user.click(within(laptopDeviceRow).getByRole("button", { name: /Revoke/i }));
-    expect(accountClient.revokeTrustedDevice).toHaveBeenCalledWith("account-session", "device-laptop");
-
-    const credentials = stubCredentials();
-    await user.click(within(settingsCard).getByRole("button", { name: /Start passkey setup/i }));
-    expect(credentials.create).toHaveBeenCalledWith({
-      publicKey: expect.objectContaining({
-        attestation: "none",
-        challenge: bytes([1, 2, 3, 4]),
-        authenticatorSelection: expect.objectContaining({ userVerification: "required" }),
-        rp: expect.objectContaining({ name: "Joii" }),
-        pubKeyCredParams: expect.arrayContaining([
-          expect.objectContaining({ type: "public-key", alg: -7 }),
-          expect.objectContaining({ type: "public-key", alg: -257 }),
-        ]),
-        user: expect.objectContaining({
-          name: "aom@example.test",
-          displayName: "Aom",
-        }),
-      }),
-    });
-    expect(accountClient.finishPasskeyRegistration).toHaveBeenCalledWith("account-session", {
-      challengeId: "passkey-challenge",
-      credentialId: "BQYH",
-      clientDataJson: "CAk",
-      attestationObject: "CgsM",
-      nickname: "Aom passkey",
-    });
-    expect(await screen.findByText("Passkey created. You can use it to sign in immediately.")).toBeInTheDocument();
-
-    const createForm = screen.getByText("Create trip").closest("form") as HTMLFormElement;
-    expect(within(createForm).getByLabelText(/Join ID/i)).toHaveAttribute("autocomplete", "username");
-    expect(within(createForm).getByLabelText(/Join password/i)).toHaveAttribute("autocomplete", "new-password");
-    fireEvent.change(within(createForm).getByLabelText(/Trip name/i), { target: { value: "Taipei Food Run" } });
-    fireEvent.change(within(createForm).getByLabelText(/Destination/i), { target: { value: "Taipei" } });
-    fireEvent.change(within(createForm).getByLabelText(/Start date/i), { target: { value: "2026-07-01" } });
-    fireEvent.change(within(createForm).getByLabelText(/End date/i), { target: { value: "2026-07-04" } });
-    fireEvent.change(within(createForm).getByLabelText(/Owner display name/i), { target: { value: "Aom" } });
-    fireEvent.change(within(createForm).getByLabelText(/Join ID/i), { target: { value: "TPE-2026" } });
-    fireEvent.change(within(createForm).getByLabelText(/Join password/i), { target: { value: "taipei-secret" } });
-    await user.click(within(createForm).getByRole("button", { name: /Create and open/i }));
-
-    expect(accountClient.createTrip).toHaveBeenCalledWith("account-session", {
-      name: "Taipei Food Run",
-      destinationLabel: "Taipei",
-      startDate: "2026-07-01",
-      endDate: "2026-07-04",
-      ownerDisplayName: "Aom",
-      joinId: "TPE-2026",
-      joinPassword: "taipei-secret",
-    });
-    await waitFor(() => expect(onAuthenticated).toHaveBeenCalledWith(expect.objectContaining({ sessionToken: "member-session" })));
+    expect(screen.getByRole("navigation", { name: /Portal navigation/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Dashboard/i })).toHaveAttribute("href", "/portal");
+    expect(screen.getByRole("link", { name: /My Trips/i })).toHaveAttribute("href", "/portal/my-trips");
+    expect(screen.getByRole("link", { name: /Explorer/i })).toHaveAttribute("href", "/portal/explorer");
+    expect(screen.getByRole("link", { name: /Trip To-dos/i })).toHaveAttribute("href", "/portal/to-dos");
+    expect(screen.getByRole("link", { name: /Travel Vault/i })).toHaveAttribute("href", "/portal/vault");
+    expect(screen.getByRole("link", { name: /^Settings$/i })).toHaveAttribute("href", "/portal/settings");
+    expect(screen.getByRole("link", { name: /Sign out/i })).toHaveAttribute("href", "/portal/sign-out");
+    expect(screen.getByText("User data stats and session status.")).toBeInTheDocument();
+    expect(accountClient.loadExplorer).toHaveBeenCalledWith("account-session");
+    expect(accountClient.listToDos).toHaveBeenCalledWith("account-session");
+    expect(accountClient.listVault).toHaveBeenCalledWith("account-session");
   }, 45_000);
+
+  it("renders each split portal section from its own route state", async () => {
+    const sections = [
+      { section: "trips" as const, nav: /My Trips/i, visible: "Seoul Spring", hidden: "User data stats and session status." },
+      { section: "explorer" as const, nav: /Explorer/i, visible: "Upcoming trips", hidden: "Trusted PC" },
+      { section: "todos" as const, nav: /Trip To-dos/i, visible: "Book train", hidden: "User data stats and session status." },
+      { section: "vault" as const, nav: /Travel Vault/i, visible: "Passport note", hidden: "User data stats and session status." },
+      { section: "settings" as const, nav: /^Settings$/i, visible: "Manage local account profile and trusted devices.", hidden: "User data stats and session status." },
+      { section: "sign-out" as const, nav: /Sign out/i, visible: "End this account session on this device.", hidden: "User data stats and session status." },
+    ];
+
+    for (const item of sections) {
+      const accountClient = createAccountClient();
+      const view = render(
+        <AccountAccessPanel
+          accessMode="account-portal"
+          accountClient={accountClient}
+          accountSession={{
+            userId: "user-aom",
+            sessionToken: "account-session",
+            kind: "trusted",
+            trustedDeviceId: "device-current",
+            createdAt: "2026-05-30T08:00:00.000Z",
+            expiresAt: "2026-06-29T08:00:00.000Z",
+          }}
+          portalSection={item.section}
+          trip={seedTrip}
+          onAccountSessionChange={vi.fn()}
+          onAuthenticated={vi.fn()}
+          onTripChange={vi.fn()}
+        />,
+      );
+
+      expect(await screen.findByText(item.visible, {}, { timeout: 3_000 })).toBeInTheDocument();
+      expect(screen.queryByText(item.hidden)).not.toBeInTheDocument();
+      const portalNav = within(screen.getByRole("navigation", { name: /Portal navigation/i }));
+      expect(portalNav.getByRole("link", { name: item.nav })).toHaveAttribute("aria-current", "page");
+      view.unmount();
+    }
+  });
+
+  it("keeps portal to-dos visible when another portal API fails", async () => {
+    const accountClient = createAccountClient();
+    vi.mocked(accountClient.listVault).mockRejectedValueOnce(new Error("database error"));
+
+    render(
+      <AccountAccessPanel
+        accessMode="account-portal"
+        accountClient={accountClient}
+        accountSession={{
+          userId: "user-aom",
+          sessionToken: "account-session",
+          kind: "trusted",
+          trustedDeviceId: "device-current",
+          createdAt: "2026-05-30T08:00:00.000Z",
+          expiresAt: "2026-06-29T08:00:00.000Z",
+        }}
+        portalSection="todos"
+        trip={seedTrip}
+        onAccountSessionChange={vi.fn()}
+        onAuthenticated={vi.fn()}
+        onTripChange={vi.fn()}
+      />,
+    );
+
+    expect(await screen.findByText("Book train", {}, { timeout: 3_000 })).toBeInTheDocument();
+    expect(screen.getByText("database error")).toBeInTheDocument();
+    expect(screen.queryByText("No to-dos yet.")).not.toBeInTheDocument();
+  });
 
   it("logs in with a provider-free browser passkey and keeps trusted-device controls", async () => {
     const user = userEvent.setup();
@@ -482,6 +522,7 @@ describe("AccountAccessPanel", () => {
           createdAt: "2026-05-30T08:00:00.000Z",
           expiresAt: "2026-06-29T08:00:00.000Z",
         }}
+        portalSection="settings"
         trip={seedTrip}
         onAccountSessionChange={onAccountSessionChange}
         onAuthenticated={vi.fn()}
@@ -567,6 +608,50 @@ function createAccountClient(): AccountApiClient {
     ),
     listTrips: vi.fn().mockResolvedValue([accountTrip, accountTravelerTrip]),
     loadStats: vi.fn().mockResolvedValue(accountStats),
+    loadExplorer: vi.fn().mockResolvedValue({
+      upcomingTrips: 1,
+      ownedTrips: 1,
+      destinationCount: 2,
+      nextTrip: accountTrip,
+    }),
+    listToDos: vi.fn().mockResolvedValue([
+      {
+        id: "todo-1",
+        tripId: "trip-id",
+        tripName: "Seoul Spring",
+        title: "Book train",
+        status: "open",
+        visibility: "shared",
+        kind: "booking",
+        assigneeId: null,
+        relatedItemId: null,
+        version: 1,
+      },
+    ]),
+    listVault: vi.fn().mockResolvedValue([
+      {
+        id: "vault-1",
+        tripId: "trip-id",
+        tripName: "Seoul Spring",
+        kind: "note",
+        title: "Passport note",
+        detail: "Keep copies ready",
+        externalUrl: null,
+        source: "vault",
+        createdAt: "2026-05-30T08:00:00.000Z",
+      },
+    ]),
+    createVaultItem: vi.fn().mockResolvedValue({
+      id: "vault-created",
+      tripId: null,
+      tripName: null,
+      kind: "file",
+      title: "Tickets",
+      detail: "PDF link",
+      externalUrl: "https://example.test/tickets.pdf",
+      source: "vault",
+      createdAt: "2026-05-30T08:00:00.000Z",
+    }),
     createTrip: vi.fn().mockImplementation((_sessionToken: string, request: AccountTripCreateRequest) =>
       Promise.resolve({
         trip: {

@@ -13,6 +13,13 @@ describe("app route helpers", () => {
   it("builds trip-scoped workspace paths", () => {
     expect(appRoutes.login()).toBe("/login");
     expect(appRoutes.register()).toBe("/register");
+    expect(appRoutes.portal()).toBe("/portal");
+    expect(appRoutes.portalMyTrips()).toBe("/portal/my-trips");
+    expect(appRoutes.portalExplorer()).toBe("/portal/explorer");
+    expect(appRoutes.portalToDos()).toBe("/portal/to-dos");
+    expect(appRoutes.portalVault()).toBe("/portal/vault");
+    expect(appRoutes.portalSettings()).toBe("/portal/settings");
+    expect(appRoutes.portalSignOut()).toBe("/portal/sign-out");
     expect(appRoutes.trips()).toBe("/trips");
     expect(appRoutes.tripOverview("trip 1")).toBe("/trips/trip%201");
     expect(appRoutes.tripItinerary("trip 1")).toBe("/trips/trip%201/itinerary");

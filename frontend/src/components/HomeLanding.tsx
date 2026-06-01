@@ -109,13 +109,13 @@ export function HomeLanding() {
             </div>
 
             <div className="home-preview-grid">
-              <aside className="home-preview-menu" aria-label={landing.preview.sectionsLabel}>
-                <span data-active="true">{landing.preview.sections.overview}</span>
-                <span>{landing.preview.sections.itinerary}</span>
-                <span>{landing.preview.sections.map}</span>
-                <span>{landing.preview.sections.budget}</span>
-                <span>{landing.preview.sections.checklist}</span>
-              </aside>
+              <div className="home-preview-menu" aria-label={landing.preview.sectionsLabel} role="list">
+                <span data-active="true" role="listitem">{landing.preview.sections.overview}</span>
+                <span role="listitem">{landing.preview.sections.itinerary}</span>
+                <span role="listitem">{landing.preview.sections.map}</span>
+                <span role="listitem">{landing.preview.sections.budget}</span>
+                <span role="listitem">{landing.preview.sections.checklist}</span>
+              </div>
 
               <div className="home-preview-main">
                 <div className="home-day-strip">

@@ -12,6 +12,7 @@ import { TimelineView } from "@/src/components/TimelineView";
 import { TripMembersPage } from "@/src/components/TripMembersPage";
 import { Button } from "@/src/components/ui";
 import { Icon } from "@/src/components/icons";
+import { appRoutes } from "@/src/routes/app-routes";
 import { createTripApiClient, type TripApiClient, type TripCockpit } from "@/src/trip/api-client";
 import { createAccountApiClient, type AccountSession } from "@/src/account/api-client";
 import {
@@ -35,6 +36,7 @@ const localMutationTimestamp = "2026-05-28T00:00:00.000Z";
 const accountSessionStorageKey = "sagittarius-account-session";
 
 export type PlanningView = "overview" | "itinerary" | "map" | "timeline" | "members";
+type PortalSection = "dashboard" | "trips" | "explorer" | "todos" | "vault" | "settings" | "sign-out";
 
 interface SagittariusAppProps {
   initialView?: PlanningView;
@@ -43,7 +45,9 @@ interface SagittariusAppProps {
   apiClient?: TripApiClient;
   routeTripId?: string;
   initialJoinCode?: string;
-  accessMode?: "combined" | "account-login" | "account-register" | "trip-access";
+  accessMode?: "combined" | "account-login" | "account-register" | "account-portal" | "trip-access";
+  accountSuccessRedirectHref?: string;
+  portalSection?: PortalSection;
 }
 
 export function SagittariusApp({
@@ -54,6 +58,8 @@ export function SagittariusApp({
   routeTripId,
   initialJoinCode,
   accessMode = "combined",
+  accountSuccessRedirectHref,
+  portalSection = "dashboard",
 }: SagittariusAppProps) {
   /* v8 ignore next 3 */
   const resolvedApiClient = useMemo(
@@ -142,6 +148,11 @@ export function SagittariusApp({
     if (!accountSessionLoaded) return;
     persistAccountSession(accountSession);
   }, [accountSession, accountSessionLoaded]);
+
+  const changeAccountSession = useCallback((session: AccountSession | null) => {
+    setAccountSession(session);
+    persistAccountSession(session);
+  }, []);
 
   useEffect(() => {
     if (!isApiMode || !participantSession || !resolvedApiClient) return undefined;
@@ -608,7 +619,7 @@ export function SagittariusApp({
     }
     if (typeof window !== "undefined") {
       window.sessionStorage.setItem("sagittarius-open-expenses", trip.id);
-      window.location.href = `/trips/${trip.id}/itinerary`;
+      window.location.href = appRoutes.tripItinerary(trip.id);
     }
   }
 
@@ -647,11 +658,13 @@ export function SagittariusApp({
         accessMode={accessMode}
         accountClient={accountClient}
         accountSession={accountSession}
+        accountSuccessRedirectHref={accountSuccessRedirectHref}
+        portalSection={portalSection}
         apiClient={resolvedApiClient}
         initialError={accessError}
         initialJoinCode={initialJoinCode}
         trip={routeTripId ? undefined : trip}
-        onAccountSessionChange={setAccountSession}
+        onAccountSessionChange={changeAccountSession}
         onAuthenticated={authenticateParticipant}
         onCockpitLoaded={replaceCockpitFromApi}
         onTripChange={replaceTripFromJoin}

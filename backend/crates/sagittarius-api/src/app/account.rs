@@ -9,18 +9,20 @@ use time::{Duration, OffsetDateTime};
 use uuid::Uuid;
 
 use crate::db::models::{
-    AccountProfileRecord, AccountTripRecord, AccountTripStatsRecord, NewAccountAuditEvent,
-    NewAccountPlanVariant, NewAccountTrip, NewAccountTripOwnerMember, NewEmailLoginOutbox,
-    NewTrustedDevice, NewUser, NewUserEmail, NewUserSession, PasskeyRecord, TrustedDeviceRecord,
+    AccountProfileRecord, AccountTodoRecord, AccountTripRecord, AccountTripStatsRecord,
+    AccountVaultItemRecord, NewAccountAuditEvent, NewAccountPlanVariant, NewAccountTrip,
+    NewAccountTripOwnerMember, NewAccountVaultItem, NewEmailLoginOutbox, NewTrustedDevice,
+    NewUser, NewUserEmail, NewUserSession, PasskeyRecord, TrustedDeviceRecord,
 };
 use crate::db::{self, PgPool};
 use crate::domain::errors::ServiceError;
 use crate::domain::types::{
     AccountMemberClaimResponse, AccountProfile, AccountSession, AccountSessionKind,
-    AccountSettings, AccountTripCreateResponse, AccountTripStats, AccountTripSummary,
-    EmailLoginStartResponse, MemberSession, OwnerTransferResponse, PasskeyChallengeResponse,
-    PasskeyCredentialDescriptor, PasskeyLoginStartResponse, PasskeySummary, TripMemberAccessStatus,
-    TripRole, TripSummary, TrustedDeviceSummary,
+    AccountExplorerSummary, AccountSettings, AccountTodoSummary, AccountTripCreateResponse,
+    AccountTripStats, AccountTripSummary, AccountVaultItemSummary, EmailLoginStartResponse,
+    MemberSession, OwnerTransferResponse, PasskeyChallengeResponse, PasskeyCredentialDescriptor,
+    PasskeyLoginStartResponse, PasskeySummary, TripMemberAccessStatus, TripRole, TripSummary,
+    TrustedDeviceSummary,
 };
 
 const CHALLENGE_TTL: Duration = Duration::minutes(10);
@@ -64,6 +66,14 @@ pub struct AccountSettingsUpdateInput {
     pub avatar_color: String,
     pub locale: String,
     pub timezone: String,
+}
+
+pub struct AccountVaultItemCreateInput {
+    pub trip_id: Option<Uuid>,
+    pub kind: String,
+    pub title: String,
+    pub detail: String,
+    pub external_url: Option<String>,
 }
 
 pub struct PasskeyRegistrationFinishInput {
@@ -469,6 +479,77 @@ pub async fn load_stats(
     let stats = db::account_queries::get_account_trip_stats(pool, user_id).await?;
 
     Ok(account_trip_stats_from_record(stats))
+}
+
+pub async fn load_explorer(
+    pool: &PgPool,
+    session_token: &str,
+) -> Result<AccountExplorerSummary, ServiceError> {
+    let user_id = authenticate_user_session(pool, session_token).await?;
+    let trips = db::account_queries::list_account_trips(pool, user_id).await?;
+    let stats = db::account_queries::get_account_trip_stats(pool, user_id).await?;
+    let destination_count = trips
+        .iter()
+        .map(|trip| trip.destination_label.to_lowercase())
+        .collect::<std::collections::BTreeSet<_>>()
+        .len() as i64;
+
+    Ok(AccountExplorerSummary {
+        upcoming_trips: stats.active_trips,
+        owned_trips: stats.trips_owned,
+        destination_count,
+        next_trip: trips.into_iter().next().map(account_trip_from_record),
+    })
+}
+
+pub async fn list_todos(
+    pool: &PgPool,
+    session_token: &str,
+) -> Result<Vec<AccountTodoSummary>, ServiceError> {
+    let user_id = authenticate_user_session(pool, session_token).await?;
+    let todos = db::account_queries::list_account_todos(pool, user_id).await?;
+
+    Ok(todos.into_iter().map(account_todo_from_record).collect())
+}
+
+pub async fn list_vault_items(
+    pool: &PgPool,
+    session_token: &str,
+) -> Result<Vec<AccountVaultItemSummary>, ServiceError> {
+    let user_id = authenticate_user_session(pool, session_token).await?;
+    let items = db::account_queries::list_account_vault_items(pool, user_id).await?;
+
+    Ok(items.into_iter().map(account_vault_item_from_record).collect())
+}
+
+pub async fn create_vault_item(
+    pool: &PgPool,
+    session_token: &str,
+    input: AccountVaultItemCreateInput,
+) -> Result<AccountVaultItemSummary, ServiceError> {
+    let user_id = authenticate_user_session(pool, session_token).await?;
+    let kind = match input.kind.as_str() {
+        "note" | "file" => input.kind,
+        _ => return Err(ServiceError::InvalidRequest("vault item kind is invalid")),
+    };
+    let title = validate_trip_text(&input.title, "vault title")?;
+    let detail = input.detail.trim().chars().take(2000).collect::<String>();
+    let external_url = input.external_url.as_deref().map(str::trim).filter(|value| !value.is_empty());
+    let record = db::account_queries::insert_account_vault_item(
+        pool,
+        NewAccountVaultItem {
+            id: Uuid::now_v7(),
+            user_id,
+            trip_id: input.trip_id,
+            kind: &kind,
+            title: &title,
+            detail: &detail,
+            external_url,
+        },
+    )
+    .await?;
+
+    Ok(account_vault_item_from_record(record))
 }
 
 pub async fn claim_member(
@@ -1453,6 +1534,35 @@ fn account_trip_stats_from_record(record: AccountTripStatsRecord) -> AccountTrip
         trips_owned: record.trips_owned,
         active_trips: record.active_trips,
         temp_claims_completed: record.temp_claims_completed,
+    }
+}
+
+fn account_todo_from_record(record: AccountTodoRecord) -> AccountTodoSummary {
+    AccountTodoSummary {
+        id: record.id,
+        trip_id: record.trip_id,
+        trip_name: record.trip_name,
+        title: record.title,
+        status: record.status,
+        visibility: record.visibility,
+        kind: record.kind,
+        assignee_id: record.assignee_id,
+        related_item_id: record.related_item_id,
+        version: record.version,
+    }
+}
+
+fn account_vault_item_from_record(record: AccountVaultItemRecord) -> AccountVaultItemSummary {
+    AccountVaultItemSummary {
+        id: record.id,
+        trip_id: record.trip_id,
+        trip_name: record.trip_name,
+        kind: record.kind,
+        title: record.title,
+        detail: record.detail,
+        external_url: record.external_url,
+        source: record.source,
+        created_at: format_timestamp(record.created_at),
     }
 }
 

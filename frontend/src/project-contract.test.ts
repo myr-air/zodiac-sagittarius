@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
@@ -47,6 +47,17 @@ describe("Sagittarius project scaffold", () => {
     expect(readFileSync(join(frontendRoot, "src/i18n/messages.ts"), "utf8")).toContain("วางแผนทริปกับเพื่อน");
     expect(existsSync(join(frontendRoot, "app/login/page.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "app/register/page.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "app/portal/page.tsx"))).toBe(true);
+    [
+      "app/portal/my-trips/page.tsx",
+      "app/portal/explorer/page.tsx",
+      "app/portal/to-dos/page.tsx",
+      "app/portal/vault/page.tsx",
+      "app/portal/settings/page.tsx",
+      "app/portal/sign-out/page.tsx",
+    ].forEach((routeFile) => expect(existsSync(join(frontendRoot, routeFile))).toBe(true));
+    expect(readFileSync(join(frontendRoot, "app/login/page.tsx"), "utf8")).toContain("appRoutes.portal()");
+    expect(readFileSync(join(frontendRoot, "app/register/page.tsx"), "utf8")).toContain("appRoutes.portal()");
     expect(existsSync(join(frontendRoot, "app/trips/[tripId]/page.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "app/trips/[tripId]/itinerary/page.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "app/trips/[tripId]/map/page.tsx"))).toBe(true);
@@ -65,6 +76,18 @@ describe("Sagittarius project scaffold", () => {
       "app/trips/new/page.tsx",
     ].forEach((routeFile) => {
       expect(readFileSync(join(frontendRoot, routeFile), "utf8")).toContain('accessMode="account-login"');
+    });
+
+    [
+      "app/portal/page.tsx",
+      "app/portal/my-trips/page.tsx",
+      "app/portal/explorer/page.tsx",
+      "app/portal/to-dos/page.tsx",
+      "app/portal/vault/page.tsx",
+      "app/portal/settings/page.tsx",
+      "app/portal/sign-out/page.tsx",
+    ].forEach((routeFile) => {
+      expect(readFileSync(join(frontendRoot, routeFile), "utf8")).toContain('accessMode="account-portal"');
     });
 
     [
@@ -110,6 +133,15 @@ describe("Sagittarius project scaffold", () => {
     expect(makefile).toContain('DATABASE_URL="$(TEST_DATABASE_URL)" cargo test --manifest-path $(BACKEND_MANIFEST)');
   });
 
+  it("keeps incremental database migrations independent in db-init targets", () => {
+    const makefile = readFileSync(join(repoRoot, "Makefile"), "utf8");
+
+    expect(makefile).toContain("backend/migrations/0004_account_password_auth.sql");
+    expect(makefile).toContain("backend/migrations/0005_account_portal.sql");
+    expect(makefile).toContain("table_name='account_vault_items'");
+    expect(makefile).not.toMatch(/elif ! \$\(PSQL\)[\s\S]*account_vault_items/);
+  });
+
   it("keeps the real API e2e runnable from a seeded local backend", () => {
     const packageJson = JSON.parse(readFileSync(join(frontendRoot, "package.json"), "utf8")) as {
       scripts?: Record<string, string>;
@@ -118,7 +150,38 @@ describe("Sagittarius project scaffold", () => {
 
     expect(packageJson.scripts?.["test:e2e:local"]).toBe("bun run scripts/run-local-real-api-e2e.ts");
     expect(existsSync(join(frontendRoot, "scripts/run-local-real-api-e2e.ts"))).toBe(true);
+    expect(readFileSync(join(repoRoot, "backend/crates/sagittarius-api/src/bin/seed_e2e.rs"), "utf8")).toContain("0005_account_portal.sql");
     expect(makefile).toContain("frontend-e2e-local:");
+    expect(makefile).toContain("frontend-e2e-local: db-init-test");
     expect(makefile).toContain("bun run test:e2e:local");
   });
+
+  it("keeps production source free of unimplemented runtime placeholders", () => {
+    const sourceRoots = [
+      join(frontendRoot, "app"),
+      join(frontendRoot, "src"),
+      join(repoRoot, "backend/crates/sagittarius-api/src"),
+    ];
+    const blocked = /\b(?:unimplemented!|todo!)\s*\(|not implemented|coming soon/i;
+    const offenders = sourceRoots
+      .flatMap((root) => collectSourceFiles(root))
+      .filter((filePath) => filePath !== fileURLToPath(import.meta.url))
+      .filter((filePath) => blocked.test(readFileSync(filePath, "utf8")))
+      .map((filePath) => filePath.replace(`${repoRoot}/`, ""));
+
+    expect(offenders).toEqual([]);
+  });
 });
+
+function collectSourceFiles(root: string): string[] {
+  if (!existsSync(root)) return [];
+  return readdirSync(root).flatMap((entry) => {
+    const filePath = join(root, entry);
+    const stats = statSync(filePath);
+    if (stats.isDirectory()) {
+      if ([".next", "coverage", "node_modules", "target"].includes(entry)) return [];
+      return collectSourceFiles(filePath);
+    }
+    return /\.(css|rs|ts|tsx)$/.test(entry) ? [filePath] : [];
+  });
+}

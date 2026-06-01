@@ -53,7 +53,7 @@ export const OwnerThai: Story = {
   args: Owner.args,
   parameters: { locale: "th" },
   play: async ({ canvas }) => {
-    await expect(canvas.getByRole("navigation", { name: /เมนูวางแผน Sagittarius/i })).toBeVisible();
+    await expect(canvas.getByRole("navigation", { name: /เมนูวางแผน Joii/i })).toBeVisible();
     await expect(canvas.getByRole("link", { name: /ภาพรวม/i })).toHaveAttribute("aria-current", "page");
   },
 };

@@ -181,6 +181,44 @@ pub struct AccountTripStats {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub struct AccountExplorerSummary {
+    pub upcoming_trips: i64,
+    pub owned_trips: i64,
+    pub destination_count: i64,
+    pub next_trip: Option<AccountTripSummary>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AccountTodoSummary {
+    pub id: Uuid,
+    pub trip_id: Uuid,
+    pub trip_name: String,
+    pub title: String,
+    pub status: String,
+    pub visibility: String,
+    pub kind: Option<String>,
+    pub assignee_id: Option<Uuid>,
+    pub related_item_id: Option<Uuid>,
+    pub version: i64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AccountVaultItemSummary {
+    pub id: Uuid,
+    pub trip_id: Option<Uuid>,
+    pub trip_name: Option<String>,
+    pub kind: String,
+    pub title: String,
+    pub detail: String,
+    pub external_url: Option<String>,
+    pub source: String,
+    pub created_at: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct AccountMemberClaimResponse {
     pub trip_id: Uuid,
     pub member_id: Uuid,

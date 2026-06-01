@@ -195,6 +195,43 @@ pub struct AccountTripStatsRecord {
 }
 
 #[derive(Debug, Clone, FromRow)]
+pub struct AccountTodoRecord {
+    pub id: Uuid,
+    pub trip_id: Uuid,
+    pub trip_name: String,
+    pub title: String,
+    pub status: String,
+    pub visibility: String,
+    pub kind: Option<String>,
+    pub assignee_id: Option<Uuid>,
+    pub related_item_id: Option<Uuid>,
+    pub version: i64,
+}
+
+#[derive(Debug, Clone, FromRow)]
+pub struct AccountVaultItemRecord {
+    pub id: Uuid,
+    pub trip_id: Option<Uuid>,
+    pub trip_name: Option<String>,
+    pub kind: String,
+    pub title: String,
+    pub detail: String,
+    pub external_url: Option<String>,
+    pub source: String,
+    pub created_at: OffsetDateTime,
+}
+
+pub struct NewAccountVaultItem<'a> {
+    pub id: Uuid,
+    pub user_id: Uuid,
+    pub trip_id: Option<Uuid>,
+    pub kind: &'a str,
+    pub title: &'a str,
+    pub detail: &'a str,
+    pub external_url: Option<&'a str>,
+}
+
+#[derive(Debug, Clone, FromRow)]
 pub struct ActiveUserSessionRecord {
     pub user_id: Uuid,
 }

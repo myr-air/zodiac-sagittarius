@@ -471,6 +471,7 @@ export const messages = {
         combined: "Account access",
         accountLogin: "Account sign in",
         accountRegister: "Account register",
+        accountPortal: "Account portal",
         tripAccess: "Trip access",
       },
       eyebrow: "Joii access",
@@ -478,6 +479,7 @@ export const messages = {
         combined: "Manage trips with an account or temporary access",
         accountLogin: "Sign in",
         accountRegister: "Register",
+        accountPortal: "Portal",
         tripAccess: "Enter a trip with temporary access",
       },
       details: {
@@ -485,6 +487,7 @@ export const messages = {
           "Accounts keep trip history, stats, and owner rights. Temporary access still opens an existing trip immediately.",
         accountLogin: "Use an email code or passkey to return to the account connected to your trips.",
         accountRegister: "Create an account with email or password to keep trip history, stats, and owner rights.",
+        accountPortal: "Manage your profile, trips, travel work, settings, and account session.",
         tripAccess: "Enter the Trip ID and password to open an existing trip without an account.",
       },
       highlights: {
@@ -518,6 +521,61 @@ export const messages = {
         trusted: "This device can return faster next time.",
         temporary: "This session is temporary.",
         link: "Open account portal",
+      },
+      portal: {
+        title: "Portal",
+        nav: {
+          label: "Portal navigation",
+          dashboard: "Dashboard",
+          trips: "My Trips",
+          explorer: "Explorer",
+          todos: "Trip To-dos",
+          vault: "Travel Vault",
+          settings: "Settings",
+        },
+        sections: {
+          dashboard: {
+            title: "Dashboard",
+            detail: "User data stats and session status.",
+          },
+          trips: {
+            title: "My Trips",
+          },
+          explorer: {
+            title: "Explorer",
+          },
+          todos: {
+            title: "Trip To-dos",
+            detail: "A calmer name for checklists and tasks.",
+            empty: "No to-dos yet.",
+          },
+          vault: {
+            title: "Travel Vault",
+            detail: "A calmer name for notes and files.",
+            empty: "No notes or files yet.",
+          },
+          signOut: {
+            title: "Sign out",
+            detail: "End this account session on this device.",
+          },
+        },
+        explorerStats: {
+          upcoming: "Upcoming trips",
+          destinations: "Destinations",
+          nextTrip: "Next trip",
+        },
+        vaultCreate: {
+          kind: "Kind",
+          note: "Note",
+          file: "File",
+          title: "Title *",
+          detail: "Detail",
+          externalUrl: "File link",
+          personal: "Personal",
+          submit: "Save to vault",
+          success: "Saved to Travel Vault.",
+          error: "Could not save vault item.",
+        },
       },
       emailLogin: {
         errors: {
@@ -1132,6 +1190,7 @@ export const messages = {
         combined: "Account access",
         accountLogin: "Account sign in",
         accountRegister: "Account register",
+        accountPortal: "Account portal",
         tripAccess: "Trip access",
       },
       eyebrow: "Joii access",
@@ -1139,12 +1198,14 @@ export const messages = {
         combined: "จัดการ trip ด้วย account หรือเข้าแบบ temp",
         accountLogin: "Sign in",
         accountRegister: "Register",
+        accountPortal: "Portal",
         tripAccess: "เข้า trip แบบ temp access",
       },
       details: {
         combined: "Account จะเก็บประวัติ สถิติ และสิทธิ owner ส่วน temp access ยังใช้เข้าทริปเดิมได้ทันที",
         accountLogin: "ใช้ email code หรือ passkey เพื่อกลับเข้า account ที่ผูกกับ trip ของคุณ",
         accountRegister: "สร้าง account ด้วย email หรือ password เพื่อเก็บประวัติ trip สถิติ และสิทธิ owner",
+        accountPortal: "จัดการ profile, trips, travel work, settings และ account session",
         tripAccess: "กรอก Trip ID และ password เพื่อเข้า trip เดิมโดยไม่ต้องใช้ account",
       },
       highlights: {
@@ -1178,6 +1239,61 @@ export const messages = {
         trusted: "อุปกรณ์นี้กลับมาใช้ได้ไวขึ้น",
         temporary: "Session นี้เป็นแบบ temporary",
         link: "เปิด account portal",
+      },
+      portal: {
+        title: "Portal",
+        nav: {
+          label: "Portal navigation",
+          dashboard: "Dashboard",
+          trips: "My Trips",
+          explorer: "Explorer",
+          todos: "Trip To-dos",
+          vault: "Travel Vault",
+          settings: "Settings",
+        },
+        sections: {
+          dashboard: {
+            title: "Dashboard",
+            detail: "User data stats และ session status",
+          },
+          trips: {
+            title: "My Trips",
+          },
+          explorer: {
+            title: "Explorer",
+          },
+          todos: {
+            title: "Trip To-dos",
+            detail: "ชื่อใหม่สำหรับ checklists และ tasks",
+            empty: "ยังไม่มี to-dos",
+          },
+          vault: {
+            title: "Travel Vault",
+            detail: "ชื่อใหม่สำหรับ notes และ files",
+            empty: "ยังไม่มี notes หรือ files",
+          },
+          signOut: {
+            title: "Sign out",
+            detail: "จบ account session บนอุปกรณ์นี้",
+          },
+        },
+        explorerStats: {
+          upcoming: "Upcoming trips",
+          destinations: "Destinations",
+          nextTrip: "Next trip",
+        },
+        vaultCreate: {
+          kind: "Kind",
+          note: "Note",
+          file: "File",
+          title: "Title *",
+          detail: "Detail",
+          externalUrl: "File link",
+          personal: "Personal",
+          submit: "Save to vault",
+          success: "Saved to Travel Vault.",
+          error: "Could not save vault item.",
+        },
       },
       emailLogin: {
         errors: {

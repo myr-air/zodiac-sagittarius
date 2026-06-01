@@ -388,6 +388,95 @@ async fn account_user_can_create_trip_and_becomes_owner(pool: sqlx::PgPool) {
 }
 
 #[sqlx::test(migrations = "../../migrations")]
+async fn account_portal_routes_return_explorer_todos_and_vault(pool: sqlx::PgPool) {
+    let session = login_account(&pool, "portal@example.com", true, "Portal laptop").await;
+    let auth = format!("Bearer {}", session["sessionToken"].as_str().unwrap());
+    let (create_status, create_body) =
+        create_account_trip(&pool, &auth, "portal-2026", "portal-password-2026").await;
+    assert_eq!(create_status, StatusCode::OK);
+    let trip_id = Uuid::parse_str(create_body["trip"]["id"].as_str().unwrap()).unwrap();
+    let member_id = Uuid::parse_str(create_body["ownerMemberId"].as_str().unwrap()).unwrap();
+    let plan_variant_id =
+        Uuid::parse_str(create_body["trip"]["activePlanVariantId"].as_str().unwrap()).unwrap();
+    let item_id = Uuid::now_v7();
+    let task_id = Uuid::now_v7();
+
+    sqlx::query(
+        "insert into itinerary_items (
+           id, trip_id, plan_variant_id, day, sort_order, start_time, activity, activity_type,
+           place, map_link, transportation, note, created_by
+         )
+         values ($1, $2, $3, '2026-11-04', 100, '09:00', 'Temple visit', 'attraction',
+           'Chiang Mai', '', 'walk', 'Bring paper tickets', $4)",
+    )
+    .bind(item_id)
+    .bind(trip_id)
+    .bind(plan_variant_id)
+    .bind(member_id)
+    .execute(&pool)
+    .await
+    .unwrap();
+    sqlx::query(
+        "insert into trip_tasks (
+           id, trip_id, title, status, visibility, kind, created_by, assignee_id, related_item_id
+         )
+         values ($1, $2, 'Book train', 'open', 'shared', 'booking', $3, $3, $4)",
+    )
+    .bind(task_id)
+    .bind(trip_id)
+    .bind(member_id)
+    .bind(item_id)
+    .execute(&pool)
+    .await
+    .unwrap();
+
+    let app = support::app(pool.clone());
+    let (explorer_status, explorer): (StatusCode, Value) =
+        response_json(get_with_auth(app.clone(), "/api/v1/account/explorer", Some(&auth)).await)
+            .await;
+    assert_eq!(explorer_status, StatusCode::OK);
+    assert_eq!(explorer["upcomingTrips"], 1);
+    assert_eq!(explorer["destinationCount"], 1);
+    assert_eq!(explorer["nextTrip"]["id"], create_body["trip"]["id"]);
+
+    let (todo_status, todos): (StatusCode, Value) =
+        response_json(get_with_auth(app.clone(), "/api/v1/account/to-dos", Some(&auth)).await)
+            .await;
+    assert_eq!(todo_status, StatusCode::OK);
+    assert_eq!(todos[0]["title"], "Book train");
+    assert_eq!(todos[0]["tripName"], "portal-2026 Food Run");
+
+    let create_vault = post_json_with_auth(
+        app.clone(),
+        "/api/v1/account/vault",
+        Some(&auth),
+        json!({
+            "kind": "file",
+            "title": "Tickets",
+            "detail": "PDF copy",
+            "externalUrl": "https://example.test/tickets.pdf"
+        }),
+    )
+    .await;
+    let (vault_create_status, vault_created): (StatusCode, Value) =
+        response_json(create_vault).await;
+    assert_eq!(vault_create_status, StatusCode::CREATED);
+    assert_eq!(vault_created["kind"], "file");
+
+    let (vault_status, vault): (StatusCode, Value) =
+        response_json(get_with_auth(app, "/api/v1/account/vault", Some(&auth)).await).await;
+    assert_eq!(vault_status, StatusCode::OK);
+    assert!(vault.as_array().unwrap().iter().any(|item| item["title"] == "Tickets"));
+    assert!(
+        vault
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|item| item["title"] == "Temple visit" && item["source"] == "itinerary")
+    );
+}
+
+#[sqlx::test(migrations = "../../migrations")]
 async fn account_trip_join_password_hash_uses_random_salt_and_remains_joinable(pool: sqlx::PgPool) {
     let session = login_account(&pool, "owner@example.com", false, "").await;
     let auth = format!("Bearer {}", session["sessionToken"].as_str().unwrap());

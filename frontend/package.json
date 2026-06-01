@@ -12,7 +12,7 @@
     "storybook": "NODE_OPTIONS=--no-warnings STORYBOOK_DISABLE_TELEMETRY=1 storybook dev -p 6006",
     "build-storybook": "NODE_OPTIONS=--no-warnings STORYBOOK_DISABLE_TELEMETRY=1 storybook build",
     "test": "NODE_OPTIONS=--no-warnings vitest --project unit run",
-    "test:e2e:real": "NODE_OPTIONS=--no-warnings SAGITTARIUS_E2E_REQUIRED=1 vitest --project unit run src/trip/real-api.e2e.test.ts",
+    "test:e2e:real": "NODE_OPTIONS=--no-warnings SAGITTARIUS_E2E_REQUIRED=1 vitest --project unit run src/trip/real-api.e2e.test.ts src/account/real-portal.e2e.test.ts",
     "test:e2e:local": "bun run scripts/run-local-real-api-e2e.ts",
     "test:storybook": "NODE_OPTIONS=--no-warnings vitest --project storybook run",
     "test:watch": "NODE_OPTIONS=--no-warnings vitest",

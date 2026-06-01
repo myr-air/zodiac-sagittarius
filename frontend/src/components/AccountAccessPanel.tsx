@@ -4,13 +4,18 @@ import { ComponentProps, FormEvent, ReactNode, useEffect, useState } from "react
 import type {
   AccountApiClient,
   AccountSession,
+  AccountExplorerSummary,
   AccountSettings,
   AccountSettingsUpdateRequest,
+  AccountTodoSummary,
   AccountTripCreateRequest,
   AccountTripStats,
   AccountTripSummary,
+  AccountVaultItemCreateRequest,
+  AccountVaultItemSummary,
   EmailLoginStartResponse,
 } from "@/src/account/api-client";
+import { appRoutes } from "@/src/routes/app-routes";
 import type { TripApiClient, TripCockpit } from "@/src/trip/api-client";
 import type { Trip, TripParticipantSession } from "@/src/trip/types";
 import { Badge, Button } from "./ui";
@@ -21,9 +26,11 @@ import { useI18n } from "@/src/i18n/I18nProvider";
 import type { Messages } from "@/src/i18n/messages";
 
 interface AccountAccessPanelProps {
-  accessMode?: "combined" | "account-login" | "account-register" | "trip-access";
+  accessMode?: "combined" | "account-login" | "account-register" | "account-portal" | "trip-access";
   accountClient: AccountApiClient;
   accountSession: AccountSession | null;
+  accountSuccessRedirectHref?: string;
+  portalSection?: PortalSection;
   apiClient?: TripApiClient;
   initialError?: string | null;
   initialJoinCode?: string;
@@ -35,6 +42,7 @@ interface AccountAccessPanelProps {
 }
 
 type AccessMode = "account" | "temp";
+type PortalSection = "dashboard" | "trips" | "explorer" | "todos" | "vault" | "settings" | "sign-out";
 
 const ACCESS_ERROR_CODES = {
   accountLoadFailed: "account-load-failed",
@@ -57,6 +65,7 @@ export function AccountAccessPanel({
   accessMode = "combined",
   accountClient,
   accountSession,
+  accountSuccessRedirectHref,
   apiClient,
   initialError,
   initialJoinCode,
@@ -64,17 +73,23 @@ export function AccountAccessPanel({
   onAuthenticated,
   onCockpitLoaded,
   onTripChange,
+  portalSection = "dashboard",
   trip,
 }: AccountAccessPanelProps) {
   const { t } = useI18n();
   const accessMessages = t.access.messages;
-  const forcedMode = accessMode === "trip-access" ? "temp" : accessMode === "combined" ? null : "account";
-  const isAccountEntry = accessMode === "account-login" || accessMode === "account-register";
+  const [clientPortalRedirected, setClientPortalRedirected] = useState(false);
+  const effectiveAccessMode = clientPortalRedirected ? "account-portal" : accessMode;
+  const forcedMode = effectiveAccessMode === "trip-access" ? "temp" : effectiveAccessMode === "combined" ? null : "account";
+  const isAccountEntry = effectiveAccessMode === "account-login" || effectiveAccessMode === "account-register";
   const [selectedMode, setSelectedMode] = useState<AccessMode>(() => (accountSession ? "account" : "temp"));
   const mode = forcedMode ?? (accountSession ? "account" : selectedMode);
   const [settings, setSettings] = useState<AccountSettings | null>(null);
   const [trips, setTrips] = useState<AccountTripSummary[]>([]);
   const [stats, setStats] = useState<AccountTripStats | null>(null);
+  const [explorer, setExplorer] = useState<AccountExplorerSummary | null>(null);
+  const [todos, setTodos] = useState<AccountTodoSummary[]>([]);
+  const [vaultItems, setVaultItems] = useState<AccountVaultItemSummary[]>([]);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pendingAccountSession, setPendingAccountSession] = useState<AccountSession | null>(null);
@@ -86,20 +101,29 @@ export function AccountAccessPanel({
     }
 
     let cancelled = false;
-    Promise.all([
+    Promise.allSettled([
       accountClient.loadSettings(accountSession.sessionToken),
       accountClient.listTrips(accountSession.sessionToken),
       accountClient.loadStats(accountSession.sessionToken),
+      accountClient.loadExplorer(accountSession.sessionToken),
+      accountClient.listToDos(accountSession.sessionToken),
+      accountClient.listVault(accountSession.sessionToken),
     ])
-      .then(([nextSettings, nextTrips, nextStats]) => {
+      .then(([nextSettings, nextTrips, nextStats, nextExplorer, nextTodos, nextVaultItems]) => {
         if (cancelled) return;
-        setSettings(nextSettings);
-        setTrips(nextTrips);
-        setStats(nextStats);
-      })
-      .catch((caught) => {
-        if (cancelled) return;
-        setError(rawErrorMessage(caught, ACCESS_ERROR_CODES.accountLoadFailed));
+        const failures = [nextSettings, nextTrips, nextStats, nextExplorer, nextTodos, nextVaultItems]
+          .filter((result) => result.status === "rejected");
+        if (nextSettings.status === "fulfilled") setSettings(nextSettings.value);
+        if (nextTrips.status === "fulfilled") setTrips(nextTrips.value);
+        if (nextStats.status === "fulfilled") setStats(nextStats.value);
+        if (nextExplorer.status === "fulfilled") setExplorer(nextExplorer.value);
+        if (nextTodos.status === "fulfilled") setTodos(nextTodos.value);
+        if (nextVaultItems.status === "fulfilled") setVaultItems(nextVaultItems.value);
+        if (failures.length) {
+          setError(rawErrorMessage(failures[0].reason, ACCESS_ERROR_CODES.accountLoadFailed));
+        } else {
+          setError(null);
+        }
       });
 
     return () => {
@@ -114,11 +138,19 @@ export function AccountAccessPanel({
 
     const timeout = window.setTimeout(() => {
       onAccountSessionChange(pendingAccountSession);
+      if (accountSuccessRedirectHref) {
+        if (pendingAccountSession.kind === "trusted") {
+          window.location.assign(accountSuccessRedirectHref);
+        } else {
+          window.history.replaceState(null, "", accountSuccessRedirectHref);
+          setClientPortalRedirected(true);
+        }
+      }
       setPendingAccountSession(null);
     }, 900);
 
     return () => window.clearTimeout(timeout);
-  }, [onAccountSessionChange, pendingAccountSession]);
+  }, [accountSuccessRedirectHref, onAccountSessionChange, pendingAccountSession]);
 
   async function refreshAccount(sessionToken: string) {
     const [nextSettings, nextTrips, nextStats] = await Promise.all([
@@ -132,7 +164,7 @@ export function AccountAccessPanel({
   }
 
   return (
-    <main className={["account-page", isAccountEntry ? "account-page--entry" : ""].filter(Boolean).join(" ")} aria-label={mainLabel(accessMode, t.access.mainLabels)}>
+    <main className={["account-page", isAccountEntry ? "account-page--entry" : ""].filter(Boolean).join(" ")} aria-label={mainLabel(effectiveAccessMode, t.access.mainLabels)}>
       <section className={["account-shell", isAccountEntry ? "account-shell--entry" : ""].filter(Boolean).join(" ")}>
         {isAccountEntry ? <LanguageSwitch className="access-language-switch account-entry-language-switch" /> : null}
         <div className="account-hero">
@@ -141,14 +173,14 @@ export function AccountAccessPanel({
           </div>
           <div>
             <p className="join-eyebrow">{t.access.eyebrow}</p>
-            <h1>{heroTitle(accessMode, t.access.titles)}</h1>
-            <p>{heroDetail(accessMode, t.access.details)}</p>
+            <h1>{heroTitle(effectiveAccessMode, t.access.titles)}</h1>
+            <p>{heroDetail(effectiveAccessMode, t.access.details)}</p>
             {isAccountEntry ? null : <LanguageSwitch className="access-language-switch" />}
           </div>
-          {isAccountEntry ? <AuthHighlights flow={accessMode === "account-register" ? "register" : "login"} highlights={t.access.highlights} /> : null}
+          {isAccountEntry ? <AuthHighlights flow={effectiveAccessMode === "account-register" ? "register" : "login"} highlights={t.access.highlights} /> : null}
         </div>
 
-        {accessMode === "combined" ? (
+        {effectiveAccessMode === "combined" ? (
           <div className="account-mode-tabs" role="tablist" aria-label={t.access.tabs.label}>
             <button
               type="button"
@@ -195,8 +227,13 @@ export function AccountAccessPanel({
             isLoading={!settings}
             settings={settings}
             stats={stats}
+            explorer={explorer}
             trips={trips}
+            todos={todos}
+            vaultItems={vaultItems}
+            portalSection={portalSection}
             onSettingsChanged={setSettings}
+            onVaultItemCreated={(item) => setVaultItems((current) => [item, ...current])}
             onCreatedTrip={async (session) => {
               onAuthenticated(session);
               if (apiClient) {
@@ -274,6 +311,7 @@ function AuthHighlights({ flow, highlights }: { flow: "login" | "register"; high
 function mainLabel(accessMode: AccountAccessPanelProps["accessMode"], labels: Messages["access"]["mainLabels"]): string {
   if (accessMode === "account-login") return labels.accountLogin;
   if (accessMode === "account-register") return labels.accountRegister;
+  if (accessMode === "account-portal") return labels.accountPortal;
   if (accessMode === "trip-access") return labels.tripAccess;
   return labels.combined;
 }
@@ -281,6 +319,7 @@ function mainLabel(accessMode: AccountAccessPanelProps["accessMode"], labels: Me
 function heroTitle(accessMode: AccountAccessPanelProps["accessMode"], titles: Messages["access"]["titles"]): string {
   if (accessMode === "account-login") return titles.accountLogin;
   if (accessMode === "account-register") return titles.accountRegister;
+  if (accessMode === "account-portal") return titles.accountPortal;
   if (accessMode === "trip-access") return titles.tripAccess;
   return titles.combined;
 }
@@ -288,6 +327,7 @@ function heroTitle(accessMode: AccountAccessPanelProps["accessMode"], titles: Me
 function heroDetail(accessMode: AccountAccessPanelProps["accessMode"], details: Messages["access"]["details"]): string {
   if (accessMode === "account-login") return details.accountLogin;
   if (accessMode === "account-register") return details.accountRegister;
+  if (accessMode === "account-portal") return details.accountPortal;
   if (accessMode === "trip-access") return details.tripAccess;
   return details.combined;
 }
@@ -354,7 +394,7 @@ function EmailLoginPanel({
       const session = await accountClient.finishEmailLogin({
         challengeId: challenge.challengeId,
         code,
-        trustDevice: flow === "login" ? trustDevice : false,
+        trustDevice: flow === "login" ? trustDevice : true,
         deviceLabel: "",
       });
       onLoggedIn(session);
@@ -372,7 +412,7 @@ function EmailLoginPanel({
         flow,
         email,
         password,
-        trustDevice: flow === "login" ? trustDevice : false,
+        trustDevice: flow === "login" ? trustDevice : true,
         deviceLabel: "",
       });
       onLoggedIn(session);
@@ -558,6 +598,7 @@ function EmailLoginPanel({
 function AccountDashboard({
   accountClient,
   accountSession,
+  explorer,
   isLoading,
   onCreatedTrip,
   onError,
@@ -565,12 +606,17 @@ function AccountDashboard({
   onSessionCleared,
   onMessage,
   onSettingsChanged,
+  onVaultItemCreated,
+  portalSection,
   settings,
   stats,
+  todos,
   trips,
+  vaultItems,
 }: {
   accountClient: AccountApiClient;
   accountSession: AccountSession;
+  explorer: AccountExplorerSummary | null;
   isLoading: boolean;
   onCreatedTrip: (session: TripParticipantSession) => Promise<void>;
   onError: (message: string | null) => void;
@@ -578,13 +624,18 @@ function AccountDashboard({
   onSessionCleared: () => void;
   onMessage: (message: string | null) => void;
   onSettingsChanged: (settings: AccountSettings) => void;
+  onVaultItemCreated: (item: AccountVaultItemSummary) => void;
+  portalSection: PortalSection;
   settings: AccountSettings | null;
   stats: AccountTripStats | null;
+  todos: AccountTodoSummary[];
   trips: AccountTripSummary[];
+  vaultItems: AccountVaultItemSummary[];
 }) {
   const { t } = useI18n();
   const [tripForm, setTripForm] = useState(defaultTripForm);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [vaultForm, setVaultForm] = useState<AccountVaultItemCreateRequest>({ kind: "note", title: "", detail: "", externalUrl: "" });
   const sessionKindLabel = accountSession.kind === "trusted" ? t.access.dashboard.sessionKinds.trusted : t.access.dashboard.sessionKinds.temporary;
 
   async function submitTrip(event: FormEvent<HTMLFormElement>) {
@@ -600,6 +651,26 @@ function AccountDashboard({
       onError(errorMessage(caught, t.access.dashboard.createTrip.error, t.access.messages));
     } finally {
       setIsSubmitting(false);
+    }
+  }
+
+  async function submitVaultItem(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const title = vaultForm.title.trim();
+    if (!title) return;
+    try {
+      const item = await accountClient.createVaultItem(accountSession.sessionToken, {
+        ...vaultForm,
+        title,
+        detail: vaultForm.detail.trim(),
+        externalUrl: vaultForm.externalUrl?.trim() || null,
+      });
+      onVaultItemCreated(item);
+      setVaultForm({ kind: "note", title: "", detail: "", externalUrl: "" });
+      onMessage(t.access.portal.vaultCreate.success);
+      onError(null);
+    } catch (caught) {
+      onError(errorMessage(caught, t.access.portal.vaultCreate.error, t.access.messages));
     }
   }
 
@@ -626,144 +697,260 @@ function AccountDashboard({
     }
   }
 
+  const portalNavItems = [
+    { id: "dashboard" as const, href: appRoutes.portal(), icon: "home" as const, label: t.access.portal.nav.dashboard },
+    { id: "trips" as const, href: appRoutes.portalMyTrips(), icon: "calendar" as const, label: t.access.portal.nav.trips },
+    { id: "explorer" as const, href: appRoutes.portalExplorer(), icon: "map" as const, label: t.access.portal.nav.explorer },
+    { id: "todos" as const, href: appRoutes.portalToDos(), icon: "list" as const, label: t.access.portal.nav.todos },
+    { id: "vault" as const, href: appRoutes.portalVault(), icon: "document" as const, label: t.access.portal.nav.vault },
+    { id: "settings" as const, href: appRoutes.portalSettings(), icon: "settings" as const, label: t.access.portal.nav.settings },
+  ];
+
   return (
     <div className="account-dashboard" id="account-portal">
-      <section className="account-card account-profile-card">
-        <div className="account-profile-row">
-          <span className="person-avatar" style={{ backgroundColor: settings?.profile.avatarColor ?? "#0f766e" }} aria-hidden="true">
-            {(settings?.profile.displayName ?? t.access.dashboard.fallbackName).slice(0, 1)}
-          </span>
+      <nav className="portal-nav" aria-label={t.access.portal.nav.label}>
+        <div className="portal-nav-brand">
+          <span className="join-mark" aria-hidden="true"><Icon name="route" /></span>
           <div>
-            <strong>{settings?.profile.displayName ?? t.access.dashboard.fallbackName}</strong>
+            <strong>{t.access.portal.title}</strong>
             <span>{settings?.profile.primaryEmail ?? t.access.dashboard.noEmail}</span>
           </div>
-          <Badge tone={accountSession.kind === "trusted" ? "success" : "warning"}>{sessionKindLabel}</Badge>
         </div>
-        <div className="account-stat-grid">
-          <Stat label={t.access.dashboard.stats.trips} value={stats?.tripsTotal ?? 0} />
-          <Stat label={t.access.dashboard.stats.owned} value={stats?.tripsOwned ?? 0} />
-          <Stat label={t.access.dashboard.stats.active} value={stats?.activeTrips ?? 0} />
-          <Stat label={t.access.dashboard.stats.claims} value={stats?.tempClaimsCompleted ?? 0} />
+        <div className="portal-nav-links">
+          {portalNavItems.map((item) => (
+            <a href={item.href} key={item.href} className={item.id === portalSection ? "portal-nav-link portal-nav-link--active" : "portal-nav-link"} aria-current={item.id === portalSection ? "page" : undefined}>
+              <Icon name={item.icon} />
+              <span>{item.label}</span>
+            </a>
+          ))}
+          <a
+            href={appRoutes.portalSignOut()}
+            className={portalSection === "sign-out" ? "portal-nav-link portal-nav-link--active" : "portal-nav-link"}
+            aria-current={portalSection === "sign-out" ? "page" : undefined}
+          >
+            <Icon name="x" />
+            <span>{t.access.dashboard.logout}</span>
+          </a>
         </div>
-        <Button type="button" variant="secondary" onClick={() => void onLogout()}>
-          <Icon name="x" />
-          {t.access.dashboard.logout}
-        </Button>
-      </section>
+      </nav>
 
-      <form className="account-card account-form account-create-trip" onSubmit={submitTrip}>
-        <PanelHeading icon="plus" title={t.access.dashboard.createTrip.title} detail={t.access.dashboard.createTrip.detail} />
-        <div className="account-two-col">
-          <label>
-            <span>{t.access.dashboard.createTrip.labels.name}</span>
-            <input value={tripForm.name} onChange={(event) => setTripForm((current) => ({ ...current, name: event.target.value }))} required />
-          </label>
-          <label>
-            <span>{t.access.dashboard.createTrip.labels.destination}</span>
-            <input
-              value={tripForm.destinationLabel}
-              onChange={(event) => setTripForm((current) => ({ ...current, destinationLabel: event.target.value }))}
-              required
-            />
-          </label>
-          <label>
-            <span>{t.access.dashboard.createTrip.labels.startDate}</span>
-            <input
-              value={tripForm.startDate}
-              onChange={(event) => setTripForm((current) => ({ ...current, startDate: event.target.value }))}
-              type="date"
-              required
-            />
-          </label>
-          <label>
-            <span>{t.access.dashboard.createTrip.labels.endDate}</span>
-            <input value={tripForm.endDate} onChange={(event) => setTripForm((current) => ({ ...current, endDate: event.target.value }))} type="date" required />
-          </label>
-          <label>
-            <span>{t.access.dashboard.createTrip.labels.ownerDisplayName}</span>
-            <input
-              value={tripForm.ownerDisplayName}
-              onChange={(event) => setTripForm((current) => ({ ...current, ownerDisplayName: event.target.value }))}
-              autoComplete="name"
-              required
-            />
-          </label>
-          <label>
-            <span>{t.access.dashboard.createTrip.labels.joinId}</span>
-            <input
-              value={tripForm.joinId}
-              onChange={(event) => setTripForm((current) => ({ ...current, joinId: event.target.value }))}
-              autoComplete="username"
-              required
-            />
-          </label>
-        </div>
-        <label>
-          <span>{t.access.dashboard.createTrip.labels.joinPassword}</span>
-          <input
-            value={tripForm.joinPassword}
-            onChange={(event) => setTripForm((current) => ({ ...current, joinPassword: event.target.value }))}
-            type="password"
-            autoComplete="new-password"
-            minLength={8}
-            required
-          />
-        </label>
-        <Button type="submit" disabled={isSubmitting}>
-          <Icon name="check" />
-          {t.access.dashboard.createTrip.submit}
-        </Button>
-      </form>
-
-      <section className="account-card account-history">
-        <PanelHeading
-          icon="clock"
-          title={t.access.dashboard.history.title}
-          detail={isLoading ? t.access.dashboard.history.loading : t.access.dashboard.history.visibleTrips({ count: trips.length })}
-        />
-        {trips.length ? (
-          <div className="account-trip-list">
-            {trips.map((trip) => (
-              <article className="account-trip-row" key={trip.id}>
-                <span className="account-trip-icon" aria-hidden="true"><Icon name="location" /></span>
-                <div>
-                  <strong>{trip.name}</strong>
-                  <span>{trip.destinationLabel} · {trip.startDate} - {trip.endDate}</span>
-                </div>
-                <Badge tone={trip.isOwner ? "success" : "neutral"}>{trip.isOwner ? t.access.dashboard.history.owner : t.appShell.roles[trip.role]}</Badge>
-              </article>
-            ))}
+      <div className="portal-content">
+        {portalSection === "dashboard" ? <section className="account-card account-profile-card" id="portal-dashboard">
+          <PanelHeading icon="home" title={t.access.portal.sections.dashboard.title} detail={t.access.portal.sections.dashboard.detail} />
+          <div className="account-profile-row">
+            <span className="person-avatar" style={{ backgroundColor: settings?.profile.avatarColor ?? "#0f766e" }} aria-hidden="true">
+              {(settings?.profile.displayName ?? t.access.dashboard.fallbackName).slice(0, 1)}
+            </span>
+            <div>
+              <strong>{settings?.profile.displayName ?? t.access.dashboard.fallbackName}</strong>
+              <span>{settings?.profile.primaryEmail ?? t.access.dashboard.noEmail}</span>
+            </div>
+            <Badge tone={accountSession.kind === "trusted" ? "success" : "warning"}>{sessionKindLabel}</Badge>
           </div>
-        ) : (
-          <p className="account-empty">{t.access.dashboard.history.empty}</p>
-        )}
-      </section>
+          <div className="account-stat-grid">
+            <Stat label={t.access.dashboard.stats.trips} value={stats?.tripsTotal ?? 0} />
+            <Stat label={t.access.dashboard.stats.owned} value={stats?.tripsOwned ?? 0} />
+            <Stat label={t.access.dashboard.stats.active} value={stats?.activeTrips ?? 0} />
+            <Stat label={t.access.dashboard.stats.claims} value={stats?.tempClaimsCompleted ?? 0} />
+          </div>
+        </section> : null}
 
-      <section className="account-card account-settings-card">
-        <PanelHeading icon="settings" title={t.access.settings.title} detail={t.access.settings.detail} />
-        {settings ? (
-          <AccountSettingsEditor
-            accountClient={accountClient}
-            accountSession={accountSession}
-            settings={settings}
-            onError={onError}
-            onMessage={onMessage}
-            onSessionCleared={onSessionCleared}
-            onSettingsChanged={onSettingsChanged}
+        {portalSection === "trips" ? <section className="account-card account-history" id="portal-trips">
+          <PanelHeading
+            icon="calendar"
+            title={t.access.portal.sections.trips.title}
+            detail={isLoading ? t.access.dashboard.history.loading : t.access.dashboard.history.visibleTrips({ count: trips.length })}
           />
-        ) : (
-          <p className="account-empty">{t.access.settings.loading}</p>
-        )}
-        <Button
-          type="button"
-          variant="secondary"
-          disabled={!settings}
-          onClick={() => void registerPasskey()}
-        >
-          <Icon name="key" />
-          {t.access.settings.startPasskeySetup}
-        </Button>
-      </section>
+          {trips.length ? (
+            <div className="account-trip-list">
+              {trips.map((trip) => (
+                <article className="account-trip-row" key={trip.id}>
+                  <span className="account-trip-icon" aria-hidden="true"><Icon name="location" /></span>
+                  <div>
+                    <strong>{trip.name}</strong>
+                    <span>{trip.destinationLabel} · {trip.startDate} - {trip.endDate}</span>
+                  </div>
+                  <Badge tone={trip.isOwner ? "success" : "neutral"}>{trip.isOwner ? t.access.dashboard.history.owner : t.appShell.roles[trip.role]}</Badge>
+                </article>
+              ))}
+            </div>
+          ) : (
+            <p className="account-empty">{t.access.dashboard.history.empty}</p>
+          )}
+        </section> : null}
+
+        {portalSection === "explorer" ? <form className="account-card account-form account-create-trip" id="portal-explorer" onSubmit={submitTrip}>
+          <PanelHeading icon="map" title={t.access.portal.sections.explorer.title} detail={t.access.dashboard.createTrip.detail} />
+          <div className="account-settings-grid">
+            <SettingLine label={t.access.portal.explorerStats.upcoming} value={`${explorer?.upcomingTrips ?? 0}`} />
+            <SettingLine label={t.access.portal.explorerStats.destinations} value={`${explorer?.destinationCount ?? 0}`} />
+          </div>
+          {explorer?.nextTrip ? (
+            <div className="account-step-summary">
+              <span>{t.access.portal.explorerStats.nextTrip}</span>
+              <strong>{explorer.nextTrip.name}</strong>
+            </div>
+          ) : null}
+          <div className="account-two-col">
+            <label>
+              <span>{t.access.dashboard.createTrip.labels.name}</span>
+              <input value={tripForm.name} onChange={(event) => setTripForm((current) => ({ ...current, name: event.target.value }))} required />
+            </label>
+            <label>
+              <span>{t.access.dashboard.createTrip.labels.destination}</span>
+              <input
+                value={tripForm.destinationLabel}
+                onChange={(event) => setTripForm((current) => ({ ...current, destinationLabel: event.target.value }))}
+                required
+              />
+            </label>
+            <label>
+              <span>{t.access.dashboard.createTrip.labels.startDate}</span>
+              <input
+                value={tripForm.startDate}
+                onChange={(event) => setTripForm((current) => ({ ...current, startDate: event.target.value }))}
+                type="date"
+                required
+              />
+            </label>
+            <label>
+              <span>{t.access.dashboard.createTrip.labels.endDate}</span>
+              <input value={tripForm.endDate} onChange={(event) => setTripForm((current) => ({ ...current, endDate: event.target.value }))} type="date" required />
+            </label>
+            <label>
+              <span>{t.access.dashboard.createTrip.labels.ownerDisplayName}</span>
+              <input
+                value={tripForm.ownerDisplayName}
+                onChange={(event) => setTripForm((current) => ({ ...current, ownerDisplayName: event.target.value }))}
+                autoComplete="name"
+                required
+              />
+            </label>
+            <label>
+              <span>{t.access.dashboard.createTrip.labels.joinId}</span>
+              <input
+                value={tripForm.joinId}
+                onChange={(event) => setTripForm((current) => ({ ...current, joinId: event.target.value }))}
+                autoComplete="username"
+                required
+              />
+            </label>
+          </div>
+          <label>
+            <span>{t.access.dashboard.createTrip.labels.joinPassword}</span>
+            <input
+              value={tripForm.joinPassword}
+              onChange={(event) => setTripForm((current) => ({ ...current, joinPassword: event.target.value }))}
+              type="password"
+              autoComplete="new-password"
+              minLength={8}
+              required
+            />
+          </label>
+          <Button type="submit" disabled={isSubmitting}>
+            <Icon name="check" />
+            {t.access.dashboard.createTrip.submit}
+          </Button>
+        </form> : null}
+
+        {portalSection === "todos" ? <section className="account-card portal-feature-card" id="portal-to-dos">
+          <PanelHeading icon="list" title={t.access.portal.sections.todos.title} detail={t.access.portal.sections.todos.detail} />
+          {todos.length ? (
+            <div className="account-trip-list">
+              {todos.map((todo) => (
+                <article className="account-trip-row" key={todo.id}>
+                  <span className="account-trip-icon" aria-hidden="true"><Icon name="list" /></span>
+                  <div>
+                    <strong>{todo.title}</strong>
+                    <span>{todo.tripName} · {todo.visibility} · {todo.kind ?? "prep"}</span>
+                  </div>
+                  <Badge tone={todo.status === "done" ? "success" : "warning"}>{todo.status}</Badge>
+                </article>
+              ))}
+            </div>
+          ) : (
+            <p className="account-empty">{t.access.portal.sections.todos.empty}</p>
+          )}
+        </section> : null}
+
+        {portalSection === "vault" ? <section className="account-card portal-feature-card" id="portal-vault">
+          <PanelHeading icon="document" title={t.access.portal.sections.vault.title} detail={t.access.portal.sections.vault.detail} />
+          <form className="account-form account-settings-form" onSubmit={submitVaultItem}>
+            <div className="account-two-col">
+              <label>
+                <span>{t.access.portal.vaultCreate.kind}</span>
+                <select value={vaultForm.kind} onChange={(event) => setVaultForm((current) => ({ ...current, kind: event.target.value as "note" | "file" }))}>
+                  <option value="note">{t.access.portal.vaultCreate.note}</option>
+                  <option value="file">{t.access.portal.vaultCreate.file}</option>
+                </select>
+              </label>
+              <label>
+                <span>{t.access.portal.vaultCreate.title}</span>
+                <input value={vaultForm.title} onChange={(event) => setVaultForm((current) => ({ ...current, title: event.target.value }))} required />
+              </label>
+            </div>
+            <label>
+              <span>{t.access.portal.vaultCreate.detail}</span>
+              <input value={vaultForm.detail} onChange={(event) => setVaultForm((current) => ({ ...current, detail: event.target.value }))} />
+            </label>
+            <label>
+              <span>{t.access.portal.vaultCreate.externalUrl}</span>
+              <input value={vaultForm.externalUrl ?? ""} onChange={(event) => setVaultForm((current) => ({ ...current, externalUrl: event.target.value }))} />
+            </label>
+            <Button type="submit"><Icon name="plus" />{t.access.portal.vaultCreate.submit}</Button>
+          </form>
+          {vaultItems.length ? (
+            <div className="account-trip-list">
+              {vaultItems.map((item) => (
+                <article className="account-trip-row" key={`${item.source}-${item.id}`}>
+                  <span className="account-trip-icon" aria-hidden="true"><Icon name={item.kind === "file" ? "document" : "note"} /></span>
+                  <div>
+                    <strong>{item.title}</strong>
+                    <span>{item.tripName ?? t.access.portal.vaultCreate.personal} · {item.detail}</span>
+                  </div>
+                  <Badge tone={item.kind === "file" ? "neutral" : "success"}>{item.kind}</Badge>
+                </article>
+              ))}
+            </div>
+          ) : (
+            <p className="account-empty">{t.access.portal.sections.vault.empty}</p>
+          )}
+        </section> : null}
+
+        {portalSection === "settings" ? <section className="account-card account-settings-card" id="portal-settings">
+          <PanelHeading icon="settings" title={t.access.settings.title} detail={t.access.settings.detail} />
+          {settings ? (
+            <AccountSettingsEditor
+              accountClient={accountClient}
+              accountSession={accountSession}
+              settings={settings}
+              onError={onError}
+              onMessage={onMessage}
+              onSessionCleared={onSessionCleared}
+              onSettingsChanged={onSettingsChanged}
+            />
+          ) : (
+            <p className="account-empty">{t.access.settings.loading}</p>
+          )}
+          <Button
+            type="button"
+            variant="secondary"
+            disabled={!settings}
+            onClick={() => void registerPasskey()}
+          >
+            <Icon name="key" />
+            {t.access.settings.startPasskeySetup}
+          </Button>
+        </section> : null}
+
+        {portalSection === "sign-out" ? <section className="account-card account-profile-card" id="portal-sign-out">
+          <PanelHeading icon="x" title={t.access.portal.sections.signOut.title} detail={t.access.portal.sections.signOut.detail} />
+          <Button type="button" variant="secondary" onClick={() => void onLogout()}>
+            <Icon name="x" />
+            {t.access.dashboard.logout}
+          </Button>
+        </section> : null}
+      </div>
     </div>
   );
 }

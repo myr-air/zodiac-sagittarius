@@ -18,6 +18,7 @@ export const Owner: Story = {
   args: {
     endDate: tripFixture.trip.endDate,
     items: tripFixture.planItems,
+    liveMapEnabled: false,
     startDate: tripFixture.trip.startDate,
     tripName: tripFixture.trip.name,
   },

@@ -34,7 +34,7 @@ frontend-storybook:
 frontend-verify:
 	cd $(FRONTEND_DIR) && bun run verify:frontend
 
-frontend-e2e-local:
+frontend-e2e-local: db-init-test
 	cd $(FRONTEND_DIR) && \
 	DATABASE_URL="$(TEST_DATABASE_URL)" SAGITTARIUS_BIND_ADDR="$(SAGITTARIUS_BIND_ADDR)" \
 	bun run test:e2e:local
@@ -44,15 +44,23 @@ verify: frontend-verify backend-test
 db-init: db-create
 	@if ! $(PSQL) "$(DATABASE_URL)" -tAc "SELECT 1 FROM information_schema.tables WHERE table_schema='public' AND table_name='trips'" | grep -q 1; then \
 	  $(MAKE) db-migrate; \
-	elif ! $(PSQL) "$(DATABASE_URL)" -tAc "SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='users' AND column_name='password_hash'" | grep -q 1; then \
+	fi
+	@if ! $(PSQL) "$(DATABASE_URL)" -tAc "SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='users' AND column_name='password_hash'" | grep -q 1; then \
 	  $(PSQL) -v ON_ERROR_STOP=1 "$(DATABASE_URL)" < backend/migrations/0004_account_password_auth.sql; \
+	fi
+	@if ! $(PSQL) "$(DATABASE_URL)" -tAc "SELECT 1 FROM information_schema.tables WHERE table_schema='public' AND table_name='account_vault_items'" | grep -q 1; then \
+	  $(PSQL) -v ON_ERROR_STOP=1 "$(DATABASE_URL)" < backend/migrations/0005_account_portal.sql; \
 	fi
 
 db-init-test: db-create-test
 	@if ! $(PSQL) "$(TEST_DATABASE_URL)" -tAc "SELECT 1 FROM information_schema.tables WHERE table_schema='public' AND table_name='trips'" | grep -q 1; then \
 	  $(MAKE) db-migrate-test; \
-	elif ! $(PSQL) "$(TEST_DATABASE_URL)" -tAc "SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='users' AND column_name='password_hash'" | grep -q 1; then \
+	fi
+	@if ! $(PSQL) "$(TEST_DATABASE_URL)" -tAc "SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='users' AND column_name='password_hash'" | grep -q 1; then \
 	  $(PSQL) -v ON_ERROR_STOP=1 "$(TEST_DATABASE_URL)" < backend/migrations/0004_account_password_auth.sql; \
+	fi
+	@if ! $(PSQL) "$(TEST_DATABASE_URL)" -tAc "SELECT 1 FROM information_schema.tables WHERE table_schema='public' AND table_name='account_vault_items'" | grep -q 1; then \
+	  $(PSQL) -v ON_ERROR_STOP=1 "$(TEST_DATABASE_URL)" < backend/migrations/0005_account_portal.sql; \
 	fi
 
 db-ensure-psql:
