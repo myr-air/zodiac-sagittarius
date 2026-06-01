@@ -40,6 +40,9 @@ export const OwnerThai: Story = {
   args: Owner.args,
   parameters: { locale: "th" },
   play: async ({ canvas }) => {
+    await expect(canvas.getByRole("banner", { name: /Hong Kong Food Crawl/i })).toBeVisible();
+    await expect(canvas.getByRole("region", { name: /travel cockpit/i })).toBeVisible();
+    await expect(canvas.getByRole("region", { name: /trip highlight board/i })).toBeVisible();
     await expect(canvas.getByRole("region", { name: /เช็กลิสต์ของทริป/i })).toBeVisible();
   },
 };

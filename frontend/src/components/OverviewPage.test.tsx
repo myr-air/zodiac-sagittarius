@@ -37,6 +37,44 @@ describe("OverviewPage role lenses", () => {
     expect(screen.getByRole("heading", { name: /วันนี้ต้องโฟกัส/i })).toBeInTheDocument();
   }, 30_000);
 
+  it("renders the photo-first cockpit hero and visual highlight board from trip data", () => {
+    renderOverview("member-beam");
+
+    const hero = screen.getByRole("banner", { name: /Hong Kong Food Crawl/i });
+    expect(hero).toHaveTextContent(/Hong Kong/i);
+    expect(hero).toHaveTextContent(/HK\$/i);
+    expect(within(hero).getByText(/ศูนย์จัดการทริป/i)).toBeInTheDocument();
+
+    const cockpit = screen.getByRole("region", { name: /travel cockpit/i });
+    expect(within(cockpit).getByText(/Next stop/i)).toBeInTheDocument();
+    expect(within(cockpit).getByText(/Trip readiness/i)).toBeInTheDocument();
+    expect(within(cockpit).getByText(/Budget/i)).toBeInTheDocument();
+
+    const board = screen.getByRole("region", { name: /trip highlight board/i });
+    expect(within(board).getByText(/Dim Dim Sum ที่ Tim Ho Wan/i)).toBeInTheDocument();
+    expect(within(board).getByText(/อาหารเย็นที่ Temple Street Night Market/i)).toBeInTheDocument();
+  });
+
+  it("keeps the photo-first overview useful for empty trips", () => {
+    render(
+      <OverviewPage
+        currentMemberId="member-beam"
+        expenseSummary={buildExpenseSummary([], "member-beam")}
+        items={[]}
+        suggestions={[]}
+        tasks={[]}
+        trip={{ ...seedTrip, itineraryItems: [] }}
+        onCreateTask={vi.fn()}
+        onOpenExpenses={vi.fn()}
+        onToggleTaskStatus={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByRole("banner", { name: /Hong Kong Food Crawl/i })).toBeInTheDocument();
+    expect(screen.getByText(/ยังไม่มี itinerary ในแผนนี้/i)).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: /trip highlight board/i })).toHaveTextContent(/ยังไม่มีไฮไลต์ในแผนนี้/i);
+  });
+
   it("combines booking prep into the trip checklist for managers", () => {
     renderOverview("member-beam");
 
