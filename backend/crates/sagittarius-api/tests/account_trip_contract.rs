@@ -451,6 +451,7 @@ async fn account_portal_routes_return_explorer_todos_and_vault(pool: sqlx::PgPoo
         "/api/v1/account/vault",
         Some(&auth),
         json!({
+            "tripId": trip_id,
             "kind": "file",
             "title": "Tickets",
             "detail": "PDF copy",
@@ -462,11 +463,19 @@ async fn account_portal_routes_return_explorer_todos_and_vault(pool: sqlx::PgPoo
         response_json(create_vault).await;
     assert_eq!(vault_create_status, StatusCode::CREATED);
     assert_eq!(vault_created["kind"], "file");
+    assert_eq!(vault_created["tripId"], trip_id.to_string());
+    assert_eq!(vault_created["tripName"], "portal-2026 Food Run");
 
     let (vault_status, vault): (StatusCode, Value) =
         response_json(get_with_auth(app, "/api/v1/account/vault", Some(&auth)).await).await;
     assert_eq!(vault_status, StatusCode::OK);
-    assert!(vault.as_array().unwrap().iter().any(|item| item["title"] == "Tickets"));
+    assert!(
+        vault
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|item| item["title"] == "Tickets")
+    );
     assert!(
         vault
             .as_array()
@@ -474,6 +483,49 @@ async fn account_portal_routes_return_explorer_todos_and_vault(pool: sqlx::PgPoo
             .iter()
             .any(|item| item["title"] == "Temple visit" && item["source"] == "itinerary")
     );
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn account_vault_rejects_trip_id_outside_account_membership(pool: sqlx::PgPool) {
+    let owner_session = login_account(&pool, "vault-owner@example.com", false, "").await;
+    let owner_auth = format!("Bearer {}", owner_session["sessionToken"].as_str().unwrap());
+    let outsider_session = login_account(&pool, "vault-outsider@example.com", false, "").await;
+    let outsider_auth = format!(
+        "Bearer {}",
+        outsider_session["sessionToken"].as_str().unwrap()
+    );
+    let (create_status, create_body) =
+        create_account_trip(&pool, &owner_auth, "vault-private", "vault-password-2026").await;
+    assert_eq!(create_status, StatusCode::OK);
+    let trip_id = create_body["trip"]["id"].as_str().unwrap();
+
+    let response = post_json_with_auth(
+        support::app(pool.clone()),
+        "/api/v1/account/vault",
+        Some(&outsider_auth),
+        json!({
+            "tripId": trip_id,
+            "kind": "note",
+            "title": "Should not attach",
+            "detail": "Must not leak trip metadata",
+            "externalUrl": null
+        }),
+    )
+    .await;
+    let (status, body): (StatusCode, Value) = response_json(response).await;
+    assert_eq!(status, StatusCode::FORBIDDEN);
+    assert_eq!(body["code"], "forbidden");
+
+    let leaked_count: i64 = sqlx::query_scalar(
+        "select count(*)
+         from account_vault_items
+         where trip_id = $1",
+    )
+    .bind(Uuid::parse_str(trip_id).unwrap())
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(leaked_count, 0);
 }
 
 #[sqlx::test(migrations = "../../migrations")]

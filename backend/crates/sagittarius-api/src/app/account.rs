@@ -11,14 +11,14 @@ use uuid::Uuid;
 use crate::db::models::{
     AccountProfileRecord, AccountTodoRecord, AccountTripRecord, AccountTripStatsRecord,
     AccountVaultItemRecord, NewAccountAuditEvent, NewAccountPlanVariant, NewAccountTrip,
-    NewAccountTripOwnerMember, NewAccountVaultItem, NewEmailLoginOutbox, NewTrustedDevice,
-    NewUser, NewUserEmail, NewUserSession, PasskeyRecord, TrustedDeviceRecord,
+    NewAccountTripOwnerMember, NewAccountVaultItem, NewEmailLoginOutbox, NewTrustedDevice, NewUser,
+    NewUserEmail, NewUserSession, PasskeyRecord, TrustedDeviceRecord,
 };
 use crate::db::{self, PgPool};
 use crate::domain::errors::ServiceError;
 use crate::domain::types::{
-    AccountMemberClaimResponse, AccountProfile, AccountSession, AccountSessionKind,
-    AccountExplorerSummary, AccountSettings, AccountTodoSummary, AccountTripCreateResponse,
+    AccountExplorerSummary, AccountMemberClaimResponse, AccountProfile, AccountSession,
+    AccountSessionKind, AccountSettings, AccountTodoSummary, AccountTripCreateResponse,
     AccountTripStats, AccountTripSummary, AccountVaultItemSummary, EmailLoginStartResponse,
     MemberSession, OwnerTransferResponse, PasskeyChallengeResponse, PasskeyCredentialDescriptor,
     PasskeyLoginStartResponse, PasskeySummary, TripMemberAccessStatus, TripRole, TripSummary,
@@ -519,7 +519,10 @@ pub async fn list_vault_items(
     let user_id = authenticate_user_session(pool, session_token).await?;
     let items = db::account_queries::list_account_vault_items(pool, user_id).await?;
 
-    Ok(items.into_iter().map(account_vault_item_from_record).collect())
+    Ok(items
+        .into_iter()
+        .map(account_vault_item_from_record)
+        .collect())
 }
 
 pub async fn create_vault_item(
@@ -534,7 +537,18 @@ pub async fn create_vault_item(
     };
     let title = validate_trip_text(&input.title, "vault title")?;
     let detail = input.detail.trim().chars().take(2000).collect::<String>();
-    let external_url = input.external_url.as_deref().map(str::trim).filter(|value| !value.is_empty());
+    let external_url = input
+        .external_url
+        .as_deref()
+        .map(str::trim)
+        .filter(|value| !value.is_empty());
+    if let Some(trip_id) = input.trip_id {
+        let has_membership =
+            db::account_queries::account_has_active_trip_membership(pool, user_id, trip_id).await?;
+        if !has_membership {
+            return Err(ServiceError::Forbidden);
+        }
+    }
     let record = db::account_queries::insert_account_vault_item(
         pool,
         NewAccountVaultItem {

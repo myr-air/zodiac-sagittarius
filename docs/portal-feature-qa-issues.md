@@ -49,6 +49,18 @@ Severity: P3
 
 The Codex in-app browser context did not expose the localStorage state needed to validate the logged-in portal route during this QA pass. Playwright was used as the fallback for browser/session verification. This is a tool limitation, not an app bug, but future browser QA should record the fallback reason.
 
+### Fixed: account vault accepted foreign trip ids
+
+Severity: P1
+
+`POST /api/v1/account/vault` accepted any existing `tripId` because the database only enforced a foreign key to `trips(id)`. An account could create a personal vault item linked to another account's trip and receive that trip name back in the API response.
+
+Fix:
+
+- `create_vault_item` now verifies that a supplied `tripId` belongs to an active membership for the authenticated account and that the trip is not deleted.
+- `account_vault_rejects_trip_id_outside_account_membership` covers the denied case and asserts no row is inserted.
+- The portal vault happy-path test now creates a vault item linked to the account's own trip and verifies `tripId` plus `tripName`.
+
 ## Hardcode And Placeholder Scan
 
 Command:

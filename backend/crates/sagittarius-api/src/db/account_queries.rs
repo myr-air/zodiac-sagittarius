@@ -3,12 +3,12 @@ use uuid::Uuid;
 
 use crate::db::PgPool;
 use crate::db::models::{
-    AccountProfileRecord, AccountTripRecord, AccountTripStatsRecord, ActiveUserSessionRecord,
-    AccountTodoRecord, AccountVaultItemRecord, EmailLoginChallengeRecord, NewAccountAuditEvent,
-    NewAccountPlanVariant, NewAccountTrip, NewAccountTripOwnerMember, NewAccountVaultItem,
-    NewEmailLoginOutbox, NewTrustedDevice, NewUser, NewUserEmail, NewUserSession,
-    PasskeyCredentialRecord, PasskeyRecord, PasswordLoginUserRecord, TripAuthRecord,
-    TrustedDeviceRecord, UserEmailRecord,
+    AccountProfileRecord, AccountTodoRecord, AccountTripRecord, AccountTripStatsRecord,
+    AccountVaultItemRecord, ActiveUserSessionRecord, EmailLoginChallengeRecord,
+    NewAccountAuditEvent, NewAccountPlanVariant, NewAccountTrip, NewAccountTripOwnerMember,
+    NewAccountVaultItem, NewEmailLoginOutbox, NewTrustedDevice, NewUser, NewUserEmail,
+    NewUserSession, PasskeyCredentialRecord, PasskeyRecord, PasswordLoginUserRecord,
+    TripAuthRecord, TrustedDeviceRecord, UserEmailRecord,
 };
 use crate::domain::types::{TripMemberAccessStatus, TripRole};
 
@@ -627,6 +627,28 @@ pub async fn list_account_vault_items(
     )
     .bind(user_id)
     .fetch_all(pool)
+    .await
+}
+
+pub async fn account_has_active_trip_membership(
+    pool: &PgPool,
+    user_id: Uuid,
+    trip_id: Uuid,
+) -> Result<bool, sqlx::Error> {
+    sqlx::query_scalar(
+        "select exists (
+           select 1
+           from trip_members
+           join trips on trips.id = trip_members.trip_id
+           where trip_members.user_id = $1
+             and trip_members.trip_id = $2
+             and trip_members.access_status = 'active'
+             and trips.deleted_at is null
+         )",
+    )
+    .bind(user_id)
+    .bind(trip_id)
+    .fetch_one(pool)
     .await
 }
 
