@@ -52,11 +52,6 @@ export function OverviewPage({ trip, currentMemberId, expenseSummary, items, sug
   const foodStops = sortedItems.filter((item) => item.activityType === "food").slice(0, 3);
   const tripHighlights = sortedItems.filter((item) => ["attraction", "experience", "shopping"].includes(item.activityType)).slice(0, 4);
   const viewerHighlights = sortedItems.filter((item) => item.activityType !== "travel").slice(0, 5);
-  const roleSpecificHighlightIds = new Set(
-    isTravelerLens ? [...foodStops, ...tripHighlights].slice(0, 5).map((item) => item.id) : isViewerLens ? viewerHighlights.map((item) => item.id) : [],
-  );
-  const boardHighlightItems = isManagerLens ? highlightItems : highlightItems.filter((item) => !roleSpecificHighlightIds.has(item.id));
-  const boardEmptyMessage = isManagerLens ? t.overview.empty.highlights : photoBoardEmptyMessage(t.overview.empty.highlights);
   const visibleTasks = useMemo(
     () =>
       tasks.filter((task) => {
@@ -134,6 +129,7 @@ export function OverviewPage({ trip, currentMemberId, expenseSummary, items, sug
         <CockpitCard
           icon="wallet"
           label="Budget"
+          ariaLabel={t.overview.money.openExpenses}
           value={groupSpendLabel}
           detail={t.overview.money.settlementSuggestions({ count: settlementCount })}
           onClick={openExpenses}
@@ -147,10 +143,11 @@ export function OverviewPage({ trip, currentMemberId, expenseSummary, items, sug
       </section>
 
       <HighlightBoard
-        items={boardHighlightItems}
+        items={highlightItems}
         startDate={trip.startDate}
         locale={locale}
-        emptyMessage={boardEmptyMessage}
+        emptyMessage={isManagerLens ? t.overview.empty.highlights : photoBoardEmptyMessage(t.overview.empty.highlights)}
+        compactText={!isManagerLens}
       />
 
       <div className="overview-grid">
@@ -220,10 +217,10 @@ export function OverviewPage({ trip, currentMemberId, expenseSummary, items, sug
               )}
             </section>
 
-            <button className="overview-panel overview-panel--button" type="button" aria-label={t.overview.money.openExpenses} onClick={openExpenses}>
+            <button className="overview-panel overview-panel--button" type="button" aria-label={t.overview.money.openExpenses} aria-labelledby="overview-traveler-budget-title" onClick={openExpenses}>
               <div className="overview-panel-title">
                 <Icon name="wallet" />
-                <h2>{t.overview.expenses}</h2>
+                <h2 id="overview-traveler-budget-title">{t.overview.expenses}</h2>
               </div>
               <strong>{expenseSummary.currentUserNetLabel}</strong>
               <span>{t.overview.money.settlementSuggestions({ count: expenseSummary.settlementSuggestions.length })}</span>
@@ -258,10 +255,10 @@ export function OverviewPage({ trip, currentMemberId, expenseSummary, items, sug
               {viewerNextStopPanel(nextStop, trip.startDate, locale, t.overview.empty.itinerary, t.overview.focusDetails.viewerFallback)}
             </section>
 
-            <button className="overview-panel overview-panel--button" type="button" aria-label={t.overview.money.openExpenses} onClick={openExpenses}>
+            <button className="overview-panel overview-panel--button" type="button" aria-label={t.overview.money.openExpenses} aria-labelledby="overview-viewer-budget-title" onClick={openExpenses}>
               <div className="overview-panel-title">
                 <Icon name="wallet" />
-                <h2>{t.overview.headings.overallBudget}</h2>
+                <h2 id="overview-viewer-budget-title">{t.overview.headings.overallBudget}</h2>
               </div>
               <strong>HK${expenseSummary.groupSpend.toLocaleString("en-HK")}</strong>
               <span>{t.overview.money.overallSummary}</span>
@@ -318,10 +315,10 @@ export function OverviewPage({ trip, currentMemberId, expenseSummary, items, sug
           <span>{t.overview.readiness.alertSummary({ warnings: warningCount, suggestions: pendingSuggestions })}</span>
             </section>
 
-            <button className="overview-panel overview-panel--button" type="button" aria-label={t.overview.money.openExpenses} onClick={openExpenses}>
+            <button className="overview-panel overview-panel--button" type="button" aria-label={t.overview.money.openExpenses} aria-labelledby="overview-manager-budget-title" onClick={openExpenses}>
           <div className="overview-panel-title">
             <Icon name="wallet" />
-            <h2>{t.overview.headings.budget}</h2>
+            <h2 id="overview-manager-budget-title">{t.overview.headings.budget}</h2>
           </div>
           <strong>{expenseSummary.currentUserNetLabel}</strong>
           <span>{t.overview.money.settlementSuggestions({ count: expenseSummary.settlementSuggestions.length })}</span>
@@ -601,12 +598,14 @@ function OverviewHero({
 function CockpitCard({
   icon,
   label,
+  ariaLabel,
   value,
   detail,
   onClick,
 }: {
   icon: "calendar" | "location" | "users" | "wallet" | "route" | "check";
   label: string;
+  ariaLabel?: string;
   value: string;
   detail: string;
   onClick?: () => void;
@@ -624,7 +623,7 @@ function CockpitCard({
 
   if (onClick) {
     return (
-      <button className="overview-cockpit-card overview-cockpit-card--button" type="button" onClick={onClick}>
+      <button className="overview-cockpit-card overview-cockpit-card--button" type="button" aria-label={ariaLabel} onClick={onClick}>
         {content}
       </button>
     );
@@ -633,7 +632,7 @@ function CockpitCard({
   return <div className="overview-cockpit-card">{content}</div>;
 }
 
-function HighlightBoard({ items, startDate, locale, emptyMessage }: { items: ItineraryItem[]; startDate: string; locale: Locale; emptyMessage: string }) {
+function HighlightBoard({ items, startDate, locale, emptyMessage, compactText = false }: { items: ItineraryItem[]; startDate: string; locale: Locale; emptyMessage: string; compactText?: boolean }) {
   return (
     <section className="overview-highlight-board" aria-label="trip highlight board">
       {items.length ? (
@@ -641,7 +640,7 @@ function HighlightBoard({ items, startDate, locale, emptyMessage }: { items: Iti
           {items.map((item, index) => (
             <li className={`overview-highlight-item overview-highlight-item--${highlightTone(item, index)}`} key={item.id}>
               <span>{formatDayLabel(item.day, startDate, locale)} · {item.startTime}</span>
-              <strong>{item.activity}</strong>
+              <strong>{compactText ? item.place : item.activity}</strong>
               <small>{item.place}</small>
             </li>
           ))}
