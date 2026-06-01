@@ -219,6 +219,15 @@ export const messages = {
         tripChecklist: "Trip checklist and prep",
         addChecklist: "Add checklist item",
       },
+      cockpit: {
+        nextStop: "Next stop",
+        budget: "Budget",
+        crewReadiness: "Crew & readiness",
+      },
+      highlightBoard: {
+        title: "Trip highlights",
+        subtitle: "Food and places from this itinerary",
+      },
       filters: {
         scopeLabel: "Checklist scope filters",
         statusLabel: "Checklist status filters",
@@ -937,6 +946,15 @@ export const messages = {
         budget: "งบประมาณ",
         tripChecklist: "เช็กลิสต์ทริปและการเตรียมตัว",
         addChecklist: "เพิ่มเช็กลิสต์",
+      },
+      cockpit: {
+        nextStop: "จุดถัดไป",
+        budget: "งบประมาณ",
+        crewReadiness: "ทีมและความพร้อม",
+      },
+      highlightBoard: {
+        title: "ไฮไลต์ทริป",
+        subtitle: "ของกินและสถานที่จากแผนนี้",
       },
       filters: {
         scopeLabel: "Checklist scope filters",

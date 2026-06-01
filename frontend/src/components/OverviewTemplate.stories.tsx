@@ -42,7 +42,7 @@ export const OwnerThai: Story = {
   play: async ({ canvas }) => {
     await expect(canvas.getByRole("region", { name: /Hong Kong \+ Shenzhen Trip/i })).toBeVisible();
     await expect(canvas.getByRole("region", { name: /travel cockpit/i })).toBeVisible();
-    await expect(canvas.getByRole("region", { name: /trip highlight board/i })).toBeVisible();
+    await expect(canvas.getByRole("region", { name: /ไฮไลต์ทริป/i })).toBeVisible();
     await expect(canvas.getByRole("region", { name: /เช็กลิสต์ของทริป/i })).toBeVisible();
   },
 };

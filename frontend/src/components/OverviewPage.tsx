@@ -116,13 +116,13 @@ export function OverviewPage({ trip, currentMemberId, expenseSummary, items, sug
       <section className="overview-travel-cockpit" aria-label="travel cockpit">
         <CockpitCard
           icon="route"
-          label="Next stop"
+          label={t.overview.cockpit.nextStop}
           value={nextStop?.place ?? trip.destinationLabel}
           detail={nextStop ? `${formatDayLabel(nextStop.day, trip.startDate, locale)} · ${nextStop.startTime}` : t.dates.stopCount({ count: items.length })}
         />
         <CockpitCard
           icon="wallet"
-          label="Budget"
+          label={t.overview.cockpit.budget}
           ariaLabel={t.overview.money.openExpenses}
           value={groupSpendLabel}
           detail={t.overview.money.settlementSuggestions({ count: settlementCount })}
@@ -130,9 +130,14 @@ export function OverviewPage({ trip, currentMemberId, expenseSummary, items, sug
         />
         <CockpitCard
           icon="users"
-          label="Crew & readiness"
+          label={t.overview.cockpit.crewReadiness}
           value={t.dates.memberCount({ count: activeMembers })}
-          detail={`${t.dates.dayCount({ count: tripDays.length })} · ${t.overview.readiness.alertSummary({ warnings: warningCount, suggestions: pendingSuggestions })}`}
+          detail={(
+            <span className="overview-readiness-chips">
+              <span>{t.dates.dayCount({ count: tripDays.length })}</span>
+              <span>{t.overview.readiness.alertSummary({ warnings: warningCount, suggestions: pendingSuggestions })}</span>
+            </span>
+          )}
         />
       </section>
 
@@ -141,6 +146,8 @@ export function OverviewPage({ trip, currentMemberId, expenseSummary, items, sug
         startDate={trip.startDate}
         locale={locale}
         emptyMessage={isManagerLens ? t.overview.empty.highlights : photoBoardEmptyMessage(t.overview.empty.highlights)}
+        title={t.overview.highlightBoard.title}
+        subtitle={t.overview.highlightBoard.subtitle}
       />
 
       <div className="overview-grid">
@@ -583,7 +590,7 @@ function CockpitCard({
   label: string;
   ariaLabel?: string;
   value: string;
-  detail: string;
+  detail: ReactNode;
   onClick?: () => void;
 }) {
   const content = (
@@ -608,9 +615,16 @@ function CockpitCard({
   return <div className="overview-cockpit-card">{content}</div>;
 }
 
-function HighlightBoard({ items, startDate, locale, emptyMessage }: { items: ItineraryItem[]; startDate: string; locale: Locale; emptyMessage: string }) {
+function HighlightBoard({ items, startDate, locale, emptyMessage, title, subtitle }: { items: ItineraryItem[]; startDate: string; locale: Locale; emptyMessage: string; title: string; subtitle: string }) {
   return (
-    <section className="overview-highlight-board" aria-label="trip highlight board">
+    <section className="overview-highlight-board" aria-label={title}>
+      <div className="overview-board-title">
+        <Icon name="location" />
+        <div>
+          <h2>{title}</h2>
+          <p>{subtitle}</p>
+        </div>
+      </div>
       {items.length ? (
         <ul className="overview-highlight-list">
           {items.map((item, index) => (

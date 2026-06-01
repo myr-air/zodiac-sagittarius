@@ -46,11 +46,13 @@ describe("OverviewPage role lenses", () => {
     expect(within(hero).getByText(/ศูนย์จัดการทริป/i)).toBeInTheDocument();
 
     const cockpit = screen.getByRole("region", { name: /travel cockpit/i });
-    expect(within(cockpit).getByText(/Next stop/i)).toBeInTheDocument();
-    expect(within(cockpit).getByText(/Budget/i)).toBeInTheDocument();
-    expect(within(cockpit).getByText(/Crew & readiness/i)).toBeInTheDocument();
+    expect(within(cockpit).getByText(/จุดถัดไป/i)).toBeInTheDocument();
+    expect(within(cockpit).getByText(/งบประมาณ/i)).toBeInTheDocument();
+    expect(within(cockpit).getByText(/ทีมและความพร้อม/i)).toBeInTheDocument();
 
-    const board = screen.getByRole("region", { name: /trip highlight board/i });
+    const board = screen.getByRole("region", { name: /ไฮไลต์ทริป/i });
+    expect(within(board).getByRole("heading", { name: /ไฮไลต์ทริป/i })).toBeInTheDocument();
+    expect(within(board).getByText(/ของกินและสถานที่จากแผนนี้/i)).toBeInTheDocument();
     expect(within(board).getByText(/Dim Dim Sum ที่ Tim Ho Wan/i)).toBeInTheDocument();
     expect(within(board).getByText(/อาหารเย็นที่ Temple Street Night Market/i)).toBeInTheDocument();
     expect(within(board).getAllByRole("listitem")).toHaveLength(4);
@@ -73,7 +75,7 @@ describe("OverviewPage role lenses", () => {
 
     expect(screen.getByRole("region", { name: /Hong Kong \+ Shenzhen Trip/i })).toBeInTheDocument();
     expect(screen.getByText(/ยังไม่มี itinerary ในแผนนี้/i)).toBeInTheDocument();
-    expect(screen.getByRole("region", { name: /trip highlight board/i })).toHaveTextContent(/ยังไม่มีไฮไลต์ในแผนนี้/i);
+    expect(screen.getByRole("region", { name: /ไฮไลต์ทริป/i })).toHaveTextContent(/ยังไม่มีไฮไลต์ในแผนนี้/i);
   });
 
   it("combines booking prep into the trip checklist for managers", () => {
@@ -95,7 +97,7 @@ describe("OverviewPage role lenses", () => {
     expect(screen.getByRole("region", { name: /วันนี้และจุดถัดไป/i })).toBeInTheDocument();
     expect(within(screen.getByRole("region", { name: /Hong Kong \+ Shenzhen Trip/i })).getByText(/มุมมองการเดินทางของฉัน/i)).toBeInTheDocument();
     expect(screen.getByRole("region", { name: /ไฮไลต์ของนักเดินทาง/i })).toBeInTheDocument();
-    expect(within(screen.getByRole("region", { name: /trip highlight board/i })).getByText(/Dim Dim Sum ที่ Tim Ho Wan/i)).toBeInTheDocument();
+    expect(within(screen.getByRole("region", { name: /ไฮไลต์ทริป/i })).getByText(/Dim Dim Sum ที่ Tim Ho Wan/i)).toBeInTheDocument();
     expect(screen.getAllByText(/อาหารเย็นที่ Temple Street Night Market/i).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/Dim Dim Sum ที่ Tim Ho Wan/i).length).toBeGreaterThan(0);
     expect(screen.queryByRole("region", { name: /ความพร้อมของทริป/i })).not.toBeInTheDocument();

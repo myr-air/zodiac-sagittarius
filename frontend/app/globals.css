@@ -5610,6 +5610,25 @@ button:disabled,
   font-weight: 750;
 }
 
+.overview-readiness-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-width: 0;
+}
+
+.overview-readiness-chips span {
+  min-width: 0;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 14%, var(--color-border));
+  border-radius: var(--radius-sm);
+  padding: 4px 7px;
+  color: var(--color-text-muted);
+  background: rgb(255 255 255 / 0.68);
+  font-size: 11px;
+  line-height: 15px;
+  font-weight: 800;
+}
+
 .overview-highlight-board {
   margin: 0 0 16px;
   border: 1px solid var(--color-border);
@@ -5624,11 +5643,36 @@ button:disabled,
 }
 
 .overview-board-title {
+  display: flex;
+  align-items: center;
+  gap: 9px;
   margin: 0 0 10px;
   color: var(--color-text);
+}
+
+.overview-board-title .icon {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  color: var(--color-primary);
+}
+
+.overview-board-title h2,
+.overview-board-title p {
+  margin: 0;
+}
+
+.overview-board-title h2 {
   font-size: 15px;
   line-height: 22px;
   font-weight: 900;
+}
+
+.overview-board-title p {
+  color: var(--color-text-muted);
+  font-size: 12px;
+  line-height: 17px;
+  font-weight: 750;
 }
 
 .overview-highlight-grid,
@@ -8799,6 +8843,18 @@ span.member-state-pill {
   .overview-highlight-grid,
   .overview-highlight-list {
     grid-template-columns: 1fr;
+  }
+
+  .overview-travel-cockpit {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .overview-travel-cockpit .overview-cockpit-card:nth-child(3) {
+    grid-column: 1 / -1;
+  }
+
+  .overview-highlight-board {
+    display: none;
   }
 
   .overview-cockpit-card {
