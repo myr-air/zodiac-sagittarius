@@ -52,6 +52,11 @@ export function OverviewPage({ trip, currentMemberId, expenseSummary, items, sug
   const foodStops = sortedItems.filter((item) => item.activityType === "food").slice(0, 3);
   const tripHighlights = sortedItems.filter((item) => ["attraction", "experience", "shopping"].includes(item.activityType)).slice(0, 4);
   const viewerHighlights = sortedItems.filter((item) => item.activityType !== "travel").slice(0, 5);
+  const roleSpecificHighlightIds = new Set(
+    isTravelerLens ? [...foodStops, ...tripHighlights].slice(0, 5).map((item) => item.id) : isViewerLens ? viewerHighlights.map((item) => item.id) : [],
+  );
+  const boardHighlightItems = isManagerLens ? highlightItems : highlightItems.filter((item) => !roleSpecificHighlightIds.has(item.id));
+  const boardEmptyMessage = isManagerLens ? t.overview.empty.highlights : photoBoardEmptyMessage(t.overview.empty.highlights);
   const visibleTasks = useMemo(
     () =>
       tasks.filter((task) => {
@@ -142,10 +147,10 @@ export function OverviewPage({ trip, currentMemberId, expenseSummary, items, sug
       </section>
 
       <HighlightBoard
-        items={highlightItems}
+        items={boardHighlightItems}
         startDate={trip.startDate}
         locale={locale}
-        emptyMessage={t.overview.empty.highlights}
+        emptyMessage={boardEmptyMessage}
       />
 
       <div className="overview-grid">
@@ -173,7 +178,7 @@ export function OverviewPage({ trip, currentMemberId, expenseSummary, items, sug
                 <Icon name="location" />
                 <h2>{t.overview.headings.highlights}</h2>
               </div>
-              <OverviewStopList items={[...foodStops, ...tripHighlights].slice(0, 5)} startDate={trip.startDate} locale={locale} emptyMessage={quietHighlightsMessage(t.overview.empty.highlights)} quietItemIds={highlightItems.map((item) => item.id)} />
+              <OverviewStopList items={[...foodStops, ...tripHighlights].slice(0, 5)} startDate={trip.startDate} locale={locale} emptyMessage={t.overview.empty.highlights} />
             </section>
 
             <section className="overview-panel overview-task-panel" aria-label={t.overview.sections.travelChecklist}>
@@ -242,7 +247,7 @@ export function OverviewPage({ trip, currentMemberId, expenseSummary, items, sug
                 <Icon name="location" />
                 <h2>{t.overview.headings.viewerSnapshot}</h2>
               </div>
-              <OverviewStopList items={viewerHighlights} startDate={trip.startDate} locale={locale} emptyMessage={quietHighlightsMessage(t.overview.empty.highlights)} quietItemIds={highlightItems.map((item) => item.id)} />
+              <OverviewStopList items={viewerHighlights} startDate={trip.startDate} locale={locale} emptyMessage={t.overview.empty.highlights} />
             </section>
 
             <section className="overview-panel" aria-label={t.overview.sections.nextStop}>
@@ -434,21 +439,18 @@ function overviewRoleLens(member?: Member): OverviewRoleLens {
   return "viewer";
 }
 
-function OverviewStopList({ items, startDate, locale, emptyMessage, quietItemIds = [] }: { items: ItineraryItem[]; startDate: string; locale: Locale; emptyMessage: string; quietItemIds?: string[] }) {
+function OverviewStopList({ items, startDate, locale, emptyMessage }: { items: ItineraryItem[]; startDate: string; locale: Locale; emptyMessage: string }) {
   if (!items.length) return <p className="overview-muted">{emptyMessage}</p>;
 
   return (
     <ul className="overview-stop-list">
-      {items.map((item) => {
-        const quietItem = quietItemIds.includes(item.id);
-        return (
+      {items.map((item) => (
         <li key={item.id}>
           <span>{formatDayLabel(item.day, startDate, locale)} · {item.startTime}</span>
-          <strong>{quietItem ? item.place : item.activity}</strong>
-          <small>{quietItem ? item.activityType : item.place}</small>
+          <strong>{item.activity}</strong>
+          <small>{item.place}</small>
         </li>
-        );
-      })}
+      ))}
     </ul>
   );
 }
@@ -537,9 +539,9 @@ function buildHighlightItems(items: ItineraryItem[]): ItineraryItem[] {
   return items.filter((item) => item.activityType !== "travel").slice(0, 6);
 }
 
-function quietHighlightsMessage(message: string): string {
-  if (message === "ยังไม่มีไฮไลต์ในแผนนี้") return "ยังไม่มีไฮไลต์สำหรับมุมมองนี้";
-  if (message === "No highlights in this plan yet.") return "No highlights for this view yet.";
+function photoBoardEmptyMessage(message: string): string {
+  if (message === "ยังไม่มีไฮไลต์ในแผนนี้") return "ยังไม่มีภาพไฮไลต์ในแผนนี้";
+  if (message === "No highlights in this plan yet.") return "No photo highlights in this plan yet.";
   return message;
 }
 
