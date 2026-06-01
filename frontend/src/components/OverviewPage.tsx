@@ -147,7 +147,6 @@ export function OverviewPage({ trip, currentMemberId, expenseSummary, items, sug
         startDate={trip.startDate}
         locale={locale}
         emptyMessage={isManagerLens ? t.overview.empty.highlights : photoBoardEmptyMessage(t.overview.empty.highlights)}
-        compactText={!isManagerLens}
       />
 
       <div className="overview-grid">
@@ -573,8 +572,8 @@ function OverviewHero({
     <section className={`overview-hero overview-hero--${visual.tone}`} aria-label={title}>
       <div className="overview-hero-copy">
         <span className="overview-hero-kicker">{destinationLabel}</span>
-        <h1>{roleTitle}</h1>
-        <p>{title}</p>
+        <h1>{title}</h1>
+        <p className="overview-hero-role">{roleTitle}</p>
         <div className="overview-hero-meta" aria-label="trip facts">
           <span><Icon name="calendar" /> {dateRange}</span>
           <span><Icon name="location" /> {visual.label}</span>
@@ -632,7 +631,7 @@ function CockpitCard({
   return <div className="overview-cockpit-card">{content}</div>;
 }
 
-function HighlightBoard({ items, startDate, locale, emptyMessage, compactText = false }: { items: ItineraryItem[]; startDate: string; locale: Locale; emptyMessage: string; compactText?: boolean }) {
+function HighlightBoard({ items, startDate, locale, emptyMessage }: { items: ItineraryItem[]; startDate: string; locale: Locale; emptyMessage: string }) {
   return (
     <section className="overview-highlight-board" aria-label="trip highlight board">
       {items.length ? (
@@ -640,7 +639,7 @@ function HighlightBoard({ items, startDate, locale, emptyMessage, compactText = 
           {items.map((item, index) => (
             <li className={`overview-highlight-item overview-highlight-item--${highlightTone(item, index)}`} key={item.id}>
               <span>{formatDayLabel(item.day, startDate, locale)} · {item.startTime}</span>
-              <strong>{compactText ? item.place : item.activity}</strong>
+              <strong>{item.activity}</strong>
               <small>{item.place}</small>
             </li>
           ))}

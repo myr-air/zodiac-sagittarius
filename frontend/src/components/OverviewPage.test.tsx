@@ -92,10 +92,11 @@ describe("OverviewPage role lenses", () => {
     renderOverview("member-nam");
 
     expect(screen.getByRole("region", { name: /วันนี้และจุดถัดไป/i })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: /มุมมองการเดินทางของฉัน/i })).toBeInTheDocument();
+    expect(within(screen.getByRole("region", { name: /Hong Kong \+ Shenzhen Trip/i })).getByText(/มุมมองการเดินทางของฉัน/i)).toBeInTheDocument();
     expect(screen.getByRole("region", { name: /ไฮไลต์ของนักเดินทาง/i })).toBeInTheDocument();
-    expect(screen.getByText(/อาหารเย็นที่ Temple Street Night Market/i)).toBeInTheDocument();
-    expect(screen.getByText(/Dim Dim Sum ที่ Tim Ho Wan/i)).toBeInTheDocument();
+    expect(within(screen.getByRole("region", { name: /trip highlight board/i })).getByText(/Dim Dim Sum ที่ Tim Ho Wan/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/อาหารเย็นที่ Temple Street Night Market/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Dim Dim Sum ที่ Tim Ho Wan/i).length).toBeGreaterThan(0);
     expect(screen.queryByRole("region", { name: /ความพร้อมของทริป/i })).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/ให้ใครดูแล/i)).not.toBeInTheDocument();
   });
@@ -144,7 +145,7 @@ describe("OverviewPage role lenses", () => {
     const user = userEvent.setup();
     renderOverview("member-beam");
 
-    expect(screen.getByRole("heading", { name: /ศูนย์จัดการทริป/i })).toBeInTheDocument();
+    expect(within(screen.getByRole("region", { name: /Hong Kong \+ Shenzhen Trip/i })).getByText(/ศูนย์จัดการทริป/i)).toBeInTheDocument();
     expect(screen.getByRole("region", { name: /ความพร้อมของทริป/i })).toBeInTheDocument();
     const checklist = screen.getByRole("region", { name: /เช็กลิสต์ของทริป/i });
     expect(checklist).toBeInTheDocument();
@@ -157,7 +158,7 @@ describe("OverviewPage role lenses", () => {
   it("shows a read-only trip snapshot for viewers", () => {
     renderOverview("member-family");
 
-    expect(screen.getByRole("heading", { name: /ภาพรวมทริป/i })).toBeInTheDocument();
+    expect(within(screen.getByRole("region", { name: /Hong Kong \+ Shenzhen Trip/i })).getByText(/ภาพรวมทริป/i)).toBeInTheDocument();
     expect(screen.getByRole("region", { name: /ภาพรวมทริปแบบอ่านอย่างเดียว/i })).toBeInTheDocument();
     expect(screen.queryByRole("region", { name: /เช็กลิสต์ของทริป/i })).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/เพิ่มเช็กลิสต์/i)).not.toBeInTheDocument();
