@@ -40,7 +40,7 @@ describe("OverviewPage role lenses", () => {
   it("renders the photo-first cockpit hero and visual highlight board from trip data", () => {
     renderOverview("member-beam");
 
-    const hero = screen.getByRole("banner", { name: /Hong Kong \+ Shenzhen Trip/i });
+    const hero = screen.getByRole("region", { name: /Hong Kong \+ Shenzhen Trip/i });
     expect(hero).toHaveTextContent(/Hong Kong/i);
     expect(hero).toHaveTextContent(/HK\$/i);
     expect(within(hero).getByText(/ศูนย์จัดการทริป/i)).toBeInTheDocument();
@@ -70,7 +70,7 @@ describe("OverviewPage role lenses", () => {
       />,
     );
 
-    expect(screen.getByRole("banner", { name: /Hong Kong \+ Shenzhen Trip/i })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: /Hong Kong \+ Shenzhen Trip/i })).toBeInTheDocument();
     expect(screen.getByText(/ยังไม่มี itinerary ในแผนนี้/i)).toBeInTheDocument();
     expect(screen.getByRole("region", { name: /trip highlight board/i })).toHaveTextContent(/ยังไม่มีไฮไลต์ในแผนนี้/i);
   });

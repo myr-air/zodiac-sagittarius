@@ -570,7 +570,7 @@ function OverviewHero({
   currentMemberCard: ReactNode;
 }) {
   return (
-    <header className={`overview-hero overview-hero--${visual.tone}`} role="banner" aria-label={title}>
+    <section className={`overview-hero overview-hero--${visual.tone}`} aria-label={title}>
       <div className="overview-hero-copy">
         <span className="overview-hero-kicker">{destinationLabel}</span>
         <h1>{roleTitle}</h1>
@@ -591,7 +591,7 @@ function OverviewHero({
         {currentMemberCard}
         <span className="overview-hero-settlements">{settlementCount} settlements</span>
       </div>
-    </header>
+    </section>
   );
 }
 
