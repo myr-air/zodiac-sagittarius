@@ -54,6 +54,7 @@ const WEBAUTHN_FLAG_ATTESTED_CREDENTIAL_DATA: u8 = 0x40;
 pub struct AccountTripCreateInput {
     pub name: String,
     pub destination_label: String,
+    pub countries: Vec<String>,
     pub start_date: time::Date,
     pub end_date: time::Date,
     pub owner_display_name: String,
@@ -380,7 +381,16 @@ pub async fn create_trip(
 ) -> Result<AccountTripCreateResponse, ServiceError> {
     let user_id = authenticate_user_session(pool, session_token).await?;
     let name = validate_trip_text(&input.name, "trip name")?;
-    let destination_label = validate_trip_text(&input.destination_label, "destination label")?;
+    let countries = validate_trip_countries(&input.countries)?;
+    let countries_label = countries.join(", ");
+    let destination_label = validate_trip_text(
+        if input.destination_label.trim().is_empty() {
+            &countries_label
+        } else {
+            &input.destination_label
+        },
+        "destination label",
+    )?;
     let owner_display_name = validate_trip_text(&input.owner_display_name, "owner display name")?;
     let join_id = validate_join_id(&input.join_id)?;
     let join_password = validate_join_password(&input.join_password)?;
@@ -405,6 +415,7 @@ pub async fn create_trip(
             id: trip_id,
             name: &name,
             destination_label: &destination_label,
+            countries: &countries,
             start_date: input.start_date,
             end_date: input.end_date,
             join_id: &join_id,
@@ -1092,6 +1103,20 @@ fn validate_trip_text(value: &str, field: &'static str) -> Result<String, Servic
     Ok(trimmed.to_string())
 }
 
+fn validate_trip_countries(countries: &[String]) -> Result<Vec<String>, ServiceError> {
+    let mut normalized = Vec::new();
+    for country in countries {
+        let trimmed = validate_trip_text(country, "country")?;
+        if !normalized.iter().any(|existing: &String| existing.eq_ignore_ascii_case(&trimmed)) {
+            normalized.push(trimmed);
+        }
+    }
+    if normalized.is_empty() || normalized.len() > 12 {
+        return Err(ServiceError::InvalidRequest("countries"));
+    }
+    Ok(normalized)
+}
+
 fn validate_join_id(join_id: &str) -> Result<String, ServiceError> {
     let normalized = join_id.trim().to_ascii_uppercase();
     if normalized.is_empty() || normalized.chars().count() > MAX_JOIN_ID_LENGTH {
@@ -1550,6 +1575,7 @@ fn account_trip_from_record(record: AccountTripRecord) -> AccountTripSummary {
         id: record.id,
         name: record.name,
         destination_label: record.destination_label,
+        countries: record.countries,
         start_date: record.start_date,
         end_date: record.end_date,
         role: record.role,

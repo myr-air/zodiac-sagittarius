@@ -179,6 +179,7 @@ describe("Account API client", () => {
         id: "trip-id",
         name: "Seoul Spring",
         destinationLabel: "Seoul",
+        countries: ["South Korea"],
         startDate: "2026-06-01",
         endDate: "2026-06-05",
         joinId: "SEOUL-2026",
@@ -198,6 +199,7 @@ describe("Account API client", () => {
     const request = {
       name: "Seoul Spring",
       destinationLabel: "Seoul",
+      countries: ["South Korea"],
       startDate: "2026-06-01",
       endDate: "2026-06-05",
       ownerDisplayName: "Aom",
@@ -387,6 +389,7 @@ const accountTrip = {
   id: "trip-id",
   name: "Seoul Spring",
   destinationLabel: "Seoul",
+  countries: ["South Korea"],
   startDate: "2026-06-01",
   endDate: "2026-06-05",
   role: "owner" as const,

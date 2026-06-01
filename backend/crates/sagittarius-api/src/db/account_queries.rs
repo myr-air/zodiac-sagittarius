@@ -487,6 +487,7 @@ pub async fn list_account_trips(
            trips.id,
            trips.name,
            trips.destination_label,
+           trips.countries,
            trips.start_date,
            trips.end_date,
            trip_members.role,
@@ -888,6 +889,7 @@ pub async fn insert_account_trip(
            id,
            name,
            destination_label,
+           countries,
            start_date,
            end_date,
            join_id,
@@ -895,11 +897,12 @@ pub async fn insert_account_trip(
            active_plan_variant_id,
            owner_member_id
          )
-         values ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+         values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
          returning
            id,
            name,
            destination_label,
+           countries,
            start_date,
            end_date,
            join_id,
@@ -911,6 +914,7 @@ pub async fn insert_account_trip(
     .bind(trip.id)
     .bind(trip.name)
     .bind(trip.destination_label)
+    .bind(trip.countries)
     .bind(trip.start_date)
     .bind(trip.end_date)
     .bind(trip.join_id)

@@ -11,8 +11,8 @@ use crate::app;
 use crate::app::AppState;
 use crate::domain::errors::ServiceError;
 use crate::domain::types::{
-    AccountMemberClaimResponse, AccountSession, AccountSettings, AccountTripCreateResponse,
-    AccountTripStats, AccountTripSummary, AccountExplorerSummary, AccountTodoSummary,
+    AccountExplorerSummary, AccountMemberClaimResponse, AccountSession, AccountSettings,
+    AccountTodoSummary, AccountTripCreateResponse, AccountTripStats, AccountTripSummary,
     AccountVaultItemSummary, EmailLoginStartResponse, MemberSession, OwnerTransferResponse,
     PasskeyChallengeResponse, PasskeyLoginStartResponse, PasskeySummary,
 };
@@ -47,6 +47,7 @@ pub struct PasswordLoginRequest {
 pub struct AccountTripCreateRequest {
     pub name: String,
     pub destination_label: String,
+    pub countries: Vec<String>,
     pub start_date: Date,
     pub end_date: Date,
     pub owner_display_name: String,
@@ -226,6 +227,7 @@ pub async fn create_trip(
         app::account::AccountTripCreateInput {
             name: request.name,
             destination_label: request.destination_label,
+            countries: request.countries,
             start_date: request.start_date,
             end_date: request.end_date,
             owner_display_name: request.owner_display_name,

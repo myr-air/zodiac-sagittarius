@@ -1,7 +1,12 @@
 "use client";
 
-import { ComponentProps, CSSProperties, Dispatch, FormEvent, ReactNode, SetStateAction, useEffect, useState } from "react";
+import { ComponentProps, CSSProperties, Dispatch, FormEvent, KeyboardEvent, ReactNode, SetStateAction, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { geoCentroid, geoEqualEarth, geoPath } from "d3-geo";
+import { feature } from "topojson-client";
+import countriesTopology from "world-atlas/countries-110m.json";
+import type { Feature, FeatureCollection, Geometry } from "geojson";
+import type { Topology } from "topojson-specification";
 import type {
   AccountApiClient,
   AccountSession,
@@ -45,7 +50,22 @@ interface AccountAccessPanelProps {
 
 type AccessMode = "account" | "temp";
 type PortalSection = "dashboard" | "trips" | "new-trip" | "explorer" | "todos" | "vault" | "settings" | "sign-out";
-type TripWizardStep = "basics" | "access" | "review";
+type TripContinent = "all" | "asia" | "europe" | "north-america" | "south-america" | "oceania" | "africa";
+
+interface TripCountryOption {
+  code: string;
+  name: string;
+  continent: Exclude<TripContinent, "all">;
+  currency: string;
+  cities: string[];
+  x: number;
+  y: number;
+}
+
+interface TripCountrySelection {
+  name: string;
+  currency: string;
+}
 
 const ACCESS_ERROR_CODES = {
   accountLoadFailed: "account-load-failed",
@@ -57,6 +77,7 @@ const ACCESS_ERROR_CODES = {
 const defaultTripForm = (ownerDisplayName = ""): AccountTripCreateRequest => ({
   name: "",
   destinationLabel: "",
+  countries: [],
   startDate: new Date().toISOString().slice(0, 10),
   endDate: new Date(Date.now() + 3 * 86_400_000).toISOString().slice(0, 10),
   ownerDisplayName,
@@ -64,7 +85,61 @@ const defaultTripForm = (ownerDisplayName = ""): AccountTripCreateRequest => ({
   joinPassword: generateJoinPassword(),
 });
 
-const tripWizardSteps: TripWizardStep[] = ["basics", "access", "review"];
+const tripContinents: Array<{ id: TripContinent; label: string }> = [
+  { id: "all", label: "World" },
+  { id: "asia", label: "Asia" },
+  { id: "europe", label: "Europe" },
+  { id: "north-america", label: "North America" },
+  { id: "south-america", label: "South America" },
+  { id: "oceania", label: "Oceania" },
+  { id: "africa", label: "Africa" },
+];
+
+const tripCountryOptions: TripCountryOption[] = [
+  { code: "JP", name: "Japan", continent: "asia", currency: "JPY", cities: ["Tokyo", "Osaka", "Kyoto", "Sapporo"], x: 78, y: 42 },
+  { code: "KR", name: "South Korea", continent: "asia", currency: "KRW", cities: ["Seoul", "Busan", "Jeju"], x: 74, y: 41 },
+  { code: "TH", name: "Thailand", continent: "asia", currency: "THB", cities: ["Bangkok", "Chiang Mai", "Phuket"], x: 68, y: 54 },
+  { code: "SG", name: "Singapore", continent: "asia", currency: "SGD", cities: ["Singapore"], x: 69, y: 61 },
+  { code: "CN", name: "China", continent: "asia", currency: "CNY", cities: ["Beijing", "Shanghai", "Shenzhen"], x: 71, y: 44 },
+  { code: "HK", name: "Hong Kong", continent: "asia", currency: "HKD", cities: ["Hong Kong"], x: 72, y: 51 },
+  { code: "TW", name: "Taiwan", continent: "asia", currency: "TWD", cities: ["Taipei", "Kaohsiung"], x: 75, y: 51 },
+  { code: "VN", name: "Vietnam", continent: "asia", currency: "VND", cities: ["Hanoi", "Da Nang", "Ho Chi Minh City"], x: 70, y: 55 },
+  { code: "FR", name: "France", continent: "europe", currency: "EUR", cities: ["Paris", "Nice", "Lyon"], x: 48, y: 38 },
+  { code: "IT", name: "Italy", continent: "europe", currency: "EUR", cities: ["Rome", "Milan", "Venice"], x: 51, y: 42 },
+  { code: "ES", name: "Spain", continent: "europe", currency: "EUR", cities: ["Madrid", "Barcelona", "Seville"], x: 45, y: 43 },
+  { code: "GB", name: "United Kingdom", continent: "europe", currency: "GBP", cities: ["London", "Edinburgh", "Manchester"], x: 46, y: 34 },
+  { code: "DE", name: "Germany", continent: "europe", currency: "EUR", cities: ["Berlin", "Munich", "Frankfurt"], x: 51, y: 36 },
+  { code: "CH", name: "Switzerland", continent: "europe", currency: "CHF", cities: ["Zurich", "Lucerne", "Geneva"], x: 50, y: 40 },
+  { code: "US", name: "United States", continent: "north-america", currency: "USD", cities: ["New York", "Los Angeles", "San Francisco"], x: 20, y: 41 },
+  { code: "CA", name: "Canada", continent: "north-america", currency: "CAD", cities: ["Vancouver", "Toronto", "Montreal"], x: 19, y: 30 },
+  { code: "MX", name: "Mexico", continent: "north-america", currency: "MXN", cities: ["Mexico City", "Cancun", "Oaxaca"], x: 19, y: 52 },
+  { code: "BR", name: "Brazil", continent: "south-america", currency: "BRL", cities: ["Rio de Janeiro", "Sao Paulo", "Salvador"], x: 34, y: 70 },
+  { code: "PE", name: "Peru", continent: "south-america", currency: "PEN", cities: ["Lima", "Cusco"], x: 27, y: 69 },
+  { code: "AU", name: "Australia", continent: "oceania", currency: "AUD", cities: ["Sydney", "Melbourne", "Perth"], x: 80, y: 76 },
+  { code: "NZ", name: "New Zealand", continent: "oceania", currency: "NZD", cities: ["Auckland", "Queenstown", "Wellington"], x: 88, y: 82 },
+  { code: "MA", name: "Morocco", continent: "africa", currency: "MAD", cities: ["Marrakech", "Casablanca", "Fes"], x: 45, y: 51 },
+  { code: "EG", name: "Egypt", continent: "africa", currency: "EGP", cities: ["Cairo", "Luxor", "Alexandria"], x: 56, y: 52 },
+  { code: "ZA", name: "South Africa", continent: "africa", currency: "ZAR", cities: ["Cape Town", "Johannesburg"], x: 55, y: 80 },
+];
+
+const worldMapSize = { width: 960, height: 500 };
+const mapCountryNameAliases: Record<string, string> = {
+  "United States of America": "United States",
+};
+const worldMapProjection = geoEqualEarth().fitExtent([[12, 12], [worldMapSize.width - 12, worldMapSize.height - 12]], { type: "Sphere" });
+const worldMapPath = geoPath(worldMapProjection);
+const worldMapFeatureCollection = feature<{ name: string }>(
+  countriesTopology as unknown as Topology,
+  "countries",
+) as unknown as FeatureCollection<Geometry, { name: string }>;
+const worldMapCountries = worldMapFeatureCollection.features
+  .map((country) => ({
+    feature: country,
+    name: mapCountryNameAliases[country.properties.name] ?? country.properties.name,
+    path: worldMapPath(country),
+    region: mapCountryRegion(country),
+  }))
+  .filter((country): country is { feature: Feature<Geometry, { name: string }>; name: string; path: string; region: TripContinent } => Boolean(country.path));
 const portalSectionOrder: PortalSection[] = ["dashboard", "trips", "new-trip", "explorer", "todos", "vault", "settings", "sign-out"];
 const portalSectionStorageKey = "sagittarius:portal-section-index";
 
@@ -745,7 +820,6 @@ function AccountDashboard({
   const { t } = useI18n();
   const defaultOwnerDisplayName = settings?.profile.displayName ?? t.access.dashboard.fallbackName;
   const [tripForm, setTripForm] = useState(() => defaultTripForm());
-  const [wizardStep, setWizardStep] = useState<TripWizardStep>("basics");
   const [transitionDirection] = useState<"forward" | "back">(() => {
     const currentIndex = portalSectionOrder.indexOf(portalSection);
     return currentIndex < readPreviousPortalSectionIndex(currentIndex) ? "back" : "forward";
@@ -761,14 +835,12 @@ function AccountDashboard({
     return `${trip.name} ${trip.destinationLabel} ${trip.role}`.toLocaleLowerCase().includes(query);
   });
 
-  async function submitTrip(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  async function submitTrip() {
     setIsSubmitting(true);
     try {
       const response = await accountClient.createTrip(accountSession.sessionToken, normalizedTripForm(tripForm, defaultOwnerDisplayName));
       await onCreatedTrip(response.memberSession);
       setTripForm(defaultTripForm());
-      setWizardStep("basics");
       onMessage(t.access.dashboard.createTrip.success);
       onError(null);
     } catch (caught) {
@@ -940,10 +1012,8 @@ function AccountDashboard({
           <PortalTripWizard
             defaultOwnerDisplayName={defaultOwnerDisplayName}
             isSubmitting={isSubmitting}
-            step={wizardStep}
             tripForm={tripForm}
             onChange={setTripForm}
-            onStepChange={setWizardStep}
             onSubmit={submitTrip}
           />
         </section> : null}
@@ -1130,43 +1200,46 @@ function PortalTripWizard({
   defaultOwnerDisplayName,
   isSubmitting,
   onChange,
-  onStepChange,
   onSubmit,
-  step,
   tripForm,
 }: {
   defaultOwnerDisplayName: string;
   isSubmitting: boolean;
   onChange: Dispatch<SetStateAction<AccountTripCreateRequest>>;
-  onStepChange: Dispatch<SetStateAction<TripWizardStep>>;
-  onSubmit: (event: FormEvent<HTMLFormElement>) => void;
-  step: TripWizardStep;
+  onSubmit: () => void;
   tripForm: AccountTripCreateRequest;
 }) {
   const { t } = useI18n();
-  const stepIndex = tripWizardSteps.indexOf(step);
-  const ownerDisplayName = tripForm.ownerDisplayName.trim() || defaultOwnerDisplayName;
-  const basicsComplete = Boolean(tripForm.name.trim() && tripForm.startDate && tripForm.endDate);
-  const accessComplete = Boolean(ownerDisplayName.trim() && tripForm.joinId.trim() && tripForm.joinPassword.length >= 12);
-  const canGoNext = step === "basics" ? basicsComplete : step === "access" ? accessComplete : true;
-  const canSubmit = basicsComplete && accessComplete;
-  const progress = `${((stepIndex + 1) / tripWizardSteps.length) * 100}%`;
+  const [countryQuery, setCountryQuery] = useState("");
+  const [activeContinent, setActiveContinent] = useState<TripContinent>("all");
+  const [isMapOpen, setIsMapOpen] = useState(false);
+  const [hasEditedOwnerDisplayName, setHasEditedOwnerDisplayName] = useState(false);
+  const [hasCopiedJoinCode, setHasCopiedJoinCode] = useState(false);
+  const [inspirationOffset, setInspirationOffset] = useState(0);
+  const destinationSearchRef = useRef<HTMLInputElement | null>(null);
+  const ownerDisplayName = tripForm.ownerDisplayName;
+  const effectiveOwnerDisplayName = hasEditedOwnerDisplayName ? ownerDisplayName : ownerDisplayName || defaultOwnerDisplayName;
+  const selectedCountries = selectedTripCountries(tripForm.countries, tripForm.destinationLabel);
+  const selectedCountryNames = selectedCountries.map((country) => country.name);
+  const destinationComplete = selectedCountries.length > 0;
+  const datesComplete = Boolean(tripForm.startDate && tripForm.endDate);
+  const accessComplete = Boolean(effectiveOwnerDisplayName.trim() && tripForm.joinId.trim() && tripForm.joinPassword.length >= 12);
+  const canSubmit = Boolean(tripForm.name.trim()) && destinationComplete && datesComplete && accessComplete;
+  const suggestedCountries = countrySuggestions(countryQuery, activeContinent, selectedCountryNames);
+  const destinationSummary = selectedCountryNames.length ? selectedCountryNames.join(", ") : "Add at least one place";
+  const currencySummary = selectedCountries.length ? uniqueList(selectedCountries.map((country) => country.currency).filter(Boolean)).join(", ") || "Currency by country" : "Currency";
+  const previewTripName = tripForm.name.trim() || "Untitled trip";
+  const inviteStatus = accessComplete ? "Invite ready" : "Invite draft";
+  const inspirationCards = rotateList(tripPreviewCards(selectedCountryNames), inspirationOffset);
+  const destinationCards = tripDestinationCards(selectedCountryNames);
+  const previewStartDate = formatPreviewTravelDate(tripForm.startDate);
+  const previewEndDate = formatPreviewTravelDate(tripForm.endDate);
+  const previewNightCount = tripNightCount(tripForm.startDate, tripForm.endDate);
+  const routeDestinationCode = selectedCountryNames.includes("Japan") ? "KIX" : selectedCountryNames[0]?.slice(0, 3).toUpperCase() || "DST";
+  const joinCode = tripForm.joinId || "JOII-26A1";
 
-  function nextStep() {
-    if (!canGoNext) return;
-    onStepChange(tripWizardSteps[Math.min(tripWizardSteps.length - 1, stepIndex + 1)]);
-  }
-
-  function previousStep() {
-    onStepChange(tripWizardSteps[Math.max(0, stepIndex - 1)]);
-  }
-
-  function isStepAccessible(candidate: TripWizardStep) {
-    const candidateIndex = tripWizardSteps.indexOf(candidate);
-    if (candidateIndex <= stepIndex) return true;
-    if (candidate === "access") return basicsComplete;
-    if (candidate === "review") return basicsComplete && accessComplete;
-    return true;
+  function seedOwnerDisplayName() {
+    onChange((current) => current.ownerDisplayName.trim() ? current : { ...current, ownerDisplayName: defaultOwnerDisplayName });
   }
 
   function regenerateCredentials() {
@@ -1177,92 +1250,238 @@ function PortalTripWizard({
     }));
   }
 
+  function updateCountries(nextCountries: string[]) {
+    onChange((current) => ({ ...current, countries: nextCountries, destinationLabel: nextCountries.join(", ") }));
+    setCountryQuery("");
+  }
+
+  function toggleCountry(countryName: string) {
+    const nextCountries = selectedCountryNames.includes(countryName)
+      ? selectedCountryNames.filter((name) => name !== countryName)
+      : [...selectedCountryNames, countryName];
+    updateCountries(nextCountries);
+  }
+
+  function focusDestinationSearch() {
+    destinationSearchRef.current?.focus();
+  }
+
+  function swapTravelDates() {
+    onChange((current) => ({ ...current, startDate: current.endDate, endDate: current.startDate }));
+  }
+
+  async function copyJoinCode() {
+    const text = joinCode.trim();
+    if (!text) return;
+    try {
+      await navigator.clipboard?.writeText(text);
+      setHasCopiedJoinCode(true);
+    } catch {
+      setHasCopiedJoinCode(false);
+    }
+  }
+
+  function shiftInspiration(direction: -1 | 1) {
+    setInspirationOffset((current) => current + direction);
+  }
+
+  function submitWizard(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    seedOwnerDisplayName();
+    if (canSubmit && !isSubmitting) onSubmit();
+  }
+
   return (
-    <form className="account-form account-settings-form portal-create-trip-inline portal-trip-wizard" onSubmit={onSubmit}>
-      <div className="trip-wizard-head">
+    <form className="account-form account-settings-form portal-create-trip-inline portal-trip-simple" onSubmit={submitWizard}>
+      <div className="trip-simple-head">
         <div>
-          <span className="trip-wizard-kicker">Step {stepIndex + 1} of {tripWizardSteps.length}</span>
-          <strong>{wizardStepTitle(step)}</strong>
-          <p>{wizardStepDetail(step)}</p>
+          <strong>Create trip <Badge tone={canSubmit ? "success" : "neutral"}>{canSubmit ? "Ready" : "Draft"}</Badge></strong>
+          <p>สร้างแผนการเดินทางและเชิญเพื่อนร่วมทริปของคุณ</p>
         </div>
-        <Badge tone={canSubmit ? "success" : "neutral"}>{canSubmit ? "Ready" : "Draft"}</Badge>
-      </div>
-      <div className="trip-wizard-progress" aria-hidden="true">
-        <span style={{ width: progress }} />
-      </div>
-      <div className="trip-wizard-steps" aria-label="Create trip steps">
-        {tripWizardSteps.map((candidate, index) => (
-          <button
-            aria-current={candidate === step ? "step" : undefined}
-            className={[
-              "trip-wizard-step",
-              candidate === step ? "trip-wizard-step--active" : "",
-              index < stepIndex ? "trip-wizard-step--complete" : "",
-            ].filter(Boolean).join(" ")}
-            disabled={!isStepAccessible(candidate)}
-            key={candidate}
-            type="button"
-            onClick={() => onStepChange(candidate)}
-          >
-            <span>{index + 1}</span>
-            {wizardStepLabel(candidate)}
-          </button>
-        ))}
       </div>
       <div className="trip-wizard-layout">
         <div className="trip-wizard-main">
-          {step === "basics" ? (
-            <div className="trip-wizard-pane">
-              <p>Name the trip and choose the round trip window.</p>
-              <div className="account-two-col">
-                <label>
-                  <span>{t.access.dashboard.createTrip.labels.name}</span>
-                  <input
-                    value={tripForm.name}
-                    onChange={(event) => onChange((current) => ({ ...current, name: event.target.value, destinationLabel: event.target.value }))}
-                    required
-                  />
-                  <small>Use a name your group will recognize in the portal.</small>
+          <div className="trip-wizard-pane">
+            <div className="trip-scope-panel">
+              <section className="trip-step-section">
+                <div className="trip-step-heading">
+                  <strong>1. Trip name</strong>
+                  <span>ตั้งชื่อทริปของคุณ</span>
+                </div>
+                <label className="trip-name-field">
+                  <span className="sr-only">{t.access.dashboard.createTrip.labels.name}</span>
+                <input
+                  value={tripForm.name}
+                  onChange={(event) => onChange((current) => ({ ...current, name: event.target.value }))}
+                    placeholder="Kyoto & Osaka Winter Escape"
+                    maxLength={100}
+                  required
+                />
+                  <small>{tripForm.name.length} / 100</small>
                 </label>
-                <fieldset className="trip-roundtrip-field">
-                  <legend>Round trip dates</legend>
-                  <div className="trip-roundtrip-row">
-                    <label className="trip-date-leg">
-                      <span>Depart</span>
-                      <input
-                        aria-label={t.access.dashboard.createTrip.labels.startDate}
-                        value={tripForm.startDate}
-                        onChange={(event) => onChange((current) => ({ ...current, startDate: event.target.value }))}
-                        type="date"
-                        required
-                      />
-                    </label>
-                    <span className="trip-date-arrow" aria-hidden="true"><Icon name="route" /></span>
-                    <label className="trip-date-leg">
-                      <span>Return</span>
-                      <input
-                        aria-label={t.access.dashboard.createTrip.labels.endDate}
-                        value={tripForm.endDate}
-                        onChange={(event) => onChange((current) => ({ ...current, endDate: event.target.value }))}
-                        type="date"
-                        required
-                      />
-                    </label>
+              </section>
+
+              <section className="trip-step-section">
+                <div className="trip-step-heading">
+                  <strong>2. Where are you going?</strong>
+                  <span>เลือกจุดหมายปลายทาง</span>
+                </div>
+                <div className="trip-country-picker">
+                {selectedCountryNames.length ? (
+                  <div className="trip-form-destination-row" aria-label="Selected destinations">
+                    <div className="sr-only" aria-label="Selected countries">
+                      {selectedCountryNames.map((countryName) => (
+                        <button type="button" key={countryName} aria-label={countryName} onClick={() => toggleCountry(countryName)}>
+                          {countryName}
+                        </button>
+                      ))}
+                    </div>
+                    {destinationCards.map((card) => (
+                      <article key={card.title} className="trip-mini-destination">
+                        <span className="trip-place-thumb" aria-hidden="true" />
+                        <div>
+                          <strong>{card.title}</strong>
+                          <small>{card.detail}</small>
+                        </div>
+                        <button type="button" aria-label={`Remove ${card.countryName}`} onClick={() => toggleCountry(card.countryName)}>
+                          <Icon name="x" />
+                        </button>
+                      </article>
+                    ))}
+                    <button className="trip-mini-add" type="button" onClick={focusDestinationSearch}>
+                      <Icon name="plus" />
+                      เพิ่มจุดหมาย
+                    </button>
+                    <div className="trip-form-destination-search">
+                      <label>
+                        <span className="sr-only">Search destinations</span>
+                        <input
+                          aria-label="Search destinations"
+                          ref={destinationSearchRef}
+                          value={countryQuery}
+                          onChange={(event) => setCountryQuery(event.target.value)}
+                          placeholder="เพิ่มเมืองหรือประเทศ..."
+                        />
+                      </label>
+                      {countryQuery.trim() && suggestedCountries.length ? (
+                        <div className="trip-country-suggestions" aria-label="Destination suggestions">
+                          {suggestedCountries.map((country) => (
+                            <button type="button" key={country.code} aria-label={country.name} onClick={() => toggleCountry(country.name)}>
+                              <strong>{country.name}</strong>
+                              <span>{country.cities.slice(0, 3).join(", ")} · {country.currency}</span>
+                            </button>
+                          ))}
+                        </div>
+                      ) : null}
+                    </div>
                   </div>
-                  <small>Round trip dates are used as the first trip window.</small>
-                </fieldset>
+                ) : (
+                  <>
+                    <div className="trip-country-search">
+                      <label>
+                        <span className="sr-only">Where are you going?</span>
+                        <input
+                          aria-label="Search destinations"
+                          ref={destinationSearchRef}
+                          value={countryQuery}
+                          onChange={(event) => setCountryQuery(event.target.value)}
+                          placeholder="Hong Kong, Shenzhen, Hokkaido..."
+                        />
+                      </label>
+                      {suggestedCountries.length ? (
+                        <div className="trip-country-suggestions" aria-label="Destination suggestions">
+                          {suggestedCountries.map((country) => (
+                            <button type="button" key={country.code} aria-label={country.name} onClick={() => toggleCountry(country.name)}>
+                              <strong>{country.name}</strong>
+                              <span>{country.cities.slice(0, 3).join(", ")} · {country.currency}</span>
+                            </button>
+                          ))}
+                        </div>
+                      ) : null}
+                    </div>
+                    <div className="trip-selected-countries" aria-label="Selected destinations">
+                      <span>Add a country, city, or region.</span>
+                    </div>
+                  </>
+                )}
+                <button className="trip-map-toggle" type="button" onClick={() => setIsMapOpen((current) => !current)}>
+                  <Icon name="map" />
+                  {isMapOpen ? "Hide map" : "Pick on map"}
+                </button>
+                {isMapOpen ? (
+                  <div className="trip-map-drawer">
+                    <div className="trip-continent-filter" aria-label="Filter map by continent">
+                      {tripContinents.map((continent) => (
+                        <button
+                          className={continent.id === activeContinent ? "trip-continent-chip trip-continent-chip--active" : "trip-continent-chip"}
+                          type="button"
+                          key={continent.id}
+                          onClick={() => setActiveContinent(continent.id)}
+                        >
+                          {continent.label}
+                        </button>
+                      ))}
+                    </div>
+                    <CountryWorldMap
+                      activeContinent={activeContinent}
+                      selectedCountryNames={selectedCountryNames}
+                      onToggleCountry={toggleCountry}
+                    />
+                  </div>
+                ) : null}
               </div>
-            </div>
-          ) : null}
-          {step === "access" ? (
-            <div className="trip-wizard-pane">
-              <p>Access details are generated for this trip. You can regenerate before creating it.</p>
-              <div className="trip-access-panel">
+              </section>
+
+              <section className="trip-step-section">
+                <div className="trip-step-heading">
+                  <strong>3. When are you going?</strong>
+                  <span>กำหนดวันเดินทาง</span>
+                </div>
+              <fieldset className="trip-roundtrip-field">
+                <legend>Round trip dates</legend>
+                <div className="trip-roundtrip-row">
+                  <label className="trip-date-leg">
+                    <span>Depart</span>
+                    <input
+                      aria-label={t.access.dashboard.createTrip.labels.startDate}
+                      value={tripForm.startDate}
+                      onChange={(event) => onChange((current) => ({ ...current, startDate: event.target.value }))}
+                      type="date"
+                      required
+                    />
+                  </label>
+                  <button className="trip-date-arrow" type="button" onClick={swapTravelDates} aria-label="Swap depart and return dates">
+                    <Icon name="route" />
+                  </button>
+                  <label className="trip-date-leg">
+                    <span>Return</span>
+                    <input
+                      aria-label={t.access.dashboard.createTrip.labels.endDate}
+                      value={tripForm.endDate}
+                      onChange={(event) => onChange((current) => ({ ...current, endDate: event.target.value }))}
+                      type="date"
+                      required
+                    />
+                  </label>
+                </div>
+                <small>Round trip dates are used as the first trip window.</small>
+              </fieldset>
+              </section>
+
+              <section className="trip-step-section trip-step-section--compact">
+              <details className="trip-access-panel">
+                <summary>
+                    <span>4. Trip owner & settings</span>
+                  <strong>{effectiveOwnerDisplayName || defaultOwnerDisplayName}</strong>
+                </summary>
                 <label>
                   <span>{t.access.dashboard.createTrip.labels.ownerDisplayName}</span>
                   <input
-                    value={ownerDisplayName}
-                    onChange={(event) => onChange((current) => ({ ...current, ownerDisplayName: event.target.value }))}
+                    value={effectiveOwnerDisplayName}
+                    onChange={(event) => {
+                      setHasEditedOwnerDisplayName(true);
+                      onChange((current) => ({ ...current, ownerDisplayName: event.target.value }));
+                    }}
                     autoComplete="name"
                     required
                   />
@@ -1282,100 +1501,480 @@ function PortalTripWizard({
                     Regenerate
                   </Button>
                 </div>
-              </div>
+              </details>
+              </section>
+
+              <section className="trip-step-section trip-step-section--compact">
+                <details className="trip-access-panel">
+                  <summary>
+                    <span>5. Invite & join code</span>
+                    <strong>เชิญเพื่อนและโค้ดเข้าร่วม</strong>
+                  </summary>
+                  <div className="trip-generated-access">
+                    <label>
+                      <span>{t.access.dashboard.createTrip.labels.joinId}</span>
+                      <input value={tripForm.joinId} readOnly />
+                    </label>
+                    <label>
+                      <span>{t.access.dashboard.createTrip.labels.joinPassword}</span>
+                      <input value={tripForm.joinPassword} readOnly />
+                    </label>
+                    <Button type="button" variant="secondary" onClick={regenerateCredentials}>
+                      <Icon name="route" />
+                      Regenerate
+                    </Button>
+                  </div>
+                </details>
+              </section>
+
               <div className="trip-access-note">
                 <Icon name="key" />
-                <span>Share these with travelers who need to join manually. You can rotate access later.</span>
+                <span>คุณสามารถแก้ไขรายละเอียดทั้งหมดได้หลังจากสร้างทริป</span>
+              </div>
+              <div className="trip-ticket-review">
+                <div>
+                  <span>Trip</span>
+                  <strong>{tripForm.name || "New trip"}</strong>
+                </div>
+                <div>
+                  <span>Destinations</span>
+                  <strong>{destinationSummary}</strong>
+                </div>
+                <div>
+                  <span>Dates</span>
+                  <strong>{tripForm.startDate} - {tripForm.endDate}</strong>
+                </div>
               </div>
             </div>
-          ) : null}
-          {step === "review" ? (
-            <div className="trip-ticket-review">
-              <div>
-                <span>Trip</span>
-                <strong>{tripForm.name || "New trip"}</strong>
-              </div>
-              <div>
-                <span>Dates</span>
-                <strong>{tripForm.startDate} - {tripForm.endDate}</strong>
-              </div>
-              <div>
-                <span>Owner</span>
-                <strong>{ownerDisplayName || "Owner"}</strong>
-              </div>
-              <div>
-                <span>Join ID</span>
-                <strong>{tripForm.joinId || "Join ID"}</strong>
-              </div>
-            </div>
-          ) : null}
+          </div>
         </div>
-        <aside className="trip-ticket-preview" aria-label="Trip ticket preview">
-          <div className="trip-ticket-topline">
-            <span>JOII TRIP</span>
-            <Badge tone="primary">Round trip</Badge>
+        <aside className="trip-live-preview" role="region" aria-label="Live trip preview">
+          <div className="trip-boarding-pass">
+            <div className="trip-main-ticket">
+              <div className="trip-preview-ticket-top">
+                <span>Trip preview</span>
+              </div>
+              <strong>{previewTripName}</strong>
+              <p>Trip ID: TRP-26-0001 <Badge tone={canSubmit ? "success" : "neutral"}>{canSubmit ? "Ready" : "Draft"}</Badge></p>
+              <div className="trip-flight-route">
+                <div>
+                  <strong>BKK</strong>
+                  <span>Bangkok</span>
+                </div>
+                <span className="trip-flight-line"><Icon name="route" /></span>
+                <div>
+                  <strong>{routeDestinationCode}</strong>
+                  <span>{selectedCountryNames[0] ?? "Destination"}</span>
+                </div>
+              </div>
+              <TripPreviewLiveMap selectedCountryNames={selectedCountryNames} />
+              <div className="trip-preview-destination-row">
+                <span>Destinations</span>
+                <div>
+                  {destinationCards.map((card) => (
+                    <article key={card.title} className="trip-mini-destination">
+                      <span className="trip-place-thumb" aria-hidden="true" />
+                      <div>
+                        <strong>{card.title}</strong>
+                        <small>{card.detail}</small>
+                      </div>
+                      <Badge tone="primary">{card.nights}</Badge>
+                    </article>
+                  ))}
+                  <button className="trip-mini-add" type="button" onClick={focusDestinationSearch}>
+                    <Icon name="plus" />
+                    เพิ่มจุดหมาย
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div className="trip-ticket-stub">
+              <Icon name="route" />
+              <div>
+                <strong>{previewStartDate} - {previewEndDate}</strong>
+                <span>{previewNightCount}</span>
+              </div>
+              <div>
+                <span>สกุลเงิน</span>
+                <strong>{currencySummary}</strong>
+              </div>
+              <div>
+                <span>สถานะ</span>
+                <Badge tone={canSubmit ? "warning" : "neutral"}>{inviteStatus}</Badge>
+              </div>
+              <span className="trip-ticket-barcode" aria-label="Ticket barcode" />
+            </div>
           </div>
-          <strong>{tripForm.name || "New trip"}</strong>
-          <small>{ownerDisplayName || "Owner"}</small>
-          <div className="trip-ticket-route">
-            <span>{tripForm.startDate || "Depart"}</span>
-            <Icon name="route" />
-            <span>{tripForm.endDate || "Return"}</span>
+          <div className="trip-preview-inspiration">
+            <div>
+              <strong>Inspiration board</strong>
+              <span>ไอเดียสำหรับทริปนี้</span>
+              <div className="trip-inspiration-controls">
+                <button type="button" onClick={() => shiftInspiration(-1)} aria-label="Previous inspiration">
+                  <Icon name="chevronLeft" />
+                </button>
+                <button type="button" onClick={() => shiftInspiration(1)} aria-label="Next inspiration">
+                  <Icon name="chevronRight" />
+                </button>
+              </div>
+            </div>
+            <ul aria-label="Destination inspiration">
+              {inspirationCards.map((card) => (
+                <li key={card.title} style={{ "--card-accent": card.accent } as CSSProperties}>
+                  <span aria-hidden="true" />
+                  <div>
+                    <strong>{card.title}</strong>
+                    <small>{card.detail}</small>
+                  </div>
+                </li>
+              ))}
+            </ul>
           </div>
-          <div className="trip-ticket-meta">
-            <span>{tripForm.joinId || "Join ID"}</span>
-            <span>{tripForm.joinPassword ? "Password generated" : "Password"}</span>
+          <div className="trip-share-strip">
+            <span><Icon name="users" /> แชร์โค้ดนี้กับเพื่อนเพื่อเข้าร่วมทริป</span>
+            <span>Join code: <strong>{joinCode}</strong></span>
+            <Button type="button" variant="secondary" onClick={() => void copyJoinCode()}>
+              {hasCopiedJoinCode ? "Copied" : "คัดลอก"}
+            </Button>
           </div>
-          <em>Access is generated automatically and can be rotated later.</em>
         </aside>
       </div>
       <div className="trip-wizard-actions">
-        <Button type="button" variant="secondary" onClick={previousStep} disabled={stepIndex === 0}>
-          <Icon name="chevronLeft" />
-          Back
+        <Button asChild type="button" variant="secondary">
+          <Link href={appRoutes.portalMyTrips()}>
+            <Icon name="chevronLeft" />
+            Cancel
+          </Link>
         </Button>
-        {step === "review" ? (
-          <Button type="submit" disabled={isSubmitting || !canSubmit}>
-            <Icon name="check" />
-            {t.access.dashboard.createTrip.submit}
-          </Button>
-        ) : (
-          <Button type="button" onClick={nextStep} disabled={!canGoNext}>
-            Continue
-            <Icon name="chevronRight" />
-          </Button>
-        )}
+        <Button type="submit" disabled={isSubmitting || !canSubmit}>
+          <Icon name="check" />
+          {isSubmitting ? "Creating..." : t.access.dashboard.createTrip.submit}
+        </Button>
       </div>
     </form>
   );
 }
 
-function wizardStepLabel(step: TripWizardStep): string {
-  if (step === "basics") return "Trip";
-  if (step === "access") return "Access";
-  return "Review";
+function tripPreviewCards(selectedCountryNames: string[]): Array<{ title: string; detail: string; accent: string }> {
+  if (selectedCountryNames.includes("Japan")) {
+    return [
+      { title: "ย่านกิออน เกียวโต", detail: "Kyoto", accent: "#0f766e" },
+      { title: "วัดคินคะคุจิ", detail: "Kyoto", accent: "#38bdf8" },
+      { title: "ปราสาทโอซาก้า", detail: "Osaka", accent: "#fb7185" },
+      { title: "ชินเซไก", detail: "Osaka", accent: "#0f766e" },
+    ];
+  }
+  const selected = selectedCountryNames.length ? selectedCountryNames.slice(0, 4) : ["ย่านกิออน เกียวโต", "วัดคินคะคุจิ", "ปราสาทโอซาก้า", "ชินเซไก"];
+  return selected.map((name, index) => ({
+    title: name,
+    detail: selectedCountryNames.length ? name : index < 2 ? "Kyoto" : "Osaka",
+    accent: ["#0f766e", "#38bdf8", "#fb7185"][index % 3],
+  }));
 }
 
-function wizardStepTitle(step: TripWizardStep): string {
-  if (step === "basics") return "Round trip";
-  if (step === "access") return "Join access";
-  return "Review and create";
+function rotateList<T>(items: T[], offset: number): T[] {
+  if (items.length <= 1) return items;
+  const normalizedOffset = ((offset % items.length) + items.length) % items.length;
+  return [...items.slice(normalizedOffset), ...items.slice(0, normalizedOffset)];
 }
 
-function wizardStepDetail(step: TripWizardStep): string {
-  if (step === "basics") return "Name the trip and select departure plus return dates.";
-  if (step === "access") return "Owner and join credentials are prepared by the system.";
-  return "Check the trip before opening the workspace.";
+function tripDestinationCards(selectedCountryNames: string[]): Array<{ title: string; detail: string; nights: string; countryName: string }> {
+  const cards: Array<{ title: string; detail: string; nights: string; countryName: string }> = [];
+  if (selectedCountryNames.includes("Japan")) {
+    cards.push(
+      { title: "Kyoto", detail: "Japan", nights: "4 คืน", countryName: "Japan" },
+      { title: "Osaka", detail: "Japan", nights: "6 คืน", countryName: "Japan" },
+    );
+  }
+  selectedCountryNames
+    .filter((name) => name !== "Japan")
+    .forEach((name, index) => {
+      cards.push({ title: name, detail: name, nights: `${index + 3} คืน`, countryName: name });
+    });
+  if (cards.length) return cards.slice(0, 4);
+  return [{ title: "Destination", detail: "Trip stop", nights: "3 คืน", countryName: "Destination" }];
+}
+
+function formatPreviewTravelDate(value: string): string {
+  if (!value) return "--";
+  const date = new Date(`${value}T00:00:00`);
+  if (Number.isNaN(date.getTime())) return value;
+  return new Intl.DateTimeFormat("en", { day: "2-digit", month: "short", year: "numeric" }).format(date);
+}
+
+function tripNightCount(startDate: string, endDate: string): string {
+  const start = Date.parse(`${startDate}T00:00:00`);
+  const end = Date.parse(`${endDate}T00:00:00`);
+  if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start) return "ยังไม่กำหนด";
+  const days = Math.round((end - start) / 86_400_000);
+  return `${days} คืน (${days + 1} วัน)`;
+}
+
+function TripPreviewLiveMap({ selectedCountryNames }: { selectedCountryNames: string[] }) {
+  const coordinates = useMemo(() => tripPreviewMapCoordinates(selectedCountryNames), [selectedCountryNames]);
+  const mapContainerRef = useRef<HTMLDivElement | null>(null);
+  const mapRef = useRef<import("maplibre-gl").Map | null>(null);
+  const markersRef = useRef<Array<import("maplibre-gl").Marker>>([]);
+  const [mapState, setMapState] = useState<"idle" | "loading" | "ready" | "error">("idle");
+  const liveMapEnabled = process.env.NODE_ENV !== "test";
+
+  useEffect(() => {
+    if (!liveMapEnabled || selectedCountryNames.length === 0 || !mapContainerRef.current) return undefined;
+    let disposed = false;
+    const markers = markersRef.current;
+
+    async function mountMap() {
+      setMapState("loading");
+
+      try {
+        const maplibregl = await import("maplibre-gl");
+        const container = mapContainerRef.current;
+        if (!container || disposed) return;
+        container.inert = true;
+        container.tabIndex = -1;
+
+        const map = new maplibregl.Map({
+          attributionControl: { compact: true },
+          center: previewMapCenter(coordinates),
+          container,
+          interactive: false,
+          style: "https://tiles.openfreemap.org/styles/positron",
+          zoom: coordinates.length > 1 ? 2.4 : 3.2,
+        });
+        mapRef.current = map;
+
+        coordinates.forEach((coordinate, index) => {
+          const markerElement = document.createElement("span");
+          markerElement.className = "trip-preview-live-marker";
+          markerElement.textContent = String(index + 1);
+          markerElement.setAttribute("aria-hidden", "true");
+          const marker = new maplibregl.Marker({ element: markerElement })
+            .setLngLat(coordinate)
+            .addTo(map);
+          markers.push(marker);
+        });
+
+        map.on("load", () => {
+          if (disposed) return;
+          fitPreviewMap(map, coordinates);
+          container.inert = false;
+          setMapState("ready");
+        });
+        map.on("error", () => {
+          if (!disposed) setMapState("error");
+        });
+      } catch {
+        if (!disposed) setMapState("error");
+      }
+    }
+
+    void mountMap();
+
+    return () => {
+      disposed = true;
+      markers.forEach((marker) => marker.remove());
+      markers.length = 0;
+      mapRef.current?.remove();
+      mapRef.current = null;
+    };
+  }, [coordinates, liveMapEnabled, selectedCountryNames.length]);
+
+  return (
+    <div className={mapState === "ready" ? "trip-preview-map trip-preview-map--live trip-preview-map--ready" : "trip-preview-map trip-preview-map--live"}>
+      <div className="trip-preview-map-canvas" ref={mapContainerRef} aria-hidden="true" />
+      {mapState !== "ready" ? (
+        <div className="trip-preview-map-fallback" aria-hidden="true">
+          <span className="trip-preview-pin trip-preview-pin--origin"><Icon name="location" /></span>
+          <span className="trip-preview-pin trip-preview-pin--destination"><Icon name="map" /></span>
+          <span className="trip-preview-route-line" />
+        </div>
+      ) : null}
+      <span className="trip-preview-map-source">
+        <Icon name="map" />
+        OpenFreeMap live map
+      </span>
+    </div>
+  );
+}
+
+function tripPreviewMapCoordinates(selectedCountryNames: string[]): Array<[number, number]> {
+  const coordinates = selectedCountryNames
+    .map((countryName) => worldMapCountries.find((country) => country.name === countryName)?.feature)
+    .filter((country): country is Feature<Geometry, { name: string }> => Boolean(country))
+    .map((country) => geoCentroid(country) as [number, number]);
+  return coordinates.length ? coordinates : [[100, 20]];
+}
+
+function previewMapCenter(coordinates: Array<[number, number]>): [number, number] {
+  const totals = coordinates.reduce(
+    (current, coordinate) => [current[0] + coordinate[0], current[1] + coordinate[1]] as [number, number],
+    [0, 0] as [number, number],
+  );
+  return [totals[0] / coordinates.length, totals[1] / coordinates.length];
+}
+
+function fitPreviewMap(map: import("maplibre-gl").Map, coordinates: Array<[number, number]>) {
+  if (coordinates.length <= 1) {
+    map.flyTo({ center: coordinates[0], zoom: 3.2, duration: 0 });
+    return;
+  }
+  const lngs = coordinates.map((coordinate) => coordinate[0]);
+  const lats = coordinates.map((coordinate) => coordinate[1]);
+  const bounds: [[number, number], [number, number]] = [
+    [Math.min(...lngs), Math.min(...lats)],
+    [Math.max(...lngs), Math.max(...lats)],
+  ];
+  map.fitBounds(bounds, { padding: 48, duration: 0, maxZoom: 4.2 });
+}
+
+function CountryWorldMap({
+  activeContinent,
+  onToggleCountry,
+  selectedCountryNames,
+}: {
+  activeContinent: TripContinent;
+  onToggleCountry: (countryName: string) => void;
+  selectedCountryNames: string[];
+}) {
+  const [hoveredCountry, setHoveredCountry] = useState<string | null>(null);
+  const [zoom, setZoom] = useState(1);
+
+  function countryClassName(countryName: string, region: TripContinent) {
+    const isSelected = selectedCountryNames.includes(countryName);
+    const isDimmed = activeContinent !== "all" && region !== activeContinent;
+    return [
+      "trip-map-shape",
+      isSelected ? "trip-map-shape--selected" : "",
+      hoveredCountry === countryName ? "trip-map-shape--hovered" : "",
+      isDimmed ? "trip-map-shape--dimmed" : "",
+    ].filter(Boolean).join(" ");
+  }
+
+  function toggleFromKeyboard(event: KeyboardEvent<SVGPathElement>, countryName: string) {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    event.preventDefault();
+    onToggleCountry(countryName);
+  }
+
+  function changeZoom(delta: number) {
+    setZoom((current) => clampNumber(Number((current + delta).toFixed(1)), 1, 2.4));
+  }
+
+  function resetZoom() {
+    setZoom(1);
+  }
+
+  const viewBox = zoomedMapViewBox(activeContinent, zoom);
+
+  return (
+    <div className="trip-world-map" aria-label="World map country picker">
+      <div className="trip-map-controls" aria-label="Map zoom controls">
+        <button type="button" onClick={() => changeZoom(-0.25)} disabled={zoom <= 1} aria-label="Zoom out">
+          -
+        </button>
+        <span>{Math.round(zoom * 100)}%</span>
+        <button type="button" onClick={() => changeZoom(0.25)} disabled={zoom >= 2.4} aria-label="Zoom in">
+          +
+        </button>
+        <button type="button" onClick={resetZoom}>Reset</button>
+      </div>
+      <svg viewBox={viewBox} role="img" aria-label="World countries">
+        <path className="trip-map-sphere" d={worldMapPath({ type: "Sphere" }) ?? ""} />
+        {worldMapCountries.map((country) => (
+          <path
+            aria-label={country.name}
+            aria-pressed={selectedCountryNames.includes(country.name)}
+            className={countryClassName(country.name, country.region)}
+            d={country.path}
+            key={country.name}
+            role="button"
+            tabIndex={0}
+            onBlur={() => setHoveredCountry(null)}
+            onClick={() => onToggleCountry(country.name)}
+            onFocus={() => setHoveredCountry(country.name)}
+            onKeyDown={(event) => toggleFromKeyboard(event, country.name)}
+            onMouseEnter={() => setHoveredCountry(country.name)}
+            onMouseLeave={() => setHoveredCountry(null)}
+          >
+            <title>{country.name}</title>
+          </path>
+        ))}
+      </svg>
+      {hoveredCountry ? <span className="trip-map-hover-label">{hoveredCountry}</span> : null}
+    </div>
+  );
+}
+
+function baseContinentViewBox(continent: TripContinent): [number, number, number, number] {
+  if (continent === "asia") return [500, 80, 390, 300];
+  if (continent === "europe") return [365, 70, 255, 210];
+  if (continent === "north-america") return [35, 70, 365, 245];
+  if (continent === "south-america") return [205, 245, 230, 235];
+  if (continent === "oceania") return [680, 270, 255, 175];
+  if (continent === "africa") return [385, 170, 280, 305];
+  return [0, 0, worldMapSize.width, worldMapSize.height];
+}
+
+function zoomedMapViewBox(continent: TripContinent, zoom: number): string {
+  const [x, y, width, height] = baseContinentViewBox(continent);
+  const nextWidth = width / zoom;
+  const nextHeight = height / zoom;
+  const nextX = x + (width - nextWidth) / 2;
+  const nextY = y + (height - nextHeight) / 2;
+  return `${nextX} ${nextY} ${nextWidth} ${nextHeight}`;
+}
+
+function mapCountryRegion(country: Feature<Geometry, { name: string }>): TripContinent {
+  const [longitude, latitude] = geoCentroid(country);
+  if (longitude < -25) return latitude >= 12 ? "north-america" : "south-america";
+  if (longitude >= 110 && latitude < -5) return "oceania";
+  if (longitude >= -25 && longitude <= 60 && latitude >= -37 && latitude < 35) return "africa";
+  if (longitude >= -25 && longitude <= 65 && latitude >= 35) return "europe";
+  if (longitude >= 25 && latitude >= -12) return "asia";
+  return "all";
+}
+
+function clampNumber(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value));
 }
 
 function normalizedTripForm(form: AccountTripCreateRequest, defaultOwnerDisplayName: string): AccountTripCreateRequest {
   const name = form.name.trim();
+  const countries = selectedTripCountries(form.countries, form.destinationLabel);
+  const countryNames = countries.map((country) => country.name);
   return {
     ...form,
     name,
-    destinationLabel: form.destinationLabel.trim() || name,
+    countries: countryNames,
+    destinationLabel: countryNames.length ? countryNames.join(", ") : form.destinationLabel.trim() || name,
     ownerDisplayName: form.ownerDisplayName.trim() || defaultOwnerDisplayName,
   };
+}
+
+function selectedTripCountries(countries: string[], destinationLabel: string): TripCountrySelection[] {
+  const selectedNames = (countries.length ? countries : destinationLabel.split(",")).map((value) => value.trim()).filter(Boolean);
+  return selectedNames
+    .map((name) => {
+      const option = tripCountryOptions.find((country) => country.name.toLocaleLowerCase() === name.toLocaleLowerCase());
+      return option ? { name: option.name, currency: option.currency } : { name, currency: "" };
+    });
+}
+
+function countrySuggestions(query: string, activeContinent: TripContinent, selectedCountryNames: string[]): TripCountryOption[] {
+  const normalizedQuery = query.trim().toLocaleLowerCase();
+  const pool = activeContinent === "all" ? tripCountryOptions : tripCountryOptions.filter((country) => country.continent === activeContinent);
+  return pool
+    .filter((country) => !selectedCountryNames.includes(country.name))
+    .filter((country) => {
+      if (!normalizedQuery) return true;
+      return [country.name, country.code, country.currency, ...country.cities]
+        .some((value) => value.toLocaleLowerCase().includes(normalizedQuery));
+    })
+    .slice(0, normalizedQuery ? 6 : 4);
+}
+
+function uniqueList(values: string[]): string[] {
+  return Array.from(new Set(values));
 }
 
 function generateJoinId(): string {

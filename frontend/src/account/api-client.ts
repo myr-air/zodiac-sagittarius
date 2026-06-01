@@ -26,6 +26,7 @@ export interface AccountTripSummary {
   id: string;
   name: string;
   destinationLabel: string;
+  countries?: string[];
   startDate: string;
   endDate: string;
   role: TripRole;
@@ -121,6 +122,7 @@ export interface PasskeyLoginStartResponse extends PasskeyChallengeResponse {
 export interface AccountTripCreateRequest {
   name: string;
   destinationLabel: string;
+  countries: string[];
   startDate: string;
   endDate: string;
   ownerDisplayName: string;

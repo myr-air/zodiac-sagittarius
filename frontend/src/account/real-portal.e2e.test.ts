@@ -24,6 +24,7 @@ describe.skipIf(!required && !baseUrl)("real account portal API e2e", () => {
     const created = await accountClient.createTrip(account.sessionToken, {
       name: `Portal E2E ${runId}`,
       destinationLabel: "Chiang Mai, Thailand",
+      countries: ["Thailand"],
       startDate: "2026-11-04",
       endDate: "2026-11-08",
       ownerDisplayName: "Portal E2E",

@@ -4,6 +4,7 @@ CREATE TABLE trips (
   id uuid PRIMARY KEY,
   name text NOT NULL,
   destination_label text NOT NULL,
+  countries text[] NOT NULL DEFAULT '{}',
   start_date date NOT NULL,
   end_date date NOT NULL,
   join_id text NOT NULL UNIQUE,

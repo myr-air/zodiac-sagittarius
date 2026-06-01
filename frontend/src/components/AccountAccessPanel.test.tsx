@@ -493,6 +493,308 @@ describe("AccountAccessPanel", () => {
     expect(screen.queryByText("No to-dos yet.")).not.toBeInTheDocument();
   });
 
+  it("allows replacing the default owner display name in the trip builder", async () => {
+    const user = userEvent.setup();
+    const accountClient = createAccountClient();
+
+    render(
+      <AccountAccessPanel
+        accessMode="account-portal"
+        accountClient={accountClient}
+        accountSession={{
+          userId: "user-aom",
+          sessionToken: "account-session",
+          kind: "trusted",
+          trustedDeviceId: "device-current",
+          createdAt: "2026-05-30T08:00:00.000Z",
+          expiresAt: "2026-06-29T08:00:00.000Z",
+        }}
+        portalSection="new-trip"
+        trip={seedTrip}
+        onAccountSessionChange={vi.fn()}
+        onAuthenticated={vi.fn()}
+        onTripChange={vi.fn()}
+      />,
+    );
+
+    fireEvent.change(await screen.findByLabelText(/Trip name/i), { target: { value: "Osaka Round Trip" } });
+    await user.click(screen.getByRole("button", { name: /^Japan$/i }));
+    const ownerDisplayName = await screen.findByLabelText(/Owner display name/i);
+
+    expect(ownerDisplayName).toHaveValue("Aom");
+    await user.clear(ownerDisplayName);
+    expect(ownerDisplayName).toHaveValue("");
+    await user.type(ownerDisplayName, "Mew");
+    expect(ownerDisplayName).toHaveValue("Mew");
+  });
+
+  it("keeps a live visual trip preview in sync with the builder form", async () => {
+    const user = userEvent.setup();
+    const accountClient = createAccountClient();
+
+    render(
+      <AccountAccessPanel
+        accessMode="account-portal"
+        accountClient={accountClient}
+        accountSession={{
+          userId: "user-aom",
+          sessionToken: "account-session",
+          kind: "trusted",
+          trustedDeviceId: "device-current",
+          createdAt: "2026-05-30T08:00:00.000Z",
+          expiresAt: "2026-06-29T08:00:00.000Z",
+        }}
+        portalSection="new-trip"
+        trip={seedTrip}
+        onAccountSessionChange={vi.fn()}
+        onAuthenticated={vi.fn()}
+        onTripChange={vi.fn()}
+      />,
+    );
+
+    fireEvent.change(await screen.findByLabelText(/Trip name/i), { target: { value: "Osaka Round Trip" } });
+    await user.click(screen.getByRole("button", { name: /^Japan$/i }));
+
+    const preview = screen.getByRole("region", { name: /Live trip preview/i });
+    expect(within(preview).getByText("Osaka Round Trip")).toBeInTheDocument();
+    expect(within(preview).getAllByText("Japan").length).toBeGreaterThan(0);
+    expect(within(preview).getByText(/Trip preview/i)).toBeInTheDocument();
+    expect(within(preview).getByText(/Invite ready/i)).toBeInTheDocument();
+    expect(within(preview).getByText(/OpenFreeMap live map/i)).toBeInTheDocument();
+    expect(within(preview).getByText(/Join code:/i)).toBeInTheDocument();
+    expect(within(preview).getByLabelText(/Ticket barcode/i)).toBeInTheDocument();
+    expect(screen.getByRole("list", { name: /Destination inspiration/i })).toBeInTheDocument();
+  });
+
+  it("uses selected non-Japan destinations in destination cards and inspiration copy", async () => {
+    const user = userEvent.setup();
+    const accountClient = createAccountClient();
+
+    render(
+      <AccountAccessPanel
+        accessMode="account-portal"
+        accountClient={accountClient}
+        accountSession={{
+          userId: "user-aom",
+          sessionToken: "account-session",
+          kind: "trusted",
+          trustedDeviceId: "device-current",
+          createdAt: "2026-05-30T08:00:00.000Z",
+          expiresAt: "2026-06-29T08:00:00.000Z",
+        }}
+        portalSection="new-trip"
+        trip={seedTrip}
+        onAccountSessionChange={vi.fn()}
+        onAuthenticated={vi.fn()}
+        onTripChange={vi.fn()}
+      />,
+    );
+
+    fireEvent.change(await screen.findByLabelText(/Trip name/i), { target: { value: "China Spring Food Trip" } });
+    await user.type(screen.getByLabelText(/Search destinations/i), "China");
+    await user.click(screen.getByRole("button", { name: /^China$/i }));
+
+    const preview = screen.getByRole("region", { name: /Live trip preview/i });
+    expect(within(preview).getAllByText("China").length).toBeGreaterThan(1);
+    expect(within(preview).queryByText("Kyoto")).not.toBeInTheDocument();
+    expect(within(preview).queryByText("Osaka")).not.toBeInTheDocument();
+    expect(screen.getAllByText("China").length).toBeGreaterThan(1);
+  });
+
+  it("does not create a trip when submitting before the review step", async () => {
+    const user = userEvent.setup();
+    const accountClient = createAccountClient();
+    const onAuthenticated = vi.fn();
+
+    render(
+      <AccountAccessPanel
+        accessMode="account-portal"
+        accountClient={accountClient}
+        accountSession={{
+          userId: "user-aom",
+          sessionToken: "account-session",
+          kind: "trusted",
+          trustedDeviceId: "device-current",
+          createdAt: "2026-05-30T08:00:00.000Z",
+          expiresAt: "2026-06-29T08:00:00.000Z",
+        }}
+        portalSection="new-trip"
+        trip={seedTrip}
+        onAccountSessionChange={vi.fn()}
+        onAuthenticated={onAuthenticated}
+        onTripChange={vi.fn()}
+      />,
+    );
+
+    fireEvent.change(await screen.findByLabelText(/Trip name/i), { target: { value: "Osaka Round Trip" } });
+    await user.keyboard("{Enter}");
+
+    expect(screen.getByRole("button", { name: /Create and open/i })).toBeDisabled();
+    expect(accountClient.createTrip).not.toHaveBeenCalled();
+    expect(onAuthenticated).not.toHaveBeenCalled();
+  });
+
+  it("does not create a trip on the same click that enters review", async () => {
+    const user = userEvent.setup();
+    const accountClient = createAccountClient();
+
+    render(
+      <AccountAccessPanel
+        accessMode="account-portal"
+        accountClient={accountClient}
+        accountSession={{
+          userId: "user-aom",
+          sessionToken: "account-session",
+          kind: "trusted",
+          trustedDeviceId: "device-current",
+          createdAt: "2026-05-30T08:00:00.000Z",
+          expiresAt: "2026-06-29T08:00:00.000Z",
+        }}
+        portalSection="new-trip"
+        trip={seedTrip}
+        onAccountSessionChange={vi.fn()}
+        onAuthenticated={vi.fn()}
+        onTripChange={vi.fn()}
+      />,
+    );
+
+    fireEvent.change(await screen.findByLabelText(/Trip name/i), { target: { value: "Osaka Round Trip" } });
+    await user.click(screen.getByRole("button", { name: /^Japan$/i }));
+
+    expect(screen.getAllByText("Japan").length).toBeGreaterThan(0);
+    expect(accountClient.createTrip).not.toHaveBeenCalled();
+    await user.click(screen.getByRole("button", { name: /Create and open/i }));
+    expect(accountClient.createTrip).toHaveBeenCalledTimes(1);
+  });
+
+  it("uses selected countries as the new trip destination scope", async () => {
+    const user = userEvent.setup();
+    const accountClient = createAccountClient();
+
+    render(
+      <AccountAccessPanel
+        accessMode="account-portal"
+        accountClient={accountClient}
+        accountSession={{
+          userId: "user-aom",
+          sessionToken: "account-session",
+          kind: "trusted",
+          trustedDeviceId: "device-current",
+          createdAt: "2026-05-30T08:00:00.000Z",
+          expiresAt: "2026-06-29T08:00:00.000Z",
+        }}
+        portalSection="new-trip"
+        trip={seedTrip}
+        onAccountSessionChange={vi.fn()}
+        onAuthenticated={vi.fn()}
+        onTripChange={vi.fn()}
+      />,
+    );
+
+    fireEvent.change(await screen.findByLabelText(/Trip name/i), { target: { value: "Japan Korea Sprint" } });
+    await user.click(screen.getByRole("button", { name: /^Japan$/i }));
+    await user.type(screen.getByLabelText(/Search destinations/i), "Seoul");
+    await user.click(screen.getByRole("button", { name: /^South Korea$/i }));
+    expect(screen.getAllByRole("button", { name: /Japan/i }).length).toBeGreaterThan(0);
+    expect(screen.getAllByRole("button", { name: /South Korea/i }).length).toBeGreaterThan(0);
+
+    expect(await screen.findAllByText("Japan, South Korea")).not.toHaveLength(0);
+    await user.click(screen.getByRole("button", { name: /Create and open/i }));
+
+    expect(accountClient.createTrip).toHaveBeenCalledWith(
+      "account-session",
+      expect.objectContaining({
+        name: "Japan Korea Sprint",
+        destinationLabel: "Japan, South Korea",
+        countries: ["Japan", "South Korea"],
+      }),
+    );
+  });
+
+  it("lets visible trip builder controls update destinations and dates", async () => {
+    const user = userEvent.setup();
+    const accountClient = createAccountClient();
+
+    render(
+      <AccountAccessPanel
+        accessMode="account-portal"
+        accountClient={accountClient}
+        accountSession={{
+          userId: "user-aom",
+          sessionToken: "account-session",
+          kind: "trusted",
+          trustedDeviceId: "device-current",
+          createdAt: "2026-05-30T08:00:00.000Z",
+          expiresAt: "2026-06-29T08:00:00.000Z",
+        }}
+        portalSection="new-trip"
+        trip={seedTrip}
+        onAccountSessionChange={vi.fn()}
+        onAuthenticated={vi.fn()}
+        onTripChange={vi.fn()}
+      />,
+    );
+
+    fireEvent.change(await screen.findByLabelText(/Trip name/i), { target: { value: "Japan Korea Sprint" } });
+    await user.click(screen.getByRole("button", { name: /^Japan$/i }));
+    await user.click(screen.getAllByRole("button", { name: /เพิ่มจุดหมาย/i })[0]);
+    expect(screen.getByLabelText(/Search destinations/i)).toHaveFocus();
+
+    await user.type(screen.getByLabelText(/Search destinations/i), "Seoul");
+    await user.click(screen.getByRole("button", { name: /^South Korea$/i }));
+    expect(await screen.findAllByText("Japan, South Korea")).not.toHaveLength(0);
+
+    const depart = screen.getByLabelText(/Start date/i);
+    const returnDate = screen.getByLabelText(/End date/i);
+    fireEvent.change(depart, { target: { value: "2026-02-10" } });
+    fireEvent.change(returnDate, { target: { value: "2026-02-04" } });
+    await user.click(screen.getByRole("button", { name: /Swap depart and return dates/i }));
+    expect(depart).toHaveValue("2026-02-04");
+    expect(returnDate).toHaveValue("2026-02-10");
+
+    await user.click(screen.getByRole("button", { name: /Remove South Korea/i }));
+    expect(screen.queryByRole("button", { name: /South Korea/i })).not.toBeInTheDocument();
+    expect(await screen.findAllByText("Japan")).not.toHaveLength(0);
+  });
+
+  it("copies the generated join code from the preview share strip", async () => {
+    const user = userEvent.setup();
+    const accountClient = createAccountClient();
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: { writeText },
+    });
+
+    render(
+      <AccountAccessPanel
+        accessMode="account-portal"
+        accountClient={accountClient}
+        accountSession={{
+          userId: "user-aom",
+          sessionToken: "account-session",
+          kind: "trusted",
+          trustedDeviceId: "device-current",
+          createdAt: "2026-05-30T08:00:00.000Z",
+          expiresAt: "2026-06-29T08:00:00.000Z",
+        }}
+        portalSection="new-trip"
+        trip={seedTrip}
+        onAccountSessionChange={vi.fn()}
+        onAuthenticated={vi.fn()}
+        onTripChange={vi.fn()}
+      />,
+    );
+
+    fireEvent.change(await screen.findByLabelText(/Trip name/i), { target: { value: "Osaka Round Trip" } });
+    await user.click(screen.getByRole("button", { name: /^Japan$/i }));
+    const joinCode = screen.getByText(/Join code:/i).textContent?.replace("Join code:", "").trim();
+    await user.click(screen.getByRole("button", { name: /คัดลอก/i }));
+
+    expect(writeText).toHaveBeenCalledWith(joinCode);
+    expect(await screen.findByText(/Copied/i)).toBeInTheDocument();
+  });
+
   it("logs in with a provider-free browser passkey and keeps trusted-device controls", async () => {
     const user = userEvent.setup();
     const accountClient = createAccountClient();

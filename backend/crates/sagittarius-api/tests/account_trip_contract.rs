@@ -162,6 +162,7 @@ async fn create_account_trip(
         json!({
             "name": format!("{join_id} Food Run"),
             "destinationLabel": "Chiang Mai, Thailand",
+            "countries": ["Thailand"],
             "startDate": date_value(2026, Month::November, 4),
             "endDate": date_value(2026, Month::November, 8),
             "ownerDisplayName": "Aom",
@@ -244,6 +245,7 @@ async fn account_user_can_create_trip_and_becomes_owner(pool: sqlx::PgPool) {
         json!({
             "name": " Chiang Mai Food Run ",
             "destinationLabel": " Chiang Mai, Thailand ",
+            "countries": [" Thailand "],
             "startDate": date_value(2026, Month::November, 4),
             "endDate": date_value(2026, Month::November, 8),
             "ownerDisplayName": " Aom ",
@@ -257,6 +259,7 @@ async fn account_user_can_create_trip_and_becomes_owner(pool: sqlx::PgPool) {
     assert_eq!(status, StatusCode::OK);
     assert_eq!(body["trip"]["name"], "Chiang Mai Food Run");
     assert_eq!(body["trip"]["destinationLabel"], "Chiang Mai, Thailand");
+    assert_eq!(body["trip"]["countries"], json!(["Thailand"]));
     assert_eq!(
         body["trip"]["startDate"],
         date_value(2026, Month::November, 4)
@@ -627,6 +630,7 @@ async fn account_trip_creation_validates_text_and_join_id(pool: sqlx::PgPool) {
         json!({
             "name": " ",
             "destinationLabel": "Chiang Mai, Thailand",
+            "countries": ["Thailand"],
             "startDate": date_value(2026, Month::November, 4),
             "endDate": date_value(2026, Month::November, 8),
             "ownerDisplayName": "Aom",
@@ -636,6 +640,7 @@ async fn account_trip_creation_validates_text_and_join_id(pool: sqlx::PgPool) {
         json!({
             "name": oversized_name,
             "destinationLabel": "Chiang Mai, Thailand",
+            "countries": ["Thailand"],
             "startDate": date_value(2026, Month::November, 4),
             "endDate": date_value(2026, Month::November, 8),
             "ownerDisplayName": "Aom",
@@ -645,6 +650,7 @@ async fn account_trip_creation_validates_text_and_join_id(pool: sqlx::PgPool) {
         json!({
             "name": "Chiang Mai",
             "destinationLabel": "Chiang Mai, Thailand",
+            "countries": ["Thailand"],
             "startDate": date_value(2026, Month::November, 4),
             "endDate": date_value(2026, Month::November, 8),
             "ownerDisplayName": "Aom",
@@ -654,6 +660,7 @@ async fn account_trip_creation_validates_text_and_join_id(pool: sqlx::PgPool) {
         json!({
             "name": "Chiang Mai",
             "destinationLabel": "Chiang Mai, Thailand",
+            "countries": ["Thailand"],
             "startDate": date_value(2026, Month::November, 4),
             "endDate": date_value(2026, Month::November, 8),
             "ownerDisplayName": "Aom",
@@ -686,6 +693,7 @@ async fn account_trip_creation_validates_dates_and_auth(pool: sqlx::PgPool) {
         json!({
             "name": "Chiang Mai",
             "destinationLabel": "Chiang Mai, Thailand",
+            "countries": ["Thailand"],
             "startDate": date_value(2026, Month::November, 4),
             "endDate": date_value(2026, Month::November, 8),
             "ownerDisplayName": "Aom",
@@ -708,6 +716,7 @@ async fn account_trip_creation_validates_dates_and_auth(pool: sqlx::PgPool) {
         json!({
             "name": "Chiang Mai",
             "destinationLabel": "Chiang Mai, Thailand",
+            "countries": ["Thailand"],
             "startDate": date_value(2026, Month::November, 9),
             "endDate": date_value(2026, Month::November, 8),
             "ownerDisplayName": "Aom",

@@ -27,6 +27,7 @@ export interface TripSummaryResponse {
   id: string;
   name: string;
   destinationLabel: string;
+  countries?: string[];
   startDate: string;
   endDate: string;
   joinId: string;
@@ -278,6 +279,7 @@ export function mapCockpitResponse(response: TripCockpitResponse): TripCockpit {
       joinPasswordHash: "",
       name: response.trip.name,
       destinationLabel: response.trip.destinationLabel,
+      countries: response.trip.countries ?? [],
       startDate: response.trip.startDate,
       endDate: response.trip.endDate,
       activePlanVariantId,

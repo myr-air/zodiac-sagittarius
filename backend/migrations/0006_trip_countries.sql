@@ -1,0 +1,2 @@
+ALTER TABLE trips
+  ADD COLUMN IF NOT EXISTS countries text[] NOT NULL DEFAULT '{}';

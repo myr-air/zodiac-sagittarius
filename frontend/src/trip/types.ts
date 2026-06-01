@@ -111,6 +111,7 @@ export interface Trip {
   joinPasswordHash: string;
   name: string;
   destinationLabel: string;
+  countries?: string[];
   startDate: string;
   endDate: string;
   activePlanVariantId: string;

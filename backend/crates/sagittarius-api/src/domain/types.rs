@@ -139,6 +139,7 @@ pub struct TripSummary {
     pub id: Uuid,
     pub name: String,
     pub destination_label: String,
+    pub countries: Vec<String>,
     pub start_date: Date,
     pub end_date: Date,
     pub join_id: String,
@@ -161,6 +162,7 @@ pub struct AccountTripSummary {
     pub id: Uuid,
     pub name: String,
     pub destination_label: String,
+    pub countries: Vec<String>,
     pub start_date: Date,
     pub end_date: Date,
     pub role: TripRole,
@@ -468,6 +470,7 @@ mod account_type_tests {
             id: trip_id,
             name: "Chiang Mai".to_string(),
             destination_label: "Chiang Mai, Thailand".to_string(),
+            countries: vec!["Thailand".to_string()],
             start_date,
             end_date,
             role: TripRole::Owner,
@@ -478,6 +481,7 @@ mod account_type_tests {
         };
         let value = serde_json::to_value(account_trip).unwrap();
         assert_eq!(value["destinationLabel"], "Chiang Mai, Thailand");
+        assert_eq!(value["countries"], serde_json::json!(["Thailand"]));
         assert_eq!(
             value["startDate"],
             serde_json::to_value(start_date).unwrap()
@@ -527,6 +531,7 @@ mod account_type_tests {
                 id: trip_id,
                 name: "Chiang Mai".to_string(),
                 destination_label: "Chiang Mai, Thailand".to_string(),
+                countries: vec!["Thailand".to_string()],
                 start_date,
                 end_date,
                 join_id: "CM2026".to_string(),
@@ -545,6 +550,7 @@ mod account_type_tests {
         };
         let value = serde_json::to_value(account_trip_create).unwrap();
         assert_eq!(value["trip"]["destinationLabel"], "Chiang Mai, Thailand");
+        assert_eq!(value["trip"]["countries"], serde_json::json!(["Thailand"]));
         assert_eq!(value["ownerMemberId"], owner_member_id.to_string());
         assert_eq!(
             value["memberSession"]["memberId"],
