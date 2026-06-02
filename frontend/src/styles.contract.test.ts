@@ -4,6 +4,14 @@ import { describe, expect, it } from "vitest";
 describe("Calm Travel Ops CSS contract", () => {
   const css = readFileSync("app/globals.css", "utf8");
 
+  it("keeps Tailwind available while preserving global design tokens", () => {
+    expect(css).toContain('@import "tailwindcss";');
+    expect(css).toContain("--font-sans:");
+    expect(css).toContain("--shadow-panel:");
+    expect(css).toContain("--radius-lg:");
+    expect(css).toMatch(/:where\(button,\s*a,\s*input,\s*select,\s*textarea\):focus-visible/);
+  });
+
   it("keeps the production palette away from the purple Joii prototype theme", () => {
     expect(css).toContain("--color-primary: #0f766e");
     expect(css).toContain("--color-route: #2563eb");
