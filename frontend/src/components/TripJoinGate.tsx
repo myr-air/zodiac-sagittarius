@@ -146,10 +146,38 @@ export function TripJoinGate({ trip, apiClient, embedded = false, initialJoinCod
   }
 
   const PageElement = embedded ? "section" : "main";
+  const visualNotes = [
+    { icon: "key" as const, title: t.join.visual.secureTitle, detail: t.join.visual.secureDetail },
+    { icon: "users" as const, title: t.join.visual.membersTitle, detail: t.join.visual.membersDetail },
+    { icon: "map" as const, title: t.join.visual.planTitle, detail: t.join.visual.planDetail },
+  ];
 
   return (
     <PageElement className="join-page" aria-label={t.join.pageLabel}>
       <section className="join-shell">
+        <aside className="trip-access-visual" aria-label={t.join.visual.label}>
+          <div className="trip-access-photo-stack" aria-hidden="true">
+            <span className="trip-access-photo trip-access-photo--krabi" />
+            <span className="trip-access-photo trip-access-photo--kyoto" />
+            <span className="trip-access-photo trip-access-photo--santorini" />
+          </div>
+          <div className="trip-access-route-card" aria-hidden="true">
+            <span className="trip-access-route-stop">Joii</span>
+            <span className="trip-access-route-line" />
+            <span className="trip-access-route-stop">Trip</span>
+          </div>
+          <ul className="trip-access-notes">
+            {visualNotes.map((note) => (
+              <li key={note.title}>
+                <Icon name={note.icon} />
+                <span>
+                  <strong>{note.title}</strong>
+                  <small>{note.detail}</small>
+                </span>
+              </li>
+            ))}
+          </ul>
+        </aside>
         <div className="join-hero">
           <div className="join-mark" aria-hidden="true">
             <Icon name="route" />

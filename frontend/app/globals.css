@@ -1820,6 +1820,259 @@ button:disabled,
   min-height: auto;
 }
 
+.account-page--trip-access {
+  display: grid;
+  align-items: center;
+  overflow-x: clip;
+  padding: clamp(18px, 4vw, 42px);
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 0.84), rgb(240 253 250 / 0.56) 56%, rgb(255 247 237 / 0.42)),
+    linear-gradient(90deg, rgb(37 99 235 / 0.055) 1px, transparent 1px),
+    linear-gradient(0deg, rgb(37 99 235 / 0.045) 1px, transparent 1px),
+    var(--paper-grain),
+    var(--color-page);
+  background-size: auto, 58px 58px, 58px 58px, auto, auto;
+}
+
+.account-page--trip-access .account-shell {
+  width: min(100%, 1120px);
+}
+
+.account-page--trip-access .account-hero {
+  display: none;
+}
+
+.account-page--trip-access .join-page {
+  min-height: auto;
+  padding: 0;
+  background: transparent;
+}
+
+.account-page--trip-access .join-shell {
+  width: 100%;
+  grid-template-columns: minmax(330px, 0.86fr) minmax(360px, 1fr);
+  gap: 0;
+  overflow: hidden;
+  padding: 0;
+  border-color: rgb(203 213 225 / 0.72);
+  border-radius: 24px;
+  background: rgb(255 255 255 / 0.96);
+  box-shadow: 0 28px 70px rgb(15 23 42 / 0.16);
+}
+
+.account-page--trip-access .join-hero,
+.account-page--trip-access .join-alert,
+.account-page--trip-access .join-form,
+.account-page--trip-access .participant-step {
+  grid-column: 2;
+  margin-inline: clamp(20px, 4vw, 44px);
+}
+
+.account-page--trip-access .join-hero {
+  margin-top: clamp(28px, 5vw, 54px);
+  grid-template-columns: 52px minmax(0, 1fr);
+}
+
+.account-page--trip-access .join-mark {
+  width: 52px;
+  height: 52px;
+  color: #ffffff;
+  background: linear-gradient(135deg, #0f766e, #0ea5e9);
+  box-shadow: 0 16px 28px rgb(15 118 110 / 0.22);
+}
+
+.account-page--trip-access .join-hero h1 {
+  font-size: 36px;
+  line-height: 42px;
+}
+
+.account-page--trip-access .join-hero p:not(.join-eyebrow) {
+  max-width: 520px;
+  font-size: 15px;
+  line-height: 24px;
+}
+
+.account-page--trip-access .access-language-switch {
+  width: fit-content;
+}
+
+.account-page--trip-access .trip-access-language-switch {
+  top: 16px;
+  right: 16px;
+  z-index: 5;
+  margin: 0;
+  background: rgb(255 255 255 / 0.92);
+  box-shadow: 0 10px 24px rgb(15 23 42 / 0.08);
+}
+
+.account-page--trip-access .join-form,
+.account-page--trip-access .participant-step {
+  margin-top: 18px;
+  margin-bottom: clamp(28px, 5vw, 54px);
+}
+
+.account-page--trip-access .join-form {
+  gap: 14px;
+}
+
+.account-page--trip-access .join-form label,
+.account-page--trip-access .participant-auth label {
+  gap: 8px;
+}
+
+.account-page--trip-access .join-form input,
+.account-page--trip-access .participant-auth input {
+  min-height: 50px;
+  border-color: rgb(148 163 184 / 0.7);
+  border-radius: 12px;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.9);
+}
+
+.account-page--trip-access .join-submit {
+  min-height: 52px;
+  border-radius: 12px;
+  box-shadow: 0 16px 30px rgb(15 118 110 / 0.18);
+}
+
+.trip-access-visual {
+  position: relative;
+  grid-column: 1;
+  grid-row: 1 / span 4;
+  min-height: 620px;
+  overflow: hidden;
+  padding: 28px;
+  background:
+    linear-gradient(180deg, rgb(15 23 42 / 0.02), rgb(15 118 110 / 0.08)),
+    url("/landing/auth/bg-map-watercolor.png") center / cover no-repeat,
+    #f8fbff;
+}
+
+.trip-access-visual::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgb(255 255 255 / 0.7), transparent 44%),
+    radial-gradient(ellipse at 20% 18%, rgb(6 182 212 / 0.18), transparent 38%),
+    radial-gradient(ellipse at 86% 74%, rgb(249 115 22 / 0.16), transparent 36%);
+  pointer-events: none;
+}
+
+.trip-access-photo-stack {
+  position: relative;
+  z-index: 1;
+  min-height: 380px;
+}
+
+.trip-access-photo {
+  position: absolute;
+  overflow: hidden;
+  border: 8px solid rgb(255 255 255 / 0.92);
+  border-radius: 18px;
+  background-position: center;
+  background-size: cover;
+  box-shadow: 0 24px 46px rgb(15 23 42 / 0.2);
+}
+
+.trip-access-photo--krabi {
+  left: 0;
+  top: 24px;
+  width: 72%;
+  aspect-ratio: 4 / 5;
+  background-image: url("/landing/auth/photo-krabi.png");
+}
+
+.trip-access-photo--kyoto {
+  right: 0;
+  top: 0;
+  width: 46%;
+  aspect-ratio: 3 / 4;
+  background-image: url("/landing/auth/photo-kyoto.png");
+}
+
+.trip-access-photo--santorini {
+  right: 6%;
+  bottom: 0;
+  width: 54%;
+  aspect-ratio: 4 / 3;
+  background-image: url("/landing/auth/photo-santorini.png");
+}
+
+.trip-access-route-card {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  margin-top: 18px;
+  padding: 13px 14px;
+  border: 1px solid rgb(203 213 225 / 0.76);
+  border-radius: 16px;
+  background: rgb(255 255 255 / 0.9);
+  box-shadow: 0 18px 34px rgb(15 23 42 / 0.12);
+}
+
+.trip-access-route-stop {
+  color: var(--color-text);
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.trip-access-route-line {
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--color-primary), var(--color-route), var(--color-warning));
+}
+
+.trip-access-notes {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 10px;
+  margin: 18px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.trip-access-notes li {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid rgb(226 232 240 / 0.82);
+  border-radius: 14px;
+  background: rgb(255 255 255 / 0.82);
+}
+
+.trip-access-notes .icon {
+  width: 34px;
+  height: 34px;
+  padding: 8px;
+  border-radius: 10px;
+  color: var(--color-primary-strong);
+  background: var(--color-primary-soft);
+}
+
+.trip-access-notes strong,
+.trip-access-notes small {
+  display: block;
+}
+
+.trip-access-notes strong {
+  color: var(--color-text);
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.trip-access-notes small {
+  color: var(--color-text-muted);
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 17px;
+}
+
 .account-hero-mark {
   width: 52px;
   height: 52px;
@@ -5033,6 +5286,12 @@ button:disabled,
   box-shadow: var(--shadow-panel);
 }
 
+.account-page--trip-access .account-shell .join-shell {
+  width: 100%;
+  justify-self: stretch;
+  box-shadow: 0 28px 70px rgb(15 23 42 / 0.16);
+}
+
 .account-claim-banner {
   justify-content: space-between;
   margin-bottom: 12px;
@@ -5115,7 +5374,6 @@ button:disabled,
 .password-visibility-button:focus-visible {
   color: var(--color-primary-strong);
   border-color: var(--color-primary);
-  outline: none;
 }
 
 .participant-auth-help {
@@ -9484,6 +9742,102 @@ span.member-state-pill {
   .portal-feature-card,
   .account-history {
     grid-column: auto;
+  }
+
+  .account-page--trip-access {
+    align-items: start;
+    padding: 14px;
+  }
+
+  .account-page--trip-access .account-shell::before {
+    inset: -8px;
+  }
+
+  .account-page--trip-access .join-shell {
+    grid-template-columns: 1fr;
+    border-radius: 18px;
+  }
+
+  .account-page--trip-access .trip-access-language-switch {
+    top: 26px;
+    right: 26px;
+  }
+
+  .trip-access-visual {
+    grid-column: 1;
+    grid-row: auto;
+    min-height: auto;
+    padding: 16px;
+  }
+
+  .trip-access-photo-stack {
+    min-height: 172px;
+  }
+
+  .trip-access-photo {
+    border-width: 5px;
+    border-radius: 14px;
+  }
+
+  .trip-access-photo--krabi {
+    left: 0;
+    top: 8px;
+    width: 50%;
+    aspect-ratio: 4 / 3;
+  }
+
+  .trip-access-photo--kyoto {
+    left: 37%;
+    right: auto;
+    top: 0;
+    width: 34%;
+    aspect-ratio: 1;
+  }
+
+  .trip-access-photo--santorini {
+    right: 0;
+    bottom: 10px;
+    width: 38%;
+    aspect-ratio: 4 / 3;
+  }
+
+  .trip-access-route-card,
+  .trip-access-notes {
+    display: none;
+  }
+
+  .account-page--trip-access .join-hero,
+  .account-page--trip-access .join-alert,
+  .account-page--trip-access .join-form,
+  .account-page--trip-access .participant-step {
+    grid-column: 1;
+    margin-inline: 16px;
+  }
+
+  .account-page--trip-access .join-hero {
+    margin-top: 18px;
+    grid-template-columns: 42px minmax(0, 1fr);
+  }
+
+  .account-page--trip-access .join-mark {
+    width: 42px;
+    height: 42px;
+  }
+
+  .account-page--trip-access .join-hero h1 {
+    font-size: 27px;
+    line-height: 34px;
+  }
+
+  .account-page--trip-access .join-hero p:not(.join-eyebrow) {
+    font-size: 13.5px;
+    line-height: 21px;
+  }
+
+  .account-page--trip-access .join-form,
+  .account-page--trip-access .participant-step {
+    margin-top: 16px;
+    margin-bottom: 18px;
   }
 
   .account-page--entry {

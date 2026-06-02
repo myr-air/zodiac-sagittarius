@@ -187,6 +187,7 @@ export function AccountAccessPanel({
   const forcedMode = effectiveAccessMode === "trip-access" ? "temp" : effectiveAccessMode === "combined" ? null : "account";
   const isAccountEntry = effectiveAccessMode === "account-login" || effectiveAccessMode === "account-register";
   const isPortalEntry = effectiveAccessMode === "account-portal";
+  const isTripAccessEntry = effectiveAccessMode === "trip-access";
   const [selectedMode, setSelectedMode] = useState<AccessMode>(() => (accountSession ? "account" : "temp"));
   const mode = forcedMode ?? (accountSession ? "account" : selectedMode);
   const initialPortalData = accountSession ? getAccountPortalDataCache(accountSession.sessionToken) : null;
@@ -300,13 +301,15 @@ export function AccountAccessPanel({
         "account-page",
         isAccountEntry ? "account-page--entry" : "",
         isPortalEntry ? "account-page--portal" : "",
+        effectiveAccessMode === "trip-access" ? "account-page--trip-access" : "",
         isPortalEntry && portalSection === "new-trip" ? "account-page--portal-new-trip" : "",
       ].filter(Boolean).join(" ")}
       aria-label={mainLabel(effectiveEntryAccessMode, t.access.mainLabels)}
     >
       <section className={["account-shell", isAccountEntry ? "account-shell--entry" : ""].filter(Boolean).join(" ")}>
         {isAccountEntry ? <LanguageSwitch className="access-language-switch account-entry-language-switch" /> : null}
-        <div className="account-hero">
+        {isTripAccessEntry ? <LanguageSwitch className="access-language-switch account-entry-language-switch trip-access-language-switch" /> : null}
+        {!isTripAccessEntry ? <div className="account-hero">
           <div className="join-mark account-hero-mark" aria-hidden="true">
             <Icon name="route" />
           </div>
@@ -320,7 +323,7 @@ export function AccountAccessPanel({
           </div>
           {isAccountEntry ? <AuthTravelCollage labels={t.access.entryHero} /> : null}
           {isAccountEntry ? <AuthHighlights flow={entryFlow} highlights={t.access.highlights} entryHero={t.access.entryHero} /> : null}
-        </div>
+        </div> : null}
 
         {effectiveAccessMode === "combined" ? (
           <div className="account-mode-tabs" role="tablist" aria-label={t.access.tabs.label}>
