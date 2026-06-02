@@ -33,6 +33,8 @@ describe("I18nProvider", () => {
     expect(screen.getByText("English")).toBeInTheDocument();
     expect(screen.getByText("Overview")).toBeInTheDocument();
     expect(document.documentElement).toHaveAttribute("lang", "en");
+    expect(screen.getByRole("group", { name: /language/i })).toHaveClass("language-switch", "inline-flex", "rounded-full");
+    expect(screen.getByRole("button", { name: "English" })).toHaveClass("language-switch-option--active", "bg-[var(--text-strong,var(--color-text))]");
   });
 
   it("switches to Thai immediately and persists the choice", async () => {

@@ -33,5 +33,12 @@ describe("SuggestionPanel", () => {
     expect(screen.getAllByText("แนะนำให้จองคิวล่วงหน้า")).toHaveLength(3);
     expect(screen.getByText("ผู้ร่วมเดินทาง เสนอการปรับแผน")).toBeInTheDocument();
     expect(screen.queryByText("Hidden approved item")).not.toBeInTheDocument();
+    expect(screen.getByRole("region", { name: /คิวข้อเสนอ/i })).toHaveClass("detail-section", "suggestion-module", "grid");
+    expect(screen.getByText("คำแนะนำ (3)").closest(".module-title-row")).toHaveClass("module-title-row", "flex");
+    expect(screen.getByText("ผู้ร่วมเดินทาง เสนอการปรับแผน").closest(".suggestion-item")).toHaveClass(
+      "suggestion-item",
+      "grid",
+      "grid-cols-[18px_minmax(0,1fr)]",
+    );
   });
 });

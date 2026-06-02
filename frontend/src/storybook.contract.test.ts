@@ -20,7 +20,9 @@ describe("Storybook template catalog", () => {
     [
       "Design System/Buttons",
       "Design System/Badges",
+      "Design System/Language Switch",
       "Design System/Page Header",
+      "Design System/Suggestion Panel",
       "Design System/Travel Motifs",
       "Templates/Workspace Shell",
       "Templates/Overview",
