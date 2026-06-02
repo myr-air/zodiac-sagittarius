@@ -155,7 +155,7 @@ export function TripJoinGate({ trip, apiClient, embedded = false, initialJoinCod
   return (
     <PageElement className="join-page" aria-label={t.join.pageLabel}>
       <section className="join-shell">
-        <aside className="trip-access-visual" aria-label={t.join.visual.label}>
+        <div className="trip-access-visual" aria-label={t.join.visual.label}>
           <div className="trip-access-photo-stack" aria-hidden="true">
             <span className="trip-access-photo trip-access-photo--krabi" />
             <span className="trip-access-photo trip-access-photo--kyoto" />
@@ -177,7 +177,7 @@ export function TripJoinGate({ trip, apiClient, embedded = false, initialJoinCod
               </li>
             ))}
           </ul>
-        </aside>
+        </div>
         <div className="join-hero">
           <div className="join-mark" aria-hidden="true">
             <Icon name="route" />

@@ -5,17 +5,37 @@ import { formatTripRange, PageHeader, PageUserCard } from "./PageHeader";
 import { Badge, Button, Panel } from "./ui";
 
 describe("shared UI primitives", () => {
-  it("composes default and custom classes for buttons, panels, and badges", () => {
+  it("composes Tailwind defaults, legacy bridge classes, and custom classes", () => {
     render(
       <Panel className="trip-panel" aria-label="Panel">
         <Button className="trip-action">Save</Button>
+        <Button variant="danger" disabled>
+          Delete
+        </Button>
         <Badge className="trip-badge">Ready</Badge>
       </Panel>,
     );
 
-    expect(screen.getByRole("button", { name: "Save" })).toHaveClass("button", "button--primary", "trip-action");
-    expect(screen.getByLabelText("Panel")).toHaveClass("panel", "trip-panel");
-    expect(screen.getByText("Ready")).toHaveClass("badge", "badge--neutral", "trip-badge");
+    expect(screen.getByRole("button", { name: "Save" })).toHaveClass(
+      "button",
+      "button--primary",
+      "inline-flex",
+      "bg-[var(--color-primary)]",
+      "trip-action",
+    );
+    expect(screen.getByRole("button", { name: "Delete" })).toHaveClass(
+      "button",
+      "button--danger",
+      "disabled:bg-[var(--color-surface-muted)]",
+    );
+    expect(screen.getByLabelText("Panel")).toHaveClass(
+      "panel",
+      "grid",
+      "gap-3",
+      "rounded-[var(--radius-lg)]",
+      "trip-panel",
+    );
+    expect(screen.getByText("Ready")).toHaveClass("badge", "badge--neutral", "inline-flex", "rounded-full", "trip-badge");
   });
 
   it("renders page headers with and without optional regions", () => {

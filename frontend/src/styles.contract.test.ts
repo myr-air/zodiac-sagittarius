@@ -12,6 +12,10 @@ describe("Calm Travel Ops CSS contract", () => {
     expect(css).toMatch(/:where\(button,\s*a,\s*input,\s*select,\s*textarea\):focus-visible/);
   });
 
+  it("keeps danger badges above the minimum contrast threshold on soft danger backgrounds", () => {
+    expect(css).toMatch(/\.badge--danger\s*{[^}]*color:\s*#b91c1c/s);
+  });
+
   it("keeps the production palette away from the purple Joii prototype theme", () => {
     expect(css).toContain("--color-primary: #0f766e");
     expect(css).toContain("--color-route: #2563eb");

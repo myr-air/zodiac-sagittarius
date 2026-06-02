@@ -39,6 +39,13 @@ describe("TripJoinGate", () => {
     expect(screen.getByLabelText(/Trip ID/i)).toHaveValue("HK-SZ-2025");
   });
 
+  it("keeps the trip access visual preview out of complementary landmarks", () => {
+    render(<TripJoinGate trip={seedTrip} onTripChange={vi.fn()} onAuthenticated={vi.fn()} />);
+
+    expect(screen.queryByRole("complementary", { name: /Trip access preview/i })).not.toBeInTheDocument();
+    expect(screen.getByLabelText(/Trip access preview/i)).toHaveClass("trip-access-visual");
+  });
+
   it("marks trip room credentials with browser password-manager autocomplete hints", () => {
     render(<TripJoinGate trip={seedTrip} onTripChange={vi.fn()} onAuthenticated={vi.fn()} />);
 
