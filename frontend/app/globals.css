@@ -9688,6 +9688,12 @@ span.member-state-pill {
     gap: 8px;
   }
 
+  .members-page .presence-pill {
+    grid-column: 2;
+    justify-self: start;
+    white-space: nowrap;
+  }
+
   .members-page .member-controls {
     width: 100%;
   }

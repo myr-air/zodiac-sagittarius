@@ -2,6 +2,7 @@ import { type FormEvent, useEffect, useMemo, useState } from "react";
 import { appRoutes } from "@/src/routes/app-routes";
 import type { Member, Trip, TripMemberAccessStatus, TripRole } from "@/src/trip/types";
 import { useI18n } from "@/src/i18n/I18nProvider";
+import { cn } from "@/src/lib/cn";
 import { Icon } from "./icons";
 import { TravelMotif } from "./motifs";
 import { formatTripRange, PageHeader, PageUserCard } from "./PageHeader";
@@ -18,6 +19,119 @@ interface TripMembersPageProps {
   onResetMemberClaim: (memberId: string) => void;
   onTransferOwnership?: (targetMemberId: string) => void;
 }
+
+const membersPageClassName = ["members-page", "grid", "min-h-full", "min-w-0", "gap-3", "bg-transparent", "px-6", "py-[22px]", "pb-7"];
+const memberStatGridClassName = ["member-stat-grid", "grid", "grid-cols-5", "gap-3", "w-full"];
+const memberStatClassName = [
+  "member-stat",
+  "grid",
+  "min-h-[126px]",
+  "min-w-0",
+  "content-start",
+  "gap-2",
+  "rounded-[var(--radius-md)]",
+  "border",
+  "border-[var(--color-border)]",
+  "bg-[var(--color-surface)]",
+  "p-3.5",
+  "shadow-[0_10px_24px_rgb(15_23_42_/_0.04)]",
+];
+const memberCommandBarClassName = [
+  "member-command-bar",
+  "grid",
+  "min-w-0",
+  "gap-3",
+  "rounded-[var(--radius-lg)]",
+  "border",
+  "border-[var(--color-border)]",
+  "bg-[var(--color-surface)]",
+  "p-4",
+  "shadow-[0_12px_28px_rgb(15_23_42_/_0.05)]",
+];
+const memberCommandFieldsClassName = ["member-command-fields", "grid", "min-w-0", "grid-cols-3", "gap-3"];
+const memberCommandActionsClassName = ["member-command-actions", "flex", "min-w-0", "flex-wrap", "items-center", "justify-end", "gap-2"];
+const memberCommandMetaClassName = ["member-command-meta", "grid", "min-w-0", "grid-cols-[minmax(0,1fr)_auto]", "items-center", "gap-2"];
+const memberActionButtonClassName = [
+  "inline-flex",
+  "min-h-10",
+  "min-w-0",
+  "items-center",
+  "justify-center",
+  "gap-2",
+  "rounded-[var(--radius-md)]",
+  "border",
+  "px-3",
+  "text-sm",
+  "font-extrabold",
+  "leading-5",
+  "transition-[border-color,box-shadow,transform,background,color]",
+  "duration-150",
+  "focus-visible:outline-none",
+  "focus-visible:ring-2",
+  "focus-visible:ring-[var(--color-primary-border)]",
+];
+const memberResetButtonClassName = [
+  "member-filter-reset",
+  "border-[var(--color-border)]",
+  "bg-[var(--color-surface-subtle)]",
+  "text-[var(--color-text-muted)]",
+  "hover:border-[var(--color-primary)]",
+  "hover:text-[var(--color-primary-strong)]",
+];
+const inviteCopyButtonClassName = [
+  "invite-copy-button",
+  "border-[var(--color-primary)]",
+  "bg-[var(--color-primary)]",
+  "text-white",
+  "hover:-translate-y-px",
+  "hover:shadow-[0_12px_22px_rgb(15_118_110_/_0.18)]",
+  "disabled:cursor-not-allowed",
+  "disabled:border-[var(--color-border)]",
+  "disabled:bg-[var(--color-surface-muted)]",
+  "disabled:text-[var(--color-text-muted)]",
+  "disabled:shadow-none",
+];
+const memberCreateButtonClassName = [
+  "member-create-button",
+  "border-[var(--color-primary)]",
+  "bg-[var(--color-primary-soft)]",
+  "text-[var(--color-primary-strong)]",
+  "hover:-translate-y-px",
+  "hover:shadow-[0_12px_22px_rgb(15_118_110_/_0.12)]",
+  "disabled:cursor-not-allowed",
+  "disabled:border-[var(--color-border)]",
+  "disabled:bg-[var(--color-surface-muted)]",
+  "disabled:text-[var(--color-text-muted)]",
+  "disabled:shadow-none",
+];
+const copyFeedbackClassName = [
+  "copy-feedback",
+  "inline-flex",
+  "min-h-8",
+  "items-center",
+  "justify-center",
+  "rounded-full",
+  "border",
+  "border-[var(--color-border)]",
+  "bg-[var(--color-surface-subtle)]",
+  "px-3",
+  "text-xs",
+  "font-extrabold",
+  "leading-4",
+  "text-[var(--color-text-muted)]",
+];
+const memberCreatePanelClassName = [
+  "member-create-panel",
+  "grid",
+  "min-w-0",
+  "gap-3",
+  "rounded-[var(--radius-lg)]",
+  "border",
+  "border-[var(--color-primary-border)]",
+  "bg-[var(--color-primary-soft)]",
+  "p-4",
+];
+const memberCreateFormClassName = ["member-create-form", "grid", "min-w-0", "grid-cols-[minmax(0,1fr)_minmax(180px,240px)_auto]", "items-end", "gap-3"];
 
 export function TripMembersPage({
   trip,
@@ -139,7 +253,7 @@ export function TripMembersPage({
   }
 
   return (
-    <section className="members-page" aria-label={t.members.pageLabel}>
+    <section className={cn(membersPageClassName)} aria-label={t.members.pageLabel}>
       <PageHeader
         title={t.members.title}
         subtitle={trip.name}
@@ -153,36 +267,36 @@ export function TripMembersPage({
         aside={<PageUserCard color={currentMember.color} name={currentMember.displayName} label={canManagePeople ? t.members.canManage : t.members.readOnly} />}
       />
 
-      <section className="member-stat-grid" aria-label={t.members.summaryLabel}>
-        <div className="member-stat">
+      <section className={cn(memberStatGridClassName)} aria-label={t.members.summaryLabel}>
+        <div className={cn(memberStatClassName)}>
           <Icon name="users" />
           <span>{t.members.stats.total}</span>
           <strong>{visibleMembers.length}</strong>
         </div>
-        <div className="member-stat">
+        <div className={cn(memberStatClassName)}>
           <Icon name="check" />
           <span>{t.members.stats.active}</span>
           <strong>{activeMembers}</strong>
         </div>
-        <div className="member-stat">
+        <div className={cn(memberStatClassName)}>
           <Icon name="warning" />
           <span>{t.members.stats.pending}</span>
           <strong>{pendingMembers}</strong>
         </div>
-        <div className="member-stat">
+        <div className={cn(memberStatClassName)}>
           <Icon name="check" />
           <span>{t.members.stats.joined}</span>
           <strong>{joinedMembers}</strong>
         </div>
-        <div className="member-stat">
+        <div className={cn(memberStatClassName)}>
           <Icon name="alertCircle" />
           <span>{t.members.stats.disabled}</span>
           <strong>{disabledMembers}</strong>
         </div>
       </section>
 
-      <section className="member-command-bar" aria-label={t.members.commandBar}>
-        <div className="member-command-fields">
+      <section className={cn(memberCommandBarClassName)} aria-label={t.members.commandBar}>
+        <div className={cn(memberCommandFieldsClassName)}>
           <label>
             <span>{t.members.fields.search}</span>
             <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder={t.members.fields.searchPlaceholder} />
@@ -208,15 +322,15 @@ export function TripMembersPage({
             </select>
           </label>
         </div>
-        <div className="member-command-actions">
-          <button className="member-filter-reset" type="button" onClick={resetFilters}>{t.members.actions.clear}</button>
-          <button className="invite-copy-button" type="button" disabled={!canManagePeople} onClick={copyInviteLink}>
+        <div className={cn(memberCommandActionsClassName)}>
+          <button className={cn(memberActionButtonClassName, memberResetButtonClassName)} type="button" onClick={resetFilters}>{t.members.actions.clear}</button>
+          <button className={cn(memberActionButtonClassName, inviteCopyButtonClassName)} type="button" disabled={!canManagePeople} onClick={copyInviteLink}>
             <Icon name="copy" />
             {t.members.actions.copyInvite}
           </button>
           <button
             aria-expanded={createPanelOpen}
-            className="member-create-button"
+            className={cn(memberActionButtonClassName, memberCreateButtonClassName)}
             type="button"
             disabled={!canManagePeople}
             onClick={() => setCreatePanelOpen((current) => !current)}
@@ -225,17 +339,17 @@ export function TripMembersPage({
             {createPanelOpen ? t.members.actions.closeCreate : t.members.actions.openCreate}
           </button>
         </div>
-        <div className="member-command-meta">
+        <div className={cn(memberCommandMetaClassName)}>
           <code>{inviteLink}</code>
-          <span className={`copy-feedback copy-feedback--${copyState}`} role="status">
+          <span className={cn(copyFeedbackClassName, `copy-feedback--${copyState}`)} role="status">
             {copyState === "copied" ? t.common.status.copied : copyState === "error" ? t.common.status.copyFailed : canManagePeople ? t.members.copy.ready : t.members.copy.readOnly}
           </span>
         </div>
       </section>
 
       {createPanelOpen ? (
-        <section className="member-create-panel" aria-label={t.members.createLabel}>
-          <form className="member-create-form" onSubmit={submitNewMember}>
+        <section className={cn(memberCreatePanelClassName)} aria-label={t.members.createLabel}>
+          <form className={cn(memberCreateFormClassName)} onSubmit={submitNewMember}>
             <label>
               <span>{t.members.fields.newName}</span>
               <input
@@ -257,7 +371,7 @@ export function TripMembersPage({
                 <option value="viewer">{t.appShell.roles.viewer}</option>
               </select>
             </label>
-            <button className="member-create-button" type="submit" disabled={!canManagePeople || !newMemberName.trim()}>
+            <button className={cn(memberActionButtonClassName, memberCreateButtonClassName)} type="submit" disabled={!canManagePeople || !newMemberName.trim()}>
               <Icon name="check" />
               {t.members.actions.saveMember}
             </button>

@@ -38,6 +38,9 @@ export const OwnerThai: Story = {
   parameters: { locale: "th" },
   play: async ({ canvas }) => {
     await expect(canvas.getByRole("region", { name: /สมาชิกทริป/i })).toBeVisible();
+    await expect(canvas.getByRole("region", { name: /สมาชิกทริป/i })).toHaveClass("members-page", "grid");
+    await expect(canvas.getByRole("region", { name: /สรุปสมาชิก/i })).toHaveClass("member-stat-grid", "grid");
+    await expect(canvas.getByRole("region", { name: /แถบคำสั่งสมาชิก/i })).toHaveClass("member-command-bar", "grid");
   },
 };
 
