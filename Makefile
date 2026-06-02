@@ -9,7 +9,7 @@ DATABASE_NAME ?= sagittarius
 TEST_DATABASE_NAME ?= sagittarius_test
 PSQL ?= psql
 
-.PHONY: backend-dev frontend-dev backend-test frontend-build frontend-test frontend-storybook frontend-verify frontend-e2e-local verify db-init db-create db-migrate db-init-test db-migrate-test db-ensure-psql
+.PHONY: backend-dev frontend-dev backend-test frontend-build frontend-test frontend-storybook frontend-verify frontend-e2e-local frontend-e2e-auth-browser verify db-init db-create db-migrate db-init-test db-migrate-test db-ensure-psql
 
 backend-dev: db-init
 	DATABASE_URL="$(DATABASE_URL)" SAGITTARIUS_BIND_ADDR="$(SAGITTARIUS_BIND_ADDR)" \
@@ -38,6 +38,11 @@ frontend-e2e-local: db-init-test
 	cd $(FRONTEND_DIR) && \
 	DATABASE_URL="$(TEST_DATABASE_URL)" SAGITTARIUS_BIND_ADDR="$(SAGITTARIUS_BIND_ADDR)" \
 	bun run test:e2e:local
+
+frontend-e2e-auth-browser: db-init-test
+	cd $(FRONTEND_DIR) && \
+	DATABASE_URL="$(TEST_DATABASE_URL)" \
+	bun run test:e2e:auth-browser
 
 verify: frontend-verify backend-test
 

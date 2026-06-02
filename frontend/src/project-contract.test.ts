@@ -153,13 +153,17 @@ describe("Sagittarius project scaffold", () => {
     const makefile = readFileSync(join(repoRoot, "Makefile"), "utf8");
 
     expect(packageJson.scripts?.["test:e2e:local"]).toBe("bun run scripts/run-local-real-api-e2e.ts");
+    expect(packageJson.scripts?.["test:e2e:auth-browser"]).toBe("bun run scripts/run-local-real-browser-auth-e2e.ts");
     expect(existsSync(join(frontendRoot, "scripts/run-local-real-api-e2e.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "scripts/run-local-real-browser-auth-e2e.ts"))).toBe(true);
     const seedE2e = readFileSync(join(repoRoot, "backend/crates/sagittarius-api/src/bin/seed_e2e.rs"), "utf8");
     expect(seedE2e).toContain("0005_account_portal.sql");
     expect(seedE2e).toContain("0006_trip_countries.sql");
     expect(makefile).toContain("frontend-e2e-local:");
     expect(makefile).toContain("frontend-e2e-local: db-init-test");
     expect(makefile).toContain("bun run test:e2e:local");
+    expect(makefile).toContain("frontend-e2e-auth-browser: db-init-test");
+    expect(makefile).toContain("bun run test:e2e:auth-browser");
   });
 
   it("keeps production source free of unimplemented runtime placeholders", () => {
