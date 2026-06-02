@@ -44,6 +44,9 @@ export const OwnerThai: Story = {
     await expect(canvas.getByRole("region", { name: /travel cockpit/i })).toBeVisible();
     await expect(canvas.getByRole("region", { name: /ไฮไลต์ทริป/i })).toBeVisible();
     await expect(canvas.getByRole("region", { name: /เช็กลิสต์ของทริป/i })).toBeVisible();
+    await expect(canvas.getByRole("region", { name: /Trip overview/i })).toHaveClass("grid");
+    await expect(canvas.getByRole("region", { name: /Hong Kong \+ Shenzhen Trip/i })).toHaveClass("overview-hero", "grid");
+    await expect(canvas.getByRole("region", { name: /travel cockpit/i })).toHaveClass("overview-travel-cockpit", "grid", "grid-cols-3");
   },
 };
 

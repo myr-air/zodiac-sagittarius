@@ -2,6 +2,7 @@ import { type FormEvent, type ReactNode, useMemo, useState } from "react";
 import type { ExpenseSummary, ItineraryItem, Member, Suggestion, Trip, TripTask } from "@/src/trip/types";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import type { Locale } from "@/src/i18n/types";
+import { cn } from "@/src/lib/cn";
 import { formatDayLabel, getTripDates, validateItineraryItem } from "@/src/trip/itinerary";
 import { Icon } from "./icons";
 import { formatTripRange, PageUserCard } from "./PageHeader";
@@ -17,6 +18,100 @@ interface OverviewPageProps {
   onOpenExpenses?: () => void;
   onToggleTaskStatus: (taskId: string) => void;
 }
+
+const overviewPageClassName = ["overview-page", "grid", "min-h-full", "min-w-0", "gap-3", "bg-transparent", "px-6", "py-[22px]", "pb-7"];
+const overviewCockpitClassName = ["overview-travel-cockpit", "grid", "grid-cols-3", "gap-3", "w-full", "mb-3.5"];
+const overviewHeroBaseClassName = [
+  "overview-hero",
+  "relative",
+  "grid",
+  "min-h-[228px]",
+  "grid-cols-[minmax(0,1fr)_minmax(260px,320px)]",
+  "items-center",
+  "gap-6",
+  "overflow-hidden",
+  "rounded-[var(--radius-lg)]",
+  "border",
+  "p-6",
+  "shadow-[0_14px_34px_rgb(15_23_42_/_0.07)]",
+];
+const overviewHeroCopyClassName = ["overview-hero-copy", "relative", "z-[2]", "grid", "min-w-0", "max-w-[760px]", "content-center", "gap-2.5"];
+const overviewHeroKickerClassName = [
+  "overview-hero-kicker",
+  "w-fit",
+  "max-w-full",
+  "overflow-hidden",
+  "rounded-full",
+  "border",
+  "bg-white/70",
+  "px-2.5",
+  "py-1.5",
+  "text-xs",
+  "font-extrabold",
+  "leading-4",
+  "text-ellipsis",
+  "whitespace-nowrap",
+];
+const overviewHeroMetaClassName = ["overview-hero-meta", "mt-1", "flex", "flex-wrap", "gap-2"];
+const overviewHeroVisualClassName = ["overview-hero-visual", "absolute", "z-[1]", "hidden", "overflow-hidden", "rounded-[var(--radius-lg)]", "opacity-40"];
+const overviewHeroAsideClassName = [
+  "overview-hero-aside",
+  "relative",
+  "z-[2]",
+  "grid",
+  "min-w-0",
+  "content-center",
+  "gap-2.5",
+  "self-center",
+  "rounded-[var(--radius-lg)]",
+  "border",
+  "border-white/70",
+  "bg-white/80",
+  "p-3",
+  "shadow-[0_14px_30px_rgb(15_23_42_/_0.07)]",
+];
+const overviewHeroSettlementsClassName = [
+  "overview-hero-settlements",
+  "justify-self-stretch",
+  "rounded-full",
+  "border",
+  "bg-white/70",
+  "px-2.5",
+  "py-1.5",
+  "text-center",
+  "text-xs",
+  "font-extrabold",
+  "leading-4",
+];
+const cockpitCardBaseClassName = [
+  "overview-cockpit-card",
+  "grid",
+  "min-h-[126px]",
+  "min-w-0",
+  "content-start",
+  "gap-2",
+  "rounded-[var(--radius-md)]",
+  "border",
+  "border-[var(--color-border)]",
+  "bg-[var(--color-surface)]",
+  "p-3.5",
+  "text-left",
+  "shadow-[0_10px_24px_rgb(15_23_42_/_0.04)]",
+];
+const cockpitCardButtonClassName = [
+  "overview-cockpit-card--button",
+  "cursor-pointer",
+  "transition-[border-color,box-shadow,transform]",
+  "duration-150",
+  "hover:-translate-y-px",
+  "hover:border-[var(--color-primary)]",
+  "hover:shadow-[0_16px_30px_rgb(15_23_42_/_0.08)]",
+  "focus-visible:-translate-y-px",
+  "focus-visible:border-[var(--color-primary)]",
+  "focus-visible:shadow-[0_16px_30px_rgb(15_23_42_/_0.08)]",
+  "focus-visible:outline-none",
+];
+const cockpitCardTitleClassName = ["overview-cockpit-card-title", "inline-flex", "min-w-0", "items-center", "gap-2", "text-xs", "font-extrabold", "leading-4", "text-[var(--color-text-muted)]"];
 
 export function OverviewPage({ trip, currentMemberId, expenseSummary, items, suggestions, tasks, onCreateTask, onOpenExpenses, onToggleTaskStatus }: OverviewPageProps) {
   const { locale, t } = useI18n();
@@ -100,7 +195,7 @@ export function OverviewPage({ trip, currentMemberId, expenseSummary, items, sug
   }
 
   return (
-    <section className="overview-page" aria-label={t.overview.pageLabel}>
+    <section className={cn(overviewPageClassName)} aria-label={t.overview.pageLabel}>
       <OverviewHero
         title={trip.name}
         roleTitle={t.overview.roleHeadings[roleLens]}
@@ -113,7 +208,7 @@ export function OverviewPage({ trip, currentMemberId, expenseSummary, items, sug
         currentMemberCard={currentMemberCard}
       />
 
-      <section className="overview-travel-cockpit" aria-label="travel cockpit">
+      <section className={cn(overviewCockpitClassName)} aria-label="travel cockpit">
         <CockpitCard
           icon="route"
           label={t.overview.cockpit.nextStop}
@@ -553,26 +648,26 @@ function OverviewHero({
   currentMemberCard: ReactNode;
 }) {
   return (
-    <section className={`overview-hero overview-hero--${visual.tone}`} aria-label={title}>
-      <div className="overview-hero-copy">
-        <span className="overview-hero-kicker">{destinationLabel}</span>
+    <section className={cn(overviewHeroBaseClassName, `overview-hero--${visual.tone}`)} aria-label={title}>
+      <div className={cn(overviewHeroCopyClassName)}>
+        <span className={cn(overviewHeroKickerClassName)}>{destinationLabel}</span>
         <h1>{title}</h1>
         <p className="overview-hero-role">{roleTitle}</p>
-        <div className="overview-hero-meta" aria-label="trip facts">
+        <div className={cn(overviewHeroMetaClassName)} aria-label="trip facts">
           <span><Icon name="calendar" /> {dateRange}</span>
           <span><Icon name="location" /> {visual.label}</span>
           <span><Icon name="users" /> {activeMembersLabel}</span>
           <span><Icon name="wallet" /> {groupSpendLabel}</span>
         </div>
       </div>
-      <div className="overview-hero-visual" aria-hidden="true">
+      <div className={cn(overviewHeroVisualClassName)} aria-hidden="true">
         <span className="overview-hero-skyline" />
         <span className="overview-hero-route" />
         <span className="overview-hero-marker" />
       </div>
-      <div className="overview-hero-aside">
+      <div className={cn(overviewHeroAsideClassName)}>
         {currentMemberCard}
-        <span className="overview-hero-settlements">{settlementCount} settlements</span>
+        <span className={cn(overviewHeroSettlementsClassName)}>{settlementCount} settlements</span>
       </div>
     </section>
   );
@@ -595,7 +690,7 @@ function CockpitCard({
 }) {
   const content = (
     <>
-      <div className="overview-cockpit-card-title">
+      <div className={cn(cockpitCardTitleClassName)}>
         <Icon name={icon} />
         <span>{label}</span>
       </div>
@@ -606,13 +701,13 @@ function CockpitCard({
 
   if (onClick) {
     return (
-      <button className="overview-cockpit-card overview-cockpit-card--button" type="button" aria-label={ariaLabel} onClick={onClick}>
+      <button className={cn(cockpitCardBaseClassName, cockpitCardButtonClassName)} type="button" aria-label={ariaLabel} onClick={onClick}>
         {content}
       </button>
     );
   }
 
-  return <div className="overview-cockpit-card">{content}</div>;
+  return <div className={cn(cockpitCardBaseClassName)}>{content}</div>;
 }
 
 function HighlightBoard({ items, startDate, locale, emptyMessage, title, subtitle }: { items: ItineraryItem[]; startDate: string; locale: Locale; emptyMessage: string; title: string; subtitle: string }) {

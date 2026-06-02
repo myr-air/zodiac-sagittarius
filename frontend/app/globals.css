@@ -6723,6 +6723,12 @@ button:disabled,
   font-weight: 850;
 }
 
+@media (max-width: 520px) {
+  .overview-health-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .overview-stop-list {
   display: grid;
   gap: 8px;
