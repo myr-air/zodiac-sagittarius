@@ -6,8 +6,9 @@ function segment(value: string): string {
 
 export const appRoutes = {
   home: () => "/",
-  login: () => "/login",
-  register: () => "/register",
+  access: (mode: "sign-in" | "register" = "sign-in") => `/access?mode=${mode}`,
+  login: () => "/access?mode=sign-in",
+  register: () => "/access?mode=register",
   portal: () => "/portal",
   portalMyTrips: () => "/portal/my-trips",
   portalNewTrip: () => "/portal/trips/new",

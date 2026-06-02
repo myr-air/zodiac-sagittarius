@@ -45,6 +45,7 @@ describe("Sagittarius project scaffold", () => {
     expect(readFileSync(join(frontendRoot, "src/components/HomeLanding.tsx"), "utf8")).toContain("LanguageSwitch");
     expect(readFileSync(join(frontendRoot, "src/i18n/messages.ts"), "utf8")).toContain("Plan trips with friends");
     expect(readFileSync(join(frontendRoot, "src/i18n/messages.ts"), "utf8")).toContain("วางแผนทริปกับเพื่อน");
+    expect(existsSync(join(frontendRoot, "app/access/page.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "app/login/page.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "app/register/page.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "app/portal/page.tsx"))).toBe(true);
@@ -56,8 +57,9 @@ describe("Sagittarius project scaffold", () => {
       "app/portal/settings/page.tsx",
       "app/portal/sign-out/page.tsx",
     ].forEach((routeFile) => expect(existsSync(join(frontendRoot, routeFile))).toBe(true));
-    expect(readFileSync(join(frontendRoot, "app/login/page.tsx"), "utf8")).toContain("appRoutes.portal()");
-    expect(readFileSync(join(frontendRoot, "app/register/page.tsx"), "utf8")).toContain("appRoutes.portal()");
+    expect(readFileSync(join(frontendRoot, "app/access/page.tsx"), "utf8")).toContain("appRoutes.portal()");
+    expect(readFileSync(join(frontendRoot, "app/login/page.tsx"), "utf8")).toContain("redirect(appRoutes.login())");
+    expect(readFileSync(join(frontendRoot, "app/register/page.tsx"), "utf8")).toContain("redirect(appRoutes.register())");
     expect(existsSync(join(frontendRoot, "app/trips/[tripId]/page.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "app/trips/[tripId]/itinerary/page.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "app/trips/[tripId]/map/page.tsx"))).toBe(true);

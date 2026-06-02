@@ -2,6 +2,7 @@
 
 import { ComponentProps, CSSProperties, Dispatch, FormEvent, KeyboardEvent, ReactNode, SetStateAction, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { geoCentroid, geoEqualEarth, geoPath } from "d3-geo";
 import { feature } from "topojson-client";
 import countriesTopology from "world-atlas/countries-110m.json";
@@ -49,8 +50,12 @@ interface AccountAccessPanelProps {
 }
 
 type AccessMode = "account" | "temp";
+type AuthFlow = "login" | "register";
+type AuthTransitionDirection = "forward" | "back" | "mode";
 type PortalSection = "dashboard" | "trips" | "new-trip" | "explorer" | "todos" | "vault" | "settings" | "sign-out";
 type TripContinent = "all" | "asia" | "europe" | "north-america" | "south-america" | "oceania" | "africa";
+
+const accountEmailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 interface TripCountryOption {
   code: string;
@@ -174,6 +179,11 @@ export function AccountAccessPanel({
   const accessMessages = t.access.messages;
   const [clientPortalRedirected, setClientPortalRedirected] = useState(false);
   const effectiveAccessMode = clientPortalRedirected ? "account-portal" : accessMode;
+  const [entryFlowOverride, setEntryFlowOverride] = useState<AuthFlow | null>(null);
+  const entryFlow = entryFlowOverride ?? (accessMode === "account-register" ? "register" : "login");
+  const effectiveEntryAccessMode = isAccountEntryMode(effectiveAccessMode)
+    ? entryFlow === "register" ? "account-register" : "account-login"
+    : effectiveAccessMode;
   const forcedMode = effectiveAccessMode === "trip-access" ? "temp" : effectiveAccessMode === "combined" ? null : "account";
   const isAccountEntry = effectiveAccessMode === "account-login" || effectiveAccessMode === "account-register";
   const isPortalEntry = effectiveAccessMode === "account-portal";
@@ -199,7 +209,7 @@ export function AccountAccessPanel({
   const displayedVaultItems = vaultItems.length ? vaultItems : currentPortalCache?.vaultItems ?? [];
 
   useEffect(() => {
-    if (!accountSession) {
+    if (!accountSession || isAccountEntry) {
       return;
     }
 
@@ -242,7 +252,7 @@ export function AccountAccessPanel({
     return () => {
       cancelled = true;
     };
-  }, [accountClient, accountSession]);
+  }, [accountClient, accountSession, isAccountEntry]);
 
   useEffect(() => {
     if (!pendingAccountSession) {
@@ -292,7 +302,7 @@ export function AccountAccessPanel({
         isPortalEntry ? "account-page--portal" : "",
         isPortalEntry && portalSection === "new-trip" ? "account-page--portal-new-trip" : "",
       ].filter(Boolean).join(" ")}
-      aria-label={mainLabel(effectiveAccessMode, t.access.mainLabels)}
+      aria-label={mainLabel(effectiveEntryAccessMode, t.access.mainLabels)}
     >
       <section className={["account-shell", isAccountEntry ? "account-shell--entry" : ""].filter(Boolean).join(" ")}>
         {isAccountEntry ? <LanguageSwitch className="access-language-switch account-entry-language-switch" /> : null}
@@ -301,12 +311,15 @@ export function AccountAccessPanel({
             <Icon name="route" />
           </div>
           <div>
-            <p className="join-eyebrow">{t.access.eyebrow}</p>
-            <h1>{heroTitle(effectiveAccessMode, t.access.titles)}</h1>
-            <p>{heroDetail(effectiveAccessMode, t.access.details)}</p>
+            <p className="join-eyebrow">{isAccountEntry ? t.access.entryHero.brand : t.access.eyebrow}</p>
+            {isAccountEntry ? <p className="account-entry-brand-tagline">{t.access.entryHero.tagline}</p> : null}
+            <h1>{isAccountEntry ? t.access.entryHero.title : heroTitle(effectiveEntryAccessMode, t.access.titles)}</h1>
+            <div className="h-6"></div>
+            <p>{isAccountEntry ? t.access.entryHero.detail : heroDetail(effectiveEntryAccessMode, t.access.details)}</p>
             {isAccountEntry ? null : <LanguageSwitch className="access-language-switch" />}
           </div>
-          {isAccountEntry ? <AuthHighlights flow={effectiveAccessMode === "account-register" ? "register" : "login"} highlights={t.access.highlights} /> : null}
+          {isAccountEntry ? <AuthTravelCollage labels={t.access.entryHero} /> : null}
+          {isAccountEntry ? <AuthHighlights flow={entryFlow} highlights={t.access.highlights} entryHero={t.access.entryHero} /> : null}
         </div>
 
         {effectiveAccessMode === "combined" ? (
@@ -334,8 +347,15 @@ export function AccountAccessPanel({
           </div>
         ) : null}
 
-        {message ? <StatusMessage tone="success">{message}</StatusMessage> : null}
-        {displayError ? <StatusMessage tone="danger">{displayError}</StatusMessage> : null}
+        {isAccountEntry && (message || displayError) ? (
+          <div className="account-toast-stack" aria-live="polite">
+            {message ? <StatusMessage tone="success">{message}</StatusMessage> : null}
+            {displayError ? <StatusMessage tone="danger">{displayError}</StatusMessage> : null}
+          </div>
+        ) : null}
+
+        {!isAccountEntry && message ? <StatusMessage tone="success">{message}</StatusMessage> : null}
+        {!isAccountEntry && displayError ? <StatusMessage tone="danger">{displayError}</StatusMessage> : null}
 
         {mode === "temp" ? (
           <TripJoinGate
@@ -349,6 +369,18 @@ export function AccountAccessPanel({
           />
         ) : pendingAccountSession ? (
           <StatusMessage tone="success">{t.access.portalDelay.detail}</StatusMessage>
+        ) : isAccountEntry ? (
+          <EmailLoginPanel
+            flow={entryFlow}
+            accountClient={accountClient}
+            showRouteTabs
+            onFlowChange={setEntryFlowOverride}
+            onLoggedIn={(session) => {
+              setMessage(session.kind === "trusted" ? t.access.messages.trustedLogin : t.access.messages.temporaryLogin);
+              setPendingAccountSession(session);
+            }}
+            onError={setError}
+          />
         ) : !accountSessionLoaded && effectiveAccessMode === "account-portal" ? (
           <AccountPortalLoadingFrame portalSection={portalSection} />
         ) : accountSession ? (
@@ -390,8 +422,10 @@ export function AccountAccessPanel({
           />
         ) : (
           <EmailLoginPanel
-            flow={accessMode === "account-register" ? "register" : "login"}
+            flow={entryFlow}
             accountClient={accountClient}
+            showRouteTabs={isAccountEntry}
+            onFlowChange={setEntryFlowOverride}
             onLoggedIn={(session) => {
               setMessage(session.kind === "trusted" ? t.access.messages.trustedLogin : t.access.messages.temporaryLogin);
               setPendingAccountSession(session);
@@ -404,24 +438,68 @@ export function AccountAccessPanel({
   );
 }
 
-function AuthHighlights({ flow, highlights }: { flow: "login" | "register"; highlights: Messages["access"]["highlights"] }) {
+function AuthTravelCollage({ labels }: { labels: Messages["access"]["entryHero"] }) {
+  const photos = [
+    { id: "krabi", label: "Krabi, Thailand", alt: "Krabi beach lagoon with limestone cliffs and a longtail boat" },
+    { id: "cappadocia", label: "Cappadocia, Turkiye", alt: "Cappadocia sunrise landscape with hot air balloons" },
+    { id: "kyoto", label: "Kyoto, Japan", alt: "Kyoto traditional street with wooden houses and a pagoda" },
+    { id: "santorini", label: "Santorini, Greece", alt: "Santorini coast with blue domes and the Aegean sea" },
+  ];
+
+  return (
+    <div className="account-travel-collage" aria-label={labels.collageLabel}>
+      {photos.map((photo) => (
+        <figure className={`travel-photo-card travel-photo-card--${photo.id}`} key={photo.id}>
+          <Image alt={photo.alt} className="travel-photo-image" fill sizes="220px" src={`/landing/auth/photo-${photo.id}.png`} />
+          <span className="travel-photo-heart" aria-hidden="true" />
+          <figcaption className="travel-photo-caption">{photo.label}</figcaption>
+        </figure>
+      ))}
+      <span className="travel-next-card">
+        <Icon name="location" />
+        <span>
+          <small>{labels.nextLabel}</small>
+          <strong>{labels.nextTrip}</strong>
+          <small>{labels.nextDate}</small>
+        </span>
+      </span>
+    </div>
+  );
+}
+
+function AuthHighlights({
+  entryHero,
+  flow,
+  highlights,
+}: {
+  entryHero?: Messages["access"]["entryHero"];
+  flow: "login" | "register";
+  highlights: Messages["access"]["highlights"];
+}) {
   const items = flow === "register"
     ? [highlights.registerSecure, highlights.registerHistory, highlights.registerOwner]
     : [highlights.secure, highlights.history, highlights.trusted];
+  const entryItems = entryHero
+    ? [
+        { title: entryHero.safeTitle, detail: entryHero.safeDetail },
+        { title: entryHero.syncTitle, detail: entryHero.syncDetail },
+        { title: entryHero.exploreTitle, detail: entryHero.exploreDetail },
+      ]
+    : null;
 
   return (
     <ul className="account-auth-highlights" aria-label={highlights.label}>
       <li className="account-auth-highlight">
         <Icon name="check" />
-        <span>{items[0]}</span>
+        <span>{entryItems ? <><strong>{entryItems[0].title}</strong><small>{entryItems[0].detail}</small></> : items[0]}</span>
       </li>
       <li className="account-auth-highlight">
         <Icon name="clock" />
-        <span>{items[1]}</span>
+        <span>{entryItems ? <><strong>{entryItems[1].title}</strong><small>{entryItems[1].detail}</small></> : items[1]}</span>
       </li>
       <li className="account-auth-highlight">
         <Icon name="key" />
-        <span>{items[2]}</span>
+        <span>{entryItems ? <><strong>{entryItems[2].title}</strong><small>{entryItems[2].detail}</small></> : items[2]}</span>
       </li>
     </ul>
   );
@@ -517,26 +595,41 @@ function heroDetail(accessMode: AccountAccessPanelProps["accessMode"], details: 
   return details.combined;
 }
 
+function isAccountEntryMode(accessMode: AccountAccessPanelProps["accessMode"]): accessMode is "account-login" | "account-register" {
+  return accessMode === "account-login" || accessMode === "account-register";
+}
+
 function EmailLoginPanel({
   flow,
   accountClient,
   onError,
+  onFlowChange,
   onLoggedIn,
+  showRouteTabs = false,
 }: {
-  flow: "login" | "register";
+  flow: AuthFlow;
   accountClient: AccountApiClient;
   onError: (message: string | null) => void;
+  onFlowChange?: (flow: AuthFlow) => void;
   onLoggedIn: (session: AccountSession) => void;
+  showRouteTabs?: boolean;
 }) {
   const { locale, t } = useI18n();
+  const activeFlow = flow;
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [code, setCode] = useState("");
+  const [displayName, setDisplayName] = useState("");
+  const [homeBase, setHomeBase] = useState("");
   const [trustDevice, setTrustDevice] = useState(true);
-  const [authStep, setAuthStep] = useState<"email" | "methods" | "password">("email");
+  const [authStep, setAuthStep] = useState<"email" | "methods" | "password" | "setup">("email");
+  const [transitionDirection, setTransitionDirection] = useState<AuthTransitionDirection>("forward");
   const [challenge, setChallenge] = useState<EmailLoginStartResponse | null>(null);
+  const [verifiedRegistrationSession, setVerifiedRegistrationSession] = useState<AccountSession | null>(null);
   const [resendCooldown, setResendCooldown] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const normalizedEmail = email.trim();
+  const isEmailValid = accountEmailPattern.test(normalizedEmail);
 
   useEffect(() => {
     if (!challenge || resendCooldown <= 0) return undefined;
@@ -548,19 +641,25 @@ function EmailLoginPanel({
 
   async function submitEmail(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (!isEmailValid) return;
     onError(null);
-    setAuthStep("methods");
+    goToStep(activeFlow === "register" ? "password" : "methods");
   }
 
   async function submitPassword(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (activeFlow === "register") {
+      await requestEmailCode();
+      return;
+    }
     await signInWithPassword();
   }
 
   async function requestEmailCode() {
     setIsSubmitting(true);
     try {
-      const nextChallenge = await accountClient.startEmailLogin(email);
+      const nextChallenge = await accountClient.startEmailLogin(normalizedEmail);
+      setTransitionDirection("forward");
       setChallenge(nextChallenge);
       setResendCooldown(30);
       onError(null);
@@ -579,12 +678,47 @@ function EmailLoginPanel({
       const session = await accountClient.finishEmailLogin({
         challengeId: challenge.challengeId,
         code,
-        trustDevice: flow === "login" ? trustDevice : true,
+        trustDevice: activeFlow === "login" ? trustDevice : true,
         deviceLabel: "",
       });
+      if (activeFlow === "register") {
+        setVerifiedRegistrationSession(session);
+        goToStep("setup");
+        setChallenge(null);
+        setCode("");
+        onError(null);
+        return;
+      }
       onLoggedIn(session);
     } catch (caught) {
       onError(errorMessage(caught, t.access.emailLogin.errors.invalidCode, t.access.messages));
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  async function submitSetup(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!verifiedRegistrationSession) return;
+    setIsSubmitting(true);
+    try {
+      const session = await accountClient.finishPasswordLogin({
+        flow: "register",
+        email: normalizedEmail,
+        password,
+        trustDevice: true,
+        deviceLabel: "",
+      });
+      await accountClient.updateSettings(session.sessionToken, {
+        displayName: displayName.trim() || normalizedEmail.split("@")[0] || t.access.dashboard.fallbackName,
+        avatarColor: "#0f766e",
+        locale,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC",
+      });
+      onLoggedIn(session);
+      onError(null);
+    } catch (caught) {
+      onError(errorMessage(caught, t.access.emailLogin.errors.passwordRegisterFailed, t.access.messages));
     } finally {
       setIsSubmitting(false);
     }
@@ -594,16 +728,16 @@ function EmailLoginPanel({
     setIsSubmitting(true);
     try {
       const session = await accountClient.finishPasswordLogin({
-        flow,
-        email,
+        flow: activeFlow,
+        email: normalizedEmail,
         password,
-        trustDevice: flow === "login" ? trustDevice : true,
+        trustDevice: activeFlow === "login" ? trustDevice : true,
         deviceLabel: "",
       });
       onLoggedIn(session);
       onError(null);
     } catch (caught) {
-      onError(errorMessage(caught, flow === "register" ? t.access.emailLogin.errors.passwordRegisterFailed : t.access.emailLogin.errors.passwordLoginFailed, t.access.messages));
+      onError(errorMessage(caught, activeFlow === "register" ? t.access.emailLogin.errors.passwordRegisterFailed : t.access.emailLogin.errors.passwordLoginFailed, t.access.messages));
     } finally {
       setIsSubmitting(false);
     }
@@ -612,7 +746,7 @@ function EmailLoginPanel({
   async function signInWithPasskey() {
     setIsSubmitting(true);
     try {
-      const loginStart = await accountClient.startPasskeyLogin(email);
+      const loginStart = await accountClient.startPasskeyLogin(normalizedEmail);
       const credential = await getPasskeyCredential(loginStart.challenge, loginStart.allowCredentials.map((credential) => credential.credentialId));
       const session = await accountClient.finishPasskeyLogin({
         challengeId: loginStart.challengeId,
@@ -620,7 +754,7 @@ function EmailLoginPanel({
         clientDataJson: arrayBufferToBase64Url(credential.response.clientDataJSON),
         authenticatorData: arrayBufferToBase64Url(credential.response.authenticatorData),
         signature: arrayBufferToBase64Url(credential.response.signature),
-        trustDevice: flow === "login" ? trustDevice : false,
+        trustDevice: activeFlow === "login" ? trustDevice : false,
         deviceLabel: "",
       });
       onLoggedIn(session);
@@ -636,62 +770,106 @@ function EmailLoginPanel({
     setChallenge(null);
     setCode("");
     setResendCooldown(0);
-    setAuthStep("methods");
+    goToStep(activeFlow === "register" ? "password" : "methods", "back");
     onError(null);
   }
 
   function changeEmail() {
+    resetEntryState("back");
+  }
+
+  function resetEntryState(direction: AuthTransitionDirection = "back") {
     setChallenge(null);
     setCode("");
     setPassword("");
+    setDisplayName("");
+    setHomeBase("");
     setResendCooldown(0);
-    setAuthStep("email");
+    setVerifiedRegistrationSession(null);
+    goToStep("email", direction);
     onError(null);
   }
 
   function showPasswordStep() {
     setPassword("");
-    setAuthStep("password");
+    goToStep("password");
     onError(null);
   }
 
+  function chooseMethods() {
+    goToStep("methods", "back");
+    onError(null);
+  }
+
+  function goToStep(nextStep: typeof authStep, direction: AuthTransitionDirection = "forward") {
+    setTransitionDirection(direction);
+    setAuthStep(nextStep);
+  }
+
+  function switchFlow(nextFlow: AuthFlow) {
+    if (nextFlow === activeFlow) return;
+    onFlowChange?.(nextFlow);
+    resetEntryState("mode");
+    const nextHref = nextFlow === "register" ? appRoutes.register() : appRoutes.login();
+    window.history.replaceState(null, "", nextHref);
+  }
+
+  const visualStep = challenge ? "otp" : authStep;
+  const stepLabel = activeFlow === "register"
+    ? t.access.emailLogin.stepRegister({ current: visualStep === "email" ? 1 : visualStep === "password" ? 2 : visualStep === "otp" ? 3 : 4, total: 4 })
+    : t.access.emailLogin.stepLogin({ current: visualStep === "email" ? 1 : visualStep === "methods" || visualStep === "password" ? 2 : 3, total: 3 });
+
   const trustDeviceFields = (
     <label className="account-check">
-      <input checked={trustDevice} onChange={(event) => setTrustDevice(event.target.checked)} type="checkbox" />
+      <input checked={trustDevice} onChange={(event) => setTrustDevice(event.target.checked)} type="checkbox" suppressHydrationWarning />
       {t.access.emailLogin.trustDevice}
     </label>
   );
 
   return (
     <div className="account-login-flow">
-      <form className="account-card account-form" onSubmit={challenge ? submitCode : authStep === "password" ? submitPassword : submitEmail}>
-        <PanelHeading
-          icon={challenge ? "settings" : authStep === "password" ? "key" : "users"}
-          title={challenge ? t.access.emailLogin.verifyTitle : authStep === "methods" ? t.access.emailLogin.methodTitle : authStep === "password" ? t.access.emailLogin.passwordTitle : t.access.emailLogin.emailTitle}
-          detail={
-            challenge
-              ? t.access.emailLogin.expiresAt({ value: formatDateTime(challenge.expiresAt, locale) })
-              : authStep === "methods"
-                ? t.access.emailLogin.methodDetail
-                : authStep === "password"
-                  ? t.access.emailLogin.passwordDetail
-                  : t.access.emailLogin.emailDetail
-          }
-        />
-        {challenge ? (
-          <>
+      {showRouteTabs ? (
+        <nav className="account-entry-tabs" aria-label={t.access.mainLabels.combined}>
+          <button type="button" className={activeFlow === "login" ? "account-entry-tab account-entry-tab--active" : "account-entry-tab"} aria-current={activeFlow === "login" ? "page" : undefined} onClick={() => switchFlow("login")}>
+            {t.access.titles.accountLogin}
+          </button>
+          <button type="button" className={activeFlow === "register" ? "account-entry-tab account-entry-tab--active" : "account-entry-tab"} aria-current={activeFlow === "register" ? "page" : undefined} onClick={() => switchFlow("register")}>
+            {t.access.titles.accountRegister}
+          </button>
+        </nav>
+      ) : null}
+      <form className="account-card account-form account-auth-card" onSubmit={authStep === "setup" ? submitSetup : challenge ? submitCode : authStep === "password" ? submitPassword : submitEmail}>
+        <span className="account-step-kicker">{stepLabel}</span>
+        <div className={`account-step-stage account-step-stage--${transitionDirection}`} key={visualStep}>
+          <PanelHeading
+            icon={challenge ? "settings" : authStep === "password" ? "key" : "users"}
+            title={challenge ? t.access.emailLogin.verifyTitle : authStep === "setup" ? t.access.emailLogin.setupTitle : authStep === "methods" ? t.access.emailLogin.methodTitle : authStep === "password" ? t.access.emailLogin.passwordTitle : t.access.emailLogin.emailTitle}
+            detail={
+              challenge
+                ? t.access.emailLogin.expiresAt({ value: formatDateTime(challenge.expiresAt, locale) })
+                : authStep === "setup"
+                  ? t.access.emailLogin.setupDetail
+                  : authStep === "methods"
+                    ? t.access.emailLogin.methodDetail
+                    : authStep === "password"
+                      ? activeFlow === "register" ? t.access.emailLogin.registerPasswordDetail : t.access.emailLogin.passwordDetail
+                      : t.access.emailLogin.emailDetail
+            }
+          />
+          {challenge ? (
+            <>
             <div className="account-step-summary">
               <span>{t.access.emailLogin.sentCodeTo}</span>
-              <strong>{email}</strong>
+              <strong>{normalizedEmail}</strong>
             </div>
             <label>
               <span>{t.access.emailLogin.verificationCode}</span>
-              <input value={code} onChange={(event) => setCode(event.target.value)} inputMode="numeric" autoComplete="one-time-code" required />
+              <input value={code} onChange={(event) => setCode(event.target.value)} inputMode="numeric" autoComplete="one-time-code" required suppressHydrationWarning />
             </label>
-            {flow === "login" ? trustDeviceFields : null}
+            {activeFlow === "login" ? trustDeviceFields : null}
             <Button type="submit" disabled={isSubmitting}>
               <Icon name="check" />
-              {flow === "register" ? t.access.emailLogin.createAccount : t.access.emailLogin.signInAccount}
+              {activeFlow === "register" ? t.access.emailLogin.createAccount : t.access.emailLogin.signInAccount}
             </Button>
             <Button type="button" variant="secondary" disabled={isSubmitting || resendCooldown > 0} onClick={() => void requestEmailCode()}>
               {t.access.emailLogin.resendCode}
@@ -700,33 +878,35 @@ function EmailLoginPanel({
             <Button type="button" variant="secondary" disabled={isSubmitting} onClick={resetChallenge}>
               {t.access.emailLogin.changeEmail}
             </Button>
-          </>
-        ) : authStep === "email" ? (
-          <>
+            </>
+          ) : authStep === "email" ? (
+            <>
             <label>
               <span>{t.access.emailLogin.email}</span>
-              <input value={email} onChange={(event) => setEmail(event.target.value)} type="email" autoComplete="email" required />
+              <input value={email} onChange={(event) => setEmail(event.target.value)} type="email" autoComplete="email" placeholder="you@example.com" required suppressHydrationWarning />
             </label>
-            <Button type="submit" disabled={!email || isSubmitting}>
-              <Icon name="check" />
+            {activeFlow === "login" ? trustDeviceFields : null}
+            <Button type="submit" disabled={!isEmailValid || isSubmitting}>
+              <Icon name="chevronRight" />
               {t.access.emailLogin.continue}
             </Button>
-          </>
-        ) : authStep === "methods" ? (
-          <>
+            <SocialAuthButtons labels={t.access.emailLogin} />
+            </>
+          ) : authStep === "methods" ? (
+            <>
             <div className="account-step-summary">
-              <span>{flow === "register" ? t.access.emailLogin.createFor : t.access.emailLogin.signInAs}</span>
-              <strong>{email}</strong>
+              <span>{activeFlow === "register" ? t.access.emailLogin.createFor : t.access.emailLogin.signInAs}</span>
+              <strong>{normalizedEmail}</strong>
             </div>
             <Button type="button" disabled={isSubmitting} onClick={() => void requestEmailCode()}>
               <Icon name="check" />
-              {flow === "register" ? t.access.emailLogin.sendRegisterCode : t.access.emailLogin.sendSignInCode}
+              {activeFlow === "register" ? t.access.emailLogin.sendRegisterCode : t.access.emailLogin.sendSignInCode}
             </Button>
             <Button type="button" variant="secondary" disabled={isSubmitting} onClick={showPasswordStep}>
               <Icon name="key" />
-              {flow === "register" ? t.access.emailLogin.createWithPassword : t.access.emailLogin.signInWithPassword}
+              {activeFlow === "register" ? t.access.emailLogin.createWithPassword : t.access.emailLogin.signInWithPassword}
             </Button>
-            {flow === "login" ? (
+            {activeFlow === "login" ? (
               <Button type="button" variant="secondary" disabled={isSubmitting} onClick={() => void signInWithPasskey()}>
                 <Icon name="key" />
                 {t.access.emailLogin.signInWithPasskey}
@@ -735,12 +915,31 @@ function EmailLoginPanel({
             <Button type="button" variant="ghost" disabled={isSubmitting} onClick={changeEmail}>
               {t.access.emailLogin.changeEmail}
             </Button>
-          </>
-        ) : (
-          <>
+            </>
+          ) : authStep === "setup" ? (
+            <>
             <div className="account-step-summary">
-              <span>{flow === "register" ? t.access.emailLogin.createFor : t.access.emailLogin.signInAs}</span>
-              <strong>{email}</strong>
+              <span>{t.access.emailLogin.createFor}</span>
+              <strong>{normalizedEmail}</strong>
+            </div>
+            <label>
+              <span>{t.access.emailLogin.displayName}</span>
+              <input value={displayName} onChange={(event) => setDisplayName(event.target.value)} autoComplete="name" placeholder="Aom Traveler" required suppressHydrationWarning />
+            </label>
+            <label>
+              <span>{t.access.emailLogin.homeBase}</span>
+              <input value={homeBase} onChange={(event) => setHomeBase(event.target.value)} autoComplete="address-level2" placeholder="Bangkok" suppressHydrationWarning />
+            </label>
+            <Button type="submit" disabled={!displayName.trim() || isSubmitting}>
+              <Icon name="check" />
+              {t.access.emailLogin.finishSetup}
+            </Button>
+            </>
+          ) : (
+            <>
+            <div className="account-step-summary">
+              <span>{activeFlow === "register" ? t.access.emailLogin.createFor : t.access.emailLogin.signInAs}</span>
+              <strong>{normalizedEmail}</strong>
             </div>
             <label>
               <span>{t.access.emailLogin.password}</span>
@@ -748,34 +947,59 @@ function EmailLoginPanel({
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
                 type="password"
-                autoComplete={flow === "register" ? "new-password" : "current-password"}
+                autoComplete={activeFlow === "register" ? "new-password" : "current-password"}
                 required
+                suppressHydrationWarning
               />
             </label>
-            {flow === "login" ? trustDeviceFields : null}
+            {activeFlow === "login" ? trustDeviceFields : null}
             <Button type="submit" disabled={password.length < 8 || isSubmitting}>
               <Icon name="key" />
-              {flow === "register" ? t.access.emailLogin.createWithPassword : t.access.emailLogin.signInWithPassword}
+              {activeFlow === "register" ? t.access.emailLogin.continueToOtp : t.access.emailLogin.signInWithPassword}
             </Button>
-            <Button type="button" variant="ghost" disabled={isSubmitting} onClick={() => setAuthStep("methods")}>
-              {t.access.emailLogin.chooseAnotherMethod}
-            </Button>
-          </>
-        )}
+            {activeFlow === "login" ? (
+              <Button type="button" variant="ghost" disabled={isSubmitting} onClick={chooseMethods}>
+                {t.access.emailLogin.chooseAnotherMethod}
+              </Button>
+            ) : (
+              <Button type="button" variant="ghost" disabled={isSubmitting} onClick={changeEmail}>
+                {t.access.emailLogin.changeEmail}
+              </Button>
+            )}
+            </>
+          )}
+        </div>
       </form>
       {!challenge ? (
         <p className="account-flow-switch">
-          {flow === "register" ? (
+          {activeFlow === "register" ? (
             <>
-              {t.access.emailLogin.hasAccount} <a href="/login">{t.access.emailLogin.signInLink}</a>
+              {t.access.emailLogin.hasAccount} <button type="button" onClick={() => switchFlow("login")}>{t.access.emailLogin.signInLink}</button>
             </>
           ) : (
             <>
-              {t.access.emailLogin.noAccount} <a href="/register">{t.access.emailLogin.registerLink}</a>
+              {t.access.emailLogin.noAccount} <button type="button" onClick={() => switchFlow("register")}>{t.access.emailLogin.registerLink}</button>
             </>
           )}
         </p>
       ) : null}
+    </div>
+  );
+}
+
+function SocialAuthButtons({ labels }: { labels: Messages["access"]["emailLogin"] }) {
+  return (
+    <div className="account-social-block" aria-label={labels.socialLabel}>
+      <div className="account-divider"><span>{labels.socialDivider}</span></div>
+      <p className="sr-only" id="account-social-disabled-hint">{labels.socialDisabledHint}</p>
+      <button className="account-social-button" type="button" disabled aria-describedby="account-social-disabled-hint" title={labels.socialDisabledHint}>
+        <span className="account-social-glyph account-social-glyph--google">G</span>
+        {labels.google}
+      </button>
+      <button className="account-social-button" type="button" disabled aria-describedby="account-social-disabled-hint" title={labels.socialDisabledHint}>
+        <span className="account-social-glyph account-social-glyph--apple">A</span>
+        {labels.apple}
+      </button>
     </div>
   );
 }

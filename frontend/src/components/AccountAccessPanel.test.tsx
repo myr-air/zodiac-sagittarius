@@ -59,23 +59,23 @@ describe("AccountAccessPanel", () => {
     expect(screen.getByRole("heading", { name: /Manage trips with an account/i })).toBeInTheDocument();
     expect(screen.getByLabelText(/Email/i)).toHaveAttribute("autocomplete", "email");
     expect(screen.queryByLabelText(/Verification code/i)).not.toBeInTheDocument();
-    expect(screen.queryByRole("checkbox", { name: /Trust this device/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /Sign in with password/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("checkbox", { name: /Trust this device/i })).toBeChecked();
+    expect(screen.queryByRole("button", { name: /Use password/i })).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/Device label/i)).not.toBeInTheDocument();
 
     fireEvent.change(screen.getByLabelText(/Email/i), { target: { value: "aom@example.test" } });
-    await user.click(screen.getByRole("button", { name: /Continue/i }));
+    await user.click(screen.getByRole("button", { name: /^Continue$/i }));
 
-    expect(screen.getByText(/Choose one way to continue/i)).toBeInTheDocument();
+    expect(screen.getByText(/Choose the way that feels easiest/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Send sign-in code/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Sign in with password/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Sign in with passkey/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Use password/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Use passkey/i })).toBeInTheDocument();
     expect(screen.queryByRole("checkbox", { name: /Trust this device/i })).not.toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: /Send sign-in code/i }));
 
     expect(await screen.findByLabelText(/Verification code/i)).toHaveAttribute("autocomplete", "one-time-code");
-    expect(screen.queryByText(/Choose one way to continue/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Choose the way that feels easiest/i)).not.toBeInTheDocument();
     expect(screen.getByText(/aom@example.test/i)).toBeInTheDocument();
     expect(screen.queryByLabelText(/Device label/i)).not.toBeInTheDocument();
     expect(screen.getByRole("checkbox", { name: /Trust this device/i })).toBeChecked();
@@ -84,12 +84,12 @@ describe("AccountAccessPanel", () => {
     await user.click(screen.getByRole("button", { name: /Change email/i }));
 
     expect(screen.queryByLabelText(/Verification code/i)).not.toBeInTheDocument();
-    expect(screen.getByText(/Choose one way to continue/i)).toBeInTheDocument();
+    expect(screen.getByText(/Choose the way that feels easiest/i)).toBeInTheDocument();
     expect(screen.getByText(/aom@example.test/i)).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "ภาษาไทย" }));
 
-    expect(screen.getByText(/เลือกหนึ่งวิธีเพื่อไปต่อ/i)).toBeInTheDocument();
+    expect(screen.getByText(/เลือกวิธีที่สะดวก/i)).toBeInTheDocument();
     expect(screen.queryByRole("checkbox", { name: /เชื่อถืออุปกรณ์นี้/i })).not.toBeInTheDocument();
   }, 45_000);
 
@@ -115,7 +115,7 @@ describe("AccountAccessPanel", () => {
 
     fireEvent.change(screen.getByLabelText(/Email/i), { target: { value: "aom@example.test" } });
     await act(async () => {
-      fireEvent.click(screen.getByRole("button", { name: /Continue/i }));
+      fireEvent.click(screen.getByRole("button", { name: /^Continue$/i }));
     });
     await act(async () => {
       fireEvent.click(screen.getByRole("button", { name: /Send sign-in code/i }));
@@ -128,6 +128,40 @@ describe("AccountAccessPanel", () => {
     }
 
     expect(screen.getByRole("button", { name: /^Resend code$/i })).toBeEnabled();
+  });
+
+  it("requires a valid email format before continuing", async () => {
+    const user = userEvent.setup();
+    render(
+      <AccountAccessPanel
+        accessMode="account-login"
+        accountClient={createAccountClient()}
+        accountSession={null}
+        trip={seedTrip}
+        onAccountSessionChange={vi.fn()}
+        onAuthenticated={vi.fn()}
+        onTripChange={vi.fn()}
+      />,
+    );
+
+    const emailInput = screen.getByLabelText(/Email/i);
+    const continueButton = screen.getByRole("button", { name: /^Continue$/i });
+
+    expect(continueButton).toBeDisabled();
+
+    fireEvent.change(emailInput, { target: { value: "aom" } });
+    expect(continueButton).toBeDisabled();
+
+    fireEvent.change(emailInput, { target: { value: "aom@example" } });
+    expect(continueButton).toBeDisabled();
+
+    fireEvent.change(emailInput, { target: { value: "  aom@example.test  " } });
+    expect(continueButton).toBeEnabled();
+
+    await user.click(continueButton);
+
+    expect(screen.getByText(/Choose the way that feels easiest/i)).toBeInTheDocument();
+    expect(screen.getByText("aom@example.test")).toBeInTheDocument();
   });
 
   it("logs in and registers with a password fallback instead of forcing OTP", async () => {
@@ -147,10 +181,10 @@ describe("AccountAccessPanel", () => {
     );
 
     fireEvent.change(screen.getByLabelText(/Email/i), { target: { value: "aom@example.test" } });
-    await user.click(screen.getByRole("button", { name: /Continue/i }));
-    await user.click(screen.getByRole("button", { name: /Sign in with password/i }));
+    await user.click(screen.getByRole("button", { name: /^Continue$/i }));
+    await user.click(screen.getByRole("button", { name: /Use password/i }));
     fireEvent.change(screen.getByLabelText(/^Password$/i), { target: { value: "account-secret" } });
-    await user.click(screen.getByRole("button", { name: /Sign in with password/i }));
+    await user.click(screen.getByRole("button", { name: /Use password/i }));
 
     expect(accountClient.finishPasswordLogin).toHaveBeenCalledWith({
       flow: "login",
@@ -178,10 +212,10 @@ describe("AccountAccessPanel", () => {
 
     await user.click(screen.getByRole("tab", { name: /^Account$/i }));
 
-    expect(screen.queryByRole("button", { name: /Sign in with passkey/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Use passkey/i })).not.toBeInTheDocument();
     fireEvent.change(screen.getByLabelText(/Email/i), { target: { value: "aom@example.test" } });
-    await user.click(screen.getByRole("button", { name: /Continue/i }));
-    expect(screen.getByRole("button", { name: /Sign in with passkey/i })).toBeEnabled();
+    await user.click(screen.getByRole("button", { name: /^Continue$/i }));
+    expect(screen.getByRole("button", { name: /Use passkey/i })).toBeEnabled();
     expect(screen.getAllByTestId("icon-key").length).toBeGreaterThan(0);
   });
 
@@ -200,11 +234,43 @@ describe("AccountAccessPanel", () => {
 
     expect(screen.queryByRole("tablist", { name: /Access mode/i })).not.toBeInTheDocument();
     expect(screen.getByRole("main", { name: /Account sign in/i })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: /^Sign in$/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Continue/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /Travel ideas. Perfectly planned./i })).toBeInTheDocument();
+    const accessTabs = screen.getByRole("navigation", { name: /Account access/i });
+    expect(accessTabs).toBeInTheDocument();
+    expect(within(accessTabs).getByRole("button", { name: /^Sign in$/i })).toHaveAttribute("aria-current", "page");
+    expect(screen.getByRole("button", { name: /^Continue$/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Continue with Google/i })).toBeDisabled();
+    expect(screen.getByRole("button", { name: /Continue with Apple/i })).toBeDisabled();
     expect(screen.queryByRole("button", { name: /Send sign-in code/i })).not.toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /Register/i })).toHaveAttribute("href", "/register");
+    expect(within(accessTabs).getByRole("button", { name: /^Register$/i })).toBeInTheDocument();
     expect(screen.queryByLabelText(/Trip ID/i)).not.toBeInTheDocument();
+  });
+
+  it("keeps login entry on the auth form with session errors shown as toast", () => {
+    render(
+      <AccountAccessPanel
+        accessMode="account-login"
+        accountClient={createAccountClient()}
+        accountSession={{
+          userId: "stale-user",
+          sessionToken: "stale-account-session",
+          kind: "trusted",
+          trustedDeviceId: "device-stale",
+          createdAt: "2026-05-30T08:00:00.000Z",
+          expiresAt: "2026-06-29T08:00:00.000Z",
+        }}
+        initialError="unauthorized"
+        trip={seedTrip}
+        onAccountSessionChange={vi.fn()}
+        onAuthenticated={vi.fn()}
+        onTripChange={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByRole("main", { name: /Account sign in/i })).toBeInTheDocument();
+    expect(screen.getByLabelText(/Email/i)).toBeInTheDocument();
+    expect(screen.queryByRole("navigation", { name: /Portal navigation/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("alert").closest(".account-toast-stack")).toBeTruthy();
   });
 
   it("renders account registration as a separate account entry path", () => {
@@ -222,11 +288,13 @@ describe("AccountAccessPanel", () => {
 
     expect(screen.queryByRole("tablist", { name: /Access mode/i })).not.toBeInTheDocument();
     expect(screen.getByRole("main", { name: /Account register/i })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: /^Register$/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Continue/i })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /Sign in/i })).toHaveAttribute("href", "/login");
+    expect(screen.getByRole("heading", { name: /Travel ideas. Perfectly planned./i })).toBeInTheDocument();
+    const accessTabs = screen.getByRole("navigation", { name: /Account access/i });
+    expect(within(accessTabs).getByRole("button", { name: /^Register$/i })).toHaveAttribute("aria-current", "page");
+    expect(screen.getByRole("button", { name: /^Continue$/i })).toBeInTheDocument();
+    expect(within(accessTabs).getByRole("button", { name: /^Sign in$/i })).toBeInTheDocument();
     expect(screen.queryByRole("checkbox", { name: /Trust this device/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /Sign in with passkey/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Use passkey/i })).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/Trip ID/i)).not.toBeInTheDocument();
   });
 
@@ -248,10 +316,13 @@ describe("AccountAccessPanel", () => {
     );
 
     fireEvent.change(screen.getByLabelText(/Email/i), { target: { value: "new-aom@example.test" } });
-    await user.click(screen.getByRole("button", { name: /Continue/i }));
-    await user.click(screen.getByRole("button", { name: /Create account with password/i }));
+    await user.click(screen.getByRole("button", { name: /^Continue$/i }));
     fireEvent.change(screen.getByLabelText(/^Password$/i), { target: { value: "account-secret" } });
-    await user.click(screen.getByRole("button", { name: /Create account with password/i }));
+    await user.click(screen.getByRole("button", { name: /^Continue$/i }));
+    fireEvent.change(await screen.findByLabelText(/Verification code/i), { target: { value: "123456" } });
+    await user.click(screen.getByRole("button", { name: /Create my trip space/i }));
+    fireEvent.change(await screen.findByLabelText(/Display name/i), { target: { value: "New Aom" } });
+    await user.click(screen.getByRole("button", { name: /Finish and start planning/i }));
 
     expect(accountClient.finishPasswordLogin).toHaveBeenCalledWith({
       flow: "register",
@@ -260,6 +331,7 @@ describe("AccountAccessPanel", () => {
       trustDevice: true,
       deviceLabel: "",
     });
+    expect(accountClient.updateSettings).toHaveBeenCalledWith("account-session", expect.objectContaining({ displayName: "New Aom" }));
     await waitFor(() => expect(onAccountSessionChange).toHaveBeenCalledWith(expect.objectContaining({ kind: "trusted" })));
   });
 
@@ -364,7 +436,7 @@ describe("AccountAccessPanel", () => {
 
     await user.click(screen.getByRole("tab", { name: /^Account$/i }));
     fireEvent.change(screen.getByLabelText(/Email/i), { target: { value: "aom@example.test" } });
-    await user.click(screen.getByRole("button", { name: /Continue/i }));
+    await user.click(screen.getByRole("button", { name: /^Continue$/i }));
     await user.click(screen.getByRole("button", { name: /Send sign-in code/i }));
     fireEvent.change(screen.getByLabelText(/Verification code/i), { target: { value: "123456" } });
     await user.click(screen.getByRole("button", { name: /^Sign in$/i }));
@@ -815,9 +887,9 @@ describe("AccountAccessPanel", () => {
     await user.click(screen.getByRole("tab", { name: /^Account$/i }));
     fireEvent.change(screen.getByLabelText(/Email/i), { target: { value: "aom@example.test" } });
     expect(screen.queryByLabelText(/Device label/i)).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /Sign in with passkey/i })).not.toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: /Continue/i }));
-    await user.click(screen.getByRole("button", { name: /Sign in with passkey/i }));
+    expect(screen.queryByRole("button", { name: /Use passkey/i })).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: /^Continue$/i }));
+    await user.click(screen.getByRole("button", { name: /Use passkey/i }));
 
     expect(accountClient.startPasskeyLogin).toHaveBeenCalledWith("aom@example.test");
     expect(credentials.get).toHaveBeenCalledWith({

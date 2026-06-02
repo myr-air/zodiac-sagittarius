@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { LanguageSwitch } from "@/src/i18n/LanguageSwitch";
 import { useI18n } from "@/src/i18n/I18nProvider";
+import { appRoutes } from "@/src/routes/app-routes";
 import { Icon } from "./icons";
 
 const workflowStepMeta = [
@@ -47,7 +48,7 @@ export function HomeLanding() {
         <div className="home-nav-actions">
           <div className="home-nav-secondary-actions">
             <LanguageSwitch className="home-language-switch" />
-            <Link className="home-link-button" href="/login">
+            <Link className="home-link-button" href={appRoutes.login()}>
               {landing.actions.login}
             </Link>
           </div>
@@ -72,7 +73,7 @@ export function HomeLanding() {
           <p>{landing.hero.detail}</p>
 
           <div className="home-hero-actions">
-            <Link className="home-primary-button home-large-button" href="/register">
+            <Link className="home-primary-button home-large-button" href={appRoutes.register()}>
               {landing.actions.startPlanning}
               <Icon name="route" />
             </Link>
@@ -192,7 +193,7 @@ export function HomeLanding() {
           <h2>{landing.finalCta.title}</h2>
           <p>{landing.finalCta.detail}</p>
         </div>
-        <Link className="home-primary-button home-large-button" href="/register">
+        <Link className="home-primary-button home-large-button" href={appRoutes.register()}>
           {landing.actions.createTrip}
           <Icon name="plus" />
         </Link>
@@ -213,9 +214,9 @@ export function HomeLanding() {
         </div>
 
         <div className="home-footer-links">
-          <Link href="/login">{landing.actions.login}</Link>
+          <Link href={appRoutes.login()}>{landing.actions.login}</Link>
           <Link href="/join">{landing.actions.tripAccess}</Link>
-          <Link href="/register">{landing.actions.createAccount}</Link>
+          <Link href={appRoutes.register()}>{landing.actions.createAccount}</Link>
           <a href="https://github.com/GLINCKER/thesvg" target="_blank" rel="noreferrer">
             <Image src="/icons/github-thesvg.svg" alt="" width={16} height={16} />
             {landing.footer.svgSource}

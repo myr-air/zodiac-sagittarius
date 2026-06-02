@@ -32,13 +32,13 @@ export const PublicEntry: Story = {
 export const AccountLogin: Story = {
   args: { accessMode: "account-login", requireJoin: true, dataSource: "api" },
   parameters: {
-    nextjs: { navigation: { pathname: "/login" } },
+    nextjs: { navigation: { pathname: "/access", query: { mode: "sign-in" } } },
   },
 };
 export const AccountRegister: Story = {
   args: { accessMode: "account-register", requireJoin: true, dataSource: "api" },
   parameters: {
-    nextjs: { navigation: { pathname: "/register" } },
+    nextjs: { navigation: { pathname: "/access", query: { mode: "register" } } },
   },
 };
 export const AccountPortal: Story = {
