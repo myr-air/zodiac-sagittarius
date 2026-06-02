@@ -57,8 +57,8 @@ Add or reuse a small `cn()` helper before migrating shared components. The helpe
 The expected pattern is:
 
 - keep a stable component API
-- compute Tailwind classes from props
-- allow caller `className` extension
+- keep static class sets as plain strings and pass them directly to `className`
+- use `cn()` only for conditional classes, variant composition, or caller `className` extension
 - keep ARIA and semantic markup unchanged
 
 ## Migration Waves
