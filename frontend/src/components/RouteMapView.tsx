@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import type { ItineraryItem } from "@/src/trip/types";
 import { useI18n } from "@/src/i18n/I18nProvider";
+import { cn } from "@/src/lib/cn";
 import { formatDayLabel, groupItemsByDay } from "@/src/trip/itinerary";
 import { Icon } from "./icons";
 import { TravelMotif } from "./motifs";
@@ -41,6 +42,24 @@ type DayColorStyle = CSSProperties & {
 type DayFilter = "all" | string;
 
 const routeDayColors = ["#2563eb", "#0f766e", "#f97316", "#0891b2", "#16a34a", "#dc2626"];
+const routeMapPanelClassName = "route-map-panel grid h-full min-h-0 min-w-0 grid-rows-[auto_minmax(0,1fr)] bg-[var(--color-page)] px-6 py-[22px] pb-7";
+const routeMapLayoutClassName = "route-map-layout block h-full min-h-0 w-full p-0 mb-7";
+const routeMapCanvasClassName = "route-map-canvas relative h-full min-h-[520px] overflow-hidden rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-route-soft)]";
+const mapDayFilterClassName = "map-day-filter absolute left-3 top-3 z-[8] flex max-w-[min(720px,calc(100%_-_92px))] flex-wrap gap-[7px]";
+const mapDayFilterButtonClassName = "map-day-filter-button inline-flex min-h-[30px] items-center gap-1.5 rounded-full border border-[rgb(203_213_225_/_0.9)] bg-white/90 px-2.5 py-1.5 text-[11px] font-extrabold leading-4 text-[#334155] shadow-[0_8px_18px_rgb(15_23_42_/_0.08)] backdrop-blur transition-[background,border-color,color,box-shadow] duration-150";
+const activeMapDayFilterButtonClassName = "map-day-filter-button--active";
+const mapDaySwatchClassName = "map-day-swatch size-[9px] rounded-full bg-[var(--day-color,var(--color-route))] shadow-[0_0_0_2px_rgb(255_255_255_/_0.9)]";
+const routeLiveMapClassName = "route-live-map absolute inset-0 z-[4] bg-[var(--color-route-soft)]";
+const routeMapStatusClassName = "route-map-status absolute left-1/2 top-1/2 z-[5] m-0 -translate-x-1/2 -translate-y-1/2 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white/90 px-2.5 py-2 text-xs font-extrabold text-[var(--color-text-muted)]";
+const mapZoneClassName = "map-zone absolute z-[1] text-[11px] font-extrabold uppercase leading-[15px] text-[#475569]";
+const mapZoneHongKongClassName = "map-zone--hk";
+const mapZoneShenzhenClassName = "map-zone--sz";
+const mapZoneBayClassName = "map-zone--bay";
+const routeMapSvgClassName = "route-map-svg absolute inset-0 z-[2] size-full overflow-visible";
+const routeMapPathShadowClassName = "route-map-path route-map-path--shadow";
+const routeMapPathClassName = "route-map-path";
+const routeMarkerClassName = "route-marker absolute grid size-[30px] place-items-center rounded-full border-2 border-white bg-[var(--day-color,var(--color-route))] text-[11px] font-extrabold tabular-nums text-white shadow-[0_10px_22px_rgb(37_99_235_/_0.24)]";
+const mapSourceNoteClassName = "map-source-note absolute bottom-2 right-2.5 z-[6] m-0 rounded-full border border-[rgb(203_213_225_/_0.82)] bg-white/90 px-2 py-1 text-[10px] font-extrabold leading-[14px] text-[#475569]";
 
 export function RouteMapView({ endDate, items, liveMapEnabled = process.env.NODE_ENV !== "test", startDate, tripName }: RouteMapViewProps) {
   const { locale, t } = useI18n();
@@ -212,7 +231,7 @@ export function RouteMapView({ endDate, items, liveMapEnabled = process.env.NODE
   }, [activeDay, liveMapState, routeDayGroups, visibleLiveRoutePoints]);
 
   return (
-    <section className="route-map-panel" id="map" aria-labelledby="route-map-heading" aria-label={t.map.pageLabel}>
+    <section className={routeMapPanelClassName} id="map" aria-labelledby="route-map-heading" aria-label={t.map.pageLabel}>
       <PageHeader
         title={t.map.title}
         subtitle={tripName}
@@ -227,12 +246,12 @@ export function RouteMapView({ endDate, items, liveMapEnabled = process.env.NODE
         motif={<TravelMotif tone="route" />}
       />
 
-      <div className="route-map-layout">
-        <div className="route-map-canvas" aria-label={t.map.canvasLabel}>
-          <div className="map-day-filter" aria-label={t.map.filterLabel}>
+      <div className={routeMapLayoutClassName}>
+        <div className={routeMapCanvasClassName} aria-label={t.map.canvasLabel}>
+          <div className={mapDayFilterClassName} aria-label={t.map.filterLabel}>
             <button
               type="button"
-              className={activeDay === "all" ? "map-day-filter-button map-day-filter-button--active" : "map-day-filter-button"}
+              className={cn(mapDayFilterButtonClassName, activeDay === "all" && activeMapDayFilterButtonClassName)}
               aria-pressed={activeDay === "all"}
               onClick={() => setActiveDay("all")}
             >
@@ -241,13 +260,13 @@ export function RouteMapView({ endDate, items, liveMapEnabled = process.env.NODE
             {routeDayGroups.map((group) => (
               <button
                 type="button"
-                className={activeDay === group.day ? "map-day-filter-button map-day-filter-button--active" : "map-day-filter-button"}
+                className={cn(mapDayFilterButtonClassName, activeDay === group.day && activeMapDayFilterButtonClassName)}
                 aria-pressed={activeDay === group.day}
                 key={group.day}
                 style={dayFilterStyle(group.color)}
                 onClick={() => setActiveDay(group.day)}
               >
-                <span className="map-day-swatch" aria-hidden="true" />
+                <span className={mapDaySwatchClassName} aria-hidden="true" />
                 {group.label}
               </button>
             ))}
@@ -255,28 +274,28 @@ export function RouteMapView({ endDate, items, liveMapEnabled = process.env.NODE
 
           {liveMapState !== "error" ? (
             <>
-              <div className="route-live-map" ref={mapContainerRef} aria-hidden="true" />
-              {liveMapState !== "ready" ? <p className="route-map-status">{liveMapStatusText(liveMapState, t.map.liveLoading, t.map.liveError)}</p> : null}
+              <div className={routeLiveMapClassName} ref={mapContainerRef} aria-hidden="true" />
+              {liveMapState !== "ready" ? <p className={routeMapStatusClassName}>{liveMapStatusText(liveMapState, t.map.liveLoading, t.map.liveError)}</p> : null}
             </>
           ) : (
             <>
-              <span className="map-zone map-zone--hk">Hong Kong</span>
-              <span className="map-zone map-zone--sz">Shenzhen</span>
-              <span className="map-zone map-zone--bay">Victoria Harbour</span>
-              <svg className="route-map-svg" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
+              <span className={cn(mapZoneClassName, mapZoneHongKongClassName)}>Hong Kong</span>
+              <span className={cn(mapZoneClassName, mapZoneShenzhenClassName)}>Shenzhen</span>
+              <span className={cn(mapZoneClassName, mapZoneBayClassName)}>Victoria Harbour</span>
+              <svg className={routeMapSvgClassName} viewBox="0 0 100 100" aria-hidden="true" focusable="false">
                 {visibleRouteDayGroups.map((group) => {
                   const pathPoints = group.points.map((point) => `${point.x},${point.y}`).join(" ");
                   return (
                     <g key={group.day} style={routeLineStyle(group.color)}>
-                      <polyline className="route-map-path route-map-path--shadow" points={pathPoints} />
-                      <polyline className="route-map-path" points={pathPoints} />
+                      <polyline className={routeMapPathShadowClassName} points={pathPoints} />
+                      <polyline className={routeMapPathClassName} points={pathPoints} />
                     </g>
                   );
                 })}
               </svg>
               {visibleRoutePoints.map((point, index) => (
                 <span
-                  className="route-marker"
+                  className={routeMarkerClassName}
                   style={markerStyle(point, index, dayColorFor(point.item.day, routeDayGroups))}
                   aria-hidden="true"
                   key={point.item.id}
@@ -286,7 +305,7 @@ export function RouteMapView({ endDate, items, liveMapEnabled = process.env.NODE
               ))}
             </>
           )}
-          <p className="map-source-note">{t.map.sourceNote}</p>
+          <p className={mapSourceNoteClassName}>{t.map.sourceNote}</p>
         </div>
       </div>
     </section>

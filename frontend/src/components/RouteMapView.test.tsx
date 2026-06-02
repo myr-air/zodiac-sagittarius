@@ -165,6 +165,35 @@ describe("RouteMapView", () => {
     expect(screen.getByText("Victoria Harbour")).toBeInTheDocument();
   });
 
+  it("exposes hybrid Tailwind bridge classes for the map shell and fallback surface", async () => {
+    maplibreMock.throwOnCreate = true;
+
+    render(
+      <RouteMapView
+        endDate={tripFixture.trip.endDate}
+        items={tripFixture.planItems}
+        liveMapEnabled
+        startDate={tripFixture.trip.startDate}
+        tripName={tripFixture.trip.name}
+      />,
+    );
+
+    await waitFor(() => expect(screen.getByText("Hong Kong")).toBeInTheDocument());
+
+    const panel = screen.getByRole("region", { name: /แผนที่เส้นทาง/i });
+    expect(panel).toHaveClass("route-map-panel", "grid", "min-h-0");
+
+    const canvas = screen.getByLabelText(/ตัวอย่างแผนที่เส้นทางฮ่องกงและเซินเจิ้น/i);
+    expect(canvas).toHaveClass("route-map-canvas", "relative", "overflow-hidden");
+
+    const dayTwoButton = screen.getByRole("button", { name: /วันที่ 2/i });
+    expect(dayTwoButton).toHaveClass("map-day-filter-button", "inline-flex");
+    expect(screen.getByText("Hong Kong")).toHaveClass("map-zone", "absolute");
+    expect(document.querySelector(".route-map-svg")).toHaveClass("route-map-svg", "absolute", "inset-0");
+    expect(document.querySelector(".route-marker")).toHaveClass("route-marker", "absolute", "grid");
+    expect(screen.getByText(/OpenFreeMap/i)).toHaveClass("map-source-note", "absolute");
+  });
+
   it("mounts, filters, and cleans up a live MapLibre route", async () => {
     const { unmount } = render(
       <RouteMapView
