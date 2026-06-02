@@ -82,6 +82,24 @@ describe("SmartItineraryTable", () => {
     expect(document.querySelector('tr[aria-label*="Dim Dim Sum"]')).toHaveAttribute("aria-hidden", "true");
   });
 
+  it("exposes hybrid Tailwind bridge classes for the table shell and selected row", () => {
+    renderTable({ selectedItemId: "item-dimdim" });
+
+    const panel = screen.getByRole("region", { name: /ตารางแผนการเดินทาง/i });
+    expect(panel).toHaveClass("table-panel", "grid", "min-h-full");
+
+    const scrollFrame = screen.getByLabelText(/รายการแผนการเดินทางแบบเลื่อนได้/i);
+    expect(scrollFrame).toHaveClass("table-scroll", "overflow-x-auto", "rounded-[var(--radius-md)]");
+
+    const table = screen.getByRole("table", { name: /รายการแผนการเดินทาง แยกตามวัน/i });
+    expect(table).toHaveClass("smart-table", "w-full", "min-w-[960px]");
+
+    const selectedRow = screen.getByRole("row", { name: /Dim Dim Sum/i });
+    expect(selectedRow).toHaveClass("data-row", "data-row--selected");
+    expect(within(selectedRow).getByRole("button", { name: /เลือกจุด Dim Dim Sum/i })).toHaveClass("row-select", "grid", "min-w-0");
+    expect(within(selectedRow).getByRole("link", { name: /แผนที่/i })).toHaveClass("map-link", "underline");
+  });
+
   it("offers button-based reorder controls for touch and keyboard users", async () => {
     const user = userEvent.setup();
     const props = renderTable();

@@ -3,6 +3,7 @@ import type { ItineraryAdvisory, ItineraryItem, TripRole } from "@/src/trip/type
 import { useI18n } from "@/src/i18n/I18nProvider";
 import type { Messages } from "@/src/i18n/messages";
 import type { Locale } from "@/src/i18n/types";
+import { cn } from "@/src/lib/cn";
 import { formatDayLabel, groupItemsByDay } from "@/src/trip/itinerary";
 import { Button } from "./ui";
 import { Icon } from "./icons";
@@ -27,6 +28,28 @@ interface SmartItineraryTableProps {
   onToggleContextRail: () => void;
   onUndo: () => void;
 }
+
+const tablePanelClassName = "table-panel grid min-h-full min-w-0 grid-rows-[auto_auto] overflow-visible bg-[var(--color-page)] px-6 py-[22px] pb-7";
+const pageHeaderActionsClassName = "page-header-actions relative z-[1] flex max-w-[420px] min-w-0 flex-wrap items-center justify-end gap-2";
+const iconButtonClassName = "icon-button inline-flex min-h-9 w-9 items-center justify-center rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface)] text-[#334155]";
+const detailsToggleButtonClassName = "details-toggle-button";
+const tableScrollClassName = "table-scroll min-h-0 w-full max-w-full overflow-x-auto overflow-y-clip rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)]";
+const smartTableClassName = "smart-table w-full min-w-[960px] table-fixed border-collapse text-xs leading-4 text-[#1f2937]";
+const dayGroupClassName = "day-group";
+const dayRowClassName = "day-row";
+const dayToggleClassName = "day-row-content day-toggle flex h-[39px] w-full min-w-0 items-center gap-[9px] border-0 bg-transparent p-0 text-left text-[#334155]";
+const dayRouteClassName = "day-route ml-[18px] font-semibold text-[var(--color-text-muted)]";
+const dataRowClassName = "data-row transition-[background,box-shadow,transform] duration-150";
+const dragCellClassName = "drag-cell text-[var(--color-text-subtle)]";
+const reorderControlsClassName = "reorder-controls inline-grid grid-cols-[repeat(3,26px)] items-center gap-1";
+const dragHandleClassName = "drag-handle inline-grid size-[26px] cursor-grab place-items-center rounded-[var(--radius-sm)] border-0 bg-transparent text-[var(--color-text-subtle)] transition-[color,background] duration-150 disabled:cursor-not-allowed";
+const reorderButtonClassName = "reorder-button inline-grid size-[26px] place-items-center rounded-[var(--radius-sm)] border-0 bg-transparent text-[var(--color-text-subtle)] transition-[color,background] duration-150 disabled:cursor-not-allowed disabled:opacity-40";
+const timeCellClassName = "time-cell font-semibold tabular-nums text-[#0f172a]";
+const activityCellClassName = "activity-cell min-w-0";
+const rowSelectClassName = "row-select grid min-h-[22px] w-full min-w-0 gap-0.5 border-0 bg-transparent p-0 text-left text-inherit";
+const mapLinkClassName = "map-link text-[#2563eb] underline underline-offset-2";
+const emptyWarningClassName = "empty-warning text-[var(--color-text-subtle)]";
+const warningSummaryClassName = "warning-summary inline-flex min-w-0 items-center gap-1.5 rounded-full border border-[var(--color-warning-border)] bg-[var(--color-warning-soft)] px-2 py-0.5 text-[11px] font-extrabold text-[var(--color-warning-strong)]";
 
 export function SmartItineraryTable({
   canRedo,
@@ -87,7 +110,7 @@ export function SmartItineraryTable({
   }
 
   return (
-    <section className="table-panel" aria-label={t.itinerary.pageLabel} id="itinerary">
+    <section className={tablePanelClassName} aria-label={t.itinerary.pageLabel} id="itinerary">
       <PageHeader
         title={t.itinerary.title}
         subtitle={tripName}
@@ -100,13 +123,13 @@ export function SmartItineraryTable({
           </>
         )}
         aside={(
-          <div className="page-header-actions" role="group" aria-label={t.itinerary.actionsLabel}>
+          <div className={pageHeaderActionsClassName} role="group" aria-label={t.itinerary.actionsLabel}>
             <Button type="button" onClick={onAddStop} disabled={!canRestructureItems} className="add-stop-button">
               <Icon name="plus" />
               {t.itinerary.addStop}
             </Button>
             <button
-              className="icon-button details-toggle-button"
+              className={cn(iconButtonClassName, detailsToggleButtonClassName)}
               type="button"
               aria-expanded={contextRailOpen}
               aria-label={contextRailOpen ? t.itinerary.hideDetails : t.itinerary.openDetails}
@@ -115,18 +138,18 @@ export function SmartItineraryTable({
             >
               <Icon name="panel" />
             </button>
-            <button className="icon-button" type="button" aria-label={t.itinerary.undo} disabled={!canUndo} onClick={onUndo}>
+            <button className={iconButtonClassName} type="button" aria-label={t.itinerary.undo} disabled={!canUndo} onClick={onUndo}>
               <Icon name="undo" />
             </button>
-            <button className="icon-button" type="button" aria-label={t.itinerary.redo} disabled={!canRedo} onClick={onRedo}>
+            <button className={iconButtonClassName} type="button" aria-label={t.itinerary.redo} disabled={!canRedo} onClick={onRedo}>
               <Icon name="redo" />
             </button>
             {!canEdit ? <p className="page-header-note">{t.itinerary.editRequiresOrganizer}</p> : null}
           </div>
         )}
       />
-      <div className="table-scroll" tabIndex={0} aria-label={t.itinerary.scrollLabel}>
-        <table className="smart-table">
+      <div className={tableScrollClassName} tabIndex={0} aria-label={t.itinerary.scrollLabel}>
+        <table className={smartTableClassName}>
           <caption className="sr-only">{t.itinerary.caption}</caption>
           <thead>
             <tr>
@@ -204,12 +227,12 @@ function DayGroup({
   const dayLabel = formatDayLabel(group.day, startDate, locale);
 
   return (
-    <tbody className="day-group" data-state={collapsed ? "closed" : "open"}>
-      <tr className="day-row">
+    <tbody className={dayGroupClassName} data-state={collapsed ? "closed" : "open"}>
+      <tr className={dayRowClassName}>
         <th colSpan={8}>
           <button
             type="button"
-            className="day-row-content day-toggle"
+            className={dayToggleClassName}
             aria-expanded={!collapsed}
             aria-label={collapsed ? itineraryLabels.dayToggle.expand({ day: dayLabel }) : itineraryLabels.dayToggle.collapse({ day: dayLabel })}
             onClick={() => onToggleDay(group.day)}
@@ -218,7 +241,7 @@ function DayGroup({
             <strong>{dayLabel}</strong>
             <span>·</span>
             <span>{formatThaiDate(group.day, locale)}</span>
-            <span className="day-route">{dayRouteLabel(group.day, locale)}</span>
+            <span className={dayRouteClassName}>{dayRouteLabel(group.day, locale)}</span>
           </button>
         </th>
       </tr>
@@ -231,11 +254,11 @@ function DayGroup({
           onDragOver={(event) => onPreviewDrop(event, item.id)}
           onDrop={(event) => onDropItem(event, item.id)}
         >
-          <td className="drag-cell">
-            <div className="reorder-controls">
+          <td className={dragCellClassName}>
+            <div className={reorderControlsClassName}>
               <button
                 type="button"
-                className="drag-handle"
+                className={dragHandleClassName}
                 draggable={canEdit && !collapsed}
                 disabled={!canEdit}
                 tabIndex={collapsed ? -1 : undefined}
@@ -247,7 +270,7 @@ function DayGroup({
               </button>
               <button
                 type="button"
-                className="reorder-button"
+                className={reorderButtonClassName}
                 disabled={!canEdit || itemIndex === 0}
                 tabIndex={collapsed ? -1 : undefined}
                 aria-label={itineraryLabels.row.moveUp({ activity: item.activity })}
@@ -260,7 +283,7 @@ function DayGroup({
               </button>
               <button
                 type="button"
-                className="reorder-button"
+                className={reorderButtonClassName}
                 disabled={!canEdit || itemIndex >= group.items.length - 1}
                 tabIndex={collapsed ? -1 : undefined}
                 aria-label={itineraryLabels.row.moveDown({ activity: item.activity })}
@@ -273,11 +296,11 @@ function DayGroup({
               </button>
             </div>
           </td>
-          <td className="time-cell">{tableStartTime(item)}</td>
-          <td className="activity-cell">
+          <td className={timeCellClassName}>{tableStartTime(item)}</td>
+          <td className={activityCellClassName}>
             <button
               type="button"
-              className="row-select"
+              className={rowSelectClassName}
               aria-pressed={selectedItemId === item.id}
               aria-label={itineraryLabels.row.select({ activity: item.activity })}
               tabIndex={collapsed ? -1 : undefined}
@@ -290,7 +313,7 @@ function DayGroup({
             </button>
           </td>
           <td>{activityTypeLabel(item.activityType, locale)}</td>
-          <td><a href={mapHref(item)} tabIndex={collapsed ? -1 : undefined}>{mapLinkLabel(item, itineraryLabels.row.mapFallback)}</a></td>
+          <td><a className={mapLinkClassName} href={mapHref(item)} tabIndex={collapsed ? -1 : undefined}>{mapLinkLabel(item, itineraryLabels.row.mapFallback)}</a></td>
           <td>{formatDuration(item.durationMinutes, locale)}</td>
           <td>{item.transportation || "—"}</td>
           <td><AdvisorySummary advisories={item.advisories ?? []} /></td>
@@ -305,18 +328,18 @@ function getRowClassName(
   selectedItemId: string,
   dragState: { draggedItemId: string | null; overItemId: string | null },
 ): string {
-  return [
-    "data-row",
-    selectedItemId === item.id ? "data-row--selected" : null,
-    dragState.draggedItemId === item.id ? "data-row--dragging" : null,
-    dragState.overItemId === item.id ? "data-row--drop-target" : null,
-  ].filter(Boolean).join(" ");
+  return cn(
+    dataRowClassName,
+    selectedItemId === item.id && "data-row--selected",
+    dragState.draggedItemId === item.id && "data-row--dragging",
+    dragState.overItemId === item.id && "data-row--drop-target",
+  );
 }
 
 function AdvisorySummary({ advisories }: { advisories: ItineraryAdvisory[] }) {
-  if (advisories.length === 0) return <span className="empty-warning">—</span>;
+  if (advisories.length === 0) return <span className={emptyWarningClassName}>—</span>;
   return (
-    <span className="warning-summary">
+    <span className={warningSummaryClassName}>
       <Icon name="warning" />
       <span>{advisories[0]?.label}</span>
     </span>
