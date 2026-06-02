@@ -78,6 +78,16 @@ describe("PeoplePanel", () => {
       />,
     );
 
+    expect(screen.getByRole("region", { name: /People and presence/i })).toHaveClass("detail-section", "people-module", "grid", "gap-3");
+    expect(screen.getAllByText(/Explorer Friend/i)[0].closest(".person-row")).toHaveClass(
+      "person-row",
+      "grid",
+      "rounded-[var(--radius-sm)]",
+    );
+    expect(screen.getByLabelText(/Status for Explorer Friend/i)).toHaveClass("member-status-stack", "flex", "flex-wrap");
+    expect(screen.getByLabelText(/Role for Explorer Friend/i)).toHaveClass("member-role-select", "min-h-8");
+    expect(screen.getByRole("button", { name: /ปิดสิทธิ์ Explorer Friend/i })).toHaveClass("reset-claim-button", "inline-flex");
+
     await user.selectOptions(screen.getByLabelText(/Role for Explorer Friend/i), "organizer");
     await user.click(screen.getByRole("button", { name: /ปิดสิทธิ์ Explorer Friend/i }));
 
@@ -252,9 +262,28 @@ describe("PeoplePanel", () => {
       />,
     );
 
+    expect(screen.getByText(/ออฟไลน์ 1 ชม./i)).toHaveClass("presence-pill", "inline-flex", "whitespace-nowrap");
     expect(screen.queryByLabelText(/Role for Explorer Friend/i)).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: /คัดลอกลิงก์เชิญ/i })).toBeDisabled();
     expect(screen.getByRole("button", { name: /เปิดฟอร์มเพิ่มสมาชิก/i })).toBeDisabled();
+  });
+
+  it("bridges the empty member state to Tailwind classes", () => {
+    render(
+      <PeoplePanel
+        members={[]}
+        currentMemberId="member-aom"
+        emptyMessage="ไม่มีสมาชิกในตัวกรองนี้"
+        onResetFilters={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByText("ไม่มีสมาชิกในตัวกรองนี้").closest(".members-empty-state")).toHaveClass(
+      "members-empty-state",
+      "grid",
+      "rounded-[var(--radius-md)]",
+    );
+    expect(screen.getByRole("button", { name: /ล้างตัวกรอง/i })).toHaveClass("reset-claim-button", "inline-flex");
   });
 
   it("lets organizers create a new trip member", async () => {
