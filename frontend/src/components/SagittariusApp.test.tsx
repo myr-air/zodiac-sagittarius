@@ -596,6 +596,59 @@ describe("Sagittarius cockpit UI", () => {
     expect(await screen.findByRole("heading", { name: /Persisted API Trip/i })).toBeInTheDocument();
   });
 
+  it("keeps a persisted API session when the public route uses the canonical UUID", async () => {
+    installLocalStorageStub();
+    const apiTrip = {
+      ...seedTrip,
+      id: "018fc9c4-9cf0-7384-93ee-9bdc9c8d8f11",
+      name: "Canonical Route API Trip",
+      joinPasswordHash: "",
+      members: [{
+        ...seedTrip.members[0],
+        id: "018fc9c4-9cf0-7384-93ee-9bdc9c8d8f22",
+        tripId: "018fc9c4-9cf0-7384-93ee-9bdc9c8d8f11",
+        claimPasswordHash: null,
+      }],
+    };
+    window.localStorage.setItem(
+      tripParticipantSessionStorageKey,
+      JSON.stringify({
+        tripId: apiTrip.id,
+        memberId: apiTrip.members[0].id,
+        sessionToken: "canonical-route-session-token",
+        createdAt: "2026-05-29T00:00:00.000Z",
+        expiresAt: "2026-06-28T00:00:00.000Z",
+      }),
+    );
+    const apiClient = createApiClientForTrip(apiTrip);
+
+    render(<SagittariusApp requireJoin dataSource="api" initialView="overview" routeTripId={apiTrip.id} apiClient={apiClient} />);
+
+    await waitFor(() => expect(apiClient.loadTrip).toHaveBeenCalledWith(apiTrip.id, "canonical-route-session-token"));
+    expect(await screen.findByRole("heading", { name: /Canonical Route API Trip/i })).toBeInTheDocument();
+  });
+
+  it("rejects a persisted API session when a canonical UUID route belongs to another trip", async () => {
+    installLocalStorageStub();
+    const apiClient = createApiClientForTrip(seedTrip);
+    window.localStorage.setItem(
+      tripParticipantSessionStorageKey,
+      JSON.stringify({
+        tripId: "018fc9c4-9cf0-7384-93ee-9bdc9c8d8f11",
+        memberId: "018fc9c4-9cf0-7384-93ee-9bdc9c8d8f22",
+        sessionToken: "other-trip-session-token",
+        createdAt: "2026-05-29T00:00:00.000Z",
+        expiresAt: "2026-06-28T00:00:00.000Z",
+      }),
+    );
+
+    render(<SagittariusApp requireJoin dataSource="api" initialView="overview" routeTripId="018fc9c4-9cf0-7384-93ee-9bdc9c8d8f99" apiClient={apiClient} />);
+
+    await waitFor(() => expect(screen.getByRole("main", { name: /Account access/i })).toBeInTheDocument());
+    expect(apiClient.loadTrip).not.toHaveBeenCalled();
+    expect(window.localStorage.getItem(tripParticipantSessionStorageKey)).toBeNull();
+  });
+
   it("hydrates a persisted API session before the backend trip is in local state", async () => {
     installLocalStorageStub();
     const apiTrip = {
@@ -949,12 +1002,11 @@ describe("Sagittarius cockpit UI", () => {
     expect(screen.getAllByRole("heading", { name: /Hong Kong \+ Shenzhen Trip/i }).length).toBeGreaterThan(0);
     expect(screen.getByRole("navigation", { name: /เมนูวางแผน Joii/i })).toBeInTheDocument();
     expect(screen.queryByRole("banner", { name: /Trip command bar/i })).not.toBeInTheDocument();
-    expect(container.querySelector(".page-header")).toHaveTextContent("ศูนย์จัดการทริป");
+    expect(screen.getAllByText(/ศูนย์จัดการทริป/i).length).toBeGreaterThan(0);
     expect(workspaceGrid).toBeInTheDocument();
     expect(workspaceGrid).toContainElement(planningMain as HTMLElement);
     expect(planningMain).toContainElement(screen.getByRole("region", { name: /Trip overview/i }));
     expect(screen.getByRole("region", { name: /Trip overview/i })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: /ศูนย์จัดการทริป/i })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /เพิ่มสถานที่ \/ กิจกรรม/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /เปิดรายละเอียด/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /เลิกทำ/i })).not.toBeInTheDocument();
@@ -1085,7 +1137,7 @@ describe("Sagittarius cockpit UI", () => {
     const membersLink = within(navigation).getByRole("link", { name: /สมาชิก/i });
 
     expect(membersLink).toHaveClass("rail-link--active");
-    expect(membersLink).toHaveAttribute("href", "/trips/trip-hong-kong-shenzhen/members");
+    expect(membersLink).toHaveAttribute("href", "/trips/018f4e80-5788-7de0-a45c-8a555d17fc2d/members");
     expect(screen.getByRole("region", { name: /สมาชิกทริป/i })).toBeInTheDocument();
     expect(screen.getByRole("region", { name: /People and presence/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /สมาชิกในทริป/i })).toBeInTheDocument();

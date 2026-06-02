@@ -1,7 +1,7 @@
 import type { Expense, ItineraryItem, Trip } from "./types";
 import { hashLocalSecret, localTripJoinId, localTripJoinPassword } from "./auth";
 
-const tripId = "trip-hong-kong-shenzhen";
+const tripId = "018f4e80-5788-7de0-a45c-8a555d17fc2d";
 const mainPlanId = "plan-main";
 const updatedAt = "2026-05-27T00:00:00.000Z";
 

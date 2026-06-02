@@ -1004,7 +1004,10 @@ function loadPersistedParticipantSession(requireJoin: boolean, trip: Trip, isApi
   if (!rawSession) return null;
   try {
     const parsedSession = JSON.parse(rawSession) as TripParticipantSession;
-    if (routeTripId && parsedSession.tripId !== routeTripId) return null;
+    if (routeTripId && parsedSession.tripId !== routeTripId) {
+      storage.removeItem(tripParticipantSessionStorageKey);
+      return null;
+    }
     /* v8 ignore next */
     return isApiMode || findSessionMember(trip, parsedSession) ? parsedSession : null;
   } catch {

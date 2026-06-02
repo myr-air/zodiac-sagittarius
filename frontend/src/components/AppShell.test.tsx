@@ -87,13 +87,14 @@ describe("AppShell", () => {
     );
 
     await screen.findByRole("link", { name: /ภาพรวม/ });
-    expect(screen.getByRole("link", { name: /ภาพรวม/ })).toHaveAttribute("href", "/trips/trip-hong-kong-shenzhen");
-    expect(screen.getByRole("link", { name: /แผนการเดินทาง/ })).toHaveAttribute("href", "/trips/trip-hong-kong-shenzhen/itinerary");
-    expect(screen.getByRole("link", { name: /แผนที่/ })).toHaveAttribute("href", "/trips/trip-hong-kong-shenzhen/map");
-    expect(screen.getByRole("link", { name: /ไทม์ไลน์/ })).toHaveAttribute("href", "/trips/trip-hong-kong-shenzhen/timeline");
-    expect(screen.getByRole("link", { name: /สมาชิก/ })).toHaveAttribute("href", "/trips/trip-hong-kong-shenzhen/members");
+    expect(screen.getByRole("link", { name: /ภาพรวม/ })).toHaveAttribute("href", "/trips/018f4e80-5788-7de0-a45c-8a555d17fc2d");
+    expect(screen.getByRole("link", { name: /แผนการเดินทาง/ })).toHaveAttribute("href", "/trips/018f4e80-5788-7de0-a45c-8a555d17fc2d/itinerary");
+    expect(screen.getByRole("link", { name: /แผนที่/ })).toHaveAttribute("href", "/trips/018f4e80-5788-7de0-a45c-8a555d17fc2d/map");
+    expect(screen.getByRole("link", { name: /ไทม์ไลน์/ })).toHaveAttribute("href", "/trips/018f4e80-5788-7de0-a45c-8a555d17fc2d/timeline");
+    expect(screen.getByRole("link", { name: /สมาชิก/ })).toHaveAttribute("href", "/trips/018f4e80-5788-7de0-a45c-8a555d17fc2d/members");
     expect(screen.getByRole("button", { name: /ค่าใช้จ่าย/ })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "ดูสรุปรายละเอียด" })).toHaveAttribute("href", "/trips/trip-hong-kong-shenzhen");
+    expect(screen.getByText("Trip ID 018f4e80")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "ดูสรุปรายละเอียด" })).toHaveAttribute("href", "/trips/018f4e80-5788-7de0-a45c-8a555d17fc2d");
   });
 
   it("renders English shell labels by default and can switch to Thai", async () => {
@@ -111,13 +112,13 @@ describe("AppShell", () => {
     );
 
     expect(screen.getByRole("navigation", { name: /Joii planning navigation/i })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /Overview/i })).toHaveAttribute("href", "/trips/trip-hong-kong-shenzhen");
+    expect(screen.getByRole("link", { name: /Overview/i })).toHaveAttribute("href", "/trips/018f4e80-5788-7de0-a45c-8a555d17fc2d");
     expect(screen.getByText("Traveler")).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "ภาษาไทย" }));
 
     expect(screen.getByRole("navigation", { name: /เมนูวางแผน Joii/i })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /ภาพรวม/i })).toHaveAttribute("href", "/trips/trip-hong-kong-shenzhen");
+    expect(screen.getByRole("link", { name: /ภาพรวม/i })).toHaveAttribute("href", "/trips/018f4e80-5788-7de0-a45c-8a555d17fc2d");
     expect(screen.getByText("ผู้ร่วมเดินทาง")).toBeInTheDocument();
   });
 });

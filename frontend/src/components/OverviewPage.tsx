@@ -616,6 +616,8 @@ function CockpitCard({
 }
 
 function HighlightBoard({ items, startDate, locale, emptyMessage, title, subtitle }: { items: ItineraryItem[]; startDate: string; locale: Locale; emptyMessage: string; title: string; subtitle: string }) {
+  if (items.length === 1) return null;
+
   return (
     <section className="overview-highlight-board" aria-label={title}>
       <div className="overview-board-title">

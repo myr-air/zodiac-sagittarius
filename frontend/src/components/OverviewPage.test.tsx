@@ -78,6 +78,25 @@ describe("OverviewPage role lenses", () => {
     expect(screen.getByRole("region", { name: /ไฮไลต์ทริป/i })).toHaveTextContent(/ยังไม่มีไฮไลต์ในแผนนี้/i);
   });
 
+  it("does not spend a full-width highlight board on one repeated highlight", () => {
+    render(
+      <OverviewPage
+        currentMemberId="member-nam"
+        expenseSummary={buildExpenseSummary([], "member-nam")}
+        items={[seedTrip.itineraryItems.find((item) => item.id === "item-dimdim")!]}
+        suggestions={[]}
+        tasks={[]}
+        trip={seedTrip}
+        onCreateTask={vi.fn()}
+        onOpenExpenses={vi.fn()}
+        onToggleTaskStatus={vi.fn()}
+      />,
+    );
+
+    expect(screen.queryByRole("region", { name: /ไฮไลต์ทริป/i })).not.toBeInTheDocument();
+    expect(screen.getAllByText(/Dim Dim Sum/i).length).toBeGreaterThan(0);
+  });
+
   it("combines booking prep into the trip checklist for managers", () => {
     renderOverview("member-beam");
 

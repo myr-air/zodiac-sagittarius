@@ -6,6 +6,7 @@ import type { PlanningView } from "@/src/app/SagittariusApp";
 import { LanguageSwitch } from "@/src/i18n/LanguageSwitch";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { appRoutes, tripWorkspaceNavItems } from "@/src/routes/app-routes";
+import { shortTripId } from "@/src/trip/ids";
 import type { Member, Trip } from "@/src/trip/types";
 import { getTripDates } from "@/src/trip/itinerary";
 import { Icon } from "./icons";
@@ -88,6 +89,7 @@ export function AppShell({ activeView, children, collapsed, currentMember, onLea
 
         <div className="rail-summary" aria-label={t.appShell.planSummary}>
           <strong>{t.appShell.planSummary}</strong>
+          <span><Icon name="key" /> {t.appShell.tripId({ id: shortTripId(trip.id) })}</span>
           <span><Icon name="calendar" /> {t.appShell.tripDuration({ days: tripDays, nights: tripNights })}</span>
           <span><Icon name="location" /> {t.appShell.placeCount({ count: trip.itineraryItems.length })}</span>
           <Link href={appRoutes.tripOverview(trip.id)} className="rail-summary-link">{t.appShell.viewDetails}</Link>
