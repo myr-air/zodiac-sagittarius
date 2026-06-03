@@ -2,7 +2,7 @@ mod support;
 
 use axum::body::{Body, to_bytes};
 use http::{Method, Request, StatusCode, header};
-use serde_json::Value;
+use serde_json::{Value, json};
 use tower::ServiceExt;
 
 #[sqlx::test(migrations = "../../migrations")]
@@ -175,4 +175,93 @@ async fn trip_load_contract_rejects_empty_bearer_token(pool: sqlx::PgPool) {
         .unwrap();
 
     assert_eq!(response.status(), StatusCode::UNAUTHORIZED);
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn trip_patch_contract_updates_metadata_and_rejects_stale_versions(pool: sqlx::PgPool) {
+    support::seed_trip(&pool).await;
+    let owner_token = support::create_session(&pool, support::OWNER_ID).await;
+    let app = support::app(pool);
+
+    let response = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method(Method::PATCH)
+                .uri(format!("/api/v1/trips/{}", support::TRIP_ID))
+                .header(header::AUTHORIZATION, format!("Bearer {owner_token}"))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({
+                        "clientMutationId": "trip-patch-1",
+                        "expectedVersion": 1,
+                        "name": "Hong Kong revised",
+                        "destinationLabel": "Hong Kong",
+                        "countries": ["Hong Kong"]
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::OK);
+    let body: Value =
+        serde_json::from_slice(&to_bytes(response.into_body(), 65536).await.unwrap()).unwrap();
+    assert_eq!(body["name"], "Hong Kong revised");
+    assert_eq!(body["destinationLabel"], "Hong Kong");
+    assert_eq!(body["countries"], json!(["Hong Kong"]));
+    assert_eq!(body["version"], 2);
+
+    let stale = app
+        .oneshot(
+            Request::builder()
+                .method(Method::PATCH)
+                .uri(format!("/api/v1/trips/{}", support::TRIP_ID))
+                .header(header::AUTHORIZATION, format!("Bearer {owner_token}"))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({
+                        "clientMutationId": "trip-patch-2",
+                        "expectedVersion": 1,
+                        "name": "Stale"
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(stale.status(), StatusCode::CONFLICT);
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn trip_patch_contract_viewer_cannot_update_metadata(pool: sqlx::PgPool) {
+    support::seed_trip(&pool).await;
+    let viewer_token = support::create_session(&pool, support::VIEWER_ID).await;
+    let app = support::app(pool);
+
+    let response = app
+        .oneshot(
+            Request::builder()
+                .method(Method::PATCH)
+                .uri(format!("/api/v1/trips/{}", support::TRIP_ID))
+                .header(header::AUTHORIZATION, format!("Bearer {viewer_token}"))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({
+                        "clientMutationId": "trip-patch-viewer",
+                        "expectedVersion": 1,
+                        "name": "Forbidden"
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::FORBIDDEN);
 }

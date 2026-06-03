@@ -27,7 +27,7 @@ wave plan for stop notes. Current implementation was audited against
 | Area | Contract / route | Backend status | Frontend API-mode status | Ticket |
 | --- | --- | --- | --- | --- |
 | Trip load | `GET /api/v1/trips/:tripId` | Implemented: trip/members/variants/itinerary/suggestions/tasks/stop notes/expenses/expense summary | Implemented: reads cockpit stop notes and expenses | W2-API-008, W3-FE-001 |
-| Trip metadata | `PATCH /api/v1/trips/:tripId` | Missing | Missing | Future gap |
+| Trip metadata | `PATCH /api/v1/trips/:tripId` | Implemented | Implemented in API client; settings UI can call it when product exposes metadata editing | Trip metadata closure |
 | Plan variants | `POST/PATCH/PUBLISH /plan-variants` | Missing | Missing | Future gap |
 | Itinerary create | `POST /api/v1/trips/:tripId/itinerary-items` | Implemented | Implemented | W2-API-003, W3-FE-005 |
 | Itinerary patch | `PATCH /api/v1/trips/:tripId/itinerary-items/:itemId` | Implemented | Implemented | Existing |

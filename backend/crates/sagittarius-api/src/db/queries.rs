@@ -41,6 +41,56 @@ pub async fn find_trip_by_id(
     .await
 }
 
+pub async fn lock_trip(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    trip_id: Uuid,
+) -> Result<Option<TripAuthRecord>, sqlx::Error> {
+    sqlx::query_as::<_, TripAuthRecord>(
+        "select
+           id, name, destination_label, countries, start_date, end_date, join_id, join_password_hash,
+           active_plan_variant_id, owner_member_id, version
+         from trips
+         where id = $1 and deleted_at is null
+         for update",
+    )
+    .bind(trip_id)
+    .fetch_optional(&mut **tx)
+    .await
+}
+
+pub async fn update_trip_metadata(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    trip_id: Uuid,
+    patch: &crate::domain::patches::PatchTripRequest,
+    version: i64,
+) -> Result<Option<TripAuthRecord>, sqlx::Error> {
+    sqlx::query_as::<_, TripAuthRecord>(
+        "update trips
+         set name = coalesce($2, name),
+             destination_label = coalesce($3, destination_label),
+             countries = coalesce($4, countries),
+             start_date = coalesce($5, start_date),
+             end_date = coalesce($6, end_date),
+             active_plan_variant_id = coalesce($7, active_plan_variant_id),
+             version = $8,
+             updated_at = now()
+         where id = $1 and deleted_at is null
+         returning
+           id, name, destination_label, countries, start_date, end_date, join_id, join_password_hash,
+           active_plan_variant_id, owner_member_id, version",
+    )
+    .bind(trip_id)
+    .bind(patch.name.as_deref())
+    .bind(patch.destination_label.as_deref())
+    .bind(patch.countries.as_ref())
+    .bind(patch.start_date)
+    .bind(patch.end_date)
+    .bind(patch.active_plan_variant_id)
+    .bind(version)
+    .fetch_optional(&mut **tx)
+    .await
+}
+
 pub async fn list_claimable_members(
     pool: &PgPool,
     trip_id: Uuid,

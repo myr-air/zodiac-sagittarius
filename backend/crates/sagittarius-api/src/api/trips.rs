@@ -6,7 +6,8 @@ use crate::api::extractors::BearerToken;
 use crate::app;
 use crate::app::AppState;
 use crate::domain::errors::ServiceError;
-use crate::domain::types::TripCockpit;
+use crate::domain::patches::PatchTripRequest;
+use crate::domain::types::{TripCockpit, TripSummary};
 
 pub async fn load_trip(
     State(state): State<AppState>,
@@ -16,4 +17,22 @@ pub async fn load_trip(
     let cockpit = app::trips::load_cockpit(&state.pool, trip_id, &session_token).await?;
 
     Ok(Json(cockpit))
+}
+
+pub async fn patch_trip(
+    State(state): State<AppState>,
+    Path(trip_id): Path<Uuid>,
+    BearerToken(session_token): BearerToken,
+    Json(request): Json<PatchTripRequest>,
+) -> Result<Json<TripSummary>, ServiceError> {
+    let trip = app::trips::patch_trip(
+        &state.pool,
+        &state.realtime,
+        trip_id,
+        &session_token,
+        request,
+    )
+    .await?;
+
+    Ok(Json(trip))
 }

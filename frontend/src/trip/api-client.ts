@@ -147,6 +147,7 @@ export interface TripApiClient {
   loginMember(tripId: string, memberId: string, participantPassword: string, joinSessionToken: string): Promise<TripParticipantSession>;
   logout(tripId: string, sessionToken: string): Promise<void>;
   loadTrip(tripId: string, sessionToken: string): Promise<TripCockpit>;
+  patchTrip(tripId: string, sessionToken: string, request: PatchTripApiRequest): Promise<Trip>;
   createTask(tripId: string, sessionToken: string, request: CreateTaskApiRequest): Promise<TripTask>;
   patchTask(tripId: string, taskId: string, sessionToken: string, request: PatchTaskApiRequest): Promise<TripTask>;
   createItineraryItem(tripId: string, sessionToken: string, request: CreateItineraryItemApiRequest): Promise<ItineraryItem>;
@@ -177,6 +178,17 @@ export interface CreateTaskApiRequest {
   kind?: TripTask["kind"];
   assigneeId?: string | null;
   relatedItemId?: string | null;
+}
+
+export interface PatchTripApiRequest {
+  clientMutationId: string;
+  expectedVersion: number;
+  name?: string;
+  destinationLabel?: string;
+  countries?: string[];
+  startDate?: string;
+  endDate?: string;
+  activePlanVariantId?: string;
 }
 
 export interface PatchTaskApiRequest {
@@ -327,6 +339,14 @@ export function createTripApiClient(options: TripApiClientOptions = {}): TripApi
         headers: { Authorization: `Bearer ${sessionToken}` },
       });
       return mapCockpitResponse(cockpit);
+    },
+    async patchTrip(tripId, sessionToken, tripRequest) {
+      const trip = await request<TripSummaryResponse>(tripApiRoutes.trip(tripId), {
+        method: "PATCH",
+        headers: { Authorization: `Bearer ${sessionToken}` },
+        body: JSON.stringify(tripRequest),
+      });
+      return mapTripSummary(trip);
     },
     async createTask(tripId, sessionToken, taskRequest) {
       const task = await request<TripTaskResponse>(tripApiRoutes.tasks(tripId), {
@@ -490,14 +510,7 @@ export function mapCockpitResponse(response: TripCockpitResponse): TripCockpit {
   const activePlanVariantId = response.trip.activePlanVariantId ?? response.planVariants[0]?.id ?? "";
   return {
     trip: {
-      id: response.trip.id,
-      joinId: response.trip.joinId,
-      joinPasswordHash: "",
-      name: response.trip.name,
-      destinationLabel: response.trip.destinationLabel,
-      countries: response.trip.countries ?? [],
-      startDate: response.trip.startDate,
-      endDate: response.trip.endDate,
+      ...mapTripSummary(response.trip),
       activePlanVariantId,
       planVariants: response.planVariants.map(mapPlanVariant),
       members: response.members.map(mapMember),
@@ -508,6 +521,25 @@ export function mapCockpitResponse(response: TripCockpitResponse): TripCockpit {
     tasks: response.tasks.map(mapTask),
     stopNotes: response.stopNotes,
     expenseSummary: response.expenseSummary,
+  };
+}
+
+function mapTripSummary(trip: TripSummaryResponse): Trip {
+  return {
+    id: trip.id,
+    joinId: trip.joinId,
+    joinPasswordHash: "",
+    name: trip.name,
+    destinationLabel: trip.destinationLabel,
+    countries: trip.countries ?? [],
+    startDate: trip.startDate,
+    endDate: trip.endDate,
+    activePlanVariantId: trip.activePlanVariantId ?? "",
+    planVariants: [],
+    members: [],
+    itineraryItems: [],
+    expenses: [],
+    version: trip.version,
   };
 }
 

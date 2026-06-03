@@ -43,6 +43,15 @@ describe.skipIf(!required && !hasCredentials)("real Sagittarius API e2e", () => 
     });
     expect(onlineMember).toMatchObject({ id: member.id, presence: "online" });
 
+    const patchedTrip = await client.patchTrip(join.trip.id, session.sessionToken, {
+      clientMutationId: `e2e-trip-patch-${Date.now().toString(36)}`,
+      expectedVersion: cockpit.trip.version ?? 1,
+      name: `${cockpit.trip.name} E2E`,
+      destinationLabel: cockpit.trip.destinationLabel,
+      countries: cockpit.trip.countries ?? [],
+    });
+    expect(patchedTrip).toMatchObject({ id: join.trip.id, version: (cockpit.trip.version ?? 1) + 1 });
+
     const task = await client.createTask(join.trip.id, session.sessionToken, {
       clientMutationId: `e2e-task-${Date.now().toString(36)}`,
       title: `E2E connectivity ${new Date().toISOString()}`,

@@ -88,7 +88,10 @@ fn api_v1() -> Router<AppState> {
         )
         .route("/account/session", delete(account::logout_session))
         .route("/trip-join-sessions", post(join::join_trip))
-        .route("/trips/{trip_id}", get(trips::load_trip))
+        .route(
+            "/trips/{trip_id}",
+            get(trips::load_trip).patch(trips::patch_trip),
+        )
         .route("/trips/{trip_id}/events/stream", get(ws::trip_ws))
         .route(
             "/trips/{trip_id}/itinerary-items",

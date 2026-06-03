@@ -126,6 +126,7 @@ export interface Trip {
   members: Member[];
   itineraryItems: ItineraryItem[];
   expenses: Expense[];
+  version?: number;
 }
 
 export interface TripJoinCredential {

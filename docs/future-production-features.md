@@ -9,6 +9,7 @@ These are intentionally outside the current production connectivity pivot.
 - Itinerary create/reorder/delete API wiring is live; delete is available from the edit stop dialog.
 - Expense create/update/delete is wired through backend APIs from the context rail, with summary reload support.
 - Presence updates persist through `POST /presence` and sync the active API session member online.
+- Trip metadata updates have a versioned backend route and API client method.
 - Local Docker-backed API/browser verification passed for the production-readiness wave.
 
 ## Still Future

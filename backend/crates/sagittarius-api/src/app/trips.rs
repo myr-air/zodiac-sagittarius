@@ -3,13 +3,17 @@ use std::collections::BTreeMap;
 
 use uuid::Uuid;
 
-use crate::app::auth;
+use crate::app::{auth, events};
 use crate::db;
 use crate::db::PgPool;
 use crate::db::models::ExpenseSplitRecord;
 use crate::domain::capabilities::can;
 use crate::domain::errors::ServiceError;
-use crate::domain::types::{Capability, ExpenseSummary, SettlementSuggestion, TripCockpit};
+use crate::domain::patches::PatchTripRequest;
+use crate::domain::types::{
+    Capability, ExpenseSummary, SettlementSuggestion, TripCockpit, TripSummary,
+};
+use crate::realtime::RealtimeHub;
 
 pub async fn load_cockpit(
     pool: &PgPool,
@@ -77,6 +81,126 @@ pub async fn load_cockpit(
         expenses: expense_rows.into_iter().map(Into::into).collect(),
         expense_summary,
     })
+}
+
+pub async fn patch_trip(
+    pool: &PgPool,
+    realtime: &RealtimeHub,
+    trip_id: Uuid,
+    session_token: &str,
+    request: PatchTripRequest,
+) -> Result<TripSummary, ServiceError> {
+    validate_trip_patch(&request)?;
+
+    let token_hash = auth::hash_session_token(session_token)?;
+    let mut tx = pool.begin().await?;
+    let session = db::queries::find_active_member_session_in_tx(&mut tx, trip_id, &token_hash)
+        .await?
+        .ok_or(ServiceError::Unauthenticated)?;
+    if !can(session.role, Capability::EditItinerary) {
+        return Err(ServiceError::Forbidden);
+    }
+    if db::queries::realtime_event_exists_for_client_mutation(
+        &mut tx,
+        trip_id,
+        session.member_id,
+        &request.client_mutation_id,
+    )
+    .await?
+    {
+        return Err(ServiceError::VersionConflict);
+    }
+
+    let existing = db::queries::lock_trip(&mut tx, trip_id)
+        .await?
+        .ok_or(ServiceError::NotFound)?;
+    if existing.version != request.expected_version {
+        let latest = serde_json::to_value(TripSummary::from(existing))
+            .map_err(|_| ServiceError::InvalidRequest("latest trip could not be serialized"))?;
+        return Err(ServiceError::VersionConflictWithLatest(latest));
+    }
+    let start_date = request.start_date.unwrap_or(existing.start_date);
+    let end_date = request.end_date.unwrap_or(existing.end_date);
+    if start_date > end_date {
+        return Err(ServiceError::InvalidRequest(
+            "startDate must be before endDate",
+        ));
+    }
+    if let Some(active_plan_variant_id) = request.active_plan_variant_id {
+        let variants = db::queries::list_plan_variants(pool, trip_id).await?;
+        if !variants
+            .iter()
+            .any(|variant| variant.id == active_plan_variant_id)
+        {
+            return Err(ServiceError::InvalidRequest(
+                "activePlanVariantId is invalid",
+            ));
+        }
+    }
+
+    let updated =
+        db::queries::update_trip_metadata(&mut tx, trip_id, &request, request.expected_version + 1)
+            .await?
+            .ok_or(ServiceError::NotFound)?;
+    let trip = TripSummary::from(updated);
+    let payload = serde_json::to_value(&trip)
+        .map_err(|_| ServiceError::InvalidRequest("event payload could not be serialized"))?;
+    let event = events::insert(
+        &mut tx,
+        events::EventWrite {
+            trip_id,
+            aggregate_type: "trip",
+            event_type: "trip.updated",
+            aggregate_id: trip.id,
+            version: trip.version,
+            payload,
+            client_mutation_id: Some(request.client_mutation_id.as_str()),
+            created_by: Some(session.member_id),
+        },
+    )
+    .await?;
+
+    tx.commit().await?;
+    realtime.publish(event).await;
+
+    Ok(trip)
+}
+
+fn validate_trip_patch(request: &PatchTripRequest) -> Result<(), ServiceError> {
+    if request.client_mutation_id.trim().is_empty() {
+        return Err(ServiceError::InvalidRequest("clientMutationId is required"));
+    }
+    if let Some(name) = &request.name {
+        validate_text(name, "name")?;
+    }
+    if let Some(destination_label) = &request.destination_label {
+        validate_text(destination_label, "destinationLabel")?;
+    }
+    if let Some(countries) = &request.countries {
+        for country in countries {
+            validate_text(country, "country")?;
+        }
+    }
+    if let (Some(start_date), Some(end_date)) = (request.start_date, request.end_date) {
+        if start_date > end_date {
+            return Err(ServiceError::InvalidRequest(
+                "startDate must be before endDate",
+            ));
+        }
+    }
+
+    Ok(())
+}
+
+fn validate_text(value: &str, field: &'static str) -> Result<(), ServiceError> {
+    let trimmed = value.trim();
+    if trimmed.is_empty() {
+        return Err(ServiceError::InvalidRequest(field));
+    }
+    if trimmed.len() > 160 {
+        return Err(ServiceError::InvalidRequest(field));
+    }
+    Ok(())
 }
 
 pub(crate) fn build_expense_summary(

@@ -16,6 +16,19 @@ pub struct PatchItineraryItemRequest {
 
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub struct PatchTripRequest {
+    pub client_mutation_id: String,
+    pub expected_version: i64,
+    pub name: Option<String>,
+    pub destination_label: Option<String>,
+    pub countries: Option<Vec<String>>,
+    pub start_date: Option<Date>,
+    pub end_date: Option<Date>,
+    pub active_plan_variant_id: Option<Uuid>,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct CreateItineraryItemRequest {
     pub client_mutation_id: String,
     pub plan_variant_id: Uuid,
