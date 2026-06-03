@@ -245,6 +245,7 @@ pub struct ClaimableMember {
     pub role: TripRole,
     pub access_status: TripMemberAccessStatus,
     pub color: String,
+    pub claimed_at: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

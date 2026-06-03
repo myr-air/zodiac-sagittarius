@@ -61,6 +61,7 @@ impl From<TripMemberAuthRecord> for ClaimableMember {
             role: record.role,
             access_status: record.access_status,
             color: record.color,
+            claimed_at: record.claimed_at.map(|dt| dt.to_string()),
         }
     }
 }
