@@ -11,6 +11,8 @@ const frontendPort = process.env.SAGITTARIUS_BROWSER_E2E_FRONTEND_PORT ?? "5190"
 const apiBaseUrl = `http://${apiBindAddress}`;
 const frontendBaseUrl = `http://${frontendHost}:${frontendPort}`;
 const psql = process.env.PSQL ?? "psql";
+const desktopViewport = { width: 1440, height: 960 };
+const mobileViewport = { width: 390, height: 844 };
 type LoggedProcess = ChildProcessByStdio<null, Readable, Readable>;
 
 async function main() {
@@ -43,6 +45,7 @@ async function main() {
     browser = await chromium.launch({ headless: true });
     await registerThroughBrowser(browser, { email, password, displayName });
     await signInThroughBrowser(browser, { email, password, displayName });
+    await signInThroughMobileBrowser(browser, { email, password, displayName });
   } finally {
     await browser?.close();
     for (const child of [...processes].reverse()) {
@@ -83,6 +86,34 @@ async function registerThroughBrowser(browser: Browser, input: { email: string; 
 async function signInThroughBrowser(browser: Browser, input: { email: string; password: string; displayName: string }) {
   const { page, assertNoConsoleErrors } = await newCheckedPage(browser);
 
+  await passwordSignIn(page, input);
+  await expectPortalDashboard(page, input);
+  await page.reload({ waitUntil: "networkidle" });
+  await expectPortalDashboard(page, input);
+  await page.goto(`${frontendBaseUrl}/portal/to-dos`, { waitUntil: "networkidle" });
+  await expectText(page, "Trip To-dos");
+  await page.goto(`${frontendBaseUrl}/portal/vault`, { waitUntil: "networkidle" });
+  await expectText(page, "Travel Vault");
+
+  assertNoConsoleErrors();
+  await page.close();
+}
+
+async function signInThroughMobileBrowser(browser: Browser, input: { email: string; password: string; displayName: string }) {
+  const { page, assertNoConsoleErrors } = await newCheckedPage(browser, mobileViewport);
+
+  await passwordSignIn(page, input);
+  await expectPortalDashboard(page, input);
+  await assertNoHorizontalPageOverflow(page);
+  await page.goto(`${frontendBaseUrl}/portal/settings`, { waitUntil: "networkidle" });
+  await expectVisibleSelector(page, "#portal-settings");
+  await assertNoHorizontalPageOverflow(page);
+
+  assertNoConsoleErrors();
+  await page.close();
+}
+
+async function passwordSignIn(page: Page, input: { email: string; password: string }) {
   await page.goto(`${frontendBaseUrl}/access?mode=sign-in`, { waitUntil: "networkidle" });
   await expectMainLabel(page, "Account sign in");
   await page.getByLabel("Email *").fill(input.email);
@@ -90,19 +121,49 @@ async function signInThroughBrowser(browser: Browser, input: { email: string; pa
   await page.getByRole("button", { name: /^Use password$/ }).click();
   await page.getByLabel("Password").fill(input.password);
   await page.getByRole("button", { name: /^Use password$/ }).click();
+}
 
+async function expectPortalDashboard(page: Page, input: { email: string; displayName: string }) {
   await page.waitForURL("**/portal", { timeout: 15_000 });
   await expectText(page, "Dashboard");
   await expectText(page, input.displayName);
   await expectText(page, input.email);
-
-  assertNoConsoleErrors();
-  await page.close();
 }
 
-async function newCheckedPage(browser: Browser): Promise<{ page: Page; assertNoConsoleErrors: () => void }> {
+async function assertNoHorizontalPageOverflow(page: Page) {
+  const overflow = await page.evaluate(() => {
+    const horizontalScrollAllowed = '[class*="overflow-x-auto"],[data-allow-horizontal-scroll="true"]';
+    const offenders = Array.from(document.querySelectorAll<HTMLElement>("body *"))
+      .filter((element) => {
+        if (element.closest(horizontalScrollAllowed)) return false;
+        const rect = element.getBoundingClientRect();
+        return rect.width > 0 && (rect.left < -1 || rect.right > window.innerWidth + 1);
+      })
+      .slice(0, 8)
+      .map((element) => ({
+        className: String(element.className),
+        tagName: element.tagName,
+        text: (element.textContent ?? "").trim().replace(/\s+/g, " ").slice(0, 80),
+      }));
+
+    return {
+      clientWidth: document.documentElement.clientWidth,
+      offenders,
+      scrollWidth: document.documentElement.scrollWidth,
+    };
+  });
+
+  if (overflow.scrollWidth > overflow.clientWidth + 1 || overflow.offenders.length) {
+    throw new Error(`Horizontal overflow detected: ${JSON.stringify(overflow, null, 2)}`);
+  }
+}
+
+async function newCheckedPage(
+  browser: Browser,
+  viewport: { width: number; height: number } = desktopViewport,
+): Promise<{ page: Page; assertNoConsoleErrors: () => void }> {
   const context = await browser.newContext({
-    viewport: { width: 1440, height: 960 },
+    viewport,
     reducedMotion: "no-preference",
   });
   const page = await context.newPage();
@@ -127,6 +188,10 @@ async function expectText(page: Page, text: string) {
 
 async function expectMainLabel(page: Page, label: string) {
   await page.locator(`main[aria-label="${label}"]`).waitFor({ state: "visible", timeout: 10_000 });
+}
+
+async function expectVisibleSelector(page: Page, selector: string) {
+  await page.locator(selector).waitFor({ state: "visible", timeout: 10_000 });
 }
 
 async function waitForEmailCode(email: string): Promise<string> {
