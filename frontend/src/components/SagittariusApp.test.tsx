@@ -1109,6 +1109,10 @@ describe("Sagittarius cockpit UI", () => {
     await user.type(within(context).getByLabelText(/ชื่อค่าใช้จ่าย/i), "Taxi");
     await user.type(within(context).getByLabelText(/จำนวนเงิน/i), "120");
     expect(within(context).getByRole("button", { name: /เพิ่ม\/แก้ไขค่าใช้จ่าย/i })).toBeEnabled();
+    expect(within(context).getByRole("button", { name: /เพิ่ม\/แก้ไขค่าใช้จ่าย/i })).toBeDisabled();
+    await user.type(within(context).getByLabelText(/ชื่อค่าใช้จ่าย/i), "Taxi");
+    await user.type(within(context).getByLabelText(/จำนวนเงิน/i), "120");
+    expect(within(context).getByRole("button", { name: /เพิ่ม\/แก้ไขค่าใช้จ่าย/i })).toBeEnabled();
     unmount();
     window.localStorage.clear();
     window.sessionStorage.clear();

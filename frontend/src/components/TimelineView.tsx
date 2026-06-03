@@ -20,7 +20,7 @@ interface TimelineViewProps {
   onToggleContextRail: () => void;
 }
 
-const timelinePanelClassName = "timeline-panel grid min-h-full min-w-0 gap-3 bg-[var(--color-page)] px-6 py-[22px] pb-7";
+const timelinePanelClassName = "timeline-panel grid min-h-full min-w-0 grid-rows-[auto_minmax(0,1fr)] gap-3 bg-[var(--color-page)] px-6 py-[22px] pb-7";
 const timelineGridClassName = "timeline-grid mb-[30px] grid w-full grid-cols-3 gap-3 p-0 max-[1199px]:w-[calc(100%-24px)] max-[767px]:grid-cols-1 max-[767px]:px-0";
 const timelineDayClassName = "timeline-day overflow-hidden rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)]";
 const timelineDayHeaderClassName = "timeline-day-header flex min-h-[50px] items-center justify-between gap-2.5 border-b border-[var(--color-border)] bg-[var(--color-surface)] px-3.5 py-2.5 [&_strong]:text-[13px] [&_strong]:font-extrabold [&_strong]:leading-[18px] [&_strong]:text-[#0f172a] [&_span:not(.badge)]:text-[11px] [&_span:not(.badge)]:font-bold [&_span:not(.badge)]:leading-[15px] [&_span:not(.badge)]:text-[var(--color-text-muted)]";

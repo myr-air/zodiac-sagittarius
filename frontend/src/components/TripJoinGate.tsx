@@ -288,8 +288,14 @@ export function TripJoinGate({ trip, apiClient, embedded = false, variant = "def
           </form>
         ) : (
           <div className={cn(participantStepClassName, isTripAccessVariant ? tripAccessContentClassName : "", isTripAccessVariant ? tripAccessParticipantStepClassName : "")}>
-            <button type="button" className="join-back" onClick={() => setStep('room')}>
-              <Icon name="chevronLeft" />
+            <button
+              type="button"
+              className={cn(
+                "inline-flex w-fit items-center gap-1.5 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-3.5 py-1.5 text-xs font-[850] text-[var(--color-text-muted)] transition-all duration-150 hover:bg-[var(--color-primary-soft)] hover:text-[var(--color-primary-strong)] hover:border-[var(--color-primary-border)] hover:shadow-[0_8px_18px_rgb(15_118_110_/_0.08)] focus-visible:bg-[var(--color-primary-soft)] focus-visible:text-[var(--color-primary-strong)] focus-visible:border-[var(--color-primary-border)]"
+              )}
+              onClick={() => setStep('room')}
+            >
+              <Icon name="chevronLeft" className="size-3.5" />
               {t.join.backToRoom}
             </button>
             <div className={participantGridClassName} aria-label={t.join.participantListLabel}>
@@ -321,20 +327,22 @@ export function TripJoinGate({ trip, apiClient, embedded = false, variant = "def
                             ? t.join.participantPassword({ name: selectedMember.displayName })
                             : t.join.setParticipantPassword({ name: selectedMember.displayName })}
                         </span>
-                        <input
-                          value={participantPassword}
-                          onChange={(event) => setParticipantPassword(event.target.value)}
-                          type={showParticipantPassword ? "text" : "password"}
-                          autoComplete="current-password"
-                        />
-                        <button
-                          type="button"
-                          className={passwordVisibilityButtonClassName}
-                          aria-label={showParticipantPassword ? t.join.hideParticipantPassword : t.join.showParticipantPassword}
-                          onClick={() => setShowParticipantPassword((current) => !current)}
-                        >
-                          <Icon name={showParticipantPassword ? "eyeOff" : "eye"} />
-                        </button>
+                        <span className={passwordInputRowClassName}>
+                          <input
+                            value={participantPassword}
+                            onChange={(event) => setParticipantPassword(event.target.value)}
+                            type={showParticipantPassword ? "text" : "password"}
+                            autoComplete="current-password"
+                          />
+                          <button
+                            type="button"
+                            className={passwordVisibilityButtonClassName}
+                            aria-label={showParticipantPassword ? t.join.hideParticipantPassword : t.join.showParticipantPassword}
+                            onClick={() => setShowParticipantPassword((current) => !current)}
+                          >
+                            <Icon name={showParticipantPassword ? "eyeOff" : "eye"} />
+                          </button>
+                        </span>
                       </label>
                       {!selectedMember.claimPasswordHash ? (
                         <p className={participantAuthHelpClassName}>

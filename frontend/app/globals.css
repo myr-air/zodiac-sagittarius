@@ -682,3 +682,17 @@ button:disabled,
   }
 
 }
+
+/* Layout spacing adjustments to prevent back-to-home button and brand hero collision on desktop */
+@media (min-width: 768px) {
+  .account-shell--entry .account-hero .join-mark {
+    top: 108px !important;
+  }
+  .account-shell--entry .account-hero .join-mark + div {
+    top: 118px !important;
+  }
+  .account-shell--entry .account-hero .account-travel-collage {
+    top: 118px !important;
+  }
+}
+

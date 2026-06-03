@@ -490,6 +490,7 @@ export const messages = {
         tripAccess: "Trip access",
       },
       eyebrow: "Joii access",
+      backToHome: "Back to Home",
       entryHero: {
         brand: "JOII",
         tagline: "Travel · Plan · Memories",
@@ -1263,6 +1264,7 @@ export const messages = {
         tripAccess: "Trip access",
       },
       eyebrow: "Joii access",
+      backToHome: "กลับสู่หน้าหลัก",
       entryHero: {
         brand: "JOII",
         tagline: "Travel · Plan · Memories",

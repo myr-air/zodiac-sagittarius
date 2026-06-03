@@ -114,6 +114,7 @@ describe("ContextRail", () => {
   });
 
   it("creates, updates, and deletes stop expenses", () => {
+  it("creates, updates, and deletes stop expenses", () => {
     const props = renderRail({
       trip: {
         ...tripFixture.trip,
@@ -156,7 +157,6 @@ describe("ContextRail", () => {
       paidBy: "member-aom",
       category: "food",
     });
-
     fireEvent.click(screen.getByRole("button", { name: /Delete expense Dim sum/i }));
     expect(props.onDeleteExpense).toHaveBeenCalledWith("expense-dimdim-1");
   });

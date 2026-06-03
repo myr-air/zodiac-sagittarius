@@ -180,7 +180,6 @@ export function ContextRail({
     setExpensePaidBy(expense.paidBy);
     setExpenseCategory(expense.category);
   }
-
   return (
     <aside className={`${contextRailClassName} ${open ? contextRailOpenClassName : contextRailClosedClassName}`} data-state={open ? "open" : "closed"} aria-hidden={!open} aria-label={t.contextRail.pageLabel}>
       <div className={railInspectorClassName}>

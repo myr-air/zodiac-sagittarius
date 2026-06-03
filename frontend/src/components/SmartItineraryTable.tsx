@@ -30,7 +30,7 @@ interface SmartItineraryTableProps {
   onUndo: () => void;
 }
 
-const tablePanelClassName = "table-panel grid h-auto min-h-full min-w-0 grid-rows-[auto_auto] overflow-visible bg-[var(--color-page)] px-6 py-[22px] pb-7";
+const tablePanelClassName = "table-panel grid h-auto min-h-full min-w-0 grid-rows-[auto_minmax(0,1fr)] overflow-visible bg-[var(--color-page)] px-6 py-[22px] pb-7";
 const pageHeaderActionsClassName = "page-header-actions relative z-[1] flex max-w-[420px] min-w-0 flex-wrap items-center justify-end gap-2";
 const pageHeaderNoteClassName = "page-header-note m-0 basis-full text-right text-xs font-bold text-[var(--color-warning-strong)]";
 const detailsToggleButtonClassName = "details-toggle-button aria-[expanded=false]:border-[var(--color-primary-border)] aria-[expanded=false]:bg-[var(--color-primary-soft)] aria-[expanded=false]:text-[var(--color-primary-strong)]";

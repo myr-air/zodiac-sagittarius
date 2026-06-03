@@ -87,14 +87,14 @@ const homeHeroTitleClassName =
   "home-hero-title relative z-[1] m-0 max-w-[610px] text-[44px] font-black leading-[1.16] text-[#102036] [text-wrap:balance] max-[1120px]:max-w-[700px] max-[760px]:text-[30px] max-[760px]:leading-[1.34] [&>span]:block";
 const homeHeroDetailClassName =
   "home-hero-detail mt-[26px] mb-0 max-w-[560px] text-lg font-medium leading-8 text-[var(--color-text-muted)] [text-wrap:pretty] max-[760px]:mt-[18px] max-[760px]:text-[15px] max-[760px]:leading-[26px]";
-const homeHeroActionsClassName = "home-hero-actions mt-[34px] flex flex-wrap gap-[18px] max-[760px]:mt-6 max-[760px]:grid max-[760px]:grid-cols-1 max-[760px]:gap-2.5";
+const homeHeroActionsClassName = "home-hero-actions mt-[34px] flex flex-wrap gap-[18px] max-[760px]:hidden";
 const homeSocialProofClassName = "home-social-proof mt-12 flex items-center gap-[18px] max-[760px]:mt-7 max-[760px]:items-start";
 const homeAvatarStackClassName =
   "home-avatar-stack flex [&>span]:-ml-2.5 [&>span]:grid [&>span]:size-11 [&>span]:place-items-center [&>span]:rounded-full [&>span]:border-[3px] [&>span]:border-white [&>span]:bg-[var(--color-postcard)] [&>span]:text-xs [&>span]:font-[850] [&>span]:text-[#102036] [&>span]:shadow-[0_8px_20px_rgb(15_23_42_/_0.12)] [&>span:first-child]:ml-0 [&>span:first-child]:bg-[var(--color-mint)] [&>span:nth-child(2)]:bg-[#bfdbfe] [&>span:nth-child(3)]:bg-[#fed7aa] [&>span:last-child]:bg-[var(--color-primary)] [&>span:last-child]:text-white";
 const homeSocialProofTextClassName = "m-0 text-sm font-bold leading-[22px] text-[var(--color-text-muted)]";
 
 const homeProductPreviewClassName =
-  "home-product-preview relative z-[1] scroll-mt-[18px] max-[1120px]:mb-[52px] max-[760px]:mt-7 max-[760px]:mb-9";
+  "home-product-preview relative z-[1] scroll-mt-[18px] max-[1120px]:mb-[52px] max-[760px]:hidden";
 const homePreviewShellClassName =
   "home-preview-shell min-w-0 overflow-hidden rounded-[var(--radius-lg)] border border-[rgb(203_213_225_/_0.9)] bg-[rgb(255_255_255_/_0.96)] shadow-[0_24px_60px_rgb(15_23_42_/_0.18)]";
 const homePreviewTopbarClassName =

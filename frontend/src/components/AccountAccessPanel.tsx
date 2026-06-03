@@ -83,8 +83,14 @@ const tripAccessLanguageSwitchClassName =
 const accessLanguageSwitchClassName = "access-language-switch mt-3.5";
 const accountEntryLanguageSwitchClassName =
   "account-entry-language-switch !absolute !right-4 !top-4 !z-[2] !m-0 !w-fit !bg-[rgb(255_255_255_/_0.9)] !shadow-[0_10px_24px_rgb(15_23_42_/_0.08)] max-[767px]:!right-7 max-[767px]:!top-7";
+const backHomeButtonClassName =
+  "back-home-button inline-flex items-center gap-1.5 rounded-full border border-[var(--color-border)] bg-[color-mix(in_srgb,var(--color-surface)_88%,transparent)] px-3 py-1.5 text-[0.78rem] font-[850] text-[var(--color-text-muted)] no-underline transition-all duration-150 hover:bg-[var(--color-primary-soft)] hover:text-[var(--color-primary-strong)] hover:border-[var(--color-primary-border)] hover:shadow-[0_8px_18px_rgb(15_118_110_/_0.08)] focus-visible:bg-[var(--color-primary-soft)] focus-visible:text-[var(--color-primary-strong)] focus-visible:border-[var(--color-primary-border)]";
+const accountEntryBackHomeClassName =
+  "account-entry-back-home !absolute !left-11 !top-11 !z-[2] !m-0 !w-fit !bg-[rgb(255_255_255_/_0.9)] !shadow-[0_10px_24px_rgb(15_23_42_/_0.08)] max-[767px]:!left-7 max-[767px]:!top-7";
+const tripAccessBackHomeClassName =
+  "trip-access-back-home !absolute !left-4 !top-4 !z-[5] !m-0 !w-fit !bg-[rgb(255_255_255_/_0.92)] !shadow-[0_10px_24px_rgb(15_23_42_/_0.08)] max-[767px]:!left-[26px] max-[767px]:!top-[26px]";
 const accountHeroClassName =
-  "account-hero relative grid grid-cols-[52px_minmax(0,1fr)] items-start gap-3.5 overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[rgb(255_255_255_/_0.94)] p-[18px] shadow-[var(--shadow-panel)] [.account-shell--entry_&]:col-start-1 [.account-shell--entry_&]:row-span-3 [.account-shell--entry_&]:row-start-1 [.account-shell--entry_&]:min-h-[clamp(560px,76vh,680px)] [.account-shell--entry_&]:grid-rows-[auto_auto_1fr] [.account-shell--entry_&]:content-between [.account-shell--entry_&]:overflow-visible [.account-shell--entry_&]:border-transparent [.account-shell--entry_&]:bg-transparent [.account-shell--entry_&]:p-[clamp(44px,6vw,64px)] [.account-shell--entry_&]:shadow-none max-[767px]:[.account-shell--entry_&]:col-start-1 max-[767px]:[.account-shell--entry_&]:row-start-2 max-[767px]:[.account-shell--entry_&]:min-h-0 max-[767px]:[.account-shell--entry_&]:grid-cols-[52px_minmax(0,1fr)] max-[767px]:[.account-shell--entry_&]:gap-3.5 max-[767px]:[.account-shell--entry_&]:overflow-hidden max-[767px]:[.account-shell--entry_&]:p-5 max-[767px]:[.account-shell--entry_&]:pt-5 max-[767px]:[.account-shell--entry_&]:hidden [.account-shell--entry_&>*]:relative [.account-shell--entry_&>*]:z-[1] [.account-shell--entry_&>div>p:not(.join-eyebrow):not(.account-entry-brand-tagline)]:max-w-[330px] max-[767px]:[.account-shell--entry_&>div>p:not(.join-eyebrow):not(.account-entry-brand-tagline)]:max-w-none max-[767px]:[.account-shell--entry_&>div>p:not(.join-eyebrow):not(.account-entry-brand-tagline)]:text-[13px] max-[767px]:[.account-shell--entry_&>div>p:not(.join-eyebrow):not(.account-entry-brand-tagline)]:leading-5 [&_h1]:m-0 [&_h1]:text-3xl [&_h1]:leading-[38px] [&_h1]:text-[var(--color-text)] [.account-shell--entry_&_.join-mark]:absolute [.account-shell--entry_&_.join-mark]:left-11 [.account-shell--entry_&_.join-mark]:top-11 max-[767px]:[.account-shell--entry_&_.join-mark]:relative max-[767px]:[.account-shell--entry_&_.join-mark]:inset-auto [.account-shell--entry_&_.join-mark+div]:absolute [.account-shell--entry_&_.join-mark+div]:left-[116px] [.account-shell--entry_&_.join-mark+div]:top-[54px] [.account-shell--entry_&_.join-mark+div]:w-[400px] max-[767px]:[.account-shell--entry_&_.join-mark+div]:relative max-[767px]:[.account-shell--entry_&_.join-mark+div]:inset-auto max-[767px]:[.account-shell--entry_&_.join-mark+div]:w-auto [.account-shell--entry_&_.account-travel-collage]:absolute [.account-shell--entry_&_.account-travel-collage]:col-span-full [.account-shell--entry_&_.account-travel-collage]:row-span-full [.account-shell--entry_&_.account-travel-collage]:right-[clamp(-70px,-5vw,-52px)] [.account-shell--entry_&_.account-travel-collage]:top-[54px] [.account-shell--entry_&_.account-travel-collage]:z-[1] [.account-shell--entry_&_.account-travel-collage]:h-[590px] [.account-shell--entry_&_.account-travel-collage]:w-[330px] [.account-shell--entry_&_.account-travel-collage]:pointer-events-none max-[767px]:[.account-shell--entry_&_.account-travel-collage]:hidden [.account-shell--entry_&_h1]:mt-7 [.account-shell--entry_&_h1]:max-w-[400px] [.account-shell--entry_&_h1]:text-[clamp(40px,3.6vw,52px)] [.account-shell--entry_&_h1]:leading-[1.08] max-[767px]:[.account-shell--entry_&_h1]:mt-2 max-[767px]:[.account-shell--entry_&_h1]:max-w-none max-[767px]:[.account-shell--entry_&_h1]:text-3xl max-[767px]:[.account-shell--entry_&_h1]:leading-[34px] [&_p:not(.join-eyebrow)]:mt-1 [&_p:not(.join-eyebrow)]:mb-0 [&_p:not(.join-eyebrow)]:max-w-[720px] [&_p:not(.join-eyebrow)]:text-sm [&_p:not(.join-eyebrow)]:leading-[22px] [&_p:not(.join-eyebrow)]:text-[var(--color-text-muted)]";
+  "account-hero relative grid grid-cols-[52px_minmax(0,1fr)] items-start gap-3.5 overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[rgb(255_255_255_/_0.94)] p-[18px] shadow-[var(--shadow-panel)] [.account-shell--entry_&]:col-start-1 [.account-shell--entry_&]:row-span-3 [.account-shell--entry_&]:row-start-1 [.account-shell--entry_&]:min-h-[clamp(560px,76vh,680px)] [.account-shell--entry_&]:grid-rows-[auto_auto_1fr] [.account-shell--entry_&]:content-between [.account-shell--entry_&]:overflow-visible [.account-shell--entry_&]:border-transparent [.account-shell--entry_&]:bg-transparent [.account-shell--entry_&]:p-[clamp(44px,6vw,64px)] [.account-shell--entry_&]:shadow-none max-[767px]:[.account-shell--entry_&]:col-start-1 max-[767px]:[.account-shell--entry_&]:row-start-2 max-[767px]:[.account-shell--entry_&]:min-h-0 max-[767px]:[.account-shell--entry_&]:grid-cols-[52px_minmax(0,1fr)] max-[767px]:[.account-shell--entry_&]:gap-3.5 max-[767px]:[.account-shell--entry_&]:overflow-hidden max-[767px]:[.account-shell--entry_&]:p-5 max-[767px]:[.account-shell--entry_&]:pt-5 max-[767px]:[.account-shell--entry_&]:hidden [.account-shell--entry_&>*]:z-[1] [.account-shell--entry_&>div>p:not(.join-eyebrow):not(.account-entry-brand-tagline)]:max-w-[330px] max-[767px]:[.account-shell--entry_&>div>p:not(.join-eyebrow):not(.account-entry-brand-tagline)]:max-w-none max-[767px]:[.account-shell--entry_&>div>p:not(.join-eyebrow):not(.account-entry-brand-tagline)]:text-[13px] max-[767px]:[.account-shell--entry_&>div>p:not(.join-eyebrow):not(.account-entry-brand-tagline)]:leading-5 [&_h1]:m-0 [&_h1]:text-3xl [&_h1]:leading-[38px] [&_h1]:text-[var(--color-text)] [.account-shell--entry_&_.join-mark]:absolute [.account-shell--entry_&_.join-mark]:left-11 [.account-shell--entry_&_.join-mark]:top-[108px] max-[767px]:[.account-shell--entry_&_.join-mark]:relative max-[767px]:[.account-shell--entry_&_.join-mark]:inset-auto [.account-shell--entry_&_.join-mark+div]:absolute [.account-shell--entry_&_.join-mark+div]:left-[116px] [.account-shell--entry_&_.join-mark+div]:top-[118px] [.account-shell--entry_&_.join-mark+div]:w-[400px] max-[767px]:[.account-shell--entry_&_.join-mark+div]:relative max-[767px]:[.account-shell--entry_&_.join-mark+div]:inset-auto max-[767px]:[.account-shell--entry_&_.join-mark+div]:w-auto [.account-shell--entry_&_.account-travel-collage]:absolute [.account-shell--entry_&_.account-travel-collage]:col-span-full [.account-shell--entry_&_.account-travel-collage]:row-span-full [.account-shell--entry_&_.account-travel-collage]:right-[clamp(-70px,-5vw,-52px)] [.account-shell--entry_&_.account-travel-collage]:top-[118px] [.account-shell--entry_&_.account-travel-collage]:z-[1] [.account-shell--entry_&_.account-travel-collage]:h-[590px] [.account-shell--entry_&_.account-travel-collage]:w-[330px] [.account-shell--entry_&_.account-travel-collage]:pointer-events-none max-[767px]:[.account-shell--entry_&_.account-travel-collage]:hidden [.account-shell--entry_&_h1]:mt-7 [.account-shell--entry_&_h1]:max-w-[400px] [.account-shell--entry_&_h1]:text-[clamp(40px,3.6vw,52px)] [.account-shell--entry_&_h1]:leading-[1.08] max-[767px]:[.account-shell--entry_&_h1]:mt-2 max-[767px]:[.account-shell--entry_&_h1]:max-w-none max-[767px]:[.account-shell--entry_&_h1]:text-3xl max-[767px]:[.account-shell--entry_&_h1]:leading-[34px] [&_p:not(.join-eyebrow)]:mt-1 [&_p:not(.join-eyebrow)]:mb-0 [&_p:not(.join-eyebrow)]:max-w-[720px] [&_p:not(.join-eyebrow)]:text-sm [&_p:not(.join-eyebrow)]:leading-[22px] [&_p:not(.join-eyebrow)]:text-[var(--color-text-muted)]";
 const accountPortalHeroClassName =
   "grid-cols-[40px_minmax(0,1fr)_auto] !items-center px-3.5 py-3 max-[767px]:grid-cols-[36px_minmax(0,1fr)_auto] max-[767px]:p-3 [&_.join-eyebrow]:hidden [&_h1]:!text-[22px] [&_h1]:!leading-7 [&_p:not(.join-eyebrow)]:hidden";
 const accountPortalHeroMarkClassName = "!size-10 max-[767px]:!size-9";
@@ -138,14 +144,14 @@ const accountTabClassName =
 const accountTabActiveClassName = "account-tab--active bg-[var(--color-primary-soft)] text-[var(--color-primary-strong)]";
 const accountEntryTabsClassName = "account-entry-tabs grid grid-cols-2 gap-0 border-b border-[var(--color-border)] px-[34px] pb-3.5";
 const accountEntryTabClassName =
-  "account-entry-tab grid min-h-[42px] cursor-pointer place-items-center border-0 border-b-[3px] border-transparent bg-transparent text-[15px] font-[850] text-[var(--color-text-muted)] no-underline transition-[border-color,color] duration-[180ms] ease-out";
+  "account-entry-tab grid min-h-[42px] cursor-pointer place-items-center border-0 border-b-[3px] border-solid border-transparent bg-transparent text-[15px] font-[850] text-[var(--color-text-muted)] no-underline transition-[border-color,color] duration-[180ms] ease-out";
 const accountEntryTabActiveClassName = "account-entry-tab--active border-[var(--color-primary)] text-[var(--color-primary-strong)]";
 const portalNavClassName =
   "portal-nav sticky top-4 grid gap-3.5 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] p-3 shadow-[var(--shadow-soft)] max-[767px]:static max-[767px]:gap-2.5 max-[767px]:p-2.5";
 const portalNavBrandClassName =
   "portal-nav-brand flex min-w-0 items-center gap-2.5 max-[767px]:px-1 max-[767px]:pt-0.5 [&_span]:block [&_span]:min-w-0 [&_span]:overflow-hidden [&_span]:text-ellipsis [&_span]:whitespace-nowrap [&_span]:text-xs [&_span]:font-[750] [&_span]:text-[var(--color-text-muted)] [&_strong]:block [&_strong]:min-w-0 [&_strong]:overflow-hidden [&_strong]:text-ellipsis [&_strong]:whitespace-nowrap [&_strong]:text-[var(--color-text)]";
 const portalNavLinksClassName =
-  "portal-nav-links grid gap-2.5 max-[767px]:-mx-1 max-[767px]:flex max-[767px]:gap-2 max-[767px]:overflow-x-auto max-[767px]:overscroll-x-contain max-[767px]:px-1 max-[767px]:pb-0.5 max-[767px]:[scrollbar-width:none] max-[767px]:[&::-webkit-scrollbar]:hidden";
+  "portal-nav-links grid gap-2.5 max-[767px]:-mx-1 max-[767px]:flex max-[767px]:flex-nowrap max-[767px]:gap-2 max-[767px]:overflow-x-auto max-[767px]:overscroll-x-contain max-[767px]:px-1 max-[767px]:pb-0.5 max-[767px]:[scrollbar-width:none] max-[767px]:[&::-webkit-scrollbar]:hidden max-[767px]:[mask-image:linear-gradient(to_right,#000_82%,transparent)]";
 const portalNavLinkClassName =
   "portal-nav-link flex min-h-[42px] w-full items-center gap-2.5 rounded-[var(--radius-md)] border border-transparent bg-transparent px-2.5 text-left text-[13px] font-[850] text-[var(--color-text-muted)] no-underline transition-[border-color,background,color,box-shadow,transform] duration-[180ms] ease-out hover:translate-x-0.5 hover:border-[var(--color-primary-border)] hover:bg-[var(--color-primary-soft)] hover:text-[var(--color-primary-strong)] hover:shadow-[0_8px_18px_rgb(15_118_110_/_0.08)] focus-visible:translate-x-0.5 focus-visible:border-[var(--color-primary-border)] focus-visible:bg-[var(--color-primary-soft)] focus-visible:text-[var(--color-primary-strong)] focus-visible:shadow-[0_8px_18px_rgb(15_118_110_/_0.08)] max-[767px]:w-auto max-[767px]:min-w-[116px] max-[767px]:shrink-0 max-[767px]:justify-center max-[767px]:hover:translate-x-0 max-[767px]:focus-visible:translate-x-0";
 const portalNavLinkActiveClassName = "portal-nav-link--active border-[var(--color-primary-border)] bg-[var(--color-primary-soft)] text-[var(--color-primary-strong)]";
@@ -310,7 +316,7 @@ const accountTwoColClassName =
 const accountSettingsFormClassName = cn(accountFormClassName, "account-settings-form grid gap-3");
 const accountLoginFlowClassName = "account-login-flow grid w-[min(100%,560px)] justify-self-center gap-3";
 const accountEntryLoginFlowClassName =
-  "col-start-2 row-start-3 w-[min(100%,520px)] self-start justify-self-center gap-[22px] rounded-[14px] border border-[var(--color-border)] bg-[rgb(255_255_255_/_0.96)] p-[clamp(24px,3vw,34px)] shadow-[0_24px_54px_rgb(15_23_42_/_0.1)] max-[767px]:col-start-1 max-[767px]:row-start-1 max-[767px]:mt-[76px] max-[767px]:w-[min(100%,460px)]";
+  "relative col-start-2 row-start-3 w-[min(100%,520px)] self-start justify-self-center gap-[22px] rounded-[14px] border border-[var(--color-border)] bg-[rgb(255_255_255_/_0.96)] p-[clamp(24px,3vw,34px)] pt-[70px] shadow-[0_24px_54px_rgb(15_23_42_/_0.1)] max-[767px]:col-start-1 max-[767px]:row-start-1 max-[767px]:mt-[76px] max-[767px]:w-[min(100%,460px)]";
 const accountAuthCardClassName = cn(
   accountCardClassName,
   "account-auth-card !gap-4 !overflow-visible !border-0 !bg-transparent !p-0 !shadow-none",
@@ -588,8 +594,23 @@ export function AccountAccessPanel({
       aria-label={mainLabel(effectiveEntryAccessMode, t.access.mainLabels)}
     >
       <section className={cn(accountShellClassName, isAccountEntry ? accountEntryShellClassName : "", isPortalEntry ? accountPortalShellClassName : "", isPortalEntry && portalSection === "new-trip" ? accountPortalNewTripShellClassName : "", isTripAccessEntry ? accountTripAccessShellClassName : "")}>
-        {isAccountEntry ? <LanguageSwitch className={cn(accessLanguageSwitchClassName, accountEntryLanguageSwitchClassName)} /> : null}
-        {isTripAccessEntry ? <LanguageSwitch className={cn(accessLanguageSwitchClassName, accountEntryLanguageSwitchClassName, tripAccessLanguageSwitchClassName)} /> : null}
+        {isAccountEntry ? (
+          <>
+            <Link href={appRoutes.home()} className={cn(backHomeButtonClassName, accountEntryBackHomeClassName)}>
+              <Icon name="chevronLeft" className="size-3.5" />
+              {t.access.backToHome}
+            </Link>
+          </>
+        ) : null}
+        {isTripAccessEntry ? (
+          <>
+            <Link href={appRoutes.home()} className={cn(backHomeButtonClassName, tripAccessBackHomeClassName)}>
+              <Icon name="chevronLeft" className="size-3.5" />
+              {t.access.backToHome}
+            </Link>
+            <LanguageSwitch className={cn(accessLanguageSwitchClassName, accountEntryLanguageSwitchClassName, tripAccessLanguageSwitchClassName)} />
+          </>
+        ) : null}
         {!isTripAccessEntry ? <div className={cn(accountHeroClassName, isPortalEntry ? accountPortalHeroClassName : "")}>
           <div className={cn(accountHeroMarkClassName, isPortalEntry ? accountPortalHeroMarkClassName : "")} aria-hidden="true">
             <Icon name="route" />
@@ -1114,14 +1135,37 @@ function EmailLoginPanel({
   return (
     <div className={cn(accountLoginFlowClassName, showRouteTabs ? accountEntryLoginFlowClassName : "")}>
       {showRouteTabs ? (
-        <nav className={accountEntryTabsClassName} aria-label={t.access.mainLabels.combined}>
-          <button type="button" className={cn(accountEntryTabClassName, activeFlow === "login" ? accountEntryTabActiveClassName : "")} aria-current={activeFlow === "login" ? "page" : undefined} onClick={() => switchFlow("login")}>
-            {t.access.titles.accountLogin}
-          </button>
-          <button type="button" className={cn(accountEntryTabClassName, activeFlow === "register" ? accountEntryTabActiveClassName : "")} aria-current={activeFlow === "register" ? "page" : undefined} onClick={() => switchFlow("register")}>
-            {t.access.titles.accountRegister}
-          </button>
-        </nav>
+        <>
+          <LanguageSwitch className={cn(accessLanguageSwitchClassName, accountEntryLanguageSwitchClassName)} />
+          <nav className={accountEntryTabsClassName} aria-label={t.access.mainLabels.combined}>
+            <button
+              type="button"
+              className={cn(
+                "account-entry-tab grid min-h-[42px] cursor-pointer place-items-center border-0 border-b-[3px] border-solid bg-transparent text-[15px] font-[850] no-underline transition-[border-color,color] duration-[180ms] ease-out",
+                activeFlow === "login"
+                  ? "account-entry-tab--active border-[var(--color-primary)] text-[var(--color-primary-strong)]"
+                  : "border-transparent text-[var(--color-text-muted)]"
+              )}
+              aria-current={activeFlow === "login" ? "page" : undefined}
+              onClick={() => switchFlow("login")}
+            >
+              {t.access.titles.accountLogin}
+            </button>
+            <button
+              type="button"
+              className={cn(
+                "account-entry-tab grid min-h-[42px] cursor-pointer place-items-center border-0 border-b-[3px] border-solid bg-transparent text-[15px] font-[850] no-underline transition-[border-color,color] duration-[180ms] ease-out",
+                activeFlow === "register"
+                  ? "account-entry-tab--active border-[var(--color-primary)] text-[var(--color-primary-strong)]"
+                  : "border-transparent text-[var(--color-text-muted)]"
+              )}
+              aria-current={activeFlow === "register" ? "page" : undefined}
+              onClick={() => switchFlow("register")}
+            >
+              {t.access.titles.accountRegister}
+            </button>
+          </nav>
+        </>
       ) : null}
       <form className={accountAuthCardClassName} onSubmit={authStep === "setup" ? submitSetup : challenge ? submitCode : authStep === "password" ? submitPassword : submitEmail}>
         <span className={accountStepKickerClassName}>{stepLabel}</span>
@@ -2723,8 +2767,7 @@ function rawErrorMessage(caught: unknown, fallback: string): string {
   if (isApiLikeError(caught)) return caught.code || String(caught.status);
   if (caught instanceof Error && caught.message) {
     const normalized = caught.message.trim();
-    if (Object.values(ACCESS_ERROR_CODES).includes(normalized as typeof ACCESS_ERROR_CODES[keyof typeof ACCESS_ERROR_CODES])) return normalized;
-    if (/^\d{3}$/.test(normalized)) return normalized;
+    if (normalized) return normalized;
   }
   return fallback;
 }
