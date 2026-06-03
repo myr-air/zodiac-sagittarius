@@ -2,6 +2,14 @@
 
 Use this checklist after Wave 4 real-system verification passes in staging.
 
+## Preflight
+
+- Run staging preflight before e2e or rollback checks:
+
+```bash
+make staging-preflight PSQL='docker exec -i sagittarius-test-postgres psql'
+```
+
 ## Logging And Alerts
 
 - Run API with `RUST_LOG=info,tower_http=info,sagittarius_api=info`.

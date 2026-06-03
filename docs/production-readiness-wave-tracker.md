@@ -247,7 +247,7 @@ passed locally with Docker Postgres on 2026-06-03.
 ### W4-TEST-001: Test/staging config split
 - **Owner**: DevOps
 - **Estimate**: 2h
-- **Status**: Documented in `docs/test-staging-verification-runbook.md`.
+- **Status**: Documented in `docs/test-staging-verification-runbook.md`; `staging-preflight` validates DB/API/logging/PSQL config before sign-off.
 
 ### W4-TEST-002: Seed + cleanup script
 - **Owner**: Backend
