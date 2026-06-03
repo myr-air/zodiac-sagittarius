@@ -28,6 +28,7 @@ const workflowStepMeta = [
 
 const previewDayKeys = ["first", "second", "third"] as const;
 const checklistKeys = ["flights", "hotel", "cash", "packing"] as const;
+const checkedChecklistKeys = new Set<(typeof checklistKeys)[number]>(["flights", "hotel", "cash"]);
 const workflowToneClassNames = {
   teal: {
     number: "bg-[var(--color-primary)] text-white shadow-[0_14px_24px_rgb(15_118_110_/_0.24)]",
@@ -69,7 +70,7 @@ const homeLinkButtonClassName = cn(
 const homePrimaryButtonClassName = cn(
   "home-primary-button",
   homeButtonBaseClassName,
-  "gap-2.5 border border-[var(--color-primary)] bg-[linear-gradient(135deg,var(--color-primary),#0891b2)] text-white shadow-[0_16px_28px_rgb(15_118_110_/_0.18)] hover:-translate-y-px hover:shadow-[0_18px_32px_rgb(15_118_110_/_0.22)]",
+  "gap-2.5 border border-[var(--color-primary)] bg-[linear-gradient(135deg,var(--color-primary),#0891b2)] px-[18px] text-white shadow-[0_16px_28px_rgb(15_118_110_/_0.18)] hover:-translate-y-px hover:shadow-[0_18px_32px_rgb(15_118_110_/_0.22)]",
 );
 const homeSecondaryButtonClassName = cn(
   "home-secondary-button",
@@ -83,16 +84,17 @@ const homeHeroRouteClassName =
   "home-hero-route pointer-events-none absolute left-0 top-[92px] z-0 h-[420px] w-full max-w-none overflow-visible max-[760px]:top-[236px] max-[760px]:h-[260px] [&_path]:fill-none [&_path]:[filter:drop-shadow(0_14px_18px_rgb(37_99_235_/_0.07))] [&_path]:[stroke-linecap:round] [&_path]:[stroke-width:3] [&_path]:[stroke:rgb(37_99_235_/_0.2)] max-[760px]:[&_path]:[stroke-width:2] max-[760px]:[&_path]:[stroke:rgb(37_99_235_/_0.16)]";
 const homeTitleSceneClassName = "home-title-scene relative isolate";
 const homeHeroTitleClassName =
-  "home-hero-title relative z-[1] m-0 max-w-[610px] text-[44px] font-black leading-[1.16] text-[#102036] [text-wrap:balance] max-[1120px]:max-w-[700px] max-[760px]:text-[30px] max-[760px]:leading-[1.26] [&>span]:block";
+  "home-hero-title relative z-[1] m-0 max-w-[610px] text-[44px] font-black leading-[1.16] text-[#102036] [text-wrap:balance] max-[1120px]:max-w-[700px] max-[760px]:text-[30px] max-[760px]:leading-[1.34] [&>span]:block";
 const homeHeroDetailClassName =
   "home-hero-detail mt-[26px] mb-0 max-w-[560px] text-lg font-medium leading-8 text-[var(--color-text-muted)] [text-wrap:pretty] max-[760px]:mt-[18px] max-[760px]:text-[15px] max-[760px]:leading-[26px]";
-const homeHeroActionsClassName = "home-hero-actions mt-[34px] flex flex-wrap gap-[18px] max-[760px]:hidden max-[760px]:grid-cols-2 max-[760px]:gap-2.5";
+const homeHeroActionsClassName = "home-hero-actions mt-[34px] flex flex-wrap gap-[18px] max-[760px]:mt-6 max-[760px]:grid max-[760px]:grid-cols-1 max-[760px]:gap-2.5";
 const homeSocialProofClassName = "home-social-proof mt-12 flex items-center gap-[18px] max-[760px]:mt-7 max-[760px]:items-start";
 const homeAvatarStackClassName =
   "home-avatar-stack flex [&>span]:-ml-2.5 [&>span]:grid [&>span]:size-11 [&>span]:place-items-center [&>span]:rounded-full [&>span]:border-[3px] [&>span]:border-white [&>span]:bg-[var(--color-postcard)] [&>span]:text-xs [&>span]:font-[850] [&>span]:text-[#102036] [&>span]:shadow-[0_8px_20px_rgb(15_23_42_/_0.12)] [&>span:first-child]:ml-0 [&>span:first-child]:bg-[var(--color-mint)] [&>span:nth-child(2)]:bg-[#bfdbfe] [&>span:nth-child(3)]:bg-[#fed7aa] [&>span:last-child]:bg-[var(--color-primary)] [&>span:last-child]:text-white";
 const homeSocialProofTextClassName = "m-0 text-sm font-bold leading-[22px] text-[var(--color-text-muted)]";
 
-const homeProductPreviewClassName = "home-product-preview relative z-[1] scroll-mt-[18px] max-[1120px]:mb-[52px] max-[760px]:hidden";
+const homeProductPreviewClassName =
+  "home-product-preview relative z-[1] scroll-mt-[18px] max-[1120px]:mb-[52px] max-[760px]:mt-7 max-[760px]:mb-9";
 const homePreviewShellClassName =
   "home-preview-shell min-w-0 overflow-hidden rounded-[var(--radius-lg)] border border-[rgb(203_213_225_/_0.9)] bg-[rgb(255_255_255_/_0.96)] shadow-[0_24px_60px_rgb(15_23_42_/_0.18)]";
 const homePreviewTopbarClassName =
@@ -138,15 +140,15 @@ const homeWorkflowClassName =
 const homeWorkflowTitleClassName = "m-0 text-[42px] font-black leading-[52px] text-[var(--color-text)] [text-wrap:balance] max-[760px]:text-[30px] max-[760px]:leading-[38px]";
 const homeWorkflowHighlightClassName = "home-workflow-highlight relative inline-block text-[#078a95]";
 const homeWorkflowDetailClassName = "mx-auto mt-5 mb-0 text-xl font-[450] leading-8 text-[var(--color-text-muted)] max-[760px]:text-base max-[760px]:leading-[26px]";
-const homeWorkflowGridClassName = "home-workflow-grid mx-auto mt-[92px] grid w-[min(100%,1320px)] grid-cols-3 gap-[72px] max-[760px]:mt-[42px] max-[760px]:grid-cols-1 max-[760px]:gap-[18px]";
+const homeWorkflowGridClassName = "home-workflow-grid mx-auto mt-[92px] grid w-[min(100%,1320px)] grid-cols-3 gap-[72px] max-[760px]:mt-[42px] max-[760px]:grid-cols-1 max-[760px]:gap-3.5";
 const homeWorkflowItemClassName =
-  "home-workflow-item relative grid min-h-[486px] content-center justify-items-center gap-7 rounded-[44px] border border-[var(--color-border)] bg-[rgb(255_255_255_/_0.95)] px-12 pt-[72px] pb-14 text-center shadow-[0_26px_68px_rgb(15_23_42_/_0.07),inset_0_1px_0_rgb(255_255_255_/_0.86)] transition-[transform,box-shadow] duration-[180ms] ease-out hover:-translate-y-0.5 hover:shadow-[0_30px_76px_rgb(15_23_42_/_0.09),inset_0_1px_0_rgb(255_255_255_/_0.86)] max-[760px]:min-h-[360px] max-[760px]:rounded-[28px] max-[760px]:px-[26px] max-[760px]:pt-[52px] max-[760px]:pb-9";
+  "home-workflow-item relative grid min-h-[486px] content-center justify-items-center gap-7 rounded-[44px] border border-[var(--color-border)] bg-[rgb(255_255_255_/_0.95)] px-12 pt-[72px] pb-14 text-center shadow-[0_26px_68px_rgb(15_23_42_/_0.07),inset_0_1px_0_rgb(255_255_255_/_0.86)] transition-[transform,box-shadow] duration-[180ms] ease-out hover:-translate-y-0.5 hover:shadow-[0_30px_76px_rgb(15_23_42_/_0.09),inset_0_1px_0_rgb(255_255_255_/_0.86)] max-[760px]:min-h-0 max-[760px]:grid-cols-[44px_minmax(0,1fr)] max-[760px]:grid-rows-[auto_auto] max-[760px]:items-center max-[760px]:justify-items-start max-[760px]:gap-x-4 max-[760px]:gap-y-2 max-[760px]:rounded-[24px] max-[760px]:px-5 max-[760px]:py-5 max-[760px]:text-left";
 const homeWorkflowNumberClassName =
-  "home-workflow-number absolute left-1/2 top-[46px] grid size-[66px] -translate-x-1/2 place-items-center rounded-full text-[26px] font-black max-[760px]:top-7 max-[760px]:size-11 max-[760px]:text-lg";
+  "home-workflow-number absolute left-1/2 top-[46px] grid size-[66px] -translate-x-1/2 place-items-center rounded-full text-[26px] font-black max-[760px]:static max-[760px]:col-start-1 max-[760px]:row-span-2 max-[760px]:size-11 max-[760px]:translate-x-0 max-[760px]:text-lg";
 const homeWorkflowIconClassName =
-  "home-workflow-icon mt-[88px] grid size-28 place-items-center rounded-full max-[760px]:mt-12 max-[760px]:size-[88px] [&_.icon]:size-[42px] [&_.icon]:stroke-[1.8] max-[760px]:[&_.icon]:size-[34px]";
+  "home-workflow-icon mt-[88px] grid size-28 place-items-center rounded-full max-[760px]:hidden [&_.icon]:size-[42px] [&_.icon]:stroke-[1.8]";
 const homeWorkflowItemTitleClassName = "m-0 text-[30px] font-black leading-[38px] text-[var(--color-text)] max-[760px]:text-2xl max-[760px]:leading-8";
-const homeWorkflowItemTextClassName = "m-0 text-xl font-[450] leading-[34px] text-[var(--color-text-muted)] max-[760px]:text-base max-[760px]:leading-[27px]";
+const homeWorkflowItemTextClassName = "m-0 text-xl font-[450] leading-[34px] text-[var(--color-text-muted)] max-[760px]:text-base max-[760px]:leading-[26px]";
 
 const homeFeatureBandClassName =
   "home-feature-band mx-auto mb-[84px] mt-[54px] grid w-[min(100%_-_40px,1120px)] grid-cols-[minmax(0,1fr)_auto] items-center gap-6 rounded-[var(--radius-lg)] border border-[var(--color-primary-border)] bg-[var(--watercolor-surface-wash),rgb(255_255_255_/_0.92)] p-8 shadow-[var(--shadow-panel)] max-[760px]:mt-[34px] max-[760px]:w-[min(100%_-_28px,1120px)] max-[760px]:grid-cols-1 max-[760px]:p-6 max-[760px]:[&_.home-primary-button]:w-full";
@@ -285,12 +287,22 @@ export function HomeLanding() {
                       <strong className={homeChecklistTitleClassName}>{landing.preview.sections.checklist}</strong>
                       <span className={homeChecklistProgressClassName}>{landing.preview.checklistProgress}</span>
                     </div>
-                    <meter className={homeChecklistMeterClassName} min="0" max="100" value="66">
-                      66%
+                    <meter className={homeChecklistMeterClassName} min="0" max="100" value="75">
+                      75%
                     </meter>
                     <ul className={homeChecklistListClassName}>
                       {checklistKeys.map((itemKey) => (
-                        <li className={homeChecklistItemClassName} key={itemKey}>{landing.preview.checklistItems[itemKey]}</li>
+                        <li
+                          className={cn(
+                            homeChecklistItemClassName,
+                            !checkedChecklistKeys.has(itemKey) &&
+                              "text-[var(--color-text-subtle)] before:border before:border-[var(--color-border-strong)] before:bg-white before:shadow-none",
+                          )}
+                          data-checked={checkedChecklistKeys.has(itemKey)}
+                          key={itemKey}
+                        >
+                          {landing.preview.checklistItems[itemKey]}
+                        </li>
                       ))}
                     </ul>
                   </div>
