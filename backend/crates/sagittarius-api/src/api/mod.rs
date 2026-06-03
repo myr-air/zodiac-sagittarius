@@ -5,6 +5,7 @@ pub mod extractors;
 pub mod itinerary;
 pub mod join;
 pub mod members;
+pub mod plan_variants;
 pub mod stop_notes;
 pub mod suggestions;
 pub mod tasks;
@@ -91,6 +92,18 @@ fn api_v1() -> Router<AppState> {
         .route(
             "/trips/{trip_id}",
             get(trips::load_trip).patch(trips::patch_trip),
+        )
+        .route(
+            "/trips/{trip_id}/plan-variants",
+            post(plan_variants::create_plan_variant),
+        )
+        .route(
+            "/trips/{trip_id}/plan-variants/{plan_variant_id}",
+            patch(plan_variants::patch_plan_variant),
+        )
+        .route(
+            "/trips/{trip_id}/plan-variants/{plan_variant_id}/publications",
+            post(plan_variants::publish_plan_variant),
         )
         .route("/trips/{trip_id}/events/stream", get(ws::trip_ws))
         .route(

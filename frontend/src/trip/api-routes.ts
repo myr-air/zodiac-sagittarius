@@ -12,6 +12,11 @@ export const tripApiRoutes = {
   members: (tripId: string) => `/api/v1/trips/${encodePathSegment(tripId)}/members`,
   member: (tripId: string, memberId: string) => `/api/v1/trips/${encodePathSegment(tripId)}/members/${encodePathSegment(memberId)}`,
   presence: (tripId: string) => `/api/v1/trips/${encodePathSegment(tripId)}/presence`,
+  planVariants: (tripId: string) => `/api/v1/trips/${encodePathSegment(tripId)}/plan-variants`,
+  planVariant: (tripId: string, planVariantId: string) =>
+    `/api/v1/trips/${encodePathSegment(tripId)}/plan-variants/${encodePathSegment(planVariantId)}`,
+  planVariantPublications: (tripId: string, planVariantId: string) =>
+    `/api/v1/trips/${encodePathSegment(tripId)}/plan-variants/${encodePathSegment(planVariantId)}/publications`,
   resetMemberClaim: (tripId: string, memberId: string) =>
     `/api/v1/trips/${encodePathSegment(tripId)}/members/${encodePathSegment(memberId)}/claim-resets`,
   tasks: (tripId: string) => `/api/v1/trips/${encodePathSegment(tripId)}/tasks`,

@@ -41,6 +41,7 @@ export interface PlanVariant {
   name: string;
   kind: PlanVariantKind;
   description: string;
+  version?: number;
 }
 
 export interface ItineraryCoordinates {

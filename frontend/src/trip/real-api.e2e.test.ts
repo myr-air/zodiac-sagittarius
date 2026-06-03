@@ -33,9 +33,10 @@ describe.skipIf(!required && !hasCredentials)("real Sagittarius API e2e", () => 
     expect(cockpit.trip.id).toBe(join.trip.id);
     expect(cockpit.trip.members.length).toBeGreaterThan(0);
     expect(cockpit.trip.planVariants.length).toBeGreaterThan(0);
-    const planVariantId = cockpit.trip.activePlanVariantId || cockpit.trip.planVariants[0].id;
+    let planVariantId = cockpit.trip.activePlanVariantId || cockpit.trip.planVariants[0].id;
     const firstItem = cockpit.trip.itineraryItems[0];
     expect(firstItem).toBeTruthy();
+    const runId = Date.now().toString(36);
 
     const onlineMember = await client.updatePresence(join.trip.id, session.sessionToken, {
       clientMutationId: `e2e-presence-${Date.now().toString(36)}`,
@@ -52,6 +53,25 @@ describe.skipIf(!required && !hasCredentials)("real Sagittarius API e2e", () => 
     });
     expect(patchedTrip).toMatchObject({ id: join.trip.id, version: (cockpit.trip.version ?? 1) + 1 });
 
+    const createdVariant = await client.createPlanVariant(join.trip.id, session.sessionToken, {
+      clientMutationId: `e2e-plan-create-${runId}`,
+      name: `E2E backup ${runId}`,
+      kind: "backup",
+      description: "created by real API e2e",
+    });
+    expect(createdVariant).toMatchObject({ name: `E2E backup ${runId}`, kind: "backup", version: 1 });
+    const patchedVariant = await client.patchPlanVariant(join.trip.id, createdVariant.id, session.sessionToken, {
+      clientMutationId: `e2e-plan-patch-${runId}`,
+      expectedVersion: createdVariant.version ?? 1,
+      patch: { description: "updated by real API e2e" },
+    });
+    expect(patchedVariant).toMatchObject({ id: createdVariant.id, description: "updated by real API e2e", version: 2 });
+    const publishedTrip = await client.publishPlanVariant(join.trip.id, createdVariant.id, session.sessionToken, {
+      clientMutationId: `e2e-plan-publish-${runId}`,
+    });
+    expect(publishedTrip.activePlanVariantId).toBe(createdVariant.id);
+    planVariantId = createdVariant.id;
+
     const task = await client.createTask(join.trip.id, session.sessionToken, {
       clientMutationId: `e2e-task-${Date.now().toString(36)}`,
       title: `E2E connectivity ${new Date().toISOString()}`,
@@ -66,7 +86,6 @@ describe.skipIf(!required && !hasCredentials)("real Sagittarius API e2e", () => 
       createdBy: member.id,
     });
 
-    const runId = Date.now().toString(36);
     const createdItem = await client.createItineraryItem(join.trip.id, session.sessionToken, {
       clientMutationId: `e2e-item-create-${runId}`,
       planVariantId,

@@ -167,6 +167,14 @@ pub struct NewAccountPlanVariant<'a> {
     pub description: &'a str,
 }
 
+pub struct NewPlanVariant<'a> {
+    pub id: Uuid,
+    pub trip_id: Uuid,
+    pub name: &'a str,
+    pub kind: &'a str,
+    pub description: &'a str,
+}
+
 pub struct NewAccountAuditEvent {
     pub id: Uuid,
     pub user_id: Uuid,

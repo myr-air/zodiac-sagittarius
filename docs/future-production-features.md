@@ -10,6 +10,7 @@ These are intentionally outside the current production connectivity pivot.
 - Expense create/update/delete is wired through backend APIs from the context rail, with summary reload support.
 - Presence updates persist through `POST /presence` and sync the active API session member online.
 - Trip metadata updates have a versioned backend route and API client method.
+- Plan variants can be created, patched, and published through backend routes and the API client.
 - Local Docker-backed API/browser verification passed for the production-readiness wave.
 
 ## Still Future

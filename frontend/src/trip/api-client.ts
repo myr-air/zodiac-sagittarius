@@ -148,6 +148,9 @@ export interface TripApiClient {
   logout(tripId: string, sessionToken: string): Promise<void>;
   loadTrip(tripId: string, sessionToken: string): Promise<TripCockpit>;
   patchTrip(tripId: string, sessionToken: string, request: PatchTripApiRequest): Promise<Trip>;
+  createPlanVariant(tripId: string, sessionToken: string, request: CreatePlanVariantApiRequest): Promise<PlanVariant>;
+  patchPlanVariant(tripId: string, planVariantId: string, sessionToken: string, request: PatchPlanVariantApiRequest): Promise<PlanVariant>;
+  publishPlanVariant(tripId: string, planVariantId: string, sessionToken: string, request: PublishPlanVariantApiRequest): Promise<Trip>;
   createTask(tripId: string, sessionToken: string, request: CreateTaskApiRequest): Promise<TripTask>;
   patchTask(tripId: string, taskId: string, sessionToken: string, request: PatchTaskApiRequest): Promise<TripTask>;
   createItineraryItem(tripId: string, sessionToken: string, request: CreateItineraryItemApiRequest): Promise<ItineraryItem>;
@@ -189,6 +192,23 @@ export interface PatchTripApiRequest {
   startDate?: string;
   endDate?: string;
   activePlanVariantId?: string;
+}
+
+export interface CreatePlanVariantApiRequest {
+  clientMutationId: string;
+  name: string;
+  kind: PlanVariant["kind"];
+  description?: string;
+}
+
+export interface PatchPlanVariantApiRequest {
+  clientMutationId: string;
+  expectedVersion: number;
+  patch: Partial<Pick<PlanVariant, "name" | "kind" | "description">>;
+}
+
+export interface PublishPlanVariantApiRequest {
+  clientMutationId: string;
 }
 
 export interface PatchTaskApiRequest {
@@ -345,6 +365,30 @@ export function createTripApiClient(options: TripApiClientOptions = {}): TripApi
         method: "PATCH",
         headers: { Authorization: `Bearer ${sessionToken}` },
         body: JSON.stringify(tripRequest),
+      });
+      return mapTripSummary(trip);
+    },
+    async createPlanVariant(tripId, sessionToken, planRequest) {
+      const variant = await request<PlanVariantResponse>(tripApiRoutes.planVariants(tripId), {
+        method: "POST",
+        headers: { Authorization: `Bearer ${sessionToken}` },
+        body: JSON.stringify(planRequest),
+      });
+      return mapPlanVariant(variant);
+    },
+    async patchPlanVariant(tripId, planVariantId, sessionToken, planRequest) {
+      const variant = await request<PlanVariantResponse>(tripApiRoutes.planVariant(tripId, planVariantId), {
+        method: "PATCH",
+        headers: { Authorization: `Bearer ${sessionToken}` },
+        body: JSON.stringify(planRequest),
+      });
+      return mapPlanVariant(variant);
+    },
+    async publishPlanVariant(tripId, planVariantId, sessionToken, publishRequest) {
+      const trip = await request<TripSummaryResponse>(tripApiRoutes.planVariantPublications(tripId, planVariantId), {
+        method: "POST",
+        headers: { Authorization: `Bearer ${sessionToken}` },
+        body: JSON.stringify(publishRequest),
       });
       return mapTripSummary(trip);
     },
@@ -578,6 +622,7 @@ function mapPlanVariant(variant: PlanVariantResponse): PlanVariant {
     name: variant.name,
     kind: variant.kind,
     description: variant.description,
+    version: variant.version,
   };
 }
 

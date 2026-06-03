@@ -45,6 +45,37 @@ pub struct CreateItineraryItemRequest {
 
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub struct CreatePlanVariantRequest {
+    pub client_mutation_id: String,
+    pub name: String,
+    pub kind: String,
+    pub description: Option<String>,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PatchPlanVariantRequest {
+    pub client_mutation_id: String,
+    pub expected_version: i64,
+    pub patch: PlanVariantPatch,
+}
+
+#[derive(Debug, Clone, Default, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PlanVariantPatch {
+    pub name: Option<String>,
+    pub kind: Option<String>,
+    pub description: Option<String>,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PublishPlanVariantRequest {
+    pub client_mutation_id: String,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ReorderItineraryItemsRequest {
     pub client_mutation_id: String,
     pub plan_variant_id: Uuid,
@@ -212,6 +243,48 @@ impl ReorderItineraryItemsRequest {
         }
 
         Ok(())
+    }
+}
+
+impl CreatePlanVariantRequest {
+    pub fn validate(&self) -> Result<(), ServiceError> {
+        validate_client_mutation_id(&self.client_mutation_id)?;
+        validate_required_text(&self.name, "plan variant name is required")?;
+        validate_plan_variant_kind(&self.kind)?;
+        if let Some(description) = &self.description {
+            validate_sized_text(description, "plan variant description is too long")?;
+        }
+
+        Ok(())
+    }
+}
+
+impl PatchPlanVariantRequest {
+    pub fn validate(&self) -> Result<(), ServiceError> {
+        validate_client_mutation_id(&self.client_mutation_id)?;
+        self.patch.validate()
+    }
+}
+
+impl PlanVariantPatch {
+    pub fn validate(&self) -> Result<(), ServiceError> {
+        if let Some(name) = &self.name {
+            validate_required_text(name, "plan variant name is required")?;
+        }
+        if let Some(kind) = &self.kind {
+            validate_plan_variant_kind(kind)?;
+        }
+        if let Some(description) = &self.description {
+            validate_sized_text(description, "plan variant description is too long")?;
+        }
+
+        Ok(())
+    }
+}
+
+impl PublishPlanVariantRequest {
+    pub fn validate(&self) -> Result<(), ServiceError> {
+        validate_client_mutation_id(&self.client_mutation_id)
     }
 }
 
@@ -426,6 +499,14 @@ fn validate_required_text(value: &str, message: &'static str) -> Result<(), Serv
         return Err(ServiceError::InvalidRequest(message));
     }
 
+    validate_sized_text(value, "text is too long")
+}
+
+fn validate_sized_text(value: &str, message: &'static str) -> Result<(), ServiceError> {
+    if value.chars().count() > 500 {
+        return Err(ServiceError::InvalidRequest(message));
+    }
+
     Ok(())
 }
 
@@ -468,6 +549,13 @@ fn validate_splits(value: &Value) -> Result<(), ServiceError> {
     }
 
     Ok(())
+}
+
+fn validate_plan_variant_kind(value: &str) -> Result<(), ServiceError> {
+    match value {
+        "main" | "backup" | "draft" | "split" => Ok(()),
+        _ => Err(ServiceError::InvalidRequest("plan variant kind is invalid")),
+    }
 }
 
 fn validate_member_role(role: TripRole) -> Result<(), ServiceError> {

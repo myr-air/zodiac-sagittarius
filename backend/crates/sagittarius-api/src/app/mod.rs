@@ -5,6 +5,7 @@ pub mod events;
 pub mod expenses;
 pub mod itinerary;
 pub mod members;
+pub mod plan_variants;
 pub mod stop_notes;
 pub mod suggestions;
 pub mod tasks;

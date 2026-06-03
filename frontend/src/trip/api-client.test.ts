@@ -395,6 +395,77 @@ describe("Trip API client", () => {
     );
   });
 
+  it("creates patches and publishes plan variants through authenticated backend routes", async () => {
+    const createdVariant = {
+      id: "018f4e82-3000-7c00-b111-000000000099",
+      tripId: cockpitResponse.trip.id,
+      name: "Rain backup",
+      kind: "backup" as const,
+      description: "Indoor route",
+      version: 1,
+    };
+    const patchedVariant = {
+      ...createdVariant,
+      name: "Rain day backup",
+      version: 2,
+    };
+    const publishedTrip = {
+      ...cockpitResponse.trip,
+      activePlanVariantId: createdVariant.id,
+      version: 2,
+    };
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValueOnce(jsonResponse(createdVariant, 201))
+      .mockResolvedValueOnce(jsonResponse(patchedVariant))
+      .mockResolvedValueOnce(jsonResponse(publishedTrip));
+    const client = createTripApiClient({ baseUrl: "https://api.example.test", fetchImpl });
+
+    const created = await client.createPlanVariant(cockpitResponse.trip.id, "session-token", {
+      clientMutationId: "web-plan-create-1",
+      name: "Rain backup",
+      kind: "backup",
+      description: "Indoor route",
+    });
+    const patched = await client.patchPlanVariant(cockpitResponse.trip.id, created.id, "session-token", {
+      clientMutationId: "web-plan-patch-1",
+      expectedVersion: 1,
+      patch: { name: "Rain day backup" },
+    });
+    const trip = await client.publishPlanVariant(cockpitResponse.trip.id, created.id, "session-token", {
+      clientMutationId: "web-plan-publish-1",
+    });
+
+    expect(fetchImpl).toHaveBeenNthCalledWith(
+      1,
+      `https://api.example.test/api/v1/trips/${cockpitResponse.trip.id}/plan-variants`,
+      expect.objectContaining({
+        method: "POST",
+        headers: expect.objectContaining({ Authorization: "Bearer session-token" }),
+      }),
+    );
+    expect(fetchImpl).toHaveBeenNthCalledWith(
+      2,
+      `https://api.example.test/api/v1/trips/${cockpitResponse.trip.id}/plan-variants/${createdVariant.id}`,
+      expect.objectContaining({
+        method: "PATCH",
+        body: JSON.stringify({ clientMutationId: "web-plan-patch-1", expectedVersion: 1, patch: { name: "Rain day backup" } }),
+      }),
+    );
+    expect(fetchImpl).toHaveBeenNthCalledWith(
+      3,
+      `https://api.example.test/api/v1/trips/${cockpitResponse.trip.id}/plan-variants/${createdVariant.id}/publications`,
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({ clientMutationId: "web-plan-publish-1" }),
+      }),
+    );
+    expect(created).toMatchObject({ id: createdVariant.id, kind: "backup", version: 1 });
+    expect(patched).toMatchObject({ name: "Rain day backup", version: 2 });
+    expect(trip.activePlanVariantId).toBe(createdVariant.id);
+    expect(trip.version).toBe(2);
+  });
+
   it("patches itinerary items and creates or resolves suggestions through authenticated backend routes", async () => {
     const patchedItem = {
       ...cockpitResponse.itineraryItems[0],

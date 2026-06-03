@@ -4,9 +4,9 @@ use uuid::Uuid;
 use crate::db::PgPool;
 use crate::db::models::{
     AuthenticatedMemberSessionRecord, ExpenseRecord, ExpenseSplitRecord, ItineraryItemRecord,
-    NewExpense, NewItineraryItem, NewRealtimeEvent, NewStopNote, NewSuggestion, NewTripMember,
-    NewTripTask, PlanVariantRecord, RealtimeEventRecord, StopNoteRecord, SuggestionRecord,
-    TripAuthRecord, TripMemberAuthRecord, TripMemberRecord, TripTaskRecord,
+    NewExpense, NewItineraryItem, NewPlanVariant, NewRealtimeEvent, NewStopNote, NewSuggestion,
+    NewTripMember, NewTripTask, PlanVariantRecord, RealtimeEventRecord, StopNoteRecord,
+    SuggestionRecord, TripAuthRecord, TripMemberAuthRecord, TripMemberRecord, TripTaskRecord,
 };
 
 pub async fn find_trip_by_join_id(
@@ -86,6 +86,29 @@ pub async fn update_trip_metadata(
     .bind(patch.start_date)
     .bind(patch.end_date)
     .bind(patch.active_plan_variant_id)
+    .bind(version)
+    .fetch_optional(&mut **tx)
+    .await
+}
+
+pub async fn update_trip_active_plan_variant(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    trip_id: Uuid,
+    active_plan_variant_id: Uuid,
+    version: i64,
+) -> Result<Option<TripAuthRecord>, sqlx::Error> {
+    sqlx::query_as::<_, TripAuthRecord>(
+        "update trips
+         set active_plan_variant_id = $2,
+             version = $3,
+             updated_at = now()
+         where id = $1 and deleted_at is null
+         returning
+           id, name, destination_label, countries, start_date, end_date, join_id, join_password_hash,
+           active_plan_variant_id, owner_member_id, version",
+    )
+    .bind(trip_id)
+    .bind(active_plan_variant_id)
     .bind(version)
     .fetch_optional(&mut **tx)
     .await
@@ -453,6 +476,64 @@ pub async fn list_plan_variants(
     )
     .bind(trip_id)
     .fetch_all(pool)
+    .await
+}
+
+pub async fn lock_plan_variant(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    plan_variant_id: Uuid,
+) -> Result<Option<PlanVariantRecord>, sqlx::Error> {
+    sqlx::query_as::<_, PlanVariantRecord>(
+        "select id, trip_id, name, kind, description, version
+         from plan_variants
+         where id = $1
+         for update",
+    )
+    .bind(plan_variant_id)
+    .fetch_optional(&mut **tx)
+    .await
+}
+
+pub async fn insert_plan_variant(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    plan_variant: NewPlanVariant<'_>,
+) -> Result<PlanVariantRecord, sqlx::Error> {
+    sqlx::query_as::<_, PlanVariantRecord>(
+        "insert into plan_variants (id, trip_id, name, kind, description)
+         values ($1, $2, $3, $4, $5)
+         returning id, trip_id, name, kind, description, version",
+    )
+    .bind(plan_variant.id)
+    .bind(plan_variant.trip_id)
+    .bind(plan_variant.name)
+    .bind(plan_variant.kind)
+    .bind(plan_variant.description)
+    .fetch_one(&mut **tx)
+    .await
+}
+
+pub async fn update_plan_variant(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    plan_variant_id: Uuid,
+    patch: &crate::domain::patches::PlanVariantPatch,
+    version: i64,
+) -> Result<Option<PlanVariantRecord>, sqlx::Error> {
+    sqlx::query_as::<_, PlanVariantRecord>(
+        "update plan_variants
+         set name = coalesce($2, name),
+             kind = coalesce($3, kind),
+             description = coalesce($4, description),
+             version = $5,
+             updated_at = now()
+         where id = $1
+         returning id, trip_id, name, kind, description, version",
+    )
+    .bind(plan_variant_id)
+    .bind(patch.name.as_deref().map(str::trim))
+    .bind(patch.kind.as_deref())
+    .bind(patch.description.as_deref().map(str::trim))
+    .bind(version)
+    .fetch_optional(&mut **tx)
     .await
 }
 
