@@ -166,6 +166,17 @@ describe("Sagittarius project scaffold", () => {
     expect(makefile).toContain("bun run test:e2e:auth-browser");
   });
 
+  it("keeps production-readiness gates repeatable from the root Makefile", () => {
+    const makefile = readFileSync(join(repoRoot, "Makefile"), "utf8");
+    const apiMain = readFileSync(join(repoRoot, "backend/crates/sagittarius-api/src/main.rs"), "utf8");
+
+    expect(makefile).toContain("production-readiness-local: verify frontend-e2e-local frontend-e2e-auth-browser db-rollback-stop-notes-test");
+    expect(makefile).toContain("db-rollback-stop-notes-test:");
+    expect(makefile).toContain("ROLLBACK_TEST_DATABASE_NAME ?= sagittarius_rollback_test");
+    expect(makefile).toContain("DROP TABLE IF EXISTS stop_notes");
+    expect(apiMain).toContain("EnvFilter::try_from_default_env()");
+  });
+
   it("keeps production source free of unimplemented runtime placeholders", () => {
     const sourceRoots = [
       join(frontendRoot, "app"),
