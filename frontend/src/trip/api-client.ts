@@ -159,6 +159,7 @@ export interface TripApiClient {
   createStopNote(tripId: string, sessionToken: string, request: CreateStopNoteApiRequest): Promise<StopNote>;
   patchStopNote(tripId: string, noteId: string, sessionToken: string, request: PatchStopNoteApiRequest): Promise<StopNote>;
   deleteStopNote(tripId: string, noteId: string, sessionToken: string): Promise<StopNote>;
+  listMembers(tripId: string, sessionToken: string): Promise<Member[]>;
   createMember(tripId: string, sessionToken: string, request: CreateMemberApiRequest): Promise<Member>;
   patchMember(tripId: string, memberId: string, sessionToken: string, request: PatchMemberApiRequest): Promise<Member>;
   resetMemberClaim(tripId: string, memberId: string, sessionToken: string): Promise<Member>;
@@ -408,6 +409,13 @@ export function createTripApiClient(options: TripApiClientOptions = {}): TripApi
         method: "DELETE",
         headers: { Authorization: `Bearer ${sessionToken}` },
       });
+    },
+    async listMembers(tripId, sessionToken) {
+      const members = await request<TripMemberResponse[]>(tripApiRoutes.members(tripId), {
+        method: "GET",
+        headers: { Authorization: `Bearer ${sessionToken}` },
+      });
+      return members.map(mapMember);
     },
     async createMember(tripId, sessionToken, memberRequest) {
       const member = await request<TripMemberResponse>(tripApiRoutes.members(tripId), {

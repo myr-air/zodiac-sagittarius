@@ -38,7 +38,7 @@ wave plan for stop notes. Current implementation was audited against
 | Expenses summary | `GET /api/v1/trips/:tripId/expenses/summary` | Implemented | Implemented, refreshes after writes | W2-API-006, W3-FE-001 |
 | Expense create/update/delete | `POST/PATCH/DELETE /expenses` | Implemented | Implemented in context rail expense controls | W2-API-006, W3-FE-001 |
 | Join/session claim flow | join sessions + member sessions + logout | Implemented | Implemented | Existing |
-| Member list | `GET /api/v1/trips/:tripId/members` | Partial: included in cockpit only | Partial: cockpit only | W2-API-007, W3-FE-001 |
+| Member list | `GET /api/v1/trips/:tripId/members` | Implemented | Implemented in API client; cockpit remains the primary page hydration path | W2-API-007, W3-FE-001 |
 | Member create/update | `POST/PATCH /members` | Implemented | Implemented | W2-API-007, W3-FE-004 |
 | Member claim reset | `POST /members/:memberId/claim-resets` | Implemented | Implemented | W2-API-007, W3-FE-004 |
 | Member account link | `POST /members/:memberId/account-links` | Implemented | Implemented | Existing |
@@ -206,7 +206,7 @@ demo-only/read-only. Frontend typecheck, targeted tests, and full unit suite pas
 ### W3-FE-001: Expand `TripApiClient` methods
 - **Owner**: Frontend
 - **Estimate**: 3h
-- **Status**: Implemented; client tests cover expense create/update/delete routes.
+- **Status**: Implemented; client tests cover member list and expense create/update/delete routes.
 
 ### W3-FE-002: Sync `api-routes` constants
 - **Owner**: Frontend

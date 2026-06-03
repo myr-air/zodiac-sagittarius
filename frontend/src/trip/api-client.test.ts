@@ -316,6 +316,28 @@ describe("Trip API client", () => {
     expect(doneTask).toMatchObject({ id: createdTask.id, status: "done", version: 2 });
   });
 
+  it("lists members through the authenticated backend members route", async () => {
+    const fetchImpl = vi.fn().mockResolvedValueOnce(jsonResponse(cockpitResponse.members));
+    const client = createTripApiClient({ baseUrl: "https://api.example.test", fetchImpl });
+
+    await expect(client.listMembers(cockpitResponse.trip.id, "session-token")).resolves.toEqual(
+      cockpitResponse.members.map((member) => expect.objectContaining({
+        id: member.id,
+        displayName: member.displayName,
+        role: member.role,
+        accessStatus: member.accessStatus,
+      })),
+    );
+
+    expect(fetchImpl).toHaveBeenCalledWith(
+      `https://api.example.test/api/v1/trips/${cockpitResponse.trip.id}/members`,
+      expect.objectContaining({
+        method: "GET",
+        headers: expect.objectContaining({ Authorization: "Bearer session-token" }),
+      }),
+    );
+  });
+
   it("patches itinerary items and creates or resolves suggestions through authenticated backend routes", async () => {
     const patchedItem = {
       ...cockpitResponse.itineraryItems[0],
