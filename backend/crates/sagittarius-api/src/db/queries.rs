@@ -122,7 +122,7 @@ pub async fn list_claimable_members(
         "select
            id, trip_id, display_name, role, access_status, claim_password_hash, claimed_at, color
          from trip_members
-         where trip_id = $1 and access_status = 'active' and claim_password_hash is null
+         where trip_id = $1 and access_status = 'active'
          order by created_at, display_name",
     )
     .bind(trip_id)

@@ -161,6 +161,17 @@ async fn seed_trip(pool: &sqlx::PgPool) -> Result<(), sqlx::Error> {
     .bind(owner_id)
     .execute(&mut *tx)
     .await?;
+    sqlx::query(
+        "update trip_members
+         set claim_password_hash = $1, claimed_at = now()
+         where id = $2",
+    )
+    .bind(sagittarius_api::app::auth::hash_secret_for_tests(
+        "beam-pass-2026",
+    ))
+    .bind(organizer_id)
+    .execute(&mut *tx)
+    .await?;
     tx.commit().await
 }
 
