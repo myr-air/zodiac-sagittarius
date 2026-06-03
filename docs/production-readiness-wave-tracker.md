@@ -42,7 +42,7 @@ wave plan for stop notes. Current implementation was audited against
 | Member create/update | `POST/PATCH /members` | Implemented | Implemented | W2-API-007, W3-FE-004 |
 | Member claim reset | `POST /members/:memberId/claim-resets` | Implemented | Implemented | W2-API-007, W3-FE-004 |
 | Member account link | `POST /members/:memberId/account-links` | Implemented | Implemented | Existing |
-| Ownership transfer | `POST /ownership-transfers` | Implemented | Not wired in trip cockpit UI | Existing backend / future FE |
+| Ownership transfer | `POST /ownership-transfers` | Implemented | Implemented from trip members page through account API client | Existing |
 | Stop notes | Product requirement from wave plan | Implemented DB/API/domain | Implemented create/update/delete API persistence | W2-DB-001, W2-DB-002, W2-API-001, W2-API-002, W3-FE-006 |
 | Presence | `POST /presence` | Implemented | Implemented in API client and API-session online sync | Presence closure |
 
