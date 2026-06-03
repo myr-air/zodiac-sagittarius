@@ -445,6 +445,10 @@ export const messages = {
         perPerson: "Cost per person (estimate)",
         totalFor: ({ count }: { count: number }) => `Total for ${count} people`,
         edit: "Add/edit expenses",
+        formTitle: "Expense title",
+        formAmount: "Amount",
+        formPaidBy: "Paid by",
+        formCategory: "Category",
       },
     },
     stopDialog: {
@@ -1213,6 +1217,10 @@ export const messages = {
         perPerson: "ค่าใช้จ่ายต่อคน (โดยประมาณ)",
         totalFor: ({ count }: { count: number }) => `รวมสำหรับ ${count} คน`,
         edit: "เพิ่ม/แก้ไขค่าใช้จ่าย",
+        formTitle: "ชื่อค่าใช้จ่าย",
+        formAmount: "จำนวนเงิน",
+        formPaidBy: "จ่ายโดย",
+        formCategory: "ประเภท",
       },
     },
     stopDialog: {

@@ -25,27 +25,43 @@ pub async fn load_cockpit(
     let session_member_id = session.member_id;
     let can_view_expenses = can(session.role, Capability::ViewExpenses);
 
-    let (trip, members, plan_variants, itinerary_items, suggestions, tasks, stop_notes, expenses) =
-        tokio::try_join!(
-            db::queries::find_trip_by_id(pool, session_trip_id),
-            db::queries::list_trip_members(pool, session_trip_id),
-            db::queries::list_plan_variants(pool, session_trip_id),
-            db::queries::list_itinerary_items(pool, session_trip_id),
-            db::queries::list_suggestions(pool, session_trip_id),
-            db::queries::list_visible_tasks(pool, session_trip_id, session_member_id),
-            db::queries::list_stop_notes(pool, session_trip_id),
-            async {
-                if can_view_expenses {
-                    db::queries::list_expense_splits(pool, session_trip_id).await
-                } else {
-                    Ok(Vec::new())
-                }
-            },
-        )?;
+    let (
+        trip,
+        members,
+        plan_variants,
+        itinerary_items,
+        suggestions,
+        tasks,
+        stop_notes,
+        expense_rows,
+        expense_splits,
+    ) = tokio::try_join!(
+        db::queries::find_trip_by_id(pool, session_trip_id),
+        db::queries::list_trip_members(pool, session_trip_id),
+        db::queries::list_plan_variants(pool, session_trip_id),
+        db::queries::list_itinerary_items(pool, session_trip_id),
+        db::queries::list_suggestions(pool, session_trip_id),
+        db::queries::list_visible_tasks(pool, session_trip_id, session_member_id),
+        db::queries::list_stop_notes(pool, session_trip_id),
+        async {
+            if can_view_expenses {
+                db::queries::list_expenses(pool, session_trip_id).await
+            } else {
+                Ok(Vec::new())
+            }
+        },
+        async {
+            if can_view_expenses {
+                db::queries::list_expense_splits(pool, session_trip_id).await
+            } else {
+                Ok(Vec::new())
+            }
+        },
+    )?;
 
     let trip = trip.ok_or(ServiceError::NotFound)?;
     let expense_summary = if can_view_expenses {
-        Some(build_expense_summary(expenses, session_member_id))
+        Some(build_expense_summary(expense_splits, session_member_id))
     } else {
         None
     };
@@ -58,6 +74,7 @@ pub async fn load_cockpit(
         suggestions: suggestions.into_iter().map(Into::into).collect(),
         tasks: tasks.into_iter().map(Into::into).collect(),
         stop_notes: stop_notes.into_iter().map(Into::into).collect(),
+        expenses: expense_rows.into_iter().map(Into::into).collect(),
         expense_summary,
     })
 }

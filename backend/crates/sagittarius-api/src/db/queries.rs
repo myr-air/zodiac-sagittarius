@@ -951,6 +951,23 @@ pub async fn list_expense_splits(
     .await
 }
 
+pub async fn list_expenses(
+    pool: &PgPool,
+    trip_id: Uuid,
+) -> Result<Vec<ExpenseRecord>, sqlx::Error> {
+    sqlx::query_as::<_, ExpenseRecord>(
+        "select
+           id, trip_id, title, amount_minor, currency, paid_by, category, splits,
+           itinerary_item_id, version
+         from expenses
+         where trip_id = $1 and deleted_at is null
+         order by created_at",
+    )
+    .bind(trip_id)
+    .fetch_all(pool)
+    .await
+}
+
 pub async fn insert_expense(
     tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
     expense: NewExpense<'_>,

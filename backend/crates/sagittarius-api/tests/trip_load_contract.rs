@@ -11,6 +11,7 @@ async fn trip_load_contract_returns_cockpit_payload_and_filters_private_tasks(po
     let traveler_token = support::create_session(&pool, support::TRAVELER_ID).await;
     support::seed_tasks(&pool).await;
     support::seed_stop_note(&pool).await;
+    support::seed_expense(&pool).await;
     let app = support::app(pool);
 
     let response = app
@@ -67,8 +68,11 @@ async fn trip_load_contract_returns_cockpit_payload_and_filters_private_tasks(po
             .iter()
             .all(|task| task["title"] != "Private owner task")
     );
-    assert_eq!(body["expenseSummary"]["groupSpend"].as_f64(), Some(0.0));
+    assert_eq!(body["expenseSummary"]["groupSpend"].as_f64(), Some(240.0));
     assert!(body["expenseSummary"]["netByMember"].is_object());
+    assert_eq!(body["expenses"][0]["id"], support::EXPENSE_ID);
+    assert_eq!(body["expenses"][0]["itineraryItemId"], support::ITEM_ID);
+    assert_eq!(body["expenses"][0]["amountMinor"], 24000);
 }
 
 #[sqlx::test(migrations = "../../migrations")]
@@ -76,6 +80,7 @@ async fn trip_load_contract_viewer_hides_expense_summary_and_private_tasks(pool:
     support::seed_trip(&pool).await;
     let viewer_token = support::create_session(&pool, support::VIEWER_ID).await;
     support::seed_tasks(&pool).await;
+    support::seed_expense(&pool).await;
     let app = support::app(pool);
 
     let response = app
@@ -95,6 +100,7 @@ async fn trip_load_contract_viewer_hides_expense_summary_and_private_tasks(pool:
         serde_json::from_slice(&to_bytes(response.into_body(), 131072).await.unwrap()).unwrap();
 
     assert_eq!(body["expenseSummary"], Value::Null);
+    assert_eq!(body["expenses"].as_array().unwrap().len(), 0);
     let tasks = body["tasks"].as_array().unwrap();
     let task_titles: Vec<&str> = tasks
         .iter()

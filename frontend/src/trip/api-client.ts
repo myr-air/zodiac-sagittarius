@@ -1,5 +1,6 @@
 import type {
   ExpenseSummary,
+  Expense,
   ItineraryAdvisory,
   ItineraryCoordinates,
   ItineraryItem,
@@ -88,6 +89,19 @@ export interface TripTaskResponse extends TripTask {
   version: number;
 }
 
+export interface ExpenseResponse {
+  id: string;
+  tripId: string;
+  title: string;
+  amountMinor: number;
+  currency: string;
+  paidBy: string;
+  category: Expense["category"];
+  splits: Record<string, number>;
+  itineraryItemId: string | null;
+  version: number;
+}
+
 export interface TripCockpitResponse {
   trip: TripSummaryResponse;
   members: TripMemberResponse[];
@@ -96,6 +110,7 @@ export interface TripCockpitResponse {
   suggestions: SuggestionResponse[];
   tasks: TripTaskResponse[];
   stopNotes: StopNote[];
+  expenses: ExpenseResponse[];
   expenseSummary: ExpenseSummary | null;
 }
 
@@ -148,6 +163,9 @@ export interface TripApiClient {
   patchMember(tripId: string, memberId: string, sessionToken: string, request: PatchMemberApiRequest): Promise<Member>;
   resetMemberClaim(tripId: string, memberId: string, sessionToken: string): Promise<Member>;
   getExpenseSummary(tripId: string, sessionToken: string): Promise<ExpenseSummary>;
+  createExpense(tripId: string, sessionToken: string, request: CreateExpenseApiRequest): Promise<Expense>;
+  patchExpense(tripId: string, expenseId: string, sessionToken: string, request: PatchExpenseApiRequest): Promise<Expense>;
+  deleteExpense(tripId: string, expenseId: string, sessionToken: string): Promise<Expense>;
 }
 
 export interface CreateTaskApiRequest {
@@ -225,6 +243,29 @@ export interface PatchMemberApiRequest {
   role?: Exclude<TripRole, "owner">;
   accessStatus?: TripMemberAccessStatus;
   participantPassword?: string;
+}
+
+export interface CreateExpenseApiRequest {
+  clientMutationId: string;
+  title: string;
+  amountMinor: number;
+  currency?: string;
+  paidBy: string;
+  category: Expense["category"];
+  splits: Record<string, number>;
+  itineraryItemId?: string | null;
+}
+
+export interface PatchExpenseApiRequest {
+  clientMutationId: string;
+  expectedVersion: number;
+  title?: string;
+  amountMinor?: number;
+  currency?: string;
+  paidBy?: string;
+  category?: Expense["category"];
+  splits?: Record<string, number>;
+  itineraryItemId?: string | null;
 }
 
 export function createTripApiClient(options: TripApiClientOptions = {}): TripApiClient {
@@ -397,6 +438,29 @@ export function createTripApiClient(options: TripApiClientOptions = {}): TripApi
         headers: { Authorization: `Bearer ${sessionToken}` },
       });
     },
+    async createExpense(tripId, sessionToken, expenseRequest) {
+      const expense = await request<ExpenseResponse>(tripApiRoutes.expenses(tripId), {
+        method: "POST",
+        headers: { Authorization: `Bearer ${sessionToken}` },
+        body: JSON.stringify(expenseRequest),
+      });
+      return mapExpense(expense);
+    },
+    async patchExpense(tripId, expenseId, sessionToken, expenseRequest) {
+      const expense = await request<ExpenseResponse>(tripApiRoutes.expense(tripId, expenseId), {
+        method: "PATCH",
+        headers: { Authorization: `Bearer ${sessionToken}` },
+        body: JSON.stringify(expenseRequest),
+      });
+      return mapExpense(expense);
+    },
+    async deleteExpense(tripId, expenseId, sessionToken) {
+      const expense = await request<ExpenseResponse>(tripApiRoutes.expense(tripId, expenseId), {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${sessionToken}` },
+      });
+      return mapExpense(expense);
+    },
   };
 }
 
@@ -416,7 +480,7 @@ export function mapCockpitResponse(response: TripCockpitResponse): TripCockpit {
       planVariants: response.planVariants.map(mapPlanVariant),
       members: response.members.map(mapMember),
       itineraryItems: response.itineraryItems.map(mapItineraryItem),
-      expenses: [],
+      expenses: response.expenses.map(mapExpense),
     },
     suggestions: response.suggestions,
     tasks: response.tasks.map(mapTask),
@@ -468,6 +532,22 @@ function mapItineraryItem(item: ItineraryItemResponse): ItineraryItem {
     ...item,
     coordinates: item.coordinates ?? undefined,
     address: item.address ?? undefined,
+  };
+}
+
+function mapExpense(expense: ExpenseResponse): Expense {
+  return {
+    id: expense.id,
+    tripId: expense.tripId,
+    title: expense.title,
+    amount: expense.amountMinor / 100,
+    amountMinor: expense.amountMinor,
+    currency: expense.currency,
+    paidBy: expense.paidBy,
+    splits: expense.splits,
+    category: expense.category,
+    itineraryItemId: expense.itineraryItemId,
+    version: expense.version,
   };
 }
 

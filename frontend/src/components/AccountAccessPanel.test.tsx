@@ -561,7 +561,7 @@ describe("AccountAccessPanel", () => {
     );
 
     expect(await screen.findByText("Book train", {}, { timeout: 3_000 })).toBeInTheDocument();
-    expect(screen.getByText("database error")).toBeInTheDocument();
+    expect(screen.getByText("Could not load account data.")).toBeInTheDocument();
     expect(screen.queryByText("No to-dos yet.")).not.toBeInTheDocument();
   });
 

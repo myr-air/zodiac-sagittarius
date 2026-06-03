@@ -73,11 +73,16 @@ export interface ItineraryItem {
 
 export interface Expense {
   id: string;
+  tripId?: string;
   title: string;
   amount: number;
+  amountMinor?: number;
+  currency?: string;
   paidBy: string;
   splits: Record<string, number>;
   category: "food" | "transport" | "tickets" | "stay" | "shopping" | "settlement";
+  itineraryItemId?: string | null;
+  version?: number;
 }
 
 export type TripTaskStatus = "open" | "done";

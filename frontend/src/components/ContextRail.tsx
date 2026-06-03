@@ -1,5 +1,5 @@
 import { type FormEvent, useMemo, useState } from "react";
-import type { ExpenseSummary, ItineraryItem, Member, StopNote, Suggestion, Trip, TripTask } from "@/src/trip/types";
+import type { Expense, ExpenseSummary, ItineraryItem, Member, StopNote, Suggestion, Trip, TripTask } from "@/src/trip/types";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { Button } from "./ui";
 import { Icon } from "./icons";
@@ -20,6 +20,9 @@ interface ContextRailProps {
   canEditExpenses: boolean;
   open: boolean;
   onCreateNote: (input: { itemId: string; body: string }) => void;
+  onCreateExpense: (input: { itemId: string; title: string; amount: number; paidBy: string; category: Expense["category"] }) => void;
+  onUpdateExpense: (input: { expenseId: string; title: string; amount: number; paidBy: string; category: Expense["category"] }) => void;
+  onDeleteExpense: (expenseId: string) => void;
   onDeleteNote: (noteId: string) => void;
   onEditSelected: () => void;
   onReviewSuggestion: (suggestionId: string, decision: "approved" | "rejected") => void;
@@ -57,6 +60,8 @@ const bookingTaskClassName = "stop-booking-task grid grid-cols-[minmax(0,1fr)_au
 const bookingTaskLabelClassName = "inline-flex min-w-0 items-center gap-2 [&_input]:size-[15px] [&_input]:accent-[var(--color-primary)] [&_span]:text-xs [&_span]:font-extrabold [&_span]:leading-4 [&_span]:text-[var(--color-text)]";
 const bookingTaskMetaClassName = "text-[11px] font-bold leading-4 text-[var(--color-text-muted)]";
 const expenseGridClassName = "expense-grid grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-3 gap-y-0.5 text-xs [&_span]:text-[var(--color-text-muted)] [&_strong]:text-base [&_strong]:font-bold [&_strong]:leading-[21px] [&_strong]:tabular-nums";
+const expenseFormClassName = "expense-form grid gap-2 [&_input]:min-h-8 [&_input]:rounded-[var(--radius-sm)] [&_input]:border [&_input]:border-[var(--color-border)] [&_input]:bg-[var(--color-surface)] [&_input]:px-2 [&_input]:text-xs [&_select]:min-h-8 [&_select]:rounded-[var(--radius-sm)] [&_select]:border [&_select]:border-[var(--color-border)] [&_select]:bg-[var(--color-surface)] [&_select]:px-2 [&_select]:text-xs [&_label]:grid [&_label]:gap-1 [&_label>span]:text-[11px] [&_label>span]:font-black [&_label>span]:text-[var(--color-text-muted)]";
+const expenseItemClassName = "expense-item grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface-subtle)] px-2.5 py-2 text-xs";
 const contextRailClassName =
   "context-rail absolute right-0 top-0 z-[3] h-full min-h-0 w-[380px] max-w-[min(380px,calc(100%_-_24px))] min-w-0 translate-x-0 bg-[var(--color-surface)] opacity-100 shadow-[-28px_0_54px_rgb(15_23_42_/_0.18)] [transition:transform_220ms_ease,opacity_180ms_ease,box-shadow_220ms_ease] will-change-[transform,opacity] data-[state=closed]:pointer-events-none data-[state=closed]:translate-x-6 data-[state=closed]:opacity-0 data-[state=closed]:shadow-[-8px_0_18px_rgb(15_23_42_/_0)] max-[1199px]:static max-[1199px]:w-full max-[1199px]:max-w-none max-[1199px]:shadow-none";
 const contextRailOpenClassName = "context-rail--open animate-[drawer-slide-in_220ms_ease-out_both]";
@@ -97,6 +102,9 @@ export function ContextRail({
   canEditExpenses,
   open,
   onCreateNote,
+  onCreateExpense,
+  onUpdateExpense,
+  onDeleteExpense,
   onDeleteNote,
   onEditSelected,
   onReviewSuggestion,
@@ -108,6 +116,11 @@ export function ContextRail({
   const { locale, t } = useI18n();
   const [activeTab, setActiveTab] = useState<"notes" | "booking" | "suggestions">("notes");
   const [noteBody, setNoteBody] = useState("");
+  const [expenseTitle, setExpenseTitle] = useState("");
+  const [expenseAmount, setExpenseAmount] = useState("");
+  const [expensePaidBy, setExpensePaidBy] = useState(currentMember.id);
+  const [expenseCategory, setExpenseCategory] = useState<Expense["category"]>("food");
+  const [editingExpenseId, setEditingExpenseId] = useState<string | null>(null);
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
   const [editingNoteBody, setEditingNoteBody] = useState("");
   const selectedEnd = formatEndTime(selectedItem.startTime, selectedItem.durationMinutes);
@@ -116,6 +129,7 @@ export function ContextRail({
   /* v8 ignore next */
   const selectedAdvisories = selectedItem.advisories ?? [];
   const selectedNotes = useMemo(() => stopNotes.filter((note) => note.itemId === selectedItem.id), [selectedItem.id, stopNotes]);
+  const selectedExpenses = useMemo(() => trip.expenses.filter((expense) => expense.itineraryItemId === selectedItem.id), [selectedItem.id, trip.expenses]);
   const selectedTasks = useMemo(() => tasks.filter((task) => task.relatedItemId === selectedItem.id || (task.kind === "booking" && task.title.toLowerCase().includes(selectedItem.activity.toLowerCase()))), [selectedItem, tasks]);
   const selectedSuggestions = useMemo(
     () => suggestions.filter((suggestion) => suggestion.targetItemId === selectedItem.id && (suggestion.status === "pending" || suggestion.status === "conflicted")),
@@ -142,6 +156,29 @@ export function ContextRail({
     onUpdateNote({ noteId: editingNoteId, body });
     setEditingNoteId(null);
     setEditingNoteBody("");
+  }
+
+  function submitExpense(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const title = expenseTitle.trim();
+    const amount = Number(expenseAmount);
+    if (!title || !Number.isFinite(amount) || amount < 0) return;
+    if (editingExpenseId) {
+      onUpdateExpense({ expenseId: editingExpenseId, title, amount, paidBy: expensePaidBy, category: expenseCategory });
+    } else {
+      onCreateExpense({ itemId: selectedItem.id, title, amount, paidBy: expensePaidBy, category: expenseCategory });
+    }
+    setEditingExpenseId(null);
+    setExpenseTitle("");
+    setExpenseAmount("");
+  }
+
+  function startEditingExpense(expense: Expense) {
+    setEditingExpenseId(expense.id);
+    setExpenseTitle(expense.title);
+    setExpenseAmount(String(expense.amount));
+    setExpensePaidBy(expense.paidBy);
+    setExpenseCategory(expense.category);
   }
 
   return (
@@ -315,7 +352,52 @@ export function ContextRail({
             <span>{t.contextRail.expenses.totalFor({ count: trip.members.length - 1 })}</span>
             <strong>HK${groupSpend}</strong>
           </div>
-          <Button type="button" variant="secondary" className={detailButtonClassName} disabled={!canEditExpenses}>{t.contextRail.expenses.edit}</Button>
+          <div className={moduleListClassName}>
+            {selectedExpenses.map((expense) => (
+              <article className={expenseItemClassName} key={expense.id}>
+                <span>
+                  <strong>{expense.title}</strong>
+                  <br />
+                  HK${expense.amount.toLocaleString("en-HK")}
+                </span>
+                <span className={noteActionsClassName}>
+                  <button className={noteActionButtonClassName} type="button" aria-label={`Edit expense ${expense.title}`} disabled={!canEditExpenses} onClick={() => startEditingExpense(expense)}>
+                    <Icon name="edit" />
+                  </button>
+                  <button className={noteActionButtonClassName} type="button" aria-label={`Delete expense ${expense.title}`} disabled={!canEditExpenses} onClick={() => onDeleteExpense(expense.id)}>
+                    <Icon name="trash" />
+                  </button>
+                </span>
+              </article>
+            ))}
+          </div>
+          <form className={expenseFormClassName} onSubmit={submitExpense}>
+            <label>
+              <span>{t.contextRail.expenses.formTitle}</span>
+              <input value={expenseTitle} disabled={!canEditExpenses} onChange={(event) => setExpenseTitle(event.target.value)} />
+            </label>
+            <label>
+              <span>{t.contextRail.expenses.formAmount}</span>
+              <input inputMode="decimal" value={expenseAmount} disabled={!canEditExpenses} onChange={(event) => setExpenseAmount(event.target.value)} />
+            </label>
+            <label>
+              <span>{t.contextRail.expenses.formPaidBy}</span>
+              <select value={expensePaidBy} disabled={!canEditExpenses} onChange={(event) => setExpensePaidBy(event.target.value)}>
+                {trip.members.map((member) => (
+                  <option value={member.id} key={member.id}>{member.displayName}</option>
+                ))}
+              </select>
+            </label>
+            <label>
+              <span>{t.contextRail.expenses.formCategory}</span>
+              <select value={expenseCategory} disabled={!canEditExpenses} onChange={(event) => setExpenseCategory(event.target.value as Expense["category"])}>
+                {(["food", "transport", "tickets", "stay", "shopping", "settlement"] satisfies Expense["category"][]).map((category) => (
+                  <option value={category} key={category}>{category}</option>
+                ))}
+              </select>
+            </label>
+            <Button type="submit" variant="secondary" className={detailButtonClassName} disabled={!canEditExpenses || !expenseTitle.trim() || !expenseAmount.trim()}>{editingExpenseId ? t.common.actions.save : t.contextRail.expenses.edit}</Button>
+          </form>
         </section>
 
       </div>

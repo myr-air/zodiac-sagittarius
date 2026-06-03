@@ -74,6 +74,20 @@ const cockpitResponse: TripCockpitResponse = {
       version: 1,
     },
   ],
+  expenses: [
+    {
+      id: "018f4e86-1111-7000-8000-000000000001",
+      tripId: "018f4e80-5788-7de0-a45c-8a555d17fc2d",
+      title: "Dim sum breakfast",
+      amountMinor: 24000,
+      currency: "HKD",
+      paidBy: "018f4e81-77a4-7b8f-b3bd-0d0f493ac561",
+      category: "food",
+      splits: {},
+      itineraryItemId: "018f4e83-5410-7d8b-8f25-fd52c5e7bd1f",
+      version: 1,
+    },
+  ],
   tasks: [
     {
       id: "018f4e84-1111-7000-8000-000000000001",
@@ -154,6 +168,7 @@ describe("Trip API client", () => {
       },
     ]);
     expect(cockpit.stopNotes).toEqual(cockpitResponse.stopNotes);
+    expect(cockpit.trip.expenses[0]).toMatchObject({ id: cockpitResponse.expenses[0].id, amount: 240 });
     expect(cockpit.expenseSummary).toEqual(cockpitResponse.expenseSummary);
   });
 
@@ -382,6 +397,71 @@ describe("Trip API client", () => {
     expect(suggestion).toMatchObject({ id: createdSuggestion.id, status: "pending" });
     expect(approved).toMatchObject({ id: createdSuggestion.id, status: "approved" });
     expect(rejected).toMatchObject({ id: rejectedSuggestion.id, status: "rejected" });
+  });
+
+  it("creates, patches, and deletes expenses through authenticated backend routes", async () => {
+    const createdExpense = { ...cockpitResponse.expenses[0], id: "018f4e86-1111-7000-8000-000000000002", title: "Taxi", amountMinor: 12000, version: 1 };
+    const patchedExpense = { ...createdExpense, title: "Taxi edited", amountMinor: 15000, version: 2 };
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValueOnce(jsonResponse(createdExpense, 201))
+      .mockResolvedValueOnce(jsonResponse(patchedExpense))
+      .mockResolvedValueOnce(jsonResponse(patchedExpense));
+    const client = createTripApiClient({ baseUrl: "https://api.example.test", fetchImpl });
+    const createRequest = {
+      clientMutationId: "web-expense-1",
+      title: "Taxi",
+      amountMinor: 12000,
+      currency: "HKD",
+      paidBy: cockpitResponse.members[0].id,
+      category: "transport" as const,
+      splits: { [cockpitResponse.members[0].id]: 12000 },
+      itineraryItemId: cockpitResponse.itineraryItems[0].id,
+    };
+    const patchRequest = {
+      clientMutationId: "web-expense-2",
+      expectedVersion: 1,
+      title: "Taxi edited",
+      amountMinor: 15000,
+      paidBy: cockpitResponse.members[0].id,
+      category: "transport" as const,
+      splits: { [cockpitResponse.members[0].id]: 15000 },
+      itineraryItemId: cockpitResponse.itineraryItems[0].id,
+    };
+
+    const created = await client.createExpense(cockpitResponse.trip.id, "session-token", createRequest);
+    const patched = await client.patchExpense(cockpitResponse.trip.id, created.id, "session-token", patchRequest);
+    const deleted = await client.deleteExpense(cockpitResponse.trip.id, patched.id, "session-token");
+
+    expect(fetchImpl).toHaveBeenNthCalledWith(
+      1,
+      `https://api.example.test/api/v1/trips/${cockpitResponse.trip.id}/expenses`,
+      expect.objectContaining({
+        method: "POST",
+        headers: expect.objectContaining({ Authorization: "Bearer session-token" }),
+        body: JSON.stringify(createRequest),
+      }),
+    );
+    expect(fetchImpl).toHaveBeenNthCalledWith(
+      2,
+      `https://api.example.test/api/v1/trips/${cockpitResponse.trip.id}/expenses/${createdExpense.id}`,
+      expect.objectContaining({
+        method: "PATCH",
+        headers: expect.objectContaining({ Authorization: "Bearer session-token" }),
+        body: JSON.stringify(patchRequest),
+      }),
+    );
+    expect(fetchImpl).toHaveBeenNthCalledWith(
+      3,
+      `https://api.example.test/api/v1/trips/${cockpitResponse.trip.id}/expenses/${patchedExpense.id}`,
+      expect.objectContaining({
+        method: "DELETE",
+        headers: expect.objectContaining({ Authorization: "Bearer session-token" }),
+      }),
+    );
+    expect(created).toMatchObject({ id: createdExpense.id, title: "Taxi", amount: 120, version: 1 });
+    expect(patched).toMatchObject({ id: createdExpense.id, title: "Taxi edited", amount: 150, version: 2 });
+    expect(deleted).toMatchObject({ id: createdExpense.id, title: "Taxi edited", amount: 150, version: 2 });
   });
 });
 

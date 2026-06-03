@@ -399,6 +399,7 @@ pub struct TripCockpit {
     pub suggestions: Vec<SuggestionSummary>,
     pub tasks: Vec<TripTaskSummary>,
     pub stop_notes: Vec<StopNoteSummary>,
+    pub expenses: Vec<ExpenseItemSummary>,
     pub expense_summary: Option<ExpenseSummary>,
 }
 

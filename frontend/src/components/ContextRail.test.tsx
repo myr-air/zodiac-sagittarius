@@ -23,6 +23,9 @@ function renderRail(overrides: Partial<Parameters<typeof ContextRail>[0]> = {}) 
     canEditExpenses: true,
     open: true,
     onCreateNote: vi.fn(),
+    onCreateExpense: vi.fn(),
+    onUpdateExpense: vi.fn(),
+    onDeleteExpense: vi.fn(),
     onDeleteNote: vi.fn(),
     onEditSelected: vi.fn(),
     onUpdateNote: vi.fn(),
@@ -108,5 +111,53 @@ describe("ContextRail", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /ลบโน้ต/i }));
     expect(props.onDeleteNote).toHaveBeenCalledWith("note-dimdim-1");
+  });
+
+  it("creates, updates, and deletes stop expenses", () => {
+    const props = renderRail({
+      trip: {
+        ...tripFixture.trip,
+        expenses: [
+          {
+            id: "expense-dimdim-1",
+            title: "Dim sum",
+            amount: 240,
+            paidBy: "member-aom",
+            splits: {},
+            category: "food",
+            itineraryItemId: selectedItem.id,
+            version: 1,
+          },
+        ],
+      },
+    });
+
+    fireEvent.change(screen.getByLabelText("ชื่อค่าใช้จ่าย"), { target: { value: "Taxi" } });
+    fireEvent.change(screen.getByLabelText("จำนวนเงิน"), { target: { value: "120" } });
+    fireEvent.click(screen.getByRole("button", { name: "เพิ่ม/แก้ไขค่าใช้จ่าย" }));
+
+    expect(props.onCreateExpense).toHaveBeenCalledWith({
+      itemId: selectedItem.id,
+      title: "Taxi",
+      amount: 120,
+      paidBy: tripFixture.currentMembers.owner.id,
+      category: "food",
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: /Edit expense Dim sum/i }));
+    fireEvent.change(screen.getByLabelText("ชื่อค่าใช้จ่าย"), { target: { value: "Dim sum edited" } });
+    fireEvent.change(screen.getByLabelText("จำนวนเงิน"), { target: { value: "260" } });
+    fireEvent.click(screen.getByRole("button", { name: "บันทึก" }));
+
+    expect(props.onUpdateExpense).toHaveBeenCalledWith({
+      expenseId: "expense-dimdim-1",
+      title: "Dim sum edited",
+      amount: 260,
+      paidBy: "member-aom",
+      category: "food",
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: /Delete expense Dim sum/i }));
+    expect(props.onDeleteExpense).toHaveBeenCalledWith("expense-dimdim-1");
   });
 });

@@ -29,7 +29,8 @@ bun run ../backend/target/debug/seed_e2e
 Preferred local full-stack command:
 
 ```bash
-make frontend-e2e-local
+make frontend-e2e-local PSQL='docker exec -i sagittarius-test-postgres psql'
+make frontend-e2e-auth-browser PSQL='docker exec -i sagittarius-test-postgres psql'
 ```
 
 The seed includes:
@@ -50,14 +51,13 @@ cargo test -p sagittarius-api
 
 cd ../frontend
 bun run typecheck
-bun run test src/trip/api-client.test.ts src/components/SagittariusApp.test.tsx src/components/TripJoinGate.test.tsx
+bun run test
 ```
 
 Then run browser/core journeys against real API:
 
-```bash
-make frontend-e2e-local
-```
+Use the `make frontend-e2e-local` and `make frontend-e2e-auth-browser`
+commands above.
 
 Required journeys:
 
@@ -78,9 +78,25 @@ Minimum evidence:
 - disabled member cannot keep using revoked sessions
 - realtime write event includes actor where `clientMutationId` exists
 
-## Current Local Blocker
+## Local Docker Verification
 
-On this machine, DB integration tests currently cannot complete because
-`psql` is not in `PATH` and Postgres at `127.0.0.1:5432` times out. Backend
-compile/unit checks pass, but real DB verification needs local Postgres or a
-containerized test database.
+On 2026-06-03, local verification passed with a Docker Postgres container:
+
+```bash
+docker run --name sagittarius-test-postgres \
+  -e POSTGRES_USER=postgres \
+  -e POSTGRES_PASSWORD=postgres \
+  -e POSTGRES_DB=sagittarius_test \
+  -p 127.0.0.1:5432:5432 \
+  -d postgres:17-alpine
+```
+
+If the container already exists, start it and check readiness:
+
+```bash
+docker start sagittarius-test-postgres
+docker exec sagittarius-test-postgres pg_isready -U postgres -d sagittarius_test
+```
+
+Use `PSQL='docker exec -i sagittarius-test-postgres psql'` when running local
+e2e commands because this machine does not have host `psql` in `PATH`.

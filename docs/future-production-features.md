@@ -7,10 +7,10 @@ These are intentionally outside the current production connectivity pivot.
 - Stop notes persist through backend endpoints.
 - Member create/update/reset claim flows have backend endpoints and frontend API wiring.
 - Itinerary create/reorder API wiring is live; delete has backend/client support.
-- Expense write endpoints exist on the backend, with summary reload support.
+- Expense create/update/delete is wired through backend APIs from the context rail, with summary reload support.
+- Local Docker-backed API/browser verification passed for the production-readiness wave.
 
 ## Still Future
 
-- Browser-driven staging sign-off for all write journeys after local/staging Postgres is available.
+- Browser-driven staging sign-off for all write journeys in the deployed staging environment.
 - Production alert routing from HTTP/write traces into the deployment observability stack.
-- Full expense editing UI if the product wants expense CRUD beyond summary/context controls.

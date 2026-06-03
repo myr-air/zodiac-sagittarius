@@ -578,6 +578,9 @@ describe("Sagittarius cockpit UI", () => {
       patchMember: vi.fn(),
       resetMemberClaim: vi.fn(),
       getExpenseSummary: vi.fn(),
+      createExpense: vi.fn(),
+      patchExpense: vi.fn(),
+      deleteExpense: vi.fn(),
     };
 
     render(<SagittariusApp requireJoin dataSource="api" apiClient={apiClient} />);
@@ -885,6 +888,9 @@ describe("Sagittarius cockpit UI", () => {
       patchMember: vi.fn(),
       resetMemberClaim: vi.fn(),
       getExpenseSummary: vi.fn(),
+      createExpense: vi.fn(),
+      patchExpense: vi.fn(),
+      deleteExpense: vi.fn(),
     };
 
     render(<SagittariusApp requireJoin dataSource="api" initialView="itinerary" apiClient={apiClient} />);
@@ -1001,6 +1007,9 @@ describe("Sagittarius cockpit UI", () => {
       patchMember: vi.fn(),
       resetMemberClaim: vi.fn(),
       getExpenseSummary: vi.fn(),
+      createExpense: vi.fn(),
+      patchExpense: vi.fn(),
+      deleteExpense: vi.fn(),
     };
 
     render(<SagittariusApp requireJoin dataSource="api" initialView="itinerary" apiClient={apiClient} />);
@@ -1045,6 +1054,8 @@ describe("Sagittarius cockpit UI", () => {
     const context = screen.getByRole("complementary", { name: /ข้อมูลประกอบการวางแผน/i });
     expect(within(context).getByLabelText(/เพิ่มโน้ตสำหรับจุดนี้/i)).toBeEnabled();
     expect(within(context).getByRole("button", { name: /บันทึกโน้ต/i })).toBeDisabled();
+    await user.type(within(context).getByLabelText(/ชื่อค่าใช้จ่าย/i), "Taxi");
+    await user.type(within(context).getByLabelText(/จำนวนเงิน/i), "120");
     expect(within(context).getByRole("button", { name: /เพิ่ม\/แก้ไขค่าใช้จ่าย/i })).toBeEnabled();
     unmount();
     window.localStorage.clear();
@@ -1966,6 +1977,9 @@ function createApiClientForTrip(trip: Trip): TripApiClient {
     patchMember: vi.fn(),
     resetMemberClaim: vi.fn(),
     getExpenseSummary: vi.fn(),
+    createExpense: vi.fn(),
+    patchExpense: vi.fn(),
+    deleteExpense: vi.fn(),
   };
 }
 

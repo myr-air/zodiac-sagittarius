@@ -204,7 +204,8 @@ pub async fn finish_email_login(
         .await?
         .ok_or(ServiceError::Unauthenticated)?;
 
-    db::account_queries::lock_email_login_start_for_email(&mut tx, &challenge.normalized_email).await?;
+    db::account_queries::lock_email_login_start_for_email(&mut tx, &challenge.normalized_email)
+        .await?;
     let challenge = db::account_queries::lock_email_login_challenge(&mut tx, challenge_id)
         .await?
         .ok_or(ServiceError::Unauthenticated)?;
@@ -1129,7 +1130,10 @@ fn validate_trip_countries(countries: &[String]) -> Result<Vec<String>, ServiceE
     let mut normalized = Vec::new();
     for country in countries {
         let trimmed = validate_trip_text(country, "country")?;
-        if !normalized.iter().any(|existing: &String| existing.eq_ignore_ascii_case(&trimmed)) {
+        if !normalized
+            .iter()
+            .any(|existing: &String| existing.eq_ignore_ascii_case(&trimmed))
+        {
             normalized.push(trimmed);
         }
     }

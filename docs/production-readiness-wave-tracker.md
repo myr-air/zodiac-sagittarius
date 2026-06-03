@@ -26,24 +26,24 @@ wave plan for stop notes. Current implementation was audited against
 
 | Area | Contract / route | Backend status | Frontend API-mode status | Ticket |
 | --- | --- | --- | --- | --- |
-| Trip load | `GET /api/v1/trips/:tripId` | Partial: trip/members/variants/itinerary/suggestions/tasks/expense summary | Partial: reads cockpit, stop notes hardcoded empty | W2-API-008, W3-FE-001 |
+| Trip load | `GET /api/v1/trips/:tripId` | Implemented: trip/members/variants/itinerary/suggestions/tasks/stop notes/expenses/expense summary | Implemented: reads cockpit stop notes and expenses | W2-API-008, W3-FE-001 |
 | Trip metadata | `PATCH /api/v1/trips/:tripId` | Missing | Missing | Future gap |
 | Plan variants | `POST/PATCH/PUBLISH /plan-variants` | Missing | Missing | Future gap |
-| Itinerary create | `POST /api/v1/trips/:tripId/itinerary-items` | Missing | Local/demo only | W2-API-003, W3-FE-005 |
+| Itinerary create | `POST /api/v1/trips/:tripId/itinerary-items` | Implemented | Implemented | W2-API-003, W3-FE-005 |
 | Itinerary patch | `PATCH /api/v1/trips/:tripId/itinerary-items/:itemId` | Implemented | Implemented | Existing |
-| Itinerary delete | `DELETE /api/v1/trips/:tripId/itinerary-items/:itemId` | Missing | Local/demo only | W2-API-004, W3-FE-005 |
-| Itinerary reorder | `PATCH /api/v1/trips/:tripId/itinerary-items/order` | Missing | Local/demo only | W2-API-005, W3-FE-005 |
+| Itinerary delete | `DELETE /api/v1/trips/:tripId/itinerary-items/:itemId` | Implemented | API client support; direct UI delete remains product-dependent | W2-API-004, W3-FE-005 |
+| Itinerary reorder | `PATCH /api/v1/trips/:tripId/itinerary-items/order` | Implemented | Implemented | W2-API-005, W3-FE-005 |
 | Suggestions | `POST/PATCH /suggestions` | Implemented | Implemented | Existing |
 | Tasks | `POST/PATCH /tasks` | Implemented extension beyond spec | Implemented | Existing |
-| Expenses summary | `GET /api/v1/trips/:tripId/expenses/summary` | Partial: summary included in cockpit only | Partial: cockpit only | W2-API-006, W3-FE-001 |
-| Expense create/update/delete | `POST/PATCH/DELETE /expenses` | Missing | Local/demo only | W2-API-006, W3-FE-001 |
+| Expenses summary | `GET /api/v1/trips/:tripId/expenses/summary` | Implemented | Implemented, refreshes after writes | W2-API-006, W3-FE-001 |
+| Expense create/update/delete | `POST/PATCH/DELETE /expenses` | Implemented | Implemented in context rail expense controls | W2-API-006, W3-FE-001 |
 | Join/session claim flow | join sessions + member sessions + logout | Implemented | Implemented | Existing |
 | Member list | `GET /api/v1/trips/:tripId/members` | Partial: included in cockpit only | Partial: cockpit only | W2-API-007, W3-FE-001 |
-| Member create/update | `POST/PATCH /members` | Missing | Local/demo only | W2-API-007, W3-FE-004 |
-| Member claim reset | `POST /members/:memberId/claim-resets` | Missing | Local/demo only | W2-API-007, W3-FE-004 |
+| Member create/update | `POST/PATCH /members` | Implemented | Implemented | W2-API-007, W3-FE-004 |
+| Member claim reset | `POST /members/:memberId/claim-resets` | Implemented | Implemented | W2-API-007, W3-FE-004 |
 | Member account link | `POST /members/:memberId/account-links` | Implemented | Implemented | Existing |
 | Ownership transfer | `POST /ownership-transfers` | Implemented | Not wired in trip cockpit UI | Existing backend / future FE |
-| Stop notes | Product requirement from wave plan | Missing DB/API/domain | Local/demo only | W2-DB-001, W2-DB-002, W2-API-001, W2-API-002, W3-FE-006 |
+| Stop notes | Product requirement from wave plan | Implemented DB/API/domain | Implemented create/update/delete API persistence | W2-DB-001, W2-DB-002, W2-API-001, W2-API-002, W3-FE-006 |
 | Presence | `POST /presence` | Missing | Missing | Future gap |
 
 ### Permission scope baseline
@@ -101,10 +101,9 @@ wave plan for stop notes. Current implementation was audited against
 ## Wave 2 - Backend + DB foundation (backend-first)
 
 Wave status: backend implementation added on `codex/production-readiness-waves`.
-Compile/unit verification is green. DB integration verification is blocked in
-the current local environment because `psql` is not in `PATH` and
-`DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/sagittarius_test`
-times out connecting to Postgres.
+Backend DB integration verification passed against Docker Postgres on
+2026-06-03 with
+`DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/sagittarius_test`.
 
 ### W2-DB-001: Stop-note migration + schema constraints
 - **Owner**: Backend
@@ -115,7 +114,7 @@ times out connecting to Postgres.
   - Foreign keys point to `trips`, `itinerary_items`, `trip_members`.
   - Read index exists for trip-scoped retrieval.
   - Migration tests validate table/index presence.
-- **Status**: Implemented; DB integration run blocked by local Postgres setup.
+- **Status**: Implemented; contract/schema tests passed against Docker Postgres.
 
 ### W2-DB-002: Stop-note repo/domain service model
 - **Owner**: Backend
@@ -124,7 +123,7 @@ times out connecting to Postgres.
   - DB model + query for listing stop notes by trip implemented.
   - Domain type for `StopNoteSummary` added.
   - Cockpit mapper can include stop notes list.
-- **Status**: Implemented; compile verified.
+- **Status**: Implemented; backend test suite passed.
 
 ### W2-API-001: POST `/trips/:tripId/stop-notes`
 - **Owner**: Backend
@@ -134,7 +133,7 @@ times out connecting to Postgres.
   - Author is the active session member.
   - Conflict on duplicate mutation id in same trip/member.
   - Realtime `stop_note.created` event emitted on success.
-- **Status**: Implemented; contract test added, DB run blocked by local Postgres setup.
+- **Status**: Implemented; contract test passed.
 
 ### W2-API-002: PATCH/DELETE `/trips/:tripId/stop-notes/:noteId`
 - **Owner**: Backend
@@ -143,7 +142,7 @@ times out connecting to Postgres.
   - PATCH updates body with optimistic version check.
   - DELETE soft-deletes row and emits event.
   - Cross-trip note access returns not found.
-- **Status**: Implemented; contract test added, DB run blocked by local Postgres setup.
+- **Status**: Implemented; contract test passed.
 
 ### W2-API-003: POST `/trips/:tripId/itinerary-items`
 - **Owner**: Backend
@@ -152,7 +151,7 @@ times out connecting to Postgres.
   - New route exists and writes item.
   - Returns created row + version.
   - DB version increments + realtime event.
-- **Status**: Implemented; compile verified.
+- **Status**: Implemented; backend test suite passed.
 
 ### W2-API-004: DELETE `/trips/:tripId/itinerary-items/:itemId`
 - **Owner**: Backend
@@ -160,7 +159,7 @@ times out connecting to Postgres.
 - **Acceptance criteria**:
   - Soft-deletion only.
   - Cannot delete unknown item or cross-trip item.
-- **Status**: Implemented; compile verified.
+- **Status**: Implemented; backend test suite passed.
 
 ### W2-API-005: PATCH `/trips/:tripId/itinerary-items/order`
 - **Owner**: Backend
@@ -169,7 +168,7 @@ times out connecting to Postgres.
   - Single transaction reorder for one day/plan variant.
   - Sort orders are deterministic and contiguous by step.
   - Emits one `itinerary_items.reordered` event.
-- **Status**: Implemented; compile verified.
+- **Status**: Implemented; backend test suite passed.
 
 ### W2-API-006: Expense CRUD endpoints
 - **Owner**: Backend
@@ -178,7 +177,7 @@ times out connecting to Postgres.
   - POST/PATCH/DELETE implemented with version checks.
   - Owner/organizer only.
   - `expense_summary` updates automatically on reload.
-- **Status**: Implemented; compile verified.
+- **Status**: Implemented; backend test suite passed.
 
 ### W2-API-007: Member ops endpoints
 - **Owner**: Backend
@@ -188,7 +187,7 @@ times out connecting to Postgres.
   - `PATCH /trips/:tripId/members/:memberId`
   - `POST /trips/:tripId/members/:memberId/claim-resets`
   - Access checks for `managePeople` capability.
-- **Status**: Implemented; compile verified.
+- **Status**: Implemented; backend test suite passed.
 
 ### W2-API-008: Include stop-notes & core entities in cockpit payload
 - **Owner**: Backend
@@ -197,17 +196,17 @@ times out connecting to Postgres.
   - `GET /trips/:tripId` returns `stopNotes` array in `TripCockpit`.
   - Expenses and suggestions behavior unchanged.
   - API tests updated to assert new payload shape.
-- **Status**: Implemented; trip-load contract assertion added, DB run blocked by local Postgres setup.
+- **Status**: Implemented; trip-load contract asserts stop notes, expenses, summary, and viewer expense hiding.
 
 ## Wave 3 – Frontend API Client + Wiring
 
 Wave status: implemented. API-mode no longer treats core write surfaces as
-demo-only/read-only. Frontend typecheck and targeted app/API tests pass.
+demo-only/read-only. Frontend typecheck, targeted tests, and full unit suite pass.
 
 ### W3-FE-001: Expand `TripApiClient` methods
 - **Owner**: Frontend
 - **Estimate**: 3h
-- **Status**: Implemented; client tests updated.
+- **Status**: Implemented; client tests cover expense create/update/delete routes.
 
 ### W3-FE-002: Sync `api-routes` constants
 - **Owner**: Frontend
@@ -237,12 +236,12 @@ demo-only/read-only. Frontend typecheck and targeted app/API tests pass.
 ### W3-FE-007: Update API-mode tests to success-path
 - **Owner**: Frontend
 - **Estimate**: 2h
-- **Status**: Implemented; targeted tests pass.
+- **Status**: Implemented; targeted and full frontend unit tests pass.
 
 ## Wave 4 – Test/Staging Verification
 
-Wave status: test/staging runbook and seed updates added. Full real-system
-verification is still blocked locally until Postgres/psql is available.
+Wave status: test/staging runbook and seed updates added. Local real-system
+verification passed with Docker Postgres and `PSQL='docker exec -i sagittarius-test-postgres psql'`.
 
 ### W4-TEST-001: Test/staging config split
 - **Owner**: DevOps
@@ -257,12 +256,12 @@ verification is still blocked locally until Postgres/psql is available.
 ### W4-TEST-003: API contract + schema validation
 - **Owner**: QA
 - **Estimate**: 3h
-- **Status**: Contract tests added/compiled; DB run blocked by local Postgres setup.
+- **Status**: Contract tests passed against Docker Postgres.
 
 ### W4-TEST-004: Playwright/Cypress journey smoke
 - **Owner**: QA
 - **Estimate**: 6h
-- **Status**: Runbook gate documented; real browser run blocked by local Postgres setup.
+- **Status**: `make frontend-e2e-local` and `make frontend-e2e-auth-browser` passed against real API/browser.
 
 ### W4-TEST-005: Security checklist
 - **Owner**: Security
@@ -272,12 +271,13 @@ verification is still blocked locally until Postgres/psql is available.
 ### W4-TEST-006: Perf smoke + retry/idempotency checks
 - **Owner**: Backend
 - **Estimate**: 3h
-- **Status**: Runbook gate documented; execution pending real test DB.
+- **Status**: Basic suite smoke passed through API contract tests and real API/browser e2e.
 
 ## Wave 5 – Production Readiness Freeze
 
-Wave status: production freeze checklist added and HTTP tracing enabled. Final
-ship remains gated on real staging DB/browser verification.
+Wave status: production freeze checklist added and HTTP tracing enabled. Local
+Docker-backed verification is green; final ship remains gated on staging
+environment sign-off and alert routing.
 
 ### W5-PROD-001: Logging + alerting for writes
 - **Owner**: SRE
@@ -287,7 +287,7 @@ ship remains gated on real staging DB/browser verification.
 ### W5-PROD-002: Rollback plan + migration rollback verification
 - **Owner**: Backend
 - **Estimate**: 2h
-- **Status**: Rollback plan documented; execution pending staging DB.
+- **Status**: Rollback plan documented; execution still required on staging DB.
 
 ### W5-PROD-003: Update production-ready docs
 - **Owner**: Docs
@@ -297,9 +297,9 @@ ship remains gated on real staging DB/browser verification.
 ### W5-PROD-004: Security/a11y/browser final sweep
 - **Owner**: QA
 - **Estimate**: 3h
-- **Status**: Checklist documented; execution pending staging browser run.
+- **Status**: Local browser auth e2e passed; final staging browser sweep still required.
 
-## Wave 2 issue list (current gap snapshot)
+## Wave 2 issue list (implemented in this branch)
 
 - `POST /trips/:tripId/itinerary-items`
 - `PATCH /trips/:tripId/itinerary-items/:itemId`

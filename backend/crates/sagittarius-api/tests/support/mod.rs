@@ -13,6 +13,7 @@ pub const PLAN_ID: &str = "018f4e82-3000-7c00-b111-000000000001";
 pub const ALT_PLAN_ID: &str = "018f4e82-3000-7c00-b111-000000000002";
 pub const ITEM_ID: &str = "018f4e83-5410-7d8b-8f25-fd52c5e7bd1f";
 pub const STOP_NOTE_ID: &str = "018f4e83-5410-7d8b-8f25-fd52c5e7bd30";
+pub const EXPENSE_ID: &str = "018f4e86-1111-7000-8000-000000000001";
 
 pub fn app(pool: PgPool) -> Router {
     sagittarius_api::api::router(sagittarius_api::app::AppState::with_pool(pool))
@@ -157,6 +158,28 @@ pub async fn seed_stop_note(pool: &PgPool) {
     .bind(Uuid::parse_str(TRIP_ID).unwrap())
     .bind(Uuid::parse_str(ITEM_ID).unwrap())
     .bind(Uuid::parse_str(TRAVELER_ID).unwrap())
+    .execute(pool)
+    .await
+    .unwrap();
+}
+
+pub async fn seed_expense(pool: &PgPool) {
+    let owner_id = Uuid::parse_str(OWNER_ID).unwrap();
+    let traveler_id = Uuid::parse_str(TRAVELER_ID).unwrap();
+    sqlx::query(
+        "insert into expenses (
+           id, trip_id, title, amount_minor, currency, paid_by, category, splits, itinerary_item_id
+         )
+         values ($1, $2, 'Dim sum breakfast', 24000, 'HKD', $3, 'food', $4, $5)",
+    )
+    .bind(Uuid::parse_str(EXPENSE_ID).unwrap())
+    .bind(Uuid::parse_str(TRIP_ID).unwrap())
+    .bind(owner_id)
+    .bind(serde_json::json!({
+        owner_id.to_string(): 12000,
+        traveler_id.to_string(): 12000
+    }))
+    .bind(Uuid::parse_str(ITEM_ID).unwrap())
     .execute(pool)
     .await
     .unwrap();

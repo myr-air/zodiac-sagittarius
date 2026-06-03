@@ -141,7 +141,9 @@ async function waitForEmailCode(email: string): Promise<string> {
 }
 
 function latestEmailCode(email: string): string | null {
-  const status = spawnSync(psql, [
+  const [psqlCommand, ...psqlPrefixArgs] = splitCommand(psql);
+  const status = spawnSync(psqlCommand, [
+    ...psqlPrefixArgs,
     databaseUrl,
     "-tAc",
     `select code from email_login_outbox where normalized_email = lower('${email}') order by created_at desc limit 1`,
@@ -156,6 +158,10 @@ function latestEmailCode(email: string): string | null {
   }
 
   return status.stdout.trim() || null;
+}
+
+function splitCommand(command: string): string[] {
+  return command.trim().split(/\s+/).filter(Boolean);
 }
 
 async function waitForHealth(url: string, name: string) {

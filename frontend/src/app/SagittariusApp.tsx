@@ -32,7 +32,7 @@ import { tripFixtureStopNotes, tripFixtureSuggestions, tripFixtureTasks } from "
 import { tripStorageKey } from "@/src/trip/repository";
 import { seedTrip } from "@/src/trip/seed";
 import { approveSuggestion } from "@/src/trip/suggestions";
-import type { ExpenseSummary, ItineraryItem, StopNote, Suggestion, Trip, TripMemberAccessStatus, TripParticipantSession, TripRole, TripTask } from "@/src/trip/types";
+import type { Expense, ExpenseSummary, ItineraryItem, StopNote, Suggestion, Trip, TripMemberAccessStatus, TripParticipantSession, TripRole, TripTask } from "@/src/trip/types";
 
 const localMutationTimestamp = "2026-05-28T00:00:00.000Z";
 const accountSessionStorageKey = "sagittarius-account-session";
@@ -791,6 +791,94 @@ export function SagittariusApp({
     setStopNotes((current) => current.filter((note) => note.id !== noteId || (note.authorId !== currentMember.id && !canEdit)));
   }
 
+  async function createExpense(input: { itemId: string; title: string; amount: number; paidBy: string; category: Expense["category"] }) {
+    if (!canEditExpenses) return;
+    const amountMinor = Math.round(input.amount * 100);
+    const splits = equalExpenseSplits(amountMinor, trip.members.map((member) => member.id));
+    if (isApiMode && resolvedApiClient && participantSession) {
+      const expense = await resolvedApiClient.createExpense(trip.id, participantSession.sessionToken, {
+        clientMutationId: nextClientMutationId("expense-create"),
+        title: input.title,
+        amountMinor,
+        currency: "HKD",
+        paidBy: input.paidBy,
+        category: input.category,
+        splits,
+        itineraryItemId: input.itemId,
+      });
+      setTripState((current) => ({
+        ...current,
+        trip: { ...current.trip, expenses: [...current.trip.expenses, expense] },
+      }));
+      setBackendExpenseSummary(await resolvedApiClient.getExpenseSummary(trip.id, participantSession.sessionToken));
+      return;
+    }
+
+    const expense: Expense = {
+      id: `expense-local-${Date.now().toString(36)}`,
+      tripId: trip.id,
+      title: input.title,
+      amount: input.amount,
+      amountMinor,
+      currency: "HKD",
+      paidBy: input.paidBy,
+      category: input.category,
+      splits,
+      itineraryItemId: input.itemId,
+      version: 1,
+    };
+    commitTrip((current) => ({ ...current, expenses: [...current.expenses, expense] }));
+  }
+
+  async function deleteExpense(expenseId: string) {
+    if (!canEditExpenses) return;
+    if (isApiMode && resolvedApiClient && participantSession) {
+      await resolvedApiClient.deleteExpense(trip.id, expenseId, participantSession.sessionToken);
+      setTripState((current) => ({
+        ...current,
+        trip: { ...current.trip, expenses: current.trip.expenses.filter((expense) => expense.id !== expenseId) },
+      }));
+      setBackendExpenseSummary(await resolvedApiClient.getExpenseSummary(trip.id, participantSession.sessionToken));
+      return;
+    }
+    commitTrip((current) => ({ ...current, expenses: current.expenses.filter((expense) => expense.id !== expenseId) }));
+  }
+
+  async function updateExpense(input: { expenseId: string; title: string; amount: number; paidBy: string; category: Expense["category"] }) {
+    if (!canEditExpenses) return;
+    const existing = trip.expenses.find((expense) => expense.id === input.expenseId);
+    if (!existing) return;
+    const amountMinor = Math.round(input.amount * 100);
+    const splits = equalExpenseSplits(amountMinor, trip.members.map((member) => member.id));
+    if (isApiMode && resolvedApiClient && participantSession) {
+      const expense = await resolvedApiClient.patchExpense(trip.id, input.expenseId, participantSession.sessionToken, {
+        clientMutationId: nextClientMutationId("expense-patch"),
+        expectedVersion: existing.version ?? 1,
+        title: input.title,
+        amountMinor,
+        currency: existing.currency ?? "HKD",
+        paidBy: input.paidBy,
+        category: input.category,
+        splits,
+        itineraryItemId: existing.itineraryItemId ?? null,
+      });
+      setTripState((current) => ({
+        ...current,
+        trip: { ...current.trip, expenses: current.trip.expenses.map((candidate) => (candidate.id === input.expenseId ? expense : candidate)) },
+      }));
+      setBackendExpenseSummary(await resolvedApiClient.getExpenseSummary(trip.id, participantSession.sessionToken));
+      return;
+    }
+    commitTrip((current) => ({
+      ...current,
+      expenses: current.expenses.map((expense) =>
+        expense.id === input.expenseId
+          ? { ...expense, title: input.title, amount: input.amount, amountMinor, paidBy: input.paidBy, category: input.category, splits, version: (expense.version ?? 1) + 1 }
+          : expense,
+      ),
+    }));
+  }
+
   function openExpensesWorkspace() {
     if (supportsContextRail) {
       setContextRailVisibility(true);
@@ -1016,6 +1104,9 @@ export function SagittariusApp({
               canEditExpenses={canEditExpenses}
               open={contextRailOpen}
               onCreateNote={createStopNote}
+              onCreateExpense={createExpense}
+              onUpdateExpense={updateExpense}
+              onDeleteExpense={deleteExpense}
               onDeleteNote={deleteStopNote}
               onEditSelected={() => setDialogState({ mode: "edit", item: selectedItem })}
               onReviewSuggestion={reviewSuggestion}
@@ -1049,6 +1140,19 @@ function getNextSortOrder(items: ItineraryItem[], day: string): number {
 function buildMapLink(place: string): string {
   /* v8 ignore next */
   return place ? `https://maps.google.com/?q=${encodeURIComponent(place)}` : "";
+}
+
+function equalExpenseSplits(amountMinor: number, memberIds: string[]): Record<string, number> {
+  const participantIds = memberIds.length ? memberIds : ["unknown-member"];
+  const baseShare = Math.floor(amountMinor / participantIds.length);
+  let remainder = amountMinor - baseShare * participantIds.length;
+  return Object.fromEntries(
+    participantIds.map((memberId) => {
+      const share = baseShare + (remainder > 0 ? 1 : 0);
+      remainder -= 1;
+      return [memberId, share];
+    }),
+  );
 }
 
 export function nextLocalItemId(items: ItineraryItem[], prefix: string): string {
