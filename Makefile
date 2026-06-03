@@ -12,7 +12,7 @@ ROLLBACK_TEST_DATABASE_URL ?= postgres://postgres:postgres@127.0.0.1:5432/$(ROLL
 PSQL ?= psql
 PSQL_BIN := $(firstword $(PSQL))
 
-.PHONY: backend-dev frontend-dev backend-test frontend-build frontend-test frontend-storybook frontend-verify frontend-e2e-local frontend-e2e-auth-browser verify production-readiness-local db-init db-create db-migrate db-init-test db-migrate-test db-rollback-stop-notes-test db-ensure-psql
+.PHONY: backend-dev frontend-dev backend-test frontend-build frontend-test frontend-storybook frontend-verify frontend-e2e-local frontend-e2e-auth-browser api-trace-smoke verify production-readiness-local db-init db-create db-migrate db-init-test db-migrate-test db-rollback-stop-notes-test db-ensure-psql
 
 backend-dev: db-init
 	DATABASE_URL="$(DATABASE_URL)" SAGITTARIUS_BIND_ADDR="$(SAGITTARIUS_BIND_ADDR)" \
@@ -47,9 +47,14 @@ frontend-e2e-auth-browser: db-init-test
 	DATABASE_URL="$(TEST_DATABASE_URL)" \
 	bun run test:e2e:auth-browser
 
+api-trace-smoke: db-init-test
+	cd $(FRONTEND_DIR) && \
+	DATABASE_URL="$(TEST_DATABASE_URL)" \
+	bun run test:api-trace-smoke
+
 verify: frontend-verify backend-test
 
-production-readiness-local: verify frontend-e2e-local frontend-e2e-auth-browser db-rollback-stop-notes-test
+production-readiness-local: verify frontend-e2e-local frontend-e2e-auth-browser api-trace-smoke db-rollback-stop-notes-test
 
 db-init: db-create
 	@if ! $(PSQL) "$(DATABASE_URL)" -tAc "SELECT 1 FROM information_schema.tables WHERE table_schema='public' AND table_name='trips'" | grep -q 1; then \

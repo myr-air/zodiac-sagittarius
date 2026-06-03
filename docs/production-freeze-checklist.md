@@ -16,6 +16,12 @@ Use this checklist after Wave 4 real-system verification passes in staging.
   - expense routes
   - member management routes
 
+Local trace smoke:
+
+```bash
+make api-trace-smoke PSQL='docker exec -i sagittarius-test-postgres psql'
+```
+
 ## Rollback
 
 Migration `0007_stop_notes.sql` is additive. Rollback options:

@@ -283,7 +283,7 @@ gated on staging environment sign-off, rollback execution, and alert routing.
 ### W5-PROD-001: Logging + alerting for writes
 - **Owner**: SRE
 - **Estimate**: 4h
-- **Status**: HTTP request/response tracing emits at `INFO`, and `RUST_LOG` env filtering is honored by the API binary; alert routing checklist documented.
+- **Status**: HTTP request/response tracing emits at `INFO`, `RUST_LOG` env filtering is honored by the API binary, and local API trace smoke target is available; alert routing checklist documented.
 
 ### W5-PROD-002: Rollback plan + migration rollback verification
 - **Owner**: Backend

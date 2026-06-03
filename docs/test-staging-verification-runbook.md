@@ -33,6 +33,7 @@ make production-readiness-local PSQL='docker exec -i sagittarius-test-postgres p
 make verify PSQL='docker exec -i sagittarius-test-postgres psql'
 make frontend-e2e-local PSQL='docker exec -i sagittarius-test-postgres psql'
 make frontend-e2e-auth-browser PSQL='docker exec -i sagittarius-test-postgres psql'
+make api-trace-smoke PSQL='docker exec -i sagittarius-test-postgres psql'
 make db-rollback-stop-notes-test PSQL='docker exec -i sagittarius-test-postgres psql'
 ```
 
@@ -106,3 +107,4 @@ Latest local evidence on 2026-06-03:
 - `make verify PSQL='docker exec -i sagittarius-test-postgres psql'` passed.
 - `make frontend-e2e-local PSQL='docker exec -i sagittarius-test-postgres psql'` passed.
 - `make frontend-e2e-auth-browser PSQL='docker exec -i sagittarius-test-postgres psql'` passed.
+- `make api-trace-smoke PSQL='docker exec -i sagittarius-test-postgres psql'` passed.
