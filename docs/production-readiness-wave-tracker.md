@@ -31,7 +31,7 @@ wave plan for stop notes. Current implementation was audited against
 | Plan variants | `POST/PATCH/PUBLISH /plan-variants` | Missing | Missing | Future gap |
 | Itinerary create | `POST /api/v1/trips/:tripId/itinerary-items` | Implemented | Implemented | W2-API-003, W3-FE-005 |
 | Itinerary patch | `PATCH /api/v1/trips/:tripId/itinerary-items/:itemId` | Implemented | Implemented | Existing |
-| Itinerary delete | `DELETE /api/v1/trips/:tripId/itinerary-items/:itemId` | Implemented | API client support; direct UI delete remains product-dependent | W2-API-004, W3-FE-005 |
+| Itinerary delete | `DELETE /api/v1/trips/:tripId/itinerary-items/:itemId` | Implemented | Implemented from edit stop dialog | W2-API-004, W3-FE-005 |
 | Itinerary reorder | `PATCH /api/v1/trips/:tripId/itinerary-items/order` | Implemented | Implemented | W2-API-005, W3-FE-005 |
 | Suggestions | `POST/PATCH /suggestions` | Implemented | Implemented | Existing |
 | Tasks | `POST/PATCH /tasks` | Implemented extension beyond spec | Implemented | Existing |
@@ -226,7 +226,7 @@ demo-only/read-only. Frontend typecheck, targeted tests, and full unit suite pas
 ### W3-FE-005: Wire itinerary create/delete/reorder to API
 - **Owner**: Frontend
 - **Estimate**: 4h
-- **Status**: Create/reorder implemented; delete client method exists for API route.
+- **Status**: Create/reorder/delete implemented; delete is available from the edit stop dialog.
 
 ### W3-FE-006: Wire stop-note create/delete persistence
 - **Owner**: Frontend
@@ -261,7 +261,7 @@ verification passed with Docker Postgres and `PSQL='docker exec -i sagittarius-t
 ### W4-TEST-004: Playwright/Cypress journey smoke
 - **Owner**: QA
 - **Estimate**: 6h
-- **Status**: `make frontend-e2e-local` and `make frontend-e2e-auth-browser` passed against real API/browser.
+- **Status**: `make frontend-e2e-local` covers real API itinerary create/reorder/delete, expense CRUD, stop-note CRUD, and portal to-dos; `make frontend-e2e-auth-browser` passed against real API/browser.
 
 ### W4-TEST-005: Security checklist
 - **Owner**: Security

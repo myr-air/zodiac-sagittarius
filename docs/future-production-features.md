@@ -6,7 +6,7 @@ These are intentionally outside the current production connectivity pivot.
 
 - Stop notes persist through backend endpoints.
 - Member create/update/reset claim flows have backend endpoints and frontend API wiring.
-- Itinerary create/reorder API wiring is live; delete has backend/client support.
+- Itinerary create/reorder/delete API wiring is live; delete is available from the edit stop dialog.
 - Expense create/update/delete is wired through backend APIs from the context rail, with summary reload support.
 - Local Docker-backed API/browser verification passed for the production-readiness wave.
 

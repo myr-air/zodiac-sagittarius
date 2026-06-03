@@ -471,6 +471,7 @@ export const messages = {
         cancel: "Cancel",
         create: "Save activity",
         edit: "Save changes",
+        delete: "Delete stop",
       },
     },
     suggestions: {
@@ -1243,6 +1244,7 @@ export const messages = {
         cancel: "ยกเลิก",
         create: "บันทึกกิจกรรม",
         edit: "บันทึกการแก้ไข",
+        delete: "ลบจุดนี้",
       },
     },
     suggestions: {

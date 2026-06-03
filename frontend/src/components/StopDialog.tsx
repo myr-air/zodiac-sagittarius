@@ -19,6 +19,7 @@ interface StopDialogProps {
   mode: "create" | "edit";
   initialItem?: ItineraryItem;
   onClose: () => void;
+  onDelete?: () => void;
   onSubmit: (values: StopFormValues) => void;
 }
 
@@ -29,7 +30,8 @@ const dialogTitleRowClassName = "dialog-title-row grid min-h-[54px] grid-cols-[m
 const stopFormClassName = "stop-form grid gap-4 p-4";
 const dialogGridClassName = "dialog-grid grid grid-cols-2 gap-3 max-[767px]:grid-cols-1 [&_input]:min-h-[38px] [&_input]:w-full [&_input]:rounded-[var(--radius-sm)] [&_input]:border [&_input]:border-[var(--color-border-strong)] [&_input]:bg-[var(--color-surface)] [&_input]:px-2.5 [&_input]:py-2 [&_input]:text-[13px] [&_input]:text-[var(--color-text)] [&_label]:grid [&_label]:min-w-0 [&_label]:gap-1.5 [&_label>span]:text-xs [&_label>span]:font-bold [&_label>span]:text-[var(--color-text-muted)] [&_select]:min-h-[38px] [&_select]:w-full [&_select]:rounded-[var(--radius-sm)] [&_select]:border [&_select]:border-[var(--color-border-strong)] [&_select]:bg-[var(--color-surface)] [&_select]:px-2.5 [&_select]:py-2 [&_select]:text-[13px] [&_select]:text-[var(--color-text)] [&_textarea]:min-h-[38px] [&_textarea]:w-full [&_textarea]:resize-y [&_textarea]:rounded-[var(--radius-sm)] [&_textarea]:border [&_textarea]:border-[var(--color-border-strong)] [&_textarea]:bg-[var(--color-surface)] [&_textarea]:px-2.5 [&_textarea]:py-2 [&_textarea]:text-[13px] [&_textarea]:text-[var(--color-text)]";
 const dialogFieldWideClassName = "dialog-field-wide col-span-full";
-const dialogActionsClassName = "dialog-actions flex justify-end gap-2.5 max-[767px]:grid";
+const dialogActionsClassName = "dialog-actions grid grid-cols-[auto_1fr_auto] items-center gap-2.5 max-[767px]:grid-cols-1";
+const dialogPrimaryActionsClassName = "dialog-primary-actions flex justify-end gap-2.5 max-[767px]:grid";
 
 const fieldIds = {
   activity: "stop-activity",
@@ -42,7 +44,7 @@ const fieldIds = {
   transportation: "stop-transportation",
 };
 
-export function StopDialog({ mode, initialItem, onClose, onSubmit }: StopDialogProps) {
+export function StopDialog({ mode, initialItem, onClose, onDelete, onSubmit }: StopDialogProps) {
   const { locale, t } = useI18n();
   const [values, setValues] = useState<StopFormValues>(() => ({
     startTime: initialItem?.startTime ?? "16:30",
@@ -142,8 +144,14 @@ export function StopDialog({ mode, initialItem, onClose, onSubmit }: StopDialogP
           </div>
 
           <div className={dialogActionsClassName}>
-            <Button type="button" variant="ghost" onClick={onClose}>{t.stopDialog.actions.cancel}</Button>
-            <Button type="submit">{mode === "create" ? t.stopDialog.actions.create : t.stopDialog.actions.edit}</Button>
+            {mode === "edit" && onDelete ? (
+              <Button type="button" variant="danger" onClick={onDelete}>{t.stopDialog.actions.delete}</Button>
+            ) : <span />}
+            <span />
+            <div className={dialogPrimaryActionsClassName}>
+              <Button type="button" variant="ghost" onClick={onClose}>{t.stopDialog.actions.cancel}</Button>
+              <Button type="submit">{mode === "create" ? t.stopDialog.actions.create : t.stopDialog.actions.edit}</Button>
+            </div>
           </div>
         </form>
       </section>

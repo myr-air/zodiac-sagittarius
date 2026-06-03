@@ -1036,6 +1036,40 @@ describe("Sagittarius cockpit UI", () => {
     expect(screen.getByText(/Explorer Friend เสนอการปรับแผน/i)).toBeInTheDocument();
   });
 
+  it("deletes itinerary stops through the API client in API mode", async () => {
+    const user = userEvent.setup();
+    installLocalStorageStub();
+    const selectedItem = seedTrip.itineraryItems.find((item) => item.id === "item-dimdim")!;
+    const nextItem = seedTrip.itineraryItems.find((item) => item.id !== selectedItem.id)!;
+    const ownerTrip = {
+      ...seedTrip,
+      joinPasswordHash: "",
+      members: [{ ...seedTrip.members[0], claimPasswordHash: null }],
+    };
+    const cockpit: TripCockpit = {
+      trip: ownerTrip,
+      suggestions: [],
+      tasks: [],
+      stopNotes: [],
+      expenseSummary: null,
+    };
+    const apiClient = createApiClientForTrip(ownerTrip, {
+      loadTrip: vi.fn().mockResolvedValue(cockpit),
+      deleteItineraryItem: vi.fn().mockResolvedValue({ ...selectedItem, version: selectedItem.version + 1 }),
+    });
+
+    render(<SagittariusApp requireJoin dataSource="api" initialView="itinerary" apiClient={apiClient} />);
+
+    await loginApiTrip(user);
+    await user.click(await screen.findByRole("button", { name: /เปิดรายละเอียด/i }));
+    await user.click(screen.getByRole("button", { name: /แก้ไขรายละเอียด/i }));
+    await user.click(screen.getByRole("button", { name: /ลบจุดนี้/i }));
+
+    expect(apiClient.deleteItineraryItem).toHaveBeenCalledWith(ownerTrip.id, selectedItem.id, "session-token");
+    expect(screen.queryByText(selectedItem.activity)).not.toBeInTheDocument();
+    expect(screen.getAllByText(nextItem.activity).length).toBeGreaterThan(0);
+  });
+
   it("exposes production write surfaces in API mode when backend routes exist", async () => {
     const user = userEvent.setup();
     installLocalStorageStub();
@@ -1914,7 +1948,7 @@ async function loginApiTrip(user: ReturnType<typeof userEvent.setup>) {
   await user.click(screen.getByRole("button", { name: /เริ่มใช้งาน/i }));
 }
 
-function createApiClientForTrip(trip: Trip): TripApiClient {
+function createApiClientForTrip(trip: Trip, overrides: Partial<TripApiClient> = {}): TripApiClient {
   const cockpit: TripCockpit = {
     trip,
     suggestions: [],
@@ -1980,6 +2014,7 @@ function createApiClientForTrip(trip: Trip): TripApiClient {
     createExpense: vi.fn(),
     patchExpense: vi.fn(),
     deleteExpense: vi.fn(),
+    ...overrides,
   };
 }
 

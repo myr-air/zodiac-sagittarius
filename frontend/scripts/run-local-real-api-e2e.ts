@@ -11,20 +11,23 @@ async function main() {
     DATABASE_URL: databaseUrl,
   });
 
-  const api = spawn("cargo", ["run", "--manifest-path", backendManifest, "--bin", "sagittarius-api"], {
-    cwd: process.cwd(),
-    env: {
-      ...process.env,
-      DATABASE_URL: databaseUrl,
-      SAGITTARIUS_BIND_ADDR: bindAddress,
-    },
-    stdio: ["ignore", "pipe", "pipe"],
-  });
+  const existingApiHealthy = await isHealthy(apiBaseUrl);
+  const api = existingApiHealthy
+    ? null
+    : spawn("cargo", ["run", "--manifest-path", backendManifest, "--bin", "sagittarius-api"], {
+        cwd: process.cwd(),
+        env: {
+          ...process.env,
+          DATABASE_URL: databaseUrl,
+          SAGITTARIUS_BIND_ADDR: bindAddress,
+        },
+        stdio: ["ignore", "pipe", "pipe"],
+      });
 
-  api.stdout.setEncoding("utf8");
-  api.stderr.setEncoding("utf8");
-  api.stdout.on("data", (chunk) => process.stdout.write(chunk));
-  api.stderr.on("data", (chunk) => process.stderr.write(chunk));
+  api?.stdout.setEncoding("utf8");
+  api?.stderr.setEncoding("utf8");
+  api?.stdout.on("data", (chunk) => process.stdout.write(chunk));
+  api?.stderr.on("data", (chunk) => process.stderr.write(chunk));
 
   try {
     await waitForHealth(apiBaseUrl);
@@ -35,7 +38,16 @@ async function main() {
       SAGITTARIUS_E2E_PARTICIPANT_PASSWORD: "1234",
     });
   } finally {
-    api.kill("SIGTERM");
+    api?.kill("SIGTERM");
+  }
+}
+
+async function isHealthy(baseUrl: string): Promise<boolean> {
+  try {
+    const response = await fetch(`${baseUrl}/api/v1/health`);
+    return response.ok;
+  } catch {
+    return false;
   }
 }
 

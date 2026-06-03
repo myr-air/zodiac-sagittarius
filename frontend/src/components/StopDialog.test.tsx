@@ -33,10 +33,14 @@ describe("StopDialog", () => {
 
   it("prefills edit mode from the selected itinerary item and closes from both controls", async () => {
     const onClose = vi.fn();
-    render(<StopDialog mode="edit" initialItem={tripFixture.planItems[0]} onClose={onClose} onSubmit={vi.fn()} />);
+    const onDelete = vi.fn();
+    render(<StopDialog mode="edit" initialItem={tripFixture.planItems[0]} onClose={onClose} onDelete={onDelete} onSubmit={vi.fn()} />);
 
     expect(screen.getByRole("heading", { name: "แก้ไขรายละเอียด" })).toBeInTheDocument();
     expect(screen.getByDisplayValue(tripFixture.planItems[0].activity)).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole("button", { name: "ลบจุดนี้" }));
+    expect(onDelete).toHaveBeenCalledTimes(1);
 
     await userEvent.click(screen.getByRole("button", { name: "ยกเลิก" }));
     await userEvent.click(screen.getByRole("button", { name: "ปิดฟอร์ม" }));
@@ -52,5 +56,6 @@ describe("StopDialog", () => {
     expect(screen.getByLabelText("ชั่วโมง")).toBeInTheDocument();
     expect(screen.getByLabelText("นาที")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "ปิดฟอร์ม" }).querySelector("svg path")).toHaveAttribute("d", "M18 6 6 18M6 6l12 12");
+    expect(screen.queryByRole("button", { name: "ลบจุดนี้" })).not.toBeInTheDocument();
   });
 });

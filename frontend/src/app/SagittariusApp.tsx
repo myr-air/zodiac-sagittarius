@@ -481,6 +481,39 @@ export function SagittariusApp({
     setDialogState(null);
   }
 
+  async function deleteSelectedStop() {
+    /* v8 ignore next */
+    if (dialogState?.mode !== "edit" || !canEdit) return;
+    const itemId = dialogState.item.id;
+    const remainingItems = trip.itineraryItems.filter((item) => item.id !== itemId);
+    const nextSelectedItemId = remainingItems[0]?.id ?? "";
+    if (isApiMode && resolvedApiClient && participantSession) {
+      await resolvedApiClient.deleteItineraryItem(trip.id, itemId, participantSession.sessionToken);
+      setTripState((current) => ({
+        ...current,
+        trip: {
+          ...current.trip,
+          itineraryItems: current.trip.itineraryItems.filter((item) => item.id !== itemId),
+          expenses: current.trip.expenses.filter((expense) => expense.itineraryItemId !== itemId),
+        },
+      }));
+      setSelectedItemId(nextSelectedItemId);
+      setContextRailVisibility(Boolean(nextSelectedItemId));
+      setDialogState(null);
+      return;
+    }
+    commitTrip(
+      (current) => ({
+        ...current,
+        itineraryItems: current.itineraryItems.filter((item) => item.id !== itemId),
+        expenses: current.expenses.filter((expense) => expense.itineraryItemId !== itemId),
+      }),
+      nextSelectedItemId,
+    );
+    setContextRailVisibility(Boolean(nextSelectedItemId));
+    setDialogState(null);
+  }
+
   function commitTrip(updater: (current: Trip) => Trip, nextSelectedItemId?: string) {
     setTripState((current) => {
       const nextTrip = updater(current.trip);
@@ -1123,6 +1156,7 @@ export function SagittariusApp({
             mode={dialogState.mode}
             initialItem={dialogState.mode === "edit" ? dialogState.item : undefined}
             onClose={() => setDialogState(null)}
+            onDelete={dialogState.mode === "edit" ? deleteSelectedStop : undefined}
             onSubmit={dialogState.mode === "edit" ? updateSelectedStop : createStop}
           />
         ) : null}
