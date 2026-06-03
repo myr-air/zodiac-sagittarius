@@ -289,6 +289,8 @@ Backend and frontend Dockerfiles plus `make container-build` now provide a
 repeatable production image build path.
 The API exposes `/api/v1/health` for liveness and `/api/v1/readiness` for
 database-backed traffic readiness.
+Staging preflight enforces those probes when
+`SAGITTARIUS_REQUIRE_PREFLIGHT_API_CHECK=1` is set.
 Final ship remains gated on staging environment sign-off, rollback execution,
 and alert routing; `make staging-signoff-check` now enforces those external
 evidence fields, and `make production-env-check` blocks unsafe production

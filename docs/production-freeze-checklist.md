@@ -7,6 +7,7 @@ Use this checklist after Wave 4 real-system verification passes in staging.
 - Run staging preflight before e2e or rollback checks:
 
 ```bash
+SAGITTARIUS_REQUIRE_PREFLIGHT_API_CHECK=1 \
 make staging-preflight PSQL='docker exec -i sagittarius-test-postgres psql'
 ```
 

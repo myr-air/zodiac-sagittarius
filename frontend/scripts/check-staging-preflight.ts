@@ -11,6 +11,10 @@ checkApiBaseUrl(apiBaseUrl);
 checkRustLog(rustLog);
 checkPsql(psql, databaseUrl);
 
+if (process.env.SAGITTARIUS_REQUIRE_PREFLIGHT_API_CHECK === "1") {
+  await checkApiRuntime(apiBaseUrl);
+}
+
 if (failures.length > 0) {
   throw new Error(`Staging preflight failed:\n- ${failures.join("\n- ")}`);
 }
@@ -95,6 +99,33 @@ function checkPsql(command: string, url: string) {
   });
   if (check.status !== 0) {
     failures.push(`PSQL cannot connect to DATABASE_URL: ${check.stderr.trim() || "unknown error"}`);
+  }
+}
+
+async function checkApiRuntime(baseUrl: string) {
+  if (!baseUrl) return;
+  await checkApiEndpoint(baseUrl, "/api/v1/health", "ok", "API liveness");
+  await checkApiEndpoint(baseUrl, "/api/v1/readiness", '{"status":"ready"}', "API readiness");
+}
+
+async function checkApiEndpoint(baseUrl: string, path: string, expectedBody: string, label: string) {
+  let response: Response;
+  try {
+    response = await fetch(new URL(path, baseUrl), {
+      signal: AbortSignal.timeout(5_000),
+    });
+  } catch (error) {
+    failures.push(`${label} check failed: ${error instanceof Error ? error.message : "request failed"}`);
+    return;
+  }
+
+  const body = (await response.text()).trim();
+  if (!response.ok) {
+    failures.push(`${label} check returned ${response.status}: ${body || "empty response"}`);
+    return;
+  }
+  if (body !== expectedBody) {
+    failures.push(`${label} check returned unexpected body: ${body || "empty response"}`);
   }
 }
 

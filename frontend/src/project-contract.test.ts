@@ -209,6 +209,10 @@ describe("Sagittarius project scaffold", () => {
     expect(productionEnvCheck).toContain("EMAIL_DELIVERY");
     expect(productionEnvCheck).toContain("PASSKEY_ALLOWED_ORIGINS");
     expect(productionEnvCheck).toContain("SMTP_PASSWORD");
+    const stagingPreflight = readFileSync(join(frontendRoot, "scripts/check-staging-preflight.ts"), "utf8");
+    expect(stagingPreflight).toContain("SAGITTARIUS_REQUIRE_PREFLIGHT_API_CHECK");
+    expect(stagingPreflight).toContain("/api/v1/health");
+    expect(stagingPreflight).toContain("/api/v1/readiness");
     expect(packageJson.scripts?.start).toContain("${HOSTNAME:-127.0.0.1}");
     expect(workflow).toContain("postgres:17-alpine");
     expect(workflow).toContain("bun install --frozen-lockfile");

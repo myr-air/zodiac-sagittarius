@@ -52,6 +52,8 @@ Run these before staging sign-off:
 
 ```bash
 make production-readiness-local PSQL='docker exec -i sagittarius-test-postgres psql'
+SAGITTARIUS_REQUIRE_PREFLIGHT_API_CHECK=1 \
+make staging-preflight PSQL='docker exec -i sagittarius-test-postgres psql'
 ```
 
 Probe staging API runtime before browser sign-off:
@@ -59,6 +61,8 @@ Probe staging API runtime before browser sign-off:
 - `GET /api/v1/health` returns `200 ok` without requiring auth.
 - `GET /api/v1/readiness` returns `200 {"status":"ready"}` only when the API can
   query the staging database.
+- Set `SAGITTARIUS_REQUIRE_PREFLIGHT_API_CHECK=1` for real staging so the
+  preflight script fails when either probe is unhealthy.
 
 Then run browser/core journeys against real API:
 
