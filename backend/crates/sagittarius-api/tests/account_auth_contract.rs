@@ -720,6 +720,68 @@ async fn preexisting_normalized_email_resumes_existing_user(pool: sqlx::PgPool) 
 }
 
 #[sqlx::test(migrations = "../../migrations")]
+async fn email_login_reuses_existing_user_without_orphan_user_rows(pool: sqlx::PgPool) {
+    let app = support::app(pool.clone());
+
+    let first_start = start_email_login_with_code(&pool, app.clone(), "  New@example.com  ").await;
+    let (first_status, first_session): (StatusCode, Value) = post_json_response(
+        app.clone(),
+        "/api/v1/auth/email/sessions",
+        json!({
+            "challengeId": first_start.0["challengeId"],
+            "code": first_start.1,
+            "trustDevice": false,
+            "deviceLabel": ""
+        }),
+    )
+    .await;
+    assert_eq!(first_status, StatusCode::OK);
+    let user_id = Uuid::parse_str(first_session["userId"].as_str().unwrap()).unwrap();
+
+    let total_users_after_first: i64 = sqlx::query_scalar("select count(*) from users")
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+    assert_eq!(total_users_after_first, 1);
+    let email_rows_after_first: i64 =
+        sqlx::query_scalar("select count(*) from user_emails where user_id = $1")
+            .bind(user_id)
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+    assert_eq!(email_rows_after_first, 1);
+
+    let second_start = start_email_login_with_code(&pool, app.clone(), "new@EXAMPLE.com").await;
+    let (second_status, second_session): (StatusCode, Value) = post_json_response(
+        app,
+        "/api/v1/auth/email/sessions",
+        json!({
+            "challengeId": second_start.0["challengeId"],
+            "code": second_start.1,
+            "trustDevice": false,
+            "deviceLabel": ""
+        }),
+    )
+    .await;
+    assert_eq!(second_status, StatusCode::OK);
+    let reused_user_id = Uuid::parse_str(second_session["userId"].as_str().unwrap()).unwrap();
+    assert_eq!(reused_user_id, user_id);
+
+    let total_users_after_second: i64 = sqlx::query_scalar("select count(*) from users")
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+    assert_eq!(total_users_after_second, 1);
+    let normalized_user_email_count: i64 = sqlx::query_scalar(
+        "select count(*) from user_emails where normalized_email = 'new@example.com'",
+    )
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(normalized_user_email_count, 1);
+}
+
+#[sqlx::test(migrations = "../../migrations")]
 async fn disabled_user_email_login_is_forbidden_and_creates_no_session(pool: sqlx::PgPool) {
     let disabled_user_id = Uuid::parse_str("018f4e80-0000-7000-a000-000000000001").unwrap();
     sqlx::query(

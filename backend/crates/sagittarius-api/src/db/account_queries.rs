@@ -57,6 +57,20 @@ pub async fn lock_email_login_challenge(
     .await
 }
 
+pub async fn find_email_login_challenge(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    challenge_id: Uuid,
+) -> Result<Option<EmailLoginChallengeRecord>, sqlx::Error> {
+    sqlx::query_as::<_, EmailLoginChallengeRecord>(
+        "select id, normalized_email, code_hash, attempt_count, expires_at, locked_at, consumed_at
+         from email_login_challenges
+         where id = $1",
+    )
+    .bind(challenge_id)
+    .fetch_optional(&mut **tx)
+    .await
+}
+
 pub async fn lock_email_login_start_for_email(
     tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
     normalized_email: &str,
@@ -178,9 +192,9 @@ pub async fn insert_user_email_or_resume(
            set
              normalized_email = excluded.normalized_email,
              verified_at = coalesce(user_emails.verified_at, excluded.verified_at)
-           returning user_id
+           returning user_id, verified_at
          )
-         select upserted.user_id, users.disabled_at
+         select upserted.user_id, users.disabled_at, upserted.verified_at
          from upserted
          join users on users.id = upserted.user_id",
     )
@@ -204,6 +218,39 @@ pub async fn insert_user(
     .bind(user.id)
     .bind(user.display_name)
     .bind(user.avatar_color)
+    .execute(&mut **tx)
+    .await?;
+
+    Ok(())
+}
+
+pub async fn find_user_email_record(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    normalized_email: &str,
+) -> Result<Option<UserEmailRecord>, sqlx::Error> {
+    sqlx::query_as::<_, UserEmailRecord>(
+        "select ue.user_id, u.disabled_at, ue.verified_at
+         from user_emails ue
+         join users u on u.id = ue.user_id
+         where ue.normalized_email = $1",
+    )
+    .bind(normalized_email)
+    .fetch_optional(&mut **tx)
+    .await
+}
+
+pub async fn verify_user_email_for_normalized_email_if_unverified(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    normalized_email: &str,
+    verified_at: OffsetDateTime,
+) -> Result<(), sqlx::Error> {
+    sqlx::query(
+        "update user_emails
+         set verified_at = $2
+         where normalized_email = $1 and verified_at is null",
+    )
+    .bind(normalized_email)
+    .bind(verified_at)
     .execute(&mut **tx)
     .await?;
 

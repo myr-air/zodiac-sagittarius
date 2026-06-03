@@ -1,6 +1,6 @@
 pub mod account;
-pub mod email;
 pub mod auth;
+pub mod email;
 pub mod events;
 pub mod itinerary;
 pub mod suggestions;
@@ -27,8 +27,10 @@ impl AppState {
     }
 
     pub fn test() -> Self {
+        let database_url = std::env::var("DATABASE_URL")
+            .unwrap_or_else(|_| "postgres://sagittarius:sagittarius@localhost/sagittarius".to_string());
         let pool = sqlx::postgres::PgPoolOptions::new()
-            .connect_lazy("postgres://sagittarius:sagittarius@localhost/sagittarius")
+            .connect_lazy(&database_url)
             .expect("test database URL should be valid");
 
         Self::with_pool(pool)

@@ -1,12 +1,11 @@
 use std::fmt;
+use std::io::Write;
 use std::process::{Command as StdCommand, Stdio};
-use std::thread;
 
 use lettre::message::Mailbox;
 use lettre::transport::smtp::authentication::Credentials;
 use lettre::{Message, SmtpTransport, Transport};
 use time::OffsetDateTime;
-use tokio::sync::oneshot;
 use tracing::{error, info, warn};
 use uuid::Uuid;
 
@@ -111,7 +110,15 @@ impl EmailDelivery {
                 Ok(())
             }
             EmailDelivery::Sendmail { command, from } => {
-                send_via_sendmail(command, from, email, code, challenge_id, expires_at).await
+                send_via_sendmail(SendmailDeliveryRequest {
+                    command: command.to_string(),
+                    from: from.to_string(),
+                    to: email.to_string(),
+                    code: code.to_string(),
+                    challenge_id,
+                    expires_at: expires_at.to_string(),
+                })
+                .await
             }
             EmailDelivery::Smtp {
                 host,
@@ -120,101 +127,87 @@ impl EmailDelivery {
                 password,
                 from,
             } => {
-                send_via_smtp(
-                    host,
-                    *port,
-                    username,
-                    password,
-                    from,
-                    email,
-                    code,
+                send_via_smtp(SmtpDeliveryRequest {
+                    host: host.to_string(),
+                    port: *port,
+                    username: username.to_string(),
+                    password: password.to_string(),
+                    from: from.to_string(),
+                    to: email.to_string(),
+                    code: code.to_string(),
                     challenge_id,
-                    expires_at,
-                )
+                    expires_at: expires_at.to_string(),
+                })
                 .await
             }
         }
     }
 }
 
-async fn send_via_smtp(
-    host: &str,
+struct SmtpDeliveryRequest {
+    host: String,
     port: u16,
-    username: &str,
-    password: &str,
-    from: &str,
-    to: &str,
-    code: &str,
+    username: String,
+    password: String,
+    from: String,
+    to: String,
+    code: String,
     challenge_id: Uuid,
-    expires_at: &str,
-) -> Result<(), ServiceError> {
-    let host = host.to_string();
-    let username = username.to_string();
-    let password = password.to_string();
-    let from = from.to_string();
-    let to = to.to_string();
-    let code = code.to_string();
-    let expires_at = expires_at.to_string();
+    expires_at: String,
+}
 
-    let (tx, rx) = oneshot::channel();
+struct SendmailDeliveryRequest {
+    command: String,
+    from: String,
+    to: String,
+    code: String,
+    challenge_id: Uuid,
+    expires_at: String,
+}
 
-    thread::spawn(move || {
-        let result = send_with_smtp(
-            &host,
-            port,
-            &username,
-            &password,
-            &from,
-            &to,
-            &code,
-            challenge_id,
-            &expires_at,
-        );
-        let _ = tx.send(result);
-    });
-
-    rx.await
+async fn send_via_smtp(request: SmtpDeliveryRequest) -> Result<(), ServiceError> {
+    tokio::task::spawn_blocking(move || send_with_smtp(request))
+        .await
         .map_err(|_| ServiceError::EmailDelivery("email delivery task failed".to_string()))?
 }
 
-fn send_with_smtp(
-    host: &str,
-    port: u16,
-    username: &str,
-    password: &str,
-    from: &str,
-    to: &str,
-    code: &str,
-    challenge_id: Uuid,
-    expires_at: &str,
-) -> Result<(), ServiceError> {
-    if username.trim().is_empty() || password.trim().is_empty() {
+fn send_with_smtp(request: SmtpDeliveryRequest) -> Result<(), ServiceError> {
+    if request.username.trim().is_empty() || request.password.trim().is_empty() {
         return Err(ServiceError::EmailDelivery(
             "smtp credentials are not configured".to_string(),
         ));
     }
 
     let email = Message::builder()
-        .from(parse_mailbox(from, "sender")?)
-        .to(parse_mailbox(to, "recipient")?)
+        .from(parse_mailbox(&request.from, "sender")?)
+        .to(parse_mailbox(&request.to, "recipient")?)
         .subject("[Sagittarius] รหัสยืนยันการเข้าสู่ระบบ")
-        .body(compose_login_email_body(code, challenge_id, expires_at))
+        .body(compose_login_email_body(
+            &request.code,
+            request.challenge_id,
+            &request.expires_at,
+        ))
         .map_err(|cause| {
             error!(error = %cause, "failed to build smtp email");
             ServiceError::EmailDelivery("email message build failed".to_string())
         })?;
 
-    let mailer = SmtpTransport::starttls_relay(host)
+    let mailer = SmtpTransport::starttls_relay(&request.host)
         .map_err(|cause| {
-            error!(host = %host, error = %cause, "failed to configure smtp relay");
+            error!(host = %request.host, error = %cause, "failed to configure smtp relay");
             ServiceError::EmailDelivery("smtp relay configuration failed".to_string())
         })?
-        .port(port)
-        .credentials(Credentials::new(username.to_string(), password.to_string()))
+        .port(request.port)
+        .credentials(Credentials::new(request.username, request.password))
         .build();
 
     mailer.send(&email).map_err(|cause| {
-        error!(host = %host, port = port, error = %cause, "smtp send failed");
+        error!(
+            host = %request.host,
+            port = request.port,
+            error = %cause,
+            "smtp send failed"
+        );
         ServiceError::EmailDelivery("smtp send failed".to_string())
     })?;
 
@@ -228,28 +221,21 @@ fn parse_mailbox(address: &str, label: &str) -> Result<Mailbox, ServiceError> {
     })
 }
 
-async fn send_via_sendmail(
-    command: &str,
-    from: &str,
-    to: &str,
-    code: &str,
-    challenge_id: Uuid,
-    expires_at: &str,
-) -> Result<(), ServiceError> {
-    let message = compose_login_email(from, to, code, challenge_id, expires_at);
-
-    let command = command.to_string();
-    let from = from.to_string();
-
-    let (tx, rx) = oneshot::channel();
-
-    thread::spawn(move || {
-        let result = send_with_command(&command, &from, message);
-        let _ = tx.send(result);
-    });
-
-    rx.await
+async fn send_via_sendmail(request: SendmailDeliveryRequest) -> Result<(), ServiceError> {
+    tokio::task::spawn_blocking(move || send_with_sendmail(request))
+        .await
         .map_err(|_| ServiceError::EmailDelivery("email delivery task failed".to_string()))?
+}
+
+fn send_with_sendmail(request: SendmailDeliveryRequest) -> Result<(), ServiceError> {
+    let message = compose_login_email(
+        &request.from,
+        &request.to,
+        &request.code,
+        request.challenge_id,
+        &request.expires_at,
+    );
+    send_with_command(&request.command, &request.from, message)
 }
 
 fn send_with_command(command: &str, from: &str, message: String) -> Result<(), ServiceError> {
@@ -270,7 +256,6 @@ fn send_with_command(command: &str, from: &str, message: String) -> Result<(), S
         ));
     };
 
-    use std::io::Write;
     stdin.write_all(message.as_bytes()).map_err(|cause| {
         error!(error = %cause, "failed to write email payload");
         ServiceError::EmailDelivery("email delivery write failed".to_string())

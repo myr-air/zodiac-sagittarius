@@ -87,6 +87,7 @@ pub struct EmailLoginChallengeRecord {
 pub struct UserEmailRecord {
     pub user_id: Uuid,
     pub disabled_at: Option<OffsetDateTime>,
+    pub verified_at: Option<OffsetDateTime>,
 }
 
 #[derive(Debug, Clone, FromRow)]

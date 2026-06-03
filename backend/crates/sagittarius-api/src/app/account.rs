@@ -200,6 +200,11 @@ pub async fn finish_email_login(
     device_label: &str,
 ) -> Result<AccountSession, ServiceError> {
     let mut tx = pool.begin().await?;
+    let challenge = db::account_queries::find_email_login_challenge(&mut tx, challenge_id)
+        .await?
+        .ok_or(ServiceError::Unauthenticated)?;
+
+    db::account_queries::lock_email_login_start_for_email(&mut tx, &challenge.normalized_email).await?;
     let challenge = db::account_queries::lock_email_login_challenge(&mut tx, challenge_id)
         .await?
         .ok_or(ServiceError::Unauthenticated)?;
@@ -993,6 +998,23 @@ async fn find_or_create_user(
     normalized_email: &str,
     verified_at: OffsetDateTime,
 ) -> Result<Uuid, ServiceError> {
+    if let Some(existing) =
+        db::account_queries::find_user_email_record(tx, normalized_email).await?
+    {
+        if existing.disabled_at.is_some() {
+            return Err(ServiceError::Forbidden);
+        }
+        if existing.verified_at.is_none() {
+            db::account_queries::verify_user_email_for_normalized_email_if_unverified(
+                tx,
+                normalized_email,
+                verified_at,
+            )
+            .await?;
+        }
+        return Ok(existing.user_id);
+    }
+
     let user_id = Uuid::now_v7();
     db::account_queries::insert_user(
         tx,
@@ -1147,9 +1169,11 @@ fn validate_account_password(password: &str) -> Result<String, ServiceError> {
 fn map_account_trip_insert_error(error: sqlx::Error) -> ServiceError {
     let duplicate_join_id = is_unique_violation_on_constraint(&error, "trips_join_id_key");
     let database_error = ServiceError::Database(error);
-    duplicate_join_id
-        .then_some(ServiceError::TripJoinIdAlreadyExists)
-        .unwrap_or(database_error)
+    if duplicate_join_id {
+        ServiceError::TripJoinIdAlreadyExists
+    } else {
+        database_error
+    }
 }
 
 fn is_unique_violation_on_constraint(error: &sqlx::Error, constraint: &str) -> bool {
@@ -1540,11 +1564,11 @@ fn decode_base64url(value: &str) -> Result<Vec<u8>, ServiceError> {
 fn map_passkey_insert_error(error: sqlx::Error) -> ServiceError {
     let duplicate_passkey =
         is_unique_violation_on_constraint(&error, "webauthn_credentials_credential_id_idx");
-    duplicate_passkey
-        .then_some(ServiceError::InvalidRequest(
-            "passkey credential already exists",
-        ))
-        .unwrap_or(ServiceError::Database(error))
+    if duplicate_passkey {
+        ServiceError::InvalidRequest("passkey credential already exists")
+    } else {
+        ServiceError::Database(error)
+    }
 }
 
 fn account_profile_from_record(record: AccountProfileRecord) -> AccountProfile {

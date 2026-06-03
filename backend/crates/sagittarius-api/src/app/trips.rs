@@ -21,18 +21,29 @@ pub async fn load_cockpit(
         .await?
         .ok_or(ServiceError::Unauthenticated)?;
 
-    let trip = db::queries::find_trip_by_id(pool, session.trip_id)
-        .await?
-        .ok_or(ServiceError::NotFound)?;
-    let members = db::queries::list_trip_members(pool, session.trip_id).await?;
-    let plan_variants = db::queries::list_plan_variants(pool, session.trip_id).await?;
-    let itinerary_items = db::queries::list_itinerary_items(pool, session.trip_id).await?;
-    let suggestions = db::queries::list_suggestions(pool, session.trip_id).await?;
-    let tasks = db::queries::list_visible_tasks(pool, session.trip_id, session.member_id).await?;
+    let session_trip_id = session.trip_id;
+    let session_member_id = session.member_id;
+    let can_view_expenses = can(session.role, Capability::ViewExpenses);
 
-    let expense_summary = if can(session.role, Capability::ViewExpenses) {
-        let expenses = db::queries::list_expense_splits(pool, session.trip_id).await?;
-        Some(build_expense_summary(expenses, session.member_id))
+    let (trip, members, plan_variants, itinerary_items, suggestions, tasks, expenses) = tokio::try_join!(
+        db::queries::find_trip_by_id(pool, session_trip_id),
+        db::queries::list_trip_members(pool, session_trip_id),
+        db::queries::list_plan_variants(pool, session_trip_id),
+        db::queries::list_itinerary_items(pool, session_trip_id),
+        db::queries::list_suggestions(pool, session_trip_id),
+        db::queries::list_visible_tasks(pool, session_trip_id, session_member_id),
+        async {
+            if can_view_expenses {
+                db::queries::list_expense_splits(pool, session_trip_id).await
+            } else {
+                Ok(Vec::new())
+            }
+        },
+    )?;
+
+    let trip = trip.ok_or(ServiceError::NotFound)?;
+    let expense_summary = if can_view_expenses {
+        Some(build_expense_summary(expenses, session_member_id))
     } else {
         None
     };
