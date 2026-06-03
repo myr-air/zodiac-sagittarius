@@ -113,6 +113,7 @@ runtime values before deploy:
 ```bash
 DATABASE_URL=postgres://user:pass@db.example.test:5432/sagittarius \
 NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL=https://api.example.test \
+SAGITTARIUS_ALLOWED_ORIGINS=https://app.example.test \
 RUST_LOG=info,tower_http=info,sagittarius_api=info \
 SAGITTARIUS_STAGING_PREFLIGHT_PASSED=1 \
 SAGITTARIUS_STAGING_BROWSER_SIGNOFF=1 \

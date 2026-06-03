@@ -63,12 +63,38 @@ async fn unknown_route_returns_json_not_found() {
 #[tokio::test]
 async fn cors_preflight_allows_frontend_to_call_api() {
     let app = sagittarius_api::api::router(sagittarius_api::app::AppState::test());
+    for origin in ["http://127.0.0.1:5180", "http://127.0.0.1:5190"] {
+        let response = app
+            .clone()
+            .oneshot(
+                Request::builder()
+                    .method("OPTIONS")
+                    .uri("/api/v1/trip-join-sessions")
+                    .header(ORIGIN, origin)
+                    .header(ACCESS_CONTROL_REQUEST_METHOD, "POST")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+
+        assert_eq!(response.status(), StatusCode::OK);
+        assert_eq!(
+            response.headers().get(ACCESS_CONTROL_ALLOW_ORIGIN).unwrap(),
+            origin
+        );
+    }
+}
+
+#[tokio::test]
+async fn cors_preflight_rejects_unknown_origin_header() {
+    let app = sagittarius_api::api::router(sagittarius_api::app::AppState::test());
     let response = app
         .oneshot(
             Request::builder()
                 .method("OPTIONS")
                 .uri("/api/v1/trip-join-sessions")
-                .header(ORIGIN, "http://127.0.0.1:5180")
+                .header(ORIGIN, "https://evil.example.test")
                 .header(ACCESS_CONTROL_REQUEST_METHOD, "POST")
                 .body(Body::empty())
                 .unwrap(),
@@ -77,9 +103,11 @@ async fn cors_preflight_allows_frontend_to_call_api() {
         .unwrap();
 
     assert_eq!(response.status(), StatusCode::OK);
-    assert_eq!(
-        response.headers().get(ACCESS_CONTROL_ALLOW_ORIGIN).unwrap(),
-        "http://127.0.0.1:5180"
+    assert!(
+        response
+            .headers()
+            .get(ACCESS_CONTROL_ALLOW_ORIGIN)
+            .is_none()
     );
 }
 

@@ -177,7 +177,11 @@ fn api_v1() -> Router<AppState> {
 
 fn cors_layer() -> CorsLayer {
     CorsLayer::new()
-        .allow_origin(AllowOrigin::mirror_request())
+        .allow_origin(AllowOrigin::predicate(|origin, _request_parts| {
+            origin
+                .to_str()
+                .is_ok_and(|value| allowed_cors_origin(value))
+        }))
         .allow_methods([
             Method::DELETE,
             Method::GET,
@@ -186,4 +190,36 @@ fn cors_layer() -> CorsLayer {
             Method::OPTIONS,
         ])
         .allow_headers([AUTHORIZATION, CONTENT_TYPE])
+}
+
+fn allowed_cors_origin(origin: &str) -> bool {
+    if local_development_origin(origin) {
+        return true;
+    }
+
+    std::env::var("SAGITTARIUS_ALLOWED_ORIGINS")
+        .ok()
+        .into_iter()
+        .flat_map(|value| {
+            value
+                .split(',')
+                .map(str::trim)
+                .filter(|candidate| !candidate.is_empty())
+                .map(str::to_owned)
+                .collect::<Vec<_>>()
+        })
+        .any(|allowed| allowed == origin)
+}
+
+fn local_development_origin(origin: &str) -> bool {
+    let Ok(url) = origin.parse::<http::Uri>() else {
+        return false;
+    };
+    if url.scheme_str() != Some("http") {
+        return false;
+    }
+    matches!(
+        url.host(),
+        Some("127.0.0.1") | Some("localhost") | Some("0.0.0.0")
+    )
 }

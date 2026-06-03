@@ -193,6 +193,8 @@ describe("Sagittarius project scaffold", () => {
     expect(makefile).toContain("DROP TABLE IF EXISTS stop_notes");
     expect(apiMod).toContain("DefaultOnRequest::new().level(Level::INFO)");
     expect(apiMod).toContain("DefaultOnResponse::new().level(Level::INFO)");
+    expect(apiMod).toContain("SAGITTARIUS_ALLOWED_ORIGINS");
+    expect(apiMod).not.toContain("AllowOrigin::mirror_request()");
     expect(apiMain).toContain("EnvFilter::try_from_default_env()");
     expect(workflow).toContain("postgres:17-alpine");
     expect(workflow).toContain("bun install --frozen-lockfile");

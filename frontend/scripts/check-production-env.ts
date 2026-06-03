@@ -2,6 +2,7 @@ const failures: string[] = [];
 
 const databaseUrl = requiredEnv("DATABASE_URL");
 const apiBaseUrl = requiredEnv("NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL");
+const allowedOrigins = requiredEnv("SAGITTARIUS_ALLOWED_ORIGINS");
 const rustLog = requiredEnv("RUST_LOG");
 const evidenceUrl = requiredEnv("SAGITTARIUS_STAGING_EVIDENCE_URL");
 const featureOwner = requiredEnv("SAGITTARIUS_FEATURE_OWNER");
@@ -9,6 +10,7 @@ const rollbackOwner = requiredEnv("SAGITTARIUS_ROLLBACK_OWNER");
 
 checkDatabaseUrl(databaseUrl);
 checkApiBaseUrl(apiBaseUrl);
+checkAllowedOrigins(allowedOrigins, apiBaseUrl);
 checkRustLog(rustLog);
 checkEvidence("SAGITTARIUS_STAGING_EVIDENCE_URL", evidenceUrl);
 checkOwner("SAGITTARIUS_FEATURE_OWNER", featureOwner);
@@ -79,6 +81,35 @@ function checkApiBaseUrl(value: string) {
   }
   if (["localhost", "127.0.0.1", "::1"].includes(url.hostname)) {
     failures.push("NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL must not point at localhost for production");
+  }
+}
+
+function checkAllowedOrigins(value: string, apiValue: string) {
+  if (!value) return;
+  const origins = value.split(",").map((origin) => origin.trim()).filter(Boolean);
+  if (!origins.length) {
+    failures.push("SAGITTARIUS_ALLOWED_ORIGINS must include at least one production frontend origin");
+    return;
+  }
+
+  for (const origin of origins) {
+    let url: URL;
+    try {
+      url = new URL(origin);
+    } catch {
+      failures.push(`SAGITTARIUS_ALLOWED_ORIGINS contains invalid URL: ${origin}`);
+      continue;
+    }
+    if (url.protocol !== "https:") {
+      failures.push(`SAGITTARIUS_ALLOWED_ORIGINS must use https:// origins for production: ${origin}`);
+    }
+    if (["localhost", "127.0.0.1", "::1"].includes(url.hostname)) {
+      failures.push(`SAGITTARIUS_ALLOWED_ORIGINS must not include localhost for production: ${origin}`);
+    }
+  }
+
+  if (apiValue && origins.includes(apiValue)) {
+    failures.push("SAGITTARIUS_ALLOWED_ORIGINS should contain frontend origins, not the API base URL");
   }
 }
 
