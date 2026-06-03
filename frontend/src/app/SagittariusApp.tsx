@@ -19,6 +19,7 @@ import {
   canTripRole,
   createTripParticipant,
   findSessionMember,
+  nextTripMemberColor,
   resetTripParticipantClaim,
   setTripParticipantPassword,
   setTripParticipantAccessStatus,
@@ -122,9 +123,9 @@ export function SagittariusApp({
   const canEdit = canTripRole(currentMember.role, "editItinerary");
   const canCreateSuggestion = canTripRole(currentMember.role, "createSuggestion");
   const canReviewSuggestions = canTripRole(currentMember.role, "reviewSuggestions");
-  const canEditExpenses = !isApiMode && canTripRole(currentMember.role, "editExpenses");
-  const canManagePeople = !isApiMode && canTripRole(currentMember.role, "managePeople");
-  const canCreateStopNote = !isApiMode && (canCreateSuggestion || canEdit);
+  const canEditExpenses = canTripRole(currentMember.role, "editExpenses");
+  const canManagePeople = canTripRole(currentMember.role, "managePeople");
+  const canCreateStopNote = canCreateSuggestion || canEdit;
   const supportsContextRail = currentView === "overview" || currentView === "itinerary" || currentView === "timeline";
   const planItems = useMemo(
     () => trip.itineraryItems.filter((item) => item.planVariantId === selectedPlanVariantId),
@@ -298,47 +299,69 @@ export function SagittariusApp({
     setContextRailVisibility(true);
   }
 
-  function moveItem(draggedItemId: string, targetItemId: string) {
+  async function moveItem(draggedItemId: string, targetItemId: string) {
     /* v8 ignore next */
     if (!canEdit || draggedItemId === targetItemId) return;
 
-    commitTrip((current) => {
-      const draggedItem = current.itineraryItems.find((item) => item.id === draggedItemId);
-      const targetItem = current.itineraryItems.find((item) => item.id === targetItemId);
+    const nextTrip = moveTripItem(trip, draggedItemId, targetItemId, selectedPlanVariantId);
+    if (!nextTrip) return;
 
-      /* v8 ignore next */
-      if (!draggedItem || !targetItem || draggedItem.planVariantId !== selectedPlanVariantId || targetItem.planVariantId !== selectedPlanVariantId) return current;
+    if (isApiMode && resolvedApiClient && participantSession) {
+      const targetItem = nextTrip.itineraryItems.find((item) => item.id === targetItemId);
+      if (!targetItem) return;
+      const orderedIds = nextTrip.itineraryItems
+        .filter((item) => item.planVariantId === targetItem.planVariantId && item.day === targetItem.day)
+        .sort((a, b) => a.sortOrder - b.sortOrder || a.startTime.localeCompare(b.startTime))
+        .map((item) => item.id);
+      const reorderedItems = await resolvedApiClient.reorderItineraryItems(trip.id, participantSession.sessionToken, {
+        clientMutationId: nextClientMutationId("itinerary-reorder"),
+        planVariantId: targetItem.planVariantId,
+        day: targetItem.day,
+        itemIds: orderedIds,
+      });
+      setTripState((current) => {
+        const itemsById = new Map(reorderedItems.map((item) => [item.id, item]));
+        return {
+          ...current,
+          trip: {
+            ...current.trip,
+            itineraryItems: current.trip.itineraryItems.map((item) => itemsById.get(item.id) ?? item),
+          },
+        };
+      });
+      setContextRailVisibility(true);
+      return;
+    }
 
-      /* v8 ignore next 3 */
-      const targetDayItems = current.itineraryItems
-        .filter((item) => item.planVariantId === targetItem.planVariantId && item.day === targetItem.day && item.id !== draggedItemId)
-        .sort((a, b) => a.sortOrder - b.sortOrder || a.startTime.localeCompare(b.startTime));
-      const targetIndex = targetDayItems.findIndex((item) => item.id === targetItemId);
-
-      /* v8 ignore next */
-      if (targetIndex < 0) return current;
-
-      const nextDayItems = [
-        ...targetDayItems.slice(0, targetIndex),
-        {
-          ...draggedItem,
-          day: targetItem.day,
-          updatedAt: localMutationTimestamp,
-          version: draggedItem.version + 1,
-        },
-        ...targetDayItems.slice(targetIndex),
-      ].map((item, index) => ({ ...item, sortOrder: (index + 1) * 100 }));
-      const nextItemsById = new Map(nextDayItems.map((item) => [item.id, item]));
-
-      return {
-        ...current,
-        itineraryItems: current.itineraryItems.map((item) => nextItemsById.get(item.id) ?? item),
-      };
-    }, draggedItemId);
+    commitTrip(() => nextTrip, draggedItemId);
     setContextRailVisibility(true);
   }
 
-  function createStop(values: StopFormValues) {
+  async function createStop(values: StopFormValues) {
+    if (isApiMode && resolvedApiClient && participantSession) {
+      const createdItem = await resolvedApiClient.createItineraryItem(trip.id, participantSession.sessionToken, {
+        clientMutationId: nextClientMutationId("itinerary-create"),
+        planVariantId: selectedPlanVariantId,
+        day: selectedDay,
+        startTime: values.startTime,
+        activity: values.activity,
+        activityType: values.activityType,
+        place: values.place,
+        mapLink: buildMapLink(values.place),
+        durationMinutes: values.durationMinutes,
+        transportation: values.transportation,
+        note: values.note,
+      });
+      setTripState((current) => ({
+        ...current,
+        trip: { ...current.trip, itineraryItems: [...current.trip.itineraryItems, createdItem] },
+      }));
+      setSelectedItemId(createdItem.id);
+      setContextRailVisibility(true);
+      setDialogState(null);
+      return;
+    }
+
     const nextItem: ItineraryItem = {
       id: nextLocalItemId(trip.itineraryItems, "item-new"),
       tripId: trip.id,
@@ -363,6 +386,40 @@ export function SagittariusApp({
     commitTrip((current) => ({ ...current, itineraryItems: [...current.itineraryItems, nextItem] }), nextItem.id);
     setContextRailVisibility(true);
     setDialogState(null);
+  }
+
+  function moveTripItem(current: Trip, draggedItemId: string, targetItemId: string, planVariantId: string): Trip | null {
+    const draggedItem = current.itineraryItems.find((item) => item.id === draggedItemId);
+    const targetItem = current.itineraryItems.find((item) => item.id === targetItemId);
+
+    /* v8 ignore next */
+    if (!draggedItem || !targetItem || draggedItem.planVariantId !== planVariantId || targetItem.planVariantId !== planVariantId) return null;
+
+    /* v8 ignore next 3 */
+    const targetDayItems = current.itineraryItems
+      .filter((item) => item.planVariantId === targetItem.planVariantId && item.day === targetItem.day && item.id !== draggedItemId)
+      .sort((a, b) => a.sortOrder - b.sortOrder || a.startTime.localeCompare(b.startTime));
+    const targetIndex = targetDayItems.findIndex((item) => item.id === targetItemId);
+
+    /* v8 ignore next */
+    if (targetIndex < 0) return null;
+
+    const nextDayItems = [
+      ...targetDayItems.slice(0, targetIndex),
+      {
+        ...draggedItem,
+        day: targetItem.day,
+        updatedAt: localMutationTimestamp,
+        version: draggedItem.version + 1,
+      },
+      ...targetDayItems.slice(targetIndex),
+    ].map((item, index) => ({ ...item, sortOrder: (index + 1) * 100 }));
+    const nextItemsById = new Map(nextDayItems.map((item) => [item.id, item]));
+
+    return {
+      ...current,
+      itineraryItems: current.itineraryItems.map((item) => nextItemsById.get(item.id) ?? item),
+    };
   }
 
   async function updateSelectedStop(values: StopFormValues) {
@@ -521,33 +578,62 @@ export function SagittariusApp({
     }
   }
 
-  function resetMemberClaim(memberId: string) {
+  async function resetMemberClaim(memberId: string) {
     /* v8 ignore next */
     if (!canManagePeople) return;
+    if (isApiMode && resolvedApiClient && participantSession) {
+      const member = await resolvedApiClient.resetMemberClaim(trip.id, memberId, participantSession.sessionToken);
+      commitTrip((current) => ({ ...current, members: current.members.map((candidate) => (candidate.id === memberId ? member : candidate)) }));
+      return;
+    }
     commitTrip((current) => resetTripParticipantClaim(current, memberId));
   }
 
-  function changeMemberRole(memberId: string, role: Exclude<TripRole, "owner">) {
+  async function changeMemberRole(memberId: string, role: Exclude<TripRole, "owner">) {
     /* v8 ignore next */
     if (!canManagePeople) return;
+    if (isApiMode && resolvedApiClient && participantSession) {
+      const member = await resolvedApiClient.patchMember(trip.id, memberId, participantSession.sessionToken, { role });
+      commitTrip((current) => ({ ...current, members: current.members.map((candidate) => (candidate.id === memberId ? member : candidate)) }));
+      return;
+    }
     commitTrip((current) => updateTripParticipantRole(current, memberId, role));
   }
 
-  function changeMemberAccessStatus(memberId: string, accessStatus: TripMemberAccessStatus) {
+  async function changeMemberAccessStatus(memberId: string, accessStatus: TripMemberAccessStatus) {
     /* v8 ignore next */
     if (!canManagePeople) return;
+    if (isApiMode && resolvedApiClient && participantSession) {
+      const member = await resolvedApiClient.patchMember(trip.id, memberId, participantSession.sessionToken, { accessStatus });
+      commitTrip((current) => ({ ...current, members: current.members.map((candidate) => (candidate.id === memberId ? member : candidate)) }));
+      return;
+    }
     commitTrip((current) => setTripParticipantAccessStatus(current, memberId, accessStatus));
   }
 
-  function changeMemberPassword(memberId: string, password: string) {
+  async function changeMemberPassword(memberId: string, password: string) {
     /* v8 ignore next */
     if (!canManagePeople || memberId !== currentMember.id) return;
+    if (isApiMode && resolvedApiClient && participantSession) {
+      const member = await resolvedApiClient.patchMember(trip.id, memberId, participantSession.sessionToken, { participantPassword: password });
+      commitTrip((current) => ({ ...current, members: current.members.map((candidate) => (candidate.id === memberId ? member : candidate)) }));
+      return;
+    }
     commitTrip((current) => setTripParticipantPassword(current, memberId, password));
   }
 
-  function createMember(input: { displayName: string; role: Exclude<TripRole, "owner"> }) {
+  async function createMember(input: { displayName: string; role: Exclude<TripRole, "owner"> }) {
     /* v8 ignore next */
     if (!canManagePeople) return;
+    if (isApiMode && resolvedApiClient && participantSession) {
+      const member = await resolvedApiClient.createMember(trip.id, participantSession.sessionToken, {
+        displayName: input.displayName,
+        role: input.role,
+        color: nextTripMemberColor(trip.members.length),
+      });
+      commitTrip((current) => ({ ...current, members: [...current.members, member] }));
+      return;
+    }
     commitTrip((current) => createTripParticipant(current, input));
   }
 
@@ -647,10 +733,19 @@ export function SagittariusApp({
     );
   }
 
-  function createStopNote(input: { itemId: string; body: string }) {
+  async function createStopNote(input: { itemId: string; body: string }) {
     const body = input.body.trim();
     /* v8 ignore next */
     if (!body || !canCreateStopNote) return;
+    if (isApiMode && resolvedApiClient && participantSession) {
+      const note = await resolvedApiClient.createStopNote(trip.id, participantSession.sessionToken, {
+        clientMutationId: nextClientMutationId("stop-note-create"),
+        itineraryItemId: input.itemId,
+        body,
+      });
+      setStopNotes((current) => [...current, note]);
+      return;
+    }
     setStopNotes((current) => [
       ...current,
       {
@@ -664,9 +759,20 @@ export function SagittariusApp({
     ]);
   }
 
-  function updateStopNote(input: { noteId: string; body: string }) {
+  async function updateStopNote(input: { noteId: string; body: string }) {
     const body = input.body.trim();
     if (!body) return;
+    if (isApiMode && resolvedApiClient && participantSession) {
+      const existing = stopNotes.find((note) => note.id === input.noteId);
+      if (!existing) return;
+      const note = await resolvedApiClient.patchStopNote(trip.id, input.noteId, participantSession.sessionToken, {
+        clientMutationId: nextClientMutationId("stop-note-patch"),
+        expectedVersion: existing.version ?? 1,
+        body,
+      });
+      setStopNotes((current) => current.map((candidate) => (candidate.id === input.noteId ? note : candidate)));
+      return;
+    }
     setStopNotes((current) =>
       current.map((note) =>
         note.id === input.noteId && (note.authorId === currentMember.id || canEdit)
@@ -676,7 +782,12 @@ export function SagittariusApp({
     );
   }
 
-  function deleteStopNote(noteId: string) {
+  async function deleteStopNote(noteId: string) {
+    if (isApiMode && resolvedApiClient && participantSession) {
+      await resolvedApiClient.deleteStopNote(trip.id, noteId, participantSession.sessionToken);
+      setStopNotes((current) => current.filter((note) => note.id !== noteId));
+      return;
+    }
     setStopNotes((current) => current.filter((note) => note.id !== noteId || (note.authorId !== currentMember.id && !canEdit)));
   }
 
@@ -850,7 +961,7 @@ export function SagittariusApp({
             ) : currentView === "itinerary" ? (
               <SmartItineraryTable
                 canRedo={tripState.future.length > 0}
-                canRestructure={!isApiMode}
+                canRestructure={canEdit}
                 canUndo={tripState.past.length > 0}
                 contextRailOpen={contextRailOpen}
                 endDate={trip.endDate}

@@ -565,9 +565,19 @@ describe("Sagittarius cockpit UI", () => {
         version: 2,
       }),
       patchItineraryItem: vi.fn(),
+      createItineraryItem: vi.fn(),
+      deleteItineraryItem: vi.fn(),
+      reorderItineraryItems: vi.fn(),
       createSuggestion: vi.fn(),
       approveSuggestion: vi.fn(),
       rejectSuggestion: vi.fn(),
+      createStopNote: vi.fn(),
+      patchStopNote: vi.fn(),
+      deleteStopNote: vi.fn(),
+      createMember: vi.fn(),
+      patchMember: vi.fn(),
+      resetMemberClaim: vi.fn(),
+      getExpenseSummary: vi.fn(),
     };
 
     render(<SagittariusApp requireJoin dataSource="api" apiClient={apiClient} />);
@@ -862,9 +872,19 @@ describe("Sagittarius cockpit UI", () => {
       createTask: vi.fn(),
       patchTask: vi.fn(),
       patchItineraryItem: vi.fn().mockResolvedValue(patchedItem),
+      createItineraryItem: vi.fn(),
+      deleteItineraryItem: vi.fn(),
+      reorderItineraryItems: vi.fn(),
       createSuggestion: vi.fn(),
       approveSuggestion: vi.fn().mockResolvedValue({ ...pendingSuggestion, status: "approved" }),
       rejectSuggestion: vi.fn(),
+      createStopNote: vi.fn(),
+      patchStopNote: vi.fn(),
+      deleteStopNote: vi.fn(),
+      createMember: vi.fn(),
+      patchMember: vi.fn(),
+      resetMemberClaim: vi.fn(),
+      getExpenseSummary: vi.fn(),
     };
 
     render(<SagittariusApp requireJoin dataSource="api" initialView="itinerary" apiClient={apiClient} />);
@@ -968,9 +988,19 @@ describe("Sagittarius cockpit UI", () => {
       createTask: vi.fn(),
       patchTask: vi.fn(),
       patchItineraryItem: vi.fn(),
+      createItineraryItem: vi.fn(),
+      deleteItineraryItem: vi.fn(),
+      reorderItineraryItems: vi.fn(),
       createSuggestion: vi.fn().mockResolvedValue(apiSuggestion),
       approveSuggestion: vi.fn(),
       rejectSuggestion: vi.fn(),
+      createStopNote: vi.fn(),
+      patchStopNote: vi.fn(),
+      deleteStopNote: vi.fn(),
+      createMember: vi.fn(),
+      patchMember: vi.fn(),
+      resetMemberClaim: vi.fn(),
+      getExpenseSummary: vi.fn(),
     };
 
     render(<SagittariusApp requireJoin dataSource="api" initialView="itinerary" apiClient={apiClient} />);
@@ -997,7 +1027,7 @@ describe("Sagittarius cockpit UI", () => {
     expect(screen.getByText(/Explorer Friend เสนอการปรับแผน/i)).toBeInTheDocument();
   });
 
-  it("keeps future write-only surfaces read-only in API mode until backend routes exist", async () => {
+  it("exposes production write surfaces in API mode when backend routes exist", async () => {
     const user = userEvent.setup();
     installLocalStorageStub();
     const ownerTrip = {
@@ -1009,13 +1039,13 @@ describe("Sagittarius cockpit UI", () => {
     const { unmount } = render(<SagittariusApp requireJoin dataSource="api" initialView="itinerary" apiClient={itineraryClient} />);
 
     await loginApiTrip(user);
-    expect(screen.getByRole("button", { name: /เพิ่มสถานที่ \/ กิจกรรม/i })).toBeDisabled();
+    expect(screen.getByRole("button", { name: /เพิ่มสถานที่ \/ กิจกรรม/i })).toBeEnabled();
     await user.click(await screen.findByRole("button", { name: /เปิดรายละเอียด/i }));
 
     const context = screen.getByRole("complementary", { name: /ข้อมูลประกอบการวางแผน/i });
-    expect(within(context).getByLabelText(/เพิ่มโน้ตสำหรับจุดนี้/i)).toBeDisabled();
+    expect(within(context).getByLabelText(/เพิ่มโน้ตสำหรับจุดนี้/i)).toBeEnabled();
     expect(within(context).getByRole("button", { name: /บันทึกโน้ต/i })).toBeDisabled();
-    expect(within(context).getByRole("button", { name: /เพิ่ม\/แก้ไขค่าใช้จ่าย/i })).toBeDisabled();
+    expect(within(context).getByRole("button", { name: /เพิ่ม\/แก้ไขค่าใช้จ่าย/i })).toBeEnabled();
     unmount();
     window.localStorage.clear();
     window.sessionStorage.clear();
@@ -1024,8 +1054,8 @@ describe("Sagittarius cockpit UI", () => {
     render(<SagittariusApp requireJoin dataSource="api" initialView="members" apiClient={membersClient} />);
     await loginApiTrip(user);
 
-    expect(screen.getByRole("button", { name: /เปิดฟอร์มเพิ่มสมาชิก/i })).toBeDisabled();
-    expect(screen.getByRole("button", { name: /คัดลอกลิงก์เชิญ/i })).toBeDisabled();
+    expect(screen.getByRole("button", { name: /เปิดฟอร์มเพิ่มสมาชิก/i })).toBeEnabled();
+    expect(screen.getByRole("button", { name: /คัดลอกลิงก์เชิญ/i })).toBeEnabled();
   });
 
   it("opens directly into the trip overview instead of a marketing landing page", () => {
@@ -1922,10 +1952,20 @@ function createApiClientForTrip(trip: Trip): TripApiClient {
     loadTrip: vi.fn().mockResolvedValue(cockpit),
     createTask: vi.fn(),
     patchTask: vi.fn(),
+    createItineraryItem: vi.fn(),
     patchItineraryItem: vi.fn(),
+    deleteItineraryItem: vi.fn(),
+    reorderItineraryItems: vi.fn(),
     createSuggestion: vi.fn(),
     approveSuggestion: vi.fn(),
     rejectSuggestion: vi.fn(),
+    createStopNote: vi.fn(),
+    patchStopNote: vi.fn(),
+    deleteStopNote: vi.fn(),
+    createMember: vi.fn(),
+    patchMember: vi.fn(),
+    resetMemberClaim: vi.fn(),
+    getExpenseSummary: vi.fn(),
   };
 }
 

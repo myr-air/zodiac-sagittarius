@@ -103,6 +103,8 @@ export interface StopNote {
   authorId: string;
   body: string;
   createdAt: string;
+  updatedAt?: string;
+  version?: number;
 }
 
 export interface Trip {

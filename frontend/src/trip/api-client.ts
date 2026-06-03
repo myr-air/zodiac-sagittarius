@@ -95,6 +95,7 @@ export interface TripCockpitResponse {
   itineraryItems: ItineraryItemResponse[];
   suggestions: SuggestionResponse[];
   tasks: TripTaskResponse[];
+  stopNotes: StopNote[];
   expenseSummary: ExpenseSummary | null;
 }
 
@@ -133,10 +134,20 @@ export interface TripApiClient {
   loadTrip(tripId: string, sessionToken: string): Promise<TripCockpit>;
   createTask(tripId: string, sessionToken: string, request: CreateTaskApiRequest): Promise<TripTask>;
   patchTask(tripId: string, taskId: string, sessionToken: string, request: PatchTaskApiRequest): Promise<TripTask>;
+  createItineraryItem(tripId: string, sessionToken: string, request: CreateItineraryItemApiRequest): Promise<ItineraryItem>;
   patchItineraryItem(tripId: string, itemId: string, sessionToken: string, request: PatchItineraryItemApiRequest): Promise<ItineraryItem>;
+  deleteItineraryItem(tripId: string, itemId: string, sessionToken: string): Promise<ItineraryItem>;
+  reorderItineraryItems(tripId: string, sessionToken: string, request: ReorderItineraryItemsApiRequest): Promise<ItineraryItem[]>;
   createSuggestion(tripId: string, sessionToken: string, request: CreateSuggestionApiRequest): Promise<Suggestion>;
   approveSuggestion(tripId: string, suggestionId: string, sessionToken: string): Promise<Suggestion>;
   rejectSuggestion(tripId: string, suggestionId: string, sessionToken: string): Promise<Suggestion>;
+  createStopNote(tripId: string, sessionToken: string, request: CreateStopNoteApiRequest): Promise<StopNote>;
+  patchStopNote(tripId: string, noteId: string, sessionToken: string, request: PatchStopNoteApiRequest): Promise<StopNote>;
+  deleteStopNote(tripId: string, noteId: string, sessionToken: string): Promise<StopNote>;
+  createMember(tripId: string, sessionToken: string, request: CreateMemberApiRequest): Promise<Member>;
+  patchMember(tripId: string, memberId: string, sessionToken: string, request: PatchMemberApiRequest): Promise<Member>;
+  resetMemberClaim(tripId: string, memberId: string, sessionToken: string): Promise<Member>;
+  getExpenseSummary(tripId: string, sessionToken: string): Promise<ExpenseSummary>;
 }
 
 export interface CreateTaskApiRequest {
@@ -160,6 +171,27 @@ export interface PatchItineraryItemApiRequest {
   patch: Partial<Pick<ItineraryItem, "startTime" | "durationMinutes" | "activity" | "activityType" | "place" | "mapLink" | "transportation" | "note">>;
 }
 
+export interface CreateItineraryItemApiRequest {
+  clientMutationId: string;
+  planVariantId: string;
+  day: string;
+  startTime?: string | null;
+  activity: string;
+  activityType: ItineraryItem["activityType"];
+  place: string;
+  mapLink?: string | null;
+  durationMinutes?: number | null;
+  transportation?: string | null;
+  note?: string | null;
+}
+
+export interface ReorderItineraryItemsApiRequest {
+  clientMutationId: string;
+  planVariantId: string;
+  day: string;
+  itemIds: string[];
+}
+
 export interface CreateSuggestionApiRequest {
   clientMutationId: string;
   type: SuggestionType;
@@ -167,6 +199,32 @@ export interface CreateSuggestionApiRequest {
   planVariantId: string;
   sourceVersion: number | null;
   proposedPatch: EditableSuggestionPatch;
+}
+
+export interface CreateStopNoteApiRequest {
+  clientMutationId: string;
+  itineraryItemId: string;
+  body: string;
+}
+
+export interface PatchStopNoteApiRequest {
+  clientMutationId: string;
+  expectedVersion: number;
+  body: string;
+}
+
+export interface CreateMemberApiRequest {
+  displayName: string;
+  role: Exclude<TripRole, "owner">;
+  color: string;
+  participantPassword?: string;
+}
+
+export interface PatchMemberApiRequest {
+  displayName?: string;
+  role?: Exclude<TripRole, "owner">;
+  accessStatus?: TripMemberAccessStatus;
+  participantPassword?: string;
 }
 
 export function createTripApiClient(options: TripApiClientOptions = {}): TripApiClient {
@@ -246,6 +304,29 @@ export function createTripApiClient(options: TripApiClientOptions = {}): TripApi
       });
       return mapItineraryItem(item);
     },
+    async createItineraryItem(tripId, sessionToken, itemRequest) {
+      const item = await request<ItineraryItemResponse>(tripApiRoutes.itineraryItems(tripId), {
+        method: "POST",
+        headers: { Authorization: `Bearer ${sessionToken}` },
+        body: JSON.stringify(itemRequest),
+      });
+      return mapItineraryItem(item);
+    },
+    async deleteItineraryItem(tripId, itemId, sessionToken) {
+      const item = await request<ItineraryItemResponse>(tripApiRoutes.itineraryItem(tripId, itemId), {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${sessionToken}` },
+      });
+      return mapItineraryItem(item);
+    },
+    async reorderItineraryItems(tripId, sessionToken, reorderRequest) {
+      const items = await request<ItineraryItemResponse[]>(tripApiRoutes.reorderItineraryItems(tripId), {
+        method: "PATCH",
+        headers: { Authorization: `Bearer ${sessionToken}` },
+        body: JSON.stringify(reorderRequest),
+      });
+      return items.map(mapItineraryItem);
+    },
     createSuggestion(tripId, sessionToken, suggestionRequest) {
       return request<Suggestion>(tripApiRoutes.suggestions(tripId), {
         method: "POST",
@@ -265,6 +346,55 @@ export function createTripApiClient(options: TripApiClientOptions = {}): TripApi
         method: "PATCH",
         headers: { Authorization: `Bearer ${sessionToken}` },
         body: JSON.stringify({ status: "rejected" }),
+      });
+    },
+    createStopNote(tripId, sessionToken, noteRequest) {
+      return request<StopNote>(tripApiRoutes.stopNotes(tripId), {
+        method: "POST",
+        headers: { Authorization: `Bearer ${sessionToken}` },
+        body: JSON.stringify(noteRequest),
+      });
+    },
+    patchStopNote(tripId, noteId, sessionToken, noteRequest) {
+      return request<StopNote>(tripApiRoutes.stopNote(tripId, noteId), {
+        method: "PATCH",
+        headers: { Authorization: `Bearer ${sessionToken}` },
+        body: JSON.stringify(noteRequest),
+      });
+    },
+    deleteStopNote(tripId, noteId, sessionToken) {
+      return request<StopNote>(tripApiRoutes.stopNote(tripId, noteId), {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${sessionToken}` },
+      });
+    },
+    async createMember(tripId, sessionToken, memberRequest) {
+      const member = await request<TripMemberResponse>(tripApiRoutes.members(tripId), {
+        method: "POST",
+        headers: { Authorization: `Bearer ${sessionToken}` },
+        body: JSON.stringify(memberRequest),
+      });
+      return mapMember(member);
+    },
+    async patchMember(tripId, memberId, sessionToken, memberRequest) {
+      const member = await request<TripMemberResponse>(tripApiRoutes.member(tripId, memberId), {
+        method: "PATCH",
+        headers: { Authorization: `Bearer ${sessionToken}` },
+        body: JSON.stringify(memberRequest),
+      });
+      return mapMember(member);
+    },
+    async resetMemberClaim(tripId, memberId, sessionToken) {
+      const member = await request<TripMemberResponse>(tripApiRoutes.resetMemberClaim(tripId, memberId), {
+        method: "POST",
+        headers: { Authorization: `Bearer ${sessionToken}` },
+      });
+      return mapMember(member);
+    },
+    getExpenseSummary(tripId, sessionToken) {
+      return request<ExpenseSummary>(tripApiRoutes.expensesSummary(tripId), {
+        method: "GET",
+        headers: { Authorization: `Bearer ${sessionToken}` },
       });
     },
   };
@@ -290,7 +420,7 @@ export function mapCockpitResponse(response: TripCockpitResponse): TripCockpit {
     },
     suggestions: response.suggestions,
     tasks: response.tasks.map(mapTask),
-    stopNotes: [],
+    stopNotes: response.stopNotes,
     expenseSummary: response.expenseSummary,
   };
 }

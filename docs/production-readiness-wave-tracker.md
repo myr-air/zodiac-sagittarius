@@ -201,33 +201,43 @@ times out connecting to Postgres.
 
 ## Wave 3 – Frontend API Client + Wiring
 
+Wave status: implemented. API-mode no longer treats core write surfaces as
+demo-only/read-only. Frontend typecheck and targeted app/API tests pass.
+
 ### W3-FE-001: Expand `TripApiClient` methods
 - **Owner**: Frontend
 - **Estimate**: 3h
+- **Status**: Implemented; client tests updated.
 
 ### W3-FE-002: Sync `api-routes` constants
 - **Owner**: Frontend
 - **Estimate**: 1h
+- **Status**: Implemented.
 
 ### W3-FE-003: Enable write UI by capability in API mode
 - **Owner**: Frontend
 - **Estimate**: 2h
+- **Status**: Implemented; old read-only API-mode test updated.
 
 ### W3-FE-004: Wire member management write handlers
 - **Owner**: Frontend
 - **Estimate**: 3h
+- **Status**: Implemented.
 
 ### W3-FE-005: Wire itinerary create/delete/reorder to API
 - **Owner**: Frontend
 - **Estimate**: 4h
+- **Status**: Create/reorder implemented; delete client method exists for API route.
 
 ### W3-FE-006: Wire stop-note create/delete persistence
 - **Owner**: Frontend
 - **Estimate**: 3h
+- **Status**: Create/update/delete implemented.
 
 ### W3-FE-007: Update API-mode tests to success-path
 - **Owner**: Frontend
 - **Estimate**: 2h
+- **Status**: Implemented; targeted tests pass.
 
 ## Wave 4 – Test/Staging Verification
 

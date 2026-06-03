@@ -192,9 +192,19 @@ describe("TripJoinGate", () => {
       createTask: vi.fn(),
       patchTask: vi.fn(),
       patchItineraryItem: vi.fn(),
+      createItineraryItem: vi.fn(),
+      deleteItineraryItem: vi.fn(),
+      reorderItineraryItems: vi.fn(),
       createSuggestion: vi.fn(),
       approveSuggestion: vi.fn(),
       rejectSuggestion: vi.fn(),
+      createStopNote: vi.fn(),
+      patchStopNote: vi.fn(),
+      deleteStopNote: vi.fn(),
+      createMember: vi.fn(),
+      patchMember: vi.fn(),
+      resetMemberClaim: vi.fn(),
+      getExpenseSummary: vi.fn(),
     };
 
     render(<TripJoinGate apiClient={apiClient} onTripChange={vi.fn()} onAuthenticated={vi.fn()} />);
@@ -314,9 +324,19 @@ describe("TripJoinGate", () => {
       createTask: vi.fn(),
       patchTask: vi.fn(),
       patchItineraryItem: vi.fn(),
+      createItineraryItem: vi.fn(),
+      deleteItineraryItem: vi.fn(),
+      reorderItineraryItems: vi.fn(),
       createSuggestion: vi.fn(),
       approveSuggestion: vi.fn(),
       rejectSuggestion: vi.fn(),
+      createStopNote: vi.fn(),
+      patchStopNote: vi.fn(),
+      deleteStopNote: vi.fn(),
+      createMember: vi.fn(),
+      patchMember: vi.fn(),
+      resetMemberClaim: vi.fn(),
+      getExpenseSummary: vi.fn(),
     };
     const onTripChange = vi.fn();
     const onAuthenticated = vi.fn();
@@ -385,9 +405,19 @@ describe("TripJoinGate", () => {
       createTask: vi.fn(),
       patchTask: vi.fn(),
       patchItineraryItem: vi.fn(),
+      createItineraryItem: vi.fn(),
+      deleteItineraryItem: vi.fn(),
+      reorderItineraryItems: vi.fn(),
       createSuggestion: vi.fn(),
       approveSuggestion: vi.fn(),
       rejectSuggestion: vi.fn(),
+      createStopNote: vi.fn(),
+      patchStopNote: vi.fn(),
+      deleteStopNote: vi.fn(),
+      createMember: vi.fn(),
+      patchMember: vi.fn(),
+      resetMemberClaim: vi.fn(),
+      getExpenseSummary: vi.fn(),
     };
 
     render(<TripJoinGate apiClient={apiClient} onTripChange={vi.fn()} onAuthenticated={vi.fn()} />);
@@ -446,9 +476,19 @@ describe("TripJoinGate", () => {
       createTask: vi.fn(),
       patchTask: vi.fn(),
       patchItineraryItem: vi.fn(),
+      createItineraryItem: vi.fn(),
+      deleteItineraryItem: vi.fn(),
+      reorderItineraryItems: vi.fn(),
       createSuggestion: vi.fn(),
       approveSuggestion: vi.fn(),
       rejectSuggestion: vi.fn(),
+      createStopNote: vi.fn(),
+      patchStopNote: vi.fn(),
+      deleteStopNote: vi.fn(),
+      createMember: vi.fn(),
+      patchMember: vi.fn(),
+      resetMemberClaim: vi.fn(),
+      getExpenseSummary: vi.fn(),
     };
 
     render(<TripJoinGate apiClient={apiClient} onTripChange={vi.fn()} onAuthenticated={vi.fn()} />);
@@ -497,9 +537,19 @@ function createApiClient(overrides: Partial<TripApiClient> = {}): TripApiClient 
     createTask: vi.fn(),
     patchTask: vi.fn(),
     patchItineraryItem: vi.fn(),
+    createItineraryItem: vi.fn(),
+    deleteItineraryItem: vi.fn(),
+    reorderItineraryItems: vi.fn(),
     createSuggestion: vi.fn(),
     approveSuggestion: vi.fn(),
     rejectSuggestion: vi.fn(),
+    createStopNote: vi.fn(),
+    patchStopNote: vi.fn(),
+    deleteStopNote: vi.fn(),
+    createMember: vi.fn(),
+    patchMember: vi.fn(),
+    resetMemberClaim: vi.fn(),
+    getExpenseSummary: vi.fn(),
     ...overrides,
-  };
+  } as TripApiClient;
 }

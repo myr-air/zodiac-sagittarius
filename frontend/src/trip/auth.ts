@@ -189,10 +189,9 @@ function normalizeJoinId(joinId: string): string {
 }
 
 function createLocalSessionToken(): string {
-  if (typeof crypto !== "undefined" && "randomUUID" in crypto) return `local-${crypto.randomUUID()}`;
-  const randomValue = typeof crypto !== "undefined" && "getRandomValues" in crypto
-    ? Array.from(crypto.getRandomValues(new Uint8Array(16)), (byte) => byte.toString(16).padStart(2, "0")).join("")
-    : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+  const webCrypto = (globalThis as { crypto?: Crypto }).crypto;
+  if (webCrypto && "randomUUID" in webCrypto) return `local-${webCrypto.randomUUID()}`;
+  const randomValue = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
   return `local-${randomValue}`;
 }
 
@@ -214,7 +213,7 @@ function nextTripMemberId(members: Member[], displayName: string): string {
   return candidate;
 }
 
-function nextTripMemberColor(index: number): string {
+export function nextTripMemberColor(index: number): string {
   const palette = ["#0f766e", "#2563eb", "#f97316", "#64748b", "#7c3aed", "#db2777", "#0891b2", "#ca8a04"];
   return palette[index % palette.length];
 }

@@ -62,6 +62,18 @@ const cockpitResponse: TripCockpitResponse = {
     },
   ],
   suggestions: [],
+  stopNotes: [
+    {
+      id: "018f4e83-5410-7d8b-8f25-fd52c5e7bd30",
+      tripId: "018f4e80-5788-7de0-a45c-8a555d17fc2d",
+      itemId: "018f4e83-5410-7d8b-8f25-fd52c5e7bd1f",
+      authorId: "018f4e81-77a4-7b8f-b3bd-0d0f493ac561",
+      body: "Bring voucher",
+      createdAt: "2026-05-29T00:00:00.000Z",
+      updatedAt: "2026-05-29T00:00:00.000Z",
+      version: 1,
+    },
+  ],
   tasks: [
     {
       id: "018f4e84-1111-7000-8000-000000000001",
@@ -141,6 +153,7 @@ describe("Trip API client", () => {
         version: 1,
       },
     ]);
+    expect(cockpit.stopNotes).toEqual(cockpitResponse.stopNotes);
     expect(cockpit.expenseSummary).toEqual(cockpitResponse.expenseSummary);
   });
 

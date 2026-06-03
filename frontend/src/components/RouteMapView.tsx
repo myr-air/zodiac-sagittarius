@@ -178,13 +178,15 @@ export function RouteMapView({
     });
 
     liveRoutePoints.forEach((point) => {
+      const coordinates = point.item.coordinates;
+      if (!coordinates) return;
       const markerLabel = String(visibleCoordinates.get(point.item.id) ?? 1);
       const markerColor = dayColorFor(point.item.day, routeDayGroups);
       const markerDisplay = activeDay === "all" || point.item.day === activeDay ? "" : "none";
       const existing = markersRef.current.get(point.item.id);
       if (existing) {
         existing.day = point.item.day;
-        existing.marker.setLngLat([point.item.coordinates.lng, point.item.coordinates.lat]);
+        existing.marker.setLngLat([coordinates.lng, coordinates.lat]);
         existing.marker.getElement().style.setProperty("--day-color", markerColor);
         existing.marker.getElement().textContent = markerLabel;
         existing.marker.getElement().style.display = markerDisplay;
@@ -200,7 +202,7 @@ export function RouteMapView({
       markerElement.textContent = markerLabel;
 
       const marker = new maplibregl.Marker({ element: markerElement })
-        .setLngLat([point.item.coordinates.lng, point.item.coordinates.lat])
+        .setLngLat([coordinates.lng, coordinates.lat])
         .addTo(map);
 
       markersRef.current.set(point.item.id, { marker, day: point.item.day });
