@@ -95,14 +95,20 @@ export function RouteMapView({
   const maplibreModuleRef = useRef<typeof import("maplibre-gl") | null>(null);
   const markersRef = useRef<Map<string, { marker: import("maplibre-gl").Marker; day: string }>>(new Map());
   const sourceIdsRef = useRef<string[]>([]);
+  const liveRoutePointsRef = useRef(liveRoutePoints);
 
   const markerItems = useMemo(() => new Set(liveRoutePoints.map((point) => point.item.id)), [liveRoutePoints]);
+
+  useEffect(() => {
+    liveRoutePointsRef.current = liveRoutePoints;
+  }, [liveRoutePoints]);
 
   useEffect(() => {
     if (!mapContainerRef.current || mapRef.current || !liveMapEnabled) return undefined;
 
     let disposed = false;
     const liveMapContainer = mapContainerRef.current;
+    const mountedMarkers = markersRef.current;
 
     async function mountLiveMap() {
       setLiveMapState("loading");
@@ -117,7 +123,7 @@ export function RouteMapView({
 
         const map = new maplibregl.Map({
           attributionControl: { compact: true },
-          center: getRouteCenter(liveRoutePoints),
+          center: getRouteCenter(liveRoutePointsRef.current),
           container,
           cooperativeGestures: true,
           style: "https://tiles.openfreemap.org/styles/positron",
@@ -148,11 +154,12 @@ export function RouteMapView({
 
     return () => {
       disposed = true;
-      markersRef.current.forEach((entry) => entry.marker.remove());
-      markersRef.current.clear();
-      if (mapRef.current) cleanupRouteLayers(mapRef.current, sourceIdsRef.current);
+      const map = mapRef.current;
+      mountedMarkers.forEach((entry) => entry.marker.remove());
+      mountedMarkers.clear();
+      if (map) cleanupRouteLayers(map, sourceIdsRef.current);
       sourceIdsRef.current = [];
-      mapRef.current?.remove();
+      map?.remove();
       mapRef.current = null;
       if (liveMapContainer) {
         liveMapContainer.inert = false;

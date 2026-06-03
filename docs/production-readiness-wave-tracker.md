@@ -240,8 +240,9 @@ demo-only/read-only. Frontend typecheck, targeted tests, and full unit suite pas
 
 ## Wave 4 – Test/Staging Verification
 
-Wave status: test/staging runbook and seed updates added. Local real-system
-verification passed with Docker Postgres and `PSQL='docker exec -i sagittarius-test-postgres psql'`.
+Wave status: test/staging runbook and seed updates added. Local repo-level and
+real-system verification passed with Docker Postgres and
+`PSQL='docker exec -i sagittarius-test-postgres psql'`.
 
 ### W4-TEST-001: Test/staging config split
 - **Owner**: DevOps
@@ -256,12 +257,12 @@ verification passed with Docker Postgres and `PSQL='docker exec -i sagittarius-t
 ### W4-TEST-003: API contract + schema validation
 - **Owner**: QA
 - **Estimate**: 3h
-- **Status**: Contract tests passed against Docker Postgres.
+- **Status**: `make verify PSQL='docker exec -i sagittarius-test-postgres psql'` passed on 2026-06-03; backend contract tests passed against Docker Postgres.
 
 ### W4-TEST-004: Playwright/Cypress journey smoke
 - **Owner**: QA
 - **Estimate**: 6h
-- **Status**: `make frontend-e2e-local` covers real API itinerary create/reorder/delete, expense CRUD, stop-note CRUD, and portal to-dos; `make frontend-e2e-auth-browser` passed against real API/browser.
+- **Status**: `make frontend-e2e-local PSQL='docker exec -i sagittarius-test-postgres psql'` passed on 2026-06-03; it covers real API itinerary create/reorder/delete, plan variant create/patch/publish, expense CRUD, stop-note CRUD, and portal to-dos. `make frontend-e2e-auth-browser` remains the browser-auth command for staging sign-off.
 
 ### W4-TEST-005: Security checklist
 - **Owner**: Security
@@ -275,9 +276,9 @@ verification passed with Docker Postgres and `PSQL='docker exec -i sagittarius-t
 
 ## Wave 5 – Production Readiness Freeze
 
-Wave status: production freeze checklist added and HTTP tracing enabled. Local
-Docker-backed verification is green; final ship remains gated on staging
-environment sign-off and alert routing.
+Wave status: production freeze checklist added, HTTP tracing enabled, repo-level
+local verification green, and local real API e2e green. Final ship remains
+gated on staging environment sign-off, rollback execution, and alert routing.
 
 ### W5-PROD-001: Logging + alerting for writes
 - **Owner**: SRE
@@ -297,7 +298,7 @@ environment sign-off and alert routing.
 ### W5-PROD-004: Security/a11y/browser final sweep
 - **Owner**: QA
 - **Estimate**: 3h
-- **Status**: Local browser auth e2e passed; final staging browser sweep still required.
+- **Status**: Local unit/storybook/build checks and real API e2e passed; final staging browser sweep still required.
 
 ## Wave 2 issue list (implemented in this branch)
 

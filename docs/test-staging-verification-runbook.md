@@ -29,6 +29,7 @@ bun run ../backend/target/debug/seed_e2e
 Preferred local full-stack command:
 
 ```bash
+make verify PSQL='docker exec -i sagittarius-test-postgres psql'
 make frontend-e2e-local PSQL='docker exec -i sagittarius-test-postgres psql'
 make frontend-e2e-auth-browser PSQL='docker exec -i sagittarius-test-postgres psql'
 ```
@@ -45,13 +46,7 @@ The seed includes:
 Run these before staging sign-off:
 
 ```bash
-cd backend
-DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/sagittarius_test \
-cargo test -p sagittarius-api
-
-cd ../frontend
-bun run typecheck
-bun run test
+make verify PSQL='docker exec -i sagittarius-test-postgres psql'
 ```
 
 Then run browser/core journeys against real API:
@@ -62,6 +57,7 @@ commands above.
 Required journeys:
 
 - create/reorder/delete itinerary
+- create/patch/publish plan variants
 - manage members: create, role, access status, password, reset claim
 - manage expenses: create, update, delete, summary reload
 - create/update/delete stop note
@@ -99,4 +95,10 @@ docker exec sagittarius-test-postgres pg_isready -U postgres -d sagittarius_test
 ```
 
 Use `PSQL='docker exec -i sagittarius-test-postgres psql'` when running local
-e2e commands because this machine does not have host `psql` in `PATH`.
+verify/e2e commands because this machine does not have host `psql` in `PATH`.
+The Makefile supports that Docker-backed `PSQL` command.
+
+Latest local evidence on 2026-06-03:
+
+- `make verify PSQL='docker exec -i sagittarius-test-postgres psql'` passed.
+- `make frontend-e2e-local PSQL='docker exec -i sagittarius-test-postgres psql'` passed.

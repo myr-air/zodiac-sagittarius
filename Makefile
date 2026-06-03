@@ -8,6 +8,7 @@ PGADMIN_URL ?= postgres://postgres:postgres@127.0.0.1:5432/postgres
 DATABASE_NAME ?= sagittarius
 TEST_DATABASE_NAME ?= sagittarius_test
 PSQL ?= psql
+PSQL_BIN := $(firstword $(PSQL))
 
 .PHONY: backend-dev frontend-dev backend-test frontend-build frontend-test frontend-storybook frontend-verify frontend-e2e-local frontend-e2e-auth-browser verify db-init db-create db-migrate db-init-test db-migrate-test db-ensure-psql
 
@@ -75,12 +76,12 @@ db-init-test: db-create-test
 	fi
 
 db-ensure-psql:
-	@if ! command -v $(PSQL) >/dev/null 2>&1; then \
-	  echo "Error: $(PSQL) not found in PATH. Install PostgreSQL client and retry."; \
+	@if ! command -v $(PSQL_BIN) >/dev/null 2>&1; then \
+	  echo "Error: $(PSQL_BIN) not found in PATH. Install PostgreSQL client and retry."; \
 	  echo "Examples:"; \
 	  echo "  rtk brew install postgresql"; \
 	  echo "  rtk sudo apt-get install postgresql-client"; \
-	  echo "  rtk docker-psql via container (not covered by this Makefile)"; \
+	  echo "  PSQL='docker exec -i sagittarius-test-postgres psql' rtk make verify"; \
 	  echo "Or set PSQL path manually, e.g. PSQL=/opt/homebrew/bin/psql make backend-dev"; \
 	  exit 1; \
 	fi

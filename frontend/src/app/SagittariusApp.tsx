@@ -105,7 +105,7 @@ export function SagittariusApp({
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [contextRailOpen, setContextRailOpen] = useState(false);
   const [contextRailMounted, setContextRailMounted] = useState(false);
-  const [currentView, setCurrentView] = useState<PlanningView>(initialView);
+  const [navigatedView, setNavigatedView] = useState<PlanningView | null>(null);
   const selectedPlanVariantId = tripState.trip.activePlanVariantId;
   const [currentMemberId, setCurrentMemberId] = useState(seedTrip.members[0].id);
   const [selectedItemId, setSelectedItemId] = useState("item-dimdim");
@@ -117,6 +117,7 @@ export function SagittariusApp({
     if (typeof window === "undefined") return initialView;
     return resolveViewFromPath(window.location.pathname, tripIdForPath, initialView);
   }, [initialView, tripIdForPath]);
+  const currentView = navigatedView ?? resolveCurrentView();
   const sessionMember = findSessionMember(trip, participantSession);
   const currentMember = sessionMember ?? trip.members.find((member) => member.id === currentMemberId) ?? trip.members[0];
   const isApiMode = dataSource === "api" && !isLocalParticipantSession(participantSession);
@@ -142,13 +143,9 @@ export function SagittariusApp({
   );
 
   useEffect(() => {
-    setCurrentView(resolveCurrentView());
-  }, [resolveCurrentView]);
-
-  useEffect(() => {
     if (typeof window === "undefined") return;
 
-    const onPopState = () => setCurrentView(resolveCurrentView());
+    const onPopState = () => setNavigatedView(resolveCurrentView());
     window.addEventListener("popstate", onPopState);
     return () => window.removeEventListener("popstate", onPopState);
   }, [resolveCurrentView]);
@@ -278,7 +275,7 @@ export function SagittariusApp({
   }, []);
 
   const navigateWorkspaceView = useCallback((view: PlanningView, href: string) => {
-    setCurrentView(view);
+    setNavigatedView(view);
     setContextRailVisibility(false);
     if (typeof window !== "undefined" && window.location.pathname !== href) {
       window.history.pushState(null, "", href);

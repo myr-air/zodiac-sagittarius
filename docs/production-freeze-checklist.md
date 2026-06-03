@@ -8,7 +8,10 @@ Use this checklist after Wave 4 real-system verification passes in staging.
 - Confirm write requests emit HTTP trace spans with status and latency.
 - Route 4xx/5xx write-operation logs to the staging alert sink before production.
 - Alert on repeated `401`, `403`, `409`, and `500` spikes for:
+  - trip metadata routes
+  - plan variant routes
   - itinerary write routes
+  - presence and task routes
   - stop-note routes
   - expense routes
   - member management routes
@@ -40,7 +43,8 @@ Before production, verify both paths in staging:
 - Verify every write route rejects missing/invalid bearer tokens.
 - Verify cross-trip IDs return `404` rather than mutating another trip.
 - Verify viewer cannot create stop notes, mutate itinerary, edit expenses, or manage members.
-- Verify traveler can create stop notes/suggestions but cannot directly edit itinerary, expenses, or members.
+- Verify viewer cannot create, patch, or publish plan variants.
+- Verify traveler can create stop notes/suggestions but cannot directly edit itinerary, plan variants, expenses, or members.
 - Verify disabled members lose active sessions.
 
 ## Browser And Accessibility
