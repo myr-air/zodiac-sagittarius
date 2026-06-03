@@ -218,6 +218,8 @@ describe("Sagittarius project scaffold", () => {
     expect(workflow).toContain("bun install --frozen-lockfile");
     expect(workflow).toContain("bunx playwright install --with-deps chromium");
     expect(workflow).toContain("make production-readiness-local PSQL=psql");
+    expect(workflow).toContain("name: Production container image build");
+    expect(workflow).toContain("make container-build");
   });
 
   it("keeps production source free of unimplemented runtime placeholders", () => {
