@@ -295,8 +295,8 @@ Staging preflight enforces those probes when
 Final ship remains gated on staging environment sign-off, rollback execution,
 and alert routing; `make staging-signoff-check` now enforces those external
 evidence fields, requires alert evidence, rejects placeholder owners or
-localhost staging URLs, requires migration/rollback evidence URLs, and
-`make production-env-check` blocks unsafe production
+localhost staging URLs, requires browser/migration/rollback/no-P1-P2 evidence
+URLs, and `make production-env-check` blocks unsafe production
 runtime values before deploy, including missing production CORS/passkey
 allowlists, alert sink/runbook, and email delivery configuration.
 
@@ -329,7 +329,9 @@ allowlists, alert sink/runbook, and email delivery configuration.
 - **Estimate**: 3h
 - **Status**: Local unit/storybook/build checks and real API e2e passed; final
   staging browser sweep still required and must be captured with
-  `staging-signoff-check`.
+  `staging-signoff-check`. Sign-off now requires browser evidence and issue
+  evidence URLs so the deployed-staging browser run and no-P1/P2 tracker query
+  are auditable.
 
 ## Wave 2 issue list (implemented in this branch)
 

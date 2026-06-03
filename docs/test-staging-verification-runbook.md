@@ -92,9 +92,11 @@ SAGITTARIUS_STAGING_ENVIRONMENT=staging \
 SAGITTARIUS_STAGING_API_BASE_URL=https://api.staging.example.test \
 SAGITTARIUS_STAGING_FRONTEND_URL=https://staging.example.test \
 SAGITTARIUS_STAGING_EVIDENCE_URL=https://ci.example.test/runs/123 \
+SAGITTARIUS_STAGING_BROWSER_EVIDENCE_URL=https://ci.example.test/runs/123/browser \
 SAGITTARIUS_STAGING_MIGRATION_EVIDENCE_URL=https://ci.example.test/runs/123/migration \
 SAGITTARIUS_STAGING_ROLLBACK_EVIDENCE_URL=https://ci.example.test/runs/123/rollback \
 SAGITTARIUS_STAGING_ALERT_EVIDENCE_URL=https://alerts.example.test/incidents/sagittarius-write-routes \
+SAGITTARIUS_STAGING_ISSUE_EVIDENCE_URL=https://issues.example.test/sagittarius?severity=P1,P2 \
 SAGITTARIUS_FEATURE_OWNER="Feature Owner" \
 SAGITTARIUS_ROLLBACK_OWNER="Rollback Owner" \
 make staging-signoff-check
@@ -106,6 +108,8 @@ It also requires a separate alert evidence URL so write-operation alert routing
 is auditable.
 Migration and rollback evidence URLs must point to the staging run, log, or
 change record that proves both paths were executed.
+Browser evidence must point to the deployed-staging browser run, and issue
+evidence must point to the tracker query showing no open P1/P2 regressions.
 
 Perf smoke:
 

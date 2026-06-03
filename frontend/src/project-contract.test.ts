@@ -170,9 +170,11 @@ describe("Sagittarius project scaffold", () => {
     expect(stagingSignoff).toContain("checkPublicHttpsUrl");
     expect(stagingSignoff).toContain("must not point at localhost");
     expect(stagingSignoff).toContain("must be a real owner, not TBD");
+    expect(stagingSignoff).toContain("SAGITTARIUS_STAGING_BROWSER_EVIDENCE_URL");
     expect(stagingSignoff).toContain("SAGITTARIUS_STAGING_MIGRATION_EVIDENCE_URL");
     expect(stagingSignoff).toContain("SAGITTARIUS_STAGING_ROLLBACK_EVIDENCE_URL");
     expect(stagingSignoff).toContain("SAGITTARIUS_STAGING_ALERT_EVIDENCE_URL");
+    expect(stagingSignoff).toContain("SAGITTARIUS_STAGING_ISSUE_EVIDENCE_URL");
     const seedE2e = readFileSync(join(repoRoot, "backend/crates/sagittarius-api/src/bin/seed_e2e.rs"), "utf8");
     expect(seedE2e).toContain("0005_account_portal.sql");
     expect(seedE2e).toContain("0006_trip_countries.sql");
@@ -216,8 +218,10 @@ describe("Sagittarius project scaffold", () => {
     expect(productionEnvCheck).toContain("EMAIL_DELIVERY");
     expect(productionEnvCheck).toContain("PASSKEY_ALLOWED_ORIGINS");
     expect(productionEnvCheck).toContain("SMTP_PASSWORD");
+    expect(productionEnvCheck).toContain("SAGITTARIUS_STAGING_BROWSER_EVIDENCE_URL");
     expect(productionEnvCheck).toContain("SAGITTARIUS_STAGING_MIGRATION_EVIDENCE_URL");
     expect(productionEnvCheck).toContain("SAGITTARIUS_STAGING_ROLLBACK_EVIDENCE_URL");
+    expect(productionEnvCheck).toContain("SAGITTARIUS_STAGING_ISSUE_EVIDENCE_URL");
     expect(productionEnvCheck).toContain("SAGITTARIUS_ALERT_SINK_NAME");
     expect(productionEnvCheck).toContain("SAGITTARIUS_ALERT_RUNBOOK_URL");
     const stagingPreflight = readFileSync(join(frontendRoot, "scripts/check-staging-preflight.ts"), "utf8");
