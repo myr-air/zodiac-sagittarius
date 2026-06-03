@@ -103,6 +103,13 @@ pub struct PatchMemberRequest {
 
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub struct UpdatePresenceRequest {
+    pub client_mutation_id: String,
+    pub presence: String,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct CreateSuggestionRequest {
     pub client_mutation_id: String,
     pub r#type: String,

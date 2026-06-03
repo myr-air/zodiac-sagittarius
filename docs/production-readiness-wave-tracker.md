@@ -44,7 +44,7 @@ wave plan for stop notes. Current implementation was audited against
 | Member account link | `POST /members/:memberId/account-links` | Implemented | Implemented | Existing |
 | Ownership transfer | `POST /ownership-transfers` | Implemented | Not wired in trip cockpit UI | Existing backend / future FE |
 | Stop notes | Product requirement from wave plan | Implemented DB/API/domain | Implemented create/update/delete API persistence | W2-DB-001, W2-DB-002, W2-API-001, W2-API-002, W3-FE-006 |
-| Presence | `POST /presence` | Missing | Missing | Future gap |
+| Presence | `POST /presence` | Implemented | Implemented in API client and API-session online sync | Presence closure |
 
 ### Permission scope baseline
 

@@ -242,6 +242,31 @@ export function SagittariusApp({
   }, [isApiMode, participantSession, resolvedApiClient]);
 
   useEffect(() => {
+    if (!isApiMode || !participantSession || !resolvedApiClient) return undefined;
+    let cancelled = false;
+
+    void Promise.resolve(resolvedApiClient.updatePresence(participantSession.tripId, participantSession.sessionToken, {
+      clientMutationId: nextClientMutationId("presence-online"),
+      presence: "online",
+    }))
+      .then((member) => {
+        if (cancelled || !member) return;
+        setTripState((current) => ({
+          ...current,
+          trip: {
+            ...current.trip,
+            members: current.trip.members.map((candidate) => (candidate.id === member.id ? member : candidate)),
+          },
+        }));
+      })
+      .catch(() => undefined);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isApiMode, participantSession, resolvedApiClient]);
+
+  useEffect(() => {
     if (contextRailOpen) return undefined;
     const timeout = window.setTimeout(() => setContextRailMounted(false), 900);
     return () => window.clearTimeout(timeout);

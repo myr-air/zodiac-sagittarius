@@ -6,7 +6,7 @@ use crate::db::PgPool;
 use crate::db::models::NewTripMember;
 use crate::domain::capabilities::can;
 use crate::domain::errors::ServiceError;
-use crate::domain::patches::{CreateMemberRequest, PatchMemberRequest};
+use crate::domain::patches::{CreateMemberRequest, PatchMemberRequest, UpdatePresenceRequest};
 use crate::domain::types::{Capability, TripMemberAccessStatus, TripMemberSummary, TripRole};
 use crate::realtime::RealtimeHub;
 
@@ -156,6 +156,67 @@ pub async fn reset_member_claim(
         &member,
         "member.claim_reset",
         Some(session.member_id),
+    )
+    .await?;
+
+    tx.commit().await?;
+    realtime.publish(event).await;
+
+    Ok(member)
+}
+
+pub async fn update_presence(
+    pool: &PgPool,
+    realtime: &RealtimeHub,
+    trip_id: Uuid,
+    session_token: &str,
+    request: UpdatePresenceRequest,
+) -> Result<TripMemberSummary, ServiceError> {
+    if request.client_mutation_id.trim().is_empty() {
+        return Err(ServiceError::InvalidRequest("clientMutationId is required"));
+    }
+    let presence = request.presence.trim();
+    if !matches!(presence, "online" | "away" | "offline") {
+        return Err(ServiceError::InvalidRequest("presence is invalid"));
+    }
+
+    let token_hash = auth::hash_session_token(session_token)?;
+    let mut tx = pool.begin().await?;
+    let session = db::queries::find_active_member_session_in_tx(&mut tx, trip_id, &token_hash)
+        .await?
+        .ok_or(ServiceError::Unauthenticated)?;
+    if !can(session.role, Capability::ViewPlan) {
+        return Err(ServiceError::Forbidden);
+    }
+    if db::queries::realtime_event_exists_for_client_mutation(
+        &mut tx,
+        trip_id,
+        session.member_id,
+        &request.client_mutation_id,
+    )
+    .await?
+    {
+        return Err(ServiceError::VersionConflict);
+    }
+
+    let member = db::queries::update_member_presence(&mut tx, trip_id, session.member_id, presence)
+        .await?
+        .ok_or(ServiceError::NotFound)?;
+    let member = TripMemberSummary::from(member);
+    let event = events::insert(
+        &mut tx,
+        events::EventWrite {
+            trip_id,
+            aggregate_type: "member",
+            event_type: "presence.updated",
+            aggregate_id: member.id,
+            version: 1,
+            payload: serde_json::to_value(&member).map_err(|_| {
+                ServiceError::InvalidRequest("event payload could not be serialized")
+            })?,
+            client_mutation_id: Some(request.client_mutation_id.as_str()),
+            created_by: Some(session.member_id),
+        },
     )
     .await?;
 

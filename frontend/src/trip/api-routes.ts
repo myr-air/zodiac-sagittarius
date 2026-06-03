@@ -11,6 +11,7 @@ export const tripApiRoutes = {
   currentMemberSession: (tripId: string) => `/api/v1/trips/${encodePathSegment(tripId)}/member-sessions/current`,
   members: (tripId: string) => `/api/v1/trips/${encodePathSegment(tripId)}/members`,
   member: (tripId: string, memberId: string) => `/api/v1/trips/${encodePathSegment(tripId)}/members/${encodePathSegment(memberId)}`,
+  presence: (tripId: string) => `/api/v1/trips/${encodePathSegment(tripId)}/presence`,
   resetMemberClaim: (tripId: string, memberId: string) =>
     `/api/v1/trips/${encodePathSegment(tripId)}/members/${encodePathSegment(memberId)}/claim-resets`,
   tasks: (tripId: string) => `/api/v1/trips/${encodePathSegment(tripId)}/tasks`,

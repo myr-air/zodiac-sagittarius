@@ -338,6 +338,28 @@ describe("Trip API client", () => {
     );
   });
 
+  it("updates presence through the authenticated backend presence route", async () => {
+    const onlineMember = { ...cockpitResponse.members[0], presence: "online", lastSeenAt: "2026-06-03T12:00:00Z" };
+    const fetchImpl = vi.fn().mockResolvedValueOnce(jsonResponse(onlineMember));
+    const client = createTripApiClient({ baseUrl: "https://api.example.test", fetchImpl });
+    const request = { clientMutationId: "presence-1", presence: "online" as const };
+
+    await expect(client.updatePresence(cockpitResponse.trip.id, "session-token", request)).resolves.toMatchObject({
+      id: onlineMember.id,
+      presence: "online",
+      lastSeenAt: "2026-06-03T12:00:00Z",
+    });
+
+    expect(fetchImpl).toHaveBeenCalledWith(
+      `https://api.example.test/api/v1/trips/${cockpitResponse.trip.id}/presence`,
+      expect.objectContaining({
+        method: "POST",
+        headers: expect.objectContaining({ Authorization: "Bearer session-token" }),
+        body: JSON.stringify(request),
+      }),
+    );
+  });
+
   it("patches itinerary items and creates or resolves suggestions through authenticated backend routes", async () => {
     const patchedItem = {
       ...cockpitResponse.itineraryItems[0],

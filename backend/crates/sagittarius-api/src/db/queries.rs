@@ -333,6 +333,27 @@ pub async fn update_trip_member(
     .await
 }
 
+pub async fn update_member_presence(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    trip_id: Uuid,
+    member_id: Uuid,
+    presence: &str,
+) -> Result<Option<TripMemberRecord>, sqlx::Error> {
+    sqlx::query_as::<_, TripMemberRecord>(
+        "update trip_members
+         set presence = $3, last_seen_at = now(), updated_at = now()
+         where trip_id = $1 and id = $2
+         returning
+           id, trip_id, display_name, role, access_status, presence, color, user_id,
+           claimed_at::text as claimed_at, last_seen_at::text as last_seen_at",
+    )
+    .bind(trip_id)
+    .bind(member_id)
+    .bind(presence)
+    .fetch_optional(&mut **tx)
+    .await
+}
+
 pub async fn reset_member_claim(
     tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
     trip_id: Uuid,

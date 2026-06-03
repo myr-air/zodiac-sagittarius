@@ -129,6 +129,7 @@ fn api_v1() -> Router<AppState> {
             "/trips/{trip_id}/members/{member_id}/claim-resets",
             post(members::reset_member_claim),
         )
+        .route("/trips/{trip_id}/presence", post(members::update_presence))
         .route(
             "/trips/{trip_id}/stop-notes",
             post(stop_notes::create_stop_note),

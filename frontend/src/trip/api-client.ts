@@ -160,6 +160,7 @@ export interface TripApiClient {
   patchStopNote(tripId: string, noteId: string, sessionToken: string, request: PatchStopNoteApiRequest): Promise<StopNote>;
   deleteStopNote(tripId: string, noteId: string, sessionToken: string): Promise<StopNote>;
   listMembers(tripId: string, sessionToken: string): Promise<Member[]>;
+  updatePresence(tripId: string, sessionToken: string, request: UpdatePresenceApiRequest): Promise<Member>;
   createMember(tripId: string, sessionToken: string, request: CreateMemberApiRequest): Promise<Member>;
   patchMember(tripId: string, memberId: string, sessionToken: string, request: PatchMemberApiRequest): Promise<Member>;
   resetMemberClaim(tripId: string, memberId: string, sessionToken: string): Promise<Member>;
@@ -244,6 +245,11 @@ export interface PatchMemberApiRequest {
   role?: Exclude<TripRole, "owner">;
   accessStatus?: TripMemberAccessStatus;
   participantPassword?: string;
+}
+
+export interface UpdatePresenceApiRequest {
+  clientMutationId: string;
+  presence: Member["presence"];
 }
 
 export interface CreateExpenseApiRequest {
@@ -416,6 +422,14 @@ export function createTripApiClient(options: TripApiClientOptions = {}): TripApi
         headers: { Authorization: `Bearer ${sessionToken}` },
       });
       return members.map(mapMember);
+    },
+    async updatePresence(tripId, sessionToken, presenceRequest) {
+      const member = await request<TripMemberResponse>(tripApiRoutes.presence(tripId), {
+        method: "POST",
+        headers: { Authorization: `Bearer ${sessionToken}` },
+        body: JSON.stringify(presenceRequest),
+      });
+      return mapMember(member);
     },
     async createMember(tripId, sessionToken, memberRequest) {
       const member = await request<TripMemberResponse>(tripApiRoutes.members(tripId), {
