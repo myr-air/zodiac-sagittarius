@@ -112,6 +112,7 @@ SAGITTARIUS_STAGING_ENVIRONMENT=staging \
 SAGITTARIUS_STAGING_API_BASE_URL=https://api.staging.example.test \
 SAGITTARIUS_STAGING_FRONTEND_URL=https://staging.example.test \
 SAGITTARIUS_STAGING_EVIDENCE_URL=https://ci.example.test/runs/123 \
+SAGITTARIUS_STAGING_ALERT_EVIDENCE_URL=https://alerts.example.test/incidents/sagittarius-write-routes \
 SAGITTARIUS_FEATURE_OWNER="Feature Owner" \
 SAGITTARIUS_ROLLBACK_OWNER="Rollback Owner" \
 make staging-signoff-check
@@ -132,6 +133,8 @@ SMTP_USERNAME=smtp-user \
 SMTP_PASSWORD=smtp-password \
 EMAIL_FROM="Sagittarius <no-reply@example.test>" \
 RUST_LOG=info,tower_http=info,sagittarius_api=info \
+SAGITTARIUS_ALERT_SINK_NAME=sagittarius-write-route-alerts \
+SAGITTARIUS_ALERT_RUNBOOK_URL=https://runbooks.example.test/sagittarius/write-route-alerts \
 SAGITTARIUS_STAGING_PREFLIGHT_PASSED=1 \
 SAGITTARIUS_STAGING_BROWSER_SIGNOFF=1 \
 SAGITTARIUS_STAGING_DB_MIGRATION_VERIFIED=1 \

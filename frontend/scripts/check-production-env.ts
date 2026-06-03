@@ -7,6 +7,8 @@ const passkeyAllowedOrigins = requiredEnv("PASSKEY_ALLOWED_ORIGINS");
 const emailDelivery = requiredEnv("EMAIL_DELIVERY");
 const rustLog = requiredEnv("RUST_LOG");
 const evidenceUrl = requiredEnv("SAGITTARIUS_STAGING_EVIDENCE_URL");
+const alertSinkName = requiredEnv("SAGITTARIUS_ALERT_SINK_NAME");
+const alertRunbookUrl = requiredEnv("SAGITTARIUS_ALERT_RUNBOOK_URL");
 const featureOwner = requiredEnv("SAGITTARIUS_FEATURE_OWNER");
 const rollbackOwner = requiredEnv("SAGITTARIUS_ROLLBACK_OWNER");
 
@@ -17,6 +19,8 @@ checkAllowedOrigins("PASSKEY_ALLOWED_ORIGINS", passkeyAllowedOrigins, "");
 checkEmailDelivery(emailDelivery);
 checkRustLog(rustLog);
 checkEvidence("SAGITTARIUS_STAGING_EVIDENCE_URL", evidenceUrl);
+checkAlertSink(alertSinkName);
+checkEvidence("SAGITTARIUS_ALERT_RUNBOOK_URL", alertRunbookUrl);
 checkOwner("SAGITTARIUS_FEATURE_OWNER", featureOwner);
 checkOwner("SAGITTARIUS_ROLLBACK_OWNER", rollbackOwner);
 
@@ -162,6 +166,13 @@ function checkEvidence(name: string, value: string) {
     if (!["http:", "https:"].includes(url.protocol)) failures.push(`${name} must be an http(s) URL`);
   } catch {
     failures.push(`${name} must be a valid evidence URL`);
+  }
+}
+
+function checkAlertSink(value: string) {
+  if (!value) return;
+  if (value.length < 3 || /^tbd$/i.test(value)) {
+    failures.push("SAGITTARIUS_ALERT_SINK_NAME must name a real alert sink, not TBD");
   }
 }
 

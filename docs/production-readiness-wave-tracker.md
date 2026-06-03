@@ -294,15 +294,15 @@ Staging preflight enforces those probes when
 `SAGITTARIUS_REQUIRE_PREFLIGHT_API_CHECK=1` is set.
 Final ship remains gated on staging environment sign-off, rollback execution,
 and alert routing; `make staging-signoff-check` now enforces those external
-evidence fields, rejects placeholder owners or localhost staging URLs, and
-`make production-env-check` blocks unsafe production
+evidence fields, requires alert evidence, rejects placeholder owners or
+localhost staging URLs, and `make production-env-check` blocks unsafe production
 runtime values before deploy, including missing production CORS/passkey
-allowlists and email delivery configuration.
+allowlists, alert sink/runbook, and email delivery configuration.
 
 ### W5-PROD-001: Logging + alerting for writes
 - **Owner**: SRE
 - **Estimate**: 4h
-- **Status**: HTTP request/response tracing emits at `INFO`, `RUST_LOG` env filtering is honored by the API binary, local API trace smoke target is available, production CORS uses an origin allowlist, email delivery is required for account login, and production env check requires `tower_http`/`sagittarius_api` logging before deploy; alert routing checklist documented.
+- **Status**: HTTP request/response tracing emits at `INFO`, `RUST_LOG` env filtering is honored by the API binary, local API trace smoke target is available, production CORS uses an origin allowlist, email delivery is required for account login, production env check requires `tower_http`/`sagittarius_api` logging plus alert sink/runbook config before deploy, and staging sign-off requires alert routing evidence.
 
 ### W5-PROD-001A: Runtime liveness/readiness probes
 - **Owner**: SRE
