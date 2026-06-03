@@ -21,6 +21,7 @@ async fn migration_creates_vertical_slice_tables(pool: sqlx::PgPool) {
         "suggestions",
         "trip_tasks",
         "expenses",
+        "stop_notes",
         "realtime_events",
     ] {
         assert!(
@@ -48,6 +49,7 @@ async fn migration_creates_vertical_slice_indexes(pool: sqlx::PgPool) {
         "trip_tasks_trip_visibility_status_idx",
         "trip_tasks_assignee_status_idx",
         "trip_member_sessions_member_active_idx",
+        "stop_notes_trip_item_created_at_idx",
         "realtime_events_trip_id_idx",
         "realtime_events_client_mutation_id_idx",
     ] {

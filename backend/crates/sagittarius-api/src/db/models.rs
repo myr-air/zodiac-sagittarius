@@ -3,9 +3,9 @@ use time::{Date, OffsetDateTime};
 use uuid::Uuid;
 
 use crate::domain::types::{
-    AccountSessionKind, ClaimableMember, ItineraryCoordinates, ItineraryItemSummary,
-    PlanVariantSummary, SuggestionSummary, TripMemberAccessStatus, TripMemberSummary, TripRole,
-    TripSummary, TripTaskSummary,
+    AccountSessionKind, ClaimableMember, ExpenseItemSummary, ItineraryCoordinates,
+    ItineraryItemSummary, PlanVariantSummary, StopNoteSummary, SuggestionSummary,
+    TripMemberAccessStatus, TripMemberSummary, TripRole, TripSummary, TripTaskSummary,
 };
 
 #[derive(Debug, Clone, FromRow)]
@@ -175,6 +175,32 @@ pub struct NewAccountAuditEvent {
     pub actor_member_id: Uuid,
     pub event_type: &'static str,
     pub payload: serde_json::Value,
+}
+
+pub struct NewItineraryItem<'a> {
+    pub id: Uuid,
+    pub trip_id: Uuid,
+    pub plan_variant_id: Uuid,
+    pub day: Date,
+    pub sort_order: i32,
+    pub start_time: Option<&'a str>,
+    pub activity: &'a str,
+    pub activity_type: &'a str,
+    pub place: &'a str,
+    pub map_link: &'a str,
+    pub duration_minutes: Option<i32>,
+    pub transportation: &'a str,
+    pub note: &'a str,
+    pub created_by: Uuid,
+}
+
+pub struct NewTripMember<'a> {
+    pub id: Uuid,
+    pub trip_id: Uuid,
+    pub display_name: &'a str,
+    pub role: TripRole,
+    pub color: &'a str,
+    pub claim_password_hash: Option<&'a str>,
 }
 
 #[derive(Debug, Clone, FromRow)]
@@ -473,10 +499,88 @@ pub struct NewTripTask<'a> {
 }
 
 #[derive(Debug, Clone, FromRow)]
+pub struct StopNoteRecord {
+    pub id: Uuid,
+    pub trip_id: Uuid,
+    pub itinerary_item_id: Uuid,
+    pub author_id: Uuid,
+    pub body: String,
+    pub created_at: String,
+    pub updated_at: String,
+    pub version: i64,
+}
+
+impl From<StopNoteRecord> for StopNoteSummary {
+    fn from(record: StopNoteRecord) -> Self {
+        Self {
+            id: record.id,
+            trip_id: record.trip_id,
+            item_id: record.itinerary_item_id,
+            author_id: record.author_id,
+            body: record.body,
+            created_at: record.created_at,
+            updated_at: record.updated_at,
+            version: record.version,
+        }
+    }
+}
+
+pub struct NewStopNote<'a> {
+    pub id: Uuid,
+    pub trip_id: Uuid,
+    pub itinerary_item_id: Uuid,
+    pub author_id: Uuid,
+    pub body: &'a str,
+}
+
+#[derive(Debug, Clone, FromRow)]
 pub struct ExpenseSplitRecord {
     pub paid_by: Uuid,
     pub amount_minor: i32,
     pub splits: serde_json::Value,
+}
+
+#[derive(Debug, Clone, FromRow)]
+pub struct ExpenseRecord {
+    pub id: Uuid,
+    pub trip_id: Uuid,
+    pub title: String,
+    pub amount_minor: i32,
+    pub currency: String,
+    pub paid_by: Uuid,
+    pub category: String,
+    pub splits: serde_json::Value,
+    pub itinerary_item_id: Option<Uuid>,
+    pub version: i64,
+}
+
+impl From<ExpenseRecord> for ExpenseItemSummary {
+    fn from(record: ExpenseRecord) -> Self {
+        Self {
+            id: record.id,
+            trip_id: record.trip_id,
+            title: record.title,
+            amount_minor: record.amount_minor,
+            currency: record.currency,
+            paid_by: record.paid_by,
+            category: record.category,
+            splits: record.splits,
+            itinerary_item_id: record.itinerary_item_id,
+            version: record.version,
+        }
+    }
+}
+
+pub struct NewExpense<'a> {
+    pub id: Uuid,
+    pub trip_id: Uuid,
+    pub title: &'a str,
+    pub amount_minor: i32,
+    pub currency: &'a str,
+    pub paid_by: Uuid,
+    pub category: &'a str,
+    pub splits: serde_json::Value,
+    pub itinerary_item_id: Option<Uuid>,
 }
 
 #[derive(Debug, Clone, FromRow)]

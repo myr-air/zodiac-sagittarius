@@ -100,6 +100,12 @@ wave plan for stop notes. Current implementation was audited against
 
 ## Wave 2 - Backend + DB foundation (backend-first)
 
+Wave status: backend implementation added on `codex/production-readiness-waves`.
+Compile/unit verification is green. DB integration verification is blocked in
+the current local environment because `psql` is not in `PATH` and
+`DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/sagittarius_test`
+times out connecting to Postgres.
+
 ### W2-DB-001: Stop-note migration + schema constraints
 - **Owner**: Backend
 - **Estimate**: 1.5h
@@ -109,6 +115,7 @@ wave plan for stop notes. Current implementation was audited against
   - Foreign keys point to `trips`, `itinerary_items`, `trip_members`.
   - Read index exists for trip-scoped retrieval.
   - Migration tests validate table/index presence.
+- **Status**: Implemented; DB integration run blocked by local Postgres setup.
 
 ### W2-DB-002: Stop-note repo/domain service model
 - **Owner**: Backend
@@ -117,6 +124,7 @@ wave plan for stop notes. Current implementation was audited against
   - DB model + query for listing stop notes by trip implemented.
   - Domain type for `StopNoteSummary` added.
   - Cockpit mapper can include stop notes list.
+- **Status**: Implemented; compile verified.
 
 ### W2-API-001: POST `/trips/:tripId/stop-notes`
 - **Owner**: Backend
@@ -126,6 +134,7 @@ wave plan for stop notes. Current implementation was audited against
   - Author is the active session member.
   - Conflict on duplicate mutation id in same trip/member.
   - Realtime `stop_note.created` event emitted on success.
+- **Status**: Implemented; contract test added, DB run blocked by local Postgres setup.
 
 ### W2-API-002: PATCH/DELETE `/trips/:tripId/stop-notes/:noteId`
 - **Owner**: Backend
@@ -134,6 +143,7 @@ wave plan for stop notes. Current implementation was audited against
   - PATCH updates body with optimistic version check.
   - DELETE soft-deletes row and emits event.
   - Cross-trip note access returns not found.
+- **Status**: Implemented; contract test added, DB run blocked by local Postgres setup.
 
 ### W2-API-003: POST `/trips/:tripId/itinerary-items`
 - **Owner**: Backend
@@ -142,6 +152,7 @@ wave plan for stop notes. Current implementation was audited against
   - New route exists and writes item.
   - Returns created row + version.
   - DB version increments + realtime event.
+- **Status**: Implemented; compile verified.
 
 ### W2-API-004: DELETE `/trips/:tripId/itinerary-items/:itemId`
 - **Owner**: Backend
@@ -149,6 +160,7 @@ wave plan for stop notes. Current implementation was audited against
 - **Acceptance criteria**:
   - Soft-deletion only.
   - Cannot delete unknown item or cross-trip item.
+- **Status**: Implemented; compile verified.
 
 ### W2-API-005: PATCH `/trips/:tripId/itinerary-items/order`
 - **Owner**: Backend
@@ -157,6 +169,7 @@ wave plan for stop notes. Current implementation was audited against
   - Single transaction reorder for one day/plan variant.
   - Sort orders are deterministic and contiguous by step.
   - Emits one `itinerary_items.reordered` event.
+- **Status**: Implemented; compile verified.
 
 ### W2-API-006: Expense CRUD endpoints
 - **Owner**: Backend
@@ -165,6 +178,7 @@ wave plan for stop notes. Current implementation was audited against
   - POST/PATCH/DELETE implemented with version checks.
   - Owner/organizer only.
   - `expense_summary` updates automatically on reload.
+- **Status**: Implemented; compile verified.
 
 ### W2-API-007: Member ops endpoints
 - **Owner**: Backend
@@ -174,6 +188,7 @@ wave plan for stop notes. Current implementation was audited against
   - `PATCH /trips/:tripId/members/:memberId`
   - `POST /trips/:tripId/members/:memberId/claim-resets`
   - Access checks for `managePeople` capability.
+- **Status**: Implemented; compile verified.
 
 ### W2-API-008: Include stop-notes & core entities in cockpit payload
 - **Owner**: Backend
@@ -182,6 +197,7 @@ wave plan for stop notes. Current implementation was audited against
   - `GET /trips/:tripId` returns `stopNotes` array in `TripCockpit`.
   - Expenses and suggestions behavior unchanged.
   - API tests updated to assert new payload shape.
+- **Status**: Implemented; trip-load contract assertion added, DB run blocked by local Postgres setup.
 
 ## Wave 3 – Frontend API Client + Wiring
 

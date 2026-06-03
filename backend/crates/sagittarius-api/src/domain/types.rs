@@ -346,6 +346,19 @@ pub struct TripTaskSummary {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub struct StopNoteSummary {
+    pub id: Uuid,
+    pub trip_id: Uuid,
+    pub item_id: Uuid,
+    pub author_id: Uuid,
+    pub body: String,
+    pub created_at: String,
+    pub updated_at: String,
+    pub version: i64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct SettlementSuggestion {
     pub from: Uuid,
     pub to: Uuid,
@@ -363,6 +376,21 @@ pub struct ExpenseSummary {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub struct ExpenseItemSummary {
+    pub id: Uuid,
+    pub trip_id: Uuid,
+    pub title: String,
+    pub amount_minor: i32,
+    pub currency: String,
+    pub paid_by: Uuid,
+    pub category: String,
+    pub splits: Value,
+    pub itinerary_item_id: Option<Uuid>,
+    pub version: i64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct TripCockpit {
     pub trip: TripSummary,
     pub members: Vec<TripMemberSummary>,
@@ -370,6 +398,7 @@ pub struct TripCockpit {
     pub itinerary_items: Vec<ItineraryItemSummary>,
     pub suggestions: Vec<SuggestionSummary>,
     pub tasks: Vec<TripTaskSummary>,
+    pub stop_notes: Vec<StopNoteSummary>,
     pub expense_summary: Option<ExpenseSummary>,
 }
 

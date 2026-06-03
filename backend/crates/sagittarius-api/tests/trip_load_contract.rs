@@ -10,6 +10,7 @@ async fn trip_load_contract_returns_cockpit_payload_and_filters_private_tasks(po
     support::seed_trip(&pool).await;
     let traveler_token = support::create_session(&pool, support::TRAVELER_ID).await;
     support::seed_tasks(&pool).await;
+    support::seed_stop_note(&pool).await;
     let app = support::app(pool);
 
     let response = app
@@ -34,6 +35,14 @@ async fn trip_load_contract_returns_cockpit_payload_and_filters_private_tasks(po
     assert_eq!(body["planVariants"].as_array().unwrap().len(), 1);
     assert_eq!(body["itineraryItems"][0]["id"], support::ITEM_ID);
     assert_eq!(body["suggestions"].as_array().unwrap().len(), 0);
+    assert_eq!(body["stopNotes"][0]["id"], support::STOP_NOTE_ID);
+    assert_eq!(body["stopNotes"][0]["itemId"], support::ITEM_ID);
+    assert_eq!(body["stopNotes"][0]["authorId"], support::TRAVELER_ID);
+    assert_eq!(
+        body["stopNotes"][0]["body"],
+        "Bring printed booking voucher"
+    );
+    assert_eq!(body["stopNotes"][0]["version"], 2);
 
     let tasks = body["tasks"].as_array().unwrap();
     let mut task_titles: Vec<&str> = tasks

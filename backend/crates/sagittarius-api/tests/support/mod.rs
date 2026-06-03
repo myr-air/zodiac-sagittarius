@@ -12,6 +12,7 @@ pub const TRIP_ID: &str = "018f4e80-5788-7de0-a45c-8a555d17fc2d";
 pub const PLAN_ID: &str = "018f4e82-3000-7c00-b111-000000000001";
 pub const ALT_PLAN_ID: &str = "018f4e82-3000-7c00-b111-000000000002";
 pub const ITEM_ID: &str = "018f4e83-5410-7d8b-8f25-fd52c5e7bd1f";
+pub const STOP_NOTE_ID: &str = "018f4e83-5410-7d8b-8f25-fd52c5e7bd30";
 
 pub fn app(pool: PgPool) -> Router {
     sagittarius_api::api::router(sagittarius_api::app::AppState::with_pool(pool))
@@ -142,6 +143,20 @@ pub async fn seed_tasks(pool: &PgPool) {
     .bind(Uuid::parse_str(TRIP_ID).unwrap())
     .bind(Uuid::parse_str(TRAVELER_ID).unwrap())
     .bind(Uuid::parse_str(ORGANIZER_ID).unwrap())
+    .execute(pool)
+    .await
+    .unwrap();
+}
+
+pub async fn seed_stop_note(pool: &PgPool) {
+    sqlx::query(
+        "insert into stop_notes (id, trip_id, itinerary_item_id, author_id, body, version)
+         values ($1, $2, $3, $4, 'Bring printed booking voucher', 2)",
+    )
+    .bind(Uuid::parse_str(STOP_NOTE_ID).unwrap())
+    .bind(Uuid::parse_str(TRIP_ID).unwrap())
+    .bind(Uuid::parse_str(ITEM_ID).unwrap())
+    .bind(Uuid::parse_str(TRAVELER_ID).unwrap())
     .execute(pool)
     .await
     .unwrap();

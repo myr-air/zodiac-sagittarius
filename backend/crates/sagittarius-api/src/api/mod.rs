@@ -1,8 +1,11 @@
 pub mod account;
 pub mod error;
+pub mod expenses;
 pub mod extractors;
 pub mod itinerary;
 pub mod join;
+pub mod members;
+pub mod stop_notes;
 pub mod suggestions;
 pub mod tasks;
 pub mod trips;
@@ -86,8 +89,16 @@ fn api_v1() -> Router<AppState> {
         .route("/trips/{trip_id}", get(trips::load_trip))
         .route("/trips/{trip_id}/events/stream", get(ws::trip_ws))
         .route(
+            "/trips/{trip_id}/itinerary-items",
+            post(itinerary::create_itinerary_item),
+        )
+        .route(
+            "/trips/{trip_id}/itinerary-items/order",
+            patch(itinerary::reorder_itinerary_items),
+        )
+        .route(
             "/trips/{trip_id}/itinerary-items/{item_id}",
-            patch(itinerary::patch_itinerary_item),
+            patch(itinerary::patch_itinerary_item).delete(itinerary::delete_itinerary_item),
         )
         .route(
             "/trips/{trip_id}/suggestions",
@@ -95,6 +106,35 @@ fn api_v1() -> Router<AppState> {
         )
         .route("/trips/{trip_id}/tasks", post(tasks::create_task))
         .route("/trips/{trip_id}/tasks/{task_id}", patch(tasks::patch_task))
+        .route(
+            "/trips/{trip_id}/expenses/summary",
+            get(expenses::get_expense_summary),
+        )
+        .route("/trips/{trip_id}/expenses", post(expenses::create_expense))
+        .route(
+            "/trips/{trip_id}/expenses/{expense_id}",
+            patch(expenses::patch_expense).delete(expenses::delete_expense),
+        )
+        .route(
+            "/trips/{trip_id}/members",
+            get(members::list_members).post(members::create_member),
+        )
+        .route(
+            "/trips/{trip_id}/members/{member_id}",
+            patch(members::patch_member),
+        )
+        .route(
+            "/trips/{trip_id}/members/{member_id}/claim-resets",
+            post(members::reset_member_claim),
+        )
+        .route(
+            "/trips/{trip_id}/stop-notes",
+            post(stop_notes::create_stop_note),
+        )
+        .route(
+            "/trips/{trip_id}/stop-notes/{note_id}",
+            patch(stop_notes::patch_stop_note).delete(stop_notes::delete_stop_note),
+        )
         .route(
             "/trips/{trip_id}/suggestions/{suggestion_id}",
             patch(suggestions::patch_suggestion),
