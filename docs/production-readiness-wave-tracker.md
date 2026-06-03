@@ -276,21 +276,28 @@ verification is still blocked locally until Postgres/psql is available.
 
 ## Wave 5 – Production Readiness Freeze
 
+Wave status: production freeze checklist added and HTTP tracing enabled. Final
+ship remains gated on real staging DB/browser verification.
+
 ### W5-PROD-001: Logging + alerting for writes
 - **Owner**: SRE
 - **Estimate**: 4h
+- **Status**: HTTP tracing enabled; alert routing checklist documented.
 
 ### W5-PROD-002: Rollback plan + migration rollback verification
 - **Owner**: Backend
 - **Estimate**: 2h
+- **Status**: Rollback plan documented; execution pending staging DB.
 
 ### W5-PROD-003: Update production-ready docs
 - **Owner**: Docs
 - **Estimate**: 1h
+- **Status**: `docs/future-production-features.md` updated.
 
 ### W5-PROD-004: Security/a11y/browser final sweep
 - **Owner**: QA
 - **Estimate**: 3h
+- **Status**: Checklist documented; execution pending staging browser run.
 
 ## Wave 2 issue list (current gap snapshot)
 

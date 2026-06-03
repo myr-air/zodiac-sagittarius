@@ -2,7 +2,15 @@
 
 These are intentionally outside the current production connectivity pivot.
 
-- Persist stop notes through backend endpoints instead of keeping them as demo-only context data.
-- Add backend endpoints for member role changes, access status changes, member creation, and password resets.
-- Move itinerary create, reorder, and delete into API mutations after the backend exposes those routes.
-- Add expense write endpoints to replace local expense-summary-only rendering.
+## Now Live In API Mode
+
+- Stop notes persist through backend endpoints.
+- Member create/update/reset claim flows have backend endpoints and frontend API wiring.
+- Itinerary create/reorder API wiring is live; delete has backend/client support.
+- Expense write endpoints exist on the backend, with summary reload support.
+
+## Still Future
+
+- Browser-driven staging sign-off for all write journeys after local/staging Postgres is available.
+- Production alert routing from HTTP/write traces into the deployment observability stack.
+- Full expense editing UI if the product wants expense CRUD beyond summary/context controls.

@@ -20,6 +20,7 @@ use axum::{
     routing::{delete, get, patch, post},
 };
 use tower_http::cors::{AllowOrigin, CorsLayer};
+use tower_http::trace::TraceLayer;
 
 use crate::app::AppState;
 
@@ -27,6 +28,7 @@ pub fn router(state: AppState) -> Router {
     Router::new()
         .nest("/api/v1", api_v1())
         .fallback(error::not_found)
+        .layer(TraceLayer::new_for_http())
         .layer(cors_layer())
         .with_state(state)
 }
