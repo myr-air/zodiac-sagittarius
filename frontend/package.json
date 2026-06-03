@@ -17,6 +17,7 @@
     "test:e2e:auth-browser": "bun run scripts/run-local-real-browser-auth-e2e.ts",
     "test:api-trace-smoke": "bun run scripts/run-local-api-trace-smoke.ts",
     "test:perf-smoke": "bun run scripts/run-local-perf-smoke.ts",
+    "test:production-env": "bun run scripts/check-production-env.ts",
     "test:staging-preflight": "bun run scripts/check-staging-preflight.ts",
     "test:staging-signoff": "bun run scripts/check-staging-signoff.ts",
     "test:storybook": "NODE_OPTIONS=--no-warnings vitest --project storybook run",

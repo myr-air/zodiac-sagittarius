@@ -287,12 +287,13 @@ local verification green, local real API e2e green, and a GitHub Actions
 production-readiness workflow runs the local gate with Postgres + Playwright.
 Final ship remains gated on staging environment sign-off, rollback execution,
 and alert routing; `make staging-signoff-check` now enforces those external
-evidence fields.
+evidence fields, and `make production-env-check` blocks unsafe production
+runtime values before deploy.
 
 ### W5-PROD-001: Logging + alerting for writes
 - **Owner**: SRE
 - **Estimate**: 4h
-- **Status**: HTTP request/response tracing emits at `INFO`, `RUST_LOG` env filtering is honored by the API binary, and local API trace smoke target is available; alert routing checklist documented.
+- **Status**: HTTP request/response tracing emits at `INFO`, `RUST_LOG` env filtering is honored by the API binary, local API trace smoke target is available, and production env check requires `tower_http`/`sagittarius_api` logging before deploy; alert routing checklist documented.
 
 ### W5-PROD-002: Rollback plan + migration rollback verification
 - **Owner**: Backend

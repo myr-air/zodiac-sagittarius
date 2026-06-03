@@ -12,7 +12,7 @@ ROLLBACK_TEST_DATABASE_URL ?= postgres://postgres:postgres@127.0.0.1:5432/$(ROLL
 PSQL ?= psql
 PSQL_BIN := $(firstword $(PSQL))
 
-.PHONY: backend-dev frontend-dev backend-test frontend-build frontend-test frontend-storybook frontend-verify frontend-e2e-local frontend-e2e-auth-browser api-trace-smoke perf-smoke staging-preflight staging-signoff-check verify production-readiness-local db-init db-create db-migrate db-init-test db-migrate-test db-rollback-stop-notes-test db-ensure-psql
+.PHONY: backend-dev frontend-dev backend-test frontend-build frontend-test frontend-storybook frontend-verify frontend-e2e-local frontend-e2e-auth-browser api-trace-smoke perf-smoke production-env-check staging-preflight staging-signoff-check verify production-readiness-local db-init db-create db-migrate db-init-test db-migrate-test db-rollback-stop-notes-test db-ensure-psql
 
 backend-dev: db-init
 	DATABASE_URL="$(DATABASE_URL)" SAGITTARIUS_BIND_ADDR="$(SAGITTARIUS_BIND_ADDR)" \
@@ -56,6 +56,9 @@ perf-smoke: db-init-test
 	cd $(FRONTEND_DIR) && \
 	DATABASE_URL="$(TEST_DATABASE_URL)" \
 	bun run test:perf-smoke
+
+production-env-check:
+	cd $(FRONTEND_DIR) && bun run test:production-env
 
 staging-preflight: db-ensure-psql
 	cd $(FRONTEND_DIR) && \

@@ -106,3 +106,22 @@ SAGITTARIUS_FEATURE_OWNER="Feature Owner" \
 SAGITTARIUS_ROLLBACK_OWNER="Rollback Owner" \
 make staging-signoff-check
 ```
+
+Then run the production environment safety check with the actual production
+runtime values before deploy:
+
+```bash
+DATABASE_URL=postgres://user:pass@db.example.test:5432/sagittarius \
+NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL=https://api.example.test \
+RUST_LOG=info,tower_http=info,sagittarius_api=info \
+SAGITTARIUS_STAGING_PREFLIGHT_PASSED=1 \
+SAGITTARIUS_STAGING_BROWSER_SIGNOFF=1 \
+SAGITTARIUS_STAGING_DB_MIGRATION_VERIFIED=1 \
+SAGITTARIUS_STAGING_ROLLBACK_VERIFIED=1 \
+SAGITTARIUS_STAGING_ALERT_ROUTING_VERIFIED=1 \
+SAGITTARIUS_STAGING_NO_P1_P2=1 \
+SAGITTARIUS_STAGING_EVIDENCE_URL=https://ci.example.test/runs/123 \
+SAGITTARIUS_FEATURE_OWNER="Feature Owner" \
+SAGITTARIUS_ROLLBACK_OWNER="Rollback Owner" \
+make production-env-check
+```
