@@ -112,6 +112,8 @@ SAGITTARIUS_STAGING_ENVIRONMENT=staging \
 SAGITTARIUS_STAGING_API_BASE_URL=https://api.staging.example.test \
 SAGITTARIUS_STAGING_FRONTEND_URL=https://staging.example.test \
 SAGITTARIUS_STAGING_EVIDENCE_URL=https://ci.example.test/runs/123 \
+SAGITTARIUS_STAGING_MIGRATION_EVIDENCE_URL=https://ci.example.test/runs/123/migration \
+SAGITTARIUS_STAGING_ROLLBACK_EVIDENCE_URL=https://ci.example.test/runs/123/rollback \
 SAGITTARIUS_STAGING_ALERT_EVIDENCE_URL=https://alerts.example.test/incidents/sagittarius-write-routes \
 SAGITTARIUS_FEATURE_OWNER="Feature Owner" \
 SAGITTARIUS_ROLLBACK_OWNER="Rollback Owner" \
@@ -142,6 +144,8 @@ SAGITTARIUS_STAGING_ROLLBACK_VERIFIED=1 \
 SAGITTARIUS_STAGING_ALERT_ROUTING_VERIFIED=1 \
 SAGITTARIUS_STAGING_NO_P1_P2=1 \
 SAGITTARIUS_STAGING_EVIDENCE_URL=https://ci.example.test/runs/123 \
+SAGITTARIUS_STAGING_MIGRATION_EVIDENCE_URL=https://ci.example.test/runs/123/migration \
+SAGITTARIUS_STAGING_ROLLBACK_EVIDENCE_URL=https://ci.example.test/runs/123/rollback \
 SAGITTARIUS_FEATURE_OWNER="Feature Owner" \
 SAGITTARIUS_ROLLBACK_OWNER="Rollback Owner" \
 make production-env-check

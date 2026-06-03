@@ -92,6 +92,8 @@ SAGITTARIUS_STAGING_ENVIRONMENT=staging \
 SAGITTARIUS_STAGING_API_BASE_URL=https://api.staging.example.test \
 SAGITTARIUS_STAGING_FRONTEND_URL=https://staging.example.test \
 SAGITTARIUS_STAGING_EVIDENCE_URL=https://ci.example.test/runs/123 \
+SAGITTARIUS_STAGING_MIGRATION_EVIDENCE_URL=https://ci.example.test/runs/123/migration \
+SAGITTARIUS_STAGING_ROLLBACK_EVIDENCE_URL=https://ci.example.test/runs/123/rollback \
 SAGITTARIUS_STAGING_ALERT_EVIDENCE_URL=https://alerts.example.test/incidents/sagittarius-write-routes \
 SAGITTARIUS_FEATURE_OWNER="Feature Owner" \
 SAGITTARIUS_ROLLBACK_OWNER="Rollback Owner" \
@@ -102,6 +104,8 @@ The sign-off check rejects localhost/non-HTTPS staging URLs, production
 environment names, and placeholder owners like `TBD`.
 It also requires a separate alert evidence URL so write-operation alert routing
 is auditable.
+Migration and rollback evidence URLs must point to the staging run, log, or
+change record that proves both paths were executed.
 
 Perf smoke:
 

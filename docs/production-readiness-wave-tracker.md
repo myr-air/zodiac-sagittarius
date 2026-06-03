@@ -295,7 +295,8 @@ Staging preflight enforces those probes when
 Final ship remains gated on staging environment sign-off, rollback execution,
 and alert routing; `make staging-signoff-check` now enforces those external
 evidence fields, requires alert evidence, rejects placeholder owners or
-localhost staging URLs, and `make production-env-check` blocks unsafe production
+localhost staging URLs, requires migration/rollback evidence URLs, and
+`make production-env-check` blocks unsafe production
 runtime values before deploy, including missing production CORS/passkey
 allowlists, alert sink/runbook, and email delivery configuration.
 
@@ -314,7 +315,9 @@ allowlists, alert sink/runbook, and email delivery configuration.
 ### W5-PROD-002: Rollback plan + migration rollback verification
 - **Owner**: Backend
 - **Estimate**: 2h
-- **Status**: Rollback plan documented; local SQL rollback smoke target added. Execution still required on staging DB.
+- **Status**: Rollback plan documented; local SQL rollback smoke target added.
+  Staging sign-off and production env check require migration and rollback
+  evidence URLs. Execution still required on staging DB.
 
 ### W5-PROD-003: Update production-ready docs
 - **Owner**: Docs

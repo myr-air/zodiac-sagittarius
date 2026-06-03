@@ -12,6 +12,8 @@ const requiredTextChecks = [
   ["SAGITTARIUS_STAGING_API_BASE_URL", "staging API base URL"],
   ["SAGITTARIUS_STAGING_FRONTEND_URL", "staging frontend URL"],
   ["SAGITTARIUS_STAGING_EVIDENCE_URL", "evidence or run URL"],
+  ["SAGITTARIUS_STAGING_MIGRATION_EVIDENCE_URL", "migration evidence URL"],
+  ["SAGITTARIUS_STAGING_ROLLBACK_EVIDENCE_URL", "rollback evidence URL"],
   ["SAGITTARIUS_STAGING_ALERT_EVIDENCE_URL", "alert routing evidence URL"],
   ["SAGITTARIUS_FEATURE_OWNER", "feature owner"],
   ["SAGITTARIUS_ROLLBACK_OWNER", "rollback owner"],
@@ -39,6 +41,14 @@ checkPublicHttpsUrl(
 );
 checkEvidenceUrl("SAGITTARIUS_STAGING_EVIDENCE_URL", process.env.SAGITTARIUS_STAGING_EVIDENCE_URL ?? "");
 checkEvidenceUrl(
+  "SAGITTARIUS_STAGING_MIGRATION_EVIDENCE_URL",
+  process.env.SAGITTARIUS_STAGING_MIGRATION_EVIDENCE_URL ?? "",
+);
+checkEvidenceUrl(
+  "SAGITTARIUS_STAGING_ROLLBACK_EVIDENCE_URL",
+  process.env.SAGITTARIUS_STAGING_ROLLBACK_EVIDENCE_URL ?? "",
+);
+checkEvidenceUrl(
   "SAGITTARIUS_STAGING_ALERT_EVIDENCE_URL",
   process.env.SAGITTARIUS_STAGING_ALERT_EVIDENCE_URL ?? "",
 );
@@ -56,6 +66,8 @@ const summary = [
   `- Frontend: ${process.env.SAGITTARIUS_STAGING_FRONTEND_URL}`,
   `- API: ${process.env.SAGITTARIUS_STAGING_API_BASE_URL}`,
   `- Evidence: ${process.env.SAGITTARIUS_STAGING_EVIDENCE_URL}`,
+  `- Migration evidence: ${process.env.SAGITTARIUS_STAGING_MIGRATION_EVIDENCE_URL}`,
+  `- Rollback evidence: ${process.env.SAGITTARIUS_STAGING_ROLLBACK_EVIDENCE_URL}`,
   `- Alert evidence: ${process.env.SAGITTARIUS_STAGING_ALERT_EVIDENCE_URL}`,
   `- Feature owner: ${process.env.SAGITTARIUS_FEATURE_OWNER}`,
   `- Rollback owner: ${process.env.SAGITTARIUS_ROLLBACK_OWNER}`,
