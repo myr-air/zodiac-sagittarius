@@ -1794,107 +1794,113 @@ mod tests {
 
     #[test]
     fn passkey_authenticator_data_validation_accepts_valid_registration() {
-        let signing_key = SigningKey::from_slice(&[7; 32]).unwrap();
-        let credential_id = b"unit-passkey-credential";
-        let mut auth_data = passkey_authenticator_data(8, 0x45);
-        auth_data.extend_from_slice(&[0; 16]);
-        auth_data.extend_from_slice(&(credential_id.len() as u16).to_be_bytes());
-        auth_data.extend_from_slice(credential_id);
-        auth_data.extend_from_slice(&cose_key(&signing_key));
-        let encoded_credential_id = URL_SAFE_NO_PAD.encode(credential_id);
+        with_passkey_origin_allowlist("localhost,127.0.0.1", || {
+            let signing_key = SigningKey::from_slice(&[7; 32]).unwrap();
+            let credential_id = b"unit-passkey-credential";
+            let mut auth_data = passkey_authenticator_data(8, 0x45);
+            auth_data.extend_from_slice(&[0; 16]);
+            auth_data.extend_from_slice(&(credential_id.len() as u16).to_be_bytes());
+            auth_data.extend_from_slice(credential_id);
+            auth_data.extend_from_slice(&cose_key(&signing_key));
+            let encoded_credential_id = URL_SAFE_NO_PAD.encode(credential_id);
 
-        assert_eq!(
-            parse_registration_authenticator_data(
-                &auth_data,
-                &encoded_credential_id,
-                "http://localhost:5180",
-            )
-            .unwrap(),
-            cose_key(&signing_key)
-        );
-        assert_eq!(parse_authenticator_sign_count(&auth_data).unwrap(), 8);
+            assert_eq!(
+                parse_registration_authenticator_data(
+                    &auth_data,
+                    &encoded_credential_id,
+                    "http://localhost:5180",
+                )
+                .unwrap(),
+                cose_key(&signing_key)
+            );
+            assert_eq!(parse_authenticator_sign_count(&auth_data).unwrap(), 8);
+        });
     }
 
     #[test]
     fn passkey_authenticator_data_validation_rejects_wrong_rp_and_flags() {
-        assert!(
-            verify_authenticator_data(
-                &passkey_authenticator_data(0, 0x05),
-                "https://evil.example.test",
-                false,
-            )
-            .is_err()
-        );
-        assert!(
-            verify_authenticator_data(
-                &passkey_authenticator_data(0, 0x05),
-                "http://127.0.0.1:5180",
-                false,
-            )
-            .is_err()
-        );
-        assert!(
-            verify_authenticator_data(
-                &passkey_authenticator_data(0, 0x04),
-                "http://localhost:5180",
-                false,
-            )
-            .is_err()
-        );
-        assert!(
-            verify_authenticator_data(
-                &passkey_authenticator_data(0, 0x01),
-                "http://localhost:5180",
-                true,
-            )
-            .is_err()
-        );
-        assert!(
-            verify_authenticator_data(
-                &passkey_authenticator_data(0, 0x41),
-                "http://localhost:5180",
-                true,
-            )
-            .is_err()
-        );
+        with_passkey_origin_allowlist("localhost,127.0.0.1", || {
+            assert!(
+                verify_authenticator_data(
+                    &passkey_authenticator_data(0, 0x05),
+                    "https://evil.example.test",
+                    false,
+                )
+                .is_err()
+            );
+            assert!(
+                verify_authenticator_data(
+                    &passkey_authenticator_data(0, 0x05),
+                    "http://127.0.0.1:5180",
+                    false,
+                )
+                .is_err()
+            );
+            assert!(
+                verify_authenticator_data(
+                    &passkey_authenticator_data(0, 0x04),
+                    "http://localhost:5180",
+                    false,
+                )
+                .is_err()
+            );
+            assert!(
+                verify_authenticator_data(
+                    &passkey_authenticator_data(0, 0x01),
+                    "http://localhost:5180",
+                    true,
+                )
+                .is_err()
+            );
+            assert!(
+                verify_authenticator_data(
+                    &passkey_authenticator_data(0, 0x41),
+                    "http://localhost:5180",
+                    true,
+                )
+                .is_err()
+            );
+        });
     }
 
     #[test]
     fn passkey_authenticator_data_validation_covers_malformed_shapes() {
-        assert!(parse_authenticator_sign_count(&[0; 36]).is_err());
-        assert!(verify_authenticator_data(&[0; 36], "http://localhost:5180", false).is_err());
+        with_passkey_origin_allowlist("localhost,127.0.0.1", || {
+            assert!(parse_authenticator_sign_count(&[0; 36]).is_err());
+            assert!(verify_authenticator_data(&[0; 36], "http://localhost:5180", false).is_err());
 
-        let mut short_registration = passkey_authenticator_data(0, 0x45);
-        assert!(
-            parse_registration_authenticator_data(
-                &short_registration,
-                "credential",
-                "http://localhost:5180",
-            )
-            .is_err()
-        );
+            let mut short_registration = passkey_authenticator_data(0, 0x45);
+            assert!(
+                parse_registration_authenticator_data(
+                    &short_registration,
+                    "credential",
+                    "http://localhost:5180",
+                )
+                .is_err()
+            );
 
-        short_registration.extend_from_slice(&[0; 16]);
-        short_registration.extend_from_slice(&1_u16.to_be_bytes());
-        assert!(
-            parse_registration_authenticator_data(
-                &short_registration,
-                "credential",
-                "http://localhost:5180",
-            )
-            .is_err()
-        );
+            short_registration.extend_from_slice(&[0; 16]);
+            short_registration.extend_from_slice(&1_u16.to_be_bytes());
+            assert!(
+                parse_registration_authenticator_data(
+                    &short_registration,
+                    "credential",
+                    "http://localhost:5180",
+                )
+                .is_err()
+            );
 
-        short_registration.push(b'x');
-        short_registration.push(0);
-        assert!(
-            parse_registration_authenticator_data(
-                &short_registration,
-                "different",
-                "http://localhost:5180",
-            )
-            .is_err()
-        );
+            short_registration.push(b'x');
+            short_registration.push(0);
+            assert!(
+                parse_registration_authenticator_data(
+                    &short_registration,
+                    "different",
+                    "http://localhost:5180",
+                )
+                .is_err()
+            );
+        });
     }
 
     #[test]
