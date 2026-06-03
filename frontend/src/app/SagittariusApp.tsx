@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { AppShell } from "@/src/components/AppShell";
+import { AppShell, resolveViewFromPath } from "@/src/components/AppShell";
 import { AccountAccessPanel } from "@/src/components/AccountAccessPanel";
 import { ContextRail } from "@/src/components/ContextRail";
 import { OverviewPage } from "@/src/components/OverviewPage";
@@ -26,6 +26,7 @@ import {
   updateTripParticipantRole,
 } from "@/src/trip/auth";
 import { buildExpenseSummary } from "@/src/trip/expenses";
+import { buildItineraryView } from "@/src/trip/itinerary";
 import { tripFixtureStopNotes, tripFixtureSuggestions, tripFixtureTasks } from "@/src/demo/trip-fixtures";
 import { tripStorageKey } from "@/src/trip/repository";
 import { seedTrip } from "@/src/trip/seed";
@@ -100,23 +101,22 @@ export function SagittariusApp({
   const [tasks, setTasks] = useState<TripTask[]>(() => tripFixtureTasks.map((task) => ({ ...task })));
   const [stopNotes, setStopNotes] = useState<StopNote[]>(() => tripFixtureStopNotes.map((note) => ({ ...note })));
   const [backendExpenseSummary, setBackendExpenseSummary] = useState<ExpenseSummary | null>(null);
-  const [workspaceNavigation, setWorkspaceNavigation] = useState<{ initialView: PlanningView; routeTripId?: string; view: PlanningView } | null>(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [contextRailOpen, setContextRailOpen] = useState(false);
   const [contextRailMounted, setContextRailMounted] = useState(false);
-  const selectedDay = "2025-05-16";
+  const [currentView, setCurrentView] = useState<PlanningView>(initialView);
   const selectedPlanVariantId = tripState.trip.activePlanVariantId;
   const [currentMemberId, setCurrentMemberId] = useState(seedTrip.members[0].id);
   const [selectedItemId, setSelectedItemId] = useState("item-dimdim");
   const [dialogState, setDialogState] = useState<{ mode: "create" } | { mode: "edit"; item: ItineraryItem } | null>(null);
 
   const trip = tripState.trip;
-  const currentView =
-    workspaceNavigation && workspaceNavigation.initialView === initialView && workspaceNavigation.routeTripId === routeTripId
-      ? workspaceNavigation.view
-      : initialView;
+  const tripIdForPath = routeTripId ?? trip.id;
+  const resolveCurrentView = useCallback(() => {
+    if (typeof window === "undefined") return initialView;
+    return resolveViewFromPath(window.location.pathname, tripIdForPath, initialView);
+  }, [initialView, tripIdForPath]);
   const sessionMember = findSessionMember(trip, participantSession);
-  /* v8 ignore next */
   const currentMember = sessionMember ?? trip.members.find((member) => member.id === currentMemberId) ?? trip.members[0];
   const isApiMode = dataSource === "api" && !isLocalParticipantSession(participantSession);
   const canEdit = canTripRole(currentMember.role, "editItinerary");
@@ -130,13 +130,27 @@ export function SagittariusApp({
     () => trip.itineraryItems.filter((item) => item.planVariantId === selectedPlanVariantId),
     [selectedPlanVariantId, trip.itineraryItems],
   );
+  const itineraryView = useMemo(() => buildItineraryView(planItems), [planItems]);
   /* v8 ignore next */
   const selectedItem = planItems.find((item) => item.id === selectedItemId) ?? planItems[0];
+  const selectedDay = selectedItem?.day ?? itineraryView.dayGroups[0]?.day ?? trip.startDate;
   const selectedItemIdForView = selectedItem?.id ?? "";
   const expenseSummary = useMemo(
     () => backendExpenseSummary ?? buildExpenseSummary(trip.expenses, currentMember.id),
     [backendExpenseSummary, currentMember.id, trip.expenses],
   );
+
+  useEffect(() => {
+    setCurrentView(resolveCurrentView());
+  }, [resolveCurrentView]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const onPopState = () => setCurrentView(resolveCurrentView());
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, [resolveCurrentView]);
 
   useEffect(() => {
     const timeout = window.setTimeout(() => {
@@ -238,12 +252,12 @@ export function SagittariusApp({
   }, []);
 
   const navigateWorkspaceView = useCallback((view: PlanningView, href: string) => {
-    setWorkspaceNavigation({ initialView, routeTripId, view });
+    setCurrentView(view);
     setContextRailVisibility(false);
     if (typeof window !== "undefined" && window.location.pathname !== href) {
       window.history.pushState(null, "", href);
     }
-  }, [initialView, routeTripId, setContextRailVisibility]);
+  }, [setContextRailVisibility]);
 
   useEffect(() => {
     if (!supportsContextRail || typeof window === "undefined") return;
@@ -826,6 +840,7 @@ export function SagittariusApp({
                 currentMemberId={currentMember.id}
                 expenseSummary={expenseSummary}
                 items={planItems}
+                itineraryView={itineraryView}
                 suggestions={suggestions}
                 tasks={tasks}
                 onOpenExpenses={openExpensesWorkspace}
@@ -840,6 +855,7 @@ export function SagittariusApp({
                 contextRailOpen={contextRailOpen}
                 endDate={trip.endDate}
                 items={planItems}
+                itineraryView={itineraryView}
                 role={currentMember.role}
                 startDate={trip.startDate}
                 selectedItemId={selectedItemIdForView}
@@ -855,6 +871,7 @@ export function SagittariusApp({
               <RouteMapView
                 endDate={trip.endDate}
                 items={planItems}
+                itineraryView={itineraryView}
                 startDate={trip.startDate}
                 tripName={trip.name}
               />
@@ -863,6 +880,7 @@ export function SagittariusApp({
                 contextRailOpen={contextRailOpen}
                 endDate={trip.endDate}
                 items={planItems}
+                itineraryView={itineraryView}
                 selectedItemId={selectedItemIdForView}
                 startDate={trip.startDate}
                 tripName={trip.name}

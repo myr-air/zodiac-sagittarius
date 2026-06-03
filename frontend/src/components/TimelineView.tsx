@@ -1,7 +1,7 @@
 import type { ItineraryItem } from "@/src/trip/types";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
-import { formatDayLabel, groupItemsByDay } from "@/src/trip/itinerary";
+import { formatDayLabel, groupItemsByDay, type ItineraryView } from "@/src/trip/itinerary";
 import { Badge, IconButton } from "./ui";
 import { Icon } from "./icons";
 import { TimelineMotif } from "./motifs";
@@ -12,6 +12,7 @@ interface TimelineViewProps {
   contextRailOpen: boolean;
   endDate: string;
   items: ItineraryItem[];
+  itineraryView?: ItineraryView;
   selectedItemId: string;
   startDate: string;
   tripName: string;
@@ -37,10 +38,20 @@ const timelineWarningClassName = "timeline-warning col-start-3 row-start-3 inlin
 const detailsToggleButtonClassName = "details-toggle-button aria-[expanded=false]:border-[var(--color-primary-border)] aria-[expanded=false]:bg-[var(--color-primary-soft)] aria-[expanded=false]:text-[var(--color-primary-strong)]";
 const pageHeaderActionsClassName = "page-header-actions relative z-[1] flex max-w-[420px] min-w-0 flex-wrap items-center justify-end gap-2";
 
-export function TimelineView({ contextRailOpen, endDate, items, selectedItemId, startDate, tripName, onSelectItem, onToggleContextRail }: TimelineViewProps) {
+export function TimelineView({
+  contextRailOpen,
+  endDate,
+  items,
+  itineraryView,
+  selectedItemId,
+  startDate,
+  tripName,
+  onSelectItem,
+  onToggleContextRail,
+}: TimelineViewProps) {
   const { locale, t } = useI18n();
-  const groups = groupItemsByDay(items);
-  const warningCount = items.reduce((total, item) => total + (item.advisories?.length ?? 0), 0);
+  const groups = itineraryView?.dayGroups ?? groupItemsByDay(items);
+  const warningCount = itineraryView?.warningCount ?? items.reduce((total, item) => total + (item.advisories?.length ?? 0), 0);
   const totalMinutes = items.reduce((total, item) => total + (item.durationMinutes ?? 0), 0);
   const primaryRoute = groups.map((group) => dayRouteLabel(group.day, locale)).join(" / ");
 

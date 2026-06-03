@@ -24,6 +24,21 @@ interface AppShellProps {
   onToggleCollapsed: () => void;
 }
 
+export function resolveViewFromPath(pathname: string, tripId: string, initialView: PlanningView): PlanningView {
+  const normalizedPath = pathname.replace(/\/+$/, "");
+  const tripBasePath = `/trips/${tripId}`;
+
+  if (normalizedPath === tripBasePath) return initialView;
+  if (!normalizedPath.startsWith(`${tripBasePath}/`)) return initialView;
+
+  const viewSegment = normalizedPath.slice(tripBasePath.length + 1).split("/")[0];
+  if (viewSegment === "itinerary") return "itinerary";
+  if (viewSegment === "map") return "map";
+  if (viewSegment === "timeline") return "timeline";
+  if (viewSegment === "members") return "members";
+  return initialView;
+}
+
 const brandRowClassName = "brand-row inline-flex min-h-[62px] items-center justify-between px-3.5 pl-4 data-[collapsed=true]:px-[5px] data-[collapsed=true]:pl-2 max-[1199px]:px-[5px] max-[1199px]:pl-2 max-[767px]:min-h-[54px]";
 const brandBlockClassName = "brand-block inline-flex min-w-0 items-center gap-[11px]";
 const brandMarkClassName = "brand-mark grid size-[30px] place-items-center rounded-[var(--radius-sm)] bg-[var(--color-primary)] text-white font-extrabold [&_.icon]:size-[19px] [&_.icon]:stroke-[2.4]";

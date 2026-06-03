@@ -3,7 +3,7 @@ import type { ExpenseSummary, ItineraryItem, Member, Suggestion, Trip, TripTask 
 import { useI18n } from "@/src/i18n/I18nProvider";
 import type { Locale } from "@/src/i18n/types";
 import { cn } from "@/src/lib/cn";
-import { formatDayLabel, getTripDates, validateItineraryItem } from "@/src/trip/itinerary";
+import { formatDayLabel, getTripDates, type ItineraryView } from "@/src/trip/itinerary";
 import { Icon } from "./icons";
 import { formatTripRange, PageUserCard } from "./PageHeader";
 import { Button } from "./ui";
@@ -13,6 +13,7 @@ interface OverviewPageProps {
   currentMemberId: string;
   expenseSummary: ExpenseSummary;
   items: ItineraryItem[];
+  itineraryView?: ItineraryView;
   suggestions: Suggestion[];
   tasks: TripTask[];
   onCreateTask: (input: { title: string; visibility: TripTask["visibility"]; assigneeId?: string | null }) => void;
@@ -94,7 +95,18 @@ const overviewTaskScopeToneClassName: Record<TripTask["visibility"], string> = {
 };
 const overviewUndoToastClassName = "overview-undo-toast fixed bottom-5 right-5 z-[80] inline-flex max-w-[min(420px,calc(100vw-32px))] items-center gap-3 rounded-[var(--radius-md)] border border-[var(--color-primary)] bg-[var(--color-surface)] px-3.5 py-3 text-[13px] font-extrabold text-[var(--color-text)] shadow-[var(--shadow-panel)] [&_button]:min-h-[30px] [&_button]:cursor-pointer [&_button]:rounded-[var(--radius-sm)] [&_button]:border [&_button]:border-[var(--color-border-strong)] [&_button]:bg-[var(--color-primary-soft)] [&_button]:px-2.5 [&_button]:text-[var(--color-primary-strong)] [&_button]:font-extrabold";
 
-export function OverviewPage({ trip, currentMemberId, expenseSummary, items, suggestions, tasks, onCreateTask, onOpenExpenses, onToggleTaskStatus }: OverviewPageProps) {
+export function OverviewPage({
+  trip,
+  currentMemberId,
+  expenseSummary,
+  items,
+  itineraryView,
+  suggestions,
+  tasks,
+  onCreateTask,
+  onOpenExpenses,
+  onToggleTaskStatus,
+}: OverviewPageProps) {
   const { locale, t } = useI18n();
   const [taskScope, setTaskScope] = useState<"mine" | "trip" | "all">("mine");
   const [taskStatusFilter, setTaskStatusFilter] = useState<"all" | "open" | "done">("all");
@@ -105,9 +117,9 @@ export function OverviewPage({ trip, currentMemberId, expenseSummary, items, sug
   const [undoTask, setUndoTask] = useState<TripTask | null>(null);
   const tripDays = getTripDates(trip.startDate, trip.endDate);
   /* v8 ignore next */
-  const sortedItems = useMemo(() => items.slice().sort((a, b) => a.day.localeCompare(b.day) || a.sortOrder - b.sortOrder || a.startTime.localeCompare(b.startTime)), [items]);
+  const sortedItems = itineraryView?.sortedItems ?? items.slice().sort((a, b) => a.day.localeCompare(b.day) || a.sortOrder - b.sortOrder || a.startTime.localeCompare(b.startTime));
   const nextStop = sortedItems[0];
-  const warningCount = items.reduce((total, item) => total + validateItineraryItem(item, items.filter((candidate) => candidate.day === item.day)).length, 0);
+  const warningCount = itineraryView?.warningCount ?? items.reduce((total, item) => total + (item.advisories?.length ?? 0), 0);
   const pendingSuggestions = suggestions.filter((suggestion) => suggestion.status === "pending").length;
   const activeMembers = trip.members.filter((member) => member.id !== "member-viewer" && member.accessStatus !== "disabled").length;
   const groupSpendLabel = `HK$${expenseSummary.groupSpend.toLocaleString("en-HK")}`;

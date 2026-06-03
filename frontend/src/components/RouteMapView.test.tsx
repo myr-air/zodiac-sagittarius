@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { tripFixture } from "@/src/demo/trip-fixtures";
+import { I18nProvider } from "@/src/i18n/I18nProvider";
 import { renderWithI18n } from "@/src/i18n/test-utils";
 import {
   activeDayLabel,
@@ -12,18 +13,28 @@ import {
   RouteMapView,
 } from "./RouteMapView";
 
-const render = (ui: Parameters<typeof renderWithI18n>[0]) => renderWithI18n(ui, { locale: "th" });
+const render = (ui: Parameters<typeof renderWithI18n>[0]) => {
+  const result = renderWithI18n(ui, { locale: "th" });
+  const originalRerender = result.rerender;
+
+  return {
+    ...result,
+    rerender: (nextUi: Parameters<typeof renderWithI18n>[0]) => originalRerender(<I18nProvider initialLocale="th">{nextUi}</I18nProvider>),
+  };
+};
 
 const maplibreMock = vi.hoisted(() => ({
   maps: [] as Array<{
     addControl: ReturnType<typeof vi.fn>;
     addLayer: ReturnType<typeof vi.fn>;
     addSource: ReturnType<typeof vi.fn>;
+    getSource: ReturnType<typeof vi.fn>;
     fitBounds: ReturnType<typeof vi.fn>;
     flyTo: ReturnType<typeof vi.fn>;
     getLayer: ReturnType<typeof vi.fn>;
+    removeLayer: ReturnType<typeof vi.fn>;
+    removeSource: ReturnType<typeof vi.fn>;
     remove: ReturnType<typeof vi.fn>;
-    setPaintProperty: ReturnType<typeof vi.fn>;
   }>,
   markers: [] as Array<{ element: HTMLElement; remove: ReturnType<typeof vi.fn> }>,
   loadDelay: 0,
@@ -38,15 +49,17 @@ vi.mock("maplibre-gl", () => ({
       addControl: vi.fn(),
       addLayer: vi.fn(),
       addSource: vi.fn(),
+      getSource: vi.fn(() => ({ type: "geojson" })),
       fitBounds: vi.fn(),
       flyTo: vi.fn(),
       getLayer: vi.fn(() => true),
+      removeLayer: vi.fn(),
+      removeSource: vi.fn(),
       on: vi.fn((event: string, callback: () => void) => {
         handlers.set(event, callback);
         if (event === "load") window.setTimeout(callback, maplibreMock.loadDelay);
       }),
       remove: vi.fn(),
-      setPaintProperty: vi.fn(),
     };
     const chromeButton = document.createElement("button");
     options.container.append(chromeButton);
@@ -81,7 +94,15 @@ describe("RouteMapView", () => {
   });
 
   it("summarizes route visibility and filters stops by day", async () => {
-    const regionalItems = tripFixture.planItems.filter((item) => !item.coordinates || item.coordinates.lng > 110);
+    const regionalItems = tripFixture.planItems.filter((item) => {
+      if (!item.coordinates) return true;
+      return Number.isFinite(item.coordinates.lat)
+        && Number.isFinite(item.coordinates.lng)
+        && item.coordinates.lat >= -90
+        && item.coordinates.lat <= 90
+        && item.coordinates.lng >= -180
+        && item.coordinates.lng <= 180;
+    });
     render(
       <RouteMapView
         endDate={tripFixture.trip.endDate}
@@ -213,7 +234,8 @@ describe("RouteMapView", () => {
 
     await userEvent.click(screen.getByRole("button", { name: /วันที่ 2/ }));
 
-    expect(maplibreMock.maps[0]?.setPaintProperty).toHaveBeenCalled();
+    expect(maplibreMock.maps[0]?.removeLayer).toHaveBeenCalled();
+    expect(maplibreMock.maps[0]?.addLayer).toHaveBeenCalled();
     expect(maplibreMock.maps[0]?.fitBounds).toHaveBeenCalled();
     expect(maplibreMock.markers.some((marker) => marker.element.style.display === "none")).toBe(true);
 
@@ -276,11 +298,70 @@ describe("RouteMapView", () => {
 
     await user.click(screen.getByRole("button", { name: /วันที่ 2/ }));
 
-    expect(maplibreMock.maps[0]!.setPaintProperty).not.toHaveBeenCalled();
+    expect(maplibreMock.maps[0]!.removeLayer).not.toHaveBeenCalled();
 
     unmount();
     (maplibreMock.maps[0] as typeof maplibreMock.maps[number] & { trigger: (event: string) => void }).trigger("error");
     expect(screen.queryByText("Hong Kong")).not.toBeInTheDocument();
+  });
+
+  it("rebuilds live map lines when points change after mount", async () => {
+    const { rerender } = render(
+      <RouteMapView
+        endDate={tripFixture.trip.endDate}
+        items={tripFixture.planItems.slice(0, 2)}
+        liveMapEnabled
+        startDate={tripFixture.trip.startDate}
+        tripName={tripFixture.trip.name}
+      />,
+    );
+
+    await waitFor(() => expect(maplibreMock.maps[0]?.addLayer).toHaveBeenCalled());
+
+    const map = maplibreMock.maps[0] as typeof maplibreMock.maps[number];
+    map.removeLayer.mockClear();
+    map.removeSource.mockClear();
+    map.addLayer.mockClear();
+    map.addSource.mockClear();
+
+    rerender(
+      <RouteMapView
+        endDate={tripFixture.trip.endDate}
+        items={tripFixture.planItems.slice(0, 3)}
+        liveMapEnabled
+        startDate={tripFixture.trip.startDate}
+        tripName={tripFixture.trip.name}
+      />,
+    );
+
+    await waitFor(() => expect(map.removeLayer).toHaveBeenCalled());
+    await waitFor(() => expect(map.addSource).toHaveBeenCalled());
+    expect(map.removeSource).toHaveBeenCalled();
+  });
+
+  it("includes valid stops outside the previous longitude gate", async () => {
+    const londonStop = {
+      ...tripFixture.planItems[0],
+      id: "manual-london-stop",
+      day: "2025-05-15",
+      sortOrder: 999,
+      startTime: "10:30",
+      place: "London Eye",
+      activity: "London Stop",
+      coordinates: { lat: 51.5074, lng: -0.1278 },
+    };
+
+    render(
+      <RouteMapView
+        endDate={tripFixture.trip.endDate}
+        items={[tripFixture.planItems[0], londonStop]}
+        startDate={tripFixture.trip.startDate}
+        tripName={tripFixture.trip.name}
+      />,
+    );
+
+    expect(screen.getByText("2/2 จุดที่แสดง")).toBeInTheDocument();
+    expect(screen.getByText("กำลังโหลดแผนที่จาก OpenFreeMap")).toBeInTheDocument();
   });
 
   it("cleans up before async map mounting captures a container", () => {

@@ -15,6 +15,7 @@ import type { TripApiClient, TripCockpit } from "@/src/trip/api-client";
 import { tripParticipantSessionStorageKey } from "@/src/trip/auth";
 import { I18nProvider } from "@/src/i18n/I18nProvider";
 import { renderWithI18n } from "@/src/i18n/test-utils";
+import { tripStorageKey } from "@/src/trip/repository";
 import { seedTrip } from "@/src/trip/seed";
 import type { ItineraryItem, StopNote, Suggestion, Trip, TripTask } from "@/src/trip/types";
 
@@ -32,6 +33,7 @@ describe("Sagittarius cockpit UI", () => {
   beforeEach(() => {
     installLocalStorageStub();
     installSessionStorageStub();
+    window.history.pushState(null, "", "/");
   });
 
   it("generates collision-free local ids and falls back when randomUUID is unavailable", () => {
@@ -428,6 +430,36 @@ describe("Sagittarius cockpit UI", () => {
 
     expect(window.location.pathname).toBe(`/trips/${seedTrip.id}/itinerary`);
     expect(screen.getByRole("link", { name: /แผนการเดินทาง/i })).toHaveAttribute("aria-current", "page");
+    expect(apiClient.loadTrip).toHaveBeenCalledTimes(1);
+  });
+
+  it("re-syncs workspace active link from popstate without extra loadTrip", async () => {
+    installLocalStorageStub();
+    window.sessionStorage.setItem(
+      tripParticipantSessionStorageKey,
+      JSON.stringify({
+        tripId: seedTrip.id,
+        memberId: seedTrip.members[0].id,
+        sessionToken: "persisted-trip-session",
+        createdAt: "2026-05-29T00:00:00.000Z",
+        expiresAt: "2026-06-28T00:00:00.000Z",
+      }),
+    );
+    window.history.pushState(null, "", `/trips/${seedTrip.id}`);
+    const apiClient = createApiClientForTrip(seedTrip);
+
+    render(<SagittariusApp accessMode="trip-access" requireJoin dataSource="api" routeTripId={seedTrip.id} apiClient={apiClient} />);
+
+    await waitFor(() => expect(apiClient.loadTrip).toHaveBeenCalledTimes(1));
+    expect(screen.getByRole("link", { name: /ภาพรวม/i })).toHaveAttribute("aria-current", "page");
+
+    act(() => {
+      window.history.pushState(null, "", `/trips/${seedTrip.id}/itinerary`);
+      window.dispatchEvent(new PopStateEvent("popstate"));
+    });
+
+    await waitFor(() => expect(screen.getByRole("link", { name: /แผนการเดินทาง/i })).toHaveAttribute("aria-current", "page"));
+    expect(screen.getByRole("link", { name: /ภาพรวม/i })).not.toHaveAttribute("aria-current", "page");
     expect(apiClient.loadTrip).toHaveBeenCalledTimes(1);
   });
 
@@ -1381,7 +1413,7 @@ describe("Sagittarius cockpit UI", () => {
     expect(screen.queryByRole("button", { name: /เปิดรายละเอียด/i })).not.toBeInTheDocument();
     await user.click(within(screen.getByRole("region", { name: /แผนที่เส้นทาง/i })).getByRole("button", { name: /วันที่ 2/i }));
     expect(screen.queryByRole("complementary", { name: /ข้อมูลประกอบการวางแผน/i })).not.toBeInTheDocument();
-    expect(screen.getByText(/6\/15 จุดที่แสดง/i)).toBeInTheDocument();
+    expect(screen.getByText(/6\/16 จุดที่แสดง/i)).toBeInTheDocument();
   });
 
   it("toggles timeline details and closes the context rail from its own control", async () => {
@@ -1678,6 +1710,94 @@ describe("Sagittarius cockpit UI", () => {
     expect(screen.queryByRole("dialog", { name: /เพิ่มกิจกรรม/i })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: /เลือกจุด Coffee break at K11 Musea/i })).toBeInTheDocument();
     expect(within(screen.getByRole("complementary", { name: /ข้อมูลประกอบการวางแผน/i })).getByRole("heading", { name: /Coffee break at K11 Musea/i })).toBeInTheDocument();
+  });
+
+  it("adds a new itinerary stop into the selected item's day", async () => {
+    const user = userEvent.setup();
+    render(<SagittariusApp initialView="itinerary" />);
+
+    await user.click(screen.getByRole("button", { name: /เลือกจุด เช็คเอาท์จากโรงแรม/i }));
+    await user.click(screen.getByRole("button", { name: /เพิ่มสถานที่ \/ กิจกรรม/i }));
+
+    const dialog = screen.getByRole("dialog", { name: /เพิ่มกิจกรรม/i });
+    await user.clear(within(dialog).getByLabelText(/^เวลา$/i));
+    await user.type(within(dialog).getByLabelText(/^เวลา$/i), "16:45");
+    await user.clear(within(dialog).getByLabelText(/กิจกรรม/i));
+    await user.type(within(dialog).getByLabelText(/กิจกรรม/i), "Shenzhen late tea");
+    await user.clear(within(dialog).getByLabelText(/สถานที่/i));
+    await user.type(within(dialog).getByLabelText(/สถานที่/i), "Shenzhen Garden");
+    await user.selectOptions(within(dialog).getByLabelText(/^นาที$/i), "30");
+    await user.clear(within(dialog).getByLabelText(/การเดินทาง/i));
+    await user.type(within(dialog).getByLabelText(/การเดินทาง/i), "เดิน");
+    await user.click(within(dialog).getByRole("button", { name: /บันทึกกิจกรรม/i }));
+
+    expect(screen.queryByRole("dialog", { name: /เพิ่มกิจกรรม/i })).not.toBeInTheDocument();
+
+    const stopButtons = screen.getAllByRole("button", { name: /^เลือกจุด / });
+    const labels = stopButtons.map((button) => button.getAttribute("aria-label") ?? "");
+
+    expect(labels.find((label) => label.includes("เช็คเอาท์จากโรงแรม"))).not.toBeUndefined();
+    expect(labels.find((label) => label.includes("เข้าพักโรงแรมที่ Shenzhen"))).not.toBeUndefined();
+    expect(labels.find((label) => label.includes("Shenzhen late tea"))).not.toBeUndefined();
+
+    const checkoutIndex = labels.findIndex((label) => label.includes("เช็คเอาท์จากโรงแรม"));
+    const shenzhenHotelIndex = labels.findIndex((label) => label.includes("เข้าพักโรงแรมที่ Shenzhen"));
+    const lateTeaIndex = labels.findIndex((label) => label.includes("Shenzhen late tea"));
+
+    expect(lateTeaIndex).toBeGreaterThan(shenzhenHotelIndex);
+    expect(lateTeaIndex).toBeGreaterThan(checkoutIndex);
+    expect(checkoutIndex).toBeGreaterThan(-1);
+    expect(shenzhenHotelIndex).toBeGreaterThan(-1);
+  });
+
+  it("uses trip first day when no selected item is available and keeps sort order increasing", async () => {
+    const user = userEvent.setup();
+    const storage = installLocalStorageStub();
+    const emptyTrip = {
+      ...seedTrip,
+      id: "019e83ac-ed69-7df3-9354-b27359800374",
+      itineraryItems: [],
+      members: [{ ...seedTrip.members[0], tripId: "019e83ac-ed69-7df3-9354-b27359800374" }],
+    };
+    storage.setItem(tripStorageKey, JSON.stringify(emptyTrip));
+
+    render(<SagittariusApp initialView="itinerary" />);
+
+    expect(await screen.findByRole("button", { name: /เพิ่มสถานที่ \/ กิจกรรม/i })).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: /เพิ่มสถานที่ \/ กิจกรรม/i }));
+
+    let dialog = screen.getByRole("dialog", { name: /เพิ่มกิจกรรม/i });
+    await user.clear(within(dialog).getByLabelText(/^เวลา$/i));
+    await user.type(within(dialog).getByLabelText(/^เวลา$/i), "16:30");
+    await user.clear(within(dialog).getByLabelText(/กิจกรรม/i));
+    await user.type(within(dialog).getByLabelText(/กิจกรรม/i), "Evening check-in stop");
+    await user.clear(within(dialog).getByLabelText(/สถานที่/i));
+    await user.type(within(dialog).getByLabelText(/สถานที่/i), "Harbourfront Lounge");
+    await user.clear(within(dialog).getByLabelText(/การเดินทาง/i));
+    await user.type(within(dialog).getByLabelText(/การเดินทาง/i), "แท็กซี่");
+    await user.click(within(dialog).getByRole("button", { name: /บันทึกกิจกรรม/i }));
+    expect(screen.queryByRole("dialog", { name: /เพิ่มกิจกรรม/i })).not.toBeInTheDocument();
+    await waitFor(() => expect(screen.getByText("วันที่ 1")).toBeInTheDocument());
+
+    await user.click(screen.getByRole("button", { name: /เพิ่มสถานที่ \/ กิจกรรม/i }));
+
+    dialog = screen.getByRole("dialog", { name: /เพิ่มกิจกรรม/i });
+    await user.clear(within(dialog).getByLabelText(/^เวลา$/i));
+    await user.type(within(dialog).getByLabelText(/^เวลา$/i), "08:00");
+    await user.clear(within(dialog).getByLabelText(/กิจกรรม/i));
+    await user.type(within(dialog).getByLabelText(/กิจกรรม/i), "Morning market visit");
+    await user.clear(within(dialog).getByLabelText(/สถานที่/i));
+    await user.type(within(dialog).getByLabelText(/สถานที่/i), "Mong Kok Market");
+    await user.clear(within(dialog).getByLabelText(/การเดินทาง/i));
+    await user.type(within(dialog).getByLabelText(/การเดินทาง/i), "MTR");
+    await user.click(within(dialog).getByRole("button", { name: /บันทึกกิจกรรม/i }));
+    expect(screen.queryByRole("dialog", { name: /เพิ่มกิจกรรม/i })).not.toBeInTheDocument();
+
+    const stopButtons = screen.getAllByRole("button", { name: /^เลือกจุด / });
+    expect(stopButtons).toHaveLength(2);
+    expect(stopButtons[0]).toHaveAccessibleName(/เลือกจุด Evening check-in stop/i);
+    expect(stopButtons[1]).toHaveAccessibleName(/เลือกจุด Morning market visit/i);
   });
 
   it("edits the selected stop and supports undo redo", async () => {

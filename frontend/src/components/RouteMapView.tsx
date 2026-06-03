@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react"
 import type { ItineraryItem } from "@/src/trip/types";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
-import { formatDayLabel, groupItemsByDay } from "@/src/trip/itinerary";
+import { formatDayLabel, groupItemsByDay, type ItineraryView } from "@/src/trip/itinerary";
 import { Icon } from "./icons";
 import { TravelMotif } from "./motifs";
 import { formatTripRange, PageHeader } from "./PageHeader";
@@ -10,6 +10,7 @@ import { formatTripRange, PageHeader } from "./PageHeader";
 interface RouteMapViewProps {
   endDate: string;
   items: ItineraryItem[];
+  itineraryView?: ItineraryView;
   liveMapEnabled?: boolean;
   startDate: string;
   tripName: string;
@@ -61,9 +62,16 @@ const routeMapPathClassName = "route-map-path fill-none stroke-[var(--day-color,
 const routeMarkerClassName = "route-marker absolute left-[var(--x)] top-[var(--y)] z-[3] grid size-[30px] -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border-2 border-white bg-[var(--day-color,var(--color-route))] text-[11px] font-extrabold tabular-nums text-white shadow-[0_10px_22px_rgb(37_99_235_/_0.24)] transition-[background,box-shadow,transform] duration-150 [animation:route-marker-in_180ms_ease-out_both] [animation-delay:var(--marker-delay)]";
 const mapSourceNoteClassName = "map-source-note absolute bottom-2 right-2.5 z-[6] m-0 rounded-full border border-[rgb(203_213_225_/_0.82)] bg-white/90 px-2 py-1 text-[10px] font-extrabold leading-[14px] text-[#475569]";
 
-export function RouteMapView({ endDate, items, liveMapEnabled = process.env.NODE_ENV !== "test", startDate, tripName }: RouteMapViewProps) {
+export function RouteMapView({
+  endDate,
+  itineraryView,
+  items,
+  liveMapEnabled = process.env.NODE_ENV !== "test",
+  startDate,
+  tripName,
+}: RouteMapViewProps) {
   const { locale, t } = useI18n();
-  const groups = useMemo(() => groupItemsByDay(items), [items]);
+  const groups = useMemo(() => itineraryView?.dayGroups ?? groupItemsByDay(items), [items, itineraryView]);
   const routePoints = useMemo(() => buildRoutePoints(items), [items]);
   const routeDayGroups = useMemo(() => buildRouteDayGroups(groups, routePoints, startDate, locale), [groups, locale, routePoints, startDate]);
   const [activeDay, setActiveDay] = useState<DayFilter>("all");
@@ -75,37 +83,35 @@ export function RouteMapView({ endDate, items, liveMapEnabled = process.env.NODE
     () => (activeDay === "all" ? routePoints : routePoints.filter((point) => point.item.day === activeDay)),
     [activeDay, routePoints],
   );
-  const liveRoutePoints = useMemo(() => routePoints.filter((point) => point.item.coordinates), [routePoints]);
+  const liveRoutePoints = useMemo(() => routePoints.filter((point) => hasCoordinates(point.item.coordinates)), [routePoints]);
   const visibleLiveRoutePoints = useMemo(
     () => (activeDay === "all" ? liveRoutePoints : liveRoutePoints.filter((point) => point.item.day === activeDay)),
     [activeDay, liveRoutePoints],
   );
-  const warningCount = items.reduce((total, item) => total + (item.advisories?.length ?? 0), 0);
+  const warningCount = itineraryView?.warningCount ?? items.reduce((total, item) => total + (item.advisories?.length ?? 0), 0);
   const [liveMapState, setLiveMapState] = useState<"idle" | "loading" | "ready" | "error">("idle");
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<import("maplibre-gl").Map | null>(null);
-  const markersRef = useRef<Map<string, import("maplibre-gl").Marker>>(new Map());
-  const activeDayRef = useRef<DayFilter>(activeDay);
+  const maplibreModuleRef = useRef<typeof import("maplibre-gl") | null>(null);
+  const markersRef = useRef<Map<string, { marker: import("maplibre-gl").Marker; day: string }>>(new Map());
+  const sourceIdsRef = useRef<string[]>([]);
+
+  const markerItems = useMemo(() => new Set(liveRoutePoints.map((point) => point.item.id)), [liveRoutePoints]);
 
   useEffect(() => {
-    activeDayRef.current = activeDay;
-  }, [activeDay]);
-
-  useEffect(() => {
-    if (!mapContainerRef.current || mapRef.current || liveRoutePoints.length === 0 || !liveMapEnabled) return undefined;
+    if (!mapContainerRef.current || mapRef.current || !liveMapEnabled) return undefined;
 
     let disposed = false;
-    let liveMapContainer: HTMLDivElement | null = null;
-    const markers = markersRef.current;
+    const liveMapContainer = mapContainerRef.current;
 
     async function mountLiveMap() {
       setLiveMapState("loading");
 
       try {
         const maplibregl = await import("maplibre-gl");
+        if (!mapContainerRef.current || disposed) return;
+        maplibreModuleRef.current = maplibregl;
         const container = mapContainerRef.current;
-        if (!container || disposed) return;
-        liveMapContainer = container;
         container.inert = true;
         container.tabIndex = -1;
 
@@ -122,73 +128,15 @@ export function RouteMapView({ endDate, items, liveMapEnabled = process.env.NODE
         map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
         removeMapChromeFromTabOrder(container);
 
-        liveRoutePoints.forEach((point, index) => {
-          const coordinates = point.item.coordinates;
-          /* v8 ignore next */
-          if (!coordinates) return;
-
-          const markerElement = document.createElement("span");
-          markerElement.className = "ofm-marker";
-          markerElement.dataset.day = point.item.day;
-          markerElement.setAttribute("aria-hidden", "true");
-          markerElement.style.setProperty("--day-color", dayColorFor(point.item.day, routeDayGroups));
-          markerElement.textContent = String(index + 1);
-
-          const marker = new maplibregl.Marker({ element: markerElement })
-            .setLngLat([coordinates.lng, coordinates.lat])
-            .addTo(map);
-          markers.set(point.item.id, marker);
-        });
-
         map.on("load", () => {
           if (disposed) return;
-          routeDayGroups.forEach((group, index) => {
-            const coordinates = group.points.flatMap((point) => {
-              const coordinate = point.item.coordinates;
-              return coordinate ? [[coordinate.lng, coordinate.lat]] : [];
-            });
-            if (coordinates.length < 2) return;
-
-            map.addSource(routeSourceId(index), {
-              type: "geojson",
-              data: {
-                type: "Feature",
-                properties: {},
-                geometry: {
-                  type: "LineString",
-                  coordinates,
-                },
-              } as GeoJSON.Feature<GeoJSON.LineString>,
-            });
-            map.addLayer({
-              id: routeShadowLayerId(index),
-              type: "line",
-              source: routeSourceId(index),
-              paint: {
-                "line-color": "#ffffff",
-                "line-opacity": routeOpacity(activeDayRef.current, group.day, 0.82, 0),
-                "line-width": 9,
-              },
-            });
-            map.addLayer({
-              id: routeLineLayerId(index),
-              type: "line",
-              source: routeSourceId(index),
-              paint: {
-                "line-color": group.color,
-                "line-opacity": routeOpacity(activeDayRef.current, group.day, 0.94, 0),
-                "line-width": 4.5,
-              },
-            });
-          });
-          fitLiveRoute(map, activeDayRef.current === "all" ? liveRoutePoints : liveRoutePoints.filter((point) => point.item.day === activeDayRef.current));
-          removeMapChromeFromTabOrder(container);
           container.inert = false;
           setLiveMapState("ready");
         });
 
         map.on("error", () => {
-          if (!disposed) setLiveMapState("error");
+          if (disposed) return;
+          setLiveMapState("error");
         });
       } catch {
         /* v8 ignore next */
@@ -200,35 +148,71 @@ export function RouteMapView({ endDate, items, liveMapEnabled = process.env.NODE
 
     return () => {
       disposed = true;
-      markers.forEach((marker) => marker.remove());
-      markers.clear();
+      markersRef.current.forEach((entry) => entry.marker.remove());
+      markersRef.current.clear();
+      if (mapRef.current) cleanupRouteLayers(mapRef.current, sourceIdsRef.current);
+      sourceIdsRef.current = [];
       mapRef.current?.remove();
       mapRef.current = null;
       if (liveMapContainer) {
         liveMapContainer.inert = false;
       }
     };
-  }, [liveMapEnabled, liveRoutePoints, routeDayGroups]);
+  }, [liveMapEnabled]);
 
   useEffect(() => {
-    markersRef.current.forEach((marker) => {
-      const visible = activeDay === "all" || marker.getElement().dataset.day === activeDay;
-      marker.getElement().style.display = visible ? "" : "none";
-    });
-
     const map = mapRef.current;
-    if (!map || liveMapState !== "ready") return;
+    const maplibregl = maplibreModuleRef.current;
+    if (!map || liveMapState !== "ready" || !maplibregl) return;
 
-    routeDayGroups.forEach((group, index) => {
-      if (map.getLayer(routeShadowLayerId(index))) {
-        map.setPaintProperty(routeShadowLayerId(index), "line-opacity", routeOpacity(activeDay, group.day, 0.82, 0));
-      }
-      if (map.getLayer(routeLineLayerId(index))) {
-        map.setPaintProperty(routeLineLayerId(index), "line-opacity", routeOpacity(activeDay, group.day, 0.94, 0));
+    const visibleCoordinates = new Map<string, number>(
+      visibleLiveRoutePoints
+        .map((point, index) => [point.item.id, index + 1]),
+    );
+
+    markersRef.current.forEach((entry, itemId) => {
+      if (!markerItems.has(itemId)) {
+        entry.marker.remove();
+        markersRef.current.delete(itemId);
       }
     });
+
+    liveRoutePoints.forEach((point) => {
+      const markerLabel = String(visibleCoordinates.get(point.item.id) ?? 1);
+      const markerColor = dayColorFor(point.item.day, routeDayGroups);
+      const markerDisplay = activeDay === "all" || point.item.day === activeDay ? "" : "none";
+      const existing = markersRef.current.get(point.item.id);
+      if (existing) {
+        existing.day = point.item.day;
+        existing.marker.setLngLat([point.item.coordinates.lng, point.item.coordinates.lat]);
+        existing.marker.getElement().style.setProperty("--day-color", markerColor);
+        existing.marker.getElement().textContent = markerLabel;
+        existing.marker.getElement().style.display = markerDisplay;
+        return;
+      }
+
+      const markerElement = document.createElement("span");
+      markerElement.className = "ofm-marker";
+      markerElement.dataset.day = point.item.day;
+      markerElement.setAttribute("aria-hidden", "true");
+      markerElement.style.setProperty("--day-color", markerColor);
+      markerElement.style.display = markerDisplay;
+      markerElement.textContent = markerLabel;
+
+      const marker = new maplibregl.Marker({ element: markerElement })
+        .setLngLat([point.item.coordinates.lng, point.item.coordinates.lat])
+        .addTo(map);
+
+      markersRef.current.set(point.item.id, { marker, day: point.item.day });
+    });
+
+    markersRef.current.forEach((entry) => {
+      entry.marker.getElement().style.display = activeDay === "all" || entry.day === activeDay ? "" : "none";
+    });
+
+    sourceIdsRef.current = synchronizeRouteLayers(map, sourceIdsRef.current, routeDayGroups, activeDay);
     fitLiveRoute(map, visibleLiveRoutePoints);
-  }, [activeDay, liveMapState, routeDayGroups, visibleLiveRoutePoints]);
+  }, [activeDay, liveMapState, liveRoutePoints, visibleLiveRoutePoints, routeDayGroups, markerItems]);
 
   return (
     <section className={routeMapPanelClassName} id="map" aria-labelledby="route-map-heading" aria-label={t.map.pageLabel}>
@@ -361,8 +345,83 @@ function routeOpacity(activeDay: DayFilter, day: string, visibleOpacity: number,
   return activeDay === "all" || activeDay === day ? visibleOpacity : hiddenOpacity;
 }
 
+function cleanupRouteLayers(map: import("maplibre-gl").Map, sourceIds: string[]) {
+  sourceIds.forEach((sourceId) => {
+    const lineId = `${sourceId}-line`;
+    const layerId = `${sourceId}-shadow`;
+
+    if (map.getLayer(lineId)) {
+      map.removeLayer(lineId);
+    }
+
+    if (map.getLayer(layerId)) {
+      map.removeLayer(layerId);
+    }
+
+    if (map.getSource(sourceId)) {
+      map.removeSource(sourceId);
+    }
+  });
+}
+
+function synchronizeRouteLayers(map: import("maplibre-gl").Map, sourceIds: string[], dayGroups: RouteDayGroup[], activeDay: DayFilter) {
+  const nextSourceIds: string[] = [];
+  cleanupRouteLayers(map, sourceIds);
+
+  dayGroups.forEach((group, index) => {
+    const coordinates = group.points.flatMap((point) => {
+      const coordinate = point.item.coordinates;
+      return hasCoordinates(coordinate) ? [[coordinate.lng, coordinate.lat]] : [];
+    });
+
+    if (coordinates.length < 2) return;
+
+    const sourceId = routeSourceId(index);
+    const shadowId = routeShadowLayerId(index);
+    const lineId = routeLineLayerId(index);
+
+    map.addSource(sourceId, {
+      type: "geojson",
+      data: {
+        type: "Feature",
+        properties: {},
+        geometry: {
+          type: "LineString",
+          coordinates,
+        },
+      } as GeoJSON.Feature<GeoJSON.LineString>,
+    });
+
+    map.addLayer({
+      id: shadowId,
+      type: "line",
+      source: sourceId,
+      paint: {
+        "line-color": "#ffffff",
+        "line-opacity": routeOpacity(activeDay, group.day, 0.82, 0),
+        "line-width": 9,
+      },
+    });
+
+    map.addLayer({
+      id: lineId,
+      type: "line",
+      source: sourceId,
+      paint: {
+        "line-color": group.color,
+        "line-opacity": routeOpacity(activeDay, group.day, 0.94, 0),
+        "line-width": 4.5,
+      },
+    });
+
+    nextSourceIds.push(sourceId);
+  });
+
+  return nextSourceIds;
+}
+
 export function fitLiveRoute(map: import("maplibre-gl").Map, points: RoutePoint[]) {
-  const pointsWithCoordinates = points.filter((point) => point.item.coordinates);
+  const pointsWithCoordinates = points.filter((point) => point.item.coordinates && hasCoordinates(point.item.coordinates));
   if (pointsWithCoordinates.length > 1) {
     map.fitBounds(getRouteBounds(pointsWithCoordinates), { padding: 80, maxZoom: 13 });
     return;
@@ -380,7 +439,15 @@ function removeMapChromeFromTabOrder(container: HTMLElement) {
 }
 
 function hasCoordinates(coordinate: ItineraryItem["coordinates"]): coordinate is NonNullable<ItineraryItem["coordinates"]> {
-  return Boolean(coordinate);
+  return Boolean(
+    coordinate
+    && Number.isFinite(coordinate.lat)
+    && Number.isFinite(coordinate.lng)
+    && coordinate.lat >= -90
+    && coordinate.lat <= 90
+    && coordinate.lng >= -180
+    && coordinate.lng <= 180,
+  );
 }
 
 export function getRouteCenter(points: RoutePoint[]): [number, number] {
@@ -411,7 +478,7 @@ function markerStyle(point: RoutePoint, index: number, color: string): MarkerSty
 
 function buildRoutePoints(items: ItineraryItem[]): RoutePoint[] {
   const regionalItems = items.filter(isRegionalMapStop);
-  const coordinateItems = regionalItems.filter((item) => item.coordinates);
+  const coordinateItems = regionalItems.filter((item) => hasCoordinates(item.coordinates));
   const bounds = getBounds(coordinateItems);
 
   return regionalItems.map((item, index) => {
@@ -421,7 +488,8 @@ function buildRoutePoints(items: ItineraryItem[]): RoutePoint[] {
 }
 
 function isRegionalMapStop(item: ItineraryItem): boolean {
-  return !item.coordinates || item.coordinates.lng > 110;
+  if (!item.coordinates) return true;
+  return hasCoordinates(item.coordinates);
 }
 
 function getBounds(items: ItineraryItem[]) {

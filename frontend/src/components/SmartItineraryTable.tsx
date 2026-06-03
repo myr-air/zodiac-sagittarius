@@ -4,7 +4,7 @@ import { useI18n } from "@/src/i18n/I18nProvider";
 import type { Messages } from "@/src/i18n/messages";
 import type { Locale } from "@/src/i18n/types";
 import { cn } from "@/src/lib/cn";
-import { formatDayLabel, groupItemsByDay } from "@/src/trip/itinerary";
+import { formatDayLabel, groupItemsByDay, type ItineraryView } from "@/src/trip/itinerary";
 import { Button, IconButton } from "./ui";
 import { Icon } from "./icons";
 import { formatTripRange, PageHeader } from "./PageHeader";
@@ -19,6 +19,7 @@ interface SmartItineraryTableProps {
   items: ItineraryItem[];
   role: TripRole;
   startDate: string;
+  itineraryView?: ItineraryView;
   selectedItemId: string;
   tripName: string;
   onAddStop: () => void;
@@ -67,6 +68,7 @@ export function SmartItineraryTable({
   canUndo,
   contextRailOpen,
   endDate,
+  itineraryView,
   items,
   role,
   startDate,
@@ -80,10 +82,10 @@ export function SmartItineraryTable({
   onUndo,
 }: SmartItineraryTableProps) {
   const { locale, t } = useI18n();
-  const groups = groupItemsByDay(items);
+  const groups = itineraryView?.dayGroups ?? groupItemsByDay(items);
   const canEdit = role === "owner" || role === "organizer";
   const canRestructureItems = canEdit && canRestructure;
-  const warningCount = items.reduce((total, item) => total + (item.advisories?.length ?? 0), 0);
+  const warningCount = itineraryView?.warningCount ?? items.reduce((total, item) => total + (item.advisories?.length ?? 0), 0);
   const totalMinutes = items.reduce((total, item) => total + (item.durationMinutes ?? 0), 0);
   const [collapsedDays, setCollapsedDays] = useState<string[]>([]);
   const [dragState, setDragState] = useState<{ draggedItemId: string | null; overItemId: string | null }>({ draggedItemId: null, overItemId: null });

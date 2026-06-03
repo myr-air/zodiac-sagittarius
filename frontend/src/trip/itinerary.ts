@@ -1,5 +1,25 @@
 import type { Locale } from "@/src/i18n/types";
-import type { ItineraryItem, NowNextState, ValidationWarning } from "./types";
+import type { ItineraryItem, ValidationWarning } from "./types";
+
+export interface ItineraryDayGroup {
+  day: string;
+  items: ItineraryItem[];
+  warningCount: number;
+}
+
+export interface ItineraryRouteDayStat {
+  day: string;
+  itemCount: number;
+  coordinateItemCount: number;
+  warningCount: number;
+}
+
+export interface ItineraryView {
+  dayGroups: ItineraryDayGroup[];
+  sortedItems: ItineraryItem[];
+  warningCount: number;
+  routeDayStats: ItineraryRouteDayStat[];
+}
 
 export function getTripDates(startDate: string, endDate: string): string[] {
   const start = new Date(`${startDate}T00:00:00Z`);
@@ -20,19 +40,125 @@ export function sortItemsForDay(items: ItineraryItem[], day: string): ItineraryI
     .sort((a, b) => a.sortOrder - b.sortOrder || a.startTime.localeCompare(b.startTime));
 }
 
-export function groupItemsByDay(items: ItineraryItem[]): Array<{ day: string; items: ItineraryItem[]; warningCount: number }> {
-  const days = Array.from(new Set(items.map((item) => item.day))).sort();
-  return days.map((day) => {
-    const dayItems = sortItemsForDay(items, day);
-    return {
-      day,
-      items: dayItems,
-      warningCount: dayItems.reduce((total, item) => total + validateItineraryItem(item, dayItems).length, 0),
-    };
+export function buildItineraryView(items: ItineraryItem[]): ItineraryView {
+  const sortedItems = [...items].sort((a, b) => {
+    const dayCompare = a.day.localeCompare(b.day);
+    if (dayCompare !== 0) return dayCompare;
+    return a.sortOrder - b.sortOrder || a.startTime.localeCompare(b.startTime);
   });
+
+  const dayBuckets = new Map<string, ItineraryItem[]>();
+  for (const item of sortedItems) {
+    const bucket = dayBuckets.get(item.day);
+    if (!bucket) {
+      dayBuckets.set(item.day, [item]);
+    } else {
+      bucket.push(item);
+    }
+  }
+
+  const dayGroups: ItineraryDayGroup[] = [];
+  const routeDayStats: ItineraryRouteDayStat[] = [];
+
+  let warningCount = 0;
+
+  for (const day of Array.from(dayBuckets.keys()).sort()) {
+    const dayItems = dayBuckets.get(day) ?? [];
+    const baseWarningsByItem = new Map<string, ValidationWarning[]>();
+
+    for (const item of dayItems) {
+      baseWarningsByItem.set(item.id, validateItemFields(item));
+    }
+
+    const overlapWarningsByItem = buildOverlapWarnings(dayItems);
+    for (const [itemId, overlapWarnings] of overlapWarningsByItem) {
+      baseWarningsByItem.set(itemId, [...(baseWarningsByItem.get(itemId) ?? []), ...overlapWarnings]);
+    }
+
+    const dayWarningCount = dayItems.reduce(
+      (total, item) => total + (baseWarningsByItem.get(item.id)?.length ?? 0),
+      0,
+    );
+
+    warningCount += dayWarningCount;
+    dayGroups.push({ day, items: dayItems, warningCount: dayWarningCount });
+    routeDayStats.push({
+      day,
+      itemCount: dayItems.length,
+      coordinateItemCount: dayItems.filter((item) => item.coordinates).length,
+      warningCount: dayWarningCount,
+    });
+  }
+
+  return { dayGroups, sortedItems, warningCount, routeDayStats };
+}
+
+export function groupItemsByDay(items: ItineraryItem[]): ItineraryDayGroup[] {
+  return buildItineraryView(items).dayGroups;
 }
 
 export function validateItineraryItem(item: ItineraryItem, dayItems: ItineraryItem[]): ValidationWarning[] {
+  const warnings = validateItemFields(item);
+  const overlapWarnings = buildOverlapWarnings(dayItems);
+  const itemOverlapWarnings = overlapWarnings.get(item.id);
+  if (itemOverlapWarnings) warnings.push(...itemOverlapWarnings);
+  return warnings;
+}
+
+function buildOverlapWarnings(dayItems: ItineraryItem[]): Map<string, ValidationWarning[]> {
+  const warningsByItemId = new Map<string, ValidationWarning[]>();
+  const validIntervals = dayItems
+    .map((item) => {
+      const start = parseTime(item.startTime);
+      if (start === null || item.durationMinutes === null || item.durationMinutes <= 0) return null;
+      return { item, start, end: start + item.durationMinutes };
+    })
+    .filter((entry): entry is { item: ItineraryItem; start: number; end: number } => entry !== null)
+    .sort((a, b) => a.start - b.start || a.end - b.end || a.item.sortOrder - b.item.sortOrder);
+
+  if (validIntervals.length < 2) return warningsByItemId;
+
+  let group: Array<{ item: ItineraryItem; end: number }> = [];
+  let groupMaxEnd = 0;
+
+  const addOverlapWarningGroup = (groupItems: Array<{ item: ItineraryItem; end: number }>) => {
+    if (groupItems.length < 2) return;
+    const primary = groupItems[0]?.item;
+    const secondary = groupItems[1]?.item;
+    if (!primary || !secondary) return;
+    for (const entry of groupItems) {
+      const overlapTarget = entry.item.id === primary.id ? secondary : primary;
+      warningsByItemId.set(entry.item.id, [{
+        code: "overlap",
+        message: `This stop overlaps ${overlapTarget.activity}; ตรวจเวลาอีกครั้งก่อน publish.`,
+        itemId: entry.item.id,
+      }]);
+    }
+  };
+
+  for (const entry of validIntervals) {
+    if (!group.length) {
+      group = [entry];
+      groupMaxEnd = entry.end;
+      continue;
+    }
+
+    if (entry.start < groupMaxEnd) {
+      group.push(entry);
+      groupMaxEnd = Math.max(groupMaxEnd, entry.end);
+      continue;
+    }
+
+    addOverlapWarningGroup(group);
+    group = [entry];
+    groupMaxEnd = entry.end;
+  }
+
+  addOverlapWarningGroup(group);
+  return warningsByItemId;
+}
+
+function validateItemFields(item: ItineraryItem): ValidationWarning[] {
   const warnings: ValidationWarning[] = [];
   const start = parseTime(item.startTime);
 
@@ -54,27 +180,10 @@ export function validateItineraryItem(item: ItineraryItem, dayItems: ItineraryIt
     warnings.push({ code: "missing-transportation", message: "Add transport notes so the group knows the next move.", itemId: item.id });
   }
 
-  if (start !== null && item.durationMinutes && item.durationMinutes > 0) {
-    const currentEnd = start + item.durationMinutes;
-    const previous = dayItems
-      .filter((candidate) => candidate.id !== item.id)
-      .map((candidate) => ({ item: candidate, start: parseTime(candidate.startTime), duration: candidate.durationMinutes }))
-      .filter((candidate): candidate is { item: ItineraryItem; start: number; duration: number } => candidate.start !== null && candidate.duration !== null && candidate.duration > 0)
-      .find((candidate) => candidate.start < currentEnd && start < candidate.start + candidate.duration);
-
-    if (previous) {
-      warnings.push({
-        code: "overlap",
-        message: `This stop overlaps ${previous.item.activity}; ตรวจเวลาอีกครั้งก่อน publish.`,
-        itemId: item.id,
-      });
-    }
-  }
-
   return warnings;
 }
 
-export function getNowNext(items: ItineraryItem[], day: string, currentTime: string): NowNextState {
+export function getNowNext(items: ItineraryItem[], day: string, currentTime: string): { current: ItineraryItem | null; next: ItineraryItem | null; fallbackReason: string | null } {
   const nowMinutes = parseTime(currentTime);
   if (nowMinutes === null) return { current: null, next: null, fallbackReason: "Current time is unavailable." };
 

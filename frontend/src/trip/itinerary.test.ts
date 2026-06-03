@@ -3,6 +3,7 @@ import { buildExpenseSummary } from "./expenses";
 import { seedTrip } from "./seed";
 import {
   getNowNext,
+  buildItineraryView,
   getTripDates,
   groupItemsByDay,
   parseTime,
@@ -36,6 +37,107 @@ describe("itinerary planning domain", () => {
       "item-symphony-lights",
       "item-temple-street",
     ]);
+  });
+
+  it("builds a shared itinerary view with sorted items and warning totals", () => {
+    const selectedItems = [
+      {
+        ...seedTrip.itineraryItems.find((item) => item.id === "item-victoria-peak")!,
+        id: "item-overlap-a",
+        day: "2025-05-16",
+        sortOrder: 300,
+        startTime: "09:30",
+        durationMinutes: 45,
+      },
+      {
+        ...seedTrip.itineraryItems.find((item) => item.id === "item-dimdim")!,
+        id: "item-overlap-b",
+        day: "2025-05-16",
+        sortOrder: 100,
+        startTime: "09:00",
+        durationMinutes: 60,
+      },
+      {
+        ...seedTrip.itineraryItems.find((item) => item.id === "item-pacific-place")!,
+        id: "item-safe-stop",
+        day: "2025-05-16",
+        sortOrder: 200,
+        startTime: "11:00",
+        durationMinutes: 30,
+      },
+      {
+        ...seedTrip.itineraryItems.find((item) => item.id === "item-temple-street")!,
+        id: "item-invalid-fields",
+        day: "2025-05-16",
+        sortOrder: 400,
+        startTime: "24:99",
+        durationMinutes: 0,
+        mapLink: " ",
+        transportation: " ",
+      },
+      {
+        ...seedTrip.itineraryItems.find((item) => item.id === "item-checkout")!,
+        id: "item-other-day",
+      },
+    ];
+
+    const view = buildItineraryView(selectedItems);
+
+    expect(view.sortedItems.map((item) => item.id)).toEqual([
+      "item-overlap-b",
+      "item-safe-stop",
+      "item-overlap-a",
+      "item-invalid-fields",
+      "item-other-day",
+    ]);
+    expect(view.dayGroups.map((group) => ({
+      day: group.day,
+      warningCount: group.warningCount,
+      ids: group.items.map((item) => item.id),
+    }))).toEqual([
+      {
+        day: "2025-05-16",
+        warningCount: 6,
+        ids: ["item-overlap-b", "item-safe-stop", "item-overlap-a", "item-invalid-fields"],
+      },
+      {
+        day: "2025-05-17",
+        warningCount: 0,
+        ids: ["item-other-day"],
+      },
+    ]);
+    expect(view.routeDayStats).toEqual([
+      {
+        day: "2025-05-16",
+        itemCount: 4,
+        coordinateItemCount: 4,
+        warningCount: 6,
+      },
+      {
+        day: "2025-05-17",
+        itemCount: 1,
+        coordinateItemCount: 1,
+        warningCount: 0,
+      },
+    ]);
+  });
+
+  it("keeps invalid field warning totals stable in shared derive", () => {
+    const invalidDayItem = {
+      ...seedTrip.itineraryItems.find((item) => item.id === "item-dimdim")!,
+      id: "item-invalid-fields-only",
+      day: "2025-05-16",
+      sortOrder: 999,
+      startTime: " ",
+      durationMinutes: 0,
+      mapLink: " ",
+      transportation: " ",
+    };
+
+    const view = buildItineraryView([invalidDayItem]);
+
+    expect(view.warningCount).toBe(4);
+    expect(view.dayGroups[0]?.warningCount).toBe(4);
   });
 
   it("falls back for invalid trip dates and invalid display days", () => {
