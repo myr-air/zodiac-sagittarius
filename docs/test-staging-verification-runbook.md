@@ -68,6 +68,25 @@ Required journeys:
 - create/update/delete stop note
 - permission blocked path for viewer/traveler where applicable
 
+After staging verification, run the sign-off evidence check with the real
+environment, owner, and evidence URLs:
+
+```bash
+SAGITTARIUS_STAGING_PREFLIGHT_PASSED=1 \
+SAGITTARIUS_STAGING_BROWSER_SIGNOFF=1 \
+SAGITTARIUS_STAGING_DB_MIGRATION_VERIFIED=1 \
+SAGITTARIUS_STAGING_ROLLBACK_VERIFIED=1 \
+SAGITTARIUS_STAGING_ALERT_ROUTING_VERIFIED=1 \
+SAGITTARIUS_STAGING_NO_P1_P2=1 \
+SAGITTARIUS_STAGING_ENVIRONMENT=staging \
+SAGITTARIUS_STAGING_API_BASE_URL=https://api.staging.example.test \
+SAGITTARIUS_STAGING_FRONTEND_URL=https://staging.example.test \
+SAGITTARIUS_STAGING_EVIDENCE_URL=https://ci.example.test/runs/123 \
+SAGITTARIUS_FEATURE_OWNER="Feature Owner" \
+SAGITTARIUS_ROLLBACK_OWNER="Rollback Owner" \
+make staging-signoff-check
+```
+
 Perf smoke:
 
 - `make perf-smoke PSQL='docker exec -i sagittarius-test-postgres psql'`

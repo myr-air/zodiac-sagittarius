@@ -284,7 +284,8 @@ passed locally with Docker Postgres on 2026-06-03.
 
 Wave status: production freeze checklist added, HTTP tracing enabled, repo-level
 local verification green, and local real API e2e green. Final ship remains
-gated on staging environment sign-off, rollback execution, and alert routing.
+gated on staging environment sign-off, rollback execution, and alert routing;
+`make staging-signoff-check` now enforces those external evidence fields.
 
 ### W5-PROD-001: Logging + alerting for writes
 - **Owner**: SRE
@@ -304,7 +305,9 @@ gated on staging environment sign-off, rollback execution, and alert routing.
 ### W5-PROD-004: Security/a11y/browser final sweep
 - **Owner**: QA
 - **Estimate**: 3h
-- **Status**: Local unit/storybook/build checks and real API e2e passed; final staging browser sweep still required.
+- **Status**: Local unit/storybook/build checks and real API e2e passed; final
+  staging browser sweep still required and must be captured with
+  `staging-signoff-check`.
 
 ## Wave 2 issue list (implemented in this branch)
 

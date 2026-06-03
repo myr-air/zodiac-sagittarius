@@ -12,7 +12,7 @@ ROLLBACK_TEST_DATABASE_URL ?= postgres://postgres:postgres@127.0.0.1:5432/$(ROLL
 PSQL ?= psql
 PSQL_BIN := $(firstword $(PSQL))
 
-.PHONY: backend-dev frontend-dev backend-test frontend-build frontend-test frontend-storybook frontend-verify frontend-e2e-local frontend-e2e-auth-browser api-trace-smoke perf-smoke staging-preflight verify production-readiness-local db-init db-create db-migrate db-init-test db-migrate-test db-rollback-stop-notes-test db-ensure-psql
+.PHONY: backend-dev frontend-dev backend-test frontend-build frontend-test frontend-storybook frontend-verify frontend-e2e-local frontend-e2e-auth-browser api-trace-smoke perf-smoke staging-preflight staging-signoff-check verify production-readiness-local db-init db-create db-migrate db-init-test db-migrate-test db-rollback-stop-notes-test db-ensure-psql
 
 backend-dev: db-init
 	DATABASE_URL="$(DATABASE_URL)" SAGITTARIUS_BIND_ADDR="$(SAGITTARIUS_BIND_ADDR)" \
@@ -64,6 +64,9 @@ staging-preflight: db-ensure-psql
 	PSQL="$(PSQL)" \
 	RUST_LOG="info,tower_http=info,sagittarius_api=info" \
 	bun run test:staging-preflight
+
+staging-signoff-check:
+	cd $(FRONTEND_DIR) && bun run test:staging-signoff
 
 verify: frontend-verify backend-test
 
