@@ -78,6 +78,12 @@ Minimum evidence:
 - disabled member cannot keep using revoked sessions
 - realtime write event includes actor where `clientMutationId` exists
 
+Local security evidence:
+
+- `members_contract_disabling_member_revokes_existing_session` verifies owner
+  disable, session revocation, stale-token read rejection, and stale-token write
+  rejection.
+
 ## Local Docker Verification
 
 On 2026-06-03, local verification passed with a Docker Postgres container:

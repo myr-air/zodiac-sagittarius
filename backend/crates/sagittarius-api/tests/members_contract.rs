@@ -55,6 +55,93 @@ async fn members_contract_requires_bearer_session(pool: sqlx::PgPool) {
 }
 
 #[sqlx::test(migrations = "../../migrations")]
+async fn members_contract_disabling_member_revokes_existing_session(pool: sqlx::PgPool) {
+    support::seed_trip(&pool).await;
+    let owner_token = support::create_session(&pool, support::OWNER_ID).await;
+    let traveler_token = support::create_session(&pool, support::TRAVELER_ID).await;
+    let app = support::app(pool.clone());
+
+    let disable_response = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method(Method::PATCH)
+                .uri(format!(
+                    "/api/v1/trips/{}/members/{}",
+                    support::TRIP_ID,
+                    support::TRAVELER_ID
+                ))
+                .header(header::AUTHORIZATION, format!("Bearer {owner_token}"))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({
+                        "accessStatus": "disabled"
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(disable_response.status(), StatusCode::OK);
+    let body: Value =
+        serde_json::from_slice(&to_bytes(disable_response.into_body(), 65536).await.unwrap())
+            .unwrap();
+    assert_eq!(body["id"], support::TRAVELER_ID);
+    assert_eq!(body["accessStatus"], "disabled");
+    assert!(body["claimedAt"].is_null());
+
+    let revoked_count: i64 = sqlx::query_scalar(
+        "select count(*)
+         from trip_member_sessions
+         where trip_id = $1
+           and member_id = $2
+           and revoked_at is not null",
+    )
+    .bind(uuid::Uuid::parse_str(support::TRIP_ID).unwrap())
+    .bind(uuid::Uuid::parse_str(support::TRAVELER_ID).unwrap())
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(revoked_count, 1);
+
+    let read_after_disable = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method(Method::GET)
+                .uri(format!("/api/v1/trips/{}/members", support::TRIP_ID))
+                .header(header::AUTHORIZATION, format!("Bearer {traveler_token}"))
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(read_after_disable.status(), StatusCode::UNAUTHORIZED);
+
+    let write_after_disable = app
+        .oneshot(
+            Request::builder()
+                .method(Method::POST)
+                .uri(format!("/api/v1/trips/{}/presence", support::TRIP_ID))
+                .header(header::AUTHORIZATION, format!("Bearer {traveler_token}"))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({
+                        "clientMutationId": "presence-disabled-member",
+                        "presence": "online"
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(write_after_disable.status(), StatusCode::UNAUTHORIZED);
+}
+
+#[sqlx::test(migrations = "../../migrations")]
 async fn presence_contract_updates_current_member_and_emits_event(pool: sqlx::PgPool) {
     support::seed_trip(&pool).await;
     let token = support::create_session(&pool, support::TRAVELER_ID).await;

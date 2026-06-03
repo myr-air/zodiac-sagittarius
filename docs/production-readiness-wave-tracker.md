@@ -268,6 +268,10 @@ passed locally with Docker Postgres on 2026-06-03.
 - **Owner**: Security
 - **Estimate**: 2h
 - **Status**: Runbook gate documented against `/Users/xiivth/.codex/REAL_SYSTEM_QA.md`.
+  Local contract coverage verifies that disabling a member revokes existing
+  member sessions and blocks both read and write requests with the old token.
+  Full `production-readiness-local` passed with this security check on
+  2026-06-03.
 
 ### W4-TEST-006: Perf smoke + retry/idempotency checks
 - **Owner**: Backend
