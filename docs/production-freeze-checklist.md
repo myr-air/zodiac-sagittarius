@@ -5,7 +5,7 @@ Use this checklist after Wave 4 real-system verification passes in staging.
 ## Logging And Alerts
 
 - Run API with `RUST_LOG=info,tower_http=info,sagittarius_api=info`.
-- Confirm write requests emit HTTP trace spans with status and latency.
+- Confirm write requests emit `INFO` HTTP trace spans with status and latency.
 - Route 4xx/5xx write-operation logs to the staging alert sink before production.
 - Alert on repeated `401`, `403`, `409`, and `500` spikes for:
   - trip metadata routes

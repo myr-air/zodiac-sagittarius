@@ -168,12 +168,15 @@ describe("Sagittarius project scaffold", () => {
 
   it("keeps production-readiness gates repeatable from the root Makefile", () => {
     const makefile = readFileSync(join(repoRoot, "Makefile"), "utf8");
+    const apiMod = readFileSync(join(repoRoot, "backend/crates/sagittarius-api/src/api/mod.rs"), "utf8");
     const apiMain = readFileSync(join(repoRoot, "backend/crates/sagittarius-api/src/main.rs"), "utf8");
 
     expect(makefile).toContain("production-readiness-local: verify frontend-e2e-local frontend-e2e-auth-browser db-rollback-stop-notes-test");
     expect(makefile).toContain("db-rollback-stop-notes-test:");
     expect(makefile).toContain("ROLLBACK_TEST_DATABASE_NAME ?= sagittarius_rollback_test");
     expect(makefile).toContain("DROP TABLE IF EXISTS stop_notes");
+    expect(apiMod).toContain("DefaultOnRequest::new().level(Level::INFO)");
+    expect(apiMod).toContain("DefaultOnResponse::new().level(Level::INFO)");
     expect(apiMain).toContain("EnvFilter::try_from_default_env()");
   });
 
