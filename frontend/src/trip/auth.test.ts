@@ -40,7 +40,9 @@ describe("trip participant auth", () => {
     expect(member?.claimPasswordHash).toBeTruthy();
     expect(verifyTripParticipantPassword(member!, "my-trip-pin")).toBe(true);
     expect(session).toMatchObject({ tripId: seedTrip.id, memberId: "member-nam" });
-    expect(session.sessionToken).toMatch(/^local_/);
+    expect(session.sessionToken).toMatch(/^local-/);
+    expect(session.sessionToken).not.toContain(seedTrip.id);
+    expect(session.sessionToken).not.toContain("member-nam");
     expect(session.expiresAt).toBeTruthy();
   });
 

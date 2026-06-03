@@ -161,6 +161,27 @@ pub async fn find_active_trip_join_session(
     .await
 }
 
+pub async fn consume_trip_join_session(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    trip_id: Uuid,
+    token_hash: &str,
+) -> Result<u64, sqlx::Error> {
+    let result = sqlx::query(
+        "update trip_join_sessions
+         set consumed_at = now()
+         where trip_id = $1
+           and join_session_token_hash = $2
+           and consumed_at is null
+           and expires_at > now()",
+    )
+    .bind(trip_id)
+    .bind(token_hash)
+    .execute(&mut **tx)
+    .await?;
+
+    Ok(result.rows_affected())
+}
+
 pub async fn revoke_member_session(
     pool: &PgPool,
     trip_id: Uuid,

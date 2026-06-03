@@ -142,7 +142,7 @@ export function createTripParticipantSession(trip: Trip, memberId: string, optio
   return {
     tripId: trip.id,
     memberId,
-    sessionToken: `local_${trip.id}_${memberId}_${now.getTime().toString(36)}`,
+    sessionToken: createLocalSessionToken(),
     createdAt: now.toISOString(),
     expiresAt: expiresAt.toISOString(),
   };
@@ -186,6 +186,14 @@ export function hashLocalSecret(secret: string): string {
 
 function normalizeJoinId(joinId: string): string {
   return joinId.trim().toUpperCase();
+}
+
+function createLocalSessionToken(): string {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) return `local-${crypto.randomUUID()}`;
+  const randomValue = typeof crypto !== "undefined" && "getRandomValues" in crypto
+    ? Array.from(crypto.getRandomValues(new Uint8Array(16)), (byte) => byte.toString(16).padStart(2, "0")).join("")
+    : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+  return `local-${randomValue}`;
 }
 
 function nextTripMemberId(members: Member[], displayName: string): string {

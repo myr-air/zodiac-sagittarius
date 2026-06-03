@@ -481,7 +481,7 @@ export function AccountAccessPanel({
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pendingAccountSession, setPendingAccountSession] = useState<AccountSession | null>(null);
-  const displayError = localizeAccessError(error ?? initialError ?? null, accessMessages);
+  const displayError = error ? localizeAccessError(error, accessMessages) ?? error : localizeAccessError(initialError ?? null, accessMessages);
   const currentPortalCache = accountSession ? getAccountPortalDataCache(accountSession.sessionToken) : null;
   const displayedSettings = settings ?? currentPortalCache?.settings ?? null;
   const displayedTrips = trips.length ? trips : currentPortalCache?.trips ?? [];
@@ -2720,25 +2720,41 @@ function errorMessage(caught: unknown, fallback: string, labels: Messages["acces
 }
 
 function rawErrorMessage(caught: unknown, fallback: string): string {
-  if (caught instanceof Error && caught.message) return caught.message;
+  if (isApiLikeError(caught)) return caught.code || String(caught.status);
+  if (caught instanceof Error && caught.message) {
+    const normalized = caught.message.trim();
+    if (Object.values(ACCESS_ERROR_CODES).includes(normalized as typeof ACCESS_ERROR_CODES[keyof typeof ACCESS_ERROR_CODES])) return normalized;
+    if (/^\d{3}$/.test(normalized)) return normalized;
+  }
   return fallback;
 }
 
 function localizeAccessError(message: string | null, labels: Messages["access"]["messages"]): string | null {
   if (!message) return null;
-  return friendlyErrorText(message, message, labels);
+  return friendlyErrorText(message, null, labels);
 }
 
-function friendlyErrorText(message: string, fallback: string, labels: Messages["access"]["messages"]): string {
+function friendlyErrorText(message: string, fallback: string | null, labels: Messages["access"]["messages"]): string | null {
   const normalized = message.trim();
   if (normalized === ACCESS_ERROR_CODES.accountLoadFailed) return labels.accountLoadFailed;
   if (normalized === ACCESS_ERROR_CODES.passkeyRegistrationCredential) return labels.passkeyRegistrationCredential;
   if (normalized === ACCESS_ERROR_CODES.passkeyLoginCredential) return labels.passkeyLoginCredential;
   if (normalized === ACCESS_ERROR_CODES.passkeyUnsupported) return labels.passkeyUnsupported;
+  if (normalized === "not_found") return labels.notFound;
+  if (normalized === "invalid_request") return labels.unauthorized;
   if (normalized === "404") return labels.notFound;
-  if (normalized === "401" || normalized === "403" || normalized === "unauthenticated" || normalized === "unauthorized") return labels.unauthorized;
+  if (normalized === "401" || normalized === "403" || normalized === "unauthenticated" || normalized === "unauthorized" || normalized === "forbidden") return labels.unauthorized;
   if (!normalized || /^\d{3}$/.test(normalized)) return fallback;
-  return normalized;
+  return fallback;
+}
+
+function isApiLikeError(value: unknown): value is { code?: string; status?: number } {
+  return Boolean(
+    value &&
+      typeof value === "object" &&
+      ("code" in value || "status" in value) &&
+      (typeof (value as { code?: unknown }).code === "string" || typeof (value as { status?: unknown }).status === "number"),
+  );
 }
 
 function formatDateTime(value: string, locale: "en" | "th"): string {

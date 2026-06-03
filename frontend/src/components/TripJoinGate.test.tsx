@@ -346,7 +346,7 @@ describe("TripJoinGate", () => {
     expect(onCockpitLoaded).toHaveBeenCalledWith(cockpit);
   });
 
-  it("surfaces API and generic errors while joining and authenticating", async () => {
+  it("uses safe API fallback copy while joining and authenticating", async () => {
     const user = userEvent.setup();
     const apiClient: TripApiClient = {
       joinTrip: vi.fn()
@@ -404,8 +404,9 @@ describe("TripJoinGate", () => {
     await user.type(screen.getByLabelText(/Set password for Demo Traveler/i), "owner-pin");
     await user.click(screen.getByRole("button", { name: /Start|Confirm/i }));
 
-    expect(apiClient.loginMember).toHaveBeenCalledWith(seedTrip.id, "member-aom", "owner-pin", "join-session-token");
-    expect(screen.getByRole("alert")).toHaveTextContent("Backend login unavailable");
+    expect(apiClient.loginMember).not.toHaveBeenCalled();
+    expect(screen.getByRole("alert")).toHaveTextContent("Password is incorrect.");
+    expect(screen.getByRole("alert")).not.toHaveTextContent("Already claimed");
   });
 
   it("does not fall back to login when backend claiming fails for a non-validation reason", async () => {
@@ -460,7 +461,8 @@ describe("TripJoinGate", () => {
     await user.click(screen.getByRole("button", { name: /Start|Confirm/i }));
 
     expect(apiClient.loginMember).not.toHaveBeenCalled();
-    expect(screen.getByRole("alert")).toHaveTextContent("Claim service down");
+    expect(screen.getByRole("alert")).toHaveTextContent("Password is incorrect.");
+    expect(screen.getByRole("alert")).not.toHaveTextContent("Claim service down");
   });
 });
 

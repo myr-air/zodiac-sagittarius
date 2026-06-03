@@ -31,6 +31,7 @@ function render(ui: ReactElement) {
 describe("Sagittarius cockpit UI", () => {
   beforeEach(() => {
     installLocalStorageStub();
+    installSessionStorageStub();
   });
 
   it("generates collision-free local ids and falls back when randomUUID is unavailable", () => {
@@ -390,7 +391,7 @@ describe("Sagittarius cockpit UI", () => {
       expect(await screen.findByRole("navigation", { name: /เมนูวางแผน Joii/i })).toBeInTheDocument();
       expect(screen.getByRole("link", { name: /ภาพรวม/i })).toHaveAttribute("aria-current", "page");
       expect(screen.queryByLabelText(/Trip ID/i)).not.toBeInTheDocument();
-      expect(storage.getItem(tripParticipantSessionStorageKey)).toContain("account-member-session");
+      expect(window.sessionStorage.getItem(tripParticipantSessionStorageKey)).toContain("account-member-session");
       expect(fetchSpy).toHaveBeenCalledWith(
         expect.stringContaining(`/api/v1/account/trips/${seedTrip.id}/member-sessions`),
         expect.objectContaining({
@@ -406,8 +407,8 @@ describe("Sagittarius cockpit UI", () => {
 
   it("switches trip workspace navigation without reloading the backend cockpit", async () => {
     const user = userEvent.setup();
-    const storage = installLocalStorageStub();
-    storage.setItem(
+    installLocalStorageStub();
+    window.sessionStorage.setItem(
       tripParticipantSessionStorageKey,
       JSON.stringify({
         tripId: seedTrip.id,
@@ -431,14 +432,14 @@ describe("Sagittarius cockpit UI", () => {
   });
 
   it("opens an empty trip timeline without a selected itinerary item", async () => {
-    const storage = installLocalStorageStub();
+    installLocalStorageStub();
     const emptyTrip = {
       ...seedTrip,
       id: "019e83ac-ed69-7df3-9354-b27359800374",
       itineraryItems: [],
       members: [{ ...seedTrip.members[0], tripId: "019e83ac-ed69-7df3-9354-b27359800374" }],
     };
-    storage.setItem(
+    window.sessionStorage.setItem(
       tripParticipantSessionStorageKey,
       JSON.stringify({
         tripId: emptyTrip.id,
@@ -578,7 +579,7 @@ describe("Sagittarius cockpit UI", () => {
       joinPasswordHash: "",
       members: [{ ...seedTrip.members[0], claimPasswordHash: null }],
     };
-    window.localStorage.setItem(
+    window.sessionStorage.setItem(
       tripParticipantSessionStorageKey,
       JSON.stringify({
         tripId: apiTrip.id,
@@ -610,7 +611,7 @@ describe("Sagittarius cockpit UI", () => {
         claimPasswordHash: null,
       }],
     };
-    window.localStorage.setItem(
+    window.sessionStorage.setItem(
       tripParticipantSessionStorageKey,
       JSON.stringify({
         tripId: apiTrip.id,
@@ -631,7 +632,7 @@ describe("Sagittarius cockpit UI", () => {
   it("rejects a persisted API session when a canonical UUID route belongs to another trip", async () => {
     installLocalStorageStub();
     const apiClient = createApiClientForTrip(seedTrip);
-    window.localStorage.setItem(
+    window.sessionStorage.setItem(
       tripParticipantSessionStorageKey,
       JSON.stringify({
         tripId: "018fc9c4-9cf0-7384-93ee-9bdc9c8d8f11",
@@ -646,7 +647,7 @@ describe("Sagittarius cockpit UI", () => {
 
     await waitFor(() => expect(screen.getByRole("main", { name: /Account access/i })).toBeInTheDocument());
     expect(apiClient.loadTrip).not.toHaveBeenCalled();
-    expect(window.localStorage.getItem(tripParticipantSessionStorageKey)).toBeNull();
+    expect(window.sessionStorage.getItem(tripParticipantSessionStorageKey)).toBeNull();
   });
 
   it("hydrates a persisted API session before the backend trip is in local state", async () => {
@@ -665,7 +666,7 @@ describe("Sagittarius cockpit UI", () => {
         claimPasswordHash: null,
       }],
     };
-    window.localStorage.setItem(
+    window.sessionStorage.setItem(
       tripParticipantSessionStorageKey,
       JSON.stringify({
         tripId: apiTrip.id,
@@ -685,7 +686,7 @@ describe("Sagittarius cockpit UI", () => {
 
   it("renders the same access choice before restoring a persisted account session", () => {
     installLocalStorageStub();
-    window.localStorage.setItem(
+    window.sessionStorage.setItem(
       "sagittarius-account-session",
       JSON.stringify({
         userId: "11111111-1111-1111-1111-111111111111",
@@ -706,7 +707,7 @@ describe("Sagittarius cockpit UI", () => {
   it("ignores late API hydration when the app unmounts during a persisted session load", async () => {
     installLocalStorageStub();
     const deferred = createDeferred<TripCockpit>();
-    window.localStorage.setItem(
+    window.sessionStorage.setItem(
       tripParticipantSessionStorageKey,
       JSON.stringify({
         tripId: seedTrip.id,
@@ -733,7 +734,7 @@ describe("Sagittarius cockpit UI", () => {
 
   it("recovers to access instead of hanging when persisted API hydration fails", async () => {
     installLocalStorageStub();
-    window.localStorage.setItem(
+    window.sessionStorage.setItem(
       tripParticipantSessionStorageKey,
       JSON.stringify({
         tripId: seedTrip.id,
@@ -750,8 +751,8 @@ describe("Sagittarius cockpit UI", () => {
 
     await waitFor(() => expect(apiClient.loadTrip).toHaveBeenCalledWith(seedTrip.id, "expired-session-token"));
     expect(await screen.findByRole("main", { name: /Account access/i })).toBeInTheDocument();
-    expect(screen.getByRole("alert")).toHaveTextContent(/โหลดข้อมูลทริปไม่สำเร็จ/i);
-    expect(window.localStorage.getItem(tripParticipantSessionStorageKey)).toBeNull();
+    expect(screen.getByRole("alert")).toHaveTextContent(/สิทธิ์ไม่ถูกต้อง/i);
+    expect(window.sessionStorage.getItem(tripParticipantSessionStorageKey)).toBeNull();
   });
 
   it("edits itinerary stops and resolves suggestions through the API client after backend login", async () => {
@@ -985,6 +986,7 @@ describe("Sagittarius cockpit UI", () => {
     expect(within(context).getByRole("button", { name: /เพิ่ม\/แก้ไขค่าใช้จ่าย/i })).toBeDisabled();
     unmount();
     window.localStorage.clear();
+    window.sessionStorage.clear();
 
     const membersClient = createApiClientForTrip(ownerTrip);
     render(<SagittariusApp requireJoin dataSource="api" initialView="members" apiClient={membersClient} />);
@@ -1721,6 +1723,21 @@ function installLocalStorageStub() {
     clear: () => values.clear(),
   };
   Object.defineProperty(window, "localStorage", {
+    configurable: true,
+    value: storage,
+  });
+  return storage;
+}
+
+function installSessionStorageStub() {
+  const values = new Map<string, string>();
+  const storage = {
+    getItem: (key: string) => values.get(key) ?? null,
+    setItem: (key: string, value: string) => values.set(key, value),
+    removeItem: (key: string) => values.delete(key),
+    clear: () => values.clear(),
+  };
+  Object.defineProperty(window, "sessionStorage", {
     configurable: true,
     value: storage,
   });

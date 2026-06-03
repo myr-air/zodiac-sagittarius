@@ -18,6 +18,7 @@ const SESSION_TOKEN_SALT: &[u8] = b"sagittarius-session-token";
 const JOIN_SESSION_TOKEN_SALT: &[u8] = b"sagittarius-join-session";
 const SESSION_TTL: Duration = Duration::days(30);
 const JOIN_SESSION_TTL: Duration = Duration::minutes(20);
+const PARTICIPANT_PASSWORD_MIN_LENGTH: usize = 4;
 
 pub fn hash_secret_for_tests(secret: &str) -> String {
     hash_secret_with_salt(secret, TEST_SECRET_SALT).expect("static test salt should hash")
@@ -90,7 +91,10 @@ pub async fn claim_member(
     trip_id: Uuid,
     member_id: Uuid,
     participant_password: &str,
+    join_session_token: &str,
 ) -> Result<MemberSession, ServiceError> {
+    let participant_password = normalize_participant_password(participant_password)?;
+    let join_session_token_hash = hash_join_session_token(join_session_token)?;
     let mut tx = pool.begin().await?;
     let member = db::queries::lock_member(&mut tx, trip_id, member_id)
         .await?
@@ -102,9 +106,7 @@ pub async fn claim_member(
 
     match member.claim_password_hash.as_deref() {
         Some(_) => {
-            return Err(ServiceError::InvalidRequest(
-                "member has already been claimed",
-            ));
+            return Err(ServiceError::Unauthenticated);
         }
         None => {
             let password_hash = hash_secret(participant_password)?;
@@ -113,6 +115,7 @@ pub async fn claim_member(
         }
     }
 
+    consume_join_session(&mut tx, trip_id, &join_session_token_hash).await?;
     let session = create_session(&mut tx, trip_id, member_id).await?;
     tx.commit().await?;
 
@@ -124,7 +127,10 @@ pub async fn login_member(
     trip_id: Uuid,
     member_id: Uuid,
     participant_password: &str,
+    join_session_token: &str,
 ) -> Result<MemberSession, ServiceError> {
+    let participant_password = normalize_participant_password(participant_password)?;
+    let join_session_token_hash = hash_join_session_token(join_session_token)?;
     let mut tx = pool.begin().await?;
     let member = db::queries::lock_member(&mut tx, trip_id, member_id)
         .await?
@@ -143,6 +149,7 @@ pub async fn login_member(
         return Err(ServiceError::Unauthenticated);
     }
 
+    consume_join_session(&mut tx, trip_id, &join_session_token_hash).await?;
     let session = create_session(&mut tx, trip_id, member_id).await?;
     tx.commit().await?;
 
@@ -227,6 +234,27 @@ async fn create_session(
         created_at: format_timestamp(created_at)?,
         expires_at: format_timestamp(expires_at)?,
     })
+}
+
+fn normalize_participant_password(secret: &str) -> Result<&str, ServiceError> {
+    let normalized = secret.trim();
+    if normalized.len() < PARTICIPANT_PASSWORD_MIN_LENGTH {
+        return Err(ServiceError::InvalidRequest(
+            "participant password does not meet policy",
+        ));
+    }
+    Ok(normalized)
+}
+
+async fn consume_join_session(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    trip_id: Uuid,
+    token_hash: &str,
+) -> Result<(), ServiceError> {
+    if db::queries::consume_trip_join_session(tx, trip_id, token_hash).await? != 1 {
+        return Err(ServiceError::Unauthenticated);
+    }
+    Ok(())
 }
 
 fn format_timestamp(timestamp: OffsetDateTime) -> Result<String, ServiceError> {

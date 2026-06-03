@@ -50,14 +50,15 @@ pub async fn claim_member(
     let join_session_token = request
         .join_session_token
         .as_deref()
+        .map(str::trim)
         .filter(|token| !token.is_empty())
         .ok_or(ServiceError::Unauthenticated)?;
-    app::auth::verify_join_session(&state.pool, trip_id, join_session_token).await?;
     let response = app::auth::claim_member(
         &state.pool,
         trip_id,
         member_id,
         &request.participant_password,
+        join_session_token,
     )
     .await?;
 
@@ -72,14 +73,15 @@ pub async fn login_member(
     let join_session_token = request
         .join_session_token
         .as_deref()
+        .map(str::trim)
         .filter(|token| !token.is_empty())
         .ok_or(ServiceError::Unauthenticated)?;
-    app::auth::verify_join_session(&state.pool, trip_id, join_session_token).await?;
     let response = app::auth::login_member(
         &state.pool,
         trip_id,
         request.member_id,
         &request.participant_password,
+        join_session_token,
     )
     .await?;
 

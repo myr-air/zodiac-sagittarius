@@ -158,14 +158,16 @@ export function TripJoinGate({ trip, apiClient, embedded = false, variant = "def
     setIsSubmitting(true);
 
     try {
+      const normalizedParticipantPassword = participantPassword.trim();
+      if (normalizedParticipantPassword.length < 4) {
+        setError(t.join.errors.shortPassword);
+        return;
+      }
+
       if (apiClient && joinSessionToken) {
-        let session: TripParticipantSession;
-        try {
-          session = await apiClient.claimMember(activeTrip.id, selectedMember.id, participantPassword, joinSessionToken);
-        } catch (caught) {
-          if (!(caught instanceof TripApiError) || caught.code !== "invalid_request") throw caught;
-          session = await apiClient.loginMember(activeTrip.id, selectedMember.id, participantPassword, joinSessionToken);
-        }
+        const session = selectedMember.claimPasswordHash
+          ? await apiClient.loginMember(activeTrip.id, selectedMember.id, normalizedParticipantPassword, joinSessionToken)
+          : await apiClient.claimMember(activeTrip.id, selectedMember.id, normalizedParticipantPassword, joinSessionToken);
         const cockpit = await apiClient.loadTrip(activeTrip.id, session.sessionToken);
         setJoinedTrip(cockpit.trip);
         onTripChange(cockpit.trip);
@@ -175,7 +177,7 @@ export function TripJoinGate({ trip, apiClient, embedded = false, variant = "def
       }
 
       if (selectedMember.claimPasswordHash) {
-        if (!verifyTripParticipantPassword(selectedMember, participantPassword)) {
+        if (!verifyTripParticipantPassword(selectedMember, normalizedParticipantPassword)) {
           setError(t.join.errors.participantPassword);
           return;
         }
@@ -183,7 +185,7 @@ export function TripJoinGate({ trip, apiClient, embedded = false, variant = "def
         return;
       }
 
-      const claimedTrip = claimTripParticipant(activeTrip, selectedMember.id, participantPassword);
+      const claimedTrip = claimTripParticipant(activeTrip, selectedMember.id, normalizedParticipantPassword);
       const claimedMember = claimedTrip.members.find((member) => member.id === selectedMember.id);
       if (!claimedMember?.claimPasswordHash) {
         setError(t.join.errors.shortPassword);
@@ -397,11 +399,13 @@ function errorMessage(caught: unknown, fallback: string): string {
   if (caught instanceof TripApiError) {
     if (caught.status === 404) return fallback;
     if (caught.status === 401 || caught.status === 403) return fallback;
-    return friendlyErrorText(caught.message, fallback);
+    if (caught.status === 400 || caught.code === "invalid_request") return fallback;
+    if (caught.status >= 500) return fallback;
+    return friendlyErrorText(caught.code, fallback);
   }
   if (caught instanceof Error) {
     if (caught.message.includes('fetch') || caught.message.includes('Failed')) return fallback;
-    return friendlyErrorText(caught.message, fallback);
+    return fallback;
   }
   return fallback;
 }

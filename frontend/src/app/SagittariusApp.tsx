@@ -118,8 +118,7 @@ export function SagittariusApp({
   const sessionMember = findSessionMember(trip, participantSession);
   /* v8 ignore next */
   const currentMember = sessionMember ?? trip.members.find((member) => member.id === currentMemberId) ?? trip.members[0];
-  const isLocalParticipantSession = participantSession?.sessionToken.startsWith("local_") ?? false;
-  const isApiMode = dataSource === "api" && !isLocalParticipantSession;
+  const isApiMode = dataSource === "api" && !isLocalParticipantSession(participantSession);
   const canEdit = canTripRole(currentMember.role, "editItinerary");
   const canCreateSuggestion = canTripRole(currentMember.role, "createSuggestion");
   const canReviewSuggestions = canTripRole(currentMember.role, "reviewSuggestions");
@@ -183,12 +182,12 @@ export function SagittariusApp({
         setAccessError(null);
         setParticipantSession(session);
         setCurrentMemberId(session.memberId);
-        getBrowserLocalStorage()?.setItem(tripParticipantSessionStorageKey, JSON.stringify(session));
+        persistParticipantSession(session, isApiMode);
       })
       .catch(() => {
         if (cancelled) return;
         setAccountTripAccessDeniedRouteId(routeTripId);
-        getBrowserLocalStorage()?.removeItem(tripParticipantSessionStorageKey);
+        clearParticipantSession(isApiMode);
       });
 
     return () => {
@@ -217,9 +216,9 @@ export function SagittariusApp({
       })
       .catch(() => {
         if (cancelled) return;
-        getBrowserLocalStorage()?.removeItem(tripParticipantSessionStorageKey);
+        clearParticipantSession(isApiMode);
         setParticipantSession(null);
-        setAccessError("โหลดข้อมูลทริปไม่สำเร็จ กรุณาเข้าห้อง trip ใหม่อีกครั้ง");
+        setAccessError("unauthenticated");
       });
 
     return () => {
@@ -454,14 +453,14 @@ export function SagittariusApp({
     setAccessError(null);
     setParticipantSession(session);
     setCurrentMemberId(session.memberId);
-    getBrowserLocalStorage()?.setItem(tripParticipantSessionStorageKey, JSON.stringify(session));
+    persistParticipantSession(session, dataSource === "api" && !isLocalParticipantSession(session));
   }
 
   function leaveParticipantSession() {
     setParticipantSession(null);
     setCurrentMemberId(seedTrip.members[0].id);
     setContextRailVisibility(false);
-    getBrowserLocalStorage()?.removeItem(tripParticipantSessionStorageKey);
+    clearParticipantSession(isApiMode);
   }
 
   function replaceTripFromJoin(nextTrip: Trip) {
@@ -1001,6 +1000,19 @@ function getBrowserLocalStorage(): Storage | null {
   return window.localStorage;
 }
 
+function getBrowserSessionStorage(): Storage | null {
+  if (typeof window === "undefined" || !("sessionStorage" in window) || !window.sessionStorage) return null;
+  return window.sessionStorage;
+}
+
+function getParticipantSessionStorage(isApiMode: boolean): Storage | null {
+  return isApiMode ? getBrowserSessionStorage() : getBrowserLocalStorage();
+}
+
+function isLocalParticipantSession(session: TripParticipantSession | null): boolean {
+  return session?.sessionToken.startsWith("local-") ?? false;
+}
+
 function loadPersistedTrip(): Trip | null {
   const rawTrip = getBrowserLocalStorage()?.getItem(tripStorageKey);
   if (!rawTrip) return null;
@@ -1013,7 +1025,8 @@ function loadPersistedTrip(): Trip | null {
 }
 
 function loadPersistedParticipantSession(requireJoin: boolean, trip: Trip, isApiMode = false, routeTripId?: string): TripParticipantSession | null {
-  const storage = getBrowserLocalStorage();
+  if (isApiMode) getBrowserLocalStorage()?.removeItem(tripParticipantSessionStorageKey);
+  const storage = getParticipantSessionStorage(isApiMode);
   if (!requireJoin || !storage) return null;
   const rawSession = storage.getItem(tripParticipantSessionStorageKey);
   if (!rawSession) return null;
@@ -1029,6 +1042,16 @@ function loadPersistedParticipantSession(requireJoin: boolean, trip: Trip, isApi
     storage.removeItem(tripParticipantSessionStorageKey);
     return null;
   }
+}
+
+function persistParticipantSession(session: TripParticipantSession, isApiMode: boolean) {
+  if (isApiMode) getBrowserLocalStorage()?.removeItem(tripParticipantSessionStorageKey);
+  getParticipantSessionStorage(isApiMode)?.setItem(tripParticipantSessionStorageKey, JSON.stringify(session));
+}
+
+function clearParticipantSession(isApiMode: boolean) {
+  getParticipantSessionStorage(isApiMode)?.removeItem(tripParticipantSessionStorageKey);
+  if (isApiMode) getBrowserLocalStorage()?.removeItem(tripParticipantSessionStorageKey);
 }
 
 function loadPersistedAccountSession(): AccountSession | null {
