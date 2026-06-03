@@ -180,6 +180,7 @@ describe("Sagittarius project scaffold", () => {
     const makefile = readFileSync(join(repoRoot, "Makefile"), "utf8");
     const apiMod = readFileSync(join(repoRoot, "backend/crates/sagittarius-api/src/api/mod.rs"), "utf8");
     const apiMain = readFileSync(join(repoRoot, "backend/crates/sagittarius-api/src/main.rs"), "utf8");
+    const productionEnvCheck = readFileSync(join(frontendRoot, "scripts/check-production-env.ts"), "utf8");
     const workflow = readFileSync(join(repoRoot, ".github/workflows/production-readiness.yml"), "utf8");
 
     expect(makefile).toContain("production-readiness-local: staging-preflight verify frontend-e2e-local frontend-e2e-auth-browser api-trace-smoke perf-smoke db-rollback-stop-notes-test");
@@ -196,6 +197,9 @@ describe("Sagittarius project scaffold", () => {
     expect(apiMod).toContain("SAGITTARIUS_ALLOWED_ORIGINS");
     expect(apiMod).not.toContain("AllowOrigin::mirror_request()");
     expect(apiMain).toContain("EnvFilter::try_from_default_env()");
+    expect(productionEnvCheck).toContain("EMAIL_DELIVERY");
+    expect(productionEnvCheck).toContain("PASSKEY_ALLOWED_ORIGINS");
+    expect(productionEnvCheck).toContain("SMTP_PASSWORD");
     expect(workflow).toContain("postgres:17-alpine");
     expect(workflow).toContain("bun install --frozen-lockfile");
     expect(workflow).toContain("bunx playwright install --with-deps chromium");

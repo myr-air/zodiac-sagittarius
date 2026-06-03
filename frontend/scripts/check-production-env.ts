@@ -3,6 +3,8 @@ const failures: string[] = [];
 const databaseUrl = requiredEnv("DATABASE_URL");
 const apiBaseUrl = requiredEnv("NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL");
 const allowedOrigins = requiredEnv("SAGITTARIUS_ALLOWED_ORIGINS");
+const passkeyAllowedOrigins = requiredEnv("PASSKEY_ALLOWED_ORIGINS");
+const emailDelivery = requiredEnv("EMAIL_DELIVERY");
 const rustLog = requiredEnv("RUST_LOG");
 const evidenceUrl = requiredEnv("SAGITTARIUS_STAGING_EVIDENCE_URL");
 const featureOwner = requiredEnv("SAGITTARIUS_FEATURE_OWNER");
@@ -10,7 +12,9 @@ const rollbackOwner = requiredEnv("SAGITTARIUS_ROLLBACK_OWNER");
 
 checkDatabaseUrl(databaseUrl);
 checkApiBaseUrl(apiBaseUrl);
-checkAllowedOrigins(allowedOrigins, apiBaseUrl);
+checkAllowedOrigins("SAGITTARIUS_ALLOWED_ORIGINS", allowedOrigins, apiBaseUrl);
+checkAllowedOrigins("PASSKEY_ALLOWED_ORIGINS", passkeyAllowedOrigins, "");
+checkEmailDelivery(emailDelivery);
 checkRustLog(rustLog);
 checkEvidence("SAGITTARIUS_STAGING_EVIDENCE_URL", evidenceUrl);
 checkOwner("SAGITTARIUS_FEATURE_OWNER", featureOwner);
@@ -84,11 +88,11 @@ function checkApiBaseUrl(value: string) {
   }
 }
 
-function checkAllowedOrigins(value: string, apiValue: string) {
+function checkAllowedOrigins(name: string, value: string, apiValue: string) {
   if (!value) return;
   const origins = value.split(",").map((origin) => origin.trim()).filter(Boolean);
   if (!origins.length) {
-    failures.push("SAGITTARIUS_ALLOWED_ORIGINS must include at least one production frontend origin");
+    failures.push(`${name} must include at least one production frontend origin`);
     return;
   }
 
@@ -97,19 +101,44 @@ function checkAllowedOrigins(value: string, apiValue: string) {
     try {
       url = new URL(origin);
     } catch {
-      failures.push(`SAGITTARIUS_ALLOWED_ORIGINS contains invalid URL: ${origin}`);
+      failures.push(`${name} contains invalid URL: ${origin}`);
       continue;
     }
     if (url.protocol !== "https:") {
-      failures.push(`SAGITTARIUS_ALLOWED_ORIGINS must use https:// origins for production: ${origin}`);
+      failures.push(`${name} must use https:// origins for production: ${origin}`);
     }
     if (["localhost", "127.0.0.1", "::1"].includes(url.hostname)) {
-      failures.push(`SAGITTARIUS_ALLOWED_ORIGINS must not include localhost for production: ${origin}`);
+      failures.push(`${name} must not include localhost for production: ${origin}`);
     }
   }
 
   if (apiValue && origins.includes(apiValue)) {
-    failures.push("SAGITTARIUS_ALLOWED_ORIGINS should contain frontend origins, not the API base URL");
+    failures.push(`${name} should contain frontend origins, not the API base URL`);
+  }
+}
+
+function checkEmailDelivery(value: string) {
+  if (!value) return;
+  const mode = value.toLowerCase();
+  if (!["smtp", "sendmail"].includes(mode)) {
+    failures.push("EMAIL_DELIVERY must be smtp or sendmail for production");
+    return;
+  }
+
+  if (mode === "smtp") {
+    for (const name of ["SMTP_HOST", "SMTP_USERNAME", "SMTP_PASSWORD", "EMAIL_FROM"]) {
+      if (!process.env[name]?.trim()) failures.push(`${name} is required when EMAIL_DELIVERY=smtp`);
+    }
+    const port = process.env.SMTP_PORT?.trim();
+    if (port && !Number.isInteger(Number(port))) {
+      failures.push("SMTP_PORT must be an integer when set");
+    }
+  }
+
+  if (mode === "sendmail") {
+    for (const name of ["SENDMAIL_COMMAND", "EMAIL_FROM"]) {
+      if (!process.env[name]?.trim()) failures.push(`${name} is required when EMAIL_DELIVERY=sendmail`);
+    }
   }
 }
 

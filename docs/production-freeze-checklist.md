@@ -114,6 +114,13 @@ runtime values before deploy:
 DATABASE_URL=postgres://user:pass@db.example.test:5432/sagittarius \
 NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL=https://api.example.test \
 SAGITTARIUS_ALLOWED_ORIGINS=https://app.example.test \
+PASSKEY_ALLOWED_ORIGINS=https://app.example.test \
+EMAIL_DELIVERY=smtp \
+SMTP_HOST=smtp.example.test \
+SMTP_PORT=587 \
+SMTP_USERNAME=smtp-user \
+SMTP_PASSWORD=smtp-password \
+EMAIL_FROM="Sagittarius <no-reply@example.test>" \
 RUST_LOG=info,tower_http=info,sagittarius_api=info \
 SAGITTARIUS_STAGING_PREFLIGHT_PASSED=1 \
 SAGITTARIUS_STAGING_BROWSER_SIGNOFF=1 \
