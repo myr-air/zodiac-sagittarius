@@ -240,9 +240,9 @@ demo-only/read-only. Frontend typecheck, targeted tests, and full unit suite pas
 
 ## Wave 4 – Test/Staging Verification
 
-Wave status: test/staging runbook and seed updates added. Local repo-level and
-real-system verification passed with Docker Postgres and
-`PSQL='docker exec -i sagittarius-test-postgres psql'`.
+Wave status: test/staging runbook and seed updates added.
+`make production-readiness-local PSQL='docker exec -i sagittarius-test-postgres psql'`
+passed locally with Docker Postgres on 2026-06-03.
 
 ### W4-TEST-001: Test/staging config split
 - **Owner**: DevOps
@@ -257,12 +257,12 @@ real-system verification passed with Docker Postgres and
 ### W4-TEST-003: API contract + schema validation
 - **Owner**: QA
 - **Estimate**: 3h
-- **Status**: `make verify PSQL='docker exec -i sagittarius-test-postgres psql'` passed on 2026-06-03; backend contract tests passed against Docker Postgres.
+- **Status**: Covered by `make production-readiness-local PSQL='docker exec -i sagittarius-test-postgres psql'` on 2026-06-03; backend contract tests passed against Docker Postgres.
 
 ### W4-TEST-004: Playwright/Cypress journey smoke
 - **Owner**: QA
 - **Estimate**: 6h
-- **Status**: `make frontend-e2e-local PSQL='docker exec -i sagittarius-test-postgres psql'` passed on 2026-06-03; it covers real API itinerary create/reorder/delete, plan variant create/patch/publish, expense CRUD, stop-note CRUD, and portal to-dos. `make frontend-e2e-auth-browser` remains the browser-auth command for staging sign-off.
+- **Status**: Covered by `make production-readiness-local PSQL='docker exec -i sagittarius-test-postgres psql'` on 2026-06-03; local e2e covers real API itinerary create/reorder/delete, plan variant create/patch/publish, expense CRUD, stop-note CRUD, portal to-dos, and auth browser flow. Staging browser sign-off still required.
 
 ### W4-TEST-005: Security checklist
 - **Owner**: Security
@@ -283,12 +283,12 @@ gated on staging environment sign-off, rollback execution, and alert routing.
 ### W5-PROD-001: Logging + alerting for writes
 - **Owner**: SRE
 - **Estimate**: 4h
-- **Status**: HTTP tracing enabled; alert routing checklist documented.
+- **Status**: HTTP tracing enabled and `RUST_LOG` env filtering is honored by the API binary; alert routing checklist documented.
 
 ### W5-PROD-002: Rollback plan + migration rollback verification
 - **Owner**: Backend
 - **Estimate**: 2h
-- **Status**: Rollback plan documented; execution still required on staging DB.
+- **Status**: Rollback plan documented; local SQL rollback smoke target added. Execution still required on staging DB.
 
 ### W5-PROD-003: Update production-ready docs
 - **Owner**: Docs

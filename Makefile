@@ -7,10 +7,12 @@ SAGITTARIUS_BIND_ADDR ?= 127.0.0.1:5181
 PGADMIN_URL ?= postgres://postgres:postgres@127.0.0.1:5432/postgres
 DATABASE_NAME ?= sagittarius
 TEST_DATABASE_NAME ?= sagittarius_test
+ROLLBACK_TEST_DATABASE_NAME ?= sagittarius_rollback_test
+ROLLBACK_TEST_DATABASE_URL ?= postgres://postgres:postgres@127.0.0.1:5432/$(ROLLBACK_TEST_DATABASE_NAME)
 PSQL ?= psql
 PSQL_BIN := $(firstword $(PSQL))
 
-.PHONY: backend-dev frontend-dev backend-test frontend-build frontend-test frontend-storybook frontend-verify frontend-e2e-local frontend-e2e-auth-browser verify db-init db-create db-migrate db-init-test db-migrate-test db-ensure-psql
+.PHONY: backend-dev frontend-dev backend-test frontend-build frontend-test frontend-storybook frontend-verify frontend-e2e-local frontend-e2e-auth-browser verify production-readiness-local db-init db-create db-migrate db-init-test db-migrate-test db-rollback-stop-notes-test db-ensure-psql
 
 backend-dev: db-init
 	DATABASE_URL="$(DATABASE_URL)" SAGITTARIUS_BIND_ADDR="$(SAGITTARIUS_BIND_ADDR)" \
@@ -46,6 +48,8 @@ frontend-e2e-auth-browser: db-init-test
 	bun run test:e2e:auth-browser
 
 verify: frontend-verify backend-test
+
+production-readiness-local: verify frontend-e2e-local frontend-e2e-auth-browser db-rollback-stop-notes-test
 
 db-init: db-create
 	@if ! $(PSQL) "$(DATABASE_URL)" -tAc "SELECT 1 FROM information_schema.tables WHERE table_schema='public' AND table_name='trips'" | grep -q 1; then \
@@ -107,3 +111,15 @@ db-migrate-test:
 	@for f in backend/migrations/*.sql; do \
 	  $(PSQL) -v ON_ERROR_STOP=1 "$(TEST_DATABASE_URL)" < "$$f"; \
 	done
+
+db-rollback-stop-notes-test:
+	@$(MAKE) db-ensure-psql
+	@$(PSQL) "$(PGADMIN_URL)" -v ON_ERROR_STOP=1 -c "DROP DATABASE IF EXISTS $(ROLLBACK_TEST_DATABASE_NAME) WITH (FORCE);"
+	@$(PSQL) "$(PGADMIN_URL)" -v ON_ERROR_STOP=1 -c "CREATE DATABASE $(ROLLBACK_TEST_DATABASE_NAME);"
+	@for f in backend/migrations/*.sql; do \
+	  $(PSQL) -v ON_ERROR_STOP=1 "$(ROLLBACK_TEST_DATABASE_URL)" < "$$f"; \
+	done
+	@$(PSQL) "$(ROLLBACK_TEST_DATABASE_URL)" -tAc "SELECT to_regclass('public.stop_notes') IS NOT NULL" | grep -q t
+	@$(PSQL) "$(ROLLBACK_TEST_DATABASE_URL)" -v ON_ERROR_STOP=1 -c "DROP INDEX IF EXISTS stop_notes_trip_item_created_at_idx; DROP TABLE IF EXISTS stop_notes;"
+	@$(PSQL) "$(ROLLBACK_TEST_DATABASE_URL)" -tAc "SELECT to_regclass('public.stop_notes') IS NULL" | grep -q t
+	@$(PSQL) "$(PGADMIN_URL)" -v ON_ERROR_STOP=1 -c "DROP DATABASE IF EXISTS $(ROLLBACK_TEST_DATABASE_NAME) WITH (FORCE);"

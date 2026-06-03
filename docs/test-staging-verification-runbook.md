@@ -29,9 +29,11 @@ bun run ../backend/target/debug/seed_e2e
 Preferred local full-stack command:
 
 ```bash
+make production-readiness-local PSQL='docker exec -i sagittarius-test-postgres psql'
 make verify PSQL='docker exec -i sagittarius-test-postgres psql'
 make frontend-e2e-local PSQL='docker exec -i sagittarius-test-postgres psql'
 make frontend-e2e-auth-browser PSQL='docker exec -i sagittarius-test-postgres psql'
+make db-rollback-stop-notes-test PSQL='docker exec -i sagittarius-test-postgres psql'
 ```
 
 The seed includes:
@@ -46,7 +48,7 @@ The seed includes:
 Run these before staging sign-off:
 
 ```bash
-make verify PSQL='docker exec -i sagittarius-test-postgres psql'
+make production-readiness-local PSQL='docker exec -i sagittarius-test-postgres psql'
 ```
 
 Then run browser/core journeys against real API:
@@ -100,5 +102,7 @@ The Makefile supports that Docker-backed `PSQL` command.
 
 Latest local evidence on 2026-06-03:
 
+- `make production-readiness-local PSQL='docker exec -i sagittarius-test-postgres psql'` passed.
 - `make verify PSQL='docker exec -i sagittarius-test-postgres psql'` passed.
 - `make frontend-e2e-local PSQL='docker exec -i sagittarius-test-postgres psql'` passed.
+- `make frontend-e2e-auth-browser PSQL='docker exec -i sagittarius-test-postgres psql'` passed.

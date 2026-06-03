@@ -37,6 +37,12 @@ Before production, verify both paths in staging:
 - execute stop-note create/delete
 - rollback app version and confirm old cockpit still loads
 
+Local SQL rollback smoke:
+
+```bash
+make db-rollback-stop-notes-test PSQL='docker exec -i sagittarius-test-postgres psql'
+```
+
 ## Security And Access
 
 - Run the checks in `/Users/xiivth/.codex/REAL_SYSTEM_QA.md`.
