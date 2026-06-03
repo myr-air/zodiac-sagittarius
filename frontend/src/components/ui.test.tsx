@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { Icon } from "./icons";
 import { formatTripRange, PageHeader, PageUserCard } from "./PageHeader";
-import { Badge, Button, Panel } from "./ui";
+import { Badge, Button, IconButton, Panel } from "./ui";
 
 describe("shared UI primitives", () => {
   it("composes Tailwind defaults, legacy bridge classes, and custom classes", () => {
@@ -13,6 +13,10 @@ describe("shared UI primitives", () => {
           Delete
         </Button>
         <Badge className="trip-badge">Ready</Badge>
+        <Badge tone="danger">Blocked</Badge>
+        <IconButton aria-label="Open details" className="details-toggle-button">
+          <Icon name="panel" />
+        </IconButton>
       </Panel>,
     );
 
@@ -36,12 +40,19 @@ describe("shared UI primitives", () => {
       "trip-panel",
     );
     expect(screen.getByText("Ready")).toHaveClass("badge", "badge--neutral", "inline-flex", "rounded-full", "trip-badge");
+    expect(screen.getByText("Blocked")).toHaveClass("badge--danger", "text-[#b91c1c]", "bg-[var(--color-danger-soft)]");
+    expect(screen.getByRole("button", { name: "Open details" })).toHaveClass("icon-button", "inline-flex", "w-9", "details-toggle-button");
   });
 
   it("renders page headers with and without optional regions", () => {
     const { rerender } = render(<PageHeader title="Itinerary" />);
 
     expect(screen.getByRole("heading", { name: "Itinerary", level: 1 })).toBeInTheDocument();
+    expect(screen.getByRole("banner")).toHaveClass(
+      "page-header",
+      "min-h-[126px]",
+      "bg-[image:var(--watercolor-surface-wash),var(--paper-grain)]",
+    );
     expect(screen.queryByText("Plan")).not.toBeInTheDocument();
 
     rerender(
@@ -57,8 +68,10 @@ describe("shared UI primitives", () => {
     );
 
     expect(screen.getByText("Plan")).toHaveClass("eyebrow");
+    expect(screen.getByText("Plan")).toHaveClass("uppercase", "text-[var(--color-primary-strong)]");
     expect(screen.getByRole("heading", { name: "Day one", level: 2 })).toBeInTheDocument();
     expect(screen.getByText("A compact overview")).toHaveClass("page-header-description");
+    expect(screen.getByText("A compact overview")).toHaveClass("max-w-[560px]", "text-[var(--color-text-muted)]");
     expect(screen.getByText("Updated now")).toBeInTheDocument();
     expect(screen.getByText("Motif")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Share" })).toBeInTheDocument();
@@ -74,6 +87,7 @@ describe("shared UI primitives", () => {
     expect(screen.getByText("Aom")).toBeInTheDocument();
     expect(screen.getByText("Current user")).toBeInTheDocument();
     expect(screen.getByText("A")).toHaveStyle({ backgroundColor: "#0f766e" });
+    expect(screen.getByText("Aom").closest(".page-current-user")).toHaveClass("grid", "min-w-[252px]");
   });
 
   it("renders every supported icon branch", () => {

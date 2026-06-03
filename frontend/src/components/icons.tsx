@@ -41,7 +41,7 @@ type IconName =
 
 export function Icon({ name, className, ...props }: SVGProps<SVGSVGElement> & { name: IconName }) {
   const common = {
-    className: ["icon", className].filter(Boolean).join(" "),
+    className: ["icon size-[18px] shrink-0", className].filter(Boolean).join(" "),
     fill: "none",
     stroke: "currentColor",
     strokeLinecap: "round" as const,

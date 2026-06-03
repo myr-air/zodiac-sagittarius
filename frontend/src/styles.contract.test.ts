@@ -3,6 +3,11 @@ import { describe, expect, it } from "vitest";
 
 describe("Calm Travel Ops CSS contract", () => {
   const css = readFileSync("app/globals.css", "utf8");
+  const appSource = readFileSync("src/app/SagittariusApp.tsx", "utf8");
+  const contextRailSource = readFileSync("src/components/ContextRail.tsx", "utf8");
+  const smartTableSource = readFileSync("src/components/SmartItineraryTable.tsx", "utf8");
+  const motifSource = readFileSync("src/components/motifs.tsx", "utf8");
+  const motifStories = readFileSync("src/components/motifs.stories.tsx", "utf8");
 
   it("keeps Tailwind available while preserving global design tokens", () => {
     expect(css).toContain('@import "tailwindcss";');
@@ -10,10 +15,6 @@ describe("Calm Travel Ops CSS contract", () => {
     expect(css).toContain("--shadow-panel:");
     expect(css).toContain("--radius-lg:");
     expect(css).toMatch(/:where\(button,\s*a,\s*input,\s*select,\s*textarea\):focus-visible/);
-  });
-
-  it("keeps danger badges above the minimum contrast threshold on soft danger backgrounds", () => {
-    expect(css).toMatch(/\.badge--danger\s*{[^}]*color:\s*#b91c1c/s);
   });
 
   it("keeps the production palette away from the purple Joii prototype theme", () => {
@@ -28,13 +29,15 @@ describe("Calm Travel Ops CSS contract", () => {
     expect(css).toContain("--color-sky: #38bdf8");
     expect(css).toContain("--color-postcard: #fff7ed");
     expect(css).toContain("--color-coral: #fb7185");
-    expect(css).toMatch(/\.travel-motif\s*{/s);
-    expect(css).toMatch(/\.travel-motif-path\s*{/s);
-    expect(css).toMatch(/\.travel-motif-postcard\s*{/s);
+    expect(motifSource).toContain("travel-motif relative min-h-[88px] min-w-[180px]");
+    expect(motifSource).toContain("travel-motif-path absolute inset-0");
+    expect(motifSource).toContain("travel-motif-postcard absolute");
+    expect(motifStories).toContain("TimelineMotif");
   });
 
   it("keeps motif motion reduced-motion safe", () => {
-    expect(css).toMatch(/@media \(prefers-reduced-motion: reduce\)[\s\S]*\.travel-motif/s);
+    expect(css).toMatch(/@media \(prefers-reduced-motion: reduce\)[\s\S]*\*\s*{/s);
+    expect(css).not.toMatch(/\.travel-motif\s*{/s);
   });
 
   it("adds subtle watercolor paper texture without image assets", () => {
@@ -43,67 +46,62 @@ describe("Calm Travel Ops CSS contract", () => {
     expect(css).toContain("--watercolor-page-wash:");
     expect(css).toContain("--watercolor-surface-wash:");
     expect(css).toMatch(/body\s*{[^}]*var\(--paper-grain\)[^}]*var\(--watercolor-page-wash\)/s);
-    expect(css).toMatch(/\.page-header\s*{[^}]*var\(--watercolor-surface-wash\)[^}]*var\(--paper-grain\)/s);
-    expect(css).toMatch(/\.travel-motif::before\s*{[^}]*radial-gradient/s);
+    expect(motifSource).toContain("radial-gradient(circle_at_22%_35%");
     expect(css).not.toMatch(/url\(["']?.*paper/i);
   });
 
   it("contains horizontal scrolling to the smart table viewport", () => {
     expect(css).toMatch(/body\s*{[^}]*overflow-x:\s*hidden/s);
-    expect(css).toMatch(/\.planning-main\s*{[^}]*overflow-y:\s*auto/s);
-    expect(css).toMatch(/\.table-scroll\s*{[^}]*overflow-x:\s*auto/s);
-    expect(css).toMatch(/\.smart-table\s*{[^}]*min-width:\s*960px/s);
+    expect(appSource).toContain("planning-main h-full min-h-0 min-w-0 overflow-y-auto");
+    expect(smartTableSource).toContain("table-scroll m-0 h-auto min-h-0 w-full max-w-full overflow-x-auto");
+    expect(smartTableSource).toContain("smart-table w-full min-w-[960px] table-fixed border-collapse");
   });
 
   it("keeps vertical scrolling on the planning shell instead of nesting table scrollbars", () => {
-    expect(css).toMatch(/\.planning-main\s*{[^}]*overflow-y:\s*auto/s);
-    expect(css).toMatch(/\.table-panel\s*{[^}]*min-height:\s*100%/s);
-    expect(css).toMatch(/\.table-panel\s*{[^}]*overflow:\s*visible/s);
-    expect(css).toMatch(/\.table-scroll\s*{[^}]*height:\s*auto/s);
-    expect(css).toMatch(/\.table-scroll\s*{[^}]*overflow-y:\s*clip/s);
+    expect(appSource).toContain("planning-main h-full min-h-0 min-w-0 overflow-y-auto");
+    expect(smartTableSource).toContain("table-panel grid h-auto min-h-full min-w-0");
+    expect(smartTableSource).toContain("overflow-visible bg-[var(--color-page)]");
+    expect(smartTableSource).toContain("table-scroll m-0 h-auto min-h-0");
+    expect(smartTableSource).toContain("overflow-x-auto overflow-y-clip");
   });
 
   it("defines desktop, tablet, mobile, focus, and reduced-motion states", () => {
-    expect(css).toContain("@media (max-width: 1199px)");
+    expect(contextRailSource).toContain("max-[1199px]:static");
+    expect(contextRailSource).toContain("max-[1199px]:border-l-0");
     expect(css).toContain("@media (max-width: 767px)");
     expect(css).toContain("@media (prefers-reduced-motion: reduce)");
     expect(css).toContain(":where(button, a, input, select, textarea):focus-visible");
   });
 
   it("locks the reference cockpit dimensions for pixel QA", () => {
-    expect(css).toMatch(/\.app-layout\s*{[^}]*grid-template-columns:\s*228px minmax\(0,\s*1fr\)/s);
-    expect(css).toMatch(/\.page-header\s*{[^}]*min-height:\s*126px/s);
-    expect(css).toMatch(/\.workspace-grid\s*{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)/s);
-    expect(css).toMatch(/\.context-rail\s*{[^}]*width:\s*380px/s);
+    expect(appSource).toContain("workspace-grid relative grid h-[calc(100vh-62px)]");
+    expect(appSource).toContain("grid-cols-[minmax(0,1fr)]");
+    expect(contextRailSource).toContain("context-rail absolute right-0 top-0");
+    expect(contextRailSource).toContain("w-[380px]");
   });
 
   it("overlays the right context rail instead of shrinking the table", () => {
-    expect(css).toMatch(/\.workspace-grid\s*{[^}]*position:\s*relative/s);
-    expect(css).toMatch(/\.context-rail\s*{[^}]*position:\s*absolute/s);
-    expect(css).toMatch(/\.context-rail\s*{[^}]*right:\s*0/s);
+    expect(appSource).toContain("workspace-grid relative grid");
+    expect(contextRailSource).toContain("context-rail absolute right-0 top-0");
+    expect(contextRailSource).toContain("max-[1199px]:static");
   });
 
-  it("defines itinerary-driven map and timeline surfaces", () => {
-    expect(css).toMatch(/\.route-map-panel\s*{[^}]*grid-template-rows:\s*auto minmax\(0,\s*1fr\)/s);
-    expect(css).toMatch(/\.route-map-layout\s*{[^}]*height:\s*100%/s);
-    expect(css).toMatch(/\.route-map-canvas\s*{[^}]*min-height:\s*520px/s);
-    expect(css).toMatch(/\.map-day-filter\s*{[^}]*position:\s*absolute/s);
-    expect(css).toMatch(/\.route-live-map\s*{[^}]*position:\s*absolute/s);
-    expect(css).toMatch(/\.timeline-stop-button\s*{[^}]*grid-template-columns:\s*56px 34px minmax\(0,\s*1fr\)/s);
+  it("keeps hard-to-express map and timeline CSS in globals", () => {
+    expect(css).toMatch(/\.route-map-canvas::before/s);
+    expect(css).toMatch(/\.route-map-canvas::after/s);
+    expect(css).toContain("@keyframes route-marker-in");
+    expect(css).toMatch(/\.ofm-marker\s*{[^}]*display:\s*grid/s);
+    expect(css).toMatch(/\.timeline-stop::before\s*{[^}]*content:\s*""/s);
   });
 
   it("animates row drag previews, day collapse, and drawer transitions", () => {
     expect(css).toContain("@keyframes drawer-slide-in");
-    expect(css).toMatch(/\.context-rail\s*{[^}]*transition:\s*transform 220ms ease,\s*opacity 180ms ease,\s*box-shadow 220ms ease/s);
-    expect(css).toMatch(/\.context-rail\[data-state="closed"\]\s*{[^}]*transform:\s*translateX\(24px\)/s);
-    expect(css).toMatch(/\.context-rail\s*{[^}]*box-shadow:\s*-28px 0 54px rgb\(15 23 42 \/ 0\.18\)/s);
-    expect(css).toMatch(/\.data-row\s*{[^}]*cursor:\s*pointer/s);
-    expect(css).toMatch(/\.data-row--drop-target td\s*{[^}]*box-shadow:\s*inset 0 2px 0 var\(--color-primary\)/s);
+    expect(contextRailSource).toContain("[transition:transform_220ms_ease,opacity_180ms_ease,box-shadow_220ms_ease]");
+    expect(contextRailSource).toContain("data-[state=closed]:translate-x-6");
+    expect(contextRailSource).toContain("shadow-[-28px_0_54px_rgb(15_23_42_/_0.18)]");
+    expect(smartTableSource).toContain("data-row cursor-pointer");
+    expect(smartTableSource).toContain("data-row--drop-target translate-y-px");
     expect(css).toMatch(/\.day-group\[data-state="closed"\]\s+\.data-row td\s*{[^}]*height:\s*0/s);
   });
 
-  it("keeps the collapsed navigation expand control visible", () => {
-    expect(css).not.toMatch(/\.side-rail\[data-collapsed="true"\]\s+\.rail-toggle\s*{[^}]*display:\s*none/s);
-    expect(css).toMatch(/\.side-rail\[data-collapsed="true"\]\s+\.rail-toggle\s*{[^}]*display:\s*(inline-flex|grid|flex)/s);
-  });
 });

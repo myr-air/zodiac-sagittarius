@@ -34,6 +34,21 @@ import type { ExpenseSummary, ItineraryItem, StopNote, Suggestion, Trip, TripMem
 
 const localMutationTimestamp = "2026-05-28T00:00:00.000Z";
 const accountSessionStorageKey = "sagittarius-account-session";
+const accountClaimBannerClassName =
+  "account-claim-banner mb-3 flex min-w-0 items-center justify-between gap-3 rounded-[var(--radius-lg)] border border-[var(--color-route-border)] bg-[rgb(239_246_255_/_0.86)] p-3 max-[767px]:flex-wrap max-[767px]:items-start [&>div]:max-[767px]:min-w-0 [&_span]:text-[13px] [&_span]:leading-5 [&_span]:text-[var(--color-text-muted)] [&_strong]:block [&_strong]:text-[var(--color-route)]";
+const accountClaimMessageClassName = "account-claim-message font-extrabold";
+const rolePreviewToolbarClassName =
+  "role-preview-toolbar mb-3 inline-flex w-fit items-center gap-2 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] px-2.5 py-2 text-xs font-extrabold text-[var(--color-text-muted)] shadow-[var(--shadow-soft)] [&_select]:min-h-8 [&_select]:rounded-[var(--radius-sm)] [&_select]:border [&_select]:border-[var(--color-border-strong)] [&_select]:bg-[var(--color-surface)] [&_select]:px-2 [&_select]:font-[inherit] [&_select]:text-[var(--color-text)]";
+const portalLoadingCardClassName =
+  "account-card portal-loading-card grid min-h-[220px] gap-3.5 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[rgb(255_255_255_/_0.94)] p-4 shadow-[var(--shadow-panel)]";
+const portalSkeletonBaseClassName =
+  "portal-skeleton block overflow-hidden rounded-[var(--radius-md)] bg-[linear-gradient(90deg,var(--color-surface-subtle),rgb(226_232_240_/_0.72),var(--color-surface-subtle))] bg-[length:220%_100%] animate-[portal-skeleton-pulse_1.2s_ease-in-out_infinite] motion-reduce:animate-none";
+const portalSkeletonTitleClassName = `${portalSkeletonBaseClassName} portal-skeleton--title h-7 w-[min(220px,48%)]`;
+const portalSkeletonLineClassName = `${portalSkeletonBaseClassName} portal-skeleton--line h-4 w-[min(520px,72%)]`;
+const portalSkeletonBlockClassName = `${portalSkeletonBaseClassName} portal-skeleton--block h-[132px] w-full`;
+const workspaceShellClassName = "workspace-shell min-w-0 bg-transparent";
+const workspaceGridClassName = "workspace-grid relative grid h-[calc(100vh-62px)] min-h-0 grid-cols-[minmax(0,1fr)] overflow-hidden data-[command-bar=hidden]:h-screen max-[1199px]:h-auto max-[1199px]:grid-cols-1 max-[1199px]:overflow-visible";
+const planningMainClassName = "planning-main h-full min-h-0 min-w-0 overflow-y-auto scroll-smooth bg-[var(--color-page)] max-[1199px]:h-auto max-[1199px]:overflow-y-visible";
 
 export type PlanningView = "overview" | "itinerary" | "map" | "timeline" | "members";
 type PortalSection = "dashboard" | "trips" | "new-trip" | "explorer" | "todos" | "vault" | "settings" | "sign-out";
@@ -756,9 +771,9 @@ export function SagittariusApp({
       trip={trip}
       onToggleCollapsed={() => setSidebarCollapsed((current) => !current)}
     >
-      <main className="workspace-shell">
+      <main className={workspaceShellClassName}>
         {requireJoin ? (
-          <div className="account-claim-banner">
+          <div className={accountClaimBannerClassName}>
             <div>
               <strong>{accountSession ? "เชื่อมต่อ account แล้ว" : "เข้าแบบ temp"}</strong>
               <span>
@@ -775,11 +790,11 @@ export function SagittariusApp({
                 ผูกตัวตน
               </Button>
             ) : null}
-            {accountClaimState.message ? <span className="account-claim-message">{accountClaimState.message}</span> : null}
+            {accountClaimState.message ? <span className={accountClaimMessageClassName}>{accountClaimState.message}</span> : null}
           </div>
         ) : null}
         {dataSource === "demo" && (!requireJoin || canManagePeople) ? (
-          <label className="role-preview-toolbar">
+          <label className={rolePreviewToolbarClassName}>
             <span>ดูในบทบาท</span>
             <select aria-label="Role preview" value={currentMember.id} onChange={(event) => setCurrentMemberId(event.target.value)}>
               {trip.members.map((member) => (
@@ -788,8 +803,8 @@ export function SagittariusApp({
             </select>
           </label>
         ) : null}
-        <div className="workspace-grid" data-context-rail={contextRailOpen ? "open" : "closed"} data-command-bar="hidden">
-          <div className="planning-main">
+        <div className={workspaceGridClassName} data-context-rail={contextRailOpen ? "open" : "closed"} data-command-bar="hidden">
+          <div className={planningMainClassName}>
             {currentView === "members" ? (
               <TripMembersPage
                 trip={trip}
@@ -972,10 +987,10 @@ export function replaceSuggestionById(suggestions: Suggestion[], suggestionId: s
 function TripAccessLoadingFrame() {
   return (
     <main className="account-page account-page--portal" aria-busy="true" aria-label="Opening trip">
-      <section className="account-card portal-loading-card">
-        <span className="portal-skeleton portal-skeleton--title" />
-        <span className="portal-skeleton portal-skeleton--line" />
-        <span className="portal-skeleton portal-skeleton--block" />
+      <section className={portalLoadingCardClassName}>
+        <span className={portalSkeletonTitleClassName} />
+        <span className={portalSkeletonLineClassName} />
+        <span className={portalSkeletonBlockClassName} />
       </section>
     </main>
   );

@@ -183,8 +183,9 @@ describe("RouteMapView", () => {
     const panel = screen.getByRole("region", { name: /แผนที่เส้นทาง/i });
     expect(panel).toHaveClass("route-map-panel", "grid", "min-h-0");
 
+    expect(document.querySelector(".route-map-layout")).toHaveClass("route-map-layout", "h-full", "min-h-0");
     const canvas = screen.getByLabelText(/ตัวอย่างแผนที่เส้นทางฮ่องกงและเซินเจิ้น/i);
-    expect(canvas).toHaveClass("route-map-canvas", "relative", "overflow-hidden");
+    expect(canvas).toHaveClass("route-map-canvas", "relative", "min-h-[520px]", "overflow-hidden");
 
     const dayTwoButton = screen.getByRole("button", { name: /วันที่ 2/i });
     expect(dayTwoButton).toHaveClass("map-day-filter-button", "inline-flex");

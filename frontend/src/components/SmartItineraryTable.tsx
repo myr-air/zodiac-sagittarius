@@ -5,7 +5,7 @@ import type { Messages } from "@/src/i18n/messages";
 import type { Locale } from "@/src/i18n/types";
 import { cn } from "@/src/lib/cn";
 import { formatDayLabel, groupItemsByDay } from "@/src/trip/itinerary";
-import { Button } from "./ui";
+import { Button, IconButton } from "./ui";
 import { Icon } from "./icons";
 import { formatTripRange, PageHeader } from "./PageHeader";
 import { activityTypeLabel, dayRouteLabel, formatDuration, formatThaiDate } from "./itineraryDisplay";
@@ -29,27 +29,37 @@ interface SmartItineraryTableProps {
   onUndo: () => void;
 }
 
-const tablePanelClassName = "table-panel grid min-h-full min-w-0 grid-rows-[auto_auto] overflow-visible bg-[var(--color-page)] px-6 py-[22px] pb-7";
+const tablePanelClassName = "table-panel grid h-auto min-h-full min-w-0 grid-rows-[auto_auto] overflow-visible bg-[var(--color-page)] px-6 py-[22px] pb-7";
 const pageHeaderActionsClassName = "page-header-actions relative z-[1] flex max-w-[420px] min-w-0 flex-wrap items-center justify-end gap-2";
-const iconButtonClassName = "icon-button inline-flex min-h-9 w-9 items-center justify-center rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface)] text-[#334155]";
-const detailsToggleButtonClassName = "details-toggle-button";
-const tableScrollClassName = "table-scroll min-h-0 w-full max-w-full overflow-x-auto overflow-y-clip rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)]";
-const smartTableClassName = "smart-table w-full min-w-[960px] table-fixed border-collapse text-xs leading-4 text-[#1f2937]";
+const pageHeaderNoteClassName = "page-header-note m-0 basis-full text-right text-xs font-bold text-[var(--color-warning-strong)]";
+const detailsToggleButtonClassName = "details-toggle-button aria-[expanded=false]:border-[var(--color-primary-border)] aria-[expanded=false]:bg-[var(--color-primary-soft)] aria-[expanded=false]:text-[var(--color-primary-strong)]";
+const tableScrollClassName = "table-scroll m-0 h-auto min-h-0 w-full max-w-full overflow-x-auto overflow-y-clip rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)]";
+const smartTableClassName =
+  "smart-table w-full min-w-[960px] table-fixed border-collapse text-xs leading-4 text-[#1f2937] [&_a]:text-[#2563eb] [&_a]:underline [&_a]:underline-offset-2 [&_td:first-child]:w-[34px] [&_td:first-child]:px-0 [&_td:first-child]:text-center [&_td:nth-child(2)]:w-[78px] [&_td:nth-child(4)]:w-[94px] [&_td:nth-child(5)]:w-[124px] [&_td:nth-child(6)]:w-[94px] [&_td:nth-child(7)]:w-[108px] [&_td:nth-child(8)]:w-[118px] [&_td:nth-child(8)]:border-r-0 [&_td]:h-9 [&_td]:border-b [&_td]:border-r [&_td]:border-[var(--color-border)] [&_td]:px-2.5 [&_td]:py-1 [&_td]:text-left [&_td]:align-middle [&_th:first-child]:w-[34px] [&_th:first-child]:px-0 [&_th:first-child]:text-center [&_th:nth-child(2)]:w-[78px] [&_th:nth-child(4)]:w-[94px] [&_th:nth-child(5)]:w-[124px] [&_th:nth-child(6)]:w-[94px] [&_th:nth-child(7)]:w-[108px] [&_th:nth-child(8)]:w-[118px] [&_th:nth-child(8)]:border-r-0 [&_th]:h-9 [&_th]:border-b [&_th]:border-r [&_th]:border-[var(--color-border)] [&_th]:px-2.5 [&_th]:py-1 [&_th]:text-left [&_th]:align-middle [&_thead_th]:sticky [&_thead_th]:top-0 [&_thead_th]:z-[1] [&_thead_th]:h-12 [&_thead_th]:bg-[var(--color-surface)] [&_thead_th]:text-xs [&_thead_th]:font-[750] [&_thead_th]:text-[var(--color-text-muted)]";
 const dayGroupClassName = "day-group";
-const dayRowClassName = "day-row";
-const dayToggleClassName = "day-row-content day-toggle flex h-[39px] w-full min-w-0 items-center gap-[9px] border-0 bg-transparent p-0 text-left text-[#334155]";
+const dayRowClassName = "day-row [&_th]:h-[39px] [&_th]:bg-[var(--color-surface)] [&_th]:px-2.5 [&_th]:py-0";
+const dayToggleClassName = "day-row-content day-toggle flex h-[39px] w-full min-w-0 items-center gap-[9px] border-0 bg-transparent p-0 text-left text-[#334155] aria-[expanded=true]:[&_.icon]:rotate-90 [&_.icon]:transition-transform [&_.icon]:duration-[140ms] [&_strong]:text-[#0f172a]";
 const dayRouteClassName = "day-route ml-[18px] font-semibold text-[var(--color-text-muted)]";
-const dataRowClassName = "data-row transition-[background,box-shadow,transform] duration-150";
+const dataRowClassName =
+  "data-row cursor-pointer transition-[background,box-shadow,transform] duration-[160ms] hover:[&_td]:bg-[var(--color-surface-subtle)] focus-visible:[&_td]:bg-[var(--color-primary-soft)] focus-visible:[&_td]:shadow-[inset_0_0_0_2px_var(--color-primary-border)] [&_td]:transition-[background,border-color,box-shadow,color,font-size,height,opacity,padding] [&_td]:duration-[180ms]";
+const dataRowSelectedClassName =
+  "data-row--selected [&_td:first-child]:shadow-[inset_2px_0_0_var(--color-primary),inset_0_1px_0_var(--color-primary),inset_0_-1px_0_var(--color-primary)] [&_td:last-child]:shadow-[inset_-1px_0_0_var(--color-primary),inset_0_1px_0_var(--color-primary),inset_0_-1px_0_var(--color-primary)] [&_td]:bg-[#ecfeff] [&_td]:shadow-[inset_0_1px_0_var(--color-primary),inset_0_-1px_0_var(--color-primary)]";
+const dataRowDraggingClassName = "data-row--dragging cursor-grabbing [&_td]:bg-[var(--color-surface-muted)] [&_td]:opacity-[0.54]";
+const dataRowDropTargetClassName =
+  "data-row--drop-target translate-y-px [&_td:first-child]:shadow-[inset_3px_0_0_var(--color-primary),inset_0_2px_0_var(--color-primary),inset_0_-1px_0_var(--color-primary-border)] [&_td]:bg-[var(--color-primary-soft)] [&_td]:shadow-[inset_0_2px_0_var(--color-primary),inset_0_-1px_0_var(--color-primary-border)]";
 const dragCellClassName = "drag-cell text-[var(--color-text-subtle)]";
 const reorderControlsClassName = "reorder-controls inline-grid grid-cols-[repeat(3,26px)] items-center gap-1";
-const dragHandleClassName = "drag-handle inline-grid size-[26px] cursor-grab place-items-center rounded-[var(--radius-sm)] border-0 bg-transparent text-[var(--color-text-subtle)] transition-[color,background] duration-150 disabled:cursor-not-allowed";
-const reorderButtonClassName = "reorder-button inline-grid size-[26px] place-items-center rounded-[var(--radius-sm)] border-0 bg-transparent text-[var(--color-text-subtle)] transition-[color,background] duration-150 disabled:cursor-not-allowed disabled:opacity-40";
-const timeCellClassName = "time-cell font-semibold tabular-nums text-[#0f172a]";
+const dragHandleClassName =
+  "drag-handle inline-grid size-[26px] cursor-grab place-items-center rounded-[var(--radius-sm)] border-0 bg-transparent text-[var(--color-text-subtle)] transition-[color,background] duration-150 hover:not-disabled:bg-[var(--color-primary-soft)] hover:not-disabled:text-[var(--color-primary-strong)] active:cursor-grabbing disabled:cursor-not-allowed disabled:opacity-[0.42]";
+const reorderButtonClassName =
+  "reorder-button inline-grid size-[26px] cursor-pointer place-items-center rounded-[var(--radius-sm)] border-0 bg-transparent text-[var(--color-text-subtle)] transition-[color,background] duration-150 hover:not-disabled:bg-[var(--color-primary-soft)] hover:not-disabled:text-[var(--color-primary-strong)] disabled:cursor-not-allowed disabled:opacity-[0.34] [&_.icon]:size-[15px] [&_.icon]:rotate-90";
+const timeCellClassName = "time-cell font-[650] tabular-nums text-[#334155]";
 const activityCellClassName = "activity-cell min-w-0";
-const rowSelectClassName = "row-select grid min-h-[22px] w-full min-w-0 gap-0.5 border-0 bg-transparent p-0 text-left text-inherit";
+const rowSelectClassName =
+  "row-select grid min-h-[22px] w-full min-w-0 gap-0.5 border-0 bg-transparent p-0 text-left text-inherit [&_span]:overflow-hidden [&_span]:text-ellipsis [&_span]:whitespace-nowrap [&_span]:text-[11px] [&_span]:leading-4 [&_span]:text-[var(--color-text-muted)] [&_strong]:overflow-hidden [&_strong]:text-ellipsis [&_strong]:whitespace-nowrap [&_strong]:text-xs [&_strong]:font-semibold";
 const mapLinkClassName = "map-link text-[#2563eb] underline underline-offset-2";
 const emptyWarningClassName = "empty-warning text-[var(--color-text-subtle)]";
-const warningSummaryClassName = "warning-summary inline-flex min-w-0 items-center gap-1.5 rounded-full border border-[var(--color-warning-border)] bg-[var(--color-warning-soft)] px-2 py-0.5 text-[11px] font-extrabold text-[var(--color-warning-strong)]";
+const warningSummaryClassName = "warning-summary inline-flex min-w-0 items-center gap-1.5 rounded-full border border-[var(--color-warning-border)] bg-[var(--color-warning-soft)] px-2 py-0.5 text-[11px] font-extrabold text-[var(--color-warning-strong)] [&_.icon]:size-[15px]";
 
 export function SmartItineraryTable({
   canRedo,
@@ -124,12 +134,12 @@ export function SmartItineraryTable({
         )}
         aside={(
           <div className={pageHeaderActionsClassName} role="group" aria-label={t.itinerary.actionsLabel}>
-            <Button type="button" onClick={onAddStop} disabled={!canRestructureItems} className="add-stop-button">
+            <Button type="button" onClick={onAddStop} disabled={!canRestructureItems} className="add-stop-button min-w-[154px] max-[767px]:w-full">
               <Icon name="plus" />
               {t.itinerary.addStop}
             </Button>
-            <button
-              className={cn(iconButtonClassName, detailsToggleButtonClassName)}
+            <IconButton
+              className={detailsToggleButtonClassName}
               type="button"
               aria-expanded={contextRailOpen}
               aria-label={contextRailOpen ? t.itinerary.hideDetails : t.itinerary.openDetails}
@@ -137,14 +147,14 @@ export function SmartItineraryTable({
               title={contextRailOpen ? t.itinerary.hideDetails : t.itinerary.openDetails}
             >
               <Icon name="panel" />
-            </button>
-            <button className={iconButtonClassName} type="button" aria-label={t.itinerary.undo} disabled={!canUndo} onClick={onUndo}>
+            </IconButton>
+            <IconButton type="button" aria-label={t.itinerary.undo} disabled={!canUndo} onClick={onUndo}>
               <Icon name="undo" />
-            </button>
-            <button className={iconButtonClassName} type="button" aria-label={t.itinerary.redo} disabled={!canRedo} onClick={onRedo}>
+            </IconButton>
+            <IconButton type="button" aria-label={t.itinerary.redo} disabled={!canRedo} onClick={onRedo}>
               <Icon name="redo" />
-            </button>
-            {!canEdit ? <p className="page-header-note">{t.itinerary.editRequiresOrganizer}</p> : null}
+            </IconButton>
+            {!canEdit ? <p className={pageHeaderNoteClassName}>{t.itinerary.editRequiresOrganizer}</p> : null}
           </div>
         )}
       />
@@ -330,9 +340,9 @@ function getRowClassName(
 ): string {
   return cn(
     dataRowClassName,
-    selectedItemId === item.id && "data-row--selected",
-    dragState.draggedItemId === item.id && "data-row--dragging",
-    dragState.overItemId === item.id && "data-row--drop-target",
+    selectedItemId === item.id && dataRowSelectedClassName,
+    dragState.draggedItemId === item.id && dataRowDraggingClassName,
+    dragState.overItemId === item.id && dataRowDropTargetClassName,
   );
 }
 

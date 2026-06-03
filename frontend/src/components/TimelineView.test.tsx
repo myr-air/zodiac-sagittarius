@@ -36,6 +36,7 @@ describe("TimelineView", () => {
     expect(selectedStop).toHaveClass("timeline-stop", "timeline-stop--selected", "relative");
     expect(selectedButton).toHaveClass("timeline-stop-button", "grid", "min-h-[86px]");
     expect(within(selectedButton).getByText(/Dim Dim Sum/i).closest(".timeline-copy")).toHaveClass("timeline-copy", "grid", "min-w-0");
+    expect(selectedButton.querySelector(".timeline-node")).toHaveClass("bg-[var(--color-primary)]", "text-white");
   });
 
   it("keeps stop selection and details toggle behavior", async () => {

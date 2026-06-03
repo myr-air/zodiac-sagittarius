@@ -5,6 +5,7 @@ import Link from "next/link";
 import type { PlanningView } from "@/src/app/SagittariusApp";
 import { LanguageSwitch } from "@/src/i18n/LanguageSwitch";
 import { useI18n } from "@/src/i18n/I18nProvider";
+import { cn } from "@/src/lib/cn";
 import { appRoutes, tripWorkspaceNavItems } from "@/src/routes/app-routes";
 import { shortTripId } from "@/src/trip/ids";
 import type { Member, Trip } from "@/src/trip/types";
@@ -23,6 +24,30 @@ interface AppShellProps {
   onToggleCollapsed: () => void;
 }
 
+const brandRowClassName = "brand-row inline-flex min-h-[62px] items-center justify-between px-3.5 pl-4 data-[collapsed=true]:px-[5px] data-[collapsed=true]:pl-2 max-[1199px]:px-[5px] max-[1199px]:pl-2 max-[767px]:min-h-[54px]";
+const brandBlockClassName = "brand-block inline-flex min-w-0 items-center gap-[11px]";
+const brandMarkClassName = "brand-mark grid size-[30px] place-items-center rounded-[var(--radius-sm)] bg-[var(--color-primary)] text-white font-extrabold [&_.icon]:size-[19px] [&_.icon]:stroke-[2.4]";
+const brandCopyClassName = "brand-copy data-[collapsed=true]:hidden max-[1199px]:hidden max-[767px]:!hidden";
+const brandNameClassName = "text-xl font-extrabold leading-7 text-[var(--color-primary-strong)]";
+const railToggleClassName = "rail-toggle inline-flex min-h-[34px] w-[34px] items-center justify-center border-0 bg-transparent text-[var(--color-text-muted)] transition-[color,background] duration-150 hover:bg-[var(--color-primary-soft)] hover:text-[var(--color-primary)] data-[collapsed=true]:min-h-7 data-[collapsed=true]:w-7 data-[collapsed=true]:rounded-[var(--radius-sm)] data-[collapsed=true]:border data-[collapsed=true]:border-[var(--color-border)] data-[collapsed=true]:bg-[var(--color-surface)] data-[collapsed=true]:[&_.icon]:size-4 max-[1199px]:min-h-7 max-[1199px]:w-7";
+const appLayoutClassName = "app-layout grid min-h-screen grid-cols-[228px_minmax(0,1fr)] bg-[linear-gradient(180deg,rgb(255_255_255_/_0.26),transparent_220px),transparent] data-[sidebar-collapsed=true]:grid-cols-[68px_minmax(0,1fr)] max-[1199px]:grid-cols-[68px_minmax(0,1fr)] max-[767px]:block";
+const sideRailClassName = "side-rail sticky top-0 z-[5] grid h-screen grid-rows-[62px_1fr_auto_auto] gap-0 overflow-hidden border-r border-[var(--color-border)] bg-[var(--color-surface)] max-[767px]:static max-[767px]:h-auto max-[767px]:grid-rows-[auto_auto] max-[767px]:border-b max-[767px]:border-r-0 max-[767px]:pb-2";
+const railLinksClassName = "rail-links grid content-start gap-1 overflow-y-auto px-2.5 pb-3 pt-2.5 max-[767px]:flex max-[767px]:overflow-x-auto max-[767px]:pb-2 max-[767px]:pt-0";
+const railLinkClassName = "rail-link relative inline-flex min-h-10 items-center gap-[13px] rounded-[var(--radius-md)] px-[13px] text-[13px] font-semibold text-[#334155] no-underline transition-[background,color] duration-150 hover:bg-[var(--color-surface-subtle)] hover:text-[var(--color-primary-strong)] data-[collapsed=true]:justify-center data-[collapsed=true]:px-0 max-[1199px]:justify-center max-[1199px]:px-0 max-[767px]:min-h-[38px] max-[767px]:flex-none";
+const activeRailLinkClassName = "rail-link--active bg-[linear-gradient(90deg,rgb(15_118_110_/_0.12),rgb(15_118_110_/_0.04))] text-[var(--color-primary-strong)] before:absolute before:left-[-10px] before:h-7 before:w-[3px] before:rounded-full before:bg-[var(--color-primary)] before:content-['']";
+const railLinkButtonClassName = "rail-link-button w-full border-0 bg-transparent font-inherit text-left max-[767px]:w-auto";
+const railLinkLabelClassName = "data-[collapsed=true]:hidden max-[1199px]:hidden max-[767px]:!inline";
+const sideRailLanguageClassName = "side-rail-language mx-3.5 mb-1 mt-2 self-start data-[collapsed=true]:mx-0 data-[collapsed=true]:self-center data-[collapsed=true]:[&_.language-switch-option]:min-w-[27px] data-[collapsed=true]:[&_.language-switch-option]:px-0 max-[1199px]:mx-0 max-[1199px]:self-center max-[1199px]:[&_.language-switch-option]:min-w-[27px] max-[1199px]:[&_.language-switch-option]:px-0";
+const railSummaryClassName = "rail-summary mx-2.5 mb-[18px] mt-2 grid gap-[9px] rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-subtle)] p-3 text-xs leading-[18px] text-[var(--color-text-muted)] data-[collapsed=true]:hidden max-[1199px]:hidden max-[767px]:hidden [&_strong]:text-[13px] [&_strong]:text-[var(--color-text)] [&_span]:inline-flex [&_span]:items-center [&_span]:gap-2";
+const railSummaryLinkClassName = "rail-summary-link inline-flex min-h-8 items-center justify-center rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface)] text-xs font-bold text-[var(--color-primary-strong)] no-underline";
+const memberCardClassName = "member-card mx-2.5 mb-5 grid min-h-[82px] grid-cols-[34px_minmax(0,1fr)_auto] items-center gap-2.5 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-subtle)] p-[11px] data-[collapsed=true]:mx-2 data-[collapsed=true]:flex data-[collapsed=true]:min-h-[54px] data-[collapsed=true]:justify-center data-[collapsed=true]:p-2 max-[1199px]:mx-2 max-[1199px]:flex max-[1199px]:min-h-[54px] max-[1199px]:justify-center max-[1199px]:p-2 max-[767px]:hidden";
+const memberAvatarClassName = "person-avatar grid size-[30px] place-items-center rounded-full text-xs font-extrabold text-white";
+const memberCardCopyClassName = "grid min-w-0 gap-0.5 data-[collapsed=true]:hidden max-[1199px]:hidden";
+const memberCardNameClassName = "overflow-hidden text-ellipsis whitespace-nowrap text-[13px] font-extrabold leading-[18px] text-[var(--color-text)]";
+const memberCardRoleClassName = "text-[var(--color-text-muted)]";
+const memberSwitchButtonClassName = "member-switch-button min-h-7 whitespace-nowrap rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface)] px-2 text-[11px] font-extrabold text-[var(--color-primary-strong)] data-[collapsed=true]:hidden";
+const memberFallbackIconClassName = "data-[collapsed=true]:hidden max-[1199px]:hidden";
+
 export function AppShell({ activeView, children, collapsed, currentMember, onLeaveParticipantSession, onNavigateView, onOpenExpenses, trip, onToggleCollapsed }: AppShellProps) {
   const { t } = useI18n();
   const tripDays = getTripDates(trip.startDate, trip.endDate).length;
@@ -36,20 +61,21 @@ export function AppShell({ activeView, children, collapsed, currentMember, onLea
   }
 
   return (
-    <div className="app-layout" data-sidebar-collapsed={collapsed ? "true" : "false"}>
-      <nav className="side-rail" data-collapsed={collapsed ? "true" : "false"} aria-label={t.appShell.navLabel}>
-        <div className="brand-row">
-          <div className="brand-block">
-            <div className="brand-mark" aria-hidden="true">
+    <div className={appLayoutClassName} data-sidebar-collapsed={collapsed ? "true" : "false"}>
+      <nav className={sideRailClassName} data-collapsed={collapsed ? "true" : "false"} aria-label={t.appShell.navLabel}>
+        <div className={brandRowClassName} data-collapsed={collapsed ? "true" : "false"}>
+          <div className={brandBlockClassName}>
+            <div className={brandMarkClassName} aria-hidden="true">
               <Icon name="route" />
             </div>
-            <div className="brand-copy">
-              <strong>Joii</strong>
+            <div className={brandCopyClassName} data-collapsed={collapsed ? "true" : "false"}>
+              <strong className={brandNameClassName}>Joii</strong>
             </div>
           </div>
 
           <button
-            className="rail-toggle"
+            className={railToggleClassName}
+            data-collapsed={collapsed ? "true" : "false"}
             type="button"
             aria-expanded={!collapsed}
             aria-label={collapsed ? t.appShell.expandNavigation : t.appShell.collapseNavigation}
@@ -60,11 +86,12 @@ export function AppShell({ activeView, children, collapsed, currentMember, onLea
           </button>
         </div>
 
-        <div className="rail-links">
+        <div className={railLinksClassName}>
           {navItems.map((item) => (
             <a
               aria-current={item.id === activeView ? "page" : undefined}
-              className={item.id === activeView ? "rail-link rail-link--active" : "rail-link"}
+              className={cn(railLinkClassName, item.id === activeView && activeRailLinkClassName)}
+              data-collapsed={collapsed ? "true" : "false"}
               href={item.href}
               key={item.id}
               onClick={onNavigateView ? (event) => {
@@ -74,41 +101,41 @@ export function AppShell({ activeView, children, collapsed, currentMember, onLea
               title={item.label}
             >
               <Icon name={item.icon} />
-              <span>{item.label}</span>
+              <span className={railLinkLabelClassName} data-collapsed={collapsed ? "true" : "false"}>{item.label}</span>
             </a>
           ))}
           {onOpenExpenses ? (
-            <button className="rail-link rail-link-button" type="button" onClick={onOpenExpenses} title={t.appShell.nav.expenses}>
+            <button className={cn(railLinkClassName, railLinkButtonClassName)} data-collapsed={collapsed ? "true" : "false"} type="button" onClick={onOpenExpenses} title={t.appShell.nav.expenses}>
               <Icon name="wallet" />
-              <span>{t.appShell.nav.expenses}</span>
+              <span className={railLinkLabelClassName} data-collapsed={collapsed ? "true" : "false"}>{t.appShell.nav.expenses}</span>
             </button>
           ) : null}
         </div>
 
-        <LanguageSwitch className="side-rail-language" />
+        <LanguageSwitch className={sideRailLanguageClassName} data-collapsed={collapsed ? "true" : "false"} />
 
-        <div className="rail-summary" aria-label={t.appShell.planSummary}>
+        <div className={railSummaryClassName} data-collapsed={collapsed ? "true" : "false"} aria-label={t.appShell.planSummary}>
           <strong>{t.appShell.planSummary}</strong>
           <span><Icon name="key" /> {t.appShell.tripId({ id: shortTripId(trip.id) })}</span>
           <span><Icon name="calendar" /> {t.appShell.tripDuration({ days: tripDays, nights: tripNights })}</span>
           <span><Icon name="location" /> {t.appShell.placeCount({ count: trip.itineraryItems.length })}</span>
-          <Link href={appRoutes.tripOverview(trip.id)} className="rail-summary-link">{t.appShell.viewDetails}</Link>
+          <Link href={appRoutes.tripOverview(trip.id)} className={railSummaryLinkClassName}>{t.appShell.viewDetails}</Link>
         </div>
 
-        <div className="member-card">
-          <span className="person-avatar" style={{ backgroundColor: currentMember.color }} aria-hidden="true">
+        <div className={memberCardClassName} data-collapsed={collapsed ? "true" : "false"}>
+          <span className={memberAvatarClassName} style={{ backgroundColor: currentMember.color }} aria-hidden="true">
             {currentMember.displayName.slice(0, 1)}
           </span>
-          <div>
-            <strong>{currentMember.displayName}</strong>
-            <span>{roleLabel(currentMember.role, t.appShell.roles)}</span>
+          <div className={memberCardCopyClassName} data-collapsed={collapsed ? "true" : "false"}>
+            <strong className={memberCardNameClassName}>{currentMember.displayName}</strong>
+            <span className={memberCardRoleClassName}>{roleLabel(currentMember.role, t.appShell.roles)}</span>
           </div>
           {onLeaveParticipantSession ? (
-            <button className="member-switch-button" type="button" onClick={confirmLeaveParticipantSession}>
+            <button className={memberSwitchButtonClassName} data-collapsed={collapsed ? "true" : "false"} type="button" onClick={confirmLeaveParticipantSession}>
               {t.appShell.switchIdentity}
             </button>
           ) : (
-            <Icon name="chevronRight" />
+            <Icon name="chevronRight" className={memberFallbackIconClassName} data-collapsed={collapsed ? "true" : "false"} />
           )}
         </div>
       </nav>

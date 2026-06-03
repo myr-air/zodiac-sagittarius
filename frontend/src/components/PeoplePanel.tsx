@@ -1,18 +1,30 @@
 import { cn } from "@/src/lib/cn";
 import type { Member, TripMemberAccessStatus, TripRole } from "@/src/trip/types";
 
-const peopleModuleClassName = "detail-section people-module grid min-w-0 gap-3 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] p-3.5";
+const peopleModuleClassName = "detail-section people-module grid w-full min-w-0 gap-3 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] p-3.5";
+const peopleHeadingClassName = "m-0 text-[15px] font-extrabold leading-[21px] text-[#334155]";
 const peopleListClassName = "people-list grid min-w-0 gap-2";
-const personRowClassName = "person-row grid min-w-0 grid-cols-[34px_minmax(0,1fr)_auto] items-center gap-2.5 rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface-subtle)] p-2.5";
+const personRowClassName = "person-row grid min-h-[68px] min-w-0 grid-cols-[34px_minmax(220px,1fr)_auto] items-center gap-2.5 rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface-subtle)] p-2.5 text-[11px] leading-4 text-[var(--color-text-muted)] data-[access-status=disabled]:opacity-70 max-[1199px]:grid-cols-[34px_minmax(0,1fr)]";
 const personAvatarClassName = "person-avatar grid size-[34px] place-items-center rounded-full text-sm font-extrabold text-white";
-const memberIdentityClassName = "member-identity grid min-w-0 gap-1";
+const memberIdentityClassName = "member-identity grid min-w-0 gap-1 [&_span]:text-[var(--color-text-muted)] [&_strong]:overflow-hidden [&_strong]:text-ellipsis [&_strong]:whitespace-nowrap [&_strong]:text-[13px] [&_strong]:font-extrabold [&_strong]:leading-[18px] [&_strong]:text-[var(--color-text)]";
 const memberStatusStackClassName = "member-status-stack flex min-w-0 flex-wrap gap-1.5";
 const memberStatePillClassName = "member-state-pill inline-flex min-h-[22px] items-center rounded-full border px-2 py-0.5 text-[11px] font-extrabold leading-4";
-const memberControlsClassName = "member-controls flex min-w-0 flex-wrap justify-end gap-1.5";
+const memberStatePillToneClassNames = {
+  active: "member-state-pill--active border-[var(--color-success-border)] bg-[var(--color-success-soft)] text-[#15803d]",
+  claimed: "member-state-pill--claimed border-[var(--color-success-border)] bg-[var(--color-success-soft)] text-[#15803d]",
+  disabled: "member-state-pill--disabled border-[var(--color-danger-border)] bg-[var(--color-danger-soft)] text-[var(--color-danger)]",
+  pending: "member-state-pill--pending border-[var(--color-warning-border)] bg-[var(--color-warning-soft)] text-[var(--color-warning-strong)]",
+} satisfies Record<"active" | "claimed" | "disabled" | "pending", string>;
+const memberControlsClassName = "member-controls flex min-w-0 flex-wrap justify-end gap-1.5 max-[1199px]:col-start-2 max-[1199px]:justify-start max-[767px]:w-full max-[767px]:[&>*]:flex-[1_1_150px]";
 const memberRoleSelectClassName = "member-role-select min-h-8 max-w-32 rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface)] px-2 text-xs font-extrabold text-[var(--color-text)]";
-const resetClaimButtonClassName = "reset-claim-button inline-flex min-h-8 items-center justify-center rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface)] px-2.5 text-xs font-extrabold text-[var(--color-primary-strong)] transition-[border-color,box-shadow,transform] duration-150 hover:-translate-y-px hover:border-[var(--color-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary-border)]";
-const presencePillClassName = "presence-pill col-start-2 inline-flex min-h-[22px] items-center justify-center justify-self-start whitespace-nowrap rounded-full px-2 text-[11px] font-extrabold leading-4";
-const membersEmptyStateClassName = "members-empty-state grid min-w-0 justify-items-center gap-2 rounded-[var(--radius-md)] border border-dashed border-[var(--color-border-strong)] p-7 text-center text-[var(--color-text-muted)]";
+const resetClaimButtonClassName = "reset-claim-button inline-flex min-h-8 items-center justify-center rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface)] px-2.5 text-xs font-extrabold text-[var(--color-warning-strong)] transition-[border-color,box-shadow,transform] duration-150 hover:-translate-y-px hover:border-[var(--color-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary-border)]";
+const presencePillClassName = "presence-pill col-start-2 inline-flex min-h-[22px] items-center justify-center justify-self-start gap-1.5 whitespace-nowrap rounded-full px-2 text-[11px] font-extrabold leading-4 text-[var(--color-text-muted)] before:size-1.5 before:rounded-full before:bg-[var(--color-text-subtle)] before:content-['']";
+const presencePillToneClassNames = {
+  away: "presence-pill--away before:bg-[var(--color-text-subtle)]",
+  offline: "presence-pill--offline before:bg-[var(--color-text-subtle)]",
+  online: "presence-pill--online before:bg-[var(--color-success)]",
+} satisfies Record<Member["presence"], string>;
+const membersEmptyStateClassName = "members-empty-state grid min-w-0 justify-items-center gap-2 rounded-[var(--radius-md)] border border-dashed border-[var(--color-border-strong)] bg-[var(--color-surface-subtle)] p-7 text-center text-[var(--color-text-muted)] [&_strong]:text-sm [&_strong]:leading-5 [&_strong]:text-[var(--color-text)]";
 
 export function PeoplePanel({
   members,
@@ -39,7 +51,7 @@ export function PeoplePanel({
 }) {
   return (
     <section className={peopleModuleClassName} aria-label="People and presence">
-      <h3>สมาชิกและสถานะ</h3>
+      <h3 className={peopleHeadingClassName}>สมาชิกและสถานะ</h3>
       <div className={peopleListClassName}>
         {members.length === 0 ? (
           <div className={membersEmptyStateClassName}>
@@ -67,10 +79,10 @@ export function PeoplePanel({
               <strong>{member.displayName}{member.id === currentMemberId ? " (คุณ)" : ""}</strong>
               <span>{roleLabel(member.role)}</span>
               <div className={memberStatusStackClassName} aria-label={`Status for ${member.displayName}`}>
-                <span className={cn(memberStatePillClassName, `member-state-pill--${member.accessStatus === "disabled" ? "disabled" : "active"}`)}>
+                <span className={cn(memberStatePillClassName, memberStatePillToneClassNames[member.accessStatus === "disabled" ? "disabled" : "active"])}>
                   {member.accessStatus === "disabled" ? "ปิดสิทธิ์" : "เปิดสิทธิ์"}
                 </span>
-                <span className={cn(memberStatePillClassName, `member-state-pill--${joined ? "claimed" : "pending"}`)}>
+                <span className={cn(memberStatePillClassName, memberStatePillToneClassNames[joined ? "claimed" : "pending"])}>
                   {joined ? "ยืนยันแล้ว" : "รอเข้าร่วม"}
                 </span>
               </div>
@@ -119,7 +131,7 @@ export function PeoplePanel({
                 ) : null}
               </div>
             ) : (
-              <span className={cn(presencePillClassName, `presence-pill--${member.presence}`)}>
+              <span className={cn(presencePillClassName, presencePillToneClassNames[member.presence])}>
                 {presenceLabel(member.presence)}
               </span>
             )}

@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { expect } from "storybook/test";
-import { Button } from "./ui";
+import { Icon } from "./icons";
+import { Button, IconButton } from "./ui";
 
 const buttonsMeta = {
   title: "Design System/Buttons",
@@ -31,4 +32,12 @@ export const CssCheck: ButtonStory = {
     const button = canvas.getByRole("button", { name: /submit/i });
     await expect(getComputedStyle(button).backgroundColor).toBe("rgb(15, 118, 110)");
   },
+};
+
+export const IconOnly: ButtonStory = {
+  render: () => (
+    <IconButton aria-label="เปิดรายละเอียด">
+      <Icon name="panel" />
+    </IconButton>
+  ),
 };

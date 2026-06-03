@@ -1,5 +1,6 @@
 "use client";
 
+import type { HTMLAttributes } from "react";
 import { cn } from "@/src/lib/cn";
 import { useI18n } from "./I18nProvider";
 import type { Locale } from "./types";
@@ -39,11 +40,11 @@ const activeOptionClassName = [
   "text-[var(--surface,var(--color-surface))]",
 ];
 
-export function LanguageSwitch({ className }: { className?: string }) {
+export function LanguageSwitch({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
   const { locale, setLocale, t } = useI18n();
 
   return (
-    <div className={cn(switchClassName, className)} role="group" aria-label={t.common.language.label}>
+    <div className={cn(switchClassName, className)} role="group" aria-label={t.common.language.label} {...props}>
       {options.map((option) => (
         <button
           type="button"

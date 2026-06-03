@@ -5,6 +5,20 @@ import { cn } from "@/src/lib/cn";
 type ButtonVariant = "primary" | "secondary" | "ghost" | "danger";
 type BadgeTone = "neutral" | "primary" | "route" | "warning" | "success" | "danger";
 
+const iconButtonBaseClassName = [
+  "icon-button",
+  "inline-flex",
+  "min-h-9",
+  "w-9",
+  "items-center",
+  "justify-center",
+  "rounded-[var(--radius-sm)]",
+  "border",
+  "border-[var(--color-border)]",
+  "bg-[var(--color-surface)]",
+  "text-[#334155]",
+];
+
 const buttonBaseClassName = [
   "button",
   "inline-flex",
@@ -100,6 +114,14 @@ export function Button({
 
   return (
     <button className={nextClassName} {...props}>
+      {children}
+    </button>
+  );
+}
+
+export function IconButton({ children, className = "", ...props }: ButtonHTMLAttributes<HTMLButtonElement> & { children: ReactNode }) {
+  return (
+    <button className={cn(iconButtonBaseClassName, className)} {...props}>
       {children}
     </button>
   );

@@ -8,6 +8,35 @@ import { AppShell } from "./AppShell";
 installLocalStorageStub();
 
 describe("AppShell", () => {
+  it("owns the workspace grid and side rail responsive classes", async () => {
+    const { container } = renderWithI18n(
+      <AppShell
+        activeView="overview"
+        collapsed={false}
+        currentMember={seedTrip.members[0]}
+        onToggleCollapsed={vi.fn()}
+        trip={seedTrip}
+      >
+        <main>content</main>
+      </AppShell>,
+      { locale: "th" },
+    );
+
+    await screen.findByRole("navigation", { name: /เมนูวางแผน Joii/i });
+    expect(container.querySelector(".app-layout")).toHaveClass(
+      "grid",
+      "grid-cols-[228px_minmax(0,1fr)]",
+      "data-[sidebar-collapsed=true]:grid-cols-[68px_minmax(0,1fr)]",
+      "max-[767px]:block",
+    );
+    expect(screen.getByRole("navigation", { name: /เมนูวางแผน Joii/i })).toHaveClass(
+      "side-rail",
+      "sticky",
+      "grid-rows-[62px_1fr_auto_auto]",
+      "max-[767px]:static",
+    );
+  });
+
   it("labels traveler and viewer roles and exposes leave-session action", async () => {
     const user = userEvent.setup();
     const onLeaveParticipantSession = vi.fn();
@@ -49,7 +78,7 @@ describe("AppShell", () => {
 
     await screen.findByText("ผู้ชม");
     expect(screen.getByText("Family Member").closest(".member-card")).toHaveTextContent("ผู้ชม");
-    expect(screen.getByRole("button", { name: "ขยายเมนู" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "ขยายเมนู" })).toHaveClass("rail-toggle", "inline-flex", "data-[collapsed=true]:border");
   });
 
   it("labels organizer members", async () => {

@@ -31,6 +31,7 @@ import { TripJoinGate } from "./TripJoinGate";
 import { LanguageSwitch } from "@/src/i18n/LanguageSwitch";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import type { Messages } from "@/src/i18n/messages";
+import { cn } from "@/src/lib/cn";
 
 interface AccountAccessPanelProps {
   accessMode?: "combined" | "account-login" | "account-register" | "account-portal" | "trip-access";
@@ -56,6 +57,286 @@ type PortalSection = "dashboard" | "trips" | "new-trip" | "explorer" | "todos" |
 type TripContinent = "all" | "asia" | "europe" | "north-america" | "south-america" | "oceania" | "africa";
 
 const accountEmailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const accountAvatarClassName = "person-avatar grid size-[30px] place-items-center rounded-full text-xs font-extrabold text-white";
+const accountDangerStatusClassName = "join-alert m-0 inline-flex items-center gap-2 rounded-[var(--radius-md)] border border-[var(--color-danger-border)] bg-[var(--color-danger-soft)] px-3 py-2.5 text-[13px] font-bold text-[var(--color-danger)]";
+const accountSuccessStatusClassName =
+  "account-success m-0 inline-flex items-center gap-2 rounded-[var(--radius-md)] border border-[var(--color-success-border)] bg-[var(--color-success-soft)] px-3 py-2.5 text-[13px] font-extrabold text-[var(--color-success)]";
+const accountToastStackClassName =
+  "account-toast-stack pointer-events-none fixed right-[clamp(18px,4vw,44px)] top-7 z-[5] grid w-[min(420px,calc(100vw_-_40px))] gap-2.5 max-[767px]:inset-x-[18px] max-[767px]:top-auto max-[767px]:bottom-[18px] max-[767px]:w-auto [&_.account-success]:pointer-events-auto [&_.account-success]:min-h-12 [&_.account-success]:w-full [&_.account-success]:justify-start [&_.account-success]:rounded-[var(--radius-lg)] [&_.account-success]:bg-[linear-gradient(90deg,rgb(22_163_74_/_0.08),rgb(255_255_255_/_0.96)_42%),rgb(255_255_255_/_0.96)] [&_.account-success]:shadow-[0_18px_44px_rgb(15_23_42_/_0.14)] [&_.join-alert]:pointer-events-auto [&_.join-alert]:min-h-12 [&_.join-alert]:w-full [&_.join-alert]:justify-start [&_.join-alert]:rounded-[var(--radius-lg)] [&_.join-alert]:bg-[linear-gradient(90deg,rgb(220_38_38_/_0.08),rgb(255_255_255_/_0.96)_42%),rgb(255_255_255_/_0.96)] [&_.join-alert]:shadow-[0_18px_44px_rgb(15_23_42_/_0.14)]";
+const accountPageClassName =
+  "account-page min-h-screen bg-[var(--paper-grain),var(--watercolor-page-wash),var(--color-page)] p-7";
+const accountEntryPageClassName =
+  "account-page--entry grid items-center bg-[linear-gradient(90deg,rgb(255_255_255_/_0.84),rgb(255_255_255_/_0.96)_50%,rgb(255_255_255_/_0.98)),var(--paper-grain),#ffffff] p-[clamp(18px,4vw,44px)] max-[767px]:items-start max-[767px]:p-[18px]";
+const accountTripAccessPageClassName =
+  "account-page--trip-access grid items-center overflow-x-clip bg-[linear-gradient(180deg,rgb(255_255_255_/_0.84),rgb(240_253_250_/_0.56)_56%,rgb(255_247_237_/_0.42)),linear-gradient(90deg,rgb(37_99_235_/_0.055)_1px,transparent_1px),linear-gradient(0deg,rgb(37_99_235_/_0.045)_1px,transparent_1px),var(--paper-grain),var(--color-page)] bg-[length:auto,58px_58px,58px_58px,auto,auto] p-[clamp(18px,4vw,42px)] max-[767px]:items-start max-[767px]:p-3.5";
+const accountPortalPageClassName = "account-page--portal overflow-x-clip pt-[18px] max-[767px]:p-3.5";
+const accountPortalNewTripPageClassName =
+  "account-page--portal-new-trip !bg-[linear-gradient(90deg,rgb(255_255_255_/_0.86),rgb(248_250_252_/_0.72)),var(--color-page)] !pt-3.5 max-[767px]:!p-2.5 [&_.account-dashboard]:!block [&_.account-hero]:hidden [&_.portal-content]:!block [&_.portal-content]:!min-h-0 [&_.portal-nav]:hidden";
+const accountShellClassName = "account-shell relative mx-auto grid w-[min(100%,1180px)] gap-4 [&>*]:relative";
+const accountPortalShellClassName = "gap-3.5";
+const accountPortalNewTripShellClassName = "!w-[min(100%,1488px)] !gap-0 max-[767px]:!w-full";
+const accountTripAccessShellClassName = "w-[min(100%,1120px)]";
+const accountEntryShellClassName =
+  "account-shell--entry relative w-[min(100%,1240px)] grid-cols-[minmax(610px,1.08fr)_minmax(380px,0.92fr)] grid-rows-[auto_auto_1fr] items-center gap-x-7 gap-y-3.5 max-[767px]:grid-cols-1 max-[767px]:grid-rows-[auto_auto] max-[767px]:gap-3.5";
+const tripAccessLanguageSwitchClassName =
+  "trip-access-language-switch !right-4 !top-4 !z-[5] !m-0 !w-fit !bg-[rgb(255_255_255_/_0.92)] !shadow-[0_10px_24px_rgb(15_23_42_/_0.08)] max-[767px]:!right-[26px] max-[767px]:!top-[26px]";
+const accessLanguageSwitchClassName = "access-language-switch mt-3.5";
+const accountEntryLanguageSwitchClassName =
+  "account-entry-language-switch !absolute !right-4 !top-4 !z-[2] !m-0 !w-fit !bg-[rgb(255_255_255_/_0.9)] !shadow-[0_10px_24px_rgb(15_23_42_/_0.08)] max-[767px]:!right-7 max-[767px]:!top-7";
+const accountHeroClassName =
+  "account-hero relative grid grid-cols-[52px_minmax(0,1fr)] items-start gap-3.5 overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[rgb(255_255_255_/_0.94)] p-[18px] shadow-[var(--shadow-panel)] [.account-shell--entry_&]:col-start-1 [.account-shell--entry_&]:row-span-3 [.account-shell--entry_&]:row-start-1 [.account-shell--entry_&]:min-h-[clamp(560px,76vh,680px)] [.account-shell--entry_&]:grid-rows-[auto_auto_1fr] [.account-shell--entry_&]:content-between [.account-shell--entry_&]:overflow-visible [.account-shell--entry_&]:border-transparent [.account-shell--entry_&]:bg-transparent [.account-shell--entry_&]:p-[clamp(44px,6vw,64px)] [.account-shell--entry_&]:shadow-none max-[767px]:[.account-shell--entry_&]:col-start-1 max-[767px]:[.account-shell--entry_&]:row-start-2 max-[767px]:[.account-shell--entry_&]:min-h-0 max-[767px]:[.account-shell--entry_&]:grid-cols-[52px_minmax(0,1fr)] max-[767px]:[.account-shell--entry_&]:gap-3.5 max-[767px]:[.account-shell--entry_&]:overflow-hidden max-[767px]:[.account-shell--entry_&]:p-5 max-[767px]:[.account-shell--entry_&]:pt-5 max-[767px]:[.account-shell--entry_&]:hidden [.account-shell--entry_&>*]:relative [.account-shell--entry_&>*]:z-[1] [.account-shell--entry_&>div>p:not(.join-eyebrow):not(.account-entry-brand-tagline)]:max-w-[330px] max-[767px]:[.account-shell--entry_&>div>p:not(.join-eyebrow):not(.account-entry-brand-tagline)]:max-w-none max-[767px]:[.account-shell--entry_&>div>p:not(.join-eyebrow):not(.account-entry-brand-tagline)]:text-[13px] max-[767px]:[.account-shell--entry_&>div>p:not(.join-eyebrow):not(.account-entry-brand-tagline)]:leading-5 [&_h1]:m-0 [&_h1]:text-3xl [&_h1]:leading-[38px] [&_h1]:text-[var(--color-text)] [.account-shell--entry_&_.join-mark]:absolute [.account-shell--entry_&_.join-mark]:left-11 [.account-shell--entry_&_.join-mark]:top-11 max-[767px]:[.account-shell--entry_&_.join-mark]:relative max-[767px]:[.account-shell--entry_&_.join-mark]:inset-auto [.account-shell--entry_&_.join-mark+div]:absolute [.account-shell--entry_&_.join-mark+div]:left-[116px] [.account-shell--entry_&_.join-mark+div]:top-[54px] [.account-shell--entry_&_.join-mark+div]:w-[400px] max-[767px]:[.account-shell--entry_&_.join-mark+div]:relative max-[767px]:[.account-shell--entry_&_.join-mark+div]:inset-auto max-[767px]:[.account-shell--entry_&_.join-mark+div]:w-auto [.account-shell--entry_&_.account-travel-collage]:absolute [.account-shell--entry_&_.account-travel-collage]:col-span-full [.account-shell--entry_&_.account-travel-collage]:row-span-full [.account-shell--entry_&_.account-travel-collage]:right-[clamp(-70px,-5vw,-52px)] [.account-shell--entry_&_.account-travel-collage]:top-[54px] [.account-shell--entry_&_.account-travel-collage]:z-[1] [.account-shell--entry_&_.account-travel-collage]:h-[590px] [.account-shell--entry_&_.account-travel-collage]:w-[330px] [.account-shell--entry_&_.account-travel-collage]:pointer-events-none max-[767px]:[.account-shell--entry_&_.account-travel-collage]:hidden [.account-shell--entry_&_h1]:mt-7 [.account-shell--entry_&_h1]:max-w-[400px] [.account-shell--entry_&_h1]:text-[clamp(40px,3.6vw,52px)] [.account-shell--entry_&_h1]:leading-[1.08] max-[767px]:[.account-shell--entry_&_h1]:mt-2 max-[767px]:[.account-shell--entry_&_h1]:max-w-none max-[767px]:[.account-shell--entry_&_h1]:text-3xl max-[767px]:[.account-shell--entry_&_h1]:leading-[34px] [&_p:not(.join-eyebrow)]:mt-1 [&_p:not(.join-eyebrow)]:mb-0 [&_p:not(.join-eyebrow)]:max-w-[720px] [&_p:not(.join-eyebrow)]:text-sm [&_p:not(.join-eyebrow)]:leading-[22px] [&_p:not(.join-eyebrow)]:text-[var(--color-text-muted)]";
+const accountPortalHeroClassName =
+  "grid-cols-[40px_minmax(0,1fr)_auto] !items-center px-3.5 py-3 max-[767px]:grid-cols-[36px_minmax(0,1fr)_auto] max-[767px]:p-3 [&_.join-eyebrow]:hidden [&_h1]:!text-[22px] [&_h1]:!leading-7 [&_p:not(.join-eyebrow)]:hidden";
+const accountPortalHeroMarkClassName = "!size-10 max-[767px]:!size-9";
+const accountPortalLanguageSwitchClassName =
+  "col-start-3 row-start-1 !m-0 self-center justify-self-end max-[767px]:[&_.language-switch-option]:min-w-[34px]";
+const accountHeroMarkClassName = "join-mark account-hero-mark grid size-[52px] place-items-center rounded-[var(--radius-md)] bg-[var(--color-primary)] text-white [&_.icon]:size-6";
+const accountHeroEyebrowClassName = "join-eyebrow mb-0.5 mt-0 text-xs font-extrabold uppercase tracking-normal text-[var(--color-primary-strong)]";
+const accountEntryBrandTaglineClassName =
+  "account-entry-brand-tagline m-0 text-[13px] font-bold leading-[18px] text-[var(--color-primary-strong)]";
+const accountCardClassName =
+  "account-card grid gap-3.5 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[rgb(255_255_255_/_0.94)] p-4 shadow-[var(--shadow-panel)]";
+const portalLoadingCardClassName = cn(accountCardClassName, "portal-loading-card col-span-2 min-h-[220px] max-[767px]:col-auto");
+const portalSkeletonBaseClassName =
+  "portal-skeleton block overflow-hidden rounded-[var(--radius-md)] bg-[linear-gradient(90deg,var(--color-surface-subtle),rgb(226_232_240_/_0.72),var(--color-surface-subtle))] bg-[length:220%_100%] animate-[portal-skeleton-pulse_1.2s_ease-in-out_infinite] motion-reduce:animate-none";
+const portalSkeletonTitleClassName = cn(portalSkeletonBaseClassName, "portal-skeleton--title h-7 w-[min(220px,48%)]");
+const portalSkeletonLineClassName = cn(portalSkeletonBaseClassName, "portal-skeleton--line h-4 w-[min(520px,72%)]");
+const portalSkeletonBlockClassName = cn(portalSkeletonBaseClassName, "portal-skeleton--block h-[132px] w-full");
+const portalSkeletonNumberClassName = cn(portalSkeletonBaseClassName, "portal-skeleton--number h-[26px] w-[34px]");
+const portalSkeletonShortClassName = cn(portalSkeletonBaseClassName, "portal-skeleton--short h-3.5 w-24");
+const portalSkeletonIconClassName = cn(portalSkeletonBaseClassName, "portal-skeleton--icon size-9");
+const accountStatClassName =
+  "account-stat grid min-h-[66px] content-center gap-0.5 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-subtle)] p-2.5 [&_span]:text-xs [&_span]:font-extrabold [&_span]:text-[var(--color-text-muted)] [&_strong]:text-2xl [&_strong]:leading-7 [&_strong]:text-[var(--color-text)]";
+const portalSkeletonCardClassName = cn(accountStatClassName, "portal-skeleton-card");
+const portalListSkeletonClassName = "portal-list-skeleton grid gap-2";
+const portalListSkeletonCompactClassName = cn(portalListSkeletonClassName, "portal-list-skeleton--compact grid-cols-2 max-[520px]:grid-cols-1");
+const portalSkeletonRowClassName =
+  "portal-skeleton-row grid min-h-[62px] grid-cols-[36px_minmax(0,1fr)_96px] items-center gap-3 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-subtle)] p-2.5";
+const accountAuthHighlightsClassName =
+  "account-auth-highlights absolute bottom-[76px] left-11 z-[2] col-span-full grid w-[330px] list-none gap-[18px] self-end border-t-0 p-0 m-[clamp(24px,7vh,64px)_0_0] max-[767px]:relative max-[767px]:inset-auto max-[767px]:w-auto max-[767px]:gap-3 max-[767px]:mt-[18px]";
+const accountAuthHighlightClassName =
+  "account-auth-highlight grid min-h-[54px] grid-cols-[42px_minmax(0,1fr)] items-start gap-3.5 border-b-0 bg-transparent p-0 text-[var(--color-text)] max-[767px]:min-h-0 [&_.icon]:size-8 [&_.icon]:rounded-full [&_.icon]:border-2 [&_.icon]:border-current [&_.icon]:p-[5px] [&_.icon]:text-[var(--color-primary-strong)] [&_small]:mt-0.5 [&_small]:block [&_small]:text-xs [&_small]:font-[650] [&_small]:leading-[18px] [&_small]:text-[var(--color-text-muted)] [&_span]:min-w-0 [&_span]:text-[13px] [&_span]:font-extrabold [&_span]:leading-[19px] [&_span]:text-[var(--color-text)] [&_strong]:block [&_strong]:text-sm [&_strong]:leading-[19px] [&_strong]:text-[var(--color-text)]";
+const travelPhotoCardClassName =
+  "travel-photo-card absolute block overflow-hidden rounded-[10px] border-4 border-[rgb(255_255_255_/_0.92)] bg-white shadow-[0_14px_30px_rgb(15_23_42_/_0.16)] rotate-[var(--card-rotate)] [animation:travel-card-enter_620ms_cubic-bezier(0.2,0.75,0.25,1)_both,travel-card-float_7s_ease-in-out_infinite] [animation-delay:var(--travel-delay,0ms),calc(var(--travel-delay,0ms)+680ms)] after:absolute after:inset-x-0 after:bottom-0 after:h-[54px] after:bg-[linear-gradient(180deg,transparent,rgb(255_255_255_/_0.9))] after:content-[''] motion-reduce:animate-none";
+const travelPhotoImageClassName = "travel-photo-image block size-full object-cover";
+const travelPhotoHeartClassName =
+  "travel-photo-heart absolute right-[11px] top-[11px] z-[2] size-[18px] rounded-full border-2 border-white drop-shadow-[0_1px_2px_rgb(15_23_42_/_0.2)]";
+const travelPhotoCaptionClassName =
+  "travel-photo-caption absolute inset-x-2.5 bottom-[9px] z-[2] text-[10px] font-[850] text-[var(--color-text)]";
+const travelPhotoCardVariants: Record<string, string> = {
+  cappadocia: "travel-photo-card--cappadocia right-1.5 top-[240px] h-[154px] w-[208px] [--card-rotate:-4deg] [--float-rotate:-0.7deg] [--float-x:-7px] [--float-y:5px] [--travel-delay:160ms]",
+  krabi: "travel-photo-card--krabi right-[-6px] top-2 h-44 w-[146px] [--card-rotate:5deg] [--float-rotate:0.8deg] [--float-x:6px] [--float-y:-8px] [--travel-delay:70ms]",
+  kyoto: "travel-photo-card--kyoto right-[100px] top-[366px] h-[148px] w-[172px] [--card-rotate:-2deg] [--float-rotate:-0.5deg] [--float-x:5px] [--float-y:6px] [--travel-delay:240ms]",
+  santorini: "travel-photo-card--santorini right-2 top-[348px] h-[146px] w-[184px] [--card-rotate:2deg] [--float-rotate:0.6deg] [--float-x:-6px] [--float-y:-5px] [--travel-delay:320ms]",
+};
+const travelNextCardClassName =
+  "travel-next-card absolute right-0 top-[504px] grid min-h-[72px] w-[196px] grid-cols-[40px_minmax(0,1fr)] items-center gap-2.5 rounded-[10px] border border-[rgb(255_255_255_/_0.92)] bg-[rgb(255_255_255_/_0.94)] p-3 shadow-[0_14px_30px_rgb(15_23_42_/_0.16)] [--float-x:4px] [--float-y:-4px] [animation:travel-card-enter_620ms_cubic-bezier(0.2,0.75,0.25,1)_420ms_both,travel-card-float_7s_ease-in-out_1s_infinite] motion-reduce:animate-none [&_.icon]:size-[34px] [&_.icon]:rounded-full [&_.icon]:bg-[var(--color-primary-soft)] [&_.icon]:p-2 [&_.icon]:text-[var(--color-primary-strong)] [&_small]:block [&_small]:min-w-0 [&_small]:text-[10px] [&_small]:leading-[15px] [&_small]:text-[var(--color-text-muted)] [&_strong]:block [&_strong]:min-w-0 [&_strong]:overflow-hidden [&_strong]:text-ellipsis [&_strong]:whitespace-nowrap [&_strong]:text-xs [&_strong]:leading-4 [&_strong]:text-[var(--color-text)]";
+const accountModeTabsClassName =
+  "account-mode-tabs inline-grid w-[min(100%,420px)] grid-cols-2 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] p-1";
+const accountTabClassName =
+  "account-tab inline-flex min-h-[42px] items-center justify-center gap-2 rounded-[var(--radius-md)] border-0 bg-transparent font-extrabold text-[var(--color-text-muted)] transition-[background,color] duration-[180ms] ease-out";
+const accountTabActiveClassName = "account-tab--active bg-[var(--color-primary-soft)] text-[var(--color-primary-strong)]";
+const accountEntryTabsClassName = "account-entry-tabs grid grid-cols-2 gap-0 border-b border-[var(--color-border)] px-[34px] pb-3.5";
+const accountEntryTabClassName =
+  "account-entry-tab grid min-h-[42px] cursor-pointer place-items-center border-0 border-b-[3px] border-transparent bg-transparent text-[15px] font-[850] text-[var(--color-text-muted)] no-underline transition-[border-color,color] duration-[180ms] ease-out";
+const accountEntryTabActiveClassName = "account-entry-tab--active border-[var(--color-primary)] text-[var(--color-primary-strong)]";
+const portalNavClassName =
+  "portal-nav sticky top-4 grid gap-3.5 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] p-3 shadow-[var(--shadow-soft)] max-[767px]:static max-[767px]:gap-2.5 max-[767px]:p-2.5";
+const portalNavBrandClassName =
+  "portal-nav-brand flex min-w-0 items-center gap-2.5 max-[767px]:px-1 max-[767px]:pt-0.5 [&_span]:block [&_span]:min-w-0 [&_span]:overflow-hidden [&_span]:text-ellipsis [&_span]:whitespace-nowrap [&_span]:text-xs [&_span]:font-[750] [&_span]:text-[var(--color-text-muted)] [&_strong]:block [&_strong]:min-w-0 [&_strong]:overflow-hidden [&_strong]:text-ellipsis [&_strong]:whitespace-nowrap [&_strong]:text-[var(--color-text)]";
+const portalNavLinksClassName =
+  "portal-nav-links grid gap-2.5 max-[767px]:-mx-1 max-[767px]:flex max-[767px]:gap-2 max-[767px]:overflow-x-auto max-[767px]:overscroll-x-contain max-[767px]:px-1 max-[767px]:pb-0.5 max-[767px]:[scrollbar-width:none] max-[767px]:[&::-webkit-scrollbar]:hidden";
+const portalNavLinkClassName =
+  "portal-nav-link flex min-h-[42px] w-full items-center gap-2.5 rounded-[var(--radius-md)] border border-transparent bg-transparent px-2.5 text-left text-[13px] font-[850] text-[var(--color-text-muted)] no-underline transition-[border-color,background,color,box-shadow,transform] duration-[180ms] ease-out hover:translate-x-0.5 hover:border-[var(--color-primary-border)] hover:bg-[var(--color-primary-soft)] hover:text-[var(--color-primary-strong)] hover:shadow-[0_8px_18px_rgb(15_118_110_/_0.08)] focus-visible:translate-x-0.5 focus-visible:border-[var(--color-primary-border)] focus-visible:bg-[var(--color-primary-soft)] focus-visible:text-[var(--color-primary-strong)] focus-visible:shadow-[0_8px_18px_rgb(15_118_110_/_0.08)] max-[767px]:w-auto max-[767px]:min-w-[116px] max-[767px]:shrink-0 max-[767px]:justify-center max-[767px]:hover:translate-x-0 max-[767px]:focus-visible:translate-x-0";
+const portalNavLinkActiveClassName = "portal-nav-link--active border-[var(--color-primary-border)] bg-[var(--color-primary-soft)] text-[var(--color-primary-strong)]";
+const accountDashboardClassName = "account-dashboard grid grid-cols-[220px_minmax(0,1fr)] items-start gap-3.5 max-[767px]:grid-cols-1";
+const portalContentClassName = "portal-content grid min-h-[460px] grid-cols-2 items-start gap-2.5 max-[767px]:min-h-[520px] max-[767px]:grid-cols-1";
+const portalProfileCardClassName = cn(accountCardClassName, "account-profile-card col-span-2 max-[767px]:col-auto");
+const portalHistoryCardClassName = cn(accountCardClassName, "account-history col-span-2 max-[767px]:col-auto");
+const portalNewTripCardClassName =
+  "portal-new-trip-card !gap-[18px] !min-h-[calc(100vh-28px)] !overflow-hidden !rounded-[24px] !border-0 !bg-[linear-gradient(180deg,rgb(255_255_255_/_0.98),rgb(248_250_252_/_0.96)),var(--color-surface)] !p-[18px] !shadow-[0_22px_60px_rgb(15_23_42_/_0.12)] max-[767px]:!min-h-[calc(100vh-20px)] max-[767px]:!rounded-[18px] max-[767px]:!p-3";
+const tripBuilderTopbarClassName =
+  "trip-builder-topbar grid grid-cols-[132px_minmax(0,1fr)_auto] items-center gap-7 pb-[18px] max-[767px]:grid-cols-[1fr_auto] max-[767px]:gap-2.5 [&>.badge]:mt-2 [&>.badge]:justify-self-end [&>.button]:min-h-[58px] [&>.button]:rounded-[9px] [&>.button]:bg-[rgb(255_255_255_/_0.88)] [&>.button]:shadow-[0_8px_24px_rgb(15_23_42_/_0.04)] max-[767px]:[&>.button]:w-auto max-[767px]:[&>.button]:min-w-[118px] [&>div]:grid [&>div]:min-w-0 [&>div]:justify-self-start [&>div]:gap-0.5 [&>div]:text-left max-[767px]:[&>div]:col-span-full [&>div_span]:hidden [&>div_strong]:inline-flex [&>div_strong]:items-center [&>div_strong]:gap-2.5 [&>div_strong]:text-[30px] [&>div_strong]:leading-[34px] [&>div_strong]:text-[#111827] max-[767px]:[&>div_strong]:text-[28px] max-[767px]:[&>div_strong]:leading-8 [&>div_small]:mt-2 [&>div_small]:block [&>div_small]:max-w-[420px] [&>div_small]:text-[13px] [&>div_small]:font-[650] [&>div_small]:leading-[18px] [&>div_small]:text-[var(--color-text-muted)] max-[767px]:[&>div_small]:max-w-[260px] max-[767px]:[&>div_small]:text-[11px]";
+const portalCreateTripInlineClassName =
+  "portal-create-trip-inline portal-trip-simple !gap-4 !rounded-none !border-0 !bg-transparent !p-0 !shadow-none max-[767px]:!rounded-[18px] max-[767px]:!p-3.5";
+const tripSimpleHeadClassName = "trip-simple-head hidden";
+const tripWizardLayoutClassName =
+  "trip-wizard-layout grid grid-cols-[minmax(430px,0.76fr)_minmax(560px,1fr)] items-stretch gap-[22px] max-[767px]:grid-cols-1";
+const tripWizardMainClassName =
+  "trip-wizard-main min-h-0 rounded-[10px] border border-[rgb(203_213_225_/_0.72)] bg-[rgb(255_255_255_/_0.86)] p-0 shadow-[0_18px_42px_rgb(15_23_42_/_0.04)]";
+const tripWizardPaneClassName =
+  "trip-wizard-pane grid gap-0 [&_.account-two-col]:rounded-[18px] [&_.account-two-col]:border [&_.account-two-col]:border-[var(--color-border)] [&_.account-two-col]:bg-white [&_.account-two-col]:p-3 max-[767px]:[&_.account-two-col]:p-2.5 [&>p]:m-0 [&>p]:text-[13px] [&>p]:leading-5 [&>p]:text-[var(--color-text-muted)] [&_input]:min-h-[52px] [&_input]:rounded-[14px] [&_input]:text-[15px] [&_label]:min-h-[76px] [&_label_small]:mt-1.5 [&_label_small]:block [&_label_small]:text-[11px] [&_label_small]:leading-4 [&_label_small]:text-[var(--color-text-muted)]";
+const tripScopePanelClassName =
+  "trip-scope-panel grid gap-0 rounded-[10px] border-0 bg-transparent px-[22px] pb-6 pt-7";
+const tripLivePreviewClassName =
+  "trip-live-preview static grid min-h-0 min-w-0 content-start gap-0 self-start rounded-[10px] border border-[rgb(203_213_225_/_0.72)] bg-[linear-gradient(180deg,rgb(255_251_235_/_0.46),rgb(255_255_255_/_0.88)),rgb(255_255_255_/_0.82)] px-3.5 pb-3 pt-5 shadow-[0_18px_42px_rgb(15_23_42_/_0.04)] max-[767px]:mt-3.5 max-[767px]:p-3";
+const tripStepSectionClassName = "trip-step-section grid gap-3.5 pb-[34px]";
+const tripStepSectionCompactClassName = cn(tripStepSectionClassName, "trip-step-section--compact pb-3.5");
+const tripStepHeadingClassName =
+  "trip-step-heading grid gap-1.5 [&_span]:text-[13px] [&_span]:leading-[18px] [&_span]:text-[var(--color-text-muted)] [&_strong]:text-lg [&_strong]:leading-6 [&_strong]:text-[#111827]";
+const tripNameFieldClassName =
+  "trip-name-field relative min-h-[52px] [&_input]:min-h-[52px] [&_input]:rounded-[9px] [&_input]:bg-[rgb(255_255_255_/_0.9)] [&_input]:shadow-[inset_0_1px_0_rgb(255_255_255_/_0.8)] [&_small]:absolute [&_small]:right-[13px] [&_small]:top-[17px] [&_small]:text-xs [&_small]:font-bold [&_small]:text-[var(--color-text-muted)]";
+const tripCountryPickerClassName =
+  "trip-country-picker grid gap-3 [&>small]:text-[11px] [&>small]:font-[750] [&>small]:leading-4 [&>small]:text-[var(--color-text-muted)]";
+const tripCountrySearchClassName =
+  "trip-country-search relative grid gap-2 [&_input]:min-h-[52px] [&_input]:rounded-[9px] [&_input]:bg-[rgb(255_255_255_/_0.9)] [&_input]:shadow-[inset_0_1px_0_rgb(255_255_255_/_0.8)] [&_label]:min-h-0";
+const tripFormDestinationRowClassName =
+  "trip-form-destination-row grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_132px] gap-2.5 max-[767px]:grid-cols-1";
+const tripPlaceThumbClassName =
+  "trip-place-thumb block size-[42px] rounded-md bg-[linear-gradient(145deg,rgb(15_118_110_/_0.28),transparent_54%),linear-gradient(45deg,rgb(255_255_255_/_0.22)_25%,transparent_25%_50%,rgb(255_255_255_/_0.22)_50%_75%,transparent_75%),#dbeafe] bg-[length:auto,12px_12px,auto]";
+const tripMiniDestinationClassName =
+  "trip-mini-destination grid min-h-[70px] grid-cols-[42px_minmax(0,1fr)_auto] items-center gap-2 rounded-[9px] border border-[var(--color-border)] bg-white p-2 [&_small]:block [&_small]:text-[11px] [&_small]:text-[#64748b] [&_strong]:block [&_button]:grid [&_button]:size-6 [&_button]:cursor-pointer [&_button]:place-items-center [&_button]:border-0 [&_button]:bg-transparent [&_button]:text-[#475569]";
+const tripMiniAddClassName =
+  "trip-mini-add grid min-h-[70px] grid-cols-[20px_minmax(0,1fr)] items-center gap-2 rounded-[9px] border border-dashed border-[var(--color-border)] bg-white p-2 text-xs font-extrabold text-[var(--color-text-muted)]";
+const tripFormDestinationSearchClassName =
+  "trip-form-destination-search col-span-full grid gap-2 [&_.trip-country-suggestions]:!grid-cols-2 [&_input]:min-h-[42px] [&_input]:w-full [&_input]:rounded-[9px] [&_input]:border [&_input]:border-[var(--color-border)] [&_input]:bg-white [&_input]:px-3.5 [&_input]:text-[var(--color-text)] max-[767px]:[&_.trip-country-suggestions]:!grid-cols-1";
+const tripSelectedCountriesClassName =
+  "trip-selected-countries flex min-h-[44px] flex-wrap items-center gap-3 rounded-[var(--radius-md)] border border-dashed border-[var(--color-border-strong)] bg-[var(--color-surface-subtle)] p-3 text-[13px] font-bold text-[var(--color-text-muted)]";
+const tripCountrySuggestionsClassName =
+  "trip-country-suggestions grid grid-cols-3 gap-3 max-[767px]:grid-cols-1 [&_button]:grid [&_button]:min-h-[68px] [&_button]:grid-cols-[42px_minmax(0,1fr)] [&_button]:content-center [&_button]:items-center [&_button]:gap-[3px] [&_button]:rounded-[9px] [&_button]:border [&_button]:border-[var(--color-border)] [&_button]:bg-[var(--color-surface)] [&_button]:px-2.5 [&_button]:py-[9px] [&_button]:text-left [&_button]:text-[var(--color-text)] [&_button]:transition-[background,border-color,box-shadow] [&_button]:duration-[180ms] [&_button:hover]:border-[var(--color-primary)] [&_button:hover]:bg-[var(--color-primary-soft)] [&_button:hover]:shadow-[0_10px_18px_rgb(15_118_110_/_0.08)] [&_button:focus-visible]:border-[var(--color-primary)] [&_button:focus-visible]:bg-[var(--color-primary-soft)] [&_button:focus-visible]:shadow-[0_10px_18px_rgb(15_118_110_/_0.08)] [&_button::before]:block [&_button::before]:size-[42px] [&_button::before]:rounded-md [&_button::before]:bg-[linear-gradient(145deg,rgb(15_118_110_/_0.28),transparent_54%),linear-gradient(45deg,rgb(255_255_255_/_0.22)_25%,transparent_25%_50%,rgb(255_255_255_/_0.22)_50%_75%,transparent_75%),#dbeafe] [&_button::before]:bg-[length:auto,12px_12px,auto] [&_button::before]:content-[''] [&_span]:col-start-2 [&_span]:overflow-hidden [&_span]:text-ellipsis [&_span]:whitespace-nowrap [&_span]:text-[11px] [&_span]:leading-[15px] [&_span]:text-[var(--color-text-muted)] [&_strong]:col-start-2 [&_strong]:text-[13px] [&_strong]:leading-[18px]";
+const tripMapToggleClassName =
+  "trip-map-toggle inline-flex min-h-10 min-w-[132px] w-fit cursor-pointer items-center gap-2 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-[13px] text-xs font-black text-[var(--color-primary-strong)] transition-[background,border-color,box-shadow] duration-[180ms] hover:border-[var(--color-primary)] hover:bg-[var(--color-primary-soft)] hover:shadow-[0_8px_18px_rgb(15_118_110_/_0.08)] focus-visible:border-[var(--color-primary)] focus-visible:bg-[var(--color-primary-soft)] focus-visible:shadow-[0_8px_18px_rgb(15_118_110_/_0.08)] [&_.icon]:size-4";
+const tripMapDrawerClassName =
+  "trip-map-drawer grid gap-2.5 rounded-[20px] border border-[var(--color-primary-border)] bg-[linear-gradient(180deg,rgb(240_253_250_/_0.8),rgb(248_250_252_/_0.92))] p-2.5";
+const tripWorldMapClassName =
+  "trip-world-map relative min-h-[470px] overflow-hidden rounded-[18px] border border-[var(--color-primary-border)] bg-[linear-gradient(180deg,rgb(239_246_255_/_0.92),rgb(240_253_250_/_0.92)),#eef8ff] transition-[background] duration-[180ms] max-[767px]:min-h-[310px]";
+const tripWorldMapSvgClassName = "relative z-[1] block w-full min-h-[470px] max-[767px]:min-h-[310px]";
+const tripMapControlsClassName =
+  "trip-map-controls absolute right-3.5 top-3.5 z-[3] inline-flex items-center gap-1.5 rounded-full border border-[var(--color-border)] bg-[rgb(255_255_255_/_0.94)] p-1.5 shadow-[0_12px_24px_rgb(15_23_42_/_0.12)] max-[767px]:left-2.5 max-[767px]:right-2.5 max-[767px]:justify-center max-[767px]:rounded-[18px] [&_button]:inline-grid [&_button]:h-[30px] [&_button]:min-w-[34px] [&_button]:cursor-pointer [&_button]:place-items-center [&_button]:rounded-full [&_button]:border [&_button]:border-[var(--color-border)] [&_button]:bg-[var(--color-surface)] [&_button]:text-xs [&_button]:font-black [&_button]:text-[var(--color-primary-strong)] [&_button]:transition-[background,border-color,color] [&_button]:duration-150 [&_button:disabled]:cursor-not-allowed [&_button:disabled]:bg-[var(--color-surface-subtle)] [&_button:disabled]:text-[var(--color-text-subtle)] [&_button:focus-visible]:border-[var(--color-primary)] [&_button:focus-visible]:bg-[var(--color-primary-soft)] [&_button:hover]:border-[var(--color-primary)] [&_button:hover]:bg-[var(--color-primary-soft)] [&_span]:inline-grid [&_span]:h-[30px] [&_span]:min-w-[46px] [&_span]:place-items-center [&_span]:rounded-full [&_span]:text-xs [&_span]:font-black [&_span]:text-[var(--color-text-muted)]";
+const tripMapHoverLabelClassName =
+  "trip-map-hover-label pointer-events-none absolute left-4 top-4 z-[2] max-w-[calc(100%_-_32px)] rounded-full border border-[var(--color-primary-border)] bg-[rgb(255_255_255_/_0.94)] px-3 py-2 text-[13px] font-black text-[var(--color-primary-strong)] shadow-[0_12px_24px_rgb(15_23_42_/_0.12)]";
+const tripContinentFilterClassName = "trip-continent-filter flex flex-wrap gap-[7px]";
+const tripContinentChipClassName =
+  "trip-continent-chip min-h-[34px] cursor-pointer rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-3 text-xs font-[850] text-[var(--color-text-muted)] transition-[background,border-color,color,box-shadow] duration-[180ms] hover:border-[var(--color-primary)] hover:bg-[var(--color-primary-soft)] hover:text-[var(--color-primary-strong)] hover:shadow-[0_8px_16px_rgb(15_118_110_/_0.08)] focus-visible:border-[var(--color-primary)] focus-visible:bg-[var(--color-primary-soft)] focus-visible:text-[var(--color-primary-strong)] focus-visible:shadow-[0_8px_16px_rgb(15_118_110_/_0.08)]";
+const tripContinentChipActiveClassName =
+  "trip-continent-chip--active border-[var(--color-primary)] bg-[var(--color-primary-soft)] text-[var(--color-primary-strong)] shadow-[0_8px_16px_rgb(15_118_110_/_0.08)]";
+const tripRoundtripFieldClassName =
+  "trip-roundtrip-field col-span-full m-0 grid min-w-0 gap-2.5 rounded-[18px] border border-[var(--color-border)] bg-[linear-gradient(180deg,#fff,rgb(248_250_252_/_0.72))] p-3 [&>small]:hidden [&_legend]:hidden";
+const tripRoundtripRowClassName =
+  "trip-roundtrip-row grid grid-cols-[minmax(0,1fr)_42px_minmax(0,1fr)] items-end gap-2.5 max-[767px]:grid-cols-1";
+const tripDateLegClassName =
+  "trip-date-leg grid min-h-0 min-w-0 grid-cols-[28px_minmax(0,1fr)] items-center gap-x-2 rounded-[9px] border border-[var(--color-border-strong)] bg-[rgb(255_255_255_/_0.94)] px-3 py-2.5 before:row-span-2 before:size-[22px] before:rounded-full before:bg-[linear-gradient(135deg,transparent_42%,#0f766e_42%_58%,transparent_58%),radial-gradient(circle_at_50%_50%,rgb(15_118_110_/_0.12),transparent_64%)] before:content-[''] [&_input]:min-h-6 [&_input]:w-full [&_input]:min-w-0 [&_input]:rounded-none [&_input]:border-0 [&_input]:bg-transparent [&_input]:p-0 [&_span]:text-xs [&_span]:font-[850] [&_span]:text-[var(--color-text-muted)]";
+const tripDateArrowClassName =
+  "trip-date-arrow grid h-[52px] w-[42px] items-center justify-items-center self-end rounded-full border border-[var(--color-primary-border)] bg-[var(--color-primary-soft)] text-[var(--color-primary-strong)] max-[767px]:h-[34px] max-[767px]:w-full";
+const tripAccessPanelClassName =
+  "trip-access-panel grid gap-3 rounded-[18px] border border-[var(--color-border)] bg-white p-3 [&_summary]:mb-0 [&_summary]:flex [&_summary]:min-h-[42px] [&_summary]:cursor-pointer [&_summary]:items-center [&_summary]:justify-between [&_summary]:gap-3 [&_summary]:text-[13px] [&_summary]:font-black [&_summary]:text-[var(--color-text)] [&_summary_strong]:overflow-hidden [&_summary_strong]:text-ellipsis [&_summary_strong]:whitespace-nowrap [&_summary_strong]:text-xs [&_summary_strong]:font-[850] [&_summary_strong]:text-[var(--color-text-muted)] open:[&_summary]:mb-2 open:[&_summary]:border-b open:[&_summary]:border-[var(--color-border)] open:[&_summary]:pb-2.5";
+const tripGeneratedAccessClassName =
+  "trip-generated-access grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] items-end gap-2.5 rounded-2xl border border-[var(--color-primary-border)] bg-[var(--color-primary-soft)] p-3 max-[767px]:grid-cols-1 [&_.button]:min-h-[52px] [&_.button]:w-auto [&_.button]:whitespace-nowrap";
+const tripAccessNoteClassName =
+  "trip-access-note mt-3.5 grid grid-cols-[24px_minmax(0,1fr)] items-center justify-center gap-2.5 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface-subtle)] p-3 text-center text-xs font-[750] leading-[18px] text-[var(--color-text-muted)] [&_.icon]:text-[var(--color-primary-strong)]";
+const tripTicketReviewClassName =
+  "trip-ticket-review grid grid-cols-2 gap-2.5 [.account-page--portal-new-trip_&]:hidden max-[767px]:grid-cols-1 [&>div]:grid [&>div]:min-h-[76px] [&>div]:content-center [&>div]:gap-1 [&>div]:rounded-[var(--radius-md)] [&>div]:border [&>div]:border-[var(--color-border)] [&>div]:bg-[var(--color-surface)] [&>div]:p-3 [&_span]:text-[11px] [&_span]:font-[850] [&_span]:uppercase [&_span]:text-[var(--color-text-muted)] [&_strong]:min-w-0 [&_strong]:[overflow-wrap:anywhere]";
+const tripShareStripClassName =
+  "trip-share-strip grid min-h-[52px] grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-3 rounded-[9px] border border-[var(--color-route-border)] bg-[rgb(239_246_255_/_0.92)] py-2 pl-4 pr-2.5 text-[13px] font-extrabold text-[#0f6670] max-[767px]:[.account-page--portal-new-trip_&]:grid-cols-1 max-[767px]:[.account-page--portal-new-trip_&]:text-left max-[767px]:[.account-page--portal-new-trip_&_.button]:w-full [&_span]:inline-flex [&_span]:min-w-0 [&_span]:items-center [&_span]:gap-2 [&_.icon]:size-6 [&_.button]:min-h-9 [&_.button]:rounded-[7px]";
+const tripWizardActionsClassName =
+  "trip-wizard-actions flex justify-between gap-2.5 px-[22px] pb-[22px] pt-0 [.account-page--portal-new-trip_&]:w-[min(100%,626px)] [.account-page--portal-new-trip_&]:px-[22px] [.account-page--portal-new-trip_&]:pb-[22px] [.account-page--portal-new-trip_&]:pt-3.5 min-[768px]:[.account-page--portal-new-trip_&]:w-[calc((100%-22px)*0.43)] min-[768px]:[.account-page--portal-new-trip_&]:min-w-[430px] max-[767px]:flex-col max-[767px]:[&_.button]:w-full max-[767px]:[.account-page--portal-new-trip_&]:w-full max-[767px]:[.account-page--portal-new-trip_&]:px-3 [&_.button--primary]:min-h-[58px] [&_.button--primary]:flex-1 [&_.button--primary]:justify-center [&_.button--primary]:rounded-[9px] [&_.button--primary]:bg-[linear-gradient(135deg,#0f766e,#0b8885)] [&_.button--primary]:text-base [&_.button--primary::after]:ml-1 [&_.button--primary::after]:text-[13px] [&_.button--primary::after]:font-extrabold [&_.button--primary::after]:content-['สร้างทริป'] [&_.button--secondary]:hidden";
+const tripBoardingPassClassName =
+  "trip-boarding-pass mx-auto mb-[26px] grid w-[min(100%,760px)] grid-cols-[minmax(0,1fr)_222px] drop-shadow-[0_12px_22px_rgb(15_23_42_/_0.14)] max-[767px]:[.account-page--portal-new-trip_&]:w-full max-[767px]:[.account-page--portal-new-trip_&]:grid-cols-1 max-[767px]:[.account-page--portal-new-trip_&]:drop-shadow-[0_10px_20px_rgb(15_23_42_/_0.1)]";
+const tripMainTicketClassName =
+  "trip-main-ticket relative min-h-[504px] rounded-xl bg-[rgb(255_255_255_/_0.96)] px-7 pb-6 pt-7 max-[767px]:[.account-page--portal-new-trip_&]:min-h-0 max-[767px]:[.account-page--portal-new-trip_&]:p-5 [&_.trip-preview-map]:mb-[18px] [&_.trip-preview-map]:min-h-[170px] [&_.trip-preview-map]:rounded-[9px] max-[767px]:[.account-page--portal-new-trip_&_.trip-preview-map]:min-h-[148px] [&>p]:my-2 [&>p]:mb-[18px] [&>p]:flex [&>p]:items-center [&>p]:gap-2 [&>p]:text-[13px] [&>p]:text-[#64748b] [&>strong]:mt-1.5 [&>strong]:block [&>strong]:text-[27px] [&>strong]:leading-8 [&>strong]:text-[#090f1f] max-[767px]:[.account-page--portal-new-trip_&>strong]:text-2xl max-[767px]:[.account-page--portal-new-trip_&>strong]:leading-[29px]";
+const tripPreviewMapClassName =
+  "trip-preview-map relative min-h-[168px] overflow-hidden rounded-[18px] border border-[color-mix(in_srgb,var(--color-route-border)_82%,white)] bg-[linear-gradient(90deg,rgb(37_99_235_/_0.07)_1px,transparent_1px),linear-gradient(0deg,rgb(37_99_235_/_0.07)_1px,transparent_1px),radial-gradient(circle_at_24%_32%,rgb(20_184_166_/_0.2),transparent_25%),radial-gradient(circle_at_76%_62%,rgb(56_189_248_/_0.22),transparent_28%),linear-gradient(160deg,rgb(236_253_245_/_0.96),rgb(239_246_255_/_0.94))] [background-size:34px_34px,34px_34px,auto,auto,auto] max-[767px]:min-h-[138px]";
+const tripPreviewMapLiveClassName = "trip-preview-map--live isolate";
+const tripPreviewMapReadyClassName = "trip-preview-map--ready bg-[#eef8ff]";
+const tripPreviewMapCanvasClassName = "trip-preview-map-canvas absolute inset-0 z-[1]";
+const tripPreviewMapFallbackClassName = "trip-preview-map-fallback absolute inset-0 z-[2]";
+const tripPreviewMapSourceClassName =
+  "trip-preview-map-source absolute left-2.5 top-2.5 z-[4] inline-flex min-h-7 max-w-[calc(100%_-_20px)] items-center gap-1.5 rounded-full border border-[rgb(15_118_110_/_0.22)] bg-[rgb(255_255_255_/_0.9)] px-[9px] text-[11px] font-black text-[var(--color-primary-strong)] shadow-[0_10px_18px_rgb(15_23_42_/_0.12)] [&_.icon]:size-[13px]";
+const tripPreviewLiveMarkerClassName =
+  "trip-preview-live-marker grid size-7 place-items-center rounded-full border-2 border-white bg-[var(--color-primary)] text-xs font-black text-white shadow-[0_10px_20px_rgb(15_23_42_/_0.22)]";
+const tripPreviewRouteLineClassName =
+  "trip-preview-route-line absolute left-[28%] top-[52%] w-[44%] -rotate-[13deg] border-t-2 border-dashed border-[rgb(15_118_110_/_0.58)]";
+const tripPreviewPinClassName =
+  "trip-preview-pin absolute z-[1] grid size-[38px] place-items-center rounded-full border border-[var(--color-primary-border)] bg-[rgb(255_255_255_/_0.94)] text-[var(--color-primary-strong)] shadow-[0_12px_24px_rgb(15_23_42_/_0.12)] [&_.icon]:size-[18px]";
+const tripPreviewPinOriginClassName = "trip-preview-pin--origin left-[18%] top-[54%]";
+const tripPreviewPinDestinationClassName = "trip-preview-pin--destination right-[18%] top-[32%] border-[var(--color-route-border)] text-[var(--color-route)]";
+const tripPreviewTicketTopClassName =
+  "trip-boarding-ticket-top flex items-center justify-between gap-2.5 [&>span]:text-xs [&>span]:font-black [&>span]:tracking-[0.02em] [&>span]:text-[#64748b]";
+const tripFlightRouteClassName =
+  "trip-flight-route mb-[18px] grid grid-cols-[86px_minmax(0,1fr)_86px] items-center gap-2.5 max-[767px]:[.account-page--portal-new-trip_&]:grid-cols-[58px_minmax(0,1fr)_58px] [&_div]:grid [&_div]:gap-0.5 [&_div:last-child]:text-right [&_span]:text-xs [&_span]:text-[#64748b] [&_strong]:text-[21px] [&_strong]:leading-6 [&_strong]:text-[#111827]";
+const tripFlightLineClassName =
+  "trip-flight-line relative grid h-px place-items-center border-t-2 border-dashed border-[rgb(100_116_139_/_0.42)] before:absolute before:left-0 before:top-[-5px] before:size-2.5 before:rounded-full before:bg-[#3f7194] before:content-[''] after:absolute after:right-0 after:top-[-5px] after:size-2.5 after:rounded-full after:bg-[#3f7194] after:content-[''] [&_.icon]:size-7 [&_.icon]:bg-white [&_.icon]:p-1 [&_.icon]:text-[#3f7194]";
+const tripPreviewDestinationRowClassName =
+  "trip-preview-destination-row grid gap-2.5 [&>span]:text-xs [&>span]:font-black [&>span]:uppercase [&>span]:text-[#64748b] [&>div]:grid [&>div]:grid-cols-3 [&>div]:gap-2.5 max-[767px]:[.account-page--portal-new-trip_&>div]:grid-cols-1";
+const tripTicketStubClassName =
+  "trip-ticket-stub relative grid min-h-[504px] content-start gap-[22px] rounded-xl border-l border-dashed border-[rgb(100_116_139_/_0.34)] bg-[rgb(255_255_255_/_0.96)] p-7 max-[767px]:[.account-page--portal-new-trip_&]:grid-cols-2 max-[767px]:[.account-page--portal-new-trip_&]:gap-3.5 max-[767px]:[.account-page--portal-new-trip_&]:border-l-0 max-[767px]:[.account-page--portal-new-trip_&]:border-t max-[767px]:[.account-page--portal-new-trip_&]:p-[18px] max-[767px]:[.account-page--portal-new-trip_&]:min-h-0 [&>div]:grid [&>div]:gap-[7px] [&>div_span]:text-xs [&>div_span]:text-[#64748b] [&>div_strong]:text-lg [&>div_strong]:leading-6 [&>div_strong]:text-[#111827] [&>.icon]:size-8 [&>.icon]:justify-self-end [&>.icon]:text-[#4b6b70] [&>.icon]:-rotate-[35deg] max-[767px]:[.account-page--portal-new-trip_&>.icon]:size-[26px] max-[767px]:[.account-page--portal-new-trip_&>.icon]:justify-self-start max-[767px]:[.account-page--portal-new-trip_&>div_strong]:text-[15px] max-[767px]:[.account-page--portal-new-trip_&>div_strong]:leading-5";
+const tripTicketBarcodeClassName =
+  "trip-ticket-barcode mt-[34px] h-[142px] w-[58px] justify-self-end bg-[repeating-linear-gradient(90deg,#111827_0_2px,transparent_2px_4px,#111827_4px_5px,transparent_5px_9px)] max-[767px]:[.account-page--portal-new-trip_&]:col-start-2 max-[767px]:[.account-page--portal-new-trip_&]:row-span-3 max-[767px]:[.account-page--portal-new-trip_&]:row-start-2 max-[767px]:[.account-page--portal-new-trip_&]:mt-0 max-[767px]:[.account-page--portal-new-trip_&]:h-[108px] max-[767px]:[.account-page--portal-new-trip_&]:w-12";
+const tripPreviewInspirationClassName =
+  "trip-preview-inspiration relative mx-[-14px] grid gap-2.5 border-t border-[var(--color-border)] bg-[rgb(255_255_255_/_0.62)] px-4 pb-5 pt-4 max-[767px]:[.account-page--portal-new-trip_&]:mx-[-12px] [&>div]:relative [&>div]:grid [&>div]:gap-0.5 [&>div>span]:text-xs [&>div>span]:font-bold [&>div>span]:text-[#64748b] [&>div>strong]:text-[17px] [&>div>strong]:leading-5 [&>div>strong]:text-[var(--color-text)] [&>ul]:m-0 [&>ul]:mt-2.5 [&>ul]:grid [&>ul]:list-none [&>ul]:grid-cols-4 [&>ul]:gap-3.5 [&>ul]:p-0 max-[767px]:[.account-page--portal-new-trip_&>ul]:grid-cols-1";
+const tripInspirationControlsClassName =
+  "trip-inspiration-controls absolute right-0.5 top-0 flex gap-2.5 [&_button]:grid [&_button]:size-9 [&_button]:cursor-pointer [&_button]:place-items-center [&_button]:rounded-[9px] [&_button]:border [&_button]:border-[var(--color-border)] [&_button]:bg-white [&_button]:p-[9px] [&_button]:text-[#334155] [&_.icon]:size-[18px]";
+const tripInspirationItemClassName =
+  "grid min-w-0 gap-0 overflow-hidden rounded-[9px] border border-[var(--color-border)] bg-[var(--color-surface)] p-0 max-[767px]:[.account-page--portal-new-trip_&]:grid-cols-[78px_minmax(0,1fr)] [&>div]:grid [&>div]:min-w-0 [&>div]:gap-0.5 [&>div]:p-2.5 [&_strong]:overflow-hidden [&_strong]:text-ellipsis [&_strong]:whitespace-nowrap [&_strong]:text-[13px] [&_strong]:leading-4 [&_strong]:text-[var(--color-text)] [&_small]:text-[10px] [&_small]:font-[750] [&_small]:leading-[14px] [&_small]:text-[var(--color-text-muted)]";
+const tripInspirationSwatchClassName =
+  "min-h-[170px] rounded-none bg-[linear-gradient(145deg,color-mix(in_srgb,var(--card-accent)_24%,white),transparent),linear-gradient(45deg,rgb(255_255_255_/_0.18)_25%,transparent_25%_50%,rgb(255_255_255_/_0.18)_50%_75%,transparent_75%),color-mix(in_srgb,var(--card-accent)_18%,var(--color-surface-subtle))] bg-[length:auto,18px_18px,auto] max-[767px]:[.account-page--portal-new-trip_&]:min-h-[72px]";
+const portalFeatureCardClassName = cn(accountCardClassName, "portal-feature-card col-span-2 max-[767px]:col-auto");
+const portalSettingsCardClassName = cn(accountCardClassName, "account-settings-card col-span-2 max-[767px]:col-auto");
+const accountPanelHeadingClassName =
+  "account-panel-heading flex min-w-0 items-center gap-3 max-[767px]:flex-wrap max-[767px]:items-start [&>div]:max-[767px]:min-w-0 [&_small]:text-[13px] [&_small]:leading-5 [&_small]:text-[var(--color-text-muted)] max-[767px]:[&_small]:[overflow-wrap:anywhere] [&_span[aria-hidden=true]]:grid [&_span[aria-hidden=true]]:size-9 [&_span[aria-hidden=true]]:shrink-0 [&_span[aria-hidden=true]]:place-items-center [&_span[aria-hidden=true]]:rounded-[var(--radius-md)] [&_span[aria-hidden=true]]:bg-[var(--color-primary-soft)] [&_span[aria-hidden=true]]:text-[var(--color-primary-strong)] [&_strong]:block [&_strong]:text-[var(--color-text)]";
+const accountStatGridClassName = "account-stat-grid grid grid-cols-2 gap-2.5 max-[767px]:grid-cols-1";
+const accountSettingsGridClassName = "account-settings-grid grid grid-cols-2 gap-2.5";
+const accountSettingLineClassName =
+  "account-setting-line grid min-h-[66px] content-center gap-0.5 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-subtle)] p-2.5 [&_span]:text-xs [&_span]:font-extrabold [&_span]:text-[var(--color-text-muted)] [&_strong]:text-sm [&_strong]:text-[var(--color-text)]";
+const portalSectionToplineClassName =
+  "portal-section-topline flex min-w-0 items-start justify-between gap-3 max-[767px]:flex-wrap [&_.account-panel-heading]:flex-auto [&>.button]:max-[767px]:w-full [&>button]:max-[767px]:w-full";
+const accountProfileRowClassName =
+  "account-profile-row flex min-w-0 items-center gap-3 max-[767px]:flex-wrap max-[767px]:items-start [&>.badge]:ml-auto max-[767px]:[&>.badge]:ml-0 [&>div]:max-[767px]:min-w-0 [&_span]:text-[13px] [&_span]:leading-5 [&_span]:text-[var(--color-text-muted)] max-[767px]:[&_span]:[overflow-wrap:anywhere] [&_strong]:block [&_strong]:text-[var(--color-text)]";
+const accountTripListClassName = "account-trip-list grid gap-2";
+const accountTripRowClassName =
+  "account-trip-row flex min-h-[62px] min-w-0 items-center gap-3 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-subtle)] p-2.5 text-inherit no-underline transition-[border-color,background] duration-[180ms] ease-out hover:border-[color-mix(in_srgb,var(--color-primary)_32%,var(--color-border))] hover:bg-[color-mix(in_srgb,var(--color-primary-soft)_52%,var(--color-surface))] focus-visible:border-[color-mix(in_srgb,var(--color-primary)_32%,var(--color-border))] focus-visible:bg-[color-mix(in_srgb,var(--color-primary-soft)_52%,var(--color-surface))] focus-visible:outline-none max-[767px]:flex-wrap max-[767px]:items-start [&>.badge]:ml-auto max-[767px]:[&>.badge]:ml-0 [&>div]:max-[767px]:min-w-0 [&_span]:text-[13px] [&_span]:leading-5 [&_span]:text-[var(--color-text-muted)] max-[767px]:[&_span]:[overflow-wrap:anywhere] [&_strong]:block [&_strong]:text-[var(--color-text)]";
+const accountTripIconClassName =
+  "account-trip-icon grid size-9 shrink-0 place-items-center rounded-[var(--radius-md)] bg-[var(--color-primary-soft)] text-[var(--color-primary-strong)]";
+const accountEmptyClassName = "account-empty text-[13px] leading-5 text-[var(--color-text-muted)]";
+const cloudProviderPanelClassName = "cloud-provider-panel grid gap-3 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface-subtle)] p-3.5 [&_span]:block [&_span]:text-[13px] [&_span]:leading-5 [&_span]:text-[var(--color-text-muted)] [&_strong]:block [&_strong]:text-[var(--color-text)]";
+const cloudProviderGridClassName = "cloud-provider-grid grid grid-cols-4 gap-2 max-[767px]:grid-cols-2";
+const cloudProviderButtonClassName = "cloud-provider-button inline-flex min-h-[46px] cursor-pointer items-center justify-center gap-2 rounded-[var(--radius-md)] border border-[var(--color-border-strong)] bg-[var(--color-surface)] text-xs font-[850] text-[var(--color-text)] transition-[border-color,background,color] duration-[180ms] hover:border-[var(--color-primary)] hover:bg-[var(--color-primary-soft)] hover:text-[var(--color-primary-strong)] focus-visible:border-[var(--color-primary)] focus-visible:bg-[var(--color-primary-soft)] focus-visible:text-[var(--color-primary-strong)]";
+const settingsProfilePreviewClassName = "settings-profile-preview grid grid-cols-[46px_minmax(0,1fr)] items-center gap-3 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface-subtle)] p-3.5 [&_span]:block [&_span]:text-[13px] [&_span]:leading-5 [&_span]:text-[var(--color-text-muted)] [&_strong]:block [&_strong]:text-[var(--color-text)]";
+const portalSearchClassName =
+  "portal-search grid min-h-[46px] grid-cols-[20px_minmax(0,1fr)] items-center gap-2.5 rounded-[var(--radius-md)] border border-[var(--color-border-strong)] bg-[var(--color-surface)] px-3 text-[var(--color-text-muted)] [&_input]:min-w-0 [&_input]:border-0 [&_input]:bg-transparent [&_input]:font-[inherit] [&_input]:font-[750] [&_input]:text-[var(--color-text)] [&_input]:outline-0";
+const portalMapPreviewClassName =
+  "portal-map-preview relative min-h-[220px] overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[linear-gradient(90deg,rgb(15_23_42_/_0.06)_1px,transparent_1px),linear-gradient(0deg,rgb(15_23_42_/_0.06)_1px,transparent_1px),radial-gradient(circle_at_24%_30%,rgb(20_184_166_/_0.18),transparent_24%),radial-gradient(circle_at_76%_68%,rgb(59_130_246_/_0.16),transparent_26%),var(--color-surface-subtle)] bg-[length:34px_34px,34px_34px,auto,auto,auto] max-[767px]:min-h-[180px]";
+const portalMapPinClassName =
+  "portal-map-pin absolute left-[var(--pin-x)] top-[var(--pin-y)] z-[1] grid size-[34px] place-items-center rounded-full border border-[var(--color-primary-border)] bg-[var(--color-surface)] text-[var(--color-primary-strong)] shadow-[var(--shadow-soft)]";
+const accountDeviceListClassName = "account-device-list grid gap-2";
+const accountDeviceRowClassName =
+  "account-device-row flex min-w-0 items-center justify-between gap-3 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-subtle)] p-2.5 max-[767px]:flex-wrap max-[767px]:items-start [&>.button]:w-auto [&>.button]:min-w-[124px] [&>.button]:shrink-0 max-[767px]:[&>.button]:w-full [&>div]:max-[767px]:min-w-0 [&_span]:block [&_span]:text-xs [&_span]:leading-[18px] [&_span]:text-[var(--color-text-muted)] max-[767px]:[&_span]:[overflow-wrap:anywhere] [&_strong]:block";
+const accountFormClassName =
+  "account-form [&_input]:min-h-[46px] [&_input]:w-full [&_input]:rounded-[var(--radius-md)] [&_input]:border [&_input]:border-[var(--color-border-strong)] [&_input]:bg-[var(--color-surface)] [&_input]:px-3 [&_input]:text-[var(--color-text)] [&_input]:transition-[border-color,box-shadow,background] [&_input]:duration-[180ms] [&_input]:ease-out [&_input:focus]:border-[var(--color-primary)] [&_input:focus]:shadow-[0_0_0_4px_rgb(15_118_110_/_0.12)] [&_input:hover]:border-[color-mix(in_srgb,var(--color-primary)_36%,var(--color-border-strong))] [&_label]:grid [&_label]:gap-1.5 [&_label]:text-[13px] [&_label]:font-bold [&_label]:text-[var(--color-text-muted)] [&_select]:min-h-[46px] [&_select]:w-full [&_select]:rounded-[var(--radius-md)] [&_select]:border [&_select]:border-[var(--color-border-strong)] [&_select]:bg-[var(--color-surface)] [&_select]:px-3 [&_select]:text-[var(--color-text)] [&_select]:transition-[border-color,box-shadow,background] [&_select]:duration-[180ms] [&_select]:ease-out [&_select:focus]:border-[var(--color-primary)] [&_select:focus]:shadow-[0_0_0_4px_rgb(15_118_110_/_0.12)] [&_select:hover]:border-[color-mix(in_srgb,var(--color-primary)_36%,var(--color-border-strong))]";
+const accountCheckClassName =
+  "account-check grid grid-cols-[auto_minmax(0,1fr)] items-center [&_input]:min-h-[18px] [&_input]:w-[18px]";
+const accountTwoColClassName =
+  "account-two-col grid grid-cols-2 gap-2.5 max-[767px]:grid-cols-1 [&_label]:grid [&_label]:gap-1.5 [&_label]:text-[13px] [&_label]:font-bold [&_label]:text-[var(--color-text-muted)]";
+const accountSettingsFormClassName = cn(accountFormClassName, "account-settings-form grid gap-3");
+const accountLoginFlowClassName = "account-login-flow grid w-[min(100%,560px)] justify-self-center gap-3";
+const accountEntryLoginFlowClassName =
+  "col-start-2 row-start-3 w-[min(100%,520px)] self-start justify-self-center gap-[22px] rounded-[14px] border border-[var(--color-border)] bg-[rgb(255_255_255_/_0.96)] p-[clamp(24px,3vw,34px)] shadow-[0_24px_54px_rgb(15_23_42_/_0.1)] max-[767px]:col-start-1 max-[767px]:row-start-1 max-[767px]:mt-[76px] max-[767px]:w-[min(100%,460px)]";
+const accountAuthCardClassName = cn(
+  accountCardClassName,
+  "account-auth-card !gap-4 !overflow-visible !border-0 !bg-transparent !p-0 !shadow-none",
+  accountFormClassName,
+);
+const accountStepKickerClassName = "account-step-kicker block text-xs font-[850] leading-[18px] text-[var(--color-text-muted)]";
+const accountStepStageClassName =
+  "account-step-stage grid gap-4 overflow-visible [animation-duration:260ms] [animation-fill-mode:both] [animation-timing-function:cubic-bezier(0.2,0.72,0.28,1)] motion-reduce:animate-none";
+const accountStepStageDirectionClassNames = {
+  back: "account-step-stage--back animate-[account-step-in-back]",
+  forward: "account-step-stage--forward animate-[account-step-in-forward]",
+  mode: "account-step-stage--mode animate-[account-step-in-mode] [animation-duration:190ms] [animation-timing-function:cubic-bezier(0.16,0.72,0.24,1)]",
+} satisfies Record<AuthTransitionDirection, string>;
+const accountStepSummaryClassName =
+  "account-step-summary grid gap-1 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-primary-soft)] p-3 text-[13px] font-[750] text-[var(--color-text-muted)] [&_strong]:min-w-0 [&_strong]:[overflow-wrap:anywhere] [&_strong]:text-[15px] [&_strong]:text-[var(--color-primary-strong)]";
+const accountFlowSwitchClassName =
+  "account-flow-switch m-0 text-center text-[13px] font-[750] text-[var(--color-text-muted)] [&_a]:cursor-pointer [&_a]:border-0 [&_a]:bg-transparent [&_a]:p-0 [&_a]:font-[inherit] [&_a]:font-[850] [&_a]:text-[var(--color-primary-strong)] [&_a]:no-underline [&_a:focus-visible]:underline [&_a:hover]:underline [&_button]:cursor-pointer [&_button]:border-0 [&_button]:bg-transparent [&_button]:p-0 [&_button]:font-[inherit] [&_button]:font-[850] [&_button]:text-[var(--color-primary-strong)] [&_button]:no-underline [&_button:focus-visible]:underline [&_button:hover]:underline";
+const accountSocialBlockClassName = "account-social-block mt-1 grid gap-2.5";
+const accountDividerClassName =
+  "account-divider grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3.5 text-[13px] font-[650] text-[var(--color-text-muted)] before:h-px before:bg-[var(--color-border)] before:content-[''] after:h-px after:bg-[var(--color-border)] after:content-['']";
+const accountSocialButtonClassName =
+  "account-social-button inline-flex min-h-12 items-center justify-center gap-3 rounded-[var(--radius-md)] border border-[var(--color-border-strong)] bg-[rgb(255_255_255_/_0.72)] text-sm font-[850] text-[var(--color-text)] disabled:cursor-not-allowed disabled:opacity-[0.52]";
+const accountSocialGlyphClassName =
+  "account-social-glyph grid size-[22px] place-items-center rounded-full bg-white text-[13px] font-black";
+const accountSocialGlyphGoogleClassName = cn(accountSocialGlyphClassName, "account-social-glyph--google text-[#4285f4]");
+const accountSocialGlyphAppleClassName = cn(accountSocialGlyphClassName, "account-social-glyph--apple text-[#111827]");
 
 interface TripCountryOption {
   code: string;
@@ -297,41 +578,41 @@ export function AccountAccessPanel({
 
   return (
     <main
-      className={[
-        "account-page",
-        isAccountEntry ? "account-page--entry" : "",
-        isPortalEntry ? "account-page--portal" : "",
-        effectiveAccessMode === "trip-access" ? "account-page--trip-access" : "",
-        isPortalEntry && portalSection === "new-trip" ? "account-page--portal-new-trip" : "",
-      ].filter(Boolean).join(" ")}
+      className={cn(
+        accountPageClassName,
+        isAccountEntry ? accountEntryPageClassName : "",
+        isPortalEntry ? accountPortalPageClassName : "",
+        isTripAccessEntry ? accountTripAccessPageClassName : "",
+        isPortalEntry && portalSection === "new-trip" ? accountPortalNewTripPageClassName : "",
+      )}
       aria-label={mainLabel(effectiveEntryAccessMode, t.access.mainLabels)}
     >
-      <section className={["account-shell", isAccountEntry ? "account-shell--entry" : ""].filter(Boolean).join(" ")}>
-        {isAccountEntry ? <LanguageSwitch className="access-language-switch account-entry-language-switch" /> : null}
-        {isTripAccessEntry ? <LanguageSwitch className="access-language-switch account-entry-language-switch trip-access-language-switch" /> : null}
-        {!isTripAccessEntry ? <div className="account-hero">
-          <div className="join-mark account-hero-mark" aria-hidden="true">
+      <section className={cn(accountShellClassName, isAccountEntry ? accountEntryShellClassName : "", isPortalEntry ? accountPortalShellClassName : "", isPortalEntry && portalSection === "new-trip" ? accountPortalNewTripShellClassName : "", isTripAccessEntry ? accountTripAccessShellClassName : "")}>
+        {isAccountEntry ? <LanguageSwitch className={cn(accessLanguageSwitchClassName, accountEntryLanguageSwitchClassName)} /> : null}
+        {isTripAccessEntry ? <LanguageSwitch className={cn(accessLanguageSwitchClassName, accountEntryLanguageSwitchClassName, tripAccessLanguageSwitchClassName)} /> : null}
+        {!isTripAccessEntry ? <div className={cn(accountHeroClassName, isPortalEntry ? accountPortalHeroClassName : "")}>
+          <div className={cn(accountHeroMarkClassName, isPortalEntry ? accountPortalHeroMarkClassName : "")} aria-hidden="true">
             <Icon name="route" />
           </div>
           <div>
-            <p className="join-eyebrow">{isAccountEntry ? t.access.entryHero.brand : t.access.eyebrow}</p>
-            {isAccountEntry ? <p className="account-entry-brand-tagline">{t.access.entryHero.tagline}</p> : null}
+            <p className={accountHeroEyebrowClassName}>{isAccountEntry ? t.access.entryHero.brand : t.access.eyebrow}</p>
+            {isAccountEntry ? <p className={accountEntryBrandTaglineClassName}>{t.access.entryHero.tagline}</p> : null}
             <h1>{isAccountEntry ? t.access.entryHero.title : heroTitle(effectiveEntryAccessMode, t.access.titles)}</h1>
             <div className="h-6"></div>
             <p>{isAccountEntry ? t.access.entryHero.detail : heroDetail(effectiveEntryAccessMode, t.access.details)}</p>
-            {isAccountEntry ? null : <LanguageSwitch className="access-language-switch" />}
+            {isAccountEntry ? null : <LanguageSwitch className={cn(accessLanguageSwitchClassName, isPortalEntry ? accountPortalLanguageSwitchClassName : "")} />}
           </div>
           {isAccountEntry ? <AuthTravelCollage labels={t.access.entryHero} /> : null}
           {isAccountEntry ? <AuthHighlights flow={entryFlow} highlights={t.access.highlights} entryHero={t.access.entryHero} /> : null}
         </div> : null}
 
         {effectiveAccessMode === "combined" ? (
-          <div className="account-mode-tabs" role="tablist" aria-label={t.access.tabs.label}>
+          <div className={accountModeTabsClassName} role="tablist" aria-label={t.access.tabs.label}>
             <button
               type="button"
               role="tab"
               aria-selected={mode === "account"}
-              className={mode === "account" ? "account-tab account-tab--active" : "account-tab"}
+              className={cn(accountTabClassName, mode === "account" ? accountTabActiveClassName : "")}
               onClick={() => setSelectedMode("account")}
             >
               <Icon name="users" />
@@ -341,7 +622,7 @@ export function AccountAccessPanel({
               type="button"
               role="tab"
               aria-selected={mode === "temp"}
-              className={mode === "temp" ? "account-tab account-tab--active" : "account-tab"}
+              className={cn(accountTabClassName, mode === "temp" ? accountTabActiveClassName : "")}
               onClick={() => setSelectedMode("temp")}
             >
               <Icon name="clock" />
@@ -351,7 +632,7 @@ export function AccountAccessPanel({
         ) : null}
 
         {isAccountEntry && (message || displayError) ? (
-          <div className="account-toast-stack" aria-live="polite">
+          <div className={accountToastStackClassName} aria-live="polite">
             {message ? <StatusMessage tone="success">{message}</StatusMessage> : null}
             {displayError ? <StatusMessage tone="danger">{displayError}</StatusMessage> : null}
           </div>
@@ -366,6 +647,7 @@ export function AccountAccessPanel({
             embedded
             initialJoinCode={initialJoinCode}
             trip={trip}
+            variant={isTripAccessEntry ? "trip-access" : "default"}
             onAuthenticated={onAuthenticated}
             onCockpitLoaded={onCockpitLoaded}
             onTripChange={onTripChange}
@@ -452,13 +734,13 @@ function AuthTravelCollage({ labels }: { labels: Messages["access"]["entryHero"]
   return (
     <div className="account-travel-collage" aria-label={labels.collageLabel}>
       {photos.map((photo) => (
-        <figure className={`travel-photo-card travel-photo-card--${photo.id}`} key={photo.id}>
-          <Image alt={photo.alt} className="travel-photo-image" fill sizes="220px" src={`/landing/auth/photo-${photo.id}.png`} />
-          <span className="travel-photo-heart" aria-hidden="true" />
-          <figcaption className="travel-photo-caption">{photo.label}</figcaption>
+        <figure className={cn(travelPhotoCardClassName, travelPhotoCardVariants[photo.id])} key={photo.id}>
+          <Image alt={photo.alt} className={travelPhotoImageClassName} fill sizes="220px" src={`/landing/auth/photo-${photo.id}.png`} />
+          <span className={travelPhotoHeartClassName} aria-hidden="true" />
+          <figcaption className={travelPhotoCaptionClassName}>{photo.label}</figcaption>
         </figure>
       ))}
-      <span className="travel-next-card">
+      <span className={travelNextCardClassName}>
         <Icon name="location" />
         <span>
           <small>{labels.nextLabel}</small>
@@ -491,16 +773,16 @@ function AuthHighlights({
     : null;
 
   return (
-    <ul className="account-auth-highlights" aria-label={highlights.label}>
-      <li className="account-auth-highlight">
+    <ul className={accountAuthHighlightsClassName} aria-label={highlights.label}>
+      <li className={accountAuthHighlightClassName}>
         <Icon name="check" />
         <span>{entryItems ? <><strong>{entryItems[0].title}</strong><small>{entryItems[0].detail}</small></> : items[0]}</span>
       </li>
-      <li className="account-auth-highlight">
+      <li className={accountAuthHighlightClassName}>
         <Icon name="clock" />
         <span>{entryItems ? <><strong>{entryItems[1].title}</strong><small>{entryItems[1].detail}</small></> : items[1]}</span>
       </li>
-      <li className="account-auth-highlight">
+      <li className={accountAuthHighlightClassName}>
         <Icon name="key" />
         <span>{entryItems ? <><strong>{entryItems[2].title}</strong><small>{entryItems[2].detail}</small></> : items[2]}</span>
       </li>
@@ -514,24 +796,24 @@ function AccountPortalLoadingFrame({ portalSection }: { portalSection: PortalSec
   const cachedEmail = accountPortalDataCache?.settings?.profile.primaryEmail ?? t.access.dashboard.noEmail;
 
   return (
-    <div className="account-dashboard" id="account-portal" aria-busy="true">
-      <nav className="portal-nav" aria-label={t.access.portal.nav.label}>
-        <div className="portal-nav-brand">
+    <div className={accountDashboardClassName} id="account-portal" aria-busy="true">
+      <nav className={portalNavClassName} aria-label={t.access.portal.nav.label}>
+        <div className={portalNavBrandClassName}>
           <div>
             <strong>{t.access.portal.title}</strong>
             <span>{cachedEmail}</span>
           </div>
         </div>
-        <div className="portal-nav-links">
+        <div className={portalNavLinksClassName}>
           {portalNavItems.map((item) => (
-            <Link href={item.href} key={item.href} className={item.id === portalSection ? "portal-nav-link portal-nav-link--active" : "portal-nav-link"} aria-current={item.id === portalSection ? "page" : undefined}>
+            <Link href={item.href} key={item.href} className={cn(portalNavLinkClassName, item.id === portalSection ? portalNavLinkActiveClassName : "")} aria-current={item.id === portalSection ? "page" : undefined}>
               <Icon name={item.icon} />
               <span>{item.label}</span>
             </Link>
           ))}
           <Link
             href={appRoutes.portalSignOut()}
-            className={portalSection === "sign-out" ? "portal-nav-link portal-nav-link--active" : "portal-nav-link"}
+            className={cn(portalNavLinkClassName, portalSection === "sign-out" ? portalNavLinkActiveClassName : "")}
             aria-current={portalSection === "sign-out" ? "page" : undefined}
           >
             <Icon name="x" />
@@ -539,11 +821,11 @@ function AccountPortalLoadingFrame({ portalSection }: { portalSection: PortalSec
           </Link>
         </div>
       </nav>
-      <div className="portal-content">
-        <section className="account-card portal-loading-card">
-          <span className="portal-skeleton portal-skeleton--title" />
-          <span className="portal-skeleton portal-skeleton--line" />
-          <span className="portal-skeleton portal-skeleton--block" />
+      <div className={portalContentClassName}>
+        <section className={portalLoadingCardClassName}>
+          <span className={portalSkeletonTitleClassName} />
+          <span className={portalSkeletonLineClassName} />
+          <span className={portalSkeletonBlockClassName} />
         </section>
       </div>
     </div>
@@ -823,27 +1105,27 @@ function EmailLoginPanel({
     : t.access.emailLogin.stepLogin({ current: visualStep === "email" ? 1 : visualStep === "methods" || visualStep === "password" ? 2 : 3, total: 3 });
 
   const trustDeviceFields = (
-    <label className="account-check">
+    <label className={accountCheckClassName}>
       <input checked={trustDevice} onChange={(event) => setTrustDevice(event.target.checked)} type="checkbox" suppressHydrationWarning />
       {t.access.emailLogin.trustDevice}
     </label>
   );
 
   return (
-    <div className="account-login-flow">
+    <div className={cn(accountLoginFlowClassName, showRouteTabs ? accountEntryLoginFlowClassName : "")}>
       {showRouteTabs ? (
-        <nav className="account-entry-tabs" aria-label={t.access.mainLabels.combined}>
-          <button type="button" className={activeFlow === "login" ? "account-entry-tab account-entry-tab--active" : "account-entry-tab"} aria-current={activeFlow === "login" ? "page" : undefined} onClick={() => switchFlow("login")}>
+        <nav className={accountEntryTabsClassName} aria-label={t.access.mainLabels.combined}>
+          <button type="button" className={cn(accountEntryTabClassName, activeFlow === "login" ? accountEntryTabActiveClassName : "")} aria-current={activeFlow === "login" ? "page" : undefined} onClick={() => switchFlow("login")}>
             {t.access.titles.accountLogin}
           </button>
-          <button type="button" className={activeFlow === "register" ? "account-entry-tab account-entry-tab--active" : "account-entry-tab"} aria-current={activeFlow === "register" ? "page" : undefined} onClick={() => switchFlow("register")}>
+          <button type="button" className={cn(accountEntryTabClassName, activeFlow === "register" ? accountEntryTabActiveClassName : "")} aria-current={activeFlow === "register" ? "page" : undefined} onClick={() => switchFlow("register")}>
             {t.access.titles.accountRegister}
           </button>
         </nav>
       ) : null}
-      <form className="account-card account-form account-auth-card" onSubmit={authStep === "setup" ? submitSetup : challenge ? submitCode : authStep === "password" ? submitPassword : submitEmail}>
-        <span className="account-step-kicker">{stepLabel}</span>
-        <div className={`account-step-stage account-step-stage--${transitionDirection}`} key={visualStep}>
+      <form className={accountAuthCardClassName} onSubmit={authStep === "setup" ? submitSetup : challenge ? submitCode : authStep === "password" ? submitPassword : submitEmail}>
+        <span className={accountStepKickerClassName}>{stepLabel}</span>
+        <div className={cn(accountStepStageClassName, accountStepStageDirectionClassNames[transitionDirection])} key={visualStep}>
           <PanelHeading
             icon={challenge ? "settings" : authStep === "password" ? "key" : "users"}
             title={challenge ? t.access.emailLogin.verifyTitle : authStep === "setup" ? t.access.emailLogin.setupTitle : authStep === "methods" ? t.access.emailLogin.methodTitle : authStep === "password" ? t.access.emailLogin.passwordTitle : t.access.emailLogin.emailTitle}
@@ -861,7 +1143,7 @@ function EmailLoginPanel({
           />
           {challenge ? (
             <>
-            <div className="account-step-summary">
+            <div className={accountStepSummaryClassName}>
               <span>{t.access.emailLogin.sentCodeTo}</span>
               <strong>{normalizedEmail}</strong>
             </div>
@@ -897,7 +1179,7 @@ function EmailLoginPanel({
             </>
           ) : authStep === "methods" ? (
             <>
-            <div className="account-step-summary">
+            <div className={accountStepSummaryClassName}>
               <span>{activeFlow === "register" ? t.access.emailLogin.createFor : t.access.emailLogin.signInAs}</span>
               <strong>{normalizedEmail}</strong>
             </div>
@@ -921,7 +1203,7 @@ function EmailLoginPanel({
             </>
           ) : authStep === "setup" ? (
             <>
-            <div className="account-step-summary">
+            <div className={accountStepSummaryClassName}>
               <span>{t.access.emailLogin.createFor}</span>
               <strong>{normalizedEmail}</strong>
             </div>
@@ -940,7 +1222,7 @@ function EmailLoginPanel({
             </>
           ) : (
             <>
-            <div className="account-step-summary">
+            <div className={accountStepSummaryClassName}>
               <span>{activeFlow === "register" ? t.access.emailLogin.createFor : t.access.emailLogin.signInAs}</span>
               <strong>{normalizedEmail}</strong>
             </div>
@@ -974,7 +1256,7 @@ function EmailLoginPanel({
         </div>
       </form>
       {!challenge ? (
-        <p className="account-flow-switch">
+        <p className={accountFlowSwitchClassName}>
           {activeFlow === "register" ? (
             <>
               {t.access.emailLogin.hasAccount} <button type="button" onClick={() => switchFlow("login")}>{t.access.emailLogin.signInLink}</button>
@@ -992,15 +1274,15 @@ function EmailLoginPanel({
 
 function SocialAuthButtons({ labels }: { labels: Messages["access"]["emailLogin"] }) {
   return (
-    <div className="account-social-block" aria-label={labels.socialLabel}>
-      <div className="account-divider"><span>{labels.socialDivider}</span></div>
+    <div className={accountSocialBlockClassName} aria-label={labels.socialLabel}>
+      <div className={accountDividerClassName}><span>{labels.socialDivider}</span></div>
       <p className="sr-only" id="account-social-disabled-hint">{labels.socialDisabledHint}</p>
-      <button className="account-social-button" type="button" disabled aria-describedby="account-social-disabled-hint" title={labels.socialDisabledHint}>
-        <span className="account-social-glyph account-social-glyph--google">G</span>
+      <button className={accountSocialButtonClassName} type="button" disabled aria-describedby="account-social-disabled-hint" title={labels.socialDisabledHint}>
+        <span className={accountSocialGlyphGoogleClassName}>G</span>
         {labels.google}
       </button>
-      <button className="account-social-button" type="button" disabled aria-describedby="account-social-disabled-hint" title={labels.socialDisabledHint}>
-        <span className="account-social-glyph account-social-glyph--apple">A</span>
+      <button className={accountSocialButtonClassName} type="button" disabled aria-describedby="account-social-disabled-hint" title={labels.socialDisabledHint}>
+        <span className={accountSocialGlyphAppleClassName}>A</span>
         {labels.apple}
       </button>
     </div>
@@ -1129,24 +1411,24 @@ function AccountDashboard({
   }, [currentPortalSectionIndex]);
 
   return (
-    <div className="account-dashboard" id="account-portal" data-transition-direction={transitionDirection}>
-      <nav className="portal-nav" aria-label={t.access.portal.nav.label}>
-        <div className="portal-nav-brand">
+    <div className={accountDashboardClassName} id="account-portal" data-transition-direction={transitionDirection}>
+      <nav className={portalNavClassName} aria-label={t.access.portal.nav.label}>
+        <div className={portalNavBrandClassName}>
           <div>
             <strong>{t.access.portal.title}</strong>
             <span>{settings?.profile.primaryEmail ?? t.access.dashboard.noEmail}</span>
           </div>
         </div>
-        <div className="portal-nav-links">
+        <div className={portalNavLinksClassName}>
           {portalNavItems.map((item) => (
-            <Link href={item.href} key={item.href} className={item.id === activePortalSection ? "portal-nav-link portal-nav-link--active" : "portal-nav-link"} aria-current={item.id === activePortalSection ? "page" : undefined}>
+            <Link href={item.href} key={item.href} className={cn(portalNavLinkClassName, item.id === activePortalSection ? portalNavLinkActiveClassName : "")} aria-current={item.id === activePortalSection ? "page" : undefined}>
               <Icon name={item.icon} />
               <span>{item.label}</span>
             </Link>
           ))}
           <Link
             href={appRoutes.portalSignOut()}
-            className={activePortalSection === "sign-out" ? "portal-nav-link portal-nav-link--active" : "portal-nav-link"}
+            className={cn(portalNavLinkClassName, activePortalSection === "sign-out" ? portalNavLinkActiveClassName : "")}
             aria-current={activePortalSection === "sign-out" ? "page" : undefined}
           >
             <Icon name="x" />
@@ -1155,11 +1437,11 @@ function AccountDashboard({
         </div>
       </nav>
 
-      <div className="portal-content">
-        {portalSection === "dashboard" ? <section className="account-card account-profile-card" id="portal-dashboard">
+      <div className={portalContentClassName}>
+        {portalSection === "dashboard" ? <section className={portalProfileCardClassName} id="portal-dashboard">
           <PanelHeading icon="home" title={t.access.portal.sections.dashboard.title} detail={t.access.portal.sections.dashboard.detail} />
-          <div className="account-profile-row">
-            <span className="person-avatar" style={{ backgroundColor: settings?.profile.avatarColor ?? "#0f766e" }} aria-hidden="true">
+          <div className={accountProfileRowClassName}>
+            <span className={accountAvatarClassName} style={{ backgroundColor: settings?.profile.avatarColor ?? "#0f766e" }} aria-hidden="true">
               {(settings?.profile.displayName ?? t.access.dashboard.fallbackName).slice(0, 1)}
             </span>
             <div>
@@ -1168,7 +1450,7 @@ function AccountDashboard({
             </div>
             <Badge tone={accountSession.kind === "trusted" ? "success" : "warning"}>{sessionKindLabel}</Badge>
           </div>
-          <div className="account-stat-grid">
+          <div className={accountStatGridClassName}>
             {isLoading && !stats ? (
               <PortalStatSkeleton />
             ) : (
@@ -1182,8 +1464,8 @@ function AccountDashboard({
           </div>
         </section> : null}
 
-        {portalSection === "trips" ? <section className="account-card account-history" id="portal-trips">
-          <div className="portal-section-topline">
+        {portalSection === "trips" ? <section className={portalHistoryCardClassName} id="portal-trips">
+          <div className={portalSectionToplineClassName}>
             <PanelHeading
               icon="calendar"
               title={t.access.portal.sections.trips.title}
@@ -1199,10 +1481,10 @@ function AccountDashboard({
           {isLoading && !trips.length ? (
             <PortalListSkeleton rows={2} />
           ) : trips.length ? (
-            <div className="account-trip-list">
+            <div className={accountTripListClassName}>
               {trips.map((trip) => (
-                <article className="account-trip-row" key={trip.id}>
-                  <span className="account-trip-icon" aria-hidden="true"><Icon name="location" /></span>
+                <article className={accountTripRowClassName} key={trip.id}>
+                  <span className={accountTripIconClassName} aria-hidden="true"><Icon name="location" /></span>
                   <div>
                     <strong>{trip.name}</strong>
                     <span>{trip.destinationLabel} · {trip.startDate} - {trip.endDate}</span>
@@ -1218,12 +1500,12 @@ function AccountDashboard({
               ))}
             </div>
           ) : (
-            <p className="account-empty">{t.access.dashboard.history.empty}</p>
+            <p className={accountEmptyClassName}>{t.access.dashboard.history.empty}</p>
           )}
         </section> : null}
 
-        {portalSection === "new-trip" ? <section className="account-card account-history portal-new-trip-card" id="portal-new-trip">
-          <div className="trip-builder-topbar">
+        {portalSection === "new-trip" ? <section className={cn(portalHistoryCardClassName, portalNewTripCardClassName)} id="portal-new-trip">
+          <div className={tripBuilderTopbarClassName}>
             <Button asChild variant="secondary">
               <Link href={appRoutes.portalMyTrips()}>
                 <Icon name="chevronLeft" />
@@ -1233,6 +1515,7 @@ function AccountDashboard({
             <div>
               <span>Trip builder</span>
               <strong>Create trip</strong>
+              <small>สร้างแผนการเดินทางและเชิญเพื่อนร่วมทริปของคุณ</small>
             </div>
             <Badge tone="neutral">Draft</Badge>
           </div>
@@ -1245,21 +1528,21 @@ function AccountDashboard({
           />
         </section> : null}
 
-        {portalSection === "explorer" ? <section className="account-card portal-feature-card portal-explorer-card" id="portal-explorer">
+        {portalSection === "explorer" ? <section className={cn(portalFeatureCardClassName, "portal-explorer-card")} id="portal-explorer">
           <PanelHeading icon="map" title={t.access.portal.sections.explorer.title} detail="Find shared trips from people in your system." />
           {isLoading && !explorer ? <PortalListSkeleton rows={1} compact /> : (
-            <div className="account-settings-grid">
+            <div className={accountSettingsGridClassName}>
               <SettingLine label={t.access.portal.explorerStats.upcoming} value={`${explorer?.upcomingTrips ?? 0}`} />
               <SettingLine label={t.access.portal.explorerStats.destinations} value={`${explorer?.destinationCount ?? 0}`} />
             </div>
           )}
           {explorer?.nextTrip ? (
-            <div className="account-step-summary">
+            <div className={accountStepSummaryClassName}>
               <span>{t.access.portal.explorerStats.nextTrip}</span>
               <strong>{explorer.nextTrip.name}</strong>
             </div>
           ) : null}
-          <div className="portal-search">
+          <div className={portalSearchClassName}>
             <Icon name="map" />
             <input
               aria-label="Search shared trips"
@@ -1268,10 +1551,10 @@ function AccountDashboard({
               onChange={(event) => setExplorerQuery(event.target.value)}
             />
           </div>
-          <div className="portal-map-preview" aria-label="Shared trip map preview">
+          <div className={portalMapPreviewClassName} aria-label="Shared trip map preview">
             {explorerTrips.slice(0, 4).map((trip, index) => (
               <span
-                className="portal-map-pin"
+                className={portalMapPinClassName}
                 key={trip.id}
                 style={{ "--pin-x": `${22 + index * 17}%`, "--pin-y": `${32 + (index % 2) * 26}%` } as CSSProperties}
                 title={`${trip.name}, ${trip.destinationLabel}`}
@@ -1281,10 +1564,10 @@ function AccountDashboard({
             ))}
           </div>
           {explorerTrips.length ? (
-            <div className="account-trip-list">
+            <div className={accountTripListClassName}>
               {explorerTrips.map((trip) => (
-                <article className="account-trip-row" key={trip.id}>
-                  <span className="account-trip-icon" aria-hidden="true"><Icon name="map" /></span>
+                <article className={accountTripRowClassName} key={trip.id}>
+                  <span className={accountTripIconClassName} aria-hidden="true"><Icon name="map" /></span>
                   <div>
                     <strong>{trip.name}</strong>
                     <span>{trip.destinationLabel} · {trip.startDate} - {trip.endDate}</span>
@@ -1294,19 +1577,19 @@ function AccountDashboard({
               ))}
             </div>
           ) : (
-            <p className="account-empty">No shared trips match this search.</p>
+            <p className={accountEmptyClassName}>No shared trips match this search.</p>
           )}
         </section> : null}
 
-        {portalSection === "todos" ? <section className="account-card portal-feature-card" id="portal-to-dos">
+        {portalSection === "todos" ? <section className={portalFeatureCardClassName} id="portal-to-dos">
           <PanelHeading icon="list" title={t.access.portal.sections.todos.title} detail={t.access.portal.sections.todos.detail} />
           {isLoading && !todos.length ? (
             <PortalListSkeleton rows={1} />
           ) : todos.length ? (
-            <div className="account-trip-list">
+            <div className={accountTripListClassName}>
               {todos.map((todo) => (
-                <article className="account-trip-row" key={todo.id}>
-                  <span className="account-trip-icon" aria-hidden="true"><Icon name="list" /></span>
+                <article className={accountTripRowClassName} key={todo.id}>
+                  <span className={accountTripIconClassName} aria-hidden="true"><Icon name="list" /></span>
                   <div>
                     <strong>{todo.title}</strong>
                     <span>{todo.tripName} · {todo.visibility} · {todo.kind ?? "prep"}</span>
@@ -1316,28 +1599,28 @@ function AccountDashboard({
               ))}
             </div>
           ) : (
-            <p className="account-empty">{t.access.portal.sections.todos.empty}</p>
+            <p className={accountEmptyClassName}>{t.access.portal.sections.todos.empty}</p>
           )}
         </section> : null}
 
-        {portalSection === "vault" ? <section className="account-card portal-feature-card" id="portal-vault">
+        {portalSection === "vault" ? <section className={portalFeatureCardClassName} id="portal-vault">
           <PanelHeading icon="document" title={t.access.portal.sections.vault.title} detail={t.access.portal.sections.vault.detail} />
-          <div className="cloud-provider-panel" aria-label="Cloud provider options">
+          <div className={cloudProviderPanelClassName} aria-label="Cloud provider options">
             <div>
               <strong>Use your own cloud</strong>
               <span>Save links to Google Drive, iCloud, Dropbox, OneDrive, or any private folder. Files stay in your provider; Joii keeps only the link and note.</span>
             </div>
-            <div className="cloud-provider-grid">
+            <div className={cloudProviderGridClassName}>
               {["Google Drive", "iCloud", "Dropbox", "OneDrive"].map((provider) => (
-                <button className="cloud-provider-button" type="button" key={provider}>
+                <button className={cloudProviderButtonClassName} type="button" key={provider}>
                   <Icon name="cloud" />
                   {provider}
                 </button>
               ))}
             </div>
           </div>
-          <form className="account-form account-settings-form" onSubmit={submitVaultItem}>
-            <div className="account-two-col">
+          <form className={accountSettingsFormClassName} onSubmit={submitVaultItem}>
+            <div className={accountTwoColClassName}>
               <label>
                 <span>{t.access.portal.vaultCreate.kind}</span>
                 <select value={vaultForm.kind} onChange={(event) => setVaultForm((current) => ({ ...current, kind: event.target.value as "note" | "file" }))}>
@@ -1368,10 +1651,10 @@ function AccountDashboard({
           {isLoading && !vaultItems.length ? (
             <PortalListSkeleton rows={1} />
           ) : vaultItems.length ? (
-            <div className="account-trip-list">
+            <div className={accountTripListClassName}>
               {vaultItems.map((item) => (
-                <article className="account-trip-row" key={`${item.source}-${item.id}`}>
-                  <span className="account-trip-icon" aria-hidden="true"><Icon name={item.kind === "file" ? "document" : "note"} /></span>
+                <article className={accountTripRowClassName} key={`${item.source}-${item.id}`}>
+                  <span className={accountTripIconClassName} aria-hidden="true"><Icon name={item.kind === "file" ? "document" : "note"} /></span>
                   <div>
                     <strong>{item.title}</strong>
                     <span>{item.tripName ?? t.access.portal.vaultCreate.personal} · {item.detail}</span>
@@ -1381,11 +1664,11 @@ function AccountDashboard({
               ))}
             </div>
           ) : (
-            <p className="account-empty">{t.access.portal.sections.vault.empty}</p>
+            <p className={accountEmptyClassName}>{t.access.portal.sections.vault.empty}</p>
           )}
         </section> : null}
 
-        {portalSection === "settings" ? <section className="account-card account-settings-card" id="portal-settings">
+        {portalSection === "settings" ? <section className={portalSettingsCardClassName} id="portal-settings">
           <PanelHeading icon="settings" title={t.access.settings.title} detail={t.access.settings.detail} />
           {settings ? (
             <AccountSettingsEditor
@@ -1398,7 +1681,7 @@ function AccountDashboard({
               onSettingsChanged={onSettingsChanged}
             />
           ) : (
-            <p className="account-empty">{t.access.settings.loading}</p>
+            <p className={accountEmptyClassName}>{t.access.settings.loading}</p>
           )}
           <Button
             type="button"
@@ -1411,7 +1694,7 @@ function AccountDashboard({
           </Button>
         </section> : null}
 
-        {portalSection === "sign-out" ? <section className="account-card account-profile-card" id="portal-sign-out">
+        {portalSection === "sign-out" ? <section className={portalProfileCardClassName} id="portal-sign-out">
           <PanelHeading icon="x" title={t.access.portal.sections.signOut.title} detail={t.access.portal.sections.signOut.detail} />
           <Button type="button" variant="secondary" onClick={() => void onLogout()}>
             <Icon name="x" />
@@ -1519,23 +1802,23 @@ function PortalTripWizard({
   }
 
   return (
-    <form className="account-form account-settings-form portal-create-trip-inline portal-trip-simple" onSubmit={submitWizard}>
-      <div className="trip-simple-head">
+    <form className={cn(accountSettingsFormClassName, portalCreateTripInlineClassName)} onSubmit={submitWizard}>
+      <div className={tripSimpleHeadClassName}>
         <div>
           <strong>Create trip <Badge tone={canSubmit ? "success" : "neutral"}>{canSubmit ? "Ready" : "Draft"}</Badge></strong>
           <p>สร้างแผนการเดินทางและเชิญเพื่อนร่วมทริปของคุณ</p>
         </div>
       </div>
-      <div className="trip-wizard-layout">
-        <div className="trip-wizard-main">
-          <div className="trip-wizard-pane">
-            <div className="trip-scope-panel">
-              <section className="trip-step-section">
-                <div className="trip-step-heading">
+      <div className={tripWizardLayoutClassName}>
+        <div className={tripWizardMainClassName}>
+          <div className={tripWizardPaneClassName}>
+            <div className={tripScopePanelClassName}>
+              <section className={tripStepSectionClassName}>
+                <div className={tripStepHeadingClassName}>
                   <strong>1. Trip name</strong>
                   <span>ตั้งชื่อทริปของคุณ</span>
                 </div>
-                <label className="trip-name-field">
+                <label className={tripNameFieldClassName}>
                   <span className="sr-only">{t.access.dashboard.createTrip.labels.name}</span>
                 <input
                   value={tripForm.name}
@@ -1548,14 +1831,14 @@ function PortalTripWizard({
                 </label>
               </section>
 
-              <section className="trip-step-section">
-                <div className="trip-step-heading">
+              <section className={tripStepSectionClassName}>
+                <div className={tripStepHeadingClassName}>
                   <strong>2. Where are you going?</strong>
                   <span>เลือกจุดหมายปลายทาง</span>
                 </div>
-                <div className="trip-country-picker">
+                <div className={tripCountryPickerClassName}>
                 {selectedCountryNames.length ? (
-                  <div className="trip-form-destination-row" aria-label="Selected destinations">
+                  <div className={tripFormDestinationRowClassName} aria-label="Selected destinations">
                     <div className="sr-only" aria-label="Selected countries">
                       {selectedCountryNames.map((countryName) => (
                         <button type="button" key={countryName} aria-label={countryName} onClick={() => toggleCountry(countryName)}>
@@ -1564,8 +1847,8 @@ function PortalTripWizard({
                       ))}
                     </div>
                     {destinationCards.map((card) => (
-                      <article key={card.title} className="trip-mini-destination">
-                        <span className="trip-place-thumb" aria-hidden="true" />
+                      <article key={card.title} className={tripMiniDestinationClassName}>
+                        <span className={tripPlaceThumbClassName} aria-hidden="true" />
                         <div>
                           <strong>{card.title}</strong>
                           <small>{card.detail}</small>
@@ -1575,11 +1858,11 @@ function PortalTripWizard({
                         </button>
                       </article>
                     ))}
-                    <button className="trip-mini-add" type="button" onClick={focusDestinationSearch}>
+                    <button className={tripMiniAddClassName} type="button" onClick={focusDestinationSearch}>
                       <Icon name="plus" />
                       เพิ่มจุดหมาย
                     </button>
-                    <div className="trip-form-destination-search">
+                    <div className={tripFormDestinationSearchClassName}>
                       <label>
                         <span className="sr-only">Search destinations</span>
                         <input
@@ -1591,7 +1874,7 @@ function PortalTripWizard({
                         />
                       </label>
                       {countryQuery.trim() && suggestedCountries.length ? (
-                        <div className="trip-country-suggestions" aria-label="Destination suggestions">
+                        <div className={tripCountrySuggestionsClassName} aria-label="Destination suggestions">
                           {suggestedCountries.map((country) => (
                             <button type="button" key={country.code} aria-label={country.name} onClick={() => toggleCountry(country.name)}>
                               <strong>{country.name}</strong>
@@ -1604,7 +1887,7 @@ function PortalTripWizard({
                   </div>
                 ) : (
                   <>
-                    <div className="trip-country-search">
+                    <div className={tripCountrySearchClassName}>
                       <label>
                         <span className="sr-only">Where are you going?</span>
                         <input
@@ -1616,7 +1899,7 @@ function PortalTripWizard({
                         />
                       </label>
                       {suggestedCountries.length ? (
-                        <div className="trip-country-suggestions" aria-label="Destination suggestions">
+                        <div className={tripCountrySuggestionsClassName} aria-label="Destination suggestions">
                           {suggestedCountries.map((country) => (
                             <button type="button" key={country.code} aria-label={country.name} onClick={() => toggleCountry(country.name)}>
                               <strong>{country.name}</strong>
@@ -1626,21 +1909,24 @@ function PortalTripWizard({
                         </div>
                       ) : null}
                     </div>
-                    <div className="trip-selected-countries" aria-label="Selected destinations">
+                    <div className={tripSelectedCountriesClassName} aria-label="Selected destinations">
                       <span>Add a country, city, or region.</span>
                     </div>
                   </>
                 )}
-                <button className="trip-map-toggle" type="button" onClick={() => setIsMapOpen((current) => !current)}>
+                <button className={tripMapToggleClassName} type="button" onClick={() => setIsMapOpen((current) => !current)}>
                   <Icon name="map" />
                   {isMapOpen ? "Hide map" : "Pick on map"}
                 </button>
                 {isMapOpen ? (
-                  <div className="trip-map-drawer">
-                    <div className="trip-continent-filter" aria-label="Filter map by continent">
+                  <div className={tripMapDrawerClassName}>
+                    <div className={tripContinentFilterClassName} aria-label="Filter map by continent">
                       {tripContinents.map((continent) => (
                         <button
-                          className={continent.id === activeContinent ? "trip-continent-chip trip-continent-chip--active" : "trip-continent-chip"}
+                          className={cn(
+                            tripContinentChipClassName,
+                            continent.id === activeContinent ? tripContinentChipActiveClassName : "",
+                          )}
                           type="button"
                           key={continent.id}
                           onClick={() => setActiveContinent(continent.id)}
@@ -1659,15 +1945,15 @@ function PortalTripWizard({
               </div>
               </section>
 
-              <section className="trip-step-section">
-                <div className="trip-step-heading">
+              <section className={tripStepSectionClassName}>
+                <div className={tripStepHeadingClassName}>
                   <strong>3. When are you going?</strong>
                   <span>กำหนดวันเดินทาง</span>
                 </div>
-              <fieldset className="trip-roundtrip-field">
+              <fieldset className={tripRoundtripFieldClassName}>
                 <legend>Round trip dates</legend>
-                <div className="trip-roundtrip-row">
-                  <label className="trip-date-leg">
+                <div className={tripRoundtripRowClassName}>
+                  <label className={tripDateLegClassName}>
                     <span>Depart</span>
                     <input
                       aria-label={t.access.dashboard.createTrip.labels.startDate}
@@ -1677,10 +1963,10 @@ function PortalTripWizard({
                       required
                     />
                   </label>
-                  <button className="trip-date-arrow" type="button" onClick={swapTravelDates} aria-label="Swap depart and return dates">
+                  <button className={tripDateArrowClassName} type="button" onClick={swapTravelDates} aria-label="Swap depart and return dates">
                     <Icon name="route" />
                   </button>
-                  <label className="trip-date-leg">
+                  <label className={tripDateLegClassName}>
                     <span>Return</span>
                     <input
                       aria-label={t.access.dashboard.createTrip.labels.endDate}
@@ -1695,8 +1981,8 @@ function PortalTripWizard({
               </fieldset>
               </section>
 
-              <section className="trip-step-section trip-step-section--compact">
-              <details className="trip-access-panel">
+              <section className={tripStepSectionCompactClassName}>
+              <details className={tripAccessPanelClassName}>
                 <summary>
                     <span>4. Trip owner & settings</span>
                   <strong>{effectiveOwnerDisplayName || defaultOwnerDisplayName}</strong>
@@ -1714,7 +2000,7 @@ function PortalTripWizard({
                   />
                   <small>Defaulted from your account profile.</small>
                 </label>
-                <div className="trip-generated-access">
+                <div className={tripGeneratedAccessClassName}>
                   <label>
                     <span>{t.access.dashboard.createTrip.labels.joinId}</span>
                     <input value={tripForm.joinId} readOnly />
@@ -1731,13 +2017,13 @@ function PortalTripWizard({
               </details>
               </section>
 
-              <section className="trip-step-section trip-step-section--compact">
-                <details className="trip-access-panel">
+              <section className={tripStepSectionCompactClassName}>
+                <details className={tripAccessPanelClassName}>
                   <summary>
                     <span>5. Invite & join code</span>
                     <strong>เชิญเพื่อนและโค้ดเข้าร่วม</strong>
                   </summary>
-                  <div className="trip-generated-access">
+                  <div className={tripGeneratedAccessClassName}>
                     <label>
                       <span>{t.access.dashboard.createTrip.labels.joinId}</span>
                       <input value={tripForm.joinId} readOnly />
@@ -1754,11 +2040,11 @@ function PortalTripWizard({
                 </details>
               </section>
 
-              <div className="trip-access-note">
+              <div className={tripAccessNoteClassName}>
                 <Icon name="key" />
                 <span>คุณสามารถแก้ไขรายละเอียดทั้งหมดได้หลังจากสร้างทริป</span>
               </div>
-              <div className="trip-ticket-review">
+              <div className={tripTicketReviewClassName}>
                 <div>
                   <span>Trip</span>
                   <strong>{tripForm.name || "New trip"}</strong>
@@ -1775,32 +2061,32 @@ function PortalTripWizard({
             </div>
           </div>
         </div>
-        <aside className="trip-live-preview" role="region" aria-label="Live trip preview">
-          <div className="trip-boarding-pass">
-            <div className="trip-main-ticket">
-              <div className="trip-preview-ticket-top">
+        <aside className={tripLivePreviewClassName} role="region" aria-label="Live trip preview">
+          <div className={tripBoardingPassClassName}>
+            <div className={tripMainTicketClassName}>
+              <div className={tripPreviewTicketTopClassName}>
                 <span>Trip preview</span>
               </div>
               <strong>{previewTripName}</strong>
               <p>Trip ID: TRP-26-0001 <Badge tone={canSubmit ? "success" : "neutral"}>{canSubmit ? "Ready" : "Draft"}</Badge></p>
-              <div className="trip-flight-route">
+              <div className={tripFlightRouteClassName}>
                 <div>
                   <strong>BKK</strong>
                   <span>Bangkok</span>
                 </div>
-                <span className="trip-flight-line"><Icon name="route" /></span>
+                <span className={tripFlightLineClassName}><Icon name="route" /></span>
                 <div>
                   <strong>{routeDestinationCode}</strong>
                   <span>{selectedCountryNames[0] ?? "Destination"}</span>
                 </div>
               </div>
               <TripPreviewLiveMap selectedCountryNames={selectedCountryNames} />
-              <div className="trip-preview-destination-row">
+              <div className={tripPreviewDestinationRowClassName}>
                 <span>Destinations</span>
                 <div>
                   {destinationCards.map((card) => (
-                    <article key={card.title} className="trip-mini-destination">
-                      <span className="trip-place-thumb" aria-hidden="true" />
+                    <article key={card.title} className={tripMiniDestinationClassName}>
+                      <span className={tripPlaceThumbClassName} aria-hidden="true" />
                       <div>
                         <strong>{card.title}</strong>
                         <small>{card.detail}</small>
@@ -1808,14 +2094,14 @@ function PortalTripWizard({
                       <Badge tone="primary">{card.nights}</Badge>
                     </article>
                   ))}
-                  <button className="trip-mini-add" type="button" onClick={focusDestinationSearch}>
+                  <button className={tripMiniAddClassName} type="button" onClick={focusDestinationSearch}>
                     <Icon name="plus" />
                     เพิ่มจุดหมาย
                   </button>
                 </div>
               </div>
             </div>
-            <div className="trip-ticket-stub">
+            <div className={tripTicketStubClassName}>
               <Icon name="route" />
               <div>
                 <strong>{previewStartDate} - {previewEndDate}</strong>
@@ -1829,14 +2115,14 @@ function PortalTripWizard({
                 <span>สถานะ</span>
                 <Badge tone={canSubmit ? "warning" : "neutral"}>{inviteStatus}</Badge>
               </div>
-              <span className="trip-ticket-barcode" aria-label="Ticket barcode" />
+              <span className={tripTicketBarcodeClassName} aria-label="Ticket barcode" />
             </div>
           </div>
-          <div className="trip-preview-inspiration">
+          <div className={tripPreviewInspirationClassName}>
             <div>
               <strong>Inspiration board</strong>
               <span>ไอเดียสำหรับทริปนี้</span>
-              <div className="trip-inspiration-controls">
+              <div className={tripInspirationControlsClassName}>
                 <button type="button" onClick={() => shiftInspiration(-1)} aria-label="Previous inspiration">
                   <Icon name="chevronLeft" />
                 </button>
@@ -1847,8 +2133,8 @@ function PortalTripWizard({
             </div>
             <ul aria-label="Destination inspiration">
               {inspirationCards.map((card) => (
-                <li key={card.title} style={{ "--card-accent": card.accent } as CSSProperties}>
-                  <span aria-hidden="true" />
+                <li key={card.title} className={tripInspirationItemClassName} style={{ "--card-accent": card.accent } as CSSProperties}>
+                  <span className={tripInspirationSwatchClassName} aria-hidden="true" />
                   <div>
                     <strong>{card.title}</strong>
                     <small>{card.detail}</small>
@@ -1857,7 +2143,7 @@ function PortalTripWizard({
               ))}
             </ul>
           </div>
-          <div className="trip-share-strip">
+          <div className={tripShareStripClassName}>
             <span><Icon name="users" /> แชร์โค้ดนี้กับเพื่อนเพื่อเข้าร่วมทริป</span>
             <span>Join code: <strong>{joinCode}</strong></span>
             <Button type="button" variant="secondary" onClick={() => void copyJoinCode()}>
@@ -1866,7 +2152,7 @@ function PortalTripWizard({
           </div>
         </aside>
       </div>
-      <div className="trip-wizard-actions">
+      <div className={tripWizardActionsClassName}>
         <Button asChild type="button" variant="secondary">
           <Link href={appRoutes.portalMyTrips()}>
             <Icon name="chevronLeft" />
@@ -1972,7 +2258,7 @@ function TripPreviewLiveMap({ selectedCountryNames }: { selectedCountryNames: st
 
         coordinates.forEach((coordinate, index) => {
           const markerElement = document.createElement("span");
-          markerElement.className = "trip-preview-live-marker";
+          markerElement.className = tripPreviewLiveMarkerClassName;
           markerElement.textContent = String(index + 1);
           markerElement.setAttribute("aria-hidden", "true");
           const marker = new maplibregl.Marker({ element: markerElement })
@@ -2007,16 +2293,16 @@ function TripPreviewLiveMap({ selectedCountryNames }: { selectedCountryNames: st
   }, [coordinates, liveMapEnabled, selectedCountryNames.length]);
 
   return (
-    <div className={mapState === "ready" ? "trip-preview-map trip-preview-map--live trip-preview-map--ready" : "trip-preview-map trip-preview-map--live"}>
-      <div className="trip-preview-map-canvas" ref={mapContainerRef} aria-hidden="true" />
+    <div className={cn(tripPreviewMapClassName, tripPreviewMapLiveClassName, mapState === "ready" ? tripPreviewMapReadyClassName : "")}>
+      <div className={tripPreviewMapCanvasClassName} ref={mapContainerRef} aria-hidden="true" />
       {mapState !== "ready" ? (
-        <div className="trip-preview-map-fallback" aria-hidden="true">
-          <span className="trip-preview-pin trip-preview-pin--origin"><Icon name="location" /></span>
-          <span className="trip-preview-pin trip-preview-pin--destination"><Icon name="map" /></span>
-          <span className="trip-preview-route-line" />
+        <div className={tripPreviewMapFallbackClassName} aria-hidden="true">
+          <span className={cn(tripPreviewPinClassName, tripPreviewPinOriginClassName)}><Icon name="location" /></span>
+          <span className={cn(tripPreviewPinClassName, tripPreviewPinDestinationClassName)}><Icon name="map" /></span>
+          <span className={tripPreviewRouteLineClassName} />
         </div>
       ) : null}
-      <span className="trip-preview-map-source">
+      <span className={tripPreviewMapSourceClassName}>
         <Icon name="map" />
         OpenFreeMap live map
       </span>
@@ -2094,8 +2380,8 @@ function CountryWorldMap({
   const viewBox = zoomedMapViewBox(activeContinent, zoom);
 
   return (
-    <div className="trip-world-map" aria-label="World map country picker">
-      <div className="trip-map-controls" aria-label="Map zoom controls">
+    <div className={tripWorldMapClassName} aria-label="World map country picker">
+      <div className={tripMapControlsClassName} aria-label="Map zoom controls">
         <button type="button" onClick={() => changeZoom(-0.25)} disabled={zoom <= 1} aria-label="Zoom out">
           -
         </button>
@@ -2105,7 +2391,7 @@ function CountryWorldMap({
         </button>
         <button type="button" onClick={resetZoom}>Reset</button>
       </div>
-      <svg viewBox={viewBox} role="img" aria-label="World countries">
+      <svg className={tripWorldMapSvgClassName} viewBox={viewBox} role="img" aria-label="World countries">
         <path className="trip-map-sphere" d={worldMapPath({ type: "Sphere" }) ?? ""} />
         {worldMapCountries.map((country) => (
           <path
@@ -2127,7 +2413,7 @@ function CountryWorldMap({
           </path>
         ))}
       </svg>
-      {hoveredCountry ? <span className="trip-map-hover-label">{hoveredCountry}</span> : null}
+      {hoveredCountry ? <span className={tripMapHoverLabelClassName}>{hoveredCountry}</span> : null}
     </div>
   );
 }
@@ -2233,9 +2519,9 @@ function PortalStatSkeleton() {
   return (
     <>
       {Array.from({ length: 4 }, (_, index) => (
-        <div className="account-stat portal-skeleton-card" key={index}>
-          <span className="portal-skeleton portal-skeleton--number" />
-          <span className="portal-skeleton portal-skeleton--short" />
+        <div className={portalSkeletonCardClassName} key={index}>
+          <span className={portalSkeletonNumberClassName} />
+          <span className={portalSkeletonShortClassName} />
         </div>
       ))}
     </>
@@ -2244,12 +2530,12 @@ function PortalStatSkeleton() {
 
 function PortalListSkeleton({ compact = false, rows }: { compact?: boolean; rows: number }) {
   return (
-    <div className={compact ? "portal-list-skeleton portal-list-skeleton--compact" : "portal-list-skeleton"} aria-hidden="true">
+    <div className={compact ? portalListSkeletonCompactClassName : portalListSkeletonClassName} aria-hidden="true">
       {Array.from({ length: rows }, (_, index) => (
-        <div className="portal-skeleton-row" key={index}>
-          <span className="portal-skeleton portal-skeleton--icon" />
-          <span className="portal-skeleton portal-skeleton--line" />
-          <span className="portal-skeleton portal-skeleton--short" />
+        <div className={portalSkeletonRowClassName} key={index}>
+          <span className={portalSkeletonIconClassName} />
+          <span className={portalSkeletonLineClassName} />
+          <span className={portalSkeletonShortClassName} />
         </div>
       ))}
     </div>
@@ -2317,8 +2603,8 @@ function AccountSettingsEditor({
 
   return (
     <>
-      <div className="settings-profile-preview">
-        <span className="person-avatar" style={{ backgroundColor: form.avatarColor }} aria-hidden="true">
+      <div className={settingsProfilePreviewClassName}>
+        <span className={accountAvatarClassName} style={{ backgroundColor: form.avatarColor }} aria-hidden="true">
           {form.displayName.slice(0, 1) || "A"}
         </span>
         <div>
@@ -2326,8 +2612,8 @@ function AccountSettingsEditor({
           <span>{settings.profile.primaryEmail ?? t.access.dashboard.noEmail}</span>
         </div>
       </div>
-      <form className="account-form account-settings-form" onSubmit={submitSettings}>
-        <div className="account-two-col">
+      <form className={accountSettingsFormClassName} onSubmit={submitSettings}>
+        <div className={accountTwoColClassName}>
           <label>
             <span>{t.access.settings.form.displayName}</span>
             <input value={form.displayName} onChange={(event) => setForm((current) => ({ ...current, displayName: event.target.value }))} required />
@@ -2360,15 +2646,15 @@ function AccountSettingsEditor({
         </Button>
       </form>
 
-      <div className="account-settings-grid">
+      <div className={accountSettingsGridClassName}>
         <SettingLine label={t.access.settings.passkeys} value={`${settings.passkeys.length}`} />
         <SettingLine label={t.access.settings.trustedDevices} value={`${settings.trustedDevices.length}`} />
       </div>
 
-      <div className="account-device-list" aria-label={t.access.settings.trustedDevicesLabel}>
+      <div className={accountDeviceListClassName} aria-label={t.access.settings.trustedDevicesLabel}>
         {settings.trustedDevices.length ? (
           settings.trustedDevices.map((device) => (
-            <div className="account-device-row" key={device.id}>
+            <div className={accountDeviceRowClassName} key={device.id}>
               <div>
                 <strong>{device.label}</strong>
                 <span>
@@ -2383,7 +2669,7 @@ function AccountSettingsEditor({
             </div>
           ))
         ) : (
-          <p className="account-empty">{t.access.settings.noTrustedDevices}</p>
+          <p className={accountEmptyClassName}>{t.access.settings.noTrustedDevices}</p>
         )}
       </div>
     </>
@@ -2392,7 +2678,7 @@ function AccountSettingsEditor({
 
 function PanelHeading({ detail, icon, title }: { detail: string; icon: ComponentProps<typeof Icon>["name"]; title: string }) {
   return (
-    <div className="account-panel-heading">
+    <div className={accountPanelHeadingClassName}>
       <span aria-hidden="true"><Icon name={icon} /></span>
       <div>
         <strong>{title}</strong>
@@ -2404,7 +2690,7 @@ function PanelHeading({ detail, icon, title }: { detail: string; icon: Component
 
 function Stat({ label, value }: { label: string; value: number }) {
   return (
-    <div className="account-stat">
+    <div className={accountStatClassName}>
       <strong>{value}</strong>
       <span>{label}</span>
     </div>
@@ -2413,7 +2699,7 @@ function Stat({ label, value }: { label: string; value: number }) {
 
 function SettingLine({ label, value }: { label: string; value: string }) {
   return (
-    <div className="account-setting-line">
+    <div className={accountSettingLineClassName}>
       <span>{label}</span>
       <strong>{value}</strong>
     </div>
@@ -2422,7 +2708,7 @@ function SettingLine({ label, value }: { label: string; value: string }) {
 
 function StatusMessage({ children, tone }: { children: ReactNode; tone: "danger" | "success" }) {
   return (
-    <p className={tone === "danger" ? "join-alert" : "account-success"} role={tone === "danger" ? "alert" : "status"}>
+    <p className={tone === "danger" ? accountDangerStatusClassName : accountSuccessStatusClassName} role={tone === "danger" ? "alert" : "status"}>
       <Icon name={tone === "danger" ? "alertCircle" : "check"} />
       {children}
     </p>

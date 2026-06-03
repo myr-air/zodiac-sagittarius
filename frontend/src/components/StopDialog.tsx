@@ -23,6 +23,13 @@ interface StopDialogProps {
 }
 
 const activityTypeOptions: ActivityType[] = ["food", "attraction", "experience", "travel", "shopping", "stay"];
+const modalBackdropClassName = "modal-backdrop fixed inset-0 z-20 grid place-items-center bg-[rgb(15_23_42_/_0.28)] p-5 max-[767px]:items-end max-[767px]:p-2.5";
+const stopDialogClassName = "stop-dialog max-h-[calc(100vh-40px)] w-[min(620px,100%)] overflow-auto rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] shadow-[0_24px_70px_rgb(15_23_42_/_0.22)]";
+const dialogTitleRowClassName = "dialog-title-row grid min-h-[54px] grid-cols-[minmax(0,1fr)_34px] items-center gap-3 border-b border-[var(--color-border)] px-4 [&_button]:grid [&_button]:size-[34px] [&_button]:rotate-180 [&_button]:place-items-center [&_button]:border-0 [&_button]:bg-transparent [&_button]:text-[var(--color-text-muted)] [&_h2]:m-0 [&_h2]:text-base [&_h2]:font-extrabold [&_h2]:leading-[22px] [&_h2]:text-[#0f172a]";
+const stopFormClassName = "stop-form grid gap-4 p-4";
+const dialogGridClassName = "dialog-grid grid grid-cols-2 gap-3 max-[767px]:grid-cols-1 [&_input]:min-h-[38px] [&_input]:w-full [&_input]:rounded-[var(--radius-sm)] [&_input]:border [&_input]:border-[var(--color-border-strong)] [&_input]:bg-[var(--color-surface)] [&_input]:px-2.5 [&_input]:py-2 [&_input]:text-[13px] [&_input]:text-[var(--color-text)] [&_label]:grid [&_label]:min-w-0 [&_label]:gap-1.5 [&_label>span]:text-xs [&_label>span]:font-bold [&_label>span]:text-[var(--color-text-muted)] [&_select]:min-h-[38px] [&_select]:w-full [&_select]:rounded-[var(--radius-sm)] [&_select]:border [&_select]:border-[var(--color-border-strong)] [&_select]:bg-[var(--color-surface)] [&_select]:px-2.5 [&_select]:py-2 [&_select]:text-[13px] [&_select]:text-[var(--color-text)] [&_textarea]:min-h-[38px] [&_textarea]:w-full [&_textarea]:resize-y [&_textarea]:rounded-[var(--radius-sm)] [&_textarea]:border [&_textarea]:border-[var(--color-border-strong)] [&_textarea]:bg-[var(--color-surface)] [&_textarea]:px-2.5 [&_textarea]:py-2 [&_textarea]:text-[13px] [&_textarea]:text-[var(--color-text)]";
+const dialogFieldWideClassName = "dialog-field-wide col-span-full";
+const dialogActionsClassName = "dialog-actions flex justify-end gap-2.5 max-[767px]:grid";
 
 const fieldIds = {
   activity: "stop-activity",
@@ -70,17 +77,17 @@ export function StopDialog({ mode, initialItem, onClose, onSubmit }: StopDialogP
   }
 
   return (
-    <div className="modal-backdrop" role="presentation">
-      <section className="stop-dialog" role="dialog" aria-modal="true" aria-labelledby="stop-dialog-title">
-        <div className="dialog-title-row">
+    <div className={modalBackdropClassName} role="presentation">
+      <section className={stopDialogClassName} role="dialog" aria-modal="true" aria-labelledby="stop-dialog-title">
+        <div className={dialogTitleRowClassName}>
           <h2 id="stop-dialog-title">{title}</h2>
           <button type="button" aria-label={t.stopDialog.closeForm} onClick={onClose}>
             <Icon name="x" />
           </button>
         </div>
 
-        <form className="stop-form" onSubmit={handleSubmit}>
-          <div className="dialog-grid">
+        <form className={stopFormClassName} onSubmit={handleSubmit}>
+          <div className={dialogGridClassName}>
             <label htmlFor={fieldIds.startTime}>
               <span>{t.stopDialog.fields.time}</span>
               <input id={fieldIds.startTime} type="time" value={values.startTime} onChange={(event) => update("startTime", event.target.value)} required />
@@ -108,7 +115,7 @@ export function StopDialog({ mode, initialItem, onClose, onSubmit }: StopDialogP
                 ))}
               </select>
             </label>
-            <label className="dialog-field-wide" htmlFor={fieldIds.activity}>
+            <label className={dialogFieldWideClassName} htmlFor={fieldIds.activity}>
               <span>{t.stopDialog.fields.activity}</span>
               <input id={fieldIds.activity} value={values.activity} onChange={(event) => update("activity", event.target.value)} required />
             </label>
@@ -124,17 +131,17 @@ export function StopDialog({ mode, initialItem, onClose, onSubmit }: StopDialogP
               <span>{t.stopDialog.fields.place}</span>
               <input id={fieldIds.place} value={values.place} onChange={(event) => update("place", event.target.value)} required />
             </label>
-            <label className="dialog-field-wide" htmlFor={fieldIds.transportation}>
+            <label className={dialogFieldWideClassName} htmlFor={fieldIds.transportation}>
               <span>{t.stopDialog.fields.transportation}</span>
               <input id={fieldIds.transportation} value={values.transportation} onChange={(event) => update("transportation", event.target.value)} />
             </label>
-            <label className="dialog-field-wide" htmlFor={fieldIds.note}>
+            <label className={dialogFieldWideClassName} htmlFor={fieldIds.note}>
               <span>{t.stopDialog.fields.note}</span>
               <textarea id={fieldIds.note} value={values.note} onChange={(event) => update("note", event.target.value)} rows={3} />
             </label>
           </div>
 
-          <div className="dialog-actions">
+          <div className={dialogActionsClassName}>
             <Button type="button" variant="ghost" onClick={onClose}>{t.stopDialog.actions.cancel}</Button>
             <Button type="submit">{mode === "create" ? t.stopDialog.actions.create : t.stopDialog.actions.edit}</Button>
           </div>
