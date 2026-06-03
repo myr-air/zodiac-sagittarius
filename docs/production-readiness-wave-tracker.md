@@ -241,29 +241,38 @@ demo-only/read-only. Frontend typecheck and targeted app/API tests pass.
 
 ## Wave 4 – Test/Staging Verification
 
+Wave status: test/staging runbook and seed updates added. Full real-system
+verification is still blocked locally until Postgres/psql is available.
+
 ### W4-TEST-001: Test/staging config split
 - **Owner**: DevOps
 - **Estimate**: 2h
+- **Status**: Documented in `docs/test-staging-verification-runbook.md`.
 
 ### W4-TEST-002: Seed + cleanup script
 - **Owner**: Backend
 - **Estimate**: 2h
+- **Status**: Implemented via `seed_e2e`; includes migration 0007, stop note, and expense seed data.
 
 ### W4-TEST-003: API contract + schema validation
 - **Owner**: QA
 - **Estimate**: 3h
+- **Status**: Contract tests added/compiled; DB run blocked by local Postgres setup.
 
 ### W4-TEST-004: Playwright/Cypress journey smoke
 - **Owner**: QA
 - **Estimate**: 6h
+- **Status**: Runbook gate documented; real browser run blocked by local Postgres setup.
 
 ### W4-TEST-005: Security checklist
 - **Owner**: Security
 - **Estimate**: 2h
+- **Status**: Runbook gate documented against `/Users/xiivth/.codex/REAL_SYSTEM_QA.md`.
 
 ### W4-TEST-006: Perf smoke + retry/idempotency checks
 - **Owner**: Backend
 - **Estimate**: 3h
+- **Status**: Runbook gate documented; execution pending real test DB.
 
 ## Wave 5 – Production Readiness Freeze
 

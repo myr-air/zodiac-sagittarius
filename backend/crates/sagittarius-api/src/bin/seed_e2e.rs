@@ -8,6 +8,8 @@ const TRAVELER_ID: &str = "018f4e81-77a4-7b8f-b3bd-0d0f493ac563";
 const VIEWER_ID: &str = "018f4e81-77a4-7b8f-b3bd-0d0f493ac564";
 const PLAN_ID: &str = "018f4e82-3000-7c00-b111-000000000001";
 const ITEM_ID: &str = "018f4e83-5410-7d8b-8f25-fd52c5e7bd1f";
+const STOP_NOTE_ID: &str = "018f4e83-5410-7d8b-8f25-fd52c5e7bd30";
+const EXPENSE_ID: &str = "018f4e86-1111-7000-8000-000000000001";
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -31,14 +33,53 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         include_str!("../../../../migrations/0004_account_password_auth.sql"),
         include_str!("../../../../migrations/0005_account_portal.sql"),
         include_str!("../../../../migrations/0006_trip_countries.sql"),
+        include_str!("../../../../migrations/0007_stop_notes.sql"),
     ] {
         sqlx::raw_sql(migration).execute(&pool).await?;
     }
 
     seed_trip(&pool).await?;
     seed_tasks(&pool).await?;
+    seed_stop_notes(&pool).await?;
+    seed_expenses(&pool).await?;
 
     println!("seeded local e2e trip HK-SZ-2025 in sagittarius_test");
+    Ok(())
+}
+
+async fn seed_stop_notes(pool: &sqlx::PgPool) -> Result<(), sqlx::Error> {
+    sqlx::query(
+        "insert into stop_notes (id, trip_id, itinerary_item_id, author_id, body)
+         values ($1, $2, $3, $4, 'Meet outside exit B after breakfast')",
+    )
+    .bind(Uuid::parse_str(STOP_NOTE_ID).expect("static uuid"))
+    .bind(Uuid::parse_str(TRIP_ID).expect("static uuid"))
+    .bind(Uuid::parse_str(ITEM_ID).expect("static uuid"))
+    .bind(Uuid::parse_str(TRAVELER_ID).expect("static uuid"))
+    .execute(pool)
+    .await?;
+    Ok(())
+}
+
+async fn seed_expenses(pool: &sqlx::PgPool) -> Result<(), sqlx::Error> {
+    let owner_id = Uuid::parse_str(OWNER_ID).expect("static uuid");
+    let traveler_id = Uuid::parse_str(TRAVELER_ID).expect("static uuid");
+    sqlx::query(
+        "insert into expenses (
+           id, trip_id, title, amount_minor, currency, paid_by, category, splits, itinerary_item_id
+         )
+         values ($1, $2, 'Dim sum breakfast', 24000, 'HKD', $3, 'food', $4, $5)",
+    )
+    .bind(Uuid::parse_str(EXPENSE_ID).expect("static uuid"))
+    .bind(Uuid::parse_str(TRIP_ID).expect("static uuid"))
+    .bind(owner_id)
+    .bind(serde_json::json!({
+        owner_id.to_string(): 12000,
+        traveler_id.to_string(): 12000
+    }))
+    .bind(Uuid::parse_str(ITEM_ID).expect("static uuid"))
+    .execute(pool)
+    .await?;
     Ok(())
 }
 
