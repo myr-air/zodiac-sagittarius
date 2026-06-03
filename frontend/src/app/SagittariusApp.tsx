@@ -36,8 +36,13 @@ import type { Expense, ExpenseSummary, ItineraryItem, StopNote, Suggestion, Trip
 
 const localMutationTimestamp = "2026-05-28T00:00:00.000Z";
 const accountSessionStorageKey = "sagittarius-account-session";
-const accountClaimBannerClassName =
-  "account-claim-banner mb-3 flex min-w-0 items-center justify-between gap-3 rounded-[var(--radius-lg)] border border-[var(--color-route-border)] bg-[rgb(239_246_255_/_0.86)] p-3 max-[767px]:flex-wrap max-[767px]:items-start [&>div]:max-[767px]:min-w-0 [&_span]:text-[13px] [&_span]:leading-5 [&_span]:text-[var(--color-text-muted)] [&_strong]:block [&_strong]:text-[var(--color-route)]";
+const workspaceToastClassName =
+  "workspace-toast pointer-events-auto fixed left-1/2 top-5 z-[60] flex w-[min(480px,calc(100vw-32px))] -translate-x-1/2 items-start gap-3 rounded-[var(--radius-lg)] border border-[var(--color-route-border)] bg-[rgba(239,246,255,0.94)] px-4 py-3 shadow-[0_8px_32px_rgba(15,23,42,0.16)] backdrop-blur-[10px] max-[767px]:top-3";
+const workspaceToastIconClassName = "mt-0.5 shrink-0 text-[var(--color-route)]";
+const workspaceToastBodyClassName = "min-w-0 flex-1 [&_span]:block [&_span]:text-[12.5px] [&_span]:leading-5 [&_span]:text-[var(--color-text-muted)] [&_strong]:text-[13.5px] [&_strong]:font-[850] [&_strong]:text-[var(--color-route)]";
+const workspaceToastActionsClassName = "flex shrink-0 items-center gap-2";
+const workspaceToastDismissClassName =
+  "ml-1 grid size-7 shrink-0 place-items-center rounded-full text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-surface-subtle)] hover:text-[var(--color-text)]";
 const accountClaimMessageClassName = "account-claim-message font-extrabold";
 const rolePreviewToolbarClassName =
   "role-preview-toolbar mb-3 inline-flex w-fit items-center gap-2 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] px-2.5 py-2 text-xs font-extrabold text-[var(--color-text-muted)] shadow-[var(--shadow-soft)] [&_select]:min-h-8 [&_select]:rounded-[var(--radius-sm)] [&_select]:border [&_select]:border-[var(--color-border-strong)] [&_select]:bg-[var(--color-surface)] [&_select]:px-2 [&_select]:font-[inherit] [&_select]:text-[var(--color-text)]";
@@ -98,6 +103,8 @@ export function SagittariusApp({
   const [accountSessionLoaded, setAccountSessionLoaded] = useState(false);
   const [accountClaimState, setAccountClaimState] = useState<{ status: "idle" | "saving"; message: string | null }>({ status: "idle", message: null });
   const [accountTripAccessDeniedRouteId, setAccountTripAccessDeniedRouteId] = useState<string | null>(null);
+  const [toastDismissed, setToastDismissed] = useState(false);
+  const [toastDismissing, setToastDismissing] = useState(false);
   const [suggestions, setSuggestions] = useState<Suggestion[]>(() => tripFixtureSuggestions.map((suggestion) => ({ ...suggestion })));
   const [tasks, setTasks] = useState<TripTask[]>(() => tripFixtureTasks.map((task) => ({ ...task })));
   const [stopNotes, setStopNotes] = useState<StopNote[]>(() => tripFixtureStopNotes.map((note) => ({ ...note })));
@@ -105,6 +112,15 @@ export function SagittariusApp({
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [contextRailOpen, setContextRailOpen] = useState(false);
   const [contextRailMounted, setContextRailMounted] = useState(false);
+  // Auto-dismiss the workspace toast after 6 s when the session is a join-only (temp) session
+  useEffect(() => {
+    if (!requireJoin || toastDismissed) return;
+    const timer = setTimeout(() => {
+      setToastDismissing(true);
+      setTimeout(() => setToastDismissed(true), 220);
+    }, 6000);
+    return () => clearTimeout(timer);
+  }, [requireJoin, toastDismissed]);
   const [navigatedView, setNavigatedView] = useState<PlanningView | null>(null);
   const selectedPlanVariantId = tripState.trip.activePlanVariantId;
   const [currentMemberId, setCurrentMemberId] = useState(seedTrip.members[0].id);
@@ -1039,26 +1055,25 @@ export function SagittariusApp({
       onToggleCollapsed={() => setSidebarCollapsed((current) => !current)}
     >
       <main className={workspaceShellClassName}>
-        {requireJoin ? (
-          <div className={accountClaimBannerClassName}>
-            <div>
-              <strong>{accountSession ? "เชื่อมต่อ account แล้ว" : "เข้าแบบ temp"}</strong>
-              <span>
-                {accountSession
-                  ? currentMember.userId
-                    ? "ตัวตนนี้ผูกกับ account แล้ว"
-                    : "ผูกตัวตน temp นี้กับ account เพื่อเก็บประวัติและสถิติ"
-                  : "เข้าสู่ระบบจากหน้า access เพื่อผูก identity นี้กับ account ภายหลัง"}
-              </span>
-            </div>
-            {accountSession && participantSession && !currentMember.userId ? (
-              <Button type="button" variant="secondary" onClick={() => void claimCurrentMemberToAccount()} disabled={accountClaimState.status === "saving"}>
-                <Icon name="check" />
-                ผูกตัวตน
-              </Button>
-            ) : null}
-            {accountClaimState.message ? <span className={accountClaimMessageClassName}>{accountClaimState.message}</span> : null}
-          </div>
+        {requireJoin && !toastDismissed ? (
+          <WorkspaceToast
+            accountSession={accountSession}
+            memberUserId={currentMember.userId}
+            claimState={accountClaimState}
+            canClaim={Boolean(accountSession && participantSession && !currentMember.userId)}
+            dismissing={toastDismissing}
+            onClaim={() => void claimCurrentMemberToAccount()}
+            onDismiss={() => {
+              setToastDismissing(true);
+              setTimeout(() => setToastDismissed(true), 220);
+            }}
+            className={workspaceToastClassName}
+            iconClassName={workspaceToastIconClassName}
+            bodyClassName={workspaceToastBodyClassName}
+            actionsClassName={workspaceToastActionsClassName}
+            dismissClassName={workspaceToastDismissClassName}
+            messageClassName={accountClaimMessageClassName}
+          />
         ) : null}
         {dataSource === "demo" && (!requireJoin || canManagePeople) ? (
           <label className={rolePreviewToolbarClassName}>
@@ -1373,4 +1388,73 @@ function persistAccountSession(session: AccountSession | null) {
 
 function persistTripDraft(trip: Trip) {
   getBrowserLocalStorage()?.setItem(tripStorageKey, JSON.stringify(trip));
+}
+
+interface WorkspaceToastProps {
+  accountSession: AccountSession | null;
+  memberUserId: string | null | undefined;
+  claimState: { status: "idle" | "saving"; message: string | null };
+  canClaim: boolean;
+  dismissing: boolean;
+  onClaim: () => void;
+  onDismiss: () => void;
+  className: string;
+  iconClassName: string;
+  bodyClassName: string;
+  actionsClassName: string;
+  dismissClassName: string;
+  messageClassName: string;
+}
+
+function WorkspaceToast({
+  accountSession,
+  memberUserId,
+  claimState,
+  canClaim,
+  dismissing,
+  onClaim,
+  onDismiss,
+  className,
+  iconClassName,
+  bodyClassName,
+  actionsClassName,
+  dismissClassName,
+  messageClassName,
+}: WorkspaceToastProps) {
+  const isClaimed = Boolean(accountSession && memberUserId);
+  const title = isClaimed ? "เชื่อมต่อ account แล้ว" : accountSession ? "ผูกตัวตนกับ account" : "เข้าแบบ temp";
+  const detail = isClaimed
+    ? "ตัวตนนี้ผูกกับ account แล้ว"
+    : accountSession
+      ? "ผูกตัวตน temp นี้กับ account เพื่อเก็บประวัติและสถิติ"
+      : "เข้าสู่ระบบจากหน้า access เพื่อผูก identity นี้กับ account ภายหลัง";
+
+  return (
+    <div className={className} data-dismissing={dismissing ? "true" : undefined} role="status" aria-live="polite">
+      <span className={iconClassName} aria-hidden="true">
+        <Icon name={isClaimed ? "check" : "clock"} />
+      </span>
+      <div className={bodyClassName}>
+        <strong>{title}</strong>
+        <span>{detail}</span>
+        {claimState.message ? <span className={messageClassName}>{claimState.message}</span> : null}
+      </div>
+      <div className={actionsClassName}>
+        {canClaim ? (
+          <Button type="button" variant="secondary" onClick={onClaim} disabled={claimState.status === "saving"}>
+            <Icon name="check" />
+            ผูกตัวตน
+          </Button>
+        ) : null}
+        <button
+          type="button"
+          className={dismissClassName}
+          aria-label="ปิดการแจ้งเตือน"
+          onClick={onDismiss}
+        >
+          <Icon name="x" />
+        </button>
+      </div>
+    </div>
+  );
 }

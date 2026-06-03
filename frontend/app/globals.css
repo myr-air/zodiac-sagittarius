@@ -696,3 +696,36 @@ button:disabled,
   }
 }
 
+/* ─── Workspace toast notification ──────────────────────────────────────── */
+
+@keyframes workspace-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(-18px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes workspace-toast-out {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-12px) scale(0.97);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .workspace-toast {
+    animation: workspace-toast-in 280ms cubic-bezier(0.2, 0.8, 0.3, 1) both;
+  }
+
+  .workspace-toast[data-dismissing="true"] {
+    animation: workspace-toast-out 220ms cubic-bezier(0.4, 0, 1, 1) both;
+  }
+}
