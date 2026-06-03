@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "NODE_OPTIONS=--no-warnings next dev --hostname 127.0.0.1 --port 5180",
     "build": "NODE_OPTIONS=--no-warnings next build",
-    "start": "NODE_OPTIONS=--no-warnings next start --hostname 127.0.0.1 --port 5180",
+    "start": "NODE_OPTIONS=--no-warnings next start --hostname ${HOSTNAME:-127.0.0.1} --port ${PORT:-5180}",
     "lint": "eslint .",
     "storybook": "NODE_OPTIONS=--no-warnings STORYBOOK_DISABLE_TELEMETRY=1 storybook dev -p 6006",
     "build-storybook": "NODE_OPTIONS=--no-warnings STORYBOOK_DISABLE_TELEMETRY=1 storybook build",

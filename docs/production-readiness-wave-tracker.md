@@ -285,6 +285,8 @@ passed locally with Docker Postgres on 2026-06-03.
 Wave status: production freeze checklist added, HTTP tracing enabled, repo-level
 local verification green, local real API e2e green, and a GitHub Actions
 production-readiness workflow runs the local gate with Postgres + Playwright.
+Backend and frontend Dockerfiles plus `make container-build` now provide a
+repeatable production image build path.
 Final ship remains gated on staging environment sign-off, rollback execution,
 and alert routing; `make staging-signoff-check` now enforces those external
 evidence fields, and `make production-env-check` blocks unsafe production
@@ -304,7 +306,7 @@ allowlists and email delivery configuration.
 ### W5-PROD-003: Update production-ready docs
 - **Owner**: Docs
 - **Estimate**: 1h
-- **Status**: `docs/future-production-features.md` updated.
+- **Status**: `docs/future-production-features.md` updated; production freeze checklist now includes container image build verification.
 
 ### W5-PROD-004: Security/a11y/browser final sweep
 - **Owner**: QA

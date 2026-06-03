@@ -178,12 +178,19 @@ describe("Sagittarius project scaffold", () => {
 
   it("keeps production-readiness gates repeatable from the root Makefile", () => {
     const makefile = readFileSync(join(repoRoot, "Makefile"), "utf8");
+    const packageJson = JSON.parse(readFileSync(join(frontendRoot, "package.json"), "utf8")) as {
+      scripts?: Record<string, string>;
+    };
     const apiMod = readFileSync(join(repoRoot, "backend/crates/sagittarius-api/src/api/mod.rs"), "utf8");
     const apiMain = readFileSync(join(repoRoot, "backend/crates/sagittarius-api/src/main.rs"), "utf8");
     const productionEnvCheck = readFileSync(join(frontendRoot, "scripts/check-production-env.ts"), "utf8");
     const workflow = readFileSync(join(repoRoot, ".github/workflows/production-readiness.yml"), "utf8");
 
+    expect(existsSync(join(repoRoot, ".dockerignore"))).toBe(true);
+    expect(existsSync(join(repoRoot, "backend/Dockerfile"))).toBe(true);
+    expect(existsSync(join(repoRoot, "frontend/Dockerfile"))).toBe(true);
     expect(makefile).toContain("production-readiness-local: staging-preflight verify frontend-e2e-local frontend-e2e-auth-browser api-trace-smoke perf-smoke db-rollback-stop-notes-test");
+    expect(makefile).toContain("container-build:");
     expect(makefile).toContain("staging-preflight: db-ensure-psql");
     expect(makefile).toContain("staging-signoff-check:");
     expect(makefile).toContain("production-env-check:");
@@ -200,6 +207,7 @@ describe("Sagittarius project scaffold", () => {
     expect(productionEnvCheck).toContain("EMAIL_DELIVERY");
     expect(productionEnvCheck).toContain("PASSKEY_ALLOWED_ORIGINS");
     expect(productionEnvCheck).toContain("SMTP_PASSWORD");
+    expect(packageJson.scripts?.start).toContain("${HOSTNAME:-127.0.0.1}");
     expect(workflow).toContain("postgres:17-alpine");
     expect(workflow).toContain("bun install --frozen-lockfile");
     expect(workflow).toContain("bunx playwright install --with-deps chromium");

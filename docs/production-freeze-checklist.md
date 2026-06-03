@@ -85,6 +85,7 @@ Production can open only when:
 
 - staging DB migration is verified
 - backend integration and frontend targeted tests pass
+- production container images build successfully with `make container-build`
 - real browser e2e write journeys pass
 - no known P1/P2 issues remain
 - rollback owner and feature owner have signed off
