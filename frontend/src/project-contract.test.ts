@@ -155,10 +155,12 @@ describe("Sagittarius project scaffold", () => {
     expect(packageJson.scripts?.["test:e2e:local"]).toBe("bun run scripts/run-local-real-api-e2e.ts");
     expect(packageJson.scripts?.["test:e2e:auth-browser"]).toBe("bun run scripts/run-local-real-browser-auth-e2e.ts");
     expect(packageJson.scripts?.["test:api-trace-smoke"]).toBe("bun run scripts/run-local-api-trace-smoke.ts");
+    expect(packageJson.scripts?.["test:perf-smoke"]).toBe("bun run scripts/run-local-perf-smoke.ts");
     expect(packageJson.scripts?.["test:staging-preflight"]).toBe("bun run scripts/check-staging-preflight.ts");
     expect(existsSync(join(frontendRoot, "scripts/run-local-real-api-e2e.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "scripts/run-local-real-browser-auth-e2e.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "scripts/run-local-api-trace-smoke.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "scripts/run-local-perf-smoke.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "scripts/check-staging-preflight.ts"))).toBe(true);
     const seedE2e = readFileSync(join(repoRoot, "backend/crates/sagittarius-api/src/bin/seed_e2e.rs"), "utf8");
     expect(seedE2e).toContain("0005_account_portal.sql");
@@ -175,9 +177,10 @@ describe("Sagittarius project scaffold", () => {
     const apiMod = readFileSync(join(repoRoot, "backend/crates/sagittarius-api/src/api/mod.rs"), "utf8");
     const apiMain = readFileSync(join(repoRoot, "backend/crates/sagittarius-api/src/main.rs"), "utf8");
 
-    expect(makefile).toContain("production-readiness-local: staging-preflight verify frontend-e2e-local frontend-e2e-auth-browser api-trace-smoke db-rollback-stop-notes-test");
+    expect(makefile).toContain("production-readiness-local: staging-preflight verify frontend-e2e-local frontend-e2e-auth-browser api-trace-smoke perf-smoke db-rollback-stop-notes-test");
     expect(makefile).toContain("staging-preflight: db-ensure-psql");
     expect(makefile).toContain("api-trace-smoke: db-init-test");
+    expect(makefile).toContain("perf-smoke: db-init-test");
     expect(makefile).toContain("db-rollback-stop-notes-test:");
     expect(makefile).toContain("ROLLBACK_TEST_DATABASE_NAME ?= sagittarius_rollback_test");
     expect(makefile).toContain("DROP TABLE IF EXISTS stop_notes");

@@ -35,6 +35,7 @@ make verify PSQL='docker exec -i sagittarius-test-postgres psql'
 make frontend-e2e-local PSQL='docker exec -i sagittarius-test-postgres psql'
 make frontend-e2e-auth-browser PSQL='docker exec -i sagittarius-test-postgres psql'
 make api-trace-smoke PSQL='docker exec -i sagittarius-test-postgres psql'
+make perf-smoke PSQL='docker exec -i sagittarius-test-postgres psql'
 make db-rollback-stop-notes-test PSQL='docker exec -i sagittarius-test-postgres psql'
 ```
 
@@ -66,6 +67,12 @@ Required journeys:
 - manage expenses: create, update, delete, summary reload
 - create/update/delete stop note
 - permission blocked path for viewer/traveler where applicable
+
+Perf smoke:
+
+- `make perf-smoke PSQL='docker exec -i sagittarius-test-postgres psql'`
+  starts a real seeded API and checks concurrent cockpit/member/expense-summary
+  reads against `SAGITTARIUS_PERF_SMOKE_MAX_P95_MS`.
 
 ## Security QA
 
@@ -116,3 +123,4 @@ Latest local evidence on 2026-06-03:
 - `make frontend-e2e-local PSQL='docker exec -i sagittarius-test-postgres psql'` passed.
 - `make frontend-e2e-auth-browser PSQL='docker exec -i sagittarius-test-postgres psql'` passed.
 - `make api-trace-smoke PSQL='docker exec -i sagittarius-test-postgres psql'` passed.
+- `make perf-smoke PSQL='docker exec -i sagittarius-test-postgres psql'` passed.

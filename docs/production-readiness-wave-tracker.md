@@ -276,7 +276,9 @@ passed locally with Docker Postgres on 2026-06-03.
 ### W4-TEST-006: Perf smoke + retry/idempotency checks
 - **Owner**: Backend
 - **Estimate**: 3h
-- **Status**: Basic suite smoke passed through API contract tests and real API/browser e2e.
+- **Status**: Local perf smoke target added and included in
+  `production-readiness-local`; it seeds a real DB/API, joins a trip, and checks
+  concurrent cockpit/member/expense-summary reads against a p95 latency budget.
 
 ## Wave 5 – Production Readiness Freeze
 
