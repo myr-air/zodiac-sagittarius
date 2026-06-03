@@ -1,0 +1,71 @@
+name: Production Readiness
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - "codex/**"
+  workflow_dispatch:
+
+jobs:
+  local-gate:
+    name: Local production readiness gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: sagittarius_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d sagittarius_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+
+    env:
+      DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/sagittarius
+      TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/sagittarius_test
+      PGADMIN_URL: postgres://postgres:postgres@127.0.0.1:5432/postgres
+      SAGITTARIUS_BIND_ADDR: 127.0.0.1:5181
+      RUST_LOG: info,tower_http=info,sagittarius_api=info
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install system dependencies
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: "1.95"
+          components: rustfmt,clippy
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: backend
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.5
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: bun install --frozen-lockfile
+
+      - name: Install Chromium for browser e2e
+        working-directory: frontend
+        run: bunx playwright install --with-deps chromium
+
+      - name: Run local production readiness gate
+        run: make production-readiness-local PSQL=psql

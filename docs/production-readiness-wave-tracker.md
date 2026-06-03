@@ -283,9 +283,11 @@ passed locally with Docker Postgres on 2026-06-03.
 ## Wave 5 – Production Readiness Freeze
 
 Wave status: production freeze checklist added, HTTP tracing enabled, repo-level
-local verification green, and local real API e2e green. Final ship remains
-gated on staging environment sign-off, rollback execution, and alert routing;
-`make staging-signoff-check` now enforces those external evidence fields.
+local verification green, local real API e2e green, and a GitHub Actions
+production-readiness workflow runs the local gate with Postgres + Playwright.
+Final ship remains gated on staging environment sign-off, rollback execution,
+and alert routing; `make staging-signoff-check` now enforces those external
+evidence fields.
 
 ### W5-PROD-001: Logging + alerting for writes
 - **Owner**: SRE

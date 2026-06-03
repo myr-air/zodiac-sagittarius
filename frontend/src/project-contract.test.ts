@@ -178,6 +178,7 @@ describe("Sagittarius project scaffold", () => {
     const makefile = readFileSync(join(repoRoot, "Makefile"), "utf8");
     const apiMod = readFileSync(join(repoRoot, "backend/crates/sagittarius-api/src/api/mod.rs"), "utf8");
     const apiMain = readFileSync(join(repoRoot, "backend/crates/sagittarius-api/src/main.rs"), "utf8");
+    const workflow = readFileSync(join(repoRoot, ".github/workflows/production-readiness.yml"), "utf8");
 
     expect(makefile).toContain("production-readiness-local: staging-preflight verify frontend-e2e-local frontend-e2e-auth-browser api-trace-smoke perf-smoke db-rollback-stop-notes-test");
     expect(makefile).toContain("staging-preflight: db-ensure-psql");
@@ -190,6 +191,10 @@ describe("Sagittarius project scaffold", () => {
     expect(apiMod).toContain("DefaultOnRequest::new().level(Level::INFO)");
     expect(apiMod).toContain("DefaultOnResponse::new().level(Level::INFO)");
     expect(apiMain).toContain("EnvFilter::try_from_default_env()");
+    expect(workflow).toContain("postgres:17-alpine");
+    expect(workflow).toContain("bun install --frozen-lockfile");
+    expect(workflow).toContain("bunx playwright install --with-deps chromium");
+    expect(workflow).toContain("make production-readiness-local PSQL=psql");
   });
 
   it("keeps production source free of unimplemented runtime placeholders", () => {
