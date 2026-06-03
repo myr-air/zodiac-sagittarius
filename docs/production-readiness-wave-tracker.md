@@ -294,7 +294,8 @@ Staging preflight enforces those probes when
 `SAGITTARIUS_REQUIRE_PREFLIGHT_API_CHECK=1` is set.
 Final ship remains gated on staging environment sign-off, rollback execution,
 and alert routing; `make staging-signoff-check` now enforces those external
-evidence fields, and `make production-env-check` blocks unsafe production
+evidence fields, rejects placeholder owners or localhost staging URLs, and
+`make production-env-check` blocks unsafe production
 runtime values before deploy, including missing production CORS/passkey
 allowlists and email delivery configuration.
 

@@ -166,6 +166,10 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "scripts/check-production-env.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "scripts/check-staging-preflight.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "scripts/check-staging-signoff.ts"))).toBe(true);
+    const stagingSignoff = readFileSync(join(frontendRoot, "scripts/check-staging-signoff.ts"), "utf8");
+    expect(stagingSignoff).toContain("checkPublicHttpsUrl");
+    expect(stagingSignoff).toContain("must not point at localhost");
+    expect(stagingSignoff).toContain("must be a real owner, not TBD");
     const seedE2e = readFileSync(join(repoRoot, "backend/crates/sagittarius-api/src/bin/seed_e2e.rs"), "utf8");
     expect(seedE2e).toContain("0005_account_portal.sql");
     expect(seedE2e).toContain("0006_trip_countries.sql");

@@ -96,6 +96,8 @@ Production can open only when:
 - real browser e2e write journeys pass
 - no known P1/P2 issues remain
 - rollback owner and feature owner have signed off
+- staging sign-off evidence uses real HTTPS staging URLs and named owners, not
+  localhost or `TBD`
 
 Enforce the external evidence gate before opening production:
 

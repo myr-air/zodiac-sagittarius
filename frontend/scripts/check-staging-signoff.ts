@@ -30,6 +30,16 @@ for (const [name, label] of requiredTextChecks) {
   }
 }
 
+checkEnvironment(process.env.SAGITTARIUS_STAGING_ENVIRONMENT ?? "");
+checkPublicHttpsUrl("SAGITTARIUS_STAGING_API_BASE_URL", process.env.SAGITTARIUS_STAGING_API_BASE_URL ?? "");
+checkPublicHttpsUrl(
+  "SAGITTARIUS_STAGING_FRONTEND_URL",
+  process.env.SAGITTARIUS_STAGING_FRONTEND_URL ?? "",
+);
+checkEvidenceUrl("SAGITTARIUS_STAGING_EVIDENCE_URL", process.env.SAGITTARIUS_STAGING_EVIDENCE_URL ?? "");
+checkOwner("SAGITTARIUS_FEATURE_OWNER", process.env.SAGITTARIUS_FEATURE_OWNER ?? "");
+checkOwner("SAGITTARIUS_ROLLBACK_OWNER", process.env.SAGITTARIUS_ROLLBACK_OWNER ?? "");
+
 if (failures.length) {
   throw new Error(`Staging sign-off failed:\n- ${failures.join("\n- ")}`);
 }
@@ -52,5 +62,50 @@ const summary = [
 ].join("\n");
 
 console.log(summary);
+
+function checkEnvironment(value: string) {
+  if (!value) return;
+  const lower = value.toLowerCase();
+  if (!lower.includes("staging") && !lower.includes("test")) {
+    failures.push("SAGITTARIUS_STAGING_ENVIRONMENT must name a staging/test environment");
+  }
+  if (lower.includes("prod")) {
+    failures.push("SAGITTARIUS_STAGING_ENVIRONMENT must not be production");
+  }
+}
+
+function checkPublicHttpsUrl(name: string, value: string) {
+  if (!value) return;
+  let url: URL;
+  try {
+    url = new URL(value);
+  } catch {
+    failures.push(`${name} must be a valid URL`);
+    return;
+  }
+  if (url.protocol !== "https:") {
+    failures.push(`${name} must use https://`);
+  }
+  if (["localhost", "127.0.0.1", "::1"].includes(url.hostname)) {
+    failures.push(`${name} must not point at localhost`);
+  }
+}
+
+function checkEvidenceUrl(name: string, value: string) {
+  if (!value) return;
+  try {
+    const url = new URL(value);
+    if (!["http:", "https:"].includes(url.protocol)) failures.push(`${name} must be an http(s) URL`);
+  } catch {
+    failures.push(`${name} must be a valid evidence URL`);
+  }
+}
+
+function checkOwner(name: string, value: string) {
+  if (!value) return;
+  if (value.length < 3 || /^tbd$/i.test(value)) {
+    failures.push(`${name} must be a real owner, not TBD`);
+  }
+}
 
 export {};

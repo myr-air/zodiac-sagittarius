@@ -97,6 +97,9 @@ SAGITTARIUS_ROLLBACK_OWNER="Rollback Owner" \
 make staging-signoff-check
 ```
 
+The sign-off check rejects localhost/non-HTTPS staging URLs, production
+environment names, and placeholder owners like `TBD`.
+
 Perf smoke:
 
 - `make perf-smoke PSQL='docker exec -i sagittarius-test-postgres psql'`
