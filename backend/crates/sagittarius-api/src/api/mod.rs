@@ -2,6 +2,7 @@ pub mod account;
 pub mod error;
 pub mod expenses;
 pub mod extractors;
+pub mod health;
 pub mod itinerary;
 pub mod join;
 pub mod members;
@@ -42,7 +43,8 @@ pub fn router(state: AppState) -> Router {
 
 fn api_v1() -> Router<AppState> {
     Router::new()
-        .route("/health", get(|| async { "ok" }))
+        .route("/health", get(health::liveness))
+        .route("/readiness", get(health::readiness))
         .route("/auth/email/challenges", post(account::start_email_login))
         .route("/auth/email/sessions", post(account::finish_email_login))
         .route(

@@ -54,6 +54,12 @@ Run these before staging sign-off:
 make production-readiness-local PSQL='docker exec -i sagittarius-test-postgres psql'
 ```
 
+Probe staging API runtime before browser sign-off:
+
+- `GET /api/v1/health` returns `200 ok` without requiring auth.
+- `GET /api/v1/readiness` returns `200 {"status":"ready"}` only when the API can
+  query the staging database.
+
 Then run browser/core journeys against real API:
 
 Use the `make frontend-e2e-local` and `make frontend-e2e-auth-browser`

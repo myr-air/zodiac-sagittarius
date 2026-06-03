@@ -5,6 +5,7 @@ use http::{
 };
 use sagittarius_api::domain::errors::ServiceError;
 use serde_json::Value;
+use sqlx::postgres::PgPoolOptions;
 use tower::ServiceExt;
 
 #[tokio::test]
@@ -27,6 +28,55 @@ async fn health_returns_ok() {
         .unwrap();
 
     assert_eq!(&body[..], b"ok");
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn readiness_checks_database(pool: sqlx::PgPool) {
+    let app = sagittarius_api::api::router(sagittarius_api::app::AppState::with_pool(pool));
+    let response = app
+        .oneshot(
+            Request::builder()
+                .uri("/api/v1/readiness")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::OK);
+
+    let body = axum::body::to_bytes(response.into_body(), usize::MAX)
+        .await
+        .unwrap();
+    let body: Value = serde_json::from_slice(&body).unwrap();
+
+    assert_eq!(body["status"], "ready");
+}
+
+#[tokio::test]
+async fn readiness_returns_unavailable_when_database_is_down() {
+    let pool = PgPoolOptions::new()
+        .connect_lazy("postgres://postgres:postgres@127.0.0.1:1/sagittarius_missing")
+        .unwrap();
+    let app = sagittarius_api::api::router(sagittarius_api::app::AppState::with_pool(pool));
+    let response = app
+        .oneshot(
+            Request::builder()
+                .uri("/api/v1/readiness")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::SERVICE_UNAVAILABLE);
+
+    let body = axum::body::to_bytes(response.into_body(), usize::MAX)
+        .await
+        .unwrap();
+    let body: Value = serde_json::from_slice(&body).unwrap();
+
+    assert_eq!(body["status"], "unready");
 }
 
 #[tokio::test]

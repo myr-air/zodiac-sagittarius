@@ -13,6 +13,10 @@ make staging-preflight PSQL='docker exec -i sagittarius-test-postgres psql'
 ## Logging And Alerts
 
 - Run API with `RUST_LOG=info,tower_http=info,sagittarius_api=info`.
+- Configure the deploy platform to use `/api/v1/health` for liveness and
+  `/api/v1/readiness` for traffic readiness.
+- Confirm `/api/v1/readiness` returns `200 {"status":"ready"}` only after the
+  API can query the database.
 - Confirm write requests emit `INFO` HTTP trace spans with status and latency.
 - Route 4xx/5xx write-operation logs to the staging alert sink before production.
 - Alert on repeated `401`, `403`, `409`, and `500` spikes for:
@@ -86,6 +90,8 @@ Production can open only when:
 - staging DB migration is verified
 - backend integration and frontend targeted tests pass
 - production container images build successfully with `make container-build`
+- liveness/readiness probes are configured against `/api/v1/health` and
+  `/api/v1/readiness`
 - real browser e2e write journeys pass
 - no known P1/P2 issues remain
 - rollback owner and feature owner have signed off

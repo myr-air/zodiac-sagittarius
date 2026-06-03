@@ -287,6 +287,8 @@ local verification green, local real API e2e green, and a GitHub Actions
 production-readiness workflow runs the local gate with Postgres + Playwright.
 Backend and frontend Dockerfiles plus `make container-build` now provide a
 repeatable production image build path.
+The API exposes `/api/v1/health` for liveness and `/api/v1/readiness` for
+database-backed traffic readiness.
 Final ship remains gated on staging environment sign-off, rollback execution,
 and alert routing; `make staging-signoff-check` now enforces those external
 evidence fields, and `make production-env-check` blocks unsafe production
@@ -297,6 +299,13 @@ allowlists and email delivery configuration.
 - **Owner**: SRE
 - **Estimate**: 4h
 - **Status**: HTTP request/response tracing emits at `INFO`, `RUST_LOG` env filtering is honored by the API binary, local API trace smoke target is available, production CORS uses an origin allowlist, email delivery is required for account login, and production env check requires `tower_http`/`sagittarius_api` logging before deploy; alert routing checklist documented.
+
+### W5-PROD-001A: Runtime liveness/readiness probes
+- **Owner**: SRE
+- **Estimate**: 1h
+- **Status**: Implemented. `/api/v1/health` remains a cheap liveness probe;
+  `/api/v1/readiness` checks database connectivity and returns `503` when the
+  API should not receive traffic.
 
 ### W5-PROD-002: Rollback plan + migration rollback verification
 - **Owner**: Backend

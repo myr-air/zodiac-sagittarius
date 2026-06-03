@@ -199,6 +199,8 @@ describe("Sagittarius project scaffold", () => {
     expect(makefile).toContain("db-rollback-stop-notes-test:");
     expect(makefile).toContain("ROLLBACK_TEST_DATABASE_NAME ?= sagittarius_rollback_test");
     expect(makefile).toContain("DROP TABLE IF EXISTS stop_notes");
+    expect(apiMod).toContain(".route(\"/health\", get(health::liveness))");
+    expect(apiMod).toContain(".route(\"/readiness\", get(health::readiness))");
     expect(apiMod).toContain("DefaultOnRequest::new().level(Level::INFO)");
     expect(apiMod).toContain("DefaultOnResponse::new().level(Level::INFO)");
     expect(apiMod).toContain("SAGITTARIUS_ALLOWED_ORIGINS");
