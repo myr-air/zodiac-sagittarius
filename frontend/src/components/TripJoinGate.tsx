@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, FormEvent, useMemo, useState } from "react";
+import { Fragment, FormEvent, useEffect, useMemo, useState } from "react";
 import { Icon } from "./icons";
 import { Badge, Button } from "./ui";
 import { LanguageSwitch } from "@/src/i18n/LanguageSwitch";
@@ -23,6 +23,7 @@ interface TripJoinGateProps {
   embedded?: boolean;
   variant?: "default" | "trip-access";
   initialJoinCode?: string;
+  initialJoinToken?: string | null;
   onTripChange: (trip: Trip) => void;
   onAuthenticated: (session: TripParticipantSession) => void;
   onCockpitLoaded?: (cockpit: TripCockpit) => void;
@@ -80,7 +81,7 @@ const tripAccessRouteLineClassName =
 const tripAccessNotesClassName =
   "trip-access-notes relative z-[1] m-0 mt-[18px] grid list-none gap-2.5 p-0 max-[767px]:hidden [&_.icon]:size-[34px] [&_.icon]:rounded-[10px] [&_.icon]:bg-[var(--color-primary-soft)] [&_.icon]:p-2 [&_.icon]:text-[var(--color-primary-strong)] [&_li]:grid [&_li]:grid-cols-[34px_minmax(0,1fr)] [&_li]:items-center [&_li]:gap-2.5 [&_li]:rounded-[14px] [&_li]:border [&_li]:border-[rgb(226_232_240_/_0.82)] [&_li]:bg-[rgb(255_255_255_/_0.82)] [&_li]:p-3 [&_small]:block [&_small]:text-xs [&_small]:font-[650] [&_small]:leading-[17px] [&_small]:text-[var(--color-text-muted)] [&_strong]:block [&_strong]:text-[13px] [&_strong]:leading-[18px] [&_strong]:text-[var(--color-text)]";
 
-export function TripJoinGate({ trip, apiClient, embedded = false, variant = "default", initialJoinCode, onTripChange, onAuthenticated, onCockpitLoaded }: TripJoinGateProps) {
+export function TripJoinGate({ trip, apiClient, embedded = false, variant = "default", initialJoinCode, initialJoinToken, onTripChange, onAuthenticated, onCockpitLoaded }: TripJoinGateProps) {
   const { t } = useI18n();
   const [step, setStep] = useState<"room" | "participant">("room");
   const [joinId, setJoinId] = useState(initialJoinCode ?? "");
@@ -93,6 +94,7 @@ export function TripJoinGate({ trip, apiClient, embedded = false, variant = "def
   const [showParticipantPassword, setShowParticipantPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [resolvedInitialJoinToken, setResolvedInitialJoinToken] = useState(false);
 
   /* v8 ignore next */
   const activeTrip = joinedTrip ?? trip ?? null;
@@ -103,6 +105,34 @@ export function TripJoinGate({ trip, apiClient, embedded = false, variant = "def
   );
   /* v8 ignore next */
   const participantMembers = activeTrip?.members ?? [];
+
+  useEffect(() => {
+    if (resolvedInitialJoinToken || !initialJoinToken || !apiClient?.resolveJoinInviteToken) return;
+    let cancelled = false;
+    setResolvedInitialJoinToken(true);
+    setIsSubmitting(true);
+    apiClient.resolveJoinInviteToken(initialJoinToken)
+      .then((response) => {
+        if (cancelled) return;
+        const nextTrip = tripFromJoinResponse(response);
+        setJoinedTrip(nextTrip);
+        setJoinSessionToken(response.joinSessionToken);
+        setSelectedMemberId(null);
+        setError(null);
+        setStep("participant");
+      })
+      .catch((caught) => {
+        if (cancelled) return;
+        setError(errorMessage(caught, t.join.errors.tripCredentials));
+        setStep("room");
+      })
+      .finally(() => {
+        if (!cancelled) setIsSubmitting(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [apiClient, initialJoinToken, resolvedInitialJoinToken, t.join.errors.tripCredentials]);
 
   async function submitTripRoom(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

@@ -67,6 +67,7 @@ interface SagittariusAppProps {
   apiClient?: TripApiClient;
   routeTripId?: string;
   initialJoinCode?: string;
+  initialJoinToken?: string | null;
   accessMode?: "combined" | "account-login" | "account-register" | "account-portal" | "trip-access";
   accountSuccessRedirectHref?: string;
   portalSection?: PortalSection;
@@ -79,6 +80,7 @@ export function SagittariusApp({
   apiClient,
   routeTripId,
   initialJoinCode,
+  initialJoinToken,
   accessMode = "combined",
   accountSuccessRedirectHref,
   portalSection = "dashboard",
@@ -99,11 +101,13 @@ export function SagittariusApp({
   }));
   const [participantSession, setParticipantSession] = useState<TripParticipantSession | null>(null);
   const [isCockpitLoaded, setIsCockpitLoaded] = useState(false);
+  const [sessionRestored, setSessionRestored] = useState(false);
   const [accessError, setAccessError] = useState<string | null>(null);
   const [accountSession, setAccountSession] = useState<AccountSession | null>(null);
   const [accountSessionLoaded, setAccountSessionLoaded] = useState(false);
   const [accountClaimState, setAccountClaimState] = useState<{ status: "idle" | "saving"; message: string | null }>({ status: "idle", message: null });
   const [accountTripAccessDeniedRouteId, setAccountTripAccessDeniedRouteId] = useState<string | null>(null);
+  const [joinInviteToken, setJoinInviteToken] = useState<string | null>(initialJoinToken ?? null);
   const [toastDismissed, setToastDismissed] = useState(false);
   const [toastDismissing, setToastDismissing] = useState(false);
   const [suggestions, setSuggestions] = useState<Suggestion[]>(() => tripFixtureSuggestions.map((suggestion) => ({ ...suggestion })));
@@ -170,6 +174,7 @@ export function SagittariusApp({
   }, [resolveCurrentView]);
 
   useEffect(() => {
+    setSessionRestored(false);
     const timeout = window.setTimeout(() => {
       const persistedTrip = loadPersistedTrip();
       const nextTrip = persistedTrip ?? seedTrip;
@@ -181,7 +186,10 @@ export function SagittariusApp({
       if (persistedSession) {
         setParticipantSession(persistedSession);
         setCurrentMemberId(persistedSession.memberId);
+      } else {
+        setParticipantSession(null);
       }
+      setSessionRestored(true);
     }, 0);
 
     return () => window.clearTimeout(timeout);
@@ -759,6 +767,13 @@ export function SagittariusApp({
     commitTrip((current) => createTripParticipant(current, input));
   }
 
+  async function rotateJoinInviteToken() {
+    if (!canManagePeople || !isApiMode || !resolvedApiClient || !participantSession?.sessionToken) return;
+    const response = await resolvedApiClient.rotateJoinInviteToken?.(trip.id, participantSession.sessionToken);
+    if (!response) return;
+    setJoinInviteToken(response.token);
+  }
+
   async function suggestSelectedStop() {
     /* v8 ignore next */
     if (!canCreateSuggestion || !selectedItem) return;
@@ -1050,6 +1065,7 @@ export function SagittariusApp({
 
   useEffect(() => {
     if (
+      sessionRestored &&
       requireJoin &&
       routeTripId &&
       !sessionMember &&
@@ -1063,7 +1079,7 @@ export function SagittariusApp({
       const joinHref = appRoutes.join(undefined, returnTo);
       window.location.replace(joinHref);
     }
-  }, [requireJoin, routeTripId, sessionMember, isAccountTripAccessPending, isTripLoading]);
+  }, [sessionRestored, requireJoin, routeTripId, sessionMember, isAccountTripAccessPending, isTripLoading]);
 
   if (isAccountTripAccessPending || isTripLoading) {
     return <TripAccessLoadingFrame />;
@@ -1081,6 +1097,7 @@ export function SagittariusApp({
         apiClient={resolvedApiClient}
         initialError={accessError}
         initialJoinCode={initialJoinCode}
+        initialJoinToken={initialJoinToken}
         trip={trip}
         onAccountSessionChange={changeAccountSession}
         onAuthenticated={authenticateParticipant}
@@ -1105,6 +1122,7 @@ export function SagittariusApp({
         apiClient={resolvedApiClient}
         initialError={accessError}
         initialJoinCode={initialJoinCode}
+        initialJoinToken={initialJoinToken}
         trip={routeTripId ? undefined : trip}
         onAccountSessionChange={changeAccountSession}
         onAuthenticated={authenticateParticipant}
@@ -1163,10 +1181,12 @@ export function SagittariusApp({
                 trip={trip}
                 currentMember={currentMember}
                 canManagePeople={canManagePeople}
+                joinInviteToken={joinInviteToken}
                 onChangeMemberAccessStatus={changeMemberAccessStatus}
                 onChangeMemberPassword={changeMemberPassword}
                 onChangeMemberRole={changeMemberRole}
                 onCreateMember={createMember}
+                onRotateJoinInviteToken={isApiMode ? rotateJoinInviteToken : undefined}
                 onResetMemberClaim={resetMemberClaim}
                 onTransferOwnership={
                   currentMember.role === "owner" && accountSession && participantSession && resolvedApiClient
