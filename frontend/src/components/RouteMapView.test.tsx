@@ -12,6 +12,7 @@ import {
   liveMapStatusText,
   RouteMapView,
 } from "./RouteMapView";
+import { getTripDates } from "@/src/trip/itinerary";
 
 const render = (ui: Parameters<typeof renderWithI18n>[0]) => {
   const result = renderWithI18n(ui, { locale: "th" });
@@ -84,6 +85,9 @@ vi.mock("maplibre-gl", () => ({
 }));
 
 describe("RouteMapView", () => {
+  const tripDates = getTripDates(tripFixture.trip.startDate, tripFixture.trip.endDate);
+  const hongKongDay = tripDates[1] ?? tripFixture.trip.startDate;
+
   afterEach(() => {
     maplibreMock.maps.length = 0;
     maplibreMock.markers.length = 0;
@@ -118,7 +122,7 @@ describe("RouteMapView", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /วันที่ 2/ }));
 
-    const dayTwoCount = regionalItems.filter((item) => item.day === "2025-05-16").length;
+    const dayTwoCount = regionalItems.filter((item) => item.day === hongKongDay).length;
     expect(screen.getByText(/จุดที่แสดง/)).toHaveTextContent(`${dayTwoCount}/${regionalItems.length} จุดที่แสดง`);
     expect(screen.getAllByText(/วันที่ 2/).length).toBeGreaterThan(0);
 
@@ -402,7 +406,7 @@ describe("RouteMapView", () => {
   });
 
   it("builds live map lines from mixed coordinate and fallback points", async () => {
-    const coordinateItems = tripFixture.planItems.filter((item) => item.day === "2025-05-16" && item.coordinates).slice(0, 2);
+    const coordinateItems = tripFixture.planItems.filter((item) => item.day === hongKongDay && item.coordinates).slice(0, 2);
     const mixedItems = [
       coordinateItems[0],
       { ...coordinateItems[0], id: "fallback-middle-stop", activity: "Fallback middle", coordinates: undefined },

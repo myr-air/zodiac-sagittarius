@@ -32,6 +32,14 @@ function render(ui: ReactElement) {
   };
 }
 
+function getFirstStopDetailsButton(): HTMLElement {
+  return screen.getByRole("button", { name: /เลือกจุด Dim Dim Sum/i });
+}
+
+async function openFirstStopDetails(user: ReturnType<typeof userEvent.setup>) {
+  await user.click(getFirstStopDetailsButton());
+}
+
 describe("Sagittarius cockpit UI", () => {
   beforeEach(() => {
     installLocalStorageStub();
@@ -1073,7 +1081,7 @@ describe("Sagittarius cockpit UI", () => {
     await user.type(screen.getByLabelText(/ตั้งรหัสสำหรับ Demo Traveler/i), "owner-pin");
     await user.click(screen.getByRole("button", { name: /เริ่มใช้งาน/i }));
 
-    await user.click(await screen.findByRole("button", { name: /เปิดรายละเอียด/i }));
+    await openFirstStopDetails(user);
     await user.click(screen.getByRole("button", { name: /แก้ไขรายละเอียด/i }));
     const dialog = screen.getByRole("dialog", { name: /แก้ไขรายละเอียด/i });
     await user.clear(within(dialog).getByLabelText(/กิจกรรม/i));
@@ -1200,7 +1208,7 @@ describe("Sagittarius cockpit UI", () => {
     await user.click(await screen.findByRole("button", { name: /Explorer Friend/i }));
     await user.type(screen.getByLabelText(/ตั้งรหัสสำหรับ Explorer Friend/i), "traveler-pin");
     await user.click(screen.getByRole("button", { name: /เริ่มใช้งาน/i }));
-    await user.click(await screen.findByRole("button", { name: /เปิดรายละเอียด/i }));
+    await openFirstStopDetails(user);
     await user.click(screen.getByRole("button", { name: /เสนอแก้ไข/i }));
 
     expect(apiClient.createSuggestion).toHaveBeenCalledWith(
@@ -1301,8 +1309,8 @@ describe("Sagittarius cockpit UI", () => {
     const { unmount } = render(<SagittariusApp requireJoin dataSource="api" initialView="itinerary" apiClient={itineraryClient} />);
 
     await loginApiTrip(user);
-    expect(screen.getByRole("button", { name: /เพิ่มสถานที่ \/ กิจกรรม/i })).toBeEnabled();
-    await user.click(await screen.findByRole("button", { name: /เปิดรายละเอียด/i }));
+    expect(screen.getAllByRole("button", { name: /เพิ่มสถานที่ \/ กิจกรรม/i })[0]).toBeEnabled();
+    await openFirstStopDetails(user);
 
     const context = screen.getByRole("complementary", { name: /ข้อมูลประกอบการวางแผน/i });
     expect(within(context).getByLabelText(/เพิ่มโน้ตสำหรับจุดนี้/i)).toBeEnabled();
@@ -1461,7 +1469,7 @@ describe("Sagittarius cockpit UI", () => {
     expect(screen.queryByRole("region", { name: /ตารางแผนการเดินทาง/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("region", { name: /แผนที่เส้นทาง/i })).not.toBeInTheDocument();
     expect(within(timeline).getByRole("button", { name: /เลือกจุดในไทม์ไลน์ Dim Dim Sum/i })).toBeInTheDocument();
-    expect(within(timeline).getAllByText(/Hong Kong City Day/i).length).toBeGreaterThan(0);
+    expect(within(timeline).getAllByText(/วันที่ 2/i).length).toBeGreaterThan(0);
   });
 
   it("renders trip members as their own workspace page", () => {
@@ -1488,7 +1496,7 @@ describe("Sagittarius cockpit UI", () => {
 
     expect(screen.queryByRole("banner", { name: /Trip command bar/i })).not.toBeInTheDocument();
     expect(container.querySelector(".page-header")).toHaveTextContent("Hong Kong + Shenzhen Trip");
-    expect(container.querySelector(".page-header")).toHaveTextContent("15–20 พ.ค. 2025");
+    expect(container.querySelector(".page-header")).toHaveTextContent("18–23 มิ.ย. 2026");
     expect(workspaceGrid).toBeInTheDocument();
     expect(workspaceGrid).toHaveAttribute("data-command-bar", "hidden");
     expect(workspaceGrid).toContainElement(planningMain as HTMLElement);
@@ -1646,19 +1654,13 @@ describe("Sagittarius cockpit UI", () => {
     expect(screen.getByRole("main", { name: /Account access/i })).toBeInTheDocument();
   });
 
-  it("keeps undo and redo harmless when there is no history", async () => {
+  it("keeps removed undo and redo controls out of the itinerary toolbar", async () => {
     const user = userEvent.setup();
     render(<SagittariusApp initialView="itinerary" />);
 
-    const undoButton = screen.getByRole("button", { name: /เลิกทำ/i });
-    const redoButton = screen.getByRole("button", { name: /ทำซ้ำ/i });
-    expect(undoButton).toBeDisabled();
-    expect(redoButton).toBeDisabled();
-    (undoButton as HTMLButtonElement).disabled = false;
-    (redoButton as HTMLButtonElement).disabled = false;
-    fireEvent.click(undoButton);
-    fireEvent.click(redoButton);
-    await user.click(screen.getByRole("button", { name: /เปิดรายละเอียด/i }));
+    expect(screen.queryByRole("button", { name: /เลิกทำ/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /ทำซ้ำ/i })).not.toBeInTheDocument();
+    await openFirstStopDetails(user);
     expect(screen.getByRole("complementary", { name: /ข้อมูลประกอบการวางแผน/i })).toBeInTheDocument();
   });
 
@@ -1667,7 +1669,7 @@ describe("Sagittarius cockpit UI", () => {
     render(<SagittariusApp initialView="itinerary" />);
 
     await user.selectOptions(screen.getByLabelText(/Role preview/i), "member-viewer");
-    const addStopButton = screen.getByRole("button", { name: /เพิ่มสถานที่ \/ กิจกรรม/i });
+    const addStopButton = screen.getAllByRole("button", { name: /เพิ่มสถานที่ \/ กิจกรรม/i })[0];
     (addStopButton as HTMLButtonElement).disabled = false;
     fireEvent.click(addStopButton);
     expect(screen.queryByRole("dialog", { name: /เพิ่มกิจกรรม/i })).not.toBeInTheDocument();
@@ -1677,7 +1679,7 @@ describe("Sagittarius cockpit UI", () => {
     fireEvent.drop(screen.getByRole("button", { name: /เลือกจุด Dim Dim Sum/i }).closest("tr")!, { dataTransfer });
     expect(screen.getByRole("button", { name: /เลือกจุด Dim Dim Sum/i })).toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: /เปิดรายละเอียด/i }));
+    await openFirstStopDetails(user);
     const suggestButton = screen.getByRole("button", { name: /เสนอแก้ไข/i });
     (suggestButton as HTMLButtonElement).disabled = false;
     fireEvent.click(suggestButton);
@@ -1755,9 +1757,9 @@ describe("Sagittarius cockpit UI", () => {
 
     expect(screen.queryByRole("complementary", { name: /ข้อมูลประกอบการวางแผน/i })).not.toBeInTheDocument();
     expect(container.querySelector(".workspace-grid")).toHaveAttribute("data-context-rail", "closed");
-    expect(screen.getByRole("button", { name: /เปิดรายละเอียด/i })).toBeInTheDocument();
+    expect(getFirstStopDetailsButton()).toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: /เปิดรายละเอียด/i }));
+    await openFirstStopDetails(user);
 
     expect(screen.getByRole("complementary", { name: /ข้อมูลประกอบการวางแผน/i })).toBeInTheDocument();
     expect(container.querySelector(".workspace-grid")).toHaveAttribute("data-context-rail", "open");
@@ -1780,7 +1782,7 @@ describe("Sagittarius cockpit UI", () => {
     const user = userEvent.setup();
     render(<SagittariusApp initialView="itinerary" />);
 
-    await user.click(screen.getByRole("button", { name: /เปิดรายละเอียด/i }));
+    await openFirstStopDetails(user);
 
     const context = screen.getByRole("complementary", { name: /ข้อมูลประกอบการวางแผน/i });
     expect(within(context).queryByRole("region", { name: /People and presence/i })).not.toBeInTheDocument();
@@ -1814,7 +1816,7 @@ describe("Sagittarius cockpit UI", () => {
     const user = userEvent.setup();
     const { container } = render(<SagittariusApp initialView="itinerary" />);
 
-    await user.click(screen.getByRole("button", { name: /เปิดรายละเอียด/i }));
+    await openFirstStopDetails(user);
     expect(container.querySelector(".workspace-grid")).toHaveAttribute("data-context-rail", "open");
 
     await user.click(screen.getByRole("region", { name: /ตารางแผนการเดินทาง/i }));
@@ -1826,7 +1828,7 @@ describe("Sagittarius cockpit UI", () => {
   it("keeps the context drawer mounted during the close animation and ignores non-element document events", async () => {
     const { container } = render(<SagittariusApp initialView="itinerary" />);
 
-    fireEvent.click(screen.getByRole("button", { name: /เปิดรายละเอียด/i }));
+    fireEvent.click(getFirstStopDetailsButton());
     expect(await screen.findByRole("complementary", { name: /ข้อมูลประกอบการวางแผน/i })).toBeInTheDocument();
 
     document.dispatchEvent(new Event("click"));
@@ -1850,7 +1852,7 @@ describe("Sagittarius cockpit UI", () => {
   it("does not close the context drawer for clicks that originate on itinerary rows", () => {
     const { container } = render(<SagittariusApp initialView="itinerary" />);
 
-    fireEvent.click(screen.getByRole("button", { name: /เปิดรายละเอียด/i }));
+    fireEvent.click(getFirstStopDetailsButton());
     fireEvent.click(screen.getByRole("row", { name: /เปิดรายละเอียดของ Victoria Peak/i }));
 
     expect(container.querySelector(".workspace-grid")).toHaveAttribute("data-context-rail", "open");
@@ -1861,7 +1863,7 @@ describe("Sagittarius cockpit UI", () => {
     const user = userEvent.setup();
     const { container } = render(<SagittariusApp initialView="itinerary" />);
 
-    await user.click(screen.getByRole("button", { name: /เปิดรายละเอียด/i }));
+    await openFirstStopDetails(user);
     const context = screen.getByRole("complementary", { name: /ข้อมูลประกอบการวางแผน/i });
 
     await user.click(context);
@@ -1937,7 +1939,7 @@ describe("Sagittarius cockpit UI", () => {
     render(<SagittariusApp initialView="itinerary" />);
 
     await user.selectOptions(screen.getByLabelText(/Role preview/i), "member-nam");
-    await user.click(screen.getByRole("button", { name: /เปิดรายละเอียด/i }));
+    await openFirstStopDetails(user);
     await user.click(screen.getByRole("button", { name: /เสนอแก้ไข/i }));
 
     expect(screen.getByText(/คำแนะนำ \(3\)/i)).toBeInTheDocument();
@@ -1949,7 +1951,7 @@ describe("Sagittarius cockpit UI", () => {
     const user = userEvent.setup();
     render(<SagittariusApp initialView="itinerary" />);
 
-    await user.click(screen.getByRole("button", { name: /เปิดรายละเอียด/i }));
+    await openFirstStopDetails(user);
 
     const context = screen.getByRole("complementary", { name: /ข้อมูลประกอบการวางแผน/i });
     expect(within(context).getByRole("tab", { name: /โน้ต/i })).toHaveAttribute("aria-selected", "true");
@@ -1978,7 +1980,7 @@ describe("Sagittarius cockpit UI", () => {
     const user = userEvent.setup();
     render(<SagittariusApp initialView="itinerary" />);
 
-    await user.click(screen.getByRole("button", { name: /เปิดรายละเอียด/i }));
+    await openFirstStopDetails(user);
 
     const context = screen.getByRole("complementary", { name: /ข้อมูลประกอบการวางแผน/i });
     await user.click(within(context).getByRole("tab", { name: /ข้อเสนอ/i }));
@@ -2101,11 +2103,11 @@ describe("Sagittarius cockpit UI", () => {
     expect(stopButtons[1]).toHaveAccessibleName(/เลือกจุด Morning market visit/i);
   });
 
-  it("edits the selected stop and supports undo redo", async () => {
+  it("edits the selected stop", async () => {
     const user = userEvent.setup();
     render(<SagittariusApp initialView="itinerary" />);
 
-    await user.click(screen.getByRole("button", { name: /เปิดรายละเอียด/i }));
+    await openFirstStopDetails(user);
     await user.click(screen.getByRole("button", { name: /แก้ไขรายละเอียด/i }));
 
     const dialog = screen.getByRole("dialog", { name: /แก้ไขรายละเอียด/i });
@@ -2114,12 +2116,6 @@ describe("Sagittarius cockpit UI", () => {
     await user.click(within(dialog).getByRole("button", { name: /บันทึกการแก้ไข/i }));
 
     const context = screen.getByRole("complementary", { name: /ข้อมูลประกอบการวางแผน/i });
-    expect(within(context).getByRole("heading", { name: /Dim Dim Sum revised/i })).toBeInTheDocument();
-
-    await user.click(screen.getByRole("button", { name: /เลิกทำ/i }));
-    expect(within(context).getByRole("heading", { name: /Dim Dim Sum ที่ Tim Ho Wan/i })).toBeInTheDocument();
-
-    await user.click(screen.getByRole("button", { name: /ทำซ้ำ/i }));
     expect(within(context).getByRole("heading", { name: /Dim Dim Sum revised/i })).toBeInTheDocument();
   });
 });

@@ -12,7 +12,7 @@ import { beforeEach, afterEach } from "vitest";
 
 beforeEach(() => {
   vi.useFakeTimers({ toFake: ["Date"] });
-  vi.setSystemTime(new Date("2025-05-16T12:00:00Z"));
+  vi.setSystemTime(new Date("2026-06-18T12:00:00Z"));
 });
 
 afterEach(() => {

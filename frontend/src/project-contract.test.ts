@@ -68,19 +68,15 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "app/join/page.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "app/join/[joinCode]/page.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "app/join/demo/page.tsx"))).toBe(false);
-    expect(readFileSync(join(frontendRoot, "app/join/[joinCode]/page.tsx"), "utf8")).toContain('redirect("/join")');
+    expect(readFileSync(join(frontendRoot, "app/join/[joinCode]/page.tsx"), "utf8")).toContain("initialJoinCode={decodedJoinCode}");
     expect(readFileSync(join(frontendRoot, "app/layout.tsx"), "utf8")).toContain("Joii");
   });
 
   it("keeps account and trip access separated on production page routes", () => {
-    [
-      "app/trips/page.tsx",
-      "app/trips/new/page.tsx",
-    ].forEach((routeFile) => {
-      expect(readFileSync(join(frontendRoot, routeFile), "utf8")).toContain('accessMode="account-login"');
-    });
+    expect(readFileSync(join(frontendRoot, "app/trips/new/page.tsx"), "utf8")).toContain('accessMode="account-login"');
 
     [
+      "app/trips/page.tsx",
       "app/portal/page.tsx",
       "app/portal/my-trips/page.tsx",
       "app/portal/explorer/page.tsx",

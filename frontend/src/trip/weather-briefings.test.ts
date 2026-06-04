@@ -36,7 +36,7 @@ describe("weather briefings", () => {
   });
 
   it("maps Thai weekday tones from ISO date", () => {
-    expect(thaiWeekdayTone("2026-07-12")).toMatchObject({ name: "sunday", className: expect.stringContaining("text-red") });
+    expect(thaiWeekdayTone("2026-07-12")).toMatchObject({ name: "sunday", className: expect.stringContaining("text-rose") });
     expect(thaiWeekdayTone("2026-07-13")).toMatchObject({ name: "monday", className: expect.stringContaining("text-yellow") });
   });
 

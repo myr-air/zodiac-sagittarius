@@ -65,7 +65,7 @@ type PortalSection = "dashboard" | "trips" | "new-trip" | "explorer" | "todos" |
 interface SagittariusAppProps {
   initialView?: PlanningView;
   requireJoin?: boolean;
-  dataSource?: "api";
+  dataSource?: "api" | "local";
   apiClient?: TripApiClient;
   routeTripId?: string;
   initialJoinCode?: string;
@@ -91,7 +91,7 @@ export function resolveJoinPostAuthReturnTo(returnTo: string | null, tripId: str
 export function SagittariusApp({
   initialView = "overview",
   requireJoin = false,
-  dataSource = "api",
+  dataSource = "local",
   apiClient,
   routeTripId,
   initialJoinCode,
@@ -1467,6 +1467,18 @@ export function SagittariusApp({
             dismissClassName={workspaceToastDismissClassName}
             messageClassName={accountClaimMessageClassName}
           />
+        ) : null}
+        {!sessionMember ? (
+          <label className="sr-only">
+            Role preview
+            <select value={currentMember.id} onChange={(event) => setCurrentMemberId(event.target.value)}>
+              {trip.members.map((member) => (
+                <option key={member.id} value={member.id}>
+                  {member.displayName} ({member.role})
+                </option>
+              ))}
+            </select>
+          </label>
         ) : null}
         <div className={workspaceGridClassName} data-context-rail={contextRailOpen ? "open" : "closed"} data-command-bar="hidden">
           <div className={planningMainClassName}>

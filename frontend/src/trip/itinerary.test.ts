@@ -17,6 +17,11 @@ import { createLocalTripRepository } from "./repository";
 import { approveSuggestion, detectSuggestionConflict } from "./suggestions";
 
 describe("itinerary planning domain", () => {
+  const tripDates = getTripDates(seedTrip.startDate, seedTrip.endDate);
+  const arrivalDay = tripDates[0] ?? seedTrip.startDate;
+  const hongKongDay = tripDates[1] ?? seedTrip.startDate;
+  const shenzhenDay = tripDates[2] ?? seedTrip.endDate;
+
   it("resolves trip path items with time-slot fallback to main", () => {
     const mainBreakfast = {
       ...seedTrip.itineraryItems.find((item) => item.id === "item-dimdim")!,
@@ -141,13 +146,13 @@ describe("itinerary planning domain", () => {
 
     expect(getTripDates(seedTrip.startDate, seedTrip.endDate)).toEqual([
       "2026-06-18",
-      "2025-05-16",
-      "2025-05-17",
-      "2025-05-18",
-      "2025-05-19",
+      "2026-06-19",
+      "2026-06-20",
+      "2026-06-21",
+      "2026-06-22",
       "2026-06-23",
     ]);
-    expect(groups[0]?.day).toBe("2026-06-18");
+    expect(groups[0]?.day).toBe(arrivalDay);
     expect(groups[0]?.items.map((item) => item.id)).toEqual([
       "item-flight-bkk-hkg",
       "item-arrive-hkg",
@@ -164,7 +169,7 @@ describe("itinerary planning domain", () => {
       {
         ...seedTrip.itineraryItems.find((item) => item.id === "item-victoria-peak")!,
         id: "item-overlap-a",
-        day: "2025-05-16",
+        day: hongKongDay,
         sortOrder: 300,
         startTime: "09:30",
         durationMinutes: 45,
@@ -172,7 +177,7 @@ describe("itinerary planning domain", () => {
       {
         ...seedTrip.itineraryItems.find((item) => item.id === "item-dimdim")!,
         id: "item-overlap-b",
-        day: "2025-05-16",
+        day: hongKongDay,
         sortOrder: 100,
         startTime: "09:00",
         durationMinutes: 60,
@@ -180,7 +185,7 @@ describe("itinerary planning domain", () => {
       {
         ...seedTrip.itineraryItems.find((item) => item.id === "item-pacific-place")!,
         id: "item-safe-stop",
-        day: "2025-05-16",
+        day: hongKongDay,
         sortOrder: 200,
         startTime: "11:00",
         durationMinutes: 30,
@@ -188,7 +193,7 @@ describe("itinerary planning domain", () => {
       {
         ...seedTrip.itineraryItems.find((item) => item.id === "item-temple-street")!,
         id: "item-invalid-fields",
-        day: "2025-05-16",
+        day: hongKongDay,
         sortOrder: 400,
         startTime: "24:99",
         durationMinutes: 0,
@@ -216,25 +221,25 @@ describe("itinerary planning domain", () => {
       ids: group.items.map((item) => item.id),
     }))).toEqual([
       {
-        day: "2025-05-16",
+        day: hongKongDay,
         warningCount: 6,
         ids: ["item-overlap-b", "item-safe-stop", "item-overlap-a", "item-invalid-fields"],
       },
       {
-        day: "2025-05-17",
+        day: shenzhenDay,
         warningCount: 0,
         ids: ["item-other-day"],
       },
     ]);
     expect(view.routeDayStats).toEqual([
       {
-        day: "2025-05-16",
+        day: hongKongDay,
         itemCount: 4,
         coordinateItemCount: 4,
         warningCount: 6,
       },
       {
-        day: "2025-05-17",
+        day: shenzhenDay,
         itemCount: 1,
         coordinateItemCount: 1,
         warningCount: 0,
@@ -246,7 +251,7 @@ describe("itinerary planning domain", () => {
     const invalidDayItem = {
       ...seedTrip.itineraryItems.find((item) => item.id === "item-dimdim")!,
       id: "item-invalid-fields-only",
-      day: "2025-05-16",
+      day: hongKongDay,
       sortOrder: 999,
       startTime: " ",
       durationMinutes: 0,
@@ -262,17 +267,17 @@ describe("itinerary planning domain", () => {
 
   it("falls back for invalid trip dates and invalid display days", () => {
     expect(getTripDates("bad-date", "2026-06-23")).toEqual(["bad-date"]);
-    expect(getTripDates("2025-05-21", "2026-06-23")).toEqual(["2025-05-21"]);
+    expect(getTripDates("2026-06-23", "2025-05-21")).toEqual(["2026-06-23"]);
     expect(formatDayLabel("not-a-date", seedTrip.startDate)).toBe("not-a-date");
   });
 
   it("formats day labels in the active locale", () => {
-    expect(formatDayLabel("2025-05-16", seedTrip.startDate)).toBe("Day 2");
-    expect(formatDayLabel("2025-05-17", seedTrip.startDate, "th")).toBe("วันที่ 3");
+    expect(formatDayLabel(hongKongDay, seedTrip.startDate)).toBe("Day 2");
+    expect(formatDayLabel(shenzhenDay, seedTrip.startDate, "th")).toBe("วันที่ 3");
   });
 
   it("finds validation issues without relying on color alone", () => {
-    const dayItems = sortItemsForDay(seedTrip.itineraryItems, "2025-05-16");
+    const dayItems = sortItemsForDay(seedTrip.itineraryItems, hongKongDay);
     const missing = seedTrip.itineraryItems.find((item) => item.id === "item-arrive-hkg");
     const dimsum = dayItems.find((item) => item.id === "item-dimdim")!;
     const overlapFixture = { ...dimsum, id: "item-overlap-fixture", startTime: "09:00", durationMinutes: 90 };
@@ -303,7 +308,7 @@ describe("itinerary planning domain", () => {
   });
 
   it("derives now and next for the on-trip context", () => {
-    const state = getNowNext(seedTrip.itineraryItems, "2025-05-16", "09:10");
+    const state = getNowNext(seedTrip.itineraryItems, hongKongDay, "09:10");
 
     expect(state.current?.id).toBe("item-dimdim");
     expect(state.next?.id).toBe("item-victoria-peak");
@@ -311,7 +316,7 @@ describe("itinerary planning domain", () => {
   });
 
   it("explains now/next fallback states for invalid, empty, and completed days", () => {
-    expect(getNowNext(seedTrip.itineraryItems, "2025-05-16", "bad")).toMatchObject({
+    expect(getNowNext(seedTrip.itineraryItems, hongKongDay, "bad")).toMatchObject({
       current: null,
       next: null,
       fallbackReason: "Current time is unavailable.",
@@ -321,7 +326,7 @@ describe("itinerary planning domain", () => {
       next: null,
       fallbackReason: "No timed stops for this day yet.",
     });
-    expect(getNowNext(seedTrip.itineraryItems, "2025-05-16", "23:59")).toMatchObject({
+    expect(getNowNext(seedTrip.itineraryItems, hongKongDay, "23:59")).toMatchObject({
       current: null,
       next: null,
       fallbackReason: "The day plan has ended.",

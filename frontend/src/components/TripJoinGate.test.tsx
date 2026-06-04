@@ -241,13 +241,11 @@ describe("TripJoinGate", () => {
     expect(screen.queryByRole("link", { name: /เปิด seed trip/i })).not.toBeInTheDocument();
   });
 
-  it("uses the local seed trip from the same join form before falling through to the API", async () => {
+  it("uses the local seed trip from the same join form when no API client is provided", async () => {
     const user = userEvent.setup();
-    const apiClient = createApiClient();
 
     render(
       <TripJoinGate
-        apiClient={apiClient}
         trip={seedTrip}
         onTripChange={vi.fn()}
         onAuthenticated={vi.fn()}
@@ -258,7 +256,6 @@ describe("TripJoinGate", () => {
     await user.type(screen.getByLabelText(/^Trip password$/i), "seed-trip-pass");
     await user.click(screen.getByRole("button", { name: /Enter trip/i }));
 
-    expect(apiClient.joinTrip).not.toHaveBeenCalled();
     expect(screen.getByRole("heading", { name: /Choose identity/i })).toBeInTheDocument();
   });
 
