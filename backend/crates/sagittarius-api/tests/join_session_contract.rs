@@ -35,7 +35,7 @@ async fn join_room(app: &axum::Router) -> Value {
                 .uri("/api/v1/trip-join-sessions")
                 .header(header::CONTENT_TYPE, "application/json")
                 .body(Body::from(
-                    json!({"joinCode":" hk-sz-2025 ","tripPassword":"dim-sum-run"}).to_string(),
+                    json!({"joinCode":" hk-sz-2025 ","tripPassword":"seed-trip-pass"}).to_string(),
                 ))
                 .unwrap(),
         )

@@ -28,7 +28,9 @@ import {
   updateTripParticipantRole,
 } from "@/src/trip/auth";
 import { buildExpenseSummary } from "@/src/trip/expenses";
-import { buildItineraryView } from "@/src/trip/itinerary";
+import { buildItineraryView, deriveItineraryPathOptions, mainItineraryPathId, resolveItineraryPathItems, type ItineraryPathOption, type ItineraryPathSelection } from "@/src/trip/itinerary";
+import { applyImportedItemsToItineraryPath, type ItineraryImportApplyTarget } from "@/src/trip/itinerary-paths";
+import { buildItineraryExport, parseItineraryImport, type ItineraryExportItem } from "@/src/trip/itinerary-import-export";
 import { tripFixtureStopNotes, tripFixtureSuggestions, tripFixtureTasks } from "@/src/trip/trip-fixtures";
 import { tripStorageKey } from "@/src/trip/repository";
 import { seedTrip } from "@/src/trip/seed";
@@ -145,6 +147,7 @@ export function SagittariusApp({
   const [currentMemberId, setCurrentMemberId] = useState(seedTrip.members[0].id);
   const [selectedItemId, setSelectedItemId] = useState("item-dimdim");
   const [dialogState, setDialogState] = useState<{ mode: "create"; day?: string } | { mode: "edit"; item: ItineraryItem } | null>(null);
+  const [pathSelection, setPathSelection] = useState<ItineraryPathSelection>({ tripPathId: mainItineraryPathId, dayPathOverrides: {} });
 
   const trip = tripState.trip;
   const tripIdForPath = routeTripId ?? trip.id;
@@ -154,6 +157,7 @@ export function SagittariusApp({
   }, [initialView, tripIdForPath]);
   const currentView = navigatedView ?? resolveCurrentView();
   const sessionMember = findSessionMember(trip, participantSession);
+  const hasRouteParticipantSession = Boolean(participantSession && (!routeTripId || participantSession.tripId === routeTripId));
   const currentMember = sessionMember ?? trip.members.find((member) => member.id === currentMemberId) ?? trip.members[0];
   const isApiMode = dataSource === "api" && !isLocalParticipantSession(participantSession);
   const isTripLoading = isApiMode && Boolean(participantSession) && !isCockpitLoaded;
@@ -164,10 +168,12 @@ export function SagittariusApp({
   const canManagePeople = canTripRole(currentMember.role, "managePeople");
   const canCreateStopNote = canCreateSuggestion || canEdit;
   const supportsContextRail = currentView === "overview" || currentView === "itinerary" || currentView === "timeline";
-  const planItems = useMemo(
+  const activePlanItems = useMemo(
     () => trip.itineraryItems.filter((item) => item.planVariantId === selectedPlanVariantId),
     [selectedPlanVariantId, trip.itineraryItems],
   );
+  const pathOptions = useMemo(() => deriveItineraryPathOptions(activePlanItems, trip.itineraryPaths ?? []), [activePlanItems, trip.itineraryPaths]);
+  const planItems = useMemo(() => resolveItineraryPathItems(activePlanItems, pathSelection), [activePlanItems, pathSelection]);
   const itineraryView = useMemo(() => buildItineraryView(planItems), [planItems]);
   /* v8 ignore next */
   const selectedItem = planItems.find((item) => item.id === selectedItemId) ?? planItems[0];
@@ -177,6 +183,39 @@ export function SagittariusApp({
     () => backendExpenseSummary ?? buildExpenseSummary(trip.expenses, currentMember.id),
     [backendExpenseSummary, currentMember.id, trip.expenses],
   );
+
+  function changeTripPath(pathId: string) {
+    setPathSelection((current) => ({ ...current, tripPathId: pathId, showAll: false }));
+  }
+
+  function changeDayPath(day: string, pathId: string) {
+    setPathSelection((current) => ({
+      ...current,
+      showAll: false,
+      dayPathOverrides: {
+        ...(current.dayPathOverrides ?? {}),
+        [day]: pathId === mainItineraryPathId ? undefined : pathId,
+      },
+    }));
+  }
+
+  function clearDayPath(day: string) {
+    setPathSelection((current) => ({
+      ...current,
+      dayPathOverrides: {
+        ...(current.dayPathOverrides ?? {}),
+        [day]: undefined,
+      },
+    }));
+  }
+
+  function clearAllDayPaths() {
+    setPathSelection((current) => ({ ...current, dayPathOverrides: {} }));
+  }
+
+  function toggleShowAllPaths(showAll: boolean) {
+    setPathSelection((current) => ({ ...current, showAll }));
+  }
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -393,8 +432,20 @@ export function SagittariusApp({
     if (!nextTrip) return;
 
     if (isApiMode && resolvedApiClient && participantSession) {
+      const draggedItem = trip.itineraryItems.find((item) => item.id === draggedItemId);
       const targetItem = nextTrip.itineraryItems.find((item) => item.id === targetItemId);
-      if (!targetItem) return;
+      if (!draggedItem || !targetItem) return;
+      if (draggedItem.day !== targetItem.day) {
+        await resolvedApiClient.patchItineraryItem(trip.id, draggedItemId, participantSession.sessionToken, {
+          clientMutationId: nextClientMutationId("itinerary-day-move"),
+          expectedVersion: draggedItem.version,
+          patch: { day: targetItem.day },
+        });
+        setTripState((current) => ({ ...current, trip: nextTrip }));
+        setSelectedItemId(draggedItemId);
+        setContextRailVisibility(true);
+        return;
+      }
       const orderedIds = nextTrip.itineraryItems
         .filter((item) => item.planVariantId === targetItem.planVariantId && item.day === targetItem.day)
         .sort((a, b) => a.sortOrder - b.sortOrder || a.startTime.localeCompare(b.startTime))
@@ -423,12 +474,44 @@ export function SagittariusApp({
     setContextRailVisibility(true);
   }
 
+  async function moveItemToDay(draggedItemId: string, targetDay: string) {
+    /* v8 ignore next */
+    if (!canEdit) return;
+
+    const nextTrip = moveTripItemToDay(trip, draggedItemId, targetDay, selectedPlanVariantId);
+    if (!nextTrip) return;
+
+    if (isApiMode && resolvedApiClient && participantSession) {
+      const draggedItem = trip.itineraryItems.find((item) => item.id === draggedItemId);
+      if (!draggedItem) return;
+      await resolvedApiClient.patchItineraryItem(trip.id, draggedItemId, participantSession.sessionToken, {
+        clientMutationId: nextClientMutationId("itinerary-day-move"),
+        expectedVersion: draggedItem.version,
+        patch: { day: targetDay },
+      });
+      setTripState((current) => ({ ...current, trip: nextTrip }));
+      setSelectedItemId(draggedItemId);
+      setContextRailVisibility(true);
+      return;
+    }
+
+    commitTrip(() => nextTrip, draggedItemId);
+    setContextRailVisibility(true);
+  }
+
   async function createStop(values: StopFormValues) {
+    const day = values.day || selectedDay;
+    const targetPathId = selectedItineraryPathIdForDay(day, pathSelection);
+    const targetPathName = pathOptions.find((option) => option.id === targetPathId)?.name;
+    const pathFields = itineraryItemPathFieldsForTarget(`path-group-${nextLocalItemId(trip.itineraryItems, "item-new")}`, targetPathId, targetPathName);
     if (isApiMode && resolvedApiClient && participantSession) {
       const createdItem = await resolvedApiClient.createItineraryItem(trip.id, participantSession.sessionToken, {
         clientMutationId: nextClientMutationId("itinerary-create"),
         planVariantId: selectedPlanVariantId,
-        day: values.day || selectedDay,
+        pathGroupId: pathFields.pathGroupId,
+        pathId: pathFields.pathId,
+        pathRole: pathFields.pathRole,
+        day,
         startTime: values.startTime,
         activity: values.activity,
         activityType: values.activityType,
@@ -452,8 +535,9 @@ export function SagittariusApp({
       id: nextLocalItemId(trip.itineraryItems, "item-new"),
       tripId: trip.id,
       planVariantId: selectedPlanVariantId,
-      day: values.day || selectedDay,
-      sortOrder: getNextSortOrder(planItems, selectedDay),
+      ...pathFields,
+      day,
+      sortOrder: getNextSortOrder(planItems, day),
       startTime: values.startTime,
       activity: values.activity,
       activityType: values.activityType,
@@ -508,6 +592,30 @@ export function SagittariusApp({
     };
   }
 
+  function moveTripItemToDay(current: Trip, draggedItemId: string, targetDay: string, planVariantId: string): Trip | null {
+    const draggedItem = current.itineraryItems.find((item) => item.id === draggedItemId);
+    if (!draggedItem || draggedItem.planVariantId !== planVariantId) return null;
+
+    const targetDayItems = current.itineraryItems
+      .filter((item) => item.planVariantId === draggedItem.planVariantId && item.day === targetDay && item.id !== draggedItemId)
+      .sort((a, b) => a.sortOrder - b.sortOrder || a.startTime.localeCompare(b.startTime));
+    const nextDayItems = [
+      ...targetDayItems,
+      {
+        ...draggedItem,
+        day: targetDay,
+        updatedAt: localMutationTimestamp,
+        version: draggedItem.version + 1,
+      },
+    ].map((item, index) => ({ ...item, sortOrder: (index + 1) * 100 }));
+    const nextItemsById = new Map(nextDayItems.map((item) => [item.id, item]));
+
+    return {
+      ...current,
+      itineraryItems: current.itineraryItems.map((item) => nextItemsById.get(item.id) ?? item),
+    };
+  }
+
   async function updateSelectedStop(values: StopFormValues) {
     /* v8 ignore next */
     if (dialogState?.mode !== "edit") return;
@@ -533,7 +641,7 @@ export function SagittariusApp({
         ...current,
         trip: {
           ...current.trip,
-          itineraryItems: current.trip.itineraryItems.map((item) => (item.id === itemId ? patchedItem : item)),
+          itineraryItems: current.trip.itineraryItems.map((item) => (item.id === itemId ? { ...patchedItem, day: values.day || patchedItem.day } : item)),
         },
       }));
       setSelectedItemId(itemId);
@@ -573,6 +681,7 @@ export function SagittariusApp({
     /* v8 ignore next */
     if (dialogState?.mode !== "edit" || !canEdit) return;
     const itemId = dialogState.item.id;
+    if (!window.confirm(`Delete activity "${dialogState.item.activity}"? This removes the activity for real.`)) return;
     const remainingItems = trip.itineraryItems.filter((item) => item.id !== itemId);
     const nextSelectedItemId = remainingItems[0]?.id ?? "";
     if (isApiMode && resolvedApiClient && participantSession) {
@@ -670,10 +779,11 @@ export function SagittariusApp({
       const returnToParam = searchParams.get("rt");
       const returnTo = returnToParam ? decodeReturnTo(returnToParam) : null;
       const safeReturnTo = resolveJoinPostAuthReturnTo(returnTo, session.tripId);
-      if (safeReturnTo) {
-        window.location.href = safeReturnTo;
-      } else if (!routeTripId) {
-        window.location.href = appRoutes.tripOverview(session.tripId);
+      const postAuthHref = safeReturnTo ?? (!routeTripId ? appRoutes.tripOverview(session.tripId) : null);
+      if (postAuthHref) {
+        window.history.replaceState(null, "", postAuthHref);
+        const postAuthPath = new URL(postAuthHref, window.location.origin).pathname;
+        setNavigatedView(resolveViewFromPath(postAuthPath, session.tripId, initialView));
       }
     }
   }
@@ -1092,6 +1202,99 @@ export function SagittariusApp({
     }));
   }
 
+  function exportItinerary() {
+    const document = buildItineraryExport({
+      exportedAt: new Date().toISOString(),
+      items: planItems,
+      trip,
+    });
+    const blob = new Blob([`${JSON.stringify(document, null, 2)}\n`], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const anchor = window.document.createElement("a");
+    anchor.href = url;
+    anchor.download = `${slugifyFilePart(trip.name)}-itinerary-v1.json`;
+    window.document.body.append(anchor);
+    anchor.click();
+    anchor.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  async function importItinerary(file: File) {
+    /* v8 ignore next */
+    if (!canEdit) return;
+    try {
+      const content = await file.text();
+      const document = isApiMode && resolvedApiClient && participantSession
+        ? await resolvedApiClient.importItinerary(trip.id, participantSession.sessionToken, {
+            fileName: file.name,
+            contentType: file.type || "text/plain",
+            mode: "auto",
+            content,
+          })
+        : { items: parseItineraryImport(content) };
+      const importedItems = document.items;
+      const target = promptItineraryImportApplyTarget({
+        importedItems,
+        memberId: currentMember.id,
+        pathOptions,
+        startDate: trip.startDate,
+        currentTripPathId: pathSelection.tripPathId ?? mainItineraryPathId,
+      });
+      if (!target) return;
+      const previewTrip = applyImportedItemsToItineraryPath(trip, importedItems, target);
+      const currentIds = new Set(trip.itineraryItems.map((item) => item.id));
+      const previewIds = new Set(previewTrip.itineraryItems.map((item) => item.id));
+      const deletedItems = trip.itineraryItems.filter((item) => !previewIds.has(item.id));
+      const previewImportedItems = previewTrip.itineraryItems.filter((item) => !currentIds.has(item.id));
+
+      if (isApiMode && resolvedApiClient && participantSession) {
+        for (const item of deletedItems) {
+          await resolvedApiClient.deleteItineraryItem(trip.id, item.id, participantSession.sessionToken);
+        }
+        const createdItems: ItineraryItem[] = [];
+        for (const item of previewImportedItems) {
+          const createdItem = await resolvedApiClient.createItineraryItem(trip.id, participantSession.sessionToken, {
+            clientMutationId: nextClientMutationId("itinerary-import-create"),
+            planVariantId: item.planVariantId,
+            pathGroupId: item.pathGroupId,
+            pathId: item.pathId,
+            pathName: item.pathName,
+            pathRole: item.pathRole,
+            day: item.day,
+            startTime: item.startTime,
+            activity: item.activity,
+            activityType: item.activityType,
+            place: item.place,
+            mapLink: item.mapLink,
+            durationMinutes: item.durationMinutes,
+            transportation: item.transportation,
+            note: item.note,
+          });
+          createdItems.push(createdItem);
+        }
+        const deletedIds = new Set(deletedItems.map((item) => item.id));
+        setTripState((current) => ({
+          ...current,
+          trip: {
+            ...current.trip,
+            itineraryPaths: previewTrip.itineraryPaths,
+            itineraryItems: [...current.trip.itineraryItems.filter((item) => !deletedIds.has(item.id)), ...createdItems],
+          },
+        }));
+        const nextSelectedItemId = createdItems[0]?.id ?? "";
+        setSelectedItemId(nextSelectedItemId);
+        setContextRailVisibility(Boolean(nextSelectedItemId));
+        return;
+      }
+
+      const nextSelectedItemId = previewImportedItems[0]?.id ?? "";
+      commitTrip(() => previewTrip, nextSelectedItemId);
+      setContextRailVisibility(Boolean(nextSelectedItemId));
+    } catch (caught) {
+      window.alert(caught instanceof Error ? caught.message : "Import itinerary ไม่สำเร็จ");
+    }
+  }
+
   function openExpensesWorkspace() {
     if (supportsContextRail) {
       setContextRailVisibility(true);
@@ -1143,8 +1346,10 @@ export function SagittariusApp({
     if (
       sessionRestored &&
       requireJoin &&
+      accessMode !== "trip-access" &&
       routeTripId &&
-      !sessionMember &&
+      !hasRouteParticipantSession &&
+      !accessError &&
       !isAccountTripAccessPending &&
       !isTripLoading &&
       typeof window !== "undefined" &&
@@ -1155,7 +1360,7 @@ export function SagittariusApp({
       const joinHref = appRoutes.join(undefined, returnTo);
       window.location.replace(joinHref);
     }
-  }, [sessionRestored, requireJoin, routeTripId, sessionMember, isAccountTripAccessPending, isTripLoading]);
+  }, [sessionRestored, requireJoin, accessMode, routeTripId, hasRouteParticipantSession, accessError, isAccountTripAccessPending, isTripLoading]);
 
   if (isAccountTripAccessPending || isTripLoading) {
     return <TripAccessLoadingFrame />;
@@ -1184,6 +1389,29 @@ export function SagittariusApp({
   }
 
   if (requireJoin && !sessionMember) {
+    if (routeTripId && !sessionRestored) {
+      return <TripAccessLoadingFrame />;
+    }
+    if (routeTripId && accessMode === "trip-access") {
+      return (
+        <AccountAccessPanel
+          accessMode={accessMode}
+          accountClient={accountClient}
+          accountSession={accountSession}
+          accountSessionLoaded={accountSessionLoaded}
+          accountSuccessRedirectHref={accountSuccessRedirectHref}
+          portalSection={portalSection}
+          apiClient={resolvedApiClient}
+          initialError={accessError}
+          initialJoinCode={initialJoinCode}
+          initialJoinToken={initialJoinToken}
+          onAccountSessionChange={changeAccountSession}
+          onAuthenticated={authenticateParticipant}
+          onCockpitLoaded={replaceCockpitFromApi}
+          onTripChange={replaceTripFromJoin}
+        />
+      );
+    }
     if (routeTripId) {
       return <TripAccessLoadingFrame />;
     }
@@ -1291,13 +1519,25 @@ export function SagittariusApp({
                 endDate={trip.endDate}
                 items={planItems}
                 itineraryView={itineraryView}
+                pathOptions={pathOptions}
                 role={currentMember.role}
                 startDate={trip.startDate}
                 selectedItemId={selectedItemIdForView}
+                selectedTripPathId={pathSelection.tripPathId ?? mainItineraryPathId}
+                dayPathOverrides={pathSelection.dayPathOverrides ?? {}}
+                showAllPaths={Boolean(pathSelection.showAll)}
                 tripName={trip.name}
                 onAddStop={addStop}
                 onSelectItem={selectItem}
                 onMoveItem={moveItem}
+                onMoveItemToDay={moveItemToDay}
+                onExportItinerary={exportItinerary}
+                onImportItinerary={importItinerary}
+                onChangeTripPath={changeTripPath}
+                onChangeDayPath={changeDayPath}
+                onClearDayPath={clearDayPath}
+                onClearAllDayPaths={clearAllDayPaths}
+                onToggleShowAllPaths={toggleShowAllPaths}
                 onRedo={redo}
                 onToggleContextRail={() => setContextRailVisibility(!contextRailOpen)}
                 onUndo={undo}
@@ -1579,6 +1819,57 @@ function shiftIsoDate(value: string, days: number): string {
   const date = new Date(`${value}T00:00:00Z`);
   date.setUTCDate(date.getUTCDate() + days);
   return date.toISOString().slice(0, 10);
+}
+
+function selectedItineraryPathIdForDay(day: string, selection: ItineraryPathSelection): string {
+  if (selection.showAll) return mainItineraryPathId;
+  return selection.dayPathOverrides?.[day] || selection.tripPathId || mainItineraryPathId;
+}
+
+function itineraryItemPathFieldsForTarget(pathGroupId: string, pathId: string, pathName?: string): Pick<ItineraryItem, "pathGroupId" | "pathId" | "pathName" | "pathRole"> {
+  if (pathId === mainItineraryPathId) {
+    return { pathGroupId, pathRole: "main" };
+  }
+  return { pathGroupId, pathId, pathName, pathRole: "alternative" };
+}
+
+function promptItineraryImportApplyTarget({
+  importedItems,
+  memberId,
+  pathOptions,
+  startDate,
+  currentTripPathId,
+}: {
+  importedItems: ItineraryExportItem[];
+  memberId: string;
+  pathOptions: ItineraryPathOption[];
+  startDate: string;
+  currentTripPathId: string;
+}): ItineraryImportApplyTarget | null {
+  const currentPathName = pathOptions.find((option) => option.id === currentTripPathId)?.name ?? "Main";
+  const pathNameInput = window.prompt("Import target path name. Use Main for the main path.", currentPathName);
+  if (pathNameInput === null) return null;
+  const pathName = pathNameInput.trim() || "Main";
+  const existingPath = pathOptions.find((option) => option.name.toLowerCase() === pathName.toLowerCase() || option.id === pathName);
+  const pathId = pathName.toLowerCase() === "main" ? mainItineraryPathId : existingPath?.id ?? `path-${slugifyFilePart(pathName) || Date.now().toString(36)}`;
+  const normalizedPathName = pathId === mainItineraryPathId ? "Main" : existingPath?.name ?? pathName;
+  const useWholeTrip = window.confirm("Apply this import as a whole trip path? OK = whole trip, Cancel = this day only.");
+  const day = useWholeTrip ? undefined : window.prompt("Target day for this import (YYYY-MM-DD).", importedItems[0]?.day ?? startDate);
+  if (!useWholeTrip && (!day || !day.trim())) return null;
+  const targetDay = useWholeTrip ? undefined : day?.trim();
+  const replaceTarget = window.confirm("Replace existing activities in this target path? OK = replace, Cancel = keep both as alternatives.");
+  return {
+    memberId,
+    pathId,
+    pathName: normalizedPathName,
+    scope: useWholeTrip ? "trip" : "day",
+    day: targetDay,
+    mode: replaceTarget ? "replace-target" : "keep-alternatives",
+  };
+}
+
+function slugifyFilePart(value: string): string {
+  return value.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "trip";
 }
 
 interface WorkspaceToastProps {

@@ -112,13 +112,13 @@ async fn seed_trip(pool: &sqlx::PgPool) -> Result<(), sqlx::Error> {
            active_plan_variant_id, owner_member_id
          )
          values (
-           $1, 'Hong Kong + Shenzhen Trip', 'Hong Kong + Shenzhen', '2025-05-15',
-           '2025-05-20', 'HK-SZ-2025', $2, $3, $4
+           $1, 'Hong Kong + Shenzhen Trip', 'Hong Kong + Shenzhen', '2026-06-18',
+           '2026-06-23', 'HK-SZ-2025', $2, $3, $4
          )",
     )
     .bind(trip_id)
     .bind(sagittarius_api::app::auth::hash_secret_for_tests(
-        "dim-sum-run",
+        "seed-trip-pass",
     ))
     .bind(plan_id)
     .bind(owner_id)
@@ -153,7 +153,7 @@ async fn seed_trip(pool: &sqlx::PgPool) -> Result<(), sqlx::Error> {
            place, map_link, duration_minutes, transportation, note, created_by, version
          )
          values (
-           $1, $2, $3, '2025-05-16', 100, '08:30', 'Dim Dim Sum', 'food',
+           $1, $2, $3, '2026-06-19', 100, '08:30', 'Dim Dim Sum', 'food',
            'The Elements', 'https://maps.google.com', 60, 'walk', 'breakfast', $4, 4
          )",
     )

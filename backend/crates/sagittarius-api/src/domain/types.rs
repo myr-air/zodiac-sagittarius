@@ -368,6 +368,10 @@ pub struct ItineraryItemSummary {
     pub id: Uuid,
     pub trip_id: Uuid,
     pub plan_variant_id: Uuid,
+    pub path_group_id: Option<String>,
+    pub path_id: Option<String>,
+    pub path_name: Option<String>,
+    pub path_role: Option<String>,
     pub day: Date,
     pub sort_order: i32,
     pub start_time: String,
@@ -385,6 +389,52 @@ pub struct ItineraryItemSummary {
     pub created_by: Uuid,
     pub updated_at: String,
     pub version: i64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ItineraryImportTrip {
+    pub id: Uuid,
+    pub name: String,
+    pub destination_label: String,
+    pub start_date: Date,
+    pub end_date: Date,
+    pub active_plan_variant_id: Uuid,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ItineraryImportItem {
+    pub id: String,
+    pub path_group_id: Option<String>,
+    pub path_id: Option<String>,
+    pub path_name: Option<String>,
+    pub path_role: Option<String>,
+    pub day: Date,
+    pub sort_order: i32,
+    pub start_time: String,
+    pub activity: String,
+    pub activity_type: String,
+    pub place: String,
+    pub link_label: String,
+    pub map_link: String,
+    pub coordinates: Option<ItineraryCoordinates>,
+    pub address: Option<String>,
+    pub duration_minutes: Option<i32>,
+    pub transportation: String,
+    pub advisories: Value,
+    pub note: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ItineraryImportDocument {
+    pub schema: String,
+    pub version: i32,
+    pub source: String,
+    pub exported_at: String,
+    pub trip: ItineraryImportTrip,
+    pub items: Vec<ItineraryImportItem>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

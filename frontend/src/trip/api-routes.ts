@@ -33,6 +33,7 @@ export const tripApiRoutes = {
   tasks: (tripId: string) => `/api/v1/trips/${tripPathSegment(tripId)}/tasks`,
   task: (tripId: string, taskId: string) => `/api/v1/trips/${tripPathSegment(tripId)}/tasks/${encodePathSegment(taskId)}`,
   itineraryItems: (tripId: string) => `/api/v1/trips/${tripPathSegment(tripId)}/itinerary-items`,
+  itineraryImports: (tripId: string) => `/api/v1/trips/${tripPathSegment(tripId)}/itinerary-imports`,
   itineraryItem: (tripId: string, itemId: string) =>
     `/api/v1/trips/${tripPathSegment(tripId)}/itinerary-items/${encodePathSegment(itemId)}`,
   reorderItineraryItems: (tripId: string) => `/api/v1/trips/${tripPathSegment(tripId)}/itinerary-items/order`,

@@ -44,6 +44,20 @@ export interface PlanVariant {
   version?: number;
 }
 
+export type ItineraryPathScope = "day" | "trip";
+export type ItineraryPathRole = "main" | "alternative";
+
+export interface ItineraryPath {
+  id: string;
+  tripId: string;
+  name: string;
+  scope: ItineraryPathScope;
+  day?: string;
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface ItineraryCoordinates {
   lat: number;
   lng: number;
@@ -106,6 +120,10 @@ export interface ItineraryItem {
   id: string;
   tripId: string;
   planVariantId: string;
+  pathGroupId?: string;
+  pathId?: string;
+  pathName?: string;
+  pathRole?: ItineraryPathRole;
   day: string;
   sortOrder: number;
   startTime: string;
@@ -177,6 +195,7 @@ export interface Trip {
   endDate: string;
   activePlanVariantId: string;
   planVariants: PlanVariant[];
+  itineraryPaths?: ItineraryPath[];
   members: Member[];
   itineraryItems: ItineraryItem[];
   expenses: Expense[];

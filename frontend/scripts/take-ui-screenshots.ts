@@ -125,7 +125,7 @@ async function main() {
 
     // Enter trip password
     console.log("Entering Trip password...");
-    await page.locator('input[type="password"]').fill("dim-sum-run");
+    await page.locator('input[type="password"]').fill("seed-trip-pass");
     await page.getByRole("button", { name: /Enter trip|เข้าห้อง/i }).click();
     await page.waitForTimeout(1000);
     await captureViewports(page, "07-join-select-member");

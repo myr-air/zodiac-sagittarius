@@ -24,7 +24,7 @@ export function activityTypeLabel(type: ItineraryItem["activityType"], locale: L
 }
 
 export function dayRouteLabel(day: string, locale: Locale = "en"): string {
-  if (day === "2025-05-15") return "Bangkok -> Hong Kong";
+  if (day === "2026-06-18") return "Bangkok -> Hong Kong";
   if (day === "2025-05-16") return "Hong Kong City Day";
   if (day === "2025-05-17") return "Hong Kong -> Shenzhen";
   return locale === "th" ? "วันในทริป" : "Trip day";

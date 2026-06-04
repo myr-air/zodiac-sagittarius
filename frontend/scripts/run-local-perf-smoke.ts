@@ -55,7 +55,7 @@ async function main() {
 
 async function runPerfSmoke(apiBaseUrl: string) {
   const client = createTripApiClient({ baseUrl: apiBaseUrl });
-  const join = await client.joinTrip({ joinId: "HK-SZ-2025", password: "dim-sum-run" });
+  const join = await client.joinTrip({ joinId: "HK-SZ-2025", password: "seed-trip-pass" });
   const member = join.claimableMembers.find((candidate) => candidate.accessStatus === "active") ?? join.claimableMembers[0];
   if (!member) throw new Error("No claimable member returned by seeded trip");
 

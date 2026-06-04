@@ -417,11 +417,11 @@ mod tests {
 
     #[test]
     fn test_hashes_verify_matching_secret_and_reject_bad_inputs() {
-        let hash = hash_secret_for_tests("dim-sum-run");
+        let hash = hash_secret_for_tests("seed-trip-pass");
 
-        assert!(verify_secret("dim-sum-run", &hash));
+        assert!(verify_secret("seed-trip-pass", &hash));
         assert!(!verify_secret("wrong", &hash));
-        assert!(!verify_secret("dim-sum-run", "not-a-password-hash"));
+        assert!(!verify_secret("seed-trip-pass", "not-a-password-hash"));
     }
 
     #[test]

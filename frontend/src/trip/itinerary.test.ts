@@ -4,6 +4,8 @@ import { seedTrip } from "./seed";
 import {
   getNowNext,
   buildItineraryView,
+  deriveItineraryPathOptions,
+  resolveItineraryPathItems,
   getTripDates,
   groupItemsByDay,
   parseTime,
@@ -15,19 +17,137 @@ import { createLocalTripRepository } from "./repository";
 import { approveSuggestion, detectSuggestionConflict } from "./suggestions";
 
 describe("itinerary planning domain", () => {
+  it("resolves trip path items with time-slot fallback to main", () => {
+    const mainBreakfast = {
+      ...seedTrip.itineraryItems.find((item) => item.id === "item-dimdim")!,
+      id: "main-breakfast",
+      pathGroupId: "group-breakfast",
+      pathRole: "main" as const,
+      day: "2025-05-16",
+      startTime: "09:00",
+      sortOrder: 100,
+      activity: "Dim sum breakfast",
+    };
+    const mainMuseum = {
+      ...seedTrip.itineraryItems.find((item) => item.id === "item-victoria-peak")!,
+      id: "main-museum",
+      pathGroupId: "group-museum",
+      pathRole: "main" as const,
+      day: "2025-05-16",
+      startTime: "11:00",
+      sortOrder: 200,
+      activity: "Museum main",
+    };
+    const rainMuseum = {
+      ...mainMuseum,
+      id: "rain-museum",
+      pathId: "path-rain",
+      pathRole: "alternative" as const,
+      activity: "Indoor museum rain plan",
+    };
+
+    const visible = resolveItineraryPathItems([mainBreakfast, mainMuseum, rainMuseum], {
+      tripPathId: "path-rain",
+    });
+
+    expect(visible.map((item) => item.id)).toEqual(["main-breakfast", "rain-museum"]);
+  });
+
+  it("lets day path overrides win over the whole-trip path without deleting rows", () => {
+    const mainDinner = {
+      ...seedTrip.itineraryItems.find((item) => item.id === "item-temple-street")!,
+      id: "main-dinner",
+      pathGroupId: "group-dinner",
+      pathRole: "main" as const,
+      day: "2025-05-17",
+      startTime: "18:00",
+      sortOrder: 100,
+      activity: "Night market main",
+    };
+    const planOneDinner = {
+      ...mainDinner,
+      id: "plan-one-dinner",
+      pathId: "path-plan-1",
+      pathRole: "alternative" as const,
+      activity: "Plan 1 dinner",
+    };
+    const rainDinner = {
+      ...mainDinner,
+      id: "rain-dinner",
+      pathId: "path-rain",
+      pathRole: "alternative" as const,
+      activity: "Rain dinner",
+    };
+    const items = [mainDinner, planOneDinner, rainDinner];
+
+    const visible = resolveItineraryPathItems(items, {
+      tripPathId: "path-plan-1",
+      dayPathOverrides: { "2025-05-17": "path-rain" },
+    });
+
+    expect(visible.map((item) => item.id)).toEqual(["rain-dinner"]);
+    expect(items.map((item) => item.id)).toEqual(["main-dinner", "plan-one-dinner", "rain-dinner"]);
+  });
+
+  it("can show all main and alternative path items for inspection", () => {
+    const mainItem = {
+      ...seedTrip.itineraryItems[0],
+      id: "main-route",
+      pathGroupId: "group-route",
+      pathRole: "main" as const,
+    };
+    const alternativeItem = {
+      ...mainItem,
+      id: "slow-route",
+      pathId: "path-slow",
+      pathRole: "alternative" as const,
+      activity: "Slow route",
+    };
+
+    expect(resolveItineraryPathItems([mainItem, alternativeItem], { showAll: true }).map((item) => item.id)).toEqual([
+      "main-route",
+      "slow-route",
+    ]);
+  });
+
+  it("derives main and named path options from metadata and item fields", () => {
+    const rainPath = {
+      id: "path-rain",
+      tripId: seedTrip.id,
+      name: "Rain plan",
+      scope: "day" as const,
+      day: "2025-05-16",
+      createdBy: "member-aom",
+      createdAt: "2026-06-04T00:00:00.000Z",
+      updatedAt: "2026-06-04T00:00:00.000Z",
+    };
+    const slowItem = {
+      ...seedTrip.itineraryItems[0],
+      pathId: "path-slow",
+      pathName: "Slow morning",
+      pathRole: "alternative" as const,
+    };
+
+    expect(deriveItineraryPathOptions([slowItem], [rainPath])).toEqual([
+      { id: "main", name: "Main", scope: "trip" },
+      { id: "path-rain", name: "Rain plan", scope: "day", day: "2025-05-16" },
+      { id: "path-slow", name: "Slow morning", scope: "trip" },
+    ]);
+  });
+
   it("groups and sorts selected plan items by day", () => {
     const items = seedTrip.itineraryItems.filter((item) => item.planVariantId === seedTrip.activePlanVariantId);
     const groups = groupItemsByDay(items);
 
     expect(getTripDates(seedTrip.startDate, seedTrip.endDate)).toEqual([
-      "2025-05-15",
+      "2026-06-18",
       "2025-05-16",
       "2025-05-17",
       "2025-05-18",
       "2025-05-19",
-      "2025-05-20",
+      "2026-06-23",
     ]);
-    expect(groups[0]?.day).toBe("2025-05-15");
+    expect(groups[0]?.day).toBe("2026-06-18");
     expect(groups[0]?.items.map((item) => item.id)).toEqual([
       "item-flight-bkk-hkg",
       "item-arrive-hkg",
@@ -141,8 +261,8 @@ describe("itinerary planning domain", () => {
   });
 
   it("falls back for invalid trip dates and invalid display days", () => {
-    expect(getTripDates("bad-date", "2025-05-20")).toEqual(["bad-date"]);
-    expect(getTripDates("2025-05-21", "2025-05-20")).toEqual(["2025-05-21"]);
+    expect(getTripDates("bad-date", "2026-06-23")).toEqual(["bad-date"]);
+    expect(getTripDates("2025-05-21", "2026-06-23")).toEqual(["2025-05-21"]);
     expect(formatDayLabel("not-a-date", seedTrip.startDate)).toBe("not-a-date");
   });
 

@@ -18,6 +18,7 @@ import type {
   EditableSuggestionPatch,
   SuggestionType,
 } from "./types";
+import type { ItineraryExportDocument } from "./itinerary-import-export";
 import { tripApiRoutes } from "./api-routes";
 
 export interface TripApiClientOptions {
@@ -64,6 +65,10 @@ export interface ItineraryItemResponse {
   id: string;
   tripId: string;
   planVariantId: string;
+  pathGroupId?: string;
+  pathId?: string;
+  pathName?: string;
+  pathRole?: ItineraryItem["pathRole"];
   day: string;
   sortOrder: number;
   startTime: string;
@@ -167,6 +172,7 @@ export interface TripApiClient {
   patchItineraryItem(tripId: string, itemId: string, sessionToken: string, request: PatchItineraryItemApiRequest): Promise<ItineraryItem>;
   deleteItineraryItem(tripId: string, itemId: string, sessionToken: string): Promise<ItineraryItem>;
   reorderItineraryItems(tripId: string, sessionToken: string, request: ReorderItineraryItemsApiRequest): Promise<ItineraryItem[]>;
+  importItinerary(tripId: string, sessionToken: string, request: ImportItineraryApiRequest): Promise<ItineraryExportDocument>;
   createSuggestion(tripId: string, sessionToken: string, request: CreateSuggestionApiRequest): Promise<Suggestion>;
   approveSuggestion(tripId: string, suggestionId: string, sessionToken: string): Promise<Suggestion>;
   rejectSuggestion(tripId: string, suggestionId: string, sessionToken: string): Promise<Suggestion>;
@@ -191,6 +197,13 @@ export interface CreateTaskApiRequest {
   kind?: TripTask["kind"];
   assigneeId?: string | null;
   relatedItemId?: string | null;
+}
+
+export interface ImportItineraryApiRequest {
+  fileName?: string;
+  contentType?: string;
+  mode?: "auto" | "json" | "ai";
+  content: string;
 }
 
 export interface PatchTripApiRequest {
@@ -238,12 +251,16 @@ export interface PatchTaskApiRequest {
 export interface PatchItineraryItemApiRequest {
   clientMutationId: string;
   expectedVersion: number;
-  patch: Partial<Pick<ItineraryItem, "day" | "startTime" | "durationMinutes" | "activity" | "activityType" | "place" | "mapLink" | "transportation" | "note">>;
+  patch: Partial<Pick<ItineraryItem, "pathGroupId" | "pathId" | "pathName" | "pathRole" | "day" | "startTime" | "durationMinutes" | "activity" | "activityType" | "place" | "mapLink" | "transportation" | "note">>;
 }
 
 export interface CreateItineraryItemApiRequest {
   clientMutationId: string;
   planVariantId: string;
+  pathGroupId?: string;
+  pathId?: string;
+  pathName?: string;
+  pathRole?: ItineraryItem["pathRole"];
   day: string;
   startTime?: string | null;
   activity: string;
@@ -472,6 +489,13 @@ export function createTripApiClient(options: TripApiClientOptions = {}): TripApi
         headers: { Authorization: `Bearer ${sessionToken}` },
       });
       return mapItineraryItem(item);
+    },
+    importItinerary(tripId, sessionToken, importRequest) {
+      return request<ItineraryExportDocument>(tripApiRoutes.itineraryImports(tripId), {
+        method: "POST",
+        headers: { Authorization: `Bearer ${sessionToken}` },
+        body: JSON.stringify(importRequest),
+      });
     },
     async reorderItineraryItems(tripId, sessionToken, reorderRequest) {
       const items = await request<ItineraryItemResponse[]>(tripApiRoutes.reorderItineraryItems(tripId), {

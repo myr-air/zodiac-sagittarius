@@ -5,6 +5,7 @@ pub mod expenses;
 pub mod extractors;
 pub mod health;
 pub mod itinerary;
+pub mod itinerary_imports;
 pub mod join;
 pub mod members;
 pub mod plan_variants;
@@ -130,6 +131,10 @@ fn api_v1() -> Router<AppState> {
         .route(
             "/trips/{trip_id}/itinerary-items",
             post(itinerary::create_itinerary_item),
+        )
+        .route(
+            "/trips/{trip_id}/itinerary-imports",
+            post(itinerary_imports::import_itinerary),
         )
         .route(
             "/trips/{trip_id}/itinerary-items/order",

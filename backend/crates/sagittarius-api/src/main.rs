@@ -86,7 +86,7 @@ async fn seed_sample_trip_data(pool: &sqlx::PgPool) -> Result<(), sqlx::Error> {
     let item_id = Uuid::parse_str(ITEM_ID).expect("static uuid");
 
     let mut tx = pool.begin().await?;
-    let inserted_trip = sqlx::query_scalar::<_, Uuid>(
+    sqlx::query(
         "insert into trips (
            id, name, destination_label, start_date, end_date, join_id, join_password_hash,
            active_plan_variant_id, owner_member_id
@@ -95,8 +95,15 @@ async fn seed_sample_trip_data(pool: &sqlx::PgPool) -> Result<(), sqlx::Error> {
            $1, 'Hong Kong + Shenzhen Trip', 'Hong Kong + Shenzhen', '2026-06-18',
            '2026-06-23', 'HK-SZ-2025', $2, $3, $4
          )
-         on conflict (join_id) do nothing
-         returning id",
+         on conflict (join_id) do update
+         set name = excluded.name,
+             destination_label = excluded.destination_label,
+             start_date = excluded.start_date,
+             end_date = excluded.end_date,
+             join_password_hash = excluded.join_password_hash,
+             active_plan_variant_id = excluded.active_plan_variant_id,
+             owner_member_id = excluded.owner_member_id,
+             updated_at = now()",
     )
     .bind(trip_id)
     .bind(sagittarius_api::app::auth::hash_secret_for_tests(
@@ -104,26 +111,28 @@ async fn seed_sample_trip_data(pool: &sqlx::PgPool) -> Result<(), sqlx::Error> {
     ))
     .bind(plan_id)
     .bind(owner_id)
-    .fetch_optional(&mut *tx)
+    .execute(&mut *tx)
     .await?;
-
-    if inserted_trip.is_none() {
-        tracing::info!("sample trip already exists; skip seeding sample data");
-        return Ok(());
-    }
 
     sqlx::query("set constraints all deferred")
         .execute(&mut *tx)
         .await?;
 
     sqlx::query(
-        "insert into trip_members (id, trip_id, display_name, role, color)
+        "insert into trip_members (id, trip_id, display_name, role, color, access_status, claim_password_hash, claimed_at)
          values
-           ($1, $5, 'Aom', 'owner', '#0f766e'),
-           ($2, $5, 'Beam', 'organizer', '#2563eb'),
-           ($3, $5, 'Nam', 'traveler', '#f97316'),
-           ($4, $5, 'Family', 'viewer', '#64748b')
-         on conflict (id, trip_id) do nothing",
+           ($1, $5, 'Aom', 'owner', '#0f766e', 'active', null, null),
+           ($2, $5, 'Beam', 'organizer', '#2563eb', 'active', null, null),
+           ($3, $5, 'Nam', 'traveler', '#f97316', 'active', null, null),
+           ($4, $5, 'Family', 'viewer', '#64748b', 'active', null, null)
+         on conflict (id, trip_id) do update
+         set display_name = excluded.display_name,
+             role = excluded.role,
+             color = excluded.color,
+             access_status = excluded.access_status,
+             claim_password_hash = excluded.claim_password_hash,
+             claimed_at = excluded.claimed_at,
+             updated_at = now()",
     )
     .bind(owner_id)
     .bind(organizer_id)

@@ -42,7 +42,7 @@ async function main() {
     const response = await fetch(`${apiBaseUrl}/api/v1/trip-join-sessions`, {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ joinCode: "HK-SZ-2025", tripPassword: "dim-sum-run" }),
+      body: JSON.stringify({ joinCode: "HK-SZ-2025", tripPassword: "seed-trip-pass" }),
     });
     if (!response.ok) {
       throw new Error(`join session smoke request returned ${response.status}: ${await response.text()}`);

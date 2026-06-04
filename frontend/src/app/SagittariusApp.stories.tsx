@@ -90,7 +90,7 @@ export const AccountPortalSignOut: Story = {
   },
 };
 export const AccountTrips: Story = {
-  args: { accessMode: "account-login", requireJoin: true, dataSource: "api" },
+  args: { accessMode: "account-portal", portalSection: "trips", requireJoin: true, dataSource: "api" },
   parameters: {
     nextjs: { navigation: { pathname: "/trips" } },
   },

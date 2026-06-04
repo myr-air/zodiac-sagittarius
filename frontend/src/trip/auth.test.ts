@@ -20,7 +20,7 @@ describe("trip participant auth", () => {
   it("accepts the seed trip credentials before participant selection", () => {
     expect(verifyTripCredentials(seedTrip, { joinId: "HK-SZ-2025", password: "seed-trip-pass" })).toBe(true);
     expect(verifyTripCredentials(seedTrip, { joinId: " HK-SZ-2025 ", password: " seed-trip-pass " })).toBe(true);
-    expect(verifyTripCredentials(seedTrip, { joinId: "HK-SZ-2025", password: "dim-sum-run" })).toBe(false);
+    expect(verifyTripCredentials(seedTrip, { joinId: "HK-SZ-2025", password: "wrong-pass" })).toBe(false);
     expect(verifyTripCredentials(seedTrip, { joinId: "HK-SZ-2025", password: "wrong" })).toBe(false);
   });
 

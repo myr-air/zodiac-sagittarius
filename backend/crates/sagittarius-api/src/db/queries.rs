@@ -682,7 +682,7 @@ pub async fn list_itinerary_items(
 ) -> Result<Vec<ItineraryItemRecord>, sqlx::Error> {
     sqlx::query_as::<_, ItineraryItemRecord>(
         "select
-           id, trip_id, plan_variant_id, day, sort_order,
+           id, trip_id, plan_variant_id, path_group_id, path_id, path_name, path_role, day, sort_order,
            coalesce(to_char(start_time, 'HH24:MI'), '') as start_time,
            activity, activity_type, place, link_label, map_link, address,
            latitude::float8 as latitude, longitude::float8 as longitude,
@@ -815,7 +815,7 @@ pub async fn lock_itinerary_item(
 ) -> Result<Option<ItineraryItemRecord>, sqlx::Error> {
     sqlx::query_as::<_, ItineraryItemRecord>(
         "select
-           id, trip_id, plan_variant_id, day, sort_order,
+           id, trip_id, plan_variant_id, path_group_id, path_id, path_name, path_role, day, sort_order,
            coalesce(to_char(start_time, 'HH24:MI'), '') as start_time,
            activity, activity_type, place, link_label, map_link, address,
            latitude::float8 as latitude, longitude::float8 as longitude,
@@ -838,20 +838,24 @@ pub async fn update_itinerary_item(
 ) -> Result<Option<ItineraryItemRecord>, sqlx::Error> {
     sqlx::query_as::<_, ItineraryItemRecord>(
         "update itinerary_items
-         set day = coalesce($2, day),
-             start_time = coalesce($3::time, start_time),
-             duration_minutes = coalesce($4, duration_minutes),
-             activity = coalesce($5, activity),
-             activity_type = coalesce($6, activity_type),
-             place = coalesce($7, place),
-             map_link = coalesce($8, map_link),
-             transportation = coalesce($9, transportation),
-             note = coalesce($10, note),
-             version = $11,
+         set path_group_id = coalesce($2, path_group_id),
+             path_id = coalesce($3, path_id),
+             path_name = coalesce($4, path_name),
+             path_role = coalesce($5, path_role),
+             day = coalesce($6, day),
+             start_time = coalesce($7::time, start_time),
+             duration_minutes = coalesce($8, duration_minutes),
+             activity = coalesce($9, activity),
+             activity_type = coalesce($10, activity_type),
+             place = coalesce($11, place),
+             map_link = coalesce($12, map_link),
+             transportation = coalesce($13, transportation),
+             note = coalesce($14, note),
+             version = $15,
              updated_at = now()
          where id = $1 and deleted_at is null
          returning
-           id, trip_id, plan_variant_id, day, sort_order,
+           id, trip_id, plan_variant_id, path_group_id, path_id, path_name, path_role, day, sort_order,
            coalesce(to_char(start_time, 'HH24:MI'), '') as start_time,
            activity, activity_type, place, link_label, map_link, address,
            latitude::float8 as latitude, longitude::float8 as longitude,
@@ -859,6 +863,10 @@ pub async fn update_itinerary_item(
            updated_at::text as updated_at, version",
     )
     .bind(item_id)
+    .bind(patch.path_group_id.as_deref())
+    .bind(patch.path_id.as_deref())
+    .bind(patch.path_name.as_deref())
+    .bind(patch.path_role.as_deref())
     .bind(patch.day)
     .bind(patch.start_time.as_deref())
     .bind(patch.duration_minutes)
@@ -902,12 +910,12 @@ pub async fn insert_itinerary_item(
 ) -> Result<ItineraryItemRecord, sqlx::Error> {
     sqlx::query_as::<_, ItineraryItemRecord>(
         "insert into itinerary_items (
-           id, trip_id, plan_variant_id, day, sort_order, start_time, activity, activity_type,
+           id, trip_id, plan_variant_id, path_group_id, path_id, path_name, path_role, day, sort_order, start_time, activity, activity_type,
            place, map_link, duration_minutes, transportation, note, created_by, version
          )
-         values ($1, $2, $3, $4, $5, $6::time, $7, $8, $9, $10, $11, $12, $13, $14, 1)
+         values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10::time, $11, $12, $13, $14, $15, $16, $17, $18, 1)
          returning
-           id, trip_id, plan_variant_id, day, sort_order,
+           id, trip_id, plan_variant_id, path_group_id, path_id, path_name, path_role, day, sort_order,
            coalesce(to_char(start_time, 'HH24:MI'), '') as start_time,
            activity, activity_type, place, link_label, map_link, address,
            latitude::float8 as latitude, longitude::float8 as longitude,
@@ -917,6 +925,10 @@ pub async fn insert_itinerary_item(
     .bind(item.id)
     .bind(item.trip_id)
     .bind(item.plan_variant_id)
+    .bind(item.path_group_id)
+    .bind(item.path_id)
+    .bind(item.path_name)
+    .bind(item.path_role)
     .bind(item.day)
     .bind(item.sort_order)
     .bind(item.start_time)
@@ -942,7 +954,7 @@ pub async fn delete_itinerary_item(
          set deleted_at = now(), version = $2, updated_at = now()
          where id = $1 and deleted_at is null
          returning
-           id, trip_id, plan_variant_id, day, sort_order,
+           id, trip_id, plan_variant_id, path_group_id, path_id, path_name, path_role, day, sort_order,
            coalesce(to_char(start_time, 'HH24:MI'), '') as start_time,
            activity, activity_type, place, link_label, map_link, address,
            latitude::float8 as latitude, longitude::float8 as longitude,
@@ -974,7 +986,7 @@ pub async fn reorder_itinerary_items(
                and day = $4
                and deleted_at is null
              returning
-               id, trip_id, plan_variant_id, day, sort_order,
+               id, trip_id, plan_variant_id, path_group_id, path_id, path_name, path_role, day, sort_order,
                coalesce(to_char(start_time, 'HH24:MI'), '') as start_time,
                activity, activity_type, place, link_label, map_link, address,
                latitude::float8 as latitude, longitude::float8 as longitude,

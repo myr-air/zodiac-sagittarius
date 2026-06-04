@@ -34,7 +34,7 @@ async function main() {
     await run("bun", ["run", "test:e2e:real"], {
       SAGITTARIUS_E2E_API_BASE_URL: apiBaseUrl,
       SAGITTARIUS_E2E_JOIN_ID: "HK-SZ-2025",
-      SAGITTARIUS_E2E_TRIP_PASSWORD: "dim-sum-run",
+      SAGITTARIUS_E2E_TRIP_PASSWORD: "seed-trip-pass",
       SAGITTARIUS_E2E_PARTICIPANT_PASSWORD: "1234",
     });
   } finally {

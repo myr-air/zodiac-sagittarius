@@ -201,6 +201,7 @@ describe("TripJoinGate", () => {
       createItineraryItem: vi.fn(),
       deleteItineraryItem: vi.fn(),
       reorderItineraryItems: vi.fn(),
+    importItinerary: vi.fn(),
       createSuggestion: vi.fn(),
       approveSuggestion: vi.fn(),
       rejectSuggestion: vi.fn(),
@@ -344,6 +345,7 @@ describe("TripJoinGate", () => {
       createItineraryItem: vi.fn(),
       deleteItineraryItem: vi.fn(),
       reorderItineraryItems: vi.fn(),
+    importItinerary: vi.fn(),
       createSuggestion: vi.fn(),
       approveSuggestion: vi.fn(),
       rejectSuggestion: vi.fn(),
@@ -374,13 +376,13 @@ describe("TripJoinGate", () => {
     );
 
     await user.type(screen.getByLabelText(/Trip ID/i), "HK-SZ-2025");
-    await user.type(screen.getByLabelText(/^Trip password$/i), "dim-sum-run");
+    await user.type(screen.getByLabelText(/^Trip password$/i), "seed-trip-pass");
     await user.click(screen.getByRole("button", { name: /Enter trip/i }));
     await user.click(await screen.findByRole("button", { name: /Aom/i }));
     await user.type(screen.getByLabelText(/Set password for Aom/i), "owner-pin");
     await user.click(screen.getByRole("button", { name: /Start|Confirm/i }));
 
-    expect(apiClient.joinTrip).toHaveBeenCalledWith({ joinId: "HK-SZ-2025", password: "dim-sum-run" });
+    expect(apiClient.joinTrip).toHaveBeenCalledWith({ joinId: "HK-SZ-2025", password: "seed-trip-pass" });
     expect(apiClient.claimMember).toHaveBeenCalledWith(cockpit.trip.id, cockpit.trip.members[0].id, "owner-pin", "join-session-token");
     expect(apiClient.loadTrip).toHaveBeenCalledWith(cockpit.trip.id, "session-token");
     expect(onTripChange).toHaveBeenCalledWith(cockpit.trip);
@@ -436,6 +438,7 @@ describe("TripJoinGate", () => {
       createItineraryItem: vi.fn(),
       deleteItineraryItem: vi.fn(),
       reorderItineraryItems: vi.fn(),
+    importItinerary: vi.fn(),
       createSuggestion: vi.fn(),
       approveSuggestion: vi.fn(),
       rejectSuggestion: vi.fn(),
@@ -461,7 +464,7 @@ describe("TripJoinGate", () => {
     expect(screen.getByRole("alert")).toHaveTextContent("Trip ID or password is incorrect.");
 
     await user.clear(screen.getByLabelText(/^Trip password$/i));
-    await user.type(screen.getByLabelText(/^Trip password$/i), "dim-sum-run");
+    await user.type(screen.getByLabelText(/^Trip password$/i), "seed-trip-pass");
     await user.click(screen.getByRole("button", { name: /Enter trip/i }));
     await user.click(await screen.findByRole("button", { name: /Demo Traveler/i }));
     await user.type(screen.getByLabelText(/Set password for Demo Traveler/i), "owner-pin");
@@ -518,6 +521,7 @@ describe("TripJoinGate", () => {
       createItineraryItem: vi.fn(),
       deleteItineraryItem: vi.fn(),
       reorderItineraryItems: vi.fn(),
+    importItinerary: vi.fn(),
       createSuggestion: vi.fn(),
       approveSuggestion: vi.fn(),
       rejectSuggestion: vi.fn(),
@@ -538,7 +542,7 @@ describe("TripJoinGate", () => {
     render(<TripJoinGate apiClient={apiClient} onTripChange={vi.fn()} onAuthenticated={vi.fn()} />);
 
     await user.type(screen.getByLabelText(/Trip ID/i), "HK-SZ-2025");
-    await user.type(screen.getByLabelText(/^Trip password$/i), "dim-sum-run");
+    await user.type(screen.getByLabelText(/^Trip password$/i), "seed-trip-pass");
     await user.click(screen.getByRole("button", { name: /Enter trip/i }));
     await user.click(await screen.findByRole("button", { name: /Demo Traveler/i }));
     await user.type(screen.getByLabelText(/Set password for Demo Traveler/i), "owner-pin");
@@ -590,6 +594,7 @@ function createApiClient(overrides: Partial<TripApiClient> = {}): TripApiClient 
     createItineraryItem: vi.fn(),
     deleteItineraryItem: vi.fn(),
     reorderItineraryItems: vi.fn(),
+    importItinerary: vi.fn(),
     createSuggestion: vi.fn(),
     approveSuggestion: vi.fn(),
     rejectSuggestion: vi.fn(),

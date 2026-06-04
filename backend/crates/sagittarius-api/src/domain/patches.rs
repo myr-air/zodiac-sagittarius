@@ -32,6 +32,10 @@ pub struct PatchTripRequest {
 pub struct CreateItineraryItemRequest {
     pub client_mutation_id: String,
     pub plan_variant_id: Uuid,
+    pub path_group_id: Option<String>,
+    pub path_id: Option<String>,
+    pub path_name: Option<String>,
+    pub path_role: Option<String>,
     pub day: Date,
     pub start_time: Option<String>,
     pub activity: String,
@@ -81,6 +85,15 @@ pub struct ReorderItineraryItemsRequest {
     pub plan_variant_id: Uuid,
     pub day: Date,
     pub item_ids: Vec<Uuid>,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ImportItineraryRequest {
+    pub file_name: Option<String>,
+    pub content_type: Option<String>,
+    pub mode: Option<String>,
+    pub content: String,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -241,6 +254,9 @@ impl CreateItineraryItemRequest {
         }
         validate_required_text(&self.activity, "activity is required")?;
         validate_activity_type(&self.activity_type)?;
+        if let Some(path_role) = &self.path_role {
+            validate_path_role(path_role)?;
+        }
         validate_required_text(&self.place, "place is required")?;
         if self
             .duration_minutes
@@ -262,6 +278,22 @@ impl ReorderItineraryItemsRequest {
             return Err(ServiceError::InvalidRequest("item_ids are required"));
         }
 
+        Ok(())
+    }
+}
+
+impl ImportItineraryRequest {
+    pub fn validate(&self) -> Result<(), ServiceError> {
+        let mode = self.mode.as_deref().unwrap_or("auto");
+        if !matches!(mode, "auto" | "json" | "ai") {
+            return Err(ServiceError::InvalidRequest("unsupported import mode"));
+        }
+        if self.content.trim().is_empty() {
+            return Err(ServiceError::InvalidRequest("import content is required"));
+        }
+        if self.content.len() > 120_000 {
+            return Err(ServiceError::InvalidRequest("import content is too large"));
+        }
         Ok(())
     }
 }
@@ -407,6 +439,10 @@ impl PatchMemberRequest {
 #[derive(Debug, Clone, Default, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ItineraryItemPatch {
+    pub path_group_id: Option<String>,
+    pub path_id: Option<String>,
+    pub path_name: Option<String>,
+    pub path_role: Option<String>,
     pub day: Option<Date>,
     pub start_time: Option<String>,
     pub duration_minutes: Option<i32>,
@@ -435,6 +471,10 @@ impl ItineraryItemPatch {
 
         if let Some(activity_type) = &self.activity_type {
             validate_activity_type(activity_type)?;
+        }
+
+        if let Some(path_role) = &self.path_role {
+            validate_path_role(path_role)?;
         }
 
         Ok(())
@@ -490,6 +530,13 @@ fn validate_activity_type(value: &str) -> Result<(), ServiceError> {
     match value {
         "travel" | "food" | "shopping" | "attraction" | "experience" | "stay" => Ok(()),
         _ => Err(ServiceError::InvalidRequest("activity_type is invalid")),
+    }
+}
+
+fn validate_path_role(value: &str) -> Result<(), ServiceError> {
+    match value {
+        "main" | "alternative" => Ok(()),
+        _ => Err(ServiceError::InvalidRequest("path_role is invalid")),
     }
 }
 

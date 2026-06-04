@@ -6,8 +6,8 @@ const cockpitResponse: TripCockpitResponse = {
     id: "018f4e80-5788-7de0-a45c-8a555d17fc2d",
     name: "Hong Kong + Shenzhen Trip",
     destinationLabel: "Hong Kong + Shenzhen",
-    startDate: "2025-05-15",
-    endDate: "2025-05-20",
+    startDate: "2026-06-18",
+    endDate: "2026-06-23",
     joinId: "HK-SZ-2025",
     activePlanVariantId: "018f4e82-3000-7c00-b111-000000000001",
     ownerMemberId: "018f4e81-77a4-7b8f-b3bd-0d0f493ac561",
@@ -42,6 +42,10 @@ const cockpitResponse: TripCockpitResponse = {
       id: "018f4e83-5410-7d8b-8f25-fd52c5e7bd1f",
       tripId: "018f4e80-5788-7de0-a45c-8a555d17fc2d",
       planVariantId: "018f4e82-3000-7c00-b111-000000000001",
+      pathGroupId: "group-breakfast",
+      pathId: "path-rain",
+      pathName: "Rain plan",
+      pathRole: "alternative",
       day: "2025-05-16",
       sortOrder: 100,
       startTime: "08:30",
@@ -130,14 +134,14 @@ describe("Trip API client", () => {
       .mockResolvedValueOnce(jsonResponse(cockpitResponse));
     const client = createTripApiClient({ baseUrl: "https://api.example.test", fetchImpl });
 
-    const join = await client.joinTrip({ joinId: "HK-SZ-2025", password: "dim-sum-run" });
+    const join = await client.joinTrip({ joinId: "HK-SZ-2025", password: "seed-trip-pass" });
     const session = await client.claimMember(join.trip.id, join.claimableMembers[0].id, "owner-pin", join.joinSessionToken);
     const cockpit = await client.loadTrip(join.trip.id, session.sessionToken);
 
     expect(fetchImpl).toHaveBeenNthCalledWith(
       1,
       "https://api.example.test/api/v1/trip-join-sessions",
-      expect.objectContaining({ method: "POST", body: JSON.stringify({ joinCode: "HK-SZ-2025", tripPassword: "dim-sum-run" }) }),
+      expect.objectContaining({ method: "POST", body: JSON.stringify({ joinCode: "HK-SZ-2025", tripPassword: "seed-trip-pass" }) }),
     );
     expect(fetchImpl).toHaveBeenNthCalledWith(
       2,
@@ -169,6 +173,12 @@ describe("Trip API client", () => {
     ]);
     expect(cockpit.stopNotes).toEqual(cockpitResponse.stopNotes);
     expect(cockpit.trip.expenses[0]).toMatchObject({ id: cockpitResponse.expenses[0].id, amount: 240 });
+    expect(cockpit.trip.itineraryItems[0]).toMatchObject({
+      pathGroupId: "group-breakfast",
+      pathId: "path-rain",
+      pathName: "Rain plan",
+      pathRole: "alternative",
+    });
     expect(cockpit.expenseSummary).toEqual(cockpitResponse.expenseSummary);
   });
 
@@ -183,11 +193,52 @@ describe("Trip API client", () => {
     });
   });
 
+  it("posts itinerary import content to the backend normalizer route", async () => {
+    const document = {
+      schema: "joii.itinerary.export",
+      version: 1,
+      source: "ai",
+      exportedAt: "2026-06-04T12:00:00.000Z",
+      trip: {
+        id: cockpitResponse.trip.id,
+        name: cockpitResponse.trip.name,
+        destinationLabel: cockpitResponse.trip.destinationLabel,
+        startDate: cockpitResponse.trip.startDate,
+        endDate: cockpitResponse.trip.endDate,
+        activePlanVariantId: cockpitResponse.trip.activePlanVariantId,
+      },
+      items: [],
+    };
+    const fetchImpl = vi.fn().mockResolvedValueOnce(jsonResponse(document));
+    const client = createTripApiClient({ baseUrl: "https://api.example.test", fetchImpl });
+
+    await expect(client.importItinerary(cockpitResponse.trip.id, "session-token", {
+      fileName: "notes.md",
+      contentType: "text/markdown",
+      mode: "auto",
+      content: "09:00 breakfast at Central",
+    })).resolves.toEqual(document);
+
+    expect(fetchImpl).toHaveBeenCalledWith(
+      `https://api.example.test/api/v1/trips/${cockpitResponse.trip.id}/itinerary-imports`,
+      expect.objectContaining({
+        method: "POST",
+        headers: expect.objectContaining({ Authorization: "Bearer session-token" }),
+        body: JSON.stringify({
+          fileName: "notes.md",
+          contentType: "text/markdown",
+          mode: "auto",
+          content: "09:00 breakfast at Central",
+        }),
+      }),
+    );
+  });
+
   it("uses fallback error details when the backend returns a malformed error body", async () => {
     const fetchImpl = vi.fn().mockResolvedValueOnce(new Response("not-json", { status: 502 }));
     const client = createTripApiClient({ fetchImpl });
 
-    await expect(client.joinTrip({ joinId: "HK-SZ-2025", password: "dim-sum-run" })).rejects.toMatchObject({
+    await expect(client.joinTrip({ joinId: "HK-SZ-2025", password: "seed-trip-pass" })).rejects.toMatchObject({
       code: "request_failed",
       message: "request failed with 502",
       status: 502,
@@ -199,7 +250,7 @@ describe("Trip API client", () => {
     vi.stubGlobal("fetch", fetchImpl);
     const client = createTripApiClient();
 
-    await expect(client.joinTrip({ joinId: "HK-SZ-2025", password: "dim-sum-run" })).rejects.toMatchObject({
+    await expect(client.joinTrip({ joinId: "HK-SZ-2025", password: "seed-trip-pass" })).rejects.toMatchObject({
       code: "forbidden",
       message: "request failed with 403",
       status: 403,
@@ -216,7 +267,7 @@ describe("Trip API client", () => {
     const fetchImpl = vi.fn().mockResolvedValueOnce(jsonResponse({ message: "not allowed" }, 403));
     const client = createTripApiClient({ fetchImpl });
 
-    await expect(client.joinTrip({ joinId: "HK-SZ-2025", password: "dim-sum-run" })).rejects.toMatchObject({
+    await expect(client.joinTrip({ joinId: "HK-SZ-2025", password: "seed-trip-pass" })).rejects.toMatchObject({
       code: "request_failed",
       message: "not allowed",
       status: 403,

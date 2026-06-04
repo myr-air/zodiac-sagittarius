@@ -137,7 +137,7 @@ export function TripJoinGate({ trip, apiClient, embedded = false, variant = "def
     event.preventDefault();
     setIsSubmitting(true);
     try {
-      if (trip && verifyTripCredentials(trip, { joinId, password: tripPassword })) {
+      if (!apiClient && trip && verifyTripCredentials(trip, { joinId, password: tripPassword })) {
         setJoinedTrip(trip);
         setJoinSessionToken(null);
         setSelectedMemberId(null);

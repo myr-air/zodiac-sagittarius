@@ -209,7 +209,7 @@ async fn legacy_claim_member_session(
     let (join_status, join_body): (StatusCode, Value) = post_json_response(
         app.clone(),
         "/api/v1/trip-join-sessions",
-        json!({"joinCode": "HK-SZ-2025", "tripPassword": "dim-sum-run"}),
+        json!({"joinCode": "HK-SZ-2025", "tripPassword": "seed-trip-pass"}),
     )
     .await;
     assert_eq!(join_status, StatusCode::OK);

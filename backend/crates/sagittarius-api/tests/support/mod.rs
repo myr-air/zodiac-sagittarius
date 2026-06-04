@@ -39,13 +39,13 @@ pub async fn seed_trip(pool: &PgPool) {
            active_plan_variant_id, owner_member_id
          )
          values (
-           $1, 'Hong Kong + Shenzhen Trip', 'Hong Kong + Shenzhen', '2025-05-15',
-           '2025-05-20', 'HK-SZ-2025', $2, $3, $4
+           $1, 'Hong Kong + Shenzhen Trip', 'Hong Kong + Shenzhen', '2026-06-18',
+           '2026-06-23', 'HK-SZ-2025', $2, $3, $4
          )",
     )
     .bind(trip_id)
     .bind(sagittarius_api::app::auth::hash_secret_for_tests(
-        "dim-sum-run",
+        "seed-trip-pass",
     ))
     .bind(plan_id)
     .bind(owner_id)

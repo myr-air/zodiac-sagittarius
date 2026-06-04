@@ -475,3 +475,15 @@ Let's put ourselves in the shoes of a traveler using Sagittarius on their trip. 
       // พัฒนาระบบแสดง Toast Error หรือสลับ UI State กลับไปหน้าเข้าห้องทริปใหม่แบบสวยงาม
     });
   ```
+
+---
+
+### 4. Fixture วันที่ของ itinerary test ไม่ตรงกับ `seedTrip.startDate`
+* **วันที่พบ:** 2026-06-04
+* **หลักฐาน:** ระหว่างเพิ่ม TDD สำหรับ activity branch group รันคำสั่ง:
+  ```bash
+  rtk bun run test -- src/trip/itinerary.test.ts
+  ```
+  แล้วพบ failures เดิมที่ไม่เกี่ยวกับ branch resolver เช่น `getTripDates(seedTrip.startDate, seedTrip.endDate)` คืน `2026-06-18` ถึง `2026-06-23` แต่ test เดิมยังคาดวันที่ `2025-05-16` ถึง `2025-05-19`; `formatDayLabel("2025-05-16", seedTrip.startDate)` จึงกลายเป็น `Day -397`.
+* **ผลกระทบ:** ทำให้การรันทั้ง `frontend/src/trip/itinerary.test.ts` fail แม้ tests ใหม่ของ activity path resolver จะ pass เมื่อ run เฉพาะ case ใหม่ด้วย `-t`.
+* **แนวทางแก้:** ปรับ fixture/test ให้ใช้ date range เดียวกัน หรือแยก historical Hong Kong fixture ออกจาก current trip fixture เพื่อไม่ให้ domain tests ผูกกับวันที่คนละยุค.

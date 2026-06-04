@@ -17,10 +17,26 @@ function renderTable(overrides: Partial<Parameters<typeof SmartItineraryTable>[0
     role: "owner",
     startDate: tripFixture.trip.startDate,
     selectedItemId: tripFixture.planItems[0].id,
+    pathOptions: [
+      { id: "main", name: "Main", scope: "trip" },
+      { id: "path-plan-1", name: "Plan 1", scope: "trip" },
+      { id: "path-rain", name: "Rain plan", scope: "day", day: "2026-06-19" },
+    ],
+    selectedTripPathId: "main",
+    dayPathOverrides: {},
+    showAllPaths: false,
     tripName: tripFixture.trip.name,
     onAddStop: vi.fn(),
     onSelectItem: vi.fn(),
     onMoveItem: vi.fn(),
+    onMoveItemToDay: vi.fn(),
+    onExportItinerary: vi.fn(),
+    onImportItinerary: vi.fn(),
+    onChangeTripPath: vi.fn(),
+    onChangeDayPath: vi.fn(),
+    onClearDayPath: vi.fn(),
+    onClearAllDayPaths: vi.fn(),
+    onToggleShowAllPaths: vi.fn(),
     onRedo: vi.fn(),
     onToggleContextRail: vi.fn(),
     onUndo: vi.fn(),
@@ -49,6 +65,9 @@ describe("SmartItineraryTable", () => {
           onAddStop={vi.fn()}
           onSelectItem={vi.fn()}
           onMoveItem={vi.fn()}
+          onMoveItemToDay={vi.fn()}
+          onExportItinerary={vi.fn()}
+          onImportItinerary={vi.fn()}
           onRedo={vi.fn()}
           onToggleContextRail={vi.fn()}
           onUndo={vi.fn()}
@@ -57,10 +76,60 @@ describe("SmartItineraryTable", () => {
     );
 
     const actions = screen.getByRole("group", { name: /Itinerary actions/i });
-    expect(within(actions).getByRole("button", { name: /Add stop or activity/i })).toBeInTheDocument();
+    expect(within(actions).getByRole("button", { name: /Import/i })).toBeInTheDocument();
+    expect(within(actions).getByRole("button", { name: /Export/i })).toBeInTheDocument();
+    expect(within(actions).queryByRole("button", { name: /Add stop or activity/i })).not.toBeInTheDocument();
+    expect(within(actions).queryByRole("button", { name: /Open details/i })).not.toBeInTheDocument();
+    expect(within(actions).queryByRole("button", { name: /Undo/i })).not.toBeInTheDocument();
+    expect(within(actions).queryByRole("button", { name: /Redo/i })).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "ภาษาไทย" }));
-    expect(within(actions).getByRole("button", { name: /เพิ่มสถานที่ \/ กิจกรรม/i })).toBeInTheDocument();
+    expect(within(actions).getByRole("button", { name: /Import/i })).toBeInTheDocument();
+    expect(within(actions).getByRole("button", { name: /Export/i })).toBeInTheDocument();
+    expect(within(actions).queryByRole("button", { name: /เพิ่มสถานที่ \/ กิจกรรม/i })).not.toBeInTheDocument();
+    expect(within(actions).queryByRole("button", { name: /เปิดรายละเอียด/i })).not.toBeInTheDocument();
+    expect(within(actions).queryByRole("button", { name: /เลิกทำ/i })).not.toBeInTheDocument();
+    expect(within(actions).queryByRole("button", { name: /ทำซ้ำ/i })).not.toBeInTheDocument();
   }, 30_000);
+
+  it("calls import and export handlers from the itinerary header", async () => {
+    const user = userEvent.setup();
+    const onExportItinerary = vi.fn();
+    const onImportItinerary = vi.fn();
+    renderTable({ onExportItinerary, onImportItinerary });
+
+    await user.click(screen.getByRole("button", { name: /Export/i }));
+    expect(onExportItinerary).toHaveBeenCalledOnce();
+
+    const file = new File(['{"schema":"joii.itinerary.export","version":1,"items":[]}'], "itinerary.json", { type: "application/json" });
+    await user.upload(screen.getByLabelText(/Import itinerary JSON/i), file);
+
+    expect(onImportItinerary).toHaveBeenCalledWith(file);
+  });
+
+  it("exposes trip and day path filters without deleting itinerary rows", async () => {
+    const user = userEvent.setup();
+    const props = renderTable({
+      selectedTripPathId: "path-plan-1",
+      dayPathOverrides: { "2026-06-19": "path-rain" },
+      showAllPaths: false,
+    });
+
+    await user.selectOptions(screen.getByLabelText(/Trip path/i), "main");
+    expect(props.onChangeTripPath).toHaveBeenCalledWith("main");
+
+    await user.click(screen.getByLabelText(/Show all paths/i));
+    expect(props.onToggleShowAllPaths).toHaveBeenCalledWith(true);
+
+    await user.click(screen.getByRole("button", { name: /Clear all day path overrides/i }));
+    expect(props.onClearAllDayPaths).toHaveBeenCalledOnce();
+
+    await user.selectOptions(screen.getByLabelText(/Path for Day 2/i), "main");
+    expect(props.onChangeDayPath).toHaveBeenCalledWith("2026-06-19", "main");
+
+    await user.click(screen.getByRole("button", { name: /Clear path override for Day 2/i }));
+    expect(props.onClearDayPath).toHaveBeenCalledWith("2026-06-19");
+    expect(screen.queryByRole("button", { name: /Delete path/i })).not.toBeInTheDocument();
+  });
 
   it("uses explicit controls for row selection instead of making table rows interactive", () => {
     const onSelectItem = vi.fn();
@@ -115,7 +184,7 @@ describe("SmartItineraryTable", () => {
     renderTable({ role: "viewer", canRestructure: false });
 
     const actions = screen.getByRole("group", { name: /คำสั่งแผนการเดินทาง/i });
-    expect(within(actions).getByRole("button", { name: /เพิ่มสถานที่/i })).toBeDisabled();
+    expect(within(actions).getByRole("button", { name: /Import/i })).toBeDisabled();
     expect(screen.getByText("ต้องมีสิทธิ์ผู้จัดทริปจึงจะแก้ไขได้")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /ลาก Dim Dim Sum/i })).toBeDisabled();
   });
@@ -148,6 +217,18 @@ describe("SmartItineraryTable", () => {
 
     expect(props.onMoveItem).not.toHaveBeenCalled();
     expect(row).not.toHaveClass("data-row--drop-target");
+  });
+
+  it("drops a dragged item onto a different day add row", () => {
+    const onMoveItemToDay = vi.fn();
+    const props = renderTable({ onMoveItemToDay });
+    const dataTransfer = createDataTransfer();
+    dataTransfer.setData("text/plain", "item-dimdim");
+
+    fireEvent.dragOver(screen.getByRole("button", { name: /เพิ่มสถานที่ \/ กิจกรรม วันที่ 3/i }).closest("tr")!, { dataTransfer });
+    fireEvent.drop(screen.getByRole("button", { name: /เพิ่มสถานที่ \/ กิจกรรม วันที่ 3/i }).closest("tr")!, { dataTransfer });
+
+    expect(props.onMoveItemToDay).toHaveBeenCalledWith("item-dimdim", "2026-06-20");
   });
 
   it("ignores missing and self-targeted drag payloads", () => {

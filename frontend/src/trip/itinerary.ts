@@ -1,5 +1,20 @@
 import type { Locale } from "@/src/i18n/types";
-import type { ItineraryItem, ValidationWarning } from "./types";
+import type { ItineraryItem, ItineraryPath, ItineraryPathScope, ValidationWarning } from "./types";
+
+export const mainItineraryPathId = "main";
+
+export interface ItineraryPathSelection {
+  tripPathId?: string;
+  dayPathOverrides?: Record<string, string | undefined>;
+  showAll?: boolean;
+}
+
+export interface ItineraryPathOption {
+  id: string;
+  name: string;
+  scope: ItineraryPathScope;
+  day?: string;
+}
 
 export interface ItineraryDayGroup {
   day: string;
@@ -40,12 +55,61 @@ export function sortItemsForDay(items: ItineraryItem[], day: string): ItineraryI
     .sort((a, b) => a.sortOrder - b.sortOrder || a.startTime.localeCompare(b.startTime));
 }
 
+export function resolveItineraryPathItems(items: ItineraryItem[], selection: ItineraryPathSelection = {}): ItineraryItem[] {
+  if (selection.showAll) return sortItineraryItems(items);
+
+  const groups = new Map<string, ItineraryItem[]>();
+  for (const item of items) {
+    const groupKey = itineraryPathGroupKey(item);
+    groups.set(groupKey, [...(groups.get(groupKey) ?? []), item]);
+  }
+
+  const visibleItems: ItineraryItem[] = [];
+  for (const groupItems of groups.values()) {
+    const day = groupItems[0]?.day ?? "";
+    const selectedPathId = selection.dayPathOverrides?.[day] || selection.tripPathId || mainItineraryPathId;
+    const selected = groupItems.find((item) => itineraryItemPathId(item) === selectedPathId);
+    const main = groupItems.find((item) => itineraryItemPathId(item) === mainItineraryPathId);
+    const fallback = groupItems[0];
+    if (selected) {
+      visibleItems.push(selected);
+    } else if (main) {
+      visibleItems.push(main);
+    } else if (fallback) {
+      visibleItems.push(fallback);
+    }
+  }
+
+  return sortItineraryItems(visibleItems);
+}
+
+export function deriveItineraryPathOptions(items: ItineraryItem[], paths: ItineraryPath[] = []): ItineraryPathOption[] {
+  const options = new Map<string, ItineraryPathOption>();
+  options.set(mainItineraryPathId, { id: mainItineraryPathId, name: "Main", scope: "trip" });
+
+  for (const path of paths) {
+    options.set(path.id, {
+      id: path.id,
+      name: path.name,
+      scope: path.scope,
+      day: path.day,
+    });
+  }
+
+  for (const item of items) {
+    if (item.pathRole !== "alternative" || !item.pathId || options.has(item.pathId)) continue;
+    options.set(item.pathId, {
+      id: item.pathId,
+      name: item.pathName || humanizePathId(item.pathId),
+      scope: "trip",
+    });
+  }
+
+  return Array.from(options.values());
+}
+
 export function buildItineraryView(items: ItineraryItem[]): ItineraryView {
-  const sortedItems = [...items].sort((a, b) => {
-    const dayCompare = a.day.localeCompare(b.day);
-    if (dayCompare !== 0) return dayCompare;
-    return a.sortOrder - b.sortOrder || a.startTime.localeCompare(b.startTime);
-  });
+  const sortedItems = sortItineraryItems(items);
 
   const dayBuckets = new Map<string, ItineraryItem[]>();
   for (const item of sortedItems) {
@@ -91,6 +155,32 @@ export function buildItineraryView(items: ItineraryItem[]): ItineraryView {
   }
 
   return { dayGroups, sortedItems, warningCount, routeDayStats };
+}
+
+function sortItineraryItems(items: ItineraryItem[]): ItineraryItem[] {
+  return [...items].sort((a, b) => {
+    const dayCompare = a.day.localeCompare(b.day);
+    if (dayCompare !== 0) return dayCompare;
+    return a.sortOrder - b.sortOrder || a.startTime.localeCompare(b.startTime) || a.id.localeCompare(b.id);
+  });
+}
+
+function itineraryPathGroupKey(item: ItineraryItem): string {
+  return item.pathGroupId || `${item.day}:${item.startTime}:${item.sortOrder}:${item.id}`;
+}
+
+function itineraryItemPathId(item: ItineraryItem): string {
+  if (item.pathRole === "alternative") return item.pathId || item.id;
+  return mainItineraryPathId;
+}
+
+function humanizePathId(pathId: string): string {
+  return pathId
+    .replace(/^path-/, "")
+    .split(/[-_\s]+/)
+    .filter(Boolean)
+    .map((part) => part.slice(0, 1).toUpperCase() + part.slice(1))
+    .join(" ") || pathId;
 }
 
 export function groupItemsByDay(items: ItineraryItem[]): ItineraryDayGroup[] {

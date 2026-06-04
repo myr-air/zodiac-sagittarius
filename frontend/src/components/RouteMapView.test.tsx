@@ -343,7 +343,7 @@ describe("RouteMapView", () => {
     const londonStop = {
       ...tripFixture.planItems[0],
       id: "manual-london-stop",
-      day: "2025-05-15",
+      day: "2026-06-18",
       sortOrder: 999,
       startTime: "10:30",
       place: "London Eye",
