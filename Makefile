@@ -4,6 +4,8 @@ BACKEND_MANIFEST := backend/Cargo.toml
 DATABASE_URL ?= postgres://postgres:postgres@127.0.0.1:5432/sagittarius
 TEST_DATABASE_URL ?= postgres://postgres:postgres@127.0.0.1:5432/sagittarius_test
 SAGITTARIUS_BIND_ADDR ?= 127.0.0.1:5181
+SAGITTARIUS_ENV ?= development
+SAGITTARIUS_SEED_SAMPLE_DATA ?= 1
 PGADMIN_URL ?= postgres://postgres:postgres@127.0.0.1:5432/postgres
 DATABASE_NAME ?= sagittarius
 TEST_DATABASE_NAME ?= sagittarius_test
@@ -16,6 +18,8 @@ PSQL_BIN := $(firstword $(PSQL))
 
 backend-dev: db-init
 	DATABASE_URL="$(DATABASE_URL)" SAGITTARIUS_BIND_ADDR="$(SAGITTARIUS_BIND_ADDR)" \
+	SAGITTARIUS_ENV="$(SAGITTARIUS_ENV)" \
+	SAGITTARIUS_SEED_SAMPLE_DATA="$(SAGITTARIUS_SEED_SAMPLE_DATA)" \
 	cargo run --manifest-path $(BACKEND_MANIFEST) --bin sagittarius-api
 
 frontend-dev:
