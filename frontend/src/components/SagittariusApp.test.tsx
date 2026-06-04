@@ -650,6 +650,37 @@ describe("Sagittarius cockpit UI", () => {
     expect(await screen.findByRole("heading", { name: /Persisted API Trip/i })).toBeInTheDocument();
   });
 
+  it("redirects /join to the trip route when a persisted API session already exists", async () => {
+    installLocalStorageStub();
+    const replaceMock = vi.fn();
+    const originalLocation = window.location;
+    const locationMock = {
+      ...originalLocation,
+      pathname: "/join",
+      search: "",
+      replace: replaceMock,
+    };
+    const locationSpy = vi.spyOn(window, "location", "get").mockReturnValue(locationMock);
+    window.localStorage.setItem(
+      tripParticipantSessionStorageKey,
+      JSON.stringify({
+        tripId: seedTrip.id,
+        memberId: seedTrip.members[0].id,
+        sessionToken: "persisted-join-session-token",
+        createdAt: "2026-05-29T00:00:00.000Z",
+        expiresAt: "2026-06-28T00:00:00.000Z",
+      }),
+    );
+    const apiClient = createApiClientForTrip(seedTrip);
+
+    render(<SagittariusApp accessMode="trip-access" requireJoin dataSource="api" apiClient={apiClient} />);
+
+    await waitFor(() => expect(replaceMock).toHaveBeenCalledWith(`/trips/${seedTrip.id}`));
+    await waitFor(() => expect(apiClient.loadTrip).toHaveBeenCalledWith(seedTrip.id, "persisted-join-session-token"));
+
+    locationSpy.mockRestore();
+  });
+
   it("keeps a persisted API session when the public route uses the canonical UUID", async () => {
     installLocalStorageStub();
     const apiTrip = {

@@ -303,6 +303,15 @@ export function SagittariusApp({
   }, [setContextRailVisibility]);
 
   useEffect(() => {
+    if (!requireJoin || !participantSession || !sessionMember || routeTripId || typeof window === "undefined") return;
+    if (!window.location.pathname.startsWith("/join")) return;
+    const returnToParam = new URLSearchParams(window.location.search).get("rt");
+    const returnTo = returnToParam ? decodeReturnTo(returnToParam) : null;
+    const target = returnTo && returnTo.startsWith("/trips/") ? returnTo : appRoutes.tripOverview(participantSession.tripId);
+    window.location.replace(target);
+  }, [participantSession, requireJoin, routeTripId, sessionMember]);
+
+  useEffect(() => {
     if (!supportsContextRail || typeof window === "undefined") return;
     if (window.sessionStorage.getItem("sagittarius-open-expenses") !== trip.id) return;
     window.sessionStorage.removeItem("sagittarius-open-expenses");
