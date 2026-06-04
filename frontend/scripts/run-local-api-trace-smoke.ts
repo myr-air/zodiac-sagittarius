@@ -105,12 +105,16 @@ async function waitForHealth(baseUrl: string) {
 async function waitForTraceLogs(logs: string[], requiredSnippets: string[]) {
   const deadline = Date.now() + 5_000;
   while (Date.now() < deadline) {
-    const output = logs.join("");
+    const output = normalizeTraceOutput(logs.join(""));
     if (requiredSnippets.every((snippet) => output.includes(snippet))) return;
     await delay(100);
   }
 
   throw new Error(`Timed out waiting for HTTP trace log snippets: ${requiredSnippets.join(", ")}`);
+}
+
+export function normalizeTraceOutput(output: string) {
+  return output.replace(/\x1B\[[0-?]*[ -/]*[@-~]/g, "");
 }
 
 async function run(command: string, args: string[], env: Record<string, string>) {
@@ -128,4 +132,6 @@ async function run(command: string, args: string[], env: Record<string, string>)
   }
 }
 
-await main();
+if (import.meta.main) {
+  await main();
+}
