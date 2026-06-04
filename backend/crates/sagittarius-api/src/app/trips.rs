@@ -27,6 +27,27 @@ pub async fn load_cockpit(
 
     let session_trip_id = session.trip_id;
     let session_member_id = session.member_id;
+    if matches!(
+        session.role,
+        crate::domain::types::TripRole::Organizer | crate::domain::types::TripRole::Traveler
+    ) {
+        if let Some(trip_record) = db::queries::find_trip_by_id(pool, session_trip_id).await? {
+            let refreshed_expires_at = auth::member_session_expires_at(
+                session.role,
+                trip_record.start_date,
+                trip_record.end_date,
+                time::OffsetDateTime::now_utc(),
+            )?;
+            db::queries::extend_member_session_expiry(
+                pool,
+                session_trip_id,
+                session_member_id,
+                &token_hash,
+                refreshed_expires_at,
+            )
+            .await?;
+        }
+    }
     let can_view_expenses = can(session.role, Capability::ViewExpenses);
 
     let (

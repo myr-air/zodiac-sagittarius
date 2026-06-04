@@ -204,6 +204,7 @@ async fn legacy_claim_member_session(
     member_id: &str,
     participant_password: &str,
 ) -> Value {
+    support::set_trip_dates(pool, "2026-06-01", "2026-06-30").await;
     let app = support::app(pool.clone());
     let (join_status, join_body): (StatusCode, Value) = post_json_response(
         app.clone(),
@@ -213,7 +214,6 @@ async fn legacy_claim_member_session(
     .await;
     assert_eq!(join_status, StatusCode::OK);
     let join_session_token = join_body["joinSessionToken"].as_str().unwrap();
-
     let (status, body): (StatusCode, Value) = post_json_response(
         app,
         &format!(
@@ -226,7 +226,7 @@ async fn legacy_claim_member_session(
         }),
     )
     .await;
-    assert_eq!(status, StatusCode::OK);
+    assert_eq!(status, StatusCode::OK, "claim response body: {body}");
 
     body
 }
@@ -388,6 +388,29 @@ async fn account_user_can_create_trip_and_becomes_owner(pool: sqlx::PgPool) {
     assert_eq!(audit.2, Some(user_id));
     assert_eq!(audit.3, Some(owner_member_id));
     assert_eq!(audit.4, "trip.created");
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn account_trip_contract_owner_member_session_uses_30_day_ttl(pool: sqlx::PgPool) {
+    let account = login_account(&pool, "owner-session@example.com", true, "Owner laptop").await;
+    let auth = format!("Bearer {}", account["sessionToken"].as_str().unwrap());
+    let (status, body) =
+        create_account_trip(&pool, &auth, "OWNER-TTL-2026", "owner-ttl-pass").await;
+
+    assert_eq!(status, StatusCode::OK);
+    let member_session = &body["memberSession"];
+    let created_at = time::OffsetDateTime::parse(
+        member_session["createdAt"].as_str().unwrap(),
+        &time::format_description::well_known::Rfc3339,
+    )
+    .unwrap();
+    let expires_at = time::OffsetDateTime::parse(
+        member_session["expiresAt"].as_str().unwrap(),
+        &time::format_description::well_known::Rfc3339,
+    )
+    .unwrap();
+
+    assert_eq!(expires_at - created_at, time::Duration::days(30));
 }
 
 #[sqlx::test(migrations = "../../migrations")]

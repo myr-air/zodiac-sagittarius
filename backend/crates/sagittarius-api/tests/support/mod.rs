@@ -112,6 +112,7 @@ pub async fn claim_member(pool: &PgPool, member_id: &str, password: &str, access
 }
 
 pub async fn create_session(pool: &PgPool, member_id: &str) -> String {
+    set_trip_dates(pool, "2026-06-01", "2026-06-30").await;
     let token = format!("test-token-{member_id}");
     sqlx::query(
         "insert into trip_member_sessions (
@@ -129,6 +130,62 @@ pub async fn create_session(pool: &PgPool, member_id: &str) -> String {
     .unwrap();
 
     token
+}
+
+pub async fn create_session_with_expiry(
+    pool: &PgPool,
+    member_id: &str,
+    expires_at: time::OffsetDateTime,
+) -> String {
+    let token = format!("test-token-{member_id}-{}", expires_at.unix_timestamp());
+    sqlx::query(
+        "insert into trip_member_sessions (
+           id, trip_id, member_id, session_token_hash, expires_at
+         )
+         values (gen_random_uuid(), $1, $2, $3, $4)",
+    )
+    .bind(Uuid::parse_str(TRIP_ID).unwrap())
+    .bind(Uuid::parse_str(member_id).unwrap())
+    .bind(sagittarius_api::app::auth::hash_session_token_for_tests(
+        &token,
+    ))
+    .bind(expires_at)
+    .execute(pool)
+    .await
+    .unwrap();
+
+    token
+}
+
+pub async fn set_trip_dates(pool: &PgPool, start_date: &str, end_date: &str) {
+    sqlx::query(
+        "update trips
+         set start_date = $1::date, end_date = $2::date
+         where id = $3",
+    )
+    .bind(start_date)
+    .bind(end_date)
+    .bind(Uuid::parse_str(TRIP_ID).unwrap())
+    .execute(pool)
+    .await
+    .unwrap();
+}
+
+pub async fn stored_member_session_expires_at(
+    pool: &PgPool,
+    session_token: &str,
+) -> time::OffsetDateTime {
+    sqlx::query_scalar(
+        "select expires_at
+         from trip_member_sessions
+         where session_token_hash = $1",
+    )
+    .bind(sagittarius_api::app::auth::hash_session_token_for_tests(
+        session_token,
+    ))
+    .fetch_one(pool)
+    .await
+    .unwrap()
 }
 
 pub async fn seed_tasks(pool: &PgPool) {

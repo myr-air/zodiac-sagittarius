@@ -44,7 +44,6 @@ const MAX_TRIP_TEXT_LENGTH: usize = 120;
 const MAX_JOIN_ID_LENGTH: usize = 32;
 const MIN_JOIN_PASSWORD_LENGTH: usize = 8;
 const MAX_JOIN_PASSWORD_LENGTH: usize = 256;
-const MEMBER_SESSION_TTL: Duration = Duration::days(30);
 const DEFAULT_OWNER_COLOR: &str = "#0f766e";
 const PASSKEY_ALLOWED_ORIGINS: &[&str] = &["localhost", "127.0.0.1", "0.0.0.0"];
 const WEBAUTHN_FLAG_USER_PRESENT: u8 = 0x01;
@@ -1095,7 +1094,15 @@ async fn create_member_session(
     let session_token = generate_secure_token();
     let session_token_hash = crate::app::auth::hash_session_token(&session_token)?;
     let created_at = OffsetDateTime::now_utc();
-    let expires_at = created_at + MEMBER_SESSION_TTL;
+    let policy = db::queries::find_member_session_policy(tx, trip_id, member_id)
+        .await?
+        .ok_or(ServiceError::Unauthenticated)?;
+    let expires_at = crate::app::auth::member_session_expires_at(
+        policy.role,
+        policy.start_date,
+        policy.end_date,
+        created_at,
+    )?;
 
     db::queries::insert_member_session(
         tx,

@@ -8,6 +8,7 @@ use tower::ServiceExt;
 #[sqlx::test(migrations = "../../migrations")]
 async fn trip_load_contract_returns_cockpit_payload_and_filters_private_tasks(pool: sqlx::PgPool) {
     support::seed_trip(&pool).await;
+    support::set_trip_dates(&pool, "2026-06-01", "2026-06-30").await;
     let traveler_token = support::create_session(&pool, support::TRAVELER_ID).await;
     support::seed_tasks(&pool).await;
     support::seed_stop_note(&pool).await;
@@ -113,6 +114,7 @@ async fn trip_load_contract_viewer_hides_expense_summary_and_private_tasks(pool:
 #[sqlx::test(migrations = "../../migrations")]
 async fn trip_load_contract_serializes_missing_start_time_as_empty_string(pool: sqlx::PgPool) {
     support::seed_trip(&pool).await;
+    support::set_trip_dates(&pool, "2026-06-01", "2026-06-30").await;
     sqlx::query("update itinerary_items set start_time = null where id = $1")
         .bind(uuid::Uuid::parse_str(support::ITEM_ID).unwrap())
         .execute(&pool)
@@ -137,6 +139,89 @@ async fn trip_load_contract_serializes_missing_start_time_as_empty_string(pool: 
     let body: Value =
         serde_json::from_slice(&to_bytes(response.into_body(), 131072).await.unwrap()).unwrap();
     assert_eq!(body["itineraryItems"][0]["startTime"], "");
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn trip_load_refreshes_organizer_session_but_not_viewer_session(pool: sqlx::PgPool) {
+    support::seed_trip(&pool).await;
+    support::set_trip_dates(&pool, "2026-06-01", "2026-06-30").await;
+    let organizer_expiry = time::OffsetDateTime::now_utc() + time::Duration::hours(2);
+    let viewer_expiry = time::OffsetDateTime::now_utc() + time::Duration::hours(2);
+    let organizer_token =
+        support::create_session_with_expiry(&pool, support::ORGANIZER_ID, organizer_expiry).await;
+    let viewer_token =
+        support::create_session_with_expiry(&pool, support::VIEWER_ID, viewer_expiry).await;
+    let app = support::app(pool.clone());
+
+    let organizer_response = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method(Method::GET)
+                .uri(format!("/api/v1/trips/{}", support::TRIP_ID))
+                .header(header::AUTHORIZATION, format!("Bearer {organizer_token}"))
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(organizer_response.status(), StatusCode::OK);
+
+    let viewer_response = app
+        .oneshot(
+            Request::builder()
+                .method(Method::GET)
+                .uri(format!("/api/v1/trips/{}", support::TRIP_ID))
+                .header(header::AUTHORIZATION, format!("Bearer {viewer_token}"))
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(viewer_response.status(), StatusCode::OK);
+
+    let organizer_refreshed =
+        support::stored_member_session_expires_at(&pool, &organizer_token).await;
+    let viewer_refreshed = support::stored_member_session_expires_at(&pool, &viewer_token).await;
+
+    assert!(organizer_refreshed > organizer_expiry + time::Duration::days(6));
+    assert_eq!(viewer_refreshed, viewer_expiry);
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn trip_load_rejects_unexpired_session_after_trip_access_window(pool: sqlx::PgPool) {
+    support::seed_trip(&pool).await;
+    support::set_trip_dates(&pool, "2020-01-01", "2020-01-02").await;
+    let organizer_token = support::create_session_with_expiry(
+        &pool,
+        support::ORGANIZER_ID,
+        time::OffsetDateTime::now_utc() + time::Duration::days(30),
+    )
+    .await;
+    let viewer_token = support::create_session_with_expiry(
+        &pool,
+        support::VIEWER_ID,
+        time::OffsetDateTime::now_utc() + time::Duration::days(30),
+    )
+    .await;
+    let app = support::app(pool);
+
+    for token in [organizer_token, viewer_token] {
+        let response = app
+            .clone()
+            .oneshot(
+                Request::builder()
+                    .method(Method::GET)
+                    .uri(format!("/api/v1/trips/{}", support::TRIP_ID))
+                    .header(header::AUTHORIZATION, format!("Bearer {token}"))
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+
+        assert_eq!(response.status(), StatusCode::UNAUTHORIZED);
+    }
 }
 
 #[sqlx::test(migrations = "../../migrations")]

@@ -4,9 +4,10 @@ use uuid::Uuid;
 use crate::db::PgPool;
 use crate::db::models::{
     AuthenticatedMemberSessionRecord, ExpenseRecord, ExpenseSplitRecord, ItineraryItemRecord,
-    NewExpense, NewItineraryItem, NewPlanVariant, NewRealtimeEvent, NewStopNote, NewSuggestion,
-    NewTripMember, NewTripTask, PlanVariantRecord, RealtimeEventRecord, StopNoteRecord,
-    SuggestionRecord, TripAuthRecord, TripMemberAuthRecord, TripMemberRecord, TripTaskRecord,
+    MemberSessionPolicyRecord, NewExpense, NewItineraryItem, NewPlanVariant, NewRealtimeEvent,
+    NewStopNote, NewSuggestion, NewTripMember, NewTripTask, PlanVariantRecord, RealtimeEventRecord,
+    StopNoteRecord, SuggestionRecord, TripAuthRecord, TripMemberAuthRecord, TripMemberRecord,
+    TripTaskRecord,
 };
 
 pub async fn find_trip_by_join_id(
@@ -195,6 +196,52 @@ pub async fn insert_member_session(
     Ok(())
 }
 
+pub async fn find_member_session_policy(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    trip_id: Uuid,
+    member_id: Uuid,
+) -> Result<Option<MemberSessionPolicyRecord>, sqlx::Error> {
+    sqlx::query_as::<_, MemberSessionPolicyRecord>(
+        "select m.role, t.start_date, t.end_date
+         from trip_members m
+         join trips t on t.id = m.trip_id
+         where m.trip_id = $1
+           and m.id = $2
+           and m.access_status = 'active'
+           and t.deleted_at is null",
+    )
+    .bind(trip_id)
+    .bind(member_id)
+    .fetch_optional(&mut **tx)
+    .await
+}
+
+pub async fn extend_member_session_expiry(
+    pool: &PgPool,
+    trip_id: Uuid,
+    member_id: Uuid,
+    token_hash: &str,
+    expires_at: OffsetDateTime,
+) -> Result<u64, sqlx::Error> {
+    let result = sqlx::query(
+        "update trip_member_sessions
+         set expires_at = greatest(expires_at, $4)
+         where trip_id = $1
+           and member_id = $2
+           and session_token_hash = $3
+           and revoked_at is null
+           and expires_at > now()",
+    )
+    .bind(trip_id)
+    .bind(member_id)
+    .bind(token_hash)
+    .bind(expires_at)
+    .execute(pool)
+    .await?;
+
+    Ok(result.rows_affected())
+}
+
 pub async fn insert_trip_join_session(
     pool: &PgPool,
     join_session_id: Uuid,
@@ -283,11 +330,24 @@ pub async fn find_active_member_session(
         "select s.trip_id, s.member_id, m.role
          from trip_member_sessions s
          join trip_members m on m.id = s.member_id and m.trip_id = s.trip_id
+         join trips t on t.id = s.trip_id
          where s.trip_id = $1
            and s.session_token_hash = $2
            and s.revoked_at is null
            and s.expires_at > now()
-           and m.access_status = 'active'",
+           and m.access_status = 'active'
+           and t.deleted_at is null
+           and (
+             m.role = 'owner'
+             or (
+               m.role in ('organizer', 'traveler')
+               and now()::date between t.start_date - 7 and t.end_date + 7
+             )
+             or (
+               m.role = 'viewer'
+               and now()::date <= t.end_date + 7
+             )
+           )",
     )
     .bind(trip_id)
     .bind(token_hash)
@@ -304,11 +364,24 @@ pub async fn find_active_member_session_in_tx(
         "select s.trip_id, s.member_id, m.role
          from trip_member_sessions s
          join trip_members m on m.id = s.member_id and m.trip_id = s.trip_id
+         join trips t on t.id = s.trip_id
          where s.trip_id = $1
            and s.session_token_hash = $2
            and s.revoked_at is null
            and s.expires_at > now()
-           and m.access_status = 'active'",
+           and m.access_status = 'active'
+           and t.deleted_at is null
+           and (
+             m.role = 'owner'
+             or (
+               m.role in ('organizer', 'traveler')
+               and now()::date between t.start_date - 7 and t.end_date + 7
+             )
+             or (
+               m.role = 'viewer'
+               and now()::date <= t.end_date + 7
+             )
+           )",
     )
     .bind(trip_id)
     .bind(token_hash)
@@ -325,10 +398,23 @@ pub async fn find_unexpired_member_session_in_tx(
         "select s.trip_id, s.member_id, m.role
          from trip_member_sessions s
          join trip_members m on m.id = s.member_id and m.trip_id = s.trip_id
+         join trips t on t.id = s.trip_id
          where s.trip_id = $1
            and s.session_token_hash = $2
            and s.revoked_at is null
-           and s.expires_at > now()",
+           and s.expires_at > now()
+           and t.deleted_at is null
+           and (
+             m.role = 'owner'
+             or (
+               m.role in ('organizer', 'traveler')
+               and now()::date between t.start_date - 7 and t.end_date + 7
+             )
+             or (
+               m.role = 'viewer'
+               and now()::date <= t.end_date + 7
+             )
+           )",
     )
     .bind(trip_id)
     .bind(token_hash)

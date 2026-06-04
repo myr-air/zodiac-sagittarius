@@ -3,6 +3,7 @@ mod support;
 use axum::body::{Body, to_bytes};
 use http::{Method, Request, StatusCode, header};
 use serde_json::{Value, json};
+use time::{Duration, OffsetDateTime};
 use tower::ServiceExt;
 
 fn assert_hash_fields_absent(value: &Value) {
@@ -48,6 +49,7 @@ async fn join_room(app: &axum::Router) -> Value {
 #[sqlx::test(migrations = "../../migrations")]
 async fn join_session_contract_hides_hashes_and_claim_creates_session(pool: sqlx::PgPool) {
     support::seed_trip(&pool).await;
+    support::set_trip_dates(&pool, "2026-06-01", "2026-06-30").await;
     let app = support::app(pool.clone());
 
     let join_body = join_room(&app).await;
@@ -154,6 +156,7 @@ async fn join_session_contract_claim_requires_join_session_token(pool: sqlx::PgP
 #[sqlx::test(migrations = "../../migrations")]
 async fn join_session_contract_login_and_logout_use_join_and_member_tokens(pool: sqlx::PgPool) {
     support::seed_trip(&pool).await;
+    support::set_trip_dates(&pool, "2026-06-01", "2026-06-30").await;
     support::claim_member(&pool, support::ORGANIZER_ID, "1234", "active").await;
     let app = support::app(pool.clone());
     let join_body = join_room(&app).await;
@@ -264,8 +267,99 @@ async fn join_session_contract_login_and_logout_use_join_and_member_tokens(pool:
 }
 
 #[sqlx::test(migrations = "../../migrations")]
+async fn member_session_contract_sets_organizer_traveler_and_viewer_ttls(pool: sqlx::PgPool) {
+    support::seed_trip(&pool).await;
+    support::set_trip_dates(&pool, "2026-06-01", "2026-06-30").await;
+    support::claim_member(&pool, support::ORGANIZER_ID, "1234", "active").await;
+    support::claim_member(&pool, support::TRAVELER_ID, "1234", "active").await;
+    support::claim_member(&pool, support::VIEWER_ID, "1234", "active").await;
+    let app = support::app(pool.clone());
+
+    for (member_id, expected_days) in [
+        (support::ORGANIZER_ID, 7_i64),
+        (support::TRAVELER_ID, 7_i64),
+        (support::VIEWER_ID, 1_i64),
+    ] {
+        let join_body = join_room(&app).await;
+        let join_session_token = join_body["joinSessionToken"].as_str().unwrap();
+        let response = app
+            .clone()
+            .oneshot(
+                Request::builder()
+                    .method(Method::POST)
+                    .uri(format!(
+                        "/api/v1/trips/{}/member-sessions",
+                        support::TRIP_ID
+                    ))
+                    .header(header::CONTENT_TYPE, "application/json")
+                    .body(Body::from(
+                        json!({
+                            "memberId": member_id,
+                            "participantPassword": "1234",
+                            "joinSessionToken": join_session_token
+                        })
+                        .to_string(),
+                    ))
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
+        let body: Value =
+            serde_json::from_slice(&to_bytes(response.into_body(), 65536).await.unwrap()).unwrap();
+        let created_at = OffsetDateTime::parse(
+            body["createdAt"].as_str().unwrap(),
+            &time::format_description::well_known::Rfc3339,
+        )
+        .unwrap();
+        let expires_at = OffsetDateTime::parse(
+            body["expiresAt"].as_str().unwrap(),
+            &time::format_description::well_known::Rfc3339,
+        )
+        .unwrap();
+
+        assert_eq!(expires_at - created_at, Duration::days(expected_days));
+    }
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn member_session_contract_rejects_organizer_after_trip_window(pool: sqlx::PgPool) {
+    support::seed_trip(&pool).await;
+    support::set_trip_dates(&pool, "2020-01-01", "2020-01-02").await;
+    support::claim_member(&pool, support::ORGANIZER_ID, "1234", "active").await;
+    let app = support::app(pool.clone());
+    let join_body = join_room(&app).await;
+    let join_session_token = join_body["joinSessionToken"].as_str().unwrap();
+
+    let response = app
+        .oneshot(
+            Request::builder()
+                .method(Method::POST)
+                .uri(format!(
+                    "/api/v1/trips/{}/member-sessions",
+                    support::TRIP_ID
+                ))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({
+                        "memberId": support::ORGANIZER_ID,
+                        "participantPassword": "1234",
+                        "joinSessionToken": join_session_token
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::UNAUTHORIZED);
+}
+
+#[sqlx::test(migrations = "../../migrations")]
 async fn join_session_contract_rejects_bad_join_and_disabled_or_wrong_login(pool: sqlx::PgPool) {
     support::seed_trip(&pool).await;
+    support::set_trip_dates(&pool, "2026-06-01", "2026-06-30").await;
     support::claim_member(&pool, support::VIEWER_ID, "1234", "disabled").await;
     support::claim_member(&pool, support::ORGANIZER_ID, "1234", "active").await;
     let app = support::app(pool.clone());

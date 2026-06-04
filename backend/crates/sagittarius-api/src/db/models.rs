@@ -74,6 +74,13 @@ pub struct AuthenticatedMemberSessionRecord {
 }
 
 #[derive(Debug, Clone, FromRow)]
+pub struct MemberSessionPolicyRecord {
+    pub role: TripRole,
+    pub start_date: Date,
+    pub end_date: Date,
+}
+
+#[derive(Debug, Clone, FromRow)]
 pub struct EmailLoginChallengeRecord {
     pub id: Uuid,
     pub normalized_email: String,

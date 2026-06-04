@@ -3,20 +3,23 @@ use argon2::{Argon2, PasswordHasher, PasswordVerifier};
 use base64::{Engine as _, engine::general_purpose::URL_SAFE_NO_PAD};
 use rand::RngCore;
 use time::format_description::well_known::Rfc3339;
-use time::{Duration, OffsetDateTime};
+use time::{Date, Duration, OffsetDateTime, PrimitiveDateTime, Time};
 use uuid::Uuid;
 
 use crate::db;
 use crate::db::PgPool;
 use crate::domain::errors::ServiceError;
 use crate::domain::types::{
-    ClaimableMember, JoinTripResponse, MemberSession, TripMemberAccessStatus, TripSummary,
+    ClaimableMember, JoinTripResponse, MemberSession, TripMemberAccessStatus, TripRole, TripSummary,
 };
 
 const TEST_SECRET_SALT: &[u8] = b"sagittarius-test-salt";
 const SESSION_TOKEN_SALT: &[u8] = b"sagittarius-session-token";
 const JOIN_SESSION_TOKEN_SALT: &[u8] = b"sagittarius-join-session";
-const SESSION_TTL: Duration = Duration::days(30);
+const OWNER_MEMBER_SESSION_TTL: Duration = Duration::days(30);
+const ACTIVE_TRIP_MEMBER_SESSION_TTL: Duration = Duration::days(7);
+const VIEWER_SESSION_TTL: Duration = Duration::days(1);
+const TRIP_ACCESS_WINDOW: Duration = Duration::days(7);
 const JOIN_SESSION_TTL: Duration = Duration::minutes(20);
 const PARTICIPANT_PASSWORD_MIN_LENGTH: usize = 4;
 
@@ -206,15 +209,66 @@ pub fn hash_session_token_for_tests(session_token: &str) -> String {
     hash_session_token(session_token).expect("static session token salt should hash")
 }
 
+pub(crate) fn member_session_expires_at(
+    role: TripRole,
+    trip_start_date: Date,
+    trip_end_date: Date,
+    now: OffsetDateTime,
+) -> Result<OffsetDateTime, ServiceError> {
+    match role {
+        TripRole::Owner => Ok(now + OWNER_MEMBER_SESSION_TTL),
+        TripRole::Organizer | TripRole::Traveler => {
+            let access_start = start_of_day_utc(trip_start_date)? - TRIP_ACCESS_WINDOW;
+            let access_end = end_of_day_utc(add_days(trip_end_date, 7)?)?;
+            if now < access_start || now > access_end {
+                return Err(ServiceError::Unauthenticated);
+            }
+            Ok(std::cmp::min(
+                now + ACTIVE_TRIP_MEMBER_SESSION_TTL,
+                access_end,
+            ))
+        }
+        TripRole::Viewer => {
+            let access_end = end_of_day_utc(add_days(trip_end_date, 7)?)?;
+            if now > access_end {
+                return Err(ServiceError::Unauthenticated);
+            }
+            Ok(std::cmp::min(now + VIEWER_SESSION_TTL, access_end))
+        }
+    }
+}
+
+fn start_of_day_utc(date: Date) -> Result<OffsetDateTime, ServiceError> {
+    Ok(PrimitiveDateTime::new(date, Time::MIDNIGHT).assume_utc())
+}
+
+fn add_days(date: Date, days: i64) -> Result<Date, ServiceError> {
+    date.checked_add(Duration::days(days))
+        .ok_or(ServiceError::InvalidRequest(
+            "trip access date is out of range",
+        ))
+}
+
+fn end_of_day_utc(date: Date) -> Result<OffsetDateTime, ServiceError> {
+    let next_day = date.next_day().ok_or(ServiceError::InvalidRequest(
+        "trip access date is out of range",
+    ))?;
+    Ok(PrimitiveDateTime::new(next_day, Time::MIDNIGHT).assume_utc() - Duration::seconds(1))
+}
+
 async fn create_session(
     tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
     trip_id: Uuid,
     member_id: Uuid,
 ) -> Result<MemberSession, ServiceError> {
+    let policy = db::queries::find_member_session_policy(tx, trip_id, member_id)
+        .await?
+        .ok_or(ServiceError::Unauthenticated)?;
     let session_token = generate_session_token();
     let session_token_hash = hash_session_token(&session_token)?;
     let created_at = OffsetDateTime::now_utc();
-    let expires_at = created_at + SESSION_TTL;
+    let expires_at =
+        member_session_expires_at(policy.role, policy.start_date, policy.end_date, created_at)?;
 
     db::queries::insert_member_session(
         tx,
@@ -302,5 +356,99 @@ mod tests {
         let timestamp = OffsetDateTime::from_unix_timestamp(0).unwrap();
 
         assert_eq!(format_timestamp(timestamp).unwrap(), "1970-01-01T00:00:00Z");
+    }
+
+    fn utc(year: i32, month: time::Month, day: u8, hour: u8) -> OffsetDateTime {
+        time::Date::from_calendar_date(year, month, day)
+            .unwrap()
+            .with_hms(hour, 0, 0)
+            .unwrap()
+            .assume_utc()
+    }
+
+    #[test]
+    fn organizer_and_traveler_policy_uses_sliding_7_day_cap() {
+        let start = time::Date::from_calendar_date(2026, time::Month::November, 10).unwrap();
+        let end = time::Date::from_calendar_date(2026, time::Month::November, 20).unwrap();
+        let now = utc(2026, time::Month::November, 17, 9);
+
+        let organizer = member_session_expires_at(TripRole::Organizer, start, end, now).unwrap();
+        let traveler = member_session_expires_at(TripRole::Traveler, start, end, now).unwrap();
+
+        assert_eq!(organizer, utc(2026, time::Month::November, 24, 9));
+        assert_eq!(traveler, utc(2026, time::Month::November, 24, 9));
+    }
+
+    #[test]
+    fn organizer_and_traveler_policy_never_extends_past_trip_end_plus_7_days() {
+        let start = time::Date::from_calendar_date(2026, time::Month::November, 10).unwrap();
+        let end = time::Date::from_calendar_date(2026, time::Month::November, 20).unwrap();
+        let now = utc(2026, time::Month::November, 25, 9);
+
+        let expires_at = member_session_expires_at(TripRole::Traveler, start, end, now).unwrap();
+
+        assert_eq!(
+            expires_at,
+            utc(2026, time::Month::November, 27, 23)
+                + Duration::minutes(59)
+                + Duration::seconds(59)
+        );
+    }
+
+    #[test]
+    fn organizer_and_traveler_policy_rejects_outside_trip_window() {
+        let start = time::Date::from_calendar_date(2026, time::Month::November, 10).unwrap();
+        let end = time::Date::from_calendar_date(2026, time::Month::November, 20).unwrap();
+        let too_early = utc(2026, time::Month::November, 2, 23);
+        let too_late = utc(2026, time::Month::November, 28, 0);
+
+        assert!(matches!(
+            member_session_expires_at(TripRole::Organizer, start, end, too_early),
+            Err(ServiceError::Unauthenticated)
+        ));
+        assert!(matches!(
+            member_session_expires_at(TripRole::Traveler, start, end, too_late),
+            Err(ServiceError::Unauthenticated)
+        ));
+    }
+
+    #[test]
+    fn viewer_policy_is_fixed_1_day_and_capped_by_trip_end_plus_7_days() {
+        let start = time::Date::from_calendar_date(2026, time::Month::November, 10).unwrap();
+        let end = time::Date::from_calendar_date(2026, time::Month::November, 20).unwrap();
+
+        let normal = member_session_expires_at(
+            TripRole::Viewer,
+            start,
+            end,
+            utc(2026, time::Month::November, 10, 9),
+        )
+        .unwrap();
+        let capped = member_session_expires_at(
+            TripRole::Viewer,
+            start,
+            end,
+            utc(2026, time::Month::November, 27, 12),
+        )
+        .unwrap();
+
+        assert_eq!(normal, utc(2026, time::Month::November, 11, 9));
+        assert_eq!(
+            capped,
+            utc(2026, time::Month::November, 27, 23)
+                + Duration::minutes(59)
+                + Duration::seconds(59)
+        );
+    }
+
+    #[test]
+    fn owner_policy_uses_long_member_ttl() {
+        let start = time::Date::from_calendar_date(2026, time::Month::November, 10).unwrap();
+        let end = time::Date::from_calendar_date(2026, time::Month::November, 20).unwrap();
+        let now = utc(2026, time::Month::December, 15, 9);
+
+        let expires_at = member_session_expires_at(TripRole::Owner, start, end, now).unwrap();
+
+        assert_eq!(expires_at, now + OWNER_MEMBER_SESSION_TTL);
     }
 }
