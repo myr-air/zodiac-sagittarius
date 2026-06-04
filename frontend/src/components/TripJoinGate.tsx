@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, FormEvent, useEffect, useMemo, useState } from "react";
+import { Fragment, FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { Icon } from "./icons";
 import { Badge, Button } from "./ui";
 import { LanguageSwitch } from "@/src/i18n/LanguageSwitch";
@@ -94,7 +94,7 @@ export function TripJoinGate({ trip, apiClient, embedded = false, variant = "def
   const [showParticipantPassword, setShowParticipantPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [resolvedInitialJoinToken, setResolvedInitialJoinToken] = useState(false);
+  const resolvedInitialJoinTokenRef = useRef(false);
 
   /* v8 ignore next */
   const activeTrip = joinedTrip ?? trip ?? null;
@@ -107,10 +107,9 @@ export function TripJoinGate({ trip, apiClient, embedded = false, variant = "def
   const participantMembers = activeTrip?.members ?? [];
 
   useEffect(() => {
-    if (resolvedInitialJoinToken || !initialJoinToken || !apiClient?.resolveJoinInviteToken) return;
+    if (resolvedInitialJoinTokenRef.current || !initialJoinToken || !apiClient?.resolveJoinInviteToken) return;
     let cancelled = false;
-    setResolvedInitialJoinToken(true);
-    setIsSubmitting(true);
+    resolvedInitialJoinTokenRef.current = true;
     apiClient.resolveJoinInviteToken(initialJoinToken)
       .then((response) => {
         if (cancelled) return;
@@ -132,7 +131,7 @@ export function TripJoinGate({ trip, apiClient, embedded = false, variant = "def
     return () => {
       cancelled = true;
     };
-  }, [apiClient, initialJoinToken, resolvedInitialJoinToken, t.join.errors.tripCredentials]);
+  }, [apiClient, initialJoinToken, t.join.errors.tripCredentials]);
 
   async function submitTripRoom(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

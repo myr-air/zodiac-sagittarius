@@ -43,6 +43,7 @@ interface AccountAccessPanelProps {
   apiClient?: TripApiClient;
   initialError?: string | null;
   initialJoinCode?: string;
+  initialJoinToken?: string | null;
   trip?: Trip;
   onAccountSessionChange: (session: AccountSession | null) => void;
   onAuthenticated: (session: TripParticipantSession) => void;
@@ -455,6 +456,7 @@ export function AccountAccessPanel({
   apiClient,
   initialError,
   initialJoinCode,
+  initialJoinToken,
   onAccountSessionChange,
   onAuthenticated,
   onCockpitLoaded,
@@ -667,6 +669,7 @@ export function AccountAccessPanel({
             apiClient={apiClient}
             embedded
             initialJoinCode={initialJoinCode}
+            initialJoinToken={initialJoinToken}
             trip={trip}
             variant={isTripAccessEntry ? "trip-access" : "default"}
             onAuthenticated={onAuthenticated}

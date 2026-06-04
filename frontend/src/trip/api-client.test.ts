@@ -260,6 +260,40 @@ describe("Trip API client", () => {
     );
   });
 
+  it("resolves and rotates tokenized join invite links through encoded routes", async () => {
+    const inviteResponse = {
+      trip: cockpitResponse.trip,
+      claimableMembers: cockpitResponse.members,
+      joinSessionToken: "fresh-join-session-token",
+      expiresAt: "2026-06-11T12:00:00.000Z",
+    };
+    const rotateResponse = {
+      token: "fresh-invite-token",
+      expiresAt: "2026-06-11T12:00:00.000Z",
+    };
+    const fetchImpl = vi.fn()
+      .mockResolvedValueOnce(jsonResponse(inviteResponse))
+      .mockResolvedValueOnce(jsonResponse(rotateResponse));
+    const client = createTripApiClient({ baseUrl: "https://api.example.test", fetchImpl });
+
+    await expect(client.resolveJoinInviteToken?.("invite/token value")).resolves.toEqual(inviteResponse);
+    await expect(client.rotateJoinInviteToken?.("trip/with space", "member-session-token")).resolves.toEqual(rotateResponse);
+
+    expect(fetchImpl).toHaveBeenNthCalledWith(
+      1,
+      "https://api.example.test/api/v1/trip-join-invite-tokens/current?token=invite%2Ftoken+value",
+      expect.objectContaining({ method: "GET" }),
+    );
+    expect(fetchImpl).toHaveBeenNthCalledWith(
+      2,
+      "https://api.example.test/api/v1/trips/trip%2Fwith%20space/join-invite-tokens",
+      expect.objectContaining({
+        method: "POST",
+        headers: expect.objectContaining({ Authorization: "Bearer member-session-token" }),
+      }),
+    );
+  });
+
   it("falls back to an empty active plan id when the backend has no active or listed variant", () => {
     const cockpit = mapCockpitResponse({
       ...cockpitResponse,

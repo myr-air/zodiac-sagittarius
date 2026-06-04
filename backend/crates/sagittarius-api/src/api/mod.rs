@@ -99,6 +99,10 @@ fn api_v1() -> Router<AppState> {
         .route("/account/session", delete(account::logout_session))
         .route("/trip-join-sessions", post(join::join_trip))
         .route(
+            "/trip-join-invite-tokens/current",
+            get(join::resolve_invite_token),
+        )
+        .route(
             "/trips/{trip_id}",
             get(trips::load_trip).patch(trips::patch_trip),
         )
@@ -161,6 +165,10 @@ fn api_v1() -> Router<AppState> {
         .route(
             "/trips/{trip_id}/members/{member_id}/claim-resets",
             post(members::reset_member_claim),
+        )
+        .route(
+            "/trips/{trip_id}/join-invite-tokens",
+            post(join::rotate_invite_token),
         )
         .route("/trips/{trip_id}/presence", post(members::update_presence))
         .route(

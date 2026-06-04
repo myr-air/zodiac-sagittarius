@@ -263,6 +263,63 @@ pub async fn insert_trip_join_session(
     Ok(())
 }
 
+pub async fn revoke_active_trip_join_invite_tokens(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    trip_id: Uuid,
+) -> Result<u64, sqlx::Error> {
+    let result = sqlx::query(
+        "update trip_join_invite_tokens
+         set revoked_at = now()
+         where trip_id = $1
+           and revoked_at is null
+           and expires_at > now()",
+    )
+    .bind(trip_id)
+    .execute(&mut **tx)
+    .await?;
+
+    Ok(result.rows_affected())
+}
+
+pub async fn insert_trip_join_invite_token(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    invite_token_id: Uuid,
+    trip_id: Uuid,
+    token_hash: &str,
+    created_by: Uuid,
+    expires_at: OffsetDateTime,
+) -> Result<(), sqlx::Error> {
+    sqlx::query(
+        "insert into trip_join_invite_tokens (id, trip_id, token_hash, created_by, expires_at)
+         values ($1, $2, $3, $4, $5)",
+    )
+    .bind(invite_token_id)
+    .bind(trip_id)
+    .bind(token_hash)
+    .bind(created_by)
+    .bind(expires_at)
+    .execute(&mut **tx)
+    .await?;
+
+    Ok(())
+}
+
+pub async fn find_active_trip_join_invite_token(
+    pool: &PgPool,
+    token_hash: &str,
+) -> Result<Option<Uuid>, sqlx::Error> {
+    sqlx::query_scalar::<_, Uuid>(
+        "select trip_id
+         from trip_join_invite_tokens
+         where token_hash = $1
+           and revoked_at is null
+           and expires_at > now()",
+    )
+    .bind(token_hash)
+    .fetch_optional(pool)
+    .await
+}
+
 pub async fn find_active_trip_join_session(
     pool: &PgPool,
     trip_id: Uuid,

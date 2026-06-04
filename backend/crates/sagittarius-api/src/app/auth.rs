@@ -8,18 +8,22 @@ use uuid::Uuid;
 
 use crate::db;
 use crate::db::PgPool;
+use crate::domain::capabilities::can;
 use crate::domain::errors::ServiceError;
 use crate::domain::types::{
-    ClaimableMember, JoinTripResponse, MemberSession, TripMemberAccessStatus, TripRole, TripSummary,
+    Capability, ClaimableMember, JoinInviteTokenResponse, JoinTripResponse, MemberSession,
+    TripMemberAccessStatus, TripRole, TripSummary,
 };
 
 const TEST_SECRET_SALT: &[u8] = b"sagittarius-test-salt";
 const SESSION_TOKEN_SALT: &[u8] = b"sagittarius-session-token";
 const JOIN_SESSION_TOKEN_SALT: &[u8] = b"sagittarius-join-session";
+const JOIN_INVITE_TOKEN_SALT: &[u8] = b"sagittarius-join-invite-token";
 const OWNER_MEMBER_SESSION_TTL: Duration = Duration::days(30);
 const ACTIVE_TRIP_MEMBER_SESSION_TTL: Duration = Duration::days(7);
 const VIEWER_SESSION_TTL: Duration = Duration::days(1);
 const JOIN_SESSION_TTL: Duration = Duration::days(7);
+const JOIN_INVITE_TOKEN_TTL: Duration = Duration::days(7);
 const PARTICIPANT_PASSWORD_MIN_LENGTH: usize = 4;
 
 pub fn hash_secret_for_tests(secret: &str) -> String {
@@ -75,6 +79,58 @@ pub async fn join_trip(
     })
 }
 
+pub async fn resolve_join_invite_token(
+    pool: &PgPool,
+    invite_token: &str,
+) -> Result<JoinTripResponse, ServiceError> {
+    let invite_token = invite_token.trim();
+    if invite_token.is_empty() {
+        return Err(ServiceError::Unauthenticated);
+    }
+
+    let invite_token_hash = hash_join_invite_token(invite_token)?;
+    let trip_id = db::queries::find_active_trip_join_invite_token(pool, &invite_token_hash)
+        .await?
+        .ok_or(ServiceError::Unauthenticated)?;
+    create_join_session_response(pool, trip_id).await
+}
+
+pub async fn rotate_join_invite_token(
+    pool: &PgPool,
+    trip_id: Uuid,
+    session_token: &str,
+) -> Result<JoinInviteTokenResponse, ServiceError> {
+    let session_token_hash = hash_session_token(session_token)?;
+    let mut tx = pool.begin().await?;
+    let session =
+        db::queries::find_active_member_session_in_tx(&mut tx, trip_id, &session_token_hash)
+            .await?
+            .ok_or(ServiceError::Unauthenticated)?;
+    if !can(session.role, Capability::ManagePeople) {
+        return Err(ServiceError::Forbidden);
+    }
+
+    db::queries::revoke_active_trip_join_invite_tokens(&mut tx, trip_id).await?;
+    let invite_token = generate_session_token();
+    let invite_token_hash = hash_join_invite_token(&invite_token)?;
+    let expires_at = OffsetDateTime::now_utc() + JOIN_INVITE_TOKEN_TTL;
+    db::queries::insert_trip_join_invite_token(
+        &mut tx,
+        Uuid::now_v7(),
+        trip_id,
+        &invite_token_hash,
+        session.member_id,
+        expires_at,
+    )
+    .await?;
+    tx.commit().await?;
+
+    Ok(JoinInviteTokenResponse {
+        token: invite_token,
+        expires_at: format_timestamp(expires_at)?,
+    })
+}
+
 pub async fn verify_join_session(
     pool: &PgPool,
     trip_id: Uuid,
@@ -86,6 +142,38 @@ pub async fn verify_join_session(
         .ok_or(ServiceError::Unauthenticated)?;
 
     Ok(())
+}
+
+async fn create_join_session_response(
+    pool: &PgPool,
+    trip_id: Uuid,
+) -> Result<JoinTripResponse, ServiceError> {
+    let trip = db::queries::find_trip_by_id(pool, trip_id)
+        .await?
+        .ok_or(ServiceError::NotFound)?;
+    let claimable_members = db::queries::list_claimable_members(pool, trip.id)
+        .await?
+        .into_iter()
+        .map(ClaimableMember::from)
+        .collect();
+    let join_session_token = generate_session_token();
+    let join_session_token_hash = hash_join_session_token(&join_session_token)?;
+    let expires_at = OffsetDateTime::now_utc() + JOIN_SESSION_TTL;
+    db::queries::insert_trip_join_session(
+        pool,
+        Uuid::now_v7(),
+        trip.id,
+        &join_session_token_hash,
+        expires_at,
+    )
+    .await?;
+
+    Ok(JoinTripResponse {
+        trip: TripSummary::from(trip),
+        claimable_members,
+        join_session_token,
+        expires_at: format_timestamp(expires_at)?,
+    })
 }
 
 pub async fn claim_member(
@@ -204,6 +292,10 @@ pub(crate) fn hash_join_session_token(session_token: &str) -> Result<String, Ser
     hash_secret_with_salt(session_token, JOIN_SESSION_TOKEN_SALT)
 }
 
+fn hash_join_invite_token(session_token: &str) -> Result<String, ServiceError> {
+    hash_secret_with_salt(session_token, JOIN_INVITE_TOKEN_SALT)
+}
+
 pub fn hash_session_token_for_tests(session_token: &str) -> String {
     hash_session_token(session_token).expect("static session token salt should hash")
 }
@@ -221,7 +313,7 @@ pub(crate) fn member_session_expires_at(
             let trip_start = start_of_day_utc(trip_start_date)?;
             let trip_end = end_of_day_utc(trip_end_date)?;
             let trip_end_plus_7 = end_of_day_utc(add_days(trip_end_date, 7)?)?;
-            
+
             if now >= trip_start - Duration::days(7) && now <= trip_end {
                 Ok(trip_end_plus_7)
             } else {
@@ -412,8 +504,10 @@ mod tests {
         let too_late = utc(2026, time::Month::November, 28, 0);
 
         // Should return base 7 days session
-        let early_session = member_session_expires_at(TripRole::Organizer, start, end, too_early).unwrap();
-        let late_session = member_session_expires_at(TripRole::Traveler, start, end, too_late).unwrap();
+        let early_session =
+            member_session_expires_at(TripRole::Organizer, start, end, too_early).unwrap();
+        let late_session =
+            member_session_expires_at(TripRole::Traveler, start, end, too_late).unwrap();
 
         assert_eq!(early_session, too_early + Duration::days(7));
         assert_eq!(late_session, too_late + Duration::days(7));

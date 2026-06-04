@@ -122,6 +122,11 @@ export interface JoinTripResponse {
   expiresAt: string;
 }
 
+export interface JoinInviteTokenResponse {
+  token: string;
+  expiresAt: string;
+}
+
 export interface TripCockpit {
   trip: Trip;
   suggestions: Suggestion[];
@@ -144,6 +149,8 @@ export class TripApiError extends Error {
 
 export interface TripApiClient {
   joinTrip(credentials: TripJoinCredential): Promise<JoinTripResponse>;
+  resolveJoinInviteToken?: (token: string) => Promise<JoinTripResponse>;
+  rotateJoinInviteToken?: (tripId: string, sessionToken: string) => Promise<JoinInviteTokenResponse>;
   claimMember(tripId: string, memberId: string, participantPassword: string, joinSessionToken: string): Promise<TripParticipantSession>;
   loginMember(tripId: string, memberId: string, participantPassword: string, joinSessionToken: string): Promise<TripParticipantSession>;
   logout(tripId: string, sessionToken: string): Promise<void>;
@@ -344,6 +351,17 @@ export function createTripApiClient(options: TripApiClientOptions = {}): TripApi
       return request<JoinTripResponse>(tripApiRoutes.joinSession(), {
         method: "POST",
         body: JSON.stringify({ joinCode: credentials.joinId, tripPassword: credentials.password }),
+      });
+    },
+    resolveJoinInviteToken(token) {
+      return request<JoinTripResponse>(tripApiRoutes.joinInviteTokenCurrent(token), {
+        method: "GET",
+      });
+    },
+    rotateJoinInviteToken(tripId, sessionToken) {
+      return request<JoinInviteTokenResponse>(tripApiRoutes.joinInviteTokens(tripId), {
+        method: "POST",
+        headers: { Authorization: `Bearer ${sessionToken}` },
       });
     },
     claimMember(tripId, memberId, participantPassword, joinSessionToken) {

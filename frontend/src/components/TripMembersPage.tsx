@@ -12,10 +12,12 @@ interface TripMembersPageProps {
   trip: Trip;
   currentMember: Member;
   canManagePeople: boolean;
+  joinInviteToken?: string | null;
   onChangeMemberAccessStatus: (memberId: string, accessStatus: TripMemberAccessStatus) => void;
   onChangeMemberPassword: (memberId: string, password: string) => void;
   onChangeMemberRole: (memberId: string, role: Exclude<TripRole, "owner">) => void;
   onCreateMember: (input: { displayName: string; role: Exclude<TripRole, "owner"> }) => void;
+  onRotateJoinInviteToken?: () => Promise<void>;
   onResetMemberClaim: (memberId: string) => void;
   onTransferOwnership?: (targetMemberId: string) => void;
 }
@@ -40,10 +42,12 @@ export function TripMembersPage({
   trip,
   currentMember,
   canManagePeople,
+  joinInviteToken,
   onChangeMemberAccessStatus,
   onChangeMemberPassword,
   onChangeMemberRole,
   onCreateMember,
+  onRotateJoinInviteToken,
   onResetMemberClaim,
   onTransferOwnership,
 }: TripMembersPageProps) {
@@ -52,6 +56,7 @@ export function TripMembersPage({
   const [roleFilter, setRoleFilter] = useState<"all" | TripRole>("all");
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "disabled" | "claimed" | "pending">("all");
   const [copyState, setCopyState] = useState<"idle" | "copied" | "error">("idle");
+  const [isRotatingInviteToken, setIsRotatingInviteToken] = useState(false);
   const [createPanelOpen, setCreatePanelOpen] = useState(false);
   const [newMemberName, setNewMemberName] = useState("");
   const [newMemberRole, setNewMemberRole] = useState<Exclude<TripRole, "owner">>("traveler");
@@ -60,7 +65,7 @@ export function TripMembersPage({
   const joinedMembers = visibleMembers.filter((member) => isMemberJoined(member, currentMember.id)).length;
   const disabledMembers = visibleMembers.length - activeMembers;
   const pendingMembers = visibleMembers.length - joinedMembers;
-  const inviteLink = buildInviteLink(trip.joinId);
+  const inviteLink = buildInviteLink(trip.joinId, joinInviteToken);
   const filteredMembers = useMemo(
     () =>
       visibleMembers.filter((member) => {
@@ -94,6 +99,19 @@ export function TripMembersPage({
       setCopyState("copied");
     } catch {
       setCopyState("error");
+    }
+  }
+
+  async function rotateInviteToken() {
+    if (!canManagePeople || !onRotateJoinInviteToken) return;
+    setIsRotatingInviteToken(true);
+    try {
+      await onRotateJoinInviteToken();
+      setCopyState("idle");
+    } catch {
+      setCopyState("error");
+    } finally {
+      setIsRotatingInviteToken(false);
     }
   }
 
@@ -231,6 +249,12 @@ export function TripMembersPage({
             <Icon name="copy" />
             {t.members.actions.copyInvite}
           </button>
+          {onRotateJoinInviteToken ? (
+            <button className={cn(memberActionButtonClassName, memberCreateButtonClassName)} type="button" disabled={!canManagePeople || isRotatingInviteToken} onClick={rotateInviteToken}>
+              <Icon name="key" />
+              {isRotatingInviteToken ? t.members.actions.rotatingInvite : t.members.actions.rotateInvite}
+            </button>
+          ) : null}
           <button
             aria-expanded={createPanelOpen}
             className={cn(memberActionButtonClassName, memberCreateButtonClassName)}
@@ -302,8 +326,9 @@ function isMemberJoined(member: Member, currentMemberId: string): boolean {
   return Boolean(member.claimPasswordHash) || member.id === currentMemberId;
 }
 
-function buildInviteLink(joinId: string): string {
+function buildInviteLink(joinId: string, token?: string | null): string {
   /* v8 ignore next */
   const baseUrl = typeof window === "undefined" ? "" : window.location.origin;
+  if (token) return `${baseUrl}${appRoutes.join()}?token=${encodeURIComponent(token)}`;
   return `${baseUrl}${appRoutes.join(joinId)}`;
 }

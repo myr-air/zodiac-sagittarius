@@ -369,6 +369,8 @@ export const messages = {
       actions: {
         clear: "Clear filters",
         copyInvite: "Copy invite link",
+        rotateInvite: "Rotate token",
+        rotatingInvite: "Rotating token",
         openCreate: "Open add-member form",
         closeCreate: "Close add-member form",
         saveMember: "Save member",
@@ -1145,6 +1147,8 @@ export const messages = {
       actions: {
         clear: "ล้างตัวกรอง",
         copyInvite: "คัดลอกลิงก์เชิญ",
+        rotateInvite: "หมุน token ใหม่",
+        rotatingInvite: "กำลังหมุน token",
         openCreate: "เปิดฟอร์มเพิ่มสมาชิก",
         closeCreate: "ปิดฟอร์มเพิ่มสมาชิก",
         saveMember: "บันทึกสมาชิก",

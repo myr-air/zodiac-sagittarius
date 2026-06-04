@@ -259,6 +259,13 @@ pub struct JoinTripResponse {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub struct JoinInviteTokenResponse {
+    pub token: String,
+    pub expires_at: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct TripMemberSummary {
     pub id: Uuid,
     pub trip_id: Uuid,

@@ -267,6 +267,173 @@ async fn join_session_contract_login_and_logout_use_join_and_member_tokens(pool:
 }
 
 #[sqlx::test(migrations = "../../migrations")]
+async fn join_invite_token_resolves_to_fresh_join_session(pool: sqlx::PgPool) {
+    support::seed_trip(&pool).await;
+    support::claim_member(&pool, support::ORGANIZER_ID, "1234", "active").await;
+    let organizer_token = support::create_session(&pool, support::ORGANIZER_ID).await;
+    let app = support::app(pool.clone());
+
+    let rotate_response = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method(Method::POST)
+                .uri(format!(
+                    "/api/v1/trips/{}/join-invite-tokens",
+                    support::TRIP_ID
+                ))
+                .header(header::AUTHORIZATION, format!("Bearer {organizer_token}"))
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(rotate_response.status(), StatusCode::OK);
+    let rotate_body: Value =
+        serde_json::from_slice(&to_bytes(rotate_response.into_body(), 65536).await.unwrap())
+            .unwrap();
+    let invite_token = rotate_body["token"].as_str().unwrap();
+    assert!(!invite_token.is_empty());
+    assert!(rotate_body["expiresAt"].as_str().unwrap().contains('T'));
+    assert_hash_fields_absent(&rotate_body);
+
+    let resolve_response = app
+        .oneshot(
+            Request::builder()
+                .method(Method::GET)
+                .uri(format!(
+                    "/api/v1/trip-join-invite-tokens/current?token={invite_token}"
+                ))
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(resolve_response.status(), StatusCode::OK);
+    let resolve_body: Value =
+        serde_json::from_slice(&to_bytes(resolve_response.into_body(), 65536).await.unwrap())
+            .unwrap();
+    assert_eq!(resolve_body["trip"]["id"], support::TRIP_ID);
+    assert_eq!(resolve_body["trip"]["joinId"], "HK-SZ-2025");
+    assert_ne!(
+        resolve_body["joinSessionToken"].as_str().unwrap(),
+        invite_token,
+        "URL invite token must not be reused as the one-time member auth token"
+    );
+    assert_hash_fields_absent(&resolve_body);
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn join_invite_token_rotation_revokes_old_token_and_requires_manage_people(
+    pool: sqlx::PgPool,
+) {
+    support::seed_trip(&pool).await;
+    support::claim_member(&pool, support::ORGANIZER_ID, "1234", "active").await;
+    support::claim_member(&pool, support::TRAVELER_ID, "1234", "active").await;
+    let organizer_token = support::create_session(&pool, support::ORGANIZER_ID).await;
+    let traveler_token = support::create_session(&pool, support::TRAVELER_ID).await;
+    let app = support::app(pool.clone());
+
+    let denied_response = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method(Method::POST)
+                .uri(format!(
+                    "/api/v1/trips/{}/join-invite-tokens",
+                    support::TRIP_ID
+                ))
+                .header(header::AUTHORIZATION, format!("Bearer {traveler_token}"))
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(denied_response.status(), StatusCode::FORBIDDEN);
+
+    let first_response = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method(Method::POST)
+                .uri(format!(
+                    "/api/v1/trips/{}/join-invite-tokens",
+                    support::TRIP_ID
+                ))
+                .header(header::AUTHORIZATION, format!("Bearer {organizer_token}"))
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(first_response.status(), StatusCode::OK);
+    let first_body: Value =
+        serde_json::from_slice(&to_bytes(first_response.into_body(), 65536).await.unwrap())
+            .unwrap();
+    let first_token = first_body["token"].as_str().unwrap();
+
+    let second_response = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method(Method::POST)
+                .uri(format!(
+                    "/api/v1/trips/{}/join-invite-tokens",
+                    support::TRIP_ID
+                ))
+                .header(header::AUTHORIZATION, format!("Bearer {organizer_token}"))
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(second_response.status(), StatusCode::OK);
+    let second_body: Value =
+        serde_json::from_slice(&to_bytes(second_response.into_body(), 65536).await.unwrap())
+            .unwrap();
+    let second_token = second_body["token"].as_str().unwrap();
+    assert_ne!(first_token, second_token);
+
+    let old_token_response = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method(Method::GET)
+                .uri(format!(
+                    "/api/v1/trip-join-invite-tokens/current?token={first_token}"
+                ))
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(old_token_response.status(), StatusCode::UNAUTHORIZED);
+
+    sqlx::query(
+        "update trip_join_invite_tokens
+         set expires_at = now() - interval '1 minute'
+         where trip_id = $1",
+    )
+    .bind(uuid::Uuid::parse_str(support::TRIP_ID).unwrap())
+    .execute(&pool)
+    .await
+    .unwrap();
+    let expired_token_response = app
+        .oneshot(
+            Request::builder()
+                .method(Method::GET)
+                .uri(format!(
+                    "/api/v1/trip-join-invite-tokens/current?token={second_token}"
+                ))
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(expired_token_response.status(), StatusCode::UNAUTHORIZED);
+}
+
+#[sqlx::test(migrations = "../../migrations")]
 async fn member_session_contract_sets_organizer_traveler_and_viewer_ttls(pool: sqlx::PgPool) {
     support::seed_trip(&pool).await;
     support::set_trip_dates(&pool, "2026-07-15", "2026-07-30").await;
