@@ -232,6 +232,7 @@ describe("Sagittarius project scaffold", () => {
     expect(workflow).toContain("postgres:17-alpine");
     expect(workflow).toContain("bun install --frozen-lockfile");
     expect(workflow).toContain("bunx playwright install --with-deps chromium");
+    expect(workflow).toContain('SAGITTARIUS_PERF_SMOKE_MAX_P95_MS: "3000"');
     expect(workflow).toContain("make production-readiness-local PSQL=psql");
     expect(workflow).toContain("name: Production container image build");
     expect(workflow).toContain("make container-build");

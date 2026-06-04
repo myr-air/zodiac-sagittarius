@@ -104,13 +104,14 @@ async function runPerfSmoke(apiBaseUrl: string) {
   durations.sort((left, right) => left - right);
   const p95 = percentile(durations, 0.95);
   const total = performance.now() - startedAt;
-  process.stdout.write(
-    `perf smoke ok: requests=${requestCount} concurrency=${concurrency} totalMs=${Math.round(total)} p95Ms=${Math.round(p95)} maxP95Ms=${maxP95Ms}\n`,
-  );
 
   if (p95 > maxP95Ms) {
     throw new Error(`Perf smoke p95 ${Math.round(p95)}ms exceeded ${maxP95Ms}ms`);
   }
+
+  process.stdout.write(
+    `perf smoke ok: requests=${requestCount} concurrency=${concurrency} totalMs=${Math.round(total)} p95Ms=${Math.round(p95)} maxP95Ms=${maxP95Ms}\n`,
+  );
 }
 
 function percentile(values: number[], ratio: number): number {
