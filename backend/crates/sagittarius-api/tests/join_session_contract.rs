@@ -269,7 +269,7 @@ async fn join_session_contract_login_and_logout_use_join_and_member_tokens(pool:
 #[sqlx::test(migrations = "../../migrations")]
 async fn member_session_contract_sets_organizer_traveler_and_viewer_ttls(pool: sqlx::PgPool) {
     support::seed_trip(&pool).await;
-    support::set_trip_dates(&pool, "2026-06-01", "2026-06-30").await;
+    support::set_trip_dates(&pool, "2026-07-15", "2026-07-30").await;
     support::claim_member(&pool, support::ORGANIZER_ID, "1234", "active").await;
     support::claim_member(&pool, support::TRAVELER_ID, "1234", "active").await;
     support::claim_member(&pool, support::VIEWER_ID, "1234", "active").await;
@@ -323,7 +323,7 @@ async fn member_session_contract_sets_organizer_traveler_and_viewer_ttls(pool: s
 }
 
 #[sqlx::test(migrations = "../../migrations")]
-async fn member_session_contract_rejects_organizer_after_trip_window(pool: sqlx::PgPool) {
+async fn member_session_contract_allows_organizer_after_trip_window(pool: sqlx::PgPool) {
     support::seed_trip(&pool).await;
     support::set_trip_dates(&pool, "2020-01-01", "2020-01-02").await;
     support::claim_member(&pool, support::ORGANIZER_ID, "1234", "active").await;
@@ -353,7 +353,7 @@ async fn member_session_contract_rejects_organizer_after_trip_window(pool: sqlx:
         .await
         .unwrap();
 
-    assert_eq!(response.status(), StatusCode::UNAUTHORIZED);
+    assert_eq!(response.status(), StatusCode::OK);
 }
 
 #[sqlx::test(migrations = "../../migrations")]

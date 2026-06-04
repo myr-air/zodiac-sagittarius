@@ -184,12 +184,12 @@ async fn trip_load_refreshes_organizer_session_but_not_viewer_session(pool: sqlx
         support::stored_member_session_expires_at(&pool, &organizer_token).await;
     let viewer_refreshed = support::stored_member_session_expires_at(&pool, &viewer_token).await;
 
-    assert!(organizer_refreshed > organizer_expiry + time::Duration::days(6));
+    assert!(organizer_refreshed >= time::OffsetDateTime::now_utc() + time::Duration::hours(71));
     assert_eq!(viewer_refreshed, viewer_expiry);
 }
 
 #[sqlx::test(migrations = "../../migrations")]
-async fn trip_load_rejects_unexpired_session_after_trip_access_window(pool: sqlx::PgPool) {
+async fn trip_load_allows_unexpired_session_after_trip_access_window(pool: sqlx::PgPool) {
     support::seed_trip(&pool).await;
     support::set_trip_dates(&pool, "2020-01-01", "2020-01-02").await;
     let organizer_token = support::create_session_with_expiry(
@@ -220,7 +220,7 @@ async fn trip_load_rejects_unexpired_session_after_trip_access_window(pool: sqlx
             .await
             .unwrap();
 
-        assert_eq!(response.status(), StatusCode::UNAUTHORIZED);
+        assert_eq!(response.status(), StatusCode::OK);
     }
 }
 

@@ -336,18 +336,7 @@ pub async fn find_active_member_session(
            and s.revoked_at is null
            and s.expires_at > now()
            and m.access_status = 'active'
-           and t.deleted_at is null
-           and (
-             m.role = 'owner'
-             or (
-               m.role in ('organizer', 'traveler')
-               and now()::date between t.start_date - 7 and t.end_date + 7
-             )
-             or (
-               m.role = 'viewer'
-               and now()::date <= t.end_date + 7
-             )
-           )",
+           and t.deleted_at is null",
     )
     .bind(trip_id)
     .bind(token_hash)
@@ -370,18 +359,7 @@ pub async fn find_active_member_session_in_tx(
            and s.revoked_at is null
            and s.expires_at > now()
            and m.access_status = 'active'
-           and t.deleted_at is null
-           and (
-             m.role = 'owner'
-             or (
-               m.role in ('organizer', 'traveler')
-               and now()::date between t.start_date - 7 and t.end_date + 7
-             )
-             or (
-               m.role = 'viewer'
-               and now()::date <= t.end_date + 7
-             )
-           )",
+           and t.deleted_at is null",
     )
     .bind(trip_id)
     .bind(token_hash)

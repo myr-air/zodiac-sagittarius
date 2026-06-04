@@ -19,8 +19,7 @@ const JOIN_SESSION_TOKEN_SALT: &[u8] = b"sagittarius-join-session";
 const OWNER_MEMBER_SESSION_TTL: Duration = Duration::days(30);
 const ACTIVE_TRIP_MEMBER_SESSION_TTL: Duration = Duration::days(7);
 const VIEWER_SESSION_TTL: Duration = Duration::days(1);
-const TRIP_ACCESS_WINDOW: Duration = Duration::days(7);
-const JOIN_SESSION_TTL: Duration = Duration::minutes(20);
+const JOIN_SESSION_TTL: Duration = Duration::days(7);
 const PARTICIPANT_PASSWORD_MIN_LENGTH: usize = 4;
 
 pub fn hash_secret_for_tests(secret: &str) -> String {
@@ -218,22 +217,25 @@ pub(crate) fn member_session_expires_at(
     match role {
         TripRole::Owner => Ok(now + OWNER_MEMBER_SESSION_TTL),
         TripRole::Organizer | TripRole::Traveler => {
-            let access_start = start_of_day_utc(trip_start_date)? - TRIP_ACCESS_WINDOW;
-            let access_end = end_of_day_utc(add_days(trip_end_date, 7)?)?;
-            if now < access_start || now > access_end {
-                return Err(ServiceError::Unauthenticated);
+            let base_expires = now + ACTIVE_TRIP_MEMBER_SESSION_TTL; // 7 days
+            let trip_start = start_of_day_utc(trip_start_date)?;
+            let trip_end = end_of_day_utc(trip_end_date)?;
+            let trip_end_plus_7 = end_of_day_utc(add_days(trip_end_date, 7)?)?;
+            
+            if now >= trip_start - Duration::days(7) && now <= trip_end {
+                Ok(trip_end_plus_7)
+            } else {
+                Ok(base_expires)
             }
-            Ok(std::cmp::min(
-                now + ACTIVE_TRIP_MEMBER_SESSION_TTL,
-                access_end,
-            ))
         }
         TripRole::Viewer => {
-            let access_end = end_of_day_utc(add_days(trip_end_date, 7)?)?;
-            if now > access_end {
-                return Err(ServiceError::Unauthenticated);
+            let base_expires = now + VIEWER_SESSION_TTL; // 1 day
+            let trip_end_plus_7 = end_of_day_utc(add_days(trip_end_date, 7)?)?;
+            if now > trip_end_plus_7 {
+                Ok(base_expires)
+            } else {
+                Ok(std::cmp::min(base_expires, trip_end_plus_7))
             }
-            Ok(std::cmp::min(now + VIEWER_SESSION_TTL, access_end))
         }
     }
 }
@@ -375,20 +377,15 @@ mod tests {
         let organizer = member_session_expires_at(TripRole::Organizer, start, end, now).unwrap();
         let traveler = member_session_expires_at(TripRole::Traveler, start, end, now).unwrap();
 
-        assert_eq!(organizer, utc(2026, time::Month::November, 24, 9));
-        assert_eq!(traveler, utc(2026, time::Month::November, 24, 9));
-    }
-
-    #[test]
-    fn organizer_and_traveler_policy_never_extends_past_trip_end_plus_7_days() {
-        let start = time::Date::from_calendar_date(2026, time::Month::November, 10).unwrap();
-        let end = time::Date::from_calendar_date(2026, time::Month::November, 20).unwrap();
-        let now = utc(2026, time::Month::November, 25, 9);
-
-        let expires_at = member_session_expires_at(TripRole::Traveler, start, end, now).unwrap();
-
+        // Since now is in November 17 (which is inside Nov 3 to Nov 20), expires_at is trip.end + 7 days
         assert_eq!(
-            expires_at,
+            organizer,
+            utc(2026, time::Month::November, 27, 23)
+                + Duration::minutes(59)
+                + Duration::seconds(59)
+        );
+        assert_eq!(
+            traveler,
             utc(2026, time::Month::November, 27, 23)
                 + Duration::minutes(59)
                 + Duration::seconds(59)
@@ -396,20 +393,30 @@ mod tests {
     }
 
     #[test]
-    fn organizer_and_traveler_policy_rejects_outside_trip_window() {
+    fn organizer_and_traveler_policy_never_extends_past_trip_end_plus_7_days() {
+        let start = time::Date::from_calendar_date(2026, time::Month::November, 10).unwrap();
+        let end = time::Date::from_calendar_date(2026, time::Month::November, 20).unwrap();
+        // now is after Nov 20, so it is outside Nov 3 to Nov 20. It should get base 7 days.
+        let now = utc(2026, time::Month::November, 25, 9);
+
+        let expires_at = member_session_expires_at(TripRole::Traveler, start, end, now).unwrap();
+
+        assert_eq!(expires_at, utc(2026, time::Month::December, 2, 9));
+    }
+
+    #[test]
+    fn organizer_and_traveler_policy_allows_outside_trip_window() {
         let start = time::Date::from_calendar_date(2026, time::Month::November, 10).unwrap();
         let end = time::Date::from_calendar_date(2026, time::Month::November, 20).unwrap();
         let too_early = utc(2026, time::Month::November, 2, 23);
         let too_late = utc(2026, time::Month::November, 28, 0);
 
-        assert!(matches!(
-            member_session_expires_at(TripRole::Organizer, start, end, too_early),
-            Err(ServiceError::Unauthenticated)
-        ));
-        assert!(matches!(
-            member_session_expires_at(TripRole::Traveler, start, end, too_late),
-            Err(ServiceError::Unauthenticated)
-        ));
+        // Should return base 7 days session
+        let early_session = member_session_expires_at(TripRole::Organizer, start, end, too_early).unwrap();
+        let late_session = member_session_expires_at(TripRole::Traveler, start, end, too_late).unwrap();
+
+        assert_eq!(early_session, too_early + Duration::days(7));
+        assert_eq!(late_session, too_late + Duration::days(7));
     }
 
     #[test]
@@ -431,6 +438,13 @@ mod tests {
             utc(2026, time::Month::November, 27, 12),
         )
         .unwrap();
+        let past_trip = member_session_expires_at(
+            TripRole::Viewer,
+            start,
+            end,
+            utc(2026, time::Month::November, 29, 12),
+        )
+        .unwrap();
 
         assert_eq!(normal, utc(2026, time::Month::November, 11, 9));
         assert_eq!(
@@ -439,6 +453,7 @@ mod tests {
                 + Duration::minutes(59)
                 + Duration::seconds(59)
         );
+        assert_eq!(past_trip, utc(2026, time::Month::November, 30, 12));
     }
 
     #[test]

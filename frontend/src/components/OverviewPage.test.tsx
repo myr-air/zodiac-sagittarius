@@ -8,6 +8,17 @@ import { renderWithI18n } from "@/src/i18n/test-utils";
 import { seedTrip } from "@/src/trip/seed";
 import { OverviewPage } from "./OverviewPage";
 
+import { beforeEach, afterEach } from "vitest";
+
+beforeEach(() => {
+  vi.useFakeTimers({ toFake: ["Date"] });
+  vi.setSystemTime(new Date("2025-05-16T12:00:00Z"));
+});
+
+afterEach(() => {
+  vi.useRealTimers();
+});
+
 const render = (ui: Parameters<typeof renderWithI18n>[0]) => renderWithI18n(ui, { locale: "th" });
 
 describe("OverviewPage role lenses", () => {

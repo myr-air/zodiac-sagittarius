@@ -67,11 +67,11 @@ const overviewNextStopClassName = "overview-next-stop grid gap-[5px] [&_p]:m-0 [
 const overviewHealthGridClassName = "overview-health-grid grid grid-cols-3 gap-2 max-[520px]:grid-cols-1 [&_span]:grid [&_span]:min-h-[58px] [&_span]:gap-0.5 [&_span]:rounded-[var(--radius-sm)] [&_span]:border [&_span]:border-[var(--color-border)] [&_span]:bg-[var(--color-surface-subtle)] [&_span]:p-2.5 [&_span]:text-xs [&_span]:font-bold [&_span]:leading-4 [&_span]:text-[var(--color-text-muted)] [&_strong]:text-[22px] [&_strong]:font-extrabold [&_strong]:leading-[26px] [&_strong]:text-[var(--color-text)]";
 const overviewStopListClassName = "overview-stop-list m-0 grid list-none gap-2 p-0 [&_li]:grid [&_li]:gap-[3px] [&_li]:rounded-[var(--radius-sm)] [&_li]:border [&_li]:border-[var(--color-border)] [&_li]:bg-[var(--color-surface-subtle)] [&_li]:px-3 [&_li]:py-2.5 [&_small]:text-xs [&_small]:font-bold [&_small]:leading-4 [&_small]:text-[var(--color-text-muted)] [&_span]:text-xs [&_span]:font-bold [&_span]:leading-4 [&_span]:text-[var(--color-text-muted)] [&_strong]:text-sm [&_strong]:font-extrabold [&_strong]:leading-5 [&_strong]:text-[var(--color-text)]";
 const overviewFocusListClassName = "overview-focus-list m-0 mt-2 grid list-none gap-1.5 p-0 [&_li]:flex [&_li]:flex-wrap [&_li]:items-center [&_li]:gap-x-2.5 [&_li]:gap-y-1.5 [&_li]:border-t [&_li]:border-[var(--color-border)] [&_li]:pt-2 [&_span]:text-xs [&_span]:font-bold [&_span]:leading-4 [&_span]:text-[var(--color-text-muted)] [&_strong]:text-[13px] [&_strong]:font-extrabold [&_strong]:leading-[18px] [&_strong]:text-[var(--color-text)]";
-const overviewHighlightBoardClassName = "overview-highlight-board mb-4 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[linear-gradient(135deg,rgb(255_255_255_/_0.86),rgb(255_247_237_/_0.44)),var(--paper-grain),var(--color-surface)] bg-[length:auto,120px_120px,auto] p-3 shadow-[0_14px_32px_rgb(15_23_42_/_0.05)] max-[767px]:hidden";
+const overviewHighlightBoardClassName = "overview-highlight-board mb-4 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[linear-gradient(135deg,rgb(255_255_255_/_0.86),rgb(255_247_237_/_0.44)),var(--paper-grain),var(--color-surface)] bg-[length:auto,120px_120px,auto] p-3 shadow-[0_14px_32px_rgb(15_23_42_/_0.05)]";
 const overviewBoardTitleClassName = "overview-board-title mb-2.5 flex items-center gap-[9px] text-[var(--color-text)] [&_.icon]:text-[var(--color-primary)] [&_h2]:m-0 [&_h2]:text-[15px] [&_h2]:font-black [&_h2]:leading-[22px] [&_p]:m-0 [&_p]:text-xs [&_p]:font-bold [&_p]:leading-[17px] [&_p]:text-[var(--color-text-muted)]";
-const overviewHighlightListClassName = "overview-highlight-list m-0 grid list-none grid-cols-[repeat(4,minmax(150px,1fr))] gap-2.5 p-0 max-[1199px]:grid-cols-3 max-[767px]:grid-cols-1";
+const overviewHighlightListClassName = "overview-highlight-list m-0 grid list-none grid-cols-[repeat(4,minmax(150px,1fr))] gap-2.5 p-0 max-[1199px]:grid-cols-3 max-[767px]:flex max-[767px]:overflow-x-auto max-[767px]:pb-3.5 max-[767px]:scroll-snap-x max-[767px]:-mx-3 max-[767px]:px-3 [&::-webkit-scrollbar]:hidden";
 const overviewHighlightItemClassName =
-  "overview-highlight-item relative grid min-h-[178px] min-w-0 content-end overflow-hidden rounded-[var(--radius-md)] border border-[color-mix(in_srgb,var(--overview-highlight-accent)_18%,white)] bg-[linear-gradient(180deg,transparent_0_34%,rgb(255_255_255_/_0.78)_66%,rgb(255_255_255_/_0.94)),radial-gradient(circle_at_22%_22%,rgb(255_255_255_/_0.86)_0_16px,transparent_17px),linear-gradient(135deg,var(--overview-highlight-wash),color-mix(in_srgb,var(--overview-highlight-accent)_18%,white))] px-3 pb-3 pt-[88px] [--overview-highlight-accent:#0284c7] [--overview-highlight-wash:#e0f2fe] max-[767px]:min-h-[150px] [&_small]:relative [&_small]:z-[1] [&_small]:min-w-0 [&_small]:overflow-hidden [&_small]:text-ellipsis [&_small]:whitespace-nowrap [&_small]:text-[11px] [&_small]:font-bold [&_small]:leading-[15px] [&_small]:text-[var(--color-text-muted)] [&_span]:relative [&_span]:z-[1] [&_span]:text-[11px] [&_span]:font-[850] [&_span]:leading-[15px] [&_span]:text-[var(--overview-highlight-accent)] [&_strong]:relative [&_strong]:z-[1] [&_strong]:min-w-0 [&_strong]:overflow-hidden [&_strong]:text-ellipsis [&_strong]:whitespace-nowrap [&_strong]:text-[13px] [&_strong]:font-black [&_strong]:leading-[18px] [&_strong]:text-[var(--color-text)]";
+  "overview-highlight-item relative grid min-h-[178px] min-w-0 content-end overflow-hidden rounded-[var(--radius-md)] border border-[color-mix(in_srgb,var(--overview-highlight-accent)_18%,white)] bg-[linear-gradient(180deg,transparent_0_34%,rgb(255_255_255_/_0.78)_66%,rgb(255_255_255_/_0.94)),radial-gradient(circle_at_22%_22%,rgb(255_255_255_/_0.86)_0_16px,transparent_17px),linear-gradient(135deg,var(--overview-highlight-wash),color-mix(in_srgb,var(--overview-highlight-accent)_18%,white))] px-3 pb-3 pt-[88px] [--overview-highlight-accent:#0284c7] [--overview-highlight-wash:#e0f2fe] max-[767px]:min-h-[150px] max-[767px]:w-[240px] max-[767px]:shrink-0 max-[767px]:scroll-snap-align-start [&_small]:relative [&_small]:z-[1] [&_small]:min-w-0 [&_small]:overflow-hidden [&_small]:text-ellipsis [&_small]:whitespace-nowrap [&_small]:text-[11px] [&_small]:font-bold [&_small]:leading-[15px] [&_small]:text-[var(--color-text-muted)] [&_span]:relative [&_span]:z-[1] [&_span]:text-[11px] [&_span]:font-[850] [&_span]:leading-[15px] [&_span]:text-[var(--overview-highlight-accent)] [&_strong]:relative [&_strong]:z-[1] [&_strong]:min-w-0 [&_strong]:overflow-hidden [&_strong]:text-ellipsis [&_strong]:whitespace-nowrap [&_strong]:text-[13px] [&_strong]:font-black [&_strong]:leading-[18px] [&_strong]:text-[var(--color-text)]";
 const overviewHighlightToneClassNames = {
   harbor: "[--overview-highlight-accent:#0f766e] [--overview-highlight-wash:#ccfbf1]",
   city: "[--overview-highlight-accent:#4f46e5] [--overview-highlight-wash:#e0e7ff]",
@@ -84,7 +84,7 @@ const overviewTaskFilterClassName = "overview-task-filter min-h-7 rounded-[calc(
 const overviewTaskFilterActiveClassName = "overview-task-filter--active bg-[var(--color-surface)] text-[var(--color-primary-strong)] shadow-[0_1px_4px_rgb(15_23_42_/_0.06)]";
 const overviewTaskAddButtonClassName = "overview-task-add-button inline-flex min-h-[34px] w-[34px] flex-none items-center justify-center rounded-[var(--radius-sm)] border border-[var(--color-primary-border)] bg-[var(--color-primary)] p-0 text-xl font-extrabold leading-none text-white transition-[background,border-color,box-shadow,transform] duration-200 hover:border-[var(--color-primary)] hover:bg-[var(--color-primary-strong)] hover:shadow-[0_8px_18px_rgb(37_99_235_/_0.18)] active:translate-y-px focus-visible:outline focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[rgb(37_99_235_/_0.22)]";
 const overviewTaskFormClassName = "overview-task-form grid grid-cols-[minmax(180px,1fr)_minmax(118px,140px)_minmax(132px,160px)_auto] items-end gap-2 max-[767px]:grid-cols-1 [&_button]:min-h-[34px] [&_button]:rounded-[var(--radius-sm)] [&_button]:border [&_button]:border-[var(--color-primary-border)] [&_button]:bg-[var(--color-primary)] [&_button]:px-3 [&_button]:text-xs [&_button]:font-extrabold [&_button]:text-white [&_button:disabled]:border-[var(--color-border)] [&_button:disabled]:bg-[var(--color-surface-muted)] [&_button:disabled]:text-[var(--color-text-subtle)] max-[767px]:[&_button]:w-full [&_input]:min-h-[34px] [&_input]:w-full [&_input]:rounded-[var(--radius-sm)] [&_input]:border [&_input]:border-[var(--color-border)] [&_input]:bg-[var(--color-surface)] [&_input]:px-2.5 [&_input]:text-xs [&_input]:font-bold [&_input]:text-[var(--color-text)] [&_label]:grid [&_label]:min-w-0 [&_label]:gap-[5px] [&_label>span]:text-[11px] [&_label>span]:font-extrabold [&_label>span]:leading-[15px] [&_label>span]:text-[var(--color-text-muted)] [&_select]:min-h-[34px] [&_select]:w-full [&_select]:rounded-[var(--radius-sm)] [&_select]:border [&_select]:border-[var(--color-border)] [&_select]:bg-[var(--color-surface)] [&_select]:px-2.5 [&_select]:text-xs [&_select]:font-bold [&_select]:text-[var(--color-text)] [&_select:disabled]:bg-[var(--color-surface-muted)] [&_select:disabled]:text-[var(--color-text-subtle)]";
-const overviewTaskFormPersonalClassName = "overview-task-form--personal grid-cols-[minmax(180px,1fr)_auto] max-[767px]:grid-cols-1";
+const personalTaskFormClassName = "overview-task-form overview-task-form--personal grid grid-cols-[minmax(140px,1fr)_auto] items-end gap-2 [&_button]:min-h-[34px] [&_button]:rounded-[var(--radius-sm)] [&_button]:border [&_button]:border-[var(--color-primary-border)] [&_button]:bg-[var(--color-primary)] [&_button]:px-3 [&_button]:text-xs [&_button]:font-extrabold [&_button]:text-white [&_button:disabled]:border-[var(--color-border)] [&_button:disabled]:bg-[var(--color-surface-muted)] [&_button:disabled]:text-[var(--color-text-subtle)] [&_input]:min-h-[34px] [&_input]:w-full [&_input]:rounded-[var(--radius-sm)] [&_input]:border [&_input]:border-[var(--color-border)] [&_input]:bg-[var(--color-surface)] [&_input]:px-2.5 [&_input]:text-xs [&_input]:font-bold [&_input]:text-[var(--color-text)] [&_label]:grid [&_label]:min-w-0 [&_label]:gap-[5px] [&_label>span]:text-[11px] [&_label>span]:font-extrabold [&_label>span]:leading-[15px] [&_label>span]:text-[var(--color-text-muted)] w-full max-[767px]:grid-cols-1 max-[767px]:[&_button]:w-full";
 const overviewTaskListClassName = "overview-task-list m-0 grid list-none gap-2 p-0 text-[13px] font-semibold leading-5 text-[var(--color-text-muted)]";
 const overviewTaskItemClassName = "overview-task-item grid min-h-10 grid-cols-[minmax(0,1fr)_auto] items-center gap-2.5 rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface-subtle)] px-2.5 py-2 max-[767px]:grid-cols-1 [&_input]:size-4 [&_input]:accent-[var(--color-primary)] [&_label]:inline-flex [&_label]:min-w-0 [&_label]:items-center [&_label]:gap-[9px] [&_label>span]:overflow-hidden [&_label>span]:text-ellipsis [&_label>span]:whitespace-nowrap [&_label>span]:text-[13px] [&_label>span]:leading-[18px] [&_small]:whitespace-nowrap [&_small]:text-[11px] [&_small]:font-extrabold [&_small]:text-[var(--color-text-muted)]";
 const overviewTaskMetaClassName = "overview-task-meta inline-flex flex-wrap justify-end gap-1.5";
@@ -108,6 +108,13 @@ export function OverviewPage({
   onToggleTaskStatus,
 }: OverviewPageProps) {
   const { locale, t } = useI18n();
+  const countdown = getCountdownBadge(trip.startDate, trip.endDate, locale);
+  const isCompleted = countdown.type === "completed";
+  const focusTodayHeading = isCompleted
+    ? (locale === "th" ? "ย้อนรอยความทรงจำ" : "Memories of the Journey")
+    : (countdown.type === "incoming"
+      ? (locale === "th" ? "จุดสตาร์ทแรกของทริป" : "First Stop Preview")
+      : t.overview.focusToday);
   const [taskScope, setTaskScope] = useState<"mine" | "trip" | "all">("mine");
   const [taskStatusFilter, setTaskStatusFilter] = useState<"all" | "open" | "done">("all");
   const [isTaskDialogOpen, setIsTaskDialogOpen] = useState(false);
@@ -199,6 +206,7 @@ export function OverviewPage({
         settlementCount={settlementCount}
         visual={heroVisual}
         currentMemberCard={currentMemberCard}
+        countdown={countdown}
       />
 
       <section className={overviewCockpitClassName} aria-label="travel cockpit">
@@ -244,18 +252,24 @@ export function OverviewPage({
             <section className={cn(overviewPanelClassName, overviewPanelWideClassName)} aria-label={t.overview.sections.todayFocus}>
               <div className={overviewPanelTitleClassName}>
                 <Icon name="route" />
-                <h2>{t.overview.focusToday}</h2>
+                <h2>{focusTodayHeading}</h2>
               </div>
-              {nextStop ? (
-                <div className={overviewNextStopClassName}>
-                  <strong>{nextStop.activity}</strong>
-                  <span>{formatDayLabel(nextStop.day, trip.startDate, locale)} · {nextStop.startTime} · {nextStop.place}</span>
-                  <p>{travelerNextStopDetail(nextStop, t.overview.focusDetails.travelerFallback)}</p>
-                </div>
+              {isCompleted ? (
+                <TripCompletedPostcard trip={trip} items={items} groupSpendLabel={groupSpendLabel} locale={locale} />
               ) : (
-                <p className={overviewMutedClassName}>{t.overview.empty.itinerary}</p>
+                <>
+                  {nextStop ? (
+                    <div className={overviewNextStopClassName}>
+                      <strong>{nextStop.activity}</strong>
+                      <span>{formatDayLabel(nextStop.day, trip.startDate, locale)} · {nextStop.startTime} · {nextStop.place}</span>
+                      <p>{travelerNextStopDetail(nextStop, t.overview.focusDetails.travelerFallback)}</p>
+                    </div>
+                  ) : (
+                    <p className={overviewMutedClassName}>{t.overview.empty.itinerary}</p>
+                  )}
+                  <OverviewFocusList items={nextDayItems} startDate={trip.startDate} locale={locale} label={t.overview.sections.todayFocusStops} />
+                </>
               )}
-              <OverviewFocusList items={nextDayItems} startDate={trip.startDate} locale={locale} label={t.overview.sections.todayFocusStops} />
             </section>
 
             <section className={cn(overviewPanelClassName, overviewPanelWideClassName)} aria-label={t.overview.sections.travelerHighlights}>
@@ -278,7 +292,7 @@ export function OverviewPage({
                   <button className={cn(overviewTaskFilterClassName, taskStatusFilter === "done" && overviewTaskFilterActiveClassName)} type="button" onClick={() => setTaskStatusFilter("done")}>{t.common.status.done}</button>
                 </div>
               </div>
-              <form className={cn(overviewTaskFormClassName, overviewTaskFormPersonalClassName)} onSubmit={submitTask}>
+              <form className={personalTaskFormClassName} onSubmit={submitTask}>
                 <label>
                   <span>{t.overview.addPersonalTask}</span>
                   <input value={newTaskTitle} onChange={(event) => setNewTaskTitle(event.target.value)} placeholder={t.overview.personalTaskPlaceholder} />
@@ -288,7 +302,7 @@ export function OverviewPage({
               {visibleTasks.length ? (
                 <ul className={overviewTaskListClassName}>
                   {visibleTasks.map((task) => (
-                    <li className={overviewTaskItemClassName} key={task.id} aria-label={task.title} data-status={task.status}>
+                    <li className={cn(overviewTaskItemClassName, "hover:border-teal-600/30 hover:shadow-xs transition-all duration-200")} key={task.id} aria-label={task.title} data-status={task.status}>
                       <label>
                         <input type="checkbox" checked={task.status === "done"} onChange={() => toggleTask(task)} />
                         <span className={task.status === "done" ? "line-through text-[var(--color-text-muted)] font-normal" : "text-[var(--color-text)] font-bold"}>
@@ -296,8 +310,7 @@ export function OverviewPage({
                         </span>
                       </label>
                       <div className={overviewTaskMetaClassName}>
-                        <small className={cn(overviewTaskScopeClassName, overviewTaskScopeToneClassName[task.visibility])}>{task.visibility === "private" ? t.overview.task.private : t.overview.task.shared}</small>
-                        <small>{assigneeLabel(task, trip, t.overview.task)}</small>
+                        <TaskAssigneeBadge task={task} trip={trip} labels={t.overview.task} />
                       </div>
                     </li>
                   ))}
@@ -370,18 +383,24 @@ export function OverviewPage({
             <section className={cn(overviewPanelClassName, overviewPanelWideClassName)} aria-label={t.overview.sections.todayFocus}>
           <div className={overviewPanelTitleClassName}>
             <Icon name="route" />
-            <h2>{t.overview.focusToday}</h2>
+            <h2>{focusTodayHeading}</h2>
           </div>
-          {nextStop ? (
-            <div className={overviewNextStopClassName}>
-              <strong>{nextStop.activity}</strong>
-              <span>{formatDayLabel(nextStop.day, trip.startDate, locale)} · {nextStop.startTime} · {nextStop.place}</span>
-              <p>{managerNextStopDetail(nextStop, t.overview.focusDetails.managerFallback)}</p>
-            </div>
+          {isCompleted ? (
+            <TripCompletedPostcard trip={trip} items={items} groupSpendLabel={groupSpendLabel} locale={locale} />
           ) : (
-            <p className={overviewMutedClassName}>{t.overview.empty.itinerary}</p>
+            <>
+              {nextStop ? (
+                <div className={overviewNextStopClassName}>
+                  <strong>{nextStop.activity}</strong>
+                  <span>{formatDayLabel(nextStop.day, trip.startDate, locale)} · {nextStop.startTime} · {nextStop.place}</span>
+                  <p>{managerNextStopDetail(nextStop, t.overview.focusDetails.managerFallback)}</p>
+                </div>
+              ) : (
+                <p className={overviewMutedClassName}>{t.overview.empty.itinerary}</p>
+              )}
+              <OverviewFocusList items={nextDayItems} startDate={trip.startDate} locale={locale} label={t.overview.sections.todayFocusStops} />
+            </>
           )}
-          <OverviewFocusList items={nextDayItems} startDate={trip.startDate} locale={locale} label={t.overview.sections.todayFocusStops} />
             </section>
 
             <section className={cn(overviewPanelClassName, overviewPanelHealthClassName)} aria-label={t.overview.sections.readiness}>
@@ -428,7 +447,7 @@ export function OverviewPage({
           {visibleTasks.length ? (
             <ul className={overviewTaskListClassName}>
               {visibleTasks.map((task) => (
-                <li className={overviewTaskItemClassName} key={task.id} aria-label={task.title} data-status={task.status}>
+                <li className={cn(overviewTaskItemClassName, "hover:border-teal-600/30 hover:shadow-xs transition-all duration-200")} key={task.id} aria-label={task.title} data-status={task.status}>
                   <label>
                     <input type="checkbox" checked={task.status === "done"} onChange={() => toggleTask(task)} />
                     <span className={task.status === "done" ? "line-through text-[var(--color-text-muted)] font-normal" : "text-[var(--color-text)] font-bold"}>
@@ -436,9 +455,13 @@ export function OverviewPage({
                     </span>
                   </label>
                   <div className={overviewTaskMetaClassName}>
-                    <small className={cn(overviewTaskScopeClassName, overviewTaskScopeToneClassName[task.visibility])}>{task.visibility === "private" ? t.overview.task.private : t.overview.task.shared}</small>
-                    <small>{taskKindLabel(task, t.overview.task)}</small>
-                    <small>{task.relatedItemId ? stopLabel(task.relatedItemId, items, t.overview.task.planStop) : assigneeLabel(task, trip, t.overview.task)}</small>
+                    <TaskAssigneeBadge task={task} trip={trip} labels={t.overview.task} />
+                    <small className="text-[11px] font-extrabold text-[var(--color-text-muted)] border border-[var(--color-border)] bg-[var(--color-surface-subtle)] px-1.5 py-0.5 rounded-sm">{taskKindLabel(task, t.overview.task)}</small>
+                    {task.relatedItemId && (
+                      <small className="text-[11px] font-extrabold text-[var(--color-text-muted)] border border-[var(--color-border)] bg-[var(--color-surface-subtle)] px-1.5 py-0.5 rounded-sm">
+                        {stopLabel(task.relatedItemId, items, t.overview.task.planStop)}
+                      </small>
+                    )}
                   </div>
                 </li>
               ))}
@@ -595,15 +618,84 @@ type DestinationTone = "harbor" | "city" | "coast" | "market";
 interface DestinationVisual {
   tone: DestinationTone;
   label: string;
+  imageUrl?: string;
 }
 
 function buildDestinationVisual(destinationLabel: string): DestinationVisual {
   const label = destinationLabel.trim() || "Trip destination";
   const normalized = label.toLocaleLowerCase("en-US");
-  if (/(hong kong|harbour|harbor|shenzhen|bay)/i.test(normalized)) return { tone: "harbor", label };
-  if (/(beach|coast|island|phuket|okinawa|bali)/i.test(normalized)) return { tone: "coast", label };
-  if (/(market|bazaar|night|taipei|bangkok)/i.test(normalized)) return { tone: "market", label };
-  return { tone: "city", label };
+  if (/(hong kong|harbour|harbor|shenzhen|bay)/i.test(normalized)) {
+    return { tone: "harbor", label, imageUrl: "/landing/auth/photo-hong-kong-skyline.png" };
+  }
+  if (/(beach|coast|island|phuket|okinawa|bali)/i.test(normalized)) {
+    return { tone: "coast", label, imageUrl: "/landing/auth/photo-krabi.png" };
+  }
+  if (/(market|bazaar|night|taipei|bangkok)/i.test(normalized)) {
+    return { tone: "market", label, imageUrl: "/landing/auth/photo-santorini.png" };
+  }
+  return { tone: "city", label, imageUrl: "/landing/auth/photo-kyoto.png" };
+}
+
+function getHighlightImage(item: ItineraryItem): string | undefined {
+  const activity = item.activity.toLowerCase();
+  const place = item.place.toLowerCase();
+
+  // Hong Kong specific matches first
+  if (
+    activity.includes("dim dim sum") ||
+    activity.includes("ติ่มซำ") ||
+    activity.includes("food") ||
+    activity.includes("กิน") ||
+    activity.includes("อาหาร") ||
+    activity.includes("brunch") ||
+    activity.includes("lunch") ||
+    activity.includes("dinner")
+  ) {
+    return "/landing/auth/photo-dim-sum-brunch.png";
+  }
+  if (
+    activity.includes("mong kok") ||
+    activity.includes("ladies market") ||
+    activity.includes("ช้อป") ||
+    activity.includes("เดินเล่น") ||
+    activity.includes("market") ||
+    activity.includes("shopping") ||
+    activity.includes("ซื้อ")
+  ) {
+    return "/landing/auth/photo-mong-kok-market.png";
+  }
+  if (
+    activity.includes("peak tram") ||
+    activity.includes("victoria peak") ||
+    activity.includes("skyline") ||
+    activity.includes("view") ||
+    activity.includes("วิวมุมสูง") ||
+    activity.includes("ชมวิว") ||
+    activity.includes("sky terrace")
+  ) {
+    return "/landing/auth/photo-hong-kong-skyline.png";
+  }
+
+  // Fallbacks based on category/tone
+  if (item.activityType === "food") {
+    return "/landing/auth/photo-dim-sum-brunch.png";
+  }
+  if (item.activityType === "shopping") {
+    return "/landing/auth/photo-mong-kok-market.png";
+  }
+  if (item.activityType === "attraction") {
+    return "/landing/auth/photo-hong-kong-skyline.png";
+  }
+
+  // Generic fallbacks based on item.id hash to keep it stable
+  const images = [
+    "/landing/auth/photo-kyoto.png",
+    "/landing/auth/photo-krabi.png",
+    "/landing/auth/photo-santorini.png",
+    "/landing/auth/photo-cappadocia.png",
+  ];
+  const hash = item.id.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  return images[hash % images.length];
 }
 
 function buildHighlightItems(items: ItineraryItem[]): ItineraryItem[] {
@@ -623,6 +715,125 @@ function highlightTone(item: ItineraryItem, index: number): DestinationTone {
   return index % 3 === 0 ? "coast" : "city";
 }
 
+function getCountdownBadge(startDateStr: string, endDateStr: string, locale: Locale): { text: string; type: "incoming" | "active" | "completed" } {
+  const now = new Date();
+  const start = new Date(`${startDateStr}T00:00:00.000Z`);
+  const end = new Date(`${endDateStr}T00:00:00.000Z`);
+  
+  const today = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+  const todayMs = today.getTime();
+
+  const startMs = start.getTime();
+  const endMs = end.getTime();
+
+  if (todayMs < startMs) {
+    const diffDays = Math.ceil((startMs - todayMs) / (1000 * 60 * 60 * 24));
+    return {
+      text: locale === "th" ? `จะเริ่มในอีก ${diffDays} วัน` : `Starts in ${diffDays} days`,
+      type: "incoming"
+    };
+  } else if (todayMs >= startMs && todayMs <= endMs) {
+    const diffDays = Math.floor((todayMs - startMs) / (1000 * 60 * 60 * 24)) + 1;
+    const totalDays = Math.floor((endMs - startMs) / (1000 * 60 * 60 * 24)) + 1;
+    return {
+      text: locale === "th" ? `วันที่ ${diffDays} จาก ${totalDays}` : `Day ${diffDays} of ${totalDays}`,
+      type: "active"
+    };
+  } else {
+    return {
+      text: locale === "th" ? "ทริปเสร็จสิ้นแล้ว" : "Trip Completed",
+      type: "completed"
+    };
+  }
+}
+
+function TripCompletedPostcard({ trip, items, groupSpendLabel, locale }: { trip: Trip; items: ItineraryItem[]; groupSpendLabel: string; locale: Locale }) {
+  const dayCount = getTripDates(trip.startDate, trip.endDate).length;
+  const stopCount = items.length;
+
+  return (
+    <div className="relative overflow-hidden rounded-xl border border-amber-200/60 bg-[var(--color-paper-warm)] p-5 shadow-[0_8px_24px_rgba(245_158_11_/_0.04)] bg-[image:var(--paper-grain)] bg-[length:120px_120px]">
+      {/* Decorative Stamp */}
+      <div className="absolute top-4 right-4 w-12 h-14 border-2 border-dashed border-amber-300/40 rounded-xs flex flex-col items-center justify-center rotate-[6deg] select-none opacity-60">
+        <Icon name="location" className="size-5 text-amber-500/50" />
+        <span className="text-[7px] font-black text-amber-600/40 uppercase mt-0.5 tracking-wider font-mono">Joii Map</span>
+      </div>
+
+      <div className="flex flex-col gap-2.5 max-w-[85%]">
+        <strong className="text-base font-extrabold text-amber-900/90 leading-tight flex items-center gap-1.5">
+          <Icon name="calendar" className="size-4.5 text-amber-700" />
+          {locale === "th" ? "ขอบคุณสำหรับการเดินทาง!" : "Thank you for traveling!"}
+        </strong>
+        <p className="m-0 text-xs font-bold leading-relaxed text-amber-800/80">
+          {locale === "th" 
+            ? `ทริป ${trip.name} ได้เสร็จสิ้นลงแล้วอย่างสมบูรณ์แบบ หวังว่าคุณจะได้รับความทรงจำและมิตรภาพที่ยอดเยี่ยมระหว่างเดินทาง!`
+            : `The ${trip.name} has completed. Hope this journey left you with beautiful memories and meaningful connections!`}
+        </p>
+      </div>
+
+      {/* Stats row */}
+      <div className="grid grid-cols-3 gap-2 border-t border-amber-200/40 pt-4 mt-4 text-center">
+        <div className="flex flex-col gap-0.5">
+          <span className="text-[10px] font-extrabold uppercase tracking-wider text-amber-700/60">{locale === "th" ? "ระยะเวลา" : "Duration"}</span>
+          <strong className="text-lg font-black text-amber-900">{dayCount} {locale === "th" ? "วัน" : "Days"}</strong>
+        </div>
+        <div className="flex flex-col gap-0.5 border-x border-amber-200/40">
+          <span className="text-[10px] font-extrabold uppercase tracking-wider text-amber-700/60">{locale === "th" ? "สถานที่เช็คอิน" : "Places Visited"}</span>
+          <strong className="text-lg font-black text-amber-900">{stopCount} {locale === "th" ? "จุด" : "Stops"}</strong>
+        </div>
+        <div className="flex flex-col gap-0.5">
+          <span className="text-[10px] font-extrabold uppercase tracking-wider text-amber-700/60">{locale === "th" ? "ยอดใช้จ่ายรวม" : "Total Budget"}</span>
+          <strong className="text-lg font-black text-amber-900">{groupSpendLabel}</strong>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TaskAssigneeBadge({ task, trip, labels }: { task: TripTask; trip: Trip; labels: any }) {
+  const isPrivate = task.visibility === "private";
+  const member = task.assigneeId ? trip.members.find((m) => m.id === task.assigneeId) : null;
+  const name = member?.displayName ?? labels.tripMember;
+  const color = member?.color ?? "#cbd5e1";
+  const initial = name.slice(0, 1).toUpperCase();
+
+  return (
+    <div className="inline-flex flex-wrap items-center gap-1.5">
+      {/* Visibility Badge */}
+      <small className={cn(
+        "inline-flex items-center text-[10px] font-bold px-1.5 py-0.5 rounded-sm border",
+        isPrivate 
+          ? "bg-teal-50 text-teal-700 border-teal-100/50" 
+          : "bg-blue-50 text-blue-700 border-blue-100/50"
+      )}>
+        {isPrivate ? labels.private : labels.shared}
+      </small>
+
+      {/* Assignee Badge */}
+      {task.visibility !== "private" && (
+        task.assigneeId ? (
+          <div className="inline-flex items-center gap-1">
+            <span
+              className="w-[18px] h-[18px] rounded-full flex items-center justify-center text-[9px] font-black text-white shrink-0 shadow-2xs"
+              style={{ backgroundColor: color }}
+              title={name}
+            >
+              {initial}
+            </span>
+            <span className="text-[11px] font-bold text-[var(--color-text-muted)] max-w-[80px] overflow-hidden text-ellipsis whitespace-nowrap">
+              {name}
+            </span>
+          </div>
+        ) : (
+          <small className="inline-flex items-center bg-slate-50 border border-slate-200/50 text-[10px] font-bold text-slate-500 px-1.5 py-0.5 rounded-sm">
+            {labels.unassigned}
+          </small>
+        )
+      )}
+    </div>
+  );
+}
+
 function OverviewHero({
   title,
   roleTitle,
@@ -633,6 +844,7 @@ function OverviewHero({
   settlementCount,
   visual,
   currentMemberCard,
+  countdown,
 }: {
   title: string;
   roleTitle: string;
@@ -643,12 +855,23 @@ function OverviewHero({
   settlementCount: number;
   visual: DestinationVisual;
   currentMemberCard: ReactNode;
+  countdown: { text: string; type: "incoming" | "active" | "completed" };
 }) {
   const { t } = useI18n();
   return (
     <section className={cn(overviewHeroBaseClassName, overviewHeroToneClassNames[visual.tone])} aria-label={title}>
       <div className={overviewHeroCopyClassName}>
-        <span className={overviewHeroKickerClassName}>{destinationLabel}</span>
+        <div className="flex flex-wrap items-center gap-2 mb-1">
+          <span className={overviewHeroKickerClassName}>{destinationLabel}</span>
+          <span className={cn(
+            "text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider shadow-2xs border",
+            countdown.type === "incoming" && "bg-teal-50 text-teal-700 border-teal-100 dark:bg-teal-950/30 dark:text-teal-400 dark:border-teal-900/30",
+            countdown.type === "active" && "bg-amber-50 text-amber-700 border-amber-100 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-900/30",
+            countdown.type === "completed" && "bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700"
+          )}>
+            {countdown.text}
+          </span>
+        </div>
         <h1 className={overviewHeroTitleClassName}>{title}</h1>
         <p className={overviewHeroRoleClassName}>{roleTitle}</p>
         <div className={overviewHeroMetaClassName} aria-label="trip facts">
@@ -658,11 +881,26 @@ function OverviewHero({
           <span><Icon name="wallet" /> {groupSpendLabel}</span>
         </div>
       </div>
-      <div className={overviewHeroVisualClassName} aria-hidden="true">
-        <span className={overviewHeroSkylineClassName} />
-        <span className={overviewHeroRouteClassName} />
-        <span className={overviewHeroMarkerClassName} />
-      </div>
+      {visual.imageUrl ? (
+        <div className="absolute right-[336px] top-1/2 -translate-y-1/2 z-[1] hidden xl:block select-none pointer-events-none" aria-hidden="true">
+          <div className="relative rotate-[-3.5deg] hover:rotate-0 hover:scale-105 transition-all duration-300 shadow-[0_12px_28px_rgba(15,23,42,0.12)] border-[10px] border-white bg-white p-2.5 pb-8 w-56 shrink-0 pointer-events-auto">
+            {/* Washi tape effect */}
+            <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 w-14 h-5 bg-teal-100/30 backdrop-blur-[2px] rotate-[2deg] border border-white/20 shadow-[0_1px_3px_rgba(0,0,0,0.03)]" />
+            <div className="relative aspect-[4/3] w-full overflow-hidden bg-slate-50 rounded-xs border border-slate-100">
+              <img src={visual.imageUrl} alt={visual.label} className="object-cover w-full h-full" />
+            </div>
+            <div className="mt-3 text-center text-[10px] font-extrabold text-[var(--color-primary)] tracking-widest uppercase font-mono">
+              ★ {visual.label.split("+")[0].trim()} ★
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className={overviewHeroVisualClassName} aria-hidden="true">
+          <span className={overviewHeroSkylineClassName} />
+          <span className={overviewHeroRouteClassName} />
+          <span className={overviewHeroMarkerClassName} />
+        </div>
+      )}
       <div className={overviewHeroAsideClassName}>
         {currentMemberCard}
         <span className={overviewHeroSettlementsClassName}>{t.overview.money.settlementsCount({ count: settlementCount })}</span>
@@ -686,26 +924,58 @@ function CockpitCard({
   detail: ReactNode;
   onClick?: () => void;
 }) {
+  const iconColors = {
+    route: "bg-teal-50 text-teal-700 border border-teal-100/80 dark:bg-teal-950/40 dark:text-teal-400 dark:border-teal-900/40",
+    wallet: "bg-amber-50 text-amber-700 border border-amber-100/80 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-900/40",
+    users: "bg-sky-50 text-sky-700 border border-sky-100/80 dark:bg-sky-950/40 dark:text-sky-400 dark:border-sky-900/40",
+    calendar: "bg-indigo-50 text-indigo-700 border border-indigo-100/80 dark:bg-indigo-950/40 dark:text-indigo-400 dark:border-indigo-900/40",
+    location: "bg-emerald-50 text-emerald-700 border border-emerald-100/80 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-900/40",
+    check: "bg-purple-50 text-purple-700 border border-purple-100/80 dark:bg-purple-950/40 dark:text-purple-400 dark:border-purple-900/40",
+  }[icon] || "bg-slate-50 text-slate-700";
+
   const content = (
-    <>
-      <div className={cockpitCardTitleClassName}>
-        <Icon name={icon} />
-        <span>{label}</span>
+    <div className="flex flex-col gap-2 w-full">
+      <div className="flex items-center gap-2">
+        <div className={cn("size-8 rounded-full flex items-center justify-center shrink-0 shadow-xs", iconColors)}>
+          <Icon name={icon} className="size-4" />
+        </div>
+        <span className="text-[11px] font-extrabold uppercase tracking-wider text-[var(--color-text-muted)]">
+          {label}
+        </span>
       </div>
-      <strong>{value}</strong>
-      <small>{detail}</small>
-    </>
+      <div className="flex flex-col gap-0.5 mt-1">
+        <strong className="text-[22px] font-black leading-7 text-[var(--color-text)] [overflow-wrap:anywhere]">
+          {value}
+        </strong>
+        <div className="min-w-0 text-xs font-bold leading-[17px] text-[var(--color-text-muted)] mt-0.5">
+          {detail}
+        </div>
+      </div>
+    </div>
   );
 
   if (onClick) {
     return (
-      <button className={cn(cockpitCardBaseClassName, cockpitCardButtonClassName)} type="button" aria-label={ariaLabel} onClick={onClick}>
+      <button
+        className={cn(
+          cockpitCardBaseClassName,
+          cockpitCardButtonClassName,
+          "hover:scale-[1.01] hover:border-[var(--color-primary)] active:scale-[0.99] transition-all duration-200"
+        )}
+        type="button"
+        aria-label={ariaLabel}
+        onClick={onClick}
+      >
         {content}
       </button>
     );
   }
 
-  return <div className={cockpitCardBaseClassName}>{content}</div>;
+  return (
+    <div className={cn(cockpitCardBaseClassName, "hover:scale-[1.01] hover:border-slate-300 transition-all duration-200")}>
+      {content}
+    </div>
+  );
 }
 
 function HighlightBoard({ items, startDate, locale, emptyMessage, title, subtitle }: { items: ItineraryItem[]; startDate: string; locale: Locale; emptyMessage: string; title: string; subtitle: string }) {
@@ -722,13 +992,40 @@ function HighlightBoard({ items, startDate, locale, emptyMessage, title, subtitl
       </div>
       {items.length ? (
         <ul className={overviewHighlightListClassName}>
-          {items.map((item, index) => (
-            <li className={cn(overviewHighlightItemClassName, overviewHighlightToneClassNames[highlightTone(item, index)])} key={item.id}>
-              <span>{formatDayLabel(item.day, startDate, locale)} · {item.startTime}</span>
-              <strong>{item.activity}</strong>
-              <small>{item.place}</small>
-            </li>
-          ))}
+          {items.map((item, index) => {
+            const imgUrl = getHighlightImage(item);
+            return (
+              <li
+                className={cn(
+                  overviewHighlightItemClassName,
+                  !imgUrl && overviewHighlightToneClassNames[highlightTone(item, index)],
+                  imgUrl && "border-slate-200/60 bg-slate-900",
+                  "hover:scale-[1.02] hover:shadow-[0_12px_24px_rgba(15,23,42,0.08)] transition-all duration-300 group cursor-pointer"
+                )}
+                key={item.id}
+              >
+                {imgUrl && (
+                  <>
+                    <img
+                      src={imgUrl}
+                      alt={item.activity}
+                      className="absolute inset-0 w-full h-full object-cover opacity-70 transition-transform duration-500 group-hover:scale-108"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/40 to-transparent z-[1]" />
+                  </>
+                )}
+                <span className={cn("relative z-10 text-[11px] font-bold uppercase tracking-wider mb-1", imgUrl ? "text-slate-300" : "text-[var(--overview-highlight-accent)]")}>
+                  {formatDayLabel(item.day, startDate, locale)} · {item.startTime}
+                </span>
+                <strong className={cn("relative z-10 text-sm font-black leading-snug mb-0.5", imgUrl ? "text-white group-hover:text-teal-200 transition-colors" : "text-[var(--color-text)]")}>
+                  {item.activity}
+                </strong>
+                <small className={cn("relative z-10 text-[11px] font-bold overflow-hidden text-ellipsis whitespace-nowrap", imgUrl ? "text-slate-300" : "text-[var(--color-text-muted)]")}>
+                  {item.place}
+                </small>
+              </li>
+            );
+          })}
         </ul>
       ) : (
         <p className={overviewMutedClassName}>{emptyMessage}</p>
