@@ -352,7 +352,7 @@ describe("AccountAccessPanel", () => {
     expect(screen.getByRole("main", { name: /Trip access/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /Enter trip room/i })).toBeInTheDocument();
     expect(screen.getAllByRole("button", { name: "ภาษาไทย" })).toHaveLength(1);
-    expect(screen.queryByRole("link", { name: /เปิด demo trip/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /เปิด seed trip/i })).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/Email/i)).not.toBeInTheDocument();
   });
 

@@ -54,7 +54,7 @@ describe("TripMembersPage", () => {
     await act(async () => {
       await Promise.resolve();
     });
-    expect(writeText).toHaveBeenCalledWith(expect.stringContaining("/join/DEMO-TRIP"));
+    expect(writeText).toHaveBeenCalledWith(expect.stringContaining("/join/HK-SZ-2025"));
     expect(screen.getByRole("status")).toHaveTextContent("คัดลอกแล้ว");
 
     fireEvent.click(screen.getByRole("button", { name: /รีเซ็ตรหัสผ่าน Travel Mate/i }));

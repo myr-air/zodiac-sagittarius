@@ -1,5 +1,5 @@
 import type { Expense, ItineraryItem, Trip } from "./types";
-import { hashLocalSecret, localTripJoinId, localTripJoinPassword } from "./auth";
+import { hashLocalSecret, seedTripJoinId, seedTripJoinPassword } from "./auth";
 
 const tripId = "018f4e80-5788-7de0-a45c-8a555d17fc2d";
 const mainPlanId = "plan-main";
@@ -53,12 +53,12 @@ const expenses: Expense[] = [
 
 export const seedTrip: Trip = {
   id: tripId,
-  joinId: localTripJoinId,
-  joinPasswordHash: hashLocalSecret(localTripJoinPassword),
+  joinId: seedTripJoinId,
+  joinPasswordHash: hashLocalSecret(seedTripJoinPassword),
   name: "Hong Kong + Shenzhen Trip",
   destinationLabel: "Hong Kong + Shenzhen",
-  startDate: "2025-05-15",
-  endDate: "2025-05-20",
+  startDate: "2026-06-18",
+  endDate: "2026-06-23",
   activePlanVariantId: mainPlanId,
   planVariants: [
     { id: mainPlanId, tripId, name: "แผนหลัก (V1)", kind: "main", description: "Published working plan for the group." },
@@ -75,7 +75,7 @@ export const seedTrip: Trip = {
   itineraryItems: [
     item({
       id: "item-flight-bkk-hkg",
-      day: "2025-05-15",
+      day: "2026-06-18",
       sortOrder: 100,
       startTime: "09:00",
       activity: "เดินทางออกจากกรุงเทพฯ (BKK)",
@@ -90,7 +90,7 @@ export const seedTrip: Trip = {
     }),
     item({
       id: "item-arrive-hkg",
-      day: "2025-05-15",
+      day: "2026-06-18",
       sortOrder: 200,
       startTime: "12:55",
       activity: "ถึง Hong Kong International Airport",
@@ -105,7 +105,7 @@ export const seedTrip: Trip = {
     }),
     item({
       id: "item-airport-express",
-      day: "2025-05-15",
+      day: "2026-06-18",
       sortOrder: 300,
       startTime: "14:00",
       activity: "Airport Express ไป Kowloon",
@@ -120,7 +120,7 @@ export const seedTrip: Trip = {
     }),
     item({
       id: "item-hotel-checkin",
-      day: "2025-05-15",
+      day: "2026-06-18",
       sortOrder: 400,
       startTime: "14:30",
       activity: "เช็คอินที่โรงแรม (Tsim Sha Tsui)",
@@ -135,7 +135,7 @@ export const seedTrip: Trip = {
     }),
     item({
       id: "item-avenue-stars",
-      day: "2025-05-15",
+      day: "2026-06-18",
       sortOrder: 500,
       startTime: "16:00",
       activity: "Avenue of Stars (星光大道)",
@@ -150,7 +150,7 @@ export const seedTrip: Trip = {
     }),
     item({
       id: "item-symphony-lights",
-      day: "2025-05-15",
+      day: "2026-06-18",
       sortOrder: 600,
       startTime: "17:30",
       activity: "Symphony of Lights",
@@ -165,7 +165,7 @@ export const seedTrip: Trip = {
     }),
     item({
       id: "item-temple-street",
-      day: "2025-05-15",
+      day: "2026-06-18",
       sortOrder: 700,
       startTime: "19:00",
       activity: "อาหารเย็นที่ Temple Street Night Market",
@@ -180,7 +180,7 @@ export const seedTrip: Trip = {
     }),
     item({
       id: "item-dimdim",
-      day: "2025-05-16",
+      day: "2026-06-19",
       sortOrder: 100,
       startTime: "08:30",
       activity: "Dim Dim Sum ที่ Tim Ho Wan",
@@ -198,7 +198,7 @@ export const seedTrip: Trip = {
     }),
     item({
       id: "item-victoria-peak",
-      day: "2025-05-16",
+      day: "2026-06-19",
       sortOrder: 200,
       startTime: "10:00",
       activity: "Victoria Peak (The Peak Tram)",
@@ -214,7 +214,7 @@ export const seedTrip: Trip = {
     }),
     item({
       id: "item-pacific-place",
-      day: "2025-05-16",
+      day: "2026-06-19",
       sortOrder: 300,
       startTime: "12:30",
       activity: "ช้อปปิ้งที่ Pacific Place",
@@ -229,7 +229,7 @@ export const seedTrip: Trip = {
     }),
     item({
       id: "item-star-ferry",
-      day: "2025-05-16",
+      day: "2026-06-19",
       sortOrder: 400,
       startTime: "14:30",
       activity: "Star Ferry ไป Central",
@@ -244,7 +244,7 @@ export const seedTrip: Trip = {
     }),
     item({
       id: "item-central-soho",
-      day: "2025-05-16",
+      day: "2026-06-19",
       sortOrder: 500,
       startTime: "15:00",
       activity: "เดินเล่นย่าน Central – SOHO",
@@ -259,7 +259,7 @@ export const seedTrip: Trip = {
     }),
     item({
       id: "item-luk-yu",
-      day: "2025-05-16",
+      day: "2026-06-19",
       sortOrder: 600,
       startTime: "18:30",
       activity: "อาหารเย็น Luk Yu Tea House",
@@ -275,7 +275,7 @@ export const seedTrip: Trip = {
     }),
     item({
       id: "item-checkout",
-      day: "2025-05-17",
+      day: "2026-06-20",
       sortOrder: 100,
       startTime: "09:00",
       activity: "เช็คเอาท์จากโรงแรม",
@@ -290,7 +290,7 @@ export const seedTrip: Trip = {
     }),
     item({
       id: "item-shenzhen-transfer",
-      day: "2025-05-17",
+      day: "2026-06-20",
       sortOrder: 200,
       startTime: "10:00",
       activity: "เดินทางไป Shenzhen (Lo Wu / Lok Ma Chau)",
@@ -306,7 +306,7 @@ export const seedTrip: Trip = {
     }),
     item({
       id: "item-shenzhen-hotel",
-      day: "2025-05-17",
+      day: "2026-06-20",
       sortOrder: 300,
       startTime: "11:30",
       activity: "เข้าพักโรงแรมที่ Shenzhen",

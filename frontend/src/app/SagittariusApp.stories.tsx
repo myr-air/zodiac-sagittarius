@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import { localTripJoinId } from "@/src/trip/auth";
+import { seedTripJoinId } from "@/src/trip/auth";
 import { SagittariusApp } from "./SagittariusApp";
 
 const meta = {
@@ -17,8 +17,8 @@ const storyTripId = "trip-1";
 
 export const Cockpit: Story = {};
 export const ApiJoin: Story = { args: { accessMode: "trip-access", requireJoin: true, dataSource: "api" } };
-export const JoinWithDemoCredentials: Story = {
-  args: { accessMode: "trip-access", requireJoin: true, dataSource: "api", initialJoinCode: localTripJoinId },
+export const JoinWithSeedCredentials: Story = {
+  args: { accessMode: "trip-access", requireJoin: true, dataSource: "api", initialJoinCode: seedTripJoinId },
   parameters: {
     nextjs: { navigation: { pathname: "/join" } },
   },
@@ -108,9 +108,9 @@ export const TripAccess: Story = {
   },
 };
 export const TripAccessWithJoinCode: Story = {
-  args: { accessMode: "trip-access", requireJoin: true, dataSource: "demo", initialJoinCode: localTripJoinId },
+  args: { accessMode: "trip-access", requireJoin: true, dataSource: "api", initialJoinCode: seedTripJoinId },
   parameters: {
-    nextjs: { navigation: { pathname: `/join/${localTripJoinId}` } },
+    nextjs: { navigation: { pathname: `/join/${seedTripJoinId}` } },
   },
 };
 export const TripOverviewAccess: Story = {

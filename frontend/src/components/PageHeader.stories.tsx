@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { expect } from "storybook/test";
-import { tripFixture } from "@/src/demo/trip-fixtures";
+import { tripFixture } from "@/src/trip/trip-fixtures";
 import { Icon } from "./icons";
 import { TravelMotif } from "./motifs";
 import { formatTripRange, PageHeader, PageUserCard } from "./PageHeader";

@@ -339,8 +339,8 @@ describe("itinerary planning domain", () => {
     repository.clearDraft();
     expect(repository.loadTrip()).toBe(seedTrip);
     expect(repository.describeSource()).toEqual({
-      mode: "demo",
-      restBase: "demo-fixture",
+      mode: "seed",
+      restBase: "seed-trip",
     });
   });
 

@@ -73,7 +73,7 @@ describe("Storybook template catalog", () => {
       "AccountTrips",
       "AccountNewTrip",
       "TripAccess",
-      "JoinWithDemoCredentials",
+      "JoinWithSeedCredentials",
       "TripAccessWithJoinCode",
       "TripOverviewAccess",
       "TripItineraryAccess",
@@ -94,9 +94,9 @@ describe("Storybook template catalog", () => {
     expect(stories).toContain('portalSection: "vault"');
     expect(stories).toContain('portalSection: "settings"');
     expect(stories).toContain('portalSection: "sign-out"');
-    expect(stories).toContain('initialJoinCode: localTripJoinId');
+    expect(stories).toContain('initialJoinCode: seedTripJoinId');
     expect(stories).toContain('pathname: "/join"');
-    expect(stories).toContain('pathname: `/join/${localTripJoinId}`');
+    expect(stories).toContain('pathname: `/join/${seedTripJoinId}`');
   });
 
   it("requires access-gated app stories to declare an explicit access mode", () => {

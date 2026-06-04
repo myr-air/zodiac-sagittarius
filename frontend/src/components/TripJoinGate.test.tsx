@@ -93,7 +93,7 @@ describe("TripJoinGate", () => {
     const user = userEvent.setup();
     render(<TripJoinGate trip={seedTrip} onTripChange={vi.fn()} onAuthenticated={vi.fn()} />);
 
-    await user.type(screen.getByLabelText(/Trip ID/i), "DEMO-TRIP");
+    await user.type(screen.getByLabelText(/Trip ID/i), "HK-SZ-2025");
     await user.type(screen.getByLabelText(/^Trip password$/i), "wrong");
     await user.click(screen.getByRole("button", { name: /Enter trip/i }));
 
@@ -101,7 +101,7 @@ describe("TripJoinGate", () => {
     expect(screen.queryByRole("heading", { name: /Choose identity/i })).not.toBeInTheDocument();
 
     await user.clear(screen.getByLabelText(/^Trip password$/i));
-    await user.type(screen.getByLabelText(/^Trip password$/i), "demo-trip-pass");
+    await user.type(screen.getByLabelText(/^Trip password$/i), "seed-trip-pass");
     await user.click(screen.getByRole("button", { name: /Enter trip/i }));
 
     expect(screen.getByRole("heading", { name: /Choose identity/i })).toBeInTheDocument();
@@ -227,7 +227,7 @@ describe("TripJoinGate", () => {
     expect(screen.getByRole("alert")).toHaveTextContent("Trip ID or password is incorrect.");
   });
 
-  it("does not offer a separate demo access link", () => {
+  it("does not offer a separate seed access link", () => {
     render(
       <TripJoinGate
         apiClient={createApiClient()}
@@ -237,10 +237,10 @@ describe("TripJoinGate", () => {
       />,
     );
 
-    expect(screen.queryByRole("link", { name: /เปิด demo trip/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /เปิด seed trip/i })).not.toBeInTheDocument();
   });
 
-  it("uses the local demo trip from the same join form before falling through to the API", async () => {
+  it("uses the local seed trip from the same join form before falling through to the API", async () => {
     const user = userEvent.setup();
     const apiClient = createApiClient();
 
@@ -253,8 +253,8 @@ describe("TripJoinGate", () => {
       />,
     );
 
-    await user.type(screen.getByLabelText(/Trip ID/i), "DEMO-TRIP");
-    await user.type(screen.getByLabelText(/^Trip password$/i), "demo-trip-pass");
+    await user.type(screen.getByLabelText(/Trip ID/i), "HK-SZ-2025");
+    await user.type(screen.getByLabelText(/^Trip password$/i), "seed-trip-pass");
     await user.click(screen.getByRole("button", { name: /Enter trip/i }));
 
     expect(apiClient.joinTrip).not.toHaveBeenCalled();
@@ -551,8 +551,8 @@ describe("TripJoinGate", () => {
 });
 
 async function enterTripRoom(user: ReturnType<typeof userEvent.setup>) {
-  fireEvent.change(screen.getByLabelText(/Trip ID/i), { target: { value: "DEMO-TRIP" } });
-  fireEvent.change(screen.getByLabelText(/^Trip password$/i), { target: { value: "demo-trip-pass" } });
+  fireEvent.change(screen.getByLabelText(/Trip ID/i), { target: { value: "HK-SZ-2025" } });
+  fireEvent.change(screen.getByLabelText(/^Trip password$/i), { target: { value: "seed-trip-pass" } });
   await user.click(screen.getByRole("button", { name: /Enter trip/i }));
 }
 

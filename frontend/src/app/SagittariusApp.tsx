@@ -28,7 +28,7 @@ import {
 } from "@/src/trip/auth";
 import { buildExpenseSummary } from "@/src/trip/expenses";
 import { buildItineraryView } from "@/src/trip/itinerary";
-import { tripFixtureStopNotes, tripFixtureSuggestions, tripFixtureTasks } from "@/src/demo/trip-fixtures";
+import { tripFixtureStopNotes, tripFixtureSuggestions, tripFixtureTasks } from "@/src/trip/trip-fixtures";
 import { tripStorageKey } from "@/src/trip/repository";
 import { seedTrip } from "@/src/trip/seed";
 import { decodeTripId } from "@/src/trip/ids";
@@ -45,8 +45,6 @@ const workspaceToastActionsClassName = "flex shrink-0 items-center gap-2";
 const workspaceToastDismissClassName =
   "ml-1 grid size-7 shrink-0 place-items-center rounded-full text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-surface-subtle)] hover:text-[var(--color-text)]";
 const accountClaimMessageClassName = "account-claim-message font-extrabold";
-const rolePreviewToolbarClassName =
-  "role-preview-toolbar mb-3 inline-flex w-fit items-center gap-2 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] px-2.5 py-2 text-xs font-extrabold text-[var(--color-text-muted)] shadow-[var(--shadow-soft)] [&_select]:min-h-8 [&_select]:rounded-[var(--radius-sm)] [&_select]:border [&_select]:border-[var(--color-border-strong)] [&_select]:bg-[var(--color-surface)] [&_select]:px-2 [&_select]:font-[inherit] [&_select]:text-[var(--color-text)]";
 const portalLoadingCardClassName =
   "account-card portal-loading-card grid min-h-[220px] gap-3.5 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[rgb(255_255_255_/_0.94)] p-4 shadow-[var(--shadow-panel)]";
 const portalSkeletonBaseClassName =
@@ -64,7 +62,7 @@ type PortalSection = "dashboard" | "trips" | "new-trip" | "explorer" | "todos" |
 interface SagittariusAppProps {
   initialView?: PlanningView;
   requireJoin?: boolean;
-  dataSource?: "api" | "demo";
+  dataSource?: "api";
   apiClient?: TripApiClient;
   routeTripId?: string;
   initialJoinCode?: string;
@@ -90,7 +88,7 @@ export function resolveJoinPostAuthReturnTo(returnTo: string | null, tripId: str
 export function SagittariusApp({
   initialView = "overview",
   requireJoin = false,
-  dataSource = "demo",
+  dataSource = "api",
   apiClient,
   routeTripId,
   initialJoinCode,
@@ -1185,16 +1183,6 @@ export function SagittariusApp({
             dismissClassName={workspaceToastDismissClassName}
             messageClassName={accountClaimMessageClassName}
           />
-        ) : null}
-        {dataSource === "demo" && (!requireJoin || canManagePeople) ? (
-          <label className={rolePreviewToolbarClassName}>
-            <span>ดูในบทบาท</span>
-            <select aria-label="Role preview" value={currentMember.id} onChange={(event) => setCurrentMemberId(event.target.value)}>
-              {trip.members.map((member) => (
-                <option value={member.id} key={member.id}>{member.displayName} / {member.role}</option>
-              ))}
-            </select>
-          </label>
         ) : null}
         <div className={workspaceGridClassName} data-context-rail={contextRailOpen ? "open" : "closed"} data-command-bar="hidden">
           <div className={planningMainClassName}>

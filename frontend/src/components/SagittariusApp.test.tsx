@@ -67,8 +67,8 @@ describe("Sagittarius cockpit UI", () => {
     expect(screen.getByRole("main", { name: /Account access/i })).toBeInTheDocument();
     expect(screen.queryByRole("navigation", { name: /เมนูวางแผน Joii/i })).not.toBeInTheDocument();
 
-    fireEvent.change(screen.getByLabelText(/Trip ID/i), { target: { value: "DEMO-TRIP" } });
-    fireEvent.change(screen.getByLabelText(/^Trip password$/i), { target: { value: "demo-trip-pass" } });
+    fireEvent.change(screen.getByLabelText(/Trip ID/i), { target: { value: "HK-SZ-2025" } });
+    fireEvent.change(screen.getByLabelText(/^Trip password$/i), { target: { value: "seed-trip-pass" } });
     await user.click(screen.getByRole("button", { name: /เข้าห้อง trip/i }));
     await user.click(screen.getByRole("button", { name: /Explorer Friend/i }));
     fireEvent.change(screen.getByLabelText(/ตั้งรหัสสำหรับ Explorer Friend/i), { target: { value: "traveler-pin" } });
@@ -80,13 +80,13 @@ describe("Sagittarius cockpit UI", () => {
     expect(screen.queryByRole("button", { name: /เพิ่มสถานที่ \/ กิจกรรม/i })).not.toBeInTheDocument();
   }, 45_000);
 
-  it("lets demo credentials enter through the canonical API join route without calling the backend", async () => {
+  it("lets seed credentials enter through the canonical API join route without calling the backend", async () => {
     const user = userEvent.setup();
     const apiClient = createApiClientForTrip(seedTrip);
     render(<SagittariusApp accessMode="trip-access" requireJoin dataSource="api" apiClient={apiClient} />);
 
-    fireEvent.change(screen.getByLabelText(/Trip ID/i), { target: { value: "DEMO-TRIP" } });
-    fireEvent.change(screen.getByLabelText(/^Trip password$/i), { target: { value: "demo-trip-pass" } });
+    fireEvent.change(screen.getByLabelText(/Trip ID/i), { target: { value: "HK-SZ-2025" } });
+    fireEvent.change(screen.getByLabelText(/^Trip password$/i), { target: { value: "seed-trip-pass" } });
     await user.click(screen.getByRole("button", { name: /เข้าห้อง trip/i }));
     await user.click(screen.getByRole("button", { name: /Explorer Friend/i }));
     fireEvent.change(screen.getByLabelText(/ตั้งรหัสสำหรับ Explorer Friend/i), { target: { value: "traveler-pin" } });
@@ -102,8 +102,8 @@ describe("Sagittarius cockpit UI", () => {
     const confirm = vi.spyOn(window, "confirm").mockReturnValue(true);
     render(<SagittariusApp requireJoin />);
 
-    fireEvent.change(screen.getByLabelText(/Trip ID/i), { target: { value: "DEMO-TRIP" } });
-    fireEvent.change(screen.getByLabelText(/^Trip password$/i), { target: { value: "demo-trip-pass" } });
+    fireEvent.change(screen.getByLabelText(/Trip ID/i), { target: { value: "HK-SZ-2025" } });
+    fireEvent.change(screen.getByLabelText(/^Trip password$/i), { target: { value: "seed-trip-pass" } });
     await user.click(screen.getByRole("button", { name: /เข้าห้อง trip/i }));
     await user.click(screen.getByRole("button", { name: /Explorer Friend/i }));
     fireEvent.change(screen.getByLabelText(/ตั้งรหัสสำหรับ Explorer Friend/i), { target: { value: "traveler-pin" } });
@@ -123,8 +123,8 @@ describe("Sagittarius cockpit UI", () => {
     installLocalStorageStub();
     const { unmount } = render(<SagittariusApp requireJoin />);
 
-    fireEvent.change(screen.getByLabelText(/Trip ID/i), { target: { value: "DEMO-TRIP" } });
-    fireEvent.change(screen.getByLabelText(/^Trip password$/i), { target: { value: "demo-trip-pass" } });
+    fireEvent.change(screen.getByLabelText(/Trip ID/i), { target: { value: "HK-SZ-2025" } });
+    fireEvent.change(screen.getByLabelText(/^Trip password$/i), { target: { value: "seed-trip-pass" } });
     await user.click(screen.getByRole("button", { name: /เข้าห้อง trip/i }));
     await user.click(screen.getByRole("button", { name: /Explorer Friend/i }));
     fireEvent.change(screen.getByLabelText(/ตั้งรหัสสำหรับ Explorer Friend/i), { target: { value: "traveler-pin" } });
@@ -134,8 +134,8 @@ describe("Sagittarius cockpit UI", () => {
     unmount();
     render(<SagittariusApp requireJoin />);
 
-    fireEvent.change(screen.getByLabelText(/Trip ID/i), { target: { value: "DEMO-TRIP" } });
-    fireEvent.change(screen.getByLabelText(/^Trip password$/i), { target: { value: "demo-trip-pass" } });
+    fireEvent.change(screen.getByLabelText(/Trip ID/i), { target: { value: "HK-SZ-2025" } });
+    fireEvent.change(screen.getByLabelText(/^Trip password$/i), { target: { value: "seed-trip-pass" } });
     await user.click(screen.getByRole("button", { name: /เข้าห้อง trip/i }));
     await user.click(screen.getByRole("button", { name: /Explorer Friend/i }));
 
@@ -1511,7 +1511,7 @@ describe("Sagittarius cockpit UI", () => {
 
     await user.click(screen.getByRole("button", { name: /คัดลอกลิงก์เชิญ/i }));
 
-    expect(writeText).toHaveBeenCalledWith(expect.stringContaining("/join/DEMO-TRIP"));
+    expect(writeText).toHaveBeenCalledWith(expect.stringContaining("/join/HK-SZ-2025"));
     expect(screen.getByText(/คัดลอกแล้ว/i)).toBeInTheDocument();
   });
 

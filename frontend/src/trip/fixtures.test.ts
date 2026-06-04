@@ -4,7 +4,7 @@ import {
   buildEmptyTripFixture,
   getTripFixtureMember,
   tripFixture,
-} from "../demo/trip-fixtures";
+} from "./trip-fixtures";
 
 describe("trip fixtures", () => {
   it("exposes deterministic owner, traveler, and viewer members", () => {

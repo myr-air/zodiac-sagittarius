@@ -17,15 +17,20 @@ const rowClassName =
 const segmentClassName =
   "weather-forecast-segment grid min-w-[72px] cursor-pointer gap-2 border-0 bg-transparent p-0 text-center font-inherit text-[var(--color-text)] transition-[opacity,transform,filter] duration-200 hover:-translate-y-0.5 hover:opacity-95 focus-visible:outline focus-visible:outline-3 focus-visible:outline-offset-4 focus-visible:outline-[rgb(14_165_233_/_0.28)]";
 const selectedClassName = "weather-forecast-segment--selected drop-shadow-[0_10px_18px_rgb(14_116_144_/_0.20)]";
-const dayClassName = "text-[12px] font-black leading-4";
+const dayClassName = "text-[12px] font-black leading-4 inline-flex min-h-6 items-center justify-center rounded-full px-2 border border-white/80 shadow-[0_4px_10px_rgb(15_23_42_/_0.06)]";
 const iconClassName = "weather-forecast-icon text-[30px] leading-none drop-shadow-[0_8px_14px_rgb(15_23_42_/_0.16)]";
 const tempClassName = "weather-forecast-temp inline-flex items-baseline justify-center gap-1.5 leading-none";
 const tempHighClassName = "weather-forecast-temp-high text-[16px] font-black text-[var(--color-text)]";
 const tempLowClassName = "weather-forecast-temp-low text-[16px] font-bold text-[var(--color-text-muted)]";
+const emptyClassName = "rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white/60 px-4 py-3 text-xs font-black text-[var(--color-text-muted)]";
 
 export function WeatherForecastStrip({ briefings, locale, selectedDate, onSelect }: WeatherForecastStripProps) {
   const sorted = briefingsForStrip(briefings);
-  if (!sorted.length) return null;
+  if (!sorted.length) {
+    return <section className={stripClassName} aria-label={locale === "th" ? "พยากรณ์อากาศรายวัน" : "Daily weather forecast"}>
+      <div className={`${rowClassName} ${emptyClassName}`}>{locale === "th" ? "ยังไม่มีข้อมูลพยากรณ์อากาศ" : "No weather data yet"}</div>
+    </section>;
+  }
 
   return (
     <section className={stripClassName} aria-label={locale === "th" ? "พยากรณ์อากาศรายวัน" : "Daily weather forecast"}>
@@ -39,14 +44,14 @@ export function WeatherForecastStrip({ briefings, locale, selectedDate, onSelect
           const condition = weatherGraphicLabel(weather?.conditionCode);
 
           return (
-            <button
-              aria-label={`${dayLabel} ${condition} ${formatTemp(high)} ${formatTemp(low)}`}
-              className={cn(segmentClassName, selectedDate === briefing.date && selectedClassName)}
-              key={`${briefing.date}-${briefing.locationKey}`}
-              type="button"
-              onClick={() => onSelect(briefing.date)}
-            >
-              <span className={cn(dayClassName, tone.className)}>{dayLabel}</span>
+              <button
+                aria-label={`${dayLabel} ${condition} ${formatTemp(high)} ${formatTemp(low)}`}
+                className={cn(segmentClassName, selectedDate === briefing.date && selectedClassName)}
+                key={`${briefing.date}-${briefing.locationKey}`}
+                type="button"
+                onClick={() => onSelect(briefing.date)}
+              >
+              <span className={cn(dayClassName, tone.className, tone.chipClassName)}>{dayLabel}</span>
               <span className={iconClassName} aria-hidden="true">
                 {iconForCondition(weather?.conditionCode)}
               </span>

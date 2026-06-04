@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import { tripFixture } from "@/src/demo/trip-fixtures";
+import { tripFixture } from "@/src/trip/trip-fixtures";
 import { weatherBriefings } from "./WeatherBriefing.fixtures";
 import { OverviewPage } from "./OverviewPage";
 

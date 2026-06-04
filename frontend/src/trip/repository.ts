@@ -7,8 +7,8 @@ export interface TripRepository {
   saveTrip(trip: Trip): void;
   clearDraft(): void;
   describeSource(): {
-    mode: "demo";
-    restBase: "demo-fixture";
+    mode: "seed";
+    restBase: "seed-trip";
   };
 }
 
@@ -31,8 +31,8 @@ export function createLocalTripRepository(storageKey: string, storage: TripStora
     },
     describeSource() {
       return {
-        mode: "demo",
-        restBase: "demo-fixture",
+        mode: "seed",
+        restBase: "seed-trip",
       };
     },
   };
