@@ -7,7 +7,7 @@ import { activityTypeLabel, formatDuration, formatEndTime } from "./itineraryDis
 
 interface ContextRailProps {
   trip: Trip;
-  selectedItem: ItineraryItem;
+  selectedItem?: ItineraryItem;
   suggestions: Suggestion[];
   stopNotes: StopNote[];
   tasks: TripTask[];
@@ -20,7 +20,7 @@ interface ContextRailProps {
   canEditExpenses: boolean;
   open: boolean;
   onCreateNote: (input: { itemId: string; body: string }) => void;
-  onCreateExpense: (input: { itemId: string; title: string; amount: number; paidBy: string; category: Expense["category"] }) => void;
+  onCreateExpense: (input: { itemId: string | null; title: string; amount: number; paidBy: string; category: Expense["category"] }) => void;
   onUpdateExpense: (input: { expenseId: string; title: string; amount: number; paidBy: string; category: Expense["category"] }) => void;
   onDeleteExpense: (expenseId: string) => void;
   onDeleteNote: (noteId: string) => void;
@@ -123,23 +123,34 @@ export function ContextRail({
   const [editingExpenseId, setEditingExpenseId] = useState<string | null>(null);
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
   const [editingNoteBody, setEditingNoteBody] = useState("");
-  const selectedEnd = formatEndTime(selectedItem.startTime, selectedItem.durationMinutes);
+  const selectedEnd = selectedItem ? formatEndTime(selectedItem.startTime, selectedItem.durationMinutes) : "";
   const groupSpend = expenseSummary.groupSpend.toLocaleString("en-HK");
   const perPerson = Math.round(expenseSummary.groupSpend / Math.max(1, trip.members.length - 1)).toLocaleString("en-HK");
   /* v8 ignore next */
-  const selectedAdvisories = selectedItem.advisories ?? [];
-  const selectedNotes = useMemo(() => stopNotes.filter((note) => note.itemId === selectedItem.id), [selectedItem.id, stopNotes]);
-  const selectedExpenses = useMemo(() => trip.expenses.filter((expense) => expense.itineraryItemId === selectedItem.id), [selectedItem.id, trip.expenses]);
-  const selectedTasks = useMemo(() => tasks.filter((task) => task.relatedItemId === selectedItem.id || (task.kind === "booking" && task.title.toLowerCase().includes(selectedItem.activity.toLowerCase()))), [selectedItem, tasks]);
-  const selectedSuggestions = useMemo(
-    () => suggestions.filter((suggestion) => suggestion.targetItemId === selectedItem.id && (suggestion.status === "pending" || suggestion.status === "conflicted")),
-    [selectedItem.id, suggestions],
-  );
+  const selectedAdvisories = selectedItem?.advisories ?? [];
+  const selectedNotes = useMemo(() => {
+    if (!selectedItem) return [];
+    return stopNotes.filter((note) => note.itemId === selectedItem.id);
+  }, [selectedItem, stopNotes]);
+  const selectedExpenses = useMemo(() => {
+    if (!selectedItem) return trip.expenses;
+    return trip.expenses.filter((expense) => expense.itineraryItemId === selectedItem.id);
+  }, [selectedItem, trip.expenses]);
+  const selectedTasks = useMemo(() => {
+    if (!selectedItem) return [];
+    return tasks.filter((task) => task.relatedItemId === selectedItem.id || (task.kind === "booking" && task.title.toLowerCase().includes(selectedItem.activity.toLowerCase())));
+  }, [selectedItem, tasks]);
+  const selectedSuggestions = useMemo(() => {
+    if (!selectedItem) return [];
+    return suggestions.filter(
+      (suggestion) => suggestion.targetItemId === selectedItem.id && (suggestion.status === "pending" || suggestion.status === "conflicted")
+    );
+  }, [selectedItem, suggestions]);
 
   function submitNote(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const body = noteBody.trim();
-    if (!body) return;
+    if (!body || !selectedItem) return;
     onCreateNote({ itemId: selectedItem.id, body });
     setNoteBody("");
   }
@@ -166,7 +177,7 @@ export function ContextRail({
     if (editingExpenseId) {
       onUpdateExpense({ expenseId: editingExpenseId, title, amount, paidBy: expensePaidBy, category: expenseCategory });
     } else {
-      onCreateExpense({ itemId: selectedItem.id, title, amount, paidBy: expensePaidBy, category: expenseCategory });
+      onCreateExpense({ itemId: selectedItem ? selectedItem.id : null, title, amount, paidBy: expensePaidBy, category: expenseCategory });
     }
     setEditingExpenseId(null);
     setExpenseTitle("");
@@ -184,20 +195,22 @@ export function ContextRail({
     <aside className={`${contextRailClassName} ${open ? contextRailOpenClassName : contextRailClosedClassName}`} data-state={open ? "open" : "closed"} aria-hidden={!open} aria-label={t.contextRail.pageLabel}>
       <div className={railInspectorClassName}>
         <div className={inspectorTitleClassName}>
-          <h2 className={inspectorTitleHeadingClassName}>{selectedItem.activity}</h2>
+          <h2 className={inspectorTitleHeadingClassName}>{selectedItem ? selectedItem.activity : t.contextRail.expenses.title}</h2>
           <button className={inspectorCloseButtonClassName} type="button" aria-label={t.contextRail.closeDetails} onClick={onClose}><Icon name="chevronRight" /></button>
         </div>
 
-        <div className={inspectorTabsClassName} role="tablist" aria-label={t.contextRail.tabsLabel}>
-          <button className={inspectorTabClassName} type="button" role="tab" aria-selected={activeTab === "notes"} onClick={() => setActiveTab("notes")}>{t.contextRail.tabs.notes}</button>
-          <button className={inspectorTabClassName} type="button" role="tab" aria-selected={activeTab === "booking"} onClick={() => setActiveTab("booking")}>{t.contextRail.tabs.booking}</button>
-          <button className={inspectorTabClassName} type="button" role="tab" aria-selected={activeTab === "suggestions"} onClick={() => setActiveTab("suggestions")}>{t.contextRail.tabs.suggestions}</button>
-        </div>
+        {selectedItem ? (
+          <>
+            <div className={inspectorTabsClassName} role="tablist" aria-label={t.contextRail.tabsLabel}>
+              <button className={inspectorTabClassName} type="button" role="tab" aria-selected={activeTab === "notes"} onClick={() => setActiveTab("notes")}>{t.contextRail.tabs.notes}</button>
+              <button className={inspectorTabClassName} type="button" role="tab" aria-selected={activeTab === "booking"} onClick={() => setActiveTab("booking")}>{t.contextRail.tabs.booking}</button>
+              <button className={inspectorTabClassName} type="button" role="tab" aria-selected={activeTab === "suggestions"} onClick={() => setActiveTab("suggestions")}>{t.contextRail.tabs.suggestions}</button>
+            </div>
 
-        <section className={detailSectionClassName} aria-label={t.contextRail.detailLabel}>
-          <p className={detailMetaLineClassName}><Icon name="utensils" /> {activityTypeLabel(selectedItem.activityType, locale)}</p>
-          <p className={detailMetaLineClassName}><Icon name="clock" /> {selectedItem.startTime} – {selectedEnd} ({formatDuration(selectedItem.durationMinutes, locale)})</p>
-          <p className={detailMetaLineClassName}><Icon name="location" /> {selectedItem.address ?? selectedItem.place}</p>
+            <section className={detailSectionClassName} aria-label={t.contextRail.detailLabel}>
+              <p className={detailMetaLineClassName}><Icon name="utensils" /> {activityTypeLabel(selectedItem.activityType, locale)}</p>
+              <p className={detailMetaLineClassName}><Icon name="clock" /> {selectedItem.startTime} – {selectedEnd} ({formatDuration(selectedItem.durationMinutes, locale)})</p>
+              <p className={detailMetaLineClassName}><Icon name="location" /> {selectedItem.address ?? selectedItem.place}</p>
           <a className={mapLinkClassName} href={selectedItem.mapLink}>{t.contextRail.openMaps}</a>
           <div className={detailMapClassName} aria-label={t.contextRail.mapPreview}>
             <span className={`${mapRoadBaseClassName} ${mapRoadOneClassName}`} />
@@ -342,9 +355,13 @@ export function ContextRail({
             <Button type="button" variant="ghost" className="min-h-7 px-2 py-1 text-[11px]" disabled={!canReviewSuggestions}>{t.contextRail.conflicts.autoFix}</Button>
           </div>
         </section>
+          </>
+        ) : null}
 
         <section className={`${detailSectionClassName} expense-module`} aria-label={t.contextRail.expenses.label}>
-          <h3 className={detailHeadingClassName}>{t.contextRail.expenses.title}</h3>
+          {selectedItem ? (
+            <h3 className={detailHeadingClassName}>{t.contextRail.expenses.title}</h3>
+          ) : null}
           <div className={expenseGridClassName}>
             <span>{t.contextRail.expenses.perPerson}</span>
             <strong>HK${perPerson}</strong>

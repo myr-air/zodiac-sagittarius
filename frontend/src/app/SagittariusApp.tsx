@@ -879,7 +879,7 @@ export function SagittariusApp({
     setStopNotes((current) => current.filter((note) => note.id !== noteId || (note.authorId !== currentMember.id && !canEdit)));
   }
 
-  async function createExpense(input: { itemId: string; title: string; amount: number; paidBy: string; category: Expense["category"] }) {
+  async function createExpense(input: { itemId: string | null; title: string; amount: number; paidBy: string; category: Expense["category"] }) {
     if (!canEditExpenses) return;
     const amountMinor = Math.round(input.amount * 100);
     const splits = equalExpenseSplits(amountMinor, trip.members.map((member) => member.id));
@@ -1021,7 +1021,9 @@ export function SagittariusApp({
       !sessionMember &&
       !isAccountTripAccessPending &&
       !isTripLoading &&
-      typeof window !== "undefined"
+      typeof window !== "undefined" &&
+      !window.location.pathname.includes("iframe.html") &&
+      !("__vitest_browser__" in window)
     ) {
       const returnTo = window.location.pathname + window.location.search;
       const joinHref = appRoutes.join(undefined, returnTo);
@@ -1193,7 +1195,7 @@ export function SagittariusApp({
               />
             )}
           </div>
-          {supportsContextRail && contextRailMounted && selectedItem ? (
+          {supportsContextRail && contextRailMounted ? (
             <ContextRail
               trip={trip}
               selectedItem={selectedItem}
@@ -1213,7 +1215,7 @@ export function SagittariusApp({
               onUpdateExpense={updateExpense}
               onDeleteExpense={deleteExpense}
               onDeleteNote={deleteStopNote}
-              onEditSelected={() => setDialogState({ mode: "edit", item: selectedItem })}
+              onEditSelected={() => { if (selectedItem) setDialogState({ mode: "edit", item: selectedItem }); }}
               onReviewSuggestion={reviewSuggestion}
               onSuggestSelected={suggestSelectedStop}
               onToggleTaskStatus={toggleTaskStatus}

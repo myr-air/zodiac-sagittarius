@@ -11,7 +11,7 @@ import {
   nextLocalTaskId,
   replaceSuggestionById,
 } from "@/src/app/SagittariusApp";
-import type { TripApiClient, TripCockpit } from "@/src/trip/api-client";
+import type { CreateExpenseApiRequest, TripApiClient, TripCockpit } from "@/src/trip/api-client";
 import { tripParticipantSessionStorageKey } from "@/src/trip/auth";
 import { I18nProvider } from "@/src/i18n/I18nProvider";
 import { renderWithI18n } from "@/src/i18n/test-utils";
@@ -2053,7 +2053,7 @@ function createApiClientForTrip(trip: Trip, overrides: Partial<TripApiClient> = 
     patchMember: vi.fn(),
     resetMemberClaim: vi.fn(),
     getExpenseSummary: vi.fn(),
-    createExpense: vi.fn().mockImplementation((_tripId: string, _sessionToken: string, request: any) =>
+    createExpense: vi.fn().mockImplementation((_tripId: string, _sessionToken: string, request: CreateExpenseApiRequest) =>
       Promise.resolve({
         id: "new-expense-id",
         title: request.title,
