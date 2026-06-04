@@ -12,7 +12,7 @@ import {
   nextLocalTaskId,
   replaceSuggestionById,
 } from "@/src/app/SagittariusApp";
-import type { CreateExpenseApiRequest, TripApiClient, TripCockpit } from "@/src/trip/api-client";
+import { TripApiError, type CreateExpenseApiRequest, type TripApiClient, type TripCockpit } from "@/src/trip/api-client";
 import { tripParticipantSessionStorageKey } from "@/src/trip/auth";
 import { I18nProvider } from "@/src/i18n/I18nProvider";
 import { renderWithI18n } from "@/src/i18n/test-utils";
@@ -1105,6 +1105,83 @@ describe("Sagittarius cockpit UI", () => {
 
     expect(apiClient.approveSuggestion).toHaveBeenCalledWith(ownerTrip.id, pendingSuggestion.id, "session-token");
     expect(within(context).queryByText(/Book ahead from API/i)).not.toBeInTheDocument();
+  }, 45_000);
+
+  it("reloads the latest API trip and clears auto overlap resolution when item versions conflict", async () => {
+    const user = userEvent.setup();
+    const day = "2026-06-18";
+    const baseItem = seedTrip.itineraryItems.find((item) => item.day === day)!;
+    const overlapMain = {
+      ...baseItem,
+      id: "item-overlap-main",
+      day,
+      startTime: "08:00",
+      durationMinutes: 180,
+      sortOrder: 100,
+      activity: "API overlap main",
+      pathGroupId: undefined,
+      pathId: undefined,
+      pathName: undefined,
+      pathRole: "main" as const,
+      version: 4,
+    };
+    const overlapLater = {
+      ...baseItem,
+      id: "item-overlap-later",
+      day,
+      startTime: "08:30",
+      durationMinutes: 60,
+      sortOrder: 200,
+      activity: "API overlap later",
+      pathGroupId: undefined,
+      pathId: undefined,
+      pathName: undefined,
+      pathRole: "main" as const,
+      version: 4,
+    };
+    const overlapTrip = { ...seedTrip, joinPasswordHash: "", itineraryItems: [overlapMain, overlapLater] };
+    const resolvedTrip = {
+      ...overlapTrip,
+      itineraryItems: [
+        { ...overlapMain, pathGroupId: "path-group-item-overlap-main", version: 5 },
+        {
+          ...overlapLater,
+          pathGroupId: "path-group-item-overlap-main",
+          pathId: "path-2026-06-18-sub-a",
+          pathName: "Plan A",
+          pathRole: "alternative" as const,
+          version: 5,
+        },
+      ],
+    };
+    let patchConflicted = false;
+    const loadTrip = vi.fn().mockImplementation(() =>
+      Promise.resolve({
+        trip: patchConflicted ? resolvedTrip : overlapTrip,
+        suggestions: [],
+        tasks: [],
+        stopNotes: [],
+        expenseSummary: null,
+      })
+    );
+    const apiClient = createApiClientForTrip(overlapTrip, {
+      loadTrip,
+      patchItineraryItem: vi.fn().mockImplementationOnce(() => {
+        patchConflicted = true;
+        return Promise.reject(new TripApiError({ code: "version_conflict", message: "version conflict", status: 409 }));
+      }),
+    });
+
+    render(<SagittariusApp requireJoin dataSource="api" initialView="itinerary" apiClient={apiClient} />);
+
+    await loginApiTrip(user);
+    const autoButton = await screen.findByRole("button", { name: /Auto fix overlaps for Day 1/i });
+    await waitFor(() => expect(autoButton).toBeEnabled());
+    await user.click(autoButton);
+
+    await waitFor(() => expect(apiClient.patchItineraryItem).toHaveBeenCalledTimes(1));
+    expect(loadTrip.mock.calls.length).toBeGreaterThanOrEqual(2);
+    expect(screen.queryByRole("button", { name: /Auto fix overlaps for Day 1/i })).not.toBeInTheDocument();
   }, 45_000);
 
   it("creates traveler suggestions through the API client after backend login", async () => {

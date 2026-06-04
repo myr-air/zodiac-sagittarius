@@ -14,7 +14,7 @@ import { TripSettingsPage, type TripSettingsFormValues } from "@/src/components/
 import { Button } from "@/src/components/ui";
 import { Icon } from "@/src/components/icons";
 import { appRoutes, decodeReturnTo } from "@/src/routes/app-routes";
-import { createTripApiClient, type TripApiClient, type TripCockpit } from "@/src/trip/api-client";
+import { createTripApiClient, TripApiError, type TripApiClient, type TripCockpit } from "@/src/trip/api-client";
 import { createAccountApiClient, type AccountSession } from "@/src/account/api-client";
 import {
   canTripRole,
@@ -720,22 +720,34 @@ export function SagittariusApp({
     /* v8 ignore next */
     if (!canEdit) return;
 
-    const previewPlacement = autoResolveSamePathOverlaps(trip, { day, planVariantId: selectedPlanVariantId });
-    if (previewPlacement.changedExistingItems.length === 0) return;
-
     if (isApiMode && resolvedApiClient && participantSession) {
-      const patchedBranchItems = await patchApiItineraryBranchItems(previewPlacement.changedExistingItems, resolvedApiClient, trip.id, participantSession.sessionToken);
-      const patchedBranchItemsById = new Map(patchedBranchItems.map((item) => [item.id, item]));
-      setTripState((current) => ({
-        ...current,
-        trip: {
-          ...current.trip,
-          itineraryItems: current.trip.itineraryItems.map((item) => patchedBranchItemsById.get(item.id) ?? item),
-        },
-      }));
+      let currentTrip = trip;
+      for (let attempt = 0; attempt < 2; attempt += 1) {
+        const placement = autoResolveSamePathOverlaps(currentTrip, { day, planVariantId: selectedPlanVariantId });
+        if (placement.changedExistingItems.length === 0) return;
+        try {
+          const patchedBranchItems = await patchApiItineraryBranchItems(placement.changedExistingItems, resolvedApiClient, currentTrip.id, participantSession.sessionToken);
+          const patchedBranchItemsById = new Map(patchedBranchItems.map((item) => [item.id, item]));
+          setTripState((state) => ({
+            ...state,
+            trip: {
+              ...state.trip,
+              itineraryItems: state.trip.itineraryItems.map((item) => patchedBranchItemsById.get(item.id) ?? item),
+            },
+          }));
+          return;
+        } catch (error) {
+          if (!(error instanceof TripApiError) || error.code !== "version_conflict" || attempt > 0) throw error;
+          const cockpit = await resolvedApiClient.loadTrip(currentTrip.id, participantSession.sessionToken);
+          replaceCockpitFromApi(cockpit);
+          currentTrip = cockpit.trip;
+        }
+      }
       return;
     }
 
+    const previewPlacement = autoResolveSamePathOverlaps(trip, { day, planVariantId: selectedPlanVariantId });
+    if (previewPlacement.changedExistingItems.length === 0) return;
     commitTrip((current) => autoResolveSamePathOverlaps(current, { day, planVariantId: selectedPlanVariantId }).trip);
   }
 
@@ -1774,8 +1786,9 @@ async function patchApiItineraryBranchItems(
   tripId: string,
   sessionToken: string,
 ): Promise<ItineraryItem[]> {
-  return Promise.all(items.map((item) =>
-    apiClient.patchItineraryItem(tripId, item.id, sessionToken, {
+  const patchedItems: ItineraryItem[] = [];
+  for (const item of items) {
+    patchedItems.push(await apiClient.patchItineraryItem(tripId, item.id, sessionToken, {
       clientMutationId: nextClientMutationId("itinerary-branch"),
       expectedVersion: item.version,
       patch: {
@@ -1784,8 +1797,9 @@ async function patchApiItineraryBranchItems(
         pathName: item.pathName,
         pathRole: item.pathRole,
       },
-    })
-  ));
+    }));
+  }
+  return patchedItems;
 }
 
 export function replaceSuggestionById(suggestions: Suggestion[], suggestionId: string, replacement: Suggestion): Suggestion[] {
