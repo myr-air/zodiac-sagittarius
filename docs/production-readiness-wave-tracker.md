@@ -285,7 +285,9 @@ passed locally with Docker Postgres on 2026-06-03.
 Wave status: production freeze checklist added, HTTP tracing enabled, repo-level
 local verification green, local real API e2e green, and a GitHub Actions
 production-readiness workflow runs the local gate with Postgres + Playwright and
-builds production container images.
+builds production container images. The same workflow also runs the staging
+sign-off and production environment safety scripts with complete production-like
+values so release gates cannot drift silently.
 Backend and frontend Dockerfiles plus `make container-build` now provide a
 repeatable production image build path.
 The API exposes `/api/v1/health` for liveness and `/api/v1/readiness` for

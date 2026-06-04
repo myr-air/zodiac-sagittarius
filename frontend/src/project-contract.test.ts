@@ -235,6 +235,9 @@ describe("Sagittarius project scaffold", () => {
     expect(workflow).toContain("make production-readiness-local PSQL=psql");
     expect(workflow).toContain("name: Production container image build");
     expect(workflow).toContain("make container-build");
+    expect(workflow).toContain("name: Release safety script checks");
+    expect(workflow).toContain("bun run test:staging-signoff");
+    expect(workflow).toContain("bun run test:production-env");
   });
 
   it("keeps production source free of unimplemented runtime placeholders", () => {

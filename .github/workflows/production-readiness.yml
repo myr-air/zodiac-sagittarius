@@ -81,3 +81,57 @@ jobs:
 
       - name: Build backend and frontend images
         run: make container-build
+
+  release-safety:
+    name: Release safety script checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    env:
+      DATABASE_URL: postgres://user:pass@db.example.test:5432/sagittarius
+      NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL: https://api.example.test
+      SAGITTARIUS_ALLOWED_ORIGINS: https://app.example.test
+      PASSKEY_ALLOWED_ORIGINS: https://app.example.test
+      EMAIL_DELIVERY: smtp
+      SMTP_HOST: smtp.example.test
+      SMTP_PORT: "587"
+      SMTP_USERNAME: smtp-user
+      SMTP_PASSWORD: smtp-password
+      EMAIL_FROM: "Sagittarius <no-reply@example.test>"
+      RUST_LOG: info,tower_http=info,sagittarius_api=info
+      SAGITTARIUS_ALERT_SINK_NAME: sagittarius-write-route-alerts
+      SAGITTARIUS_ALERT_RUNBOOK_URL: https://runbooks.example.test/sagittarius/write-route-alerts
+      SAGITTARIUS_STAGING_PREFLIGHT_PASSED: "1"
+      SAGITTARIUS_STAGING_BROWSER_SIGNOFF: "1"
+      SAGITTARIUS_STAGING_DB_MIGRATION_VERIFIED: "1"
+      SAGITTARIUS_STAGING_ROLLBACK_VERIFIED: "1"
+      SAGITTARIUS_STAGING_ALERT_ROUTING_VERIFIED: "1"
+      SAGITTARIUS_STAGING_NO_P1_P2: "1"
+      SAGITTARIUS_STAGING_ENVIRONMENT: staging
+      SAGITTARIUS_STAGING_API_BASE_URL: https://api.staging.example.test
+      SAGITTARIUS_STAGING_FRONTEND_URL: https://staging.example.test
+      SAGITTARIUS_STAGING_EVIDENCE_URL: https://ci.example.test/runs/123
+      SAGITTARIUS_STAGING_BROWSER_EVIDENCE_URL: https://ci.example.test/runs/123/browser
+      SAGITTARIUS_STAGING_MIGRATION_EVIDENCE_URL: https://ci.example.test/runs/123/migration
+      SAGITTARIUS_STAGING_ROLLBACK_EVIDENCE_URL: https://ci.example.test/runs/123/rollback
+      SAGITTARIUS_STAGING_ALERT_EVIDENCE_URL: https://alerts.example.test/incidents/sagittarius-write-routes
+      SAGITTARIUS_STAGING_ISSUE_EVIDENCE_URL: "https://issues.example.test/sagittarius?severity=P1,P2"
+      SAGITTARIUS_FEATURE_OWNER: "Feature Owner"
+      SAGITTARIUS_ROLLBACK_OWNER: "Rollback Owner"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.5
+
+      - name: Run staging signoff gate
+        working-directory: frontend
+        run: bun run test:staging-signoff
+
+      - name: Run production environment gate
+        working-directory: frontend
+        run: bun run test:production-env
