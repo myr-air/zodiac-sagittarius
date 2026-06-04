@@ -488,6 +488,7 @@ export const messages = {
       fields: {
         time: "Time",
         day: "Day",
+        plan: "Plan",
         hours: "Hours",
         minutes: "Minutes",
         activity: "Activity",
@@ -1292,6 +1293,7 @@ export const messages = {
       fields: {
         time: "เวลา",
         day: "วัน",
+        plan: "แผน",
         hours: "ชั่วโมง",
         minutes: "นาที",
         activity: "กิจกรรม",

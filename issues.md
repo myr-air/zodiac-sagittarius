@@ -488,3 +488,21 @@ Let's put ourselves in the shoes of a traveler using Sagittarius on their trip. 
 * **ผลกระทบ:** ทำให้การรันทั้ง `frontend/src/trip/itinerary.test.ts` fail แม้ tests ใหม่ของ activity path resolver จะ pass เมื่อ run เฉพาะ case ใหม่ด้วย `-t`.
 * **วิธีแก้ที่ทำแล้ว:** ปรับ `frontend/src/trip/itinerary.test.ts` ให้ derive วันจาก `seedTrip.startDate` / `seedTrip.endDate` แทน hardcode วันที่ปี 2025 และแก้ invalid range test ให้ใช้ start date ที่มากกว่า end date จริง.
 * **หลักฐาน:** `rtk bun run test -- src/trip/itinerary.test.ts` ผ่าน `19 passed`.
+
+---
+
+### 5. Context rail ทับ toolbar itinerary หลังเลือก stop ทำให้คลิก `Show all paths` ไม่ได้ในบางตำแหน่ง — แก้แล้ว 2026-06-04
+* **วันที่พบ:** 2026-06-04
+* **หลักฐาน:** ระหว่าง Playwright QA ของ activity sub plan บน desktop viewport `1366x900` หลัง save activity แล้ว context rail เปิดอยู่ด้านขวา เมื่อ script คลิก checkbox `Show all paths` Playwright timeout เพราะ subtree ของ `<aside aria-label="Planning context">` intercept pointer events บริเวณ toolbar.
+* **ผลกระทบ:** ผู้ใช้ desktop ที่เปิด context rail อาจคลิก control บางตัวบน itinerary toolbar/day filter ไม่ได้ ถ้าตำแหน่ง control อยู่ใต้ overlay ของ rail.
+* **วิธีแก้ที่ทำแล้ว:** เพิ่ม reserved right padding ให้ `.planning-main` เมื่อ context rail เปิดบน desktop (`380px`) และ reset เป็น `0px` บน viewport ต่ำกว่า `1200px` เพื่อไม่ให้ content/toolbar อยู่ใต้ rail overlay.
+* **หลักฐาน:** Playwright QA บน `http://127.0.0.1:5180/trips/:tripId/itinerary` เปิด context rail แล้วคลิก checkbox `Show all paths` สำเร็จ (`false -> true`), ไม่มี console/pageerror, desktop `.planning-main` มี `paddingRight=380px`, mobile `390x844` มี `paddingRight=0px` และไม่มี horizontal document overflow.
+
+---
+
+### 6. `bun run lint` fail จาก `TripSettingsPage.tsx` set-state-in-effect — แก้แล้ว 2026-06-04
+* **วันที่พบ:** 2026-06-04
+* **หลักฐาน:** หลังเพิ่มปุ่ม Auto overlap รัน `rtk bun run lint` จาก `frontend/` แล้ว ESLint fail ที่ `frontend/src/components/TripSettingsPage.tsx:50` และ `:54` ด้วย rule `react-hooks/set-state-in-effect`.
+* **ผลกระทบ:** ทำให้ lint suite ทั้ง frontend fail แม้ unit tests และ typecheck ผ่าน.
+* **วิธีแก้ที่ทำแล้ว:** แยก `TripSettingsPageContent` เป็น keyed child ตามข้อมูล trip (`id/name/destination/start/end`) เพื่อให้ React remount และ reset form/status/error เองเมื่อ trip เปลี่ยน แทนการเรียก `setState` synchronous ใน `useEffect`.
+* **หลักฐาน:** `rtk bun run lint` ผ่านแล้ว เหลือเฉพาะ warnings เดิมที่ไม่ fail suite; `rtk bun run typecheck` ผ่าน.

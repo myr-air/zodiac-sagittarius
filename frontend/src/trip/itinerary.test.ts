@@ -140,6 +140,22 @@ describe("itinerary planning domain", () => {
     ]);
   });
 
+  it("derives generated activity sub plans as day-scoped path options", () => {
+    const planAItem = {
+      ...seedTrip.itineraryItems[0],
+      day: "2026-06-19",
+      pathGroupId: "path-group-morning",
+      pathId: "path-2026-06-19-sub-a",
+      pathName: "Plan A",
+      pathRole: "alternative" as const,
+    };
+
+    expect(deriveItineraryPathOptions([planAItem])).toEqual([
+      { id: "main", name: "Main", scope: "trip" },
+      { id: "path-2026-06-19-sub-a", name: "Plan A", scope: "day", day: "2026-06-19" },
+    ]);
+  });
+
   it("groups and sorts selected plan items by day", () => {
     const items = seedTrip.itineraryItems.filter((item) => item.planVariantId === seedTrip.activePlanVariantId);
     const groups = groupItemsByDay(items);

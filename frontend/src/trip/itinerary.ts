@@ -98,10 +98,12 @@ export function deriveItineraryPathOptions(items: ItineraryItem[], paths: Itiner
 
   for (const item of items) {
     if (item.pathRole !== "alternative" || !item.pathId || options.has(item.pathId)) continue;
+    const generatedDay = generatedDayFromPathId(item.pathId);
     options.set(item.pathId, {
       id: item.pathId,
       name: item.pathName || humanizePathId(item.pathId),
-      scope: "trip",
+      scope: generatedDay ? "day" : "trip",
+      day: generatedDay || undefined,
     });
   }
 
@@ -181,6 +183,11 @@ function humanizePathId(pathId: string): string {
     .filter(Boolean)
     .map((part) => part.slice(0, 1).toUpperCase() + part.slice(1))
     .join(" ") || pathId;
+}
+
+function generatedDayFromPathId(pathId: string): string | null {
+  const match = pathId.match(/^path-(\d{4}-\d{2}-\d{2})-sub-[a-z]+$/i);
+  return match?.[1] ?? null;
 }
 
 export function groupItemsByDay(items: ItineraryItem[]): ItineraryDayGroup[] {

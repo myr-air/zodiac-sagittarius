@@ -36,6 +36,7 @@ function renderTable(overrides: Partial<Parameters<typeof SmartItineraryTable>[0
     onChangeDayPath: vi.fn(),
     onClearDayPath: vi.fn(),
     onClearAllDayPaths: vi.fn(),
+    onAutoResolveDayOverlaps: vi.fn(),
     onToggleShowAllPaths: vi.fn(),
     onRedo: vi.fn(),
     onToggleContextRail: vi.fn(),
@@ -129,6 +130,127 @@ describe("SmartItineraryTable", () => {
     await user.click(screen.getByRole("button", { name: /Clear path override for Day 2/i }));
     expect(props.onClearDayPath).toHaveBeenCalledWith("2026-06-19");
     expect(screen.queryByRole("button", { name: /Delete path/i })).not.toBeInTheDocument();
+  });
+
+  it("keeps generated day plans out of the trip-wide filter while showing them on the matching day", () => {
+    renderTable({
+      pathOptions: [
+        { id: "main", name: "Main", scope: "trip" },
+        { id: "path-2026-06-19-sub-a", name: "Plan A", scope: "day", day: "2026-06-19" },
+      ],
+    });
+
+    const tripPath = screen.getByLabelText(/Trip path/i);
+    expect(within(tripPath).queryByRole("option", { name: "Plan A" })).not.toBeInTheDocument();
+    expect(within(screen.getByLabelText(/Path for Day 2/i)).getByRole("option", { name: "Plan A" })).toBeInTheDocument();
+    expect(screen.queryByLabelText(/Path for Day 1/i)).not.toBeInTheDocument();
+  });
+
+  it("hides day path controls when the day only has the main plan", () => {
+    renderTable({
+      pathOptions: [
+        { id: "main", name: "Main", scope: "trip" },
+        { id: "path-2026-06-19-sub-a", name: "Plan A", scope: "day", day: "2026-06-19" },
+      ],
+    });
+
+    expect(screen.queryByLabelText(/Path for Day 1/i)).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Clear path override for Day 1/i })).not.toBeInTheDocument();
+    expect(screen.getByLabelText(/Path for Day 2/i)).toBeInTheDocument();
+  });
+
+  it("marks rows with pastel red only when they overlap inside the same plan", () => {
+    const samePlanA = {
+      ...tripFixture.planItems[0],
+      id: "same-plan-a",
+      day: "2026-06-19",
+      startTime: "08:00",
+      durationMinutes: 120,
+      sortOrder: 100,
+      activity: "Same plan A",
+      pathRole: "main" as const,
+    };
+    const samePlanB = {
+      ...samePlanA,
+      id: "same-plan-b",
+      startTime: "08:30",
+      durationMinutes: 60,
+      sortOrder: 200,
+      activity: "Same plan B",
+    };
+    renderTable({
+      items: [samePlanA, samePlanB],
+      selectedItemId: "same-plan-a",
+    });
+
+    expect(screen.getByRole("row", { name: /Same plan A/i })).toHaveClass("data-row--path-overlap");
+    expect(screen.getByRole("row", { name: /Same plan B/i })).toHaveClass("data-row--path-overlap");
+  });
+
+  it("shows an auto fix button only for days with same-plan overlaps", async () => {
+    const user = userEvent.setup();
+    const samePlanA = {
+      ...tripFixture.planItems[0],
+      id: "same-plan-a",
+      day: "2026-06-19",
+      startTime: "08:00",
+      durationMinutes: 120,
+      sortOrder: 100,
+      activity: "Same plan A",
+      pathRole: "main" as const,
+    };
+    const samePlanB = {
+      ...samePlanA,
+      id: "same-plan-b",
+      startTime: "08:30",
+      durationMinutes: 60,
+      sortOrder: 200,
+      activity: "Same plan B",
+    };
+    const onAutoResolveDayOverlaps = vi.fn();
+    renderTable({
+      items: [samePlanA, samePlanB],
+      selectedItemId: "same-plan-a",
+      onAutoResolveDayOverlaps,
+    });
+
+    expect(screen.queryByRole("button", { name: /Auto fix overlaps for Day 1/i })).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: /Auto fix overlaps for Day 2/i }));
+
+    expect(onAutoResolveDayOverlaps).toHaveBeenCalledWith("2026-06-19");
+  });
+
+  it("does not mark rows that overlap across different plans", () => {
+    const mainItem = {
+      ...tripFixture.planItems[0],
+      id: "main-overlap",
+      day: "2026-06-19",
+      startTime: "08:00",
+      durationMinutes: 120,
+      sortOrder: 100,
+      activity: "Main overlap",
+      pathGroupId: "path-group-overlap",
+      pathRole: "main" as const,
+    };
+    const planAItem = {
+      ...mainItem,
+      id: "plan-a-overlap",
+      startTime: "08:30",
+      durationMinutes: 60,
+      sortOrder: 200,
+      activity: "Plan A overlap",
+      pathId: "path-2026-06-19-sub-a",
+      pathName: "Plan A",
+      pathRole: "alternative" as const,
+    };
+    renderTable({
+      items: [mainItem, planAItem],
+      selectedItemId: "main-overlap",
+      showAllPaths: true,
+    });
+
+    expect(screen.getByRole("row", { name: /Main overlap/i })).not.toHaveClass("data-row--path-overlap");
+    expect(screen.getByRole("row", { name: /Plan A overlap/i })).not.toHaveClass("data-row--path-overlap");
   });
 
   it("uses explicit controls for row selection instead of making table rows interactive", () => {

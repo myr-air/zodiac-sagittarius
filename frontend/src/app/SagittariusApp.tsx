@@ -29,7 +29,7 @@ import {
 } from "@/src/trip/auth";
 import { buildExpenseSummary } from "@/src/trip/expenses";
 import { buildItineraryView, deriveItineraryPathOptions, mainItineraryPathId, resolveItineraryPathItems, type ItineraryPathOption, type ItineraryPathSelection } from "@/src/trip/itinerary";
-import { applyImportedItemsToItineraryPath, type ItineraryImportApplyTarget } from "@/src/trip/itinerary-paths";
+import { applyImportedItemsToItineraryPath, applyItemToActivityBranch, applyManualActivityPath, autoResolveSamePathOverlaps, deriveManualActivityPathOptions, type ItineraryImportApplyTarget } from "@/src/trip/itinerary-paths";
 import { buildItineraryExport, parseItineraryImport, type ItineraryExportItem } from "@/src/trip/itinerary-import-export";
 import { tripFixtureStopNotes, tripFixtureSuggestions, tripFixtureTasks } from "@/src/trip/trip-fixtures";
 import { tripStorageKey } from "@/src/trip/repository";
@@ -57,7 +57,8 @@ const portalSkeletonLineClassName = `${portalSkeletonBaseClassName} portal-skele
 const portalSkeletonBlockClassName = `${portalSkeletonBaseClassName} portal-skeleton--block h-[132px] w-full`;
 const workspaceShellClassName = "workspace-shell min-w-0 bg-transparent";
 const workspaceGridClassName = "workspace-grid relative grid h-[calc(100vh-62px)] min-h-0 grid-cols-[minmax(0,1fr)] overflow-hidden data-[command-bar=hidden]:h-screen max-[1199px]:h-auto max-[1199px]:grid-cols-1 max-[1199px]:overflow-visible";
-const planningMainClassName = "planning-main h-full min-h-0 min-w-0 overflow-y-auto scroll-smooth bg-[var(--color-page)] max-[1199px]:h-auto max-[1199px]:overflow-y-visible";
+const planningMainClassName = "planning-main h-full min-h-0 min-w-0 overflow-y-auto scroll-smooth bg-[var(--color-page)] transition-[padding] duration-200 max-[1199px]:h-auto max-[1199px]:overflow-y-visible";
+const planningMainWithRailClassName = "pr-[380px] max-[1199px]:pr-0";
 
 export type PlanningView = "overview" | "itinerary" | "map" | "timeline" | "members" | "settings";
 type PortalSection = "dashboard" | "trips" | "new-trip" | "explorer" | "todos" | "vault" | "settings" | "sign-out";
@@ -503,36 +504,10 @@ export function SagittariusApp({
     const day = values.day || selectedDay;
     const targetPathId = selectedItineraryPathIdForDay(day, pathSelection);
     const targetPathName = pathOptions.find((option) => option.id === targetPathId)?.name;
-    const pathFields = itineraryItemPathFieldsForTarget(`path-group-${nextLocalItemId(trip.itineraryItems, "item-new")}`, targetPathId, targetPathName);
-    if (isApiMode && resolvedApiClient && participantSession) {
-      const createdItem = await resolvedApiClient.createItineraryItem(trip.id, participantSession.sessionToken, {
-        clientMutationId: nextClientMutationId("itinerary-create"),
-        planVariantId: selectedPlanVariantId,
-        pathGroupId: pathFields.pathGroupId,
-        pathId: pathFields.pathId,
-        pathRole: pathFields.pathRole,
-        day,
-        startTime: values.startTime,
-        activity: values.activity,
-        activityType: values.activityType,
-        place: values.place,
-        mapLink: buildMapLink(values.place),
-        durationMinutes: values.durationMinutes,
-        transportation: values.transportation,
-        note: values.note,
-      });
-      setTripState((current) => ({
-        ...current,
-        trip: { ...current.trip, itineraryItems: [...current.trip.itineraryItems, createdItem] },
-      }));
-      setSelectedItemId(createdItem.id);
-      setContextRailVisibility(true);
-      setDialogState(null);
-      return;
-    }
-
-    const nextItem: ItineraryItem = {
-      id: nextLocalItemId(trip.itineraryItems, "item-new"),
+    const nextItemId = nextLocalItemId(trip.itineraryItems, "item-new");
+    const pathFields = itineraryItemPathFieldsForTarget(`path-group-${nextItemId}`, targetPathId, targetPathName);
+    const draftItem: ItineraryItem = {
+      id: nextItemId,
       tripId: trip.id,
       planVariantId: selectedPlanVariantId,
       ...pathFields,
@@ -553,7 +528,57 @@ export function SagittariusApp({
       updatedAt: localMutationTimestamp,
       version: 1,
     };
-    commitTrip((current) => ({ ...current, itineraryItems: [...current.itineraryItems, nextItem] }), nextItem.id);
+    const branchPlacement = targetPathId === mainItineraryPathId
+      ? applyItemToActivityBranch(trip, draftItem)
+      : {
+          trip: { ...trip, itineraryItems: [...trip.itineraryItems, draftItem] },
+          item: draftItem,
+          changedExistingItems: [],
+        };
+    if (isApiMode && resolvedApiClient && participantSession) {
+      const patchedBranchItems = await patchApiItineraryBranchItems(branchPlacement.changedExistingItems, resolvedApiClient, trip.id, participantSession.sessionToken);
+      const createdItem = await resolvedApiClient.createItineraryItem(trip.id, participantSession.sessionToken, {
+        clientMutationId: nextClientMutationId("itinerary-create"),
+        planVariantId: selectedPlanVariantId,
+        pathGroupId: branchPlacement.item.pathGroupId,
+        pathId: branchPlacement.item.pathId,
+        pathName: branchPlacement.item.pathName,
+        pathRole: branchPlacement.item.pathRole,
+        day,
+        startTime: values.startTime,
+        activity: values.activity,
+        activityType: values.activityType,
+        place: values.place,
+        mapLink: buildMapLink(values.place),
+        durationMinutes: values.durationMinutes,
+        transportation: values.transportation,
+        note: values.note,
+      });
+      const createdItemWithPath = {
+        ...createdItem,
+        pathGroupId: branchPlacement.item.pathGroupId,
+        pathId: branchPlacement.item.pathId,
+        pathName: branchPlacement.item.pathName,
+        pathRole: branchPlacement.item.pathRole,
+      };
+      const patchedBranchItemsById = new Map(patchedBranchItems.map((item) => [item.id, item]));
+      setTripState((current) => ({
+        ...current,
+        trip: {
+          ...current.trip,
+          itineraryItems: [
+            ...current.trip.itineraryItems.map((item) => patchedBranchItemsById.get(item.id) ?? item),
+            createdItemWithPath,
+          ],
+        },
+      }));
+      setSelectedItemId(createdItem.id);
+      setContextRailVisibility(true);
+      setDialogState(null);
+      return;
+    }
+
+    commitTrip((current) => (targetPathId === mainItineraryPathId ? applyItemToActivityBranch(current, draftItem).trip : { ...current, itineraryItems: [...current.itineraryItems, draftItem] }), draftItem.id);
     setContextRailVisibility(true);
     setDialogState(null);
   }
@@ -637,11 +662,24 @@ export function SagittariusApp({
           note: values.note,
         },
       });
+      const tripWithPatchedItem = {
+        ...trip,
+        itineraryItems: trip.itineraryItems.map((item) => (item.id === itemId ? { ...patchedItem, day: values.day || patchedItem.day } : item)),
+      };
+      const autoBranchPlacement = applyItemToActivityBranch(tripWithPatchedItem, { ...patchedItem, day: values.day || patchedItem.day });
+      const branchPlacement = values.pathId
+        ? applyManualActivityPath(autoBranchPlacement.trip, itemId, values.pathId)
+        : autoBranchPlacement;
+      const patchedBranchItems = await patchApiItineraryBranchItems(branchPlacement.changedExistingItems, resolvedApiClient, trip.id, participantSession.sessionToken);
+      const patchedBranchItemsById = new Map(patchedBranchItems.map((item) => [item.id, item]));
       setTripState((current) => ({
         ...current,
         trip: {
           ...current.trip,
-          itineraryItems: current.trip.itineraryItems.map((item) => (item.id === itemId ? { ...patchedItem, day: values.day || patchedItem.day } : item)),
+          itineraryItems: current.trip.itineraryItems.map((item) => {
+            if (patchedBranchItemsById.has(item.id)) return patchedBranchItemsById.get(item.id) ?? item;
+            return item.id === itemId ? branchPlacement.item : item;
+          }),
         },
       }));
       setSelectedItemId(itemId);
@@ -649,32 +687,56 @@ export function SagittariusApp({
       setDialogState(null);
       return;
     }
-    commitTrip((current) => ({
-      ...current,
-      itineraryItems: current.itineraryItems.map((item) =>
-        item.id === itemId
-          ? {
-              ...item,
-              day: values.day || item.day,
-              startTime: values.startTime,
-              activity: values.activity,
-              activityType: values.activityType,
-              place: values.place,
-              /* v8 ignore next */
-              mapLink: item.mapLink || buildMapLink(values.place),
-              address: values.place,
-              durationMinutes: values.durationMinutes,
-              transportation: values.transportation,
-              note: values.note,
-              updatedAt: localMutationTimestamp,
-              version: item.version + 1,
-            }
-          : item,
-      ),
-    }));
+    commitTrip((current) => {
+      const updatedItem = {
+        ...dialogState.item,
+        day: values.day || dialogState.item.day,
+        startTime: values.startTime,
+        activity: values.activity,
+        activityType: values.activityType,
+        place: values.place,
+        /* v8 ignore next */
+        mapLink: dialogState.item.mapLink || buildMapLink(values.place),
+        address: values.place,
+        durationMinutes: values.durationMinutes,
+        transportation: values.transportation,
+        note: values.note,
+        updatedAt: localMutationTimestamp,
+        version: dialogState.item.version + 1,
+      };
+      const tripWithUpdatedItem = {
+        ...current,
+        itineraryItems: current.itineraryItems.map((item) => (item.id === itemId ? updatedItem : item)),
+      };
+      const autoBranchPlacement = applyItemToActivityBranch(tripWithUpdatedItem, updatedItem);
+      return values.pathId ? applyManualActivityPath(autoBranchPlacement.trip, itemId, values.pathId).trip : autoBranchPlacement.trip;
+    });
     setSelectedItemId(itemId);
     setContextRailVisibility(true);
     setDialogState(null);
+  }
+
+  async function autoResolveDayOverlaps(day: string) {
+    /* v8 ignore next */
+    if (!canEdit) return;
+
+    const previewPlacement = autoResolveSamePathOverlaps(trip, { day, planVariantId: selectedPlanVariantId });
+    if (previewPlacement.changedExistingItems.length === 0) return;
+
+    if (isApiMode && resolvedApiClient && participantSession) {
+      const patchedBranchItems = await patchApiItineraryBranchItems(previewPlacement.changedExistingItems, resolvedApiClient, trip.id, participantSession.sessionToken);
+      const patchedBranchItemsById = new Map(patchedBranchItems.map((item) => [item.id, item]));
+      setTripState((current) => ({
+        ...current,
+        trip: {
+          ...current.trip,
+          itineraryItems: current.trip.itineraryItems.map((item) => patchedBranchItemsById.get(item.id) ?? item),
+        },
+      }));
+      return;
+    }
+
+    commitTrip((current) => autoResolveSamePathOverlaps(current, { day, planVariantId: selectedPlanVariantId }).trip);
   }
 
   async function deleteSelectedStop() {
@@ -1481,7 +1543,7 @@ export function SagittariusApp({
           </label>
         ) : null}
         <div className={workspaceGridClassName} data-context-rail={contextRailOpen ? "open" : "closed"} data-command-bar="hidden">
-          <div className={planningMainClassName}>
+          <div className={`${planningMainClassName} ${contextRailOpen && supportsContextRail ? planningMainWithRailClassName : ""}`}>
             {currentView === "settings" ? (
               <TripSettingsPage
                 canEdit={canManagePeople}
@@ -1549,6 +1611,7 @@ export function SagittariusApp({
                 onChangeDayPath={changeDayPath}
                 onClearDayPath={clearDayPath}
                 onClearAllDayPaths={clearAllDayPaths}
+                onAutoResolveDayOverlaps={autoResolveDayOverlaps}
                 onToggleShowAllPaths={toggleShowAllPaths}
                 onRedo={redo}
                 onToggleContextRail={() => setContextRailVisibility(!contextRailOpen)}
@@ -1613,6 +1676,7 @@ export function SagittariusApp({
             endDate={trip.endDate}
             initialItem={dialogState.mode === "edit" ? dialogState.item : undefined}
             initialDay={dialogState.mode === "create" ? dialogState.day ?? selectedDay : undefined}
+            manualPathOptions={dialogState.mode === "edit" ? deriveManualActivityPathOptions(trip, dialogState.item.id) : undefined}
             onClose={() => setDialogState(null)}
             onDelete={dialogState.mode === "edit" ? deleteSelectedStop : undefined}
             onSubmit={dialogState.mode === "edit" ? updateSelectedStop : createStop}
@@ -1702,6 +1766,26 @@ export function nextLocalStopNoteId(notes: StopNote[]): string {
 export function nextClientMutationId(prefix: string): string {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) return `${prefix}-${crypto.randomUUID()}`;
   return `${prefix}-${Date.now().toString(36)}`;
+}
+
+async function patchApiItineraryBranchItems(
+  items: ItineraryItem[],
+  apiClient: TripApiClient,
+  tripId: string,
+  sessionToken: string,
+): Promise<ItineraryItem[]> {
+  return Promise.all(items.map((item) =>
+    apiClient.patchItineraryItem(tripId, item.id, sessionToken, {
+      clientMutationId: nextClientMutationId("itinerary-branch"),
+      expectedVersion: item.version,
+      patch: {
+        pathGroupId: item.pathGroupId,
+        pathId: item.pathId,
+        pathName: item.pathName,
+        pathRole: item.pathRole,
+      },
+    })
+  ));
 }
 
 export function replaceSuggestionById(suggestions: Suggestion[], suggestionId: string, replacement: Suggestion): Suggestion[] {

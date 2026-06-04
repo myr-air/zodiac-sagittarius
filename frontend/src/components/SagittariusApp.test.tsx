@@ -2011,8 +2011,94 @@ describe("Sagittarius cockpit UI", () => {
     await user.click(within(dialog).getByRole("button", { name: /บันทึกกิจกรรม/i }));
 
     expect(screen.queryByRole("dialog", { name: /เพิ่มกิจกรรม/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /เลือกจุด Coffee break at K11 Musea/i })).not.toBeInTheDocument();
+    await user.click(screen.getByLabelText(/Show all paths/i));
     expect(screen.getByRole("button", { name: /เลือกจุด Coffee break at K11 Musea/i })).toBeInTheDocument();
     expect(within(screen.getByRole("complementary", { name: /ข้อมูลประกอบการวางแผน/i })).getByRole("heading", { name: /Coffee break at K11 Musea/i })).toBeInTheDocument();
+  });
+
+  it("manually promotes an overlapping stop to the main plan from edit details", async () => {
+    const user = userEvent.setup();
+    render(<SagittariusApp initialView="itinerary" />);
+
+    await user.click(screen.getByRole("button", { name: /เพิ่มสถานที่ \/ กิจกรรม วันที่ 2/i }));
+
+    let dialog = screen.getByRole("dialog", { name: /เพิ่มกิจกรรม/i });
+    await user.clear(within(dialog).getByLabelText(/^เวลา$/i));
+    await user.type(within(dialog).getByLabelText(/^เวลา$/i), "16:45");
+    await user.clear(within(dialog).getByLabelText(/กิจกรรม/i));
+    await user.type(within(dialog).getByLabelText(/กิจกรรม/i), "Manual main coffee");
+    await user.clear(within(dialog).getByLabelText(/สถานที่/i));
+    await user.type(within(dialog).getByLabelText(/สถานที่/i), "K11 Musea");
+    await user.clear(within(dialog).getByLabelText(/^ชั่วโมง$/i));
+    await user.type(within(dialog).getByLabelText(/^ชั่วโมง$/i), "0");
+    await user.selectOptions(within(dialog).getByLabelText(/^นาที$/i), "45");
+    await user.click(within(dialog).getByRole("button", { name: /บันทึกกิจกรรม/i }));
+
+    expect(screen.queryByRole("button", { name: /เลือกจุด Manual main coffee/i })).not.toBeInTheDocument();
+    await user.click(screen.getByLabelText(/Show all paths/i));
+    await user.click(screen.getByRole("button", { name: /เลือกจุด Manual main coffee/i }));
+    await user.click(screen.getByRole("button", { name: /แก้ไขรายละเอียด/i }));
+
+    dialog = screen.getByRole("dialog", { name: /แก้ไขรายละเอียด/i });
+    await user.selectOptions(within(dialog).getByLabelText("แผน"), "main");
+    await user.click(within(dialog).getByRole("button", { name: /บันทึกการแก้ไข/i }));
+
+    await user.click(screen.getByLabelText(/Show all paths/i));
+    expect(screen.getByRole("button", { name: /เลือกจุด Manual main coffee/i })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /เลือกจุด เดินเล่นย่าน Central/i })).not.toBeInTheDocument();
+  });
+
+  it("promotes another stop when the current main stop is manually moved to a new plan", async () => {
+    const user = userEvent.setup();
+    render(<SagittariusApp initialView="itinerary" />);
+
+    await user.click(screen.getByRole("button", { name: /เพิ่มสถานที่ \/ กิจกรรม วันที่ 2/i }));
+
+    let dialog = screen.getByRole("dialog", { name: /เพิ่มกิจกรรม/i });
+    await user.clear(within(dialog).getByLabelText(/^เวลา$/i));
+    await user.type(within(dialog).getByLabelText(/^เวลา$/i), "16:45");
+    await user.clear(within(dialog).getByLabelText(/กิจกรรม/i));
+    await user.type(within(dialog).getByLabelText(/กิจกรรม/i), "Promoted after demote coffee");
+    await user.clear(within(dialog).getByLabelText(/สถานที่/i));
+    await user.type(within(dialog).getByLabelText(/สถานที่/i), "K11 Musea");
+    await user.click(within(dialog).getByRole("button", { name: /บันทึกกิจกรรม/i }));
+
+    expect(screen.queryByRole("button", { name: /เลือกจุด Promoted after demote coffee/i })).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: /ปิดรายละเอียด/i }));
+    await user.click(screen.getByRole("button", { name: /เลือกจุด เดินเล่นย่าน Central/i }));
+    await user.click(screen.getByRole("button", { name: /แก้ไขรายละเอียด/i }));
+
+    dialog = screen.getByRole("dialog", { name: /แก้ไขรายละเอียด/i });
+    await user.selectOptions(within(dialog).getByLabelText("แผน"), "path-2026-06-19-sub-b");
+    await user.click(within(dialog).getByRole("button", { name: /บันทึกการแก้ไข/i }));
+
+    expect(screen.getByRole("button", { name: /เลือกจุด Promoted after demote coffee/i })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /เลือกจุด เดินเล่นย่าน Central/i })).not.toBeInTheDocument();
+  });
+
+  it("filters a generated day plan from the matching day path selector", async () => {
+    const user = userEvent.setup();
+    render(<SagittariusApp initialView="itinerary" />);
+
+    await user.click(screen.getByRole("button", { name: /เพิ่มสถานที่ \/ กิจกรรม วันที่ 2/i }));
+
+    const dialog = screen.getByRole("dialog", { name: /เพิ่มกิจกรรม/i });
+    await user.clear(within(dialog).getByLabelText(/^เวลา$/i));
+    await user.type(within(dialog).getByLabelText(/^เวลา$/i), "16:45");
+    await user.clear(within(dialog).getByLabelText(/กิจกรรม/i));
+    await user.type(within(dialog).getByLabelText(/กิจกรรม/i), "Day filter coffee");
+    await user.clear(within(dialog).getByLabelText(/สถานที่/i));
+    await user.type(within(dialog).getByLabelText(/สถานที่/i), "K11 Musea");
+    await user.click(within(dialog).getByRole("button", { name: /บันทึกกิจกรรม/i }));
+
+    expect(screen.queryByRole("button", { name: /เลือกจุด Day filter coffee/i })).not.toBeInTheDocument();
+    expect(within(screen.getByLabelText(/Trip path/i)).queryByRole("option", { name: "Plan A" })).not.toBeInTheDocument();
+
+    await user.selectOptions(screen.getByLabelText(/Path for Day 2/i), "path-2026-06-19-sub-a");
+
+    expect(screen.getByRole("button", { name: /เลือกจุด Day filter coffee/i })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /เลือกจุด เดินเล่นย่าน Central/i })).not.toBeInTheDocument();
   });
 
   it("adds a new itinerary stop into the selected item's day", async () => {

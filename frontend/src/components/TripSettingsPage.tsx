@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useMemo, useState, type FormEvent } from "react";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
 import type { Member, Trip } from "@/src/trip/types";
@@ -41,19 +41,22 @@ const errorClassName = "text-[#b91c1c]";
 const successClassName = "text-[#15803d]";
 
 export function TripSettingsPage({ canEdit, currentMember, trip, onSave }: TripSettingsPageProps) {
+  return (
+    <TripSettingsPageContent
+      key={tripSettingsStateKey(trip)}
+      canEdit={canEdit}
+      currentMember={currentMember}
+      trip={trip}
+      onSave={onSave}
+    />
+  );
+}
+
+function TripSettingsPageContent({ canEdit, currentMember, trip, onSave }: TripSettingsPageProps) {
   const { t } = useI18n();
   const [form, setForm] = useState<TripSettingsFormValues>(() => tripToForm(trip));
   const [status, setStatus] = useState<"idle" | "saving" | "saved">("idle");
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    setForm(tripToForm(trip));
-  }, [trip.id, trip.name, trip.destinationLabel, trip.startDate, trip.endDate]);
-
-  useEffect(() => {
-    setStatus("idle");
-    setError(null);
-  }, [trip.id]);
 
   const invalidDateRange = Boolean(form.startDate && form.endDate && form.endDate < form.startDate);
   const outsideStopCount = useMemo(() => {
@@ -63,7 +66,7 @@ export function TripSettingsPage({ canEdit, currentMember, trip, onSave }: TripS
       const shiftedDay = shiftIsoDate(item.day, dayShift);
       return shiftedDay < form.startDate || shiftedDay > form.endDate;
     }).length;
-  }, [form.endDate, form.startDate, invalidDateRange, trip.itineraryItems]);
+  }, [form.endDate, form.startDate, invalidDateRange, trip.itineraryItems, trip.startDate]);
   const canSubmit = Boolean(canEdit && !invalidDateRange && form.name.trim() && form.destinationLabel.trim() && status !== "saving");
 
   async function submitSettings(event: FormEvent<HTMLFormElement>) {
@@ -164,6 +167,10 @@ export function TripSettingsPage({ canEdit, currentMember, trip, onSave }: TripS
       </div>
     </section>
   );
+}
+
+function tripSettingsStateKey(trip: Trip): string {
+  return [trip.id, trip.name, trip.destinationLabel, trip.startDate, trip.endDate].join(":");
 }
 
 function tripToForm(trip: Trip): TripSettingsFormValues {

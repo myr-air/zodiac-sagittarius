@@ -70,4 +70,28 @@ describe("StopDialog", () => {
 
     expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({ day: "2026-06-20" }));
   });
+
+  it("submits the selected manual plan path when editing one stop", () => {
+    const onSubmit = vi.fn();
+    render(
+      <StopDialog
+        mode="edit"
+        startDate="2026-06-18"
+        endDate="2026-06-23"
+        initialItem={{ ...tripFixture.planItems[0], pathRole: "main" }}
+        manualPathOptions={[
+          { id: "main", name: "Main" },
+          { id: "path-2026-06-19-sub-a", name: "Plan A" },
+          { id: "path-2026-06-19-sub-b", name: "Plan B" },
+        ]}
+        onClose={vi.fn()}
+        onSubmit={onSubmit}
+      />,
+    );
+
+    fireEvent.change(screen.getByLabelText("แผน"), { target: { value: "path-2026-06-19-sub-b" } });
+    fireEvent.submit(screen.getByRole("button", { name: "บันทึกการแก้ไข" }).closest("form")!);
+
+    expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({ pathId: "path-2026-06-19-sub-b" }));
+  });
 });

@@ -8,6 +8,7 @@ import { activityTypeLabel, formatThaiDate } from "./itineraryDisplay";
 
 export interface StopFormValues {
   day: string;
+  pathId?: string;
   startTime: string;
   activity: string;
   activityType: ActivityType;
@@ -17,11 +18,17 @@ export interface StopFormValues {
   note: string;
 }
 
+export interface StopManualPathOption {
+  id: string;
+  name: string;
+}
+
 interface StopDialogProps {
   mode: "create" | "edit";
   endDate?: string;
   initialDay?: string;
   initialItem?: ItineraryItem;
+  manualPathOptions?: StopManualPathOption[];
   onClose: () => void;
   onDelete?: () => void;
   onSubmit: (values: StopFormValues) => void;
@@ -42,6 +49,7 @@ const fieldIds = {
   activity: "stop-activity",
   activityType: "stop-activity-type",
   day: "stop-day",
+  path: "stop-path",
   durationHours: "stop-duration-hours",
   durationMinutes: "stop-duration-minutes",
   note: "stop-note",
@@ -50,11 +58,12 @@ const fieldIds = {
   transportation: "stop-transportation",
 };
 
-export function StopDialog({ mode, endDate, initialDay, initialItem, onClose, onDelete, onSubmit, startDate }: StopDialogProps) {
+export function StopDialog({ mode, endDate, initialDay, initialItem, manualPathOptions = [], onClose, onDelete, onSubmit, startDate }: StopDialogProps) {
   const { locale, t } = useI18n();
   const dayOptions = startDate && endDate ? getTripDates(startDate, endDate) : [];
   const [values, setValues] = useState<StopFormValues>(() => ({
     day: initialItem?.day ?? initialDay ?? startDate ?? "",
+    pathId: initialItem?.pathRole === "alternative" ? initialItem.pathId : "main",
     startTime: initialItem?.startTime ?? "16:30",
     activity: initialItem?.activity ?? "",
     activityType: initialItem?.activityType ?? "experience",
@@ -104,6 +113,16 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, onClose, on
                 <select id={fieldIds.day} value={values.day} onChange={(event) => update("day", event.target.value)}>
                   {dayOptions.map((day) => (
                     <option value={day} key={day}>{formatDayLabel(day, startDate ?? day, locale)} · {formatThaiDate(day, locale)}</option>
+                  ))}
+                </select>
+              </label>
+            ) : null}
+            {mode === "edit" && manualPathOptions.length > 1 ? (
+              <label className={dialogFieldWideClassName} htmlFor={fieldIds.path}>
+                <span>{t.stopDialog.fields.plan}</span>
+                <select id={fieldIds.path} value={values.pathId ?? "main"} onChange={(event) => update("pathId", event.target.value)}>
+                  {manualPathOptions.map((option) => (
+                    <option value={option.id} key={option.id}>{option.name}</option>
                   ))}
                 </select>
               </label>

@@ -4,7 +4,7 @@ import { useI18n } from "@/src/i18n/I18nProvider";
 import type { Messages } from "@/src/i18n/messages";
 import type { Locale } from "@/src/i18n/types";
 import { cn } from "@/src/lib/cn";
-import { formatDayLabel, getTripDates, groupItemsByDay, mainItineraryPathId, type ItineraryDayGroup, type ItineraryPathOption, type ItineraryView } from "@/src/trip/itinerary";
+import { formatDayLabel, getTripDates, groupItemsByDay, mainItineraryPathId, parseTime, type ItineraryDayGroup, type ItineraryPathOption, type ItineraryView } from "@/src/trip/itinerary";
 import { Button } from "./ui";
 import { Icon } from "./icons";
 import { formatTripRange, PageHeader } from "./PageHeader";
@@ -36,6 +36,7 @@ interface SmartItineraryTableProps {
   onChangeDayPath?: (day: string, pathId: string) => void;
   onClearDayPath?: (day: string) => void;
   onClearAllDayPaths?: () => void;
+  onAutoResolveDayOverlaps?: (day: string) => void;
   onToggleShowAllPaths?: (showAll: boolean) => void;
   onRedo: () => void;
   onToggleContextRail: () => void;
@@ -62,10 +63,13 @@ const dayRouteClassName = "day-route ml-[18px] font-semibold text-[var(--color-t
 const dayPathControlsClassName = "ml-auto inline-flex min-w-0 items-center gap-2 max-[767px]:ml-2 max-[767px]:shrink-0";
 const dayPathSelectClassName = "min-h-7 max-w-[172px] rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface)] px-2 text-[11px] font-bold text-[var(--color-text)] max-[767px]:max-w-[112px]";
 const dayClearPathButtonClassName = "inline-flex min-h-7 items-center rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface)] px-2 text-[11px] font-extrabold text-[var(--color-text-muted)] disabled:opacity-40 max-[767px]:px-1.5";
+const dayAutoOverlapButtonClassName = "inline-flex min-h-7 items-center rounded-[var(--radius-sm)] border border-[#fca5a5] bg-[#fee2e2] px-2 text-[11px] font-extrabold text-[#991b1b] transition-colors hover:enabled:bg-[#fecaca] disabled:opacity-40 max-[767px]:px-1.5";
 const dataRowClassName =
   "data-row cursor-pointer transition-[background,box-shadow,transform] duration-[160ms] hover:[&_td]:bg-[var(--color-surface-subtle)] focus-visible:[&_td]:bg-[var(--color-primary-soft)] focus-visible:[&_td]:shadow-[inset_0_0_0_2px_var(--color-primary-border)] [&_td]:transition-[background,border-color,box-shadow,color,font-size,height,opacity,padding] [&_td]:duration-[180ms]";
 const dataRowSelectedClassName =
   "data-row--selected [&_td:first-child]:shadow-[inset_2px_0_0_var(--color-primary),inset_0_1px_0_var(--color-primary),inset_0_-1px_0_var(--color-primary)] [&_td:last-child]:shadow-[inset_-1px_0_0_var(--color-primary),inset_0_1px_0_var(--color-primary),inset_0_-1px_0_var(--color-primary)] [&_td]:bg-[#ecfeff] [&_td]:shadow-[inset_0_1px_0_var(--color-primary),inset_0_-1px_0_var(--color-primary)]";
+const dataRowPathOverlapClassName =
+  "data-row--path-overlap [&_td]:!bg-[#fee2e2] hover:[&_td]:!bg-[#fecaca] [&_td:first-child]:shadow-[inset_2px_0_0_#fca5a5] [&_td:last-child]:shadow-[inset_-1px_0_0_#fca5a5] [&_td]:shadow-[inset_0_1px_0_#fca5a5,inset_0_-1px_0_#fca5a5]";
 const dataRowDraggingClassName = "data-row--dragging cursor-grabbing [&_td]:bg-[var(--color-surface-muted)] [&_td]:opacity-[0.54]";
 const dataRowDropTargetClassName =
   "data-row--drop-target translate-y-px [&_td:first-child]:shadow-[inset_3px_0_0_var(--color-primary),inset_0_2px_0_var(--color-primary),inset_0_-1px_0_var(--color-primary-border)] [&_td]:bg-[var(--color-primary-soft)] [&_td]:shadow-[inset_0_2px_0_var(--color-primary),inset_0_-1px_0_var(--color-primary-border)]";
@@ -109,6 +113,7 @@ export function SmartItineraryTable({
   onChangeDayPath,
   onClearDayPath,
   onClearAllDayPaths,
+  onAutoResolveDayOverlaps,
   onToggleShowAllPaths,
 }: SmartItineraryTableProps) {
   const { locale, t } = useI18n();
@@ -277,6 +282,7 @@ export function SmartItineraryTable({
               onClearDragPreview={clearDragPreview}
               onChangeDayPath={onChangeDayPath}
               onClearDayPath={onClearDayPath}
+              onAutoResolveDayOverlaps={onAutoResolveDayOverlaps}
               onDropItem={dropItem}
               onDropOnDay={dropOnDay}
               onAddStop={onAddStop}
@@ -310,6 +316,7 @@ function DayGroup({
   onClearDragPreview,
   onChangeDayPath,
   onClearDayPath,
+  onAutoResolveDayOverlaps,
   onDropItem,
   onDropOnDay,
   onAddStop,
@@ -335,6 +342,7 @@ function DayGroup({
   onClearDragPreview: () => void;
   onChangeDayPath?: (day: string, pathId: string) => void;
   onClearDayPath?: (day: string) => void;
+  onAutoResolveDayOverlaps?: (day: string) => void;
   onDropItem: (event: DragEvent<HTMLElement>, targetItemId: string) => void;
   onDropOnDay: (event: DragEvent<HTMLElement>, targetDay: string) => void;
   onAddStop: (day?: string) => void;
@@ -348,6 +356,8 @@ function DayGroup({
   const dayLabel = formatDayLabel(group.day, startDate, locale);
   const dayA11yLabel = formatDayLabel(group.day, startDate, "en");
   const dayPathOptions = pathOptions.filter((option) => option.id === mainItineraryPathId || option.scope === "trip" || option.day === group.day);
+  const hasAlternativePathOptions = dayPathOptions.some((option) => option.id !== mainItineraryPathId);
+  const samePathOverlapItemIds = findSamePathOverlapItemIds(group.items);
 
   return (
     <tbody className={dayGroupClassName} data-state={collapsed ? "closed" : "open"}>
@@ -372,35 +382,52 @@ function DayGroup({
               <span>{formatThaiDate(group.day, locale)}</span>
               <span className={dayRouteClassName}>{dayRouteLabel(group.day, locale)}</span>
             </button>
-            <span className={dayPathControlsClassName}>
-              <select
-                className={dayPathSelectClassName}
-                aria-label={`Path for ${dayA11yLabel}`}
-                value={dayPathOverride || mainItineraryPathId}
-                disabled={!canEdit || showAllPaths}
-                onChange={(event) => onChangeDayPath?.(group.day, event.target.value)}
-              >
-                {dayPathOptions.map((option) => (
-                  <option key={option.id} value={option.id}>{option.name}</option>
-                ))}
-              </select>
-              <button
-                type="button"
-                className={dayClearPathButtonClassName}
-                aria-label={`Clear path override for ${dayA11yLabel}`}
-                disabled={!canEdit || showAllPaths || !dayPathOverride}
-                onClick={() => onClearDayPath?.(group.day)}
-              >
-                Clear
-              </button>
-            </span>
+            {samePathOverlapItemIds.size > 0 || hasAlternativePathOptions ? (
+              <span className={dayPathControlsClassName}>
+                {samePathOverlapItemIds.size > 0 ? (
+                  <button
+                    type="button"
+                    className={dayAutoOverlapButtonClassName}
+                    aria-label={`Auto fix overlaps for ${dayA11yLabel}`}
+                    disabled={!canEdit}
+                    onClick={() => onAutoResolveDayOverlaps?.(group.day)}
+                  >
+                    Auto
+                  </button>
+                ) : null}
+                {hasAlternativePathOptions ? (
+                  <>
+                    <select
+                      className={dayPathSelectClassName}
+                      aria-label={`Path for ${dayA11yLabel}`}
+                      value={dayPathOverride || mainItineraryPathId}
+                      disabled={!canEdit || showAllPaths}
+                      onChange={(event) => onChangeDayPath?.(group.day, event.target.value)}
+                    >
+                      {dayPathOptions.map((option) => (
+                        <option key={option.id} value={option.id}>{option.name}</option>
+                      ))}
+                    </select>
+                    <button
+                      type="button"
+                      className={dayClearPathButtonClassName}
+                      aria-label={`Clear path override for ${dayA11yLabel}`}
+                      disabled={!canEdit || showAllPaths || !dayPathOverride}
+                      onClick={() => onClearDayPath?.(group.day)}
+                    >
+                      Clear
+                    </button>
+                  </>
+                ) : null}
+              </span>
+            ) : null}
           </div>
         </th>
       </tr>
       {!collapsed ? group.items.map((item, itemIndex) => (
         <tr
           aria-label={itineraryLabels.row.openDetails({ activity: item.activity })}
-          className={getRowClassName(item, selectedItemId, dragState)}
+          className={getRowClassName(item, selectedItemId, dragState, samePathOverlapItemIds)}
           key={item.id}
           onDragOver={(event) => onPreviewDrop(event, item.id)}
           onDrop={(event) => onDropItem(event, item.id)}
@@ -511,13 +538,51 @@ function getRowClassName(
   item: ItineraryItem,
   selectedItemId: string,
   dragState: { draggedItemId: string | null; overItemId: string | null; overDay: string | null },
+  samePathOverlapItemIds: Set<string> = new Set(),
 ): string {
   return cn(
     dataRowClassName,
     selectedItemId === item.id && dataRowSelectedClassName,
+    samePathOverlapItemIds.has(item.id) && dataRowPathOverlapClassName,
     dragState.draggedItemId === item.id && dataRowDraggingClassName,
     dragState.overItemId === item.id && dataRowDropTargetClassName,
   );
+}
+
+function findSamePathOverlapItemIds(items: ItineraryItem[]): Set<string> {
+  const ids = new Set<string>();
+  const groups = new Map<string, ItineraryItem[]>();
+  for (const item of items) {
+    const key = `${item.day}:${itineraryItemPathId(item)}`;
+    groups.set(key, [...(groups.get(key) ?? []), item]);
+  }
+
+  for (const groupItems of groups.values()) {
+    const intervals = groupItems
+      .map((item) => {
+        const start = parseTime(item.startTime);
+        if (start === null || item.durationMinutes === null || item.durationMinutes <= 0) return null;
+        return { item, start, end: start + item.durationMinutes };
+      })
+      .filter((entry): entry is { item: ItineraryItem; start: number; end: number } => entry !== null)
+      .sort((left, right) => left.start - right.start || left.end - right.end || left.item.sortOrder - right.item.sortOrder);
+
+    for (let leftIndex = 0; leftIndex < intervals.length; leftIndex += 1) {
+      for (let rightIndex = leftIndex + 1; rightIndex < intervals.length; rightIndex += 1) {
+        const left = intervals[leftIndex];
+        const right = intervals[rightIndex];
+        if (!left || !right) continue;
+        if (right.start >= left.end) break;
+        ids.add(left.item.id);
+        ids.add(right.item.id);
+      }
+    }
+  }
+  return ids;
+}
+
+function itineraryItemPathId(item: ItineraryItem): string {
+  return item.pathRole === "alternative" ? item.pathId ?? item.id : mainItineraryPathId;
 }
 
 function AdvisorySummary({ advisories }: { advisories: ItineraryAdvisory[] }) {
