@@ -1346,8 +1346,8 @@ function getBrowserSessionStorage(): Storage | null {
   return window.sessionStorage;
 }
 
-function getParticipantSessionStorage(isApiMode: boolean): Storage | null {
-  return isApiMode ? getBrowserSessionStorage() : getBrowserLocalStorage();
+function getParticipantSessionStorage(): Storage | null {
+  return getBrowserLocalStorage();
 }
 
 function isLocalParticipantSession(session: TripParticipantSession | null): boolean {
@@ -1366,33 +1366,39 @@ function loadPersistedTrip(): Trip | null {
 }
 
 function loadPersistedParticipantSession(requireJoin: boolean, trip: Trip, isApiMode = false, routeTripId?: string): TripParticipantSession | null {
-  if (isApiMode) getBrowserLocalStorage()?.removeItem(tripParticipantSessionStorageKey);
-  const storage = getParticipantSessionStorage(isApiMode);
+  const storage = getParticipantSessionStorage();
   if (!requireJoin || !storage) return null;
-  const rawSession = storage.getItem(tripParticipantSessionStorageKey);
+  const legacySessionStorage = isApiMode ? getBrowserSessionStorage() : null;
+  const rawSession = storage.getItem(tripParticipantSessionStorageKey) ?? legacySessionStorage?.getItem(tripParticipantSessionStorageKey);
   if (!rawSession) return null;
   try {
     const parsedSession = JSON.parse(rawSession) as TripParticipantSession;
     if (routeTripId && parsedSession.tripId !== routeTripId) {
       storage.removeItem(tripParticipantSessionStorageKey);
+      legacySessionStorage?.removeItem(tripParticipantSessionStorageKey);
       return null;
+    }
+    if (legacySessionStorage?.getItem(tripParticipantSessionStorageKey) === rawSession) {
+      storage.setItem(tripParticipantSessionStorageKey, rawSession);
+      legacySessionStorage.removeItem(tripParticipantSessionStorageKey);
     }
     /* v8 ignore next */
     return isApiMode || findSessionMember(trip, parsedSession) ? parsedSession : null;
   } catch {
     storage.removeItem(tripParticipantSessionStorageKey);
+    legacySessionStorage?.removeItem(tripParticipantSessionStorageKey);
     return null;
   }
 }
 
 function persistParticipantSession(session: TripParticipantSession, isApiMode: boolean) {
-  if (isApiMode) getBrowserLocalStorage()?.removeItem(tripParticipantSessionStorageKey);
-  getParticipantSessionStorage(isApiMode)?.setItem(tripParticipantSessionStorageKey, JSON.stringify(session));
+  getParticipantSessionStorage()?.setItem(tripParticipantSessionStorageKey, JSON.stringify(session));
+  if (isApiMode) getBrowserSessionStorage()?.removeItem(tripParticipantSessionStorageKey);
 }
 
 function clearParticipantSession(isApiMode: boolean) {
-  getParticipantSessionStorage(isApiMode)?.removeItem(tripParticipantSessionStorageKey);
-  if (isApiMode) getBrowserLocalStorage()?.removeItem(tripParticipantSessionStorageKey);
+  getParticipantSessionStorage()?.removeItem(tripParticipantSessionStorageKey);
+  if (isApiMode) getBrowserSessionStorage()?.removeItem(tripParticipantSessionStorageKey);
 }
 
 function loadPersistedAccountSession(): AccountSession | null {

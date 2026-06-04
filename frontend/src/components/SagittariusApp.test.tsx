@@ -394,7 +394,8 @@ describe("Sagittarius cockpit UI", () => {
       expect(await screen.findByRole("navigation", { name: /เมนูวางแผน Joii/i })).toBeInTheDocument();
       expect(screen.getByRole("link", { name: /ภาพรวม/i })).toHaveAttribute("aria-current", "page");
       expect(screen.queryByLabelText(/Trip ID/i)).not.toBeInTheDocument();
-      expect(window.sessionStorage.getItem(tripParticipantSessionStorageKey)).toContain("account-member-session");
+      expect(window.localStorage.getItem(tripParticipantSessionStorageKey)).toContain("account-member-session");
+      expect(window.sessionStorage.getItem(tripParticipantSessionStorageKey)).toBeNull();
       expect(fetchSpy).toHaveBeenCalledWith(
         expect.stringContaining(`/api/v1/account/trips/${seedTrip.id}/member-sessions`),
         expect.objectContaining({
@@ -631,7 +632,7 @@ describe("Sagittarius cockpit UI", () => {
       joinPasswordHash: "",
       members: [{ ...seedTrip.members[0], claimPasswordHash: null }],
     };
-    window.sessionStorage.setItem(
+    window.localStorage.setItem(
       tripParticipantSessionStorageKey,
       JSON.stringify({
         tripId: apiTrip.id,
