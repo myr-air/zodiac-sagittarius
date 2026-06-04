@@ -20,7 +20,10 @@ export const appRoutes = {
   account: () => "/account",
   trips: () => "/trips",
   newTrip: () => "/trips/new",
-  join: (joinCode?: string) => (joinCode ? `/join/${segment(joinCode)}` : "/join"),
+  join: (joinCode?: string, returnTo?: string) => {
+    const base = joinCode ? `/join/${segment(joinCode)}` : "/join";
+    return returnTo ? `${base}?returnTo=${encodeURIComponent(returnTo)}` : base;
+  },
   tripOverview: (tripId: string) => `/trips/${segment(tripId)}`,
   tripItinerary: (tripId: string) => `/trips/${segment(tripId)}/itinerary`,
   tripMap: (tripId: string) => `/trips/${segment(tripId)}/map`,

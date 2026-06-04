@@ -165,7 +165,8 @@ export function TripJoinGate({ trip, apiClient, embedded = false, variant = "def
       }
 
       if (apiClient && joinSessionToken) {
-        const session = selectedMember.claimPasswordHash
+        const isClaimed = Boolean(selectedMember.claimPasswordHash || selectedMember.claimedAt);
+        const session = isClaimed
           ? await apiClient.loginMember(activeTrip.id, selectedMember.id, normalizedParticipantPassword, joinSessionToken)
           : await apiClient.claimMember(activeTrip.id, selectedMember.id, normalizedParticipantPassword, joinSessionToken);
         const cockpit = await apiClient.loadTrip(activeTrip.id, session.sessionToken);
@@ -315,7 +316,7 @@ export function TripJoinGate({ trip, apiClient, embedded = false, variant = "def
                       <strong>{member.displayName}</strong>
                       <small>{roleLabel(member.role, t.appShell.roles)}</small>
                     </span>
-                    <Badge tone={isTripParticipantDisabled(member) ? "danger" : member.claimPasswordHash ? "success" : "warning"}>
+                    <Badge tone={isTripParticipantDisabled(member) ? "danger" : (member.claimPasswordHash || member.claimedAt) ? "success" : "warning"}>
                       {participantStatusLabel(member, t.join.memberStatus)}
                     </Badge>
                   </button>
@@ -323,7 +324,7 @@ export function TripJoinGate({ trip, apiClient, embedded = false, variant = "def
                     <form className={participantAuthClassName} role="group" aria-label={selectedMember.displayName} onSubmit={submitParticipant}>
                       <label>
                         <span>
-                          {selectedMember.claimPasswordHash
+                          {(selectedMember.claimPasswordHash || selectedMember.claimedAt)
                             ? t.join.participantPassword({ name: selectedMember.displayName })
                             : t.join.setParticipantPassword({ name: selectedMember.displayName })}
                         </span>
@@ -344,14 +345,14 @@ export function TripJoinGate({ trip, apiClient, embedded = false, variant = "def
                           </button>
                         </span>
                       </label>
-                      {!selectedMember.claimPasswordHash ? (
+                      {!(selectedMember.claimPasswordHash || selectedMember.claimedAt) ? (
                         <p className={participantAuthHelpClassName}>
                           {t.join.participantHelp}
                         </p>
                       ) : null}
                       <Button type="submit" className={cn(joinSubmitClassName, isTripAccessVariant ? tripAccessSubmitClassName : "")} disabled={isSubmitting}>
                         <Icon name="check" />
-                        {selectedMember.claimPasswordHash ? t.common.actions.confirm : t.join.start}
+                        {(selectedMember.claimPasswordHash || selectedMember.claimedAt) ? t.common.actions.confirm : t.join.start}
                       </Button>
                     </form>
                   ) : null}
@@ -371,7 +372,7 @@ function roleLabel(role: Member["role"], labels: Messages["appShell"]["roles"]):
 
 function participantStatusLabel(member: Member, labels: Messages["join"]["memberStatus"]): string {
   if (isTripParticipantDisabled(member)) return labels.disabled;
-  if (member.claimPasswordHash) return labels.claimed;
+  if (member.claimPasswordHash || member.claimedAt) return labels.claimed;
   return labels.ready;
 }
 

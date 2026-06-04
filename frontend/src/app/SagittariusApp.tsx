@@ -596,6 +596,16 @@ export function SagittariusApp({
     setParticipantSession(session);
     setCurrentMemberId(session.memberId);
     persistParticipantSession(session, dataSource === "api" && !isLocalParticipantSession(session));
+
+    if (typeof window !== "undefined") {
+      const searchParams = new URLSearchParams(window.location.search);
+      const returnTo = searchParams.get("returnTo");
+      if (returnTo && (returnTo.startsWith("/") || returnTo.startsWith("/trips/"))) {
+        window.location.href = returnTo;
+      } else if (!routeTripId) {
+        window.location.href = appRoutes.tripOverview(session.tripId);
+      }
+    }
   }
 
   function leaveParticipantSession() {
@@ -997,6 +1007,20 @@ export function SagittariusApp({
     !sessionMember &&
     (!accountSessionLoaded || Boolean(accountSession && accountTripAccessDeniedRouteId !== routeTripId));
 
+  useEffect(() => {
+    if (
+      requireJoin &&
+      routeTripId &&
+      !sessionMember &&
+      !isAccountTripAccessPending &&
+      typeof window !== "undefined"
+    ) {
+      const returnTo = window.location.pathname + window.location.search;
+      const joinHref = appRoutes.join(undefined, returnTo);
+      window.location.replace(joinHref);
+    }
+  }, [requireJoin, routeTripId, sessionMember, isAccountTripAccessPending]);
+
   if (isAccountTripAccessPending) {
     return <TripAccessLoadingFrame />;
   }
@@ -1023,6 +1047,9 @@ export function SagittariusApp({
   }
 
   if (requireJoin && !sessionMember) {
+    if (routeTripId) {
+      return <TripAccessLoadingFrame />;
+    }
     return (
       <AccountAccessPanel
         accessMode={accessMode}
