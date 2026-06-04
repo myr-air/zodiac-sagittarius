@@ -86,7 +86,7 @@ const overviewTaskAddButtonClassName = "overview-task-add-button inline-flex min
 const overviewTaskFormClassName = "overview-task-form grid grid-cols-[minmax(180px,1fr)_minmax(118px,140px)_minmax(132px,160px)_auto] items-end gap-2 max-[767px]:grid-cols-1 [&_button]:min-h-[34px] [&_button]:rounded-[var(--radius-sm)] [&_button]:border [&_button]:border-[var(--color-primary-border)] [&_button]:bg-[var(--color-primary)] [&_button]:px-3 [&_button]:text-xs [&_button]:font-extrabold [&_button]:text-white [&_button:disabled]:border-[var(--color-border)] [&_button:disabled]:bg-[var(--color-surface-muted)] [&_button:disabled]:text-[var(--color-text-subtle)] max-[767px]:[&_button]:w-full [&_input]:min-h-[34px] [&_input]:w-full [&_input]:rounded-[var(--radius-sm)] [&_input]:border [&_input]:border-[var(--color-border)] [&_input]:bg-[var(--color-surface)] [&_input]:px-2.5 [&_input]:text-xs [&_input]:font-bold [&_input]:text-[var(--color-text)] [&_label]:grid [&_label]:min-w-0 [&_label]:gap-[5px] [&_label>span]:text-[11px] [&_label>span]:font-extrabold [&_label>span]:leading-[15px] [&_label>span]:text-[var(--color-text-muted)] [&_select]:min-h-[34px] [&_select]:w-full [&_select]:rounded-[var(--radius-sm)] [&_select]:border [&_select]:border-[var(--color-border)] [&_select]:bg-[var(--color-surface)] [&_select]:px-2.5 [&_select]:text-xs [&_select]:font-bold [&_select]:text-[var(--color-text)] [&_select:disabled]:bg-[var(--color-surface-muted)] [&_select:disabled]:text-[var(--color-text-subtle)]";
 const overviewTaskFormPersonalClassName = "overview-task-form--personal grid-cols-[minmax(180px,1fr)_auto] max-[767px]:grid-cols-1";
 const overviewTaskListClassName = "overview-task-list m-0 grid list-none gap-2 p-0 text-[13px] font-semibold leading-5 text-[var(--color-text-muted)]";
-const overviewTaskItemClassName = "overview-task-item grid min-h-10 grid-cols-[minmax(0,1fr)_auto] items-center gap-2.5 rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface-subtle)] px-2.5 py-2 data-[status=done]:[&_label>span]:text-[var(--color-text-muted)] data-[status=done]:[&_label>span]:line-through max-[767px]:grid-cols-1 [&_input]:size-4 [&_input]:accent-[var(--color-primary)] [&_label]:inline-flex [&_label]:min-w-0 [&_label]:items-center [&_label]:gap-[9px] [&_label>span]:overflow-hidden [&_label>span]:text-ellipsis [&_label>span]:whitespace-nowrap [&_label>span]:text-[13px] [&_label>span]:font-bold [&_label>span]:leading-[18px] [&_label>span]:text-[var(--color-text)] [&_small]:whitespace-nowrap [&_small]:text-[11px] [&_small]:font-extrabold [&_small]:text-[var(--color-text-muted)]";
+const overviewTaskItemClassName = "overview-task-item grid min-h-10 grid-cols-[minmax(0,1fr)_auto] items-center gap-2.5 rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface-subtle)] px-2.5 py-2 max-[767px]:grid-cols-1 [&_input]:size-4 [&_input]:accent-[var(--color-primary)] [&_label]:inline-flex [&_label]:min-w-0 [&_label]:items-center [&_label]:gap-[9px] [&_label>span]:overflow-hidden [&_label>span]:text-ellipsis [&_label>span]:whitespace-nowrap [&_label>span]:text-[13px] [&_label>span]:leading-[18px] [&_small]:whitespace-nowrap [&_small]:text-[11px] [&_small]:font-extrabold [&_small]:text-[var(--color-text-muted)]";
 const overviewTaskMetaClassName = "overview-task-meta inline-flex flex-wrap justify-end gap-1.5";
 const overviewTaskScopeClassName = "overview-task-scope rounded-full border border-[var(--color-border)] px-2 py-[3px] leading-[14px]";
 const overviewTaskScopeToneClassName: Record<TripTask["visibility"], string> = {
@@ -291,7 +291,9 @@ export function OverviewPage({
                     <li className={overviewTaskItemClassName} key={task.id} aria-label={task.title} data-status={task.status}>
                       <label>
                         <input type="checkbox" checked={task.status === "done"} onChange={() => toggleTask(task)} />
-                        <span>{task.title}</span>
+                        <span className={task.status === "done" ? "line-through text-[var(--color-text-muted)] font-normal" : "text-[var(--color-text)] font-bold"}>
+                          {task.title}
+                        </span>
                       </label>
                       <div className={overviewTaskMetaClassName}>
                         <small className={cn(overviewTaskScopeClassName, overviewTaskScopeToneClassName[task.visibility])}>{task.visibility === "private" ? t.overview.task.private : t.overview.task.shared}</small>
@@ -429,7 +431,9 @@ export function OverviewPage({
                 <li className={overviewTaskItemClassName} key={task.id} aria-label={task.title} data-status={task.status}>
                   <label>
                     <input type="checkbox" checked={task.status === "done"} onChange={() => toggleTask(task)} />
-                    <span>{task.title}</span>
+                    <span className={task.status === "done" ? "line-through text-[var(--color-text-muted)] font-normal" : "text-[var(--color-text)] font-bold"}>
+                      {task.title}
+                    </span>
                   </label>
                   <div className={overviewTaskMetaClassName}>
                     <small className={cn(overviewTaskScopeClassName, overviewTaskScopeToneClassName[task.visibility])}>{task.visibility === "private" ? t.overview.task.private : t.overview.task.shared}</small>
@@ -640,6 +644,7 @@ function OverviewHero({
   visual: DestinationVisual;
   currentMemberCard: ReactNode;
 }) {
+  const { t } = useI18n();
   return (
     <section className={cn(overviewHeroBaseClassName, overviewHeroToneClassNames[visual.tone])} aria-label={title}>
       <div className={overviewHeroCopyClassName}>
@@ -660,7 +665,7 @@ function OverviewHero({
       </div>
       <div className={overviewHeroAsideClassName}>
         {currentMemberCard}
-        <span className={overviewHeroSettlementsClassName}>{settlementCount} settlements</span>
+        <span className={overviewHeroSettlementsClassName}>{t.overview.money.settlementsCount({ count: settlementCount })}</span>
       </div>
     </section>
   );

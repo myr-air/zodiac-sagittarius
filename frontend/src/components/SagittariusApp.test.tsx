@@ -18,6 +18,7 @@ import { renderWithI18n } from "@/src/i18n/test-utils";
 import { tripStorageKey } from "@/src/trip/repository";
 import { seedTrip } from "@/src/trip/seed";
 import type { ItineraryItem, StopNote, Suggestion, Trip, TripTask } from "@/src/trip/types";
+import { encodeReturnTo } from "@/src/routes/app-routes";
 
 function render(ui: ReactElement) {
   const result = renderWithI18n(ui, { locale: "th" });
@@ -706,7 +707,7 @@ describe("Sagittarius cockpit UI", () => {
 
     render(<SagittariusApp requireJoin dataSource="api" initialView="overview" routeTripId="018fc9c4-9cf0-7384-93ee-9bdc9c8d8f99" apiClient={apiClient} />);
 
-    await waitFor(() => expect(replaceMock).toHaveBeenCalledWith("/join?returnTo=%2Ftrips%2F018fc9c4-9cf0-7384-93ee-9bdc9c8d8f99"));
+    await waitFor(() => expect(replaceMock).toHaveBeenCalledWith(`/join?rt=${encodeURIComponent(encodeReturnTo("/trips/018fc9c4-9cf0-7384-93ee-9bdc9c8d8f99"))}`));
     expect(apiClient.loadTrip).not.toHaveBeenCalled();
     expect(window.sessionStorage.getItem(tripParticipantSessionStorageKey)).toBeNull();
 
@@ -1121,6 +1122,7 @@ describe("Sagittarius cockpit UI", () => {
     await user.type(within(context).getByLabelText(/ชื่อค่าใช้จ่าย/i), "Taxi");
     await user.type(within(context).getByLabelText(/จำนวนเงิน/i), "120");
     expect(within(context).getByRole("button", { name: /เพิ่ม\/แก้ไขค่าใช้จ่าย/i })).toBeEnabled();
+    await user.click(within(context).getByRole("button", { name: /เพิ่ม\/แก้ไขค่าใช้จ่าย/i }));
     expect(within(context).getByRole("button", { name: /เพิ่ม\/แก้ไขค่าใช้จ่าย/i })).toBeDisabled();
     await user.type(within(context).getByLabelText(/ชื่อค่าใช้จ่าย/i), "Taxi");
     await user.type(within(context).getByLabelText(/จำนวนเงิน/i), "120");
@@ -2051,7 +2053,19 @@ function createApiClientForTrip(trip: Trip, overrides: Partial<TripApiClient> = 
     patchMember: vi.fn(),
     resetMemberClaim: vi.fn(),
     getExpenseSummary: vi.fn(),
-    createExpense: vi.fn(),
+    createExpense: vi.fn().mockImplementation((_tripId: string, _sessionToken: string, request: any) =>
+      Promise.resolve({
+        id: "new-expense-id",
+        title: request.title,
+        amount: request.amountMinor ? request.amountMinor / 100 : 0,
+        amountMinor: request.amountMinor || 0,
+        paidBy: request.paidBy,
+        splits: request.splits || {},
+        category: request.category || "general",
+        itineraryItemId: request.itineraryItemId || null,
+        version: 1,
+      }),
+    ),
     patchExpense: vi.fn(),
     deleteExpense: vi.fn(),
     ...overrides,

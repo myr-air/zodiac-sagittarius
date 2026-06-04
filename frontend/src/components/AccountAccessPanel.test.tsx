@@ -18,7 +18,7 @@ import { renderWithI18n } from "@/src/i18n/test-utils";
 import { AccountAccessPanel } from "./AccountAccessPanel";
 
 function render(ui: ReactElement) {
-  const result = renderWithI18n(ui);
+  const result = renderWithI18n(ui, { locale: "en" });
   const originalRerender = result.rerender;
 
   return {
@@ -538,7 +538,7 @@ describe("AccountAccessPanel", () => {
 
   it("keeps portal to-dos visible when another portal API fails", async () => {
     const accountClient = createAccountClient();
-    vi.mocked(accountClient.listVault).mockRejectedValueOnce(new Error("database error"));
+    vi.mocked(accountClient.listVault).mockRejectedValueOnce(new Error("account-load-failed"));
 
     render(
       <AccountAccessPanel

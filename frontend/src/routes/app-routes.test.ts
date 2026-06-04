@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { appRoutes, tripWorkspaceNavItems } from "@/src/routes/app-routes";
+import { appRoutes, tripWorkspaceNavItems, encodeReturnTo, decodeReturnTo } from "@/src/routes/app-routes";
 
 const labels = {
   overview: "Overview",
@@ -31,6 +31,21 @@ describe("app route helpers", () => {
     expect(appRoutes.tripMembers("trip 1")).toBe("/trips/trip%201/members");
     expect(appRoutes.join()).toBe("/join");
     expect(appRoutes.join("HK-SZ-2025")).toBe("/join/HK-SZ-2025");
+  });
+
+  it("obfuscates and decodes returnTo parameter using URL-safe Base64", () => {
+    const path = "/trips/018f4e80-5788-7de0-a45c-8a555d17fc2d/members";
+    const encoded = encodeReturnTo(path);
+    // Should not contain plain path
+    expect(encoded).not.toContain("trips");
+    expect(encoded).not.toContain("members");
+
+    // Decoding should yield original path
+    expect(decodeReturnTo(encoded)).toBe(path);
+
+    // appRoutes.join should use encoded returnTo path
+    const joinUrl = appRoutes.join(undefined, path);
+    expect(joinUrl).toBe(`/join?rt=${encodeURIComponent(encoded)}`);
   });
 
   it("keeps workspace nav tied to a trip id", () => {

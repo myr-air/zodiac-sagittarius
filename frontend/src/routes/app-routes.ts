@@ -1,5 +1,26 @@
 import type { PlanningView } from "@/src/app/SagittariusApp";
 
+export function encodeReturnTo(path: string): string {
+  try {
+    const base64 = btoa(unescape(encodeURIComponent(path)));
+    return base64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  } catch (e) {
+    return path;
+  }
+}
+
+export function decodeReturnTo(encoded: string): string {
+  try {
+    let base64 = encoded.replace(/-/g, "+").replace(/_/g, "/");
+    while (base64.length % 4) {
+      base64 += "=";
+    }
+    return decodeURIComponent(escape(atob(base64)));
+  } catch (e) {
+    return encoded;
+  }
+}
+
 function segment(value: string): string {
   return encodeURIComponent(value);
 }
@@ -22,7 +43,7 @@ export const appRoutes = {
   newTrip: () => "/trips/new",
   join: (joinCode?: string, returnTo?: string) => {
     const base = joinCode ? `/join/${segment(joinCode)}` : "/join";
-    return returnTo ? `${base}?returnTo=${encodeURIComponent(returnTo)}` : base;
+    return returnTo ? `${base}?rt=${encodeURIComponent(encodeReturnTo(returnTo))}` : base;
   },
   tripOverview: (tripId: string) => `/trips/${segment(tripId)}`,
   tripItinerary: (tripId: string) => `/trips/${segment(tripId)}/itinerary`,

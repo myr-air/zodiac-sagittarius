@@ -12,7 +12,7 @@ import { TimelineView } from "@/src/components/TimelineView";
 import { TripMembersPage } from "@/src/components/TripMembersPage";
 import { Button } from "@/src/components/ui";
 import { Icon } from "@/src/components/icons";
-import { appRoutes } from "@/src/routes/app-routes";
+import { appRoutes, decodeReturnTo } from "@/src/routes/app-routes";
 import { createTripApiClient, type TripApiClient, type TripCockpit } from "@/src/trip/api-client";
 import { createAccountApiClient, type AccountSession } from "@/src/account/api-client";
 import {
@@ -98,6 +98,7 @@ export function SagittariusApp({
     future: [],
   }));
   const [participantSession, setParticipantSession] = useState<TripParticipantSession | null>(null);
+  const [isCockpitLoaded, setIsCockpitLoaded] = useState(false);
   const [accessError, setAccessError] = useState<string | null>(null);
   const [accountSession, setAccountSession] = useState<AccountSession | null>(null);
   const [accountSessionLoaded, setAccountSessionLoaded] = useState(false);
@@ -137,6 +138,7 @@ export function SagittariusApp({
   const sessionMember = findSessionMember(trip, participantSession);
   const currentMember = sessionMember ?? trip.members.find((member) => member.id === currentMemberId) ?? trip.members[0];
   const isApiMode = dataSource === "api" && !isLocalParticipantSession(participantSession);
+  const isTripLoading = isApiMode && Boolean(participantSession) && !isCockpitLoaded;
   const canEdit = canTripRole(currentMember.role, "editItinerary");
   const canCreateSuggestion = canTripRole(currentMember.role, "createSuggestion");
   const canReviewSuggestions = canTripRole(currentMember.role, "reviewSuggestions");
@@ -241,12 +243,14 @@ export function SagittariusApp({
         setTasks(cockpit.tasks);
         setStopNotes(cockpit.stopNotes);
         setBackendExpenseSummary(cockpit.expenseSummary);
+        setIsCockpitLoaded(true);
       })
       .catch(() => {
         if (cancelled) return;
         clearParticipantSession(isApiMode);
         setParticipantSession(null);
         setAccessError("unauthenticated");
+        setIsCockpitLoaded(false);
       });
 
     return () => {
@@ -599,7 +603,8 @@ export function SagittariusApp({
 
     if (typeof window !== "undefined") {
       const searchParams = new URLSearchParams(window.location.search);
-      const returnTo = searchParams.get("returnTo");
+      const returnToParam = searchParams.get("rt");
+      const returnTo = returnToParam ? decodeReturnTo(returnToParam) : null;
       if (returnTo && (returnTo.startsWith("/") || returnTo.startsWith("/trips/"))) {
         window.location.href = returnTo;
       } else if (!routeTripId) {
@@ -613,6 +618,7 @@ export function SagittariusApp({
     setCurrentMemberId(seedTrip.members[0].id);
     setContextRailVisibility(false);
     clearParticipantSession(isApiMode);
+    setIsCockpitLoaded(false);
   }
 
   function replaceTripFromJoin(nextTrip: Trip) {
@@ -626,6 +632,7 @@ export function SagittariusApp({
     setTasks(cockpit.tasks);
     setStopNotes(cockpit.stopNotes);
     setBackendExpenseSummary(cockpit.expenseSummary);
+    setIsCockpitLoaded(true);
   }
 
   async function claimCurrentMemberToAccount() {
@@ -1013,15 +1020,16 @@ export function SagittariusApp({
       routeTripId &&
       !sessionMember &&
       !isAccountTripAccessPending &&
+      !isTripLoading &&
       typeof window !== "undefined"
     ) {
       const returnTo = window.location.pathname + window.location.search;
       const joinHref = appRoutes.join(undefined, returnTo);
       window.location.replace(joinHref);
     }
-  }, [requireJoin, routeTripId, sessionMember, isAccountTripAccessPending]);
+  }, [requireJoin, routeTripId, sessionMember, isAccountTripAccessPending, isTripLoading]);
 
-  if (isAccountTripAccessPending) {
+  if (isAccountTripAccessPending || isTripLoading) {
     return <TripAccessLoadingFrame />;
   }
 

@@ -1,12 +1,13 @@
 import { cn } from "@/src/lib/cn";
 import type { Member, TripMemberAccessStatus, TripRole } from "@/src/trip/types";
+import { useI18n } from "@/src/i18n/I18nProvider";
 
 const peopleModuleClassName = "detail-section people-module grid w-full min-w-0 gap-3 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] p-3.5";
 const peopleHeadingClassName = "m-0 text-[15px] font-extrabold leading-[21px] text-[#334155]";
 const peopleListClassName = "people-list grid min-w-0 gap-2";
 const personRowClassName = "person-row grid min-h-[68px] min-w-0 grid-cols-[34px_minmax(220px,1fr)_auto] items-center gap-2.5 rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface-subtle)] p-2.5 text-[11px] leading-4 text-[var(--color-text-muted)] data-[access-status=disabled]:opacity-70 max-[1199px]:grid-cols-[34px_minmax(0,1fr)]";
 const personAvatarClassName = "person-avatar grid size-[34px] place-items-center rounded-full text-sm font-extrabold text-white";
-const memberIdentityClassName = "member-identity grid min-w-0 gap-1 [&_span]:text-[var(--color-text-muted)] [&_strong]:overflow-hidden [&_strong]:text-ellipsis [&_strong]:whitespace-nowrap [&_strong]:text-[13px] [&_strong]:font-extrabold [&_strong]:leading-[18px] [&_strong]:text-[var(--color-text)]";
+const memberIdentityClassName = "member-identity grid min-w-0 gap-1 [&_span]:text-[12px] [&_span]:font-semibold [&_span]:text-[var(--color-text-muted)] [&_strong]:overflow-hidden [&_strong]:text-ellipsis [&_strong]:whitespace-nowrap [&_strong]:text-[13px] [&_strong]:font-extrabold [&_strong]:leading-[18px] [&_strong]:text-[var(--color-text)]";
 const memberStatusStackClassName = "member-status-stack flex min-w-0 flex-wrap gap-1.5";
 const memberStatePillClassName = "member-state-pill inline-flex min-h-[22px] items-center rounded-full border px-2 py-0.5 text-[11px] font-extrabold leading-4";
 const memberStatePillToneClassNames = {
@@ -16,8 +17,8 @@ const memberStatePillToneClassNames = {
   pending: "member-state-pill--pending border-[var(--color-warning-border)] bg-[var(--color-warning-soft)] text-[var(--color-warning-strong)]",
 } satisfies Record<"active" | "claimed" | "disabled" | "pending", string>;
 const memberControlsClassName = "member-controls flex min-w-0 flex-wrap justify-end gap-1.5 max-[1199px]:col-start-2 max-[1199px]:justify-start max-[767px]:w-full max-[767px]:[&>*]:flex-[1_1_150px]";
-const memberRoleSelectClassName = "member-role-select min-h-8 max-w-32 rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface)] px-2 text-xs font-extrabold text-[var(--color-text)]";
-const resetClaimButtonClassName = "reset-claim-button inline-flex min-h-8 items-center justify-center rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface)] px-2.5 text-xs font-extrabold text-[var(--color-warning-strong)] transition-[border-color,box-shadow,transform] duration-150 hover:-translate-y-px hover:border-[var(--color-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary-border)]";
+const memberRoleSelectClassName = "member-role-select min-h-8 max-w-32 rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface)] py-[5px] px-2.5 text-[13px] font-bold leading-5 text-[var(--color-text)] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary-border)]";
+const resetClaimButtonClassName = "reset-claim-button inline-flex min-h-8 items-center justify-center rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface)] py-[5px] px-3 text-[13px] font-bold text-[var(--color-warning-strong)] transition-[border-color,box-shadow,transform] duration-150 hover:-translate-y-px hover:border-[var(--color-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary-border)]";
 const presencePillClassName = "presence-pill col-start-2 inline-flex min-h-[22px] items-center justify-center justify-self-start gap-1.5 whitespace-nowrap rounded-full px-2 text-[11px] font-extrabold leading-4 text-[var(--color-text-muted)] before:size-1.5 before:rounded-full before:bg-[var(--color-text-subtle)] before:content-['']";
 const presencePillToneClassNames = {
   away: "presence-pill--away before:bg-[var(--color-text-subtle)]",
@@ -49,6 +50,7 @@ export function PeoplePanel({
   onResetMemberClaim?: (memberId: string) => void;
   onTransferOwnership?: (targetMemberId: string) => void;
 }) {
+  const { locale } = useI18n();
   return (
     <section className={peopleModuleClassName} aria-label="People and presence">
       <h3 className={peopleHeadingClassName}>สมาชิกและสถานะ</h3>
@@ -60,7 +62,7 @@ export function PeoplePanel({
             {resetFiltersButton(onResetFilters)}
           </div>
         ) : members.map((member) => {
-          const joined = Boolean(member.claimPasswordHash) || member.id === currentMemberId;
+          const joined = Boolean(member.claimPasswordHash || member.claimedAt) || member.id === currentMemberId;
           const canChangePassword = member.id === currentMemberId || Boolean(member.claimPasswordHash);
           const canTransferOwner = Boolean(
             onTransferOwnership &&
@@ -76,8 +78,8 @@ export function PeoplePanel({
               {member.displayName.slice(0, 1)}
             </span>
             <div className={memberIdentityClassName}>
-              <strong>{member.displayName}{member.id === currentMemberId ? " (คุณ)" : ""}</strong>
-              <span>{roleLabel(member.role)}</span>
+              <strong>{member.displayName}{member.id === currentMemberId ? (locale === "th" ? " (คุณ)" : " (You)") : ""}</strong>
+              <span>{roleLabel(member.role, locale)}</span>
               <div className={memberStatusStackClassName} aria-label={`Status for ${member.displayName}`}>
                 <span className={cn(memberStatePillClassName, memberStatePillToneClassNames[member.accessStatus === "disabled" ? "disabled" : "active"])}>
                   {member.accessStatus === "disabled" ? "ปิดสิทธิ์" : "เปิดสิทธิ์"}
@@ -96,9 +98,9 @@ export function PeoplePanel({
                     value={member.role}
                     onChange={(event) => onChangeMemberRole?.(member.id, event.target.value as Exclude<TripRole, "owner">)}
                   >
-                    <option value="organizer">Organizer</option>
-                    <option value="traveler">Traveller</option>
-                    <option value="viewer">Viewer</option>
+                    <option value="organizer">{locale === "th" ? "ผู้จัดทริป" : "Organizer"}</option>
+                    <option value="traveler">{locale === "th" ? "ผู้ร่วมเดินทาง" : "Traveler"}</option>
+                    <option value="viewer">{locale === "th" ? "ผู้ชม" : "Viewer"}</option>
                   </select>
                 ) : null}
                 {canChangePassword ? (
@@ -153,9 +155,15 @@ function presenceLabel(presence: Member["presence"]): string {
   return presence === "online" ? "ออนไลน์" : presence === "away" ? "ออฟไลน์ 1 ชม." : "ออฟไลน์";
 }
 
-function roleLabel(role: Member["role"]): string {
-  if (role === "owner") return "เจ้าของแผน";
-  if (role === "organizer") return "ผู้จัดทริป";
-  if (role === "traveler") return "ผู้ร่วมเดินทาง";
-  return "ดูได้";
+function roleLabel(role: Member["role"], locale: string): string {
+  if (locale === "th") {
+    if (role === "owner") return "เจ้าของแผน";
+    if (role === "organizer") return "ผู้จัดทริป";
+    if (role === "traveler") return "ผู้ร่วมเดินทาง";
+    return "ดูได้";
+  }
+  if (role === "owner") return "Owner";
+  if (role === "organizer") return "Organizer";
+  if (role === "traveler") return "Traveler";
+  return "Viewer";
 }

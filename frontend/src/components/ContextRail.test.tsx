@@ -114,7 +114,6 @@ describe("ContextRail", () => {
   });
 
   it("creates, updates, and deletes stop expenses", () => {
-  it("creates, updates, and deletes stop expenses", () => {
     const props = renderRail({
       trip: {
         ...tripFixture.trip,

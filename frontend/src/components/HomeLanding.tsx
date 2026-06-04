@@ -133,7 +133,7 @@ const homeChecklistTitleClassName = "min-w-0 text-sm font-[850] leading-[18px] t
 const homeChecklistProgressClassName = "shrink-0 whitespace-nowrap text-[11px] font-[750] leading-4 text-[var(--color-text-subtle)]";
 const homeChecklistMeterClassName = "home-checklist-meter h-2.5 w-full overflow-hidden rounded-full border-0";
 const homeChecklistListClassName = "grid list-none gap-2.5 p-0 m-0";
-const homeChecklistItemClassName = "home-checklist-item relative pl-6 text-[12.5px] font-bold leading-[19px] text-[var(--color-text-muted)]";
+const homeChecklistItemClassName = "home-checklist-item relative pl-6 text-[12.5px] leading-[19px]";
 
 const homeWorkflowClassName =
   "home-workflow relative scroll-mt-[18px] bg-[linear-gradient(90deg,rgb(37_99_235_/_0.035)_1px,transparent_1px),linear-gradient(0deg,rgb(37_99_235_/_0.03)_1px,transparent_1px),linear-gradient(180deg,rgb(255_255_255_/_0.94),rgb(255_255_255_/_0.9))] bg-[length:72px_72px,72px_72px,auto] px-5 pt-[76px] pb-[86px] text-center max-[760px]:px-3.5 max-[760px]:pt-[54px] max-[760px]:pb-16";
@@ -295,10 +295,11 @@ export function HomeLanding() {
                         <li
                           className={cn(
                             homeChecklistItemClassName,
-                            !checkedChecklistKeys.has(itemKey) &&
-                              "text-[var(--color-text-subtle)] before:border before:border-[var(--color-border-strong)] before:bg-white before:shadow-none",
+                            checkedChecklistKeys.has(itemKey)
+                              ? "line-through text-[var(--color-text-subtle)] font-medium"
+                              : "text-[var(--color-text)] font-bold",
                           )}
-                          data-checked={checkedChecklistKeys.has(itemKey)}
+                          data-checked={checkedChecklistKeys.has(itemKey) ? "true" : "false"}
                           key={itemKey}
                         >
                           {landing.preview.checklistItems[itemKey]}

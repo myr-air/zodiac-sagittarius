@@ -50,17 +50,19 @@ const sideRailClassName = "side-rail sticky top-0 z-[5] grid h-screen grid-rows-
 const railLinksClassName = "rail-links grid content-start gap-1 overflow-y-auto px-2.5 pb-3 pt-2.5 max-[767px]:flex max-[767px]:overflow-x-auto max-[767px]:pb-2 max-[767px]:pt-0";
 const railLinkClassName = "rail-link relative inline-flex min-h-10 items-center gap-[13px] rounded-[var(--radius-md)] px-[13px] text-[13px] font-semibold text-[#334155] no-underline transition-[background,color] duration-150 hover:bg-[var(--color-surface-subtle)] hover:text-[var(--color-primary-strong)] data-[collapsed=true]:justify-center data-[collapsed=true]:px-0 max-[1199px]:justify-center max-[1199px]:px-0 max-[767px]:min-h-[38px] max-[767px]:flex-none";
 const activeRailLinkClassName = "rail-link--active bg-[linear-gradient(90deg,rgb(15_118_110_/_0.12),rgb(15_118_110_/_0.04))] text-[var(--color-primary-strong)] before:absolute before:left-[-10px] before:h-7 before:w-[3px] before:rounded-full before:bg-[var(--color-primary)] before:content-['']";
-const railLinkButtonClassName = "rail-link-button w-full border-0 bg-transparent font-inherit text-left max-[767px]:w-auto";
+const railLinkButtonClassName = "rail-link-button w-full border-0 bg-transparent font-sans text-left max-[767px]:w-auto";
 const railLinkLabelClassName = "data-[collapsed=true]:hidden max-[1199px]:hidden max-[767px]:!inline";
 const sideRailLanguageClassName = "side-rail-language mx-3.5 mb-1 mt-2 self-start data-[collapsed=true]:mx-0 data-[collapsed=true]:self-center data-[collapsed=true]:[&_.language-switch-option]:min-w-[27px] data-[collapsed=true]:[&_.language-switch-option]:px-0 max-[1199px]:mx-0 max-[1199px]:self-center max-[1199px]:[&_.language-switch-option]:min-w-[27px] max-[1199px]:[&_.language-switch-option]:px-0";
 const railSummaryClassName = "rail-summary mx-2.5 mb-[18px] mt-2 grid gap-[9px] rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-subtle)] p-3 text-xs leading-[18px] text-[var(--color-text-muted)] data-[collapsed=true]:hidden max-[1199px]:hidden max-[767px]:hidden [&_strong]:text-[13px] [&_strong]:text-[var(--color-text)] [&_span]:inline-flex [&_span]:items-center [&_span]:gap-2";
 const railSummaryLinkClassName = "rail-summary-link inline-flex min-h-8 items-center justify-center rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface)] text-xs font-bold text-[var(--color-primary-strong)] no-underline";
-const memberCardClassName = "member-card mx-2.5 mb-5 grid min-h-[82px] grid-cols-[34px_minmax(0,1fr)_auto] items-center gap-2.5 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-subtle)] p-[11px] data-[collapsed=true]:mx-2 data-[collapsed=true]:flex data-[collapsed=true]:min-h-[54px] data-[collapsed=true]:justify-center data-[collapsed=true]:p-2 max-[1199px]:mx-2 max-[1199px]:flex max-[1199px]:min-h-[54px] max-[1199px]:justify-center max-[1199px]:p-2 max-[767px]:hidden";
+const memberCardBaseClassName = "member-card mx-2.5 mb-5 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-subtle)] p-[11px] data-[collapsed=true]:mx-2 data-[collapsed=true]:flex data-[collapsed=true]:min-h-[54px] data-[collapsed=true]:justify-center data-[collapsed=true]:p-2 max-[1199px]:mx-2 max-[1199px]:flex max-[1199px]:min-h-[54px] max-[1199px]:justify-center max-[1199px]:p-2 max-[767px]:hidden";
+const memberCardGridClassName = "grid min-h-[82px] grid-cols-[34px_minmax(0,1fr)_auto] items-center gap-2.5";
+const memberCardColClassName = "flex flex-col items-stretch gap-2.5 min-h-[auto]";
 const memberAvatarClassName = "person-avatar grid size-[30px] place-items-center rounded-full text-xs font-extrabold text-white";
 const memberCardCopyClassName = "grid min-w-0 gap-0.5 data-[collapsed=true]:hidden max-[1199px]:hidden";
 const memberCardNameClassName = "overflow-hidden text-ellipsis whitespace-nowrap text-[13px] font-extrabold leading-[18px] text-[var(--color-text)]";
 const memberCardRoleClassName = "text-[var(--color-text-muted)]";
-const memberSwitchButtonClassName = "member-switch-button min-h-7 whitespace-nowrap rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface)] px-2 text-[11px] font-extrabold text-[var(--color-primary-strong)] data-[collapsed=true]:hidden";
+const memberSwitchButtonClassName = "member-switch-button min-h-7 whitespace-nowrap rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface)] px-2 text-[11px] font-extrabold text-[var(--color-primary-strong)] data-[collapsed=true]:hidden max-[1199px]:hidden";
 const memberFallbackIconClassName = "data-[collapsed=true]:hidden max-[1199px]:hidden";
 
 export function AppShell({ activeView, children, collapsed, currentMember, onLeaveParticipantSession, onNavigateView, onOpenExpenses, trip, onToggleCollapsed }: AppShellProps) {
@@ -137,20 +139,39 @@ export function AppShell({ activeView, children, collapsed, currentMember, onLea
           <Link href={appRoutes.tripOverview(trip.id)} className={railSummaryLinkClassName}>{t.appShell.viewDetails}</Link>
         </div>
 
-        <div className={memberCardClassName} data-collapsed={collapsed ? "true" : "false"}>
-          <span className={memberAvatarClassName} style={{ backgroundColor: currentMember.color }} aria-hidden="true">
-            {currentMember.displayName.slice(0, 1)}
-          </span>
-          <div className={memberCardCopyClassName} data-collapsed={collapsed ? "true" : "false"}>
-            <strong className={memberCardNameClassName}>{currentMember.displayName}</strong>
-            <span className={memberCardRoleClassName}>{roleLabel(currentMember.role, t.appShell.roles)}</span>
-          </div>
-          {onLeaveParticipantSession ? (
-            <button className={memberSwitchButtonClassName} data-collapsed={collapsed ? "true" : "false"} type="button" onClick={confirmLeaveParticipantSession}>
-              {t.appShell.switchIdentity}
-            </button>
+        <div className={cn(memberCardBaseClassName, onLeaveParticipantSession && !collapsed ? memberCardColClassName : memberCardGridClassName)} data-collapsed={collapsed ? "true" : "false"}>
+          {onLeaveParticipantSession && !collapsed ? (
+            <>
+              <div className="flex items-center gap-2.5 min-w-0 w-full">
+                <span className={memberAvatarClassName} style={{ backgroundColor: currentMember.color }} aria-hidden="true">
+                  {currentMember.displayName.slice(0, 1)}
+                </span>
+                <div className={memberCardCopyClassName} data-collapsed={collapsed ? "true" : "false"}>
+                  <strong className={memberCardNameClassName}>{currentMember.displayName}</strong>
+                  <span className={memberCardRoleClassName}>{roleLabel(currentMember.role, t.appShell.roles)}</span>
+                </div>
+              </div>
+              <button className={memberSwitchButtonClassName} data-collapsed={collapsed ? "true" : "false"} type="button" onClick={confirmLeaveParticipantSession}>
+                {t.appShell.switchIdentity}
+              </button>
+            </>
           ) : (
-            <Icon name="chevronRight" className={memberFallbackIconClassName} data-collapsed={collapsed ? "true" : "false"} />
+            <>
+              <span className={memberAvatarClassName} style={{ backgroundColor: currentMember.color }} aria-hidden="true">
+                {currentMember.displayName.slice(0, 1)}
+              </span>
+              <div className={memberCardCopyClassName} data-collapsed={collapsed ? "true" : "false"}>
+                <strong className={memberCardNameClassName}>{currentMember.displayName}</strong>
+                <span className={memberCardRoleClassName}>{roleLabel(currentMember.role, t.appShell.roles)}</span>
+              </div>
+              {onLeaveParticipantSession ? (
+                <button className={memberSwitchButtonClassName} data-collapsed={collapsed ? "true" : "false"} type="button" onClick={confirmLeaveParticipantSession}>
+                  {t.appShell.switchIdentity}
+                </button>
+              ) : (
+                <Icon name="chevronRight" className={memberFallbackIconClassName} data-collapsed={collapsed ? "true" : "false"} />
+              )}
+            </>
           )}
         </div>
       </nav>

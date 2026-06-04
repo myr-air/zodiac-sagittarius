@@ -272,6 +272,7 @@ export const messages = {
       money: {
         openExpenses: "Open expenses",
         settlementSuggestions: ({ count }: { count: number }) => `${count} settlement suggestions`,
+        settlementsCount: ({ count }: { count: number }) => count === 1 ? "1 settlement" : `${count} settlements`,
         generalExamples: "Flights, hotels, and shared costs",
         generalDetail: "Open the trip expense workspace",
         overallSummary: "Trip-wide expense summary",
@@ -1046,6 +1047,7 @@ export const messages = {
       money: {
         openExpenses: "เปิดค่าใช้จ่าย",
         settlementSuggestions: ({ count }: { count: number }) => `${count} รายการชำระคืนที่แนะนำ`,
+        settlementsCount: ({ count }: { count: number }) => `${count} รายการชำระคืน`,
         generalExamples: "ตั๋วเครื่องบิน โรงแรม ค่าใช้จ่ายรวม",
         generalDetail: "เปิด workspace ค่าใช้จ่ายของทริป",
         overallSummary: "สรุปรายจ่ายรวมของทริป",
