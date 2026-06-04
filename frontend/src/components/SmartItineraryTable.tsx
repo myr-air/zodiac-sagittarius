@@ -4,7 +4,7 @@ import { useI18n } from "@/src/i18n/I18nProvider";
 import type { Messages } from "@/src/i18n/messages";
 import type { Locale } from "@/src/i18n/types";
 import { cn } from "@/src/lib/cn";
-import { formatDayLabel, groupItemsByDay, type ItineraryView } from "@/src/trip/itinerary";
+import { formatDayLabel, getTripDates, groupItemsByDay, type ItineraryDayGroup, type ItineraryView } from "@/src/trip/itinerary";
 import { Button, IconButton } from "./ui";
 import { Icon } from "./icons";
 import { formatTripRange, PageHeader } from "./PageHeader";
@@ -22,7 +22,7 @@ interface SmartItineraryTableProps {
   itineraryView?: ItineraryView;
   selectedItemId: string;
   tripName: string;
-  onAddStop: () => void;
+  onAddStop: (day?: string) => void;
   onSelectItem: (itemId: string) => void;
   onMoveItem: (draggedItemId: string, targetItemId: string) => void;
   onRedo: () => void;
@@ -38,6 +38,7 @@ const tableScrollClassName = "table-scroll m-0 h-auto min-h-0 w-full max-w-full 
 const smartTableClassName =
   "smart-table w-full min-w-[960px] table-fixed border-collapse text-xs leading-4 text-[#1f2937] [&_a]:text-[#2563eb] [&_a]:underline [&_a]:underline-offset-2 [&_td:first-child]:w-[34px] [&_td:first-child]:px-0 [&_td:first-child]:text-center [&_td:nth-child(2)]:w-[78px] [&_td:nth-child(4)]:w-[94px] [&_td:nth-child(5)]:w-[124px] [&_td:nth-child(6)]:w-[94px] [&_td:nth-child(7)]:w-[108px] [&_td:nth-child(8)]:w-[118px] [&_td:nth-child(8)]:border-r-0 [&_td]:h-9 [&_td]:border-b [&_td]:border-r [&_td]:border-[var(--color-border)] [&_td]:px-2.5 [&_td]:py-1 [&_td]:text-left [&_td]:align-middle [&_th:first-child]:w-[34px] [&_th:first-child]:px-0 [&_th:first-child]:text-center [&_th:nth-child(2)]:w-[78px] [&_th:nth-child(4)]:w-[94px] [&_th:nth-child(5)]:w-[124px] [&_th:nth-child(6)]:w-[94px] [&_th:nth-child(7)]:w-[108px] [&_th:nth-child(8)]:w-[118px] [&_th:nth-child(8)]:border-r-0 [&_th]:h-9 [&_th]:border-b [&_th]:border-r [&_th]:border-[var(--color-border)] [&_th]:px-2.5 [&_th]:py-1 [&_th]:text-left [&_th]:align-middle [&_thead_th]:sticky [&_thead_th]:top-0 [&_thead_th]:z-[1] [&_thead_th]:h-12 [&_thead_th]:bg-[var(--color-surface)] [&_thead_th]:text-xs [&_thead_th]:font-[750] [&_thead_th]:text-[var(--color-text-muted)]";
 const dayGroupClassName = "day-group";
+const daySpacerRowClassName = "day-spacer-row [&_td]:!h-3 [&_td]:!border-0 [&_td]:!bg-[var(--color-page)] [&_td]:!p-0";
 const dayRowClassName = "day-row [&_th]:h-[39px] [&_th]:bg-[var(--color-surface)] [&_th]:px-2.5 [&_th]:py-0";
 const dayToggleClassName = "day-row-content day-toggle flex h-[39px] w-full min-w-0 items-center gap-[9px] border-0 bg-transparent p-0 text-left text-[#334155] aria-[expanded=true]:[&_.icon]:rotate-90 [&_.icon]:transition-transform [&_.icon]:duration-[140ms] [&_strong]:text-[#0f172a]";
 const dayRouteClassName = "day-route ml-[18px] font-semibold text-[var(--color-text-muted)]";
@@ -61,6 +62,8 @@ const rowSelectClassName =
 const mapLinkClassName = "map-link text-[#2563eb] underline underline-offset-2";
 const emptyWarningClassName = "empty-warning text-[var(--color-text-subtle)]";
 const warningSummaryClassName = "warning-summary inline-flex min-w-0 items-center gap-1.5 rounded-full border border-[var(--color-warning-border)] bg-[var(--color-warning-soft)] px-2 py-0.5 text-[11px] font-extrabold text-[var(--color-warning-strong)] [&_.icon]:size-[15px]";
+const addStopRowClassName = "add-stop-row [&_td]:border-b [&_td]:border-r [&_td]:border-dashed [&_td]:border-[var(--color-border)] [&_td]:bg-[var(--color-surface-subtle)] [&_td]:px-2.5 [&_td]:py-1";
+const addStopInlineButtonClassName = "inline-flex min-h-7 w-full items-center justify-center gap-2 rounded-[var(--radius-sm)] border border-dashed border-[var(--color-primary-border)] bg-[rgb(240_253_250_/_0.72)] px-3 text-[12px] font-extrabold text-[var(--color-primary-strong)] transition-[background,border-color,color] duration-150 hover:enabled:bg-[var(--color-primary-soft)] disabled:cursor-not-allowed disabled:border-[var(--color-border)] disabled:bg-transparent disabled:text-[var(--color-text-subtle)]";
 
 export function SmartItineraryTable({
   canRedo,
@@ -82,7 +85,7 @@ export function SmartItineraryTable({
   onUndo,
 }: SmartItineraryTableProps) {
   const { locale, t } = useI18n();
-  const groups = itineraryView?.dayGroups ?? groupItemsByDay(items);
+  const groups = mergeTripDayGroups(itineraryView?.dayGroups ?? groupItemsByDay(items), startDate, endDate);
   const canEdit = role === "owner" || role === "organizer";
   const canRestructureItems = canEdit && canRestructure;
   const warningCount = itineraryView?.warningCount ?? items.reduce((total, item) => total + (item.advisories?.length ?? 0), 0);
@@ -136,7 +139,7 @@ export function SmartItineraryTable({
         )}
         aside={(
           <div className={pageHeaderActionsClassName} role="group" aria-label={t.itinerary.actionsLabel}>
-            <Button type="button" onClick={onAddStop} disabled={!canRestructureItems} className="add-stop-button min-w-[154px] max-[767px]:w-full">
+            <Button type="button" onClick={() => onAddStop()} disabled={!canRestructureItems} className="add-stop-button min-w-[154px] max-[767px]:w-full">
               <Icon name="plus" />
               {t.itinerary.addStop}
             </Button>
@@ -177,12 +180,13 @@ export function SmartItineraryTable({
               <th>{t.itinerary.headers.warnings}</th>
             </tr>
           </thead>
-          {groups.map((group) => (
+          {groups.map((group, groupIndex) => (
             <DayGroup
               canEdit={canRestructureItems}
               collapsed={collapsedDays.includes(group.day)}
               dragState={dragState}
               group={group}
+              hasTopSpacer={groupIndex > 0}
               itineraryLabels={t.itinerary}
               locale={locale}
               key={group.day}
@@ -190,6 +194,7 @@ export function SmartItineraryTable({
               startDate={startDate}
               onClearDragPreview={clearDragPreview}
               onDropItem={dropItem}
+              onAddStop={onAddStop}
               onMoveItem={onMoveItem}
               onPreviewDrop={previewDrop}
               onSelectItem={onSelectItem}
@@ -205,6 +210,7 @@ export function SmartItineraryTable({
 
 function DayGroup({
   group,
+  hasTopSpacer,
   itineraryLabels,
   locale,
   startDate,
@@ -214,6 +220,7 @@ function DayGroup({
   dragState,
   onClearDragPreview,
   onDropItem,
+  onAddStop,
   onMoveItem,
   onPreviewDrop,
   onSelectItem,
@@ -221,6 +228,7 @@ function DayGroup({
   onToggleDay,
 }: {
   group: { day: string; items: ItineraryItem[]; warningCount: number };
+  hasTopSpacer: boolean;
   itineraryLabels: Messages["itinerary"];
   locale: Locale;
   startDate: string;
@@ -230,6 +238,7 @@ function DayGroup({
   dragState: { draggedItemId: string | null; overItemId: string | null };
   onClearDragPreview: () => void;
   onDropItem: (event: DragEvent<HTMLElement>, targetItemId: string) => void;
+  onAddStop: (day?: string) => void;
   onMoveItem: (draggedItemId: string, targetItemId: string) => void;
   onPreviewDrop: (event: DragEvent<HTMLElement>, targetItemId: string) => void;
   onSelectItem: (itemId: string) => void;
@@ -240,6 +249,11 @@ function DayGroup({
 
   return (
     <tbody className={dayGroupClassName} data-state={collapsed ? "closed" : "open"}>
+      {hasTopSpacer ? (
+        <tr className={daySpacerRowClassName} aria-hidden="true">
+          <td colSpan={8} />
+        </tr>
+      ) : null}
       <tr className={dayRowClassName}>
         <th colSpan={8}>
           <button
@@ -257,9 +271,8 @@ function DayGroup({
           </button>
         </th>
       </tr>
-      {group.items.map((item, itemIndex) => (
+      {!collapsed ? group.items.map((item, itemIndex) => (
         <tr
-          aria-hidden={collapsed}
           aria-label={itineraryLabels.row.openDetails({ activity: item.activity })}
           className={getRowClassName(item, selectedItemId, dragState)}
           key={item.id}
@@ -330,9 +343,38 @@ function DayGroup({
           <td>{item.transportation || "—"}</td>
           <td><AdvisorySummary advisories={item.advisories ?? []} /></td>
         </tr>
-      ))}
+      )) : null}
+      {!collapsed ? (
+        <tr className={addStopRowClassName}>
+          <td colSpan={8}>
+            <button
+              type="button"
+              className={addStopInlineButtonClassName}
+              disabled={!canEdit}
+              onClick={() => onAddStop(group.day)}
+              aria-label={`${itineraryLabels.addStop} ${dayLabel}`}
+            >
+              <Icon name="plus" />
+              {itineraryLabels.addStop}
+            </button>
+          </td>
+        </tr>
+      ) : null}
     </tbody>
   );
+}
+
+function mergeTripDayGroups(groups: ItineraryDayGroup[], startDate: string, endDate: string): ItineraryDayGroup[] {
+  const groupsByDay = new Map(groups.map((group) => [group.day, group]));
+  const tripDays = getTripDates(startDate, endDate);
+  const days = new Set<string>(tripDays);
+  for (const group of groups) {
+    if (group.items.length) days.add(group.day);
+  }
+
+  return Array.from(days)
+    .sort()
+    .map((day) => groupsByDay.get(day) ?? { day, items: [], warningCount: 0 });
 }
 
 function getRowClassName(

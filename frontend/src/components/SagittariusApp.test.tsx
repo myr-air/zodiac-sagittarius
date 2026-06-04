@@ -1355,11 +1355,12 @@ describe("Sagittarius cockpit UI", () => {
       "แผนที่",
       "ไทม์ไลน์",
       "สมาชิก",
+      "Settings",
     ]);
     expect(within(navigation).getByRole("link", { name: /ภาพรวม/i })).toHaveClass("rail-link--active");
     expect(within(navigation).queryByRole("link", { name: /งบประมาณ/i })).not.toBeInTheDocument();
     expect(within(navigation).queryByRole("link", { name: /รายการจอง/i })).not.toBeInTheDocument();
-    expect(within(navigation).queryByRole("link", { name: /ตั้งค่า/i })).not.toBeInTheDocument();
+    expect(within(navigation).getByRole("link", { name: /^Settings$/ })).toBeInTheDocument();
   });
 
   it("matches the dense planning cockpit skeleton from the reference", () => {

@@ -79,7 +79,7 @@ describe("SmartItineraryTable", () => {
     expect(props.onSelectItem).not.toHaveBeenCalled();
 
     fireEvent.click(screen.getByRole("button", { name: /ย่อ วันที่ 2/i }));
-    expect(document.querySelector('tr[aria-label*="Dim Dim Sum"]')).toHaveAttribute("aria-hidden", "true");
+    expect(document.querySelector('tr[aria-label*="Dim Dim Sum"]')).not.toBeInTheDocument();
   });
 
   it("exposes hybrid Tailwind bridge classes for the table shell and selected row", () => {
@@ -114,9 +114,28 @@ describe("SmartItineraryTable", () => {
   it("prevents dragging when role or restructure settings disallow editing", () => {
     renderTable({ role: "viewer", canRestructure: false });
 
-    expect(screen.getByRole("button", { name: /เพิ่มสถานที่/i })).toBeDisabled();
+    const actions = screen.getByRole("group", { name: /คำสั่งแผนการเดินทาง/i });
+    expect(within(actions).getByRole("button", { name: /เพิ่มสถานที่/i })).toBeDisabled();
     expect(screen.getByText("ต้องมีสิทธิ์ผู้จัดทริปจึงจะแก้ไขได้")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /ลาก Dim Dim Sum/i })).toBeDisabled();
+  });
+
+  it("shows every trip day and offers an empty add row at the bottom of each day", async () => {
+    const user = userEvent.setup();
+    const onAddStop = vi.fn();
+    renderTable({
+      endDate: "2026-06-20",
+      items: [tripFixture.planItems[0]],
+      onAddStop,
+      startDate: "2026-06-18",
+    });
+
+    expect(screen.getByRole("button", { name: /ย่อ วันที่ 1/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /ย่อ วันที่ 2/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /ย่อ วันที่ 3/i })).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: /เพิ่มสถานที่ \/ กิจกรรม วันที่ 3/i }));
+    expect(onAddStop).toHaveBeenCalledWith("2026-06-20");
   });
 
   it("ignores drag previews and drops that cannot move an item", () => {

@@ -1,11 +1,13 @@
 import { useState, type FormEvent } from "react";
 import type { ActivityType, ItineraryItem } from "@/src/trip/types";
 import { useI18n } from "@/src/i18n/I18nProvider";
+import { formatDayLabel, getTripDates } from "@/src/trip/itinerary";
 import { Button } from "./ui";
 import { Icon } from "./icons";
-import { activityTypeLabel } from "./itineraryDisplay";
+import { activityTypeLabel, formatThaiDate } from "./itineraryDisplay";
 
 export interface StopFormValues {
+  day: string;
   startTime: string;
   activity: string;
   activityType: ActivityType;
@@ -17,10 +19,13 @@ export interface StopFormValues {
 
 interface StopDialogProps {
   mode: "create" | "edit";
+  endDate?: string;
+  initialDay?: string;
   initialItem?: ItineraryItem;
   onClose: () => void;
   onDelete?: () => void;
   onSubmit: (values: StopFormValues) => void;
+  startDate?: string;
 }
 
 const activityTypeOptions: ActivityType[] = ["food", "attraction", "experience", "travel", "shopping", "stay"];
@@ -36,6 +41,7 @@ const dialogPrimaryActionsClassName = "dialog-primary-actions flex justify-end g
 const fieldIds = {
   activity: "stop-activity",
   activityType: "stop-activity-type",
+  day: "stop-day",
   durationHours: "stop-duration-hours",
   durationMinutes: "stop-duration-minutes",
   note: "stop-note",
@@ -44,9 +50,11 @@ const fieldIds = {
   transportation: "stop-transportation",
 };
 
-export function StopDialog({ mode, initialItem, onClose, onDelete, onSubmit }: StopDialogProps) {
+export function StopDialog({ mode, endDate, initialDay, initialItem, onClose, onDelete, onSubmit, startDate }: StopDialogProps) {
   const { locale, t } = useI18n();
+  const dayOptions = startDate && endDate ? getTripDates(startDate, endDate) : [];
   const [values, setValues] = useState<StopFormValues>(() => ({
+    day: initialItem?.day ?? initialDay ?? startDate ?? "",
     startTime: initialItem?.startTime ?? "16:30",
     activity: initialItem?.activity ?? "",
     activityType: initialItem?.activityType ?? "experience",
@@ -90,6 +98,16 @@ export function StopDialog({ mode, initialItem, onClose, onDelete, onSubmit }: S
 
         <form className={stopFormClassName} onSubmit={handleSubmit}>
           <div className={dialogGridClassName}>
+            {mode === "edit" && dayOptions.length ? (
+              <label className={dialogFieldWideClassName} htmlFor={fieldIds.day}>
+                <span>{t.stopDialog.fields.day}</span>
+                <select id={fieldIds.day} value={values.day} onChange={(event) => update("day", event.target.value)}>
+                  {dayOptions.map((day) => (
+                    <option value={day} key={day}>{formatDayLabel(day, startDate ?? day, locale)} · {formatThaiDate(day, locale)}</option>
+                  ))}
+                </select>
+              </label>
+            ) : null}
             <label htmlFor={fieldIds.startTime}>
               <span>{t.stopDialog.fields.time}</span>
               <input id={fieldIds.startTime} type="time" value={values.startTime} onChange={(event) => update("startTime", event.target.value)} required />

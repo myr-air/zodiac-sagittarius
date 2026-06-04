@@ -55,12 +55,13 @@ export const appRoutes = {
   tripMap: (tripId: string) => `/trips/${tripRouteSegment(tripId)}/map`,
   tripTimeline: (tripId: string) => `/trips/${tripRouteSegment(tripId)}/timeline`,
   tripMembers: (tripId: string) => `/trips/${tripRouteSegment(tripId)}/members`,
+  tripSettings: (tripId: string) => `/trips/${tripRouteSegment(tripId)}/settings`,
 };
 
 interface TripWorkspaceNavItem {
   id: PlanningView;
   label: string;
-  icon: "home" | "calendar" | "map" | "list" | "users";
+  icon: "home" | "calendar" | "map" | "list" | "users" | "settings";
   href: string;
 }
 
@@ -70,6 +71,7 @@ export interface TripWorkspaceNavLabels {
   map: string;
   timeline: string;
   members: string;
+  settings: string;
 }
 
 export function tripWorkspaceNavItems(tripId: string, labels: TripWorkspaceNavLabels): TripWorkspaceNavItem[] {

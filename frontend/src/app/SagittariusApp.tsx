@@ -10,6 +10,7 @@ import { SmartItineraryTable } from "@/src/components/SmartItineraryTable";
 import { StopDialog, type StopFormValues } from "@/src/components/StopDialog";
 import { TimelineView } from "@/src/components/TimelineView";
 import { TripMembersPage } from "@/src/components/TripMembersPage";
+import { TripSettingsPage, type TripSettingsFormValues } from "@/src/components/TripSettingsPage";
 import { Button } from "@/src/components/ui";
 import { Icon } from "@/src/components/icons";
 import { appRoutes, decodeReturnTo } from "@/src/routes/app-routes";
@@ -56,7 +57,7 @@ const workspaceShellClassName = "workspace-shell min-w-0 bg-transparent";
 const workspaceGridClassName = "workspace-grid relative grid h-[calc(100vh-62px)] min-h-0 grid-cols-[minmax(0,1fr)] overflow-hidden data-[command-bar=hidden]:h-screen max-[1199px]:h-auto max-[1199px]:grid-cols-1 max-[1199px]:overflow-visible";
 const planningMainClassName = "planning-main h-full min-h-0 min-w-0 overflow-y-auto scroll-smooth bg-[var(--color-page)] max-[1199px]:h-auto max-[1199px]:overflow-y-visible";
 
-export type PlanningView = "overview" | "itinerary" | "map" | "timeline" | "members";
+export type PlanningView = "overview" | "itinerary" | "map" | "timeline" | "members" | "settings";
 type PortalSection = "dashboard" | "trips" | "new-trip" | "explorer" | "todos" | "vault" | "settings" | "sign-out";
 
 interface SagittariusAppProps {
@@ -143,7 +144,7 @@ export function SagittariusApp({
   const selectedPlanVariantId = tripState.trip.activePlanVariantId;
   const [currentMemberId, setCurrentMemberId] = useState(seedTrip.members[0].id);
   const [selectedItemId, setSelectedItemId] = useState("item-dimdim");
-  const [dialogState, setDialogState] = useState<{ mode: "create" } | { mode: "edit"; item: ItineraryItem } | null>(null);
+  const [dialogState, setDialogState] = useState<{ mode: "create"; day?: string } | { mode: "edit"; item: ItineraryItem } | null>(null);
 
   const trip = tripState.trip;
   const tripIdForPath = routeTripId ?? trip.id;
@@ -373,10 +374,10 @@ export function SagittariusApp({
     };
   }, [contextRailOpen, setContextRailVisibility]);
 
-  function addStop() {
+  function addStop(day?: string) {
     /* v8 ignore next */
     if (!canEdit) return;
-    setDialogState({ mode: "create" });
+    setDialogState({ mode: "create", day });
   }
 
   function selectItem(itemId: string) {
@@ -427,7 +428,7 @@ export function SagittariusApp({
       const createdItem = await resolvedApiClient.createItineraryItem(trip.id, participantSession.sessionToken, {
         clientMutationId: nextClientMutationId("itinerary-create"),
         planVariantId: selectedPlanVariantId,
-        day: selectedDay,
+        day: values.day || selectedDay,
         startTime: values.startTime,
         activity: values.activity,
         activityType: values.activityType,
@@ -451,7 +452,7 @@ export function SagittariusApp({
       id: nextLocalItemId(trip.itineraryItems, "item-new"),
       tripId: trip.id,
       planVariantId: selectedPlanVariantId,
-      day: selectedDay,
+      day: values.day || selectedDay,
       sortOrder: getNextSortOrder(planItems, selectedDay),
       startTime: values.startTime,
       activity: values.activity,
@@ -516,6 +517,7 @@ export function SagittariusApp({
         clientMutationId: nextClientMutationId("itinerary-patch"),
         expectedVersion: dialogState.item.version,
         patch: {
+          day: values.day,
           startTime: values.startTime,
           activity: values.activity,
           activityType: values.activityType,
@@ -545,6 +547,7 @@ export function SagittariusApp({
         item.id === itemId
           ? {
               ...item,
+              day: values.day || item.day,
               startTime: values.startTime,
               activity: values.activity,
               activityType: values.activityType,
@@ -859,6 +862,59 @@ export function SagittariusApp({
         assigneeId: visibility === "shared" ? input.assigneeId || null : currentMember.id,
       },
     ]);
+  }
+
+  async function saveTripSettings(values: TripSettingsFormValues) {
+    if (!canManagePeople) return;
+    const shiftedItems = shiftItineraryItemsToStartDate(trip.itineraryItems, trip.startDate, values.startDate);
+
+    if (isApiMode && resolvedApiClient && participantSession) {
+      const patchedTrip = await resolvedApiClient.patchTrip(trip.id, participantSession.sessionToken, {
+        clientMutationId: nextClientMutationId("trip-settings"),
+        expectedVersion: trip.version ?? 0,
+        name: values.name,
+        destinationLabel: values.destinationLabel,
+        startDate: values.startDate,
+        endDate: values.endDate,
+      });
+      const changedItems = shiftedItems.filter((shiftedItem) => {
+        const currentItem = trip.itineraryItems.find((item) => item.id === shiftedItem.id);
+        return currentItem && currentItem.day !== shiftedItem.day;
+      });
+      const patchedItems = await Promise.all(changedItems.map((item) =>
+        resolvedApiClient.patchItineraryItem(trip.id, item.id, participantSession.sessionToken, {
+          clientMutationId: nextClientMutationId("itinerary-day-shift"),
+          expectedVersion: item.version,
+          patch: { day: item.day },
+        })
+      ));
+      const patchedItemsById = new Map(patchedItems.map((item) => [item.id, item]));
+      setTripState((current) => ({
+        ...current,
+        trip: {
+          ...current.trip,
+          name: patchedTrip.name,
+          destinationLabel: patchedTrip.destinationLabel,
+          countries: patchedTrip.countries,
+          startDate: patchedTrip.startDate,
+          endDate: patchedTrip.endDate,
+          activePlanVariantId: patchedTrip.activePlanVariantId || current.trip.activePlanVariantId,
+          itineraryItems: current.trip.itineraryItems.map((item) => patchedItemsById.get(item.id) ?? item),
+          version: patchedTrip.version,
+        },
+      }));
+      return;
+    }
+
+    commitTrip((current) => ({
+      ...current,
+      name: values.name,
+      destinationLabel: values.destinationLabel,
+      startDate: values.startDate,
+      endDate: values.endDate,
+      itineraryItems: shiftItineraryItemsToStartDate(current.itineraryItems, current.startDate, values.startDate),
+      version: (current.version ?? 0) + 1,
+    }));
   }
 
   async function toggleTaskStatus(taskId: string) {
@@ -1186,7 +1242,14 @@ export function SagittariusApp({
         ) : null}
         <div className={workspaceGridClassName} data-context-rail={contextRailOpen ? "open" : "closed"} data-command-bar="hidden">
           <div className={planningMainClassName}>
-            {currentView === "members" ? (
+            {currentView === "settings" ? (
+              <TripSettingsPage
+                canEdit={canManagePeople}
+                currentMember={currentMember}
+                trip={trip}
+                onSave={saveTripSettings}
+              />
+            ) : currentView === "members" ? (
               <TripMembersPage
                 trip={trip}
                 currentMember={currentMember}
@@ -1294,7 +1357,10 @@ export function SagittariusApp({
           <StopDialog
             key={dialogState.mode === "edit" ? `edit-${dialogState.item.id}` : "create-stop"}
             mode={dialogState.mode}
+            startDate={trip.startDate}
+            endDate={trip.endDate}
             initialItem={dialogState.mode === "edit" ? dialogState.item : undefined}
+            initialDay={dialogState.mode === "create" ? dialogState.day ?? selectedDay : undefined}
             onClose={() => setDialogState(null)}
             onDelete={dialogState.mode === "edit" ? deleteSelectedStop : undefined}
             onSubmit={dialogState.mode === "edit" ? updateSelectedStop : createStop}
@@ -1497,6 +1563,22 @@ function persistAccountSession(session: AccountSession | null) {
 
 function persistTripDraft(trip: Trip) {
   getBrowserLocalStorage()?.setItem(tripStorageKey, JSON.stringify(trip));
+}
+
+function shiftItineraryItemsToStartDate(items: ItineraryItem[], currentStartDate: string, nextStartDate: string): ItineraryItem[] {
+  const dayShift = daysBetweenIsoDates(currentStartDate, nextStartDate);
+  if (!dayShift) return items;
+  return items.map((item) => ({ ...item, day: shiftIsoDate(item.day, dayShift) }));
+}
+
+function daysBetweenIsoDates(from: string, to: string): number {
+  return Math.round((Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / 86_400_000);
+}
+
+function shiftIsoDate(value: string, days: number): string {
+  const date = new Date(`${value}T00:00:00Z`);
+  date.setUTCDate(date.getUTCDate() + days);
+  return date.toISOString().slice(0, 10);
 }
 
 interface WorkspaceToastProps {

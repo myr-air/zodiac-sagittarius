@@ -238,7 +238,7 @@ export interface PatchTaskApiRequest {
 export interface PatchItineraryItemApiRequest {
   clientMutationId: string;
   expectedVersion: number;
-  patch: Partial<Pick<ItineraryItem, "startTime" | "durationMinutes" | "activity" | "activityType" | "place" | "mapLink" | "transportation" | "note">>;
+  patch: Partial<Pick<ItineraryItem, "day" | "startTime" | "durationMinutes" | "activity" | "activityType" | "place" | "mapLink" | "transportation" | "note">>;
 }
 
 export interface CreateItineraryItemApiRequest {

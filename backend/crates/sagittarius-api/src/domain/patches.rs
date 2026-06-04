@@ -407,6 +407,7 @@ impl PatchMemberRequest {
 #[derive(Debug, Clone, Default, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ItineraryItemPatch {
+    pub day: Option<Date>,
     pub start_time: Option<String>,
     pub duration_minutes: Option<i32>,
     pub activity: Option<String>,

@@ -838,15 +838,16 @@ pub async fn update_itinerary_item(
 ) -> Result<Option<ItineraryItemRecord>, sqlx::Error> {
     sqlx::query_as::<_, ItineraryItemRecord>(
         "update itinerary_items
-         set start_time = coalesce($2::time, start_time),
-             duration_minutes = coalesce($3, duration_minutes),
-             activity = coalesce($4, activity),
-             activity_type = coalesce($5, activity_type),
-             place = coalesce($6, place),
-             map_link = coalesce($7, map_link),
-             transportation = coalesce($8, transportation),
-             note = coalesce($9, note),
-             version = $10,
+         set day = coalesce($2, day),
+             start_time = coalesce($3::time, start_time),
+             duration_minutes = coalesce($4, duration_minutes),
+             activity = coalesce($5, activity),
+             activity_type = coalesce($6, activity_type),
+             place = coalesce($7, place),
+             map_link = coalesce($8, map_link),
+             transportation = coalesce($9, transportation),
+             note = coalesce($10, note),
+             version = $11,
              updated_at = now()
          where id = $1 and deleted_at is null
          returning
@@ -858,6 +859,7 @@ pub async fn update_itinerary_item(
            updated_at::text as updated_at, version",
     )
     .bind(item_id)
+    .bind(patch.day)
     .bind(patch.start_time.as_deref())
     .bind(patch.duration_minutes)
     .bind(patch.activity.as_deref())

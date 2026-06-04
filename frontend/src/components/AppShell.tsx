@@ -1,16 +1,13 @@
 "use client";
 
 import type { ReactNode } from "react";
-import Link from "next/link";
 import type { PlanningView } from "@/src/app/SagittariusApp";
 import { LanguageSwitch } from "@/src/i18n/LanguageSwitch";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
 import { appRoutes, tripWorkspaceNavItems } from "@/src/routes/app-routes";
-import { shortTripId } from "@/src/trip/ids";
 import { decodeTripId } from "@/src/trip/ids";
 import type { Member, Trip } from "@/src/trip/types";
-import { getTripDates } from "@/src/trip/itinerary";
 import { Icon } from "./icons";
 
 interface AppShellProps {
@@ -43,6 +40,7 @@ export function resolveViewFromPath(pathname: string, tripId: string, initialVie
   if (viewSegment === "map") return "map";
   if (viewSegment === "timeline") return "timeline";
   if (viewSegment === "members") return "members";
+  if (viewSegment === "settings") return "settings";
   return initialView;
 }
 
@@ -60,8 +58,6 @@ const activeRailLinkClassName = "rail-link--active bg-[linear-gradient(90deg,rgb
 const railLinkButtonClassName = "rail-link-button w-full border-0 bg-transparent font-sans text-left max-[767px]:w-auto";
 const railLinkLabelClassName = "data-[collapsed=true]:hidden max-[1199px]:hidden max-[767px]:!inline";
 const sideRailLanguageClassName = "side-rail-language mx-3.5 mb-1 mt-2 self-start data-[collapsed=true]:mx-0 data-[collapsed=true]:self-center data-[collapsed=true]:[&_.language-switch-option]:min-w-[27px] data-[collapsed=true]:[&_.language-switch-option]:px-0 max-[1199px]:mx-0 max-[1199px]:self-center max-[1199px]:[&_.language-switch-option]:min-w-[27px] max-[1199px]:[&_.language-switch-option]:px-0";
-const railSummaryClassName = "rail-summary mx-2.5 mb-[18px] mt-2 grid gap-[9px] rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-subtle)] p-3 text-xs leading-[18px] text-[var(--color-text-muted)] data-[collapsed=true]:hidden max-[1199px]:hidden max-[767px]:hidden [&_strong]:text-[13px] [&_strong]:text-[var(--color-text)] [&_span]:inline-flex [&_span]:items-center [&_span]:gap-2";
-const railSummaryLinkClassName = "rail-summary-link inline-flex min-h-8 items-center justify-center rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface)] text-xs font-bold text-[var(--color-primary-strong)] no-underline";
 const memberCardBaseClassName = "member-card mx-2.5 mb-5 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-subtle)] p-[11px] data-[collapsed=true]:mx-2 data-[collapsed=true]:flex data-[collapsed=true]:min-h-[54px] data-[collapsed=true]:justify-center data-[collapsed=true]:p-2 max-[1199px]:mx-2 max-[1199px]:flex max-[1199px]:min-h-[54px] max-[1199px]:justify-center max-[1199px]:p-2 max-[767px]:hidden";
 const memberCardGridClassName = "grid min-h-[82px] grid-cols-[34px_minmax(0,1fr)_auto] items-center gap-2.5";
 const memberCardColClassName = "flex flex-col items-stretch gap-2.5 min-h-[auto]";
@@ -74,9 +70,8 @@ const memberFallbackIconClassName = "data-[collapsed=true]:hidden max-[1199px]:h
 
 export function AppShell({ activeView, children, collapsed, currentMember, onLeaveParticipantSession, onNavigateView, onOpenExpenses, trip, onToggleCollapsed }: AppShellProps) {
   const { t } = useI18n();
-  const tripDays = getTripDates(trip.startDate, trip.endDate).length;
-  const tripNights = Math.max(0, tripDays - 1);
   const navItems = tripWorkspaceNavItems(trip.id, t.routes);
+  const settingsHref = appRoutes.tripSettings(trip.id);
 
   function confirmLeaveParticipantSession() {
     if (!onLeaveParticipantSession) return;
@@ -134,17 +129,23 @@ export function AppShell({ activeView, children, collapsed, currentMember, onLea
               <span className={railLinkLabelClassName} data-collapsed={collapsed ? "true" : "false"}>{t.appShell.nav.expenses}</span>
             </button>
           ) : null}
+          <a
+            aria-current={activeView === "settings" ? "page" : undefined}
+            className={cn(railLinkClassName, activeView === "settings" && activeRailLinkClassName)}
+            data-collapsed={collapsed ? "true" : "false"}
+            href={settingsHref}
+            onClick={onNavigateView ? (event) => {
+              event.preventDefault();
+              onNavigateView("settings", settingsHref);
+            } : undefined}
+            title={t.appShell.nav.settings}
+          >
+            <Icon name="settings" />
+            <span className={railLinkLabelClassName} data-collapsed={collapsed ? "true" : "false"}>{t.appShell.nav.settings}</span>
+          </a>
         </div>
 
         <LanguageSwitch className={sideRailLanguageClassName} data-collapsed={collapsed ? "true" : "false"} />
-
-        <div className={railSummaryClassName} data-collapsed={collapsed ? "true" : "false"} aria-label={t.appShell.planSummary}>
-          <strong>{t.appShell.planSummary}</strong>
-            <span><Icon name="key" /> {t.appShell.tripId({ id: shortTripId(trip.id, { mode: "front", length: 6 }) })}</span>
-          <span><Icon name="calendar" /> {t.appShell.tripDuration({ days: tripDays, nights: tripNights })}</span>
-          <span><Icon name="location" /> {t.appShell.placeCount({ count: trip.itineraryItems.length })}</span>
-          <Link href={appRoutes.tripOverview(trip.id)} className={railSummaryLinkClassName}>{t.appShell.viewDetails}</Link>
-        </div>
 
         <div className={cn(memberCardBaseClassName, onLeaveParticipantSession && !collapsed ? memberCardColClassName : memberCardGridClassName)} data-collapsed={collapsed ? "true" : "false"}>
           {onLeaveParticipantSession && !collapsed ? (

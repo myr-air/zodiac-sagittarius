@@ -124,8 +124,9 @@ describe("AppShell", () => {
     expect(screen.getByRole("link", { name: /ไทม์ไลน์/ })).toHaveAttribute("href", `/trips/${shortTripId}/timeline`);
     expect(screen.getByRole("link", { name: /สมาชิก/ })).toHaveAttribute("href", `/trips/${shortTripId}/members`);
     expect(screen.getByRole("button", { name: /ค่าใช้จ่าย/ })).toBeInTheDocument();
-    expect(screen.getByText("Trip ID 018f4e")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "ดูสรุปรายละเอียด" })).toHaveAttribute("href", `/trips/${shortTripId}`);
+    expect(screen.getByRole("link", { name: /^Settings$/ })).toHaveAttribute("href", `/trips/${shortTripId}/settings`);
+    expect(screen.queryByText("Trip ID 018f4e")).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "ดูสรุปรายละเอียด" })).not.toBeInTheDocument();
   });
 
   it("renders English shell labels by default and can switch to Thai", async () => {
