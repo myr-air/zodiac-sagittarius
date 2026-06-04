@@ -31,6 +31,7 @@ import { buildItineraryView } from "@/src/trip/itinerary";
 import { tripFixtureStopNotes, tripFixtureSuggestions, tripFixtureTasks } from "@/src/demo/trip-fixtures";
 import { tripStorageKey } from "@/src/trip/repository";
 import { seedTrip } from "@/src/trip/seed";
+import { decodeTripId } from "@/src/trip/ids";
 import { approveSuggestion } from "@/src/trip/suggestions";
 import type { DailyBriefingOverrides, Expense, ExpenseSummary, ItineraryItem, StopNote, Suggestion, Trip, TripDailyBriefing, TripMemberAccessStatus, TripParticipantSession, TripRole, TripTask } from "@/src/trip/types";
 
@@ -71,6 +72,19 @@ interface SagittariusAppProps {
   accessMode?: "combined" | "account-login" | "account-register" | "account-portal" | "trip-access";
   accountSuccessRedirectHref?: string;
   portalSection?: PortalSection;
+}
+
+export function resolveJoinPostAuthReturnTo(returnTo: string | null, tripId: string): string | null {
+  if (!returnTo || !returnTo.startsWith("/")) return null;
+  if (returnTo === appRoutes.trips()) return null;
+
+  if (returnTo.startsWith("/trips/")) {
+    const tripSegment = returnTo.slice("/trips/".length).split(/[/?#]/, 1)[0];
+    const normalizedTripSegment = decodeTripId(tripSegment);
+    if (normalizedTripSegment !== tripId) return null;
+  }
+
+  return returnTo;
 }
 
 export function SagittariusApp({
@@ -174,8 +188,12 @@ export function SagittariusApp({
   }, [resolveCurrentView]);
 
   useEffect(() => {
-    setSessionRestored(false);
+    let cancelled = false;
+    window.queueMicrotask(() => {
+      if (!cancelled) setSessionRestored(false);
+    });
     const timeout = window.setTimeout(() => {
+      if (cancelled) return;
       const persistedTrip = loadPersistedTrip();
       const nextTrip = persistedTrip ?? seedTrip;
       const persistedSession = loadPersistedParticipantSession(requireJoin, nextTrip, isApiMode, routeTripId);
@@ -192,7 +210,10 @@ export function SagittariusApp({
       setSessionRestored(true);
     }, 0);
 
-    return () => window.clearTimeout(timeout);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timeout);
+    };
   }, [isApiMode, requireJoin, routeTripId]);
 
   useEffect(() => {
@@ -322,7 +343,7 @@ export function SagittariusApp({
     if (!window.location.pathname.startsWith("/join")) return;
     const returnToParam = new URLSearchParams(window.location.search).get("rt");
     const returnTo = returnToParam ? decodeReturnTo(returnToParam) : null;
-    const target = returnTo && returnTo.startsWith("/trips/") ? returnTo : appRoutes.tripOverview(participantSession.tripId);
+    const target = resolveJoinPostAuthReturnTo(returnTo, participantSession.tripId) ?? appRoutes.tripOverview(participantSession.tripId);
     window.location.replace(target);
   }, [participantSession, requireJoin, routeTripId, sessionMember]);
 
@@ -647,8 +668,9 @@ export function SagittariusApp({
       const searchParams = new URLSearchParams(window.location.search);
       const returnToParam = searchParams.get("rt");
       const returnTo = returnToParam ? decodeReturnTo(returnToParam) : null;
-      if (returnTo && (returnTo.startsWith("/") || returnTo.startsWith("/trips/"))) {
-        window.location.href = returnTo;
+      const safeReturnTo = resolveJoinPostAuthReturnTo(returnTo, session.tripId);
+      if (safeReturnTo) {
+        window.location.href = safeReturnTo;
       } else if (!routeTripId) {
         window.location.href = appRoutes.tripOverview(session.tripId);
       }

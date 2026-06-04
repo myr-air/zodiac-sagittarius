@@ -1,4 +1,5 @@
 import type { PlanningView } from "@/src/app/SagittariusApp";
+import { encodeTripId } from "@/src/trip/ids";
 
 export function encodeReturnTo(path: string): string {
   try {
@@ -25,6 +26,10 @@ function segment(value: string): string {
   return encodeURIComponent(value);
 }
 
+function tripRouteSegment(value: string): string {
+  return segment(encodeTripId(value));
+}
+
 export const appRoutes = {
   home: () => "/",
   access: (mode: "sign-in" | "register" = "sign-in") => `/access?mode=${mode}`,
@@ -45,11 +50,11 @@ export const appRoutes = {
     const base = joinCode ? `/join/${segment(joinCode)}` : "/join";
     return returnTo ? `${base}?rt=${encodeURIComponent(encodeReturnTo(returnTo))}` : base;
   },
-  tripOverview: (tripId: string) => `/trips/${segment(tripId)}`,
-  tripItinerary: (tripId: string) => `/trips/${segment(tripId)}/itinerary`,
-  tripMap: (tripId: string) => `/trips/${segment(tripId)}/map`,
-  tripTimeline: (tripId: string) => `/trips/${segment(tripId)}/timeline`,
-  tripMembers: (tripId: string) => `/trips/${segment(tripId)}/members`,
+  tripOverview: (tripId: string) => `/trips/${tripRouteSegment(tripId)}`,
+  tripItinerary: (tripId: string) => `/trips/${tripRouteSegment(tripId)}/itinerary`,
+  tripMap: (tripId: string) => `/trips/${tripRouteSegment(tripId)}/map`,
+  tripTimeline: (tripId: string) => `/trips/${tripRouteSegment(tripId)}/timeline`,
+  tripMembers: (tripId: string) => `/trips/${tripRouteSegment(tripId)}/members`,
 };
 
 interface TripWorkspaceNavItem {

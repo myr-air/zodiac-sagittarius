@@ -4,6 +4,7 @@ import type { ReactElement } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   SagittariusApp,
+  resolveJoinPostAuthReturnTo,
   nextClientMutationId,
   nextLocalItemId,
   nextLocalStopNoteId,
@@ -17,6 +18,7 @@ import { I18nProvider } from "@/src/i18n/I18nProvider";
 import { renderWithI18n } from "@/src/i18n/test-utils";
 import { tripStorageKey } from "@/src/trip/repository";
 import { seedTrip } from "@/src/trip/seed";
+import { encodeTripId } from "@/src/trip/ids";
 import type { ItineraryItem, StopNote, Suggestion, Trip, TripDailyBriefing, TripTask } from "@/src/trip/types";
 import { encodeReturnTo } from "@/src/routes/app-routes";
 
@@ -411,6 +413,7 @@ describe("Sagittarius cockpit UI", () => {
 
   it("switches trip workspace navigation without reloading the backend cockpit", async () => {
     const user = userEvent.setup();
+    const shortTripId = encodeTripId(seedTrip.id);
     installLocalStorageStub();
     window.sessionStorage.setItem(
       tripParticipantSessionStorageKey,
@@ -422,7 +425,7 @@ describe("Sagittarius cockpit UI", () => {
         expiresAt: "2026-06-28T00:00:00.000Z",
       }),
     );
-    window.history.pushState(null, "", `/trips/${seedTrip.id}`);
+    window.history.pushState(null, "", `/trips/${shortTripId}`);
     const apiClient = createApiClientForTrip(seedTrip);
 
     render(<SagittariusApp accessMode="trip-access" requireJoin dataSource="api" routeTripId={seedTrip.id} apiClient={apiClient} />);
@@ -430,13 +433,14 @@ describe("Sagittarius cockpit UI", () => {
     await waitFor(() => expect(apiClient.loadTrip).toHaveBeenCalledTimes(1));
     await user.click(screen.getByRole("link", { name: /แผนการเดินทาง/i }));
 
-    expect(window.location.pathname).toBe(`/trips/${seedTrip.id}/itinerary`);
+    expect(window.location.pathname).toBe(`/trips/${shortTripId}/itinerary`);
     expect(screen.getByRole("link", { name: /แผนการเดินทาง/i })).toHaveAttribute("aria-current", "page");
     expect(apiClient.loadTrip).toHaveBeenCalledTimes(1);
   });
 
   it("re-syncs workspace active link from popstate without extra loadTrip", async () => {
     installLocalStorageStub();
+    const shortTripId = encodeTripId(seedTrip.id);
     window.sessionStorage.setItem(
       tripParticipantSessionStorageKey,
       JSON.stringify({
@@ -447,7 +451,7 @@ describe("Sagittarius cockpit UI", () => {
         expiresAt: "2026-06-28T00:00:00.000Z",
       }),
     );
-    window.history.pushState(null, "", `/trips/${seedTrip.id}`);
+    window.history.pushState(null, "", `/trips/${shortTripId}`);
     const apiClient = createApiClientForTrip(seedTrip);
 
     render(<SagittariusApp accessMode="trip-access" requireJoin dataSource="api" routeTripId={seedTrip.id} apiClient={apiClient} />);
@@ -456,7 +460,7 @@ describe("Sagittarius cockpit UI", () => {
     expect(screen.getByRole("link", { name: /ภาพรวม/i })).toHaveAttribute("aria-current", "page");
 
     act(() => {
-      window.history.pushState(null, "", `/trips/${seedTrip.id}/itinerary`);
+      window.history.pushState(null, "", `/trips/${shortTripId}/itinerary`);
       window.dispatchEvent(new PopStateEvent("popstate"));
     });
 
@@ -726,10 +730,51 @@ describe("Sagittarius cockpit UI", () => {
 
     render(<SagittariusApp accessMode="trip-access" requireJoin dataSource="api" apiClient={apiClient} />);
 
-    await waitFor(() => expect(replaceMock).toHaveBeenCalledWith(`/trips/${seedTrip.id}`));
+    await waitFor(() => expect(replaceMock).toHaveBeenCalledWith(`/trips/${encodeTripId(seedTrip.id)}`));
     await waitFor(() => expect(apiClient.loadTrip).toHaveBeenCalledWith(seedTrip.id, "persisted-join-session-token"));
 
     locationSpy.mockRestore();
+  });
+
+  it("falls back to trip route when /join returnTo points to /trips", async () => {
+    installLocalStorageStub();
+    const replaceMock = vi.fn();
+    const originalLocation = window.location;
+    const locationMock = {
+      ...originalLocation,
+      pathname: "/join",
+      search: `?rt=${encodeURIComponent(encodeReturnTo("/trips"))}`,
+      replace: replaceMock,
+    };
+    const locationSpy = vi.spyOn(window, "location", "get").mockReturnValue(locationMock);
+    window.localStorage.setItem(
+      tripParticipantSessionStorageKey,
+      JSON.stringify({
+        tripId: seedTrip.id,
+        memberId: seedTrip.members[0].id,
+        sessionToken: "persisted-join-session-token",
+        createdAt: "2026-05-29T00:00:00.000Z",
+        expiresAt: "2026-06-28T00:00:00.000Z",
+      }),
+    );
+    const apiClient = createApiClientForTrip(seedTrip);
+
+    render(<SagittariusApp accessMode="trip-access" requireJoin dataSource="api" apiClient={apiClient} />);
+
+    await waitFor(() => expect(replaceMock).toHaveBeenCalledWith(`/trips/${encodeTripId(seedTrip.id)}`));
+    await waitFor(() => expect(apiClient.loadTrip).toHaveBeenCalledWith(seedTrip.id, "persisted-join-session-token"));
+
+    locationSpy.mockRestore();
+  });
+
+  it("resolveJoinPostAuthReturnTo only accepts safe trip-scoped return targets", () => {
+    const tripId = "018f4e80-5788-7de0-a45c-8a555d17fc2d";
+    expect(resolveJoinPostAuthReturnTo("/trips", tripId)).toBeNull();
+    expect(resolveJoinPostAuthReturnTo(`/trips/${tripId}/itinerary`, tripId)).toBe(`/trips/${tripId}/itinerary`);
+    expect(resolveJoinPostAuthReturnTo(`/trips/${tripId}?foo=1`, tripId)).toBe(`/trips/${tripId}?foo=1`);
+    expect(resolveJoinPostAuthReturnTo(`/trips/018fc9c4-9cf0-7384-93ee-9bdc9c8d8f99/members`, tripId)).toBeNull();
+    expect(resolveJoinPostAuthReturnTo("/settings", tripId)).toBe("/settings");
+    expect(resolveJoinPostAuthReturnTo("/trips/AY9OgFeIfeCkXIpVXRf8LQ/itinerary", tripId)).toBe("/trips/AY9OgFeIfeCkXIpVXRf8LQ/itinerary");
   });
 
   it("keeps a persisted API session when the public route uses the canonical UUID", async () => {
@@ -1365,13 +1410,14 @@ describe("Sagittarius cockpit UI", () => {
   });
 
   it("renders trip members as their own workspace page", () => {
+    const shortTripId = encodeTripId(seedTrip.id);
     render(<SagittariusApp initialView="members" />);
 
     const navigation = screen.getByRole("navigation", { name: /เมนูวางแผน Joii/i });
     const membersLink = within(navigation).getByRole("link", { name: /สมาชิก/i });
 
     expect(membersLink).toHaveClass("rail-link--active");
-    expect(membersLink).toHaveAttribute("href", "/trips/018f4e80-5788-7de0-a45c-8a555d17fc2d/members");
+    expect(membersLink).toHaveAttribute("href", `/trips/${shortTripId}/members`);
     expect(screen.getByRole("region", { name: /สมาชิกทริป/i })).toBeInTheDocument();
     expect(screen.getByRole("region", { name: /People and presence/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /สมาชิกในทริป/i })).toBeInTheDocument();

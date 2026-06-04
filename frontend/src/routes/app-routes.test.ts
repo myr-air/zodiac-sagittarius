@@ -29,6 +29,7 @@ describe("app route helpers", () => {
     expect(appRoutes.tripMap("trip 1")).toBe("/trips/trip%201/map");
     expect(appRoutes.tripTimeline("trip 1")).toBe("/trips/trip%201/timeline");
     expect(appRoutes.tripMembers("trip 1")).toBe("/trips/trip%201/members");
+    expect(appRoutes.tripOverview("018f4e80-5788-7de0-a45c-8a555d17fc2d")).toBe("/trips/AY9OgFeIfeCkXIpVXRf8LQ");
     expect(appRoutes.join()).toBe("/join");
     expect(appRoutes.join("HK-SZ-2025")).toBe("/join/HK-SZ-2025");
   });

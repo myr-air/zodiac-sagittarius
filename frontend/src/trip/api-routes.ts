@@ -1,42 +1,50 @@
+import { decodeTripId } from "@/src/trip/ids";
+
 function encodePathSegment(segment: string): string {
   return encodeURIComponent(segment);
 }
 
+function tripPathSegment(tripId: string): string {
+  return encodePathSegment(decodeTripId(tripId));
+}
+
 export const tripApiRoutes = {
   joinSession: () => "/api/v1/trip-join-sessions",
-  trip: (tripId: string) => `/api/v1/trips/${encodePathSegment(tripId)}`,
+  joinInviteTokenCurrent: (token: string) => `/api/v1/trip-join-invite-tokens/current?${new URLSearchParams({ token })}`,
+  joinInviteTokens: (tripId: string) => `/api/v1/trips/${tripPathSegment(tripId)}/join-invite-tokens`,
+  trip: (tripId: string) => `/api/v1/trips/${tripPathSegment(tripId)}`,
   claimMember: (tripId: string, memberId: string) =>
-    `/api/v1/trips/${encodePathSegment(tripId)}/members/${encodePathSegment(memberId)}/claims`,
-  memberSessions: (tripId: string) => `/api/v1/trips/${encodePathSegment(tripId)}/member-sessions`,
-  currentMemberSession: (tripId: string) => `/api/v1/trips/${encodePathSegment(tripId)}/member-sessions/current`,
-  dailyBriefings: (tripId: string) => `/api/v1/trips/${encodePathSegment(tripId)}/daily-briefings`,
+    `/api/v1/trips/${tripPathSegment(tripId)}/members/${encodePathSegment(memberId)}/claims`,
+  memberSessions: (tripId: string) => `/api/v1/trips/${tripPathSegment(tripId)}/member-sessions`,
+  currentMemberSession: (tripId: string) => `/api/v1/trips/${tripPathSegment(tripId)}/member-sessions/current`,
+  dailyBriefings: (tripId: string) => `/api/v1/trips/${tripPathSegment(tripId)}/daily-briefings`,
   dailyBriefing: (tripId: string, date: string) =>
-    `/api/v1/trips/${encodePathSegment(tripId)}/daily-briefings/${encodePathSegment(date)}`,
-  members: (tripId: string) => `/api/v1/trips/${encodePathSegment(tripId)}/members`,
-  member: (tripId: string, memberId: string) => `/api/v1/trips/${encodePathSegment(tripId)}/members/${encodePathSegment(memberId)}`,
-  presence: (tripId: string) => `/api/v1/trips/${encodePathSegment(tripId)}/presence`,
-  planVariants: (tripId: string) => `/api/v1/trips/${encodePathSegment(tripId)}/plan-variants`,
+    `/api/v1/trips/${tripPathSegment(tripId)}/daily-briefings/${encodePathSegment(date)}`,
+  members: (tripId: string) => `/api/v1/trips/${tripPathSegment(tripId)}/members`,
+  member: (tripId: string, memberId: string) => `/api/v1/trips/${tripPathSegment(tripId)}/members/${encodePathSegment(memberId)}`,
+  presence: (tripId: string) => `/api/v1/trips/${tripPathSegment(tripId)}/presence`,
+  planVariants: (tripId: string) => `/api/v1/trips/${tripPathSegment(tripId)}/plan-variants`,
   planVariant: (tripId: string, planVariantId: string) =>
-    `/api/v1/trips/${encodePathSegment(tripId)}/plan-variants/${encodePathSegment(planVariantId)}`,
+    `/api/v1/trips/${tripPathSegment(tripId)}/plan-variants/${encodePathSegment(planVariantId)}`,
   planVariantPublications: (tripId: string, planVariantId: string) =>
-    `/api/v1/trips/${encodePathSegment(tripId)}/plan-variants/${encodePathSegment(planVariantId)}/publications`,
+    `/api/v1/trips/${tripPathSegment(tripId)}/plan-variants/${encodePathSegment(planVariantId)}/publications`,
   resetMemberClaim: (tripId: string, memberId: string) =>
-    `/api/v1/trips/${encodePathSegment(tripId)}/members/${encodePathSegment(memberId)}/claim-resets`,
-  tasks: (tripId: string) => `/api/v1/trips/${encodePathSegment(tripId)}/tasks`,
-  task: (tripId: string, taskId: string) => `/api/v1/trips/${encodePathSegment(tripId)}/tasks/${encodePathSegment(taskId)}`,
-  itineraryItems: (tripId: string) => `/api/v1/trips/${encodePathSegment(tripId)}/itinerary-items`,
+    `/api/v1/trips/${tripPathSegment(tripId)}/members/${encodePathSegment(memberId)}/claim-resets`,
+  tasks: (tripId: string) => `/api/v1/trips/${tripPathSegment(tripId)}/tasks`,
+  task: (tripId: string, taskId: string) => `/api/v1/trips/${tripPathSegment(tripId)}/tasks/${encodePathSegment(taskId)}`,
+  itineraryItems: (tripId: string) => `/api/v1/trips/${tripPathSegment(tripId)}/itinerary-items`,
   itineraryItem: (tripId: string, itemId: string) =>
-    `/api/v1/trips/${encodePathSegment(tripId)}/itinerary-items/${encodePathSegment(itemId)}`,
-  reorderItineraryItems: (tripId: string) => `/api/v1/trips/${encodePathSegment(tripId)}/itinerary-items/order`,
-  suggestions: (tripId: string) => `/api/v1/trips/${encodePathSegment(tripId)}/suggestions`,
+    `/api/v1/trips/${tripPathSegment(tripId)}/itinerary-items/${encodePathSegment(itemId)}`,
+  reorderItineraryItems: (tripId: string) => `/api/v1/trips/${tripPathSegment(tripId)}/itinerary-items/order`,
+  suggestions: (tripId: string) => `/api/v1/trips/${tripPathSegment(tripId)}/suggestions`,
   suggestion: (tripId: string, suggestionId: string) =>
-    `/api/v1/trips/${encodePathSegment(tripId)}/suggestions/${encodePathSegment(suggestionId)}`,
-  expensesSummary: (tripId: string) => `/api/v1/trips/${encodePathSegment(tripId)}/expenses/summary`,
-  expenses: (tripId: string) => `/api/v1/trips/${encodePathSegment(tripId)}/expenses`,
-  expense: (tripId: string, expenseId: string) => `/api/v1/trips/${encodePathSegment(tripId)}/expenses/${encodePathSegment(expenseId)}`,
-  stopNotes: (tripId: string) => `/api/v1/trips/${encodePathSegment(tripId)}/stop-notes`,
-  stopNote: (tripId: string, noteId: string) => `/api/v1/trips/${encodePathSegment(tripId)}/stop-notes/${encodePathSegment(noteId)}`,
-  updateMember: (tripId: string, memberId: string) => `/api/v1/trips/${encodePathSegment(tripId)}/members/${encodePathSegment(memberId)}`,
+    `/api/v1/trips/${tripPathSegment(tripId)}/suggestions/${encodePathSegment(suggestionId)}`,
+  expensesSummary: (tripId: string) => `/api/v1/trips/${tripPathSegment(tripId)}/expenses/summary`,
+  expenses: (tripId: string) => `/api/v1/trips/${tripPathSegment(tripId)}/expenses`,
+  expense: (tripId: string, expenseId: string) => `/api/v1/trips/${tripPathSegment(tripId)}/expenses/${encodePathSegment(expenseId)}`,
+  stopNotes: (tripId: string) => `/api/v1/trips/${tripPathSegment(tripId)}/stop-notes`,
+  stopNote: (tripId: string, noteId: string) => `/api/v1/trips/${tripPathSegment(tripId)}/stop-notes/${encodePathSegment(noteId)}`,
+  updateMember: (tripId: string, memberId: string) => `/api/v1/trips/${tripPathSegment(tripId)}/members/${encodePathSegment(memberId)}`,
 };
 
 export const tripAuthApiRoutes = {

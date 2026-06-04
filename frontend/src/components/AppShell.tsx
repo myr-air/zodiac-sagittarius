@@ -8,6 +8,7 @@ import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
 import { appRoutes, tripWorkspaceNavItems } from "@/src/routes/app-routes";
 import { shortTripId } from "@/src/trip/ids";
+import { decodeTripId } from "@/src/trip/ids";
 import type { Member, Trip } from "@/src/trip/types";
 import { getTripDates } from "@/src/trip/itinerary";
 import { Icon } from "./icons";
@@ -26,12 +27,18 @@ interface AppShellProps {
 
 export function resolveViewFromPath(pathname: string, tripId: string, initialView: PlanningView): PlanningView {
   const normalizedPath = pathname.replace(/\/+$/, "");
-  const tripBasePath = `/trips/${tripId}`;
 
-  if (normalizedPath === tripBasePath) return initialView;
-  if (!normalizedPath.startsWith(`${tripBasePath}/`)) return initialView;
+  if (!normalizedPath.startsWith("/trips/")) return initialView;
 
-  const viewSegment = normalizedPath.slice(tripBasePath.length + 1).split("/")[0];
+  const rawTripSegment = normalizedPath.slice("/trips/".length).split("/")[0];
+  const decodedTripSegment = decodeTripId(rawTripSegment);
+  if (decodedTripSegment !== tripId) return initialView;
+
+  if (normalizedPath === `/trips/${rawTripSegment}`) return initialView;
+  if (!normalizedPath.startsWith(`/trips/${rawTripSegment}/`)) return initialView;
+
+  const viewSegment = normalizedPath.slice(`/trips/${rawTripSegment}/`.length).split("/")[0];
+
   if (viewSegment === "itinerary") return "itinerary";
   if (viewSegment === "map") return "map";
   if (viewSegment === "timeline") return "timeline";
@@ -133,7 +140,7 @@ export function AppShell({ activeView, children, collapsed, currentMember, onLea
 
         <div className={railSummaryClassName} data-collapsed={collapsed ? "true" : "false"} aria-label={t.appShell.planSummary}>
           <strong>{t.appShell.planSummary}</strong>
-          <span><Icon name="key" /> {t.appShell.tripId({ id: shortTripId(trip.id) })}</span>
+            <span><Icon name="key" /> {t.appShell.tripId({ id: shortTripId(trip.id, { mode: "front", length: 6 }) })}</span>
           <span><Icon name="calendar" /> {t.appShell.tripDuration({ days: tripDays, nights: tripNights })}</span>
           <span><Icon name="location" /> {t.appShell.placeCount({ count: trip.itineraryItems.length })}</span>
           <Link href={appRoutes.tripOverview(trip.id)} className={railSummaryLinkClassName}>{t.appShell.viewDetails}</Link>
