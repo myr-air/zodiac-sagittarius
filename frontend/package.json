@@ -15,6 +15,7 @@
     "test:e2e:real": "NODE_OPTIONS=--no-warnings SAGITTARIUS_E2E_REQUIRED=1 vitest --project unit run src/trip/real-api.e2e.test.ts src/account/real-portal.e2e.test.ts",
     "test:e2e:local": "bun run scripts/run-local-real-api-e2e.ts",
     "test:e2e:auth-browser": "bun run scripts/run-local-real-browser-auth-e2e.ts",
+    "test:production-browser-qa": "bun run scripts/run-local-production-browser-qa.ts",
     "test:api-trace-smoke": "bun run scripts/run-local-api-trace-smoke.ts",
     "test:perf-smoke": "bun run scripts/run-local-perf-smoke.ts",
     "test:production-env": "bun run scripts/check-production-env.ts",
