@@ -1,5 +1,6 @@
 import { spawn, spawnSync, type ChildProcessByStdio } from "node:child_process";
 import { mkdir, writeFile } from "node:fs/promises";
+import { createServer, request as httpRequest, type IncomingMessage, type Server, type ServerResponse } from "node:http";
 import { tmpdir } from "node:os";
 import { join as joinPath } from "node:path";
 import type { Readable } from "node:stream";
@@ -12,8 +13,18 @@ const backendManifest = "../backend/Cargo.toml";
 const apiBindAddress = process.env.SAGITTARIUS_PROD_BROWSER_QA_API_BIND_ADDR ?? "127.0.0.1:5181";
 const frontendHost = process.env.SAGITTARIUS_PROD_BROWSER_QA_FRONTEND_HOST ?? "127.0.0.1";
 const frontendPort = process.env.SAGITTARIUS_PROD_BROWSER_QA_FRONTEND_PORT ?? "5182";
+const useCloudflareTunnel = process.env.SAGITTARIUS_PROD_BROWSER_QA_CLOUDFLARE_TUNNEL === "1";
+const cloudflaredRunner = process.env.SAGITTARIUS_PROD_BROWSER_QA_CLOUDFLARED_RUNNER ?? "docker";
+const cloudflaredDockerImage = process.env.SAGITTARIUS_PROD_BROWSER_QA_CLOUDFLARED_IMAGE ?? "cloudflare/cloudflared:latest";
+const providedPublicFrontendUrl = process.env.SAGITTARIUS_PROD_BROWSER_QA_PUBLIC_FRONTEND_URL?.trim() ?? "";
+const tunnelProxyHost = process.env.SAGITTARIUS_PROD_BROWSER_QA_TUNNEL_PROXY_HOST ?? (cloudflaredRunner === "docker" ? "0.0.0.0" : "127.0.0.1");
+const tunnelProxyCheckHost = tunnelProxyHost === "0.0.0.0" ? "127.0.0.1" : tunnelProxyHost;
+const tunnelProxyPort = process.env.SAGITTARIUS_PROD_BROWSER_QA_TUNNEL_PROXY_PORT ?? "5183";
+const qaEnvironmentLabel = process.env.SAGITTARIUS_PROD_BROWSER_QA_ENVIRONMENT ?? "local-staging";
 const apiBaseUrl = `http://${apiBindAddress}`;
-const frontendBaseUrl = `http://${frontendHost}:${frontendPort}`;
+const localFrontendBaseUrl = `http://${frontendHost}:${frontendPort}`;
+const tunnelProxyBaseUrl = `http://${tunnelProxyCheckHost}:${tunnelProxyPort}`;
+let frontendBaseUrl = localFrontendBaseUrl;
 const psql = process.env.PSQL ?? "psql";
 const runId = process.env.SAGITTARIUS_PROD_BROWSER_QA_RUN_ID ?? Date.now().toString(36);
 const evidenceDir = process.env.SAGITTARIUS_PROD_BROWSER_QA_EVIDENCE_DIR ?? joinPath(tmpdir(), "sagittarius-staging-evidence", runId);
@@ -49,7 +60,12 @@ const evidence: Evidence = {
     databaseUrl,
     evidenceDir,
     frontendBaseUrl,
-    note: "Local deployed staging on this machine: real Postgres + real Rust API + Next production build/start.",
+    cloudflareTunnel: useCloudflareTunnel ? "enabled" : "disabled",
+    cloudflaredRunner,
+    cloudflaredDockerImage: cloudflaredRunner === "docker" ? cloudflaredDockerImage : "",
+    providedPublicFrontendUrl,
+    qaEnvironment: qaEnvironmentLabel,
+    note: "Local staging QA on this machine: real Postgres + real Rust API + Next production build/start; optional Cloudflare Tunnel public browser path.",
   },
   failures: [],
   screenshots: [],
@@ -59,6 +75,7 @@ const evidence: Evidence = {
 
 async function main() {
   const processes: LoggedProcess[] = [];
+  const cleanup: Array<() => Promise<void> | void> = [];
   let browser: Browser | null = null;
 
   await mkdir(evidenceDir, { recursive: true });
@@ -78,19 +95,44 @@ async function main() {
     await waitForHealth(`${apiBaseUrl}/api/v1/health`, "API");
     evidence.checks.push("Real API health check passed.");
 
+    const browserApiBaseUrl = useCloudflareTunnel ? "" : apiBaseUrl;
     await run("bun", ["run", "build"], {
-      NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL: apiBaseUrl,
+      NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL: browserApiBaseUrl,
     });
-    evidence.checks.push("Next production build completed against the local staging API URL.");
+    evidence.checks.push(
+      useCloudflareTunnel
+        ? "Next production build completed for local staging with same-origin API routing for the Cloudflare Tunnel path."
+        : "Next production build completed against the local API URL.",
+    );
 
     const frontend = spawnLogged("frontend", "bun", ["run", "start"], {
       HOSTNAME: frontendHost,
-      NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL: apiBaseUrl,
+      NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL: browserApiBaseUrl,
       PORT: frontendPort,
     });
     processes.push(frontend);
-    await waitForHealth(`${frontendBaseUrl}/access?mode=sign-in`, "frontend");
+    await waitForHealth(`${localFrontendBaseUrl}/access?mode=sign-in`, "frontend");
     evidence.checks.push("Next production server is reachable.");
+
+    if (useCloudflareTunnel) {
+      const proxy = await startTunnelReverseProxy();
+      cleanup.push(() => new Promise<void>((resolve) => proxy.close(() => resolve())));
+      await waitForHealth(`${tunnelProxyBaseUrl}/access?mode=sign-in`, "local tunnel reverse proxy");
+      evidence.checks.push("Local reverse proxy routes same-origin /api requests to the real API.");
+
+      if (providedPublicFrontendUrl) {
+        frontendBaseUrl = trimTrailingSlash(providedPublicFrontendUrl);
+        evidence.checks.push(`Using operator-provided Cloudflare Tunnel frontend URL ${frontendBaseUrl}.`);
+      } else {
+        const tunnel = await spawnCloudflareTunnel();
+        processes.push(tunnel.process);
+        frontendBaseUrl = tunnel.publicUrl;
+      }
+      evidence.environment.frontendBaseUrl = frontendBaseUrl;
+      evidence.environment.cloudflareTunnelUrl = frontendBaseUrl;
+      await waitForHealth(`${frontendBaseUrl}/access?mode=sign-in`, "Cloudflare Tunnel frontend", 120_000);
+      evidence.checks.push(`Cloudflare Tunnel public local-staging frontend is reachable at ${frontendBaseUrl}.`);
+    }
 
     browser = await chromium.launch({ headless: true });
     await runPortalCustomerFlows(browser);
@@ -105,6 +147,9 @@ async function main() {
   } finally {
     evidence.finishedAt = new Date().toISOString();
     await browser?.close();
+    for (const close of [...cleanup].reverse()) {
+      await close();
+    }
     for (const child of [...processes].reverse()) {
       child.kill("SIGTERM");
     }
@@ -464,18 +509,21 @@ function latestEmailCode(email: string): string | null {
   return status.stdout.trim() || null;
 }
 
-async function waitForHealth(url: string, name: string) {
-  const deadline = Date.now() + 45_000;
+async function waitForHealth(url: string, name: string, timeoutMs = 45_000) {
+  const deadline = Date.now() + timeoutMs;
+  let lastError = "";
   while (Date.now() < deadline) {
     try {
       const response = await fetch(url);
       if (response.ok) return;
+      lastError = `${response.status} ${response.statusText}`;
     } catch {
+      lastError = "network error";
       await delay(250);
     }
   }
 
-  throw new Error(`Timed out waiting for ${name} at ${url}`);
+  throw new Error(`Timed out waiting for ${name} at ${url}. Last result: ${lastError || "none"}`);
 }
 
 function spawnLogged(name: string, command: string, args: string[], env: Record<string, string>): LoggedProcess {
@@ -495,6 +543,112 @@ function spawnLogged(name: string, command: string, args: string[], env: Record<
   child.stderr.on("data", (chunk) => process.stderr.write(`[${name}] ${chunk}`));
 
   return child;
+}
+
+async function startTunnelReverseProxy(): Promise<Server> {
+  const server = createServer((request, response) => {
+    const targetBaseUrl = request.url?.startsWith("/api/") ? apiBaseUrl : localFrontendBaseUrl;
+    proxyRequest(targetBaseUrl, request, response);
+  });
+
+  await new Promise<void>((resolve, reject) => {
+    server.once("error", reject);
+    server.listen(Number(tunnelProxyPort), tunnelProxyHost, () => {
+      server.off("error", reject);
+      resolve();
+    });
+  });
+
+  evidence.commands.push(`node reverse-proxy ${tunnelProxyBaseUrl} -> frontend ${localFrontendBaseUrl}, /api -> ${apiBaseUrl}`);
+  return server;
+}
+
+function proxyRequest(targetBaseUrl: string, incoming: IncomingMessage, outgoing: ServerResponse) {
+  const target = new URL(incoming.url ?? "/", targetBaseUrl);
+  const proxy = httpRequest(
+    target,
+    {
+      headers: {
+        ...incoming.headers,
+        host: target.host,
+      },
+      method: incoming.method,
+    },
+    (proxyResponse) => {
+      outgoing.writeHead(proxyResponse.statusCode ?? 502, proxyResponse.headers);
+      proxyResponse.pipe(outgoing);
+    },
+  );
+
+  proxy.on("error", (error) => {
+    if (!outgoing.headersSent) outgoing.writeHead(502, { "content-type": "text/plain" });
+    outgoing.end(`Proxy error: ${error.message}`);
+  });
+  incoming.pipe(proxy);
+}
+
+async function spawnCloudflareTunnel(): Promise<{ process: LoggedProcess; publicUrl: string }> {
+  const localTargetUrl = tunnelProxyBaseUrl;
+  const dockerTargetUrl = `http://host.docker.internal:${tunnelProxyPort}`;
+  const command = cloudflaredRunner === "docker" ? "docker" : "cloudflared";
+  const args = cloudflaredRunner === "docker"
+    ? [
+        "run",
+        "--rm",
+        "--name",
+        `sagittarius-cloudflared-${runId}`,
+        cloudflaredDockerImage,
+        "tunnel",
+        "--url",
+        dockerTargetUrl,
+        "--no-autoupdate",
+      ]
+    : ["tunnel", "--url", localTargetUrl, "--no-autoupdate"];
+  evidence.commands.push(`${command} ${args.join(" ")}`);
+  const child = spawn(command, args, {
+    cwd: process.cwd(),
+    env: process.env,
+    stdio: ["ignore", "pipe", "pipe"],
+  });
+
+  child.stdout.setEncoding("utf8");
+  child.stderr.setEncoding("utf8");
+
+  return {
+    process: child,
+    publicUrl: await waitForTunnelUrl(child),
+  };
+}
+
+async function waitForTunnelUrl(child: LoggedProcess): Promise<string> {
+  const urlPattern = /https:\/\/[-a-z0-9]+\.trycloudflare\.com/i;
+  let output = "";
+  return new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      reject(new Error(`Timed out waiting for Cloudflare Tunnel URL. Output:\n${output}`));
+    }, 45_000);
+
+    const onData = (chunk: string) => {
+      process.stdout.write(`[cloudflared] ${chunk}`);
+      output += chunk;
+      const match = output.match(urlPattern);
+      if (match) {
+        clearTimeout(timeout);
+        resolve(match[0]);
+      }
+    };
+
+    child.stdout.on("data", onData);
+    child.stderr.on("data", onData);
+    child.once("error", (error) => {
+      clearTimeout(timeout);
+      reject(error);
+    });
+    child.once("exit", (code) => {
+      clearTimeout(timeout);
+      reject(new Error(`cloudflared exited before publishing a tunnel URL with code ${code}. Output:\n${output}`));
+    });
+  });
 }
 
 async function run(command: string, args: string[], env: Record<string, string>) {
@@ -521,7 +675,7 @@ async function writeEvidence() {
 
 function renderMarkdownEvidence(): string {
   return [
-    "# Sagittarius Local Deployed Staging Browser QA",
+    "# Sagittarius Local Staging Browser QA",
     "",
     `- Status: ${evidence.status}`,
     `- Started: ${evidence.startedAt}`,
@@ -553,6 +707,10 @@ function splitCommand(command: string): string[] {
 
 function ensure(condition: unknown, message: string): asserts condition {
   if (!condition) throw new Error(message);
+}
+
+function trimTrailingSlash(value: string): string {
+  return value.endsWith("/") ? value.slice(0, -1) : value;
 }
 
 await main();
