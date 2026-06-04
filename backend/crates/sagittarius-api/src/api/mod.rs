@@ -1,4 +1,5 @@
 pub mod account;
+pub mod daily_briefings;
 pub mod error;
 pub mod expenses;
 pub mod extractors;
@@ -100,6 +101,14 @@ fn api_v1() -> Router<AppState> {
         .route(
             "/trips/{trip_id}",
             get(trips::load_trip).patch(trips::patch_trip),
+        )
+        .route(
+            "/trips/{trip_id}/daily-briefings",
+            get(daily_briefings::list_daily_briefings),
+        )
+        .route(
+            "/trips/{trip_id}/daily-briefings/{date}",
+            patch(daily_briefings::patch_daily_briefing),
         )
         .route(
             "/trips/{trip_id}/plan-variants",

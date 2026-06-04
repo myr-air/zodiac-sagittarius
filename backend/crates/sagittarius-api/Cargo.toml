@@ -16,6 +16,7 @@ http = "1"
 dotenvy = "0.15"
 lettre = { version = "0.11", default-features = false, features = ["builder", "hostname", "pool", "rustls-tls", "smtp-transport"] }
 rand = "0.9"
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
 p256 = { version = "0.13", features = ["ecdsa"] }
 serde = { version = "1", features = ["derive"] }
 serde_cbor = "0.11"

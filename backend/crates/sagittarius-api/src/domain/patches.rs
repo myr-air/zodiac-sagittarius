@@ -154,6 +154,16 @@ pub struct UpdatePresenceRequest {
 
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub struct PatchDailyBriefingRequest {
+    pub client_mutation_id: String,
+    pub expected_version: i64,
+    pub outfit_advice: Option<Option<String>>,
+    pub festival_note: Option<Option<String>>,
+    pub facts_note: Option<Option<String>>,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct CreateSuggestionRequest {
     pub client_mutation_id: String,
     pub r#type: String,
@@ -210,6 +220,16 @@ impl PatchTaskRequest {
     pub fn validate(&self) -> Result<(), ServiceError> {
         validate_client_mutation_id(&self.client_mutation_id)?;
         self.patch.validate()
+    }
+}
+
+impl PatchDailyBriefingRequest {
+    pub fn validate(&self) -> Result<(), ServiceError> {
+        validate_client_mutation_id(&self.client_mutation_id)?;
+        validate_optional_override(&self.outfit_advice, "outfitAdvice")?;
+        validate_optional_override(&self.festival_note, "festivalNote")?;
+        validate_optional_override(&self.facts_note, "factsNote")?;
+        Ok(())
     }
 }
 
@@ -507,6 +527,16 @@ fn validate_sized_text(value: &str, message: &'static str) -> Result<(), Service
         return Err(ServiceError::InvalidRequest(message));
     }
 
+    Ok(())
+}
+
+fn validate_optional_override(
+    value: &Option<Option<String>>,
+    field: &'static str,
+) -> Result<(), ServiceError> {
+    if let Some(Some(text)) = value {
+        validate_sized_text(text, field)?;
+    }
     Ok(())
 }
 

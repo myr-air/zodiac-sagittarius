@@ -292,6 +292,71 @@ pub struct ItineraryCoordinates {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub struct BriefingCoordinates {
+    pub lat: f64,
+    pub lng: f64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BriefingSourceMeta {
+    pub source: String,
+    pub source_url: Option<String>,
+    pub fetched_at: Option<String>,
+    pub expires_at: Option<String>,
+    pub confidence: String,
+    pub unavailable_reason: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct WeatherBriefingBlock {
+    pub condition_code: String,
+    pub condition_label: String,
+    pub temperature_max_celsius: Option<f64>,
+    pub temperature_min_celsius: Option<f64>,
+    pub humidity_percent: Option<i32>,
+    pub wind_speed_kph: Option<f64>,
+    pub rain_chance_percent: Option<i32>,
+    pub meta: BriefingSourceMeta,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TextBriefingBlock {
+    pub title: String,
+    pub body: String,
+    pub meta: BriefingSourceMeta,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DailyBriefingOverrides {
+    pub outfit_advice: Option<String>,
+    pub festival_note: Option<String>,
+    pub facts_note: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TripDailyBriefing {
+    pub trip_id: Uuid,
+    pub date: Date,
+    pub location_key: String,
+    pub location_label: String,
+    pub coordinates: Option<BriefingCoordinates>,
+    pub weather: Option<WeatherBriefingBlock>,
+    pub holiday: Option<TextBriefingBlock>,
+    pub festival: Option<TextBriefingBlock>,
+    pub facts: Option<TextBriefingBlock>,
+    pub outfit_advice: Option<TextBriefingBlock>,
+    pub manual_overrides: DailyBriefingOverrides,
+    pub updated_at: String,
+    pub version: i64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ItineraryItemSummary {
     pub id: Uuid,
     pub trip_id: Uuid,

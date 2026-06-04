@@ -22,6 +22,7 @@ async fn migration_creates_vertical_slice_tables(pool: sqlx::PgPool) {
         "trip_tasks",
         "expenses",
         "stop_notes",
+        "trip_daily_briefings",
         "realtime_events",
     ] {
         assert!(
@@ -50,6 +51,7 @@ async fn migration_creates_vertical_slice_indexes(pool: sqlx::PgPool) {
         "trip_tasks_assignee_status_idx",
         "trip_member_sessions_member_active_idx",
         "stop_notes_trip_item_created_at_idx",
+        "trip_daily_briefings_trip_date_idx",
         "realtime_events_trip_id_idx",
         "realtime_events_client_mutation_id_idx",
     ] {
@@ -78,6 +80,56 @@ async fn trips_cycle_foreign_keys_are_deferred(pool: sqlx::PgPool) {
             ("trips_active_plan_variant_id_fkey".to_string(), true, true),
             ("trips_owner_member_id_fkey".to_string(), true, true),
         ]
+    );
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn daily_briefings_schema_stores_cache_and_manual_overrides(pool: sqlx::PgPool) {
+    let columns: Vec<(String, String)> = sqlx::query_as(
+        "select column_name::text, data_type::text
+         from information_schema.columns
+         where table_schema = 'public'
+           and table_name = 'trip_daily_briefings'
+         order by ordinal_position",
+    )
+    .fetch_all(&pool)
+    .await
+    .unwrap();
+
+    for (column_name, data_type) in [
+        ("trip_id", "uuid"),
+        ("briefing_date", "date"),
+        ("location_key", "text"),
+        ("location_label", "text"),
+        ("coordinates", "jsonb"),
+        ("weather", "jsonb"),
+        ("holiday", "jsonb"),
+        ("festival", "jsonb"),
+        ("facts", "jsonb"),
+        ("outfit_advice", "jsonb"),
+        ("manual_overrides", "jsonb"),
+        ("version", "bigint"),
+    ] {
+        assert!(
+            columns.contains(&(column_name.to_string(), data_type.to_string())),
+            "missing column {column_name} {data_type}"
+        );
+    }
+
+    let unique_constraints: Vec<String> = sqlx::query_scalar(
+        "select conname::text
+         from pg_constraint
+         where conrelid = 'trip_daily_briefings'::regclass
+           and contype = 'u'",
+    )
+    .fetch_all(&pool)
+    .await
+    .unwrap();
+    assert!(
+        unique_constraints
+            .iter()
+            .any(|name| name.contains("trip_daily_briefings_trip_id_briefing_date_location_key")),
+        "missing unique cache key"
     );
 }
 

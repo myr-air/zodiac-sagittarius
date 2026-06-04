@@ -1,5 +1,5 @@
 import { type FormEvent, type ReactNode, useMemo, useState } from "react";
-import type { ExpenseSummary, ItineraryItem, Member, Suggestion, Trip, TripTask } from "@/src/trip/types";
+import type { DailyBriefingOverrides, ExpenseSummary, ItineraryItem, Member, Suggestion, Trip, TripDailyBriefing, TripTask } from "@/src/trip/types";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import type { Locale } from "@/src/i18n/types";
 import { cn } from "@/src/lib/cn";
@@ -7,6 +7,8 @@ import { formatDayLabel, getTripDates, type ItineraryView } from "@/src/trip/iti
 import { Icon } from "./icons";
 import { formatTripRange, PageUserCard } from "./PageHeader";
 import { Button } from "./ui";
+import { WeatherBriefingDrawer } from "./WeatherBriefingDrawer";
+import { WeatherForecastStrip } from "./WeatherForecastStrip";
 
 interface OverviewPageProps {
   trip: Trip;
@@ -16,8 +18,10 @@ interface OverviewPageProps {
   itineraryView?: ItineraryView;
   suggestions: Suggestion[];
   tasks: TripTask[];
+  dailyBriefings?: TripDailyBriefing[];
   onCreateTask: (input: { title: string; visibility: TripTask["visibility"]; assigneeId?: string | null }) => void;
   onOpenExpenses?: () => void;
+  onSaveDailyBriefingOverrides?: (date: string, version: number, overrides: DailyBriefingOverrides) => void;
   onToggleTaskStatus: (taskId: string) => void;
 }
 
@@ -103,8 +107,10 @@ export function OverviewPage({
   itineraryView,
   suggestions,
   tasks,
+  dailyBriefings = [],
   onCreateTask,
   onOpenExpenses,
+  onSaveDailyBriefingOverrides,
   onToggleTaskStatus,
 }: OverviewPageProps) {
   const { locale, t } = useI18n();
@@ -122,6 +128,7 @@ export function OverviewPage({
   const [newTaskVisibility, setNewTaskVisibility] = useState<TripTask["visibility"]>("private");
   const [newTaskAssigneeId, setNewTaskAssigneeId] = useState("");
   const [undoTask, setUndoTask] = useState<TripTask | null>(null);
+  const [selectedBriefingDate, setSelectedBriefingDate] = useState<string | null>(null);
   const tripDays = getTripDates(trip.startDate, trip.endDate);
   /* v8 ignore next */
   const sortedItems = itineraryView?.sortedItems ?? items.slice().sort((a, b) => a.day.localeCompare(b.day) || a.sortOrder - b.sortOrder || a.startTime.localeCompare(b.startTime));
@@ -147,6 +154,7 @@ export function OverviewPage({
   const foodStops = sortedItems.filter((item) => item.activityType === "food").slice(0, 3);
   const tripHighlights = sortedItems.filter((item) => ["attraction", "experience", "shopping"].includes(item.activityType)).slice(0, 4);
   const viewerHighlights = sortedItems.filter((item) => item.activityType !== "travel").slice(0, 5);
+  const selectedBriefing = dailyBriefings.find((briefing) => briefing.date === selectedBriefingDate) ?? null;
   const visibleTasks = useMemo(
     () =>
       tasks.filter((task) => {
@@ -207,6 +215,20 @@ export function OverviewPage({
         visual={heroVisual}
         currentMemberCard={currentMemberCard}
         countdown={countdown}
+      />
+      <WeatherForecastStrip
+        briefings={dailyBriefings}
+        locale={locale}
+        selectedDate={selectedBriefingDate}
+        onSelect={setSelectedBriefingDate}
+      />
+      <WeatherBriefingDrawer
+        briefing={selectedBriefing}
+        locale={locale}
+        canEdit={isManagerLens}
+        isOpen={Boolean(selectedBriefing)}
+        onClose={() => setSelectedBriefingDate(null)}
+        onSaveOverrides={onSaveDailyBriefingOverrides}
       />
 
       <section className={overviewCockpitClassName} aria-label="travel cockpit">
@@ -790,7 +812,14 @@ function TripCompletedPostcard({ trip, items, groupSpendLabel, locale }: { trip:
   );
 }
 
-function TaskAssigneeBadge({ task, trip, labels }: { task: TripTask; trip: Trip; labels: any }) {
+interface TaskAssigneeLabels {
+  private: string;
+  shared: string;
+  tripMember: string;
+  unassigned: string;
+}
+
+function TaskAssigneeBadge({ task, trip, labels }: { task: TripTask; trip: Trip; labels: TaskAssigneeLabels }) {
   const isPrivate = task.visibility === "private";
   const member = task.assigneeId ? trip.members.find((m) => m.id === task.assigneeId) : null;
   const name = member?.displayName ?? labels.tripMember;

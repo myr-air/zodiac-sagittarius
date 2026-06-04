@@ -17,7 +17,7 @@ import { I18nProvider } from "@/src/i18n/I18nProvider";
 import { renderWithI18n } from "@/src/i18n/test-utils";
 import { tripStorageKey } from "@/src/trip/repository";
 import { seedTrip } from "@/src/trip/seed";
-import type { ItineraryItem, StopNote, Suggestion, Trip, TripTask } from "@/src/trip/types";
+import type { ItineraryItem, StopNote, Suggestion, Trip, TripDailyBriefing, TripTask } from "@/src/trip/types";
 import { encodeReturnTo } from "@/src/routes/app-routes";
 
 function render(ui: ReactElement) {
@@ -544,6 +544,8 @@ describe("Sagittarius cockpit UI", () => {
       loginMember: vi.fn(),
       logout: vi.fn(),
       loadTrip: vi.fn().mockResolvedValue(cockpit),
+      listDailyBriefings: vi.fn().mockResolvedValue([]),
+      patchDailyBriefing: vi.fn(),
       patchTrip: vi.fn(),
       createPlanVariant: vi.fn(),
       patchPlanVariant: vi.fn(),
@@ -648,6 +650,55 @@ describe("Sagittarius cockpit UI", () => {
 
     await waitFor(() => expect(apiClient.loadTrip).toHaveBeenCalledWith(apiTrip.id, "persisted-session-token"));
     expect(await screen.findByRole("heading", { name: /Persisted API Trip/i })).toBeInTheDocument();
+  });
+
+  it("loads daily weather briefings into overview and saves organizer overrides", async () => {
+    const user = userEvent.setup();
+    installLocalStorageStub();
+    const apiTrip = {
+      ...seedTrip,
+      name: "Weather API Trip",
+      joinPasswordHash: "",
+      members: [{ ...seedTrip.members[0], claimPasswordHash: null }],
+    };
+    const briefing = dailyBriefingFixture(apiTrip.id, "2026-07-12");
+    window.localStorage.setItem(
+      tripParticipantSessionStorageKey,
+      JSON.stringify({
+        tripId: apiTrip.id,
+        memberId: apiTrip.members[0].id,
+        sessionToken: "weather-session-token",
+        createdAt: "2026-05-29T00:00:00.000Z",
+        expiresAt: "2026-06-28T00:00:00.000Z",
+      }),
+    );
+    const apiClient = createApiClientForTrip(apiTrip, {
+      listDailyBriefings: vi.fn().mockResolvedValue([briefing]),
+      patchDailyBriefing: vi.fn().mockResolvedValue({
+        ...briefing,
+        manualOverrides: { outfitAdvice: "Pack a compact umbrella" },
+        version: 2,
+      }),
+    });
+
+    render(<SagittariusApp requireJoin dataSource="api" initialView="overview" apiClient={apiClient} />);
+
+    await waitFor(() => expect(apiClient.listDailyBriefings).toHaveBeenCalledWith(apiTrip.id, "weather-session-token"));
+    expect(await screen.findByRole("region", { name: /พยากรณ์อากาศรายวัน/i })).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: /Rain 33° 28°/ }));
+    expect(screen.getByRole("dialog", { name: /รายละเอียดพยากรณ์อากาศ/i })).toBeInTheDocument();
+    await user.type(screen.getByLabelText(/Outfit advice override/i), "Pack a compact umbrella");
+    await user.click(screen.getByRole("button", { name: /บันทึก/i }));
+
+    expect(apiClient.patchDailyBriefing).toHaveBeenCalledWith(
+      apiTrip.id,
+      "2026-07-12",
+      "weather-session-token",
+      expect.objectContaining({
+        expectedVersion: 1,
+        outfitAdvice: "Pack a compact umbrella",
+      }),
+    );
   });
 
   it("redirects /join to the trip route when a persisted API session already exists", async () => {
@@ -923,6 +974,8 @@ describe("Sagittarius cockpit UI", () => {
       loginMember: vi.fn(),
       logout: vi.fn(),
       loadTrip: vi.fn().mockResolvedValue(cockpit),
+      listDailyBriefings: vi.fn().mockResolvedValue([]),
+      patchDailyBriefing: vi.fn(),
       patchTrip: vi.fn(),
       createPlanVariant: vi.fn(),
       patchPlanVariant: vi.fn(),
@@ -1048,6 +1101,8 @@ describe("Sagittarius cockpit UI", () => {
       loginMember: vi.fn(),
       logout: vi.fn(),
       loadTrip: vi.fn().mockResolvedValue(cockpit),
+      listDailyBriefings: vi.fn().mockResolvedValue([]),
+      patchDailyBriefing: vi.fn(),
       patchTrip: vi.fn(),
       createPlanVariant: vi.fn(),
       patchPlanVariant: vi.fn(),
@@ -1118,6 +1173,8 @@ describe("Sagittarius cockpit UI", () => {
     };
     const apiClient = createApiClientForTrip(ownerTrip, {
       loadTrip: vi.fn().mockResolvedValue(cockpit),
+      listDailyBriefings: vi.fn().mockResolvedValue([]),
+      patchDailyBriefing: vi.fn(),
       deleteItineraryItem: vi.fn().mockResolvedValue({ ...selectedItem, version: selectedItem.version + 1 }),
     });
 
@@ -2063,6 +2120,8 @@ function createApiClientForTrip(trip: Trip, overrides: Partial<TripApiClient> = 
     loginMember: vi.fn(),
     logout: vi.fn(),
     loadTrip: vi.fn().mockResolvedValue(cockpit),
+    listDailyBriefings: vi.fn().mockResolvedValue([]),
+    patchDailyBriefing: vi.fn(),
     patchTrip: vi.fn(),
     createPlanVariant: vi.fn(),
     patchPlanVariant: vi.fn(),
@@ -2101,6 +2160,33 @@ function createApiClientForTrip(trip: Trip, overrides: Partial<TripApiClient> = 
     patchExpense: vi.fn(),
     deleteExpense: vi.fn(),
     ...overrides,
+  };
+}
+
+function dailyBriefingFixture(tripId: string, date: string): TripDailyBriefing {
+  return {
+    tripId,
+    date,
+    locationKey: "destination:hong-kong",
+    locationLabel: "Hong Kong",
+    coordinates: null,
+    weather: {
+      conditionCode: "rain",
+      conditionLabel: "Rain",
+      temperatureMaxCelsius: 33,
+      temperatureMinCelsius: 28,
+      humidityPercent: 82,
+      windSpeedKph: 16,
+      rainChancePercent: 64,
+      meta: { source: "Open-Meteo", sourceUrl: null, fetchedAt: "2026-06-04T00:00:00Z", expiresAt: "2026-06-04T06:00:00Z", confidence: "high", unavailableReason: null },
+    },
+    holiday: null,
+    festival: null,
+    facts: null,
+    outfitAdvice: { title: "Outfit advice", body: "Light shirt and compact umbrella.", meta: { source: "Sagittarius", sourceUrl: null, fetchedAt: null, expiresAt: null, confidence: "medium", unavailableReason: null } },
+    manualOverrides: {},
+    updatedAt: "2026-06-04T00:00:00Z",
+    version: 1,
   };
 }
 

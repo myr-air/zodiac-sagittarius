@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { tripFixture } from "@/src/demo/trip-fixtures";
+import { weatherBriefings } from "./WeatherBriefing.fixtures";
 import { OverviewPage } from "./OverviewPage";
 
 const meta = {
@@ -20,7 +21,9 @@ export const Owner: Story = {
     items: tripFixture.planItems,
     suggestions: tripFixture.suggestions,
     tasks: tripFixture.tasks,
+    dailyBriefings: weatherBriefings,
     onCreateTask: () => {},
+    onSaveDailyBriefingOverrides: () => {},
     onToggleTaskStatus: () => {},
   },
 };

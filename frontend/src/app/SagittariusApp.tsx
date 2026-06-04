@@ -32,7 +32,7 @@ import { tripFixtureStopNotes, tripFixtureSuggestions, tripFixtureTasks } from "
 import { tripStorageKey } from "@/src/trip/repository";
 import { seedTrip } from "@/src/trip/seed";
 import { approveSuggestion } from "@/src/trip/suggestions";
-import type { Expense, ExpenseSummary, ItineraryItem, StopNote, Suggestion, Trip, TripMemberAccessStatus, TripParticipantSession, TripRole, TripTask } from "@/src/trip/types";
+import type { DailyBriefingOverrides, Expense, ExpenseSummary, ItineraryItem, StopNote, Suggestion, Trip, TripDailyBriefing, TripMemberAccessStatus, TripParticipantSession, TripRole, TripTask } from "@/src/trip/types";
 
 const localMutationTimestamp = "2026-05-28T00:00:00.000Z";
 const accountSessionStorageKey = "sagittarius-account-session";
@@ -109,6 +109,7 @@ export function SagittariusApp({
   const [suggestions, setSuggestions] = useState<Suggestion[]>(() => tripFixtureSuggestions.map((suggestion) => ({ ...suggestion })));
   const [tasks, setTasks] = useState<TripTask[]>(() => tripFixtureTasks.map((task) => ({ ...task })));
   const [stopNotes, setStopNotes] = useState<StopNote[]>(() => tripFixtureStopNotes.map((note) => ({ ...note })));
+  const [dailyBriefings, setDailyBriefings] = useState<TripDailyBriefing[]>([]);
   const [backendExpenseSummary, setBackendExpenseSummary] = useState<ExpenseSummary | null>(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [contextRailOpen, setContextRailOpen] = useState(false);
@@ -234,23 +235,29 @@ export function SagittariusApp({
     if (!isApiMode || !participantSession || !resolvedApiClient) return undefined;
     let cancelled = false;
 
-    void resolvedApiClient
-      .loadTrip(participantSession.tripId, participantSession.sessionToken)
-      .then((cockpit) => {
+    void Promise.all([
+      resolvedApiClient.loadTrip(participantSession.tripId, participantSession.sessionToken),
+      resolvedApiClient
+        .listDailyBriefings(participantSession.tripId, participantSession.sessionToken)
+        .catch(() => [] as TripDailyBriefing[]),
+    ])
+      .then(([cockpit, briefings]) => {
         if (cancelled) return;
         setTripState({ trip: cockpit.trip, past: [], future: [] });
         setSuggestions(cockpit.suggestions);
         setTasks(cockpit.tasks);
         setStopNotes(cockpit.stopNotes);
+        setDailyBriefings(briefings);
         setBackendExpenseSummary(cockpit.expenseSummary);
         setIsCockpitLoaded(true);
       })
       .catch(() => {
         if (cancelled) return;
         clearParticipantSession(isApiMode);
-        setParticipantSession(null);
-        setAccessError("unauthenticated");
-        setIsCockpitLoaded(false);
+      setParticipantSession(null);
+      setAccessError("unauthenticated");
+      setDailyBriefings([]);
+      setIsCockpitLoaded(false);
       });
 
     return () => {
@@ -563,6 +570,24 @@ export function SagittariusApp({
     );
     setContextRailVisibility(Boolean(nextSelectedItemId));
     setDialogState(null);
+  }
+
+  async function saveDailyBriefingOverrides(date: string, version: number, overrides: DailyBriefingOverrides) {
+    if (isApiMode && resolvedApiClient && participantSession) {
+      const patched = await resolvedApiClient.patchDailyBriefing(trip.id, date, participantSession.sessionToken, {
+        clientMutationId: nextClientMutationId("daily-briefing"),
+        expectedVersion: version,
+        ...overrides,
+      });
+      setDailyBriefings((current) => current.map((briefing) => (briefing.date === date ? patched : briefing)));
+      return;
+    }
+
+    setDailyBriefings((current) => current.map((briefing) => (
+      briefing.date === date
+        ? { ...briefing, manualOverrides: { ...briefing.manualOverrides, ...overrides }, version: briefing.version + 1 }
+        : briefing
+    )));
   }
 
   function commitTrip(updater: (current: Trip) => Trip, nextSelectedItemId?: string) {
@@ -1158,8 +1183,10 @@ export function SagittariusApp({
                 itineraryView={itineraryView}
                 suggestions={suggestions}
                 tasks={tasks}
+                dailyBriefings={dailyBriefings}
                 onOpenExpenses={openExpensesWorkspace}
                 onCreateTask={createTask}
+                onSaveDailyBriefingOverrides={saveDailyBriefingOverrides}
                 onToggleTaskStatus={toggleTaskStatus}
               />
             ) : currentView === "itinerary" ? (

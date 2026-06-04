@@ -34,6 +34,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         include_str!("../../../../migrations/0005_account_portal.sql"),
         include_str!("../../../../migrations/0006_trip_countries.sql"),
         include_str!("../../../../migrations/0007_stop_notes.sql"),
+        include_str!("../../../../migrations/0008_trip_daily_briefings.sql"),
     ] {
         sqlx::raw_sql(migration).execute(&pool).await?;
     }

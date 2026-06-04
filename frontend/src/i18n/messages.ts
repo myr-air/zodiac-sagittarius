@@ -763,6 +763,7 @@ export const messages = {
       memberStatus: {
         ready: "Ready",
         claimed: "Verified",
+        linked: "Linked",
         disabled: "Disabled",
       },
       visual: {
@@ -1537,6 +1538,7 @@ export const messages = {
       memberStatus: {
         ready: "พร้อมใช้งาน",
         claimed: "ยืนยันแล้ว",
+        linked: "ผูกบัญชีแล้ว",
         disabled: "ปิดสิทธิ์",
       },
       visual: {

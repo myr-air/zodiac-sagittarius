@@ -9,6 +9,9 @@ export const tripApiRoutes = {
     `/api/v1/trips/${encodePathSegment(tripId)}/members/${encodePathSegment(memberId)}/claims`,
   memberSessions: (tripId: string) => `/api/v1/trips/${encodePathSegment(tripId)}/member-sessions`,
   currentMemberSession: (tripId: string) => `/api/v1/trips/${encodePathSegment(tripId)}/member-sessions/current`,
+  dailyBriefings: (tripId: string) => `/api/v1/trips/${encodePathSegment(tripId)}/daily-briefings`,
+  dailyBriefing: (tripId: string, date: string) =>
+    `/api/v1/trips/${encodePathSegment(tripId)}/daily-briefings/${encodePathSegment(date)}`,
   members: (tripId: string) => `/api/v1/trips/${encodePathSegment(tripId)}/members`,
   member: (tripId: string, memberId: string) => `/api/v1/trips/${encodePathSegment(tripId)}/members/${encodePathSegment(memberId)}`,
   presence: (tripId: string) => `/api/v1/trips/${encodePathSegment(tripId)}/presence`,

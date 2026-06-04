@@ -9,6 +9,7 @@ import type {
   StopNote,
   Suggestion,
   Trip,
+  TripDailyBriefing,
   TripJoinCredential,
   TripMemberAccessStatus,
   TripParticipantSession,
@@ -147,6 +148,8 @@ export interface TripApiClient {
   loginMember(tripId: string, memberId: string, participantPassword: string, joinSessionToken: string): Promise<TripParticipantSession>;
   logout(tripId: string, sessionToken: string): Promise<void>;
   loadTrip(tripId: string, sessionToken: string): Promise<TripCockpit>;
+  listDailyBriefings(tripId: string, sessionToken: string): Promise<TripDailyBriefing[]>;
+  patchDailyBriefing(tripId: string, date: string, sessionToken: string, request: PatchDailyBriefingApiRequest): Promise<TripDailyBriefing>;
   patchTrip(tripId: string, sessionToken: string, request: PatchTripApiRequest): Promise<Trip>;
   createPlanVariant(tripId: string, sessionToken: string, request: CreatePlanVariantApiRequest): Promise<PlanVariant>;
   patchPlanVariant(tripId: string, planVariantId: string, sessionToken: string, request: PatchPlanVariantApiRequest): Promise<PlanVariant>;
@@ -192,6 +195,14 @@ export interface PatchTripApiRequest {
   startDate?: string;
   endDate?: string;
   activePlanVariantId?: string;
+}
+
+export interface PatchDailyBriefingApiRequest {
+  clientMutationId: string;
+  expectedVersion: number;
+  outfitAdvice?: string | null;
+  festivalNote?: string | null;
+  factsNote?: string | null;
 }
 
 export interface CreatePlanVariantApiRequest {
@@ -359,6 +370,19 @@ export function createTripApiClient(options: TripApiClientOptions = {}): TripApi
         headers: { Authorization: `Bearer ${sessionToken}` },
       });
       return mapCockpitResponse(cockpit);
+    },
+    listDailyBriefings(tripId, sessionToken) {
+      return request<TripDailyBriefing[]>(tripApiRoutes.dailyBriefings(tripId), {
+        method: "GET",
+        headers: { Authorization: `Bearer ${sessionToken}` },
+      });
+    },
+    patchDailyBriefing(tripId, date, sessionToken, patchRequest) {
+      return request<TripDailyBriefing>(tripApiRoutes.dailyBriefing(tripId, date), {
+        method: "PATCH",
+        headers: { Authorization: `Bearer ${sessionToken}` },
+        body: JSON.stringify(patchRequest),
+      });
     },
     async patchTrip(tripId, sessionToken, tripRequest) {
       const trip = await request<TripSummaryResponse>(tripApiRoutes.trip(tripId), {
