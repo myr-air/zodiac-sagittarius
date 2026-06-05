@@ -5,6 +5,36 @@ use http::{Method, Request, StatusCode, header};
 use serde_json::{Value, json};
 use tower::ServiceExt;
 
+#[test]
+fn place_resolution_classifies_candidates_by_confidence() {
+    use sagittarius_api::app::place_resolution::{
+        PlaceCandidate, PlaceCoordinates, classify_candidates,
+    };
+
+    let high = PlaceCandidate {
+        name: "Dim Dim Sum".to_string(),
+        address: "The Elements, Hong Kong".to_string(),
+        coordinates: PlaceCoordinates {
+            lat: 22.3049,
+            lng: 114.1617,
+        },
+        map_link:
+            "https://www.openstreetmap.org/?mlat=22.3049&mlon=114.1617#map=17/22.3049/114.1617"
+                .to_string(),
+        confidence: 0.92,
+        source: "nominatim".to_string(),
+        evidence: vec!["brave: Dim Dim Sum Elements".to_string()],
+    };
+    let low = PlaceCandidate {
+        confidence: 0.61,
+        ..high.clone()
+    };
+
+    assert_eq!(classify_candidates(vec![high]).status, "resolved");
+    assert_eq!(classify_candidates(vec![low]).status, "ambiguous");
+    assert_eq!(classify_candidates(Vec::new()).status, "unresolved");
+}
+
 #[sqlx::test(migrations = "../../migrations")]
 async fn place_resolution_returns_unresolved_when_disabled(pool: sqlx::PgPool) {
     support::seed_trip(&pool).await;
