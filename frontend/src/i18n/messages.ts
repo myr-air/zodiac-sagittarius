@@ -335,6 +335,9 @@ export const messages = {
       },
       filters: {
         plans: "Filter plans",
+        showPlans: "Show filters",
+        hidePlans: "Hide filters",
+        panelLabel: "Plan filters",
         selectedCount: ({ count }: { count: number }) => `${count} selected`,
         selectedNames: ({ names }: { names: string }) => `Selected: ${names}`,
       },
@@ -525,6 +528,12 @@ export const messages = {
         create: "Save activity",
         edit: "Save changes",
         delete: "Delete stop",
+        chooseCandidate: ({ name }: { name: string }) => `Choose ${name}`,
+        saveUnresolved: "Save without coordinates",
+      },
+      placeResolution: {
+        candidates: "Place candidates",
+        unresolved: "This place needs location review",
       },
     },
     suggestions: {
@@ -1164,6 +1173,9 @@ export const messages = {
       },
       filters: {
         plans: "กรองแผน",
+        showPlans: "แสดงตัวกรอง",
+        hidePlans: "ซ่อนตัวกรอง",
+        panelLabel: "ตัวกรองแผน",
         selectedCount: ({ count }: { count: number }) => `เลือก ${count} แผน`,
         selectedNames: ({ names }: { names: string }) => `เลือก: ${names}`,
       },
@@ -1354,6 +1366,12 @@ export const messages = {
         create: "บันทึกกิจกรรม",
         edit: "บันทึกการแก้ไข",
         delete: "ลบจุดนี้",
+        chooseCandidate: ({ name }: { name: string }) => `เลือก ${name}`,
+        saveUnresolved: "บันทึกแบบยังไม่ระบุพิกัด",
+      },
+      placeResolution: {
+        candidates: "ตัวเลือกสถานที่",
+        unresolved: "สถานที่นี้ต้องตรวจพิกัด",
       },
     },
     suggestions: {

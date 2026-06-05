@@ -94,4 +94,62 @@ describe("StopDialog", () => {
 
     expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({ pathId: "path-2026-06-19-sub-b" }));
   });
+
+  it("shows ambiguous place candidates and submits the selected candidate", async () => {
+    const onSubmit = vi.fn();
+    render(
+      <StopDialog
+        mode="create"
+        onClose={vi.fn()}
+        onSubmit={onSubmit}
+        placeResolution={{
+          state: "ambiguous",
+          candidates: [{
+            name: "The Elements",
+            address: "Austin Road West, Hong Kong",
+            coordinates: { lat: 22.3049, lng: 114.1617 },
+            mapLink: "https://www.openstreetmap.org/?mlat=22.3049&mlon=114.1617#map=17/22.3049/114.1617",
+            confidence: 0.92,
+            source: "nominatim",
+            evidence: ["brave: The Elements"],
+          }],
+        }}
+      />,
+    );
+
+    await userEvent.click(screen.getByRole("button", { name: /เลือก The Elements/i }));
+    fireEvent.change(screen.getByLabelText("กิจกรรม"), { target: { value: "Dim Dim Sum" } });
+    fireEvent.change(screen.getByLabelText("สถานที่"), { target: { value: "ติ่มซำ แถว Elements" } });
+    fireEvent.submit(screen.getByRole("button", { name: "บันทึกกิจกรรม" }).closest("form")!);
+
+    expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({
+      resolvedPlace: expect.objectContaining({
+        name: "The Elements",
+        coordinates: { lat: 22.3049, lng: 114.1617 },
+      }),
+      saveUnresolved: false,
+    }));
+  });
+
+  it("allows saving an unresolved place when no candidate is chosen", async () => {
+    const onSubmit = vi.fn();
+    render(
+      <StopDialog
+        mode="create"
+        onClose={vi.fn()}
+        onSubmit={onSubmit}
+        placeResolution={{ state: "unresolved", candidates: [] }}
+      />,
+    );
+
+    fireEvent.change(screen.getByLabelText("กิจกรรม"), { target: { value: "Late snack" } });
+    fireEvent.change(screen.getByLabelText("สถานที่"), { target: { value: "near hotel" } });
+    await userEvent.click(screen.getByRole("button", { name: /บันทึกแบบยังไม่ระบุพิกัด/i }));
+
+    expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({
+      activity: "Late snack",
+      place: "near hotel",
+      saveUnresolved: true,
+    }));
+  });
 });

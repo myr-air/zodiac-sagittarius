@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import type { ActivityType, ItineraryItem } from "@/src/trip/types";
+import type { ActivityType, ItineraryItem, PlaceResolutionCandidate } from "@/src/trip/types";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { formatDayLabel, getTripDates } from "@/src/trip/itinerary";
 import { Button } from "./ui";
@@ -16,6 +16,8 @@ export interface StopFormValues {
   durationMinutes: number;
   transportation: string;
   note: string;
+  resolvedPlace?: PlaceResolutionCandidate;
+  saveUnresolved?: boolean;
 }
 
 export interface StopManualPathOption {
@@ -32,6 +34,7 @@ interface StopDialogProps {
   onClose: () => void;
   onDelete?: () => void;
   onSubmit: (values: StopFormValues) => void;
+  placeResolution?: { state: "idle" | "resolving" | "ambiguous" | "unresolved"; candidates: PlaceResolutionCandidate[] };
   startDate?: string;
 }
 
@@ -44,6 +47,8 @@ const dialogGridClassName = "dialog-grid grid grid-cols-2 gap-3 max-[767px]:grid
 const dialogFieldWideClassName = "dialog-field-wide col-span-full";
 const dialogActionsClassName = "dialog-actions grid grid-cols-[auto_1fr_auto] items-center gap-2.5 max-[767px]:grid-cols-1";
 const dialogPrimaryActionsClassName = "dialog-primary-actions flex justify-end gap-2.5 max-[767px]:grid";
+const placeCandidateListClassName = "place-candidate-list grid gap-2";
+const placeCandidateButtonClassName = "place-candidate-button grid gap-1 rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-left text-xs text-[var(--color-text)] transition-[border-color,box-shadow] hover:border-[var(--color-primary)] focus-visible:border-[var(--color-primary)] focus-visible:outline-none aria-pressed:border-[var(--color-primary)] aria-pressed:shadow-[0_0_0_2px_rgb(153_246_228_/_0.42)] [&_strong]:text-sm [&_strong]:font-extrabold [&_span]:text-[var(--color-text-muted)]";
 
 const fieldIds = {
   activity: "stop-activity",
@@ -58,7 +63,7 @@ const fieldIds = {
   transportation: "stop-transportation",
 };
 
-export function StopDialog({ mode, endDate, initialDay, initialItem, manualPathOptions = [], onClose, onDelete, onSubmit, startDate }: StopDialogProps) {
+export function StopDialog({ mode, endDate, initialDay, initialItem, manualPathOptions = [], onClose, onDelete, onSubmit, placeResolution, startDate }: StopDialogProps) {
   const { locale, t } = useI18n();
   const dayOptions = startDate && endDate ? getTripDates(startDate, endDate) : [];
   const [values, setValues] = useState<StopFormValues>(() => ({
@@ -72,6 +77,7 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, manualPathO
     transportation: initialItem?.transportation ?? "",
     note: initialItem?.note ?? "",
   }));
+  const [selectedCandidate, setSelectedCandidate] = useState<PlaceResolutionCandidate | undefined>();
 
   const title = mode === "create" ? t.stopDialog.titles.create : t.stopDialog.titles.edit;
 
@@ -92,6 +98,21 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, manualPathO
       transportation: values.transportation.trim(),
       note: values.note.trim(),
       durationMinutes: Math.max(1, Number(values.durationMinutes) || 1),
+      resolvedPlace: selectedCandidate,
+      saveUnresolved: false,
+    });
+  }
+
+  function submitUnresolved() {
+    onSubmit({
+      ...values,
+      activity: values.activity.trim(),
+      place: values.place.trim(),
+      transportation: values.transportation.trim(),
+      note: values.note.trim(),
+      durationMinutes: Math.max(1, Number(values.durationMinutes) || 1),
+      resolvedPlace: undefined,
+      saveUnresolved: true,
     });
   }
 
@@ -170,6 +191,26 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, manualPathO
               <span>{t.stopDialog.fields.place}</span>
               <input id={fieldIds.place} value={values.place} onChange={(event) => update("place", event.target.value)} required />
             </label>
+            {placeResolution?.state === "ambiguous" ? (
+              <div className={dialogFieldWideClassName} aria-label={t.stopDialog.placeResolution.candidates}>
+                <div className={placeCandidateListClassName}>
+                  {placeResolution.candidates.map((candidate) => (
+                    <button
+                      type="button"
+                      className={placeCandidateButtonClassName}
+                      key={`${candidate.source}:${candidate.name}:${candidate.address}`}
+                      aria-label={t.stopDialog.actions.chooseCandidate({ name: candidate.name })}
+                      aria-pressed={selectedCandidate?.mapLink === candidate.mapLink}
+                      onClick={() => setSelectedCandidate(candidate)}
+                    >
+                      <strong>{candidate.name}</strong>
+                      <span>{candidate.address}</span>
+                      <span>{candidate.source} · {Math.round(candidate.confidence * 100)}%</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : null}
             <label className={dialogFieldWideClassName} htmlFor={fieldIds.transportation}>
               <span>{t.stopDialog.fields.transportation}</span>
               <input id={fieldIds.transportation} value={values.transportation} onChange={(event) => update("transportation", event.target.value)} />
@@ -186,6 +227,9 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, manualPathO
             ) : <span />}
             <span />
             <div className={dialogPrimaryActionsClassName}>
+              {placeResolution?.state === "unresolved" ? (
+                <Button type="button" variant="ghost" onClick={submitUnresolved}>{t.stopDialog.actions.saveUnresolved}</Button>
+              ) : null}
               <Button type="button" variant="ghost" onClick={onClose}>{t.stopDialog.actions.cancel}</Button>
               <Button type="submit">{mode === "create" ? t.stopDialog.actions.create : t.stopDialog.actions.edit}</Button>
             </div>
