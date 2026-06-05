@@ -201,10 +201,6 @@ export function SagittariusApp({
     latestTripRef.current = trip;
   }, [trip]);
 
-  useEffect(() => {
-    setStopPlaceResolution({ state: "idle", candidates: [] });
-  }, [dialogState?.mode, dialogState?.mode === "edit" ? dialogState.item.id : dialogState?.day]);
-
   /* v8 ignore next */
   const selectedItem = activePlanItems.find((item) => item.id === selectedItemId) ?? planItems[0] ?? activePlanItems[0];
   const selectedDay = selectedItem?.day ?? itineraryView.dayGroups[0]?.day ?? trip.startDate;
@@ -461,6 +457,7 @@ export function SagittariusApp({
   function addStop(day?: string) {
     /* v8 ignore next */
     if (!canEdit) return;
+    setStopPlaceResolution({ state: "idle", candidates: [] });
     setDialogState({ mode: "create", day });
   }
 
@@ -944,7 +941,10 @@ export function SagittariusApp({
 
   function editItem(itemId: string) {
     const item = trip.itineraryItems.find((candidate) => candidate.id === itemId);
-    if (item) setDialogState({ mode: "edit", item });
+    if (item) {
+      setStopPlaceResolution({ state: "idle", candidates: [] });
+      setDialogState({ mode: "edit", item });
+    }
   }
 
   async function deleteStop(itemId: string) {
@@ -1875,7 +1875,7 @@ export function SagittariusApp({
               onUpdateExpense={updateExpense}
               onDeleteExpense={deleteExpense}
               onDeleteNote={deleteStopNote}
-              onEditSelected={() => { if (selectedItem) setDialogState({ mode: "edit", item: selectedItem }); }}
+              onEditSelected={() => { if (selectedItem) editItem(selectedItem.id); }}
               onReviewSuggestion={reviewSuggestion}
               onSuggestSelected={suggestSelectedStop}
               onToggleTaskStatus={toggleTaskStatus}
@@ -1893,7 +1893,10 @@ export function SagittariusApp({
             initialItem={dialogState.mode === "edit" ? dialogState.item : undefined}
             initialDay={dialogState.mode === "create" ? dialogState.day ?? selectedDay : undefined}
             manualPathOptions={dialogState.mode === "edit" ? deriveManualActivityPathOptions(trip, dialogState.item.id) : undefined}
-            onClose={() => setDialogState(null)}
+            onClose={() => {
+              setStopPlaceResolution({ state: "idle", candidates: [] });
+              setDialogState(null);
+            }}
             onDelete={dialogState.mode === "edit" ? deleteSelectedStop : undefined}
             onSubmit={dialogState.mode === "edit" ? updateSelectedStop : createStop}
             placeResolution={stopPlaceResolution}

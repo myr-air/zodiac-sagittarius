@@ -2408,7 +2408,7 @@ describe("Sagittarius cockpit UI", () => {
     await user.click(within(dialog).getByRole("button", { name: /บันทึกกิจกรรม/i }));
 
     expect(screen.queryByRole("dialog", { name: /เพิ่มกิจกรรม/i })).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /เลือกจุด Coffee break at K11 Musea/i })).toBeInTheDocument();
+    expect(await screen.findByRole("button", { name: /เลือกจุด Coffee break at K11 Musea/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Coffee break at K11 Musea on Plan A/i })).toBeInTheDocument();
     expect(within(screen.getByRole("complementary", { name: /ข้อมูลประกอบการวางแผน/i })).getByRole("heading", { name: /Coffee break at K11 Musea/i })).toBeInTheDocument();
   });

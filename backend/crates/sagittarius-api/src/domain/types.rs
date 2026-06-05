@@ -431,6 +431,7 @@ pub struct ItineraryImportItem {
 pub struct ItineraryImportDocument {
     pub schema: String,
     pub version: i32,
+    #[serde(default)]
     pub source: String,
     pub exported_at: String,
     pub trip: ItineraryImportTrip,
