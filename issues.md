@@ -517,3 +517,12 @@ Let's put ourselves in the shoes of a traveler using Sagittarius on their trip. 
 * **ผลกระทบ:** ทำให้ lint suite ทั้ง frontend fail แม้ unit tests และ typecheck ผ่าน.
 * **วิธีแก้ที่ทำแล้ว:** แยก `TripSettingsPageContent` เป็น keyed child ตามข้อมูล trip (`id/name/destination/start/end`) เพื่อให้ React remount และ reset form/status/error เองเมื่อ trip เปลี่ยน แทนการเรียก `setState` synchronous ใน `useEffect`.
 * **หลักฐาน:** `rtk bun run lint` ผ่านแล้ว เหลือเฉพาะ warnings เดิมที่ไม่ fail suite; `rtk bun run typecheck` ผ่าน.
+
+---
+
+### 7. Place resolver ยังไม่มี persistent cache สำหรับ Nominatim — พบ 2026-06-05
+* **วันที่พบ:** 2026-06-05
+* **หลักฐาน:** เพิ่ม endpoint resolve place โดยใช้ Nominatim public API ผ่าน backend proxy พร้อม process-level rate limit 1 request/second และ fallback เป็น unresolved แต่ยังไม่มี DB/cache table สำหรับเก็บ query/result ซ้ำ.
+* **ผลกระทบ:** ยังไม่ดีที่สุดตาม Nominatim usage policy ที่แนะนำให้ proxy และ cache requests เมื่อทำได้ โดยเฉพาะถ้าผู้ใช้หลายคน save activity ที่มี place hint ซ้ำ ๆ.
+* **แนวทางแก้:** เพิ่มตาราง `place_resolution_cache` keyed ด้วย normalized query + country codes + provider version, เก็บ candidates/status/created_at/expires_at แล้วให้ resolver อ่าน cache ก่อนยิง Nominatim. Invalid/ambiguous results ควร cache อายุสั้นกว่า high-confidence results.
+* **หลักฐาน verification ปัจจุบัน:** resolver unit tests ผ่าน (`cargo test -p sagittarius-api app::place_resolution::tests`), frontend targeted tests/typecheck ผ่าน, browser map smoke ไม่มี console/page errors; งานที่เหลือคือ persistent cache เท่านั้น.
