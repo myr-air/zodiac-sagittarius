@@ -6,6 +6,7 @@ import { I18nProvider } from "@/src/i18n/I18nProvider";
 import { renderWithI18n } from "@/src/i18n/test-utils";
 import {
   activeDayLabel,
+  applyRouteMapTheme,
   dayColorFor,
   fallbackRouteViewport,
   fitLiveRoute,
@@ -49,6 +50,7 @@ const maplibreMock = vi.hoisted(() => ({
     removeLayer: ReturnType<typeof vi.fn>;
     removeSource: ReturnType<typeof vi.fn>;
     remove: ReturnType<typeof vi.fn>;
+    setPaintProperty: ReturnType<typeof vi.fn>;
   }>,
   markers: [] as Array<{ element: HTMLElement; remove: ReturnType<typeof vi.fn> }>,
   loadDelay: 0,
@@ -74,6 +76,7 @@ vi.mock("maplibre-gl", () => ({
         if (event === "load") window.setTimeout(callback, maplibreMock.loadDelay);
       }),
       remove: vi.fn(),
+      setPaintProperty: vi.fn(),
     };
     const chromeButton = document.createElement("button");
     options.container.append(chromeButton);
@@ -261,6 +264,9 @@ describe("RouteMapView", () => {
     );
 
     await waitFor(() => expect(maplibreMock.maps[0]?.addLayer).toHaveBeenCalled());
+    expect(maplibreMock.maps[0]?.setPaintProperty).toHaveBeenCalledWith("water", "fill-color", "#c9dfe7");
+    expect(maplibreMock.maps[0]?.setPaintProperty).toHaveBeenCalledWith("background", "background-color", "#f6fbfd");
+    expect(maplibreMock.maps[0]?.setPaintProperty).toHaveBeenCalledWith("label_country_1", "text-color", "#0f3f46");
     expect(document.querySelector(".route-live-map")).not.toHaveProperty("inert", true);
     expect(document.querySelector(".route-live-map button")).toHaveAttribute("tabindex", "-1");
     expect(maplibreMock.markers.length).toBeGreaterThan(1);
@@ -475,7 +481,16 @@ describe("RouteMapView", () => {
     expect(map.flyTo).toHaveBeenCalledWith({ center: [100.9925, 15.87], essential: false, zoom: 5 });
     expect(map.fitBounds).not.toHaveBeenCalled();
     expect(getRouteCenter([])).toEqual([100.9925, 15.87]);
-    expect(fallbackRouteViewport("Hong Kong + Shenzhen", [])).toEqual({ center: [114.1694, 22.3193], zoom: 10 });
+    expect(fallbackRouteViewport("Hong Kong + Shenzhen", [])).toEqual({ center: [114.115, 22.43], zoom: 8.2 });
+    expect(fallbackRouteViewport("Hong Kong", [])).toEqual({ center: [114.1694, 22.3193], zoom: 8.6 });
     expect(fallbackRouteViewport("", [])).toEqual({ center: [100.9925, 15.87], zoom: 5 });
+
+    const themedMap = {
+      getLayer: vi.fn((layerId: string) => layerId === "water"),
+      setPaintProperty: vi.fn(),
+    };
+    applyRouteMapTheme(themedMap as never);
+    expect(themedMap.setPaintProperty).toHaveBeenCalledTimes(1);
+    expect(themedMap.setPaintProperty).toHaveBeenCalledWith("water", "fill-color", "#c9dfe7");
   });
 });

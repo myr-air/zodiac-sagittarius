@@ -51,11 +51,12 @@ interface RouteViewport {
 
 const routeDayColors = ["#2563eb", "#0f766e", "#f97316", "#0891b2", "#16a34a", "#dc2626"];
 const thailandRouteViewport: RouteViewport = { center: [100.9925, 15.8700], zoom: 5 };
+const hongKongShenzhenRouteViewport: RouteViewport = { center: [114.1150, 22.4300], zoom: 8.2 };
 const routeCountryViewports: Record<string, RouteViewport> = {
   cn: { center: [104.1954, 35.8617], zoom: 3.4 },
   china: { center: [104.1954, 35.8617], zoom: 3.4 },
-  hk: { center: [114.1694, 22.3193], zoom: 10 },
-  "hong kong": { center: [114.1694, 22.3193], zoom: 10 },
+  hk: { center: [114.1694, 22.3193], zoom: 8.6 },
+  "hong kong": { center: [114.1694, 22.3193], zoom: 8.6 },
   id: { center: [113.9213, -0.7893], zoom: 4.1 },
   indonesia: { center: [113.9213, -0.7893], zoom: 4.1 },
   jp: { center: [138.2529, 36.2048], zoom: 4.7 },
@@ -64,12 +65,12 @@ const routeCountryViewports: Record<string, RouteViewport> = {
   korea: { center: [127.7669, 35.9078], zoom: 6 },
   la: { center: [102.4955, 19.8563], zoom: 5.5 },
   laos: { center: [102.4955, 19.8563], zoom: 5.5 },
-  mo: { center: [113.5439, 22.1987], zoom: 11 },
-  macau: { center: [113.5439, 22.1987], zoom: 11 },
+  mo: { center: [113.5439, 22.1987], zoom: 9.2 },
+  macau: { center: [113.5439, 22.1987], zoom: 9.2 },
   malaysia: { center: [101.9758, 4.2105], zoom: 5 },
   my: { center: [101.9758, 4.2105], zoom: 5 },
-  sg: { center: [103.8198, 1.3521], zoom: 10.5 },
-  singapore: { center: [103.8198, 1.3521], zoom: 10.5 },
+  sg: { center: [103.8198, 1.3521], zoom: 9.2 },
+  singapore: { center: [103.8198, 1.3521], zoom: 9.2 },
   th: thailandRouteViewport,
   thailand: thailandRouteViewport,
   tw: { center: [120.9605, 23.6978], zoom: 6 },
@@ -77,6 +78,42 @@ const routeCountryViewports: Record<string, RouteViewport> = {
   vietnam: { center: [108.2772, 14.0583], zoom: 5 },
   vn: { center: [108.2772, 14.0583], zoom: 5 },
 };
+const routeMapThemeRules: Array<{ layerId: string; property: string; value: unknown }> = [
+  { layerId: "background", property: "background-color", value: "#f6fbfd" },
+  { layerId: "park", property: "fill-color", value: "#dff3ea" },
+  { layerId: "water", property: "fill-color", value: "#c9dfe7" },
+  { layerId: "landcover_ice_shelf", property: "fill-color", value: "#eff8fb" },
+  { layerId: "landcover_glacier", property: "fill-color", value: "#e6f3f6" },
+  { layerId: "landuse_residential", property: "fill-color", value: "#f8fbfb" },
+  { layerId: "landcover_wood", property: "fill-color", value: "#d7eadf" },
+  { layerId: "building", property: "fill-color", value: "#e6ecee" },
+  { layerId: "waterway", property: "line-color", value: "#b9d6df" },
+  { layerId: "highway_path", property: "line-color", value: "#eef5f6" },
+  { layerId: "highway_minor", property: "line-color", value: "#f7fbfb" },
+  { layerId: "highway_major_casing", property: "line-color", value: "#d8e5e7" },
+  { layerId: "highway_major_inner", property: "line-color", value: "#ffffff" },
+  { layerId: "highway_major_subtle", property: "line-color", value: "#d2e0e3" },
+  { layerId: "highway_motorway_casing", property: "line-color", value: "#d9e3e6" },
+  { layerId: "highway_motorway_inner", property: "line-color", value: "#fde7b2" },
+  { layerId: "highway_motorway_subtle", property: "line-color", value: "#edc96d" },
+  { layerId: "railway", property: "line-color", value: "#9eb6bd" },
+  { layerId: "railway_transit", property: "line-color", value: "#84a5ad" },
+  { layerId: "boundary_3", property: "line-color", value: "#92adb5" },
+  { layerId: "boundary_2", property: "line-color", value: "#527f88" },
+  { layerId: "boundary_disputed", property: "line-color", value: "#f59e0b" },
+  { layerId: "water_name_point_label", property: "text-color", value: "#2f7080" },
+  { layerId: "water_name_line_label", property: "text-color", value: "#2f7080" },
+  { layerId: "waterway_line_label", property: "text-color", value: "#2f7080" },
+  { layerId: "label_other", property: "text-color", value: "#52636a" },
+  { layerId: "label_village", property: "text-color", value: "#43545b" },
+  { layerId: "label_town", property: "text-color", value: "#33464d" },
+  { layerId: "label_state", property: "text-color", value: "#26444b" },
+  { layerId: "label_city", property: "text-color", value: "#0f2f38" },
+  { layerId: "label_city_capital", property: "text-color", value: "#0f2f38" },
+  { layerId: "label_country_3", property: "text-color", value: "#0f3f46" },
+  { layerId: "label_country_2", property: "text-color", value: "#0f3f46" },
+  { layerId: "label_country_1", property: "text-color", value: "#0f3f46" },
+];
 const routeMapPanelClassName = "route-map-panel grid h-full min-h-0 min-w-0 grid-rows-[auto_minmax(0,1fr)] bg-[var(--color-page)] px-6 py-[22px] pb-7";
 const routeMapLayoutClassName = "route-map-layout mb-7 block h-full min-h-0 w-full p-0 max-[1199px]:w-[calc(100%-24px)] max-[1199px]:px-0";
 const routeMapCanvasClassName = "route-map-canvas relative h-full min-h-[520px] overflow-hidden rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[linear-gradient(90deg,rgb(203_213_225_/_0.48)_1px,transparent_1px)_0_0/42px_42px,linear-gradient(0deg,rgb(203_213_225_/_0.48)_1px,transparent_1px)_0_0/42px_42px,var(--color-route-soft)] max-[767px]:h-[64vh] max-[767px]:min-h-[460px]";
@@ -184,6 +221,7 @@ export function RouteMapView({
 
         map.on("load", () => {
           if (disposed) return;
+          applyRouteMapTheme(map);
           container.inert = false;
           setLiveMapState("ready");
         });
@@ -540,6 +578,10 @@ export function fallbackRouteViewport(destinationLabel: string, countries: strin
     .filter(Boolean);
   const destination = destinationLabel.toLowerCase();
 
+  if (destination.includes("hong kong") && destination.includes("shenzhen")) {
+    return hongKongShenzhenRouteViewport;
+  }
+
   for (const candidate of candidates) {
     const viewport = routeCountryViewports[candidate];
     if (viewport) return viewport;
@@ -552,6 +594,13 @@ export function fallbackRouteViewport(destinationLabel: string, countries: strin
   if (destination.includes("shenzhen")) return routeCountryViewports.hk ?? thailandRouteViewport;
 
   return thailandRouteViewport;
+}
+
+export function applyRouteMapTheme(map: import("maplibre-gl").Map) {
+  routeMapThemeRules.forEach(({ layerId, property, value }) => {
+    if (!map.getLayer(layerId)) return;
+    map.setPaintProperty(layerId, property, value);
+  });
 }
 
 function getRouteBounds(points: RoutePoint[]): [[number, number], [number, number]] {
