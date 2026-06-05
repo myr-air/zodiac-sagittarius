@@ -716,9 +716,7 @@ where
     Option::<String>::deserialize(deserializer).map(Some)
 }
 
-fn deserialize_nullable_f64_patch<'de, D>(
-    deserializer: D,
-) -> Result<Option<Option<f64>>, D::Error>
+fn deserialize_nullable_f64_patch<'de, D>(deserializer: D) -> Result<Option<Option<f64>>, D::Error>
 where
     D: Deserializer<'de>,
 {

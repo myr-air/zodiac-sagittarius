@@ -129,7 +129,12 @@ async fn itinerary_patch_contract_patches_address_and_coordinates(pool: sqlx::Pg
     assert_eq!(body["address"], "Shop G72, G/F, The Elements, Hong Kong");
     assert_eq!(body["coordinates"]["lat"], 22.3049);
     assert_eq!(body["coordinates"]["lng"], 114.1617);
-    assert!(body["mapLink"].as_str().unwrap().contains("openstreetmap.org"));
+    assert!(
+        body["mapLink"]
+            .as_str()
+            .unwrap()
+            .contains("openstreetmap.org")
+    );
 
     let stored: (Option<String>, Option<f64>, Option<f64>) = sqlx::query_as(
         "select address, latitude::float8, longitude::float8 from itinerary_items where id = $1",
