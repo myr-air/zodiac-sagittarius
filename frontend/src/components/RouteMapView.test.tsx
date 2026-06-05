@@ -24,6 +24,18 @@ const render = (ui: Parameters<typeof renderWithI18n>[0]) => {
   };
 };
 
+function hasValidCoordinates(item: { coordinates?: { lat: number; lng: number } }) {
+  return Boolean(
+    item.coordinates
+    && Number.isFinite(item.coordinates.lat)
+    && Number.isFinite(item.coordinates.lng)
+    && item.coordinates.lat >= -90
+    && item.coordinates.lat <= 90
+    && item.coordinates.lng >= -180
+    && item.coordinates.lng <= 180,
+  );
+}
+
 const maplibreMock = vi.hoisted(() => ({
   maps: [] as Array<{
     addControl: ReturnType<typeof vi.fn>;
@@ -98,15 +110,7 @@ describe("RouteMapView", () => {
   });
 
   it("summarizes route visibility and filters stops by day", async () => {
-    const regionalItems = tripFixture.planItems.filter((item) => {
-      if (!item.coordinates) return true;
-      return Number.isFinite(item.coordinates.lat)
-        && Number.isFinite(item.coordinates.lng)
-        && item.coordinates.lat >= -90
-        && item.coordinates.lat <= 90
-        && item.coordinates.lng >= -180
-        && item.coordinates.lng <= 180;
-    });
+    const coordinateItems = tripFixture.planItems.filter(hasValidCoordinates);
     render(
       <RouteMapView
         endDate={tripFixture.trip.endDate}
@@ -117,17 +121,17 @@ describe("RouteMapView", () => {
     );
 
     expect(screen.getByRole("heading", { name: "แผนที่" })).toBeInTheDocument();
-    expect(screen.getByText(/จุดที่แสดง/)).toHaveTextContent(`${regionalItems.length}/${regionalItems.length} จุดที่แสดง`);
+    expect(screen.getByText(/มีพิกัด/)).toHaveTextContent(`${coordinateItems.length}/${tripFixture.planItems.length} มีพิกัด · 0 ยังไม่ระบุ`);
     expect(screen.getByText("กำลังโหลดแผนที่จาก OpenFreeMap")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: /วันที่ 2/ }));
 
-    const dayTwoCount = regionalItems.filter((item) => item.day === hongKongDay).length;
-    expect(screen.getByText(/จุดที่แสดง/)).toHaveTextContent(`${dayTwoCount}/${regionalItems.length} จุดที่แสดง`);
+    const dayTwoCount = coordinateItems.filter((item) => item.day === hongKongDay).length;
+    expect(screen.getByText(/มีพิกัด/)).toHaveTextContent(`${dayTwoCount}/${tripFixture.planItems.length} มีพิกัด · 0 ยังไม่ระบุ`);
     expect(screen.getAllByText(/วันที่ 2/).length).toBeGreaterThan(0);
 
     fireEvent.click(screen.getByRole("button", { name: "ทุกวัน" }));
-    expect(screen.getByText(/จุดที่แสดง/)).toHaveTextContent(`${regionalItems.length}/${regionalItems.length} จุดที่แสดง`);
+    expect(screen.getByText(/มีพิกัด/)).toHaveTextContent(`${coordinateItems.length}/${tripFixture.planItems.length} มีพิกัด · 0 ยังไม่ระบุ`);
   });
 
   it("handles empty route data without map day choices", () => {
@@ -140,11 +144,11 @@ describe("RouteMapView", () => {
       />,
     );
 
-    expect(screen.getByText("0/0 จุดที่แสดง")).toBeInTheDocument();
+    expect(screen.getByText("0/0 มีพิกัด · 0 ยังไม่ระบุ")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /วันที่ 1/ })).not.toBeInTheDocument();
   });
 
-  it("projects stops without coordinates onto fallback route points", () => {
+  it("lists stops without coordinates instead of placing unresolved map markers", () => {
     render(
       <RouteMapView
         endDate={tripFixture.trip.endDate}
@@ -154,7 +158,9 @@ describe("RouteMapView", () => {
       />,
     );
 
-    expect(screen.getByText("3/3 จุดที่แสดง")).toBeInTheDocument();
+    expect(screen.getByText("0/3 มีพิกัด · 3 ยังไม่ระบุ")).toBeInTheDocument();
+    expect(screen.getByRole("complementary", { name: "กิจกรรมที่ยังไม่มีพิกัด" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /วันที่ 1/ })).not.toBeInTheDocument();
     expect(screen.getByText("กำลังโหลดแผนที่จาก OpenFreeMap")).toBeInTheDocument();
   });
 
@@ -364,7 +370,7 @@ describe("RouteMapView", () => {
       />,
     );
 
-    expect(screen.getByText("2/2 จุดที่แสดง")).toBeInTheDocument();
+    expect(screen.getByText("2/2 มีพิกัด · 0 ยังไม่ระบุ")).toBeInTheDocument();
     expect(screen.getByText("กำลังโหลดแผนที่จาก OpenFreeMap")).toBeInTheDocument();
   });
 

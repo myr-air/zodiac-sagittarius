@@ -381,6 +381,9 @@ export const messages = {
       canvasLabel: "Map preview of the Hong Kong and Shenzhen itinerary route",
       liveLoading: "Loading map from OpenFreeMap",
       liveError: "Could not load the live map. Showing the fallback route diagram.",
+      locationStatus: ({ mapped, total, unresolved }: { mapped: number; total: number; unresolved: number }) => `${mapped}/${total} mapped · ${unresolved} unresolved`,
+      unresolvedLabel: "Activities without coordinates",
+      unresolvedTitle: ({ count }: { count: number }) => `${count} activities need coordinates`,
       sourceNote: "แผนที่สด: OpenFreeMap + ข้อมูล OpenStreetMap · ตัวแสดงผล: MapLibre GL JS",
     },
     timeline: {
@@ -1219,6 +1222,9 @@ export const messages = {
       canvasLabel: "ตัวอย่างแผนที่เส้นทางฮ่องกงและเซินเจิ้น",
       liveLoading: "กำลังโหลดแผนที่จาก OpenFreeMap",
       liveError: "โหลดแผนที่สดไม่สำเร็จ แสดงแผนผังสำรองไว้ก่อน",
+      locationStatus: ({ mapped, total, unresolved }: { mapped: number; total: number; unresolved: number }) => `${mapped}/${total} มีพิกัด · ${unresolved} ยังไม่ระบุ`,
+      unresolvedLabel: "กิจกรรมที่ยังไม่มีพิกัด",
+      unresolvedTitle: ({ count }: { count: number }) => `${count} กิจกรรมยังไม่มีพิกัด`,
       sourceNote: "Live tiles: OpenFreeMap + OpenStreetMap data · Renderer: MapLibre GL JS",
     },
     timeline: {

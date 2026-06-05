@@ -61,6 +61,11 @@ const routeMapPathShadowClassName = "route-map-path route-map-path--shadow fill-
 const routeMapPathClassName = "route-map-path fill-none stroke-[var(--day-color,var(--color-route))] stroke-[2.1] [stroke-linecap:round] [stroke-linejoin:round]";
 const routeMarkerClassName = "route-marker absolute left-[var(--x)] top-[var(--y)] z-[3] grid size-[30px] -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border-2 border-white bg-[var(--day-color,var(--color-route))] text-[11px] font-extrabold tabular-nums text-white shadow-[0_10px_22px_rgb(37_99_235_/_0.24)] transition-[background,box-shadow,transform] duration-150 [animation:route-marker-in_180ms_ease-out_both] [animation-delay:var(--marker-delay)]";
 const mapSourceNoteClassName = "map-source-note absolute bottom-2 right-2.5 z-[6] m-0 rounded-full border border-[rgb(203_213_225_/_0.82)] bg-white/90 px-2 py-1 text-[10px] font-extrabold leading-[14px] text-[#475569]";
+const unresolvedPanelClassName = "map-unresolved-panel absolute bottom-10 left-3 z-[7] grid max-h-[min(220px,42%)] w-[min(360px,calc(100%_-_24px))] gap-2 overflow-hidden rounded-[var(--radius-md)] border border-[rgb(245_158_11_/_0.38)] bg-[rgb(255_251_235_/_0.94)] p-3 shadow-[0_14px_34px_rgb(15_23_42_/_0.14)] backdrop-blur";
+const unresolvedPanelHeaderClassName = "map-unresolved-header flex items-start gap-2 text-[12px] font-extrabold leading-5 text-[#92400e]";
+const unresolvedPanelListClassName = "map-unresolved-list m-0 grid gap-1.5 overflow-y-auto p-0";
+const unresolvedPanelItemClassName = "map-unresolved-item grid gap-0.5 rounded-[var(--radius-sm)] bg-white/70 px-2 py-1.5 text-[11px] leading-4 text-[#475569]";
+const unresolvedPanelItemTitleClassName = "font-extrabold text-[#0f172a]";
 
 export function RouteMapView({
   endDate,
@@ -73,17 +78,23 @@ export function RouteMapView({
   const { locale, t } = useI18n();
   const groups = useMemo(() => itineraryView?.dayGroups ?? groupItemsByDay(items), [items, itineraryView]);
   const routePoints = useMemo(() => buildRoutePoints(items), [items]);
-  const routeDayGroups = useMemo(() => buildRouteDayGroups(groups, routePoints, startDate, locale), [groups, locale, routePoints, startDate]);
+  const coordinateRoutePoints = useMemo(() => routePoints.filter((point) => hasCoordinates(point.item.coordinates)), [routePoints]);
+  const unresolvedItems = useMemo(() => items.filter((item) => !hasCoordinates(item.coordinates)), [items]);
+  const routeDayGroups = useMemo(() => buildRouteDayGroups(groups, coordinateRoutePoints, startDate, locale), [coordinateRoutePoints, groups, locale, startDate]);
   const [activeDay, setActiveDay] = useState<DayFilter>("all");
   const visibleRouteDayGroups = useMemo(
     () => routeDayGroups.filter((group) => activeDay === "all" || group.day === activeDay),
     [activeDay, routeDayGroups],
   );
   const visibleRoutePoints = useMemo(
-    () => (activeDay === "all" ? routePoints : routePoints.filter((point) => point.item.day === activeDay)),
-    [activeDay, routePoints],
+    () => (activeDay === "all" ? coordinateRoutePoints : coordinateRoutePoints.filter((point) => point.item.day === activeDay)),
+    [activeDay, coordinateRoutePoints],
   );
-  const liveRoutePoints = useMemo(() => routePoints.filter((point) => hasCoordinates(point.item.coordinates)), [routePoints]);
+  const visibleUnresolvedItems = useMemo(
+    () => (activeDay === "all" ? unresolvedItems : unresolvedItems.filter((item) => item.day === activeDay)),
+    [activeDay, unresolvedItems],
+  );
+  const liveRoutePoints = coordinateRoutePoints;
   const visibleLiveRoutePoints = useMemo(
     () => (activeDay === "all" ? liveRoutePoints : liveRoutePoints.filter((point) => point.item.day === activeDay)),
     [activeDay, liveRoutePoints],
@@ -231,7 +242,7 @@ export function RouteMapView({
         meta={(
           <>
             <span><Icon name="calendar" /> {formatTripRange(startDate, endDate, locale)}</span>
-            <span><Icon name="location" /> {t.dates.visibleStops({ visible: visibleRoutePoints.length, total: routePoints.length })}</span>
+            <span><Icon name="location" /> {t.map.locationStatus({ mapped: visibleRoutePoints.length, total: items.length, unresolved: visibleUnresolvedItems.length })}</span>
             <span><Icon name="warning" /> {t.dates.warningCount({ count: warningCount })}</span>
             <span><Icon name="route" /> {activeDayLabel(activeDay, routeDayGroups, t.map.allDays, t.map.chooseDay)}</span>
           </>
@@ -298,6 +309,22 @@ export function RouteMapView({
               ))}
             </>
           )}
+          {visibleUnresolvedItems.length > 0 ? (
+            <aside className={unresolvedPanelClassName} aria-label={t.map.unresolvedLabel}>
+              <div className={unresolvedPanelHeaderClassName}>
+                <Icon name="warning" />
+                <span>{t.map.unresolvedTitle({ count: visibleUnresolvedItems.length })}</span>
+              </div>
+              <ol className={unresolvedPanelListClassName}>
+                {visibleUnresolvedItems.slice(0, 6).map((item) => (
+                  <li className={unresolvedPanelItemClassName} key={item.id}>
+                    <span className={unresolvedPanelItemTitleClassName}>{item.activity}</span>
+                    <span>{item.place}</span>
+                  </li>
+                ))}
+              </ol>
+            </aside>
+          ) : null}
           <p className={mapSourceNoteClassName}>{t.map.sourceNote}</p>
         </div>
       </div>
