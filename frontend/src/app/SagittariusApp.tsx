@@ -177,7 +177,7 @@ export function SagittariusApp({
   const planItems = useMemo(() => resolveItineraryPathItems(activePlanItems, pathSelection), [activePlanItems, pathSelection]);
   const itineraryView = useMemo(() => buildItineraryView(planItems), [planItems]);
   /* v8 ignore next */
-  const selectedItem = planItems.find((item) => item.id === selectedItemId) ?? planItems[0];
+  const selectedItem = activePlanItems.find((item) => item.id === selectedItemId) ?? planItems[0] ?? activePlanItems[0];
   const selectedDay = selectedItem?.day ?? itineraryView.dayGroups[0]?.day ?? trip.startDate;
   const selectedItemIdForView = selectedItem?.id ?? "";
   const expenseSummary = useMemo(
@@ -512,6 +512,32 @@ export function SagittariusApp({
     }
 
     commitTrip(() => nextTrip, draggedItemId);
+    setContextRailVisibility(true);
+  }
+
+  async function moveItemToPath(itemId: string, pathId: string) {
+    /* v8 ignore next */
+    if (!canEdit) return;
+
+    const branchPlacement = applyManualActivityPath(trip, itemId, pathId);
+    if (branchPlacement.trip === trip || branchPlacement.changedExistingItems.length === 0) return;
+
+    if (isApiMode && resolvedApiClient && participantSession) {
+      const patchedBranchItems = await patchApiItineraryBranchItems(branchPlacement.changedExistingItems, resolvedApiClient, trip.id, participantSession.sessionToken);
+      const patchedBranchItemsById = new Map(patchedBranchItems.map((item) => [item.id, item]));
+      setTripState((current) => ({
+        ...current,
+        trip: {
+          ...current.trip,
+          itineraryItems: current.trip.itineraryItems.map((item) => patchedBranchItemsById.get(item.id) ?? item),
+        },
+      }));
+      setSelectedItemId(itemId);
+      setContextRailVisibility(true);
+      return;
+    }
+
+    commitTrip(() => branchPlacement.trip, itemId);
     setContextRailVisibility(true);
   }
 
@@ -1617,6 +1643,7 @@ export function SagittariusApp({
                 canUndo={tripState.past.length > 0}
                 contextRailOpen={contextRailOpen}
                 endDate={trip.endDate}
+                graphItems={activePlanItems}
                 items={planItems}
                 itineraryView={itineraryView}
                 pathOptions={pathOptions}
@@ -1631,6 +1658,7 @@ export function SagittariusApp({
                 onSelectItem={selectItem}
                 onMoveItem={moveItem}
                 onMoveItemToDay={moveItemToDay}
+                onMoveItemToPath={moveItemToPath}
                 onExportItinerary={exportItinerary}
                 onImportItinerary={importItinerary}
                 onChangeTripPath={changeTripPath}

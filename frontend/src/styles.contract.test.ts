@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 describe("Calm Travel Ops CSS contract", () => {
   const css = readFileSync("app/globals.css", "utf8");
   const appSource = readFileSync("src/app/SagittariusApp.tsx", "utf8");
+  const activityPathGraphSource = readFileSync("src/components/ActivityPathGraphDay.tsx", "utf8");
   const contextRailSource = readFileSync("src/components/ContextRail.tsx", "utf8");
   const smartTableSource = readFileSync("src/components/SmartItineraryTable.tsx", "utf8");
   const motifSource = readFileSync("src/components/motifs.tsx", "utf8");
@@ -35,6 +36,17 @@ describe("Calm Travel Ops CSS contract", () => {
     expect(motifStories).toContain("TimelineMotif");
   });
 
+  it("keeps the activity path graph on the product theme palette", () => {
+    expect(activityPathGraphSource).toContain("bg-[var(--color-surface-subtle)]");
+    expect(activityPathGraphSource).toContain("var(--color-primary)");
+    expect(activityPathGraphSource).toContain("var(--color-route)");
+    expect(activityPathGraphSource).toContain("var(--color-warning)");
+    expect(activityPathGraphSource).toContain("var(--color-coral)");
+    expect(activityPathGraphSource).not.toContain("#0f1f1b");
+    expect(activityPathGraphSource).not.toContain("#db0aa7");
+    expect(activityPathGraphSource).not.toContain("#18e031");
+  });
+
   it("keeps motif motion reduced-motion safe", () => {
     expect(css).toMatch(/@media \(prefers-reduced-motion: reduce\)[\s\S]*\*\s*{/s);
     expect(css).not.toMatch(/\.travel-motif\s*{/s);
@@ -54,7 +66,7 @@ describe("Calm Travel Ops CSS contract", () => {
     expect(css).toMatch(/body\s*{[^}]*overflow-x:\s*hidden/s);
     expect(appSource).toContain("planning-main h-full min-h-0 min-w-0 overflow-y-auto");
     expect(smartTableSource).toContain("table-scroll m-0 h-auto min-h-0 w-full max-w-full overflow-x-auto");
-    expect(smartTableSource).toContain("smart-table w-full min-w-[960px] table-fixed border-collapse");
+    expect(smartTableSource).toContain("smart-table w-full min-w-[1010px] table-fixed border-collapse");
   });
 
   it("keeps vertical scrolling on the planning shell instead of nesting table scrollbars", () => {

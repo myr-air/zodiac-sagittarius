@@ -37,6 +37,7 @@ export const Owner: Story = {
     onSelectItem: noop,
     onMoveItem: noop,
     onMoveItemToDay: noop,
+    onMoveItemToPath: noop,
     onExportItinerary: noop,
     onImportItinerary: noop,
     onChangeTripPath: noop,

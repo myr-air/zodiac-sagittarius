@@ -2047,6 +2047,37 @@ describe("Sagittarius cockpit UI", () => {
     expect(container.querySelector(".workspace-grid")).toHaveAttribute("data-context-rail", "open");
   });
 
+  it("opens context details for an alternative activity selected from the graph", async () => {
+    const user = userEvent.setup();
+    const storage = installLocalStorageStub();
+    const mainItem = {
+      ...seedTrip.itineraryItems[0],
+      id: "graph-main-app",
+      day: seedTrip.startDate,
+      activity: "Graph app main",
+      pathGroupId: "graph-app-group",
+      pathRole: "main" as const,
+    };
+    const alternativeItem = {
+      ...mainItem,
+      id: "graph-alt-app",
+      activity: "Graph app alternative",
+      pathId: "path-2026-06-18-sub-a",
+      pathName: "Plan A",
+      pathRole: "alternative" as const,
+    };
+    storage.setItem(tripStorageKey, JSON.stringify({
+      ...seedTrip,
+      itineraryItems: [mainItem, alternativeItem],
+    }));
+    render(<SagittariusApp initialView="itinerary" />);
+
+    await user.click(await screen.findByRole("button", { name: /Graph app alternative on Plan A/i }));
+
+    const context = screen.getByRole("complementary", { name: /ข้อมูลประกอบการวางแผน/i });
+    expect(within(context).getByRole("heading", { name: /Graph app alternative/i })).toBeInTheDocument();
+  });
+
   it("closes the right context drawer when clicking outside it", async () => {
     const user = userEvent.setup();
     const { container } = render(<SagittariusApp initialView="itinerary" />);
@@ -2088,8 +2119,6 @@ describe("Sagittarius cockpit UI", () => {
     const { container } = render(<SagittariusApp initialView="itinerary" />);
 
     fireEvent.click(getFirstStopDetailsButton());
-    expect(screen.queryByRole("button", { name: /เลือกจุด Coffee break at K11 Musea/i })).not.toBeInTheDocument();
-    await user.click(screen.getByLabelText(/Show all paths/i));
     fireEvent.click(screen.getByRole("row", { name: /เปิดรายละเอียดของ Victoria Peak/i }));
 
     expect(container.querySelector(".workspace-grid")).toHaveAttribute("data-context-rail", "open");
@@ -2112,8 +2141,6 @@ describe("Sagittarius cockpit UI", () => {
   it("collapses and expands day groups", async () => {
     const user = userEvent.setup();
     render(<SagittariusApp initialView="itinerary" />);
-    expect(screen.queryByRole("button", { name: /เลือกจุด Manual main coffee/i })).not.toBeInTheDocument();
-    await user.click(screen.getByLabelText(/Show all paths/i));
 
     await user.click(screen.getByRole("button", { name: /ย่อ วันที่ 2/i }));
 
@@ -2121,7 +2148,6 @@ describe("Sagittarius cockpit UI", () => {
     expect(screen.queryByRole("button", { name: /เลือกจุด Victoria Peak/i })).not.toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: /ขยาย วันที่ 2/i }));
-    await user.click(screen.getByLabelText(/Show all paths/i));
 
     expect(screen.getByRole("button", { name: /เลือกจุด Dim Dim Sum/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /เลือกจุด Victoria Peak/i })).toBeInTheDocument();
@@ -2252,6 +2278,7 @@ describe("Sagittarius cockpit UI", () => {
 
     expect(screen.queryByRole("dialog", { name: /เพิ่มกิจกรรม/i })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: /เลือกจุด Coffee break at K11 Musea/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Coffee break at K11 Musea on Plan A/i })).toBeInTheDocument();
     expect(within(screen.getByRole("complementary", { name: /ข้อมูลประกอบการวางแผน/i })).getByRole("heading", { name: /Coffee break at K11 Musea/i })).toBeInTheDocument();
   });
 
@@ -2281,7 +2308,8 @@ describe("Sagittarius cockpit UI", () => {
     await user.click(within(dialog).getByRole("button", { name: /บันทึกการแก้ไข/i }));
 
     expect(screen.getByRole("button", { name: /เลือกจุด Manual main coffee/i })).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /เลือกจุด เดินเล่นย่าน Central/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Manual main coffee on Main/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /เดินเล่นย่าน Central.*on Plan A/i })).toBeInTheDocument();
   });
 
   it("promotes another stop when the current main stop is manually moved to a new plan", async () => {
@@ -2299,7 +2327,7 @@ describe("Sagittarius cockpit UI", () => {
     await user.type(within(dialog).getByLabelText(/สถานที่/i), "K11 Musea");
     await user.click(within(dialog).getByRole("button", { name: /บันทึกกิจกรรม/i }));
 
-    expect(screen.queryByRole("button", { name: /เลือกจุด Promoted after demote coffee/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /เลือกจุด Promoted after demote coffee/i })).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: /ปิดรายละเอียด/i }));
     await user.click(screen.getByRole("button", { name: /เลือกจุด เดินเล่นย่าน Central/i }));
     await user.click(screen.getByRole("button", { name: /แก้ไขรายละเอียด/i }));
@@ -2309,10 +2337,11 @@ describe("Sagittarius cockpit UI", () => {
     await user.click(within(dialog).getByRole("button", { name: /บันทึกการแก้ไข/i }));
 
     expect(screen.getByRole("button", { name: /เลือกจุด Promoted after demote coffee/i })).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /เลือกจุด เดินเล่นย่าน Central/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Promoted after demote coffee on Main/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /เดินเล่นย่าน Central.*on Plan B/i })).toBeInTheDocument();
   });
 
-  it("filters a generated day plan from the matching day path selector", async () => {
+  it("keeps a generated day plan visible in the graph and selectable from the matching day path selector", async () => {
     const user = userEvent.setup();
     render(<SagittariusApp initialView="itinerary" />);
 
@@ -2327,13 +2356,15 @@ describe("Sagittarius cockpit UI", () => {
     await user.type(within(dialog).getByLabelText(/สถานที่/i), "K11 Musea");
     await user.click(within(dialog).getByRole("button", { name: /บันทึกกิจกรรม/i }));
 
-    expect(screen.queryByRole("button", { name: /เลือกจุด Day filter coffee/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /เลือกจุด Day filter coffee/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Day filter coffee on Plan A/i })).toBeInTheDocument();
     expect(within(screen.getByLabelText(/Trip path/i)).queryByRole("option", { name: "Plan A" })).not.toBeInTheDocument();
 
     await user.selectOptions(screen.getByLabelText(/Path for Day 2/i), "path-2026-06-19-sub-a");
 
     expect(screen.getByRole("button", { name: /เลือกจุด Day filter coffee/i })).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /เลือกจุด เดินเล่นย่าน Central/i })).not.toBeInTheDocument();
+    expect(screen.getByLabelText(/Path for Day 2/i)).toHaveValue("path-2026-06-19-sub-a");
+    expect(screen.getByRole("button", { name: /เลือกจุด เดินเล่นย่าน Central/i })).toBeInTheDocument();
   });
 
   it("adds a new itinerary stop into the selected item's day", async () => {

@@ -9,6 +9,7 @@ import { Button } from "./ui";
 import { Icon } from "./icons";
 import { formatTripRange, PageHeader } from "./PageHeader";
 import { activityTypeLabel, dayRouteLabel, formatDuration, formatThaiDate } from "./itineraryDisplay";
+import { ActivityPathGraphDay } from "./ActivityPathGraphDay";
 
 interface SmartItineraryTableProps {
   canRedo: boolean;
@@ -16,6 +17,7 @@ interface SmartItineraryTableProps {
   canUndo: boolean;
   contextRailOpen: boolean;
   endDate: string;
+  graphItems?: ItineraryItem[];
   items: ItineraryItem[];
   role: TripRole;
   startDate: string;
@@ -30,6 +32,7 @@ interface SmartItineraryTableProps {
   onSelectItem: (itemId: string) => void;
   onMoveItem: (draggedItemId: string, targetItemId: string) => void;
   onMoveItemToDay: (draggedItemId: string, targetDay: string) => void;
+  onMoveItemToPath?: (itemId: string, pathId: string) => void;
   onExportItinerary: () => void;
   onImportItinerary: (file: File) => void;
   onChangeTripPath?: (pathId: string) => void;
@@ -53,7 +56,10 @@ const clearPathButtonClassName = "inline-flex min-h-9 items-center rounded-[var(
 const importInputClassName = "sr-only";
 const tableScrollClassName = "table-scroll m-0 h-auto min-h-0 w-full max-w-full overflow-x-auto overflow-y-clip rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)]";
 const smartTableClassName =
-  "smart-table w-full min-w-[960px] table-fixed border-collapse text-xs leading-4 text-[#1f2937] [&_a]:text-[#2563eb] [&_a]:underline [&_a]:underline-offset-2 [&_td:first-child]:w-[34px] [&_td:first-child]:px-0 [&_td:first-child]:text-center [&_td:nth-child(2)]:w-[78px] [&_td:nth-child(4)]:w-[94px] [&_td:nth-child(5)]:w-[124px] [&_td:nth-child(6)]:w-[94px] [&_td:nth-child(7)]:w-[108px] [&_td:nth-child(8)]:w-[118px] [&_td:nth-child(8)]:border-r-0 [&_td]:h-9 [&_td]:border-b [&_td]:border-r [&_td]:border-[var(--color-border)] [&_td]:px-2.5 [&_td]:py-1 [&_td]:text-left [&_td]:align-middle [&_th:first-child]:w-[34px] [&_th:first-child]:px-0 [&_th:first-child]:text-center [&_th:nth-child(2)]:w-[78px] [&_th:nth-child(4)]:w-[94px] [&_th:nth-child(5)]:w-[124px] [&_th:nth-child(6)]:w-[94px] [&_th:nth-child(7)]:w-[108px] [&_th:nth-child(8)]:w-[118px] [&_th:nth-child(8)]:border-r-0 [&_th]:h-9 [&_th]:border-b [&_th]:border-r [&_th]:border-[var(--color-border)] [&_th]:px-2.5 [&_th]:py-1 [&_th]:text-left [&_th]:align-middle [&_thead_th]:sticky [&_thead_th]:top-0 [&_thead_th]:z-[1] [&_thead_th]:h-12 [&_thead_th]:bg-[var(--color-surface)] [&_thead_th]:text-xs [&_thead_th]:font-[750] [&_thead_th]:text-[var(--color-text-muted)]";
+  "smart-table w-full min-w-[1010px] table-fixed border-collapse text-xs leading-4 text-[#1f2937] [&_a]:text-[#2563eb] [&_a]:underline [&_a]:underline-offset-2 [&_td:first-child]:px-0 [&_td:first-child]:text-center [&_td:nth-child(2)]:w-[34px] [&_td:nth-child(2)]:px-0 [&_td:nth-child(2)]:text-center [&_td:nth-child(3)]:w-[82px] [&_td:nth-child(5)]:w-[94px] [&_td:nth-child(6)]:w-[124px] [&_td:nth-child(7)]:w-[108px] [&_td:nth-child(8)]:w-[118px] [&_td:nth-child(8)]:border-r-0 [&_td]:h-9 [&_td]:border-b [&_td]:border-r [&_td]:border-[var(--color-border)] [&_td]:px-2.5 [&_td]:py-1 [&_td]:text-left [&_td]:align-middle [&_th:first-child]:px-0 [&_th:first-child]:text-center [&_th:nth-child(2)]:w-[34px] [&_th:nth-child(2)]:px-0 [&_th:nth-child(2)]:text-center [&_th:nth-child(3)]:w-[82px] [&_th:nth-child(5)]:w-[94px] [&_th:nth-child(6)]:w-[124px] [&_th:nth-child(7)]:w-[108px] [&_th:nth-child(8)]:w-[118px] [&_th:nth-child(8)]:border-r-0 [&_th]:h-9 [&_th]:border-b [&_th]:border-r [&_th]:border-[var(--color-border)] [&_th]:px-2.5 [&_th]:py-1 [&_th]:text-left [&_th]:align-middle [&_thead_th]:sticky [&_thead_th]:top-0 [&_thead_th]:z-[1] [&_thead_th]:h-12 [&_thead_th]:bg-[var(--color-surface)] [&_thead_th]:text-xs [&_thead_th]:font-[750] [&_thead_th]:text-[var(--color-text-muted)]";
+const graphColumnMinWidth = 30;
+const graphColumnSidePadding = 9;
+const graphColumnLaneGap = 18;
 const dayGroupClassName = "day-group";
 const daySpacerRowClassName = "day-spacer-row [&_td]:!h-3 [&_td]:!border-0 [&_td]:!bg-[var(--color-page)] [&_td]:!p-0";
 const dayRowClassName = "day-row [&_th]:h-[39px] [&_th]:bg-[var(--color-surface)] [&_th]:px-2.5 [&_th]:py-0";
@@ -74,12 +80,12 @@ const dataRowDraggingClassName = "data-row--dragging cursor-grabbing [&_td]:bg-[
 const dataRowDropTargetClassName =
   "data-row--drop-target translate-y-px [&_td:first-child]:shadow-[inset_3px_0_0_var(--color-primary),inset_0_2px_0_var(--color-primary),inset_0_-1px_0_var(--color-primary-border)] [&_td]:bg-[var(--color-primary-soft)] [&_td]:shadow-[inset_0_2px_0_var(--color-primary),inset_0_-1px_0_var(--color-primary-border)]";
 const dragCellClassName = "drag-cell text-[var(--color-text-subtle)]";
-const reorderControlsClassName = "reorder-controls inline-grid grid-cols-[repeat(3,26px)] items-center gap-1";
+const reorderControlsClassName = "reorder-controls inline-grid grid-cols-[26px] items-center justify-center";
 const dragHandleClassName =
   "drag-handle inline-grid size-[26px] cursor-grab place-items-center rounded-[var(--radius-sm)] border-0 bg-transparent text-[var(--color-text-subtle)] transition-[color,background] duration-150 hover:not-disabled:bg-[var(--color-primary-soft)] hover:not-disabled:text-[var(--color-primary-strong)] active:cursor-grabbing disabled:cursor-not-allowed disabled:opacity-[0.42]";
-const reorderButtonClassName =
-  "reorder-button inline-grid size-[26px] cursor-pointer place-items-center rounded-[var(--radius-sm)] border-0 bg-transparent text-[var(--color-text-subtle)] transition-[color,background] duration-150 hover:not-disabled:bg-[var(--color-primary-soft)] hover:not-disabled:text-[var(--color-primary-strong)] disabled:cursor-not-allowed disabled:opacity-[0.34] [&_.icon]:size-[15px] [&_.icon]:rotate-90";
-const timeCellClassName = "time-cell font-[650] tabular-nums text-[#334155]";
+const timeCellClassName = "time-cell !text-center font-[650] tabular-nums text-[#334155]";
+const timeStackClassName = "grid min-h-[30px] content-center justify-items-center gap-0.5 leading-none [&_span]:whitespace-nowrap";
+const timeDurationClassName = "time-duration text-[10px] font-[700] leading-3 text-[var(--color-text-muted)]";
 const activityCellClassName = "activity-cell min-w-0";
 const rowSelectClassName =
   "row-select grid min-h-[22px] w-full min-w-0 gap-0.5 border-0 bg-transparent p-0 text-left text-inherit [&_span]:overflow-hidden [&_span]:text-ellipsis [&_span]:whitespace-nowrap [&_span]:text-[11px] [&_span]:leading-4 [&_span]:text-[var(--color-text-muted)] [&_strong]:overflow-hidden [&_strong]:text-ellipsis [&_strong]:whitespace-nowrap [&_strong]:text-xs [&_strong]:font-semibold";
@@ -89,10 +95,12 @@ const warningSummaryClassName = "warning-summary inline-flex min-w-0 items-cente
 const addStopRowClassName = "add-stop-row [&_td]:border-b [&_td]:border-r [&_td]:border-dashed [&_td]:border-[var(--color-border)] [&_td]:bg-[var(--color-surface-subtle)] [&_td]:px-2.5 [&_td]:py-1";
 const addStopRowDropTargetClassName = "add-stop-row--drop-target [&_td]:!bg-[var(--color-primary-soft)] [&_td]:shadow-[inset_0_0_0_2px_var(--color-primary-border)]";
 const addStopInlineButtonClassName = "inline-flex min-h-7 w-full items-center justify-center gap-2 rounded-[var(--radius-sm)] border border-dashed border-[var(--color-primary-border)] bg-[rgb(240_253_250_/_0.72)] px-3 text-[12px] font-extrabold text-[var(--color-primary-strong)] transition-[background,border-color,color] duration-150 hover:enabled:bg-[var(--color-primary-soft)] disabled:cursor-not-allowed disabled:border-[var(--color-border)] disabled:bg-transparent disabled:text-[var(--color-text-subtle)]";
+const graphCellClassName = "activity-path-graph-cell !h-auto !bg-[var(--color-surface-subtle)] !p-0 !align-top !shadow-none";
 
 export function SmartItineraryTable({
   canRestructure = true,
   endDate,
+  graphItems,
   itineraryView,
   items,
   pathOptions = [{ id: mainItineraryPathId, name: "Main", scope: "trip" }],
@@ -107,6 +115,7 @@ export function SmartItineraryTable({
   onSelectItem,
   onMoveItem,
   onMoveItemToDay,
+  onMoveItemToPath,
   onExportItinerary,
   onImportItinerary,
   onChangeTripPath,
@@ -118,11 +127,14 @@ export function SmartItineraryTable({
 }: SmartItineraryTableProps) {
   const { locale, t } = useI18n();
   const importInputRef = useRef<HTMLInputElement>(null);
-  const groups = mergeTripDayGroups(itineraryView?.dayGroups ?? groupItemsByDay(items), startDate, endDate);
+  const displayItems = graphItems ?? items;
+  const groups = mergeTripDayGroups(groupItemsByDay(displayItems), startDate, endDate);
+  const graphItemsByDay = groupGraphItemsByDay(displayItems);
   const canEdit = role === "owner" || role === "organizer";
   const canRestructureItems = canEdit && canRestructure;
-  const warningCount = itineraryView?.warningCount ?? items.reduce((total, item) => total + (item.advisories?.length ?? 0), 0);
+  const warningCount = itineraryView?.warningCount ?? displayItems.reduce((total, item) => total + (item.advisories?.length ?? 0), 0);
   const totalMinutes = items.reduce((total, item) => total + (item.durationMinutes ?? 0), 0);
+  const graphColumnWidth = buildGraphColumnWidth(displayItems, pathOptions);
   const [collapsedDays, setCollapsedDays] = useState<string[]>([]);
   const [dragState, setDragState] = useState<{ draggedItemId: string | null; overItemId: string | null; overDay: string | null }>({ draggedItemId: null, overItemId: null, overDay: null });
 
@@ -250,8 +262,21 @@ export function SmartItineraryTable({
       <div className={tableScrollClassName} tabIndex={0} aria-label={t.itinerary.scrollLabel}>
         <table className={smartTableClassName}>
           <caption className="sr-only">{t.itinerary.caption}</caption>
+          <colgroup>
+            <col style={{ width: graphColumnWidth }} />
+            <col />
+            <col />
+            <col />
+            <col />
+            <col />
+            <col />
+            <col />
+          </colgroup>
           <thead>
             <tr>
+              <th>
+                <span className="sr-only">Path graph</span>
+              </th>
               <th>
                 <span className="sr-only">{t.itinerary.headers.reorder}</span>
               </th>
@@ -259,7 +284,6 @@ export function SmartItineraryTable({
               <th>{t.itinerary.headers.activity}</th>
               <th>{t.itinerary.headers.type}</th>
               <th>{t.itinerary.headers.map}</th>
-              <th>{t.itinerary.headers.duration}</th>
               <th>{t.itinerary.headers.transport}</th>
               <th>{t.itinerary.headers.warnings}</th>
             </tr>
@@ -269,6 +293,8 @@ export function SmartItineraryTable({
               canEdit={canRestructureItems}
               collapsed={collapsedDays.includes(group.day)}
               dragState={dragState}
+              graphColumnWidth={graphColumnWidth}
+              graphItems={graphItemsByDay.get(group.day) ?? []}
               group={group}
               hasTopSpacer={groupIndex > 0}
               itineraryLabels={t.itinerary}
@@ -287,6 +313,7 @@ export function SmartItineraryTable({
               onDropOnDay={dropOnDay}
               onAddStop={onAddStop}
               onMoveItem={onMoveItem}
+              onMoveItemToPath={onMoveItemToPath}
               onPreviewDayDrop={previewDayDrop}
               onPreviewDrop={previewDrop}
               onSelectItem={onSelectItem}
@@ -301,6 +328,8 @@ export function SmartItineraryTable({
 }
 
 function DayGroup({
+  graphColumnWidth,
+  graphItems,
   group,
   hasTopSpacer,
   itineraryLabels,
@@ -321,12 +350,15 @@ function DayGroup({
   onDropOnDay,
   onAddStop,
   onMoveItem,
+  onMoveItemToPath,
   onPreviewDayDrop,
   onPreviewDrop,
   onSelectItem,
   onStartDrag,
   onToggleDay,
 }: {
+  graphColumnWidth: number;
+  graphItems: ItineraryItem[];
   group: { day: string; items: ItineraryItem[]; warningCount: number };
   hasTopSpacer: boolean;
   itineraryLabels: Messages["itinerary"];
@@ -347,6 +379,7 @@ function DayGroup({
   onDropOnDay: (event: DragEvent<HTMLElement>, targetDay: string) => void;
   onAddStop: (day?: string) => void;
   onMoveItem: (draggedItemId: string, targetItemId: string) => void;
+  onMoveItemToPath?: (itemId: string, pathId: string) => void;
   onPreviewDayDrop: (event: DragEvent<HTMLElement>, targetDay: string) => void;
   onPreviewDrop: (event: DragEvent<HTMLElement>, targetItemId: string) => void;
   onSelectItem: (itemId: string) => void;
@@ -358,6 +391,7 @@ function DayGroup({
   const dayPathOptions = pathOptions.filter((option) => option.id === mainItineraryPathId || option.scope === "trip" || option.day === group.day);
   const hasAlternativePathOptions = dayPathOptions.some((option) => option.id !== mainItineraryPathId);
   const samePathOverlapItemIds = findSamePathOverlapItemIds(group.items);
+  const showGraph = !collapsed && (graphItems.length > 0 || group.items.length > 0);
 
   return (
     <tbody className={dayGroupClassName} data-state={collapsed ? "closed" : "open"}>
@@ -367,7 +401,23 @@ function DayGroup({
         </tr>
       ) : null}
       <tr className={dayRowClassName}>
-        <th colSpan={8}>
+        {showGraph ? (
+          <td className={graphCellClassName} rowSpan={Math.max(2, group.items.length + 2)}>
+            <ActivityPathGraphDay
+              canEdit={canEdit}
+              day={group.day}
+              dayLabel={dayA11yLabel}
+              graphItems={graphItems}
+              graphWidth={graphColumnWidth}
+              pathOptions={pathOptions}
+              rowItems={group.items}
+              selectedItemId={selectedItemId}
+              onMoveItemToPath={onMoveItemToPath}
+              onSelectItem={onSelectItem}
+            />
+          </td>
+        ) : null}
+        <th colSpan={showGraph ? 7 : 8}>
           <div className={dayRowContentClassName}>
             <button
               type="button"
@@ -424,7 +474,7 @@ function DayGroup({
           </div>
         </th>
       </tr>
-      {!collapsed ? group.items.map((item, itemIndex) => (
+      {!collapsed ? group.items.map((item) => (
         <tr
           aria-label={itineraryLabels.row.openDetails({ activity: item.activity })}
           className={getRowClassName(item, selectedItemId, dragState, samePathOverlapItemIds)}
@@ -446,35 +496,14 @@ function DayGroup({
               >
                 <Icon name="drag" />
               </button>
-              <button
-                type="button"
-                className={reorderButtonClassName}
-                disabled={!canEdit || itemIndex === 0}
-                tabIndex={collapsed ? -1 : undefined}
-                aria-label={itineraryLabels.row.moveUp({ activity: item.activity })}
-                onClick={() => {
-                  const previousItem = group.items[itemIndex - 1];
-                  if (previousItem) onMoveItem(item.id, previousItem.id);
-                }}
-              >
-                <Icon name="chevronLeft" />
-              </button>
-              <button
-                type="button"
-                className={reorderButtonClassName}
-                disabled={!canEdit || itemIndex >= group.items.length - 1}
-                tabIndex={collapsed ? -1 : undefined}
-                aria-label={itineraryLabels.row.moveDown({ activity: item.activity })}
-                onClick={() => {
-                  const nextItem = group.items[itemIndex + 1];
-                  if (nextItem) onMoveItem(nextItem.id, item.id);
-                }}
-              >
-                <Icon name="chevronRight" />
-              </button>
             </div>
           </td>
-          <td className={timeCellClassName}>{tableStartTime(item)}</td>
+          <td className={timeCellClassName}>
+            <span className={timeStackClassName}>
+              <span>{tableStartTime(item)}</span>
+              <span className={timeDurationClassName}>{formatDuration(item.durationMinutes, locale)}</span>
+            </span>
+          </td>
           <td className={activityCellClassName}>
             <button
               type="button"
@@ -492,7 +521,6 @@ function DayGroup({
           </td>
           <td>{activityTypeLabel(item.activityType, locale)}</td>
           <td><a className={mapLinkClassName} href={mapHref(item)} tabIndex={collapsed ? -1 : undefined}>{mapLinkLabel(item, itineraryLabels.row.mapFallback)}</a></td>
-          <td>{formatDuration(item.durationMinutes, locale)}</td>
           <td>{item.transportation || "—"}</td>
           <td><AdvisorySummary advisories={item.advisories ?? []} /></td>
         </tr>
@@ -503,7 +531,7 @@ function DayGroup({
           onDragOver={(event) => onPreviewDayDrop(event, group.day)}
           onDrop={(event) => onDropOnDay(event, group.day)}
         >
-          <td colSpan={8}>
+          <td colSpan={showGraph ? 7 : 8}>
             <button
               type="button"
               className={addStopInlineButtonClassName}
@@ -532,6 +560,53 @@ function mergeTripDayGroups(groups: ItineraryDayGroup[], startDate: string, endD
   return Array.from(days)
     .sort()
     .map((day) => groupsByDay.get(day) ?? { day, items: [], warningCount: 0 });
+}
+
+function groupGraphItemsByDay(items: ItineraryItem[]): Map<string, ItineraryItem[]> {
+  const itemsByDay = new Map<string, ItineraryItem[]>();
+  for (const item of items) {
+    itemsByDay.set(item.day, [...(itemsByDay.get(item.day) ?? []), item]);
+  }
+  return itemsByDay;
+}
+
+function buildGraphColumnWidth(items: ItineraryItem[], pathOptions: ItineraryPathOption[]): number {
+  const pathCountsByDay = new Map<string, Set<string>>();
+  const planAPathId = findPlanAPathId(pathOptions);
+  const itemsByDay = groupGraphItemsByDay(items);
+  for (const [day, dayItems] of itemsByDay) {
+    const dayPaths = pathCountsByDay.get(day) ?? new Set<string>([mainItineraryPathId]);
+    dayItems.forEach((item, itemIndex) => {
+      const pathId = item.pathRole === "alternative" ? item.pathId ?? item.id : mainItineraryPathId;
+      dayPaths.add(shouldUseVisualPlanA(item, pathId, dayItems.slice(0, itemIndex)) ? planAPathId : pathId);
+    });
+    pathCountsByDay.set(day, dayPaths);
+  }
+  const laneCount = Math.max(1, ...Array.from(pathCountsByDay.values(), (paths) => paths.size));
+  return Math.max(graphColumnMinWidth, graphColumnSidePadding * 2 + (laneCount - 1) * graphColumnLaneGap + 12);
+}
+
+function findPlanAPathId(pathOptions: ItineraryPathOption[]): string {
+  return pathOptions.find((option) => option.id !== mainItineraryPathId && option.name.toLowerCase() === "plan a")?.id ?? "visual-plan-a";
+}
+
+function shouldUseVisualPlanA(item: ItineraryItem, pathId: string, earlierItems: ItineraryItem[]): boolean {
+  return pathId === mainItineraryPathId && !item.pathGroupId && overlapsEarlierItem(item, earlierItems);
+}
+
+function overlapsEarlierItem(item: ItineraryItem, earlierItems: ItineraryItem[]): boolean {
+  const interval = itemInterval(item);
+  if (!interval) return false;
+  return earlierItems.some((earlierItem) => {
+    const earlierInterval = itemInterval(earlierItem);
+    return Boolean(earlierInterval && interval.start < earlierInterval.end && earlierInterval.start < interval.end);
+  });
+}
+
+function itemInterval(item: ItineraryItem): { start: number; end: number } | null {
+  const start = parseTime(item.startTime);
+  if (start === null) return null;
+  return { start, end: start + (item.durationMinutes ?? 45) };
 }
 
 function getRowClassName(

@@ -30,6 +30,7 @@ function renderTable(overrides: Partial<Parameters<typeof SmartItineraryTable>[0
     onSelectItem: vi.fn(),
     onMoveItem: vi.fn(),
     onMoveItemToDay: vi.fn(),
+    onMoveItemToPath: vi.fn(),
     onExportItinerary: vi.fn(),
     onImportItinerary: vi.fn(),
     onChangeTripPath: vi.fn(),
@@ -45,6 +46,23 @@ function renderTable(overrides: Partial<Parameters<typeof SmartItineraryTable>[0
   };
   renderWithI18n(<SmartItineraryTable {...props} />, { locale: "th" });
   return props;
+}
+
+function findGraphLine(from: HTMLElement, to: HTMLElement): Element | undefined {
+  const fromCenter = {
+    x: Number.parseFloat(from.style.left),
+    y: Number.parseFloat(from.style.top) + 6,
+  };
+  const toCenter = {
+    x: Number.parseFloat(to.style.left),
+    y: Number.parseFloat(to.style.top) + 6,
+  };
+  return Array.from(document.querySelectorAll(".activity-path-graph-line")).find((line) => (
+    line.getAttribute("data-from-x") === `${fromCenter.x}` &&
+    line.getAttribute("data-from-y") === `${fromCenter.y}` &&
+    line.getAttribute("data-to-x") === `${toCenter.x}` &&
+    line.getAttribute("data-to-y") === `${toCenter.y}`
+  ));
 }
 
 describe("SmartItineraryTable", () => {
@@ -144,6 +162,516 @@ describe("SmartItineraryTable", () => {
     expect(within(tripPath).queryByRole("option", { name: "Plan A" })).not.toBeInTheDocument();
     expect(within(screen.getByLabelText(/Path for Day 2/i)).getByRole("option", { name: "Plan A" })).toBeInTheDocument();
     expect(screen.queryByLabelText(/Path for Day 1/i)).not.toBeInTheDocument();
+  });
+
+  it("renders a left-side dot graph without lane controls", () => {
+    const mainItem = {
+      ...tripFixture.planItems[0],
+      id: "graph-main",
+      day: "2026-06-19",
+      activity: "Graph main",
+      pathGroupId: "path-group-graph",
+      pathRole: "main" as const,
+    };
+    const alternativeItem = {
+      ...mainItem,
+      id: "graph-plan-a",
+      activity: "Graph plan A",
+      pathId: "path-2026-06-19-sub-a",
+      pathName: "Plan A",
+      pathRole: "alternative" as const,
+    };
+
+    renderTable({
+      items: [mainItem],
+      graphItems: [mainItem, alternativeItem],
+      selectedItemId: "graph-main",
+      pathOptions: [
+        { id: "main", name: "Main", scope: "trip" },
+        { id: "path-2026-06-19-sub-a", name: "Plan A", scope: "day", day: "2026-06-19" },
+      ],
+    });
+
+    expect(screen.getByRole("group", { name: /Activity path graph for Day 2/i })).toHaveClass("activity-path-graph");
+    expect(screen.getByRole("button", { name: /Graph main on Main/i })).toHaveClass("activity-path-graph-node--selected");
+    expect(screen.getByRole("button", { name: /Graph plan A on Plan A/i })).toBeInTheDocument();
+    expect(screen.getByRole("row", { name: /Graph plan A/i })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Drop activities on Plan A for Day 2/i })).not.toBeInTheDocument();
+    expect(document.querySelector(".activity-path-graph-lane-label")).not.toBeInTheDocument();
+    expect(screen.queryByRole("group", { name: /Activity path graph for Day 1/i })).not.toBeInTheDocument();
+  });
+
+  it("offers a keyboard fallback for changing an activity path", async () => {
+    const user = userEvent.setup();
+    const onMoveItemToPath = vi.fn();
+    const mainItem = {
+      ...tripFixture.planItems[0],
+      id: "graph-main",
+      day: "2026-06-19",
+      activity: "Graph main",
+      pathGroupId: "path-group-graph",
+      pathRole: "main" as const,
+    };
+    renderTable({
+      items: [mainItem],
+      graphItems: [mainItem],
+      selectedItemId: "graph-main",
+      onMoveItemToPath,
+      pathOptions: [
+        { id: "main", name: "Main", scope: "trip" },
+        { id: "path-2026-06-19-sub-a", name: "Plan A", scope: "day", day: "2026-06-19" },
+      ],
+    });
+
+    await user.selectOptions(screen.getByLabelText(/Move Graph main to path/i), "path-2026-06-19-sub-a");
+
+    expect(onMoveItemToPath).toHaveBeenCalledWith("graph-main", "path-2026-06-19-sub-a");
+  });
+
+  it("keeps graph nodes selectable but disables graph path mutation for read-only roles", () => {
+    const onMoveItemToPath = vi.fn();
+    const onSelectItem = vi.fn();
+    const mainItem = {
+      ...tripFixture.planItems[0],
+      id: "graph-main",
+      day: "2026-06-19",
+      activity: "Graph main",
+      pathRole: "main" as const,
+    };
+    renderTable({
+      items: [mainItem],
+      graphItems: [mainItem],
+      role: "viewer",
+      selectedItemId: "graph-main",
+      onMoveItemToPath,
+      onSelectItem,
+      pathOptions: [
+        { id: "main", name: "Main", scope: "trip" },
+        { id: "path-2026-06-19-sub-a", name: "Plan A", scope: "day", day: "2026-06-19" },
+      ],
+    });
+
+    const graphNode = screen.getByRole("button", { name: /Graph main on Main/i });
+    expect(graphNode).toBeEnabled();
+    expect(graphNode).toHaveAttribute("draggable", "false");
+    fireEvent.click(graphNode);
+    expect(onSelectItem).toHaveBeenCalledWith("graph-main");
+    expect(screen.getByLabelText(/Move Graph main to path/i)).toBeDisabled();
+  });
+
+  it("does not render graph gap marks between dot nodes", () => {
+    const earlyItem = {
+      ...tripFixture.planItems[0],
+      id: "gap-early",
+      day: "2026-06-19",
+      startTime: "08:00",
+      durationMinutes: 30,
+      activity: "Gap early",
+      sortOrder: 100,
+      pathRole: "main" as const,
+    };
+    const lateItem = {
+      ...tripFixture.planItems[1],
+      id: "gap-late",
+      day: "2026-06-19",
+      startTime: "09:15",
+      durationMinutes: 30,
+      activity: "Gap late",
+      sortOrder: 200,
+      pathRole: "main" as const,
+    };
+
+    renderTable({
+      items: [earlyItem, lateItem],
+      graphItems: [earlyItem, lateItem],
+      selectedItemId: "gap-early",
+    });
+
+    expect(screen.queryByLabelText(/Free time gap 30 min on Main/i)).not.toBeInTheDocument();
+    expect(screen.getAllByRole("button", { name: /Gap .* on Main/i })).toHaveLength(2);
+    expect(document.querySelector(".activity-path-graph-line--dashed")).toBeInTheDocument();
+  });
+
+  it("draws mixed-path graph lines through each overlapping plan", () => {
+    const earlyItem = {
+      ...tripFixture.planItems[0],
+      id: "gap-early",
+      day: "2026-06-19",
+      startTime: "08:00",
+      durationMinutes: 30,
+      activity: "Gap early",
+      sortOrder: 100,
+      pathGroupId: "gap-group",
+      pathRole: "main" as const,
+    };
+    const branchItem = {
+      ...tripFixture.planItems[1],
+      id: "gap-branch",
+      day: "2026-06-19",
+      startTime: "08:15",
+      durationMinutes: 30,
+      activity: "Gap branch",
+      sortOrder: 200,
+      pathGroupId: "gap-group",
+      pathId: "path-2026-06-19-sub-a",
+      pathName: "Plan A",
+      pathRole: "alternative" as const,
+    };
+    const branchFollowUpItem = {
+      ...tripFixture.planItems[2],
+      id: "gap-branch-follow-up",
+      day: "2026-06-19",
+      startTime: "08:30",
+      durationMinutes: 30,
+      activity: "Gap branch follow up",
+      sortOrder: 250,
+      pathGroupId: "gap-group",
+      pathId: "path-2026-06-19-sub-a",
+      pathName: "Plan A",
+      pathRole: "alternative" as const,
+    };
+    const lateItem = {
+      ...tripFixture.planItems[3],
+      id: "gap-late",
+      day: "2026-06-19",
+      startTime: "09:15",
+      durationMinutes: 30,
+      activity: "Gap late",
+      sortOrder: 300,
+      pathRole: "main" as const,
+    };
+
+    renderTable({
+      items: [earlyItem, branchItem, branchFollowUpItem, lateItem],
+      graphItems: [earlyItem, branchItem, branchFollowUpItem, lateItem],
+      selectedItemId: "gap-early",
+      showAllPaths: true,
+    });
+
+    expect(screen.queryByLabelText(/Free time gap 30 min on Main/i)).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Gap branch on Plan A/i })).toHaveClass("activity-path-graph-node");
+    const earlyDot = screen.getByRole("button", { name: /Gap early on Main/i });
+    const branchDot = screen.getByRole("button", { name: /Gap branch on Plan A/i });
+    const followUpDot = screen.getByRole("button", { name: /Gap branch follow up on Plan A/i });
+    const lateDot = screen.getByRole("button", { name: /Gap late on Main/i });
+    expect(findGraphLine(earlyDot, branchDot)).toBeUndefined();
+    const followUpLine = findGraphLine(earlyDot, followUpDot);
+    const planFollowUpLine = findGraphLine(branchDot, followUpDot);
+    const earlyReturnToMainLine = findGraphLine(branchDot, lateDot);
+    const returnToMainLine = findGraphLine(followUpDot, lateDot);
+    const followUpDotCenterY = Number.parseFloat(followUpDot.style.top) + 6;
+    const returnEdgeY = followUpDotCenterY + 21.5;
+    expect(followUpLine).toBeDefined();
+    expect(planFollowUpLine).toBeUndefined();
+    expect(earlyReturnToMainLine).toBeUndefined();
+    expect(returnToMainLine?.getAttribute("d")).toContain(`L ${Number.parseFloat(lateDot.style.left)} ${returnEdgeY}`);
+    expect(returnToMainLine?.getAttribute("d")).toContain(`L ${Number.parseFloat(lateDot.style.left)} ${Number.parseFloat(lateDot.style.top) + 6}`);
+    expect(returnToMainLine).toHaveClass("activity-path-graph-line--dashed");
+    expect(document.querySelectorAll(".activity-path-graph-line").length).toBeGreaterThanOrEqual(4);
+  });
+
+  it("keeps same-plan gaps on the plan route but draws them as dashed", () => {
+    const mainItem = {
+      ...tripFixture.planItems[0],
+      id: "plan-gap-main",
+      day: "2026-06-19",
+      startTime: "08:00",
+      durationMinutes: 45,
+      activity: "Plan gap main",
+      sortOrder: 100,
+      pathRole: "main" as const,
+    };
+    const firstPlanItem = {
+      ...tripFixture.planItems[1],
+      id: "plan-gap-first",
+      day: "2026-06-19",
+      startTime: "08:15",
+      durationMinutes: 30,
+      activity: "Plan gap first",
+      sortOrder: 200,
+      pathId: "path-2026-06-19-sub-a",
+      pathName: "Plan A",
+      pathRole: "alternative" as const,
+    };
+    const secondPlanItem = {
+      ...tripFixture.planItems[2],
+      id: "plan-gap-second",
+      day: "2026-06-19",
+      startTime: "09:15",
+      durationMinutes: 30,
+      activity: "Plan gap second",
+      sortOrder: 300,
+      pathId: "path-2026-06-19-sub-a",
+      pathName: "Plan A",
+      pathRole: "alternative" as const,
+    };
+    const lateMainItem = {
+      ...tripFixture.planItems[3],
+      id: "plan-gap-late-main",
+      day: "2026-06-19",
+      startTime: "10:15",
+      durationMinutes: 30,
+      activity: "Plan gap late main",
+      sortOrder: 400,
+      pathRole: "main" as const,
+    };
+
+    renderTable({
+      items: [mainItem, firstPlanItem, secondPlanItem, lateMainItem],
+      graphItems: [mainItem, firstPlanItem, secondPlanItem, lateMainItem],
+      selectedItemId: "plan-gap-main",
+      showAllPaths: true,
+    });
+
+    const firstPlanDot = screen.getByRole("button", { name: /Plan gap first on Plan A/i });
+    const secondPlanDot = screen.getByRole("button", { name: /Plan gap second on Plan A/i });
+    const lateMainDot = screen.getByRole("button", { name: /Plan gap late main on Main/i });
+    const planGapLine = findGraphLine(firstPlanDot, secondPlanDot);
+
+    expect(planGapLine).toHaveClass("activity-path-graph-line--dashed");
+    expect(findGraphLine(firstPlanDot, lateMainDot)).toBeUndefined();
+  });
+
+  it("routes main to a later plan only when that plan has no earlier branch entry", () => {
+    const mainItem = {
+      ...tripFixture.planItems[0],
+      id: "branch-main",
+      day: "2026-06-19",
+      startTime: "08:00",
+      durationMinutes: 45,
+      activity: "Branch main",
+      sortOrder: 100,
+      pathRole: "main" as const,
+    };
+    const rainEntry = {
+      ...tripFixture.planItems[1],
+      id: "branch-rain-entry",
+      day: "2026-06-19",
+      startTime: "08:15",
+      durationMinutes: 45,
+      activity: "Branch rain entry",
+      sortOrder: 200,
+      pathId: "path-rain",
+      pathName: "Rain plan",
+      pathRole: "alternative" as const,
+    };
+    const rainFollowUp = {
+      ...tripFixture.planItems[2],
+      id: "branch-rain-follow-up",
+      day: "2026-06-19",
+      startTime: "09:00",
+      durationMinutes: 30,
+      activity: "Branch rain follow up",
+      sortOrder: 300,
+      pathId: "path-rain",
+      pathName: "Rain plan",
+      pathRole: "alternative" as const,
+    };
+    const planAEntry = {
+      ...tripFixture.planItems[3],
+      id: "branch-plan-a-entry",
+      day: "2026-06-19",
+      startTime: "09:10",
+      durationMinutes: 30,
+      activity: "Branch plan A entry",
+      sortOrder: 400,
+      pathId: "path-2026-06-19-sub-a",
+      pathName: "Plan A",
+      pathRole: "alternative" as const,
+    };
+
+    renderTable({
+      items: [mainItem, rainEntry, rainFollowUp, planAEntry],
+      graphItems: [mainItem, rainEntry, rainFollowUp, planAEntry],
+      selectedItemId: "branch-main",
+      showAllPaths: true,
+    });
+
+    const mainDot = screen.getByRole("button", { name: /Branch main on Main/i });
+    const rainFollowUpDot = screen.getByRole("button", { name: /Branch rain follow up on Rain plan/i });
+    const planAEntryDot = screen.getByRole("button", { name: /Branch plan A entry on Plan A/i });
+    expect(findGraphLine(mainDot, rainFollowUpDot)).toBeUndefined();
+    expect(findGraphLine(mainDot, planAEntryDot)).toBeDefined();
+  });
+
+  it("routes a main node to a plan node that starts exactly when the next main row starts", () => {
+    const requestedItems = [
+      ["requested-main-0800", "08:00", 60, 100, "Main 08:00 block", undefined, undefined, "main"],
+      ["requested-main-0900", "09:00", 120, 200, "Main 09:00 block", undefined, undefined, "main"],
+      ["requested-plan-a-0900", "09:00", 30, 210, "Plan A 09:00 branch", "path-2026-06-19-sub-a", "Plan A", "alternative"],
+      ["requested-plan-a-1000", "10:00", 60, 300, "Plan A 10:00 follow up", "path-2026-06-19-sub-a", "Plan A", "alternative"],
+      ["requested-main-1100", "11:00", 60, 400, "Main 11:00 block", undefined, undefined, "main"],
+      ["requested-main-1200", "12:00", 180, 500, "Main 12:00 block", undefined, undefined, "main"],
+      ["requested-plan-a-1230", "12:30", 60, 510, "Plan A 12:30 branch", "path-2026-06-19-sub-a", "Plan A", "alternative"],
+      ["requested-main-1600", "16:00", 60, 600, "Main 16:00 block", undefined, undefined, "main"],
+    ].map(([id, startTime, durationMinutes, sortOrder, activity, pathId, pathName, pathRole]) => ({
+      ...tripFixture.planItems[0],
+      id: id as string,
+      day: "2026-06-19",
+      startTime: startTime as string,
+      durationMinutes: durationMinutes as number,
+      sortOrder: sortOrder as number,
+      activity: activity as string,
+      pathId: pathId as string | undefined,
+      pathName: pathName as string | undefined,
+      pathRole: pathRole as typeof tripFixture.planItems[number]["pathRole"],
+    }));
+
+    renderTable({
+      items: requestedItems,
+      graphItems: requestedItems,
+      selectedItemId: "requested-main-0800",
+      showAllPaths: true,
+      pathOptions: [
+        { id: "main", name: "Main", scope: "trip" },
+        { id: "path-2026-06-19-sub-a", name: "Plan A", scope: "day", day: "2026-06-19" },
+      ],
+    });
+
+    const firstMainDot = screen.getByRole("button", { name: /Main 08:00 block on Main/i });
+    const nextMainDot = screen.getByRole("button", { name: /Main 09:00 block on Main/i });
+    const planEntryDot = screen.getByRole("button", { name: /Plan A 09:00 branch on Plan A/i });
+    const planFollowUpDot = screen.getByRole("button", { name: /Plan A 10:00 follow up on Plan A/i });
+    const returnMainDot = screen.getByRole("button", { name: /Main 11:00 block on Main/i });
+    const laterMainDot = screen.getByRole("button", { name: /Main 12:00 block on Main/i });
+    const laterPlanEntryDot = screen.getByRole("button", { name: /Plan A 12:30 branch on Plan A/i });
+    const branchEntryLine = findGraphLine(firstMainDot, planEntryDot);
+
+    expect(branchEntryLine).toBeDefined();
+    expect(branchEntryLine).not.toHaveClass("activity-path-graph-line--dashed");
+    expect(findGraphLine(firstMainDot, nextMainDot)).not.toHaveClass("activity-path-graph-line--dashed");
+    expect(findGraphLine(planFollowUpDot, returnMainDot)).toBeDefined();
+    expect(findGraphLine(planFollowUpDot, laterPlanEntryDot)).toBeUndefined();
+    expect(findGraphLine(returnMainDot, laterPlanEntryDot)).toHaveClass("activity-path-graph-line--dashed");
+    expect(findGraphLine(laterMainDot, laterPlanEntryDot)).toBeUndefined();
+    expect(findGraphLine(nextMainDot, planEntryDot)).toBeUndefined();
+  });
+
+  it("sizes the graph column from visible lanes instead of unused path options", () => {
+    const mainItem = {
+      ...tripFixture.planItems[0],
+      id: "single-lane-main",
+      day: "2026-06-19",
+      activity: "Single lane main",
+      pathRole: "main" as const,
+    };
+
+    renderTable({
+      items: [mainItem],
+      graphItems: [mainItem],
+      selectedItemId: "single-lane-main",
+      pathOptions: [
+        { id: "main", name: "Main", scope: "trip" },
+        { id: "path-rain", name: "Rain plan", scope: "day", day: "2026-06-19" },
+        { id: "path-2026-06-19-sub-a", name: "Plan A", scope: "day", day: "2026-06-19" },
+      ],
+    });
+
+    expect(document.querySelector("col")?.getAttribute("style")).toContain("width: 30px");
+    expect(screen.getByRole("button", { name: /Single lane main on Main/i }).style.left).toBe("15px");
+  });
+
+  it("expands the graph column when multiple plans have visible nodes", () => {
+    const mainItem = {
+      ...tripFixture.planItems[0],
+      id: "multi-lane-main",
+      day: "2026-06-19",
+      activity: "Multi lane main",
+      pathRole: "main" as const,
+    };
+    const rainItem = {
+      ...tripFixture.planItems[1],
+      id: "multi-lane-rain",
+      day: "2026-06-19",
+      activity: "Multi lane rain",
+      pathId: "path-rain",
+      pathName: "Rain plan",
+      pathRole: "alternative" as const,
+    };
+    const planAItem = {
+      ...tripFixture.planItems[2],
+      id: "multi-lane-plan-a",
+      day: "2026-06-19",
+      activity: "Multi lane plan A",
+      pathId: "path-2026-06-19-sub-a",
+      pathName: "Plan A",
+      pathRole: "alternative" as const,
+    };
+
+    renderTable({
+      items: [mainItem, rainItem, planAItem],
+      graphItems: [mainItem, rainItem, planAItem],
+      selectedItemId: "multi-lane-main",
+      showAllPaths: true,
+    });
+
+    expect(document.querySelector("col")?.getAttribute("style")).toContain("width: 66px");
+    expect(Number.parseFloat(screen.getByRole("button", { name: /Multi lane plan A on Plan A/i }).style.left)).toBeGreaterThan(
+      Number.parseFloat(screen.getByRole("button", { name: /Multi lane main on Main/i }).style.left),
+    );
+  });
+
+  it("moves an overlapping activity dot to the Plan A position", () => {
+    const mainItem = {
+      ...tripFixture.planItems[0],
+      id: "overlap-main-dot",
+      day: "2026-06-19",
+      startTime: "08:00",
+      durationMinutes: 60,
+      activity: "Overlap main dot",
+      sortOrder: 100,
+      pathRole: "main" as const,
+    };
+    const overlapItem = {
+      ...tripFixture.planItems[1],
+      id: "overlap-plan-a-dot",
+      day: "2026-06-19",
+      startTime: "08:30",
+      durationMinutes: 45,
+      activity: "Overlap plan A dot",
+      sortOrder: 200,
+      pathRole: "main" as const,
+    };
+
+    renderTable({
+      items: [mainItem, overlapItem],
+      graphItems: [mainItem, overlapItem],
+      selectedItemId: "overlap-main-dot",
+      pathOptions: [
+        { id: "main", name: "Main", scope: "trip" },
+        { id: "path-2026-06-19-sub-a", name: "Plan A", scope: "day", day: "2026-06-19" },
+      ],
+    });
+
+    const mainDot = screen.getByRole("button", { name: /Overlap main dot on Main/i });
+    const planADot = screen.getByRole("button", { name: /Overlap plan A dot on Plan A/i });
+    const startToPlanALine = Array.from(document.querySelectorAll(".activity-path-graph-line")).find((line) => (
+      line.getAttribute("data-from-y") === "23.75" &&
+      line.getAttribute("data-to-x") === `${Number.parseFloat(planADot.style.left)}` &&
+      line.getAttribute("data-to-y") === `${Number.parseFloat(planADot.style.top) + 6}`
+    ));
+    const mainDotCenter = {
+      x: Number.parseFloat(mainDot.style.left),
+      y: Number.parseFloat(mainDot.style.top) + 6,
+    };
+    const planADotCenter = {
+      x: Number.parseFloat(planADot.style.left),
+      y: Number.parseFloat(planADot.style.top) + 6,
+    };
+    const dotToDotLine = Array.from(document.querySelectorAll(".activity-path-graph-line")).find((line) => (
+      line.getAttribute("data-from-x") === `${mainDotCenter.x}` &&
+      line.getAttribute("data-from-y") === `${mainDotCenter.y}` &&
+      line.getAttribute("data-to-x") === `${planADotCenter.x}` &&
+      line.getAttribute("data-to-y") === `${planADotCenter.y}`
+    ));
+    expect(Number.parseFloat(planADot.style.left)).toBeGreaterThan(Number.parseFloat(mainDot.style.left));
+    expect(dotToDotLine).toBeUndefined();
+    expect(startToPlanALine).toBeDefined();
+    expect(startToPlanALine?.getAttribute("d")).toContain(" C ");
+    expect(startToPlanALine?.getAttribute("d")).toContain("47.5");
+    expect(screen.getByLabelText(/Start of Day 2/i)).toHaveClass("activity-path-graph-anchor");
+    expect(screen.getByLabelText(/End of Day 2/i)).toHaveClass("activity-path-graph-anchor");
+    expect(document.querySelectorAll(".activity-path-graph-line").length).toBeGreaterThanOrEqual(3);
   });
 
   it("hides day path controls when the day only has the main plan", () => {
@@ -283,7 +811,7 @@ describe("SmartItineraryTable", () => {
     expect(scrollFrame).toHaveClass("table-scroll", "overflow-x-auto", "rounded-[var(--radius-md)]");
 
     const table = screen.getByRole("table", { name: /รายการแผนการเดินทาง แยกตามวัน/i });
-    expect(table).toHaveClass("smart-table", "w-full", "min-w-[960px]");
+    expect(table).toHaveClass("smart-table", "w-full", "min-w-[1010px]");
 
     const selectedRow = screen.getByRole("row", { name: /Dim Dim Sum/i });
     expect(selectedRow).toHaveClass("data-row", "data-row--selected");
@@ -291,15 +819,13 @@ describe("SmartItineraryTable", () => {
     expect(within(selectedRow).getByRole("link", { name: /แผนที่/i })).toHaveClass("map-link", "underline");
   });
 
-  it("offers button-based reorder controls for touch and keyboard users", async () => {
-    const user = userEvent.setup();
-    const props = renderTable();
+  it("keeps row reorder controls to the drag handle only", () => {
+    renderTable();
     const row = screen.getByRole("row", { name: /Dim Dim Sum/i });
 
-    expect(within(row).getByRole("button", { name: /ย้าย .*Dim Dim Sum.*ขึ้น/i })).toBeDisabled();
-    await user.click(within(row).getByRole("button", { name: /ย้าย .*Dim Dim Sum.*ลง/i }));
-
-    expect(props.onMoveItem).toHaveBeenCalledWith("item-victoria-peak", "item-dimdim");
+    expect(within(row).getByRole("button", { name: /ลาก Dim Dim Sum/i })).toHaveClass("drag-handle");
+    expect(within(row).queryByRole("button", { name: /ย้าย .*Dim Dim Sum.*ขึ้น/i })).not.toBeInTheDocument();
+    expect(within(row).queryByRole("button", { name: /ย้าย .*Dim Dim Sum.*ลง/i })).not.toBeInTheDocument();
   });
 
   it("prevents dragging when role or restructure settings disallow editing", () => {
