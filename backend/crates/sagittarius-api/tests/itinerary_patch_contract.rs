@@ -89,6 +89,64 @@ async fn itinerary_patch_contract_organizer_can_patch_item_and_stale_patch_confl
 }
 
 #[sqlx::test(migrations = "../../migrations")]
+async fn itinerary_patch_contract_patches_address_and_coordinates(pool: sqlx::PgPool) {
+    support::seed_trip(&pool).await;
+    let token = support::create_session(&pool, support::ORGANIZER_ID).await;
+    let app = support::app(pool.clone());
+
+    let response = app
+        .oneshot(
+            Request::builder()
+                .method(Method::PATCH)
+                .uri(format!(
+                    "/api/v1/trips/{}/itinerary-items/{}",
+                    support::TRIP_ID,
+                    support::ITEM_ID
+                ))
+                .header(header::AUTHORIZATION, format!("Bearer {token}"))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({
+                        "clientMutationId": "web-patch-location",
+                        "expectedVersion": 4,
+                        "patch": {
+                            "address": "Shop G72, G/F, The Elements, Hong Kong",
+                            "latitude": 22.3049,
+                            "longitude": 114.1617,
+                            "mapLink": "https://www.openstreetmap.org/?mlat=22.3049&mlon=114.1617#map=17/22.3049/114.1617"
+                        }
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::OK);
+    let body: Value =
+        serde_json::from_slice(&to_bytes(response.into_body(), 65536).await.unwrap()).unwrap();
+    assert_eq!(body["address"], "Shop G72, G/F, The Elements, Hong Kong");
+    assert_eq!(body["coordinates"]["lat"], 22.3049);
+    assert_eq!(body["coordinates"]["lng"], 114.1617);
+    assert!(body["mapLink"].as_str().unwrap().contains("openstreetmap.org"));
+
+    let stored: (Option<String>, Option<f64>, Option<f64>) = sqlx::query_as(
+        "select address, latitude::float8, longitude::float8 from itinerary_items where id = $1",
+    )
+    .bind(Uuid::parse_str(support::ITEM_ID).unwrap())
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(
+        stored.0.as_deref(),
+        Some("Shop G72, G/F, The Elements, Hong Kong")
+    );
+    assert_eq!(stored.1, Some(22.3049));
+    assert_eq!(stored.2, Some(114.1617));
+}
+
+#[sqlx::test(migrations = "../../migrations")]
 async fn itinerary_patch_contract_traveler_cannot_patch_item(pool: sqlx::PgPool) {
     support::seed_trip(&pool).await;
     let token = support::create_session(&pool, support::TRAVELER_ID).await;

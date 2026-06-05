@@ -838,9 +838,12 @@ pub async fn update_itinerary_item(
              activity_type = coalesce($10, activity_type),
              place = coalesce($11, place),
              map_link = coalesce($12, map_link),
-             transportation = coalesce($13, transportation),
-             note = coalesce($14, note),
-             version = $15,
+             address = case when $13 then $14 else address end,
+             latitude = case when $15 then $16 else latitude end,
+             longitude = case when $17 then $18 else longitude end,
+             transportation = coalesce($19, transportation),
+             note = coalesce($20, note),
+             version = $21,
              updated_at = now()
          where id = $1 and deleted_at is null
          returning
@@ -863,6 +866,12 @@ pub async fn update_itinerary_item(
     .bind(patch.activity_type.as_deref())
     .bind(patch.place.as_deref())
     .bind(patch.map_link.as_deref())
+    .bind(patch.address.is_some())
+    .bind(patch.address.as_ref().and_then(|value| value.as_deref()))
+    .bind(patch.latitude.is_some())
+    .bind(patch.latitude.flatten())
+    .bind(patch.longitude.is_some())
+    .bind(patch.longitude.flatten())
     .bind(patch.transportation.as_deref())
     .bind(patch.note.as_deref())
     .bind(next_version)
@@ -900,9 +909,9 @@ pub async fn insert_itinerary_item(
     sqlx::query_as::<_, ItineraryItemRecord>(
         "insert into itinerary_items (
            id, trip_id, plan_variant_id, path_group_id, path_id, path_name, path_role, day, sort_order, start_time, activity, activity_type,
-           place, map_link, duration_minutes, transportation, note, created_by, version
+           place, map_link, address, latitude, longitude, duration_minutes, transportation, note, created_by, version
          )
-         values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10::time, $11, $12, $13, $14, $15, $16, $17, $18, 1)
+         values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10::time, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, 1)
          returning
            id, trip_id, plan_variant_id, path_group_id, path_id, path_name, path_role, day, sort_order,
            coalesce(to_char(start_time, 'HH24:MI'), '') as start_time,
@@ -925,6 +934,9 @@ pub async fn insert_itinerary_item(
     .bind(item.activity_type)
     .bind(item.place)
     .bind(item.map_link)
+    .bind(item.address)
+    .bind(item.latitude)
+    .bind(item.longitude)
     .bind(item.duration_minutes)
     .bind(item.transportation)
     .bind(item.note)

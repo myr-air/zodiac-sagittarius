@@ -42,6 +42,9 @@ pub struct CreateItineraryItemRequest {
     pub activity_type: String,
     pub place: String,
     pub map_link: Option<String>,
+    pub address: Option<String>,
+    pub latitude: Option<f64>,
+    pub longitude: Option<f64>,
     pub duration_minutes: Option<i32>,
     pub transportation: Option<String>,
     pub note: Option<String>,
@@ -266,6 +269,7 @@ impl CreateItineraryItemRequest {
                 "duration_minutes must be greater than zero",
             ));
         }
+        validate_coordinates(self.latitude, self.longitude)?;
 
         Ok(())
     }
@@ -450,6 +454,12 @@ pub struct ItineraryItemPatch {
     pub activity_type: Option<String>,
     pub place: Option<String>,
     pub map_link: Option<String>,
+    #[serde(default, deserialize_with = "deserialize_nullable_string_patch")]
+    pub address: Option<Option<String>>,
+    #[serde(default, deserialize_with = "deserialize_nullable_f64_patch")]
+    pub latitude: Option<Option<f64>>,
+    #[serde(default, deserialize_with = "deserialize_nullable_f64_patch")]
+    pub longitude: Option<Option<f64>>,
     pub transportation: Option<String>,
     pub note: Option<String>,
 }
@@ -476,6 +486,7 @@ impl ItineraryItemPatch {
         if let Some(path_role) = &self.path_role {
             validate_path_role(path_role)?;
         }
+        validate_coordinate_patch(self.latitude, self.longitude)?;
 
         Ok(())
     }
@@ -661,6 +672,57 @@ fn validate_task_kind(value: &str) -> Result<(), ServiceError> {
         "prep" | "booking" => Ok(()),
         _ => Err(ServiceError::InvalidRequest("task kind is invalid")),
     }
+}
+
+fn validate_coordinate_patch(
+    latitude: Option<Option<f64>>,
+    longitude: Option<Option<f64>>,
+) -> Result<(), ServiceError> {
+    if latitude.is_some() != longitude.is_some() {
+        return Err(ServiceError::InvalidRequest(
+            "latitude and longitude must be provided together",
+        ));
+    }
+
+    match (latitude, longitude) {
+        (Some(Some(lat)), Some(Some(lng))) => validate_coordinates(Some(lat), Some(lng)),
+        (Some(None), Some(None)) | (None, None) => Ok(()),
+        _ => Err(ServiceError::InvalidRequest(
+            "latitude and longitude must be provided together",
+        )),
+    }
+}
+
+fn validate_coordinates(latitude: Option<f64>, longitude: Option<f64>) -> Result<(), ServiceError> {
+    if latitude.is_some() != longitude.is_some() {
+        return Err(ServiceError::InvalidRequest(
+            "latitude and longitude must be provided together",
+        ));
+    }
+    if latitude.is_some_and(|value| !(-90.0..=90.0).contains(&value))
+        || longitude.is_some_and(|value| !(-180.0..=180.0).contains(&value))
+    {
+        return Err(ServiceError::InvalidRequest("coordinates are out of range"));
+    }
+    Ok(())
+}
+
+fn deserialize_nullable_string_patch<'de, D>(
+    deserializer: D,
+) -> Result<Option<Option<String>>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    Option::<String>::deserialize(deserializer).map(Some)
+}
+
+fn deserialize_nullable_f64_patch<'de, D>(
+    deserializer: D,
+) -> Result<Option<Option<f64>>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    Option::<f64>::deserialize(deserializer).map(Some)
 }
 
 fn deserialize_nullable_uuid_patch<'de, D>(
