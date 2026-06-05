@@ -31,14 +31,14 @@ function renderTable(overrides: Partial<Parameters<typeof SmartItineraryTable>[0
     onMoveItem: vi.fn(),
     onMoveItemToDay: vi.fn(),
     onMoveItemToPath: vi.fn(),
+    onUpdateItemInline: vi.fn(),
+    onEditItem: vi.fn(),
+    onDeleteItem: vi.fn(),
     onExportItinerary: vi.fn(),
     onImportItinerary: vi.fn(),
-    onChangeTripPath: vi.fn(),
     onChangeDayPath: vi.fn(),
     onClearDayPath: vi.fn(),
-    onClearAllDayPaths: vi.fn(),
     onAutoResolveDayOverlaps: vi.fn(),
-    onToggleShowAllPaths: vi.fn(),
     onRedo: vi.fn(),
     onToggleContextRail: vi.fn(),
     onUndo: vi.fn(),
@@ -125,29 +125,30 @@ describe("SmartItineraryTable", () => {
     expect(onImportItinerary).toHaveBeenCalledWith(file);
   });
 
-  it("exposes trip and day path filters without deleting itinerary rows", async () => {
+  it("filters visible plans from the checkbox dropdown", async () => {
     const user = userEvent.setup();
-    const props = renderTable({
-      selectedTripPathId: "path-plan-1",
-      dayPathOverrides: { "2026-06-19": "path-rain" },
-      showAllPaths: false,
+    renderTable({
+      items: [
+        tripFixture.planItems[0],
+        {
+          ...tripFixture.planItems[0],
+          id: "plan-a-item",
+          activity: "Plan A museum",
+          place: "Plan A checkpoint",
+          pathId: "path-plan-1",
+          pathName: "Plan 1",
+          pathRole: "alternative",
+          pathGroupId: "group-plan-a",
+        },
+      ],
     });
 
-    await user.selectOptions(screen.getByLabelText(/Trip path/i), "main");
-    expect(props.onChangeTripPath).toHaveBeenCalledWith("main");
+    await user.click(screen.getByRole("button", { name: /กรองแผน/i }));
+    await user.click(screen.getByLabelText("Plan 1"));
 
-    await user.click(screen.getByLabelText(/Show all paths/i));
-    expect(props.onToggleShowAllPaths).toHaveBeenCalledWith(true);
-
-    await user.click(screen.getByRole("button", { name: /Clear all day path overrides/i }));
-    expect(props.onClearAllDayPaths).toHaveBeenCalledOnce();
-
-    await user.selectOptions(screen.getByLabelText(/Path for Day 2/i), "main");
-    expect(props.onChangeDayPath).toHaveBeenCalledWith("2026-06-19", "main");
-
-    await user.click(screen.getByRole("button", { name: /Clear path override for Day 2/i }));
-    expect(props.onClearDayPath).toHaveBeenCalledWith("2026-06-19");
-    expect(screen.queryByRole("button", { name: /Delete path/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /กรองแผน/i })).toHaveTextContent(/เลือก: Main/i);
+    expect(screen.getByRole("row", { name: /เปิดรายละเอียดของ เดินทางออกจากกรุงเทพ/i })).toBeInTheDocument();
+    expect(screen.queryByRole("row", { name: /เปิดรายละเอียดของ Plan A museum/i })).not.toBeInTheDocument();
   });
 
   it("keeps generated day plans out of the trip-wide filter while showing them on the matching day", () => {
@@ -158,8 +159,9 @@ describe("SmartItineraryTable", () => {
       ],
     });
 
-    const tripPath = screen.getByLabelText(/Trip path/i);
-    expect(within(tripPath).queryByRole("option", { name: "Plan A" })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /กรองแผน/i }));
+    const filterDialog = screen.getByRole("dialog", { name: /กรองแผน/i });
+    expect(within(filterDialog).getByLabelText("Plan A")).toBeInTheDocument();
     expect(within(screen.getByLabelText(/Path for Day 2/i)).getByRole("option", { name: "Plan A" })).toBeInTheDocument();
     expect(screen.queryByLabelText(/Path for Day 1/i)).not.toBeInTheDocument();
   });
@@ -792,7 +794,7 @@ describe("SmartItineraryTable", () => {
 
     fireEvent.click(within(row).getByRole("button", { name: /เลือกจุด Dim Dim Sum/i }));
     expect(props.onSelectItem).toHaveBeenCalledWith("item-dimdim");
-    expect(within(row).getByText("Shop G72, G/F, The Elements")).toBeVisible();
+    expect(within(row).getByRole("textbox", { name: /แก้ไขสถานที่ Dim Dim Sum/i })).toHaveValue("Shop G72, G/F, The Elements");
     onSelectItem.mockClear();
     fireEvent.keyDown(within(row).getByRole("link", { name: /แผนที่/i }), { key: "Enter", bubbles: true });
     expect(props.onSelectItem).not.toHaveBeenCalled();
@@ -819,13 +821,122 @@ describe("SmartItineraryTable", () => {
     expect(within(selectedRow).getByRole("link", { name: /แผนที่/i })).toHaveClass("map-link", "underline");
   });
 
-  it("keeps row reorder controls to the drag handle only", () => {
-    renderTable();
+  it("saves visible row fields from flat inline controls", async () => {
+    const user = userEvent.setup();
+    const onUpdateItemInline = vi.fn();
+    renderTable({ onUpdateItemInline });
+    const row = screen.getByRole("row", { name: /Dim Dim Sum/i });
+
+    const activity = within(row).getByRole("textbox", { name: /แก้ไขกิจกรรม Dim Dim Sum/i });
+    await user.clear(activity);
+    await user.type(activity, "Harbour brunch{Enter}");
+
+    const place = within(row).getByRole("textbox", { name: /แก้ไขสถานที่ Dim Dim Sum/i });
+    await user.clear(place);
+    await user.type(place, "Central Pier{Enter}");
+
+    const time = within(row).getByLabelText(/แก้ไขเวลา Dim Dim Sum/i);
+    await user.clear(time);
+    await user.type(time, "10:15{Enter}");
+
+    await user.selectOptions(within(row).getByRole("combobox", { name: /แก้ไขประเภท Dim Dim Sum/i }), "experience");
+
+    const transportation = within(row).getByRole("textbox", { name: /แก้ไขการเดินทาง Dim Dim Sum/i });
+    await user.clear(transportation);
+    await user.type(transportation, "Walk{Enter}");
+
+    expect(onUpdateItemInline).toHaveBeenCalledWith("item-dimdim", { activity: "Harbour brunch" });
+    expect(onUpdateItemInline).toHaveBeenCalledWith("item-dimdim", { place: "Central Pier" });
+    expect(onUpdateItemInline).toHaveBeenCalledWith("item-dimdim", { startTime: "10:15" });
+    expect(onUpdateItemInline).toHaveBeenCalledWith("item-dimdim", { activityType: "experience" });
+    expect(onUpdateItemInline).toHaveBeenCalledWith("item-dimdim", { transportation: "Walk" });
+  });
+
+  it("cancels a flat inline edit with Escape", async () => {
+    const user = userEvent.setup();
+    const onUpdateItemInline = vi.fn();
+    renderTable({ onUpdateItemInline });
+    const row = screen.getByRole("row", { name: /Dim Dim Sum/i });
+    const activity = within(row).getByRole("textbox", { name: /แก้ไขกิจกรรม Dim Dim Sum/i });
+
+    await user.clear(activity);
+    await user.type(activity, "Wrong value");
+    await user.keyboard("{Escape}");
+
+    expect(activity).toHaveValue("Dim Dim Sum ที่ Tim Ho Wan");
+    expect(onUpdateItemInline).not.toHaveBeenCalled();
+  });
+
+  it("keeps inline row fields read-only for viewer roles", () => {
+    renderTable({ role: "viewer", onUpdateItemInline: vi.fn() });
+    const row = screen.getByRole("row", { name: /Dim Dim Sum/i });
+
+    expect(within(row).getByRole("textbox", { name: /กิจกรรม Dim Dim Sum/i })).toHaveAttribute("readonly");
+    expect(within(row).getByRole("textbox", { name: /สถานที่ Dim Dim Sum/i })).toHaveAttribute("readonly");
+    expect(within(row).getByLabelText(/เวลา Dim Dim Sum/i)).toBeDisabled();
+    expect(within(row).getByRole("combobox", { name: /ประเภท Dim Dim Sum/i })).toBeDisabled();
+    expect(within(row).getByRole("textbox", { name: /การเดินทาง Dim Dim Sum/i })).toHaveAttribute("readonly");
+  });
+
+  it("shows row action buttons in the last column", async () => {
+    const user = userEvent.setup();
+    const onEditItem = vi.fn();
+    const onDeleteItem = vi.fn();
+    const props = renderTable({ onEditItem, onDeleteItem });
     const row = screen.getByRole("row", { name: /Dim Dim Sum/i });
 
     expect(within(row).getByRole("button", { name: /ลาก Dim Dim Sum/i })).toHaveClass("drag-handle");
-    expect(within(row).queryByRole("button", { name: /ย้าย .*Dim Dim Sum.*ขึ้น/i })).not.toBeInTheDocument();
-    expect(within(row).queryByRole("button", { name: /ย้าย .*Dim Dim Sum.*ลง/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("columnheader", { name: /จัดการ/i })).toBeInTheDocument();
+
+    await user.click(within(row).getByRole("button", { name: /แก้ไข Dim Dim Sum/i }));
+    await user.click(within(row).getByRole("button", { name: /ลบ Dim Dim Sum/i }));
+
+    expect(within(row).getByRole("button", { name: /ย้าย Dim Dim Sum .* ขึ้น/i })).toBeDisabled();
+    expect(within(row).getByRole("button", { name: /ย้าย Dim Dim Sum .* ลง/i })).toBeEnabled();
+    expect(onEditItem).toHaveBeenCalledWith("item-dimdim");
+    expect(onDeleteItem).not.toHaveBeenCalled();
+    expect(props.onMoveItem).not.toHaveBeenCalled();
+  });
+
+  it("requires Yes before deleting a row and cancels with No", async () => {
+    const user = userEvent.setup();
+    const onDeleteItem = vi.fn();
+    renderTable({ onDeleteItem });
+    const row = screen.getByRole("row", { name: /Dim Dim Sum/i });
+
+    await user.click(within(row).getByRole("button", { name: /ลบ Dim Dim Sum/i }));
+    const firstDialog = screen.getByRole("dialog", { name: /ยืนยันการลบ Dim Dim Sum/i });
+    expect(onDeleteItem).not.toHaveBeenCalled();
+
+    await user.click(within(firstDialog).getByRole("button", { name: /ไม่ลบ/i }));
+    expect(screen.queryByRole("dialog", { name: /ยืนยันการลบ Dim Dim Sum/i })).not.toBeInTheDocument();
+
+    await user.click(within(row).getByRole("button", { name: /ลบ Dim Dim Sum/i }));
+    await user.click(within(screen.getByRole("dialog", { name: /ยืนยันการลบ Dim Dim Sum/i })).getByRole("button", { name: /ลบกิจกรรม/i }));
+
+    expect(onDeleteItem).toHaveBeenCalledWith("item-dimdim");
+    expect(screen.queryByRole("dialog", { name: /ยืนยันการลบ Dim Dim Sum/i })).not.toBeInTheDocument();
+  });
+
+  it("reorders rows from a touch drag on the handle", () => {
+    const props = renderTable();
+    const sourceHandle = screen.getByRole("button", { name: /ลาก Victoria Peak/i });
+    const targetRow = screen.getByRole("button", { name: /เลือกจุด Dim Dim Sum/i }).closest("tr")!;
+    const originalElementFromPoint = document.elementFromPoint;
+    Object.defineProperty(document, "elementFromPoint", {
+      configurable: true,
+      value: vi.fn(() => targetRow),
+    });
+
+    fireEvent.touchStart(sourceHandle, { changedTouches: [{ identifier: 7, clientX: 10, clientY: 10 }] });
+    fireEvent.touchMove(window, { changedTouches: [{ identifier: 7, clientX: 20, clientY: 20 }] });
+    fireEvent.touchEnd(window, { changedTouches: [{ identifier: 7, clientX: 20, clientY: 20 }] });
+
+    expect(props.onMoveItem).toHaveBeenCalledWith("item-victoria-peak", "item-dimdim");
+    Object.defineProperty(document, "elementFromPoint", {
+      configurable: true,
+      value: originalElementFromPoint,
+    });
   });
 
   it("prevents dragging when role or restructure settings disallow editing", () => {

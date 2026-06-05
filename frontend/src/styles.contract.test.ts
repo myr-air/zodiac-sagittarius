@@ -74,7 +74,8 @@ describe("Calm Travel Ops CSS contract", () => {
     expect(smartTableSource).toContain("table-panel grid h-auto min-h-full min-w-0");
     expect(smartTableSource).toContain("overflow-visible bg-[var(--color-page)]");
     expect(smartTableSource).toContain("table-scroll m-0 h-auto min-h-0");
-    expect(smartTableSource).toContain("overflow-x-auto overflow-y-clip");
+    expect(smartTableSource).toContain("overflow-x-auto overflow-y-hidden");
+    expect(smartTableSource).toContain("[contain:paint]");
   });
 
   it("defines desktop, tablet, mobile, focus, and reduced-motion states", () => {

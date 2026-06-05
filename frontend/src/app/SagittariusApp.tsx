@@ -1,18 +1,19 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AppShell, resolveViewFromPath } from "@/src/components/AppShell";
 import { AccountAccessPanel } from "@/src/components/AccountAccessPanel";
 import { ContextRail } from "@/src/components/ContextRail";
 import { OverviewPage } from "@/src/components/OverviewPage";
 import { RouteMapView } from "@/src/components/RouteMapView";
-import { SmartItineraryTable } from "@/src/components/SmartItineraryTable";
+import { SmartItineraryTable, type InlineItineraryItemPatch } from "@/src/components/SmartItineraryTable";
 import { StopDialog, type StopFormValues } from "@/src/components/StopDialog";
 import { TimelineView } from "@/src/components/TimelineView";
 import { TripMembersPage } from "@/src/components/TripMembersPage";
 import { TripSettingsPage, type TripSettingsFormValues } from "@/src/components/TripSettingsPage";
 import { Button } from "@/src/components/ui";
 import { Icon } from "@/src/components/icons";
+import { useI18n } from "@/src/i18n/I18nProvider";
 import { appRoutes, decodeReturnTo } from "@/src/routes/app-routes";
 import { createTripApiClient, TripApiError, type TripApiClient, type TripCockpit } from "@/src/trip/api-client";
 import { createAccountApiClient, type AccountSession } from "@/src/account/api-client";
@@ -47,6 +48,11 @@ const workspaceToastBodyClassName = "min-w-0 flex-1 [&_span]:block [&_span]:text
 const workspaceToastActionsClassName = "flex shrink-0 items-center gap-2";
 const workspaceToastDismissClassName =
   "ml-1 grid size-7 shrink-0 place-items-center rounded-full text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-surface-subtle)] hover:text-[var(--color-text)]";
+const appDeleteModalBackdropClassName = "modal-backdrop fixed inset-0 z-20 grid place-items-center bg-[rgb(15_23_42_/_0.28)] p-5";
+const appDeleteDialogClassName = "delete-confirm-dialog grid w-[min(420px,100%)] gap-3 rounded-[var(--radius-lg)] border border-[var(--color-danger-border)] bg-[var(--color-surface)] p-4 shadow-[0_24px_70px_rgb(15_23_42_/_0.22)]";
+const appDeleteDialogTitleClassName = "m-0 text-base font-extrabold leading-[22px] text-[#991b1b]";
+const appDeleteDialogBodyClassName = "m-0 text-sm font-medium leading-6 text-[var(--color-text-muted)]";
+const appDeleteDialogActionsClassName = "mt-1 flex justify-end gap-2";
 const accountClaimMessageClassName = "account-claim-message font-extrabold";
 const portalLoadingCardClassName =
   "account-card portal-loading-card grid min-h-[220px] gap-3.5 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[rgb(255_255_255_/_0.94)] p-4 shadow-[var(--shadow-panel)]";
@@ -101,6 +107,7 @@ export function SagittariusApp({
   accountSuccessRedirectHref,
   portalSection = "dashboard",
 }: SagittariusAppProps) {
+  const { t } = useI18n();
   /* v8 ignore next 3 */
   const resolvedApiClient = useMemo(
     () => apiClient ?? (dataSource === "api" ? createTripApiClient({ baseUrl: process.env.NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL ?? "" }) : undefined),
@@ -115,6 +122,8 @@ export function SagittariusApp({
     past: [],
     future: [],
   }));
+  const latestTripRef = useRef(tripState.trip);
+  const inlineUpdateQueueRef = useRef<Map<string, Promise<void>>>(new Map());
   const [participantSession, setParticipantSession] = useState<TripParticipantSession | null>(null);
   const [isCockpitLoaded, setIsCockpitLoaded] = useState(false);
   const [sessionRestored, setSessionRestored] = useState(false);
@@ -148,6 +157,7 @@ export function SagittariusApp({
   const [currentMemberId, setCurrentMemberId] = useState(seedTrip.members[0].id);
   const [selectedItemId, setSelectedItemId] = useState("item-dimdim");
   const [dialogState, setDialogState] = useState<{ mode: "create"; day?: string } | { mode: "edit"; item: ItineraryItem } | null>(null);
+  const [dialogDeleteItem, setDialogDeleteItem] = useState<ItineraryItem | null>(null);
   const [pathSelection, setPathSelection] = useState<ItineraryPathSelection>({ tripPathId: mainItineraryPathId, dayPathOverrides: {} });
 
   const trip = tripState.trip;
@@ -176,6 +186,11 @@ export function SagittariusApp({
   const pathOptions = useMemo(() => deriveItineraryPathOptions(activePlanItems, trip.itineraryPaths ?? []), [activePlanItems, trip.itineraryPaths]);
   const planItems = useMemo(() => resolveItineraryPathItems(activePlanItems, pathSelection), [activePlanItems, pathSelection]);
   const itineraryView = useMemo(() => buildItineraryView(planItems), [planItems]);
+
+  useEffect(() => {
+    latestTripRef.current = trip;
+  }, [trip]);
+
   /* v8 ignore next */
   const selectedItem = activePlanItems.find((item) => item.id === selectedItemId) ?? planItems[0] ?? activePlanItems[0];
   const selectedDay = selectedItem?.day ?? itineraryView.dayGroups[0]?.day ?? trip.startDate;
@@ -757,6 +772,92 @@ export function SagittariusApp({
     setDialogState(null);
   }
 
+  async function updateItineraryItemInline(itemId: string, patch: InlineItineraryItemPatch) {
+    if (!canEdit) return;
+    const previousUpdate = inlineUpdateQueueRef.current.get(itemId) ?? Promise.resolve();
+    const queuedUpdate = previousUpdate
+      .catch(() => undefined)
+      .then(() => runItineraryItemInlineUpdate(itemId, patch));
+    inlineUpdateQueueRef.current.set(itemId, queuedUpdate);
+    try {
+      await queuedUpdate;
+    } finally {
+      if (inlineUpdateQueueRef.current.get(itemId) === queuedUpdate) {
+        inlineUpdateQueueRef.current.delete(itemId);
+      }
+    }
+  }
+
+  async function runItineraryItemInlineUpdate(itemId: string, patch: InlineItineraryItemPatch) {
+    function buildInlinePatch(item: ItineraryItem): InlineItineraryItemPatch | null {
+      const nextPatch: InlineItineraryItemPatch = { ...patch };
+      if (nextPatch.activity !== undefined) nextPatch.activity = nextPatch.activity.trim();
+      if (nextPatch.place !== undefined) nextPatch.place = nextPatch.place.trim();
+      if (nextPatch.transportation !== undefined) nextPatch.transportation = nextPatch.transportation.trim();
+      if (nextPatch.activity !== undefined && nextPatch.activity.length === 0) return null;
+      if (nextPatch.place !== undefined && nextPatch.place.length === 0) return null;
+      const changedPatch = Object.fromEntries(
+        Object.entries(nextPatch).filter(([key, value]) => item[key as keyof InlineItineraryItemPatch] !== value),
+      ) as InlineItineraryItemPatch;
+      return Object.keys(changedPatch).length > 0 ? changedPatch : null;
+    }
+
+    if (isApiMode && resolvedApiClient && participantSession) {
+      let currentTrip = latestTripRef.current;
+      for (let attempt = 0; attempt < 2; attempt += 1) {
+        const item = currentTrip.itineraryItems.find((candidate) => candidate.id === itemId);
+        if (!item) return;
+        const nextPatch = buildInlinePatch(item);
+        if (!nextPatch) return;
+        try {
+          const patchedItem = await resolvedApiClient.patchItineraryItem(currentTrip.id, itemId, participantSession.sessionToken, {
+            clientMutationId: nextClientMutationId("itinerary-inline-patch"),
+            expectedVersion: item.version,
+            patch: {
+              ...nextPatch,
+              ...(nextPatch.place !== undefined ? { address: nextPatch.place, mapLink: item.mapLink || buildMapLink(nextPatch.place) } : {}),
+            },
+          });
+          const nextTrip = {
+            ...latestTripRef.current,
+            itineraryItems: latestTripRef.current.itineraryItems.map((candidate) => (candidate.id === itemId ? patchedItem : candidate)),
+          };
+          latestTripRef.current = nextTrip;
+          setTripState((current) => ({ ...current, trip: nextTrip }));
+          setSelectedItemId(itemId);
+          setContextRailVisibility(true);
+          return;
+        } catch (error) {
+          if (!(error instanceof TripApiError) || error.code !== "version_conflict" || attempt > 0) throw error;
+          const cockpit = await resolvedApiClient.loadTrip(currentTrip.id, participantSession.sessionToken);
+          replaceCockpitFromApi(cockpit);
+          latestTripRef.current = cockpit.trip;
+          currentTrip = cockpit.trip;
+        }
+      }
+      return;
+    }
+
+    commitTrip((current) => {
+      const item = current.itineraryItems.find((candidate) => candidate.id === itemId);
+      if (!item) return current;
+      const nextPatch = buildInlinePatch(item);
+      if (!nextPatch) return current;
+      const updatedItem = {
+        ...item,
+        ...nextPatch,
+        ...(nextPatch.place !== undefined ? { address: nextPatch.place, mapLink: item.mapLink || buildMapLink(nextPatch.place) } : {}),
+        updatedAt: localMutationTimestamp,
+        version: item.version + 1,
+      };
+      return {
+        ...current,
+        itineraryItems: current.itineraryItems.map((candidate) => (candidate.id === itemId ? updatedItem : candidate)),
+      };
+    }, itemId);
+    setContextRailVisibility(true);
+  }
+
   async function autoResolveDayOverlaps(day: string) {
     /* v8 ignore next */
     if (!canEdit) return;
@@ -795,10 +896,20 @@ export function SagittariusApp({
   async function deleteSelectedStop() {
     /* v8 ignore next */
     if (dialogState?.mode !== "edit" || !canEdit) return;
-    const itemId = dialogState.item.id;
-    if (!window.confirm(`Delete activity "${dialogState.item.activity}"? This removes the activity for real.`)) return;
+    setDialogDeleteItem(dialogState.item);
+  }
+
+  function editItem(itemId: string) {
+    const item = trip.itineraryItems.find((candidate) => candidate.id === itemId);
+    if (item) setDialogState({ mode: "edit", item });
+  }
+
+  async function deleteStop(itemId: string) {
+    if (!canEdit) return;
+    const item = trip.itineraryItems.find((candidate) => candidate.id === itemId);
+    if (!item) return;
     const remainingItems = trip.itineraryItems.filter((item) => item.id !== itemId);
-    const nextSelectedItemId = remainingItems[0]?.id ?? "";
+    const nextSelectedItemId = selectedItemId === itemId ? remainingItems[0]?.id ?? "" : selectedItemId;
     if (isApiMode && resolvedApiClient && participantSession) {
       await resolvedApiClient.deleteItineraryItem(trip.id, itemId, participantSession.sessionToken);
       setTripState((current) => ({
@@ -811,7 +922,7 @@ export function SagittariusApp({
       }));
       setSelectedItemId(nextSelectedItemId);
       setContextRailVisibility(Boolean(nextSelectedItemId));
-      setDialogState(null);
+      setDialogState((current) => (current?.mode === "edit" && current.item.id === itemId ? null : current));
       return;
     }
     commitTrip(
@@ -823,7 +934,7 @@ export function SagittariusApp({
       nextSelectedItemId,
     );
     setContextRailVisibility(Boolean(nextSelectedItemId));
-    setDialogState(null);
+    setDialogState((current) => (current?.mode === "edit" && current.item.id === itemId ? null : current));
   }
 
   async function saveDailyBriefingOverrides(date: string, version: number, overrides: DailyBriefingOverrides) {
@@ -1659,6 +1770,9 @@ export function SagittariusApp({
                 onMoveItem={moveItem}
                 onMoveItemToDay={moveItemToDay}
                 onMoveItemToPath={moveItemToPath}
+                onUpdateItemInline={updateItineraryItemInline}
+                onEditItem={editItem}
+                onDeleteItem={deleteStop}
                 onExportItinerary={exportItinerary}
                 onImportItinerary={importItinerary}
                 onChangeTripPath={changeTripPath}
@@ -1735,6 +1849,28 @@ export function SagittariusApp({
             onDelete={dialogState.mode === "edit" ? deleteSelectedStop : undefined}
             onSubmit={dialogState.mode === "edit" ? updateSelectedStop : createStop}
           />
+        ) : null}
+        {dialogDeleteItem ? (
+          <div className={appDeleteModalBackdropClassName} role="presentation">
+            <section className={appDeleteDialogClassName} role="dialog" aria-modal="true" aria-labelledby="app-delete-dialog-title">
+              <h2 className={appDeleteDialogTitleClassName} id="app-delete-dialog-title">{t.itinerary.row.confirmDeleteTitle({ activity: dialogDeleteItem.activity })}</h2>
+              <p className={appDeleteDialogBodyClassName}>{t.itinerary.row.confirmDeleteBody({ activity: dialogDeleteItem.activity })}</p>
+              <div className={appDeleteDialogActionsClassName}>
+                <Button type="button" variant="ghost" onClick={() => setDialogDeleteItem(null)}>{t.itinerary.row.confirmDeleteNo}</Button>
+                <Button
+                  type="button"
+                  variant="danger"
+                  onClick={async () => {
+                    const itemId = dialogDeleteItem.id;
+                    setDialogDeleteItem(null);
+                    await deleteStop(itemId);
+                  }}
+                >
+                  {t.itinerary.row.confirmDeleteYes}
+                </Button>
+              </div>
+            </section>
+          </div>
         ) : null}
       </main>
     </AppShell>

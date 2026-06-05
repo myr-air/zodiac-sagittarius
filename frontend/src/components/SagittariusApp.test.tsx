@@ -1462,7 +1462,6 @@ describe("Sagittarius cockpit UI", () => {
   it("deletes itinerary stops through the API client in API mode", async () => {
     const user = userEvent.setup();
     installLocalStorageStub();
-    const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
     const selectedItem = seedTrip.itineraryItems.find((item) => item.id === "item-dimdim")!;
     const nextItem = seedTrip.itineraryItems.find((item) => item.id !== selectedItem.id)!;
     const ownerTrip = {
@@ -1490,8 +1489,9 @@ describe("Sagittarius cockpit UI", () => {
     await user.click(await screen.findByRole("button", { name: new RegExp(`เลือกจุด ${selectedItem.activity}`, "i") }));
     await user.click(screen.getByRole("button", { name: /แก้ไขรายละเอียด/i }));
     await user.click(screen.getByRole("button", { name: /ลบจุดนี้/i }));
+    const dialog = screen.getByRole("dialog", { name: new RegExp(`ยืนยันการลบ ${selectedItem.activity}`, "i") });
+    await user.click(within(dialog).getByRole("button", { name: /ลบกิจกรรม/i }));
 
-    expect(confirmSpy).toHaveBeenCalledWith(expect.stringContaining(selectedItem.activity));
     expect(apiClient.deleteItineraryItem).toHaveBeenCalledWith(ownerTrip.id, selectedItem.id, "session-token");
     expect(screen.queryByText(selectedItem.activity)).not.toBeInTheDocument();
     expect(screen.getAllByText(nextItem.activity).length).toBeGreaterThan(0);
@@ -1500,7 +1500,6 @@ describe("Sagittarius cockpit UI", () => {
   it("keeps an itinerary stop when delete confirmation is cancelled", async () => {
     const user = userEvent.setup();
     installLocalStorageStub();
-    vi.spyOn(window, "confirm").mockReturnValue(false);
     const selectedItem = seedTrip.itineraryItems.find((item) => item.id === "item-dimdim")!;
     const ownerTrip = {
       ...seedTrip,
@@ -1527,6 +1526,8 @@ describe("Sagittarius cockpit UI", () => {
     await user.click(await screen.findByRole("button", { name: new RegExp(`เลือกจุด ${selectedItem.activity}`, "i") }));
     await user.click(screen.getByRole("button", { name: /แก้ไขรายละเอียด/i }));
     await user.click(screen.getByRole("button", { name: /ลบจุดนี้/i }));
+    const dialog = screen.getByRole("dialog", { name: new RegExp(`ยืนยันการลบ ${selectedItem.activity}`, "i") });
+    await user.click(within(dialog).getByRole("button", { name: /ไม่ลบ/i }));
 
     expect(apiClient.deleteItineraryItem).not.toHaveBeenCalled();
     expect(screen.getAllByText(selectedItem.activity).length).toBeGreaterThan(0);
@@ -2358,7 +2359,8 @@ describe("Sagittarius cockpit UI", () => {
 
     expect(screen.getByRole("button", { name: /เลือกจุด Day filter coffee/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Day filter coffee on Plan A/i })).toBeInTheDocument();
-    expect(within(screen.getByLabelText(/Trip path/i)).queryByRole("option", { name: "Plan A" })).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: /กรองแผน/i }));
+    expect(within(screen.getByRole("dialog", { name: /กรองแผน/i })).getByLabelText("Plan A")).toBeInTheDocument();
 
     await user.selectOptions(screen.getByLabelText(/Path for Day 2/i), "path-2026-06-19-sub-a");
 

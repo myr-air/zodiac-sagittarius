@@ -1,5 +1,5 @@
-import { useRef, useState, type ChangeEvent, type DragEvent } from "react";
-import type { ItineraryAdvisory, ItineraryItem, TripRole } from "@/src/trip/types";
+import { useEffect, useRef, useState, type CSSProperties, type ChangeEvent, type DragEvent, type PointerEvent as ReactPointerEvent, type TouchEvent as ReactTouchEvent } from "react";
+import type { ActivityType, ItineraryItem, TripRole } from "@/src/trip/types";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import type { Messages } from "@/src/i18n/messages";
 import type { Locale } from "@/src/i18n/types";
@@ -33,6 +33,9 @@ interface SmartItineraryTableProps {
   onMoveItem: (draggedItemId: string, targetItemId: string) => void;
   onMoveItemToDay: (draggedItemId: string, targetDay: string) => void;
   onMoveItemToPath?: (itemId: string, pathId: string) => void;
+  onUpdateItemInline?: (itemId: string, patch: InlineItineraryItemPatch) => void | Promise<void>;
+  onEditItem?: (itemId: string) => void;
+  onDeleteItem?: (itemId: string) => void;
   onExportItinerary: () => void;
   onImportItinerary: (file: File) => void;
   onChangeTripPath?: (pathId: string) => void;
@@ -46,17 +49,21 @@ interface SmartItineraryTableProps {
   onUndo: () => void;
 }
 
+export type InlineItineraryItemPatch = Partial<Pick<ItineraryItem, "startTime" | "activity" | "place" | "activityType" | "transportation">>;
+
 const tablePanelClassName = "table-panel grid h-auto min-h-full min-w-0 grid-rows-[auto_minmax(0,1fr)] overflow-visible bg-[var(--color-page)] px-6 py-[22px] pb-7";
 const pageHeaderActionsClassName = "page-header-actions relative z-[1] flex max-w-[420px] min-w-0 flex-wrap items-center justify-end gap-2";
 const pageHeaderNoteClassName = "page-header-note m-0 basis-full text-right text-xs font-bold text-[var(--color-warning-strong)]";
 const pathControlsClassName = "path-controls flex min-w-0 flex-wrap items-center justify-end gap-2";
-const pathSelectClassName = "min-h-9 min-w-[132px] rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface)] px-2 text-xs font-bold text-[var(--color-text)]";
-const pathCheckboxLabelClassName = "inline-flex min-h-9 items-center gap-2 rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface)] px-2.5 text-xs font-bold text-[var(--color-text-muted)]";
-const clearPathButtonClassName = "inline-flex min-h-9 items-center rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface)] px-2.5 text-xs font-extrabold text-[var(--color-text-muted)] disabled:opacity-40";
+const pathFilterShellClassName = "relative";
+const pathFilterButtonClassName = "inline-flex min-h-9 min-w-[220px] items-center justify-between gap-3 rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3 text-xs font-bold text-[var(--color-text)]";
+const pathFilterSummaryClassName = "min-w-0 truncate text-right text-[11px] font-semibold text-[var(--color-text-muted)]";
+const pathFilterMenuClassName = "absolute right-0 top-[calc(100%+8px)] z-10 grid min-w-[220px] gap-1 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] p-2 shadow-[0_18px_34px_rgb(15_23_42_/_0.14)]";
+const pathFilterOptionClassName = "grid grid-cols-[16px_minmax(0,1fr)] items-center gap-2 rounded-[var(--radius-sm)] px-2 py-1.5 text-xs font-semibold text-[var(--color-text)] hover:bg-[var(--color-surface-subtle)]";
 const importInputClassName = "sr-only";
-const tableScrollClassName = "table-scroll m-0 h-auto min-h-0 w-full max-w-full overflow-x-auto overflow-y-clip rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)]";
+const tableScrollClassName = "table-scroll m-0 h-auto min-h-0 w-full max-w-full overflow-x-auto overflow-y-hidden rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] [contain:paint]";
 const smartTableClassName =
-  "smart-table w-full min-w-[1010px] table-fixed border-collapse text-xs leading-4 text-[#1f2937] [&_a]:text-[#2563eb] [&_a]:underline [&_a]:underline-offset-2 [&_td:first-child]:px-0 [&_td:first-child]:text-center [&_td:nth-child(2)]:w-[34px] [&_td:nth-child(2)]:px-0 [&_td:nth-child(2)]:text-center [&_td:nth-child(3)]:w-[82px] [&_td:nth-child(5)]:w-[94px] [&_td:nth-child(6)]:w-[124px] [&_td:nth-child(7)]:w-[108px] [&_td:nth-child(8)]:w-[118px] [&_td:nth-child(8)]:border-r-0 [&_td]:h-9 [&_td]:border-b [&_td]:border-r [&_td]:border-[var(--color-border)] [&_td]:px-2.5 [&_td]:py-1 [&_td]:text-left [&_td]:align-middle [&_th:first-child]:px-0 [&_th:first-child]:text-center [&_th:nth-child(2)]:w-[34px] [&_th:nth-child(2)]:px-0 [&_th:nth-child(2)]:text-center [&_th:nth-child(3)]:w-[82px] [&_th:nth-child(5)]:w-[94px] [&_th:nth-child(6)]:w-[124px] [&_th:nth-child(7)]:w-[108px] [&_th:nth-child(8)]:w-[118px] [&_th:nth-child(8)]:border-r-0 [&_th]:h-9 [&_th]:border-b [&_th]:border-r [&_th]:border-[var(--color-border)] [&_th]:px-2.5 [&_th]:py-1 [&_th]:text-left [&_th]:align-middle [&_thead_th]:sticky [&_thead_th]:top-0 [&_thead_th]:z-[1] [&_thead_th]:h-12 [&_thead_th]:bg-[var(--color-surface)] [&_thead_th]:text-xs [&_thead_th]:font-[750] [&_thead_th]:text-[var(--color-text-muted)]";
+  "smart-table w-full min-w-[1010px] table-fixed border-collapse text-xs leading-4 text-[#1f2937] [&_a]:text-[#2563eb] [&_a]:underline [&_a]:underline-offset-2 [&_td:first-child]:px-0 [&_td:first-child]:text-center [&_td:nth-child(2)]:w-[34px] [&_td:nth-child(2)]:px-0 [&_td:nth-child(2)]:text-center [&_td:nth-child(3)]:w-[82px] [&_td:nth-child(5)]:w-[94px] [&_td:nth-child(6)]:w-[124px] [&_td:nth-child(7)]:w-[108px] [&_td:nth-child(8)]:w-[118px] [&_td:nth-child(8)]:border-r-0 [&_td]:h-9 [&_td]:border-b [&_td]:border-r [&_td]:border-[var(--color-border)] [&_td]:px-2.5 [&_td]:py-1 [&_td]:text-left [&_td]:align-middle [&_th:first-child]:px-0 [&_th:first-child]:text-center [&_th:nth-child(2)]:w-[34px] [&_th:nth-child(2)]:px-0 [&_th:nth-child(2)]:text-center [&_th:nth-child(3)]:w-[82px] [&_th:nth-child(5)]:w-[94px] [&_th:nth-child(6)]:w-[124px] [&_th:nth-child(7)]:w-[108px] [&_th:nth-child(8)]:w-[118px] [&_th:nth-child(8)]:border-r-0 [&_th]:h-9 [&_th]:border-b [&_th]:border-r [&_th]:border-[var(--color-border)] [&_th]:px-2.5 [&_th]:py-1 [&_th]:text-left [&_th]:align-middle [&_thead_th]:sticky [&_thead_th]:top-0 [&_thead_th]:z-[1] [&_thead_th]:h-12 [&_thead_th]:bg-[var(--color-surface)] [&_thead_th]:text-xs [&_thead_th]:font-[750] [&_thead_th]:text-[var(--color-text-muted)] max-[767px]:[&_td:first-child]:sticky max-[767px]:[&_td:first-child]:left-0 max-[767px]:[&_td:first-child]:z-[2] max-[767px]:[&_td:nth-child(2)]:sticky max-[767px]:[&_td:nth-child(2)]:left-[var(--graph-column-width)] max-[767px]:[&_td:nth-child(2)]:z-[3] max-[767px]:[&_th:first-child]:sticky max-[767px]:[&_th:first-child]:left-0 max-[767px]:[&_th:first-child]:z-[4] max-[767px]:[&_th:nth-child(2)]:sticky max-[767px]:[&_th:nth-child(2)]:left-[var(--graph-column-width)] max-[767px]:[&_th:nth-child(2)]:z-[5]";
 const graphColumnMinWidth = 30;
 const graphColumnSidePadding = 9;
 const graphColumnLaneGap = 18;
@@ -82,20 +89,34 @@ const dataRowDropTargetClassName =
 const dragCellClassName = "drag-cell text-[var(--color-text-subtle)]";
 const reorderControlsClassName = "reorder-controls inline-grid grid-cols-[26px] items-center justify-center";
 const dragHandleClassName =
-  "drag-handle inline-grid size-[26px] cursor-grab place-items-center rounded-[var(--radius-sm)] border-0 bg-transparent text-[var(--color-text-subtle)] transition-[color,background] duration-150 hover:not-disabled:bg-[var(--color-primary-soft)] hover:not-disabled:text-[var(--color-primary-strong)] active:cursor-grabbing disabled:cursor-not-allowed disabled:opacity-[0.42]";
+  "drag-handle inline-grid size-[26px] touch-none cursor-grab place-items-center rounded-[var(--radius-sm)] border-0 bg-transparent text-[var(--color-text-subtle)] transition-[color,background] duration-150 hover:not-disabled:bg-[var(--color-primary-soft)] hover:not-disabled:text-[var(--color-primary-strong)] active:cursor-grabbing disabled:cursor-not-allowed disabled:opacity-[0.42]";
+const rowActionCellClassName = "row-actions-cell";
+const rowActionsClassName = "row-actions flex items-center justify-center gap-1";
+const rowActionButtonClassName = "row-action-button inline-grid size-[26px] place-items-center rounded-[var(--radius-sm)] border-0 bg-transparent text-[var(--color-text-subtle)] transition-[color,background] duration-150 hover:not-disabled:bg-[var(--color-primary-soft)] hover:not-disabled:text-[var(--color-primary-strong)] disabled:cursor-not-allowed disabled:opacity-[0.42]";
 const timeCellClassName = "time-cell !text-center font-[650] tabular-nums text-[#334155]";
 const timeStackClassName = "grid min-h-[30px] content-center justify-items-center gap-0.5 leading-none [&_span]:whitespace-nowrap";
 const timeDurationClassName = "time-duration text-[10px] font-[700] leading-3 text-[var(--color-text-muted)]";
 const activityCellClassName = "activity-cell min-w-0";
 const rowSelectClassName =
-  "row-select grid min-h-[22px] w-full min-w-0 gap-0.5 border-0 bg-transparent p-0 text-left text-inherit [&_span]:overflow-hidden [&_span]:text-ellipsis [&_span]:whitespace-nowrap [&_span]:text-[11px] [&_span]:leading-4 [&_span]:text-[var(--color-text-muted)] [&_strong]:overflow-hidden [&_strong]:text-ellipsis [&_strong]:whitespace-nowrap [&_strong]:text-xs [&_strong]:font-semibold";
+  "row-select grid min-h-[22px] w-full min-w-0 gap-0.5 border-0 bg-transparent p-0 text-left text-inherit";
+const inlineActivityStackClassName = "grid min-w-0 gap-0.5";
+const inlineFieldClassName =
+  "inline-row-field min-h-[24px] w-full min-w-0 rounded-[var(--radius-sm)] border border-transparent bg-transparent px-1.5 py-0 text-xs leading-4 text-[var(--color-text)] outline-none transition-[background,border-color,box-shadow] duration-150 placeholder:text-[var(--color-text-muted)] hover:not-read-only:border-[var(--color-border)] hover:not-read-only:bg-[var(--color-surface)] focus:border-[var(--color-primary-border)] focus:bg-[var(--color-surface)] focus:shadow-[0_0_0_2px_rgb(153_246_228_/_0.45)] read-only:cursor-pointer read-only:truncate read-only:px-0 read-only:font-semibold disabled:cursor-not-allowed disabled:text-[var(--color-text-muted)]";
+const inlineActivityFieldClassName = cn(inlineFieldClassName, "font-semibold");
+const inlineSubtleFieldClassName = cn(inlineFieldClassName, "text-[11px] text-[var(--color-text-muted)]");
+const inlineTimeInputClassName = cn(inlineFieldClassName, "text-center font-[650] tabular-nums");
+const inlineSelectClassName = cn(inlineFieldClassName, "appearance-auto font-semibold");
 const mapLinkClassName = "map-link text-[#2563eb] underline underline-offset-2";
-const emptyWarningClassName = "empty-warning text-[var(--color-text-subtle)]";
-const warningSummaryClassName = "warning-summary inline-flex min-w-0 items-center gap-1.5 rounded-full border border-[var(--color-warning-border)] bg-[var(--color-warning-soft)] px-2 py-0.5 text-[11px] font-extrabold text-[var(--color-warning-strong)] [&_.icon]:size-[15px]";
 const addStopRowClassName = "add-stop-row [&_td]:border-b [&_td]:border-r [&_td]:border-dashed [&_td]:border-[var(--color-border)] [&_td]:bg-[var(--color-surface-subtle)] [&_td]:px-2.5 [&_td]:py-1";
 const addStopRowDropTargetClassName = "add-stop-row--drop-target [&_td]:!bg-[var(--color-primary-soft)] [&_td]:shadow-[inset_0_0_0_2px_var(--color-primary-border)]";
 const addStopInlineButtonClassName = "inline-flex min-h-7 w-full items-center justify-center gap-2 rounded-[var(--radius-sm)] border border-dashed border-[var(--color-primary-border)] bg-[rgb(240_253_250_/_0.72)] px-3 text-[12px] font-extrabold text-[var(--color-primary-strong)] transition-[background,border-color,color] duration-150 hover:enabled:bg-[var(--color-primary-soft)] disabled:cursor-not-allowed disabled:border-[var(--color-border)] disabled:bg-transparent disabled:text-[var(--color-text-subtle)]";
 const graphCellClassName = "activity-path-graph-cell !h-auto !bg-[var(--color-surface-subtle)] !p-0 !align-top !shadow-none";
+const deleteModalBackdropClassName = "modal-backdrop fixed inset-0 z-20 grid place-items-center bg-[rgb(15_23_42_/_0.28)] p-5";
+const deleteDialogClassName = "delete-confirm-dialog grid w-[min(420px,100%)] gap-3 rounded-[var(--radius-lg)] border border-[var(--color-danger-border)] bg-[var(--color-surface)] p-4 shadow-[0_24px_70px_rgb(15_23_42_/_0.22)]";
+const deleteDialogTitleClassName = "m-0 text-base font-extrabold leading-[22px] text-[#991b1b]";
+const deleteDialogBodyClassName = "m-0 text-sm font-medium leading-6 text-[var(--color-text-muted)]";
+const deleteDialogActionsClassName = "mt-1 flex justify-end gap-2";
+const activityTypeOptions: ActivityType[] = ["food", "attraction", "experience", "travel", "shopping", "stay"];
 
 export function SmartItineraryTable({
   canRestructure = true,
@@ -107,7 +128,6 @@ export function SmartItineraryTable({
   role,
   startDate,
   selectedItemId,
-  selectedTripPathId = mainItineraryPathId,
   dayPathOverrides = {},
   showAllPaths = false,
   tripName,
@@ -116,36 +136,79 @@ export function SmartItineraryTable({
   onMoveItem,
   onMoveItemToDay,
   onMoveItemToPath,
+  onUpdateItemInline,
+  onEditItem,
+  onDeleteItem,
   onExportItinerary,
   onImportItinerary,
-  onChangeTripPath,
   onChangeDayPath,
   onClearDayPath,
-  onClearAllDayPaths,
   onAutoResolveDayOverlaps,
-  onToggleShowAllPaths,
 }: SmartItineraryTableProps) {
   const { locale, t } = useI18n();
   const importInputRef = useRef<HTMLInputElement>(null);
-  const displayItems = graphItems ?? items;
-  const groups = mergeTripDayGroups(groupItemsByDay(displayItems), startDate, endDate);
-  const graphItemsByDay = groupGraphItemsByDay(displayItems);
+  const allDisplayItems = graphItems ?? items;
+  const filterOptions = dedupePathOptions(pathOptions, allDisplayItems);
   const canEdit = role === "owner" || role === "organizer";
   const canRestructureItems = canEdit && canRestructure;
-  const warningCount = itineraryView?.warningCount ?? displayItems.reduce((total, item) => total + (item.advisories?.length ?? 0), 0);
-  const totalMinutes = items.reduce((total, item) => total + (item.durationMinutes ?? 0), 0);
-  const graphColumnWidth = buildGraphColumnWidth(displayItems, pathOptions);
+  const [selectedPathIds, setSelectedPathIds] = useState<string[]>(() => filterOptions.map((option) => option.id));
+  const [planFilterOpen, setPlanFilterOpen] = useState(false);
   const [collapsedDays, setCollapsedDays] = useState<string[]>([]);
   const [dragState, setDragState] = useState<{ draggedItemId: string | null; overItemId: string | null; overDay: string | null }>({ draggedItemId: null, overItemId: null, overDay: null });
+  const [pendingDeleteItem, setPendingDeleteItem] = useState<ItineraryItem | null>(null);
+  const knownFilterIdsRef = useRef<string[]>(filterOptions.map((option) => option.id));
+  const touchDragRef = useRef<{ itemId: string; pointerId?: number; touchId?: number } | null>(null);
+  const selectedPathIdSet = new Set(selectedPathIds);
+  const displayItems = allDisplayItems.filter((item) => selectedPathIdSet.has(itineraryItemPathId(item)));
+  const selectedFilterLabel = formatSelectedPlanLabel(filterOptions, selectedPathIds, t.itinerary.filters.selectedCount, t.itinerary.filters.selectedNames);
+  const groups = mergeTripDayGroups(groupItemsByDay(displayItems), startDate, endDate);
+  const graphItemsByDay = groupGraphItemsByDay(displayItems);
+  const warningCount = itineraryView?.warningCount ?? displayItems.reduce((total, item) => total + (item.advisories?.length ?? 0), 0);
+  const totalMinutes = displayItems.reduce((total, item) => total + (item.durationMinutes ?? 0), 0);
+  const graphColumnWidth = buildGraphColumnWidth(displayItems, pathOptions);
+  const smartTableStyle = { "--graph-column-width": `${graphColumnWidth}px` } as CSSProperties;
+
+  useEffect(() => {
+    setSelectedPathIds((current) => {
+      const optionIds = filterOptions.map((option) => option.id);
+      const previousOptionIds = knownFilterIdsRef.current;
+      const nextIds = optionIds.filter((id) => current.includes(id) || !previousOptionIds.includes(id));
+      knownFilterIdsRef.current = optionIds;
+      return nextIds.length === current.length && nextIds.every((id, index) => id === current[index]) ? current : nextIds;
+    });
+  }, [filterOptions]);
 
   function toggleDay(day: string) {
     setCollapsedDays((current) => (current.includes(day) ? current.filter((item) => item !== day) : [...current, day]));
+  }
+
+  function togglePlanFilter(pathId: string) {
+    setSelectedPathIds((current) => (
+      current.includes(pathId) ? current.filter((item) => item !== pathId) : [...current, pathId]
+    ));
   }
 
   function startDrag(event: DragEvent<HTMLButtonElement>, itemId: string) {
     event.dataTransfer.effectAllowed = "move";
     event.dataTransfer.setData("text/plain", itemId);
     setDragState({ draggedItemId: itemId, overItemId: null, overDay: null });
+  }
+
+  function startTouchDrag(event: ReactPointerEvent<HTMLButtonElement>, itemId: string) {
+    if (!canRestructureItems || event.pointerType !== "pen") return;
+    touchDragRef.current = { itemId, pointerId: event.pointerId };
+    setDragState({ draggedItemId: itemId, overItemId: null, overDay: null });
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+    event.preventDefault();
+  }
+
+  function startTouchGesture(event: ReactTouchEvent<HTMLButtonElement>, itemId: string) {
+    if (!canRestructureItems) return;
+    const touch = event.changedTouches[0];
+    if (!touch) return;
+    touchDragRef.current = { itemId, touchId: touch.identifier };
+    setDragState({ draggedItemId: itemId, overItemId: null, overDay: null });
+    event.preventDefault();
   }
 
   function previewDrop(event: DragEvent<HTMLElement>, targetItemId: string) {
@@ -184,7 +247,113 @@ export function SmartItineraryTable({
 
   function clearDragPreview() {
     setDragState({ draggedItemId: null, overItemId: null, overDay: null });
+    touchDragRef.current = null;
   }
+
+  useEffect(() => {
+    function handlePointerMove(event: PointerEvent) {
+      const current = touchDragRef.current;
+      if (!current || current.pointerId !== event.pointerId) return;
+      const target = document.elementFromPoint(event.clientX, event.clientY);
+      const itemRow = target?.closest<HTMLElement>("[data-item-id]");
+      const dayRow = target?.closest<HTMLElement>("[data-day-drop]");
+      if (itemRow) {
+        const targetItemId = itemRow.dataset.itemId;
+        if (targetItemId && targetItemId !== current.itemId) {
+          setDragState({ draggedItemId: current.itemId, overItemId: targetItemId, overDay: null });
+          event.preventDefault();
+        }
+        return;
+      }
+      if (dayRow) {
+        const targetDay = dayRow.dataset.dayDrop;
+        if (targetDay) {
+          setDragState({ draggedItemId: current.itemId, overItemId: null, overDay: targetDay });
+          event.preventDefault();
+        }
+      }
+    }
+
+    function handlePointerUp(event: PointerEvent) {
+      const current = touchDragRef.current;
+      if (!current || current.pointerId !== event.pointerId) return;
+      const target = document.elementFromPoint(event.clientX, event.clientY);
+      const itemRow = target?.closest<HTMLElement>("[data-item-id]");
+      const dayRow = target?.closest<HTMLElement>("[data-day-drop]");
+      const targetItemId = itemRow?.dataset.itemId;
+      const targetDay = dayRow?.dataset.dayDrop;
+      if (targetItemId && targetItemId !== current.itemId) onMoveItem(current.itemId, targetItemId);
+      else if (targetDay) onMoveItemToDay(current.itemId, targetDay);
+      clearDragPreview();
+    }
+
+    function cancelPointer(event: PointerEvent) {
+      const current = touchDragRef.current;
+      if (current && current.pointerId === event.pointerId) clearDragPreview();
+    }
+
+    function handleTouchMove(event: TouchEvent) {
+      const current = touchDragRef.current;
+      if (!current || current.touchId === undefined) return;
+      const touch = Array.from(event.changedTouches).find((entry) => entry.identifier === current.touchId);
+      if (!touch) return;
+      const target = document.elementFromPoint(touch.clientX, touch.clientY);
+      const itemRow = target?.closest<HTMLElement>("[data-item-id]");
+      const dayRow = target?.closest<HTMLElement>("[data-day-drop]");
+      if (itemRow) {
+        const targetItemId = itemRow.dataset.itemId;
+        if (targetItemId && targetItemId !== current.itemId) {
+          setDragState({ draggedItemId: current.itemId, overItemId: targetItemId, overDay: null });
+          event.preventDefault();
+        }
+        return;
+      }
+      if (dayRow) {
+        const targetDay = dayRow.dataset.dayDrop;
+        if (targetDay) {
+          setDragState({ draggedItemId: current.itemId, overItemId: null, overDay: targetDay });
+          event.preventDefault();
+        }
+      }
+    }
+
+    function handleTouchEnd(event: TouchEvent) {
+      const current = touchDragRef.current;
+      if (!current || current.touchId === undefined) return;
+      const touch = Array.from(event.changedTouches).find((entry) => entry.identifier === current.touchId);
+      if (!touch) return;
+      const target = document.elementFromPoint(touch.clientX, touch.clientY);
+      const itemRow = target?.closest<HTMLElement>("[data-item-id]");
+      const dayRow = target?.closest<HTMLElement>("[data-day-drop]");
+      const targetItemId = itemRow?.dataset.itemId;
+      const targetDay = dayRow?.dataset.dayDrop;
+      if (targetItemId && targetItemId !== current.itemId) onMoveItem(current.itemId, targetItemId);
+      else if (targetDay) onMoveItemToDay(current.itemId, targetDay);
+      clearDragPreview();
+    }
+
+    function cancelTouch(event: TouchEvent) {
+      const current = touchDragRef.current;
+      if (!current || current.touchId === undefined) return;
+      const touch = Array.from(event.changedTouches).find((entry) => entry.identifier === current.touchId);
+      if (touch) clearDragPreview();
+    }
+
+    window.addEventListener("pointermove", handlePointerMove);
+    window.addEventListener("pointerup", handlePointerUp);
+    window.addEventListener("pointercancel", cancelPointer);
+    window.addEventListener("touchmove", handleTouchMove, { passive: false });
+    window.addEventListener("touchend", handleTouchEnd);
+    window.addEventListener("touchcancel", cancelTouch);
+    return () => {
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerup", handlePointerUp);
+      window.removeEventListener("pointercancel", cancelPointer);
+      window.removeEventListener("touchmove", handleTouchMove);
+      window.removeEventListener("touchend", handleTouchEnd);
+      window.removeEventListener("touchcancel", cancelTouch);
+    };
+  }, [canRestructureItems, onMoveItem, onMoveItemToDay]);
 
   function importFile(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
@@ -208,36 +377,34 @@ export function SmartItineraryTable({
         aside={(
           <div className={pageHeaderActionsClassName} role="group" aria-label={t.itinerary.actionsLabel}>
             <div className={pathControlsClassName}>
-              <select
-                className={pathSelectClassName}
-                aria-label="Trip path"
-                value={selectedTripPathId}
-                disabled={!canRestructureItems || showAllPaths}
-                onChange={(event) => onChangeTripPath?.(event.target.value)}
-              >
-                {pathOptions.filter((option) => option.scope === "trip" || option.id === mainItineraryPathId).map((option) => (
-                  <option key={option.id} value={option.id}>{option.name}</option>
-                ))}
-              </select>
-              <label className={pathCheckboxLabelClassName}>
-                <input
-                  type="checkbox"
-                  aria-label="Show all paths"
-                  checked={showAllPaths}
-                  disabled={!canRestructureItems}
-                  onChange={(event) => onToggleShowAllPaths?.(event.target.checked)}
-                />
-                Show all
-              </label>
-              <button
-                type="button"
-                className={clearPathButtonClassName}
-                aria-label="Clear all day path overrides"
-                disabled={!canRestructureItems || Object.values(dayPathOverrides).filter(Boolean).length === 0}
-                onClick={() => onClearAllDayPaths?.()}
-              >
-                Clear all
-              </button>
+              <div className={pathFilterShellClassName}>
+                <button
+                  type="button"
+                  className={pathFilterButtonClassName}
+                  aria-expanded={planFilterOpen}
+                  aria-haspopup="dialog"
+                  aria-label={t.itinerary.filters.plans}
+                  title={selectedFilterLabel}
+                  onClick={() => setPlanFilterOpen((current) => !current)}
+                >
+                  <span>{t.itinerary.filters.plans}</span>
+                  <span className={pathFilterSummaryClassName}>{selectedFilterLabel}</span>
+                </button>
+                {planFilterOpen ? (
+                  <div className={pathFilterMenuClassName} role="dialog" aria-label={t.itinerary.filters.plans}>
+                    {filterOptions.map((option) => (
+                      <label className={pathFilterOptionClassName} key={option.id}>
+                        <input
+                          type="checkbox"
+                          checked={selectedPathIdSet.has(option.id)}
+                          onChange={() => togglePlanFilter(option.id)}
+                        />
+                        <span>{option.name}</span>
+                      </label>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
             </div>
             <input
               ref={importInputRef}
@@ -260,7 +427,7 @@ export function SmartItineraryTable({
         )}
       />
       <div className={tableScrollClassName} tabIndex={0} aria-label={t.itinerary.scrollLabel}>
-        <table className={smartTableClassName}>
+        <table className={smartTableClassName} style={smartTableStyle}>
           <caption className="sr-only">{t.itinerary.caption}</caption>
           <colgroup>
             <col style={{ width: graphColumnWidth }} />
@@ -285,7 +452,7 @@ export function SmartItineraryTable({
               <th>{t.itinerary.headers.type}</th>
               <th>{t.itinerary.headers.map}</th>
               <th>{t.itinerary.headers.transport}</th>
-              <th>{t.itinerary.headers.warnings}</th>
+              <th>{t.itinerary.headers.actions}</th>
             </tr>
           </thead>
           {groups.map((group, groupIndex) => (
@@ -313,16 +480,43 @@ export function SmartItineraryTable({
               onDropOnDay={dropOnDay}
               onAddStop={onAddStop}
               onMoveItem={onMoveItem}
+              onMoveItemToDay={onMoveItemToDay}
               onMoveItemToPath={onMoveItemToPath}
+              onUpdateItemInline={onUpdateItemInline}
               onPreviewDayDrop={previewDayDrop}
               onPreviewDrop={previewDrop}
               onSelectItem={onSelectItem}
               onStartDrag={startDrag}
+              onStartTouchDrag={startTouchDrag}
+              onStartTouchGesture={startTouchGesture}
+              onEditItem={onEditItem}
+              onDeleteItem={setPendingDeleteItem}
               onToggleDay={toggleDay}
             />
           ))}
         </table>
       </div>
+      {pendingDeleteItem ? (
+        <div className={deleteModalBackdropClassName} role="presentation">
+          <section className={deleteDialogClassName} role="dialog" aria-modal="true" aria-labelledby="itinerary-delete-title">
+            <h2 className={deleteDialogTitleClassName} id="itinerary-delete-title">{t.itinerary.row.confirmDeleteTitle({ activity: pendingDeleteItem.activity })}</h2>
+            <p className={deleteDialogBodyClassName}>{t.itinerary.row.confirmDeleteBody({ activity: pendingDeleteItem.activity })}</p>
+            <div className={deleteDialogActionsClassName}>
+              <Button type="button" variant="ghost" onClick={() => setPendingDeleteItem(null)}>{t.itinerary.row.confirmDeleteNo}</Button>
+              <Button
+                type="button"
+                variant="danger"
+                onClick={() => {
+                  onDeleteItem?.(pendingDeleteItem.id);
+                  setPendingDeleteItem(null);
+                }}
+              >
+                {t.itinerary.row.confirmDeleteYes}
+              </Button>
+            </div>
+          </section>
+        </div>
+      ) : null}
     </section>
   );
 }
@@ -350,11 +544,17 @@ function DayGroup({
   onDropOnDay,
   onAddStop,
   onMoveItem,
+  onMoveItemToDay,
   onMoveItemToPath,
+  onUpdateItemInline,
   onPreviewDayDrop,
   onPreviewDrop,
   onSelectItem,
   onStartDrag,
+  onStartTouchDrag,
+  onStartTouchGesture,
+  onEditItem,
+  onDeleteItem,
   onToggleDay,
 }: {
   graphColumnWidth: number;
@@ -379,11 +579,17 @@ function DayGroup({
   onDropOnDay: (event: DragEvent<HTMLElement>, targetDay: string) => void;
   onAddStop: (day?: string) => void;
   onMoveItem: (draggedItemId: string, targetItemId: string) => void;
+  onMoveItemToDay: (draggedItemId: string, targetDay: string) => void;
   onMoveItemToPath?: (itemId: string, pathId: string) => void;
+  onUpdateItemInline?: (itemId: string, patch: InlineItineraryItemPatch) => void | Promise<void>;
   onPreviewDayDrop: (event: DragEvent<HTMLElement>, targetDay: string) => void;
   onPreviewDrop: (event: DragEvent<HTMLElement>, targetItemId: string) => void;
   onSelectItem: (itemId: string) => void;
   onStartDrag: (event: DragEvent<HTMLButtonElement>, itemId: string) => void;
+  onStartTouchDrag: (event: ReactPointerEvent<HTMLButtonElement>, itemId: string) => void;
+  onStartTouchGesture: (event: ReactTouchEvent<HTMLButtonElement>, itemId: string) => void;
+  onEditItem?: (itemId: string) => void;
+  onDeleteItem?: (item: ItineraryItem) => void;
   onToggleDay: (day: string) => void;
 }) {
   const dayLabel = formatDayLabel(group.day, startDate, locale);
@@ -474,10 +680,16 @@ function DayGroup({
           </div>
         </th>
       </tr>
-      {!collapsed ? group.items.map((item) => (
+      {!collapsed ? group.items.map((item, index) => {
+        const moveUpTargetId = group.items[index - 1]?.id;
+        const nextItem = group.items[index + 1];
+        const moveDownTargetId = group.items[index + 2]?.id;
+
+        return (
         <tr
           aria-label={itineraryLabels.row.openDetails({ activity: item.activity })}
           className={getRowClassName(item, selectedItemId, dragState, samePathOverlapItemIds)}
+          data-item-id={item.id}
           key={item.id}
           onDragOver={(event) => onPreviewDrop(event, item.id)}
           onDrop={(event) => onDropItem(event, item.id)}
@@ -493,6 +705,8 @@ function DayGroup({
                 aria-label={itineraryLabels.row.drag({ activity: item.activity })}
                 onDragEnd={onClearDragPreview}
                 onDragStart={(event) => onStartDrag(event, item.id)}
+                onPointerDown={(event) => onStartTouchDrag(event, item.id)}
+                onTouchStart={(event) => onStartTouchGesture(event, item.id)}
               >
                 <Icon name="drag" />
               </button>
@@ -500,34 +714,132 @@ function DayGroup({
           </td>
           <td className={timeCellClassName}>
             <span className={timeStackClassName}>
-              <span>{tableStartTime(item)}</span>
+              <InlineTextField
+                ariaLabel={itineraryLabels.row.inlineTime({ activity: item.activity })}
+                canEdit={canEdit}
+                className={inlineTimeInputClassName}
+                itemValue={item.startTime}
+                key={`${item.id}:time:${item.startTime}`}
+                type="time"
+                onCommit={(value) => onUpdateItemInline?.(item.id, { startTime: value })}
+              />
               <span className={timeDurationClassName}>{formatDuration(item.durationMinutes, locale)}</span>
             </span>
           </td>
           <td className={activityCellClassName}>
-            <button
-              type="button"
-              className={rowSelectClassName}
-              aria-pressed={selectedItemId === item.id}
+            <div
+              className={inlineActivityStackClassName}
               aria-label={itineraryLabels.row.select({ activity: item.activity })}
-              tabIndex={collapsed ? -1 : undefined}
-              onClick={() => onSelectItem(item.id)}
               onDragOver={(event) => onPreviewDrop(event, item.id)}
               onDrop={(event) => onDropItem(event, item.id)}
             >
-              <strong>{item.activity}</strong>
-              <span>{item.place}</span>
-            </button>
+              <button
+                type="button"
+                className={cn("sr-only", rowSelectClassName)}
+                aria-pressed={selectedItemId === item.id}
+                aria-label={itineraryLabels.row.select({ activity: item.activity })}
+                tabIndex={collapsed ? -1 : undefined}
+                onClick={() => onSelectItem(item.id)}
+              />
+              <InlineTextField
+                ariaLabel={itineraryLabels.row.inlineActivity({ activity: item.activity })}
+                canEdit={canEdit}
+                className={inlineActivityFieldClassName}
+                itemValue={item.activity}
+                key={`${item.id}:activity:${item.activity}`}
+                required
+                onClick={() => onSelectItem(item.id)}
+                onCommit={(value) => onUpdateItemInline?.(item.id, { activity: value })}
+              />
+              <InlineTextField
+                ariaLabel={itineraryLabels.row.inlinePlace({ activity: item.activity })}
+                canEdit={canEdit}
+                className={inlineSubtleFieldClassName}
+                itemValue={item.place}
+                key={`${item.id}:place:${item.place}`}
+                required
+                onClick={() => onSelectItem(item.id)}
+                onCommit={(value) => onUpdateItemInline?.(item.id, { place: value })}
+              />
+            </div>
           </td>
-          <td>{activityTypeLabel(item.activityType, locale)}</td>
+          <td>
+            <InlineActivityTypeSelect
+              activity={item.activity}
+              ariaLabel={itineraryLabels.row.inlineType({ activity: item.activity })}
+              canEdit={canEdit}
+              key={`${item.id}:type:${item.activityType}`}
+              locale={locale}
+              value={item.activityType}
+              onCommit={(activityType) => onUpdateItemInline?.(item.id, { activityType })}
+            />
+          </td>
           <td><a className={mapLinkClassName} href={mapHref(item)} tabIndex={collapsed ? -1 : undefined}>{mapLinkLabel(item, itineraryLabels.row.mapFallback)}</a></td>
-          <td>{item.transportation || "—"}</td>
-          <td><AdvisorySummary advisories={item.advisories ?? []} /></td>
+          <td>
+            <InlineTextField
+              ariaLabel={itineraryLabels.row.inlineTransportation({ activity: item.activity })}
+              canEdit={canEdit}
+              className={inlineSubtleFieldClassName}
+              itemValue={item.transportation}
+              key={`${item.id}:transportation:${item.transportation}`}
+              placeholder="—"
+              onCommit={(value) => onUpdateItemInline?.(item.id, { transportation: value })}
+            />
+          </td>
+          <td className={rowActionCellClassName}>
+            <div className={rowActionsClassName}>
+              <button
+                type="button"
+                className={rowActionButtonClassName}
+                aria-label={itineraryLabels.row.moveUp({ activity: item.activity })}
+                disabled={!canEdit || !moveUpTargetId}
+                onClick={() => moveUpTargetId && onMoveItem(item.id, moveUpTargetId)}
+              >
+                <Icon name="chevronRight" className="-rotate-90" />
+              </button>
+              <button
+                type="button"
+                className={rowActionButtonClassName}
+                aria-label={itineraryLabels.row.moveDown({ activity: item.activity })}
+                disabled={!canEdit || !nextItem}
+                onClick={() => {
+                  if (!nextItem) return;
+                  if (moveDownTargetId) {
+                    onMoveItem(item.id, moveDownTargetId);
+                    return;
+                  }
+                  onMoveItemToDay(item.id, item.day);
+                }}
+              >
+                <Icon name="chevronRight" className="rotate-90" />
+              </button>
+              <button
+                type="button"
+                className={rowActionButtonClassName}
+                aria-label={itineraryLabels.row.edit({ activity: item.activity })}
+                disabled={!canEdit}
+                onClick={() => onEditItem?.(item.id)}
+              >
+                <Icon name="edit" />
+              </button>
+              <button
+                type="button"
+                className={rowActionButtonClassName}
+                aria-label={itineraryLabels.row.delete({ activity: item.activity })}
+                disabled={!canEdit}
+                onClick={() => onDeleteItem?.(item)}
+              >
+                <Icon name="trash" />
+              </button>
+            </div>
+          </td>
         </tr>
-      )) : null}
+        );
+      }) : null}
       {!collapsed ? (
         <tr
           className={cn(addStopRowClassName, dragState.overDay === group.day && addStopRowDropTargetClassName)}
+          data-day-drop={group.day}
           onDragOver={(event) => onPreviewDayDrop(event, group.day)}
           onDrop={(event) => onDropOnDay(event, group.day)}
         >
@@ -624,6 +936,104 @@ function getRowClassName(
   );
 }
 
+function InlineTextField({
+  ariaLabel,
+  canEdit,
+  className,
+  itemValue,
+  onClick,
+  onCommit,
+  placeholder,
+  required = false,
+  type = "text",
+}: {
+  ariaLabel: string;
+  canEdit: boolean;
+  className: string;
+  itemValue: string;
+  onClick?: () => void;
+  onCommit: (value: string) => void | Promise<void>;
+  placeholder?: string;
+  required?: boolean;
+  type?: "text" | "time";
+}) {
+  const [value, setValue] = useState(itemValue);
+
+  function commitValue() {
+    if (!canEdit) return;
+    const nextValue = type === "time" ? value : value.trim();
+    if (required && nextValue.length === 0) {
+      setValue(itemValue);
+      return;
+    }
+    if (nextValue === itemValue) return;
+    void onCommit(nextValue);
+  }
+
+  function cancelValue() {
+    setValue(itemValue);
+  }
+
+  return (
+    <input
+      aria-label={ariaLabel}
+      className={className}
+      disabled={!canEdit && type === "time"}
+      placeholder={placeholder}
+      readOnly={!canEdit && type !== "time"}
+      type={type}
+      value={value}
+      onBlur={commitValue}
+      onChange={(event) => setValue(event.target.value)}
+      onClick={onClick}
+      onKeyDown={(event) => {
+        if (event.key === "Enter") {
+          commitValue();
+          event.currentTarget.blur();
+          return;
+        }
+        if (event.key === "Escape") {
+          cancelValue();
+          event.preventDefault();
+        }
+      }}
+    />
+  );
+}
+
+function InlineActivityTypeSelect({
+  activity,
+  ariaLabel,
+  canEdit,
+  locale,
+  onCommit,
+  value,
+}: {
+  activity: string;
+  ariaLabel: string;
+  canEdit: boolean;
+  locale: Locale;
+  onCommit: (value: ActivityType) => void | Promise<void>;
+  value: ActivityType;
+}) {
+  return (
+    <select
+      aria-label={ariaLabel}
+      className={inlineSelectClassName}
+      disabled={!canEdit}
+      value={value}
+      onChange={(event) => {
+        const nextValue = event.target.value as ActivityType;
+        if (nextValue !== value) void onCommit(nextValue);
+      }}
+    >
+      {activityTypeOptions.map((option) => (
+        <option value={option} key={`${activity}-${option}`}>{activityTypeLabel(option, locale)}</option>
+      ))}
+    </select>
+  );
+}
+
 function findSamePathOverlapItemIds(items: ItineraryItem[]): Set<string> {
   const ids = new Set<string>();
   const groups = new Map<string, ItineraryItem[]>();
@@ -660,21 +1070,6 @@ function itineraryItemPathId(item: ItineraryItem): string {
   return item.pathRole === "alternative" ? item.pathId ?? item.id : mainItineraryPathId;
 }
 
-function AdvisorySummary({ advisories }: { advisories: ItineraryAdvisory[] }) {
-  if (advisories.length === 0) return <span className={emptyWarningClassName}>—</span>;
-  return (
-    <span className={warningSummaryClassName}>
-      <Icon name="warning" />
-      <span>{advisories[0]?.label}</span>
-    </span>
-  );
-}
-
-function tableStartTime(item: ItineraryItem): string {
-  /* v8 ignore next */
-  return item.startTime || "—";
-}
-
 function mapHref(item: ItineraryItem): string {
   /* v8 ignore next */
   return item.mapLink || "#";
@@ -683,4 +1078,35 @@ function mapHref(item: ItineraryItem): string {
 function mapLinkLabel(item: ItineraryItem, fallback: string): string {
   /* v8 ignore next */
   return item.linkLabel || fallback;
+}
+
+function dedupePathOptions(pathOptions: ItineraryPathOption[], items: ItineraryItem[]): { id: string; name: string }[] {
+  const optionsById = new Map<string, { id: string; name: string }>();
+  pathOptions.forEach((option) => {
+    optionsById.set(option.id, { id: option.id, name: option.name });
+  });
+  items.forEach((item) => {
+    const pathId = itineraryItemPathId(item);
+    if (!optionsById.has(pathId)) {
+      optionsById.set(pathId, { id: pathId, name: item.pathName ?? (pathId === mainItineraryPathId ? "Main" : pathId) });
+    }
+  });
+  if (!optionsById.has(mainItineraryPathId)) {
+    optionsById.set(mainItineraryPathId, { id: mainItineraryPathId, name: "Main" });
+  }
+  return Array.from(optionsById.values());
+}
+
+function formatSelectedPlanLabel(
+  filterOptions: { id: string; name: string }[],
+  selectedPathIds: string[],
+  countLabel: ({ count }: { count: number }) => string,
+  namesLabel: ({ names }: { names: string }) => string,
+): string {
+  const selectedNames = filterOptions
+    .filter((option) => selectedPathIds.includes(option.id))
+    .map((option) => option.name);
+  if (selectedNames.length === 0) return countLabel({ count: 0 });
+  if (selectedNames.length <= 2) return namesLabel({ names: selectedNames.join(", ") });
+  return namesLabel({ names: `${selectedNames.slice(0, 2).join(", ")} +${selectedNames.length - 2}` });
 }
