@@ -145,7 +145,7 @@ describe("Sagittarius cockpit UI", () => {
     await user.click(screen.getByRole("button", { name: "บันทึกกิจกรรม" }));
 
     expect(placeResolver).toHaveBeenCalledTimes(1);
-    expect(screen.getByDisplayValue("ติ่มซำ แถว Elements")).toBeInTheDocument();
+    expect(await screen.findByRole("button", { name: /เลือกจุด Dim Dim Sum/i })).toBeInTheDocument();
   });
 
   it("uses the API join route for canonical API trip access and replaces join history", async () => {
