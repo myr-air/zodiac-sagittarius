@@ -63,6 +63,32 @@ export interface ItineraryCoordinates {
   lng: number;
 }
 
+export type PlaceResolutionStatus = "resolved" | "ambiguous" | "unresolved";
+
+export interface PlaceResolutionCandidate {
+  name: string;
+  address: string;
+  coordinates: ItineraryCoordinates;
+  mapLink: string;
+  confidence: number;
+  source: string;
+  evidence: string[];
+}
+
+export interface PlaceResolutionRequest {
+  clientMutationId: string;
+  activity: string;
+  placeHint: string;
+  destinationLabel: string;
+  countries: string[];
+  day: string;
+}
+
+export interface PlaceResolutionResponse {
+  status: PlaceResolutionStatus;
+  candidates: PlaceResolutionCandidate[];
+}
+
 export interface BriefingCoordinates {
   lat: number;
   lng: number;
@@ -222,7 +248,9 @@ export type ValidationWarningCode =
   | "missing-map-link"
   | "missing-transportation"
   | "time-order-conflict"
-  | "overlap";
+  | "overlap"
+  | "unresolved-location"
+  | "stale-location";
 
 export interface ValidationWarning {
   code: ValidationWarningCode;

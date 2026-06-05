@@ -13,6 +13,8 @@ import type {
   TripJoinCredential,
   TripMemberAccessStatus,
   TripParticipantSession,
+  PlaceResolutionRequest,
+  PlaceResolutionResponse,
   TripRole,
   TripTask,
   EditableSuggestionPatch,
@@ -172,6 +174,7 @@ export interface TripApiClient {
   patchItineraryItem(tripId: string, itemId: string, sessionToken: string, request: PatchItineraryItemApiRequest): Promise<ItineraryItem>;
   deleteItineraryItem(tripId: string, itemId: string, sessionToken: string): Promise<ItineraryItem>;
   reorderItineraryItems(tripId: string, sessionToken: string, request: ReorderItineraryItemsApiRequest): Promise<ItineraryItem[]>;
+  resolvePlace?: (tripId: string, sessionToken: string, request: PlaceResolutionRequest) => Promise<PlaceResolutionResponse>;
   importItinerary(tripId: string, sessionToken: string, request: ImportItineraryApiRequest): Promise<ItineraryExportDocument>;
   createSuggestion(tripId: string, sessionToken: string, request: CreateSuggestionApiRequest): Promise<Suggestion>;
   approveSuggestion(tripId: string, suggestionId: string, sessionToken: string): Promise<Suggestion>;
@@ -251,7 +254,11 @@ export interface PatchTaskApiRequest {
 export interface PatchItineraryItemApiRequest {
   clientMutationId: string;
   expectedVersion: number;
-  patch: Partial<Pick<ItineraryItem, "pathGroupId" | "pathId" | "pathName" | "pathRole" | "day" | "startTime" | "durationMinutes" | "activity" | "activityType" | "place" | "mapLink" | "transportation" | "note">>;
+  patch: Partial<Pick<ItineraryItem, "pathGroupId" | "pathId" | "pathName" | "pathRole" | "day" | "startTime" | "durationMinutes" | "activity" | "activityType" | "place" | "transportation" | "note">> & {
+    address?: string | null;
+    coordinates?: ItineraryCoordinates | null;
+    mapLink?: string | null;
+  };
 }
 
 export interface CreateItineraryItemApiRequest {
@@ -267,6 +274,8 @@ export interface CreateItineraryItemApiRequest {
   activityType: ItineraryItem["activityType"];
   place: string;
   mapLink?: string | null;
+  address?: string | null;
+  coordinates?: ItineraryCoordinates | null;
   durationMinutes?: number | null;
   transportation?: string | null;
   note?: string | null;
@@ -471,7 +480,10 @@ export function createTripApiClient(options: TripApiClientOptions = {}): TripApi
       const item = await request<ItineraryItemResponse>(tripApiRoutes.itineraryItem(tripId, itemId), {
         method: "PATCH",
         headers: { Authorization: `Bearer ${sessionToken}` },
-        body: JSON.stringify(itemRequest),
+        body: JSON.stringify({
+          ...itemRequest,
+          patch: serializeItineraryLocation(itemRequest.patch),
+        }),
       });
       return mapItineraryItem(item);
     },
@@ -479,7 +491,7 @@ export function createTripApiClient(options: TripApiClientOptions = {}): TripApi
       const item = await request<ItineraryItemResponse>(tripApiRoutes.itineraryItems(tripId), {
         method: "POST",
         headers: { Authorization: `Bearer ${sessionToken}` },
-        body: JSON.stringify(itemRequest),
+        body: JSON.stringify(serializeItineraryLocation(itemRequest)),
       });
       return mapItineraryItem(item);
     },
@@ -504,6 +516,13 @@ export function createTripApiClient(options: TripApiClientOptions = {}): TripApi
         body: JSON.stringify(reorderRequest),
       });
       return items.map(mapItineraryItem);
+    },
+    resolvePlace(tripId, sessionToken, resolveRequest) {
+      return request<PlaceResolutionResponse>(tripApiRoutes.resolvePlace(tripId), {
+        method: "POST",
+        headers: { Authorization: `Bearer ${sessionToken}` },
+        body: JSON.stringify(resolveRequest),
+      });
     },
     createSuggestion(tripId, sessionToken, suggestionRequest) {
       return request<Suggestion>(tripApiRoutes.suggestions(tripId), {
@@ -631,6 +650,20 @@ export function mapCockpitResponse(response: TripCockpitResponse): TripCockpit {
     tasks: response.tasks.map(mapTask),
     stopNotes: response.stopNotes,
     expenseSummary: response.expenseSummary,
+  };
+}
+
+function serializeItineraryLocation<T extends { coordinates?: ItineraryCoordinates | null; address?: string | null }>(request: T) {
+  const { coordinates, ...rest } = request;
+  return {
+    ...rest,
+    ...(request.address !== undefined ? { address: request.address } : {}),
+    ...(coordinates !== undefined
+      ? {
+          latitude: coordinates?.lat ?? null,
+          longitude: coordinates?.lng ?? null,
+        }
+      : {}),
   };
 }
 

@@ -234,6 +234,50 @@ describe("Trip API client", () => {
     );
   });
 
+  it("resolves place candidates through the trip-scoped place route", async () => {
+    const fetchImpl = vi.fn().mockResolvedValueOnce(jsonResponse({
+      status: "resolved",
+      candidates: [{
+        name: "The Elements",
+        address: "Austin Road West, Hong Kong",
+        coordinates: { lat: 22.3049, lng: 114.1617 },
+        mapLink: "https://www.openstreetmap.org/?mlat=22.3049000&mlon=114.1617000#map=17/22.3049000/114.1617000",
+        confidence: 0.92,
+        source: "nominatim",
+        evidence: ["brave: The Elements"],
+      }],
+    }));
+    const client = createTripApiClient({ baseUrl: "https://api.example.test", fetchImpl });
+
+    expect(client.resolvePlace).toBeDefined();
+    const result = await client.resolvePlace!(cockpitResponse.trip.id, "session-token", {
+      clientMutationId: "resolve-web-1",
+      activity: "Dim Dim Sum",
+      placeHint: "ติ่มซำ แถว Elements",
+      destinationLabel: "Hong Kong + Shenzhen",
+      countries: ["HK"],
+      day: "2026-06-19",
+    });
+
+    expect(fetchImpl).toHaveBeenCalledWith(
+      `https://api.example.test/api/v1/trips/${cockpitResponse.trip.id}/places/resolve`,
+      expect.objectContaining({
+        method: "POST",
+        headers: expect.objectContaining({ Authorization: "Bearer session-token" }),
+        body: JSON.stringify({
+          clientMutationId: "resolve-web-1",
+          activity: "Dim Dim Sum",
+          placeHint: "ติ่มซำ แถว Elements",
+          destinationLabel: "Hong Kong + Shenzhen",
+          countries: ["HK"],
+          day: "2026-06-19",
+        }),
+      }),
+    );
+    expect(result.status).toBe("resolved");
+    expect(result.candidates[0].coordinates).toEqual({ lat: 22.3049, lng: 114.1617 });
+  });
+
   it("uses fallback error details when the backend returns a malformed error body", async () => {
     const fetchImpl = vi.fn().mockResolvedValueOnce(new Response("not-json", { status: 502 }));
     const client = createTripApiClient({ fetchImpl });
