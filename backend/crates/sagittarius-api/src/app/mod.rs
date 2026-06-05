@@ -7,6 +7,7 @@ pub mod expenses;
 pub mod itinerary;
 pub mod itinerary_imports;
 pub mod members;
+pub mod place_resolution;
 pub mod plan_variants;
 pub mod stop_notes;
 pub mod suggestions;

@@ -8,6 +8,7 @@ pub mod itinerary;
 pub mod itinerary_imports;
 pub mod join;
 pub mod members;
+pub mod place_resolution;
 pub mod plan_variants;
 pub mod stop_notes;
 pub mod suggestions;
@@ -135,6 +136,10 @@ fn api_v1() -> Router<AppState> {
         .route(
             "/trips/{trip_id}/itinerary-imports",
             post(itinerary_imports::import_itinerary),
+        )
+        .route(
+            "/trips/{trip_id}/places/resolve",
+            post(place_resolution::resolve_place),
         )
         .route(
             "/trips/{trip_id}/itinerary-items/order",
