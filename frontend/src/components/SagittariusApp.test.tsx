@@ -2040,7 +2040,7 @@ describe("Sagittarius cockpit UI", () => {
     expect(screen.queryByRole("button", { name: /เปิดรายละเอียด/i })).not.toBeInTheDocument();
     await user.click(within(screen.getByRole("region", { name: /แผนที่เส้นทาง/i })).getByRole("button", { name: /วันที่ 2/i }));
     expect(screen.queryByRole("complementary", { name: /ข้อมูลประกอบการวางแผน/i })).not.toBeInTheDocument();
-    expect(screen.getByText(/6\/16 จุดที่แสดง/i)).toBeInTheDocument();
+    expect(screen.getByText(/6\/16 มีพิกัด/i)).toBeInTheDocument();
   });
 
   it("toggles timeline details and closes the context rail from its own control", async () => {
@@ -2389,14 +2389,14 @@ describe("Sagittarius cockpit UI", () => {
     await user.selectOptions(within(dialog).getByLabelText(/^นาที$/i), "45");
     await user.click(within(dialog).getByRole("button", { name: /บันทึกกิจกรรม/i }));
 
-    await user.click(screen.getByRole("button", { name: /เลือกจุด Manual main coffee/i }));
+    await user.click(await screen.findByRole("button", { name: /เลือกจุด Manual main coffee/i }));
     await user.click(screen.getByRole("button", { name: /แก้ไขรายละเอียด/i }));
 
     dialog = screen.getByRole("dialog", { name: /แก้ไขรายละเอียด/i });
     await user.selectOptions(within(dialog).getByLabelText("แผน"), "main");
     await user.click(within(dialog).getByRole("button", { name: /บันทึกการแก้ไข/i }));
 
-    expect(screen.getByRole("button", { name: /เลือกจุด Manual main coffee/i })).toBeInTheDocument();
+    expect(await screen.findByRole("button", { name: /เลือกจุด Manual main coffee/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Manual main coffee on Main/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /เดินเล่นย่าน Central.*on Plan A/i })).toBeInTheDocument();
   });
@@ -2416,7 +2416,7 @@ describe("Sagittarius cockpit UI", () => {
     await user.type(within(dialog).getByLabelText(/สถานที่/i), "K11 Musea");
     await user.click(within(dialog).getByRole("button", { name: /บันทึกกิจกรรม/i }));
 
-    expect(screen.getByRole("button", { name: /เลือกจุด Promoted after demote coffee/i })).toBeInTheDocument();
+    expect(await screen.findByRole("button", { name: /เลือกจุด Promoted after demote coffee/i })).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: /ปิดรายละเอียด/i }));
     await user.click(screen.getByRole("button", { name: /เลือกจุด เดินเล่นย่าน Central/i }));
     await user.click(screen.getByRole("button", { name: /แก้ไขรายละเอียด/i }));
@@ -2445,15 +2445,15 @@ describe("Sagittarius cockpit UI", () => {
     await user.type(within(dialog).getByLabelText(/สถานที่/i), "K11 Musea");
     await user.click(within(dialog).getByRole("button", { name: /บันทึกกิจกรรม/i }));
 
-    expect(screen.getByRole("button", { name: /เลือกจุด Day filter coffee/i })).toBeInTheDocument();
+    expect(await screen.findByRole("button", { name: /เลือกจุด Day filter coffee/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Day filter coffee on Plan A/i })).toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: /กรองแผน/i }));
-    expect(within(screen.getByRole("dialog", { name: /กรองแผน/i })).getByLabelText("Plan A")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: /กรองแผน|แสดงตัวกรอง/i }));
+    expect(screen.getByLabelText("Plan A")).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: /Path for Day 2/i }));
     await user.click(within(screen.getByRole("listbox", { name: /Path for Day 2/i })).getByRole("option", { name: "Plan A" }));
 
-    expect(screen.getByRole("button", { name: /เลือกจุด Day filter coffee/i })).toBeInTheDocument();
+    expect(await screen.findByRole("button", { name: /เลือกจุด Day filter coffee/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Path for Day 2/i })).toHaveTextContent("Plan A");
     expect(screen.getByRole("button", { name: /เลือกจุด เดินเล่นย่าน Central/i })).toBeInTheDocument();
   });
