@@ -37,7 +37,7 @@ import { tripStorageKey } from "@/src/trip/repository";
 import { seedTrip } from "@/src/trip/seed";
 import { decodeTripId } from "@/src/trip/ids";
 import { approveSuggestion } from "@/src/trip/suggestions";
-import type { DailyBriefingOverrides, Expense, ExpenseSummary, ItineraryItem, StopNote, Suggestion, Trip, TripDailyBriefing, TripMemberAccessStatus, TripParticipantSession, TripRole, TripTask } from "@/src/trip/types";
+import type { DailyBriefingOverrides, Expense, ExpenseSummary, ItineraryItem, PlaceResolutionCandidate, PlaceResolutionRequest, PlaceResolutionResponse, StopNote, Suggestion, Trip, TripDailyBriefing, TripMemberAccessStatus, TripParticipantSession, TripRole, TripTask } from "@/src/trip/types";
 
 const localMutationTimestamp = "2026-05-28T00:00:00.000Z";
 const accountSessionStorageKey = "sagittarius-account-session";
@@ -68,12 +68,14 @@ const planningMainWithRailClassName = "pr-[380px] max-[1199px]:pr-0";
 
 export type PlanningView = "overview" | "itinerary" | "map" | "timeline" | "members" | "settings";
 type PortalSection = "dashboard" | "trips" | "new-trip" | "explorer" | "todos" | "vault" | "settings" | "sign-out";
+type PlaceResolver = (request: PlaceResolutionRequest) => Promise<PlaceResolutionResponse>;
 
 interface SagittariusAppProps {
   initialView?: PlanningView;
   requireJoin?: boolean;
   dataSource?: "api" | "local";
   apiClient?: TripApiClient;
+  placeResolver?: PlaceResolver;
   routeTripId?: string;
   initialJoinCode?: string;
   initialJoinToken?: string | null;
@@ -100,6 +102,7 @@ export function SagittariusApp({
   requireJoin = false,
   dataSource = "local",
   apiClient,
+  placeResolver,
   routeTripId,
   initialJoinCode,
   initialJoinToken,
@@ -162,6 +165,11 @@ export function SagittariusApp({
 
   const trip = tripState.trip;
   const tripIdForPath = routeTripId ?? trip.id;
+  const effectivePlaceResolver = useMemo<PlaceResolver | null>(() => {
+    if (placeResolver) return placeResolver;
+    if (!resolvedApiClient?.resolvePlace || !participantSession) return null;
+    return (request) => resolvedApiClient.resolvePlace!(trip.id, participantSession.sessionToken, request);
+  }, [participantSession, placeResolver, resolvedApiClient, trip.id]);
   const resolveCurrentView = useCallback(() => {
     if (typeof window === "undefined") return initialView;
     return resolveViewFromPath(window.location.pathname, tripIdForPath, initialView);
@@ -558,6 +566,8 @@ export function SagittariusApp({
 
   async function createStop(values: StopFormValues) {
     const day = values.day || selectedDay;
+    const resolvedPlace = await resolveStopPlace({ ...values, day }, trip, effectivePlaceResolver);
+    const locationFields = locationFieldsFromCandidate(resolvedPlace, values.place);
     const targetPathId = selectedItineraryPathIdForDay(day, pathSelection);
     const targetPathName = pathOptions.find((option) => option.id === targetPathId)?.name;
     const nextItemId = nextLocalItemId(trip.itineraryItems, "item-new");
@@ -574,8 +584,9 @@ export function SagittariusApp({
       activityType: values.activityType,
       place: values.place,
       linkLabel: "แผนที่",
-      mapLink: buildMapLink(values.place),
-      address: values.place,
+      mapLink: locationFields.mapLink,
+      address: locationFields.address,
+      coordinates: locationFields.coordinates,
       durationMinutes: values.durationMinutes,
       transportation: values.transportation,
       advisories: [],
@@ -605,7 +616,9 @@ export function SagittariusApp({
         activity: values.activity,
         activityType: values.activityType,
         place: values.place,
-        mapLink: buildMapLink(values.place),
+        mapLink: locationFields.mapLink,
+        address: locationFields.address,
+        coordinates: locationFields.coordinates,
         durationMinutes: values.durationMinutes,
         transportation: values.transportation,
         note: values.note,
@@ -701,18 +714,29 @@ export function SagittariusApp({
     /* v8 ignore next */
     if (dialogState?.mode !== "edit") return;
     const itemId = dialogState.item.id;
+    const editDay = values.day || dialogState.item.day;
+    const shouldResolvePlace = values.place !== dialogState.item.place || Boolean(values.resolvedPlace) || Boolean(values.saveUnresolved);
+    const resolvedPlace = shouldResolvePlace ? await resolveStopPlace({ ...values, day: editDay }, trip, effectivePlaceResolver) : null;
+    const locationFields = shouldResolvePlace
+      ? locationFieldsFromCandidate(resolvedPlace, values.place)
+      : {
+          address: dialogState.item.address ?? dialogState.item.place,
+          coordinates: dialogState.item.coordinates,
+          mapLink: dialogState.item.mapLink,
+        };
     if (isApiMode && resolvedApiClient && participantSession) {
       const patchedItem = await resolvedApiClient.patchItineraryItem(trip.id, itemId, participantSession.sessionToken, {
         clientMutationId: nextClientMutationId("itinerary-patch"),
         expectedVersion: dialogState.item.version,
         patch: {
-          day: values.day,
+          day: editDay,
           startTime: values.startTime,
           activity: values.activity,
           activityType: values.activityType,
           place: values.place,
-          /* v8 ignore next */
-          mapLink: dialogState.item.mapLink || buildMapLink(values.place),
+          mapLink: locationFields.mapLink,
+          address: locationFields.address,
+          coordinates: locationFields.coordinates ?? null,
           durationMinutes: values.durationMinutes,
           transportation: values.transportation,
           note: values.note,
@@ -746,14 +770,14 @@ export function SagittariusApp({
     commitTrip((current) => {
       const updatedItem = {
         ...dialogState.item,
-        day: values.day || dialogState.item.day,
+        day: editDay,
         startTime: values.startTime,
         activity: values.activity,
         activityType: values.activityType,
         place: values.place,
-        /* v8 ignore next */
-        mapLink: dialogState.item.mapLink || buildMapLink(values.place),
-        address: values.place,
+        mapLink: locationFields.mapLink,
+        address: locationFields.address,
+        coordinates: locationFields.coordinates,
         durationMinutes: values.durationMinutes,
         transportation: values.transportation,
         note: values.note,
@@ -816,7 +840,7 @@ export function SagittariusApp({
             expectedVersion: item.version,
             patch: {
               ...nextPatch,
-              ...(nextPatch.place !== undefined ? { address: nextPatch.place, mapLink: item.mapLink || buildMapLink(nextPatch.place) } : {}),
+              ...(nextPatch.place !== undefined ? { address: nextPatch.place, coordinates: null, mapLink: buildMapLink(nextPatch.place) } : {}),
             },
           });
           const nextTrip = {
@@ -847,7 +871,7 @@ export function SagittariusApp({
       const updatedItem = {
         ...item,
         ...nextPatch,
-        ...(nextPatch.place !== undefined ? { address: nextPatch.place, mapLink: item.mapLink || buildMapLink(nextPatch.place) } : {}),
+        ...(nextPatch.place !== undefined ? { address: nextPatch.place, coordinates: undefined, mapLink: buildMapLink(nextPatch.place) } : {}),
         updatedAt: localMutationTimestamp,
         version: item.version + 1,
       };
@@ -1887,6 +1911,34 @@ function getNextSortOrder(items: ItineraryItem[], day: string): number {
 function buildMapLink(place: string): string {
   /* v8 ignore next */
   return place ? `https://maps.google.com/?q=${encodeURIComponent(place)}` : "";
+}
+
+async function resolveStopPlace(values: StopFormValues, trip: Trip, resolver: PlaceResolver | null): Promise<PlaceResolutionCandidate | null> {
+  if (values.resolvedPlace) return values.resolvedPlace;
+  if (values.saveUnresolved || !resolver) return null;
+  const response = await resolver({
+    clientMutationId: nextClientMutationId("place-resolve"),
+    activity: values.activity,
+    placeHint: values.place,
+    destinationLabel: trip.destinationLabel,
+    countries: trip.countries ?? [],
+    day: values.day,
+  });
+  return response.status === "resolved" ? response.candidates[0] ?? null : null;
+}
+
+function locationFieldsFromCandidate(candidate: PlaceResolutionCandidate | null, place: string) {
+  return candidate
+    ? {
+        address: candidate.address,
+        coordinates: candidate.coordinates,
+        mapLink: candidate.mapLink,
+      }
+    : {
+        address: place,
+        coordinates: undefined,
+        mapLink: buildMapLink(place),
+      };
 }
 
 function equalExpenseSplits(amountMinor: number, memberIds: string[]): Record<string, number> {
