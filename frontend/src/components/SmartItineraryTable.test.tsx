@@ -891,7 +891,7 @@ describe("SmartItineraryTable", () => {
 
     await user.click(within(row).getByRole("button", { name: /แก้ไขระยะเวลา Dim Dim Sum/i }));
     const presetDialog = screen.getByRole("dialog", { name: /แก้ไขระยะเวลา Dim Dim Sum/i });
-    await user.click(within(presetDialog).getByRole("button", { name: /1 ชม. 30 นาที/i }));
+    await user.click(within(presetDialog).getByRole("button", { name: /1 h 30 m/i }));
 
     expect(onUpdateItemInline).toHaveBeenCalledWith("item-dimdim", { durationMinutes: 90 });
     expect(screen.queryByRole("dialog", { name: /แก้ไขระยะเวลา Dim Dim Sum/i })).not.toBeInTheDocument();

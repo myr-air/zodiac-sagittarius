@@ -13,10 +13,10 @@ describe("itinerary display formatting", () => {
 
   it("formats durations and wrapped end times", () => {
     expect(formatDuration(null)).toBe("—");
-    expect(formatDuration(45)).toBe("45 min");
-    expect(formatDuration(120)).toBe("2 hr");
-    expect(formatDuration(135)).toBe("2 hr 15 min");
-    expect(formatDuration(135, "th")).toBe("2 ชม. 15 นาที");
+    expect(formatDuration(45)).toBe("45 m");
+    expect(formatDuration(120)).toBe("2 h");
+    expect(formatDuration(135)).toBe("2 h 15 m");
+    expect(formatDuration(135, "th")).toBe("2 h 15 m");
     expect(formatEndTime("", 45)).toBe("—");
     expect(formatEndTime("23:30", 90)).toBe("01:00");
   });

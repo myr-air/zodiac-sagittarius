@@ -1280,7 +1280,7 @@ describe("Sagittarius cockpit UI", () => {
     await loginApiTrip(user);
     const row = await screen.findByRole("row", { name: /Dim Dim Sum/i });
     await user.click(within(row).getByRole("button", { name: /แก้ไขระยะเวลา Dim Dim Sum/i }));
-    await user.click(within(screen.getByRole("dialog", { name: /แก้ไขระยะเวลา Dim Dim Sum/i })).getByRole("button", { name: /1 ชม. 30 นาที/i }));
+    await user.click(within(screen.getByRole("dialog", { name: /แก้ไขระยะเวลา Dim Dim Sum/i })).getByRole("button", { name: /1 h 30 m/i }));
 
     await waitFor(() => expect(apiClient.patchItineraryItem).toHaveBeenCalledWith(
       ownerTrip.id,

@@ -31,15 +31,11 @@ export function dayRouteLabel(day: string, locale: Locale = "en"): string {
 }
 
 export function formatDuration(minutes: number | null, locale: Locale = "en"): string {
+  void locale;
   if (!minutes) return "—";
-  if (locale === "th") {
-    if (minutes < 60) return `${minutes} นาที`;
-    if (minutes % 60 === 0) return `${minutes / 60} ชม.`;
-    return `${Math.floor(minutes / 60)} ชม. ${minutes % 60} นาที`;
-  }
-  if (minutes < 60) return `${minutes} min`;
-  if (minutes % 60 === 0) return `${minutes / 60} hr`;
-  return `${Math.floor(minutes / 60)} hr ${minutes % 60} min`;
+  if (minutes < 60) return `${minutes} m`;
+  if (minutes % 60 === 0) return `${minutes / 60} h`;
+  return `${Math.floor(minutes / 60)} h ${minutes % 60} m`;
 }
 
 export function formatEndTime(startTime: string, minutes: number | null): string {
