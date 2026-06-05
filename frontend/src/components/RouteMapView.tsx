@@ -288,7 +288,7 @@ export function RouteMapView({
       />
 
       <div className={routeMapLayoutClassName}>
-        <div className={routeMapCanvasClassName} aria-label={t.map.canvasLabel}>
+        <div className={routeMapCanvasClassName} data-live-map-state={liveMapState} aria-label={t.map.canvasLabel}>
           <div className={mapDayFilterClassName} aria-label={t.map.filterLabel}>
             <button
               type="button"

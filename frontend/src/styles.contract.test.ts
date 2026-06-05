@@ -102,6 +102,8 @@ describe("Calm Travel Ops CSS contract", () => {
   it("keeps hard-to-express map and timeline CSS in globals", () => {
     expect(css).toMatch(/\.route-map-canvas::before/s);
     expect(css).toMatch(/\.route-map-canvas::after/s);
+    expect(css).toMatch(/\.route-map-canvas\[data-live-map-state="ready"\]::after\s*{[^}]*display:\s*none/s);
+    expect(css).toMatch(/\.route-live-map\.maplibregl-map\s*{[^}]*position:\s*absolute/s);
     expect(css).toContain("@keyframes route-marker-in");
     expect(css).toMatch(/\.ofm-marker\s*{[^}]*display:\s*grid/s);
     expect(css).toMatch(/\.timeline-stop::before\s*{[^}]*content:\s*""/s);

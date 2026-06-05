@@ -239,6 +239,7 @@ describe("RouteMapView", () => {
     expect(document.querySelector(".route-map-layout")).toHaveClass("route-map-layout", "h-full", "min-h-0");
     const canvas = screen.getByLabelText(/ตัวอย่างแผนที่เส้นทางฮ่องกงและเซินเจิ้น/i);
     expect(canvas).toHaveClass("route-map-canvas", "relative", "min-h-[520px]", "overflow-hidden");
+    expect(canvas).toHaveAttribute("data-live-map-state", "error");
 
     const dayTwoButton = screen.getByRole("button", { name: /วันที่ 2/i });
     expect(dayTwoButton).toHaveClass("map-day-filter-button", "inline-flex");
