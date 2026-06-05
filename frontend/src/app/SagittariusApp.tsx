@@ -69,6 +69,7 @@ const planningMainWithRailClassName = "pr-[380px] max-[1199px]:pr-0";
 export type PlanningView = "overview" | "itinerary" | "map" | "timeline" | "members" | "settings";
 type PortalSection = "dashboard" | "trips" | "new-trip" | "explorer" | "todos" | "vault" | "settings" | "sign-out";
 type PlaceResolver = (request: PlaceResolutionRequest) => Promise<PlaceResolutionResponse>;
+type StopPlaceResolutionState = { state: "idle" | "resolving" | "ambiguous" | "unresolved"; candidates: PlaceResolutionCandidate[] };
 
 interface SagittariusAppProps {
   initialView?: PlanningView;
@@ -160,6 +161,7 @@ export function SagittariusApp({
   const [currentMemberId, setCurrentMemberId] = useState(seedTrip.members[0].id);
   const [selectedItemId, setSelectedItemId] = useState("item-dimdim");
   const [dialogState, setDialogState] = useState<{ mode: "create"; day?: string } | { mode: "edit"; item: ItineraryItem } | null>(null);
+  const [stopPlaceResolution, setStopPlaceResolution] = useState<StopPlaceResolutionState>({ state: "idle", candidates: [] });
   const [dialogDeleteItem, setDialogDeleteItem] = useState<ItineraryItem | null>(null);
   const [pathSelection, setPathSelection] = useState<ItineraryPathSelection>({ tripPathId: mainItineraryPathId, dayPathOverrides: {} });
 
@@ -198,6 +200,10 @@ export function SagittariusApp({
   useEffect(() => {
     latestTripRef.current = trip;
   }, [trip]);
+
+  useEffect(() => {
+    setStopPlaceResolution({ state: "idle", candidates: [] });
+  }, [dialogState?.mode, dialogState?.mode === "edit" ? dialogState.item.id : dialogState?.day]);
 
   /* v8 ignore next */
   const selectedItem = activePlanItems.find((item) => item.id === selectedItemId) ?? planItems[0] ?? activePlanItems[0];
@@ -566,8 +572,14 @@ export function SagittariusApp({
 
   async function createStop(values: StopFormValues) {
     const day = values.day || selectedDay;
-    const resolvedPlace = await resolveStopPlace({ ...values, day }, trip, effectivePlaceResolver);
-    const locationFields = locationFieldsFromCandidate(resolvedPlace, values.place);
+    setStopPlaceResolution(effectivePlaceResolver && !values.resolvedPlace && !values.saveUnresolved ? { state: "resolving", candidates: [] } : { state: "idle", candidates: [] });
+    const placeResolution = await resolveStopPlace({ ...values, day }, trip, effectivePlaceResolver);
+    if (placeResolution.state) {
+      setStopPlaceResolution(placeResolution.state);
+      return;
+    }
+    setStopPlaceResolution({ state: "idle", candidates: [] });
+    const locationFields = locationFieldsFromCandidate(placeResolution.candidate, values.place);
     const targetPathId = selectedItineraryPathIdForDay(day, pathSelection);
     const targetPathName = pathOptions.find((option) => option.id === targetPathId)?.name;
     const nextItemId = nextLocalItemId(trip.itineraryItems, "item-new");
@@ -716,9 +728,15 @@ export function SagittariusApp({
     const itemId = dialogState.item.id;
     const editDay = values.day || dialogState.item.day;
     const shouldResolvePlace = values.place !== dialogState.item.place || Boolean(values.resolvedPlace) || Boolean(values.saveUnresolved);
-    const resolvedPlace = shouldResolvePlace ? await resolveStopPlace({ ...values, day: editDay }, trip, effectivePlaceResolver) : null;
+    setStopPlaceResolution(shouldResolvePlace && effectivePlaceResolver && !values.resolvedPlace && !values.saveUnresolved ? { state: "resolving", candidates: [] } : { state: "idle", candidates: [] });
+    const placeResolution = shouldResolvePlace ? await resolveStopPlace({ ...values, day: editDay }, trip, effectivePlaceResolver) : { candidate: null, state: null };
+    if (placeResolution.state) {
+      setStopPlaceResolution(placeResolution.state);
+      return;
+    }
+    setStopPlaceResolution({ state: "idle", candidates: [] });
     const locationFields = shouldResolvePlace
-      ? locationFieldsFromCandidate(resolvedPlace, values.place)
+      ? locationFieldsFromCandidate(placeResolution.candidate, values.place)
       : {
           address: dialogState.item.address ?? dialogState.item.place,
           coordinates: dialogState.item.coordinates,
@@ -1873,6 +1891,7 @@ export function SagittariusApp({
             onClose={() => setDialogState(null)}
             onDelete={dialogState.mode === "edit" ? deleteSelectedStop : undefined}
             onSubmit={dialogState.mode === "edit" ? updateSelectedStop : createStop}
+            placeResolution={stopPlaceResolution}
           />
         ) : null}
         {dialogDeleteItem ? (
@@ -1913,18 +1932,28 @@ function buildMapLink(place: string): string {
   return place ? `https://maps.google.com/?q=${encodeURIComponent(place)}` : "";
 }
 
-async function resolveStopPlace(values: StopFormValues, trip: Trip, resolver: PlaceResolver | null): Promise<PlaceResolutionCandidate | null> {
-  if (values.resolvedPlace) return values.resolvedPlace;
-  if (values.saveUnresolved || !resolver) return null;
-  const response = await resolver({
-    clientMutationId: nextClientMutationId("place-resolve"),
-    activity: values.activity,
-    placeHint: values.place,
-    destinationLabel: trip.destinationLabel,
-    countries: trip.countries ?? [],
-    day: values.day,
-  });
-  return response.status === "resolved" ? response.candidates[0] ?? null : null;
+async function resolveStopPlace(values: StopFormValues, trip: Trip, resolver: PlaceResolver | null): Promise<{ candidate: PlaceResolutionCandidate | null; state: StopPlaceResolutionState | null }> {
+  if (values.resolvedPlace) return { candidate: values.resolvedPlace, state: null };
+  if (values.saveUnresolved || !resolver) return { candidate: null, state: null };
+  try {
+    const response = await resolver({
+      clientMutationId: nextClientMutationId("place-resolve"),
+      activity: values.activity,
+      placeHint: values.place,
+      destinationLabel: trip.destinationLabel,
+      countries: trip.countries ?? [],
+      day: values.day,
+    });
+    if (response.status === "resolved") {
+      return { candidate: response.candidates[0] ?? null, state: null };
+    }
+    if (response.status === "ambiguous") {
+      return { candidate: null, state: { state: "ambiguous", candidates: response.candidates } };
+    }
+    return { candidate: null, state: { state: "unresolved", candidates: [] } };
+  } catch {
+    return { candidate: null, state: { state: "unresolved", candidates: [] } };
+  }
 }
 
 function locationFieldsFromCandidate(candidate: PlaceResolutionCandidate | null, place: string) {

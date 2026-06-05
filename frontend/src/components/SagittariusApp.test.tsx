@@ -117,6 +117,37 @@ describe("Sagittarius cockpit UI", () => {
     expect(screen.getByDisplayValue("ติ่มซำ แถว Elements")).toBeInTheDocument();
   });
 
+  it("asks the organizer to choose when place resolution is ambiguous", async () => {
+    const user = userEvent.setup();
+    const placeResolver = vi.fn().mockResolvedValue({
+      status: "ambiguous",
+      candidates: [
+        {
+          name: "The Elements",
+          address: "Austin Road West, Hong Kong",
+          coordinates: { lat: 22.3049, lng: 114.1617 },
+          mapLink: "https://www.openstreetmap.org/?mlat=22.3049&mlon=114.1617#map=17/22.3049/114.1617",
+          confidence: 0.78,
+          source: "nominatim",
+          evidence: ["brave: The Elements"],
+        },
+      ],
+    });
+    render(<SagittariusApp initialView="itinerary" placeResolver={placeResolver} />);
+
+    await user.click(screen.getByRole("button", { name: "เพิ่มสถานที่ / กิจกรรม วันที่ 1" }));
+    fireEvent.change(screen.getByLabelText("กิจกรรม"), { target: { value: "Dim Dim Sum" } });
+    fireEvent.change(screen.getByLabelText("สถานที่"), { target: { value: "ติ่มซำ แถว Elements" } });
+    await user.click(screen.getByRole("button", { name: "บันทึกกิจกรรม" }));
+
+    expect(await screen.findByRole("button", { name: "เลือก The Elements" })).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "เลือก The Elements" }));
+    await user.click(screen.getByRole("button", { name: "บันทึกกิจกรรม" }));
+
+    expect(placeResolver).toHaveBeenCalledTimes(1);
+    expect(screen.getByDisplayValue("ติ่มซำ แถว Elements")).toBeInTheDocument();
+  });
+
   it("uses the API join route for canonical API trip access and replaces join history", async () => {
     const user = userEvent.setup();
     const replaceStateMock = vi.spyOn(window.history, "replaceState").mockImplementation(() => undefined);
