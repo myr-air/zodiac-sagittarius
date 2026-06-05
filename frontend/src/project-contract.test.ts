@@ -137,8 +137,10 @@ describe("Sagittarius project scaffold", () => {
     expect(makefile).toContain("backend/migrations/0004_account_password_auth.sql");
     expect(makefile).toContain("backend/migrations/0005_account_portal.sql");
     expect(makefile).toContain("backend/migrations/0006_trip_countries.sql");
+    expect(makefile).toContain("backend/migrations/0010_itinerary_activity_paths.sql");
     expect(makefile).toContain("table_name='account_vault_items'");
     expect(makefile).toContain("table_name='trips' AND column_name='countries'");
+    expect(makefile).toContain("table_name='itinerary_items' AND column_name='path_id'");
     expect(makefile).not.toMatch(/elif ! \$\(PSQL\)[\s\S]*account_vault_items/);
   });
 
@@ -174,6 +176,7 @@ describe("Sagittarius project scaffold", () => {
     const seedE2e = readFileSync(join(repoRoot, "backend/crates/sagittarius-api/src/bin/seed_e2e.rs"), "utf8");
     expect(seedE2e).toContain("0005_account_portal.sql");
     expect(seedE2e).toContain("0006_trip_countries.sql");
+    expect(seedE2e).toContain("0010_itinerary_activity_paths.sql");
     expect(makefile).toContain("frontend-e2e-local:");
     expect(makefile).toContain("frontend-e2e-local: db-init-test");
     expect(makefile).toContain("bun run test:e2e:local");

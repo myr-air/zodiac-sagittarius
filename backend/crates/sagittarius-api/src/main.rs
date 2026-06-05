@@ -58,7 +58,12 @@ fn should_seed_sample_data_for_env(env: &str) -> bool {
 
 fn is_sample_seed_enabled() -> bool {
     let seed_flag = std::env::var("SAGITTARIUS_SEED_SAMPLE_DATA")
-        .map(|value| matches!(value.to_ascii_lowercase().as_str(), "1" | "true" | "yes" | "on"))
+        .map(|value| {
+            matches!(
+                value.to_ascii_lowercase().as_str(),
+                "1" | "true" | "yes" | "on"
+            )
+        })
         .unwrap_or(false);
     if !seed_flag {
         return false;
