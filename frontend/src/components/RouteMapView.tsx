@@ -51,12 +51,12 @@ interface RouteViewport {
 
 const routeDayColors = ["#2563eb", "#0f766e", "#f97316", "#0891b2", "#16a34a", "#dc2626"];
 const thailandRouteViewport: RouteViewport = { center: [100.9925, 15.8700], zoom: 5 };
-const hongKongShenzhenRouteViewport: RouteViewport = { center: [114.1700, 22.4300], zoom: 9.0 };
+const hongKongShenzhenRouteViewport: RouteViewport = { center: [114.1800, 22.3900], zoom: 9.8 };
 const routeCountryViewports: Record<string, RouteViewport> = {
   cn: { center: [104.1954, 35.8617], zoom: 3.4 },
   china: { center: [104.1954, 35.8617], zoom: 3.4 },
-  hk: { center: [114.1694, 22.3193], zoom: 9.3 },
-  "hong kong": { center: [114.1694, 22.3193], zoom: 9.3 },
+  hk: { center: [114.1694, 22.3193], zoom: 10 },
+  "hong kong": { center: [114.1694, 22.3193], zoom: 10 },
   id: { center: [113.9213, -0.7893], zoom: 4.1 },
   indonesia: { center: [113.9213, -0.7893], zoom: 4.1 },
   jp: { center: [138.2529, 36.2048], zoom: 4.7 },

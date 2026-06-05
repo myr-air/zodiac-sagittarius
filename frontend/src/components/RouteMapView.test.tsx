@@ -481,8 +481,8 @@ describe("RouteMapView", () => {
     expect(map.flyTo).toHaveBeenCalledWith({ center: [100.9925, 15.87], essential: false, zoom: 5 });
     expect(map.fitBounds).not.toHaveBeenCalled();
     expect(getRouteCenter([])).toEqual([100.9925, 15.87]);
-    expect(fallbackRouteViewport("Hong Kong + Shenzhen", [])).toEqual({ center: [114.17, 22.43], zoom: 9 });
-    expect(fallbackRouteViewport("Hong Kong", [])).toEqual({ center: [114.1694, 22.3193], zoom: 9.3 });
+    expect(fallbackRouteViewport("Hong Kong + Shenzhen", [])).toEqual({ center: [114.18, 22.39], zoom: 9.8 });
+    expect(fallbackRouteViewport("Hong Kong", [])).toEqual({ center: [114.1694, 22.3193], zoom: 10 });
     expect(fallbackRouteViewport("", [])).toEqual({ center: [100.9925, 15.87], zoom: 5 });
 
     const themedMap = {
