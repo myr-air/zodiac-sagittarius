@@ -25,8 +25,7 @@ const anchorClassName =
 const dotSize = 12;
 const dayRowHeight = 47.5;
 const addStopRowHeight = 36;
-const rowStep = 43;
-const dotTopOffset = rowStep / 2 - dotSize / 2;
+const rowStep = 59;
 const dotLaneGap = 18;
 const laneColors = [
   "var(--color-primary)",

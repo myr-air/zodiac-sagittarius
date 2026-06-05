@@ -203,6 +203,37 @@ describe("SmartItineraryTable", () => {
     expect(screen.queryByRole("group", { name: /Activity path graph for Day 1/i })).not.toBeInTheDocument();
   });
 
+  it("aligns graph dots with the taller editable itinerary rows", () => {
+    const firstItem = {
+      ...tripFixture.planItems[0],
+      id: "graph-row-first",
+      day: "2026-06-19",
+      activity: "Graph row first",
+      pathGroupId: "path-group-row-height",
+      pathRole: "main" as const,
+    };
+    const secondItem = {
+      ...tripFixture.planItems[1],
+      id: "graph-row-second",
+      day: "2026-06-19",
+      activity: "Graph row second",
+      pathGroupId: "path-group-row-height",
+      pathRole: "main" as const,
+      sortOrder: firstItem.sortOrder + 10,
+    };
+
+    renderTable({
+      items: [firstItem, secondItem],
+      graphItems: [firstItem, secondItem],
+      selectedItemId: "graph-row-first",
+    });
+
+    const firstDot = screen.getByRole("button", { name: /Graph row first on Main/i });
+    const secondDot = screen.getByRole("button", { name: /Graph row second on Main/i });
+    expect(firstDot).toHaveStyle({ top: "71px" });
+    expect(secondDot).toHaveStyle({ top: "130px" });
+  });
+
   it("offers a keyboard fallback for changing an activity path", async () => {
     const user = userEvent.setup();
     const onMoveItemToPath = vi.fn();
@@ -362,7 +393,7 @@ describe("SmartItineraryTable", () => {
     const earlyReturnToMainLine = findGraphLine(branchDot, lateDot);
     const returnToMainLine = findGraphLine(followUpDot, lateDot);
     const followUpDotCenterY = Number.parseFloat(followUpDot.style.top) + 6;
-    const returnEdgeY = followUpDotCenterY + 21.5;
+    const returnEdgeY = followUpDotCenterY + 29.5;
     expect(followUpLine).toBeDefined();
     expect(planFollowUpLine).toBeUndefined();
     expect(earlyReturnToMainLine).toBeUndefined();
