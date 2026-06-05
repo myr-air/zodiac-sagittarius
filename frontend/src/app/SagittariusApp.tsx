@@ -1246,6 +1246,7 @@ export function SagittariusApp({
   async function saveTripSettings(values: TripSettingsFormValues) {
     if (!canManagePeople) return;
     const shiftedItems = shiftItineraryItemsToStartDate(trip.itineraryItems, trip.startDate, values.startDate);
+    const nextCountries = deriveTripCountriesFromDestination(values.destinationLabel, trip.countries ?? []);
 
     if (isApiMode && resolvedApiClient && participantSession) {
       const patchedTrip = await resolvedApiClient.patchTrip(trip.id, participantSession.sessionToken, {
@@ -1253,6 +1254,7 @@ export function SagittariusApp({
         expectedVersion: trip.version ?? 0,
         name: values.name,
         destinationLabel: values.destinationLabel,
+        countries: nextCountries,
         startDate: values.startDate,
         endDate: values.endDate,
       });
@@ -1289,6 +1291,7 @@ export function SagittariusApp({
       ...current,
       name: values.name,
       destinationLabel: values.destinationLabel,
+      countries: nextCountries,
       startDate: values.startDate,
       endDate: values.endDate,
       itineraryItems: shiftItineraryItemsToStartDate(current.itineraryItems, current.startDate, values.startDate),
@@ -1830,6 +1833,8 @@ export function SagittariusApp({
               />
             ) : currentView === "map" ? (
               <RouteMapView
+                countries={trip.countries ?? []}
+                destinationLabel={trip.destinationLabel}
                 endDate={trip.endDate}
                 items={planItems}
                 itineraryView={itineraryView}
@@ -1930,6 +1935,33 @@ function getNextSortOrder(items: ItineraryItem[], day: string): number {
 function buildMapLink(place: string): string {
   /* v8 ignore next */
   return place ? `https://maps.google.com/?q=${encodeURIComponent(place)}` : "";
+}
+
+function deriveTripCountriesFromDestination(destinationLabel: string, fallbackCountries: string[]): string[] {
+  const destination = destinationLabel.toLowerCase();
+  const knownCountries: Array<[string, string[]]> = [
+    ["hong kong", ["Hong Kong", "China"]],
+    ["shenzhen", ["Hong Kong", "China"]],
+    ["macau", ["Macau", "China"]],
+    ["thailand", ["Thailand"]],
+    ["bangkok", ["Thailand"]],
+    ["chiang mai", ["Thailand"]],
+    ["japan", ["Japan"]],
+    ["tokyo", ["Japan"]],
+    ["osaka", ["Japan"]],
+    ["south korea", ["South Korea"]],
+    ["seoul", ["South Korea"]],
+    ["taiwan", ["Taiwan"]],
+    ["taipei", ["Taiwan"]],
+    ["singapore", ["Singapore"]],
+    ["malaysia", ["Malaysia"]],
+    ["vietnam", ["Vietnam"]],
+    ["indonesia", ["Indonesia"]],
+    ["china", ["China"]],
+  ];
+  const countries = knownCountries.flatMap(([keyword, countries]) => destination.includes(keyword) ? countries : []);
+  const uniqueCountries = Array.from(new Set(countries));
+  return uniqueCountries.length ? uniqueCountries : fallbackCountries;
 }
 
 async function resolveStopPlace(values: StopFormValues, trip: Trip, resolver: PlaceResolver | null): Promise<{ candidate: PlaceResolutionCandidate | null; state: StopPlaceResolutionState | null }> {

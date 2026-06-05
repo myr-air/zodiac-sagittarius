@@ -7,6 +7,7 @@ import { renderWithI18n } from "@/src/i18n/test-utils";
 import {
   activeDayLabel,
   dayColorFor,
+  fallbackRouteViewport,
   fitLiveRoute,
   getRouteCenter,
   liveMapStatusText,
@@ -162,6 +163,27 @@ describe("RouteMapView", () => {
     expect(screen.getByRole("complementary", { name: "กิจกรรมที่ยังไม่มีพิกัด" })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /วันที่ 1/ })).not.toBeInTheDocument();
     expect(screen.getByText("กำลังโหลดแผนที่จาก OpenFreeMap")).toBeInTheDocument();
+  });
+
+  it("centers the live map on the destination country when no stop has coordinates", async () => {
+    const unresolvedItems = tripFixture.planItems.slice(0, 2).map((item) => ({ ...item, coordinates: undefined }));
+    render(
+      <RouteMapView
+        countries={["Thailand"]}
+        destinationLabel="Chiang Mai, Thailand"
+        endDate={tripFixture.trip.endDate}
+        items={unresolvedItems}
+        liveMapEnabled
+        startDate={tripFixture.trip.startDate}
+        tripName={tripFixture.trip.name}
+      />,
+    );
+
+    await waitFor(() => expect(maplibreMock.maps[0]?.flyTo).toHaveBeenCalledWith({
+      center: [100.9925, 15.87],
+      essential: false,
+      zoom: 5,
+    }));
   });
 
   it("centers a live map around one coordinate with a fly-to transition", async () => {
@@ -449,8 +471,10 @@ describe("RouteMapView", () => {
 
     const map = { flyTo: vi.fn(), fitBounds: vi.fn() };
     fitLiveRoute(map as never, []);
-    expect(map.flyTo).not.toHaveBeenCalled();
+    expect(map.flyTo).toHaveBeenCalledWith({ center: [100.9925, 15.87], essential: false, zoom: 5 });
     expect(map.fitBounds).not.toHaveBeenCalled();
-    expect(getRouteCenter([])).toEqual([114.16, 22.3]);
+    expect(getRouteCenter([])).toEqual([100.9925, 15.87]);
+    expect(fallbackRouteViewport("Hong Kong + Shenzhen", [])).toEqual({ center: [114.1694, 22.3193], zoom: 10 });
+    expect(fallbackRouteViewport("", [])).toEqual({ center: [100.9925, 15.87], zoom: 5 });
   });
 });

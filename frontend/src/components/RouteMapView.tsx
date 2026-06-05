@@ -8,6 +8,8 @@ import { TravelMotif } from "./motifs";
 import { formatTripRange, PageHeader } from "./PageHeader";
 
 interface RouteMapViewProps {
+  countries?: string[];
+  destinationLabel?: string;
   endDate: string;
   items: ItineraryItem[];
   itineraryView?: ItineraryView;
@@ -42,7 +44,39 @@ type DayColorStyle = CSSProperties & {
 
 type DayFilter = "all" | string;
 
+interface RouteViewport {
+  center: [number, number];
+  zoom: number;
+}
+
 const routeDayColors = ["#2563eb", "#0f766e", "#f97316", "#0891b2", "#16a34a", "#dc2626"];
+const thailandRouteViewport: RouteViewport = { center: [100.9925, 15.8700], zoom: 5 };
+const routeCountryViewports: Record<string, RouteViewport> = {
+  cn: { center: [104.1954, 35.8617], zoom: 3.4 },
+  china: { center: [104.1954, 35.8617], zoom: 3.4 },
+  hk: { center: [114.1694, 22.3193], zoom: 10 },
+  "hong kong": { center: [114.1694, 22.3193], zoom: 10 },
+  id: { center: [113.9213, -0.7893], zoom: 4.1 },
+  indonesia: { center: [113.9213, -0.7893], zoom: 4.1 },
+  jp: { center: [138.2529, 36.2048], zoom: 4.7 },
+  japan: { center: [138.2529, 36.2048], zoom: 4.7 },
+  kr: { center: [127.7669, 35.9078], zoom: 6 },
+  korea: { center: [127.7669, 35.9078], zoom: 6 },
+  la: { center: [102.4955, 19.8563], zoom: 5.5 },
+  laos: { center: [102.4955, 19.8563], zoom: 5.5 },
+  mo: { center: [113.5439, 22.1987], zoom: 11 },
+  macau: { center: [113.5439, 22.1987], zoom: 11 },
+  malaysia: { center: [101.9758, 4.2105], zoom: 5 },
+  my: { center: [101.9758, 4.2105], zoom: 5 },
+  sg: { center: [103.8198, 1.3521], zoom: 10.5 },
+  singapore: { center: [103.8198, 1.3521], zoom: 10.5 },
+  th: thailandRouteViewport,
+  thailand: thailandRouteViewport,
+  tw: { center: [120.9605, 23.6978], zoom: 6 },
+  taiwan: { center: [120.9605, 23.6978], zoom: 6 },
+  vietnam: { center: [108.2772, 14.0583], zoom: 5 },
+  vn: { center: [108.2772, 14.0583], zoom: 5 },
+};
 const routeMapPanelClassName = "route-map-panel grid h-full min-h-0 min-w-0 grid-rows-[auto_minmax(0,1fr)] bg-[var(--color-page)] px-6 py-[22px] pb-7";
 const routeMapLayoutClassName = "route-map-layout mb-7 block h-full min-h-0 w-full p-0 max-[1199px]:w-[calc(100%-24px)] max-[1199px]:px-0";
 const routeMapCanvasClassName = "route-map-canvas relative h-full min-h-[520px] overflow-hidden rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[linear-gradient(90deg,rgb(203_213_225_/_0.48)_1px,transparent_1px)_0_0/42px_42px,linear-gradient(0deg,rgb(203_213_225_/_0.48)_1px,transparent_1px)_0_0/42px_42px,var(--color-route-soft)] max-[767px]:h-[64vh] max-[767px]:min-h-[460px]";
@@ -68,6 +102,8 @@ const unresolvedPanelItemClassName = "map-unresolved-item grid gap-0.5 rounded-[
 const unresolvedPanelItemTitleClassName = "font-extrabold text-[#0f172a]";
 
 export function RouteMapView({
+  countries = [],
+  destinationLabel = "",
   endDate,
   itineraryView,
   items,
@@ -99,6 +135,7 @@ export function RouteMapView({
     () => (activeDay === "all" ? liveRoutePoints : liveRoutePoints.filter((point) => point.item.day === activeDay)),
     [activeDay, liveRoutePoints],
   );
+  const fallbackViewport = useMemo(() => fallbackRouteViewport(destinationLabel, countries), [countries, destinationLabel]);
   const warningCount = itineraryView?.warningCount ?? items.reduce((total, item) => total + (item.advisories?.length ?? 0), 0);
   const [liveMapState, setLiveMapState] = useState<"idle" | "loading" | "ready" | "error">("idle");
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
@@ -134,11 +171,11 @@ export function RouteMapView({
 
         const map = new maplibregl.Map({
           attributionControl: { compact: true },
-          center: getRouteCenter(liveRoutePointsRef.current),
+          center: getRouteCenter(liveRoutePointsRef.current, fallbackViewport.center),
           container,
           cooperativeGestures: true,
           style: "https://tiles.openfreemap.org/styles/positron",
-          zoom: 10,
+          zoom: liveRoutePointsRef.current.length > 0 ? 10 : fallbackViewport.zoom,
         });
 
         mapRef.current = map;
@@ -231,8 +268,8 @@ export function RouteMapView({
     });
 
     sourceIdsRef.current = synchronizeRouteLayers(map, sourceIdsRef.current, routeDayGroups, activeDay);
-    fitLiveRoute(map, visibleLiveRoutePoints);
-  }, [activeDay, liveMapState, liveRoutePoints, visibleLiveRoutePoints, routeDayGroups, markerItems]);
+    fitLiveRoute(map, visibleLiveRoutePoints, fallbackViewport);
+  }, [activeDay, fallbackViewport, liveMapState, liveRoutePoints, visibleLiveRoutePoints, routeDayGroups, markerItems]);
 
   return (
     <section className={routeMapPanelClassName} id="map" aria-labelledby="route-map-heading" aria-label={t.map.pageLabel}>
@@ -456,7 +493,7 @@ function synchronizeRouteLayers(map: import("maplibre-gl").Map, sourceIds: strin
   return nextSourceIds;
 }
 
-export function fitLiveRoute(map: import("maplibre-gl").Map, points: RoutePoint[]) {
+export function fitLiveRoute(map: import("maplibre-gl").Map, points: RoutePoint[], fallbackViewport = thailandRouteViewport) {
   const pointsWithCoordinates = points.filter((point) => point.item.coordinates && hasCoordinates(point.item.coordinates));
   if (pointsWithCoordinates.length > 1) {
     map.fitBounds(getRouteBounds(pointsWithCoordinates), { padding: 80, maxZoom: 13 });
@@ -464,7 +501,10 @@ export function fitLiveRoute(map: import("maplibre-gl").Map, points: RoutePoint[
   }
 
   const coordinate = pointsWithCoordinates[0]?.item.coordinates;
-  if (!coordinate) return;
+  if (!coordinate) {
+    map.flyTo({ center: fallbackViewport.center, essential: false, zoom: fallbackViewport.zoom });
+    return;
+  }
   map.flyTo({ center: [coordinate.lng, coordinate.lat], essential: false, zoom: 13 });
 }
 
@@ -486,11 +526,32 @@ function hasCoordinates(coordinate: ItineraryItem["coordinates"]): coordinate is
   );
 }
 
-export function getRouteCenter(points: RoutePoint[]): [number, number] {
+export function getRouteCenter(points: RoutePoint[], fallbackCenter: [number, number] = thailandRouteViewport.center): [number, number] {
   const coordinates = points.map((point) => point.item.coordinates).filter(hasCoordinates);
   const lng = coordinates.reduce((total, coordinate) => total + coordinate.lng, 0) / Math.max(1, coordinates.length);
   const lat = coordinates.reduce((total, coordinate) => total + coordinate.lat, 0) / Math.max(1, coordinates.length);
-  return [lng || 114.16, lat || 22.3];
+  return coordinates.length ? [lng, lat] : fallbackCenter;
+}
+
+export function fallbackRouteViewport(destinationLabel: string, countries: string[] = []): RouteViewport {
+  const candidates = [...countries, destinationLabel]
+    .flatMap((value) => value.split(/[,+/|]/))
+    .map((value) => value.trim().toLowerCase())
+    .filter(Boolean);
+  const destination = destinationLabel.toLowerCase();
+
+  for (const candidate of candidates) {
+    const viewport = routeCountryViewports[candidate];
+    if (viewport) return viewport;
+  }
+
+  for (const [keyword, viewport] of Object.entries(routeCountryViewports)) {
+    if (keyword.length > 2 && destination.includes(keyword)) return viewport;
+  }
+
+  if (destination.includes("shenzhen")) return routeCountryViewports.hk ?? thailandRouteViewport;
+
+  return thailandRouteViewport;
 }
 
 function getRouteBounds(points: RoutePoint[]): [[number, number], [number, number]] {

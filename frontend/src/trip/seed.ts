@@ -57,6 +57,7 @@ export const seedTrip: Trip = {
   joinPasswordHash: hashLocalSecret(seedTripJoinPassword),
   name: "Hong Kong + Shenzhen Trip",
   destinationLabel: "Hong Kong + Shenzhen",
+  countries: ["Hong Kong", "China"],
   startDate: "2026-06-18",
   endDate: "2026-06-23",
   activePlanVariantId: mainPlanId,

@@ -920,6 +920,48 @@ describe("Sagittarius cockpit UI", () => {
     );
   });
 
+  it("patches trip countries when organizer changes the API trip destination", async () => {
+    const user = userEvent.setup();
+    installLocalStorageStub();
+    const apiTrip = {
+      ...seedTrip,
+      members: [{ ...seedTrip.members[0], claimPasswordHash: null }],
+    };
+    window.localStorage.setItem(
+      tripParticipantSessionStorageKey,
+      JSON.stringify({
+        tripId: apiTrip.id,
+        memberId: apiTrip.members[0].id,
+        sessionToken: "settings-session-token",
+        createdAt: "2026-05-29T00:00:00.000Z",
+        expiresAt: "2026-06-28T00:00:00.000Z",
+      }),
+    );
+    const patchTrip = vi.fn().mockResolvedValue({
+      ...apiTrip,
+      destinationLabel: "Chiang Mai, Thailand",
+      countries: ["Thailand"],
+      version: 2,
+    });
+    const apiClient = createApiClientForTrip(apiTrip, { patchTrip });
+
+    render(<SagittariusApp requireJoin dataSource="api" initialView="settings" apiClient={apiClient} />);
+
+    const destinationInput = await screen.findByLabelText("ปลายทาง");
+    await user.clear(destinationInput);
+    await user.type(destinationInput, "Chiang Mai, Thailand");
+    await user.click(screen.getByRole("button", { name: /Save changes/i }));
+
+    await waitFor(() => expect(patchTrip).toHaveBeenCalledWith(
+      apiTrip.id,
+      "settings-session-token",
+      expect.objectContaining({
+        destinationLabel: "Chiang Mai, Thailand",
+        countries: ["Thailand"],
+      }),
+    ));
+  });
+
   it("redirects /join to the trip route when a persisted API session already exists", async () => {
     installLocalStorageStub();
     const replaceMock = vi.fn();
