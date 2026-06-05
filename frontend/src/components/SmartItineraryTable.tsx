@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type CSSProperties, type ChangeEvent, type DragEvent, type PointerEvent as ReactPointerEvent, type TouchEvent as ReactTouchEvent } from "react";
+import { createPortal } from "react-dom";
 import type { ActivityType, ItineraryItem, TripRole } from "@/src/trip/types";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import type { Messages } from "@/src/i18n/messages";
@@ -74,7 +75,7 @@ const dayRowContentClassName = "day-row-content flex h-[39px] w-full min-w-0 ite
 const dayToggleClassName = "day-toggle flex min-w-0 items-center gap-[9px] border-0 bg-transparent p-0 text-left text-[#334155] aria-[expanded=true]:[&_.icon]:rotate-90 [&_.icon]:transition-transform [&_.icon]:duration-[140ms] [&_strong]:text-[#0f172a]";
 const dayRouteClassName = "day-route ml-[18px] font-semibold text-[var(--color-text-muted)] max-[767px]:hidden";
 const dayPathControlsClassName = "ml-auto inline-flex min-w-0 items-center gap-2 max-[767px]:ml-2 max-[767px]:shrink-0";
-const dayPathSelectClassName = "min-h-7 max-w-[172px] rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface)] px-2 text-[11px] font-bold text-[var(--color-text)] max-[767px]:max-w-[112px]";
+const dayPathPickerClassName = "min-h-7 max-w-[172px] px-2 text-[11px] max-[767px]:max-w-[112px]";
 const dayClearPathButtonClassName = "inline-flex min-h-7 items-center rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface)] px-2 text-[11px] font-extrabold text-[var(--color-text-muted)] disabled:opacity-40 max-[767px]:px-1.5";
 const dayAutoOverlapButtonClassName = "inline-flex min-h-7 items-center rounded-[var(--radius-sm)] border border-[#fca5a5] bg-[#fee2e2] px-2 text-[11px] font-extrabold text-[#991b1b] transition-colors hover:enabled:bg-[#fecaca] disabled:opacity-40 max-[767px]:px-1.5";
 const dataRowClassName =
@@ -106,7 +107,10 @@ const inlineFieldClassName =
 const inlineActivityFieldClassName = cn(inlineFieldClassName, "font-semibold");
 const inlineSubtleFieldClassName = cn(inlineFieldClassName, "text-[11px] text-[var(--color-text-muted)]");
 const inlineTimeInputClassName = cn(inlineFieldClassName, "text-center font-[650] tabular-nums");
-const inlineSelectClassName = cn(inlineFieldClassName, "appearance-auto font-semibold");
+const inlineOptionPickerButtonClassName = cn(inlineFieldClassName, "inline-option-picker-button inline-flex items-center justify-between gap-2 text-left font-semibold");
+const inlineOptionPickerCaretClassName = "shrink-0 text-[var(--color-text-subtle)]";
+const floatingOptionMenuClassName = "inline-option-picker-menu fixed z-[15] grid max-h-[min(260px,calc(100vh_-_24px))] overflow-auto rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] p-1 shadow-[0_18px_44px_rgb(15_23_42_/_0.18)]";
+const floatingOptionButtonClassName = "grid min-h-8 w-full min-w-0 cursor-pointer grid-cols-[minmax(0,1fr)_16px] items-center gap-2 rounded-[var(--radius-sm)] px-2.5 py-1.5 text-left text-xs font-bold text-[var(--color-text)] transition-colors hover:bg-[var(--color-primary-soft)] focus-visible:bg-[var(--color-primary-soft)] focus-visible:outline-none aria-selected:bg-[var(--color-primary-soft)] aria-selected:text-[var(--color-primary-strong)] data-[active=true]:bg-[var(--color-primary-soft)]";
 const mapLinkClassName = "map-link text-[#2563eb] underline underline-offset-2";
 const addStopRowClassName = "add-stop-row [&_td]:border-b [&_td]:border-r [&_td]:border-dashed [&_td]:border-[var(--color-border)] [&_td]:bg-[var(--color-surface-subtle)] [&_td]:px-2.5 [&_td]:py-1";
 const addStopRowDropTargetClassName = "add-stop-row--drop-target [&_td]:!bg-[var(--color-primary-soft)] [&_td]:shadow-[inset_0_0_0_2px_var(--color-primary-border)]";
@@ -736,17 +740,14 @@ function DayGroup({
                 ) : null}
                 {hasAlternativePathOptions ? (
                   <>
-                    <select
-                      className={dayPathSelectClassName}
-                      aria-label={`Path for ${dayA11yLabel}`}
+                    <InlineOptionPicker
+                      buttonClassName={dayPathPickerClassName}
+                      ariaLabel={`Path for ${dayA11yLabel}`}
                       value={dayPathOverride || mainItineraryPathId}
                       disabled={!canEdit || showAllPaths}
-                      onChange={(event) => onChangeDayPath?.(group.day, event.target.value)}
-                    >
-                      {dayPathOptions.map((option) => (
-                        <option key={option.id} value={option.id}>{option.name}</option>
-                      ))}
-                    </select>
+                      options={dayPathOptions.map((option) => ({ value: option.id, label: option.name }))}
+                      onCommit={(pathId) => onChangeDayPath?.(group.day, pathId)}
+                    />
                     <button
                       type="button"
                       className={dayClearPathButtonClassName}
@@ -1092,6 +1093,168 @@ function InlineTextField({
   );
 }
 
+interface InlineOptionPickerOption {
+  label: string;
+  value: string;
+}
+
+function InlineOptionPicker({
+  ariaLabel,
+  buttonClassName,
+  disabled,
+  onCommit,
+  optionKeyPrefix = "option",
+  options,
+  value,
+}: {
+  ariaLabel: string;
+  buttonClassName?: string;
+  disabled?: boolean;
+  onCommit: (value: string) => void | Promise<void>;
+  optionKeyPrefix?: string;
+  options: InlineOptionPickerOption[];
+  value: string;
+}) {
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const selectedIndex = Math.max(0, options.findIndex((option) => option.value === value));
+  const [open, setOpen] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(selectedIndex);
+  const [position, setPosition] = useState<{ left: number; top: number; width: number }>({ left: 0, top: 0, width: 180 });
+  const selectedOption = options.find((option) => option.value === value) ?? options[0];
+
+  useEffect(() => {
+    if (!open) return;
+    function updatePosition() {
+      const rect = buttonRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      const menuHeight = Math.min(260, options.length * 34 + 8);
+      const spaceBelow = window.innerHeight - rect.bottom - 8;
+      const top = spaceBelow >= menuHeight ? rect.bottom + 6 : Math.max(8, rect.top - menuHeight - 6);
+      setPosition({
+        left: Math.min(Math.max(8, rect.left), Math.max(8, window.innerWidth - Math.max(rect.width, 180) - 8)),
+        top,
+        width: Math.max(rect.width, 180),
+      });
+    }
+
+    updatePosition();
+    window.addEventListener("resize", updatePosition);
+    window.addEventListener("scroll", updatePosition, true);
+    return () => {
+      window.removeEventListener("resize", updatePosition);
+      window.removeEventListener("scroll", updatePosition, true);
+    };
+  }, [open, options.length]);
+
+  useEffect(() => {
+    if (!open) return;
+    function closeOnOutside(event: MouseEvent | TouchEvent) {
+      const target = event.target as Node | null;
+      if (!target) return;
+      if (buttonRef.current?.contains(target) || menuRef.current?.contains(target)) return;
+      setOpen(false);
+    }
+    document.addEventListener("mousedown", closeOnOutside);
+    document.addEventListener("touchstart", closeOnOutside);
+    return () => {
+      document.removeEventListener("mousedown", closeOnOutside);
+      document.removeEventListener("touchstart", closeOnOutside);
+    };
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    requestAnimationFrame(() => menuRef.current?.focus());
+  }, [open]);
+
+  function openMenu() {
+    if (disabled) return;
+    setActiveIndex(selectedIndex);
+    setOpen(true);
+  }
+
+  function commitOption(option: InlineOptionPickerOption) {
+    if (option.value !== value) void onCommit(option.value);
+    setOpen(false);
+    buttonRef.current?.focus();
+  }
+
+  return (
+    <>
+      <button
+        ref={buttonRef}
+        type="button"
+        aria-expanded={open}
+        aria-haspopup="listbox"
+        aria-label={ariaLabel}
+        className={cn(inlineOptionPickerButtonClassName, buttonClassName)}
+        disabled={disabled}
+        onClick={() => (open ? setOpen(false) : openMenu())}
+        onKeyDown={(event) => {
+          if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+            event.preventDefault();
+            openMenu();
+          }
+          if (event.key === "Escape") setOpen(false);
+        }}
+      >
+        <span className="min-w-0 truncate">{selectedOption?.label ?? "—"}</span>
+        <span className={inlineOptionPickerCaretClassName} aria-hidden="true">⌄</span>
+      </button>
+      {open ? createPortal(
+        <div
+          ref={menuRef}
+          className={floatingOptionMenuClassName}
+          role="listbox"
+          aria-label={ariaLabel}
+          aria-activedescendant={`${optionKeyPrefix}-${options[activeIndex]?.value ?? value}`}
+          style={{ left: position.left, top: position.top, width: position.width }}
+          tabIndex={-1}
+          onKeyDown={(event) => {
+            if (event.key === "Escape") {
+              event.preventDefault();
+              setOpen(false);
+              buttonRef.current?.focus();
+            }
+            if (event.key === "ArrowDown") {
+              event.preventDefault();
+              setActiveIndex((current) => Math.min(options.length - 1, current + 1));
+            }
+            if (event.key === "ArrowUp") {
+              event.preventDefault();
+              setActiveIndex((current) => Math.max(0, current - 1));
+            }
+            if (event.key === "Enter") {
+              event.preventDefault();
+              const option = options[activeIndex];
+              if (option) commitOption(option);
+            }
+          }}
+        >
+          {options.map((option, index) => (
+            <div
+              className={floatingOptionButtonClassName}
+              role="option"
+              aria-selected={option.value === value}
+              data-active={index === activeIndex ? "true" : undefined}
+              id={`${optionKeyPrefix}-${option.value}`}
+              tabIndex={-1}
+              key={`${optionKeyPrefix}-${option.value}`}
+              onMouseEnter={() => setActiveIndex(index)}
+              onClick={() => commitOption(option)}
+            >
+              <span className="min-w-0 truncate">{option.label}</span>
+              <span aria-hidden="true">{option.value === value ? "✓" : ""}</span>
+            </div>
+          ))}
+        </div>,
+        document.body,
+      ) : null}
+    </>
+  );
+}
+
 function InlineActivityTypeSelect({
   activity,
   ariaLabel,
@@ -1108,20 +1271,17 @@ function InlineActivityTypeSelect({
   value: ActivityType;
 }) {
   return (
-    <select
-      aria-label={ariaLabel}
-      className={inlineSelectClassName}
+    <InlineOptionPicker
+      ariaLabel={ariaLabel}
+      buttonClassName=""
       disabled={!canEdit}
       value={value}
-      onChange={(event) => {
-        const nextValue = event.target.value as ActivityType;
-        if (nextValue !== value) void onCommit(nextValue);
+      options={activityTypeOptions.map((option) => ({ value: option, label: activityTypeLabel(option, locale) }))}
+      optionKeyPrefix={activity}
+      onCommit={(nextValue) => {
+        if (nextValue !== value) void onCommit(nextValue as ActivityType);
       }}
-    >
-      {activityTypeOptions.map((option) => (
-        <option value={option} key={`${activity}-${option}`}>{activityTypeLabel(option, locale)}</option>
-      ))}
-    </select>
+    />
   );
 }
 

@@ -151,8 +151,11 @@ describe("SmartItineraryTable", () => {
     expect(screen.queryByRole("row", { name: /เปิดรายละเอียดของ Plan A museum/i })).not.toBeInTheDocument();
   });
 
-  it("keeps generated day plans out of the trip-wide filter while showing them on the matching day", () => {
+  it("keeps generated day plans out of the trip-wide filter while showing them on the matching day", async () => {
+    const user = userEvent.setup();
+    const onChangeDayPath = vi.fn();
     renderTable({
+      onChangeDayPath,
       pathOptions: [
         { id: "main", name: "Main", scope: "trip" },
         { id: "path-2026-06-19-sub-a", name: "Plan A", scope: "day", day: "2026-06-19" },
@@ -162,7 +165,12 @@ describe("SmartItineraryTable", () => {
     fireEvent.click(screen.getByRole("button", { name: /กรองแผน/i }));
     const filterDialog = screen.getByRole("dialog", { name: /กรองแผน/i });
     expect(within(filterDialog).getByLabelText("Plan A")).toBeInTheDocument();
-    expect(within(screen.getByLabelText(/Path for Day 2/i)).getByRole("option", { name: "Plan A" })).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: /Path for Day 2/i }));
+    const dayPathMenu = screen.getByRole("listbox", { name: /Path for Day 2/i });
+    expect(within(dayPathMenu).getByRole("option", { name: "Plan A" })).toBeInTheDocument();
+    expect(dayPathMenu.closest(".table-scroll")).toBeNull();
+    await user.click(within(dayPathMenu).getByRole("option", { name: "Plan A" }));
+    expect(onChangeDayPath).toHaveBeenCalledWith("2026-06-19", "path-2026-06-19-sub-a");
     expect(screen.queryByLabelText(/Path for Day 1/i)).not.toBeInTheDocument();
   });
 
@@ -870,7 +878,10 @@ describe("SmartItineraryTable", () => {
     await user.clear(time);
     await user.type(time, "10:15{Enter}");
 
-    await user.selectOptions(within(row).getByRole("combobox", { name: /แก้ไขประเภท Dim Dim Sum/i }), "experience");
+    await user.click(within(row).getByRole("button", { name: /แก้ไขประเภท Dim Dim Sum/i }));
+    const typeMenu = screen.getByRole("listbox", { name: /แก้ไขประเภท Dim Dim Sum/i });
+    expect(typeMenu.closest(".table-scroll")).toBeNull();
+    await user.click(within(typeMenu).getByRole("option", { name: /กิจกรรม/i }));
 
     const transportation = within(row).getByRole("textbox", { name: /แก้ไขการเดินทาง Dim Dim Sum/i });
     await user.clear(transportation);
@@ -937,7 +948,7 @@ describe("SmartItineraryTable", () => {
     expect(within(row).getByRole("textbox", { name: /สถานที่ Dim Dim Sum/i })).toHaveAttribute("readonly");
     expect(within(row).getByLabelText(/^แก้ไขเวลา Dim Dim Sum/i)).toBeDisabled();
     expect(within(row).getByRole("button", { name: /ระยะเวลา Dim Dim Sum/i })).toBeDisabled();
-    expect(within(row).getByRole("combobox", { name: /ประเภท Dim Dim Sum/i })).toBeDisabled();
+    expect(within(row).getByRole("button", { name: /ประเภท Dim Dim Sum/i })).toBeDisabled();
     expect(within(row).getByRole("textbox", { name: /การเดินทาง Dim Dim Sum/i })).toHaveAttribute("readonly");
   });
 

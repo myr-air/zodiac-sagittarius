@@ -2390,10 +2390,11 @@ describe("Sagittarius cockpit UI", () => {
     await user.click(screen.getByRole("button", { name: /กรองแผน/i }));
     expect(within(screen.getByRole("dialog", { name: /กรองแผน/i })).getByLabelText("Plan A")).toBeInTheDocument();
 
-    await user.selectOptions(screen.getByLabelText(/Path for Day 2/i), "path-2026-06-19-sub-a");
+    await user.click(screen.getByRole("button", { name: /Path for Day 2/i }));
+    await user.click(within(screen.getByRole("listbox", { name: /Path for Day 2/i })).getByRole("option", { name: "Plan A" }));
 
     expect(screen.getByRole("button", { name: /เลือกจุด Day filter coffee/i })).toBeInTheDocument();
-    expect(screen.getByLabelText(/Path for Day 2/i)).toHaveValue("path-2026-06-19-sub-a");
+    expect(screen.getByRole("button", { name: /Path for Day 2/i })).toHaveTextContent("Plan A");
     expect(screen.getByRole("button", { name: /เลือกจุด เดินเล่นย่าน Central/i })).toBeInTheDocument();
   });
 
