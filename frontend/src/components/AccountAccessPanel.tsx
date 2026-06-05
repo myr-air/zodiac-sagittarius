@@ -532,6 +532,11 @@ export function AccountAccessPanel({
           todos: nextTodos.status === "fulfilled" ? nextTodos.value : cachedData?.todos ?? [],
           vaultItems: nextVaultItems.status === "fulfilled" ? nextVaultItems.value : cachedData?.vaultItems ?? [],
         });
+        if (failures.some((result) => isUnauthenticated(result.reason))) {
+          clearAccountPortalDataCache(accountSession.sessionToken);
+          onAccountSessionChange(null);
+          return;
+        }
         if (failures.length) {
           setError(rawErrorMessage(failures[0].reason, ACCESS_ERROR_CODES.accountLoadFailed));
         } else {
@@ -542,7 +547,7 @@ export function AccountAccessPanel({
     return () => {
       cancelled = true;
     };
-  }, [accountClient, accountSession, isAccountEntry]);
+  }, [accountClient, accountSession, isAccountEntry, onAccountSessionChange]);
 
   useEffect(() => {
     if (!pendingAccountSession) {
@@ -2801,6 +2806,10 @@ function isApiLikeError(value: unknown): value is { code?: string; status?: numb
       ("code" in value || "status" in value) &&
       (typeof (value as { code?: unknown }).code === "string" || typeof (value as { status?: unknown }).status === "number"),
   );
+}
+
+function isUnauthenticated(value: unknown): boolean {
+  return isApiLikeError(value) && value.status === 401;
 }
 
 function formatDateTime(value: string, locale: "en" | "th"): string {

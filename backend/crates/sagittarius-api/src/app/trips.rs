@@ -31,7 +31,10 @@ pub async fn load_cockpit(
         session.role,
         crate::domain::types::TripRole::Organizer | crate::domain::types::TripRole::Traveler
     ) {
-        if db::queries::find_trip_by_id(pool, session_trip_id).await?.is_some() {
+        if db::queries::find_trip_by_id(pool, session_trip_id)
+            .await?
+            .is_some()
+        {
             let refreshed_expires_at = time::OffsetDateTime::now_utc() + time::Duration::days(3);
             db::queries::extend_member_session_expiry(
                 pool,

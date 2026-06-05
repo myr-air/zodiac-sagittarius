@@ -3,7 +3,8 @@
 ## Goal
 
 Improve temporary trip access so travelers do not need to log in repeatedly,
-while keeping access revocable and bounded by the trip lifecycle.
+while keeping access revocable. Trip member sessions are first-class trip-scoped
+sessions and do not require account linking.
 
 ## Current Context
 
@@ -41,31 +42,22 @@ Owner access is tied to the permanent account session and trip ownership.
 - Access still depends on the account session being active and the user not
   being disabled.
 
-### Organizer / Traveler
+### Trip Members
 
-Organizers and travelers use trip member sessions.
+Owners, organizers, travelers, and viewers can use trip member sessions.
+Account linking is optional and must not be required for normal trip workspace
+access.
 
-- They may authenticate from `trip.start_date - 7 days` through
-  `trip.end_date + 7 days`.
-- On login, session expiry is:
-  `min(now + 7 days, trip.end_date + 7 days)`.
-- When they return while the session is still valid and the trip access window
-  is still open, refresh the session expiry to:
-  `min(now + 7 days, trip.end_date + 7 days)`.
-- A session must never extend beyond `trip.end_date + 7 days`.
+- Organizer and traveler session expiry is `now + 7 days`, except during the
+  active trip window (`trip.start_date - 7 days` through `trip.end_date`), where
+  the session lasts through `trip.end_date + 7 days`.
+- Viewer session expiry is `now + 1 day`, capped at `trip.end_date + 7 days`.
+- Returning organizer/traveler sessions may be refreshed while still valid;
+  viewer sessions are not refreshed.
+- A valid member session is enough to load and operate the trip workspace within
+  the member's role capability matrix.
 - Disabled members cannot authenticate, refresh, load trip data, mutate data, or
   subscribe to realtime updates.
-
-### Viewer / Guest Link
-
-Viewer access is a quick guest view.
-
-- Viewer sessions last 1 day.
-- There is no organizer-selectable viewer duration.
-- Viewer expiry is:
-  `min(now + 1 day, trip.end_date + 7 days)`.
-- Viewer access remains read-only and follows the existing viewer capability
-  matrix.
 
 ## Token Storage
 
@@ -87,8 +79,8 @@ not make local storage the long-term security target.
 5. Backend stores only the token hash and returns the raw token once.
 6. Authenticated trip APIs verify the token hash, session expiry, revocation,
    member access status, role, and trip id.
-7. On eligible organizer/traveler requests, backend extends the session expiry
-   using the same centralized expiry function.
+7. On successful trip workspace load, backend extends eligible organizer/traveler
+   session expiry.
 
 ## Implementation Shape
 
@@ -98,11 +90,8 @@ Add one shared domain helper for member session policy, for example:
 member_session_expires_at(role, trip_start_date, trip_end_date, now)
 ```
 
-The helper returns either:
-
-- a concrete expiry timestamp;
-- or an unauthenticated/forbidden result when the current time is outside the
-  role's allowed access window.
+The helper returns a concrete expiry timestamp. Keep this helper as the single
+policy point so login and tests do not drift.
 
 Use the same helper for login, claim, refresh, and tests so the date rules do
 not drift.
@@ -113,29 +102,27 @@ not drift.
   unknown session tokens.
 - Return `403 forbidden` for valid identities whose role or access status does
   not allow the action.
-- Treat access outside the trip window as unauthenticated for login/session
-  continuation, so the user is guided back through the join flow.
+- Treat expired, revoked, or disabled sessions as unauthenticated/forbidden so
+  the user is guided back through the join flow.
 
 ## Tests
 
 Backend contract tests should cover:
 
-- organizer and traveler can log in from 7 days before start through 7 days
-  after end;
-- organizer and traveler cannot log in before or after that window;
-- organizer and traveler session refresh extends by 7 days but never past
-  `trip.end_date + 7 days`;
-- viewer session lasts 1 day and has no configurable duration;
-- viewer expiry is capped by `trip.end_date + 7 days`;
+- organizer and traveler member sessions use the 7-day/trip-window policy;
+- viewer member sessions last 1 day and are capped at `trip.end_date + 7 days`;
+- trip workspace load refreshes organizer/traveler sessions while leaving viewer
+  sessions unchanged;
+- valid unexpired member sessions remain first-class proof for account linking;
 - owner access through permanent account is not capped by trip end;
 - disabled members cannot use an otherwise valid unexpired session;
 - revoked sessions stop working immediately.
 
 Frontend/API tests should cover:
 
-- returning organizer/traveler does not need to re-enter the member password
-  while the refreshed session remains valid;
-- expired viewer guest access returns to the join/access flow;
+- returning trip members do not need to re-enter the member password while the
+  refreshed session remains valid;
+- expired trip member access returns to the join/access flow;
 - stored session state is cleared or replaced when the backend rejects it.
 
 ## Out Of Scope

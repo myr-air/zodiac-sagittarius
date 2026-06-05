@@ -787,6 +787,7 @@ export const messages = {
       errors: {
         tripCredentials: "Trip ID or password is incorrect.",
         participantPassword: "Password is incorrect.",
+        tripLoad: "Password was accepted, but the trip could not be loaded. Please ask the organizer to check the trip data.",
         shortPassword: "Set a password with at least 4 characters.",
       },
       memberStatus: {
@@ -1591,6 +1592,7 @@ export const messages = {
       errors: {
         tripCredentials: "Trip ID หรือ password ไม่ถูกต้อง",
         participantPassword: "รหัสไม่ถูกต้อง",
+        tripLoad: "รหัสถูกแล้ว แต่โหลดข้อมูล trip ไม่สำเร็จ กรุณาให้ผู้จัดทริปตรวจข้อมูล trip",
         shortPassword: "ตั้งรหัสอย่างน้อย 4 ตัวอักษร",
       },
       memberStatus: {

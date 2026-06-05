@@ -13,6 +13,7 @@ import type {
 } from "@/src/account/api-client";
 import { seedTrip } from "@/src/trip/seed";
 import type { TripParticipantSession } from "@/src/trip/types";
+import { TripApiError } from "@/src/trip/api-client";
 import { I18nProvider } from "@/src/i18n/I18nProvider";
 import { renderWithI18n } from "@/src/i18n/test-utils";
 import { AccountAccessPanel } from "./AccountAccessPanel";
@@ -563,6 +564,38 @@ describe("AccountAccessPanel", () => {
     expect(await screen.findByText("Book train", {}, { timeout: 3_000 })).toBeInTheDocument();
     expect(screen.getByText("Could not load account data.")).toBeInTheDocument();
     expect(screen.queryByText("No to-dos yet.")).not.toBeInTheDocument();
+  });
+
+  it("clears the account session when portal loading is unauthenticated", async () => {
+    const accountClient = createAccountClient();
+    const onAccountSessionChange = vi.fn();
+    vi.mocked(accountClient.loadSettings).mockRejectedValueOnce(new TripApiError({
+      code: "unauthenticated",
+      message: "session expired",
+      status: 401,
+    }));
+
+    render(
+      <AccountAccessPanel
+        accessMode="account-portal"
+        accountClient={accountClient}
+        accountSession={{
+          userId: "user-aom",
+          sessionToken: "account-session",
+          kind: "trusted",
+          trustedDeviceId: "device-current",
+          createdAt: "2026-05-30T08:00:00.000Z",
+          expiresAt: "2026-06-29T08:00:00.000Z",
+        }}
+        portalSection="dashboard"
+        trip={seedTrip}
+        onAccountSessionChange={onAccountSessionChange}
+        onAuthenticated={vi.fn()}
+        onTripChange={vi.fn()}
+      />,
+    );
+
+    await waitFor(() => expect(onAccountSessionChange).toHaveBeenCalledWith(null));
   });
 
   it("allows replacing the default owner display name in the trip builder", async () => {

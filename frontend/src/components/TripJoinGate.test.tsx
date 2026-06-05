@@ -387,6 +387,63 @@ describe("TripJoinGate", () => {
     expect(onCockpitLoaded).toHaveBeenCalledWith(cockpit);
   });
 
+  it("does not label an API cockpit load failure as a participant password error", async () => {
+    const user = userEvent.setup();
+    const apiClient = createApiClient({
+      joinTrip: vi.fn().mockResolvedValue({
+        trip: {
+          id: seedTrip.id,
+          name: seedTrip.name,
+          destinationLabel: seedTrip.destinationLabel,
+          startDate: seedTrip.startDate,
+          endDate: seedTrip.endDate,
+          joinId: seedTrip.joinId,
+          activePlanVariantId: seedTrip.activePlanVariantId,
+          ownerMemberId: "member-aom",
+          version: 1,
+        },
+        claimableMembers: [
+          {
+            id: "member-beam",
+            tripId: seedTrip.id,
+            displayName: "Beam",
+            role: "organizer",
+            accessStatus: "active",
+            presence: "offline",
+            color: "#2563eb",
+            userId: null,
+            claimedAt: "2026-06-05T00:00:00.000Z",
+            lastSeenAt: null,
+          },
+        ],
+        joinSessionToken: "join-session-token",
+        expiresAt: "2026-06-12T00:00:00.000Z",
+      }),
+      loginMember: vi.fn().mockResolvedValue({
+        tripId: seedTrip.id,
+        memberId: "member-beam",
+        sessionToken: "beam-session-token",
+        createdAt: "2026-06-05T00:00:00.000Z",
+        expiresAt: "2026-06-12T00:00:00.000Z",
+      }),
+      loadTrip: vi.fn().mockRejectedValue(new TripApiError({ code: "database_error", message: "database error", status: 500 })),
+    });
+    const onAuthenticated = vi.fn();
+
+    render(<TripJoinGate apiClient={apiClient} onTripChange={vi.fn()} onAuthenticated={onAuthenticated} />);
+
+    await enterTripRoom(user);
+    await user.click(await screen.findByRole("button", { name: /Beam/i }));
+    await user.type(screen.getByLabelText(/Beam's password/i), "beam-pass-2026");
+    await user.click(screen.getByRole("button", { name: /Confirm/i }));
+
+    expect(apiClient.loginMember).toHaveBeenCalledWith(seedTrip.id, "member-beam", "beam-pass-2026", "join-session-token");
+    expect(apiClient.loadTrip).toHaveBeenCalledWith(seedTrip.id, "beam-session-token");
+    expect(screen.getByRole("alert")).toHaveTextContent(/Password was accepted, but the trip could not be loaded/i);
+    expect(screen.getByRole("alert")).not.toHaveTextContent("Password is incorrect.");
+    expect(onAuthenticated).not.toHaveBeenCalled();
+  });
+
   it("uses safe API fallback copy while joining and authenticating", async () => {
     const user = userEvent.setup();
     const apiClient: TripApiClient = {

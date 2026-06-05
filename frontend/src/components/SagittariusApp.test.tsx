@@ -20,7 +20,7 @@ import { tripStorageKey } from "@/src/trip/repository";
 import { seedTrip } from "@/src/trip/seed";
 import { encodeTripId } from "@/src/trip/ids";
 import type { ItineraryItem, StopNote, Suggestion, Trip, TripDailyBriefing, TripTask } from "@/src/trip/types";
-import { encodeReturnTo } from "@/src/routes/app-routes";
+import { appRoutes, encodeReturnTo } from "@/src/routes/app-routes";
 
 function render(ui: ReactElement) {
   const result = renderWithI18n(ui, { locale: "th" });
@@ -118,6 +118,31 @@ describe("Sagittarius cockpit UI", () => {
     locationSpy.mockRestore();
     replaceStateMock.mockRestore();
   }, 45_000);
+
+  it.each([
+    ["overview", appRoutes.tripOverview(seedTrip.id)],
+    ["itinerary", appRoutes.tripItinerary(seedTrip.id)],
+    ["map", appRoutes.tripMap(seedTrip.id)],
+    ["timeline", appRoutes.tripTimeline(seedTrip.id)],
+    ["members", appRoutes.tripMembers(seedTrip.id)],
+    ["settings", appRoutes.tripSettings(seedTrip.id)],
+  ] as const)("redirects unauthenticated trip %s routes to /join with encoded returnTo", async (_view, tripPath) => {
+    const originalLocation = window.location;
+    const locationMock = {
+      ...originalLocation,
+      pathname: tripPath,
+      search: "",
+      replace: vi.fn(),
+    };
+    const locationSpy = vi.spyOn(window, "location", "get").mockReturnValue(locationMock);
+
+    render(<SagittariusApp accessMode="trip-access" requireJoin dataSource="api" routeTripId={seedTrip.id} />);
+
+    await waitFor(() => expect(locationMock.replace).toHaveBeenCalledWith(appRoutes.join(undefined, tripPath)));
+    expect(screen.queryByRole("heading", { name: /เข้าห้อง trip/i })).not.toBeInTheDocument();
+
+    locationSpy.mockRestore();
+  });
 
   it("lets a guest participant leave their local session and choose another identity", async () => {
     const user = userEvent.setup();
@@ -433,6 +458,53 @@ describe("Sagittarius cockpit UI", () => {
     }
   });
 
+  it("keeps account state when account trip access check fails transiently", async () => {
+    const storage = installLocalStorageStub();
+    storage.setItem(
+      "sagittarius-account-session",
+      JSON.stringify({
+        userId: "11111111-1111-1111-1111-111111111111",
+        sessionToken: "transient-account-session",
+        kind: "trusted",
+        trustedDeviceId: "device-1",
+        createdAt: "2026-05-30T10:00:00.000Z",
+        expiresAt: "2030-01-01T10:00:00.000Z",
+      }),
+    );
+    const apiClient = createApiClientForTrip(seedTrip);
+    const fetchSpy = vi.spyOn(globalThis, "fetch").mockImplementation(async (input) => {
+      const request = input instanceof Request ? input.url : String(input);
+      if (request.includes(`/api/v1/account/trips/${seedTrip.id}/member-sessions`)) {
+        throw new Error("network down");
+      }
+      return new Response(JSON.stringify({}), { status: 404, headers: { "content-type": "application/json" } });
+    });
+    const originalLocation = window.location;
+    const locationMock = {
+      ...originalLocation,
+      pathname: appRoutes.tripOverview(seedTrip.id),
+      search: "",
+      replace: vi.fn(),
+    };
+    const locationSpy = vi.spyOn(window, "location", "get").mockReturnValue(locationMock);
+
+    try {
+      render(<SagittariusApp accessMode="trip-access" requireJoin dataSource="api" routeTripId={seedTrip.id} apiClient={apiClient} />);
+
+      await waitFor(() => expect(fetchSpy).toHaveBeenCalledWith(
+        expect.stringContaining(`/api/v1/account/trips/${seedTrip.id}/member-sessions`),
+        expect.anything(),
+      ));
+      expect(storage.getItem("sagittarius-account-session")).toContain("transient-account-session");
+      expect(storage.getItem(tripParticipantSessionStorageKey)).toBeNull();
+      expect(locationMock.replace).not.toHaveBeenCalledWith(expect.stringContaining("/join"));
+    } finally {
+      locationSpy.mockRestore();
+      fetchSpy.mockRestore();
+      storage.clear();
+    }
+  });
+
   it("switches trip workspace navigation without reloading the backend cockpit", async () => {
     const user = userEvent.setup();
     const shortTripId = encodeTripId(seedTrip.id);
@@ -677,6 +749,66 @@ describe("Sagittarius cockpit UI", () => {
 
     await waitFor(() => expect(apiClient.loadTrip).toHaveBeenCalledWith(apiTrip.id, "persisted-session-token"));
     expect(await screen.findByRole("heading", { name: /Persisted API Trip/i })).toBeInTheDocument();
+  });
+
+  it("keeps a persisted trip member session when the account is not linked to the trip", async () => {
+    const storage = installLocalStorageStub();
+    storage.setItem(
+      "sagittarius-account-session",
+      JSON.stringify({
+        userId: "11111111-1111-1111-1111-111111111111",
+        sessionToken: "unlinked-account-session",
+        kind: "trusted",
+        trustedDeviceId: "device-1",
+        createdAt: "2026-05-30T10:00:00.000Z",
+        expiresAt: "2030-01-01T10:00:00.000Z",
+      }),
+    );
+    storage.setItem(
+      tripParticipantSessionStorageKey,
+      JSON.stringify({
+        tripId: seedTrip.id,
+        memberId: seedTrip.members[1].id,
+        sessionToken: "beam-member-session",
+        createdAt: "2026-05-29T00:00:00.000Z",
+        expiresAt: "2026-06-28T00:00:00.000Z",
+      }),
+    );
+    const apiTrip = {
+      ...seedTrip,
+      name: "Beam Temp Workspace",
+      members: seedTrip.members.map((member) =>
+        member.id === seedTrip.members[1].id
+          ? { ...member, userId: null, claimPasswordHash: null }
+          : member,
+      ),
+    };
+    const apiClient = createApiClientForTrip(apiTrip);
+    const fetchSpy = vi.spyOn(globalThis, "fetch").mockImplementation(async (input) => {
+      const request = input instanceof Request ? input.url : String(input);
+      if (request.includes(`/api/v1/account/trips/${seedTrip.id}/member-sessions`)) {
+        return new Response(JSON.stringify({ code: "forbidden", message: "account is not linked to this trip" }), {
+          status: 403,
+          headers: { "content-type": "application/json" },
+        });
+      }
+      return new Response(JSON.stringify({}), { status: 404, headers: { "content-type": "application/json" } });
+    });
+
+    try {
+      render(<SagittariusApp requireJoin dataSource="api" routeTripId={seedTrip.id} apiClient={apiClient} />);
+
+      await waitFor(() => expect(apiClient.loadTrip).toHaveBeenCalledWith(seedTrip.id, "beam-member-session"));
+      expect(await screen.findByRole("heading", { name: /Beam Temp Workspace/i })).toBeInTheDocument();
+      expect(storage.getItem(tripParticipantSessionStorageKey)).toContain("beam-member-session");
+      expect(fetchSpy).not.toHaveBeenCalledWith(
+        expect.stringContaining(`/api/v1/account/trips/${seedTrip.id}/member-sessions`),
+        expect.anything(),
+      );
+    } finally {
+      fetchSpy.mockRestore();
+      storage.clear();
+    }
   });
 
   it("loads daily weather briefings into overview and saves organizer overrides", async () => {
@@ -947,7 +1079,7 @@ describe("Sagittarius cockpit UI", () => {
     expect(screen.queryByText(/Too Late Trip/i)).not.toBeInTheDocument();
   });
 
-  it("recovers to access instead of hanging when persisted API hydration fails", async () => {
+  it("recovers to access instead of hanging when persisted API hydration is unauthenticated", async () => {
     installLocalStorageStub();
     window.sessionStorage.setItem(
       tripParticipantSessionStorageKey,
@@ -960,7 +1092,11 @@ describe("Sagittarius cockpit UI", () => {
       }),
     );
     const apiClient = createApiClientForTrip(seedTrip);
-    vi.mocked(apiClient.loadTrip).mockRejectedValue(new Error("session expired"));
+    vi.mocked(apiClient.loadTrip).mockRejectedValue(new TripApiError({
+      code: "unauthenticated",
+      message: "session expired",
+      status: 401,
+    }));
 
     render(<SagittariusApp requireJoin dataSource="api" initialView="overview" apiClient={apiClient} />);
 
@@ -968,6 +1104,28 @@ describe("Sagittarius cockpit UI", () => {
     expect(await screen.findByRole("main", { name: /Account access/i })).toBeInTheDocument();
     expect(screen.getByRole("alert")).toHaveTextContent(/สิทธิ์ไม่ถูกต้อง/i);
     expect(window.sessionStorage.getItem(tripParticipantSessionStorageKey)).toBeNull();
+  });
+
+  it("keeps a persisted API session when hydration fails transiently", async () => {
+    const storage = installLocalStorageStub();
+    storage.setItem(
+      tripParticipantSessionStorageKey,
+      JSON.stringify({
+        tripId: seedTrip.id,
+        memberId: seedTrip.members[0].id,
+        sessionToken: "network-session-token",
+        createdAt: "2026-05-29T00:00:00.000Z",
+        expiresAt: "2026-06-28T00:00:00.000Z",
+      }),
+    );
+    const apiClient = createApiClientForTrip(seedTrip);
+    vi.mocked(apiClient.loadTrip).mockRejectedValue(new Error("network down"));
+
+    render(<SagittariusApp requireJoin dataSource="api" routeTripId={seedTrip.id} initialView="overview" apiClient={apiClient} />);
+
+    await waitFor(() => expect(apiClient.loadTrip).toHaveBeenCalledWith(seedTrip.id, "network-session-token"));
+    expect(storage.getItem(tripParticipantSessionStorageKey)).toContain("network-session-token");
+    expect(screen.queryByRole("main", { name: /Account access/i })).not.toBeInTheDocument();
   });
 
   it("edits itinerary stops and resolves suggestions through the API client after backend login", async () => {
@@ -1930,6 +2088,8 @@ describe("Sagittarius cockpit UI", () => {
     const { container } = render(<SagittariusApp initialView="itinerary" />);
 
     fireEvent.click(getFirstStopDetailsButton());
+    expect(screen.queryByRole("button", { name: /เลือกจุด Coffee break at K11 Musea/i })).not.toBeInTheDocument();
+    await user.click(screen.getByLabelText(/Show all paths/i));
     fireEvent.click(screen.getByRole("row", { name: /เปิดรายละเอียดของ Victoria Peak/i }));
 
     expect(container.querySelector(".workspace-grid")).toHaveAttribute("data-context-rail", "open");
@@ -1952,6 +2112,8 @@ describe("Sagittarius cockpit UI", () => {
   it("collapses and expands day groups", async () => {
     const user = userEvent.setup();
     render(<SagittariusApp initialView="itinerary" />);
+    expect(screen.queryByRole("button", { name: /เลือกจุด Manual main coffee/i })).not.toBeInTheDocument();
+    await user.click(screen.getByLabelText(/Show all paths/i));
 
     await user.click(screen.getByRole("button", { name: /ย่อ วันที่ 2/i }));
 
@@ -1959,6 +2121,7 @@ describe("Sagittarius cockpit UI", () => {
     expect(screen.queryByRole("button", { name: /เลือกจุด Victoria Peak/i })).not.toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: /ขยาย วันที่ 2/i }));
+    await user.click(screen.getByLabelText(/Show all paths/i));
 
     expect(screen.getByRole("button", { name: /เลือกจุด Dim Dim Sum/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /เลือกจุด Victoria Peak/i })).toBeInTheDocument();
@@ -2088,8 +2251,6 @@ describe("Sagittarius cockpit UI", () => {
     await user.click(within(dialog).getByRole("button", { name: /บันทึกกิจกรรม/i }));
 
     expect(screen.queryByRole("dialog", { name: /เพิ่มกิจกรรม/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /เลือกจุด Coffee break at K11 Musea/i })).not.toBeInTheDocument();
-    await user.click(screen.getByLabelText(/Show all paths/i));
     expect(screen.getByRole("button", { name: /เลือกจุด Coffee break at K11 Musea/i })).toBeInTheDocument();
     expect(within(screen.getByRole("complementary", { name: /ข้อมูลประกอบการวางแผน/i })).getByRole("heading", { name: /Coffee break at K11 Musea/i })).toBeInTheDocument();
   });
@@ -2112,8 +2273,6 @@ describe("Sagittarius cockpit UI", () => {
     await user.selectOptions(within(dialog).getByLabelText(/^นาที$/i), "45");
     await user.click(within(dialog).getByRole("button", { name: /บันทึกกิจกรรม/i }));
 
-    expect(screen.queryByRole("button", { name: /เลือกจุด Manual main coffee/i })).not.toBeInTheDocument();
-    await user.click(screen.getByLabelText(/Show all paths/i));
     await user.click(screen.getByRole("button", { name: /เลือกจุด Manual main coffee/i }));
     await user.click(screen.getByRole("button", { name: /แก้ไขรายละเอียด/i }));
 
@@ -2121,7 +2280,6 @@ describe("Sagittarius cockpit UI", () => {
     await user.selectOptions(within(dialog).getByLabelText("แผน"), "main");
     await user.click(within(dialog).getByRole("button", { name: /บันทึกการแก้ไข/i }));
 
-    await user.click(screen.getByLabelText(/Show all paths/i));
     expect(screen.getByRole("button", { name: /เลือกจุด Manual main coffee/i })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /เลือกจุด เดินเล่นย่าน Central/i })).not.toBeInTheDocument();
   });

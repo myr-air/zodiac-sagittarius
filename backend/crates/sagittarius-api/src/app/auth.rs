@@ -309,7 +309,7 @@ pub(crate) fn member_session_expires_at(
     match role {
         TripRole::Owner => Ok(now + OWNER_MEMBER_SESSION_TTL),
         TripRole::Organizer | TripRole::Traveler => {
-            let base_expires = now + ACTIVE_TRIP_MEMBER_SESSION_TTL; // 7 days
+            let base_expires = now + ACTIVE_TRIP_MEMBER_SESSION_TTL;
             let trip_start = start_of_day_utc(trip_start_date)?;
             let trip_end = end_of_day_utc(trip_end_date)?;
             let trip_end_plus_7 = end_of_day_utc(add_days(trip_end_date, 7)?)?;
@@ -321,7 +321,7 @@ pub(crate) fn member_session_expires_at(
             }
         }
         TripRole::Viewer => {
-            let base_expires = now + VIEWER_SESSION_TTL; // 1 day
+            let base_expires = now + VIEWER_SESSION_TTL;
             let trip_end_plus_7 = end_of_day_utc(add_days(trip_end_date, 7)?)?;
             if now > trip_end_plus_7 {
                 Ok(base_expires)

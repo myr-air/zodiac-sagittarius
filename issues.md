@@ -7,6 +7,17 @@
 
 ---
 
+## Open Issues Found 2026-06-05
+
+### Beam account login does not guarantee direct trip access
+
+- **Date found:** 2026-06-05
+- **Evidence:** `frontend/src/app/SagittariusApp.tsx` restores trusted `sagittarius-account-session`, then calls `POST /api/v1/account/trips/:tripId/member-sessions`. Backend `create_trip_member_session` only succeeds when `trip_members.user_id` is linked to that account. The sample/e2e seed sets Beam's `claim_password_hash` with `beam-pass-2026` but does not set `trip_members.user_id`, so an account-only Beam login can be valid while the trip route still redirects to `/join`.
+- **Impact:** Users think their account session "หลุด" because the app sends them back to join, even though the real missing state is the account-to-trip-member link or a lost trip-member session.
+- **Suggested fix path:** Add a durable in-workspace account-link action outside the auto-dismissing toast, and consider seeding/linking the Beam test account to the Beam trip member when the expected QA path is account login.
+- **Fix update 2026-06-05:** Trip member sessions are treated as first-class trip-scoped access with the original TTL policy: organizer/traveler use the 7-day/trip-window expiry, viewer uses 1 day, and account linking remains optional. Valid member-session proof can link an account without requiring the account to already be linked to the trip.
+- **Verification:** `rtk cargo test --manifest-path backend/Cargo.toml -p sagittarius-api app::auth::tests`; `rtk env DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/sagittarius_test cargo test --manifest-path backend/Cargo.toml -p sagittarius-api --test join_session_contract member_session_contract_sets_organizer_traveler_and_viewer_ttls`; `rtk env DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/sagittarius_test cargo test --manifest-path backend/Cargo.toml -p sagittarius-api --test trip_load_contract trip_load_refreshes_organizer_session_but_not_viewer_session`; `rtk env DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/sagittarius_test cargo test --manifest-path backend/Cargo.toml -p sagittarius-api --test account_trip_contract account_claim_accepts_valid_member_session_after_trip_window`; `rtk bun run --cwd frontend test src/components/SagittariusApp.test.tsx -t "keeps a persisted trip member session"`.
+
 ## ✅ Implementation Checklist
 
 สถานะนี้อัปเดตจากการแก้ใน codebase วันที่ 2026-05-31 และใช้เป็นแหล่งอ้างอิงเร็วว่า issue ในไฟล์นี้ถูกจัดการครบหรือยัง

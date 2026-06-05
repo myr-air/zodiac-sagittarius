@@ -988,6 +988,76 @@ async fn account_claims_existing_temp_member_after_member_session_proof(pool: sq
 }
 
 #[sqlx::test(migrations = "../../migrations")]
+async fn account_claim_accepts_valid_member_session_after_trip_window(pool: sqlx::PgPool) {
+    support::seed_trip(&pool).await;
+    support::set_trip_dates(&pool, "2020-01-01", "2020-01-02").await;
+    support::claim_member(&pool, support::TRAVELER_ID, "1234", "active").await;
+    let member_session_token = support::create_session_with_expiry(
+        &pool,
+        support::TRAVELER_ID,
+        time::OffsetDateTime::now_utc() + time::Duration::days(7),
+    )
+    .await;
+    let session = login_account(&pool, "traveler-after-window@example.com", false, "").await;
+    let auth = format!("Bearer {}", session["sessionToken"].as_str().unwrap());
+    let user_id = Uuid::parse_str(session["userId"].as_str().unwrap()).unwrap();
+    let trip_id = Uuid::parse_str(support::TRIP_ID).unwrap();
+    let member_id = Uuid::parse_str(support::TRAVELER_ID).unwrap();
+
+    let response = post_json_with_auth(
+        support::app(pool.clone()),
+        &format!("/api/v1/trips/{trip_id}/members/{member_id}/account-links"),
+        Some(&auth),
+        json!({"memberSessionToken": member_session_token}),
+    )
+    .await;
+    let (status, body): (StatusCode, Value) = response_json(response).await;
+
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(body["userId"], user_id.to_string());
+    assert_eq!(body["memberId"], support::TRAVELER_ID);
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn account_claim_is_idempotent_for_same_account_user(pool: sqlx::PgPool) {
+    support::seed_trip(&pool).await;
+    let member_session = legacy_claim_member_session(&pool, support::TRAVELER_ID, "1234").await;
+    let member_session_token = member_session["sessionToken"].as_str().unwrap();
+    let session = login_account(&pool, "traveler@example.com", false, "").await;
+    let auth = format!("Bearer {}", session["sessionToken"].as_str().unwrap());
+    let user_id = Uuid::parse_str(session["userId"].as_str().unwrap()).unwrap();
+    let trip_id = Uuid::parse_str(support::TRIP_ID).unwrap();
+    let member_id = Uuid::parse_str(support::TRAVELER_ID).unwrap();
+
+    sqlx::query(
+        "update trip_members
+         set user_id = $1, claimed_at = coalesce(claimed_at, now())
+         where trip_id = $2 and id = $3",
+    )
+    .bind(user_id)
+    .bind(trip_id)
+    .bind(member_id)
+    .execute(&pool)
+    .await
+    .unwrap();
+
+    let response = post_json_with_auth(
+        support::app(pool.clone()),
+        &format!("/api/v1/trips/{trip_id}/members/{member_id}/account-links"),
+        Some(&auth),
+        json!({"memberSessionToken": member_session_token}),
+    )
+    .await;
+    let (status, body): (StatusCode, Value) = response_json(response).await;
+
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(body["tripId"], support::TRIP_ID);
+    assert_eq!(body["memberId"], support::TRAVELER_ID);
+    assert_eq!(body["userId"], user_id.to_string());
+    assert_eq!(body["role"], "traveler");
+}
+
+#[sqlx::test(migrations = "../../migrations")]
 async fn account_claim_for_disabled_member_returns_forbidden_after_session_proof(
     pool: sqlx::PgPool,
 ) {
@@ -1054,6 +1124,7 @@ async fn account_claim_rejects_wrong_session_and_already_linked_member(pool: sql
     let traveler_session = legacy_claim_member_session(&pool, support::TRAVELER_ID, "1234").await;
     let organizer_session = legacy_claim_member_session(&pool, support::ORGANIZER_ID, "5678").await;
     let account_session = login_account(&pool, "traveler@example.com", false, "").await;
+    let other_account_session = login_account(&pool, "other-traveler@example.com", false, "").await;
     let auth = format!(
         "Bearer {}",
         account_session["sessionToken"].as_str().unwrap()
@@ -1100,7 +1171,7 @@ async fn account_claim_rejects_wrong_session_and_already_linked_member(pool: sql
          set user_id = $1, claimed_at = coalesce(claimed_at, now())
          where trip_id = $2 and id = $3",
     )
-    .bind(Uuid::parse_str(account_session["userId"].as_str().unwrap()).unwrap())
+    .bind(Uuid::parse_str(other_account_session["userId"].as_str().unwrap()).unwrap())
     .bind(trip_id)
     .bind(organizer_id)
     .execute(&pool)

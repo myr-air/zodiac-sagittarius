@@ -198,7 +198,11 @@ export function TripJoinGate({ trip, apiClient, embedded = false, variant = "def
         const session = isClaimed
           ? await apiClient.loginMember(activeTrip.id, selectedMember.id, normalizedParticipantPassword, joinSessionToken)
           : await apiClient.claimMember(activeTrip.id, selectedMember.id, normalizedParticipantPassword, joinSessionToken);
-        const cockpit = await apiClient.loadTrip(activeTrip.id, session.sessionToken);
+        const cockpit = await apiClient.loadTrip(activeTrip.id, session.sessionToken).catch(() => null);
+        if (!cockpit) {
+          setError(t.join.errors.tripLoad);
+          return;
+        }
         setJoinedTrip(cockpit.trip);
         onTripChange(cockpit.trip);
         onAuthenticated(session);

@@ -269,6 +269,11 @@ export function SagittariusApp({
     persistAccountSession(accountSession);
   }, [accountSession, accountSessionLoaded]);
 
+  const changeAccountSession = useCallback((session: AccountSession | null) => {
+    setAccountSession(session);
+    persistAccountSession(session);
+  }, []);
+
   useEffect(() => {
     if (!isApiMode || !routeTripId || !accountSessionLoaded || !accountSession || participantSession) return undefined;
     let cancelled = false;
@@ -283,21 +288,25 @@ export function SagittariusApp({
         setCurrentMemberId(session.memberId);
         persistParticipantSession(session, isApiMode);
       })
-      .catch(() => {
+      .catch((caught) => {
         if (cancelled) return;
-        setAccountTripAccessDeniedRouteId(routeTripId);
-        clearParticipantSession(isApiMode);
+        if (isUnauthenticated(caught)) {
+          changeAccountSession(null);
+          setAccessError("unauthenticated");
+          return;
+        }
+        if (isForbidden(caught)) {
+          setAccountTripAccessDeniedRouteId(routeTripId);
+          clearParticipantSession(isApiMode);
+          return;
+        }
+        setAccessError("trip access check failed");
       });
 
     return () => {
       cancelled = true;
     };
-  }, [accountClient, accountSession, accountSessionLoaded, isApiMode, participantSession, routeTripId]);
-
-  const changeAccountSession = useCallback((session: AccountSession | null) => {
-    setAccountSession(session);
-    persistAccountSession(session);
-  }, []);
+  }, [accountClient, accountSession, accountSessionLoaded, changeAccountSession, isApiMode, participantSession, routeTripId]);
 
   useEffect(() => {
     if (!isApiMode || !participantSession || !resolvedApiClient) return undefined;
@@ -319,13 +328,19 @@ export function SagittariusApp({
         setBackendExpenseSummary(cockpit.expenseSummary);
         setIsCockpitLoaded(true);
       })
-      .catch(() => {
+      .catch((caught) => {
         if (cancelled) return;
-        clearParticipantSession(isApiMode);
-      setParticipantSession(null);
-      setAccessError("unauthenticated");
-      setDailyBriefings([]);
-      setIsCockpitLoaded(false);
+        if (isAuthFailure(caught)) {
+          clearParticipantSession(isApiMode);
+          setParticipantSession(null);
+          setAccessError("unauthenticated");
+          setDailyBriefings([]);
+          setIsCockpitLoaded(false);
+          return;
+        }
+        setAccessError("trip load failed");
+        setDailyBriefings([]);
+        setIsCockpitLoaded(false);
       });
 
     return () => {
@@ -1414,29 +1429,28 @@ export function SagittariusApp({
     isApiMode &&
     Boolean(routeTripId) &&
     !sessionMember &&
+    !accessError &&
     (!accountSessionLoaded || Boolean(accountSession && accountTripAccessDeniedRouteId !== routeTripId));
+  const shouldRedirectUnauthenticatedTripRoute =
+    sessionRestored &&
+    requireJoin &&
+    Boolean(routeTripId) &&
+    !hasRouteParticipantSession &&
+    !accessError &&
+    !isAccountTripAccessPending &&
+    !isTripLoading &&
+    typeof window !== "undefined" &&
+    !window.location.pathname.includes("iframe.html") &&
+    !("__vitest_browser__" in window);
 
   useEffect(() => {
-    if (
-      sessionRestored &&
-      requireJoin &&
-      accessMode !== "trip-access" &&
-      routeTripId &&
-      !hasRouteParticipantSession &&
-      !accessError &&
-      !isAccountTripAccessPending &&
-      !isTripLoading &&
-      typeof window !== "undefined" &&
-      !window.location.pathname.includes("iframe.html") &&
-      !("__vitest_browser__" in window)
-    ) {
-      const returnTo = window.location.pathname + window.location.search;
-      const joinHref = appRoutes.join(undefined, returnTo);
-      window.location.replace(joinHref);
-    }
-  }, [sessionRestored, requireJoin, accessMode, routeTripId, hasRouteParticipantSession, accessError, isAccountTripAccessPending, isTripLoading]);
+    if (!shouldRedirectUnauthenticatedTripRoute) return;
+    const returnTo = window.location.pathname + window.location.search;
+    const joinHref = appRoutes.join(undefined, returnTo);
+    window.location.replace(joinHref);
+  }, [shouldRedirectUnauthenticatedTripRoute]);
 
-  if (isAccountTripAccessPending || isTripLoading) {
+  if (isAccountTripAccessPending || isTripLoading || shouldRedirectUnauthenticatedTripRoute) {
     return <TripAccessLoadingFrame />;
   }
 
@@ -1881,6 +1895,18 @@ function persistParticipantSession(session: TripParticipantSession, isApiMode: b
 function clearParticipantSession(isApiMode: boolean) {
   getParticipantSessionStorage()?.removeItem(tripParticipantSessionStorageKey);
   if (isApiMode) getBrowserSessionStorage()?.removeItem(tripParticipantSessionStorageKey);
+}
+
+function isUnauthenticated(caught: unknown): boolean {
+  return caught instanceof TripApiError && caught.status === 401;
+}
+
+function isForbidden(caught: unknown): boolean {
+  return caught instanceof TripApiError && caught.status === 403;
+}
+
+function isAuthFailure(caught: unknown): boolean {
+  return isUnauthenticated(caught) || isForbidden(caught);
 }
 
 function loadPersistedAccountSession(): AccountSession | null {

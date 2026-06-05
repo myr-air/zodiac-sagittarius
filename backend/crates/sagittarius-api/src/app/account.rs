@@ -630,11 +630,19 @@ pub async fn claim_member(
         return Err(ServiceError::Forbidden);
     }
 
-    if db::account_queries::get_member_user_id(&mut tx, trip_id, member_id)
-        .await?
-        .is_some()
+    if let Some(existing_user_id) =
+        db::account_queries::get_member_user_id(&mut tx, trip_id, member_id).await?
     {
-        return Err(ServiceError::IdentityAlreadyLinked);
+        if existing_user_id != user_id {
+            return Err(ServiceError::IdentityAlreadyLinked);
+        }
+        tx.commit().await?;
+        return Ok(AccountMemberClaimResponse {
+            trip_id,
+            member_id,
+            user_id,
+            role: member.role,
+        });
     }
 
     db::account_queries::link_member_to_account_user(&mut tx, trip_id, member_id, user_id).await?;
