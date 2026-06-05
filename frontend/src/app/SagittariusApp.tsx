@@ -794,6 +794,7 @@ export function SagittariusApp({
       if (nextPatch.activity !== undefined) nextPatch.activity = nextPatch.activity.trim();
       if (nextPatch.place !== undefined) nextPatch.place = nextPatch.place.trim();
       if (nextPatch.transportation !== undefined) nextPatch.transportation = nextPatch.transportation.trim();
+      if (nextPatch.durationMinutes !== undefined && nextPatch.durationMinutes !== null) nextPatch.durationMinutes = Math.max(1, Math.round(Number(nextPatch.durationMinutes) || 1));
       if (nextPatch.activity !== undefined && nextPatch.activity.length === 0) return null;
       if (nextPatch.place !== undefined && nextPatch.place.length === 0) return null;
       const changedPatch = Object.fromEntries(

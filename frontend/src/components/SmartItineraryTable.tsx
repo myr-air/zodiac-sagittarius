@@ -49,7 +49,7 @@ interface SmartItineraryTableProps {
   onUndo: () => void;
 }
 
-export type InlineItineraryItemPatch = Partial<Pick<ItineraryItem, "startTime" | "activity" | "place" | "activityType" | "transportation">>;
+export type InlineItineraryItemPatch = Partial<Pick<ItineraryItem, "startTime" | "durationMinutes" | "activity" | "place" | "activityType" | "transportation">>;
 
 const tablePanelClassName = "table-panel grid h-auto min-h-full min-w-0 grid-rows-[auto_minmax(0,1fr)] overflow-visible bg-[var(--color-page)] px-6 py-[22px] pb-7";
 const pageHeaderActionsClassName = "page-header-actions relative z-[1] flex max-w-[420px] min-w-0 flex-wrap items-center justify-end gap-2";
@@ -95,7 +95,7 @@ const rowActionsClassName = "row-actions flex items-center justify-center gap-1"
 const rowActionButtonClassName = "row-action-button inline-grid size-[26px] place-items-center rounded-[var(--radius-sm)] border-0 bg-transparent text-[var(--color-text-subtle)] transition-[color,background] duration-150 hover:not-disabled:bg-[var(--color-primary-soft)] hover:not-disabled:text-[var(--color-primary-strong)] disabled:cursor-not-allowed disabled:opacity-[0.42]";
 const timeCellClassName = "time-cell !text-center font-[650] tabular-nums text-[#334155]";
 const timeStackClassName = "grid min-h-[30px] content-center justify-items-center gap-0.5 leading-none [&_span]:whitespace-nowrap";
-const timeDurationClassName = "time-duration text-[10px] font-[700] leading-3 text-[var(--color-text-muted)]";
+const durationPillClassName = "duration-pill inline-flex min-h-[17px] max-w-full items-center justify-center rounded-full border border-transparent bg-transparent px-1 text-[10px] font-[750] leading-3 text-[var(--color-text-muted)] transition-[background,border-color,color] duration-150 hover:not-disabled:border-[var(--color-primary-border)] hover:not-disabled:bg-[var(--color-primary-soft)] hover:not-disabled:text-[var(--color-primary-strong)] focus-visible:border-[var(--color-primary-border)] focus-visible:bg-[var(--color-primary-soft)] focus-visible:text-[var(--color-primary-strong)] focus-visible:outline-none disabled:cursor-not-allowed disabled:text-[var(--color-text-muted)]";
 const activityCellClassName = "activity-cell min-w-0";
 const rowSelectClassName =
   "row-select grid min-h-[22px] w-full min-w-0 gap-0.5 border-0 bg-transparent p-0 text-left text-inherit";
@@ -116,7 +116,15 @@ const deleteDialogClassName = "delete-confirm-dialog grid w-[min(420px,100%)] ga
 const deleteDialogTitleClassName = "m-0 text-base font-extrabold leading-[22px] text-[#991b1b]";
 const deleteDialogBodyClassName = "m-0 text-sm font-medium leading-6 text-[var(--color-text-muted)]";
 const deleteDialogActionsClassName = "mt-1 flex justify-end gap-2";
+const durationDialogClassName = "duration-dialog grid w-[min(360px,100%)] gap-3 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 shadow-[0_24px_70px_rgb(15_23_42_/_0.2)]";
+const durationDialogTitleClassName = "m-0 text-sm font-extrabold leading-5 text-[var(--color-text)]";
+const durationPresetGridClassName = "grid grid-cols-3 gap-2";
+const durationPresetButtonClassName = "min-h-9 rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface-subtle)] px-2 text-xs font-extrabold text-[var(--color-text)] transition-[background,border-color,color] duration-150 hover:border-[var(--color-primary-border)] hover:bg-[var(--color-primary-soft)] hover:text-[var(--color-primary-strong)]";
+const durationCustomGridClassName = "grid grid-cols-2 gap-2";
+const durationInputLabelClassName = "grid gap-1 text-[11px] font-extrabold text-[var(--color-text-muted)]";
+const durationInputClassName = "min-h-9 rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface)] px-2 text-sm font-bold tabular-nums text-[var(--color-text)] outline-none focus:border-[var(--color-primary-border)] focus:shadow-[0_0_0_2px_rgb(153_246_228_/_0.45)]";
 const activityTypeOptions: ActivityType[] = ["food", "attraction", "experience", "travel", "shopping", "stay"];
+const durationPresetMinutes = [15, 30, 45, 60, 90, 120];
 
 export function SmartItineraryTable({
   canRestructure = true,
@@ -156,6 +164,7 @@ export function SmartItineraryTable({
   const [collapsedDays, setCollapsedDays] = useState<string[]>([]);
   const [dragState, setDragState] = useState<{ draggedItemId: string | null; overItemId: string | null; overDay: string | null }>({ draggedItemId: null, overItemId: null, overDay: null });
   const [pendingDeleteItem, setPendingDeleteItem] = useState<ItineraryItem | null>(null);
+  const [durationEditor, setDurationEditor] = useState<{ item: ItineraryItem; hours: string; minutes: string } | null>(null);
   const knownFilterIdsRef = useRef<string[]>(filterOptions.map((option) => option.id));
   const touchDragRef = useRef<{ itemId: string; pointerId?: number; touchId?: number } | null>(null);
   const selectedPathIdSet = new Set(selectedPathIds);
@@ -180,6 +189,28 @@ export function SmartItineraryTable({
 
   function toggleDay(day: string) {
     setCollapsedDays((current) => (current.includes(day) ? current.filter((item) => item !== day) : [...current, day]));
+  }
+
+  function openDurationEditor(item: ItineraryItem) {
+    const durationMinutes = item.durationMinutes ?? 45;
+    setDurationEditor({
+      item,
+      hours: String(Math.floor(durationMinutes / 60)),
+      minutes: String(durationMinutes % 60),
+    });
+  }
+
+  function commitDuration(itemId: string, minutes: number) {
+    if (!canEdit) return;
+    onUpdateItemInline?.(itemId, { durationMinutes: Math.max(1, Math.round(minutes)) });
+    setDurationEditor(null);
+  }
+
+  function commitCustomDuration() {
+    if (!durationEditor) return;
+    const hours = Number(durationEditor.hours) || 0;
+    const minutes = Number(durationEditor.minutes) || 0;
+    commitDuration(durationEditor.item.id, hours * 60 + minutes);
   }
 
   function togglePlanFilter(pathId: string) {
@@ -491,6 +522,7 @@ export function SmartItineraryTable({
               onStartTouchGesture={startTouchGesture}
               onEditItem={onEditItem}
               onDeleteItem={setPendingDeleteItem}
+              onEditDuration={openDurationEditor}
               onToggleDay={toggleDay}
             />
           ))}
@@ -513,6 +545,54 @@ export function SmartItineraryTable({
               >
                 {t.itinerary.row.confirmDeleteYes}
               </Button>
+            </div>
+          </section>
+        </div>
+      ) : null}
+      {durationEditor ? (
+        <div className={deleteModalBackdropClassName} role="presentation">
+          <section className={durationDialogClassName} role="dialog" aria-modal="true" aria-labelledby="itinerary-duration-title">
+            <h2 className={durationDialogTitleClassName} id="itinerary-duration-title">{t.itinerary.row.durationDialogTitle({ activity: durationEditor.item.activity })}</h2>
+            <div className={durationPresetGridClassName}>
+              {durationPresetMinutes.map((minutes) => (
+                <button
+                  type="button"
+                  className={durationPresetButtonClassName}
+                  key={minutes}
+                  onClick={() => commitDuration(durationEditor.item.id, minutes)}
+                >
+                  {formatDuration(minutes, locale)}
+                </button>
+              ))}
+            </div>
+            <div className={durationCustomGridClassName}>
+              <label className={durationInputLabelClassName}>
+                {t.itinerary.row.durationHours}
+                <input
+                  className={durationInputClassName}
+                  inputMode="numeric"
+                  min={0}
+                  type="number"
+                  value={durationEditor.hours}
+                  onChange={(event) => setDurationEditor((current) => current ? { ...current, hours: event.target.value } : current)}
+                />
+              </label>
+              <label className={durationInputLabelClassName}>
+                {t.itinerary.row.durationMinutes}
+                <input
+                  className={durationInputClassName}
+                  inputMode="numeric"
+                  max={59}
+                  min={0}
+                  type="number"
+                  value={durationEditor.minutes}
+                  onChange={(event) => setDurationEditor((current) => current ? { ...current, minutes: event.target.value } : current)}
+                />
+              </label>
+            </div>
+            <div className={deleteDialogActionsClassName}>
+              <Button type="button" variant="ghost" onClick={() => setDurationEditor(null)}>{t.itinerary.row.durationCancel}</Button>
+              <Button type="button" onClick={commitCustomDuration}>{t.itinerary.row.durationSave}</Button>
             </div>
           </section>
         </div>
@@ -555,6 +635,7 @@ function DayGroup({
   onStartTouchGesture,
   onEditItem,
   onDeleteItem,
+  onEditDuration,
   onToggleDay,
 }: {
   graphColumnWidth: number;
@@ -590,6 +671,7 @@ function DayGroup({
   onStartTouchGesture: (event: ReactTouchEvent<HTMLButtonElement>, itemId: string) => void;
   onEditItem?: (itemId: string) => void;
   onDeleteItem?: (item: ItineraryItem) => void;
+  onEditDuration: (item: ItineraryItem) => void;
   onToggleDay: (day: string) => void;
 }) {
   const dayLabel = formatDayLabel(group.day, startDate, locale);
@@ -723,7 +805,15 @@ function DayGroup({
                 type="time"
                 onCommit={(value) => onUpdateItemInline?.(item.id, { startTime: value })}
               />
-              <span className={timeDurationClassName}>{formatDuration(item.durationMinutes, locale)}</span>
+              <button
+                type="button"
+                className={durationPillClassName}
+                disabled={!canEdit}
+                aria-label={(canEdit ? itineraryLabels.row.inlineDuration : itineraryLabels.row.duration)({ activity: item.activity })}
+                onClick={() => onEditDuration(item)}
+              >
+                {formatDuration(item.durationMinutes, locale)}
+              </button>
             </span>
           </td>
           <td className={activityCellClassName}>

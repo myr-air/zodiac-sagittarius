@@ -1265,6 +1265,34 @@ describe("Sagittarius cockpit UI", () => {
     expect(within(context).queryByText(/Book ahead from API/i)).not.toBeInTheDocument();
   }, 45_000);
 
+  it("edits itinerary duration inline through the API client after backend login", async () => {
+    const user = userEvent.setup();
+    installLocalStorageStub();
+    const selectedItem = seedTrip.itineraryItems.find((item) => item.id === "item-dimdim")!;
+    const ownerTrip = { ...seedTrip, joinPasswordHash: "" };
+    const patchedItem = { ...selectedItem, durationMinutes: 90, version: selectedItem.version + 1 };
+    const apiClient = createApiClientForTrip(ownerTrip, {
+      patchItineraryItem: vi.fn().mockResolvedValue(patchedItem),
+    });
+
+    render(<SagittariusApp requireJoin dataSource="api" initialView="itinerary" apiClient={apiClient} />);
+
+    await loginApiTrip(user);
+    const row = await screen.findByRole("row", { name: /Dim Dim Sum/i });
+    await user.click(within(row).getByRole("button", { name: /แก้ไขระยะเวลา Dim Dim Sum/i }));
+    await user.click(within(screen.getByRole("dialog", { name: /แก้ไขระยะเวลา Dim Dim Sum/i })).getByRole("button", { name: /1 ชม. 30 นาที/i }));
+
+    await waitFor(() => expect(apiClient.patchItineraryItem).toHaveBeenCalledWith(
+      ownerTrip.id,
+      selectedItem.id,
+      "session-token",
+      expect.objectContaining({
+        expectedVersion: selectedItem.version,
+        patch: expect.objectContaining({ durationMinutes: 90 }),
+      }),
+    ));
+  }, 45_000);
+
   it("reloads the latest API trip and clears auto overlap resolution when item versions conflict", async () => {
     const user = userEvent.setup();
     const day = "2026-06-18";

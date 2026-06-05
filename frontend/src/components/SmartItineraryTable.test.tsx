@@ -852,6 +852,37 @@ describe("SmartItineraryTable", () => {
     expect(onUpdateItemInline).toHaveBeenCalledWith("item-dimdim", { transportation: "Walk" });
   });
 
+  it("edits duration from a compact row duration picker", async () => {
+    const user = userEvent.setup();
+    const onUpdateItemInline = vi.fn();
+    renderTable({ onUpdateItemInline });
+    const row = screen.getByRole("row", { name: /Dim Dim Sum/i });
+
+    await user.click(within(row).getByRole("button", { name: /แก้ไขระยะเวลา Dim Dim Sum/i }));
+    const presetDialog = screen.getByRole("dialog", { name: /แก้ไขระยะเวลา Dim Dim Sum/i });
+    await user.click(within(presetDialog).getByRole("button", { name: /1 ชม. 30 นาที/i }));
+
+    expect(onUpdateItemInline).toHaveBeenCalledWith("item-dimdim", { durationMinutes: 90 });
+    expect(screen.queryByRole("dialog", { name: /แก้ไขระยะเวลา Dim Dim Sum/i })).not.toBeInTheDocument();
+  });
+
+  it("saves a custom duration from the row duration picker", async () => {
+    const user = userEvent.setup();
+    const onUpdateItemInline = vi.fn();
+    renderTable({ onUpdateItemInline });
+    const row = screen.getByRole("row", { name: /Dim Dim Sum/i });
+
+    await user.click(within(row).getByRole("button", { name: /แก้ไขระยะเวลา Dim Dim Sum/i }));
+    const dialog = screen.getByRole("dialog", { name: /แก้ไขระยะเวลา Dim Dim Sum/i });
+    await user.clear(within(dialog).getByRole("spinbutton", { name: /ชั่วโมง/i }));
+    await user.type(within(dialog).getByRole("spinbutton", { name: /ชั่วโมง/i }), "2");
+    await user.clear(within(dialog).getByRole("spinbutton", { name: /นาที/i }));
+    await user.type(within(dialog).getByRole("spinbutton", { name: /นาที/i }), "10");
+    await user.click(within(dialog).getByRole("button", { name: /บันทึก/i }));
+
+    expect(onUpdateItemInline).toHaveBeenCalledWith("item-dimdim", { durationMinutes: 130 });
+  });
+
   it("cancels a flat inline edit with Escape", async () => {
     const user = userEvent.setup();
     const onUpdateItemInline = vi.fn();
@@ -873,7 +904,8 @@ describe("SmartItineraryTable", () => {
 
     expect(within(row).getByRole("textbox", { name: /กิจกรรม Dim Dim Sum/i })).toHaveAttribute("readonly");
     expect(within(row).getByRole("textbox", { name: /สถานที่ Dim Dim Sum/i })).toHaveAttribute("readonly");
-    expect(within(row).getByLabelText(/เวลา Dim Dim Sum/i)).toBeDisabled();
+    expect(within(row).getByLabelText(/^แก้ไขเวลา Dim Dim Sum/i)).toBeDisabled();
+    expect(within(row).getByRole("button", { name: /ระยะเวลา Dim Dim Sum/i })).toBeDisabled();
     expect(within(row).getByRole("combobox", { name: /ประเภท Dim Dim Sum/i })).toBeDisabled();
     expect(within(row).getByRole("textbox", { name: /การเดินทาง Dim Dim Sum/i })).toHaveAttribute("readonly");
   });
