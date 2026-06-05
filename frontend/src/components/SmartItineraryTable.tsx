@@ -53,14 +53,14 @@ interface SmartItineraryTableProps {
 export type InlineItineraryItemPatch = Partial<Pick<ItineraryItem, "startTime" | "durationMinutes" | "activity" | "place" | "activityType" | "transportation">>;
 
 const tablePanelClassName = "table-panel grid h-auto min-h-full min-w-0 grid-rows-[auto_minmax(0,1fr)] overflow-visible bg-[var(--color-page)] px-6 py-[22px] pb-7";
-const pageHeaderActionsClassName = "page-header-actions relative z-[1] flex max-w-[420px] min-w-0 flex-wrap items-center justify-end gap-2";
+const pageHeaderActionsClassName = "page-header-actions relative z-[1] flex max-w-[260px] min-w-0 flex-wrap items-center justify-end gap-2";
 const pageHeaderNoteClassName = "page-header-note m-0 basis-full text-right text-xs font-bold text-[var(--color-warning-strong)]";
-const pathControlsClassName = "path-controls flex min-w-0 flex-wrap items-center justify-end gap-2";
-const pathFilterShellClassName = "relative";
-const pathFilterButtonClassName = "inline-flex min-h-9 min-w-[220px] items-center justify-between gap-3 rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3 text-xs font-bold text-[var(--color-text)]";
-const pathFilterSummaryClassName = "min-w-0 truncate text-right text-[11px] font-semibold text-[var(--color-text-muted)]";
-const pathFilterMenuClassName = "absolute right-0 top-[calc(100%+8px)] z-10 grid min-w-[220px] gap-1 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] p-2 shadow-[0_18px_34px_rgb(15_23_42_/_0.14)]";
-const pathFilterOptionClassName = "grid grid-cols-[16px_minmax(0,1fr)] items-center gap-2 rounded-[var(--radius-sm)] px-2 py-1.5 text-xs font-semibold text-[var(--color-text)] hover:bg-[var(--color-surface-subtle)]";
+const itineraryFilterShellClassName = "itinerary-filter-shell -mt-1 mb-[14px] grid gap-2 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2.5";
+const itineraryFilterBarClassName = "itinerary-filter-bar flex min-w-0 flex-wrap items-center gap-2";
+const pathFilterButtonClassName = "inline-flex min-h-8 min-w-[148px] items-center justify-center gap-2 rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface-subtle)] px-2.5 text-xs font-extrabold text-[var(--color-text)] transition-[background,border-color,color] duration-150 hover:bg-[var(--color-primary-soft)] hover:text-[var(--color-primary-strong)] aria-[expanded=true]:border-[var(--color-primary-border)] aria-[expanded=true]:bg-[var(--color-primary-soft)] aria-[expanded=true]:text-[var(--color-primary-strong)] [&_.icon]:size-4 [&_.icon]:transition-transform [&_.icon]:duration-[150ms] aria-[expanded=true]:[&_.icon]:rotate-90";
+const pathFilterSummaryClassName = "min-w-0 flex-1 truncate text-xs font-semibold text-[var(--color-text-muted)]";
+const pathFilterPanelClassName = "itinerary-filter-panel flex min-w-0 flex-wrap gap-1.5 border-t border-[var(--color-border)] pt-2";
+const pathFilterOptionClassName = "inline-flex min-h-8 items-center gap-2 rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface-subtle)] px-2.5 text-xs font-semibold text-[var(--color-text)] hover:border-[var(--color-primary-border)] hover:bg-[var(--color-primary-soft)]";
 const importInputClassName = "sr-only";
 const tableScrollClassName = "table-scroll m-0 h-auto min-h-0 w-full max-w-full overflow-x-auto overflow-y-hidden rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] [contain:paint]";
 const smartTableClassName =
@@ -165,7 +165,7 @@ export function SmartItineraryTable({
   const canEdit = role === "owner" || role === "organizer";
   const canRestructureItems = canEdit && canRestructure;
   const [selectedPathIds, setSelectedPathIds] = useState<string[]>(() => filterOptions.map((option) => option.id));
-  const [planFilterOpen, setPlanFilterOpen] = useState(false);
+  const [planFiltersExpanded, setPlanFiltersExpanded] = useState(false);
   const [collapsedDays, setCollapsedDays] = useState<string[]>([]);
   const [dragState, setDragState] = useState<{ draggedItemId: string | null; overItemId: string | null; overDay: string | null }>({ draggedItemId: null, overItemId: null, overDay: null });
   const [pendingDeleteItem, setPendingDeleteItem] = useState<ItineraryItem | null>(null);
@@ -412,36 +412,6 @@ export function SmartItineraryTable({
         )}
         aside={(
           <div className={pageHeaderActionsClassName} role="group" aria-label={t.itinerary.actionsLabel}>
-            <div className={pathControlsClassName}>
-              <div className={pathFilterShellClassName}>
-                <button
-                  type="button"
-                  className={pathFilterButtonClassName}
-                  aria-expanded={planFilterOpen}
-                  aria-haspopup="dialog"
-                  aria-label={t.itinerary.filters.plans}
-                  title={selectedFilterLabel}
-                  onClick={() => setPlanFilterOpen((current) => !current)}
-                >
-                  <span>{t.itinerary.filters.plans}</span>
-                  <span className={pathFilterSummaryClassName}>{selectedFilterLabel}</span>
-                </button>
-                {planFilterOpen ? (
-                  <div className={pathFilterMenuClassName} role="dialog" aria-label={t.itinerary.filters.plans}>
-                    {filterOptions.map((option) => (
-                      <label className={pathFilterOptionClassName} key={option.id}>
-                        <input
-                          type="checkbox"
-                          checked={selectedPathIdSet.has(option.id)}
-                          onChange={() => togglePlanFilter(option.id)}
-                        />
-                        <span>{option.name}</span>
-                      </label>
-                    ))}
-                  </div>
-                ) : null}
-              </div>
-            </div>
             <input
               ref={importInputRef}
               className={importInputClassName}
@@ -462,6 +432,36 @@ export function SmartItineraryTable({
           </div>
         )}
       />
+      <div className={itineraryFilterShellClassName}>
+        <div className={itineraryFilterBarClassName}>
+          <button
+            type="button"
+            className={pathFilterButtonClassName}
+            aria-controls="itinerary-plan-filters"
+            aria-expanded={planFiltersExpanded}
+            title={selectedFilterLabel}
+            onClick={() => setPlanFiltersExpanded((current) => !current)}
+          >
+            <Icon name="chevronRight" />
+            <span>{planFiltersExpanded ? t.itinerary.filters.hidePlans : t.itinerary.filters.showPlans}</span>
+          </button>
+          <span className={pathFilterSummaryClassName}>{selectedFilterLabel}</span>
+        </div>
+        {planFiltersExpanded ? (
+          <div className={pathFilterPanelClassName} id="itinerary-plan-filters" role="region" aria-label={t.itinerary.filters.panelLabel}>
+            {filterOptions.map((option) => (
+              <label className={pathFilterOptionClassName} key={option.id}>
+                <input
+                  type="checkbox"
+                  checked={selectedPathIdSet.has(option.id)}
+                  onChange={() => togglePlanFilter(option.id)}
+                />
+                <span>{option.name}</span>
+              </label>
+            ))}
+          </div>
+        ) : null}
+      </div>
       <div className={tableScrollClassName} tabIndex={0} aria-label={t.itinerary.scrollLabel}>
         <table className={smartTableClassName} style={smartTableStyle}>
           <caption className="sr-only">{t.itinerary.caption}</caption>

@@ -143,10 +143,12 @@ describe("SmartItineraryTable", () => {
       ],
     });
 
-    await user.click(screen.getByRole("button", { name: /กรองแผน/i }));
+    expect(screen.queryByRole("region", { name: /ตัวกรองแผน/i })).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: /แสดงตัวกรอง/i }));
     await user.click(screen.getByLabelText("Plan 1"));
 
-    expect(screen.getByRole("button", { name: /กรองแผน/i })).toHaveTextContent(/เลือก: Main/i);
+    expect(screen.getByRole("button", { name: /ซ่อนตัวกรอง/i })).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByText(/เลือก: Main/i)).toBeInTheDocument();
     expect(screen.getByRole("row", { name: /เปิดรายละเอียดของ เดินทางออกจากกรุงเทพ/i })).toBeInTheDocument();
     expect(screen.queryByRole("row", { name: /เปิดรายละเอียดของ Plan A museum/i })).not.toBeInTheDocument();
   });
@@ -162,9 +164,9 @@ describe("SmartItineraryTable", () => {
       ],
     });
 
-    fireEvent.click(screen.getByRole("button", { name: /กรองแผน/i }));
-    const filterDialog = screen.getByRole("dialog", { name: /กรองแผน/i });
-    expect(within(filterDialog).getByLabelText("Plan A")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /แสดงตัวกรอง/i }));
+    const filterRegion = screen.getByRole("region", { name: /ตัวกรองแผน/i });
+    expect(within(filterRegion).getByLabelText("Plan A")).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: /Path for Day 2/i }));
     const dayPathMenu = screen.getByRole("listbox", { name: /Path for Day 2/i });
     expect(within(dayPathMenu).getByRole("option", { name: "Plan A" })).toBeInTheDocument();
