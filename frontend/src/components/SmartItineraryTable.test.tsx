@@ -873,7 +873,7 @@ describe("SmartItineraryTable", () => {
     expect(panel).toHaveClass("table-panel", "grid", "min-h-full");
 
     const scrollFrame = screen.getByLabelText(/รายการแผนการเดินทางแบบเลื่อนได้/i);
-    expect(scrollFrame).toHaveClass("table-scroll", "overflow-x-auto", "rounded-[var(--radius-md)]");
+    expect(scrollFrame).toHaveClass("table-scroll", "overflow-x-auto", "rounded-(--radius-md)");
 
     const table = screen.getByRole("table", { name: /รายการแผนการเดินทาง แยกตามวัน/i });
     expect(table).toHaveClass("smart-table", "w-full", "min-w-[1010px]");

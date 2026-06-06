@@ -1,4 +1,4 @@
-import { screen } from "@testing-library/react";
+import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { renderWithI18n } from "@/src/i18n/test-utils";
@@ -82,7 +82,7 @@ describe("PeoplePanel", () => {
     expect(screen.getAllByText(/Explorer Friend/i)[0].closest(".person-row")).toHaveClass(
       "person-row",
       "grid",
-      "rounded-[var(--radius-sm)]",
+      "rounded-(--radius-sm)",
     );
     expect(screen.getByLabelText(/Status for Explorer Friend/i)).toHaveClass("member-status-stack", "flex", "flex-wrap");
     expect(screen.getByLabelText(/Role for Explorer Friend/i)).toHaveClass("member-role-select", "min-h-8");
@@ -98,7 +98,6 @@ describe("PeoplePanel", () => {
   it("asks for confirmation before disabling participant access", async () => {
     const user = userEvent.setup();
     const onChangeMemberAccessStatus = vi.fn();
-    const confirm = vi.spyOn(window, "confirm").mockReturnValue(false);
 
     render(
       <TripMembersPage
@@ -115,17 +114,17 @@ describe("PeoplePanel", () => {
 
     await user.click(screen.getByRole("button", { name: /ปิดสิทธิ์ Explorer Friend/i }));
 
-    expect(confirm).toHaveBeenCalledWith(expect.stringContaining("Explorer Friend"));
+    expect(screen.getByRole("dialog", { name: /ปิดสิทธิ์ Explorer Friend/i })).toBeInTheDocument();
     expect(onChangeMemberAccessStatus).not.toHaveBeenCalled();
 
-    confirm.mockRestore();
+    await user.click(screen.getByRole("button", { name: /ยกเลิก/i }));
+    expect(onChangeMemberAccessStatus).not.toHaveBeenCalled();
   });
 
   it("confirms reset, re-enable, and invite copy error paths", async () => {
     const user = userEvent.setup();
     const onResetMemberClaim = vi.fn();
     const onChangeMemberAccessStatus = vi.fn();
-    const confirm = vi.spyOn(window, "confirm").mockReturnValue(true);
     const writeText = vi.fn().mockRejectedValue(new Error("denied"));
     Object.defineProperty(navigator, "clipboard", {
       configurable: true,
@@ -154,22 +153,20 @@ describe("PeoplePanel", () => {
     );
 
     await user.click(screen.getByRole("button", { name: /รีเซ็ตรหัสผ่าน Explorer Friend/i }));
+    await user.click(within(screen.getByRole("dialog", { name: /รีเซ็ตตัวตน Explorer Friend/i })).getByRole("button", { name: /รีเซ็ตตัวตน/i }));
     await user.click(screen.getByRole("button", { name: /เปิดสิทธิ์ Family Member/i }));
+    await user.click(within(screen.getByRole("dialog", { name: /เปิดสิทธิ์ Family Member/i })).getByRole("button", { name: /ยืนยัน/i }));
     await user.click(screen.getByRole("button", { name: /คัดลอกลิงก์เชิญ/i }));
 
-    expect(confirm).toHaveBeenCalledWith(expect.stringContaining("Explorer Friend"));
     expect(onResetMemberClaim).toHaveBeenCalledWith("member-nam");
     expect(onChangeMemberAccessStatus).toHaveBeenCalledWith("member-family", "active");
     expect(screen.getByText("คัดลอกไม่สำเร็จ")).toBeInTheDocument();
-
-    confirm.mockRestore();
   });
 
-  it("ignores null password prompts and blank new-member submissions", async () => {
+  it("ignores canceled password dialogs and blank new-member submissions", async () => {
     const user = userEvent.setup();
     const onChangeMemberPassword = vi.fn();
     const onCreateMember = vi.fn();
-    const prompt = vi.spyOn(window, "prompt").mockReturnValue(null);
 
     render(
       <TripMembersPage
@@ -185,19 +182,17 @@ describe("PeoplePanel", () => {
     );
 
     await user.click(screen.getByRole("button", { name: /เปลี่ยนรหัสผ่าน Demo Traveler/i }));
+    await user.click(screen.getByRole("button", { name: /ยกเลิก/i }));
     await user.click(screen.getByRole("button", { name: /เปิดฟอร์มเพิ่มสมาชิก/i }));
     expect(screen.getByRole("button", { name: /บันทึกสมาชิก/i })).toBeDisabled();
 
     expect(onChangeMemberPassword).not.toHaveBeenCalled();
     expect(onCreateMember).not.toHaveBeenCalled();
-
-    prompt.mockRestore();
   });
 
   it("asks the owner for a new password before changing it", async () => {
     const user = userEvent.setup();
     const onChangeMemberPassword = vi.fn();
-    const prompt = vi.spyOn(window, "prompt").mockReturnValue("owner-new-pin");
 
     render(
       <TripMembersPage
@@ -213,18 +208,16 @@ describe("PeoplePanel", () => {
     );
 
     await user.click(screen.getByRole("button", { name: /เปลี่ยนรหัสผ่าน Demo Traveler/i }));
+    const passwordDialog = screen.getByRole("dialog", { name: /เปลี่ยนรหัสผ่าน Demo Traveler/i });
+    await user.type(within(passwordDialog).getByLabelText(/รหัสผ่านใหม่/i), "owner-new-pin");
+    await user.click(within(passwordDialog).getByRole("button", { name: /บันทึกรหัสผ่าน/i }));
 
-    expect(prompt).toHaveBeenCalledWith(expect.stringContaining("Demo Traveler"));
     expect(onChangeMemberPassword).toHaveBeenCalledWith("member-aom", "owner-new-pin");
-
-    prompt.mockRestore();
   });
 
   it("does not change the owner password when the new password is too short", async () => {
     const user = userEvent.setup();
     const onChangeMemberPassword = vi.fn();
-    const prompt = vi.spyOn(window, "prompt").mockReturnValue("123");
-    const alert = vi.spyOn(window, "alert").mockImplementation(() => undefined);
 
     render(
       <TripMembersPage
@@ -240,12 +233,12 @@ describe("PeoplePanel", () => {
     );
 
     await user.click(screen.getByRole("button", { name: /เปลี่ยนรหัสผ่าน Demo Traveler/i }));
+    const passwordDialog = screen.getByRole("dialog", { name: /เปลี่ยนรหัสผ่าน Demo Traveler/i });
+    await user.type(within(passwordDialog).getByLabelText(/รหัสผ่านใหม่/i), "123");
+    await user.click(within(passwordDialog).getByRole("button", { name: /บันทึกรหัสผ่าน/i }));
 
-    expect(alert).toHaveBeenCalledWith(expect.stringContaining("อย่างน้อย 4"));
+    expect(within(passwordDialog).getByRole("alert")).toHaveTextContent("รหัสผ่านต้องมีอย่างน้อย 4 ตัวอักษร");
     expect(onChangeMemberPassword).not.toHaveBeenCalled();
-
-    prompt.mockRestore();
-    alert.mockRestore();
   });
 
   it("shows a read-only command center for non-managers", () => {
@@ -281,7 +274,7 @@ describe("PeoplePanel", () => {
     expect(screen.getByText("ไม่มีสมาชิกในตัวกรองนี้").closest(".members-empty-state")).toHaveClass(
       "members-empty-state",
       "grid",
-      "rounded-[var(--radius-md)]",
+      "rounded-(--radius-md)",
     );
     expect(screen.getByRole("button", { name: /ล้างตัวกรอง/i })).toHaveClass("reset-claim-button", "inline-flex");
   });

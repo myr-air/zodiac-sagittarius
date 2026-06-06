@@ -65,6 +65,15 @@
 - **Fix update 2026-06-06:** Removed unused lint targets, switched overview imagery to `Image`, reused `LanguageSwitch` class constants, and added route-map fallback viewport dependencies.
 - **Verification:** `rtk bun run --cwd frontend lint` now exits with 0 warnings. `rtk bun run --cwd frontend typecheck` passed.
 
+### Tailwind CSS variable utilities use legacy bracket syntax
+
+- **Date found:** 2026-06-06
+- **Evidence:** Tailwind canonical class suggestions flag simple design-token utilities such as `text-[var(--color-text-muted)]`, which can be written as `text-(--color-text-muted)`.
+- **Impact:** The old form is valid but creates editor noise and makes new Tailwind class suggestions harder to scan.
+- **Suggested fix path:** Prefer canonical shorthand only when the arbitrary value is a single CSS variable token. Keep bracket syntax for multi-value expressions, fallback vars, gradients, shadows, `rgb(...)`, `color-mix(...)`, and arbitrary properties.
+- **Fix update 2026-06-06:** Added a project frontend rule in `AGENTS.md`, converted simple token utilities across frontend source files, and added a CSS contract test to prevent new legacy simple-token utilities.
+- **Verification:** `rtk bun run --cwd frontend test src/styles.contract.test.ts` passed after first failing with 1,090 legacy matches. `rtk bun run --cwd frontend test` passed with 38 files passed, 2 skipped, 415 tests passed, 2 skipped. `rtk bun run --cwd frontend lint`, `rtk bun run --cwd frontend typecheck`, and `rtk bun run --cwd frontend build` passed. A repository scanner reported `legacySimpleVarUtilityCount: 0`.
+
 ## ✅ Implementation Checklist
 
 สถานะนี้อัปเดตจากการแก้ใน codebase วันที่ 2026-05-31 และใช้เป็นแหล่งอ้างอิงเร็วว่า issue ในไฟล์นี้ถูกจัดการครบหรือยัง

@@ -3,9 +3,9 @@ import { cn } from "@/src/lib/cn";
 import type { Member, Suggestion } from "@/src/trip/types";
 import { Icon } from "./icons";
 
-const panelClassName = "detail-section suggestion-module grid gap-1.5 border-b border-[var(--color-border)] px-4 py-2.5";
+const panelClassName = "detail-section suggestion-module grid gap-1.5 border-b border-(--color-border) px-4 py-2.5";
 const titleRowClassName = "module-title-row flex items-center justify-between gap-2.5";
-const titleButtonClassName = "min-h-[30px] rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface)] px-2.5 text-xs font-bold text-[#334155]";
+const titleButtonClassName = "min-h-[30px] rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-2.5 text-xs font-bold text-[#334155]";
 const listClassName = "suggestion-list grid gap-1.5";
 const itemBaseClassName = "suggestion-item grid grid-cols-[18px_minmax(0,1fr)] gap-2 text-xs leading-4 text-[#334155]";
 const copyClassName = "grid gap-0.5";
@@ -27,11 +27,11 @@ export function SuggestionPanel({ suggestions, members }: { suggestions: Suggest
             <article className={cn(itemBaseClassName, `suggestion-item--${suggestion.status}`)} key={suggestion.id}>
               <Icon
                 name={suggestion.status === "conflicted" ? "alertCircle" : "check"}
-                className={suggestion.status === "conflicted" ? "text-[var(--color-warning)]" : "text-[var(--color-success)]"}
+                className={suggestion.status === "conflicted" ? "text-(--color-warning)" : "text-(--color-success)"}
               />
               <div className={copyClassName}>
                 <strong className="font-semibold">{suggestion.proposedPatch.activity ?? t.suggestions.fallback}</strong>
-                <span className="text-[var(--color-text-muted)]">{t.suggestions.suggestedUpdate({ name: proposer?.displayName ?? t.appShell.roles.traveler })}</span>
+                <span className="text-(--color-text-muted)">{t.suggestions.suggestedUpdate({ name: proposer?.displayName ?? t.appShell.roles.traveler })}</span>
               </div>
             </article>
           );

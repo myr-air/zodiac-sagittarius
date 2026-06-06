@@ -23,18 +23,18 @@ interface TripSettingsPageProps {
 
 const pageClassName = "trip-settings-page min-h-full bg-[linear-gradient(180deg,#f8fffb_0%,#f7fbff_46%,#fff7fb_100%)] px-6 py-6 max-[767px]:px-4";
 const shellClassName = "mx-auto grid max-w-[980px] gap-4";
-const headerClassName = "grid gap-3 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[rgb(255_255_255_/_0.88)] p-5 shadow-[var(--shadow-panel)]";
+const headerClassName = "grid gap-3 rounded-(--radius-lg) border border-(--color-border) bg-[rgb(255_255_255_/_0.88)] p-5 shadow-[var(--shadow-panel)]";
 const headerToplineClassName = "flex min-w-0 items-start justify-between gap-3 max-[767px]:flex-wrap";
 const eyebrowClassName = "inline-flex w-fit items-center gap-2 rounded-full border border-[#bae6fd] bg-[#e0f2fe] px-3 py-1 text-[11px] font-extrabold uppercase tracking-[0.04em] text-[#0369a1]";
-const headingClassName = "grid gap-1 [&_h1]:text-[26px] [&_h1]:font-[900] [&_h1]:leading-8 [&_h1]:text-[var(--color-text)] [&_p]:max-w-[620px] [&_p]:text-[13px] [&_p]:leading-5 [&_p]:text-[var(--color-text-muted)]";
+const headingClassName = "grid gap-1 [&_h1]:text-[26px] [&_h1]:font-[900] [&_h1]:leading-8 [&_h1]:text-(--color-text) [&_p]:max-w-[620px] [&_p]:text-[13px] [&_p]:leading-5 [&_p]:text-(--color-text-muted)";
 const contentGridClassName = "grid grid-cols-[minmax(0,1fr)_300px] gap-4 max-[920px]:grid-cols-1";
-const cardClassName = "rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[rgb(255_255_255_/_0.9)] p-4 shadow-[var(--shadow-panel)]";
+const cardClassName = "rounded-(--radius-lg) border border-(--color-border) bg-[rgb(255_255_255_/_0.9)] p-4 shadow-[var(--shadow-panel)]";
 const formClassName = "grid gap-3.5";
 const fieldGridClassName = "grid grid-cols-2 gap-3 max-[767px]:grid-cols-1";
-const labelClassName = "grid gap-1.5 text-[12px] font-extrabold text-[var(--color-text)]";
-const inputClassName = "min-h-10 rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3 text-[13px] text-[var(--color-text)] outline-none transition-[border-color,box-shadow] focus:border-[var(--color-primary)] focus:shadow-[0_0_0_3px_rgb(15_118_110_/_0.12)] disabled:bg-[var(--color-surface-muted)] disabled:text-[var(--color-text-muted)]";
+const labelClassName = "grid gap-1.5 text-[12px] font-extrabold text-(--color-text)";
+const inputClassName = "min-h-10 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-3 text-[13px] text-(--color-text) outline-none transition-[border-color,box-shadow] focus:border-(--color-primary) focus:shadow-[0_0_0_3px_rgb(15_118_110_/_0.12)] disabled:bg-(--color-surface-muted) disabled:text-(--color-text-muted)";
 const sideCardClassName = cn(cardClassName, "grid content-start gap-3 bg-[linear-gradient(145deg,#ecfdf5,#eff6ff_54%,#fff1f2)]");
-const impactLineClassName = "flex items-start gap-2 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[rgb(255_255_255_/_0.72)] p-3 text-[13px] leading-5 text-[var(--color-text-muted)]";
+const impactLineClassName = "flex items-start gap-2 rounded-(--radius-md) border border-(--color-border) bg-[rgb(255_255_255_/_0.72)] p-3 text-[13px] leading-5 text-(--color-text-muted)";
 const actionRowClassName = "flex items-center justify-end gap-2 pt-1 max-[767px]:grid max-[767px]:grid-cols-1";
 const messageClassName = "text-[13px] font-bold leading-5";
 const errorClassName = "text-[#b91c1c]";
@@ -104,7 +104,7 @@ function TripSettingsPageContent({ canEdit, currentMember, trip, onSave }: TripS
 
         <div className={contentGridClassName}>
           <form className={cn(cardClassName, formClassName)} onSubmit={submitSettings}>
-            <h2 className="text-[16px] font-[900] text-[var(--color-text)]">{t.tripSettings.tripDetails}</h2>
+            <h2 className="text-[16px] font-[900] text-(--color-text)">{t.tripSettings.tripDetails}</h2>
             <label className={labelClassName}>
               <span>{t.tripSettings.tripName}</span>
               <input
@@ -157,7 +157,7 @@ function TripSettingsPageContent({ canEdit, currentMember, trip, onSave }: TripS
           </form>
 
           <aside className={sideCardClassName} aria-label={t.tripSettings.planImpact}>
-            <h2 className="text-[16px] font-[900] text-[var(--color-text)]">{t.tripSettings.planImpact}</h2>
+            <h2 className="text-[16px] font-[900] text-(--color-text)">{t.tripSettings.planImpact}</h2>
             <div className={impactLineClassName}>
               <Icon name={outsideStopCount ? "warning" : "check"} />
               <span>{outsideStopCount ? t.tripSettings.outsideStops({ count: outsideStopCount }) : t.tripSettings.noImpact}</span>

@@ -16,7 +16,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 const workspaceShellClassName = "workspace-shell min-w-0 bg-transparent";
 const workspaceGridClassName = "workspace-grid relative grid h-[calc(100vh-62px)] min-h-0 grid-cols-[minmax(0,1fr)] overflow-hidden data-[command-bar=hidden]:h-screen max-[1199px]:h-auto max-[1199px]:grid-cols-1 max-[1199px]:overflow-visible";
-const planningMainClassName = "planning-main h-full min-h-0 min-w-0 overflow-y-auto scroll-smooth bg-[var(--color-page)] max-[1199px]:h-auto max-[1199px]:overflow-y-visible";
+const planningMainClassName = "planning-main h-full min-h-0 min-w-0 overflow-y-auto scroll-smooth bg-(--color-page) max-[1199px]:h-auto max-[1199px]:overflow-y-visible";
 
 export const Owner: Story = {
   args: {

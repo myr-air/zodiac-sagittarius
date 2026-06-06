@@ -44,38 +44,38 @@ import type { DailyBriefingOverrides, Expense, ExpenseComment, ExpenseLineItem, 
 const localMutationTimestamp = "2026-05-28T00:00:00.000Z";
 const accountSessionStorageKey = "sagittarius-account-session";
 const workspaceToastClassName =
-  "workspace-toast pointer-events-auto fixed left-1/2 top-5 z-[60] flex w-[min(480px,calc(100vw-32px))] -translate-x-1/2 items-start gap-3 rounded-[var(--radius-lg)] border border-[var(--color-route-border)] bg-[rgba(239,246,255,0.94)] px-4 py-3 shadow-[0_8px_32px_rgba(15,23,42,0.16)] backdrop-blur-[10px] max-[767px]:top-3";
-const workspaceToastIconClassName = "mt-0.5 shrink-0 text-[var(--color-route)]";
-const workspaceToastBodyClassName = "min-w-0 flex-1 [&_span]:block [&_span]:text-[12.5px] [&_span]:leading-5 [&_span]:text-[var(--color-text-muted)] [&_strong]:text-[13.5px] [&_strong]:font-[850] [&_strong]:text-[var(--color-route)]";
+  "workspace-toast pointer-events-auto fixed left-1/2 top-5 z-[60] flex w-[min(480px,calc(100vw-32px))] -translate-x-1/2 items-start gap-3 rounded-(--radius-lg) border border-(--color-route-border) bg-[rgba(239,246,255,0.94)] px-4 py-3 shadow-[0_8px_32px_rgba(15,23,42,0.16)] backdrop-blur-[10px] max-[767px]:top-3";
+const workspaceToastIconClassName = "mt-0.5 shrink-0 text-(--color-route)";
+const workspaceToastBodyClassName = "min-w-0 flex-1 [&_span]:block [&_span]:text-[12.5px] [&_span]:leading-5 [&_span]:text-(--color-text-muted) [&_strong]:text-[13.5px] [&_strong]:font-[850] [&_strong]:text-(--color-route)";
 const workspaceToastActionsClassName = "flex shrink-0 items-center gap-2";
 const workspaceToastDismissClassName =
-  "ml-1 grid size-7 shrink-0 place-items-center rounded-full text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-surface-subtle)] hover:text-[var(--color-text)]";
+  "ml-1 grid size-7 shrink-0 place-items-center rounded-full text-(--color-text-muted) transition-colors hover:bg-(--color-surface-subtle) hover:text-(--color-text)";
 const appDeleteModalBackdropClassName = "modal-backdrop fixed inset-0 z-20 grid place-items-center bg-[rgb(15_23_42_/_0.28)] p-5";
-const appDeleteDialogClassName = "delete-confirm-dialog grid w-[min(420px,100%)] gap-3 rounded-[var(--radius-lg)] border border-[var(--color-danger-border)] bg-[var(--color-surface)] p-4 shadow-[0_24px_70px_rgb(15_23_42_/_0.22)]";
+const appDeleteDialogClassName = "delete-confirm-dialog grid w-[min(420px,100%)] gap-3 rounded-(--radius-lg) border border-(--color-danger-border) bg-(--color-surface) p-4 shadow-[0_24px_70px_rgb(15_23_42_/_0.22)]";
 const appDeleteDialogTitleClassName = "m-0 text-base font-extrabold leading-[22px] text-[#991b1b]";
-const appDeleteDialogBodyClassName = "m-0 text-sm font-medium leading-6 text-[var(--color-text-muted)]";
+const appDeleteDialogBodyClassName = "m-0 text-sm font-medium leading-6 text-(--color-text-muted)";
 const appDeleteDialogActionsClassName = "mt-1 flex justify-end gap-2";
-const importDialogClassName = "import-options-dialog grid w-[min(520px,100%)] gap-3 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 shadow-[0_24px_70px_rgb(15_23_42_/_0.22)]";
-const importDialogTitleClassName = "m-0 text-base font-extrabold leading-[22px] text-[var(--color-text)]";
-const importDialogBodyClassName = "m-0 text-sm font-medium leading-6 text-[var(--color-text-muted)]";
-const importDialogFieldsClassName = "grid gap-3 [&_label]:grid [&_label]:gap-1.5 [&_label>span]:text-xs [&_label>span]:font-bold [&_label>span]:text-[var(--color-text-muted)] [&_input]:min-h-9 [&_input]:rounded-[var(--radius-sm)] [&_input]:border [&_input]:border-[var(--color-border)] [&_input]:bg-[var(--color-surface)] [&_input]:px-2.5 [&_input]:text-sm [&_select]:min-h-9 [&_select]:rounded-[var(--radius-sm)] [&_select]:border [&_select]:border-[var(--color-border)] [&_select]:bg-[var(--color-surface)] [&_select]:px-2.5 [&_select]:text-sm";
-const importErrorClassName = "mx-6 mt-3 rounded-[var(--radius-sm)] border border-[var(--color-danger-border)] bg-[var(--color-danger-soft)] px-3 py-2 text-sm font-bold text-[var(--color-danger)] max-[767px]:mx-3";
+const importDialogClassName = "import-options-dialog grid w-[min(520px,100%)] gap-3 rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) p-4 shadow-[0_24px_70px_rgb(15_23_42_/_0.22)]";
+const importDialogTitleClassName = "m-0 text-base font-extrabold leading-[22px] text-(--color-text)";
+const importDialogBodyClassName = "m-0 text-sm font-medium leading-6 text-(--color-text-muted)";
+const importDialogFieldsClassName = "grid gap-3 [&_label]:grid [&_label]:gap-1.5 [&_label>span]:text-xs [&_label>span]:font-bold [&_label>span]:text-(--color-text-muted) [&_input]:min-h-9 [&_input]:rounded-(--radius-sm) [&_input]:border [&_input]:border-(--color-border) [&_input]:bg-(--color-surface) [&_input]:px-2.5 [&_input]:text-sm [&_select]:min-h-9 [&_select]:rounded-(--radius-sm) [&_select]:border [&_select]:border-(--color-border) [&_select]:bg-(--color-surface) [&_select]:px-2.5 [&_select]:text-sm";
+const importErrorClassName = "mx-6 mt-3 rounded-(--radius-sm) border border-(--color-danger-border) bg-(--color-danger-soft) px-3 py-2 text-sm font-bold text-(--color-danger) max-[767px]:mx-3";
 const accountClaimMessageClassName = "account-claim-message font-extrabold";
 const portalLoadingCardClassName =
-  "account-card portal-loading-card grid min-h-[220px] gap-3.5 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[rgb(255_255_255_/_0.94)] p-4 shadow-[var(--shadow-panel)]";
+  "account-card portal-loading-card grid min-h-[220px] gap-3.5 rounded-(--radius-lg) border border-(--color-border) bg-[rgb(255_255_255_/_0.94)] p-4 shadow-[var(--shadow-panel)]";
 
 interface PendingItineraryImport {
   fileName: string;
   items: ItineraryExportItem[];
 }
 const portalSkeletonBaseClassName =
-  "portal-skeleton block overflow-hidden rounded-[var(--radius-md)] bg-[linear-gradient(90deg,var(--color-surface-subtle),rgb(226_232_240_/_0.72),var(--color-surface-subtle))] bg-[length:220%_100%] animate-[portal-skeleton-pulse_1.2s_ease-in-out_infinite] motion-reduce:animate-none";
+  "portal-skeleton block overflow-hidden rounded-(--radius-md) bg-[linear-gradient(90deg,var(--color-surface-subtle),rgb(226_232_240_/_0.72),var(--color-surface-subtle))] bg-[length:220%_100%] animate-[portal-skeleton-pulse_1.2s_ease-in-out_infinite] motion-reduce:animate-none";
 const portalSkeletonTitleClassName = `${portalSkeletonBaseClassName} portal-skeleton--title h-7 w-[min(220px,48%)]`;
 const portalSkeletonLineClassName = `${portalSkeletonBaseClassName} portal-skeleton--line h-4 w-[min(520px,72%)]`;
 const portalSkeletonBlockClassName = `${portalSkeletonBaseClassName} portal-skeleton--block h-[132px] w-full`;
 const workspaceShellClassName = "workspace-shell min-w-0 bg-transparent";
 const workspaceGridClassName = "workspace-grid relative grid h-[calc(100vh-62px)] min-h-0 grid-cols-[minmax(0,1fr)] overflow-hidden data-[command-bar=hidden]:h-screen max-[1199px]:h-auto max-[1199px]:grid-cols-1 max-[1199px]:overflow-visible";
-const planningMainClassName = "planning-main h-full min-h-0 min-w-0 overflow-y-auto scroll-smooth bg-[var(--color-page)] transition-[padding] duration-200 max-[1199px]:h-auto max-[1199px]:overflow-y-visible";
+const planningMainClassName = "planning-main h-full min-h-0 min-w-0 overflow-y-auto scroll-smooth bg-(--color-page) transition-[padding] duration-200 max-[1199px]:h-auto max-[1199px]:overflow-y-visible";
 const planningMainWithRailClassName = "pr-[380px] max-[1199px]:pr-0";
 
 export type PlanningView = "overview" | "itinerary" | "map" | "timeline" | "members" | "expenses" | "settings";

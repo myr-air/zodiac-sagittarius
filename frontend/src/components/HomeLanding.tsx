@@ -31,7 +31,7 @@ const checklistKeys = ["flights", "hotel", "cash", "packing"] as const;
 const checkedChecklistKeys = new Set<(typeof checklistKeys)[number]>(["flights", "hotel", "cash"]);
 const workflowToneClassNames = {
   teal: {
-    number: "bg-[var(--color-primary)] text-white shadow-[0_14px_24px_rgb(15_118_110_/_0.24)]",
+    number: "bg-(--color-primary) text-white shadow-[0_14px_24px_rgb(15_118_110_/_0.24)]",
     icon: "bg-[#f2f8f9] text-[#078a95]",
   },
   sand: {
@@ -47,35 +47,35 @@ const workflowToneClassNames = {
 const homeNavClassName =
   "home-nav mx-auto grid min-h-[82px] w-[min(100%_-_40px,1320px)] grid-cols-[minmax(0,1fr)_auto] items-center gap-6 max-[1120px]:grid-cols-[1fr_auto] max-[760px]:min-h-0 max-[760px]:w-[min(100%_-_28px,1320px)] max-[760px]:grid-cols-1 max-[760px]:gap-3.5 max-[760px]:py-[18px]";
 const homeBrandClassName =
-  "home-brand inline-flex w-fit items-center gap-[11px] justify-self-start whitespace-nowrap text-2xl font-[850] leading-none text-[var(--color-primary)] no-underline max-[760px]:text-[21px]";
+  "home-brand inline-flex w-fit items-center gap-[11px] justify-self-start whitespace-nowrap text-2xl font-[850] leading-none text-(--color-primary) no-underline max-[760px]:text-[21px]";
 const homeBrandMarkClassName =
-  "home-brand-mark grid size-[42px] place-items-center [&_svg]:size-10 [&_svg]:fill-none [&_svg]:stroke-current [&_svg]:stroke-[2.4] [&_svg]:[stroke-linecap:round] [&_svg]:[stroke-linejoin:round] [&_path:last-child]:stroke-[var(--color-sunshine)]";
+  "home-brand-mark grid size-[42px] place-items-center [&_svg]:size-10 [&_svg]:fill-none [&_svg]:stroke-current [&_svg]:stroke-[2.4] [&_svg]:[stroke-linecap:round] [&_svg]:[stroke-linejoin:round] [&_path:last-child]:stroke-(--color-sunshine)";
 const homeNavActionsClassName =
   "home-nav-actions flex items-center gap-3 max-[760px]:grid max-[760px]:grid-cols-[auto_minmax(86px,0.7fr)_minmax(132px,1fr)] max-[760px]:gap-2.5 max-[420px]:grid-cols-[auto_minmax(0,1fr)]";
 const homeNavSecondaryActionsClassName = "home-nav-secondary-actions inline-flex items-center gap-2.5 max-[760px]:contents";
 const homeLanguageSwitchClassName =
-  "home-language-switch min-h-[42px] border-[color-mix(in_srgb,var(--color-primary)_36%,white)] bg-[rgb(255_255_255_/_0.86)] shadow-[0_10px_22px_rgb(15_118_110_/_0.08)] [&_.language-switch-option--active]:bg-[var(--color-primary)] [&_.language-switch-option--active]:text-white";
+  "home-language-switch min-h-[42px] border-[color-mix(in_srgb,var(--color-primary)_36%,white)] bg-[rgb(255_255_255_/_0.86)] shadow-[0_10px_22px_rgb(15_118_110_/_0.08)] [&_.language-switch-option--active]:bg-(--color-primary) [&_.language-switch-option--active]:text-white";
 
 const homePageClassName =
   "home-page min-h-screen overflow-hidden bg-[linear-gradient(180deg,rgb(255_255_255_/_0.88),rgb(240_253_250_/_0.46)_54%,rgb(255_247_237_/_0.26)),linear-gradient(90deg,rgb(37_99_235_/_0.06)_1px,transparent_1px),linear-gradient(0deg,rgb(37_99_235_/_0.055)_1px,transparent_1px),radial-gradient(720px_420px_at_13%_31%,rgb(20_184_166_/_0.16),transparent_72%),radial-gradient(620px_360px_at_86%_18%,rgb(251_113_133_/_0.13),transparent_70%),radial-gradient(760px_430px_at_74%_88%,rgb(250_204_21_/_0.12),transparent_72%),var(--paper-grain),var(--color-page)] [background-size:auto,112px_112px,112px_112px,auto,auto,auto,140px_140px,auto] max-[760px]:overflow-x-hidden";
 const homeHeroClassName =
   "home-hero relative mx-auto grid min-h-[760px] w-[min(100%_-_40px,1320px)] grid-cols-[minmax(320px,0.82fr)_minmax(620px,1.18fr)] items-center gap-14 max-[1120px]:grid-cols-1 max-[1120px]:gap-5 max-[1120px]:pt-[34px] max-[760px]:min-h-0 max-[760px]:w-[min(100%_-_28px,1320px)] max-[760px]:pt-5";
 const homeButtonBaseClassName =
-  "inline-flex min-h-[42px] items-center justify-center rounded-[var(--radius-md)] text-sm font-[780] leading-[18px] no-underline transition-[transform,border-color,background,color,box-shadow] duration-[180ms] ease-out active:translate-y-0 max-[760px]:w-full max-[760px]:px-3 max-[760px]:text-center [&_.icon]:size-[18px] [&_.icon]:shrink-0";
+  "inline-flex min-h-[42px] items-center justify-center rounded-(--radius-md) text-sm font-[780] leading-[18px] no-underline transition-[transform,border-color,background,color,box-shadow] duration-[180ms] ease-out active:translate-y-0 max-[760px]:w-full max-[760px]:px-3 max-[760px]:text-center [&_.icon]:size-[18px] [&_.icon]:shrink-0";
 const homeLinkButtonClassName = cn(
   "home-link-button",
   homeButtonBaseClassName,
-  "border border-[color-mix(in_srgb,var(--color-primary)_68%,white)] bg-[rgb(255_255_255_/_0.82)] px-[18px] text-[var(--color-primary-strong)] hover:border-[var(--color-primary)] hover:bg-[rgb(236_254_255_/_0.82)] hover:shadow-[0_12px_24px_rgb(15_118_110_/_0.1)]",
+  "border border-[color-mix(in_srgb,var(--color-primary)_68%,white)] bg-[rgb(255_255_255_/_0.82)] px-[18px] text-(--color-primary-strong) hover:border-(--color-primary) hover:bg-[rgb(236_254_255_/_0.82)] hover:shadow-[0_12px_24px_rgb(15_118_110_/_0.1)]",
 );
 const homePrimaryButtonClassName = cn(
   "home-primary-button",
   homeButtonBaseClassName,
-  "gap-2.5 border border-[var(--color-primary)] bg-[linear-gradient(135deg,var(--color-primary),#0891b2)] px-[18px] text-white shadow-[0_16px_28px_rgb(15_118_110_/_0.18)] hover:-translate-y-px hover:shadow-[0_18px_32px_rgb(15_118_110_/_0.22)]",
+  "gap-2.5 border border-(--color-primary) bg-[linear-gradient(135deg,var(--color-primary),#0891b2)] px-[18px] text-white shadow-[0_16px_28px_rgb(15_118_110_/_0.18)] hover:-translate-y-px hover:shadow-[0_18px_32px_rgb(15_118_110_/_0.22)]",
 );
 const homeSecondaryButtonClassName = cn(
   "home-secondary-button",
   homeButtonBaseClassName,
-  "gap-3 border border-[color-mix(in_srgb,var(--color-primary)_68%,white)] bg-[rgb(255_255_255_/_0.82)] px-6 text-[var(--color-primary-strong)] hover:border-[var(--color-primary)] hover:bg-[rgb(236_254_255_/_0.82)] hover:shadow-[0_12px_24px_rgb(15_118_110_/_0.1)]",
+  "gap-3 border border-[color-mix(in_srgb,var(--color-primary)_68%,white)] bg-[rgb(255_255_255_/_0.82)] px-6 text-(--color-primary-strong) hover:border-(--color-primary) hover:bg-[rgb(236_254_255_/_0.82)] hover:shadow-[0_12px_24px_rgb(15_118_110_/_0.1)]",
 );
 const homeLargeButtonClassName = "home-large-button min-h-14 px-[26px] max-[760px]:min-h-[50px]";
 
@@ -86,81 +86,81 @@ const homeTitleSceneClassName = "home-title-scene relative isolate";
 const homeHeroTitleClassName =
   "home-hero-title relative z-[1] m-0 max-w-[610px] text-[44px] font-black leading-[1.16] text-[#102036] [text-wrap:balance] max-[1120px]:max-w-[700px] max-[760px]:text-[30px] max-[760px]:leading-[1.34] [&>span]:block";
 const homeHeroDetailClassName =
-  "home-hero-detail mt-[26px] mb-0 max-w-[560px] text-lg font-medium leading-8 text-[var(--color-text-muted)] [text-wrap:pretty] max-[760px]:mt-[18px] max-[760px]:text-[15px] max-[760px]:leading-[26px]";
+  "home-hero-detail mt-[26px] mb-0 max-w-[560px] text-lg font-medium leading-8 text-(--color-text-muted) [text-wrap:pretty] max-[760px]:mt-[18px] max-[760px]:text-[15px] max-[760px]:leading-[26px]";
 const homeHeroActionsClassName = "home-hero-actions mt-[34px] flex flex-wrap gap-[18px] max-[760px]:hidden";
 const homeSocialProofClassName = "home-social-proof mt-12 flex items-center gap-[18px] max-[760px]:mt-7 max-[760px]:items-start";
 const homeAvatarStackClassName =
-  "home-avatar-stack flex [&>span]:-ml-2.5 [&>span]:grid [&>span]:size-11 [&>span]:place-items-center [&>span]:rounded-full [&>span]:border-[3px] [&>span]:border-white [&>span]:bg-[var(--color-postcard)] [&>span]:text-xs [&>span]:font-[850] [&>span]:text-[#102036] [&>span]:shadow-[0_8px_20px_rgb(15_23_42_/_0.12)] [&>span:first-child]:ml-0 [&>span:first-child]:bg-[var(--color-mint)] [&>span:nth-child(2)]:bg-[#bfdbfe] [&>span:nth-child(3)]:bg-[#fed7aa] [&>span:last-child]:bg-[var(--color-primary)] [&>span:last-child]:text-white";
-const homeSocialProofTextClassName = "m-0 text-sm font-bold leading-[22px] text-[var(--color-text-muted)]";
+  "home-avatar-stack flex [&>span]:-ml-2.5 [&>span]:grid [&>span]:size-11 [&>span]:place-items-center [&>span]:rounded-full [&>span]:border-[3px] [&>span]:border-white [&>span]:bg-(--color-postcard) [&>span]:text-xs [&>span]:font-[850] [&>span]:text-[#102036] [&>span]:shadow-[0_8px_20px_rgb(15_23_42_/_0.12)] [&>span:first-child]:ml-0 [&>span:first-child]:bg-(--color-mint) [&>span:nth-child(2)]:bg-[#bfdbfe] [&>span:nth-child(3)]:bg-[#fed7aa] [&>span:last-child]:bg-(--color-primary) [&>span:last-child]:text-white";
+const homeSocialProofTextClassName = "m-0 text-sm font-bold leading-[22px] text-(--color-text-muted)";
 
 const homeProductPreviewClassName =
   "home-product-preview relative z-[1] scroll-mt-[18px] max-[1120px]:mb-[52px] max-[760px]:hidden";
 const homePreviewShellClassName =
-  "home-preview-shell min-w-0 overflow-hidden rounded-[var(--radius-lg)] border border-[rgb(203_213_225_/_0.9)] bg-[rgb(255_255_255_/_0.96)] shadow-[0_24px_60px_rgb(15_23_42_/_0.18)]";
+  "home-preview-shell min-w-0 overflow-hidden rounded-(--radius-lg) border border-[rgb(203_213_225_/_0.9)] bg-[rgb(255_255_255_/_0.96)] shadow-[0_24px_60px_rgb(15_23_42_/_0.18)]";
 const homePreviewTopbarClassName =
-  "home-preview-topbar flex min-h-[84px] items-center justify-between gap-[18px] border-b border-[var(--color-border)] px-7 py-[22px] max-[760px]:min-h-0 max-[760px]:items-start max-[760px]:p-[18px] max-[420px]:grid";
-const homePreviewTitleClassName = "m-0 block text-base font-[850] leading-[22px] text-[var(--color-text)]";
-const homePreviewMetaClassName = "mt-1 block text-[13px] font-bold text-[var(--color-text-subtle)]";
+  "home-preview-topbar flex min-h-[84px] items-center justify-between gap-[18px] border-b border-(--color-border) px-7 py-[22px] max-[760px]:min-h-0 max-[760px]:items-start max-[760px]:p-[18px] max-[420px]:grid";
+const homePreviewTitleClassName = "m-0 block text-base font-[850] leading-[22px] text-(--color-text)";
+const homePreviewMetaClassName = "mt-1 block text-[13px] font-bold text-(--color-text-subtle)";
 const homePreviewFriendsClassName =
-  "home-preview-friends flex items-center [&>em]:-ml-[7px] [&>em]:grid [&>em]:size-[34px] [&>em]:place-items-center [&>em]:rounded-full [&>em]:border-2 [&>em]:border-white [&>em]:bg-[var(--color-surface-muted)] [&>em]:text-xs [&>em]:font-extrabold [&>em]:not-italic [&>em]:text-[var(--color-text-muted)] [&>span]:-ml-[7px] [&>span]:block [&>span]:size-[34px] [&>span]:rounded-full [&>span]:border-2 [&>span]:border-white [&>span]:bg-[linear-gradient(135deg,#bae6fd,#fda4af)] [&>span:first-child]:ml-0 [&>span:nth-child(2)]:bg-[linear-gradient(135deg,#bbf7d0,#67e8f9)] [&>span:nth-child(3)]:bg-[linear-gradient(135deg,#fed7aa,#fde68a)]";
+  "home-preview-friends flex items-center [&>em]:-ml-[7px] [&>em]:grid [&>em]:size-[34px] [&>em]:place-items-center [&>em]:rounded-full [&>em]:border-2 [&>em]:border-white [&>em]:bg-(--color-surface-muted) [&>em]:text-xs [&>em]:font-extrabold [&>em]:not-italic [&>em]:text-(--color-text-muted) [&>span]:-ml-[7px] [&>span]:block [&>span]:size-[34px] [&>span]:rounded-full [&>span]:border-2 [&>span]:border-white [&>span]:bg-[linear-gradient(135deg,#bae6fd,#fda4af)] [&>span:first-child]:ml-0 [&>span:nth-child(2)]:bg-[linear-gradient(135deg,#bbf7d0,#67e8f9)] [&>span:nth-child(3)]:bg-[linear-gradient(135deg,#fed7aa,#fde68a)]";
 const homePreviewGridClassName = "home-preview-grid grid min-h-[492px] min-w-0 grid-cols-[168px_minmax(0,1fr)] max-[760px]:min-h-0 max-[760px]:grid-cols-1";
 const homePreviewMenuClassName =
-  "home-preview-menu grid min-w-0 content-start gap-2.5 border-r border-[var(--color-border)] bg-[linear-gradient(180deg,rgb(248_250_252_/_0.9),rgb(255_255_255_/_0.74))] px-4 py-5 max-[760px]:w-full max-[760px]:max-w-full max-[760px]:grid-cols-2 max-[760px]:gap-2 max-[760px]:border-r-0 max-[760px]:border-b max-[760px]:border-[var(--color-border)]";
+  "home-preview-menu grid min-w-0 content-start gap-2.5 border-r border-(--color-border) bg-[linear-gradient(180deg,rgb(248_250_252_/_0.9),rgb(255_255_255_/_0.74))] px-4 py-5 max-[760px]:w-full max-[760px]:max-w-full max-[760px]:grid-cols-2 max-[760px]:gap-2 max-[760px]:border-r-0 max-[760px]:border-b max-[760px]:border-(--color-border)";
 const homePreviewMenuItemClassName =
-  "flex min-h-[34px] items-center rounded-[var(--radius-md)] px-3 text-xs font-[760] text-[var(--color-text-muted)] max-[760px]:justify-center max-[760px]:text-center data-[active=true]:bg-[var(--color-primary-soft)] data-[active=true]:text-[var(--color-primary-strong)]";
+  "flex min-h-[34px] items-center rounded-(--radius-md) px-3 text-xs font-[760] text-(--color-text-muted) max-[760px]:justify-center max-[760px]:text-center data-[active=true]:bg-(--color-primary-soft) data-[active=true]:text-(--color-primary-strong)";
 const homePreviewMainClassName = "home-preview-main grid min-w-0 gap-[18px] p-6 max-[760px]:p-4";
 const homeDayStripClassName =
   "home-day-strip grid min-w-0 grid-cols-3 gap-4 max-[760px]:w-full max-[760px]:max-w-full max-[760px]:grid-cols-2 max-[760px]:pb-1 max-[420px]:grid-cols-1";
 const homeDayCardClassName =
-  "home-day-card min-h-48 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] p-[13px] shadow-[0_12px_24px_rgb(15_23_42_/_0.045)] transition-[transform,box-shadow] duration-[180ms] ease-out hover:-translate-y-0.5 hover:shadow-[0_16px_30px_rgb(15_23_42_/_0.08)]";
+  "home-day-card min-h-48 rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) p-[13px] shadow-[0_12px_24px_rgb(15_23_42_/_0.045)] transition-[transform,box-shadow] duration-[180ms] ease-out hover:-translate-y-0.5 hover:shadow-[0_16px_30px_rgb(15_23_42_/_0.08)]";
 const homeDayPillClassName =
-  "inline-flex min-h-[22px] items-center rounded-[var(--radius-sm)] bg-[var(--color-route-soft)] px-[7px] text-[11px] font-[850] text-[var(--color-route)]";
-const homeDayTitleClassName = "mt-[9px] mb-0 text-[15px] font-[840] leading-5 text-[var(--color-text)]";
-const homeDayTextClassName = "mt-1 mb-0 text-[12.5px] font-semibold leading-[18px] text-[var(--color-text-muted)]";
+  "inline-flex min-h-[22px] items-center rounded-(--radius-sm) bg-(--color-route-soft) px-[7px] text-[11px] font-[850] text-(--color-route)";
+const homeDayTitleClassName = "mt-[9px] mb-0 text-[15px] font-[840] leading-5 text-(--color-text)";
+const homeDayTextClassName = "mt-1 mb-0 text-[12.5px] font-semibold leading-[18px] text-(--color-text-muted)";
 const homeDayImageClassName =
-  "home-day-image relative mt-3 h-[86px] overflow-hidden rounded-[var(--radius-md)] bg-[linear-gradient(180deg,rgb(255_255_255_/_0.16),rgb(15_23_42_/_0.12)),url('/landing/trip-card-strip.webp')] bg-[length:400%_100%]";
+  "home-day-image relative mt-3 h-[86px] overflow-hidden rounded-(--radius-md) bg-[linear-gradient(180deg,rgb(255_255_255_/_0.16),rgb(15_23_42_/_0.12)),url('/landing/trip-card-strip.webp')] bg-[length:400%_100%]";
 const homePreviewBottomClassName = "home-preview-bottom grid grid-cols-[minmax(0,1fr)_220px] gap-4 max-[760px]:grid-cols-1";
 const homeMapCardClassName =
-  "home-map-card min-h-[220px] overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white shadow-[0_12px_24px_rgb(15_23_42_/_0.045)]";
+  "home-map-card min-h-[220px] overflow-hidden rounded-(--radius-lg) border border-(--color-border) bg-white shadow-[0_12px_24px_rgb(15_23_42_/_0.045)]";
 const homeMapSvgClassName =
-  "block h-full min-h-[220px] w-full bg-[linear-gradient(90deg,rgb(37_99_235_/_0.06)_1px,transparent_1px),linear-gradient(0deg,rgb(37_99_235_/_0.06)_1px,transparent_1px),#f8fbff] bg-[length:38px_38px] [&_circle]:fill-[var(--color-primary)] [&_circle]:stroke-white [&_circle]:[stroke-width:4] [&_text]:fill-[var(--color-text)] [&_text]:text-[13px] [&_text]:font-extrabold";
+  "block h-full min-h-[220px] w-full bg-[linear-gradient(90deg,rgb(37_99_235_/_0.06)_1px,transparent_1px),linear-gradient(0deg,rgb(37_99_235_/_0.06)_1px,transparent_1px),#f8fbff] bg-[length:38px_38px] [&_circle]:fill-(--color-primary) [&_circle]:stroke-white [&_circle]:[stroke-width:4] [&_text]:fill-(--color-text) [&_text]:text-[13px] [&_text]:font-extrabold";
 const homeMapWaterClassName = "home-map-water fill-[rgb(125_211_252_/_0.42)]";
-const homeMapRouteClassName = "home-map-route fill-none stroke-[var(--color-sky)] [stroke-linecap:round] [stroke-width:8]";
+const homeMapRouteClassName = "home-map-route fill-none stroke-(--color-sky) [stroke-linecap:round] [stroke-width:8]";
 const homeChecklistCardClassName =
-  "home-checklist-card grid min-w-0 content-start gap-[13px] rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white p-[18px] shadow-[0_12px_24px_rgb(15_23_42_/_0.045)]";
+  "home-checklist-card grid min-w-0 content-start gap-[13px] rounded-(--radius-lg) border border-(--color-border) bg-white p-[18px] shadow-[0_12px_24px_rgb(15_23_42_/_0.045)]";
 const homeChecklistHeaderClassName = "flex min-w-0 items-center justify-between gap-3.5";
-const homeChecklistTitleClassName = "min-w-0 text-sm font-[850] leading-[18px] text-[var(--color-text)]";
-const homeChecklistProgressClassName = "shrink-0 whitespace-nowrap text-[11px] font-[750] leading-4 text-[var(--color-text-subtle)]";
+const homeChecklistTitleClassName = "min-w-0 text-sm font-[850] leading-[18px] text-(--color-text)";
+const homeChecklistProgressClassName = "shrink-0 whitespace-nowrap text-[11px] font-[750] leading-4 text-(--color-text-subtle)";
 const homeChecklistMeterClassName = "home-checklist-meter h-2.5 w-full overflow-hidden rounded-full border-0";
 const homeChecklistListClassName = "grid list-none gap-2.5 p-0 m-0";
 const homeChecklistItemClassName = "home-checklist-item relative pl-6 text-[12.5px] leading-[19px]";
 
 const homeWorkflowClassName =
   "home-workflow relative scroll-mt-[18px] bg-[linear-gradient(90deg,rgb(37_99_235_/_0.035)_1px,transparent_1px),linear-gradient(0deg,rgb(37_99_235_/_0.03)_1px,transparent_1px),linear-gradient(180deg,rgb(255_255_255_/_0.94),rgb(255_255_255_/_0.9))] bg-[length:72px_72px,72px_72px,auto] px-5 pt-[76px] pb-[86px] text-center max-[760px]:px-3.5 max-[760px]:pt-[54px] max-[760px]:pb-16";
-const homeWorkflowTitleClassName = "m-0 text-[42px] font-black leading-[52px] text-[var(--color-text)] [text-wrap:balance] max-[760px]:text-[30px] max-[760px]:leading-[38px]";
+const homeWorkflowTitleClassName = "m-0 text-[42px] font-black leading-[52px] text-(--color-text) [text-wrap:balance] max-[760px]:text-[30px] max-[760px]:leading-[38px]";
 const homeWorkflowHighlightClassName = "home-workflow-highlight relative inline-block text-[#078a95]";
-const homeWorkflowDetailClassName = "mx-auto mt-5 mb-0 text-xl font-[450] leading-8 text-[var(--color-text-muted)] max-[760px]:text-base max-[760px]:leading-[26px]";
+const homeWorkflowDetailClassName = "mx-auto mt-5 mb-0 text-xl font-[450] leading-8 text-(--color-text-muted) max-[760px]:text-base max-[760px]:leading-[26px]";
 const homeWorkflowGridClassName = "home-workflow-grid mx-auto mt-[92px] grid w-[min(100%,1320px)] grid-cols-3 gap-[72px] max-[760px]:mt-[42px] max-[760px]:grid-cols-1 max-[760px]:gap-3.5";
 const homeWorkflowItemClassName =
-  "home-workflow-item relative grid min-h-[486px] content-center justify-items-center gap-7 rounded-[44px] border border-[var(--color-border)] bg-[rgb(255_255_255_/_0.95)] px-12 pt-[72px] pb-14 text-center shadow-[0_26px_68px_rgb(15_23_42_/_0.07),inset_0_1px_0_rgb(255_255_255_/_0.86)] transition-[transform,box-shadow] duration-[180ms] ease-out hover:-translate-y-0.5 hover:shadow-[0_30px_76px_rgb(15_23_42_/_0.09),inset_0_1px_0_rgb(255_255_255_/_0.86)] max-[760px]:min-h-0 max-[760px]:grid-cols-[44px_minmax(0,1fr)] max-[760px]:grid-rows-[auto_auto] max-[760px]:items-center max-[760px]:justify-items-start max-[760px]:gap-x-4 max-[760px]:gap-y-2 max-[760px]:rounded-[24px] max-[760px]:px-5 max-[760px]:py-5 max-[760px]:text-left";
+  "home-workflow-item relative grid min-h-[486px] content-center justify-items-center gap-7 rounded-[44px] border border-(--color-border) bg-[rgb(255_255_255_/_0.95)] px-12 pt-[72px] pb-14 text-center shadow-[0_26px_68px_rgb(15_23_42_/_0.07),inset_0_1px_0_rgb(255_255_255_/_0.86)] transition-[transform,box-shadow] duration-[180ms] ease-out hover:-translate-y-0.5 hover:shadow-[0_30px_76px_rgb(15_23_42_/_0.09),inset_0_1px_0_rgb(255_255_255_/_0.86)] max-[760px]:min-h-0 max-[760px]:grid-cols-[44px_minmax(0,1fr)] max-[760px]:grid-rows-[auto_auto] max-[760px]:items-center max-[760px]:justify-items-start max-[760px]:gap-x-4 max-[760px]:gap-y-2 max-[760px]:rounded-[24px] max-[760px]:px-5 max-[760px]:py-5 max-[760px]:text-left";
 const homeWorkflowNumberClassName =
   "home-workflow-number absolute left-1/2 top-[46px] grid size-[66px] -translate-x-1/2 place-items-center rounded-full text-[26px] font-black max-[760px]:static max-[760px]:col-start-1 max-[760px]:row-span-2 max-[760px]:size-11 max-[760px]:translate-x-0 max-[760px]:text-lg";
 const homeWorkflowIconClassName =
   "home-workflow-icon mt-[88px] grid size-28 place-items-center rounded-full max-[760px]:hidden [&_.icon]:size-[42px] [&_.icon]:stroke-[1.8]";
-const homeWorkflowItemTitleClassName = "m-0 text-[30px] font-black leading-[38px] text-[var(--color-text)] max-[760px]:text-2xl max-[760px]:leading-8";
-const homeWorkflowItemTextClassName = "m-0 text-xl font-[450] leading-[34px] text-[var(--color-text-muted)] max-[760px]:text-base max-[760px]:leading-[26px]";
+const homeWorkflowItemTitleClassName = "m-0 text-[30px] font-black leading-[38px] text-(--color-text) max-[760px]:text-2xl max-[760px]:leading-8";
+const homeWorkflowItemTextClassName = "m-0 text-xl font-[450] leading-[34px] text-(--color-text-muted) max-[760px]:text-base max-[760px]:leading-[26px]";
 
 const homeFeatureBandClassName =
-  "home-feature-band mx-auto mb-[84px] mt-[54px] grid w-[min(100%_-_40px,1120px)] grid-cols-[minmax(0,1fr)_auto] items-center gap-6 rounded-[var(--radius-lg)] border border-[var(--color-primary-border)] bg-[var(--watercolor-surface-wash),rgb(255_255_255_/_0.92)] p-8 shadow-[var(--shadow-panel)] max-[760px]:mt-[34px] max-[760px]:w-[min(100%_-_28px,1120px)] max-[760px]:grid-cols-1 max-[760px]:p-6 max-[760px]:[&_.home-primary-button]:w-full";
-const homeFeatureTitleClassName = "m-0 text-[30px] font-black leading-10 text-[var(--color-text)] max-[760px]:text-2xl max-[760px]:leading-8";
-const homeFeatureTextClassName = "mx-auto mt-2 ml-0 max-w-[760px] text-base font-[550] leading-[26px] text-[var(--color-text-muted)]";
+  "home-feature-band mx-auto mb-[84px] mt-[54px] grid w-[min(100%_-_40px,1120px)] grid-cols-[minmax(0,1fr)_auto] items-center gap-6 rounded-(--radius-lg) border border-(--color-primary-border) bg-[var(--watercolor-surface-wash),rgb(255_255_255_/_0.92)] p-8 shadow-[var(--shadow-panel)] max-[760px]:mt-[34px] max-[760px]:w-[min(100%_-_28px,1120px)] max-[760px]:grid-cols-1 max-[760px]:p-6 max-[760px]:[&_.home-primary-button]:w-full";
+const homeFeatureTitleClassName = "m-0 text-[30px] font-black leading-10 text-(--color-text) max-[760px]:text-2xl max-[760px]:leading-8";
+const homeFeatureTextClassName = "mx-auto mt-2 ml-0 max-w-[760px] text-base font-[550] leading-[26px] text-(--color-text-muted)";
 const homeFooterClassName =
-  "home-footer mx-auto grid w-[min(100%_-_40px,1120px)] grid-cols-[minmax(0,1fr)_auto] items-center gap-6 border-t border-[var(--color-border)] pt-7 pb-[38px] max-[760px]:w-[min(100%_-_28px,1120px)] max-[760px]:grid-cols-1 max-[760px]:items-start";
+  "home-footer mx-auto grid w-[min(100%_-_40px,1120px)] grid-cols-[minmax(0,1fr)_auto] items-center gap-6 border-t border-(--color-border) pt-7 pb-[38px] max-[760px]:w-[min(100%_-_28px,1120px)] max-[760px]:grid-cols-1 max-[760px]:items-start";
 const homeFooterBrandClassName = "home-footer-brand grid gap-2.5";
-const homeFooterCopyClassName = "m-0 max-w-[560px] text-sm font-[550] leading-[22px] text-[var(--color-text-muted)]";
+const homeFooterCopyClassName = "m-0 max-w-[560px] text-sm font-[550] leading-[22px] text-(--color-text-muted)";
 const homeFooterLinksClassName = "home-footer-links flex flex-wrap justify-end gap-2.5 max-[760px]:justify-start";
 const homeFooterLinkClassName =
-  "inline-flex min-h-9 items-center gap-2 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[rgb(255_255_255_/_0.74)] px-3 text-[13px] font-[760] text-[var(--color-text-muted)] transition-[border-color,color,background] duration-[180ms] ease-out hover:border-[var(--color-primary-border)] hover:bg-[var(--color-primary-soft)] hover:text-[var(--color-primary-strong)] [&_img]:size-4 [&_img]:shrink-0";
+  "inline-flex min-h-9 items-center gap-2 rounded-(--radius-md) border border-(--color-border) bg-[rgb(255_255_255_/_0.74)] px-3 text-[13px] font-[760] text-(--color-text-muted) transition-[border-color,color,background] duration-[180ms] ease-out hover:border-(--color-primary-border) hover:bg-(--color-primary-soft) hover:text-(--color-primary-strong) [&_img]:size-4 [&_img]:shrink-0";
 
 export function HomeLanding() {
   const { t } = useI18n();
@@ -296,8 +296,8 @@ export function HomeLanding() {
                           className={cn(
                             homeChecklistItemClassName,
                             checkedChecklistKeys.has(itemKey)
-                              ? "line-through text-[var(--color-text-subtle)] font-medium"
-                              : "text-[var(--color-text)] font-bold",
+                              ? "line-through text-(--color-text-subtle) font-medium"
+                              : "text-(--color-text) font-bold",
                           )}
                           data-checked={checkedChecklistKeys.has(itemKey) ? "true" : "false"}
                           key={itemKey}

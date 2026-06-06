@@ -17,7 +17,7 @@ const switchClassName = [
   "gap-0.5",
   "rounded-full",
   "border",
-  "border-[var(--color-border)]",
+  "border-(--color-border)",
   "bg-[color-mix(in_srgb,var(--color-surface)_88%,transparent)]",
   "p-[3px]",
 ];
@@ -31,13 +31,13 @@ const optionClassName = [
   "bg-transparent",
   "text-[0.78rem]",
   "font-bold",
-  "text-[var(--color-text-muted)]",
+  "text-(--color-text-muted)",
 ];
 
 const activeOptionClassName = [
   "language-switch-option--active",
-  "bg-[var(--color-text)]",
-  "text-[var(--color-surface)]",
+  "bg-(--color-text)",
+  "text-(--color-surface)",
 ];
 
 export function LanguageSwitch({ className, ...props }: HTMLAttributes<HTMLDivElement>) {

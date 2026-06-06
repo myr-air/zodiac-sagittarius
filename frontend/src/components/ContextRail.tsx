@@ -33,47 +33,47 @@ interface ContextRailProps {
 }
 
 const suggestionListClassName = "suggestion-list grid gap-1.5";
-const suggestionItemBaseClassName = "suggestion-item grid grid-cols-[18px_minmax(0,1fr)] gap-2 text-xs leading-4 text-[#334155] [&_.icon]:size-4 [&>div]:grid [&>div]:gap-0.5 [&_strong]:font-semibold [&_span]:text-[var(--color-text-muted)]";
+const suggestionItemBaseClassName = "suggestion-item grid grid-cols-[18px_minmax(0,1fr)] gap-2 text-xs leading-4 text-[#334155] [&_.icon]:size-4 [&>div]:grid [&>div]:gap-0.5 [&_strong]:font-semibold [&_span]:text-(--color-text-muted)";
 const suggestionItemToneClassNames = {
-  conflicted: "suggestion-item--conflicted [&_.icon]:text-[var(--color-warning)]",
-  pending: "suggestion-item--pending [&_.icon]:text-[var(--color-success)]",
+  conflicted: "suggestion-item--conflicted [&_.icon]:text-(--color-warning)",
+  pending: "suggestion-item--pending [&_.icon]:text-(--color-success)",
 } satisfies Record<"conflicted" | "pending", string>;
 const suggestionActionsClassName = "suggestion-actions mt-1.5 flex flex-wrap gap-1.5";
-const suggestionActionButtonClassName = "min-h-[26px] rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface)] px-2 text-[11px] font-extrabold text-[var(--color-primary-strong)]";
-const conflictRowClassName = "conflict-row grid grid-cols-[minmax(0,1fr)_auto] items-center gap-1.5 text-[11px] leading-4 text-[var(--color-warning-strong)]";
-const conflictSummaryClassName = "inline-flex items-center gap-1.5 [&_.icon]:text-[var(--color-warning)]";
+const suggestionActionButtonClassName = "min-h-[26px] rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-2 text-[11px] font-extrabold text-(--color-primary-strong)";
+const conflictRowClassName = "conflict-row grid grid-cols-[minmax(0,1fr)_auto] items-center gap-1.5 text-[11px] leading-4 text-(--color-warning-strong)";
+const conflictSummaryClassName = "inline-flex items-center gap-1.5 [&_.icon]:text-(--color-warning)";
 const moduleListClassName = "grid list-none gap-2 p-0 m-0";
-const noteItemClassName = "stop-note-item grid gap-1 rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface-subtle)] px-2.5 py-[9px] [&>p]:m-0 [&>p]:text-[11px] [&>p]:font-bold [&>p]:leading-4 [&>p]:text-[var(--color-text-muted)] [&_strong]:text-xs [&_strong]:font-extrabold [&_strong]:leading-4 [&_strong]:text-[var(--color-text)]";
+const noteItemClassName = "stop-note-item grid gap-1 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) px-2.5 py-[9px] [&>p]:m-0 [&>p]:text-[11px] [&>p]:font-bold [&>p]:leading-4 [&>p]:text-(--color-text-muted) [&_strong]:text-xs [&_strong]:font-extrabold [&_strong]:leading-4 [&_strong]:text-(--color-text)";
 const noteHeaderClassName = "stop-note-header flex items-center justify-between gap-2";
 const noteActionsClassName = "stop-note-actions inline-flex items-center gap-1.5";
-const noteActionButtonClassName = "inline-grid size-7 cursor-pointer place-items-center rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text-muted)] hover:border-[var(--color-primary)] hover:text-[var(--color-primary-strong)] focus-visible:border-[var(--color-primary)] focus-visible:text-[var(--color-primary-strong)] focus-visible:outline-none [&_.icon]:size-[15px]";
+const noteActionButtonClassName = "inline-grid size-7 cursor-pointer place-items-center rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) text-(--color-text-muted) hover:border-(--color-primary) hover:text-(--color-primary-strong) focus-visible:border-(--color-primary) focus-visible:text-(--color-primary-strong) focus-visible:outline-none [&_.icon]:size-[15px]";
 const noteEditFormClassName = "stop-note-edit-form grid gap-2";
 const noteEditLabelClassName = "grid gap-1.5";
-const noteEditTextareaClassName = "min-h-20 resize-y rounded-[var(--radius-md)] border border-[var(--color-border-strong)] bg-[var(--color-surface)] px-2.5 py-[9px] text-[var(--color-text)]";
+const noteEditTextareaClassName = "min-h-20 resize-y rounded-(--radius-md) border border-(--color-border-strong) bg-(--color-surface) px-2.5 py-[9px] text-(--color-text)";
 const noteEditActionsClassName = "stop-note-edit-actions inline-flex items-center gap-1.5";
 const noteFormClassName = "stop-note-form grid gap-2";
-const noteFormLabelClassName = "grid gap-[5px] [&>span]:text-[11px] [&>span]:font-black [&>span]:text-[var(--color-text-muted)]";
-const noteFormTextareaClassName = "min-h-[70px] w-full resize-y rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface)] px-2.5 py-2 text-xs leading-[17px] text-[var(--color-text)]";
-const noteAuthorClassName = "stop-note-author m-0 text-[11px] font-bold leading-4 text-[var(--color-text-muted)]";
-const bookingAdvisoryClassName = "booking-advisory inline-flex w-fit items-center gap-1.5 rounded-full border border-[var(--color-warning-border)] bg-[var(--color-warning-soft)] px-2 py-1 text-[11px] font-black text-[var(--color-warning-strong)] [&_.icon]:size-3.5";
-const bookingTaskClassName = "stop-booking-task grid grid-cols-[minmax(0,1fr)_auto] items-center gap-1 rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface-subtle)] px-2.5 py-[9px] data-[status=done]:[&_span]:text-[var(--color-text-muted)] data-[status=done]:[&_span]:line-through";
-const bookingTaskLabelClassName = "inline-flex min-w-0 items-center gap-2 [&_input]:size-[15px] [&_input]:accent-[var(--color-primary)] [&_span]:text-xs [&_span]:font-extrabold [&_span]:leading-4 [&_span]:text-[var(--color-text)]";
-const bookingTaskMetaClassName = "text-[11px] font-bold leading-4 text-[var(--color-text-muted)]";
-const expenseGridClassName = "expense-grid grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-3 gap-y-0.5 text-xs [&_span]:text-[var(--color-text-muted)] [&_strong]:text-base [&_strong]:font-bold [&_strong]:leading-[21px] [&_strong]:tabular-nums";
-const expenseFormClassName = "expense-form grid gap-2 [&_input]:min-h-8 [&_input]:rounded-[var(--radius-sm)] [&_input]:border [&_input]:border-[var(--color-border)] [&_input]:bg-[var(--color-surface)] [&_input]:px-2 [&_input]:text-xs [&_select]:min-h-8 [&_select]:rounded-[var(--radius-sm)] [&_select]:border [&_select]:border-[var(--color-border)] [&_select]:bg-[var(--color-surface)] [&_select]:px-2 [&_select]:text-xs [&_label]:grid [&_label]:gap-1 [&_label>span]:text-[11px] [&_label>span]:font-black [&_label>span]:text-[var(--color-text-muted)]";
-const expenseItemClassName = "expense-item grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface-subtle)] px-2.5 py-2 text-xs";
+const noteFormLabelClassName = "grid gap-[5px] [&>span]:text-[11px] [&>span]:font-black [&>span]:text-(--color-text-muted)";
+const noteFormTextareaClassName = "min-h-[70px] w-full resize-y rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-2.5 py-2 text-xs leading-[17px] text-(--color-text)";
+const noteAuthorClassName = "stop-note-author m-0 text-[11px] font-bold leading-4 text-(--color-text-muted)";
+const bookingAdvisoryClassName = "booking-advisory inline-flex w-fit items-center gap-1.5 rounded-full border border-(--color-warning-border) bg-(--color-warning-soft) px-2 py-1 text-[11px] font-black text-(--color-warning-strong) [&_.icon]:size-3.5";
+const bookingTaskClassName = "stop-booking-task grid grid-cols-[minmax(0,1fr)_auto] items-center gap-1 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) px-2.5 py-[9px] data-[status=done]:[&_span]:text-(--color-text-muted) data-[status=done]:[&_span]:line-through";
+const bookingTaskLabelClassName = "inline-flex min-w-0 items-center gap-2 [&_input]:size-[15px] [&_input]:accent-[var(--color-primary)] [&_span]:text-xs [&_span]:font-extrabold [&_span]:leading-4 [&_span]:text-(--color-text)";
+const bookingTaskMetaClassName = "text-[11px] font-bold leading-4 text-(--color-text-muted)";
+const expenseGridClassName = "expense-grid grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-3 gap-y-0.5 text-xs [&_span]:text-(--color-text-muted) [&_strong]:text-base [&_strong]:font-bold [&_strong]:leading-[21px] [&_strong]:tabular-nums";
+const expenseFormClassName = "expense-form grid gap-2 [&_input]:min-h-8 [&_input]:rounded-(--radius-sm) [&_input]:border [&_input]:border-(--color-border) [&_input]:bg-(--color-surface) [&_input]:px-2 [&_input]:text-xs [&_select]:min-h-8 [&_select]:rounded-(--radius-sm) [&_select]:border [&_select]:border-(--color-border) [&_select]:bg-(--color-surface) [&_select]:px-2 [&_select]:text-xs [&_label]:grid [&_label]:gap-1 [&_label>span]:text-[11px] [&_label>span]:font-black [&_label>span]:text-(--color-text-muted)";
+const expenseItemClassName = "expense-item grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) px-2.5 py-2 text-xs";
 const contextRailClassName =
-  "context-rail absolute right-0 top-0 z-[3] h-full min-h-0 w-[380px] max-w-[min(380px,calc(100%_-_24px))] min-w-0 translate-x-0 bg-[var(--color-surface)] opacity-100 shadow-[-28px_0_54px_rgb(15_23_42_/_0.18)] [transition:transform_220ms_ease,opacity_180ms_ease,box-shadow_220ms_ease] will-change-[transform,opacity] data-[state=closed]:pointer-events-none data-[state=closed]:translate-x-6 data-[state=closed]:opacity-0 data-[state=closed]:shadow-[-8px_0_18px_rgb(15_23_42_/_0)] max-[1199px]:static max-[1199px]:w-full max-[1199px]:max-w-none max-[1199px]:shadow-none";
+  "context-rail absolute right-0 top-0 z-[3] h-full min-h-0 w-[380px] max-w-[min(380px,calc(100%_-_24px))] min-w-0 translate-x-0 bg-(--color-surface) opacity-100 shadow-[-28px_0_54px_rgb(15_23_42_/_0.18)] [transition:transform_220ms_ease,opacity_180ms_ease,box-shadow_220ms_ease] will-change-[transform,opacity] data-[state=closed]:pointer-events-none data-[state=closed]:translate-x-6 data-[state=closed]:opacity-0 data-[state=closed]:shadow-[-8px_0_18px_rgb(15_23_42_/_0)] max-[1199px]:static max-[1199px]:w-full max-[1199px]:max-w-none max-[1199px]:shadow-none";
 const contextRailOpenClassName = "context-rail--open animate-[drawer-slide-in_220ms_ease-out_both]";
 const contextRailClosedClassName = "context-rail--closed";
-const railInspectorClassName = "rail-inspector h-full min-h-0 overflow-y-auto border-l border-[var(--color-border)] bg-[var(--color-surface)] max-[1199px]:min-h-0 max-[1199px]:border-l-0 max-[1199px]:border-t";
+const railInspectorClassName = "rail-inspector h-full min-h-0 overflow-y-auto border-l border-(--color-border) bg-(--color-surface) max-[1199px]:min-h-0 max-[1199px]:border-l-0 max-[1199px]:border-t";
 const inspectorTitleClassName = "inspector-title grid min-h-[50px] grid-cols-[minmax(0,1fr)_30px] items-center gap-3 px-3.5 pl-4";
 const inspectorTitleHeadingClassName = "m-0 overflow-hidden text-ellipsis whitespace-nowrap text-[15px] font-extrabold leading-[22px] text-[#0f172a]";
 const inspectorCloseButtonClassName = "grid size-[30px] place-items-center border-0 bg-transparent text-[#0f172a] [&_.icon]:rotate-180";
-const inspectorTabsClassName = "inspector-tabs flex h-9 gap-6 border-y border-[var(--color-border)] px-4 max-[767px]:gap-[18px] max-[767px]:overflow-x-auto";
-const inspectorTabClassName = "border-0 border-b-2 border-transparent bg-transparent text-xs font-bold text-[var(--color-text-muted)] aria-selected:border-[var(--color-primary)] aria-selected:text-[var(--color-primary-strong)]";
+const inspectorTabsClassName = "inspector-tabs flex h-9 gap-6 border-y border-(--color-border) px-4 max-[767px]:gap-[18px] max-[767px]:overflow-x-auto";
+const inspectorTabClassName = "border-0 border-b-2 border-transparent bg-transparent text-xs font-bold text-(--color-text-muted) aria-selected:border-(--color-primary) aria-selected:text-(--color-primary-strong)";
 const mapLinkClassName = "map-link ml-[27px] text-xs font-semibold text-[#2563eb] no-underline";
-const detailMapClassName = "detail-map relative min-h-[105px] overflow-hidden rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[linear-gradient(90deg,rgb(203_213_225_/_0.7)_1px,transparent_1px),linear-gradient(0deg,rgb(203_213_225_/_0.7)_1px,transparent_1px),linear-gradient(135deg,#f8fafc,#e0f2fe)] bg-[length:37px_37px,37px_37px,auto]";
+const detailMapClassName = "detail-map relative min-h-[105px] overflow-hidden rounded-(--radius-sm) border border-(--color-border) bg-[linear-gradient(90deg,rgb(203_213_225_/_0.7)_1px,transparent_1px),linear-gradient(0deg,rgb(203_213_225_/_0.7)_1px,transparent_1px),linear-gradient(135deg,#f8fafc,#e0f2fe)] bg-[length:37px_37px,37px_37px,auto]";
 const mapRoadBaseClassName = "map-road absolute h-[5px] rounded-full bg-[#fca5a5] opacity-75 origin-left";
 const mapRoadOneClassName = "map-road-1 left-[-15px] top-[74px] w-[230px] -rotate-[31deg]";
 const mapRoadTwoClassName = "map-road-2 left-[18px] top-[18px] w-[210px] rotate-[8deg] bg-[#bfdbfe]";
@@ -81,11 +81,11 @@ const mapRoadThreeClassName = "map-road-3 left-[98px] top-[88px] w-[180px] -rota
 const mapWaterClassName = "map-water absolute right-0 bottom-0 h-[69px] w-[145px] rounded-tl-full bg-[rgb(125_211_252_/_0.28)]";
 const mapPoiClassName = "map-poi absolute text-[11px] font-bold text-[#64748b]";
 const mapMarkerClassName = "map-marker absolute left-1/2 top-1/2 grid size-9 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-[#ef4444] text-white shadow-[0_10px_20px_rgb(239_68_68_/_0.24)]";
-const detailSectionClassName = "detail-section grid gap-1.5 border-b border-[var(--color-border)] px-4 py-2.5";
+const detailSectionClassName = "detail-section grid gap-1.5 border-b border-(--color-border) px-4 py-2.5";
 const detailHeadingClassName = "m-0 text-[13px] font-extrabold leading-[18px] text-[#334155]";
-const detailMetaLineClassName = "m-0 inline-flex gap-[9px] text-xs leading-4 text-[#334155] [&_.icon]:text-[var(--color-text-muted)]";
+const detailMetaLineClassName = "m-0 inline-flex gap-[9px] text-xs leading-4 text-[#334155] [&_.icon]:text-(--color-text-muted)";
 const detailButtonClassName = "min-h-8 py-[5px]";
-const emptyWarningClassName = "empty-warning text-[var(--color-text-subtle)]";
+const emptyWarningClassName = "empty-warning text-(--color-text-subtle)";
 
 export function ContextRail({
   trip,

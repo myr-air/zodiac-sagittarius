@@ -25,6 +25,13 @@ Use existing Tailwind utilities, component classes, design tokens, and Storybook
 patterns first. Add custom CSS only after checking that the current
 Tailwind/design-system vocabulary cannot express the behavior clearly.
 
+For Tailwind utilities whose value is a simple CSS variable token, prefer the
+canonical shorthand form, such as `text-(--color-text-muted)`,
+`bg-(--color-surface)`, `border-(--color-border)`, and
+`rounded-(--radius-md)`. Keep bracketed arbitrary values for expressions that
+are not a single token, such as `rgb(...)`, `color-mix(...)`, gradients,
+fallback vars, shadows, and arbitrary properties.
+
 Keep cockpit surfaces dense but readable. Avoid landing-page patterns inside the
 workspace: oversized hero composition, decorative card stacks, gradient-only
 sections, or explanatory in-app marketing copy.

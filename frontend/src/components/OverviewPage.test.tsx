@@ -53,7 +53,7 @@ describe("OverviewPage role lenses", () => {
 
     const hero = screen.getByRole("region", { name: /Hong Kong \+ Shenzhen Trip/i });
     expect(screen.getByRole("region", { name: /Trip overview/i })).toHaveClass("overview-page", "grid", "gap-3");
-    expect(hero).toHaveClass("overview-hero", "grid", "overflow-hidden", "rounded-[var(--radius-lg)]");
+    expect(hero).toHaveClass("overview-hero", "grid", "overflow-hidden", "rounded-(--radius-lg)");
     expect(hero).toHaveTextContent(/Hong Kong/i);
     expect(hero).toHaveTextContent(/HK\$/i);
     expect(within(hero).getByText(/ศูนย์จัดการทริป/i)).toBeInTheDocument();
@@ -63,7 +63,7 @@ describe("OverviewPage role lenses", () => {
     expect(within(cockpit).getByText(/จุดถัดไป/i).closest(".overview-cockpit-card")).toHaveClass(
       "overview-cockpit-card",
       "grid",
-      "rounded-[var(--radius-md)]",
+      "rounded-(--radius-md)",
     );
     expect(within(cockpit).getByText(/จุดถัดไป/i)).toBeInTheDocument();
     expect(within(cockpit).getByText(/งบประมาณ/i)).toBeInTheDocument();

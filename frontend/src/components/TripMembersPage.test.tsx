@@ -48,7 +48,7 @@ describe("TripMembersPage", () => {
     expect(screen.getAllByText(/สมาชิกทั้งหมด/i)[0].closest(".member-stat")).toHaveClass(
       "member-stat",
       "grid",
-      "rounded-[var(--radius-md)]",
+      "rounded-(--radius-md)",
     );
     expect(screen.getByRole("region", { name: /แถบคำสั่งสมาชิก/i })).toHaveClass("member-command-bar", "grid", "gap-3");
 
@@ -77,7 +77,7 @@ describe("TripMembersPage", () => {
     expect(alert).not.toHaveBeenCalled();
 
     fireEvent.click(screen.getByRole("button", { name: /เปิดฟอร์มเพิ่มสมาชิก/i }));
-    expect(screen.getByRole("region", { name: /เพิ่มสมาชิก/i })).toHaveClass("member-create-panel", "grid", "rounded-[var(--radius-lg)]");
+    expect(screen.getByRole("region", { name: /เพิ่มสมาชิก/i })).toHaveClass("member-create-panel", "grid", "rounded-(--radius-lg)");
     expect(screen.getByLabelText(/ชื่อสมาชิกใหม่/i).closest("form")).toHaveClass("member-create-form", "grid", "gap-3");
     fireEvent.change(screen.getByLabelText(/ชื่อสมาชิกใหม่/i), { target: { value: "Guide" } });
     fireEvent.change(screen.getByLabelText(/สิทธิ์สมาชิกใหม่/i), { target: { value: "organizer" } });

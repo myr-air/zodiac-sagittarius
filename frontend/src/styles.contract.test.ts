@@ -1,4 +1,5 @@
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync, statSync } from "node:fs";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 describe("Calm Travel Ops CSS contract", () => {
@@ -9,6 +10,7 @@ describe("Calm Travel Ops CSS contract", () => {
   const smartTableSource = readFileSync("src/components/SmartItineraryTable.tsx", "utf8");
   const motifSource = readFileSync("src/components/motifs.tsx", "utf8");
   const motifStories = readFileSync("src/components/motifs.stories.tsx", "utf8");
+  const sourceFiles = collectSourceFiles("src").filter((file) => !file.endsWith(".test.ts") && !file.endsWith(".test.tsx"));
 
   it("keeps Tailwind available while preserving global design tokens", () => {
     expect(css).toContain('@import "tailwindcss";');
@@ -16,6 +18,15 @@ describe("Calm Travel Ops CSS contract", () => {
     expect(css).toContain("--shadow-panel:");
     expect(css).toContain("--radius-lg:");
     expect(css).toMatch(/:where\(button,\s*a,\s*input,\s*select,\s*textarea\):focus-visible/);
+  });
+
+  it("uses canonical Tailwind CSS variable shorthand for simple design token utilities", () => {
+    const legacyVarUtilities = sourceFiles.flatMap((file) => {
+      const matches = [...readFileSync(file, "utf8").matchAll(/(?:^|[\s"'`])(?:[\w:[\]&=./>-]+:)?(?:bg|border|fill|outline|ring|ring-offset|rounded|stroke|text)-\[var\(--[\w-]+\)\]/g)];
+      return matches.map((match) => `${file}: ${match[0].trim()}`);
+    });
+
+    expect(legacyVarUtilities).toEqual([]);
   });
 
   it("keeps the production palette away from the purple Joii prototype theme", () => {
@@ -37,7 +48,7 @@ describe("Calm Travel Ops CSS contract", () => {
   });
 
   it("keeps the activity path graph on the product theme palette", () => {
-    expect(activityPathGraphSource).toContain("bg-[var(--color-surface-subtle)]");
+    expect(activityPathGraphSource).toContain("bg-(--color-surface-subtle)");
     expect(activityPathGraphSource).toContain("var(--color-primary)");
     expect(activityPathGraphSource).toContain("var(--color-route)");
     expect(activityPathGraphSource).toContain("var(--color-warning)");
@@ -72,7 +83,7 @@ describe("Calm Travel Ops CSS contract", () => {
   it("keeps vertical scrolling on the planning shell instead of nesting table scrollbars", () => {
     expect(appSource).toContain("planning-main h-full min-h-0 min-w-0 overflow-y-auto");
     expect(smartTableSource).toContain("table-panel grid h-auto min-h-full min-w-0");
-    expect(smartTableSource).toContain("overflow-visible bg-[var(--color-page)]");
+    expect(smartTableSource).toContain("overflow-visible bg-(--color-page)");
     expect(smartTableSource).toContain("table-scroll m-0 h-auto min-h-0");
     expect(smartTableSource).toContain("overflow-x-auto overflow-y-hidden");
     expect(smartTableSource).toContain("[contain:paint]");
@@ -120,3 +131,13 @@ describe("Calm Travel Ops CSS contract", () => {
   });
 
 });
+
+function collectSourceFiles(root: string): string[] {
+  return readdirSync(root).flatMap((entry) => {
+    const path = join(root, entry);
+    const stat = statSync(path);
+    if (stat.isDirectory()) return collectSourceFiles(path);
+    if (/\.(ts|tsx)$/.test(path)) return [path];
+    return [];
+  });
+}

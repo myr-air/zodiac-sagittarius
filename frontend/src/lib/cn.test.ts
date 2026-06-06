@@ -10,12 +10,12 @@ describe("cn", () => {
     const disabled = true;
     const active = false;
 
-    expect(cn("button", disabled && "opacity-60", active && "bg-[var(--color-primary)]")).toBe("button opacity-60");
+    expect(cn("button", disabled && "opacity-60", active && "bg-(--color-primary)")).toBe("button opacity-60");
   });
 
   it("flattens nested arrays without changing class order", () => {
-    expect(cn("panel", ["grid", ["gap-3", null, ["md:grid-cols-2"]]], "rounded-[var(--radius-lg)]")).toBe(
-      "panel grid gap-3 md:grid-cols-2 rounded-[var(--radius-lg)]",
+    expect(cn("panel", ["grid", ["gap-3", null, ["md:grid-cols-2"]]], "rounded-(--radius-lg)")).toBe(
+      "panel grid gap-3 md:grid-cols-2 rounded-(--radius-lg)",
     );
   });
 

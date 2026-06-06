@@ -114,15 +114,15 @@ const routeMapThemeRules: Array<{ layerId: string; property: string; value: unkn
   { layerId: "label_country_2", property: "text-color", value: "#0f3f46" },
   { layerId: "label_country_1", property: "text-color", value: "#0f3f46" },
 ];
-const routeMapPanelClassName = "route-map-panel grid h-full min-h-0 min-w-0 grid-rows-[auto_minmax(0,1fr)] bg-[var(--color-page)] px-6 py-[22px] pb-7";
+const routeMapPanelClassName = "route-map-panel grid h-full min-h-0 min-w-0 grid-rows-[auto_minmax(0,1fr)] bg-(--color-page) px-6 py-[22px] pb-7";
 const routeMapLayoutClassName = "route-map-layout mb-7 block h-full min-h-0 w-full p-0 max-[1199px]:w-[calc(100%-24px)] max-[1199px]:px-0";
-const routeMapCanvasClassName = "route-map-canvas relative h-full min-h-[520px] overflow-hidden rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[linear-gradient(90deg,rgb(203_213_225_/_0.48)_1px,transparent_1px)_0_0/42px_42px,linear-gradient(0deg,rgb(203_213_225_/_0.48)_1px,transparent_1px)_0_0/42px_42px,var(--color-route-soft)] max-[767px]:h-[64vh] max-[767px]:min-h-[460px]";
+const routeMapCanvasClassName = "route-map-canvas relative h-full min-h-[520px] overflow-hidden rounded-(--radius-md) border border-(--color-border) bg-[linear-gradient(90deg,rgb(203_213_225_/_0.48)_1px,transparent_1px)_0_0/42px_42px,linear-gradient(0deg,rgb(203_213_225_/_0.48)_1px,transparent_1px)_0_0/42px_42px,var(--color-route-soft)] max-[767px]:h-[64vh] max-[767px]:min-h-[460px]";
 const mapDayFilterClassName = "map-day-filter absolute left-3 top-3 z-[8] flex max-w-[min(720px,calc(100%_-_92px))] flex-wrap gap-[7px]";
 const mapDayFilterButtonClassName = "map-day-filter-button inline-flex min-h-[30px] items-center gap-1.5 rounded-full border border-[rgb(203_213_225_/_0.9)] bg-white/90 px-2.5 py-1.5 text-[11px] font-extrabold leading-4 text-[#334155] shadow-[0_8px_18px_rgb(15_23_42_/_0.08)] backdrop-blur transition-[background,border-color,color,box-shadow] duration-150 hover:border-[var(--day-color,var(--color-primary))] hover:bg-white hover:text-[#0f172a] hover:shadow-[0_10px_22px_rgb(15_23_42_/_0.12)] focus-visible:border-[var(--day-color,var(--color-primary))] focus-visible:bg-white focus-visible:text-[#0f172a] focus-visible:shadow-[0_10px_22px_rgb(15_23_42_/_0.12)]";
 const activeMapDayFilterButtonClassName = "map-day-filter-button--active border-[var(--day-color,var(--color-primary))] bg-white text-[#0f172a] shadow-[0_10px_22px_rgb(15_23_42_/_0.12)]";
 const mapDaySwatchClassName = "map-day-swatch size-[9px] rounded-full bg-[var(--day-color,var(--color-route))] shadow-[0_0_0_2px_rgb(255_255_255_/_0.9)]";
-const routeLiveMapClassName = "route-live-map absolute inset-0 z-[4] bg-[var(--color-route-soft)]";
-const routeMapStatusClassName = "route-map-status absolute left-1/2 top-1/2 z-[5] m-0 -translate-x-1/2 -translate-y-1/2 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white/90 px-2.5 py-2 text-xs font-extrabold text-[var(--color-text-muted)]";
+const routeLiveMapClassName = "route-live-map absolute inset-0 z-[4] bg-(--color-route-soft)";
+const routeMapStatusClassName = "route-map-status absolute left-1/2 top-1/2 z-[5] m-0 -translate-x-1/2 -translate-y-1/2 rounded-(--radius-md) border border-(--color-border) bg-white/90 px-2.5 py-2 text-xs font-extrabold text-(--color-text-muted)";
 const mapZoneClassName = "map-zone absolute z-[1] text-[11px] font-extrabold uppercase leading-[15px] text-[#475569]";
 const mapZoneHongKongClassName = "map-zone--hk left-[17px] top-3.5";
 const mapZoneShenzhenClassName = "map-zone--sz right-[18px] top-[18px]";
@@ -132,10 +132,10 @@ const routeMapPathShadowClassName = "route-map-path route-map-path--shadow fill-
 const routeMapPathClassName = "route-map-path fill-none stroke-[var(--day-color,var(--color-route))] stroke-[2.1] [stroke-linecap:round] [stroke-linejoin:round]";
 const routeMarkerClassName = "route-marker absolute left-[var(--x)] top-[var(--y)] z-[3] grid size-[30px] -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border-2 border-white bg-[var(--day-color,var(--color-route))] text-[11px] font-extrabold tabular-nums text-white shadow-[0_10px_22px_rgb(37_99_235_/_0.24)] transition-[background,box-shadow,transform] duration-150 [animation:route-marker-in_180ms_ease-out_both] [animation-delay:var(--marker-delay)]";
 const mapSourceNoteClassName = "map-source-note absolute bottom-2 right-2.5 z-[6] m-0 rounded-full border border-[rgb(203_213_225_/_0.82)] bg-white/90 px-2 py-1 text-[10px] font-extrabold leading-[14px] text-[#475569]";
-const unresolvedPanelClassName = "map-unresolved-panel absolute bottom-10 left-3 z-[7] grid max-h-[min(220px,42%)] w-[min(360px,calc(100%_-_24px))] gap-2 overflow-hidden rounded-[var(--radius-md)] border border-[rgb(245_158_11_/_0.38)] bg-[rgb(255_251_235_/_0.94)] p-3 shadow-[0_14px_34px_rgb(15_23_42_/_0.14)] backdrop-blur";
+const unresolvedPanelClassName = "map-unresolved-panel absolute bottom-10 left-3 z-[7] grid max-h-[min(220px,42%)] w-[min(360px,calc(100%_-_24px))] gap-2 overflow-hidden rounded-(--radius-md) border border-[rgb(245_158_11_/_0.38)] bg-[rgb(255_251_235_/_0.94)] p-3 shadow-[0_14px_34px_rgb(15_23_42_/_0.14)] backdrop-blur";
 const unresolvedPanelHeaderClassName = "map-unresolved-header flex items-start gap-2 text-[12px] font-extrabold leading-5 text-[#92400e]";
 const unresolvedPanelListClassName = "map-unresolved-list m-0 grid gap-1.5 overflow-y-auto p-0";
-const unresolvedPanelItemClassName = "map-unresolved-item grid gap-0.5 rounded-[var(--radius-sm)] bg-white/70 px-2 py-1.5 text-[11px] leading-4 text-[#475569]";
+const unresolvedPanelItemClassName = "map-unresolved-item grid gap-0.5 rounded-(--radius-sm) bg-white/70 px-2 py-1.5 text-[11px] leading-4 text-[#475569]";
 const unresolvedPanelItemTitleClassName = "font-extrabold text-[#0f172a]";
 
 export function RouteMapView({

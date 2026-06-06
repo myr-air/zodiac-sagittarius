@@ -24,23 +24,23 @@ describe("shared UI primitives", () => {
       "button",
       "button--primary",
       "inline-flex",
-      "bg-[var(--color-primary)]",
+      "bg-(--color-primary)",
       "trip-action",
     );
     expect(screen.getByRole("button", { name: "Delete" })).toHaveClass(
       "button",
       "button--danger",
-      "disabled:bg-[var(--color-surface-muted)]",
+      "disabled:bg-(--color-surface-muted)",
     );
     expect(screen.getByLabelText("Panel")).toHaveClass(
       "panel",
       "grid",
       "gap-3",
-      "rounded-[var(--radius-lg)]",
+      "rounded-(--radius-lg)",
       "trip-panel",
     );
     expect(screen.getByText("Ready")).toHaveClass("badge", "badge--neutral", "inline-flex", "rounded-full", "trip-badge");
-    expect(screen.getByText("Blocked")).toHaveClass("badge--danger", "text-[#b91c1c]", "bg-[var(--color-danger-soft)]");
+    expect(screen.getByText("Blocked")).toHaveClass("badge--danger", "text-[#b91c1c]", "bg-(--color-danger-soft)");
     expect(screen.getByRole("button", { name: "Open details" })).toHaveClass("icon-button", "inline-flex", "w-9", "details-toggle-button");
   });
 
@@ -68,10 +68,10 @@ describe("shared UI primitives", () => {
     );
 
     expect(screen.getByText("Plan")).toHaveClass("eyebrow");
-    expect(screen.getByText("Plan")).toHaveClass("uppercase", "text-[var(--color-primary-strong)]");
+    expect(screen.getByText("Plan")).toHaveClass("uppercase", "text-(--color-primary-strong)");
     expect(screen.getByRole("heading", { name: "Day one", level: 2 })).toBeInTheDocument();
     expect(screen.getByText("A compact overview")).toHaveClass("page-header-description");
-    expect(screen.getByText("A compact overview")).toHaveClass("max-w-[560px]", "text-[var(--color-text-muted)]");
+    expect(screen.getByText("A compact overview")).toHaveClass("max-w-[560px]", "text-(--color-text-muted)");
     expect(screen.getByText("Updated now")).toBeInTheDocument();
     expect(screen.getByText("Motif")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Share" })).toBeInTheDocument();

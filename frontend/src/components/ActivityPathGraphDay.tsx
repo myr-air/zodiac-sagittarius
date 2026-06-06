@@ -15,13 +15,13 @@ interface ActivityPathGraphDayProps {
   onSelectItem: (itemId: string) => void;
 }
 
-const graphClassName = "activity-path-graph relative min-h-full w-full bg-[var(--color-surface-subtle)]";
+const graphClassName = "activity-path-graph relative min-h-full w-full bg-(--color-surface-subtle)";
 const dotClassName =
-  "activity-path-graph-node absolute z-[3] left-1/2 size-3 -translate-x-1/2 rounded-full border-2 border-[var(--color-surface)] bg-[var(--color-primary)] p-0 shadow-[0_1px_4px_rgb(15_23_42_/_0.18)] transition-transform hover:scale-125";
-const selectedDotClassName = "activity-path-graph-node--selected ring-2 ring-[var(--color-primary-strong)] ring-offset-1 ring-offset-[var(--color-surface)]";
+  "activity-path-graph-node absolute z-[3] left-1/2 size-3 -translate-x-1/2 rounded-full border-2 border-(--color-surface) bg-(--color-primary) p-0 shadow-[0_1px_4px_rgb(15_23_42_/_0.18)] transition-transform hover:scale-125";
+const selectedDotClassName = "activity-path-graph-node--selected ring-2 ring-(--color-primary-strong) ring-offset-1 ring-offset-(--color-surface)";
 const pathSelectClassName = "sr-only";
 const anchorClassName =
-  "activity-path-graph-anchor absolute z-[3] left-1/2 size-3 -translate-x-1/2 rounded-full border-2 border-[var(--color-primary)] bg-white shadow-[0_1px_4px_rgb(15_23_42_/_0.12)]";
+  "activity-path-graph-anchor absolute z-[3] left-1/2 size-3 -translate-x-1/2 rounded-full border-2 border-(--color-primary) bg-white shadow-[0_1px_4px_rgb(15_23_42_/_0.12)]";
 const dotSize = 12;
 const dayRowHeight = 47.5;
 const addStopRowHeight = 36;

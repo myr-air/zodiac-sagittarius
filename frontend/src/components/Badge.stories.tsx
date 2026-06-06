@@ -36,6 +36,6 @@ export const Gallery: Story = {
   play: async ({ canvas }) => {
     const badge = canvas.getByText("พร้อมแล้ว");
     await expect(badge).toHaveClass("badge--success");
-    await expect(badge).toHaveClass("bg-[var(--color-success-soft)]");
+    await expect(badge).toHaveClass("bg-(--color-success-soft)");
   },
 };
