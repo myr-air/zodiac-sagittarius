@@ -24,8 +24,8 @@ const switchClassName = [
 
 const optionClassName = [
   "language-switch-option",
-  "min-h-7",
-  "min-w-[38px]",
+  "min-h-9",
+  "min-w-11",
   "rounded-full",
   "border-0",
   "bg-transparent",

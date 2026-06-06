@@ -103,7 +103,7 @@ const timeStackClassName = "grid min-h-[30px] content-center justify-items-cente
 const durationPillClassName = "duration-pill inline-flex min-h-[17px] max-w-full items-center justify-center rounded-full border border-transparent bg-transparent px-1 text-[10px] font-[750] leading-3 text-(--color-text-muted) transition-[background,border-color,color] duration-150 hover:not-disabled:border-(--color-primary-border) hover:not-disabled:bg-(--color-primary-soft) hover:not-disabled:text-(--color-primary-strong) focus-visible:border-(--color-primary-border) focus-visible:bg-(--color-primary-soft) focus-visible:text-(--color-primary-strong) focus-visible:outline-none disabled:cursor-not-allowed disabled:text-(--color-text-muted)";
 const activityCellClassName = "activity-cell min-w-0";
 const rowSelectClassName =
-  "row-select grid min-h-[22px] w-full min-w-0 gap-0.5 border-0 bg-transparent p-0 text-left text-inherit";
+  "row-select inline-flex min-h-6 w-fit min-w-0 items-center gap-1.5 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) px-2 py-0.5 text-[11px] font-extrabold leading-4 text-(--color-primary-strong) transition-[background,border-color,color] duration-150 hover:bg-(--color-primary-soft) hover:border-(--color-primary-border) focus-visible:bg-(--color-primary-soft) focus-visible:border-(--color-primary-border) focus-visible:outline-none";
 const inlineActivityStackClassName = "grid min-w-0 gap-0.5";
 const inlineFieldClassName =
   "inline-row-field min-h-[24px] w-full min-w-0 rounded-(--radius-sm) border border-transparent bg-transparent px-1.5 py-0 text-xs leading-4 text-(--color-text) outline-none transition-[background,border-color,box-shadow] duration-150 placeholder:text-(--color-text-muted) hover:not-read-only:border-(--color-border) hover:not-read-only:bg-(--color-surface) focus:border-(--color-primary-border) focus:bg-(--color-surface) focus:shadow-[0_0_0_2px_rgb(153_246_228_/_0.45)] read-only:cursor-pointer read-only:truncate read-only:px-0 read-only:font-semibold disabled:cursor-not-allowed disabled:text-(--color-text-muted)";
@@ -846,12 +846,15 @@ function DayGroup({
             >
               <button
                 type="button"
-                className={cn("sr-only", rowSelectClassName)}
+                className={rowSelectClassName}
                 aria-pressed={selectedItemId === item.id}
-                aria-label={itineraryLabels.row.select({ activity: item.activity })}
+                aria-label={itineraryLabels.row.openDetails({ activity: item.activity })}
                 tabIndex={collapsed ? -1 : undefined}
                 onClick={() => onSelectItem(item.id)}
-              />
+              >
+                <Icon name="panel" className="size-3.5" />
+                <span>{itineraryLabels.openDetails}</span>
+              </button>
               <InlineTextField
                 ariaLabel={itineraryLabels.row.inlineActivity({ activity: item.activity })}
                 canEdit={canEdit}
