@@ -244,6 +244,63 @@ export interface StopNote {
   version?: number;
 }
 
+export type BookingDocType =
+  | "flight"
+  | "train"
+  | "public_transport"
+  | "hotel"
+  | "insurance"
+  | "passport"
+  | "visa"
+  | "activity_ticket"
+  | "other";
+
+export type BookingDocStatus =
+  | "draft"
+  | "needs_action"
+  | "booked"
+  | "confirmed"
+  | "paid"
+  | "cancelled"
+  | "expired";
+
+export type BookingDocVisibility = "shared" | "sensitive" | "private";
+
+export interface BookingDocExternalLink {
+  id: string;
+  label: string;
+  url: string;
+  provider?: string | null;
+  accessNote?: string | null;
+}
+
+export interface BookingDoc {
+  id: string;
+  tripId: string;
+  type: BookingDocType;
+  title: string;
+  status: BookingDocStatus;
+  visibility: BookingDocVisibility;
+  ownerMemberId?: string | null;
+  providerName?: string | null;
+  confirmationCode?: string | null;
+  startsAt?: string | null;
+  endsAt?: string | null;
+  timezone?: string | null;
+  priceAmount?: number | null;
+  currency?: string | null;
+  travelerIds: string[];
+  externalLinks: BookingDocExternalLink[];
+  relatedItineraryItemIds: string[];
+  relatedTaskIds: string[];
+  relatedExpenseIds: string[];
+  noteIds: string[];
+  notes?: string | null;
+  createdBy: string;
+  updatedAt: string;
+  version: number;
+}
+
 export interface Trip {
   id: string;
   joinId: string;
@@ -259,6 +316,8 @@ export interface Trip {
   members: Member[];
   itineraryItems: ItineraryItem[];
   expenses: Expense[];
+  bookingDocs?: BookingDoc[];
+  stopNotes?: StopNote[];
   expenseReminders?: ExpenseReminder[];
   version?: number;
 }

@@ -54,6 +54,7 @@ export const appRoutes = {
   tripItinerary: (tripId: string) => `/trips/${tripRouteSegment(tripId)}/itinerary`,
   tripMap: (tripId: string) => `/trips/${tripRouteSegment(tripId)}/map`,
   tripTimeline: (tripId: string) => `/trips/${tripRouteSegment(tripId)}/timeline`,
+  tripBookings: (tripId: string) => `/trips/${tripRouteSegment(tripId)}/bookings`,
   tripMembers: (tripId: string) => `/trips/${tripRouteSegment(tripId)}/members`,
   tripExpenses: (tripId: string) => `/trips/${tripRouteSegment(tripId)}/expenses`,
   tripSettings: (tripId: string) => `/trips/${tripRouteSegment(tripId)}/settings`,
@@ -62,7 +63,7 @@ export const appRoutes = {
 interface TripWorkspaceNavItem {
   id: PlanningView;
   label: string;
-  icon: "home" | "calendar" | "map" | "list" | "users" | "settings" | "wallet";
+  icon: "home" | "calendar" | "map" | "list" | "users" | "settings" | "wallet" | "ticket";
   href: string;
 }
 
@@ -71,6 +72,7 @@ export interface TripWorkspaceNavLabels {
   itinerary: string;
   map: string;
   timeline: string;
+  bookings: string;
   members: string;
   expenses: string;
   settings: string;
@@ -82,6 +84,7 @@ export function tripWorkspaceNavItems(tripId: string, labels: TripWorkspaceNavLa
     { id: "itinerary", label: labels.itinerary, icon: "calendar", href: appRoutes.tripItinerary(tripId) },
     { id: "map", label: labels.map, icon: "map", href: appRoutes.tripMap(tripId) },
     { id: "timeline", label: labels.timeline, icon: "list", href: appRoutes.tripTimeline(tripId) },
+    { id: "bookings", label: labels.bookings, icon: "ticket", href: appRoutes.tripBookings(tripId) },
     { id: "members", label: labels.members, icon: "users", href: appRoutes.tripMembers(tripId) },
     { id: "expenses", label: labels.expenses, icon: "wallet", href: appRoutes.tripExpenses(tripId) },
   ];

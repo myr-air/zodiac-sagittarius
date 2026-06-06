@@ -21,6 +21,8 @@ describe("trip fixtures", () => {
     ]);
     expect(tripFixture.tasks.map((task) => task.id)).toEqual([
       "task-esim",
+      "task-passport-nam",
+      "task-hotel-names",
       "task-peak-tram",
       "task-dimdim-booking",
       "task-expenses",

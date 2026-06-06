@@ -78,7 +78,7 @@ const workspaceGridClassName = "workspace-grid relative grid h-[calc(100vh-62px)
 const planningMainClassName = "planning-main h-full min-h-0 min-w-0 overflow-y-auto scroll-smooth bg-(--color-page) transition-[padding] duration-200 max-[1199px]:h-auto max-[1199px]:overflow-y-visible";
 const planningMainWithRailClassName = "pr-[380px] max-[1199px]:pr-0";
 
-export type PlanningView = "overview" | "itinerary" | "map" | "timeline" | "members" | "expenses" | "settings";
+export type PlanningView = "overview" | "itinerary" | "map" | "timeline" | "bookings" | "members" | "expenses" | "settings";
 type PortalSection = "dashboard" | "trips" | "new-trip" | "explorer" | "todos" | "vault" | "settings" | "sign-out";
 type PlaceResolver = (request: PlaceResolutionRequest) => Promise<PlaceResolutionResponse>;
 type StopPlaceResolutionState = { state: "idle" | "resolving" | "ambiguous" | "unresolved"; candidates: PlaceResolutionCandidate[] };
