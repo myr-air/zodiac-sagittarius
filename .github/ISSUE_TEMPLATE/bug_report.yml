@@ -1,0 +1,48 @@
+name: Bug report
+description: Report broken behavior or a regression.
+title: "[Bug]: "
+labels:
+  - bug
+  - qa
+body:
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: Where does the issue appear?
+      placeholder: Route, component, role, browser, or API path.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence
+      description: Repro steps, screenshots, logs, command output, or file references.
+      placeholder: |
+        1. Go to ...
+        2. Click ...
+        3. See ...
+    validations:
+      required: true
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+      description: Why does this matter to users or maintainers?
+    validations:
+      required: true
+  - type: textarea
+    id: suggested_fix
+    attributes:
+      label: Suggested fix path
+      description: Optional direction for the fix.
+    validations:
+      required: false
+  - type: textarea
+    id: verification
+    attributes:
+      label: Verification
+      description: What command or browser flow should prove the fix?
+      placeholder: rtk bun run --cwd frontend test ...
+    validations:
+      required: true

@@ -73,7 +73,8 @@ errors, and mobile overflow.
 
 ## Issue Tracking
 
-If you find project issues that are not fixed in the current turn, record them
-in `issues.md` with date found, evidence, impact, and a suggested fix path.
-When fixed, update the same entry with the fix summary and verification
-evidence.
+If you find project issues that are not fixed in the current turn, create a
+GitHub issue with context, evidence, impact, suggested fix path, and verification
+criteria. Use `issues.md` only as a local index to GitHub Issues and archived
+audit records. When fixed, close the GitHub issue with the fix summary and
+verification evidence.

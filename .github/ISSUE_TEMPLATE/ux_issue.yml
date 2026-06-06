@@ -1,0 +1,56 @@
+name: UX issue
+description: Track a user-facing interaction, layout, accessibility, or design issue.
+title: "[UX]: "
+labels:
+  - enhancement
+  - ux
+  - frontend
+body:
+  - type: textarea
+    id: surface
+    attributes:
+      label: Surface
+      description: Which page, component, modal, drawer, panel, or flow is affected?
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence
+      description: Screenshot, viewport, browser flow, file reference, or observed behavior.
+    validations:
+      required: true
+  - type: textarea
+    id: user_impact
+    attributes:
+      label: User impact
+      description: What gets harder for organizers, travelers, or viewers?
+    validations:
+      required: true
+  - type: dropdown
+    id: surface_model
+    attributes:
+      label: Expected surface model
+      options:
+        - Workspace panel
+        - Inspector / right drawer
+        - Task dialog
+        - Toast / transient feedback
+        - Inline form feedback
+        - Not sure
+    validations:
+      required: false
+  - type: textarea
+    id: suggested_fix
+    attributes:
+      label: Suggested fix path
+      description: Keep this directional and concise.
+    validations:
+      required: false
+  - type: textarea
+    id: verification
+    attributes:
+      label: Verification
+      description: Browser flow, viewport, test command, or accessibility check.
+    validations:
+      required: true
