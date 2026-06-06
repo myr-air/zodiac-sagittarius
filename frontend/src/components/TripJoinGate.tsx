@@ -35,6 +35,8 @@ const joinHeroClassName = "join-hero grid grid-cols-[48px_minmax(0,1fr)] items-s
 const joinMarkClassName = "join-mark grid size-12 place-items-center rounded-[var(--radius-md)] bg-[var(--color-primary)] text-white max-[767px]:size-10 [&_.icon]:size-6";
 const joinEyebrowClassName = "join-eyebrow mb-0.5 mt-0 text-xs font-extrabold uppercase tracking-normal text-[var(--color-primary-strong)]";
 const joinAlertClassName = "join-alert m-0 inline-flex items-center gap-2 rounded-[var(--radius-md)] border border-[var(--color-danger-border)] bg-[var(--color-danger-soft)] px-3 py-2.5 text-[13px] font-bold text-[var(--color-danger)]";
+const joinAlertStackClassName =
+  "join-alert-stack pointer-events-none fixed top-4 right-[clamp(18px,4vw,44px)] left-auto z-[60] grid w-[min(430px,calc(100vw-36px))] gap-2.5 max-[767px]:top-auto max-[767px]:right-0 max-[767px]:left-0 max-[767px]:bottom-5 max-[767px]:px-[18px] [&_.join-alert]:pointer-events-auto [&_.join-alert]:min-h-12 [&_.join-alert]:w-full [&_.join-alert]:justify-start [&_.join-alert]:rounded-[var(--radius-lg)] [&_.join-alert]:shadow-[0_18px_44px_rgb(15_23_42_/_0.14)]";
 const joinFormClassName = "join-form grid gap-3 [&_input]:min-h-[42px] [&_input]:w-full [&_input]:rounded-[var(--radius-md)] [&_input]:border [&_input]:border-[var(--color-border-strong)] [&_input]:bg-[var(--color-surface)] [&_input]:px-3 [&_input]:text-[var(--color-text)] [&_label]:grid [&_label]:gap-1.5 [&_label]:text-[13px] [&_label]:font-bold [&_label]:text-[var(--color-text-muted)]";
 const participantAuthClassName = "participant-auth col-span-full grid gap-3 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-subtle)] p-3.5 [&_input]:min-h-[42px] [&_input]:w-full [&_input]:rounded-[var(--radius-md)] [&_input]:border [&_input]:border-[var(--color-border-strong)] [&_input]:bg-[var(--color-surface)] [&_input]:px-3 [&_input]:text-[var(--color-text)] [&_label]:grid [&_label]:gap-1.5 [&_label]:text-[13px] [&_label]:font-bold [&_label]:text-[var(--color-text-muted)]";
 const joinSubmitClassName = "join-submit min-h-[42px] justify-center";
@@ -284,10 +286,12 @@ export function TripJoinGate({ trip, apiClient, embedded = false, variant = "def
           </div>
 
           {error ? (
-            <p className={cn(joinAlertClassName, isTripAccessVariant ? tripAccessContentClassName : "")} role="alert">
-              <Icon name="alertCircle" />
-              {error}
-            </p>
+            <div className={joinAlertStackClassName} aria-live="polite">
+              <p className={joinAlertClassName} role="alert">
+                <Icon name="alertCircle" />
+                {error}
+              </p>
+            </div>
           ) : null}
 
           {step === "room" ? (
