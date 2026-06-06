@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import type { PlanningView } from "@/src/app/SagittariusApp";
 import { LanguageSwitch } from "@/src/i18n/LanguageSwitch";
 import { useI18n } from "@/src/i18n/I18nProvider";
@@ -66,16 +66,28 @@ const memberCardNameClassName = "overflow-hidden text-ellipsis whitespace-nowrap
 const memberCardRoleClassName = "text-[var(--color-text-muted)]";
 const memberSwitchButtonClassName = "member-switch-button min-h-7 whitespace-nowrap rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface)] px-2 text-[11px] font-extrabold text-[var(--color-primary-strong)] data-[collapsed=true]:hidden max-[1199px]:hidden";
 const memberFallbackIconClassName = "data-[collapsed=true]:hidden max-[1199px]:hidden";
+const identityDialogBackdropClassName = "modal-backdrop fixed inset-0 z-20 grid place-items-center bg-[rgb(15_23_42_/_0.28)] p-5";
+const identityDialogClassName = "identity-switch-dialog grid w-[min(420px,100%)] gap-3 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 shadow-[0_24px_70px_rgb(15_23_42_/_0.22)]";
+const identityDialogTitleClassName = "m-0 text-base font-extrabold leading-[22px] text-[var(--color-text)]";
+const identityDialogBodyClassName = "m-0 text-sm font-medium leading-6 text-[var(--color-text-muted)]";
+const identityDialogActionsClassName = "mt-1 flex justify-end gap-2";
+const identityDialogButtonClassName = "inline-flex min-h-9 items-center justify-center whitespace-nowrap rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3 text-sm font-extrabold text-[var(--color-primary-strong)]";
+const identityDialogPrimaryButtonClassName = "inline-flex min-h-9 items-center justify-center whitespace-nowrap rounded-[var(--radius-sm)] border border-[var(--color-primary)] bg-[var(--color-primary)] px-3 text-sm font-extrabold text-white";
 
 export function AppShell({ activeView, children, collapsed, currentMember, onLeaveParticipantSession, onNavigateView, trip, onToggleCollapsed }: AppShellProps) {
   const { t } = useI18n();
+  const [identityDialogOpen, setIdentityDialogOpen] = useState(false);
   const navItems = tripWorkspaceNavItems(trip.id, t.routes);
   const settingsHref = appRoutes.tripSettings(trip.id);
 
-  function confirmLeaveParticipantSession() {
+  function openLeaveParticipantSessionDialog() {
     if (!onLeaveParticipantSession) return;
-    const confirmed = window.confirm(t.appShell.confirmSwitchIdentity({ name: currentMember.displayName }));
-    if (confirmed) onLeaveParticipantSession();
+    setIdentityDialogOpen(true);
+  }
+
+  function confirmLeaveParticipantSession() {
+    setIdentityDialogOpen(false);
+    onLeaveParticipantSession?.();
   }
 
   return (
@@ -152,7 +164,7 @@ export function AppShell({ activeView, children, collapsed, currentMember, onLea
                   <span className={memberCardRoleClassName}>{roleLabel(currentMember.role, t.appShell.roles)}</span>
                 </div>
               </div>
-              <button className={memberSwitchButtonClassName} data-collapsed={collapsed ? "true" : "false"} type="button" onClick={confirmLeaveParticipantSession}>
+              <button className={memberSwitchButtonClassName} data-collapsed={collapsed ? "true" : "false"} type="button" onClick={openLeaveParticipantSessionDialog}>
                 {t.appShell.switchIdentity}
               </button>
             </>
@@ -166,7 +178,7 @@ export function AppShell({ activeView, children, collapsed, currentMember, onLea
                 <span className={memberCardRoleClassName}>{roleLabel(currentMember.role, t.appShell.roles)}</span>
               </div>
               {onLeaveParticipantSession ? (
-                <button className={memberSwitchButtonClassName} data-collapsed={collapsed ? "true" : "false"} type="button" onClick={confirmLeaveParticipantSession}>
+                <button className={memberSwitchButtonClassName} data-collapsed={collapsed ? "true" : "false"} type="button" onClick={openLeaveParticipantSessionDialog}>
                   {t.appShell.switchIdentity}
                 </button>
               ) : (
@@ -178,6 +190,22 @@ export function AppShell({ activeView, children, collapsed, currentMember, onLea
       </nav>
 
       {children}
+      {identityDialogOpen ? (
+        <div className={identityDialogBackdropClassName} role="presentation">
+          <section className={identityDialogClassName} role="dialog" aria-modal="true" aria-labelledby="identity-switch-title">
+            <h2 className={identityDialogTitleClassName} id="identity-switch-title">{t.appShell.switchIdentity}</h2>
+            <p className={identityDialogBodyClassName}>{t.appShell.confirmSwitchIdentity({ name: currentMember.displayName })}</p>
+            <div className={identityDialogActionsClassName}>
+              <button className={identityDialogButtonClassName} type="button" onClick={() => setIdentityDialogOpen(false)}>
+                {t.common.actions.cancel}
+              </button>
+              <button className={identityDialogPrimaryButtonClassName} type="button" onClick={confirmLeaveParticipantSession}>
+                {t.appShell.switchIdentity}
+              </button>
+            </div>
+          </section>
+        </div>
+      ) : null}
     </div>
   );
 }

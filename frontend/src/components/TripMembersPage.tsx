@@ -37,6 +37,18 @@ const memberCreateButtonClassName = "member-create-button border-[var(--color-pr
 const copyFeedbackClassName = "copy-feedback inline-flex min-h-8 items-center justify-center rounded-full border border-[var(--color-border)] bg-[var(--color-surface-subtle)] px-3 text-xs font-extrabold leading-4 text-[var(--color-text-muted)] data-[state=copied]:text-[var(--color-success)] data-[state=error]:text-[var(--color-danger)]";
 const memberCreatePanelClassName = "member-create-panel grid min-w-0 gap-3 rounded-[var(--radius-lg)] border border-[var(--color-primary-border)] bg-[var(--color-primary-soft)] p-4 max-[1199px]:grid-cols-1 max-[767px]:p-3";
 const memberCreateFormClassName = cn("member-create-form grid min-w-0 grid-cols-[minmax(0,1fr)_minmax(180px,240px)_auto] items-end gap-3 max-[1199px]:grid-cols-1", fieldGroupClassName);
+const memberDialogBackdropClassName = "modal-backdrop fixed inset-0 z-20 grid place-items-center bg-[rgb(15_23_42_/_0.28)] p-5";
+const memberDialogClassName = cn("member-task-dialog grid w-[min(460px,100%)] gap-3 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 shadow-[0_24px_70px_rgb(15_23_42_/_0.22)]", fieldGroupClassName);
+const memberDialogTitleClassName = "m-0 text-base font-extrabold leading-[22px] text-[var(--color-text)]";
+const memberDialogBodyClassName = "m-0 text-sm font-medium leading-6 text-[var(--color-text-muted)]";
+const memberDialogActionsClassName = "mt-1 flex justify-end gap-2";
+const memberDialogErrorClassName = "m-0 rounded-[var(--radius-sm)] border border-[var(--color-danger-border)] bg-[var(--color-danger-soft)] px-3 py-2 text-xs font-bold text-[var(--color-danger)]";
+
+type MemberTaskDialogState =
+  | { kind: "reset"; member: Member }
+  | { kind: "access"; member: Member; accessStatus: TripMemberAccessStatus; actionLabel: string }
+  | { kind: "transfer"; member: Member }
+  | { kind: "password"; member: Member };
 
 export function TripMembersPage({
   trip,
@@ -60,6 +72,9 @@ export function TripMembersPage({
   const [createPanelOpen, setCreatePanelOpen] = useState(false);
   const [newMemberName, setNewMemberName] = useState("");
   const [newMemberRole, setNewMemberRole] = useState<Exclude<TripRole, "owner">>("traveler");
+  const [memberDialog, setMemberDialog] = useState<MemberTaskDialogState | null>(null);
+  const [passwordValue, setPasswordValue] = useState("");
+  const [passwordError, setPasswordError] = useState<string | null>(null);
   const visibleMembers = trip.members.filter((member) => member.id !== "member-viewer");
   const activeMembers = visibleMembers.filter((member) => member.accessStatus !== "disabled").length;
   const joinedMembers = visibleMembers.filter((member) => isMemberJoined(member, currentMember.id)).length;
@@ -125,10 +140,7 @@ export function TripMembersPage({
     const member = visibleMembers.find((candidate) => candidate.id === memberId);
     /* v8 ignore next */
     if (!member) return;
-    /* v8 ignore next */
-    if (window.confirm(t.members.confirm.resetClaim({ name: member.displayName }))) {
-      onResetMemberClaim(memberId);
-    }
+    setMemberDialog({ kind: "reset", member });
   }
 
   function confirmChangeAccessStatus(memberId: string, accessStatus: TripMemberAccessStatus) {
@@ -136,31 +148,56 @@ export function TripMembersPage({
     /* v8 ignore next */
     if (!member) return;
     const actionLabel = accessStatus === "disabled" ? t.members.confirm.disable : t.members.confirm.enable;
-    if (window.confirm(t.members.confirm.access({ action: actionLabel, name: member.displayName }))) {
-      onChangeMemberAccessStatus(memberId, accessStatus);
-    }
+    setMemberDialog({ kind: "access", member, accessStatus, actionLabel });
   }
 
   function confirmTransferOwnership(memberId: string) {
     const member = visibleMembers.find((candidate) => candidate.id === memberId);
     /* v8 ignore next */
     if (!member) return;
-    if (window.confirm(t.members.confirm.transferOwner({ name: member.displayName }))) {
-      onTransferOwnership?.(memberId);
-    }
+    setMemberDialog({ kind: "transfer", member });
   }
 
   function promptChangePassword(memberId: string) {
     const member = visibleMembers.find((candidate) => candidate.id === memberId);
     /* v8 ignore next */
     if (!member) return;
-    const password = window.prompt(t.members.confirm.passwordPrompt({ name: member.displayName }));
-    if (password === null) return;
-    if (password.trim().length < 4) {
-      window.alert(t.members.confirm.passwordTooShort);
+    setPasswordValue("");
+    setPasswordError(null);
+    setMemberDialog({ kind: "password", member });
+  }
+
+  function closeMemberDialog() {
+    setMemberDialog(null);
+    setPasswordValue("");
+    setPasswordError(null);
+  }
+
+  function submitMemberDialog(event?: FormEvent<HTMLFormElement>) {
+    event?.preventDefault();
+    if (!memberDialog) return;
+    if (memberDialog.kind === "reset") {
+      onResetMemberClaim(memberDialog.member.id);
+      closeMemberDialog();
       return;
     }
-    onChangeMemberPassword(memberId, password);
+    if (memberDialog.kind === "access") {
+      onChangeMemberAccessStatus(memberDialog.member.id, memberDialog.accessStatus);
+      closeMemberDialog();
+      return;
+    }
+    if (memberDialog.kind === "transfer") {
+      onTransferOwnership?.(memberDialog.member.id);
+      closeMemberDialog();
+      return;
+    }
+    const password = passwordValue.trim();
+    if (password.length < 4) {
+      setPasswordError(t.members.confirm.passwordTooShort);
+      return;
+    }
+    onChangeMemberPassword(memberDialog.member.id, password);
+    closeMemberDialog();
   }
 
   function submitNewMember(event: FormEvent<HTMLFormElement>) {
@@ -318,8 +355,53 @@ export function TripMembersPage({
         onResetMemberClaim={confirmResetClaim}
         onTransferOwnership={onTransferOwnership ? confirmTransferOwnership : undefined}
       />
+      {memberDialog ? (
+        <div className={memberDialogBackdropClassName} role="presentation">
+          <form className={memberDialogClassName} role="dialog" aria-modal="true" aria-labelledby="member-task-dialog-title" onSubmit={submitMemberDialog}>
+            <h2 className={memberDialogTitleClassName} id="member-task-dialog-title">{memberDialogTitle(memberDialog)}</h2>
+            {memberDialog.kind === "password" ? (
+              <>
+                <p className={memberDialogBodyClassName}>{t.members.confirm.passwordPrompt({ name: memberDialog.member.displayName })}</p>
+                <label>
+                  <span>รหัสผ่านใหม่</span>
+                  <input value={passwordValue} onChange={(event) => setPasswordValue(event.target.value)} type="password" autoComplete="new-password" />
+                </label>
+                {passwordError ? <p className={memberDialogErrorClassName} role="alert">{passwordError}</p> : null}
+              </>
+            ) : (
+              <p className={memberDialogBodyClassName}>{memberDialogBody(memberDialog, t.members.confirm)}</p>
+            )}
+            <div className={memberDialogActionsClassName}>
+              <button className={cn(memberActionButtonClassName, memberResetButtonClassName)} type="button" onClick={closeMemberDialog}>ยกเลิก</button>
+              <button className={cn(memberActionButtonClassName, memberCreateButtonClassName)} type="submit">
+                {memberDialogConfirmLabel(memberDialog)}
+              </button>
+            </div>
+          </form>
+        </div>
+      ) : null}
     </section>
   );
+}
+
+function memberDialogTitle(dialog: MemberTaskDialogState): string {
+  if (dialog.kind === "reset") return `รีเซ็ตตัวตน ${dialog.member.displayName}`;
+  if (dialog.kind === "access") return `${dialog.actionLabel} ${dialog.member.displayName}`;
+  if (dialog.kind === "transfer") return `โอน owner ให้ ${dialog.member.displayName}`;
+  return `เปลี่ยนรหัสผ่าน ${dialog.member.displayName}`;
+}
+
+function memberDialogBody(dialog: Exclude<MemberTaskDialogState, { kind: "password" }>, labels: ReturnType<typeof useI18n>["t"]["members"]["confirm"]): string {
+  if (dialog.kind === "reset") return labels.resetClaim({ name: dialog.member.displayName });
+  if (dialog.kind === "access") return labels.access({ action: dialog.actionLabel, name: dialog.member.displayName });
+  return labels.transferOwner({ name: dialog.member.displayName });
+}
+
+function memberDialogConfirmLabel(dialog: MemberTaskDialogState): string {
+  if (dialog.kind === "reset") return "รีเซ็ตตัวตน";
+  if (dialog.kind === "transfer") return "โอน owner";
+  if (dialog.kind === "password") return "บันทึกรหัสผ่าน";
+  return "ยืนยัน";
 }
 
 function isMemberJoined(member: Member, currentMemberId: string): boolean {

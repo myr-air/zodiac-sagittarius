@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { AppShell, resolveViewFromPath } from "@/src/components/AppShell";
 import { AccountAccessPanel } from "@/src/components/AccountAccessPanel";
 import { ContextRail } from "@/src/components/ContextRail";
@@ -55,9 +55,19 @@ const appDeleteDialogClassName = "delete-confirm-dialog grid w-[min(420px,100%)]
 const appDeleteDialogTitleClassName = "m-0 text-base font-extrabold leading-[22px] text-[#991b1b]";
 const appDeleteDialogBodyClassName = "m-0 text-sm font-medium leading-6 text-[var(--color-text-muted)]";
 const appDeleteDialogActionsClassName = "mt-1 flex justify-end gap-2";
+const importDialogClassName = "import-options-dialog grid w-[min(520px,100%)] gap-3 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 shadow-[0_24px_70px_rgb(15_23_42_/_0.22)]";
+const importDialogTitleClassName = "m-0 text-base font-extrabold leading-[22px] text-[var(--color-text)]";
+const importDialogBodyClassName = "m-0 text-sm font-medium leading-6 text-[var(--color-text-muted)]";
+const importDialogFieldsClassName = "grid gap-3 [&_label]:grid [&_label]:gap-1.5 [&_label>span]:text-xs [&_label>span]:font-bold [&_label>span]:text-[var(--color-text-muted)] [&_input]:min-h-9 [&_input]:rounded-[var(--radius-sm)] [&_input]:border [&_input]:border-[var(--color-border)] [&_input]:bg-[var(--color-surface)] [&_input]:px-2.5 [&_input]:text-sm [&_select]:min-h-9 [&_select]:rounded-[var(--radius-sm)] [&_select]:border [&_select]:border-[var(--color-border)] [&_select]:bg-[var(--color-surface)] [&_select]:px-2.5 [&_select]:text-sm";
+const importErrorClassName = "mx-6 mt-3 rounded-[var(--radius-sm)] border border-[var(--color-danger-border)] bg-[var(--color-danger-soft)] px-3 py-2 text-sm font-bold text-[var(--color-danger)] max-[767px]:mx-3";
 const accountClaimMessageClassName = "account-claim-message font-extrabold";
 const portalLoadingCardClassName =
   "account-card portal-loading-card grid min-h-[220px] gap-3.5 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[rgb(255_255_255_/_0.94)] p-4 shadow-[var(--shadow-panel)]";
+
+interface PendingItineraryImport {
+  fileName: string;
+  items: ItineraryExportItem[];
+}
 const portalSkeletonBaseClassName =
   "portal-skeleton block overflow-hidden rounded-[var(--radius-md)] bg-[linear-gradient(90deg,var(--color-surface-subtle),rgb(226_232_240_/_0.72),var(--color-surface-subtle))] bg-[length:220%_100%] animate-[portal-skeleton-pulse_1.2s_ease-in-out_infinite] motion-reduce:animate-none";
 const portalSkeletonTitleClassName = `${portalSkeletonBaseClassName} portal-skeleton--title h-7 w-[min(220px,48%)]`;
@@ -165,6 +175,8 @@ export function SagittariusApp({
   const [dialogState, setDialogState] = useState<{ mode: "create"; day?: string } | { mode: "edit"; item: ItineraryItem } | null>(null);
   const [stopPlaceResolution, setStopPlaceResolution] = useState<StopPlaceResolutionState>({ state: "idle", candidates: [] });
   const [dialogDeleteItem, setDialogDeleteItem] = useState<ItineraryItem | null>(null);
+  const [pendingItineraryImport, setPendingItineraryImport] = useState<PendingItineraryImport | null>(null);
+  const [itineraryImportError, setItineraryImportError] = useState<string | null>(null);
   const [pathSelection, setPathSelection] = useState<ItineraryPathSelection>({ tripPathId: mainItineraryPathId, dayPathOverrides: {} });
 
   const trip = tripState.trip;
@@ -1563,16 +1575,17 @@ export function SagittariusApp({
             content,
           })
         : { items: parseItineraryImport(content) };
-      const importedItems = document.items;
-      const target = promptItineraryImportApplyTarget({
-        importedItems,
-        memberId: currentMember.id,
-        pathOptions,
-        startDate: trip.startDate,
-        currentTripPathId: pathSelection.tripPathId ?? mainItineraryPathId,
-      });
-      if (!target) return;
-      const previewTrip = applyImportedItemsToItineraryPath(trip, importedItems, target);
+      setPendingItineraryImport({ fileName: file.name, items: document.items });
+      setItineraryImportError(null);
+    } catch (caught) {
+      setItineraryImportError(caught instanceof Error ? caught.message : "Import itinerary ไม่สำเร็จ");
+    }
+  }
+
+  async function applyPendingItineraryImport(target: ItineraryImportApplyTarget) {
+    if (!pendingItineraryImport) return;
+    try {
+      const previewTrip = applyImportedItemsToItineraryPath(trip, pendingItineraryImport.items, target);
       const currentIds = new Set(trip.itineraryItems.map((item) => item.id));
       const previewIds = new Set(previewTrip.itineraryItems.map((item) => item.id));
       const deletedItems = trip.itineraryItems.filter((item) => !previewIds.has(item.id));
@@ -1615,14 +1628,17 @@ export function SagittariusApp({
         const nextSelectedItemId = createdItems[0]?.id ?? "";
         setSelectedItemId(nextSelectedItemId);
         setContextRailVisibility(Boolean(nextSelectedItemId));
+        setPendingItineraryImport(null);
         return;
       }
 
       const nextSelectedItemId = previewImportedItems[0]?.id ?? "";
       commitTrip(() => previewTrip, nextSelectedItemId);
       setContextRailVisibility(Boolean(nextSelectedItemId));
+      setPendingItineraryImport(null);
+      setItineraryImportError(null);
     } catch (caught) {
-      window.alert(caught instanceof Error ? caught.message : "Import itinerary ไม่สำเร็จ");
+      setItineraryImportError(caught instanceof Error ? caught.message : "Import itinerary ไม่สำเร็จ");
     }
   }
 
@@ -1918,6 +1934,7 @@ export function SagittariusApp({
               />
             )}
           </div>
+          {itineraryImportError ? <p className={importErrorClassName} role="alert">{itineraryImportError}</p> : null}
           {supportsContextRail && contextRailMounted ? (
             <ContextRail
               trip={trip}
@@ -1963,6 +1980,17 @@ export function SagittariusApp({
             onDelete={dialogState.mode === "edit" ? deleteSelectedStop : undefined}
             onSubmit={dialogState.mode === "edit" ? updateSelectedStop : createStop}
             placeResolution={stopPlaceResolution}
+          />
+        ) : null}
+        {pendingItineraryImport ? (
+          <ItineraryImportOptionsDialog
+            currentTripPathId={pathSelection.tripPathId ?? mainItineraryPathId}
+            importedItems={pendingItineraryImport.items}
+            memberId={currentMember.id}
+            pathOptions={pathOptions}
+            startDate={trip.startDate}
+            onApply={(target) => void applyPendingItineraryImport(target)}
+            onClose={() => setPendingItineraryImport(null)}
           />
         ) : null}
         {dialogDeleteItem ? (
@@ -2322,38 +2350,110 @@ function itineraryItemPathFieldsForTarget(pathGroupId: string, pathId: string, p
   return { pathGroupId, pathId, pathName, pathRole: "alternative" };
 }
 
-function promptItineraryImportApplyTarget({
+function ItineraryImportOptionsDialog({
   importedItems,
   memberId,
   pathOptions,
   startDate,
   currentTripPathId,
+  onApply,
+  onClose,
 }: {
   importedItems: ItineraryExportItem[];
   memberId: string;
   pathOptions: ItineraryPathOption[];
   startDate: string;
   currentTripPathId: string;
-}): ItineraryImportApplyTarget | null {
+  onApply: (target: ItineraryImportApplyTarget) => void;
+  onClose: () => void;
+}) {
   const currentPathName = pathOptions.find((option) => option.id === currentTripPathId)?.name ?? "Main";
-  const pathNameInput = window.prompt("Import target path name. Use Main for the main path.", currentPathName);
-  if (pathNameInput === null) return null;
-  const pathName = pathNameInput.trim() || "Main";
+  const [pathNameInput, setPathNameInput] = useState(currentPathName);
+  const [scope, setScope] = useState<"trip" | "day">("trip");
+  const [day, setDay] = useState(importedItems[0]?.day ?? startDate);
+  const [mode, setMode] = useState<ItineraryImportApplyTarget["mode"]>("replace-target");
+  const previewLabel = importedItems[0]?.activity ?? "No activities";
+
+  function submitImport(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const pathName = pathNameInput.trim() || "Main";
+    const targetDay = scope === "day" ? day.trim() : undefined;
+    if (scope === "day" && !targetDay) return;
+    onApply(buildItineraryImportApplyTarget({
+      day: targetDay,
+      memberId,
+      mode,
+      pathName,
+      pathOptions,
+      scope,
+    }));
+  }
+
+  return (
+    <div className={appDeleteModalBackdropClassName} role="presentation">
+      <form className={importDialogClassName} role="dialog" aria-modal="true" aria-labelledby="itinerary-import-options-title" onSubmit={submitImport}>
+        <h2 className={importDialogTitleClassName} id="itinerary-import-options-title">ตั้งค่า import itinerary</h2>
+        <p className={importDialogBodyClassName}>{previewLabel} · {importedItems.length} activities</p>
+        <div className={importDialogFieldsClassName}>
+          <label>
+            <span>ชื่อ path</span>
+            <input value={pathNameInput} onChange={(event) => setPathNameInput(event.target.value)} />
+          </label>
+          <label>
+            <span>Scope</span>
+            <select value={scope} onChange={(event) => setScope(event.target.value as "trip" | "day")}>
+              <option value="trip">Whole trip</option>
+              <option value="day">This day only</option>
+            </select>
+          </label>
+          {scope === "day" ? (
+            <label>
+              <span>Target day</span>
+              <input value={day} onChange={(event) => setDay(event.target.value)} />
+            </label>
+          ) : null}
+          <label>
+            <span>Mode</span>
+            <select value={mode} onChange={(event) => setMode(event.target.value as ItineraryImportApplyTarget["mode"])}>
+              <option value="replace-target">Replace target path</option>
+              <option value="keep-alternatives">Keep both as alternatives</option>
+            </select>
+          </label>
+        </div>
+        <div className={appDeleteDialogActionsClassName}>
+          <Button type="button" variant="ghost" onClick={onClose}>Cancel</Button>
+          <Button type="submit">Import itinerary</Button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
+function buildItineraryImportApplyTarget({
+  day,
+  memberId,
+  mode,
+  pathName,
+  pathOptions,
+  scope,
+}: {
+  day?: string;
+  memberId: string;
+  mode: ItineraryImportApplyTarget["mode"];
+  pathName: string;
+  pathOptions: ItineraryPathOption[];
+  scope: ItineraryImportApplyTarget["scope"];
+}): ItineraryImportApplyTarget {
   const existingPath = pathOptions.find((option) => option.name.toLowerCase() === pathName.toLowerCase() || option.id === pathName);
   const pathId = pathName.toLowerCase() === "main" ? mainItineraryPathId : existingPath?.id ?? `path-${slugifyFilePart(pathName) || Date.now().toString(36)}`;
   const normalizedPathName = pathId === mainItineraryPathId ? "Main" : existingPath?.name ?? pathName;
-  const useWholeTrip = window.confirm("Apply this import as a whole trip path? OK = whole trip, Cancel = this day only.");
-  const day = useWholeTrip ? undefined : window.prompt("Target day for this import (YYYY-MM-DD).", importedItems[0]?.day ?? startDate);
-  if (!useWholeTrip && (!day || !day.trim())) return null;
-  const targetDay = useWholeTrip ? undefined : day?.trim();
-  const replaceTarget = window.confirm("Replace existing activities in this target path? OK = replace, Cancel = keep both as alternatives.");
   return {
     memberId,
     pathId,
     pathName: normalizedPathName,
-    scope: useWholeTrip ? "trip" : "day",
-    day: targetDay,
-    mode: replaceTarget ? "replace-target" : "keep-alternatives",
+    scope,
+    day,
+    mode,
   };
 }
 

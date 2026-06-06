@@ -247,7 +247,7 @@ describe("AccountAccessPanel", () => {
     expect(screen.queryByLabelText(/Trip ID/i)).not.toBeInTheDocument();
   });
 
-  it("keeps login entry on the auth form with session errors shown as toast", () => {
+  it("keeps login entry errors inline with the auth form", () => {
     render(
       <AccountAccessPanel
         accessMode="account-login"
@@ -271,7 +271,10 @@ describe("AccountAccessPanel", () => {
     expect(screen.getByRole("main", { name: /Account sign in/i })).toBeInTheDocument();
     expect(screen.getByLabelText(/Email/i)).toBeInTheDocument();
     expect(screen.queryByRole("navigation", { name: /Portal navigation/i })).not.toBeInTheDocument();
-    expect(screen.getByRole("alert").closest(".account-toast-stack")).toBeTruthy();
+    const alert = screen.getByRole("alert");
+    expect(alert).toHaveTextContent(/Sign in again/i);
+    expect(alert.closest(".account-toast-stack")).toBeNull();
+    expect(alert.closest("form")).toBeTruthy();
   });
 
   it("renders account registration as a separate account entry path", () => {

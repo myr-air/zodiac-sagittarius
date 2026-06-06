@@ -12,10 +12,8 @@ interface WeatherBriefingDrawerProps {
   onSaveOverrides?: (date: string, version: number, overrides: DailyBriefingOverrides) => void;
 }
 
-const backdropClassName =
-  "weather-briefing-backdrop fixed inset-0 z-50 bg-[rgb(15_23_42_/_0.28)] opacity-100 transition-opacity duration-200 motion-reduce:transition-none";
 const drawerClassName =
-  "weather-briefing-drawer fixed bottom-0 right-0 top-0 z-[60] grid w-[min(720px,78vw)] grid-rows-[auto_minmax(0,1fr)] overflow-hidden border-l border-[var(--color-border)] bg-[var(--color-surface)] shadow-[-28px_0_70px_rgb(15_23_42_/_0.22)] transition-[transform,opacity] duration-300 ease-out motion-reduce:transition-none max-[767px]:top-auto max-[767px]:h-[88vh] max-[767px]:w-full max-[767px]:rounded-t-[24px] max-[767px]:border-l-0 max-[767px]:border-t max-[767px]:shadow-[0_-24px_70px_rgb(15_23_42_/_0.22)]";
+  "weather-briefing-drawer fixed bottom-0 right-0 top-0 z-[50] grid w-[min(720px,78vw)] grid-rows-[auto_minmax(0,1fr)] overflow-hidden border-l border-[var(--color-border)] bg-[var(--color-surface)] shadow-[-28px_0_70px_rgb(15_23_42_/_0.18)] transition-[transform,opacity] duration-300 ease-out motion-reduce:transition-none max-[767px]:top-auto max-[767px]:h-[88vh] max-[767px]:w-full max-[767px]:rounded-t-[24px] max-[767px]:border-l-0 max-[767px]:border-t max-[767px]:shadow-[0_-24px_70px_rgb(15_23_42_/_0.22)]";
 const drawerHeaderClassName = "grid grid-cols-[minmax(0,1fr)_auto] gap-3 border-b border-[var(--color-border)] px-5 py-4";
 const drawerBodyClassName = "grid min-h-0 grid-cols-2 gap-3 overflow-auto p-5 max-[767px]:grid-cols-1";
 const briefingBlockClassName = "grid content-start gap-1 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-subtle)] p-4";
@@ -28,9 +26,7 @@ export function WeatherBriefingDrawer({ briefing, locale, canEdit, isOpen, onClo
   const outfitBody = briefing.manualOverrides.outfitAdvice ?? briefing.outfitAdvice?.body ?? emptyText(locale);
 
   return (
-    <>
-      <button className={backdropClassName} type="button" aria-label={locale === "th" ? "ปิดพยากรณ์อากาศ" : "Close weather briefing"} onClick={onClose} />
-      <section className={drawerClassName} role="dialog" aria-modal="true" aria-label={locale === "th" ? "รายละเอียดพยากรณ์อากาศ" : "Weather briefing"}>
+      <section className={drawerClassName} role="region" aria-label={locale === "th" ? "รายละเอียดพยากรณ์อากาศ" : "Weather briefing"}>
         <header className={drawerHeaderClassName}>
           <div>
             <p className="m-0 text-xs font-black leading-4 text-[var(--color-text-muted)]">{formatFullDate(briefing.date, locale)} · {briefing.locationLabel}</p>
@@ -67,7 +63,6 @@ export function WeatherBriefingDrawer({ briefing, locale, canEdit, isOpen, onClo
           ) : null}
         </div>
       </section>
-    </>
   );
 }
 

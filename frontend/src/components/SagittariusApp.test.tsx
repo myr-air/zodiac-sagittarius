@@ -207,7 +207,7 @@ describe("Sagittarius cockpit UI", () => {
 
   it("lets a guest participant leave their local session and choose another identity", async () => {
     const user = userEvent.setup();
-    const confirm = vi.spyOn(window, "confirm").mockReturnValue(true);
+    const confirm = vi.spyOn(window, "confirm");
     render(<SagittariusApp requireJoin />);
 
     fireEvent.change(screen.getByLabelText(/Trip ID/i), { target: { value: "HK-SZ-2025" } });
@@ -218,8 +218,9 @@ describe("Sagittarius cockpit UI", () => {
     await user.click(screen.getByRole("button", { name: /เริ่มใช้งาน/i }));
 
     await user.click(screen.getByRole("button", { name: /เปลี่ยนตัวตน/i }));
+    await user.click(within(screen.getByRole("dialog", { name: /เปลี่ยนตัวตน/i })).getByRole("button", { name: /เปลี่ยนตัวตน/i }));
 
-    expect(confirm).toHaveBeenCalledWith(expect.stringContaining("Explorer Friend"));
+    expect(confirm).not.toHaveBeenCalled();
     expect(screen.getByRole("main", { name: /Account access/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /เข้าห้อง trip/i })).toBeInTheDocument();
     expect(screen.queryByRole("navigation", { name: /เมนูวางแผน Joii/i })).not.toBeInTheDocument();
@@ -227,7 +228,6 @@ describe("Sagittarius cockpit UI", () => {
 
   it("persists guest participant claims across a fresh app mount", async () => {
     const user = userEvent.setup();
-    vi.spyOn(window, "confirm").mockReturnValue(true);
     installLocalStorageStub();
     const { unmount } = render(<SagittariusApp requireJoin />);
 
@@ -238,6 +238,7 @@ describe("Sagittarius cockpit UI", () => {
     fireEvent.change(screen.getByLabelText(/ตั้งรหัสสำหรับ Explorer Friend/i), { target: { value: "traveler-pin" } });
     await user.click(screen.getByRole("button", { name: /เริ่มใช้งาน/i }));
     await user.click(screen.getByRole("button", { name: /เปลี่ยนตัวตน/i }));
+    await user.click(within(screen.getByRole("dialog", { name: /เปลี่ยนตัวตน/i })).getByRole("button", { name: /เปลี่ยนตัวตน/i }));
 
     unmount();
     render(<SagittariusApp requireJoin />);
@@ -930,7 +931,7 @@ describe("Sagittarius cockpit UI", () => {
     await waitFor(() => expect(apiClient.listDailyBriefings).toHaveBeenCalledWith(apiTrip.id, "weather-session-token"));
     expect(await screen.findByRole("region", { name: /พยากรณ์อากาศรายวัน/i })).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: /Rain 33° 28°/ }));
-    expect(screen.getByRole("dialog", { name: /รายละเอียดพยากรณ์อากาศ/i })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: /รายละเอียดพยากรณ์อากาศ/i })).toBeInTheDocument();
     await user.type(screen.getByLabelText(/Outfit advice override/i), "Pack a compact umbrella");
     await user.click(screen.getByRole("button", { name: /บันทึก/i }));
 
@@ -1416,7 +1417,7 @@ describe("Sagittarius cockpit UI", () => {
     await loginApiTrip(user);
     const row = await screen.findByRole("row", { name: /Dim Dim Sum/i });
     await user.click(within(row).getByRole("button", { name: /แก้ไขระยะเวลา Dim Dim Sum/i }));
-    await user.click(within(screen.getByRole("dialog", { name: /แก้ไขระยะเวลา Dim Dim Sum/i })).getByRole("button", { name: /1 h 30 m/i }));
+    await user.click(within(screen.getByRole("region", { name: /แก้ไขระยะเวลา Dim Dim Sum/i })).getByRole("button", { name: /1 h 30 m/i }));
 
     await waitFor(() => expect(apiClient.patchItineraryItem).toHaveBeenCalledWith(
       ownerTrip.id,
@@ -1997,23 +1998,28 @@ describe("Sagittarius cockpit UI", () => {
 
   it("manages member roles, access, claim reset, and current member password from the app state", async () => {
     const user = userEvent.setup();
-    const confirm = vi.spyOn(window, "confirm").mockReturnValue(true);
-    const prompt = vi.spyOn(window, "prompt").mockReturnValue("owner-new-pin");
+    const confirm = vi.spyOn(window, "confirm");
+    const prompt = vi.spyOn(window, "prompt");
     render(<SagittariusApp initialView="members" />);
 
     await user.selectOptions(screen.getByLabelText(/Role for Explorer Friend/i), "organizer");
     expect(screen.getByText("Explorer Friend").closest(".person-row")).toHaveTextContent("ผู้จัดทริป");
 
     await user.click(screen.getByRole("button", { name: /ปิดสิทธิ์ Explorer Friend/i }));
+    await user.click(screen.getByRole("button", { name: /ยืนยัน/i }));
     expect(screen.getByRole("button", { name: /เปิดสิทธิ์ Explorer Friend/i })).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: /เปิดสิทธิ์ Explorer Friend/i }));
+    await user.click(screen.getByRole("button", { name: /ยืนยัน/i }));
     expect(screen.getByRole("button", { name: /ปิดสิทธิ์ Explorer Friend/i })).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: /เปลี่ยนรหัสผ่าน Demo Traveler/i }));
+    const passwordDialog = screen.getByRole("dialog", { name: /เปลี่ยนรหัสผ่าน Demo Traveler/i });
+    await user.type(within(passwordDialog).getByLabelText(/รหัสผ่านใหม่/i), "owner-new-pin");
+    await user.click(within(passwordDialog).getByRole("button", { name: /บันทึกรหัสผ่าน/i }));
 
-    expect(prompt).toHaveBeenCalledWith(expect.stringContaining("Demo Traveler"));
-    expect(confirm).toHaveBeenCalledWith(expect.stringContaining("Explorer Friend"));
+    expect(prompt).not.toHaveBeenCalled();
+    expect(confirm).not.toHaveBeenCalled();
 
     prompt.mockRestore();
     confirm.mockRestore();
@@ -2021,7 +2027,7 @@ describe("Sagittarius cockpit UI", () => {
 
   it("resets a claimed non-owner member loaded from a persisted draft", async () => {
     const user = userEvent.setup();
-    const confirm = vi.spyOn(window, "confirm").mockReturnValue(true);
+    const confirm = vi.spyOn(window, "confirm");
     const storage = installLocalStorageStub();
     storage.setItem("sagittarius:trip-draft", JSON.stringify({
       ...seedTrip,
@@ -2035,8 +2041,9 @@ describe("Sagittarius cockpit UI", () => {
     render(<SagittariusApp initialView="members" />);
 
     await user.click(await screen.findByRole("button", { name: /รีเซ็ตรหัสผ่าน Travel Mate/i }));
+    await user.click(within(screen.getByRole("dialog", { name: /รีเซ็ตตัวตน Travel Mate/i })).getByRole("button", { name: /รีเซ็ตตัวตน/i }));
 
-    expect(confirm).toHaveBeenCalledWith(expect.stringContaining("Travel Mate"));
+    expect(confirm).not.toHaveBeenCalled();
     await waitFor(() => expect(screen.queryByRole("button", { name: /รีเซ็ตรหัสผ่าน Travel Mate/i })).not.toBeInTheDocument());
 
     confirm.mockRestore();
@@ -2365,6 +2372,47 @@ describe("Sagittarius cockpit UI", () => {
 
     expect(screen.getByRole("button", { name: /Import/i })).toBeDisabled();
     expect(screen.getByText(/ต้องมีสิทธิ์ผู้จัดทริปจึงจะแก้ไขได้/i)).toBeInTheDocument();
+  });
+
+  it("imports itinerary files through an app dialog instead of native prompts", async () => {
+    const user = userEvent.setup();
+    const prompt = vi.spyOn(window, "prompt");
+    const confirm = vi.spyOn(window, "confirm");
+    const alert = vi.spyOn(window, "alert");
+    render(<SagittariusApp initialView="itinerary" />);
+    const file = new File([
+      JSON.stringify({
+        schema: "joii.itinerary.export",
+        version: 1,
+        exportedAt: "2026-06-06T00:00:00.000Z",
+        items: [{
+          id: "imported-lunch",
+          day: "2026-06-19",
+          sortOrder: 42,
+          startTime: "13:15",
+          activity: "Imported noodle lunch",
+          activityType: "food",
+          place: "Central Market",
+          linkLabel: "Map",
+          mapLink: "",
+          durationMinutes: 55,
+          transportation: "MTR",
+          note: "Bring cash",
+        }],
+      }),
+    ], "itinerary.json", { type: "application/json" });
+
+    await user.upload(screen.getByLabelText(/Import itinerary JSON/i), file);
+    const dialog = await screen.findByRole("dialog", { name: /ตั้งค่า import itinerary/i });
+    expect(dialog).toHaveTextContent("Imported noodle lunch");
+    await user.clear(within(dialog).getByLabelText(/ชื่อ path/i));
+    await user.type(within(dialog).getByLabelText(/ชื่อ path/i), "Plan B");
+    await user.click(within(dialog).getByRole("button", { name: /import itinerary/i }));
+
+    expect(screen.getByRole("row", { name: /Imported noodle lunch/i })).toBeInTheDocument();
+    expect(prompt).not.toHaveBeenCalled();
+    expect(confirm).not.toHaveBeenCalled();
+    expect(alert).not.toHaveBeenCalled();
   });
 
   it("lets travelers submit a suggestion instead of directly editing a stop", async () => {

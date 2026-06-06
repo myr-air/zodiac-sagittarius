@@ -58,9 +58,12 @@ describe("AppShell", () => {
     await screen.findByText("ผู้ร่วมเดินทาง");
     const memberCard = screen.getByText("Explorer Friend").closest(".member-card") as HTMLElement;
     expect(within(memberCard).getByText("ผู้ร่วมเดินทาง")).toBeInTheDocument();
-    const confirm = vi.spyOn(window, "confirm").mockReturnValue(true);
+    const confirm = vi.spyOn(window, "confirm");
     await user.click(within(memberCard).getByRole("button", { name: "เปลี่ยนตัวตน" }));
-    expect(confirm).toHaveBeenCalledWith(expect.stringContaining("Explorer Friend"));
+    const dialog = screen.getByRole("dialog", { name: /เปลี่ยนตัวตน/i });
+    expect(dialog).toHaveTextContent("Explorer Friend");
+    await user.click(within(dialog).getByRole("button", { name: /เปลี่ยนตัวตน/i }));
+    expect(confirm).not.toHaveBeenCalled();
     expect(onLeaveParticipantSession).toHaveBeenCalled();
 
     unmount();

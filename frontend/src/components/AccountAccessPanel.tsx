@@ -659,10 +659,9 @@ export function AccountAccessPanel({
           </div>
         ) : null}
 
-        {isAccountEntry && (message || displayError) ? (
+        {isAccountEntry && message ? (
           <div className={accountToastStackClassName} aria-live="polite">
             {message ? <StatusMessage tone="success">{message}</StatusMessage> : null}
-            {displayError ? <StatusMessage tone="danger">{displayError}</StatusMessage> : null}
           </div>
         ) : null}
 
@@ -687,6 +686,7 @@ export function AccountAccessPanel({
           <EmailLoginPanel
             flow={entryFlow}
             accountClient={accountClient}
+            formError={displayError}
             showRouteTabs
             onFlowChange={setEntryFlowOverride}
             onLoggedIn={(session) => {
@@ -738,6 +738,7 @@ export function AccountAccessPanel({
           <EmailLoginPanel
             flow={entryFlow}
             accountClient={accountClient}
+            formError={isAccountEntry ? displayError : null}
             showRouteTabs={isAccountEntry}
             onFlowChange={setEntryFlowOverride}
             onLoggedIn={(session) => {
@@ -916,6 +917,7 @@ function isAccountEntryMode(accessMode: AccountAccessPanelProps["accessMode"]): 
 function EmailLoginPanel({
   flow,
   accountClient,
+  formError,
   onError,
   onFlowChange,
   onLoggedIn,
@@ -923,6 +925,7 @@ function EmailLoginPanel({
 }: {
   flow: AuthFlow;
   accountClient: AccountApiClient;
+  formError?: string | null;
   onError: (message: string | null) => void;
   onFlowChange?: (flow: AuthFlow) => void;
   onLoggedIn: (session: AccountSession) => void;
@@ -1177,6 +1180,7 @@ function EmailLoginPanel({
       ) : null}
       <form className={accountAuthCardClassName} onSubmit={authStep === "setup" ? submitSetup : challenge ? submitCode : authStep === "password" ? submitPassword : submitEmail}>
         <span className={accountStepKickerClassName}>{stepLabel}</span>
+        {formError ? <StatusMessage tone="danger">{formError}</StatusMessage> : null}
         <div className={cn(accountStepStageClassName, accountStepStageDirectionClassNames[transitionDirection])} key={visualStep}>
           <PanelHeading
             icon={challenge ? "settings" : authStep === "password" ? "key" : "users"}

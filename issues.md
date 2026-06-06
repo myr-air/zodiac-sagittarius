@@ -26,6 +26,8 @@
 - **Evidence:** `frontend/src/app/SagittariusApp.tsx` still uses `window.alert` for itinerary import failure and `window.prompt`/`window.confirm` for import target options. `frontend/src/components/TripMembersPage.tsx` uses `window.confirm`, `window.prompt`, and `window.alert` for member reset/access/ownership/password actions. `frontend/src/components/AppShell.tsx` uses `window.confirm` for identity switching.
 - **Impact:** Browser-native dialogs interrupt context without matching the approved `Workspace panel` / `Inspector` / `Task dialog` / `Toast` model. They are harder to localize consistently, harder to test visually, and feel outside the Calm Travel Ops cockpit.
 - **Suggested fix path:** Replace import prompts with an `ImportOptionsDialog` plus inline persistent import error. Replace member management prompts with app-owned task dialogs or inline member-row panels. Replace identity switching confirm with the same app dialog pattern used for destructive or identity-sensitive actions.
+- **Fix update 2026-06-06:** Replaced itinerary import prompts with `ItineraryImportOptionsDialog` and inline import errors. Replaced member reset/access/ownership/password prompts with app task dialogs. Replaced app-shell identity switching confirm with an app task dialog.
+- **Verification:** `rtk rg -n "window\\.(alert|confirm|prompt)" frontend/src/app frontend/src/components` returned no matches. `rtk bun run --cwd frontend test src/components/AccountAccessPanel.test.tsx src/components/WeatherBriefingDrawer.test.tsx src/components/SmartItineraryTable.test.tsx src/components/TripMembersPage.test.tsx src/components/AppShell.test.tsx src/components/SagittariusApp.test.tsx` passed: 6 files, 169 tests.
 
 ### Account-entry errors are surfaced as toast-like floating messages
 
@@ -33,6 +35,8 @@
 - **Evidence:** `frontend/src/components/AccountAccessPanel.tsx` renders account-entry `displayError` inside `accountToastStackClassName` at the viewport edge, while non-account-entry errors render inline as `StatusMessage`.
 - **Impact:** Login/register failures require user correction, so they should stay near the auth form. A floating toast can separate the error from the field/action that caused it and conflicts with the new rule: feedback requiring correction belongs inline or in a persistent panel near the source.
 - **Suggested fix path:** Move account-entry error rendering into `EmailLoginPanel` or the nearest auth form body. Keep success notifications eligible for short feedback, but keep failed login/register/passkey/email-code messages inline and persistent until the next attempt.
+- **Fix update 2026-06-06:** Account-entry errors now render inside the auth form. The floating account toast stack remains for success feedback only.
+- **Verification:** Focused regression in `frontend/src/components/AccountAccessPanel.test.tsx` confirms account-entry errors are not inside `.account-toast-stack` and remain within the form. Included in the passing focused suite above.
 
 ### Weather briefing drawer is contextual detail but implemented as a modal dialog
 
@@ -40,6 +44,8 @@
 - **Evidence:** `frontend/src/components/WeatherBriefingDrawer.tsx` renders a selected daily briefing as `role="dialog"` with `aria-modal="true"` and a blocking backdrop, even though it is opened from `WeatherForecastStrip` as contextual day detail on `OverviewPage`.
 - **Impact:** Weather details are inspector-style context, not a blocking task. The current modal semantics and backdrop prevent users from comparing the briefing with the overview cockpit while it is open.
 - **Suggested fix path:** On desktop/tablet, render weather briefing as a non-modal inspector drawer or inline expanded panel tied to the selected day. Keep a modal bottom sheet only for mobile if screen space requires it, and adjust ARIA semantics by breakpoint.
+- **Fix update 2026-06-06:** `WeatherBriefingDrawer` now renders as a non-modal `region` inspector and no longer includes a blocking backdrop or `aria-modal`.
+- **Verification:** `frontend/src/components/WeatherBriefingDrawer.test.tsx` and `frontend/src/components/SagittariusApp.test.tsx` assert weather briefing uses `role="region"` instead of a dialog. Included in the passing focused suite above.
 
 ### Duration editing uses a modal for a small table edit
 
@@ -47,6 +53,8 @@
 - **Evidence:** `frontend/src/components/SmartItineraryTable.tsx` opens `durationDialogClassName` as `role="dialog"` with `aria-modal="true"` for editing one row duration.
 - **Impact:** Duration is a frequent table-level edit. A modal blocks row comparison and adds friction for scanning/editing multiple itinerary rows, which should normally remain inline or in an anchored row editor.
 - **Suggested fix path:** Replace the duration modal with an inline row editor, anchored popover, or compact inspector control. Keep destructive row deletion as a task dialog.
+- **Fix update 2026-06-06:** Duration editing now renders as a contextual row `region` inside the active itinerary row. Destructive row deletion remains a task dialog.
+- **Verification:** `frontend/src/components/SmartItineraryTable.test.tsx` and `frontend/src/components/SagittariusApp.test.tsx` assert duration editing uses the row-scoped region and still updates inline/API duration values. Included in the passing focused suite above.
 
 ## ✅ Implementation Checklist
 

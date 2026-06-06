@@ -1,4 +1,4 @@
-import { act, fireEvent, screen } from "@testing-library/react";
+import { act, fireEvent, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { renderWithI18n } from "@/src/i18n/test-utils";
@@ -28,9 +28,11 @@ describe("TripMembersPage", () => {
   });
 
   it("handles successful member-management actions", async () => {
+    const user = userEvent.setup();
     const writeText = vi.fn().mockResolvedValue(undefined);
-    const confirm = vi.spyOn(window, "confirm").mockReturnValue(true);
-    const prompt = vi.spyOn(window, "prompt").mockReturnValue("fresh-pin");
+    const confirm = vi.spyOn(window, "confirm");
+    const prompt = vi.spyOn(window, "prompt");
+    const alert = vi.spyOn(window, "alert");
     Object.defineProperty(navigator, "clipboard", {
       configurable: true,
       value: { writeText },
@@ -58,13 +60,21 @@ describe("TripMembersPage", () => {
     expect(screen.getByRole("status")).toHaveTextContent("คัดลอกแล้ว");
 
     fireEvent.click(screen.getByRole("button", { name: /รีเซ็ตรหัสผ่าน Travel Mate/i }));
+    await user.click(screen.getByRole("button", { name: /รีเซ็ตตัวตน/i }));
     expect(props.onResetMemberClaim).toHaveBeenCalledWith("member-beam");
 
     fireEvent.click(screen.getByRole("button", { name: /ปิดสิทธิ์ Explorer Friend/i }));
+    await user.click(screen.getByRole("button", { name: /ยืนยัน/i }));
     expect(props.onChangeMemberAccessStatus).toHaveBeenCalledWith("member-nam", "disabled");
 
     fireEvent.click(screen.getByRole("button", { name: /เปลี่ยนรหัสผ่าน Demo Traveler/i }));
+    const passwordDialog = screen.getByRole("dialog", { name: /เปลี่ยนรหัสผ่าน Demo Traveler/i });
+    await user.type(within(passwordDialog).getByLabelText(/รหัสผ่านใหม่/i), "fresh-pin");
+    await user.click(within(passwordDialog).getByRole("button", { name: /บันทึกรหัสผ่าน/i }));
     expect(props.onChangeMemberPassword).toHaveBeenCalledWith("member-aom", "fresh-pin");
+    expect(confirm).not.toHaveBeenCalled();
+    expect(prompt).not.toHaveBeenCalled();
+    expect(alert).not.toHaveBeenCalled();
 
     fireEvent.click(screen.getByRole("button", { name: /เปิดฟอร์มเพิ่มสมาชิก/i }));
     expect(screen.getByRole("region", { name: /เพิ่มสมาชิก/i })).toHaveClass("member-create-panel", "grid", "rounded-[var(--radius-lg)]");
@@ -76,11 +86,12 @@ describe("TripMembersPage", () => {
 
     prompt.mockRestore();
     confirm.mockRestore();
+    alert.mockRestore();
   }, 30_000);
 
   it("lets owners transfer ownership only to active account-linked members", async () => {
     const user = userEvent.setup();
-    const confirm = vi.spyOn(window, "confirm").mockReturnValue(true);
+    const confirm = vi.spyOn(window, "confirm");
     const accountLinkedTrip = {
       ...seedTrip,
       members: seedTrip.members.map((member) => {
@@ -92,8 +103,9 @@ describe("TripMembersPage", () => {
     const props = renderMembers({ trip: accountLinkedTrip });
 
     await user.click(screen.getByRole("button", { name: /โอน owner ให้ Explorer Friend/i }));
+    await user.click(within(screen.getByRole("dialog", { name: /โอน owner ให้ Explorer Friend/i })).getByRole("button", { name: /โอน owner/i }));
 
-    expect(confirm).toHaveBeenCalledWith(expect.stringContaining("Explorer Friend"));
+    expect(confirm).not.toHaveBeenCalled();
     expect(props.onTransferOwnership).toHaveBeenCalledWith("member-nam");
     expect(screen.queryByRole("button", { name: /โอน owner ให้ Family Member/i })).not.toBeInTheDocument();
 
@@ -103,9 +115,9 @@ describe("TripMembersPage", () => {
   it("handles invite copy failures and cancelable member prompts", async () => {
     const user = userEvent.setup();
     const writeText = vi.fn().mockRejectedValue(new Error("clipboard unavailable"));
-    const confirm = vi.spyOn(window, "confirm").mockReturnValue(false);
-    const prompt = vi.spyOn(window, "prompt").mockReturnValueOnce(null).mockReturnValueOnce("123");
-    const alert = vi.spyOn(window, "alert").mockImplementation(() => undefined);
+    const confirm = vi.spyOn(window, "confirm");
+    const prompt = vi.spyOn(window, "prompt");
+    const alert = vi.spyOn(window, "alert");
     const props = renderMembers();
     Object.defineProperty(navigator, "clipboard", {
       configurable: true,
@@ -116,12 +128,20 @@ describe("TripMembersPage", () => {
     expect(screen.getByRole("status")).toHaveTextContent("คัดลอกไม่สำเร็จ");
 
     await user.click(screen.getByRole("button", { name: /ปิดสิทธิ์ Explorer Friend/i }));
+    await user.click(screen.getByRole("button", { name: /ยกเลิก/i }));
     expect(props.onChangeMemberAccessStatus).not.toHaveBeenCalled();
 
     await user.click(screen.getByRole("button", { name: /เปลี่ยนรหัสผ่าน Demo Traveler/i }));
+    await user.click(screen.getByRole("button", { name: /ยกเลิก/i }));
     await user.click(screen.getByRole("button", { name: /เปลี่ยนรหัสผ่าน Demo Traveler/i }));
-    expect(alert).toHaveBeenCalledWith("รหัสผ่านต้องมีอย่างน้อย 4 ตัวอักษร");
+    const passwordDialog = screen.getByRole("dialog", { name: /เปลี่ยนรหัสผ่าน Demo Traveler/i });
+    await user.type(within(passwordDialog).getByLabelText(/รหัสผ่านใหม่/i), "123");
+    await user.click(within(passwordDialog).getByRole("button", { name: /บันทึกรหัสผ่าน/i }));
+    expect(within(passwordDialog).getByRole("alert")).toHaveTextContent("รหัสผ่านต้องมีอย่างน้อย 4 ตัวอักษร");
     expect(props.onChangeMemberPassword).not.toHaveBeenCalled();
+    expect(confirm).not.toHaveBeenCalled();
+    expect(prompt).not.toHaveBeenCalled();
+    expect(alert).not.toHaveBeenCalled();
 
     prompt.mockRestore();
     confirm.mockRestore();

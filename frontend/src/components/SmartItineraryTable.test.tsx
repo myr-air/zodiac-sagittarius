@@ -925,11 +925,13 @@ describe("SmartItineraryTable", () => {
     const row = screen.getByRole("row", { name: /Dim Dim Sum/i });
 
     await user.click(within(row).getByRole("button", { name: /แก้ไขระยะเวลา Dim Dim Sum/i }));
-    const presetDialog = screen.getByRole("dialog", { name: /แก้ไขระยะเวลา Dim Dim Sum/i });
-    await user.click(within(presetDialog).getByRole("button", { name: /1 h 30 m/i }));
+    const durationEditor = screen.getByRole("region", { name: /แก้ไขระยะเวลา Dim Dim Sum/i });
+    expect(screen.queryByRole("dialog", { name: /แก้ไขระยะเวลา Dim Dim Sum/i })).not.toBeInTheDocument();
+    expect(durationEditor.closest("tr")).toBe(row);
+    await user.click(within(durationEditor).getByRole("button", { name: /1 h 30 m/i }));
 
     expect(onUpdateItemInline).toHaveBeenCalledWith("item-dimdim", { durationMinutes: 90 });
-    expect(screen.queryByRole("dialog", { name: /แก้ไขระยะเวลา Dim Dim Sum/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: /แก้ไขระยะเวลา Dim Dim Sum/i })).not.toBeInTheDocument();
   });
 
   it("saves a custom duration from the row duration picker", async () => {
@@ -939,12 +941,12 @@ describe("SmartItineraryTable", () => {
     const row = screen.getByRole("row", { name: /Dim Dim Sum/i });
 
     await user.click(within(row).getByRole("button", { name: /แก้ไขระยะเวลา Dim Dim Sum/i }));
-    const dialog = screen.getByRole("dialog", { name: /แก้ไขระยะเวลา Dim Dim Sum/i });
-    await user.clear(within(dialog).getByRole("spinbutton", { name: /ชั่วโมง/i }));
-    await user.type(within(dialog).getByRole("spinbutton", { name: /ชั่วโมง/i }), "2");
-    await user.clear(within(dialog).getByRole("spinbutton", { name: /นาที/i }));
-    await user.type(within(dialog).getByRole("spinbutton", { name: /นาที/i }), "10");
-    await user.click(within(dialog).getByRole("button", { name: /บันทึก/i }));
+    const editor = screen.getByRole("region", { name: /แก้ไขระยะเวลา Dim Dim Sum/i });
+    await user.clear(within(editor).getByRole("spinbutton", { name: /ชั่วโมง/i }));
+    await user.type(within(editor).getByRole("spinbutton", { name: /ชั่วโมง/i }), "2");
+    await user.clear(within(editor).getByRole("spinbutton", { name: /นาที/i }));
+    await user.type(within(editor).getByRole("spinbutton", { name: /นาที/i }), "10");
+    await user.click(within(editor).getByRole("button", { name: /บันทึก/i }));
 
     expect(onUpdateItemInline).toHaveBeenCalledWith("item-dimdim", { durationMinutes: 130 });
   });

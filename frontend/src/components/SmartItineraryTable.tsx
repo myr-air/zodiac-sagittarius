@@ -124,7 +124,7 @@ const deleteDialogClassName = "delete-confirm-dialog grid w-[min(420px,100%)] ga
 const deleteDialogTitleClassName = "m-0 text-base font-extrabold leading-[22px] text-[#991b1b]";
 const deleteDialogBodyClassName = "m-0 text-sm font-medium leading-6 text-[var(--color-text-muted)]";
 const deleteDialogActionsClassName = "mt-1 flex justify-end gap-2";
-const durationDialogClassName = "duration-dialog grid w-[min(360px,100%)] gap-3 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 shadow-[0_24px_70px_rgb(15_23_42_/_0.2)]";
+const durationDialogClassName = "duration-dialog mt-2 grid w-[min(360px,100%)] gap-3 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] p-3 shadow-[0_12px_28px_rgb(15_23_42_/_0.12)]";
 const durationDialogTitleClassName = "m-0 text-sm font-extrabold leading-5 text-[var(--color-text)]";
 const durationPresetGridClassName = "grid grid-cols-3 gap-2";
 const durationPresetButtonClassName = "min-h-9 rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface-subtle)] px-2 text-xs font-extrabold text-[var(--color-text)] transition-[background,border-color,color] duration-150 hover:border-[var(--color-primary-border)] hover:bg-[var(--color-primary-soft)] hover:text-[var(--color-primary-strong)]";
@@ -533,7 +533,11 @@ export function SmartItineraryTable({
               onStartTouchGesture={startTouchGesture}
               onEditItem={onEditItem}
               onDeleteItem={setPendingDeleteItem}
+              durationEditor={durationEditor}
               onEditDuration={openDurationEditor}
+              onSetDurationEditor={setDurationEditor}
+              onCommitDuration={commitDuration}
+              onCommitCustomDuration={commitCustomDuration}
               onToggleDay={toggleDay}
             />
           ))}
@@ -556,54 +560,6 @@ export function SmartItineraryTable({
               >
                 {t.itinerary.row.confirmDeleteYes}
               </Button>
-            </div>
-          </section>
-        </div>
-      ) : null}
-      {durationEditor ? (
-        <div className={deleteModalBackdropClassName} role="presentation">
-          <section className={durationDialogClassName} role="dialog" aria-modal="true" aria-labelledby="itinerary-duration-title">
-            <h2 className={durationDialogTitleClassName} id="itinerary-duration-title">{t.itinerary.row.durationDialogTitle({ activity: durationEditor.item.activity })}</h2>
-            <div className={durationPresetGridClassName}>
-              {durationPresetMinutes.map((minutes) => (
-                <button
-                  type="button"
-                  className={durationPresetButtonClassName}
-                  key={minutes}
-                  onClick={() => commitDuration(durationEditor.item.id, minutes)}
-                >
-                  {formatDuration(minutes, locale)}
-                </button>
-              ))}
-            </div>
-            <div className={durationCustomGridClassName}>
-              <label className={durationInputLabelClassName}>
-                {t.itinerary.row.durationHours}
-                <input
-                  className={durationInputClassName}
-                  inputMode="numeric"
-                  min={0}
-                  type="number"
-                  value={durationEditor.hours}
-                  onChange={(event) => setDurationEditor((current) => current ? { ...current, hours: event.target.value } : current)}
-                />
-              </label>
-              <label className={durationInputLabelClassName}>
-                {t.itinerary.row.durationMinutes}
-                <input
-                  className={durationInputClassName}
-                  inputMode="numeric"
-                  max={59}
-                  min={0}
-                  type="number"
-                  value={durationEditor.minutes}
-                  onChange={(event) => setDurationEditor((current) => current ? { ...current, minutes: event.target.value } : current)}
-                />
-              </label>
-            </div>
-            <div className={deleteDialogActionsClassName}>
-              <Button type="button" variant="ghost" onClick={() => setDurationEditor(null)}>{t.itinerary.row.durationCancel}</Button>
-              <Button type="button" onClick={commitCustomDuration}>{t.itinerary.row.durationSave}</Button>
             </div>
           </section>
         </div>
@@ -647,7 +603,11 @@ function DayGroup({
   onStartTouchGesture,
   onEditItem,
   onDeleteItem,
+  durationEditor,
   onEditDuration,
+  onSetDurationEditor,
+  onCommitDuration,
+  onCommitCustomDuration,
   onToggleDay,
 }: {
   graphColumnWidth: number;
@@ -684,7 +644,11 @@ function DayGroup({
   onStartTouchGesture: (event: ReactTouchEvent<HTMLButtonElement>, itemId: string) => void;
   onEditItem?: (itemId: string) => void;
   onDeleteItem?: (item: ItineraryItem) => void;
+  durationEditor: { item: ItineraryItem; hours: string; minutes: string } | null;
   onEditDuration: (item: ItineraryItem) => void;
+  onSetDurationEditor: (updater: (current: { item: ItineraryItem; hours: string; minutes: string } | null) => { item: ItineraryItem; hours: string; minutes: string } | null) => void;
+  onCommitDuration: (itemId: string, minutes: number) => void;
+  onCommitCustomDuration: () => void;
   onToggleDay: (day: string) => void;
 }) {
   const dayLabel = formatDayLabel(group.day, startDate, locale);
@@ -806,7 +770,7 @@ function DayGroup({
             </div>
           </td>
           <td className={timeCellClassName}>
-            <span className={timeStackClassName}>
+            <div className={timeStackClassName}>
               <InlineTextField
                 ariaLabel={itineraryLabels.row.inlineTime({ activity: item.activity })}
                 canEdit={canEdit}
@@ -825,7 +789,53 @@ function DayGroup({
               >
                 {formatDuration(item.durationMinutes, locale)}
               </button>
-            </span>
+              {durationEditor?.item.id === item.id ? (
+                <section className={durationDialogClassName} role="region" aria-label={itineraryLabels.row.durationDialogTitle({ activity: item.activity })}>
+                  <h3 className={durationDialogTitleClassName}>{itineraryLabels.row.durationDialogTitle({ activity: item.activity })}</h3>
+                  <div className={durationPresetGridClassName}>
+                    {durationPresetMinutes.map((minutes) => (
+                      <button
+                        type="button"
+                        className={durationPresetButtonClassName}
+                        key={minutes}
+                        onClick={() => onCommitDuration(item.id, minutes)}
+                      >
+                        {formatDuration(minutes, locale)}
+                      </button>
+                    ))}
+                  </div>
+                  <div className={durationCustomGridClassName}>
+                    <label className={durationInputLabelClassName}>
+                      {itineraryLabels.row.durationHours}
+                      <input
+                        className={durationInputClassName}
+                        inputMode="numeric"
+                        min={0}
+                        type="number"
+                        value={durationEditor.hours}
+                        onChange={(event) => onSetDurationEditor((current) => current ? { ...current, hours: event.target.value } : current)}
+                      />
+                    </label>
+                    <label className={durationInputLabelClassName}>
+                      {itineraryLabels.row.durationMinutes}
+                      <input
+                        className={durationInputClassName}
+                        inputMode="numeric"
+                        max={59}
+                        min={0}
+                        type="number"
+                        value={durationEditor.minutes}
+                        onChange={(event) => onSetDurationEditor((current) => current ? { ...current, minutes: event.target.value } : current)}
+                      />
+                    </label>
+                  </div>
+                  <div className={deleteDialogActionsClassName}>
+                    <Button type="button" variant="ghost" onClick={() => onSetDurationEditor(() => null)}>{itineraryLabels.row.durationCancel}</Button>
+                    <Button type="button" onClick={onCommitCustomDuration}>{itineraryLabels.row.durationSave}</Button>
+                  </div>
+                </section>
+              ) : null}
+            </div>
           </td>
           <td className={activityCellClassName}>
             <div

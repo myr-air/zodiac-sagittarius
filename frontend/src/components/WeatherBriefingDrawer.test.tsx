@@ -30,11 +30,14 @@ const briefing: TripDailyBriefing = {
 };
 
 describe("WeatherBriefingDrawer", () => {
-  it("renders a large drawer and closes from the close button", async () => {
+  it("renders a non-modal inspector drawer and closes from the close button", async () => {
     const onClose = vi.fn();
     render(<WeatherBriefingDrawer briefing={briefing} locale="en" canEdit={false} isOpen onClose={onClose} />);
 
-    expect(screen.getByRole("dialog", { name: /weather briefing/i })).toBeInTheDocument();
+    const inspector = screen.getByRole("region", { name: /weather briefing/i });
+    expect(inspector).toBeInTheDocument();
+    expect(inspector).not.toHaveAttribute("aria-modal");
+    expect(screen.queryByRole("dialog", { name: /weather briefing/i })).not.toBeInTheDocument();
     expect(screen.getByText(/Rain · 33° 28°/)).toBeInTheDocument();
     expect(screen.getByText(/Humidity 82%/)).toBeInTheDocument();
     expect(screen.getByText("Light shirt and compact umbrella.")).toBeInTheDocument();
