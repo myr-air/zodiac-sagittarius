@@ -2,11 +2,8 @@ import { type FormEvent, useMemo, useState } from "react";
 import {
   buildBookingDocsSummary,
   canViewBookingDoc,
-  filterBookingDocs,
   findBookingDocRelations,
-  type BookingDocFilters,
 } from "@/src/trip/booking-docs";
-import { formatDayLabel, getTripDates } from "@/src/trip/itinerary";
 import type { BookingDoc, BookingDocStatus, BookingDocType, BookingDocVisibility, Member, Trip, TripTask } from "@/src/trip/types";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
@@ -51,16 +48,38 @@ const bookingTypes = ["flight", "train", "public_transport", "hotel", "insurance
 const bookingStatuses = ["draft", "needs_action", "booked", "confirmed", "paid", "cancelled", "expired"] satisfies BookingDocStatus[];
 const bookingVisibilities = ["shared", "sensitive", "private"] satisfies BookingDocVisibility[];
 
+type BookingFolderId = "all" | "transport" | "stays" | "tickets" | "travel_docs" | "needs_action";
+
+const bookingFolders: Array<{
+  id: BookingFolderId;
+  title: string;
+  description: string;
+  icon: Parameters<typeof Icon>[0]["name"];
+  types?: BookingDocType[];
+  status?: BookingDocStatus;
+}> = [
+  { id: "all", title: "All items", description: "Everything saved for this trip", icon: "layout" },
+  { id: "transport", title: "Transport", description: "Flights, trains, local passes", icon: "route", types: ["flight", "train", "public_transport"] },
+  { id: "stays", title: "Stays", description: "Hotels and room bookings", icon: "home", types: ["hotel"] },
+  { id: "tickets", title: "Tickets", description: "Attractions and activities", icon: "ticket", types: ["activity_ticket"] },
+  { id: "travel_docs", title: "Travel docs", description: "Passport, visa, insurance", icon: "document", types: ["passport", "visa", "insurance"] },
+  { id: "needs_action", title: "Needs action", description: "Missing, unpaid, or pending", icon: "warning", status: "needs_action" },
+];
+
 const pageClassName = "bookings-docs-page grid min-h-full min-w-0 grid-rows-[auto_minmax(0,1fr)] gap-3 bg-[linear-gradient(180deg,#f7fbfa_0%,var(--color-page)_46%)] px-6 py-[22px] pb-7 max-[767px]:px-3 max-[767px]:py-4";
 const summaryClassName = "bookings-summary grid grid-cols-4 gap-3 max-[1199px]:grid-cols-2 max-[767px]:grid-cols-1";
 const statClassName = "booking-stat grid min-h-[96px] gap-1 rounded-(--radius-lg) border border-[rgb(15_118_110_/_0.14)] bg-[linear-gradient(145deg,#ffffff_0%,#f4fffc_100%)] p-3.5 shadow-[0_10px_24px_rgb(15_23_42_/_0.05)] [&_.icon]:text-(--color-primary) [&>span]:text-xs [&>span]:font-bold [&>span]:text-(--color-text-muted) [&>strong]:text-xl [&>strong]:font-black [&>strong]:tabular-nums [&>strong]:text-(--color-text)";
 const contentClassName = "bookings-content grid min-h-0 grid-cols-[minmax(0,1fr)_330px] gap-3 max-[1199px]:grid-cols-1";
 const panelClassName = "bookings-panel grid min-h-0 gap-3 rounded-(--radius-lg) border border-[rgb(15_23_42_/_0.08)] bg-[rgb(255_255_255_/_0.95)] p-3.5 shadow-[0_14px_28px_rgb(15_23_42_/_0.05)]";
-const filtersClassName = "bookings-filters grid grid-cols-[minmax(180px,1fr)_150px_150px_150px_150px_auto] items-end gap-2 max-[1199px]:grid-cols-3 max-[767px]:grid-cols-1";
+const folderGridClassName = "booking-folders grid grid-cols-6 gap-2 max-[1399px]:grid-cols-3 max-[767px]:grid-cols-2";
+const folderButtonClassName = "group grid min-h-[104px] content-between gap-2 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) p-3 text-left transition-[background-color,border-color,box-shadow,transform] duration-150 hover:-translate-y-0.5 hover:border-(--color-primary-border) hover:bg-[#fbfffd] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary)";
+const selectedFolderClassName = "border-(--color-primary-border) bg-(--color-primary-soft) shadow-[0_8px_18px_rgb(15_118_110_/_0.1)]";
 const fieldClassName = "grid min-w-0 gap-1.5 [&>span]:text-[11px] [&>span]:font-extrabold [&>span]:text-(--color-text-muted) [&_input]:min-h-10 [&_input]:rounded-(--radius-md) [&_input]:border [&_input]:border-(--color-border) [&_input]:bg-(--color-surface) [&_input]:px-3 [&_input]:text-sm [&_select]:min-h-10 [&_select]:rounded-(--radius-md) [&_select]:border [&_select]:border-(--color-border) [&_select]:bg-(--color-surface) [&_select]:px-3 [&_select]:text-sm [&_textarea]:min-h-[74px] [&_textarea]:resize-y [&_textarea]:rounded-(--radius-md) [&_textarea]:border [&_textarea]:border-(--color-border) [&_textarea]:bg-(--color-surface) [&_textarea]:px-3 [&_textarea]:py-2 [&_textarea]:text-sm";
-const ledgerClassName = "bookings-ledger grid gap-2";
-const rowClassName = "booking-row grid min-h-[74px] grid-cols-[112px_minmax(0,1fr)_132px_110px_92px_100px_auto] items-center gap-2 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) px-3 py-2 text-left text-sm shadow-[0_8px_18px_rgb(15_23_42_/_0.035)] transition-colors hover:bg-[#fbfefd] max-[1199px]:grid-cols-[92px_minmax(0,1fr)_auto] max-[1199px]:items-start max-[1199px]:[&_.booking-cell-optional]:hidden";
-const selectedRowClassName = "border-(--color-primary-border) bg-(--color-primary-soft)";
+const timelineClassName = "booking-timeline grid gap-2 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface-subtle) p-3";
+const timelineItemsClassName = "grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-2";
+const cardGridClassName = "booking-ticket-grid grid grid-cols-[repeat(auto-fit,minmax(270px,1fr))] gap-2";
+const ticketCardClassName = "booking-ticket-card grid min-h-[178px] grid-rows-[auto_minmax(0,1fr)_auto] gap-3 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) p-3 text-left text-sm shadow-[0_8px_18px_rgb(15_23_42_/_0.035)] transition-[background-color,border-color,box-shadow,transform] duration-150 hover:-translate-y-0.5 hover:border-(--color-primary-border) hover:bg-[#fbfefd]";
+const selectedTicketClassName = "border-(--color-primary-border) bg-(--color-primary-soft) shadow-[0_10px_22px_rgb(15_118_110_/_0.09)]";
 const lockedRowClassName = "booking-row-locked flex min-h-[58px] items-center justify-between gap-2 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface-subtle) px-3 py-2 text-sm";
 const badgeClassName = "inline-flex w-fit items-center gap-1.5 rounded-full border px-2 py-0.5 text-[11px] font-extrabold capitalize";
 const inspectorClassName = "booking-inspector sticky top-3 grid max-h-[calc(100vh-92px)] content-start gap-3 overflow-auto rounded-(--radius-lg) border border-[rgb(15_23_42_/_0.08)] bg-[rgb(255_255_255_/_0.96)] p-3.5 shadow-[0_14px_28px_rgb(15_23_42_/_0.05)] max-[1199px]:static max-[1199px]:max-h-none";
@@ -84,20 +103,20 @@ export function BookingsDocsPage({
   onDeleteBookingDoc,
 }: BookingsDocsPageProps) {
   const { locale } = useI18n();
-  const [filters, setFilters] = useState<BookingDocFilters>({});
+  const [activeFolderId, setActiveFolderId] = useState<BookingFolderId>("all");
   const [selectedBookingId, setSelectedBookingId] = useState(bookingDocs[0]?.id ?? "");
   const [dialogBooking, setDialogBooking] = useState<BookingDoc | "new" | null>(null);
   const [deleteBooking, setDeleteBooking] = useState<BookingDoc | null>(null);
   const summary = useMemo(() => buildBookingDocsSummary(bookingDocs, trip.members, `${trip.startDate}T00:00:00.000Z`), [bookingDocs, trip.members, trip.startDate]);
-  const filteredDocs = useMemo(() => filterBookingDocs(bookingDocs, filters, trip, currentMember), [bookingDocs, currentMember, filters, trip]);
+  const visibleDocs = useMemo(() => bookingDocs.filter((doc) => canViewBookingDoc(doc, currentMember)), [bookingDocs, currentMember]);
+  const folderDocs = useMemo(() => visibleDocs.filter((doc) => bookingDocMatchesFolder(doc, activeFolderId)).sort(compareBookingStartWithUndated), [activeFolderId, visibleDocs]);
+  const folderCounts = useMemo(() => countBookingFolders(visibleDocs), [visibleDocs]);
   const lockedDocs = bookingDocs.filter((doc) => !canViewBookingDoc(doc, currentMember));
-  const selectedBooking = filteredDocs.find((doc) => doc.id === selectedBookingId) ?? filteredDocs[0] ?? null;
+  const selectedBooking = folderDocs.find((doc) => doc.id === selectedBookingId) ?? folderDocs[0] ?? null;
   const selectedRelations = selectedBooking ? findBookingDocRelations(selectedBooking, trip, tasks) : null;
-  const tripDays = getTripDates(trip.startDate, trip.endDate);
-
-  function clearFilters() {
-    setFilters({});
-  }
+  const activeFolder = bookingFolders.find((folder) => folder.id === activeFolderId) ?? bookingFolders[0];
+  const timelineDocs = useMemo(() => folderDocs.filter((doc) => doc.startsAt).sort(compareBookingStart).slice(0, 5), [folderDocs]);
+  const groupedDocs = useMemo(() => groupBookingDocsByDay(folderDocs, trip, locale), [folderDocs, locale, trip]);
 
   async function submitBooking(input: BookingDocInput) {
     if (dialogBooking === "new") {
@@ -137,60 +156,71 @@ export function BookingsDocsPage({
 
       <div className={contentClassName}>
         <div className={panelClassName}>
-          <div className={filtersClassName}>
-            <label className={fieldClassName}>
-              <span>Search bookings</span>
-              <input value={filters.query ?? ""} onChange={(event) => setFilters((current) => ({ ...current, query: event.target.value }))} />
-            </label>
-            <label className={fieldClassName}>
-              <span>Type</span>
-              <select value={filters.type ?? "all"} onChange={(event) => setFilters((current) => ({ ...current, type: event.target.value as BookingDocFilters["type"] }))}>
-                <option value="all">All types</option>
-                {bookingTypes.map((type) => <option key={type} value={type}>{formatEnumLabel(type)}</option>)}
-              </select>
-            </label>
-            <label className={fieldClassName}>
-              <span>Status</span>
-              <select value={filters.status ?? "all"} onChange={(event) => setFilters((current) => ({ ...current, status: event.target.value as BookingDocFilters["status"] }))}>
-                <option value="all">All statuses</option>
-                {bookingStatuses.map((status) => <option key={status} value={status}>{formatEnumLabel(status)}</option>)}
-              </select>
-            </label>
-            <label className={fieldClassName}>
-              <span>Traveler</span>
-              <select value={filters.travelerId ?? "all"} onChange={(event) => setFilters((current) => ({ ...current, travelerId: event.target.value }))}>
-                <option value="all">All travelers</option>
-                {trip.members.map((member) => <option key={member.id} value={member.id}>{member.displayName}</option>)}
-              </select>
-            </label>
-            <label className={fieldClassName}>
-              <span>Day</span>
-              <select value={filters.day ?? "all"} onChange={(event) => setFilters((current) => ({ ...current, day: event.target.value }))}>
-                <option value="all">All days</option>
-                {tripDays.map((day) => <option key={day} value={day}>{formatDayLabel(day, locale)}</option>)}
-              </select>
-            </label>
-            <Button type="button" variant="secondary" onClick={clearFilters}>Clear filters</Button>
+          <div className={folderGridClassName} aria-label="Booking folders">
+            {bookingFolders.map((folder) => (
+              <button
+                type="button"
+                className={cn(folderButtonClassName, activeFolderId === folder.id && selectedFolderClassName)}
+                key={folder.id}
+                onClick={() => setActiveFolderId(folder.id)}
+                aria-pressed={activeFolderId === folder.id}
+                aria-label={`${folder.title}, ${folderCounts[folder.id] ?? 0} items`}
+              >
+                <span className="flex items-start justify-between gap-2">
+                  <span className="grid size-9 place-items-center rounded-(--radius-md) border border-[rgb(15_118_110_/_0.12)] bg-(--color-surface-subtle) text-(--color-primary-strong)">
+                    <Icon name={folder.icon} />
+                  </span>
+                  <strong className="tabular-nums text-sm text-(--color-text)">{folderCounts[folder.id] ?? 0}</strong>
+                </span>
+                <span className="grid gap-0.5">
+                  <strong className="text-sm font-extrabold text-(--color-text)">{folder.title}</strong>
+                  <span className="text-xs font-semibold leading-5 text-(--color-text-muted)">{folder.description}</span>
+                </span>
+              </button>
+            ))}
           </div>
 
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <strong className="text-[15px] font-extrabold text-(--color-text)">Ledger</strong>
+            <div className="grid gap-0.5">
+              <strong className="text-[15px] font-extrabold text-(--color-text)">{activeFolder.title}</strong>
+              <span className="text-xs font-semibold text-(--color-text-muted)">{activeFolder.description} · {folderDocs.length} visible items</span>
+            </div>
             {canEditBookings ? <Button type="button" onClick={() => setDialogBooking("new")}><Icon name="plus" /> Add booking</Button> : null}
           </div>
 
-          <div className={ledgerClassName}>
-            {filteredDocs.map((doc) => (
-              <BookingRow
-                key={doc.id}
-                doc={doc}
-                trip={trip}
-                selected={selectedBooking?.id === doc.id}
-                canEdit={canEditBookings}
-                onSelect={() => setSelectedBookingId(doc.id)}
-                onEdit={() => setDialogBooking(doc)}
-                onDelete={() => setDeleteBooking(doc)}
-              />
+          <TimelinePreview docs={timelineDocs} onSelect={setSelectedBookingId} selectedBookingId={selectedBooking?.id ?? ""} />
+
+          <div className="grid gap-3" aria-label={`${activeFolder.title} tickets`}>
+            {groupedDocs.map((group) => (
+              <section className="grid gap-2" key={group.id} aria-label={group.label}>
+                <div className="flex items-center justify-between gap-2 border-b border-(--color-border) pb-1.5">
+                  <strong className="text-sm text-(--color-text)">{group.label}</strong>
+                  <span className="text-xs font-bold text-(--color-text-muted)">{group.docs.length} items</span>
+                </div>
+                <div className={cardGridClassName}>
+                  {group.docs.map((doc) => (
+                    <BookingTicketCard
+                      key={doc.id}
+                      doc={doc}
+                      trip={trip}
+                      selected={selectedBooking?.id === doc.id}
+                      canEdit={canEditBookings}
+                      onSelect={() => setSelectedBookingId(doc.id)}
+                      onEdit={() => setDialogBooking(doc)}
+                      onDelete={() => setDeleteBooking(doc)}
+                    />
+                  ))}
+                </div>
+              </section>
             ))}
+            {!folderDocs.length ? (
+              <div className="col-span-full grid min-h-[160px] place-items-center rounded-(--radius-md) border border-dashed border-(--color-border-strong) bg-(--color-surface-subtle) p-5 text-center">
+                <div className="grid max-w-[360px] gap-1">
+                  <strong className="text-(--color-text)">No items in this view</strong>
+                  <span className="text-sm font-medium leading-6 text-(--color-text-muted)">Try another folder or add the first ticket, booking, or travel document for this group.</span>
+                </div>
+              </div>
+            ) : null}
             {lockedDocs.map((doc) => (
               <div className={lockedRowClassName} key={doc.id}>
                 <span className="inline-flex items-center gap-2 font-extrabold text-(--color-text-muted)"><Icon name="eyeOff" /> Locked sensitive record</span>
@@ -239,7 +269,37 @@ function SummaryStat({ icon, label, value }: { icon: Parameters<typeof Icon>[0][
   );
 }
 
-function BookingRow({ doc, trip, selected, canEdit, onSelect, onEdit, onDelete }: {
+function TimelinePreview({ docs, selectedBookingId, onSelect }: { docs: BookingDoc[]; selectedBookingId: string; onSelect: (bookingDocId: string) => void }) {
+  return (
+    <div className={timelineClassName} aria-label="Booking timeline preview">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <strong className="inline-flex items-center gap-2 text-sm text-(--color-text)"><Icon name="clock" /> Timeline</strong>
+        <span className="text-xs font-bold text-(--color-text-muted)">{docs.length ? "Next dated items in this folder" : "No dated items in this folder"}</span>
+      </div>
+      {docs.length ? (
+        <div className={timelineItemsClassName}>
+          {docs.map((doc) => (
+            <button
+              type="button"
+              className={cn(
+                "grid min-h-[78px] gap-1 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) p-2.5 text-left transition-colors hover:border-(--color-primary-border) hover:bg-[#fbfffd] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary)",
+                selectedBookingId === doc.id && "border-(--color-primary-border) bg-(--color-primary-soft)",
+              )}
+              key={doc.id}
+              onClick={() => onSelect(doc.id)}
+            >
+              <span className="text-xs font-black tabular-nums text-(--color-primary-strong)">{formatDateTime(doc.startsAt)}</span>
+              <strong className="truncate text-xs font-extrabold text-(--color-text)">{doc.title}</strong>
+              <span className="truncate text-[11px] font-bold text-(--color-text-muted)">{formatEnumLabel(doc.type)}</span>
+            </button>
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function BookingTicketCard({ doc, trip, selected, canEdit, onSelect, onEdit, onDelete }: {
   doc: BookingDoc;
   trip: Trip;
   selected: boolean;
@@ -252,30 +312,54 @@ function BookingRow({ doc, trip, selected, canEdit, onSelect, onEdit, onDelete }
     .map((itemId) => trip.itineraryItems.find((item) => item.id === itemId)?.activity)
     .filter(Boolean)
     .join(", ");
+  const relatedCount = doc.relatedItineraryItemIds.length + doc.relatedTaskIds.length + doc.relatedExpenseIds.length + doc.noteIds.length;
+  const travelerNames = trip.members.filter((member) => doc.travelerIds.includes(member.id)).map((member) => member.displayName);
 
   return (
-    <div className={cn(rowClassName, selected && selectedRowClassName)}>
-      <button type="button" className="text-left" onClick={onSelect} aria-label={`Select ${doc.title}`}>
-        <span className={cn(badgeClassName, statusBadgeClassName(doc.status))}>{formatEnumLabel(doc.type)}</span>
+    <article className={cn(ticketCardClassName, selected && selectedTicketClassName)}>
+      <button type="button" className="grid gap-2 text-left" onClick={onSelect} aria-label={`Select ${doc.title}`}>
+        <span className="flex items-start justify-between gap-2">
+          <span className={cn("grid size-10 place-items-center rounded-(--radius-md) border", typeIconClassName(doc.type))}>
+            <Icon name={bookingTypeIcon(doc.type)} />
+          </span>
+          <span className={cn(badgeClassName, statusBadgeClassName(doc.status))}>{formatEnumLabel(doc.status)}</span>
+        </span>
+        <span className="grid gap-1">
+          <strong className="line-clamp-2 text-base font-black leading-5 text-(--color-text)">{doc.title}</strong>
+          <span className="truncate text-xs font-bold text-(--color-text-muted)">{doc.providerName ?? "No provider"} {doc.confirmationCode ? `· ${doc.confirmationCode}` : ""}</span>
+        </span>
       </button>
-      <div className="grid gap-1">
-        <strong className="text-(--color-text)">{doc.title}</strong>
-        <span className="text-xs font-bold text-(--color-text-muted)">{doc.providerName ?? "No provider"} {doc.confirmationCode ? `· ${doc.confirmationCode}` : ""}</span>
+
+      <div className="grid gap-2">
+        <div className="grid grid-cols-2 gap-2 text-xs font-bold text-(--color-text-muted)">
+          <span className="inline-flex min-w-0 items-center gap-1.5"><Icon name="clock" /> <span className="truncate">{formatDateTime(doc.startsAt)}</span></span>
+          <span className="inline-flex min-w-0 items-center gap-1.5"><Icon name="users" /> <span className="truncate">{travelerNames.length ? travelerNames.join(", ") : `${doc.travelerIds.length} travelers`}</span></span>
+          <span className="inline-flex min-w-0 items-center gap-1.5"><Icon name="wallet" /> <span className="truncate">{doc.priceAmount && doc.currency ? `${doc.currency} ${doc.priceAmount.toLocaleString("en-US")}` : "No price"}</span></span>
+          <span className="inline-flex min-w-0 items-center gap-1.5"><Icon name="note" /> <span className="truncate">{relatedCount} links</span></span>
+        </div>
+        <div className="flex flex-wrap gap-1.5">
+          <span className={cn(badgeClassName, typeBadgeClassName(doc.type))}>{formatEnumLabel(doc.type)}</span>
+          {doc.externalLinks.length ? <span className="inline-flex w-fit items-center gap-1.5 rounded-full border border-(--color-border) bg-(--color-surface-subtle) px-2 py-0.5 text-[11px] font-extrabold text-(--color-text-muted)"><Icon name="cloud" /> Cloud link</span> : null}
+        </div>
       </div>
-      <span className="booking-cell-optional text-xs font-bold text-(--color-text-muted)">{formatDateTime(doc.startsAt)}</span>
-      <span className="booking-cell-optional text-xs font-bold text-(--color-text-muted)">{doc.travelerIds.length} travelers</span>
-      <span className="booking-cell-optional text-xs font-bold text-(--color-text-muted)">{doc.priceAmount && doc.currency ? `${doc.currency} ${doc.priceAmount.toLocaleString("en-US")}` : "-"}</span>
-      <span className={cn("booking-cell-optional", badgeClassName, statusBadgeClassName(doc.status))}>{formatEnumLabel(doc.status)}</span>
-      <div className="inline-flex justify-end gap-1.5">
+
+      <div className="flex items-center justify-between gap-2 border-t border-(--color-border) pt-2">
         <span className="sr-only">{linkedContext}</span>
+        {doc.externalLinks[0] ? (
+          <a className="inline-flex min-h-8 items-center gap-1.5 rounded-(--radius-sm) px-2 text-xs font-extrabold text-(--color-primary-strong) hover:bg-(--color-primary-soft)" href={doc.externalLinks[0].url} target="_blank" rel="noreferrer">
+            <Icon name="external" /> Open
+          </a>
+        ) : <span className="text-xs font-bold text-(--color-text-muted)">No link</span>}
+        <span className="inline-flex justify-end gap-1.5">
         {canEdit ? (
           <>
             <IconButton type="button" aria-label="Edit booking" onClick={onEdit}><Icon name="edit" /></IconButton>
             <IconButton type="button" aria-label="Delete booking" onClick={onDelete}><Icon name="trash" /></IconButton>
           </>
         ) : null}
+        </span>
       </div>
-    </div>
+    </article>
   );
 }
 
@@ -493,6 +577,94 @@ function toDateTimeLocalValue(value: string | null | undefined): string {
 
 function fromDateTimeLocalValue(value: string): string | null {
   return value ? value : null;
+}
+
+function countBookingFolders(docs: BookingDoc[]): Record<BookingFolderId, number> {
+  return bookingFolders.reduce((counts, folder) => {
+    counts[folder.id] = docs.filter((doc) => bookingDocMatchesFolder(doc, folder.id)).length;
+    return counts;
+  }, {} as Record<BookingFolderId, number>);
+}
+
+function bookingDocMatchesFolder(doc: BookingDoc, folderId: BookingFolderId): boolean {
+  const folder = bookingFolders.find((candidate) => candidate.id === folderId);
+  if (!folder || folder.id === "all") return true;
+  if (folder.status) return doc.status === folder.status;
+  return folder.types?.includes(doc.type) ?? true;
+}
+
+function compareBookingStart(left: BookingDoc, right: BookingDoc): number {
+  return Date.parse(left.startsAt ?? "") - Date.parse(right.startsAt ?? "");
+}
+
+function compareBookingStartWithUndated(left: BookingDoc, right: BookingDoc): number {
+  const leftTime = Number.isFinite(Date.parse(left.startsAt ?? "")) ? Date.parse(left.startsAt ?? "") : Number.POSITIVE_INFINITY;
+  const rightTime = Number.isFinite(Date.parse(right.startsAt ?? "")) ? Date.parse(right.startsAt ?? "") : Number.POSITIVE_INFINITY;
+  return leftTime - rightTime || left.title.localeCompare(right.title);
+}
+
+function groupBookingDocsByDay(docs: BookingDoc[], trip: Trip, locale: string): Array<{ id: string; label: string; docs: BookingDoc[] }> {
+  const itemDayById = new Map(trip.itineraryItems.map((item) => [item.id, item.day]));
+  const groups = new Map<string, BookingDoc[]>();
+
+  for (const doc of docs) {
+    const day = bookingDocDay(doc, itemDayById);
+    const key = day ?? "undated";
+    groups.set(key, [...(groups.get(key) ?? []), doc]);
+  }
+
+  return Array.from(groups.entries())
+    .sort(([left], [right]) => {
+      if (left === "undated") return 1;
+      if (right === "undated") return -1;
+      return left.localeCompare(right);
+    })
+    .map(([id, groupDocs]) => ({
+      id,
+      label: id === "undated" ? "Any time docs" : formatDayGroupLabel(id, locale),
+      docs: groupDocs.sort(compareBookingStartWithUndated),
+    }));
+}
+
+function bookingDocDay(doc: BookingDoc, itemDayById: Map<string, string>): string | null {
+  const docDay = doc.startsAt?.slice(0, 10);
+  if (docDay) return docDay;
+  for (const itemId of doc.relatedItineraryItemIds) {
+    const linkedDay = itemDayById.get(itemId);
+    if (linkedDay) return linkedDay;
+  }
+  return null;
+}
+
+function formatDayGroupLabel(day: string, locale: string): string {
+  const date = new Date(`${day}T00:00:00.000Z`);
+  if (Number.isNaN(date.getTime())) return day;
+  const intlLocale = locale === "th" ? "th-TH" : "en-US";
+  return new Intl.DateTimeFormat(intlLocale, { weekday: "short", month: "short", day: "numeric" }).format(date);
+}
+
+function bookingTypeIcon(type: BookingDocType): Parameters<typeof Icon>[0]["name"] {
+  if (type === "flight" || type === "train" || type === "public_transport") return "route";
+  if (type === "hotel") return "home";
+  if (type === "activity_ticket") return "ticket";
+  if (type === "passport" || type === "visa" || type === "insurance") return "document";
+  return "ticket";
+}
+
+function typeIconClassName(type: BookingDocType): string {
+  if (type === "flight" || type === "train" || type === "public_transport") return "border-(--color-route-border) bg-(--color-route-soft) text-(--color-route)";
+  if (type === "hotel") return "border-(--color-success-border) bg-(--color-success-soft) text-(--color-success)";
+  if (type === "activity_ticket") return "border-(--color-warning-border) bg-(--color-warning-soft) text-(--color-warning-strong)";
+  if (type === "passport" || type === "visa" || type === "insurance") return "border-(--color-primary-border) bg-(--color-primary-soft) text-(--color-primary-strong)";
+  return "border-(--color-border) bg-(--color-surface-subtle) text-(--color-text-muted)";
+}
+
+function typeBadgeClassName(type: BookingDocType): string {
+  if (type === "flight" || type === "train" || type === "public_transport") return "border-(--color-route-border) bg-(--color-route-soft) text-(--color-route)";
+  if (type === "hotel") return "border-(--color-success-border) bg-(--color-success-soft) text-(--color-success)";
+  if (type === "activity_ticket") return "border-(--color-warning-border) bg-(--color-warning-soft) text-(--color-warning-strong)";
+  if (type === "passport" || type === "visa" || type === "insurance") return "border-(--color-primary-border) bg-(--color-primary-soft) text-(--color-primary-strong)";
+  return "border-(--color-border) bg-(--color-surface-subtle) text-(--color-text-muted)";
 }
 
 function statusBadgeClassName(status: BookingDocStatus): string {

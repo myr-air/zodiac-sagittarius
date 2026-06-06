@@ -13,43 +13,39 @@ const tasks: TripTask[] = [
 ];
 
 describe("BookingsDocsPage", () => {
-  it("renders booking summaries, ledger rows, and selected booking inspector", () => {
+  it("renders booking summaries, folders, ticket cards, and selected booking inspector", () => {
     renderPage();
 
     expect(screen.getByRole("region", { name: "Bookings & Docs" })).toBeInTheDocument();
     expect(screen.getByText("HKD 8,660")).toBeInTheDocument();
     expect(screen.getByText("2 need action")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Transport/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Travel docs/i })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Thu, Jun 18" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Select Bangkok to Hong Kong flight/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Bangkok to Hong Kong flight" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Open Airline booking/i })).toHaveAttribute("href", "https://example.com/airline/booking/QR349-HK");
   });
 
-  it("filters booking docs by search, type, status, traveler, and day", async () => {
+  it("browses booking docs by friendly folders instead of table filters", async () => {
     const user = userEvent.setup();
     renderPage();
 
-    fireEvent.change(screen.getByLabelText("Search bookings"), { target: { value: "hotel" } });
+    await user.click(screen.getByRole("button", { name: /Stays/i }));
     expect(screen.getByRole("button", { name: /Select Tsim Sha Tsui hotel stay/i })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /Select Bangkok to Hong Kong flight/i })).not.toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: "Clear filters" }));
-    fireEvent.change(screen.getByLabelText("Type"), { target: { value: "passport" } });
+    await user.click(screen.getByRole("button", { name: /Travel docs/i }));
     expect(screen.getByRole("button", { name: /Select Explorer Friend passport/i })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /Select Peak Tram tickets/i })).not.toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: "Clear filters" }));
-    fireEvent.change(screen.getByLabelText("Status"), { target: { value: "paid" } });
+    await user.click(screen.getByRole("button", { name: /Tickets/i }));
     expect(screen.getByRole("button", { name: /Select Peak Tram tickets/i })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /Select Tsim Sha Tsui hotel stay/i })).not.toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: "Clear filters" }));
-    fireEvent.change(screen.getByLabelText("Traveler"), { target: { value: "member-nam" } });
+    await user.click(screen.getByRole("button", { name: /Needs action/i }));
     expect(screen.getByRole("button", { name: /Select Explorer Friend passport/i })).toBeInTheDocument();
-
-    await user.click(screen.getByRole("button", { name: "Clear filters" }));
-    fireEvent.change(screen.getByLabelText("Day"), { target: { value: "2026-06-19" } });
-    expect(screen.getByRole("button", { name: /Select Peak Tram tickets/i })).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /Select Tsim Sha Tsui hotel stay/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Select Tsim Sha Tsui hotel stay/i })).toBeInTheDocument();
   });
 
   it("locks sensitive records for viewers while leaving shared rows visible", () => {
@@ -90,6 +86,7 @@ describe("BookingsDocsPage", () => {
       relatedExpenseIds: ["expense-peak-tram"],
     }));
 
+    await user.click(screen.getByRole("button", { name: /Transport/i }));
     await user.click(screen.getAllByRole("button", { name: "Edit booking" })[0]);
     dialog = screen.getByRole("dialog", { name: "Edit booking" });
     fireEvent.change(within(dialog).getByLabelText("Title"), { target: { value: "Updated flight booking" } });
@@ -107,6 +104,7 @@ describe("BookingsDocsPage", () => {
     const onDeleteBookingDoc = vi.fn();
     renderPage({ onDeleteBookingDoc });
 
+    await user.click(screen.getByRole("button", { name: /Transport/i }));
     await user.click(screen.getAllByRole("button", { name: "Delete booking" })[0]);
     expect(screen.getByRole("dialog", { name: "Delete booking" })).toBeInTheDocument();
     await user.click(within(screen.getByRole("dialog", { name: "Delete booking" })).getByRole("button", { name: "Cancel" }));
