@@ -132,9 +132,10 @@ describe("AppShell", () => {
     expect(screen.getByRole("link", { name: /แผนการเดินทาง/ })).toHaveAttribute("href", `/trips/${shortTripId}/itinerary`);
     expect(screen.getByRole("link", { name: /แผนที่/ })).toHaveAttribute("href", `/trips/${shortTripId}/map`);
     expect(screen.getByRole("link", { name: /ไทม์ไลน์/ })).toHaveAttribute("href", `/trips/${shortTripId}/timeline`);
+    expect(screen.getByRole("link", { name: /ตั๋วและเอกสาร/ })).toHaveAttribute("href", `/trips/${shortTripId}/bookings`);
     expect(screen.getByRole("link", { name: /สมาชิก/ })).toHaveAttribute("href", `/trips/${shortTripId}/members`);
     expect(screen.getByRole("link", { name: /ค่าใช้จ่าย/ })).toHaveAttribute("href", `/trips/${shortTripId}/expenses`);
-    expect(screen.getByRole("link", { name: /^Settings$/ })).toHaveAttribute("href", `/trips/${shortTripId}/settings`);
+    expect(screen.getByRole("link", { name: /^ตั้งค่า$/ })).toHaveAttribute("href", `/trips/${shortTripId}/settings`);
     expect(screen.queryByText("Trip ID 018f4e")).not.toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "ดูสรุปรายละเอียด" })).not.toBeInTheDocument();
   });

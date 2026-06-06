@@ -138,6 +138,24 @@ describe("Sagittarius cockpit UI", () => {
     expect(screen.getByDisplayValue("ติ่มซำ แถว Elements")).toBeInTheDocument();
   });
 
+  it("opens the Bookings & Docs workspace and creates a local booking record", async () => {
+    const user = userEvent.setup();
+    render(<SagittariusApp initialView="bookings" />);
+
+    expect(screen.getByRole("region", { name: "Bookings & Docs" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Select Bangkok to Hong Kong flight/i })).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Add booking" }));
+    const dialog = screen.getByRole("dialog", { name: "Add booking" });
+    fireEvent.change(within(dialog).getByLabelText("Title"), { target: { value: "Airport Express pass" } });
+    fireEvent.change(within(dialog).getByLabelText("Type"), { target: { value: "public_transport" } });
+    fireEvent.change(within(dialog).getByLabelText("Status"), { target: { value: "booked" } });
+    fireEvent.change(within(dialog).getByLabelText("External link"), { target: { value: "https://drive.google.com/airport-express" } });
+    await user.click(within(dialog).getByRole("button", { name: "Save booking" }));
+
+    expect(await screen.findByRole("button", { name: /Select Airport Express pass/i })).toBeInTheDocument();
+  });
+
   it("asks the organizer to choose when place resolution is ambiguous", async () => {
     const user = userEvent.setup();
     const placeResolver = vi.fn().mockResolvedValue({
@@ -382,10 +400,10 @@ describe("Sagittarius cockpit UI", () => {
       render(<SagittariusApp requireJoin dataSource="api" />);
 
       expect(await screen.findByText("User data stats และ session status")).toBeInTheDocument();
-      expect(screen.getAllByText("Dashboard").length).toBeGreaterThan(0);
+      expect(screen.getAllByText(/Dashboard|แดชบอร์ด/).length).toBeGreaterThan(0);
       expect(screen.getByRole("tab", { name: /^Account$/i })).toHaveAttribute("aria-selected", "true");
       expect(screen.getByRole("tab", { name: /Temp access/i })).toHaveAttribute("aria-selected", "false");
-      expect(screen.getByRole("link", { name: /^Settings$/i })).toHaveAttribute("href", "/portal/settings");
+      expect(screen.getByRole("link", { name: /^Settings$|^ตั้งค่า$/i })).toHaveAttribute("href", "/portal/settings");
       expect(screen.queryByLabelText(/Trip ID/i)).not.toBeInTheDocument();
       expect(screen.queryByRole("button", { name: /ส่งรหัส sign-in/i })).not.toBeInTheDocument();
       await waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(6));
@@ -952,7 +970,7 @@ describe("Sagittarius cockpit UI", () => {
     expect(await screen.findByRole("region", { name: /พยากรณ์อากาศรายวัน/i })).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: /Rain 33° 28°/ }));
     expect(screen.getByRole("region", { name: /รายละเอียดพยากรณ์อากาศ/i })).toBeInTheDocument();
-    await user.type(screen.getByLabelText(/Outfit advice override/i), "Pack a compact umbrella");
+    await user.type(screen.getByLabelText(/Outfit advice override|คำแนะนำการแต่งตัว/i), "Pack a compact umbrella");
     await user.click(screen.getByRole("button", { name: /บันทึก/i }));
 
     expect(apiClient.patchDailyBriefing).toHaveBeenCalledWith(
@@ -1004,7 +1022,7 @@ describe("Sagittarius cockpit UI", () => {
     const destinationInput = await screen.findByLabelText("ปลายทาง");
     await user.clear(destinationInput);
     await user.type(destinationInput, "Chiang Mai, Thailand");
-    await user.click(screen.getByRole("button", { name: /Save changes/i }));
+    await user.click(screen.getByRole("button", { name: /Save changes|บันทึกการเปลี่ยนแปลง/i }));
 
     await waitFor(() => expect(patchTrip).toHaveBeenCalledWith(
       apiTrip.id,
@@ -1838,14 +1856,15 @@ describe("Sagittarius cockpit UI", () => {
       "แผนการเดินทาง",
       "แผนที่",
       "ไทม์ไลน์",
+      "ตั๋วและเอกสาร",
       "สมาชิก",
       "ค่าใช้จ่าย",
-      "Settings",
+      "ตั้งค่า",
     ]);
     expect(within(navigation).getByRole("link", { name: /ภาพรวม/i })).toHaveClass("rail-link--active");
     expect(within(navigation).queryByRole("link", { name: /งบประมาณ/i })).not.toBeInTheDocument();
-    expect(within(navigation).queryByRole("link", { name: /รายการจอง/i })).not.toBeInTheDocument();
-    expect(within(navigation).getByRole("link", { name: /^Settings$/ })).toBeInTheDocument();
+    expect(within(navigation).getByRole("link", { name: /ตั๋วและเอกสาร/i })).toBeInTheDocument();
+    expect(within(navigation).getByRole("link", { name: /^ตั้งค่า$/ })).toBeInTheDocument();
   });
 
   it("matches the dense planning cockpit skeleton from the reference", () => {
@@ -2386,11 +2405,11 @@ describe("Sagittarius cockpit UI", () => {
     const user = userEvent.setup();
     render(<SagittariusApp initialView="itinerary" />);
 
-    expect(screen.getByRole("button", { name: /Import/i })).toBeEnabled();
+    expect(screen.getByRole("button", { name: /นำเข้า/i })).toBeEnabled();
 
     await user.selectOptions(screen.getByLabelText(/Role preview/i), "member-viewer");
 
-    expect(screen.getByRole("button", { name: /Import/i })).toBeDisabled();
+    expect(screen.getByRole("button", { name: /นำเข้า/i })).toBeDisabled();
     expect(screen.getByText(/ต้องมีสิทธิ์ผู้จัดทริปจึงจะแก้ไขได้/i)).toBeInTheDocument();
   });
 
@@ -2422,7 +2441,7 @@ describe("Sagittarius cockpit UI", () => {
       }),
     ], "itinerary.json", { type: "application/json" });
 
-    await user.upload(screen.getByLabelText(/Import itinerary JSON/i), file);
+    await user.upload(screen.getByLabelText(/นำเข้า itinerary JSON/i), file);
     const dialog = await screen.findByRole("dialog", { name: /ตั้งค่า import itinerary/i });
     expect(dialog).toHaveTextContent("Imported noodle lunch");
     await user.clear(within(dialog).getByLabelText(/ชื่อ path/i));

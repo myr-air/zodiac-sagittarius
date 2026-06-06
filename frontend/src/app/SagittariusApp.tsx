@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { AppShell, resolveViewFromPath } from "@/src/components/AppShell";
 import { AccountAccessPanel } from "@/src/components/AccountAccessPanel";
+import { BookingsDocsPage, type BookingDocInput } from "@/src/components/BookingsDocsPage";
 import { ContextRail } from "@/src/components/ContextRail";
 import { OverviewPage } from "@/src/components/OverviewPage";
 import { RouteMapView } from "@/src/components/RouteMapView";
@@ -39,7 +40,7 @@ import { tripStorageKey } from "@/src/trip/repository";
 import { seedTrip } from "@/src/trip/seed";
 import { decodeTripId } from "@/src/trip/ids";
 import { approveSuggestion } from "@/src/trip/suggestions";
-import type { DailyBriefingOverrides, Expense, ExpenseComment, ExpenseLineItem, ExpenseSummary, ItineraryItem, PlaceResolutionCandidate, PlaceResolutionRequest, PlaceResolutionResponse, SettlementSuggestion, StopNote, Suggestion, Trip, TripDailyBriefing, TripMemberAccessStatus, TripParticipantSession, TripRole, TripTask } from "@/src/trip/types";
+import type { BookingDoc, DailyBriefingOverrides, Expense, ExpenseComment, ExpenseLineItem, ExpenseSummary, ItineraryItem, PlaceResolutionCandidate, PlaceResolutionRequest, PlaceResolutionResponse, SettlementSuggestion, StopNote, Suggestion, Trip, TripDailyBriefing, TripMemberAccessStatus, TripParticipantSession, TripRole, TripTask } from "@/src/trip/types";
 
 const localMutationTimestamp = "2026-05-28T00:00:00.000Z";
 const accountSessionStorageKey = "sagittarius-account-session";
@@ -202,6 +203,7 @@ export function SagittariusApp({
   const canReviewSuggestions = canTripRole(currentMember.role, "reviewSuggestions");
   const canEditExpenses = canTripRole(currentMember.role, "editExpenses");
   const canManagePeople = canTripRole(currentMember.role, "managePeople");
+  const canEditBookings = canEdit || canEditExpenses;
   const canCreateStopNote = canCreateSuggestion || canEdit;
   const supportsContextRail = currentView === "overview" || currentView === "itinerary" || currentView === "timeline";
   const activePlanItems = useMemo(
@@ -1318,6 +1320,56 @@ export function SagittariusApp({
     }));
   }
 
+  async function createBookingDoc(input: BookingDocInput) {
+    if (!canEditBookings) return;
+    const title = input.title.trim();
+    if (!title) return;
+    const bookingDoc: BookingDoc = {
+      id: nextLocalBookingDocId(trip.bookingDocs ?? []),
+      tripId: trip.id,
+      ...input,
+      title,
+      externalLinks: input.externalLinks.map((link, index) => ({
+        ...link,
+        id: link.id || `link-local-${index + 1}`,
+      })),
+      createdBy: currentMember.id,
+      updatedAt: localMutationTimestamp,
+      version: 1,
+    };
+    commitTrip((current) => ({ ...current, bookingDocs: [...(current.bookingDocs ?? []), bookingDoc] }));
+  }
+
+  async function updateBookingDoc(bookingDocId: string, input: BookingDocInput) {
+    if (!canEditBookings) return;
+    commitTrip((current) => ({
+      ...current,
+      bookingDocs: (current.bookingDocs ?? []).map((bookingDoc) =>
+        bookingDoc.id === bookingDocId
+          ? {
+              ...bookingDoc,
+              ...input,
+              title: input.title.trim(),
+              externalLinks: input.externalLinks.map((link, index) => ({
+                ...link,
+                id: link.id || bookingDoc.externalLinks[index]?.id || `link-local-${index + 1}`,
+              })),
+              updatedAt: localMutationTimestamp,
+              version: bookingDoc.version + 1,
+            }
+          : bookingDoc,
+      ),
+    }));
+  }
+
+  async function deleteBookingDoc(bookingDocId: string) {
+    if (!canEditBookings) return;
+    commitTrip((current) => ({
+      ...current,
+      bookingDocs: (current.bookingDocs ?? []).filter((bookingDoc) => bookingDoc.id !== bookingDocId),
+    }));
+  }
+
   async function toggleTaskStatus(taskId: string) {
     if (isApiMode && resolvedApiClient && participantSession) {
       const task = tasks.find((candidate) => candidate.id === taskId);
@@ -1867,6 +1919,17 @@ export function SagittariusApp({
                     : undefined
                 }
               />
+            ) : currentView === "bookings" ? (
+              <BookingsDocsPage
+                trip={{ ...trip, stopNotes }}
+                tasks={tasks}
+                currentMember={currentMember}
+                bookingDocs={trip.bookingDocs ?? []}
+                canEditBookings={canEditBookings}
+                onCreateBookingDoc={createBookingDoc}
+                onUpdateBookingDoc={updateBookingDoc}
+                onDeleteBookingDoc={deleteBookingDoc}
+              />
             ) : currentView === "expenses" ? (
               <TripExpensesPage
                 trip={trip}
@@ -2187,6 +2250,19 @@ export function nextLocalStopNoteId(notes: StopNote[]): string {
   while (existingIds.has(id)) {
     index += 1;
     id = `note-local-${index}`;
+  }
+
+  return id;
+}
+
+export function nextLocalBookingDocId(bookingDocs: BookingDoc[]): string {
+  const existingIds = new Set(bookingDocs.map((bookingDoc) => bookingDoc.id));
+  let index = bookingDocs.filter((bookingDoc) => bookingDoc.id.startsWith("booking-local-")).length + 1;
+  let id = `booking-local-${index}`;
+
+  while (existingIds.has(id)) {
+    index += 1;
+    id = `booking-local-${index}`;
   }
 
   return id;

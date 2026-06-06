@@ -94,7 +94,7 @@ describe("OverviewPage role lenses", () => {
     );
 
     expect(screen.getByRole("region", { name: /Hong Kong \+ Shenzhen Trip/i })).toBeInTheDocument();
-    expect(screen.getByText(/ยังไม่มี itinerary ในแผนนี้/i)).toBeInTheDocument();
+    expect(screen.getByText(/ยังไม่มีแผนการเดินทางในทริปนี้/i)).toBeInTheDocument();
     expect(screen.getByRole("region", { name: /ไฮไลต์ทริป/i })).toHaveTextContent(/ยังไม่มีไฮไลต์ในแผนนี้/i);
   });
 
@@ -223,7 +223,7 @@ describe("OverviewPage role lenses", () => {
       />,
     );
 
-    expect(screen.getByText(/ยังไม่มี itinerary ในแผนนี้/i)).toBeInTheDocument();
+    expect(screen.getByText(/ยังไม่มีแผนการเดินทางในทริปนี้/i)).toBeInTheDocument();
     expect(screen.getByText(/ยังไม่มีไฮไลต์ในแผนนี้/i)).toBeInTheDocument();
     expect(screen.getByText(/ยังไม่มีเช็กลิสต์ของคุณ/i)).toBeInTheDocument();
   });
@@ -245,7 +245,7 @@ describe("OverviewPage role lenses", () => {
       />,
     );
 
-    expect(screen.getByText(/ยังไม่มี itinerary ในแผนนี้/i)).toBeInTheDocument();
+    expect(screen.getByText(/ยังไม่มีแผนการเดินทางในทริปนี้/i)).toBeInTheDocument();
     expect(screen.getByText(/ไม่มีงานในตัวกรองนี้/i)).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: /เพิ่มเช็กลิสต์/i }));

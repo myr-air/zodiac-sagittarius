@@ -96,15 +96,15 @@ describe("SmartItineraryTable", () => {
     );
 
     const actions = screen.getByRole("group", { name: /Itinerary actions/i });
-    expect(within(actions).getByRole("button", { name: /Import/i })).toBeInTheDocument();
-    expect(within(actions).getByRole("button", { name: /Export/i })).toBeInTheDocument();
+    expect(within(actions).getByRole("button", { name: /Import|นำเข้า/i })).toBeInTheDocument();
+    expect(within(actions).getByRole("button", { name: /Export|ส่งออก/i })).toBeInTheDocument();
     expect(within(actions).queryByRole("button", { name: /Add stop or activity/i })).not.toBeInTheDocument();
     expect(within(actions).queryByRole("button", { name: /Open details/i })).not.toBeInTheDocument();
     expect(within(actions).queryByRole("button", { name: /Undo/i })).not.toBeInTheDocument();
     expect(within(actions).queryByRole("button", { name: /Redo/i })).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "ภาษาไทย" }));
-    expect(within(actions).getByRole("button", { name: /Import/i })).toBeInTheDocument();
-    expect(within(actions).getByRole("button", { name: /Export/i })).toBeInTheDocument();
+    expect(within(actions).getByRole("button", { name: /Import|นำเข้า/i })).toBeInTheDocument();
+    expect(within(actions).getByRole("button", { name: /Export|ส่งออก/i })).toBeInTheDocument();
     expect(within(actions).queryByRole("button", { name: /เพิ่มสถานที่ \/ กิจกรรม/i })).not.toBeInTheDocument();
     expect(within(actions).queryByRole("button", { name: /เปิดรายละเอียด/i })).not.toBeInTheDocument();
     expect(within(actions).queryByRole("button", { name: /เลิกทำ/i })).not.toBeInTheDocument();
@@ -117,11 +117,11 @@ describe("SmartItineraryTable", () => {
     const onImportItinerary = vi.fn();
     renderTable({ onExportItinerary, onImportItinerary });
 
-    await user.click(screen.getByRole("button", { name: /Export/i }));
+    await user.click(screen.getByRole("button", { name: /Export|ส่งออก/i }));
     expect(onExportItinerary).toHaveBeenCalledOnce();
 
     const file = new File(['{"schema":"joii.itinerary.export","version":1,"items":[]}'], "itinerary.json", { type: "application/json" });
-    await user.upload(screen.getByLabelText(/Import itinerary JSON/i), file);
+    await user.upload(screen.getByLabelText(/Import itinerary JSON|นำเข้า itinerary JSON/i), file);
 
     expect(onImportItinerary).toHaveBeenCalledWith(file);
   });
@@ -1045,7 +1045,7 @@ describe("SmartItineraryTable", () => {
     renderTable({ role: "viewer", canRestructure: false });
 
     const actions = screen.getByRole("group", { name: /คำสั่งแผนการเดินทาง/i });
-    expect(within(actions).getByRole("button", { name: /Import/i })).toBeDisabled();
+    expect(within(actions).getByRole("button", { name: /Import|นำเข้า/i })).toBeDisabled();
     expect(screen.getByText("ต้องมีสิทธิ์ผู้จัดทริปจึงจะแก้ไขได้")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /ลาก Dim Dim Sum/i })).toBeDisabled();
   });

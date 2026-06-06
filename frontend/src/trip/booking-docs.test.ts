@@ -5,7 +5,7 @@ import {
   filterBookingDocs,
   findBookingDocRelations,
 } from "./booking-docs";
-import type { BookingDoc, Expense, ItineraryItem, Member, StopNote, Trip, TripTask } from "./types";
+import type { BookingDoc, Expense, ItineraryItem, Member, StopNote, Trip } from "./types";
 
 const members: Member[] = [
   { id: "member-owner", displayName: "Owner", role: "owner", presence: "online", color: "#0f766e" },

@@ -136,6 +136,41 @@ const cockpitResponse: TripCockpitResponse = {
     currentUserNetLabel: "settled",
     settlementSuggestions: [],
   },
+  bookingDocs: [
+    {
+      id: "booking-api-flight",
+      tripId: "018f4e80-5788-7de0-a45c-8a555d17fc2d",
+      type: "flight",
+      title: "API flight voucher",
+      status: "confirmed",
+      visibility: "shared",
+      providerName: "Cathay",
+      confirmationCode: "CX-API",
+      startsAt: "2026-06-18T09:00:00+07:00",
+      endsAt: null,
+      timezone: "Asia/Bangkok",
+      priceAmount: 24000,
+      currency: "THB",
+      travelerIds: ["018f4e81-77a4-7b8f-b3bd-0d0f493ac561"],
+      relatedItineraryItemIds: ["018f4e83-5410-7d8b-8f25-fd52c5e7bd1f"],
+      relatedTaskIds: ["018f4e84-1111-7000-8000-000000000001"],
+      relatedExpenseIds: ["018f4e86-1111-7000-8000-000000000001"],
+      noteIds: ["018f4e83-5410-7d8b-8f25-fd52c5e7bd30"],
+      externalLinks: [
+        {
+          id: "booking-api-flight-link",
+          label: "Drive",
+          url: "https://drive.google.com/api-flight",
+          provider: "Google Drive",
+        },
+      ],
+      notes: "Stored externally.",
+      createdBy: "018f4e81-77a4-7b8f-b3bd-0d0f493ac561",
+      ownerMemberId: "018f4e81-77a4-7b8f-b3bd-0d0f493ac561",
+      updatedAt: "2026-05-29T00:00:00.000Z",
+      version: 1,
+    },
+  ],
 };
 
 describe("Trip API client", () => {
@@ -206,6 +241,10 @@ describe("Trip API client", () => {
       pathId: "path-rain",
       pathName: "Rain plan",
       pathRole: "alternative",
+    });
+    expect(cockpit.trip.bookingDocs?.[0]).toMatchObject({
+      id: "booking-api-flight",
+      externalLinks: [{ id: "booking-api-flight-link", label: "Drive", url: "https://drive.google.com/api-flight", provider: "Google Drive" }],
     });
     expect(cockpit.expenseSummary).toEqual(cockpitResponse.expenseSummary);
   });

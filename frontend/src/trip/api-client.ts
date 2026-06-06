@@ -1,4 +1,5 @@
 import type {
+  BookingDoc,
   ExpenseSummary,
   Expense,
   ExpenseComment,
@@ -128,6 +129,7 @@ export interface TripCockpitResponse {
   stopNotes: StopNote[];
   expenses: ExpenseResponse[];
   expenseSummary: ExpenseSummary | null;
+  bookingDocs?: BookingDoc[];
 }
 
 export interface JoinTripResponse {
@@ -678,6 +680,7 @@ export function mapCockpitResponse(response: TripCockpitResponse): TripCockpit {
       members: response.members.map(mapMember),
       itineraryItems: response.itineraryItems.map(mapItineraryItem),
       expenses: response.expenses.map(mapExpense),
+      bookingDocs: response.bookingDocs ?? [],
     },
     suggestions: response.suggestions,
     tasks: response.tasks.map(mapTask),
