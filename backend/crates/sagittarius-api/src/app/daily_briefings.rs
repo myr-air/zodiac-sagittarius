@@ -5,6 +5,7 @@ use time::{Date, Duration, OffsetDateTime};
 use uuid::Uuid;
 
 use crate::app::auth;
+use crate::app::place_resolution::resolve_destination_coordinates;
 use crate::db;
 use crate::db::PgPool;
 use crate::db::models::{ItineraryItemRecord, TripAuthRecord, TripDailyBriefingRecord};
@@ -109,11 +110,17 @@ async fn ensure_briefing_shells(
     itinerary_items: &[ItineraryItemRecord],
 ) -> Result<(), ServiceError> {
     let by_date = first_item_by_date(itinerary_items);
+    let destination_coordinates =
+        resolve_destination_coordinates(pool, &trip.destination_label, &trip.countries)
+            .await
+            .map(
+                |coordinates| serde_json::json!({ "lat": coordinates.lat, "lng": coordinates.lng }),
+            );
     let mut shells = Vec::new();
     let mut tx = pool.begin().await?;
     for date in briefing_window(trip.start_date, trip.end_date) {
         let (location_key, location_label, coordinates) =
-            location_for_date(trip, by_date.get(&date));
+            location_for_date(trip, by_date.get(&date), destination_coordinates.as_ref());
         let shell = db::queries::upsert_trip_daily_briefing_shell(
             &mut tx,
             trip.id,
@@ -139,7 +146,7 @@ async fn ensure_briefing_shells(
             continue;
         };
         let Some((weather, outfit_advice)) =
-            fetch_open_meteo_weather(shell.briefing_date, &coordinates).await
+            fetch_weather_for_day(shell.briefing_date, &coordinates).await
         else {
             continue;
         };
@@ -166,7 +173,12 @@ async fn ensure_briefing_shells(
 fn first_item_by_date(items: &[ItineraryItemRecord]) -> BTreeMap<Date, &ItineraryItemRecord> {
     let mut map = BTreeMap::new();
     for item in items {
-        map.entry(item.day).or_insert(item);
+        let current = map.entry(item.day).or_insert(item);
+        if current.latitude.is_none() || current.longitude.is_none() {
+            if item.latitude.is_some() && item.longitude.is_some() {
+                *current = item;
+            }
+        }
     }
     map
 }
@@ -174,6 +186,7 @@ fn first_item_by_date(items: &[ItineraryItemRecord]) -> BTreeMap<Date, &Itinerar
 fn location_for_date(
     trip: &TripAuthRecord,
     item: Option<&&ItineraryItemRecord>,
+    destination_coordinates: Option<&serde_json::Value>,
 ) -> (String, String, Option<serde_json::Value>) {
     if let Some(item) = item {
         let label = if item.place.trim().is_empty() {
@@ -185,13 +198,14 @@ fn location_for_date(
             (Some(lat), Some(lng)) => Some(serde_json::json!({ "lat": lat, "lng": lng })),
             _ => None,
         };
+        let coordinates = coordinates.or_else(|| destination_coordinates.cloned());
         return (format!("itinerary:{}", item.id), label, coordinates);
     }
 
     (
         format!("destination:{}", trip.destination_label.to_lowercase()),
         trip.destination_label.clone(),
-        None,
+        destination_coordinates.cloned(),
     )
 }
 
@@ -246,6 +260,19 @@ fn fallback_weather(date: Date) -> WeatherBriefingBlock {
             )),
         },
     }
+}
+
+async fn fetch_weather_for_day(
+    date: Date,
+    coordinates: &BriefingCoordinates,
+) -> Option<(WeatherBriefingBlock, TextBriefingBlock)> {
+    if let Some(result) = fetch_open_meteo_weather(date, coordinates).await {
+        return Some(result);
+    }
+    if let Some(result) = fetch_wttr_weather(date, coordinates).await {
+        return Some(result);
+    }
+    None
 }
 
 async fn fetch_open_meteo_weather(
@@ -313,6 +340,157 @@ fn open_meteo_url(date: Date, coordinates: &BriefingCoordinates) -> String {
         "https://api.open-meteo.com/v1/forecast?latitude={:.5}&longitude={:.5}&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_speed_10m_max&hourly=relative_humidity_2m&timezone=auto&start_date={date}&end_date={date}",
         coordinates.lat, coordinates.lng,
     )
+}
+
+fn wttr_url(coordinates: &BriefingCoordinates) -> String {
+    format!(
+        "https://wttr.in/{:.4},{:.4}?format=j1",
+        coordinates.lat, coordinates.lng
+    )
+}
+
+fn pick_json_number(value: Option<&serde_json::Value>) -> Option<f64> {
+    value.and_then(|value| value.as_f64()).or_else(|| {
+        value.and_then(|value| value.as_str().and_then(|value| value.parse::<f64>().ok()))
+    })
+}
+
+fn pick_json_int(value: Option<&serde_json::Value>) -> Option<i32> {
+    value
+        .and_then(|value| value.as_i64().and_then(|value| i32::try_from(value).ok()))
+        .or_else(|| {
+            value
+                .and_then(|value| value.as_str())
+                .and_then(|value| value.parse::<i32>().ok())
+        })
+}
+
+fn wttr_condition(
+    rain_chance: Option<i32>,
+    wind_speed_kph: Option<f64>,
+    max_temperature: Option<f64>,
+) -> (&'static str, &'static str) {
+    if rain_chance.is_some_and(|chance| chance >= 45) {
+        ("rain", "Rain")
+    } else if wind_speed_kph.is_some_and(|speed| speed >= 35.0) {
+        ("storm", "Storm")
+    } else if max_temperature.is_some_and(|temperature| temperature >= 30.0) {
+        ("sunny", "Sunny")
+    } else {
+        ("partly-cloudy", "Partly cloudy")
+    }
+}
+
+async fn fetch_wttr_weather(
+    date: Date,
+    coordinates: &BriefingCoordinates,
+) -> Option<(WeatherBriefingBlock, TextBriefingBlock)> {
+    let url = wttr_url(coordinates);
+    let response = reqwest::Client::new()
+        .get(&url)
+        .header(reqwest::header::USER_AGENT, "Sagittarius weather fallback")
+        .send()
+        .await
+        .ok()?;
+    if !response.status().is_success() {
+        return None;
+    }
+
+    let payload = response.json::<serde_json::Value>().await.ok()?;
+    let weather_days = payload.get("weather")?.as_array()?;
+    let target_date = date.to_string();
+    let target = weather_days
+        .iter()
+        .find(|day| day.get("date").and_then(|value| value.as_str()) == Some(target_date.as_str()))
+        .or_else(|| weather_days.first())?;
+
+    let max_temperature = pick_json_number(
+        target
+            .get("maxtempC")
+            .or_else(|| target.get("maxTempC"))
+            .or_else(|| target.get("max_temperature")),
+    );
+    let min_temperature = pick_json_number(
+        target
+            .get("mintempC")
+            .or_else(|| target.get("minTempC"))
+            .or_else(|| target.get("min_temperature")),
+    );
+    let wind_speed_kph = pick_json_number(
+        target
+            .get("windspeedKmph")
+            .or_else(|| target.get("windSpeedKmph"))
+            .or_else(|| target.get("windspeed")),
+    );
+    let hourly_rain = target.get("hourly").and_then(|hourly| {
+        let values = hourly
+            .as_array()?
+            .iter()
+            .filter_map(|hour| {
+                pick_json_int(
+                    hour.get("chanceofrain")
+                        .or_else(|| hour.get("chanceOfRain"))
+                        .or_else(|| hour.get("chanceofsnow")),
+                )
+            })
+            .collect::<Vec<_>>();
+        (values.len() > 0).then_some(values.iter().sum::<i32>() / values.len() as i32)
+    });
+    let rain_chance = hourly_rain
+        .or_else(|| pick_json_int(target.get("hourly")?.get(0)?.get("chanceofrain")))
+        .or_else(|| pick_json_int(target.get("chanceofrain")));
+
+    let humidity = target.get("hourly").and_then(|hourly| {
+        let values = hourly
+            .as_array()?
+            .iter()
+            .filter_map(|hour| {
+                pick_json_int(
+                    hour.get("humidity")
+                        .or_else(|| hour.get("relative_humidity_2m")),
+                )
+            })
+            .collect::<Vec<_>>();
+        (values.len() > 0).then_some(values.iter().sum::<i32>() / values.len() as i32)
+    });
+
+    let now = OffsetDateTime::now_utc();
+    let expires_at = now + Duration::hours(6);
+    let (condition_code, condition_label) =
+        wttr_condition(rain_chance, wind_speed_kph, max_temperature);
+
+    let meta = BriefingSourceMeta {
+        source: "wttr.in".to_string(),
+        source_url: Some(url),
+        fetched_at: Some(now.to_string()),
+        expires_at: Some(expires_at.to_string()),
+        confidence: "medium".to_string(),
+        unavailable_reason: None,
+    };
+    let weather = WeatherBriefingBlock {
+        condition_code: condition_code.to_string(),
+        condition_label: condition_label.to_string(),
+        temperature_max_celsius: max_temperature,
+        temperature_min_celsius: min_temperature,
+        humidity_percent: humidity,
+        wind_speed_kph,
+        rain_chance_percent: rain_chance,
+        meta: meta.clone(),
+    };
+    let advice = TextBriefingBlock {
+        title: "Outfit advice".to_string(),
+        body: outfit_advice_for_weather(&weather),
+        meta: BriefingSourceMeta {
+            source: "Sagittarius".to_string(),
+            source_url: None,
+            fetched_at: Some(now.to_string()),
+            expires_at: Some(expires_at.to_string()),
+            confidence: "medium".to_string(),
+            unavailable_reason: None,
+        },
+    };
+
+    Some((weather, advice))
 }
 
 fn average_i32(values: &[Option<i32>]) -> Option<i32> {
@@ -441,5 +619,161 @@ mod tests {
             outfit_advice_for_weather(&weather),
             "wear light breathable clothes, pack a compact umbrella."
         );
+    }
+
+    #[test]
+    fn first_item_by_date_prefers_coordinate_location() {
+        let date = Date::from_calendar_date(2026, Month::July, 10).unwrap();
+        let next_date = Date::from_calendar_date(2026, Month::July, 11).unwrap();
+        let fallback_trip_id = uuid::Uuid::from_u128(1);
+        let fallback_plan_id = uuid::Uuid::from_u128(2);
+        let empty_advisories = serde_json::json!([]);
+        let items = vec![
+            ItineraryItemRecord {
+                id: uuid::Uuid::from_u128(10),
+                trip_id: fallback_trip_id,
+                plan_variant_id: fallback_plan_id,
+                path_group_id: None,
+                path_id: None,
+                path_name: None,
+                path_role: None,
+                day: date,
+                sort_order: 1,
+                start_time: "08:00".to_string(),
+                activity: "Start".to_string(),
+                activity_type: "travel".to_string(),
+                place: "No-coord stop".to_string(),
+                link_label: String::new(),
+                map_link: String::new(),
+                address: None,
+                latitude: None,
+                longitude: None,
+                duration_minutes: Some(30),
+                transportation: "walk".to_string(),
+                advisories: empty_advisories.clone(),
+                note: String::new(),
+                created_by: uuid::Uuid::from_u128(3),
+                updated_at: "2026-06-06T00:00:00Z".to_string(),
+                version: 1,
+            },
+            ItineraryItemRecord {
+                id: uuid::Uuid::from_u128(11),
+                trip_id: fallback_trip_id,
+                plan_variant_id: fallback_plan_id,
+                path_group_id: None,
+                path_id: None,
+                path_name: None,
+                path_role: None,
+                day: date,
+                sort_order: 2,
+                start_time: "09:00".to_string(),
+                activity: "Museum".to_string(),
+                activity_type: "visit".to_string(),
+                place: "Geo stop".to_string(),
+                link_label: String::new(),
+                map_link: String::new(),
+                address: None,
+                latitude: Some(13.7),
+                longitude: Some(100.5),
+                duration_minutes: Some(45),
+                transportation: "walk".to_string(),
+                advisories: empty_advisories,
+                note: String::new(),
+                created_by: uuid::Uuid::from_u128(4),
+                updated_at: "2026-06-06T00:00:00Z".to_string(),
+                version: 1,
+            },
+            ItineraryItemRecord {
+                id: uuid::Uuid::from_u128(12),
+                trip_id: fallback_trip_id,
+                plan_variant_id: fallback_plan_id,
+                path_group_id: None,
+                path_id: None,
+                path_name: None,
+                path_role: None,
+                day: next_date,
+                sort_order: 1,
+                start_time: "10:00".to_string(),
+                activity: "No-coord".to_string(),
+                activity_type: "visit".to_string(),
+                place: "Fallback stop".to_string(),
+                link_label: String::new(),
+                map_link: String::new(),
+                address: None,
+                latitude: Some(13.8),
+                longitude: Some(100.6),
+                duration_minutes: Some(60),
+                transportation: "walk".to_string(),
+                advisories: serde_json::json!([]),
+                note: String::new(),
+                created_by: uuid::Uuid::from_u128(5),
+                updated_at: "2026-06-06T00:00:00Z".to_string(),
+                version: 1,
+            },
+        ];
+
+        let first_by_date = first_item_by_date(&items);
+
+        let date_item = first_by_date.get(&date).expect("should keep day entry");
+        assert_eq!(date_item.place, "Geo stop");
+        assert_eq!(date_item.latitude, Some(13.7));
+        assert_eq!(date_item.longitude, Some(100.5));
+    }
+
+    #[test]
+    fn location_for_date_falls_back_to_destination_coordinates_when_item_has_no_coordinates() {
+        let trip = TripAuthRecord {
+            id: uuid::Uuid::from_u128(1),
+            name: "Fallback Trip".to_string(),
+            destination_label: "Bangkok".to_string(),
+            countries: vec!["TH".to_string()],
+            start_date: Date::from_calendar_date(2026, Month::July, 10).unwrap(),
+            end_date: Date::from_calendar_date(2026, Month::July, 12).unwrap(),
+            join_id: "JOIN".to_string(),
+            join_password_hash: "hash".to_string(),
+            active_plan_variant_id: None,
+            owner_member_id: uuid::Uuid::from_u128(2),
+            version: 1,
+        };
+        let item = ItineraryItemRecord {
+            id: uuid::Uuid::from_u128(3),
+            trip_id: trip.id,
+            plan_variant_id: trip.id,
+            path_group_id: None,
+            path_id: None,
+            path_name: None,
+            path_role: None,
+            day: Date::from_calendar_date(2026, Month::July, 10).unwrap(),
+            sort_order: 1,
+            start_time: "08:00".to_string(),
+            activity: "Breakfast".to_string(),
+            activity_type: "meal".to_string(),
+            place: "Some place".to_string(),
+            link_label: String::new(),
+            map_link: String::new(),
+            address: None,
+            latitude: None,
+            longitude: None,
+            duration_minutes: Some(60),
+            transportation: "walk".to_string(),
+            advisories: serde_json::json!([]),
+            note: String::new(),
+            created_by: uuid::Uuid::from_u128(4),
+            updated_at: "2026-06-06T00:00:00Z".to_string(),
+            version: 1,
+        };
+
+        let destination_coords = serde_json::json!({ "lat": 13.7563, "lng": 100.5018 });
+        let (key, label, coordinates) =
+            location_for_date(&trip, Some(&&item), Some(&destination_coords));
+        assert_eq!(key, format!("itinerary:{}", item.id));
+        assert_eq!(label, "Some place");
+        assert_eq!(coordinates, Some(destination_coords.clone()));
+
+        let (fallback_key, fallback_label, fallback_coordinates) =
+            location_for_date(&trip, None, Some(&destination_coords));
+        assert_eq!(fallback_key, "destination:bangkok");
+        assert_eq!(fallback_label, "Bangkok");
+        assert_eq!(fallback_coordinates, Some(destination_coords));
     }
 }

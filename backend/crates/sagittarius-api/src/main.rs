@@ -93,16 +93,17 @@ async fn seed_sample_trip_data(pool: &sqlx::PgPool) -> Result<(), sqlx::Error> {
     let mut tx = pool.begin().await?;
     sqlx::query(
         "insert into trips (
-           id, name, destination_label, start_date, end_date, join_id, join_password_hash,
+           id, name, destination_label, countries, start_date, end_date, join_id, join_password_hash,
            active_plan_variant_id, owner_member_id
          )
          values (
-           $1, 'Hong Kong + Shenzhen Trip', 'Hong Kong + Shenzhen', '2026-06-18',
-           '2026-06-23', 'HK-SZ-2025', $2, $3, $4
+           $1, 'Hong Kong + Shenzhen Trip', 'Hong Kong + Shenzhen', $2, '2026-06-18',
+           '2026-06-23', 'HK-SZ-2025', $3, $4, $5
          )
          on conflict (join_id) do update
          set name = excluded.name,
              destination_label = excluded.destination_label,
+             countries = excluded.countries,
              start_date = excluded.start_date,
              end_date = excluded.end_date,
              join_password_hash = excluded.join_password_hash,
@@ -111,6 +112,7 @@ async fn seed_sample_trip_data(pool: &sqlx::PgPool) -> Result<(), sqlx::Error> {
              updated_at = now()",
     )
     .bind(trip_id)
+    .bind(vec!["HK".to_string(), "CN".to_string()])
     .bind(sagittarius_api::app::auth::hash_secret_for_tests(
         "seed-trip-pass",
     ))

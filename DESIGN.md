@@ -292,6 +292,45 @@ Behavior:
 
 ## 8. Component System
 
+### Surface Selection Rules
+
+Default principle:
+
+- Preserve context first. Interrupt only when the task truly requires it.
+
+Use this decision ladder before adding or changing any surface:
+
+1. `Inline`: field errors, row actions, small edits, validation hints, and
+   status that belongs next to the affected control or data.
+2. `Workspace panel`: the main work surface for the current page, such as the
+   itinerary table, people list, expenses ledger, plan filters, and summary
+   strips.
+3. `Inspector`: the right context rail or large contextual drawer for details
+   tied to the current selection, such as selected stop details, route preview,
+   notes, booking tasks, suggestions, stop expenses, or daily weather briefing.
+4. `Task dialog`: focused forms or blocking decisions that must be completed or
+   dismissed before the user can safely continue, such as creating/editing a
+   stop, confirming deletion, resolving an ambiguous place, or completing an
+   auth/permission step.
+5. `Toast`: short-lived feedback after an action, such as saved, copied,
+   undone, joined, or sync status.
+
+Rules:
+
+- If the user must compare, scan, sort, or edit multiple items continuously,
+  keep the work in the workspace panel.
+- If the user needs the table or page context while reading or editing details,
+  use the inspector instead of a task dialog.
+- If the interaction is destructive, identity-sensitive, or cannot safely be
+  left half-complete, use a task dialog.
+- If feedback requires user correction, show it inline or as a persistent panel
+  near the source. Do not rely on an auto-dismissing toast.
+- Toasts should auto-dismiss after a short delay unless they contain an undo
+  action, and they must not be the only place a recoverable error appears.
+- On tablet and mobile, inspectors may stack below the command area or become a
+  bottom sheet, but they keep the same purpose: contextual detail without
+  replacing the workspace.
+
 ### App Shell
 
 Purpose:

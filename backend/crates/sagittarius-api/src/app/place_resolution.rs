@@ -15,6 +15,7 @@ use crate::domain::types::Capability;
 const HIGH_CONFIDENCE_THRESHOLD: f64 = 0.85;
 const NOMINATIM_DEFAULT_BASE_URL: &str = "https://nominatim.openstreetmap.org";
 const NOMINATIM_MIN_INTERVAL: Duration = Duration::from_secs(1);
+const OPEN_METEO_GEOCODE_BASE_URL: &str = "https://geocoding-api.open-meteo.com/v1";
 
 static NOMINATIM_LAST_REQUEST: LazyLock<Mutex<Option<Instant>>> =
     LazyLock::new(|| Mutex::new(None));
@@ -79,12 +80,225 @@ pub async fn resolve_place(
     }
 
     let evidence = brave_place_evidence(&request).await.unwrap_or_default();
-    let candidates = nominatim_place_candidates(&request, evidence)
+    let candidates = resolve_place_candidates(&request, evidence)
         .await
         .unwrap_or_default();
     Ok(classify_candidates(candidates))
 }
 
+pub async fn resolve_destination_coordinates(
+    pool: &PgPool,
+    destination_label: &str,
+    countries: &[String],
+) -> Option<PlaceCoordinates> {
+    if destination_label.trim().is_empty() {
+        return None;
+    }
+
+    let country_codes = destination_country_codes(countries);
+    for query in destination_queries(destination_label, countries) {
+        let normalized_query = normalized_destination_query(&query, &country_codes);
+        if let Some(record) = db::queries::find_place_geocode_cache(pool, &normalized_query)
+            .await
+            .ok()
+            .flatten()
+        {
+            return Some(PlaceCoordinates {
+                lat: record.latitude,
+                lng: record.longitude,
+            });
+        }
+
+        let candidate =
+            resolve_query_candidates(&query, countries, HIGH_CONFIDENCE_THRESHOLD, Vec::new())
+                .await?
+                .into_iter()
+                .next()?;
+        let _ = db::queries::upsert_place_geocode_cache(
+            pool,
+            &normalized_query,
+            &query,
+            &country_codes,
+            &candidate_display_name(&candidate),
+            &candidate.source,
+            candidate.coordinates.lat,
+            candidate.coordinates.lng,
+        )
+        .await;
+        return Some(candidate.coordinates);
+    }
+
+    None
+}
+
+fn destination_queries(destination_label: &str, countries: &[String]) -> Vec<String> {
+    let country_context = countries.join(" ");
+    let full_query = compact_query(&[destination_label, &country_context]);
+    let mut queries = destination_label
+        .split(['+', '&', '/', ',', ';'])
+        .map(str::trim)
+        .filter(|part| !part.is_empty())
+        .map(|part| compact_query(&[part, &country_context]))
+        .collect::<Vec<_>>();
+    if !queries.contains(&full_query) {
+        queries.push(full_query);
+    }
+    queries
+}
+
+fn compact_query(parts: &[&str]) -> String {
+    parts
+        .join(" ")
+        .split_whitespace()
+        .collect::<Vec<_>>()
+        .join(" ")
+}
+
+fn destination_country_codes(countries: &[String]) -> Vec<String> {
+    countries
+        .iter()
+        .filter_map(|country| {
+            let normalized = country.trim().to_ascii_lowercase();
+            (normalized.len() == 2
+                && normalized
+                    .chars()
+                    .all(|character| character.is_ascii_lowercase()))
+            .then_some(normalized)
+        })
+        .collect()
+}
+
+fn normalized_destination_query(query: &str, country_codes: &[String]) -> String {
+    let mut country_codes = country_codes.to_vec();
+    country_codes.sort();
+    format!(
+        "{}|{}",
+        query
+            .split_whitespace()
+            .collect::<Vec<_>>()
+            .join(" ")
+            .to_ascii_lowercase(),
+        country_codes.join(",")
+    )
+}
+
+fn candidate_display_name(candidate: &PlaceCandidate) -> String {
+    if candidate.address.trim().is_empty() || candidate.address == candidate.name {
+        candidate.name.clone()
+    } else {
+        format!("{}, {}", candidate.name, candidate.address)
+    }
+}
+
+async fn resolve_place_candidates(
+    request: &ResolvePlaceRequest,
+    evidence: Vec<String>,
+) -> Option<Vec<PlaceCandidate>> {
+    resolve_query_candidates(
+        &place_query(request),
+        &request.countries,
+        confidence_for_request(request),
+        evidence,
+    )
+    .await
+}
+
+async fn resolve_query_candidates(
+    query: &str,
+    countries: &[String],
+    confidence: f64,
+    evidence: Vec<String>,
+) -> Option<Vec<PlaceCandidate>> {
+    let mut candidates = Vec::new();
+    if let Some(nominatim_candidates) =
+        nominatim_candidates_for_query(query, countries, confidence, evidence.clone()).await
+    {
+        candidates.extend(nominatim_candidates);
+    }
+    if candidates.is_empty() {
+        if let Some(geocode_candidates) =
+            open_meteo_candidates_for_query(query, countries, HIGH_CONFIDENCE_THRESHOLD).await
+        {
+            candidates.extend(geocode_candidates);
+        }
+    }
+    (!candidates.is_empty()).then_some(candidates)
+}
+
+async fn nominatim_candidates_for_query(
+    query: &str,
+    countries: &[String],
+    confidence: f64,
+    evidence: Vec<String>,
+) -> Option<Vec<PlaceCandidate>> {
+    if query.trim().is_empty() {
+        return None;
+    }
+
+    wait_for_nominatim_slot().await;
+
+    let client = reqwest::Client::new();
+    let base_url = std::env::var("NOMINATIM_BASE_URL")
+        .unwrap_or_else(|_| NOMINATIM_DEFAULT_BASE_URL.to_string());
+    let url = format!("{}/search", base_url.trim_end_matches('/'));
+    let mut params = vec![
+        ("format".to_string(), "jsonv2".to_string()),
+        ("limit".to_string(), "3".to_string()),
+        ("q".to_string(), query.to_string()),
+    ];
+    let country_codes = nominatim_country_codes(countries);
+    if !country_codes.is_empty() {
+        params.push(("countrycodes".to_string(), country_codes));
+    }
+
+    let response = client
+        .get(url)
+        .header(reqwest::header::USER_AGENT, place_resolution_user_agent())
+        .query(&params)
+        .send()
+        .await
+        .ok()?;
+    if !response.status().is_success() {
+        return None;
+    }
+
+    let raw = response.json::<serde_json::Value>().await.ok()?;
+    Some(parse_nominatim_candidates(&raw, confidence, evidence))
+}
+
+async fn open_meteo_candidates_for_query(
+    query: &str,
+    countries: &[String],
+    confidence: f64,
+) -> Option<Vec<PlaceCandidate>> {
+    if query.trim().is_empty() {
+        return None;
+    }
+    let client = reqwest::Client::new();
+    let url = format!("{}/search", OPEN_METEO_GEOCODE_BASE_URL);
+    let mut params = vec![("name", query), ("count", "3"), ("format", "json")];
+    let country_codes = destination_country_codes(countries);
+    let country_code = country_codes.first().map(|country| country.to_uppercase());
+    if country_codes.len() == 1 {
+        if let Some(country_code) = country_code.as_deref() {
+            params.push(("countryCode", country_code));
+        }
+    }
+
+    let response = client
+        .get(url)
+        .query(&params)
+        .header(reqwest::header::USER_AGENT, place_resolution_user_agent())
+        .send()
+        .await
+        .ok()?;
+    if !response.status().is_success() {
+        return None;
+    }
+
+    let raw = response.json::<serde_json::Value>().await.ok()?;
+    Some(parse_open_meteo_candidates(&raw, confidence, Vec::new()))
+}
 pub fn classify_candidates(candidates: Vec<PlaceCandidate>) -> ResolvePlaceResponse {
     let status = match candidates.as_slice() {
         [] => "unresolved",
@@ -134,44 +348,57 @@ fn parse_nominatim_candidates(
         .collect()
 }
 
-async fn nominatim_place_candidates(
-    request: &ResolvePlaceRequest,
+fn parse_open_meteo_candidates(
+    value: &serde_json::Value,
+    confidence: f64,
     evidence: Vec<String>,
-) -> Option<Vec<PlaceCandidate>> {
-    wait_for_nominatim_slot().await;
+) -> Vec<PlaceCandidate> {
+    value
+        .get("results")
+        .and_then(|value| value.as_array())
+        .into_iter()
+        .flatten()
+        .filter_map(|entry| {
+            let lat = entry.get("latitude")?.as_f64()?;
+            let lng = entry.get("longitude")?.as_f64()?;
+            if !(-90.0..=90.0).contains(&lat) || !(-180.0..=180.0).contains(&lng) {
+                return None;
+            }
+            let mut address_parts = [
+                entry.get("name").and_then(|value| value.as_str()),
+                entry.get("admin1").and_then(|value| value.as_str()),
+                entry.get("admin2").and_then(|value| value.as_str()),
+                entry.get("country").and_then(|value| value.as_str()),
+            ]
+            .into_iter()
+            .flatten()
+            .map(str::trim)
+            .filter(|value| !value.is_empty())
+            .map(ToString::to_string)
+            .collect::<Vec<_>>();
+            if address_parts.is_empty() {
+                return None;
+            }
 
-    let client = reqwest::Client::new();
-    let query = place_query(request);
-    let base_url = std::env::var("NOMINATIM_BASE_URL")
-        .unwrap_or_else(|_| NOMINATIM_DEFAULT_BASE_URL.to_string());
-    let url = format!("{}/search", base_url.trim_end_matches('/'));
-    let mut params = vec![
-        ("format".to_string(), "jsonv2".to_string()),
-        ("limit".to_string(), "3".to_string()),
-        ("q".to_string(), query),
-    ];
-    let country_codes = nominatim_country_codes(&request.countries);
-    if !country_codes.is_empty() {
-        params.push(("countrycodes".to_string(), country_codes));
-    }
-
-    let response = client
-        .get(url)
-        .header(reqwest::header::USER_AGENT, place_resolution_user_agent())
-        .query(&params)
-        .send()
-        .await
-        .ok()?;
-    if !response.status().is_success() {
-        return None;
-    }
-
-    let raw = response.json::<serde_json::Value>().await.ok()?;
-    Some(parse_nominatim_candidates(
-        &raw,
-        confidence_for_request(request),
-        evidence,
-    ))
+            let name = address_parts.remove(0);
+            let address = address_parts.join(", ");
+            let address = if address.is_empty() {
+                name.clone()
+            } else {
+                address
+            };
+            Some(PlaceCandidate {
+                name,
+                address,
+                coordinates: PlaceCoordinates { lat, lng },
+                map_link: osm_map_link(lat, lng),
+                confidence,
+                source: "open-meteo".to_string(),
+                evidence: evidence.clone(),
+            })
+        })
+        .take(3)
+        .collect()
 }
 
 async fn brave_place_evidence(request: &ResolvePlaceRequest) -> Option<Vec<String>> {
@@ -343,5 +570,58 @@ mod tests {
         request.activity = "Cafe".to_string();
         request.place_hint = "nearby".to_string();
         assert_eq!(confidence_for_request(&request), 0.78);
+    }
+
+    #[test]
+    fn destination_cache_key_normalizes_query_and_country_order() {
+        let country_codes = destination_country_codes(&[
+            "TH".to_string(),
+            "Thailand".to_string(),
+            "hk".to_string(),
+        ]);
+
+        assert_eq!(country_codes, vec!["th".to_string(), "hk".to_string()]);
+        assert_eq!(
+            normalized_destination_query(" Bangkok   Thailand ", &country_codes),
+            "bangkok thailand|hk,th"
+        );
+    }
+
+    #[test]
+    fn destination_queries_split_multi_city_labels_before_full_label() {
+        let queries = destination_queries(
+            "Hong Kong + Shenzhen",
+            &["HK".to_string(), "CN".to_string()],
+        );
+
+        assert_eq!(
+            queries,
+            vec![
+                "Hong Kong HK CN".to_string(),
+                "Shenzhen HK CN".to_string(),
+                "Hong Kong + Shenzhen HK CN".to_string(),
+            ]
+        );
+    }
+
+    #[test]
+    fn open_meteo_candidates_parse() {
+        let raw = serde_json::json!({
+            "results": [{
+                "name": "Bangkok",
+                "admin1": "Bangkok",
+                "admin2": "Krung Thep Maha Nakhon",
+                "country": "Thailand",
+                "latitude": 13.7563,
+                "longitude": 100.5018
+            }]
+        });
+
+        let candidates = parse_open_meteo_candidates(&raw, 0.85, vec![]);
+        assert_eq!(candidates.len(), 1);
+        assert_eq!(candidates[0].name, "Bangkok");
+        assert_eq!(candidates[0].coordinates.lat, 13.7563);
+        assert_eq!(candidates[0].coordinates.lng, 100.5018);
+        assert_eq!(candidates[0].source, "open-meteo");
     }
 }

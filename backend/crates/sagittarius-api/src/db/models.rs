@@ -426,6 +426,17 @@ pub struct TripDailyBriefingRecord {
     pub version: i64,
 }
 
+#[derive(Debug, Clone, FromRow)]
+pub struct PlaceGeocodeCacheRecord {
+    pub normalized_query: String,
+    pub query: String,
+    pub country_codes: Vec<String>,
+    pub display_name: String,
+    pub source: String,
+    pub latitude: f64,
+    pub longitude: f64,
+}
+
 impl From<ItineraryItemRecord> for ItineraryItemSummary {
     fn from(record: ItineraryItemRecord) -> Self {
         let coordinates = match (record.latitude, record.longitude) {

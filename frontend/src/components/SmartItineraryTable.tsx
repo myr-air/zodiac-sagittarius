@@ -1,11 +1,12 @@
-import { useEffect, useRef, useState, type CSSProperties, type ChangeEvent, type DragEvent, type PointerEvent as ReactPointerEvent, type TouchEvent as ReactTouchEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type ChangeEvent, type DragEvent, type PointerEvent as ReactPointerEvent, type TouchEvent as ReactTouchEvent } from "react";
 import { createPortal } from "react-dom";
-import type { ActivityType, ItineraryItem, TripRole } from "@/src/trip/types";
+import type { ActivityType, ItineraryItem, TripDailyBriefing, TripRole } from "@/src/trip/types";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import type { Messages } from "@/src/i18n/messages";
 import type { Locale } from "@/src/i18n/types";
 import { cn } from "@/src/lib/cn";
 import { formatDayLabel, getTripDates, groupItemsByDay, mainItineraryPathId, parseTime, type ItineraryDayGroup, type ItineraryPathOption, type ItineraryView } from "@/src/trip/itinerary";
+import { formatWeatherTemp, weatherGraphicLabel, weatherIconForCondition } from "@/src/trip/weather-briefings";
 import { Button } from "./ui";
 import { Icon } from "./icons";
 import { formatTripRange, PageHeader } from "./PageHeader";
@@ -20,6 +21,7 @@ interface SmartItineraryTableProps {
   endDate: string;
   graphItems?: ItineraryItem[];
   items: ItineraryItem[];
+  dailyBriefings?: TripDailyBriefing[];
   role: TripRole;
   startDate: string;
   itineraryView?: ItineraryView;
@@ -74,6 +76,7 @@ const dayRowClassName = "day-row [&_th]:h-[39px] [&_th]:bg-[var(--color-surface)
 const dayRowContentClassName = "day-row-content flex h-[39px] w-full min-w-0 items-center gap-[9px]";
 const dayToggleClassName = "day-toggle flex min-w-0 items-center gap-[9px] border-0 bg-transparent p-0 text-left text-[#334155] aria-[expanded=true]:[&_.icon]:rotate-90 [&_.icon]:transition-transform [&_.icon]:duration-[140ms] [&_strong]:text-[#0f172a]";
 const dayRouteClassName = "day-route ml-[18px] font-semibold text-[var(--color-text-muted)] max-[767px]:hidden";
+const dayWeatherChipClassName = "day-weather-chip inline-flex min-h-7 shrink-0 items-center gap-1.5 rounded-[var(--radius-sm)] border border-sky-100 bg-sky-50/80 px-2 text-[11px] font-extrabold text-sky-800 [&_strong]:text-sky-950";
 const dayPathControlsClassName = "ml-auto inline-flex min-w-0 items-center gap-2 max-[767px]:ml-2 max-[767px]:shrink-0";
 const dayPathPickerClassName = "min-h-7 max-w-[172px] px-2 text-[11px] max-[767px]:max-w-[112px]";
 const dayClearPathButtonClassName = "inline-flex min-h-7 items-center rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface)] px-2 text-[11px] font-extrabold text-[var(--color-text-muted)] disabled:opacity-40 max-[767px]:px-1.5";
@@ -137,6 +140,7 @@ export function SmartItineraryTable({
   graphItems,
   itineraryView,
   items,
+  dailyBriefings = [],
   pathOptions = [{ id: mainItineraryPathId, name: "Main", scope: "trip" }],
   role,
   startDate,
@@ -176,6 +180,7 @@ export function SmartItineraryTable({
   const displayItems = allDisplayItems.filter((item) => selectedPathIdSet.has(itineraryItemPathId(item)));
   const selectedFilterLabel = formatSelectedPlanLabel(filterOptions, selectedPathIds, t.itinerary.filters.selectedCount, t.itinerary.filters.selectedNames);
   const groups = mergeTripDayGroups(groupItemsByDay(displayItems), startDate, endDate);
+  const dailyBriefingsByDate = useMemo(() => new Map(dailyBriefings.map((briefing) => [briefing.date, briefing])), [dailyBriefings]);
   const graphItemsByDay = groupGraphItemsByDay(displayItems);
   const warningCount = itineraryView?.warningCount ?? displayItems.reduce((total, item) => total + (item.advisories?.length ?? 0), 0);
   const totalMinutes = displayItems.reduce((total, item) => total + (item.durationMinutes ?? 0), 0);
@@ -503,6 +508,7 @@ export function SmartItineraryTable({
               itineraryLabels={t.itinerary}
               locale={locale}
               key={group.day}
+              dailyBriefing={dailyBriefingsByDate.get(group.day) ?? null}
               selectedItemId={selectedItemId}
               startDate={startDate}
               pathOptions={pathOptions}
@@ -610,6 +616,7 @@ function DayGroup({
   graphColumnWidth,
   graphItems,
   group,
+  dailyBriefing,
   hasTopSpacer,
   itineraryLabels,
   locale,
@@ -646,6 +653,7 @@ function DayGroup({
   graphColumnWidth: number;
   graphItems: ItineraryItem[];
   group: { day: string; items: ItineraryItem[]; warningCount: number };
+  dailyBriefing: TripDailyBriefing | null;
   hasTopSpacer: boolean;
   itineraryLabels: Messages["itinerary"];
   locale: Locale;
@@ -725,6 +733,7 @@ function DayGroup({
               <span>{formatThaiDate(group.day, locale)}</span>
               <span className={dayRouteClassName}>{dayRouteLabel(group.day, locale)}</span>
             </button>
+            <DayWeatherChip briefing={dailyBriefing} dayLabel={dayA11yLabel} />
             {samePathOverlapItemIds.size > 0 || hasAlternativePathOptions ? (
               <span className={dayPathControlsClassName}>
                 {samePathOverlapItemIds.size > 0 ? (
@@ -1025,6 +1034,25 @@ function getRowClassName(
     samePathOverlapItemIds.has(item.id) && dataRowPathOverlapClassName,
     dragState.draggedItemId === item.id && dataRowDraggingClassName,
     dragState.overItemId === item.id && dataRowDropTargetClassName,
+  );
+}
+
+function DayWeatherChip({ briefing, dayLabel }: { briefing: TripDailyBriefing | null; dayLabel: string }) {
+  if (!briefing) return null;
+  const weather = briefing.weather;
+  const condition = weatherGraphicLabel(weather?.conditionCode);
+  return (
+    <span
+      className={dayWeatherChipClassName}
+      aria-label={`Weather for ${dayLabel}: ${condition} ${formatWeatherTemp(weather?.temperatureMaxCelsius)} ${formatWeatherTemp(weather?.temperatureMinCelsius)}`}
+      title={`${condition} ${formatWeatherTemp(weather?.temperatureMaxCelsius)} ${formatWeatherTemp(weather?.temperatureMinCelsius)}`}
+    >
+      <span aria-hidden="true">{weatherIconForCondition(weather?.conditionCode)}</span>
+      {" "}
+      <strong>{formatWeatherTemp(weather?.temperatureMaxCelsius)}</strong>
+      {" "}
+      <span>{formatWeatherTemp(weather?.temperatureMinCelsius)}</span>
+    </span>
   );
 }
 

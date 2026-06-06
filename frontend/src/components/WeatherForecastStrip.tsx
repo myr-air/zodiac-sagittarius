@@ -1,7 +1,7 @@
 import type { Locale } from "@/src/i18n/types";
 import { cn } from "@/src/lib/cn";
 import type { TripDailyBriefing } from "@/src/trip/types";
-import { briefingsForStrip, thaiWeekdayTone, weatherGraphicLabel } from "@/src/trip/weather-briefings";
+import { briefingsForStrip, formatWeatherTemp, thaiWeekdayTone, weatherGraphicLabel, weatherIconForCondition } from "@/src/trip/weather-briefings";
 
 interface WeatherForecastStripProps {
   briefings: TripDailyBriefing[];
@@ -45,7 +45,7 @@ export function WeatherForecastStrip({ briefings, locale, selectedDate, onSelect
 
           return (
               <button
-                aria-label={`${dayLabel} ${condition} ${formatTemp(high)} ${formatTemp(low)}`}
+                aria-label={`${dayLabel} ${condition} ${formatWeatherTemp(high)} ${formatWeatherTemp(low)}`}
                 className={cn(segmentClassName, selectedDate === briefing.date && selectedClassName)}
                 key={`${briefing.date}-${briefing.locationKey}`}
                 type="button"
@@ -53,11 +53,11 @@ export function WeatherForecastStrip({ briefings, locale, selectedDate, onSelect
               >
               <span className={cn(dayClassName, tone.className, tone.chipClassName)}>{dayLabel}</span>
               <span className={iconClassName} aria-hidden="true">
-                {iconForCondition(weather?.conditionCode)}
+                {weatherIconForCondition(weather?.conditionCode)}
               </span>
               <span className={tempClassName}>
-                <span className={tempHighClassName}>{formatTemp(high)}</span>
-                <span className={tempLowClassName}>{formatTemp(low)}</span>
+                <span className={tempHighClassName}>{formatWeatherTemp(high)}</span>
+                <span className={tempLowClassName}>{formatWeatherTemp(low)}</span>
               </span>
             </button>
           );
@@ -71,17 +71,4 @@ function formatDayLabel(date: string, locale: Locale): string {
   const parsed = new Date(`${date}T00:00:00`);
   if (Number.isNaN(parsed.getTime())) return date;
   return new Intl.DateTimeFormat(locale === "th" ? "th-TH" : "en-US", { weekday: "short", month: "short", day: "numeric" }).format(parsed);
-}
-
-function formatTemp(value: number | null | undefined): string {
-  if (typeof value !== "number") return "--°";
-  return `${Math.round(value)}°`;
-}
-
-function iconForCondition(code: string | null | undefined): string {
-  if (code === "clear" || code === "sunny") return "☀";
-  if (code === "rain" || code === "showers") return "☂";
-  if (code === "storm" || code === "thunderstorm") return "⚡";
-  if (code === "cloudy" || code === "partly-cloudy") return "☁";
-  return "◌";
 }

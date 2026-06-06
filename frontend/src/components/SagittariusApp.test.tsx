@@ -945,6 +945,14 @@ describe("Sagittarius cockpit UI", () => {
     );
   });
 
+  it("shows fallback daily weather briefings in the local overview", async () => {
+    render(<SagittariusApp initialView="overview" />);
+
+    const forecast = await screen.findByRole("region", { name: /พยากรณ์อากาศรายวัน/i });
+    expect(within(forecast).queryByText(/ยังไม่มีข้อมูลพยากรณ์อากาศ/i)).not.toBeInTheDocument();
+    expect(within(forecast).getAllByRole("button", { name: /Forecast pending/i }).length).toBeGreaterThan(0);
+  });
+
   it("patches trip countries when organizer changes the API trip destination", async () => {
     const user = userEvent.setup();
     installLocalStorageStub();

@@ -33,6 +33,7 @@ import { buildExpenseSplits, buildExpenseSummary, expenseSplitsToMinor, upsertEx
 import { buildItineraryView, deriveItineraryPathOptions, mainItineraryPathId, resolveItineraryPathItems, type ItineraryPathOption, type ItineraryPathSelection } from "@/src/trip/itinerary";
 import { applyImportedItemsToItineraryPath, applyItemToActivityBranch, applyManualActivityPath, autoResolveSamePathOverlaps, deriveManualActivityPathOptions, type ItineraryImportApplyTarget } from "@/src/trip/itinerary-paths";
 import { buildItineraryExport, parseItineraryImport, type ItineraryExportItem } from "@/src/trip/itinerary-import-export";
+import { buildFallbackBriefings } from "@/src/trip/weather-briefings";
 import { tripFixtureStopNotes, tripFixtureSuggestions, tripFixtureTasks } from "@/src/trip/trip-fixtures";
 import { tripStorageKey } from "@/src/trip/repository";
 import { seedTrip } from "@/src/trip/seed";
@@ -197,6 +198,10 @@ export function SagittariusApp({
   const pathOptions = useMemo(() => deriveItineraryPathOptions(activePlanItems, trip.itineraryPaths ?? []), [activePlanItems, trip.itineraryPaths]);
   const planItems = useMemo(() => resolveItineraryPathItems(activePlanItems, pathSelection), [activePlanItems, pathSelection]);
   const itineraryView = useMemo(() => buildItineraryView(planItems), [planItems]);
+  const visibleDailyBriefings = useMemo(
+    () => (dailyBriefings.length ? dailyBriefings : buildFallbackBriefings(trip)),
+    [dailyBriefings, trip],
+  );
 
   useEffect(() => {
     latestTripRef.current = trip;
@@ -1844,7 +1849,7 @@ export function SagittariusApp({
                 itineraryView={itineraryView}
                 suggestions={suggestions}
                 tasks={tasks}
-                dailyBriefings={dailyBriefings}
+                dailyBriefings={visibleDailyBriefings}
                 onOpenExpenses={openExpensesWorkspace}
                 onCreateTask={createTask}
                 onSaveDailyBriefingOverrides={saveDailyBriefingOverrides}
@@ -1859,6 +1864,7 @@ export function SagittariusApp({
                 endDate={trip.endDate}
                 graphItems={activePlanItems}
                 items={planItems}
+                dailyBriefings={visibleDailyBriefings}
                 itineraryView={itineraryView}
                 pathOptions={pathOptions}
                 role={currentMember.role}

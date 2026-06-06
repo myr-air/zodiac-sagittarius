@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import { tripFixture } from "@/src/trip/trip-fixtures";
 import { LanguageSwitch } from "@/src/i18n/LanguageSwitch";
 import { renderWithI18n } from "@/src/i18n/test-utils";
+import { weatherBriefings } from "./WeatherBriefing.fixtures";
 import { SmartItineraryTable } from "./SmartItineraryTable";
 
 function renderTable(overrides: Partial<Parameters<typeof SmartItineraryTable>[0]> = {}) {
@@ -174,6 +175,27 @@ describe("SmartItineraryTable", () => {
     await user.click(within(dayPathMenu).getByRole("option", { name: "Plan A" }));
     expect(onChangeDayPath).toHaveBeenCalledWith("2026-06-19", "path-2026-06-19-sub-a");
     expect(screen.queryByLabelText(/Path for Day 1/i)).not.toBeInTheDocument();
+  });
+
+  it("shows each day's weather icon in the itinerary day header", () => {
+    renderTable({
+      dailyBriefings: [
+        {
+          ...weatherBriefings[1],
+          date: "2026-06-19",
+          weather: weatherBriefings[1].weather ? {
+            ...weatherBriefings[1].weather,
+            conditionCode: "rain",
+            conditionLabel: "Rain",
+            temperatureMaxCelsius: 33,
+            temperatureMinCelsius: 28,
+          } : null,
+        },
+      ],
+    });
+
+    expect(screen.getByLabelText(/Weather for Day 2/i)).toHaveTextContent("☂");
+    expect(screen.getByLabelText(/Weather for Day 2/i)).toHaveTextContent("33° 28°");
   });
 
   it("renders a left-side dot graph without lane controls", () => {

@@ -35,15 +35,16 @@ pub async fn seed_trip(pool: &PgPool) {
         .unwrap();
     sqlx::query(
         "insert into trips (
-           id, name, destination_label, start_date, end_date, join_id, join_password_hash,
+           id, name, destination_label, countries, start_date, end_date, join_id, join_password_hash,
            active_plan_variant_id, owner_member_id
          )
          values (
-           $1, 'Hong Kong + Shenzhen Trip', 'Hong Kong + Shenzhen', '2026-06-18',
-           '2026-06-23', 'HK-SZ-2025', $2, $3, $4
+           $1, 'Hong Kong + Shenzhen Trip', 'Hong Kong + Shenzhen', $2, '2026-06-18',
+           '2026-06-23', 'HK-SZ-2025', $3, $4, $5
          )",
     )
     .bind(trip_id)
+    .bind(vec!["HK".to_string(), "CN".to_string()])
     .bind(sagittarius_api::app::auth::hash_secret_for_tests(
         "seed-trip-pass",
     ))

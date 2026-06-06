@@ -48,6 +48,20 @@ export function weatherGraphicLabel(conditionCode: string | null | undefined): s
   }
 }
 
+export function weatherIconForCondition(code: string | null | undefined): string {
+  if (code === "clear" || code === "sunny") return "☀";
+  if (code === "rain" || code === "showers") return "☂";
+  if (code === "storm" || code === "thunderstorm") return "⚡";
+  if (code === "cloudy" || code === "partly-cloudy") return "☁";
+  if (code === "unavailable" || !code) return "🌤";
+  return "🌤";
+}
+
+export function formatWeatherTemp(value: number | null | undefined): string {
+  if (typeof value !== "number") return "--°";
+  return `${Math.round(value)}°`;
+}
+
 function firstItineraryForDates(itineraryItems: ItineraryItem[]): Map<string, ItineraryItem> {
   const byDate = new Map<string, ItineraryItem>();
 
