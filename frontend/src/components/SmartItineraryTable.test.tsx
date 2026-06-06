@@ -52,11 +52,11 @@ function renderTable(overrides: Partial<Parameters<typeof SmartItineraryTable>[0
 function findGraphLine(from: HTMLElement, to: HTMLElement): Element | undefined {
   const fromCenter = {
     x: Number.parseFloat(from.style.left),
-    y: Number.parseFloat(from.style.top) + 6,
+    y: Number.parseFloat(from.style.top) + 18,
   };
   const toCenter = {
     x: Number.parseFloat(to.style.left),
-    y: Number.parseFloat(to.style.top) + 6,
+    y: Number.parseFloat(to.style.top) + 18,
   };
   return Array.from(document.querySelectorAll(".activity-path-graph-line")).find((line) => (
     line.getAttribute("data-from-x") === `${fromCenter.x}` &&
@@ -227,7 +227,7 @@ describe("SmartItineraryTable", () => {
     });
 
     expect(screen.getByRole("group", { name: /Activity path graph for Day 2/i })).toHaveClass("activity-path-graph");
-    expect(screen.getByRole("button", { name: /Graph main on Main/i })).toHaveClass("activity-path-graph-node--selected");
+    expect(screen.getByRole("button", { name: /Graph main on Main/i })).toHaveClass("activity-path-graph-node--selected", "size-9");
     expect(screen.getByRole("button", { name: /Graph plan A on Plan A/i })).toBeInTheDocument();
     expect(screen.getByRole("row", { name: /Graph plan A/i })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /Drop activities on Plan A for Day 2/i })).not.toBeInTheDocument();
@@ -262,8 +262,8 @@ describe("SmartItineraryTable", () => {
 
     const firstDot = screen.getByRole("button", { name: /Graph row first on Main/i });
     const secondDot = screen.getByRole("button", { name: /Graph row second on Main/i });
-    expect(firstDot).toHaveStyle({ top: "71px" });
-    expect(secondDot).toHaveStyle({ top: "130px" });
+    expect(firstDot).toHaveStyle({ top: "59px" });
+    expect(secondDot).toHaveStyle({ top: "118px" });
   });
 
   it("offers a keyboard fallback for changing an activity path", async () => {
@@ -424,13 +424,13 @@ describe("SmartItineraryTable", () => {
     const planFollowUpLine = findGraphLine(branchDot, followUpDot);
     const earlyReturnToMainLine = findGraphLine(branchDot, lateDot);
     const returnToMainLine = findGraphLine(followUpDot, lateDot);
-    const followUpDotCenterY = Number.parseFloat(followUpDot.style.top) + 6;
+    const followUpDotCenterY = Number.parseFloat(followUpDot.style.top) + 18;
     const returnEdgeY = followUpDotCenterY + 29.5;
     expect(followUpLine).toBeDefined();
     expect(planFollowUpLine).toBeUndefined();
     expect(earlyReturnToMainLine).toBeUndefined();
     expect(returnToMainLine?.getAttribute("d")).toContain(`L ${Number.parseFloat(lateDot.style.left)} ${returnEdgeY}`);
-    expect(returnToMainLine?.getAttribute("d")).toContain(`L ${Number.parseFloat(lateDot.style.left)} ${Number.parseFloat(lateDot.style.top) + 6}`);
+    expect(returnToMainLine?.getAttribute("d")).toContain(`L ${Number.parseFloat(lateDot.style.left)} ${Number.parseFloat(lateDot.style.top) + 18}`);
     expect(returnToMainLine).toHaveClass("activity-path-graph-line--dashed");
     expect(document.querySelectorAll(".activity-path-graph-line").length).toBeGreaterThanOrEqual(4);
   });
@@ -713,15 +713,15 @@ describe("SmartItineraryTable", () => {
     const startToPlanALine = Array.from(document.querySelectorAll(".activity-path-graph-line")).find((line) => (
       line.getAttribute("data-from-y") === "23.75" &&
       line.getAttribute("data-to-x") === `${Number.parseFloat(planADot.style.left)}` &&
-      line.getAttribute("data-to-y") === `${Number.parseFloat(planADot.style.top) + 6}`
+      line.getAttribute("data-to-y") === `${Number.parseFloat(planADot.style.top) + 18}`
     ));
     const mainDotCenter = {
       x: Number.parseFloat(mainDot.style.left),
-      y: Number.parseFloat(mainDot.style.top) + 6,
+      y: Number.parseFloat(mainDot.style.top) + 18,
     };
     const planADotCenter = {
       x: Number.parseFloat(planADot.style.left),
-      y: Number.parseFloat(planADot.style.top) + 6,
+      y: Number.parseFloat(planADot.style.top) + 18,
     };
     const dotToDotLine = Array.from(document.querySelectorAll(".activity-path-graph-line")).find((line) => (
       line.getAttribute("data-from-x") === `${mainDotCenter.x}` &&
@@ -878,7 +878,7 @@ describe("SmartItineraryTable", () => {
     expect(scrollFrame).toHaveClass("table-scroll", "overflow-x-auto", "rounded-(--radius-md)");
 
     const table = screen.getByRole("table", { name: /รายการแผนการเดินทาง แยกตามวัน/i });
-    expect(table).toHaveClass("smart-table", "w-full", "min-w-[1010px]");
+    expect(table).toHaveClass("smart-table", "w-full", "min-w-[1080px]");
 
     const selectedRow = screen.getByRole("row", { name: /Dim Dim Sum/i });
     expect(selectedRow).toHaveClass("data-row", "data-row--selected");

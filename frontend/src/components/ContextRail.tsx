@@ -39,14 +39,14 @@ const suggestionItemToneClassNames = {
   pending: "suggestion-item--pending [&_.icon]:text-(--color-success)",
 } satisfies Record<"conflicted" | "pending", string>;
 const suggestionActionsClassName = "suggestion-actions mt-1.5 flex flex-wrap gap-1.5";
-const suggestionActionButtonClassName = "min-h-[26px] rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-2 text-[11px] font-extrabold text-(--color-primary-strong)";
+const suggestionActionButtonClassName = "min-h-8 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-2.5 text-[11px] font-extrabold text-(--color-primary-strong)";
 const conflictRowClassName = "conflict-row grid grid-cols-[minmax(0,1fr)_auto] items-center gap-1.5 text-[11px] leading-4 text-(--color-warning-strong)";
 const conflictSummaryClassName = "inline-flex items-center gap-1.5 [&_.icon]:text-(--color-warning)";
 const moduleListClassName = "grid list-none gap-2 p-0 m-0";
 const noteItemClassName = "stop-note-item grid gap-1 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) px-2.5 py-[9px] [&>p]:m-0 [&>p]:text-[11px] [&>p]:font-bold [&>p]:leading-4 [&>p]:text-(--color-text-muted) [&_strong]:text-xs [&_strong]:font-extrabold [&_strong]:leading-4 [&_strong]:text-(--color-text)";
 const noteHeaderClassName = "stop-note-header flex items-center justify-between gap-2";
 const noteActionsClassName = "stop-note-actions inline-flex items-center gap-1.5";
-const noteActionButtonClassName = "inline-grid size-7 cursor-pointer place-items-center rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) text-(--color-text-muted) hover:border-(--color-primary) hover:text-(--color-primary-strong) focus-visible:border-(--color-primary) focus-visible:text-(--color-primary-strong) focus-visible:outline-none [&_.icon]:size-[15px]";
+const noteActionButtonClassName = "inline-grid size-8 cursor-pointer place-items-center rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) text-(--color-text-muted) hover:border-(--color-primary) hover:text-(--color-primary-strong) focus-visible:border-(--color-primary) focus-visible:text-(--color-primary-strong) focus-visible:outline-none [&_.icon]:size-[15px]";
 const noteEditFormClassName = "stop-note-edit-form grid gap-2";
 const noteEditLabelClassName = "grid gap-1.5";
 const noteEditTextareaClassName = "min-h-20 resize-y rounded-(--radius-md) border border-(--color-border-strong) bg-(--color-surface) px-2.5 py-[9px] text-(--color-text)";
@@ -67,9 +67,9 @@ const contextRailClassName =
 const contextRailOpenClassName = "context-rail--open animate-[drawer-slide-in_220ms_ease-out_both]";
 const contextRailClosedClassName = "context-rail--closed";
 const railInspectorClassName = "rail-inspector h-full min-h-0 overflow-y-auto border-l border-(--color-border) bg-(--color-surface) max-[1199px]:min-h-0 max-[1199px]:border-l-0 max-[1199px]:border-t";
-const inspectorTitleClassName = "inspector-title grid min-h-[50px] grid-cols-[minmax(0,1fr)_30px] items-center gap-3 px-3.5 pl-4";
+const inspectorTitleClassName = "inspector-title grid min-h-[50px] grid-cols-[minmax(0,1fr)_36px] items-center gap-3 px-3.5 pl-4";
 const inspectorTitleHeadingClassName = "m-0 overflow-hidden text-ellipsis whitespace-nowrap text-[15px] font-extrabold leading-[22px] text-[#0f172a]";
-const inspectorCloseButtonClassName = "grid size-[30px] place-items-center border-0 bg-transparent text-[#0f172a] [&_.icon]:rotate-180";
+const inspectorCloseButtonClassName = "grid size-9 place-items-center border-0 bg-transparent text-[#0f172a] [&_.icon]:rotate-180";
 const inspectorTabsClassName = "inspector-tabs flex h-9 gap-6 border-y border-(--color-border) px-4 max-[767px]:gap-[18px] max-[767px]:overflow-x-auto";
 const inspectorTabClassName = "border-0 border-b-2 border-transparent bg-transparent text-xs font-bold text-(--color-text-muted) aria-selected:border-(--color-primary) aria-selected:text-(--color-primary-strong)";
 const mapLinkClassName = "map-link ml-[27px] text-xs font-semibold text-[#2563eb] no-underline";
@@ -352,7 +352,7 @@ export function ContextRail({
           <h3 className={detailHeadingClassName}>{t.contextRail.conflicts.title}</h3>
           <div className={conflictRowClassName}>
             <span className={conflictSummaryClassName}><Icon name="alertCircle" /> {t.contextRail.conflicts.peakWarning}</span>
-            <Button type="button" variant="ghost" className="min-h-7 px-2 py-1 text-[11px]" disabled={!canReviewSuggestions}>{t.contextRail.conflicts.autoFix}</Button>
+            <Button type="button" variant="ghost" className="min-h-8 px-2.5 py-1 text-[11px]" disabled={!canReviewSuggestions}>{t.contextRail.conflicts.autoFix}</Button>
           </div>
         </section>
           </>

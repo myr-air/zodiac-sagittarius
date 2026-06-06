@@ -58,6 +58,20 @@ describe("Calm Travel Ops CSS contract", () => {
     expect(activityPathGraphSource).not.toContain("#18e031");
   });
 
+  it("keeps interactive audit targets finger-safe without enlarging visual graph dots", () => {
+    expect(activityPathGraphSource).toContain("activity-path-graph-node absolute");
+    expect(activityPathGraphSource).toContain("size-9");
+    expect(activityPathGraphSource).toContain("before:size-3");
+    expect(appSource).toContain("workspaceToastDismissClassName");
+    expect(appSource).toContain("grid size-9 shrink-0");
+    expect(contextRailSource).toContain("noteActionButtonClassName");
+    expect(contextRailSource).toContain("inline-grid size-8");
+    expect(contextRailSource).toContain("inspectorCloseButtonClassName");
+    expect(contextRailSource).toContain("grid size-9");
+    expect(contextRailSource).toContain("suggestionActionButtonClassName");
+    expect(contextRailSource).toContain("min-h-8");
+  });
+
   it("keeps motif motion reduced-motion safe", () => {
     expect(css).toMatch(/@media \(prefers-reduced-motion: reduce\)[\s\S]*\*\s*{/s);
     expect(css).not.toMatch(/\.travel-motif\s*{/s);
@@ -77,7 +91,7 @@ describe("Calm Travel Ops CSS contract", () => {
     expect(css).toMatch(/body\s*{[^}]*overflow-x:\s*hidden/s);
     expect(appSource).toContain("planning-main h-full min-h-0 min-w-0 overflow-y-auto");
     expect(smartTableSource).toContain("table-scroll m-0 h-auto min-h-0 w-full max-w-full overflow-x-auto");
-    expect(smartTableSource).toContain("smart-table w-full min-w-[1010px] table-fixed border-collapse");
+    expect(smartTableSource).toContain("smart-table w-full min-w-[1080px] table-fixed border-collapse");
   });
 
   it("keeps vertical scrolling on the planning shell instead of nesting table scrollbars", () => {

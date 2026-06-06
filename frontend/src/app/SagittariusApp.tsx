@@ -49,7 +49,7 @@ const workspaceToastIconClassName = "mt-0.5 shrink-0 text-(--color-route)";
 const workspaceToastBodyClassName = "min-w-0 flex-1 [&_span]:block [&_span]:text-[12.5px] [&_span]:leading-5 [&_span]:text-(--color-text-muted) [&_strong]:text-[13.5px] [&_strong]:font-[850] [&_strong]:text-(--color-route)";
 const workspaceToastActionsClassName = "flex shrink-0 items-center gap-2";
 const workspaceToastDismissClassName =
-  "ml-1 grid size-7 shrink-0 place-items-center rounded-full text-(--color-text-muted) transition-colors hover:bg-(--color-surface-subtle) hover:text-(--color-text)";
+  "ml-1 grid size-9 shrink-0 place-items-center rounded-full text-(--color-text-muted) transition-colors hover:bg-(--color-surface-subtle) hover:text-(--color-text)";
 const appDeleteModalBackdropClassName = "modal-backdrop fixed inset-0 z-20 grid place-items-center bg-[rgb(15_23_42_/_0.28)] p-5";
 const appDeleteDialogClassName = "delete-confirm-dialog grid w-[min(420px,100%)] gap-3 rounded-(--radius-lg) border border-(--color-danger-border) bg-(--color-surface) p-4 shadow-[0_24px_70px_rgb(15_23_42_/_0.22)]";
 const appDeleteDialogTitleClassName = "m-0 text-base font-extrabold leading-[22px] text-[#991b1b]";

@@ -5,7 +5,7 @@ import { Icon } from "./icons";
 
 const panelClassName = "detail-section suggestion-module grid gap-1.5 border-b border-(--color-border) px-4 py-2.5";
 const titleRowClassName = "module-title-row flex items-center justify-between gap-2.5";
-const titleButtonClassName = "min-h-[30px] rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-2.5 text-xs font-bold text-[#334155]";
+const titleButtonClassName = "min-h-8 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-2.5 text-xs font-bold text-[#334155]";
 const listClassName = "suggestion-list grid gap-1.5";
 const itemBaseClassName = "suggestion-item grid grid-cols-[18px_minmax(0,1fr)] gap-2 text-xs leading-4 text-[#334155]";
 const copyClassName = "grid gap-0.5";

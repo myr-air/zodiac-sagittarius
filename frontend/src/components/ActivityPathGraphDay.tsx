@@ -1,6 +1,7 @@
 import { cn } from "@/src/lib/cn";
 import { mainItineraryPathId, parseTime, type ItineraryPathOption } from "@/src/trip/itinerary";
 import type { ItineraryItem } from "@/src/trip/types";
+import type { CSSProperties } from "react";
 
 interface ActivityPathGraphDayProps {
   canEdit: boolean;
@@ -17,12 +18,13 @@ interface ActivityPathGraphDayProps {
 
 const graphClassName = "activity-path-graph relative min-h-full w-full bg-(--color-surface-subtle)";
 const dotClassName =
-  "activity-path-graph-node absolute z-[3] left-1/2 size-3 -translate-x-1/2 rounded-full border-2 border-(--color-surface) bg-(--color-primary) p-0 shadow-[0_1px_4px_rgb(15_23_42_/_0.18)] transition-transform hover:scale-125";
-const selectedDotClassName = "activity-path-graph-node--selected ring-2 ring-(--color-primary-strong) ring-offset-1 ring-offset-(--color-surface)";
+  "activity-path-graph-node absolute z-[3] left-1/2 size-9 -translate-x-1/2 rounded-full border-0 bg-transparent p-0 transition-transform hover:scale-105 focus-visible:outline-none before:absolute before:left-1/2 before:top-1/2 before:size-3 before:-translate-x-1/2 before:-translate-y-1/2 before:rounded-full before:border-2 before:border-(--color-surface) before:bg-(--activity-path-node-color) before:shadow-[0_1px_4px_rgb(15_23_42_/_0.18)] after:absolute after:left-1/2 after:top-1/2 after:size-4 after:-translate-x-1/2 after:-translate-y-1/2 after:rounded-full after:opacity-0 after:ring-2 after:ring-(--color-primary-strong) after:ring-offset-1 after:ring-offset-(--color-surface)";
+const selectedDotClassName = "activity-path-graph-node--selected after:opacity-100";
 const pathSelectClassName = "sr-only";
 const anchorClassName =
   "activity-path-graph-anchor absolute z-[3] left-1/2 size-3 -translate-x-1/2 rounded-full border-2 border-(--color-primary) bg-white shadow-[0_1px_4px_rgb(15_23_42_/_0.12)]";
 const dotSize = 12;
+const dotHitTargetSize = 36;
 const dayRowHeight = 47.5;
 const addStopRowHeight = 36;
 const rowStep = 59;
@@ -91,7 +93,7 @@ export function ActivityPathGraphDay({
               aria-label={`${item.activity} on ${pathName}`}
               className={cn(dotClassName, selectedItemId === item.id && selectedDotClassName)}
               draggable={canEdit}
-              style={{ backgroundColor: color, left: x, top: y - dotSize / 2 }}
+              style={{ "--activity-path-node-color": color, left: x, top: y - dotHitTargetSize / 2 } as CSSProperties}
               title={`${item.activity} (${pathName})`}
               type="button"
               onClick={() => onSelectItem(item.id)}
