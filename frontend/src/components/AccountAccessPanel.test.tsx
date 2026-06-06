@@ -509,6 +509,35 @@ describe("AccountAccessPanel", () => {
     }
   });
 
+  it("marks vault cloud providers as unavailable instead of enabled fake actions", async () => {
+    render(
+      <AccountAccessPanel
+        accessMode="account-portal"
+        accountClient={createAccountClient()}
+        accountSession={{
+          userId: "user-aom",
+          sessionToken: "account-session",
+          kind: "trusted",
+          trustedDeviceId: "device-current",
+          createdAt: "2026-05-30T08:00:00.000Z",
+          expiresAt: "2026-06-29T08:00:00.000Z",
+        }}
+        portalSection="vault"
+        trip={seedTrip}
+        onAccountSessionChange={vi.fn()}
+        onAuthenticated={vi.fn()}
+        onTripChange={vi.fn()}
+      />,
+    );
+
+    for (const provider of ["Google Drive", "iCloud", "Dropbox", "OneDrive"]) {
+      const providerButton = await screen.findByRole("button", { name: new RegExp(`${provider}.*link paste only`, "i") });
+      expect(providerButton).toBeDisabled();
+      expect(providerButton).toHaveAttribute("aria-describedby", "cloud-provider-status");
+    }
+    expect(screen.getByText(/Link paste only for now/i)).toBeInTheDocument();
+  });
+
   it("keeps portal trip rows on the page until the explicit open action", async () => {
     const accountClient = createAccountClient();
     render(

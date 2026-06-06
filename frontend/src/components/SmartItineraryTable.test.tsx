@@ -855,7 +855,7 @@ describe("SmartItineraryTable", () => {
     fireEvent.keyDown(row, { key: "Enter" });
     expect(props.onSelectItem).not.toHaveBeenCalled();
 
-    const detailsButton = within(row).getByRole("button", { name: /เปิดรายละเอียด.*Dim Dim Sum/i });
+    const detailsButton = within(row).getByRole("button", { name: /เลือกจุด Dim Dim Sum/i });
     expect(detailsButton).not.toHaveClass("sr-only");
     fireEvent.click(detailsButton);
     expect(props.onSelectItem).toHaveBeenCalledWith("item-dimdim");
@@ -882,7 +882,7 @@ describe("SmartItineraryTable", () => {
 
     const selectedRow = screen.getByRole("row", { name: /Dim Dim Sum/i });
     expect(selectedRow).toHaveClass("data-row", "data-row--selected");
-    expect(within(selectedRow).getByRole("button", { name: /เปิดรายละเอียด.*Dim Dim Sum/i })).toHaveClass("row-select", "inline-flex", "min-w-0");
+    expect(within(selectedRow).getByRole("button", { name: /เลือกจุด Dim Dim Sum/i })).toHaveClass("row-select", "inline-flex", "min-w-0");
     expect(within(selectedRow).getByRole("link", { name: /แผนที่/i })).toHaveClass("map-link", "underline");
   });
 
@@ -1023,7 +1023,7 @@ describe("SmartItineraryTable", () => {
   it("reorders rows from a touch drag on the handle", () => {
     const props = renderTable();
     const sourceHandle = screen.getByRole("button", { name: /ลาก Victoria Peak/i });
-    const targetRow = screen.getByRole("button", { name: /เปิดรายละเอียด.*Dim Dim Sum/i }).closest("tr")!;
+    const targetRow = screen.getByRole("button", { name: /เลือกจุด Dim Dim Sum/i }).closest("tr")!;
     const originalElementFromPoint = document.elementFromPoint;
     Object.defineProperty(document, "elementFromPoint", {
       configurable: true,
@@ -1071,7 +1071,7 @@ describe("SmartItineraryTable", () => {
   it("ignores drag previews and drops that cannot move an item", () => {
     const props = renderTable({ canRestructure: false });
     const dataTransfer = createDataTransfer();
-    const row = screen.getByRole("button", { name: /เปิดรายละเอียด.*Dim Dim Sum/i }).closest("tr")!;
+    const row = screen.getByRole("button", { name: /เลือกจุด Dim Dim Sum/i }).closest("tr")!;
 
     fireEvent.dragOver(row, { dataTransfer });
     fireEvent.drop(row, { dataTransfer });
@@ -1094,7 +1094,7 @@ describe("SmartItineraryTable", () => {
 
   it("ignores missing and self-targeted drag payloads", () => {
     const props = renderTable();
-    const row = screen.getByRole("button", { name: /เปิดรายละเอียด.*Dim Dim Sum/i }).closest("tr")!;
+    const row = screen.getByRole("button", { name: /เลือกจุด Dim Dim Sum/i }).closest("tr")!;
 
     fireEvent.dragOver(row, { dataTransfer: createDataTransfer() });
     expect(row).not.toHaveClass("data-row--drop-target");

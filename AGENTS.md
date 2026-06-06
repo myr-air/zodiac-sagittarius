@@ -71,6 +71,13 @@ When a user-facing feature touches the itinerary table, verify at least one real
 browser flow for the visible control, context rail interaction, console/page
 errors, and mobile overflow.
 
+## Completion
+
+When a task changes code, tests, docs, or tracked project files, commit the
+finished work before reporting completion. Only leave changes uncommitted when
+the user explicitly asks not to commit or when verification is blocked and the
+remaining risk needs user direction.
+
 ## Issue Tracking
 
 If you find project issues that are not fixed in the current turn, create a

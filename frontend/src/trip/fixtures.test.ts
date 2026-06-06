@@ -34,7 +34,11 @@ describe("trip fixtures", () => {
     const dense = buildDenseTripFixture();
 
     expect(empty.itineraryItems).toEqual([]);
-    expect(dense.itineraryItems.length).toBeGreaterThan(tripFixture.trip.itineraryItems.length);
+    expect(dense.itineraryItems.length).toBeGreaterThanOrEqual(100);
+    expect(new Set(dense.itineraryItems.map((item) => item.day)).size).toBeGreaterThanOrEqual(10);
+    expect(new Set(dense.itineraryItems.map((item) => item.pathId ?? "main")).size).toBeGreaterThanOrEqual(3);
+    expect(dense.members.length).toBeGreaterThanOrEqual(24);
+    expect(dense.expenses.length).toBeGreaterThanOrEqual(60);
     expect(tripFixture.trip.itineraryItems.length).toBeGreaterThan(0);
     expect(dense.itineraryItems[0]).not.toBe(tripFixture.trip.itineraryItems[0]);
   });

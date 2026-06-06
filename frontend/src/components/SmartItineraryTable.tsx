@@ -848,7 +848,7 @@ function DayGroup({
                 type="button"
                 className={rowSelectClassName}
                 aria-pressed={selectedItemId === item.id}
-                aria-label={itineraryLabels.row.openDetails({ activity: item.activity })}
+                aria-label={itineraryLabels.row.select({ activity: item.activity })}
                 tabIndex={collapsed ? -1 : undefined}
                 onClick={() => onSelectItem(item.id)}
               >

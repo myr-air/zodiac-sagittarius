@@ -89,6 +89,26 @@ describe("Sagittarius cockpit UI", () => {
     expect(screen.queryByRole("button", { name: /เพิ่มสถานที่ \/ กิจกรรม/i })).not.toBeInTheDocument();
   }, 45_000);
 
+  it("keeps account routes isolated from restored local participant sessions", async () => {
+    const storage = installLocalStorageStub();
+    storage.setItem(
+      tripParticipantSessionStorageKey,
+      JSON.stringify({
+        tripId: seedTrip.id,
+        memberId: seedTrip.members[1].id,
+        sessionToken: "local-restored-session",
+        createdAt: "2026-05-29T00:00:00.000Z",
+        expiresAt: "2026-06-28T00:00:00.000Z",
+      }),
+    );
+
+    render(<SagittariusApp accessMode="account-login" requireJoin />);
+
+    expect(await screen.findByRole("main", { name: /Account sign in/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /Travel ideas. Perfectly planned./i })).toBeInTheDocument();
+    expect(screen.queryByRole("navigation", { name: /เมนูวางแผน Joii/i })).not.toBeInTheDocument();
+  });
+
   it("creates a local activity with resolved coordinates when place resolution is high confidence", async () => {
     const user = userEvent.setup();
     const placeResolver = vi.fn().mockResolvedValue({

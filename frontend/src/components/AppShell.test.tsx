@@ -36,6 +36,15 @@ describe("AppShell", () => {
       "grid-rows-[62px_1fr_auto_auto]",
       "max-[767px]:static",
     );
+    expect(container.querySelector(".rail-links")).toHaveClass(
+      "max-[767px]:w-full",
+      "max-[767px]:max-w-full",
+      "max-[767px]:overflow-x-auto",
+    );
+    expect(container.querySelector(".rail-link")).toHaveClass(
+      "max-[767px]:max-w-[118px]",
+      "max-[767px]:shrink-0",
+    );
   });
 
   it("labels traveler and viewer roles and exposes leave-session action", async () => {

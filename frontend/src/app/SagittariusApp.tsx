@@ -192,6 +192,7 @@ export function SagittariusApp({
   }, [initialView, tripIdForPath]);
   const currentView = navigatedView ?? resolveCurrentView();
   const sessionMember = findSessionMember(trip, participantSession);
+  const isAccountOnlyAccessMode = accessMode === "account-login" || accessMode === "account-register";
   const hasRouteParticipantSession = Boolean(participantSession && (!routeTripId || participantSession.tripId === routeTripId));
   const currentMember = sessionMember ?? trip.members.find((member) => member.id === currentMemberId) ?? trip.members[0];
   const isApiMode = dataSource === "api" && !isLocalParticipantSession(participantSession);
@@ -1719,6 +1720,27 @@ export function SagittariusApp({
         initialJoinCode={initialJoinCode}
         initialJoinToken={initialJoinToken}
         trip={trip}
+        onAccountSessionChange={changeAccountSession}
+        onAuthenticated={authenticateParticipant}
+        onCockpitLoaded={replaceCockpitFromApi}
+        onTripChange={replaceTripFromJoin}
+      />
+    );
+  }
+
+  if (isAccountOnlyAccessMode) {
+    return (
+      <AccountAccessPanel
+        accessMode={accessMode}
+        accountClient={accountClient}
+        accountSession={accountSession}
+        accountSessionLoaded={accountSessionLoaded}
+        accountSuccessRedirectHref={accountSuccessRedirectHref}
+        portalSection={portalSection}
+        apiClient={resolvedApiClient}
+        initialError={accessError}
+        initialJoinCode={initialJoinCode}
+        initialJoinToken={initialJoinToken}
         onAccountSessionChange={changeAccountSession}
         onAuthenticated={authenticateParticipant}
         onCockpitLoaded={replaceCockpitFromApi}

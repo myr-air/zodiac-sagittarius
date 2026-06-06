@@ -294,7 +294,7 @@ const accountTripIconClassName =
 const accountEmptyClassName = "account-empty text-[13px] leading-5 text-(--color-text-muted)";
 const cloudProviderPanelClassName = "cloud-provider-panel grid gap-3 rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface-subtle) p-3.5 [&_span]:block [&_span]:text-[13px] [&_span]:leading-5 [&_span]:text-(--color-text-muted) [&_strong]:block [&_strong]:text-(--color-text)";
 const cloudProviderGridClassName = "cloud-provider-grid grid grid-cols-4 gap-2 max-[767px]:grid-cols-2";
-const cloudProviderButtonClassName = "cloud-provider-button inline-flex min-h-[46px] cursor-pointer items-center justify-center gap-2 rounded-(--radius-md) border border-(--color-border-strong) bg-(--color-surface) text-xs font-[850] text-(--color-text) transition-[border-color,background,color] duration-[180ms] hover:border-(--color-primary) hover:bg-(--color-primary-soft) hover:text-(--color-primary-strong) focus-visible:border-(--color-primary) focus-visible:bg-(--color-primary-soft) focus-visible:text-(--color-primary-strong)";
+const cloudProviderButtonClassName = "cloud-provider-button inline-flex min-h-[46px] items-center justify-center gap-2 rounded-(--radius-md) border border-(--color-border-strong) bg-(--color-surface) text-xs font-[850] text-(--color-text) transition-[border-color,background,color] duration-[180ms] hover:border-(--color-primary) hover:bg-(--color-primary-soft) hover:text-(--color-primary-strong) focus-visible:border-(--color-primary) focus-visible:bg-(--color-primary-soft) focus-visible:text-(--color-primary-strong) disabled:cursor-not-allowed disabled:border-(--color-border) disabled:bg-(--color-surface-muted) disabled:text-(--color-text-muted) disabled:hover:border-(--color-border) disabled:hover:bg-(--color-surface-muted) disabled:hover:text-(--color-text-muted)";
 const settingsProfilePreviewClassName = "settings-profile-preview grid grid-cols-[46px_minmax(0,1fr)] items-center gap-3 rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface-subtle) p-3.5 [&_span]:block [&_span]:text-[13px] [&_span]:leading-5 [&_span]:text-(--color-text-muted) [&_strong]:block [&_strong]:text-(--color-text)";
 const portalSearchClassName =
   "portal-search grid min-h-[46px] grid-cols-[20px_minmax(0,1fr)] items-center gap-2.5 rounded-(--radius-md) border border-(--color-border-strong) bg-(--color-surface) px-3 text-(--color-text-muted) [&_input]:min-w-0 [&_input]:border-0 [&_input]:bg-transparent [&_input]:font-[inherit] [&_input]:font-[750] [&_input]:text-(--color-text) [&_input]:outline-0";
@@ -1661,13 +1661,20 @@ function AccountDashboard({
           <div className={cloudProviderPanelClassName} aria-label="Cloud provider options">
             <div>
               <strong>Use your own cloud</strong>
-              <span>Save links to Google Drive, iCloud, Dropbox, OneDrive, or any private folder. Files stay in your provider; Joii keeps only the link and note.</span>
+              <span id="cloud-provider-status">Link paste only for now. Save a provider URL in the external link field; direct cloud connection is not enabled yet.</span>
             </div>
             <div className={cloudProviderGridClassName}>
               {["Google Drive", "iCloud", "Dropbox", "OneDrive"].map((provider) => (
-                <button className={cloudProviderButtonClassName} type="button" key={provider}>
+                <button
+                  aria-describedby="cloud-provider-status"
+                  className={cloudProviderButtonClassName}
+                  disabled
+                  type="button"
+                  key={provider}
+                >
                   <Icon name="cloud" />
                   {provider}
+                  <span className="sr-only">link paste only</span>
                 </button>
               ))}
             </div>
