@@ -144,9 +144,6 @@ const accountTabClassName =
   "account-tab inline-flex min-h-[42px] items-center justify-center gap-2 rounded-[var(--radius-md)] border-0 bg-transparent font-extrabold text-[var(--color-text-muted)] transition-[background,color] duration-[180ms] ease-out";
 const accountTabActiveClassName = "account-tab--active bg-[var(--color-primary-soft)] text-[var(--color-primary-strong)]";
 const accountEntryTabsClassName = "account-entry-tabs grid grid-cols-2 gap-0 border-b border-[var(--color-border)] px-[34px] pb-3.5";
-const accountEntryTabClassName =
-  "account-entry-tab grid min-h-[42px] cursor-pointer place-items-center border-0 border-b-[3px] border-solid border-transparent bg-transparent text-[15px] font-[850] text-[var(--color-text-muted)] no-underline transition-[border-color,color] duration-[180ms] ease-out";
-const accountEntryTabActiveClassName = "account-entry-tab--active border-[var(--color-primary)] text-[var(--color-primary-strong)]";
 const portalNavClassName =
   "portal-nav sticky top-4 grid gap-3.5 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] p-3 shadow-[var(--shadow-soft)] max-[767px]:static max-[767px]:gap-2.5 max-[767px]:p-2.5";
 const portalNavBrandClassName =

@@ -52,10 +52,9 @@ export function LanguageSwitch({ className, ...props }: HTMLAttributes<HTMLDivEl
             type="button"
             key={option.locale}
             className={cn(
-              "language-switch-option min-h-7 min-w-[38px] rounded-full border-0 text-[0.78rem] font-bold transition-colors duration-150",
-              isActive
-                ? "language-switch-option--active bg-[var(--color-text)] text-[var(--color-surface)]"
-                : "bg-transparent text-[var(--color-text-muted)]"
+              optionClassName,
+              "transition-colors duration-150",
+              isActive ? activeOptionClassName : ""
             )}
             aria-pressed={isActive}
             aria-label={option.locale === "en" ? t.common.language.switchToEnglish : t.common.language.switchToThai}

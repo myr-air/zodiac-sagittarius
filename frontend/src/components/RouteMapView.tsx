@@ -251,7 +251,7 @@ export function RouteMapView({
         liveMapContainer.inert = false;
       }
     };
-  }, [liveMapEnabled]);
+  }, [fallbackViewport.center, fallbackViewport.zoom, liveMapEnabled]);
 
   useEffect(() => {
     const map = mapRef.current;

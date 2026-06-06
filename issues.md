@@ -56,6 +56,15 @@
 - **Fix update 2026-06-06:** Duration editing now renders as a contextual row `region` inside the active itinerary row. Destructive row deletion remains a task dialog.
 - **Verification:** `frontend/src/components/SmartItineraryTable.test.tsx` and `frontend/src/components/SagittariusApp.test.tsx` assert duration editing uses the row-scoped region and still updates inline/API duration values. Included in the passing focused suite above.
 
+### Frontend lint warnings hide useful signal
+
+- **Date found:** 2026-06-06
+- **Evidence:** `rtk bun run --cwd frontend lint` reported 14 warnings across `frontend/scripts/take-ui-screenshots.ts`, `frontend/src/components/AccountAccessPanel.tsx`, `frontend/src/components/OverviewPage.tsx`, `frontend/src/components/RouteMapView.tsx`, and `frontend/src/i18n/LanguageSwitch.tsx`.
+- **Impact:** Persistent warnings make future lint output harder to trust because new warnings blend into existing noise.
+- **Suggested fix path:** Remove unused symbols, use existing class constants instead of duplicating inline strings, replace direct overview `<img>` usage with `next/image`, and complete the route map effect dependency list.
+- **Fix update 2026-06-06:** Removed unused lint targets, switched overview imagery to `Image`, reused `LanguageSwitch` class constants, and added route-map fallback viewport dependencies.
+- **Verification:** `rtk bun run --cwd frontend lint` now exits with 0 warnings. `rtk bun run --cwd frontend typecheck` passed.
+
 ## ✅ Implementation Checklist
 
 สถานะนี้อัปเดตจากการแก้ใน codebase วันที่ 2026-05-31 และใช้เป็นแหล่งอ้างอิงเร็วว่า issue ในไฟล์นี้ถูกจัดการครบหรือยัง

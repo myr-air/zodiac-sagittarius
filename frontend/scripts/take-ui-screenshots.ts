@@ -1,7 +1,7 @@
 import { spawnSync } from "node:child_process";
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { chromium, type Page, type Browser } from "playwright";
+import { chromium, type Page } from "playwright";
 
 const databaseUrl = process.env.DATABASE_URL ?? "postgres://postgres:postgres@127.0.0.1:5432/sagittarius_test";
 const frontendBaseUrl = "http://127.0.0.1:5180";

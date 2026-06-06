@@ -1,4 +1,5 @@
 import { type FormEvent, type ReactNode, useMemo, useState } from "react";
+import Image from "next/image";
 import type { DailyBriefingOverrides, ExpenseSummary, ItineraryItem, Member, Suggestion, Trip, TripDailyBriefing, TripTask } from "@/src/trip/types";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import type { Locale } from "@/src/i18n/types";
@@ -50,7 +51,6 @@ const overviewHeroAsideClassName = "overview-hero-aside relative z-[2] grid min-
 const overviewHeroSettlementsClassName = "overview-hero-settlements justify-self-stretch rounded-full border border-[color-mix(in_srgb,var(--overview-hero-accent)_26%,white)] bg-[rgb(255_255_255_/_0.7)] px-2.5 py-1.5 text-center text-xs font-[850] leading-4 text-[var(--overview-hero-accent)]";
 const cockpitCardBaseClassName = "overview-cockpit-card grid min-h-[126px] min-w-0 content-start gap-2 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[linear-gradient(145deg,rgb(255_255_255_/_0.94),rgb(248_250_252_/_0.82)),var(--paper-grain),var(--color-surface)] bg-[length:auto,120px_120px,auto] p-3.5 text-left text-inherit shadow-[0_10px_24px_rgb(15_23_42_/_0.04)] max-[767px]:min-h-[104px] [&_small]:min-w-0 [&_small]:text-xs [&_small]:font-bold [&_small]:leading-[17px] [&_small]:text-[var(--color-text-muted)] [&_strong]:min-w-0 [&_strong]:text-[22px] [&_strong]:font-black [&_strong]:leading-7 [&_strong]:text-[var(--color-text)] [&_strong]:[overflow-wrap:anywhere]";
 const cockpitCardButtonClassName = "overview-cockpit-card--button cursor-pointer transition-[border-color,box-shadow,transform] duration-150 hover:-translate-y-px hover:border-[var(--color-primary)] hover:shadow-[0_16px_30px_rgb(15_23_42_/_0.08)] focus-visible:-translate-y-px focus-visible:border-[var(--color-primary)] focus-visible:shadow-[0_16px_30px_rgb(15_23_42_/_0.08)] focus-visible:outline-none";
-const cockpitCardTitleClassName = "overview-cockpit-card-title inline-flex min-w-0 items-center gap-2 text-xs font-[850] leading-4 text-[var(--color-text-muted)] [&_.icon]:text-[var(--color-primary)]";
 const overviewReadinessChipsClassName = "overview-readiness-chips flex min-w-0 flex-wrap gap-1.5 [&_span]:min-w-0 [&_span]:rounded-[var(--radius-sm)] [&_span]:border [&_span]:border-[color-mix(in_srgb,var(--color-primary)_14%,var(--color-border))] [&_span]:bg-[rgb(255_255_255_/_0.68)] [&_span]:px-[7px] [&_span]:py-1 [&_span]:text-[11px] [&_span]:font-extrabold [&_span]:leading-[15px] [&_span]:text-[var(--color-text-muted)]";
 const modalBackdropClassName = "modal-backdrop fixed inset-0 z-20 grid place-items-center bg-[rgb(15_23_42_/_0.28)] p-5 max-[767px]:items-end max-[767px]:p-2.5";
 const taskDialogClassName = "stop-dialog overview-task-dialog max-h-[calc(100vh-40px)] w-[min(480px,100%)] overflow-auto rounded-2xl border border-[var(--color-border-strong)] bg-[var(--color-surface)] shadow-[0_30px_90px_rgb(15_23_42_/_0.24)]";
@@ -87,16 +87,10 @@ const overviewTaskFiltersClassName = "overview-task-filters inline-flex w-fit ma
 const overviewTaskFilterClassName = "overview-task-filter min-h-7 rounded-[calc(var(--radius-sm)-2px)] border-0 bg-transparent px-2.5 text-xs font-extrabold text-[var(--color-text-muted)]";
 const overviewTaskFilterActiveClassName = "overview-task-filter--active bg-[var(--color-surface)] text-[var(--color-primary-strong)] shadow-[0_1px_4px_rgb(15_23_42_/_0.06)]";
 const overviewTaskAddButtonClassName = "overview-task-add-button inline-flex min-h-[34px] w-[34px] flex-none items-center justify-center rounded-[var(--radius-sm)] border border-[var(--color-primary-border)] bg-[var(--color-primary)] p-0 text-xl font-extrabold leading-none text-white transition-[background,border-color,box-shadow,transform] duration-200 hover:border-[var(--color-primary)] hover:bg-[var(--color-primary-strong)] hover:shadow-[0_8px_18px_rgb(37_99_235_/_0.18)] active:translate-y-px focus-visible:outline focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[rgb(37_99_235_/_0.22)]";
-const overviewTaskFormClassName = "overview-task-form grid grid-cols-[minmax(180px,1fr)_minmax(118px,140px)_minmax(132px,160px)_auto] items-end gap-2 max-[767px]:grid-cols-1 [&_button]:min-h-[34px] [&_button]:rounded-[var(--radius-sm)] [&_button]:border [&_button]:border-[var(--color-primary-border)] [&_button]:bg-[var(--color-primary)] [&_button]:px-3 [&_button]:text-xs [&_button]:font-extrabold [&_button]:text-white [&_button:disabled]:border-[var(--color-border)] [&_button:disabled]:bg-[var(--color-surface-muted)] [&_button:disabled]:text-[var(--color-text-subtle)] max-[767px]:[&_button]:w-full [&_input]:min-h-[34px] [&_input]:w-full [&_input]:rounded-[var(--radius-sm)] [&_input]:border [&_input]:border-[var(--color-border)] [&_input]:bg-[var(--color-surface)] [&_input]:px-2.5 [&_input]:text-xs [&_input]:font-bold [&_input]:text-[var(--color-text)] [&_label]:grid [&_label]:min-w-0 [&_label]:gap-[5px] [&_label>span]:text-[11px] [&_label>span]:font-extrabold [&_label>span]:leading-[15px] [&_label>span]:text-[var(--color-text-muted)] [&_select]:min-h-[34px] [&_select]:w-full [&_select]:rounded-[var(--radius-sm)] [&_select]:border [&_select]:border-[var(--color-border)] [&_select]:bg-[var(--color-surface)] [&_select]:px-2.5 [&_select]:text-xs [&_select]:font-bold [&_select]:text-[var(--color-text)] [&_select:disabled]:bg-[var(--color-surface-muted)] [&_select:disabled]:text-[var(--color-text-subtle)]";
 const personalTaskFormClassName = "overview-task-form overview-task-form--personal grid grid-cols-[minmax(140px,1fr)_auto] items-end gap-2 [&_button]:min-h-[34px] [&_button]:rounded-[var(--radius-sm)] [&_button]:border [&_button]:border-[var(--color-primary-border)] [&_button]:bg-[var(--color-primary)] [&_button]:px-3 [&_button]:text-xs [&_button]:font-extrabold [&_button]:text-white [&_button:disabled]:border-[var(--color-border)] [&_button:disabled]:bg-[var(--color-surface-muted)] [&_button:disabled]:text-[var(--color-text-subtle)] [&_input]:min-h-[34px] [&_input]:w-full [&_input]:rounded-[var(--radius-sm)] [&_input]:border [&_input]:border-[var(--color-border)] [&_input]:bg-[var(--color-surface)] [&_input]:px-2.5 [&_input]:text-xs [&_input]:font-bold [&_input]:text-[var(--color-text)] [&_label]:grid [&_label]:min-w-0 [&_label]:gap-[5px] [&_label>span]:text-[11px] [&_label>span]:font-extrabold [&_label>span]:leading-[15px] [&_label>span]:text-[var(--color-text-muted)] w-full max-[767px]:grid-cols-1 max-[767px]:[&_button]:w-full";
 const overviewTaskListClassName = "overview-task-list m-0 grid list-none gap-2 p-0 text-[13px] font-semibold leading-5 text-[var(--color-text-muted)]";
 const overviewTaskItemClassName = "overview-task-item grid min-h-10 grid-cols-[minmax(0,1fr)_auto] items-center gap-2.5 rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface-subtle)] px-2.5 py-2 max-[767px]:grid-cols-1 [&_input]:size-4 [&_input]:accent-[var(--color-primary)] [&_label]:inline-flex [&_label]:min-w-0 [&_label]:items-center [&_label]:gap-[9px] [&_label>span]:overflow-hidden [&_label>span]:text-ellipsis [&_label>span]:whitespace-nowrap [&_label>span]:text-[13px] [&_label>span]:leading-[18px] [&_small]:whitespace-nowrap [&_small]:text-[11px] [&_small]:font-extrabold [&_small]:text-[var(--color-text-muted)]";
 const overviewTaskMetaClassName = "overview-task-meta inline-flex flex-wrap justify-end gap-1.5";
-const overviewTaskScopeClassName = "overview-task-scope rounded-full border border-[var(--color-border)] px-2 py-[3px] leading-[14px]";
-const overviewTaskScopeToneClassName: Record<TripTask["visibility"], string> = {
-  private: "overview-task-scope--private border-[var(--color-primary-border)] bg-[var(--color-primary-soft)] text-[var(--color-primary-strong)]",
-  shared: "overview-task-scope--shared border-[var(--color-route-border)] bg-[var(--color-route-soft)] text-[var(--color-route)]",
-};
 const overviewUndoToastClassName = "overview-undo-toast fixed bottom-5 right-5 z-[80] inline-flex max-w-[min(420px,calc(100vw-32px))] items-center gap-3 rounded-[var(--radius-md)] border border-[var(--color-primary)] bg-[var(--color-surface)] px-3.5 py-3 text-[13px] font-extrabold text-[var(--color-text)] shadow-[var(--shadow-panel)] [&_button]:min-h-[30px] [&_button]:cursor-pointer [&_button]:rounded-[var(--radius-sm)] [&_button]:border [&_button]:border-[var(--color-border-strong)] [&_button]:bg-[var(--color-primary-soft)] [&_button]:px-2.5 [&_button]:text-[var(--color-primary-strong)] [&_button]:font-extrabold";
 
 export function OverviewPage({
@@ -628,13 +622,6 @@ function isMyTask(task: TripTask, currentMemberId: string): boolean {
   return task.createdBy === currentMemberId || task.assigneeId === currentMemberId;
 }
 
-function assigneeLabel(task: TripTask, trip: Trip, labels: { mine: string; unassigned: string; tripMember: string }): string {
-  if (task.visibility === "private") return labels.mine;
-  if (!task.assigneeId) return labels.unassigned;
-  /* v8 ignore next */
-  return trip.members.find((member) => member.id === task.assigneeId)?.displayName ?? labels.tripMember;
-}
-
 type DestinationTone = "harbor" | "city" | "coast" | "market";
 
 interface DestinationVisual {
@@ -660,7 +647,6 @@ function buildDestinationVisual(destinationLabel: string): DestinationVisual {
 
 function getHighlightImage(item: ItineraryItem): string | undefined {
   const activity = item.activity.toLowerCase();
-  const place = item.place.toLowerCase();
 
   // Hong Kong specific matches first
   if (
@@ -916,7 +902,7 @@ function OverviewHero({
             {/* Washi tape effect */}
             <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 w-14 h-5 bg-teal-100/30 backdrop-blur-[2px] rotate-[2deg] border border-white/20 shadow-[0_1px_3px_rgba(0,0,0,0.03)]" />
             <div className="relative aspect-[4/3] w-full overflow-hidden bg-slate-50 rounded-xs border border-slate-100">
-              <img src={visual.imageUrl} alt={visual.label} className="object-cover w-full h-full" />
+              <Image src={visual.imageUrl} alt={visual.label} fill sizes="224px" className="object-cover" />
             </div>
             <div className="mt-3 text-center text-[10px] font-extrabold text-[var(--color-primary)] tracking-widest uppercase font-mono">
               ★ {visual.label.split("+")[0].trim()} ★
@@ -1035,9 +1021,11 @@ function HighlightBoard({ items, startDate, locale, emptyMessage, title, subtitl
               >
                 {imgUrl && (
                   <>
-                    <img
+                    <Image
                       src={imgUrl}
                       alt={item.activity}
+                      fill
+                      sizes="(max-width: 767px) 240px, 25vw"
                       className="absolute inset-0 w-full h-full object-cover opacity-70 transition-transform duration-500 group-hover:scale-108"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/40 to-transparent z-[1]" />
