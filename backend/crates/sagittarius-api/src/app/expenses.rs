@@ -3,10 +3,13 @@ use uuid::Uuid;
 use crate::app::{auth, events, trips};
 use crate::db;
 use crate::db::PgPool;
-use crate::db::models::NewExpense;
+use crate::db::models::{ExpenseReminderRecord, NewExpense, NewExpenseReminder};
 use crate::domain::capabilities::can;
 use crate::domain::errors::ServiceError;
-use crate::domain::patches::{CreateExpenseRequest, PatchExpenseRequest};
+use crate::domain::patches::{
+    CreateExpenseRequest, PatchExpenseRequest, RecordExpenseReminderRequest,
+    validate_expense_splits_total,
+};
 use crate::domain::types::{Capability, ExpenseItemSummary, ExpenseSummary};
 use crate::realtime::RealtimeHub;
 
@@ -23,8 +26,15 @@ pub async fn get_expense_summary(
         return Err(ServiceError::Forbidden);
     }
 
-    let splits = db::queries::list_expense_splits(pool, trip_id).await?;
-    Ok(trips::build_expense_summary(splits, session.member_id))
+    let (splits, reminders) = tokio::try_join!(
+        db::queries::list_expense_splits(pool, trip_id),
+        db::queries::list_expense_reminders(pool, trip_id),
+    )?;
+    Ok(trips::build_expense_summary(
+        splits,
+        session.member_id,
+        reminders,
+    ))
 }
 
 pub async fn create_expense(
@@ -64,6 +74,13 @@ pub async fn create_expense(
             title: request.title.trim(),
             amount_minor: request.amount_minor,
             currency: request.currency.as_deref().unwrap_or("HKD").trim(),
+            exchange_rate_to_settlement_currency: request
+                .exchange_rate_to_settlement_currency
+                .unwrap_or(1.0),
+            notes: request.notes.as_deref().unwrap_or("").trim(),
+            receipt_url: request.receipt_url.as_deref().map(str::trim),
+            line_items: request.line_items.unwrap_or_else(|| serde_json::json!([])),
+            comments: request.comments.unwrap_or_else(|| serde_json::json!([])),
             paid_by: request.paid_by,
             category: request.category.as_str(),
             splits: request.splits,
@@ -85,6 +102,65 @@ pub async fn create_expense(
     realtime.publish(event).await;
 
     Ok(expense)
+}
+
+pub async fn record_expense_reminder(
+    pool: &PgPool,
+    realtime: &RealtimeHub,
+    trip_id: Uuid,
+    session_token: &str,
+    request: RecordExpenseReminderRequest,
+) -> Result<ExpenseSummary, ServiceError> {
+    request.validate()?;
+
+    let token_hash = auth::hash_session_token(session_token)?;
+    let mut tx = pool.begin().await?;
+    let session = db::queries::find_active_member_session_in_tx(&mut tx, trip_id, &token_hash)
+        .await?
+        .ok_or(ServiceError::Unauthenticated)?;
+    if !can(session.role, Capability::ViewExpenses) {
+        return Err(ServiceError::Forbidden);
+    }
+    if db::queries::realtime_event_exists_for_client_mutation(
+        &mut tx,
+        trip_id,
+        session.member_id,
+        &request.client_mutation_id,
+    )
+    .await?
+    {
+        return Err(ServiceError::VersionConflict);
+    }
+    if !db::queries::trip_member_exists(&mut tx, trip_id, request.from).await?
+        || !db::queries::trip_member_exists(&mut tx, trip_id, request.to).await?
+    {
+        return Err(ServiceError::NotFound);
+    }
+
+    let reminder = db::queries::upsert_expense_reminder(
+        &mut tx,
+        NewExpenseReminder {
+            id: Uuid::now_v7(),
+            trip_id,
+            from_member_id: request.from,
+            to_member_id: request.to,
+            amount_minor: request.amount_minor,
+            created_by: session.member_id,
+        },
+    )
+    .await?;
+    let event = write_reminder_event(
+        &mut tx,
+        &reminder,
+        Some(request.client_mutation_id.as_str()),
+        session.member_id,
+    )
+    .await?;
+
+    tx.commit().await?;
+    realtime.publish(event).await;
+
+    get_expense_summary(pool, trip_id, session_token).await
 }
 
 pub async fn patch_expense(
@@ -135,6 +211,10 @@ pub async fn patch_expense(
             .unwrap_or(existing.itinerary_item_id),
     )
     .await?;
+    validate_expense_splits_total(
+        request.splits.as_ref().unwrap_or(&existing.splits),
+        request.amount_minor.unwrap_or(existing.amount_minor),
+    )?;
 
     let updated =
         db::queries::update_expense(&mut tx, expense_id, &request, request.expected_version + 1)
@@ -213,6 +293,39 @@ async fn validate_expense_links(
     }
 
     Ok(())
+}
+
+async fn write_reminder_event(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    reminder: &ExpenseReminderRecord,
+    client_mutation_id: Option<&str>,
+    created_by: Uuid,
+) -> Result<crate::realtime::RealtimeEvent, ServiceError> {
+    let payload = serde_json::json!({
+        "id": reminder.id,
+        "tripId": reminder.trip_id,
+        "from": reminder.from_member_id,
+        "to": reminder.to_member_id,
+        "amountMinor": reminder.amount_minor,
+        "lastRemindedAt": reminder.last_reminded_at,
+        "version": reminder.version,
+    });
+    let event = events::insert(
+        tx,
+        events::EventWrite {
+            trip_id: reminder.trip_id,
+            aggregate_type: "expense_reminder",
+            event_type: "expense.reminder_recorded",
+            aggregate_id: reminder.id,
+            version: reminder.version,
+            payload,
+            client_mutation_id,
+            created_by: Some(created_by),
+        },
+    )
+    .await?;
+
+    Ok(event)
 }
 
 async fn write_event(

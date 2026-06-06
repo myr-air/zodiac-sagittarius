@@ -23,6 +23,7 @@ async fn migration_creates_vertical_slice_tables(pool: sqlx::PgPool) {
         "expenses",
         "stop_notes",
         "trip_daily_briefings",
+        "expense_reminders",
         "realtime_events",
     ] {
         assert!(
@@ -52,6 +53,7 @@ async fn migration_creates_vertical_slice_indexes(pool: sqlx::PgPool) {
         "trip_member_sessions_member_active_idx",
         "stop_notes_trip_item_created_at_idx",
         "trip_daily_briefings_trip_date_idx",
+        "expense_reminders_trip_pair_idx",
         "realtime_events_trip_id_idx",
         "realtime_events_client_mutation_id_idx",
     ] {
@@ -131,6 +133,33 @@ async fn daily_briefings_schema_stores_cache_and_manual_overrides(pool: sqlx::Pg
             .any(|name| name.contains("trip_daily_briefings_trip_id_briefing_date_location_key")),
         "missing unique cache key"
     );
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn expenses_schema_stores_receipts_itemization_and_exchange_rates(pool: sqlx::PgPool) {
+    let columns: Vec<(String, String)> = sqlx::query_as(
+        "select column_name::text, data_type::text
+         from information_schema.columns
+         where table_schema = 'public'
+           and table_name = 'expenses'
+         order by ordinal_position",
+    )
+    .fetch_all(&pool)
+    .await
+    .unwrap();
+
+    for (column_name, data_type) in [
+        ("notes", "text"),
+        ("receipt_url", "text"),
+        ("line_items", "jsonb"),
+        ("comments", "jsonb"),
+        ("exchange_rate_to_settlement_currency", "double precision"),
+    ] {
+        assert!(
+            columns.contains(&(column_name.to_string(), data_type.to_string())),
+            "missing column {column_name} {data_type}",
+        );
+    }
 }
 
 #[sqlx::test(migrations = "../../migrations")]

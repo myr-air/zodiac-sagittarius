@@ -5,7 +5,7 @@ export function encodeReturnTo(path: string): string {
   try {
     const base64 = btoa(unescape(encodeURIComponent(path)));
     return base64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-  } catch (e) {
+  } catch {
     return path;
   }
 }
@@ -17,7 +17,7 @@ export function decodeReturnTo(encoded: string): string {
       base64 += "=";
     }
     return decodeURIComponent(escape(atob(base64)));
-  } catch (e) {
+  } catch {
     return encoded;
   }
 }
@@ -55,13 +55,14 @@ export const appRoutes = {
   tripMap: (tripId: string) => `/trips/${tripRouteSegment(tripId)}/map`,
   tripTimeline: (tripId: string) => `/trips/${tripRouteSegment(tripId)}/timeline`,
   tripMembers: (tripId: string) => `/trips/${tripRouteSegment(tripId)}/members`,
+  tripExpenses: (tripId: string) => `/trips/${tripRouteSegment(tripId)}/expenses`,
   tripSettings: (tripId: string) => `/trips/${tripRouteSegment(tripId)}/settings`,
 };
 
 interface TripWorkspaceNavItem {
   id: PlanningView;
   label: string;
-  icon: "home" | "calendar" | "map" | "list" | "users" | "settings";
+  icon: "home" | "calendar" | "map" | "list" | "users" | "settings" | "wallet";
   href: string;
 }
 
@@ -71,6 +72,7 @@ export interface TripWorkspaceNavLabels {
   map: string;
   timeline: string;
   members: string;
+  expenses: string;
   settings: string;
 }
 
@@ -81,5 +83,6 @@ export function tripWorkspaceNavItems(tripId: string, labels: TripWorkspaceNavLa
     { id: "map", label: labels.map, icon: "map", href: appRoutes.tripMap(tripId) },
     { id: "timeline", label: labels.timeline, icon: "list", href: appRoutes.tripTimeline(tripId) },
     { id: "members", label: labels.members, icon: "users", href: appRoutes.tripMembers(tripId) },
+    { id: "expenses", label: labels.expenses, icon: "wallet", href: appRoutes.tripExpenses(tripId) },
   ];
 }

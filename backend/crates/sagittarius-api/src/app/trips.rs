@@ -6,7 +6,7 @@ use uuid::Uuid;
 use crate::app::{auth, events};
 use crate::db;
 use crate::db::PgPool;
-use crate::db::models::ExpenseSplitRecord;
+use crate::db::models::{ExpenseReminderRecord, ExpenseSplitRecord};
 use crate::domain::capabilities::can;
 use crate::domain::errors::ServiceError;
 use crate::domain::patches::PatchTripRequest;
@@ -58,6 +58,7 @@ pub async fn load_cockpit(
         stop_notes,
         expense_rows,
         expense_splits,
+        expense_reminders,
     ) = tokio::try_join!(
         db::queries::find_trip_by_id(pool, session_trip_id),
         db::queries::list_trip_members(pool, session_trip_id),
@@ -80,11 +81,22 @@ pub async fn load_cockpit(
                 Ok(Vec::new())
             }
         },
+        async {
+            if can_view_expenses {
+                db::queries::list_expense_reminders(pool, session_trip_id).await
+            } else {
+                Ok(Vec::new())
+            }
+        },
     )?;
 
     let trip = trip.ok_or(ServiceError::NotFound)?;
     let expense_summary = if can_view_expenses {
-        Some(build_expense_summary(expense_splits, session_member_id))
+        Some(build_expense_summary(
+            expense_splits,
+            session_member_id,
+            expense_reminders,
+        ))
     } else {
         None
     };
@@ -225,20 +237,31 @@ fn validate_text(value: &str, field: &'static str) -> Result<(), ServiceError> {
 pub(crate) fn build_expense_summary(
     expenses: Vec<ExpenseSplitRecord>,
     current_member_id: Uuid,
+    reminders: Vec<ExpenseReminderRecord>,
 ) -> ExpenseSummary {
+    let settlement_currency = "HKD";
     let mut net_minor_by_member = BTreeMap::new();
     let mut group_spend_minor = 0_i64;
 
     for expense in expenses {
-        group_spend_minor += i64::from(expense.amount_minor);
-        *net_minor_by_member.entry(expense.paid_by).or_insert(0) += i64::from(expense.amount_minor);
+        let amount_minor = convert_minor_to_settlement_currency(
+            i64::from(expense.amount_minor),
+            expense.exchange_rate_to_settlement_currency,
+        );
+        if expense.category != "settlement" {
+            group_spend_minor += amount_minor;
+        }
+        *net_minor_by_member.entry(expense.paid_by).or_insert(0) += amount_minor;
 
         if let Some(splits) = expense.splits.as_object() {
             for (member_id, share) in splits {
                 let Ok(member_id) = Uuid::parse_str(member_id) else {
                     continue;
                 };
-                let share_minor = json_number_to_i64(share);
+                let share_minor = convert_minor_to_settlement_currency(
+                    json_number_to_i64(share),
+                    expense.exchange_rate_to_settlement_currency,
+                );
                 *net_minor_by_member.entry(member_id).or_insert(0) -= share_minor;
             }
         }
@@ -252,10 +275,44 @@ pub(crate) fn build_expense_summary(
 
     ExpenseSummary {
         group_spend: minor_to_major(group_spend_minor),
+        settlement_currency: settlement_currency.to_string(),
         net_by_member,
         current_user_net_label: current_user_net_label(current_net_minor),
-        settlement_suggestions: settlement_suggestions(net_minor_by_member),
+        settlement_suggestions: attach_reminder_history(
+            settlement_suggestions(net_minor_by_member, settlement_currency),
+            reminders,
+        ),
     }
+}
+
+fn attach_reminder_history(
+    suggestions: Vec<SettlementSuggestion>,
+    reminders: Vec<ExpenseReminderRecord>,
+) -> Vec<SettlementSuggestion> {
+    let reminders_by_key: BTreeMap<(Uuid, Uuid, i32), String> = reminders
+        .into_iter()
+        .map(|reminder| {
+            (
+                (
+                    reminder.from_member_id,
+                    reminder.to_member_id,
+                    reminder.amount_minor,
+                ),
+                reminder.last_reminded_at,
+            )
+        })
+        .collect();
+
+    suggestions
+        .into_iter()
+        .map(|mut suggestion| {
+            let amount_minor = (suggestion.amount * 100.0).round() as i32;
+            suggestion.last_reminded_at = reminders_by_key
+                .get(&(suggestion.from, suggestion.to, amount_minor))
+                .cloned();
+            suggestion
+        })
+        .collect()
 }
 
 fn json_number_to_i64(value: &serde_json::Value) -> i64 {
@@ -269,6 +326,13 @@ fn minor_to_major(value: i64) -> f64 {
     value as f64 / 100.0
 }
 
+fn convert_minor_to_settlement_currency(
+    value: i64,
+    exchange_rate_to_settlement_currency: f64,
+) -> i64 {
+    ((value as f64) * exchange_rate_to_settlement_currency).round() as i64
+}
+
 fn current_user_net_label(net_minor: i64) -> String {
     let amount = minor_to_major(net_minor.abs());
     match net_minor.cmp(&0) {
@@ -278,7 +342,10 @@ fn current_user_net_label(net_minor: i64) -> String {
     }
 }
 
-fn settlement_suggestions(net_minor_by_member: BTreeMap<Uuid, i64>) -> Vec<SettlementSuggestion> {
+fn settlement_suggestions(
+    net_minor_by_member: BTreeMap<Uuid, i64>,
+    settlement_currency: &str,
+) -> Vec<SettlementSuggestion> {
     let mut creditors: Vec<(Uuid, i64)> = net_minor_by_member
         .iter()
         .filter_map(|(member_id, net)| (*net > 0).then_some((*member_id, *net)))
@@ -300,6 +367,8 @@ fn settlement_suggestions(net_minor_by_member: BTreeMap<Uuid, i64>) -> Vec<Settl
                 from: debtors[debtor_index].0,
                 to: creditors[creditor_index].0,
                 amount: minor_to_major(amount),
+                currency: settlement_currency.to_string(),
+                last_reminded_at: None,
             });
         }
 
@@ -330,6 +399,9 @@ mod tests {
             ExpenseSplitRecord {
                 paid_by: payer,
                 amount_minor: 10_000,
+                currency: "HKD".to_string(),
+                exchange_rate_to_settlement_currency: 1.0,
+                category: "transport".to_string(),
                 splits: json!({
                     payer.to_string(): 2500,
                     debtor.to_string(): 7500,
@@ -339,6 +411,9 @@ mod tests {
             ExpenseSplitRecord {
                 paid_by: settled,
                 amount_minor: 125,
+                currency: "HKD".to_string(),
+                exchange_rate_to_settlement_currency: 1.0,
+                category: "food".to_string(),
                 splits: json!({
                     settled.to_string(): 124.6,
                     debtor.to_string(): "ignored"
@@ -347,11 +422,14 @@ mod tests {
             ExpenseSplitRecord {
                 paid_by: debtor,
                 amount_minor: 0,
+                currency: "HKD".to_string(),
+                exchange_rate_to_settlement_currency: 1.0,
+                category: "food".to_string(),
                 splits: json!("not an object"),
             },
         ];
 
-        let summary = build_expense_summary(expenses, debtor);
+        let summary = build_expense_summary(expenses, debtor, Vec::new());
 
         assert_eq!(summary.group_spend, 101.25);
         assert_eq!(summary.current_user_net_label, "You owe HK$75.00");
@@ -362,6 +440,132 @@ mod tests {
         assert_eq!(summary.settlement_suggestions[0].from, debtor);
         assert_eq!(summary.settlement_suggestions[0].to, payer);
         assert_eq!(summary.settlement_suggestions[0].amount, 75.0);
+    }
+
+    #[test]
+    fn settlement_expenses_adjust_balances_without_increasing_group_spend() {
+        let payer = Uuid::parse_str("018f4e81-77a4-7b8f-b3bd-0d0f493ac561").unwrap();
+        let debtor = Uuid::parse_str("018f4e81-77a4-7b8f-b3bd-0d0f493ac562").unwrap();
+        let expenses = vec![
+            ExpenseSplitRecord {
+                paid_by: payer,
+                amount_minor: 9_000,
+                currency: "HKD".to_string(),
+                exchange_rate_to_settlement_currency: 1.0,
+                category: "food".to_string(),
+                splits: json!({
+                    payer.to_string(): 4500,
+                    debtor.to_string(): 4500
+                }),
+            },
+            ExpenseSplitRecord {
+                paid_by: debtor,
+                amount_minor: 4_500,
+                currency: "HKD".to_string(),
+                exchange_rate_to_settlement_currency: 1.0,
+                category: "settlement".to_string(),
+                splits: json!({
+                    payer.to_string(): 4500
+                }),
+            },
+        ];
+
+        let summary = build_expense_summary(expenses, debtor, Vec::new());
+
+        assert_eq!(summary.group_spend, 90.0);
+        assert_eq!(summary.current_user_net_label, "You are settled");
+        assert!(summary.settlement_suggestions.is_empty());
+    }
+
+    #[test]
+    fn expense_summary_converts_foreign_currency_before_balancing_members() {
+        let payer = Uuid::parse_str("018f4e81-77a4-7b8f-b3bd-0d0f493ac561").unwrap();
+        let debtor = Uuid::parse_str("018f4e81-77a4-7b8f-b3bd-0d0f493ac562").unwrap();
+        let expenses = vec![
+            ExpenseSplitRecord {
+                paid_by: payer,
+                amount_minor: 12_000,
+                currency: "HKD".to_string(),
+                exchange_rate_to_settlement_currency: 1.0,
+                category: "food".to_string(),
+                splits: json!({
+                    payer.to_string(): 6000,
+                    debtor.to_string(): 6000
+                }),
+            },
+            ExpenseSplitRecord {
+                paid_by: debtor,
+                amount_minor: 10_000,
+                currency: "CNY".to_string(),
+                exchange_rate_to_settlement_currency: 1.1,
+                category: "transport".to_string(),
+                splits: json!({
+                    payer.to_string(): 5000,
+                    debtor.to_string(): 5000
+                }),
+            },
+        ];
+
+        let summary = build_expense_summary(expenses, debtor, Vec::new());
+
+        assert_eq!(summary.settlement_currency, "HKD");
+        assert_eq!(summary.group_spend, 230.0);
+        assert_eq!(summary.current_user_net_label, "You owe HK$5.00");
+        assert_eq!(summary.net_by_member[&payer], 5.0);
+        assert_eq!(summary.net_by_member[&debtor], -5.0);
+        assert_eq!(summary.settlement_suggestions.len(), 1);
+        assert_eq!(summary.settlement_suggestions[0].amount, 5.0);
+        assert_eq!(summary.settlement_suggestions[0].currency, "HKD");
+    }
+
+    #[test]
+    fn expense_summary_attaches_matching_reminder_history_to_settlement_suggestions() {
+        let payer = Uuid::parse_str("018f4e81-77a4-7b8f-b3bd-0d0f493ac561").unwrap();
+        let debtor = Uuid::parse_str("018f4e81-77a4-7b8f-b3bd-0d0f493ac562").unwrap();
+        let stale_reminder_at = "2026-06-05T11:00:00Z".to_string();
+        let matching_reminder_at = "2026-06-05T12:00:00Z".to_string();
+        let expenses = vec![ExpenseSplitRecord {
+            paid_by: payer,
+            amount_minor: 9_000,
+            currency: "HKD".to_string(),
+            exchange_rate_to_settlement_currency: 1.0,
+            category: "food".to_string(),
+            splits: json!({
+                payer.to_string(): 4500,
+                debtor.to_string(): 4500
+            }),
+        }];
+
+        let summary = build_expense_summary(
+            expenses,
+            debtor,
+            vec![
+                ExpenseReminderRecord {
+                    id: Uuid::now_v7(),
+                    trip_id: Uuid::now_v7(),
+                    from_member_id: debtor,
+                    to_member_id: payer,
+                    amount_minor: 4_000,
+                    last_reminded_at: stale_reminder_at,
+                    version: 1,
+                },
+                ExpenseReminderRecord {
+                    id: Uuid::now_v7(),
+                    trip_id: Uuid::now_v7(),
+                    from_member_id: debtor,
+                    to_member_id: payer,
+                    amount_minor: 4_500,
+                    last_reminded_at: matching_reminder_at.clone(),
+                    version: 1,
+                },
+            ],
+        );
+
+        assert_eq!(summary.settlement_suggestions.len(), 1);
+        assert_eq!(
+            summary.settlement_suggestions[0].last_reminded_at,
+            Some(matching_reminder_at)
+        );
     }
 
     #[test]
@@ -377,12 +581,15 @@ mod tests {
         let creditor_b = Uuid::now_v7();
         let debtor_a = Uuid::now_v7();
         let debtor_b = Uuid::now_v7();
-        let suggestions = settlement_suggestions(BTreeMap::from([
-            (creditor_a, 5_000),
-            (creditor_b, 2_500),
-            (debtor_a, -3_000),
-            (debtor_b, -4_500),
-        ]));
+        let suggestions = settlement_suggestions(
+            BTreeMap::from([
+                (creditor_a, 5_000),
+                (creditor_b, 2_500),
+                (debtor_a, -3_000),
+                (debtor_b, -4_500),
+            ]),
+            "HKD",
+        );
 
         assert_eq!(suggestions.len(), 3);
         assert_eq!(

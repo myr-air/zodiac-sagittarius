@@ -102,13 +102,11 @@ describe("AppShell", () => {
 
   it("links workspace navigation to the active trip route scope", async () => {
     const shortTripId = encodeTripId(seedTrip.id);
-    const onOpenExpenses = vi.fn();
     renderWithI18n(
       <AppShell
         activeView="itinerary"
         collapsed={false}
         currentMember={seedTrip.members[0]}
-        onOpenExpenses={onOpenExpenses}
         onToggleCollapsed={vi.fn()}
         trip={seedTrip}
       >
@@ -123,7 +121,7 @@ describe("AppShell", () => {
     expect(screen.getByRole("link", { name: /แผนที่/ })).toHaveAttribute("href", `/trips/${shortTripId}/map`);
     expect(screen.getByRole("link", { name: /ไทม์ไลน์/ })).toHaveAttribute("href", `/trips/${shortTripId}/timeline`);
     expect(screen.getByRole("link", { name: /สมาชิก/ })).toHaveAttribute("href", `/trips/${shortTripId}/members`);
-    expect(screen.getByRole("button", { name: /ค่าใช้จ่าย/ })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /ค่าใช้จ่าย/ })).toHaveAttribute("href", `/trips/${shortTripId}/expenses`);
     expect(screen.getByRole("link", { name: /^Settings$/ })).toHaveAttribute("href", `/trips/${shortTripId}/settings`);
     expect(screen.queryByText("Trip ID 018f4e")).not.toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "ดูสรุปรายละเอียด" })).not.toBeInTheDocument();
@@ -158,6 +156,7 @@ describe("AppShell", () => {
     const shortTripId = encodeTripId(seedTrip.id);
 
     expect(resolveViewFromPath(`/trips/${shortTripId}/itinerary`, seedTrip.id, "overview")).toBe("itinerary");
+    expect(resolveViewFromPath(`/trips/${shortTripId}/expenses`, seedTrip.id, "overview")).toBe("expenses");
     expect(resolveViewFromPath(`/trips/${seedTrip.id}/itinerary`, seedTrip.id, "overview")).toBe("itinerary");
     expect(resolveViewFromPath(`/trips/trip%201`, seedTrip.id, "overview")).toBe("overview");
   });

@@ -14,6 +14,7 @@ import {
 } from "@/src/app/SagittariusApp";
 import { TripApiError, type CreateExpenseApiRequest, type TripApiClient, type TripCockpit } from "@/src/trip/api-client";
 import { tripParticipantSessionStorageKey } from "@/src/trip/auth";
+import { normalizeExpenseSplitsFromMinor } from "@/src/trip/expenses";
 import { I18nProvider } from "@/src/i18n/I18nProvider";
 import { renderWithI18n } from "@/src/i18n/test-utils";
 import { tripStorageKey } from "@/src/trip/repository";
@@ -648,6 +649,29 @@ describe("Sagittarius cockpit UI", () => {
     expect(screen.getByRole("link", { name: /ไทม์ไลน์/i })).toHaveAttribute("aria-current", "page");
   });
 
+  it("adds a local shared expense from the full expenses page", async () => {
+    const user = userEvent.setup();
+    render(<SagittariusApp initialView="expenses" />);
+
+    expect(await screen.findByRole("region", { name: /เงินทริป/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /ค่าใช้จ่าย/i })).toHaveAttribute("aria-current", "page");
+
+    await user.click(screen.getByRole("button", { name: /เพิ่มค่าใช้จ่าย/i }));
+    const dialog = screen.getByRole("dialog", { name: /เพิ่มค่าใช้จ่าย/i });
+    await user.type(within(dialog).getByLabelText(/ชื่อค่าใช้จ่าย/i), "Late night taxi");
+    await user.clear(within(dialog).getByLabelText(/จำนวนเงิน/i));
+    await user.type(within(dialog).getByLabelText(/จำนวนเงิน/i), "100");
+    await user.selectOptions(within(dialog).getByLabelText(/แบ่งแบบ/i), "exact");
+    await user.clear(within(dialog).getByLabelText(/ส่วนของ Demo Traveler/i));
+    await user.type(within(dialog).getByLabelText(/ส่วนของ Demo Traveler/i), "40");
+    await user.clear(within(dialog).getByLabelText(/ส่วนของ Travel Mate/i));
+    await user.type(within(dialog).getByLabelText(/ส่วนของ Travel Mate/i), "60");
+    await user.click(within(dialog).getByRole("button", { name: /บันทึกค่าใช้จ่าย/i }));
+
+    expect(await screen.findByText("Late night taxi")).toBeInTheDocument();
+    expect(screen.getByRole("table", { name: /รายการค่าใช้จ่าย/i })).toHaveTextContent("HK$100.00");
+  });
+
   it("creates overview tasks through the API client after backend login", async () => {
     const user = userEvent.setup();
     const ownerTrip = {
@@ -747,6 +771,7 @@ describe("Sagittarius cockpit UI", () => {
       patchMember: vi.fn(),
       resetMemberClaim: vi.fn(),
       getExpenseSummary: vi.fn(),
+      recordExpenseReminder: vi.fn(),
       createExpense: vi.fn(),
       patchExpense: vi.fn(),
       deleteExpense: vi.fn(),
@@ -1327,6 +1352,7 @@ describe("Sagittarius cockpit UI", () => {
       patchMember: vi.fn(),
       resetMemberClaim: vi.fn(),
       getExpenseSummary: vi.fn(),
+      recordExpenseReminder: vi.fn(),
       createExpense: vi.fn(),
       patchExpense: vi.fn(),
       deleteExpense: vi.fn(),
@@ -1560,6 +1586,7 @@ describe("Sagittarius cockpit UI", () => {
       patchMember: vi.fn(),
       resetMemberClaim: vi.fn(),
       getExpenseSummary: vi.fn(),
+      recordExpenseReminder: vi.fn(),
       createExpense: vi.fn(),
       patchExpense: vi.fn(),
       deleteExpense: vi.fn(),
@@ -1783,6 +1810,7 @@ describe("Sagittarius cockpit UI", () => {
       "แผนที่",
       "ไทม์ไลน์",
       "สมาชิก",
+      "ค่าใช้จ่าย",
       "Settings",
     ]);
     expect(within(navigation).getByRole("link", { name: /ภาพรวม/i })).toHaveClass("rail-link--active");
@@ -2727,15 +2755,20 @@ function createApiClientForTrip(trip: Trip, overrides: Partial<TripApiClient> = 
     patchMember: vi.fn(),
     resetMemberClaim: vi.fn(),
     getExpenseSummary: vi.fn(),
+    recordExpenseReminder: vi.fn(),
     createExpense: vi.fn().mockImplementation((_tripId: string, _sessionToken: string, request: CreateExpenseApiRequest) =>
       Promise.resolve({
         id: "new-expense-id",
         title: request.title,
         amount: request.amountMinor ? request.amountMinor / 100 : 0,
         amountMinor: request.amountMinor || 0,
+        notes: request.notes ?? "",
+        receiptUrl: request.receiptUrl ?? null,
+        lineItems: request.lineItems ?? [],
+        comments: request.comments ?? [],
         paidBy: request.paidBy,
-        splits: request.splits || {},
-        category: request.category || "general",
+        splits: normalizeExpenseSplitsFromMinor(request.splits || {}),
+        category: request.category || "food",
         itineraryItemId: request.itineraryItemId || null,
         version: 1,
       }),

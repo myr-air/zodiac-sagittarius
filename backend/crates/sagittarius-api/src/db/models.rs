@@ -585,6 +585,9 @@ pub struct NewStopNote<'a> {
 pub struct ExpenseSplitRecord {
     pub paid_by: Uuid,
     pub amount_minor: i32,
+    pub currency: String,
+    pub exchange_rate_to_settlement_currency: f64,
+    pub category: String,
     pub splits: serde_json::Value,
 }
 
@@ -595,11 +598,36 @@ pub struct ExpenseRecord {
     pub title: String,
     pub amount_minor: i32,
     pub currency: String,
+    pub exchange_rate_to_settlement_currency: f64,
+    pub notes: String,
+    pub receipt_url: Option<String>,
+    pub line_items: serde_json::Value,
+    pub comments: serde_json::Value,
     pub paid_by: Uuid,
     pub category: String,
     pub splits: serde_json::Value,
     pub itinerary_item_id: Option<Uuid>,
     pub version: i64,
+}
+
+#[derive(Debug, Clone, FromRow)]
+pub struct ExpenseReminderRecord {
+    pub id: Uuid,
+    pub trip_id: Uuid,
+    pub from_member_id: Uuid,
+    pub to_member_id: Uuid,
+    pub amount_minor: i32,
+    pub last_reminded_at: String,
+    pub version: i64,
+}
+
+pub struct NewExpenseReminder {
+    pub id: Uuid,
+    pub trip_id: Uuid,
+    pub from_member_id: Uuid,
+    pub to_member_id: Uuid,
+    pub amount_minor: i32,
+    pub created_by: Uuid,
 }
 
 impl From<ExpenseRecord> for ExpenseItemSummary {
@@ -610,6 +638,11 @@ impl From<ExpenseRecord> for ExpenseItemSummary {
             title: record.title,
             amount_minor: record.amount_minor,
             currency: record.currency,
+            exchange_rate_to_settlement_currency: record.exchange_rate_to_settlement_currency,
+            notes: record.notes,
+            receipt_url: record.receipt_url,
+            line_items: record.line_items,
+            comments: record.comments,
             paid_by: record.paid_by,
             category: record.category,
             splits: record.splits,
@@ -625,6 +658,11 @@ pub struct NewExpense<'a> {
     pub title: &'a str,
     pub amount_minor: i32,
     pub currency: &'a str,
+    pub exchange_rate_to_settlement_currency: f64,
+    pub notes: &'a str,
+    pub receipt_url: Option<&'a str>,
+    pub line_items: serde_json::Value,
+    pub comments: serde_json::Value,
     pub paid_by: Uuid,
     pub category: &'a str,
     pub splits: serde_json::Value,

@@ -159,6 +159,10 @@ fn api_v1() -> Router<AppState> {
             "/trips/{trip_id}/expenses/summary",
             get(expenses::get_expense_summary),
         )
+        .route(
+            "/trips/{trip_id}/expenses/reminders",
+            post(expenses::record_expense_reminder),
+        )
         .route("/trips/{trip_id}/expenses", post(expenses::create_expense))
         .route(
             "/trips/{trip_id}/expenses/{expense_id}",

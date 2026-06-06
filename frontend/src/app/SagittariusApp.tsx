@@ -9,6 +9,7 @@ import { RouteMapView } from "@/src/components/RouteMapView";
 import { SmartItineraryTable, type InlineItineraryItemPatch } from "@/src/components/SmartItineraryTable";
 import { StopDialog, type StopFormValues } from "@/src/components/StopDialog";
 import { TimelineView } from "@/src/components/TimelineView";
+import { TripExpensesPage } from "@/src/components/TripExpensesPage";
 import { TripMembersPage } from "@/src/components/TripMembersPage";
 import { TripSettingsPage, type TripSettingsFormValues } from "@/src/components/TripSettingsPage";
 import { Button } from "@/src/components/ui";
@@ -28,7 +29,7 @@ import {
   tripParticipantSessionStorageKey,
   updateTripParticipantRole,
 } from "@/src/trip/auth";
-import { buildExpenseSummary } from "@/src/trip/expenses";
+import { buildExpenseSplits, buildExpenseSummary, expenseSplitsToMinor, upsertExpenseReminder } from "@/src/trip/expenses";
 import { buildItineraryView, deriveItineraryPathOptions, mainItineraryPathId, resolveItineraryPathItems, type ItineraryPathOption, type ItineraryPathSelection } from "@/src/trip/itinerary";
 import { applyImportedItemsToItineraryPath, applyItemToActivityBranch, applyManualActivityPath, autoResolveSamePathOverlaps, deriveManualActivityPathOptions, type ItineraryImportApplyTarget } from "@/src/trip/itinerary-paths";
 import { buildItineraryExport, parseItineraryImport, type ItineraryExportItem } from "@/src/trip/itinerary-import-export";
@@ -37,7 +38,7 @@ import { tripStorageKey } from "@/src/trip/repository";
 import { seedTrip } from "@/src/trip/seed";
 import { decodeTripId } from "@/src/trip/ids";
 import { approveSuggestion } from "@/src/trip/suggestions";
-import type { DailyBriefingOverrides, Expense, ExpenseSummary, ItineraryItem, PlaceResolutionCandidate, PlaceResolutionRequest, PlaceResolutionResponse, StopNote, Suggestion, Trip, TripDailyBriefing, TripMemberAccessStatus, TripParticipantSession, TripRole, TripTask } from "@/src/trip/types";
+import type { DailyBriefingOverrides, Expense, ExpenseComment, ExpenseLineItem, ExpenseSummary, ItineraryItem, PlaceResolutionCandidate, PlaceResolutionRequest, PlaceResolutionResponse, SettlementSuggestion, StopNote, Suggestion, Trip, TripDailyBriefing, TripMemberAccessStatus, TripParticipantSession, TripRole, TripTask } from "@/src/trip/types";
 
 const localMutationTimestamp = "2026-05-28T00:00:00.000Z";
 const accountSessionStorageKey = "sagittarius-account-session";
@@ -66,7 +67,7 @@ const workspaceGridClassName = "workspace-grid relative grid h-[calc(100vh-62px)
 const planningMainClassName = "planning-main h-full min-h-0 min-w-0 overflow-y-auto scroll-smooth bg-[var(--color-page)] transition-[padding] duration-200 max-[1199px]:h-auto max-[1199px]:overflow-y-visible";
 const planningMainWithRailClassName = "pr-[380px] max-[1199px]:pr-0";
 
-export type PlanningView = "overview" | "itinerary" | "map" | "timeline" | "members" | "settings";
+export type PlanningView = "overview" | "itinerary" | "map" | "timeline" | "members" | "expenses" | "settings";
 type PortalSection = "dashboard" | "trips" | "new-trip" | "explorer" | "todos" | "vault" | "settings" | "sign-out";
 type PlaceResolver = (request: PlaceResolutionRequest) => Promise<PlaceResolutionResponse>;
 type StopPlaceResolutionState = { state: "idle" | "resolving" | "ambiguous" | "unresolved"; candidates: PlaceResolutionCandidate[] };
@@ -206,8 +207,8 @@ export function SagittariusApp({
   const selectedDay = selectedItem?.day ?? itineraryView.dayGroups[0]?.day ?? trip.startDate;
   const selectedItemIdForView = selectedItem?.id ?? "";
   const expenseSummary = useMemo(
-    () => backendExpenseSummary ?? buildExpenseSummary(trip.expenses, currentMember.id),
-    [backendExpenseSummary, currentMember.id, trip.expenses],
+    () => backendExpenseSummary ?? buildExpenseSummary(trip.expenses, currentMember.id, trip.expenseReminders ?? []),
+    [backendExpenseSummary, currentMember.id, trip.expenseReminders, trip.expenses],
   );
 
   function changeTripPath(pathId: string) {
@@ -1386,43 +1387,68 @@ export function SagittariusApp({
     setStopNotes((current) => current.filter((note) => note.id !== noteId || (note.authorId !== currentMember.id && !canEdit)));
   }
 
-  async function createExpense(input: { itemId: string | null; title: string; amount: number; paidBy: string; category: Expense["category"] }) {
+  async function createExpense(input: { itemId: string | null; title: string; amount: number; paidBy: string; category: Expense["category"]; currency?: string; exchangeRateToSettlementCurrency?: number; notes?: string; receiptUrl?: string | null; lineItems?: ExpenseLineItem[]; comments?: ExpenseComment[]; repeatCount?: number; splits?: Record<string, number> }) {
     if (!canEditExpenses) return;
-    const amountMinor = Math.round(input.amount * 100);
-    const splits = equalExpenseSplits(amountMinor, trip.members.map((member) => member.id));
+    const repeatCount = normalizeExpenseRepeatCount(input.repeatCount);
+    const splits = input.splits ?? buildExpenseSplits({ amount: input.amount, memberIds: trip.members.map((member) => member.id), mode: "equal" });
+    const repeatedInputs = Array.from({ length: repeatCount }, (_, index) => ({
+      ...input,
+      title: repeatCount > 1 ? `${input.title} (${index + 1}/${repeatCount})` : input.title,
+      lineItems: repeatExpenseLineItems(input.lineItems, index, repeatCount),
+    }));
+
     if (isApiMode && resolvedApiClient && participantSession) {
-      const expense = await resolvedApiClient.createExpense(trip.id, participantSession.sessionToken, {
-        clientMutationId: nextClientMutationId("expense-create"),
-        title: input.title,
-        amountMinor,
-        currency: "HKD",
-        paidBy: input.paidBy,
-        category: input.category,
-        splits,
-        itineraryItemId: input.itemId,
-      });
+      const createdExpenses: Expense[] = [];
+      for (const repeatedInput of repeatedInputs) {
+        const expense = await resolvedApiClient.createExpense(trip.id, participantSession.sessionToken, {
+          clientMutationId: nextClientMutationId("expense-create"),
+          title: repeatedInput.title,
+          amountMinor: Math.round(repeatedInput.amount * 100),
+          currency: repeatedInput.currency ?? "HKD",
+          exchangeRateToSettlementCurrency: repeatedInput.exchangeRateToSettlementCurrency ?? 1,
+          notes: repeatedInput.notes ?? "",
+          receiptUrl: repeatedInput.receiptUrl ?? null,
+          lineItems: repeatedInput.lineItems,
+          comments: repeatedInput.comments ?? [],
+          paidBy: repeatedInput.paidBy,
+          category: repeatedInput.category,
+          splits: expenseSplitsToMinor(splits),
+          itineraryItemId: repeatedInput.itemId,
+        });
+        createdExpenses.push(expense);
+      }
       setTripState((current) => ({
         ...current,
-        trip: { ...current.trip, expenses: [...current.trip.expenses, expense] },
+        trip: { ...current.trip, expenses: [...current.trip.expenses, ...createdExpenses] },
       }));
       setBackendExpenseSummary(await resolvedApiClient.getExpenseSummary(trip.id, participantSession.sessionToken));
       return;
     }
 
-    const expense: Expense = {
-      id: `expense-local-${Date.now().toString(36)}`,
-      tripId: trip.id,
-      title: input.title,
-      amount: input.amount,
-      amountMinor,
-      currency: "HKD",
-      paidBy: input.paidBy,
-      category: input.category,
-      splits,
-      itineraryItemId: input.itemId,
-      version: 1,
-    };
-    commitTrip((current) => ({ ...current, expenses: [...current.expenses, expense] }));
+    commitTrip((current) => {
+      const expenses = [...current.expenses];
+      for (const repeatedInput of repeatedInputs) {
+        expenses.push({
+          id: nextLocalExpenseId(expenses),
+          tripId: current.id,
+          title: repeatedInput.title,
+          amount: repeatedInput.amount,
+          amountMinor: Math.round(repeatedInput.amount * 100),
+          currency: repeatedInput.currency ?? "HKD",
+          exchangeRateToSettlementCurrency: repeatedInput.exchangeRateToSettlementCurrency ?? 1,
+          notes: repeatedInput.notes ?? "",
+          receiptUrl: repeatedInput.receiptUrl ?? null,
+          lineItems: repeatedInput.lineItems ?? [],
+          comments: repeatedInput.comments ?? [],
+          paidBy: repeatedInput.paidBy,
+          category: repeatedInput.category,
+          splits,
+          itineraryItemId: repeatedInput.itemId,
+          version: 1,
+        });
+      }
+      return { ...current, expenses };
+    });
   }
 
   async function deleteExpense(expenseId: string) {
@@ -1439,23 +1465,29 @@ export function SagittariusApp({
     commitTrip((current) => ({ ...current, expenses: current.expenses.filter((expense) => expense.id !== expenseId) }));
   }
 
-  async function updateExpense(input: { expenseId: string; title: string; amount: number; paidBy: string; category: Expense["category"] }) {
+  async function updateExpense(input: { expenseId: string; title: string; amount: number; paidBy: string; category: Expense["category"]; currency?: string; exchangeRateToSettlementCurrency?: number; notes?: string; receiptUrl?: string | null; lineItems?: ExpenseLineItem[]; comments?: ExpenseComment[]; itemId?: string | null; splits?: Record<string, number> }) {
     if (!canEditExpenses) return;
     const existing = trip.expenses.find((expense) => expense.id === input.expenseId);
     if (!existing) return;
     const amountMinor = Math.round(input.amount * 100);
-    const splits = equalExpenseSplits(amountMinor, trip.members.map((member) => member.id));
+    const splits = input.splits ?? buildExpenseSplits({ amount: input.amount, memberIds: trip.members.map((member) => member.id), mode: "equal" });
+    const itineraryItemId = input.itemId === undefined ? existing.itineraryItemId ?? null : input.itemId;
     if (isApiMode && resolvedApiClient && participantSession) {
       const expense = await resolvedApiClient.patchExpense(trip.id, input.expenseId, participantSession.sessionToken, {
         clientMutationId: nextClientMutationId("expense-patch"),
         expectedVersion: existing.version ?? 1,
         title: input.title,
         amountMinor,
-        currency: existing.currency ?? "HKD",
+        currency: input.currency ?? existing.currency ?? "HKD",
+        exchangeRateToSettlementCurrency: input.exchangeRateToSettlementCurrency ?? existing.exchangeRateToSettlementCurrency ?? 1,
+        notes: input.notes ?? existing.notes ?? "",
+        receiptUrl: input.receiptUrl ?? existing.receiptUrl ?? null,
+        lineItems: input.lineItems ?? existing.lineItems ?? [],
+        comments: input.comments ?? existing.comments ?? [],
         paidBy: input.paidBy,
         category: input.category,
-        splits,
-        itineraryItemId: existing.itineraryItemId ?? null,
+        splits: expenseSplitsToMinor(splits),
+        itineraryItemId,
       });
       setTripState((current) => ({
         ...current,
@@ -1468,9 +1500,31 @@ export function SagittariusApp({
       ...current,
       expenses: current.expenses.map((expense) =>
         expense.id === input.expenseId
-          ? { ...expense, title: input.title, amount: input.amount, amountMinor, paidBy: input.paidBy, category: input.category, splits, version: (expense.version ?? 1) + 1 }
+          ? { ...expense, title: input.title, amount: input.amount, amountMinor, currency: input.currency ?? expense.currency, exchangeRateToSettlementCurrency: input.exchangeRateToSettlementCurrency ?? expense.exchangeRateToSettlementCurrency ?? 1, notes: input.notes ?? expense.notes ?? "", receiptUrl: input.receiptUrl ?? expense.receiptUrl ?? null, lineItems: input.lineItems ?? expense.lineItems ?? [], comments: input.comments ?? expense.comments ?? [], paidBy: input.paidBy, category: input.category, splits, itineraryItemId, version: (expense.version ?? 1) + 1 }
           : expense,
       ),
+    }));
+  }
+
+  async function recordPaybackReminder(suggestion: SettlementSuggestion) {
+    const amountMinor = Math.round(suggestion.amount * 100);
+    if (isApiMode && resolvedApiClient && participantSession) {
+      setBackendExpenseSummary(await resolvedApiClient.recordExpenseReminder(trip.id, participantSession.sessionToken, {
+        clientMutationId: nextClientMutationId("expense-reminder"),
+        from: suggestion.from,
+        to: suggestion.to,
+        amountMinor,
+      }));
+      return;
+    }
+    commitTrip((current) => ({
+      ...current,
+      expenseReminders: upsertExpenseReminder(current.expenseReminders ?? [], {
+        from: suggestion.from,
+        to: suggestion.to,
+        amount: suggestion.amount,
+        lastRemindedAt: new Date().toISOString(),
+      }),
     }));
   }
 
@@ -1568,14 +1622,7 @@ export function SagittariusApp({
   }
 
   function openExpensesWorkspace() {
-    if (supportsContextRail) {
-      setContextRailVisibility(true);
-      return;
-    }
-    if (typeof window !== "undefined") {
-      window.sessionStorage.setItem("sagittarius-open-expenses", trip.id);
-      window.location.href = appRoutes.tripItinerary(trip.id);
-    }
+    navigateWorkspaceView("expenses", appRoutes.tripExpenses(trip.id));
   }
 
   async function reviewSuggestion(suggestionId: string, decision: "approved" | "rejected") {
@@ -1714,7 +1761,6 @@ export function SagittariusApp({
       currentMember={currentMember}
       onLeaveParticipantSession={requireJoin ? leaveParticipantSession : undefined}
       onNavigateView={navigateWorkspaceView}
-      onOpenExpenses={openExpensesWorkspace}
       trip={trip}
       onToggleCollapsed={() => setSidebarCollapsed((current) => !current)}
     >
@@ -1777,6 +1823,17 @@ export function SagittariusApp({
                     ? transferOwnerToAccountMember
                     : undefined
                 }
+              />
+            ) : currentView === "expenses" ? (
+              <TripExpensesPage
+                trip={trip}
+                currentMember={currentMember}
+                expenseSummary={expenseSummary}
+                canEditExpenses={canEditExpenses}
+                onCreateExpense={createExpense}
+                onUpdateExpense={updateExpense}
+                onDeleteExpense={deleteExpense}
+                onRecordPaybackReminder={recordPaybackReminder}
               />
             ) : currentView === "overview" ? (
               <OverviewPage
@@ -1940,6 +1997,28 @@ function buildMapLink(place: string): string {
   return place ? `https://maps.google.com/?q=${encodeURIComponent(place)}` : "";
 }
 
+function normalizeExpenseRepeatCount(value: number | undefined): number {
+  if (!value || !Number.isFinite(value)) return 1;
+  return Math.min(31, Math.max(1, Math.floor(value)));
+}
+
+function repeatExpenseLineItems(lineItems: ExpenseLineItem[] | undefined, repeatIndex: number, repeatCount: number): ExpenseLineItem[] | undefined {
+  if (!lineItems) return undefined;
+  if (repeatCount <= 1) return lineItems;
+  return lineItems.map((lineItem) => ({ ...lineItem, id: `${lineItem.id}-repeat-${repeatIndex + 1}` }));
+}
+
+function nextLocalExpenseId(expenses: Expense[]): string {
+  const existingIds = new Set(expenses.map((expense) => expense.id));
+  let index = expenses.filter((expense) => expense.id.startsWith("expense-local-")).length + 1;
+  let id = `expense-local-${index}`;
+  while (existingIds.has(id)) {
+    index += 1;
+    id = `expense-local-${index}`;
+  }
+  return id;
+}
+
 function deriveTripCountriesFromDestination(destinationLabel: string, fallbackCountries: string[]): string[] {
   const destination = destinationLabel.toLowerCase();
   const knownCountries: Array<[string, string[]]> = [
@@ -2003,19 +2082,6 @@ function locationFieldsFromCandidate(candidate: PlaceResolutionCandidate | null,
         coordinates: undefined,
         mapLink: buildMapLink(place),
       };
-}
-
-function equalExpenseSplits(amountMinor: number, memberIds: string[]): Record<string, number> {
-  const participantIds = memberIds.length ? memberIds : ["unknown-member"];
-  const baseShare = Math.floor(amountMinor / participantIds.length);
-  let remainder = amountMinor - baseShare * participantIds.length;
-  return Object.fromEntries(
-    participantIds.map((memberId) => {
-      const share = baseShare + (remainder > 0 ? 1 : 0);
-      remainder -= 1;
-      return [memberId, share];
-    }),
-  );
 }
 
 export function nextLocalItemId(items: ItineraryItem[], prefix: string): string {

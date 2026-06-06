@@ -6,7 +6,9 @@ use crate::api::extractors::BearerToken;
 use crate::app;
 use crate::app::AppState;
 use crate::domain::errors::ServiceError;
-use crate::domain::patches::{CreateExpenseRequest, PatchExpenseRequest};
+use crate::domain::patches::{
+    CreateExpenseRequest, PatchExpenseRequest, RecordExpenseReminderRequest,
+};
 use crate::domain::types::{ExpenseItemSummary, ExpenseSummary};
 
 pub async fn get_expense_summary(
@@ -35,6 +37,24 @@ pub async fn create_expense(
     .await?;
 
     Ok(Json(expense))
+}
+
+pub async fn record_expense_reminder(
+    State(state): State<AppState>,
+    Path(trip_id): Path<Uuid>,
+    BearerToken(session_token): BearerToken,
+    Json(request): Json<RecordExpenseReminderRequest>,
+) -> Result<Json<ExpenseSummary>, ServiceError> {
+    let summary = app::expenses::record_expense_reminder(
+        &state.pool,
+        &state.realtime,
+        trip_id,
+        &session_token,
+        request,
+    )
+    .await?;
+
+    Ok(Json(summary))
 }
 
 pub async fn patch_expense(

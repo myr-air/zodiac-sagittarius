@@ -3,11 +3,12 @@ use uuid::Uuid;
 
 use crate::db::PgPool;
 use crate::db::models::{
-    AuthenticatedMemberSessionRecord, ExpenseRecord, ExpenseSplitRecord, ItineraryItemRecord,
-    MemberSessionPolicyRecord, NewExpense, NewItineraryItem, NewPlanVariant, NewRealtimeEvent,
-    NewStopNote, NewSuggestion, NewTripMember, NewTripTask, PlanVariantRecord, RealtimeEventRecord,
-    StopNoteRecord, SuggestionRecord, TripAuthRecord, TripDailyBriefingRecord,
-    TripMemberAuthRecord, TripMemberRecord, TripTaskRecord,
+    AuthenticatedMemberSessionRecord, ExpenseRecord, ExpenseReminderRecord, ExpenseSplitRecord,
+    ItineraryItemRecord, MemberSessionPolicyRecord, NewExpense, NewExpenseReminder,
+    NewItineraryItem, NewPlanVariant, NewRealtimeEvent, NewStopNote, NewSuggestion, NewTripMember,
+    NewTripTask, PlanVariantRecord, RealtimeEventRecord, StopNoteRecord, SuggestionRecord,
+    TripAuthRecord, TripDailyBriefingRecord, TripMemberAuthRecord, TripMemberRecord,
+    TripTaskRecord,
 };
 
 pub async fn find_trip_by_join_id(
@@ -1341,7 +1342,7 @@ pub async fn list_expense_splits(
     trip_id: Uuid,
 ) -> Result<Vec<ExpenseSplitRecord>, sqlx::Error> {
     sqlx::query_as::<_, ExpenseSplitRecord>(
-        "select paid_by, amount_minor, splits
+        "select paid_by, amount_minor, currency, exchange_rate_to_settlement_currency, category, splits
          from expenses
          where trip_id = $1 and deleted_at is null
          order by created_at",
@@ -1351,13 +1352,61 @@ pub async fn list_expense_splits(
     .await
 }
 
+pub async fn list_expense_reminders(
+    pool: &PgPool,
+    trip_id: Uuid,
+) -> Result<Vec<ExpenseReminderRecord>, sqlx::Error> {
+    sqlx::query_as::<_, ExpenseReminderRecord>(
+        "select
+           id, trip_id, from_member_id, to_member_id, amount_minor,
+           to_char(last_reminded_at at time zone 'UTC', 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"') as last_reminded_at,
+           version
+         from expense_reminders
+         where trip_id = $1
+         order by updated_at",
+    )
+    .bind(trip_id)
+    .fetch_all(pool)
+    .await
+}
+
+pub async fn upsert_expense_reminder(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    reminder: NewExpenseReminder,
+) -> Result<ExpenseReminderRecord, sqlx::Error> {
+    sqlx::query_as::<_, ExpenseReminderRecord>(
+        "insert into expense_reminders (
+           id, trip_id, from_member_id, to_member_id, amount_minor, created_by
+         )
+         values ($1, $2, $3, $4, $5, $6)
+         on conflict (trip_id, from_member_id, to_member_id, amount_minor)
+         do update set
+           last_reminded_at = now(),
+           updated_at = now(),
+           created_by = excluded.created_by,
+           version = expense_reminders.version + 1
+         returning
+           id, trip_id, from_member_id, to_member_id, amount_minor,
+           to_char(last_reminded_at at time zone 'UTC', 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"') as last_reminded_at,
+           version",
+    )
+    .bind(reminder.id)
+    .bind(reminder.trip_id)
+    .bind(reminder.from_member_id)
+    .bind(reminder.to_member_id)
+    .bind(reminder.amount_minor)
+    .bind(reminder.created_by)
+    .fetch_one(&mut **tx)
+    .await
+}
+
 pub async fn list_expenses(
     pool: &PgPool,
     trip_id: Uuid,
 ) -> Result<Vec<ExpenseRecord>, sqlx::Error> {
     sqlx::query_as::<_, ExpenseRecord>(
         "select
-           id, trip_id, title, amount_minor, currency, paid_by, category, splits,
+           id, trip_id, title, amount_minor, currency, exchange_rate_to_settlement_currency, notes, receipt_url, line_items, comments, paid_by, category, splits,
            itinerary_item_id, version
          from expenses
          where trip_id = $1 and deleted_at is null
@@ -1374,12 +1423,12 @@ pub async fn insert_expense(
 ) -> Result<ExpenseRecord, sqlx::Error> {
     sqlx::query_as::<_, ExpenseRecord>(
         "insert into expenses (
-           id, trip_id, title, amount_minor, currency, paid_by, category, splits,
+           id, trip_id, title, amount_minor, currency, exchange_rate_to_settlement_currency, notes, receipt_url, line_items, comments, paid_by, category, splits,
            itinerary_item_id, version
          )
-         values ($1, $2, $3, $4, $5, $6, $7, $8, $9, 1)
+         values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, 1)
          returning
-           id, trip_id, title, amount_minor, currency, paid_by, category, splits,
+           id, trip_id, title, amount_minor, currency, exchange_rate_to_settlement_currency, notes, receipt_url, line_items, comments, paid_by, category, splits,
            itinerary_item_id, version",
     )
     .bind(expense.id)
@@ -1387,6 +1436,11 @@ pub async fn insert_expense(
     .bind(expense.title)
     .bind(expense.amount_minor)
     .bind(expense.currency)
+    .bind(expense.exchange_rate_to_settlement_currency)
+    .bind(expense.notes)
+    .bind(expense.receipt_url)
+    .bind(expense.line_items)
+    .bind(expense.comments)
     .bind(expense.paid_by)
     .bind(expense.category)
     .bind(expense.splits)
@@ -1401,7 +1455,7 @@ pub async fn lock_expense(
 ) -> Result<Option<ExpenseRecord>, sqlx::Error> {
     sqlx::query_as::<_, ExpenseRecord>(
         "select
-           id, trip_id, title, amount_minor, currency, paid_by, category, splits,
+           id, trip_id, title, amount_minor, currency, exchange_rate_to_settlement_currency, notes, receipt_url, line_items, comments, paid_by, category, splits,
            itinerary_item_id, version
          from expenses
          where id = $1 and deleted_at is null
@@ -1423,21 +1477,31 @@ pub async fn update_expense(
          set title = coalesce($2, title),
              amount_minor = coalesce($3, amount_minor),
              currency = coalesce($4, currency),
-             paid_by = coalesce($5, paid_by),
-             category = coalesce($6, category),
-             splits = coalesce($7, splits),
-             itinerary_item_id = case when $8 then $9 else itinerary_item_id end,
-             version = $10,
+             exchange_rate_to_settlement_currency = coalesce($5, exchange_rate_to_settlement_currency),
+             notes = coalesce($6, notes),
+             receipt_url = coalesce($7, receipt_url),
+             line_items = coalesce($8, line_items),
+             comments = coalesce($9, comments),
+             paid_by = coalesce($10, paid_by),
+             category = coalesce($11, category),
+             splits = coalesce($12, splits),
+             itinerary_item_id = case when $13 then $14 else itinerary_item_id end,
+             version = $15,
              updated_at = now()
          where id = $1 and deleted_at is null
          returning
-           id, trip_id, title, amount_minor, currency, paid_by, category, splits,
+           id, trip_id, title, amount_minor, currency, exchange_rate_to_settlement_currency, notes, receipt_url, line_items, comments, paid_by, category, splits,
            itinerary_item_id, version",
     )
     .bind(expense_id)
     .bind(patch.title.as_deref())
     .bind(patch.amount_minor)
     .bind(patch.currency.as_deref())
+    .bind(patch.exchange_rate_to_settlement_currency)
+    .bind(patch.notes.as_deref())
+    .bind(patch.receipt_url.as_deref())
+    .bind(patch.line_items.as_ref())
+    .bind(patch.comments.as_ref())
     .bind(patch.paid_by)
     .bind(patch.category.as_deref())
     .bind(patch.splits.as_ref())
@@ -1458,7 +1522,7 @@ pub async fn delete_expense(
          set deleted_at = now(), version = $2, updated_at = now()
          where id = $1 and deleted_at is null
          returning
-           id, trip_id, title, amount_minor, currency, paid_by, category, splits,
+           id, trip_id, title, amount_minor, currency, exchange_rate_to_settlement_currency, notes, receipt_url, line_items, comments, paid_by, category, splits,
            itinerary_item_id, version",
     )
     .bind(expense_id)

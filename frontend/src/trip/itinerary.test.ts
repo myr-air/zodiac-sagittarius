@@ -421,7 +421,7 @@ describe("itinerary planning domain", () => {
 
     expect(summary.groupSpend).toBe(100.01);
     expect(summary.currentUserNetLabel).toBe("You owe HK$50.00");
-    expect(summary.settlementSuggestions).toEqual([{ from: "member-beam", to: "member-aom", amount: 50 }]);
+    expect(summary.settlementSuggestions).toEqual([{ from: "member-beam", to: "member-aom", amount: 50, currency: "HKD" }]);
 
     expect(buildExpenseSummary([
       {
@@ -432,7 +432,7 @@ describe("itinerary planning domain", () => {
         splits: { "member-aom": 90 },
         category: "settlement",
       },
-    ], "member-aom").groupSpend).toBe(100);
+    ], "member-aom").groupSpend).toBe(0);
 
     const currentMemberPaidOnly = buildExpenseSummary([
       {

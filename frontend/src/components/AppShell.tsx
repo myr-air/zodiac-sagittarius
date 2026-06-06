@@ -17,7 +17,6 @@ interface AppShellProps {
   currentMember: Member;
   onLeaveParticipantSession?: () => void;
   onNavigateView?: (view: PlanningView, href: string) => void;
-  onOpenExpenses?: () => void;
   trip: Trip;
   onToggleCollapsed: () => void;
 }
@@ -40,6 +39,7 @@ export function resolveViewFromPath(pathname: string, tripId: string, initialVie
   if (viewSegment === "map") return "map";
   if (viewSegment === "timeline") return "timeline";
   if (viewSegment === "members") return "members";
+  if (viewSegment === "expenses") return "expenses";
   if (viewSegment === "settings") return "settings";
   return initialView;
 }
@@ -55,7 +55,6 @@ const sideRailClassName = "side-rail sticky top-0 z-[5] grid h-screen grid-rows-
 const railLinksClassName = "rail-links grid content-start gap-1 overflow-y-auto px-2.5 pb-3 pt-2.5 max-[767px]:flex max-[767px]:overflow-x-auto max-[767px]:pb-2 max-[767px]:pt-0";
 const railLinkClassName = "rail-link relative inline-flex min-h-10 items-center gap-[13px] rounded-[var(--radius-md)] px-[13px] text-[13px] font-semibold text-[#334155] no-underline transition-[background,color] duration-150 hover:bg-[var(--color-surface-subtle)] hover:text-[var(--color-primary-strong)] data-[collapsed=true]:justify-center data-[collapsed=true]:px-0 max-[1199px]:justify-center max-[1199px]:px-0 max-[767px]:min-h-[38px] max-[767px]:flex-none";
 const activeRailLinkClassName = "rail-link--active bg-[linear-gradient(90deg,rgb(15_118_110_/_0.12),rgb(15_118_110_/_0.04))] text-[var(--color-primary-strong)] before:absolute before:left-[-10px] before:h-7 before:w-[3px] before:rounded-full before:bg-[var(--color-primary)] before:content-['']";
-const railLinkButtonClassName = "rail-link-button w-full border-0 bg-transparent font-sans text-left max-[767px]:w-auto";
 const railLinkLabelClassName = "data-[collapsed=true]:hidden max-[1199px]:hidden max-[767px]:!inline";
 const sideRailLanguageClassName = "side-rail-language mx-3.5 mb-1 mt-2 self-start data-[collapsed=true]:mx-0 data-[collapsed=true]:self-center data-[collapsed=true]:[&_.language-switch-option]:min-w-[27px] data-[collapsed=true]:[&_.language-switch-option]:px-0 max-[1199px]:mx-0 max-[1199px]:self-center max-[1199px]:[&_.language-switch-option]:min-w-[27px] max-[1199px]:[&_.language-switch-option]:px-0";
 const memberCardBaseClassName = "member-card mx-2.5 mb-5 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-subtle)] p-[11px] data-[collapsed=true]:mx-2 data-[collapsed=true]:flex data-[collapsed=true]:min-h-[54px] data-[collapsed=true]:justify-center data-[collapsed=true]:p-2 max-[1199px]:mx-2 max-[1199px]:flex max-[1199px]:min-h-[54px] max-[1199px]:justify-center max-[1199px]:p-2 max-[767px]:hidden";
@@ -68,7 +67,7 @@ const memberCardRoleClassName = "text-[var(--color-text-muted)]";
 const memberSwitchButtonClassName = "member-switch-button min-h-7 whitespace-nowrap rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface)] px-2 text-[11px] font-extrabold text-[var(--color-primary-strong)] data-[collapsed=true]:hidden max-[1199px]:hidden";
 const memberFallbackIconClassName = "data-[collapsed=true]:hidden max-[1199px]:hidden";
 
-export function AppShell({ activeView, children, collapsed, currentMember, onLeaveParticipantSession, onNavigateView, onOpenExpenses, trip, onToggleCollapsed }: AppShellProps) {
+export function AppShell({ activeView, children, collapsed, currentMember, onLeaveParticipantSession, onNavigateView, trip, onToggleCollapsed }: AppShellProps) {
   const { t } = useI18n();
   const navItems = tripWorkspaceNavItems(trip.id, t.routes);
   const settingsHref = appRoutes.tripSettings(trip.id);
@@ -123,12 +122,6 @@ export function AppShell({ activeView, children, collapsed, currentMember, onLea
               <span className={railLinkLabelClassName} data-collapsed={collapsed ? "true" : "false"}>{item.label}</span>
             </a>
           ))}
-          {onOpenExpenses ? (
-            <button className={cn(railLinkClassName, railLinkButtonClassName)} data-collapsed={collapsed ? "true" : "false"} type="button" onClick={onOpenExpenses} title={t.appShell.nav.expenses}>
-              <Icon name="wallet" />
-              <span className={railLinkLabelClassName} data-collapsed={collapsed ? "true" : "false"}>{t.appShell.nav.expenses}</span>
-            </button>
-          ) : null}
           <a
             aria-current={activeView === "settings" ? "page" : undefined}
             className={cn(railLinkClassName, activeView === "settings" && activeRailLinkClassName)}

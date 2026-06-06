@@ -26,6 +26,18 @@ const cockpitResponse: TripCockpitResponse = {
       claimedAt: null,
       lastSeenAt: null,
     },
+    {
+      id: "018f4e81-77a4-7b8f-b3bd-0d0f493ac562",
+      tripId: "018f4e80-5788-7de0-a45c-8a555d17fc2d",
+      displayName: "Beam",
+      role: "organizer",
+      accessStatus: "active",
+      presence: "online",
+      color: "#2563eb",
+      userId: null,
+      claimedAt: null,
+      lastSeenAt: null,
+    },
   ],
   planVariants: [
     {
@@ -85,9 +97,21 @@ const cockpitResponse: TripCockpitResponse = {
       title: "Dim sum breakfast",
       amountMinor: 24000,
       currency: "HKD",
+      exchangeRateToSettlementCurrency: 1,
+      notes: "Bring voucher.",
+      receiptUrl: null,
+      lineItems: [],
+      comments: [
+        {
+          id: "comment-voucher",
+          authorId: "018f4e81-77a4-7b8f-b3bd-0d0f493ac562",
+          body: "Voucher is in chat.",
+          createdAt: "2026-06-05T12:00:00.000Z",
+        },
+      ],
       paidBy: "018f4e81-77a4-7b8f-b3bd-0d0f493ac561",
       category: "food",
-      splits: {},
+      splits: { "018f4e81-77a4-7b8f-b3bd-0d0f493ac561": 24000 },
       itineraryItemId: "018f4e83-5410-7d8b-8f25-fd52c5e7bd1f",
       version: 1,
     },
@@ -172,7 +196,11 @@ describe("Trip API client", () => {
       },
     ]);
     expect(cockpit.stopNotes).toEqual(cockpitResponse.stopNotes);
-    expect(cockpit.trip.expenses[0]).toMatchObject({ id: cockpitResponse.expenses[0].id, amount: 240 });
+    expect(cockpit.trip.expenses[0]).toMatchObject({
+      id: cockpitResponse.expenses[0].id,
+      amount: 240,
+      splits: { "018f4e81-77a4-7b8f-b3bd-0d0f493ac561": 240 },
+    });
     expect(cockpit.trip.itineraryItems[0]).toMatchObject({
       pathGroupId: "group-breakfast",
       pathId: "path-rain",
@@ -679,8 +707,61 @@ describe("Trip API client", () => {
   });
 
   it("creates, patches, and deletes expenses through authenticated backend routes", async () => {
-    const createdExpense = { ...cockpitResponse.expenses[0], id: "018f4e86-1111-7000-8000-000000000002", title: "Taxi", amountMinor: 12000, version: 1 };
-    const patchedExpense = { ...createdExpense, title: "Taxi edited", amountMinor: 15000, version: 2 };
+    const createdExpense = {
+      ...cockpitResponse.expenses[0],
+      id: "018f4e86-1111-7000-8000-000000000002",
+      title: "Taxi",
+      amountMinor: 12000,
+      notes: "Airport pickup.",
+      receiptUrl: "https://receipts.example/taxi.jpg",
+      comments: [
+        {
+          id: "comment-created",
+          authorId: cockpitResponse.members[1].id,
+          body: "Paid from my cash wallet.",
+          createdAt: "2026-06-05T12:00:00.000Z",
+        },
+      ],
+      lineItems: [
+        {
+          id: "line-taxi",
+          title: "Taxi van",
+          amount: 120,
+          participantIds: [cockpitResponse.members[0].id],
+        },
+      ],
+      version: 1,
+    };
+    const patchedExpense = {
+      ...createdExpense,
+      title: "Taxi edited",
+      amountMinor: 15000,
+      notes: "Airport pickup edited.",
+      receiptUrl: "https://receipts.example/taxi-edited.jpg",
+      comments: [
+        {
+          id: "comment-created",
+          authorId: cockpitResponse.members[1].id,
+          body: "Paid from my cash wallet.",
+          createdAt: "2026-06-05T12:00:00.000Z",
+        },
+        {
+          id: "comment-edited",
+          authorId: cockpitResponse.members[0].id,
+          body: "Adjusted for toll.",
+          createdAt: "2026-06-05T12:10:00.000Z",
+        },
+      ],
+      lineItems: [
+        {
+          id: "line-taxi-edited",
+          title: "Taxi van edited",
+          amount: 150,
+          participantIds: [cockpitResponse.members[0].id],
+        },
+      ],
+      version: 2,
+    };
     const fetchImpl = vi
       .fn()
       .mockResolvedValueOnce(jsonResponse(createdExpense, 201))
@@ -691,7 +772,26 @@ describe("Trip API client", () => {
       clientMutationId: "web-expense-1",
       title: "Taxi",
       amountMinor: 12000,
-      currency: "HKD",
+      currency: "CNY",
+      exchangeRateToSettlementCurrency: 1.1,
+      notes: "Airport pickup.",
+      receiptUrl: "https://receipts.example/taxi.jpg",
+      comments: [
+        {
+          id: "comment-created",
+          authorId: cockpitResponse.members[1].id,
+          body: "Paid from my cash wallet.",
+          createdAt: "2026-06-05T12:00:00.000Z",
+        },
+      ],
+      lineItems: [
+        {
+          id: "line-taxi",
+          title: "Taxi van",
+          amount: 120,
+          participantIds: [cockpitResponse.members[0].id],
+        },
+      ],
       paidBy: cockpitResponse.members[0].id,
       category: "transport" as const,
       splits: { [cockpitResponse.members[0].id]: 12000 },
@@ -702,6 +802,32 @@ describe("Trip API client", () => {
       expectedVersion: 1,
       title: "Taxi edited",
       amountMinor: 15000,
+      currency: "CNY",
+      exchangeRateToSettlementCurrency: 1.1,
+      notes: "Airport pickup edited.",
+      receiptUrl: "https://receipts.example/taxi-edited.jpg",
+      comments: [
+        {
+          id: "comment-created",
+          authorId: cockpitResponse.members[1].id,
+          body: "Paid from my cash wallet.",
+          createdAt: "2026-06-05T12:00:00.000Z",
+        },
+        {
+          id: "comment-edited",
+          authorId: cockpitResponse.members[0].id,
+          body: "Adjusted for toll.",
+          createdAt: "2026-06-05T12:10:00.000Z",
+        },
+      ],
+      lineItems: [
+        {
+          id: "line-taxi-edited",
+          title: "Taxi van edited",
+          amount: 150,
+          participantIds: [cockpitResponse.members[0].id],
+        },
+      ],
       paidBy: cockpitResponse.members[0].id,
       category: "transport" as const,
       splits: { [cockpitResponse.members[0].id]: 15000 },
@@ -738,9 +864,51 @@ describe("Trip API client", () => {
         headers: expect.objectContaining({ Authorization: "Bearer session-token" }),
       }),
     );
-    expect(created).toMatchObject({ id: createdExpense.id, title: "Taxi", amount: 120, version: 1 });
+    expect(created).toMatchObject({ id: createdExpense.id, title: "Taxi", amount: 120, notes: "Airport pickup.", comments: createdExpense.comments, version: 1 });
     expect(patched).toMatchObject({ id: createdExpense.id, title: "Taxi edited", amount: 150, version: 2 });
     expect(deleted).toMatchObject({ id: createdExpense.id, title: "Taxi edited", amount: 150, version: 2 });
+  });
+
+  it("records a payback reminder and receives refreshed settlement suggestions", async () => {
+    const reminderSummary = {
+      groupSpend: 240,
+      netByMember: {
+        [cockpitResponse.members[0].id]: 120,
+        [cockpitResponse.members[1].id]: -120,
+      },
+      currentUserNetLabel: "You owe HK$120.00",
+      settlementSuggestions: [
+        {
+          from: cockpitResponse.members[1].id,
+          to: cockpitResponse.members[0].id,
+          amount: 120,
+          lastRemindedAt: "2026-06-05T12:00:00.000Z",
+        },
+      ],
+    };
+    const fetchImpl = vi.fn().mockResolvedValueOnce(jsonResponse(reminderSummary));
+    const client = createTripApiClient({ baseUrl: "https://api.example.test", fetchImpl });
+    const request = {
+      clientMutationId: "web-expense-reminder-1",
+      from: cockpitResponse.members[1].id,
+      to: cockpitResponse.members[0].id,
+      amountMinor: 12000,
+    };
+
+    const summary = await client.recordExpenseReminder(cockpitResponse.trip.id, "session-token", request);
+
+    expect(fetchImpl).toHaveBeenCalledWith(
+      `https://api.example.test/api/v1/trips/${cockpitResponse.trip.id}/expenses/reminders`,
+      expect.objectContaining({
+        method: "POST",
+        headers: expect.objectContaining({ Authorization: "Bearer session-token" }),
+        body: JSON.stringify(request),
+      }),
+    );
+    expect(summary.settlementSuggestions[0]).toMatchObject({
+      amount: 120,
+      lastRemindedAt: "2026-06-05T12:00:00.000Z",
+    });
   });
 
   it("lists and patches daily briefings through authenticated backend routes", async () => {

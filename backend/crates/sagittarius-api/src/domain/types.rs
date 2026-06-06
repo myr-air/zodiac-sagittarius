@@ -487,12 +487,15 @@ pub struct SettlementSuggestion {
     pub from: Uuid,
     pub to: Uuid,
     pub amount: f64,
+    pub currency: String,
+    pub last_reminded_at: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ExpenseSummary {
     pub group_spend: f64,
+    pub settlement_currency: String,
     pub net_by_member: std::collections::BTreeMap<Uuid, f64>,
     pub current_user_net_label: String,
     pub settlement_suggestions: Vec<SettlementSuggestion>,
@@ -506,6 +509,11 @@ pub struct ExpenseItemSummary {
     pub title: String,
     pub amount_minor: i32,
     pub currency: String,
+    pub exchange_rate_to_settlement_currency: f64,
+    pub notes: String,
+    pub receipt_url: Option<String>,
+    pub line_items: Value,
+    pub comments: Value,
     pub paid_by: Uuid,
     pub category: String,
     pub splits: Value,

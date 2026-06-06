@@ -138,9 +138,11 @@ describe("Sagittarius project scaffold", () => {
     expect(makefile).toContain("backend/migrations/0005_account_portal.sql");
     expect(makefile).toContain("backend/migrations/0006_trip_countries.sql");
     expect(makefile).toContain("backend/migrations/0010_itinerary_activity_paths.sql");
+    expect(makefile).toContain("backend/migrations/0011_expense_reminders.sql");
     expect(makefile).toContain("table_name='account_vault_items'");
     expect(makefile).toContain("table_name='trips' AND column_name='countries'");
     expect(makefile).toContain("table_name='itinerary_items' AND column_name='path_id'");
+    expect(makefile).toContain("table_name='expense_reminders'");
     expect(makefile).not.toMatch(/elif ! \$\(PSQL\)[\s\S]*account_vault_items/);
   });
 
@@ -177,6 +179,11 @@ describe("Sagittarius project scaffold", () => {
     expect(seedE2e).toContain("0005_account_portal.sql");
     expect(seedE2e).toContain("0006_trip_countries.sql");
     expect(seedE2e).toContain("0010_itinerary_activity_paths.sql");
+    expect(seedE2e).toContain("0011_expense_reminders.sql");
+    expect(seedE2e).toContain("0012_expense_exchange_rates.sql");
+    expect(seedE2e).toContain("0013_expense_receipts_itemization.sql");
+    expect(seedE2e).toContain("0014_expense_notes.sql");
+    expect(seedE2e).toContain("0015_expense_comments.sql");
     expect(makefile).toContain("frontend-e2e-local:");
     expect(makefile).toContain("frontend-e2e-local: db-init-test");
     expect(makefile).toContain("bun run test:e2e:local");

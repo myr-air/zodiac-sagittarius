@@ -42,6 +42,7 @@ export const tripApiRoutes = {
   suggestion: (tripId: string, suggestionId: string) =>
     `/api/v1/trips/${tripPathSegment(tripId)}/suggestions/${encodePathSegment(suggestionId)}`,
   expensesSummary: (tripId: string) => `/api/v1/trips/${tripPathSegment(tripId)}/expenses/summary`,
+  expenseReminders: (tripId: string) => `/api/v1/trips/${tripPathSegment(tripId)}/expenses/reminders`,
   expenses: (tripId: string) => `/api/v1/trips/${tripPathSegment(tripId)}/expenses`,
   expense: (tripId: string, expenseId: string) => `/api/v1/trips/${tripPathSegment(tripId)}/expenses/${encodePathSegment(expenseId)}`,
   stopNotes: (tripId: string) => `/api/v1/trips/${tripPathSegment(tripId)}/stop-notes`,

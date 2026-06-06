@@ -1,6 +1,8 @@
 import type {
   ExpenseSummary,
   Expense,
+  ExpenseComment,
+  ExpenseLineItem,
   ItineraryAdvisory,
   ItineraryCoordinates,
   ItineraryItem,
@@ -22,6 +24,7 @@ import type {
 } from "./types";
 import type { ItineraryExportDocument } from "./itinerary-import-export";
 import { tripApiRoutes } from "./api-routes";
+import { normalizeExpenseSplitsFromMinor } from "./expenses";
 
 export interface TripApiClientOptions {
   baseUrl?: string;
@@ -103,6 +106,11 @@ export interface ExpenseResponse {
   title: string;
   amountMinor: number;
   currency: string;
+  exchangeRateToSettlementCurrency: number;
+  notes: string | null;
+  receiptUrl: string | null;
+  lineItems: ExpenseLineItem[];
+  comments: ExpenseComment[];
   paidBy: string;
   category: Expense["category"];
   splits: Record<string, number>;
@@ -188,6 +196,7 @@ export interface TripApiClient {
   patchMember(tripId: string, memberId: string, sessionToken: string, request: PatchMemberApiRequest): Promise<Member>;
   resetMemberClaim(tripId: string, memberId: string, sessionToken: string): Promise<Member>;
   getExpenseSummary(tripId: string, sessionToken: string): Promise<ExpenseSummary>;
+  recordExpenseReminder(tripId: string, sessionToken: string, request: RecordExpenseReminderApiRequest): Promise<ExpenseSummary>;
   createExpense(tripId: string, sessionToken: string, request: CreateExpenseApiRequest): Promise<Expense>;
   patchExpense(tripId: string, expenseId: string, sessionToken: string, request: PatchExpenseApiRequest): Promise<Expense>;
   deleteExpense(tripId: string, expenseId: string, sessionToken: string): Promise<Expense>;
@@ -333,10 +342,22 @@ export interface CreateExpenseApiRequest {
   title: string;
   amountMinor: number;
   currency?: string;
+  exchangeRateToSettlementCurrency?: number;
+  notes?: string | null;
+  receiptUrl?: string | null;
+  lineItems?: ExpenseLineItem[];
+  comments?: ExpenseComment[];
   paidBy: string;
   category: Expense["category"];
   splits: Record<string, number>;
   itineraryItemId?: string | null;
+}
+
+export interface RecordExpenseReminderApiRequest {
+  clientMutationId: string;
+  from: string;
+  to: string;
+  amountMinor: number;
 }
 
 export interface PatchExpenseApiRequest {
@@ -345,6 +366,11 @@ export interface PatchExpenseApiRequest {
   title?: string;
   amountMinor?: number;
   currency?: string;
+  exchangeRateToSettlementCurrency?: number;
+  notes?: string | null;
+  receiptUrl?: string | null;
+  lineItems?: ExpenseLineItem[];
+  comments?: ExpenseComment[];
   paidBy?: string;
   category?: Expense["category"];
   splits?: Record<string, number>;
@@ -609,6 +635,13 @@ export function createTripApiClient(options: TripApiClientOptions = {}): TripApi
         headers: { Authorization: `Bearer ${sessionToken}` },
       });
     },
+    recordExpenseReminder(tripId, sessionToken, reminderRequest) {
+      return request<ExpenseSummary>(tripApiRoutes.expenseReminders(tripId), {
+        method: "POST",
+        headers: { Authorization: `Bearer ${sessionToken}` },
+        body: JSON.stringify(reminderRequest),
+      });
+    },
     async createExpense(tripId, sessionToken, expenseRequest) {
       const expense = await request<ExpenseResponse>(tripApiRoutes.expenses(tripId), {
         method: "POST",
@@ -741,8 +774,13 @@ function mapExpense(expense: ExpenseResponse): Expense {
     amount: expense.amountMinor / 100,
     amountMinor: expense.amountMinor,
     currency: expense.currency,
+    exchangeRateToSettlementCurrency: expense.exchangeRateToSettlementCurrency,
+    notes: expense.notes ?? "",
+    receiptUrl: expense.receiptUrl,
+    lineItems: expense.lineItems ?? [],
+    comments: expense.comments ?? [],
     paidBy: expense.paidBy,
-    splits: expense.splits,
+    splits: normalizeExpenseSplitsFromMinor(expense.splits),
     category: expense.category,
     itineraryItemId: expense.itineraryItemId,
     version: expense.version,

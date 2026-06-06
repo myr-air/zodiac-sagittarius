@@ -122,6 +122,11 @@ pub struct CreateExpenseRequest {
     pub title: String,
     pub amount_minor: i32,
     pub currency: Option<String>,
+    pub exchange_rate_to_settlement_currency: Option<f64>,
+    pub notes: Option<String>,
+    pub receipt_url: Option<String>,
+    pub line_items: Option<Value>,
+    pub comments: Option<Value>,
     pub paid_by: Uuid,
     pub category: String,
     pub splits: Value,
@@ -136,11 +141,25 @@ pub struct PatchExpenseRequest {
     pub title: Option<String>,
     pub amount_minor: Option<i32>,
     pub currency: Option<String>,
+    pub exchange_rate_to_settlement_currency: Option<f64>,
+    pub notes: Option<String>,
+    pub receipt_url: Option<String>,
+    pub line_items: Option<Value>,
+    pub comments: Option<Value>,
     pub paid_by: Option<Uuid>,
     pub category: Option<String>,
     pub splits: Option<Value>,
     #[serde(default, deserialize_with = "deserialize_nullable_uuid_patch")]
     pub itinerary_item_id: Option<Option<Uuid>>,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RecordExpenseReminderRequest {
+    pub client_mutation_id: String,
+    pub from: Uuid,
+    pub to: Uuid,
+    pub amount_minor: i32,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -366,8 +385,17 @@ impl CreateExpenseRequest {
         if let Some(currency) = &self.currency {
             validate_required_text(currency, "expense currency is required")?;
         }
+        if let Some(notes) = &self.notes {
+            validate_sized_text(notes, "expense notes are too long")?;
+        }
+        if let Some(receipt_url) = &self.receipt_url {
+            validate_required_text(receipt_url, "expense receipt link is required")?;
+        }
+        validate_exchange_rate(self.exchange_rate_to_settlement_currency)?;
+        validate_line_items(self.line_items.as_ref())?;
+        validate_comments(self.comments.as_ref())?;
         validate_expense_category(&self.category)?;
-        validate_splits(&self.splits)
+        validate_expense_splits_total(&self.splits, self.amount_minor)
     }
 }
 
@@ -383,15 +411,32 @@ impl PatchExpenseRequest {
         if let Some(currency) = &self.currency {
             validate_required_text(currency, "expense currency is required")?;
         }
+        if let Some(notes) = &self.notes {
+            validate_sized_text(notes, "expense notes are too long")?;
+        }
+        if let Some(receipt_url) = &self.receipt_url {
+            validate_required_text(receipt_url, "expense receipt link is required")?;
+        }
+        validate_exchange_rate(self.exchange_rate_to_settlement_currency)?;
+        validate_line_items(self.line_items.as_ref())?;
+        validate_comments(self.comments.as_ref())?;
         if let Some(category) = &self.category {
             validate_expense_category(category)?;
         }
         if let Some(splits) = &self.splits {
             validate_splits(splits)?;
         }
+        if let (Some(amount_minor), Some(splits)) = (self.amount_minor, &self.splits) {
+            validate_expense_splits_total(splits, amount_minor)?;
+        }
         if self.title.is_none()
             && self.amount_minor.is_none()
             && self.currency.is_none()
+            && self.exchange_rate_to_settlement_currency.is_none()
+            && self.notes.is_none()
+            && self.receipt_url.is_none()
+            && self.line_items.is_none()
+            && self.comments.is_none()
             && self.paid_by.is_none()
             && self.category.is_none()
             && self.splits.is_none()
@@ -400,6 +445,18 @@ impl PatchExpenseRequest {
             return Err(ServiceError::InvalidRequest("expense patch is empty"));
         }
 
+        Ok(())
+    }
+}
+
+impl RecordExpenseReminderRequest {
+    pub fn validate(&self) -> Result<(), ServiceError> {
+        validate_client_mutation_id(&self.client_mutation_id)?;
+        if self.amount_minor <= 0 {
+            return Err(ServiceError::InvalidRequest(
+                "expense reminder amount_minor must be greater than zero",
+            ));
+        }
         Ok(())
     }
 }
@@ -623,6 +680,19 @@ fn validate_amount_minor(value: i32) -> Result<(), ServiceError> {
     Ok(())
 }
 
+fn validate_exchange_rate(value: Option<f64>) -> Result<(), ServiceError> {
+    let Some(rate) = value else {
+        return Ok(());
+    };
+    if !rate.is_finite() || rate <= 0.0 {
+        return Err(ServiceError::InvalidRequest(
+            "expense exchange rate must be greater than zero",
+        ));
+    }
+
+    Ok(())
+}
+
 fn validate_expense_category(value: &str) -> Result<(), ServiceError> {
     match value {
         "food" | "transport" | "tickets" | "stay" | "shopping" | "settlement" => Ok(()),
@@ -638,6 +708,71 @@ fn validate_splits(value: &Value) -> Result<(), ServiceError> {
     }
 
     Ok(())
+}
+
+fn validate_line_items(value: Option<&Value>) -> Result<(), ServiceError> {
+    let Some(value) = value else {
+        return Ok(());
+    };
+    if !value.is_array() {
+        return Err(ServiceError::InvalidRequest(
+            "expense line items must be an array",
+        ));
+    }
+
+    Ok(())
+}
+
+fn validate_comments(value: Option<&Value>) -> Result<(), ServiceError> {
+    let Some(value) = value else {
+        return Ok(());
+    };
+    if !value.is_array() {
+        return Err(ServiceError::InvalidRequest(
+            "expense comments must be an array",
+        ));
+    }
+
+    Ok(())
+}
+
+pub(crate) fn validate_expense_splits_total(
+    value: &Value,
+    amount_minor: i32,
+) -> Result<(), ServiceError> {
+    validate_splits(value)?;
+    let mut total_minor = 0_i64;
+    for (member_id, share) in value.as_object().expect("validated splits object") {
+        if Uuid::parse_str(member_id).is_err() {
+            return Err(ServiceError::InvalidRequest(
+                "expense split member is invalid",
+            ));
+        }
+        let Some(share_minor) = split_share_minor(share) else {
+            return Err(ServiceError::InvalidRequest(
+                "expense split amount must be numeric",
+            ));
+        };
+        if share_minor < 0 {
+            return Err(ServiceError::InvalidRequest(
+                "expense split amount must be zero or greater",
+            ));
+        }
+        total_minor += share_minor;
+    }
+    if total_minor != i64::from(amount_minor) {
+        return Err(ServiceError::InvalidRequest(
+            "expense splits must equal amount_minor",
+        ));
+    }
+
+    Ok(())
+}
+
+fn split_share_minor(value: &Value) -> Option<i64> {
+    value
+        .as_i64()
+        .or_else(|| value.as_f64().map(|number| number.round() as i64))
 }
 
 fn validate_plan_variant_kind(value: &str) -> Result<(), ServiceError> {
@@ -876,6 +1011,108 @@ mod tests {
         assert_eq!(
             invalid_message(bad_status.validate()),
             "task status is invalid"
+        );
+    }
+
+    #[test]
+    fn expense_create_rejects_splits_that_do_not_match_amount_minor() {
+        let member = Uuid::now_v7();
+        let valid = CreateExpenseRequest {
+            client_mutation_id: "expense-create".to_string(),
+            title: "Dinner".to_string(),
+            amount_minor: 10_000,
+            currency: Some("HKD".to_string()),
+            exchange_rate_to_settlement_currency: None,
+            notes: None,
+            receipt_url: None,
+            line_items: None,
+            comments: None,
+            paid_by: member,
+            category: "food".to_string(),
+            splits: json!({ member.to_string(): 10_000 }),
+            itinerary_item_id: None,
+        };
+        assert!(valid.validate().is_ok());
+
+        let mut mismatched = valid;
+        mismatched.splits = json!({ member.to_string(): 9_999 });
+        assert_eq!(
+            invalid_message(mismatched.validate()),
+            "expense splits must equal amount_minor"
+        );
+    }
+
+    #[test]
+    fn expense_patch_rejects_splits_that_do_not_match_amount_minor_when_both_are_present() {
+        let member = Uuid::now_v7();
+        let valid = PatchExpenseRequest {
+            client_mutation_id: "expense-patch".to_string(),
+            expected_version: 2,
+            title: None,
+            amount_minor: Some(10_000),
+            currency: None,
+            exchange_rate_to_settlement_currency: None,
+            notes: None,
+            receipt_url: None,
+            line_items: None,
+            comments: None,
+            paid_by: None,
+            category: None,
+            splits: Some(json!({ member.to_string(): 10_000 })),
+            itinerary_item_id: None,
+        };
+        assert!(valid.validate().is_ok());
+
+        let mut mismatched = valid;
+        mismatched.splits = Some(json!({ member.to_string(): 9_999 }));
+        assert_eq!(
+            invalid_message(mismatched.validate()),
+            "expense splits must equal amount_minor"
+        );
+    }
+
+    #[test]
+    fn expense_requests_reject_invalid_exchange_rates() {
+        let member = Uuid::now_v7();
+        let create = CreateExpenseRequest {
+            client_mutation_id: "expense-create".to_string(),
+            title: "Dinner".to_string(),
+            amount_minor: 10_000,
+            currency: Some("CNY".to_string()),
+            exchange_rate_to_settlement_currency: Some(0.0),
+            notes: None,
+            receipt_url: None,
+            line_items: None,
+            comments: None,
+            paid_by: member,
+            category: "food".to_string(),
+            splits: json!({ member.to_string(): 10_000 }),
+            itinerary_item_id: None,
+        };
+        assert_eq!(
+            invalid_message(create.validate()),
+            "expense exchange rate must be greater than zero"
+        );
+
+        let patch = PatchExpenseRequest {
+            client_mutation_id: "expense-patch".to_string(),
+            expected_version: 2,
+            title: None,
+            amount_minor: None,
+            currency: None,
+            exchange_rate_to_settlement_currency: Some(-1.0),
+            notes: None,
+            receipt_url: None,
+            line_items: None,
+            comments: None,
+            paid_by: None,
+            category: None,
+            splits: None,
+            itinerary_item_id: None,
+        };
+        assert_eq!(
+            invalid_message(patch.validate()),
+            "expense exchange rate must be greater than zero"
         );
     }
 }

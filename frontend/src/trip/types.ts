@@ -176,11 +176,45 @@ export interface Expense {
   amount: number;
   amountMinor?: number;
   currency?: string;
+  exchangeRateToSettlementCurrency?: number;
+  notes?: string;
+  receiptUrl?: string | null;
+  lineItems?: ExpenseLineItem[];
+  comments?: ExpenseComment[];
   paidBy: string;
   splits: Record<string, number>;
   category: "food" | "transport" | "tickets" | "stay" | "shopping" | "settlement";
   itineraryItemId?: string | null;
   version?: number;
+}
+
+export interface ExpenseLineItem {
+  id: string;
+  title: string;
+  amount: number;
+  participantIds: string[];
+}
+
+export interface ExpenseComment {
+  id: string;
+  authorId: string;
+  body: string;
+  createdAt: string;
+}
+
+export interface ExpenseReminder {
+  from: string;
+  to: string;
+  amount: number;
+  lastRemindedAt: string;
+}
+
+export interface SettlementSuggestion {
+  from: string;
+  to: string;
+  amount: number;
+  currency?: string;
+  lastRemindedAt?: string | null;
 }
 
 export type TripTaskStatus = "open" | "done";
@@ -225,6 +259,7 @@ export interface Trip {
   members: Member[];
   itineraryItems: ItineraryItem[];
   expenses: Expense[];
+  expenseReminders?: ExpenseReminder[];
   version?: number;
 }
 
@@ -289,7 +324,8 @@ export interface Suggestion {
 
 export interface ExpenseSummary {
   groupSpend: number;
+  settlementCurrency?: string;
   netByMember: Record<string, number>;
   currentUserNetLabel: string;
-  settlementSuggestions: Array<{ from: string; to: string; amount: number }>;
+  settlementSuggestions: SettlementSuggestion[];
 }
