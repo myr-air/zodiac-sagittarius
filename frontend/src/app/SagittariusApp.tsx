@@ -203,7 +203,7 @@ export function SagittariusApp({
   const canReviewSuggestions = canTripRole(currentMember.role, "reviewSuggestions");
   const canEditExpenses = canTripRole(currentMember.role, "editExpenses");
   const canManagePeople = canTripRole(currentMember.role, "managePeople");
-  const canEditBookings = canEdit || canEditExpenses;
+  const canEditBookings = !isApiMode && (canEdit || canEditExpenses);
   const canCreateStopNote = canCreateSuggestion || canEdit;
   const supportsContextRail = currentView === "overview" || currentView === "itinerary" || currentView === "timeline";
   const activePlanItems = useMemo(

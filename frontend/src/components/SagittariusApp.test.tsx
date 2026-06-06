@@ -156,6 +156,30 @@ describe("Sagittarius cockpit UI", () => {
     expect(await screen.findByRole("button", { name: /Select Airport Express pass/i })).toBeInTheDocument();
   });
 
+  it("shows API-loaded booking docs as read-only until backend booking endpoints exist", async () => {
+    installLocalStorageStub();
+    window.sessionStorage.setItem(
+      tripParticipantSessionStorageKey,
+      JSON.stringify({
+        tripId: seedTrip.id,
+        memberId: seedTrip.members[0].id,
+        sessionToken: "api-bookings-session",
+        createdAt: "2026-05-29T00:00:00.000Z",
+        expiresAt: "2026-06-28T00:00:00.000Z",
+      }),
+    );
+    const apiClient = createApiClientForTrip(seedTrip);
+
+    render(<SagittariusApp accessMode="trip-access" initialView="bookings" requireJoin dataSource="api" routeTripId={seedTrip.id} apiClient={apiClient} />);
+
+    expect(await screen.findByRole("region", { name: "Bookings & Docs" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Select Bangkok to Hong Kong flight/i })).toBeInTheDocument();
+    expect(screen.getByText("Read-only")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Add booking" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Edit booking" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Delete booking" })).not.toBeInTheDocument();
+  });
+
   it("asks the organizer to choose when place resolution is ambiguous", async () => {
     const user = userEvent.setup();
     const placeResolver = vi.fn().mockResolvedValue({

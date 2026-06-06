@@ -207,6 +207,7 @@ export function BookingsDocsPage({
         <BookingDialog
           booking={dialogBooking === "new" ? null : dialogBooking}
           trip={trip}
+          tasks={tasks}
           onCancel={() => setDialogBooking(null)}
           onSubmit={submitBooking}
         />
@@ -316,9 +317,10 @@ function BookingInspector({ booking, relations }: { booking: BookingDoc | null; 
   );
 }
 
-function BookingDialog({ booking, trip, onCancel, onSubmit }: {
+function BookingDialog({ booking, trip, tasks, onCancel, onSubmit }: {
   booking: BookingDoc | null;
   trip: Trip;
+  tasks: TripTask[];
   onCancel: () => void;
   onSubmit: (input: BookingDocInput) => void | Promise<void>;
 }) {
@@ -334,7 +336,12 @@ function BookingDialog({ booking, trip, onCancel, onSubmit }: {
   const [currency, setCurrency] = useState(booking?.currency ?? "HKD");
   const [externalUrl, setExternalUrl] = useState(booking?.externalLinks[0]?.url ?? "");
   const [notes, setNotes] = useState(booking?.notes ?? "");
-  const [travelerId, setTravelerId] = useState(booking?.travelerIds[0] ?? trip.members[0]?.id ?? "");
+  const [travelerIds, setTravelerIds] = useState(() => booking?.travelerIds ?? trip.members.slice(0, 1).map((member) => member.id));
+  const [relatedItineraryItemIds, setRelatedItineraryItemIds] = useState(() => booking?.relatedItineraryItemIds ?? []);
+  const [relatedTaskIds, setRelatedTaskIds] = useState(() => booking?.relatedTaskIds ?? []);
+  const [relatedExpenseIds, setRelatedExpenseIds] = useState(() => booking?.relatedExpenseIds ?? []);
+  const [noteIds, setNoteIds] = useState(() => booking?.noteIds ?? []);
+  const stopNotes = trip.stopNotes ?? [];
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -347,7 +354,7 @@ function BookingDialog({ booking, trip, onCancel, onSubmit }: {
       title: trimmedTitle,
       status,
       visibility,
-      ownerMemberId: visibility === "private" ? travelerId || null : booking?.ownerMemberId ?? null,
+      ownerMemberId: visibility === "private" ? travelerIds[0] || null : booking?.ownerMemberId ?? null,
       providerName: providerName.trim() || null,
       confirmationCode: confirmationCode.trim() || null,
       startsAt: fromDateTimeLocalValue(startsAt),
@@ -355,12 +362,12 @@ function BookingDialog({ booking, trip, onCancel, onSubmit }: {
       timezone: booking?.timezone ?? "Asia/Hong_Kong",
       priceAmount: priceAmount ? Number(priceAmount) : null,
       currency: currency.trim() || null,
-      travelerIds: travelerId ? [travelerId] : [],
+      travelerIds,
       externalLinks: linkUrl ? [{ id: booking?.externalLinks[0]?.id ?? "link-local-1", label: "External link", url: linkUrl, provider: providerName.trim() || null, accessNote: null }] : [],
-      relatedItineraryItemIds: booking?.relatedItineraryItemIds ?? [],
-      relatedTaskIds: booking?.relatedTaskIds ?? [],
-      relatedExpenseIds: booking?.relatedExpenseIds ?? [],
-      noteIds: booking?.noteIds ?? [],
+      relatedItineraryItemIds,
+      relatedTaskIds,
+      relatedExpenseIds,
+      noteIds,
       notes: notes.trim() || null,
     });
   }
@@ -382,11 +389,42 @@ function BookingDialog({ booking, trip, onCancel, onSubmit }: {
             <label className={fieldClassName}><span>Confirmation code</span><input value={confirmationCode} onChange={(event) => setConfirmationCode(event.target.value)} /></label>
             <label className={fieldClassName}><span>Start</span><input type="datetime-local" value={startsAt} onChange={(event) => setStartsAt(event.target.value)} /></label>
             <label className={fieldClassName}><span>End</span><input type="datetime-local" value={endsAt} onChange={(event) => setEndsAt(event.target.value)} /></label>
-            <label className={fieldClassName}><span>Price</span><input inputMode="decimal" value={priceAmount} onChange={(event) => setPriceAmount(event.target.value)} /></label>
+            <label className={fieldClassName}><span>Price</span><input inputMode="decimal" type="number" min="0" step="0.01" value={priceAmount} onChange={(event) => setPriceAmount(event.target.value)} /></label>
             <label className={fieldClassName}><span>Currency</span><input value={currency} onChange={(event) => setCurrency(event.target.value.toUpperCase())} /></label>
-            <label className={fieldClassName}><span>Traveler</span><select value={travelerId} onChange={(event) => setTravelerId(event.target.value)}>{trip.members.map((member) => <option key={member.id} value={member.id}>{member.displayName}</option>)}</select></label>
-            <label className={fieldClassName}><span>External link</span><input value={externalUrl} onChange={(event) => setExternalUrl(event.target.value)} /></label>
+            <label className={fieldClassName}><span>External link</span><input type="url" value={externalUrl} onChange={(event) => setExternalUrl(event.target.value)} /></label>
             <label className={cn(fieldClassName, "col-span-full")}><span>Notes</span><textarea value={notes} onChange={(event) => setNotes(event.target.value)} /></label>
+          </div>
+          <div className="grid gap-3">
+            <CheckboxGroup
+              label="Travelers"
+              options={trip.members.map((member) => ({ id: member.id, label: member.displayName }))}
+              selectedIds={travelerIds}
+              onToggle={(memberId) => setTravelerIds((current) => toggleId(current, memberId))}
+            />
+            <CheckboxGroup
+              label="Linked itinerary"
+              options={trip.itineraryItems.map((item) => ({ id: item.id, label: `${item.day} · ${item.activity}` }))}
+              selectedIds={relatedItineraryItemIds}
+              onToggle={(itemId) => setRelatedItineraryItemIds((current) => toggleId(current, itemId))}
+            />
+            <CheckboxGroup
+              label="Linked todos"
+              options={tasks.map((task) => ({ id: task.id, label: task.title }))}
+              selectedIds={relatedTaskIds}
+              onToggle={(taskId) => setRelatedTaskIds((current) => toggleId(current, taskId))}
+            />
+            <CheckboxGroup
+              label="Linked expenses"
+              options={trip.expenses.map((expense) => ({ id: expense.id, label: expense.title }))}
+              selectedIds={relatedExpenseIds}
+              onToggle={(expenseId) => setRelatedExpenseIds((current) => toggleId(current, expenseId))}
+            />
+            <CheckboxGroup
+              label="Linked notes"
+              options={stopNotes.map((note) => ({ id: note.id, label: note.body }))}
+              selectedIds={noteIds}
+              onToggle={(noteId) => setNoteIds((current) => toggleId(current, noteId))}
+            />
           </div>
           <div className={dialogActionsClassName}>
             <Button type="button" variant="secondary" onClick={onCancel}>Cancel</Button>
@@ -396,6 +434,38 @@ function BookingDialog({ booking, trip, onCancel, onSubmit }: {
       </section>
     </div>
   );
+}
+
+function CheckboxGroup({
+  label,
+  options,
+  selectedIds,
+  onToggle,
+}: {
+  label: string;
+  options: Array<{ id: string; label: string }>;
+  selectedIds: string[];
+  onToggle: (id: string) => void;
+}) {
+  if (!options.length) return null;
+
+  return (
+    <fieldset className="grid gap-2 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface-subtle) p-3">
+      <legend className="px-1 text-[11px] font-extrabold text-(--color-text-muted)">{label}</legend>
+      <div className="grid max-h-36 gap-1.5 overflow-auto pr-1">
+        {options.map((option) => (
+          <label className="grid min-h-8 grid-cols-[18px_minmax(0,1fr)] items-center gap-2 text-xs font-bold text-(--color-text)" key={option.id}>
+            <input type="checkbox" checked={selectedIds.includes(option.id)} onChange={() => onToggle(option.id)} />
+            <span className="min-w-0 truncate">{option.label}</span>
+          </label>
+        ))}
+      </div>
+    </fieldset>
+  );
+}
+
+function toggleId(ids: string[], id: string): string[] {
+  return ids.includes(id) ? ids.filter((candidate) => candidate !== id) : [...ids, id];
 }
 
 function formatCurrencyTotals(totals: Record<string, number>): string {
