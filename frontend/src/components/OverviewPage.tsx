@@ -47,6 +47,12 @@ const overviewHeroSkylineClassName = "overview-hero-skyline";
 const overviewHeroRouteClassName = "overview-hero-route bottom-[17%] right-[9%] h-[46%] w-[74%] -rotate-[7deg] rounded-bl-full border-b-4 border-l-4 border-b-white/90 border-l-white/70";
 const overviewHeroMarkerClassName =
   "overview-hero-marker bottom-[39%] left-[18%] size-[18px] -rotate-45 rounded-[999px_999px_999px_2px] border-4 border-white/90 bg-(--overview-hero-accent) shadow-[0_10px_18px_rgb(15_23_42_/_0.14)]";
+const overviewHeroPolaroidStackClassName =
+  "overview-hero-polaroid-stack absolute right-[392px] top-1/2 z-[1] hidden h-[212px] w-[246px] -translate-y-1/2 select-none pointer-events-none xl:block";
+const overviewHeroPolaroidClassName =
+  "overview-hero-polaroid absolute grid w-[150px] shrink-0 gap-2 border-[8px] border-white bg-white p-1.5 pb-5 shadow-[0_10px_22px_rgb(15_23_42_/_0.12)] transition-[transform,box-shadow] duration-300 ease-out [&_span]:text-center [&_span]:font-mono [&_span]:text-[9px] [&_span]:font-extrabold [&_span]:uppercase [&_span]:tracking-[0.12em] [&_span]:text-(--overview-hero-accent)";
+const overviewHeroPolaroidFrameClassName =
+  "relative aspect-[4/3] w-full overflow-hidden rounded-[2px] border border-slate-100 bg-slate-50";
 const overviewHeroAsideClassName = "overview-hero-aside relative z-[2] grid min-w-0 content-center gap-2.5 self-center rounded-(--radius-lg) border border-white/70 bg-white/80 p-3 shadow-[0_14px_30px_rgb(15_23_42_/_0.07)] max-[1199px]:col-auto max-[1199px]:grid-cols-1 max-[1199px]:items-center max-[767px]:grid-cols-1 [&_.page-current-user]:min-w-0 [&_.page-current-user]:w-full [&_.page-current-user]:border-transparent [&_.page-current-user]:bg-transparent [&_.page-current-user]:shadow-none";
 const overviewHeroSettlementsClassName = "overview-hero-settlements justify-self-stretch rounded-full border border-[color-mix(in_srgb,var(--overview-hero-accent)_26%,white)] bg-[rgb(255_255_255_/_0.7)] px-2.5 py-1.5 text-center text-xs font-[850] leading-4 text-(--overview-hero-accent)";
 const cockpitCardBaseClassName = "overview-cockpit-card grid min-h-[126px] min-w-0 content-start gap-2 rounded-(--radius-md) border border-(--color-border) bg-[linear-gradient(145deg,rgb(255_255_255_/_0.94),rgb(248_250_252_/_0.82)),var(--paper-grain),var(--color-surface)] bg-[length:auto,120px_120px,auto] p-3.5 text-left text-inherit shadow-[0_10px_24px_rgb(15_23_42_/_0.04)] max-[767px]:min-h-[104px] [&_small]:min-w-0 [&_small]:text-xs [&_small]:font-bold [&_small]:leading-[17px] [&_small]:text-(--color-text-muted) [&_strong]:min-w-0 [&_strong]:text-[22px] [&_strong]:font-black [&_strong]:leading-7 [&_strong]:text-(--color-text) [&_strong]:[overflow-wrap:anywhere]";
@@ -628,21 +634,58 @@ interface DestinationVisual {
   tone: DestinationTone;
   label: string;
   imageUrl?: string;
+  polaroids: Array<{ imageUrl: string; caption: string }>;
 }
 
 function buildDestinationVisual(destinationLabel: string): DestinationVisual {
   const label = destinationLabel.trim() || "Trip destination";
   const normalized = label.toLocaleLowerCase("en-US");
   if (/(hong kong|harbour|harbor|shenzhen|bay)/i.test(normalized)) {
-    return { tone: "harbor", label, imageUrl: "/landing/auth/photo-hong-kong-skyline.png" };
+    return {
+      tone: "harbor",
+      label,
+      imageUrl: "/landing/auth/photo-hong-kong-skyline.png",
+      polaroids: [
+        { imageUrl: "/landing/auth/photo-mong-kok-market.png", caption: "Market" },
+        { imageUrl: "/landing/auth/photo-hong-kong-skyline.png", caption: "Harbour" },
+        { imageUrl: "/landing/auth/photo-dim-sum-brunch.png", caption: "Dim sum" },
+      ],
+    };
   }
   if (/(beach|coast|island|phuket|okinawa|bali)/i.test(normalized)) {
-    return { tone: "coast", label, imageUrl: "/landing/auth/photo-krabi.png" };
+    return {
+      tone: "coast",
+      label,
+      imageUrl: "/landing/auth/photo-krabi.png",
+      polaroids: [
+        { imageUrl: "/landing/auth/photo-krabi.png", caption: "Coast" },
+        { imageUrl: "/landing/auth/photo-santorini.png", caption: "Sunset" },
+        { imageUrl: "/landing/auth/photo-cappadocia.png", caption: "Route" },
+      ],
+    };
   }
   if (/(market|bazaar|night|taipei|bangkok)/i.test(normalized)) {
-    return { tone: "market", label, imageUrl: "/landing/auth/photo-santorini.png" };
+    return {
+      tone: "market",
+      label,
+      imageUrl: "/landing/auth/photo-santorini.png",
+      polaroids: [
+        { imageUrl: "/landing/auth/photo-mong-kok-market.png", caption: "Market" },
+        { imageUrl: "/landing/auth/photo-dim-sum-brunch.png", caption: "Food" },
+        { imageUrl: "/landing/auth/photo-santorini.png", caption: "Night" },
+      ],
+    };
   }
-  return { tone: "city", label, imageUrl: "/landing/auth/photo-kyoto.png" };
+  return {
+    tone: "city",
+    label,
+    imageUrl: "/landing/auth/photo-kyoto.png",
+    polaroids: [
+      { imageUrl: "/landing/auth/photo-kyoto.png", caption: "City" },
+      { imageUrl: "/landing/auth/photo-cappadocia.png", caption: "Route" },
+      { imageUrl: "/landing/auth/photo-krabi.png", caption: "Pause" },
+    ],
+  };
 }
 
 function getHighlightImage(item: ItineraryItem): string | undefined {
@@ -896,18 +939,32 @@ function OverviewHero({
           <span><Icon name="wallet" /> {groupSpendLabel}</span>
         </div>
       </div>
-      {visual.imageUrl ? (
-        <div className="absolute right-[336px] top-1/2 -translate-y-1/2 z-[1] hidden xl:block select-none pointer-events-none" aria-hidden="true">
-          <div className="relative rotate-[-3.5deg] hover:rotate-0 hover:scale-105 transition-all duration-300 shadow-[0_12px_28px_rgba(15,23,42,0.12)] border-[10px] border-white bg-white p-2.5 pb-8 w-56 shrink-0 pointer-events-auto">
-            {/* Washi tape effect */}
-            <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 w-14 h-5 bg-teal-100/30 backdrop-blur-[2px] rotate-[2deg] border border-white/20 shadow-[0_1px_3px_rgba(0,0,0,0.03)]" />
-            <div className="relative aspect-[4/3] w-full overflow-hidden bg-slate-50 rounded-xs border border-slate-100">
-              <Image src={visual.imageUrl} alt={visual.label} fill sizes="224px" className="object-cover" priority />
+      {visual.polaroids.length ? (
+        <div className={overviewHeroPolaroidStackClassName} aria-hidden="true">
+          {visual.polaroids.map((polaroid, index) => (
+            <div
+              className={cn(
+                overviewHeroPolaroidClassName,
+                index === 0 && "left-0 top-10 rotate-[-8deg] opacity-95",
+                index === 1 && "left-[48px] top-2 z-[2] w-[166px] rotate-[-1deg] shadow-[0_12px_26px_rgb(15_23_42_/_0.14)]",
+                index === 2 && "right-0 top-[58px] rotate-[7deg] opacity-95",
+              )}
+              key={`${polaroid.imageUrl}:${polaroid.caption}`}
+            >
+              <div className={overviewHeroPolaroidFrameClassName}>
+                <Image
+                  src={polaroid.imageUrl}
+                  alt=""
+                  fill
+                  sizes={index === 1 ? "166px" : "150px"}
+                  className="object-cover"
+                  priority={index === 1}
+                  loading={index === 1 ? "eager" : undefined}
+                />
+              </div>
+              <span>{polaroid.caption}</span>
             </div>
-            <div className="mt-3 text-center text-[10px] font-extrabold text-(--color-primary) tracking-widest uppercase font-mono">
-              ★ {visual.label.split("+")[0].trim()} ★
-            </div>
-          </div>
+          ))}
         </div>
       ) : (
         <div className={overviewHeroVisualClassName} aria-hidden="true">
@@ -1027,6 +1084,8 @@ function HighlightBoard({ items, startDate, locale, emptyMessage, title, subtitl
                       fill
                       sizes="(max-width: 767px) 240px, 25vw"
                       className="absolute inset-0 w-full h-full object-cover opacity-70 transition-transform duration-500 group-hover:scale-108"
+                      priority={index === 0}
+                      loading={index === 0 ? "eager" : undefined}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/40 to-transparent z-[1]" />
                   </>

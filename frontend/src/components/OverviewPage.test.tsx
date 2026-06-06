@@ -57,6 +57,7 @@ describe("OverviewPage role lenses", () => {
     expect(hero).toHaveTextContent(/Hong Kong/i);
     expect(hero).toHaveTextContent(/HK\$/i);
     expect(within(hero).getByText(/ศูนย์จัดการทริป/i)).toBeInTheDocument();
+    expect(hero.querySelectorAll(".overview-hero-polaroid")).toHaveLength(3);
 
     const cockpit = screen.getByRole("region", { name: /travel cockpit/i });
     expect(cockpit).toHaveClass("overview-travel-cockpit", "grid", "grid-cols-3", "gap-3");
