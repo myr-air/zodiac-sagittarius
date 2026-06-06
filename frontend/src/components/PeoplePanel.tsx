@@ -51,15 +51,16 @@ export function PeoplePanel({
   onTransferOwnership?: (targetMemberId: string) => void;
 }) {
   const { locale } = useI18n();
+  const copy = peoplePanelCopy(locale);
   return (
     <section className={peopleModuleClassName} aria-label="People and presence">
-      <h3 className={peopleHeadingClassName}>สมาชิกและสถานะ</h3>
+      <h3 className={peopleHeadingClassName}>{copy.heading}</h3>
       <div className={peopleListClassName}>
         {members.length === 0 ? (
           <div className={membersEmptyStateClassName}>
             <strong>{emptyMessage}</strong>
-            <span>ลองปรับคำค้นหาหรือล้างตัวกรองเพื่อดูสมาชิกทั้งหมด</span>
-            {resetFiltersButton(onResetFilters)}
+            <span>{copy.emptyHint}</span>
+            {resetFiltersButton(onResetFilters, locale)}
           </div>
         ) : members.map((member) => {
           const joined = Boolean(member.claimPasswordHash || member.claimedAt) || member.id === currentMemberId;
@@ -82,10 +83,10 @@ export function PeoplePanel({
               <span>{roleLabel(member.role, locale)}</span>
               <div className={memberStatusStackClassName} aria-label={`Status for ${member.displayName}`}>
                 <span className={cn(memberStatePillClassName, memberStatePillToneClassNames[member.accessStatus === "disabled" ? "disabled" : "active"])}>
-                  {member.accessStatus === "disabled" ? "ปิดสิทธิ์" : "เปิดสิทธิ์"}
+                  {member.accessStatus === "disabled" ? copy.disabled : copy.active}
                 </span>
                 <span className={cn(memberStatePillClassName, memberStatePillToneClassNames[joined ? "claimed" : "pending"])}>
-                  {joined ? "ยืนยันแล้ว" : "รอเข้าร่วม"}
+                  {joined ? copy.claimed : copy.pending}
                 </span>
               </div>
             </div>
@@ -105,12 +106,12 @@ export function PeoplePanel({
                 ) : null}
                 {canChangePassword ? (
                   <button
-                    aria-label={`${member.id === currentMemberId ? "เปลี่ยน" : "รีเซ็ต"}รหัสผ่าน ${member.displayName}`}
+                    aria-label={member.id === currentMemberId ? copy.changePasswordFor(member.displayName) : copy.resetPasswordFor(member.displayName)}
                     className={resetClaimButtonClassName}
                     type="button"
                     onClick={() => member.id === currentMemberId ? onChangeCurrentMemberPassword?.(member.id) : onResetMemberClaim?.(member.id)}
                   >
-                    {member.id === currentMemberId ? "เปลี่ยนรหัสผ่าน" : "รีเซ็ตรหัสผ่าน"}
+                    {member.id === currentMemberId ? copy.changePassword : copy.resetPassword}
                   </button>
                 ) : null}
                 {member.role !== "owner" ? (
@@ -119,7 +120,7 @@ export function PeoplePanel({
                     type="button"
                     onClick={() => onChangeMemberAccessStatus?.(member.id, member.accessStatus === "disabled" ? "active" : "disabled")}
                   >
-                    {member.accessStatus === "disabled" ? `เปิดสิทธิ์ ${member.displayName}` : `ปิดสิทธิ์ ${member.displayName}`}
+                    {member.accessStatus === "disabled" ? copy.enableFor(member.displayName) : copy.disableFor(member.displayName)}
                   </button>
                 ) : null}
                 {canTransferOwner ? (
@@ -128,7 +129,7 @@ export function PeoplePanel({
                     type="button"
                     onClick={() => onTransferOwnership?.(member.id)}
                   >
-                    โอน owner ให้ {member.displayName}
+                    {copy.transferOwnerFor(member.displayName)}
                   </button>
                 ) : null}
               </div>
@@ -145,9 +146,9 @@ export function PeoplePanel({
   );
 }
 
-function resetFiltersButton(onResetFilters?: () => void) {
+function resetFiltersButton(onResetFilters: (() => void) | undefined, locale: string) {
   /* v8 ignore next */
-  return onResetFilters ? <button className={resetClaimButtonClassName} type="button" onClick={onResetFilters}>ล้างตัวกรอง</button> : null;
+  return onResetFilters ? <button className={resetClaimButtonClassName} type="button" onClick={onResetFilters}>{peoplePanelCopy(locale).resetFilters}</button> : null;
 }
 
 function presenceLabel(presence: Member["presence"]): string {
@@ -166,4 +167,40 @@ function roleLabel(role: Member["role"], locale: string): string {
   if (role === "organizer") return "Organizer";
   if (role === "traveler") return "Traveler";
   return "Viewer";
+}
+
+function peoplePanelCopy(locale: string) {
+  return locale === "th"
+    ? {
+        heading: "สมาชิกและสถานะ",
+        emptyHint: "ลองปรับคำค้นหาหรือล้างตัวกรองเพื่อดูสมาชิกทั้งหมด",
+        active: "เปิดสิทธิ์",
+        disabled: "ปิดสิทธิ์",
+        claimed: "ยืนยันแล้ว",
+        pending: "รอเข้าร่วม",
+        changePassword: "เปลี่ยนรหัสผ่าน",
+        resetPassword: "รีเซ็ตรหัสผ่าน",
+        changePasswordFor: (name: string) => `เปลี่ยนรหัสผ่าน ${name}`,
+        resetPasswordFor: (name: string) => `รีเซ็ตรหัสผ่าน ${name}`,
+        enableFor: (name: string) => `เปิดสิทธิ์ ${name}`,
+        disableFor: (name: string) => `ปิดสิทธิ์ ${name}`,
+        transferOwnerFor: (name: string) => `โอน owner ให้ ${name}`,
+        resetFilters: "ล้างตัวกรอง",
+      }
+    : {
+        heading: "Members and status",
+        emptyHint: "Try a different search or clear filters to see every member.",
+        active: "Active",
+        disabled: "Disabled",
+        claimed: "Verified",
+        pending: "Pending",
+        changePassword: "Change password",
+        resetPassword: "Reset password",
+        changePasswordFor: (name: string) => `Change password ${name}`,
+        resetPasswordFor: (name: string) => `Reset password ${name}`,
+        enableFor: (name: string) => `Enable ${name}`,
+        disableFor: (name: string) => `Disable ${name}`,
+        transferOwnerFor: (name: string) => `Transfer owner to ${name}`,
+        resetFilters: "Clear filters",
+      };
 }

@@ -7,8 +7,26 @@ import { TripMembersPage } from "./TripMembersPage";
 import { seedTrip } from "@/src/trip/seed";
 
 const render = (ui: Parameters<typeof renderWithI18n>[0]) => renderWithI18n(ui, { locale: "th" });
+const renderEn = (ui: Parameters<typeof renderWithI18n>[0]) => renderWithI18n(ui, { locale: "en" });
 
 describe("PeoplePanel", () => {
+  it("localizes standalone panel copy for English", () => {
+    renderEn(
+      <PeoplePanel
+        members={seedTrip.members}
+        currentMemberId="member-aom"
+        canManagePeople
+      />,
+    );
+
+    expect(screen.getByRole("region", { name: /People and presence/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /Members and status/i })).toBeInTheDocument();
+    expect(screen.getByText("Demo Traveler (You)")).toBeInTheDocument();
+    expect(screen.getAllByText("Active").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Pending").length).toBeGreaterThan(0);
+    expect(screen.getByRole("button", { name: /Change password Demo Traveler/i })).toBeInTheDocument();
+  });
+
   it("lets organizers reset a claimed participant password", async () => {
     const user = userEvent.setup();
     const onResetMemberClaim = vi.fn();

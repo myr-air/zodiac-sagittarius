@@ -25,15 +25,16 @@ const tempLowClassName = "weather-forecast-temp-low text-[16px] font-bold text-(
 const emptyClassName = "rounded-(--radius-md) border border-(--color-border) bg-white/60 px-4 py-3 text-xs font-black text-(--color-text-muted)";
 
 export function WeatherForecastStrip({ briefings, locale, selectedDate, onSelect }: WeatherForecastStripProps) {
+  const copy = weatherStripCopy(locale);
   const sorted = briefingsForStrip(briefings);
   if (!sorted.length) {
-    return <section className={stripClassName} aria-label={locale === "th" ? "พยากรณ์อากาศรายวัน" : "Daily weather forecast"}>
-      <div className={`${rowClassName} ${emptyClassName}`}>{locale === "th" ? "ยังไม่มีข้อมูลพยากรณ์อากาศ" : "No weather data yet"}</div>
+    return <section className={stripClassName} aria-label={copy.regionLabel}>
+      <div className={`${rowClassName} ${emptyClassName}`}>{copy.empty}</div>
     </section>;
   }
 
   return (
-    <section className={stripClassName} aria-label={locale === "th" ? "พยากรณ์อากาศรายวัน" : "Daily weather forecast"}>
+    <section className={stripClassName} aria-label={copy.regionLabel}>
       <div className={rowClassName}>
         {sorted.map((briefing) => {
           const tone = thaiWeekdayTone(briefing.date);
@@ -71,4 +72,10 @@ function formatDayLabel(date: string, locale: Locale): string {
   const parsed = new Date(`${date}T00:00:00`);
   if (Number.isNaN(parsed.getTime())) return date;
   return new Intl.DateTimeFormat(locale === "th" ? "th-TH" : "en-US", { weekday: "short", month: "short", day: "numeric" }).format(parsed);
+}
+
+function weatherStripCopy(locale: Locale) {
+  return locale === "th"
+    ? { regionLabel: "พยากรณ์อากาศรายวัน", empty: "ยังไม่มีข้อมูลพยากรณ์อากาศ" }
+    : { regionLabel: "Daily weather forecast", empty: "No weather data yet" };
 }

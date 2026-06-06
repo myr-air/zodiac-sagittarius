@@ -54,6 +54,16 @@ describe("WeatherBriefingDrawer", () => {
     expect(screen.getByLabelText(/outfit advice override/i)).toBeInTheDocument();
   });
 
+  it("localizes drawer labels and weather details for Thai", () => {
+    render(<WeatherBriefingDrawer briefing={briefing} locale="th" canEdit isOpen onClose={() => {}} />);
+
+    expect(screen.getByRole("region", { name: /รายละเอียดพยากรณ์อากาศ/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "สภาพอากาศ" })).toBeInTheDocument();
+    expect(screen.getByText(/ความชื้น 82%/)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "คำแนะนำการแต่งตัว" })).toBeInTheDocument();
+    expect(screen.getByLabelText(/ปรับคำแนะนำการแต่งตัว/i)).toBeInTheDocument();
+  });
+
   it("submits manual overrides with date and version", async () => {
     const onSaveOverrides = vi.fn();
     render(<WeatherBriefingDrawer briefing={briefing} locale="en" canEdit isOpen onClose={() => {}} onSaveOverrides={onSaveOverrides} />);
