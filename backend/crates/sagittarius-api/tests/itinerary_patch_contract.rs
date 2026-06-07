@@ -152,6 +152,41 @@ async fn itinerary_patch_contract_patches_address_and_coordinates(pool: sqlx::Pg
 }
 
 #[sqlx::test(migrations = "../../migrations")]
+async fn itinerary_patch_contract_rejects_unsafe_map_link(pool: sqlx::PgPool) {
+    support::seed_trip(&pool).await;
+    let token = support::create_session(&pool, support::ORGANIZER_ID).await;
+    let app = support::app(pool.clone());
+
+    let response = app
+        .oneshot(
+            Request::builder()
+                .method(Method::PATCH)
+                .uri(format!(
+                    "/api/v1/trips/{}/itinerary-items/{}",
+                    support::TRIP_ID,
+                    support::ITEM_ID
+                ))
+                .header(header::AUTHORIZATION, format!("Bearer {token}"))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({
+                        "clientMutationId": "web-patch-unsafe-map-link",
+                        "expectedVersion": 4,
+                        "patch": {
+                            "mapLink": "javascript:alert(document.domain)"
+                        }
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::BAD_REQUEST);
+}
+
+#[sqlx::test(migrations = "../../migrations")]
 async fn itinerary_patch_contract_traveler_cannot_patch_item(pool: sqlx::PgPool) {
     support::seed_trip(&pool).await;
     let token = support::create_session(&pool, support::TRAVELER_ID).await;

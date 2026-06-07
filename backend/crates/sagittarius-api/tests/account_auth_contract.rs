@@ -405,6 +405,56 @@ async fn password_auth_registers_and_logs_in_without_email_code(pool: sqlx::PgPo
 }
 
 #[sqlx::test(migrations = "../../migrations")]
+async fn password_auth_locks_after_repeated_wrong_passwords(pool: sqlx::PgPool) {
+    let app = support::app(pool.clone());
+    let (register_status, _session): (StatusCode, Value) = post_json_response(
+        app.clone(),
+        "/api/v1/auth/password/sessions",
+        json!({
+            "flow": "register",
+            "email": "lockout@example.com",
+            "password": "correct-horse-battery",
+            "trustDevice": false,
+            "deviceLabel": ""
+        }),
+    )
+    .await;
+    assert_eq!(register_status, StatusCode::OK);
+
+    for _ in 0..5 {
+        let (status, body): (StatusCode, Value) = post_json_response(
+            app.clone(),
+            "/api/v1/auth/password/sessions",
+            json!({
+                "flow": "login",
+                "email": "lockout@example.com",
+                "password": "wrong-password",
+                "trustDevice": false,
+                "deviceLabel": ""
+            }),
+        )
+        .await;
+        assert_eq!(status, StatusCode::UNAUTHORIZED);
+        assert_eq!(body["code"], "unauthenticated");
+    }
+
+    let (locked_status, locked_body): (StatusCode, Value) = post_json_response(
+        app,
+        "/api/v1/auth/password/sessions",
+        json!({
+            "flow": "login",
+            "email": "lockout@example.com",
+            "password": "correct-horse-battery",
+            "trustDevice": false,
+            "deviceLabel": ""
+        }),
+    )
+    .await;
+    assert_eq!(locked_status, StatusCode::TOO_MANY_REQUESTS);
+    assert_eq!(locked_body["code"], "too_many_requests");
+}
+
+#[sqlx::test(migrations = "../../migrations")]
 async fn password_auth_validates_payload(pool: sqlx::PgPool) {
     let app = support::app(pool.clone());
 

@@ -1,61 +1,119 @@
-const failures: string[] = [];
+type Env = Record<string, string | undefined>;
 
-const databaseUrl = requiredEnv("DATABASE_URL");
-const apiBaseUrl = requiredEnv("NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL");
-const allowedOrigins = requiredEnv("SAGITTARIUS_ALLOWED_ORIGINS");
-const passkeyAllowedOrigins = requiredEnv("PASSKEY_ALLOWED_ORIGINS");
-const emailDelivery = requiredEnv("EMAIL_DELIVERY");
-const rustLog = requiredEnv("RUST_LOG");
-const evidenceUrl = requiredEnv("SAGITTARIUS_STAGING_EVIDENCE_URL");
-const browserEvidenceUrl = requiredEnv("SAGITTARIUS_STAGING_BROWSER_EVIDENCE_URL");
-const migrationEvidenceUrl = requiredEnv("SAGITTARIUS_STAGING_MIGRATION_EVIDENCE_URL");
-const rollbackEvidenceUrl = requiredEnv("SAGITTARIUS_STAGING_ROLLBACK_EVIDENCE_URL");
-const issueEvidenceUrl = requiredEnv("SAGITTARIUS_STAGING_ISSUE_EVIDENCE_URL");
-const alertSinkName = requiredEnv("SAGITTARIUS_ALERT_SINK_NAME");
-const alertRunbookUrl = requiredEnv("SAGITTARIUS_ALERT_RUNBOOK_URL");
-const featureOwner = requiredEnv("SAGITTARIUS_FEATURE_OWNER");
-const rollbackOwner = requiredEnv("SAGITTARIUS_ROLLBACK_OWNER");
+let failures: string[] = [];
+let currentEnv: Env = {};
 
-checkDatabaseUrl(databaseUrl);
-checkApiBaseUrl(apiBaseUrl);
-checkAllowedOrigins("SAGITTARIUS_ALLOWED_ORIGINS", allowedOrigins, apiBaseUrl);
-checkAllowedOrigins("PASSKEY_ALLOWED_ORIGINS", passkeyAllowedOrigins, "");
-checkEmailDelivery(emailDelivery);
-checkRustLog(rustLog);
-checkEvidence("SAGITTARIUS_STAGING_EVIDENCE_URL", evidenceUrl);
-checkEvidence("SAGITTARIUS_STAGING_BROWSER_EVIDENCE_URL", browserEvidenceUrl);
-checkEvidence("SAGITTARIUS_STAGING_MIGRATION_EVIDENCE_URL", migrationEvidenceUrl);
-checkEvidence("SAGITTARIUS_STAGING_ROLLBACK_EVIDENCE_URL", rollbackEvidenceUrl);
-checkEvidence("SAGITTARIUS_STAGING_ISSUE_EVIDENCE_URL", issueEvidenceUrl);
-checkAlertSink(alertSinkName);
-checkEvidence("SAGITTARIUS_ALERT_RUNBOOK_URL", alertRunbookUrl);
-checkOwner("SAGITTARIUS_FEATURE_OWNER", featureOwner);
-checkOwner("SAGITTARIUS_ROLLBACK_OWNER", rollbackOwner);
+export function checkProductionEnv(env: Env = process.env): string[] {
+  failures = [];
+  currentEnv = env;
 
-for (const name of [
-  "SAGITTARIUS_STAGING_PREFLIGHT_PASSED",
-  "SAGITTARIUS_STAGING_BROWSER_SIGNOFF",
-  "SAGITTARIUS_STAGING_DB_MIGRATION_VERIFIED",
-  "SAGITTARIUS_STAGING_ROLLBACK_VERIFIED",
-  "SAGITTARIUS_STAGING_ALERT_ROUTING_VERIFIED",
-  "SAGITTARIUS_STAGING_NO_P1_P2",
-]) {
-  if (process.env[name] !== "1") failures.push(`${name}=1 is required before production deploy`);
+  const runtimeEnv = requiredEnv("SAGITTARIUS_ENV");
+  const databaseUrl = requiredEnv("DATABASE_URL");
+  const apiBaseUrl = requiredEnv("NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL");
+  const allowedOrigins = requiredEnv("SAGITTARIUS_ALLOWED_ORIGINS");
+  const passkeyAllowedOrigins = requiredEnv("PASSKEY_ALLOWED_ORIGINS");
+  const emailDelivery = requiredEnv("EMAIL_DELIVERY");
+  const rustLog = requiredEnv("RUST_LOG");
+  const evidenceUrl = requiredEnv("SAGITTARIUS_STAGING_EVIDENCE_URL");
+  const browserEvidenceUrl = requiredEnv(
+    "SAGITTARIUS_STAGING_BROWSER_EVIDENCE_URL",
+  );
+  const migrationEvidenceUrl = requiredEnv(
+    "SAGITTARIUS_STAGING_MIGRATION_EVIDENCE_URL",
+  );
+  const rollbackEvidenceUrl = requiredEnv(
+    "SAGITTARIUS_STAGING_ROLLBACK_EVIDENCE_URL",
+  );
+  const issueEvidenceUrl = requiredEnv(
+    "SAGITTARIUS_STAGING_ISSUE_EVIDENCE_URL",
+  );
+  const alertSinkName = requiredEnv("SAGITTARIUS_ALERT_SINK_NAME");
+  const alertRunbookUrl = requiredEnv("SAGITTARIUS_ALERT_RUNBOOK_URL");
+  const featureOwner = requiredEnv("SAGITTARIUS_FEATURE_OWNER");
+  const rollbackOwner = requiredEnv("SAGITTARIUS_ROLLBACK_OWNER");
+
+  checkRuntimeEnv(runtimeEnv);
+  checkDatabaseUrl(databaseUrl);
+  checkApiBaseUrl(apiBaseUrl);
+  checkAllowedOrigins(
+    "SAGITTARIUS_ALLOWED_ORIGINS",
+    allowedOrigins,
+    apiBaseUrl,
+  );
+  checkAllowedOrigins("PASSKEY_ALLOWED_ORIGINS", passkeyAllowedOrigins, "");
+  checkEmailDelivery(emailDelivery);
+  checkRustLog(rustLog);
+  checkEvidence("SAGITTARIUS_STAGING_EVIDENCE_URL", evidenceUrl);
+  checkEvidence("SAGITTARIUS_STAGING_BROWSER_EVIDENCE_URL", browserEvidenceUrl);
+  checkEvidence(
+    "SAGITTARIUS_STAGING_MIGRATION_EVIDENCE_URL",
+    migrationEvidenceUrl,
+  );
+  checkEvidence(
+    "SAGITTARIUS_STAGING_ROLLBACK_EVIDENCE_URL",
+    rollbackEvidenceUrl,
+  );
+  checkEvidence("SAGITTARIUS_STAGING_ISSUE_EVIDENCE_URL", issueEvidenceUrl);
+  checkAlertSink(alertSinkName);
+  checkEvidence("SAGITTARIUS_ALERT_RUNBOOK_URL", alertRunbookUrl);
+  checkOwner("SAGITTARIUS_FEATURE_OWNER", featureOwner);
+  checkOwner("SAGITTARIUS_ROLLBACK_OWNER", rollbackOwner);
+
+  for (const name of [
+    "SAGITTARIUS_STAGING_PREFLIGHT_PASSED",
+    "SAGITTARIUS_STAGING_BROWSER_SIGNOFF",
+    "SAGITTARIUS_STAGING_DB_MIGRATION_VERIFIED",
+    "SAGITTARIUS_STAGING_ROLLBACK_VERIFIED",
+    "SAGITTARIUS_STAGING_ALERT_ROUTING_VERIFIED",
+    "SAGITTARIUS_STAGING_NO_P1_P2",
+  ]) {
+    if (currentEnv[name] !== "1")
+      failures.push(`${name}=1 is required before production deploy`);
+  }
+
+  return failures;
 }
 
-if (failures.length) {
-  throw new Error(`Production environment check failed:\n- ${failures.join("\n- ")}`);
+if (import.meta.main) {
+  const result = checkProductionEnv();
+  if (result.length) {
+    throw new Error(
+      `Production environment check failed:\n- ${result.join("\n- ")}`,
+    );
+  }
+  console.log("production env check ok");
 }
-
-console.log("production env check ok");
 
 function requiredEnv(name: string): string {
-  const value = process.env[name]?.trim();
+  const value = currentEnv[name]?.trim();
   if (!value) {
     failures.push(`${name} is required`);
     return "";
   }
   return value;
+}
+
+function checkRuntimeEnv(value: string) {
+  if (!value) return;
+  if (value !== "production") {
+    failures.push(
+      "SAGITTARIUS_ENV=production is required before production deploy",
+    );
+  }
+  const seedFlag =
+    currentEnv.SAGITTARIUS_SEED_SAMPLE_DATA?.trim().toLowerCase();
+  if (seedFlag && !["0", "false", "no", "off"].includes(seedFlag)) {
+    failures.push(
+      "SAGITTARIUS_SEED_SAMPLE_DATA must be unset or false for production deploy",
+    );
+  }
+  const localCors =
+    currentEnv.SAGITTARIUS_ALLOW_LOCAL_CORS?.trim().toLowerCase();
+  if (localCors && !["0", "false", "no", "off"].includes(localCors)) {
+    failures.push(
+      "SAGITTARIUS_ALLOW_LOCAL_CORS must be unset or false for production deploy",
+    );
+  }
 }
 
 function checkDatabaseUrl(value: string) {
@@ -77,8 +135,14 @@ function checkDatabaseUrl(value: string) {
 
   const databaseName = url.pathname.replace(/^\//, "").toLowerCase();
   const lowerUrl = value.toLowerCase();
-  if (databaseName.includes("test") || databaseName.includes("staging") || lowerUrl.includes("sagittarius_test")) {
-    failures.push("DATABASE_URL must not point at test/staging database for production");
+  if (
+    databaseName.includes("test") ||
+    databaseName.includes("staging") ||
+    lowerUrl.includes("sagittarius_test")
+  ) {
+    failures.push(
+      "DATABASE_URL must not point at test/staging database for production",
+    );
   }
   checkNoPlaceholderUrl("DATABASE_URL", url);
 }
@@ -94,19 +158,28 @@ function checkApiBaseUrl(value: string) {
   }
 
   if (url.protocol !== "https:") {
-    failures.push("NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL must use https:// for production");
+    failures.push(
+      "NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL must use https:// for production",
+    );
   }
   if (["localhost", "127.0.0.1", "::1"].includes(url.hostname)) {
-    failures.push("NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL must not point at localhost for production");
+    failures.push(
+      "NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL must not point at localhost for production",
+    );
   }
   checkNoPlaceholderUrl("NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL", url);
 }
 
 function checkAllowedOrigins(name: string, value: string, apiValue: string) {
   if (!value) return;
-  const origins = value.split(",").map((origin) => origin.trim()).filter(Boolean);
+  const origins = value
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean);
   if (!origins.length) {
-    failures.push(`${name} must include at least one production frontend origin`);
+    failures.push(
+      `${name} must include at least one production frontend origin`,
+    );
     return;
   }
 
@@ -119,16 +192,22 @@ function checkAllowedOrigins(name: string, value: string, apiValue: string) {
       continue;
     }
     if (url.protocol !== "https:") {
-      failures.push(`${name} must use https:// origins for production: ${origin}`);
+      failures.push(
+        `${name} must use https:// origins for production: ${origin}`,
+      );
     }
     if (["localhost", "127.0.0.1", "::1"].includes(url.hostname)) {
-      failures.push(`${name} must not include localhost for production: ${origin}`);
+      failures.push(
+        `${name} must not include localhost for production: ${origin}`,
+      );
     }
     checkNoPlaceholderUrl(name, url);
   }
 
   if (apiValue && origins.includes(apiValue)) {
-    failures.push(`${name} should contain frontend origins, not the API base URL`);
+    failures.push(
+      `${name} should contain frontend origins, not the API base URL`,
+    );
   }
 }
 
@@ -141,10 +220,16 @@ function checkEmailDelivery(value: string) {
   }
 
   if (mode === "smtp") {
-    for (const name of ["SMTP_HOST", "SMTP_USERNAME", "SMTP_PASSWORD", "EMAIL_FROM"]) {
-      if (!process.env[name]?.trim()) failures.push(`${name} is required when EMAIL_DELIVERY=smtp`);
+    for (const name of [
+      "SMTP_HOST",
+      "SMTP_USERNAME",
+      "SMTP_PASSWORD",
+      "EMAIL_FROM",
+    ]) {
+      if (!currentEnv[name]?.trim())
+        failures.push(`${name} is required when EMAIL_DELIVERY=smtp`);
     }
-    const port = process.env.SMTP_PORT?.trim();
+    const port = currentEnv.SMTP_PORT?.trim();
     if (port && !Number.isInteger(Number(port))) {
       failures.push("SMTP_PORT must be an integer when set");
     }
@@ -152,7 +237,8 @@ function checkEmailDelivery(value: string) {
 
   if (mode === "sendmail") {
     for (const name of ["SENDMAIL_COMMAND", "EMAIL_FROM"]) {
-      if (!process.env[name]?.trim()) failures.push(`${name} is required when EMAIL_DELIVERY=sendmail`);
+      if (!currentEnv[name]?.trim())
+        failures.push(`${name} is required when EMAIL_DELIVERY=sendmail`);
     }
   }
 }
@@ -160,13 +246,19 @@ function checkEmailDelivery(value: string) {
 function checkRustLog(value: string) {
   if (!value) return;
   if (!value.includes("tower_http")) {
-    failures.push("RUST_LOG must include tower_http for production HTTP tracing");
+    failures.push(
+      "RUST_LOG must include tower_http for production HTTP tracing",
+    );
   }
   if (!value.includes("sagittarius_api")) {
-    failures.push("RUST_LOG must include sagittarius_api for production API logs");
+    failures.push(
+      "RUST_LOG must include sagittarius_api for production API logs",
+    );
   }
   if (!value.includes("info")) {
-    failures.push("RUST_LOG must include info level for production trace visibility");
+    failures.push(
+      "RUST_LOG must include info level for production trace visibility",
+    );
   }
 }
 
@@ -174,7 +266,8 @@ function checkEvidence(name: string, value: string) {
   if (!value) return;
   try {
     const url = new URL(value);
-    if (!["http:", "https:"].includes(url.protocol)) failures.push(`${name} must be an http(s) URL`);
+    if (!["http:", "https:"].includes(url.protocol))
+      failures.push(`${name} must be an http(s) URL`);
     checkNoPlaceholderUrl(name, url);
   } catch {
     failures.push(`${name} must be a valid evidence URL`);
@@ -184,7 +277,9 @@ function checkEvidence(name: string, value: string) {
 function checkAlertSink(value: string) {
   if (!value) return;
   if (value.length < 3 || /^tbd$/i.test(value)) {
-    failures.push("SAGITTARIUS_ALERT_SINK_NAME must name a real alert sink, not TBD");
+    failures.push(
+      "SAGITTARIUS_ALERT_SINK_NAME must name a real alert sink, not TBD",
+    );
   }
 }
 
@@ -204,8 +299,7 @@ function checkNoPlaceholderUrl(name: string, url: URL) {
 function isPlaceholderHostname(hostname: string): boolean {
   const normalized = hostname.toLowerCase();
   return ["example.com", "example.net", "example.org", "example.test"].some(
-    (placeholder) => normalized === placeholder || normalized.endsWith(`.${placeholder}`),
+    (placeholder) =>
+      normalized === placeholder || normalized.endsWith(`.${placeholder}`),
   );
 }
-
-export {};

@@ -40,6 +40,12 @@ impl IntoResponse for ServiceError {
                 None,
             ),
             ServiceError::Forbidden => (StatusCode::FORBIDDEN, "forbidden", self.to_string(), None),
+            ServiceError::TooManyRequests => (
+                StatusCode::TOO_MANY_REQUESTS,
+                "too_many_requests",
+                self.to_string(),
+                None,
+            ),
             ServiceError::NotFound => (StatusCode::NOT_FOUND, "not_found", self.to_string(), None),
             ServiceError::IdentityAlreadyLinked => (
                 StatusCode::CONFLICT,

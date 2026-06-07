@@ -8,6 +8,8 @@ pub enum ServiceError {
     Unauthenticated,
     #[error("forbidden")]
     Forbidden,
+    #[error("too many requests")]
+    TooManyRequests,
     #[error("not found")]
     NotFound,
     #[error("identity already linked")]

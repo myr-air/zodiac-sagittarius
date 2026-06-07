@@ -92,6 +92,12 @@ pub struct EmailLoginChallengeRecord {
 }
 
 #[derive(Debug, Clone, FromRow)]
+pub struct AuthAttemptLockRecord {
+    pub attempt_count: i32,
+    pub locked_until: Option<OffsetDateTime>,
+}
+
+#[derive(Debug, Clone, FromRow)]
 pub struct UserEmailRecord {
     pub user_id: Uuid,
     pub disabled_at: Option<OffsetDateTime>,

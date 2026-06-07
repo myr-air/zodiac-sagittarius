@@ -392,6 +392,7 @@ impl CreateItineraryItemRequest {
             validate_path_role(path_role)?;
         }
         validate_required_text(&self.place, "place is required")?;
+        validate_optional_map_link(self.map_link.as_deref())?;
         if self
             .duration_minutes
             .is_some_and(|duration_minutes| duration_minutes <= 0)
@@ -655,6 +656,7 @@ impl ItineraryItemPatch {
         if let Some(path_role) = &self.path_role {
             validate_path_role(path_role)?;
         }
+        validate_optional_map_link(self.map_link.as_deref())?;
         validate_coordinate_patch(self.latitude, self.longitude)?;
 
         Ok(())
@@ -899,14 +901,25 @@ fn validate_booking_doc_link_label(value: &str) -> Result<(), ServiceError> {
 
 fn validate_booking_doc_url(value: &str) -> Result<(), ServiceError> {
     let trimmed = value.trim();
-    let parsed = trimmed
+    validate_http_url(trimmed, "external link URL is invalid")
+}
+
+fn validate_optional_map_link(value: Option<&str>) -> Result<(), ServiceError> {
+    let Some(trimmed) = value.map(str::trim).filter(|value| !value.is_empty()) else {
+        return Ok(());
+    };
+    validate_http_url(trimmed, "map link URL is invalid")
+}
+
+fn validate_http_url(value: &str, message: &'static str) -> Result<(), ServiceError> {
+    let parsed = value
         .parse::<http::Uri>()
-        .map_err(|_| ServiceError::InvalidRequest("external link URL is invalid"))?;
+        .map_err(|_| ServiceError::InvalidRequest(message))?;
     if !matches!(parsed.scheme_str(), Some("http" | "https"))
         || parsed.host().is_none_or(str::is_empty)
-        || trimmed.len() > 2048
+        || value.len() > 2048
     {
-        return Err(ServiceError::InvalidRequest("external link URL is invalid"));
+        return Err(ServiceError::InvalidRequest(message));
     }
     Ok(())
 }

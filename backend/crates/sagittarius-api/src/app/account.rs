@@ -33,6 +33,9 @@ const EMAIL_LOGIN_CODE_SALT: &[u8] = b"sagittarius-email-login-code";
 const SESSION_TOKEN_SALT: &[u8] = b"sagittarius-account-session-token";
 const DEFAULT_TRUSTED_DEVICE_LABEL: &str = "Trusted device";
 const MAX_EMAIL_LOGIN_ATTEMPTS: i32 = 5;
+const PASSWORD_LOGIN_MAX_ATTEMPTS: i32 = 5;
+const PASSWORD_LOGIN_LOCK_MINUTES: i64 = 15;
+const PASSWORD_LOGIN_ATTEMPT_SCOPE: &str = "account_password_login";
 const MAX_EMAIL_LENGTH: usize = 254;
 const MIN_ACCOUNT_PASSWORD_LENGTH: usize = 8;
 const MAX_ACCOUNT_PASSWORD_LENGTH: usize = 256;
@@ -253,6 +256,13 @@ pub async fn finish_password_login(
         db::account_queries::find_password_login_user_for_email(&mut tx, &normalized_email).await?;
     let user_id = match input.flow {
         PasswordLoginFlow::Login => {
+            enforce_auth_attempt_not_locked(
+                &mut tx,
+                PASSWORD_LOGIN_ATTEMPT_SCOPE,
+                &normalized_email,
+                now,
+            )
+            .await?;
             let record = existing.ok_or(ServiceError::Unauthenticated)?;
             if record.disabled_at.is_some() {
                 return Err(ServiceError::Forbidden);
@@ -261,8 +271,24 @@ pub async fn finish_password_login(
                 return Err(ServiceError::Unauthenticated);
             };
             if !crate::app::auth::verify_secret(&password, &stored_hash) {
+                record_auth_failed_attempt(
+                    &mut tx,
+                    PASSWORD_LOGIN_ATTEMPT_SCOPE,
+                    &normalized_email,
+                    PASSWORD_LOGIN_MAX_ATTEMPTS,
+                    PASSWORD_LOGIN_LOCK_MINUTES,
+                    now,
+                )
+                .await?;
+                tx.commit().await?;
                 return Err(ServiceError::Unauthenticated);
             }
+            db::queries::clear_auth_attempt(
+                &mut tx,
+                PASSWORD_LOGIN_ATTEMPT_SCOPE,
+                &normalized_email,
+            )
+            .await?;
             record.user_id
         }
         PasswordLoginFlow::Register => {
@@ -1183,6 +1209,41 @@ fn validate_account_password(password: &str) -> Result<String, ServiceError> {
     }
 
     Ok(trimmed.to_string())
+}
+
+async fn enforce_auth_attempt_not_locked(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    scope: &str,
+    attempt_key: &str,
+    now: OffsetDateTime,
+) -> Result<(), ServiceError> {
+    let attempt = db::queries::lock_auth_attempt(tx, scope, attempt_key).await?;
+    if attempt
+        .locked_until
+        .is_some_and(|locked_until| locked_until > now)
+    {
+        return Err(ServiceError::TooManyRequests);
+    }
+    Ok(())
+}
+
+async fn record_auth_failed_attempt(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    scope: &str,
+    attempt_key: &str,
+    max_attempts: i32,
+    lock_minutes: i64,
+    now: OffsetDateTime,
+) -> Result<(), ServiceError> {
+    db::queries::record_auth_failed_attempt(
+        tx,
+        scope,
+        attempt_key,
+        max_attempts,
+        now + Duration::minutes(lock_minutes),
+    )
+    .await?;
+    Ok(())
 }
 
 fn map_account_trip_insert_error(error: sqlx::Error) -> ServiceError {

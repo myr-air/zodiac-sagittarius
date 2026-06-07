@@ -25,6 +25,10 @@ const VIEWER_SESSION_TTL: Duration = Duration::days(1);
 const JOIN_SESSION_TTL: Duration = Duration::days(7);
 const JOIN_INVITE_TOKEN_TTL: Duration = Duration::days(7);
 const PARTICIPANT_PASSWORD_MIN_LENGTH: usize = 4;
+const CREDENTIAL_MAX_ATTEMPTS: i32 = 5;
+const CREDENTIAL_LOCK_MINUTES: i64 = 15;
+const TRIP_JOIN_ATTEMPT_SCOPE: &str = "trip_join_password";
+const MEMBER_LOGIN_ATTEMPT_SCOPE: &str = "member_login_password";
 
 pub fn hash_secret_for_tests(secret: &str) -> String {
     hash_secret_with_salt(secret, TEST_SECRET_SALT).expect("static test salt should hash")
@@ -46,13 +50,22 @@ pub async fn join_trip(
     trip_password: &str,
 ) -> Result<JoinTripResponse, ServiceError> {
     let normalized_join_id = join_id.trim().to_ascii_uppercase();
+    let now = OffsetDateTime::now_utc();
+    let mut tx = pool.begin().await?;
+    enforce_auth_attempt_not_locked(&mut tx, TRIP_JOIN_ATTEMPT_SCOPE, &normalized_join_id, now)
+        .await?;
     let trip = db::queries::find_trip_by_join_id(pool, &normalized_join_id)
         .await?
         .ok_or(ServiceError::NotFound)?;
 
     if !verify_secret(trip_password, &trip.join_password_hash) {
+        record_auth_failed_attempt(&mut tx, TRIP_JOIN_ATTEMPT_SCOPE, &normalized_join_id, now)
+            .await?;
+        tx.commit().await?;
         return Err(ServiceError::Unauthenticated);
     }
+    db::queries::clear_auth_attempt(&mut tx, TRIP_JOIN_ATTEMPT_SCOPE, &normalized_join_id).await?;
+    tx.commit().await?;
 
     let claimable_members = db::queries::list_claimable_members(pool, trip.id)
         .await?
@@ -185,7 +198,10 @@ pub async fn claim_member(
 ) -> Result<MemberSession, ServiceError> {
     let participant_password = normalize_participant_password(participant_password)?;
     let join_session_token_hash = hash_join_session_token(join_session_token)?;
+    let attempt_key = member_login_attempt_key(trip_id, member_id);
+    let now = OffsetDateTime::now_utc();
     let mut tx = pool.begin().await?;
+    enforce_auth_attempt_not_locked(&mut tx, MEMBER_LOGIN_ATTEMPT_SCOPE, &attempt_key, now).await?;
     let member = db::queries::lock_member(&mut tx, trip_id, member_id)
         .await?
         .ok_or(ServiceError::NotFound)?;
@@ -221,7 +237,10 @@ pub async fn login_member(
 ) -> Result<MemberSession, ServiceError> {
     let participant_password = normalize_participant_password(participant_password)?;
     let join_session_token_hash = hash_join_session_token(join_session_token)?;
+    let attempt_key = member_login_attempt_key(trip_id, member_id);
+    let now = OffsetDateTime::now_utc();
     let mut tx = pool.begin().await?;
+    enforce_auth_attempt_not_locked(&mut tx, MEMBER_LOGIN_ATTEMPT_SCOPE, &attempt_key, now).await?;
     let member = db::queries::lock_member(&mut tx, trip_id, member_id)
         .await?
         .ok_or(ServiceError::NotFound)?;
@@ -236,14 +255,54 @@ pub async fn login_member(
         .ok_or(ServiceError::Unauthenticated)?;
 
     if !verify_secret(participant_password, password_hash) {
+        record_auth_failed_attempt(&mut tx, MEMBER_LOGIN_ATTEMPT_SCOPE, &attempt_key, now).await?;
+        tx.commit().await?;
         return Err(ServiceError::Unauthenticated);
     }
 
+    db::queries::clear_auth_attempt(&mut tx, MEMBER_LOGIN_ATTEMPT_SCOPE, &attempt_key).await?;
     consume_join_session(&mut tx, trip_id, &join_session_token_hash).await?;
     let session = create_session(&mut tx, trip_id, member_id).await?;
     tx.commit().await?;
 
     Ok(session)
+}
+
+async fn enforce_auth_attempt_not_locked(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    scope: &str,
+    attempt_key: &str,
+    now: OffsetDateTime,
+) -> Result<(), ServiceError> {
+    let attempt = db::queries::lock_auth_attempt(tx, scope, attempt_key).await?;
+    if attempt
+        .locked_until
+        .is_some_and(|locked_until| locked_until > now)
+    {
+        return Err(ServiceError::TooManyRequests);
+    }
+    Ok(())
+}
+
+async fn record_auth_failed_attempt(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    scope: &str,
+    attempt_key: &str,
+    now: OffsetDateTime,
+) -> Result<(), ServiceError> {
+    db::queries::record_auth_failed_attempt(
+        tx,
+        scope,
+        attempt_key,
+        CREDENTIAL_MAX_ATTEMPTS,
+        now + Duration::minutes(CREDENTIAL_LOCK_MINUTES),
+    )
+    .await?;
+    Ok(())
+}
+
+fn member_login_attempt_key(trip_id: Uuid, member_id: Uuid) -> String {
+    format!("{trip_id}:{member_id}")
 }
 
 pub async fn logout_session(

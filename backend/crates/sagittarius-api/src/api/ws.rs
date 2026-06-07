@@ -8,7 +8,9 @@ use uuid::Uuid;
 
 use crate::app::{AppState, auth};
 use crate::db;
+use crate::domain::capabilities::can;
 use crate::domain::errors::ServiceError;
+use crate::domain::types::{Capability, TripRole};
 use crate::realtime::{RealtimeEvent, RealtimeHub, load_events_after};
 
 #[derive(Debug, Deserialize)]
@@ -27,7 +29,7 @@ pub async fn trip_ws(
 ) -> Result<Response, ServiceError> {
     let session_token = session_token_from_request(&headers, &query)?;
     let token_hash = auth::hash_session_token(&session_token)?;
-    db::queries::find_active_member_session(&state.pool, trip_id, &token_hash)
+    let session = db::queries::find_active_member_session(&state.pool, trip_id, &token_hash)
         .await?
         .ok_or(ServiceError::Unauthenticated)?;
 
@@ -37,6 +39,7 @@ pub async fn trip_ws(
             state.pool,
             state.realtime,
             trip_id,
+            session.role,
             query.after_event_id,
         )
     }))
@@ -68,6 +71,7 @@ async fn stream_trip_events(
     pool: sqlx::PgPool,
     realtime: RealtimeHub,
     trip_id: Uuid,
+    role: TripRole,
     after_event_id: Option<Uuid>,
 ) {
     let mut receiver = realtime.subscribe();
@@ -75,6 +79,7 @@ async fn stream_trip_events(
 
     let mut last_sent_event_id = after_event_id;
     for event in replay_events {
+        if !can_receive_event(role, &event) { continue; }
         if send_event(&mut socket, &event).await.is_err() { return; }
         last_sent_event_id = Some(event.event_id);
     }
@@ -89,12 +94,21 @@ async fn stream_trip_events(
                     last_sent_event_id,
                 ) =>
             {
+                if !can_receive_event(role, &event) { continue; }
                 if send_event(&mut socket, &event).await.is_err() { return; }
                 last_sent_event_id = Some(event.event_id);
             }
             Ok(_) => {}
             Err(error) => { if matches!(error, broadcast::error::RecvError::Lagged(_)) { let _ = socket.send(Message::Close(None)).await; } return; }
         }
+    }
+}
+
+fn can_receive_event(role: TripRole, event: &RealtimeEvent) -> bool {
+    if event.event_type.starts_with("expense.") {
+        can(role, Capability::ViewExpenses)
+    } else {
+        true
     }
 }
 

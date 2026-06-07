@@ -261,6 +261,52 @@ async fn websocket_route_accepts_bearer_header_session(pool: sqlx::PgPool) {
 }
 
 #[sqlx::test(migrations = "../../migrations")]
+async fn websocket_route_does_not_send_expense_events_to_viewer(pool: sqlx::PgPool) {
+    support::seed_trip(&pool).await;
+    let token = support::create_session(&pool, support::VIEWER_ID).await;
+    let hub = RealtimeHub::default();
+    let app = sagittarius_api::api::router(AppState {
+        pool,
+        email_delivery: EmailDelivery::Disabled,
+        realtime: hub.clone(),
+        daily_briefing_weather_fetch: false,
+    });
+    let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let address = listener.local_addr().unwrap();
+    let server = tokio::spawn(async move {
+        axum::serve(listener, app).await.unwrap();
+    });
+
+    let url = format!(
+        "ws://{address}/api/v1/trips/{}/events/stream?token={token}",
+        support::TRIP_ID
+    );
+    let (mut socket, _) = connect_async(url).await.unwrap();
+
+    hub.publish(RealtimeEvent {
+        event_id: Uuid::now_v7(),
+        trip_id: Uuid::parse_str(support::TRIP_ID).unwrap(),
+        event_type: "expense.created".to_string(),
+        aggregate_id: Uuid::parse_str(support::EXPENSE_ID).unwrap(),
+        version: 1,
+        client_mutation_id: Some("viewer-expense-leak".to_string()),
+        actor_member_id: Some(Uuid::parse_str(support::ORGANIZER_ID).unwrap()),
+        occurred_at: "2026-05-29T00:00:00Z".to_string(),
+        payload: json!({ "title": "Private dinner", "amountMinor": 12500 }),
+    })
+    .await;
+
+    assert!(
+        timeout(Duration::from_millis(150), socket.next())
+            .await
+            .is_err()
+    );
+
+    drop(socket);
+    server.abort();
+}
+
+#[sqlx::test(migrations = "../../migrations")]
 async fn websocket_route_closes_when_live_receiver_lags(pool: sqlx::PgPool) {
     support::seed_trip(&pool).await;
     let token = support::create_session(&pool, support::ORGANIZER_ID).await;

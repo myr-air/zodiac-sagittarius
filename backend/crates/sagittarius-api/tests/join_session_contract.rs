@@ -154,6 +154,107 @@ async fn join_session_contract_claim_requires_join_session_token(pool: sqlx::PgP
 }
 
 #[sqlx::test(migrations = "../../migrations")]
+async fn join_session_contract_locks_trip_password_after_repeated_wrong_attempts(
+    pool: sqlx::PgPool,
+) {
+    support::seed_trip(&pool).await;
+    let app = support::app(pool.clone());
+
+    for _ in 0..5 {
+        let response = app
+            .clone()
+            .oneshot(
+                Request::builder()
+                    .method(Method::POST)
+                    .uri("/api/v1/trip-join-sessions")
+                    .header(header::CONTENT_TYPE, "application/json")
+                    .body(Body::from(
+                        json!({"joinCode":"HK-SZ-2025","tripPassword":"wrong-pass"}).to_string(),
+                    ))
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::UNAUTHORIZED);
+    }
+
+    let locked = app
+        .oneshot(
+            Request::builder()
+                .method(Method::POST)
+                .uri("/api/v1/trip-join-sessions")
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({"joinCode":"HK-SZ-2025","tripPassword":"seed-trip-pass"}).to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(locked.status(), StatusCode::TOO_MANY_REQUESTS);
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn join_session_contract_locks_member_password_after_repeated_wrong_attempts(
+    pool: sqlx::PgPool,
+) {
+    support::seed_trip(&pool).await;
+    support::claim_member(&pool, support::ORGANIZER_ID, "1234", "active").await;
+    let app = support::app(pool.clone());
+    let join_body = join_room(&app).await;
+    let join_session_token = join_body["joinSessionToken"].as_str().unwrap();
+
+    for _ in 0..5 {
+        let response = app
+            .clone()
+            .oneshot(
+                Request::builder()
+                    .method(Method::POST)
+                    .uri(format!(
+                        "/api/v1/trips/{}/member-sessions",
+                        support::TRIP_ID
+                    ))
+                    .header(header::CONTENT_TYPE, "application/json")
+                    .body(Body::from(
+                        json!({
+                            "memberId": support::ORGANIZER_ID,
+                            "participantPassword":"0000",
+                            "joinSessionToken": join_session_token
+                        })
+                        .to_string(),
+                    ))
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::UNAUTHORIZED);
+    }
+
+    let locked = app
+        .oneshot(
+            Request::builder()
+                .method(Method::POST)
+                .uri(format!(
+                    "/api/v1/trips/{}/member-sessions",
+                    support::TRIP_ID
+                ))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({
+                        "memberId": support::ORGANIZER_ID,
+                        "participantPassword":"1234",
+                        "joinSessionToken": join_session_token
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(locked.status(), StatusCode::TOO_MANY_REQUESTS);
+}
+
+#[sqlx::test(migrations = "../../migrations")]
 async fn join_session_contract_login_and_logout_use_join_and_member_tokens(pool: sqlx::PgPool) {
     support::seed_trip(&pool).await;
     support::set_trip_dates(&pool, "2026-06-01", "2026-06-30").await;

@@ -50,3 +50,43 @@ async fn itinerary_create_contract_accepts_address_and_coordinates(pool: sqlx::P
     assert_eq!(body["coordinates"]["lat"], 22.2939);
     assert_eq!(body["coordinates"]["lng"], 114.1698);
 }
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn itinerary_create_contract_rejects_unsafe_map_link(pool: sqlx::PgPool) {
+    support::seed_trip(&pool).await;
+    let token = support::create_session(&pool, support::ORGANIZER_ID).await;
+    let app = support::app(pool);
+
+    let response = app
+        .oneshot(
+            Request::builder()
+                .method(Method::POST)
+                .uri(format!(
+                    "/api/v1/trips/{}/itinerary-items",
+                    support::TRIP_ID
+                ))
+                .header(header::AUTHORIZATION, format!("Bearer {token}"))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({
+                        "clientMutationId": "web-create-unsafe-map-link",
+                        "planVariantId": support::PLAN_ID,
+                        "day": "2026-06-19",
+                        "startTime": "11:30",
+                        "activity": "Coffee break",
+                        "activityType": "food",
+                        "place": "Blue Bottle Coffee",
+                        "mapLink": "javascript:alert(document.domain)",
+                        "durationMinutes": 45,
+                        "transportation": "walk",
+                        "note": "near the waterfront"
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::BAD_REQUEST);
+}

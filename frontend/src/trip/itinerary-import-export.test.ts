@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { buildItineraryExport, parseItineraryImport } from "./itinerary-import-export";
+import {
+  buildItineraryExport,
+  parseItineraryImport,
+} from "./itinerary-import-export";
 import { tripFixture } from "./trip-fixtures";
 
 describe("itinerary import/export JSON", () => {
@@ -80,8 +83,27 @@ describe("itinerary import/export JSON", () => {
       trip: tripFixture.trip,
     });
 
-    expect(parseItineraryImport(JSON.stringify(payload))).toEqual([payload.items[0]]);
-    expect(() => parseItineraryImport("{}")).toThrow(/unsupported itinerary import/i);
+    expect(parseItineraryImport(JSON.stringify(payload))).toEqual([
+      payload.items[0],
+    ]);
+    expect(() => parseItineraryImport("{}")).toThrow(
+      /unsupported itinerary import/i,
+    );
     expect(() => parseItineraryImport("{")).toThrow(/valid JSON/i);
+  });
+
+  it("drops unsafe map links from imported itinerary items", () => {
+    const payload = buildItineraryExport({
+      exportedAt: "2026-06-04T12:00:00.000Z",
+      items: [
+        {
+          ...tripFixture.planItems[0],
+          mapLink: "javascript:alert(document.domain)",
+        },
+      ],
+      trip: tripFixture.trip,
+    });
+
+    expect(parseItineraryImport(JSON.stringify(payload))[0].mapLink).toBe("");
   });
 });
