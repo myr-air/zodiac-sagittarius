@@ -218,6 +218,9 @@ describe("TripJoinGate", () => {
       createExpense: vi.fn(),
       patchExpense: vi.fn(),
       deleteExpense: vi.fn(),
+      createBookingDoc: vi.fn(),
+      patchBookingDoc: vi.fn(),
+      deleteBookingDoc: vi.fn(),
     };
 
     render(<TripJoinGate apiClient={apiClient} onTripChange={vi.fn()} onAuthenticated={vi.fn()} />);
@@ -360,6 +363,9 @@ describe("TripJoinGate", () => {
       createExpense: vi.fn(),
       patchExpense: vi.fn(),
       deleteExpense: vi.fn(),
+      createBookingDoc: vi.fn(),
+      patchBookingDoc: vi.fn(),
+      deleteBookingDoc: vi.fn(),
     };
     const onTripChange = vi.fn();
     const onAuthenticated = vi.fn();
@@ -511,6 +517,9 @@ describe("TripJoinGate", () => {
       createExpense: vi.fn(),
       patchExpense: vi.fn(),
       deleteExpense: vi.fn(),
+      createBookingDoc: vi.fn(),
+      patchBookingDoc: vi.fn(),
+      deleteBookingDoc: vi.fn(),
     };
 
     render(<TripJoinGate apiClient={apiClient} onTripChange={vi.fn()} onAuthenticated={vi.fn()} />);
@@ -595,6 +604,9 @@ describe("TripJoinGate", () => {
       createExpense: vi.fn(),
       patchExpense: vi.fn(),
       deleteExpense: vi.fn(),
+      createBookingDoc: vi.fn(),
+      patchBookingDoc: vi.fn(),
+      deleteBookingDoc: vi.fn(),
     };
 
     render(<TripJoinGate apiClient={apiClient} onTripChange={vi.fn()} onAuthenticated={vi.fn()} />);
@@ -669,6 +681,9 @@ function createApiClient(overrides: Partial<TripApiClient> = {}): TripApiClient 
     createExpense: vi.fn(),
     patchExpense: vi.fn(),
     deleteExpense: vi.fn(),
+    createBookingDoc: vi.fn(),
+    patchBookingDoc: vi.fn(),
+    deleteBookingDoc: vi.fn(),
     ...overrides,
   } as TripApiClient;
 }

@@ -123,6 +123,9 @@ db-init: db-create
 	@if ! $(PSQL) "$(DATABASE_URL)" -tAc "SELECT 1 FROM information_schema.tables WHERE table_schema='public' AND table_name='place_geocode_cache'" | grep -q 1; then \
 	  $(PSQL) -v ON_ERROR_STOP=1 "$(DATABASE_URL)" < backend/migrations/0016_place_geocode_cache.sql; \
 	fi
+	@if ! $(PSQL) "$(DATABASE_URL)" -tAc "SELECT 1 FROM information_schema.tables WHERE table_schema='public' AND table_name='booking_docs'" | grep -q 1; then \
+	  $(PSQL) -v ON_ERROR_STOP=1 "$(DATABASE_URL)" < backend/migrations/0017_booking_docs.sql; \
+	fi
 
 db-init-test: db-create-test
 	@if ! $(PSQL) "$(TEST_DATABASE_URL)" -tAc "SELECT 1 FROM information_schema.tables WHERE table_schema='public' AND table_name='trips'" | grep -q 1; then \
@@ -163,6 +166,9 @@ db-init-test: db-create-test
 	fi
 	@if ! $(PSQL) "$(TEST_DATABASE_URL)" -tAc "SELECT 1 FROM information_schema.tables WHERE table_schema='public' AND table_name='place_geocode_cache'" | grep -q 1; then \
 	  $(PSQL) -v ON_ERROR_STOP=1 "$(TEST_DATABASE_URL)" < backend/migrations/0016_place_geocode_cache.sql; \
+	fi
+	@if ! $(PSQL) "$(TEST_DATABASE_URL)" -tAc "SELECT 1 FROM information_schema.tables WHERE table_schema='public' AND table_name='booking_docs'" | grep -q 1; then \
+	  $(PSQL) -v ON_ERROR_STOP=1 "$(TEST_DATABASE_URL)" < backend/migrations/0017_booking_docs.sql; \
 	fi
 
 db-ensure-psql:
@@ -206,6 +212,6 @@ db-rollback-stop-notes-test:
 	  $(PSQL) -v ON_ERROR_STOP=1 "$(ROLLBACK_TEST_DATABASE_URL)" < "$$f"; \
 	done
 	@$(PSQL) "$(ROLLBACK_TEST_DATABASE_URL)" -tAc "SELECT to_regclass('public.stop_notes') IS NOT NULL" | grep -q t
-	@$(PSQL) "$(ROLLBACK_TEST_DATABASE_URL)" -v ON_ERROR_STOP=1 -c "DROP INDEX IF EXISTS stop_notes_trip_item_created_at_idx; DROP TABLE IF EXISTS stop_notes;"
+	@$(PSQL) "$(ROLLBACK_TEST_DATABASE_URL)" -v ON_ERROR_STOP=1 -c "DROP TABLE IF EXISTS booking_doc_stop_notes; DROP INDEX IF EXISTS stop_notes_trip_item_created_at_idx; DROP TABLE IF EXISTS stop_notes;"
 	@$(PSQL) "$(ROLLBACK_TEST_DATABASE_URL)" -tAc "SELECT to_regclass('public.stop_notes') IS NULL" | grep -q t
 	@$(PSQL) "$(PGADMIN_URL)" -v ON_ERROR_STOP=1 -c "DROP DATABASE IF EXISTS $(ROLLBACK_TEST_DATABASE_NAME) WITH (FORCE);"

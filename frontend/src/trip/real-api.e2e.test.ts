@@ -153,6 +153,47 @@ describe.skipIf(!required && !hasCredentials)("real Sagittarius API e2e", () => 
       itineraryItemId: createdItem.id,
     });
     expect(patchedExpense).toMatchObject({ id: createdExpense.id, title: "E2E snack updated", amount: 130 });
+
+    const createdBooking = await client.createBookingDoc(join.trip.id, session.sessionToken, {
+      clientMutationId: `e2e-booking-create-${runId}`,
+      type: "activity_ticket",
+      title: `E2E ticket ${runId}`,
+      status: "booked",
+      visibility: "shared",
+      ownerMemberId: member.id,
+      providerName: "E2E Provider",
+      confirmationCode: `E2E-${runId}`,
+      startsAt: null,
+      endsAt: null,
+      timezone: "Asia/Hong_Kong",
+      priceAmount: 130,
+      currency: "HKD",
+      travelerIds: [member.id, member.id],
+      externalLinks: [{ label: "Cloud voucher", url: "https://drive.google.com/e2e-ticket", provider: "Google Drive", accessNote: null }],
+      relatedItineraryItemIds: [createdItem.id],
+      relatedTaskIds: [task.id],
+      relatedExpenseIds: [createdExpense.id],
+      noteIds: [],
+      notes: "E2E booking doc",
+    });
+    expect(createdBooking).toMatchObject({
+      title: `E2E ticket ${runId}`,
+      travelerIds: [member.id],
+      relatedItineraryItemIds: [createdItem.id],
+      relatedTaskIds: [task.id],
+      relatedExpenseIds: [createdExpense.id],
+    });
+    const patchedBooking = await client.patchBookingDoc(join.trip.id, createdBooking.id, session.sessionToken, {
+      clientMutationId: `e2e-booking-patch-${runId}`,
+      expectedVersion: createdBooking.version,
+      patch: {
+        title: `E2E ticket updated ${runId}`,
+        status: "confirmed",
+      },
+    });
+    expect(patchedBooking).toMatchObject({ id: createdBooking.id, title: `E2E ticket updated ${runId}`, status: "confirmed", version: createdBooking.version + 1 });
+    await expect(client.deleteBookingDoc(join.trip.id, createdBooking.id, session.sessionToken)).resolves.toMatchObject({ id: createdBooking.id });
+
     await expect(client.deleteExpense(join.trip.id, createdExpense.id, session.sessionToken)).resolves.toMatchObject({ id: createdExpense.id });
 
     await expect(client.deleteItineraryItem(join.trip.id, createdItem.id, session.sessionToken)).resolves.toMatchObject({ id: createdItem.id });

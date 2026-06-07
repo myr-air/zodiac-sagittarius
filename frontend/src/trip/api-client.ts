@@ -129,7 +129,7 @@ export interface TripCockpitResponse {
   stopNotes: StopNote[];
   expenses: ExpenseResponse[];
   expenseSummary: ExpenseSummary | null;
-  bookingDocs?: BookingDoc[];
+  bookingDocs: BookingDoc[];
 }
 
 export interface JoinTripResponse {
@@ -202,6 +202,9 @@ export interface TripApiClient {
   createExpense(tripId: string, sessionToken: string, request: CreateExpenseApiRequest): Promise<Expense>;
   patchExpense(tripId: string, expenseId: string, sessionToken: string, request: PatchExpenseApiRequest): Promise<Expense>;
   deleteExpense(tripId: string, expenseId: string, sessionToken: string): Promise<Expense>;
+  createBookingDoc(tripId: string, sessionToken: string, request: CreateBookingDocApiRequest): Promise<BookingDoc>;
+  patchBookingDoc(tripId: string, bookingId: string, sessionToken: string, request: PatchBookingDocApiRequest): Promise<BookingDoc>;
+  deleteBookingDoc(tripId: string, bookingId: string, sessionToken: string): Promise<BookingDoc>;
 }
 
 export interface CreateTaskApiRequest {
@@ -377,6 +380,21 @@ export interface PatchExpenseApiRequest {
   category?: Expense["category"];
   splits?: Record<string, number>;
   itineraryItemId?: string | null;
+}
+
+export type BookingDocExternalLinkApiRequest = Omit<BookingDoc["externalLinks"][number], "id"> & {
+  id?: string;
+};
+
+export interface CreateBookingDocApiRequest extends Omit<BookingDoc, "id" | "tripId" | "createdBy" | "updatedAt" | "version" | "externalLinks"> {
+  clientMutationId: string;
+  externalLinks: BookingDocExternalLinkApiRequest[];
+}
+
+export interface PatchBookingDocApiRequest {
+  clientMutationId: string;
+  expectedVersion: number;
+  patch: Partial<Omit<CreateBookingDocApiRequest, "clientMutationId">>;
 }
 
 export function createTripApiClient(options: TripApiClientOptions = {}): TripApiClient {
@@ -667,10 +685,37 @@ export function createTripApiClient(options: TripApiClientOptions = {}): TripApi
       });
       return mapExpense(expense);
     },
+    createBookingDoc(tripId, sessionToken, bookingRequest) {
+      return request<BookingDoc>(tripApiRoutes.bookings(tripId), {
+        method: "POST",
+        headers: { Authorization: `Bearer ${sessionToken}` },
+        body: JSON.stringify(bookingRequest),
+      });
+    },
+    patchBookingDoc(tripId, bookingId, sessionToken, bookingRequest) {
+      return request<BookingDoc>(tripApiRoutes.booking(tripId, bookingId), {
+        method: "PATCH",
+        headers: { Authorization: `Bearer ${sessionToken}` },
+        body: JSON.stringify(bookingRequest),
+      });
+    },
+    deleteBookingDoc(tripId, bookingId, sessionToken) {
+      return request<BookingDoc>(tripApiRoutes.booking(tripId, bookingId), {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${sessionToken}` },
+      });
+    },
   };
 }
 
 export function mapCockpitResponse(response: TripCockpitResponse): TripCockpit {
+  if (!Array.isArray(response.bookingDocs)) {
+    throw new TripApiError({
+      code: "invalid_response",
+      message: "cockpit response is missing bookingDocs",
+      status: 0,
+    });
+  }
   const activePlanVariantId = response.trip.activePlanVariantId ?? response.planVariants[0]?.id ?? "";
   return {
     trip: {
@@ -680,7 +725,7 @@ export function mapCockpitResponse(response: TripCockpitResponse): TripCockpit {
       members: response.members.map(mapMember),
       itineraryItems: response.itineraryItems.map(mapItineraryItem),
       expenses: response.expenses.map(mapExpense),
-      bookingDocs: response.bookingDocs ?? [],
+      bookingDocs: response.bookingDocs,
     },
     suggestions: response.suggestions,
     tasks: response.tasks.map(mapTask),

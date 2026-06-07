@@ -203,7 +203,7 @@ export function SagittariusApp({
   const canReviewSuggestions = canTripRole(currentMember.role, "reviewSuggestions");
   const canEditExpenses = canTripRole(currentMember.role, "editExpenses");
   const canManagePeople = canTripRole(currentMember.role, "managePeople");
-  const canEditBookings = !isApiMode && (canEdit || canEditExpenses);
+  const canEditBookings = canEdit || canEditExpenses;
   const canCreateStopNote = canCreateSuggestion || canEdit;
   const supportsContextRail = currentView === "overview" || currentView === "itinerary" || currentView === "timeline";
   const activePlanItems = useMemo(
@@ -1324,6 +1324,27 @@ export function SagittariusApp({
     if (!canEditBookings) return;
     const title = input.title.trim();
     if (!title) return;
+    if (isApiMode && resolvedApiClient && participantSession) {
+      const clientMutationId = nextClientMutationId("booking-doc-create");
+      try {
+        const bookingDoc = await resolvedApiClient.createBookingDoc(trip.id, participantSession.sessionToken, {
+          clientMutationId,
+          ...serializeBookingDocInputForApi({ ...input, title }),
+        });
+        const nextTrip = {
+          ...latestTripRef.current,
+          bookingDocs: [...(latestTripRef.current.bookingDocs ?? []), bookingDoc],
+        };
+        latestTripRef.current = nextTrip;
+        setTripState((current) => ({ ...current, trip: nextTrip }));
+      } catch (error) {
+        if (!(error instanceof TripApiError) || error.code !== "version_conflict") throw error;
+        const cockpit = await resolvedApiClient.loadTrip(trip.id, participantSession.sessionToken);
+        replaceCockpitFromApi(cockpit);
+        latestTripRef.current = cockpit.trip;
+      }
+      return;
+    }
     const bookingDoc: BookingDoc = {
       id: nextLocalBookingDocId(trip.bookingDocs ?? []),
       tripId: trip.id,
@@ -1342,6 +1363,33 @@ export function SagittariusApp({
 
   async function updateBookingDoc(bookingDocId: string, input: BookingDocInput) {
     if (!canEditBookings) return;
+    if (isApiMode && resolvedApiClient && participantSession) {
+      for (let attempt = 0; attempt < 2; attempt += 1) {
+        const currentTrip = latestTripRef.current;
+        const bookingDoc = currentTrip.bookingDocs?.find((candidate) => candidate.id === bookingDocId);
+        if (!bookingDoc) return;
+        try {
+          const patchedBookingDoc = await resolvedApiClient.patchBookingDoc(currentTrip.id, bookingDocId, participantSession.sessionToken, {
+            clientMutationId: nextClientMutationId("booking-doc-patch"),
+            expectedVersion: bookingDoc.version,
+            patch: serializeBookingDocInputForApi({ ...input, title: input.title.trim() }),
+          });
+          const nextTrip = {
+            ...latestTripRef.current,
+            bookingDocs: (latestTripRef.current.bookingDocs ?? []).map((candidate) => (candidate.id === bookingDocId ? patchedBookingDoc : candidate)),
+          };
+          latestTripRef.current = nextTrip;
+          setTripState((current) => ({ ...current, trip: nextTrip }));
+          return;
+        } catch (error) {
+          if (!(error instanceof TripApiError) || error.code !== "version_conflict" || attempt > 0) throw error;
+          const cockpit = await resolvedApiClient.loadTrip(currentTrip.id, participantSession.sessionToken);
+          replaceCockpitFromApi(cockpit);
+          latestTripRef.current = cockpit.trip;
+        }
+      }
+      return;
+    }
     commitTrip((current) => ({
       ...current,
       bookingDocs: (current.bookingDocs ?? []).map((bookingDoc) =>
@@ -1364,6 +1412,16 @@ export function SagittariusApp({
 
   async function deleteBookingDoc(bookingDocId: string) {
     if (!canEditBookings) return;
+    if (isApiMode && resolvedApiClient && participantSession) {
+      await resolvedApiClient.deleteBookingDoc(trip.id, bookingDocId, participantSession.sessionToken);
+      const nextTrip = {
+        ...latestTripRef.current,
+        bookingDocs: (latestTripRef.current.bookingDocs ?? []).filter((bookingDoc) => bookingDoc.id !== bookingDocId),
+      };
+      latestTripRef.current = nextTrip;
+      setTripState((current) => ({ ...current, trip: nextTrip }));
+      return;
+    }
     commitTrip((current) => ({
       ...current,
       bookingDocs: (current.bookingDocs ?? []).filter((bookingDoc) => bookingDoc.id !== bookingDocId),
@@ -2266,6 +2324,29 @@ export function nextLocalBookingDocId(bookingDocs: BookingDoc[]): string {
   }
 
   return id;
+}
+
+function serializeBookingDocInputForApi(input: BookingDocInput) {
+  return {
+    ...input,
+    title: input.title.trim(),
+    providerName: input.providerName?.trim() || null,
+    confirmationCode: input.confirmationCode?.trim() || null,
+    timezone: input.timezone?.trim() || null,
+    currency: input.currency?.trim() || null,
+    notes: input.notes?.trim() || null,
+    externalLinks: input.externalLinks.map((link) => ({
+      ...(isUuid(link.id) ? { id: link.id } : {}),
+      label: link.label.trim(),
+      url: link.url.trim(),
+      provider: link.provider?.trim() || null,
+      accessNote: link.accessNote?.trim() || null,
+    })),
+  };
+}
+
+function isUuid(value: string | undefined): boolean {
+  return typeof value === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
 }
 
 export function nextClientMutationId(prefix: string): string {

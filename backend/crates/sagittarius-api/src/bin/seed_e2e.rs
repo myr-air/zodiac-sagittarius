@@ -9,7 +9,10 @@ const VIEWER_ID: &str = "018f4e81-77a4-7b8f-b3bd-0d0f493ac564";
 const PLAN_ID: &str = "018f4e82-3000-7c00-b111-000000000001";
 const ITEM_ID: &str = "018f4e83-5410-7d8b-8f25-fd52c5e7bd1f";
 const STOP_NOTE_ID: &str = "018f4e83-5410-7d8b-8f25-fd52c5e7bd30";
+const TASK_ID: &str = "018f4e85-2222-7000-8000-000000000001";
 const EXPENSE_ID: &str = "018f4e86-1111-7000-8000-000000000001";
+const BOOKING_FLIGHT_ID: &str = "018f4e87-1111-7000-8000-000000000001";
+const BOOKING_HOTEL_ID: &str = "018f4e87-1111-7000-8000-000000000002";
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -42,6 +45,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         include_str!("../../../../migrations/0013_expense_receipts_itemization.sql"),
         include_str!("../../../../migrations/0014_expense_notes.sql"),
         include_str!("../../../../migrations/0015_expense_comments.sql"),
+        include_str!("../../../../migrations/0016_place_geocode_cache.sql"),
+        include_str!("../../../../migrations/0017_booking_docs.sql"),
     ] {
         sqlx::raw_sql(migration).execute(&pool).await?;
     }
@@ -50,6 +55,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     seed_tasks(&pool).await?;
     seed_stop_notes(&pool).await?;
     seed_expenses(&pool).await?;
+    seed_booking_docs(&pool).await?;
 
     println!("seeded local e2e trip HK-SZ-2025 in sagittarius_test");
     Ok(())
@@ -190,12 +196,121 @@ async fn seed_tasks(pool: &sqlx::PgPool) -> Result<(), sqlx::Error> {
          )
          values
            (gen_random_uuid(), $1, 'Buy eSIM', 'open', 'private', 'prep', $2, $2),
-           (gen_random_uuid(), $1, 'Book Peak Tram', 'done', 'shared', 'booking', $3, $3)",
+           ($4, $1, 'Book Peak Tram', 'done', 'shared', 'booking', $3, $3)",
     )
     .bind(Uuid::parse_str(TRIP_ID).expect("static uuid"))
     .bind(Uuid::parse_str(TRAVELER_ID).expect("static uuid"))
     .bind(Uuid::parse_str(ORGANIZER_ID).expect("static uuid"))
+    .bind(Uuid::parse_str(TASK_ID).expect("static uuid"))
     .execute(pool)
     .await?;
     Ok(())
+}
+
+async fn seed_booking_docs(pool: &sqlx::PgPool) -> Result<(), sqlx::Error> {
+    let trip_id = Uuid::parse_str(TRIP_ID).expect("static uuid");
+    let owner_id = Uuid::parse_str(OWNER_ID).expect("static uuid");
+    let organizer_id = Uuid::parse_str(ORGANIZER_ID).expect("static uuid");
+    let traveler_id = Uuid::parse_str(TRAVELER_ID).expect("static uuid");
+    let flight_id = Uuid::parse_str(BOOKING_FLIGHT_ID).expect("static uuid");
+    let hotel_id = Uuid::parse_str(BOOKING_HOTEL_ID).expect("static uuid");
+    let item_id = Uuid::parse_str(ITEM_ID).expect("static uuid");
+    let task_id = Uuid::parse_str(TASK_ID).expect("static uuid");
+    let expense_id = Uuid::parse_str(EXPENSE_ID).expect("static uuid");
+    let note_id = Uuid::parse_str(STOP_NOTE_ID).expect("static uuid");
+
+    let mut tx = pool.begin().await?;
+    sqlx::query(
+        "insert into booking_docs (
+           id, trip_id, type, title, status, visibility, owner_member_id, provider_name,
+           confirmation_code, starts_at, ends_at, timezone, price_minor, currency, notes, created_by
+         )
+         values
+           (
+             $1, $2, 'flight', 'HK Express flight to Hong Kong', 'confirmed', 'sensitive',
+             $3, 'HK Express', 'UO-2026', '2026-06-18T03:45:00Z', '2026-06-18T06:30:00Z',
+             'Asia/Hong_Kong', 184500, 'HKD', 'Boarding pass is in Drive; check passport names.', $4
+           ),
+           (
+             $5, $2, 'hotel', 'Tsim Sha Tsui hotel voucher', 'booked', 'shared',
+             $4, 'Harbour Stay', 'HS-1842', '2026-06-18T07:00:00Z', '2026-06-23T04:00:00Z',
+             'Asia/Hong_Kong', 520000, 'HKD', 'Pay at property; breakfast included.', $4
+           )",
+    )
+    .bind(flight_id)
+    .bind(trip_id)
+    .bind(owner_id)
+    .bind(organizer_id)
+    .bind(hotel_id)
+    .execute(&mut *tx)
+    .await?;
+
+    sqlx::query(
+        "insert into booking_doc_external_links (
+           id, trip_id, booking_doc_id, label, url, provider, access_note, sort_order
+         )
+         values
+           (gen_random_uuid(), $1, $2, 'Airline booking', 'https://www.hkexpress.com', 'HK Express', 'Use confirmation code UO-2026', 0),
+           (gen_random_uuid(), $1, $3, 'Hotel voucher', 'https://drive.google.com', 'Google Drive', 'Shared trip folder', 0)",
+    )
+    .bind(trip_id)
+    .bind(flight_id)
+    .bind(hotel_id)
+    .execute(&mut *tx)
+    .await?;
+
+    sqlx::query(
+        "insert into booking_doc_travelers (trip_id, booking_doc_id, member_id)
+         values ($1, $2, $4), ($1, $2, $5), ($1, $3, $4), ($1, $3, $5)",
+    )
+    .bind(trip_id)
+    .bind(flight_id)
+    .bind(hotel_id)
+    .bind(owner_id)
+    .bind(traveler_id)
+    .execute(&mut *tx)
+    .await?;
+
+    sqlx::query(
+        "insert into booking_doc_itinerary_items (trip_id, booking_doc_id, itinerary_item_id)
+         values ($1, $2, $3), ($1, $4, $3)",
+    )
+    .bind(trip_id)
+    .bind(flight_id)
+    .bind(item_id)
+    .bind(hotel_id)
+    .execute(&mut *tx)
+    .await?;
+
+    sqlx::query(
+        "insert into booking_doc_tasks (trip_id, booking_doc_id, task_id)
+         values ($1, $2, $3)",
+    )
+    .bind(trip_id)
+    .bind(hotel_id)
+    .bind(task_id)
+    .execute(&mut *tx)
+    .await?;
+
+    sqlx::query(
+        "insert into booking_doc_expenses (trip_id, booking_doc_id, expense_id)
+         values ($1, $2, $3)",
+    )
+    .bind(trip_id)
+    .bind(hotel_id)
+    .bind(expense_id)
+    .execute(&mut *tx)
+    .await?;
+
+    sqlx::query(
+        "insert into booking_doc_stop_notes (trip_id, booking_doc_id, stop_note_id)
+         values ($1, $2, $3)",
+    )
+    .bind(trip_id)
+    .bind(flight_id)
+    .bind(note_id)
+    .execute(&mut *tx)
+    .await?;
+
+    tx.commit().await
 }

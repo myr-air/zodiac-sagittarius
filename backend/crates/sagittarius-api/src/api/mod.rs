@@ -1,4 +1,5 @@
 pub mod account;
+pub mod bookings;
 pub mod daily_briefings;
 pub mod error;
 pub mod expenses;
@@ -169,6 +170,14 @@ fn api_v1() -> Router<AppState> {
             patch(expenses::patch_expense).delete(expenses::delete_expense),
         )
         .route(
+            "/trips/{trip_id}/bookings",
+            post(bookings::create_booking_doc),
+        )
+        .route(
+            "/trips/{trip_id}/bookings/{booking_id}",
+            patch(bookings::patch_booking_doc).delete(bookings::delete_booking_doc),
+        )
+        .route(
             "/trips/{trip_id}/members",
             get(members::list_members).post(members::create_member),
         )
@@ -250,9 +259,8 @@ impl CorsOriginPolicy {
         allowed_origins: Option<&str>,
     ) -> Self {
         let runtime_env = runtime_env.trim().to_ascii_lowercase();
-        let allow_local_development_origins = parse_cors_bool(allow_local_override).unwrap_or_else(
-            || !matches!(runtime_env.as_str(), "production" | "staging"),
-        );
+        let allow_local_development_origins = parse_cors_bool(allow_local_override)
+            .unwrap_or_else(|| !matches!(runtime_env.as_str(), "production" | "staging"));
         let allowed_origins = allowed_origins
             .unwrap_or_default()
             .split(',')

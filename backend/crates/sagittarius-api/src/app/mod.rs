@@ -1,5 +1,6 @@
 pub mod account;
 pub mod auth;
+pub mod bookings;
 pub mod daily_briefings;
 pub mod email;
 pub mod events;

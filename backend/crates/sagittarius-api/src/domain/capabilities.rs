@@ -29,6 +29,7 @@ const OWNER_OR_ORGANIZER_CAPABILITIES: &[Capability] = &[
     Capability::CreateSharedTask,
     Capability::CreatePrivateTask,
     Capability::UpdateOwnPrivateTask,
+    Capability::EditBookings,
 ];
 
 #[cfg(test)]
@@ -44,10 +45,12 @@ mod tests {
         assert!(!can(TripRole::Traveler, Capability::EditItinerary));
         assert!(!can(TripRole::Traveler, Capability::ManagePeople));
         assert!(!can(TripRole::Traveler, Capability::EditExpenses));
+        assert!(!can(TripRole::Traveler, Capability::EditBookings));
 
         assert!(can(TripRole::Viewer, Capability::ViewPlan));
         assert!(!can(TripRole::Viewer, Capability::CreateSuggestion));
         assert!(!can(TripRole::Viewer, Capability::ViewExpenses));
+        assert!(!can(TripRole::Viewer, Capability::EditBookings));
     }
 
     #[test]
@@ -61,6 +64,7 @@ mod tests {
             assert!(can(role, Capability::CreateSharedTask));
             assert!(can(role, Capability::CreatePrivateTask));
             assert!(can(role, Capability::UpdateOwnPrivateTask));
+            assert!(can(role, Capability::EditBookings));
         }
     }
 }

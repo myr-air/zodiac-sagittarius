@@ -156,7 +156,8 @@ describe("Sagittarius cockpit UI", () => {
     expect(await screen.findByRole("button", { name: /Select Airport Express pass/i })).toBeInTheDocument();
   });
 
-  it("shows API-loaded booking docs as read-only until backend booking endpoints exist", async () => {
+  it("creates booking docs through the API client in API mode", async () => {
+    const user = userEvent.setup();
     installLocalStorageStub();
     window.sessionStorage.setItem(
       tripParticipantSessionStorageKey,
@@ -168,16 +169,92 @@ describe("Sagittarius cockpit UI", () => {
         expiresAt: "2026-06-28T00:00:00.000Z",
       }),
     );
-    const apiClient = createApiClientForTrip(seedTrip);
+    const apiBooking = {
+      ...(seedTrip.bookingDocs ?? [])[0],
+      id: "018f4e87-1111-7000-8000-000000009999",
+      title: "Airport Express pass",
+      type: "public_transport" as const,
+      status: "booked" as const,
+      externalLinks: [{
+        id: "018f4e88-1111-7000-8000-000000009999",
+        label: "External link",
+        url: "https://drive.google.com/airport-express",
+        provider: "Google Drive",
+        accessNote: null,
+      }],
+      updatedAt: "2026-05-29T00:00:00.000Z",
+      version: 1,
+    };
+    const apiClient = createApiClientForTrip(seedTrip, {
+      createBookingDoc: vi.fn().mockResolvedValue(apiBooking),
+    });
 
     render(<SagittariusApp accessMode="trip-access" initialView="bookings" requireJoin dataSource="api" routeTripId={seedTrip.id} apiClient={apiClient} />);
 
     expect(await screen.findByRole("region", { name: "Bookings & Docs" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Select Bangkok to Hong Kong flight/i })).toBeInTheDocument();
-    expect(screen.getByText("Read-only")).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "Add booking" })).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "Edit booking" })).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "Delete booking" })).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Add booking" }));
+    const dialog = screen.getByRole("dialog", { name: "Add booking" });
+    fireEvent.change(within(dialog).getByLabelText("Title"), { target: { value: "Airport Express pass" } });
+    fireEvent.change(within(dialog).getByLabelText("Type"), { target: { value: "public_transport" } });
+    fireEvent.change(within(dialog).getByLabelText("Status"), { target: { value: "booked" } });
+    fireEvent.change(within(dialog).getByLabelText("External link"), { target: { value: "https://drive.google.com/airport-express" } });
+    await user.click(within(dialog).getByRole("button", { name: "Save booking" }));
+
+    await waitFor(() => expect(apiClient.createBookingDoc).toHaveBeenCalledWith(
+      seedTrip.id,
+      "api-bookings-session",
+      expect.objectContaining({
+        clientMutationId: expect.stringMatching(/^booking-doc-create-/),
+        title: "Airport Express pass",
+        type: "public_transport",
+        status: "booked",
+        externalLinks: [expect.objectContaining({
+          label: "External link",
+          url: "https://drive.google.com/airport-express",
+          provider: null,
+        })],
+      }),
+    ));
+    expect(await screen.findByRole("button", { name: /Select Airport Express pass/i })).toBeInTheDocument();
+  });
+
+  it("does not retry booking doc creates with a new mutation id after create conflicts", async () => {
+    const user = userEvent.setup();
+    installLocalStorageStub();
+    window.sessionStorage.setItem(
+      tripParticipantSessionStorageKey,
+      JSON.stringify({
+        tripId: seedTrip.id,
+        memberId: seedTrip.members[0].id,
+        sessionToken: "api-bookings-session",
+        createdAt: "2026-05-29T00:00:00.000Z",
+        expiresAt: "2026-06-28T00:00:00.000Z",
+      }),
+    );
+    const apiClient = createApiClientForTrip(seedTrip, {
+      createBookingDoc: vi.fn().mockRejectedValue(new TripApiError({ code: "version_conflict", message: "duplicate mutation", status: 409 })),
+      loadTrip: vi.fn().mockResolvedValue({
+        trip: seedTrip,
+        suggestions: [],
+        tasks: [],
+        stopNotes: [],
+        expenseSummary: null,
+      }),
+    });
+
+    render(<SagittariusApp accessMode="trip-access" initialView="bookings" requireJoin dataSource="api" routeTripId={seedTrip.id} apiClient={apiClient} />);
+
+    expect(await screen.findByRole("region", { name: "Bookings & Docs" })).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Add booking" }));
+    const dialog = screen.getByRole("dialog", { name: "Add booking" });
+    fireEvent.change(within(dialog).getByLabelText("Title"), { target: { value: "Airport Express pass" } });
+    fireEvent.change(within(dialog).getByLabelText("Type"), { target: { value: "public_transport" } });
+    fireEvent.change(within(dialog).getByLabelText("Status"), { target: { value: "booked" } });
+    await user.click(within(dialog).getByRole("button", { name: "Save booking" }));
+
+    await waitFor(() => expect(apiClient.loadTrip).toHaveBeenCalledWith(seedTrip.id, "api-bookings-session"));
+    expect(apiClient.createBookingDoc).toHaveBeenCalledTimes(1);
   });
 
   it("asks the organizer to choose when place resolution is ambiguous", async () => {
@@ -838,6 +915,9 @@ describe("Sagittarius cockpit UI", () => {
       createExpense: vi.fn(),
       patchExpense: vi.fn(),
       deleteExpense: vi.fn(),
+      createBookingDoc: vi.fn(),
+      patchBookingDoc: vi.fn(),
+      deleteBookingDoc: vi.fn(),
     };
 
     render(<SagittariusApp requireJoin dataSource="api" apiClient={apiClient} />);
@@ -1427,6 +1507,9 @@ describe("Sagittarius cockpit UI", () => {
       createExpense: vi.fn(),
       patchExpense: vi.fn(),
       deleteExpense: vi.fn(),
+      createBookingDoc: vi.fn(),
+      patchBookingDoc: vi.fn(),
+      deleteBookingDoc: vi.fn(),
     };
 
     render(<SagittariusApp requireJoin dataSource="api" initialView="itinerary" apiClient={apiClient} />);
@@ -1661,6 +1744,9 @@ describe("Sagittarius cockpit UI", () => {
       createExpense: vi.fn(),
       patchExpense: vi.fn(),
       deleteExpense: vi.fn(),
+      createBookingDoc: vi.fn(),
+      patchBookingDoc: vi.fn(),
+      deleteBookingDoc: vi.fn(),
     };
 
     render(<SagittariusApp requireJoin dataSource="api" initialView="itinerary" apiClient={apiClient} />);
@@ -2894,6 +2980,9 @@ function createApiClientForTrip(trip: Trip, overrides: Partial<TripApiClient> = 
     ),
     patchExpense: vi.fn(),
     deleteExpense: vi.fn(),
+    createBookingDoc: vi.fn(),
+    patchBookingDoc: vi.fn(),
+    deleteBookingDoc: vi.fn(),
     ...overrides,
   };
 }
