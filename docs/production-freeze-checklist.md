@@ -37,29 +37,31 @@ make api-trace-smoke PSQL='docker exec -i sagittarius-test-postgres psql'
 
 ## Rollback
 
-Migration `0007_stop_notes.sql` is additive. Rollback options:
+Latest migration in this repo is currently
+`0018_auth_attempt_locks.sql`. Staging must prove the database can move from a
+fresh or current baseline through every migration up to the latest file before
+production opens.
 
-- application rollback only: deploy previous app version while leaving
-  `stop_notes` table unused.
-- database rollback for test/staging only:
+Rollback evidence must include:
 
-```sql
-DROP INDEX IF EXISTS stop_notes_trip_item_created_at_idx;
-DROP TABLE IF EXISTS stop_notes;
-```
+- application rollback: deploy the previous app image and confirm the old
+  cockpit still loads against the migrated database.
+- migration-specific rollback plan: document the exact recovery path for every
+  destructive or non-additive migration in the release. Current migrations are
+  plain SQL files, and production database rollback is not automatic.
+- shared DB migration run evidence: capture the command output or CI evidence
+  for applying all required SQL migrations to the shared database.
 
-Before production, verify both paths in staging:
-
-- upgrade from database with migrations `0001` through `0006`
-- apply `0007_stop_notes.sql`
-- boot API and load trip cockpit
-- execute stop-note create/delete
-- rollback app version and confirm old cockpit still loads
-
-Local SQL rollback smoke:
+For the Docker/Cloudflare production path, the migration evidence should show:
 
 ```bash
-make db-rollback-stop-notes-test PSQL='docker exec -i sagittarius-test-postgres psql'
+make container-production-migrate PRODUCTION_ENV_FILE=.env.production
+```
+
+If the host does not have `psql`, use an equivalent client command, for example:
+
+```bash
+make container-production-migrate PRODUCTION_ENV_FILE=.env.production PSQL='docker exec -i <shared-db-container> psql'
 ```
 
 ## Security And Access
@@ -100,6 +102,9 @@ The production compose stack creates only `sagittarius-api` and
 Production can open only when:
 
 - staging DB migration is verified
+- shared production DB migration run evidence exists for
+  `make container-production-migrate PRODUCTION_ENV_FILE=.env.production` or an
+  equivalent migration command
 - backend integration and frontend targeted tests pass
 - production container images build successfully with
   `make container-production-build PRODUCTION_ENV_FILE=.env.production`

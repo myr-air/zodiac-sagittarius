@@ -29,6 +29,10 @@ DATABASE_URL=postgres://sagittarius:secret-production-postgres-password@zodiac-p
 Replace `zodiac-postgres:5432` if the actual shared DB service uses a different
 service name, alias, or port on the `zodiac` network.
 
+The compose stack does not create, migrate, stop, remove, or roll back the
+shared database. Database lifecycle and rollback are owned outside this app
+compose file.
+
 ## Setup
 
 ```bash
@@ -45,7 +49,7 @@ If the external network does not exist yet, create it outside the app stack:
 docker network create zodiac
 ```
 
-## Build, Start, Check, Stop
+## Build, Migrate, Start, Check, Stop
 
 Build with the production env file:
 
@@ -53,13 +57,29 @@ Build with the production env file:
 make container-production-build PRODUCTION_ENV_FILE=.env.production
 ```
 
-Start the app stack:
+Before starting the app stack or opening Cloudflare Tunnel traffic, confirm the
+shared DB service exists on the `zodiac` Docker network and that
+`DATABASE_URL` in `.env.production` points to that service. The API does not
+auto-run migrations; the shared DB must be migrated first:
+
+```bash
+make container-production-migrate PRODUCTION_ENV_FILE=.env.production
+```
+
+If the host does not have `psql`, run the migration with a PostgreSQL client
+available on the Docker network:
+
+```bash
+make container-production-migrate PRODUCTION_ENV_FILE=.env.production PSQL='docker exec -i <shared-db-container> psql'
+```
+
+Start the app stack only after the migration succeeds:
 
 ```bash
 make container-production-up PRODUCTION_ENV_FILE=.env.production
 ```
 
-Check production env values and running containers:
+Check production env values, running containers, and API readiness:
 
 ```bash
 make production-env-file-check PRODUCTION_ENV_FILE=.env.production

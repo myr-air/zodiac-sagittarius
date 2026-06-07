@@ -19,7 +19,7 @@ ROLLBACK_TEST_DATABASE_URL ?= postgres://postgres:postgres@127.0.0.1:5432/$(ROLL
 PSQL ?= psql
 PSQL_BIN := $(firstword $(PSQL))
 
-.PHONY: backend-dev frontend-dev backend-test frontend-build frontend-test frontend-storybook frontend-verify frontend-e2e-local frontend-e2e-auth-browser api-trace-smoke perf-smoke production-env-check production-env-file-check staging-preflight staging-signoff-check verify production-readiness-local container-build container-production-build container-production-up container-production-down container-production-logs container-production-check db-init db-create db-migrate db-init-test db-migrate-test db-rollback-stop-notes-test db-ensure-psql
+.PHONY: backend-dev frontend-dev backend-test frontend-build frontend-test frontend-storybook frontend-verify frontend-e2e-local frontend-e2e-auth-browser api-trace-smoke perf-smoke production-env-check production-env-file-check staging-preflight staging-signoff-check verify production-readiness-local container-build container-production-build container-production-migrate container-production-up container-production-down container-production-logs container-production-check db-init db-create db-migrate db-init-test db-migrate-test db-rollback-stop-notes-test db-ensure-psql
 
 backend-dev: db-init
 	DATABASE_URL="$(DATABASE_URL)" SAGITTARIUS_BIND_ADDR="$(SAGITTARIUS_BIND_ADDR)" \
@@ -93,6 +93,9 @@ container-build:
 
 container-production-build:
 	$(PRODUCTION_COMPOSE) build
+
+container-production-migrate: production-env-file-check db-ensure-psql
+	unset DATABASE_URL; set -a; . "$(PRODUCTION_ENV_SOURCE)"; set +a; $(MAKE) db-migrate DATABASE_URL="$$DATABASE_URL"
 
 container-production-up:
 	$(PRODUCTION_COMPOSE) up -d
