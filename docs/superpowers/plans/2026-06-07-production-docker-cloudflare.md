@@ -4,9 +4,9 @@
 
 **Goal:** Make Sagittarius deployable as a production Docker Compose stack on the existing `zodiac` Docker network, ready for the existing Cloudflare Tunnel to publish the same app at `https://joii.13thx.com` and `https://sagittarius.13thx.com`.
 
-**Architecture:** Add a production compose stack for frontend, API, and Postgres, all attached to the external `zodiac` Docker network. The Cloudflare Tunnel routes both public hostnames to the frontend container; the frontend rewrites `/api/v1/*` to the internal API container. Production gates remain in place and are updated to allow the intentional same-origin API model for the `13thx.com` hostnames.
+**Architecture:** Add a production compose stack for frontend and API, both attached to the external `zodiac` Docker network. The API connects to an existing shared database service on that network through `DATABASE_URL`. The Cloudflare Tunnel routes both public hostnames to the frontend container; the frontend rewrites `/api/v1/*` to the internal API container. Production gates remain in place and are updated to allow the intentional same-origin API model for the `13thx.com` hostnames.
 
-**Tech Stack:** Docker Compose, Next.js 16, Bun, Rust/Axum, Postgres 17 Alpine, Cloudflare Tunnel ingress config, existing Vitest release-gate tests.
+**Tech Stack:** Docker Compose, Next.js 16, Bun, Rust/Axum, shared Postgres on the `zodiac` Docker network, Cloudflare Tunnel ingress config, existing Vitest release-gate tests.
 
 ---
 
@@ -17,8 +17,8 @@
 - Modify `frontend/next.config.ts`: add a rewrite from `/api/v1/:path*` to `SAGITTARIUS_INTERNAL_API_BASE_URL`.
 - Modify `frontend/Dockerfile`: pass `NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL` and `SAGITTARIUS_INTERNAL_API_BASE_URL` into the Next build and runtime.
 - Modify `backend/Dockerfile`: install `curl` in the runtime image so Docker health checks can probe readiness.
-- Add `docker-compose.production.yml`: production stack joining external Docker network `zodiac`.
-- Add `.env.production.example`: documented, non-secret production env template for the approved domains.
+- Add `docker-compose.production.yml`: production app stack joining external Docker network `zodiac` and using shared database `DATABASE_URL`.
+- Add `.env.production.example`: documented, non-secret production env template for the approved domains and shared database alias.
 - Modify `.gitignore`: ignore real `.env.production`.
 - Modify `Makefile`: add production compose targets.
 - Add `docs/production-docker-cloudflare.md`: operator runbook for Docker and Cloudflare Tunnel config.
@@ -384,40 +384,20 @@ Add this to `.gitignore` near other env and local artifact entries:
 
 - [ ] **Step 2: Add `docker-compose.production.yml`**
 
-Create this file:
+Create this file. The compose stack must not define a database service or
+database volume; production uses the existing shared database reachable on the
+external `zodiac` network through `DATABASE_URL`.
 
 ```yaml
 services:
-  sagittarius-postgres:
-    image: postgres:17-alpine
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    volumes:
-      - sagittarius-postgres-data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-    networks:
-      zodiac:
-        aliases:
-          - sagittarius-postgres
-
   sagittarius-api:
     image: sagittarius-api:production
     build:
       context: .
       dockerfile: backend/Dockerfile
     restart: unless-stopped
-    depends_on:
-      sagittarius-postgres:
-        condition: service_healthy
     environment:
-      DATABASE_URL: ${DATABASE_URL}
+      DATABASE_URL: ${DATABASE_URL:?DATABASE_URL is required}
       EMAIL_DELIVERY: ${EMAIL_DELIVERY}
       EMAIL_FROM: ${EMAIL_FROM}
       PASSKEY_ALLOWED_ORIGINS: ${PASSKEY_ALLOWED_ORIGINS}
@@ -455,7 +435,7 @@ services:
     restart: unless-stopped
     depends_on:
       sagittarius-api:
-        condition: service_started
+        condition: service_healthy
     environment:
       HOSTNAME: 0.0.0.0
       NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL: ${NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL}
@@ -478,9 +458,6 @@ services:
         aliases:
           - sagittarius-frontend
 
-volumes:
-  sagittarius-postgres-data:
-
 networks:
   zodiac:
     external: true
@@ -491,11 +468,9 @@ networks:
 Create this file:
 
 ```dotenv
-POSTGRES_DB=sagittarius
-POSTGRES_USER=sagittarius
-POSTGRES_PASSWORD=change-me-production-postgres-password
-
-DATABASE_URL=postgres://sagittarius:change-me-production-postgres-password@sagittarius-postgres:5432/sagittarius
+# zodiac-postgres is the shared database service name on the external zodiac
+# Docker network. Replace it if the actual shared DB uses a different alias.
+DATABASE_URL=postgres://sagittarius:change-me-production-postgres-password@zodiac-postgres:5432/sagittarius
 
 SAGITTARIUS_ENV=production
 SAGITTARIUS_SEED_SAMPLE_DATA=0
@@ -718,7 +693,7 @@ curl -fsS https://joii.13thx.com/api/v1/health
 make container-production-down
 ```
 
-This stops containers without deleting the Postgres volume.
+This stops the app containers. The shared database is owned outside this stack.
 ```
 
 - [ ] **Step 2: Link the runbook from the freeze checklist**

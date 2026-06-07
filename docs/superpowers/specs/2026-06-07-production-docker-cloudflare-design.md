@@ -56,11 +56,11 @@ Add a production Docker Compose file that defines a small, explicit app stack:
   inside the Docker network.
 - `sagittarius-api`: serves the Rust API on port `5181` inside the Docker
   network.
-- `sagittarius-postgres`: stores production data in a named Docker volume for
-  self-hosted deployment.
 
-All services attach to the external `zodiac` network so the existing Cloudflare
-Tunnel container can resolve service names directly.
+Both app services attach to the external `zodiac` network so the existing
+Cloudflare Tunnel container can resolve service names directly. The API uses an
+existing shared database service on that same network through `DATABASE_URL`;
+this stack does not create or own a database container or volume.
 
 The default public routing model is:
 
@@ -122,8 +122,7 @@ for fully origin-neutral API routing if needed.
 Add `.env.production.example` with non-secret defaults and placeholders for
 required secrets. It should document:
 
-- `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`
-- `DATABASE_URL`
+- `DATABASE_URL`, pointing at the shared database service name on `zodiac`
 - `SAGITTARIUS_ENV=production`
 - `SAGITTARIUS_SEED_SAMPLE_DATA=0`
 - `SAGITTARIUS_ALLOWED_ORIGINS=https://joii.13thx.com,https://sagittarius.13thx.com`
@@ -143,13 +142,12 @@ The compose stack should:
 
 - Build images from the existing Dockerfiles.
 - Attach services to `zodiac`.
-- Use a named Postgres volume.
+- Require `DATABASE_URL` for the existing shared database service on `zodiac`.
+- Not define a database service or database volume.
 - Keep app ports internal to Docker by default.
 - Add health checks:
   - frontend: HTTP check against `http://localhost:5180`
   - API: HTTP check against `http://localhost:5181/api/v1/readiness`
-  - Postgres: `pg_isready`
-- Start API after Postgres is healthy.
 - Start frontend after API is started.
 - Avoid local development seed data.
 
@@ -165,7 +163,7 @@ Add production-oriented Docker targets:
 - `container-production-build`: build the production frontend and API images.
 - `container-production-up`: start the compose stack with
   `docker compose --env-file .env.production`.
-- `container-production-down`: stop the compose stack without deleting volumes.
+- `container-production-down`: stop the app compose stack.
 - `container-production-logs`: tail stack logs.
 - `container-production-check`: run the existing production env check and local
   container health/readiness checks.
@@ -206,10 +204,11 @@ Implementation is accepted when:
    env values.
 3. `docker compose --env-file .env.production.example -f docker-compose.production.yml config`
    succeeds for syntax validation without requiring real secrets.
-4. The docs explain how to use a real `.env.production` without committing it.
-5. The docs show the exact Cloudflare Tunnel ingress for both hostnames.
-6. Existing `make production-env-check` remains the release safety gate.
-7. Existing tests that cover production env validation continue to pass.
+4. The compose file does not define a database service or database volume.
+5. The docs explain how to use a real `.env.production` without committing it.
+6. The docs show the exact Cloudflare Tunnel ingress for both hostnames.
+7. Existing `make production-env-check` remains the release safety gate.
+8. Existing tests that cover production env validation continue to pass.
 
 If a real `.env.production` is available locally, an operator can additionally
 verify:
