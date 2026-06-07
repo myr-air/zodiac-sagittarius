@@ -1,5 +1,10 @@
 type Env = Record<string, string | undefined>;
 
+const approvedSameOriginApiHosts = new Set([
+  "joii.13thx.com",
+  "sagittarius.13thx.com",
+]);
+
 let failures: string[] = [];
 let currentEnv: Env = {};
 
@@ -204,10 +209,29 @@ function checkAllowedOrigins(name: string, value: string, apiValue: string) {
     checkNoPlaceholderUrl(name, url);
   }
 
-  if (apiValue && origins.includes(apiValue)) {
+  if (
+    apiValue &&
+    origins.includes(apiValue) &&
+    !isApprovedSameOriginApi(apiValue)
+  ) {
     failures.push(
       `${name} should contain frontend origins, not the API base URL`,
     );
+  }
+}
+
+function isApprovedSameOriginApi(value: string): boolean {
+  try {
+    const url = new URL(value);
+    return (
+      url.protocol === "https:" &&
+      url.pathname === "/" &&
+      !url.search &&
+      !url.hash &&
+      approvedSameOriginApiHosts.has(url.hostname)
+    );
+  } catch {
+    return false;
   }
 }
 
