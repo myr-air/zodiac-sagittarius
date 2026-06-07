@@ -140,40 +140,25 @@ SAGITTARIUS_ROLLBACK_OWNER="Rollback Owner" \
 make staging-signoff-check
 ```
 
-Then run the production environment safety check with the actual production
-runtime values before deploy. For Docker production, prefer
-`make production-env-file-check PRODUCTION_ENV_FILE=.env.production` so the
-check validates the same file used by compose:
-
-The production example also uses placeholder domains and credentials; the check
-must be run with the actual deploy environment values.
+Then create and verify the production env file before deploy. Copy
+`.env.production.example` to `.env.production`, edit every placeholder domain,
+credential, evidence URL, and owner to the actual deploy values, and keep these
+required Docker production values:
 
 ```bash
-DATABASE_URL=postgres://user:pass@db.example.test:5432/sagittarius \
-NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL=https://api.example.test \
-SAGITTARIUS_ALLOWED_ORIGINS=https://app.example.test \
-PASSKEY_ALLOWED_ORIGINS=https://app.example.test \
-EMAIL_DELIVERY=smtp \
-SMTP_HOST=smtp.example.test \
-SMTP_PORT=587 \
-SMTP_USERNAME=smtp-user \
-SMTP_PASSWORD=smtp-password \
-EMAIL_FROM="Sagittarius <no-reply@example.test>" \
-RUST_LOG=info,tower_http=info,sagittarius_api=info \
-SAGITTARIUS_ALERT_SINK_NAME=sagittarius-write-route-alerts \
-SAGITTARIUS_ALERT_RUNBOOK_URL=https://runbooks.example.test/sagittarius/write-route-alerts \
-SAGITTARIUS_STAGING_PREFLIGHT_PASSED=1 \
-SAGITTARIUS_STAGING_BROWSER_SIGNOFF=1 \
-SAGITTARIUS_STAGING_DB_MIGRATION_VERIFIED=1 \
-SAGITTARIUS_STAGING_ROLLBACK_VERIFIED=1 \
-SAGITTARIUS_STAGING_ALERT_ROUTING_VERIFIED=1 \
-SAGITTARIUS_STAGING_NO_P1_P2=1 \
-SAGITTARIUS_STAGING_EVIDENCE_URL=https://ci.example.test/runs/123 \
-SAGITTARIUS_STAGING_BROWSER_EVIDENCE_URL=https://ci.example.test/runs/123/browser \
-SAGITTARIUS_STAGING_MIGRATION_EVIDENCE_URL=https://ci.example.test/runs/123/migration \
-SAGITTARIUS_STAGING_ROLLBACK_EVIDENCE_URL=https://ci.example.test/runs/123/rollback \
-SAGITTARIUS_STAGING_ISSUE_EVIDENCE_URL=https://issues.example.test/sagittarius?severity=P1,P2 \
-SAGITTARIUS_FEATURE_OWNER="Feature Owner" \
-SAGITTARIUS_ROLLBACK_OWNER="Rollback Owner" \
-make production-env-check
+cp .env.production.example .env.production
+$EDITOR .env.production
+
+SAGITTARIUS_ENV=production
+SAGITTARIUS_INTERNAL_API_BASE_URL=http://sagittarius-api:5181
+
+make production-env-file-check PRODUCTION_ENV_FILE=.env.production
+make container-production-build PRODUCTION_ENV_FILE=.env.production
+```
+
+After the production stack is running, verify the compose services with the same
+env file:
+
+```bash
+make container-production-check PRODUCTION_ENV_FILE=.env.production
 ```

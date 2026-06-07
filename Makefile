@@ -3,7 +3,8 @@ BACKEND_MANIFEST := backend/Cargo.toml
 
 PRODUCTION_COMPOSE_FILE ?= docker-compose.production.yml
 PRODUCTION_ENV_FILE ?= .env.production
-PRODUCTION_COMPOSE = set -a; . ./$(PRODUCTION_ENV_FILE); set +a; docker compose --env-file $(PRODUCTION_ENV_FILE) -f $(PRODUCTION_COMPOSE_FILE)
+PRODUCTION_ENV_SOURCE := $(if $(filter /%,$(PRODUCTION_ENV_FILE)),$(PRODUCTION_ENV_FILE),./$(PRODUCTION_ENV_FILE))
+PRODUCTION_COMPOSE = set -a; . "$(PRODUCTION_ENV_SOURCE)"; set +a; docker compose --env-file "$(PRODUCTION_ENV_SOURCE)" -f "$(PRODUCTION_COMPOSE_FILE)"
 
 DATABASE_URL ?= postgres://postgres:postgres@127.0.0.1:5432/sagittarius
 TEST_DATABASE_URL ?= postgres://postgres:postgres@127.0.0.1:5432/sagittarius_test
@@ -69,7 +70,7 @@ production-env-check:
 	cd $(FRONTEND_DIR) && bun run test:production-env
 
 production-env-file-check:
-	set -a; . ./$(PRODUCTION_ENV_FILE); set +a; cd $(FRONTEND_DIR) && bun run test:production-env
+	set -a; . "$(PRODUCTION_ENV_SOURCE)"; set +a; cd $(FRONTEND_DIR) && bun run test:production-env
 
 staging-preflight: db-ensure-psql
 	cd $(FRONTEND_DIR) && \
