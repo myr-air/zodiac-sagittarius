@@ -358,19 +358,20 @@ export function SagittariusApp({
     if (!isApiMode || !participantSession || !resolvedApiClient) return undefined;
     let cancelled = false;
 
-    void Promise.all([
-      resolvedApiClient.loadTrip(participantSession.tripId, participantSession.sessionToken),
-      resolvedApiClient
-        .listDailyBriefings(participantSession.tripId, participantSession.sessionToken)
-        .catch(() => [] as TripDailyBriefing[]),
-    ])
-      .then(([cockpit, briefings]) => {
+    void Promise.resolve().then(() => {
+      if (cancelled) return;
+      setIsCockpitLoaded(false);
+      setDailyBriefings([]);
+    });
+
+    void resolvedApiClient
+      .loadTrip(participantSession.tripId, participantSession.sessionToken)
+      .then((cockpit) => {
         if (cancelled) return;
         setTripState({ trip: cockpit.trip, past: [], future: [] });
         setSuggestions(cockpit.suggestions);
         setTasks(cockpit.tasks);
         setStopNotes(cockpit.stopNotes);
-        setDailyBriefings(briefings);
         setBackendExpenseSummary(cockpit.expenseSummary);
         setIsCockpitLoaded(true);
       })
@@ -387,6 +388,17 @@ export function SagittariusApp({
         setAccessError("trip load failed");
         setDailyBriefings([]);
         setIsCockpitLoaded(false);
+      });
+
+    void resolvedApiClient
+      .listDailyBriefings(participantSession.tripId, participantSession.sessionToken)
+      .then((briefings) => {
+        if (cancelled) return;
+        setDailyBriefings(briefings);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setDailyBriefings([]);
       });
 
     return () => {

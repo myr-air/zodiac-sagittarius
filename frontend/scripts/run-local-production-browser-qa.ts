@@ -6,6 +6,7 @@ import { join as joinPath } from "node:path";
 import type { Readable } from "node:stream";
 import { setTimeout as delay } from "node:timers/promises";
 import { chromium, type Browser, type Page } from "playwright";
+import { appRoutes } from "../src/routes/app-routes";
 import { createTripApiClient, TripApiError } from "../src/trip/api-client";
 
 const databaseUrl = process.env.DATABASE_URL ?? "postgres://postgres:postgres@127.0.0.1:5432/sagittarius_test";
@@ -215,12 +216,12 @@ async function runTripCustomerFlows(browser: Browser) {
   await expectText(owner.page, "Hong Kong");
   await screenshot(owner.page, "04-trip-overview-owner-desktop.png");
 
-  await owner.page.locator(`a[href="/trips/${tripId}/itinerary"]`).first().click();
+  await owner.page.locator(`a[href="${appRoutes.tripItinerary(tripId)}"]`).first().click();
   await expectVisibleSelector(owner.page, "#itinerary");
-  await expectText(owner.page, "Dim Dim Sum");
+  await expectDisplayValue(owner.page, "Dim Dim Sum");
   await screenshot(owner.page, "05-trip-itinerary-owner-desktop.png");
 
-  await owner.page.locator(`a[href="/trips/${tripId}/members"]`).first().click();
+  await owner.page.locator(`a[href="${appRoutes.tripMembers(tripId)}"]`).first().click();
   await expectText(owner.page, "Members");
   await createMemberThroughBrowser(owner.page, `QA Browser Guest ${runId}`);
   await screenshot(owner.page, "06-trip-members-created-desktop.png");
@@ -230,7 +231,7 @@ async function runTripCustomerFlows(browser: Browser) {
 
   const mobile = await newCheckedPage(browser, mobileViewport);
   await joinTripAs(mobile.page, "Family", viewerPassword);
-  await mobile.page.locator(`a[href="/trips/${tripId}/itinerary"]`).first().click();
+  await mobile.page.locator(`a[href="${appRoutes.tripItinerary(tripId)}"]`).first().click();
   await expectVisibleSelector(mobile.page, "#itinerary");
   await assertViewerCannotRestructure(mobile.page);
   await assertNoHorizontalPageOverflow(mobile.page);
@@ -340,7 +341,7 @@ async function joinTripAs(page: Page, memberName: string, password: string) {
 }
 
 async function createMemberThroughBrowser(page: Page, displayName: string) {
-  await page.locator(".member-create-button").click();
+  await page.getByRole("button", { name: /^Open add-member form$/ }).click();
   await page.locator(".member-create-panel input").fill(displayName);
   await page.locator(".member-create-panel select").selectOption("viewer");
   await page.locator(".member-create-panel button[type='submit']").click();
@@ -350,7 +351,7 @@ async function createMemberThroughBrowser(page: Page, displayName: string) {
 }
 
 async function assertViewerCannotRestructure(page: Page) {
-  const addStop = page.locator(".add-stop-button").first();
+  const addStop = page.getByRole("button", { name: /^(Add stop or activity|เพิ่มสถานที่ \/ กิจกรรม)/i }).first();
   await addStop.waitFor({ state: "visible", timeout: 10_000 });
   const disabled = await addStop.isDisabled();
   ensure(disabled, "Viewer can click Add stop or activity.");
@@ -467,7 +468,44 @@ async function screenshot(page: Page, filename: string) {
 }
 
 async function expectText(page: Page, text: string) {
-  await page.getByText(text, { exact: false }).first().waitFor({ state: "visible", timeout: 10_000 });
+  try {
+    await page.getByText(text, { exact: false }).first().waitFor({ state: "visible", timeout: 10_000 });
+  } catch (caught) {
+    const debug = await page.evaluate(() => ({
+      bodyText: document.body.innerText.replace(/\s+/g, " ").slice(0, 1800),
+      itineraryText: document.querySelector("#itinerary")?.textContent?.replace(/\s+/g, " ").slice(0, 1200) ?? "",
+      url: window.location.href,
+    }));
+    throw new Error(
+      `Timed out waiting for text "${text}". Page debug: ${JSON.stringify(debug, null, 2)}`,
+      { cause: caught },
+    );
+  }
+}
+
+async function expectDisplayValue(page: Page, value: string) {
+  try {
+    await page.waitForFunction((expected) => {
+      return Array.from(document.querySelectorAll<HTMLInputElement>("input"))
+        .some((input) => {
+          const rect = input.getBoundingClientRect();
+          const style = window.getComputedStyle(input);
+          return input.value === expected && rect.width > 0 && rect.height > 0 && style.visibility !== "hidden" && style.display !== "none";
+        });
+    }, value, { timeout: 10_000 });
+  } catch (caught) {
+    const debug = await page.evaluate(() => ({
+      bodyText: document.body.innerText.replace(/\s+/g, " ").slice(0, 1800),
+      inputValues: Array.from(document.querySelectorAll<HTMLInputElement>("input"))
+        .map((input) => ({ ariaLabel: input.getAttribute("aria-label") ?? "", value: input.value }))
+        .slice(0, 24),
+      url: window.location.href,
+    }));
+    throw new Error(
+      `Timed out waiting for display value "${value}". Page debug: ${JSON.stringify(debug, null, 2)}`,
+      { cause: caught },
+    );
+  }
 }
 
 async function expectMainLabel(page: Page, label: string) {

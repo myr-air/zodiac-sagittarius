@@ -11,9 +11,10 @@ assignment, labels, comments, and closing history.
 ## Current Status
 
 - Active GitHub issues from production readiness review:
+  - [#11 Production launch is blocked until real staging sign-off and production environment evidence exists](https://github.com/myr-air/zodiac-sagittarius/issues/11)
+- Production readiness follow-ups closed on 2026-06-07:
   - [#9 Production readiness local gate fails in auth browser e2e under next dev](https://github.com/myr-air/zodiac-sagittarius/issues/9)
   - [#10 Production browser QA fails because trip nav selector uses raw UUID instead of encoded route](https://github.com/myr-air/zodiac-sagittarius/issues/10)
-  - [#11 Production launch is blocked until real staging sign-off and production environment evidence exists](https://github.com/myr-air/zodiac-sagittarius/issues/11)
 - Open GitHub issues at migration time: none.
 - Production readiness review on 2026-06-07 opened and closed after fixes in
   `codex/fix-production-readiness`:

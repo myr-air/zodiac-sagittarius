@@ -1357,6 +1357,31 @@ describe("Sagittarius cockpit UI", () => {
     expect(screen.queryByText(/Too Late Trip/i)).not.toBeInTheDocument();
   });
 
+  it("renders the trip cockpit without waiting for slow daily briefings", async () => {
+    installLocalStorageStub();
+    const deferredBriefings = createDeferred<TripDailyBriefing[]>();
+    window.sessionStorage.setItem(
+      tripParticipantSessionStorageKey,
+      JSON.stringify({
+        tripId: seedTrip.id,
+        memberId: seedTrip.members[0].id,
+        sessionToken: "slow-briefings-session-token",
+        createdAt: "2026-05-29T00:00:00.000Z",
+        expiresAt: "2026-06-28T00:00:00.000Z",
+      }),
+    );
+    const apiClient = createApiClientForTrip(seedTrip, {
+      listDailyBriefings: vi.fn().mockReturnValue(deferredBriefings.promise),
+    });
+
+    render(<SagittariusApp requireJoin dataSource="api" initialView="itinerary" apiClient={apiClient} />);
+
+    await waitFor(() => expect(apiClient.loadTrip).toHaveBeenCalledWith(seedTrip.id, "slow-briefings-session-token"));
+    expect(await screen.findByRole("region", { name: /ตารางแผนการเดินทาง/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /เลือกจุด Dim Dim Sum/i })).toBeInTheDocument();
+    expect(apiClient.listDailyBriefings).toHaveBeenCalledWith(seedTrip.id, "slow-briefings-session-token");
+  });
+
   it("recovers to access instead of hanging when persisted API hydration is unauthenticated", async () => {
     installLocalStorageStub();
     window.sessionStorage.setItem(

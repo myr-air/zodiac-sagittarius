@@ -36,8 +36,13 @@ async function main() {
   try {
     await waitForHealth(`${apiBaseUrl}/api/v1/health`, "API");
 
-    const frontend = spawnLogged("frontend", "bun", ["run", "next", "dev", "--hostname", frontendHost, "--port", frontendPort], {
+    await run("bun", ["run", "build"], {
       NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL: apiBaseUrl,
+    });
+    const frontend = spawnLogged("frontend", "bun", ["run", "start"], {
+      HOSTNAME: frontendHost,
+      NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL: apiBaseUrl,
+      PORT: frontendPort,
     });
     processes.push(frontend);
     await waitForHealth(`${frontendBaseUrl}/access?mode=sign-in`, "frontend");

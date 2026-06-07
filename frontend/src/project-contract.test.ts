@@ -166,6 +166,10 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "scripts/check-production-env.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "scripts/check-staging-preflight.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "scripts/check-staging-signoff.ts"))).toBe(true);
+    const authBrowserE2e = readFileSync(join(frontendRoot, "scripts/run-local-real-browser-auth-e2e.ts"), "utf8");
+    expect(authBrowserE2e).toContain('run("bun", ["run", "build"]');
+    expect(authBrowserE2e).toContain('spawnLogged("frontend", "bun", ["run", "start"]');
+    expect(authBrowserE2e).not.toContain('["run", "next", "dev"');
     const stagingSignoff = readFileSync(join(frontendRoot, "scripts/check-staging-signoff.ts"), "utf8");
     expect(stagingSignoff).toContain("checkPublicHttpsUrl");
     expect(stagingSignoff).toContain("must not point at localhost");
@@ -231,6 +235,11 @@ describe("Sagittarius project scaffold", () => {
     expect(productionEnvCheck).toContain("SAGITTARIUS_ALERT_SINK_NAME");
     expect(productionEnvCheck).toContain("SAGITTARIUS_ALERT_RUNBOOK_URL");
     const stagingPreflight = readFileSync(join(frontendRoot, "scripts/check-staging-preflight.ts"), "utf8");
+    const productionBrowserQa = readFileSync(join(frontendRoot, "scripts/run-local-production-browser-qa.ts"), "utf8");
+    expect(productionBrowserQa).toContain("appRoutes.tripItinerary(tripId)");
+    expect(productionBrowserQa).toContain("appRoutes.tripMembers(tripId)");
+    expect(productionBrowserQa).not.toContain('a[href="/trips/${tripId}/itinerary"]');
+    expect(productionBrowserQa).not.toContain('a[href="/trips/${tripId}/members"]');
     expect(stagingPreflight).toContain("SAGITTARIUS_REQUIRE_PREFLIGHT_API_CHECK");
     expect(stagingPreflight).toContain("/api/v1/health");
     expect(stagingPreflight).toContain("/api/v1/readiness");
