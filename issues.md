@@ -12,6 +12,11 @@ assignment, labels, comments, and closing history.
 
 - Active local issues: none.
 - Open GitHub issues at migration time: none.
+- Production readiness review on 2026-06-07 opened:
+  - [#5 Production readiness gate fails on Storybook a11y and interaction checks](https://github.com/myr-air/zodiac-sagittarius/issues/5)
+  - [#6 Backend daily briefings contract is non-deterministic because weather fetch populates live data](https://github.com/myr-air/zodiac-sagittarius/issues/6)
+  - [#7 Implement Bookings & Docs backend persistence and API-mode mutations](https://github.com/myr-air/zodiac-sagittarius/issues/7)
+  - [#8 Align runtime CORS with production allowlist instead of always allowing localhost origins](https://github.com/myr-air/zodiac-sagittarius/issues/8)
 - This file is an index, not the active issue tracker.
 
 ## When To Add Something Here
