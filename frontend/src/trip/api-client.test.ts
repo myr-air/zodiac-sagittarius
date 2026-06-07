@@ -250,8 +250,7 @@ describe("Trip API client", () => {
   });
 
   it("rejects cockpit payloads that omit the bookingDocs source of truth", () => {
-    const responseWithoutBookingDocs = { ...cockpitResponse } as Partial<TripCockpitResponse>;
-    delete responseWithoutBookingDocs.bookingDocs;
+    const { bookingDocs: _bookingDocs, ...responseWithoutBookingDocs } = cockpitResponse;
 
     expect(() => mapCockpitResponse(responseWithoutBookingDocs as unknown as TripCockpitResponse)).toThrow("bookingDocs");
   });
