@@ -13,8 +13,9 @@ SAGITTARIUS_BIND_ADDR=127.0.0.1:5181
 NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL=http://127.0.0.1:5181
 ```
 
-Never point `seed_e2e` at a production database. The seed command refuses URLs
-that do not contain `sagittarius_test`.
+Never point `seed_e2e` at a production database. The seed command parses
+`DATABASE_URL`, requires the database name to be exactly `sagittarius_test`, and
+requires `SAGITTARIUS_ALLOW_E2E_DB_RESET=1` before it resets the schema.
 
 ## Seed And Cleanup
 
@@ -23,6 +24,7 @@ Reset test data and seed a known trip:
 ```bash
 cd frontend
 DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/sagittarius_test \
+SAGITTARIUS_ALLOW_E2E_DB_RESET=1 \
 bun run ../backend/target/debug/seed_e2e
 ```
 
@@ -42,7 +44,7 @@ make db-rollback-stop-notes-test PSQL='docker exec -i sagittarius-test-postgres 
 The seed includes:
 
 - trip join code `HK-SZ-2025`
-- trip password `dim-sum-run`
+- trip password `seed-trip-pass`
 - owner/organizer/traveler/viewer members
 - itinerary item, shared/private tasks, stop note, and expense record
 

@@ -38,6 +38,7 @@ impl AppState {
 
     pub fn with_pool_for_tests(pool: PgPool) -> Self {
         Self {
+            email_delivery: email::EmailDelivery::Disabled,
             daily_briefing_weather_fetch: false,
             ..Self::with_pool(pool)
         }

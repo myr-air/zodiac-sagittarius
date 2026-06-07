@@ -13,13 +13,37 @@ const TASK_ID: &str = "018f4e85-2222-7000-8000-000000000001";
 const EXPENSE_ID: &str = "018f4e86-1111-7000-8000-000000000001";
 const BOOKING_FLIGHT_ID: &str = "018f4e87-1111-7000-8000-000000000001";
 const BOOKING_HOTEL_ID: &str = "018f4e87-1111-7000-8000-000000000002";
+const RESET_CONFIRMATION_ENV: &str = "SAGITTARIUS_ALLOW_E2E_DB_RESET";
+const TEST_DATABASE_NAME: &str = "sagittarius_test";
+const MIGRATIONS: &[&str] = &[
+    include_str!("../../../../migrations/0001_backend_vertical_slice.sql"),
+    include_str!("../../../../migrations/0002_account_identity.sql"),
+    include_str!("../../../../migrations/0003_trip_join_sessions.sql"),
+    include_str!("../../../../migrations/0004_account_password_auth.sql"),
+    include_str!("../../../../migrations/0005_account_portal.sql"),
+    include_str!("../../../../migrations/0006_trip_countries.sql"),
+    include_str!("../../../../migrations/0007_stop_notes.sql"),
+    include_str!("../../../../migrations/0008_trip_daily_briefings.sql"),
+    include_str!("../../../../migrations/0009_trip_join_invite_tokens.sql"),
+    include_str!("../../../../migrations/0010_itinerary_activity_paths.sql"),
+    include_str!("../../../../migrations/0011_expense_reminders.sql"),
+    include_str!("../../../../migrations/0012_expense_exchange_rates.sql"),
+    include_str!("../../../../migrations/0013_expense_receipts_itemization.sql"),
+    include_str!("../../../../migrations/0014_expense_notes.sql"),
+    include_str!("../../../../migrations/0015_expense_comments.sql"),
+    include_str!("../../../../migrations/0016_place_geocode_cache.sql"),
+    include_str!("../../../../migrations/0017_booking_docs.sql"),
+];
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let database_url = std::env::var("DATABASE_URL").map_err(|_| {
         std::io::Error::new(std::io::ErrorKind::NotFound, "DATABASE_URL must be set")
     })?;
-    guard_test_database(&database_url)?;
+    guard_test_database(
+        &database_url,
+        std::env::var(RESET_CONFIRMATION_ENV).ok().as_deref(),
+    )?;
 
     let pool = PgPoolOptions::new().connect(&database_url).await?;
     sqlx::raw_sql(
@@ -29,25 +53,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     )
     .execute(&pool)
     .await?;
-    for migration in [
-        include_str!("../../../../migrations/0001_backend_vertical_slice.sql"),
-        include_str!("../../../../migrations/0002_account_identity.sql"),
-        include_str!("../../../../migrations/0003_trip_join_sessions.sql"),
-        include_str!("../../../../migrations/0004_account_password_auth.sql"),
-        include_str!("../../../../migrations/0005_account_portal.sql"),
-        include_str!("../../../../migrations/0006_trip_countries.sql"),
-        include_str!("../../../../migrations/0007_stop_notes.sql"),
-        include_str!("../../../../migrations/0008_trip_daily_briefings.sql"),
-        include_str!("../../../../migrations/0009_trip_join_invite_tokens.sql"),
-        include_str!("../../../../migrations/0010_itinerary_activity_paths.sql"),
-        include_str!("../../../../migrations/0011_expense_reminders.sql"),
-        include_str!("../../../../migrations/0012_expense_exchange_rates.sql"),
-        include_str!("../../../../migrations/0013_expense_receipts_itemization.sql"),
-        include_str!("../../../../migrations/0014_expense_notes.sql"),
-        include_str!("../../../../migrations/0015_expense_comments.sql"),
-        include_str!("../../../../migrations/0016_place_geocode_cache.sql"),
-        include_str!("../../../../migrations/0017_booking_docs.sql"),
-    ] {
+    for migration in MIGRATIONS {
         sqlx::raw_sql(migration).execute(&pool).await?;
     }
 
@@ -97,12 +103,34 @@ async fn seed_expenses(pool: &sqlx::PgPool) -> Result<(), sqlx::Error> {
     Ok(())
 }
 
-fn guard_test_database(database_url: &str) -> Result<(), Box<dyn std::error::Error>> {
-    if database_url.contains("sagittarius_test") {
+fn guard_test_database(
+    database_url: &str,
+    reset_confirmation: Option<&str>,
+) -> Result<(), Box<dyn std::error::Error>> {
+    if reset_confirmation != Some("1") {
+        return Err(format!(
+            "{RESET_CONFIRMATION_ENV}=1 is required before resetting the e2e database"
+        )
+        .into());
+    }
+
+    if database_name_from_url(database_url).as_deref() == Some(TEST_DATABASE_NAME) {
         return Ok(());
     }
 
-    Err("refusing to reset a database URL that does not contain sagittarius_test".into())
+    Err(format!(
+        "refusing to reset database; DATABASE_URL database name must be {TEST_DATABASE_NAME}"
+    )
+    .into())
+}
+
+fn database_name_from_url(database_url: &str) -> Option<String> {
+    let without_query = database_url.split(['?', '#']).next()?;
+    let database_name = without_query.rsplit('/').next()?.trim();
+    if database_name.is_empty() {
+        return None;
+    }
+    Some(database_name.to_ascii_lowercase())
 }
 
 async fn seed_trip(pool: &sqlx::PgPool) -> Result<(), sqlx::Error> {
@@ -187,6 +215,44 @@ async fn seed_trip(pool: &sqlx::PgPool) -> Result<(), sqlx::Error> {
     .execute(&mut *tx)
     .await?;
     tx.commit().await
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn e2e_seed_requires_explicit_reset_confirmation() {
+        let result = guard_test_database(
+            "postgres://postgres:postgres@127.0.0.1:5432/sagittarius_test",
+            None,
+        );
+
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn e2e_seed_rejects_production_like_database_names() {
+        for database_url in [
+            "postgres://postgres:sagittarius_test@db.example.test:5432/sagittarius",
+            "postgres://postgres:postgres@db.example.test:5432/sagittarius_prod",
+            "postgres://postgres:postgres@db.example.test:5432/sagittarius_test_shadow",
+        ] {
+            let result = guard_test_database(database_url, Some("1"));
+
+            assert!(result.is_err(), "{database_url} should be rejected");
+        }
+    }
+
+    #[test]
+    fn e2e_seed_allows_only_the_named_test_database_with_confirmation() {
+        let result = guard_test_database(
+            "postgres://postgres:postgres@127.0.0.1:5432/sagittarius_test?sslmode=disable",
+            Some("1"),
+        );
+
+        assert!(result.is_ok());
+    }
 }
 
 async fn seed_tasks(pool: &sqlx::PgPool) -> Result<(), sqlx::Error> {

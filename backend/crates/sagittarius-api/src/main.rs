@@ -81,6 +81,9 @@ async fn seed_sample_trip_data(pool: &sqlx::PgPool) -> Result<(), sqlx::Error> {
     const VIEWER_ID: &str = "018f4e81-77a4-7b8f-b3bd-0d0f493ac564";
     const PLAN_ID: &str = "018f4e82-3000-7c00-b111-000000000001";
     const ITEM_ID: &str = "018f4e83-5410-7d8b-8f25-fd52c5e7bd1f";
+    const TASK_ESIM_ID: &str = "018f4e85-2222-7000-8000-000000000001";
+    const TASK_PEAK_TRAM_ID: &str = "018f4e85-2222-7000-8000-000000000002";
+    const EXPENSE_ID: &str = "018f4e86-1111-7000-8000-000000000001";
 
     let trip_id = Uuid::parse_str(TRIP_ID).expect("static uuid");
     let owner_id = Uuid::parse_str(OWNER_ID).expect("static uuid");
@@ -194,13 +197,21 @@ async fn seed_sample_trip_data(pool: &sqlx::PgPool) -> Result<(), sqlx::Error> {
            id, trip_id, title, status, visibility, kind, created_by, assignee_id
          )
          values
-           (gen_random_uuid(), $1, 'Buy eSIM', 'open', 'private', 'prep', $2, $2),
-           (gen_random_uuid(), $1, 'Book Peak Tram', 'done', 'shared', 'booking', $3, $3)
-         on conflict do nothing",
+           ($4, $1, 'Buy eSIM', 'open', 'private', 'prep', $2, $2),
+           ($5, $1, 'Book Peak Tram', 'done', 'shared', 'booking', $3, $3)
+         on conflict (id) do update
+         set title = excluded.title,
+             status = excluded.status,
+             visibility = excluded.visibility,
+             kind = excluded.kind,
+             assignee_id = excluded.assignee_id,
+             updated_at = now()",
     )
     .bind(trip_id)
     .bind(traveler_id)
     .bind(organizer_id)
+    .bind(Uuid::parse_str(TASK_ESIM_ID).expect("static uuid"))
+    .bind(Uuid::parse_str(TASK_PEAK_TRAM_ID).expect("static uuid"))
     .execute(&mut *tx)
     .await?;
 
@@ -209,9 +220,17 @@ async fn seed_sample_trip_data(pool: &sqlx::PgPool) -> Result<(), sqlx::Error> {
            id, trip_id, title, amount_minor, currency, paid_by, category, splits
          )
          values (
-           gen_random_uuid(), $1, 'Dim sum breakfast', 24000, 'HKD', $2, 'food',
+           $4, $1, 'Dim sum breakfast', 24000, 'HKD', $2, 'food',
            $3::jsonb
-         )",
+         )
+         on conflict (id) do update
+         set title = excluded.title,
+             amount_minor = excluded.amount_minor,
+             currency = excluded.currency,
+             paid_by = excluded.paid_by,
+             category = excluded.category,
+             splits = excluded.splits,
+             updated_at = now()",
     )
     .bind(trip_id)
     .bind(owner_id)
@@ -219,6 +238,7 @@ async fn seed_sample_trip_data(pool: &sqlx::PgPool) -> Result<(), sqlx::Error> {
         owner_id.to_string(): 12000,
         traveler_id.to_string(): 12000
     }))
+    .bind(Uuid::parse_str(EXPENSE_ID).expect("static uuid"))
     .execute(&mut *tx)
     .await?;
 

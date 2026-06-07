@@ -181,6 +181,9 @@ describe("Sagittarius project scaffold", () => {
     expect(stagingSignoff).toContain("SAGITTARIUS_STAGING_ALERT_EVIDENCE_URL");
     expect(stagingSignoff).toContain("SAGITTARIUS_STAGING_ISSUE_EVIDENCE_URL");
     const seedE2e = readFileSync(join(repoRoot, "backend/crates/sagittarius-api/src/bin/seed_e2e.rs"), "utf8");
+    expect(seedE2e).toContain('const RESET_CONFIRMATION_ENV: &str = "SAGITTARIUS_ALLOW_E2E_DB_RESET"');
+    expect(seedE2e).toContain('const TEST_DATABASE_NAME: &str = "sagittarius_test"');
+    expect(seedE2e).toContain("database_name_from_url");
     expect(seedE2e).toContain("0005_account_portal.sql");
     expect(seedE2e).toContain("0006_trip_countries.sql");
     expect(seedE2e).toContain("0010_itinerary_activity_paths.sql");
@@ -189,6 +192,15 @@ describe("Sagittarius project scaffold", () => {
     expect(seedE2e).toContain("0013_expense_receipts_itemization.sql");
     expect(seedE2e).toContain("0014_expense_notes.sql");
     expect(seedE2e).toContain("0015_expense_comments.sql");
+    for (const script of [
+      "scripts/run-local-real-api-e2e.ts",
+      "scripts/run-local-real-browser-auth-e2e.ts",
+      "scripts/run-local-api-trace-smoke.ts",
+      "scripts/run-local-perf-smoke.ts",
+      "scripts/run-local-production-browser-qa.ts",
+    ]) {
+      expect(readFileSync(join(frontendRoot, script), "utf8")).toContain('SAGITTARIUS_ALLOW_E2E_DB_RESET: "1"');
+    }
     expect(makefile).toContain("frontend-e2e-local:");
     expect(makefile).toContain("frontend-e2e-local: db-init-test");
     expect(makefile).toContain("bun run test:e2e:local");
@@ -226,6 +238,10 @@ describe("Sagittarius project scaffold", () => {
     expect(apiMod).toContain("SAGITTARIUS_ALLOWED_ORIGINS");
     expect(apiMod).not.toContain("AllowOrigin::mirror_request()");
     expect(apiMain).toContain("EnvFilter::try_from_default_env()");
+    expect(apiMain).toContain("SAGITTARIUS_SEED_SAMPLE_DATA");
+    expect(apiMain).toContain("TASK_ESIM_ID");
+    expect(apiMain).toContain("EXPENSE_ID");
+    expect(apiMain).not.toContain("gen_random_uuid()");
     expect(productionEnvCheck).toContain("EMAIL_DELIVERY");
     expect(productionEnvCheck).toContain("PASSKEY_ALLOWED_ORIGINS");
     expect(productionEnvCheck).toContain("SMTP_PASSWORD");

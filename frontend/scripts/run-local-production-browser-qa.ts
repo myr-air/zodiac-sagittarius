@@ -84,6 +84,7 @@ async function main() {
   try {
     await run("cargo", ["run", "--manifest-path", backendManifest, "--bin", "seed_e2e"], {
       DATABASE_URL: databaseUrl,
+      SAGITTARIUS_ALLOW_E2E_DB_RESET: "1",
     });
     evidence.checks.push("Seeded local staging database with real migrations and e2e trip data.");
 

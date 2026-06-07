@@ -13,6 +13,7 @@ async function main() {
 
   await run("cargo", ["run", "--manifest-path", backendManifest, "--bin", "seed_e2e"], {
     DATABASE_URL: databaseUrl,
+    SAGITTARIUS_ALLOW_E2E_DB_RESET: "1",
   });
 
   const api = spawn("cargo", ["run", "--manifest-path", backendManifest, "--bin", "sagittarius-api"], {
