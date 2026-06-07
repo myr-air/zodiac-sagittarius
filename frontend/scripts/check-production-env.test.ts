@@ -17,27 +17,6 @@ function validProductionEnv(overrides: Record<string, string> = {}) {
     RUST_LOG: "sagittarius_api=info,tower_http=info",
     SAGITTARIUS_ENV: "production",
     SAGITTARIUS_INTERNAL_API_BASE_URL: "http://sagittarius-api:5181",
-    SAGITTARIUS_STAGING_EVIDENCE_URL:
-      "https://audit.prod-sagittarius.internal/preflight",
-    SAGITTARIUS_STAGING_BROWSER_EVIDENCE_URL:
-      "https://audit.prod-sagittarius.internal/browser",
-    SAGITTARIUS_STAGING_MIGRATION_EVIDENCE_URL:
-      "https://audit.prod-sagittarius.internal/migration",
-    SAGITTARIUS_STAGING_ROLLBACK_EVIDENCE_URL:
-      "https://audit.prod-sagittarius.internal/rollback",
-    SAGITTARIUS_STAGING_ISSUE_EVIDENCE_URL:
-      "https://audit.prod-sagittarius.internal/issues",
-    SAGITTARIUS_ALERT_SINK_NAME: "pagerduty-prod",
-    SAGITTARIUS_ALERT_RUNBOOK_URL:
-      "https://audit.prod-sagittarius.internal/runbook",
-    SAGITTARIUS_FEATURE_OWNER: "release-owner",
-    SAGITTARIUS_ROLLBACK_OWNER: "rollback-owner",
-    SAGITTARIUS_STAGING_PREFLIGHT_PASSED: "1",
-    SAGITTARIUS_STAGING_BROWSER_SIGNOFF: "1",
-    SAGITTARIUS_STAGING_DB_MIGRATION_VERIFIED: "1",
-    SAGITTARIUS_STAGING_ROLLBACK_VERIFIED: "1",
-    SAGITTARIUS_STAGING_ALERT_ROUTING_VERIFIED: "1",
-    SAGITTARIUS_STAGING_NO_P1_P2: "1",
     ...overrides,
   };
 }

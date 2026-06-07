@@ -157,6 +157,7 @@ describe("Sagittarius project scaffold", () => {
     expect(packageJson.scripts?.["test:api-trace-smoke"]).toBe("bun run scripts/run-local-api-trace-smoke.ts");
     expect(packageJson.scripts?.["test:perf-smoke"]).toBe("bun run scripts/run-local-perf-smoke.ts");
     expect(packageJson.scripts?.["test:production-env"]).toBe("bun run scripts/check-production-env.ts");
+    expect(packageJson.scripts?.["test:release-signoff"]).toBe("bun run scripts/check-release-signoff.ts");
     expect(packageJson.scripts?.["test:staging-preflight"]).toBe("bun run scripts/check-staging-preflight.ts");
     expect(packageJson.scripts?.["test:staging-signoff"]).toBe("bun run scripts/check-staging-signoff.ts");
     expect(existsSync(join(frontendRoot, "scripts/run-local-real-api-e2e.ts"))).toBe(true);
@@ -164,22 +165,45 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "scripts/run-local-api-trace-smoke.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "scripts/run-local-perf-smoke.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "scripts/check-production-env.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "scripts/check-release-signoff.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "scripts/check-staging-preflight.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "scripts/check-staging-signoff.ts"))).toBe(true);
     const authBrowserE2e = readFileSync(join(frontendRoot, "scripts/run-local-real-browser-auth-e2e.ts"), "utf8");
     expect(authBrowserE2e).toContain('run("bun", ["run", "build"]');
     expect(authBrowserE2e).toContain('spawnLogged("frontend", "bun", ["run", "start"]');
     expect(authBrowserE2e).not.toContain('["run", "next", "dev"');
-    const stagingSignoff = readFileSync(join(frontendRoot, "scripts/check-staging-signoff.ts"), "utf8");
-    expect(stagingSignoff).toContain("checkPublicHttpsUrl");
-    expect(stagingSignoff).toContain("must not point at localhost");
-    expect(stagingSignoff).toContain("must not use placeholder domain");
-    expect(stagingSignoff).toContain("must be a real owner, not TBD");
-    expect(stagingSignoff).toContain("SAGITTARIUS_STAGING_BROWSER_EVIDENCE_URL");
-    expect(stagingSignoff).toContain("SAGITTARIUS_STAGING_MIGRATION_EVIDENCE_URL");
-    expect(stagingSignoff).toContain("SAGITTARIUS_STAGING_ROLLBACK_EVIDENCE_URL");
-    expect(stagingSignoff).toContain("SAGITTARIUS_STAGING_ALERT_EVIDENCE_URL");
-    expect(stagingSignoff).toContain("SAGITTARIUS_STAGING_ISSUE_EVIDENCE_URL");
+    const releaseSignoff = readFileSync(join(frontendRoot, "scripts/check-release-signoff.ts"), "utf8");
+    expect(releaseSignoff).toContain("SAGITTARIUS_SIGNOFF_API_BASE_URL");
+    expect(releaseSignoff).toContain("SAGITTARIUS_SIGNOFF_FRONTEND_URL");
+    expect(releaseSignoff).toContain("SAGITTARIUS_SIGNOFF_EVIDENCE_URL");
+    expect(releaseSignoff).toContain("SAGITTARIUS_SIGNOFF_BROWSER_EVIDENCE_URL");
+    expect(releaseSignoff).toContain("SAGITTARIUS_SIGNOFF_MIGRATION_EVIDENCE_URL");
+    expect(releaseSignoff).toContain("SAGITTARIUS_SIGNOFF_ROLLBACK_EVIDENCE_URL");
+    expect(releaseSignoff).toContain("SAGITTARIUS_SIGNOFF_ALERT_EVIDENCE_URL");
+    expect(releaseSignoff).toContain("SAGITTARIUS_SIGNOFF_ISSUE_EVIDENCE_URL");
+    expect(releaseSignoff).toContain("SAGITTARIUS_SIGNOFF_PREFLIGHT_PASSED");
+    expect(releaseSignoff).toContain("SAGITTARIUS_SIGNOFF_BROWSER_PASSED");
+    expect(releaseSignoff).toContain("SAGITTARIUS_SIGNOFF_DB_MIGRATION_VERIFIED");
+    expect(releaseSignoff).toContain("SAGITTARIUS_SIGNOFF_ROLLBACK_VERIFIED");
+    expect(releaseSignoff).toContain("SAGITTARIUS_SIGNOFF_ALERT_ROUTING_VERIFIED");
+    expect(releaseSignoff).toContain("SAGITTARIUS_SIGNOFF_NO_P1_P2");
+    expect(releaseSignoff).toContain("SAGITTARIUS_STAGING_API_BASE_URL");
+    expect(releaseSignoff).toContain("SAGITTARIUS_STAGING_FRONTEND_URL");
+    expect(releaseSignoff).toContain("SAGITTARIUS_STAGING_EVIDENCE_URL");
+    expect(releaseSignoff).toContain("SAGITTARIUS_STAGING_BROWSER_EVIDENCE_URL");
+    expect(releaseSignoff).toContain("SAGITTARIUS_STAGING_MIGRATION_EVIDENCE_URL");
+    expect(releaseSignoff).toContain("SAGITTARIUS_STAGING_ROLLBACK_EVIDENCE_URL");
+    expect(releaseSignoff).toContain("SAGITTARIUS_STAGING_ALERT_EVIDENCE_URL");
+    expect(releaseSignoff).toContain("SAGITTARIUS_STAGING_ISSUE_EVIDENCE_URL");
+    expect(releaseSignoff).toContain("SAGITTARIUS_STAGING_BROWSER_SIGNOFF");
+    expect(releaseSignoff).toContain("SAGITTARIUS_STAGING_PREFLIGHT_PASSED");
+    expect(releaseSignoff).toContain("SAGITTARIUS_STAGING_DB_MIGRATION_VERIFIED");
+    expect(releaseSignoff).toContain("SAGITTARIUS_STAGING_ROLLBACK_VERIFIED");
+    expect(releaseSignoff).toContain("SAGITTARIUS_STAGING_ALERT_ROUTING_VERIFIED");
+    expect(releaseSignoff).toContain("SAGITTARIUS_STAGING_NO_P1_P2");
+    expect(releaseSignoff).toContain("must not point at localhost");
+    expect(releaseSignoff).toContain("must not use placeholder domain");
+    expect(releaseSignoff).toContain("must be a real owner, not TBD");
     const seedE2e = readFileSync(join(repoRoot, "backend/crates/sagittarius-api/src/bin/seed_e2e.rs"), "utf8");
     expect(seedE2e).toContain('const RESET_CONFIRMATION_ENV: &str = "SAGITTARIUS_ALLOW_E2E_DB_RESET"');
     expect(seedE2e).toContain('const TEST_DATABASE_NAME: &str = "sagittarius_test"');
@@ -231,6 +255,7 @@ describe("Sagittarius project scaffold", () => {
     const apiMod = readFileSync(join(repoRoot, "backend/crates/sagittarius-api/src/api/mod.rs"), "utf8");
     const apiMain = readFileSync(join(repoRoot, "backend/crates/sagittarius-api/src/main.rs"), "utf8");
     const productionEnvCheck = readFileSync(join(frontendRoot, "scripts/check-production-env.ts"), "utf8");
+    const productionEnvExample = readFileSync(join(repoRoot, ".env.production.example"), "utf8");
     const workflow = readFileSync(join(repoRoot, ".github/workflows/production-readiness.yml"), "utf8");
 
     expect(existsSync(join(repoRoot, ".dockerignore"))).toBe(true);
@@ -261,12 +286,47 @@ describe("Sagittarius project scaffold", () => {
     expect(productionEnvCheck).toContain("PASSKEY_ALLOWED_ORIGINS");
     expect(productionEnvCheck).toContain("SMTP_PASSWORD");
     expect(productionEnvCheck).toContain("SAGITTARIUS_INTERNAL_API_BASE_URL");
-    expect(productionEnvCheck).toContain("SAGITTARIUS_STAGING_BROWSER_EVIDENCE_URL");
-    expect(productionEnvCheck).toContain("SAGITTARIUS_STAGING_MIGRATION_EVIDENCE_URL");
-    expect(productionEnvCheck).toContain("SAGITTARIUS_STAGING_ROLLBACK_EVIDENCE_URL");
-    expect(productionEnvCheck).toContain("SAGITTARIUS_STAGING_ISSUE_EVIDENCE_URL");
-    expect(productionEnvCheck).toContain("SAGITTARIUS_ALERT_SINK_NAME");
-    expect(productionEnvCheck).toContain("SAGITTARIUS_ALERT_RUNBOOK_URL");
+    expect(productionEnvCheck).not.toMatch(/\bstaging\b/i);
+    expect(productionEnvExample).not.toMatch(/\bstaging\b/i);
+    for (const signoffOnlyName of [
+      "SAGITTARIUS_ALERT_RUNBOOK_URL",
+      "SAGITTARIUS_ALERT_SINK_NAME",
+      "SAGITTARIUS_FEATURE_OWNER",
+      "SAGITTARIUS_ROLLBACK_OWNER",
+      "SAGITTARIUS_SIGNOFF_ALERT_EVIDENCE_URL",
+      "SAGITTARIUS_SIGNOFF_ALERT_ROUTING_VERIFIED",
+      "SAGITTARIUS_SIGNOFF_API_BASE_URL",
+      "SAGITTARIUS_SIGNOFF_BROWSER_EVIDENCE_URL",
+      "SAGITTARIUS_SIGNOFF_BROWSER_PASSED",
+      "SAGITTARIUS_SIGNOFF_DB_MIGRATION_VERIFIED",
+      "SAGITTARIUS_SIGNOFF_ENVIRONMENT",
+      "SAGITTARIUS_SIGNOFF_EVIDENCE_URL",
+      "SAGITTARIUS_SIGNOFF_FRONTEND_URL",
+      "SAGITTARIUS_SIGNOFF_ISSUE_EVIDENCE_URL",
+      "SAGITTARIUS_SIGNOFF_MIGRATION_EVIDENCE_URL",
+      "SAGITTARIUS_SIGNOFF_NO_P1_P2",
+      "SAGITTARIUS_SIGNOFF_PREFLIGHT_PASSED",
+      "SAGITTARIUS_SIGNOFF_ROLLBACK_EVIDENCE_URL",
+      "SAGITTARIUS_SIGNOFF_ROLLBACK_VERIFIED",
+      "SAGITTARIUS_STAGING_ALERT_EVIDENCE_URL",
+      "SAGITTARIUS_STAGING_ALERT_ROUTING_VERIFIED",
+      "SAGITTARIUS_STAGING_API_BASE_URL",
+      "SAGITTARIUS_STAGING_BROWSER_EVIDENCE_URL",
+      "SAGITTARIUS_STAGING_BROWSER_SIGNOFF",
+      "SAGITTARIUS_STAGING_DB_MIGRATION_VERIFIED",
+      "SAGITTARIUS_STAGING_ENVIRONMENT",
+      "SAGITTARIUS_STAGING_EVIDENCE_URL",
+      "SAGITTARIUS_STAGING_FRONTEND_URL",
+      "SAGITTARIUS_STAGING_ISSUE_EVIDENCE_URL",
+      "SAGITTARIUS_STAGING_MIGRATION_EVIDENCE_URL",
+      "SAGITTARIUS_STAGING_NO_P1_P2",
+      "SAGITTARIUS_STAGING_PREFLIGHT_PASSED",
+      "SAGITTARIUS_STAGING_ROLLBACK_EVIDENCE_URL",
+      "SAGITTARIUS_STAGING_ROLLBACK_VERIFIED",
+    ]) {
+      expect(productionEnvCheck).not.toContain(signoffOnlyName);
+      expect(productionEnvExample).not.toContain(signoffOnlyName);
+    }
     expect(productionEnvCheck).toContain("must not use placeholder domain");
     const stagingPreflight = readFileSync(join(frontendRoot, "scripts/check-staging-preflight.ts"), "utf8");
     const productionBrowserQa = readFileSync(join(frontendRoot, "scripts/run-local-production-browser-qa.ts"), "utf8");
@@ -286,7 +346,7 @@ describe("Sagittarius project scaffold", () => {
     expect(workflow).toContain("name: Production container image build");
     expect(workflow).toContain("make container-build");
     expect(workflow).toContain("name: Release safety script checks");
-    expect(workflow).toContain("bun run test:staging-signoff");
+    expect(workflow).toContain("bun run test:release-signoff");
     expect(workflow).toContain("bun run test:production-env");
   });
 

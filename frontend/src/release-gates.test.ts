@@ -12,57 +12,104 @@ const baseEnv = {
   TMPDIR: process.env.TMPDIR ?? "",
 };
 
-const validProductionEnv = {
-  DATABASE_URL: "postgres://sagittarius:secret-prod-password@postgres.13thx.com:5432/sagittarius",
+const validProductionRuntimeEnv = {
+  DATABASE_URL:
+    "postgres://sagittarius:secret-prod-password@postgres.13thx.com:5432/sagittarius",
   EMAIL_DELIVERY: "smtp",
   EMAIL_FROM: "Sagittarius <no-reply@13thx.com>",
   NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL: "https://joii.13thx.com",
   PASSKEY_ALLOWED_ORIGINS:
     "https://joii.13thx.com,https://sagittarius.13thx.com",
   RUST_LOG: "info,tower_http=info,sagittarius_api=info",
-  SAGITTARIUS_ALERT_RUNBOOK_URL:
-    "https://runbooks.13thx.com/sagittarius/write-route-alerts",
-  SAGITTARIUS_ALERT_SINK_NAME: "sagittarius-write-route-alerts",
   SAGITTARIUS_ALLOWED_ORIGINS:
     "https://joii.13thx.com,https://sagittarius.13thx.com",
   SAGITTARIUS_ENV: "production",
-  SAGITTARIUS_FEATURE_OWNER: "Aom Owner",
   SAGITTARIUS_INTERNAL_API_BASE_URL: "http://sagittarius-api:5181",
-  SAGITTARIUS_ROLLBACK_OWNER: "Beam Owner",
   SAGITTARIUS_SEED_SAMPLE_DATA: "0",
-  SAGITTARIUS_STAGING_BROWSER_EVIDENCE_URL:
-    "https://ci.13thx.com/sagittarius/runs/123/browser",
-  SAGITTARIUS_STAGING_BROWSER_SIGNOFF: "1",
-  SAGITTARIUS_STAGING_DB_MIGRATION_VERIFIED: "1",
-  SAGITTARIUS_STAGING_EVIDENCE_URL:
-    "https://ci.13thx.com/sagittarius/runs/123",
-  SAGITTARIUS_STAGING_ISSUE_EVIDENCE_URL:
-    "https://issues.13thx.com/sagittarius?severity=P1,P2",
-  SAGITTARIUS_STAGING_MIGRATION_EVIDENCE_URL:
-    "https://ci.13thx.com/sagittarius/runs/123/migration",
-  SAGITTARIUS_STAGING_NO_P1_P2: "1",
-  SAGITTARIUS_STAGING_PREFLIGHT_PASSED: "1",
-  SAGITTARIUS_STAGING_ROLLBACK_EVIDENCE_URL:
-    "https://ci.13thx.com/sagittarius/runs/123/rollback",
-  SAGITTARIUS_STAGING_ROLLBACK_VERIFIED: "1",
-  SAGITTARIUS_STAGING_ALERT_ROUTING_VERIFIED: "1",
   SMTP_HOST: "smtp.13thx.com",
   SMTP_PASSWORD: "secret-smtp-password",
   SMTP_PORT: "587",
   SMTP_USERNAME: "sagittarius-smtp",
 };
 
+const validReleaseSignoffEnv = {
+  SAGITTARIUS_ALERT_RUNBOOK_URL:
+    "https://runbooks.13thx.com/sagittarius/write-route-alerts",
+  SAGITTARIUS_ALERT_SINK_NAME: "sagittarius-write-route-alerts",
+  SAGITTARIUS_FEATURE_OWNER: "Aom Owner",
+  SAGITTARIUS_ROLLBACK_OWNER: "Beam Owner",
+  SAGITTARIUS_SIGNOFF_ALERT_EVIDENCE_URL:
+    "https://alerts.13thx.com/incidents/sagittarius-write-routes",
+  SAGITTARIUS_SIGNOFF_ALERT_ROUTING_VERIFIED: "1",
+  SAGITTARIUS_SIGNOFF_API_BASE_URL: "https://joii.13thx.com",
+  SAGITTARIUS_SIGNOFF_BROWSER_EVIDENCE_URL:
+    "https://ci.13thx.com/sagittarius/runs/123/browser",
+  SAGITTARIUS_SIGNOFF_BROWSER_PASSED: "1",
+  SAGITTARIUS_SIGNOFF_DB_MIGRATION_VERIFIED: "1",
+  SAGITTARIUS_SIGNOFF_ENVIRONMENT: "production-preflight",
+  SAGITTARIUS_SIGNOFF_EVIDENCE_URL:
+    "https://ci.13thx.com/sagittarius/runs/123",
+  SAGITTARIUS_SIGNOFF_FRONTEND_URL: "https://joii.13thx.com",
+  SAGITTARIUS_SIGNOFF_ISSUE_EVIDENCE_URL:
+    "https://issues.13thx.com/sagittarius?severity=P1,P2",
+  SAGITTARIUS_SIGNOFF_MIGRATION_EVIDENCE_URL:
+    "https://ci.13thx.com/sagittarius/runs/123/migration",
+  SAGITTARIUS_SIGNOFF_NO_P1_P2: "1",
+  SAGITTARIUS_SIGNOFF_PREFLIGHT_PASSED: "1",
+  SAGITTARIUS_SIGNOFF_ROLLBACK_EVIDENCE_URL:
+    "https://ci.13thx.com/sagittarius/runs/123/rollback",
+  SAGITTARIUS_SIGNOFF_ROLLBACK_VERIFIED: "1",
+};
+
+const placeholderReleaseSignoffUrlCases = [
+  {
+    name: "SAGITTARIUS_SIGNOFF_API_BASE_URL",
+    value: "https://api.staging.example.test",
+  },
+  {
+    name: "SAGITTARIUS_SIGNOFF_FRONTEND_URL",
+    value: "https://staging.example.test",
+  },
+  {
+    name: "SAGITTARIUS_SIGNOFF_EVIDENCE_URL",
+    value: "https://ci.example.test/runs/123",
+  },
+  {
+    name: "SAGITTARIUS_SIGNOFF_BROWSER_EVIDENCE_URL",
+    value: "https://ci.example.test/runs/123/browser",
+  },
+  {
+    name: "SAGITTARIUS_SIGNOFF_MIGRATION_EVIDENCE_URL",
+    value: "https://ci.example.test/runs/123/migration",
+  },
+  {
+    name: "SAGITTARIUS_SIGNOFF_ROLLBACK_EVIDENCE_URL",
+    value: "https://ci.example.test/runs/123/rollback",
+  },
+  {
+    name: "SAGITTARIUS_SIGNOFF_ALERT_EVIDENCE_URL",
+    value: "https://alerts.example.test/incidents/sagittarius-write-routes",
+  },
+  {
+    name: "SAGITTARIUS_SIGNOFF_ISSUE_EVIDENCE_URL",
+    value: "https://issues.example.test/sagittarius?severity=P1,P2",
+  },
+];
+
 describe("release evidence gates", () => {
-  it("accepts the approved joii same-origin production deployment", () => {
-    const result = runGate("scripts/check-production-env.ts", validProductionEnv);
+  it("accepts the approved joii same-origin production runtime env", () => {
+    const result = runGate(
+      "scripts/check-production-env.ts",
+      validProductionRuntimeEnv,
+    );
 
     expect(result.status).toBe(0);
     expect(outputOf(result)).toContain("production env check ok");
   });
 
-  it("accepts the approved sagittarius same-origin production deployment", () => {
+  it("accepts the approved sagittarius same-origin production runtime env", () => {
     const result = runGate("scripts/check-production-env.ts", {
-      ...validProductionEnv,
+      ...validProductionRuntimeEnv,
       NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL: "https://sagittarius.13thx.com",
       SAGITTARIUS_ALLOWED_ORIGINS: "https://sagittarius.13thx.com",
     });
@@ -73,7 +120,7 @@ describe("release evidence gates", () => {
 
   it("rejects approved same-origin production domains with explicit ports", () => {
     const result = runGate("scripts/check-production-env.ts", {
-      ...validProductionEnv,
+      ...validProductionRuntimeEnv,
       NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL: "https://joii.13thx.com:444",
       SAGITTARIUS_ALLOWED_ORIGINS: "https://joii.13thx.com:444",
     });
@@ -86,7 +133,7 @@ describe("release evidence gates", () => {
 
   it("rejects accidental same-origin API base URLs outside the approved production domains", () => {
     const result = runGate("scripts/check-production-env.ts", {
-      ...validProductionEnv,
+      ...validProductionRuntimeEnv,
       NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL: "https://travel.13thx.com",
       SAGITTARIUS_ALLOWED_ORIGINS: "https://travel.13thx.com",
     });
@@ -98,7 +145,8 @@ describe("release evidence gates", () => {
   });
 
   it("rejects missing internal API targets for the runtime proxy", () => {
-    const { SAGITTARIUS_INTERNAL_API_BASE_URL, ...env } = validProductionEnv;
+    const { SAGITTARIUS_INTERNAL_API_BASE_URL, ...env } =
+      validProductionRuntimeEnv;
     const result = runGate("scripts/check-production-env.ts", env);
 
     expect(result.status).not.toBe(0);
@@ -109,7 +157,7 @@ describe("release evidence gates", () => {
 
   it("rejects internal API targets that include the public API path", () => {
     const result = runGate("scripts/check-production-env.ts", {
-      ...validProductionEnv,
+      ...validProductionRuntimeEnv,
       SAGITTARIUS_INTERNAL_API_BASE_URL:
         "http://sagittarius-api:5181/api/v1",
     });
@@ -120,32 +168,61 @@ describe("release evidence gates", () => {
     );
   });
 
-  it("rejects placeholder staging evidence URLs", () => {
-    const result = runGate("scripts/check-staging-signoff.ts", {
-      SAGITTARIUS_FEATURE_OWNER: "Aom Owner",
-      SAGITTARIUS_ROLLBACK_OWNER: "Beam Owner",
-      SAGITTARIUS_STAGING_ALERT_EVIDENCE_URL: "https://alerts.example.test/incidents/sagittarius-write-routes",
-      SAGITTARIUS_STAGING_ALERT_ROUTING_VERIFIED: "1",
-      SAGITTARIUS_STAGING_API_BASE_URL: "https://api.staging.example.test",
-      SAGITTARIUS_STAGING_BROWSER_EVIDENCE_URL: "https://ci.example.test/runs/123/browser",
-      SAGITTARIUS_STAGING_BROWSER_SIGNOFF: "1",
-      SAGITTARIUS_STAGING_DB_MIGRATION_VERIFIED: "1",
-      SAGITTARIUS_STAGING_ENVIRONMENT: "staging",
-      SAGITTARIUS_STAGING_EVIDENCE_URL: "https://ci.example.test/runs/123",
-      SAGITTARIUS_STAGING_FRONTEND_URL: "https://staging.example.test",
-      SAGITTARIUS_STAGING_ISSUE_EVIDENCE_URL: "https://issues.example.test/sagittarius?severity=P1,P2",
-      SAGITTARIUS_STAGING_MIGRATION_EVIDENCE_URL: "https://ci.example.test/runs/123/migration",
-      SAGITTARIUS_STAGING_NO_P1_P2: "1",
-      SAGITTARIUS_STAGING_PREFLIGHT_PASSED: "1",
-      SAGITTARIUS_STAGING_ROLLBACK_EVIDENCE_URL: "https://ci.example.test/runs/123/rollback",
-      SAGITTARIUS_STAGING_ROLLBACK_VERIFIED: "1",
-    });
+  it("accepts release signoff evidence with the new neutral variable names", () => {
+    const result = runGate(
+      "scripts/check-release-signoff.ts",
+      validReleaseSignoffEnv,
+    );
 
-    expect(result.status).not.toBe(0);
-    expect(outputOf(result)).toContain("must not use placeholder domain");
+    expect(result.status).toBe(0);
+    expect(outputOf(result)).toContain("release signoff ok");
   });
 
-  it("rejects placeholder production URLs and evidence", () => {
+  it("accepts deprecated staging signoff aliases in the release signoff script", () => {
+    const result = runGate(
+      "scripts/check-release-signoff.ts",
+      toLegacyStagingSignoffEnv(validReleaseSignoffEnv),
+    );
+
+    expect(result.status).toBe(0);
+    expect(outputOf(result)).toContain("release signoff ok");
+  });
+
+  it("keeps staging signoff as a compatibility entrypoint", () => {
+    const result = runGate(
+      "scripts/check-staging-signoff.ts",
+      validReleaseSignoffEnv,
+    );
+
+    expect(result.status).toBe(0);
+    expect(outputOf(result)).toContain("release signoff ok");
+  });
+
+  it("prefers new signoff variables over deprecated staging aliases", () => {
+    const result = runGate("scripts/check-release-signoff.ts", {
+      ...toLegacyStagingSignoffEnv(validReleaseSignoffEnv),
+      ...validReleaseSignoffEnv,
+      SAGITTARIUS_STAGING_EVIDENCE_URL: "https://ci.example.test/runs/bad",
+    });
+
+    expect(result.status).toBe(0);
+    expect(outputOf(result)).toContain("release signoff ok");
+  });
+
+  for (const { name, value } of placeholderReleaseSignoffUrlCases) {
+    it(`rejects placeholder release signoff URL for ${name}`, () => {
+      const result = runGate("scripts/check-release-signoff.ts", {
+        ...validReleaseSignoffEnv,
+        [name]: value,
+      });
+
+      expect(result.status).not.toBe(0);
+      expect(outputOf(result)).toContain(name);
+      expect(outputOf(result)).toContain("must not use placeholder domain");
+    });
+  }
+
+  it("rejects placeholder production runtime URLs", () => {
     const result = runGate("scripts/check-production-env.ts", {
       DATABASE_URL: "postgres://user:pass@db.example.test:5432/sagittarius",
       EMAIL_DELIVERY: "smtp",
@@ -153,23 +230,8 @@ describe("release evidence gates", () => {
       NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL: "https://api.example.test",
       PASSKEY_ALLOWED_ORIGINS: "https://app.example.test",
       RUST_LOG: "info,tower_http=info,sagittarius_api=info",
-      SAGITTARIUS_ALERT_RUNBOOK_URL: "https://runbooks.example.test/sagittarius/write-route-alerts",
-      SAGITTARIUS_ALERT_SINK_NAME: "sagittarius-write-route-alerts",
       SAGITTARIUS_ALLOWED_ORIGINS: "https://app.example.test",
       SAGITTARIUS_INTERNAL_API_BASE_URL: "http://sagittarius-api:5181",
-      SAGITTARIUS_FEATURE_OWNER: "Aom Owner",
-      SAGITTARIUS_ROLLBACK_OWNER: "Beam Owner",
-      SAGITTARIUS_STAGING_BROWSER_EVIDENCE_URL: "https://ci.example.test/runs/123/browser",
-      SAGITTARIUS_STAGING_BROWSER_SIGNOFF: "1",
-      SAGITTARIUS_STAGING_DB_MIGRATION_VERIFIED: "1",
-      SAGITTARIUS_STAGING_EVIDENCE_URL: "https://ci.example.test/runs/123",
-      SAGITTARIUS_STAGING_ISSUE_EVIDENCE_URL: "https://issues.example.test/sagittarius?severity=P1,P2",
-      SAGITTARIUS_STAGING_MIGRATION_EVIDENCE_URL: "https://ci.example.test/runs/123/migration",
-      SAGITTARIUS_STAGING_NO_P1_P2: "1",
-      SAGITTARIUS_STAGING_PREFLIGHT_PASSED: "1",
-      SAGITTARIUS_STAGING_ROLLBACK_EVIDENCE_URL: "https://ci.example.test/runs/123/rollback",
-      SAGITTARIUS_STAGING_ROLLBACK_VERIFIED: "1",
-      SAGITTARIUS_STAGING_ALERT_ROUTING_VERIFIED: "1",
       SMTP_HOST: "smtp.example.test",
       SMTP_PASSWORD: "smtp-password",
       SMTP_PORT: "587",
@@ -178,6 +240,28 @@ describe("release evidence gates", () => {
 
     expect(result.status).not.toBe(0);
     expect(outputOf(result)).toContain("must not use placeholder domain");
+  });
+
+  it("rejects supplied release signoff fields in the production runtime env", () => {
+    const result = runGate("scripts/check-production-env.ts", {
+      ...validProductionRuntimeEnv,
+      ...validReleaseSignoffEnv,
+    });
+
+    expect(result.status).not.toBe(0);
+    expect(outputOf(result)).toContain("SAGITTARIUS_SIGNOFF_EVIDENCE_URL");
+    expect(outputOf(result)).toContain("must not include release signoff");
+  });
+
+  it("rejects supplied deprecated staging signoff fields in the production runtime env", () => {
+    const result = runGate("scripts/check-production-env.ts", {
+      ...validProductionRuntimeEnv,
+      ...toLegacyStagingSignoffEnv(validReleaseSignoffEnv),
+    });
+
+    expect(result.status).not.toBe(0);
+    expect(outputOf(result)).toContain("SAGITTARIUS_STAGING_EVIDENCE_URL");
+    expect(outputOf(result)).toContain("must not include release signoff");
   });
 });
 
@@ -194,4 +278,38 @@ function runGate(script: string, env: Record<string, string>) {
 
 function outputOf(result: ReturnType<typeof runGate>): string {
   return `${result.stdout}\n${result.stderr}`;
+}
+
+function toLegacyStagingSignoffEnv(env: Record<string, string>) {
+  return {
+    SAGITTARIUS_ALERT_RUNBOOK_URL: env.SAGITTARIUS_ALERT_RUNBOOK_URL,
+    SAGITTARIUS_ALERT_SINK_NAME: env.SAGITTARIUS_ALERT_SINK_NAME,
+    SAGITTARIUS_FEATURE_OWNER: env.SAGITTARIUS_FEATURE_OWNER,
+    SAGITTARIUS_ROLLBACK_OWNER: env.SAGITTARIUS_ROLLBACK_OWNER,
+    SAGITTARIUS_STAGING_ALERT_EVIDENCE_URL:
+      env.SAGITTARIUS_SIGNOFF_ALERT_EVIDENCE_URL,
+    SAGITTARIUS_STAGING_ALERT_ROUTING_VERIFIED:
+      env.SAGITTARIUS_SIGNOFF_ALERT_ROUTING_VERIFIED,
+    SAGITTARIUS_STAGING_API_BASE_URL: env.SAGITTARIUS_SIGNOFF_API_BASE_URL,
+    SAGITTARIUS_STAGING_BROWSER_EVIDENCE_URL:
+      env.SAGITTARIUS_SIGNOFF_BROWSER_EVIDENCE_URL,
+    SAGITTARIUS_STAGING_BROWSER_SIGNOFF:
+      env.SAGITTARIUS_SIGNOFF_BROWSER_PASSED,
+    SAGITTARIUS_STAGING_DB_MIGRATION_VERIFIED:
+      env.SAGITTARIUS_SIGNOFF_DB_MIGRATION_VERIFIED,
+    SAGITTARIUS_STAGING_ENVIRONMENT: env.SAGITTARIUS_SIGNOFF_ENVIRONMENT,
+    SAGITTARIUS_STAGING_EVIDENCE_URL: env.SAGITTARIUS_SIGNOFF_EVIDENCE_URL,
+    SAGITTARIUS_STAGING_FRONTEND_URL: env.SAGITTARIUS_SIGNOFF_FRONTEND_URL,
+    SAGITTARIUS_STAGING_ISSUE_EVIDENCE_URL:
+      env.SAGITTARIUS_SIGNOFF_ISSUE_EVIDENCE_URL,
+    SAGITTARIUS_STAGING_MIGRATION_EVIDENCE_URL:
+      env.SAGITTARIUS_SIGNOFF_MIGRATION_EVIDENCE_URL,
+    SAGITTARIUS_STAGING_NO_P1_P2: env.SAGITTARIUS_SIGNOFF_NO_P1_P2,
+    SAGITTARIUS_STAGING_PREFLIGHT_PASSED:
+      env.SAGITTARIUS_SIGNOFF_PREFLIGHT_PASSED,
+    SAGITTARIUS_STAGING_ROLLBACK_EVIDENCE_URL:
+      env.SAGITTARIUS_SIGNOFF_ROLLBACK_EVIDENCE_URL,
+    SAGITTARIUS_STAGING_ROLLBACK_VERIFIED:
+      env.SAGITTARIUS_SIGNOFF_ROLLBACK_VERIFIED,
+  };
 }
