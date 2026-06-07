@@ -27,6 +27,7 @@ const validProductionEnv = {
     "https://joii.13thx.com,https://sagittarius.13thx.com",
   SAGITTARIUS_ENV: "production",
   SAGITTARIUS_FEATURE_OWNER: "Aom Owner",
+  SAGITTARIUS_INTERNAL_API_BASE_URL: "http://sagittarius-api:5181",
   SAGITTARIUS_ROLLBACK_OWNER: "Beam Owner",
   SAGITTARIUS_SEED_SAMPLE_DATA: "0",
   SAGITTARIUS_STAGING_BROWSER_EVIDENCE_URL:
@@ -96,6 +97,29 @@ describe("release evidence gates", () => {
     );
   });
 
+  it("rejects missing internal API targets for the runtime proxy", () => {
+    const { SAGITTARIUS_INTERNAL_API_BASE_URL, ...env } = validProductionEnv;
+    const result = runGate("scripts/check-production-env.ts", env);
+
+    expect(result.status).not.toBe(0);
+    expect(outputOf(result)).toContain(
+      "SAGITTARIUS_INTERNAL_API_BASE_URL is required",
+    );
+  });
+
+  it("rejects internal API targets that include the public API path", () => {
+    const result = runGate("scripts/check-production-env.ts", {
+      ...validProductionEnv,
+      SAGITTARIUS_INTERNAL_API_BASE_URL:
+        "http://sagittarius-api:5181/api/v1",
+    });
+
+    expect(result.status).not.toBe(0);
+    expect(outputOf(result)).toContain(
+      "SAGITTARIUS_INTERNAL_API_BASE_URL must point at the service root, not /api/v1",
+    );
+  });
+
   it("rejects placeholder staging evidence URLs", () => {
     const result = runGate("scripts/check-staging-signoff.ts", {
       SAGITTARIUS_FEATURE_OWNER: "Aom Owner",
@@ -132,6 +156,7 @@ describe("release evidence gates", () => {
       SAGITTARIUS_ALERT_RUNBOOK_URL: "https://runbooks.example.test/sagittarius/write-route-alerts",
       SAGITTARIUS_ALERT_SINK_NAME: "sagittarius-write-route-alerts",
       SAGITTARIUS_ALLOWED_ORIGINS: "https://app.example.test",
+      SAGITTARIUS_INTERNAL_API_BASE_URL: "http://sagittarius-api:5181",
       SAGITTARIUS_FEATURE_OWNER: "Aom Owner",
       SAGITTARIUS_ROLLBACK_OWNER: "Beam Owner",
       SAGITTARIUS_STAGING_BROWSER_EVIDENCE_URL: "https://ci.example.test/runs/123/browser",

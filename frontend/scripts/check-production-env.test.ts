@@ -16,6 +16,7 @@ function validProductionEnv(overrides: Record<string, string> = {}) {
     EMAIL_FROM: "noreply@prod-sagittarius.internal",
     RUST_LOG: "sagittarius_api=info,tower_http=info",
     SAGITTARIUS_ENV: "production",
+    SAGITTARIUS_INTERNAL_API_BASE_URL: "http://sagittarius-api:5181",
     SAGITTARIUS_STAGING_EVIDENCE_URL:
       "https://audit.prod-sagittarius.internal/preflight",
     SAGITTARIUS_STAGING_BROWSER_EVIDENCE_URL:

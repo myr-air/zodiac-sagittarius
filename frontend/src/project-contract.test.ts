@@ -208,11 +208,19 @@ describe("Sagittarius project scaffold", () => {
     expect(makefile).toContain("bun run test:e2e:auth-browser");
   });
 
-  it("documents the internal API rewrite used by production Docker", () => {
-    const nextConfig = readFileSync(resolve(frontendRoot, "next.config.ts"), "utf8");
+  it("documents the runtime internal API proxy used by production Docker", () => {
+    const routeFile = join(frontendRoot, "app/api/v1/[...path]/route.ts");
+    const routeHandler = readFileSync(routeFile, "utf8");
 
-    expect(nextConfig).toContain("SAGITTARIUS_INTERNAL_API_BASE_URL");
-    expect(nextConfig).toContain("/api/v1/:path*");
+    expect(existsSync(routeFile)).toBe(true);
+    expect(routeHandler).toContain("SAGITTARIUS_INTERNAL_API_BASE_URL");
+    expect(routeHandler).toContain("/api/v1/");
+    expect(routeHandler).toContain("GET");
+    expect(routeHandler).toContain("POST");
+    expect(routeHandler).toContain("PATCH");
+    expect(routeHandler).toContain("DELETE");
+    expect(routeHandler).toContain("OPTIONS");
+    expect(routeHandler).toContain("HEAD");
   });
 
   it("keeps production-readiness gates repeatable from the root Makefile", () => {
@@ -252,6 +260,7 @@ describe("Sagittarius project scaffold", () => {
     expect(productionEnvCheck).toContain("EMAIL_DELIVERY");
     expect(productionEnvCheck).toContain("PASSKEY_ALLOWED_ORIGINS");
     expect(productionEnvCheck).toContain("SMTP_PASSWORD");
+    expect(productionEnvCheck).toContain("SAGITTARIUS_INTERNAL_API_BASE_URL");
     expect(productionEnvCheck).toContain("SAGITTARIUS_STAGING_BROWSER_EVIDENCE_URL");
     expect(productionEnvCheck).toContain("SAGITTARIUS_STAGING_MIGRATION_EVIDENCE_URL");
     expect(productionEnvCheck).toContain("SAGITTARIUS_STAGING_ROLLBACK_EVIDENCE_URL");

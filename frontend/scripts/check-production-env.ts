@@ -15,6 +15,7 @@ export function checkProductionEnv(env: Env = process.env): string[] {
   const runtimeEnv = requiredEnv("SAGITTARIUS_ENV");
   const databaseUrl = requiredEnv("DATABASE_URL");
   const apiBaseUrl = requiredEnv("NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL");
+  const internalApiBaseUrl = requiredEnv("SAGITTARIUS_INTERNAL_API_BASE_URL");
   const allowedOrigins = requiredEnv("SAGITTARIUS_ALLOWED_ORIGINS");
   const passkeyAllowedOrigins = requiredEnv("PASSKEY_ALLOWED_ORIGINS");
   const emailDelivery = requiredEnv("EMAIL_DELIVERY");
@@ -40,6 +41,7 @@ export function checkProductionEnv(env: Env = process.env): string[] {
   checkRuntimeEnv(runtimeEnv);
   checkDatabaseUrl(databaseUrl);
   checkApiBaseUrl(apiBaseUrl);
+  checkInternalApiBaseUrl(internalApiBaseUrl);
   checkAllowedOrigins(
     "SAGITTARIUS_ALLOWED_ORIGINS",
     allowedOrigins,
@@ -173,6 +175,55 @@ function checkApiBaseUrl(value: string) {
     );
   }
   checkNoPlaceholderUrl("NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL", url);
+}
+
+function checkInternalApiBaseUrl(value: string) {
+  if (!value) return;
+  let url: URL;
+  try {
+    url = new URL(value);
+  } catch {
+    failures.push("SAGITTARIUS_INTERNAL_API_BASE_URL must be a valid URL");
+    return;
+  }
+
+  if (!["http:", "https:"].includes(url.protocol)) {
+    failures.push(
+      "SAGITTARIUS_INTERNAL_API_BASE_URL must use http:// or https://",
+    );
+  }
+  if (url.username || url.password) {
+    failures.push(
+      "SAGITTARIUS_INTERNAL_API_BASE_URL must not include username or password",
+    );
+  }
+  if (url.search || url.hash) {
+    failures.push(
+      "SAGITTARIUS_INTERNAL_API_BASE_URL must not include search params or hash",
+    );
+  }
+  if (url.pathname !== "/") {
+    if (url.pathname.replace(/\/$/, "") === "/api/v1") {
+      failures.push(
+        "SAGITTARIUS_INTERNAL_API_BASE_URL must point at the service root, not /api/v1",
+      );
+    } else {
+      failures.push(
+        "SAGITTARIUS_INTERNAL_API_BASE_URL must point at the service root without a path",
+      );
+    }
+  }
+  if (["localhost", "127.0.0.1", "::1"].includes(url.hostname)) {
+    failures.push(
+      "SAGITTARIUS_INTERNAL_API_BASE_URL must not point at localhost for production",
+    );
+  }
+  checkNoPlaceholderUrl("SAGITTARIUS_INTERNAL_API_BASE_URL", url);
+  if (url.hostname !== "sagittarius-api" || url.port !== "5181") {
+    failures.push(
+      "SAGITTARIUS_INTERNAL_API_BASE_URL must target sagittarius-api:5181 for production Docker",
+    );
+  }
 }
 
 function checkAllowedOrigins(name: string, value: string, apiValue: string) {
