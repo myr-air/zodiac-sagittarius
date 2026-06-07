@@ -15,5 +15,6 @@ These are intentionally outside the current production connectivity pivot.
 
 ## Still Future
 
-- Browser-driven staging sign-off for all write journeys in the deployed staging environment.
+- Browser-driven release verification/signoff for all write journeys in the
+  release verification environment.
 - Production alert routing from HTTP/write traces into the deployment observability stack.

@@ -262,7 +262,7 @@ passed locally with Docker Postgres on 2026-06-03.
 ### W4-TEST-004: Playwright/Cypress journey smoke
 - **Owner**: QA
 - **Estimate**: 6h
-- **Status**: Covered by `make production-readiness-local PSQL='docker exec -i sagittarius-test-postgres psql'` on 2026-06-03; local e2e covers real API itinerary create/reorder/delete, plan variant create/patch/publish, expense CRUD, stop-note CRUD, portal to-dos, and auth browser flow. Staging browser sign-off still required.
+- **Status**: Covered by `make production-readiness-local PSQL='docker exec -i sagittarius-test-postgres psql'` on 2026-06-03; local e2e covers real API itinerary create/reorder/delete, plan variant create/patch/publish, expense CRUD, stop-note CRUD, portal to-dos, and auth browser flow. Release browser signoff still required.
 
 ### W4-TEST-005: Security checklist
 - **Owner**: Security
@@ -285,27 +285,27 @@ passed locally with Docker Postgres on 2026-06-03.
 Wave status: production freeze checklist added, HTTP tracing enabled, repo-level
 local verification green, local real API e2e green, and a GitHub Actions
 production-readiness workflow runs the local gate with Postgres + Playwright and
-builds production container images. The same workflow also runs the staging
-sign-off and production environment safety scripts with complete production-like
-values so release gates cannot drift silently.
+builds production container images. The same workflow also runs the release
+signoff and production runtime environment safety scripts with split env scopes
+so release gates cannot drift silently.
 Backend and frontend Dockerfiles plus `make container-build` now provide a
 repeatable production image build path.
 The API exposes `/api/v1/health` for liveness and `/api/v1/readiness` for
 database-backed traffic readiness.
 Staging preflight enforces those probes when
 `SAGITTARIUS_REQUIRE_PREFLIGHT_API_CHECK=1` is set.
-Final ship remains gated on staging environment sign-off, rollback execution,
-and alert routing; `make staging-signoff-check` now enforces those external
-evidence fields, requires alert evidence, rejects placeholder owners or
-localhost staging URLs, requires browser/migration/rollback/no-P1-P2 evidence
-URLs, and `make production-env-check` blocks unsafe production
-runtime values before deploy, including missing production CORS/passkey
-allowlists, alert sink/runbook, and email delivery configuration.
+Final ship remains gated on release signoff, rollback execution, and alert
+routing; `make release-signoff-check` now enforces those external evidence
+fields, requires alert evidence, rejects placeholder owners or localhost
+signoff URLs, and requires browser/migration/rollback/no-P1-P2 evidence URLs.
+`make production-env-check` blocks unsafe production runtime values before
+deploy, including missing production CORS/passkey allowlists, internal API URL,
+and email delivery configuration.
 
 ### W5-PROD-001: Logging + alerting for writes
 - **Owner**: SRE
 - **Estimate**: 4h
-- **Status**: HTTP request/response tracing emits at `INFO`, `RUST_LOG` env filtering is honored by the API binary, local API trace smoke target is available, production CORS uses an origin allowlist, email delivery is required for account login, production env check requires `tower_http`/`sagittarius_api` logging plus alert sink/runbook config before deploy, and staging sign-off requires alert routing evidence.
+- **Status**: HTTP request/response tracing emits at `INFO`, `RUST_LOG` env filtering is honored by the API binary, local API trace smoke target is available, production CORS uses an origin allowlist, email delivery is required for account login, the production env check requires `tower_http`/`sagittarius_api` logging before deploy, and release signoff requires alert sink/runbook config plus alert routing evidence.
 
 ### W5-PROD-001A: Runtime liveness/readiness probes
 - **Owner**: SRE
@@ -318,8 +318,9 @@ allowlists, alert sink/runbook, and email delivery configuration.
 - **Owner**: Backend
 - **Estimate**: 2h
 - **Status**: Rollback plan documented; local SQL rollback smoke target added.
-  Staging sign-off and production env check require migration and rollback
-  evidence URLs. Execution still required on staging DB.
+  Release signoff requires migration and rollback evidence URLs, while the
+  production env check remains runtime-only. Execution still required in the
+  release verification environment.
 
 ### W5-PROD-003: Update production-ready docs
 - **Owner**: Docs
@@ -330,10 +331,10 @@ allowlists, alert sink/runbook, and email delivery configuration.
 - **Owner**: QA
 - **Estimate**: 3h
 - **Status**: Local unit/storybook/build checks and real API e2e passed; final
-  staging browser sweep still required and must be captured with
-  `staging-signoff-check`. Sign-off now requires browser evidence and issue
-  evidence URLs so the deployed-staging browser run and no-P1/P2 tracker query
-  are auditable.
+  release browser sweep still required and must be captured with
+  `release-signoff-check`. Signoff now requires browser evidence and issue
+  evidence URLs so the release-verification browser run and no-P1/P2 tracker
+  query are auditable.
 
 ## Wave 2 issue list (implemented in this branch)
 

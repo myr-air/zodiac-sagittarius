@@ -50,7 +50,7 @@ The seed includes:
 
 ## Verification Gates
 
-Run these before staging sign-off:
+Run these before release verification/signoff:
 
 ```bash
 make production-readiness-local PSQL='docker exec -i sagittarius-test-postgres psql'
@@ -58,7 +58,8 @@ SAGITTARIUS_REQUIRE_PREFLIGHT_API_CHECK=1 \
 make staging-preflight PSQL='docker exec -i sagittarius-test-postgres psql'
 ```
 
-Probe staging API runtime before browser sign-off:
+Probe the staging API runtime before browser signoff when a persistent staging
+runtime exists:
 
 - `GET /api/v1/health` returns `200 ok` without requiring auth.
 - `GET /api/v1/readiness` returns `200 {"status":"ready"}` only when the API can
@@ -80,37 +81,51 @@ Required journeys:
 - create/update/delete stop note
 - permission blocked path for viewer/traveler where applicable
 
-After staging verification, run the sign-off evidence check with the real
-environment, owner, and evidence URLs:
+## Release Verification And Signoff
 
-```bash
-SAGITTARIUS_STAGING_PREFLIGHT_PASSED=1 \
-SAGITTARIUS_STAGING_BROWSER_SIGNOFF=1 \
-SAGITTARIUS_STAGING_DB_MIGRATION_VERIFIED=1 \
-SAGITTARIUS_STAGING_ROLLBACK_VERIFIED=1 \
-SAGITTARIUS_STAGING_ALERT_ROUTING_VERIFIED=1 \
-SAGITTARIUS_STAGING_NO_P1_P2=1 \
-SAGITTARIUS_STAGING_ENVIRONMENT=staging \
-SAGITTARIUS_STAGING_API_BASE_URL=https://api.staging.example.test \
-SAGITTARIUS_STAGING_FRONTEND_URL=https://staging.example.test \
-SAGITTARIUS_STAGING_EVIDENCE_URL=https://ci.example.test/runs/123 \
-SAGITTARIUS_STAGING_BROWSER_EVIDENCE_URL=https://ci.example.test/runs/123/browser \
-SAGITTARIUS_STAGING_MIGRATION_EVIDENCE_URL=https://ci.example.test/runs/123/migration \
-SAGITTARIUS_STAGING_ROLLBACK_EVIDENCE_URL=https://ci.example.test/runs/123/rollback \
-SAGITTARIUS_STAGING_ALERT_EVIDENCE_URL=https://alerts.example.test/incidents/sagittarius-write-routes \
-SAGITTARIUS_STAGING_ISSUE_EVIDENCE_URL=https://issues.example.test/sagittarius?severity=P1,P2 \
-SAGITTARIUS_FEATURE_OWNER="Feature Owner" \
-SAGITTARIUS_ROLLBACK_OWNER="Rollback Owner" \
-make staging-signoff-check
+After release verification, write the real environment, owner, and evidence
+URLs into `.env.release-signoff`:
+
+The `example.test` values below show the required shape only. Replace every URL
+and owner with real evidence before running the check.
+
+```env
+SAGITTARIUS_SIGNOFF_PREFLIGHT_PASSED=1
+SAGITTARIUS_SIGNOFF_BROWSER_PASSED=1
+SAGITTARIUS_SIGNOFF_DB_MIGRATION_VERIFIED=1
+SAGITTARIUS_SIGNOFF_ROLLBACK_VERIFIED=1
+SAGITTARIUS_SIGNOFF_ALERT_ROUTING_VERIFIED=1
+SAGITTARIUS_SIGNOFF_NO_P1_P2=1
+SAGITTARIUS_SIGNOFF_ENVIRONMENT=staging
+SAGITTARIUS_SIGNOFF_API_BASE_URL=https://api.staging.example.test
+SAGITTARIUS_SIGNOFF_FRONTEND_URL=https://staging.example.test
+SAGITTARIUS_SIGNOFF_EVIDENCE_URL=https://ci.example.test/runs/123
+SAGITTARIUS_SIGNOFF_BROWSER_EVIDENCE_URL=https://ci.example.test/runs/123/browser
+SAGITTARIUS_SIGNOFF_MIGRATION_EVIDENCE_URL=https://ci.example.test/runs/123/migration
+SAGITTARIUS_SIGNOFF_ROLLBACK_EVIDENCE_URL=https://ci.example.test/runs/123/rollback
+SAGITTARIUS_SIGNOFF_ALERT_EVIDENCE_URL=https://alerts.example.test/incidents/sagittarius-write-routes
+SAGITTARIUS_SIGNOFF_ISSUE_EVIDENCE_URL=https://issues.example.test/sagittarius?severity=P1,P2
+SAGITTARIUS_FEATURE_OWNER="Feature Owner"
+SAGITTARIUS_ROLLBACK_OWNER="Rollback Owner"
 ```
 
-The sign-off check rejects localhost/non-HTTPS staging URLs, production
+Then run:
+
+```bash
+make release-signoff-check SIGNOFF_ENV_FILE=.env.release-signoff
+```
+
+If there is no persistent staging runtime, set
+`SAGITTARIUS_SIGNOFF_ENVIRONMENT=production-preflight` and link the real
+production-preflight evidence instead of inventing a `.env.staging` file.
+
+The signoff check rejects localhost/non-HTTPS signoff URLs, raw production
 environment names, and placeholder owners like `TBD`.
 It also requires a separate alert evidence URL so write-operation alert routing
 is auditable.
-Migration and rollback evidence URLs must point to the staging run, log, or
-change record that proves both paths were executed.
-Browser evidence must point to the deployed-staging browser run, and issue
+Migration and rollback evidence URLs must point to the run, log, or change
+record that proves both paths were executed.
+Browser evidence must point to the release-verification browser run, and issue
 evidence must point to the tracker query showing no open P1/P2 regressions.
 
 Perf smoke:

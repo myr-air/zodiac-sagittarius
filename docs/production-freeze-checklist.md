@@ -1,6 +1,9 @@
 # Production Freeze Checklist
 
-Use this checklist after Wave 4 real-system verification passes in staging.
+Use this checklist after Wave 4 real-system verification passes in the release
+verification environment. That may be a persistent staging runtime or named
+production-preflight evidence when the project is running local/dev plus
+production only.
 
 ## Preflight
 
@@ -19,7 +22,8 @@ make staging-preflight PSQL='docker exec -i sagittarius-test-postgres psql'
 - Confirm `/api/v1/readiness` returns `200 {"status":"ready"}` only after the
   API can query the database.
 - Confirm write requests emit `INFO` HTTP trace spans with status and latency.
-- Route 4xx/5xx write-operation logs to the staging alert sink before production.
+- Route 4xx/5xx write-operation logs to the release verification alert sink
+  before production.
 - Alert on repeated `401`, `403`, `409`, and `500` spikes for:
   - trip metadata routes
   - plan variant routes
@@ -38,9 +42,9 @@ make api-trace-smoke PSQL='docker exec -i sagittarius-test-postgres psql'
 ## Rollback
 
 Latest migration in this repo is currently
-`0018_auth_attempt_locks.sql`. Staging must prove the database can move from a
-fresh or current baseline through every migration up to the latest file before
-production opens.
+`0018_auth_attempt_locks.sql`. Release verification must prove the database can
+move from a fresh or current baseline through every migration up to the latest
+file before production opens.
 
 Rollback evidence must include:
 
@@ -101,15 +105,16 @@ For the self-hosted `zodiac` network deploy, follow
 the existing Cloudflare Tunnel at `joii.13thx.com` and
 `sagittarius.13thx.com`.
 
-The production compose stack creates only `sagittarius-api` and
-`sagittarius-frontend`. The shared database is provided by the existing
-`zodiac` network and is not created by this stack.
+The production compose stack creates only `sagittarius-server` and
+`sagittarius-web`; `sagittarius-server` exposes the `sagittarius-api` network
+alias. The shared database is provided by the existing `zodiac` network and is
+not created by this stack.
 
 ## Ship Gate
 
 Production can open only when:
 
-- staging DB migration is verified
+- release DB migration evidence is verified
 - shared production DB migration run evidence exists for
   `make container-production-migrate PRODUCTION_ENV_FILE=.env.production`, or
   one-time baseline evidence plus a normal migration check when adopting an
@@ -124,55 +129,49 @@ Production can open only when:
 - real browser e2e write journeys pass
 - no known P1/P2 issues remain
 - rollback owner and feature owner have signed off
-- staging sign-off evidence uses real HTTPS staging URLs and named owners, not
-  localhost or `TBD`
+- release signoff evidence uses real HTTPS URLs and named owners, not localhost
+  or `TBD`
 
-Enforce the external evidence gate before opening production:
+Use this order before opening production traffic:
 
-The `example.test` values below are placeholders for documentation only. The
-release scripts intentionally reject placeholder domains; replace every URL and
-owner with real staging evidence before running the checks.
-
-```bash
-SAGITTARIUS_STAGING_PREFLIGHT_PASSED=1 \
-SAGITTARIUS_STAGING_BROWSER_SIGNOFF=1 \
-SAGITTARIUS_STAGING_DB_MIGRATION_VERIFIED=1 \
-SAGITTARIUS_STAGING_ROLLBACK_VERIFIED=1 \
-SAGITTARIUS_STAGING_ALERT_ROUTING_VERIFIED=1 \
-SAGITTARIUS_STAGING_NO_P1_P2=1 \
-SAGITTARIUS_STAGING_ENVIRONMENT=staging \
-SAGITTARIUS_STAGING_API_BASE_URL=https://api.staging.example.test \
-SAGITTARIUS_STAGING_FRONTEND_URL=https://staging.example.test \
-SAGITTARIUS_STAGING_EVIDENCE_URL=https://ci.example.test/runs/123 \
-SAGITTARIUS_STAGING_BROWSER_EVIDENCE_URL=https://ci.example.test/runs/123/browser \
-SAGITTARIUS_STAGING_MIGRATION_EVIDENCE_URL=https://ci.example.test/runs/123/migration \
-SAGITTARIUS_STAGING_ROLLBACK_EVIDENCE_URL=https://ci.example.test/runs/123/rollback \
-SAGITTARIUS_STAGING_ALERT_EVIDENCE_URL=https://alerts.example.test/incidents/sagittarius-write-routes \
-SAGITTARIUS_STAGING_ISSUE_EVIDENCE_URL=https://issues.example.test/sagittarius?severity=P1,P2 \
-SAGITTARIUS_FEATURE_OWNER="Feature Owner" \
-SAGITTARIUS_ROLLBACK_OWNER="Rollback Owner" \
-make staging-signoff-check
-```
-
-Then create and verify the production env file before deploy. Copy
-`.env.production.example` to `.env.production`, edit every placeholder domain,
-credential, evidence URL, and owner to the actual deploy values, and keep these
-required Docker production values:
+1. Create and verify the production runtime env file. `.env.production`
+   contains production container/runtime values only; do not add release
+   evidence URLs, feature owners, rollback owners, or signoff flags to it.
 
 ```bash
 cp .env.production.example .env.production
 $EDITOR .env.production
-
-SAGITTARIUS_ENV=production
-SAGITTARIUS_INTERNAL_API_BASE_URL=http://sagittarius-api:5181
-
 make production-env-file-check PRODUCTION_ENV_FILE=.env.production
-make container-production-build PRODUCTION_ENV_FILE=.env.production
 ```
 
-After the production stack is running, verify the compose services with the same
-env file:
+2. Build, migrate, start, and check the production stack with the runtime env
+   file. Capture evidence for build output, migration or baseline migration,
+   readiness, browser write journeys, rollback, alert routing, and the no-P1/P2
+   tracker query.
 
 ```bash
+make container-production-build PRODUCTION_ENV_FILE=.env.production
+make container-production-migrate PRODUCTION_ENV_FILE=.env.production
+make container-production-up PRODUCTION_ENV_FILE=.env.production
 make container-production-check PRODUCTION_ENV_FILE=.env.production
+```
+
+3. Fill and verify the release signoff env file after that evidence exists.
+   `.env.release-signoff` contains release evidence, owner signoff, alert proof,
+   no-P1/P2 proof, and the signoff environment name.
+
+```bash
+cp .env.release-signoff.example .env.release-signoff
+$EDITOR .env.release-signoff
+make release-signoff-check SIGNOFF_ENV_FILE=.env.release-signoff
+```
+
+The deprecated `make staging-signoff-check` target remains as a compatibility
+alias for `make release-signoff-check`; new release work should use
+`release-signoff-check`.
+
+4. Run both gates before opening production traffic:
+
+```bash
+make production-deploy-gate PRODUCTION_ENV_FILE=.env.production SIGNOFF_ENV_FILE=.env.release-signoff
 ```
