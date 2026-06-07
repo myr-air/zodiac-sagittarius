@@ -1539,7 +1539,7 @@ fn normalized_passkey_allowed_entry(entry: &str) -> Option<String> {
     {
         let host = rest.split('/').next().unwrap_or("");
         let host = host.split(':').next().unwrap_or(host);
-        if host.is_empty() {
+        if host.is_empty() || host.contains('*') {
             return None;
         }
         return Some(host.to_string());
@@ -1884,6 +1884,20 @@ mod tests {
                 Some("foo.example.test".to_string())
             );
             assert_eq!(allowed_passkey_origin("https://example.test"), None);
+        });
+    }
+
+    #[test]
+    fn passkey_origin_rejects_url_global_wildcards() {
+        with_passkey_origin_allowlist("https://*", || {
+            assert_eq!(allowed_passkey_origin("https://evil.example.test"), None);
+        });
+    }
+
+    #[test]
+    fn passkey_origin_rejects_url_subdomain_wildcards() {
+        with_passkey_origin_allowlist("https://*.example.test", || {
+            assert_eq!(allowed_passkey_origin("https://foo.example.test"), None);
         });
     }
 
