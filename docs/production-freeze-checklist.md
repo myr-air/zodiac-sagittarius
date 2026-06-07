@@ -84,13 +84,27 @@ make db-rollback-stop-notes-test PSQL='docker exec -i sagittarius-test-postgres 
 - Reload after each write shows persisted backend state.
 - Keyboard and screen-reader labels remain present for member and stop-note controls.
 
+## Docker And Cloudflare
+
+For the self-hosted `zodiac` network deploy, follow
+`docs/production-docker-cloudflare.md`. The production app is published through
+the existing Cloudflare Tunnel at `joii.13thx.com` and
+`sagittarius.13thx.com`.
+
+The production compose stack creates only `sagittarius-api` and
+`sagittarius-frontend`. The shared database is provided by the existing
+`zodiac` network and is not created by this stack.
+
 ## Ship Gate
 
 Production can open only when:
 
 - staging DB migration is verified
 - backend integration and frontend targeted tests pass
-- production container images build successfully with `make container-build`
+- production container images build successfully with
+  `make container-production-build PRODUCTION_ENV_FILE=.env.production`
+- production compose checks pass with
+  `make container-production-check PRODUCTION_ENV_FILE=.env.production`
 - liveness/readiness probes are configured against `/api/v1/health` and
   `/api/v1/readiness`
 - real browser e2e write journeys pass
@@ -127,7 +141,9 @@ make staging-signoff-check
 ```
 
 Then run the production environment safety check with the actual production
-runtime values before deploy:
+runtime values before deploy. For Docker production, prefer
+`make production-env-file-check PRODUCTION_ENV_FILE=.env.production` so the
+check validates the same file used by compose:
 
 The production example also uses placeholder domains and credentials; the check
 must be run with the actual deploy environment values.

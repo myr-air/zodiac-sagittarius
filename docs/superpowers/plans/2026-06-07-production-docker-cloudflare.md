@@ -540,7 +540,7 @@ Add these near the top of `Makefile`:
 ```make
 PRODUCTION_COMPOSE_FILE ?= docker-compose.production.yml
 PRODUCTION_ENV_FILE ?= .env.production
-PRODUCTION_COMPOSE := docker compose --env-file $(PRODUCTION_ENV_FILE) -f $(PRODUCTION_COMPOSE_FILE)
+PRODUCTION_COMPOSE = set -a; . ./$(PRODUCTION_ENV_FILE); set +a; docker compose --env-file $(PRODUCTION_ENV_FILE) -f $(PRODUCTION_COMPOSE_FILE)
 ```
 
 - [ ] **Step 2: Add phony targets**
@@ -548,7 +548,7 @@ PRODUCTION_COMPOSE := docker compose --env-file $(PRODUCTION_ENV_FILE) -f $(PROD
 Extend the `.PHONY` line with:
 
 ```make
-container-production-build container-production-up container-production-down container-production-logs container-production-check
+production-env-file-check container-production-build container-production-up container-production-down container-production-logs container-production-check
 ```
 
 - [ ] **Step 3: Add target implementations**
@@ -556,6 +556,9 @@ container-production-build container-production-up container-production-down con
 Add these after `container-build`:
 
 ```make
+production-env-file-check:
+	set -a; . ./$(PRODUCTION_ENV_FILE); set +a; cd $(FRONTEND_DIR) && bun run test:production-env
+
 container-production-build:
 	$(PRODUCTION_COMPOSE) build
 
@@ -568,7 +571,7 @@ container-production-down:
 container-production-logs:
 	$(PRODUCTION_COMPOSE) logs -f --tail=200
 
-container-production-check: production-env-check
+container-production-check: production-env-file-check
 	$(PRODUCTION_COMPOSE) ps
 	$(PRODUCTION_COMPOSE) exec sagittarius-api curl -fsS http://localhost:5181/api/v1/readiness
 	$(PRODUCTION_COMPOSE) exec sagittarius-frontend bun --eval "fetch('http://localhost:5180').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))"
@@ -581,6 +584,7 @@ Run:
 ```bash
 make -n container-production-build PRODUCTION_ENV_FILE=.env.production.example
 make -n container-production-check PRODUCTION_ENV_FILE=.env.production.example
+make production-env-file-check PRODUCTION_ENV_FILE=.env.production.example
 ```
 
 Expected: Make prints Docker Compose commands without syntax errors.
@@ -618,7 +622,13 @@ Tunnel at:
 - `https://joii.13thx.com`
 - `https://sagittarius.13thx.com`
 
-`joii.13thx.com` is the primary user-facing URL.
+This compose file runs only app services:
+
+- `sagittarius-api`
+- `sagittarius-frontend`
+
+There is no managed DB service or database container in this compose file. The
+shared database is provided outside this stack on the `zodiac` network.
 
 ## Files
 
@@ -634,14 +644,19 @@ cp .env.production.example .env.production
 ```
 
 Edit `.env.production` and replace all passwords, SMTP settings, owner names,
-and evidence URLs with real production values.
+`DATABASE_URL`, and evidence URLs with real production values.
+
+`DATABASE_URL` must point to the shared database service on the `zodiac`
+network. The example uses `zodiac-postgres:5432`; replace that alias if the
+actual shared DB service differs.
 
 ## Build And Start
 
 ```bash
-make container-production-build
-make container-production-up
-docker compose --env-file .env.production -f docker-compose.production.yml ps
+make container-production-build PRODUCTION_ENV_FILE=.env.production
+make container-production-up PRODUCTION_ENV_FILE=.env.production
+make container-production-check PRODUCTION_ENV_FILE=.env.production
+set -a; . ./.env.production; set +a; docker compose --env-file .env.production -f docker-compose.production.yml config
 ```
 
 ## Cloudflare Tunnel Ingress
@@ -669,11 +684,17 @@ Run that command only if the tunnel container is not already connected.
 ## Production Checks
 
 ```bash
-make production-env-check
-make container-production-check
+make production-env-file-check PRODUCTION_ENV_FILE=.env.production
+make container-production-check PRODUCTION_ENV_FILE=.env.production
 ```
 
-The API readiness endpoint is:
+The public API health endpoint is:
+
+```text
+https://joii.13thx.com/api/v1/health
+```
+
+The internal API readiness endpoint is:
 
 ```text
 http://sagittarius-api:5181/api/v1/readiness
@@ -690,7 +711,7 @@ curl -fsS https://joii.13thx.com/api/v1/health
 ## Stop
 
 ```bash
-make container-production-down
+make container-production-down PRODUCTION_ENV_FILE=.env.production
 ```
 
 This stops the app containers. The shared database is owned outside this stack.

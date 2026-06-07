@@ -3,7 +3,7 @@ BACKEND_MANIFEST := backend/Cargo.toml
 
 PRODUCTION_COMPOSE_FILE ?= docker-compose.production.yml
 PRODUCTION_ENV_FILE ?= .env.production
-PRODUCTION_COMPOSE := docker compose --env-file $(PRODUCTION_ENV_FILE) -f $(PRODUCTION_COMPOSE_FILE)
+PRODUCTION_COMPOSE = set -a; . ./$(PRODUCTION_ENV_FILE); set +a; docker compose --env-file $(PRODUCTION_ENV_FILE) -f $(PRODUCTION_COMPOSE_FILE)
 
 DATABASE_URL ?= postgres://postgres:postgres@127.0.0.1:5432/sagittarius
 TEST_DATABASE_URL ?= postgres://postgres:postgres@127.0.0.1:5432/sagittarius_test
@@ -18,7 +18,7 @@ ROLLBACK_TEST_DATABASE_URL ?= postgres://postgres:postgres@127.0.0.1:5432/$(ROLL
 PSQL ?= psql
 PSQL_BIN := $(firstword $(PSQL))
 
-.PHONY: backend-dev frontend-dev backend-test frontend-build frontend-test frontend-storybook frontend-verify frontend-e2e-local frontend-e2e-auth-browser api-trace-smoke perf-smoke production-env-check staging-preflight staging-signoff-check verify production-readiness-local container-build container-production-build container-production-up container-production-down container-production-logs container-production-check db-init db-create db-migrate db-init-test db-migrate-test db-rollback-stop-notes-test db-ensure-psql
+.PHONY: backend-dev frontend-dev backend-test frontend-build frontend-test frontend-storybook frontend-verify frontend-e2e-local frontend-e2e-auth-browser api-trace-smoke perf-smoke production-env-check production-env-file-check staging-preflight staging-signoff-check verify production-readiness-local container-build container-production-build container-production-up container-production-down container-production-logs container-production-check db-init db-create db-migrate db-init-test db-migrate-test db-rollback-stop-notes-test db-ensure-psql
 
 backend-dev: db-init
 	DATABASE_URL="$(DATABASE_URL)" SAGITTARIUS_BIND_ADDR="$(SAGITTARIUS_BIND_ADDR)" \
@@ -68,6 +68,9 @@ perf-smoke: db-init-test
 production-env-check:
 	cd $(FRONTEND_DIR) && bun run test:production-env
 
+production-env-file-check:
+	set -a; . ./$(PRODUCTION_ENV_FILE); set +a; cd $(FRONTEND_DIR) && bun run test:production-env
+
 staging-preflight: db-ensure-psql
 	cd $(FRONTEND_DIR) && \
 	DATABASE_URL="$(TEST_DATABASE_URL)" \
@@ -99,7 +102,7 @@ container-production-down:
 container-production-logs:
 	$(PRODUCTION_COMPOSE) logs -f --tail=200
 
-container-production-check: production-env-check
+container-production-check: production-env-file-check
 	$(PRODUCTION_COMPOSE) ps
 	$(PRODUCTION_COMPOSE) exec sagittarius-api curl -fsS http://localhost:5181/api/v1/readiness
 	$(PRODUCTION_COMPOSE) exec sagittarius-frontend bun --eval "fetch('http://localhost:5180').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))"
