@@ -6,6 +6,10 @@ license.workspace = true
 publish.workspace = true
 rust-version.workspace = true
 
+[[bin]]
+name = "sagittarius-migrate"
+path = "src/bin/sagittarius_migrate.rs"
+
 [dependencies]
 argon2 = { version = "0.5", features = ["password-hash"] }
 async-trait = "0.1"

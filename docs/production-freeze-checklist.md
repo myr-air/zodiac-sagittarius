@@ -58,15 +58,19 @@ For the Docker/Cloudflare production path, the migration evidence should show:
 make container-production-migrate PRODUCTION_ENV_FILE=.env.production
 ```
 
-By default, this uses `docker run --rm -i --network zodiac postgres:17-alpine
-psql` so the migration client can resolve the shared Docker DB alias. To use an
-equivalent client command instead, override `PRODUCTION_PSQL`, for example:
+This command runs the Dockerized `sagittarius-migrate` runner. The runner applies
+pending SQL files, records them in `schema_migrations`, and rejects edited
+historical migrations by checksum mismatch.
+
+If the shared DB was already migrated before the ledger existed, capture
+evidence for the one-time baseline command instead:
 
 ```bash
-make container-production-migrate PRODUCTION_ENV_FILE=.env.production PRODUCTION_PSQL='docker exec -i <shared-db-container> psql'
+make container-production-migrate-baseline PRODUCTION_ENV_FILE=.env.production
 ```
 
-Use host `psql` only when the production database URL is reachable from the host.
+Only use the baseline command after confirming the shared DB is already current
+through the latest migration file. Do not use it for a fresh database.
 
 ## Security And Access
 
@@ -107,8 +111,9 @@ Production can open only when:
 
 - staging DB migration is verified
 - shared production DB migration run evidence exists for
-  `make container-production-migrate PRODUCTION_ENV_FILE=.env.production` or an
-  equivalent migration command
+  `make container-production-migrate PRODUCTION_ENV_FILE=.env.production`, or
+  one-time baseline evidence plus a normal migration check when adopting an
+  already-current shared DB
 - backend integration and frontend targeted tests pass
 - production container images build successfully with
   `make container-production-build PRODUCTION_ENV_FILE=.env.production`

@@ -5,7 +5,7 @@ COPY backend/Cargo.toml backend/Cargo.lock ./backend/
 COPY backend/crates ./backend/crates
 COPY backend/migrations ./backend/migrations
 WORKDIR /app/backend
-RUN cargo build --release --bin sagittarius-api
+RUN cargo build --release --bin sagittarius-api --bin sagittarius-migrate
 
 FROM debian:bookworm-slim AS runtime
 
@@ -18,6 +18,7 @@ USER sagittarius
 WORKDIR /app
 
 COPY --from=builder /app/backend/target/release/sagittarius-api /usr/local/bin/sagittarius-api
+COPY --from=builder /app/backend/target/release/sagittarius-migrate /usr/local/bin/sagittarius-migrate
 
 ENV SAGITTARIUS_BIND_ADDR=0.0.0.0:5181
 EXPOSE 5181
