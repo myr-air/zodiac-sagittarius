@@ -101,6 +101,10 @@ Production can open only when:
 
 Enforce the external evidence gate before opening production:
 
+The `example.test` values below are placeholders for documentation only. The
+release scripts intentionally reject placeholder domains; replace every URL and
+owner with real staging evidence before running the checks.
+
 ```bash
 SAGITTARIUS_STAGING_PREFLIGHT_PASSED=1 \
 SAGITTARIUS_STAGING_BROWSER_SIGNOFF=1 \
@@ -124,6 +128,9 @@ make staging-signoff-check
 
 Then run the production environment safety check with the actual production
 runtime values before deploy:
+
+The production example also uses placeholder domains and credentials; the check
+must be run with the actual deploy environment values.
 
 ```bash
 DATABASE_URL=postgres://user:pass@db.example.test:5432/sagittarius \

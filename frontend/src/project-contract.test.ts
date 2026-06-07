@@ -173,6 +173,7 @@ describe("Sagittarius project scaffold", () => {
     const stagingSignoff = readFileSync(join(frontendRoot, "scripts/check-staging-signoff.ts"), "utf8");
     expect(stagingSignoff).toContain("checkPublicHttpsUrl");
     expect(stagingSignoff).toContain("must not point at localhost");
+    expect(stagingSignoff).toContain("must not use placeholder domain");
     expect(stagingSignoff).toContain("must be a real owner, not TBD");
     expect(stagingSignoff).toContain("SAGITTARIUS_STAGING_BROWSER_EVIDENCE_URL");
     expect(stagingSignoff).toContain("SAGITTARIUS_STAGING_MIGRATION_EVIDENCE_URL");
@@ -234,6 +235,7 @@ describe("Sagittarius project scaffold", () => {
     expect(productionEnvCheck).toContain("SAGITTARIUS_STAGING_ISSUE_EVIDENCE_URL");
     expect(productionEnvCheck).toContain("SAGITTARIUS_ALERT_SINK_NAME");
     expect(productionEnvCheck).toContain("SAGITTARIUS_ALERT_RUNBOOK_URL");
+    expect(productionEnvCheck).toContain("must not use placeholder domain");
     const stagingPreflight = readFileSync(join(frontendRoot, "scripts/check-staging-preflight.ts"), "utf8");
     const productionBrowserQa = readFileSync(join(frontendRoot, "scripts/run-local-production-browser-qa.ts"), "utf8");
     expect(productionBrowserQa).toContain("appRoutes.tripItinerary(tripId)");

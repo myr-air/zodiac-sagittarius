@@ -80,6 +80,7 @@ function checkDatabaseUrl(value: string) {
   if (databaseName.includes("test") || databaseName.includes("staging") || lowerUrl.includes("sagittarius_test")) {
     failures.push("DATABASE_URL must not point at test/staging database for production");
   }
+  checkNoPlaceholderUrl("DATABASE_URL", url);
 }
 
 function checkApiBaseUrl(value: string) {
@@ -98,6 +99,7 @@ function checkApiBaseUrl(value: string) {
   if (["localhost", "127.0.0.1", "::1"].includes(url.hostname)) {
     failures.push("NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL must not point at localhost for production");
   }
+  checkNoPlaceholderUrl("NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL", url);
 }
 
 function checkAllowedOrigins(name: string, value: string, apiValue: string) {
@@ -122,6 +124,7 @@ function checkAllowedOrigins(name: string, value: string, apiValue: string) {
     if (["localhost", "127.0.0.1", "::1"].includes(url.hostname)) {
       failures.push(`${name} must not include localhost for production: ${origin}`);
     }
+    checkNoPlaceholderUrl(name, url);
   }
 
   if (apiValue && origins.includes(apiValue)) {
@@ -172,6 +175,7 @@ function checkEvidence(name: string, value: string) {
   try {
     const url = new URL(value);
     if (!["http:", "https:"].includes(url.protocol)) failures.push(`${name} must be an http(s) URL`);
+    checkNoPlaceholderUrl(name, url);
   } catch {
     failures.push(`${name} must be a valid evidence URL`);
   }
@@ -189,6 +193,19 @@ function checkOwner(name: string, value: string) {
   if (value.length < 3 || /^tbd$/i.test(value)) {
     failures.push(`${name} must be a real owner, not TBD`);
   }
+}
+
+function checkNoPlaceholderUrl(name: string, url: URL) {
+  if (isPlaceholderHostname(url.hostname)) {
+    failures.push(`${name} must not use placeholder domain: ${url.hostname}`);
+  }
+}
+
+function isPlaceholderHostname(hostname: string): boolean {
+  const normalized = hostname.toLowerCase();
+  return ["example.com", "example.net", "example.org", "example.test"].some(
+    (placeholder) => normalized === placeholder || normalized.endsWith(`.${placeholder}`),
+  );
 }
 
 export {};
