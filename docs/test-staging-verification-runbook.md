@@ -105,6 +105,8 @@ SAGITTARIUS_SIGNOFF_MIGRATION_EVIDENCE_URL=https://ci.example.test/runs/123/migr
 SAGITTARIUS_SIGNOFF_ROLLBACK_EVIDENCE_URL=https://ci.example.test/runs/123/rollback
 SAGITTARIUS_SIGNOFF_ALERT_EVIDENCE_URL=https://alerts.example.test/incidents/sagittarius-write-routes
 SAGITTARIUS_SIGNOFF_ISSUE_EVIDENCE_URL=https://issues.example.test/sagittarius?severity=P1,P2
+SAGITTARIUS_ALERT_SINK_NAME=sagittarius-write-route-alerts
+SAGITTARIUS_ALERT_RUNBOOK_URL=https://runbooks.example.test/sagittarius/write-route-alerts
 SAGITTARIUS_FEATURE_OWNER="Feature Owner"
 SAGITTARIUS_ROLLBACK_OWNER="Rollback Owner"
 ```

@@ -255,6 +255,7 @@ describe("Sagittarius project scaffold", () => {
     const releaseSignoffEnvExample = readFileSync(join(repoRoot, ".env.release-signoff.example"), "utf8");
     const gitignore = readFileSync(join(repoRoot, ".gitignore"), "utf8");
     const apiServiceBlock = composeServiceBlock(dockerCompose, "sagittarius-server");
+    const webServiceBlock = composeServiceBlock(dockerCompose, "sagittarius-web");
     const databaseHost = new URL(envFileValue(productionEnvExample, "DATABASE_URL")).hostname;
     const internalApiHost = new URL(
       envFileValue(productionEnvExample, "SAGITTARIUS_INTERNAL_API_BASE_URL"),
@@ -331,6 +332,10 @@ describe("Sagittarius project scaffold", () => {
     }
 
     expect(releaseSignoffEnvExample).not.toContain("SAGITTARIUS_STAGING_");
+    expect(apiServiceBlock).toContain("context: .");
+    expect(apiServiceBlock).toContain("dockerfile: backend/Dockerfile");
+    expect(webServiceBlock).toContain("context: .");
+    expect(webServiceBlock).toContain("dockerfile: frontend/Dockerfile");
     expect(internalApiHost).toBe("sagittarius-api");
     expect(apiServiceBlock).toMatch(/aliases:\n\s+- sagittarius-api/);
     expect(databaseHost).toBe("zodiac-postgres");
@@ -351,6 +356,7 @@ describe("Sagittarius project scaffold", () => {
     const apiMain = readFileSync(join(repoRoot, "backend/crates/sagittarius-api/src/main.rs"), "utf8");
     const productionEnvCheck = readFileSync(join(frontendRoot, "scripts/check-production-env.ts"), "utf8");
     const productionEnvExample = readFileSync(join(repoRoot, ".env.production.example"), "utf8");
+    const authBrowserE2e = readFileSync(join(frontendRoot, "scripts/run-local-real-browser-auth-e2e.ts"), "utf8");
     const workflow = readFileSync(join(repoRoot, ".github/workflows/production-readiness.yml"), "utf8");
 
     expect(existsSync(join(repoRoot, ".dockerignore"))).toBe(true);
@@ -432,6 +438,10 @@ describe("Sagittarius project scaffold", () => {
     expect(stagingPreflight).toContain("SAGITTARIUS_REQUIRE_PREFLIGHT_API_CHECK");
     expect(stagingPreflight).toContain("/api/v1/health");
     expect(stagingPreflight).toContain("/api/v1/readiness");
+    expect(authBrowserE2e).toContain('EMAIL_DELIVERY: "log"');
+    expect(authBrowserE2e).toContain('SAGITTARIUS_ENV: "development"');
+    expect(authBrowserE2e).toContain('SAGITTARIUS_ALLOW_LOCAL_CORS: "1"');
+    expect(authBrowserE2e).toContain("SAGITTARIUS_INTERNAL_API_BASE_URL: apiBaseUrl");
     expect(packageJson.scripts?.start).toContain("${HOSTNAME:-127.0.0.1}");
     expect(workflow).toContain("postgres:17-alpine");
     expect(workflow).toContain("bun install --frozen-lockfile");
@@ -440,6 +450,9 @@ describe("Sagittarius project scaffold", () => {
     expect(workflow).toContain("make production-readiness-local PSQL=psql");
     expect(workflow).toContain("name: Production container image build");
     expect(workflow).toContain("make container-build");
+    expect(workflow).toContain(
+      "make container-production-build PRODUCTION_ENV_FILE=.env.production.example",
+    );
     expect(workflow).toContain("name: Release safety script checks");
     expect(workflow).toContain("bun run test:release-signoff");
     expect(workflow).toContain("bun run test:production-env");

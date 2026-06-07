@@ -251,8 +251,11 @@ function checkEvidenceUrl(name: string, value: string) {
   if (!value) return;
   try {
     const url = new URL(value);
-    if (!["http:", "https:"].includes(url.protocol)) {
-      failures.push(`${name} must be an http(s) URL`);
+    if (url.protocol !== "https:") {
+      failures.push(`${name} must use https://`);
+    }
+    if (isLocalhostHostname(url.hostname)) {
+      failures.push(`${name} must not point at localhost`);
     }
     checkNoPlaceholderUrl(name, url);
   } catch {

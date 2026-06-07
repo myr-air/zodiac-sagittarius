@@ -83,6 +83,9 @@ jobs:
       - name: Build backend and frontend images
         run: make container-build
 
+      - name: Build production compose images
+        run: make container-production-build PRODUCTION_ENV_FILE=.env.production.example
+
   release-safety:
     name: Release safety script checks
     runs-on: ubuntu-latest

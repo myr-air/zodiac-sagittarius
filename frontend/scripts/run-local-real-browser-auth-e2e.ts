@@ -26,11 +26,15 @@ async function main() {
   await run("cargo", ["run", "--manifest-path", backendManifest, "--bin", "seed_e2e"], {
     DATABASE_URL: databaseUrl,
     SAGITTARIUS_ALLOW_E2E_DB_RESET: "1",
+    SAGITTARIUS_ENV: "development",
   });
 
   const api = spawnLogged("api", "cargo", ["run", "--manifest-path", backendManifest, "--bin", "sagittarius-api"], {
     DATABASE_URL: databaseUrl,
+    EMAIL_DELIVERY: "log",
+    SAGITTARIUS_ALLOW_LOCAL_CORS: "1",
     SAGITTARIUS_BIND_ADDR: apiBindAddress,
+    SAGITTARIUS_ENV: "development",
   });
   processes.push(api);
 
@@ -44,6 +48,7 @@ async function main() {
       HOSTNAME: frontendHost,
       NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL: apiBaseUrl,
       PORT: frontendPort,
+      SAGITTARIUS_INTERNAL_API_BASE_URL: apiBaseUrl,
     });
     processes.push(frontend);
     await waitForHealth(`${frontendBaseUrl}/access?mode=sign-in`, "frontend");
@@ -61,7 +66,7 @@ async function main() {
 }
 
 async function registerThroughBrowser(browser: Browser, input: { email: string; password: string; displayName: string }) {
-  const { page, assertNoConsoleErrors } = await newCheckedPage(browser);
+  const { page, assertNoConsoleErrors, debugPageState } = await newCheckedPage(browser);
 
   await page.goto(`${frontendBaseUrl}/access?mode=register`, { waitUntil: "networkidle" });
   await expectMainLabel(page, "Account register");
@@ -71,7 +76,11 @@ async function registerThroughBrowser(browser: Browser, input: { email: string; 
   await page.getByLabel("Password").fill(input.password);
   await page.getByRole("button", { name: /^Continue$/ }).click();
 
-  await page.getByLabel("Verification code *").waitFor({ state: "visible" });
+  try {
+    await page.getByLabel("Verification code *").waitFor({ state: "visible" });
+  } catch (caught) {
+    throw new Error(`Registration did not advance to email verification.\n${await debugPageState()}`, { cause: caught });
+  }
   const code = await waitForEmailCode(input.email);
   await page.getByLabel("Verification code *").fill(code);
   await page.getByRole("button", { name: /^Create my trip space$/ }).click();
@@ -167,23 +176,41 @@ async function assertNoHorizontalPageOverflow(page: Page) {
 async function newCheckedPage(
   browser: Browser,
   viewport: { width: number; height: number } = desktopViewport,
-): Promise<{ page: Page; assertNoConsoleErrors: () => void }> {
+): Promise<{ page: Page; assertNoConsoleErrors: () => void; debugPageState: () => Promise<string> }> {
   const context = await browser.newContext({
     viewport,
     reducedMotion: "no-preference",
   });
   const page = await context.newPage();
   const consoleErrors: string[] = [];
+  const apiEvents: string[] = [];
   page.on("console", (message) => {
     if (message.type() === "error") consoleErrors.push(message.text());
   });
   page.on("pageerror", (error) => consoleErrors.push(error.message));
+  page.on("requestfailed", (request) => {
+    if (!request.url().includes("/api/v1/")) return;
+    apiEvents.push(`request failed ${request.method()} ${request.url()} ${request.failure()?.errorText ?? ""}`.trim());
+  });
+  page.on("response", (response) => {
+    if (!response.url().includes("/api/v1/")) return;
+    apiEvents.push(`response ${response.status()} ${response.request().method()} ${response.url()}`);
+  });
   return {
     page,
     assertNoConsoleErrors: () => {
       if (consoleErrors.length) {
         throw new Error(`Browser console errors:\n${consoleErrors.join("\n")}`);
       }
+    },
+    debugPageState: async () => {
+      const visibleText = await page.locator("body").innerText({ timeout: 1_000 }).catch((error) => `Could not read body text: ${String(error)}`);
+      return [
+        `Page URL: ${page.url()}`,
+        `API events:\n${apiEvents.length ? apiEvents.join("\n") : "(none)"}`,
+        `Console errors:\n${consoleErrors.length ? consoleErrors.join("\n") : "(none)"}`,
+        `Visible text:\n${visibleText.replace(/\s+/g, " ").slice(0, 1_000)}`,
+      ].join("\n");
     },
   };
 }

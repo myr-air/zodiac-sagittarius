@@ -248,6 +248,18 @@ describe("release evidence gates", () => {
     expect(outputOf(result)).toContain("must not point at localhost");
   });
 
+  it("rejects localhost or non-HTTPS release signoff evidence URLs", () => {
+    const result = runGate("scripts/check-release-signoff.ts", {
+      ...validReleaseSignoffEnv,
+      SAGITTARIUS_SIGNOFF_EVIDENCE_URL: "http://localhost:123/run",
+    });
+
+    expect(result.status).not.toBe(0);
+    expect(outputOf(result)).toContain("SAGITTARIUS_SIGNOFF_EVIDENCE_URL");
+    expect(outputOf(result)).toContain("must use https://");
+    expect(outputOf(result)).toContain("must not point at localhost");
+  });
+
   it("rejects placeholder production runtime URLs", () => {
     const result = runGate("scripts/check-production-env.ts", {
       DATABASE_URL: "postgres://user:pass@db.example.test:5432/sagittarius",

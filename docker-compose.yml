@@ -11,8 +11,8 @@ services:
   sagittarius-server:
     container_name: sagittarius-server
     build:
-      context: ./backend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: backend/Dockerfile
     restart: unless-stopped
     mem_limit: 768m
     security_opt:
@@ -54,8 +54,8 @@ services:
   sagittarius-web:
     container_name: sagittarius-web
     build:
-      context: ./frontend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: frontend/Dockerfile
       args:
         NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL: ${NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL:?NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL is required}
         SAGITTARIUS_INTERNAL_API_BASE_URL: ${SAGITTARIUS_INTERNAL_API_BASE_URL:?SAGITTARIUS_INTERNAL_API_BASE_URL is required}
