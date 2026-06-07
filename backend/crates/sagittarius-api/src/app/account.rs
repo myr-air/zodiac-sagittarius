@@ -1888,6 +1888,16 @@ mod tests {
     }
 
     #[test]
+    fn passkey_origin_respects_plain_global_wildcard() {
+        with_passkey_origin_allowlist("*", || {
+            assert_eq!(
+                allowed_passkey_origin("https://evil.example.test"),
+                Some("evil.example.test".to_string())
+            );
+        });
+    }
+
+    #[test]
     fn passkey_origin_rejects_url_global_wildcards() {
         with_passkey_origin_allowlist("https://*", || {
             assert_eq!(allowed_passkey_origin("https://evil.example.test"), None);
