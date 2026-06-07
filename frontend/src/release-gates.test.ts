@@ -185,7 +185,12 @@ describe("release evidence gates", () => {
     );
 
     expect(result.status).toBe(0);
-    expect(outputOf(result)).toContain("release signoff ok");
+    const output = outputOf(result);
+    expect(output).toContain("- Alert sink: sagittarius-write-route-alerts");
+    expect(output).toContain(
+      "- Alert runbook: https://runbooks.13thx.com/sagittarius/write-route-alerts",
+    );
+    expect(output).toContain("release signoff ok");
   });
 
   it("accepts deprecated staging signoff aliases in the release signoff script", () => {
@@ -231,6 +236,17 @@ describe("release evidence gates", () => {
       expect(outputOf(result)).toContain("must not use placeholder domain");
     });
   }
+
+  it("rejects IPv6 localhost release signoff API URLs", () => {
+    const result = runGate("scripts/check-release-signoff.ts", {
+      ...validReleaseSignoffEnv,
+      SAGITTARIUS_SIGNOFF_API_BASE_URL: "https://[::1]",
+    });
+
+    expect(result.status).not.toBe(0);
+    expect(outputOf(result)).toContain("SAGITTARIUS_SIGNOFF_API_BASE_URL");
+    expect(outputOf(result)).toContain("must not point at localhost");
+  });
 
   it("rejects placeholder production runtime URLs", () => {
     const result = runGate("scripts/check-production-env.ts", {
