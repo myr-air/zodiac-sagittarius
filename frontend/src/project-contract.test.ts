@@ -247,6 +247,101 @@ describe("Sagittarius project scaffold", () => {
     expect(routeHandler).toContain("HEAD");
   });
 
+  it("splits runtime env examples from release signoff evidence", () => {
+    const makefile = readFileSync(join(repoRoot, "Makefile"), "utf8");
+    const dockerCompose = readFileSync(join(repoRoot, "docker-compose.yml"), "utf8");
+    const localEnvExample = readFileSync(join(repoRoot, ".env.local.example"), "utf8");
+    const productionEnvExample = readFileSync(join(repoRoot, ".env.production.example"), "utf8");
+    const releaseSignoffEnvExample = readFileSync(join(repoRoot, ".env.release-signoff.example"), "utf8");
+    const gitignore = readFileSync(join(repoRoot, ".gitignore"), "utf8");
+    const apiServiceBlock = composeServiceBlock(dockerCompose, "sagittarius-server");
+    const databaseHost = new URL(envFileValue(productionEnvExample, "DATABASE_URL")).hostname;
+    const internalApiHost = new URL(
+      envFileValue(productionEnvExample, "SAGITTARIUS_INTERNAL_API_BASE_URL"),
+    ).hostname;
+
+    expect(makefile).toContain("PRODUCTION_COMPOSE_FILE ?= docker-compose.yml");
+    expect(makefile).not.toContain("docker-compose.production.yml");
+    expect(makefile).toContain("SIGNOFF_ENV_FILE ?= .env.release-signoff");
+    expect(makefile).toContain(
+      'SIGNOFF_ENV_SOURCE := $(if $(filter /%,$(SIGNOFF_ENV_FILE)),$(SIGNOFF_ENV_FILE),./$(SIGNOFF_ENV_FILE))',
+    );
+    expect(makefile).toContain("release-signoff-check:");
+    expect(makefile).toContain("staging-signoff-check: release-signoff-check");
+    expect(makefile).toContain("production-deploy-gate: production-env-file-check release-signoff-check");
+    expect(makefile).toContain(
+      'set -a; . "$(SIGNOFF_ENV_SOURCE)"; set +a; cd $(FRONTEND_DIR) && bun run test:release-signoff',
+    );
+
+    for (const localDefault of [
+      "DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/sagittarius",
+      "TEST_DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/sagittarius_test",
+      "PGADMIN_URL=postgres://postgres:postgres@127.0.0.1:5432/postgres",
+      "SAGITTARIUS_BIND_ADDR=127.0.0.1:5181",
+      "SAGITTARIUS_ENV=development",
+      "SAGITTARIUS_SEED_SAMPLE_DATA=1",
+      "NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL=http://127.0.0.1:5181",
+      "RUST_LOG=info,tower_http=info,sagittarius_api=info",
+    ]) {
+      expect(localEnvExample).toContain(localDefault);
+    }
+
+    for (const runtimeName of [
+      "DATABASE_URL",
+      "SAGITTARIUS_ENV",
+      "SAGITTARIUS_SEED_SAMPLE_DATA",
+      "SAGITTARIUS_ALLOWED_ORIGINS",
+      "PASSKEY_ALLOWED_ORIGINS",
+      "NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL",
+      "SAGITTARIUS_INTERNAL_API_BASE_URL",
+      "EMAIL_DELIVERY",
+      "SMTP_HOST",
+      "SMTP_PORT",
+      "SMTP_USERNAME",
+      "SMTP_PASSWORD",
+      "EMAIL_FROM",
+      "SENDMAIL_COMMAND",
+      "RUST_LOG",
+    ]) {
+      expect(productionEnvExample).toContain(`${runtimeName}=`);
+    }
+
+    for (const signoffName of [
+      "SAGITTARIUS_SIGNOFF_ALERT_EVIDENCE_URL",
+      "SAGITTARIUS_SIGNOFF_ALERT_ROUTING_VERIFIED",
+      "SAGITTARIUS_SIGNOFF_API_BASE_URL",
+      "SAGITTARIUS_SIGNOFF_BROWSER_EVIDENCE_URL",
+      "SAGITTARIUS_SIGNOFF_BROWSER_PASSED",
+      "SAGITTARIUS_SIGNOFF_DB_MIGRATION_VERIFIED",
+      "SAGITTARIUS_SIGNOFF_ENVIRONMENT",
+      "SAGITTARIUS_SIGNOFF_EVIDENCE_URL",
+      "SAGITTARIUS_SIGNOFF_FRONTEND_URL",
+      "SAGITTARIUS_SIGNOFF_ISSUE_EVIDENCE_URL",
+      "SAGITTARIUS_SIGNOFF_MIGRATION_EVIDENCE_URL",
+      "SAGITTARIUS_SIGNOFF_NO_P1_P2",
+      "SAGITTARIUS_SIGNOFF_PREFLIGHT_PASSED",
+      "SAGITTARIUS_SIGNOFF_ROLLBACK_EVIDENCE_URL",
+      "SAGITTARIUS_SIGNOFF_ROLLBACK_VERIFIED",
+      "SAGITTARIUS_ALERT_RUNBOOK_URL",
+      "SAGITTARIUS_ALERT_SINK_NAME",
+      "SAGITTARIUS_FEATURE_OWNER",
+      "SAGITTARIUS_ROLLBACK_OWNER",
+    ]) {
+      expect(releaseSignoffEnvExample).toContain(`${signoffName}=`);
+    }
+
+    expect(releaseSignoffEnvExample).not.toContain("SAGITTARIUS_STAGING_");
+    expect(internalApiHost).toBe("sagittarius-api");
+    expect(apiServiceBlock).toMatch(/aliases:\n\s+- sagittarius-api/);
+    expect(databaseHost).toBe("zodiac-postgres");
+    expect(dockerCompose).toMatch(/zodiac:\n\s+external: true\n\s+name: zodiac/);
+    expect(apiServiceBlock).toContain("zodiac:");
+    expect(gitignore).toContain(".env");
+    expect(gitignore).toContain(".env.local");
+    expect(gitignore).toContain(".env.production");
+    expect(gitignore).toContain(".env.release-signoff");
+  });
+
   it("keeps production-readiness gates repeatable from the root Makefile", () => {
     const makefile = readFileSync(join(repoRoot, "Makefile"), "utf8");
     const packageJson = JSON.parse(readFileSync(join(frontendRoot, "package.json"), "utf8")) as {
@@ -366,6 +461,22 @@ describe("Sagittarius project scaffold", () => {
     expect(offenders).toEqual([]);
   });
 });
+
+function envFileValue(source: string, name: string): string {
+  const line = source.split(/\r?\n/).find((entry) => entry.startsWith(`${name}=`));
+  expect(line).toBeDefined();
+  return line!.slice(name.length + 1).replace(/^"|"$/g, "");
+}
+
+function composeServiceBlock(source: string, serviceName: string): string {
+  const marker = `  ${serviceName}:\n`;
+  const start = source.indexOf(marker);
+  expect(start).toBeGreaterThanOrEqual(0);
+
+  const body = source.slice(start + marker.length);
+  const nextServiceStart = body.search(/\n  [A-Za-z0-9_-]+:\n/);
+  return nextServiceStart === -1 ? body : body.slice(0, nextServiceStart);
+}
 
 function collectSourceFiles(root: string): string[] {
   if (!existsSync(root)) return [];

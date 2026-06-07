@@ -1,10 +1,12 @@
 FRONTEND_DIR := frontend
 BACKEND_MANIFEST := backend/Cargo.toml
 
-PRODUCTION_COMPOSE_FILE ?= docker-compose.production.yml
+PRODUCTION_COMPOSE_FILE ?= docker-compose.yml
 PRODUCTION_ENV_FILE ?= .env.production
 PRODUCTION_ENV_SOURCE := $(if $(filter /%,$(PRODUCTION_ENV_FILE)),$(PRODUCTION_ENV_FILE),./$(PRODUCTION_ENV_FILE))
 PRODUCTION_COMPOSE = set -a; . "$(PRODUCTION_ENV_SOURCE)"; set +a; docker compose --env-file "$(PRODUCTION_ENV_SOURCE)" -f "$(PRODUCTION_COMPOSE_FILE)"
+SIGNOFF_ENV_FILE ?= .env.release-signoff
+SIGNOFF_ENV_SOURCE := $(if $(filter /%,$(SIGNOFF_ENV_FILE)),$(SIGNOFF_ENV_FILE),./$(SIGNOFF_ENV_FILE))
 
 DATABASE_URL ?= postgres://postgres:postgres@127.0.0.1:5432/sagittarius
 TEST_DATABASE_URL ?= postgres://postgres:postgres@127.0.0.1:5432/sagittarius_test
@@ -19,7 +21,7 @@ ROLLBACK_TEST_DATABASE_URL ?= postgres://postgres:postgres@127.0.0.1:5432/$(ROLL
 PSQL ?= psql
 PSQL_BIN := $(firstword $(PSQL))
 
-.PHONY: backend-dev frontend-dev backend-test frontend-build frontend-test frontend-storybook frontend-verify frontend-e2e-local frontend-e2e-auth-browser api-trace-smoke perf-smoke production-env-check production-env-file-check staging-preflight staging-signoff-check verify production-readiness-local container-build container-production-build container-production-migrate container-production-migrate-baseline container-production-up container-production-down container-production-logs container-production-check db-init db-create db-migrate db-init-test db-migrate-test db-rollback-stop-notes-test db-ensure-psql
+.PHONY: backend-dev frontend-dev backend-test frontend-build frontend-test frontend-storybook frontend-verify frontend-e2e-local frontend-e2e-auth-browser api-trace-smoke perf-smoke production-env-check production-env-file-check staging-preflight release-signoff-check staging-signoff-check production-deploy-gate verify production-readiness-local container-build container-production-build container-production-migrate container-production-migrate-baseline container-production-up container-production-down container-production-logs container-production-check db-init db-create db-migrate db-init-test db-migrate-test db-rollback-stop-notes-test db-ensure-psql
 
 backend-dev: db-init
 	DATABASE_URL="$(DATABASE_URL)" SAGITTARIUS_BIND_ADDR="$(SAGITTARIUS_BIND_ADDR)" \
@@ -80,8 +82,12 @@ staging-preflight: db-ensure-psql
 	RUST_LOG="info,tower_http=info,sagittarius_api=info" \
 	bun run test:staging-preflight
 
-staging-signoff-check:
-	cd $(FRONTEND_DIR) && bun run test:staging-signoff
+release-signoff-check:
+	set -a; . "$(SIGNOFF_ENV_SOURCE)"; set +a; cd $(FRONTEND_DIR) && bun run test:release-signoff
+
+staging-signoff-check: release-signoff-check
+
+production-deploy-gate: production-env-file-check release-signoff-check
 
 verify: frontend-verify backend-test
 
@@ -95,10 +101,10 @@ container-production-build:
 	$(PRODUCTION_COMPOSE) build
 
 container-production-migrate: production-env-file-check
-	$(PRODUCTION_COMPOSE) run --rm --no-deps sagittarius-api sagittarius-migrate
+	$(PRODUCTION_COMPOSE) run --rm --no-deps sagittarius-server sagittarius-migrate
 
 container-production-migrate-baseline: production-env-file-check
-	$(PRODUCTION_COMPOSE) run --rm --no-deps -e SAGITTARIUS_MIGRATION_BASELINE=1 sagittarius-api sagittarius-migrate
+	$(PRODUCTION_COMPOSE) run --rm --no-deps -e SAGITTARIUS_MIGRATION_BASELINE=1 sagittarius-server sagittarius-migrate
 
 container-production-up:
 	$(PRODUCTION_COMPOSE) up -d
@@ -111,8 +117,8 @@ container-production-logs:
 
 container-production-check: production-env-file-check
 	$(PRODUCTION_COMPOSE) ps
-	$(PRODUCTION_COMPOSE) exec sagittarius-api curl -fsS http://localhost:5181/api/v1/readiness
-	$(PRODUCTION_COMPOSE) exec sagittarius-frontend bun --eval "fetch('http://localhost:5180').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))"
+	$(PRODUCTION_COMPOSE) exec sagittarius-server curl -fsS http://localhost:5181/api/v1/readiness
+	$(PRODUCTION_COMPOSE) exec sagittarius-web bun --eval "fetch('http://localhost:5180').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))"
 
 db-init: db-create
 	@if ! $(PSQL) "$(DATABASE_URL)" -tAc "SELECT 1 FROM information_schema.tables WHERE table_schema='public' AND table_name='trips'" | grep -q 1; then \

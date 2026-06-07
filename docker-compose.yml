@@ -2,6 +2,9 @@ networks:
   sagittarius-network:
     name: sagittarius-network
     # Internal LAN-isolation network for Sagittarius services. Keep isolated from shared LAN overlays.
+  zodiac:
+    external: true
+    name: zodiac
 
 services:
   # SAGITTARIUS API (Rust Axum)
@@ -15,7 +18,10 @@ services:
     security_opt:
       - no-new-privileges:true
     networks:
-      - sagittarius-network
+      sagittarius-network:
+        aliases:
+          - sagittarius-api
+      zodiac: {}
     healthcheck:
       test: ["CMD-SHELL", "curl -fsS http://localhost:5181/api/v1/readiness >/dev/null"]
       interval: 10s
