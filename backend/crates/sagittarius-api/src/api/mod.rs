@@ -209,11 +209,12 @@ fn api_v1() -> Router<AppState> {
 }
 
 fn cors_layer() -> CorsLayer {
+    let origin_policy = CorsOriginPolicy::from_env();
     CorsLayer::new()
-        .allow_origin(AllowOrigin::predicate(|origin, _request_parts| {
+        .allow_origin(AllowOrigin::predicate(move |origin, _request_parts| {
             origin
                 .to_str()
-                .is_ok_and(|value| allowed_cors_origin(value))
+                .is_ok_and(|value| origin_policy.allows(value))
         }))
         .allow_methods([
             Method::DELETE,
@@ -225,23 +226,62 @@ fn cors_layer() -> CorsLayer {
         .allow_headers([AUTHORIZATION, CONTENT_TYPE])
 }
 
-fn allowed_cors_origin(origin: &str) -> bool {
-    if local_development_origin(origin) {
-        return true;
+#[derive(Clone, Debug)]
+struct CorsOriginPolicy {
+    allowed_origins: Vec<String>,
+    allow_local_development_origins: bool,
+}
+
+impl CorsOriginPolicy {
+    fn from_env() -> Self {
+        let runtime_env = std::env::var("SAGITTARIUS_ENV").unwrap_or_default();
+        let allow_local_override = std::env::var("SAGITTARIUS_ALLOW_LOCAL_CORS").ok();
+        let allowed_origins = std::env::var("SAGITTARIUS_ALLOWED_ORIGINS").ok();
+        Self::from_parts(
+            &runtime_env,
+            allow_local_override.as_deref(),
+            allowed_origins.as_deref(),
+        )
     }
 
-    std::env::var("SAGITTARIUS_ALLOWED_ORIGINS")
-        .ok()
-        .into_iter()
-        .flat_map(|value| {
-            value
-                .split(',')
-                .map(str::trim)
-                .filter(|candidate| !candidate.is_empty())
-                .map(str::to_owned)
-                .collect::<Vec<_>>()
-        })
-        .any(|allowed| allowed == origin)
+    fn from_parts(
+        runtime_env: &str,
+        allow_local_override: Option<&str>,
+        allowed_origins: Option<&str>,
+    ) -> Self {
+        let runtime_env = runtime_env.trim().to_ascii_lowercase();
+        let allow_local_development_origins = parse_cors_bool(allow_local_override).unwrap_or_else(
+            || !matches!(runtime_env.as_str(), "production" | "staging"),
+        );
+        let allowed_origins = allowed_origins
+            .unwrap_or_default()
+            .split(',')
+            .map(str::trim)
+            .filter(|candidate| !candidate.is_empty())
+            .map(str::to_owned)
+            .collect();
+
+        Self {
+            allowed_origins,
+            allow_local_development_origins,
+        }
+    }
+
+    fn allows(&self, origin: &str) -> bool {
+        if self.allow_local_development_origins && local_development_origin(origin) {
+            return true;
+        }
+
+        self.allowed_origins.iter().any(|allowed| allowed == origin)
+    }
+}
+
+fn parse_cors_bool(value: Option<&str>) -> Option<bool> {
+    match value.map(str::trim).map(str::to_ascii_lowercase).as_deref() {
+        Some("1" | "true" | "yes" | "on") => Some(true),
+        Some("0" | "false" | "no" | "off") => Some(false),
+        _ => None,
+    }
 }
 
 fn local_development_origin(origin: &str) -> bool {
@@ -255,4 +295,32 @@ fn local_development_origin(origin: &str) -> bool {
         url.host(),
         Some("127.0.0.1") | Some("localhost") | Some("0.0.0.0")
     )
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn production_cors_policy_rejects_localhost_and_allows_configured_origins() {
+        let policy = CorsOriginPolicy::from_parts(
+            "production",
+            None,
+            Some("https://app.sagittarius.example, https://admin.sagittarius.example"),
+        );
+
+        assert!(!policy.allows("http://127.0.0.1:5180"));
+        assert!(!policy.allows("http://localhost:5180"));
+        assert!(policy.allows("https://app.sagittarius.example"));
+        assert!(policy.allows("https://admin.sagittarius.example"));
+    }
+
+    #[test]
+    fn development_cors_policy_keeps_localhost_available() {
+        let policy = CorsOriginPolicy::from_parts("development", None, None);
+
+        assert!(policy.allows("http://127.0.0.1:5180"));
+        assert!(policy.allows("http://localhost:5190"));
+        assert!(!policy.allows("https://evil.example.test"));
+    }
 }

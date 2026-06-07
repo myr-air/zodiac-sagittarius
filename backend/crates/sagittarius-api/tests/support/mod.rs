@@ -16,7 +16,7 @@ pub const STOP_NOTE_ID: &str = "018f4e83-5410-7d8b-8f25-fd52c5e7bd30";
 pub const EXPENSE_ID: &str = "018f4e86-1111-7000-8000-000000000001";
 
 pub fn app(pool: PgPool) -> Router {
-    sagittarius_api::api::router(sagittarius_api::app::AppState::with_pool(pool))
+    sagittarius_api::api::router(sagittarius_api::app::AppState::with_pool_for_tests(pool))
 }
 
 pub async fn seed_trip(pool: &PgPool) {

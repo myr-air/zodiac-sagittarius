@@ -15,8 +15,13 @@ pub async fn list_daily_briefings(
     Path(trip_id): Path<Uuid>,
     BearerToken(session_token): BearerToken,
 ) -> Result<Json<Vec<TripDailyBriefing>>, ServiceError> {
-    let briefings =
-        app::daily_briefings::list_daily_briefings(&state.pool, trip_id, &session_token).await?;
+    let briefings = app::daily_briefings::list_daily_briefings(
+        &state.pool,
+        trip_id,
+        &session_token,
+        state.daily_briefing_weather_fetch,
+    )
+    .await?;
 
     Ok(Json(briefings))
 }

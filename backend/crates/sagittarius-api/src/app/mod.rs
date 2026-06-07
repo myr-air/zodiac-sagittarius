@@ -22,6 +22,7 @@ pub struct AppState {
     pub pool: PgPool,
     pub realtime: RealtimeHub,
     pub email_delivery: email::EmailDelivery,
+    pub daily_briefing_weather_fetch: bool,
 }
 
 impl AppState {
@@ -30,6 +31,14 @@ impl AppState {
             pool,
             realtime: RealtimeHub::default(),
             email_delivery: email::EmailDelivery::from_env(),
+            daily_briefing_weather_fetch: daily_briefings::weather_fetch_enabled_from_env(),
+        }
+    }
+
+    pub fn with_pool_for_tests(pool: PgPool) -> Self {
+        Self {
+            daily_briefing_weather_fetch: false,
+            ..Self::with_pool(pool)
         }
     }
 
@@ -41,6 +50,6 @@ impl AppState {
             .connect_lazy(&database_url)
             .expect("test database URL should be valid");
 
-        Self::with_pool(pool)
+        Self::with_pool_for_tests(pool)
     }
 }

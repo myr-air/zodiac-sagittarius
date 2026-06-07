@@ -133,6 +133,7 @@ async fn websocket_route_replays_stored_events_and_streams_live_events(pool: sql
         pool: pool.clone(),
         email_delivery: EmailDelivery::Disabled,
         realtime: hub.clone(),
+        daily_briefing_weather_fetch: false,
     });
     let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
     let address = listener.local_addr().unwrap();
@@ -212,6 +213,7 @@ async fn websocket_route_accepts_bearer_header_session(pool: sqlx::PgPool) {
         pool,
         email_delivery: EmailDelivery::Disabled,
         realtime: hub.clone(),
+        daily_briefing_weather_fetch: false,
     });
     let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
     let address = listener.local_addr().unwrap();
@@ -267,6 +269,7 @@ async fn websocket_route_closes_when_live_receiver_lags(pool: sqlx::PgPool) {
         pool,
         email_delivery: EmailDelivery::Disabled,
         realtime: hub.clone(),
+        daily_briefing_weather_fetch: false,
     });
     let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
     let address = listener.local_addr().unwrap();

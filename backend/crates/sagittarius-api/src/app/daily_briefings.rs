@@ -1,4 +1,4 @@
-use std::collections::BTreeMap;
+use std::{collections::BTreeMap, env};
 
 use serde::Deserialize;
 use time::{Date, Duration, OffsetDateTime};
@@ -21,6 +21,7 @@ pub async fn list_daily_briefings(
     pool: &PgPool,
     trip_id: Uuid,
     session_token: &str,
+    weather_fetch_enabled: bool,
 ) -> Result<Vec<TripDailyBriefing>, ServiceError> {
     let token_hash = auth::hash_session_token(session_token)?;
     let session = db::queries::find_active_member_session(pool, trip_id, &token_hash)
@@ -34,7 +35,7 @@ pub async fn list_daily_briefings(
         .await?
         .ok_or(ServiceError::NotFound)?;
     let itinerary_items = db::queries::list_itinerary_items(pool, session.trip_id).await?;
-    ensure_briefing_shells(pool, &trip, &itinerary_items).await?;
+    ensure_briefing_shells(pool, &trip, &itinerary_items, weather_fetch_enabled).await?;
 
     let window = briefing_window(trip.start_date, trip.end_date);
     let records = db::queries::list_trip_daily_briefings(pool, session.trip_id).await?;
@@ -108,6 +109,7 @@ async fn ensure_briefing_shells(
     pool: &PgPool,
     trip: &TripAuthRecord,
     itinerary_items: &[ItineraryItemRecord],
+    weather_fetch_enabled: bool,
 ) -> Result<(), ServiceError> {
     let by_date = first_item_by_date(itinerary_items);
     let destination_coordinates =
@@ -133,6 +135,10 @@ async fn ensure_briefing_shells(
         shells.push(shell);
     }
     tx.commit().await?;
+
+    if !weather_fetch_enabled {
+        return Ok(());
+    }
 
     for shell in shells {
         if shell.weather.is_some() {
@@ -168,6 +174,22 @@ async fn ensure_briefing_shells(
     }
 
     Ok(())
+}
+
+pub(crate) fn weather_fetch_enabled_from_env() -> bool {
+    weather_fetch_enabled_from_value(
+        env::var("SAGITTARIUS_DAILY_BRIEFING_WEATHER_FETCH")
+            .ok()
+            .as_deref(),
+    )
+}
+
+fn weather_fetch_enabled_from_value(value: Option<&str>) -> bool {
+    match value.map(str::trim).map(str::to_ascii_lowercase).as_deref() {
+        Some("0" | "false" | "no" | "off") => false,
+        Some("1" | "true" | "yes" | "on") => true,
+        _ => true,
+    }
 }
 
 fn first_item_by_date(items: &[ItineraryItemRecord]) -> BTreeMap<Date, &ItineraryItemRecord> {
@@ -718,6 +740,16 @@ mod tests {
         assert_eq!(date_item.place, "Geo stop");
         assert_eq!(date_item.latitude, Some(13.7));
         assert_eq!(date_item.longitude, Some(100.5));
+    }
+
+    #[test]
+    fn weather_fetch_env_gate_defaults_on_and_accepts_false_values() {
+        assert!(weather_fetch_enabled_from_value(None));
+        assert!(weather_fetch_enabled_from_value(Some("true")));
+        assert!(weather_fetch_enabled_from_value(Some("1")));
+        assert!(!weather_fetch_enabled_from_value(Some("false")));
+        assert!(!weather_fetch_enabled_from_value(Some("0")));
+        assert!(!weather_fetch_enabled_from_value(Some("off")));
     }
 
     #[test]

@@ -46,6 +46,7 @@ export const ReadOnly: Story = {
 };
 
 export const Empty: Story = {
+  parameters: { locale: "th" },
   args: {
     members: [],
     currentMemberId: "member-aom",

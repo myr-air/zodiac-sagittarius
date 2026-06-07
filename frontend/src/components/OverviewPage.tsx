@@ -1063,7 +1063,7 @@ function HighlightBoard({ items, startDate, locale, emptyMessage, title, subtitl
         </div>
       </div>
       {items.length ? (
-        <ul className={overviewHighlightListClassName}>
+        <ul aria-label={title} className={overviewHighlightListClassName} tabIndex={0}>
           {items.map((item, index) => {
             const imgUrl = getHighlightImage(item);
             return (
