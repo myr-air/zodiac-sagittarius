@@ -59,6 +59,30 @@ describe("release evidence gates", () => {
     expect(outputOf(result)).toContain("production env check ok");
   });
 
+  it("accepts the approved sagittarius same-origin production deployment", () => {
+    const result = runGate("scripts/check-production-env.ts", {
+      ...validProductionEnv,
+      NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL: "https://sagittarius.13thx.com",
+      SAGITTARIUS_ALLOWED_ORIGINS: "https://sagittarius.13thx.com",
+    });
+
+    expect(result.status).toBe(0);
+    expect(outputOf(result)).toContain("production env check ok");
+  });
+
+  it("rejects approved same-origin production domains with explicit ports", () => {
+    const result = runGate("scripts/check-production-env.ts", {
+      ...validProductionEnv,
+      NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL: "https://joii.13thx.com:444",
+      SAGITTARIUS_ALLOWED_ORIGINS: "https://joii.13thx.com:444",
+    });
+
+    expect(result.status).not.toBe(0);
+    expect(outputOf(result)).toContain(
+      "SAGITTARIUS_ALLOWED_ORIGINS should contain frontend origins, not the API base URL",
+    );
+  });
+
   it("rejects accidental same-origin API base URLs outside the approved production domains", () => {
     const result = runGate("scripts/check-production-env.ts", {
       ...validProductionEnv,

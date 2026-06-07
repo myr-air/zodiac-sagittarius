@@ -226,6 +226,7 @@ function isApprovedSameOriginApi(value: string): boolean {
     return (
       url.protocol === "https:" &&
       url.pathname === "/" &&
+      !url.port &&
       !url.search &&
       !url.hash &&
       approvedSameOriginApiHosts.has(url.hostname)
