@@ -1507,15 +1507,14 @@ fn allowed_passkey_origin(origin: &str) -> Option<String> {
         .map(|value| {
             value
                 .split(',')
-                .map(|entry| entry.trim().to_ascii_lowercase())
-                .filter(|entry| !entry.is_empty())
+                .filter_map(normalized_passkey_allowed_entry)
                 .collect::<Vec<_>>()
         })
         .unwrap_or_else(|_| {
             PASSKEY_ALLOWED_ORIGINS
                 .iter()
                 .copied()
-                .map(ToString::to_string)
+                .filter_map(normalized_passkey_allowed_entry)
                 .collect::<Vec<_>>()
         });
 
@@ -1527,6 +1526,35 @@ fn allowed_passkey_origin(origin: &str) -> Option<String> {
     });
 
     (wildcard_allowed || subdomain_allowed).then_some(host)
+}
+
+fn normalized_passkey_allowed_entry(entry: &str) -> Option<String> {
+    let entry = entry.trim().to_ascii_lowercase();
+    if entry.is_empty() {
+        return None;
+    }
+    if let Some(rest) = entry
+        .strip_prefix("http://")
+        .or_else(|| entry.strip_prefix("https://"))
+    {
+        let host = rest.split('/').next().unwrap_or("");
+        let host = host.split(':').next().unwrap_or(host);
+        if host.is_empty() {
+            return None;
+        }
+        return Some(host.to_string());
+    }
+    if let Some(suffix) = entry.strip_prefix("*.") {
+        if suffix.is_empty() || suffix.contains("://") {
+            return None;
+        }
+        return Some(entry);
+    }
+    if entry.contains("://") {
+        return None;
+    }
+
+    Some(entry)
 }
 
 fn verify_passkey_signature(
@@ -1860,11 +1888,33 @@ mod tests {
     }
 
     #[test]
+    fn passkey_origin_accepts_allowed_origin_urls() {
+        with_passkey_origin_allowlist(
+            "https://joii.13thx.com,https://sagittarius.13thx.com",
+            || {
+                assert_eq!(
+                    allowed_passkey_origin("https://joii.13thx.com"),
+                    Some("joii.13thx.com".to_string())
+                );
+                assert_eq!(
+                    allowed_passkey_origin("https://sagittarius.13thx.com/account"),
+                    Some("sagittarius.13thx.com".to_string())
+                );
+                assert_eq!(allowed_passkey_origin("https://evil.13thx.com"), None);
+            },
+        );
+    }
+
+    #[test]
     fn passkey_origin_rejects_invalid_or_empty_values() {
         with_passkey_origin_allowlist("", || {
             assert_eq!(allowed_passkey_origin("https://localhost:5180"), None);
             assert_eq!(allowed_passkey_origin("ftp://127.0.0.1:5180"), None);
             assert_eq!(allowed_passkey_origin("localhost"), None);
+        });
+        with_passkey_origin_allowlist("https://,://,*. ", || {
+            assert_eq!(allowed_passkey_origin("https://localhost:5180"), None);
+            assert_eq!(allowed_passkey_origin("https://example.com"), None);
         });
     }
 
