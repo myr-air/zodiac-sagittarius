@@ -13,7 +13,7 @@ const baseEnv = {
 };
 
 const validProductionEnv = {
-  DATABASE_URL: "postgres://sagittarius:change-me-prod-password@postgres.13thx.com:5432/sagittarius",
+  DATABASE_URL: "postgres://sagittarius:secret-prod-password@postgres.13thx.com:5432/sagittarius",
   EMAIL_DELIVERY: "smtp",
   EMAIL_FROM: "Sagittarius <no-reply@13thx.com>",
   NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL: "https://joii.13thx.com",
@@ -46,7 +46,7 @@ const validProductionEnv = {
   SAGITTARIUS_STAGING_ROLLBACK_VERIFIED: "1",
   SAGITTARIUS_STAGING_ALERT_ROUTING_VERIFIED: "1",
   SMTP_HOST: "smtp.13thx.com",
-  SMTP_PASSWORD: "change-me-smtp-password",
+  SMTP_PASSWORD: "secret-smtp-password",
   SMTP_PORT: "587",
   SMTP_USERNAME: "sagittarius-smtp",
 };
