@@ -118,6 +118,16 @@ describe("release evidence gates", () => {
     expect(outputOf(result)).toContain("production env check ok");
   });
 
+  it("accepts production runtime env with ambient release signoff fields outside file mode", () => {
+    const result = runGate("scripts/check-production-env.ts", {
+      ...validProductionRuntimeEnv,
+      ...validReleaseSignoffEnv,
+    });
+
+    expect(result.status).toBe(0);
+    expect(outputOf(result)).toContain("production env check ok");
+  });
+
   it("rejects approved same-origin production domains with explicit ports", () => {
     const result = runGate("scripts/check-production-env.ts", {
       ...validProductionRuntimeEnv,
@@ -246,6 +256,7 @@ describe("release evidence gates", () => {
     const result = runGate("scripts/check-production-env.ts", {
       ...validProductionRuntimeEnv,
       ...validReleaseSignoffEnv,
+      SAGITTARIUS_PRODUCTION_ENV_FILE_CHECK: "1",
     });
 
     expect(result.status).not.toBe(0);
@@ -257,6 +268,7 @@ describe("release evidence gates", () => {
     const result = runGate("scripts/check-production-env.ts", {
       ...validProductionRuntimeEnv,
       ...toLegacyStagingSignoffEnv(validReleaseSignoffEnv),
+      SAGITTARIUS_PRODUCTION_ENV_FILE_CHECK: "1",
     });
 
     expect(result.status).not.toBe(0);

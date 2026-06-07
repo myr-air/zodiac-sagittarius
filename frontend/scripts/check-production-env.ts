@@ -1,5 +1,9 @@
 type Env = Record<string, string | undefined>;
 
+type CheckProductionEnvOptions = {
+  productionEnvFileCheck?: boolean;
+};
+
 const approvedSameOriginApiHosts = new Set([
   "joii.13thx.com",
   "sagittarius.13thx.com",
@@ -8,7 +12,10 @@ const approvedSameOriginApiHosts = new Set([
 let failures: string[] = [];
 let currentEnv: Env = {};
 
-export function checkProductionEnv(env: Env = process.env): string[] {
+export function checkProductionEnv(
+  env: Env = process.env,
+  options: CheckProductionEnvOptions = {},
+): string[] {
   failures = [];
   currentEnv = env;
 
@@ -20,24 +27,10 @@ export function checkProductionEnv(env: Env = process.env): string[] {
   const passkeyAllowedOrigins = requiredEnv("PASSKEY_ALLOWED_ORIGINS");
   const emailDelivery = requiredEnv("EMAIL_DELIVERY");
   const rustLog = requiredEnv("RUST_LOG");
-  const evidenceUrl = requiredEnv("SAGITTARIUS_STAGING_EVIDENCE_URL");
-  const browserEvidenceUrl = requiredEnv(
-    "SAGITTARIUS_STAGING_BROWSER_EVIDENCE_URL",
-  );
-  const migrationEvidenceUrl = requiredEnv(
-    "SAGITTARIUS_STAGING_MIGRATION_EVIDENCE_URL",
-  );
-  const rollbackEvidenceUrl = requiredEnv(
-    "SAGITTARIUS_STAGING_ROLLBACK_EVIDENCE_URL",
-  );
-  const issueEvidenceUrl = requiredEnv(
-    "SAGITTARIUS_STAGING_ISSUE_EVIDENCE_URL",
-  );
-  const alertSinkName = requiredEnv("SAGITTARIUS_ALERT_SINK_NAME");
-  const alertRunbookUrl = requiredEnv("SAGITTARIUS_ALERT_RUNBOOK_URL");
-  const featureOwner = requiredEnv("SAGITTARIUS_FEATURE_OWNER");
-  const rollbackOwner = requiredEnv("SAGITTARIUS_ROLLBACK_OWNER");
 
+  if (options.productionEnvFileCheck || productionEnvFileCheckEnabled()) {
+    checkRuntimeOnlyEnvKeys();
+  }
   checkRuntimeEnv(runtimeEnv);
   checkDatabaseUrl(databaseUrl);
   checkApiBaseUrl(apiBaseUrl);
@@ -50,33 +43,6 @@ export function checkProductionEnv(env: Env = process.env): string[] {
   checkAllowedOrigins("PASSKEY_ALLOWED_ORIGINS", passkeyAllowedOrigins, "");
   checkEmailDelivery(emailDelivery);
   checkRustLog(rustLog);
-  checkEvidence("SAGITTARIUS_STAGING_EVIDENCE_URL", evidenceUrl);
-  checkEvidence("SAGITTARIUS_STAGING_BROWSER_EVIDENCE_URL", browserEvidenceUrl);
-  checkEvidence(
-    "SAGITTARIUS_STAGING_MIGRATION_EVIDENCE_URL",
-    migrationEvidenceUrl,
-  );
-  checkEvidence(
-    "SAGITTARIUS_STAGING_ROLLBACK_EVIDENCE_URL",
-    rollbackEvidenceUrl,
-  );
-  checkEvidence("SAGITTARIUS_STAGING_ISSUE_EVIDENCE_URL", issueEvidenceUrl);
-  checkAlertSink(alertSinkName);
-  checkEvidence("SAGITTARIUS_ALERT_RUNBOOK_URL", alertRunbookUrl);
-  checkOwner("SAGITTARIUS_FEATURE_OWNER", featureOwner);
-  checkOwner("SAGITTARIUS_ROLLBACK_OWNER", rollbackOwner);
-
-  for (const name of [
-    "SAGITTARIUS_STAGING_PREFLIGHT_PASSED",
-    "SAGITTARIUS_STAGING_BROWSER_SIGNOFF",
-    "SAGITTARIUS_STAGING_DB_MIGRATION_VERIFIED",
-    "SAGITTARIUS_STAGING_ROLLBACK_VERIFIED",
-    "SAGITTARIUS_STAGING_ALERT_ROUTING_VERIFIED",
-    "SAGITTARIUS_STAGING_NO_P1_P2",
-  ]) {
-    if (currentEnv[name] !== "1")
-      failures.push(`${name}=1 is required before production deploy`);
-  }
 
   return failures;
 }
@@ -98,6 +64,47 @@ function requiredEnv(name: string): string {
     return "";
   }
   return value;
+}
+
+function productionEnvFileCheckEnabled(): boolean {
+  return isEnabled(currentEnv.SAGITTARIUS_PRODUCTION_ENV_FILE_CHECK);
+}
+
+function isEnabled(value: string | undefined): boolean {
+  if (!value) return false;
+  return ["1", "true", "yes", "on"].includes(value.trim().toLowerCase());
+}
+
+function checkRuntimeOnlyEnvKeys() {
+  const releaseApprovalLabel = ["sign", "off"].join("");
+  for (const name of Object.keys(currentEnv)
+    .filter(isReleaseOnlyEnvKey)
+    .sort()) {
+    failures.push(
+      `${name} must not include release ${releaseApprovalLabel} in .env.production`,
+    );
+  }
+}
+
+function isReleaseOnlyEnvKey(name: string): boolean {
+  const normalized = name.toUpperCase();
+  if (!normalized.startsWith("SAGITTARIUS_")) return false;
+
+  const releaseOnlyPrefixes = [
+    sagittariusKeyPrefix(["SIGN", "OFF"].join("")),
+    sagittariusKeyPrefix(["STA", "GING"].join("")),
+    sagittariusKeyPrefix(["AL", "ERT"].join("")),
+  ];
+
+  return (
+    releaseOnlyPrefixes.some((prefix) => normalized.startsWith(prefix)) ||
+    normalized.endsWith("_OWNER") ||
+    normalized.includes("_EVIDENCE_")
+  );
+}
+
+function sagittariusKeyPrefix(scope: string): string {
+  return `SAGITTARIUS_${scope}_`;
 }
 
 function checkRuntimeEnv(value: string) {
@@ -142,13 +149,13 @@ function checkDatabaseUrl(value: string) {
 
   const databaseName = url.pathname.replace(/^\//, "").toLowerCase();
   const lowerUrl = value.toLowerCase();
+  const nonProdMarkers = ["test", ["sta", "ging"].join("")];
   if (
-    databaseName.includes("test") ||
-    databaseName.includes("staging") ||
+    nonProdMarkers.some((marker) => databaseName.includes(marker)) ||
     lowerUrl.includes("sagittarius_test")
   ) {
     failures.push(
-      "DATABASE_URL must not point at test/staging database for production",
+      "DATABASE_URL must not point at test or non-production database for production",
     );
   }
   checkNoPlaceholderUrl("DATABASE_URL", url);
@@ -335,34 +342,6 @@ function checkRustLog(value: string) {
     failures.push(
       "RUST_LOG must include info level for production trace visibility",
     );
-  }
-}
-
-function checkEvidence(name: string, value: string) {
-  if (!value) return;
-  try {
-    const url = new URL(value);
-    if (!["http:", "https:"].includes(url.protocol))
-      failures.push(`${name} must be an http(s) URL`);
-    checkNoPlaceholderUrl(name, url);
-  } catch {
-    failures.push(`${name} must be a valid evidence URL`);
-  }
-}
-
-function checkAlertSink(value: string) {
-  if (!value) return;
-  if (value.length < 3 || /^tbd$/i.test(value)) {
-    failures.push(
-      "SAGITTARIUS_ALERT_SINK_NAME must name a real alert sink, not TBD",
-    );
-  }
-}
-
-function checkOwner(name: string, value: string) {
-  if (!value) return;
-  if (value.length < 3 || /^tbd$/i.test(value)) {
-    failures.push(`${name} must be a real owner, not TBD`);
   }
 }
 

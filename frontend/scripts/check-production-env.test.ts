@@ -38,6 +38,31 @@ describe("checkProductionEnv", () => {
     );
   });
 
+  it("ignores release signoff fields outside production env file mode", () => {
+    expect(
+      checkProductionEnv(
+        validProductionEnv({
+          SAGITTARIUS_SIGNOFF_EVIDENCE_URL:
+            "https://ci.13thx.com/sagittarius/runs/123",
+        }),
+      ),
+    ).toEqual([]);
+  });
+
+  it("rejects release signoff fields in production env file mode", () => {
+    const result = checkProductionEnv(
+      validProductionEnv({
+        SAGITTARIUS_PRODUCTION_ENV_FILE_CHECK: "1",
+        SAGITTARIUS_SIGNOFF_EVIDENCE_URL:
+          "https://ci.13thx.com/sagittarius/runs/123",
+      }),
+    );
+
+    expect(result).toContain(
+      "SAGITTARIUS_SIGNOFF_EVIDENCE_URL must not include release signoff in .env.production",
+    );
+  });
+
   it("accepts a hardened production env", () => {
     expect(checkProductionEnv(validProductionEnv())).toEqual([]);
   });
