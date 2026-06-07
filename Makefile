@@ -5,6 +5,9 @@ PRODUCTION_COMPOSE_FILE ?= docker-compose.production.yml
 PRODUCTION_ENV_FILE ?= .env.production
 PRODUCTION_ENV_SOURCE := $(if $(filter /%,$(PRODUCTION_ENV_FILE)),$(PRODUCTION_ENV_FILE),./$(PRODUCTION_ENV_FILE))
 PRODUCTION_COMPOSE = set -a; . "$(PRODUCTION_ENV_SOURCE)"; set +a; docker compose --env-file "$(PRODUCTION_ENV_SOURCE)" -f "$(PRODUCTION_COMPOSE_FILE)"
+PRODUCTION_DB_NETWORK ?= zodiac
+PRODUCTION_PSQL_IMAGE ?= postgres:17-alpine
+PRODUCTION_PSQL ?= docker run --rm -i --network $(PRODUCTION_DB_NETWORK) $(PRODUCTION_PSQL_IMAGE) psql
 
 DATABASE_URL ?= postgres://postgres:postgres@127.0.0.1:5432/sagittarius
 TEST_DATABASE_URL ?= postgres://postgres:postgres@127.0.0.1:5432/sagittarius_test
@@ -94,8 +97,11 @@ container-build:
 container-production-build:
 	$(PRODUCTION_COMPOSE) build
 
-container-production-migrate: production-env-file-check db-ensure-psql
-	unset DATABASE_URL; set -a; . "$(PRODUCTION_ENV_SOURCE)"; set +a; $(MAKE) db-migrate DATABASE_URL="$$DATABASE_URL"
+container-production-migrate: production-env-file-check
+	unset DATABASE_URL; set -a; . "$(PRODUCTION_ENV_SOURCE)"; set +a; \
+	for f in backend/migrations/*.sql; do \
+	  $(PRODUCTION_PSQL) -v ON_ERROR_STOP=1 "$$DATABASE_URL" < "$$f"; \
+	done
 
 container-production-up:
 	$(PRODUCTION_COMPOSE) up -d

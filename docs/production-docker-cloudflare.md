@@ -66,12 +66,19 @@ auto-run migrations; the shared DB must be migrated first:
 make container-production-migrate PRODUCTION_ENV_FILE=.env.production
 ```
 
-If the host does not have `psql`, run the migration with a PostgreSQL client
-available on the Docker network:
+By default, this runs a PostgreSQL client container on the shared Docker network:
+`docker run --rm -i --network zodiac postgres:17-alpine psql`. This lets the
+migration client resolve the default `zodiac-postgres` database alias from
+`.env.production.example`.
+
+To use a different client, override `PRODUCTION_PSQL`. For example, run `psql`
+inside the shared DB container:
 
 ```bash
-make container-production-migrate PRODUCTION_ENV_FILE=.env.production PSQL='docker exec -i <shared-db-container> psql'
+make container-production-migrate PRODUCTION_ENV_FILE=.env.production PRODUCTION_PSQL='docker exec -i <shared-db-container> psql'
 ```
+
+Use host `psql` only when `DATABASE_URL` is reachable from the host.
 
 Start the app stack only after the migration succeeds:
 

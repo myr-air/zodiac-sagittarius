@@ -58,11 +58,15 @@ For the Docker/Cloudflare production path, the migration evidence should show:
 make container-production-migrate PRODUCTION_ENV_FILE=.env.production
 ```
 
-If the host does not have `psql`, use an equivalent client command, for example:
+By default, this uses `docker run --rm -i --network zodiac postgres:17-alpine
+psql` so the migration client can resolve the shared Docker DB alias. To use an
+equivalent client command instead, override `PRODUCTION_PSQL`, for example:
 
 ```bash
-make container-production-migrate PRODUCTION_ENV_FILE=.env.production PSQL='docker exec -i <shared-db-container> psql'
+make container-production-migrate PRODUCTION_ENV_FILE=.env.production PRODUCTION_PSQL='docker exec -i <shared-db-container> psql'
 ```
+
+Use host `psql` only when the production database URL is reachable from the host.
 
 ## Security And Access
 
