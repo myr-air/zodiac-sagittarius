@@ -208,6 +208,13 @@ describe("Sagittarius project scaffold", () => {
     expect(makefile).toContain("bun run test:e2e:auth-browser");
   });
 
+  it("documents the internal API rewrite used by production Docker", () => {
+    const nextConfig = readFileSync(resolve(frontendRoot, "next.config.ts"), "utf8");
+
+    expect(nextConfig).toContain("SAGITTARIUS_INTERNAL_API_BASE_URL");
+    expect(nextConfig).toContain("/api/v1/:path*");
+  });
+
   it("keeps production-readiness gates repeatable from the root Makefile", () => {
     const makefile = readFileSync(join(repoRoot, "Makefile"), "utf8");
     const packageJson = JSON.parse(readFileSync(join(frontendRoot, "package.json"), "utf8")) as {
