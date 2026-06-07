@@ -8,6 +8,7 @@ frontend/storybook-static/
 .worktrees/
 backend/target/
 backend/.env
+.env
 .env.production
 coverage/
 frontend/coverage/

@@ -1,10 +1,34 @@
+networks:
+  sagittarius-network:
+    name: sagittarius-network
+    # Internal LAN-isolation network for Sagittarius services. Keep isolated from shared LAN overlays.
+
 services:
-  sagittarius-api:
-    image: sagittarius-api:production
+  # SAGITTARIUS API (Rust Axum)
+  sagittarius-server:
+    container_name: sagittarius-server
     build:
-      context: .
-      dockerfile: backend/Dockerfile
+      context: ./backend
+      dockerfile: Dockerfile
     restart: unless-stopped
+    mem_limit: 768m
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - sagittarius-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:5181/api/v1/readiness >/dev/null"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    logging:
+      driver: json-file
+      options:
+        max-size: 8m
+        max-file: '3'
+    expose:
+      - "5181"
     environment:
       DATABASE_URL: ${DATABASE_URL:?DATABASE_URL is required}
       EMAIL_DELIVERY: ${EMAIL_DELIVERY:?EMAIL_DELIVERY is required}
@@ -20,30 +44,23 @@ services:
       SMTP_PASSWORD: ${SMTP_PASSWORD:-}
       SMTP_PORT: ${SMTP_PORT:-587}
       SMTP_USERNAME: ${SMTP_USERNAME:-}
-    expose:
-      - "5181"
-    healthcheck:
-      test: ["CMD-SHELL", "curl -fsS http://localhost:5181/api/v1/readiness >/dev/null"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-      start_period: 20s
-    networks:
-      zodiac:
-        aliases:
-          - sagittarius-api
 
-  sagittarius-frontend:
-    image: sagittarius-frontend:production
+  sagittarius-web:
+    container_name: sagittarius-web
     build:
-      context: .
-      dockerfile: frontend/Dockerfile
+      context: ./frontend
+      dockerfile: Dockerfile
       args:
         NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL: ${NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL:?NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL is required}
         SAGITTARIUS_INTERNAL_API_BASE_URL: ${SAGITTARIUS_INTERNAL_API_BASE_URL:?SAGITTARIUS_INTERNAL_API_BASE_URL is required}
+    security_opt:
+    - no-new-privileges:true
+    cap_drop:
+      - ALL
     restart: unless-stopped
+    mem_limit: 512m
     depends_on:
-      sagittarius-api:
+      sagittarius-server:
         condition: service_healthy
     environment:
       HOSTNAME: 0.0.0.0
@@ -63,10 +80,4 @@ services:
       retries: 10
       start_period: 20s
     networks:
-      zodiac:
-        aliases:
-          - sagittarius-frontend
-
-networks:
-  zodiac:
-    external: true
+      - sagittarius-network
