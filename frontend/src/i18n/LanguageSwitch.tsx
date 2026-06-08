@@ -1,69 +1,260 @@
 "use client";
 
-import type { HTMLAttributes } from "react";
+import { useEffect, useId, useRef, useState, type HTMLAttributes } from "react";
+import { Icon } from "@/src/components/icons";
 import { cn } from "@/src/lib/cn";
 import { useI18n } from "./I18nProvider";
 import type { Locale } from "./types";
 
-const options: Array<{ locale: Locale; label: string }> = [
-  { locale: "en", label: "EN" },
-  { locale: "th", label: "TH" },
+type CurrencyCode = "HKD" | "THB" | "USD" | "JPY" | "CNY";
+
+export const currencyStorageKey = "sagittarius-currency";
+
+const languageOptions: Array<{ locale: Locale; label: string; detail: string; shortLabel: string }> = [
+  { locale: "en", label: "English", detail: "English", shortLabel: "EN" },
+  { locale: "th", label: "ภาษาไทย", detail: "Thai", shortLabel: "TH" },
 ];
 
-const switchClassName = [
+const currencyOptions: Array<{ code: CurrencyCode; label: string; symbol: string }> = [
+  { code: "HKD", label: "Hong Kong Dollar", symbol: "HK$" },
+  { code: "THB", label: "Thai Baht", symbol: "฿" },
+  { code: "USD", label: "US Dollar", symbol: "$" },
+  { code: "JPY", label: "Japanese Yen", symbol: "¥" },
+  { code: "CNY", label: "Chinese Yuan", symbol: "¥" },
+];
+
+const supportedCurrencies = new Set<CurrencyCode>(currencyOptions.map((option) => option.code));
+
+const rootClassName = [
   "language-switch",
+  "relative",
   "inline-flex",
+  "w-fit",
+  "max-w-full",
   "items-center",
-  "gap-0.5",
-  "rounded-full",
+];
+
+const triggerClassName = [
+  "language-switch-trigger",
+  "inline-flex",
+  "min-h-10",
+  "max-w-full",
+  "items-center",
+  "justify-center",
+  "gap-2",
+  "rounded-(--radius-md)",
   "border",
   "border-(--color-border)",
-  "bg-[color-mix(in_srgb,var(--color-surface)_88%,transparent)]",
-  "p-[3px]",
+  "bg-[color-mix(in_srgb,var(--color-surface)_92%,transparent)]",
+  "px-3",
+  "text-[12px]",
+  "font-extrabold",
+  "leading-4",
+  "text-(--color-primary-strong)",
+  "shadow-[0_10px_22px_rgb(15_23_42_/_0.06)]",
+  "transition-[background,border-color,box-shadow]",
+  "duration-150",
+  "hover:border-(--color-primary-border)",
+  "hover:bg-(--color-surface)",
+  "[&_.icon]:size-4",
 ];
+
+const menuClassName = [
+  "language-switch-menu",
+  "absolute",
+  "right-0",
+  "top-[calc(100%+8px)]",
+  "z-30",
+  "grid",
+  "w-[min(344px,calc(100vw-24px))]",
+  "gap-3",
+  "rounded-(--radius-lg)",
+  "border",
+  "border-(--color-border)",
+  "bg-(--color-surface)",
+  "p-3",
+  "shadow-[0_24px_70px_rgb(15_23_42_/_0.18)]",
+  "max-[767px]:left-0",
+  "max-[767px]:right-auto",
+];
+
+const sectionClassName = ["grid", "gap-2"];
+const sectionLabelClassName = "text-[11px] font-black uppercase leading-4 text-(--color-text-muted)";
+const optionGridClassName = "grid grid-cols-2 gap-2";
 
 const optionClassName = [
   "language-switch-option",
-  "min-h-9",
-  "min-w-11",
-  "rounded-full",
-  "border-0",
-  "bg-transparent",
-  "text-[0.78rem]",
-  "font-bold",
-  "text-(--color-text-muted)",
+  "grid",
+  "min-h-[46px]",
+  "grid-cols-[minmax(0,1fr)_auto]",
+  "items-center",
+  "gap-2",
+  "rounded-(--radius-md)",
+  "border",
+  "border-(--color-border)",
+  "bg-(--color-surface-subtle)",
+  "px-3",
+  "text-left",
+  "text-[13px]",
+  "font-extrabold",
+  "text-(--color-text)",
+  "transition-[background,border-color,color]",
+  "duration-150",
+  "hover:border-(--color-primary-border)",
+  "hover:bg-(--color-primary-soft)",
 ];
 
 const activeOptionClassName = [
   "language-switch-option--active",
-  "bg-(--color-text)",
-  "text-(--color-surface)",
+  "border-(--color-primary-border)",
+  "bg-(--color-primary-soft)",
+  "text-(--color-primary-strong)",
+  "[&_.language-switch-option-detail]:text-current",
+  "[&_.language-switch-option-meta]:text-current",
 ];
+
+const optionDetailClassName = "language-switch-option-detail block truncate text-[11px] font-bold leading-4 text-(--color-text-muted)";
+const optionMetaClassName = "language-switch-option-meta text-[11px] font-black text-(--color-text-muted)";
+const checkClassName = "text-(--color-primary) opacity-0 data-[active=true]:opacity-100";
 
 export function LanguageSwitch({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
   const { locale, setLocale, t } = useI18n();
+  const [open, setOpen] = useState(false);
+  const [currency, setCurrency] = useState<CurrencyCode>("HKD");
+  const menuId = useId();
+  const rootRef = useRef<HTMLDivElement>(null);
+  const activeLanguage = languageOptions.find((option) => option.locale === locale) ?? languageOptions[0];
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      setCurrency(readStoredCurrency());
+    }, 0);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, []);
+
+  useEffect(() => {
+    function closeOnOutsidePointer(event: PointerEvent) {
+      if (!rootRef.current?.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    }
+
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setOpen(false);
+      }
+    }
+
+    document.addEventListener("pointerdown", closeOnOutsidePointer);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("pointerdown", closeOnOutsidePointer);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, []);
+
+  function chooseLanguage(nextLocale: Locale) {
+    setLocale(nextLocale);
+    setOpen(false);
+  }
+
+  function chooseCurrency(nextCurrency: CurrencyCode) {
+    setCurrency(nextCurrency);
+    try {
+      window.localStorage.setItem(currencyStorageKey, nextCurrency);
+    } catch {
+      // In-memory choice is still useful for the current session.
+    }
+    setOpen(false);
+  }
 
   return (
-    <div className={cn(switchClassName, className)} role="group" aria-label={t.common.language.label} {...props}>
-      {options.map((option) => {
-        const isActive = option.locale === locale;
-        return (
-          <button
-            type="button"
-            key={option.locale}
-            className={cn(
-              optionClassName,
-              "transition-colors duration-150",
-              isActive ? activeOptionClassName : ""
-            )}
-            aria-pressed={isActive}
-            aria-label={option.locale === "en" ? t.common.language.switchToEnglish : t.common.language.switchToThai}
-            onClick={() => setLocale(option.locale)}
-          >
-            {option.label}
-          </button>
-        );
-      })}
+    <div ref={rootRef} className={cn(rootClassName, className)} {...props}>
+      <button
+        type="button"
+        className={cn(triggerClassName)}
+        aria-label={t.common.language.currencyLabel}
+        aria-expanded={open}
+        aria-controls={menuId}
+        aria-haspopup="menu"
+        onClick={() => setOpen((current) => !current)}
+      >
+        <Icon name="wallet" />
+        <span className="truncate">{activeLanguage.shortLabel} / {currency}</span>
+        <Icon name="chevronRight" className={cn("transition-transform duration-150", open ? "-rotate-90" : "rotate-90")} />
+      </button>
+
+      {open ? (
+        <div id={menuId} className={cn(menuClassName)} role="menu" aria-label={t.common.language.currencyLabel}>
+          <section className={cn(sectionClassName)} aria-labelledby={`${menuId}-language`}>
+            <strong id={`${menuId}-language`} className={sectionLabelClassName}>{t.common.language.label}</strong>
+            <div className={optionGridClassName}>
+              {languageOptions.map((option) => {
+                const isActive = option.locale === locale;
+                return (
+                  <button
+                    type="button"
+                    key={option.locale}
+                    className={cn(optionClassName, isActive ? activeOptionClassName : "")}
+                    role="menuitemradio"
+                    aria-checked={isActive}
+                    aria-label={option.label}
+                    onClick={() => chooseLanguage(option.locale)}
+                  >
+                    <span className="min-w-0">
+                      <span className="block truncate">{option.shortLabel}</span>
+                      <span className={optionDetailClassName}>{option.label}</span>
+                    </span>
+                    <Icon name="check" className={checkClassName} data-active={isActive ? "true" : "false"} />
+                  </button>
+                );
+              })}
+            </div>
+          </section>
+
+          <section className={cn(sectionClassName)} aria-labelledby={`${menuId}-currency`}>
+            <strong id={`${menuId}-currency`} className={sectionLabelClassName}>{t.common.currency.label}</strong>
+            <div className={optionGridClassName}>
+              {currencyOptions.map((option) => {
+                const isActive = option.code === currency;
+                return (
+                  <button
+                    type="button"
+                    key={option.code}
+                    className={cn(optionClassName, isActive ? activeOptionClassName : "")}
+                    role="menuitemradio"
+                    aria-checked={isActive}
+                    aria-label={option.code}
+                    onClick={() => chooseCurrency(option.code)}
+                  >
+                    <span className="min-w-0">
+                      <span className="block truncate">{option.code}</span>
+                      <span className={optionDetailClassName}>{option.label}</span>
+                    </span>
+                    <span className={optionMetaClassName}>{option.symbol}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </section>
+        </div>
+      ) : null}
     </div>
   );
+}
+
+function isCurrencyCode(value: string | null): value is CurrencyCode {
+  return supportedCurrencies.has(value as CurrencyCode);
+}
+
+function readStoredCurrency(): CurrencyCode {
+  try {
+    const stored = window.localStorage.getItem(currencyStorageKey);
+    return isCurrencyCode(stored) ? stored : "HKD";
+  } catch {
+    return "HKD";
+  }
 }

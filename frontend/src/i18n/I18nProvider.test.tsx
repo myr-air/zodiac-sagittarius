@@ -33,8 +33,8 @@ describe("I18nProvider", () => {
     expect(screen.getByText("English")).toBeInTheDocument();
     expect(screen.getByText("Overview")).toBeInTheDocument();
     expect(document.documentElement).toHaveAttribute("lang", "en");
-    expect(screen.getByRole("group", { name: /language/i })).toHaveClass("language-switch", "inline-flex", "rounded-full");
-    expect(screen.getByRole("button", { name: "English" })).toHaveClass("language-switch-option--active", "bg-(--color-text)");
+    expect(screen.getByRole("button", { name: /language and currency/i })).toHaveClass("language-switch-trigger");
+    expect(screen.getByRole("button", { name: /language and currency/i })).toHaveTextContent("EN / HKD");
   });
 
   it("switches to Thai immediately and persists the choice", async () => {
@@ -47,7 +47,8 @@ describe("I18nProvider", () => {
       </I18nProvider>,
     );
 
-    await user.click(screen.getByRole("button", { name: "ภาษาไทย" }));
+    await user.click(screen.getByRole("button", { name: /language and currency/i }));
+    await user.click(screen.getByRole("menuitemradio", { name: "ภาษาไทย" }));
 
     expect(screen.getByTestId("locale")).toHaveTextContent("th");
     expect(screen.getByText("ภาพรวม")).toBeInTheDocument();
@@ -64,6 +65,33 @@ describe("I18nProvider", () => {
 
     await screen.findByText("ภาพรวม");
     expect(screen.getByTestId("locale")).toHaveTextContent("th");
+  });
+
+  it("selects and persists the display currency from the language menu", async () => {
+    const user = userEvent.setup();
+    localStorage.clear();
+
+    const { unmount } = render(
+      <I18nProvider>
+        <Probe />
+      </I18nProvider>,
+    );
+
+    await user.click(screen.getByRole("button", { name: /language and currency/i }));
+    await user.click(screen.getByRole("menuitemradio", { name: "USD" }));
+
+    expect(screen.getByRole("button", { name: /language and currency/i })).toHaveTextContent("EN / USD");
+    expect(localStorage.getItem("sagittarius-currency")).toBe("USD");
+
+    unmount();
+
+    render(
+      <I18nProvider>
+        <Probe />
+      </I18nProvider>,
+    );
+
+    await waitFor(() => expect(screen.getByRole("button", { name: /language and currency/i })).toHaveTextContent("EN / USD"));
   });
 
   it("renders English markup before loading a stored Thai locale after mount", async () => {
@@ -116,7 +144,8 @@ describe("I18nProvider", () => {
         </I18nProvider>,
       );
 
-      await user.click(screen.getByRole("button", { name: "ภาษาไทย" }));
+      await user.click(screen.getByRole("button", { name: /language and currency/i }));
+      await user.click(screen.getByRole("menuitemradio", { name: "ภาษาไทย" }));
 
       expect(screen.getByTestId("locale")).toHaveTextContent("th");
       expect(screen.getByText("ภาพรวม")).toBeInTheDocument();

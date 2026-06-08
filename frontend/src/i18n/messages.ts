@@ -5,10 +5,14 @@ export const messages = {
     common: {
       language: {
         label: "Language",
+        currencyLabel: "Language and currency",
         english: "English",
         thai: "Thai",
         switchToEnglish: "English",
         switchToThai: "ภาษาไทย",
+      },
+      currency: {
+        label: "Currency",
       },
       actions: {
         cancel: "Cancel",
@@ -972,10 +976,14 @@ export const messages = {
     common: {
       language: {
         label: "ภาษา",
+        currencyLabel: "ภาษาและสกุลเงิน",
         english: "English",
         thai: "ไทย",
         switchToEnglish: "English",
         switchToThai: "ภาษาไทย",
+      },
+      currency: {
+        label: "สกุลเงิน",
       },
       actions: {
         cancel: "ยกเลิก",
