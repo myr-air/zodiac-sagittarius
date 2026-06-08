@@ -63,7 +63,28 @@ describe("checkProductionEnv", () => {
     );
   });
 
+  it("requires a migration database URL in production env file mode", () => {
+    const result = checkProductionEnv(
+      validProductionEnv({
+        SAGITTARIUS_PRODUCTION_ENV_FILE_CHECK: "1",
+      }),
+    );
+
+    expect(result).toContain("MIGRATION_DATABASE_URL is required");
+  });
+
   it("accepts a hardened production env", () => {
     expect(checkProductionEnv(validProductionEnv())).toEqual([]);
+  });
+
+  it("accepts a dedicated owner-capable migration database URL", () => {
+    expect(
+      checkProductionEnv(
+        validProductionEnv({
+          MIGRATION_DATABASE_URL:
+            "postgres://prod_migrator:prod_pass@db.prod-sagittarius.internal/sagittarius_prod",
+        }),
+      ),
+    ).toEqual([]);
   });
 });

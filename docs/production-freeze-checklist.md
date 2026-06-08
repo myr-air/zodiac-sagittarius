@@ -64,7 +64,9 @@ make container-production-migrate PRODUCTION_ENV_FILE=.env.production
 
 This command runs the Dockerized `sagittarius-migrate` runner. The runner applies
 pending SQL files, records them in `schema_migrations`, and rejects edited
-historical migrations by checksum mismatch.
+historical migrations by checksum mismatch. The production env file must include
+`MIGRATION_DATABASE_URL` for an owner-capable migration role; the app runtime
+`DATABASE_URL` can remain least-privileged.
 
 If the shared DB was already migrated before the ledger existed, capture
 evidence for the one-time baseline command instead:

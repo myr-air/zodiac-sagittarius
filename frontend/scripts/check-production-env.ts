@@ -20,6 +20,10 @@ export function checkProductionEnv(
 
   const runtimeEnv = requiredEnv("SAGITTARIUS_ENV");
   const databaseUrl = requiredEnv("DATABASE_URL");
+  const migrationDatabaseUrl =
+    options.productionEnvFileCheck || productionEnvFileCheckEnabled()
+      ? requiredEnv("MIGRATION_DATABASE_URL")
+      : optionalEnv("MIGRATION_DATABASE_URL");
   const apiBaseUrl = requiredEnv("NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL");
   const internalApiBaseUrl = requiredEnv("SAGITTARIUS_INTERNAL_API_BASE_URL");
   const allowedOrigins = requiredEnv("SAGITTARIUS_ALLOWED_ORIGINS");
@@ -31,7 +35,8 @@ export function checkProductionEnv(
     checkRuntimeOnlyEnvKeys();
   }
   checkRuntimeEnv(runtimeEnv);
-  checkDatabaseUrl(databaseUrl);
+  checkDatabaseUrl("DATABASE_URL", databaseUrl);
+  checkDatabaseUrl("MIGRATION_DATABASE_URL", migrationDatabaseUrl);
   checkApiBaseUrl(apiBaseUrl);
   checkInternalApiBaseUrl(internalApiBaseUrl);
   checkAllowedOrigins(
@@ -63,6 +68,10 @@ function requiredEnv(name: string): string {
     return "";
   }
   return value;
+}
+
+function optionalEnv(name: string): string {
+  return currentEnv[name]?.trim() ?? "";
 }
 
 function productionEnvFileCheckEnabled(): boolean {
@@ -129,21 +138,21 @@ function checkRuntimeEnv(value: string) {
   }
 }
 
-function checkDatabaseUrl(value: string) {
+function checkDatabaseUrl(name: string, value: string) {
   if (!value) return;
   let url: URL;
   try {
     url = new URL(value);
   } catch {
-    failures.push("DATABASE_URL must be a valid postgres URL");
+    failures.push(`${name} must be a valid postgres URL`);
     return;
   }
 
   if (!["postgres:", "postgresql:"].includes(url.protocol)) {
-    failures.push("DATABASE_URL must use postgres:// or postgresql://");
+    failures.push(`${name} must use postgres:// or postgresql://`);
   }
   if (["localhost", "127.0.0.1", "::1"].includes(url.hostname)) {
-    failures.push("DATABASE_URL must not point at localhost for production");
+    failures.push(`${name} must not point at localhost for production`);
   }
 
   const databaseName = url.pathname.replace(/^\//, "").toLowerCase();
@@ -154,10 +163,10 @@ function checkDatabaseUrl(value: string) {
     lowerUrl.includes("sagittarius_test")
   ) {
     failures.push(
-      "DATABASE_URL must not point at test or non-production database for production",
+      `${name} must not point at test or non-production database for production`,
     );
   }
-  checkNoPlaceholderUrl("DATABASE_URL", url);
+  checkNoPlaceholderUrl(name, url);
 }
 
 function checkApiBaseUrl(value: string) {

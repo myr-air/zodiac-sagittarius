@@ -107,6 +107,10 @@ fn embedded_migrations() -> Vec<Migration> {
             version: "0020_trip_city_routes.sql",
             sql: include_str!("../../../../migrations/0020_trip_city_routes.sql"),
         },
+        Migration {
+            version: "0021_trusted_device_active_label_unique.sql",
+            sql: include_str!("../../../../migrations/0021_trusted_device_active_label_unique.sql"),
+        },
     ]
 }
 
@@ -220,9 +224,18 @@ fn baseline_requested() -> bool {
     )
 }
 
+fn migration_database_url_from_env(
+    mut get_env: impl FnMut(&str) -> Result<String, env::VarError>,
+) -> Result<String, env::VarError> {
+    match get_env("MIGRATION_DATABASE_URL") {
+        Ok(value) if !value.trim().is_empty() => Ok(value),
+        _ => get_env("DATABASE_URL"),
+    }
+}
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let database_url = env::var("DATABASE_URL")?;
+    let database_url = migration_database_url_from_env(|name| env::var(name))?;
     let pool = PgPoolOptions::new()
         .max_connections(1)
         .connect(&database_url)
@@ -304,6 +317,7 @@ mod tests {
             .collect::<BTreeSet<_>>();
 
         assert!(versions.contains("0019_photo_album_links.sql"));
+        assert!(versions.contains("0021_trusted_device_active_label_unique.sql"));
     }
 
     #[test]
@@ -322,5 +336,29 @@ mod tests {
                 checksum_hex("select 1;".as_bytes()),
             )])
         );
+    }
+
+    #[test]
+    fn migration_database_url_prefers_dedicated_non_empty_url() {
+        let database_url = migration_database_url_from_env(|name| match name {
+            "MIGRATION_DATABASE_URL" => Ok("postgres://migrator/db".to_string()),
+            "DATABASE_URL" => Ok("postgres://runtime/db".to_string()),
+            _ => Err(env::VarError::NotPresent),
+        })
+        .unwrap();
+
+        assert_eq!(database_url, "postgres://migrator/db");
+    }
+
+    #[test]
+    fn migration_database_url_falls_back_to_runtime_url() {
+        let database_url = migration_database_url_from_env(|name| match name {
+            "MIGRATION_DATABASE_URL" => Ok(" ".to_string()),
+            "DATABASE_URL" => Ok("postgres://runtime/db".to_string()),
+            _ => Err(env::VarError::NotPresent),
+        })
+        .unwrap();
+
+        assert_eq!(database_url, "postgres://runtime/db");
     }
 }

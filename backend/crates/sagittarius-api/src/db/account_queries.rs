@@ -322,20 +322,23 @@ pub async fn delete_user(
 pub async fn insert_trusted_device(
     tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
     device: NewTrustedDevice<'_>,
-) -> Result<(), sqlx::Error> {
-    sqlx::query(
+) -> Result<Uuid, sqlx::Error> {
+    let trusted_device_id = sqlx::query_scalar(
         "insert into trusted_devices (id, user_id, label, created_at, last_seen_at)
-         values ($1, $2, $3, $4, $5)",
+         values ($1, $2, $3, $4, $5)
+         on conflict (user_id, label) where revoked_at is null
+         do update set last_seen_at = excluded.last_seen_at
+         returning id",
     )
     .bind(device.id)
     .bind(device.user_id)
     .bind(device.label)
     .bind(device.created_at)
     .bind(device.last_seen_at)
-    .execute(&mut **tx)
+    .fetch_one(&mut **tx)
     .await?;
 
-    Ok(())
+    Ok(trusted_device_id)
 }
 
 pub async fn insert_user_session(

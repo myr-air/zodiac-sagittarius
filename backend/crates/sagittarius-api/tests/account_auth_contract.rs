@@ -1187,6 +1187,25 @@ async fn trusted_login_creates_trusted_device_and_session(pool: sqlx::PgPool) {
 }
 
 #[sqlx::test(migrations = "../../migrations")]
+async fn trusted_login_reuses_active_device_with_same_label(pool: sqlx::PgPool) {
+    let first_session = login_account(&pool, "devices@example.com", true, "Aom laptop").await;
+    let second_session = login_account(&pool, "devices@example.com", true, "Aom laptop").await;
+    let user_id = Uuid::parse_str(first_session["userId"].as_str().unwrap()).unwrap();
+
+    assert_eq!(
+        second_session["trustedDeviceId"],
+        first_session["trustedDeviceId"]
+    );
+    let trusted_device_count: i64 =
+        sqlx::query_scalar("select count(*) from trusted_devices where user_id = $1")
+            .bind(user_id)
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+    assert_eq!(trusted_device_count, 1);
+}
+
+#[sqlx::test(migrations = "../../migrations")]
 async fn reused_code_is_rejected_after_success(pool: sqlx::PgPool) {
     let app = support::app(pool.clone());
     let (start, code) = start_email_login_with_code(&pool, app.clone(), "aom@example.com").await;

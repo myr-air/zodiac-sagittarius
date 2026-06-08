@@ -24,10 +24,16 @@ shared database is provided outside this stack on the `zodiac` network.
 
 ```env
 DATABASE_URL=postgres://sagittarius:secret-production-postgres-password@zodiac-postgres:5432/sagittarius
+MIGRATION_DATABASE_URL=postgres://sagittarius_production:secret-production-migration-password@zodiac-postgres:5432/sagittarius
 ```
 
 Replace `zodiac-postgres:5432` if the actual shared DB service uses a different
 service name, alias, or port on the `zodiac` network.
+
+`DATABASE_URL` is the app runtime role. It may be least-privileged and does not
+need to own tables. `MIGRATION_DATABASE_URL` is used only by
+`sagittarius-migrate` and must connect as the owner-capable role for existing
+tables, indexes, and migration metadata.
 
 The compose stack does not create, migrate, stop, remove, or roll back the
 shared database. Database lifecycle and rollback are owned outside this app
@@ -39,9 +45,9 @@ compose file.
 cp .env.production.example .env.production
 ```
 
-Edit `.env.production` and replace secrets, SMTP values, `DATABASE_URL`, and
-public/internal production runtime URLs with real production values. Keep
-`.env.production` local; do not commit it.
+Edit `.env.production` and replace secrets, SMTP values, `DATABASE_URL`,
+`MIGRATION_DATABASE_URL`, and public/internal production runtime URLs with real
+production values. Keep `.env.production` local; do not commit it.
 
 `.env.production` contains production runtime values only. Release evidence and
 owner signoff live in `.env.release-signoff` and are checked with
@@ -79,7 +85,9 @@ make container-production-migrate PRODUCTION_ENV_FILE=.env.production
 This starts a one-off `sagittarius-server` service container on the shared
 `zodiac` Docker network and runs `sagittarius-migrate`. The runner applies only
 pending SQL migrations, records each applied file in `schema_migrations`, and
-verifies checksums so edited historical migrations fail fast.
+verifies checksums so edited historical migrations fail fast. When
+`MIGRATION_DATABASE_URL` is set, the runner uses it instead of the runtime
+`DATABASE_URL`.
 
 If the shared DB was already migrated by the older `psql` loop and only lacks
 the `schema_migrations` ledger, record the current migration checksums once:

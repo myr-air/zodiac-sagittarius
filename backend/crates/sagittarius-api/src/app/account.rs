@@ -391,12 +391,11 @@ async fn create_user_session(
         AccountSessionKind::Temporary
     };
     let trusted_device_id = if trust_device {
-        let trusted_device_id = Uuid::now_v7();
         let label = normalized_device_label(device_label)?;
-        db::account_queries::insert_trusted_device(
+        let trusted_device_id = db::account_queries::insert_trusted_device(
             tx,
             NewTrustedDevice {
-                id: trusted_device_id,
+                id: Uuid::now_v7(),
                 user_id,
                 label: &label,
                 created_at: now,
