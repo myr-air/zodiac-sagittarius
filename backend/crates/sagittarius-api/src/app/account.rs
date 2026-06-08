@@ -251,6 +251,7 @@ pub async fn finish_email_login(
     let challenge = db::account_queries::lock_email_login_challenge(&mut tx, challenge_id)
         .await?
         .ok_or(ServiceError::Unauthenticated)?;
+    ensure_email_domain_is_allowed(&challenge.normalized_email)?;
     let now = OffsetDateTime::now_utc();
 
     if challenge.id != challenge_id
@@ -1128,15 +1129,20 @@ fn normalize_email(email: &str) -> Result<String, ServiceError> {
         return Err(ServiceError::InvalidRequest("email is invalid"));
     }
 
-    let domain =
-        email_domain(&normalized).ok_or(ServiceError::InvalidRequest("email is invalid"))?;
+    ensure_email_domain_is_allowed(&normalized)?;
+
+    Ok(normalized)
+}
+
+fn ensure_email_domain_is_allowed(email: &str) -> Result<(), ServiceError> {
+    let domain = email_domain(email).ok_or(ServiceError::InvalidRequest("email is invalid"))?;
     if is_disposable_email_domain(domain) {
         return Err(ServiceError::InvalidRequest(
             "disposable email domain is not allowed",
         ));
     }
 
-    Ok(normalized)
+    Ok(())
 }
 
 fn email_domain(email: &str) -> Option<&str> {

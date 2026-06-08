@@ -587,9 +587,7 @@ async fn password_auth_rejects_disposable_email_domains_without_side_effects(poo
 }
 
 #[sqlx::test(migrations = "../../migrations")]
-async fn passkey_login_start_rejects_disposable_email_domain_without_challenge(
-    pool: sqlx::PgPool,
-) {
+async fn passkey_login_start_rejects_disposable_email_domain_without_challenge(pool: sqlx::PgPool) {
     let app = support::app(pool.clone());
 
     let legacy_user_id = Uuid::parse_str("018f4e80-0000-7000-a000-000000000102").unwrap();
@@ -889,6 +887,62 @@ async fn email_login_finish_creates_user_and_temporary_session(pool: sqlx::PgPoo
     assert_ne!(stored.0, session_token);
     assert!(stored.1.is_none());
     assert_eq!(stored.2, "temporary");
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn email_login_finish_rejects_legacy_disposable_challenge_without_side_effects(
+    pool: sqlx::PgPool,
+) {
+    let app = support::app(pool.clone());
+    let (start, code) = start_email_login_with_code(&pool, app.clone(), "legacy@example.com").await;
+    let challenge_id = Uuid::parse_str(start["challengeId"].as_str().unwrap()).unwrap();
+
+    sqlx::query(
+        "update email_login_challenges
+         set normalized_email = 'traveler@10minutemail.com'
+         where id = $1",
+    )
+    .bind(challenge_id)
+    .execute(&pool)
+    .await
+    .unwrap();
+
+    let (finish_status, body): (StatusCode, Value) = post_json_response(
+        app,
+        "/api/v1/auth/email/sessions",
+        json!({
+            "challengeId": start["challengeId"],
+            "code": code,
+            "trustDevice": false,
+            "deviceLabel": ""
+        }),
+    )
+    .await;
+
+    assert_eq!(finish_status, StatusCode::BAD_REQUEST);
+    assert_eq!(body["code"], "invalid_request");
+
+    let consumed_at: Option<time::OffsetDateTime> =
+        sqlx::query_scalar("select consumed_at from email_login_challenges where id = $1")
+            .bind(challenge_id)
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+    assert!(consumed_at.is_none());
+
+    let disposable_email_count: i64 = sqlx::query_scalar(
+        "select count(*) from user_emails where normalized_email = 'traveler@10minutemail.com'",
+    )
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(disposable_email_count, 0);
+
+    let session_count: i64 = sqlx::query_scalar("select count(*) from user_sessions")
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+    assert_eq!(session_count, 0);
 }
 
 #[sqlx::test(migrations = "../../migrations")]
