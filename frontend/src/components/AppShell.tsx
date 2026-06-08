@@ -39,6 +39,7 @@ export function resolveViewFromPath(pathname: string, tripId: string, initialVie
   if (viewSegment === "map") return "map";
   if (viewSegment === "timeline") return "timeline";
   if (viewSegment === "bookings") return "bookings";
+  if (viewSegment === "photos") return "photos";
   if (viewSegment === "members") return "members";
   if (viewSegment === "expenses") return "expenses";
   if (viewSegment === "settings") return "settings";

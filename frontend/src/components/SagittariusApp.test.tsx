@@ -279,6 +279,36 @@ describe("Sagittarius cockpit UI", () => {
     ).toBeInTheDocument();
   });
 
+  it("opens the Photos workspace and creates a local album link", async () => {
+    const user = userEvent.setup();
+    render(<SagittariusApp initialView="photos" />);
+
+    expect(
+      screen.getByRole("region", { name: "Photos & Albums" }),
+    ).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Add album" }));
+    const dialog = screen.getByRole("dialog", { name: "Add album" });
+    fireEvent.change(within(dialog).getByLabelText("Title"), {
+      target: { value: "Trip group album" },
+    });
+    fireEvent.change(within(dialog).getByLabelText("Provider"), {
+      target: { value: "google_photos" },
+    });
+    fireEvent.change(within(dialog).getByLabelText("Album link"), {
+      target: { value: "https://photos.app.goo.gl/trip-group" },
+    });
+    await user.click(
+      within(dialog).getByRole("button", { name: "Save album" }),
+    );
+
+    expect(
+      await screen.findByRole("button", {
+        name: /Select Trip group album/i,
+      }),
+    ).toBeInTheDocument();
+  });
+
   it("creates booking docs through the API client in API mode", async () => {
     const user = userEvent.setup();
     installLocalStorageStub();
@@ -3055,6 +3085,7 @@ describe("Sagittarius cockpit UI", () => {
       "แผนที่",
       "ไทม์ไลน์",
       "ตั๋วและเอกสาร",
+      "รูปภาพ",
       "สมาชิก",
       "ค่าใช้จ่าย",
       "ตั้งค่า",
@@ -3067,6 +3098,9 @@ describe("Sagittarius cockpit UI", () => {
     ).not.toBeInTheDocument();
     expect(
       within(navigation).getByRole("link", { name: /ตั๋วและเอกสาร/i }),
+    ).toBeInTheDocument();
+    expect(
+      within(navigation).getByRole("link", { name: /รูปภาพ/i }),
     ).toBeInTheDocument();
     expect(
       within(navigation).getByRole("link", { name: /^ตั้งค่า$/ }),

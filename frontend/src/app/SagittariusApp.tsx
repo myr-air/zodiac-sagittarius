@@ -26,6 +26,10 @@ import { TimelineView } from "@/src/components/TimelineView";
 import { TripExpensesPage } from "@/src/components/TripExpensesPage";
 import { TripMembersPage } from "@/src/components/TripMembersPage";
 import {
+  TripPhotosPage,
+  type TripPhotoAlbumInput,
+} from "@/src/components/TripPhotosPage";
+import {
   TripSettingsPage,
   type TripSettingsFormValues,
 } from "@/src/components/TripSettingsPage";
@@ -111,6 +115,7 @@ import type {
   TripParticipantSession,
   TripRole,
   TripTask,
+  TripPhotoAlbumLink,
 } from "@/src/trip/types";
 
 const localMutationTimestamp = "2026-05-28T00:00:00.000Z";
@@ -168,6 +173,7 @@ export type PlanningView =
   | "map"
   | "timeline"
   | "bookings"
+  | "photos"
   | "members"
   | "expenses"
   | "settings";
@@ -383,6 +389,7 @@ export function SagittariusApp({
   const canEditExpenses = canTripRole(currentMember.role, "editExpenses");
   const canManagePeople = canTripRole(currentMember.role, "managePeople");
   const canEditBookings = canEdit || canEditExpenses;
+  const canEditPhotoAlbums = currentMember.role !== "viewer";
   const canCreateStopNote = canCreateSuggestion || canEdit;
   const supportsContextRail =
     currentView === "overview" ||
@@ -2225,6 +2232,63 @@ export function SagittariusApp({
     }));
   }
 
+  async function createPhotoAlbum(input: TripPhotoAlbumInput) {
+    if (!canEditPhotoAlbums) return;
+    const title = input.title.trim();
+    const url = input.url.trim();
+    if (!title || !url) return;
+    const photoAlbum: TripPhotoAlbumLink = {
+      id: nextLocalPhotoAlbumId(trip.photoAlbumLinks ?? []),
+      tripId: trip.id,
+      ...input,
+      title,
+      url,
+      description: input.description?.trim() || null,
+      accessNote: input.accessNote?.trim() || null,
+      createdBy: currentMember.id,
+      updatedAt: localMutationTimestamp,
+      version: 1,
+    };
+    commitTrip((current) => ({
+      ...current,
+      photoAlbumLinks: [...(current.photoAlbumLinks ?? []), photoAlbum],
+    }));
+  }
+
+  async function updatePhotoAlbum(
+    albumId: string,
+    input: TripPhotoAlbumInput,
+  ) {
+    if (!canEditPhotoAlbums) return;
+    commitTrip((current) => ({
+      ...current,
+      photoAlbumLinks: (current.photoAlbumLinks ?? []).map((album) =>
+        album.id === albumId
+          ? {
+              ...album,
+              ...input,
+              title: input.title.trim(),
+              url: input.url.trim(),
+              description: input.description?.trim() || null,
+              accessNote: input.accessNote?.trim() || null,
+              updatedAt: localMutationTimestamp,
+              version: album.version + 1,
+            }
+          : album,
+      ),
+    }));
+  }
+
+  async function deletePhotoAlbum(albumId: string) {
+    if (!canEditPhotoAlbums) return;
+    commitTrip((current) => ({
+      ...current,
+      photoAlbumLinks: (current.photoAlbumLinks ?? []).filter(
+        (album) => album.id !== albumId,
+      ),
+    }));
+  }
+
   async function toggleTaskStatus(taskId: string) {
     if (isApiMode && resolvedApiClient && participantSession) {
       const task = tasks.find((candidate) => candidate.id === taskId);
@@ -3026,6 +3090,16 @@ export function SagittariusApp({
                 onUpdateBookingDoc={updateBookingDoc}
                 onDeleteBookingDoc={deleteBookingDoc}
               />
+            ) : currentView === "photos" ? (
+              <TripPhotosPage
+                trip={trip}
+                currentMember={currentMember}
+                photoAlbumLinks={trip.photoAlbumLinks ?? []}
+                canEditPhotoAlbums={canEditPhotoAlbums}
+                onCreatePhotoAlbum={createPhotoAlbum}
+                onUpdatePhotoAlbum={updatePhotoAlbum}
+                onDeletePhotoAlbum={deletePhotoAlbum}
+              />
             ) : currentView === "expenses" ? (
               <TripExpensesPage
                 trip={trip}
@@ -3454,6 +3528,22 @@ export function nextLocalBookingDocId(bookingDocs: BookingDoc[]): string {
   while (existingIds.has(id)) {
     index += 1;
     id = `booking-local-${index}`;
+  }
+
+  return id;
+}
+
+export function nextLocalPhotoAlbumId(photoAlbumLinks: TripPhotoAlbumLink[]): string {
+  const existingIds = new Set(photoAlbumLinks.map((album) => album.id));
+  let index =
+    photoAlbumLinks.filter((album) =>
+      album.id.startsWith("photo-album-local-"),
+    ).length + 1;
+  let id = `photo-album-local-${index}`;
+
+  while (existingIds.has(id)) {
+    index += 1;
+    id = `photo-album-local-${index}`;
   }
 
   return id;

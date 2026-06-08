@@ -301,6 +301,34 @@ export interface BookingDoc {
   version: number;
 }
 
+export type TripPhotoAlbumProvider =
+  | "google_photos"
+  | "icloud"
+  | "google_drive"
+  | "dropbox"
+  | "onedrive"
+  | "custom";
+
+export type TripPhotoAlbumAccess = "view_only" | "collaborative" | "upload_request";
+
+export interface TripPhotoAlbumLink {
+  id: string;
+  tripId: string;
+  title: string;
+  provider: TripPhotoAlbumProvider;
+  url: string;
+  access: TripPhotoAlbumAccess;
+  ownerMemberId?: string | null;
+  relatedItineraryItemIds: string[];
+  day?: string | null;
+  description?: string | null;
+  accessNote?: string | null;
+  coverUrl?: string | null;
+  createdBy: string;
+  updatedAt: string;
+  version: number;
+}
+
 export interface Trip {
   id: string;
   joinId: string;
@@ -317,6 +345,7 @@ export interface Trip {
   itineraryItems: ItineraryItem[];
   expenses: Expense[];
   bookingDocs?: BookingDoc[];
+  photoAlbumLinks?: TripPhotoAlbumLink[];
   stopNotes?: StopNote[];
   expenseReminders?: ExpenseReminder[];
   version?: number;

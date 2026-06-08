@@ -7,6 +7,7 @@ const labels = {
   map: "Map",
   timeline: "Timeline",
   bookings: "Bookings & Docs",
+  photos: "Photos",
   members: "Members",
   expenses: "Expenses",
   settings: "Settings",
@@ -32,6 +33,7 @@ describe("app route helpers", () => {
     expect(appRoutes.tripMap("trip 1")).toBe("/trips/trip%201/map");
     expect(appRoutes.tripTimeline("trip 1")).toBe("/trips/trip%201/timeline");
     expect(appRoutes.tripBookings("trip 1")).toBe("/trips/trip%201/bookings");
+    expect(appRoutes.tripPhotos("trip 1")).toBe("/trips/trip%201/photos");
     expect(appRoutes.tripMembers("trip 1")).toBe("/trips/trip%201/members");
     expect(appRoutes.tripExpenses("trip 1")).toBe("/trips/trip%201/expenses");
     expect(appRoutes.tripSettings("trip 1")).toBe("/trips/trip%201/settings");
@@ -62,6 +64,7 @@ describe("app route helpers", () => {
       "/trips/trip-1/map",
       "/trips/trip-1/timeline",
       "/trips/trip-1/bookings",
+      "/trips/trip-1/photos",
       "/trips/trip-1/members",
       "/trips/trip-1/expenses",
     ]);

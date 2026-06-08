@@ -1,4 +1,4 @@
-import type { BookingDoc, Expense, ItineraryItem, Trip } from "./types";
+import type { BookingDoc, Expense, ItineraryItem, Trip, TripPhotoAlbumLink } from "./types";
 import { hashLocalSecret, seedTripJoinId, seedTripJoinPassword } from "./auth";
 
 const tripId = "018f4e80-5788-7de0-a45c-8a555d17fc2d";
@@ -188,6 +188,43 @@ const bookingDocs: BookingDoc[] = [
     noteIds: [],
     notes: "Emergency phone number is in the policy document.",
     createdBy: "member-aom",
+    updatedAt,
+    version: 1,
+  },
+];
+
+const photoAlbumLinks: TripPhotoAlbumLink[] = [
+  {
+    id: "photo-album-google-group",
+    tripId,
+    title: "Google Photos group album",
+    provider: "google_photos",
+    url: "https://photos.app.goo.gl/hong-kong-shenzhen",
+    access: "collaborative",
+    ownerMemberId: "member-aom",
+    relatedItineraryItemIds: ["item-victoria-peak", "item-dimdim"],
+    day: "2026-06-18",
+    description: "Main shared album for trip photos.",
+    accessNote: "Everyone can add photos after joining the shared album.",
+    coverUrl: null,
+    createdBy: "member-aom",
+    updatedAt,
+    version: 1,
+  },
+  {
+    id: "photo-album-dropbox-upload",
+    tripId,
+    title: "Dropbox upload request",
+    provider: "dropbox",
+    url: "https://www.dropbox.com/request/hong-kong-shenzhen",
+    access: "upload_request",
+    ownerMemberId: "member-beam",
+    relatedItineraryItemIds: [],
+    day: null,
+    description: "Fallback upload destination for full-size files.",
+    accessNote: "Use this if Google Photos upload is inconvenient.",
+    coverUrl: null,
+    createdBy: "member-beam",
     updatedAt,
     version: 1,
   },
@@ -464,5 +501,6 @@ export const seedTrip: Trip = {
     }),
   ],
   bookingDocs,
+  photoAlbumLinks,
   expenses,
 };
