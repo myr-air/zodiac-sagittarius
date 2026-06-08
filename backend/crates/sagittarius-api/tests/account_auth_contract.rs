@@ -520,21 +520,6 @@ async fn password_auth_rejects_disposable_email_domains_without_side_effects(poo
     assert_eq!(register_status, StatusCode::BAD_REQUEST);
     assert_eq!(register_body["code"], "invalid_request");
 
-    let (login_status, login_body): (StatusCode, Value) = post_json_response(
-        app,
-        "/api/v1/auth/password/sessions",
-        json!({
-            "flow": "login",
-            "email": "owner@sub.guerrillamail.com",
-            "password": "wrong-password",
-            "trustDevice": false,
-            "deviceLabel": ""
-        }),
-    )
-    .await;
-    assert_eq!(login_status, StatusCode::BAD_REQUEST);
-    assert_eq!(login_body["code"], "invalid_request");
-
     let user_count: i64 = sqlx::query_scalar("select count(*) from users")
         .fetch_one(&pool)
         .await
@@ -553,6 +538,47 @@ async fn password_auth_rejects_disposable_email_domains_without_side_effects(poo
         .unwrap();
     assert_eq!(session_count, 0);
 
+    let legacy_user_id = Uuid::parse_str("018f4e80-0000-7000-a000-000000000101").unwrap();
+    let password_hash = sagittarius_api::app::auth::hash_secret_for_tests("correct-horse-battery");
+    sqlx::query(
+        "insert into users (id, display_name, avatar_color, password_hash)
+         values ($1, 'Disposable Legacy', '#0f766e', $2)",
+    )
+    .bind(legacy_user_id)
+    .bind(password_hash)
+    .execute(&pool)
+    .await
+    .unwrap();
+    sqlx::query(
+        "insert into user_emails (id, user_id, email, normalized_email, verified_at)
+         values (gen_random_uuid(), $1, 'owner@sub.guerrillamail.com', 'owner@sub.guerrillamail.com', now())",
+    )
+    .bind(legacy_user_id)
+    .execute(&pool)
+    .await
+    .unwrap();
+
+    let (login_status, login_body): (StatusCode, Value) = post_json_response(
+        app,
+        "/api/v1/auth/password/sessions",
+        json!({
+            "flow": "login",
+            "email": "owner@sub.guerrillamail.com",
+            "password": "wrong-password",
+            "trustDevice": false,
+            "deviceLabel": ""
+        }),
+    )
+    .await;
+    assert_eq!(login_status, StatusCode::BAD_REQUEST);
+    assert_eq!(login_body["code"], "invalid_request");
+
+    let session_count_after_login: i64 = sqlx::query_scalar("select count(*) from user_sessions")
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+    assert_eq!(session_count_after_login, 0);
+
     let attempt_count: i64 = sqlx::query_scalar("select count(*) from auth_attempt_locks")
         .fetch_one(&pool)
         .await
@@ -565,6 +591,33 @@ async fn passkey_login_start_rejects_disposable_email_domain_without_challenge(
     pool: sqlx::PgPool,
 ) {
     let app = support::app(pool.clone());
+
+    let legacy_user_id = Uuid::parse_str("018f4e80-0000-7000-a000-000000000102").unwrap();
+    sqlx::query(
+        "insert into users (id, display_name, avatar_color)
+         values ($1, 'Passkey Disposable', '#2563eb')",
+    )
+    .bind(legacy_user_id)
+    .execute(&pool)
+    .await
+    .unwrap();
+    sqlx::query(
+        "insert into user_emails (id, user_id, email, normalized_email, verified_at)
+         values (gen_random_uuid(), $1, 'traveler@maildrop.cc', 'traveler@maildrop.cc', now())",
+    )
+    .bind(legacy_user_id)
+    .execute(&pool)
+    .await
+    .unwrap();
+    sqlx::query(
+        "insert into webauthn_credentials (id, user_id, credential_id, public_key, nickname)
+         values (gen_random_uuid(), $1, 'credential-disposable', '{\"alg\":\"ES256\",\"coseKey\":\"placeholder\"}'::jsonb, 'Disposable passkey')",
+    )
+    .bind(legacy_user_id)
+    .execute(&pool)
+    .await
+    .unwrap();
+
     let (status, body): (StatusCode, Value) = post_json_response(
         app,
         "/api/v1/auth/passkeys/options",
