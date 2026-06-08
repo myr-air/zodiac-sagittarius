@@ -2926,6 +2926,117 @@ async fn passkey_login_finish_rejects_user_disabled_after_challenge_start(pool: 
     assert_eq!(finish_body["code"], "unauthenticated");
 }
 
+#[sqlx::test(migrations = "../../migrations")]
+async fn passkey_login_finish_rejects_legacy_disposable_email_after_challenge_start(
+    pool: sqlx::PgPool,
+) {
+    let session = login_account(&pool, "passkey-legacy-disposable@example.com", false, "").await;
+    let user_id = Uuid::parse_str(session["userId"].as_str().unwrap()).unwrap();
+    let authorization = format!("Bearer {}", session["sessionToken"].as_str().unwrap());
+    let signing_key = SigningKey::from_slice(&[11; 32]).unwrap();
+    let credential_id_bytes = b"credential-legacy-disposable";
+    let (_, start) = response_json(
+        post_with_auth(
+            support::app(pool.clone()),
+            "/api/v1/account/passkeys/options",
+            Some(&authorization),
+        )
+        .await,
+    )
+    .await;
+    let valid_payload = registration_finish_payload(
+        start["challengeId"].as_str().unwrap(),
+        start["challenge"].as_str().unwrap(),
+        &signing_key,
+        credential_id_bytes,
+        "Aom MacBook",
+    );
+    let (valid_status, _) = response_json(
+        post_json_with_auth(
+            support::app(pool.clone()),
+            "/api/v1/account/passkeys",
+            Some(&authorization),
+            valid_payload,
+        )
+        .await,
+    )
+    .await;
+    assert_eq!(valid_status, StatusCode::OK);
+
+    let (_, login_start) = response_json(
+        post_json(
+            support::app(pool.clone()),
+            "/api/v1/auth/passkeys/options",
+            json!({"email": "passkey-legacy-disposable@example.com"}),
+        )
+        .await,
+    )
+    .await;
+    let challenge_id = Uuid::parse_str(login_start["challengeId"].as_str().unwrap()).unwrap();
+    let session_count_before: i64 = sqlx::query_scalar("select count(*) from user_sessions")
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+
+    sqlx::query(
+        "update user_emails
+         set email = 'traveler@maildrop.cc',
+             normalized_email = 'traveler@maildrop.cc'
+         where user_id = $1",
+    )
+    .bind(user_id)
+    .execute(&pool)
+    .await
+    .unwrap();
+
+    let login_finish = passkey_login_finish_payload(
+        login_start["challengeId"].as_str().unwrap(),
+        login_start["challenge"].as_str().unwrap(),
+        &signing_key,
+        credential_id_bytes,
+        1,
+        false,
+        "",
+    );
+    let (finish_status, finish_body) = response_json(
+        post_json(
+            support::app(pool.clone()),
+            "/api/v1/auth/passkeys/sessions",
+            login_finish,
+        )
+        .await,
+    )
+    .await;
+    assert_eq!(finish_status, StatusCode::BAD_REQUEST);
+    assert_eq!(finish_body["code"], "invalid_request");
+
+    let consumed_at: Option<time::OffsetDateTime> =
+        sqlx::query_scalar("select consumed_at from webauthn_challenges where id = $1")
+            .bind(challenge_id)
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+    assert!(consumed_at.is_none());
+
+    let session_count_after: i64 = sqlx::query_scalar("select count(*) from user_sessions")
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+    assert_eq!(session_count_after, session_count_before);
+
+    let credential: (i64, Option<time::OffsetDateTime>) = sqlx::query_as(
+        "select sign_count, last_used_at
+         from webauthn_credentials
+         where credential_id = $1",
+    )
+    .bind(URL_SAFE_NO_PAD.encode(credential_id_bytes))
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(credential.0, 0);
+    assert!(credential.1.is_none());
+}
+
 fn registration_finish_payload(
     challenge_id: &str,
     challenge: &str,

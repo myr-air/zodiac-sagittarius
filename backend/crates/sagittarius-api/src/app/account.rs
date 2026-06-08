@@ -1006,6 +1006,7 @@ pub async fn finish_passkey_login(
     db::account_queries::lock_active_user(&mut tx, credential.user_id)
         .await?
         .ok_or(ServiceError::Unauthenticated)?;
+    ensure_user_email_domains_are_allowed(&mut tx, credential.user_id).await?;
 
     let origin =
         verify_client_data_json(&input.client_data_json, "webauthn.get", &expected_challenge)?;
@@ -1121,6 +1122,17 @@ async fn find_or_create_user(
     }
 
     Ok(record.user_id)
+}
+
+async fn ensure_user_email_domains_are_allowed(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    user_id: Uuid,
+) -> Result<(), ServiceError> {
+    for email in db::account_queries::list_verified_user_emails_for_user(tx, user_id).await? {
+        ensure_email_domain_is_allowed(&email)?;
+    }
+
+    Ok(())
 }
 
 fn normalize_email(email: &str) -> Result<String, ServiceError> {

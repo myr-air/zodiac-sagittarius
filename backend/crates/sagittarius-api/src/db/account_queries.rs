@@ -257,6 +257,21 @@ pub async fn verify_user_email_for_normalized_email_if_unverified(
     Ok(())
 }
 
+pub async fn list_verified_user_emails_for_user(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    user_id: Uuid,
+) -> Result<Vec<String>, sqlx::Error> {
+    sqlx::query_scalar(
+        "select normalized_email
+         from user_emails
+         where user_id = $1 and verified_at is not null
+         order by created_at asc, id asc",
+    )
+    .bind(user_id)
+    .fetch_all(&mut **tx)
+    .await
+}
+
 pub async fn find_password_login_user_for_email(
     tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
     normalized_email: &str,
