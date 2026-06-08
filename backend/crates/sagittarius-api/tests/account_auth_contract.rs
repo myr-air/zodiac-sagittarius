@@ -471,6 +471,118 @@ async fn password_auth_validates_payload(pool: sqlx::PgPool) {
 }
 
 #[sqlx::test(migrations = "../../migrations")]
+async fn email_login_start_rejects_disposable_email_domains_without_challenge(pool: sqlx::PgPool) {
+    let app = support::app(pool.clone());
+
+    for email in [
+        "traveler@10minutemail.com",
+        "traveler@inbox.10minutemail.com",
+    ] {
+        let (status, body): (StatusCode, Value) = post_json_response(
+            app.clone(),
+            "/api/v1/auth/email/challenges",
+            json!({ "email": email }),
+        )
+        .await;
+        assert_eq!(status, StatusCode::BAD_REQUEST);
+        assert_eq!(body["code"], "invalid_request");
+    }
+
+    let challenge_count: i64 = sqlx::query_scalar("select count(*) from email_login_challenges")
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+    assert_eq!(challenge_count, 0);
+
+    let outbox_count: i64 = sqlx::query_scalar("select count(*) from email_login_outbox")
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+    assert_eq!(outbox_count, 0);
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn password_auth_rejects_disposable_email_domains_without_side_effects(pool: sqlx::PgPool) {
+    let app = support::app(pool.clone());
+
+    let (register_status, register_body): (StatusCode, Value) = post_json_response(
+        app.clone(),
+        "/api/v1/auth/password/sessions",
+        json!({
+            "flow": "register",
+            "email": "owner@mailinator.com",
+            "password": "correct-horse-battery",
+            "trustDevice": false,
+            "deviceLabel": ""
+        }),
+    )
+    .await;
+    assert_eq!(register_status, StatusCode::BAD_REQUEST);
+    assert_eq!(register_body["code"], "invalid_request");
+
+    let (login_status, login_body): (StatusCode, Value) = post_json_response(
+        app,
+        "/api/v1/auth/password/sessions",
+        json!({
+            "flow": "login",
+            "email": "owner@sub.guerrillamail.com",
+            "password": "wrong-password",
+            "trustDevice": false,
+            "deviceLabel": ""
+        }),
+    )
+    .await;
+    assert_eq!(login_status, StatusCode::BAD_REQUEST);
+    assert_eq!(login_body["code"], "invalid_request");
+
+    let user_count: i64 = sqlx::query_scalar("select count(*) from users")
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+    assert_eq!(user_count, 0);
+
+    let email_count: i64 = sqlx::query_scalar("select count(*) from user_emails")
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+    assert_eq!(email_count, 0);
+
+    let session_count: i64 = sqlx::query_scalar("select count(*) from user_sessions")
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+    assert_eq!(session_count, 0);
+
+    let attempt_count: i64 = sqlx::query_scalar("select count(*) from auth_attempt_locks")
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+    assert_eq!(attempt_count, 0);
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn passkey_login_start_rejects_disposable_email_domain_without_challenge(
+    pool: sqlx::PgPool,
+) {
+    let app = support::app(pool.clone());
+    let (status, body): (StatusCode, Value) = post_json_response(
+        app,
+        "/api/v1/auth/passkeys/options",
+        json!({ "email": "traveler@maildrop.cc" }),
+    )
+    .await;
+
+    assert_eq!(status, StatusCode::BAD_REQUEST);
+    assert_eq!(body["code"], "invalid_request");
+
+    let challenge_count: i64 = sqlx::query_scalar("select count(*) from webauthn_challenges")
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+    assert_eq!(challenge_count, 0);
+}
+
+#[sqlx::test(migrations = "../../migrations")]
 async fn email_login_start_creates_and_reuses_active_challenge(pool: sqlx::PgPool) {
     let app = support::app(pool.clone());
 
