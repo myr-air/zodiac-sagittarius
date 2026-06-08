@@ -99,6 +99,10 @@ fn embedded_migrations() -> Vec<Migration> {
             version: "0018_auth_attempt_locks.sql",
             sql: include_str!("../../../../migrations/0018_auth_attempt_locks.sql"),
         },
+        Migration {
+            version: "0019_photo_album_links.sql",
+            sql: include_str!("../../../../migrations/0019_photo_album_links.sql"),
+        },
     ]
 }
 
@@ -289,13 +293,13 @@ mod tests {
     }
 
     #[test]
-    fn embedded_migrations_include_latest_auth_lock_migration() {
+    fn embedded_migrations_include_latest_photo_album_link_migration() {
         let versions = embedded_migrations()
             .iter()
             .map(|migration| migration.version)
             .collect::<BTreeSet<_>>();
 
-        assert!(versions.contains("0018_auth_attempt_locks.sql"));
+        assert!(versions.contains("0019_photo_album_links.sql"));
     }
 
     #[test]
