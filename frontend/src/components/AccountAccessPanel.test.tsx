@@ -770,6 +770,148 @@ describe("AccountAccessPanel", () => {
     expect(screen.getAllByText("China").length).toBeGreaterThan(1);
   });
 
+  it("lets users add city-level destinations without using the map picker", async () => {
+    const user = userEvent.setup();
+    const accountClient = createAccountClient();
+
+    render(
+      <AccountAccessPanel
+        accessMode="account-portal"
+        accountClient={accountClient}
+        accountSession={{
+          userId: "user-aom",
+          sessionToken: "account-session",
+          kind: "trusted",
+          trustedDeviceId: "device-current",
+          createdAt: "2026-05-30T08:00:00.000Z",
+          expiresAt: "2026-06-29T08:00:00.000Z",
+        }}
+        portalSection="new-trip"
+        trip={seedTrip}
+        onAccountSessionChange={vi.fn()}
+        onAuthenticated={vi.fn()}
+        onTripChange={vi.fn()}
+      />,
+    );
+
+    fireEvent.change(await screen.findByLabelText(/Trip name/i), { target: { value: "Hong Kong May Route" } });
+    expect(screen.queryByRole("button", { name: /Pick on map/i })).not.toBeInTheDocument();
+
+    await user.type(screen.getByLabelText(/Search destinations/i), "Hong Kong");
+    await user.click(screen.getByRole("button", { name: /^Hong Kong$/i }));
+    await user.type(screen.getByLabelText(/Add city or stop/i), "Central");
+    await user.click(screen.getByRole("button", { name: /Add city/i }));
+
+    expect(screen.getAllByText(/Central/i).length).toBeGreaterThan(0);
+    await user.click(screen.getByRole("button", { name: /Create and open/i }));
+    expect(accountClient.createTrip).toHaveBeenCalledWith(
+      "account-session",
+      expect.objectContaining({
+        destinationLabel: "Hong Kong, Central",
+        countries: ["Hong Kong"],
+      }),
+    );
+  });
+
+  it("uses a custom route calendar instead of relying on native date inputs", async () => {
+    const user = userEvent.setup();
+    const accountClient = createAccountClient();
+
+    render(
+      <AccountAccessPanel
+        accessMode="account-portal"
+        accountClient={accountClient}
+        accountSession={{
+          userId: "user-aom",
+          sessionToken: "account-session",
+          kind: "trusted",
+          trustedDeviceId: "device-current",
+          createdAt: "2026-05-30T08:00:00.000Z",
+          expiresAt: "2026-06-29T08:00:00.000Z",
+        }}
+        portalSection="new-trip"
+        trip={seedTrip}
+        onAccountSessionChange={vi.fn()}
+        onAuthenticated={vi.fn()}
+        onTripChange={vi.fn()}
+      />,
+    );
+
+    expect(screen.queryByLabelText(/Start date/i)).not.toHaveAttribute("type", "date");
+    const calendar = screen.getByRole("group", { name: /Route trip calendar/i });
+    await user.click(within(calendar).getByRole("button", { name: /Select Jun 5, 2026 as depart date/i }));
+    await user.click(within(calendar).getByRole("button", { name: /Select Jun 9, 2026 as return date/i }));
+
+    await waitFor(() => expect(within(calendar).getByRole("button", { name: /Select Jun 5, 2026/i })).toHaveAttribute("aria-pressed", "true"));
+    expect(within(calendar).getByRole("button", { name: /Select Jun 9, 2026/i })).toHaveAttribute("aria-pressed", "true");
+  });
+
+  it("generates route-aware join credentials and a token-ready invite link", async () => {
+    const accountClient = createAccountClient();
+
+    render(
+      <AccountAccessPanel
+        accessMode="account-portal"
+        accountClient={accountClient}
+        accountSession={{
+          userId: "user-aom",
+          sessionToken: "account-session",
+          kind: "trusted",
+          trustedDeviceId: "device-current",
+          createdAt: "2026-05-30T08:00:00.000Z",
+          expiresAt: "2026-06-29T08:00:00.000Z",
+        }}
+        portalSection="new-trip"
+        trip={seedTrip}
+        onAccountSessionChange={vi.fn()}
+        onAuthenticated={vi.fn()}
+        onTripChange={vi.fn()}
+      />,
+    );
+
+    fireEvent.change(await screen.findByLabelText(/Trip name/i), { target: { value: "Hong Kong May Route" } });
+    fireEvent.change(screen.getByLabelText(/Search destinations/i), { target: { value: "Hong Kong" } });
+    fireEvent.click(screen.getByRole("button", { name: /^Hong Kong$/i }));
+
+    const joinCode = screen.getByText(/Join code:/i).textContent?.replace("Join code:", "").trim() ?? "";
+    const joinPass = screen.getByLabelText(/Join password/i);
+    const inviteLink = screen.getByText(/Invite link:/i).textContent?.replace("Invite link:", "").trim() ?? "";
+
+    expect(joinCode).toMatch(/^\d{4}-HK-[A-Z0-9]{3}$/);
+    expect(joinPass).toHaveValue();
+    expect(String((joinPass as HTMLInputElement).value)).toMatch(/^[A-Z0-9]{4}-[A-Z0-9]{4}$/);
+    expect(inviteLink).toContain(`/join/${joinCode}`);
+    expect(inviteLink).toContain("token=");
+  });
+
+  it("keeps the ticket preview sticky on desktop and shows workflow steps on smaller viewports", async () => {
+    const accountClient = createAccountClient();
+
+    render(
+      <AccountAccessPanel
+        accessMode="account-portal"
+        accountClient={accountClient}
+        accountSession={{
+          userId: "user-aom",
+          sessionToken: "account-session",
+          kind: "trusted",
+          trustedDeviceId: "device-current",
+          createdAt: "2026-05-30T08:00:00.000Z",
+          expiresAt: "2026-06-29T08:00:00.000Z",
+        }}
+        portalSection="new-trip"
+        trip={seedTrip}
+        onAccountSessionChange={vi.fn()}
+        onAuthenticated={vi.fn()}
+        onTripChange={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByRole("region", { name: /Live trip preview/i })).toHaveClass("sticky");
+    expect(screen.getByRole("navigation", { name: /Trip creation workflow/i })).toBeInTheDocument();
+    expect(screen.getByText(/Next: add destination detail/i)).toBeInTheDocument();
+  });
+
   it("does not create a trip when submitting before the review step", async () => {
     const user = userEvent.setup();
     const accountClient = createAccountClient();
