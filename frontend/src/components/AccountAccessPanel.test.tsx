@@ -77,11 +77,12 @@ describe("AccountAccessPanel", () => {
 
     fireEvent.change(emailInput, { target: { value: "aom@example.test" } });
     expect(authForm().getByRole("button", { name: /Sign in$/i })).toBeDisabled();
-    expect(screen.getByRole("button", { name: /Send sign-in code/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Use passkey/i })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /^Send sign-in code$/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Use sign-in code instead/i })).toBeEnabled();
+    expect(screen.getByRole("button", { name: /Use passkey instead/i })).toBeEnabled();
     expect(screen.getByRole("checkbox", { name: /Trust this device/i })).toBeChecked();
 
-    await user.click(screen.getByRole("button", { name: /Send sign-in code/i }));
+    await user.click(screen.getByRole("button", { name: /Use sign-in code instead/i }));
 
     expect(await screen.findByLabelText(/Verification code/i)).toHaveAttribute("autocomplete", "one-time-code");
     expect(screen.getByText(/aom@example.test/i)).toBeInTheDocument();
@@ -122,7 +123,7 @@ describe("AccountAccessPanel", () => {
 
     await act(async () => {
       fireEvent.change(screen.getByLabelText(/Email/i), { target: { value: "aom@example.test" } });
-      fireEvent.click(screen.getByRole("button", { name: /Send sign-in code/i }));
+      fireEvent.click(screen.getByRole("button", { name: /Use sign-in code instead/i }));
     });
     expect(screen.getByLabelText(/Verification code/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Resend code in 30 seconds/i })).toBeDisabled();
@@ -151,22 +152,117 @@ describe("AccountAccessPanel", () => {
     const emailInput = screen.getByLabelText(/Email/i);
     const passwordInput = screen.getByLabelText(/^Password$/i);
     const signInButton = authForm().getByRole("button", { name: /^Sign in$/i });
+    const emailHintId = emailInput.getAttribute("aria-describedby");
+    const passwordHintId = passwordInput.getAttribute("aria-describedby");
 
     expect(signInButton).toBeDisabled();
+    expect(emailHintId).toBeTruthy();
+    expect(passwordHintId).toBeTruthy();
+    expect(document.getElementById(emailHintId ?? "")).toHaveTextContent(/email tied to this trip space/i);
+    expect(document.getElementById(passwordHintId ?? "")).toHaveTextContent(/at least 8 characters/i);
 
     fireEvent.change(emailInput, { target: { value: "aom" } });
     fireEvent.change(passwordInput, { target: { value: "account-secret" } });
+    expect(emailInput).toHaveAttribute("aria-invalid", "true");
+    expect(document.getElementById(emailHintId ?? "")).toHaveTextContent(/complete email address/i);
     expect(signInButton).toBeDisabled();
 
     fireEvent.change(emailInput, { target: { value: "aom@example" } });
     expect(signInButton).toBeDisabled();
 
     fireEvent.change(emailInput, { target: { value: "  aom@example.test  " } });
+    expect(emailInput).not.toHaveAttribute("aria-invalid");
     expect(signInButton).toBeEnabled();
 
     await user.clear(passwordInput);
 
     expect(signInButton).toBeDisabled();
+  });
+
+  it("keeps registration code delivery behind the primary password step", async () => {
+    const user = userEvent.setup();
+    const accountClient = createAccountClient();
+    render(
+      <AccountAccessPanel
+        accessMode="account-register"
+        accountClient={accountClient}
+        accountSession={null}
+        trip={seedTrip}
+        onAccountSessionChange={vi.fn()}
+        onAuthenticated={vi.fn()}
+        onTripChange={vi.fn()}
+      />,
+    );
+
+    const emailInput = screen.getByLabelText(/Email/i);
+    const passwordInput = screen.getByLabelText(/^Password$/i);
+    const primaryButton = screen.getByRole("button", { name: /Set password and continue/i });
+
+    expect(primaryButton).toBeDisabled();
+    expect(screen.queryByRole("button", { name: /^Send code$/i })).not.toBeInTheDocument();
+
+    fireEvent.change(emailInput, { target: { value: "new-aom@example.test" } });
+
+    fireEvent.change(passwordInput, { target: { value: "short" } });
+    expect(passwordInput).toHaveAttribute("aria-invalid", "true");
+    expect(primaryButton).toBeDisabled();
+
+    fireEvent.change(passwordInput, { target: { value: "account-secret" } });
+    expect(passwordInput).not.toHaveAttribute("aria-invalid");
+    expect(primaryButton).toBeEnabled();
+
+    await user.click(primaryButton);
+
+    await waitFor(() => expect(accountClient.startEmailLogin).toHaveBeenCalledWith("new-aom@example.test"));
+  });
+
+  it("sanitizes email one-time codes and waits for six digits before submitting", async () => {
+    const user = userEvent.setup();
+    const accountClient = createAccountClient();
+    render(
+      <AccountAccessPanel
+        accessMode="account-login"
+        accountClient={accountClient}
+        accountSession={null}
+        trip={seedTrip}
+        onAccountSessionChange={vi.fn()}
+        onAuthenticated={vi.fn()}
+        onTripChange={vi.fn()}
+      />,
+    );
+
+    fireEvent.change(screen.getByLabelText(/Email/i), { target: { value: "aom@example.test" } });
+    await user.click(screen.getByRole("button", { name: /Use sign-in code instead/i }));
+
+    const codeInput = await screen.findByLabelText(/Verification code/i);
+    const codeForm = codeInput.closest("form");
+    expect(codeForm).toBeTruthy();
+    const signInButton = within(codeForm as HTMLElement).getByRole("button", { name: /^Sign in$/i });
+
+    expect(codeInput).toHaveAttribute("autocomplete", "one-time-code");
+    expect(codeInput).toHaveAttribute("inputmode", "numeric");
+    expect(codeInput).toHaveAttribute("pattern", "[0-9]{6}");
+    expect(codeInput).toHaveAttribute("maxlength", "6");
+    expect(signInButton).toBeDisabled();
+
+    fireEvent.change(codeInput, { target: { value: "12ab" } });
+    expect(codeInput).toHaveValue("12");
+    expect(codeInput).toHaveAttribute("aria-invalid", "true");
+    expect(signInButton).toBeDisabled();
+
+    fireEvent.change(codeInput, { target: { value: "12a34b5678" } });
+    expect(codeInput).toHaveValue("123456");
+    expect(codeInput).not.toHaveAttribute("aria-invalid");
+    expect(signInButton).toBeEnabled();
+
+    await user.click(signInButton);
+
+    expect(accountClient.finishEmailLogin).toHaveBeenCalledWith({
+      challengeId: "login-challenge",
+      code: "123456",
+      trustDevice: true,
+      deviceLabel: "",
+    });
   });
 
   it("logs in and registers with a password fallback instead of forcing OTP", async () => {
@@ -246,9 +342,9 @@ describe("AccountAccessPanel", () => {
 
     await user.click(screen.getByRole("tab", { name: /^Account$/i }));
 
-    expect(screen.getByRole("button", { name: /Use passkey/i })).toBeDisabled();
+    expect(screen.getByRole("button", { name: /Use passkey instead/i })).toBeDisabled();
     fireEvent.change(screen.getByLabelText(/Email/i), { target: { value: "aom@example.test" } });
-    expect(screen.getByRole("button", { name: /Use passkey/i })).toBeEnabled();
+    expect(screen.getByRole("button", { name: /Use passkey instead/i })).toBeEnabled();
     expect(screen.getAllByTestId("icon-key").length).toBeGreaterThan(0);
   });
 
@@ -274,9 +370,9 @@ describe("AccountAccessPanel", () => {
     expect(authForm().getByRole("button", { name: /^Sign in$/i })).toBeDisabled();
     expect(screen.getByLabelText(/Email/i)).toHaveAttribute("autocomplete", "username");
     expect(screen.getByLabelText(/^Password$/i)).toHaveAttribute("autocomplete", "current-password");
-    expect(screen.getByRole("button", { name: /Continue with Google/i })).toBeDisabled();
-    expect(screen.getByRole("button", { name: /Continue with Apple/i })).toBeDisabled();
-    expect(screen.getByRole("button", { name: /Send sign-in code/i })).toBeDisabled();
+    expect(screen.queryByRole("button", { name: /Continue with Google/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Continue with Apple/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Use sign-in code instead/i })).toBeDisabled();
     expect(within(accessTabs).getByRole("button", { name: /^Register$/i })).toBeInTheDocument();
     expect(screen.queryByLabelText(/Trip ID/i)).not.toBeInTheDocument();
   });
@@ -475,7 +571,7 @@ describe("AccountAccessPanel", () => {
 
     await user.click(screen.getByRole("tab", { name: /^Account$/i }));
     fireEvent.change(screen.getByLabelText(/Email/i), { target: { value: "aom@example.test" } });
-    await user.click(screen.getByRole("button", { name: /Send sign-in code/i }));
+    await user.click(screen.getByRole("button", { name: /Use sign-in code instead/i }));
     fireEvent.change(screen.getByLabelText(/Verification code/i), { target: { value: "123456" } });
     await user.click(screen.getByRole("button", { name: /^Sign in$/i }));
 
@@ -811,6 +907,7 @@ describe("AccountAccessPanel", () => {
     expect(within(inspirationStep).queryByText("Osaka")).not.toBeInTheDocument();
     expect(within(inspirationStep).queryByText("Kyoto")).not.toBeInTheDocument();
   });
+
   it("lets users add city-level destinations without using the map picker", async () => {
     const user = userEvent.setup();
     const accountClient = createAccountClient();
@@ -1312,8 +1409,8 @@ describe("AccountAccessPanel", () => {
     await user.click(screen.getByRole("tab", { name: /^Account$/i }));
     fireEvent.change(screen.getByLabelText(/Email/i), { target: { value: "aom@example.test" } });
     expect(screen.queryByLabelText(/Device label/i)).not.toBeInTheDocument();
-    expect(authForm().getByRole("button", { name: /Use passkey/i })).toBeEnabled();
-    await user.click(authForm().getByRole("button", { name: /Use passkey/i }));
+    expect(authForm().getByRole("button", { name: /Use passkey instead/i })).toBeEnabled();
+    await user.click(authForm().getByRole("button", { name: /Use passkey instead/i }));
 
     expect(accountClient.startPasskeyLogin).toHaveBeenCalledWith("aom@example.test");
     expect(credentials.get).toHaveBeenCalledWith({

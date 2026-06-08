@@ -307,6 +307,8 @@ const accountFormClassName =
   "account-form [&_input]:min-h-[46px] [&_input]:w-full [&_input]:rounded-(--radius-md) [&_input]:border [&_input]:border-(--color-border-strong) [&_input]:bg-(--color-surface) [&_input]:px-3 [&_input]:text-(--color-text) [&_input]:transition-[border-color,box-shadow,background] [&_input]:duration-[180ms] [&_input]:ease-out [&_input:focus]:border-(--color-primary) [&_input:focus]:shadow-[0_0_0_4px_rgb(15_118_110_/_0.12)] [&_input:hover]:border-[color-mix(in_srgb,var(--color-primary)_36%,var(--color-border-strong))] [&_label]:grid [&_label]:gap-1.5 [&_label]:text-[13px] [&_label]:font-bold [&_label]:text-(--color-text-muted) [&_select]:min-h-[46px] [&_select]:w-full [&_select]:rounded-(--radius-md) [&_select]:border [&_select]:border-(--color-border-strong) [&_select]:bg-(--color-surface) [&_select]:px-3 [&_select]:text-(--color-text) [&_select]:transition-[border-color,box-shadow,background] [&_select]:duration-[180ms] [&_select]:ease-out [&_select:focus]:border-(--color-primary) [&_select:focus]:shadow-[0_0_0_4px_rgb(15_118_110_/_0.12)] [&_select:hover]:border-[color-mix(in_srgb,var(--color-primary)_36%,var(--color-border-strong))]";
 const accountCheckClassName =
   "account-check grid grid-cols-[auto_minmax(0,1fr)] items-center [&_input]:min-h-[18px] [&_input]:w-[18px]";
+const accountFieldClassName = "account-field grid gap-1.5";
+const accountFieldHintClassName = "account-field-hint m-0 text-xs font-[650] leading-[18px] text-(--color-text-muted)";
 const accountTwoColClassName =
   "account-two-col grid grid-cols-2 gap-2.5 max-[767px]:grid-cols-1 [&_label]:grid [&_label]:gap-1.5 [&_label]:text-[13px] [&_label]:font-bold [&_label]:text-(--color-text-muted)";
 const accountSettingsFormClassName = cn(accountFormClassName, "account-settings-form grid gap-3");
@@ -952,9 +954,17 @@ function EmailLoginPanel({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const normalizedEmail = email.trim();
   const isEmailValid = accountEmailPattern.test(normalizedEmail);
+  const isEmailInvalid = normalizedEmail.length > 0 && !isEmailValid;
   const passwordReady = password.length >= 8;
+  const isPasswordInvalid = password.length > 0 && !passwordReady;
+  const otpReady = /^\d{6}$/.test(code);
   const emailInputId = `account-${activeFlow}-email`;
+  const emailHintId = `${emailInputId}-hint`;
   const passwordInputId = `account-${activeFlow}-password`;
+  const passwordHintId = `${passwordInputId}-hint`;
+  const codeInputId = `account-${activeFlow}-code`;
+  const codeHintId = `${codeInputId}-hint`;
+  const formErrorId = `account-${activeFlow}-error`;
   const passwordAutocomplete = activeFlow === "register" ? "new-password" : "current-password";
 
   useEffect(() => {
@@ -986,7 +996,7 @@ function EmailLoginPanel({
   }
 
   async function requestEmailCode() {
-    if (!isEmailValid) return;
+    if (!isEmailValid || (activeFlow === "register" && !passwordReady)) return;
     setIsSubmitting(true);
     try {
       const nextChallenge = await accountClient.startEmailLogin(normalizedEmail);
@@ -1003,7 +1013,7 @@ function EmailLoginPanel({
 
   async function submitCode(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!challenge) return;
+    if (!challenge || !otpReady) return;
     setIsSubmitting(true);
     try {
       const session = await accountClient.finishEmailLogin({
@@ -1030,7 +1040,7 @@ function EmailLoginPanel({
 
   async function submitSetup(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!verifiedRegistrationSession) return;
+    if (!verifiedRegistrationSession || !passwordReady) return;
     setIsSubmitting(true);
     try {
       const session = await accountClient.finishPasswordLogin({
@@ -1076,6 +1086,7 @@ function EmailLoginPanel({
   }
 
   async function signInWithPasskey() {
+    if (!isEmailValid) return;
     setIsSubmitting(true);
     try {
       const loginStart = await accountClient.startPasskeyLogin(normalizedEmail);
@@ -1139,6 +1150,10 @@ function EmailLoginPanel({
     setAuthStep(nextStep);
   }
 
+  function updateCode(value: string) {
+    setCode(value.replace(/\D/g, "").slice(0, 6));
+  }
+
   function switchFlow(nextFlow: AuthFlow) {
     if (nextFlow === activeFlow) return;
     onFlowChange?.(nextFlow);
@@ -1194,9 +1209,14 @@ function EmailLoginPanel({
           </nav>
         </>
       ) : null}
-      <form className={accountAuthCardClassName} onSubmit={authStep === "setup" ? submitSetup : challenge ? submitCode : authStep === "password" ? submitPassword : submitEmail}>
+      <form
+        aria-busy={isSubmitting}
+        aria-describedby={formError ? formErrorId : undefined}
+        className={accountAuthCardClassName}
+        onSubmit={authStep === "setup" ? submitSetup : challenge ? submitCode : authStep === "password" ? submitPassword : submitEmail}
+      >
         <span className={accountStepKickerClassName}>{stepLabel}</span>
-        {formError ? <StatusMessage tone="danger">{formError}</StatusMessage> : null}
+        {formError ? <StatusMessage id={formErrorId} tone="danger">{formError}</StatusMessage> : null}
         <div className={cn(accountStepStageClassName, accountStepStageDirectionClassNames[transitionDirection])} key={visualStep}>
           <PanelHeading
             icon={challenge ? "settings" : authStep === "password" ? "key" : "users"}
@@ -1219,16 +1239,30 @@ function EmailLoginPanel({
               <span>{t.access.emailLogin.sentCodeTo}</span>
               <strong>{normalizedEmail}</strong>
             </div>
-            <label>
-              <span>{t.access.emailLogin.verificationCode}</span>
-              <input value={code} onChange={(event) => setCode(event.target.value)} inputMode="numeric" autoComplete="one-time-code" required suppressHydrationWarning />
-            </label>
+            <div className={accountFieldClassName}>
+              <label htmlFor={codeInputId}><span>{t.access.emailLogin.verificationCode}</span></label>
+              <input
+                id={codeInputId}
+                value={code}
+                onChange={(event) => updateCode(event.target.value)}
+                name="one-time-code"
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                pattern="[0-9]{6}"
+                maxLength={6}
+                aria-describedby={codeHintId}
+                aria-invalid={code.length > 0 && !otpReady ? true : undefined}
+                required
+                suppressHydrationWarning
+              />
+              <p className={accountFieldHintClassName} id={codeHintId}>{t.access.emailLogin.verificationCodeHint}</p>
+            </div>
             {activeFlow === "login" ? trustDeviceFields : null}
-            <Button type="submit" disabled={isSubmitting}>
+            <Button type="submit" disabled={!otpReady || isSubmitting}>
               <Icon name="check" />
               {activeFlow === "register" ? t.access.emailLogin.verifyEmail : t.access.emailLogin.signInAccount}
             </Button>
-            <Button type="button" variant="secondary" disabled={isSubmitting || resendCooldown > 0} onClick={() => void requestEmailCode()}>
+            <Button type="button" variant="secondary" disabled={!isEmailValid || (activeFlow === "register" && !passwordReady) || isSubmitting || resendCooldown > 0} onClick={() => void requestEmailCode()}>
               {t.access.emailLogin.resendCode}
               {resendCooldown > 0 ? t.access.emailLogin.resendCooldown({ seconds: resendCooldown }) : ""}
             </Button>
@@ -1238,8 +1272,8 @@ function EmailLoginPanel({
             </>
           ) : authStep === "email" ? (
             <>
-            <label>
-              <span>{t.access.emailLogin.email}</span>
+            <div className={accountFieldClassName}>
+              <label htmlFor={emailInputId}><span>{t.access.emailLogin.email}</span></label>
               <input
                 id={emailInputId}
                 value={email}
@@ -1249,14 +1283,17 @@ function EmailLoginPanel({
                 inputMode="email"
                 autoCapitalize="none"
                 autoComplete="username"
+                aria-describedby={emailHintId}
+                aria-invalid={isEmailInvalid ? true : undefined}
                 spellCheck={false}
                 placeholder="you@example.com"
                 required
                 suppressHydrationWarning
               />
-            </label>
-            <label>
-              <span>{t.access.emailLogin.password}</span>
+              <p className={accountFieldHintClassName} id={emailHintId}>{isEmailInvalid ? t.access.emailLogin.emailInvalidHint : t.access.emailLogin.emailHint}</p>
+            </div>
+            <div className={accountFieldClassName}>
+              <label htmlFor={passwordInputId}><span>{t.access.emailLogin.password}</span></label>
               <input
                 id={passwordInputId}
                 value={password}
@@ -1264,17 +1301,20 @@ function EmailLoginPanel({
                 name="password"
                 type="password"
                 autoComplete={passwordAutocomplete}
+                aria-describedby={passwordHintId}
+                aria-invalid={isPasswordInvalid ? true : undefined}
                 minLength={8}
                 required
                 suppressHydrationWarning
               />
-            </label>
+              <p className={accountFieldHintClassName} id={passwordHintId}>{t.access.emailLogin.passwordHint}</p>
+            </div>
             {activeFlow === "login" ? trustDeviceFields : null}
             <Button type="submit" disabled={!isEmailValid || !passwordReady || isSubmitting}>
               <Icon name={activeFlow === "register" ? "check" : "key"} />
               {activeFlow === "register" ? t.access.emailLogin.createWithPassword : t.access.emailLogin.signInAccount}
             </Button>
-            <Button type="button" variant="secondary" disabled={!isEmailValid || isSubmitting} onClick={() => void requestEmailCode()}>
+            <Button type="button" variant="secondary" disabled={!isEmailValid || (activeFlow === "register" && !passwordReady) || isSubmitting} onClick={() => void requestEmailCode()}>
               <Icon name="check" />
               {activeFlow === "register" ? t.access.emailLogin.sendRegisterCode : t.access.emailLogin.sendSignInCode}
             </Button>
@@ -1345,8 +1385,8 @@ function EmailLoginPanel({
               type="email"
               value={normalizedEmail}
             />
-            <label>
-              <span>{t.access.emailLogin.password}</span>
+            <div className={accountFieldClassName}>
+              <label htmlFor={`${passwordInputId}-step`}><span>{t.access.emailLogin.password}</span></label>
               <input
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
@@ -1354,11 +1394,14 @@ function EmailLoginPanel({
                 name="password"
                 type="password"
                 autoComplete={passwordAutocomplete}
+                aria-describedby={passwordHintId}
+                aria-invalid={isPasswordInvalid ? true : undefined}
                 minLength={8}
                 required
                 suppressHydrationWarning
               />
-            </label>
+              <p className={accountFieldHintClassName} id={passwordHintId}>{t.access.emailLogin.passwordHint}</p>
+            </div>
             {activeFlow === "login" ? trustDeviceFields : null}
             <Button type="submit" disabled={password.length < 8 || isSubmitting}>
               <Icon name="key" />
@@ -2513,6 +2556,7 @@ function destinationCityCountryName(cityName: string): string | null {
 function cityBelongsToCountry(cityName: string, countryName: string): boolean {
   return destinationCityCountryName(cityName)?.toLocaleLowerCase() === countryName.toLocaleLowerCase();
 }
+
 function formatPreviewTravelDate(value: string): string {
   if (!value) return "--";
   const date = new Date(`${value}T00:00:00`);
@@ -2992,9 +3036,9 @@ function SettingLine({ label, value }: { label: string; value: string }) {
   );
 }
 
-function StatusMessage({ children, tone }: { children: ReactNode; tone: "danger" | "success" }) {
+function StatusMessage({ children, id, tone }: { children: ReactNode; id?: string; tone: "danger" | "success" }) {
   return (
-    <p className={tone === "danger" ? accountDangerStatusClassName : accountSuccessStatusClassName} role={tone === "danger" ? "alert" : "status"}>
+    <p className={tone === "danger" ? accountDangerStatusClassName : accountSuccessStatusClassName} id={id} role={tone === "danger" ? "alert" : "status"}>
       <Icon name={tone === "danger" ? "alertCircle" : "check"} />
       {children}
     </p>
