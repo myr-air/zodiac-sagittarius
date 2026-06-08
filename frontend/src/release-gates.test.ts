@@ -17,12 +17,10 @@ const validProductionRuntimeEnv = {
     "postgres://sagittarius:secret-prod-password@postgres.13thx.com:5432/sagittarius",
   EMAIL_DELIVERY: "smtp",
   EMAIL_FROM: "Sagittarius <no-reply@13thx.com>",
-  NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL: "https://joii.13thx.com",
-  PASSKEY_ALLOWED_ORIGINS:
-    "https://joii.13thx.com,https://sagittarius.13thx.com",
+  NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL: "https://sagittarius.13thx.com",
+  PASSKEY_ALLOWED_ORIGINS: "https://sagittarius.13thx.com",
   RUST_LOG: "info,tower_http=info,sagittarius_api=info",
-  SAGITTARIUS_ALLOWED_ORIGINS:
-    "https://joii.13thx.com,https://sagittarius.13thx.com",
+  SAGITTARIUS_ALLOWED_ORIGINS: "https://sagittarius.13thx.com",
   SAGITTARIUS_ENV: "production",
   SAGITTARIUS_INTERNAL_API_BASE_URL: "http://sagittarius-api:5181",
   SAGITTARIUS_SEED_SAMPLE_DATA: "0",
@@ -41,7 +39,7 @@ const validReleaseSignoffEnv = {
   SAGITTARIUS_SIGNOFF_ALERT_EVIDENCE_URL:
     "https://alerts.13thx.com/incidents/sagittarius-write-routes",
   SAGITTARIUS_SIGNOFF_ALERT_ROUTING_VERIFIED: "1",
-  SAGITTARIUS_SIGNOFF_API_BASE_URL: "https://joii.13thx.com",
+  SAGITTARIUS_SIGNOFF_API_BASE_URL: "https://sagittarius.13thx.com",
   SAGITTARIUS_SIGNOFF_BROWSER_EVIDENCE_URL:
     "https://ci.13thx.com/sagittarius/runs/123/browser",
   SAGITTARIUS_SIGNOFF_BROWSER_PASSED: "1",
@@ -49,7 +47,7 @@ const validReleaseSignoffEnv = {
   SAGITTARIUS_SIGNOFF_ENVIRONMENT: "production-preflight",
   SAGITTARIUS_SIGNOFF_EVIDENCE_URL:
     "https://ci.13thx.com/sagittarius/runs/123",
-  SAGITTARIUS_SIGNOFF_FRONTEND_URL: "https://joii.13thx.com",
+  SAGITTARIUS_SIGNOFF_FRONTEND_URL: "https://sagittarius.13thx.com",
   SAGITTARIUS_SIGNOFF_ISSUE_EVIDENCE_URL:
     "https://issues.13thx.com/sagittarius?severity=P1,P2",
   SAGITTARIUS_SIGNOFF_MIGRATION_EVIDENCE_URL:
@@ -97,7 +95,7 @@ const placeholderReleaseSignoffUrlCases = [
 ];
 
 describe("release evidence gates", () => {
-  it("accepts the approved joii same-origin production runtime env", () => {
+  it("accepts the approved canonical same-origin production runtime env", () => {
     const result = runGate(
       "scripts/check-production-env.ts",
       validProductionRuntimeEnv,
@@ -107,15 +105,17 @@ describe("release evidence gates", () => {
     expect(outputOf(result)).toContain("production env check ok");
   });
 
-  it("accepts the approved sagittarius same-origin production runtime env", () => {
+  it("rejects joii as a runtime API base because it redirects to the canonical host", () => {
     const result = runGate("scripts/check-production-env.ts", {
       ...validProductionRuntimeEnv,
-      NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL: "https://sagittarius.13thx.com",
-      SAGITTARIUS_ALLOWED_ORIGINS: "https://sagittarius.13thx.com",
+      NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL: "https://joii.13thx.com",
+      SAGITTARIUS_ALLOWED_ORIGINS: "https://joii.13thx.com",
     });
 
-    expect(result.status).toBe(0);
-    expect(outputOf(result)).toContain("production env check ok");
+    expect(result.status).not.toBe(0);
+    expect(outputOf(result)).toContain(
+      "SAGITTARIUS_ALLOWED_ORIGINS should contain frontend origins, not the API base URL",
+    );
   });
 
   it("accepts production runtime env with ambient release signoff fields outside file mode", () => {
@@ -131,8 +131,9 @@ describe("release evidence gates", () => {
   it("rejects approved same-origin production domains with explicit ports", () => {
     const result = runGate("scripts/check-production-env.ts", {
       ...validProductionRuntimeEnv,
-      NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL: "https://joii.13thx.com:444",
-      SAGITTARIUS_ALLOWED_ORIGINS: "https://joii.13thx.com:444",
+      NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL:
+        "https://sagittarius.13thx.com:444",
+      SAGITTARIUS_ALLOWED_ORIGINS: "https://sagittarius.13thx.com:444",
     });
 
     expect(result.status).not.toBe(0);

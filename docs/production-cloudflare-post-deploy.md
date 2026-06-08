@@ -5,13 +5,12 @@ app.
 
 ## Current Production Hostnames
 
-- Primary intended hostname: `joii.13thx.com`
-- Active fallback hostname: `sagittarius.13thx.com`
+- Canonical hostname: `sagittarius.13thx.com`
+- Redirect-only alias: `joii.13thx.com`
 
-If `joii.13thx.com` does not resolve yet, keep
-`NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL=https://sagittarius.13thx.com` in the
-runtime `.env.production` until the primary DNS record and tunnel route are
-working.
+Keep `NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL=https://sagittarius.13thx.com` in
+the runtime `.env.production`. Do not use `joii.13thx.com` as the runtime API
+base; that hostname redirects to the canonical host.
 
 ## Cloudflare DNS
 
@@ -49,21 +48,15 @@ In Cloudflare Dashboard:
 
 ```text
 Hostname: joii.13thx.com
-Service: http://sagittarius-web:5180
+Service: http://sagittarius-frontend:5180
 
 Hostname: sagittarius.13thx.com
-Service: http://sagittarius-web:5180
+Service: http://sagittarius-frontend:5180
 ```
 
-If traffic is routed through the shared Caddy gateway instead of directly to the
-Sagittarius frontend container, use this service target instead:
-
-```text
-Service: http://caddy-gateway:80
-```
-
-The repo Caddy gateway accepts both hostnames and routes them to the
-Sagittarius stack.
+The `sagittarius-frontend` alias intentionally points to the shared
+`caddy-gateway`. The gateway redirects `joii.13thx.com` to
+`sagittarius.13thx.com` and routes Sagittarius traffic to the app/API services.
 
 ## Cloudflare Access
 
@@ -81,8 +74,8 @@ of these:
 
 ```bash
 curl -I https://joii.13thx.com/
-curl -sS https://joii.13thx.com/api/v1/health
-curl -sS https://joii.13thx.com/api/v1/readiness
+curl -sS https://sagittarius.13thx.com/api/v1/health
+curl -sS https://sagittarius.13thx.com/api/v1/readiness
 ```
 
 ### Option B: Keep Access, Add Smoke Path Or Service Token
@@ -105,7 +98,7 @@ Use this if production should stay private.
 curl -sS \
   -H "CF-Access-Client-Id: $CF_ACCESS_CLIENT_ID" \
   -H "CF-Access-Client-Secret: $CF_ACCESS_CLIENT_SECRET" \
-  https://joii.13thx.com/api/v1/health
+  https://sagittarius.13thx.com/api/v1/health
 ```
 
 ## Post-Change Smoke
@@ -116,13 +109,15 @@ Run these after DNS and Access are updated:
 dig +short joii.13thx.com
 dig +short sagittarius.13thx.com
 curl -sS -I https://joii.13thx.com/
-curl -sS -D - https://joii.13thx.com/api/v1/health
-curl -sS -D - https://joii.13thx.com/api/v1/readiness
+curl -sS -D - https://sagittarius.13thx.com/api/v1/health
+curl -sS -D - https://sagittarius.13thx.com/api/v1/readiness
 ```
 
 Expected:
 
-- `joii.13thx.com` resolves.
-- The frontend returns `200` or an intentional app redirect, not DNS failure.
+- `joii.13thx.com` resolves and returns a `308` redirect to
+  `sagittarius.13thx.com`.
+- The canonical frontend returns `200` or an intentional app redirect, not DNS
+  failure.
 - Health and readiness return API responses, or return through Access only when
   the smoke command includes a valid Access service token.
