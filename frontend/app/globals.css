@@ -100,6 +100,40 @@ button:disabled,
   cursor: not-allowed;
 }
 
+.button:disabled {
+  color: var(--color-text-subtle);
+  background: var(--color-surface-muted);
+  box-shadow: none;
+}
+
+.button--primary:not(:disabled) {
+  color: #ffffff;
+  background: var(--color-primary);
+  box-shadow: 0 10px 20px rgb(15 118 110 / 0.16);
+}
+
+.button--primary:not(:disabled):hover {
+  background: var(--color-primary-strong);
+}
+
+.button--secondary:not(:disabled) {
+  color: var(--color-primary-strong);
+  background: var(--color-surface);
+  border-color: var(--color-border);
+}
+
+.button--ghost:not(:disabled) {
+  color: var(--color-text-muted);
+  background: var(--color-surface);
+  border-color: var(--color-border);
+}
+
+.button--danger:not(:disabled) {
+  color: #b91c1c;
+  background: var(--color-danger-soft);
+  border-color: var(--color-danger-border);
+}
+
 :where(button, a, input, select, textarea):focus-visible {
   outline: 3px solid color-mix(in srgb, var(--color-primary) 75%, white);
   outline-offset: 2px;

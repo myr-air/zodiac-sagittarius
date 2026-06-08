@@ -36,9 +36,9 @@ const buttonBaseClassName = [
   "no-underline",
   "transition-[background,border-color,color,box-shadow]",
   "duration-150",
-  "disabled:text-(--color-text-subtle)",
-  "disabled:bg-(--color-surface-muted)",
-  "disabled:shadow-none",
+  "[&:disabled]:text-[var(--color-text-subtle)]",
+  "[&:disabled]:bg-[var(--color-surface-muted)]",
+  "[&:disabled]:shadow-none",
 ];
 
 const buttonVariantClassNames = {

@@ -30,7 +30,7 @@ describe("shared UI primitives", () => {
     expect(screen.getByRole("button", { name: "Delete" })).toHaveClass(
       "button",
       "button--danger",
-      "disabled:bg-(--color-surface-muted)",
+      "[&:disabled]:bg-[var(--color-surface-muted)]",
     );
     expect(screen.getByLabelText("Panel")).toHaveClass(
       "panel",

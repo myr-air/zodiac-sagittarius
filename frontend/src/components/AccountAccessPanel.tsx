@@ -952,6 +952,10 @@ function EmailLoginPanel({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const normalizedEmail = email.trim();
   const isEmailValid = accountEmailPattern.test(normalizedEmail);
+  const passwordReady = password.length >= 8;
+  const emailInputId = `account-${activeFlow}-email`;
+  const passwordInputId = `account-${activeFlow}-password`;
+  const passwordAutocomplete = activeFlow === "register" ? "new-password" : "current-password";
 
   useEffect(() => {
     if (!challenge || resendCooldown <= 0) return undefined;
@@ -963,9 +967,13 @@ function EmailLoginPanel({
 
   async function submitEmail(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!isEmailValid) return;
+    if (!isEmailValid || !passwordReady) return;
     onError(null);
-    goToStep(activeFlow === "register" ? "password" : "methods");
+    if (activeFlow === "register") {
+      await requestEmailCode();
+      return;
+    }
+    await signInWithPassword();
   }
 
   async function submitPassword(event: FormEvent<HTMLFormElement>) {
@@ -978,6 +986,7 @@ function EmailLoginPanel({
   }
 
   async function requestEmailCode() {
+    if (!isEmailValid) return;
     setIsSubmitting(true);
     try {
       const nextChallenge = await accountClient.startEmailLogin(normalizedEmail);
@@ -1047,6 +1056,7 @@ function EmailLoginPanel({
   }
 
   async function signInWithPassword() {
+    if (!isEmailValid || !passwordReady) return;
     setIsSubmitting(true);
     try {
       const session = await accountClient.finishPasswordLogin({
@@ -1091,8 +1101,9 @@ function EmailLoginPanel({
   function resetChallenge() {
     setChallenge(null);
     setCode("");
+    setPassword("");
     setResendCooldown(0);
-    goToStep(activeFlow === "register" ? "password" : "methods", "back");
+    goToStep("email", "back");
     onError(null);
   }
 
@@ -1189,7 +1200,7 @@ function EmailLoginPanel({
         <div className={cn(accountStepStageClassName, accountStepStageDirectionClassNames[transitionDirection])} key={visualStep}>
           <PanelHeading
             icon={challenge ? "settings" : authStep === "password" ? "key" : "users"}
-            title={challenge ? t.access.emailLogin.verifyTitle : authStep === "setup" ? t.access.emailLogin.setupTitle : authStep === "methods" ? t.access.emailLogin.methodTitle : authStep === "password" ? t.access.emailLogin.passwordTitle : t.access.emailLogin.emailTitle}
+            title={challenge ? t.access.emailLogin.verifyTitle : authStep === "setup" ? t.access.emailLogin.setupTitle : authStep === "methods" ? t.access.emailLogin.methodTitle : authStep === "password" ? t.access.emailLogin.passwordTitle : activeFlow === "register" ? t.access.emailLogin.registerCredentialsTitle : t.access.emailLogin.loginCredentialsTitle}
             detail={
               challenge
                 ? t.access.emailLogin.expiresAt({ value: formatDateTime(challenge.expiresAt, locale) })
@@ -1199,7 +1210,7 @@ function EmailLoginPanel({
                     ? t.access.emailLogin.methodDetail
                     : authStep === "password"
                       ? activeFlow === "register" ? t.access.emailLogin.registerPasswordDetail : t.access.emailLogin.passwordDetail
-                      : t.access.emailLogin.emailDetail
+                      : activeFlow === "register" ? t.access.emailLogin.registerCredentialsDetail : t.access.emailLogin.loginCredentialsDetail
             }
           />
           {challenge ? (
@@ -1215,7 +1226,7 @@ function EmailLoginPanel({
             {activeFlow === "login" ? trustDeviceFields : null}
             <Button type="submit" disabled={isSubmitting}>
               <Icon name="check" />
-              {activeFlow === "register" ? t.access.emailLogin.createAccount : t.access.emailLogin.signInAccount}
+              {activeFlow === "register" ? t.access.emailLogin.verifyEmail : t.access.emailLogin.signInAccount}
             </Button>
             <Button type="button" variant="secondary" disabled={isSubmitting || resendCooldown > 0} onClick={() => void requestEmailCode()}>
               {t.access.emailLogin.resendCode}
@@ -1229,13 +1240,50 @@ function EmailLoginPanel({
             <>
             <label>
               <span>{t.access.emailLogin.email}</span>
-              <input value={email} onChange={(event) => setEmail(event.target.value)} type="email" autoComplete="email" placeholder="you@example.com" required suppressHydrationWarning />
+              <input
+                id={emailInputId}
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                name="email"
+                type="email"
+                inputMode="email"
+                autoCapitalize="none"
+                autoComplete="username"
+                spellCheck={false}
+                placeholder="you@example.com"
+                required
+                suppressHydrationWarning
+              />
+            </label>
+            <label>
+              <span>{t.access.emailLogin.password}</span>
+              <input
+                id={passwordInputId}
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                name="password"
+                type="password"
+                autoComplete={passwordAutocomplete}
+                minLength={8}
+                required
+                suppressHydrationWarning
+              />
             </label>
             {activeFlow === "login" ? trustDeviceFields : null}
-            <Button type="submit" disabled={!isEmailValid || isSubmitting}>
-              <Icon name="chevronRight" />
-              {t.access.emailLogin.continue}
+            <Button type="submit" disabled={!isEmailValid || !passwordReady || isSubmitting}>
+              <Icon name={activeFlow === "register" ? "check" : "key"} />
+              {activeFlow === "register" ? t.access.emailLogin.createWithPassword : t.access.emailLogin.signInAccount}
             </Button>
+            <Button type="button" variant="secondary" disabled={!isEmailValid || isSubmitting} onClick={() => void requestEmailCode()}>
+              <Icon name="check" />
+              {activeFlow === "register" ? t.access.emailLogin.sendRegisterCode : t.access.emailLogin.sendSignInCode}
+            </Button>
+            {activeFlow === "login" ? (
+              <Button type="button" variant="secondary" disabled={!isEmailValid || isSubmitting} onClick={() => void signInWithPasskey()}>
+                <Icon name="key" />
+                {t.access.emailLogin.signInWithPasskey}
+              </Button>
+            ) : null}
             <SocialAuthButtons labels={t.access.emailLogin} />
             </>
           ) : authStep === "methods" ? (
@@ -1287,13 +1335,26 @@ function EmailLoginPanel({
               <span>{activeFlow === "register" ? t.access.emailLogin.createFor : t.access.emailLogin.signInAs}</span>
               <strong>{normalizedEmail}</strong>
             </div>
+            <input
+              aria-hidden="true"
+              autoComplete="username"
+              className="sr-only"
+              name="email"
+              readOnly
+              tabIndex={-1}
+              type="email"
+              value={normalizedEmail}
+            />
             <label>
               <span>{t.access.emailLogin.password}</span>
               <input
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
+                id={`${passwordInputId}-step`}
+                name="password"
                 type="password"
-                autoComplete={activeFlow === "register" ? "new-password" : "current-password"}
+                autoComplete={passwordAutocomplete}
+                minLength={8}
                 required
                 suppressHydrationWarning
               />
