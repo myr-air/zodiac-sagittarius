@@ -1,10 +1,10 @@
-use sqlx::FromRow;
+use sqlx::{FromRow, types::Json};
 use time::{Date, OffsetDateTime};
 use uuid::Uuid;
 
 use crate::domain::types::{
     AccountSessionKind, ClaimableMember, ExpenseItemSummary, ItineraryCoordinates,
-    ItineraryItemSummary, PlanVariantSummary, StopNoteSummary, SuggestionSummary,
+    ItineraryItemSummary, PlanVariantSummary, StopNoteSummary, SuggestionSummary, TripCity,
     TripMemberAccessStatus, TripMemberSummary, TripRole, TripSummary, TripTaskSummary,
 };
 
@@ -12,7 +12,12 @@ use crate::domain::types::{
 pub struct TripAuthRecord {
     pub id: Uuid,
     pub name: String,
+    pub origin_label: String,
+    pub origin_city: String,
+    pub origin_country: String,
+    pub origin_country_code: String,
     pub destination_label: String,
+    pub destination_cities: Json<Vec<TripCity>>,
     pub countries: Vec<String>,
     pub start_date: Date,
     pub end_date: Date,
@@ -28,7 +33,12 @@ impl From<TripAuthRecord> for TripSummary {
         Self {
             id: record.id,
             name: record.name,
+            origin_label: record.origin_label,
+            origin_city: record.origin_city,
+            origin_country: record.origin_country,
+            origin_country_code: record.origin_country_code,
             destination_label: record.destination_label,
+            destination_cities: record.destination_cities.0,
             countries: record.countries,
             start_date: record.start_date,
             end_date: record.end_date,
@@ -154,7 +164,12 @@ pub struct NewUserSession<'a> {
 pub struct NewAccountTrip<'a> {
     pub id: Uuid,
     pub name: &'a str,
+    pub origin_label: &'a str,
+    pub origin_city: &'a str,
+    pub origin_country: &'a str,
+    pub origin_country_code: &'a str,
     pub destination_label: &'a str,
+    pub destination_cities: &'a [TripCity],
     pub countries: &'a [String],
     pub start_date: Date,
     pub end_date: Date,
@@ -236,7 +251,12 @@ pub struct NewTripMember<'a> {
 pub struct AccountTripRecord {
     pub id: Uuid,
     pub name: String,
+    pub origin_label: String,
+    pub origin_city: String,
+    pub origin_country: String,
+    pub origin_country_code: String,
     pub destination_label: String,
+    pub destination_cities: Json<Vec<TripCity>>,
     pub countries: Vec<String>,
     pub start_date: Date,
     pub end_date: Date,
@@ -303,6 +323,8 @@ pub struct AccountProfileRecord {
     pub avatar_color: String,
     pub locale: String,
     pub timezone: String,
+    pub home_city: Option<String>,
+    pub home_country: Option<String>,
     pub primary_email: Option<String>,
 }
 

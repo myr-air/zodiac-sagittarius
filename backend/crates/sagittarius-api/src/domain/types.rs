@@ -75,6 +75,8 @@ pub struct AccountProfile {
     pub avatar_color: String,
     pub locale: String,
     pub timezone: String,
+    pub home_city: Option<String>,
+    pub home_country: Option<String>,
     pub primary_email: Option<String>,
 }
 
@@ -135,12 +137,28 @@ pub struct PasskeyLoginStartResponse {
     pub allow_credentials: Vec<PasskeyCredentialDescriptor>,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct TripCity {
+    pub city: String,
+    pub country: String,
+    pub country_code: String,
+    pub timezone: String,
+    pub latitude: f64,
+    pub longitude: f64,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TripSummary {
     pub id: Uuid,
     pub name: String,
+    pub origin_label: String,
+    pub origin_city: String,
+    pub origin_country: String,
+    pub origin_country_code: String,
     pub destination_label: String,
+    pub destination_cities: Vec<TripCity>,
     pub countries: Vec<String>,
     pub start_date: Date,
     pub end_date: Date,
@@ -163,7 +181,12 @@ pub struct AccountTripCreateResponse {
 pub struct AccountTripSummary {
     pub id: Uuid,
     pub name: String,
+    pub origin_label: String,
+    pub origin_city: String,
+    pub origin_country: String,
+    pub origin_country_code: String,
     pub destination_label: String,
+    pub destination_cities: Vec<TripCity>,
     pub countries: Vec<String>,
     pub start_date: Date,
     pub end_date: Date,
@@ -625,6 +648,8 @@ mod account_type_tests {
                 avatar_color: "#0f766e".to_string(),
                 locale: "th-TH".to_string(),
                 timezone: "Asia/Bangkok".to_string(),
+                home_city: Some("Bangkok".to_string()),
+                home_country: Some("Thailand".to_string()),
                 primary_email: Some("aom@example.com".to_string()),
             },
             passkeys: vec![PasskeySummary {
@@ -690,11 +715,24 @@ mod account_type_tests {
         let plan_variant_id = Uuid::parse_str("018f4e80-0000-7000-a000-000000000007").unwrap();
         let start_date = Date::from_calendar_date(2026, time::Month::June, 1).unwrap();
         let end_date = Date::from_calendar_date(2026, time::Month::June, 8).unwrap();
+        let chiang_mai = TripCity {
+            city: "Chiang Mai".to_string(),
+            country: "Thailand".to_string(),
+            country_code: "TH".to_string(),
+            timezone: "Asia/Bangkok".to_string(),
+            latitude: 18.7883,
+            longitude: 98.9853,
+        };
 
         let account_trip = AccountTripSummary {
             id: trip_id,
             name: "Chiang Mai".to_string(),
-            destination_label: "Chiang Mai, Thailand".to_string(),
+            origin_label: "Bangkok, Thailand".to_string(),
+            origin_city: "Bangkok".to_string(),
+            origin_country: "Thailand".to_string(),
+            origin_country_code: "TH".to_string(),
+            destination_label: "Chiang Mai".to_string(),
+            destination_cities: vec![chiang_mai.clone()],
             countries: vec!["Thailand".to_string()],
             start_date,
             end_date,
@@ -705,7 +743,9 @@ mod account_type_tests {
             is_owner: true,
         };
         let value = serde_json::to_value(account_trip).unwrap();
-        assert_eq!(value["destinationLabel"], "Chiang Mai, Thailand");
+        assert_eq!(value["originLabel"], "Bangkok, Thailand");
+        assert_eq!(value["destinationLabel"], "Chiang Mai");
+        assert_eq!(value["destinationCities"][0]["city"], "Chiang Mai");
         assert_eq!(value["countries"], serde_json::json!(["Thailand"]));
         assert_eq!(
             value["startDate"],
@@ -755,7 +795,12 @@ mod account_type_tests {
             trip: TripSummary {
                 id: trip_id,
                 name: "Chiang Mai".to_string(),
-                destination_label: "Chiang Mai, Thailand".to_string(),
+                origin_label: "Bangkok, Thailand".to_string(),
+                origin_city: "Bangkok".to_string(),
+                origin_country: "Thailand".to_string(),
+                origin_country_code: "TH".to_string(),
+                destination_label: "Chiang Mai".to_string(),
+                destination_cities: vec![chiang_mai],
                 countries: vec!["Thailand".to_string()],
                 start_date,
                 end_date,
@@ -774,7 +819,8 @@ mod account_type_tests {
             },
         };
         let value = serde_json::to_value(account_trip_create).unwrap();
-        assert_eq!(value["trip"]["destinationLabel"], "Chiang Mai, Thailand");
+        assert_eq!(value["trip"]["originCity"], "Bangkok");
+        assert_eq!(value["trip"]["destinationLabel"], "Chiang Mai");
         assert_eq!(value["trip"]["countries"], serde_json::json!(["Thailand"]));
         assert_eq!(value["ownerMemberId"], owner_member_id.to_string());
         assert_eq!(

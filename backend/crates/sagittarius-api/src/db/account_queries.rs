@@ -1,3 +1,4 @@
+use sqlx::types::Json;
 use time::OffsetDateTime;
 use uuid::Uuid;
 
@@ -427,6 +428,8 @@ pub async fn get_user_profile(
            u.avatar_color,
            u.locale,
            u.timezone,
+           u.home_city,
+           u.home_country,
            primary_email.email as primary_email
          from users u
          left join lateral (
@@ -451,6 +454,8 @@ pub async fn update_user_profile(
     avatar_color: &str,
     locale: &str,
     timezone: &str,
+    home_city: Option<&str>,
+    home_country: Option<&str>,
 ) -> Result<Option<AccountProfileRecord>, sqlx::Error> {
     sqlx::query_as::<_, AccountProfileRecord>(
         "with updated as (
@@ -459,10 +464,12 @@ pub async fn update_user_profile(
                avatar_color = $3,
                locale = $4,
                timezone = $5,
+               home_city = $6,
+               home_country = $7,
                updated_at = now()
            where id = $1
              and disabled_at is null
-           returning id, display_name, avatar_color, locale, timezone
+           returning id, display_name, avatar_color, locale, timezone, home_city, home_country
          )
          select
            updated.id,
@@ -470,6 +477,8 @@ pub async fn update_user_profile(
            updated.avatar_color,
            updated.locale,
            updated.timezone,
+           updated.home_city,
+           updated.home_country,
            primary_email.email as primary_email
          from updated
          left join lateral (
@@ -485,6 +494,8 @@ pub async fn update_user_profile(
     .bind(avatar_color)
     .bind(locale)
     .bind(timezone)
+    .bind(home_city)
+    .bind(home_country)
     .fetch_optional(pool)
     .await
 }
@@ -548,7 +559,12 @@ pub async fn list_account_trips(
         "select
            trips.id,
            trips.name,
+           trips.origin_label,
+           trips.origin_city,
+           trips.origin_country,
+           trips.origin_country_code,
            trips.destination_label,
+           trips.destination_cities,
            trips.countries,
            trips.start_date,
            trips.end_date,
@@ -950,7 +966,12 @@ pub async fn insert_account_trip(
         "insert into trips (
            id,
            name,
+           origin_label,
+           origin_city,
+           origin_country,
+           origin_country_code,
            destination_label,
+           destination_cities,
            countries,
            start_date,
            end_date,
@@ -959,11 +980,16 @@ pub async fn insert_account_trip(
            active_plan_variant_id,
            owner_member_id
          )
-         values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+         values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
          returning
            id,
            name,
+           origin_label,
+           origin_city,
+           origin_country,
+           origin_country_code,
            destination_label,
+           destination_cities,
            countries,
            start_date,
            end_date,
@@ -975,7 +1001,12 @@ pub async fn insert_account_trip(
     )
     .bind(trip.id)
     .bind(trip.name)
+    .bind(trip.origin_label)
+    .bind(trip.origin_city)
+    .bind(trip.origin_country)
+    .bind(trip.origin_country_code)
     .bind(trip.destination_label)
+    .bind(Json(trip.destination_cities.to_vec()))
     .bind(trip.countries)
     .bind(trip.start_date)
     .bind(trip.end_date)

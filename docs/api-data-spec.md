@@ -26,7 +26,12 @@ Version: 2026-05-30.
 CREATE TABLE trips (
   id uuid PRIMARY KEY,
   name text NOT NULL,
+  origin_label text NOT NULL DEFAULT 'Bangkok, Thailand',
+  origin_city text NOT NULL DEFAULT 'Bangkok',
+  origin_country text NOT NULL DEFAULT 'Thailand',
+  origin_country_code text NOT NULL DEFAULT 'TH',
   destination_label text NOT NULL,
+  destination_cities jsonb NOT NULL DEFAULT '[]'::jsonb,
   start_date date NOT NULL,
   end_date date NOT NULL,
   join_id text NOT NULL UNIQUE,
@@ -389,7 +394,21 @@ The current frontend seed maps directly to this response:
   "trip": {
     "id": "trip-hong-kong-shenzhen",
     "name": "Hong Kong + Shenzhen Trip",
+    "originLabel": "Bangkok, Thailand",
+    "originCity": "Bangkok",
+    "originCountry": "Thailand",
+    "originCountryCode": "TH",
     "destinationLabel": "Hong Kong + Shenzhen",
+    "destinationCities": [
+      {
+        "city": "Hong Kong",
+        "country": "Hong Kong",
+        "countryCode": "HK",
+        "timezone": "Asia/Hong_Kong",
+        "latitude": 22.3193,
+        "longitude": 114.1694
+      }
+    ],
     "startDate": "2025-05-15",
     "endDate": "2025-05-20",
     "activePlanVariantId": "plan-main",

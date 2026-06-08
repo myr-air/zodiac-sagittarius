@@ -64,6 +64,15 @@ export interface ItineraryCoordinates {
   lng: number;
 }
 
+export interface TripCity {
+  city: string;
+  country: string;
+  countryCode: string;
+  timezone: string;
+  latitude: number;
+  longitude: number;
+}
+
 export type PlaceResolutionStatus = "resolved" | "ambiguous" | "unresolved";
 
 export interface PlaceResolutionCandidate {
@@ -335,7 +344,12 @@ export interface Trip {
   joinId: string;
   joinPasswordHash: string;
   name: string;
+  originLabel?: string;
+  originCity?: string;
+  originCountry?: string;
+  originCountryCode?: string;
   destinationLabel: string;
+  destinationCities?: TripCity[];
   countries?: string[];
   startDate: string;
   endDate: string;

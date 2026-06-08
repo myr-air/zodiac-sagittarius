@@ -1,6 +1,7 @@
 use std::{collections::BTreeMap, env};
 
 use serde::Deserialize;
+use sqlx::types::Json;
 use time::{Date, Duration, OffsetDateTime};
 use uuid::Uuid;
 
@@ -112,12 +113,15 @@ async fn ensure_briefing_shells(
     weather_fetch_enabled: bool,
 ) -> Result<(), ServiceError> {
     let by_date = first_item_by_date(itinerary_items);
-    let destination_coordinates =
+    let destination_coordinates = if let Some(coordinates) = destination_city_coordinates(trip) {
+        Some(coordinates)
+    } else {
         resolve_destination_coordinates(pool, &trip.destination_label, &trip.countries)
             .await
             .map(
                 |coordinates| serde_json::json!({ "lat": coordinates.lat, "lng": coordinates.lng }),
-            );
+            )
+    };
     let mut shells = Vec::new();
     let mut tx = pool.begin().await?;
     for date in briefing_window(trip.start_date, trip.end_date) {
@@ -229,6 +233,13 @@ fn location_for_date(
         trip.destination_label.clone(),
         destination_coordinates.cloned(),
     )
+}
+
+fn destination_city_coordinates(trip: &TripAuthRecord) -> Option<serde_json::Value> {
+    trip.destination_cities
+        .0
+        .first()
+        .map(|city| serde_json::json!({ "lat": city.latitude, "lng": city.longitude }))
 }
 
 fn record_to_summary(record: TripDailyBriefingRecord) -> TripDailyBriefing {
@@ -757,7 +768,19 @@ mod tests {
         let trip = TripAuthRecord {
             id: uuid::Uuid::from_u128(1),
             name: "Fallback Trip".to_string(),
+            origin_label: "Bangkok, Thailand".to_string(),
+            origin_city: "Bangkok".to_string(),
+            origin_country: "Thailand".to_string(),
+            origin_country_code: "TH".to_string(),
             destination_label: "Bangkok".to_string(),
+            destination_cities: Json(vec![crate::domain::types::TripCity {
+                city: "Bangkok".to_string(),
+                country: "Thailand".to_string(),
+                country_code: "TH".to_string(),
+                timezone: "Asia/Bangkok".to_string(),
+                latitude: 13.7563,
+                longitude: 100.5018,
+            }]),
             countries: vec!["TH".to_string()],
             start_date: Date::from_calendar_date(2026, Month::July, 10).unwrap(),
             end_date: Date::from_calendar_date(2026, Month::July, 12).unwrap(),

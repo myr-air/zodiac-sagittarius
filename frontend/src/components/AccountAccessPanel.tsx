@@ -3,11 +3,6 @@
 import { ComponentProps, CSSProperties, Dispatch, FormEvent, ReactNode, SetStateAction, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { geoCentroid, geoEqualEarth, geoPath } from "d3-geo";
-import { feature } from "topojson-client";
-import countriesTopology from "world-atlas/countries-110m.json";
-import type { Feature, FeatureCollection, Geometry } from "geojson";
-import type { Topology } from "topojson-specification";
 import type {
   AccountApiClient,
   AccountSession,
@@ -24,7 +19,7 @@ import type {
 } from "@/src/account/api-client";
 import { appRoutes } from "@/src/routes/app-routes";
 import type { TripApiClient, TripCockpit } from "@/src/trip/api-client";
-import type { Trip, TripParticipantSession } from "@/src/trip/types";
+import type { Trip, TripCity, TripParticipantSession } from "@/src/trip/types";
 import { Badge, Button } from "./ui";
 import { Icon } from "./icons";
 import { TripJoinGate } from "./TripJoinGate";
@@ -211,7 +206,7 @@ const tripRouteCalendarClassName =
 const tripCalendarSummaryClassName =
   "trip-calendar-summary grid grid-cols-2 gap-2.5 max-[767px]:grid-cols-1 [&_label]:grid [&_label]:min-h-0 [&_label]:gap-1 [&_input]:min-h-[42px] [&_input]:rounded-[9px] [&_input]:border [&_input]:border-(--color-border) [&_input]:bg-(--color-surface-subtle) [&_input]:px-3 [&_input]:text-sm [&_input]:font-black [&_span]:text-xs [&_span]:font-[850] [&_span]:text-(--color-text-muted)";
 const tripCalendarGridClassName =
-  "trip-calendar-grid grid grid-cols-7 gap-1.5 [&_button]:min-h-10 [&_button]:rounded-[8px] [&_button]:border [&_button]:border-(--color-border) [&_button]:bg-(--color-surface) [&_button]:text-xs [&_button]:font-black [&_button]:text-(--color-text-muted) [&_button:hover]:border-(--color-primary) [&_button:hover]:bg-(--color-primary-soft) [&_button[aria-pressed='true']]:border-(--color-primary) [&_button[aria-pressed='true']]:bg-(--color-primary) [&_button[aria-pressed='true']]:text-white";
+  "trip-calendar-grid grid grid-cols-7 gap-1.5 [&_button]:min-h-10 [&_button]:rounded-[8px] [&_button]:border [&_button]:border-(--color-border) [&_button]:bg-(--color-surface) [&_button]:text-xs [&_button]:font-black [&_button]:text-(--color-text-muted) [&_button]:transition-[background,border-color,color,box-shadow] [&_button:hover]:border-(--color-primary) [&_button:hover]:bg-(--color-primary-soft) [&_button[data-tour-tone='odd']]:border-(--color-route-border) [&_button[data-tour-tone='odd']]:bg-(--color-route-soft) [&_button[data-tour-tone='odd']]:text-[#1d4ed8] [&_button[data-tour-tone='even']]:border-(--color-primary-border) [&_button[data-tour-tone='even']]:bg-(--color-primary-soft) [&_button[data-tour-tone='even']]:text-(--color-primary-strong) [&_button[aria-pressed='true']]:border-(--color-primary) [&_button[aria-pressed='true']]:bg-(--color-primary) [&_button[aria-pressed='true']]:text-white [&_button[aria-pressed='true']]:shadow-[0_8px_16px_rgb(15_118_110_/_0.18)]";
 const tripDateArrowClassName =
   "trip-date-arrow grid h-[52px] w-[42px] items-center justify-items-center self-end rounded-full border border-(--color-primary-border) bg-(--color-primary-soft) text-(--color-primary-strong) max-[767px]:h-[34px] max-[767px]:w-full";
 const tripAccessPanelClassName =
@@ -263,15 +258,7 @@ const tripPreviewDestinationRowClassName =
 const tripTicketStubClassName =
   "trip-ticket-stub relative grid min-h-[504px] content-start gap-[22px] rounded-xl border-l border-dashed border-[rgb(100_116_139_/_0.34)] bg-[rgb(255_255_255_/_0.96)] p-7 max-[767px]:[.account-page--portal-new-trip_&]:grid-cols-2 max-[767px]:[.account-page--portal-new-trip_&]:gap-3.5 max-[767px]:[.account-page--portal-new-trip_&]:border-l-0 max-[767px]:[.account-page--portal-new-trip_&]:border-t max-[767px]:[.account-page--portal-new-trip_&]:p-[18px] max-[767px]:[.account-page--portal-new-trip_&]:min-h-0 [&>div]:grid [&>div]:gap-[7px] [&>div_span]:text-xs [&>div_span]:text-[#64748b] [&>div_strong]:text-lg [&>div_strong]:leading-6 [&>div_strong]:text-[#111827] [&>.icon]:size-8 [&>.icon]:justify-self-end [&>.icon]:text-[#4b6b70] [&>.icon]:-rotate-[35deg] max-[767px]:[.account-page--portal-new-trip_&>.icon]:size-[26px] max-[767px]:[.account-page--portal-new-trip_&>.icon]:justify-self-start max-[767px]:[.account-page--portal-new-trip_&>div_strong]:text-[15px] max-[767px]:[.account-page--portal-new-trip_&>div_strong]:leading-5";
 const tripTicketBarcodeClassName =
-  "trip-ticket-barcode mt-[34px] h-[142px] w-[58px] justify-self-end bg-[repeating-linear-gradient(90deg,#111827_0_2px,transparent_2px_4px,#111827_4px_5px,transparent_5px_9px)] max-[767px]:[.account-page--portal-new-trip_&]:col-start-2 max-[767px]:[.account-page--portal-new-trip_&]:row-span-3 max-[767px]:[.account-page--portal-new-trip_&]:row-start-2 max-[767px]:[.account-page--portal-new-trip_&]:mt-0 max-[767px]:[.account-page--portal-new-trip_&]:h-[108px] max-[767px]:[.account-page--portal-new-trip_&]:w-12";
-const tripPreviewInspirationClassName =
-  "trip-preview-inspiration relative mx-[-14px] grid gap-2.5 border-t border-(--color-border) bg-[rgb(255_255_255_/_0.62)] px-4 pb-5 pt-4 max-[767px]:mx-0 max-[767px]:border-t-0 max-[767px]:bg-transparent max-[767px]:px-0 max-[767px]:pb-0 max-[767px]:pt-0 [&>div]:relative [&>div]:grid [&>div]:gap-0.5 [&>div>span]:text-xs [&>div>span]:font-bold [&>div>span]:text-[#64748b] [&>div>strong]:text-[17px] [&>div>strong]:leading-5 [&>div>strong]:text-(--color-text) [&>ul]:m-0 [&>ul]:mt-2.5 [&>ul]:grid [&>ul]:list-none [&>ul]:grid-cols-4 [&>ul]:gap-3.5 [&>ul]:p-0 max-[767px]:[.account-page--portal-new-trip_&>ul]:grid-cols-1";
-const tripInspirationControlsClassName =
-  "trip-inspiration-controls absolute right-0.5 top-0 flex gap-2.5 [&_button]:grid [&_button]:size-9 [&_button]:cursor-pointer [&_button]:place-items-center [&_button]:rounded-[9px] [&_button]:border [&_button]:border-(--color-border) [&_button]:bg-white [&_button]:p-[9px] [&_button]:text-[#334155] [&_.icon]:size-[18px]";
-const tripInspirationItemClassName =
-  "grid min-w-0 gap-0 overflow-hidden rounded-[9px] border border-(--color-border) bg-(--color-surface) p-0 max-[767px]:[.account-page--portal-new-trip_&]:grid-cols-[78px_minmax(0,1fr)] [&>div]:grid [&>div]:min-w-0 [&>div]:gap-0.5 [&>div]:p-2.5 [&_strong]:overflow-hidden [&_strong]:text-ellipsis [&_strong]:whitespace-nowrap [&_strong]:text-[13px] [&_strong]:leading-4 [&_strong]:text-(--color-text) [&_small]:text-[10px] [&_small]:font-[750] [&_small]:leading-[14px] [&_small]:text-(--color-text-muted)";
-const tripInspirationSwatchClassName =
-  "min-h-[170px] rounded-none bg-[linear-gradient(145deg,color-mix(in_srgb,var(--card-accent)_24%,white),transparent),linear-gradient(45deg,rgb(255_255_255_/_0.18)_25%,transparent_25%_50%,rgb(255_255_255_/_0.18)_50%_75%,transparent_75%),color-mix(in_srgb,var(--card-accent)_18%,var(--color-surface-subtle))] bg-[length:auto,18px_18px,auto] max-[767px]:[.account-page--portal-new-trip_&]:min-h-[72px]";
+  "trip-ticket-barcode mt-[34px] h-[142px] w-[58px] justify-self-end rounded-[6px] border border-(--color-border) bg-[linear-gradient(90deg,#111827_0_3px,transparent_3px_7px,#111827_7px_9px,transparent_9px_14px,#111827_14px_15px,transparent_15px_19px,#111827_19px_23px,transparent_23px_29px,#111827_29px_31px,transparent_31px_37px,#111827_37px_40px,transparent_40px_46px,#111827_46px_47px,transparent_47px_52px,#111827_52px_56px,transparent_56px)] bg-[length:58px_100%] opacity-90 shadow-[inset_0_0_0_4px_white] max-[767px]:[.account-page--portal-new-trip_&]:col-start-2 max-[767px]:[.account-page--portal-new-trip_&]:row-span-3 max-[767px]:[.account-page--portal-new-trip_&]:row-start-2 max-[767px]:[.account-page--portal-new-trip_&]:mt-0 max-[767px]:[.account-page--portal-new-trip_&]:h-[108px] max-[767px]:[.account-page--portal-new-trip_&]:w-12";
 const portalFeatureCardClassName = cn(accountCardClassName, "portal-feature-card col-span-2 max-[767px]:col-auto");
 const portalSettingsCardClassName = cn(accountCardClassName, "account-settings-card col-span-2 max-[767px]:col-auto");
 const accountPanelHeadingClassName =
@@ -346,11 +333,6 @@ interface TripCountryOption {
   y: number;
 }
 
-interface TripCountrySelection {
-  name: string;
-  currency: string;
-}
-
 const ACCESS_ERROR_CODES = {
   accountLoadFailed: "account-load-failed",
   passkeyRegistrationCredential: "passkey-registration-credential",
@@ -358,16 +340,24 @@ const ACCESS_ERROR_CODES = {
   passkeyUnsupported: "passkey-unsupported",
 } as const;
 
-const defaultTripForm = (ownerDisplayName = ""): AccountTripCreateRequest => ({
-  name: "",
-  destinationLabel: "",
-  countries: [],
-  startDate: new Date().toISOString().slice(0, 10),
-  endDate: new Date(Date.now() + 3 * 86_400_000).toISOString().slice(0, 10),
-  ownerDisplayName,
-  joinId: generateJoinId(),
-  joinPassword: generateJoinPassword(),
-});
+const defaultTripForm = (ownerDisplayName = "", profile?: AccountSettings["profile"] | null): AccountTripCreateRequest => {
+  const origin = originCityFromProfile(profile);
+  return {
+    name: "",
+    originLabel: `${origin.city}, ${origin.country}`,
+    originCity: origin.city,
+    originCountry: origin.country,
+    originCountryCode: origin.countryCode,
+    destinationLabel: "",
+    destinationCities: [],
+    countries: [],
+    startDate: new Date().toISOString().slice(0, 10),
+    endDate: new Date(Date.now() + 3 * 86_400_000).toISOString().slice(0, 10),
+    ownerDisplayName,
+    joinId: generateJoinId(),
+    joinPassword: generateJoinPassword(),
+  };
+};
 
 const tripCountryOptions: TripCountryOption[] = [
   { code: "JP", name: "Japan", continent: "asia", currency: "JPY", cities: ["Tokyo", "Osaka", "Kyoto", "Sapporo"], x: 78, y: 42 },
@@ -396,24 +386,32 @@ const tripCountryOptions: TripCountryOption[] = [
   { code: "ZA", name: "South Africa", continent: "africa", currency: "ZAR", cities: ["Cape Town", "Johannesburg"], x: 55, y: 80 },
 ];
 
-const worldMapSize = { width: 960, height: 500 };
-const mapCountryNameAliases: Record<string, string> = {
-  "United States of America": "United States",
-};
-const worldMapProjection = geoEqualEarth().fitExtent([[12, 12], [worldMapSize.width - 12, worldMapSize.height - 12]], { type: "Sphere" });
-const worldMapPath = geoPath(worldMapProjection);
-const worldMapFeatureCollection = feature<{ name: string }>(
-  countriesTopology as unknown as Topology,
-  "countries",
-) as unknown as FeatureCollection<Geometry, { name: string }>;
-const worldMapCountries = worldMapFeatureCollection.features
-  .map((country) => ({
-    feature: country,
-    name: mapCountryNameAliases[country.properties.name] ?? country.properties.name,
-    path: worldMapPath(country),
-    region: mapCountryRegion(country),
-  }))
-  .filter((country): country is { feature: Feature<Geometry, { name: string }>; name: string; path: string; region: TripContinent } => Boolean(country.path));
+type TripCityOption = TripCity & { airportCode: string; capital?: boolean };
+
+const tripCityOptions: TripCityOption[] = [
+  { city: "Bangkok", country: "Thailand", countryCode: "TH", timezone: "Asia/Bangkok", latitude: 13.7563, longitude: 100.5018, airportCode: "BKK", capital: true },
+  { city: "Chiang Mai", country: "Thailand", countryCode: "TH", timezone: "Asia/Bangkok", latitude: 18.7883, longitude: 98.9853, airportCode: "CNX" },
+  { city: "Phuket", country: "Thailand", countryCode: "TH", timezone: "Asia/Bangkok", latitude: 7.8804, longitude: 98.3923, airportCode: "HKT" },
+  { city: "Tokyo", country: "Japan", countryCode: "JP", timezone: "Asia/Tokyo", latitude: 35.6762, longitude: 139.6503, airportCode: "TYO", capital: true },
+  { city: "Osaka", country: "Japan", countryCode: "JP", timezone: "Asia/Tokyo", latitude: 34.6937, longitude: 135.5023, airportCode: "OSA" },
+  { city: "Kyoto", country: "Japan", countryCode: "JP", timezone: "Asia/Tokyo", latitude: 35.0116, longitude: 135.7681, airportCode: "UKY" },
+  { city: "Sapporo", country: "Japan", countryCode: "JP", timezone: "Asia/Tokyo", latitude: 43.0618, longitude: 141.3545, airportCode: "CTS" },
+  { city: "Seoul", country: "South Korea", countryCode: "KR", timezone: "Asia/Seoul", latitude: 37.5665, longitude: 126.978, airportCode: "SEL", capital: true },
+  { city: "Busan", country: "South Korea", countryCode: "KR", timezone: "Asia/Seoul", latitude: 35.1796, longitude: 129.0756, airportCode: "PUS" },
+  { city: "Jeju", country: "South Korea", countryCode: "KR", timezone: "Asia/Seoul", latitude: 33.4996, longitude: 126.5312, airportCode: "CJU" },
+  { city: "Hong Kong", country: "Hong Kong", countryCode: "HK", timezone: "Asia/Hong_Kong", latitude: 22.3193, longitude: 114.1694, airportCode: "HKG", capital: true },
+  { city: "Shenzhen", country: "China", countryCode: "CN", timezone: "Asia/Shanghai", latitude: 22.5431, longitude: 114.0579, airportCode: "SZX" },
+  { city: "Shanghai", country: "China", countryCode: "CN", timezone: "Asia/Shanghai", latitude: 31.2304, longitude: 121.4737, airportCode: "SHA" },
+  { city: "Beijing", country: "China", countryCode: "CN", timezone: "Asia/Shanghai", latitude: 39.9042, longitude: 116.4074, airportCode: "BJS", capital: true },
+  { city: "Singapore", country: "Singapore", countryCode: "SG", timezone: "Asia/Singapore", latitude: 1.3521, longitude: 103.8198, airportCode: "SIN", capital: true },
+  { city: "Taipei", country: "Taiwan", countryCode: "TW", timezone: "Asia/Taipei", latitude: 25.033, longitude: 121.5654, airportCode: "TPE", capital: true },
+  { city: "Paris", country: "France", countryCode: "FR", timezone: "Europe/Paris", latitude: 48.8566, longitude: 2.3522, airportCode: "PAR", capital: true },
+  { city: "London", country: "United Kingdom", countryCode: "GB", timezone: "Europe/London", latitude: 51.5072, longitude: -0.1276, airportCode: "LON", capital: true },
+  { city: "New York", country: "United States", countryCode: "US", timezone: "America/New_York", latitude: 40.7128, longitude: -74.006, airportCode: "NYC" },
+  { city: "Los Angeles", country: "United States", countryCode: "US", timezone: "America/Los_Angeles", latitude: 34.0522, longitude: -118.2437, airportCode: "LAX" },
+  { city: "San Francisco", country: "United States", countryCode: "US", timezone: "America/Los_Angeles", latitude: 37.7749, longitude: -122.4194, airportCode: "SFO" },
+];
+
 const portalSectionOrder: PortalSection[] = ["dashboard", "trips", "new-trip", "explorer", "todos", "vault", "settings", "sign-out"];
 const portalSectionStorageKey = "sagittarius:portal-section-index";
 
@@ -432,15 +430,14 @@ interface CreatedTripShare {
   name: string;
 }
 
-type TripWizardStepId = "trip" | "place" | "dates" | "invite" | "preview" | "inspiration";
+type TripWizardStepId = "trip" | "place" | "dates" | "invite" | "preview";
 
 const tripWizardSteps: Array<{ id: TripWizardStepId; label: string; regionLabel: string; nextCopy: string }> = [
   { id: "trip", label: "Trip", regionLabel: "Trip details step", nextCopy: "Next: add destination detail" },
   { id: "place", label: "Place", regionLabel: "Destination step", nextCopy: "Next: choose route dates" },
   { id: "dates", label: "Dates", regionLabel: "Dates step", nextCopy: "Next: check invite access" },
   { id: "invite", label: "Invite", regionLabel: "Invite step", nextCopy: "Next: preview trip" },
-  { id: "preview", label: "Preview", regionLabel: "Preview step", nextCopy: "Next: inspiration" },
-  { id: "inspiration", label: "Inspiration", regionLabel: "Inspiration step", nextCopy: "Review ideas before create" },
+  { id: "preview", label: "Preview", regionLabel: "Preview step", nextCopy: "Review before create" },
 ];
 
 let accountPortalDataCache: (AccountPortalDataCache & { sessionToken: string }) | null = null;
@@ -626,7 +623,7 @@ export function AccountAccessPanel({
             <h1>{isAccountEntry ? t.access.entryHero.title : heroTitle(effectiveEntryAccessMode, t.access.titles)}</h1>
             <div className="h-6"></div>
             <p>{isAccountEntry ? t.access.entryHero.detail : heroDetail(effectiveEntryAccessMode, t.access.details)}</p>
-            {isAccountEntry ? null : <LanguageSwitch className={cn(accessLanguageSwitchClassName, isPortalEntry ? accountPortalLanguageSwitchClassName : "")} />}
+            {isAccountEntry || (isPortalEntry && portalSection === "new-trip") ? null : <LanguageSwitch className={cn(accessLanguageSwitchClassName, isPortalEntry ? accountPortalLanguageSwitchClassName : "")} />}
           </div>
           {isAccountEntry ? <AuthTravelCollage labels={t.access.entryHero} /> : null}
           {isAccountEntry ? <AuthHighlights flow={entryFlow} highlights={t.access.highlights} entryHero={t.access.entryHero} /> : null}
@@ -1472,7 +1469,7 @@ function AccountDashboard({
 }) {
   const { t } = useI18n();
   const defaultOwnerDisplayName = settings?.profile.displayName ?? t.access.dashboard.fallbackName;
-  const [tripForm, setTripForm] = useState(() => defaultTripForm());
+  const [tripForm, setTripForm] = useState(() => defaultTripForm(settings?.profile.displayName, settings?.profile));
   const [transitionDirection] = useState<"forward" | "back">(() => {
     const currentIndex = portalSectionOrder.indexOf(portalSection);
     return currentIndex < readPreviousPortalSectionIndex(currentIndex) ? "back" : "forward";
@@ -1509,7 +1506,7 @@ function AccountDashboard({
       });
       setHasCopiedCreatedInvite(false);
       await onCreatedTrip(response.memberSession, { openTrip: portalSection !== "new-trip" });
-      setTripForm(defaultTripForm());
+      setTripForm(defaultTripForm(settings?.profile.displayName, settings?.profile));
       onMessage(t.access.dashboard.createTrip.success);
       onError(null);
     } catch (caught) {
@@ -1675,7 +1672,7 @@ function AccountDashboard({
         </section> : null}
 
         {portalSection === "new-trip" ? <section className={cn(portalHistoryCardClassName, portalNewTripCardClassName)} id="portal-new-trip">
-          <div className={tripBuilderTopbarClassName}>
+          <div className={tripBuilderTopbarClassName} style={{ position: "relative", zIndex: 100 }}>
             <Button asChild variant="secondary">
               <Link href={appRoutes.portalMyTrips()}>
                 <Icon name="chevronLeft" />
@@ -1687,7 +1684,10 @@ function AccountDashboard({
               <strong>Create trip</strong>
               <small>สร้างแผนการเดินทางและเชิญเพื่อนร่วมทริปของคุณ</small>
             </div>
-            <Badge tone="neutral">Draft</Badge>
+            <div className="relative grid justify-items-end gap-2" style={{ zIndex: 80 }}>
+              <LanguageSwitch className="relative !m-0 !w-fit" style={{ zIndex: 80 }} />
+              <Badge tone="neutral">Draft</Badge>
+            </div>
           </div>
           {createdTripShare ? (
             <section className={tripCreatedShareClassName} role="region" aria-label="Created trip share link">
@@ -1915,7 +1915,6 @@ function PortalTripWizard({
   const [cityQuery, setCityQuery] = useState("");
   const [hasEditedOwnerDisplayName, setHasEditedOwnerDisplayName] = useState(false);
   const [hasCopiedJoinCode, setHasCopiedJoinCode] = useState(false);
-  const [inspirationOffset, setInspirationOffset] = useState(0);
   const [selectingDateStep, setSelectingDateStep] = useState<"depart" | "return">("depart");
   const [accessSalt, setAccessSalt] = useState(() => randomToken(3));
   const [activeMobileStep, setActiveMobileStep] = useState<TripWizardStepId>("trip");
@@ -1923,35 +1922,40 @@ function PortalTripWizard({
   const mobileStepButtonRefs = useRef<Map<TripWizardStepId, HTMLButtonElement>>(new Map());
   const ownerDisplayName = tripForm.ownerDisplayName;
   const effectiveOwnerDisplayName = hasEditedOwnerDisplayName ? ownerDisplayName : ownerDisplayName || defaultOwnerDisplayName;
-  const selectedCountries = selectedTripCountries(tripForm.countries, tripForm.destinationLabel);
-  const selectedCountryNames = selectedCountries.map((country) => country.name);
-  const selectedCityNames = selectedDestinationCities(tripForm.destinationLabel, selectedCountryNames);
-  const selectedDestinationNames = [...selectedCountryNames, ...selectedCityNames];
+  const selectedDestinationCities = tripForm.destinationCities;
+  const selectedCountryNames = uniqueList(selectedDestinationCities.map((city) => city.country));
+  const selectedCityNames = selectedDestinationCities.map((city) => city.city);
+  const selectedDestinationNames = selectedCityNames;
   const selectedDestinationKey = selectedDestinationNames.join("|");
-  const destinationComplete = selectedCountries.length > 0;
+  const destinationComplete = selectedDestinationCities.length > 0;
   const datesComplete = Boolean(tripForm.startDate && tripForm.endDate);
   const generatedJoinId = generateJoinIdForTrip(tripForm.startDate, selectedDestinationNames, accessSalt);
   const generatedJoinPassword = tripForm.joinPassword.match(/^[A-Z0-9]{4}-[A-Z0-9]{4}$/) ? tripForm.joinPassword : generateJoinPassword();
   const accessComplete = Boolean(effectiveOwnerDisplayName.trim() && generatedJoinId.trim() && generatedJoinPassword.match(/^[A-Z0-9]{4}-[A-Z0-9]{4}$/));
   const canSubmit = Boolean(tripForm.name.trim()) && destinationComplete && datesComplete && accessComplete;
-  const suggestedCountries = countrySuggestions(countryQuery, "all", selectedCountryNames);
+  const suggestedCities = citySuggestions(cityQuery || countryQuery, selectedDestinationCities);
   const destinationSummary = selectedDestinationNames.length ? selectedDestinationNames.join(", ") : "Add at least one place";
-  const currencySummary = selectedCountries.length ? uniqueList(selectedCountries.map((country) => country.currency).filter(Boolean)).join(", ") || "Currency by country" : "Currency";
+  const currencySummary = selectedCountryNames.length ? uniqueList(selectedCountryNames.map((countryName) => tripCountryOptions.find((country) => country.name === countryName)?.currency ?? "").filter(Boolean)).join(", ") || "Currency by city" : "Currency";
   const previewTripName = tripForm.name.trim() || "Untitled trip";
   const inviteStatus = accessComplete ? "Invite ready" : "Invite draft";
-  const inspirationCards = rotateList(tripPreviewCards(selectedDestinationNames), inspirationOffset);
   const destinationCards = tripDestinationCards(selectedCountryNames, selectedCityNames);
   const previewStartDate = formatPreviewTravelDate(tripForm.startDate);
   const previewEndDate = formatPreviewTravelDate(tripForm.endDate);
   const previewNightCount = tripNightCount(tripForm.startDate, tripForm.endDate);
   const routeDestinationCode = destinationRouteCode(selectedDestinationNames);
   const joinCode = generatedJoinId;
-  const calendarDays = routeCalendarDays(tripForm.startDate || "2026-06-01");
+  const calendarDays = routeCalendarDays(tripForm.startDate || "2026-06-01", tripForm.startDate, tripForm.endDate);
   const activeMobileStepIndex = Math.max(0, tripWizardSteps.findIndex((step) => step.id === activeMobileStep));
   const activeMobileStepMeta = tripWizardSteps[activeMobileStepIndex] ?? tripWizardSteps[0];
   const previousMobileStep = tripWizardSteps[activeMobileStepIndex - 1] ?? null;
   const nextMobileStep = tripWizardSteps[activeMobileStepIndex + 1] ?? null;
-  const isMobilePreviewStep = activeMobileStep === "preview" || activeMobileStep === "inspiration";
+  const isMobilePreviewStep = activeMobileStep === "preview";
+  const currentStepComplete = tripStepComplete(activeMobileStep, {
+    accessComplete,
+    datesComplete,
+    destinationComplete,
+    tripNameComplete: Boolean(tripForm.name.trim()),
+  });
 
   useEffect(() => {
     onChange((current) => {
@@ -1980,16 +1984,21 @@ function PortalTripWizard({
     }));
   }
 
-  function updateCountries(nextCountries: string[]) {
-    onChange((current) => ({ ...current, countries: nextCountries, destinationLabel: [...nextCountries, ...selectedCityNames].join(", ") }));
+  function updateDestinationCities(nextCities: TripCity[]) {
+    const nextCountries = uniqueList(nextCities.map((city) => city.country));
+    onChange((current) => ({
+      ...current,
+      countries: nextCountries,
+      destinationCities: nextCities,
+      destinationLabel: nextCities.map((city) => city.city).join(", "),
+    }));
     setCountryQuery("");
+    setCityQuery("");
   }
 
-  function toggleCountry(countryName: string) {
-    const nextCountries = selectedCountryNames.includes(countryName)
-      ? selectedCountryNames.filter((name) => name !== countryName)
-      : [...selectedCountryNames, countryName];
-    updateCountries(nextCountries);
+  function selectDestinationCity(city: TripCityOption) {
+    if (selectedDestinationCities.some((selected) => selected.city.toLocaleLowerCase() === city.city.toLocaleLowerCase() && selected.countryCode === city.countryCode)) return;
+    updateDestinationCities([...selectedDestinationCities, tripCityFromOption(city)]);
   }
 
   function focusDestinationSearch() {
@@ -2000,17 +2009,34 @@ function PortalTripWizard({
     onChange((current) => ({ ...current, startDate: current.endDate, endDate: current.startDate }));
   }
 
+  function updateStartDate(date: string) {
+    onChange((current) => {
+      if (!date || !current.endDate) return { ...current, startDate: date };
+      if (Date.parse(`${date}T00:00:00`) > Date.parse(`${current.endDate}T00:00:00`)) {
+        return { ...current, startDate: current.endDate, endDate: date };
+      }
+      return { ...current, startDate: date };
+    });
+  }
+
+  function updateEndDate(date: string) {
+    onChange((current) => {
+      if (!date || !current.startDate) return { ...current, endDate: date };
+      if (Date.parse(`${date}T00:00:00`) < Date.parse(`${current.startDate}T00:00:00`)) {
+        return { ...current, startDate: date, endDate: current.startDate };
+      }
+      return { ...current, endDate: date };
+    });
+  }
+
   function addCityStop() {
-    const nextCity = cityQuery.trim();
+    const nextCity = (countryQuery || cityQuery).trim();
     if (!nextCity || selectedDestinationNames.some((name) => name.toLocaleLowerCase() === nextCity.toLocaleLowerCase())) return;
-    const nextCities = [...selectedCityNames, nextCity];
-    onChange((current) => ({ ...current, destinationLabel: [...selectedCountryNames, ...nextCities].join(", ") }));
-    setCityQuery("");
+    updateDestinationCities([...selectedDestinationCities, customTripCity(nextCity, selectedDestinationCities[0])]);
   }
 
   function removeCityStop(cityName: string) {
-    const nextCities = selectedCityNames.filter((name) => name !== cityName);
-    onChange((current) => ({ ...current, destinationLabel: [...selectedCountryNames, ...nextCities].join(", ") }));
+    updateDestinationCities(selectedDestinationCities.filter((city) => city.city !== cityName));
   }
 
   function selectCalendarDate(date: string) {
@@ -2019,7 +2045,17 @@ function PortalTripWizard({
       setSelectingDateStep("return");
       return;
     }
-    onChange((current) => ({ ...current, endDate: date }));
+    onChange((current) => {
+      if (current.startDate && Date.parse(`${date}T00:00:00`) < Date.parse(`${current.startDate}T00:00:00`)) {
+        return { ...current, startDate: date, endDate: current.startDate };
+      }
+      return { ...current, endDate: date };
+    });
+    setSelectingDateStep("depart");
+  }
+
+  function clearTravelDates() {
+    onChange((current) => ({ ...current, startDate: "", endDate: "" }));
     setSelectingDateStep("depart");
   }
 
@@ -2032,10 +2068,6 @@ function PortalTripWizard({
     } catch {
       setHasCopiedJoinCode(false);
     }
-  }
-
-  function shiftInspiration(direction: -1 | 1) {
-    setInspirationOffset((current) => current + direction);
   }
 
   function mobileStepClassName(stepId: TripWizardStepId, baseClassName = tripStepSectionClassName) {
@@ -2117,109 +2149,68 @@ function PortalTripWizard({
                   <span>เลือกจุดหมายปลายทาง</span>
                 </div>
                 <div className={tripCountryPickerClassName}>
-                {selectedCountryNames.length ? (
-                  <div className={tripFormDestinationRowClassName} aria-label="Selected destinations">
-                    <div className="sr-only" aria-label="Selected countries">
-                      {selectedCountryNames.map((countryName) => (
-                        <button type="button" key={countryName} aria-label={countryName} onClick={() => toggleCountry(countryName)}>
-                          {countryName}
-                        </button>
-                      ))}
-                    </div>
-                    {destinationCards.map((card) => (
-                      <article key={card.title} className={tripMiniDestinationClassName}>
-                        <span className={tripPlaceThumbClassName} aria-hidden="true" />
-                        <div>
-                          <strong>{card.title}</strong>
-                          <small>{card.detail}</small>
-                        </div>
-                        <button type="button" aria-label={`Remove ${card.countryName}`} onClick={() => toggleCountry(card.countryName)}>
-                          <Icon name="x" />
-                        </button>
-                      </article>
-                    ))}
-                    <button className={tripMiniAddClassName} type="button" onClick={focusDestinationSearch}>
-                      <Icon name="plus" />
-                      เพิ่มจุดหมาย
-                    </button>
-                    <div className={tripCityEntryClassName}>
-                      <label>
-                        <span>Add city or stop</span>
-                        <input
-                          aria-label="Add city or stop"
-                          value={cityQuery}
-                          onChange={(event) => setCityQuery(event.target.value)}
-                          placeholder="Central, Tsim Sha Tsui, Sheung Wan..."
-                        />
-                      </label>
-                      <Button type="button" variant="secondary" onClick={addCityStop} disabled={!cityQuery.trim()}>
-                        <Icon name="plus" />
-                        Add city
-                      </Button>
-                    </div>
-                    {selectedCityNames.length ? (
-                      <div className={tripCityChipListClassName} aria-label="Selected cities">
-                        {selectedCityNames.map((cityName) => (
-                          <button type="button" key={cityName} onClick={() => removeCityStop(cityName)} aria-label={`Remove ${cityName}`}>
-                            {cityName}
-                            <Icon name="x" />
+                  <label className={tripCountrySearchClassName}>
+                    <span>Origin city</span>
+                    <input aria-label="Origin city" value={tripForm.originLabel} readOnly />
+                  </label>
+                  <div className={tripCountrySearchClassName}>
+                    <label>
+                      <span className="sr-only">Search destination cities</span>
+                      <input
+                        aria-label="Search destination cities"
+                        ref={destinationSearchRef}
+                        value={cityQuery}
+                        onChange={(event) => setCityQuery(event.target.value)}
+                        placeholder="Tokyo, Seoul, Hong Kong..."
+                      />
+                    </label>
+                    {suggestedCities.length ? (
+                      <div className={tripCountrySuggestionsClassName} aria-label="Destination city suggestions">
+                        {suggestedCities.map((city) => (
+                          <button type="button" key={`${city.city}-${city.countryCode}`} aria-label={`${city.city}, ${city.country}`} onClick={() => selectDestinationCity(city)}>
+                            <strong>{city.city}</strong>
+                            <span>{city.country} · {city.countryCode} · {city.timezone}</span>
                           </button>
                         ))}
                       </div>
                     ) : null}
-                    <div className={tripFormDestinationSearchClassName}>
-                      <label>
-                        <span className="sr-only">Search destinations</span>
-                        <input
-                          aria-label="Search destinations"
-                          ref={destinationSearchRef}
-                          value={countryQuery}
-                          onChange={(event) => setCountryQuery(event.target.value)}
-                          placeholder="เพิ่มเมืองหรือประเทศ..."
-                        />
-                      </label>
-                      {countryQuery.trim() && suggestedCountries.length ? (
-                        <div className={tripCountrySuggestionsClassName} aria-label="Destination suggestions">
-                          {suggestedCountries.map((country) => (
-                            <button type="button" key={country.code} aria-label={country.name} onClick={() => toggleCountry(country.name)}>
-                              <strong>{country.name}</strong>
-                              <span>{country.cities.slice(0, 3).join(", ")} · {country.currency}</span>
-                            </button>
-                          ))}
-                        </div>
-                      ) : null}
-                    </div>
                   </div>
-                ) : (
-                  <>
-                    <div className={tripCountrySearchClassName}>
-                      <label>
-                        <span className="sr-only">Where are you going?</span>
-                        <input
-                          aria-label="Search destinations"
-                          ref={destinationSearchRef}
-                          value={countryQuery}
-                          onChange={(event) => setCountryQuery(event.target.value)}
-                          placeholder="Hong Kong, Shenzhen, Hokkaido..."
-                        />
-                      </label>
-                      {suggestedCountries.length ? (
-                        <div className={tripCountrySuggestionsClassName} aria-label="Destination suggestions">
-                          {suggestedCountries.map((country) => (
-                            <button type="button" key={country.code} aria-label={country.name} onClick={() => toggleCountry(country.name)}>
-                              <strong>{country.name}</strong>
-                              <span>{country.cities.slice(0, 3).join(", ")} · {country.currency}</span>
-                            </button>
-                          ))}
-                        </div>
-                      ) : null}
+                  {selectedCityNames.length ? (
+                    <div className={tripFormDestinationRowClassName} aria-label="Selected destinations">
+                      {destinationCards.map((card) => (
+                        <article key={card.title} className={tripMiniDestinationClassName}>
+                          <span className={tripPlaceThumbClassName} aria-hidden="true" />
+                          <div>
+                            <strong>{card.title}</strong>
+                            <small>{card.detail}</small>
+                          </div>
+                          <button type="button" aria-label={`Remove ${card.title}`} onClick={() => removeCityStop(card.title)}>
+                            <Icon name="x" />
+                          </button>
+                        </article>
+                      ))}
                     </div>
+                  ) : (
                     <div className={tripSelectedCountriesClassName} aria-label="Selected destinations">
-                      <span>Add a country, city, or region.</span>
+                      <span>Choose at least one destination city.</span>
                     </div>
-                  </>
-                )}
-              </div>
+                  )}
+                  <div className={tripCityEntryClassName}>
+                    <label>
+                      <span>Add city manually</span>
+                      <input
+                        aria-label="Add city or stop"
+                        value={countryQuery}
+                        onChange={(event) => setCountryQuery(event.target.value)}
+                        placeholder="City outside the list"
+                      />
+                    </label>
+                    <Button type="button" variant="secondary" onClick={addCityStop} disabled={!countryQuery.trim()}>
+                      <Icon name="plus" />
+                      Add city
+                    </Button>
+                  </div>
+                </div>
               </section>
 
               <section
@@ -2240,7 +2231,8 @@ function PortalTripWizard({
                     <input
                       aria-label={t.access.dashboard.createTrip.labels.startDate}
                       value={tripForm.startDate}
-                      onChange={(event) => onChange((current) => ({ ...current, startDate: event.target.value }))}
+                      type="date"
+                      onChange={(event) => updateStartDate(event.target.value)}
                     />
                   </label>
                   <label>
@@ -2248,7 +2240,8 @@ function PortalTripWizard({
                     <input
                       aria-label={t.access.dashboard.createTrip.labels.endDate}
                       value={tripForm.endDate}
-                      onChange={(event) => onChange((current) => ({ ...current, endDate: event.target.value }))}
+                      type="date"
+                      onChange={(event) => updateEndDate(event.target.value)}
                     />
                   </label>
                 </div>
@@ -2258,14 +2251,20 @@ function PortalTripWizard({
                     <button
                       type="button"
                       key={day.value}
-                      aria-label={`Select ${day.label} as ${selectingDateStep} date`}
+                      aria-label={`${day.tourDay ? `Tour day ${day.tourDay}. ` : ""}Select ${day.label} as ${selectingDateStep} date`}
                       aria-pressed={day.value === tripForm.startDate || day.value === tripForm.endDate}
+                      data-in-range={day.inRange ? "true" : "false"}
+                      data-tour-tone={day.tourTone}
                       onClick={() => selectCalendarDate(day.value)}
                     >
                       {day.day}
                     </button>
                   ))}
                 </div>
+                <Button type="button" variant="secondary" onClick={clearTravelDates}>
+                  <Icon name="x" />
+                  Clear dates
+                </Button>
                 <button className={tripDateArrowClassName} type="button" onClick={swapTravelDates} aria-label="Swap depart and return dates">
                   <Icon name="route" />
                 </button>
@@ -2301,6 +2300,7 @@ function PortalTripWizard({
                   <label>
                     <span>{t.access.dashboard.createTrip.labels.joinId}</span>
                     <input value={generatedJoinId} readOnly />
+                    <small>Hint: travel month + city code + short suffix.</small>
                   </label>
                   <label>
                     <span>{t.access.dashboard.createTrip.labels.joinPassword}</span>
@@ -2351,16 +2351,16 @@ function PortalTripWizard({
               <p>Trip ID: TRP-26-0001 <Badge tone={canSubmit ? "success" : "neutral"}>{canSubmit ? "Ready" : "Draft"}</Badge></p>
               <div className={tripFlightRouteClassName}>
                 <div>
-                  <strong>BKK</strong>
-                  <span>Bangkok</span>
+                  <strong>{destinationRouteCode([tripForm.originCity])}</strong>
+                  <span>{tripForm.originCity}</span>
                 </div>
                 <span className={tripFlightLineClassName}><Icon name="route" /></span>
                 <div>
                   <strong>{routeDestinationCode}</strong>
-                  <span>{selectedCountryNames[0] ?? "Destination"}</span>
+                  <span>{selectedCityNames[0] ?? "Destination"}</span>
                 </div>
               </div>
-              <TripPreviewLiveMap selectedCountryNames={selectedCountryNames} />
+              <TripPreviewLiveMap originCity={tripCityFromFormOrigin(tripForm)} destinationCities={selectedDestinationCities} />
               <div className={tripPreviewDestinationRowClassName}>
                 <span>Destinations</span>
                 <div>
@@ -2399,38 +2399,6 @@ function PortalTripWizard({
             </div>
           </div>
           </section>
-          <section
-            className={mobileStepClassName("inspiration", "trip-inspiration-step grid")}
-            role="region"
-            aria-label={tripWizardSteps[5].regionLabel}
-            data-mobile-active={activeMobileStep === "inspiration" ? "true" : "false"}
-          >
-          <div className={tripPreviewInspirationClassName}>
-            <div>
-              <strong>Inspiration board</strong>
-              <span>ไอเดียสำหรับทริปนี้</span>
-              <div className={tripInspirationControlsClassName}>
-                <button type="button" onClick={() => shiftInspiration(-1)} aria-label="Previous inspiration">
-                  <Icon name="chevronLeft" />
-                </button>
-                <button type="button" onClick={() => shiftInspiration(1)} aria-label="Next inspiration">
-                  <Icon name="chevronRight" />
-                </button>
-              </div>
-            </div>
-            <ul aria-label="Destination inspiration">
-              {inspirationCards.map((card) => (
-                <li key={card.title} className={tripInspirationItemClassName} style={{ "--card-accent": card.accent } as CSSProperties}>
-                  <span className={tripInspirationSwatchClassName} aria-hidden="true" />
-                  <div>
-                    <strong>{card.title}</strong>
-                    <small>{card.detail}</small>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </div>
-          </section>
           <div className={cn(tripShareStripClassName, "max-[767px]:hidden")}>
             <span><Icon name="users" /> แชร์โค้ดนี้กับเพื่อนเพื่อเข้าร่วมทริป</span>
             <span>Join code: <strong>{joinCode}</strong></span>
@@ -2456,7 +2424,7 @@ function PortalTripWizard({
         <Button
           type="button"
           variant="secondary"
-          disabled={!nextMobileStep}
+          disabled={!nextMobileStep || !currentStepComplete}
           aria-label={nextMobileStep ? `Next: ${nextMobileStep.label}` : "Next"}
           onClick={() => nextMobileStep ? setActiveMobileStep(nextMobileStep.id) : undefined}
         >
@@ -2478,37 +2446,6 @@ function PortalTripWizard({
       </div>
     </form>
   );
-}
-
-function tripPreviewCards(selectedDestinationNames: string[]): Array<{ title: string; detail: string; accent: string }> {
-  const selectedCityNames = selectedDestinationNames.filter((name) => !tripCountryOptions.some((country) => country.name === name));
-  if (selectedCityNames.length) {
-    return selectedCityNames.slice(0, 4).map((name, index) => ({
-      title: name,
-      detail: destinationCityCountryName(name) ?? "City stop",
-      accent: ["#0f766e", "#38bdf8", "#fb7185"][index % 3],
-    }));
-  }
-  if (selectedDestinationNames.includes("Japan")) {
-    return [
-      { title: "ย่านกิออน เกียวโต", detail: "Kyoto", accent: "#0f766e" },
-      { title: "วัดคินคะคุจิ", detail: "Kyoto", accent: "#38bdf8" },
-      { title: "ปราสาทโอซาก้า", detail: "Osaka", accent: "#fb7185" },
-      { title: "ชินเซไก", detail: "Osaka", accent: "#0f766e" },
-    ];
-  }
-  const selected = selectedDestinationNames.length ? selectedDestinationNames.slice(0, 4) : ["ย่านกิออน เกียวโต", "วัดคินคะคุจิ", "ปราสาทโอซาก้า", "ชินเซไก"];
-  return selected.map((name, index) => ({
-    title: name,
-    detail: selectedDestinationNames.length ? name : index < 2 ? "Kyoto" : "Osaka",
-    accent: ["#0f766e", "#38bdf8", "#fb7185"][index % 3],
-  }));
-}
-
-function rotateList<T>(items: T[], offset: number): T[] {
-  if (items.length <= 1) return items;
-  const normalizedOffset = ((offset % items.length) + items.length) % items.length;
-  return [...items.slice(normalizedOffset), ...items.slice(0, normalizedOffset)];
 }
 
 function tripDestinationCards(selectedCountryNames: string[], selectedCityNames: string[] = []): Array<{ title: string; detail: string; nights: string; countryName: string }> {
@@ -2541,19 +2478,36 @@ function formatPreviewTravelDate(value: string): string {
   return new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", year: "numeric" }).format(date);
 }
 
-function routeCalendarDays(startDate: string): Array<{ value: string; day: string; label: string }> {
-  const seedDate = new Date(`${startDate || "2026-06-01"}T00:00:00`);
+function routeCalendarDays(seed: string, startDate: string, endDate: string): Array<{ value: string; day: string; label: string; inRange: boolean; tourDay: number | null; tourTone: "odd" | "even" | "none" }> {
+  const seedDate = new Date(`${seed || "2026-06-01"}T00:00:00`);
   const year = Number.isNaN(seedDate.getTime()) ? 2026 : seedDate.getFullYear();
   const month = Number.isNaN(seedDate.getTime()) ? 5 : seedDate.getMonth();
-  return Array.from({ length: 14 }, (_, index) => {
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const start = Date.parse(`${startDate}T00:00:00`);
+  const end = Date.parse(`${endDate}T00:00:00`);
+  return Array.from({ length: daysInMonth }, (_, index) => {
     const date = new Date(year, month, index + 1);
-    const value = date.toISOString().slice(0, 10);
+    const value = localDateValue(date);
+    const time = date.getTime();
+    const inRange = Number.isFinite(start) && Number.isFinite(end) && time >= Math.min(start, end) && time <= Math.max(start, end);
+    const tourDay = inRange ? Math.round((time - Math.min(start, end)) / 86_400_000) + 1 : null;
     return {
       value,
       day: String(index + 1),
       label: new Intl.DateTimeFormat("en", { day: "numeric", month: "short", year: "numeric" }).format(date),
+      inRange,
+      tourDay,
+      tourTone: tourDay ? (tourDay % 2 ? "odd" : "even") : "none",
     };
   });
+}
+
+function localDateValue(date: Date): string {
+  return [
+    String(date.getFullYear()).padStart(4, "0"),
+    String(date.getMonth() + 1).padStart(2, "0"),
+    String(date.getDate()).padStart(2, "0"),
+  ].join("-");
 }
 
 function tripNightCount(startDate: string, endDate: string): string {
@@ -2564,8 +2518,9 @@ function tripNightCount(startDate: string, endDate: string): string {
   return `${days} คืน (${days + 1} วัน)`;
 }
 
-function TripPreviewLiveMap({ selectedCountryNames }: { selectedCountryNames: string[] }) {
-  const coordinates = useMemo(() => tripPreviewMapCoordinates(selectedCountryNames), [selectedCountryNames]);
+function TripPreviewLiveMap({ originCity, destinationCities }: { originCity: TripCity; destinationCities: TripCity[] }) {
+  const routeCities = useMemo(() => [originCity, ...destinationCities], [destinationCities, originCity]);
+  const coordinates = useMemo(() => routeCities.map((city) => [city.longitude, city.latitude] as [number, number]), [routeCities]);
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<import("maplibre-gl").Map | null>(null);
   const markersRef = useRef<Array<import("maplibre-gl").Marker>>([]);
@@ -2573,7 +2528,7 @@ function TripPreviewLiveMap({ selectedCountryNames }: { selectedCountryNames: st
   const liveMapEnabled = process.env.NODE_ENV !== "test";
 
   useEffect(() => {
-    if (!liveMapEnabled || selectedCountryNames.length === 0 || !mapContainerRef.current) return undefined;
+    if (!liveMapEnabled || destinationCities.length === 0 || !mapContainerRef.current) return undefined;
     let disposed = false;
     const markers = markersRef.current;
 
@@ -2631,14 +2586,14 @@ function TripPreviewLiveMap({ selectedCountryNames }: { selectedCountryNames: st
       mapRef.current?.remove();
       mapRef.current = null;
     };
-  }, [coordinates, liveMapEnabled, selectedCountryNames.length]);
+  }, [coordinates, destinationCities.length, liveMapEnabled]);
 
   return (
     <div className={cn(tripPreviewMapClassName, tripPreviewMapLiveClassName, mapState === "ready" ? tripPreviewMapReadyClassName : "")}>
       <div className={tripPreviewMapCanvasClassName} ref={mapContainerRef} aria-hidden="true" />
       {mapState !== "ready" ? (
         <div className={tripPreviewMapFallbackClassName}>
-          <CountrySvgFallback selectedCountryNames={selectedCountryNames} />
+          <FlightRouteFallback originCity={originCity} destinationCity={destinationCities[0]} />
           <span className={cn(tripPreviewPinClassName, tripPreviewPinOriginClassName)}><Icon name="location" /></span>
           <span className={cn(tripPreviewPinClassName, tripPreviewPinDestinationClassName)}><Icon name="map" /></span>
           <span className={tripPreviewRouteLineClassName} />
@@ -2652,40 +2607,21 @@ function TripPreviewLiveMap({ selectedCountryNames }: { selectedCountryNames: st
   );
 }
 
-function CountrySvgFallback({ selectedCountryNames }: { selectedCountryNames: string[] }) {
-  const countryName = selectedCountryNames[0] ?? "Thailand";
-  const option = tripCountryOptions.find((country) => country.name === countryName);
-  const country = worldMapCountries.find((candidate) => candidate.name === countryName);
-  const bounds = country ? worldMapPath.bounds(country.feature) : null;
-  const viewBox = bounds
-    ? paddedViewBox(bounds)
-    : "0 0 960 500";
-
+function FlightRouteFallback({ originCity, destinationCity }: { originCity: TripCity; destinationCity?: TripCity }) {
+  const destination = destinationCity ?? customTripCity("Destination", originCity);
   return (
-    <div className={tripCountrySvgFallbackClassName} aria-label="Country svg fallback map">
-      <svg viewBox={viewBox} role="img" aria-label={`${countryName} country outline`}>
-        {country?.path ? <path d={country.path} /> : <path d="M110 250c80-84 198-112 316-76 101 31 167 104 238 80 58-20 104 12 123 61-90 69-216 92-352 80-139-12-247-58-325-145Z" />}
-      </svg>
-      <strong>{option?.code ?? destinationRouteCode([countryName])}</strong>
+    <div className={tripCountrySvgFallbackClassName} aria-label={`Flight route from ${originCity.city} to ${destination.city}`}>
+      <div>
+        <strong>{originCity.countryCode}</strong>
+        <span>{originCity.city}</span>
+      </div>
+      <Icon name="route" />
+      <div>
+        <strong>{destination.countryCode}</strong>
+        <span>{destination.city}</span>
+      </div>
     </div>
   );
-}
-
-function paddedViewBox(bounds: [[number, number], [number, number]]): string {
-  const [[minX, minY], [maxX, maxY]] = bounds;
-  const width = Math.max(1, maxX - minX);
-  const height = Math.max(1, maxY - minY);
-  const padX = width * 0.18;
-  const padY = height * 0.18;
-  return `${minX - padX} ${minY - padY} ${width + padX * 2} ${height + padY * 2}`;
-}
-
-function tripPreviewMapCoordinates(selectedCountryNames: string[]): Array<[number, number]> {
-  const coordinates = selectedCountryNames
-    .map((countryName) => worldMapCountries.find((country) => country.name === countryName)?.feature)
-    .filter((country): country is Feature<Geometry, { name: string }> => Boolean(country))
-    .map((country) => geoCentroid(country) as [number, number]);
-  return coordinates.length ? coordinates : [[100, 20]];
 }
 
 function previewMapCenter(coordinates: Array<[number, number]>): [number, number] {
@@ -2710,61 +2646,110 @@ function fitPreviewMap(map: import("maplibre-gl").Map, coordinates: Array<[numbe
   map.fitBounds(bounds, { padding: 48, duration: 0, maxZoom: 4.2 });
 }
 
-function mapCountryRegion(country: Feature<Geometry, { name: string }>): TripContinent {
-  const [longitude, latitude] = geoCentroid(country);
-  if (longitude < -25) return latitude >= 12 ? "north-america" : "south-america";
-  if (longitude >= 110 && latitude < -5) return "oceania";
-  if (longitude >= -25 && longitude <= 60 && latitude >= -37 && latitude < 35) return "africa";
-  if (longitude >= -25 && longitude <= 65 && latitude >= 35) return "europe";
-  if (longitude >= 25 && latitude >= -12) return "asia";
-  return "all";
-}
-
 function normalizedTripForm(form: AccountTripCreateRequest, defaultOwnerDisplayName: string): AccountTripCreateRequest {
   const name = form.name.trim();
-  const countries = selectedTripCountries(form.countries, form.destinationLabel);
-  const countryNames = countries.map((country) => country.name);
-  const cityNames = selectedDestinationCities(form.destinationLabel, countryNames);
+  const destinationCities = form.destinationCities.map((city) => ({
+    ...city,
+    city: city.city.trim(),
+    country: city.country.trim(),
+    countryCode: city.countryCode.trim().toUpperCase(),
+    timezone: city.timezone.trim(),
+  })).filter((city) => city.city && city.country && city.countryCode);
+  const countryNames = uniqueList(destinationCities.map((city) => city.country));
   return {
     ...form,
     name,
+    originLabel: form.originLabel.trim() || "Bangkok, Thailand",
+    originCity: form.originCity.trim() || "Bangkok",
+    originCountry: form.originCountry.trim() || "Thailand",
+    originCountryCode: form.originCountryCode.trim().toUpperCase() || "TH",
     countries: countryNames,
-    destinationLabel: countryNames.length || cityNames.length ? [...countryNames, ...cityNames].join(", ") : form.destinationLabel.trim() || name,
+    destinationCities,
+    destinationLabel: destinationCities.length ? destinationCities.map((city) => city.city).join(", ") : form.destinationLabel.trim() || name,
     ownerDisplayName: form.ownerDisplayName.trim() || defaultOwnerDisplayName,
     joinId: form.joinId.trim().toUpperCase(),
     joinPassword: form.joinPassword.trim().toUpperCase(),
   };
 }
 
-function selectedTripCountries(countries: string[], destinationLabel: string): TripCountrySelection[] {
-  const selectedNames = (countries.length ? countries : destinationLabel.split(",")).map((value) => value.trim()).filter(Boolean);
-  return selectedNames
-    .map((name) => {
-      const option = tripCountryOptions.find((country) => country.name.toLocaleLowerCase() === name.toLocaleLowerCase());
-      return option ? { name: option.name, currency: option.currency } : { name, currency: "" };
-    });
-}
-
-function selectedDestinationCities(destinationLabel: string, selectedCountryNames: string[]): string[] {
-  const countrySet = new Set(selectedCountryNames.map((name) => name.toLocaleLowerCase()));
-  return destinationLabel
-    .split(",")
-    .map((value) => value.trim())
-    .filter(Boolean)
-    .filter((name) => !countrySet.has(name.toLocaleLowerCase()));
-}
-
-function countrySuggestions(query: string, activeContinent: TripContinent, selectedCountryNames: string[]): TripCountryOption[] {
+function citySuggestions(query: string, selectedCities: TripCity[]): TripCityOption[] {
   const normalizedQuery = query.trim().toLocaleLowerCase();
-  const pool = activeContinent === "all" ? tripCountryOptions : tripCountryOptions.filter((country) => country.continent === activeContinent);
-  return pool
-    .filter((country) => !selectedCountryNames.includes(country.name))
-    .filter((country) => {
+  return tripCityOptions
+    .filter((city) => !selectedCities.some((selected) => selected.city === city.city && selected.countryCode === city.countryCode))
+    .filter((city) => {
       if (!normalizedQuery) return true;
-      return [country.name, country.code, country.currency, ...country.cities]
+      return [city.city, city.country, city.countryCode, city.airportCode]
         .some((value) => value.toLocaleLowerCase().includes(normalizedQuery));
     })
-    .slice(0, normalizedQuery ? 6 : 4);
+    .slice(0, normalizedQuery ? 8 : 6);
+}
+
+function tripCityFromOption(option: TripCityOption): TripCity {
+  return {
+    city: option.city,
+    country: option.country,
+    countryCode: option.countryCode,
+    timezone: option.timezone,
+    latitude: option.latitude,
+    longitude: option.longitude,
+  };
+}
+
+function originCityFromProfile(profile?: AccountSettings["profile"] | null): TripCityOption {
+  const profileCity = profile?.homeCity?.trim();
+  const profileCountry = profile?.homeCountry?.trim();
+  if (profileCity) {
+    const exact = tripCityOptions.find((city) => city.city.toLocaleLowerCase() === profileCity.toLocaleLowerCase() && (!profileCountry || city.country.toLocaleLowerCase() === profileCountry.toLocaleLowerCase()));
+    if (exact) return exact;
+  }
+  if (profileCountry) {
+    const capital = tripCityOptions.find((city) => city.capital && city.country.toLocaleLowerCase() === profileCountry.toLocaleLowerCase());
+    if (capital) return capital;
+  }
+  return tripCityOptions.find((city) => city.city === "Bangkok" && city.countryCode === "TH") ?? {
+    city: "Bangkok",
+    country: "Thailand",
+    countryCode: "TH",
+    timezone: "Asia/Bangkok",
+    latitude: 13.7563,
+    longitude: 100.5018,
+    airportCode: "BKK",
+    capital: true,
+  };
+}
+
+function customTripCity(city: string, fallback?: TripCity): TripCity {
+  const match = tripCityOptions.find((option) => option.city.toLocaleLowerCase() === city.toLocaleLowerCase());
+  if (match) return tripCityFromOption(match);
+  return {
+    city,
+    country: fallback?.country ?? "Thailand",
+    countryCode: fallback?.countryCode ?? "TH",
+    timezone: fallback?.timezone ?? "Asia/Bangkok",
+    latitude: fallback?.latitude ?? 13.7563,
+    longitude: fallback?.longitude ?? 100.5018,
+  };
+}
+
+function tripCityFromFormOrigin(form: AccountTripCreateRequest): TripCity {
+  const match = tripCityOptions.find((option) => option.city === form.originCity && option.countryCode === form.originCountryCode);
+  if (match) return tripCityFromOption(match);
+  return {
+    city: form.originCity || "Bangkok",
+    country: form.originCountry || "Thailand",
+    countryCode: form.originCountryCode || "TH",
+    timezone: "Asia/Bangkok",
+    latitude: 13.7563,
+    longitude: 100.5018,
+  };
+}
+
+function tripStepComplete(step: TripWizardStepId, state: { tripNameComplete: boolean; destinationComplete: boolean; datesComplete: boolean; accessComplete: boolean }): boolean {
+  if (step === "trip") return state.tripNameComplete;
+  if (step === "place") return state.destinationComplete;
+  if (step === "dates") return state.datesComplete;
+  if (step === "invite") return state.accessComplete;
+  return true;
 }
 
 function uniqueList(values: string[]): string[] {
@@ -2784,7 +2769,9 @@ function generateJoinIdForTrip(startDate: string, destinations: string[], suffix
 
 function destinationRouteCode(destinations: string[]): string {
   const primary = destinations[destinations.length > 1 ? 1 : 0] ?? destinations[0] ?? "TRP";
-  const option = tripCountryOptions.find((country) => country.name === primary || country.cities.some((city) => city.toLocaleLowerCase() === primary.toLocaleLowerCase()));
+  const city = tripCityOptions.find((option) => option.city.toLocaleLowerCase() === primary.toLocaleLowerCase());
+  if (city) return city.airportCode;
+  const option = tripCountryOptions.find((country) => country.name === primary || country.cities.some((cityName) => cityName.toLocaleLowerCase() === primary.toLocaleLowerCase()));
   if (option) return option.code;
   return primary.replace(/[^A-Za-z0-9]/g, "").slice(0, 3).padEnd(3, "X").toUpperCase();
 }
@@ -2946,6 +2933,14 @@ function AccountSettingsEditor({
             <span>{t.access.settings.form.timezone}</span>
             <input value={form.timezone} onChange={(event) => setForm((current) => ({ ...current, timezone: event.target.value }))} required />
           </label>
+          <label>
+            <span>Home city</span>
+            <input value={form.homeCity ?? ""} onChange={(event) => setForm((current) => ({ ...current, homeCity: event.target.value }))} placeholder="Bangkok" />
+          </label>
+          <label>
+            <span>Home country</span>
+            <input value={form.homeCountry ?? ""} onChange={(event) => setForm((current) => ({ ...current, homeCountry: event.target.value }))} placeholder="Thailand" />
+          </label>
         </div>
         <Button type="submit" disabled={isSaving}>
           <Icon name="check" />
@@ -3078,6 +3073,8 @@ function profileToForm(settings: AccountSettings): AccountSettingsUpdateRequest 
     avatarColor: settings.profile.avatarColor,
     locale: settings.profile.locale,
     timezone: settings.profile.timezone,
+    homeCity: settings.profile.homeCity ?? "",
+    homeCountry: settings.profile.homeCountry ?? "",
   };
 }
 

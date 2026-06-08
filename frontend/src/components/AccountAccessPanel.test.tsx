@@ -34,6 +34,18 @@ function authForm() {
   return within(form as HTMLElement);
 }
 
+async function switchToThai(user: ReturnType<typeof userEvent.setup>) {
+  await user.click(screen.getByRole("button", { name: /Language and currency/i }));
+  await user.click(await screen.findByRole("menuitemradio", { name: /ภาษาไทย/i }));
+}
+
+async function selectDestinationCity(user: ReturnType<typeof userEvent.setup>, query: string, option: RegExp) {
+  const search = await screen.findByLabelText(/Search destination cities/i);
+  await user.clear(search);
+  await user.type(search, query);
+  await user.click(await screen.findByRole("button", { name: option }));
+}
+
 describe("AccountAccessPanel", () => {
   beforeEach(() => {
     installLocalStorageStub();
@@ -96,7 +108,7 @@ describe("AccountAccessPanel", () => {
     expect(screen.getByLabelText(/Email/i)).toHaveValue("aom@example.test");
     expect(screen.getByLabelText(/^Password$/i)).toHaveValue("");
 
-    await user.click(screen.getByRole("button", { name: "ภาษาไทย" }));
+    await switchToThai(user);
 
     expect(screen.getByRole("checkbox", { name: /เชื่อถืออุปกรณ์นี้/i })).toBeInTheDocument();
   }, 45_000);
@@ -486,7 +498,7 @@ describe("AccountAccessPanel", () => {
     expect(screen.queryByRole("tablist", { name: /Access mode/i })).not.toBeInTheDocument();
     expect(screen.getByRole("main", { name: /Trip access/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /Enter trip room/i })).toBeInTheDocument();
-    expect(screen.getAllByRole("button", { name: "ภาษาไทย" })).toHaveLength(1);
+    expect(screen.getByRole("button", { name: /Language and currency/i })).toBeInTheDocument();
     expect(screen.queryByRole("link", { name: /เปิด seed trip/i })).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/Email/i)).not.toBeInTheDocument();
   });
@@ -554,7 +566,7 @@ describe("AccountAccessPanel", () => {
     expect(accountClient.listTrips).toHaveBeenCalledTimes(1);
     expect(accountClient.loadStats).toHaveBeenCalledTimes(1);
 
-    await user.click(screen.getByRole("button", { name: "ภาษาไทย" }));
+    await switchToThai(user);
 
     expect(await screen.findByText("User data stats และ session status")).toBeInTheDocument();
     expect(accountClient.loadSettings).toHaveBeenCalledTimes(1);
@@ -785,7 +797,7 @@ describe("AccountAccessPanel", () => {
     );
 
     fireEvent.change(await screen.findByLabelText(/Trip name/i), { target: { value: "Osaka Round Trip" } });
-    await user.click(screen.getByRole("button", { name: /^Japan$/i }));
+    await selectDestinationCity(user, "Tokyo", /^Tokyo, Japan$/i);
     const ownerDisplayName = await screen.findByLabelText(/Owner display name/i);
 
     expect(ownerDisplayName).toHaveValue("Aom");
@@ -820,20 +832,21 @@ describe("AccountAccessPanel", () => {
     );
 
     fireEvent.change(await screen.findByLabelText(/Trip name/i), { target: { value: "Osaka Round Trip" } });
-    await user.click(screen.getByRole("button", { name: /^Japan$/i }));
+    await selectDestinationCity(user, "Tokyo", /^Tokyo, Japan$/i);
 
     const preview = screen.getByRole("region", { name: /Live trip preview/i });
     expect(within(preview).getByText("Osaka Round Trip")).toBeInTheDocument();
+    expect(within(preview).getAllByText("Tokyo").length).toBeGreaterThan(0);
     expect(within(preview).getAllByText("Japan").length).toBeGreaterThan(0);
     expect(within(preview).getByText(/Trip preview/i)).toBeInTheDocument();
     expect(within(preview).getByText(/Invite ready/i)).toBeInTheDocument();
-    expect(within(preview).getByText(/OpenFreeMap live map/i)).toBeInTheDocument();
+    expect(within(preview).getByLabelText(/Flight route from Bangkok to Tokyo/i)).toBeInTheDocument();
     expect(within(preview).getByText(/Join code:/i)).toBeInTheDocument();
     expect(within(preview).getByLabelText(/Ticket barcode/i)).toBeInTheDocument();
-    expect(screen.getByRole("list", { name: /Destination inspiration/i })).toBeInTheDocument();
+    expect(screen.queryByRole("list", { name: /Destination inspiration/i })).not.toBeInTheDocument();
   });
 
-  it("uses selected non-Japan destinations in destination cards and inspiration copy", async () => {
+  it("uses selected non-Japan destination cities in destination cards", async () => {
     const user = userEvent.setup();
     const accountClient = createAccountClient();
 
@@ -858,11 +871,11 @@ describe("AccountAccessPanel", () => {
     );
 
     fireEvent.change(await screen.findByLabelText(/Trip name/i), { target: { value: "China Spring Food Trip" } });
-    await user.type(screen.getByLabelText(/Search destinations/i), "China");
-    await user.click(screen.getByRole("button", { name: /^China$/i }));
+    await selectDestinationCity(user, "Beijing", /^Beijing, China$/i);
 
     const preview = screen.getByRole("region", { name: /Live trip preview/i });
-    expect(within(preview).getAllByText("China").length).toBeGreaterThan(1);
+    expect(within(preview).getAllByText("Beijing").length).toBeGreaterThan(0);
+    expect(within(preview).getByText("China")).toBeInTheDocument();
     expect(within(preview).queryByText("Kyoto")).not.toBeInTheDocument();
     expect(within(preview).queryByText("Osaka")).not.toBeInTheDocument();
     expect(screen.getAllByText("China").length).toBeGreaterThan(1);
@@ -892,20 +905,15 @@ describe("AccountAccessPanel", () => {
       />,
     );
 
-    await user.type(await screen.findByLabelText(/Search destinations/i), "Tokyo");
-    await user.click(screen.getByRole("button", { name: /^Japan$/i }));
+    await selectDestinationCity(user, "Tokyo", /^Tokyo, Japan$/i);
     await user.type(screen.getByLabelText(/Add city or stop/i), "Tokyo");
     await user.click(screen.getByRole("button", { name: /Add city/i }));
 
     const previewStep = screen.getByRole("region", { name: /Preview step/i });
-    expect(within(previewStep).getByText("Tokyo")).toBeInTheDocument();
+    expect(within(previewStep).getAllByText("Tokyo").length).toBeGreaterThan(0);
     expect(within(previewStep).queryByText("Osaka")).not.toBeInTheDocument();
     expect(within(previewStep).queryByText("Kyoto")).not.toBeInTheDocument();
-
-    const inspirationStep = screen.getByRole("region", { name: /Inspiration step/i });
-    expect(within(inspirationStep).getByText("Tokyo")).toBeInTheDocument();
-    expect(within(inspirationStep).queryByText("Osaka")).not.toBeInTheDocument();
-    expect(within(inspirationStep).queryByText("Kyoto")).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: /Inspiration step/i })).not.toBeInTheDocument();
   });
 
   it("lets users add city-level destinations without using the map picker", async () => {
@@ -935,8 +943,8 @@ describe("AccountAccessPanel", () => {
     fireEvent.change(await screen.findByLabelText(/Trip name/i), { target: { value: "Hong Kong May Route" } });
     expect(screen.queryByRole("button", { name: /Pick on map/i })).not.toBeInTheDocument();
 
-    await user.type(screen.getByLabelText(/Search destinations/i), "Hong Kong");
-    await user.click(screen.getByRole("button", { name: /^Hong Kong$/i }));
+    await user.type(screen.getByLabelText(/Search destination cities/i), "Hong Kong");
+    await user.click(screen.getByRole("button", { name: /^Hong Kong, Hong Kong$/i }));
     await user.type(screen.getByLabelText(/Add city or stop/i), "Central");
     await user.click(screen.getByRole("button", { name: /Add city/i }));
 
@@ -945,13 +953,29 @@ describe("AccountAccessPanel", () => {
     expect(accountClient.createTrip).toHaveBeenCalledWith(
       "account-session",
       expect.objectContaining({
+        originLabel: "Bangkok, Thailand",
+        originCity: "Bangkok",
+        originCountry: "Thailand",
+        originCountryCode: "TH",
         destinationLabel: "Hong Kong, Central",
+        destinationCities: [
+          expect.objectContaining({
+            city: "Hong Kong",
+            country: "Hong Kong",
+            countryCode: "HK",
+          }),
+          expect.objectContaining({
+            city: "Central",
+            country: "Hong Kong",
+            countryCode: "HK",
+          }),
+        ],
         countries: ["Hong Kong"],
       }),
     );
   });
 
-  it("uses a custom route calendar instead of relying on native date inputs", async () => {
+  it("uses city-first destinations, hides inspiration, and previews an origin-to-destination flight", async () => {
     const user = userEvent.setup();
     const accountClient = createAccountClient();
 
@@ -975,13 +999,55 @@ describe("AccountAccessPanel", () => {
       />,
     );
 
-    expect(screen.queryByLabelText(/Start date/i)).not.toHaveAttribute("type", "date");
-    const calendar = screen.getByRole("group", { name: /Route trip calendar/i });
-    await user.click(within(calendar).getByRole("button", { name: /Select Jun 5, 2026 as depart date/i }));
-    await user.click(within(calendar).getByRole("button", { name: /Select Jun 9, 2026 as return date/i }));
+    fireEvent.change(await screen.findByLabelText(/Trip name/i), { target: { value: "Tokyo Food Run" } });
+    expect(screen.getByRole("button", { name: /Language and currency/i })).toBeInTheDocument();
+    expect(screen.getByLabelText(/Origin city/i)).toHaveValue("Bangkok, Thailand");
+    await user.type(screen.getByLabelText(/Search destination cities/i), "Tokyo");
+    await user.click(screen.getByRole("button", { name: /^Tokyo, Japan$/i }));
 
-    await waitFor(() => expect(within(calendar).getByRole("button", { name: /Select Jun 5, 2026/i })).toHaveAttribute("aria-pressed", "true"));
-    expect(within(calendar).getByRole("button", { name: /Select Jun 9, 2026/i })).toHaveAttribute("aria-pressed", "true");
+    const preview = screen.getByRole("region", { name: /Live trip preview/i });
+    expect(within(preview).getAllByText("Bangkok").length).toBeGreaterThan(0);
+    expect(within(preview).getAllByText("Tokyo").length).toBeGreaterThan(0);
+    expect(within(preview).getByLabelText(/Flight route from Bangkok to Tokyo/i)).toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: /Inspiration step/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("list", { name: /Destination inspiration/i })).not.toBeInTheDocument();
+  });
+
+  it("uses a smart route calendar with auto-swap, tour colors, and clear dates", async () => {
+    const user = userEvent.setup();
+    const accountClient = createAccountClient();
+
+    render(
+      <AccountAccessPanel
+        accessMode="account-portal"
+        accountClient={accountClient}
+        accountSession={{
+          userId: "user-aom",
+          sessionToken: "account-session",
+          kind: "trusted",
+          trustedDeviceId: "device-current",
+          createdAt: "2026-05-30T08:00:00.000Z",
+          expiresAt: "2026-06-29T08:00:00.000Z",
+        }}
+        portalSection="new-trip"
+        trip={seedTrip}
+        onAccountSessionChange={vi.fn()}
+        onAuthenticated={vi.fn()}
+        onTripChange={vi.fn()}
+      />,
+    );
+
+    const calendar = screen.getByRole("group", { name: /Route trip calendar/i });
+    await user.click(within(calendar).getByRole("button", { name: /Clear dates/i }));
+    expect(screen.getByLabelText(/Start date/i)).toHaveValue("");
+    expect(screen.getByLabelText(/End date/i)).toHaveValue("");
+    await user.click(within(calendar).getByRole("button", { name: /Select Jun 9, 2026 as depart date/i }));
+    await user.click(within(calendar).getByRole("button", { name: /Select Jun 5, 2026 as return date/i }));
+
+    await waitFor(() => expect(screen.getByLabelText(/Start date/i)).toHaveValue("2026-06-05"));
+    expect(screen.getByLabelText(/End date/i)).toHaveValue("2026-06-09");
+    expect(within(calendar).getByRole("button", { name: /Tour day 1/i })).toHaveAttribute("data-tour-tone", "odd");
+    expect(within(calendar).getByRole("button", { name: /Tour day 2/i })).toHaveAttribute("data-tour-tone", "even");
   });
 
   it("generates route-aware join credentials without a draft invite token", async () => {
@@ -1008,13 +1074,13 @@ describe("AccountAccessPanel", () => {
     );
 
     fireEvent.change(await screen.findByLabelText(/Trip name/i), { target: { value: "Hong Kong May Route" } });
-    fireEvent.change(screen.getByLabelText(/Search destinations/i), { target: { value: "Hong Kong" } });
-    fireEvent.click(screen.getByRole("button", { name: /^Hong Kong$/i }));
+    fireEvent.change(screen.getByLabelText(/Search destination cities/i), { target: { value: "Hong Kong" } });
+    fireEvent.click(screen.getByRole("button", { name: /^Hong Kong, Hong Kong$/i }));
 
     const joinCode = screen.getByText(/Join code:/i).textContent?.replace("Join code:", "").trim() ?? "";
     const joinPass = screen.getByLabelText(/Join password/i);
 
-    expect(joinCode).toMatch(/^\d{4}-HK-[A-Z0-9]{3}$/);
+    expect(joinCode).toMatch(/^\d{4}-HKG-[A-Z0-9]{3}$/);
     expect(joinPass).toHaveValue();
     expect(String((joinPass as HTMLInputElement).value)).toMatch(/^[A-Z0-9]{4}-[A-Z0-9]{4}$/);
     expect(screen.queryByText(/Invite link:/i)).not.toBeInTheDocument();
@@ -1054,8 +1120,7 @@ describe("AccountAccessPanel", () => {
     );
 
     fireEvent.change(await screen.findByLabelText(/Trip name/i), { target: { value: "Hong Kong May Route" } });
-    await user.type(screen.getByLabelText(/Search destinations/i), "Hong Kong");
-    await user.click(screen.getByRole("button", { name: /^Hong Kong$/i }));
+    await selectDestinationCity(user, "Hong Kong", /^Hong Kong, Hong Kong$/i);
     await user.click(screen.getByRole("button", { name: /Create trip/i }));
 
     const sharePanel = await screen.findByRole("region", { name: /Created trip share link/i });
@@ -1066,7 +1131,7 @@ describe("AccountAccessPanel", () => {
     expect(within(sharePanel).getByRole("link", { name: /Send email/i })).toHaveAttribute("href", expect.stringContaining("mailto:"));
   });
 
-  it("renders a country svg and flag-style badge in the ticket map fallback", async () => {
+  it("renders a flight-route fallback with city badges in the ticket map", async () => {
     const accountClient = createAccountClient();
 
     render(
@@ -1089,12 +1154,13 @@ describe("AccountAccessPanel", () => {
       />,
     );
 
-    fireEvent.change(await screen.findByLabelText(/Search destinations/i), { target: { value: "Hong Kong" } });
-    fireEvent.click(screen.getByRole("button", { name: /^Hong Kong$/i }));
+    fireEvent.change(await screen.findByLabelText(/Search destination cities/i), { target: { value: "Hong Kong" } });
+    fireEvent.click(screen.getByRole("button", { name: /^Hong Kong, Hong Kong$/i }));
 
     const preview = screen.getByRole("region", { name: /Live trip preview/i });
-    const fallback = within(preview).getByLabelText(/Country svg fallback map/i);
+    const fallback = within(preview).getByLabelText(/Flight route from Bangkok to Hong Kong/i);
     expect(fallback).toBeInTheDocument();
+    expect(within(fallback).getByText("TH")).toBeInTheDocument();
     expect(within(fallback).getByText("HK")).toBeInTheDocument();
   });
 
@@ -1126,7 +1192,7 @@ describe("AccountAccessPanel", () => {
     expect(screen.getByText(/Next: add destination detail/i)).toBeInTheDocument();
   });
 
-  it("shows one mobile trip creation step at a time with preview and inspiration last", async () => {
+  it("shows one mobile trip creation step at a time with preview last", async () => {
     const user = userEvent.setup();
     const accountClient = createAccountClient();
 
@@ -1155,22 +1221,23 @@ describe("AccountAccessPanel", () => {
     const datesStep = screen.getByRole("region", { name: /Dates step/i });
     const inviteStep = screen.getByRole("region", { name: /Invite step/i });
     const previewStep = screen.getByRole("region", { name: /Preview step/i });
-    const inspirationStep = screen.getByRole("region", { name: /Inspiration step/i });
 
     expect(tripStep).toHaveAttribute("data-mobile-active", "true");
     expect(placeStep).toHaveAttribute("data-mobile-active", "false");
     expect(datesStep).toHaveAttribute("data-mobile-active", "false");
     expect(inviteStep).toHaveAttribute("data-mobile-active", "false");
     expect(previewStep).toHaveAttribute("data-mobile-active", "false");
-    expect(inspirationStep).toHaveAttribute("data-mobile-active", "false");
+    expect(screen.queryByRole("region", { name: /Inspiration step/i })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Trip step/i })).toHaveAttribute("aria-current", "step");
 
+    fireEvent.change(await screen.findByLabelText(/Trip name/i), { target: { value: "Tokyo Sprint" } });
     await user.click(screen.getByRole("button", { name: /Next: Place/i }));
 
     expect(tripStep).toHaveAttribute("data-mobile-active", "false");
     expect(placeStep).toHaveAttribute("data-mobile-active", "true");
     expect(screen.getByRole("button", { name: /Place step/i })).toHaveAttribute("aria-current", "step");
 
+    await selectDestinationCity(user, "Tokyo", /^Tokyo, Japan$/i);
     await user.click(screen.getByRole("button", { name: /Next: Dates/i }));
 
     expect(placeStep).toHaveAttribute("data-mobile-active", "false");
@@ -1185,14 +1252,7 @@ describe("AccountAccessPanel", () => {
 
     expect(tripStep).toHaveAttribute("data-mobile-active", "false");
     expect(previewStep).toHaveAttribute("data-mobile-active", "true");
-    expect(inspirationStep).toHaveAttribute("data-mobile-active", "false");
     expect(screen.getByRole("button", { name: /Preview step/i })).toHaveAttribute("aria-current", "step");
-
-    await user.click(screen.getByRole("button", { name: /Next: Inspiration/i }));
-
-    expect(previewStep).toHaveAttribute("data-mobile-active", "false");
-    expect(inspirationStep).toHaveAttribute("data-mobile-active", "true");
-    expect(screen.getByRole("button", { name: /Inspiration step/i })).toHaveAttribute("aria-current", "step");
   });
 
   it("does not create a trip when submitting before the review step", async () => {
@@ -1253,7 +1313,7 @@ describe("AccountAccessPanel", () => {
     );
 
     fireEvent.change(await screen.findByLabelText(/Trip name/i), { target: { value: "Osaka Round Trip" } });
-    await user.click(screen.getByRole("button", { name: /^Japan$/i }));
+    await selectDestinationCity(user, "Tokyo", /^Tokyo, Japan$/i);
 
     expect(screen.getAllByText("Japan").length).toBeGreaterThan(0);
     expect(accountClient.createTrip).not.toHaveBeenCalled();
@@ -1261,7 +1321,7 @@ describe("AccountAccessPanel", () => {
     expect(accountClient.createTrip).toHaveBeenCalledTimes(1);
   });
 
-  it("uses selected countries as the new trip destination scope", async () => {
+  it("uses selected cities as the new trip destination scope", async () => {
     const user = userEvent.setup();
     const accountClient = createAccountClient();
 
@@ -1286,20 +1346,23 @@ describe("AccountAccessPanel", () => {
     );
 
     fireEvent.change(await screen.findByLabelText(/Trip name/i), { target: { value: "Japan Korea Sprint" } });
-    await user.click(screen.getByRole("button", { name: /^Japan$/i }));
-    await user.type(screen.getByLabelText(/Search destinations/i), "Seoul");
-    await user.click(screen.getByRole("button", { name: /^South Korea$/i }));
+    await selectDestinationCity(user, "Tokyo", /^Tokyo, Japan$/i);
+    await selectDestinationCity(user, "Seoul", /^Seoul, South Korea$/i);
     expect(screen.getAllByRole("button", { name: /Japan/i }).length).toBeGreaterThan(0);
-    expect(screen.getAllByRole("button", { name: /South Korea/i }).length).toBeGreaterThan(0);
+    expect(screen.getByRole("button", { name: /Remove Seoul/i })).toBeInTheDocument();
 
-    expect(await screen.findAllByText("Japan, South Korea")).not.toHaveLength(0);
+    expect(await screen.findAllByText("Tokyo, Seoul")).not.toHaveLength(0);
     await user.click(screen.getByRole("button", { name: /Create trip/i }));
 
     expect(accountClient.createTrip).toHaveBeenCalledWith(
       "account-session",
       expect.objectContaining({
         name: "Japan Korea Sprint",
-        destinationLabel: "Japan, South Korea",
+        destinationLabel: "Tokyo, Seoul",
+        destinationCities: [
+          expect.objectContaining({ city: "Tokyo", country: "Japan", countryCode: "JP" }),
+          expect.objectContaining({ city: "Seoul", country: "South Korea", countryCode: "KR" }),
+        ],
         countries: ["Japan", "South Korea"],
       }),
     );
@@ -1330,25 +1393,26 @@ describe("AccountAccessPanel", () => {
     );
 
     fireEvent.change(await screen.findByLabelText(/Trip name/i), { target: { value: "Japan Korea Sprint" } });
-    await user.click(screen.getByRole("button", { name: /^Japan$/i }));
+    await selectDestinationCity(user, "Tokyo", /^Tokyo, Japan$/i);
     await user.click(screen.getAllByRole("button", { name: /เพิ่มจุดหมาย/i })[0]);
-    expect(screen.getByLabelText(/Search destinations/i)).toHaveFocus();
+    expect(screen.getByLabelText(/Search destination cities/i)).toHaveFocus();
 
-    await user.type(screen.getByLabelText(/Search destinations/i), "Seoul");
-    await user.click(screen.getByRole("button", { name: /^South Korea$/i }));
-    expect(await screen.findAllByText("Japan, South Korea")).not.toHaveLength(0);
+    await selectDestinationCity(user, "Seoul", /^Seoul, South Korea$/i);
+    expect(await screen.findAllByText("Tokyo, Seoul")).not.toHaveLength(0);
 
     const depart = screen.getByLabelText(/Start date/i);
     const returnDate = screen.getByLabelText(/End date/i);
     fireEvent.change(depart, { target: { value: "2026-02-10" } });
     fireEvent.change(returnDate, { target: { value: "2026-02-04" } });
-    await user.click(screen.getByRole("button", { name: /Swap depart and return dates/i }));
     expect(depart).toHaveValue("2026-02-04");
     expect(returnDate).toHaveValue("2026-02-10");
+    await user.click(screen.getByRole("button", { name: /Swap depart and return dates/i }));
+    expect(depart).toHaveValue("2026-02-10");
+    expect(returnDate).toHaveValue("2026-02-04");
 
-    await user.click(screen.getByRole("button", { name: /Remove South Korea/i }));
+    await user.click(screen.getByRole("button", { name: /Remove Seoul/i }));
     expect(screen.queryByRole("button", { name: /South Korea/i })).not.toBeInTheDocument();
-    expect(await screen.findAllByText("Japan")).not.toHaveLength(0);
+    expect(await screen.findAllByText("Tokyo")).not.toHaveLength(0);
   });
 
   it("copies the generated join code from the preview share strip", async () => {
@@ -1381,7 +1445,7 @@ describe("AccountAccessPanel", () => {
     );
 
     fireEvent.change(await screen.findByLabelText(/Trip name/i), { target: { value: "Osaka Round Trip" } });
-    await user.click(screen.getByRole("button", { name: /^Japan$/i }));
+    await selectDestinationCity(user, "Tokyo", /^Tokyo, Japan$/i);
     const joinCode = screen.getByText(/Join code:/i).textContent?.replace("Join code:", "").trim();
     await user.click(screen.getByRole("button", { name: /คัดลอก/i }));
 

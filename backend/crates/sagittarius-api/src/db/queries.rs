@@ -81,7 +81,8 @@ pub async fn find_trip_by_join_id(
 ) -> Result<Option<TripAuthRecord>, sqlx::Error> {
     sqlx::query_as::<_, TripAuthRecord>(
         "select
-           id, name, destination_label, countries, start_date, end_date, join_id, join_password_hash,
+           id, name, origin_label, origin_city, origin_country, origin_country_code,
+           destination_label, destination_cities, countries, start_date, end_date, join_id, join_password_hash,
            active_plan_variant_id, owner_member_id, version
          from trips
          where join_id = $1 and deleted_at is null",
@@ -97,7 +98,8 @@ pub async fn find_trip_by_id(
 ) -> Result<Option<TripAuthRecord>, sqlx::Error> {
     sqlx::query_as::<_, TripAuthRecord>(
         "select
-           id, name, destination_label, countries, start_date, end_date, join_id, join_password_hash,
+           id, name, origin_label, origin_city, origin_country, origin_country_code,
+           destination_label, destination_cities, countries, start_date, end_date, join_id, join_password_hash,
            active_plan_variant_id, owner_member_id, version
          from trips
          where id = $1 and deleted_at is null",
@@ -113,7 +115,8 @@ pub async fn lock_trip(
 ) -> Result<Option<TripAuthRecord>, sqlx::Error> {
     sqlx::query_as::<_, TripAuthRecord>(
         "select
-           id, name, destination_label, countries, start_date, end_date, join_id, join_password_hash,
+           id, name, origin_label, origin_city, origin_country, origin_country_code,
+           destination_label, destination_cities, countries, start_date, end_date, join_id, join_password_hash,
            active_plan_variant_id, owner_member_id, version
          from trips
          where id = $1 and deleted_at is null
@@ -142,7 +145,8 @@ pub async fn update_trip_metadata(
              updated_at = now()
          where id = $1 and deleted_at is null
          returning
-           id, name, destination_label, countries, start_date, end_date, join_id, join_password_hash,
+           id, name, origin_label, origin_city, origin_country, origin_country_code,
+           destination_label, destination_cities, countries, start_date, end_date, join_id, join_password_hash,
            active_plan_variant_id, owner_member_id, version",
     )
     .bind(trip_id)
@@ -170,7 +174,8 @@ pub async fn update_trip_active_plan_variant(
              updated_at = now()
          where id = $1 and deleted_at is null
          returning
-           id, name, destination_label, countries, start_date, end_date, join_id, join_password_hash,
+           id, name, origin_label, origin_city, origin_country, origin_country_code,
+           destination_label, destination_cities, countries, start_date, end_date, join_id, join_password_hash,
            active_plan_variant_id, owner_member_id, version",
     )
     .bind(trip_id)

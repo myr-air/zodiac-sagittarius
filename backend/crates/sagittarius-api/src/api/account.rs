@@ -14,7 +14,7 @@ use crate::domain::types::{
     AccountExplorerSummary, AccountMemberClaimResponse, AccountSession, AccountSettings,
     AccountTodoSummary, AccountTripCreateResponse, AccountTripStats, AccountTripSummary,
     AccountVaultItemSummary, EmailLoginStartResponse, MemberSession, OwnerTransferResponse,
-    PasskeyChallengeResponse, PasskeyLoginStartResponse, PasskeySummary,
+    PasskeyChallengeResponse, PasskeyLoginStartResponse, PasskeySummary, TripCity,
 };
 
 #[derive(Debug, Deserialize)]
@@ -46,7 +46,12 @@ pub struct PasswordLoginRequest {
 #[serde(rename_all = "camelCase")]
 pub struct AccountTripCreateRequest {
     pub name: String,
+    pub origin_label: String,
+    pub origin_city: String,
+    pub origin_country: String,
+    pub origin_country_code: String,
     pub destination_label: String,
+    pub destination_cities: Vec<TripCity>,
     pub countries: Vec<String>,
     pub start_date: Date,
     pub end_date: Date,
@@ -74,6 +79,8 @@ pub struct AccountSettingsUpdateRequest {
     pub avatar_color: String,
     pub locale: String,
     pub timezone: String,
+    pub home_city: Option<String>,
+    pub home_country: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -207,6 +214,8 @@ pub async fn update_settings(
             avatar_color: request.avatar_color,
             locale: request.locale,
             timezone: request.timezone,
+            home_city: request.home_city,
+            home_country: request.home_country,
         },
     )
     .await?;
@@ -226,7 +235,12 @@ pub async fn create_trip(
         &session_token,
         app::account::AccountTripCreateInput {
             name: request.name,
+            origin_label: request.origin_label,
+            origin_city: request.origin_city,
+            origin_country: request.origin_country,
+            origin_country_code: request.origin_country_code,
             destination_label: request.destination_label,
+            destination_cities: request.destination_cities,
             countries: request.countries,
             start_date: request.start_date,
             end_date: request.end_date,

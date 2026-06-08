@@ -1,4 +1,4 @@
-import type { TripParticipantSession, TripRole } from "@/src/trip/types";
+import type { TripCity, TripParticipantSession, TripRole } from "@/src/trip/types";
 import { TripApiError, type TripSummaryResponse } from "@/src/trip/api-client";
 import { accountApiRoutes } from "./api-routes";
 
@@ -10,6 +10,8 @@ export interface AccountProfile {
   avatarColor: string;
   locale: string;
   timezone: string;
+  homeCity?: string | null;
+  homeCountry?: string | null;
   primaryEmail: string | null;
 }
 
@@ -25,7 +27,12 @@ export interface AccountSession {
 export interface AccountTripSummary {
   id: string;
   name: string;
+  originLabel?: string;
+  originCity?: string;
+  originCountry?: string;
+  originCountryCode?: string;
   destinationLabel: string;
+  destinationCities?: TripCity[];
   countries?: string[];
   startDate: string;
   endDate: string;
@@ -121,7 +128,12 @@ export interface PasskeyLoginStartResponse extends PasskeyChallengeResponse {
 
 export interface AccountTripCreateRequest {
   name: string;
+  originLabel: string;
+  originCity: string;
+  originCountry: string;
+  originCountryCode: string;
   destinationLabel: string;
+  destinationCities: TripCity[];
   countries: string[];
   startDate: string;
   endDate: string;
@@ -135,6 +147,8 @@ export interface AccountSettingsUpdateRequest {
   avatarColor: string;
   locale: string;
   timezone: string;
+  homeCity?: string | null;
+  homeCountry?: string | null;
 }
 
 export interface AccountTripCreateResponse {

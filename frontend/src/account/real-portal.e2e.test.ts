@@ -23,7 +23,19 @@ describe.skipIf(!required && !baseUrl)("real account portal API e2e", () => {
     });
     const created = await accountClient.createTrip(account.sessionToken, {
       name: `Portal E2E ${runId}`,
-      destinationLabel: "Chiang Mai, Thailand",
+      originLabel: "Bangkok, Thailand",
+      originCity: "Bangkok",
+      originCountry: "Thailand",
+      originCountryCode: "TH",
+      destinationLabel: "Chiang Mai",
+      destinationCities: [{
+        city: "Chiang Mai",
+        country: "Thailand",
+        countryCode: "TH",
+        timezone: "Asia/Bangkok",
+        latitude: 18.7883,
+        longitude: 98.9853,
+      }],
       countries: ["Thailand"],
       startDate: "2026-11-04",
       endDate: "2026-11-08",

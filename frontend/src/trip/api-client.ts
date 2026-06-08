@@ -11,7 +11,7 @@ import type {
   PlanVariant,
   StopNote,
   Suggestion,
-  Trip,
+  Trip, TripCity,
   TripDailyBriefing,
   TripJoinCredential,
   TripMemberAccessStatus,
@@ -36,7 +36,12 @@ export interface TripApiClientOptions {
 export interface TripSummaryResponse {
   id: string;
   name: string;
+  originLabel?: string;
+  originCity?: string;
+  originCountry?: string;
+  originCountryCode?: string;
   destinationLabel: string;
+  destinationCities?: TripCity[];
   countries?: string[];
   startDate: string;
   endDate: string;
@@ -797,7 +802,12 @@ function mapTripSummary(trip: TripSummaryResponse): Trip {
     joinId: trip.joinId,
     joinPasswordHash: "",
     name: trip.name,
+    originLabel: trip.originLabel,
+    originCity: trip.originCity,
+    originCountry: trip.originCountry,
+    originCountryCode: trip.originCountryCode,
     destinationLabel: trip.destinationLabel,
+    destinationCities: trip.destinationCities ?? [],
     countries: trip.countries ?? [],
     startDate: trip.startDate,
     endDate: trip.endDate,

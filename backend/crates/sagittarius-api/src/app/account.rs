@@ -21,8 +21,8 @@ use crate::domain::types::{
     AccountSessionKind, AccountSettings, AccountTodoSummary, AccountTripCreateResponse,
     AccountTripStats, AccountTripSummary, AccountVaultItemSummary, EmailLoginStartResponse,
     MemberSession, OwnerTransferResponse, PasskeyChallengeResponse, PasskeyCredentialDescriptor,
-    PasskeyLoginStartResponse, PasskeySummary, TripMemberAccessStatus, TripRole, TripSummary,
-    TrustedDeviceSummary,
+    PasskeyLoginStartResponse, PasskeySummary, TripCity, TripMemberAccessStatus, TripRole,
+    TripSummary, TrustedDeviceSummary,
 };
 
 const CHALLENGE_TTL: Duration = Duration::minutes(10);
@@ -95,7 +95,12 @@ const WEBAUTHN_FLAG_ATTESTED_CREDENTIAL_DATA: u8 = 0x40;
 
 pub struct AccountTripCreateInput {
     pub name: String,
+    pub origin_label: String,
+    pub origin_city: String,
+    pub origin_country: String,
+    pub origin_country_code: String,
     pub destination_label: String,
+    pub destination_cities: Vec<TripCity>,
     pub countries: Vec<String>,
     pub start_date: time::Date,
     pub end_date: time::Date,
@@ -109,6 +114,8 @@ pub struct AccountSettingsUpdateInput {
     pub avatar_color: String,
     pub locale: String,
     pub timezone: String,
+    pub home_city: Option<String>,
+    pub home_country: Option<String>,
 }
 
 pub struct AccountVaultItemCreateInput {
@@ -453,11 +460,26 @@ pub async fn create_trip(
 ) -> Result<AccountTripCreateResponse, ServiceError> {
     let user_id = authenticate_user_session(pool, session_token).await?;
     let name = validate_trip_text(&input.name, "trip name")?;
+    let origin_label = validate_trip_text(&input.origin_label, "origin label")?;
+    let origin_city = validate_trip_text(&input.origin_city, "origin city")?;
+    let origin_country = validate_trip_text(&input.origin_country, "origin country")?;
+    let origin_country_code =
+        validate_country_code(&input.origin_country_code, "origin country code")?;
+    let destination_cities = validate_trip_cities(&input.destination_cities)?;
     let countries = validate_trip_countries(&input.countries)?;
+    let destination_cities_label = destination_cities
+        .iter()
+        .map(|city| city.city.as_str())
+        .collect::<Vec<_>>()
+        .join(", ");
     let countries_label = countries.join(", ");
     let destination_label = validate_trip_text(
         if input.destination_label.trim().is_empty() {
-            &countries_label
+            if destination_cities_label.is_empty() {
+                &countries_label
+            } else {
+                &destination_cities_label
+            }
         } else {
             &input.destination_label
         },
@@ -486,7 +508,12 @@ pub async fn create_trip(
         NewAccountTrip {
             id: trip_id,
             name: &name,
+            origin_label: &origin_label,
+            origin_city: &origin_city,
+            origin_country: &origin_country,
+            origin_country_code: &origin_country_code,
             destination_label: &destination_label,
+            destination_cities: &destination_cities,
             countries: &countries,
             start_date: input.start_date,
             end_date: input.end_date,
@@ -862,6 +889,16 @@ pub async fn update_settings(
         MAX_ACCOUNT_TIMEZONE_LENGTH,
         "timezone is invalid",
     )?;
+    let home_city = optional_account_text(
+        input.home_city.as_deref(),
+        MAX_TRIP_TEXT_LENGTH,
+        "home city is invalid",
+    )?;
+    let home_country = optional_account_text(
+        input.home_country.as_deref(),
+        MAX_TRIP_TEXT_LENGTH,
+        "home country is invalid",
+    )?;
 
     db::account_queries::update_user_profile(
         pool,
@@ -870,6 +907,8 @@ pub async fn update_settings(
         &avatar_color,
         &locale,
         &timezone,
+        home_city.as_deref(),
+        home_country.as_deref(),
     )
     .await?
     .ok_or(ServiceError::Unauthenticated)?;
@@ -1268,6 +1307,51 @@ fn validate_trip_countries(countries: &[String]) -> Result<Vec<String>, ServiceE
     Ok(normalized)
 }
 
+fn validate_trip_cities(cities: &[TripCity]) -> Result<Vec<TripCity>, ServiceError> {
+    if cities.is_empty() || cities.len() > 12 {
+        return Err(ServiceError::InvalidRequest("destination cities"));
+    }
+
+    cities
+        .iter()
+        .map(|city| {
+            let latitude = city.latitude;
+            let longitude = city.longitude;
+            if !latitude.is_finite()
+                || !longitude.is_finite()
+                || !(-90.0..=90.0).contains(&latitude)
+                || !(-180.0..=180.0).contains(&longitude)
+            {
+                return Err(ServiceError::InvalidRequest("destination city coordinates"));
+            }
+
+            Ok(TripCity {
+                city: validate_trip_text(&city.city, "destination city")?,
+                country: validate_trip_text(&city.country, "destination city country")?,
+                country_code: validate_country_code(
+                    &city.country_code,
+                    "destination city country code",
+                )?,
+                timezone: validate_trip_text(&city.timezone, "destination city timezone")?,
+                latitude,
+                longitude,
+            })
+        })
+        .collect()
+}
+
+fn validate_country_code(value: &str, field: &'static str) -> Result<String, ServiceError> {
+    let normalized = value.trim().to_ascii_uppercase();
+    if normalized.len() != 2
+        || !normalized
+            .chars()
+            .all(|character| character.is_ascii_alphabetic())
+    {
+        return Err(ServiceError::InvalidRequest(field));
+    }
+    Ok(normalized)
+}
+
 fn validate_join_id(join_id: &str) -> Result<String, ServiceError> {
     let normalized = join_id.trim().to_ascii_uppercase();
     if normalized.is_empty() || normalized.chars().count() > MAX_JOIN_ID_LENGTH {
@@ -1430,6 +1514,24 @@ fn validate_account_text(
     }
 
     Ok(trimmed.to_string())
+}
+
+fn optional_account_text(
+    value: Option<&str>,
+    max_length: usize,
+    field: &'static str,
+) -> Result<Option<String>, ServiceError> {
+    let Some(value) = value else {
+        return Ok(None);
+    };
+    let trimmed = value.trim();
+    if trimmed.is_empty() {
+        return Ok(None);
+    }
+    if trimmed.chars().count() > max_length {
+        return Err(ServiceError::InvalidRequest(field));
+    }
+    Ok(Some(trimmed.to_string()))
 }
 
 fn validate_avatar_color(value: &str) -> Result<String, ServiceError> {
@@ -1770,6 +1872,8 @@ fn account_profile_from_record(record: AccountProfileRecord) -> AccountProfile {
         avatar_color: record.avatar_color,
         locale: record.locale,
         timezone: record.timezone,
+        home_city: record.home_city,
+        home_country: record.home_country,
         primary_email: record.primary_email,
     }
 }
@@ -1790,7 +1894,12 @@ fn account_trip_from_record(record: AccountTripRecord) -> AccountTripSummary {
     AccountTripSummary {
         id: record.id,
         name: record.name,
+        origin_label: record.origin_label,
+        origin_city: record.origin_city,
+        origin_country: record.origin_country,
+        origin_country_code: record.origin_country_code,
         destination_label: record.destination_label,
+        destination_cities: record.destination_cities.0,
         countries: record.countries,
         start_date: record.start_date,
         end_date: record.end_date,

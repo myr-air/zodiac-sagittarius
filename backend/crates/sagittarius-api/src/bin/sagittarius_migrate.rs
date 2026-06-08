@@ -103,6 +103,10 @@ fn embedded_migrations() -> Vec<Migration> {
             version: "0019_photo_album_links.sql",
             sql: include_str!("../../../../migrations/0019_photo_album_links.sql"),
         },
+        Migration {
+            version: "0020_trip_city_routes.sql",
+            sql: include_str!("../../../../migrations/0020_trip_city_routes.sql"),
+        },
     ]
 }
 

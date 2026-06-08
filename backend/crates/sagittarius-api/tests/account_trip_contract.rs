@@ -148,6 +148,31 @@ fn date_value(year: i32, month: Month, day: u8) -> Value {
     serde_json::to_value(Date::from_calendar_date(year, month, day).unwrap()).unwrap()
 }
 
+fn default_account_trip_payload(join_id: &str, join_password: &str) -> Value {
+    json!({
+        "name": format!("{join_id} Food Run"),
+        "originLabel": "Bangkok, Thailand",
+        "originCity": "Bangkok",
+        "originCountry": "Thailand",
+        "originCountryCode": "TH",
+        "destinationLabel": "Chiang Mai",
+        "destinationCities": [{
+            "city": "Chiang Mai",
+            "country": "Thailand",
+            "countryCode": "TH",
+            "timezone": "Asia/Bangkok",
+            "latitude": 18.7883,
+            "longitude": 98.9853
+        }],
+        "countries": ["Thailand"],
+        "startDate": date_value(2026, Month::November, 4),
+        "endDate": date_value(2026, Month::November, 8),
+        "ownerDisplayName": "Aom",
+        "joinId": join_id,
+        "joinPassword": join_password
+    })
+}
+
 async fn create_account_trip(
     pool: &sqlx::PgPool,
     auth: &str,
@@ -159,16 +184,7 @@ async fn create_account_trip(
         app,
         "/api/v1/account/trips",
         Some(auth),
-        json!({
-            "name": format!("{join_id} Food Run"),
-            "destinationLabel": "Chiang Mai, Thailand",
-            "countries": ["Thailand"],
-            "startDate": date_value(2026, Month::November, 4),
-            "endDate": date_value(2026, Month::November, 8),
-            "ownerDisplayName": "Aom",
-            "joinId": join_id,
-            "joinPassword": join_password
-        }),
+        default_account_trip_payload(join_id, join_password),
     )
     .await;
 
@@ -244,7 +260,19 @@ async fn account_user_can_create_trip_and_becomes_owner(pool: sqlx::PgPool) {
         Some(&auth),
         json!({
             "name": " Chiang Mai Food Run ",
-            "destinationLabel": " Chiang Mai, Thailand ",
+            "originLabel": " Bangkok, Thailand ",
+            "originCity": " Bangkok ",
+            "originCountry": " Thailand ",
+            "originCountryCode": " TH ",
+            "destinationLabel": " Chiang Mai ",
+            "destinationCities": [{
+                "city": " Chiang Mai ",
+                "country": " Thailand ",
+                "countryCode": " TH ",
+                "timezone": " Asia/Bangkok ",
+                "latitude": 18.7883,
+                "longitude": 98.9853
+            }],
             "countries": [" Thailand "],
             "startDate": date_value(2026, Month::November, 4),
             "endDate": date_value(2026, Month::November, 8),
@@ -258,7 +286,22 @@ async fn account_user_can_create_trip_and_becomes_owner(pool: sqlx::PgPool) {
 
     assert_eq!(status, StatusCode::OK);
     assert_eq!(body["trip"]["name"], "Chiang Mai Food Run");
-    assert_eq!(body["trip"]["destinationLabel"], "Chiang Mai, Thailand");
+    assert_eq!(body["trip"]["originLabel"], "Bangkok, Thailand");
+    assert_eq!(body["trip"]["originCity"], "Bangkok");
+    assert_eq!(body["trip"]["originCountry"], "Thailand");
+    assert_eq!(body["trip"]["originCountryCode"], "TH");
+    assert_eq!(body["trip"]["destinationLabel"], "Chiang Mai");
+    assert_eq!(
+        body["trip"]["destinationCities"],
+        json!([{
+            "city": "Chiang Mai",
+            "country": "Thailand",
+            "countryCode": "TH",
+            "timezone": "Asia/Bangkok",
+            "latitude": 18.7883,
+            "longitude": 98.9853
+        }])
+    );
     assert_eq!(body["trip"]["countries"], json!(["Thailand"]));
     assert_eq!(
         body["trip"]["startDate"],
@@ -303,7 +346,7 @@ async fn account_user_can_create_trip_and_becomes_owner(pool: sqlx::PgPool) {
     .await
     .unwrap();
     assert_eq!(trip.0, "Chiang Mai Food Run");
-    assert_eq!(trip.1, "Chiang Mai, Thailand");
+    assert_eq!(trip.1, "Chiang Mai");
     assert_eq!(trip.2, "2026-11-04");
     assert_eq!(trip.3, "2026-11-08");
     assert_eq!(trip.4, "CM-2026");
@@ -649,47 +692,22 @@ async fn account_trip_creation_validates_text_and_join_id(pool: sqlx::PgPool) {
     let oversized_name = "x".repeat(121);
     let oversized_join_id = "x".repeat(33);
 
+    let mut empty_name = default_account_trip_payload("valid-empty-name", "rice-noodle-2026");
+    empty_name["name"] = json!(" ");
+    let mut oversized_name_payload =
+        default_account_trip_payload("valid-oversized-name", "rice-noodle-2026");
+    oversized_name_payload["name"] = json!(oversized_name);
+    let mut empty_join_id = default_account_trip_payload("valid-empty-join", "rice-noodle-2026");
+    empty_join_id["joinId"] = json!(" ");
+    let mut oversized_join_payload =
+        default_account_trip_payload("valid-oversized-join", "rice-noodle-2026");
+    oversized_join_payload["joinId"] = json!(oversized_join_id);
+
     let cases = [
-        json!({
-            "name": " ",
-            "destinationLabel": "Chiang Mai, Thailand",
-            "countries": ["Thailand"],
-            "startDate": date_value(2026, Month::November, 4),
-            "endDate": date_value(2026, Month::November, 8),
-            "ownerDisplayName": "Aom",
-            "joinId": "valid-empty-name",
-            "joinPassword": "rice-noodle-2026"
-        }),
-        json!({
-            "name": oversized_name,
-            "destinationLabel": "Chiang Mai, Thailand",
-            "countries": ["Thailand"],
-            "startDate": date_value(2026, Month::November, 4),
-            "endDate": date_value(2026, Month::November, 8),
-            "ownerDisplayName": "Aom",
-            "joinId": "valid-oversized-name",
-            "joinPassword": "rice-noodle-2026"
-        }),
-        json!({
-            "name": "Chiang Mai",
-            "destinationLabel": "Chiang Mai, Thailand",
-            "countries": ["Thailand"],
-            "startDate": date_value(2026, Month::November, 4),
-            "endDate": date_value(2026, Month::November, 8),
-            "ownerDisplayName": "Aom",
-            "joinId": " ",
-            "joinPassword": "rice-noodle-2026"
-        }),
-        json!({
-            "name": "Chiang Mai",
-            "destinationLabel": "Chiang Mai, Thailand",
-            "countries": ["Thailand"],
-            "startDate": date_value(2026, Month::November, 4),
-            "endDate": date_value(2026, Month::November, 8),
-            "ownerDisplayName": "Aom",
-            "joinId": oversized_join_id,
-            "joinPassword": "rice-noodle-2026"
-        }),
+        empty_name,
+        oversized_name_payload,
+        empty_join_id,
+        oversized_join_payload,
     ];
 
     for payload in cases {
@@ -713,16 +731,7 @@ async fn account_trip_creation_validates_dates_and_auth(pool: sqlx::PgPool) {
         app,
         "/api/v1/account/trips",
         None,
-        json!({
-            "name": "Chiang Mai",
-            "destinationLabel": "Chiang Mai, Thailand",
-            "countries": ["Thailand"],
-            "startDate": date_value(2026, Month::November, 4),
-            "endDate": date_value(2026, Month::November, 8),
-            "ownerDisplayName": "Aom",
-            "joinId": "CM-2026",
-            "joinPassword": "rice-noodle-2026"
-        }),
+        default_account_trip_payload("CM-2026", "rice-noodle-2026"),
     )
     .await;
     let (status, body): (StatusCode, Value) = response_json(response).await;
@@ -732,22 +741,11 @@ async fn account_trip_creation_validates_dates_and_auth(pool: sqlx::PgPool) {
     let session = login_account(&pool, "owner@example.com", false, "").await;
     let auth = format!("Bearer {}", session["sessionToken"].as_str().unwrap());
     let app = support::app(pool);
-    let response = post_json_with_auth(
-        app,
-        "/api/v1/account/trips",
-        Some(&auth),
-        json!({
-            "name": "Chiang Mai",
-            "destinationLabel": "Chiang Mai, Thailand",
-            "countries": ["Thailand"],
-            "startDate": date_value(2026, Month::November, 9),
-            "endDate": date_value(2026, Month::November, 8),
-            "ownerDisplayName": "Aom",
-            "joinId": "CM-2026",
-            "joinPassword": "rice-noodle-2026"
-        }),
-    )
-    .await;
+    let mut invalid_dates = default_account_trip_payload("CM-2026", "rice-noodle-2026");
+    invalid_dates["startDate"] = date_value(2026, Month::November, 9);
+    invalid_dates["endDate"] = date_value(2026, Month::November, 8);
+    let response =
+        post_json_with_auth(app, "/api/v1/account/trips", Some(&auth), invalid_dates).await;
     let (status, body): (StatusCode, Value) = response_json(response).await;
     assert_eq!(status, StatusCode::BAD_REQUEST);
     assert_eq!(body["code"], "invalid_request");
@@ -776,7 +774,7 @@ async fn account_can_list_trip_history_and_stats(pool: sqlx::PgPool) {
     assert_eq!(trips.len(), 1);
     assert_eq!(trips[0]["id"], trip_id);
     assert_eq!(trips[0]["name"], "history-stats Food Run");
-    assert_eq!(trips[0]["destinationLabel"], "Chiang Mai, Thailand");
+    assert_eq!(trips[0]["destinationLabel"], "Chiang Mai");
     assert_eq!(trips[0]["startDate"], date_value(2026, Month::November, 4));
     assert_eq!(trips[0]["endDate"], date_value(2026, Month::November, 8));
     assert_eq!(trips[0]["role"], "owner");
