@@ -16,6 +16,8 @@ pub enum ServiceError {
     IdentityAlreadyLinked,
     #[error("email delivery failed: {0}")]
     EmailDelivery(String),
+    #[error("exchange rate provider failed: {0}")]
+    ExchangeRateProvider(String),
     #[error("trip join id already exists")]
     TripJoinIdAlreadyExists,
     #[error("owner transfer invalid")]

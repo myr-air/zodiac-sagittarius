@@ -4,6 +4,7 @@ pub mod bookings;
 pub mod daily_briefings;
 pub mod email;
 pub mod events;
+pub mod exchange_rates;
 pub mod expenses;
 pub mod itinerary;
 pub mod itinerary_imports;
@@ -24,6 +25,7 @@ pub struct AppState {
     pub pool: PgPool,
     pub realtime: RealtimeHub,
     pub email_delivery: email::EmailDelivery,
+    pub exchange_rates: exchange_rates::ExchangeRateService,
     pub daily_briefing_weather_fetch: bool,
 }
 
@@ -33,6 +35,7 @@ impl AppState {
             pool,
             realtime: RealtimeHub::default(),
             email_delivery: email::EmailDelivery::from_env(),
+            exchange_rates: exchange_rates::ExchangeRateService::new(),
             daily_briefing_weather_fetch: daily_briefings::weather_fetch_enabled_from_env(),
         }
     }

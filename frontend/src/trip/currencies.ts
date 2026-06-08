@@ -39,6 +39,7 @@ export const majorCurrencyOptions: MajorCurrencyOption[] = [
 ];
 
 const majorCurrencySet = new Set<string>(majorCurrencyCodes);
+const backendRatesPath = "/api/v1/exchange-rates";
 const frankfurterRatesEndpoint = "https://api.frankfurter.dev/v2/rates";
 const cacheTtlMs = 24 * 60 * 60 * 1000;
 
@@ -72,15 +73,44 @@ export async function fetchMajorExchangeRate(
   const fetchImpl = options.fetchImpl ?? globalThis.fetch;
   if (!fetchImpl) return null;
 
-  const response = await fetchImpl(buildFrankfurterRatesUrl(source, target));
-  if (!response.ok) return null;
-
-  const payload = await response.json();
-  const quote = parseFrankfurterRate(payload, source, target);
+  const quote = await fetchBackendRate(source, target, fetchImpl)
+    ?? await fetchFrankfurterRate(source, target, fetchImpl);
   if (!quote) return null;
 
   writeCachedExchangeRate(quote, storage, now);
   return quote;
+}
+
+async function fetchBackendRate(
+  source: MajorCurrencyCode,
+  target: MajorCurrencyCode,
+  fetchImpl: typeof fetch,
+): Promise<ExchangeRateQuote | null> {
+  try {
+    const response = await fetchImpl(buildBackendRatesUrl(source, target));
+    if (!response.ok) return null;
+    return parseBackendRate(await response.json(), source, target);
+  } catch {
+    return null;
+  }
+}
+
+async function fetchFrankfurterRate(
+  source: MajorCurrencyCode,
+  target: MajorCurrencyCode,
+  fetchImpl: typeof fetch,
+): Promise<ExchangeRateQuote | null> {
+  try {
+    const response = await fetchImpl(buildFrankfurterRatesUrl(source, target));
+    if (!response.ok) return null;
+    return parseFrankfurterRate(await response.json(), source, target);
+  } catch {
+    return null;
+  }
+}
+
+function buildBackendRatesUrl(source: MajorCurrencyCode, target: MajorCurrencyCode): string {
+  return `${backendRatesPath}?${new URLSearchParams({ base: source, quote: target })}`;
 }
 
 function buildFrankfurterRatesUrl(source: MajorCurrencyCode, target: MajorCurrencyCode): string {
@@ -88,6 +118,26 @@ function buildFrankfurterRatesUrl(source: MajorCurrencyCode, target: MajorCurren
   url.searchParams.set("base", source);
   url.searchParams.set("quotes", target);
   return url.toString();
+}
+
+function parseBackendRate(payload: unknown, source: MajorCurrencyCode, target: MajorCurrencyCode): ExchangeRateQuote | null {
+  if (
+    payload
+    && typeof payload === "object"
+    && (payload as { base?: unknown }).base === source
+    && (payload as { quote?: unknown }).quote === target
+    && typeof (payload as { rate?: unknown }).rate === "number"
+    && Number.isFinite((payload as { rate: number }).rate)
+    && (payload as { rate: number }).rate > 0
+  ) {
+    return {
+      date: typeof (payload as { date?: unknown }).date === "string" ? (payload as { date: string }).date : null,
+      rate: (payload as { rate: number }).rate,
+      source,
+      target,
+    };
+  }
+  return null;
 }
 
 function parseFrankfurterRate(payload: unknown, source: MajorCurrencyCode, target: MajorCurrencyCode): ExchangeRateQuote | null {

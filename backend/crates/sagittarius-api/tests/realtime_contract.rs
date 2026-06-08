@@ -2,7 +2,7 @@ mod support;
 
 use futures_util::StreamExt;
 use sagittarius_api::api::ws::should_send_live_event;
-use sagittarius_api::app::{AppState, email::EmailDelivery, events};
+use sagittarius_api::app::{AppState, email::EmailDelivery, events, exchange_rates};
 use sagittarius_api::domain::errors::ServiceError;
 use sagittarius_api::realtime::{RealtimeEvent, RealtimeHub};
 use serde_json::json;
@@ -132,6 +132,7 @@ async fn websocket_route_replays_stored_events_and_streams_live_events(pool: sql
     let app = sagittarius_api::api::router(AppState {
         pool: pool.clone(),
         email_delivery: EmailDelivery::Disabled,
+        exchange_rates: exchange_rates::ExchangeRateService::new(),
         realtime: hub.clone(),
         daily_briefing_weather_fetch: false,
     });
@@ -212,6 +213,7 @@ async fn websocket_route_accepts_bearer_header_session(pool: sqlx::PgPool) {
     let app = sagittarius_api::api::router(AppState {
         pool,
         email_delivery: EmailDelivery::Disabled,
+        exchange_rates: exchange_rates::ExchangeRateService::new(),
         realtime: hub.clone(),
         daily_briefing_weather_fetch: false,
     });
@@ -268,6 +270,7 @@ async fn websocket_route_does_not_send_expense_events_to_viewer(pool: sqlx::PgPo
     let app = sagittarius_api::api::router(AppState {
         pool,
         email_delivery: EmailDelivery::Disabled,
+        exchange_rates: exchange_rates::ExchangeRateService::new(),
         realtime: hub.clone(),
         daily_briefing_weather_fetch: false,
     });
@@ -314,6 +317,7 @@ async fn websocket_route_closes_when_live_receiver_lags(pool: sqlx::PgPool) {
     let app = sagittarius_api::api::router(AppState {
         pool,
         email_delivery: EmailDelivery::Disabled,
+        exchange_rates: exchange_rates::ExchangeRateService::new(),
         realtime: hub.clone(),
         daily_briefing_weather_fetch: false,
     });

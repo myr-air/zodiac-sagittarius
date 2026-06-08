@@ -2,6 +2,7 @@ pub mod account;
 pub mod bookings;
 pub mod daily_briefings;
 pub mod error;
+pub mod exchange_rates;
 pub mod expenses;
 pub mod extractors;
 pub mod health;
@@ -51,6 +52,7 @@ fn api_v1() -> Router<AppState> {
         .route("/health", get(health::liveness))
         .route("/readiness", get(health::readiness))
         .route("/version", get(health::version))
+        .route("/exchange-rates", get(exchange_rates::get_exchange_rate))
         .route("/auth/email/challenges", post(account::start_email_login))
         .route("/auth/email/sessions", post(account::finish_email_login))
         .route(

@@ -59,6 +59,12 @@ impl IntoResponse for ServiceError {
                 message,
                 None,
             ),
+            ServiceError::ExchangeRateProvider(message) => (
+                StatusCode::BAD_GATEWAY,
+                "exchange_rate_provider_failed",
+                message,
+                None,
+            ),
             ServiceError::TripJoinIdAlreadyExists => (
                 StatusCode::CONFLICT,
                 "trip_join_id_already_exists",
