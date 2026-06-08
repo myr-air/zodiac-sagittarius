@@ -222,6 +222,10 @@ const tripTicketReviewClassName =
   "trip-ticket-review grid grid-cols-2 gap-2.5 [.account-page--portal-new-trip_&]:hidden max-[767px]:grid-cols-1 [&>div]:grid [&>div]:min-h-[76px] [&>div]:content-center [&>div]:gap-1 [&>div]:rounded-(--radius-md) [&>div]:border [&>div]:border-(--color-border) [&>div]:bg-(--color-surface) [&>div]:p-3 [&_span]:text-[11px] [&_span]:font-[850] [&_span]:uppercase [&_span]:text-(--color-text-muted) [&_strong]:min-w-0 [&_strong]:[overflow-wrap:anywhere]";
 const tripShareStripClassName =
   "trip-share-strip grid min-h-[52px] grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-3 rounded-[9px] border border-(--color-route-border) bg-[rgb(239_246_255_/_0.92)] py-2 pl-4 pr-2.5 text-[13px] font-extrabold text-[#0f6670] min-[1024px]:grid-cols-[minmax(0,1fr)_auto_auto] max-[1023px]:grid-cols-1 max-[1023px]:text-left max-[1023px]:[&_.button]:w-full [&_span]:inline-flex [&_span]:min-w-0 [&_span]:items-center [&_span]:gap-2 [&_strong]:[overflow-wrap:anywhere] [&_.icon]:size-6 [&_.button]:min-h-9 [&_.button]:rounded-[7px]";
+const tripCreatedShareClassName =
+  "trip-created-share grid gap-2.5 rounded-[12px] border border-(--color-success-border) bg-[linear-gradient(180deg,rgb(240_253_244_/_0.94),white)] p-3 text-[13px] font-bold text-(--color-text-muted) [&_strong]:text-(--color-text) [&_code]:rounded-[6px] [&_code]:bg-white [&_code]:px-2 [&_code]:py-1 [&_code]:text-xs [&_code]:font-black [&_code]:text-(--color-primary-strong) [&_div]:flex [&_div]:flex-wrap [&_div]:gap-2 [&_.button]:w-auto";
+const tripCreatedShareLinkClassName =
+  "inline-flex min-h-9 items-center justify-center gap-2 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-3 py-[7px] text-[13px] font-extrabold text-(--color-primary-strong) no-underline";
 const tripWizardActionsClassName =
   "trip-wizard-actions flex justify-between gap-2.5 px-[22px] pb-[22px] pt-0 [.account-page--portal-new-trip_&]:w-[min(100%,626px)] [.account-page--portal-new-trip_&]:px-[22px] [.account-page--portal-new-trip_&]:pb-[22px] [.account-page--portal-new-trip_&]:pt-3.5 min-[768px]:[.account-page--portal-new-trip_&]:w-[calc((100%-22px)*0.43)] min-[768px]:[.account-page--portal-new-trip_&]:min-w-[430px] max-[767px]:flex-col max-[767px]:[&_.button]:w-full max-[767px]:[.account-page--portal-new-trip_&]:w-full max-[767px]:[.account-page--portal-new-trip_&]:px-3 [&_.button--primary]:min-h-[58px] [&_.button--primary]:flex-1 [&_.button--primary]:justify-center [&_.button--primary]:rounded-[9px] [&_.button--primary]:bg-[linear-gradient(135deg,#0f766e,#0b8885)] [&_.button--primary]:text-base [&_.button--primary::after]:ml-1 [&_.button--primary::after]:text-[13px] [&_.button--primary::after]:font-extrabold [&_.button--primary::after]:content-['สร้างทริป'] [&_.button--secondary]:hidden";
 const tripBoardingPassClassName =
@@ -234,6 +238,8 @@ const tripPreviewMapLiveClassName = "trip-preview-map--live isolate";
 const tripPreviewMapReadyClassName = "trip-preview-map--ready bg-[#eef8ff]";
 const tripPreviewMapCanvasClassName = "trip-preview-map-canvas absolute inset-0 z-[1]";
 const tripPreviewMapFallbackClassName = "trip-preview-map-fallback absolute inset-0 z-[2]";
+const tripCountrySvgFallbackClassName =
+  "trip-country-svg-fallback absolute inset-3 z-[2] grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-[10px] border border-[rgb(37_99_235_/_0.14)] bg-[linear-gradient(135deg,rgb(255_255_255_/_0.76),rgb(239_246_255_/_0.58))] px-3 [&_svg]:h-[112px] [&_svg]:w-full [&_svg]:min-w-0 [&_path]:fill-[rgb(15_118_110_/_0.24)] [&_path]:stroke-[rgb(15_118_110_/_0.7)] [&_path]:stroke-[1.2px] [&_strong]:grid [&_strong]:size-11 [&_strong]:place-items-center [&_strong]:rounded-[8px] [&_strong]:bg-white [&_strong]:text-sm [&_strong]:font-black [&_strong]:text-[#1d4ed8] [&_strong]:shadow-[0_10px_20px_rgb(15_23_42_/_0.08)]";
 const tripPreviewMapSourceClassName =
   "trip-preview-map-source absolute left-2.5 top-2.5 z-[4] inline-flex min-h-7 max-w-[calc(100%_-_20px)] items-center gap-1.5 rounded-full border border-[rgb(15_118_110_/_0.22)] bg-[rgb(255_255_255_/_0.9)] px-[9px] text-[11px] font-black text-(--color-primary-strong) shadow-[0_10px_18px_rgb(15_23_42_/_0.12)] [&_.icon]:size-[13px]";
 const tripPreviewLiveMarkerClassName =
@@ -420,6 +426,12 @@ interface AccountPortalDataCache {
   todos: AccountTodoSummary[];
   trips: AccountTripSummary[];
   vaultItems: AccountVaultItemSummary[];
+}
+
+interface CreatedTripShare {
+  inviteLink: string;
+  joinId: string;
+  name: string;
 }
 
 let accountPortalDataCache: (AccountPortalDataCache & { sessionToken: string }) | null = null;
@@ -677,6 +689,7 @@ export function AccountAccessPanel({
         ) : accountSession ? (
           <AccountDashboard
             accountClient={accountClient}
+            apiClient={apiClient}
             accountSession={accountSession}
             isLoading={!displayedSettings}
             settings={displayedSettings}
@@ -689,12 +702,14 @@ export function AccountAccessPanel({
             portalSection={portalSection}
             onSettingsChanged={setSettings}
             onVaultItemCreated={(item) => setVaultItems((current) => [item, ...current])}
-            onCreatedTrip={async (session) => {
-              onAuthenticated(session);
-              if (apiClient) {
-                const cockpit = await apiClient.loadTrip(session.tripId, session.sessionToken);
-                onTripChange(cockpit.trip);
-                onCockpitLoaded?.(cockpit);
+            onCreatedTrip={async (session, options) => {
+              if (options?.openTrip !== false) {
+                onAuthenticated(session);
+                if (apiClient) {
+                  const cockpit = await apiClient.loadTrip(session.tripId, session.sessionToken);
+                  onTripChange(cockpit.trip);
+                  onCockpitLoaded?.(cockpit);
+                }
               }
               await refreshAccount(accountSession.sessionToken);
             }}
@@ -1324,6 +1339,7 @@ function SocialAuthButtons({ labels }: { labels: Messages["access"]["emailLogin"
 
 function AccountDashboard({
   accountClient,
+  apiClient,
   accountSession,
   explorer,
   isLoading,
@@ -1342,10 +1358,11 @@ function AccountDashboard({
   vaultItems,
 }: {
   accountClient: AccountApiClient;
+  apiClient?: TripApiClient;
   accountSession: AccountSession;
   explorer: AccountExplorerSummary | null;
   isLoading: boolean;
-  onCreatedTrip: (session: TripParticipantSession) => Promise<void>;
+  onCreatedTrip: (session: TripParticipantSession, options?: { openTrip?: boolean }) => Promise<void>;
   onError: (message: string | null) => void;
   onLogout: () => Promise<void>;
   onSessionCleared: () => void;
@@ -1367,6 +1384,8 @@ function AccountDashboard({
     return currentIndex < readPreviousPortalSectionIndex(currentIndex) ? "back" : "forward";
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [createdTripShare, setCreatedTripShare] = useState<CreatedTripShare | null>(null);
+  const [hasCopiedCreatedInvite, setHasCopiedCreatedInvite] = useState(false);
   const [vaultForm, setVaultForm] = useState<AccountVaultItemCreateRequest>({ kind: "note", title: "", detail: "", externalUrl: "" });
   const [explorerQuery, setExplorerQuery] = useState("");
   const sessionKindLabel = accountSession.kind === "trusted" ? t.access.dashboard.sessionKinds.trusted : t.access.dashboard.sessionKinds.temporary;
@@ -1380,8 +1399,22 @@ function AccountDashboard({
   async function submitTrip(overrideForm?: AccountTripCreateRequest) {
     setIsSubmitting(true);
     try {
-      const response = await accountClient.createTrip(accountSession.sessionToken, normalizedTripForm(overrideForm ?? tripForm, defaultOwnerDisplayName));
-      await onCreatedTrip(response.memberSession);
+      const normalizedForm = normalizedTripForm(overrideForm ?? tripForm, defaultOwnerDisplayName);
+      const response = await accountClient.createTrip(accountSession.sessionToken, normalizedForm);
+      let inviteToken: string | null = null;
+      try {
+        const invite = await apiClient?.rotateJoinInviteToken?.(response.trip.id, response.memberSession.sessionToken);
+        inviteToken = invite?.token ?? null;
+      } catch {
+        inviteToken = null;
+      }
+      setCreatedTripShare({
+        inviteLink: buildInviteLink(response.trip.joinId, inviteToken),
+        joinId: response.trip.joinId,
+        name: response.trip.name,
+      });
+      setHasCopiedCreatedInvite(false);
+      await onCreatedTrip(response.memberSession, { openTrip: portalSection !== "new-trip" });
       setTripForm(defaultTripForm());
       onMessage(t.access.dashboard.createTrip.success);
       onError(null);
@@ -1389,6 +1422,16 @@ function AccountDashboard({
       onError(errorMessage(caught, t.access.dashboard.createTrip.error, t.access.messages));
     } finally {
       setIsSubmitting(false);
+    }
+  }
+
+  async function copyCreatedInviteLink() {
+    if (!createdTripShare) return;
+    try {
+      await navigator.clipboard?.writeText(createdTripShare.inviteLink);
+      setHasCopiedCreatedInvite(true);
+    } catch {
+      setHasCopiedCreatedInvite(false);
     }
   }
 
@@ -1552,6 +1595,20 @@ function AccountDashboard({
             </div>
             <Badge tone="neutral">Draft</Badge>
           </div>
+          {createdTripShare ? (
+            <section className={tripCreatedShareClassName} role="region" aria-label="Created trip share link">
+              <strong>{createdTripShare.name} is ready to share.</strong>
+              <span>Invite link: <code>{createdTripShare.inviteLink}</code></span>
+              <div>
+                <Button type="button" variant="secondary" onClick={() => void copyCreatedInviteLink()}>
+                  {hasCopiedCreatedInvite ? "Copied" : "Copy invite link"}
+                </Button>
+                <a className={tripCreatedShareLinkClassName} href={buildInviteEmailHref(createdTripShare.name, createdTripShare.inviteLink)}>
+                  Send email
+                </a>
+              </div>
+            </section>
+          ) : null}
           <PortalTripWizard
             defaultOwnerDisplayName={defaultOwnerDisplayName}
             isSubmitting={isSubmitting}
@@ -1764,7 +1821,6 @@ function PortalTripWizard({
   const [cityQuery, setCityQuery] = useState("");
   const [hasEditedOwnerDisplayName, setHasEditedOwnerDisplayName] = useState(false);
   const [hasCopiedJoinCode, setHasCopiedJoinCode] = useState(false);
-  const [hasCopiedInviteLink, setHasCopiedInviteLink] = useState(false);
   const [inspirationOffset, setInspirationOffset] = useState(0);
   const [selectingDateStep, setSelectingDateStep] = useState<"depart" | "return">("depart");
   const [accessSalt, setAccessSalt] = useState(() => randomToken(3));
@@ -1794,7 +1850,6 @@ function PortalTripWizard({
   const previewNightCount = tripNightCount(tripForm.startDate, tripForm.endDate);
   const routeDestinationCode = destinationRouteCode(selectedDestinationNames);
   const joinCode = generatedJoinId;
-  const inviteLink = buildDraftInviteLink(joinCode, tripForm.startDate, selectedDestinationNames);
   const calendarDays = routeCalendarDays(tripForm.startDate || "2026-06-01");
 
   useEffect(() => {
@@ -1871,15 +1926,6 @@ function PortalTripWizard({
       setHasCopiedJoinCode(true);
     } catch {
       setHasCopiedJoinCode(false);
-    }
-  }
-
-  async function copyInviteLink() {
-    try {
-      await navigator.clipboard?.writeText(inviteLink);
-      setHasCopiedInviteLink(true);
-    } catch {
-      setHasCopiedInviteLink(false);
     }
   }
 
@@ -2236,10 +2282,7 @@ function PortalTripWizard({
             <Button type="button" variant="secondary" onClick={() => void copyJoinCode()}>
               {hasCopiedJoinCode ? "Copied" : "คัดลอก"}
             </Button>
-            <span>Invite link: <strong>{inviteLink}</strong></span>
-            <Button type="button" variant="secondary" onClick={() => void copyInviteLink()}>
-              {hasCopiedInviteLink ? "Copied" : "Copy link"}
-            </Button>
+            <span><Icon name="key" /> Share link appears after create</span>
           </div>
         </aside>
       </div>
@@ -2252,7 +2295,7 @@ function PortalTripWizard({
         </Button>
         <Button type="submit" disabled={isSubmitting || !canSubmit}>
           <Icon name="check" />
-          {isSubmitting ? "Creating..." : t.access.dashboard.createTrip.submit}
+          {isSubmitting ? "Creating..." : "Create trip"}
         </Button>
       </div>
     </form>
@@ -2405,7 +2448,8 @@ function TripPreviewLiveMap({ selectedCountryNames }: { selectedCountryNames: st
     <div className={cn(tripPreviewMapClassName, tripPreviewMapLiveClassName, mapState === "ready" ? tripPreviewMapReadyClassName : "")}>
       <div className={tripPreviewMapCanvasClassName} ref={mapContainerRef} aria-hidden="true" />
       {mapState !== "ready" ? (
-        <div className={tripPreviewMapFallbackClassName} aria-hidden="true">
+        <div className={tripPreviewMapFallbackClassName}>
+          <CountrySvgFallback selectedCountryNames={selectedCountryNames} />
           <span className={cn(tripPreviewPinClassName, tripPreviewPinOriginClassName)}><Icon name="location" /></span>
           <span className={cn(tripPreviewPinClassName, tripPreviewPinDestinationClassName)}><Icon name="map" /></span>
           <span className={tripPreviewRouteLineClassName} />
@@ -2417,6 +2461,34 @@ function TripPreviewLiveMap({ selectedCountryNames }: { selectedCountryNames: st
       </span>
     </div>
   );
+}
+
+function CountrySvgFallback({ selectedCountryNames }: { selectedCountryNames: string[] }) {
+  const countryName = selectedCountryNames[0] ?? "Thailand";
+  const option = tripCountryOptions.find((country) => country.name === countryName);
+  const country = worldMapCountries.find((candidate) => candidate.name === countryName);
+  const bounds = country ? worldMapPath.bounds(country.feature) : null;
+  const viewBox = bounds
+    ? paddedViewBox(bounds)
+    : "0 0 960 500";
+
+  return (
+    <div className={tripCountrySvgFallbackClassName} aria-label="Country svg fallback map">
+      <svg viewBox={viewBox} role="img" aria-label={`${countryName} country outline`}>
+        {country?.path ? <path d={country.path} /> : <path d="M110 250c80-84 198-112 316-76 101 31 167 104 238 80 58-20 104 12 123 61-90 69-216 92-352 80-139-12-247-58-325-145Z" />}
+      </svg>
+      <strong>{option?.code ?? destinationRouteCode([countryName])}</strong>
+    </div>
+  );
+}
+
+function paddedViewBox(bounds: [[number, number], [number, number]]): string {
+  const [[minX, minY], [maxX, maxY]] = bounds;
+  const width = Math.max(1, maxX - minX);
+  const height = Math.max(1, maxY - minY);
+  const padX = width * 0.18;
+  const padY = height * 0.18;
+  return `${minX - padX} ${minY - padY} ${width + padX * 2} ${height + padY * 2}`;
 }
 
 function tripPreviewMapCoordinates(selectedCountryNames: string[]): Array<[number, number]> {
@@ -2532,11 +2604,16 @@ function generateJoinPassword(): string {
   return `${randomToken(4)}-${randomToken(4)}`;
 }
 
-function buildDraftInviteLink(joinCode: string, startDate: string, destinations: string[]): string {
-  const tokenSeed = `${joinCode}:${startDate}:${destinations.join("|")}`;
-  const token = btoa(tokenSeed).replace(/=+$/g, "").slice(0, 16);
-  if (typeof window === "undefined") return `/join/${encodeURIComponent(joinCode)}?token=${encodeURIComponent(token)}`;
-  return `${window.location.origin}/join/${encodeURIComponent(joinCode)}?token=${encodeURIComponent(token)}`;
+function buildInviteLink(joinCode: string, token?: string | null): string {
+  const basePath = token ? `${appRoutes.join()}?token=${encodeURIComponent(token)}` : appRoutes.join(joinCode);
+  if (typeof window === "undefined") return basePath;
+  return `${window.location.origin}${basePath}`;
+}
+
+function buildInviteEmailHref(tripName: string, inviteLink: string): string {
+  const subject = `Join ${tripName}`;
+  const body = `Join this trip in Joii: ${inviteLink}`;
+  return `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 }
 
 function randomToken(length: number): string {

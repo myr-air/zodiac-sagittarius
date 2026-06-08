@@ -13,7 +13,7 @@ import type {
 } from "@/src/account/api-client";
 import { seedTrip } from "@/src/trip/seed";
 import type { TripParticipantSession } from "@/src/trip/types";
-import { TripApiError } from "@/src/trip/api-client";
+import { TripApiError, type TripApiClient } from "@/src/trip/api-client";
 import { I18nProvider } from "@/src/i18n/I18nProvider";
 import { renderWithI18n } from "@/src/i18n/test-utils";
 import { AccountAccessPanel } from "./AccountAccessPanel";
@@ -803,7 +803,7 @@ describe("AccountAccessPanel", () => {
     await user.click(screen.getByRole("button", { name: /Add city/i }));
 
     expect(screen.getAllByText(/Central/i).length).toBeGreaterThan(0);
-    await user.click(screen.getByRole("button", { name: /Create and open/i }));
+    await user.click(screen.getByRole("button", { name: /Create trip/i }));
     expect(accountClient.createTrip).toHaveBeenCalledWith(
       "account-session",
       expect.objectContaining({
@@ -846,7 +846,7 @@ describe("AccountAccessPanel", () => {
     expect(within(calendar).getByRole("button", { name: /Select Jun 9, 2026/i })).toHaveAttribute("aria-pressed", "true");
   });
 
-  it("generates route-aware join credentials and a token-ready invite link", async () => {
+  it("generates route-aware join credentials without a draft invite token", async () => {
     const accountClient = createAccountClient();
 
     render(
@@ -875,13 +875,89 @@ describe("AccountAccessPanel", () => {
 
     const joinCode = screen.getByText(/Join code:/i).textContent?.replace("Join code:", "").trim() ?? "";
     const joinPass = screen.getByLabelText(/Join password/i);
-    const inviteLink = screen.getByText(/Invite link:/i).textContent?.replace("Invite link:", "").trim() ?? "";
 
     expect(joinCode).toMatch(/^\d{4}-HK-[A-Z0-9]{3}$/);
     expect(joinPass).toHaveValue();
     expect(String((joinPass as HTMLInputElement).value)).toMatch(/^[A-Z0-9]{4}-[A-Z0-9]{4}$/);
-    expect(inviteLink).toContain(`/join/${joinCode}`);
-    expect(inviteLink).toContain("token=");
+    expect(screen.queryByText(/Invite link:/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/token=/i)).not.toBeInTheDocument();
+    expect(screen.getByText(/Share link appears after create/i)).toBeInTheDocument();
+  });
+
+  it("shows a copyable email-ready invite link after create succeeds", async () => {
+    const user = userEvent.setup();
+    const accountClient = createAccountClient();
+    const apiClient = createTripApiClient();
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: { writeText },
+    });
+
+    render(
+      <AccountAccessPanel
+        accessMode="account-portal"
+        accountClient={accountClient}
+        apiClient={apiClient}
+        accountSession={{
+          userId: "user-aom",
+          sessionToken: "account-session",
+          kind: "trusted",
+          trustedDeviceId: "device-current",
+          createdAt: "2026-05-30T08:00:00.000Z",
+          expiresAt: "2026-06-29T08:00:00.000Z",
+        }}
+        portalSection="new-trip"
+        trip={seedTrip}
+        onAccountSessionChange={vi.fn()}
+        onAuthenticated={vi.fn()}
+        onTripChange={vi.fn()}
+      />,
+    );
+
+    fireEvent.change(await screen.findByLabelText(/Trip name/i), { target: { value: "Hong Kong May Route" } });
+    await user.type(screen.getByLabelText(/Search destinations/i), "Hong Kong");
+    await user.click(screen.getByRole("button", { name: /^Hong Kong$/i }));
+    await user.click(screen.getByRole("button", { name: /Create trip/i }));
+
+    const sharePanel = await screen.findByRole("region", { name: /Created trip share link/i });
+    expect(apiClient.rotateJoinInviteToken).toHaveBeenCalledWith("trip-created", "member-session");
+    expect(within(sharePanel).getByText(/Invite link:/i).textContent).toContain("token=created-token");
+    await user.click(within(sharePanel).getByRole("button", { name: /Copy invite link/i }));
+    expect(writeText).toHaveBeenCalledWith(expect.stringContaining("token=created-token"));
+    expect(within(sharePanel).getByRole("link", { name: /Send email/i })).toHaveAttribute("href", expect.stringContaining("mailto:"));
+  });
+
+  it("renders a country svg and flag-style badge in the ticket map fallback", async () => {
+    const accountClient = createAccountClient();
+
+    render(
+      <AccountAccessPanel
+        accessMode="account-portal"
+        accountClient={accountClient}
+        accountSession={{
+          userId: "user-aom",
+          sessionToken: "account-session",
+          kind: "trusted",
+          trustedDeviceId: "device-current",
+          createdAt: "2026-05-30T08:00:00.000Z",
+          expiresAt: "2026-06-29T08:00:00.000Z",
+        }}
+        portalSection="new-trip"
+        trip={seedTrip}
+        onAccountSessionChange={vi.fn()}
+        onAuthenticated={vi.fn()}
+        onTripChange={vi.fn()}
+      />,
+    );
+
+    fireEvent.change(await screen.findByLabelText(/Search destinations/i), { target: { value: "Hong Kong" } });
+    fireEvent.click(screen.getByRole("button", { name: /^Hong Kong$/i }));
+
+    const preview = screen.getByRole("region", { name: /Live trip preview/i });
+    const fallback = within(preview).getByLabelText(/Country svg fallback map/i);
+    expect(fallback).toBeInTheDocument();
+    expect(within(fallback).getByText("HK")).toBeInTheDocument();
   });
 
   it("keeps the ticket preview sticky on desktop and shows workflow steps on smaller viewports", async () => {
@@ -940,7 +1016,7 @@ describe("AccountAccessPanel", () => {
     fireEvent.change(await screen.findByLabelText(/Trip name/i), { target: { value: "Osaka Round Trip" } });
     await user.keyboard("{Enter}");
 
-    expect(screen.getByRole("button", { name: /Create and open/i })).toBeDisabled();
+    expect(screen.getByRole("button", { name: /Create trip/i })).toBeDisabled();
     expect(accountClient.createTrip).not.toHaveBeenCalled();
     expect(onAuthenticated).not.toHaveBeenCalled();
   });
@@ -974,7 +1050,7 @@ describe("AccountAccessPanel", () => {
 
     expect(screen.getAllByText("Japan").length).toBeGreaterThan(0);
     expect(accountClient.createTrip).not.toHaveBeenCalled();
-    await user.click(screen.getByRole("button", { name: /Create and open/i }));
+    await user.click(screen.getByRole("button", { name: /Create trip/i }));
     expect(accountClient.createTrip).toHaveBeenCalledTimes(1);
   });
 
@@ -1010,7 +1086,7 @@ describe("AccountAccessPanel", () => {
     expect(screen.getAllByRole("button", { name: /South Korea/i }).length).toBeGreaterThan(0);
 
     expect(await screen.findAllByText("Japan, South Korea")).not.toHaveLength(0);
-    await user.click(screen.getByRole("button", { name: /Create and open/i }));
+    await user.click(screen.getByRole("button", { name: /Create trip/i }));
 
     expect(accountClient.createTrip).toHaveBeenCalledWith(
       "account-session",
@@ -1360,6 +1436,12 @@ function createAccountClient(): AccountApiClient {
     revokeTrustedDevice: vi.fn().mockResolvedValue(undefined),
     logout: vi.fn().mockResolvedValue(undefined),
   };
+}
+
+function createTripApiClient(): TripApiClient {
+  return {
+    rotateJoinInviteToken: vi.fn().mockResolvedValue({ token: "created-token", expiresAt: "2026-06-30T00:00:00.000Z" }),
+  } as unknown as TripApiClient;
 }
 
 function stubCredentials() {
