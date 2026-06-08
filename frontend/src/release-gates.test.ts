@@ -105,11 +105,11 @@ describe("release evidence gates", () => {
     expect(outputOf(result)).toContain("production env check ok");
   });
 
-  it("rejects joii as a runtime API base because it redirects to the canonical host", () => {
+  it("rejects unsupported runtime API base hosts", () => {
     const result = runGate("scripts/check-production-env.ts", {
       ...validProductionRuntimeEnv,
-      NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL: "https://joii.13thx.com",
-      SAGITTARIUS_ALLOWED_ORIGINS: "https://joii.13thx.com",
+      NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL: "https://legacy.13thx.com",
+      SAGITTARIUS_ALLOWED_ORIGINS: "https://legacy.13thx.com",
     });
 
     expect(result.status).not.toBe(0);

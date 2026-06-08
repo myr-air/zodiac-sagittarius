@@ -1913,20 +1913,13 @@ mod tests {
 
     #[test]
     fn passkey_origin_accepts_allowed_origin_urls() {
-        with_passkey_origin_allowlist(
-            "https://joii.13thx.com,https://sagittarius.13thx.com",
-            || {
-                assert_eq!(
-                    allowed_passkey_origin("https://joii.13thx.com"),
-                    Some("joii.13thx.com".to_string())
-                );
-                assert_eq!(
-                    allowed_passkey_origin("https://sagittarius.13thx.com/account"),
-                    Some("sagittarius.13thx.com".to_string())
-                );
-                assert_eq!(allowed_passkey_origin("https://evil.13thx.com"), None);
-            },
-        );
+        with_passkey_origin_allowlist("https://sagittarius.13thx.com", || {
+            assert_eq!(
+                allowed_passkey_origin("https://sagittarius.13thx.com/account"),
+                Some("sagittarius.13thx.com".to_string())
+            );
+            assert_eq!(allowed_passkey_origin("https://evil.13thx.com"), None);
+        });
     }
 
     #[test]

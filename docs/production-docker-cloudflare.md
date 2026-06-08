@@ -4,12 +4,7 @@
 
 Deploy Sagittarius as a Docker Compose production app stack on the existing
 `zodiac` Docker network. The stack publishes the frontend through the existing
-Cloudflare Tunnel at:
-
-- `https://sagittarius.13thx.com`
-
-`https://joii.13thx.com` is a redirect-only alias. It should preserve the path
-and query string while redirecting to `https://sagittarius.13thx.com`.
+Cloudflare Tunnel at `https://sagittarius.13thx.com`.
 
 The default production compose file is `docker-compose.yml`; the root Makefile
 uses it through `PRODUCTION_COMPOSE_FILE ?= docker-compose.yml`.
@@ -145,8 +140,6 @@ Add this exact ingress to the existing Cloudflare Tunnel:
 
 ```yaml
 ingress:
-  - hostname: joii.13thx.com
-    service: http://sagittarius-frontend:5180
   - hostname: sagittarius.13thx.com
     service: http://sagittarius-frontend:5180
   - service: http_status:404
@@ -169,7 +162,6 @@ Run that command only if the tunnel container is not already connected.
 Public API health should be checked through the frontend/Cloudflare route:
 
 ```bash
-curl -fsS https://joii.13thx.com/api/v1/health
 curl -fsS https://sagittarius.13thx.com/api/v1/health
 ```
 
@@ -182,6 +174,3 @@ curl -fsS http://sagittarius-api:5181/api/v1/readiness
 The shared Caddy gateway is the only Cloudflare ingress target. Browser API
 calls use `/api/v1/*` on the public hostname, and Caddy rewrites them to
 `http://sagittarius-server:5181` inside the Docker network.
-
-Requests for `joii.13thx.com` should return `308` redirects to
-`sagittarius.13thx.com` before they reach the Sagittarius frontend.

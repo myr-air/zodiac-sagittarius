@@ -3,14 +3,12 @@
 Use this after Sagittarius is deployed but public smoke checks cannot reach the
 app.
 
-## Current Production Hostnames
+## Current Production Hostname
 
-- Canonical hostname: `sagittarius.13thx.com`
-- Redirect-only alias: `joii.13thx.com`
+Canonical hostname: `sagittarius.13thx.com`.
 
 Keep `NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL=https://sagittarius.13thx.com` in
-the runtime `.env.production`. Do not use `joii.13thx.com` as the runtime API
-base; that hostname redirects to the canonical host.
+the runtime `.env.production`.
 
 ## Cloudflare DNS
 
@@ -22,11 +20,6 @@ In Cloudflare Dashboard:
 
 ```text
 Type: CNAME
-Name: joii
-Target: <your-cloudflare-tunnel-hostname>.cfargotunnel.com
-Proxy status: Proxied
-
-Type: CNAME
 Name: sagittarius
 Target: <your-cloudflare-tunnel-hostname>.cfargotunnel.com
 Proxy status: Proxied
@@ -34,8 +27,8 @@ Proxy status: Proxied
 
 If the tunnel was created from the Zero Trust dashboard, Cloudflare may create
 these CNAME records automatically when the public hostname is added to the
-tunnel. The important check is that `dig +short joii.13thx.com` and
-`dig +short sagittarius.13thx.com` return Cloudflare records.
+tunnel. The important check is that `dig +short sagittarius.13thx.com` returns
+Cloudflare records.
 
 ## Cloudflare Tunnel Public Hostnames
 
@@ -47,16 +40,12 @@ In Cloudflare Dashboard:
 4. Add or verify:
 
 ```text
-Hostname: joii.13thx.com
-Service: http://sagittarius-frontend:5180
-
 Hostname: sagittarius.13thx.com
 Service: http://sagittarius-frontend:5180
 ```
 
 The `sagittarius-frontend` alias intentionally points to the shared
-`caddy-gateway`. The gateway redirects `joii.13thx.com` to
-`sagittarius.13thx.com` and routes Sagittarius traffic to the app/API services.
+`caddy-gateway`, which routes Sagittarius traffic to the app/API services.
 
 ## Cloudflare Access
 
@@ -67,13 +56,12 @@ of these:
 ### Option A: Public App
 
 1. Go to `Zero Trust` -> `Access` -> `Applications`.
-2. Open the application protecting `sagittarius.13thx.com` / `joii.13thx.com`.
+2. Open the application protecting `sagittarius.13thx.com`.
 3. Remove the hostname from the protected application, or change the policy so
    public users can reach the app.
 4. Re-test:
 
 ```bash
-curl -I https://joii.13thx.com/
 curl -sS https://sagittarius.13thx.com/api/v1/health
 curl -sS https://sagittarius.13thx.com/api/v1/readiness
 ```
@@ -106,17 +94,13 @@ curl -sS \
 Run these after DNS and Access are updated:
 
 ```bash
-dig +short joii.13thx.com
 dig +short sagittarius.13thx.com
-curl -sS -I https://joii.13thx.com/
 curl -sS -D - https://sagittarius.13thx.com/api/v1/health
 curl -sS -D - https://sagittarius.13thx.com/api/v1/readiness
 ```
 
 Expected:
 
-- `joii.13thx.com` resolves and returns a `308` redirect to
-  `sagittarius.13thx.com`.
 - The canonical frontend returns `200` or an intentional app redirect, not DNS
   failure.
 - Health and readiness return API responses, or return through Access only when

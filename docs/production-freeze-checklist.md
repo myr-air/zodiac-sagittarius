@@ -102,8 +102,7 @@ through the latest migration file. Do not use it for a fresh database.
 
 For the self-hosted `zodiac` network deploy, follow
 `docs/production-docker-cloudflare.md`. The production app is published through
-the existing Cloudflare Tunnel at `joii.13thx.com` and
-`sagittarius.13thx.com`.
+the existing Cloudflare Tunnel at `sagittarius.13thx.com`.
 
 The production compose stack creates only `sagittarius-server` and
 `sagittarius-web`; `sagittarius-server` exposes the `sagittarius-api` network
