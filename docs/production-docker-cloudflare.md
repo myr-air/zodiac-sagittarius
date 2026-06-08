@@ -62,7 +62,7 @@ make release-signoff-check SIGNOFF_ENV_FILE=.env.release-signoff
 If the external network does not exist yet, create it outside the app stack:
 
 ```bash
-docker network create zodiac-network
+docker network create ophiuchus-network
 ```
 
 ## Build, Migrate, Start, Check, Stop
@@ -153,14 +153,14 @@ ingress:
   - service: http_status:404
 ```
 
-The tunnel container must be attached to `zodiac-network` so it can resolve
+The tunnel container must be attached to `ophiuchus-network` so it can resolve
 `sagittarius-frontend`. That alias intentionally points to the shared
 `caddy-gateway`, not directly to the frontend container. Caddy routes `/api/*`
 to `sagittarius-server:5181` and all other Sagittarius traffic to
 `sagittarius-web:5180`.
 
 ```bash
-docker network connect zodiac-network <cloudflare-tunnel-container-name>
+docker network connect ophiuchus-network <cloudflare-tunnel-container-name>
 ```
 
 Run that command only if the tunnel container is not already connected.

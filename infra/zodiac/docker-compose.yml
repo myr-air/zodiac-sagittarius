@@ -1,8 +1,8 @@
 version: '3.8'
 
 networks:
-  zodiac-network:
-    name: zodiac-network
+  ophiuchus-network:
+    name: ophiuchus-network
     driver: bridge
   cancer-network:
     name: cancer-network
@@ -21,7 +21,7 @@ services:
     volumes:
       - pg-data:/var/lib/postgresql/data
     networks:
-      - zodiac-network
+      - ophiuchus-network
 
   # ☁️ ตัวแทนเชื่อมโยงคลาวด์ตัวหลัก (ทางเข้านอกบ้าน HTTPS สาธารณะ)
   cloudflared:
@@ -32,7 +32,7 @@ services:
     secrets:
       - cloudflare_tunnel_token
     networks:
-      - zodiac-network
+      - ophiuchus-network
       - cancer-network
 
   # 🚗 Caddy Local Gateway (ทางเข้าในบ้านสำหรับ LAN/WiFi)
@@ -47,7 +47,7 @@ services:
       - caddy-data:/data
       - caddy-config:/config
     networks:
-      zodiac-network:
+      ophiuchus-network:
         aliases:
           - sagittarius-frontend
       cancer-network: {}
