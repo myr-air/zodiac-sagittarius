@@ -3185,6 +3185,7 @@ export function SagittariusApp({
                 currentMember={currentMember}
                 expenseSummary={expenseSummary}
                 canEditExpenses={canEditExpenses}
+                apiBaseUrl={process.env.NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL ?? ""}
                 onCreateExpense={createExpense}
                 onUpdateExpense={updateExpense}
                 onDeleteExpense={deleteExpense}

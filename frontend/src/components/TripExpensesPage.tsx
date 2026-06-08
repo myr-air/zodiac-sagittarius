@@ -22,6 +22,7 @@ interface TripExpensesPageProps {
   currentMember: Member;
   expenseSummary: ExpenseSummary;
   canEditExpenses: boolean;
+  apiBaseUrl?: string;
   onCreateExpense: (input: ExpenseInput) => void | Promise<void>;
   onUpdateExpense: (input: ExpenseUpdateInput) => void | Promise<void>;
   onDeleteExpense: (expenseId: string) => void;
@@ -101,6 +102,7 @@ export function TripExpensesPage({
   currentMember,
   expenseSummary,
   canEditExpenses,
+  apiBaseUrl = "",
   onCreateExpense,
   onUpdateExpense,
   onDeleteExpense,
@@ -417,6 +419,7 @@ export function TripExpensesPage({
           trip={trip}
           currentMember={currentMember}
           settlementCurrency={settlementCurrency}
+          apiBaseUrl={apiBaseUrl}
           onClose={() => setDialogExpense(null)}
           onCreateExpense={async (input) => {
             await onCreateExpense(input);
@@ -447,6 +450,7 @@ function ExpenseDialog({
   trip,
   currentMember,
   settlementCurrency,
+  apiBaseUrl,
   onClose,
   onCreateExpense,
   onUpdateExpense,
@@ -455,6 +459,7 @@ function ExpenseDialog({
   trip: Trip;
   currentMember: Member;
   settlementCurrency: string;
+  apiBaseUrl: string;
   onClose: () => void;
   onCreateExpense: (input: ExpenseInput) => void | Promise<void>;
   onUpdateExpense: (input: ExpenseUpdateInput) => void | Promise<void>;
@@ -515,7 +520,9 @@ function ExpenseDialog({
     let cancelled = false;
     if (!needsExchangeRate || exchangeRateTouched) return;
 
-    fetchMajorExchangeRate(normalizedCurrency, normalizeCurrencyCode(settlementCurrency))
+    fetchMajorExchangeRate(normalizedCurrency, normalizeCurrencyCode(settlementCurrency), {
+      backendBaseUrl: apiBaseUrl,
+    })
       .then((quote) => {
         if (!cancelled && quote) {
           setExchangeRate(formatExchangeRateInput(quote.rate));
@@ -528,7 +535,7 @@ function ExpenseDialog({
     return () => {
       cancelled = true;
     };
-  }, [exchangeRateTouched, needsExchangeRate, normalizedCurrency, settlementCurrency]);
+  }, [apiBaseUrl, exchangeRateTouched, needsExchangeRate, normalizedCurrency, settlementCurrency]);
 
   function changeSplitMode(nextMode: ExpenseSplitMode) {
     setSplitMode(nextMode);

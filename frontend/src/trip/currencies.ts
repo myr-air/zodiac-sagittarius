@@ -14,6 +14,7 @@ export interface ExchangeRateQuote {
 }
 
 interface FetchMajorExchangeRateOptions {
+  backendBaseUrl?: string;
   fetchImpl?: typeof fetch;
   now?: number;
   storage?: Storage | null;
@@ -73,7 +74,7 @@ export async function fetchMajorExchangeRate(
   const fetchImpl = options.fetchImpl ?? globalThis.fetch;
   if (!fetchImpl) return null;
 
-  const quote = await fetchBackendRate(source, target, fetchImpl)
+  const quote = await fetchBackendRate(source, target, fetchImpl, options.backendBaseUrl)
     ?? await fetchFrankfurterRate(source, target, fetchImpl);
   if (!quote) return null;
 
@@ -85,9 +86,10 @@ async function fetchBackendRate(
   source: MajorCurrencyCode,
   target: MajorCurrencyCode,
   fetchImpl: typeof fetch,
+  backendBaseUrl = "",
 ): Promise<ExchangeRateQuote | null> {
   try {
-    const response = await fetchImpl(buildBackendRatesUrl(source, target));
+    const response = await fetchImpl(buildBackendRatesUrl(source, target, backendBaseUrl));
     if (!response.ok) return null;
     return parseBackendRate(await response.json(), source, target);
   } catch {
@@ -109,8 +111,9 @@ async function fetchFrankfurterRate(
   }
 }
 
-function buildBackendRatesUrl(source: MajorCurrencyCode, target: MajorCurrencyCode): string {
-  return `${backendRatesPath}?${new URLSearchParams({ base: source, quote: target })}`;
+function buildBackendRatesUrl(source: MajorCurrencyCode, target: MajorCurrencyCode, backendBaseUrl = ""): string {
+  const baseUrl = backendBaseUrl.endsWith("/") ? backendBaseUrl.slice(0, -1) : backendBaseUrl;
+  return `${baseUrl}${backendRatesPath}?${new URLSearchParams({ base: source, quote: target })}`;
 }
 
 function buildFrankfurterRatesUrl(source: MajorCurrencyCode, target: MajorCurrencyCode): string {

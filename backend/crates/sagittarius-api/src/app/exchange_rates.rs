@@ -317,4 +317,16 @@ mod tests {
         assert_eq!(second.rate, 1.1);
         assert_eq!(provider.calls.load(Ordering::SeqCst), 1);
     }
+
+    #[tokio::test]
+    #[ignore = "live provider smoke test; run manually to verify Frankfurter compatibility"]
+    async fn frankfurter_provider_live_smoke() {
+        let provider = FrankfurterExchangeRateProvider::new();
+
+        let quote = provider.fetch_rate("CNY", "HKD").await.unwrap();
+
+        assert!(quote.rate.is_finite());
+        assert!(quote.rate > 0.0);
+        assert_eq!(quote.provider, "frankfurter");
+    }
 }
