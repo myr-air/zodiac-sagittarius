@@ -4,7 +4,7 @@ networks:
     # Internal LAN-isolation network for Sagittarius services. Keep isolated from shared LAN overlays.
   zodiac:
     external: true
-    name: zodiac
+    name: zodiac-network
 
 services:
   # SAGITTARIUS API (Rust Axum)
@@ -86,4 +86,7 @@ services:
       retries: 10
       start_period: 20s
     networks:
-      - sagittarius-network
+      sagittarius-network:
+      zodiac:
+        aliases:
+          - sagittarius-web
