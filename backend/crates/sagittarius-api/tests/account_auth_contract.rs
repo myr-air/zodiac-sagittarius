@@ -14,41 +14,6 @@ use uuid::Uuid;
 const PASSKEY_ORIGIN: &str = "http://localhost:5180";
 const PASSKEY_RP_ID: &str = "localhost";
 
-struct PasskeyAllowedOriginsGuard {
-    previous: Option<String>,
-}
-
-impl PasskeyAllowedOriginsGuard {
-    fn set(value: &str) -> Self {
-        let previous = std::env::var("PASSKEY_ALLOWED_ORIGINS").ok();
-        // SAFETY: this integration-test guard scopes the process env override and restores it on drop.
-        unsafe {
-            std::env::set_var("PASSKEY_ALLOWED_ORIGINS", value);
-        }
-
-        Self { previous }
-    }
-}
-
-impl Drop for PasskeyAllowedOriginsGuard {
-    fn drop(&mut self) {
-        match self.previous.take() {
-            Some(raw) => {
-                // SAFETY: restoring the prior process env after the scoped override.
-                unsafe {
-                    std::env::set_var("PASSKEY_ALLOWED_ORIGINS", raw);
-                }
-            }
-            None => {
-                // SAFETY: removing the scoped process env override after the test.
-                unsafe {
-                    std::env::remove_var("PASSKEY_ALLOWED_ORIGINS");
-                }
-            }
-        }
-    }
-}
-
 async fn post_json(app: axum::Router, uri: &str, body: Value) -> Response<axum::body::Body> {
     app.oneshot(
         Request::builder()
@@ -2965,39 +2930,24 @@ async fn passkey_login_finish_rejects_user_disabled_after_challenge_start(pool: 
 async fn passkey_login_finish_rejects_legacy_disposable_email_after_challenge_start(
     pool: sqlx::PgPool,
 ) {
-    let _passkey_origin_guard = PasskeyAllowedOriginsGuard::set("localhost,127.0.0.1,0.0.0.0");
     let session = login_account(&pool, "passkey-legacy-disposable@example.com", false, "").await;
     let user_id = Uuid::parse_str(session["userId"].as_str().unwrap()).unwrap();
-    let authorization = format!("Bearer {}", session["sessionToken"].as_str().unwrap());
     let signing_key = SigningKey::from_slice(&[11; 32]).unwrap();
     let credential_id_bytes = b"credential-legacy-disposable";
-    let (_, start) = response_json(
-        post_with_auth(
-            support::app(pool.clone()),
-            "/api/v1/account/passkeys/options",
-            Some(&authorization),
-        )
-        .await,
+
+    sqlx::query(
+        "insert into webauthn_credentials (id, user_id, credential_id, public_key, nickname)
+         values (gen_random_uuid(), $1, $2, $3, 'Aom MacBook')",
     )
-    .await;
-    let valid_payload = registration_finish_payload(
-        start["challengeId"].as_str().unwrap(),
-        start["challenge"].as_str().unwrap(),
-        &signing_key,
-        credential_id_bytes,
-        "Aom MacBook",
-    );
-    let (valid_status, _) = response_json(
-        post_json_with_auth(
-            support::app(pool.clone()),
-            "/api/v1/account/passkeys",
-            Some(&authorization),
-            valid_payload,
-        )
-        .await,
-    )
-    .await;
-    assert_eq!(valid_status, StatusCode::OK);
+    .bind(user_id)
+    .bind(URL_SAFE_NO_PAD.encode(credential_id_bytes))
+    .bind(serde_json::json!({
+        "alg": "ES256",
+        "coseKey": URL_SAFE_NO_PAD.encode(cose_key(&signing_key)),
+    }))
+    .execute(&pool)
+    .await
+    .unwrap();
 
     let (_, login_start) = response_json(
         post_json(
@@ -3025,7 +2975,8 @@ async fn passkey_login_finish_rejects_legacy_disposable_email_after_challenge_st
     .await
     .unwrap();
 
-    let login_finish = passkey_login_finish_payload(
+    let (origin, rp_id) = passkey_origin_for_current_env();
+    let login_finish = passkey_login_finish_payload_with_origin_and_rp_id(
         login_start["challengeId"].as_str().unwrap(),
         login_start["challenge"].as_str().unwrap(),
         &signing_key,
@@ -3033,6 +2984,8 @@ async fn passkey_login_finish_rejects_legacy_disposable_email_after_challenge_st
         1,
         false,
         "",
+        &origin,
+        &rp_id,
     );
     let (finish_status, finish_body) = response_json(
         post_json(
@@ -3119,7 +3072,96 @@ fn passkey_login_finish_payload_with_authenticator_data(
     trust_device: bool,
     device_label: &str,
 ) -> Value {
-    let client_data_json = encoded_client_data_json("webauthn.get", challenge);
+    passkey_login_finish_payload_with_authenticator_data_and_origin(
+        challenge_id,
+        challenge,
+        signing_key,
+        credential_id,
+        authenticator_data,
+        trust_device,
+        device_label,
+        PASSKEY_ORIGIN,
+    )
+}
+
+fn passkey_origin_for_current_env() -> (String, String) {
+    let host = std::env::var("PASSKEY_ALLOWED_ORIGINS")
+        .ok()
+        .and_then(|raw| raw.split(',').find_map(passkey_host_from_allowed_entry))
+        .unwrap_or_else(|| PASSKEY_RP_ID.to_string());
+    let scheme = if host == "localhost" || host == "0.0.0.0" || host.starts_with("127.") {
+        "http"
+    } else {
+        "https"
+    };
+
+    (format!("{scheme}://{host}"), host)
+}
+
+fn passkey_host_from_allowed_entry(entry: &str) -> Option<String> {
+    let trimmed = entry.trim();
+    if trimmed.is_empty() {
+        return None;
+    }
+    if trimmed == "*" {
+        return Some(PASSKEY_RP_ID.to_string());
+    }
+    if let Some(suffix) = trimmed.strip_prefix("*.") {
+        return Some(format!("test.{suffix}"));
+    }
+    let without_scheme = trimmed
+        .split_once("://")
+        .map(|(_, rest)| rest)
+        .unwrap_or(trimmed);
+    let host = without_scheme
+        .split('/')
+        .next()
+        .unwrap_or("")
+        .split(':')
+        .next()
+        .unwrap_or("")
+        .trim();
+    if host.is_empty() {
+        None
+    } else {
+        Some(host.to_ascii_lowercase())
+    }
+}
+
+fn passkey_login_finish_payload_with_origin_and_rp_id(
+    challenge_id: &str,
+    challenge: &str,
+    signing_key: &SigningKey,
+    credential_id: &[u8],
+    sign_count: u32,
+    trust_device: bool,
+    device_label: &str,
+    origin: &str,
+    rp_id: &str,
+) -> Value {
+    passkey_login_finish_payload_with_authenticator_data_and_origin(
+        challenge_id,
+        challenge,
+        signing_key,
+        credential_id,
+        login_authenticator_data_with_rp_id(sign_count, rp_id),
+        trust_device,
+        device_label,
+        origin,
+    )
+}
+
+fn passkey_login_finish_payload_with_authenticator_data_and_origin(
+    challenge_id: &str,
+    challenge: &str,
+    signing_key: &SigningKey,
+    credential_id: &[u8],
+    authenticator_data: Vec<u8>,
+    trust_device: bool,
+    device_label: &str,
+    origin: &str,
+) -> Value {
+    let client_data_json = encoded_client_data_json_with_origin("webauthn.get", challenge, origin);
     let client_data_hash = Sha256::digest(URL_SAFE_NO_PAD.decode(&client_data_json).unwrap());
     let mut signed_data = Vec::with_capacity(authenticator_data.len() + client_data_hash.len());
     signed_data.extend_from_slice(&authenticator_data);
