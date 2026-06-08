@@ -332,15 +332,9 @@ const accountStepSummaryClassName =
   "account-step-summary grid gap-1 rounded-(--radius-md) border border-(--color-border) bg-(--color-primary-soft) p-3 text-[13px] font-[750] text-(--color-text-muted) [&_strong]:min-w-0 [&_strong]:[overflow-wrap:anywhere] [&_strong]:text-[15px] [&_strong]:text-(--color-primary-strong)";
 const accountFlowSwitchClassName =
   "account-flow-switch m-0 text-center text-[13px] font-[750] text-(--color-text-muted) [&_a]:cursor-pointer [&_a]:border-0 [&_a]:bg-transparent [&_a]:p-0 [&_a]:font-[inherit] [&_a]:font-[850] [&_a]:text-(--color-primary-strong) [&_a]:no-underline [&_a:focus-visible]:underline [&_a:hover]:underline [&_button]:cursor-pointer [&_button]:border-0 [&_button]:bg-transparent [&_button]:p-0 [&_button]:font-[inherit] [&_button]:font-[850] [&_button]:text-(--color-primary-strong) [&_button]:no-underline [&_button:focus-visible]:underline [&_button:hover]:underline";
-const accountSocialBlockClassName = "account-social-block mt-1 grid gap-2.5";
-const accountDividerClassName =
-  "account-divider grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3.5 text-[13px] font-[650] text-(--color-text-muted) before:h-px before:bg-(--color-border) before:content-[''] after:h-px after:bg-(--color-border) after:content-['']";
-const accountSocialButtonClassName =
-  "account-social-button inline-flex min-h-12 items-center justify-center gap-3 rounded-(--radius-md) border border-(--color-border-strong) bg-[rgb(255_255_255_/_0.72)] text-sm font-[850] text-(--color-text) disabled:cursor-not-allowed disabled:opacity-[0.52]";
-const accountSocialGlyphClassName =
-  "account-social-glyph grid size-[22px] place-items-center rounded-full bg-white text-[13px] font-black";
-const accountSocialGlyphGoogleClassName = cn(accountSocialGlyphClassName, "account-social-glyph--google text-[#4285f4]");
-const accountSocialGlyphAppleClassName = cn(accountSocialGlyphClassName, "account-social-glyph--apple text-[#111827]");
+const accountAlternateActionsClassName = "account-alternate-actions flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-center text-[13px] font-[800]";
+const accountTertiaryActionClassName =
+  "account-tertiary-action inline-flex min-h-8 items-center justify-center gap-1.5 rounded-(--radius-sm) border-0 bg-transparent p-0 text-[13px] font-[850] text-(--color-primary-strong) underline-offset-4 transition-colors duration-150 hover:enabled:underline focus-visible:underline disabled:cursor-not-allowed disabled:text-(--color-text-subtle) [&_.icon]:size-4";
 
 interface TripCountryOption {
   code: string;
@@ -1164,8 +1158,8 @@ function EmailLoginPanel({
 
   const visualStep = challenge ? "otp" : authStep;
   const stepLabel = activeFlow === "register"
-    ? t.access.emailLogin.stepRegister({ current: visualStep === "email" ? 1 : visualStep === "password" ? 2 : visualStep === "otp" ? 3 : 4, total: 4 })
-    : t.access.emailLogin.stepLogin({ current: visualStep === "email" ? 1 : visualStep === "methods" || visualStep === "password" ? 2 : 3, total: 3 });
+    ? t.access.emailLogin.stepRegister({ current: visualStep === "email" ? 1 : visualStep === "otp" ? 2 : 3, total: 3 })
+    : t.access.emailLogin.stepLogin({ current: visualStep === "otp" ? 2 : 1, total: 2 });
 
   const trustDeviceFields = (
     <label className={accountCheckClassName}>
@@ -1249,7 +1243,6 @@ function EmailLoginPanel({
                 inputMode="numeric"
                 autoComplete="one-time-code"
                 pattern="[0-9]{6}"
-                maxLength={6}
                 aria-describedby={codeHintId}
                 aria-invalid={code.length > 0 && !otpReady ? true : undefined}
                 required
@@ -1314,17 +1307,18 @@ function EmailLoginPanel({
               <Icon name={activeFlow === "register" ? "check" : "key"} />
               {activeFlow === "register" ? t.access.emailLogin.createWithPassword : t.access.emailLogin.signInAccount}
             </Button>
-            <Button type="button" variant="secondary" disabled={!isEmailValid || (activeFlow === "register" && !passwordReady) || isSubmitting} onClick={() => void requestEmailCode()}>
-              <Icon name="check" />
-              {activeFlow === "register" ? t.access.emailLogin.sendRegisterCode : t.access.emailLogin.sendSignInCode}
-            </Button>
             {activeFlow === "login" ? (
-              <Button type="button" variant="secondary" disabled={!isEmailValid || isSubmitting} onClick={() => void signInWithPasskey()}>
-                <Icon name="key" />
-                {t.access.emailLogin.signInWithPasskey}
-              </Button>
+              <div className={accountAlternateActionsClassName} aria-label={t.access.emailLogin.alternateSignInOptions}>
+                <button className={accountTertiaryActionClassName} type="button" disabled={!isEmailValid || isSubmitting} onClick={() => void requestEmailCode()}>
+                  <Icon name="check" />
+                  {t.access.emailLogin.useSignInCodeInstead}
+                </button>
+                <button className={accountTertiaryActionClassName} type="button" disabled={!isEmailValid || isSubmitting} onClick={() => void signInWithPasskey()}>
+                  <Icon name="key" />
+                  {t.access.emailLogin.usePasskeyInstead}
+                </button>
+              </div>
             ) : null}
-            <SocialAuthButtons labels={t.access.emailLogin} />
             </>
           ) : authStep === "methods" ? (
             <>
@@ -1433,23 +1427,6 @@ function EmailLoginPanel({
           )}
         </p>
       ) : null}
-    </div>
-  );
-}
-
-function SocialAuthButtons({ labels }: { labels: Messages["access"]["emailLogin"] }) {
-  return (
-    <div className={accountSocialBlockClassName} aria-label={labels.socialLabel}>
-      <div className={accountDividerClassName}><span>{labels.socialDivider}</span></div>
-      <p className="sr-only" id="account-social-disabled-hint">{labels.socialDisabledHint}</p>
-      <button className={accountSocialButtonClassName} type="button" disabled aria-describedby="account-social-disabled-hint" title={labels.socialDisabledHint}>
-        <span className={accountSocialGlyphGoogleClassName}>G</span>
-        {labels.google}
-      </button>
-      <button className={accountSocialButtonClassName} type="button" disabled aria-describedby="account-social-disabled-hint" title={labels.socialDisabledHint}>
-        <span className={accountSocialGlyphAppleClassName}>A</span>
-        {labels.apple}
-      </button>
     </div>
   );
 }

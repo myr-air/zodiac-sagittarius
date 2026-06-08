@@ -242,7 +242,7 @@ describe("AccountAccessPanel", () => {
     expect(codeInput).toHaveAttribute("autocomplete", "one-time-code");
     expect(codeInput).toHaveAttribute("inputmode", "numeric");
     expect(codeInput).toHaveAttribute("pattern", "[0-9]{6}");
-    expect(codeInput).toHaveAttribute("maxlength", "6");
+    expect(codeInput).not.toHaveAttribute("maxlength");
     expect(signInButton).toBeDisabled();
 
     fireEvent.change(codeInput, { target: { value: "12ab" } });
