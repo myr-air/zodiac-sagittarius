@@ -43,6 +43,45 @@ upload, proxy, mirror, or cache shared trip photos in the initial release.
 - Object storage with presigned upload URLs is viable later for selected photos,
   but it adds moderation, lifecycle, cost, privacy, and deletion responsibilities.
 
+## Visual Reference Inputs
+
+Pinterest was used as the discovery surface for travel dashboard and photo
+album UI references. Direct pin pages may require Pinterest access, so the
+implementation direction should be based on the observable pin titles and the
+reachable source projects behind them.
+
+Useful references:
+
+- Pinterest pin: `Travel Dashboard UI Exploration by Ashraf Ruhin for Chilling
+  Mantis on Dribbble`. Source project: `Travel Dashboard UI Exploration` on
+  Dribbble. Useful for the idea of a travel dashboard with visual destination
+  surfaces and compact operational modules. Do not copy its purple-heavy palette.
+- Pinterest pin: `Travel Dashboard - TanahAir UI/UX`. Source project:
+  `Travel Dashboard` on Behance. Useful for a web-app dashboard composition
+  with travel context, header hierarchy, and destination-forward panels. Use it
+  as layout inspiration only.
+- Pinterest pins: `Trip Details UI Dashboard Design`, `Dashboard - Travel
+  Service`, and related travel dashboard pins. Useful as a warning that many
+  travel dashboards over-index on booking-marketplace visuals, oversized
+  destination hero cards, and decorative grid cards.
+- Existing Sagittarius `Bookings & Docs` page. Use this as the closest local
+  structural reference: summary strip, grouped cards, filters, dialogs, and
+  inspector behavior.
+
+Design takeaways for Sagittarius:
+
+- Use a compact album command surface, not a marketing hero.
+- Let photos appear as small evidence/covers inside album cards, while provider,
+  owner, access mode, and copy/open actions remain more important.
+- Prefer a mixed layout: left filter/album board plus right inspector on
+  desktop; single-column operational cards on mobile.
+- Use sparse travel warmth from existing teal, route blue, coral, amber, and
+  mint tokens. Keep the cockpit mostly white/slate.
+- Avoid masonry as the primary layout because album cards need stable action
+  placement and readable metadata.
+- Avoid full-screen image tiles, heavy gradients, glassmorphism, and social-feed
+  affordances such as likes/comments.
+
 ## Product Shape
 
 The page should feel like an operational photo sharing hub:
