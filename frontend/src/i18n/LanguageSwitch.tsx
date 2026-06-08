@@ -3,10 +3,9 @@
 import { useEffect, useId, useRef, useState, type HTMLAttributes } from "react";
 import { Icon } from "@/src/components/icons";
 import { cn } from "@/src/lib/cn";
+import { majorCurrencyOptions, normalizeCurrencyCode, type MajorCurrencyCode } from "@/src/trip/currencies";
 import { useI18n } from "./I18nProvider";
 import type { Locale } from "./types";
-
-type CurrencyCode = "HKD" | "THB" | "USD" | "JPY" | "CNY";
 
 export const currencyStorageKey = "sagittarius-currency";
 
@@ -14,16 +13,6 @@ const languageOptions: Array<{ locale: Locale; label: string; detail: string; sh
   { locale: "en", label: "English", detail: "English", shortLabel: "EN" },
   { locale: "th", label: "ภาษาไทย", detail: "Thai", shortLabel: "TH" },
 ];
-
-const currencyOptions: Array<{ code: CurrencyCode; label: string; symbol: string }> = [
-  { code: "HKD", label: "Hong Kong Dollar", symbol: "HK$" },
-  { code: "THB", label: "Thai Baht", symbol: "฿" },
-  { code: "USD", label: "US Dollar", symbol: "$" },
-  { code: "JPY", label: "Japanese Yen", symbol: "¥" },
-  { code: "CNY", label: "Chinese Yuan", symbol: "¥" },
-];
-
-const supportedCurrencies = new Set<CurrencyCode>(currencyOptions.map((option) => option.code));
 
 const rootClassName = [
   "language-switch",
@@ -120,7 +109,7 @@ const checkClassName = "text-(--color-primary) opacity-0 data-[active=true]:opac
 export function LanguageSwitch({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
   const { locale, setLocale, t } = useI18n();
   const [open, setOpen] = useState(false);
-  const [currency, setCurrency] = useState<CurrencyCode>("HKD");
+  const [currency, setCurrency] = useState<MajorCurrencyCode>("HKD");
   const menuId = useId();
   const rootRef = useRef<HTMLDivElement>(null);
   const activeLanguage = languageOptions.find((option) => option.locale === locale) ?? languageOptions[0];
@@ -161,7 +150,7 @@ export function LanguageSwitch({ className, ...props }: HTMLAttributes<HTMLDivEl
     setOpen(false);
   }
 
-  function chooseCurrency(nextCurrency: CurrencyCode) {
+  function chooseCurrency(nextCurrency: MajorCurrencyCode) {
     setCurrency(nextCurrency);
     try {
       window.localStorage.setItem(currencyStorageKey, nextCurrency);
@@ -218,7 +207,7 @@ export function LanguageSwitch({ className, ...props }: HTMLAttributes<HTMLDivEl
           <section className={cn(sectionClassName)} aria-labelledby={`${menuId}-currency`}>
             <strong id={`${menuId}-currency`} className={sectionLabelClassName}>{t.common.currency.label}</strong>
             <div className={optionGridClassName}>
-              {currencyOptions.map((option) => {
+              {majorCurrencyOptions.map((option) => {
                 const isActive = option.code === currency;
                 return (
                   <button
@@ -246,14 +235,10 @@ export function LanguageSwitch({ className, ...props }: HTMLAttributes<HTMLDivEl
   );
 }
 
-function isCurrencyCode(value: string | null): value is CurrencyCode {
-  return supportedCurrencies.has(value as CurrencyCode);
-}
-
-function readStoredCurrency(): CurrencyCode {
+function readStoredCurrency(): MajorCurrencyCode {
   try {
     const stored = window.localStorage.getItem(currencyStorageKey);
-    return isCurrencyCode(stored) ? stored : "HKD";
+    return stored ? normalizeCurrencyCode(stored) : "HKD";
   } catch {
     return "HKD";
   }

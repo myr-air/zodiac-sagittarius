@@ -10,6 +10,7 @@ import {
   expenseAmountInSettlementCurrency,
   type ExpenseSplitMode,
 } from "@/src/trip/expenses";
+import { fetchMajorExchangeRate, majorCurrencyOptions, normalizeCurrencyCode } from "@/src/trip/currencies";
 import type { Expense, ExpenseComment, ExpenseLineItem, ExpenseSummary, Member, SettlementSuggestion, Trip } from "@/src/trip/types";
 import { Icon } from "./icons";
 import { TravelMotif } from "./motifs";
@@ -461,8 +462,9 @@ function ExpenseDialog({
   const { t } = useI18n();
   const [title, setTitle] = useState(expense?.title ?? "");
   const [amount, setAmount] = useState(expense ? String(expense.amount) : "");
-  const [currency, setCurrency] = useState(expense?.currency ?? "HKD");
+  const [currency, setCurrency] = useState(normalizeCurrencyCode(expense?.currency ?? "HKD"));
   const [exchangeRate, setExchangeRate] = useState(expense?.exchangeRateToSettlementCurrency ? String(expense.exchangeRateToSettlementCurrency) : "1");
+  const [exchangeRateTouched, setExchangeRateTouched] = useState(Boolean(expense?.exchangeRateToSettlementCurrency));
   const [notes, setNotes] = useState(expense?.notes ?? "");
   const [receiptUrl, setReceiptUrl] = useState(expense?.receiptUrl ?? "");
   const [comments, setComments] = useState<ExpenseComment[]>(expense?.comments ?? []);
@@ -508,6 +510,25 @@ function ExpenseDialog({
   const splitTotal = sumShares(splits);
   const splitMismatch = (splitMode === "exact" || splitMode === "percentage" || splitMode === "itemized") && Math.abs(splitTotal - amountNumber) > 0.01;
   const invalidItemizedLines = splitMode === "itemized" && (!validLineItems.length || validLineItems.length !== lineItems.length);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!needsExchangeRate || exchangeRateTouched) return;
+
+    fetchMajorExchangeRate(normalizedCurrency, normalizeCurrencyCode(settlementCurrency))
+      .then((quote) => {
+        if (!cancelled && quote) {
+          setExchangeRate(formatExchangeRateInput(quote.rate));
+        }
+      })
+      .catch(() => {
+        // Keep manual exchange-rate entry available when the provider is offline.
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [exchangeRateTouched, needsExchangeRate, normalizedCurrency, settlementCurrency]);
 
   function changeSplitMode(nextMode: ExpenseSplitMode) {
     setSplitMode(nextMode);
@@ -605,7 +626,19 @@ function ExpenseDialog({
             </label>
             <label className={fieldClassName}>
               <span>{t.expenses.fields.currency}</span>
-              <input value={currency} onChange={(event) => setCurrency(event.target.value.toUpperCase())} />
+              <select
+                aria-label={t.expenses.fields.currency}
+                value={currency}
+                onChange={(event) => {
+                  setCurrency(normalizeCurrencyCode(event.target.value));
+                  setExchangeRateTouched(false);
+                  setExchangeRate("1");
+                }}
+              >
+                {majorCurrencyOptions.map((option) => (
+                  <option key={option.code} value={option.code}>{option.code} · {option.label}</option>
+                ))}
+              </select>
             </label>
             <label className={fieldClassName}>
               <span>{t.expenses.fields.receiptUrl}</span>
@@ -624,7 +657,14 @@ function ExpenseDialog({
             {needsExchangeRate ? (
               <label className={fieldClassName}>
                 <span>{t.expenses.fields.exchangeRate({ currency: normalizedCurrency, settlementCurrency })}</span>
-                <input inputMode="decimal" value={exchangeRate} onChange={(event) => setExchangeRate(event.target.value)} />
+                <input
+                  inputMode="decimal"
+                  value={exchangeRate}
+                  onChange={(event) => {
+                    setExchangeRateTouched(true);
+                    setExchangeRate(event.target.value);
+                  }}
+                />
               </label>
             ) : null}
             <label className={fieldClassName}>
@@ -802,8 +842,14 @@ function formatMoney(amount: number, currency = "HKD"): string {
   const normalizedCurrency = normalizeCurrencyCode(currency);
   const prefixByCurrency: Record<string, string> = {
     CNY: "CN¥",
+    EUR: "€",
+    GBP: "£",
     HKD: "HK$",
+    JPY: "¥",
+    KRW: "₩",
+    SGD: "S$",
     THB: "฿",
+    TWD: "NT$",
     USD: "US$",
   };
   const prefix = prefixByCurrency[normalizedCurrency] ?? `${normalizedCurrency} `;
@@ -811,7 +857,6 @@ function formatMoney(amount: number, currency = "HKD"): string {
   return `${sign}${prefix}${Math.abs(amount).toLocaleString("en-HK", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
-function normalizeCurrencyCode(currency: string): string {
-  const normalized = currency.trim().toUpperCase();
-  return /^[A-Z]{3}$/.test(normalized) ? normalized : "HKD";
+function formatExchangeRateInput(rate: number): string {
+  return Number.isInteger(rate) ? String(rate) : Number(rate.toFixed(6)).toString();
 }
