@@ -50,6 +50,7 @@ fn api_v1() -> Router<AppState> {
     Router::new()
         .route("/health", get(health::liveness))
         .route("/readiness", get(health::readiness))
+        .route("/version", get(health::version))
         .route("/auth/email/challenges", post(account::start_email_login))
         .route("/auth/email/sessions", post(account::finish_email_login))
         .route(

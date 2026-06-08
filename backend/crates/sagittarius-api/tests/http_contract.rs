@@ -30,6 +30,34 @@ async fn health_returns_ok() {
     assert_eq!(&body[..], b"ok");
 }
 
+#[tokio::test]
+async fn version_endpoint_returns_application_metadata() {
+    let app = sagittarius_api::api::router(sagittarius_api::app::AppState::test());
+    let response = app
+        .oneshot(
+            Request::builder()
+                .uri("/api/v1/version")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::OK);
+
+    let body = axum::body::to_bytes(response.into_body(), usize::MAX)
+        .await
+        .unwrap();
+    let body: Value = serde_json::from_slice(&body).unwrap();
+
+    assert_eq!(body["service"], "sagittarius-api");
+    assert_eq!(body["version"], env!("CARGO_PKG_VERSION"));
+    assert_eq!(body["buildSha"], "unavailable");
+    assert_eq!(body["buildTime"], "unavailable");
+    assert_eq!(body["environment"], "local");
+    assert_eq!(body["schemaVersion"], "0019_photo_album_links");
+}
+
 #[sqlx::test(migrations = "../../migrations")]
 async fn readiness_checks_database(pool: sqlx::PgPool) {
     let app = sagittarius_api::api::router(sagittarius_api::app::AppState::with_pool(pool));

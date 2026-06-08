@@ -16,6 +16,7 @@ const labels = {
 describe("app route helpers", () => {
   it("builds trip-scoped workspace paths", () => {
     expect(appRoutes.access()).toBe("/access?mode=sign-in");
+    expect(appRoutes.about()).toBe("/about");
     expect(appRoutes.access("register")).toBe("/access?mode=register");
     expect(appRoutes.login()).toBe("/access?mode=sign-in");
     expect(appRoutes.register()).toBe("/access?mode=register");

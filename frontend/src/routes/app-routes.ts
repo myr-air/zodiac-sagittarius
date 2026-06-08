@@ -32,6 +32,7 @@ function tripRouteSegment(value: string): string {
 
 export const appRoutes = {
   home: () => "/",
+  about: () => "/about",
   access: (mode: "sign-in" | "register" = "sign-in") => `/access?mode=${mode}`,
   login: () => "/access?mode=sign-in",
   register: () => "/access?mode=register",
