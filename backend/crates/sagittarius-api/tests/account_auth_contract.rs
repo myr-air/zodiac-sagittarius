@@ -14,6 +14,41 @@ use uuid::Uuid;
 const PASSKEY_ORIGIN: &str = "http://localhost:5180";
 const PASSKEY_RP_ID: &str = "localhost";
 
+struct PasskeyAllowedOriginsGuard {
+    previous: Option<String>,
+}
+
+impl PasskeyAllowedOriginsGuard {
+    fn set(value: &str) -> Self {
+        let previous = std::env::var("PASSKEY_ALLOWED_ORIGINS").ok();
+        // SAFETY: this integration-test guard scopes the process env override and restores it on drop.
+        unsafe {
+            std::env::set_var("PASSKEY_ALLOWED_ORIGINS", value);
+        }
+
+        Self { previous }
+    }
+}
+
+impl Drop for PasskeyAllowedOriginsGuard {
+    fn drop(&mut self) {
+        match self.previous.take() {
+            Some(raw) => {
+                // SAFETY: restoring the prior process env after the scoped override.
+                unsafe {
+                    std::env::set_var("PASSKEY_ALLOWED_ORIGINS", raw);
+                }
+            }
+            None => {
+                // SAFETY: removing the scoped process env override after the test.
+                unsafe {
+                    std::env::remove_var("PASSKEY_ALLOWED_ORIGINS");
+                }
+            }
+        }
+    }
+}
+
 async fn post_json(app: axum::Router, uri: &str, body: Value) -> Response<axum::body::Body> {
     app.oneshot(
         Request::builder()
@@ -2930,6 +2965,7 @@ async fn passkey_login_finish_rejects_user_disabled_after_challenge_start(pool: 
 async fn passkey_login_finish_rejects_legacy_disposable_email_after_challenge_start(
     pool: sqlx::PgPool,
 ) {
+    let _passkey_origin_guard = PasskeyAllowedOriginsGuard::set("localhost,127.0.0.1,0.0.0.0");
     let session = login_account(&pool, "passkey-legacy-disposable@example.com", false, "").await;
     let user_id = Uuid::parse_str(session["userId"].as_str().unwrap()).unwrap();
     let authorization = format!("Bearer {}", session["sessionToken"].as_str().unwrap());
