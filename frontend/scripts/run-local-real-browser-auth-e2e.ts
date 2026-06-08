@@ -71,10 +71,8 @@ async function registerThroughBrowser(browser: Browser, input: { email: string; 
   await page.goto(`${frontendBaseUrl}/access?mode=register`, { waitUntil: "networkidle" });
   await expectMainLabel(page, "Account register");
   await page.getByLabel("Email *").fill(input.email);
-  await page.getByRole("button", { name: /^Continue$/ }).click();
-
   await page.getByLabel("Password").fill(input.password);
-  await page.getByRole("button", { name: /^Continue$/ }).click();
+  await page.getByRole("button", { name: /^Set password and continue$/ }).click();
 
   try {
     await page.getByLabel("Verification code *").waitFor({ state: "visible" });
@@ -83,7 +81,7 @@ async function registerThroughBrowser(browser: Browser, input: { email: string; 
   }
   const code = await waitForEmailCode(input.email);
   await page.getByLabel("Verification code *").fill(code);
-  await page.getByRole("button", { name: /^Create my trip space$/ }).click();
+  await page.getByRole("button", { name: /^Verify email$/ }).click();
 
   await page.getByLabel("Display name *").fill(input.displayName);
   await page.getByLabel("Home base").fill("Bangkok");
@@ -131,11 +129,10 @@ async function signInThroughMobileBrowser(browser: Browser, input: { email: stri
 async function passwordSignIn(page: Page, input: { email: string; password: string }) {
   await page.goto(`${frontendBaseUrl}/access?mode=sign-in`, { waitUntil: "networkidle" });
   await expectMainLabel(page, "Account sign in");
-  await page.getByLabel("Email *").fill(input.email);
-  await page.getByRole("button", { name: /^Continue$/ }).click();
-  await page.getByRole("button", { name: /^Use password$/ }).click();
-  await page.getByLabel("Password").fill(input.password);
-  await page.getByRole("button", { name: /^Use password$/ }).click();
+  const form = page.locator("form").first();
+  await form.getByLabel("Email *").fill(input.email);
+  await form.getByLabel("Password").fill(input.password);
+  await form.getByRole("button", { name: /^Sign in$/ }).click();
 }
 
 async function expectPortalDashboard(page: Page, input: { email: string; displayName: string }) {

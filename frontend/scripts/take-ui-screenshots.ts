@@ -87,16 +87,13 @@ async function main() {
     // 3. Register user
     console.log("3. Registering a user...");
     await page.getByLabel("Email *").fill(email);
-    await page.getByRole("button", { name: /^Continue$/ }).click();
-    await page.waitForTimeout(500);
-
     await page.locator('input[type="password"]').fill(password);
-    await page.getByRole("button", { name: /^Continue$/ }).click();
+    await page.getByRole("button", { name: /^Set password and continue$/ }).click();
     await page.waitForTimeout(500);
 
     const code = await waitForEmailCode(email);
     await page.getByLabel("Verification code *").fill(code);
-    await page.getByRole("button", { name: /^Create my trip space$/ }).click();
+    await page.getByRole("button", { name: /^Verify email$/ }).click();
     await page.waitForTimeout(500);
 
     await page.getByLabel("Display name *").fill(displayName);

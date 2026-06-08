@@ -90,6 +90,7 @@ async function main() {
 
     const api = spawnLogged("api", "cargo", ["run", "--manifest-path", backendManifest, "--bin", "sagittarius-api"], {
       DATABASE_URL: databaseUrl,
+      EMAIL_DELIVERY: "log",
       RUST_LOG: "info,tower_http=info,sagittarius_api=info",
       SAGITTARIUS_BIND_ADDR: apiBindAddress,
     });
@@ -168,12 +169,11 @@ async function runPortalCustomerFlows(browser: Browser) {
   await register.page.goto(`${frontendBaseUrl}/access?mode=register`, { waitUntil: "networkidle" });
   await expectMainLabel(register.page, "Account register");
   await register.page.getByLabel("Email *").fill(email);
-  await register.page.getByRole("button", { name: /^Continue$/ }).click();
   await register.page.getByLabel("Password").fill(password);
-  await register.page.getByRole("button", { name: /^Continue$/ }).click();
+  await register.page.getByRole("button", { name: /^Set password and continue$/ }).click();
   await register.page.getByLabel("Verification code *").waitFor({ state: "visible" });
   await register.page.getByLabel("Verification code *").fill(await waitForEmailCode(email));
-  await register.page.getByRole("button", { name: /^Create my trip space$/ }).click();
+  await register.page.getByRole("button", { name: /^Verify email$/ }).click();
   await register.page.getByLabel("Display name *").fill(displayName);
   await register.page.getByLabel("Home base").fill("Bangkok");
   await register.page.getByRole("button", { name: /^Finish and start planning$/ }).click();
@@ -362,11 +362,10 @@ async function assertViewerCannotRestructure(page: Page) {
 async function passwordSignIn(page: Page, input: { email: string; password: string }) {
   await page.goto(`${frontendBaseUrl}/access?mode=sign-in`, { waitUntil: "networkidle" });
   await expectMainLabel(page, "Account sign in");
-  await page.getByLabel("Email *").fill(input.email);
-  await page.getByRole("button", { name: /^Continue$/ }).click();
-  await page.getByRole("button", { name: /^Use password$/ }).click();
-  await page.getByLabel("Password").fill(input.password);
-  await page.getByRole("button", { name: /^Use password$/ }).click();
+  const form = page.locator("form").first();
+  await form.getByLabel("Email *").fill(input.email);
+  await form.getByLabel("Password").fill(input.password);
+  await form.getByRole("button", { name: /^Sign in$/ }).click();
 }
 
 async function expectPortalDashboard(page: Page, input: { email: string; displayName: string }) {

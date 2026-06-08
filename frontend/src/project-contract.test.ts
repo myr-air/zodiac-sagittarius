@@ -171,6 +171,12 @@ describe("Sagittarius project scaffold", () => {
     const authBrowserE2e = readFileSync(join(frontendRoot, "scripts/run-local-real-browser-auth-e2e.ts"), "utf8");
     expect(authBrowserE2e).toContain('run("bun", ["run", "build"]');
     expect(authBrowserE2e).toContain('spawnLogged("frontend", "bun", ["run", "start"]');
+    expect(authBrowserE2e).toContain('EMAIL_DELIVERY: "log"');
+    expect(authBrowserE2e).toContain("Set password and continue");
+    expect(authBrowserE2e).toContain("Verify email");
+    expect(authBrowserE2e).not.toContain('name: /^Continue$/');
+    expect(authBrowserE2e).not.toContain('name: /^Use password$/');
+    expect(authBrowserE2e).not.toContain('name: /^Create my trip space$/');
     expect(authBrowserE2e).not.toContain('["run", "next", "dev"');
     const releaseSignoff = readFileSync(join(frontendRoot, "scripts/check-release-signoff.ts"), "utf8");
     expect(releaseSignoff).toContain("SAGITTARIUS_SIGNOFF_API_BASE_URL");
@@ -433,6 +439,12 @@ describe("Sagittarius project scaffold", () => {
     expect(productionEnvCheck).toContain("must not use placeholder domain");
     const stagingPreflight = readFileSync(join(frontendRoot, "scripts/check-staging-preflight.ts"), "utf8");
     const productionBrowserQa = readFileSync(join(frontendRoot, "scripts/run-local-production-browser-qa.ts"), "utf8");
+    expect(productionBrowserQa).toContain('EMAIL_DELIVERY: "log"');
+    expect(productionBrowserQa).toContain("Set password and continue");
+    expect(productionBrowserQa).toContain("Verify email");
+    expect(productionBrowserQa).not.toContain('name: /^Continue$/');
+    expect(productionBrowserQa).not.toContain('name: /^Use password$/');
+    expect(productionBrowserQa).not.toContain('name: /^Create my trip space$/');
     expect(productionBrowserQa).toContain("appRoutes.tripItinerary(tripId)");
     expect(productionBrowserQa).toContain("appRoutes.tripMembers(tripId)");
     expect(productionBrowserQa).not.toContain('a[href="/trips/${tripId}/itinerary"]');
