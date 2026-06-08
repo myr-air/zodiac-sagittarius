@@ -158,26 +158,28 @@ const portalContentClassName = "portal-content grid min-h-[460px] grid-cols-2 it
 const portalProfileCardClassName = cn(accountCardClassName, "account-profile-card col-span-2 max-[767px]:col-auto");
 const portalHistoryCardClassName = cn(accountCardClassName, "account-history col-span-2 max-[767px]:col-auto");
 const portalNewTripCardClassName =
-  "portal-new-trip-card !gap-[18px] !min-h-[calc(100vh-28px)] !overflow-hidden !rounded-[24px] !border-0 !bg-[linear-gradient(180deg,rgb(255_255_255_/_0.98),rgb(248_250_252_/_0.96)),var(--color-surface)] !p-[18px] !shadow-[0_22px_60px_rgb(15_23_42_/_0.12)] max-[767px]:!min-h-[calc(100vh-20px)] max-[767px]:!rounded-[18px] max-[767px]:!p-3";
+  "portal-new-trip-card !gap-[18px] !min-h-[calc(100vh-28px)] !overflow-hidden !rounded-[16px] !border !border-[rgb(226_232_240_/_0.72)] !bg-[#ffffff] !p-[18px] !shadow-[0_12px_28px_rgb(15_23_42_/_0.07)] max-[767px]:!min-h-[calc(100vh-20px)] max-[767px]:!rounded-none max-[767px]:!border-0 max-[767px]:!p-0 max-[767px]:!shadow-none";
 const tripBuilderTopbarClassName =
   "trip-builder-topbar grid grid-cols-[132px_minmax(0,1fr)_auto] items-center gap-7 pb-[18px] max-[767px]:grid-cols-[1fr_auto] max-[767px]:gap-2.5 [&>.badge]:mt-2 [&>.badge]:justify-self-end [&>.button]:min-h-[58px] [&>.button]:rounded-[9px] [&>.button]:bg-[rgb(255_255_255_/_0.88)] [&>.button]:shadow-[0_8px_24px_rgb(15_23_42_/_0.04)] max-[767px]:[&>.button]:w-auto max-[767px]:[&>.button]:min-w-[118px] [&>div]:grid [&>div]:min-w-0 [&>div]:justify-self-start [&>div]:gap-0.5 [&>div]:text-left max-[767px]:[&>div]:col-span-full [&>div_span]:hidden [&>div_strong]:inline-flex [&>div_strong]:items-center [&>div_strong]:gap-2.5 [&>div_strong]:text-[30px] [&>div_strong]:leading-[34px] [&>div_strong]:text-[#111827] max-[767px]:[&>div_strong]:text-[28px] max-[767px]:[&>div_strong]:leading-8 [&>div_small]:mt-2 [&>div_small]:block [&>div_small]:max-w-[420px] [&>div_small]:text-[13px] [&>div_small]:font-[650] [&>div_small]:leading-[18px] [&>div_small]:text-(--color-text-muted) max-[767px]:[&>div_small]:max-w-[260px] max-[767px]:[&>div_small]:text-[11px]";
 const portalCreateTripInlineClassName =
-  "portal-create-trip-inline portal-trip-simple !gap-4 !rounded-none !border-0 !bg-transparent !p-0 !shadow-none max-[767px]:!rounded-[18px] max-[767px]:!p-3.5";
+  "portal-create-trip-inline portal-trip-simple !gap-4 !rounded-none !border-0 !bg-transparent !p-0 !shadow-none";
 const tripSimpleHeadClassName = "trip-simple-head hidden";
 const tripWizardLayoutClassName =
   "trip-wizard-layout grid grid-cols-[minmax(430px,0.76fr)_minmax(560px,1fr)] items-stretch gap-[22px] max-[1023px]:grid-cols-1";
 const tripWizardMainClassName =
-  "trip-wizard-main min-h-0 rounded-[10px] border border-[rgb(203_213_225_/_0.72)] bg-[rgb(255_255_255_/_0.86)] p-0 shadow-[0_18px_42px_rgb(15_23_42_/_0.04)]";
+  "trip-wizard-main min-h-0 rounded-[10px] border border-[rgb(203_213_225_/_0.72)] bg-[rgb(255_255_255_/_0.92)] p-0 shadow-[0_10px_24px_rgb(15_23_42_/_0.04)] max-[767px]:rounded-none max-[767px]:border-0 max-[767px]:bg-transparent max-[767px]:shadow-none";
 const tripWizardPaneClassName =
   "trip-wizard-pane grid gap-0 [&_.account-two-col]:rounded-[18px] [&_.account-two-col]:border [&_.account-two-col]:border-(--color-border) [&_.account-two-col]:bg-white [&_.account-two-col]:p-3 max-[767px]:[&_.account-two-col]:p-2.5 [&>p]:m-0 [&>p]:text-[13px] [&>p]:leading-5 [&>p]:text-(--color-text-muted) [&_input]:min-h-[52px] [&_input]:rounded-[14px] [&_input]:text-[15px] [&_label]:min-h-[76px] [&_label_small]:mt-1.5 [&_label_small]:block [&_label_small]:text-[11px] [&_label_small]:leading-4 [&_label_small]:text-(--color-text-muted)";
 const tripScopePanelClassName =
-  "trip-scope-panel grid gap-0 rounded-[10px] border-0 bg-transparent px-[22px] pb-6 pt-7";
+  "trip-scope-panel grid gap-0 rounded-[10px] border-0 bg-transparent px-[22px] pb-6 pt-7 max-[767px]:px-0 max-[767px]:pb-2 max-[767px]:pt-2";
 const tripLivePreviewClassName =
-  "trip-live-preview sticky top-3 grid max-h-[calc(100vh-24px)] min-h-0 min-w-0 content-start gap-0 self-start overflow-y-auto rounded-[10px] border border-[rgb(203_213_225_/_0.72)] bg-[linear-gradient(180deg,rgb(255_251_235_/_0.46),rgb(255_255_255_/_0.88)),rgb(255_255_255_/_0.82)] px-3.5 pb-3 pt-5 shadow-[0_18px_42px_rgb(15_23_42_/_0.04)] max-[1023px]:static max-[1023px]:max-h-none max-[767px]:mt-3.5 max-[767px]:p-3";
+  "trip-live-preview sticky top-3 grid max-h-[calc(100vh-24px)] min-h-0 min-w-0 content-start gap-0 self-start overflow-y-auto rounded-[10px] border border-[rgb(203_213_225_/_0.72)] bg-[linear-gradient(180deg,rgb(255_247_237_/_0.5),rgb(255_255_255_/_0.92)),rgb(255_255_255_/_0.9)] px-3.5 pb-3 pt-5 shadow-[0_10px_24px_rgb(15_23_42_/_0.04)] max-[1023px]:static max-[1023px]:max-h-none max-[767px]:mt-0 max-[767px]:rounded-none max-[767px]:border-0 max-[767px]:bg-transparent max-[767px]:p-0 max-[767px]:shadow-none";
 const tripWorkflowNavClassName =
-  "trip-workflow-nav mb-3 grid gap-2 rounded-[10px] border border-(--color-border) bg-(--color-surface-subtle) p-2.5 min-[1024px]:hidden [&_ol]:m-0 [&_ol]:grid [&_ol]:grid-cols-4 [&_ol]:gap-1.5 [&_ol]:p-0 [&_li]:list-none [&_li]:rounded-[7px] [&_li]:border [&_li]:border-(--color-border) [&_li]:bg-white [&_li]:px-2 [&_li]:py-1.5 [&_li]:text-center [&_li]:text-[11px] [&_li]:font-black [&_p]:m-0 [&_p]:text-xs [&_p]:font-[850] [&_p]:text-(--color-primary-strong)";
-const tripStepSectionClassName = "trip-step-section grid gap-3.5 pb-[34px]";
+  "trip-workflow-nav mb-3 grid gap-2 rounded-[10px] border border-(--color-border) bg-(--color-surface-subtle) p-2.5 min-[1024px]:hidden [&_ol]:m-0 [&_ol]:grid [&_ol]:grid-flow-col [&_ol]:auto-cols-[minmax(76px,1fr)] [&_ol]:gap-1.5 [&_ol]:overflow-x-auto [&_ol]:overscroll-x-contain [&_ol]:p-0 [&_ol]:[scrollbar-width:none] [&_ol::-webkit-scrollbar]:hidden [&_li]:list-none [&_button]:min-h-8 [&_button]:w-full [&_button]:rounded-[7px] [&_button]:border [&_button]:border-(--color-border) [&_button]:bg-white [&_button]:px-2 [&_button]:py-1.5 [&_button]:text-center [&_button]:text-[11px] [&_button]:font-black [&_button]:text-(--color-text-muted) [&_button[aria-current='step']]:border-[#fed7aa] [&_button[aria-current='step']]:bg-[#fff7ed] [&_button[aria-current='step']]:text-[#c2410c] [&_p]:m-0 [&_p]:text-xs [&_p]:font-[850] [&_p]:text-[#c2410c]";
+const tripStepSectionClassName = "trip-step-section grid gap-3.5 pb-[34px] max-[767px]:pb-4";
 const tripStepSectionCompactClassName = cn(tripStepSectionClassName, "trip-step-section--compact pb-3.5");
+const tripMobileStepActionsClassName =
+  "trip-mobile-step-actions hidden items-center justify-between gap-2 py-2 max-[767px]:flex [&_.button]:w-auto [&_.button]:min-w-[96px] [&_span]:text-xs [&_span]:font-black [&_span]:text-(--color-text-muted)";
 const tripStepHeadingClassName =
   "trip-step-heading grid gap-1.5 [&_span]:text-[13px] [&_span]:leading-[18px] [&_span]:text-(--color-text-muted) [&_strong]:text-lg [&_strong]:leading-6 [&_strong]:text-[#111827]";
 const tripNameFieldClassName =
@@ -205,7 +207,7 @@ const tripSelectedCountriesClassName =
 const tripCountrySuggestionsClassName =
   "trip-country-suggestions grid grid-cols-3 gap-3 max-[767px]:grid-cols-1 [&_button]:grid [&_button]:min-h-[68px] [&_button]:grid-cols-[42px_minmax(0,1fr)] [&_button]:content-center [&_button]:items-center [&_button]:gap-[3px] [&_button]:rounded-[9px] [&_button]:border [&_button]:border-(--color-border) [&_button]:bg-(--color-surface) [&_button]:px-2.5 [&_button]:py-[9px] [&_button]:text-left [&_button]:text-(--color-text) [&_button]:transition-[background,border-color,box-shadow] [&_button]:duration-[180ms] [&_button:hover]:border-(--color-primary) [&_button:hover]:bg-(--color-primary-soft) [&_button:hover]:shadow-[0_10px_18px_rgb(15_118_110_/_0.08)] [&_button:focus-visible]:border-(--color-primary) [&_button:focus-visible]:bg-(--color-primary-soft) [&_button:focus-visible]:shadow-[0_10px_18px_rgb(15_118_110_/_0.08)] [&_button::before]:block [&_button::before]:size-[42px] [&_button::before]:rounded-md [&_button::before]:bg-[linear-gradient(145deg,rgb(15_118_110_/_0.28),transparent_54%),linear-gradient(45deg,rgb(255_255_255_/_0.22)_25%,transparent_25%_50%,rgb(255_255_255_/_0.22)_50%_75%,transparent_75%),#dbeafe] [&_button::before]:bg-[length:auto,12px_12px,auto] [&_button::before]:content-[''] [&_span]:col-start-2 [&_span]:overflow-hidden [&_span]:text-ellipsis [&_span]:whitespace-nowrap [&_span]:text-[11px] [&_span]:leading-[15px] [&_span]:text-(--color-text-muted) [&_strong]:col-start-2 [&_strong]:text-[13px] [&_strong]:leading-[18px]";
 const tripRouteCalendarClassName =
-  "trip-route-calendar grid gap-3 rounded-[14px] border border-(--color-border) bg-white p-3";
+  "trip-route-calendar grid gap-3 rounded-[14px] border border-(--color-border) bg-white p-3 max-[767px]:rounded-none max-[767px]:border-0 max-[767px]:bg-transparent max-[767px]:p-0";
 const tripCalendarSummaryClassName =
   "trip-calendar-summary grid grid-cols-2 gap-2.5 max-[767px]:grid-cols-1 [&_label]:grid [&_label]:min-h-0 [&_label]:gap-1 [&_input]:min-h-[42px] [&_input]:rounded-[9px] [&_input]:border [&_input]:border-(--color-border) [&_input]:bg-(--color-surface-subtle) [&_input]:px-3 [&_input]:text-sm [&_input]:font-black [&_span]:text-xs [&_span]:font-[850] [&_span]:text-(--color-text-muted)";
 const tripCalendarGridClassName =
@@ -213,11 +215,11 @@ const tripCalendarGridClassName =
 const tripDateArrowClassName =
   "trip-date-arrow grid h-[52px] w-[42px] items-center justify-items-center self-end rounded-full border border-(--color-primary-border) bg-(--color-primary-soft) text-(--color-primary-strong) max-[767px]:h-[34px] max-[767px]:w-full";
 const tripAccessPanelClassName =
-  "trip-access-panel grid gap-3 rounded-[18px] border border-(--color-border) bg-white p-3 [&_summary]:mb-0 [&_summary]:flex [&_summary]:min-h-[42px] [&_summary]:cursor-pointer [&_summary]:items-center [&_summary]:justify-between [&_summary]:gap-3 [&_summary]:text-[13px] [&_summary]:font-black [&_summary]:text-(--color-text) [&_summary_strong]:overflow-hidden [&_summary_strong]:text-ellipsis [&_summary_strong]:whitespace-nowrap [&_summary_strong]:text-xs [&_summary_strong]:font-[850] [&_summary_strong]:text-(--color-text-muted) open:[&_summary]:mb-2 open:[&_summary]:border-b open:[&_summary]:border-(--color-border) open:[&_summary]:pb-2.5";
+  "trip-access-panel grid gap-3 rounded-[18px] border border-(--color-border) bg-white p-3 max-[767px]:rounded-none max-[767px]:border-0 max-[767px]:bg-transparent max-[767px]:p-0 [&_summary]:mb-0 [&_summary]:flex [&_summary]:min-h-[42px] [&_summary]:cursor-pointer [&_summary]:items-center [&_summary]:justify-between [&_summary]:gap-3 [&_summary]:text-[13px] [&_summary]:font-black [&_summary]:text-(--color-text) [&_summary_strong]:overflow-hidden [&_summary_strong]:text-ellipsis [&_summary_strong]:whitespace-nowrap [&_summary_strong]:text-xs [&_summary_strong]:font-[850] [&_summary_strong]:text-(--color-text-muted) open:[&_summary]:mb-2 open:[&_summary]:border-b open:[&_summary]:border-(--color-border) open:[&_summary]:pb-2.5";
 const tripGeneratedAccessClassName =
   "trip-generated-access grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] items-end gap-2.5 rounded-2xl border border-(--color-primary-border) bg-(--color-primary-soft) p-3 max-[767px]:grid-cols-1 [&_.button]:min-h-[52px] [&_.button]:w-auto [&_.button]:whitespace-nowrap";
 const tripAccessNoteClassName =
-  "trip-access-note mt-3.5 grid grid-cols-[24px_minmax(0,1fr)] items-center justify-center gap-2.5 rounded-2xl border border-(--color-border) bg-(--color-surface-subtle) p-3 text-center text-xs font-[750] leading-[18px] text-(--color-text-muted) [&_.icon]:text-(--color-primary-strong)";
+  "trip-access-note mt-3.5 grid grid-cols-[24px_minmax(0,1fr)] items-center justify-center gap-2.5 rounded-2xl border border-(--color-border) bg-(--color-surface-subtle) p-3 text-center text-xs font-[750] leading-[18px] text-(--color-text-muted) max-[767px]:hidden [&_.icon]:text-(--color-primary-strong)";
 const tripTicketReviewClassName =
   "trip-ticket-review grid grid-cols-2 gap-2.5 [.account-page--portal-new-trip_&]:hidden max-[767px]:grid-cols-1 [&>div]:grid [&>div]:min-h-[76px] [&>div]:content-center [&>div]:gap-1 [&>div]:rounded-(--radius-md) [&>div]:border [&>div]:border-(--color-border) [&>div]:bg-(--color-surface) [&>div]:p-3 [&_span]:text-[11px] [&_span]:font-[850] [&_span]:uppercase [&_span]:text-(--color-text-muted) [&_strong]:min-w-0 [&_strong]:[overflow-wrap:anywhere]";
 const tripShareStripClassName =
@@ -227,7 +229,7 @@ const tripCreatedShareClassName =
 const tripCreatedShareLinkClassName =
   "inline-flex min-h-9 items-center justify-center gap-2 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-3 py-[7px] text-[13px] font-extrabold text-(--color-primary-strong) no-underline";
 const tripWizardActionsClassName =
-  "trip-wizard-actions flex justify-between gap-2.5 px-[22px] pb-[22px] pt-0 [.account-page--portal-new-trip_&]:w-[min(100%,626px)] [.account-page--portal-new-trip_&]:px-[22px] [.account-page--portal-new-trip_&]:pb-[22px] [.account-page--portal-new-trip_&]:pt-3.5 min-[768px]:[.account-page--portal-new-trip_&]:w-[calc((100%-22px)*0.43)] min-[768px]:[.account-page--portal-new-trip_&]:min-w-[430px] max-[767px]:flex-col max-[767px]:[&_.button]:w-full max-[767px]:[.account-page--portal-new-trip_&]:w-full max-[767px]:[.account-page--portal-new-trip_&]:px-3 [&_.button--primary]:min-h-[58px] [&_.button--primary]:flex-1 [&_.button--primary]:justify-center [&_.button--primary]:rounded-[9px] [&_.button--primary]:bg-[linear-gradient(135deg,#0f766e,#0b8885)] [&_.button--primary]:text-base [&_.button--primary::after]:ml-1 [&_.button--primary::after]:text-[13px] [&_.button--primary::after]:font-extrabold [&_.button--primary::after]:content-['สร้างทริป'] [&_.button--secondary]:hidden";
+  "trip-wizard-actions flex justify-between gap-2.5 px-[22px] pb-[22px] pt-0 [.account-page--portal-new-trip_&]:w-[min(100%,626px)] [.account-page--portal-new-trip_&]:px-[22px] [.account-page--portal-new-trip_&]:pb-[22px] [.account-page--portal-new-trip_&]:pt-3.5 min-[768px]:[.account-page--portal-new-trip_&]:w-[calc((100%-22px)*0.43)] min-[768px]:[.account-page--portal-new-trip_&]:min-w-[430px] max-[767px]:flex-col max-[767px]:[&_.button]:w-full max-[767px]:[.account-page--portal-new-trip_&]:w-full max-[767px]:[.account-page--portal-new-trip_&]:px-0 [&_.button--primary]:min-h-[58px] [&_.button--primary]:flex-1 [&_.button--primary]:justify-center [&_.button--primary]:rounded-[9px] [&_.button--primary]:bg-[linear-gradient(135deg,#ff5b00,#ff7a1a)] [&_.button--primary]:text-base [&_.button--primary]:shadow-[0_12px_24px_rgb(255_91_0_/_0.18)] [&_.button--primary:disabled]:bg-(--color-surface-muted) [&_.button--primary:disabled]:text-(--color-text-subtle) [&_.button--primary:disabled]:shadow-none [&_.button--primary::after]:ml-1 [&_.button--primary::after]:text-[13px] [&_.button--primary::after]:font-extrabold [&_.button--primary::after]:content-['สร้างทริป'] [&_.button--secondary]:hidden";
 const tripBoardingPassClassName =
   "trip-boarding-pass mx-auto mb-[26px] grid w-[min(100%,760px)] grid-cols-[minmax(0,1fr)_222px] drop-shadow-[0_12px_22px_rgb(15_23_42_/_0.14)] max-[767px]:[.account-page--portal-new-trip_&]:w-full max-[767px]:[.account-page--portal-new-trip_&]:grid-cols-1 max-[767px]:[.account-page--portal-new-trip_&]:drop-shadow-[0_10px_20px_rgb(15_23_42_/_0.1)]";
 const tripMainTicketClassName =
@@ -263,7 +265,7 @@ const tripTicketStubClassName =
 const tripTicketBarcodeClassName =
   "trip-ticket-barcode mt-[34px] h-[142px] w-[58px] justify-self-end bg-[repeating-linear-gradient(90deg,#111827_0_2px,transparent_2px_4px,#111827_4px_5px,transparent_5px_9px)] max-[767px]:[.account-page--portal-new-trip_&]:col-start-2 max-[767px]:[.account-page--portal-new-trip_&]:row-span-3 max-[767px]:[.account-page--portal-new-trip_&]:row-start-2 max-[767px]:[.account-page--portal-new-trip_&]:mt-0 max-[767px]:[.account-page--portal-new-trip_&]:h-[108px] max-[767px]:[.account-page--portal-new-trip_&]:w-12";
 const tripPreviewInspirationClassName =
-  "trip-preview-inspiration relative mx-[-14px] grid gap-2.5 border-t border-(--color-border) bg-[rgb(255_255_255_/_0.62)] px-4 pb-5 pt-4 max-[767px]:[.account-page--portal-new-trip_&]:mx-[-12px] [&>div]:relative [&>div]:grid [&>div]:gap-0.5 [&>div>span]:text-xs [&>div>span]:font-bold [&>div>span]:text-[#64748b] [&>div>strong]:text-[17px] [&>div>strong]:leading-5 [&>div>strong]:text-(--color-text) [&>ul]:m-0 [&>ul]:mt-2.5 [&>ul]:grid [&>ul]:list-none [&>ul]:grid-cols-4 [&>ul]:gap-3.5 [&>ul]:p-0 max-[767px]:[.account-page--portal-new-trip_&>ul]:grid-cols-1";
+  "trip-preview-inspiration relative mx-[-14px] grid gap-2.5 border-t border-(--color-border) bg-[rgb(255_255_255_/_0.62)] px-4 pb-5 pt-4 max-[767px]:mx-0 max-[767px]:border-t-0 max-[767px]:bg-transparent max-[767px]:px-0 max-[767px]:pb-0 max-[767px]:pt-0 [&>div]:relative [&>div]:grid [&>div]:gap-0.5 [&>div>span]:text-xs [&>div>span]:font-bold [&>div>span]:text-[#64748b] [&>div>strong]:text-[17px] [&>div>strong]:leading-5 [&>div>strong]:text-(--color-text) [&>ul]:m-0 [&>ul]:mt-2.5 [&>ul]:grid [&>ul]:list-none [&>ul]:grid-cols-4 [&>ul]:gap-3.5 [&>ul]:p-0 max-[767px]:[.account-page--portal-new-trip_&>ul]:grid-cols-1";
 const tripInspirationControlsClassName =
   "trip-inspiration-controls absolute right-0.5 top-0 flex gap-2.5 [&_button]:grid [&_button]:size-9 [&_button]:cursor-pointer [&_button]:place-items-center [&_button]:rounded-[9px] [&_button]:border [&_button]:border-(--color-border) [&_button]:bg-white [&_button]:p-[9px] [&_button]:text-[#334155] [&_.icon]:size-[18px]";
 const tripInspirationItemClassName =
@@ -433,6 +435,17 @@ interface CreatedTripShare {
   joinId: string;
   name: string;
 }
+
+type TripWizardStepId = "trip" | "place" | "dates" | "invite" | "preview" | "inspiration";
+
+const tripWizardSteps: Array<{ id: TripWizardStepId; label: string; regionLabel: string; nextCopy: string }> = [
+  { id: "trip", label: "Trip", regionLabel: "Trip details step", nextCopy: "Next: add destination detail" },
+  { id: "place", label: "Place", regionLabel: "Destination step", nextCopy: "Next: choose route dates" },
+  { id: "dates", label: "Dates", regionLabel: "Dates step", nextCopy: "Next: check invite access" },
+  { id: "invite", label: "Invite", regionLabel: "Invite step", nextCopy: "Next: preview trip" },
+  { id: "preview", label: "Preview", regionLabel: "Preview step", nextCopy: "Next: inspiration" },
+  { id: "inspiration", label: "Inspiration", regionLabel: "Inspiration step", nextCopy: "Review ideas before create" },
+];
 
 let accountPortalDataCache: (AccountPortalDataCache & { sessionToken: string }) | null = null;
 
@@ -1824,7 +1837,9 @@ function PortalTripWizard({
   const [inspirationOffset, setInspirationOffset] = useState(0);
   const [selectingDateStep, setSelectingDateStep] = useState<"depart" | "return">("depart");
   const [accessSalt, setAccessSalt] = useState(() => randomToken(3));
+  const [activeMobileStep, setActiveMobileStep] = useState<TripWizardStepId>("trip");
   const destinationSearchRef = useRef<HTMLInputElement | null>(null);
+  const mobileStepButtonRefs = useRef<Map<TripWizardStepId, HTMLButtonElement>>(new Map());
   const ownerDisplayName = tripForm.ownerDisplayName;
   const effectiveOwnerDisplayName = hasEditedOwnerDisplayName ? ownerDisplayName : ownerDisplayName || defaultOwnerDisplayName;
   const selectedCountries = selectedTripCountries(tripForm.countries, tripForm.destinationLabel);
@@ -1851,6 +1866,11 @@ function PortalTripWizard({
   const routeDestinationCode = destinationRouteCode(selectedDestinationNames);
   const joinCode = generatedJoinId;
   const calendarDays = routeCalendarDays(tripForm.startDate || "2026-06-01");
+  const activeMobileStepIndex = Math.max(0, tripWizardSteps.findIndex((step) => step.id === activeMobileStep));
+  const activeMobileStepMeta = tripWizardSteps[activeMobileStepIndex] ?? tripWizardSteps[0];
+  const previousMobileStep = tripWizardSteps[activeMobileStepIndex - 1] ?? null;
+  const nextMobileStep = tripWizardSteps[activeMobileStepIndex + 1] ?? null;
+  const isMobilePreviewStep = activeMobileStep === "preview" || activeMobileStep === "inspiration";
 
   useEffect(() => {
     onChange((current) => {
@@ -1860,6 +1880,10 @@ function PortalTripWizard({
       return { ...current, joinId: nextJoinId, joinPassword: nextJoinPassword };
     });
   }, [accessSalt, onChange, selectedDestinationKey]);
+
+  useEffect(() => {
+    mobileStepButtonRefs.current.get(activeMobileStep)?.scrollIntoView?.({ block: "nearest", inline: "center" });
+  }, [activeMobileStep]);
 
   function seedOwnerDisplayName() {
     onChange((current) => current.ownerDisplayName.trim() ? current : { ...current, ownerDisplayName: defaultOwnerDisplayName });
@@ -1933,6 +1957,10 @@ function PortalTripWizard({
     setInspirationOffset((current) => current + direction);
   }
 
+  function mobileStepClassName(stepId: TripWizardStepId, baseClassName = tripStepSectionClassName) {
+    return cn(baseClassName, activeMobileStep === stepId ? "" : "max-[767px]:hidden");
+  }
+
   function submitWizard(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     seedOwnerDisplayName();
@@ -1951,18 +1979,35 @@ function PortalTripWizard({
       </div>
       <nav className={tripWorkflowNavClassName} aria-label="Trip creation workflow">
         <ol>
-          <li>Trip</li>
-          <li>Place</li>
-          <li>Dates</li>
-          <li>Invite</li>
+          {tripWizardSteps.map((step) => (
+            <li key={step.id}>
+              <button
+                type="button"
+                aria-current={activeMobileStep === step.id ? "step" : undefined}
+                aria-label={`${step.label} step`}
+                onClick={() => setActiveMobileStep(step.id)}
+                ref={(node) => {
+                  if (node) mobileStepButtonRefs.current.set(step.id, node);
+                  else mobileStepButtonRefs.current.delete(step.id);
+                }}
+              >
+                {step.label}
+              </button>
+            </li>
+          ))}
         </ol>
-        <p>{destinationComplete ? "Next: choose route dates" : "Next: add destination detail"}</p>
+        <p>{activeMobileStepMeta.nextCopy}</p>
       </nav>
       <div className={tripWizardLayoutClassName}>
-        <div className={tripWizardMainClassName}>
+        <div className={cn(tripWizardMainClassName, isMobilePreviewStep ? "max-[767px]:hidden" : "")}>
           <div className={tripWizardPaneClassName}>
             <div className={tripScopePanelClassName}>
-              <section className={tripStepSectionClassName}>
+              <section
+                className={mobileStepClassName("trip")}
+                role="region"
+                aria-label={tripWizardSteps[0].regionLabel}
+                data-mobile-active={activeMobileStep === "trip" ? "true" : "false"}
+              >
                 <div className={tripStepHeadingClassName}>
                   <strong>1. Trip name</strong>
                   <span>ตั้งชื่อทริปของคุณ</span>
@@ -1980,7 +2025,12 @@ function PortalTripWizard({
                 </label>
               </section>
 
-              <section className={tripStepSectionClassName}>
+              <section
+                className={mobileStepClassName("place")}
+                role="region"
+                aria-label={tripWizardSteps[1].regionLabel}
+                data-mobile-active={activeMobileStep === "place" ? "true" : "false"}
+              >
                 <div className={tripStepHeadingClassName}>
                   <strong>2. Where are you going?</strong>
                   <span>เลือกจุดหมายปลายทาง</span>
@@ -2091,7 +2141,12 @@ function PortalTripWizard({
               </div>
               </section>
 
-              <section className={tripStepSectionClassName}>
+              <section
+                className={mobileStepClassName("dates")}
+                role="region"
+                aria-label={tripWizardSteps[2].regionLabel}
+                data-mobile-active={activeMobileStep === "dates" ? "true" : "false"}
+              >
                 <div className={tripStepHeadingClassName}>
                   <strong>3. When are you going?</strong>
                   <span>กำหนดวันเดินทาง</span>
@@ -2137,8 +2192,13 @@ function PortalTripWizard({
               </fieldset>
               </section>
 
-              <section className={tripStepSectionCompactClassName}>
-              <details className={tripAccessPanelClassName}>
+              <section
+                className={mobileStepClassName("invite", tripStepSectionCompactClassName)}
+                role="region"
+                aria-label={tripWizardSteps[3].regionLabel}
+                data-mobile-active={activeMobileStep === "invite" ? "true" : "false"}
+              >
+              <details className={tripAccessPanelClassName} {...(activeMobileStep === "invite" ? { open: true } : {})}>
                 <summary>
                     <span>4. Trip owner & settings</span>
                   <strong>{effectiveOwnerDisplayName || defaultOwnerDisplayName}</strong>
@@ -2194,7 +2254,13 @@ function PortalTripWizard({
             </div>
           </div>
         </div>
-        <aside className={tripLivePreviewClassName} role="region" aria-label="Live trip preview">
+        <aside className={cn(tripLivePreviewClassName, isMobilePreviewStep ? "" : "max-[767px]:hidden")} role="region" aria-label="Live trip preview">
+          <section
+            className={mobileStepClassName("preview", "trip-preview-step grid")}
+            role="region"
+            aria-label={tripWizardSteps[4].regionLabel}
+            data-mobile-active={activeMobileStep === "preview" ? "true" : "false"}
+          >
           <div className={tripBoardingPassClassName}>
             <div className={tripMainTicketClassName}>
               <div className={tripPreviewTicketTopClassName}>
@@ -2251,6 +2317,13 @@ function PortalTripWizard({
               <span className={tripTicketBarcodeClassName} aria-label="Ticket barcode" />
             </div>
           </div>
+          </section>
+          <section
+            className={mobileStepClassName("inspiration", "trip-inspiration-step grid")}
+            role="region"
+            aria-label={tripWizardSteps[5].regionLabel}
+            data-mobile-active={activeMobileStep === "inspiration" ? "true" : "false"}
+          >
           <div className={tripPreviewInspirationClassName}>
             <div>
               <strong>Inspiration board</strong>
@@ -2276,7 +2349,8 @@ function PortalTripWizard({
               ))}
             </ul>
           </div>
-          <div className={tripShareStripClassName}>
+          </section>
+          <div className={cn(tripShareStripClassName, "max-[767px]:hidden")}>
             <span><Icon name="users" /> แชร์โค้ดนี้กับเพื่อนเพื่อเข้าร่วมทริป</span>
             <span>Join code: <strong>{joinCode}</strong></span>
             <Button type="button" variant="secondary" onClick={() => void copyJoinCode()}>
@@ -2285,6 +2359,29 @@ function PortalTripWizard({
             <span><Icon name="key" /> Share link appears after create</span>
           </div>
         </aside>
+      </div>
+      <div className={tripMobileStepActionsClassName} aria-label="Mobile step controls">
+        <Button
+          type="button"
+          variant="secondary"
+          disabled={!previousMobileStep}
+          aria-label={previousMobileStep ? `Back: ${previousMobileStep.label}` : "Back"}
+          onClick={() => previousMobileStep ? setActiveMobileStep(previousMobileStep.id) : undefined}
+        >
+          <Icon name="chevronLeft" />
+          Back
+        </Button>
+        <span>{activeMobileStepIndex + 1} / {tripWizardSteps.length}</span>
+        <Button
+          type="button"
+          variant="secondary"
+          disabled={!nextMobileStep}
+          aria-label={nextMobileStep ? `Next: ${nextMobileStep.label}` : "Next"}
+          onClick={() => nextMobileStep ? setActiveMobileStep(nextMobileStep.id) : undefined}
+        >
+          Next
+          <Icon name="chevronRight" />
+        </Button>
       </div>
       <div className={tripWizardActionsClassName}>
         <Button asChild type="button" variant="secondary">

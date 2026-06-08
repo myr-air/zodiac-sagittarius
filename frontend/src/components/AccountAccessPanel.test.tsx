@@ -988,6 +988,75 @@ describe("AccountAccessPanel", () => {
     expect(screen.getByText(/Next: add destination detail/i)).toBeInTheDocument();
   });
 
+  it("shows one mobile trip creation step at a time with preview and inspiration last", async () => {
+    const user = userEvent.setup();
+    const accountClient = createAccountClient();
+
+    render(
+      <AccountAccessPanel
+        accessMode="account-portal"
+        accountClient={accountClient}
+        accountSession={{
+          userId: "user-aom",
+          sessionToken: "account-session",
+          kind: "trusted",
+          trustedDeviceId: "device-current",
+          createdAt: "2026-05-30T08:00:00.000Z",
+          expiresAt: "2026-06-29T08:00:00.000Z",
+        }}
+        portalSection="new-trip"
+        trip={seedTrip}
+        onAccountSessionChange={vi.fn()}
+        onAuthenticated={vi.fn()}
+        onTripChange={vi.fn()}
+      />,
+    );
+
+    const tripStep = screen.getByRole("region", { name: /Trip details step/i });
+    const placeStep = screen.getByRole("region", { name: /Destination step/i });
+    const datesStep = screen.getByRole("region", { name: /Dates step/i });
+    const inviteStep = screen.getByRole("region", { name: /Invite step/i });
+    const previewStep = screen.getByRole("region", { name: /Preview step/i });
+    const inspirationStep = screen.getByRole("region", { name: /Inspiration step/i });
+
+    expect(tripStep).toHaveAttribute("data-mobile-active", "true");
+    expect(placeStep).toHaveAttribute("data-mobile-active", "false");
+    expect(datesStep).toHaveAttribute("data-mobile-active", "false");
+    expect(inviteStep).toHaveAttribute("data-mobile-active", "false");
+    expect(previewStep).toHaveAttribute("data-mobile-active", "false");
+    expect(inspirationStep).toHaveAttribute("data-mobile-active", "false");
+    expect(screen.getByRole("button", { name: /Trip step/i })).toHaveAttribute("aria-current", "step");
+
+    await user.click(screen.getByRole("button", { name: /Next: Place/i }));
+
+    expect(tripStep).toHaveAttribute("data-mobile-active", "false");
+    expect(placeStep).toHaveAttribute("data-mobile-active", "true");
+    expect(screen.getByRole("button", { name: /Place step/i })).toHaveAttribute("aria-current", "step");
+
+    await user.click(screen.getByRole("button", { name: /Next: Dates/i }));
+
+    expect(placeStep).toHaveAttribute("data-mobile-active", "false");
+    expect(datesStep).toHaveAttribute("data-mobile-active", "true");
+
+    await user.click(screen.getByRole("button", { name: /Back: Place/i }));
+
+    expect(placeStep).toHaveAttribute("data-mobile-active", "true");
+    expect(datesStep).toHaveAttribute("data-mobile-active", "false");
+
+    await user.click(screen.getByRole("button", { name: /Preview step/i }));
+
+    expect(tripStep).toHaveAttribute("data-mobile-active", "false");
+    expect(previewStep).toHaveAttribute("data-mobile-active", "true");
+    expect(inspirationStep).toHaveAttribute("data-mobile-active", "false");
+    expect(screen.getByRole("button", { name: /Preview step/i })).toHaveAttribute("aria-current", "step");
+
+    await user.click(screen.getByRole("button", { name: /Next: Inspiration/i }));
+
+    expect(previewStep).toHaveAttribute("data-mobile-active", "false");
+    expect(inspirationStep).toHaveAttribute("data-mobile-active", "true");
+    expect(screen.getByRole("button", { name: /Inspiration step/i })).toHaveAttribute("aria-current", "step");
+  });
+
   it("does not create a trip when submitting before the review step", async () => {
     const user = userEvent.setup();
     const accountClient = createAccountClient();
