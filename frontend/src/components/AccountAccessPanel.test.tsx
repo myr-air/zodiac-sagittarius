@@ -772,6 +772,45 @@ describe("AccountAccessPanel", () => {
     expect(screen.getAllByText("China").length).toBeGreaterThan(1);
   });
 
+  it("does not add Osaka or Kyoto as selected destination cards when Tokyo is the chosen city", async () => {
+    const user = userEvent.setup();
+    const accountClient = createAccountClient();
+
+    render(
+      <AccountAccessPanel
+        accessMode="account-portal"
+        accountClient={accountClient}
+        accountSession={{
+          userId: "user-aom",
+          sessionToken: "account-session",
+          kind: "trusted",
+          trustedDeviceId: "device-current",
+          createdAt: "2026-05-30T08:00:00.000Z",
+          expiresAt: "2026-06-29T08:00:00.000Z",
+        }}
+        portalSection="new-trip"
+        trip={seedTrip}
+        onAccountSessionChange={vi.fn()}
+        onAuthenticated={vi.fn()}
+        onTripChange={vi.fn()}
+      />,
+    );
+
+    await user.type(await screen.findByLabelText(/Search destinations/i), "Tokyo");
+    await user.click(screen.getByRole("button", { name: /^Japan$/i }));
+    await user.type(screen.getByLabelText(/Add city or stop/i), "Tokyo");
+    await user.click(screen.getByRole("button", { name: /Add city/i }));
+
+    const previewStep = screen.getByRole("region", { name: /Preview step/i });
+    expect(within(previewStep).getByText("Tokyo")).toBeInTheDocument();
+    expect(within(previewStep).queryByText("Osaka")).not.toBeInTheDocument();
+    expect(within(previewStep).queryByText("Kyoto")).not.toBeInTheDocument();
+
+    const inspirationStep = screen.getByRole("region", { name: /Inspiration step/i });
+    expect(within(inspirationStep).getByText("Tokyo")).toBeInTheDocument();
+    expect(within(inspirationStep).queryByText("Osaka")).not.toBeInTheDocument();
+    expect(within(inspirationStep).queryByText("Kyoto")).not.toBeInTheDocument();
+  });
   it("lets users add city-level destinations without using the map picker", async () => {
     const user = userEvent.setup();
     const accountClient = createAccountClient();

@@ -2460,8 +2460,16 @@ function PortalTripWizard({
   );
 }
 
-function tripPreviewCards(selectedCountryNames: string[]): Array<{ title: string; detail: string; accent: string }> {
-  if (selectedCountryNames.includes("Japan")) {
+function tripPreviewCards(selectedDestinationNames: string[]): Array<{ title: string; detail: string; accent: string }> {
+  const selectedCityNames = selectedDestinationNames.filter((name) => !tripCountryOptions.some((country) => country.name === name));
+  if (selectedCityNames.length) {
+    return selectedCityNames.slice(0, 4).map((name, index) => ({
+      title: name,
+      detail: destinationCityCountryName(name) ?? "City stop",
+      accent: ["#0f766e", "#38bdf8", "#fb7185"][index % 3],
+    }));
+  }
+  if (selectedDestinationNames.includes("Japan")) {
     return [
       { title: "ย่านกิออน เกียวโต", detail: "Kyoto", accent: "#0f766e" },
       { title: "วัดคินคะคุจิ", detail: "Kyoto", accent: "#38bdf8" },
@@ -2469,10 +2477,10 @@ function tripPreviewCards(selectedCountryNames: string[]): Array<{ title: string
       { title: "ชินเซไก", detail: "Osaka", accent: "#0f766e" },
     ];
   }
-  const selected = selectedCountryNames.length ? selectedCountryNames.slice(0, 4) : ["ย่านกิออน เกียวโต", "วัดคินคะคุจิ", "ปราสาทโอซาก้า", "ชินเซไก"];
+  const selected = selectedDestinationNames.length ? selectedDestinationNames.slice(0, 4) : ["ย่านกิออน เกียวโต", "วัดคินคะคุจิ", "ปราสาทโอซาก้า", "ชินเซไก"];
   return selected.map((name, index) => ({
     title: name,
-    detail: selectedCountryNames.length ? name : index < 2 ? "Kyoto" : "Osaka",
+    detail: selectedDestinationNames.length ? name : index < 2 ? "Kyoto" : "Osaka",
     accent: ["#0f766e", "#38bdf8", "#fb7185"][index % 3],
   }));
 }
@@ -2486,16 +2494,11 @@ function rotateList<T>(items: T[], offset: number): T[] {
 function tripDestinationCards(selectedCountryNames: string[], selectedCityNames: string[] = []): Array<{ title: string; detail: string; nights: string; countryName: string }> {
   const cards: Array<{ title: string; detail: string; nights: string; countryName: string }> = [];
   selectedCityNames.forEach((cityName, index) => {
-    cards.push({ title: cityName, detail: selectedCountryNames[0] ?? "City stop", nights: `${index + 2} คืน`, countryName: cityName });
+    const cityCountryName = destinationCityCountryName(cityName);
+    cards.push({ title: cityName, detail: cityCountryName ?? selectedCountryNames[0] ?? "City stop", nights: `${index + 2} คืน`, countryName: cityCountryName ?? cityName });
   });
-  if (selectedCountryNames.includes("Japan")) {
-    cards.push(
-      { title: "Kyoto", detail: "Japan", nights: "4 คืน", countryName: "Japan" },
-      { title: "Osaka", detail: "Japan", nights: "6 คืน", countryName: "Japan" },
-    );
-  }
   selectedCountryNames
-    .filter((name) => name !== "Japan")
+    .filter((name) => !selectedCityNames.some((cityName) => cityBelongsToCountry(cityName, name)))
     .forEach((name, index) => {
       cards.push({ title: name, detail: name, nights: `${index + 3} คืน`, countryName: name });
     });
@@ -2503,6 +2506,13 @@ function tripDestinationCards(selectedCountryNames: string[], selectedCityNames:
   return [{ title: "Destination", detail: "Trip stop", nights: "3 คืน", countryName: "Destination" }];
 }
 
+function destinationCityCountryName(cityName: string): string | null {
+  return tripCountryOptions.find((country) => country.cities.some((city) => city.toLocaleLowerCase() === cityName.toLocaleLowerCase()))?.name ?? null;
+}
+
+function cityBelongsToCountry(cityName: string, countryName: string): boolean {
+  return destinationCityCountryName(cityName)?.toLocaleLowerCase() === countryName.toLocaleLowerCase();
+}
 function formatPreviewTravelDate(value: string): string {
   if (!value) return "--";
   const date = new Date(`${value}T00:00:00`);
