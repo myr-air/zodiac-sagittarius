@@ -389,7 +389,7 @@ export function SagittariusApp({
   const canEditExpenses = canTripRole(currentMember.role, "editExpenses");
   const canManagePeople = canTripRole(currentMember.role, "managePeople");
   const canEditBookings = canEdit || canEditExpenses;
-  const canEditPhotoAlbums = currentMember.role !== "viewer";
+  const canEditPhotoAlbums = canTripRole(currentMember.role, "managePhotoAlbums");
   const canCreateStopNote = canCreateSuggestion || canEdit;
   const supportsContextRail =
     currentView === "overview" ||
@@ -2237,6 +2237,26 @@ export function SagittariusApp({
     const title = input.title.trim();
     const url = input.url.trim();
     if (!title || !url) return;
+    if (isApiMode && resolvedApiClient && participantSession) {
+      const photoAlbum = await resolvedApiClient.createPhotoAlbum(
+        trip.id,
+        participantSession.sessionToken,
+        {
+          clientMutationId: nextClientMutationId("photo-album-create"),
+          ...serializePhotoAlbumInputForApi({ ...input, title, url }),
+        },
+      );
+      const nextTrip = {
+        ...latestTripRef.current,
+        photoAlbumLinks: [
+          ...(latestTripRef.current.photoAlbumLinks ?? []),
+          photoAlbum,
+        ],
+      };
+      latestTripRef.current = nextTrip;
+      setTripState((current) => ({ ...current, trip: nextTrip }));
+      return;
+    }
     const photoAlbum: TripPhotoAlbumLink = {
       id: nextLocalPhotoAlbumId(trip.photoAlbumLinks ?? []),
       tripId: trip.id,
@@ -2260,6 +2280,49 @@ export function SagittariusApp({
     input: TripPhotoAlbumInput,
   ) {
     if (!canEditPhotoAlbums) return;
+    if (isApiMode && resolvedApiClient && participantSession) {
+      const currentTrip = latestTripRef.current;
+      const photoAlbum = currentTrip.photoAlbumLinks?.find(
+        (candidate) => candidate.id === albumId,
+      );
+      if (!photoAlbum) return;
+      try {
+        const patchedPhotoAlbum = await resolvedApiClient.patchPhotoAlbum(
+          trip.id,
+          albumId,
+          participantSession.sessionToken,
+          {
+            clientMutationId: nextClientMutationId("photo-album-patch"),
+            expectedVersion: photoAlbum.version,
+            patch: serializePhotoAlbumInputForApi(input),
+          },
+        );
+        const nextTrip = {
+          ...latestTripRef.current,
+          photoAlbumLinks: (latestTripRef.current.photoAlbumLinks ?? []).map(
+            (candidate) =>
+              candidate.id === albumId ? patchedPhotoAlbum : candidate,
+          ),
+        };
+        latestTripRef.current = nextTrip;
+        setTripState((current) => ({ ...current, trip: nextTrip }));
+      } catch (error) {
+        if (
+          error instanceof TripApiError &&
+          error.code === "version_conflict"
+        ) {
+          const latest = await resolvedApiClient.loadTrip(
+            trip.id,
+            participantSession.sessionToken,
+          );
+          latestTripRef.current = latest.trip;
+          setTripState({ trip: latest.trip, past: [], future: [] });
+          return;
+        }
+        throw error;
+      }
+      return;
+    }
     commitTrip((current) => ({
       ...current,
       photoAlbumLinks: (current.photoAlbumLinks ?? []).map((album) =>
@@ -2281,6 +2344,22 @@ export function SagittariusApp({
 
   async function deletePhotoAlbum(albumId: string) {
     if (!canEditPhotoAlbums) return;
+    if (isApiMode && resolvedApiClient && participantSession) {
+      await resolvedApiClient.deletePhotoAlbum(
+        trip.id,
+        albumId,
+        participantSession.sessionToken,
+      );
+      const nextTrip = {
+        ...latestTripRef.current,
+        photoAlbumLinks: (latestTripRef.current.photoAlbumLinks ?? []).filter(
+          (album) => album.id !== albumId,
+        ),
+      };
+      latestTripRef.current = nextTrip;
+      setTripState((current) => ({ ...current, trip: nextTrip }));
+      return;
+    }
     commitTrip((current) => ({
       ...current,
       photoAlbumLinks: (current.photoAlbumLinks ?? []).filter(
@@ -3565,6 +3644,18 @@ function serializeBookingDocInputForApi(input: BookingDocInput) {
       provider: link.provider?.trim() || null,
       accessNote: link.accessNote?.trim() || null,
     })),
+  };
+}
+
+function serializePhotoAlbumInputForApi(input: TripPhotoAlbumInput) {
+  return {
+    ...input,
+    title: input.title.trim(),
+    url: input.url.trim(),
+    description: input.description?.trim() || null,
+    accessNote: input.accessNote?.trim() || null,
+    coverUrl: input.coverUrl?.trim() || null,
+    day: input.day?.trim() || null,
   };
 }
 

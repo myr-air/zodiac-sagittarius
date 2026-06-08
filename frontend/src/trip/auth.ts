@@ -5,9 +5,9 @@ export const seedTripJoinPassword = "seed-trip-pass";
 export const tripParticipantSessionStorageKey = "sagittarius:trip-participant-session";
 
 const roleCapabilities: Record<TripRole, TripCapability[]> = {
-  owner: ["viewPlan", "editItinerary", "reviewSuggestions", "createSuggestion", "viewExpenses", "editExpenses", "managePeople"],
-  organizer: ["viewPlan", "editItinerary", "reviewSuggestions", "createSuggestion", "viewExpenses", "editExpenses", "managePeople"],
-  traveler: ["viewPlan", "createSuggestion", "viewExpenses"],
+  owner: ["viewPlan", "editItinerary", "reviewSuggestions", "createSuggestion", "viewExpenses", "editExpenses", "managePeople", "managePhotoAlbums"],
+  organizer: ["viewPlan", "editItinerary", "reviewSuggestions", "createSuggestion", "viewExpenses", "editExpenses", "managePeople", "managePhotoAlbums"],
+  traveler: ["viewPlan", "createSuggestion", "viewExpenses", "managePhotoAlbums"],
   viewer: ["viewPlan"],
 };
 

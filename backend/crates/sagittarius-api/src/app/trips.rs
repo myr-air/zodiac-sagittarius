@@ -3,7 +3,7 @@ use std::collections::BTreeMap;
 
 use uuid::Uuid;
 
-use crate::app::{auth, bookings, events};
+use crate::app::{auth, bookings, events, photo_albums};
 use crate::db;
 use crate::db::PgPool;
 use crate::db::models::{ExpenseReminderRecord, ExpenseSplitRecord};
@@ -103,6 +103,7 @@ pub async fn load_cockpit(
     let booking_docs =
         bookings::list_visible_booking_docs(pool, session_trip_id, session_member_id, session.role)
             .await?;
+    let photo_album_links = photo_albums::list_photo_album_links(pool, session_trip_id).await?;
 
     Ok(TripCockpit {
         trip: trip.into(),
@@ -115,6 +116,7 @@ pub async fn load_cockpit(
         expenses: expense_rows.into_iter().map(Into::into).collect(),
         expense_summary,
         booking_docs,
+        photo_album_links,
     })
 }
 

@@ -8,7 +8,8 @@ export type TripCapability =
   | "createSuggestion"
   | "viewExpenses"
   | "editExpenses"
-  | "managePeople";
+  | "managePeople"
+  | "managePhotoAlbums";
 
 export type PlanVariantKind = "main" | "backup" | "draft" | "split";
 

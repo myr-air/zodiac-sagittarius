@@ -9,6 +9,7 @@ pub mod itinerary;
 pub mod itinerary_imports;
 pub mod join;
 pub mod members;
+pub mod photo_albums;
 pub mod place_resolution;
 pub mod plan_variants;
 pub mod stop_notes;
@@ -176,6 +177,15 @@ fn api_v1() -> Router<AppState> {
         .route(
             "/trips/{trip_id}/bookings/{booking_id}",
             patch(bookings::patch_booking_doc).delete(bookings::delete_booking_doc),
+        )
+        .route(
+            "/trips/{trip_id}/photo-albums",
+            post(photo_albums::create_photo_album_link),
+        )
+        .route(
+            "/trips/{trip_id}/photo-albums/{album_id}",
+            patch(photo_albums::patch_photo_album_link)
+                .delete(photo_albums::delete_photo_album_link),
         )
         .route(
             "/trips/{trip_id}/members",

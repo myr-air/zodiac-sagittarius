@@ -309,6 +309,82 @@ describe("Sagittarius cockpit UI", () => {
     ).toBeInTheDocument();
   });
 
+  it("creates photo albums through the API client in API mode", async () => {
+    const user = userEvent.setup();
+    installLocalStorageStub();
+    window.sessionStorage.setItem(
+      tripParticipantSessionStorageKey,
+      JSON.stringify({
+        tripId: seedTrip.id,
+        memberId: seedTrip.members[0].id,
+        sessionToken: "api-photos-session",
+        createdAt: "2026-05-29T00:00:00.000Z",
+        expiresAt: "2026-06-28T00:00:00.000Z",
+      }),
+    );
+    const apiAlbum = {
+      ...(seedTrip.photoAlbumLinks ?? [])[0],
+      id: "018f4e89-1111-7000-8000-000000009999",
+      title: "Trip group album",
+      provider: "google_photos" as const,
+      url: "https://photos.app.goo.gl/trip-group",
+      access: "collaborative" as const,
+      updatedAt: "2026-05-29T00:00:00.000Z",
+      version: 1,
+    };
+    const apiClient = createApiClientForTrip(seedTrip, {
+      createPhotoAlbum: vi.fn().mockResolvedValue(apiAlbum),
+    });
+
+    render(
+      <SagittariusApp
+        accessMode="trip-access"
+        initialView="photos"
+        requireJoin
+        dataSource="api"
+        routeTripId={seedTrip.id}
+        apiClient={apiClient}
+      />,
+    );
+
+    expect(
+      await screen.findByRole("region", { name: "Photos & Albums" }),
+    ).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Add album" }));
+    const dialog = screen.getByRole("dialog", { name: "Add album" });
+    fireEvent.change(within(dialog).getByLabelText("Title"), {
+      target: { value: "Trip group album" },
+    });
+    fireEvent.change(within(dialog).getByLabelText("Provider"), {
+      target: { value: "google_photos" },
+    });
+    fireEvent.change(within(dialog).getByLabelText("Album link"), {
+      target: { value: "https://photos.app.goo.gl/trip-group" },
+    });
+    await user.click(
+      within(dialog).getByRole("button", { name: "Save album" }),
+    );
+
+    await waitFor(() =>
+      expect(apiClient.createPhotoAlbum).toHaveBeenCalledWith(
+        seedTrip.id,
+        "api-photos-session",
+        expect.objectContaining({
+          clientMutationId: expect.stringMatching(/^photo-album-create-/),
+          title: "Trip group album",
+          provider: "google_photos",
+          url: "https://photos.app.goo.gl/trip-group",
+          access: "collaborative",
+        }),
+      ),
+    );
+    expect(
+      await screen.findByRole("button", {
+        name: /Select Trip group album/i,
+      }),
+    ).toBeInTheDocument();
+  });
+
   it("creates booking docs through the API client in API mode", async () => {
     const user = userEvent.setup();
     installLocalStorageStub();
@@ -1456,6 +1532,9 @@ describe("Sagittarius cockpit UI", () => {
       createBookingDoc: vi.fn(),
       patchBookingDoc: vi.fn(),
       deleteBookingDoc: vi.fn(),
+      createPhotoAlbum: vi.fn(),
+      patchPhotoAlbum: vi.fn(),
+      deletePhotoAlbum: vi.fn(),
     };
 
     render(
@@ -2379,6 +2458,9 @@ describe("Sagittarius cockpit UI", () => {
       createBookingDoc: vi.fn(),
       patchBookingDoc: vi.fn(),
       deleteBookingDoc: vi.fn(),
+      createPhotoAlbum: vi.fn(),
+      patchPhotoAlbum: vi.fn(),
+      deletePhotoAlbum: vi.fn(),
     };
 
     render(
@@ -2711,6 +2793,9 @@ describe("Sagittarius cockpit UI", () => {
       createBookingDoc: vi.fn(),
       patchBookingDoc: vi.fn(),
       deleteBookingDoc: vi.fn(),
+      createPhotoAlbum: vi.fn(),
+      patchPhotoAlbum: vi.fn(),
+      deletePhotoAlbum: vi.fn(),
     };
 
     render(
@@ -4765,6 +4850,9 @@ function createApiClientForTrip(
     createBookingDoc: vi.fn(),
     patchBookingDoc: vi.fn(),
     deleteBookingDoc: vi.fn(),
+    createPhotoAlbum: vi.fn(),
+    patchPhotoAlbum: vi.fn(),
+    deletePhotoAlbum: vi.fn(),
     ...overrides,
   };
 }

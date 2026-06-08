@@ -171,6 +171,25 @@ const cockpitResponse: TripCockpitResponse = {
       version: 1,
     },
   ],
+  photoAlbumLinks: [
+    {
+      id: "018f4e89-1111-7000-8000-000000000001",
+      tripId: "018f4e80-5788-7de0-a45c-8a555d17fc2d",
+      title: "API group album",
+      provider: "google_photos",
+      url: "https://photos.app.goo.gl/api-group",
+      access: "collaborative",
+      ownerMemberId: "018f4e81-77a4-7b8f-b3bd-0d0f493ac561",
+      relatedItineraryItemIds: ["018f4e83-5410-7d8b-8f25-fd52c5e7bd1f"],
+      day: "2026-06-18",
+      description: "Shared trip album.",
+      accessNote: "Everyone can add photos.",
+      coverUrl: null,
+      createdBy: "018f4e81-77a4-7b8f-b3bd-0d0f493ac561",
+      updatedAt: "2026-05-29T00:00:00.000Z",
+      version: 1,
+    },
+  ],
 };
 
 describe("Trip API client", () => {
@@ -246,13 +265,26 @@ describe("Trip API client", () => {
       id: "booking-api-flight",
       externalLinks: [{ id: "booking-api-flight-link", label: "Drive", url: "https://drive.google.com/api-flight", provider: "Google Drive" }],
     });
+    expect(cockpit.trip.photoAlbumLinks?.[0]).toMatchObject({
+      id: "018f4e89-1111-7000-8000-000000000001",
+      title: "API group album",
+      provider: "google_photos",
+    });
     expect(cockpit.expenseSummary).toEqual(cockpitResponse.expenseSummary);
   });
 
   it("rejects cockpit payloads that omit the bookingDocs source of truth", () => {
-    const { bookingDocs: _bookingDocs, ...responseWithoutBookingDocs } = cockpitResponse;
+    const responseWithoutBookingDocs = { ...cockpitResponse };
+    delete (responseWithoutBookingDocs as Partial<TripCockpitResponse>).bookingDocs;
 
     expect(() => mapCockpitResponse(responseWithoutBookingDocs as unknown as TripCockpitResponse)).toThrow("bookingDocs");
+  });
+
+  it("rejects cockpit payloads that omit the photoAlbumLinks source of truth", () => {
+    const responseWithoutPhotoAlbums = { ...cockpitResponse };
+    delete (responseWithoutPhotoAlbums as Partial<TripCockpitResponse>).photoAlbumLinks;
+
+    expect(() => mapCockpitResponse(responseWithoutPhotoAlbums as unknown as TripCockpitResponse)).toThrow("photoAlbumLinks");
   });
 
   it("surfaces backend errors without leaking transport details into UI code", async () => {
@@ -429,6 +461,82 @@ describe("Trip API client", () => {
     expect(fetchImpl).toHaveBeenNthCalledWith(
       3,
       `https://api.example.test/api/v1/trips/${cockpitResponse.trip.id}/bookings/${createdBooking.id}`,
+      expect.objectContaining({
+        method: "DELETE",
+        headers: expect.objectContaining({ Authorization: "Bearer session-token" }),
+      }),
+    );
+  });
+
+  it("creates, patches, and deletes photo albums through trip-scoped routes", async () => {
+    const createdAlbum = {
+      ...cockpitResponse.photoAlbumLinks![0],
+      id: "018f4e89-1111-7000-8000-000000009999",
+      title: "Group album",
+      version: 1,
+    };
+    const patchedAlbum = {
+      ...createdAlbum,
+      title: "Group album updated",
+      version: 2,
+    };
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValueOnce(jsonResponse(createdAlbum))
+      .mockResolvedValueOnce(jsonResponse(patchedAlbum))
+      .mockResolvedValueOnce(jsonResponse(patchedAlbum));
+    const client = createTripApiClient({ baseUrl: "https://api.example.test", fetchImpl });
+
+    await expect(client.createPhotoAlbum(cockpitResponse.trip.id, "session-token", {
+      clientMutationId: "photo-album-create-1",
+      title: "Group album",
+      provider: "google_photos",
+      url: "https://photos.app.goo.gl/group",
+      access: "collaborative",
+      ownerMemberId: cockpitResponse.members[0].id,
+      relatedItineraryItemIds: [cockpitResponse.itineraryItems[0].id],
+      day: "2026-06-18",
+      description: "Trip album.",
+      accessNote: "Everyone can add photos.",
+      coverUrl: null,
+    })).resolves.toMatchObject({ id: createdAlbum.id, title: "Group album" });
+
+    await expect(client.patchPhotoAlbum(cockpitResponse.trip.id, createdAlbum.id, "session-token", {
+      clientMutationId: "photo-album-patch-1",
+      expectedVersion: 1,
+      patch: { title: "Group album updated" },
+    })).resolves.toMatchObject({ title: "Group album updated", version: 2 });
+
+    await expect(client.deletePhotoAlbum(cockpitResponse.trip.id, createdAlbum.id, "session-token")).resolves.toMatchObject({
+      id: createdAlbum.id,
+      version: 2,
+    });
+
+    expect(fetchImpl).toHaveBeenNthCalledWith(
+      1,
+      `https://api.example.test/api/v1/trips/${cockpitResponse.trip.id}/photo-albums`,
+      expect.objectContaining({
+        method: "POST",
+        headers: expect.objectContaining({ Authorization: "Bearer session-token" }),
+        body: expect.stringContaining("\"clientMutationId\":\"photo-album-create-1\""),
+      }),
+    );
+    expect(fetchImpl).toHaveBeenNthCalledWith(
+      2,
+      `https://api.example.test/api/v1/trips/${cockpitResponse.trip.id}/photo-albums/${createdAlbum.id}`,
+      expect.objectContaining({
+        method: "PATCH",
+        headers: expect.objectContaining({ Authorization: "Bearer session-token" }),
+        body: JSON.stringify({
+          clientMutationId: "photo-album-patch-1",
+          expectedVersion: 1,
+          patch: { title: "Group album updated" },
+        }),
+      }),
+    );
+    expect(fetchImpl).toHaveBeenNthCalledWith(
+      3,
+      `https://api.example.test/api/v1/trips/${cockpitResponse.trip.id}/photo-albums/${createdAlbum.id}`,
       expect.objectContaining({
         method: "DELETE",
         headers: expect.objectContaining({ Authorization: "Bearer session-token" }),

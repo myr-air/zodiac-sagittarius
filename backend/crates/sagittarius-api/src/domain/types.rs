@@ -27,6 +27,7 @@ pub enum Capability {
     CreatePrivateTask,
     UpdateOwnPrivateTask,
     EditBookings,
+    ManagePhotoAlbums,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Type)]
@@ -563,6 +564,26 @@ pub struct BookingDocSummary {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub struct PhotoAlbumLinkSummary {
+    pub id: Uuid,
+    pub trip_id: Uuid,
+    pub title: String,
+    pub provider: String,
+    pub url: String,
+    pub access: String,
+    pub owner_member_id: Option<Uuid>,
+    pub related_itinerary_item_ids: Vec<Uuid>,
+    pub day: Option<String>,
+    pub description: Option<String>,
+    pub access_note: Option<String>,
+    pub cover_url: Option<String>,
+    pub created_by: Uuid,
+    pub updated_at: String,
+    pub version: i64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct TripCockpit {
     pub trip: TripSummary,
     pub members: Vec<TripMemberSummary>,
@@ -574,6 +595,7 @@ pub struct TripCockpit {
     pub expenses: Vec<ExpenseItemSummary>,
     pub expense_summary: Option<ExpenseSummary>,
     pub booking_docs: Vec<BookingDocSummary>,
+    pub photo_album_links: Vec<PhotoAlbumLinkSummary>,
 }
 
 #[cfg(test)]

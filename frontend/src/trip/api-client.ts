@@ -16,6 +16,7 @@ import type {
   TripJoinCredential,
   TripMemberAccessStatus,
   TripParticipantSession,
+  TripPhotoAlbumLink,
   PlaceResolutionRequest,
   PlaceResolutionResponse,
   TripRole,
@@ -130,6 +131,7 @@ export interface TripCockpitResponse {
   expenses: ExpenseResponse[];
   expenseSummary: ExpenseSummary | null;
   bookingDocs: BookingDoc[];
+  photoAlbumLinks: TripPhotoAlbumLink[];
 }
 
 export interface JoinTripResponse {
@@ -205,6 +207,9 @@ export interface TripApiClient {
   createBookingDoc(tripId: string, sessionToken: string, request: CreateBookingDocApiRequest): Promise<BookingDoc>;
   patchBookingDoc(tripId: string, bookingId: string, sessionToken: string, request: PatchBookingDocApiRequest): Promise<BookingDoc>;
   deleteBookingDoc(tripId: string, bookingId: string, sessionToken: string): Promise<BookingDoc>;
+  createPhotoAlbum(tripId: string, sessionToken: string, request: CreatePhotoAlbumApiRequest): Promise<TripPhotoAlbumLink>;
+  patchPhotoAlbum(tripId: string, albumId: string, sessionToken: string, request: PatchPhotoAlbumApiRequest): Promise<TripPhotoAlbumLink>;
+  deletePhotoAlbum(tripId: string, albumId: string, sessionToken: string): Promise<TripPhotoAlbumLink>;
 }
 
 export interface CreateTaskApiRequest {
@@ -395,6 +400,16 @@ export interface PatchBookingDocApiRequest {
   clientMutationId: string;
   expectedVersion: number;
   patch: Partial<Omit<CreateBookingDocApiRequest, "clientMutationId">>;
+}
+
+export interface CreatePhotoAlbumApiRequest extends Omit<TripPhotoAlbumLink, "id" | "tripId" | "createdBy" | "updatedAt" | "version"> {
+  clientMutationId: string;
+}
+
+export interface PatchPhotoAlbumApiRequest {
+  clientMutationId: string;
+  expectedVersion: number;
+  patch: Partial<Omit<CreatePhotoAlbumApiRequest, "clientMutationId">>;
 }
 
 export function createTripApiClient(options: TripApiClientOptions = {}): TripApiClient {
@@ -705,6 +720,26 @@ export function createTripApiClient(options: TripApiClientOptions = {}): TripApi
         headers: { Authorization: `Bearer ${sessionToken}` },
       });
     },
+    createPhotoAlbum(tripId, sessionToken, albumRequest) {
+      return request<TripPhotoAlbumLink>(tripApiRoutes.photoAlbums(tripId), {
+        method: "POST",
+        headers: { Authorization: `Bearer ${sessionToken}` },
+        body: JSON.stringify(albumRequest),
+      });
+    },
+    patchPhotoAlbum(tripId, albumId, sessionToken, albumRequest) {
+      return request<TripPhotoAlbumLink>(tripApiRoutes.photoAlbum(tripId, albumId), {
+        method: "PATCH",
+        headers: { Authorization: `Bearer ${sessionToken}` },
+        body: JSON.stringify(albumRequest),
+      });
+    },
+    deletePhotoAlbum(tripId, albumId, sessionToken) {
+      return request<TripPhotoAlbumLink>(tripApiRoutes.photoAlbum(tripId, albumId), {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${sessionToken}` },
+      });
+    },
   };
 }
 
@@ -713,6 +748,13 @@ export function mapCockpitResponse(response: TripCockpitResponse): TripCockpit {
     throw new TripApiError({
       code: "invalid_response",
       message: "cockpit response is missing bookingDocs",
+      status: 0,
+    });
+  }
+  if (!Array.isArray(response.photoAlbumLinks)) {
+    throw new TripApiError({
+      code: "invalid_response",
+      message: "cockpit response is missing photoAlbumLinks",
       status: 0,
     });
   }
@@ -726,6 +768,7 @@ export function mapCockpitResponse(response: TripCockpitResponse): TripCockpit {
       itineraryItems: response.itineraryItems.map(mapItineraryItem),
       expenses: response.expenses.map(mapExpense),
       bookingDocs: response.bookingDocs,
+      photoAlbumLinks: response.photoAlbumLinks,
     },
     suggestions: response.suggestions,
     tasks: response.tasks.map(mapTask),

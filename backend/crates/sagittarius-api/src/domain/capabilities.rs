@@ -13,6 +13,7 @@ pub fn can(role: TripRole, capability: Capability) -> bool {
                 | Capability::CreateSharedTask
                 | Capability::CreatePrivateTask
                 | Capability::UpdateOwnPrivateTask
+                | Capability::ManagePhotoAlbums
         ),
         TripRole::Viewer => matches!(capability, Capability::ViewPlan),
     }
@@ -30,6 +31,7 @@ const OWNER_OR_ORGANIZER_CAPABILITIES: &[Capability] = &[
     Capability::CreatePrivateTask,
     Capability::UpdateOwnPrivateTask,
     Capability::EditBookings,
+    Capability::ManagePhotoAlbums,
 ];
 
 #[cfg(test)]
@@ -42,6 +44,7 @@ mod tests {
         assert!(can(TripRole::Traveler, Capability::CreateSuggestion));
         assert!(can(TripRole::Traveler, Capability::CreatePrivateTask));
         assert!(can(TripRole::Traveler, Capability::UpdateOwnPrivateTask));
+        assert!(can(TripRole::Traveler, Capability::ManagePhotoAlbums));
         assert!(!can(TripRole::Traveler, Capability::EditItinerary));
         assert!(!can(TripRole::Traveler, Capability::ManagePeople));
         assert!(!can(TripRole::Traveler, Capability::EditExpenses));
@@ -51,6 +54,7 @@ mod tests {
         assert!(!can(TripRole::Viewer, Capability::CreateSuggestion));
         assert!(!can(TripRole::Viewer, Capability::ViewExpenses));
         assert!(!can(TripRole::Viewer, Capability::EditBookings));
+        assert!(!can(TripRole::Viewer, Capability::ManagePhotoAlbums));
     }
 
     #[test]
@@ -65,6 +69,7 @@ mod tests {
             assert!(can(role, Capability::CreatePrivateTask));
             assert!(can(role, Capability::UpdateOwnPrivateTask));
             assert!(can(role, Capability::EditBookings));
+            assert!(can(role, Capability::ManagePhotoAlbums));
         }
     }
 }
