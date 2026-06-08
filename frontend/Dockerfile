@@ -24,11 +24,11 @@ ENV NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL=$NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL
 ENV SAGITTARIUS_INTERNAL_API_BASE_URL=$SAGITTARIUS_INTERNAL_API_BASE_URL
 
 WORKDIR /app/frontend
-COPY --from=builder /app/frontend/package.json /app/frontend/bun.lock ./
-COPY --from=builder /app/frontend/node_modules ./node_modules
-COPY --from=builder /app/frontend/.next ./.next
-COPY --from=builder /app/frontend/public ./public
-COPY --from=builder /app/frontend/next.config.ts ./next.config.ts
+COPY --chown=bun:bun --from=builder /app/frontend/package.json /app/frontend/bun.lock ./
+COPY --chown=bun:bun --from=builder /app/frontend/node_modules ./node_modules
+COPY --chown=bun:bun --from=builder /app/frontend/.next ./.next
+COPY --chown=bun:bun --from=builder /app/frontend/public ./public
+COPY --chown=bun:bun --from=builder /app/frontend/next.config.ts ./next.config.ts
 
 USER bun
 EXPOSE 5180

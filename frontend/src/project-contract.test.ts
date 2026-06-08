@@ -250,6 +250,7 @@ describe("Sagittarius project scaffold", () => {
   it("splits runtime env examples from release signoff evidence", () => {
     const makefile = readFileSync(join(repoRoot, "Makefile"), "utf8");
     const dockerCompose = readFileSync(join(repoRoot, "docker-compose.yml"), "utf8");
+    const frontendDockerfile = readFileSync(join(repoRoot, "frontend/Dockerfile"), "utf8");
     const localEnvExample = readFileSync(join(repoRoot, ".env.local.example"), "utf8");
     const productionEnvExample = readFileSync(join(repoRoot, ".env.production.example"), "utf8");
     const releaseSignoffEnvExample = readFileSync(join(repoRoot, ".env.release-signoff.example"), "utf8");
@@ -336,6 +337,7 @@ describe("Sagittarius project scaffold", () => {
     expect(apiServiceBlock).toContain("dockerfile: backend/Dockerfile");
     expect(webServiceBlock).toContain("context: .");
     expect(webServiceBlock).toContain("dockerfile: frontend/Dockerfile");
+    expect(frontendDockerfile).toContain("COPY --chown=bun:bun --from=builder /app/frontend/.next ./.next");
     expect(internalApiHost).toBe("sagittarius-api");
     expect(apiServiceBlock).toMatch(/aliases:\n\s+- sagittarius-api/);
     expect(databaseHost).toBe("zodiac-postgres");

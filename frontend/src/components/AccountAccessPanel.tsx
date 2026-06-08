@@ -2801,6 +2801,7 @@ function friendlyErrorText(message: string, fallback: string | null, labels: Mes
   if (normalized === ACCESS_ERROR_CODES.passkeyUnsupported) return labels.passkeyUnsupported;
   if (normalized === "not_found") return labels.notFound;
   if (normalized === "invalid_request") return labels.unauthorized;
+  if (normalized === "email_delivery_failed") return labels.emailDeliveryFailed;
   if (normalized === "404") return labels.notFound;
   if (normalized === "401" || normalized === "403" || normalized === "unauthenticated" || normalized === "unauthorized" || normalized === "forbidden") return labels.unauthorized;
   if (!normalized || /^\d{3}$/.test(normalized)) return fallback;

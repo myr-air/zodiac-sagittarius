@@ -198,6 +198,38 @@ describe("AccountAccessPanel", () => {
     expect(screen.queryByRole("link", { name: /Open account portal/i })).not.toBeInTheDocument();
   });
 
+  it("shows email delivery failures where the registration code message appears", async () => {
+    const user = userEvent.setup();
+    const accountClient = createAccountClient();
+    vi.mocked(accountClient.startEmailLogin).mockRejectedValueOnce(
+      new TripApiError({
+        code: "email_delivery_failed",
+        message: "smtp send failed",
+        status: 502,
+      }),
+    );
+
+    render(
+      <AccountAccessPanel
+        accessMode="account-register"
+        accountClient={accountClient}
+        accountSession={null}
+        trip={seedTrip}
+        onAccountSessionChange={vi.fn()}
+        onAuthenticated={vi.fn()}
+        onTripChange={vi.fn()}
+      />,
+    );
+
+    fireEvent.change(screen.getByLabelText(/Email/i), { target: { value: "mai@example.test" } });
+    await user.click(screen.getByRole("button", { name: /^Continue$/i }));
+    fireEvent.change(await screen.findByLabelText(/Password/i), { target: { value: "account-secret" } });
+    await user.click(screen.getByRole("button", { name: /^Continue$/i }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("Email service is not ready. Please try again soon.");
+    expect(screen.queryByLabelText(/Verification code/i)).not.toBeInTheDocument();
+  });
+
   it("separates passkey access from email verification with a key icon", async () => {
     const user = userEvent.setup();
     render(
