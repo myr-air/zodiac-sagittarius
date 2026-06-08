@@ -1,0 +1,65 @@
+# --- Caddyfile ---
+# ไฟล์การจัดเส้นทางด่วนสำหรับเข้าเว็บบริการในบ้านและผ่าน Cloudflare ingress
+# สอดรับกับ host ที่ควบคุมผ่าน Access บน `cancer-network`
+
+
+# ♋ ทางเข้าควบคุมแอร์ ไฟ และกล้อง (Cancer PWA Dashboard)
+# พิมพ์เข้าใช้งานที่บ้านผ่าน http://cancer.local
+# และผ่าน zodiac ingress ด้วย `cancer.13thx.com`
+:80, :5180 {
+    @cancer_host host cancer.local localhost 127.0.0.1 cancer.13thx.com
+    @sagittarius_host host sagittarius.local localhost 127.0.0.1 sagittarius.13thx.com
+    @gemini_host host gemini.local
+
+    handle @cancer_host {
+        reverse_proxy cancer-web:3000
+
+        encode gzip
+
+        header {
+            X-Content-Type-Options "nosniff"
+            X-Frame-Options "DENY"
+            Referrer-Policy "strict-origin-when-cross-origin"
+            Permissions-Policy "camera=(), microphone=(), geolocation=()"
+            Cross-Origin-Resource-Policy "same-origin"
+            Cross-Origin-Opener-Policy "same-origin"
+            Cross-Origin-Embedder-Policy "require-corp"
+            X-DNS-Prefetch-Control "off"
+            Cache-Control "no-store, max-age=0, no-cache, must-revalidate"
+            Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"
+        }
+    }
+
+    handle @gemini_host {
+        reverse_proxy gemini-web:3000
+
+        header {
+            X-Content-Type-Options "nosniff"
+            X-Frame-Options "DENY"
+            Referrer-Policy "strict-origin-when-cross-origin"
+            Permissions-Policy "camera=(), microphone=(), geolocation=()"
+        }
+    }
+
+    handle @sagittarius_host {
+        reverse_proxy /api/* sagittarius-server:5181
+        reverse_proxy sagittarius-web:5180
+
+        header {
+            X-Content-Type-Options "nosniff"
+            X-Frame-Options "DENY"
+            Referrer-Policy "strict-origin-when-cross-origin"
+            Permissions-Policy "camera=(), microphone=(), geolocation=()"
+            Cross-Origin-Resource-Policy "same-origin"
+            Cross-Origin-Opener-Policy "same-origin"
+            Cross-Origin-Embedder-Policy "require-corp"
+            X-DNS-Prefetch-Control "off"
+            Cache-Control "no-store, max-age=0, no-cache, must-revalidate"
+            Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"
+        }
+    }
+
+    handle {
+        respond "Not Found" 404
+    }
+}

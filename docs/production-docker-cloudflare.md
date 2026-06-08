@@ -126,23 +126,38 @@ Stopping this stack does not stop or remove the shared database.
 
 ## Cloudflare Tunnel Ingress
 
+Sagittarius uses the shared zodiac Caddy gateway as the Cloudflare origin. The
+tracked source for that root-level gateway config lives in this repo:
+
+- `infra/zodiac/Caddyfile`
+- `infra/zodiac/docker-compose.yml`
+
+Apply or drift-check those files against the root zodiac workspace with:
+
+```bash
+scripts/sync-zodiac-gateway.sh check
+scripts/sync-zodiac-gateway.sh apply
+```
+
 Add this exact ingress to the existing Cloudflare Tunnel:
 
 ```yaml
 ingress:
   - hostname: joii.13thx.com
-    service: http://sagittarius-web:5180
+    service: http://sagittarius-frontend:5180
   - hostname: sagittarius.13thx.com
-    service: http://sagittarius-web:5180
+    service: http://sagittarius-frontend:5180
   - service: http_status:404
 ```
 
-The tunnel container must be attached to `sagittarius-network` so it can resolve
-`sagittarius-web`. The API service also joins `zodiac` to reach the shared
-database, but the frontend ingress target is on `sagittarius-network`.
+The tunnel container must be attached to `zodiac-network` so it can resolve
+`sagittarius-frontend`. That alias intentionally points to the shared
+`caddy-gateway`, not directly to the frontend container. Caddy routes `/api/*`
+to `sagittarius-server:5181` and all other Sagittarius traffic to
+`sagittarius-web:5180`.
 
 ```bash
-docker network connect sagittarius-network <cloudflare-tunnel-container-name>
+docker network connect zodiac-network <cloudflare-tunnel-container-name>
 ```
 
 Run that command only if the tunnel container is not already connected.
@@ -162,6 +177,6 @@ Internal API readiness should be checked on the Docker network:
 curl -fsS http://sagittarius-api:5181/api/v1/readiness
 ```
 
-The frontend service is the only Cloudflare ingress target. Browser API calls
-use `/api/v1/*` on the public hostname, and the frontend rewrites them to
-`http://sagittarius-api:5181` inside `sagittarius-network`.
+The shared Caddy gateway is the only Cloudflare ingress target. Browser API
+calls use `/api/v1/*` on the public hostname, and Caddy rewrites them to
+`http://sagittarius-server:5181` inside the Docker network.
