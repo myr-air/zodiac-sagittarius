@@ -1,0 +1,333 @@
+import { spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
+import { mkdir, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { dirname, join as joinPath, resolve } from "node:path";
+import { setTimeout as delay } from "node:timers/promises";
+import { fileURLToPath } from "node:url";
+import { chromium, type Browser, type ConsoleMessage, type Page } from "playwright";
+
+const scriptsDir = dirname(fileURLToPath(import.meta.url));
+const frontendRoot = resolve(scriptsDir, "..");
+const frontendBaseUrl = process.env.SAGITTARIUS_CREATE_TRIP_UX_QA_FRONTEND_URL ?? "http://127.0.0.1:5180";
+const evidenceDir = process.env.SAGITTARIUS_CREATE_TRIP_UX_QA_EVIDENCE_DIR ?? joinPath(tmpdir(), "sagittarius-create-trip-ux-qa");
+const tripId = "018f4e80-5788-7de0-a45c-8a555d17fc2d";
+
+interface QaEvidence {
+  checks: string[];
+  consoleMessages: string[];
+  failures: string[];
+  screenshots: string[];
+  status: "running" | "passed" | "failed";
+}
+
+const evidence: QaEvidence = {
+  checks: [],
+  consoleMessages: [],
+  failures: [],
+  screenshots: [],
+  status: "running",
+};
+
+async function main() {
+  let frontend: ChildProcessWithoutNullStreams | null = null;
+  let browser: Browser | null = null;
+
+  await mkdir(evidenceDir, { recursive: true });
+
+  try {
+    if (!(await isReachable(frontendBaseUrl))) {
+      frontend = spawn("bun", ["run", "dev"], {
+        cwd: frontendRoot,
+        env: process.env,
+        stdio: "pipe",
+      });
+      await waitForFrontend();
+      evidence.checks.push(`Started local frontend at ${frontendBaseUrl}.`);
+    } else {
+      evidence.checks.push(`Used existing frontend at ${frontendBaseUrl}.`);
+    }
+
+    browser = await chromium.launch({ headless: true });
+    await runPortalEmptyStateQa(browser);
+    await runMapFallbackQa(browser);
+
+    evidence.status = "passed";
+  } catch (error) {
+    evidence.status = "failed";
+    evidence.failures.push(error instanceof Error ? error.stack ?? error.message : String(error));
+    throw error;
+  } finally {
+    await browser?.close();
+    frontend?.kill("SIGTERM");
+    await writeEvidence();
+  }
+}
+
+async function runPortalEmptyStateQa(browser: Browser) {
+  const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  await context.addInitScript(() => {
+    sessionStorage.setItem("sagittarius-account-session", JSON.stringify({
+      userId: "qa-user",
+      sessionToken: "qa-account-session",
+      kind: "trusted",
+      trustedDeviceId: "qa-device",
+      createdAt: "2026-06-09T01:00:00.000Z",
+      expiresAt: "2026-07-09T01:00:00.000Z",
+    }));
+  });
+
+  const page = await context.newPage();
+  attachConsoleChecks(page);
+  await mockEmptyAccountApi(page);
+
+  await page.goto(`${frontendBaseUrl}/portal/my-trips`, { waitUntil: "networkidle" });
+  await page.getByText("Create your first trip").waitFor({ state: "visible", timeout: 10_000 });
+  await expectNoFrameworkOverlay(page);
+  await expectNoHorizontalOverflow(page);
+  await screenshot(page, "portal-my-trips-empty-desktop.png");
+  evidence.checks.push("Desktop My Trips empty state renders an operational CTA instead of a blank portal page.");
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto(`${frontendBaseUrl}/portal/to-dos`, { waitUntil: "networkidle" });
+  await page.getByText("Create a trip to start shared to-dos").waitFor({ state: "visible", timeout: 10_000 });
+  await expectNoFrameworkOverlay(page);
+  await expectNoHorizontalOverflow(page);
+  await screenshot(page, "portal-to-dos-empty-mobile.png");
+  evidence.checks.push("Mobile Trip To-dos empty state renders without horizontal overflow.");
+
+  await context.close();
+}
+
+async function runMapFallbackQa(browser: Browser) {
+  const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  await context.addInitScript(() => {
+    sessionStorage.setItem("sagittarius:trip-participant-session", JSON.stringify({
+      tripId: "018f4e80-5788-7de0-a45c-8a555d17fc2d",
+      memberId: "member-aom",
+      sessionToken: "qa-trip-session",
+      expiresAt: "2026-07-09T01:00:00.000Z",
+    }));
+  });
+
+  const page = await context.newPage();
+  attachConsoleChecks(page);
+  await page.route("https://tiles.openfreemap.org/**", (route) => route.abort());
+  await mockTripMapApi(page);
+
+  await page.goto(`${frontendBaseUrl}/trips/${tripId}/map`, { waitUntil: "networkidle" });
+  await page.getByText("Could not load the live map. Showing the fallback route diagram.").waitFor({ state: "visible", timeout: 15_000 });
+  await expectNoFrameworkOverlay(page);
+  await expectNoHorizontalOverflow(page);
+
+  const mapState = await page.locator("[data-live-map-state]").getAttribute("data-live-map-state");
+  if (mapState !== "error") {
+    throw new Error(`Expected map fallback state to be error, got ${mapState ?? "missing"}.`);
+  }
+
+  const mapStatus = await page.locator("[data-live-map-state] [role='status']").textContent();
+  if (mapStatus !== "Could not load the live map. Showing the fallback route diagram.") {
+    throw new Error(`Expected visible map fallback status, got ${mapStatus ?? "missing"}.`);
+  }
+
+  await screenshot(page, "map-fallback-desktop.png");
+  evidence.checks.push("Map route shows a visible fallback status when OpenFreeMap tiles fail.");
+
+  await context.close();
+}
+
+async function mockEmptyAccountApi(page: Page) {
+  await page.route("**/api/v1/account", (route) => route.fulfill({
+    contentType: "application/json",
+    status: 200,
+    body: JSON.stringify({
+      profile: {
+        id: "qa-user",
+        displayName: "QA Organizer",
+        avatarColor: "#0f766e",
+        locale: "en-US",
+        timezone: "Asia/Bangkok",
+        primaryEmail: "qa@example.test",
+      },
+      passkeys: [],
+      trustedDevices: [],
+    }),
+  }));
+  await page.route("**/api/v1/account/trips", (route) => route.fulfill({ contentType: "application/json", status: 200, body: "[]" }));
+  await page.route("**/api/v1/account/trip-stats", (route) => route.fulfill({
+    contentType: "application/json",
+    status: 200,
+    body: JSON.stringify({ tripsTotal: 0, tripsOwned: 0, activeTrips: 0, tempClaimsCompleted: 0 }),
+  }));
+  await page.route("**/api/v1/account/explorer", (route) => route.fulfill({
+    contentType: "application/json",
+    status: 200,
+    body: JSON.stringify({ upcomingTrips: 0, ownedTrips: 0, destinationCount: 0, nextTrip: null }),
+  }));
+  await page.route("**/api/v1/account/to-dos", (route) => route.fulfill({ contentType: "application/json", status: 200, body: "[]" }));
+  await page.route("**/api/v1/account/vault", (route) => route.fulfill({ contentType: "application/json", status: 200, body: "[]" }));
+}
+
+async function mockTripMapApi(page: Page) {
+  const itemBase = {
+    tripId,
+    planVariantId: "plan-main",
+    linkLabel: "Map",
+    mapLink: "",
+    durationMinutes: 90,
+    transportation: "MTR",
+    note: "",
+    createdBy: "member-aom",
+    updatedAt: "2026-06-09T01:00:00.000Z",
+    version: 1,
+  };
+
+  const cockpit = {
+    trip: {
+      id: tripId,
+      name: "QA Hong Kong Sprint",
+      destinationLabel: "Hong Kong, Shenzhen",
+      destinationCities: [],
+      countries: ["Hong Kong", "China"],
+      startDate: "2026-06-18",
+      endDate: "2026-06-23",
+      joinId: "TRP-26-QA",
+      activePlanVariantId: "plan-main",
+      ownerMemberId: "member-aom",
+      version: 1,
+    },
+    members: [{
+      id: "member-aom",
+      tripId,
+      displayName: "Aom",
+      role: "owner",
+      accessStatus: "active",
+      presence: "online",
+      color: "#0f766e",
+      userId: "qa-user",
+      claimedAt: "2026-06-09T01:00:00.000Z",
+      lastSeenAt: null,
+    }],
+    planVariants: [{ id: "plan-main", tripId, name: "Main", kind: "main", description: "", version: 1 }],
+    itineraryItems: [
+      {
+        ...itemBase,
+        id: "item-1",
+        day: "2026-06-18",
+        sortOrder: 1,
+        startTime: "09:00",
+        activity: "Victoria Peak",
+        activityType: "sightseeing",
+        place: "Hong Kong",
+        coordinates: { lat: 22.2759, lng: 114.1455 },
+        address: "Hong Kong",
+      },
+      {
+        ...itemBase,
+        id: "item-2",
+        day: "2026-06-19",
+        sortOrder: 2,
+        startTime: "10:00",
+        activity: "OCT Loft",
+        activityType: "sightseeing",
+        place: "Shenzhen",
+        transportation: "Train",
+        coordinates: { lat: 22.5408, lng: 113.9346 },
+        address: "Shenzhen",
+      },
+    ],
+    suggestions: [],
+    tasks: [],
+    stopNotes: [],
+    expenses: [],
+    expenseSummary: null,
+    bookingDocs: [],
+    photoAlbumLinks: [],
+  };
+
+  await page.route(`**/api/v1/trips/${tripId}`, (route) => route.fulfill({
+    contentType: "application/json",
+    status: 200,
+    body: JSON.stringify(cockpit),
+  }));
+  await page.route(`**/api/v1/trips/${tripId}/daily-briefings`, (route) => route.fulfill({
+    contentType: "application/json",
+    status: 200,
+    body: "[]",
+  }));
+  await page.route(`**/api/v1/trips/${tripId}/presence`, (route) => route.fulfill({ status: 204, body: "" }));
+}
+
+function attachConsoleChecks(page: Page) {
+  page.on("console", (message) => {
+    if (["error", "warning", "warn"].includes(message.type()) && !isAllowedConsoleMessage(message)) {
+      evidence.consoleMessages.push(`${message.type()}: ${message.text()}`);
+    }
+  });
+  page.on("pageerror", (error) => {
+    evidence.consoleMessages.push(`pageerror: ${error.message}`);
+  });
+}
+
+function isAllowedConsoleMessage(message: ConsoleMessage) {
+  const text = message.text();
+  return (
+    text.includes("tiles.openfreemap.org") ||
+    text.includes("net::ERR_FAILED") ||
+    text.includes("GPU stall due to ReadPixels")
+  );
+}
+
+async function expectNoFrameworkOverlay(page: Page) {
+  const hasOverlay = await page.locator("[data-nextjs-dialog-overlay]").count();
+  if (hasOverlay > 0) throw new Error("Next.js framework error overlay is visible.");
+}
+
+async function expectNoHorizontalOverflow(page: Page) {
+  const hasOverflow = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth);
+  if (hasOverflow) throw new Error("Page has horizontal overflow.");
+}
+
+async function screenshot(page: Page, filename: string) {
+  const filePath = joinPath(evidenceDir, filename);
+  await page.screenshot({ path: filePath, fullPage: false });
+  evidence.screenshots.push(filePath);
+}
+
+async function waitForFrontend() {
+  const deadline = Date.now() + 30_000;
+  while (Date.now() < deadline) {
+    if (await isReachable(frontendBaseUrl)) return;
+    await delay(500);
+  }
+  throw new Error(`Timed out waiting for frontend at ${frontendBaseUrl}.`);
+}
+
+async function isReachable(url: string) {
+  try {
+    const response = await fetch(url);
+    return response.ok;
+  } catch {
+    return false;
+  }
+}
+
+async function writeEvidence() {
+  if (evidence.consoleMessages.length > 0 && evidence.status === "passed") {
+    evidence.status = "failed";
+    evidence.failures.push(`Unexpected console/page errors: ${evidence.consoleMessages.join("; ")}`);
+  }
+
+  const evidencePath = joinPath(evidenceDir, "evidence.json");
+  await writeFile(evidencePath, `${JSON.stringify(evidence, null, 2)}\n`);
+  console.log(`Create trip UX QA ${evidence.status}. Evidence: ${evidencePath}`);
+  for (const screenshotPath of evidence.screenshots) {
+    console.log(`Screenshot: ${screenshotPath}`);
+  }
+  if (evidence.status === "failed") {
+    process.exitCode = 1;
+  }
+}
+
+main().catch(() => {
+  process.exitCode = 1;
+});
