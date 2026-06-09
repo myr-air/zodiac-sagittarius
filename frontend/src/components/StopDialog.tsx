@@ -4,8 +4,30 @@ import { useI18n } from "@/src/i18n/I18nProvider";
 import { formatDayLabel, getTripDates } from "@/src/trip/itinerary";
 import { Button } from "./ui";
 import { Icon } from "./icons";
-import { activityTypeLabel, formatThaiDate } from "./itineraryDisplay";
+import { formatThaiDate } from "./itineraryDisplay";
 import { TimePickerField } from "./DateTimePickers";
+
+type StopDetailType = "transportation" | "food" | "stay" | "attraction" | "event" | "task" | "shopping" | "experience";
+
+interface StopDetailValues {
+  bookingRef: string;
+  budgetNote: string;
+  costNote: string;
+  detail: string;
+  destination: string;
+  entryWindow: string;
+  meal: string;
+  meetingPoint: string;
+  mode: string;
+  mustSee: string;
+  mustTry: string;
+  origin: string;
+  provider: string;
+  reservationName: string;
+  targetItems: string;
+  taxRefundNote: string;
+  ticketRef: string;
+}
 
 export interface StopFormValues {
   day: string;
@@ -39,7 +61,17 @@ interface StopDialogProps {
   startDate?: string;
 }
 
-const activityTypeOptions: ActivityType[] = ["food", "attraction", "experience", "travel", "shopping", "stay"];
+const detailTypeOptions: StopDetailType[] = ["transportation", "food", "stay", "attraction", "event", "task", "shopping", "experience"];
+const detailTypeToActivityType: Record<StopDetailType, ActivityType> = {
+  attraction: "attraction",
+  event: "attraction",
+  experience: "experience",
+  food: "food",
+  shopping: "shopping",
+  stay: "stay",
+  task: "experience",
+  transportation: "travel",
+};
 const modalBackdropClassName = "modal-backdrop fixed inset-0 z-20 grid place-items-center bg-[rgb(15_23_42_/_0.28)] p-5 max-[767px]:items-end max-[767px]:p-2.5";
 const stopDialogClassName = "stop-dialog max-h-[calc(100vh-40px)] w-[min(620px,100%)] overflow-auto rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) shadow-[0_24px_70px_rgb(15_23_42_/_0.22)]";
 const dialogTitleRowClassName = "dialog-title-row grid min-h-[54px] grid-cols-[minmax(0,1fr)_34px] items-center gap-3 border-b border-(--color-border) px-4 [&_button]:grid [&_button]:size-[34px] [&_button]:rotate-180 [&_button]:place-items-center [&_button]:border-0 [&_button]:bg-transparent [&_button]:text-(--color-text-muted) [&_h2]:m-0 [&_h2]:text-base [&_h2]:font-extrabold [&_h2]:leading-[22px] [&_h2]:text-[#0f172a]";
@@ -54,14 +86,52 @@ const placeCandidateButtonClassName = "place-candidate-button grid gap-1 rounded
 const fieldIds = {
   activity: "stop-activity",
   activityType: "stop-activity-type",
+  bookingRef: "stop-booking-ref",
+  budgetNote: "stop-budget-note",
+  costNote: "stop-cost-note",
   day: "stop-day",
+  detail: "stop-detail",
+  destination: "stop-destination",
   path: "stop-path",
   durationHours: "stop-duration-hours",
   durationMinutes: "stop-duration-minutes",
+  endTime: "stop-end-time",
+  entryWindow: "stop-entry-window",
+  meal: "stop-meal",
+  meetingPoint: "stop-meeting-point",
+  mode: "stop-mode",
+  mustSee: "stop-must-see",
+  mustTry: "stop-must-try",
   note: "stop-note",
+  origin: "stop-origin",
   place: "stop-place",
+  provider: "stop-provider",
+  reservationName: "stop-reservation-name",
   startTime: "stop-start-time",
+  targetItems: "stop-target-items",
+  taxRefundNote: "stop-tax-refund-note",
+  ticketRef: "stop-ticket-ref",
   transportation: "stop-transportation",
+};
+
+const emptyDetailValues: StopDetailValues = {
+  bookingRef: "",
+  budgetNote: "",
+  costNote: "",
+  detail: "",
+  destination: "",
+  entryWindow: "",
+  meal: "",
+  meetingPoint: "",
+  mode: "",
+  mustSee: "",
+  mustTry: "",
+  origin: "",
+  provider: "",
+  reservationName: "",
+  targetItems: "",
+  taxRefundNote: "",
+  ticketRef: "",
 };
 
 export function StopDialog({ mode, endDate, initialDay, initialItem, manualPathOptions = [], onClose, onDelete, onSubmit, placeResolution, startDate }: StopDialogProps) {
@@ -78,9 +148,18 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, manualPathO
     transportation: initialItem?.transportation ?? "",
     note: initialItem?.note ?? "",
   }));
+  const [detailType, setDetailType] = useState<StopDetailType>(() => detailTypeFromActivityType(initialItem?.activityType ?? "experience"));
+  const [detailValues, setDetailValues] = useState<StopDetailValues>(() => ({
+    ...emptyDetailValues,
+    detail: initialItem?.note ?? "",
+    mode: initialItem?.transportation ?? "",
+  }));
   const [selectedCandidate, setSelectedCandidate] = useState<PlaceResolutionCandidate | undefined>();
 
   const title = mode === "create" ? t.stopDialog.titles.create : t.stopDialog.titles.edit;
+  const detailLabels = stopDetailLabels(locale);
+  const endTime = addMinutesToTime(values.startTime, Math.max(1, Number(values.durationMinutes) || 1));
+  const minuteOptions = durationMinuteOptions(values.durationMinutes % 60);
 
   function update<K extends keyof StopFormValues>(key: K, value: StopFormValues[K]) {
     setValues((current) => ({ ...current, [key]: value }));
@@ -90,31 +169,38 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, manualPathO
     update("durationMinutes", hours * 60 + minutes);
   }
 
+  function updateEndTime(nextEndTime: string) {
+    const nextDuration = durationBetweenTimes(values.startTime, nextEndTime);
+    if (nextDuration !== null) update("durationMinutes", nextDuration);
+  }
+
+  function updateDetail<K extends keyof StopDetailValues>(key: K, value: StopDetailValues[K]) {
+    setDetailValues((current) => ({ ...current, [key]: value }));
+  }
+
+  function buildSubmitValues(saveUnresolved: boolean): StopFormValues {
+    const compatibleValues = buildCompatibleStopValues(values, detailType, detailValues);
+
+    return {
+      ...compatibleValues,
+      activity: compatibleValues.activity.trim(),
+      activityType: detailTypeToActivityType[detailType],
+      place: compatibleValues.place.trim(),
+      transportation: compatibleValues.transportation.trim(),
+      note: compatibleValues.note.trim(),
+      durationMinutes: Math.max(1, Number(compatibleValues.durationMinutes) || 1),
+      resolvedPlace: saveUnresolved ? undefined : selectedCandidate,
+      saveUnresolved,
+    };
+  }
+
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    onSubmit({
-      ...values,
-      activity: values.activity.trim(),
-      place: values.place.trim(),
-      transportation: values.transportation.trim(),
-      note: values.note.trim(),
-      durationMinutes: Math.max(1, Number(values.durationMinutes) || 1),
-      resolvedPlace: selectedCandidate,
-      saveUnresolved: false,
-    });
+    onSubmit(buildSubmitValues(false));
   }
 
   function submitUnresolved() {
-    onSubmit({
-      ...values,
-      activity: values.activity.trim(),
-      place: values.place.trim(),
-      transportation: values.transportation.trim(),
-      note: values.note.trim(),
-      durationMinutes: Math.max(1, Number(values.durationMinutes) || 1),
-      resolvedPlace: undefined,
-      saveUnresolved: true,
-    });
+    onSubmit(buildSubmitValues(true));
   }
 
   return (
@@ -149,9 +235,21 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, manualPathO
                 </select>
               </label>
             ) : null}
+            <label htmlFor={fieldIds.activityType}>
+              <span>{t.stopDialog.fields.type}</span>
+              <select id={fieldIds.activityType} value={detailType} onChange={(event) => setDetailType(event.target.value as StopDetailType)}>
+                {detailTypeOptions.map((option) => (
+                  <option value={option} key={option}>{detailLabels.types[option]}</option>
+                ))}
+              </select>
+            </label>
             <label htmlFor={fieldIds.startTime}>
-              <span>{t.stopDialog.fields.time}</span>
+              <span>{t.stopDialog.fields.startTime}</span>
               <TimePickerField id={fieldIds.startTime} value={values.startTime} onChange={(value) => update("startTime", value)} required />
+            </label>
+            <label htmlFor={fieldIds.endTime}>
+              <span>{t.stopDialog.fields.endTime}</span>
+              <TimePickerField id={fieldIds.endTime} value={endTime} onChange={updateEndTime} required />
             </label>
             <label htmlFor={fieldIds.durationHours}>
               <span>{t.stopDialog.fields.hours}</span>
@@ -171,7 +269,7 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, manualPathO
                 value={values.durationMinutes % 60}
                 onChange={(event) => updateDuration(Math.floor(values.durationMinutes / 60), Number(event.target.value))}
               >
-                {[0, 5, 10, 15, 20, 30, 45, 50, 55].map((minutes) => (
+                {minuteOptions.map((minutes) => (
                   <option value={minutes} key={minutes}>{minutes}</option>
                 ))}
               </select>
@@ -180,18 +278,16 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, manualPathO
               <span>{t.stopDialog.fields.activity}</span>
               <input id={fieldIds.activity} value={values.activity} onChange={(event) => update("activity", event.target.value)} required />
             </label>
-            <label htmlFor={fieldIds.activityType}>
-              <span>{t.stopDialog.fields.type}</span>
-              <select id={fieldIds.activityType} value={values.activityType} onChange={(event) => update("activityType", event.target.value as ActivityType)}>
-                {activityTypeOptions.map((option) => (
-                  <option value={option} key={option}>{activityTypeLabel(option, locale)}</option>
-                ))}
-              </select>
-            </label>
             <label htmlFor={fieldIds.place}>
               <span>{t.stopDialog.fields.place}</span>
               <input id={fieldIds.place} value={values.place} onChange={(event) => update("place", event.target.value)} required />
             </label>
+            <StopDetailFields
+              detailLabels={detailLabels}
+              detailType={detailType}
+              detailValues={detailValues}
+              updateDetail={updateDetail}
+            />
             {placeResolution?.state === "ambiguous" ? (
               <div className={dialogFieldWideClassName} aria-label={t.stopDialog.placeResolution.candidates}>
                 <div className={placeCandidateListClassName}>
@@ -212,10 +308,12 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, manualPathO
                 </div>
               </div>
             ) : null}
-            <label className={dialogFieldWideClassName} htmlFor={fieldIds.transportation}>
-              <span>{t.stopDialog.fields.transportation}</span>
-              <input id={fieldIds.transportation} value={values.transportation} onChange={(event) => update("transportation", event.target.value)} />
-            </label>
+            {detailType === "transportation" ? null : (
+              <label className={dialogFieldWideClassName} htmlFor={fieldIds.transportation}>
+                <span>{t.stopDialog.fields.transportation}</span>
+                <input id={fieldIds.transportation} value={values.transportation} onChange={(event) => update("transportation", event.target.value)} />
+              </label>
+            )}
             <label className={dialogFieldWideClassName} htmlFor={fieldIds.note}>
               <span>{t.stopDialog.fields.note}</span>
               <textarea id={fieldIds.note} value={values.note} onChange={(event) => update("note", event.target.value)} rows={3} />
@@ -239,4 +337,246 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, manualPathO
       </section>
     </div>
   );
+}
+
+function StopDetailFields({
+  detailLabels,
+  detailType,
+  detailValues,
+  updateDetail,
+}: {
+  detailLabels: ReturnType<typeof stopDetailLabels>;
+  detailType: StopDetailType;
+  detailValues: StopDetailValues;
+  updateDetail: <K extends keyof StopDetailValues>(key: K, value: StopDetailValues[K]) => void;
+}) {
+  if (detailType === "transportation") {
+    return (
+      <>
+        <DetailInput id={fieldIds.origin} label={detailLabels.fields.origin} value={detailValues.origin} onChange={(value) => updateDetail("origin", value)} />
+        <DetailInput id={fieldIds.destination} label={detailLabels.fields.destination} value={detailValues.destination} onChange={(value) => updateDetail("destination", value)} />
+        <DetailInput id={fieldIds.mode} label={detailLabels.fields.mode} value={detailValues.mode} onChange={(value) => updateDetail("mode", value)} />
+        <DetailInput id={fieldIds.ticketRef} label={detailLabels.fields.ticketRef} value={detailValues.ticketRef} onChange={(value) => updateDetail("ticketRef", value)} />
+        <DetailInput id={fieldIds.costNote} label={detailLabels.fields.costNote} value={detailValues.costNote} onChange={(value) => updateDetail("costNote", value)} />
+      </>
+    );
+  }
+
+  if (detailType === "food") {
+    return (
+      <>
+        <DetailInput id={fieldIds.meal} label={detailLabels.fields.meal} value={detailValues.meal} onChange={(value) => updateDetail("meal", value)} />
+        <DetailInput id={fieldIds.reservationName} label={detailLabels.fields.reservationName} value={detailValues.reservationName} onChange={(value) => updateDetail("reservationName", value)} />
+        <DetailInput id={fieldIds.mustTry} label={detailLabels.fields.mustTry} value={detailValues.mustTry} onChange={(value) => updateDetail("mustTry", value)} />
+        <DetailInput id={fieldIds.budgetNote} label={detailLabels.fields.budgetNote} value={detailValues.budgetNote} onChange={(value) => updateDetail("budgetNote", value)} />
+      </>
+    );
+  }
+
+  if (detailType === "stay") {
+    return (
+      <>
+        <DetailInput id={fieldIds.entryWindow} label={detailLabels.fields.checkWindow} value={detailValues.entryWindow} onChange={(value) => updateDetail("entryWindow", value)} />
+        <DetailInput id={fieldIds.bookingRef} label={detailLabels.fields.bookingRef} value={detailValues.bookingRef} onChange={(value) => updateDetail("bookingRef", value)} />
+        <DetailInput id={fieldIds.detail} label={detailLabels.fields.luggageDetail} value={detailValues.detail} onChange={(value) => updateDetail("detail", value)} />
+      </>
+    );
+  }
+
+  if (detailType === "attraction" || detailType === "event") {
+    return (
+      <>
+        <DetailInput id={fieldIds.entryWindow} label={detailLabels.fields.entryWindow} value={detailValues.entryWindow} onChange={(value) => updateDetail("entryWindow", value)} />
+        <DetailInput id={fieldIds.ticketRef} label={detailLabels.fields.ticketRef} value={detailValues.ticketRef} onChange={(value) => updateDetail("ticketRef", value)} />
+        <DetailInput id={fieldIds.mustSee} label={detailLabels.fields.mustSee} value={detailValues.mustSee} onChange={(value) => updateDetail("mustSee", value)} />
+      </>
+    );
+  }
+
+  if (detailType === "task") {
+    return (
+      <>
+        <DetailInput id={fieldIds.detail} label={detailLabels.fields.detail} value={detailValues.detail} onChange={(value) => updateDetail("detail", value)} />
+        <DetailInput id={fieldIds.meetingPoint} label={detailLabels.fields.relatedPlace} value={detailValues.meetingPoint} onChange={(value) => updateDetail("meetingPoint", value)} />
+      </>
+    );
+  }
+
+  if (detailType === "shopping") {
+    return (
+      <>
+        <DetailInput id={fieldIds.targetItems} label={detailLabels.fields.targetItems} value={detailValues.targetItems} onChange={(value) => updateDetail("targetItems", value)} />
+        <DetailInput id={fieldIds.budgetNote} label={detailLabels.fields.budgetNote} value={detailValues.budgetNote} onChange={(value) => updateDetail("budgetNote", value)} />
+        <DetailInput id={fieldIds.taxRefundNote} label={detailLabels.fields.taxRefundNote} value={detailValues.taxRefundNote} onChange={(value) => updateDetail("taxRefundNote", value)} />
+      </>
+    );
+  }
+
+  return (
+    <>
+      <DetailInput id={fieldIds.provider} label={detailLabels.fields.provider} value={detailValues.provider} onChange={(value) => updateDetail("provider", value)} />
+      <DetailInput id={fieldIds.meetingPoint} label={detailLabels.fields.meetingPoint} value={detailValues.meetingPoint} onChange={(value) => updateDetail("meetingPoint", value)} />
+      <DetailInput id={fieldIds.bookingRef} label={detailLabels.fields.bookingRef} value={detailValues.bookingRef} onChange={(value) => updateDetail("bookingRef", value)} />
+    </>
+  );
+}
+
+function DetailInput({ id, label, onChange, value }: { id: string; label: string; onChange: (value: string) => void; value: string }) {
+  return (
+    <label htmlFor={id}>
+      <span>{label}</span>
+      <input id={id} value={value} onChange={(event) => onChange(event.target.value)} />
+    </label>
+  );
+}
+
+function buildCompatibleStopValues(values: StopFormValues, detailType: StopDetailType, detailValues: StopDetailValues): StopFormValues {
+  const details = trimmedDetailValues(detailValues);
+  const noteLines = [values.note.trim()];
+  const nextValues = { ...values };
+
+  if (detailType === "transportation") {
+    const route = [details.origin, details.destination].filter(Boolean).join(" -> ");
+    nextValues.place = nextValues.place || details.destination || details.origin;
+    nextValues.transportation = [details.mode, route].filter(Boolean).join(details.mode && route ? ": " : "");
+    noteLines.push(labeledLine("Ticket/pass", details.ticketRef), labeledLine("Cost/spend", details.costNote), details.detail);
+  } else if (detailType === "food") {
+    noteLines.push(labeledLine("Meal", details.meal), labeledLine("Reservation", details.reservationName), labeledLine("Must try", details.mustTry), labeledLine("Budget", details.budgetNote));
+  } else if (detailType === "stay") {
+    noteLines.push(labeledLine("Check-in/out", details.entryWindow), labeledLine("Booking", details.bookingRef), details.detail);
+  } else if (detailType === "attraction" || detailType === "event") {
+    noteLines.push(labeledLine("Round/time slot", details.entryWindow), labeledLine("Ticket/pass", details.ticketRef), labeledLine("Must see", details.mustSee));
+  } else if (detailType === "task") {
+    noteLines.push(details.detail, labeledLine("Related place", details.meetingPoint));
+  } else if (detailType === "shopping") {
+    noteLines.push(labeledLine("Target items", details.targetItems), labeledLine("Budget", details.budgetNote), labeledLine("Tax refund", details.taxRefundNote));
+  } else {
+    noteLines.push(labeledLine("Provider", details.provider), labeledLine("Meeting point", details.meetingPoint), labeledLine("Booking", details.bookingRef));
+  }
+
+  nextValues.note = noteLines.filter(Boolean).join("\n");
+  return nextValues;
+}
+
+function trimmedDetailValues(values: StopDetailValues): StopDetailValues {
+  return Object.fromEntries(
+    Object.entries(values).map(([key, value]) => [key, value.trim()]),
+  ) as StopDetailValues;
+}
+
+function labeledLine(label: string, value: string): string {
+  return value ? `${label}: ${value}` : "";
+}
+
+function detailTypeFromActivityType(activityType: ActivityType): StopDetailType {
+  if (activityType === "travel") return "transportation";
+  return activityType;
+}
+
+function addMinutesToTime(startTime: string, durationMinutes: number): string {
+  const start = timeToMinutes(startTime);
+  if (start === null) return "";
+  const total = (start + durationMinutes) % (24 * 60);
+  return minutesToTime(total);
+}
+
+function durationBetweenTimes(startTime: string, endTime: string): number | null {
+  const start = timeToMinutes(startTime);
+  const end = timeToMinutes(endTime);
+  if (start === null || end === null) return null;
+  const duration = (end - start + 24 * 60) % (24 * 60);
+  return Math.max(1, duration);
+}
+
+function timeToMinutes(value: string): number | null {
+  const match = /^(\d{2}):(\d{2})$/.exec(value);
+  if (!match) return null;
+  const hour = Number(match[1]);
+  const minute = Number(match[2]);
+  if (hour > 23 || minute > 59) return null;
+  return hour * 60 + minute;
+}
+
+function minutesToTime(value: number): string {
+  const hour = Math.floor(value / 60);
+  const minute = value % 60;
+  return `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
+}
+
+function durationMinuteOptions(currentMinute: number): number[] {
+  return Array.from(new Set([0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, currentMinute])).sort((a, b) => a - b);
+}
+
+function stopDetailLabels(locale: "en" | "th") {
+  if (locale === "th") {
+    return {
+      types: {
+        attraction: "สถานที่",
+        event: "อีเวนต์ / รอบเวลา",
+        experience: "กิจกรรม",
+        food: "อาหาร",
+        shopping: "ช้อปปิ้ง",
+        stay: "ที่พัก",
+        task: "งานต้องทำ",
+        transportation: "การเดินทาง",
+      },
+      fields: {
+        bookingRef: "เลขจอง / booking",
+        budgetNote: "งบ / ค่าใช้จ่าย",
+        checkWindow: "เวลาเช็กอิน / เช็กเอาต์",
+        costNote: "ค่าใช้จ่าย",
+        destination: "ถึง",
+        detail: "รายละเอียด",
+        entryWindow: "รอบ / ช่วงเวลา",
+        luggageDetail: "กระเป๋า / รายละเอียด",
+        meal: "มื้ออาหาร",
+        meetingPoint: "จุดนัดพบ",
+        mode: "โดย",
+        mustSee: "จุดที่ต้องดู",
+        mustTry: "เมนูที่ต้องลอง",
+        origin: "จาก",
+        provider: "ผู้ให้บริการ",
+        relatedPlace: "สถานที่เกี่ยวข้อง",
+        reservationName: "ชื่อจอง",
+        targetItems: "ของที่อยากซื้อ",
+        taxRefundNote: "tax refund",
+        ticketRef: "ตั๋ว / pass",
+      },
+    };
+  }
+
+  return {
+    types: {
+      attraction: "Attraction",
+      event: "Event",
+      experience: "Experience",
+      food: "Food",
+      shopping: "Shopping",
+      stay: "Stay",
+      task: "Task",
+      transportation: "Transportation",
+    },
+    fields: {
+      bookingRef: "Booking ref",
+      budgetNote: "Budget note",
+      checkWindow: "Check-in / out",
+      costNote: "Cost / spend note",
+      destination: "To",
+      detail: "Detail",
+      entryWindow: "Round / time slot",
+      luggageDetail: "Bag / luggage detail",
+      meal: "Meal",
+      meetingPoint: "Meeting point",
+      mode: "By",
+      mustSee: "Must see",
+      mustTry: "Must try",
+      origin: "From",
+      provider: "Provider",
+      relatedPlace: "Related place",
+      reservationName: "Reservation name",
+      targetItems: "Target items",
+      taxRefundNote: "Tax refund note",
+      ticketRef: "Ticket / pass",
+    },
+  };
 }

@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <title>Add Activity Modal Plan</title>
+  <style>
+    body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #172033; background: #f7fafc; }
+    main { max-width: 1080px; margin: 0 auto; padding: 24px; }
+    h1, h2, h3 { margin: 0 0 10px; }
+    p { margin: 0 0 10px; line-height: 1.55; }
+    section { margin: 0 0 18px; }
+    .panel { border: 1px solid #d8e3ec; border-radius: 8px; background: white; padding: 16px; }
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    .diagram { min-height: 220px; border: 1px solid #d8e3ec; border-radius: 8px; background: #fbfdff; padding: 12px; }
+    .node { display: inline-block; margin: 5px; padding: 7px 9px; border-radius: 6px; border: 1px solid #bfd0dd; background: #fff; font-size: 13px; }
+    .changed { border-color: #0f766e; background: #ecfdf5; }
+    .new { border-color: #2563eb; background: #eff6ff; }
+    .risk { border-color: #b45309; background: #fffbeb; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { border: 1px solid #d8e3ec; padding: 8px; text-align: left; vertical-align: top; }
+    th { background: #eef5fa; }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; }
+    ul, ol { margin-top: 6px; }
+    @media (max-width: 760px) { .grid { grid-template-columns: 1fr; } main { padding: 14px; } }
+  </style>
+</head>
+<body>
+<main>
+  <section id="human-summary" class="panel">
+    <h1>Implementation Plan: Add Activity Modal</h1>
+    <p><strong>Goal:</strong> ทำ modal ให้ใส่ trip detail ได้ smart ขึ้น: เลือก type ก่อน activity, ใช้ start/end/duration คำนวณกัน, และมี fields เฉพาะ type โดยยัง save compatible กับ API เดิม.</p>
+    <section id="before-after-diagrams">
+      <div class="grid">
+        <div class="diagram">
+          <h2>Current</h2>
+          <span class="node">StopDialog</span>
+          <span class="node">startTime</span>
+          <span class="node">durationMinutes</span>
+          <span class="node">activity</span>
+          <span class="node">activityType</span>
+          <span class="node">place</span>
+          <span class="node risk">transportation string</span>
+          <p>Current form รับ transport/detail เป็น text กว้าง ๆ และไม่มี end time.</p>
+        </div>
+        <div class="diagram">
+          <h2>Proposed</h2>
+          <span class="node changed">Type first</span>
+          <span class="node changed">startTime</span>
+          <span class="node new">endTime</span>
+          <span class="node changed">duration sync</span>
+          <span class="node new">type-specific fields</span>
+          <span class="node changed">compatible submit</span>
+          <p>UI แยก detail ตาม type แต่ submit กลับเป็น existing fields: <code>activity</code>, <code>place</code>, <code>transportation</code>, <code>note</code>, <code>durationMinutes</code>.</p>
+        </div>
+      </div>
+      <p><strong>Legend:</strong> green = changed existing, blue = new UI/state, amber = compatible risk area.</p>
+    </section>
+    <section id="change-summary">
+      <h2>Key Changes</h2>
+      <table>
+        <tr><th>Area</th><th>Change</th></tr>
+        <tr><td>Time</td><td>Add end time field. Editing end time recalculates duration; editing duration recalculates end time.</td></tr>
+        <tr><td>Order</td><td>Move Type before Activity.</td></tr>
+        <tr><td>Typed detail</td><td>Add compatible fields for transportation, food, stay, attraction/event, task, shopping, experience.</td></tr>
+        <tr><td>Data contract</td><td>No backend migration in this pass. Fold typed details into existing string fields.</td></tr>
+      </table>
+    </section>
+    <section id="parallelism">
+      <h2>Parallelism</h2>
+      <p>Safe concurrency: 1 lane. Main files are shared form/test/i18n files, so parallel edits would create merge noise.</p>
+    </section>
+    <section id="critical-risks">
+      <h2>Risks</h2>
+      <table>
+        <tr><th>Risk</th><th>Control</th></tr>
+        <tr><td>Structured details lost in API mode</td><td>Fold details into <code>transportation</code> and <code>note</code> before submit.</td></tr>
+        <tr><td>End time crossing midnight</td><td>Support wrap-around duration from start to next-day end.</td></tr>
+        <tr><td>Overbuilt schema</td><td>No migration; keep as reversible UI improvement.</td></tr>
+      </table>
+    </section>
+    <section id="review-fixes-applied">
+      <h2>Review Fixes Applied</h2>
+      <table>
+        <tr><th>Axis</th><th>Result</th></tr>
+        <tr><td>Gap / critical path</td><td>Main-thread review added API-compatible folding and midnight wrap control.</td></tr>
+        <tr><td>Simplification / parallel safety</td><td>Rejected backend schema expansion for this pass; one-lane execution only.</td></tr>
+      </table>
+    </section>
+  </section>
+
+  <section id="implementation-plan" class="panel">
+    <h2>Implementation</h2>
+    <section id="acceptance-criteria">
+      <h3>Acceptance Criteria</h3>
+      <ol>
+        <li>Form shows Type before Activity and covers approved type set.</li>
+        <li>Start time, end time, and duration stay synchronized.</li>
+        <li>Transportation supports From, To, By, ticket/pass, cost/detail and submits compatible values.</li>
+        <li>Food, stay, attraction/event, task, shopping, and experience show relevant fields.</li>
+        <li>Existing create/edit submit paths remain compatible in local and API mode.</li>
+      </ol>
+    </section>
+    <section id="workpacks">
+      <h3>Workpacks</h3>
+      <table>
+        <tr><th>Workpack</th><th>Files</th><th>Depends</th><th>Evidence</th></tr>
+        <tr><td>Tests</td><td><code>frontend/src/components/StopDialog.test.tsx</code></td><td>None</td><td>Focused vitest red/green</td></tr>
+        <tr><td>Modal</td><td><code>frontend/src/components/StopDialog.tsx</code>, <code>frontend/src/i18n/messages.ts</code></td><td>Tests</td><td>Focused vitest green</td></tr>
+      </table>
+    </section>
+    <section id="task-plan">
+      <h3>Task Plan</h3>
+      <ol>
+        <li>Write failing StopDialog tests for time sync and transportation detail submit.</li>
+        <li>Implement time helpers and end time field in StopDialog.</li>
+        <li>Move type before activity and add type-specific fields.</li>
+        <li>Fold typed details into existing submit payload fields.</li>
+        <li>Run focused tests, typecheck if needed, browser QA for modal if server is practical.</li>
+        <li>Commit finished work.</li>
+      </ol>
+    </section>
+    <section id="agent-handoffs">
+      <h3>Agent Handoff</h3>
+      <p>Inline execution only. Preserve user changes. Use <code>rtk</code> for commands. Do not change backend schema.</p>
+    </section>
+    <section id="verification">
+      <h3>Verification</h3>
+      <p>Focused command: <code>rtk bun run test src/components/StopDialog.test.tsx</code> from <code>frontend</code>. Broader static command if touched types require it: <code>rtk bun run typecheck</code>.</p>
+    </section>
+  </section>
+</main>
+</body>
+</html>

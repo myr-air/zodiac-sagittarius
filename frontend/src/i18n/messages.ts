@@ -636,6 +636,8 @@ export const messages = {
       closeForm: "Close form",
       fields: {
         time: "Time",
+        startTime: "Start time",
+        endTime: "End time",
         day: "Day",
         plan: "Plan",
         hours: "Hours",
@@ -1729,6 +1731,8 @@ export const messages = {
       closeForm: "ปิดฟอร์ม",
       fields: {
         time: "เวลา",
+        startTime: "เวลาเริ่ม",
+        endTime: "เวลาจบ",
         day: "วัน",
         plan: "แผน",
         hours: "ชั่วโมง",

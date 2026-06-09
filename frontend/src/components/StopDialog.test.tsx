@@ -6,6 +6,7 @@ import { renderWithI18n } from "@/src/i18n/test-utils";
 import { StopDialog } from "./StopDialog";
 
 const render = (ui: Parameters<typeof renderWithI18n>[0]) => renderWithI18n(ui, { locale: "th" });
+const renderEn = (ui: Parameters<typeof renderWithI18n>[0]) => renderWithI18n(ui, { locale: "en" });
 
 describe("StopDialog", () => {
   it("trims submitted values and clamps invalid durations", async () => {
@@ -51,15 +52,70 @@ describe("StopDialog", () => {
   it("uses the Joii time input, split duration controls, and a standard close icon", () => {
     render(<StopDialog mode="create" onClose={vi.fn()} onSubmit={vi.fn()} />);
 
-    expect(screen.getByLabelText("เวลา")).toHaveAttribute("type", "text");
-    expect(screen.getByRole("button", { name: "Open time picker" })).toBeInTheDocument();
-    expect(screen.getByLabelText("เวลา")).toHaveAttribute("id", "stop-start-time");
-    expect(screen.getByText("เวลา").closest("label")).toHaveAttribute("for", "stop-start-time");
+    expect(screen.getByLabelText("เวลาเริ่ม")).toHaveAttribute("type", "text");
+    expect(screen.getAllByRole("button", { name: "Open time picker" })).toHaveLength(2);
+    expect(screen.getByLabelText("เวลาเริ่ม")).toHaveAttribute("id", "stop-start-time");
+    expect(screen.getByText("เวลาเริ่ม").closest("label")).toHaveAttribute("for", "stop-start-time");
+    expect(screen.getByLabelText("เวลาจบ")).toHaveAttribute("id", "stop-end-time");
     expect(screen.getByLabelText("ชั่วโมง")).toBeInTheDocument();
     expect(screen.getByLabelText("นาที")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "ปิดฟอร์ม" }).querySelector("svg path")).toHaveAttribute("d", "M18 6 6 18M6 6l12 12");
     expect(screen.queryByRole("button", { name: "ลบจุดนี้" })).not.toBeInTheDocument();
     expect(screen.queryByLabelText("วัน")).not.toBeInTheDocument();
+  });
+
+  it("keeps end time and duration synchronized", () => {
+    renderEn(<StopDialog mode="create" onClose={vi.fn()} onSubmit={vi.fn()} />);
+
+    expect(screen.getByLabelText("End time")).toHaveValue("17:15");
+
+    fireEvent.change(screen.getByLabelText("End time"), { target: { value: "18:00" } });
+    expect(screen.getByLabelText("Hours")).toHaveValue(1);
+    expect(screen.getByLabelText("Minutes")).toHaveValue("30");
+
+    fireEvent.change(screen.getByLabelText("Hours"), { target: { value: "2" } });
+    fireEvent.change(screen.getByLabelText("Minutes"), { target: { value: "0" } });
+    expect(screen.getByLabelText("End time")).toHaveValue("18:30");
+  });
+
+  it("shows transportation detail fields and submits a compatible travel payload", () => {
+    const onSubmit = vi.fn();
+    renderEn(<StopDialog mode="create" onClose={vi.fn()} onSubmit={onSubmit} />);
+
+    fireEvent.change(screen.getByLabelText("Type"), { target: { value: "transportation" } });
+    fireEvent.change(screen.getByLabelText("Activity"), { target: { value: "DMK -> HKG" } });
+    fireEvent.change(screen.getByLabelText("From"), { target: { value: "Don Mueang International Airport (DMK)" } });
+    fireEvent.change(screen.getByLabelText("To"), { target: { value: "Hong Kong International Airport (HKG)" } });
+    fireEvent.change(screen.getByLabelText("By"), { target: { value: "Plane" } });
+    fireEvent.change(screen.getByLabelText("Ticket / pass"), { target: { value: "FD ticket" } });
+    fireEvent.change(screen.getByLabelText("Cost / spend note"), { target: { value: "prepaid" } });
+    fireEvent.submit(screen.getByRole("button", { name: "Save activity" }).closest("form")!);
+
+    expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({
+      activity: "DMK -> HKG",
+      activityType: "travel",
+      place: "Hong Kong International Airport (HKG)",
+      transportation: "Plane: Don Mueang International Airport (DMK) -> Hong Kong International Airport (HKG)",
+      note: "Ticket/pass: FD ticket\nCost/spend: prepaid",
+    }));
+  });
+
+  it("shows event fields and maps events to attraction itinerary items", () => {
+    const onSubmit = vi.fn();
+    renderEn(<StopDialog mode="create" onClose={vi.fn()} onSubmit={onSubmit} />);
+
+    fireEvent.change(screen.getByLabelText("Type"), { target: { value: "event" } });
+    expect(screen.getByLabelText("Round / time slot")).toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText("Activity"), { target: { value: "Talent park light show" } });
+    fireEvent.change(screen.getByLabelText("Place"), { target: { value: "Talent park" } });
+    fireEvent.change(screen.getByLabelText("Round / time slot"), { target: { value: "19:30 / 20:30 / 21:30" } });
+    fireEvent.submit(screen.getByRole("button", { name: "Save activity" }).closest("form")!);
+
+    expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({
+      activityType: "attraction",
+      note: "Round/time slot: 19:30 / 20:30 / 21:30",
+    }));
   });
 
   it("submits the selected day when editing one stop", async () => {

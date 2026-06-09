@@ -4305,8 +4305,8 @@ describe("Sagittarius cockpit UI", () => {
     );
 
     const dialog = screen.getByRole("dialog", { name: /เพิ่มกิจกรรม/i });
-    await user.clear(within(dialog).getByLabelText(/^เวลา$/i));
-    await user.type(within(dialog).getByLabelText(/^เวลา$/i), "16:45");
+    await user.clear(within(dialog).getByLabelText(/^เวลาเริ่ม$/i));
+    await user.type(within(dialog).getByLabelText(/^เวลาเริ่ม$/i), "16:45");
     await user.clear(within(dialog).getByLabelText(/กิจกรรม/i));
     await user.type(
       within(dialog).getByLabelText(/กิจกรรม/i),
@@ -4352,8 +4352,8 @@ describe("Sagittarius cockpit UI", () => {
     );
 
     let dialog = screen.getByRole("dialog", { name: /เพิ่มกิจกรรม/i });
-    await user.clear(within(dialog).getByLabelText(/^เวลา$/i));
-    await user.type(within(dialog).getByLabelText(/^เวลา$/i), "16:45");
+    await user.clear(within(dialog).getByLabelText(/^เวลาเริ่ม$/i));
+    await user.type(within(dialog).getByLabelText(/^เวลาเริ่ม$/i), "16:45");
     await user.clear(within(dialog).getByLabelText(/กิจกรรม/i));
     await user.type(
       within(dialog).getByLabelText(/กิจกรรม/i),
@@ -4403,8 +4403,8 @@ describe("Sagittarius cockpit UI", () => {
     );
 
     let dialog = screen.getByRole("dialog", { name: /เพิ่มกิจกรรม/i });
-    await user.clear(within(dialog).getByLabelText(/^เวลา$/i));
-    await user.type(within(dialog).getByLabelText(/^เวลา$/i), "16:45");
+    await user.clear(within(dialog).getByLabelText(/^เวลาเริ่ม$/i));
+    await user.type(within(dialog).getByLabelText(/^เวลาเริ่ม$/i), "16:45");
     await user.clear(within(dialog).getByLabelText(/กิจกรรม/i));
     await user.type(
       within(dialog).getByLabelText(/กิจกรรม/i),
@@ -4460,8 +4460,8 @@ describe("Sagittarius cockpit UI", () => {
     );
 
     const dialog = screen.getByRole("dialog", { name: /เพิ่มกิจกรรม/i });
-    await user.clear(within(dialog).getByLabelText(/^เวลา$/i));
-    await user.type(within(dialog).getByLabelText(/^เวลา$/i), "16:45");
+    await user.clear(within(dialog).getByLabelText(/^เวลาเริ่ม$/i));
+    await user.type(within(dialog).getByLabelText(/^เวลาเริ่ม$/i), "16:45");
     await user.clear(within(dialog).getByLabelText(/กิจกรรม/i));
     await user.type(
       within(dialog).getByLabelText(/กิจกรรม/i),
@@ -4518,8 +4518,8 @@ describe("Sagittarius cockpit UI", () => {
     );
 
     const dialog = screen.getByRole("dialog", { name: /เพิ่มกิจกรรม/i });
-    await user.clear(within(dialog).getByLabelText(/^เวลา$/i));
-    await user.type(within(dialog).getByLabelText(/^เวลา$/i), "16:45");
+    await user.clear(within(dialog).getByLabelText(/^เวลาเริ่ม$/i));
+    await user.type(within(dialog).getByLabelText(/^เวลาเริ่ม$/i), "16:45");
     await user.clear(within(dialog).getByLabelText(/กิจกรรม/i));
     await user.type(
       within(dialog).getByLabelText(/กิจกรรม/i),
@@ -4601,8 +4601,8 @@ describe("Sagittarius cockpit UI", () => {
     );
 
     let dialog = screen.getByRole("dialog", { name: /เพิ่มกิจกรรม/i });
-    await user.clear(within(dialog).getByLabelText(/^เวลา$/i));
-    await user.type(within(dialog).getByLabelText(/^เวลา$/i), "16:30");
+    await user.clear(within(dialog).getByLabelText(/^เวลาเริ่ม$/i));
+    await user.type(within(dialog).getByLabelText(/^เวลาเริ่ม$/i), "16:30");
     await user.clear(within(dialog).getByLabelText(/กิจกรรม/i));
     await user.type(
       within(dialog).getByLabelText(/กิจกรรม/i),
@@ -4630,8 +4630,8 @@ describe("Sagittarius cockpit UI", () => {
     );
 
     dialog = screen.getByRole("dialog", { name: /เพิ่มกิจกรรม/i });
-    await user.clear(within(dialog).getByLabelText(/^เวลา$/i));
-    await user.type(within(dialog).getByLabelText(/^เวลา$/i), "08:00");
+    await user.clear(within(dialog).getByLabelText(/^เวลาเริ่ม$/i));
+    await user.type(within(dialog).getByLabelText(/^เวลาเริ่ม$/i), "08:00");
     await user.clear(within(dialog).getByLabelText(/กิจกรรม/i));
     await user.type(
       within(dialog).getByLabelText(/กิจกรรม/i),
