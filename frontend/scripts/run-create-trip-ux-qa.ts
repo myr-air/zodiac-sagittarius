@@ -235,10 +235,13 @@ async function expectDateSectionDensity(page: Page) {
     const calendarButtons = Array.from(section?.querySelectorAll<HTMLElement>(".trip-calendar-grid button") ?? []);
     const footer = section?.querySelector<HTMLElement>(".trip-calendar-footer");
     const helper = section?.querySelector<HTMLElement>(".trip-calendar-helper");
+    const helperStyle = helper ? getComputedStyle(helper) : null;
     const oversizedButtons = calendarButtons.map((button) => button.getBoundingClientRect()).filter((rect) => rect.height > 40);
     return {
       buttonCount: calendarButtons.length,
       footerHeight: footer?.getBoundingClientRect().height ?? 0,
+      helperBackgroundColor: helperStyle?.backgroundColor ?? "",
+      helperBorderRadius: Number.parseFloat(helperStyle?.borderRadius ?? "0"),
       helperHeight: helper?.getBoundingClientRect().height ?? 0,
       oversizedCount: oversizedButtons.length,
       sectionWidth: section?.getBoundingClientRect().width ?? 0,
@@ -249,6 +252,8 @@ async function expectDateSectionDensity(page: Page) {
   if (result.oversizedCount > 0) throw new Error(`Expected compact date buttons, got ${result.oversizedCount} oversized buttons.`);
   if (result.footerHeight > 44) throw new Error(`Expected compact date footer, got ${result.footerHeight}px.`);
   if (result.helperHeight > 56) throw new Error(`Expected compact date helper, got ${result.helperHeight}px.`);
+  if (result.helperBackgroundColor !== "rgba(0, 0, 0, 0)") throw new Error(`Date helper still uses a cover background: ${result.helperBackgroundColor}.`);
+  if (result.helperBorderRadius > 2) throw new Error(`Expected no rounded date helper wrapper, got ${result.helperBorderRadius}px.`);
   if (result.sectionWidth <= 0) throw new Error("Date section is not visible.");
 }
 

@@ -208,7 +208,7 @@ const tripCalendarFooterClassName =
 const tripDateArrowClassName =
   "trip-date-arrow grid size-9 items-center justify-items-center rounded-[8px] border border-(--color-primary-border) bg-(--color-primary-soft) text-(--color-primary-strong) max-[767px]:w-full";
 const tripCalendarHelperClassName =
-  "trip-calendar-helper grid grid-cols-[32px_minmax(0,1fr)] items-center gap-2.5 rounded-[9px] border border-(--color-border) bg-(--color-surface-subtle) p-2 text-xs leading-[18px] text-(--color-text-muted) [&_.icon]:grid [&_.icon]:size-7 [&_.icon]:place-items-center [&_.icon]:rounded-full [&_.icon]:border [&_.icon]:border-(--color-primary-border) [&_.icon]:bg-(--color-primary-soft) [&_.icon]:p-[5px] [&_.icon]:text-(--color-primary-strong)";
+  "trip-calendar-helper flex items-center gap-2 border-t border-(--color-border) pt-2 text-xs leading-[18px] text-(--color-text-muted) [&_.icon]:size-4 [&_.icon]:shrink-0 [&_.icon]:text-(--color-primary-strong)";
 const tripAccessPanelClassName =
   "trip-access-panel grid gap-3 rounded-[18px] border border-(--color-border) bg-white p-3 max-[767px]:rounded-none max-[767px]:border-0 max-[767px]:bg-transparent max-[767px]:p-0 [&_summary]:mb-0 [&_summary]:flex [&_summary]:min-h-[42px] [&_summary]:cursor-pointer [&_summary]:items-center [&_summary]:justify-between [&_summary]:gap-3 [&_summary]:text-[13px] [&_summary]:font-black [&_summary]:text-(--color-text) [&_summary_strong]:overflow-hidden [&_summary_strong]:text-ellipsis [&_summary_strong]:whitespace-nowrap [&_summary_strong]:text-xs [&_summary_strong]:font-[850] [&_summary_strong]:text-(--color-text-muted) open:[&_summary]:mb-2 open:[&_summary]:border-b open:[&_summary]:border-(--color-border) open:[&_summary]:pb-2.5";
 const tripGeneratedAccessClassName =
