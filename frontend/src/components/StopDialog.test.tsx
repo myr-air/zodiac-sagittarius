@@ -83,6 +83,7 @@ describe("StopDialog", () => {
     renderEn(<StopDialog mode="create" onClose={vi.fn()} onSubmit={onSubmit} />);
 
     fireEvent.change(screen.getByLabelText("Type"), { target: { value: "transportation" } });
+    expect(screen.getByLabelText("Place")).not.toBeRequired();
     fireEvent.change(screen.getByLabelText("Activity"), { target: { value: "DMK -> HKG" } });
     fireEvent.change(screen.getByLabelText("From"), { target: { value: "Don Mueang International Airport (DMK)" } });
     fireEvent.change(screen.getByLabelText("To"), { target: { value: "Hong Kong International Airport (HKG)" } });
@@ -98,6 +99,20 @@ describe("StopDialog", () => {
       transportation: "Plane: Don Mueang International Airport (DMK) -> Hong Kong International Airport (HKG)",
       note: "Ticket/pass: FD ticket\nCost/spend: prepaid",
     }));
+  });
+
+  it("detects route activity text and fills transportation times", () => {
+    renderEn(<StopDialog mode="create" onClose={vi.fn()} onSubmit={vi.fn()} />);
+
+    fireEvent.change(screen.getByLabelText("Activity"), { target: { value: "Shenzhen -> Hongkong (8.22am -8.36am)" } });
+
+    expect(screen.getByLabelText("Type")).toHaveValue("transportation");
+    expect(screen.getByLabelText("From")).toHaveValue("Shenzhen");
+    expect(screen.getByLabelText("To")).toHaveValue("Hongkong");
+    expect(screen.getByLabelText("Start time")).toHaveValue("08:22");
+    expect(screen.getByLabelText("End time")).toHaveValue("08:36");
+    expect(screen.getByLabelText("Hours")).toHaveValue(0);
+    expect(screen.getByLabelText("Minutes")).toHaveValue("14");
   });
 
   it("shows event fields and maps events to attraction itinerary items", () => {

@@ -178,6 +178,27 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, manualPathO
     setDetailValues((current) => ({ ...current, [key]: value }));
   }
 
+  function updateActivity(activity: string) {
+    update("activity", activity);
+    const parsedRoute = parseRouteActivity(activity);
+    if (!parsedRoute) return;
+
+    setDetailType("transportation");
+    setDetailValues((current) => ({
+      ...current,
+      destination: parsedRoute.destination,
+      origin: parsedRoute.origin,
+    }));
+    if (parsedRoute.startTime && parsedRoute.durationMinutes) {
+      setValues((current) => ({
+        ...current,
+        activity,
+        durationMinutes: parsedRoute.durationMinutes ?? current.durationMinutes,
+        startTime: parsedRoute.startTime ?? current.startTime,
+      }));
+    }
+  }
+
   function buildSubmitValues(saveUnresolved: boolean): StopFormValues {
     const compatibleValues = buildCompatibleStopValues(values, detailType, detailValues);
 
@@ -276,11 +297,11 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, manualPathO
             </label>
             <label className={dialogFieldWideClassName} htmlFor={fieldIds.activity}>
               <span>{t.stopDialog.fields.activity}</span>
-              <input id={fieldIds.activity} value={values.activity} onChange={(event) => update("activity", event.target.value)} required />
+              <input id={fieldIds.activity} value={values.activity} onChange={(event) => updateActivity(event.target.value)} required />
             </label>
             <label htmlFor={fieldIds.place}>
               <span>{t.stopDialog.fields.place}</span>
-              <input id={fieldIds.place} value={values.place} onChange={(event) => update("place", event.target.value)} required />
+              <input id={fieldIds.place} value={values.place} onChange={(event) => update("place", event.target.value)} required={detailType !== "transportation"} />
             </label>
             <StopDetailFields
               detailLabels={detailLabels}
@@ -486,6 +507,47 @@ function durationBetweenTimes(startTime: string, endTime: string): number | null
   if (start === null || end === null) return null;
   const duration = (end - start + 24 * 60) % (24 * 60);
   return Math.max(1, duration);
+}
+
+function parseRouteActivity(value: string): { destination: string; durationMinutes?: number; origin: string; startTime?: string } | null {
+  const match = /^\s*(.+?)\s*(?:->|→)\s*(.+?)(?:\s*\((.*?)\))?\s*$/.exec(value);
+  if (!match) return null;
+  const origin = match[1]?.trim();
+  const destination = match[2]?.trim();
+  if (!origin || !destination) return null;
+  const timeRange = parseTimeRange(match[3] ?? "");
+
+  return {
+    destination,
+    durationMinutes: timeRange?.durationMinutes,
+    origin,
+    startTime: timeRange?.startTime,
+  };
+}
+
+function parseTimeRange(value: string): { durationMinutes: number; startTime: string } | null {
+  const match = /(\d{1,2})[.:](\d{2})\s*(am|pm)?\s*[-–]\s*(\d{1,2})[.:](\d{2})\s*(am|pm)?/i.exec(value);
+  if (!match) return null;
+  const startTime = normalizeClockTime(match[1], match[2], match[3] || match[6]);
+  const endTime = normalizeClockTime(match[4], match[5], match[6] || match[3]);
+  if (!startTime || !endTime) return null;
+  const durationMinutes = durationBetweenTimes(startTime, endTime);
+  if (durationMinutes === null) return null;
+  return { durationMinutes, startTime };
+}
+
+function normalizeClockTime(hourText: string, minuteText: string, meridiem?: string): string | null {
+  let hour = Number(hourText);
+  const minute = Number(minuteText);
+  if (!Number.isInteger(hour) || !Number.isInteger(minute) || minute > 59) return null;
+  if (meridiem) {
+    const normalizedMeridiem = meridiem.toLowerCase();
+    if (hour < 1 || hour > 12) return null;
+    if (normalizedMeridiem === "pm" && hour < 12) hour += 12;
+    if (normalizedMeridiem === "am" && hour === 12) hour = 0;
+  }
+  if (hour > 23) return null;
+  return `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
 }
 
 function timeToMinutes(value: string): number | null {
