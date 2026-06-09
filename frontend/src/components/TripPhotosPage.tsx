@@ -285,16 +285,16 @@ function PhotoAlbumInspector({
 }) {
   if (!album) {
     return (
-      <aside className={inspectorClassName} aria-label="Photo album inspector">
+      <section className={inspectorClassName} aria-label="Photo album inspector">
         <div className={inspectorSectionClassName}>Select an album to see access details.</div>
-      </aside>
+      </section>
     );
   }
   const href = safePhotoAlbumHref(album.url);
   const createdBy = trip.members.find((member) => member.id === album.createdBy);
   const linkHost = albumLinkHost(href);
   return (
-    <aside className={inspectorClassName} aria-label="Photo album inspector">
+    <section className={inspectorClassName} aria-label="Photo album inspector">
       <div className="grid gap-2">
         <Badge tone={album.access === "collaborative" ? "primary" : album.access === "upload_request" ? "warning" : "route"}>{providerLabel(album.provider)}</Badge>
         <h2 className="m-0 text-xl font-black text-(--color-text)">{album.title}</h2>
@@ -337,7 +337,7 @@ function PhotoAlbumInspector({
           <span key={item.id} className="text-sm">{item.day} · {item.activity}</span>
         )) : <span className="text-(--color-text-muted)">Trip-level album</span>}
       </div>
-    </aside>
+    </section>
   );
 }
 

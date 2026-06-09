@@ -366,14 +366,14 @@ function BookingTicketCard({ doc, trip, selected, canEdit, onSelect, onEdit, onD
 function BookingInspector({ booking, relations }: { booking: BookingDoc | null; relations: ReturnType<typeof findBookingDocRelations> | null }) {
   if (!booking || !relations) {
     return (
-      <aside className={inspectorClassName} aria-label="Booking details">
+      <section className={inspectorClassName} aria-label="Booking details">
         <strong className="text-(--color-text)">No booking selected</strong>
-      </aside>
+      </section>
     );
   }
 
   return (
-    <aside className={inspectorClassName} aria-label="Booking details">
+    <section className={inspectorClassName} aria-label="Booking details">
       <div className="grid gap-1">
         <span className={cn(badgeClassName, statusBadgeClassName(booking.status))}>{formatEnumLabel(booking.status)}</span>
         <h2 className="m-0 text-lg font-extrabold text-(--color-text)">{booking.title}</h2>
@@ -397,7 +397,7 @@ function BookingInspector({ booking, relations }: { booking: BookingDoc | null; 
         <span>{relations.notes.length} notes</span>
         <span>{relations.travelers.map((member) => member.displayName).join(", ") || "No travelers"}</span>
       </div>
-    </aside>
+    </section>
   );
 }
 

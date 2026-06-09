@@ -453,8 +453,8 @@ function StaticRouteFallback({
           const pathPoints = group.points.map((point) => `${point.x},${point.y}`).join(" ");
           return (
             <g key={group.day} style={routeLineStyle(group.color)}>
-              <polyline className={routeMapPathShadowClassName} points={pathPoints} />
-              <polyline className={routeMapPathClassName} points={pathPoints} />
+              <polyline className={routeMapPathShadowClassName} pathLength={1} points={pathPoints} />
+              <polyline className={routeMapPathClassName} pathLength={1} points={pathPoints} />
             </g>
           );
         })}
