@@ -187,6 +187,7 @@ function itineraryItem(id: string, activity: string, day: string): ItineraryItem
     mapLink: "https://maps.example.com",
     durationMinutes: 60,
     transportation: "Train",
+    details: {},
     note: "",
     createdBy: "member-owner",
     updatedAt: "2026-06-01T00:00:00.000Z",

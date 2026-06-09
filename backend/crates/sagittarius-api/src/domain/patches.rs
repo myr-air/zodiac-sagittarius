@@ -49,6 +49,7 @@ pub struct CreateItineraryItemRequest {
     pub longitude: Option<f64>,
     pub duration_minutes: Option<i32>,
     pub transportation: Option<String>,
+    pub details: Option<Value>,
     pub note: Option<String>,
 }
 
@@ -470,6 +471,7 @@ impl CreateItineraryItemRequest {
             ));
         }
         validate_coordinates(self.latitude, self.longitude)?;
+        validate_optional_details(self.details.as_ref())?;
 
         Ok(())
     }
@@ -699,6 +701,7 @@ pub struct ItineraryItemPatch {
     #[serde(default, deserialize_with = "deserialize_nullable_f64_patch")]
     pub longitude: Option<Option<f64>>,
     pub transportation: Option<String>,
+    pub details: Option<Value>,
     pub note: Option<String>,
 }
 
@@ -726,6 +729,7 @@ impl ItineraryItemPatch {
         }
         validate_optional_map_link(self.map_link.as_deref())?;
         validate_coordinate_patch(self.latitude, self.longitude)?;
+        validate_optional_details(self.details.as_ref())?;
 
         Ok(())
     }
@@ -1165,6 +1169,17 @@ fn validate_comments(value: Option<&Value>) -> Result<(), ServiceError> {
         return Err(ServiceError::InvalidRequest(
             "expense comments must be an array",
         ));
+    }
+
+    Ok(())
+}
+
+fn validate_optional_details(value: Option<&Value>) -> Result<(), ServiceError> {
+    let Some(value) = value else {
+        return Ok(());
+    };
+    if !value.is_object() {
+        return Err(ServiceError::InvalidRequest("details must be an object"));
     }
 
     Ok(())

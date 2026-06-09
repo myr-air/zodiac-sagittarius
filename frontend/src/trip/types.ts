@@ -14,6 +14,7 @@ export type TripCapability =
 export type PlanVariantKind = "main" | "backup" | "draft" | "split";
 
 export type ActivityType = "travel" | "food" | "shopping" | "attraction" | "experience" | "stay";
+export type ItineraryItemDetails = Record<string, unknown>;
 
 export type AdvisorySeverity = "info" | "warning" | "critical";
 
@@ -172,6 +173,7 @@ export interface ItineraryItem {
   address?: string;
   durationMinutes: number | null;
   transportation: string;
+  details: ItineraryItemDetails;
   advisories?: ItineraryAdvisory[];
   note: string;
   createdBy: string;

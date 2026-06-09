@@ -745,7 +745,7 @@ pub async fn list_itinerary_items(
            coalesce(to_char(start_time, 'HH24:MI'), '') as start_time,
            activity, activity_type, place, link_label, map_link, address,
            latitude::float8 as latitude, longitude::float8 as longitude,
-           duration_minutes, transportation, advisories, note, created_by,
+           duration_minutes, transportation, details, advisories, note, created_by,
            updated_at::text as updated_at, version
          from itinerary_items
          where trip_id = $1 and deleted_at is null
@@ -932,7 +932,7 @@ pub async fn lock_itinerary_item(
            coalesce(to_char(start_time, 'HH24:MI'), '') as start_time,
            activity, activity_type, place, link_label, map_link, address,
            latitude::float8 as latitude, longitude::float8 as longitude,
-           duration_minutes, transportation, advisories, note, created_by,
+           duration_minutes, transportation, details, advisories, note, created_by,
            updated_at::text as updated_at, version
          from itinerary_items
          where id = $1 and deleted_at is null
@@ -966,8 +966,9 @@ pub async fn update_itinerary_item(
              latitude = case when $15 then $16 else latitude end,
              longitude = case when $17 then $18 else longitude end,
              transportation = coalesce($19, transportation),
-             note = coalesce($20, note),
-             version = $21,
+             details = coalesce($20, details),
+             note = coalesce($21, note),
+             version = $22,
              updated_at = now()
          where id = $1 and deleted_at is null
          returning
@@ -975,7 +976,7 @@ pub async fn update_itinerary_item(
            coalesce(to_char(start_time, 'HH24:MI'), '') as start_time,
            activity, activity_type, place, link_label, map_link, address,
            latitude::float8 as latitude, longitude::float8 as longitude,
-           duration_minutes, transportation, advisories, note, created_by,
+           duration_minutes, transportation, details, advisories, note, created_by,
            updated_at::text as updated_at, version",
     )
     .bind(item_id)
@@ -997,6 +998,7 @@ pub async fn update_itinerary_item(
     .bind(patch.longitude.is_some())
     .bind(patch.longitude.flatten())
     .bind(patch.transportation.as_deref())
+    .bind(patch.details.as_ref())
     .bind(patch.note.as_deref())
     .bind(next_version)
     .fetch_optional(&mut **tx)
@@ -1033,15 +1035,15 @@ pub async fn insert_itinerary_item(
     sqlx::query_as::<_, ItineraryItemRecord>(
         "insert into itinerary_items (
            id, trip_id, plan_variant_id, path_group_id, path_id, path_name, path_role, day, sort_order, start_time, activity, activity_type,
-           place, map_link, address, latitude, longitude, duration_minutes, transportation, note, created_by, version
+           place, map_link, address, latitude, longitude, duration_minutes, transportation, details, note, created_by, version
          )
-         values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10::time, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, 1)
+         values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10::time, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, 1)
          returning
            id, trip_id, plan_variant_id, path_group_id, path_id, path_name, path_role, day, sort_order,
            coalesce(to_char(start_time, 'HH24:MI'), '') as start_time,
            activity, activity_type, place, link_label, map_link, address,
            latitude::float8 as latitude, longitude::float8 as longitude,
-           duration_minutes, transportation, advisories, note, created_by,
+           duration_minutes, transportation, details, advisories, note, created_by,
            updated_at::text as updated_at, version",
     )
     .bind(item.id)
@@ -1063,6 +1065,7 @@ pub async fn insert_itinerary_item(
     .bind(item.longitude)
     .bind(item.duration_minutes)
     .bind(item.transportation)
+    .bind(item.details)
     .bind(item.note)
     .bind(item.created_by)
     .fetch_one(&mut **tx)
@@ -1083,7 +1086,7 @@ pub async fn delete_itinerary_item(
            coalesce(to_char(start_time, 'HH24:MI'), '') as start_time,
            activity, activity_type, place, link_label, map_link, address,
            latitude::float8 as latitude, longitude::float8 as longitude,
-           duration_minutes, transportation, advisories, note, created_by,
+           duration_minutes, transportation, details, advisories, note, created_by,
            updated_at::text as updated_at, version",
     )
     .bind(item_id)
@@ -1115,7 +1118,7 @@ pub async fn reorder_itinerary_items(
                coalesce(to_char(start_time, 'HH24:MI'), '') as start_time,
                activity, activity_type, place, link_label, map_link, address,
                latitude::float8 as latitude, longitude::float8 as longitude,
-               duration_minutes, transportation, advisories, note, created_by,
+               duration_minutes, transportation, details, advisories, note, created_by,
                updated_at::text as updated_at, version",
         )
         .bind(item_id)

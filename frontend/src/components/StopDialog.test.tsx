@@ -95,9 +95,17 @@ describe("StopDialog", () => {
     expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({
       activity: "DMK -> HKG",
       activityType: "travel",
+      details: {
+        kind: "transportation",
+        origin: "Don Mueang International Airport (DMK)",
+        destination: "Hong Kong International Airport (HKG)",
+        mode: "Plane",
+        ticketRef: "FD ticket",
+        costNote: "prepaid",
+      },
       place: "Hong Kong International Airport (HKG)",
-      transportation: "Plane: Don Mueang International Airport (DMK) -> Hong Kong International Airport (HKG)",
-      note: "Ticket/pass: FD ticket\nCost/spend: prepaid",
+      transportation: "",
+      note: "",
     }));
   });
 
@@ -129,7 +137,11 @@ describe("StopDialog", () => {
 
     expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({
       activityType: "attraction",
-      note: "Round/time slot: 19:30 / 20:30 / 21:30",
+      details: {
+        kind: "event",
+        entryWindow: "19:30 / 20:30 / 21:30",
+      },
+      note: "",
     }));
   });
 

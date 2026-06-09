@@ -1017,8 +1017,8 @@ function MobileSelectedStopInspector({
             })}
             canEdit={canEdit}
             className={mobileInspectorSubtleFieldClassName}
-            itemValue={item.transportation}
-            key={`${item.id}:mobile-transportation:${item.transportation}`}
+            itemValue={displayTransportation(item)}
+            key={`${item.id}:mobile-transportation:${displayTransportation(item)}`}
             placeholder="—"
             onCommit={(transportation) => onUpdateItemInline?.(item.id, { transportation })}
           />
@@ -1444,8 +1444,8 @@ function DayGroup({
                     })}
                     canEdit={canEdit}
                     className={inlineSubtleFieldClassName}
-                    itemValue={item.transportation}
-                    key={`${item.id}:transportation:${item.transportation}`}
+                    itemValue={displayTransportation(item)}
+                    key={`${item.id}:transportation:${displayTransportation(item)}`}
                     placeholder="—"
                     onCommit={(value) =>
                       onUpdateItemInline?.(item.id, { transportation: value })
@@ -2276,6 +2276,15 @@ function mapHref(item: ItineraryItem): string {
 function mapLinkLabel(item: ItineraryItem, fallback: string): string {
   /* v8 ignore next */
   return item.linkLabel || fallback;
+}
+
+function displayTransportation(item: ItineraryItem): string {
+  if (item.transportation.trim()) return item.transportation;
+  const details = item.details;
+  if (!details || typeof details !== "object" || Array.isArray(details)) return "";
+  const mode = details.mode;
+  if (typeof mode === "string" && mode.trim()) return mode;
+  return "";
 }
 
 function dedupePathOptions(

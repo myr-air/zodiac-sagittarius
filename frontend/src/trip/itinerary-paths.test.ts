@@ -15,6 +15,7 @@ const importItem: ItineraryExportItem = {
   mapLink: "https://maps.example.test",
   durationMinutes: 60,
   transportation: "MTR",
+  details: {},
   note: "Rain backup",
 };
 

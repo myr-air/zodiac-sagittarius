@@ -122,6 +122,8 @@ pub async fn create_itinerary_item(
         request.day,
     )
     .await?;
+    let empty_details = serde_json::json!({});
+    let details = request.details.as_ref().unwrap_or(&empty_details);
     let record = db::queries::insert_itinerary_item(
         &mut tx,
         db::models::NewItineraryItem {
@@ -144,6 +146,7 @@ pub async fn create_itinerary_item(
             longitude: request.longitude,
             duration_minutes: request.duration_minutes,
             transportation: request.transportation.as_deref().unwrap_or("").trim(),
+            details,
             note: request.note.as_deref().unwrap_or("").trim(),
             created_by: session.member_id,
         },

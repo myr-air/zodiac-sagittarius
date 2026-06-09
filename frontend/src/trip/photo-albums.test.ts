@@ -113,6 +113,7 @@ function itineraryItem(input: Pick<ItineraryItem, "id" | "day" | "activity" | "p
     mapLink: "https://maps.example.test",
     durationMinutes: 60,
     transportation: "walk",
+    details: {},
     note: "",
     createdBy: "member-owner",
     updatedAt: "2026-06-08T00:00:00.000Z",

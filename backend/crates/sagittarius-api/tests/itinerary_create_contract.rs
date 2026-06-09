@@ -33,6 +33,11 @@ async fn itinerary_create_contract_accepts_address_and_coordinates(pool: sqlx::P
                         "mapLink": "https://www.openstreetmap.org/?mlat=22.2939&mlon=114.1698#map=17/22.2939/114.1698",
                         "durationMinutes": 45,
                         "transportation": "walk",
+                        "details": {
+                            "kind": "food",
+                            "meal": "breakfast",
+                            "reservationName": "Mew"
+                        },
                         "note": "near the waterfront"
                     })
                     .to_string(),
@@ -49,6 +54,9 @@ async fn itinerary_create_contract_accepts_address_and_coordinates(pool: sqlx::P
     assert_eq!(body["address"], "K11 Musea, Tsim Sha Tsui, Hong Kong");
     assert_eq!(body["coordinates"]["lat"], 22.2939);
     assert_eq!(body["coordinates"]["lng"], 114.1698);
+    assert_eq!(body["details"]["kind"], "food");
+    assert_eq!(body["details"]["meal"], "breakfast");
+    assert_eq!(body["details"]["reservationName"], "Mew");
 }
 
 #[sqlx::test(migrations = "../../migrations")]

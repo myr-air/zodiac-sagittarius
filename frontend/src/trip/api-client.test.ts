@@ -70,6 +70,7 @@ const cockpitResponse: TripCockpitResponse = {
       address: null,
       durationMinutes: 60,
       transportation: "walk",
+      details: {},
       advisories: [],
       note: "breakfast",
       createdBy: "018f4e81-77a4-7b8f-b3bd-0d0f493ac561",

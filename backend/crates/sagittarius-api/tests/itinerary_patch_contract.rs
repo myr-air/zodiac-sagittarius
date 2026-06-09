@@ -32,7 +32,13 @@ async fn itinerary_patch_contract_organizer_can_patch_item_and_stale_patch_confl
                         "expectedVersion": 4,
                         "patch": {
                             "startTime": "09:00",
-                            "durationMinutes": 75
+                            "durationMinutes": 75,
+                            "details": {
+                                "kind": "transportation",
+                                "origin": "Tsim Sha Tsui",
+                                "destination": "Disneyland",
+                                "mode": "MTR"
+                            }
                         }
                     })
                     .to_string(),
@@ -45,6 +51,10 @@ async fn itinerary_patch_contract_organizer_can_patch_item_and_stale_patch_confl
     let ok_body: Value =
         serde_json::from_slice(&to_bytes(ok.into_body(), 65536).await.unwrap()).unwrap();
     assert_eq!(ok_body["startTime"], "09:00");
+    assert_eq!(ok_body["details"]["kind"], "transportation");
+    assert_eq!(ok_body["details"]["origin"], "Tsim Sha Tsui");
+    assert_eq!(ok_body["details"]["destination"], "Disneyland");
+    assert_eq!(ok_body["details"]["mode"], "MTR");
     assert_eq!(ok_body["version"], 5);
 
     let event_count: i64 =

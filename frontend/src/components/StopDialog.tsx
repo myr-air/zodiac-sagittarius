@@ -38,6 +38,7 @@ export interface StopFormValues {
   place: string;
   durationMinutes: number;
   transportation: string;
+  details: Record<string, unknown>;
   note: string;
   resolvedPlace?: PlaceResolutionCandidate;
   saveUnresolved?: boolean;
@@ -146,6 +147,7 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, manualPathO
     place: initialItem?.place ?? "",
     durationMinutes: initialItem?.durationMinutes ?? 45,
     transportation: initialItem?.transportation ?? "",
+    details: initialItem?.details ?? {},
     note: initialItem?.note ?? "",
   }));
   const [detailType, setDetailType] = useState<StopDetailType>(() => detailTypeFromActivityType(initialItem?.activityType ?? "experience"));
@@ -200,16 +202,20 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, manualPathO
   }
 
   function buildSubmitValues(saveUnresolved: boolean): StopFormValues {
-    const compatibleValues = buildCompatibleStopValues(values, detailType, detailValues);
+    const details = buildStructuredStopDetails(detailType, detailValues);
+    const nextPlace = detailType === "transportation"
+      ? values.place || readStringDetail(details.destination) || readStringDetail(details.origin)
+      : values.place;
 
     return {
-      ...compatibleValues,
-      activity: compatibleValues.activity.trim(),
+      ...values,
+      activity: values.activity.trim(),
       activityType: detailTypeToActivityType[detailType],
-      place: compatibleValues.place.trim(),
-      transportation: compatibleValues.transportation.trim(),
-      note: compatibleValues.note.trim(),
-      durationMinutes: Math.max(1, Number(compatibleValues.durationMinutes) || 1),
+      details,
+      place: nextPlace.trim(),
+      transportation: values.transportation.trim(),
+      note: values.note.trim(),
+      durationMinutes: Math.max(1, Number(values.durationMinutes) || 1),
       resolvedPlace: saveUnresolved ? undefined : selectedCandidate,
       saveUnresolved,
     };
@@ -451,42 +457,47 @@ function DetailInput({ id, label, onChange, value }: { id: string; label: string
   );
 }
 
-function buildCompatibleStopValues(values: StopFormValues, detailType: StopDetailType, detailValues: StopDetailValues): StopFormValues {
+function buildStructuredStopDetails(detailType: StopDetailType, detailValues: StopDetailValues): Record<string, unknown> {
   const details = trimmedDetailValues(detailValues);
-  const noteLines = [values.note.trim()];
-  const nextValues = { ...values };
+  const nextDetails: Record<string, unknown> = { kind: detailType };
 
-  if (detailType === "transportation") {
-    const route = [details.origin, details.destination].filter(Boolean).join(" -> ");
-    nextValues.place = nextValues.place || details.destination || details.origin;
-    nextValues.transportation = [details.mode, route].filter(Boolean).join(details.mode && route ? ": " : "");
-    noteLines.push(labeledLine("Ticket/pass", details.ticketRef), labeledLine("Cost/spend", details.costNote), details.detail);
-  } else if (detailType === "food") {
-    noteLines.push(labeledLine("Meal", details.meal), labeledLine("Reservation", details.reservationName), labeledLine("Must try", details.mustTry), labeledLine("Budget", details.budgetNote));
-  } else if (detailType === "stay") {
-    noteLines.push(labeledLine("Check-in/out", details.entryWindow), labeledLine("Booking", details.bookingRef), details.detail);
-  } else if (detailType === "attraction" || detailType === "event") {
-    noteLines.push(labeledLine("Round/time slot", details.entryWindow), labeledLine("Ticket/pass", details.ticketRef), labeledLine("Must see", details.mustSee));
-  } else if (detailType === "task") {
-    noteLines.push(details.detail, labeledLine("Related place", details.meetingPoint));
-  } else if (detailType === "shopping") {
-    noteLines.push(labeledLine("Target items", details.targetItems), labeledLine("Budget", details.budgetNote), labeledLine("Tax refund", details.taxRefundNote));
-  } else {
-    noteLines.push(labeledLine("Provider", details.provider), labeledLine("Meeting point", details.meetingPoint), labeledLine("Booking", details.bookingRef));
+  for (const key of detailKeysForType(detailType)) {
+    const value = details[key];
+    if (value) nextDetails[key] = value;
   }
+  return nextDetails;
+}
 
-  nextValues.note = noteLines.filter(Boolean).join("\n");
-  return nextValues;
+function detailKeysForType(detailType: StopDetailType): Array<keyof StopDetailValues> {
+  if (detailType === "transportation") {
+    return ["origin", "destination", "mode", "ticketRef", "costNote"];
+  }
+  if (detailType === "food") {
+    return ["meal", "reservationName", "mustTry", "budgetNote"];
+  }
+  if (detailType === "stay") {
+    return ["entryWindow", "bookingRef", "detail"];
+  }
+  if (detailType === "attraction" || detailType === "event") {
+    return ["entryWindow", "ticketRef", "mustSee"];
+  }
+  if (detailType === "task") {
+    return ["detail", "meetingPoint"];
+  }
+  if (detailType === "shopping") {
+    return ["targetItems", "budgetNote", "taxRefundNote"];
+  }
+  return ["provider", "meetingPoint", "bookingRef"];
+}
+
+function readStringDetail(value: unknown): string {
+  return typeof value === "string" ? value : "";
 }
 
 function trimmedDetailValues(values: StopDetailValues): StopDetailValues {
   return Object.fromEntries(
     Object.entries(values).map(([key, value]) => [key, value.trim()]),
   ) as StopDetailValues;
-}
-
-function labeledLine(label: string, value: string): string {
-  return value ? `${label}: ${value}` : "";
 }
 
 function detailTypeFromActivityType(activityType: ActivityType): StopDetailType {

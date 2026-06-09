@@ -93,6 +93,7 @@ export interface ItineraryItemResponse {
   address: string | null;
   durationMinutes: number | null;
   transportation: string;
+  details: ItineraryItem["details"];
   advisories: ItineraryAdvisory[];
   note: string;
   createdBy: string;
@@ -278,7 +279,7 @@ export interface PatchTaskApiRequest {
 export interface PatchItineraryItemApiRequest {
   clientMutationId: string;
   expectedVersion: number;
-  patch: Partial<Pick<ItineraryItem, "pathGroupId" | "pathId" | "pathName" | "pathRole" | "day" | "startTime" | "durationMinutes" | "activity" | "activityType" | "place" | "transportation" | "note">> & {
+  patch: Partial<Pick<ItineraryItem, "pathGroupId" | "pathId" | "pathName" | "pathRole" | "day" | "startTime" | "durationMinutes" | "activity" | "activityType" | "place" | "transportation" | "details" | "note">> & {
     address?: string | null;
     coordinates?: ItineraryCoordinates | null;
     mapLink?: string | null;
@@ -302,6 +303,7 @@ export interface CreateItineraryItemApiRequest {
   coordinates?: ItineraryCoordinates | null;
   durationMinutes?: number | null;
   transportation?: string | null;
+  details?: ItineraryItem["details"] | null;
   note?: string | null;
 }
 
@@ -864,6 +866,7 @@ function mapItineraryItem(item: ItineraryItemResponse): ItineraryItem {
     ...item,
     coordinates: item.coordinates ?? undefined,
     address: item.address ?? undefined,
+    details: item.details ?? {},
   };
 }
 

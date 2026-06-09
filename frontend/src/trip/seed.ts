@@ -6,8 +6,8 @@ const mainPlanId = "plan-main";
 const updatedAt = "2026-05-27T00:00:00.000Z";
 
 function item(
-  input: Omit<ItineraryItem, "tripId" | "planVariantId" | "createdBy" | "updatedAt" | "version"> &
-    Partial<Pick<ItineraryItem, "planVariantId" | "version">>,
+  input: Omit<ItineraryItem, "tripId" | "planVariantId" | "createdBy" | "updatedAt" | "version" | "details"> &
+    Partial<Pick<ItineraryItem, "planVariantId" | "version" | "details">>,
 ): ItineraryItem {
   return {
     tripId,
@@ -16,6 +16,7 @@ function item(
     updatedAt,
     version: input.version ?? 1,
     ...input,
+    details: input.details ?? {},
   };
 }
 

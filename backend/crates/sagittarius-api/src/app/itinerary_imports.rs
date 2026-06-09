@@ -314,7 +314,7 @@ fn itinerary_json_schema() -> Value {
                 "items": {
                     "type": "object",
                     "additionalProperties": false,
-                    "required": ["id", "day", "sortOrder", "startTime", "activity", "activityType", "place", "linkLabel", "mapLink", "durationMinutes", "transportation", "advisories", "note"],
+                    "required": ["id", "day", "sortOrder", "startTime", "activity", "activityType", "place", "linkLabel", "mapLink", "durationMinutes", "transportation", "details", "advisories", "note"],
                     "properties": {
                         "id": { "type": "string" },
                         "pathGroupId": { "type": ["string", "null"] },
@@ -331,6 +331,7 @@ fn itinerary_json_schema() -> Value {
                         "mapLink": { "type": "string" },
                         "durationMinutes": { "type": ["integer", "null"] },
                         "transportation": { "type": "string" },
+                        "details": { "type": "object" },
                         "advisories": { "type": "array" },
                         "note": { "type": "string" }
                     }

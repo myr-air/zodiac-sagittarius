@@ -27,6 +27,7 @@ export interface ItineraryExportItem {
   address?: string;
   durationMinutes: number | null;
   transportation: string;
+  details: ItineraryItem["details"];
   advisories?: ItineraryAdvisory[];
   note: string;
 }
@@ -112,6 +113,7 @@ function toExportItem(item: ItineraryItem): ItineraryExportItem {
     address: item.address,
     durationMinutes: item.durationMinutes,
     transportation: item.transportation,
+    details: item.details ?? {},
     advisories: item.advisories,
     note: item.note,
   };
@@ -144,9 +146,17 @@ function parseExportItem(value: unknown): ItineraryExportItem {
         : readNumber(item, "durationMinutes"),
     transportation:
       typeof item.transportation === "string" ? item.transportation : "",
+    details: readDetails(item.details),
     advisories: readAdvisories(item.advisories),
     note: typeof item.note === "string" ? item.note : "",
   };
+}
+
+function readDetails(value: unknown): ItineraryItem["details"] {
+  if (value === undefined || value === null) return {};
+  if (!isRecord(value) || Array.isArray(value))
+    throw new Error("Unsupported itinerary import file.");
+  return value;
 }
 
 function readOptionalString(

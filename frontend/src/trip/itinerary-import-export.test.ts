@@ -39,6 +39,7 @@ describe("itinerary import/export JSON", () => {
         address: item.address,
         durationMinutes: item.durationMinutes,
         transportation: item.transportation,
+        details: item.details ?? {},
         advisories: item.advisories,
         note: item.note,
       })),
@@ -74,6 +75,35 @@ describe("itinerary import/export JSON", () => {
       pathName: "Rain plan",
       pathRole: "alternative",
     });
+  });
+
+  it("preserves structured itinerary details in export and import", () => {
+    const itemWithDetails = {
+      ...tripFixture.planItems[0],
+      activityType: "travel" as const,
+      details: {
+        kind: "transportation",
+        origin: "Shenzhen",
+        destination: "Hong Kong",
+        mode: "Train",
+        ticketRef: "G5607",
+      },
+    };
+
+    const payload = buildItineraryExport({
+      exportedAt: "2026-06-04T00:00:00.000Z",
+      items: [itemWithDetails],
+      trip: tripFixture.trip,
+    });
+
+    expect(payload.items[0].details).toEqual({
+      kind: "transportation",
+      origin: "Shenzhen",
+      destination: "Hong Kong",
+      mode: "Train",
+      ticketRef: "G5607",
+    });
+    expect(parseItineraryImport(JSON.stringify(payload))[0].details).toEqual(payload.items[0].details);
   });
 
   it("parses JSON v1 imports and rejects unsupported files", () => {

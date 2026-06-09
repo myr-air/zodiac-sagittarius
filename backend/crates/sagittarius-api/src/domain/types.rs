@@ -409,6 +409,7 @@ pub struct ItineraryItemSummary {
     pub address: Option<String>,
     pub duration_minutes: Option<i32>,
     pub transportation: String,
+    pub details: Value,
     pub advisories: Value,
     pub note: String,
     pub created_by: Uuid,
@@ -447,8 +448,14 @@ pub struct ItineraryImportItem {
     pub address: Option<String>,
     pub duration_minutes: Option<i32>,
     pub transportation: String,
+    #[serde(default = "empty_object")]
+    pub details: Value,
     pub advisories: Value,
     pub note: String,
+}
+
+fn empty_object() -> Value {
+    serde_json::json!({})
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
