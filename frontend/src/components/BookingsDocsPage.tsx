@@ -10,6 +10,7 @@ import { cn } from "@/src/lib/cn";
 import { Icon } from "./icons";
 import { formatTripRange, PageHeader, PageUserCard } from "./PageHeader";
 import { Button, IconButton } from "./ui";
+import { DateTimePickerField } from "./DateTimePickers";
 
 interface BookingsDocsPageProps {
   trip: Trip;
@@ -471,8 +472,8 @@ function BookingDialog({ booking, trip, tasks, onCancel, onSubmit }: {
             <label className={fieldClassName}><span>Visibility</span><select value={visibility} onChange={(event) => setVisibility(event.target.value as BookingDocVisibility)}>{bookingVisibilities.map((item) => <option key={item} value={item}>{formatEnumLabel(item)}</option>)}</select></label>
             <label className={fieldClassName}><span>Provider</span><input value={providerName} onChange={(event) => setProviderName(event.target.value)} /></label>
             <label className={fieldClassName}><span>Confirmation code</span><input value={confirmationCode} onChange={(event) => setConfirmationCode(event.target.value)} /></label>
-            <label className={fieldClassName}><span>Start</span><input type="datetime-local" value={startsAt} onChange={(event) => setStartsAt(event.target.value)} /></label>
-            <label className={fieldClassName}><span>End</span><input type="datetime-local" value={endsAt} onChange={(event) => setEndsAt(event.target.value)} /></label>
+            <label className={fieldClassName}><span>Start</span><DateTimePickerField value={startsAt} onChange={setStartsAt} /></label>
+            <label className={fieldClassName}><span>End</span><DateTimePickerField value={endsAt} onChange={setEndsAt} /></label>
             <label className={fieldClassName}><span>Price</span><input inputMode="decimal" type="number" min="0" step="0.01" value={priceAmount} onChange={(event) => setPriceAmount(event.target.value)} /></label>
             <label className={fieldClassName}><span>Currency</span><input value={currency} onChange={(event) => setCurrency(event.target.value.toUpperCase())} /></label>
             <label className={fieldClassName}><span>External link</span><input type="url" value={externalUrl} onChange={(event) => setExternalUrl(event.target.value)} /></label>

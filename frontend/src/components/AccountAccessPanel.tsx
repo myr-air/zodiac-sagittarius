@@ -22,6 +22,7 @@ import type { TripApiClient, TripCockpit } from "@/src/trip/api-client";
 import type { Trip, TripCity, TripParticipantSession } from "@/src/trip/types";
 import { Badge, Button } from "./ui";
 import { Icon } from "./icons";
+import { DatePickerField } from "./DateTimePickers";
 import { TripJoinGate } from "./TripJoinGate";
 import { LanguageSwitch } from "@/src/i18n/LanguageSwitch";
 import { useI18n } from "@/src/i18n/I18nProvider";
@@ -2261,20 +2262,18 @@ function PortalTripWizard({
                 <div className={tripCalendarSummaryClassName}>
                   <label>
                     <span>{wizard.fields.depart}</span>
-                    <input
+                    <DatePickerField
                       aria-label={t.access.dashboard.createTrip.labels.startDate}
                       value={tripForm.startDate}
-                      type="date"
-                      onChange={(event) => updateStartDate(event.target.value)}
+                      onChange={updateStartDate}
                     />
                   </label>
                   <label>
                     <span>{wizard.fields.return}</span>
-                    <input
+                    <DatePickerField
                       aria-label={t.access.dashboard.createTrip.labels.endDate}
                       value={tripForm.endDate}
-                      type="date"
-                      onChange={(event) => updateEndDate(event.target.value)}
+                      onChange={updateEndDate}
                     />
                   </label>
                 </div>

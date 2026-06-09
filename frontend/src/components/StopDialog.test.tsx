@@ -48,10 +48,11 @@ describe("StopDialog", () => {
     expect(onClose).toHaveBeenCalledTimes(2);
   });
 
-  it("uses native time input, split duration controls, and a standard close icon", () => {
+  it("uses the Joii time input, split duration controls, and a standard close icon", () => {
     render(<StopDialog mode="create" onClose={vi.fn()} onSubmit={vi.fn()} />);
 
-    expect(screen.getByLabelText("เวลา")).toHaveAttribute("type", "time");
+    expect(screen.getByLabelText("เวลา")).toHaveAttribute("type", "text");
+    expect(screen.getByRole("button", { name: "Open time picker" })).toBeInTheDocument();
     expect(screen.getByLabelText("เวลา")).toHaveAttribute("id", "stop-start-time");
     expect(screen.getByText("เวลา").closest("label")).toHaveAttribute("for", "stop-start-time");
     expect(screen.getByLabelText("ชั่วโมง")).toBeInTheDocument();

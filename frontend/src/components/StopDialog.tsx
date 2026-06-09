@@ -5,6 +5,7 @@ import { formatDayLabel, getTripDates } from "@/src/trip/itinerary";
 import { Button } from "./ui";
 import { Icon } from "./icons";
 import { activityTypeLabel, formatThaiDate } from "./itineraryDisplay";
+import { TimePickerField } from "./DateTimePickers";
 
 export interface StopFormValues {
   day: string;
@@ -150,7 +151,7 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, manualPathO
             ) : null}
             <label htmlFor={fieldIds.startTime}>
               <span>{t.stopDialog.fields.time}</span>
-              <input id={fieldIds.startTime} type="time" value={values.startTime} onChange={(event) => update("startTime", event.target.value)} required />
+              <TimePickerField id={fieldIds.startTime} value={values.startTime} onChange={(value) => update("startTime", value)} required />
             </label>
             <label htmlFor={fieldIds.durationHours}>
               <span>{t.stopDialog.fields.hours}</span>

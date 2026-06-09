@@ -6,6 +6,7 @@ import { cn } from "@/src/lib/cn";
 import type { Member, Trip } from "@/src/trip/types";
 import { Button, Badge } from "./ui";
 import { Icon } from "./icons";
+import { DatePickerField } from "./DateTimePickers";
 
 export interface TripSettingsFormValues {
   name: string;
@@ -126,22 +127,20 @@ function TripSettingsPageContent({ canEdit, currentMember, trip, onSave }: TripS
             <div className={fieldGridClassName}>
               <label className={labelClassName}>
                 <span>{t.tripSettings.startDate}</span>
-                <input
+                <DatePickerField
                   className={inputClassName}
                   disabled={!canEdit}
-                  type="date"
                   value={form.startDate}
-                  onChange={(event) => setForm((current) => ({ ...current, startDate: event.target.value }))}
+                  onChange={(value) => setForm((current) => ({ ...current, startDate: value }))}
                 />
               </label>
               <label className={labelClassName}>
                 <span>{t.tripSettings.endDate}</span>
-                <input
+                <DatePickerField
                   className={inputClassName}
                   disabled={!canEdit}
-                  type="date"
                   value={form.endDate}
-                  onChange={(event) => setForm((current) => ({ ...current, endDate: event.target.value }))}
+                  onChange={(value) => setForm((current) => ({ ...current, endDate: value }))}
                 />
               </label>
             </div>

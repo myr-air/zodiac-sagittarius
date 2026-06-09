@@ -48,6 +48,7 @@ import {
   formatThaiDate,
 } from "./itineraryDisplay";
 import { ActivityPathGraphDay } from "./ActivityPathGraphDay";
+import { TimePickerField } from "./DateTimePickers";
 
 interface SmartItineraryTableProps {
   canRedo: boolean;
@@ -1737,29 +1738,43 @@ function InlineTextField({
   }
 
   return (
-    <input
-      aria-label={ariaLabel}
-      className={className}
-      disabled={!canEdit && type === "time"}
-      placeholder={placeholder}
-      readOnly={!canEdit && type !== "time"}
-      type={type}
-      value={value}
-      onBlur={commitValue}
-      onChange={(event) => setValue(event.target.value)}
-      onClick={onClick}
-      onKeyDown={(event) => {
-        if (event.key === "Enter") {
-          commitValue();
-          event.currentTarget.blur();
-          return;
-        }
-        if (event.key === "Escape") {
-          cancelValue();
-          event.preventDefault();
-        }
-      }}
-    />
+    type === "time" ? (
+      <TimePickerField
+        ariaLabel={ariaLabel}
+        className={className}
+        disabled={!canEdit}
+        required={required}
+        value={value}
+        onBlur={commitValue}
+        onChange={setValue}
+        onSelect={(nextValue) => {
+          if (nextValue !== itemValue) void onCommit(nextValue);
+        }}
+      />
+    ) : (
+      <input
+        aria-label={ariaLabel}
+        className={className}
+        placeholder={placeholder}
+        readOnly={!canEdit}
+        type={type}
+        value={value}
+        onBlur={commitValue}
+        onChange={(event) => setValue(event.target.value)}
+        onClick={onClick}
+        onKeyDown={(event) => {
+          if (event.key === "Enter") {
+            commitValue();
+            event.currentTarget.blur();
+            return;
+          }
+          if (event.key === "Escape") {
+            cancelValue();
+            event.preventDefault();
+          }
+        }}
+      />
+    )
   );
 }
 
