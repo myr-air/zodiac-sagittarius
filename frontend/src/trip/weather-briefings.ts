@@ -1,4 +1,5 @@
 import { getTripDates } from "./itinerary";
+import type { IconName } from "@/src/components/icons";
 import type { ItineraryItem, Trip, TripDailyBriefing } from "./types";
 
 export interface ThaiWeekdayTone {
@@ -48,13 +49,13 @@ export function weatherGraphicLabel(conditionCode: string | null | undefined): s
   }
 }
 
-export function weatherIconForCondition(code: string | null | undefined): string {
-  if (code === "clear" || code === "sunny") return "☀";
-  if (code === "rain" || code === "showers") return "☂";
-  if (code === "storm" || code === "thunderstorm") return "⚡";
-  if (code === "cloudy" || code === "partly-cloudy") return "☁";
-  if (code === "unavailable" || !code) return "🌤";
-  return "🌤";
+export function weatherIconForCondition(code: string | null | undefined): IconName {
+  if (code === "clear" || code === "sunny") return "sun";
+  if (code === "rain" || code === "showers") return "umbrella";
+  if (code === "storm" || code === "thunderstorm") return "warning";
+  if (code === "cloudy" || code === "partly-cloudy") return "cloud";
+  if (code === "unavailable" || !code) return "cloud";
+  return "cloud";
 }
 
 export function formatWeatherTemp(value: number | null | undefined): string {

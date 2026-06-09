@@ -122,7 +122,8 @@ describe("SmartItineraryTable", () => {
     expect(
       within(actions).queryByRole("button", { name: /Redo/i }),
     ).not.toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "ภาษาไทย" }));
+    fireEvent.click(screen.getByRole("button", { name: "Language and currency" }));
+    fireEvent.click(screen.getByRole("menuitemradio", { name: "ภาษาไทย" }));
     expect(
       within(actions).getByRole("button", { name: /Import|นำเข้า/i }),
     ).toBeInTheDocument();
@@ -277,8 +278,10 @@ describe("SmartItineraryTable", () => {
       ],
     });
 
-    expect(screen.getByLabelText(/Weather for Day 2/i)).toHaveTextContent("☂");
-    expect(screen.getByLabelText(/Weather for Day 2/i)).toHaveTextContent(
+    const weatherChip = screen.getByLabelText(/Weather for Day 2/i);
+    expect(weatherChip.querySelector(".icon")).toBeInTheDocument();
+    expect(weatherChip).not.toHaveTextContent("☂");
+    expect(weatherChip).toHaveTextContent(
       "33° 28°",
     );
   });
@@ -1294,6 +1297,90 @@ describe("SmartItineraryTable", () => {
     expect(onUpdateItemInline).toHaveBeenCalledWith("item-dimdim", {
       transportation: "Walk",
     });
+  });
+
+  it("edits the selected stop from a mobile inspector without flattening path fields", async () => {
+    const user = userEvent.setup();
+    const onUpdateItemInline = vi.fn();
+    const onSelectItem = vi.fn();
+    renderTable({
+      onSelectItem,
+      onUpdateItemInline,
+      selectedItemId: "item-dimdim",
+    });
+
+    const inspector = screen.getByRole("region", {
+      name: "รายละเอียดจุดที่เลือก",
+    });
+    expect(inspector).toHaveClass("mobile-itinerary-inspector", "max-[767px]:grid");
+    expect(inspector.closest(".table-scroll")).toBeNull();
+    expect(within(inspector).getByText(/Dim Dim Sum/i)).toBeInTheDocument();
+
+    const activity = within(inspector).getByRole("textbox", {
+      name: /แก้ไขกิจกรรม Dim Dim Sum/i,
+    });
+    await user.clear(activity);
+    await user.type(activity, "Harbour brunch{Enter}");
+
+    const place = within(inspector).getByRole("textbox", {
+      name: /แก้ไขสถานที่ Dim Dim Sum/i,
+    });
+    await user.clear(place);
+    await user.type(place, "Central Pier{Enter}");
+
+    const time = within(inspector).getByLabelText(/แก้ไขเวลา Dim Dim Sum/i);
+    await user.clear(time);
+    await user.type(time, "10:15{Enter}");
+
+    await user.click(
+      within(inspector).getByRole("button", { name: /แก้ไขประเภท Dim Dim Sum/i }),
+    );
+    await user.click(
+      within(screen.getByRole("listbox", { name: /แก้ไขประเภท Dim Dim Sum/i }))
+        .getByRole("option", { name: /กิจกรรม/i }),
+    );
+
+    const transportation = within(inspector).getByRole("textbox", {
+      name: /แก้ไขการเดินทาง Dim Dim Sum/i,
+    });
+    await user.clear(transportation);
+    await user.type(transportation, "Walk{Enter}");
+
+    await user.click(
+      within(inspector).getByRole("button", { name: /1 h 30 m/i }),
+    );
+
+    const editButton = within(inspector).getByRole("button", {
+      name: /แก้ไข Dim Dim Sum/i,
+    });
+    expect(editButton).toHaveClass("min-h-11");
+
+    expect(onUpdateItemInline).toHaveBeenCalledWith("item-dimdim", {
+      activity: "Harbour brunch",
+    });
+    expect(onUpdateItemInline).toHaveBeenCalledWith("item-dimdim", {
+      place: "Central Pier",
+    });
+    expect(onUpdateItemInline).toHaveBeenCalledWith("item-dimdim", {
+      startTime: "10:15",
+    });
+    expect(onUpdateItemInline).toHaveBeenCalledWith("item-dimdim", {
+      activityType: "experience",
+    });
+    expect(onUpdateItemInline).toHaveBeenCalledWith("item-dimdim", {
+      transportation: "Walk",
+    });
+    expect(onUpdateItemInline).toHaveBeenCalledWith("item-dimdim", {
+      durationMinutes: 90,
+    });
+    expect(
+      onUpdateItemInline.mock.calls.every(([, patch]) =>
+        !("pathGroupId" in patch) &&
+        !("pathId" in patch) &&
+        !("pathName" in patch) &&
+        !("pathRole" in patch),
+      ),
+    ).toBe(true);
   });
 
   it("edits duration from a compact row duration picker", async () => {

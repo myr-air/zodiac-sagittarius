@@ -5,6 +5,7 @@ import { describe, expect, it } from "vitest";
 describe("Calm Travel Ops CSS contract", () => {
   const css = readFileSync("app/globals.css", "utf8");
   const appSource = readFileSync("src/app/SagittariusApp.tsx", "utf8");
+  const accountSource = readFileSync("src/components/AccountAccessPanel.tsx", "utf8");
   const activityPathGraphSource = readFileSync("src/components/ActivityPathGraphDay.tsx", "utf8");
   const contextRailSource = readFileSync("src/components/ContextRail.tsx", "utf8");
   const smartTableSource = readFileSync("src/components/SmartItineraryTable.tsx", "utf8");
@@ -77,12 +78,14 @@ describe("Calm Travel Ops CSS contract", () => {
     expect(css).not.toMatch(/\.travel-motif\s*{/s);
   });
 
-  it("adds subtle watercolor paper texture without image assets", () => {
+  it("keeps postcard texture tokens opt-in instead of applying them to the cockpit body", () => {
     expect(css).toContain("--color-paper-warm: #fffaf0");
     expect(css).toContain("--paper-grain:");
     expect(css).toContain("--watercolor-page-wash:");
     expect(css).toContain("--watercolor-surface-wash:");
-    expect(css).toMatch(/body\s*{[^}]*var\(--paper-grain\)[^}]*var\(--watercolor-page-wash\)/s);
+    expect(css).toMatch(/body\s*{[^}]*background:\s*var\(--color-page\)/s);
+    expect(css).not.toMatch(/body\s*{[^}]*var\(--paper-grain\)[^}]*var\(--watercolor-page-wash\)/s);
+    expect(accountSource).toContain("account-page min-h-screen bg-[var(--paper-grain),var(--watercolor-page-wash),var(--color-page)]");
     expect(motifSource).toContain("radial-gradient(circle_at_22%_35%");
     expect(css).not.toMatch(/url\(["']?.*paper/i);
   });

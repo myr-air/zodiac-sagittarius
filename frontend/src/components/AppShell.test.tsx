@@ -1,4 +1,4 @@
-import { screen, within } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { renderWithI18n } from "@/src/i18n/test-utils";
@@ -40,11 +40,55 @@ describe("AppShell", () => {
       "max-[767px]:w-full",
       "max-[767px]:max-w-full",
       "max-[767px]:overflow-x-auto",
+      "max-[767px]:[scrollbar-width:none]",
+      "max-[767px]:[&::-webkit-scrollbar]:hidden",
+      "max-[767px]:[mask-image:linear-gradient(to_right,transparent,#000_18px,#000_calc(100%-18px),transparent)]",
     );
     expect(container.querySelector(".rail-link")).toHaveClass(
       "max-[767px]:max-w-[118px]",
       "max-[767px]:shrink-0",
     );
+  });
+
+  it("keeps the active mobile navigation item centered when the view changes", async () => {
+    const scrollIntoView = vi.fn();
+    Object.defineProperty(Element.prototype, "scrollIntoView", {
+      configurable: true,
+      value: scrollIntoView,
+    });
+
+    const firstRender = renderWithI18n(
+      <AppShell
+        activeView="overview"
+        collapsed={false}
+        currentMember={seedTrip.members[0]}
+        onToggleCollapsed={vi.fn()}
+        trip={seedTrip}
+      >
+        <main>content</main>
+      </AppShell>,
+      { locale: "th" },
+    );
+
+    await waitFor(() => expect(scrollIntoView).toHaveBeenCalledWith({ block: "nearest", inline: "center" }));
+    scrollIntoView.mockClear();
+    firstRender.unmount();
+
+    renderWithI18n(
+      <AppShell
+        activeView="photos"
+        collapsed={false}
+        currentMember={seedTrip.members[0]}
+        onToggleCollapsed={vi.fn()}
+        trip={seedTrip}
+      >
+        <main>content</main>
+      </AppShell>,
+      { locale: "th" },
+    );
+
+    await waitFor(() => expect(scrollIntoView).toHaveBeenCalledWith({ block: "nearest", inline: "center" }));
+    expect(screen.getByRole("link", { name: /รูปภาพ/i })).toHaveAttribute("data-active", "true");
   });
 
   it("labels traveler and viewer roles and exposes leave-session action", async () => {
@@ -159,7 +203,8 @@ describe("AppShell", () => {
     expect(screen.getByRole("link", { name: /Overview/i })).toHaveAttribute("href", `/trips/${encodeTripId(seedTrip.id)}`);
     expect(screen.getByText("Traveler")).toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: "ภาษาไทย" }));
+    await user.click(screen.getByRole("button", { name: "Language and currency" }));
+    await user.click(screen.getByRole("menuitemradio", { name: "ภาษาไทย" }));
 
     expect(screen.getByRole("navigation", { name: /เมนูวางแผน Joii/i })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /ภาพรวม/i })).toHaveAttribute("href", `/trips/${encodeTripId(seedTrip.id)}`);

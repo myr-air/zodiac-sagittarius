@@ -2,6 +2,7 @@ import type { Locale } from "@/src/i18n/types";
 import { cn } from "@/src/lib/cn";
 import type { TripDailyBriefing } from "@/src/trip/types";
 import { briefingsForStrip, formatWeatherTemp, thaiWeekdayTone, weatherGraphicLabel, weatherIconForCondition } from "@/src/trip/weather-briefings";
+import { Icon } from "./icons";
 
 interface WeatherForecastStripProps {
   briefings: TripDailyBriefing[];
@@ -22,6 +23,7 @@ const iconClassName = "weather-forecast-icon text-[30px] leading-none drop-shado
 const tempClassName = "weather-forecast-temp inline-flex items-baseline justify-center gap-1.5 leading-none";
 const tempHighClassName = "weather-forecast-temp-high text-[16px] font-black text-(--color-text)";
 const tempLowClassName = "weather-forecast-temp-low text-[16px] font-bold text-(--color-text-muted)";
+const pendingClassName = "weather-forecast-pending text-[12px] font-black leading-4 text-(--color-text-muted)";
 const emptyClassName = "rounded-(--radius-md) border border-(--color-border) bg-white/60 px-4 py-3 text-xs font-black text-(--color-text-muted)";
 
 export function WeatherForecastStrip({ briefings, locale, selectedDate, onSelect }: WeatherForecastStripProps) {
@@ -43,10 +45,12 @@ export function WeatherForecastStrip({ briefings, locale, selectedDate, onSelect
           const low = weather?.temperatureMinCelsius;
           const dayLabel = formatDayLabel(briefing.date, locale);
           const condition = weatherGraphicLabel(weather?.conditionCode);
+          const hasForecastTemps = typeof high === "number" && typeof low === "number";
+          const temperatureLabel = hasForecastTemps ? `${formatWeatherTemp(high)} ${formatWeatherTemp(low)}` : "";
 
           return (
               <button
-                aria-label={`${dayLabel} ${condition} ${formatWeatherTemp(high)} ${formatWeatherTemp(low)}`}
+                aria-label={[dayLabel, condition, temperatureLabel].filter(Boolean).join(" ")}
                 className={cn(segmentClassName, selectedDate === briefing.date && selectedClassName)}
                 key={`${briefing.date}-${briefing.locationKey}`}
                 type="button"
@@ -54,12 +58,14 @@ export function WeatherForecastStrip({ briefings, locale, selectedDate, onSelect
               >
               <span className={cn(dayClassName, tone.className, tone.chipClassName)}>{dayLabel}</span>
               <span className={iconClassName} aria-hidden="true">
-                {weatherIconForCondition(weather?.conditionCode)}
+                <Icon name={weatherIconForCondition(weather?.conditionCode)} />
               </span>
-              <span className={tempClassName}>
-                <span className={tempHighClassName}>{formatWeatherTemp(high)}</span>
-                <span className={tempLowClassName}>{formatWeatherTemp(low)}</span>
-              </span>
+              {hasForecastTemps ? (
+                <span className={tempClassName}>
+                  <span className={tempHighClassName}>{formatWeatherTemp(high)}</span>
+                  <span className={tempLowClassName}>{formatWeatherTemp(low)}</span>
+                </span>
+              ) : <span className={pendingClassName}>{condition}</span>}
             </button>
           );
         })}

@@ -121,8 +121,11 @@ const mapDayFilterClassName = "map-day-filter absolute left-3 top-3 z-[8] flex m
 const mapDayFilterButtonClassName = "map-day-filter-button inline-flex min-h-8 items-center gap-1.5 rounded-full border border-[rgb(203_213_225_/_0.9)] bg-white/90 px-2.5 py-1.5 text-[11px] font-extrabold leading-4 text-[#334155] shadow-[0_8px_18px_rgb(15_23_42_/_0.08)] backdrop-blur transition-[background,border-color,color,box-shadow] duration-150 hover:border-[var(--day-color,var(--color-primary))] hover:bg-white hover:text-[#0f172a] hover:shadow-[0_10px_22px_rgb(15_23_42_/_0.12)] focus-visible:border-[var(--day-color,var(--color-primary))] focus-visible:bg-white focus-visible:text-[#0f172a] focus-visible:shadow-[0_10px_22px_rgb(15_23_42_/_0.12)]";
 const activeMapDayFilterButtonClassName = "map-day-filter-button--active border-[var(--day-color,var(--color-primary))] bg-white text-[#0f172a] shadow-[0_10px_22px_rgb(15_23_42_/_0.12)]";
 const mapDaySwatchClassName = "map-day-swatch size-[9px] rounded-full bg-[var(--day-color,var(--color-route))] shadow-[0_0_0_2px_rgb(255_255_255_/_0.9)]";
-const routeLiveMapClassName = "route-live-map absolute inset-0 z-[4] bg-(--color-route-soft)";
-const routeMapStatusClassName = "route-map-status absolute left-1/2 top-1/2 z-[5] m-0 -translate-x-1/2 -translate-y-1/2 rounded-(--radius-md) border border-(--color-border) bg-white/90 px-2.5 py-2 text-xs font-extrabold text-(--color-text-muted)";
+const routeLiveMapClassName = "route-live-map absolute inset-0 z-[4] bg-(--color-route-soft) transition-opacity duration-200";
+const routeLiveMapPendingClassName = "route-live-map--pending pointer-events-none opacity-0";
+const routeMapStatusClassName = "route-map-status absolute left-1/2 top-1/2 z-[7] m-0 -translate-x-1/2 -translate-y-1/2 rounded-(--radius-md) border border-(--color-border) bg-white/90 px-2.5 py-2 text-xs font-extrabold text-(--color-text-muted)";
+const routeMapFallbackClassName = "route-map-fallback absolute inset-0 z-[2]";
+const routeMapRetryButtonClassName = "route-map-retry mt-2 inline-flex min-h-8 items-center gap-1.5 rounded-full border border-(--color-primary-border) bg-white px-3 py-1.5 text-xs font-extrabold text-(--color-primary-strong) shadow-[0_10px_22px_rgb(15_23_42_/_0.12)] transition-[background,border-color,box-shadow] duration-150 hover:bg-(--color-surface-subtle) focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary) [&_.icon]:size-3.5";
 const mapZoneClassName = "map-zone absolute z-[1] text-[11px] font-extrabold uppercase leading-[15px] text-[#475569]";
 const mapZoneHongKongClassName = "map-zone--hk left-[17px] top-3.5";
 const mapZoneShenzhenClassName = "map-zone--sz right-[18px] top-[18px]";
@@ -131,6 +134,10 @@ const routeMapSvgClassName = "route-map-svg absolute inset-0 z-[2] size-full ove
 const routeMapPathShadowClassName = "route-map-path route-map-path--shadow fill-none stroke-white stroke-[5.4] opacity-[0.86] [stroke-linecap:round] [stroke-linejoin:round]";
 const routeMapPathClassName = "route-map-path fill-none stroke-[var(--day-color,var(--color-route))] stroke-[2.1] [stroke-linecap:round] [stroke-linejoin:round]";
 const routeMarkerClassName = "route-marker absolute left-[var(--x)] top-[var(--y)] z-[3] grid size-[30px] -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border-2 border-white bg-[var(--day-color,var(--color-route))] text-[11px] font-extrabold tabular-nums text-white shadow-[0_10px_22px_rgb(37_99_235_/_0.24)] transition-[background,box-shadow,transform] duration-150 [animation:route-marker-in_180ms_ease-out_both] [animation-delay:var(--marker-delay)]";
+const routeStopListClassName = "route-stop-list absolute right-3 top-16 z-[6] grid max-h-[min(260px,48%)] w-[min(260px,calc(100%_-_24px))] gap-1.5 overflow-y-auto rounded-(--radius-md) border border-(--color-border) bg-white/88 p-2.5 text-[11px] font-bold leading-4 text-[#475569] shadow-[0_14px_34px_rgb(15_23_42_/_0.12)] backdrop-blur max-[767px]:hidden";
+const routeStopListItemClassName = "route-stop-list-item grid grid-cols-[auto_minmax(0,1fr)] gap-2 rounded-(--radius-sm) px-1.5 py-1";
+const routeStopListIndexClassName = "grid size-5 place-items-center rounded-full bg-[var(--day-color,var(--color-route))] text-[10px] font-black text-white";
+const routeStopListCopyClassName = "min-w-0 truncate";
 const mapSourceNoteClassName = "map-source-note absolute bottom-2 right-2.5 z-[6] m-0 rounded-full border border-[rgb(203_213_225_/_0.82)] bg-white/90 px-2 py-1 text-[10px] font-extrabold leading-[14px] text-[#475569]";
 const unresolvedPanelClassName = "map-unresolved-panel absolute bottom-10 left-3 z-[7] grid max-h-[min(220px,42%)] w-[min(360px,calc(100%_-_24px))] gap-2 overflow-hidden rounded-(--radius-md) border border-[rgb(245_158_11_/_0.38)] bg-[rgb(255_251_235_/_0.94)] p-3 shadow-[0_14px_34px_rgb(15_23_42_/_0.14)] backdrop-blur";
 const unresolvedPanelHeaderClassName = "map-unresolved-header flex items-start gap-2 text-[12px] font-extrabold leading-5 text-[#92400e]";
@@ -175,6 +182,7 @@ export function RouteMapView({
   const fallbackViewport = useMemo(() => fallbackRouteViewport(destinationLabel, countries), [countries, destinationLabel]);
   const warningCount = itineraryView?.warningCount ?? items.reduce((total, item) => total + (item.advisories?.length ?? 0), 0);
   const [liveMapState, setLiveMapState] = useState<"idle" | "loading" | "ready" | "error">("idle");
+  const [liveMapRetryKey, setLiveMapRetryKey] = useState(0);
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<import("maplibre-gl").Map | null>(null);
   const maplibreModuleRef = useRef<typeof import("maplibre-gl") | null>(null);
@@ -251,7 +259,7 @@ export function RouteMapView({
         liveMapContainer.inert = false;
       }
     };
-  }, [fallbackViewport.center, fallbackViewport.zoom, liveMapEnabled]);
+  }, [fallbackViewport.center, fallbackViewport.zoom, liveMapEnabled, liveMapRetryKey]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -309,6 +317,22 @@ export function RouteMapView({
     fitLiveRoute(map, visibleLiveRoutePoints, fallbackViewport);
   }, [activeDay, fallbackViewport, liveMapState, liveRoutePoints, visibleLiveRoutePoints, routeDayGroups, markerItems]);
 
+  function handleRetryLiveMap() {
+    markersRef.current.forEach((entry) => entry.marker.remove());
+    markersRef.current.clear();
+    if (mapRef.current) {
+      cleanupRouteLayers(mapRef.current, sourceIdsRef.current);
+      mapRef.current.remove();
+    }
+    sourceIdsRef.current = [];
+    mapRef.current = null;
+    if (mapContainerRef.current) {
+      mapContainerRef.current.inert = false;
+    }
+    setLiveMapState("idle");
+    setLiveMapRetryKey((key) => key + 1);
+  }
+
   return (
     <section className={routeMapPanelClassName} id="map" aria-labelledby="route-map-heading" aria-label={t.map.pageLabel}>
       <PageHeader
@@ -351,38 +375,30 @@ export function RouteMapView({
             ))}
           </div>
 
+          {liveMapState !== "ready" ? (
+            <StaticRouteFallback
+              routeDayGroups={visibleRouteDayGroups}
+              routePoints={visibleRoutePoints}
+              stopListLabel={t.map.visibleStopsLabel}
+            />
+          ) : null}
+
           {liveMapState !== "error" ? (
             <>
-              <div className={routeLiveMapClassName} ref={mapContainerRef} aria-hidden="true" />
+              <div className={cn(routeLiveMapClassName, liveMapState !== "ready" && routeLiveMapPendingClassName)} ref={mapContainerRef} aria-hidden="true" />
               {liveMapState !== "ready" ? <p className={routeMapStatusClassName}>{liveMapStatusText(liveMapState, t.map.liveLoading, t.map.liveError)}</p> : null}
             </>
           ) : (
             <>
-              <p className={routeMapStatusClassName} role="status">{liveMapStatusText(liveMapState, t.map.liveLoading, t.map.liveError)}</p>
-              <span className={cn(mapZoneClassName, mapZoneHongKongClassName)}>Hong Kong</span>
-              <span className={cn(mapZoneClassName, mapZoneShenzhenClassName)}>Shenzhen</span>
-              <span className={cn(mapZoneClassName, mapZoneBayClassName)}>Victoria Harbour</span>
-              <svg className={routeMapSvgClassName} viewBox="0 0 100 100" aria-hidden="true" focusable="false">
-                {visibleRouteDayGroups.map((group) => {
-                  const pathPoints = group.points.map((point) => `${point.x},${point.y}`).join(" ");
-                  return (
-                    <g key={group.day} style={routeLineStyle(group.color)}>
-                      <polyline className={routeMapPathShadowClassName} points={pathPoints} />
-                      <polyline className={routeMapPathClassName} points={pathPoints} />
-                    </g>
-                  );
-                })}
-              </svg>
-              {visibleRoutePoints.map((point, index) => (
-                <span
-                  className={routeMarkerClassName}
-                  style={markerStyle(point, index, dayColorFor(point.item.day, routeDayGroups))}
-                  aria-hidden="true"
-                  key={point.item.id}
-                >
-                  <span>{index + 1}</span>
-                </span>
-              ))}
+              <div className={routeMapStatusClassName} role="status">
+                <p className="m-0">{liveMapStatusText(liveMapState, t.map.liveLoading, t.map.liveError)}</p>
+                {liveMapEnabled ? (
+                  <button className={routeMapRetryButtonClassName} type="button" onClick={handleRetryLiveMap}>
+                    <Icon name="redo" />
+                    {t.map.retryLiveMap}
+                  </button>
+                ) : null}
+              </div>
             </>
           )}
           {visibleUnresolvedItems.length > 0 ? (
@@ -416,6 +432,61 @@ export function liveMapStatusText(state: "idle" | "loading" | "ready" | "error",
 export function activeDayLabel(activeDay: DayFilter, groups: RouteDayGroup[], allDays = "All days", chooseDay = "Choose day"): string {
   if (activeDay === "all") return allDays;
   return groups.find((group) => group.day === activeDay)?.label ?? chooseDay;
+}
+
+function StaticRouteFallback({
+  routeDayGroups,
+  routePoints,
+  stopListLabel,
+}: {
+  routeDayGroups: RouteDayGroup[];
+  routePoints: RoutePoint[];
+  stopListLabel: string;
+}) {
+  return (
+    <div className={routeMapFallbackClassName}>
+      <span className={cn(mapZoneClassName, mapZoneHongKongClassName)}>Hong Kong</span>
+      <span className={cn(mapZoneClassName, mapZoneShenzhenClassName)}>Shenzhen</span>
+      <span className={cn(mapZoneClassName, mapZoneBayClassName)}>Victoria Harbour</span>
+      <svg className={routeMapSvgClassName} viewBox="0 0 100 100" aria-hidden="true" focusable="false">
+        {routeDayGroups.map((group) => {
+          const pathPoints = group.points.map((point) => `${point.x},${point.y}`).join(" ");
+          return (
+            <g key={group.day} style={routeLineStyle(group.color)}>
+              <polyline className={routeMapPathShadowClassName} points={pathPoints} />
+              <polyline className={routeMapPathClassName} points={pathPoints} />
+            </g>
+          );
+        })}
+      </svg>
+      {routePoints.map((point, index) => (
+        <span
+          className={routeMarkerClassName}
+          style={markerStyle(point, index, dayColorFor(point.item.day, routeDayGroups))}
+          aria-hidden="true"
+          key={point.item.id}
+        >
+          <span>{index + 1}</span>
+        </span>
+      ))}
+      {routePoints.length > 0 ? (
+        <ol className={routeStopListClassName} aria-label={stopListLabel}>
+          {routePoints.slice(0, 8).map((point, index) => (
+            <li className={routeStopListItemClassName} key={point.item.id}>
+              <span
+                className={routeStopListIndexClassName}
+                style={routeLineStyle(dayColorFor(point.item.day, routeDayGroups))}
+                aria-hidden="true"
+              >
+                {index + 1}
+              </span>
+              <span className={routeStopListCopyClassName}>{point.item.activity}</span>
+            </li>
+          ))}
+        </ol>
+      ) : null}
+    </div>
+  );
 }
 
 function buildRouteDayGroups(groups: ReturnType<typeof groupItemsByDay>, routePoints: RoutePoint[], startDate: string, locale: "en" | "th"): RouteDayGroup[] {

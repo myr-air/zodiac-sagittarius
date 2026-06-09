@@ -330,6 +330,7 @@ export const messages = {
       redo: "Redo",
       editRequiresOrganizer: "Editing requires organizer access.",
       scrollLabel: "Scrollable itinerary rows",
+      mobileInspectorLabel: "Selected stop details",
       caption: "Trip itinerary rows grouped by day.",
       dayItems: ({ days, stops }: { days: number; stops: number }) => `${days} days / ${stops} stops`,
       headers: {
@@ -390,6 +391,8 @@ export const messages = {
       canvasLabel: "Map preview of the Hong Kong and Shenzhen itinerary route",
       liveLoading: "Loading map from OpenFreeMap",
       liveError: "Could not load the live map. Showing the fallback route diagram.",
+      retryLiveMap: "Retry live map",
+      visibleStopsLabel: "Visible route stops",
       locationStatus: ({ mapped, total, unresolved }: { mapped: number; total: number; unresolved: number }) => `${mapped}/${total} mapped · ${unresolved} unresolved`,
       unresolvedLabel: "Activities without coordinates",
       unresolvedTitle: ({ count }: { count: number }) => `${count} activities need coordinates`,
@@ -1420,6 +1423,7 @@ export const messages = {
       redo: "ทำซ้ำ",
       editRequiresOrganizer: "ต้องมีสิทธิ์ผู้จัดทริปจึงจะแก้ไขได้",
       scrollLabel: "รายการแผนการเดินทางแบบเลื่อนได้",
+      mobileInspectorLabel: "รายละเอียดจุดที่เลือก",
       caption: "รายการแผนการเดินทาง แยกตามวัน",
       dayItems: ({ days, stops }: { days: number; stops: number }) => `${days} วัน / ${stops} จุด`,
       headers: {
@@ -1480,6 +1484,8 @@ export const messages = {
       canvasLabel: "ตัวอย่างแผนที่เส้นทางฮ่องกงและเซินเจิ้น",
       liveLoading: "กำลังโหลดแผนที่จาก OpenFreeMap",
       liveError: "โหลดแผนที่สดไม่สำเร็จ แสดงแผนผังสำรองไว้ก่อน",
+      retryLiveMap: "ลองโหลดแผนที่สดอีกครั้ง",
+      visibleStopsLabel: "จุดบนเส้นทางที่แสดงอยู่",
       locationStatus: ({ mapped, total, unresolved }: { mapped: number; total: number; unresolved: number }) => `${mapped}/${total} มีพิกัด · ${unresolved} ยังไม่ระบุ`,
       unresolvedLabel: "กิจกรรมที่ยังไม่มีพิกัด",
       unresolvedTitle: ({ count }: { count: number }) => `${count} กิจกรรมยังไม่มีพิกัด`,

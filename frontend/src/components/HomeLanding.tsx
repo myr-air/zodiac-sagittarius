@@ -201,6 +201,7 @@ export function HomeLanding() {
           <div className={homeTitleSceneClassName}>
             <h1 className={homeHeroTitleClassName} id="home-title">
               <span>{landing.hero.titleLines.first}</span>
+              {" "}
               <span>{landing.hero.titleLines.second}</span>
             </h1>
           </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import type { PlanningView } from "@/src/app/SagittariusApp";
 import { LanguageSwitch } from "@/src/i18n/LanguageSwitch";
 import { useI18n } from "@/src/i18n/I18nProvider";
@@ -54,7 +54,7 @@ const brandNameClassName = "text-xl font-extrabold leading-7 text-(--color-prima
 const railToggleClassName = "rail-toggle inline-flex min-h-9 w-9 items-center justify-center border-0 bg-transparent text-(--color-text-muted) transition-[color,background] duration-150 hover:bg-(--color-primary-soft) hover:text-(--color-primary) data-[collapsed=true]:rounded-(--radius-sm) data-[collapsed=true]:border data-[collapsed=true]:border-(--color-border) data-[collapsed=true]:bg-(--color-surface) data-[collapsed=true]:[&_.icon]:size-4";
 const appLayoutClassName = "app-layout grid min-h-screen grid-cols-[228px_minmax(0,1fr)] bg-[linear-gradient(180deg,rgb(255_255_255_/_0.26),transparent_220px),transparent] data-[sidebar-collapsed=true]:grid-cols-[68px_minmax(0,1fr)] max-[1199px]:grid-cols-[68px_minmax(0,1fr)] max-[767px]:block";
 const sideRailClassName = "side-rail sticky top-0 z-[5] grid h-screen grid-rows-[62px_1fr_auto_auto] gap-0 overflow-hidden border-r border-(--color-border) bg-(--color-surface) max-[767px]:static max-[767px]:h-auto max-[767px]:grid-rows-[auto_auto] max-[767px]:border-b max-[767px]:border-r-0 max-[767px]:pb-2";
-const railLinksClassName = "rail-links grid content-start gap-1 overflow-y-auto px-2.5 pb-3 pt-2.5 max-[767px]:flex max-[767px]:w-full max-[767px]:max-w-full max-[767px]:overflow-x-auto max-[767px]:overflow-y-hidden max-[767px]:pb-2 max-[767px]:pt-0";
+const railLinksClassName = "rail-links grid content-start gap-1 overflow-y-auto px-2.5 pb-3 pt-2.5 max-[767px]:flex max-[767px]:w-full max-[767px]:max-w-full max-[767px]:overflow-x-auto max-[767px]:overflow-y-hidden max-[767px]:overscroll-x-contain max-[767px]:pb-2 max-[767px]:pt-0 max-[767px]:[scrollbar-width:none] max-[767px]:[&::-webkit-scrollbar]:hidden max-[767px]:[mask-image:linear-gradient(to_right,transparent,#000_18px,#000_calc(100%-18px),transparent)]";
 const railLinkClassName = "rail-link relative inline-flex min-h-10 items-center gap-[13px] rounded-(--radius-md) px-[13px] text-[13px] font-semibold text-[#334155] no-underline transition-[background,color] duration-150 hover:bg-(--color-surface-subtle) hover:text-(--color-primary-strong) data-[collapsed=true]:justify-center data-[collapsed=true]:px-0 max-[1199px]:justify-center max-[1199px]:px-0 max-[767px]:min-h-[38px] max-[767px]:max-w-[118px] max-[767px]:shrink-0 max-[767px]:justify-start max-[767px]:gap-2 max-[767px]:px-2.5";
 const activeRailLinkClassName = "rail-link--active bg-[linear-gradient(90deg,rgb(15_118_110_/_0.12),rgb(15_118_110_/_0.04))] text-(--color-primary-strong) before:absolute before:left-[-10px] before:h-7 before:w-[3px] before:rounded-full before:bg-(--color-primary) before:content-['']";
 const railLinkLabelClassName = "data-[collapsed=true]:hidden max-[1199px]:hidden max-[767px]:!inline max-[767px]:min-w-0 max-[767px]:truncate";
@@ -79,8 +79,16 @@ const identityDialogPrimaryButtonClassName = "inline-flex min-h-9 items-center j
 export function AppShell({ activeView, children, collapsed, currentMember, onLeaveParticipantSession, onNavigateView, trip, onToggleCollapsed }: AppShellProps) {
   const { t } = useI18n();
   const [identityDialogOpen, setIdentityDialogOpen] = useState(false);
+  const activeLinkRef = useRef<HTMLAnchorElement | null>(null);
   const navItems = tripWorkspaceNavItems(trip.id, t.routes);
   const settingsHref = appRoutes.tripSettings(trip.id);
+
+  useEffect(() => {
+    const activeLink = activeLinkRef.current;
+    if (typeof activeLink?.scrollIntoView === "function") {
+      activeLink.scrollIntoView({ block: "nearest", inline: "center" });
+    }
+  }, [activeView]);
 
   function openLeaveParticipantSessionDialog() {
     if (!onLeaveParticipantSession) return;
@@ -119,32 +127,38 @@ export function AppShell({ activeView, children, collapsed, currentMember, onLea
         </div>
 
         <div className={railLinksClassName}>
-          {navItems.map((item) => (
+          {navItems.map((item) => {
+            const isActive = item.id === activeView;
+            return (
             <a
-              aria-current={item.id === activeView ? "page" : undefined}
-              className={cn(railLinkClassName, item.id === activeView && activeRailLinkClassName)}
+              aria-current={isActive ? "page" : undefined}
+              className={cn(railLinkClassName, isActive && activeRailLinkClassName)}
               data-collapsed={collapsed ? "true" : "false"}
+              data-active={isActive ? "true" : "false"}
               href={item.href}
               key={item.id}
               onClick={onNavigateView ? (event) => {
                 event.preventDefault();
                 onNavigateView(item.id, item.href);
               } : undefined}
+              ref={isActive ? activeLinkRef : undefined}
               title={item.label}
             >
               <Icon name={item.icon} />
               <span className={railLinkLabelClassName} data-collapsed={collapsed ? "true" : "false"}>{item.label}</span>
             </a>
-          ))}
+          );})}
           <a
             aria-current={activeView === "settings" ? "page" : undefined}
             className={cn(railLinkClassName, activeView === "settings" && activeRailLinkClassName)}
             data-collapsed={collapsed ? "true" : "false"}
+            data-active={activeView === "settings" ? "true" : "false"}
             href={settingsHref}
             onClick={onNavigateView ? (event) => {
               event.preventDefault();
               onNavigateView("settings", settingsHref);
             } : undefined}
+            ref={activeView === "settings" ? activeLinkRef : undefined}
             title={t.appShell.nav.settings}
           >
             <Icon name="settings" />

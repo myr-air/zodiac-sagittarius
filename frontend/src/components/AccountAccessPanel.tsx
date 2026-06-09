@@ -768,9 +768,9 @@ function AuthTravelCollage({ labels }: { labels: Messages["access"]["entryHero"]
 
   return (
     <div className="account-travel-collage" aria-label={labels.collageLabel}>
-      {photos.map((photo) => (
+      {photos.map((photo, index) => (
         <figure className={cn(travelPhotoCardClassName, travelPhotoCardVariants[photo.id])} key={photo.id}>
-          <Image alt={photo.alt} className={travelPhotoImageClassName} fill sizes="220px" src={`/landing/auth/photo-${photo.id}.png`} />
+          <Image alt={photo.alt} className={travelPhotoImageClassName} fill loading={index === 0 ? "eager" : "lazy"} sizes="220px" src={`/landing/auth/photo-${photo.id}.png`} />
           <span className={travelPhotoHeartClassName} aria-hidden="true" />
           <figcaption className={travelPhotoCaptionClassName}>{photo.label}</figcaption>
         </figure>

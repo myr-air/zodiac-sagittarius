@@ -207,6 +207,28 @@ const addStopRowDropTargetClassName =
   "add-stop-row--drop-target [&_td]:!bg-(--color-primary-soft) [&_td]:shadow-[inset_0_0_0_2px_var(--color-primary-border)]";
 const addStopInlineButtonClassName =
   "inline-flex min-h-8 w-full items-center justify-center gap-2 rounded-(--radius-sm) border border-dashed border-(--color-primary-border) bg-[rgb(240_253_250_/_0.72)] px-3 text-[12px] font-extrabold text-(--color-primary-strong) transition-[background,border-color,color] duration-150 hover:enabled:bg-(--color-primary-soft) disabled:cursor-not-allowed disabled:border-(--color-border) disabled:bg-transparent disabled:text-(--color-text-subtle)";
+const mobileInspectorClassName =
+  "mobile-itinerary-inspector mt-3 hidden gap-3 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) p-3 shadow-[0_14px_30px_rgb(15_23_42_/_0.08)] max-[767px]:grid";
+const mobileInspectorHeaderClassName =
+  "grid gap-1 border-b border-(--color-border) pb-2";
+const mobileInspectorTitleClassName =
+  "m-0 truncate text-base font-black leading-6 text-(--color-text)";
+const mobileInspectorMetaClassName =
+  "m-0 inline-flex flex-wrap items-center gap-2 text-[11px] font-extrabold text-(--color-text-muted)";
+const mobileInspectorGridClassName = "grid grid-cols-2 gap-2";
+const mobileInspectorWideClassName = "col-span-2";
+const mobileInspectorLabelClassName =
+  "grid gap-1 text-[11px] font-extrabold text-(--color-text-muted)";
+const mobileInspectorFieldClassName = cn(inlineFieldClassName, "min-h-11 border-(--color-border) bg-(--color-surface-subtle) px-3 text-sm");
+const mobileInspectorSubtleFieldClassName = cn(mobileInspectorFieldClassName, "text-(--color-text)");
+const mobileInspectorTimeFieldClassName = cn(mobileInspectorFieldClassName, "text-left tabular-nums");
+const mobileInspectorTypeButtonClassName = "min-h-11 border-(--color-border) bg-(--color-surface-subtle) px-3 text-sm";
+const mobileInspectorDurationClassName = "grid grid-cols-3 gap-2";
+const mobileInspectorDurationButtonClassName =
+  "min-h-10 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) px-2 text-xs font-extrabold text-(--color-text) transition-[background,border-color,color] duration-150 hover:enabled:border-(--color-primary-border) hover:enabled:bg-(--color-primary-soft) hover:enabled:text-(--color-primary-strong) disabled:cursor-not-allowed disabled:opacity-50";
+const mobileInspectorActionsClassName = "flex flex-wrap gap-2";
+const mobileInspectorActionButtonClassName =
+  "inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) px-3 text-xs font-extrabold text-(--color-text) transition-[background,border-color,color] duration-150 hover:enabled:border-(--color-primary-border) hover:enabled:bg-(--color-primary-soft) hover:enabled:text-(--color-primary-strong) disabled:cursor-not-allowed disabled:opacity-50";
 const graphCellClassName =
   "activity-path-graph-cell !h-auto !bg-(--color-surface-subtle) !p-0 !align-top !shadow-none";
 const deleteModalBackdropClassName =
@@ -303,6 +325,10 @@ export function SmartItineraryTable({
   const displayItems = allDisplayItems.filter((item) =>
     selectedPathIdSet.has(itineraryItemPathId(item)),
   );
+  const selectedItem =
+    displayItems.find((item) => item.id === selectedItemId) ??
+    allDisplayItems.find((item) => item.id === selectedItemId) ??
+    null;
   const selectedFilterLabel = formatSelectedPlanLabel(
     filterOptions,
     selectedPathIds,
@@ -798,6 +824,17 @@ export function SmartItineraryTable({
           ))}
         </table>
       </div>
+      {selectedItem ? (
+        <MobileSelectedStopInspector
+          canEdit={canEdit}
+          item={selectedItem}
+          itineraryLabels={t.itinerary}
+          locale={locale}
+          onDeleteItem={setPendingDeleteItem}
+          onEditItem={onEditItem}
+          onUpdateItemInline={onUpdateItemInline}
+        />
+      ) : null}
       {pendingDeleteItem ? (
         <div className={deleteModalBackdropClassName} role="presentation">
           <section
@@ -841,6 +878,139 @@ export function SmartItineraryTable({
           </section>
         </div>
       ) : null}
+    </section>
+  );
+}
+
+function MobileSelectedStopInspector({
+  canEdit,
+  item,
+  itineraryLabels,
+  locale,
+  onDeleteItem,
+  onEditItem,
+  onUpdateItemInline,
+}: {
+  canEdit: boolean;
+  item: ItineraryItem;
+  itineraryLabels: Messages["itinerary"];
+  locale: Locale;
+  onDeleteItem?: (item: ItineraryItem) => void;
+  onEditItem?: (itemId: string) => void;
+  onUpdateItemInline?: (
+    itemId: string,
+    patch: InlineItineraryItemPatch,
+  ) => void | Promise<void>;
+}) {
+  return (
+    <section className={mobileInspectorClassName} aria-label={itineraryLabels.mobileInspectorLabel}>
+      <div className={mobileInspectorHeaderClassName}>
+        <h2 className={mobileInspectorTitleClassName}>{item.activity}</h2>
+        <p className={mobileInspectorMetaClassName}>
+          <span>{item.startTime}</span>
+          <span>·</span>
+          <span>{formatDuration(item.durationMinutes, locale)}</span>
+          <span>·</span>
+          <span>{item.pathName ?? "Main"}</span>
+        </p>
+      </div>
+      <div className={mobileInspectorGridClassName}>
+        <label className={cn(mobileInspectorLabelClassName, mobileInspectorWideClassName)}>
+          {itineraryLabels.headers.activity}
+          <InlineTextField
+            ariaLabel={itineraryLabels.row.inlineActivity({ activity: item.activity })}
+            canEdit={canEdit}
+            className={mobileInspectorFieldClassName}
+            itemValue={item.activity}
+            key={`${item.id}:mobile-activity:${item.activity}`}
+            required
+            onCommit={(activity) => onUpdateItemInline?.(item.id, { activity })}
+          />
+        </label>
+        <label className={cn(mobileInspectorLabelClassName, mobileInspectorWideClassName)}>
+          {itineraryLabels.headers.map}
+          <InlineTextField
+            ariaLabel={itineraryLabels.row.inlinePlace({ activity: item.activity })}
+            canEdit={canEdit}
+            className={mobileInspectorSubtleFieldClassName}
+            itemValue={item.place}
+            key={`${item.id}:mobile-place:${item.place}`}
+            required
+            onCommit={(place) => onUpdateItemInline?.(item.id, { place })}
+          />
+        </label>
+        <label className={mobileInspectorLabelClassName}>
+          {itineraryLabels.headers.time}
+          <InlineTextField
+            ariaLabel={itineraryLabels.row.inlineTime({ activity: item.activity })}
+            canEdit={canEdit}
+            className={mobileInspectorTimeFieldClassName}
+            itemValue={item.startTime}
+            key={`${item.id}:mobile-time:${item.startTime}`}
+            type="time"
+            onCommit={(startTime) => onUpdateItemInline?.(item.id, { startTime })}
+          />
+        </label>
+        <span className={mobileInspectorLabelClassName}>
+          {itineraryLabels.headers.type}
+          <InlineActivityTypeSelect
+            activity={`${item.id}-mobile`}
+            ariaLabel={itineraryLabels.row.inlineType({ activity: item.activity })}
+            buttonClassName={mobileInspectorTypeButtonClassName}
+            canEdit={canEdit}
+            locale={locale}
+            value={item.activityType}
+            onCommit={(activityType) => onUpdateItemInline?.(item.id, { activityType })}
+          />
+        </span>
+        <label className={cn(mobileInspectorLabelClassName, mobileInspectorWideClassName)}>
+          {itineraryLabels.headers.transport}
+          <InlineTextField
+            ariaLabel={itineraryLabels.row.inlineTransportation({ activity: item.activity })}
+            canEdit={canEdit}
+            className={mobileInspectorSubtleFieldClassName}
+            itemValue={item.transportation}
+            key={`${item.id}:mobile-transportation:${item.transportation}`}
+            placeholder="—"
+            onCommit={(transportation) => onUpdateItemInline?.(item.id, { transportation })}
+          />
+        </label>
+      </div>
+      <div className={mobileInspectorDurationClassName}>
+        {durationPresetMinutes.map((minutes) => (
+          <button
+            type="button"
+            className={mobileInspectorDurationButtonClassName}
+            disabled={!canEdit}
+            key={minutes}
+            onClick={() => onUpdateItemInline?.(item.id, { durationMinutes: minutes })}
+          >
+            {formatDuration(minutes, locale)}
+          </button>
+        ))}
+      </div>
+      <div className={mobileInspectorActionsClassName}>
+        <button
+          type="button"
+          className={mobileInspectorActionButtonClassName}
+          disabled={!canEdit}
+          aria-label={itineraryLabels.row.edit({ activity: item.activity })}
+          onClick={() => onEditItem?.(item.id)}
+        >
+          <Icon name="edit" />
+          {itineraryLabels.headers.actions}
+        </button>
+        <button
+          type="button"
+          className={mobileInspectorActionButtonClassName}
+          disabled={!canEdit}
+          aria-label={itineraryLabels.row.delete({ activity: item.activity })}
+          onClick={() => onDeleteItem?.(item)}
+        >
+          <Icon name="trash" />
+          {itineraryLabels.row.confirmDeleteYes}
+        </button>
+      </div>
     </section>
   );
 }
@@ -1533,17 +1703,25 @@ function DayWeatherChip({
   if (!briefing) return null;
   const weather = briefing.weather;
   const condition = weatherGraphicLabel(weather?.conditionCode);
+  const high = weather?.temperatureMaxCelsius;
+  const low = weather?.temperatureMinCelsius;
+  const hasForecastTemps = typeof high === "number" && typeof low === "number";
+  const weatherLabel = hasForecastTemps ? `${condition} ${formatWeatherTemp(high)} ${formatWeatherTemp(low)}` : condition;
   return (
     <span
       className={dayWeatherChipClassName}
-      aria-label={`Weather for ${dayLabel}: ${condition} ${formatWeatherTemp(weather?.temperatureMaxCelsius)} ${formatWeatherTemp(weather?.temperatureMinCelsius)}`}
-      title={`${condition} ${formatWeatherTemp(weather?.temperatureMaxCelsius)} ${formatWeatherTemp(weather?.temperatureMinCelsius)}`}
+      aria-label={`Weather for ${dayLabel}: ${weatherLabel}`}
+      title={weatherLabel}
     >
       <span aria-hidden="true">
-        {weatherIconForCondition(weather?.conditionCode)}
+        <Icon name={weatherIconForCondition(weather?.conditionCode)} />
       </span>{" "}
-      <strong>{formatWeatherTemp(weather?.temperatureMaxCelsius)}</strong>{" "}
-      <span>{formatWeatherTemp(weather?.temperatureMinCelsius)}</span>
+      {hasForecastTemps ? (
+        <>
+          <strong>{formatWeatherTemp(high)}</strong>{" "}
+          <span>{formatWeatherTemp(low)}</span>
+        </>
+      ) : <span>{condition}</span>}
     </span>
   );
 }
@@ -1808,6 +1986,7 @@ function InlineOptionPicker({
 function InlineActivityTypeSelect({
   activity,
   ariaLabel,
+  buttonClassName = "",
   canEdit,
   locale,
   onCommit,
@@ -1815,6 +1994,7 @@ function InlineActivityTypeSelect({
 }: {
   activity: string;
   ariaLabel: string;
+  buttonClassName?: string;
   canEdit: boolean;
   locale: Locale;
   onCommit: (value: ActivityType) => void | Promise<void>;
@@ -1823,7 +2003,7 @@ function InlineActivityTypeSelect({
   return (
     <InlineOptionPicker
       ariaLabel={ariaLabel}
-      buttonClassName=""
+      buttonClassName={buttonClassName}
       disabled={!canEdit}
       value={value}
       options={activityTypeOptions.map((option) => ({

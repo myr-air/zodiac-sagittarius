@@ -147,6 +147,23 @@ describe("AccountAccessPanel", () => {
     expect(screen.getByRole("button", { name: /^Resend code$/i })).toBeEnabled();
   });
 
+  it("eager-loads only the above-fold auth collage image", () => {
+    render(
+      <AccountAccessPanel
+        accessMode="account-login"
+        accountClient={createAccountClient()}
+        accountSession={null}
+        trip={seedTrip}
+        onAccountSessionChange={vi.fn()}
+        onAuthenticated={vi.fn()}
+        onTripChange={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByAltText("Krabi beach lagoon with limestone cliffs and a longtail boat")).toHaveAttribute("loading", "eager");
+    expect(screen.getByAltText("Kyoto traditional street with wooden houses and a pagoda")).toHaveAttribute("loading", "lazy");
+  });
+
   it("requires a valid email format before continuing", async () => {
     const user = userEvent.setup();
     render(

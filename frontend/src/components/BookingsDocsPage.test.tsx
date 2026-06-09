@@ -20,9 +20,11 @@ describe("BookingsDocsPage", () => {
     expect(screen.getByText("HKD 8,660")).toBeInTheDocument();
     expect(screen.getByText("2 need action")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Transport/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Transport/i })).toHaveClass("min-h-[72px]");
     expect(screen.getByRole("button", { name: /Travel docs/i })).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Thu, Jun 18" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Select Bangkok to Hong Kong flight/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Select Bangkok to Hong Kong flight/i }).closest(".booking-ticket-card")).toHaveClass("min-h-[156px]");
     expect(screen.getByRole("heading", { name: "Bangkok to Hong Kong flight" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Open Airline booking/i })).toHaveAttribute("href", "https://example.com/airline/booking/QR349-HK");
   });

@@ -69,12 +69,7 @@ body {
   margin: 0;
   overflow-x: hidden;
   color: var(--color-text);
-  background:
-    var(--paper-grain),
-    var(--watercolor-page-wash),
-    var(--color-page);
-  background-attachment: fixed;
-  background-size: 140px 140px, auto, auto;
+  background: var(--color-page);
   font-family: var(--font-sans);
   font-synthesis: none;
   letter-spacing: 0;
@@ -505,29 +500,6 @@ button:disabled,
     opacity: 1;
     transform: translateY(0);
   }
-}
-
-.page-header::before {
-  position: absolute;
-  inset: 0 auto 0 0;
-  z-index: 1;
-  width: 5px;
-  background: var(--color-primary);
-  content: "";
-}
-
-.page-header::after {
-  position: absolute;
-  right: -76px;
-  bottom: -98px;
-  width: 260px;
-  height: 190px;
-  border-radius: 999px;
-  background:
-    radial-gradient(circle at 42% 44%, rgb(250 204 21 / 0.16), transparent 58%),
-    radial-gradient(circle at 58% 52%, rgb(56 189 248 / 0.12), transparent 62%);
-  content: "";
-  pointer-events: none;
 }
 
 .overview-hero-skyline,

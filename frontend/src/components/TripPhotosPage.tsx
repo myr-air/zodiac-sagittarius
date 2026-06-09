@@ -48,8 +48,9 @@ const providerGridClassName = "photos-providers grid grid-cols-7 gap-2 max-[1399
 const providerButtonClassName = "grid min-h-[76px] content-between gap-2 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) p-3 text-left transition-[background-color,border-color,box-shadow,transform] duration-150 hover:-translate-y-0.5 hover:border-(--color-primary-border) hover:bg-[#fbfffd] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary)";
 const selectedProviderClassName = "border-(--color-primary-border) bg-(--color-primary-soft) shadow-[0_8px_18px_rgb(15_118_110_/_0.1)]";
 const cardGridClassName = "photo-album-grid grid grid-cols-[repeat(auto-fit,minmax(270px,1fr))] gap-2";
-const albumCardClassName = "photo-album-card grid min-h-[190px] grid-rows-[auto_minmax(0,1fr)_auto] gap-3 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) p-3 text-left text-sm shadow-[0_8px_18px_rgb(15_23_42_/_0.035)] transition-[background-color,border-color,box-shadow,transform] duration-150 hover:-translate-y-0.5 hover:border-(--color-primary-border) hover:bg-[#fbfefd]";
+const albumCardClassName = "photo-album-card grid min-h-[214px] grid-rows-[auto_minmax(0,1fr)_auto] gap-3 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) p-3 text-left text-sm shadow-[0_8px_18px_rgb(15_23_42_/_0.035)] transition-[background-color,border-color,box-shadow,transform] duration-150 hover:-translate-y-0.5 hover:border-(--color-primary-border) hover:bg-[#fbfefd]";
 const selectedAlbumClassName = "border-(--color-primary-border) bg-(--color-primary-soft) shadow-[0_10px_22px_rgb(15_118_110_/_0.09)]";
+const albumCoverClassName = "photo-album-cover min-h-[74px] overflow-hidden rounded-(--radius-md) border border-(--color-border) bg-[linear-gradient(135deg,rgb(236_254_255),rgb(255_247_237)_54%,rgb(239_246_255))] bg-cover bg-center";
 const inspectorClassName = "photos-inspector sticky top-3 grid max-h-[calc(100vh-92px)] content-start gap-3 overflow-auto rounded-(--radius-lg) border border-[rgb(15_23_42_/_0.08)] bg-[rgb(255_255_255_/_0.96)] p-3.5 shadow-[0_14px_28px_rgb(15_23_42_/_0.05)] max-[1199px]:static max-[1199px]:max-h-none";
 const inspectorSectionClassName = "grid gap-2 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface-subtle) p-2.5 text-sm";
 const dialogBackdropClassName = "fixed inset-0 z-20 grid place-items-center bg-[rgb(15_23_42_/_0.28)] p-4";
@@ -230,9 +231,16 @@ function PhotoAlbumCard({
 }) {
   const href = safePhotoAlbumHref(album.url);
   const owner = trip.members.find((member) => member.id === album.ownerMemberId);
+  const coverHref = safePhotoAlbumHref(album.coverUrl);
   return (
     <article className={cn(albumCardClassName, selected && selectedAlbumClassName)}>
       <button type="button" className="grid min-w-0 gap-2 text-left" onClick={onSelect} aria-label={`Select ${album.title}`}>
+        <span
+          aria-label={`Cover for ${album.title}`}
+          className={albumCoverClassName}
+          role="img"
+          style={coverHref ? { backgroundImage: `url(${coverHref})` } : undefined}
+        />
         <span className="flex items-center justify-between gap-2">
           <Badge tone={album.access === "collaborative" ? "primary" : album.access === "upload_request" ? "warning" : "route"}>{accessLabel(album.access)}</Badge>
           <span className="text-xs font-extrabold text-(--color-text-muted)">{providerLabel(album.provider)}</span>
@@ -284,6 +292,7 @@ function PhotoAlbumInspector({
   }
   const href = safePhotoAlbumHref(album.url);
   const createdBy = trip.members.find((member) => member.id === album.createdBy);
+  const linkHost = albumLinkHost(href);
   return (
     <aside className={inspectorClassName} aria-label="Photo album inspector">
       <div className="grid gap-2">
@@ -292,6 +301,18 @@ function PhotoAlbumInspector({
         <span className="text-sm font-semibold leading-6 text-(--color-text-muted)">External provider permissions control real access.</span>
       </div>
       <div className={inspectorSectionClassName}>
+        <div className="flex min-w-0 items-center justify-between gap-2">
+          <span className="min-w-0 truncate text-xs font-black text-(--color-text-muted)">{linkHost ?? "Blocked link"}</span>
+          {href ? (
+            <button
+              type="button"
+              className="inline-flex min-h-8 items-center gap-1.5 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-2 text-xs font-extrabold text-(--color-primary-strong)"
+              onClick={() => void navigator.clipboard?.writeText(album.url)}
+            >
+              <Icon name="copy" /> Copy
+            </button>
+          ) : null}
+        </div>
         {href ? (
           <Button asChild className="w-full">
             <a href={href} target="_blank" rel="noreferrer">Open album<Icon name="external" /></a>
@@ -299,7 +320,6 @@ function PhotoAlbumInspector({
         ) : (
           <strong className="text-[#b91c1c]">Unsafe link blocked</strong>
         )}
-        <span className="break-all text-xs font-semibold text-(--color-text-muted)">{album.url}</span>
       </div>
       <div className={inspectorSectionClassName}>
         <strong className="text-(--color-text)">Access</strong>
@@ -319,6 +339,15 @@ function PhotoAlbumInspector({
       </div>
     </aside>
   );
+}
+
+function albumLinkHost(href: string | null): string | null {
+  if (!href) return null;
+  try {
+    return new URL(href).host;
+  } catch {
+    return null;
+  }
 }
 
 function PhotoAlbumDialog({

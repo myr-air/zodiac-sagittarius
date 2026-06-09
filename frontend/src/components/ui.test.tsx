@@ -50,8 +50,8 @@ describe("shared UI primitives", () => {
     expect(screen.getByRole("heading", { name: "Itinerary", level: 1 })).toBeInTheDocument();
     expect(screen.getByRole("banner")).toHaveClass(
       "page-header",
-      "min-h-[126px]",
-      "bg-[image:var(--watercolor-surface-wash),var(--paper-grain)]",
+      "min-h-[112px]",
+      "shadow-none",
     );
     expect(screen.queryByText("Plan")).not.toBeInTheDocument();
 

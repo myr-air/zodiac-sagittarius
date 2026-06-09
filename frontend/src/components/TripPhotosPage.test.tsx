@@ -19,7 +19,7 @@ const albums: TripPhotoAlbumLink[] = [
     day: "2026-06-18",
     description: "Shared album for everyone",
     accessNote: "Everyone can add photos",
-    coverUrl: null,
+    coverUrl: "https://images.example.test/hong-kong-album.jpg",
     createdBy: "member-aom",
     updatedAt: "2026-06-08T00:00:00.000Z",
     version: 1,
@@ -69,7 +69,10 @@ describe("TripPhotosPage", () => {
     expect(screen.getByText("1 collaborative")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Google Photos, 1 albums" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Select Google Photos group album/i })).toBeInTheDocument();
+    expect(screen.getByLabelText("Cover for Google Photos group album")).toHaveStyle({ backgroundImage: "url(https://images.example.test/hong-kong-album.jpg)" });
     expect(screen.getByRole("heading", { name: "Google Photos group album" })).toBeInTheDocument();
+    expect(screen.getByText("photos.app.goo.gl")).toBeInTheDocument();
+    expect(screen.queryByText("https://photos.app.goo.gl/group")).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Open album/i })).toHaveAttribute("href", "https://photos.app.goo.gl/group");
 
     expect(screen.getByRole("button", { name: /Select Unsafe import/i })).toBeInTheDocument();

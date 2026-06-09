@@ -1,6 +1,6 @@
 import type { SVGProps } from "react";
 
-type IconName =
+export type IconName =
   | "alertCircle"
   | "calendar"
   | "check"
@@ -32,10 +32,12 @@ type IconName =
   | "redo"
   | "route"
   | "settings"
+  | "sun"
   | "table"
   | "ticket"
   | "trash"
   | "undo"
+  | "umbrella"
   | "utensils"
   | "users"
   | "wallet"
@@ -88,10 +90,12 @@ export function Icon({ name, className, ...props }: SVGProps<SVGSVGElement> & { 
   if (name === "redo") return <svg {...common}><path d="m17 1 4 4-4 4" /><path d="M3 11a4 4 0 0 1 4-4h14" /><path d="M7 7h7a7 7 0 0 1 0 14H6" /></svg>;
   if (name === "route") return <svg {...common}><circle cx="6" cy="6" r="2" /><circle cx="18" cy="18" r="2" /><path d="M8 6h5a3 3 0 0 1 0 6h-2a3 3 0 0 0 0 6h5" /></svg>;
   if (name === "settings") return <svg {...common}><path d="M12 15.5A3.5 3.5 0 1 0 12 8a3.5 3.5 0 0 0 0 7.5Z" /><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1A2 2 0 1 1 4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.6-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1A2 2 0 1 1 7 4.2l.1.1a1.7 1.7 0 0 0 1.9.3 1.7 1.7 0 0 0 1-1.6V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1A2 2 0 1 1 19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.1a2 2 0 1 1 0 4H21a1.7 1.7 0 0 0-1.6 1Z" /></svg>;
+  if (name === "sun") return <svg {...common}><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></svg>;
   if (name === "table") return <svg {...common}><rect x="3" y="4" width="18" height="16" rx="2" /><path d="M3 10h18M9 10v10M15 10v10" /></svg>;
   if (name === "ticket") return <svg {...common}><path d="M3 9a3 3 0 0 0 0 6v3a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-3a3 3 0 0 0 0-6V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2Z" /><path d="M13 5v2M13 11v2M13 17v2" /></svg>;
   if (name === "trash") return <svg {...common}><path d="M3 6h18M8 6V4h8v2M6 6l1 16h10l1-16" /><path d="M10 11v6M14 11v6" /></svg>;
   if (name === "undo") return <svg {...common}><path d="m7 1-4 4 4 4" /><path d="M21 11a4 4 0 0 0-4-4H3" /><path d="M17 7h-7a7 7 0 0 0 0 14h8" /></svg>;
+  if (name === "umbrella") return <svg {...common}><path d="M3 13a9 9 0 0 1 18 0Z" /><path d="M12 13v5a2 2 0 0 0 4 0" /><path d="M4 13h16" /></svg>;
   if (name === "utensils") return <svg {...common}><path d="M4 3v7a3 3 0 0 0 6 0V3M7 3v18M21 3v18M15 3v7a4 4 0 0 0 4 4h2" /></svg>;
   if (name === "users") return <svg {...common}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" /></svg>;
   if (name === "wallet") return <svg {...common}><path d="M20 7H5a3 3 0 0 0 0 6h15v6H5a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3h13a2 2 0 0 1 2 2v1Z" /><path d="M16 13h.01" /></svg>;

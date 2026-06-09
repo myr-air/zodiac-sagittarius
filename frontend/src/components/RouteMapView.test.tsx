@@ -127,6 +127,8 @@ describe("RouteMapView", () => {
     expect(screen.getByRole("heading", { name: "แผนที่" })).toBeInTheDocument();
     expect(screen.getByText(/มีพิกัด/)).toHaveTextContent(`${coordinateItems.length}/${tripFixture.planItems.length} มีพิกัด · 0 ยังไม่ระบุ`);
     expect(screen.getByText("กำลังโหลดแผนที่จาก OpenFreeMap")).toBeInTheDocument();
+    expect(screen.getByText("Hong Kong")).toBeInTheDocument();
+    expect(screen.getByRole("list", { name: "จุดบนเส้นทางที่แสดงอยู่" })).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: /วันที่ 2/ }));
 
@@ -218,8 +220,33 @@ describe("RouteMapView", () => {
 
     await waitFor(() => expect(screen.getByText("Hong Kong")).toBeInTheDocument());
     expect(screen.getByRole("status")).toHaveTextContent("โหลดแผนที่สดไม่สำเร็จ แสดงแผนผังสำรองไว้ก่อน");
+    expect(screen.getByRole("button", { name: "ลองโหลดแผนที่สดอีกครั้ง" })).toBeInTheDocument();
     expect(screen.getByText("Shenzhen")).toBeInTheDocument();
     expect(screen.getByText("Victoria Harbour")).toBeInTheDocument();
+  });
+
+  it("retries the live map after a tile failure remounts MapLibre", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <RouteMapView
+        endDate={tripFixture.trip.endDate}
+        items={tripFixture.planItems}
+        liveMapEnabled
+        startDate={tripFixture.trip.startDate}
+        tripName={tripFixture.trip.name}
+      />,
+    );
+
+    await waitFor(() => expect(maplibreMock.maps[0]).toBeTruthy());
+    (maplibreMock.maps[0] as typeof maplibreMock.maps[number] & { trigger: (event: string) => void }).trigger("error");
+    await waitFor(() => expect(screen.getByRole("button", { name: "ลองโหลดแผนที่สดอีกครั้ง" })).toBeInTheDocument());
+
+    await user.click(screen.getByRole("button", { name: "ลองโหลดแผนที่สดอีกครั้ง" }));
+
+    await waitFor(() => expect(maplibreMock.maps).toHaveLength(2));
+    await waitFor(() => expect(maplibreMock.maps[1]?.addLayer).toHaveBeenCalled());
+    expect(screen.queryByRole("button", { name: "ลองโหลดแผนที่สดอีกครั้ง" })).not.toBeInTheDocument();
   });
 
   it("exposes hybrid Tailwind bridge classes for the map shell and fallback surface", async () => {
