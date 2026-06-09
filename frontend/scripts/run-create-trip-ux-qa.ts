@@ -134,6 +134,12 @@ async function runCreateTripBuilderQa(browser: Browser) {
   await screenshot(page, "create-trip-builder-dates-desktop.png");
   evidence.checks.push("Desktop create-trip date section renders compact calendar controls without oversized cells or clipped actions.");
 
+  await page.locator(".trip-access-panel").evaluate((element) => element.setAttribute("open", ""));
+  await page.locator(".trip-generated-access").evaluate((element) => element.scrollIntoView({ block: "center" }));
+  await expectInviteAccessBlockRestraint(page);
+  await screenshot(page, "create-trip-builder-invite-desktop.png");
+  evidence.checks.push("Desktop create-trip invite credentials use a restrained neutral form block instead of a green cover panel.");
+
   await page.setViewportSize({ width: 390, height: 844 });
   await page.getByRole("button", { name: /Preview step/i }).click();
   await expectNoFrameworkOverlay(page);
@@ -243,6 +249,26 @@ async function expectDateSectionDensity(page: Page) {
   if (result.footerHeight > 44) throw new Error(`Expected compact date footer, got ${result.footerHeight}px.`);
   if (result.helperHeight > 56) throw new Error(`Expected compact date helper, got ${result.helperHeight}px.`);
   if (result.sectionWidth <= 0) throw new Error("Date section is not visible.");
+}
+
+async function expectInviteAccessBlockRestraint(page: Page) {
+  const result = await page.evaluate(() => {
+    const block = document.querySelector<HTMLElement>(".trip-generated-access");
+    const regenerateButton = block?.querySelector<HTMLElement>(".button");
+    const style = block ? getComputedStyle(block) : null;
+    const buttonRect = regenerateButton?.getBoundingClientRect();
+    return {
+      backgroundColor: style?.backgroundColor ?? "",
+      borderRadius: Number.parseFloat(style?.borderRadius ?? "0"),
+      buttonHeight: buttonRect?.height ?? 0,
+      blockWidth: block?.getBoundingClientRect().width ?? 0,
+    };
+  });
+
+  if (result.blockWidth <= 0) throw new Error("Invite access block is not visible.");
+  if (result.backgroundColor !== "rgba(0, 0, 0, 0)") throw new Error(`Invite access block still uses a cover background: ${result.backgroundColor}.`);
+  if (result.borderRadius > 2) throw new Error(`Expected no rounded invite access wrapper, got ${result.borderRadius}px.`);
+  if (result.buttonHeight > 46) throw new Error(`Expected compact regenerate button, got ${result.buttonHeight}px.`);
 }
 
 async function mockEmptyAccountApi(page: Page) {
