@@ -1403,7 +1403,10 @@ describe("SmartItineraryTable", () => {
     expect(
       screen.queryByRole("dialog", { name: /แก้ไขระยะเวลา Dim Dim Sum/i }),
     ).not.toBeInTheDocument();
-    expect(durationEditor.closest("tr")).toBe(row);
+    expect(durationEditor.closest("tr")).toBeNull();
+    expect(row).toContainElement(
+      within(row).getByRole("button", { name: /แก้ไขระยะเวลา Dim Dim Sum/i }),
+    );
     await user.click(
       within(durationEditor).getByRole("button", { name: /1 h 30 m/i }),
     );

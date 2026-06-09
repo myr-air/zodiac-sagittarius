@@ -5,8 +5,10 @@ import {
   useState,
   type CSSProperties,
   type ChangeEvent,
+  type Dispatch,
   type DragEvent,
   type PointerEvent as ReactPointerEvent,
+  type SetStateAction,
   type TouchEvent as ReactTouchEvent,
 } from "react";
 import { createPortal } from "react-dom";
@@ -253,7 +255,7 @@ const deleteDialogBodyClassName =
   "m-0 text-sm font-medium leading-6 text-(--color-text-muted)";
 const deleteDialogActionsClassName = "mt-1 flex justify-end gap-2";
 const durationDialogClassName =
-  "duration-dialog mt-2 grid w-[min(300px,calc(100vw-24px))] gap-3 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) p-3 shadow-[0_12px_28px_rgb(15_23_42_/_0.12)]";
+  "duration-dialog fixed z-[30] grid w-[min(300px,calc(100vw-24px))] gap-3 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) p-3 shadow-[0_12px_28px_rgb(15_23_42_/_0.12)]";
 const durationDialogTitleClassName =
   "m-0 text-sm font-extrabold leading-5 text-(--color-text)";
 const durationPresetGridClassName = "grid grid-cols-3 gap-2";
@@ -1157,11 +1159,13 @@ function DayGroup({
     minutes: string;
   } | null;
   onEditDuration: (item: ItineraryItem) => void;
-  onSetDurationEditor: (
-    updater: (
-      current: { item: ItineraryItem; hours: string; minutes: string } | null,
-    ) => { item: ItineraryItem; hours: string; minutes: string } | null,
-  ) => void;
+  onSetDurationEditor: Dispatch<
+    SetStateAction<{
+      item: ItineraryItem;
+      hours: string;
+      minutes: string;
+    } | null>
+  >;
   onCommitDuration: (itemId: string, minutes: number) => void;
   onCommitCustomDuration: () => void;
   onToggleDay: (day: string) => void;
@@ -1338,101 +1342,22 @@ function DayGroup({
                         onUpdateItemInline?.(item.id, { startTime: value })
                       }
                     />
-                    <button
-                      type="button"
-                      className={durationPillClassName}
-                      disabled={!canEdit}
-                      aria-label={(canEdit
-                        ? itineraryLabels.row.inlineDuration
-                        : itineraryLabels.row.duration)({
-                        activity: item.activity,
-                      })}
-                      onClick={() => onEditDuration(item)}
-                    >
-                      {formatDuration(item.durationMinutes, locale)}
-                    </button>
-                    {durationEditor?.item.id === item.id ? (
-                      <section
-                        className={durationDialogClassName}
-                        role="region"
-                        aria-label={itineraryLabels.row.durationDialogTitle({
-                          activity: item.activity,
-                        })}
-                      >
-                        <h3 className={durationDialogTitleClassName}>
-                          {itineraryLabels.row.durationDialogTitle({
-                            activity: item.activity,
-                          })}
-                        </h3>
-                        <div className={durationPresetGridClassName}>
-                          {durationPresetMinutes.map((minutes) => (
-                            <button
-                              type="button"
-                              className={durationPresetButtonClassName}
-                              key={minutes}
-                              onClick={() => onCommitDuration(item.id, minutes)}
-                            >
-                              {formatDuration(minutes, locale)}
-                            </button>
-                          ))}
-                        </div>
-                        <div className={durationCustomGridClassName}>
-                          <label className={durationInputLabelClassName}>
-                            {itineraryLabels.row.durationHours}
-                            <input
-                              className={durationInputClassName}
-                              inputMode="numeric"
-                              min={0}
-                              type="number"
-                              value={durationEditor.hours}
-                              onChange={(event) =>
-                                onSetDurationEditor((current) =>
-                                  current
-                                    ? { ...current, hours: event.target.value }
-                                    : current,
-                                )
-                              }
-                            />
-                          </label>
-                          <label className={durationInputLabelClassName}>
-                            {itineraryLabels.row.durationMinutes}
-                            <input
-                              className={durationInputClassName}
-                              inputMode="numeric"
-                              max={59}
-                              min={0}
-                              type="number"
-                              value={durationEditor.minutes}
-                              onChange={(event) =>
-                                onSetDurationEditor((current) =>
-                                  current
-                                    ? {
-                                        ...current,
-                                        minutes: event.target.value,
-                                      }
-                                    : current,
-                                )
-                              }
-                            />
-                          </label>
-                        </div>
-                        <div className={deleteDialogActionsClassName}>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            onClick={() => onSetDurationEditor(() => null)}
-                          >
-                            {itineraryLabels.row.durationCancel}
-                          </Button>
-                          <Button
-                            type="button"
-                            onClick={onCommitCustomDuration}
-                          >
-                            {itineraryLabels.row.durationSave}
-                          </Button>
-                        </div>
-                      </section>
-                    ) : null}
+                    <DurationEditorPopover
+                      canEdit={canEdit}
+                      editor={
+                        durationEditor?.item.id === item.id
+                          ? durationEditor
+                          : null
+                      }
+                      item={item}
+                      labels={itineraryLabels}
+                      locale={locale}
+                      onClose={() => onSetDurationEditor(() => null)}
+                      onCommitCustomDuration={onCommitCustomDuration}
+                      onCommitDuration={onCommitDuration}
+                      onEditDuration={onEditDuration}
+                      onSetDurationEditor={onSetDurationEditor}
+                    />
                   </div>
                 </td>
                 <td className={activityCellClassName}>
@@ -1835,6 +1760,214 @@ function InlineTextField({
         }
       }}
     />
+  );
+}
+
+function DurationEditorPopover({
+  canEdit,
+  editor,
+  item,
+  labels,
+  locale,
+  onClose,
+  onCommitCustomDuration,
+  onCommitDuration,
+  onEditDuration,
+  onSetDurationEditor,
+}: {
+  canEdit: boolean;
+  editor: {
+    item: ItineraryItem;
+    hours: string;
+    minutes: string;
+  } | null;
+  item: ItineraryItem;
+  labels: Messages["itinerary"];
+  locale: Locale;
+  onClose: () => void;
+  onCommitCustomDuration: () => void;
+  onCommitDuration: (itemId: string, minutes: number) => void;
+  onEditDuration: (item: ItineraryItem) => void;
+  onSetDurationEditor: Dispatch<
+    SetStateAction<{
+      item: ItineraryItem;
+      hours: string;
+      minutes: string;
+    } | null>
+  >;
+}) {
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const panelRef = useRef<HTMLElement>(null);
+  const [position, setPosition] = useState({
+    left: 8,
+    top: 8,
+    width: 300,
+  });
+  const durationLabel = (canEdit
+    ? labels.row.inlineDuration
+    : labels.row.duration)({
+    activity: item.activity,
+  });
+  const title = labels.row.durationDialogTitle({ activity: item.activity });
+
+  useEffect(() => {
+    if (!editor) return;
+
+    function updatePosition() {
+      const triggerRect = buttonRef.current?.getBoundingClientRect();
+      if (!triggerRect) return;
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+      const width = Math.min(300, viewportWidth - 16);
+      const panelHeight = Math.min(
+        panelRef.current?.getBoundingClientRect().height ?? 276,
+        viewportHeight - 16,
+      );
+      const preferredLeft =
+        triggerRect.left + triggerRect.width / 2 - width / 2;
+      const left = Math.min(
+        Math.max(8, preferredLeft),
+        Math.max(8, viewportWidth - width - 8),
+      );
+      const belowTop = triggerRect.bottom + 6;
+      const aboveTop = triggerRect.top - panelHeight - 6;
+      const hasSpaceBelow = belowTop + panelHeight <= viewportHeight - 8;
+      const top = hasSpaceBelow
+        ? belowTop
+        : Math.min(
+            Math.max(8, aboveTop),
+            Math.max(8, viewportHeight - panelHeight - 8),
+          );
+      setPosition({ left, top, width });
+    }
+
+    updatePosition();
+    const frame = window.requestAnimationFrame(updatePosition);
+    window.addEventListener("resize", updatePosition);
+    window.addEventListener("scroll", updatePosition, true);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.removeEventListener("resize", updatePosition);
+      window.removeEventListener("scroll", updatePosition, true);
+    };
+  }, [editor]);
+
+  useEffect(() => {
+    if (!editor) return;
+    function closeOnOutside(event: MouseEvent | TouchEvent) {
+      const target = event.target as Node | null;
+      if (!target) return;
+      if (
+        buttonRef.current?.contains(target) ||
+        panelRef.current?.contains(target)
+      )
+        return;
+      onClose();
+    }
+    document.addEventListener("mousedown", closeOnOutside);
+    document.addEventListener("touchstart", closeOnOutside);
+    return () => {
+      document.removeEventListener("mousedown", closeOnOutside);
+      document.removeEventListener("touchstart", closeOnOutside);
+    };
+  }, [editor, onClose]);
+
+  return (
+    <>
+      <button
+        ref={buttonRef}
+        type="button"
+        className={durationPillClassName}
+        disabled={!canEdit}
+        aria-expanded={editor ? "true" : "false"}
+        aria-label={durationLabel}
+        onClick={() => (editor ? onClose() : onEditDuration(item))}
+      >
+        {formatDuration(item.durationMinutes, locale)}
+      </button>
+      {editor
+        ? createPortal(
+            <section
+              ref={panelRef}
+              className={durationDialogClassName}
+              role="region"
+              aria-label={title}
+              style={{
+                left: position.left,
+                top: position.top,
+                width: position.width,
+              }}
+              onKeyDown={(event) => {
+                if (event.key === "Escape") {
+                  event.preventDefault();
+                  onClose();
+                  buttonRef.current?.focus();
+                }
+              }}
+            >
+              <h3 className={durationDialogTitleClassName}>{title}</h3>
+              <div className={durationPresetGridClassName}>
+                {durationPresetMinutes.map((minutes) => (
+                  <button
+                    type="button"
+                    className={durationPresetButtonClassName}
+                    key={minutes}
+                    onClick={() => onCommitDuration(item.id, minutes)}
+                  >
+                    {formatDuration(minutes, locale)}
+                  </button>
+                ))}
+              </div>
+              <div className={durationCustomGridClassName}>
+                <label className={durationInputLabelClassName}>
+                  {labels.row.durationHours}
+                  <input
+                    className={durationInputClassName}
+                    inputMode="numeric"
+                    min={0}
+                    type="number"
+                    value={editor.hours}
+                    onChange={(event) =>
+                      onSetDurationEditor((current) =>
+                        current
+                          ? { ...current, hours: event.target.value }
+                          : current,
+                      )
+                    }
+                  />
+                </label>
+                <label className={durationInputLabelClassName}>
+                  {labels.row.durationMinutes}
+                  <input
+                    className={durationInputClassName}
+                    inputMode="numeric"
+                    max={59}
+                    min={0}
+                    type="number"
+                    value={editor.minutes}
+                    onChange={(event) =>
+                      onSetDurationEditor((current) =>
+                        current
+                          ? { ...current, minutes: event.target.value }
+                          : current,
+                      )
+                    }
+                  />
+                </label>
+              </div>
+              <div className={deleteDialogActionsClassName}>
+                <Button type="button" variant="ghost" onClick={onClose}>
+                  {labels.row.durationCancel}
+                </Button>
+                <Button type="button" onClick={onCommitCustomDuration}>
+                  {labels.row.durationSave}
+                </Button>
+              </div>
+            </section>,
+            document.body,
+          )
+        : null}
+    </>
   );
 }
 
