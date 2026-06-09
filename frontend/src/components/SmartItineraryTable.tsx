@@ -253,7 +253,7 @@ const deleteDialogBodyClassName =
   "m-0 text-sm font-medium leading-6 text-(--color-text-muted)";
 const deleteDialogActionsClassName = "mt-1 flex justify-end gap-2";
 const durationDialogClassName =
-  "duration-dialog mt-2 grid w-[min(360px,100%)] gap-3 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) p-3 shadow-[0_12px_28px_rgb(15_23_42_/_0.12)]";
+  "duration-dialog mt-2 grid w-[min(300px,calc(100vw-24px))] gap-3 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) p-3 shadow-[0_12px_28px_rgb(15_23_42_/_0.12)]";
 const durationDialogTitleClassName =
   "m-0 text-sm font-extrabold leading-5 text-(--color-text)";
 const durationPresetGridClassName = "grid grid-cols-3 gap-2";

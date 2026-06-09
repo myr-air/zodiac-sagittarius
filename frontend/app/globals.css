@@ -705,6 +705,81 @@ button:disabled,
   }
 }
 
+.modal-backdrop {
+  align-items: center;
+  justify-items: center;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.modal-backdrop::before {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(520px 300px at 16% 12%, rgb(56 189 248 / 0.16), transparent 64%),
+    radial-gradient(460px 260px at 86% 20%, rgb(251 113 133 / 0.1), transparent 60%),
+    linear-gradient(180deg, rgb(15 23 42 / 0.12), rgb(15 23 42 / 0.22));
+  content: "";
+}
+
+.stop-dialog,
+.overview-task-dialog,
+.expense-dialog,
+.booking-dialog,
+.photos-dialog,
+.member-task-dialog,
+.delete-confirm-dialog,
+.import-options-dialog,
+.identity-switch-dialog,
+.duration-dialog {
+  position: relative;
+  z-index: 1;
+  max-width: calc(100vw - 24px);
+  max-height: calc(100dvh - 24px);
+  border-color: #d7e7f2;
+  box-shadow:
+    0 20px 42px rgb(14 165 233 / 0.12),
+    0 8px 16px rgb(15 23 42 / 0.07);
+  overflow-wrap: anywhere;
+}
+
+.expense-dialog,
+.booking-dialog,
+.photos-dialog {
+  max-height: min(760px, calc(100dvh - 24px));
+}
+
+.member-task-dialog,
+.delete-confirm-dialog,
+.import-options-dialog,
+.identity-switch-dialog,
+.overview-task-dialog {
+  overflow-y: auto;
+}
+
+.dialog-title-row h2,
+.expense-dialog h2,
+.booking-dialog h2,
+.photos-dialog h2,
+.member-task-dialog h2,
+.delete-confirm-dialog h2,
+.import-options-dialog h2,
+.identity-switch-dialog h2,
+.duration-dialog h3 {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  text-wrap: pretty;
+}
+
+.expense-dialog form,
+.booking-dialog form,
+.photos-dialog form,
+.stop-dialog form {
+  scrollbar-gutter: stable;
+}
+
 @keyframes travel-chip-settle {
   from {
     opacity: 0.7;
@@ -793,9 +868,14 @@ button:disabled,
 
   .mobile-itinerary-inspector,
   .weather-briefing-drawer,
+  .stop-dialog,
+  .overview-task-dialog,
+  .expense-dialog,
   .photos-dialog,
   .booking-dialog,
+  .member-task-dialog,
   .delete-confirm-dialog,
+  .import-options-dialog,
   .identity-switch-dialog {
     animation: travel-sheet-rise 220ms var(--motion-ease-out) both;
   }
@@ -853,6 +933,51 @@ button:disabled,
 
   .timeline-stop::before {
     left: 92px;
+  }
+
+  .modal-backdrop {
+    align-items: end;
+    padding: 10px;
+  }
+
+  .stop-dialog,
+  .overview-task-dialog,
+  .expense-dialog,
+  .booking-dialog,
+  .photos-dialog,
+  .member-task-dialog,
+  .delete-confirm-dialog,
+  .import-options-dialog,
+  .identity-switch-dialog {
+    width: 100%;
+    max-width: 100%;
+    max-height: calc(100dvh - 20px);
+    border-radius: var(--radius-lg);
+  }
+
+  .duration-dialog {
+    width: min(360px, calc(100vw - 20px));
+    max-height: calc(100dvh - 20px);
+    overflow-y: auto;
+  }
+
+  .dialog-actions,
+  .delete-confirm-dialog > div:last-child,
+  .member-task-dialog > div:last-child,
+  .import-options-dialog > div:last-child,
+  .identity-switch-dialog > div:last-child {
+    display: grid;
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
+  .dialog-actions .button,
+  .delete-confirm-dialog .button,
+  .member-task-dialog .button,
+  .import-options-dialog .button,
+  .identity-switch-dialog button {
+    width: 100%;
+    min-width: 0;
   }
 
 }
