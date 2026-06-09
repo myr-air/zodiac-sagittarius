@@ -270,7 +270,9 @@ function attachConsoleChecks(page: Page) {
 
 function isAllowedConsoleMessage(message: ConsoleMessage) {
   const text = message.text();
+  const url = message.location().url;
   return (
+    url.includes("static.cloudflareinsights.com") ||
     text.includes("tiles.openfreemap.org") ||
     text.includes("net::ERR_FAILED") ||
     text.includes("GPU stall due to ReadPixels")
