@@ -347,8 +347,8 @@ describe("Sagittarius project scaffold", () => {
     expect(internalApiHost).toBe("sagittarius-api");
     expect(apiServiceBlock).toMatch(/aliases:\n\s+- sagittarius-api/);
     expect(databaseHost).toBe("zodiac-postgres");
-    expect(dockerCompose).toMatch(/zodiac:\n\s+external: true\n\s+name: zodiac/);
-    expect(apiServiceBlock).toContain("zodiac:");
+    expect(dockerCompose).toMatch(/ophiuchus:\n\s+external: true\n\s+name: ophiuchus-network/);
+    expect(apiServiceBlock).toContain("ophiuchus:");
     expect(gitignore).toContain(".env");
     expect(gitignore).toContain(".env.local");
     expect(gitignore).toContain(".env.production");

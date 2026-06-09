@@ -27,7 +27,8 @@ describe("TripJoinGate", () => {
     expect(screen.getByRole("heading", { name: /Enter trip room/i })).toBeInTheDocument();
     expect(screen.getByLabelText(/Trip ID/i)).toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: "ภาษาไทย" }));
+    await user.click(screen.getByRole("button", { name: "Language and currency" }));
+    await user.click(screen.getByRole("menuitemradio", { name: "ภาษาไทย" }));
 
     expect(screen.getByRole("heading", { name: /เข้าห้อง trip/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /เข้าห้อง trip/i })).toBeInTheDocument();

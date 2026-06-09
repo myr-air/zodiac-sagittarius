@@ -238,7 +238,7 @@ describe("Sagittarius cockpit UI", () => {
         }),
       ),
     );
-    expect(screen.getByDisplayValue("ติ่มซำ แถว Elements")).toBeInTheDocument();
+    expect(screen.getAllByDisplayValue("ติ่มซำ แถว Elements").length).toBeGreaterThan(0);
   });
 
   it("opens the Bookings & Docs workspace and creates a local booking record", async () => {

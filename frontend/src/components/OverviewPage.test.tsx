@@ -44,7 +44,8 @@ describe("OverviewPage role lenses", () => {
     expect(screen.getByRole("region", { name: /Trip overview/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /Focus for today/i })).toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: "ภาษาไทย" }));
+    await user.click(screen.getByRole("button", { name: "Language and currency" }));
+    await user.click(screen.getByRole("menuitemradio", { name: "ภาษาไทย" }));
     expect(screen.getByRole("heading", { name: /วันนี้ต้องโฟกัส/i })).toBeInTheDocument();
   }, 30_000);
 
