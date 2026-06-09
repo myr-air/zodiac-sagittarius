@@ -358,6 +358,7 @@ export function RouteMapView({
             </>
           ) : (
             <>
+              <p className={routeMapStatusClassName} role="status">{liveMapStatusText(liveMapState, t.map.liveLoading, t.map.liveError)}</p>
               <span className={cn(mapZoneClassName, mapZoneHongKongClassName)}>Hong Kong</span>
               <span className={cn(mapZoneClassName, mapZoneShenzhenClassName)}>Shenzhen</span>
               <span className={cn(mapZoneClassName, mapZoneBayClassName)}>Victoria Harbour</span>

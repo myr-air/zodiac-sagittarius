@@ -217,6 +217,7 @@ describe("RouteMapView", () => {
     );
 
     await waitFor(() => expect(screen.getByText("Hong Kong")).toBeInTheDocument());
+    expect(screen.getByRole("status")).toHaveTextContent("โหลดแผนที่สดไม่สำเร็จ แสดงแผนผังสำรองไว้ก่อน");
     expect(screen.getByText("Shenzhen")).toBeInTheDocument();
     expect(screen.getByText("Victoria Harbour")).toBeInTheDocument();
   });
@@ -316,6 +317,7 @@ describe("RouteMapView", () => {
 
     (maplibreMock.maps[0] as typeof maplibreMock.maps[number] & { trigger: (event: string) => void }).trigger("error");
     await waitFor(() => expect(screen.getByText("Hong Kong")).toBeInTheDocument());
+    expect(screen.getByRole("status")).toHaveTextContent("โหลดแผนที่สดไม่สำเร็จ แสดงแผนผังสำรองไว้ก่อน");
 
     unmount();
     expect(maplibreMock.maps[0]?.remove).toHaveBeenCalled();

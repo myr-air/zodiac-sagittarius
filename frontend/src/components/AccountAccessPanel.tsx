@@ -281,6 +281,8 @@ const accountTripRowClassName =
 const accountTripIconClassName =
   "account-trip-icon grid size-9 shrink-0 place-items-center rounded-(--radius-md) bg-(--color-primary-soft) text-(--color-primary-strong)";
 const accountEmptyClassName = "account-empty text-[13px] leading-5 text-(--color-text-muted)";
+const portalEmptyStateClassName =
+  "portal-empty-state grid min-h-[164px] content-center gap-3 rounded-(--radius-lg) border border-dashed border-(--color-border-strong) bg-[color-mix(in_srgb,var(--color-surface-subtle)_72%,var(--color-surface))] p-4 text-left [&_.button]:w-fit max-[767px]:[&_.button]:w-full [&>span[aria-hidden=true]]:grid [&>span[aria-hidden=true]]:size-10 [&>span[aria-hidden=true]]:place-items-center [&>span[aria-hidden=true]]:rounded-(--radius-md) [&>span[aria-hidden=true]]:bg-(--color-primary-soft) [&>span[aria-hidden=true]]:text-(--color-primary-strong) [&_p]:m-0 [&_p]:max-w-[560px] [&_p]:text-[13px] [&_p]:leading-5 [&_p]:text-(--color-text-muted) [&_strong]:block [&_strong]:text-base [&_strong]:leading-6 [&_strong]:text-(--color-text)";
 const cloudProviderPanelClassName = "cloud-provider-panel grid gap-3 rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface-subtle) p-3.5 [&_span]:block [&_span]:text-[13px] [&_span]:leading-5 [&_span]:text-(--color-text-muted) [&_strong]:block [&_strong]:text-(--color-text)";
 const cloudProviderGridClassName = "cloud-provider-grid grid grid-cols-4 gap-2 max-[767px]:grid-cols-2";
 const cloudProviderButtonClassName = "cloud-provider-button inline-flex min-h-[46px] items-center justify-center gap-2 rounded-(--radius-md) border border-(--color-border-strong) bg-(--color-surface) text-xs font-[850] text-(--color-text) transition-[border-color,background,color] duration-[180ms] hover:border-(--color-primary) hover:bg-(--color-primary-soft) hover:text-(--color-primary-strong) focus-visible:border-(--color-primary) focus-visible:bg-(--color-primary-soft) focus-visible:text-(--color-primary-strong) disabled:cursor-not-allowed disabled:border-(--color-border) disabled:bg-(--color-surface-muted) disabled:text-(--color-text-muted) disabled:hover:border-(--color-border) disabled:hover:bg-(--color-surface-muted) disabled:hover:text-(--color-text-muted)";
@@ -1671,7 +1673,13 @@ function AccountDashboard({
               ))}
             </div>
           ) : (
-            <p className={accountEmptyClassName}>{t.access.dashboard.history.empty}</p>
+            <PortalEmptyState
+              actionHref={appRoutes.portalNewTrip()}
+              actionLabel={t.access.portal.emptyStates.trips.action}
+              detail={t.access.portal.emptyStates.trips.detail}
+              icon="plus"
+              title={t.access.portal.emptyStates.trips.title}
+            />
           )}
         </section> : null}
 
@@ -1765,7 +1773,13 @@ function AccountDashboard({
               ))}
             </div>
           ) : (
-            <p className={accountEmptyClassName}>No shared trips match this search.</p>
+            <PortalEmptyState
+              actionHref={appRoutes.portalNewTrip()}
+              actionLabel={t.access.portal.emptyStates.explorer.action}
+              detail={explorerQuery.trim() ? t.access.portal.emptyStates.explorer.noMatchesDetail : t.access.portal.emptyStates.explorer.detail}
+              icon="map"
+              title={explorerQuery.trim() ? t.access.portal.emptyStates.explorer.noMatchesTitle : t.access.portal.emptyStates.explorer.title}
+            />
           )}
         </section> : null}
 
@@ -1787,7 +1801,13 @@ function AccountDashboard({
               ))}
             </div>
           ) : (
-            <p className={accountEmptyClassName}>{t.access.portal.sections.todos.empty}</p>
+            <PortalEmptyState
+              actionHref={appRoutes.portalNewTrip()}
+              actionLabel={t.access.portal.emptyStates.todos.action}
+              detail={t.access.portal.emptyStates.todos.detail}
+              icon="list"
+              title={t.access.portal.emptyStates.todos.title}
+            />
           )}
         </section> : null}
 
@@ -3030,6 +3050,36 @@ function PanelHeading({ detail, icon, title }: { detail: string; icon: Component
         <strong>{title}</strong>
         <small>{detail}</small>
       </div>
+    </div>
+  );
+}
+
+function PortalEmptyState({
+  actionHref,
+  actionLabel,
+  detail,
+  icon,
+  title,
+}: {
+  actionHref: string;
+  actionLabel: string;
+  detail: string;
+  icon: ComponentProps<typeof Icon>["name"];
+  title: string;
+}) {
+  return (
+    <div className={portalEmptyStateClassName}>
+      <span aria-hidden="true"><Icon name={icon} /></span>
+      <div>
+        <strong>{title}</strong>
+        <p>{detail}</p>
+      </div>
+      <Button asChild variant="secondary">
+        <Link href={actionHref}>
+          <Icon name="plus" />
+          {actionLabel}
+        </Link>
+      </Button>
     </div>
   );
 }

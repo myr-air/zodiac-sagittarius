@@ -779,6 +779,25 @@ export const messages = {
           destinations: "Destinations",
           nextTrip: "Next trip",
         },
+        emptyStates: {
+          trips: {
+            title: "Create your first trip",
+            detail: "Start with a shared route, dates, and owner settings.",
+            action: "Create trip",
+          },
+          explorer: {
+            title: "No shared trips yet",
+            detail: "Shared trips from your account network will appear here.",
+            noMatchesTitle: "No shared trips match this search",
+            noMatchesDetail: "Try a different city, trip name, or role.",
+            action: "Create trip",
+          },
+          todos: {
+            title: "Create a trip to start shared to-dos",
+            detail: "Trip tasks appear here after you create or join a trip.",
+            action: "Create trip",
+          },
+        },
         vaultCreate: {
           kind: "Kind",
           note: "Note",
@@ -1848,6 +1867,25 @@ export const messages = {
           upcoming: "Upcoming trips",
           destinations: "Destinations",
           nextTrip: "Next trip",
+        },
+        emptyStates: {
+          trips: {
+            title: "เริ่มสร้างทริปแรก",
+            detail: "เริ่มจาก route, วันที่ และ owner settings ที่แชร์กับเพื่อนได้",
+            action: "Create trip",
+          },
+          explorer: {
+            title: "ยังไม่มี shared trips",
+            detail: "ทริปที่แชร์จาก account network จะมาแสดงตรงนี้",
+            noMatchesTitle: "ไม่พบ shared trips ตามคำค้นนี้",
+            noMatchesDetail: "ลองค้นด้วย city, ชื่อทริป หรือ role อื่น",
+            action: "Create trip",
+          },
+          todos: {
+            title: "Create trip เพื่อเริ่ม shared to-dos",
+            detail: "งานของทริปจะแสดงที่นี่หลังจากสร้างหรือเข้าร่วมทริป",
+            action: "Create trip",
+          },
         },
         vaultCreate: {
           kind: "Kind",
