@@ -503,7 +503,7 @@ describe("RouteMapView", () => {
   it("exercises route map helper fallbacks directly", () => {
     expect(liveMapStatusText("error", "กำลังโหลด", "โหลดไม่สำเร็จ")).toBe("โหลดไม่สำเร็จ");
     expect(activeDayLabel("missing-day", [], "ทุกวัน", "เลือกวัน")).toBe("เลือกวัน");
-    expect(dayColorFor("missing-day", [])).toBe("#38bdf8");
+    expect(dayColorFor("missing-day", [])).toBe("#0ea5e9");
 
     const map = { flyTo: vi.fn(), fitBounds: vi.fn() };
     fitLiveRoute(map as never, []);

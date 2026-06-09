@@ -576,8 +576,8 @@ button:disabled,
   height: 58%;
   border-top-left-radius: 999px;
   background:
-    linear-gradient(135deg, rgb(37 99 235 / 0.12), transparent 54%),
-    rgb(125 211 252 / 0.28);
+    linear-gradient(135deg, rgb(250 204 21 / 0.18), transparent 54%),
+    rgb(14 165 233 / 0.14);
 }
 
 .route-map-canvas::after {
@@ -590,7 +590,7 @@ button:disabled,
   background:
     linear-gradient(90deg, rgb(15 23 42 / 0.05) 1px, transparent 1px),
     linear-gradient(0deg, rgb(15 23 42 / 0.04) 1px, transparent 1px),
-    rgb(20 184 166 / 0.1);
+    rgb(251 113 133 / 0.12);
   background-size: 34px 34px;
 }
 

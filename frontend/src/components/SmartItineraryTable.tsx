@@ -102,23 +102,23 @@ export type InlineItineraryItemPatch = Partial<
 >;
 
 const tablePanelClassName =
-  "table-panel grid h-auto min-h-full min-w-0 grid-rows-[auto_minmax(0,1fr)] overflow-visible bg-[linear-gradient(180deg,#172033_0%,#1e3358_92px,#f8fafc_92px,#f8fafc_100%)] px-6 py-[22px] pb-7 max-[767px]:bg-[linear-gradient(180deg,#172033_0%,#20385f_118px,#f8fafc_118px,#f8fafc_100%)] max-[767px]:px-3 max-[767px]:pb-3";
+  "table-panel grid h-auto min-h-full min-w-0 grid-rows-[auto_minmax(0,1fr)] overflow-visible bg-[linear-gradient(180deg,#e0f2fe_0%,#eef7ff_92px,#f8fafc_92px,#ffffff_100%)] px-6 py-[22px] pb-7 max-[767px]:bg-[linear-gradient(180deg,#e0f2fe_0%,#fff7d6_118px,#f8fafc_118px,#ffffff_100%)] max-[767px]:px-3 max-[767px]:pb-3";
 const pageHeaderActionsClassName =
   "page-header-actions relative z-[1] flex max-w-[260px] min-w-0 flex-wrap items-center justify-end gap-2";
 const pageHeaderNoteClassName =
   "page-header-note m-0 basis-full text-right text-xs font-bold text-(--color-warning-strong)";
 const itineraryFilterShellClassName =
-  "itinerary-filter-shell -mt-1 mb-[14px] grid gap-2 rounded-(--radius-md) border border-[rgb(148_163_184_/_0.42)] bg-[linear-gradient(90deg,#142033,#1e3358)] px-3 py-2.5 text-[#dbeafe] shadow-[0_18px_44px_rgb(15_23_42_/_0.18)] ring-1 ring-white/10";
+  "itinerary-filter-shell -mt-1 mb-[14px] grid gap-2 rounded-(--radius-md) border border-[#d7e7f2] bg-[linear-gradient(90deg,#ffffff,#eef7ff_58%,#fff7d6)] px-3 py-2.5 text-[#0369a1] shadow-[0_16px_34px_rgb(14_165_233_/_0.12)] ring-1 ring-white";
 const itineraryFilterBarClassName =
   "itinerary-filter-bar flex min-w-0 flex-wrap items-center gap-2 border-l-[3px] border-(--color-route) pl-2";
 const pathFilterButtonClassName =
-  "inline-flex min-h-8 min-w-[148px] items-center justify-center gap-2 rounded-(--radius-sm) border border-(--color-route-border) bg-(--color-route-soft) px-2.5 text-xs font-extrabold text-(--color-route) transition-[background,border-color,color] duration-150 hover:border-(--color-route) hover:bg-(--color-primary-soft) hover:text-(--color-primary-strong) aria-[expanded=true]:border-(--color-primary-border) aria-[expanded=true]:bg-(--color-primary-soft) aria-[expanded=true]:text-(--color-primary-strong) [&_.icon]:size-4 [&_.icon]:transition-transform [&_.icon]:duration-[150ms] aria-[expanded=true]:[&_.icon]:rotate-90";
+  "inline-flex min-h-8 min-w-[148px] items-center justify-center gap-2 rounded-(--radius-sm) border border-(--color-route-border) bg-(--color-route-soft) px-2.5 text-xs font-extrabold text-(--color-route) transition-[background,border-color,color] duration-150 hover:border-(--color-route) hover:bg-(--color-route-soft) hover:text-(--color-route) aria-[expanded=true]:border-(--color-route-border) aria-[expanded=true]:bg-(--color-route-soft) aria-[expanded=true]:text-(--color-route) [&_.icon]:size-4 [&_.icon]:transition-transform [&_.icon]:duration-[150ms] aria-[expanded=true]:[&_.icon]:rotate-90";
 const pathFilterSummaryClassName =
-  "min-w-0 flex-1 truncate text-xs font-semibold text-[#cbd5e1]";
+  "min-w-0 flex-1 truncate text-xs font-semibold text-[#64748b]";
 const pathFilterPanelClassName =
-  "itinerary-filter-panel flex min-w-0 flex-wrap gap-1.5 border-t border-[rgb(255_255_255_/_0.12)] pt-2";
+  "itinerary-filter-panel flex min-w-0 flex-wrap gap-1.5 border-t border-[#d7e7f2] pt-2";
 const pathFilterOptionClassName =
-  "inline-flex min-h-8 items-center gap-2 rounded-(--radius-sm) border border-[rgb(255_255_255_/_0.16)] bg-[rgb(255_255_255_/_0.08)] px-2.5 text-xs font-semibold text-[#e0f2fe] hover:border-(--color-primary-border) hover:bg-[rgb(255_255_255_/_0.16)]";
+  "inline-flex min-h-8 items-center gap-2 rounded-(--radius-sm) border border-[#d7e7f2] bg-white/80 px-2.5 text-xs font-semibold text-[#0369a1] hover:border-(--color-route-border) hover:bg-white";
 const importInputClassName = "sr-only";
 const tableScrollClassName =
   "table-scroll m-0 h-auto min-h-0 w-full max-w-full overflow-x-auto overflow-y-hidden rounded-(--radius-md) border border-(--color-border-strong) bg-(--color-surface) shadow-[0_22px_52px_rgb(15_23_42_/_0.14)] ring-1 ring-white [contain:paint]";
@@ -149,25 +149,25 @@ const dayClearPathButtonClassName =
 const dayAutoOverlapButtonClassName =
   "inline-flex min-h-8 items-center rounded-(--radius-sm) border border-[#fca5a5] bg-[#fee2e2] px-2 text-[11px] font-extrabold text-[#991b1b] transition-colors hover:enabled:bg-[#fecaca] disabled:opacity-40 max-[767px]:px-1.5";
 const dataRowClassName =
-  "data-row cursor-pointer transition-[background,box-shadow,transform] duration-[160ms] hover:[&_td]:bg-(--color-surface-subtle) focus-visible:[&_td]:bg-(--color-primary-soft) focus-visible:[&_td]:shadow-[inset_0_0_0_2px_var(--color-primary-border)] [&_td]:transition-[background,border-color,box-shadow,color,font-size,height,opacity,padding] [&_td]:duration-[180ms]";
+  "data-row cursor-pointer transition-[background,box-shadow,transform] duration-[160ms] hover:[&_td]:bg-(--color-surface-subtle) focus-visible:[&_td]:bg-(--color-route-soft) focus-visible:[&_td]:shadow-[inset_0_0_0_2px_var(--color-route-border)] [&_td]:transition-[background,border-color,box-shadow,color,font-size,height,opacity,padding] [&_td]:duration-[180ms]";
 const dataRowSelectedClassName =
-  "data-row--selected [&_td:first-child]:shadow-[inset_3px_0_0_var(--color-primary),inset_0_1px_0_var(--color-primary),inset_0_-1px_0_var(--color-primary)] [&_td:last-child]:shadow-[inset_-1px_0_0_var(--color-primary),inset_0_1px_0_var(--color-primary),inset_0_-1px_0_var(--color-primary)] [&_td]:bg-[#ecfeff] [&_td]:shadow-[inset_0_1px_0_var(--color-primary),inset_0_-1px_0_var(--color-primary)]";
+  "data-row--selected [&_td:first-child]:shadow-[inset_3px_0_0_var(--color-route),inset_0_1px_0_var(--color-route),inset_0_-1px_0_var(--color-route)] [&_td:last-child]:shadow-[inset_-1px_0_0_var(--color-route),inset_0_1px_0_var(--color-route),inset_0_-1px_0_var(--color-route)] [&_td]:bg-[#eff6ff] [&_td]:shadow-[inset_0_1px_0_var(--color-route),inset_0_-1px_0_var(--color-route)]";
 const dataRowPathOverlapClassName =
   "data-row--path-overlap [&_td]:!bg-[#fee2e2] hover:[&_td]:!bg-[#fecaca] [&_td:first-child]:shadow-[inset_2px_0_0_#fca5a5] [&_td:last-child]:shadow-[inset_-1px_0_0_#fca5a5] [&_td]:shadow-[inset_0_1px_0_#fca5a5,inset_0_-1px_0_#fca5a5]";
 const dataRowDraggingClassName =
   "data-row--dragging cursor-grabbing [&_td]:bg-(--color-surface-muted) [&_td]:opacity-[0.54]";
 const dataRowDropTargetClassName =
-  "data-row--drop-target translate-y-px [&_td:first-child]:shadow-[inset_3px_0_0_var(--color-primary),inset_0_2px_0_var(--color-primary),inset_0_-1px_0_var(--color-primary-border)] [&_td]:bg-(--color-primary-soft) [&_td]:shadow-[inset_0_2px_0_var(--color-primary),inset_0_-1px_0_var(--color-primary-border)]";
+  "data-row--drop-target translate-y-px [&_td:first-child]:shadow-[inset_3px_0_0_var(--color-route),inset_0_2px_0_var(--color-route),inset_0_-1px_0_var(--color-route-border)] [&_td]:bg-(--color-route-soft) [&_td]:shadow-[inset_0_2px_0_var(--color-route),inset_0_-1px_0_var(--color-route-border)]";
 const dragCellClassName = "drag-cell text-(--color-text-subtle)";
 const reorderControlsClassName =
   "reorder-controls inline-grid grid-cols-[32px] items-center justify-center";
 const dragHandleClassName =
-  "drag-handle inline-grid size-8 shrink-0 touch-none cursor-grab place-items-center rounded-(--radius-sm) border-0 bg-transparent text-(--color-text-subtle) transition-[color,background] duration-150 hover:not-disabled:bg-(--color-primary-soft) hover:not-disabled:text-(--color-primary-strong) active:cursor-grabbing disabled:cursor-not-allowed disabled:opacity-[0.42]";
+  "drag-handle inline-grid size-8 shrink-0 touch-none cursor-grab place-items-center rounded-(--radius-sm) border-0 bg-transparent text-(--color-text-subtle) transition-[color,background] duration-150 hover:not-disabled:bg-(--color-route-soft) hover:not-disabled:text-(--color-route) active:cursor-grabbing disabled:cursor-not-allowed disabled:opacity-[0.42]";
 const rowActionCellClassName = "row-actions-cell";
 const rowActionsClassName =
   "row-actions flex items-center justify-center gap-1";
 const rowActionButtonClassName =
-  "row-action-button inline-grid size-8 shrink-0 place-items-center rounded-(--radius-sm) border-0 bg-transparent text-(--color-text-subtle) transition-[color,background] duration-150 hover:not-disabled:bg-(--color-primary-soft) hover:not-disabled:text-(--color-primary-strong) disabled:cursor-not-allowed disabled:opacity-[0.42]";
+  "row-action-button inline-grid size-8 shrink-0 place-items-center rounded-(--radius-sm) border-0 bg-transparent text-(--color-text-subtle) transition-[color,background] duration-150 hover:not-disabled:bg-(--color-route-soft) hover:not-disabled:text-(--color-route) disabled:cursor-not-allowed disabled:opacity-[0.42]";
 const timeHeaderClassName =
   "time-header max-[767px]:sticky max-[767px]:left-0 max-[767px]:z-[5] max-[767px]:shadow-[6px_0_12px_rgb(15_23_42_/_0.08)]";
 const timeCellClassName =
@@ -175,13 +175,13 @@ const timeCellClassName =
 const timeStackClassName =
   "grid min-h-[30px] content-center justify-items-center gap-0.5 leading-none [&_span]:whitespace-nowrap";
 const durationPillClassName =
-  "duration-pill inline-flex min-h-8 min-w-8 max-w-full items-center justify-center rounded-full border border-transparent bg-transparent px-1.5 text-[10px] font-[750] leading-3 text-(--color-text-muted) transition-[background,border-color,color] duration-150 hover:not-disabled:border-(--color-primary-border) hover:not-disabled:bg-(--color-primary-soft) hover:not-disabled:text-(--color-primary-strong) focus-visible:border-(--color-primary-border) focus-visible:bg-(--color-primary-soft) focus-visible:text-(--color-primary-strong) focus-visible:outline-none disabled:cursor-not-allowed disabled:text-(--color-text-muted)";
+  "duration-pill inline-flex min-h-8 min-w-8 max-w-full items-center justify-center rounded-full border border-transparent bg-transparent px-1.5 text-[10px] font-[750] leading-3 text-(--color-text-muted) transition-[background,border-color,color] duration-150 hover:not-disabled:border-(--color-route-border) hover:not-disabled:bg-(--color-route-soft) hover:not-disabled:text-(--color-route) focus-visible:border-(--color-route-border) focus-visible:bg-(--color-route-soft) focus-visible:text-(--color-route) focus-visible:outline-none disabled:cursor-not-allowed disabled:text-(--color-text-muted)";
 const activityCellClassName = "activity-cell min-w-0";
 const rowSelectClassName =
-  "row-select inline-flex min-h-8 w-fit min-w-0 items-center gap-1.5 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) px-2 py-0.5 text-[11px] font-extrabold leading-4 text-(--color-primary-strong) transition-[background,border-color,color] duration-150 hover:bg-(--color-primary-soft) hover:border-(--color-primary-border) focus-visible:bg-(--color-primary-soft) focus-visible:border-(--color-primary-border) focus-visible:outline-none";
+  "row-select inline-flex min-h-8 w-fit min-w-0 items-center gap-1.5 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) px-2 py-0.5 text-[11px] font-extrabold leading-4 text-(--color-route) transition-[background,border-color,color] duration-150 hover:bg-(--color-route-soft) hover:border-(--color-route-border) focus-visible:bg-(--color-route-soft) focus-visible:border-(--color-route-border) focus-visible:outline-none";
 const inlineActivityStackClassName = "grid min-w-0 gap-0.5";
 const inlineFieldClassName =
-  "inline-row-field min-h-[24px] w-full min-w-0 rounded-(--radius-sm) border border-transparent bg-transparent px-1.5 py-0 text-xs leading-4 text-(--color-text) outline-none transition-[background,border-color,box-shadow] duration-150 placeholder:text-(--color-text-muted) hover:not-read-only:border-(--color-border) hover:not-read-only:bg-(--color-surface) focus:border-(--color-primary-border) focus:bg-(--color-surface) focus:shadow-[0_0_0_2px_rgb(153_246_228_/_0.45)] read-only:cursor-pointer read-only:truncate read-only:px-0 read-only:font-semibold disabled:cursor-not-allowed disabled:text-(--color-text-muted)";
+  "inline-row-field min-h-[24px] w-full min-w-0 rounded-(--radius-sm) border border-transparent bg-transparent px-1.5 py-0 text-xs leading-4 text-(--color-text) outline-none transition-[background,border-color,box-shadow] duration-150 placeholder:text-(--color-text-muted) hover:not-read-only:border-(--color-border) hover:not-read-only:bg-(--color-surface) focus:border-(--color-route-border) focus:bg-(--color-surface) focus:shadow-[0_0_0_2px_rgb(186_230_253_/_0.55)] read-only:cursor-pointer read-only:truncate read-only:px-0 read-only:font-semibold disabled:cursor-not-allowed disabled:text-(--color-text-muted)";
 const inlineActivityFieldClassName = cn(inlineFieldClassName, "font-semibold");
 const inlineSubtleFieldClassName = cn(
   inlineFieldClassName,
@@ -199,14 +199,14 @@ const inlineOptionPickerCaretClassName = "shrink-0 text-(--color-text-subtle)";
 const floatingOptionMenuClassName =
   "inline-option-picker-menu fixed z-[15] grid max-h-[min(260px,calc(100vh_-_24px))] overflow-auto rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) p-1 shadow-[0_18px_44px_rgb(15_23_42_/_0.18)]";
 const floatingOptionButtonClassName =
-  "grid min-h-8 w-full min-w-0 cursor-pointer grid-cols-[minmax(0,1fr)_16px] items-center gap-2 rounded-(--radius-sm) px-2.5 py-1.5 text-left text-xs font-bold text-(--color-text) transition-colors hover:bg-(--color-primary-soft) focus-visible:bg-(--color-primary-soft) focus-visible:outline-none aria-selected:bg-(--color-primary-soft) aria-selected:text-(--color-primary-strong) data-[active=true]:bg-(--color-primary-soft)";
+  "grid min-h-8 w-full min-w-0 cursor-pointer grid-cols-[minmax(0,1fr)_16px] items-center gap-2 rounded-(--radius-sm) px-2.5 py-1.5 text-left text-xs font-bold text-(--color-text) transition-colors hover:bg-(--color-route-soft) focus-visible:bg-(--color-route-soft) focus-visible:outline-none aria-selected:bg-(--color-route-soft) aria-selected:text-(--color-route) data-[active=true]:bg-(--color-route-soft)";
 const mapLinkClassName = "map-link text-[#1d4ed8] underline underline-offset-2";
 const addStopRowClassName =
   "add-stop-row [&_td]:border-b [&_td]:border-r [&_td]:border-dashed [&_td]:border-(--color-border) [&_td]:bg-(--color-surface-subtle) [&_td]:px-2.5 [&_td]:py-1";
 const addStopRowDropTargetClassName =
-  "add-stop-row--drop-target [&_td]:!bg-(--color-primary-soft) [&_td]:shadow-[inset_0_0_0_2px_var(--color-primary-border)]";
+  "add-stop-row--drop-target [&_td]:!bg-(--color-route-soft) [&_td]:shadow-[inset_0_0_0_2px_var(--color-route-border)]";
 const addStopInlineButtonClassName =
-  "inline-flex min-h-8 w-full items-center justify-center gap-2 rounded-(--radius-sm) border border-dashed border-(--color-primary-border) bg-[rgb(240_253_250_/_0.72)] px-3 text-[12px] font-extrabold text-(--color-primary-strong) transition-[background,border-color,color] duration-150 hover:enabled:bg-(--color-primary-soft) disabled:cursor-not-allowed disabled:border-(--color-border) disabled:bg-transparent disabled:text-(--color-text-subtle)";
+  "inline-flex min-h-8 w-full items-center justify-center gap-2 rounded-(--radius-sm) border border-dashed border-(--color-route-border) bg-[rgb(239_246_255_/_0.72)] px-3 text-[12px] font-extrabold text-(--color-route) transition-[background,border-color,color] duration-150 hover:enabled:bg-(--color-route-soft) disabled:cursor-not-allowed disabled:border-(--color-border) disabled:bg-transparent disabled:text-(--color-text-subtle)";
 const mobileInspectorClassName =
   "mobile-itinerary-inspector mt-3 hidden gap-4 rounded-t-(--radius-lg) rounded-b-(--radius-md) border border-(--color-border-strong) bg-(--color-surface) p-4 shadow-[0_-18px_46px_rgb(15_23_42_/_0.16)] max-[767px]:sticky max-[767px]:bottom-0 max-[767px]:z-10 max-[767px]:grid";
 const mobileInspectorHandleClassName =
@@ -214,7 +214,7 @@ const mobileInspectorHandleClassName =
 const mobileInspectorHeaderClassName =
   "grid gap-1 border-b border-(--color-border) pb-3";
 const mobileInspectorTitleClassName =
-  "m-0 truncate border-l-[4px] border-(--color-primary) pl-3 text-lg font-black leading-7 text-(--color-text)";
+  "m-0 truncate border-l-[4px] border-(--color-route) pl-3 text-lg font-black leading-7 text-(--color-text)";
 const mobileInspectorMetaClassName =
   "m-0 inline-flex flex-wrap items-center gap-2 pl-4 text-xs font-extrabold text-(--color-route)";
 const mobileInspectorGridClassName = "grid grid-cols-2 gap-3";
@@ -237,10 +237,10 @@ const mobileInspectorTypeButtonClassName =
   "min-h-12 border-(--color-border) bg-(--color-surface-subtle) px-3 text-sm font-bold";
 const mobileInspectorDurationClassName = "grid grid-cols-3 gap-2.5";
 const mobileInspectorDurationButtonClassName =
-  "min-h-12 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) px-2 text-xs font-extrabold text-(--color-text) transition-[background,border-color,color] duration-150 hover:enabled:border-(--color-primary-border) hover:enabled:bg-(--color-primary-soft) hover:enabled:text-(--color-primary-strong) disabled:cursor-not-allowed disabled:opacity-50";
+  "min-h-12 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) px-2 text-xs font-extrabold text-(--color-text) transition-[background,border-color,color] duration-150 hover:enabled:border-(--color-route-border) hover:enabled:bg-(--color-route-soft) hover:enabled:text-(--color-route) disabled:cursor-not-allowed disabled:opacity-50";
 const mobileInspectorActionsClassName = "flex flex-wrap gap-2";
 const mobileInspectorActionButtonClassName =
-  "inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) px-3 text-xs font-extrabold text-(--color-text) transition-[background,border-color,color] duration-150 hover:enabled:border-(--color-primary-border) hover:enabled:bg-(--color-primary-soft) hover:enabled:text-(--color-primary-strong) disabled:cursor-not-allowed disabled:opacity-50";
+  "inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) px-3 text-xs font-extrabold text-(--color-text) transition-[background,border-color,color] duration-150 hover:enabled:border-(--color-route-border) hover:enabled:bg-(--color-route-soft) hover:enabled:text-(--color-route) disabled:cursor-not-allowed disabled:opacity-50";
 const graphCellClassName =
   "activity-path-graph-cell !h-auto !bg-(--color-surface-subtle) !p-0 !align-top !shadow-none";
 const deleteModalBackdropClassName =
@@ -258,12 +258,12 @@ const durationDialogTitleClassName =
   "m-0 text-sm font-extrabold leading-5 text-(--color-text)";
 const durationPresetGridClassName = "grid grid-cols-3 gap-2";
 const durationPresetButtonClassName =
-  "min-h-9 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) px-2 text-xs font-extrabold text-(--color-text) transition-[background,border-color,color] duration-150 hover:border-(--color-primary-border) hover:bg-(--color-primary-soft) hover:text-(--color-primary-strong)";
+  "min-h-9 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) px-2 text-xs font-extrabold text-(--color-text) transition-[background,border-color,color] duration-150 hover:border-(--color-route-border) hover:bg-(--color-route-soft) hover:text-(--color-route)";
 const durationCustomGridClassName = "grid grid-cols-2 gap-2";
 const durationInputLabelClassName =
   "grid gap-1 text-[11px] font-extrabold text-(--color-text-muted)";
 const durationInputClassName =
-  "min-h-9 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-2 text-sm font-bold tabular-nums text-(--color-text) outline-none focus:border-(--color-primary-border) focus:shadow-[0_0_0_2px_rgb(153_246_228_/_0.45)]";
+  "min-h-9 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-2 text-sm font-bold tabular-nums text-(--color-text) outline-none focus:border-(--color-route-border) focus:shadow-[0_0_0_2px_rgb(186_230_253_/_0.55)]";
 const activityTypeOptions: ActivityType[] = [
   "food",
   "attraction",
@@ -692,7 +692,7 @@ export function SmartItineraryTable({
               type="button"
               onClick={() => importInputRef.current?.click()}
               disabled={!canRestructureItems}
-              className="import-itinerary-button min-w-[104px] max-[767px]:flex-1"
+              className="import-itinerary-button min-w-[104px] !bg-[#0369a1] !shadow-[0_10px_20px_rgb(14_165_233_/_0.18)] hover:enabled:!bg-[#075985] max-[767px]:flex-1"
             >
               <Icon name="import" />
               {t.itinerary.import}
@@ -700,7 +700,7 @@ export function SmartItineraryTable({
             <Button
               type="button"
               onClick={onExportItinerary}
-              className="export-itinerary-button min-w-[104px] max-[767px]:flex-1"
+              className="export-itinerary-button min-w-[104px] !bg-[#0369a1] !shadow-[0_10px_20px_rgb(14_165_233_/_0.18)] hover:enabled:!bg-[#075985] max-[767px]:flex-1"
             >
               <Icon name="export" />
               {t.itinerary.export}
