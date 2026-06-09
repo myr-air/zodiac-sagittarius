@@ -100,7 +100,7 @@ describe("Calm Travel Ops CSS contract", () => {
   it("keeps vertical scrolling on the planning shell instead of nesting table scrollbars", () => {
     expect(appSource).toContain("planning-main h-full min-h-0 min-w-0 overflow-y-auto");
     expect(smartTableSource).toContain("table-panel grid h-auto min-h-full min-w-0");
-    expect(smartTableSource).toContain("overflow-visible bg-(--color-page)");
+    expect(smartTableSource).toContain("overflow-visible bg-[linear-gradient(180deg,#172033_0%,#1e3358_92px");
     expect(smartTableSource).toContain("table-scroll m-0 h-auto min-h-0");
     expect(smartTableSource).toContain("overflow-x-auto overflow-y-hidden");
     expect(smartTableSource).toContain("[contain:paint]");

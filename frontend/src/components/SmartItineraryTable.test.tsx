@@ -1312,7 +1312,12 @@ describe("SmartItineraryTable", () => {
     const inspector = screen.getByRole("region", {
       name: "รายละเอียดจุดที่เลือก",
     });
-    expect(inspector).toHaveClass("mobile-itinerary-inspector", "max-[767px]:grid");
+    expect(inspector).toHaveClass(
+      "mobile-itinerary-inspector",
+      "max-[767px]:grid",
+      "max-[767px]:sticky",
+      "max-[767px]:bottom-0",
+    );
     expect(inspector.closest(".table-scroll")).toBeNull();
     expect(within(inspector).getByText(/Dim Dim Sum/i)).toBeInTheDocument();
 
@@ -1353,7 +1358,7 @@ describe("SmartItineraryTable", () => {
     const editButton = within(inspector).getByRole("button", {
       name: /แก้ไข Dim Dim Sum/i,
     });
-    expect(editButton).toHaveClass("min-h-11");
+    expect(editButton).toHaveClass("min-h-12");
 
     expect(onUpdateItemInline).toHaveBeenCalledWith("item-dimdim", {
       activity: "Harbour brunch",
