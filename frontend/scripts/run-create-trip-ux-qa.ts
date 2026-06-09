@@ -137,6 +137,7 @@ async function runCreateTripBuilderQa(browser: Browser) {
   await page.locator(".trip-access-panel").evaluate((element) => element.setAttribute("open", ""));
   await page.locator(".trip-generated-access").evaluate((element) => element.scrollIntoView({ block: "center" }));
   await expectInviteAccessBlockRestraint(page);
+  await expectCreateTripActionBarRestraint(page);
   await screenshot(page, "create-trip-builder-invite-desktop.png");
   evidence.checks.push("Desktop create-trip invite credentials use a restrained neutral form block instead of a green cover panel.");
 
@@ -254,21 +255,53 @@ async function expectDateSectionDensity(page: Page) {
 async function expectInviteAccessBlockRestraint(page: Page) {
   const result = await page.evaluate(() => {
     const block = document.querySelector<HTMLElement>(".trip-generated-access");
+    const note = document.querySelector<HTMLElement>(".trip-access-note");
     const regenerateButton = block?.querySelector<HTMLElement>(".button");
     const style = block ? getComputedStyle(block) : null;
+    const noteStyle = note ? getComputedStyle(note) : null;
     const buttonRect = regenerateButton?.getBoundingClientRect();
     return {
       backgroundColor: style?.backgroundColor ?? "",
       borderRadius: Number.parseFloat(style?.borderRadius ?? "0"),
+      noteBackgroundColor: noteStyle?.backgroundColor ?? "",
+      noteBorderRadius: Number.parseFloat(noteStyle?.borderRadius ?? "0"),
       buttonHeight: buttonRect?.height ?? 0,
       blockWidth: block?.getBoundingClientRect().width ?? 0,
+      noteWidth: note?.getBoundingClientRect().width ?? 0,
     };
   });
 
   if (result.blockWidth <= 0) throw new Error("Invite access block is not visible.");
+  if (result.noteWidth <= 0) throw new Error("Invite access note is not visible.");
   if (result.backgroundColor !== "rgba(0, 0, 0, 0)") throw new Error(`Invite access block still uses a cover background: ${result.backgroundColor}.`);
   if (result.borderRadius > 2) throw new Error(`Expected no rounded invite access wrapper, got ${result.borderRadius}px.`);
+  if (result.noteBackgroundColor !== "rgba(0, 0, 0, 0)") throw new Error(`Invite access note still uses a cover background: ${result.noteBackgroundColor}.`);
+  if (result.noteBorderRadius > 2) throw new Error(`Expected no rounded invite access note, got ${result.noteBorderRadius}px.`);
   if (result.buttonHeight > 46) throw new Error(`Expected compact regenerate button, got ${result.buttonHeight}px.`);
+}
+
+async function expectCreateTripActionBarRestraint(page: Page) {
+  const result = await page.evaluate(() => {
+    const status = document.querySelector<HTMLElement>(".trip-wizard-action-status");
+    const summary = document.querySelector<HTMLElement>(".trip-wizard-action-summary");
+    const statusStyle = status ? getComputedStyle(status) : null;
+    const summaryStyle = summary ? getComputedStyle(summary) : null;
+    return {
+      statusBackgroundColor: statusStyle?.backgroundColor ?? "",
+      statusBorderRadius: Number.parseFloat(statusStyle?.borderRadius ?? "0"),
+      summaryBackgroundColor: summaryStyle?.backgroundColor ?? "",
+      summaryBorderRadius: Number.parseFloat(summaryStyle?.borderRadius ?? "0"),
+      statusWidth: status?.getBoundingClientRect().width ?? 0,
+      summaryWidth: summary?.getBoundingClientRect().width ?? 0,
+    };
+  });
+
+  if (result.statusWidth <= 0) throw new Error("Create trip action status is not visible.");
+  if (result.summaryWidth <= 0) throw new Error("Create trip action summary is not visible.");
+  if (result.statusBackgroundColor !== "rgba(0, 0, 0, 0)") throw new Error(`Create trip action status still uses a card background: ${result.statusBackgroundColor}.`);
+  if (result.statusBorderRadius > 2) throw new Error(`Expected no rounded action status wrapper, got ${result.statusBorderRadius}px.`);
+  if (result.summaryBackgroundColor !== "rgba(0, 0, 0, 0)") throw new Error(`Create trip action summary still uses a card background: ${result.summaryBackgroundColor}.`);
+  if (result.summaryBorderRadius > 2) throw new Error(`Expected no rounded action summary wrapper, got ${result.summaryBorderRadius}px.`);
 }
 
 async function mockEmptyAccountApi(page: Page) {
