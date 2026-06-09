@@ -7,6 +7,7 @@ import {
   type ChangeEvent,
   type Dispatch,
   type DragEvent,
+  type FormEvent,
   type PointerEvent as ReactPointerEvent,
   type SetStateAction,
   type TouchEvent as ReactTouchEvent,
@@ -15,6 +16,7 @@ import { createPortal } from "react-dom";
 import type {
   ActivityType,
   ItineraryItem,
+  PlanVariant,
   TripDailyBriefing,
   TripRole,
 } from "@/src/trip/types";
@@ -59,6 +61,10 @@ interface SmartItineraryTableProps {
   graphItems?: ItineraryItem[];
   items: ItineraryItem[];
   dailyBriefings?: TripDailyBriefing[];
+  tripSheets: PlanVariant[];
+  selectedTripSheetId: string;
+  tripSheetError: string | null;
+  isTripSheetBusy: boolean;
   role: TripRole;
   startDate: string;
   itineraryView?: ItineraryView;
@@ -81,6 +87,8 @@ interface SmartItineraryTableProps {
   onDeleteItem?: (itemId: string) => void;
   onExportItinerary: () => void;
   onImportItinerary: (file: File) => void;
+  onChangeTripSheet: (sheetId: string) => boolean | void | Promise<boolean | void>;
+  onCreateTripSheet: (name: string) => boolean | void | Promise<boolean | void>;
   onChangeTripPath?: (pathId: string) => void;
   onChangeDayPath?: (day: string, pathId: string) => void;
   onClearDayPath?: (day: string) => void;
@@ -110,6 +118,24 @@ const pageHeaderActionsClassName =
   "page-header-actions relative z-[1] flex max-w-[260px] min-w-0 flex-wrap items-center justify-end gap-2";
 const pageHeaderNoteClassName =
   "page-header-note m-0 basis-full text-right text-xs font-bold text-(--color-warning-strong)";
+const tripSheetShellClassName =
+  "trip-sheet-shell mb-3 flex min-w-0 flex-wrap items-end gap-2 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) px-3 py-2.5 shadow-[0_10px_24px_rgb(15_23_42_/_0.08)]";
+const tripSheetFieldClassName =
+  "grid min-w-[220px] flex-1 gap-1 text-[11px] font-extrabold text-(--color-text-muted)";
+const tripSheetSelectClassName =
+  "min-h-9 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) px-2.5 text-sm font-bold text-(--color-text) outline-none focus:border-(--color-route-border) focus:shadow-[0_0_0_2px_rgb(186_230_253_/_0.55)] disabled:cursor-not-allowed disabled:opacity-50";
+const tripSheetCreateFormClassName =
+  "trip-sheet-create-form flex min-w-[260px] flex-wrap items-end gap-2";
+const tripSheetNameFieldClassName =
+  "grid min-w-[180px] flex-1 gap-1 text-[11px] font-extrabold text-(--color-text-muted)";
+const tripSheetNameInputClassName =
+  "min-h-9 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-2.5 text-sm font-bold text-(--color-text) outline-none placeholder:text-(--color-text-muted) focus:border-(--color-route-border) focus:shadow-[0_0_0_2px_rgb(186_230_253_/_0.55)] disabled:cursor-not-allowed disabled:opacity-50";
+const tripSheetButtonClassName =
+  "min-h-9 rounded-(--radius-sm) px-3 text-xs font-extrabold";
+const tripSheetSecondaryButtonClassName =
+  "inline-flex min-h-9 items-center justify-center rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) px-3 text-xs font-extrabold text-(--color-text-muted) transition-colors hover:enabled:border-(--color-route-border) hover:enabled:bg-(--color-route-soft) hover:enabled:text-(--color-route) disabled:cursor-not-allowed disabled:opacity-50";
+const tripSheetMessageClassName =
+  "m-0 basis-full text-xs font-bold text-(--color-warning-strong)";
 const itineraryFilterShellClassName =
   "itinerary-filter-shell -mt-1 mb-[14px] grid gap-2 rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) px-3 py-2.5 text-(--color-route) shadow-[var(--shadow-soft)]";
 const itineraryFilterBarClassName =
@@ -284,6 +310,10 @@ export function SmartItineraryTable({
   itineraryView,
   items,
   dailyBriefings = [],
+  tripSheets,
+  selectedTripSheetId,
+  tripSheetError,
+  isTripSheetBusy,
   pathOptions = [{ id: mainItineraryPathId, name: "Main", scope: "trip" }],
   role,
   startDate,
@@ -301,6 +331,8 @@ export function SmartItineraryTable({
   onDeleteItem,
   onExportItinerary,
   onImportItinerary,
+  onChangeTripSheet,
+  onCreateTripSheet,
   onChangeDayPath,
   onClearDayPath,
   onAutoResolveDayOverlaps,
@@ -315,6 +347,11 @@ export function SmartItineraryTable({
     filterOptions.map((option) => option.id),
   );
   const [planFiltersExpanded, setPlanFiltersExpanded] = useState(false);
+  const [isCreatingTripSheet, setIsCreatingTripSheet] = useState(false);
+  const [newTripSheetName, setNewTripSheetName] = useState("");
+  const [newTripSheetError, setNewTripSheetError] = useState<string | null>(
+    null,
+  );
   const [collapsedDays, setCollapsedDays] = useState<string[]>([]);
   const [dragState, setDragState] = useState<{
     draggedItemId: string | null;
@@ -374,6 +411,13 @@ export function SmartItineraryTable({
   const smartTableStyle = {
     "--graph-column-width": `${graphColumnWidth}px`,
   } as CSSProperties;
+  const selectedSheetId = tripSheets.some(
+    (sheet) => sheet.id === selectedTripSheetId,
+  )
+    ? selectedTripSheetId
+    : (tripSheets[0]?.id ?? "");
+  const sheetControlsDisabled = !canEdit || isTripSheetBusy || tripSheets.length === 0;
+  const tripSheetMessage = newTripSheetError ?? tripSheetError;
 
   useEffect(() => {
     setSelectedPathIds((current) => {
@@ -645,6 +689,21 @@ export function SmartItineraryTable({
     event.target.value = "";
   }
 
+  async function submitNewTripSheet(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (isTripSheetBusy) return;
+    const name = newTripSheetName.trim();
+    if (!name) {
+      setNewTripSheetError(t.itinerary.tripSheets.emptyName);
+      return;
+    }
+    setNewTripSheetError(null);
+    const created = await onCreateTripSheet(name);
+    if (created === false) return;
+    setNewTripSheetName("");
+    setIsCreatingTripSheet(false);
+  }
+
   return (
     <section
       className={tablePanelClassName}
@@ -716,6 +775,80 @@ export function SmartItineraryTable({
           </div>
         }
       />
+      <div className={tripSheetShellClassName}>
+        <label className={tripSheetFieldClassName}>
+          <span>{t.itinerary.tripSheets.selectorLabel}</span>
+          <select
+            className={tripSheetSelectClassName}
+            value={selectedSheetId}
+            disabled={sheetControlsDisabled}
+            onChange={(event) => onChangeTripSheet(event.target.value)}
+          >
+            {tripSheets.map((sheet) => (
+              <option value={sheet.id} key={sheet.id}>
+                {sheet.name}
+              </option>
+            ))}
+          </select>
+        </label>
+        {canEdit ? (
+          isCreatingTripSheet ? (
+            <form
+              className={tripSheetCreateFormClassName}
+              onSubmit={submitNewTripSheet}
+            >
+              <label className={tripSheetNameFieldClassName}>
+                <span>{t.itinerary.tripSheets.nameLabel}</span>
+                <input
+                  className={tripSheetNameInputClassName}
+                  value={newTripSheetName}
+                  disabled={isTripSheetBusy}
+                  placeholder={t.itinerary.tripSheets.namePlaceholder}
+                  onChange={(event) => {
+                    setNewTripSheetName(event.target.value);
+                    setNewTripSheetError(null);
+                  }}
+                />
+              </label>
+              <Button
+                type="submit"
+                disabled={isTripSheetBusy}
+                className={tripSheetButtonClassName}
+              >
+                {t.itinerary.tripSheets.createConfirm}
+              </Button>
+              <button
+                type="button"
+                className={tripSheetSecondaryButtonClassName}
+                disabled={isTripSheetBusy}
+                onClick={() => {
+                  setIsCreatingTripSheet(false);
+                  setNewTripSheetName("");
+                  setNewTripSheetError(null);
+                }}
+              >
+                {t.itinerary.tripSheets.createCancel}
+              </button>
+            </form>
+          ) : (
+            <Button
+              type="button"
+              disabled={isTripSheetBusy}
+              className={tripSheetButtonClassName}
+              onClick={() => setIsCreatingTripSheet(true)}
+            >
+              {t.itinerary.tripSheets.create}
+            </Button>
+          )
+        ) : null}
+        {isTripSheetBusy ? (
+          <p className={tripSheetMessageClassName}>
+            {t.itinerary.tripSheets.busy}
+          </p>
+        ) : tripSheetMessage ? (
+          <p className={tripSheetMessageClassName}>{tripSheetMessage}</p>
+        ) : null}
+      </div>
       <div className={itineraryFilterShellClassName}>
         <div className={itineraryFilterBarClassName}>
           <button

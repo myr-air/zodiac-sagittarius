@@ -103,6 +103,7 @@ import type {
   ExpenseLineItem,
   ExpenseSummary,
   ItineraryItem,
+  PlanVariant,
   PlaceResolutionCandidate,
   PlaceResolutionRequest,
   PlaceResolutionResponse,
@@ -336,6 +337,8 @@ export function SagittariusApp({
   const [itineraryImportError, setItineraryImportError] = useState<
     string | null
   >(null);
+  const [tripSheetError, setTripSheetError] = useState<string | null>(null);
+  const [isTripSheetBusy, setIsTripSheetBusy] = useState(false);
   const [pathSelection, setPathSelection] = useState<ItineraryPathSelection>({
     tripPathId: mainItineraryPathId,
     dayPathOverrides: {},
@@ -754,6 +757,149 @@ export function SagittariusApp({
       document.removeEventListener("click", closeContextRailFromOutside);
     };
   }, [contextRailOpen, setContextRailVisibility]);
+
+  async function reloadTripSheetConflict() {
+    if (!resolvedApiClient || !participantSession) return;
+    const cockpit = await resolvedApiClient.loadTrip(
+      trip.id,
+      participantSession.sessionToken,
+    );
+    replaceCockpitFromApi(cockpit);
+    latestTripRef.current = cockpit.trip;
+  }
+
+  function mergePublishedTripSheet(
+    currentTrip: Trip,
+    publishedTrip: Trip,
+    fallbackActivePlanVariantId: string,
+    createdVariant?: PlanVariant,
+  ): Trip {
+    const variantsById = new Map(
+      currentTrip.planVariants.map((variant) => [variant.id, variant]),
+    );
+    for (const variant of publishedTrip.planVariants) {
+      variantsById.set(variant.id, variant);
+    }
+    if (createdVariant) variantsById.set(createdVariant.id, createdVariant);
+    return {
+      ...currentTrip,
+      activePlanVariantId:
+        publishedTrip.activePlanVariantId || fallbackActivePlanVariantId,
+      planVariants: Array.from(variantsById.values()),
+      version: publishedTrip.version ?? currentTrip.version,
+    };
+  }
+
+  async function switchTripSheet(sheetId: string): Promise<boolean> {
+    if (!canEdit || !sheetId || sheetId === selectedPlanVariantId) return false;
+    setTripSheetError(null);
+
+    if (isApiMode && resolvedApiClient && participantSession) {
+      setIsTripSheetBusy(true);
+      try {
+        const publishedTrip = await resolvedApiClient.publishPlanVariant(
+          trip.id,
+          sheetId,
+          participantSession.sessionToken,
+          { clientMutationId: nextClientMutationId("trip-sheet-publish") },
+        );
+        setTripState((current) => {
+          const nextTrip = mergePublishedTripSheet(
+            current.trip,
+            publishedTrip,
+            sheetId,
+          );
+          latestTripRef.current = nextTrip;
+          return { ...current, trip: nextTrip };
+        });
+      } catch (error) {
+        if (
+          error instanceof TripApiError &&
+          error.code === "version_conflict"
+        ) {
+          await reloadTripSheetConflict();
+          return true;
+        }
+        setTripSheetError(t.itinerary.tripSheets.error);
+        return false;
+      } finally {
+        setIsTripSheetBusy(false);
+      }
+      return true;
+    }
+
+    commitTrip((current) => ({ ...current, activePlanVariantId: sheetId }));
+    return true;
+  }
+
+  async function createTripSheet(name: string): Promise<boolean> {
+    if (!canEdit) return false;
+    const trimmedName = name.trim();
+    if (!trimmedName) return false;
+    setTripSheetError(null);
+
+    if (isApiMode && resolvedApiClient && participantSession) {
+      setIsTripSheetBusy(true);
+      try {
+        const createdVariant = await resolvedApiClient.createPlanVariant(
+          trip.id,
+          participantSession.sessionToken,
+          {
+            clientMutationId: nextClientMutationId("trip-sheet-create"),
+            name: trimmedName,
+            kind: "draft",
+            description: "",
+          },
+        );
+        const publishedTrip = await resolvedApiClient.publishPlanVariant(
+          trip.id,
+          createdVariant.id,
+          participantSession.sessionToken,
+          { clientMutationId: nextClientMutationId("trip-sheet-publish") },
+        );
+        setTripState((current) => {
+          const nextTrip = mergePublishedTripSheet(
+            current.trip,
+            publishedTrip,
+            createdVariant.id,
+            createdVariant,
+          );
+          latestTripRef.current = nextTrip;
+          return { ...current, trip: nextTrip };
+        });
+      } catch (error) {
+        if (
+          error instanceof TripApiError &&
+          error.code === "version_conflict"
+        ) {
+          await reloadTripSheetConflict();
+          return true;
+        }
+        setTripSheetError(t.itinerary.tripSheets.error);
+        return false;
+      } finally {
+        setIsTripSheetBusy(false);
+      }
+      return true;
+    }
+
+    commitTrip((current) => {
+      const variant: PlanVariant = {
+        id: nextLocalPlanVariantId(current.planVariants),
+        tripId: current.id,
+        name: trimmedName,
+        kind: "draft",
+        description: "",
+        version: 1,
+      };
+      return {
+        ...current,
+        activePlanVariantId: variant.id,
+        planVariants: [...current.planVariants, variant],
+      };
+    });
+    return true;
+  }
 
   function addStop(day?: string) {
     /* v8 ignore next */
@@ -3223,6 +3369,12 @@ export function SagittariusApp({
                 dailyBriefings={visibleDailyBriefings}
                 itineraryView={itineraryView}
                 pathOptions={pathOptions}
+                tripSheets={trip.planVariants}
+                selectedTripSheetId={selectedPlanVariantId}
+                onChangeTripSheet={switchTripSheet}
+                onCreateTripSheet={createTripSheet}
+                tripSheetError={tripSheetError}
+                isTripSheetBusy={isTripSheetBusy}
                 role={currentMember.role}
                 startDate={trip.startDate}
                 selectedItemId={selectedItemIdForView}
@@ -3553,6 +3705,22 @@ export function nextLocalItemId(
   while (existingIds.has(id)) {
     index += 1;
     id = `${prefix}-${index}`;
+  }
+
+  return id;
+}
+
+function nextLocalPlanVariantId(planVariants: PlanVariant[]): string {
+  const existingIds = new Set(planVariants.map((variant) => variant.id));
+  let index =
+    planVariants.filter((variant) =>
+      variant.id.startsWith("plan-variant-local-"),
+    ).length + 1;
+  let id = `plan-variant-local-${index}`;
+
+  while (existingIds.has(id)) {
+    index += 1;
+    id = `plan-variant-local-${index}`;
   }
 
   return id;
