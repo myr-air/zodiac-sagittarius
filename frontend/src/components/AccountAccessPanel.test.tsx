@@ -903,8 +903,45 @@ describe("AccountAccessPanel", () => {
     expect(within(preview).getByText(/Invite ready/i)).toBeInTheDocument();
     expect(within(preview).getByLabelText(/Flight route from Bangkok to Tokyo/i)).toBeInTheDocument();
     expect(within(preview).getByText(/Join code:/i)).toBeInTheDocument();
-    expect(within(preview).getByLabelText(/Draft boarding code, generated after create/i)).toBeInTheDocument();
+    expect(within(preview).getByText(/Invite link appears after create/i)).toBeInTheDocument();
     expect(screen.queryByRole("list", { name: /Destination inspiration/i })).not.toBeInTheDocument();
+  });
+
+  it("separates destination metadata in the selected cards and draft summary", async () => {
+    const user = userEvent.setup();
+    const accountClient = createAccountClient();
+
+    render(
+      <AccountAccessPanel
+        accessMode="account-portal"
+        accountClient={accountClient}
+        accountSession={{
+          userId: "user-aom",
+          sessionToken: "account-session",
+          kind: "trusted",
+          trustedDeviceId: "device-current",
+          createdAt: "2026-05-30T08:00:00.000Z",
+          expiresAt: "2026-06-29T08:00:00.000Z",
+        }}
+        portalSection="new-trip"
+        trip={seedTrip}
+        onAccountSessionChange={vi.fn()}
+        onAuthenticated={vi.fn()}
+        onTripChange={vi.fn()}
+      />,
+    );
+
+    fireEvent.change(await screen.findByLabelText(/Trip name/i), { target: { value: "ทริปกล่องสุ่ม" } });
+    await selectDestinationCity(user, "Shenzhen", /^Shenzhen, China$/i);
+    await selectDestinationCity(user, "Hong Kong", /^Hong Kong, Hong Kong$/i);
+
+    const form = screen.getByRole("form", { name: /Create trip/i });
+    expect(form.textContent).not.toContain("ChinaAsia");
+    expect(form.textContent).not.toContain("Hong KongAsia");
+    expect(screen.getAllByText("Asia/Shanghai").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("CNY").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Asia/Hong_Kong").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("HKD").length).toBeGreaterThan(0);
   });
 
   it("uses selected non-Japan destination cities in destination cards", async () => {
@@ -1288,7 +1325,7 @@ describe("AccountAccessPanel", () => {
     expect(wizard.textContent).not.toMatch(/[ก-๙]/);
   });
 
-  it("marks the preview barcode as a draft artifact before the trip is created", async () => {
+  it("shows draft invite readiness without a boarding-pass barcode before the trip is created", async () => {
     const accountClient = createAccountClient();
 
     render(
@@ -1312,8 +1349,9 @@ describe("AccountAccessPanel", () => {
     );
 
     const preview = screen.getByRole("region", { name: /Live trip preview/i });
-    expect(within(preview).getByText(/Draft boarding code/i)).toBeInTheDocument();
-    expect(within(preview).getByLabelText(/Draft boarding code, generated after create/i)).toHaveAttribute("aria-disabled", "true");
+    expect(within(preview).getByText(/Invite link appears after create/i)).toBeInTheDocument();
+    expect(within(preview).queryByText(/Draft boarding code/i)).not.toBeInTheDocument();
+    expect(within(preview).queryByLabelText(/Draft boarding code, generated after create/i)).not.toBeInTheDocument();
   });
 
   it("shows one mobile trip creation step at a time with preview last", async () => {

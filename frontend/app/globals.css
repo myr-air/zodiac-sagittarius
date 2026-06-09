@@ -410,26 +410,6 @@ button:disabled,
   transform: rotate(16deg);
 }
 
-.trip-main-ticket::before,
-.trip-main-ticket::after {
-  content: "";
-  position: absolute;
-  right: -11px;
-  width: 22px;
-  height: 22px;
-  border-radius: 999px;
-  background: #f7f1df;
-  z-index: 2;
-}
-
-.trip-main-ticket::before {
-  top: 196px;
-}
-
-.trip-main-ticket::after {
-  bottom: 112px;
-}
-
 .trip-world-map::before {
   content: "";
   position: absolute;
@@ -728,14 +708,6 @@ button:disabled,
 
   .timeline-stop::before {
     left: 92px;
-  }
-
-}
-
-@media (max-width: 767px) {
-  .account-page--portal-new-trip .trip-main-ticket::before,
-  .account-page--portal-new-trip .trip-main-ticket::after {
-    display: none;
   }
 
 }

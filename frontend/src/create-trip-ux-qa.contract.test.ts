@@ -16,6 +16,8 @@ describe("Create trip UX QA harness", () => {
     expect(packageJson.scripts?.["test:create-trip-ux-qa"]).toBe("bun run scripts/run-create-trip-ux-qa.ts");
     expect(existsSync(scriptPath)).toBe(true);
     expect(readFileSync(scriptPath, "utf8")).toContain("portal-my-trips-empty-desktop.png");
+    expect(readFileSync(scriptPath, "utf8")).toContain("create-trip-builder-desktop.png");
+    expect(readFileSync(scriptPath, "utf8")).toContain("create-trip-builder-mobile-preview.png");
     expect(readFileSync(scriptPath, "utf8")).toContain("map-fallback-desktop.png");
   });
 });

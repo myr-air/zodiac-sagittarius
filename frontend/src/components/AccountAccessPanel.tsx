@@ -168,7 +168,7 @@ const tripWizardPaneClassName =
 const tripScopePanelClassName =
   "trip-scope-panel grid gap-0 rounded-[10px] border-0 bg-transparent px-[22px] pb-6 pt-7 max-[767px]:px-0 max-[767px]:pb-2 max-[767px]:pt-2";
 const tripLivePreviewClassName =
-  "trip-live-preview sticky top-3 bottom-3 grid max-h-[calc(100vh-24px)] min-h-[calc(100vh-24px)] min-w-0 content-start gap-0 self-stretch overflow-y-auto rounded-[10px] border border-[rgb(203_213_225_/_0.72)] bg-[linear-gradient(180deg,rgb(255_247_237_/_0.5),rgb(255_255_255_/_0.92)),rgb(255_255_255_/_0.9)] px-3.5 pb-3 pt-5 shadow-[0_10px_24px_rgb(15_23_42_/_0.04)] max-[1023px]:static max-[1023px]:max-h-none max-[1023px]:min-h-0 max-[767px]:mt-0 max-[767px]:rounded-none max-[767px]:border-0 max-[767px]:bg-transparent max-[767px]:p-0 max-[767px]:shadow-none";
+  "trip-live-preview sticky top-3 grid max-h-[calc(100vh-24px)] min-h-0 min-w-0 content-start gap-0 self-start overflow-y-auto rounded-[10px] border border-[rgb(203_213_225_/_0.72)] bg-white px-3.5 pb-3 pt-5 shadow-[0_10px_24px_rgb(15_23_42_/_0.04)] max-[1023px]:static max-[1023px]:max-h-none max-[767px]:mt-0 max-[767px]:rounded-none max-[767px]:border-0 max-[767px]:bg-transparent max-[767px]:p-0 max-[767px]:shadow-none";
 const tripWorkflowNavClassName =
   "trip-workflow-nav mb-3 grid gap-2 rounded-[10px] border border-(--color-border) bg-(--color-surface-subtle) p-2.5 min-[1024px]:hidden [&_ol]:m-0 [&_ol]:grid [&_ol]:grid-flow-col [&_ol]:auto-cols-[minmax(76px,1fr)] [&_ol]:gap-1.5 [&_ol]:overflow-x-auto [&_ol]:overscroll-x-contain [&_ol]:p-0 [&_ol]:[scrollbar-width:none] [&_ol::-webkit-scrollbar]:hidden [&_li]:list-none [&_button]:min-h-8 [&_button]:w-full [&_button]:rounded-[7px] [&_button]:border [&_button]:border-(--color-border) [&_button]:bg-white [&_button]:px-2 [&_button]:py-1.5 [&_button]:text-center [&_button]:text-[11px] [&_button]:font-black [&_button]:text-(--color-text-muted) [&_button[aria-current='step']]:border-[#fed7aa] [&_button[aria-current='step']]:bg-[#fff7ed] [&_button[aria-current='step']]:text-[#c2410c] [&_p]:m-0 [&_p]:text-xs [&_p]:font-[850] [&_p]:text-[#c2410c]";
 const tripStepSectionClassName = "trip-step-section grid gap-3.5 pb-[34px] max-[767px]:pb-4";
@@ -192,7 +192,7 @@ const tripFormDestinationRowClassName =
 const tripPlaceThumbClassName =
   "trip-place-thumb block size-[42px] rounded-md bg-[linear-gradient(145deg,rgb(15_118_110_/_0.28),transparent_54%),linear-gradient(45deg,rgb(255_255_255_/_0.22)_25%,transparent_25%_50%,rgb(255_255_255_/_0.22)_50%_75%,transparent_75%),#dbeafe] bg-[length:auto,12px_12px,auto]";
 const tripMiniDestinationClassName =
-  "trip-mini-destination grid min-h-[70px] grid-cols-[42px_minmax(0,1fr)_auto] items-center gap-2 rounded-[9px] border border-(--color-border) bg-white p-2 [&_small]:block [&_small]:text-[11px] [&_small]:leading-[15px] [&_small]:text-[#64748b] [&_strong]:block [&_button]:grid [&_button]:size-6 [&_button]:cursor-pointer [&_button]:place-items-center [&_button]:border-0 [&_button]:bg-transparent [&_button]:text-[#475569]";
+  "trip-mini-destination grid min-h-[70px] grid-cols-[42px_minmax(0,1fr)_auto] items-center gap-2 rounded-[9px] border border-(--color-border) bg-white p-2 [&_small]:flex [&_small]:min-w-0 [&_small]:flex-wrap [&_small]:gap-x-1 [&_small]:text-[11px] [&_small]:leading-[15px] [&_small]:text-[#64748b] [&_small_span]:min-w-0 [&_small_span]:overflow-hidden [&_small_span]:text-ellipsis [&_strong]:block [&_button]:grid [&_button]:size-6 [&_button]:cursor-pointer [&_button]:place-items-center [&_button]:border-0 [&_button]:bg-transparent [&_button]:text-[#475569]";
 const tripMiniAddClassName =
   "trip-mini-add grid min-h-[70px] grid-cols-[20px_minmax(0,1fr)] items-center gap-2 rounded-[9px] border border-dashed border-(--color-border) bg-white p-2 text-xs font-extrabold text-(--color-text-muted)";
 const tripFormDestinationSearchClassName =
@@ -230,9 +230,9 @@ const tripWizardActionStatusClassName =
 const tripWizardActionSummaryClassName =
   "trip-wizard-action-summary hidden min-h-[96px] min-w-0 content-center gap-1.5 rounded-[10px] border border-[rgb(203_213_225_/_0.72)] bg-[rgb(248_250_252_/_0.82)] px-4 py-3 text-[12px] text-(--color-text-muted) min-[1024px]:col-start-2 min-[1024px]:row-span-2 min-[1024px]:row-start-1 min-[1024px]:grid [&_strong]:min-w-0 [&_strong]:overflow-hidden [&_strong]:text-ellipsis [&_strong]:whitespace-nowrap [&_strong]:text-[15px] [&_strong]:text-(--color-text) [&_span]:min-w-0 [&_span]:overflow-hidden [&_span]:text-ellipsis [&_span]:whitespace-nowrap";
 const tripBoardingPassClassName =
-  "trip-boarding-pass mx-auto mb-[26px] grid w-[min(100%,760px)] grid-cols-[minmax(0,1fr)_222px] drop-shadow-[0_12px_22px_rgb(15_23_42_/_0.14)] max-[767px]:[.account-page--portal-new-trip_&]:w-full max-[767px]:[.account-page--portal-new-trip_&]:grid-cols-1 max-[767px]:[.account-page--portal-new-trip_&]:drop-shadow-[0_10px_20px_rgb(15_23_42_/_0.1)]";
+  "trip-draft-summary mx-auto mb-3 grid w-[min(100%,760px)] gap-3";
 const tripMainTicketClassName =
-  "trip-main-ticket relative min-h-[504px] rounded-xl bg-[rgb(255_255_255_/_0.96)] px-7 pb-6 pt-7 max-[767px]:[.account-page--portal-new-trip_&]:min-h-0 max-[767px]:[.account-page--portal-new-trip_&]:p-5 [&_.trip-preview-map]:mb-[18px] [&_.trip-preview-map]:min-h-[170px] [&_.trip-preview-map]:rounded-[9px] max-[767px]:[.account-page--portal-new-trip_&_.trip-preview-map]:min-h-[148px] [&>p]:my-2 [&>p]:mb-[18px] [&>p]:flex [&>p]:items-center [&>p]:gap-2 [&>p]:text-[13px] [&>p]:text-[#64748b] [&>strong]:mt-1.5 [&>strong]:block [&>strong]:text-[27px] [&>strong]:leading-8 [&>strong]:text-[#090f1f] max-[767px]:[.account-page--portal-new-trip_&>strong]:text-2xl max-[767px]:[.account-page--portal-new-trip_&>strong]:leading-[29px]";
+  "trip-main-ticket relative grid gap-4 rounded-[10px] border border-(--color-border) bg-white p-5 max-[767px]:[.account-page--portal-new-trip_&]:p-4 [&_.trip-preview-map]:min-h-[170px] [&_.trip-preview-map]:rounded-[9px] max-[767px]:[.account-page--portal-new-trip_&_.trip-preview-map]:min-h-[148px] [&>p]:m-0 [&>p]:flex [&>p]:items-center [&>p]:gap-2 [&>p]:text-[13px] [&>p]:text-[#64748b] [&>strong]:block [&>strong]:[overflow-wrap:anywhere] [&>strong]:text-[24px] [&>strong]:leading-8 [&>strong]:text-[#090f1f] max-[767px]:[.account-page--portal-new-trip_&>strong]:text-2xl max-[767px]:[.account-page--portal-new-trip_&>strong]:leading-[29px]";
 const tripPreviewMapClassName =
   "trip-preview-map relative min-h-[168px] overflow-hidden rounded-[18px] border border-[color-mix(in_srgb,var(--color-route-border)_82%,white)] bg-[linear-gradient(90deg,rgb(37_99_235_/_0.07)_1px,transparent_1px),linear-gradient(0deg,rgb(37_99_235_/_0.07)_1px,transparent_1px),radial-gradient(circle_at_24%_32%,rgb(20_184_166_/_0.2),transparent_25%),radial-gradient(circle_at_76%_62%,rgb(56_189_248_/_0.22),transparent_28%),linear-gradient(160deg,rgb(236_253_245_/_0.96),rgb(239_246_255_/_0.94))] [background-size:34px_34px,34px_34px,auto,auto,auto] max-[767px]:min-h-[138px]";
 const tripPreviewMapLiveClassName = "trip-preview-map--live isolate";
@@ -258,11 +258,11 @@ const tripFlightRouteClassName =
 const tripFlightLineClassName =
   "trip-flight-line relative grid h-px place-items-center border-t-2 border-dashed border-[rgb(100_116_139_/_0.42)] before:absolute before:left-0 before:top-[-5px] before:size-2.5 before:rounded-full before:bg-[#3f7194] before:content-[''] after:absolute after:right-0 after:top-[-5px] after:size-2.5 after:rounded-full after:bg-[#3f7194] after:content-[''] [&_.icon]:size-7 [&_.icon]:bg-white [&_.icon]:p-1 [&_.icon]:text-[#3f7194]";
 const tripPreviewDestinationRowClassName =
-  "trip-preview-destination-row grid gap-2.5 [&>span]:text-xs [&>span]:font-black [&>span]:uppercase [&>span]:text-[#64748b] [&>div]:grid [&>div]:grid-cols-3 [&>div]:gap-2.5 max-[767px]:[.account-page--portal-new-trip_&>div]:grid-cols-1";
+  "trip-preview-destination-row grid gap-2.5 [&>span]:text-xs [&>span]:font-black [&>span]:uppercase [&>span]:text-[#64748b] [&>div]:grid [&>div]:grid-cols-[repeat(auto-fit,minmax(180px,1fr))] [&>div]:gap-2.5 max-[767px]:[.account-page--portal-new-trip_&>div]:grid-cols-1";
+const tripPreviewDestinationCardClassName =
+  "trip-preview-destination-card grid min-h-[82px] gap-1.5 rounded-[9px] border border-(--color-border) bg-(--color-surface-subtle) p-3 text-left [&_small]:flex [&_small]:min-w-0 [&_small]:flex-wrap [&_small]:gap-x-1 [&_small]:text-[11px] [&_small]:leading-4 [&_small]:text-[#64748b] [&_strong]:min-w-0 [&_strong]:[overflow-wrap:anywhere] [&_strong]:text-[15px] [&_strong]:leading-5 [&_strong]:text-[#111827]";
 const tripTicketStubClassName =
-  "trip-ticket-stub relative grid min-h-[504px] content-start gap-[22px] rounded-xl border-l border-dashed border-[rgb(100_116_139_/_0.34)] bg-[rgb(255_255_255_/_0.96)] p-7 max-[767px]:[.account-page--portal-new-trip_&]:grid-cols-2 max-[767px]:[.account-page--portal-new-trip_&]:gap-3.5 max-[767px]:[.account-page--portal-new-trip_&]:border-l-0 max-[767px]:[.account-page--portal-new-trip_&]:border-t max-[767px]:[.account-page--portal-new-trip_&]:p-[18px] max-[767px]:[.account-page--portal-new-trip_&]:min-h-0 [&>div]:grid [&>div]:gap-[7px] [&>div_span]:text-xs [&>div_span]:text-[#64748b] [&>div_strong]:text-lg [&>div_strong]:leading-6 [&>div_strong]:text-[#111827] [&>.icon]:size-8 [&>.icon]:justify-self-end [&>.icon]:text-[#4b6b70] [&>.icon]:-rotate-[35deg] max-[767px]:[.account-page--portal-new-trip_&>.icon]:size-[26px] max-[767px]:[.account-page--portal-new-trip_&>.icon]:justify-self-start max-[767px]:[.account-page--portal-new-trip_&>div_strong]:text-[15px] max-[767px]:[.account-page--portal-new-trip_&>div_strong]:leading-5";
-const tripTicketBarcodeClassName =
-  "trip-ticket-barcode mt-[34px] h-[142px] w-[58px] justify-self-end rounded-[6px] border border-(--color-border) bg-[linear-gradient(90deg,#64748b_0_3px,transparent_3px_7px,#64748b_7px_9px,transparent_9px_14px,#64748b_14px_15px,transparent_15px_19px,#64748b_19px_23px,transparent_23px_29px,#64748b_29px_31px,transparent_31px_37px,#64748b_37px_40px,transparent_40px_46px,#64748b_46px_47px,transparent_47px_52px,#64748b_52px_56px,transparent_56px)] bg-[length:58px_100%] opacity-45 shadow-[inset_0_0_0_4px_white] max-[767px]:[.account-page--portal-new-trip_&]:col-start-2 max-[767px]:[.account-page--portal-new-trip_&]:row-span-3 max-[767px]:[.account-page--portal-new-trip_&]:row-start-2 max-[767px]:[.account-page--portal-new-trip_&]:mt-0 max-[767px]:[.account-page--portal-new-trip_&]:h-[108px] max-[767px]:[.account-page--portal-new-trip_&]:w-12";
+  "trip-ticket-stub grid grid-cols-3 gap-2.5 rounded-[10px] border border-(--color-border) bg-(--color-surface-subtle) p-3 max-[767px]:[.account-page--portal-new-trip_&]:grid-cols-1 [&>div]:grid [&>div]:gap-1 [&>div]:rounded-[8px] [&>div]:border [&>div]:border-(--color-border) [&>div]:bg-white [&>div]:p-3 [&>div_span]:text-xs [&>div_span]:text-[#64748b] [&>div_strong]:min-w-0 [&>div_strong]:[overflow-wrap:anywhere] [&>div_strong]:text-[15px] [&>div_strong]:leading-5 [&>div_strong]:text-[#111827] [&>.icon]:hidden";
 const portalFeatureCardClassName = cn(accountCardClassName, "portal-feature-card col-span-2 max-[767px]:col-auto");
 const portalSettingsCardClassName = cn(accountCardClassName, "account-settings-card col-span-2 max-[767px]:col-auto");
 const accountPanelHeadingClassName =
@@ -2214,7 +2214,7 @@ function PortalTripWizard({
                           <span className={tripPlaceThumbClassName} aria-hidden="true" />
                           <div>
                             <strong>{card.title}</strong>
-                            <small><span>{card.detail}</span>{card.meta ? <span>{card.meta}</span> : null}</small>
+                            <DestinationCardMeta detail={card.detail} meta={card.meta} />
                           </div>
                           <button type="button" aria-label={`Remove ${card.title}`} onClick={() => removeCityStop(card.title)}>
                             <Icon name="x" />
@@ -2398,12 +2398,9 @@ function PortalTripWizard({
                 <span>{wizard.preview.destinations}</span>
                 <div>
                   {destinationCards.map((card) => (
-                    <article key={card.title} className={tripMiniDestinationClassName}>
-                      <span className={tripPlaceThumbClassName} aria-hidden="true" />
-                      <div>
-                        <strong>{card.title}</strong>
-                        <small><span>{card.detail}</span>{card.meta ? <span>{card.meta}</span> : null}</small>
-                      </div>
+                    <article key={card.title} className={tripPreviewDestinationCardClassName}>
+                      <strong>{card.title}</strong>
+                      <DestinationCardMeta detail={card.detail} meta={card.meta} />
                       <Badge tone="primary">{card.nights}</Badge>
                     </article>
                   ))}
@@ -2428,8 +2425,6 @@ function PortalTripWizard({
                 <span>{wizard.preview.status}</span>
                 <Badge tone={canSubmit ? "warning" : "neutral"}>{inviteStatus}</Badge>
               </div>
-              <span>{wizard.preview.draftBoardingCode}</span>
-              <span className={tripTicketBarcodeClassName} aria-label={wizard.preview.draftBoardingCodeLabel} aria-disabled="true" />
             </div>
           </div>
           </section>
@@ -2491,6 +2486,26 @@ function PortalTripWizard({
       </div>
     </form>
   );
+}
+
+function DestinationCardMeta({ detail, meta }: { detail: string; meta: string }) {
+  const parts = [detail, ...destinationMetaParts(meta)].filter(Boolean);
+  if (!parts.length) return null;
+
+  return (
+    <small>
+      {parts.map((part, index) => (
+        <span key={`${part}-${index}`}>
+          {index > 0 ? <span aria-hidden="true"> · </span> : null}
+          <span>{part}</span>
+        </span>
+      ))}
+    </small>
+  );
+}
+
+function destinationMetaParts(meta: string): string[] {
+  return meta.split(" · ").map((part) => part.trim()).filter(Boolean);
 }
 
 function tripDestinationCards(selectedCountryNames: string[], selectedCityNames: string[] = [], locale: string = "en"): Array<{ title: string; detail: string; meta: string; nights: string; countryName: string }> {

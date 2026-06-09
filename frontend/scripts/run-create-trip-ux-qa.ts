@@ -49,6 +49,7 @@ async function main() {
 
     browser = await chromium.launch({ headless: true });
     await runPortalEmptyStateQa(browser);
+    await runCreateTripBuilderQa(browser);
     await runMapFallbackQa(browser);
 
     evidence.status = "passed";
@@ -98,6 +99,47 @@ async function runPortalEmptyStateQa(browser: Browser) {
   await context.close();
 }
 
+async function runCreateTripBuilderQa(browser: Browser) {
+  const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  await context.addInitScript(() => {
+    sessionStorage.setItem("sagittarius-account-session", JSON.stringify({
+      userId: "qa-user",
+      sessionToken: "qa-account-session",
+      kind: "trusted",
+      trustedDeviceId: "qa-device",
+      createdAt: "2026-06-09T01:00:00.000Z",
+      expiresAt: "2026-07-09T01:00:00.000Z",
+    }));
+    localStorage.setItem("sagittarius-language", "en");
+    localStorage.setItem("sagittarius-currency", "HKD");
+  });
+
+  const page = await context.newPage();
+  attachConsoleChecks(page);
+  await page.route("https://tiles.openfreemap.org/**", (route) => route.abort());
+  await mockEmptyAccountApi(page);
+
+  await page.goto(`${frontendBaseUrl}/portal/trips/new`, { waitUntil: "networkidle" });
+  await page.getByRole("form", { name: /Create trip/i }).waitFor({ state: "visible", timeout: 10_000 });
+  await fillCreateTripBuilder(page);
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await expectNoFrameworkOverlay(page);
+  await expectNoHorizontalOverflow(page);
+  await expectCreateTripTextFit(page, 96);
+  await screenshot(page, "create-trip-builder-desktop.png");
+  evidence.checks.push("Desktop create-trip builder renders selected destinations and draft summary without text squeeze or metadata concatenation.");
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.getByRole("button", { name: /Preview step/i }).click();
+  await expectNoFrameworkOverlay(page);
+  await expectNoHorizontalOverflow(page);
+  await expectCreateTripTextFit(page, 220);
+  await screenshot(page, "create-trip-builder-mobile-preview.png");
+  evidence.checks.push("Mobile create-trip preview step renders without horizontal overflow or clipped destination text.");
+
+  await context.close();
+}
+
 async function runMapFallbackQa(browser: Browser) {
   const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
   await context.addInitScript(() => {
@@ -133,6 +175,46 @@ async function runMapFallbackQa(browser: Browser) {
   evidence.checks.push("Map route shows a visible fallback status when OpenFreeMap tiles fail.");
 
   await context.close();
+}
+
+async function fillCreateTripBuilder(page: Page) {
+  await page.getByLabel(/Trip name/i).fill("ทริปกล่องสุ่ม");
+  await page.getByLabel(/Search destination cities/i).fill("Shenzhen");
+  await page.getByRole("button", { name: /^Shenzhen, China$/i }).click();
+  await page.getByLabel(/Search destination cities/i).fill("Hong Kong");
+  await page.getByRole("button", { name: /^Hong Kong, Hong Kong$/i }).click();
+  await page.getByLabel(/Start date/i).fill("2026-06-19");
+  await page.getByLabel(/End date/i).fill("2026-06-25");
+  await page.getByText("Invite ready").waitFor({ state: "visible", timeout: 10_000 });
+}
+
+async function expectCreateTripTextFit(page: Page, minimumTextWidth: number) {
+  const result = await page.evaluate((minimumWidth) => {
+    const root = document.querySelector("form[aria-label='Create trip']");
+    const text = root?.textContent ?? "";
+    const visibleCards = Array.from(document.querySelectorAll<HTMLElement>(".trip-preview-destination-card"))
+      .filter((card) => {
+        const style = window.getComputedStyle(card);
+        const rect = card.getBoundingClientRect();
+        return style.display !== "none" && style.visibility !== "hidden" && rect.width > 0 && rect.height > 0;
+      });
+    const squeezed = visibleCards.flatMap((card) => Array.from(card.querySelectorAll<HTMLElement>("strong, small")).map((node) => ({
+      text: node.textContent?.replace(/\s+/g, " ").trim() ?? "",
+      width: node.getBoundingClientRect().width,
+    }))).filter((node) => node.text && node.width < minimumWidth);
+
+    return {
+      concatenated: text.includes("ChinaAsia") || text.includes("Hong KongAsia"),
+      cardCount: visibleCards.length,
+      squeezed,
+    };
+  }, minimumTextWidth);
+
+  if (result.concatenated) throw new Error("Create-trip destination metadata is concatenated.");
+  if (result.cardCount < 2) throw new Error(`Expected at least two visible preview destination cards, got ${result.cardCount}.`);
+  if (result.squeezed.length) {
+    throw new Error(`Create-trip preview text is squeezed below ${minimumTextWidth}px: ${JSON.stringify(result.squeezed)}`);
+  }
 }
 
 async function mockEmptyAccountApi(page: Page) {
