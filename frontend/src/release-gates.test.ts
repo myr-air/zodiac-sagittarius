@@ -156,8 +156,8 @@ describe("release evidence gates", () => {
   });
 
   it("rejects missing internal API targets for the runtime proxy", () => {
-    const { SAGITTARIUS_INTERNAL_API_BASE_URL, ...env } =
-      validProductionRuntimeEnv;
+    const env = { ...validProductionRuntimeEnv };
+    delete env.SAGITTARIUS_INTERNAL_API_BASE_URL;
     const result = runGate("scripts/check-production-env.ts", env);
 
     expect(result.status).not.toBe(0);
