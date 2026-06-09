@@ -1,0 +1,889 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Implementation Plan: Sagittarius Production Web Redesign Fixes</title>
+  <style>
+    :root {
+      --page: #f8fafc;
+      --surface: #ffffff;
+      --surface-muted: #f1f5f9;
+      --ink: #172033;
+      --muted: #475569;
+      --subtle: #64748b;
+      --border: #dbe4ef;
+      --border-strong: #cbd5e1;
+      --primary: #0f766e;
+      --primary-soft: #ecfeff;
+      --route: #2563eb;
+      --route-soft: #eff6ff;
+      --warning: #c2410c;
+      --warning-soft: #fff7ed;
+      --danger: #b91c1c;
+      --danger-soft: #fef2f2;
+      --success: #15803d;
+      --success-soft: #f0fdf4;
+      --new: #7c3aed;
+      --new-soft: #f5f3ff;
+      --radius: 8px;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--page);
+      color: var(--ink);
+      font-family: "Noto Sans Thai", Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 14px;
+      line-height: 1.55;
+      letter-spacing: 0;
+    }
+    main {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 28px 0 48px;
+    }
+    h1, h2, h3, p { margin-top: 0; }
+    h1 {
+      margin-bottom: 8px;
+      font-size: 28px;
+      line-height: 1.18;
+      letter-spacing: 0;
+    }
+    h2 {
+      margin-bottom: 12px;
+      font-size: 18px;
+      line-height: 1.25;
+    }
+    h3 {
+      margin-bottom: 8px;
+      font-size: 15px;
+      line-height: 1.3;
+    }
+    section {
+      margin-top: 18px;
+    }
+    .lead {
+      max-width: 78ch;
+      color: var(--muted);
+      font-weight: 600;
+    }
+    .panel {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      padding: 16px;
+    }
+    .callout {
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius);
+      background: var(--surface-muted);
+      padding: 12px;
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+    .diagram-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+      align-items: stretch;
+    }
+    .diagram {
+      min-height: 360px;
+    }
+    svg {
+      display: block;
+      width: 100%;
+      height: auto;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: #fbfdff;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    th, td {
+      border-bottom: 1px solid var(--border);
+      padding: 9px 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background: var(--surface-muted);
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+    tr:last-child td { border-bottom: 0; }
+    code {
+      border-radius: 4px;
+      background: var(--surface-muted);
+      padding: 1px 4px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      font-size: 12px;
+    }
+    pre {
+      overflow: auto;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: #0f172a;
+      color: #f8fafc;
+      padding: 12px;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+    .tag {
+      display: inline-flex;
+      min-height: 24px;
+      align-items: center;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--surface);
+      padding: 2px 8px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+    .tag.changed { border-color: #99f6e4; background: var(--primary-soft); color: var(--primary); }
+    .tag.new { border-color: #ddd6fe; background: var(--new-soft); color: var(--new); }
+    .tag.risky { border-color: #fed7aa; background: var(--warning-soft); color: var(--warning); }
+    .tag.shared { border-color: #bfdbfe; background: var(--route-soft); color: var(--route); }
+    .tag.removed { border-color: #fecaca; background: var(--danger-soft); color: var(--danger); }
+    .caption {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .note-list {
+      margin: 0;
+      padding-left: 18px;
+    }
+    .note-list li { margin: 4px 0; }
+    .status-high { color: var(--danger); font-weight: 900; }
+    .status-medium { color: var(--warning); font-weight: 900; }
+    .status-low { color: var(--primary); font-weight: 900; }
+    @media (max-width: 820px) {
+      main { width: min(100% - 20px, 1180px); padding-top: 18px; }
+      .grid-2, .grid-3, .diagram-grid { grid-template-columns: 1fr; }
+      th, td { padding: 8px; }
+    }
+  </style>
+</head>
+<body>
+<main>
+  <section id="human-summary">
+    <h1>Implementation Plan: Sagittarius Production Web Redesign Fixes</h1>
+    <p class="lead">
+      Goal: turn the June 9 redesign audit and issue index into an executable, reviewed plan for fixing cockpit craft issues without resetting the product.
+      The product lane stays Calm Travel Ops: dense, calm, friendly, trustworthy, scan-friendly, and specific to group trip planning.
+    </p>
+    <div class="legend" aria-label="Plan legend">
+      <span class="tag changed">Changed</span>
+      <span class="tag new">New</span>
+      <span class="tag removed">Removed</span>
+      <span class="tag shared">Shared</span>
+      <span class="tag risky">Risky</span>
+    </div>
+
+    <section id="before-after-diagrams" class="panel">
+      <h2>Current vs Proposed Structure</h2>
+      <div class="diagram-grid">
+        <div class="diagram">
+          <h3>Current</h3>
+          <svg viewBox="0 0 560 360" role="img" aria-label="Current design structure diagram">
+            <defs>
+              <marker id="arrow-current" markerWidth="8" markerHeight="8" refX="6" refY="3.5" orient="auto">
+                <path d="M0,0 L7,3.5 L0,7 Z" fill="#475569"></path>
+              </marker>
+            </defs>
+            <rect x="20" y="24" width="160" height="62" rx="8" fill="#fff7ed" stroke="#fed7aa"></rect>
+            <text x="36" y="48" font-size="13" font-weight="800" fill="#9a3412">Global wash</text>
+            <text x="36" y="67" font-size="11" fill="#475569">paper grain + watercolor</text>
+            <rect x="220" y="24" width="160" height="62" rx="8" fill="#fff7ed" stroke="#fed7aa"></rect>
+            <text x="236" y="48" font-size="13" font-weight="800" fill="#9a3412">PageHeader</text>
+            <text x="236" y="67" font-size="11" fill="#475569">stripe, motif, tall mobile</text>
+            <rect x="420" y="24" width="120" height="62" rx="8" fill="#eff6ff" stroke="#bfdbfe"></rect>
+            <text x="438" y="48" font-size="13" font-weight="800" fill="#1d4ed8">AppShell</text>
+            <text x="438" y="67" font-size="11" fill="#475569">raw mobile scroll</text>
+            <path d="M180 55 H220" stroke="#475569" stroke-width="2" marker-end="url(#arrow-current)"></path>
+            <path d="M380 55 H420" stroke="#475569" stroke-width="2" marker-end="url(#arrow-current)"></path>
+            <rect x="28" y="132" width="138" height="76" rx="8" fill="#fef2f2" stroke="#fecaca"></rect>
+            <text x="44" y="155" font-size="13" font-weight="800" fill="#b91c1c">Overview</text>
+            <text x="44" y="174" font-size="11" fill="#475569">postcard hero</text>
+            <text x="44" y="191" font-size="11" fill="#475569">decor competes</text>
+            <rect x="192" y="132" width="138" height="76" rx="8" fill="#fef2f2" stroke="#fecaca"></rect>
+            <text x="208" y="155" font-size="13" font-weight="800" fill="#b91c1c">Photos</text>
+            <text x="208" y="174" font-size="11" fill="#475569">text-led cards</text>
+            <text x="208" y="191" font-size="11" fill="#475569">raw URL inspector</text>
+            <rect x="356" y="132" width="138" height="76" rx="8" fill="#fef2f2" stroke="#fecaca"></rect>
+            <text x="372" y="155" font-size="13" font-weight="800" fill="#b91c1c">Itinerary</text>
+            <text x="372" y="174" font-size="11" fill="#475569">24px fields</text>
+            <text x="372" y="191" font-size="11" fill="#475569">1080px mobile table</text>
+            <rect x="110" y="250" width="138" height="76" rx="8" fill="#fff7ed" stroke="#fed7aa"></rect>
+            <text x="126" y="273" font-size="13" font-weight="800" fill="#9a3412">Weather</text>
+            <text x="126" y="292" font-size="11" fill="#475569">emoji glyphs</text>
+            <text x="126" y="309" font-size="11" fill="#475569">repeated -- deg</text>
+            <rect x="286" y="250" width="138" height="76" rx="8" fill="#fff7ed" stroke="#fed7aa"></rect>
+            <text x="302" y="273" font-size="13" font-weight="800" fill="#9a3412">Map</text>
+            <text x="302" y="292" font-size="11" fill="#475569">blank-ish loading</text>
+            <text x="302" y="309" font-size="11" fill="#475569">no stop context</text>
+          </svg>
+          <p class="caption">Most important current issue: cockpit surfaces inherit decorative postcard treatment and several mobile workflows rely on dense desktop controls.</p>
+        </div>
+        <div class="diagram">
+          <h3>Proposed</h3>
+          <svg viewBox="0 0 560 360" role="img" aria-label="Proposed design structure diagram">
+            <defs>
+              <marker id="arrow-proposed" markerWidth="8" markerHeight="8" refX="6" refY="3.5" orient="auto">
+                <path d="M0,0 L7,3.5 L0,7 Z" fill="#475569"></path>
+              </marker>
+            </defs>
+            <rect x="20" y="24" width="160" height="62" rx="8" fill="#f0fdf4" stroke="#bbf7d0"></rect>
+            <text x="36" y="48" font-size="13" font-weight="800" fill="#15803d">Scoped art tokens</text>
+            <text x="36" y="67" font-size="11" fill="#475569">landing/auth only</text>
+            <rect x="220" y="24" width="160" height="62" rx="8" fill="#ecfeff" stroke="#99f6e4"></rect>
+            <text x="236" y="48" font-size="13" font-weight="800" fill="#0f766e">Compact header</text>
+            <text x="236" y="67" font-size="11" fill="#475569">flat, 132-168px mobile</text>
+            <rect x="420" y="24" width="120" height="62" rx="8" fill="#eff6ff" stroke="#bfdbfe"></rect>
+            <text x="438" y="48" font-size="13" font-weight="800" fill="#1d4ed8">Polished nav</text>
+            <text x="438" y="67" font-size="11" fill="#475569">fade + active scroll</text>
+            <path d="M180 55 H220" stroke="#475569" stroke-width="2" marker-end="url(#arrow-proposed)"></path>
+            <path d="M380 55 H420" stroke="#475569" stroke-width="2" marker-end="url(#arrow-proposed)"></path>
+            <rect x="28" y="132" width="138" height="76" rx="8" fill="#ecfeff" stroke="#99f6e4"></rect>
+            <text x="44" y="155" font-size="13" font-weight="800" fill="#0f766e">Overview</text>
+            <text x="44" y="174" font-size="11" fill="#475569">trip state first</text>
+            <text x="44" y="191" font-size="11" fill="#475569">decision context</text>
+            <rect x="192" y="132" width="138" height="76" rx="8" fill="#f5f3ff" stroke="#ddd6fe"></rect>
+            <text x="208" y="155" font-size="13" font-weight="800" fill="#7c3aed">Photos/docs</text>
+            <text x="208" y="174" font-size="11" fill="#475569">covers + domain label</text>
+            <text x="208" y="191" font-size="11" fill="#475569">compact filters</text>
+            <rect x="356" y="132" width="138" height="76" rx="8" fill="#f5f3ff" stroke="#ddd6fe"></rect>
+            <text x="372" y="155" font-size="13" font-weight="800" fill="#7c3aed">Mobile edit</text>
+            <text x="372" y="174" font-size="11" fill="#475569">selected stop sheet</text>
+            <text x="372" y="191" font-size="11" fill="#475569">40-44px targets</text>
+            <rect x="110" y="250" width="138" height="76" rx="8" fill="#ecfeff" stroke="#99f6e4"></rect>
+            <text x="126" y="273" font-size="13" font-weight="800" fill="#0f766e">Weather</text>
+            <text x="126" y="292" font-size="11" fill="#475569">app glyphs</text>
+            <text x="126" y="309" font-size="11" fill="#475569">single pending state</text>
+            <rect x="286" y="250" width="138" height="76" rx="8" fill="#eff6ff" stroke="#bfdbfe"></rect>
+            <text x="302" y="273" font-size="13" font-weight="800" fill="#1d4ed8">Map loading</text>
+            <text x="302" y="292" font-size="11" fill="#475569">static route + stops</text>
+            <text x="302" y="309" font-size="11" fill="#475569">retry / fallback</text>
+          </svg>
+          <p class="caption">Most important proposed difference: cockpit chrome becomes operational, while travel warmth moves to photos, map pins, empty states, and success moments.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="change-summary" class="panel">
+      <h2>Key Changes</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Priority</th>
+            <th>Change</th>
+            <th>Why</th>
+            <th>Evidence checked</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="status-high">P0</td>
+            <td>Scope paper grain and watercolor to public/auth routes, flatten cockpit page headers, remove side stripe.</td>
+            <td>Every cockpit page currently inherits postcard language, which weakens operational scanning.</td>
+            <td><code>redesign.md</code> major issues 1, 2, 6; <code>frontend/app/globals.css:40</code>, <code>:72</code>, <code>:510</code>; <code>frontend/src/components/PageHeader.tsx:14</code>.</td>
+          </tr>
+          <tr>
+            <td class="status-high">P0</td>
+            <td>Polish mobile app nav and reduce mobile header height.</td>
+            <td>Mobile users reach useful content too late and see raw horizontal nav scroll.</td>
+            <td><code>redesign.md</code> major issue 2 and minor issue 4; <code>frontend/src/components/AppShell.tsx:57</code>.</td>
+          </tr>
+          <tr>
+            <td class="status-high">P0</td>
+            <td>Add mobile selected-stop inspector for itinerary editing while preserving desktop table density.</td>
+            <td>Frequent row actions and inputs are 24-32px and the table is 1080px inside a phone viewport.</td>
+            <td><code>redesign.md</code> major issue 4; <code>frontend/src/components/SmartItineraryTable.tsx:123</code>, <code>:126</code>, <code>:165</code>, <code>:170</code>, <code>:184</code>.</td>
+          </tr>
+          <tr>
+            <td class="status-medium">P1</td>
+            <td>Repaint photos and bookings as visual travel artifacts with compact filters and clean external-link labels.</td>
+            <td>Photos and bookings currently share empty card patterns and photos do not look photo-led.</td>
+            <td><code>redesign.md</code> major issue 3 and minor issue 7; <code>TripPhotosPage.tsx:47</code>, <code>:51</code>, <code>:302</code>; <code>BookingsDocsPage.tsx:74</code>, <code>:81</code>.</td>
+          </tr>
+          <tr>
+            <td class="status-medium">P1</td>
+            <td>Replace weather emoji and pending temperature repetition with app-consistent weather states.</td>
+            <td>Emoji product chrome and repeated <code>-- deg</code> read prototype-like.</td>
+            <td><code>redesign.md</code> major issue 5; <code>WeatherForecastStrip.tsx:21</code>, <code>:56</code>; <code>weather-briefings.ts:51</code>, <code>:60</code>.</td>
+          </tr>
+          <tr>
+            <td class="status-medium">P1</td>
+            <td>Show map route preview and stop list while live tiles load or fail.</td>
+            <td>OpenFreeMap loading currently centers a status over a large pale canvas without adjacent route context.</td>
+            <td><code>redesign.md</code> major issue 7; <code>RouteMapView.tsx:119</code>, <code>:125</code>, <code>:354</code>.</td>
+          </tr>
+          <tr>
+            <td class="status-low">P2</td>
+            <td>Fix landing H1 accessible spacing and auth LCP priority after cockpit shell work.</td>
+            <td>Small production-readiness fixes are clear and low risk, but should not drive the cockpit repaint.</td>
+            <td><code>redesign.md</code> minor issues 1, 2, 8; <code>HomeLanding.tsx:203</code>, <code>:204</code>.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="parallelism" class="panel">
+      <h2>Parallelism Shape</h2>
+      <p>
+        Likely touched files exceed 10. Maximum safe concurrency is <strong>3 workpack lanes after Wave 0</strong>.
+        Wave 0 owns shared shell files, because <code>globals.css</code>, <code>PageHeader.tsx</code>, and <code>AppShell.tsx</code> affect every route and would create merge hazards if edited in parallel with route-level workers.
+      </p>
+      <table>
+        <thead>
+          <tr>
+            <th>Wave</th>
+            <th>Owner</th>
+            <th>Can run with</th>
+            <th>Must wait for</th>
+            <th>Merge risk</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Wave 0</td>
+            <td>Aggregator: design contract, shell, header, mobile nav</td>
+            <td>None</td>
+            <td>Context already gathered</td>
+            <td class="status-high">High, shared route chrome</td>
+          </tr>
+          <tr>
+            <td>Wave 1</td>
+            <td>Overview/weather, photos/bookings, map fallback</td>
+            <td>All three lanes can run together after Wave 0</td>
+            <td>Wave 0 header/nav contract</td>
+            <td class="status-medium">Medium, route pages and tests are disjoint</td>
+          </tr>
+          <tr>
+            <td>Wave 2</td>
+            <td>Itinerary mobile inspector</td>
+            <td>None preferred</td>
+            <td>Wave 0 and current itinerary test pass</td>
+            <td class="status-high">High, large shared table and API/local mutation behavior</td>
+          </tr>
+          <tr>
+            <td>Wave 3</td>
+            <td>Reviewer and simplifier</td>
+            <td>Can run in parallel against integrated branch if user authorizes subagents</td>
+            <td>Focused tests passing</td>
+            <td class="status-low">Low, read-only review first</td>
+          </tr>
+          <tr>
+            <td>Wave 4</td>
+            <td>Aggregator fixes accepted review items</td>
+            <td>None</td>
+            <td>Reviewer output</td>
+            <td class="status-medium">Medium, final cross-route polish</td>
+          </tr>
+          <tr>
+            <td>Wave 5</td>
+            <td>Final verification and commit</td>
+            <td>None</td>
+            <td>All focused tests and browser QA</td>
+            <td class="status-low">Low</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="critical-risks" class="panel">
+      <h2>Critical Risks</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Risk</th>
+            <th>Impact</th>
+            <th>Mitigation</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Global repaint changes route pages not covered by the audit.</td>
+            <td>Unexpected regressions in account/access or public landing.</td>
+            <td>Scope decorative art to explicit landing/auth classes and test <code>HomeLanding</code>, <code>AccountAccessPanel</code>, and cockpit stories.</td>
+          </tr>
+          <tr>
+            <td>Itinerary mobile inspector duplicates mutation logic.</td>
+            <td>Local/API mode behavior or path model can drift.</td>
+            <td>Reuse existing SmartItineraryTable callbacks and data model. Do not create a second itinerary state writer.</td>
+          </tr>
+          <tr>
+            <td>Photos cover URLs can be unsafe or broken.</td>
+            <td>Broken cards or privacy-sensitive external loads.</td>
+            <td>Use existing safe URL pattern for links, add thumbnail fallback, and avoid loading unsafe cover URLs.</td>
+          </tr>
+          <tr>
+            <td>Map retry can remount MapLibre incorrectly.</td>
+            <td>Memory leaks, duplicate markers, or keyboard focus issues.</td>
+            <td>Keep cleanup tests in <code>RouteMapView.test.tsx</code>, add retry state key, and verify marker cleanup.</td>
+          </tr>
+          <tr>
+            <td>Touch target fixes reduce useful desktop density.</td>
+            <td>Organizer editing becomes slower on desktop.</td>
+            <td>Use responsive classes: keep dense desktop rows, raise mobile and frequent controls to 40-44px.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="review-fixes-applied" class="panel">
+      <h2>Review Fixes Applied</h2>
+      <p>
+        Subagent review was not dispatched because the available multi-agent tool policy allows spawning only when the user explicitly asks for subagents or parallel agent work.
+        I ran the required review axes in the main thread and repaired the plan before delivery.
+      </p>
+      <table>
+        <thead>
+          <tr>
+            <th>Review axis</th>
+            <th>Finding</th>
+            <th>Fix applied</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Gap and critical path</td>
+            <td>Initial split risked editing shared shell files in parallel with route pages.</td>
+            <td>Added Wave 0 as aggregator-owned shared contract for <code>globals.css</code>, <code>PageHeader.tsx</code>, and <code>AppShell.tsx</code>.</td>
+            <td>Accepted</td>
+          </tr>
+          <tr>
+            <td>Gap and critical path</td>
+            <td>Mobile nav issue had no direct test owner.</td>
+            <td>Added AppShell test/story ownership and active-item auto-scroll requirement in Workpack 0.</td>
+            <td>Accepted</td>
+          </tr>
+          <tr>
+            <td>Simplification</td>
+            <td>Members and expenses repaint could expand scope beyond production blockers.</td>
+            <td>Deferred members/expenses to follow-up unless touched by shell token cleanup; kept only issue-linked evidence in risk notes.</td>
+            <td>Accepted</td>
+          </tr>
+          <tr>
+            <td>Parallel safety</td>
+            <td>Photos and bookings both need external-link labeling; duplicating helpers would add drift.</td>
+            <td>Added one small shared URL-label helper owned by the photos/bookings lane.</td>
+            <td>Accepted</td>
+          </tr>
+          <tr>
+            <td>Simplification</td>
+            <td>Itinerary row-card rewrite would be too risky for the first repaint pass.</td>
+            <td>Changed scope to selected-stop inspector bottom sheet on mobile, preserving table comparison and existing callbacks.</td>
+            <td>Accepted</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  </section>
+
+  <section id="implementation-plan">
+    <section id="acceptance-criteria" class="panel">
+      <h2>Acceptance Criteria</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Criterion</th>
+            <th>Evidence</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>AC1</td>
+            <td>Cockpit routes no longer use global paper grain, watercolor page wash, or page-header side stripe. Landing/auth can still opt into postcard art.</td>
+            <td>CSS scan plus desktop/mobile screenshots for overview, itinerary, map, photos, bookings, landing, and auth.</td>
+          </tr>
+          <tr>
+            <td>AC2</td>
+            <td>Mobile cockpit headers fit a 132-168px target unless a route has a clear functional exception.</td>
+            <td>Browser measurements at 390x844 for itinerary, timeline, and map.</td>
+          </tr>
+          <tr>
+            <td>AC3</td>
+            <td>Mobile app nav hides native scrollbar, shows fade affordance, keeps active item visible, and remains keyboard reachable.</td>
+            <td><code>AppShell.test.tsx</code> plus browser checks at 320 and 390.</td>
+          </tr>
+          <tr>
+            <td>AC4</td>
+            <td>Photos page displays album cover imagery or a meaningful destination/provider thumbnail fallback. Inspector shows provider/status/domain and hides raw URL behind open/copy actions.</td>
+            <td><code>TripPhotosPage.test.tsx</code>, Storybook mobile and desktop stories.</td>
+          </tr>
+          <tr>
+            <td>AC5</td>
+            <td>Weather strip uses app-consistent glyphs, shows pending forecast once per day without repeated <code>-- deg</code>, and preserves accessible labels.</td>
+            <td><code>WeatherForecastStrip.test.tsx</code>, <code>WeatherBriefingDrawer.test.tsx</code> if drawer copy changes.</td>
+          </tr>
+          <tr>
+            <td>AC6</td>
+            <td>Map shows route preview and stop context during live tile loading, exposes tile failure with retry and fallback, and preserves existing marker cleanup behavior.</td>
+            <td><code>RouteMapView.test.tsx</code> loading/error/retry cases and browser map story.</td>
+          </tr>
+          <tr>
+            <td>AC7</td>
+            <td>Itinerary mobile editing has a selected-stop details path with 40-44px controls while desktop table density and path model behavior remain intact.</td>
+            <td><code>SmartItineraryTable.test.tsx</code>, <code>SagittariusApp.test.tsx</code> for API/local wiring if callbacks are touched, and browser mobile flow.</td>
+          </tr>
+          <tr>
+            <td>AC8</td>
+            <td>Landing H1 accessible text has a natural space and auth LCP image priority is set only where above-fold.</td>
+            <td><code>HomeLanding.test</code> or component test update if present, browser console check for LCP warning.</td>
+          </tr>
+          <tr>
+            <td>AC9</td>
+            <td>No page-level horizontal overflow at 320, 390, 768, 1024, and 1440 widths except scoped table/map/nav regions.</td>
+            <td>Real browser viewport QA and production checklist notes.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="workpacks" class="panel">
+      <h2>Workpacks</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Workpack</th>
+            <th>Files owned</th>
+            <th>Dependencies</th>
+            <th>Can run with</th>
+            <th>Evidence</th>
+            <th>Merge risk</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>WP0 Shell Contract</td>
+            <td><code>frontend/app/globals.css</code>, <code>frontend/src/components/PageHeader.tsx</code>, <code>frontend/src/components/AppShell.tsx</code>, <code>frontend/src/components/AppShell.test.tsx</code>, <code>frontend/src/components/PageHeader.stories.tsx</code></td>
+            <td>None</td>
+            <td>None</td>
+            <td>CSS scan, AppShell test, header Storybook stories</td>
+            <td class="status-high">High</td>
+          </tr>
+          <tr>
+            <td>WP1 Overview And Weather</td>
+            <td><code>frontend/src/components/OverviewPage.tsx</code>, <code>OverviewPage.test.tsx</code>, <code>OverviewPage.stories.tsx</code>, <code>WeatherForecastStrip.tsx</code>, <code>WeatherForecastStrip.test.tsx</code>, <code>frontend/src/trip/weather-briefings.ts</code></td>
+            <td>WP0 header contract</td>
+            <td>WP2, WP3</td>
+            <td>Focused tests and Storybook mobile/desktop</td>
+            <td class="status-medium">Medium</td>
+          </tr>
+          <tr>
+            <td>WP2 Photos And Bookings</td>
+            <td><code>frontend/src/components/TripPhotosPage.tsx</code>, <code>TripPhotosPage.test.tsx</code>, <code>TripPhotosPage.stories.tsx</code>, <code>BookingsDocsPage.tsx</code>, <code>BookingsDocsPage.test.tsx</code>, <code>frontend/src/lib/external-link-label.ts</code> if needed</td>
+            <td>WP0 header contract</td>
+            <td>WP1, WP3</td>
+            <td>Focused tests, cover fallback checks, copy action checks</td>
+            <td class="status-medium">Medium</td>
+          </tr>
+          <tr>
+            <td>WP3 Map Loading Fallback</td>
+            <td><code>frontend/src/components/RouteMapView.tsx</code>, <code>RouteMapView.test.tsx</code>, <code>MapTemplate.stories.tsx</code>, <code>MapPage.stories.tsx</code></td>
+            <td>WP0 header contract</td>
+            <td>WP1, WP2</td>
+            <td>Map loading/error/retry tests and Storybook map story</td>
+            <td class="status-medium">Medium</td>
+          </tr>
+          <tr>
+            <td>WP4 Itinerary Mobile Inspector</td>
+            <td><code>frontend/src/components/SmartItineraryTable.tsx</code>, <code>SmartItineraryTable.test.tsx</code>, <code>ItineraryTemplate.stories.tsx</code>, <code>ItineraryPage.stories.tsx</code>, <code>SagittariusApp.test.tsx</code> only if app wiring changes</td>
+            <td>WP0 plus focused table tests passing</td>
+            <td>None preferred</td>
+            <td>Table tests, mobile browser edit flow, path model regression tests</td>
+            <td class="status-high">High</td>
+          </tr>
+          <tr>
+            <td>WP5 Landing/Auth Small Fixes</td>
+            <td><code>frontend/src/components/HomeLanding.tsx</code>, create <code>frontend/src/components/HomeLanding.test.tsx</code> if still absent, relevant auth image component in <code>AccountAccessPanel.tsx</code> or login route if confirmed</td>
+            <td>WP0 global art scoping</td>
+            <td>Can run after WP0 with low risk</td>
+            <td>Accessible text assertion and browser console check</td>
+            <td class="status-low">Low</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="task-plan" class="panel">
+      <h2>Ordered Task Plan</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Task</th>
+            <th>Steps</th>
+            <th>Commands</th>
+            <th>Expected evidence</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>T0 Setup and baseline</td>
+            <td>
+              Read <code>redesign.md</code>, <code>issues.md</code>, <code>PRODUCT.md</code>/<code>DESIGN.md</code> context from Impeccable, then capture current screenshots for overview, itinerary, map, timeline, photos, bookings, landing, auth at 390 and 1440.
+            </td>
+            <td><code>rtk bun run dev</code><br><code>rtk bun run storybook</code></td>
+            <td>Baseline notes include header heights, nav scrollbar, console warnings, and no unrelated changes.</td>
+          </tr>
+          <tr>
+            <td>T1 WP0 shell contract tests</td>
+            <td>
+              Add or update tests for AppShell mobile nav classes and active item behavior. Add PageHeader story expectations for compact mobile and no decorative stripe.
+            </td>
+            <td><code>rtk bun run test -- src/components/AppShell.test.tsx</code></td>
+            <td>Failing tests show current raw scrollbar or missing compact behavior before implementation.</td>
+          </tr>
+          <tr>
+            <td>T2 WP0 shell contract implementation</td>
+            <td>
+              Scope body/page watercolor to explicit public/auth classes, remove <code>.page-header::before</code>, reduce routine panel shadows, make PageHeader flatter, and add mobile nav hidden scrollbar, fade mask, and active-item scroll refs.
+            </td>
+            <td><code>rtk bun run test -- src/components/AppShell.test.tsx src/components/SagittariusApp.test.tsx</code></td>
+            <td>Tests pass; CSS scan shows no cockpit global wash and no side stripe.</td>
+          </tr>
+          <tr>
+            <td>T3 WP1 overview hierarchy</td>
+            <td>
+              Replace decorative overview hero dominance with a trip-state and next-decision first read. Keep destination warmth in smaller identity moments. Strengthen highlight card scrims and selected/focus states.
+            </td>
+            <td><code>rtk bun run test -- src/components/OverviewPage.test.tsx</code></td>
+            <td>Overview tests pass; screenshot first read is trip state, not collage.</td>
+          </tr>
+          <tr>
+            <td>T4 WP1 weather states</td>
+            <td>
+              Replace emoji returns in <code>weatherIconForCondition</code> with a typed condition model consumed by <code>WeatherForecastStrip</code>, or create compact inline weather glyph components using the app icon vocabulary. Show "Forecast pending" as a muted state instead of repeated missing temperatures.
+            </td>
+            <td><code>rtk bun run test -- src/components/WeatherForecastStrip.test.tsx src/components/WeatherBriefingDrawer.test.tsx</code></td>
+            <td>Accessible labels keep condition and temperatures when present; pending day has a single clear unavailable state.</td>
+          </tr>
+          <tr>
+            <td>T5 WP2 photos repaint</td>
+            <td>
+              Convert provider cards to compact chips or smaller image-backed filters. Add album cover strip using <code>coverUrl</code> when safe, fallback thumbnails by provider/day/destination, and clean inspector link row with domain label, open action, and copy action.
+            </td>
+            <td><code>rtk bun run test -- src/components/TripPhotosPage.test.tsx</code></td>
+            <td>Photo cards show visual covers or fallback; raw URL is not visible in the narrow inspector.</td>
+          </tr>
+          <tr>
+            <td>T6 WP2 bookings repaint</td>
+            <td>
+              Reduce folder-card vertical space and style booking cards as compact travel documents with type, status, date, code, owner, and action line. Reuse the URL domain helper if link labels are changed.
+            </td>
+            <td><code>rtk bun run test -- src/components/BookingsDocsPage.test.tsx</code></td>
+            <td>Bookings remain operational and more compact without becoming decorative.</td>
+          </tr>
+          <tr>
+            <td>T7 WP3 map loading and failure</td>
+            <td>
+              Render the static route preview and a stop list while <code>liveMapState</code> is idle/loading, not only on error. Add tile failure state with retry and "static route" fallback copy. Keep day filters outside or pinned compactly on mobile.
+            </td>
+            <td><code>rtk bun run test -- src/components/RouteMapView.test.tsx</code></td>
+            <td>Tests cover loading with stop list, error fallback, retry, cleanup, and day filtering.</td>
+          </tr>
+          <tr>
+            <td>T8 WP4 itinerary mobile inspector tests</td>
+            <td>
+              Add tests for selecting a stop on mobile, opening details, editing through existing callbacks, and preserving path fields. Confirm desktop table still exposes inline edit controls.
+            </td>
+            <td><code>rtk bun run test -- src/components/SmartItineraryTable.test.tsx src/trip/itinerary-paths.test.ts src/trip/itinerary.test.ts</code></td>
+            <td>Failing mobile inspector test exists before implementation; path regression tests stay green after implementation.</td>
+          </tr>
+          <tr>
+            <td>T9 WP4 itinerary mobile inspector implementation</td>
+            <td>
+              Add a responsive selected-stop details panel or bottom sheet controlled by existing selection state. Keep table horizontal scroll for comparison. Raise mobile frequent action targets to 40-44px. Route all edits through existing mutation props.
+            </td>
+            <td><code>rtk bun run test -- src/components/SmartItineraryTable.test.tsx src/components/SagittariusApp.test.tsx</code></td>
+            <td>Mobile edit path works, desktop density remains, local/API callback tests pass.</td>
+          </tr>
+          <tr>
+            <td>T10 WP5 landing/auth small fixes</td>
+            <td>
+              Add a DOM space or hidden separator between landing H1 title lines. Create a focused landing accessible-name test if no existing unit test owns the H1. Set eager/priority only on confirmed above-fold auth image. Keep mobile hidden assets lazy.
+            </td>
+            <td><code>rtk bun run test -- src/components/HomeLanding.test.tsx src/components/AccountAccessPanel.test.tsx</code></td>
+            <td>Screen reader text reads naturally; browser console no longer shows the same LCP warning.</td>
+          </tr>
+          <tr>
+            <td>T11 Integrated verification</td>
+            <td>
+              Run focused unit tests first, then Storybook tests, typecheck, lint, build, and real browser QA matrix.
+            </td>
+            <td><code>rtk bun run lint</code><br><code>rtk bun run typecheck</code><br><code>rtk bun run test</code><br><code>rtk bun run test:storybook</code><br><code>rtk bun run build</code><br><code>rtk bun run build-storybook</code></td>
+            <td>All commands pass or documented blocker with exact failure.</td>
+          </tr>
+          <tr>
+            <td>T12 Issue and commit</td>
+            <td>
+              Update GitHub issue #22 with fix summary and QA evidence. If any audit item remains unfixed, create a focused GitHub issue instead of editing <code>issues.md</code> directly. Commit the finished implementation.
+            </td>
+            <td><code>rtk git status --short</code><br><code>rtk git add ...</code><br><code>rtk git commit -m "fix: improve production web redesign issues"</code></td>
+            <td>Commit contains only scoped code/test/docs changes and issue evidence is linked.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="agent-handoffs" class="panel">
+      <h2>Agent Handoff Prompts</h2>
+      <p>
+        Use these only if the user authorizes subagents or if execution moves to a separate thread. Otherwise the main thread should execute the same ownership model inline.
+      </p>
+      <h3>Workpack Agent: WP0 Shell Contract</h3>
+      <pre>Implement workpack WP0 Shell Contract.
+Owned files/modules: frontend/app/globals.css, frontend/src/components/PageHeader.tsx, frontend/src/components/AppShell.tsx, frontend/src/components/AppShell.test.tsx, frontend/src/components/PageHeader.stories.tsx.
+Do not modify files outside this ownership without reporting a blocker.
+You are not alone in the codebase; preserve others' changes and adapt to them.
+Inputs: docs/superpowers/plans/2026-06-09-production-web-redesign-fix-plan.html, acceptance criteria AC1-AC3, tests in T1-T2.
+Stop when: shell/header/nav changes are complete and focused checks pass, or a blocker is found.
+Return: changed files, commands run, pass/fail evidence, blockers, merge notes.</pre>
+
+      <h3>Workpack Agent: WP1 Overview And Weather</h3>
+      <pre>Implement workpack WP1 Overview And Weather.
+Owned files/modules: frontend/src/components/OverviewPage.tsx, OverviewPage.test.tsx, OverviewPage.stories.tsx, WeatherForecastStrip.tsx, WeatherForecastStrip.test.tsx, frontend/src/trip/weather-briefings.ts.
+Do not modify files outside this ownership without reporting a blocker.
+You are not alone in the codebase; preserve others' changes and adapt to them.
+Inputs: docs/superpowers/plans/2026-06-09-production-web-redesign-fix-plan.html, acceptance criteria AC4-AC5, tests in T3-T4.
+Stop when: route overview is state-first, weather states are app-consistent, and focused checks pass.
+Return: changed files, commands run, pass/fail evidence, blockers, merge notes.</pre>
+
+      <h3>Workpack Agent: WP2 Photos And Bookings</h3>
+      <pre>Implement workpack WP2 Photos And Bookings.
+Owned files/modules: frontend/src/components/TripPhotosPage.tsx, TripPhotosPage.test.tsx, TripPhotosPage.stories.tsx, BookingsDocsPage.tsx, BookingsDocsPage.test.tsx, frontend/src/lib/external-link-label.ts if needed.
+Do not modify files outside this ownership without reporting a blocker.
+You are not alone in the codebase; preserve others' changes and adapt to them.
+Inputs: docs/superpowers/plans/2026-06-09-production-web-redesign-fix-plan.html, acceptance criterion AC4, tests in T5-T6.
+Stop when: photos are visual, bookings are compact, URL handling is clean, and focused checks pass.
+Return: changed files, commands run, pass/fail evidence, blockers, merge notes.</pre>
+
+      <h3>Workpack Agent: WP3 Map Loading Fallback</h3>
+      <pre>Implement workpack WP3 Map Loading Fallback.
+Owned files/modules: frontend/src/components/RouteMapView.tsx, RouteMapView.test.tsx, MapTemplate.stories.tsx, MapPage.stories.tsx.
+Do not modify files outside this ownership without reporting a blocker.
+You are not alone in the codebase; preserve others' changes and adapt to them.
+Inputs: docs/superpowers/plans/2026-06-09-production-web-redesign-fix-plan.html, acceptance criterion AC6, tests in T7.
+Stop when: loading, error, retry, fallback, and stop context behavior are implemented and focused checks pass.
+Return: changed files, commands run, pass/fail evidence, blockers, merge notes.</pre>
+
+      <h3>Workpack Agent: WP4 Itinerary Mobile Inspector</h3>
+      <pre>Implement workpack WP4 Itinerary Mobile Inspector.
+Owned files/modules: frontend/src/components/SmartItineraryTable.tsx, SmartItineraryTable.test.tsx, ItineraryTemplate.stories.tsx, ItineraryPage.stories.tsx, SagittariusApp.test.tsx only if app wiring changes.
+Do not modify files outside this ownership without reporting a blocker.
+You are not alone in the codebase; preserve others' changes and adapt to them.
+Inputs: docs/superpowers/plans/2026-06-09-production-web-redesign-fix-plan.html, acceptance criterion AC7, tests in T8-T9.
+Stop when: mobile selected-stop edit path works through existing callbacks and path model regressions pass.
+Return: changed files, commands run, pass/fail evidence, blockers, merge notes.</pre>
+
+      <h3>Aggregator/Test Agent</h3>
+      <pre>Integrate completed workpacks and own shared files.
+Owned files/modules: shared shell files, integration conflicts, final QA notes, issue #22 update text.
+Inputs: docs/superpowers/plans/2026-06-09-production-web-redesign-fix-plan.html, workpack summaries, expected tests T11.
+Resolve conflicts without reverting others' work. Run focused tests first, then broader verification named in the plan.
+Return: integration changes, commands run, failures fixed, remaining risks.</pre>
+
+      <h3>Execution Reviewer</h3>
+      <pre>Review the integrated implementation against docs/superpowers/plans/2026-06-09-production-web-redesign-fix-plan.html.
+Focus on correctness, requirement coverage, regression risk, route-specific visual issues, and missing verification.
+Return blocker, major, and minor findings with file evidence and suggested fixes.</pre>
+
+      <h3>Execution Simplifier</h3>
+      <pre>Review the integrated implementation for simplification after focused tests pass.
+Focus on avoiding duplicated URL helpers, route-specific style drift, unnecessary new components, unsafe global CSS, and overbuilt mobile itinerary behavior.
+Return blocker, major, and minor simplification findings with suggested fixes.</pre>
+    </section>
+
+    <section id="verification" class="panel">
+      <h2>Verification Matrix</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Area</th>
+            <th>Command or browser check</th>
+            <th>Pass evidence</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Shell and nav</td>
+            <td><code>rtk bun run test -- src/components/AppShell.test.tsx src/components/SagittariusApp.test.tsx</code></td>
+            <td>Navigation remains route-scoped, collapsed/expanded behavior passes, mobile nav has hidden scrollbar and active item visible.</td>
+          </tr>
+          <tr>
+            <td>Photos and bookings</td>
+            <td><code>rtk bun run test -- src/components/TripPhotosPage.test.tsx src/components/BookingsDocsPage.test.tsx</code></td>
+            <td>Cover fallback, provider filters, compact booking card, inspector URL/domain actions pass.</td>
+          </tr>
+          <tr>
+            <td>Itinerary path safety</td>
+            <td><code>rtk bun run test -- src/components/SmartItineraryTable.test.tsx src/trip/itinerary-paths.test.ts src/trip/itinerary.test.ts</code></td>
+            <td>Path fields remain intact, mobile detail edit path calls the same mutation handlers, overlap resolution still passes.</td>
+          </tr>
+          <tr>
+            <td>Map</td>
+            <td><code>rtk bun run test -- src/components/RouteMapView.test.tsx</code></td>
+            <td>Loading preview, error fallback, retry, marker cleanup, day filter behavior pass.</td>
+          </tr>
+          <tr>
+            <td>Weather</td>
+            <td><code>rtk bun run test -- src/components/WeatherForecastStrip.test.tsx src/components/WeatherBriefingDrawer.test.tsx</code></td>
+            <td>Loaded, pending, stale/unavailable/error copy remains accessible and non-emoji.</td>
+          </tr>
+          <tr>
+            <td>Storybook</td>
+            <td><code>rtk bun run test:storybook</code></td>
+            <td>Production route stories still render and interactions pass.</td>
+          </tr>
+          <tr>
+            <td>Static gates</td>
+            <td><code>rtk bun run lint</code>, <code>rtk bun run typecheck</code>, <code>rtk bun run build</code>, <code>rtk bun run build-storybook</code></td>
+            <td>No lint/type/build regressions.</td>
+          </tr>
+          <tr>
+            <td>Browser QA</td>
+            <td>Open Next app at <code>http://127.0.0.1:5180/</code> and Storybook cockpit stories at 320, 390, 768, 1024, 1440.</td>
+            <td>No page-level horizontal overflow, compact headers, no raw mobile nav scrollbar, controls visible, console/page errors absent, reduced motion checked.</td>
+          </tr>
+          <tr>
+            <td>Contrast and touch</td>
+            <td>Inspect image overlays, muted text, icon-only buttons, mobile itinerary controls.</td>
+            <td>Image text meets WCAG contrast, icon-only controls have labels/focus, mobile primary controls are 40-44px where frequent.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  </section>
+</main>
+</body>
+</html>
