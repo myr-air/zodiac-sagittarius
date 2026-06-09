@@ -22,6 +22,72 @@ const storybookItineraryItems: ItineraryItem[] = seedTrip.itineraryItems.map((it
 const storybookSuggestions: Suggestion[] = tripFixtureSuggestions.map((suggestion) => ({ ...suggestion }));
 
 export const mswHandlers = [
+  http.get("*/api/v1/account", () => HttpResponse.json(accountSettings())),
+  http.get("*/api/v1/account/trips", () => HttpResponse.json([])),
+  http.get("*/api/v1/account/trip-stats", () =>
+    HttpResponse.json({
+      tripsTotal: 0,
+      tripsOwned: 0,
+      activeTrips: 0,
+      tempClaimsCompleted: 0,
+    }),
+  ),
+  http.get("*/api/v1/account/explorer", () =>
+    HttpResponse.json({
+      upcomingTrips: 0,
+      ownedTrips: 0,
+      destinationCount: 0,
+      nextTrip: null,
+    }),
+  ),
+  http.get("*/api/v1/account/to-dos", () => HttpResponse.json([])),
+  http.get("*/api/v1/account/vault", () => HttpResponse.json([])),
+  http.post("*/api/v1/account/trips", async ({ request }) => {
+    const body = (await request.json().catch(() => ({}))) as {
+      name?: string;
+      originLabel?: string;
+      originCity?: string;
+      originCountry?: string;
+      originCountryCode?: string;
+      destinationLabel?: string;
+      destinationCities?: Array<Record<string, unknown>>;
+      countries?: string[];
+      startDate?: string;
+      endDate?: string;
+      joinId?: string;
+    };
+
+    return HttpResponse.json(
+      {
+        trip: {
+          id: "storybook-created-trip",
+          name: body.name ?? "Storybook Trip",
+          originLabel: body.originLabel ?? "Bangkok, Thailand",
+          originCity: body.originCity ?? "Bangkok",
+          originCountry: body.originCountry ?? "Thailand",
+          originCountryCode: body.originCountryCode ?? "TH",
+          destinationLabel: body.destinationLabel ?? "Hong Kong",
+          destinationCities: body.destinationCities ?? [],
+          countries: body.countries ?? [],
+          startDate: body.startDate ?? "2026-06-18",
+          endDate: body.endDate ?? "2026-06-23",
+          joinId: body.joinId ?? "0626-SZX-ZLR",
+          activePlanVariantId: "plan-main",
+          ownerMemberId: "storybook-owner",
+          version: 1,
+        },
+        ownerMemberId: "storybook-owner",
+        memberSession: {
+          tripId: "storybook-created-trip",
+          memberId: "storybook-owner",
+          sessionToken: "storybook-member-session-token",
+          createdAt: "2026-05-30T08:00:00.000Z",
+          expiresAt: "2026-06-29T08:00:00.000Z",
+        },
+      },
+      { status: 201 },
+    );
+  }),
   http.post("*/api/v1/trip-join-sessions", async ({ request }) => {
     const body = await request.json().catch(() => null) as { joinCode?: string; tripPassword?: string } | null;
     if (body?.joinCode?.trim().toUpperCase() !== seedTrip.joinId || body.tripPassword !== "dim-sum-run") {
@@ -145,6 +211,21 @@ export const mswHandlers = [
   }),
   http.delete("*/api/v1/trips/:tripId/member-sessions/current", () => new HttpResponse(null, { status: 204 })),
 ];
+
+function accountSettings() {
+  return {
+    profile: {
+      id: "user-aom",
+      displayName: "Aom",
+      avatarColor: "#0f766e",
+      locale: "en-US",
+      timezone: "Asia/Bangkok",
+      primaryEmail: "aom@example.com",
+    },
+    passkeys: [],
+    trustedDevices: [],
+  };
+}
 
 function tripSummary() {
   return {

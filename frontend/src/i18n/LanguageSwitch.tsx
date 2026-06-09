@@ -55,26 +55,27 @@ const menuClassName = [
   "top-[calc(100%+8px)]",
   "z-30",
   "grid",
-  "w-[min(344px,calc(100vw-24px))]",
-  "gap-3",
-  "rounded-(--radius-lg)",
+  "w-[min(292px,calc(100vw-24px))]",
+  "max-w-[calc(100vw-24px)]",
+  "gap-2.5",
+  "rounded-(--radius-md)",
   "border",
   "border-(--color-border)",
   "bg-(--color-surface)",
-  "p-3",
-  "shadow-[0_24px_70px_rgb(15_23_42_/_0.18)]",
+  "p-2.5",
+  "shadow-[0_18px_42px_rgb(15_23_42_/_0.16)]",
   "max-[767px]:left-0",
   "max-[767px]:right-auto",
 ];
 
 const sectionClassName = ["grid", "gap-2"];
-const sectionLabelClassName = "text-[11px] font-black uppercase leading-4 text-(--color-text-muted)";
+const sectionLabelClassName = "text-[10px] font-black uppercase leading-3 text-(--color-text-muted)";
 const optionGridClassName = "grid grid-cols-2 gap-2";
 
 const optionClassName = [
   "language-switch-option",
   "grid",
-  "min-h-[46px]",
+  "min-h-[44px]",
   "grid-cols-[minmax(0,1fr)_auto]",
   "items-center",
   "gap-2",
@@ -82,9 +83,9 @@ const optionClassName = [
   "border",
   "border-(--color-border)",
   "bg-(--color-surface-subtle)",
-  "px-3",
+  "px-2.5",
   "text-left",
-  "text-[13px]",
+  "text-[12px]",
   "font-extrabold",
   "text-(--color-text)",
   "transition-[background,border-color,color]",

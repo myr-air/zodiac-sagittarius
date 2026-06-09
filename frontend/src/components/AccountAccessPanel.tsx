@@ -155,7 +155,7 @@ const portalHistoryCardClassName = cn(accountCardClassName, "account-history col
 const portalNewTripCardClassName =
   "portal-new-trip-card !gap-[18px] !min-h-[calc(100vh-28px)] !overflow-hidden !rounded-[16px] !border !border-[rgb(226_232_240_/_0.72)] !bg-[#ffffff] !p-[18px] !shadow-[0_12px_28px_rgb(15_23_42_/_0.07)] max-[767px]:!min-h-[calc(100vh-20px)] max-[767px]:!rounded-none max-[767px]:!border-0 max-[767px]:!p-0 max-[767px]:!shadow-none";
 const tripBuilderTopbarClassName =
-  "trip-builder-topbar grid grid-cols-[132px_minmax(0,1fr)_auto] items-center gap-7 pb-[18px] max-[767px]:grid-cols-[1fr_auto] max-[767px]:gap-2.5 [&>.badge]:mt-2 [&>.badge]:justify-self-end [&>.button]:min-h-[58px] [&>.button]:rounded-[9px] [&>.button]:bg-[rgb(255_255_255_/_0.88)] [&>.button]:shadow-[0_8px_24px_rgb(15_23_42_/_0.04)] max-[767px]:[&>.button]:w-auto max-[767px]:[&>.button]:min-w-[118px] [&>div]:grid [&>div]:min-w-0 [&>div]:justify-self-start [&>div]:gap-0.5 [&>div]:text-left max-[767px]:[&>div]:col-span-full [&>div_span]:hidden [&>div_strong]:inline-flex [&>div_strong]:items-center [&>div_strong]:gap-2.5 [&>div_strong]:text-[30px] [&>div_strong]:leading-[34px] [&>div_strong]:text-[#111827] max-[767px]:[&>div_strong]:text-[28px] max-[767px]:[&>div_strong]:leading-8 [&>div_small]:mt-2 [&>div_small]:block [&>div_small]:max-w-[420px] [&>div_small]:text-[13px] [&>div_small]:font-[650] [&>div_small]:leading-[18px] [&>div_small]:text-(--color-text-muted) max-[767px]:[&>div_small]:max-w-[260px] max-[767px]:[&>div_small]:text-[11px]";
+  "trip-builder-topbar grid grid-cols-[132px_minmax(0,1fr)_auto] items-center gap-7 pb-[18px] max-[767px]:grid-cols-[1fr_auto] max-[767px]:gap-2.5 [&>.badge]:mt-2 [&>.badge]:justify-self-end [&>.button]:min-h-[58px] [&>.button]:rounded-[9px] [&>.button]:bg-[rgb(255_255_255_/_0.88)] [&>.button]:shadow-[0_8px_24px_rgb(15_23_42_/_0.04)] max-[767px]:[&>.button]:w-auto max-[767px]:[&>.button]:min-w-[118px] [&>.trip-builder-title]:grid [&>.trip-builder-title]:min-w-0 [&>.trip-builder-title]:justify-self-start [&>.trip-builder-title]:gap-0.5 [&>.trip-builder-title]:text-left max-[767px]:[&>.trip-builder-title]:col-span-full [&>.trip-builder-title>span]:hidden [&>.trip-builder-title>strong]:inline-flex [&>.trip-builder-title>strong]:items-center [&>.trip-builder-title>strong]:gap-2.5 [&>.trip-builder-title>strong]:text-[30px] [&>.trip-builder-title>strong]:leading-[34px] [&>.trip-builder-title>strong]:text-[#111827] max-[767px]:[&>.trip-builder-title>strong]:text-[28px] max-[767px]:[&>.trip-builder-title>strong]:leading-8 [&>.trip-builder-title>small]:mt-2 [&>.trip-builder-title>small]:block [&>.trip-builder-title>small]:max-w-[420px] [&>.trip-builder-title>small]:text-[13px] [&>.trip-builder-title>small]:font-[650] [&>.trip-builder-title>small]:leading-[18px] [&>.trip-builder-title>small]:text-(--color-text-muted) max-[767px]:[&>.trip-builder-title>small]:max-w-[260px] max-[767px]:[&>.trip-builder-title>small]:text-[11px]";
 const portalCreateTripInlineClassName =
   "portal-create-trip-inline portal-trip-simple !gap-4 !rounded-none !border-0 !bg-transparent !p-0 !shadow-none";
 const tripSimpleHeadClassName = "trip-simple-head hidden";
@@ -168,7 +168,7 @@ const tripWizardPaneClassName =
 const tripScopePanelClassName =
   "trip-scope-panel grid gap-0 rounded-[10px] border-0 bg-transparent px-[22px] pb-6 pt-7 max-[767px]:px-0 max-[767px]:pb-2 max-[767px]:pt-2";
 const tripLivePreviewClassName =
-  "trip-live-preview sticky top-3 grid max-h-[calc(100vh-24px)] min-h-0 min-w-0 content-start gap-0 self-start overflow-y-auto rounded-[10px] border border-[rgb(203_213_225_/_0.72)] bg-[linear-gradient(180deg,rgb(255_247_237_/_0.5),rgb(255_255_255_/_0.92)),rgb(255_255_255_/_0.9)] px-3.5 pb-3 pt-5 shadow-[0_10px_24px_rgb(15_23_42_/_0.04)] max-[1023px]:static max-[1023px]:max-h-none max-[767px]:mt-0 max-[767px]:rounded-none max-[767px]:border-0 max-[767px]:bg-transparent max-[767px]:p-0 max-[767px]:shadow-none";
+  "trip-live-preview sticky top-3 bottom-3 grid max-h-[calc(100vh-24px)] min-h-[calc(100vh-24px)] min-w-0 content-start gap-0 self-stretch overflow-y-auto rounded-[10px] border border-[rgb(203_213_225_/_0.72)] bg-[linear-gradient(180deg,rgb(255_247_237_/_0.5),rgb(255_255_255_/_0.92)),rgb(255_255_255_/_0.9)] px-3.5 pb-3 pt-5 shadow-[0_10px_24px_rgb(15_23_42_/_0.04)] max-[1023px]:static max-[1023px]:max-h-none max-[1023px]:min-h-0 max-[767px]:mt-0 max-[767px]:rounded-none max-[767px]:border-0 max-[767px]:bg-transparent max-[767px]:p-0 max-[767px]:shadow-none";
 const tripWorkflowNavClassName =
   "trip-workflow-nav mb-3 grid gap-2 rounded-[10px] border border-(--color-border) bg-(--color-surface-subtle) p-2.5 min-[1024px]:hidden [&_ol]:m-0 [&_ol]:grid [&_ol]:grid-flow-col [&_ol]:auto-cols-[minmax(76px,1fr)] [&_ol]:gap-1.5 [&_ol]:overflow-x-auto [&_ol]:overscroll-x-contain [&_ol]:p-0 [&_ol]:[scrollbar-width:none] [&_ol::-webkit-scrollbar]:hidden [&_li]:list-none [&_button]:min-h-8 [&_button]:w-full [&_button]:rounded-[7px] [&_button]:border [&_button]:border-(--color-border) [&_button]:bg-white [&_button]:px-2 [&_button]:py-1.5 [&_button]:text-center [&_button]:text-[11px] [&_button]:font-black [&_button]:text-(--color-text-muted) [&_button[aria-current='step']]:border-[#fed7aa] [&_button[aria-current='step']]:bg-[#fff7ed] [&_button[aria-current='step']]:text-[#c2410c] [&_p]:m-0 [&_p]:text-xs [&_p]:font-[850] [&_p]:text-[#c2410c]";
 const tripStepSectionClassName = "trip-step-section grid gap-3.5 pb-[34px] max-[767px]:pb-4";
@@ -188,11 +188,11 @@ const tripCityEntryClassName =
 const tripCityChipListClassName =
   "trip-city-chip-list flex flex-wrap gap-2 [&_button]:inline-flex [&_button]:min-h-8 [&_button]:items-center [&_button]:gap-1.5 [&_button]:rounded-full [&_button]:border [&_button]:border-(--color-route-border) [&_button]:bg-(--color-route-soft) [&_button]:px-2.5 [&_button]:text-xs [&_button]:font-black [&_button]:text-[#1d4ed8]";
 const tripFormDestinationRowClassName =
-  "trip-form-destination-row grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_132px] gap-2.5 max-[767px]:grid-cols-1";
+  "trip-form-destination-row grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-2.5 max-[767px]:grid-cols-1";
 const tripPlaceThumbClassName =
   "trip-place-thumb block size-[42px] rounded-md bg-[linear-gradient(145deg,rgb(15_118_110_/_0.28),transparent_54%),linear-gradient(45deg,rgb(255_255_255_/_0.22)_25%,transparent_25%_50%,rgb(255_255_255_/_0.22)_50%_75%,transparent_75%),#dbeafe] bg-[length:auto,12px_12px,auto]";
 const tripMiniDestinationClassName =
-  "trip-mini-destination grid min-h-[70px] grid-cols-[42px_minmax(0,1fr)_auto] items-center gap-2 rounded-[9px] border border-(--color-border) bg-white p-2 [&_small]:block [&_small]:text-[11px] [&_small]:text-[#64748b] [&_strong]:block [&_button]:grid [&_button]:size-6 [&_button]:cursor-pointer [&_button]:place-items-center [&_button]:border-0 [&_button]:bg-transparent [&_button]:text-[#475569]";
+  "trip-mini-destination grid min-h-[70px] grid-cols-[42px_minmax(0,1fr)_auto] items-center gap-2 rounded-[9px] border border-(--color-border) bg-white p-2 [&_small]:block [&_small]:text-[11px] [&_small]:leading-[15px] [&_small]:text-[#64748b] [&_strong]:block [&_button]:grid [&_button]:size-6 [&_button]:cursor-pointer [&_button]:place-items-center [&_button]:border-0 [&_button]:bg-transparent [&_button]:text-[#475569]";
 const tripMiniAddClassName =
   "trip-mini-add grid min-h-[70px] grid-cols-[20px_minmax(0,1fr)] items-center gap-2 rounded-[9px] border border-dashed border-(--color-border) bg-white p-2 text-xs font-extrabold text-(--color-text-muted)";
 const tripFormDestinationSearchClassName =
@@ -206,7 +206,7 @@ const tripRouteCalendarClassName =
 const tripCalendarSummaryClassName =
   "trip-calendar-summary grid grid-cols-2 gap-2.5 max-[767px]:grid-cols-1 [&_label]:grid [&_label]:min-h-0 [&_label]:gap-1 [&_input]:min-h-[42px] [&_input]:rounded-[9px] [&_input]:border [&_input]:border-(--color-border) [&_input]:bg-(--color-surface-subtle) [&_input]:px-3 [&_input]:text-sm [&_input]:font-black [&_span]:text-xs [&_span]:font-[850] [&_span]:text-(--color-text-muted)";
 const tripCalendarGridClassName =
-  "trip-calendar-grid grid grid-cols-7 gap-1.5 [&_button]:min-h-10 [&_button]:rounded-[8px] [&_button]:border [&_button]:border-(--color-border) [&_button]:bg-(--color-surface) [&_button]:text-xs [&_button]:font-black [&_button]:text-(--color-text-muted) [&_button]:transition-[background,border-color,color,box-shadow] [&_button:hover]:border-(--color-primary) [&_button:hover]:bg-(--color-primary-soft) [&_button[data-tour-tone='odd']]:border-(--color-route-border) [&_button[data-tour-tone='odd']]:bg-(--color-route-soft) [&_button[data-tour-tone='odd']]:text-[#1d4ed8] [&_button[data-tour-tone='even']]:border-(--color-primary-border) [&_button[data-tour-tone='even']]:bg-(--color-primary-soft) [&_button[data-tour-tone='even']]:text-(--color-primary-strong) [&_button[aria-pressed='true']]:border-(--color-primary) [&_button[aria-pressed='true']]:bg-(--color-primary) [&_button[aria-pressed='true']]:text-white [&_button[aria-pressed='true']]:shadow-[0_8px_16px_rgb(15_118_110_/_0.18)]";
+  "trip-calendar-grid grid grid-cols-7 gap-1.5 [&_button]:min-h-10 [&_button]:rounded-[8px] [&_button]:border [&_button]:border-(--color-border) [&_button]:bg-(--color-surface) [&_button]:text-xs [&_button]:font-black [&_button]:text-(--color-text-muted) [&_button]:transition-[background,border-color,color,box-shadow] [&_button:hover]:border-(--color-primary) [&_button:hover]:bg-(--color-primary-soft) [&_button[data-date-state='today']]:border-[#f59e0b] [&_button[data-date-state='today']]:text-[#92400e] [&_button[data-date-state='in-range']]:border-(--color-route-border) [&_button[data-date-state='in-range']]:bg-(--color-route-soft) [&_button[data-date-state='in-range']]:text-[#1d4ed8] [&_button[data-date-state='start']]:border-(--color-primary) [&_button[data-date-state='start']]:bg-(--color-primary) [&_button[data-date-state='start']]:text-white [&_button[data-date-state='end']]:border-(--color-primary) [&_button[data-date-state='end']]:bg-(--color-primary) [&_button[data-date-state='end']]:text-white [&_button[aria-pressed='true']]:shadow-[0_8px_16px_rgb(15_118_110_/_0.18)]";
 const tripDateArrowClassName =
   "trip-date-arrow grid h-[52px] w-[42px] items-center justify-items-center self-end rounded-full border border-(--color-primary-border) bg-(--color-primary-soft) text-(--color-primary-strong) max-[767px]:h-[34px] max-[767px]:w-full";
 const tripAccessPanelClassName =
@@ -224,7 +224,11 @@ const tripCreatedShareClassName =
 const tripCreatedShareLinkClassName =
   "inline-flex min-h-9 items-center justify-center gap-2 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-3 py-[7px] text-[13px] font-extrabold text-(--color-primary-strong) no-underline";
 const tripWizardActionsClassName =
-  "trip-wizard-actions flex justify-between gap-2.5 px-[22px] pb-[22px] pt-0 [.account-page--portal-new-trip_&]:w-[min(100%,626px)] [.account-page--portal-new-trip_&]:px-[22px] [.account-page--portal-new-trip_&]:pb-[22px] [.account-page--portal-new-trip_&]:pt-3.5 min-[768px]:[.account-page--portal-new-trip_&]:w-[calc((100%-22px)*0.43)] min-[768px]:[.account-page--portal-new-trip_&]:min-w-[430px] max-[767px]:flex-col max-[767px]:[&_.button]:w-full max-[767px]:[.account-page--portal-new-trip_&]:w-full max-[767px]:[.account-page--portal-new-trip_&]:px-0 [&_.button--primary]:min-h-[58px] [&_.button--primary]:flex-1 [&_.button--primary]:justify-center [&_.button--primary]:rounded-[9px] [&_.button--primary]:bg-[linear-gradient(135deg,#ff5b00,#ff7a1a)] [&_.button--primary]:text-base [&_.button--primary]:shadow-[0_12px_24px_rgb(255_91_0_/_0.18)] [&_.button--primary:disabled]:bg-(--color-surface-muted) [&_.button--primary:disabled]:text-(--color-text-subtle) [&_.button--primary:disabled]:shadow-none [&_.button--primary::after]:ml-1 [&_.button--primary::after]:text-[13px] [&_.button--primary::after]:font-extrabold [&_.button--primary::after]:content-['สร้างทริป'] [&_.button--secondary]:hidden";
+  "trip-wizard-actions sticky bottom-0 z-20 grid gap-2.5 border-t border-[rgb(226_232_240_/_0.82)] bg-[rgb(255_255_255_/_0.94)] px-[22px] pb-[22px] pt-3.5 shadow-[0_-12px_26px_rgb(15_23_42_/_0.06)] backdrop-blur min-[1024px]:grid-cols-[minmax(430px,0.76fr)_minmax(560px,1fr)] min-[1024px]:items-stretch max-[767px]:[.account-page--portal-new-trip_&]:w-full max-[767px]:[.account-page--portal-new-trip_&]:px-0 [&>div]:flex [&>div]:justify-between [&>div]:gap-2.5 max-[767px]:[&>div]:flex-col [&_.button]:w-auto max-[767px]:[&_.button]:w-full [&_.button--primary]:min-h-[58px] [&_.button--primary]:flex-1 [&_.button--primary]:justify-center [&_.button--primary]:rounded-[9px] [&_.button--primary]:bg-(--color-primary) [&_.button--primary]:text-base [&_.button--primary]:shadow-[0_12px_24px_rgb(15_118_110_/_0.18)] [&_.button--primary:disabled]:bg-(--color-surface-muted) [&_.button--primary:disabled]:text-(--color-text-subtle) [&_.button--primary:disabled]:shadow-none [&_.button--secondary]:hidden";
+const tripWizardActionStatusClassName =
+  "trip-wizard-action-status m-0 inline-flex min-h-8 items-center gap-2 rounded-[8px] border border-(--color-border) bg-(--color-surface-subtle) px-3 text-[12px] font-[850] text-(--color-text-muted) min-[1024px]:col-start-1 [&_.icon]:size-4 [&_.icon]:text-(--color-primary-strong)";
+const tripWizardActionSummaryClassName =
+  "trip-wizard-action-summary hidden min-h-[96px] min-w-0 content-center gap-1.5 rounded-[10px] border border-[rgb(203_213_225_/_0.72)] bg-[rgb(248_250_252_/_0.82)] px-4 py-3 text-[12px] text-(--color-text-muted) min-[1024px]:col-start-2 min-[1024px]:row-span-2 min-[1024px]:row-start-1 min-[1024px]:grid [&_strong]:min-w-0 [&_strong]:overflow-hidden [&_strong]:text-ellipsis [&_strong]:whitespace-nowrap [&_strong]:text-[15px] [&_strong]:text-(--color-text) [&_span]:min-w-0 [&_span]:overflow-hidden [&_span]:text-ellipsis [&_span]:whitespace-nowrap";
 const tripBoardingPassClassName =
   "trip-boarding-pass mx-auto mb-[26px] grid w-[min(100%,760px)] grid-cols-[minmax(0,1fr)_222px] drop-shadow-[0_12px_22px_rgb(15_23_42_/_0.14)] max-[767px]:[.account-page--portal-new-trip_&]:w-full max-[767px]:[.account-page--portal-new-trip_&]:grid-cols-1 max-[767px]:[.account-page--portal-new-trip_&]:drop-shadow-[0_10px_20px_rgb(15_23_42_/_0.1)]";
 const tripMainTicketClassName =
@@ -258,7 +262,7 @@ const tripPreviewDestinationRowClassName =
 const tripTicketStubClassName =
   "trip-ticket-stub relative grid min-h-[504px] content-start gap-[22px] rounded-xl border-l border-dashed border-[rgb(100_116_139_/_0.34)] bg-[rgb(255_255_255_/_0.96)] p-7 max-[767px]:[.account-page--portal-new-trip_&]:grid-cols-2 max-[767px]:[.account-page--portal-new-trip_&]:gap-3.5 max-[767px]:[.account-page--portal-new-trip_&]:border-l-0 max-[767px]:[.account-page--portal-new-trip_&]:border-t max-[767px]:[.account-page--portal-new-trip_&]:p-[18px] max-[767px]:[.account-page--portal-new-trip_&]:min-h-0 [&>div]:grid [&>div]:gap-[7px] [&>div_span]:text-xs [&>div_span]:text-[#64748b] [&>div_strong]:text-lg [&>div_strong]:leading-6 [&>div_strong]:text-[#111827] [&>.icon]:size-8 [&>.icon]:justify-self-end [&>.icon]:text-[#4b6b70] [&>.icon]:-rotate-[35deg] max-[767px]:[.account-page--portal-new-trip_&>.icon]:size-[26px] max-[767px]:[.account-page--portal-new-trip_&>.icon]:justify-self-start max-[767px]:[.account-page--portal-new-trip_&>div_strong]:text-[15px] max-[767px]:[.account-page--portal-new-trip_&>div_strong]:leading-5";
 const tripTicketBarcodeClassName =
-  "trip-ticket-barcode mt-[34px] h-[142px] w-[58px] justify-self-end rounded-[6px] border border-(--color-border) bg-[linear-gradient(90deg,#111827_0_3px,transparent_3px_7px,#111827_7px_9px,transparent_9px_14px,#111827_14px_15px,transparent_15px_19px,#111827_19px_23px,transparent_23px_29px,#111827_29px_31px,transparent_31px_37px,#111827_37px_40px,transparent_40px_46px,#111827_46px_47px,transparent_47px_52px,#111827_52px_56px,transparent_56px)] bg-[length:58px_100%] opacity-90 shadow-[inset_0_0_0_4px_white] max-[767px]:[.account-page--portal-new-trip_&]:col-start-2 max-[767px]:[.account-page--portal-new-trip_&]:row-span-3 max-[767px]:[.account-page--portal-new-trip_&]:row-start-2 max-[767px]:[.account-page--portal-new-trip_&]:mt-0 max-[767px]:[.account-page--portal-new-trip_&]:h-[108px] max-[767px]:[.account-page--portal-new-trip_&]:w-12";
+  "trip-ticket-barcode mt-[34px] h-[142px] w-[58px] justify-self-end rounded-[6px] border border-(--color-border) bg-[linear-gradient(90deg,#64748b_0_3px,transparent_3px_7px,#64748b_7px_9px,transparent_9px_14px,#64748b_14px_15px,transparent_15px_19px,#64748b_19px_23px,transparent_23px_29px,#64748b_29px_31px,transparent_31px_37px,#64748b_37px_40px,transparent_40px_46px,#64748b_46px_47px,transparent_47px_52px,#64748b_52px_56px,transparent_56px)] bg-[length:58px_100%] opacity-45 shadow-[inset_0_0_0_4px_white] max-[767px]:[.account-page--portal-new-trip_&]:col-start-2 max-[767px]:[.account-page--portal-new-trip_&]:row-span-3 max-[767px]:[.account-page--portal-new-trip_&]:row-start-2 max-[767px]:[.account-page--portal-new-trip_&]:mt-0 max-[767px]:[.account-page--portal-new-trip_&]:h-[108px] max-[767px]:[.account-page--portal-new-trip_&]:w-12";
 const portalFeatureCardClassName = cn(accountCardClassName, "portal-feature-card col-span-2 max-[767px]:col-auto");
 const portalSettingsCardClassName = cn(accountCardClassName, "account-settings-card col-span-2 max-[767px]:col-auto");
 const accountPanelHeadingClassName =
@@ -1676,17 +1680,17 @@ function AccountDashboard({
             <Button asChild variant="secondary">
               <Link href={appRoutes.portalMyTrips()}>
                 <Icon name="chevronLeft" />
-                My trips
+                {t.access.portal.nav.trips}
               </Link>
             </Button>
-            <div>
-              <span>Trip builder</span>
-              <strong>Create trip</strong>
-              <small>สร้างแผนการเดินทางและเชิญเพื่อนร่วมทริปของคุณ</small>
+            <div className="trip-builder-title">
+              <span>{t.access.dashboard.createTrip.wizard.builderLabel}</span>
+              <strong>{t.access.dashboard.createTrip.wizard.title}</strong>
+              <small>{t.access.dashboard.createTrip.wizard.detail}</small>
             </div>
             <div className="relative grid justify-items-end gap-2" style={{ zIndex: 80 }}>
               <LanguageSwitch className="relative !m-0 !w-fit" style={{ zIndex: 80 }} />
-              <Badge tone="neutral">Draft</Badge>
+              <Badge tone="neutral">{t.access.dashboard.createTrip.wizard.statusDraft}</Badge>
             </div>
           </div>
           {createdTripShare ? (
@@ -1910,7 +1914,8 @@ function PortalTripWizard({
   onSubmit: (form?: AccountTripCreateRequest) => void;
   tripForm: AccountTripCreateRequest;
 }) {
-  const { t } = useI18n();
+  const { locale, t } = useI18n();
+  const wizard = t.access.dashboard.createTrip.wizard;
   const [countryQuery, setCountryQuery] = useState("");
   const [cityQuery, setCityQuery] = useState("");
   const [hasEditedOwnerDisplayName, setHasEditedOwnerDisplayName] = useState(false);
@@ -1934,14 +1939,14 @@ function PortalTripWizard({
   const accessComplete = Boolean(effectiveOwnerDisplayName.trim() && generatedJoinId.trim() && generatedJoinPassword.match(/^[A-Z0-9]{4}-[A-Z0-9]{4}$/));
   const canSubmit = Boolean(tripForm.name.trim()) && destinationComplete && datesComplete && accessComplete;
   const suggestedCities = citySuggestions(cityQuery || countryQuery, selectedDestinationCities);
-  const destinationSummary = selectedDestinationNames.length ? selectedDestinationNames.join(", ") : "Add at least one place";
-  const currencySummary = selectedCountryNames.length ? uniqueList(selectedCountryNames.map((countryName) => tripCountryOptions.find((country) => country.name === countryName)?.currency ?? "").filter(Boolean)).join(", ") || "Currency by city" : "Currency";
-  const previewTripName = tripForm.name.trim() || "Untitled trip";
-  const inviteStatus = accessComplete ? "Invite ready" : "Invite draft";
-  const destinationCards = tripDestinationCards(selectedCountryNames, selectedCityNames);
+  const destinationSummary = selectedDestinationNames.length ? selectedDestinationNames.join(", ") : wizard.empty.destinationSummary;
+  const currencySummary = selectedCountryNames.length ? uniqueList(selectedCountryNames.map((countryName) => tripCountryOptions.find((country) => country.name === countryName)?.currency ?? "").filter(Boolean)).join(", ") || wizard.empty.currencyByCity : wizard.empty.currency;
+  const previewTripName = tripForm.name.trim() || wizard.empty.untitledTrip;
+  const inviteStatus = accessComplete ? wizard.preview.inviteReady : wizard.preview.inviteDraft;
+  const destinationCards = tripDestinationCards(selectedCountryNames, selectedCityNames, locale);
   const previewStartDate = formatPreviewTravelDate(tripForm.startDate);
   const previewEndDate = formatPreviewTravelDate(tripForm.endDate);
-  const previewNightCount = tripNightCount(tripForm.startDate, tripForm.endDate);
+  const previewNightCount = tripNightCount(tripForm.startDate, tripForm.endDate, locale);
   const routeDestinationCode = destinationRouteCode(selectedDestinationNames);
   const joinCode = generatedJoinId;
   const calendarDays = routeCalendarDays(tripForm.startDate || "2026-06-01", tripForm.startDate, tripForm.endDate);
@@ -1956,6 +1961,13 @@ function PortalTripWizard({
     destinationComplete,
     tripNameComplete: Boolean(tripForm.name.trim()),
   });
+  const missingFields = [
+    tripForm.name.trim() ? null : wizard.status.fields.trip,
+    destinationComplete ? null : wizard.status.fields.destination,
+    datesComplete ? null : wizard.status.fields.dates,
+    accessComplete ? null : wizard.status.fields.invite,
+  ].filter(Boolean).join(", ");
+  const createStatusText = canSubmit ? wizard.status.ready : wizard.status.required({ fields: missingFields });
 
   useEffect(() => {
     onChange((current) => {
@@ -2083,11 +2095,11 @@ function PortalTripWizard({
   }
 
   return (
-    <form className={cn(accountSettingsFormClassName, portalCreateTripInlineClassName)} onSubmit={submitWizard}>
+    <form className={cn(accountSettingsFormClassName, portalCreateTripInlineClassName)} aria-label={wizard.title} onSubmit={submitWizard}>
       <div className={tripSimpleHeadClassName}>
         <div>
-          <strong>Create trip <Badge tone={canSubmit ? "success" : "neutral"}>{canSubmit ? "Ready" : "Draft"}</Badge></strong>
-          <p>สร้างแผนการเดินทางและเชิญเพื่อนร่วมทริปของคุณ</p>
+          <strong>{wizard.title} <Badge tone={canSubmit ? "success" : "neutral"}>{canSubmit ? wizard.statusReady : wizard.statusDraft}</Badge></strong>
+          <p>{wizard.detail}</p>
         </div>
       </div>
       <nav className={tripWorkflowNavClassName} aria-label="Trip creation workflow">
@@ -2097,19 +2109,19 @@ function PortalTripWizard({
               <button
                 type="button"
                 aria-current={activeMobileStep === step.id ? "step" : undefined}
-                aria-label={`${step.label} step`}
+                aria-label={`${wizard.stepNames[step.id]} step`}
                 onClick={() => setActiveMobileStep(step.id)}
                 ref={(node) => {
                   if (node) mobileStepButtonRefs.current.set(step.id, node);
                   else mobileStepButtonRefs.current.delete(step.id);
                 }}
               >
-                {step.label}
+                {wizard.stepNames[step.id]}
               </button>
             </li>
           ))}
         </ol>
-        <p>{activeMobileStepMeta.nextCopy}</p>
+        <p>{wizard.workflow[activeMobileStepMeta.id]}</p>
       </nav>
       <div className={tripWizardLayoutClassName}>
         <div className={cn(tripWizardMainClassName, isMobilePreviewStep ? "max-[767px]:hidden" : "")}>
@@ -2122,15 +2134,15 @@ function PortalTripWizard({
                 data-mobile-active={activeMobileStep === "trip" ? "true" : "false"}
               >
                 <div className={tripStepHeadingClassName}>
-                  <strong>1. Trip name</strong>
-                  <span>ตั้งชื่อทริปของคุณ</span>
+                  <strong>{wizard.steps.trip.title}</strong>
+                  <span>{wizard.steps.trip.detail}</span>
                 </div>
                 <label className={tripNameFieldClassName}>
                   <span className="sr-only">{t.access.dashboard.createTrip.labels.name}</span>
                 <input
                   value={tripForm.name}
                   onChange={(event) => onChange((current) => ({ ...current, name: event.target.value }))}
-                    placeholder="Kyoto & Osaka Winter Escape"
+                    placeholder={wizard.placeholders.tripName}
                     maxLength={100}
                   required
                 />
@@ -2145,23 +2157,23 @@ function PortalTripWizard({
                 data-mobile-active={activeMobileStep === "place" ? "true" : "false"}
               >
                 <div className={tripStepHeadingClassName}>
-                  <strong>2. Where are you going?</strong>
-                  <span>เลือกจุดหมายปลายทาง</span>
+                  <strong>{wizard.steps.place.title}</strong>
+                  <span>{wizard.steps.place.detail}</span>
                 </div>
                 <div className={tripCountryPickerClassName}>
                   <label className={tripCountrySearchClassName}>
-                    <span>Origin city</span>
-                    <input aria-label="Origin city" value={tripForm.originLabel} readOnly />
+                    <span>{wizard.fields.originCity}</span>
+                    <input aria-label={wizard.fields.originCity} value={tripForm.originLabel} readOnly />
                   </label>
                   <div className={tripCountrySearchClassName}>
                     <label>
-                      <span className="sr-only">Search destination cities</span>
+                      <span className="sr-only">{wizard.fields.searchDestinationCities}</span>
                       <input
-                        aria-label="Search destination cities"
+                        aria-label={wizard.fields.searchDestinationCities}
                         ref={destinationSearchRef}
                         value={cityQuery}
                         onChange={(event) => setCityQuery(event.target.value)}
-                        placeholder="Tokyo, Seoul, Hong Kong..."
+                        placeholder={wizard.placeholders.destinationSearch}
                       />
                     </label>
                     {suggestedCities.length ? (
@@ -2182,7 +2194,7 @@ function PortalTripWizard({
                           <span className={tripPlaceThumbClassName} aria-hidden="true" />
                           <div>
                             <strong>{card.title}</strong>
-                            <small>{card.detail}</small>
+                            <small><span>{card.detail}</span>{card.meta ? <span>{card.meta}</span> : null}</small>
                           </div>
                           <button type="button" aria-label={`Remove ${card.title}`} onClick={() => removeCityStop(card.title)}>
                             <Icon name="x" />
@@ -2192,22 +2204,22 @@ function PortalTripWizard({
                     </div>
                   ) : (
                     <div className={tripSelectedCountriesClassName} aria-label="Selected destinations">
-                      <span>Choose at least one destination city.</span>
+                      <span>{wizard.empty.selectedDestinations}</span>
                     </div>
                   )}
                   <div className={tripCityEntryClassName}>
                     <label>
-                      <span>Add city manually</span>
+                      <span>{wizard.fields.addCityManually}</span>
                       <input
-                        aria-label="Add city or stop"
+                        aria-label={wizard.fields.addCityOrStop}
                         value={countryQuery}
                         onChange={(event) => setCountryQuery(event.target.value)}
-                        placeholder="City outside the list"
+                        placeholder={wizard.placeholders.manualCity}
                       />
                     </label>
                     <Button type="button" variant="secondary" onClick={addCityStop} disabled={!countryQuery.trim()}>
                       <Icon name="plus" />
-                      Add city
+                      {wizard.actions.addCity}
                     </Button>
                   </div>
                 </div>
@@ -2220,14 +2232,14 @@ function PortalTripWizard({
                 data-mobile-active={activeMobileStep === "dates" ? "true" : "false"}
               >
                 <div className={tripStepHeadingClassName}>
-                  <strong>3. When are you going?</strong>
-                  <span>กำหนดวันเดินทาง</span>
+                  <strong>{wizard.steps.dates.title}</strong>
+                  <span>{wizard.steps.dates.detail}</span>
                 </div>
-              <fieldset className={tripRouteCalendarClassName} role="group" aria-label="Route trip calendar">
-                <legend>Route trip calendar</legend>
+              <fieldset className={tripRouteCalendarClassName} role="group" aria-label={wizard.fields.routeCalendar}>
+                <legend>{wizard.fields.routeCalendar}</legend>
                 <div className={tripCalendarSummaryClassName}>
                   <label>
-                    <span>Depart</span>
+                    <span>{wizard.fields.depart}</span>
                     <input
                       aria-label={t.access.dashboard.createTrip.labels.startDate}
                       value={tripForm.startDate}
@@ -2236,7 +2248,7 @@ function PortalTripWizard({
                     />
                   </label>
                   <label>
-                    <span>Return</span>
+                    <span>{wizard.fields.return}</span>
                     <input
                       aria-label={t.access.dashboard.createTrip.labels.endDate}
                       value={tripForm.endDate}
@@ -2254,6 +2266,7 @@ function PortalTripWizard({
                       aria-label={`${day.tourDay ? `Tour day ${day.tourDay}. ` : ""}Select ${day.label} as ${selectingDateStep} date`}
                       aria-pressed={day.value === tripForm.startDate || day.value === tripForm.endDate}
                       data-in-range={day.inRange ? "true" : "false"}
+                      data-date-state={day.dateState}
                       data-tour-tone={day.tourTone}
                       onClick={() => selectCalendarDate(day.value)}
                     >
@@ -2263,12 +2276,12 @@ function PortalTripWizard({
                 </div>
                 <Button type="button" variant="secondary" onClick={clearTravelDates}>
                   <Icon name="x" />
-                  Clear dates
+                  {wizard.actions.clearDates}
                 </Button>
-                <button className={tripDateArrowClassName} type="button" onClick={swapTravelDates} aria-label="Swap depart and return dates">
+                <button className={tripDateArrowClassName} type="button" onClick={swapTravelDates} aria-label={wizard.actions.swapDates}>
                   <Icon name="route" />
                 </button>
-                <small>Round trip dates are used as the first trip window.</small>
+                <small>{wizard.helper.datesWindow}</small>
               </fieldset>
               </section>
 
@@ -2280,7 +2293,7 @@ function PortalTripWizard({
               >
               <details className={tripAccessPanelClassName} {...(activeMobileStep === "invite" ? { open: true } : {})}>
                 <summary>
-                    <span>4. Trip owner & settings</span>
+                    <span>{wizard.steps.invite.title}</span>
                   <strong>{effectiveOwnerDisplayName || defaultOwnerDisplayName}</strong>
                 </summary>
                 <label>
@@ -2294,13 +2307,13 @@ function PortalTripWizard({
                     autoComplete="name"
                     required
                   />
-                  <small>Defaulted from your account profile.</small>
+                  <small>{wizard.helper.ownerDefault}</small>
                 </label>
                 <div className={tripGeneratedAccessClassName}>
                   <label>
                     <span>{t.access.dashboard.createTrip.labels.joinId}</span>
                     <input value={generatedJoinId} readOnly />
-                    <small>Hint: travel month + city code + short suffix.</small>
+                    <small>{wizard.helper.joinIdHint}</small>
                   </label>
                   <label>
                     <span>{t.access.dashboard.createTrip.labels.joinPassword}</span>
@@ -2308,7 +2321,7 @@ function PortalTripWizard({
                   </label>
                   <Button type="button" variant="secondary" onClick={regenerateCredentials}>
                     <Icon name="route" />
-                    Regenerate
+                    {wizard.actions.regenerate}
                   </Button>
                 </div>
               </details>
@@ -2316,20 +2329,20 @@ function PortalTripWizard({
 
               <div className={tripAccessNoteClassName}>
                 <Icon name="key" />
-                <span>คุณสามารถแก้ไขรายละเอียดทั้งหมดได้หลังจากสร้างทริป</span>
+                <span>{wizard.helper.postCreateEditable}</span>
               </div>
               <div className={tripTicketReviewClassName}>
                 <div>
-                  <span>Trip</span>
-                  <strong>{tripForm.name || "New trip"}</strong>
+                  <span>{wizard.review.trip}</span>
+                  <strong>{tripForm.name || wizard.empty.newTrip}</strong>
                 </div>
                 <div>
-                  <span>Destinations</span>
+                  <span>{wizard.review.destinations}</span>
                   <strong>{destinationSummary}</strong>
                 </div>
                 <div>
-                  <span>Dates</span>
-                  <strong>{tripForm.startDate} - {tripForm.endDate}</strong>
+                  <span>{wizard.review.dates}</span>
+                  <strong>{tripForm.startDate && tripForm.endDate ? `${tripForm.startDate} - ${tripForm.endDate}` : wizard.empty.missingDates}</strong>
                 </div>
               </div>
             </div>
@@ -2345,10 +2358,10 @@ function PortalTripWizard({
           <div className={tripBoardingPassClassName}>
             <div className={tripMainTicketClassName}>
               <div className={tripPreviewTicketTopClassName}>
-                <span>Trip preview</span>
+                <span>{wizard.preview.label}</span>
               </div>
               <strong>{previewTripName}</strong>
-              <p>Trip ID: TRP-26-0001 <Badge tone={canSubmit ? "success" : "neutral"}>{canSubmit ? "Ready" : "Draft"}</Badge></p>
+              <p>{wizard.preview.tripId}: TRP-26-0001 <Badge tone={canSubmit ? "success" : "neutral"}>{canSubmit ? wizard.statusReady : wizard.statusDraft}</Badge></p>
               <div className={tripFlightRouteClassName}>
                 <div>
                   <strong>{destinationRouteCode([tripForm.originCity])}</strong>
@@ -2357,26 +2370,26 @@ function PortalTripWizard({
                 <span className={tripFlightLineClassName}><Icon name="route" /></span>
                 <div>
                   <strong>{routeDestinationCode}</strong>
-                  <span>{selectedCityNames[0] ?? "Destination"}</span>
+                  <span>{selectedCityNames[0] ?? wizard.empty.destination}</span>
                 </div>
               </div>
               <TripPreviewLiveMap originCity={tripCityFromFormOrigin(tripForm)} destinationCities={selectedDestinationCities} />
               <div className={tripPreviewDestinationRowClassName}>
-                <span>Destinations</span>
+                <span>{wizard.preview.destinations}</span>
                 <div>
                   {destinationCards.map((card) => (
                     <article key={card.title} className={tripMiniDestinationClassName}>
                       <span className={tripPlaceThumbClassName} aria-hidden="true" />
                       <div>
                         <strong>{card.title}</strong>
-                        <small>{card.detail}</small>
+                        <small><span>{card.detail}</span>{card.meta ? <span>{card.meta}</span> : null}</small>
                       </div>
                       <Badge tone="primary">{card.nights}</Badge>
                     </article>
                   ))}
                   <button className={tripMiniAddClassName} type="button" onClick={focusDestinationSearch}>
                     <Icon name="plus" />
-                    เพิ่มจุดหมาย
+                    {wizard.actions.addDestination}
                   </button>
                 </div>
               </div>
@@ -2388,24 +2401,25 @@ function PortalTripWizard({
                 <span>{previewNightCount}</span>
               </div>
               <div>
-                <span>สกุลเงิน</span>
+                <span>{wizard.preview.currency}</span>
                 <strong>{currencySummary}</strong>
               </div>
               <div>
-                <span>สถานะ</span>
+                <span>{wizard.preview.status}</span>
                 <Badge tone={canSubmit ? "warning" : "neutral"}>{inviteStatus}</Badge>
               </div>
-              <span className={tripTicketBarcodeClassName} aria-label="Ticket barcode" />
+              <span>{wizard.preview.draftBoardingCode}</span>
+              <span className={tripTicketBarcodeClassName} aria-label={wizard.preview.draftBoardingCodeLabel} aria-disabled="true" />
             </div>
           </div>
           </section>
           <div className={cn(tripShareStripClassName, "max-[767px]:hidden")}>
-            <span><Icon name="users" /> แชร์โค้ดนี้กับเพื่อนเพื่อเข้าร่วมทริป</span>
-            <span>Join code: <strong>{joinCode}</strong></span>
+            <span><Icon name="users" /> {wizard.preview.shareCode}</span>
+            <span>{wizard.preview.joinCode} <strong>{joinCode}</strong></span>
             <Button type="button" variant="secondary" onClick={() => void copyJoinCode()}>
-              {hasCopiedJoinCode ? "Copied" : "คัดลอก"}
+              {hasCopiedJoinCode ? wizard.actions.copied : wizard.actions.copy}
             </Button>
-            <span><Icon name="key" /> Share link appears after create</span>
+            <span><Icon name="key" /> {wizard.preview.shareLinkPending}</span>
           </div>
         </aside>
       </div>
@@ -2414,53 +2428,80 @@ function PortalTripWizard({
           type="button"
           variant="secondary"
           disabled={!previousMobileStep}
-          aria-label={previousMobileStep ? `Back: ${previousMobileStep.label}` : "Back"}
+          aria-label={previousMobileStep ? `${wizard.actions.back}: ${wizard.stepNames[previousMobileStep.id]}` : wizard.actions.back}
           onClick={() => previousMobileStep ? setActiveMobileStep(previousMobileStep.id) : undefined}
         >
           <Icon name="chevronLeft" />
-          Back
+          {wizard.actions.back}
         </Button>
         <span>{activeMobileStepIndex + 1} / {tripWizardSteps.length}</span>
         <Button
           type="button"
           variant="secondary"
           disabled={!nextMobileStep || !currentStepComplete}
-          aria-label={nextMobileStep ? `Next: ${nextMobileStep.label}` : "Next"}
+          aria-label={nextMobileStep ? `${wizard.actions.next}: ${wizard.stepNames[nextMobileStep.id]}` : wizard.actions.next}
           onClick={() => nextMobileStep ? setActiveMobileStep(nextMobileStep.id) : undefined}
         >
-          Next
+          {wizard.actions.next}
           <Icon name="chevronRight" />
         </Button>
       </div>
-      <div className={tripWizardActionsClassName}>
-        <Button asChild type="button" variant="secondary">
-          <Link href={appRoutes.portalMyTrips()}>
-            <Icon name="chevronLeft" />
-            Cancel
-          </Link>
-        </Button>
-        <Button type="submit" disabled={isSubmitting || !canSubmit}>
-          <Icon name="check" />
-          {isSubmitting ? "Creating..." : "Create trip"}
-        </Button>
+      <div className={tripWizardActionsClassName} role="group" aria-label="Create trip status">
+        <p className={tripWizardActionStatusClassName}>
+          <Icon name={canSubmit ? "check" : "key"} />
+          {createStatusText}
+        </p>
+        <div className={tripWizardActionSummaryClassName} aria-hidden="true">
+          <strong>{previewTripName}</strong>
+          <span>{destinationSummary}</span>
+          <span>{previewStartDate} - {previewEndDate} · {previewNightCount}</span>
+        </div>
+        <div>
+          <Button asChild type="button" variant="secondary">
+            <Link href={appRoutes.portalMyTrips()}>
+              <Icon name="chevronLeft" />
+              {wizard.actions.cancel}
+            </Link>
+          </Button>
+          <Button type="submit" disabled={isSubmitting || !canSubmit}>
+            <Icon name="check" />
+            {isSubmitting ? wizard.actions.creating : wizard.actions.create}
+          </Button>
+        </div>
       </div>
     </form>
   );
 }
 
-function tripDestinationCards(selectedCountryNames: string[], selectedCityNames: string[] = []): Array<{ title: string; detail: string; nights: string; countryName: string }> {
-  const cards: Array<{ title: string; detail: string; nights: string; countryName: string }> = [];
+function tripDestinationCards(selectedCountryNames: string[], selectedCityNames: string[] = [], locale: string = "en"): Array<{ title: string; detail: string; meta: string; nights: string; countryName: string }> {
+  const cards: Array<{ title: string; detail: string; meta: string; nights: string; countryName: string }> = [];
   selectedCityNames.forEach((cityName, index) => {
     const cityCountryName = destinationCityCountryName(cityName);
-    cards.push({ title: cityName, detail: cityCountryName ?? selectedCountryNames[0] ?? "City stop", nights: `${index + 2} คืน`, countryName: cityCountryName ?? cityName });
+    cards.push({ title: cityName, detail: cityCountryName ?? selectedCountryNames[0] ?? "City stop", meta: destinationCityMeta(cityName), nights: tripNightBadge(index + 2, locale), countryName: cityCountryName ?? cityName });
   });
   selectedCountryNames
     .filter((name) => !selectedCityNames.some((cityName) => cityBelongsToCountry(cityName, name)))
     .forEach((name, index) => {
-      cards.push({ title: name, detail: name, nights: `${index + 3} คืน`, countryName: name });
+      cards.push({ title: name, detail: name, meta: countryCurrencyDetail(name), nights: tripNightBadge(index + 3, locale), countryName: name });
     });
   if (cards.length) return cards.slice(0, 4);
-  return [{ title: "Destination", detail: "Trip stop", nights: "3 คืน", countryName: "Destination" }];
+  return [{ title: "Destination", detail: "Trip stop", meta: "", nights: tripNightBadge(3, locale), countryName: "Destination" }];
+}
+
+function destinationCityMeta(cityName: string): string {
+  const city = tripCityOptions.find((option) => option.city.toLocaleLowerCase() === cityName.toLocaleLowerCase());
+  if (!city) return "";
+  const currency = tripCountryOptions.find((country) => country.name === city.country)?.currency;
+  return [city.timezone, currency].filter(Boolean).join(" · ");
+}
+
+function countryCurrencyDetail(countryName: string): string {
+  const country = tripCountryOptions.find((option) => option.name === countryName);
+  return country?.currency ?? "";
+}
+
+function tripNightBadge(nights: number, locale: string): string {
+  return locale === "th" ? `${nights} คืน` : `${nights} nights`;
 }
 
 function destinationCityCountryName(cityName: string): string | null {
@@ -2478,19 +2519,21 @@ function formatPreviewTravelDate(value: string): string {
   return new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", year: "numeric" }).format(date);
 }
 
-function routeCalendarDays(seed: string, startDate: string, endDate: string): Array<{ value: string; day: string; label: string; inRange: boolean; tourDay: number | null; tourTone: "odd" | "even" | "none" }> {
+function routeCalendarDays(seed: string, startDate: string, endDate: string): Array<{ value: string; day: string; label: string; inRange: boolean; tourDay: number | null; tourTone: "odd" | "even" | "none"; dateState: "start" | "end" | "in-range" | "today" | "default" }> {
   const seedDate = new Date(`${seed || "2026-06-01"}T00:00:00`);
   const year = Number.isNaN(seedDate.getTime()) ? 2026 : seedDate.getFullYear();
   const month = Number.isNaN(seedDate.getTime()) ? 5 : seedDate.getMonth();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const start = Date.parse(`${startDate}T00:00:00`);
   const end = Date.parse(`${endDate}T00:00:00`);
+  const todayValue = localDateValue(new Date());
   return Array.from({ length: daysInMonth }, (_, index) => {
     const date = new Date(year, month, index + 1);
     const value = localDateValue(date);
     const time = date.getTime();
     const inRange = Number.isFinite(start) && Number.isFinite(end) && time >= Math.min(start, end) && time <= Math.max(start, end);
     const tourDay = inRange ? Math.round((time - Math.min(start, end)) / 86_400_000) + 1 : null;
+    const dateState = value === startDate ? "start" : value === endDate ? "end" : inRange ? "in-range" : value === todayValue ? "today" : "default";
     return {
       value,
       day: String(index + 1),
@@ -2498,6 +2541,7 @@ function routeCalendarDays(seed: string, startDate: string, endDate: string): Ar
       inRange,
       tourDay,
       tourTone: tourDay ? (tourDay % 2 ? "odd" : "even") : "none",
+      dateState,
     };
   });
 }
@@ -2510,12 +2554,12 @@ function localDateValue(date: Date): string {
   ].join("-");
 }
 
-function tripNightCount(startDate: string, endDate: string): string {
+function tripNightCount(startDate: string, endDate: string, locale: string): string {
   const start = Date.parse(`${startDate}T00:00:00`);
   const end = Date.parse(`${endDate}T00:00:00`);
-  if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start) return "ยังไม่กำหนด";
+  if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start) return locale === "th" ? "ยังไม่กำหนด" : "Not set";
   const days = Math.round((end - start) / 86_400_000);
-  return `${days} คืน (${days + 1} วัน)`;
+  return locale === "th" ? `${days} คืน (${days + 1} วัน)` : `${days} nights (${days + 1} days)`;
 }
 
 function TripPreviewLiveMap({ originCity, destinationCities }: { originCity: TripCity; destinationCities: TripCity[] }) {

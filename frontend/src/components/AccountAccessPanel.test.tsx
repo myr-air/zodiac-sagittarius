@@ -842,7 +842,7 @@ describe("AccountAccessPanel", () => {
     expect(within(preview).getByText(/Invite ready/i)).toBeInTheDocument();
     expect(within(preview).getByLabelText(/Flight route from Bangkok to Tokyo/i)).toBeInTheDocument();
     expect(within(preview).getByText(/Join code:/i)).toBeInTheDocument();
-    expect(within(preview).getByLabelText(/Ticket barcode/i)).toBeInTheDocument();
+    expect(within(preview).getByLabelText(/Draft boarding code, generated after create/i)).toBeInTheDocument();
     expect(screen.queryByRole("list", { name: /Destination inspiration/i })).not.toBeInTheDocument();
   });
 
@@ -1046,6 +1046,9 @@ describe("AccountAccessPanel", () => {
 
     await waitFor(() => expect(screen.getByLabelText(/Start date/i)).toHaveValue("2026-06-05"));
     expect(screen.getByLabelText(/End date/i)).toHaveValue("2026-06-09");
+    expect(within(calendar).getByRole("button", { name: /Tour day 1/i })).toHaveAttribute("data-date-state", "start");
+    expect(within(calendar).getByRole("button", { name: /Tour day 5/i })).toHaveAttribute("data-date-state", "end");
+    expect(within(calendar).getByRole("button", { name: /Tour day 2/i })).toHaveAttribute("data-date-state", "in-range");
     expect(within(calendar).getByRole("button", { name: /Tour day 1/i })).toHaveAttribute("data-tour-tone", "odd");
     expect(within(calendar).getByRole("button", { name: /Tour day 2/i })).toHaveAttribute("data-tour-tone", "even");
   });
@@ -1085,7 +1088,7 @@ describe("AccountAccessPanel", () => {
     expect(String((joinPass as HTMLInputElement).value)).toMatch(/^[A-Z0-9]{4}-[A-Z0-9]{4}$/);
     expect(screen.queryByText(/Invite link:/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/token=/i)).not.toBeInTheDocument();
-    expect(screen.getByText(/Share link appears after create/i)).toBeInTheDocument();
+    expect(screen.getByText(/Invite link appears after create/i)).toBeInTheDocument();
   });
 
   it("shows a copyable email-ready invite link after create succeeds", async () => {
@@ -1188,8 +1191,68 @@ describe("AccountAccessPanel", () => {
     );
 
     expect(screen.getByRole("region", { name: /Live trip preview/i })).toHaveClass("sticky");
+    expect(screen.getByRole("group", { name: /Create trip status/i })).toHaveClass("sticky");
+    expect(screen.getByText(/Required:/i)).toBeInTheDocument();
     expect(screen.getByRole("navigation", { name: /Trip creation workflow/i })).toBeInTheDocument();
     expect(screen.getByText(/Next: add destination detail/i)).toBeInTheDocument();
+  });
+
+  it("uses localized English copy in the trip builder without Thai fallback text", async () => {
+    const accountClient = createAccountClient();
+
+    render(
+      <AccountAccessPanel
+        accessMode="account-portal"
+        accountClient={accountClient}
+        accountSession={{
+          userId: "user-aom",
+          sessionToken: "account-session",
+          kind: "trusted",
+          trustedDeviceId: "device-current",
+          createdAt: "2026-05-30T08:00:00.000Z",
+          expiresAt: "2026-06-29T08:00:00.000Z",
+        }}
+        portalSection="new-trip"
+        trip={seedTrip}
+        onAccountSessionChange={vi.fn()}
+        onAuthenticated={vi.fn()}
+        onTripChange={vi.fn()}
+      />,
+    );
+
+    const wizard = screen.getByRole("form", { name: /Create trip/i });
+    expect(within(wizard).getByText(/Build the trip plan and invite friends when it is ready/i)).toBeInTheDocument();
+    expect(within(wizard).getByText(/Add another destination/i)).toBeInTheDocument();
+    expect(within(wizard).getByText(/Invite link appears after create/i)).toBeInTheDocument();
+    expect(wizard.textContent).not.toMatch(/[ก-๙]/);
+  });
+
+  it("marks the preview barcode as a draft artifact before the trip is created", async () => {
+    const accountClient = createAccountClient();
+
+    render(
+      <AccountAccessPanel
+        accessMode="account-portal"
+        accountClient={accountClient}
+        accountSession={{
+          userId: "user-aom",
+          sessionToken: "account-session",
+          kind: "trusted",
+          trustedDeviceId: "device-current",
+          createdAt: "2026-05-30T08:00:00.000Z",
+          expiresAt: "2026-06-29T08:00:00.000Z",
+        }}
+        portalSection="new-trip"
+        trip={seedTrip}
+        onAccountSessionChange={vi.fn()}
+        onAuthenticated={vi.fn()}
+        onTripChange={vi.fn()}
+      />,
+    );
+
+    const preview = screen.getByRole("region", { name: /Live trip preview/i });
+    expect(within(preview).getByText(/Draft boarding code/i)).toBeInTheDocument();
+    expect(within(preview).getByLabelText(/Draft boarding code, generated after create/i)).toHaveAttribute("aria-disabled", "true");
   });
 
   it("shows one mobile trip creation step at a time with preview last", async () => {
@@ -1394,7 +1457,7 @@ describe("AccountAccessPanel", () => {
 
     fireEvent.change(await screen.findByLabelText(/Trip name/i), { target: { value: "Japan Korea Sprint" } });
     await selectDestinationCity(user, "Tokyo", /^Tokyo, Japan$/i);
-    await user.click(screen.getAllByRole("button", { name: /เพิ่มจุดหมาย/i })[0]);
+    await user.click(screen.getAllByRole("button", { name: /Add another destination/i })[0]);
     expect(screen.getByLabelText(/Search destination cities/i)).toHaveFocus();
 
     await selectDestinationCity(user, "Seoul", /^Seoul, South Korea$/i);
@@ -1447,7 +1510,7 @@ describe("AccountAccessPanel", () => {
     fireEvent.change(await screen.findByLabelText(/Trip name/i), { target: { value: "Osaka Round Trip" } });
     await selectDestinationCity(user, "Tokyo", /^Tokyo, Japan$/i);
     const joinCode = screen.getByText(/Join code:/i).textContent?.replace("Join code:", "").trim();
-    await user.click(screen.getByRole("button", { name: /คัดลอก/i }));
+    await user.click(screen.getByRole("button", { name: /Copy/i }));
 
     expect(writeText).toHaveBeenCalledWith(joinCode);
     expect(await screen.findByText(/Copied/i)).toBeInTheDocument();

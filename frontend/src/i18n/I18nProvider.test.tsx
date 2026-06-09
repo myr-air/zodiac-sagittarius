@@ -94,6 +94,27 @@ describe("I18nProvider", () => {
     await waitFor(() => expect(screen.getByRole("button", { name: /language and currency/i })).toHaveTextContent("EN / USD"));
   });
 
+  it("shows visible labels and active states for every language and currency option", async () => {
+    const user = userEvent.setup();
+    localStorage.clear();
+
+    render(
+      <I18nProvider>
+        <Probe />
+      </I18nProvider>,
+    );
+
+    await user.click(screen.getByRole("button", { name: /language and currency/i }));
+
+    expect(screen.getByRole("menuitemradio", { name: "English" })).toHaveTextContent("English");
+    expect(screen.getByRole("menuitemradio", { name: "ภาษาไทย" })).toHaveTextContent("ภาษาไทย");
+    expect(screen.getByRole("menuitemradio", { name: "HKD" })).toHaveTextContent("Hong Kong Dollar");
+    expect(screen.getByRole("menuitemradio", { name: "USD" })).toHaveTextContent("US Dollar");
+    expect(screen.getByRole("menuitemradio", { name: "English" })).toHaveAttribute("aria-checked", "true");
+    expect(screen.getByRole("menuitemradio", { name: "HKD" })).toHaveAttribute("aria-checked", "true");
+    expect(screen.getByRole("menu", { name: /language and currency/i })).toHaveClass("max-w-[calc(100vw-24px)]");
+  });
+
   it("renders English markup before loading a stored Thai locale after mount", async () => {
     localStorage.setItem("sagittarius-locale", "th");
 
