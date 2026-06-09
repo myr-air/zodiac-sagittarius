@@ -17,6 +17,7 @@ describe("Create trip UX QA harness", () => {
     expect(existsSync(scriptPath)).toBe(true);
     expect(readFileSync(scriptPath, "utf8")).toContain("portal-my-trips-empty-desktop.png");
     expect(readFileSync(scriptPath, "utf8")).toContain("create-trip-builder-desktop.png");
+    expect(readFileSync(scriptPath, "utf8")).toContain("create-trip-builder-dates-desktop.png");
     expect(readFileSync(scriptPath, "utf8")).toContain("create-trip-builder-mobile-preview.png");
     expect(readFileSync(scriptPath, "utf8")).toContain("map-fallback-desktop.png");
   });

@@ -129,6 +129,11 @@ async function runCreateTripBuilderQa(browser: Browser) {
   await screenshot(page, "create-trip-builder-desktop.png");
   evidence.checks.push("Desktop create-trip builder renders selected destinations and draft summary without text squeeze or metadata concatenation.");
 
+  await page.getByRole("group", { name: /Route trip calendar/i }).scrollIntoViewIfNeeded();
+  await expectDateSectionDensity(page);
+  await screenshot(page, "create-trip-builder-dates-desktop.png");
+  evidence.checks.push("Desktop create-trip date section renders compact calendar controls without oversized cells or clipped actions.");
+
   await page.setViewportSize({ width: 390, height: 844 });
   await page.getByRole("button", { name: /Preview step/i }).click();
   await expectNoFrameworkOverlay(page);
@@ -215,6 +220,29 @@ async function expectCreateTripTextFit(page: Page, minimumTextWidth: number) {
   if (result.squeezed.length) {
     throw new Error(`Create-trip preview text is squeezed below ${minimumTextWidth}px: ${JSON.stringify(result.squeezed)}`);
   }
+}
+
+async function expectDateSectionDensity(page: Page) {
+  const result = await page.evaluate(() => {
+    const section = document.querySelector<HTMLElement>(".trip-route-calendar");
+    const calendarButtons = Array.from(section?.querySelectorAll<HTMLElement>(".trip-calendar-grid button") ?? []);
+    const footer = section?.querySelector<HTMLElement>(".trip-calendar-footer");
+    const helper = section?.querySelector<HTMLElement>(".trip-calendar-helper");
+    const oversizedButtons = calendarButtons.map((button) => button.getBoundingClientRect()).filter((rect) => rect.height > 40);
+    return {
+      buttonCount: calendarButtons.length,
+      footerHeight: footer?.getBoundingClientRect().height ?? 0,
+      helperHeight: helper?.getBoundingClientRect().height ?? 0,
+      oversizedCount: oversizedButtons.length,
+      sectionWidth: section?.getBoundingClientRect().width ?? 0,
+    };
+  });
+
+  if (result.buttonCount < 28) throw new Error(`Expected date grid buttons, got ${result.buttonCount}.`);
+  if (result.oversizedCount > 0) throw new Error(`Expected compact date buttons, got ${result.oversizedCount} oversized buttons.`);
+  if (result.footerHeight > 44) throw new Error(`Expected compact date footer, got ${result.footerHeight}px.`);
+  if (result.helperHeight > 56) throw new Error(`Expected compact date helper, got ${result.helperHeight}px.`);
+  if (result.sectionWidth <= 0) throw new Error("Date section is not visible.");
 }
 
 async function mockEmptyAccountApi(page: Page) {

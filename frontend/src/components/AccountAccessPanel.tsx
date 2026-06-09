@@ -185,8 +185,6 @@ const tripCountrySearchClassName =
   "trip-country-search relative grid gap-2 [&_input]:min-h-[52px] [&_input]:rounded-[9px] [&_input]:bg-[rgb(255_255_255_/_0.9)] [&_input]:shadow-[inset_0_1px_0_rgb(255_255_255_/_0.8)] [&_label]:min-h-0";
 const tripCityEntryClassName =
   "trip-city-entry grid grid-cols-[minmax(0,1fr)_auto] items-end gap-2.5 rounded-[9px] border border-(--color-border) bg-(--color-surface-subtle) p-2.5 max-[767px]:grid-cols-1 [&_input]:min-h-[42px] [&_input]:rounded-[9px] [&_input]:border [&_input]:border-(--color-border) [&_input]:bg-white [&_input]:px-3.5 [&_label]:grid [&_label]:gap-1 [&_span]:text-xs [&_span]:font-[850] [&_span]:text-(--color-text-muted)";
-const tripCityChipListClassName =
-  "trip-city-chip-list flex flex-wrap gap-2 [&_button]:inline-flex [&_button]:min-h-8 [&_button]:items-center [&_button]:gap-1.5 [&_button]:rounded-full [&_button]:border [&_button]:border-(--color-route-border) [&_button]:bg-(--color-route-soft) [&_button]:px-2.5 [&_button]:text-xs [&_button]:font-black [&_button]:text-[#1d4ed8]";
 const tripFormDestinationRowClassName =
   "trip-form-destination-row grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-2.5 max-[767px]:grid-cols-1";
 const tripPlaceThumbClassName =
@@ -195,20 +193,22 @@ const tripMiniDestinationClassName =
   "trip-mini-destination grid min-h-[70px] grid-cols-[42px_minmax(0,1fr)_auto] items-center gap-2 rounded-[9px] border border-(--color-border) bg-white p-2 [&_small]:flex [&_small]:min-w-0 [&_small]:flex-wrap [&_small]:gap-x-1 [&_small]:text-[11px] [&_small]:leading-[15px] [&_small]:text-[#64748b] [&_small_span]:min-w-0 [&_small_span]:overflow-hidden [&_small_span]:text-ellipsis [&_strong]:block [&_button]:grid [&_button]:size-6 [&_button]:cursor-pointer [&_button]:place-items-center [&_button]:border-0 [&_button]:bg-transparent [&_button]:text-[#475569]";
 const tripMiniAddClassName =
   "trip-mini-add grid min-h-[70px] grid-cols-[20px_minmax(0,1fr)] items-center gap-2 rounded-[9px] border border-dashed border-(--color-border) bg-white p-2 text-xs font-extrabold text-(--color-text-muted)";
-const tripFormDestinationSearchClassName =
-  "trip-form-destination-search col-span-full grid gap-2 [&_.trip-country-suggestions]:!grid-cols-2 [&_input]:min-h-[42px] [&_input]:w-full [&_input]:rounded-[9px] [&_input]:border [&_input]:border-(--color-border) [&_input]:bg-white [&_input]:px-3.5 [&_input]:text-(--color-text) max-[767px]:[&_.trip-country-suggestions]:!grid-cols-1";
 const tripSelectedCountriesClassName =
   "trip-selected-countries flex min-h-[44px] flex-wrap items-center gap-3 rounded-(--radius-md) border border-dashed border-(--color-border-strong) bg-(--color-surface-subtle) p-3 text-[13px] font-bold text-(--color-text-muted)";
 const tripCountrySuggestionsClassName =
   "trip-country-suggestions grid grid-cols-3 gap-3 max-[767px]:grid-cols-1 [&_button]:grid [&_button]:min-h-[68px] [&_button]:grid-cols-[42px_minmax(0,1fr)] [&_button]:content-center [&_button]:items-center [&_button]:gap-[3px] [&_button]:rounded-[9px] [&_button]:border [&_button]:border-(--color-border) [&_button]:bg-(--color-surface) [&_button]:px-2.5 [&_button]:py-[9px] [&_button]:text-left [&_button]:text-(--color-text) [&_button]:transition-[background,border-color,box-shadow] [&_button]:duration-[180ms] [&_button:hover]:border-(--color-primary) [&_button:hover]:bg-(--color-primary-soft) [&_button:hover]:shadow-[0_10px_18px_rgb(15_118_110_/_0.08)] [&_button:focus-visible]:border-(--color-primary) [&_button:focus-visible]:bg-(--color-primary-soft) [&_button:focus-visible]:shadow-[0_10px_18px_rgb(15_118_110_/_0.08)] [&_button::before]:block [&_button::before]:size-[42px] [&_button::before]:rounded-md [&_button::before]:bg-[linear-gradient(145deg,rgb(15_118_110_/_0.28),transparent_54%),linear-gradient(45deg,rgb(255_255_255_/_0.22)_25%,transparent_25%_50%,rgb(255_255_255_/_0.22)_50%_75%,transparent_75%),#dbeafe] [&_button::before]:bg-[length:auto,12px_12px,auto] [&_button::before]:content-[''] [&_span]:col-start-2 [&_span]:overflow-hidden [&_span]:text-ellipsis [&_span]:whitespace-nowrap [&_span]:text-[11px] [&_span]:leading-[15px] [&_span]:text-(--color-text-muted) [&_strong]:col-start-2 [&_strong]:text-[13px] [&_strong]:leading-[18px]";
 const tripRouteCalendarClassName =
-  "trip-route-calendar grid gap-3 rounded-[14px] border border-(--color-border) bg-white p-3 max-[767px]:rounded-none max-[767px]:border-0 max-[767px]:bg-transparent max-[767px]:p-0";
+  "trip-route-calendar grid gap-2.5 rounded-[10px] border border-(--color-border) bg-white p-3 max-[767px]:rounded-none max-[767px]:border-0 max-[767px]:bg-transparent max-[767px]:p-0 [&>legend]:px-1 [&>legend]:text-[13px] [&>legend]:font-[850] [&>legend]:leading-5 [&>legend]:text-(--color-text) [&>strong]:text-[14px] [&>strong]:leading-5 [&>strong]:text-(--color-text)";
 const tripCalendarSummaryClassName =
-  "trip-calendar-summary grid grid-cols-2 gap-2.5 max-[767px]:grid-cols-1 [&_label]:grid [&_label]:min-h-0 [&_label]:gap-1 [&_input]:min-h-[42px] [&_input]:rounded-[9px] [&_input]:border [&_input]:border-(--color-border) [&_input]:bg-(--color-surface-subtle) [&_input]:px-3 [&_input]:text-sm [&_input]:font-black [&_span]:text-xs [&_span]:font-[850] [&_span]:text-(--color-text-muted)";
+  "trip-calendar-summary grid grid-cols-2 gap-2 max-[767px]:grid-cols-1 [&_label]:grid [&_label]:min-h-0 [&_label]:gap-1 [&_input]:min-h-10 [&_input]:rounded-[8px] [&_input]:border [&_input]:border-(--color-border) [&_input]:bg-(--color-surface-subtle) [&_input]:px-3 [&_input]:text-[13px] [&_input]:font-black [&_span]:text-[11px] [&_span]:font-[850] [&_span]:text-(--color-text-muted)";
 const tripCalendarGridClassName =
-  "trip-calendar-grid grid grid-cols-7 gap-1.5 [&_button]:min-h-10 [&_button]:rounded-[8px] [&_button]:border [&_button]:border-(--color-border) [&_button]:bg-(--color-surface) [&_button]:text-xs [&_button]:font-black [&_button]:text-(--color-text-muted) [&_button]:transition-[background,border-color,color,box-shadow] [&_button:hover]:border-(--color-primary) [&_button:hover]:bg-(--color-primary-soft) [&_button[data-date-state='today']]:border-[#f59e0b] [&_button[data-date-state='today']]:text-[#92400e] [&_button[data-date-state='in-range']]:border-(--color-route-border) [&_button[data-date-state='in-range']]:bg-(--color-route-soft) [&_button[data-date-state='in-range']]:text-[#1d4ed8] [&_button[data-date-state='start']]:border-(--color-primary) [&_button[data-date-state='start']]:bg-(--color-primary) [&_button[data-date-state='start']]:text-white [&_button[data-date-state='end']]:border-(--color-primary) [&_button[data-date-state='end']]:bg-(--color-primary) [&_button[data-date-state='end']]:text-white [&_button[aria-pressed='true']]:shadow-[0_8px_16px_rgb(15_118_110_/_0.18)]";
+  "trip-calendar-grid grid grid-cols-7 gap-1 [&_button]:min-h-9 [&_button]:rounded-[7px] [&_button]:border [&_button]:border-(--color-border) [&_button]:bg-(--color-surface) [&_button]:text-xs [&_button]:font-black [&_button]:text-(--color-text-muted) [&_button]:transition-[background,border-color,color,box-shadow] [&_button:hover]:border-(--color-primary) [&_button:hover]:bg-(--color-primary-soft) [&_button[data-date-state='today']]:border-[#f59e0b] [&_button[data-date-state='today']]:text-[#92400e] [&_button[data-date-state='in-range']]:border-(--color-route-border) [&_button[data-date-state='in-range']]:bg-(--color-route-soft) [&_button[data-date-state='in-range']]:text-[#1d4ed8] [&_button[data-date-state='start']]:border-(--color-primary) [&_button[data-date-state='start']]:bg-(--color-primary) [&_button[data-date-state='start']]:text-white [&_button[data-date-state='end']]:border-(--color-primary) [&_button[data-date-state='end']]:bg-(--color-primary) [&_button[data-date-state='end']]:text-white [&_button[aria-pressed='true']]:shadow-[0_6px_12px_rgb(15_118_110_/_0.14)]";
+const tripCalendarFooterClassName =
+  "trip-calendar-footer grid grid-cols-[minmax(0,1fr)_36px] items-center gap-2 max-[767px]:grid-cols-1 [&_.button]:min-h-9 [&_.button]:rounded-[8px]";
 const tripDateArrowClassName =
-  "trip-date-arrow grid h-[52px] w-[42px] items-center justify-items-center self-end rounded-full border border-(--color-primary-border) bg-(--color-primary-soft) text-(--color-primary-strong) max-[767px]:h-[34px] max-[767px]:w-full";
+  "trip-date-arrow grid size-9 items-center justify-items-center rounded-[8px] border border-(--color-primary-border) bg-(--color-primary-soft) text-(--color-primary-strong) max-[767px]:w-full";
+const tripCalendarHelperClassName =
+  "trip-calendar-helper grid grid-cols-[32px_minmax(0,1fr)] items-center gap-2.5 rounded-[9px] border border-(--color-border) bg-(--color-surface-subtle) p-2 text-xs leading-[18px] text-(--color-text-muted) [&_.icon]:grid [&_.icon]:size-7 [&_.icon]:place-items-center [&_.icon]:rounded-full [&_.icon]:border [&_.icon]:border-(--color-primary-border) [&_.icon]:bg-(--color-primary-soft) [&_.icon]:p-[5px] [&_.icon]:text-(--color-primary-strong)";
 const tripAccessPanelClassName =
   "trip-access-panel grid gap-3 rounded-[18px] border border-(--color-border) bg-white p-3 max-[767px]:rounded-none max-[767px]:border-0 max-[767px]:bg-transparent max-[767px]:p-0 [&_summary]:mb-0 [&_summary]:flex [&_summary]:min-h-[42px] [&_summary]:cursor-pointer [&_summary]:items-center [&_summary]:justify-between [&_summary]:gap-3 [&_summary]:text-[13px] [&_summary]:font-black [&_summary]:text-(--color-text) [&_summary_strong]:overflow-hidden [&_summary_strong]:text-ellipsis [&_summary_strong]:whitespace-nowrap [&_summary_strong]:text-xs [&_summary_strong]:font-[850] [&_summary_strong]:text-(--color-text-muted) open:[&_summary]:mb-2 open:[&_summary]:border-b open:[&_summary]:border-(--color-border) open:[&_summary]:pb-2.5";
 const tripGeneratedAccessClassName =
@@ -2294,14 +2294,19 @@ function PortalTripWizard({
                     </button>
                   ))}
                 </div>
-                <Button type="button" variant="secondary" onClick={clearTravelDates}>
-                  <Icon name="x" />
-                  {wizard.actions.clearDates}
-                </Button>
-                <button className={tripDateArrowClassName} type="button" onClick={swapTravelDates} aria-label={wizard.actions.swapDates}>
+                <div className={tripCalendarFooterClassName}>
+                  <Button type="button" variant="secondary" onClick={clearTravelDates}>
+                    <Icon name="x" />
+                    {wizard.actions.clearDates}
+                  </Button>
+                  <button className={tripDateArrowClassName} type="button" onClick={swapTravelDates} aria-label={wizard.actions.swapDates}>
+                    <Icon name="route" />
+                  </button>
+                </div>
+                <small className={tripCalendarHelperClassName}>
                   <Icon name="route" />
-                </button>
-                <small>{wizard.helper.datesWindow}</small>
+                  <span>{wizard.helper.datesWindow}</span>
+                </small>
               </fieldset>
               </section>
 
