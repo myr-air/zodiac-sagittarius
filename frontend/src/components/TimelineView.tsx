@@ -20,17 +20,17 @@ interface TimelineViewProps {
   onToggleContextRail: () => void;
 }
 
-const timelinePanelClassName = "timeline-panel grid min-h-full min-w-0 grid-rows-[auto_minmax(0,1fr)] gap-3 bg-(--color-page) px-6 py-[22px] pb-7";
+const timelinePanelClassName = "timeline-panel grid min-h-full min-w-0 grid-rows-[auto_minmax(0,1fr)] gap-3 bg-transparent px-6 py-[22px] pb-7";
 const timelineGridClassName = "timeline-grid mb-[30px] grid w-full grid-cols-3 gap-3 p-0 max-[1199px]:w-[calc(100%-24px)] max-[767px]:grid-cols-1 max-[767px]:px-0";
-const timelineDayClassName = "timeline-day overflow-hidden rounded-(--radius-md) border border-(--color-border) bg-(--color-surface)";
-const timelineDayHeaderClassName = "timeline-day-header flex min-h-[50px] items-center justify-between gap-2.5 border-b border-(--color-border) bg-(--color-surface) px-3.5 py-2.5 [&_strong]:text-[13px] [&_strong]:font-extrabold [&_strong]:leading-[18px] [&_strong]:text-[#0f172a] [&_span:not(.badge)]:text-[11px] [&_span:not(.badge)]:font-bold [&_span:not(.badge)]:leading-[15px] [&_span:not(.badge)]:text-(--color-text-muted)";
+const timelineDayClassName = "timeline-day overflow-hidden rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) shadow-[var(--shadow-soft)]";
+const timelineDayHeaderClassName = "timeline-day-header flex min-h-[50px] items-center justify-between gap-2.5 border-b border-(--color-border) bg-(--color-surface-subtle) px-3.5 py-2.5 [&_strong]:text-[13px] [&_strong]:font-extrabold [&_strong]:leading-[18px] [&_strong]:text-[#0f172a] [&_span:not(.badge)]:text-[11px] [&_span:not(.badge)]:font-bold [&_span:not(.badge)]:leading-[15px] [&_span:not(.badge)]:text-(--color-text-muted)";
 const timelineDayHeaderCopyClassName = "grid min-w-0 gap-px";
 const timelineStopListClassName = "timeline-stop-list m-0 grid list-none gap-1.5 p-0 [&_.timeline-stop:last-child_.timeline-stop-button]:border-b-0";
 const timelineStopClassName = "timeline-stop relative";
 const timelineStopButtonClassName = "timeline-stop-button relative z-[1] grid min-h-[86px] w-full grid-cols-[56px_34px_minmax(0,1fr)] items-start gap-2.5 border-0 border-b border-(--color-border) bg-(--color-surface) px-3.5 py-2.5 text-left text-(--color-text) transition-[background,box-shadow] duration-150 hover:bg-(--color-primary-soft) focus-visible:bg-(--color-primary-soft) focus-visible:outline-none max-[767px]:min-h-[82px] max-[767px]:grid-cols-[62px_32px_minmax(0,1fr)] max-[767px]:gap-2";
 const selectedTimelineStopButtonClassName = "bg-(--color-primary-soft) shadow-[inset_3px_0_0_var(--color-primary)]";
 const timelineTimeClassName = "timeline-time col-start-1 row-span-3 grid min-w-0 gap-0.5 [&_span]:text-[11px] [&_span]:font-bold [&_span]:leading-[15px] [&_span]:tabular-nums [&_span]:text-(--color-text-muted) [&_strong]:text-[13px] [&_strong]:font-extrabold [&_strong]:leading-[18px] [&_strong]:tabular-nums [&_strong]:text-[#0f172a]";
-const timelineNodeClassName = "timeline-node col-start-2 row-start-1 grid size-8 place-items-center rounded-full border-2 border-(--color-surface) bg-(--color-route-soft) text-(--color-route) shadow-[0_0_0_1px_var(--color-route-border)]";
+const timelineNodeClassName = "timeline-node col-start-2 row-start-1 grid size-8 place-items-center rounded-full border-2 border-(--color-surface) bg-(--color-primary-soft) text-(--color-primary-strong) shadow-[0_0_0_1px_var(--color-primary-border)]";
 const selectedTimelineNodeClassName = "bg-(--color-primary) text-white shadow-[0_0_0_1px_var(--color-primary)]";
 const timelineCopyClassName = "timeline-copy col-start-3 row-start-1 grid min-w-0 gap-0.5 [&_span]:[overflow-wrap:anywhere] [&_span]:text-xs [&_span]:font-semibold [&_span]:leading-4 [&_span]:text-(--color-text-muted) [&_strong]:overflow-hidden [&_strong]:whitespace-normal [&_strong]:text-[13px] [&_strong]:font-extrabold [&_strong]:leading-[18px] [&_strong]:text-[#0f172a] [&_strong]:text-ellipsis";
 const timelineMetaClassName = "timeline-meta col-start-3 row-start-2 flex min-w-0 flex-wrap content-start gap-x-2 gap-y-1 [&_span]:text-xs [&_span]:font-semibold [&_span]:leading-4 [&_span]:text-(--color-text-muted)";

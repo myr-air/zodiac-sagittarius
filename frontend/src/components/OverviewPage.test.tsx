@@ -65,7 +65,7 @@ describe("OverviewPage role lenses", () => {
     expect(within(cockpit).getByText(/จุดถัดไป/i).closest(".overview-cockpit-card")).toHaveClass(
       "overview-cockpit-card",
       "grid",
-      "rounded-(--radius-md)",
+      "rounded-(--radius-lg)",
     );
     expect(within(cockpit).getByText(/จุดถัดไป/i)).toBeInTheDocument();
     expect(within(cockpit).getByText(/งบประมาณ/i)).toBeInTheDocument();

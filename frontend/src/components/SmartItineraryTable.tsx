@@ -105,17 +105,17 @@ export type InlineItineraryItemPatch = Partial<
 >;
 
 const tablePanelClassName =
-  "table-panel grid h-auto min-h-full min-w-0 grid-rows-[auto_minmax(0,1fr)] overflow-visible bg-[linear-gradient(180deg,#e0f2fe_0%,#eef7ff_92px,#f8fafc_92px,#ffffff_100%)] px-6 py-[22px] pb-7 max-[767px]:bg-[linear-gradient(180deg,#e0f2fe_0%,#fff7d6_118px,#f8fafc_118px,#ffffff_100%)] max-[767px]:px-3 max-[767px]:pb-3";
+  "table-panel grid h-auto min-h-full min-w-0 grid-rows-[auto_minmax(0,1fr)] overflow-visible bg-transparent px-6 py-[22px] pb-7 max-[767px]:px-3 max-[767px]:pb-3";
 const pageHeaderActionsClassName =
   "page-header-actions relative z-[1] flex max-w-[260px] min-w-0 flex-wrap items-center justify-end gap-2";
 const pageHeaderNoteClassName =
   "page-header-note m-0 basis-full text-right text-xs font-bold text-(--color-warning-strong)";
 const itineraryFilterShellClassName =
-  "itinerary-filter-shell -mt-1 mb-[14px] grid gap-2 rounded-(--radius-md) border border-[#d7e7f2] bg-[linear-gradient(90deg,#ffffff,#eef7ff_58%,#fff7d6)] px-3 py-2.5 text-[#0369a1] shadow-[0_16px_34px_rgb(14_165_233_/_0.12)] ring-1 ring-white";
+  "itinerary-filter-shell -mt-1 mb-[14px] grid gap-2 rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) px-3 py-2.5 text-(--color-route) shadow-[var(--shadow-soft)]";
 const itineraryFilterBarClassName =
   "itinerary-filter-bar flex min-w-0 flex-wrap items-center gap-2 border-l-[3px] border-(--color-route) pl-2";
 const pathFilterButtonClassName =
-  "inline-flex min-h-8 min-w-[148px] items-center justify-center gap-2 rounded-(--radius-sm) border border-(--color-route-border) bg-(--color-route-soft) px-2.5 text-xs font-extrabold text-(--color-route) transition-[background,border-color,color] duration-150 hover:border-(--color-route) hover:bg-(--color-route-soft) hover:text-(--color-route) aria-[expanded=true]:border-(--color-route-border) aria-[expanded=true]:bg-(--color-route-soft) aria-[expanded=true]:text-(--color-route) [&_.icon]:size-4 [&_.icon]:transition-transform [&_.icon]:duration-[150ms] aria-[expanded=true]:[&_.icon]:rotate-90";
+  "inline-flex min-h-8 min-w-[148px] items-center justify-center gap-2 rounded-full border border-(--color-primary-border) bg-(--color-primary-soft) px-2.5 text-xs font-extrabold text-(--color-primary-strong) transition-[background,border-color,color] duration-150 hover:border-(--color-primary) hover:bg-(--color-primary-soft) hover:text-(--color-primary-strong) aria-[expanded=true]:border-(--color-primary-border) aria-[expanded=true]:bg-(--color-primary-soft) aria-[expanded=true]:text-(--color-primary-strong) [&_.icon]:size-4 [&_.icon]:transition-transform [&_.icon]:duration-[150ms] aria-[expanded=true]:[&_.icon]:rotate-90";
 const pathFilterSummaryClassName =
   "min-w-0 flex-1 truncate text-xs font-semibold text-[#64748b]";
 const pathFilterPanelClassName =
@@ -124,9 +124,9 @@ const pathFilterOptionClassName =
   "inline-flex min-h-8 items-center gap-2 rounded-(--radius-sm) border border-[#d7e7f2] bg-white/80 px-2.5 text-xs font-semibold text-[#0369a1] hover:border-(--color-route-border) hover:bg-white";
 const importInputClassName = "sr-only";
 const tableScrollClassName =
-  "table-scroll m-0 h-auto min-h-0 w-full max-w-full overflow-x-auto overflow-y-hidden rounded-(--radius-md) border border-(--color-border-strong) bg-(--color-surface) shadow-[0_22px_52px_rgb(15_23_42_/_0.14)] ring-1 ring-white [contain:paint]";
+  "table-scroll m-0 h-auto min-h-0 w-full max-w-full overflow-x-auto overflow-y-hidden rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) shadow-[var(--shadow-panel)] [contain:paint]";
 const smartTableClassName =
-  "smart-table w-full min-w-[1080px] table-fixed border-collapse text-xs leading-4 text-[#1f2937] [&_a]:text-[#1d4ed8] [&_a]:underline [&_a]:underline-offset-2 [&_td:first-child]:px-0 [&_td:first-child]:text-center [&_td:nth-child(2)]:w-[38px] [&_td:nth-child(2)]:px-0 [&_td:nth-child(2)]:text-center [&_td:nth-child(3)]:w-[88px] [&_td:nth-child(5)]:w-[94px] [&_td:nth-child(6)]:w-[124px] [&_td:nth-child(7)]:w-[108px] [&_td:nth-child(8)]:w-[148px] [&_td:nth-child(8)]:border-r-0 [&_td]:h-9 [&_td]:border-b [&_td]:border-r [&_td]:border-(--color-border) [&_td]:px-2.5 [&_td]:py-1 [&_td]:text-left [&_td]:align-middle [&_th:first-child]:px-0 [&_th:first-child]:text-center [&_th:nth-child(2)]:w-[38px] [&_th:nth-child(2)]:px-0 [&_th:nth-child(2)]:text-center [&_th:nth-child(3)]:w-[88px] [&_th:nth-child(5)]:w-[94px] [&_th:nth-child(6)]:w-[124px] [&_th:nth-child(7)]:w-[108px] [&_th:nth-child(8)]:w-[148px] [&_th:nth-child(8)]:border-r-0 [&_th]:h-9 [&_th]:border-b [&_th]:border-r [&_th]:border-(--color-border-strong) [&_th]:px-2.5 [&_th]:py-1 [&_th]:text-left [&_th]:align-middle [&_thead_th]:sticky [&_thead_th]:top-0 [&_thead_th]:z-[1] [&_thead_th]:h-12 [&_thead_th]:bg-(--color-route-soft) [&_thead_th]:text-xs [&_thead_th]:font-[800] [&_thead_th]:text-[#1e3a8a] [&_thead_th]:shadow-[inset_0_-1px_0_var(--color-route-border)]";
+  "smart-table w-full min-w-[1080px] table-fixed border-collapse text-xs leading-4 text-[#1f2937] [&_a]:text-[#1d4ed8] [&_a]:underline [&_a]:underline-offset-2 [&_td:first-child]:px-0 [&_td:first-child]:text-center [&_td:nth-child(2)]:w-[38px] [&_td:nth-child(2)]:px-0 [&_td:nth-child(2)]:text-center [&_td:nth-child(3)]:w-[88px] [&_td:nth-child(5)]:w-[94px] [&_td:nth-child(6)]:w-[124px] [&_td:nth-child(7)]:w-[108px] [&_td:nth-child(8)]:w-[148px] [&_td:nth-child(8)]:border-r-0 [&_td]:h-9 [&_td]:border-b [&_td]:border-r [&_td]:border-(--color-border) [&_td]:px-2.5 [&_td]:py-1 [&_td]:text-left [&_td]:align-middle [&_th:first-child]:px-0 [&_th:first-child]:text-center [&_th:nth-child(2)]:w-[38px] [&_th:nth-child(2)]:px-0 [&_th:nth-child(2)]:text-center [&_th:nth-child(3)]:w-[88px] [&_th:nth-child(5)]:w-[94px] [&_th:nth-child(6)]:w-[124px] [&_th:nth-child(7)]:w-[108px] [&_th:nth-child(8)]:w-[148px] [&_th:nth-child(8)]:border-r-0 [&_th]:h-9 [&_th]:border-b [&_th]:border-r [&_th]:border-(--color-border-strong) [&_th]:px-2.5 [&_th]:py-1 [&_th]:text-left [&_th]:align-middle [&_thead_th]:sticky [&_thead_th]:top-0 [&_thead_th]:z-[1] [&_thead_th]:h-12 [&_thead_th]:bg-(--color-surface-subtle) [&_thead_th]:text-xs [&_thead_th]:font-[800] [&_thead_th]:text-(--color-text) [&_thead_th]:shadow-[inset_0_-1px_0_var(--color-border)]";
 const graphColumnMinWidth = 30;
 const graphColumnSidePadding = 9;
 const graphColumnLaneGap = 18;
@@ -154,7 +154,7 @@ const dayAutoOverlapButtonClassName =
 const dataRowClassName =
   "data-row cursor-pointer transition-[background,box-shadow,transform] duration-[160ms] hover:[&_td]:bg-(--color-surface-subtle) focus-visible:[&_td]:bg-(--color-route-soft) focus-visible:[&_td]:shadow-[inset_0_0_0_2px_var(--color-route-border)] [&_td]:transition-[background,border-color,box-shadow,color,font-size,height,opacity,padding] [&_td]:duration-[180ms]";
 const dataRowSelectedClassName =
-  "data-row--selected [&_td:first-child]:shadow-[inset_3px_0_0_var(--color-route),inset_0_1px_0_var(--color-route),inset_0_-1px_0_var(--color-route)] [&_td:last-child]:shadow-[inset_-1px_0_0_var(--color-route),inset_0_1px_0_var(--color-route),inset_0_-1px_0_var(--color-route)] [&_td]:bg-[#eff6ff] [&_td]:shadow-[inset_0_1px_0_var(--color-route),inset_0_-1px_0_var(--color-route)]";
+  "data-row--selected [&_td:first-child]:shadow-[inset_3px_0_0_var(--color-primary),inset_0_1px_0_var(--color-primary-border),inset_0_-1px_0_var(--color-primary-border)] [&_td:last-child]:shadow-[inset_-1px_0_0_var(--color-primary-border),inset_0_1px_0_var(--color-primary-border),inset_0_-1px_0_var(--color-primary-border)] [&_td]:bg-(--color-primary-soft) [&_td]:shadow-[inset_0_1px_0_var(--color-primary-border),inset_0_-1px_0_var(--color-primary-border)]";
 const dataRowPathOverlapClassName =
   "data-row--path-overlap [&_td]:!bg-[#fee2e2] hover:[&_td]:!bg-[#fecaca] [&_td:first-child]:shadow-[inset_2px_0_0_#fca5a5] [&_td:last-child]:shadow-[inset_-1px_0_0_#fca5a5] [&_td]:shadow-[inset_0_1px_0_#fca5a5,inset_0_-1px_0_#fca5a5]";
 const dataRowDraggingClassName =

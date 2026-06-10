@@ -1223,7 +1223,7 @@ describe("SmartItineraryTable", () => {
     expect(scrollFrame).toHaveClass(
       "table-scroll",
       "overflow-x-auto",
-      "rounded-(--radius-md)",
+      "rounded-(--radius-lg)",
     );
 
     const table = screen.getByRole("table", {

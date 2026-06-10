@@ -26,14 +26,14 @@ describe("AppShell", () => {
     await screen.findByRole("navigation", { name: /เมนูวางแผน Joii/i });
     expect(container.querySelector(".app-layout")).toHaveClass(
       "grid",
-      "grid-cols-[228px_minmax(0,1fr)]",
-      "data-[sidebar-collapsed=true]:grid-cols-[68px_minmax(0,1fr)]",
+      "grid-cols-[236px_minmax(0,1fr)]",
+      "data-[sidebar-collapsed=true]:grid-cols-[74px_minmax(0,1fr)]",
       "max-[767px]:block",
     );
     expect(screen.getByRole("navigation", { name: /เมนูวางแผน Joii/i })).toHaveClass(
       "side-rail",
       "sticky",
-      "grid-rows-[62px_1fr_auto_auto]",
+      "grid-rows-[70px_1fr_auto_auto]",
       "max-[767px]:static",
     );
     expect(container.querySelector(".rail-links")).toHaveClass(
@@ -135,7 +135,7 @@ describe("AppShell", () => {
 
     await screen.findByText("ผู้ชม");
     expect(screen.getByText("Family Member").closest(".member-card")).toHaveTextContent("ผู้ชม");
-    expect(screen.getByRole("button", { name: "ขยายเมนู" })).toHaveClass("rail-toggle", "inline-flex", "data-[collapsed=true]:border");
+    expect(screen.getByRole("button", { name: "ขยายเมนู" })).toHaveClass("rail-toggle", "inline-flex", "rounded-full");
   });
 
   it("labels organizer members", async () => {
