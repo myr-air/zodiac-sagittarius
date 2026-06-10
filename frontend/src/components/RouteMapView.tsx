@@ -33,6 +33,7 @@ interface RouteDayGroup {
 
 type MarkerStyle = CSSProperties & {
   "--day-color": string;
+  "--route-marker-text-color": string;
   "--x": string;
   "--y": string;
   "--marker-delay": string;
@@ -133,7 +134,7 @@ const mapZoneBayClassName = "map-zone--bay bottom-5 right-6 text-[#0369a1]";
 const routeMapSvgClassName = "route-map-svg absolute inset-0 z-[2] size-full overflow-visible";
 const routeMapPathShadowClassName = "route-map-path route-map-path--shadow fill-none stroke-white stroke-[7.2] opacity-[0.92] [stroke-linecap:round] [stroke-linejoin:round]";
 const routeMapPathClassName = "route-map-path fill-none stroke-[var(--day-color,var(--color-route))] stroke-[3.2] [stroke-linecap:round] [stroke-linejoin:round]";
-const routeMarkerClassName = "route-marker absolute left-[var(--x)] top-[var(--y)] z-[3] grid size-[34px] -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border-[3px] border-white bg-[var(--day-color,var(--color-route))] text-[11px] font-extrabold tabular-nums text-[#0f172a] shadow-[0_14px_26px_rgb(15_23_42_/_0.26)] transition-[background,box-shadow,transform] duration-150 [animation:route-marker-in_180ms_ease-out_both] [animation-delay:var(--marker-delay)]";
+const routeMarkerClassName = "route-marker absolute left-[var(--x)] top-[var(--y)] z-[3] grid size-[34px] -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border-[3px] border-white bg-[var(--day-color,var(--color-route))] text-[11px] font-extrabold tabular-nums text-[var(--route-marker-text-color)] shadow-[0_14px_26px_rgb(15_23_42_/_0.26)] transition-[background,box-shadow,transform] duration-150 [animation:route-marker-in_180ms_ease-out_both] [animation-delay:var(--marker-delay)]";
 const routeStopListClassName = "route-stop-list absolute right-3 top-[78px] z-[6] grid max-h-[min(292px,52%)] w-[min(282px,calc(100%_-_24px))] gap-1.5 overflow-y-auto rounded-(--radius-md) border border-[#d7e7f2] bg-white/88 p-2.5 text-[11px] font-bold leading-4 text-[#475569] shadow-[0_18px_42px_rgb(14_165_233_/_0.16)] backdrop-blur-md max-[767px]:hidden";
 const routeStopListItemClassName = "route-stop-list-item grid grid-cols-[auto_minmax(0,1fr)] gap-2 rounded-(--radius-sm) border border-[#e5eef5] bg-[#f8fbff] px-1.5 py-1.5";
 const routeStopListIndexClassName = "grid size-5 place-items-center rounded-full bg-[var(--day-color,var(--color-route))] text-[10px] font-black text-[#0f172a]";
@@ -144,6 +145,34 @@ const unresolvedPanelHeaderClassName = "map-unresolved-header flex items-start g
 const unresolvedPanelListClassName = "map-unresolved-list m-0 grid gap-1.5 overflow-y-auto p-0";
 const unresolvedPanelItemClassName = "map-unresolved-item grid gap-0.5 rounded-(--radius-sm) bg-white/78 px-2 py-1.5 text-[11px] leading-4 text-[#9a3412]";
 const unresolvedPanelItemTitleClassName = "font-extrabold text-[#172033]";
+const DARK_TEXT = "#0f172a";
+const MINIMUM_A11Y_CONTRAST = 4.5;
+
+function hexToLinear(component: string): number {
+  const value = Number.parseInt(component, 16) / 255;
+  return value <= 0.03928 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
+}
+
+function luminance(color: string): number {
+  if (color.length !== 7 || !/^#[0-9a-fA-F]{6}$/.test(color)) return 0;
+  const red = hexToLinear(color.slice(1, 3));
+  const green = hexToLinear(color.slice(3, 5));
+  const blue = hexToLinear(color.slice(5, 7));
+  return 0.2126 * red + 0.7152 * green + 0.0722 * blue;
+}
+
+function contrastRatio(foreground: string, background: string): number {
+  const foregroundLuminance = luminance(foreground);
+  const backgroundLuminance = luminance(background);
+  const brightest = Math.max(foregroundLuminance, backgroundLuminance);
+  const darkest = Math.min(foregroundLuminance, backgroundLuminance);
+  return (brightest + 0.05) / (darkest + 0.05);
+}
+
+function markerTextColor(color: string): string {
+  if (contrastRatio("#ffffff", color) >= MINIMUM_A11Y_CONTRAST) return "#ffffff";
+  return DARK_TEXT;
+}
 
 export function RouteMapView({
   countries = [],
@@ -688,6 +717,7 @@ function getRouteBounds(points: RoutePoint[]): [[number, number], [number, numbe
 function markerStyle(point: RoutePoint, index: number, color: string): MarkerStyle {
   return {
     "--day-color": color,
+    "--route-marker-text-color": markerTextColor(color),
     "--x": `${point.x}%`,
     "--y": `${point.y}%`,
     "--marker-delay": `${index * 18}ms`,

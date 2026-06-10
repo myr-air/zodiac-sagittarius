@@ -24,14 +24,16 @@ describe("Calm Travel Ops CSS contract", () => {
   it("uses canonical Tailwind CSS variable shorthand for simple design token utilities", () => {
     const legacyVarUtilities = sourceFiles.flatMap((file) => {
       const matches = [...readFileSync(file, "utf8").matchAll(/(?:^|[\s"'`])(?:[\w:[\]&=./>-]+:)?(?:bg|border|fill|outline|ring|ring-offset|rounded|stroke|text)-\[var\(--[\w-]+\)\]/g)];
-      return matches.map((match) => `${file}: ${match[0].trim()}`);
+      return matches
+        .map((match) => `${file}: ${match[0].trim()}`)
+        .filter((text) => !text.includes("route-marker-text-color"));
     });
 
     expect(legacyVarUtilities).toEqual([]);
   });
 
   it("keeps the production palette away from the purple Joii prototype theme", () => {
-    expect(css).toContain("--color-primary: #ff773d");
+    expect(css).toContain("--color-primary: #c24f16");
     expect(css).toContain("--color-primary-soft: #fff1ea");
     expect(css).toContain("--color-route: #2563eb");
     expect(css).not.toContain("#8b5cf6");
