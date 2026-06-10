@@ -33,6 +33,7 @@ import { seedTrip } from "@/src/trip/seed";
 import { encodeTripId } from "@/src/trip/ids";
 import type {
   ItineraryItem,
+  PlanVariant,
   StopNote,
   Suggestion,
   Trip,
@@ -60,6 +61,39 @@ function getFirstStopDetailsButton(): HTMLElement {
 
 async function openFirstStopDetails(user: ReturnType<typeof userEvent.setup>) {
   await user.click(getFirstStopDetailsButton());
+}
+
+function tripWithSheets(): Trip {
+  const mainSheet = seedTrip.planVariants.find(
+    (variant) => variant.id === seedTrip.activePlanVariantId,
+  )!;
+  const backupSheet: PlanVariant = {
+    id: "plan-variant-backup",
+    tripId: seedTrip.id,
+    name: "Rain Sheet",
+    kind: "draft",
+    description: "",
+    version: 1,
+  };
+  const mainItem = seedTrip.itineraryItems.find(
+    (item) => item.id === "item-dimdim",
+  )!;
+  return {
+    ...seedTrip,
+    activePlanVariantId: mainSheet.id,
+    planVariants: [mainSheet, backupSheet],
+    itineraryItems: [
+      { ...mainItem, planVariantId: mainSheet.id },
+      {
+        ...mainItem,
+        id: "item-rain-gallery",
+        planVariantId: backupSheet.id,
+        activity: "Rain sheet gallery",
+        place: "M+ Museum",
+        sortOrder: mainItem.sortOrder + 100,
+      },
+    ],
+  };
 }
 
 describe("Sagittarius cockpit UI", () => {
@@ -4186,6 +4220,324 @@ describe("Sagittarius cockpit UI", () => {
     expect(confirm).not.toHaveBeenCalled();
     expect(alert).not.toHaveBeenCalled();
   });
+
+  it("creates a named local Trip Sheet and selects it without copying itinerary rows", async () => {
+    const user = userEvent.setup();
+    render(<SagittariusApp initialView="itinerary" />);
+
+    const selector = await screen.findByLabelText("Trip Sheet");
+    await user.click(screen.getByRole("button", { name: "เพิ่ม sheet" }));
+    await user.type(screen.getByLabelText("ชื่อ sheet"), "Museum Day");
+    await user.click(screen.getByRole("button", { name: "สร้าง sheet" }));
+
+    await waitFor(() =>
+      expect(screen.getByLabelText("Trip Sheet")).toHaveDisplayValue(
+        "Museum Day",
+      ),
+    );
+    expect(selector).toHaveValue(
+      (screen.getByRole("option", { name: "Museum Day" }) as HTMLOptionElement)
+        .value,
+    );
+    expect(
+      screen.queryByRole("row", { name: /Dim Dim Sum/i }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("switches local Trip Sheets and changes visible itinerary rows by planVariantId", async () => {
+    const user = userEvent.setup();
+    const storage = installLocalStorageStub();
+    const draftTrip = tripWithSheets();
+    storage.setItem(tripStorageKey, JSON.stringify(draftTrip));
+
+    render(<SagittariusApp initialView="itinerary" />);
+
+    await screen.findByRole("option", { name: "Rain Sheet" });
+    await screen.findByRole("row", { name: /Dim Dim Sum/i });
+    await user.selectOptions(screen.getByLabelText("Trip Sheet"), [
+      "plan-variant-backup",
+    ]);
+
+    expect(
+      await screen.findByRole("row", { name: /Rain sheet gallery/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("row", { name: /Dim Dim Sum/i }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("adds new local stops to the current Trip Sheet after switching sheets", async () => {
+    const user = userEvent.setup();
+    const storage = installLocalStorageStub();
+    const draftTrip = tripWithSheets();
+    storage.setItem(tripStorageKey, JSON.stringify(draftTrip));
+
+    render(<SagittariusApp initialView="itinerary" />);
+
+    await screen.findByRole("option", { name: "Rain Sheet" });
+    await user.selectOptions(screen.getByLabelText("Trip Sheet"), [
+      "plan-variant-backup",
+    ]);
+    await user.click(
+      await screen.findByRole("button", {
+        name: /เพิ่มสถานที่ \/ กิจกรรม วันที่ 1/i,
+      }),
+    );
+    const dialog = await screen.findByRole("dialog", { name: /เพิ่มกิจกรรม/i });
+    fireEvent.change(within(dialog).getByLabelText("กิจกรรม"), {
+      target: { value: "Sheet coffee" },
+    });
+    fireEvent.change(within(dialog).getByLabelText("สถานที่"), {
+      target: { value: "Sheung Wan" },
+    });
+    await user.click(
+      within(dialog).getByRole("button", { name: "บันทึกกิจกรรม" }),
+    );
+
+    expect(
+      await screen.findByRole("row", { name: /Sheet coffee/i }),
+    ).toBeInTheDocument();
+    const persistedTrip = JSON.parse(storage.getItem(tripStorageKey)!) as Trip;
+    expect(persistedTrip.itineraryItems).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          activity: "Sheet coffee",
+          planVariantId: "plan-variant-backup",
+        }),
+      ]),
+    );
+  });
+
+  it("imports itinerary rows into the current Trip Sheet and keeps path fields", async () => {
+    const user = userEvent.setup();
+    const storage = installLocalStorageStub();
+    const draftTrip = tripWithSheets();
+    storage.setItem(tripStorageKey, JSON.stringify(draftTrip));
+    render(<SagittariusApp initialView="itinerary" />);
+
+    await screen.findByRole("option", { name: "Rain Sheet" });
+    await user.selectOptions(screen.getByLabelText("Trip Sheet"), [
+      "plan-variant-backup",
+    ]);
+
+    const file = new File(
+      [
+        JSON.stringify({
+          schema: "joii.itinerary.export",
+          version: 1,
+          exportedAt: "2026-06-06T00:00:00.000Z",
+          items: [
+            {
+              id: "imported-current-sheet",
+              pathGroupId: "imported-path-group",
+              pathId: "path-rain-plan",
+              pathName: "Rain plan",
+              pathRole: "alternative",
+              day: seedTrip.startDate,
+              sortOrder: 15,
+              startTime: "15:30",
+              activity: "Imported current sheet stop",
+              activityType: "attraction",
+              place: "K11 Musea",
+              linkLabel: "Map",
+              mapLink: "",
+              durationMinutes: 70,
+              transportation: "Walk",
+              note: "Preserve path context",
+            },
+          ],
+        }),
+      ],
+      "itinerary.json",
+      { type: "application/json" },
+    );
+
+    await user.upload(screen.getByLabelText(/นำเข้า itinerary JSON/i), file);
+    const dialog = await screen.findByRole("dialog", {
+      name: /ตั้งค่า import itinerary/i,
+    });
+    await user.clear(within(dialog).getByLabelText(/ชื่อ path/i));
+    await user.type(within(dialog).getByLabelText(/ชื่อ path/i), "Rain import");
+    await user.click(
+      within(dialog).getByRole("button", { name: /import itinerary/i }),
+    );
+
+    expect(
+      await screen.findByRole("row", { name: /Imported current sheet stop/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", {
+        name: /Imported current sheet stop on Rain import/i,
+      }),
+    ).toBeInTheDocument();
+    const persistedTrip = JSON.parse(storage.getItem(tripStorageKey)!) as Trip;
+    expect(persistedTrip.itineraryItems).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          activity: "Imported current sheet stop",
+          planVariantId: "plan-variant-backup",
+          pathGroupId: "imported-path-group",
+          pathId: "path-rain-import",
+          pathName: "Rain import",
+          pathRole: "alternative",
+        }),
+      ]),
+    );
+  });
+
+  it("creates and publishes a Trip Sheet through the API, then selects the returned active sheet", async () => {
+    const user = userEvent.setup();
+    const apiTrip = {
+      ...tripWithSheets(),
+      members: [{ ...seedTrip.members[0], claimPasswordHash: null }],
+    };
+    const createdSheet: PlanVariant = {
+      id: "plan-variant-api-created",
+      tripId: apiTrip.id,
+      name: "API Sheet",
+      kind: "draft",
+      description: "",
+      version: 1,
+    };
+    const publishedTrip: Trip = {
+      ...apiTrip,
+      activePlanVariantId: createdSheet.id,
+      planVariants: [...apiTrip.planVariants, createdSheet],
+      version: (apiTrip.version ?? 0) + 1,
+    };
+    const apiClient = createApiClientForTrip(apiTrip, {
+      createPlanVariant: vi.fn().mockResolvedValue(createdSheet),
+      publishPlanVariant: vi.fn().mockResolvedValue(publishedTrip),
+    });
+
+    render(
+      <SagittariusApp
+        requireJoin
+        dataSource="api"
+        initialView="itinerary"
+        apiClient={apiClient}
+      />,
+    );
+    await loginApiTrip(user);
+
+    await user.click(await screen.findByRole("button", { name: "เพิ่ม sheet" }));
+    await user.type(screen.getByLabelText("ชื่อ sheet"), "API Sheet");
+    await user.click(screen.getByRole("button", { name: "สร้าง sheet" }));
+
+    await waitFor(() =>
+      expect(apiClient.createPlanVariant).toHaveBeenCalledWith(
+        apiTrip.id,
+        "session-token",
+        expect.objectContaining({
+          name: "API Sheet",
+          kind: "draft",
+          description: "",
+        }),
+      ),
+    );
+    expect(apiClient.publishPlanVariant).toHaveBeenCalledWith(
+      apiTrip.id,
+      createdSheet.id,
+      "session-token",
+      expect.objectContaining({ clientMutationId: expect.any(String) }),
+    );
+    await waitFor(() =>
+      expect(screen.getByLabelText("Trip Sheet")).toHaveValue(createdSheet.id),
+    );
+  }, 45_000);
+
+  it("reloads cockpit state when API Trip Sheet publish hits a version conflict", async () => {
+    const user = userEvent.setup();
+    const apiTrip = {
+      ...tripWithSheets(),
+      members: [{ ...seedTrip.members[0], claimPasswordHash: null }],
+    };
+    const reloadedSheet: PlanVariant = {
+      id: "plan-variant-reloaded",
+      tripId: apiTrip.id,
+      name: "Reloaded Sheet",
+      kind: "draft",
+      description: "",
+      version: 3,
+    };
+    const reloadedTrip: Trip = {
+      ...apiTrip,
+      activePlanVariantId: reloadedSheet.id,
+      planVariants: [...apiTrip.planVariants, reloadedSheet],
+      itineraryItems: [
+        {
+          ...apiTrip.itineraryItems[0],
+          id: "item-reloaded-sheet",
+          planVariantId: reloadedSheet.id,
+          activity: "Reloaded sheet stop",
+        },
+      ],
+      version: (apiTrip.version ?? 0) + 2,
+    };
+    const loadTrip = vi
+      .fn()
+      .mockResolvedValueOnce({
+        trip: apiTrip,
+        suggestions: [],
+        tasks: [],
+        stopNotes: [],
+        expenseSummary: null,
+      })
+      .mockResolvedValueOnce({
+        trip: reloadedTrip,
+        suggestions: [],
+        tasks: [],
+        stopNotes: [],
+        expenseSummary: null,
+      })
+      .mockResolvedValue({
+        trip: reloadedTrip,
+        suggestions: [],
+        tasks: [],
+        stopNotes: [],
+        expenseSummary: null,
+      });
+    const apiClient = createApiClientForTrip(apiTrip, {
+      loadTrip,
+      publishPlanVariant: vi.fn().mockRejectedValue(
+        new TripApiError({
+          code: "version_conflict",
+          message: "version conflict",
+          status: 409,
+        }),
+      ),
+    });
+
+    render(
+      <SagittariusApp
+        requireJoin
+        dataSource="api"
+        initialView="itinerary"
+        apiClient={apiClient}
+      />,
+    );
+    await loginApiTrip(user);
+
+    await user.selectOptions(await screen.findByLabelText("Trip Sheet"), [
+      "plan-variant-backup",
+    ]);
+
+    expect(apiClient.publishPlanVariant).toHaveBeenCalledWith(
+      apiTrip.id,
+      "plan-variant-backup",
+      "session-token",
+      expect.objectContaining({ clientMutationId: expect.any(String) }),
+    );
+    await waitFor(() => expect(loadTrip.mock.calls.length).toBeGreaterThanOrEqual(2));
+    await waitFor(() =>
+      expect(screen.getByLabelText("Trip Sheet")).toHaveValue(
+        reloadedSheet.id,
+      ),
+    );
+    expect(
+      screen.getByRole("row", { name: /Reloaded sheet stop/i }),
+    ).toBeInTheDocument();
+  }, 45_000);
 
   it("lets travelers submit a suggestion instead of directly editing a stop", async () => {
     const user = userEvent.setup();

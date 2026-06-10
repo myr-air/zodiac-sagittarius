@@ -1,4 +1,4 @@
-import { fireEvent, screen, within } from "@testing-library/react";
+import { cleanup, fireEvent, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { tripFixture } from "@/src/trip/trip-fixtures";
@@ -17,6 +17,10 @@ function renderTable(
     contextRailOpen: false,
     endDate: tripFixture.trip.endDate,
     items: tripFixture.planItems,
+    tripSheets: tripFixture.trip.planVariants,
+    selectedTripSheetId: tripFixture.trip.activePlanVariantId,
+    tripSheetError: null,
+    isTripSheetBusy: false,
     role: "owner",
     startDate: tripFixture.trip.startDate,
     selectedItemId: tripFixture.planItems[0].id,
@@ -39,6 +43,8 @@ function renderTable(
     onDeleteItem: vi.fn(),
     onExportItinerary: vi.fn(),
     onImportItinerary: vi.fn(),
+    onChangeTripSheet: vi.fn(),
+    onCreateTripSheet: vi.fn(),
     onChangeDayPath: vi.fn(),
     onClearDayPath: vi.fn(),
     onAutoResolveDayOverlaps: vi.fn(),
@@ -86,6 +92,10 @@ describe("SmartItineraryTable", () => {
           contextRailOpen={false}
           endDate={tripFixture.trip.endDate}
           items={tripFixture.planItems}
+          tripSheets={tripFixture.trip.planVariants}
+          selectedTripSheetId={tripFixture.trip.activePlanVariantId}
+          tripSheetError={null}
+          isTripSheetBusy={false}
           role="owner"
           startDate={tripFixture.trip.startDate}
           selectedItemId={tripFixture.planItems[0].id}
@@ -96,6 +106,8 @@ describe("SmartItineraryTable", () => {
           onMoveItemToDay={vi.fn()}
           onExportItinerary={vi.fn()}
           onImportItinerary={vi.fn()}
+          onChangeTripSheet={vi.fn()}
+          onCreateTripSheet={vi.fn()}
           onRedo={vi.fn()}
           onToggleContextRail={vi.fn()}
           onUndo={vi.fn()}
@@ -166,6 +178,94 @@ describe("SmartItineraryTable", () => {
     );
 
     expect(onImportItinerary).toHaveBeenCalledWith(file);
+  });
+
+  it("renders the current Trip Sheet selector with existing sheet names", () => {
+    renderTable();
+
+    const selector = screen.getByLabelText("Trip Sheet");
+
+    expect(selector).toHaveValue(tripFixture.trip.activePlanVariantId);
+    expect(
+      screen.getByRole("option", { name: "แผนหลัก (V1)" }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "แผนฝนตก" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("option", { name: "ร่างปรับเวลา" }),
+    ).toBeInTheDocument();
+  });
+
+  it("calls onChangeTripSheet when the Trip Sheet selector changes", async () => {
+    const user = userEvent.setup();
+    const onChangeTripSheet = vi.fn();
+    renderTable({ onChangeTripSheet });
+
+    await user.selectOptions(screen.getByLabelText("Trip Sheet"), "plan-rain");
+
+    expect(onChangeTripSheet).toHaveBeenCalledWith("plan-rain");
+  });
+
+  it("lets an organizer create a named Trip Sheet", async () => {
+    const user = userEvent.setup();
+    const onCreateTripSheet = vi.fn();
+    renderTable({ role: "organizer", onCreateTripSheet });
+
+    await user.click(screen.getByRole("button", { name: "เพิ่ม sheet" }));
+    await user.type(screen.getByLabelText("ชื่อ sheet"), "Food crawl");
+    await user.click(screen.getByRole("button", { name: "สร้าง sheet" }));
+
+    expect(onCreateTripSheet).toHaveBeenCalledWith("Food crawl");
+  });
+
+  it("keeps the Trip Sheet create form open when creation fails", async () => {
+    const user = userEvent.setup();
+    const onCreateTripSheet = vi.fn().mockResolvedValue(false);
+    renderTable({ onCreateTripSheet, tripSheetError: "Could not update Trip Sheet." });
+
+    await user.click(screen.getByRole("button", { name: "เพิ่ม sheet" }));
+    await user.type(screen.getByLabelText("ชื่อ sheet"), "Retry sheet");
+    await user.click(screen.getByRole("button", { name: "สร้าง sheet" }));
+
+    expect(onCreateTripSheet).toHaveBeenCalledWith("Retry sheet");
+    expect(screen.getByLabelText("ชื่อ sheet")).toHaveValue("Retry sheet");
+    expect(screen.getByText("Could not update Trip Sheet.")).toBeInTheDocument();
+  });
+
+  it("disables Trip Sheet switching and hides creation for travelers and viewers", () => {
+    renderTable({ role: "traveler" });
+
+    expect(screen.getByLabelText("Trip Sheet")).toBeDisabled();
+    expect(
+      screen.queryByRole("button", { name: "เพิ่ม sheet" }),
+    ).not.toBeInTheDocument();
+
+    cleanup();
+    renderTable({ role: "viewer" });
+
+    expect(screen.getByLabelText("Trip Sheet")).toBeDisabled();
+    expect(
+      screen.queryByRole("button", { name: "เพิ่ม sheet" }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("keeps the activity path filter UI separate from Trip Sheets", async () => {
+    const user = userEvent.setup();
+    renderTable();
+
+    expect(screen.getByLabelText("Trip Sheet")).toBeInTheDocument();
+    expect(
+      screen.queryByRole("region", { name: /ตัวกรองแผน/i }),
+    ).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: /แสดงตัวกรอง/i }));
+    const filterRegion = screen.getByRole("region", { name: /ตัวกรองแผน/i });
+
+    expect(filterRegion).toBeInTheDocument();
+    expect(within(filterRegion).getByLabelText("Plan 1")).toBeInTheDocument();
+    expect(
+      within(filterRegion).getByLabelText("Rain plan"),
+    ).toBeInTheDocument();
+    expect(within(filterRegion).queryByText("แผนฝนตก")).not.toBeInTheDocument();
   });
 
   it("neutralizes unsafe map link hrefs", () => {

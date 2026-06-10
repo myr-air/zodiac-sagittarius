@@ -13,8 +13,8 @@
   --color-text-subtle: #7a808c;
   --color-border: #e9e3dc;
   --color-border-strong: #d8cec4;
-  --color-primary: #ff773d;
-  --color-primary-strong: #df5f2b;
+  --color-primary: #c24f16;
+  --color-primary-strong: #a63f0b;
   --color-primary-soft: #fff1ea;
   --color-primary-border: #ffc4a8;
   --color-route: #2563eb;
@@ -291,10 +291,6 @@ button:disabled,
   border-color: var(--color-border);
   color: var(--color-text-muted);
   box-shadow: var(--shadow-soft);
-}
-
-.route-marker {
-  color: #ffffff;
 }
 
 .timeline-stop-button:hover,
