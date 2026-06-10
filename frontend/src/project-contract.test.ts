@@ -104,9 +104,9 @@ describe("Sagittarius project scaffold", () => {
   it("keeps the Calm Travel Ops design tokens in globals", () => {
     const css = readFileSync(join(frontendRoot, "app/globals.css"), "utf8");
 
-    expect(css).toContain("--color-primary: #0f766e");
+    expect(css).toContain("--color-primary: #ff773d");
     expect(css).toContain("--color-route: #2563eb");
-    expect(css).toContain("--color-warning: #f97316");
+    expect(css).toContain("--color-warning: #f59e0b");
   });
 
   it("documents the Rust/PostgreSQL API data contract", () => {
