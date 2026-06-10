@@ -49,7 +49,7 @@ interface RouteViewport {
   zoom: number;
 }
 
-const routeDayColors = ["#0ea5e9", "#0369a1", "#facc15", "#fb7185", "#f97316", "#f43f5e"];
+const routeDayColors = ["#ff773d", "#2563eb", "#f59e0b", "#16a34a", "#fb7185", "#0ea5e9"];
 const thailandRouteViewport: RouteViewport = { center: [100.9925, 15.8700], zoom: 5 };
 const hongKongShenzhenRouteViewport: RouteViewport = { center: [114.1800, 22.3900], zoom: 9.8 };
 const routeCountryViewports: Record<string, RouteViewport> = {
@@ -114,12 +114,12 @@ const routeMapThemeRules: Array<{ layerId: string; property: string; value: unkn
   { layerId: "label_country_2", property: "text-color", value: "#0f3f46" },
   { layerId: "label_country_1", property: "text-color", value: "#0f3f46" },
 ];
-const routeMapPanelClassName = "route-map-panel grid h-full min-h-0 min-w-0 grid-rows-[auto_minmax(0,1fr)] bg-[linear-gradient(180deg,#e0f2fe_0%,#eef7ff_92px,#f8fafc_92px,#ffffff_100%)] px-6 py-[22px] pb-7 max-[767px]:bg-[linear-gradient(180deg,#e0f2fe_0%,#fff7d6_118px,#f8fafc_118px,#ffffff_100%)] max-[767px]:px-3 max-[767px]:py-4";
-const routeMapLayoutClassName = "route-map-layout mb-7 block h-full min-h-0 w-full rounded-(--radius-lg) border border-[#d7e7f2] bg-white p-2 shadow-[0_22px_52px_rgb(14_165_233_/_0.14)] max-[1199px]:w-full max-[1199px]:px-2 max-[767px]:mb-2 max-[767px]:p-1.5";
-const routeMapCanvasClassName = "route-map-canvas relative h-full min-h-[560px] overflow-hidden rounded-(--radius-md) border border-[#b7dced] bg-[linear-gradient(115deg,rgb(255_251_235_/_0.92)_0_30%,rgb(224_242_254_/_0.96)_30%_64%,rgb(255_241_242_/_0.86)_64%_100%)] shadow-[inset_0_0_0_1px_rgb(255_255_255_/_0.86)] max-[767px]:h-[58vh] max-[767px]:min-h-[390px] max-[767px]:rounded-t-[22px]";
-const mapDayFilterClassName = "map-day-filter absolute left-3 top-3 z-[8] flex max-w-[min(760px,calc(100%_-_104px))] flex-wrap gap-2 rounded-(--radius-md) border border-[#d7e7f2] bg-white/88 p-1.5 shadow-[0_14px_30px_rgb(14_165_233_/_0.14)] backdrop-blur-md max-[767px]:left-2 max-[767px]:right-2 max-[767px]:max-w-none";
-const mapDayFilterButtonClassName = "map-day-filter-button inline-flex min-h-8 items-center gap-1.5 rounded-(--radius-sm) border border-[#d7e7f2] bg-[#f8fbff] px-2.5 py-1.5 text-[11px] font-extrabold leading-4 text-[#0369a1] shadow-[0_8px_18px_rgb(14_165_233_/_0.08)] backdrop-blur transition-[background,border-color,color,box-shadow] duration-150 hover:border-[var(--day-color,var(--color-route))] hover:bg-white hover:text-[#075985] hover:shadow-[0_10px_22px_rgb(14_165_233_/_0.14)] focus-visible:border-[var(--day-color,var(--color-route))] focus-visible:bg-white focus-visible:text-[#075985] focus-visible:shadow-[0_10px_22px_rgb(14_165_233_/_0.14)]";
-const activeMapDayFilterButtonClassName = "map-day-filter-button--active border-[var(--day-color,var(--color-route))] bg-[#fff7d6] text-[#172033] shadow-[0_10px_22px_rgb(250_204_21_/_0.2)]";
+const routeMapPanelClassName = "route-map-panel grid h-full min-h-0 min-w-0 grid-rows-[auto_minmax(0,1fr)] bg-transparent px-6 py-[22px] pb-7 max-[767px]:px-3 max-[767px]:py-4";
+const routeMapLayoutClassName = "route-map-layout mb-7 block h-full min-h-0 w-full rounded-(--radius-lg) border border-(--color-border) bg-white p-2 shadow-[var(--shadow-panel)] max-[1199px]:w-full max-[1199px]:px-2 max-[767px]:mb-2 max-[767px]:p-1.5";
+const routeMapCanvasClassName = "route-map-canvas relative h-full min-h-[560px] overflow-hidden rounded-(--radius-md) border border-(--color-border) bg-[linear-gradient(115deg,rgb(255_251_235_/_0.92)_0_30%,rgb(230_244_255_/_0.96)_30%_64%,rgb(255_241_234_/_0.86)_64%_100%)] shadow-[inset_0_0_0_1px_rgb(255_255_255_/_0.86)] max-[767px]:h-[58vh] max-[767px]:min-h-[390px] max-[767px]:rounded-t-[22px]";
+const mapDayFilterClassName = "map-day-filter absolute left-3 top-3 z-[8] flex max-w-[min(760px,calc(100%_-_104px))] flex-wrap gap-2 rounded-(--radius-lg) border border-(--color-border) bg-white/90 p-1.5 shadow-[var(--shadow-soft)] backdrop-blur-md max-[767px]:left-2 max-[767px]:right-2 max-[767px]:max-w-none";
+const mapDayFilterButtonClassName = "map-day-filter-button inline-flex min-h-8 items-center gap-1.5 rounded-full border border-(--color-border) bg-[#fbfaf8] px-2.5 py-1.5 text-[11px] font-extrabold leading-4 text-(--color-text-muted) shadow-[0_8px_18px_rgb(55_47_38_/_0.06)] backdrop-blur transition-[background,border-color,color,box-shadow] duration-150 hover:border-[var(--day-color,var(--color-route))] hover:bg-white hover:text-(--color-text) hover:shadow-[0_10px_22px_rgb(55_47_38_/_0.1)] focus-visible:border-[var(--day-color,var(--color-route))] focus-visible:bg-white focus-visible:text-(--color-text) focus-visible:shadow-[0_10px_22px_rgb(55_47_38_/_0.1)]";
+const activeMapDayFilterButtonClassName = "map-day-filter-button--active border-[var(--day-color,var(--color-primary))] bg-(--color-primary-soft) text-[#172033] shadow-[0_10px_22px_rgb(255_119_61_/_0.16)]";
 const mapDaySwatchClassName = "map-day-swatch size-[9px] rounded-full bg-[var(--day-color,var(--color-route))] shadow-[0_0_0_2px_rgb(255_255_255_/_0.94)]";
 const routeLiveMapClassName = "route-live-map absolute inset-0 z-[4] bg-[#dbeafe] transition-opacity duration-200";
 const routeLiveMapPendingClassName = "route-live-map--pending pointer-events-none opacity-0";

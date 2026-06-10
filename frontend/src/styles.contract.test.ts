@@ -31,7 +31,8 @@ describe("Calm Travel Ops CSS contract", () => {
   });
 
   it("keeps the production palette away from the purple Joii prototype theme", () => {
-    expect(css).toContain("--color-primary: #0f766e");
+    expect(css).toContain("--color-primary: #ff773d");
+    expect(css).toContain("--color-primary-soft: #fff1ea");
     expect(css).toContain("--color-route: #2563eb");
     expect(css).not.toContain("#8b5cf6");
     expect(css).not.toContain("#6b38d4");
@@ -100,7 +101,7 @@ describe("Calm Travel Ops CSS contract", () => {
   it("keeps vertical scrolling on the planning shell instead of nesting table scrollbars", () => {
     expect(appSource).toContain("planning-main h-full min-h-0 min-w-0 overflow-y-auto");
     expect(smartTableSource).toContain("table-panel grid h-auto min-h-full min-w-0");
-    expect(smartTableSource).toContain("overflow-visible bg-[linear-gradient(180deg,#e0f2fe_0%,#eef7ff_92px");
+    expect(smartTableSource).toContain("overflow-visible bg-transparent");
     expect(smartTableSource).toContain("table-scroll m-0 h-auto min-h-0");
     expect(smartTableSource).toContain("overflow-x-auto overflow-y-hidden");
     expect(smartTableSource).toContain("[contain:paint]");
@@ -115,7 +116,7 @@ describe("Calm Travel Ops CSS contract", () => {
   });
 
   it("locks the reference cockpit dimensions for pixel QA", () => {
-    expect(appSource).toContain("workspace-grid relative grid h-[calc(100vh-62px)]");
+    expect(appSource).toContain("workspace-grid relative grid h-screen");
     expect(appSource).toContain("grid-cols-[minmax(0,1fr)]");
     expect(contextRailSource).toContain("context-rail absolute right-0 top-0");
     expect(contextRailSource).toContain("w-[380px]");

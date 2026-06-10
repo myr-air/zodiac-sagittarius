@@ -111,6 +111,10 @@ fn embedded_migrations() -> Vec<Migration> {
             version: "0021_trusted_device_active_label_unique.sql",
             sql: include_str!("../../../../migrations/0021_trusted_device_active_label_unique.sql"),
         },
+        Migration {
+            version: "0022_itinerary_item_details.sql",
+            sql: include_str!("../../../../migrations/0022_itinerary_item_details.sql"),
+        },
     ]
 }
 

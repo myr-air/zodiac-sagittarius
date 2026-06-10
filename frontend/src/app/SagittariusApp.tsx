@@ -162,7 +162,7 @@ const portalSkeletonLineClassName = `${portalSkeletonBaseClassName} portal-skele
 const portalSkeletonBlockClassName = `${portalSkeletonBaseClassName} portal-skeleton--block h-[132px] w-full`;
 const workspaceShellClassName = "workspace-shell min-w-0 bg-transparent";
 const workspaceGridClassName =
-  "workspace-grid relative grid h-[calc(100vh-62px)] min-h-0 grid-cols-[minmax(0,1fr)] overflow-hidden data-[command-bar=hidden]:h-screen max-[1199px]:h-auto max-[1199px]:grid-cols-1 max-[1199px]:overflow-visible";
+  "workspace-grid relative grid h-screen min-h-0 grid-cols-[minmax(0,1fr)] overflow-hidden max-[1199px]:h-auto max-[1199px]:grid-cols-1 max-[1199px]:overflow-visible";
 const planningMainClassName =
   "planning-main h-full min-h-0 min-w-0 overflow-y-auto scroll-smooth bg-(--color-page) transition-[padding] duration-200 max-[1199px]:h-auto max-[1199px]:overflow-y-visible";
 const planningMainWithRailClassName = "pr-[380px] max-[1199px]:pr-0";
