@@ -359,7 +359,7 @@ export function TripJoinGate({ trip, apiClient, embedded = false, variant = "def
                       </Badge>
                     </button>
                     {selectedMember?.id === member.id ? (
-                      <form className={participantAuthClassName} role="group" aria-label={selectedMember.displayName} onSubmit={submitParticipant}>
+                      <form className={participantAuthClassName} aria-label={selectedMember.displayName} onSubmit={submitParticipant}>
                         <label>
                           <span>
                             {(selectedMember.claimPasswordHash || selectedMember.claimedAt)

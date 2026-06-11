@@ -89,7 +89,7 @@ describe("TripJoinGate", () => {
     await user.click(screen.getByRole("button", { name: /Explorer Friend/i }));
 
     const selectedCard = screen.getByRole("button", { name: /Explorer Friend/i });
-    const authPanel = screen.getByRole("group", { name: /Explorer Friend/i });
+    const authPanel = screen.getByRole("form", { name: /Explorer Friend/i });
     expect(selectedCard.nextElementSibling).toBe(authPanel);
   }, 45_000);
 
@@ -150,7 +150,7 @@ describe("TripJoinGate", () => {
 
     await enterTripRoom(user);
     await user.click(screen.getByRole("button", { name: /Travel Mate/i }));
-    const authPanel = screen.getByRole("group", { name: /Travel Mate/i });
+    const authPanel = screen.getByRole("form", { name: /Travel Mate/i });
 
     await user.type(within(authPanel).getByLabelText(/Travel Mate's password/i), "wrong");
     await user.click(within(authPanel).getByRole("button", { name: /Confirm/i }));

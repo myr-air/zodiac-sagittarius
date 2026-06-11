@@ -77,7 +77,7 @@ describe("Storybook template catalog", () => {
       ["components/TripPhotosPage.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty", "Tablet", "Mobile"]],
       ["components/BookingsDocsPage.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty", "Tablet", "Mobile"]],
       ["components/TripSettingsPage.stories.tsx", ["Owner", "Traveler", "Viewer", "Thai", "Tablet", "Mobile"]],
-      ["components/TripJoinGate.stories.tsx", ["RoomCredentials", "TripAccess", "Thai", "Tablet", "Mobile"]],
+      ["components/TripJoinGate.stories.tsx", ["RoomCredentials", "TripAccess", "SelectIdentity", "Thai", "Tablet", "Mobile"]],
       ["components/AboutAppPage.stories.tsx", ["Ready", "ApiUnavailable", "Mobile"]],
     ];
 
