@@ -33,3 +33,8 @@ export const Traveler: Story = {
     expenseSummary: tripFixture.expenseSummaries.traveler,
   },
 };
+
+export const OwnerThai: Story = {
+  args: Owner.args,
+  parameters: { locale: "th" },
+};

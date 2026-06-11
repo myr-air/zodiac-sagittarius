@@ -33,3 +33,8 @@ export const Viewer: Story = {
     canEditPhotoAlbums: false,
   },
 };
+
+export const OwnerThai: Story = {
+  args: Owner.args,
+  parameters: { locale: "th" },
+};

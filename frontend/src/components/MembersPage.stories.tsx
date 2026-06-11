@@ -26,3 +26,24 @@ export const Owner: Story = {
     onResetMemberClaim: noop,
   },
 };
+
+export const OwnerThai: Story = {
+  args: Owner.args,
+  parameters: { locale: "th" },
+};
+
+export const Traveler: Story = {
+  args: {
+    ...Owner.args,
+    currentMember: tripFixture.currentMembers.traveler,
+    canManagePeople: false,
+  },
+};
+
+export const Viewer: Story = {
+  args: {
+    ...Owner.args,
+    currentMember: tripFixture.currentMembers.viewer,
+    canManagePeople: false,
+  },
+};

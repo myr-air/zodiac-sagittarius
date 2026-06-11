@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import { tripFixture } from "@/src/trip/trip-fixtures";
+import { buildDenseTripFixture, tripFixture } from "@/src/trip/trip-fixtures";
 import { SmartItineraryTable } from "./SmartItineraryTable";
 
 const noop = () => {};
@@ -55,5 +55,25 @@ export const Owner: Story = {
     onRedo: noop,
     onToggleContextRail: noop,
     onUndo: noop,
+  },
+};
+
+export const OwnerThai: Story = {
+  args: Owner.args,
+  parameters: { locale: "th" },
+};
+
+export const Viewer: Story = {
+  args: {
+    ...Owner.args,
+    role: "viewer",
+  },
+};
+
+export const Dense: Story = {
+  args: {
+    ...Owner.args,
+    items: buildDenseTripFixture().itineraryItems,
+    selectedItemId: "",
   },
 };
