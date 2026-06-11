@@ -78,6 +78,17 @@ finished work before reporting completion. Only leave changes uncommitted when
 the user explicitly asks not to commit or when verification is blocked and the
 remaining risk needs user direction.
 
+## Deployment
+
+Whenever changes are merged to `main`, production deployment is required to run
+automatically through the production deployment path (`make production-deploy-gate`
+followed by production publish steps in `docs/production-docker-cloudflare.md` and
+GitHub workflow expectations). Manual merge-to-production approval does not replace
+this automatic deploy requirement.
+
+For production route changes, teams should complete a browser smoke check immediately
+after deploy in this order: `/trips`, map route, and auth flow.
+
 ## Issue Tracking
 
 If you find project issues that are not fixed in the current turn, create a
