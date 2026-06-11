@@ -71,10 +71,10 @@ const overviewHighlightListClassName = "overview-highlight-list m-0 grid list-no
 const overviewHighlightItemClassName =
   "overview-highlight-item relative grid min-h-[178px] min-w-0 content-end overflow-hidden rounded-(--radius-md) border border-[color-mix(in_srgb,var(--overview-highlight-accent)_18%,white)] bg-[linear-gradient(180deg,transparent_0_34%,rgb(255_255_255_/_0.78)_66%,rgb(255_255_255_/_0.94)),radial-gradient(circle_at_22%_22%,rgb(255_255_255_/_0.86)_0_16px,transparent_17px),linear-gradient(135deg,var(--overview-highlight-wash),color-mix(in_srgb,var(--overview-highlight-accent)_18%,white))] px-3 pb-3 pt-[88px] [--overview-highlight-accent:#0284c7] [--overview-highlight-wash:#e0f2fe] max-[767px]:min-h-[150px] max-[767px]:w-[240px] max-[767px]:shrink-0 max-[767px]:snap-start [&_small]:relative [&_small]:z-[1] [&_small]:min-w-0 [&_small]:overflow-hidden [&_small]:text-ellipsis [&_small]:whitespace-nowrap [&_small]:text-[11px] [&_small]:font-bold [&_small]:leading-[15px] [&_small]:text-(--color-text-muted) [&_span]:relative [&_span]:z-[1] [&_span]:text-[11px] [&_span]:font-[850] [&_span]:leading-[15px] [&_span]:text-(--overview-highlight-accent) [&_strong]:relative [&_strong]:z-[1] [&_strong]:min-w-0 [&_strong]:text-[13px] [&_strong]:font-black [&_strong]:leading-[18px] [&_strong]:text-(--color-text) [&_strong]:[overflow-wrap:anywhere]";
 const overviewHighlightToneClassNames = {
-  harbor: "[--overview-highlight-accent:#0f766e] [--overview-highlight-wash:#ccfbf1]",
-  city: "[--overview-highlight-accent:#4f46e5] [--overview-highlight-wash:#e0e7ff]",
-  coast: "[--overview-highlight-accent:#0284c7] [--overview-highlight-wash:#cffafe]",
-  market: "[--overview-highlight-accent:#c2410c] [--overview-highlight-wash:#ffedd5]",
+  harbor: "[--overview-highlight-accent:var(--color-primary)] [--overview-highlight-wash:var(--color-primary-soft)]",
+  city: "[--overview-highlight-accent:var(--color-route)] [--overview-highlight-wash:var(--color-route-soft)]",
+  coast: "[--overview-highlight-accent:var(--color-route)] [--overview-highlight-wash:var(--color-route-soft)]",
+  market: "[--overview-highlight-accent:var(--color-warning-strong)] [--overview-highlight-wash:var(--color-warning-soft)]",
 } satisfies Record<DestinationTone, string>;
 const overviewTaskToolbarClassName = "overview-task-toolbar flex flex-wrap items-center justify-between gap-2";
 const overviewTaskFiltersClassName = "overview-task-filters inline-flex w-fit max-w-full rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-muted) p-0.5";
@@ -84,6 +84,7 @@ const overviewTaskAddButtonClassName = "overview-task-add-button inline-flex min
 const personalTaskFormClassName = "overview-task-form overview-task-form--personal grid grid-cols-[minmax(140px,1fr)_auto] items-end gap-2 [&_button]:min-h-[34px] [&_button]:rounded-(--radius-sm) [&_button]:border [&_button]:border-(--color-primary-border) [&_button]:bg-(--color-primary) [&_button]:px-3 [&_button]:text-xs [&_button]:font-extrabold [&_button]:text-white [&_button:disabled]:border-(--color-border) [&_button:disabled]:bg-(--color-surface-muted) [&_button:disabled]:text-(--color-text-subtle) [&_input]:min-h-[34px] [&_input]:w-full [&_input]:rounded-(--radius-sm) [&_input]:border [&_input]:border-(--color-border) [&_input]:bg-(--color-surface) [&_input]:px-2.5 [&_input]:text-xs [&_input]:font-bold [&_input]:text-(--color-text) [&_label]:grid [&_label]:min-w-0 [&_label]:gap-[5px] [&_label>span]:text-[11px] [&_label>span]:font-extrabold [&_label>span]:leading-[15px] [&_label>span]:text-(--color-text-muted) w-full max-[767px]:grid-cols-1 max-[767px]:[&_button]:w-full";
 const overviewTaskListClassName = "overview-task-list m-0 grid list-none gap-2 p-0 text-[13px] font-semibold leading-5 text-(--color-text-muted)";
 const overviewTaskItemClassName = "overview-task-item grid min-h-10 grid-cols-[minmax(0,1fr)_auto] items-center gap-2.5 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) px-2.5 py-2 max-[767px]:grid-cols-1 [&_input]:size-4 [&_input]:accent-[var(--color-primary)] [&_label]:inline-flex [&_label]:min-w-0 [&_label]:items-center [&_label]:gap-[9px] [&_label>span]:overflow-hidden [&_label>span]:text-ellipsis [&_label>span]:whitespace-nowrap [&_label>span]:text-[13px] [&_label>span]:leading-[18px] [&_small]:whitespace-nowrap [&_small]:text-[11px] [&_small]:font-extrabold [&_small]:text-(--color-text-muted)";
+const overviewTaskItemInteractiveClassName = "transition-[border-color,box-shadow,background] duration-150 hover:border-(--color-primary-border) hover:bg-(--color-surface)";
 const overviewTaskMetaClassName = "overview-task-meta inline-flex flex-wrap justify-end gap-1.5";
 const overviewUndoToastClassName = "overview-undo-toast fixed bottom-5 right-5 z-[80] inline-flex max-w-[min(420px,calc(100vw-32px))] items-center gap-3 rounded-(--radius-md) border border-(--color-primary) bg-(--color-surface) px-3.5 py-3 text-[13px] font-extrabold text-(--color-text) shadow-[var(--shadow-panel)] [&_button]:min-h-8 [&_button]:cursor-pointer [&_button]:rounded-(--radius-sm) [&_button]:border [&_button]:border-(--color-border-strong) [&_button]:bg-(--color-primary-soft) [&_button]:px-2.5 [&_button]:text-(--color-primary-strong) [&_button]:font-extrabold";
 
@@ -312,7 +313,7 @@ export function OverviewPage({
               {visibleTasks.length ? (
                 <ul className={overviewTaskListClassName}>
                   {visibleTasks.map((task) => (
-                    <li className={cn(overviewTaskItemClassName, "hover:border-teal-600/30 hover:shadow-xs transition-all duration-200")} key={task.id} aria-label={task.title} data-status={task.status}>
+                    <li className={cn(overviewTaskItemClassName, overviewTaskItemInteractiveClassName)} key={task.id} aria-label={task.title} data-status={task.status}>
                       <label>
                         <input type="checkbox" checked={task.status === "done"} onChange={() => toggleTask(task)} />
                         <span className={task.status === "done" ? "line-through text-(--color-text-muted) font-normal" : "text-(--color-text) font-bold"}>
@@ -457,7 +458,7 @@ export function OverviewPage({
           {visibleTasks.length ? (
             <ul className={overviewTaskListClassName}>
               {visibleTasks.map((task) => (
-                <li className={cn(overviewTaskItemClassName, "hover:border-teal-600/30 hover:shadow-xs transition-all duration-200")} key={task.id} aria-label={task.title} data-status={task.status}>
+                <li className={cn(overviewTaskItemClassName, overviewTaskItemInteractiveClassName)} key={task.id} aria-label={task.title} data-status={task.status}>
                   <label>
                     <input type="checkbox" checked={task.status === "done"} onChange={() => toggleTask(task)} />
                     <span className={task.status === "done" ? "line-through text-(--color-text-muted) font-normal" : "text-(--color-text) font-bold"}>
@@ -791,38 +792,36 @@ function TripCompletedPostcard({ trip, items, groupSpendLabel, locale }: { trip:
   const stopCount = items.length;
 
   return (
-    <div className="relative overflow-hidden rounded-xl border border-amber-200/60 bg-(--color-paper-warm) p-5 shadow-[0_8px_24px_rgba(245_158_11_/_0.04)] bg-[image:var(--paper-grain)] bg-[length:120px_120px]">
-      {/* Decorative Stamp */}
-      <div className="absolute top-4 right-4 w-12 h-14 border-2 border-dashed border-amber-300/40 rounded-xs flex flex-col items-center justify-center rotate-[6deg] select-none opacity-60">
-        <Icon name="location" className="size-5 text-amber-500/50" />
-        <span className="text-[7px] font-black text-amber-600/40 uppercase mt-0.5 tracking-wider font-mono">Joii Map</span>
+    <div className="relative overflow-hidden rounded-(--radius-md) border border-(--color-warning-border) bg-(--color-warning-soft) bg-[image:var(--paper-grain)] bg-[length:120px_120px] p-5">
+      <div className="absolute top-4 right-4 flex h-14 w-12 rotate-[6deg] select-none flex-col items-center justify-center rounded-(--radius-sm) border-2 border-dashed border-(--color-warning-border) opacity-70">
+        <Icon name="location" className="size-5 text-(--color-warning-strong)" />
+        <span className="mt-0.5 font-mono text-[7px] font-black uppercase tracking-normal text-(--color-warning-strong)">Joii Map</span>
       </div>
 
-      <div className="flex flex-col gap-2.5 max-w-[85%]">
-        <strong className="text-base font-extrabold text-amber-900/90 leading-tight flex items-center gap-1.5">
-          <Icon name="calendar" className="size-4.5 text-amber-700" />
+      <div className="flex max-w-[85%] flex-col gap-2.5">
+        <strong className="flex items-center gap-1.5 text-base font-extrabold leading-tight text-(--color-text)">
+          <Icon name="calendar" className="size-4.5 text-(--color-warning-strong)" />
           {locale === "th" ? "ขอบคุณสำหรับการเดินทาง!" : "Thank you for traveling!"}
         </strong>
-        <p className="m-0 text-xs font-bold leading-relaxed text-amber-800/80">
+        <p className="m-0 text-xs font-bold leading-relaxed text-(--color-text-muted)">
           {locale === "th" 
             ? `ทริป ${trip.name} ได้เสร็จสิ้นลงแล้วอย่างสมบูรณ์แบบ หวังว่าคุณจะได้รับความทรงจำและมิตรภาพที่ยอดเยี่ยมระหว่างเดินทาง!`
             : `The ${trip.name} has completed. Hope this journey left you with beautiful memories and meaningful connections!`}
         </p>
       </div>
 
-      {/* Stats row */}
-      <div className="grid grid-cols-3 gap-2 border-t border-amber-200/40 pt-4 mt-4 text-center">
+      <div className="mt-4 grid grid-cols-3 gap-2 border-t border-(--color-warning-border) pt-4 text-center">
         <div className="flex flex-col gap-0.5">
-          <span className="text-[10px] font-extrabold uppercase tracking-wider text-amber-700/60">{locale === "th" ? "ระยะเวลา" : "Duration"}</span>
-          <strong className="text-lg font-black text-amber-900">{dayCount} {locale === "th" ? "วัน" : "Days"}</strong>
+          <span className="text-[10px] font-extrabold uppercase tracking-normal text-(--color-warning-strong)">{locale === "th" ? "ระยะเวลา" : "Duration"}</span>
+          <strong className="text-lg font-black text-(--color-text)">{dayCount} {locale === "th" ? "วัน" : "Days"}</strong>
         </div>
-        <div className="flex flex-col gap-0.5 border-x border-amber-200/40">
-          <span className="text-[10px] font-extrabold uppercase tracking-wider text-amber-700/60">{locale === "th" ? "สถานที่เช็คอิน" : "Places Visited"}</span>
-          <strong className="text-lg font-black text-amber-900">{stopCount} {locale === "th" ? "จุด" : "Stops"}</strong>
+        <div className="flex flex-col gap-0.5 border-x border-(--color-warning-border)">
+          <span className="text-[10px] font-extrabold uppercase tracking-normal text-(--color-warning-strong)">{locale === "th" ? "สถานที่เช็คอิน" : "Places Visited"}</span>
+          <strong className="text-lg font-black text-(--color-text)">{stopCount} {locale === "th" ? "จุด" : "Stops"}</strong>
         </div>
         <div className="flex flex-col gap-0.5">
-          <span className="text-[10px] font-extrabold uppercase tracking-wider text-amber-700/60">{locale === "th" ? "ยอดใช้จ่ายรวม" : "Total Budget"}</span>
-          <strong className="text-lg font-black text-amber-900">{groupSpendLabel}</strong>
+          <span className="text-[10px] font-extrabold uppercase tracking-normal text-(--color-warning-strong)">{locale === "th" ? "ยอดใช้จ่ายรวม" : "Total Budget"}</span>
+          <strong className="text-lg font-black text-(--color-text)">{groupSpendLabel}</strong>
         </div>
       </div>
     </div>
@@ -840,27 +839,25 @@ function TaskAssigneeBadge({ task, trip, labels }: { task: TripTask; trip: Trip;
   const isPrivate = task.visibility === "private";
   const member = task.assigneeId ? trip.members.find((m) => m.id === task.assigneeId) : null;
   const name = member?.displayName ?? labels.tripMember;
-  const color = member?.color ?? "#cbd5e1";
+  const color = member?.color ?? "var(--color-text-subtle)";
   const initial = name.slice(0, 1).toUpperCase();
 
   return (
     <div className="inline-flex flex-wrap items-center gap-1.5">
-      {/* Visibility Badge */}
       <small className={cn(
-        "inline-flex items-center text-[10px] font-bold px-1.5 py-0.5 rounded-sm border",
+        "inline-flex items-center rounded-sm border px-1.5 py-0.5 text-[10px] font-bold",
         isPrivate 
-          ? "bg-teal-50 text-teal-700 border-teal-100/50" 
-          : "bg-blue-50 text-blue-700 border-blue-100/50"
+          ? "border-(--color-primary-border) bg-(--color-primary-soft) text-(--color-primary-strong)" 
+          : "border-(--color-route-border) bg-(--color-route-soft) text-(--color-route)"
       )}>
         {isPrivate ? labels.private : labels.shared}
       </small>
 
-      {/* Assignee Badge */}
       {task.visibility !== "private" && (
         task.assigneeId ? (
           <div className="inline-flex items-center gap-1">
             <span
-              className="w-[18px] h-[18px] rounded-full flex items-center justify-center text-[9px] font-black text-white shrink-0 shadow-2xs"
+              className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full text-[9px] font-black text-white"
               style={{ backgroundColor: color }}
               title={name}
             >
@@ -871,7 +868,7 @@ function TaskAssigneeBadge({ task, trip, labels }: { task: TripTask; trip: Trip;
             </span>
           </div>
         ) : (
-          <small className="inline-flex items-center bg-slate-50 border border-slate-200/50 text-[10px] font-bold text-slate-500 px-1.5 py-0.5 rounded-sm">
+          <small className="inline-flex items-center rounded-sm border border-(--color-border) bg-(--color-surface-subtle) px-1.5 py-0.5 text-[10px] font-bold text-(--color-text-muted)">
             {labels.unassigned}
           </small>
         )
@@ -951,21 +948,21 @@ function CockpitCard({
   onClick?: () => void;
 }) {
   const iconColors = {
-    route: "bg-teal-50 text-teal-700 border border-teal-100/80 dark:bg-teal-950/40 dark:text-teal-400 dark:border-teal-900/40",
-    wallet: "bg-amber-50 text-amber-700 border border-amber-100/80 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-900/40",
-    users: "bg-sky-50 text-sky-700 border border-sky-100/80 dark:bg-sky-950/40 dark:text-sky-400 dark:border-sky-900/40",
-    calendar: "bg-indigo-50 text-indigo-700 border border-indigo-100/80 dark:bg-indigo-950/40 dark:text-indigo-400 dark:border-indigo-900/40",
-    location: "bg-emerald-50 text-emerald-700 border border-emerald-100/80 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-900/40",
-    check: "bg-purple-50 text-purple-700 border border-purple-100/80 dark:bg-purple-950/40 dark:text-purple-400 dark:border-purple-900/40",
-  }[icon] || "bg-slate-50 text-slate-700";
+    route: "border border-(--color-route-border) bg-(--color-route-soft) text-(--color-route)",
+    wallet: "border border-(--color-warning-border) bg-(--color-warning-soft) text-(--color-warning-strong)",
+    users: "border border-(--color-route-border) bg-(--color-route-soft) text-(--color-route)",
+    calendar: "border border-(--color-primary-border) bg-(--color-primary-soft) text-(--color-primary-strong)",
+    location: "border border-(--color-primary-border) bg-(--color-primary-soft) text-(--color-primary-strong)",
+    check: "border border-(--color-success-border) bg-(--color-success-soft) text-(--color-success)",
+  }[icon] || "border border-(--color-border) bg-(--color-surface-subtle) text-(--color-text-muted)";
 
   const content = (
     <div className="flex flex-col gap-2 w-full">
       <div className="flex items-center gap-2">
-        <div className={cn("size-8 rounded-full flex items-center justify-center shrink-0 shadow-xs", iconColors)}>
+        <div className={cn("flex size-8 shrink-0 items-center justify-center rounded-full", iconColors)}>
           <Icon name={icon} className="size-4" />
         </div>
-        <span className="text-[11px] font-extrabold uppercase tracking-wider text-(--color-text-muted)">
+        <span className="text-[11px] font-extrabold uppercase tracking-normal text-(--color-text-muted)">
           {label}
         </span>
       </div>
@@ -986,7 +983,7 @@ function CockpitCard({
         className={cn(
           cockpitCardBaseClassName,
           cockpitCardButtonClassName,
-          "hover:scale-[1.01] hover:border-(--color-primary) active:scale-[0.99] transition-all duration-200"
+          "active:translate-y-px"
         )}
         type="button"
         aria-label={ariaLabel}
@@ -998,7 +995,7 @@ function CockpitCard({
   }
 
   return (
-    <div className={cn(cockpitCardBaseClassName, "hover:scale-[1.01] hover:border-slate-300 transition-all duration-200")}>
+    <div className={cockpitCardBaseClassName}>
       {content}
     </div>
   );
@@ -1025,8 +1022,8 @@ function HighlightBoard({ items, startDate, locale, emptyMessage, title, subtitl
                 className={cn(
                   overviewHighlightItemClassName,
                   !imgUrl && overviewHighlightToneClassNames[highlightTone(item, index)],
-                  imgUrl && "border-slate-200/60 bg-slate-900",
-                  "hover:scale-[1.02] hover:shadow-[0_12px_24px_rgba(15,23,42,0.08)] transition-all duration-300 group cursor-pointer"
+                  imgUrl && "border-(--color-border-strong) bg-(--color-text)",
+                  "group cursor-pointer transition-[border-color,box-shadow,transform] duration-150 hover:-translate-y-0.5 hover:border-(--color-primary-border)"
                 )}
                 key={item.id}
               >
@@ -1041,16 +1038,16 @@ function HighlightBoard({ items, startDate, locale, emptyMessage, title, subtitl
                       priority={index === 0}
                       loading={index === 0 ? "eager" : undefined}
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/40 to-transparent z-[1]" />
+                    <div className="absolute inset-0 z-[1] bg-[linear-gradient(180deg,rgb(15_23_42_/_0.12),rgb(15_23_42_/_0.82))]" />
                   </>
                 )}
-                <span className={cn("relative z-10 text-[11px] font-bold uppercase tracking-wider mb-1", imgUrl ? "text-slate-300" : "text-(--overview-highlight-accent)")}>
+                <span className={cn("relative z-10 mb-1 text-[11px] font-bold uppercase tracking-normal", imgUrl ? "text-white/82" : "text-(--overview-highlight-accent)")}>
                   {formatDayLabel(item.day, startDate, locale)} · {item.startTime}
                 </span>
-                <strong className={cn("relative z-10 mb-0.5 text-sm font-black leading-snug [overflow-wrap:anywhere]", imgUrl ? "text-white transition-colors group-hover:text-teal-200" : "text-(--color-text)")}>
+                <strong className={cn("relative z-10 mb-0.5 text-sm font-black leading-snug [overflow-wrap:anywhere]", imgUrl ? "text-white" : "text-(--color-text)")}>
                   {item.activity}
                 </strong>
-                <small className={cn("relative z-10 text-[11px] font-bold overflow-hidden text-ellipsis whitespace-nowrap", imgUrl ? "text-slate-300" : "text-(--color-text-muted)")}>
+                <small className={cn("relative z-10 overflow-hidden text-ellipsis whitespace-nowrap text-[11px] font-bold", imgUrl ? "text-white/78" : "text-(--color-text-muted)")}>
                   {item.place}
                 </small>
               </li>
