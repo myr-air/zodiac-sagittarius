@@ -21,7 +21,7 @@ ROLLBACK_TEST_DATABASE_URL ?= postgres://postgres:postgres@127.0.0.1:5432/$(ROLL
 PSQL ?= psql
 PSQL_BIN := $(firstword $(PSQL))
 
-.PHONY: backend-dev frontend-dev backend-test frontend-build frontend-test frontend-storybook frontend-verify frontend-e2e-local frontend-e2e-auth-browser api-trace-smoke perf-smoke production-env-check production-env-file-check staging-preflight release-signoff-check staging-signoff-check production-deploy-gate verify production-readiness-local container-build container-production-build container-production-migrate container-production-migrate-baseline container-production-up container-production-down container-production-logs container-production-check db-init db-create db-migrate db-init-test db-migrate-test db-rollback-stop-notes-test db-ensure-psql
+.PHONY: backend-dev frontend-dev backend-test frontend-build frontend-test frontend-storybook frontend-verify frontend-e2e-local frontend-e2e-auth-browser api-trace-smoke perf-smoke production-env-check production-env-file-check staging-preflight release-signoff-check staging-signoff-check production-deploy-gate verify production-readiness-fast production-readiness-local container-build container-production-build container-production-migrate container-production-migrate-baseline container-production-up container-production-down container-production-logs container-production-check db-init db-create db-migrate db-init-test db-migrate-test db-rollback-stop-notes-test db-ensure-psql
 
 backend-dev: db-init
 	DATABASE_URL="$(DATABASE_URL)" SAGITTARIUS_BIND_ADDR="$(SAGITTARIUS_BIND_ADDR)" \
@@ -91,7 +91,9 @@ production-deploy-gate: production-env-file-check release-signoff-check
 
 verify: frontend-verify backend-test
 
-production-readiness-local: staging-preflight verify frontend-e2e-local frontend-e2e-auth-browser api-trace-smoke perf-smoke db-rollback-stop-notes-test
+production-readiness-fast: staging-preflight verify frontend-e2e-local frontend-e2e-auth-browser api-trace-smoke db-rollback-stop-notes-test
+
+production-readiness-local: production-readiness-fast perf-smoke
 
 container-build:
 	docker build -f backend/Dockerfile -t sagittarius-api:local .

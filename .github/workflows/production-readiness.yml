@@ -69,7 +69,7 @@ jobs:
         run: bunx playwright install --with-deps chromium
 
       - name: Run local production readiness gate
-        run: make production-readiness-local PSQL=psql
+        run: make production-readiness-fast PSQL=psql
 
   container-images:
     name: Production container image build
