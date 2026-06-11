@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import { buildDenseTripFixture, tripFixture } from "@/src/trip/trip-fixtures";
+import { expect } from "storybook/test";
+import { buildDenseTripFixture, buildEmptyTripFixture, tripFixture } from "@/src/trip/trip-fixtures";
 import { SmartItineraryTable } from "./SmartItineraryTable";
 
 const noop = () => {};
@@ -70,10 +71,69 @@ export const Viewer: Story = {
   },
 };
 
+export const Traveler: Story = {
+  args: {
+    ...Owner.args,
+    role: "traveler",
+  },
+};
+
 export const Dense: Story = {
   args: {
     ...Owner.args,
     items: buildDenseTripFixture().itineraryItems,
     selectedItemId: "",
   },
+};
+
+export const Empty: Story = {
+  args: {
+    ...Owner.args,
+    items: buildEmptyTripFixture().itineraryItems,
+    selectedItemId: "",
+  },
+};
+
+export const OverlapConflictWarning: Story = {
+  args: {
+    ...Owner.args,
+    selectedItemId: "overlap-dim-sum",
+    items: [
+      {
+        ...tripFixture.planItems[0],
+        id: "overlap-peak-tram",
+        day: tripFixture.trip.startDate,
+        startTime: "09:00",
+        durationMinutes: 120,
+        sortOrder: 10,
+        pathId: "main",
+        pathName: "Main",
+        pathRole: "main",
+      },
+      {
+        ...tripFixture.planItems[1],
+        id: "overlap-dim-sum",
+        day: tripFixture.trip.startDate,
+        startTime: "09:30",
+        durationMinutes: 90,
+        sortOrder: 20,
+        pathId: "main",
+        pathName: "Main",
+        pathRole: "main",
+      },
+    ],
+  },
+  play: async ({ canvasElement }) => {
+    await expect(canvasElement.querySelector(".data-row--path-overlap")).toBeInTheDocument();
+  },
+};
+
+export const Tablet: Story = {
+  args: Owner.args,
+  parameters: { viewport: { defaultViewport: "tablet768" } },
+};
+
+export const Mobile: Story = {
+  args: Owner.args,
+  parameters: { viewport: { defaultViewport: "mobile320" } },
 };

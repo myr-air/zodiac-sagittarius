@@ -1,9 +1,12 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { expect } from "storybook/test";
-import { tripFixture } from "@/src/trip/trip-fixtures";
+import { buildDenseTripFixture, buildEmptyTripFixture, tripFixture } from "@/src/trip/trip-fixtures";
+import { buildExpenseSummary } from "@/src/trip/expenses";
 import { TripExpensesPage } from "./TripExpensesPage";
 
 const noop = () => {};
+const denseTrip = buildDenseTripFixture();
+const emptyTrip = buildEmptyTripFixture();
 
 const meta = {
   title: "Pages/Expenses",
@@ -55,4 +58,31 @@ export const Viewer: Story = {
 export const OwnerThai: Story = {
   args: Owner.args,
   parameters: { locale: "th" },
+};
+
+export const Dense: Story = {
+  args: {
+    ...Owner.args,
+    trip: denseTrip,
+    currentMember: denseTrip.members[0],
+    expenseSummary: buildExpenseSummary(denseTrip.expenses, denseTrip.members[0].id),
+  },
+};
+
+export const Empty: Story = {
+  args: {
+    ...Owner.args,
+    trip: emptyTrip,
+    expenseSummary: buildExpenseSummary(emptyTrip.expenses, tripFixture.currentMembers.owner.id),
+  },
+};
+
+export const Tablet: Story = {
+  args: Owner.args,
+  parameters: { viewport: { defaultViewport: "tablet768" } },
+};
+
+export const Mobile: Story = {
+  args: Owner.args,
+  parameters: { viewport: { defaultViewport: "mobile320" } },
 };

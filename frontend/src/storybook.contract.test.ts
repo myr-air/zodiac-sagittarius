@@ -14,6 +14,14 @@ function storyText() {
   return collectStoryFiles().map((file) => readFileSync(file, "utf8")).join("\n");
 }
 
+function expectStoryExports(file: string, stateNames: string[]) {
+  const story = readFileSync(join("src", file), "utf8");
+
+  stateNames.forEach((stateName) => {
+    expect(story, `${file} should export ${stateName}`).toContain(`export const ${stateName}`);
+  });
+}
+
 describe("Storybook template catalog", () => {
   it("contains design system, template, and page story categories", () => {
     const stories = storyText();
@@ -46,6 +54,7 @@ describe("Storybook template catalog", () => {
       "Pages/Trip Settings",
       "Pages/Home Landing",
       "Pages/Stop Dialog",
+      "Pages/Trip Join Gate",
     ].forEach((title) => expect(stories).toContain(`title: "${title}"`));
   });
 
@@ -53,6 +62,25 @@ describe("Storybook template catalog", () => {
     const stories = storyText();
     ["Owner", "OwnerThai", "Traveler", "Viewer", "Empty", "Dense", "Mobile", "TabletItinerary", "MobileItinerary", "Desktop1024", "Desktop1440", "TableOverflow"].forEach((stateName) => {
       expect(stories).toContain(`export const ${stateName}`);
+    });
+  });
+
+  it("documents page-level role, density, and viewport states per cockpit page", () => {
+    const requiredPageStates: Array<[string, string[]]> = [
+      ["components/OverviewPage.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty", "Tablet", "Mobile"]],
+      ["components/ItineraryPage.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty", "OverlapConflictWarning", "Tablet", "Mobile"]],
+      ["components/TimelinePage.stories.tsx", ["Owner", "OwnerThai", "Dense", "Empty", "Tablet", "Mobile"]],
+      ["components/MapPage.stories.tsx", ["Owner", "OwnerThai", "Dense", "Empty", "Tablet", "Mobile"]],
+      ["components/MembersPage.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty", "Tablet", "Mobile"]],
+      ["components/ExpensesPage.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty", "Tablet", "Mobile"]],
+      ["components/TripPhotosPage.stories.tsx", ["Owner", "OwnerThai", "Viewer", "Dense", "Empty", "Tablet", "Mobile"]],
+      ["components/BookingsDocsPage.stories.tsx", ["Owner", "Traveler", "Viewer", "Empty", "Mobile"]],
+      ["components/TripSettingsPage.stories.tsx", ["Owner", "Viewer", "Thai", "Mobile"]],
+      ["components/TripJoinGate.stories.tsx", ["RoomCredentials", "TripAccess", "Thai", "Mobile"]],
+    ];
+
+    requiredPageStates.forEach(([file, stateNames]) => {
+      expectStoryExports(file, stateNames);
     });
   });
 
@@ -64,6 +92,19 @@ describe("Storybook template catalog", () => {
     });
     expect(appStories).toContain("initialMemberId: travelerMemberId");
     expect(appStories).toContain("initialMemberId: viewerMemberId");
+  });
+
+  it("documents app-level responsive stories for every primary cockpit view", () => {
+    expectStoryExports("app/SagittariusApp.stories.tsx", [
+      "TabletItinerary",
+      "MobileItinerary",
+      "TabletTimeline",
+      "MobileTimeline",
+      "TabletMap",
+      "MobileMap",
+      "TabletMembers",
+      "MobileMembers",
+    ]);
   });
 
   it("keeps viewport and antigravity UX QA entry points available", () => {

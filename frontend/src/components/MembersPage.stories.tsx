@@ -1,8 +1,13 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import { tripFixture } from "@/src/trip/trip-fixtures";
+import { buildDenseTripFixture, tripFixture } from "@/src/trip/trip-fixtures";
 import { TripMembersPage } from "./TripMembersPage";
 
 const noop = () => {};
+const denseTrip = buildDenseTripFixture();
+const singleMemberTrip = {
+  ...tripFixture.trip,
+  members: [tripFixture.currentMembers.owner],
+};
 
 const meta = {
   title: "Pages/Members",
@@ -46,4 +51,30 @@ export const Viewer: Story = {
     currentMember: tripFixture.currentMembers.viewer,
     canManagePeople: false,
   },
+};
+
+export const Dense: Story = {
+  args: {
+    ...Owner.args,
+    trip: denseTrip,
+    currentMember: denseTrip.members.find((member) => member.role === "owner") ?? tripFixture.currentMembers.owner,
+  },
+};
+
+export const Empty: Story = {
+  args: {
+    ...Owner.args,
+    trip: singleMemberTrip,
+    currentMember: tripFixture.currentMembers.owner,
+  },
+};
+
+export const Tablet: Story = {
+  args: Owner.args,
+  parameters: { viewport: { defaultViewport: "tablet768" } },
+};
+
+export const Mobile: Story = {
+  args: Owner.args,
+  parameters: { viewport: { defaultViewport: "mobile320" } },
 };

@@ -297,6 +297,7 @@ describe("RouteMapView", () => {
     expect(maplibreMock.maps[0]?.setPaintProperty).toHaveBeenCalledWith("background", "background-color", "#f6fbfd");
     expect(maplibreMock.maps[0]?.setPaintProperty).toHaveBeenCalledWith("label_country_1", "text-color", "#0f3f46");
     expect(document.querySelector(".route-live-map")).not.toHaveProperty("inert", true);
+    expect(document.querySelector(".route-live-map")).not.toHaveAttribute("tabindex");
     expect(document.querySelector(".route-live-map button")).toHaveAttribute("tabindex", "-1");
     expect(maplibreMock.markers.length).toBeGreaterThan(1);
 

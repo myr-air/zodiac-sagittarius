@@ -47,3 +47,13 @@ export const Empty: Story = {
     selectedItemId: "",
   },
 };
+
+export const Tablet: Story = {
+  args: Owner.args,
+  parameters: { viewport: { defaultViewport: "tablet768" } },
+};
+
+export const Mobile: Story = {
+  args: Owner.args,
+  parameters: { viewport: { defaultViewport: "mobile320" } },
+};

@@ -49,6 +49,18 @@ export const Viewer: Story = {
   },
 };
 
+export const Traveler: Story = {
+  args: {
+    ...Owner.args,
+    currentMember: tripFixture.currentMembers.traveler,
+    canEditBookings: true,
+  },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole("region", { name: /Bookings & Docs/i })).toBeVisible();
+    await expect(canvas.getByRole("button", { name: /Add booking/i })).toBeEnabled();
+  },
+};
+
 export const Empty: Story = {
   args: {
     ...Owner.args,
@@ -63,4 +75,3 @@ export const Mobile: Story = {
   args: Owner.args,
   parameters: { viewport: { defaultViewport: "mobile320" } },
 };
-

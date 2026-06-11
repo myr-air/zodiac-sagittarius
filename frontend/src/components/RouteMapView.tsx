@@ -241,7 +241,6 @@ export function RouteMapView({
         maplibreModuleRef.current = maplibregl;
         const container = mapContainerRef.current;
         container.inert = true;
-        container.tabIndex = -1;
 
         const map = new maplibregl.Map({
           attributionControl: { compact: true },

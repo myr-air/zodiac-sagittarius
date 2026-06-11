@@ -235,3 +235,39 @@ export const MobileItinerary: Story = {
   },
   play: Itinerary.play,
 };
+export const TabletTimeline: Story = {
+  args: { initialView: "timeline" },
+  parameters: {
+    viewport: { defaultViewport: "tablet768" },
+  },
+};
+export const MobileTimeline: Story = {
+  args: { initialView: "timeline" },
+  parameters: {
+    viewport: { defaultViewport: "mobile320" },
+  },
+};
+export const TabletMap: Story = {
+  args: { initialView: "map" },
+  parameters: {
+    viewport: { defaultViewport: "tablet768" },
+  },
+};
+export const MobileMap: Story = {
+  args: { initialView: "map" },
+  parameters: {
+    viewport: { defaultViewport: "mobile320" },
+  },
+};
+export const TabletMembers: Story = {
+  args: { initialView: "members" },
+  parameters: {
+    viewport: { defaultViewport: "tablet768" },
+  },
+};
+export const MobileMembers: Story = {
+  args: { initialView: "members" },
+  parameters: {
+    viewport: { defaultViewport: "mobile320" },
+  },
+};
