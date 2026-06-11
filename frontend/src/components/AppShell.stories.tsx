@@ -50,7 +50,32 @@ export const Owner: Story = {
   },
 };
 
-export const Mobile: Story = { args: { ...Owner.args, collapsed: true } };
+export const Traveler: Story = {
+  args: {
+    ...Owner.args,
+    currentMember: tripFixture.currentMembers.traveler,
+  },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByText("Explorer Friend")).toBeVisible();
+    await expect(canvas.getAllByText("Traveler").length).toBeGreaterThan(0);
+  },
+};
+
+export const Viewer: Story = {
+  args: {
+    ...Owner.args,
+    currentMember: tripFixture.currentMembers.viewer,
+  },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByText("Family Member")).toBeVisible();
+    await expect(canvas.getByText("Viewer")).toBeVisible();
+  },
+};
+
+export const Mobile: Story = {
+  args: { ...Owner.args, collapsed: true },
+  parameters: { viewport: { defaultViewport: "mobile320" } },
+};
 
 export const OwnerThai: Story = {
   args: Owner.args,

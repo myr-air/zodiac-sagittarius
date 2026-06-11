@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import { expect } from "storybook/test";
 import { tripFixture } from "@/src/trip/trip-fixtures";
 import { TripExpensesPage } from "./TripExpensesPage";
 
@@ -24,6 +25,10 @@ export const Owner: Story = {
     onUpdateExpense: noop,
     onDeleteExpense: noop,
   },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole("region", { name: /Trip money/i })).toHaveClass("expenses-page");
+    await expect(canvas.getByRole("button", { name: /Add expense/i })).toBeEnabled();
+  },
 };
 
 export const Traveler: Story = {
@@ -31,6 +36,19 @@ export const Traveler: Story = {
     ...Owner.args,
     currentMember: tripFixture.currentMembers.traveler,
     expenseSummary: tripFixture.expenseSummaries.traveler,
+  },
+};
+
+export const Viewer: Story = {
+  args: {
+    ...Owner.args,
+    currentMember: tripFixture.currentMembers.viewer,
+    expenseSummary: tripFixture.expenseSummaries.viewer,
+    canEditExpenses: false,
+  },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByText(/Money view only/i)).toBeVisible();
+    await expect(canvas.getByRole("button", { name: /Add expense/i })).toBeDisabled();
   },
 };
 
