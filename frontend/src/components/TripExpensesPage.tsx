@@ -75,7 +75,7 @@ const fieldClassName = "grid min-w-0 gap-1.5 [&>span]:text-[11px] [&>span]:font-
 const tableWrapClassName = "min-h-0 overflow-auto rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) p-2 shadow-[0_10px_22px_rgb(55_47_38_/_0.045)]";
 const tableClassName = "expense-ledger-table w-full min-w-[780px] border-separate border-spacing-y-2 text-left text-sm";
 const tableHeaderClassName = "sticky top-0 z-[1] bg-(--color-surface-subtle) text-[11px] font-black uppercase text-(--color-text-muted) [&_th]:px-3 [&_th]:py-2";
-const tableBodyClassName = "[&_td]:border-y [&_td]:border-[rgb(15_23_42_/_0.08)] [&_td]:bg-(--color-surface) [&_td]:px-3 [&_td]:py-3 [&_td:first-child]:rounded-l-(--radius-md) [&_td:first-child]:border-l [&_td:last-child]:rounded-r-(--radius-md) [&_td:last-child]:border-r [&_tr:hover_td]:bg-[#fbfefd]";
+const tableBodyClassName = "[&_td]:border-y [&_td]:border-[rgb(15_23_42_/_0.08)] [&_td]:bg-(--color-surface) [&_td]:px-3 [&_td]:py-3 [&_td:first-child]:rounded-l-(--radius-md) [&_td:first-child]:border-l [&_td:last-child]:rounded-r-(--radius-md) [&_td:last-child]:border-r [&_tr:hover_td]:bg-(--color-surface-subtle)";
 const tableTitleClassName = "grid gap-1 [&_strong]:text-(--color-text) [&_span]:text-xs [&_span]:text-(--color-text-muted)";
 const actionCellClassName = "inline-flex items-center gap-1.5";
 const memberLineClassName = "grid min-w-0 grid-cols-[34px_minmax(0,1fr)] items-center gap-2";
@@ -815,7 +815,7 @@ function categoryTone(category: Expense["category"]): { background: string; bord
     food: { background: "#fff7ed", border: "#fed7aa", dot: "#f97316", text: "#9a3412" },
     transport: { background: "#eff6ff", border: "#bfdbfe", dot: "#2563eb", text: "#1d4ed8" },
     tickets: { background: "#fdf2f8", border: "#fbcfe8", dot: "#db2777", text: "#9d174d" },
-    stay: { background: "#ecfeff", border: "#99f6e4", dot: "#0f766e", text: "#115e59" },
+    stay: { background: "#fff8e6", border: "#f8d78f", dot: "#b45309", text: "#92400e" },
     shopping: { background: "#fefce8", border: "#fde68a", dot: "#ca8a04", text: "#854d0e" },
     settlement: { background: "#f0fdf4", border: "#bbf7d0", dot: "#16a34a", text: "#166534" },
   };

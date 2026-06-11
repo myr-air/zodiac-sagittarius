@@ -133,13 +133,13 @@ const tripSheetShellClassName =
 const tripSheetFieldClassName =
   "grid min-w-[220px] flex-1 gap-1 text-[11px] font-extrabold text-(--color-text-muted)";
 const tripSheetSelectClassName =
-  "min-h-9 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) px-2.5 text-sm font-bold text-(--color-text) outline-none focus:border-(--color-route-border) focus:shadow-[0_0_0_2px_rgb(186_230_253_/_0.55)] disabled:cursor-not-allowed disabled:opacity-50";
+  "min-h-9 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) px-2.5 text-sm font-bold text-(--color-text) outline-none focus:border-(--color-primary-border) focus:shadow-[0_0_0_2px_rgb(255_196_168_/_0.55)] disabled:cursor-not-allowed disabled:opacity-50";
 const tripSheetCreateFormClassName =
   "trip-sheet-create-form flex min-w-[260px] flex-wrap items-end gap-2";
 const tripSheetNameFieldClassName =
   "grid min-w-[180px] flex-1 gap-1 text-[11px] font-extrabold text-(--color-text-muted)";
 const tripSheetNameInputClassName =
-  "min-h-9 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-2.5 text-sm font-bold text-(--color-text) outline-none placeholder:text-(--color-text-muted) focus:border-(--color-route-border) focus:shadow-[0_0_0_2px_rgb(186_230_253_/_0.55)] disabled:cursor-not-allowed disabled:opacity-50";
+  "min-h-9 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-2.5 text-sm font-bold text-(--color-text) outline-none placeholder:text-(--color-text-muted) focus:border-(--color-primary-border) focus:shadow-[0_0_0_2px_rgb(255_196_168_/_0.55)] disabled:cursor-not-allowed disabled:opacity-50";
 const tripSheetButtonClassName =
   "min-h-9 rounded-(--radius-sm) px-3 text-xs font-extrabold";
 const tripSheetSecondaryButtonClassName =
@@ -153,16 +153,16 @@ const itineraryFilterBarClassName =
 const pathFilterButtonClassName =
   "inline-flex min-h-8 min-w-[148px] items-center justify-center gap-2 rounded-full border border-(--color-primary-border) bg-(--color-primary-soft) px-2.5 text-xs font-extrabold text-(--color-primary-strong) transition-[background,border-color,color] duration-150 hover:border-(--color-primary) hover:bg-(--color-primary-soft) hover:text-(--color-primary-strong) aria-[expanded=true]:border-(--color-primary-border) aria-[expanded=true]:bg-(--color-primary-soft) aria-[expanded=true]:text-(--color-primary-strong) [&_.icon]:size-4 [&_.icon]:transition-transform [&_.icon]:duration-[150ms] aria-[expanded=true]:[&_.icon]:rotate-90";
 const pathFilterSummaryClassName =
-  "min-w-0 flex-1 truncate text-xs font-semibold text-[#64748b]";
+  "min-w-0 flex-1 truncate text-xs font-semibold text-(--color-text-muted)";
 const pathFilterPanelClassName =
-  "itinerary-filter-panel flex min-w-0 flex-wrap gap-1.5 border-t border-[#d7e7f2] pt-2";
+  "itinerary-filter-panel flex min-w-0 flex-wrap gap-1.5 border-t border-(--color-route-border) pt-2";
 const pathFilterOptionClassName =
-  "inline-flex min-h-8 items-center gap-2 rounded-(--radius-sm) border border-[#d7e7f2] bg-(--color-surface) px-2.5 text-xs font-semibold text-[#0369a1] hover:border-(--color-route-border) hover:bg-(--color-route-soft)";
+  "inline-flex min-h-8 items-center gap-2 rounded-(--radius-sm) border border-(--color-route-border) bg-(--color-surface) px-2.5 text-xs font-semibold text-(--color-route) hover:border-(--color-route-border) hover:bg-(--color-route-soft)";
 const importInputClassName = "sr-only";
 const tableScrollClassName =
   "table-scroll m-0 h-auto min-h-0 w-full max-w-full overflow-x-auto overflow-y-hidden rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) shadow-[var(--shadow-panel)] [contain:paint]";
 const smartTableClassName =
-  "smart-table w-full min-w-[1080px] table-fixed border-collapse text-xs leading-4 text-[#1f2937] [&_a]:text-[#1d4ed8] [&_a]:underline [&_a]:underline-offset-2 [&_td:first-child]:px-0 [&_td:first-child]:text-center [&_td:nth-child(2)]:w-[38px] [&_td:nth-child(2)]:px-0 [&_td:nth-child(2)]:text-center [&_td:nth-child(3)]:w-[88px] [&_td:nth-child(5)]:w-[94px] [&_td:nth-child(6)]:w-[124px] [&_td:nth-child(7)]:w-[108px] [&_td:nth-child(8)]:w-[148px] [&_td:nth-child(8)]:border-r-0 [&_td]:h-10 [&_td]:border-b [&_td]:border-r [&_td]:border-(--color-border) [&_td]:px-2.5 [&_td]:py-1.5 [&_td]:text-left [&_td]:align-middle [&_th:first-child]:px-0 [&_th:first-child]:text-center [&_th:nth-child(2)]:w-[38px] [&_th:nth-child(2)]:px-0 [&_th:nth-child(2)]:text-center [&_th:nth-child(3)]:w-[88px] [&_th:nth-child(5)]:w-[94px] [&_th:nth-child(6)]:w-[124px] [&_th:nth-child(7)]:w-[108px] [&_th:nth-child(8)]:w-[148px] [&_th:nth-child(8)]:border-r-0 [&_th]:h-9 [&_th]:border-b [&_th]:border-r [&_th]:border-(--color-border-strong) [&_th]:px-2.5 [&_th]:py-1 [&_th]:text-left [&_th]:align-middle [&_thead_th]:sticky [&_thead_th]:top-0 [&_thead_th]:z-[1] [&_thead_th]:h-12 [&_thead_th]:bg-[rgb(255_251_247_/_0.96)] [&_thead_th]:text-xs [&_thead_th]:font-[800] [&_thead_th]:text-(--color-text) [&_thead_th]:shadow-[inset_0_-1px_0_var(--color-border)]";
+  "smart-table w-full min-w-[1080px] table-fixed border-collapse text-xs leading-4 text-(--color-text) [&_a]:text-(--color-route) [&_a]:underline [&_a]:underline-offset-2 [&_td:first-child]:px-0 [&_td:first-child]:text-center [&_td:nth-child(2)]:w-[38px] [&_td:nth-child(2)]:px-0 [&_td:nth-child(2)]:text-center [&_td:nth-child(3)]:w-[88px] [&_td:nth-child(5)]:w-[94px] [&_td:nth-child(6)]:w-[124px] [&_td:nth-child(7)]:w-[108px] [&_td:nth-child(8)]:w-[148px] [&_td:nth-child(8)]:border-r-0 [&_td]:h-10 [&_td]:border-b [&_td]:border-r [&_td]:border-(--color-border) [&_td]:px-2.5 [&_td]:py-1.5 [&_td]:text-left [&_td]:align-middle [&_th:first-child]:px-0 [&_th:first-child]:text-center [&_th:nth-child(2)]:w-[38px] [&_th:nth-child(2)]:px-0 [&_th:nth-child(2)]:text-center [&_th:nth-child(3)]:w-[88px] [&_th:nth-child(5)]:w-[94px] [&_th:nth-child(6)]:w-[124px] [&_th:nth-child(7)]:w-[108px] [&_th:nth-child(8)]:w-[148px] [&_th:nth-child(8)]:border-r-0 [&_th]:h-9 [&_th]:border-b [&_th]:border-r [&_th]:border-(--color-border-strong) [&_th]:px-2.5 [&_th]:py-1 [&_th]:text-left [&_th]:align-middle [&_thead_th]:sticky [&_thead_th]:top-0 [&_thead_th]:z-[1] [&_thead_th]:h-12 [&_thead_th]:bg-[rgb(255_251_247_/_0.96)] [&_thead_th]:text-xs [&_thead_th]:font-[800] [&_thead_th]:text-(--color-text) [&_thead_th]:shadow-[inset_0_-1px_0_var(--color-border)]";
 const graphColumnMinWidth = 30;
 const graphColumnSidePadding = 9;
 const graphColumnLaneGap = 18;
@@ -174,11 +174,11 @@ const dayRowClassName =
 const dayRowContentClassName =
   "day-row-content flex h-[39px] w-full min-w-0 items-center gap-[9px]";
 const dayToggleClassName =
-  "day-toggle flex min-h-8 min-w-0 items-center gap-[9px] border-0 bg-transparent p-0 text-left text-[#334155] aria-[expanded=true]:[&_.icon]:rotate-90 [&_.icon]:transition-transform [&_.icon]:duration-[140ms] [&_strong]:text-[#0f172a]";
+  "day-toggle flex min-h-8 min-w-0 items-center gap-[9px] border-0 bg-transparent p-0 text-left text-(--color-text-muted) aria-[expanded=true]:[&_.icon]:rotate-90 [&_.icon]:transition-transform [&_.icon]:duration-[140ms] [&_strong]:text-(--color-text)";
 const dayRouteClassName =
   "day-route ml-[18px] font-semibold text-(--color-text-muted) max-[767px]:hidden";
 const dayWeatherChipClassName =
-  "day-weather-chip inline-flex min-h-7 shrink-0 items-center gap-1.5 rounded-(--radius-sm) border border-sky-100 bg-sky-50/80 px-2 text-[11px] font-extrabold text-sky-800 [&_strong]:text-sky-950";
+  "day-weather-chip inline-flex min-h-7 shrink-0 items-center gap-1.5 rounded-(--radius-sm) border border-(--color-route-border) bg-(--color-route-soft) px-2 text-[11px] font-extrabold text-(--color-route) [&_strong]:text-(--color-text)";
 const dayPathControlsClassName =
   "ml-auto inline-flex min-w-0 items-center gap-2 max-[767px]:ml-2 max-[767px]:shrink-0";
 const dayPathPickerClassName =
@@ -186,13 +186,13 @@ const dayPathPickerClassName =
 const dayClearPathButtonClassName =
   "inline-flex min-h-8 items-center rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-2 text-[11px] font-extrabold text-(--color-text-muted) disabled:opacity-40 max-[767px]:px-1.5";
 const dayAutoOverlapButtonClassName =
-  "inline-flex min-h-8 items-center rounded-(--radius-sm) border border-[#fca5a5] bg-[#fee2e2] px-2 text-[11px] font-extrabold text-[#991b1b] transition-colors hover:enabled:bg-[#fecaca] disabled:opacity-40 max-[767px]:px-1.5";
+  "inline-flex min-h-8 items-center rounded-(--radius-sm) border border-(--color-danger-border) bg-(--color-danger-soft) px-2 text-[11px] font-extrabold text-[#b91c1c] transition-colors hover:enabled:border-(--color-danger) disabled:opacity-40 max-[767px]:px-1.5";
 const dataRowClassName =
   "data-row cursor-pointer transition-[background,box-shadow,transform] duration-[160ms] hover:[&_td]:bg-(--color-surface-subtle) focus-visible:[&_td]:bg-(--color-route-soft) focus-visible:[&_td]:shadow-[inset_0_0_0_2px_var(--color-route-border)] [&_td]:transition-[background,border-color,box-shadow,color,font-size,height,opacity,padding] [&_td]:duration-[180ms]";
 const dataRowSelectedClassName =
   "data-row--selected [&_td:first-child]:shadow-[inset_3px_0_0_var(--color-primary),inset_0_1px_0_var(--color-primary-border),inset_0_-1px_0_var(--color-primary-border)] [&_td:last-child]:shadow-[inset_-1px_0_0_var(--color-primary-border),inset_0_1px_0_var(--color-primary-border),inset_0_-1px_0_var(--color-primary-border)] [&_td]:bg-(--color-primary-soft) [&_td]:shadow-[inset_0_1px_0_var(--color-primary-border),inset_0_-1px_0_var(--color-primary-border)]";
 const dataRowPathOverlapClassName =
-  "data-row--path-overlap [&_td]:!bg-[#fee2e2] hover:[&_td]:!bg-[#fecaca] [&_td:first-child]:shadow-[inset_2px_0_0_#fca5a5] [&_td:last-child]:shadow-[inset_-1px_0_0_#fca5a5] [&_td]:shadow-[inset_0_1px_0_#fca5a5,inset_0_-1px_0_#fca5a5]";
+  "data-row--path-overlap [&_td]:!bg-(--color-danger-soft) hover:[&_td]:!bg-(--color-danger-soft) [&_td:first-child]:shadow-[inset_2px_0_0_var(--color-danger-border)] [&_td:last-child]:shadow-[inset_-1px_0_0_var(--color-danger-border)] [&_td]:shadow-[inset_0_1px_0_var(--color-danger-border),inset_0_-1px_0_var(--color-danger-border)]";
 const dataRowDraggingClassName =
   "data-row--dragging cursor-grabbing [&_td]:bg-(--color-surface-muted) [&_td]:opacity-[0.54]";
 const dataRowDropTargetClassName =
@@ -210,7 +210,7 @@ const rowActionButtonClassName =
 const timeHeaderClassName =
   "time-header max-[767px]:sticky max-[767px]:left-0 max-[767px]:z-[5] max-[767px]:shadow-[6px_0_12px_rgb(15_23_42_/_0.08)]";
 const timeCellClassName =
-  "time-cell !text-center font-[650] tabular-nums text-[#334155] max-[767px]:sticky max-[767px]:left-0 max-[767px]:z-[4] max-[767px]:!bg-(--color-surface) max-[767px]:shadow-[6px_0_12px_rgb(15_23_42_/_0.08)]";
+  "time-cell !text-center font-[650] tabular-nums text-(--color-text-muted) max-[767px]:sticky max-[767px]:left-0 max-[767px]:z-[4] max-[767px]:!bg-(--color-surface) max-[767px]:shadow-[6px_0_12px_rgb(15_23_42_/_0.08)]";
 const timeStackClassName =
   "grid min-h-[30px] content-center justify-items-center gap-0.5 leading-none [&_span]:whitespace-nowrap";
 const durationPillClassName =
@@ -225,7 +225,7 @@ const blockToggleButtonClassName =
 const blockDropButtonClassName =
   "inline-flex min-h-7 w-fit items-center gap-1.5 rounded-(--radius-sm) border border-dashed border-(--color-route-border) bg-(--color-surface) px-2 text-[11px] font-extrabold text-(--color-route) transition-[background,border-color,box-shadow] data-[active=true]:bg-(--color-route-soft) data-[active=true]:shadow-[0_0_0_2px_rgb(186_230_253_/_0.72)] disabled:cursor-not-allowed disabled:opacity-50";
 const inlineFieldClassName =
-  "inline-row-field min-h-[24px] w-full min-w-0 rounded-(--radius-sm) border border-transparent bg-transparent px-1.5 py-0 text-xs leading-4 text-(--color-text) outline-none transition-[background,border-color,box-shadow] duration-150 placeholder:text-(--color-text-muted) hover:not-read-only:border-(--color-border) hover:not-read-only:bg-(--color-surface) focus:border-(--color-route-border) focus:bg-(--color-surface) focus:shadow-[0_0_0_2px_rgb(186_230_253_/_0.55)] read-only:cursor-pointer read-only:truncate read-only:px-0 read-only:font-semibold disabled:cursor-not-allowed disabled:text-(--color-text-muted)";
+  "inline-row-field min-h-[24px] w-full min-w-0 rounded-(--radius-sm) border border-transparent bg-transparent px-1.5 py-0 text-xs leading-4 text-(--color-text) outline-none transition-[background,border-color,box-shadow] duration-150 placeholder:text-(--color-text-muted) hover:not-read-only:border-(--color-border) hover:not-read-only:bg-(--color-surface) focus:border-(--color-primary-border) focus:bg-(--color-surface) focus:shadow-[0_0_0_2px_rgb(255_196_168_/_0.55)] read-only:cursor-pointer read-only:truncate read-only:px-0 read-only:font-semibold disabled:cursor-not-allowed disabled:text-(--color-text-muted)";
 const inlineActivityFieldClassName = cn(inlineFieldClassName, "font-semibold");
 const inlineSubtleFieldClassName = cn(
   inlineFieldClassName,
@@ -244,7 +244,7 @@ const floatingOptionMenuClassName =
   "inline-option-picker-menu fixed z-[15] grid max-h-[min(260px,calc(100vh_-_24px))] overflow-auto rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) p-1 shadow-[0_10px_22px_rgb(15_23_42_/_0.12)]";
 const floatingOptionButtonClassName =
   "grid min-h-8 w-full min-w-0 cursor-pointer grid-cols-[minmax(0,1fr)_16px] items-center gap-2 rounded-(--radius-sm) px-2.5 py-1.5 text-left text-xs font-bold text-(--color-text) transition-colors hover:bg-(--color-route-soft) focus-visible:bg-(--color-route-soft) focus-visible:outline-none aria-selected:bg-(--color-route-soft) aria-selected:text-(--color-route) data-[active=true]:bg-(--color-route-soft)";
-const mapLinkClassName = "map-link text-[#1d4ed8] underline underline-offset-2";
+const mapLinkClassName = "map-link text-(--color-route) underline underline-offset-2";
 const addStopRowClassName =
   "add-stop-row [&_td]:border-b [&_td]:border-r [&_td]:border-dashed [&_td]:border-(--color-border) [&_td]:bg-(--color-surface-subtle) [&_td]:px-2.5 [&_td]:py-1";
 const addStopRowDropTargetClassName =
@@ -292,7 +292,7 @@ const deleteModalBackdropClassName =
 const deleteDialogClassName =
   "delete-confirm-dialog grid w-[min(420px,100%)] gap-3 rounded-(--radius-lg) border border-(--color-danger-border) bg-(--color-surface) p-4 shadow-[0_14px_34px_rgb(15_23_42_/_0.14)]";
 const deleteDialogTitleClassName =
-  "m-0 text-base font-extrabold leading-[22px] text-[#991b1b]";
+  "m-0 text-base font-extrabold leading-[22px] text-(--color-danger)";
 const deleteDialogBodyClassName =
   "m-0 text-sm font-medium leading-6 text-(--color-text-muted)";
 const deleteDialogActionsClassName = "mt-1 flex justify-end gap-2";
@@ -307,7 +307,7 @@ const durationCustomGridClassName = "grid grid-cols-2 gap-2";
 const durationInputLabelClassName =
   "grid gap-1 text-[11px] font-extrabold text-(--color-text-muted)";
 const durationInputClassName =
-  "min-h-9 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-2 text-sm font-bold tabular-nums text-(--color-text) outline-none focus:border-(--color-route-border) focus:shadow-[0_0_0_2px_rgb(186_230_253_/_0.55)]";
+  "min-h-9 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-2 text-sm font-bold tabular-nums text-(--color-text) outline-none focus:border-(--color-primary-border) focus:shadow-[0_0_0_2px_rgb(255_196_168_/_0.55)]";
 const activityTypeOptions: ActivityType[] = [
   "food",
   "attraction",
@@ -913,7 +913,7 @@ export function SmartItineraryTable({
               type="button"
               onClick={() => importInputRef.current?.click()}
               disabled={!canRestructureItems}
-              className="import-itinerary-button min-w-[104px] !bg-[#0369a1] !shadow-[0_10px_20px_rgb(14_165_233_/_0.18)] hover:enabled:!bg-[#075985] max-[767px]:flex-1"
+              className="import-itinerary-button min-w-[104px] !bg-(--color-primary) !shadow-[0_10px_20px_color-mix(in_srgb,var(--color-primary)_18%,transparent)] hover:enabled:!bg-(--color-primary-strong) max-[767px]:flex-1"
             >
               <Icon name="import" />
               {t.itinerary.import}
@@ -921,7 +921,7 @@ export function SmartItineraryTable({
             <Button
               type="button"
               onClick={onExportItinerary}
-              className="export-itinerary-button min-w-[104px] !bg-[#0369a1] !shadow-[0_10px_20px_rgb(14_165_233_/_0.18)] hover:enabled:!bg-[#075985] max-[767px]:flex-1"
+              className="export-itinerary-button min-w-[104px] !bg-(--color-primary) !shadow-[0_10px_20px_color-mix(in_srgb,var(--color-primary)_18%,transparent)] hover:enabled:!bg-(--color-primary-strong) max-[767px]:flex-1"
             >
               <Icon name="export" />
               {t.itinerary.export}

@@ -73,14 +73,14 @@ const statClassName = "booking-stat grid min-h-[92px] gap-1 rounded-(--radius-md
 const contentClassName = "bookings-content grid min-h-0 grid-cols-[minmax(0,1fr)_330px] gap-3 max-[1199px]:grid-cols-1";
 const panelClassName = "bookings-panel grid min-h-0 gap-3 rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) p-3.5 shadow-[0_10px_22px_rgb(55_47_38_/_0.045)]";
 const folderGridClassName = "booking-folders grid grid-cols-6 gap-2 max-[1399px]:grid-cols-3 max-[767px]:grid-cols-2";
-const folderButtonClassName = "group grid min-h-[72px] content-between gap-1.5 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) p-2.5 text-left transition-[background-color,border-color,box-shadow,transform] duration-150 hover:-translate-y-0.5 hover:border-(--color-primary-border) hover:bg-[#fbfffd] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary)";
-const selectedFolderClassName = "border-(--color-primary-border) bg-(--color-primary-soft) shadow-[0_8px_18px_rgb(15_118_110_/_0.1)]";
+const folderButtonClassName = "group grid min-h-[72px] content-between gap-1.5 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) p-2.5 text-left transition-[background-color,border-color,box-shadow,transform] duration-150 hover:-translate-y-0.5 hover:border-(--color-primary-border) hover:bg-(--color-surface-subtle) focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary)";
+const selectedFolderClassName = "border-(--color-primary-border) bg-(--color-primary-soft) shadow-[0_8px_18px_rgb(194_79_22_/_0.1)]";
 const fieldClassName = "grid min-w-0 gap-1.5 [&>span]:text-[11px] [&>span]:font-extrabold [&>span]:text-(--color-text-muted) [&_input]:min-h-10 [&_input]:rounded-(--radius-md) [&_input]:border [&_input]:border-(--color-border) [&_input]:bg-(--color-surface) [&_input]:px-3 [&_input]:text-sm [&_select]:min-h-10 [&_select]:rounded-(--radius-md) [&_select]:border [&_select]:border-(--color-border) [&_select]:bg-(--color-surface) [&_select]:px-3 [&_select]:text-sm [&_textarea]:min-h-[74px] [&_textarea]:resize-y [&_textarea]:rounded-(--radius-md) [&_textarea]:border [&_textarea]:border-(--color-border) [&_textarea]:bg-(--color-surface) [&_textarea]:px-3 [&_textarea]:py-2 [&_textarea]:text-sm";
 const timelineClassName = "booking-timeline grid gap-2 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface-subtle) p-3";
 const timelineItemsClassName = "grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-2";
 const cardGridClassName = "booking-ticket-grid grid grid-cols-[repeat(auto-fit,minmax(270px,1fr))] gap-2";
-const ticketCardClassName = "booking-ticket-card grid min-h-[156px] grid-rows-[auto_minmax(0,1fr)_auto] gap-3 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) p-3 text-left text-sm shadow-[0_8px_18px_rgb(15_23_42_/_0.035)] transition-[background-color,border-color,box-shadow,transform] duration-150 hover:-translate-y-0.5 hover:border-(--color-primary-border) hover:bg-[#fbfefd]";
-const selectedTicketClassName = "border-(--color-primary-border) bg-(--color-primary-soft) shadow-[0_10px_22px_rgb(15_118_110_/_0.09)]";
+const ticketCardClassName = "booking-ticket-card grid min-h-[156px] grid-rows-[auto_minmax(0,1fr)_auto] gap-3 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) p-3 text-left text-sm shadow-[0_8px_18px_rgb(15_23_42_/_0.035)] transition-[background-color,border-color,box-shadow,transform] duration-150 hover:-translate-y-0.5 hover:border-(--color-primary-border) hover:bg-(--color-surface-subtle)";
+const selectedTicketClassName = "border-(--color-primary-border) bg-(--color-primary-soft) shadow-[0_10px_22px_rgb(194_79_22_/_0.09)]";
 const lockedRowClassName = "booking-row-locked flex min-h-[58px] items-center justify-between gap-2 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface-subtle) px-3 py-2 text-sm";
 const badgeClassName = "inline-flex w-fit items-center gap-1.5 rounded-full border px-2 py-0.5 text-[11px] font-extrabold capitalize";
 const inspectorClassName = "booking-inspector sticky top-3 grid max-h-[calc(100vh-92px)] content-start gap-3 overflow-auto rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) p-3.5 shadow-[0_10px_22px_rgb(55_47_38_/_0.045)] max-[1199px]:static max-[1199px]:max-h-none";
@@ -168,7 +168,7 @@ export function BookingsDocsPage({
                 aria-label={`${folder.title}, ${folderCounts[folder.id] ?? 0} items`}
               >
                 <span className="flex items-start justify-between gap-2">
-                  <span className="grid size-9 place-items-center rounded-(--radius-md) border border-[rgb(15_118_110_/_0.12)] bg-(--color-surface-subtle) text-(--color-primary-strong)">
+                  <span className="grid size-9 place-items-center rounded-(--radius-md) border border-(--color-primary-border) bg-(--color-surface-subtle) text-(--color-primary-strong)">
                     <Icon name={folder.icon} />
                   </span>
                   <strong className="tabular-nums text-sm text-(--color-text)">{folderCounts[folder.id] ?? 0}</strong>
@@ -247,7 +247,7 @@ export function BookingsDocsPage({
       {deleteBooking ? (
         <div className={dialogBackdropClassName} role="presentation">
           <section className={deleteDialogClassName} role="dialog" aria-modal="true" aria-labelledby="booking-delete-title">
-            <h2 id="booking-delete-title" className="m-0 text-base font-extrabold text-[#991b1b]">Delete booking</h2>
+            <h2 id="booking-delete-title" className="m-0 text-base font-extrabold text-(--color-danger)">Delete booking</h2>
             <p className="m-0 text-sm font-medium leading-6 text-(--color-text-muted)">Delete {deleteBooking.title}? Related itinerary, todo, and expense records will stay in place.</p>
             <div className="flex justify-end gap-2">
               <Button type="button" variant="secondary" onClick={() => setDeleteBooking(null)}>Cancel</Button>
@@ -283,7 +283,7 @@ function TimelinePreview({ docs, selectedBookingId, onSelect }: { docs: BookingD
             <button
               type="button"
               className={cn(
-                "grid min-h-[78px] gap-1 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) p-2.5 text-left transition-colors hover:border-(--color-primary-border) hover:bg-[#fbfffd] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary)",
+                "grid min-h-[78px] gap-1 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) p-2.5 text-left transition-colors hover:border-(--color-primary-border) hover:bg-(--color-surface-subtle) focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary)",
                 selectedBookingId === doc.id && "border-(--color-primary-border) bg-(--color-primary-soft)",
               )}
               key={doc.id}

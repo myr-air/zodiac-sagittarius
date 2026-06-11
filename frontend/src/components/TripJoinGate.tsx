@@ -61,7 +61,7 @@ const tripAccessFormClassName =
   "my-[clamp(28px,5vw,54px)] mt-[18px] !gap-3.5 max-[767px]:mt-4 max-[767px]:mb-[18px] [&_input]:!min-h-[50px] [&_input]:!rounded-(--radius-md) [&_input]:!border-(--color-border-strong) [&_label]:!gap-2";
 const tripAccessParticipantStepClassName =
   "my-[clamp(28px,5vw,54px)] mt-[18px] max-[767px]:mt-4 max-[767px]:mb-[18px] [&_.participant-auth_label]:!gap-2 [&_.participant-auth_input]:!min-h-[50px] [&_.participant-auth_input]:!rounded-(--radius-md) [&_.participant-auth_input]:!border-(--color-border-strong)";
-const tripAccessSubmitClassName = "!min-h-[52px] !rounded-(--radius-md) !mt-5 shadow-[0_8px_18px_rgb(15_118_110_/_0.12)]";
+const tripAccessSubmitClassName = "!min-h-[52px] !rounded-(--radius-md) !mt-5 shadow-[0_8px_18px_rgb(194_79_22_/_0.12)]";
 const tripAccessVisualClassName =
   "trip-access-visual relative col-start-1 row-start-1 row-span-4 min-h-[620px] overflow-hidden border-r border-(--color-border) bg-(--color-surface-subtle) p-7 max-[767px]:col-start-1 max-[767px]:row-auto max-[767px]:min-h-0 max-[767px]:border-r-0 max-[767px]:border-b max-[767px]:p-4";
 const tripAccessVisualWashClassName =
@@ -330,7 +330,7 @@ export function TripJoinGate({ trip, apiClient, embedded = false, variant = "def
               <button
                 type="button"
                 className={cn(
-                  "inline-flex w-fit items-center gap-1.5 rounded-full border border-(--color-border) bg-(--color-surface) px-3.5 py-1.5 text-xs font-[850] text-(--color-text-muted) transition-all duration-150 hover:bg-(--color-primary-soft) hover:text-(--color-primary-strong) hover:border-(--color-primary-border) hover:shadow-[0_8px_18px_rgb(15_118_110_/_0.08)] focus-visible:bg-(--color-primary-soft) focus-visible:text-(--color-primary-strong) focus-visible:border-(--color-primary-border)"
+                  "inline-flex w-fit items-center gap-1.5 rounded-full border border-(--color-border) bg-(--color-surface) px-3.5 py-1.5 text-xs font-[850] text-(--color-text-muted) transition-all duration-150 hover:bg-(--color-primary-soft) hover:text-(--color-primary-strong) hover:border-(--color-primary-border) hover:shadow-[0_8px_18px_rgb(194_79_22_/_0.08)] focus-visible:bg-(--color-primary-soft) focus-visible:text-(--color-primary-strong) focus-visible:border-(--color-primary-border)"
                 )}
                 onClick={() => setStep('room')}
               >
