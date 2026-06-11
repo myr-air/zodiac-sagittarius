@@ -265,7 +265,7 @@ describe("SmartItineraryTable", () => {
 
     expect(filterShell).toHaveClass(
       "itinerary-filter-shell",
-      "bg-(--color-surface)",
+      "bg-[linear-gradient(135deg,var(--color-surface)_0%,var(--color-route-soft)_100%)]",
     );
     expect(filterShell?.className).not.toContain("255_255_255");
     expect(filterRegion).toBeInTheDocument();
@@ -1431,7 +1431,7 @@ describe("SmartItineraryTable", () => {
     });
     expect(inspector).toHaveClass(
       "mobile-itinerary-inspector",
-      "shadow-[0_-10px_24px_rgb(15_23_42_/_0.12)]",
+      "shadow-[0_-4px_8px_rgb(15_23_42_/_0.08)]",
       "max-[767px]:grid",
       "max-[767px]:sticky",
       "max-[767px]:bottom-0",

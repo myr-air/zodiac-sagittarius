@@ -129,7 +129,7 @@ const pageHeaderActionsClassName =
 const pageHeaderNoteClassName =
   "page-header-note m-0 basis-full text-right text-xs font-bold text-(--color-warning-strong)";
 const tripSheetShellClassName =
-  "trip-sheet-shell mb-3 flex min-w-0 flex-wrap items-end gap-2 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) px-3 py-2.5 shadow-[0_10px_24px_rgb(15_23_42_/_0.08)]";
+  "trip-sheet-shell mb-3 flex min-w-0 flex-wrap items-end gap-2 rounded-(--radius-md) border border-[color-mix(in_srgb,var(--color-primary)_16%,var(--color-border))] bg-[linear-gradient(135deg,var(--color-surface)_0%,var(--color-primary-soft)_100%)] px-3 py-2.5 shadow-[0_1px_0_rgb(15_23_42_/_0.04)]";
 const tripSheetFieldClassName =
   "grid min-w-[220px] flex-1 gap-1 text-[11px] font-extrabold text-(--color-text-muted)";
 const tripSheetSelectClassName =
@@ -147,7 +147,7 @@ const tripSheetSecondaryButtonClassName =
 const tripSheetMessageClassName =
   "m-0 basis-full text-xs font-bold text-(--color-warning-strong)";
 const itineraryFilterShellClassName =
-  "itinerary-filter-shell -mt-1 mb-[14px] grid gap-2 rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) px-3 py-2.5 text-(--color-route) shadow-[var(--shadow-soft)]";
+  "itinerary-filter-shell -mt-1 mb-[14px] grid gap-2 rounded-(--radius-lg) border border-[color-mix(in_srgb,var(--color-route)_18%,var(--color-border))] bg-[linear-gradient(135deg,var(--color-surface)_0%,var(--color-route-soft)_100%)] px-3 py-2.5 text-(--color-route) shadow-[0_1px_0_rgb(15_23_42_/_0.04)]";
 const itineraryFilterBarClassName =
   "itinerary-filter-bar flex min-w-0 flex-wrap items-center gap-2";
 const pathFilterButtonClassName =
@@ -160,9 +160,9 @@ const pathFilterOptionClassName =
   "inline-flex min-h-8 items-center gap-2 rounded-(--radius-sm) border border-(--color-route-border) bg-(--color-surface) px-2.5 text-xs font-semibold text-(--color-route) hover:border-(--color-route-border) hover:bg-(--color-route-soft)";
 const importInputClassName = "sr-only";
 const tableScrollClassName =
-  "table-scroll m-0 h-auto min-h-0 w-full max-w-full overflow-x-auto overflow-y-hidden rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) shadow-[var(--shadow-panel)] [contain:paint]";
+  "table-scroll m-0 h-auto min-h-0 w-full max-w-full overflow-x-auto overflow-y-hidden rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) shadow-[0_1px_0_rgb(15_23_42_/_0.04)] [contain:paint]";
 const smartTableClassName =
-  "smart-table w-full min-w-[1080px] table-fixed border-collapse text-xs leading-4 text-(--color-text) [&_a]:text-(--color-route) [&_a]:underline [&_a]:underline-offset-2 [&_td:first-child]:px-0 [&_td:first-child]:text-center [&_td:nth-child(2)]:w-[38px] [&_td:nth-child(2)]:px-0 [&_td:nth-child(2)]:text-center [&_td:nth-child(3)]:w-[88px] [&_td:nth-child(5)]:w-[94px] [&_td:nth-child(6)]:w-[124px] [&_td:nth-child(7)]:w-[108px] [&_td:nth-child(8)]:w-[148px] [&_td:nth-child(8)]:border-r-0 [&_td]:h-10 [&_td]:border-b [&_td]:border-r [&_td]:border-(--color-border) [&_td]:px-2.5 [&_td]:py-1.5 [&_td]:text-left [&_td]:align-middle [&_th:first-child]:px-0 [&_th:first-child]:text-center [&_th:nth-child(2)]:w-[38px] [&_th:nth-child(2)]:px-0 [&_th:nth-child(2)]:text-center [&_th:nth-child(3)]:w-[88px] [&_th:nth-child(5)]:w-[94px] [&_th:nth-child(6)]:w-[124px] [&_th:nth-child(7)]:w-[108px] [&_th:nth-child(8)]:w-[148px] [&_th:nth-child(8)]:border-r-0 [&_th]:h-9 [&_th]:border-b [&_th]:border-r [&_th]:border-(--color-border-strong) [&_th]:px-2.5 [&_th]:py-1 [&_th]:text-left [&_th]:align-middle [&_thead_th]:sticky [&_thead_th]:top-0 [&_thead_th]:z-[1] [&_thead_th]:h-12 [&_thead_th]:bg-[rgb(255_251_247_/_0.96)] [&_thead_th]:text-xs [&_thead_th]:font-[800] [&_thead_th]:text-(--color-text) [&_thead_th]:shadow-[inset_0_-1px_0_var(--color-border)]";
+  "smart-table w-full min-w-[1080px] table-fixed border-collapse text-xs leading-4 text-(--color-text) [&_a]:text-(--color-route) [&_a]:underline [&_a]:underline-offset-2 [&_td:first-child]:px-0 [&_td:first-child]:text-center [&_td:nth-child(2)]:w-[38px] [&_td:nth-child(2)]:px-0 [&_td:nth-child(2)]:text-center [&_td:nth-child(3)]:w-[88px] [&_td:nth-child(5)]:w-[94px] [&_td:nth-child(6)]:w-[124px] [&_td:nth-child(7)]:w-[108px] [&_td:nth-child(8)]:w-[148px] [&_td:nth-child(8)]:border-r-0 [&_td]:h-10 [&_td]:border-b [&_td]:border-r [&_td]:border-(--color-border) [&_td]:px-2.5 [&_td]:py-1.5 [&_td]:text-left [&_td]:align-middle [&_th:first-child]:px-0 [&_th:first-child]:text-center [&_th:nth-child(2)]:w-[38px] [&_th:nth-child(2)]:px-0 [&_th:nth-child(2)]:text-center [&_th:nth-child(3)]:w-[88px] [&_th:nth-child(5)]:w-[94px] [&_th:nth-child(6)]:w-[124px] [&_th:nth-child(7)]:w-[108px] [&_th:nth-child(8)]:w-[148px] [&_th:nth-child(8)]:border-r-0 [&_th]:h-9 [&_th]:border-b [&_th]:border-r [&_th]:border-(--color-border-strong) [&_th]:px-2.5 [&_th]:py-1 [&_th]:text-left [&_th]:align-middle [&_thead_th]:sticky [&_thead_th]:top-0 [&_thead_th]:z-[1] [&_thead_th]:h-12 [&_thead_th]:bg-[linear-gradient(180deg,rgb(255_255_255_/_0.98)_0%,rgb(239_246_255_/_0.94)_100%)] [&_thead_th]:text-xs [&_thead_th]:font-[800] [&_thead_th]:text-(--color-text) [&_thead_th]:shadow-[inset_0_-1px_0_var(--color-route-border)]";
 const graphColumnMinWidth = 30;
 const graphColumnSidePadding = 9;
 const graphColumnLaneGap = 18;
@@ -252,7 +252,7 @@ const addStopRowDropTargetClassName =
 const addStopInlineButtonClassName =
   "inline-flex min-h-8 w-full items-center justify-center gap-2 rounded-(--radius-sm) border border-dashed border-(--color-route-border) bg-[rgb(239_246_255_/_0.72)] px-3 text-[12px] font-extrabold text-(--color-route) transition-[background,border-color,color] duration-150 hover:enabled:bg-(--color-route-soft) disabled:cursor-not-allowed disabled:border-(--color-border) disabled:bg-transparent disabled:text-(--color-text-subtle)";
 const mobileInspectorClassName =
-  "mobile-itinerary-inspector mt-3 hidden gap-4 rounded-t-(--radius-lg) rounded-b-(--radius-md) border border-(--color-border-strong) bg-(--color-surface) p-4 shadow-[0_-10px_24px_rgb(15_23_42_/_0.12)] max-[767px]:sticky max-[767px]:bottom-0 max-[767px]:z-10 max-[767px]:grid";
+  "mobile-itinerary-inspector mt-3 hidden gap-4 rounded-t-(--radius-lg) rounded-b-(--radius-md) border border-(--color-border-strong) bg-[linear-gradient(180deg,var(--color-surface)_0%,var(--color-route-soft)_100%)] p-4 shadow-[0_-4px_8px_rgb(15_23_42_/_0.08)] max-[767px]:sticky max-[767px]:bottom-0 max-[767px]:z-10 max-[767px]:grid";
 const mobileInspectorHandleClassName =
   "mx-auto h-1.5 w-12 rounded-full bg-(--color-border-strong)";
 const mobileInspectorHeaderClassName =
