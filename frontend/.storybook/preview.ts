@@ -43,7 +43,7 @@ const preview: Preview = {
     },
     backgrounds: {
       options: {
-        studio: { name: "Friendly Trip Studio", value: "#f8fafc" },
+        studio: { name: "Calm Travel Ops", value: "#f2efeb" },
         white: { name: "White", value: "#ffffff" },
       },
     },
