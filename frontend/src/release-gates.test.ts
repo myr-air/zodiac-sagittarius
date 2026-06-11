@@ -105,6 +105,20 @@ describe("release evidence gates", () => {
     expect(outputOf(result)).toContain("production env check ok");
   });
 
+  it("accepts the approved joii same-origin production runtime env", () => {
+    const result = runGate("scripts/check-production-env.ts", {
+      ...validProductionRuntimeEnv,
+      NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL: "https://joii.13thx.com",
+      SAGITTARIUS_ALLOWED_ORIGINS:
+        "https://joii.13thx.com,https://sagittarius.13thx.com",
+      PASSKEY_ALLOWED_ORIGINS:
+        "https://joii.13thx.com,https://sagittarius.13thx.com",
+    });
+
+    expect(result.status).toBe(0);
+    expect(outputOf(result)).toContain("production env check ok");
+  });
+
   it("rejects unsupported runtime API base hosts", () => {
     const result = runGate("scripts/check-production-env.ts", {
       ...validProductionRuntimeEnv,

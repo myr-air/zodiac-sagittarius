@@ -5,6 +5,7 @@ type CheckProductionEnvOptions = {
 };
 
 const approvedSameOriginApiHosts = new Set([
+  "joii.13thx.com",
   "sagittarius.13thx.com",
 ]);
 
