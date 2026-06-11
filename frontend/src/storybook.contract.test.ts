@@ -29,6 +29,7 @@ describe("Storybook template catalog", () => {
       "Design System/Buttons",
       "Design System/Badges",
       "Design System/Context Rail",
+      "Design System/Date Time Pickers",
       "Design System/Language Switch",
       "Design System/Page Header",
       "Design System/People Panel",
@@ -82,6 +83,7 @@ describe("Storybook template catalog", () => {
       ["components/StopDialog.stories.tsx", ["Create", "Edit", "AmbiguousPlace", "TransportationForm", "FoodForm", "StayForm", "ShoppingForm", "Mobile", "Thai"]],
       ["components/AboutAppPage.stories.tsx", ["Ready", "ApiUnavailable", "Thai", "Mobile"]],
       ["components/ContextRail.stories.tsx", ["NotesOpen", "BookingTab", "SuggestionsTab", "TripExpensesOnly", "ReadOnlyTraveler", "Closed", "Mobile"]],
+      ["components/DateTimePickers.stories.tsx", ["TimePicker", "DatePicker", "DateTimePicker", "Disabled", "Mobile"]],
     ];
 
     requiredPageStates.forEach(([file, stateNames]) => {
