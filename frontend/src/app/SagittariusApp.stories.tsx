@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { expect } from "storybook/test";
 import { seedTripJoinId } from "@/src/trip/auth";
-import { tripFixture } from "@/src/trip/trip-fixtures";
+import { buildDenseTripFixture, buildEmptyTripFixture, tripFixture } from "@/src/trip/trip-fixtures";
 import { SagittariusApp } from "./SagittariusApp";
 
 const meta = {
@@ -18,6 +18,8 @@ type Story = StoryObj<typeof meta>;
 const storyTripId = "trip-1";
 const travelerMemberId = tripFixture.currentMembers.traveler.id;
 const viewerMemberId = tripFixture.currentMembers.viewer.id;
+const denseTrip = buildDenseTripFixture();
+const emptyTrip = buildEmptyTripFixture();
 
 function addStopButtons(canvasElement: HTMLElement) {
   return Array.from(
@@ -215,6 +217,20 @@ export const Itinerary: Story = {
 export const Timeline: Story = { args: { initialView: "timeline" } };
 export const Map: Story = { args: { initialView: "map" } };
 export const Members: Story = { args: { initialView: "members" } };
+export const Dense: Story = {
+  args: { initialTrip: denseTrip, initialView: "overview" },
+  play: async ({ canvasElement }) => {
+    await expect(canvasElement.querySelector(".workspace-shell")).toBeInTheDocument();
+    await expect(canvasElement.querySelector(".overview-page")).toBeInTheDocument();
+  },
+};
+export const Empty: Story = {
+  args: { initialTrip: emptyTrip, initialView: "overview" },
+  play: async ({ canvasElement }) => {
+    await expect(canvasElement.querySelector(".workspace-shell")).toBeInTheDocument();
+    await expect(canvasElement.querySelector(".overview-page")).toBeInTheDocument();
+  },
+};
 export const Mobile: Story = {
   args: { initialView: "overview" },
   parameters: {

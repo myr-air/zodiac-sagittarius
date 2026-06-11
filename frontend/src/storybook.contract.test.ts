@@ -87,7 +87,7 @@ describe("Storybook template catalog", () => {
   it("documents top-level cockpit owner, traveler, and viewer roles", () => {
     const appStories = readFileSync(join("src", "app", "SagittariusApp.stories.tsx"), "utf8");
 
-    ["Owner", "OwnerThai", "Traveler", "Viewer"].forEach((stateName) => {
+    ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty"].forEach((stateName) => {
       expect(appStories).toContain(`export const ${stateName}`);
     });
     expect(appStories).toContain("initialMemberId: travelerMemberId");

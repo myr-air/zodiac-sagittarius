@@ -215,6 +215,7 @@ interface SagittariusAppProps {
   accountSuccessRedirectHref?: string;
   portalSection?: PortalSection;
   initialMemberId?: string;
+  initialTrip?: Trip;
 }
 
 export function resolveJoinPostAuthReturnTo(
@@ -246,6 +247,7 @@ export function SagittariusApp({
   accountSuccessRedirectHref,
   portalSection = "dashboard",
   initialMemberId,
+  initialTrip = seedTrip,
 }: SagittariusAppProps) {
   const { locale, t } = useI18n();
   /* v8 ignore next 3 */
@@ -271,7 +273,7 @@ export function SagittariusApp({
     past: Trip[];
     future: Trip[];
   }>(() => ({
-    trip: seedTrip,
+    trip: initialTrip,
     past: [],
     future: [],
   }));
@@ -326,7 +328,7 @@ export function SagittariusApp({
   const [navigatedView, setNavigatedView] = useState<PlanningView | null>(null);
   const selectedPlanVariantId = tripState.trip.activePlanVariantId;
   const [currentMemberId, setCurrentMemberId] = useState(
-    initialMemberId ?? seedTrip.members[0].id,
+    initialMemberId ?? initialTrip.members[0].id,
   );
   const [selectedItemId, setSelectedItemId] = useState("item-dimdim");
   const [dialogState, setDialogState] = useState<
@@ -511,7 +513,7 @@ export function SagittariusApp({
     const timeout = window.setTimeout(() => {
       if (cancelled) return;
       const persistedTrip = loadPersistedTrip();
-      const nextTrip = persistedTrip ?? seedTrip;
+      const nextTrip = persistedTrip ?? initialTrip;
       const persistedSession = loadPersistedParticipantSession(
         requireJoin,
         nextTrip,
@@ -535,7 +537,7 @@ export function SagittariusApp({
       cancelled = true;
       window.clearTimeout(timeout);
     };
-  }, [isApiMode, requireJoin, routeTripId]);
+  }, [initialTrip, isApiMode, requireJoin, routeTripId]);
 
   useEffect(() => {
     if (accountSessionLoaded) return;
@@ -2043,7 +2045,7 @@ export function SagittariusApp({
 
   function leaveParticipantSession() {
     setParticipantSession(null);
-    setCurrentMemberId(seedTrip.members[0].id);
+    setCurrentMemberId(initialTrip.members[0].id);
     setContextRailVisibility(false);
     clearParticipantSession();
     setIsCockpitLoaded(false);
