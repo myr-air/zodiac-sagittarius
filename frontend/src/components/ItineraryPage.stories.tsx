@@ -5,6 +5,56 @@ import type { ItineraryItem } from "@/src/trip/types";
 import { SmartItineraryTable } from "./SmartItineraryTable";
 
 const noop = () => {};
+const pagePlanAExampleItems: ItineraryItem[] = [
+  {
+    ...tripFixture.planItems[0],
+    id: "page-plan-a-main-breakfast",
+    day: "2026-06-19",
+    startTime: "08:00",
+    durationMinutes: 75,
+    sortOrder: 100,
+    activity: "Harbour breakfast",
+    place: "Main checkpoint",
+    pathRole: "main",
+  },
+  {
+    ...tripFixture.planItems[1],
+    id: "page-plan-a-museum",
+    day: "2026-06-19",
+    startTime: "08:15",
+    durationMinutes: 60,
+    sortOrder: 200,
+    activity: "Plan A museum stop",
+    place: "Plan A checkpoint",
+    pathId: "path-2026-06-19-sub-a",
+    pathName: "Plan A",
+    pathRole: "alternative",
+  },
+  {
+    ...tripFixture.planItems[2],
+    id: "page-plan-a-cafe",
+    day: "2026-06-19",
+    startTime: "09:45",
+    durationMinutes: 45,
+    sortOrder: 300,
+    activity: "Plan A cafe backup",
+    place: "Plan A checkpoint",
+    pathId: "path-2026-06-19-sub-a",
+    pathName: "Plan A",
+    pathRole: "alternative",
+  },
+  {
+    ...tripFixture.planItems[3],
+    id: "page-plan-a-main-lunch",
+    day: "2026-06-19",
+    startTime: "11:00",
+    durationMinutes: 60,
+    sortOrder: 400,
+    activity: "Main lunch",
+    place: "Main checkpoint",
+    pathRole: "main",
+  },
+];
 const pageStressPathItems: ItineraryItem[] = [
   ["page-stress-0800-main", "08:00", 75, 100, "Harbour breakfast", "Main", undefined, "main"],
   ["page-stress-0805-a", "08:05", 90, 110, "Museum sprint", "Plan A", "path-2026-06-19-sub-a", "alternative"],
@@ -150,6 +200,27 @@ export const OverlapConflictWarning: Story = {
   },
   play: async ({ canvasElement }) => {
     await expect(canvasElement.querySelector(".data-row--path-overlap")).toBeInTheDocument();
+  },
+};
+
+export const PlanAExample: Story = {
+  args: {
+    ...Owner.args,
+    items: pagePlanAExampleItems,
+    graphItems: pagePlanAExampleItems,
+    selectedItemId: "page-plan-a-main-breakfast",
+    showAllPaths: true,
+    pathOptions: [
+      { id: "main", name: "Main", scope: "trip" },
+      { id: "path-2026-06-19-sub-a", name: "Plan A", scope: "day", day: "2026-06-19" },
+    ],
+  },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole("region", { name: /Itinerary table/i })).toHaveClass("table-panel", "grid");
+    await expect(canvas.getByRole("group", { name: /Activity path graph for Day 2/i })).toHaveClass("activity-path-graph");
+    await expect(canvas.getByRole("button", { name: /Harbour breakfast on Main/i })).toHaveClass("activity-path-graph-node--selected");
+    await expect(canvas.getByRole("button", { name: /Plan A museum stop on Plan A/i })).toBeInTheDocument();
+    await expect(canvas.getByRole("button", { name: /Plan A cafe backup on Plan A/i })).toBeInTheDocument();
   },
 };
 
