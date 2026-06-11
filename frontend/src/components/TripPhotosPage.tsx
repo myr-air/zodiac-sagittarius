@@ -3,6 +3,7 @@ import {
   buildPhotoAlbumSummary,
   filterPhotoAlbumLinks,
   findPhotoAlbumRelations,
+  safePhotoAlbumCoverHref,
   safePhotoAlbumHref,
 } from "@/src/trip/photo-albums";
 import type { Member, Trip, TripPhotoAlbumAccess, TripPhotoAlbumLink, TripPhotoAlbumProvider } from "@/src/trip/types";
@@ -386,7 +387,7 @@ function PhotoAlbumCard({
 }) {
   const href = safePhotoAlbumHref(album.url);
   const owner = trip.members.find((member) => member.id === album.ownerMemberId);
-  const coverHref = safePhotoAlbumHref(album.coverUrl);
+  const coverHref = safePhotoAlbumCoverHref(album.coverUrl);
   return (
     <article className={cn(albumCardClassName, selected && selectedAlbumClassName)}>
       <button type="button" className="grid min-w-0 gap-2 text-left" onClick={onSelect} aria-label={copy.selectAlbum(album.title)}>

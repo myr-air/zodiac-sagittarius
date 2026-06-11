@@ -27,6 +27,31 @@ const densePhotoAlbumLinks: TripPhotoAlbumLink[] = Array.from({ length: 18 }, (_
   };
 });
 
+const coverPhotoAlbumLinks: TripPhotoAlbumLink[] = [
+  {
+    ...(tripFixture.trip.photoAlbumLinks?.[0] ?? densePhotoAlbumLinks[0]),
+    id: "photo-album-cover-hong-kong",
+    title: "Harbour skyline handoff",
+    coverUrl: "/landing/auth/photo-hong-kong-skyline.png",
+    accessNote: "Use this as the trip recap cover before everyone uploads.",
+  },
+  {
+    ...(tripFixture.trip.photoAlbumLinks?.[1] ?? densePhotoAlbumLinks[1]),
+    id: "photo-album-cover-market",
+    title: "Mong Kok market uploads",
+    coverUrl: "/landing/auth/photo-mong-kok-market.png",
+    access: "upload_request",
+    provider: "dropbox",
+  },
+  {
+    ...(tripFixture.trip.photoAlbumLinks?.[2] ?? densePhotoAlbumLinks[2]),
+    id: "photo-album-cover-fallback",
+    title: "No cover fallback album",
+    coverUrl: null,
+    provider: "custom",
+  },
+];
+
 const meta = {
   title: "Pages/Photos",
   component: TripPhotosPage,
@@ -98,6 +123,23 @@ export const AddAlbumDialogOpen: Story = {
     await expect(canvas.getByText("Album link")).toBeVisible();
     await expect(canvas.getByText("Related itinerary")).toBeVisible();
     await expect(canvas.getByRole("button", { name: /Save album/i })).toBeVisible();
+  },
+};
+
+export const CoverStates: Story = {
+  args: {
+    ...Owner.args,
+    photoAlbumLinks: coverPhotoAlbumLinks,
+  },
+  play: async ({ canvas }) => {
+    const harbourCover = canvas.getByLabelText(/Cover for Harbour skyline handoff/i);
+    await expect(harbourCover).toHaveClass("photo-album-cover", "bg-cover", "bg-center");
+    await expect(harbourCover.getAttribute("style")).toContain("/landing/auth/photo-hong-kong-skyline.png");
+
+    const fallbackCover = canvas.getByLabelText(/Cover for No cover fallback album/i);
+    await expect(fallbackCover).toHaveClass("photo-album-cover", "bg-(--color-surface-subtle)");
+    await expect(fallbackCover.getAttribute("style")).toBeNull();
+    await expect(canvas.getAllByText(/Use this as the trip recap cover/i).length).toBeGreaterThan(1);
   },
 };
 

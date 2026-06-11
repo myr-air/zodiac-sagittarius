@@ -74,7 +74,7 @@ describe("Storybook template catalog", () => {
       ["components/MapPage.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty", "LiveMapLoading", "LiveMapFailure", "Tablet", "Desktop1024", "Desktop1440", "Mobile"]],
       ["components/MembersPage.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty", "Tablet", "Desktop1024", "Desktop1440", "Mobile"]],
       ["components/ExpensesPage.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty", "AddExpenseDialogOpen", "Tablet", "Desktop1024", "Desktop1440", "Mobile"]],
-      ["components/TripPhotosPage.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty", "AddAlbumDialogOpen", "Tablet", "Desktop1024", "Desktop1440", "Mobile"]],
+      ["components/TripPhotosPage.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty", "AddAlbumDialogOpen", "CoverStates", "Tablet", "Desktop1024", "Desktop1440", "Mobile"]],
       ["components/BookingsDocsPage.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty", "AddBookingDialogOpen", "Tablet", "Desktop1024", "Desktop1440", "Mobile"]],
       ["components/TripSettingsPage.stories.tsx", ["Owner", "Traveler", "Viewer", "Thai", "Tablet", "Desktop1024", "Desktop1440", "Mobile"]],
       ["components/TripJoinGate.stories.tsx", ["RoomCredentials", "TripAccess", "SelectIdentity", "Thai", "Tablet", "Mobile"]],
