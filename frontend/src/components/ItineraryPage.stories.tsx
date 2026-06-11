@@ -5,6 +5,55 @@ import type { ItineraryItem } from "@/src/trip/types";
 import { SmartItineraryTable } from "./SmartItineraryTable";
 
 const noop = () => {};
+const pageBranchGraphItems: ItineraryItem[] = [
+  {
+    ...tripFixture.planItems[0],
+    id: "page-graph-main",
+    day: "2026-06-19",
+    startTime: "08:00",
+    durationMinutes: 45,
+    sortOrder: 100,
+    activity: "Dim Sum morning",
+    pathGroupId: "page-path-group-morning",
+    pathRole: "main",
+  },
+  {
+    ...tripFixture.planItems[1],
+    id: "page-graph-rain",
+    day: "2026-06-19",
+    startTime: "08:20",
+    durationMinutes: 80,
+    sortOrder: 200,
+    activity: "Rain museum",
+    pathGroupId: "page-path-group-morning",
+    pathId: "path-rain",
+    pathName: "Rain plan",
+    pathRole: "alternative",
+  },
+  {
+    ...tripFixture.planItems[2],
+    id: "page-graph-late",
+    day: "2026-06-19",
+    startTime: "09:45",
+    durationMinutes: 45,
+    sortOrder: 300,
+    activity: "Late coffee",
+    pathGroupId: "page-path-group-morning",
+    pathId: "path-2026-06-19-sub-a",
+    pathName: "Plan A",
+    pathRole: "alternative",
+  },
+  {
+    ...tripFixture.planItems[3],
+    id: "page-graph-lunch",
+    day: "2026-06-19",
+    startTime: "11:15",
+    durationMinutes: 60,
+    sortOrder: 400,
+    activity: "Central lunch",
+    pathRole: "main",
+  },
+];
 const pagePlanAExampleItems: ItineraryItem[] = [
   {
     ...tripFixture.planItems[0],
@@ -55,6 +104,29 @@ const pagePlanAExampleItems: ItineraryItem[] = [
     pathRole: "main",
   },
 ];
+const pageRequestedPlanExampleItems: ItineraryItem[] = [
+  ["page-requested-main-0800", "08:00", 60, 100, "Main 08:00 block", undefined, undefined, "main"],
+  ["page-requested-main-0900", "09:00", 120, 200, "Main 09:00 block", undefined, undefined, "main"],
+  ["page-requested-plan-a-0900", "09:00", 30, 210, "Plan A 09:00 branch", "path-2026-06-19-sub-a", "Plan A", "alternative"],
+  ["page-requested-plan-a-1000", "10:00", 60, 300, "Plan A 10:00 follow up", "path-2026-06-19-sub-a", "Plan A", "alternative"],
+  ["page-requested-main-1100", "11:00", 60, 400, "Main 11:00 block", undefined, undefined, "main"],
+  ["page-requested-main-1200", "12:00", 180, 500, "Main 12:00 block", undefined, undefined, "main"],
+  ["page-requested-plan-a-1230", "12:30", 60, 510, "Plan A 12:30 branch", "path-2026-06-19-sub-a", "Plan A", "alternative"],
+  ["page-requested-main-1600", "16:00", 60, 600, "Main 16:00 block", undefined, undefined, "main"],
+].map(([id, startTime, durationMinutes, sortOrder, activity, pathId, pathName, pathRole]) => ({
+  ...tripFixture.planItems[0],
+  id: id as string,
+  day: "2026-06-19",
+  startTime: startTime as string,
+  durationMinutes: durationMinutes as number,
+  sortOrder: sortOrder as number,
+  activity: activity as string,
+  activityType: "experience",
+  place: pathName ? `${pathName} checkpoint` : "Main checkpoint",
+  pathId: pathId as string | undefined,
+  pathName: pathName as string | undefined,
+  pathRole: pathRole as ItineraryItem["pathRole"],
+}));
 const pageStressPathItems: ItineraryItem[] = [
   ["page-stress-0800-main", "08:00", 75, 100, "Harbour breakfast", "Main", undefined, "main"],
   ["page-stress-0805-a", "08:05", 90, 110, "Museum sprint", "Plan A", "path-2026-06-19-sub-a", "alternative"],
@@ -241,6 +313,67 @@ export const PlanAExample: Story = {
     await expect(canvas.getByRole("button", { name: /Harbour breakfast on Main/i })).toHaveClass("activity-path-graph-node--selected");
     await expect(canvas.getByRole("button", { name: /Plan A museum stop on Plan A/i })).toBeInTheDocument();
     await expect(canvas.getByRole("button", { name: /Plan A cafe backup on Plan A/i })).toBeInTheDocument();
+  },
+};
+
+export const BranchGraph: Story = {
+  args: {
+    ...Owner.args,
+    items: pageBranchGraphItems,
+    graphItems: pageBranchGraphItems,
+    selectedItemId: "page-graph-main",
+    showAllPaths: true,
+    pathOptions: [
+      { id: "main", name: "Main", scope: "trip" },
+      { id: "path-rain", name: "Rain plan", scope: "day", day: "2026-06-19" },
+      { id: "path-2026-06-19-sub-a", name: "Plan A", scope: "day", day: "2026-06-19" },
+    ],
+  },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole("group", { name: /Activity path graph for Day 2/i })).toHaveClass("activity-path-graph");
+    await expect(canvas.getByRole("button", { name: /Dim Sum morning on Main/i })).toHaveClass("activity-path-graph-node--selected");
+    await expect(canvas.getByRole("button", { name: /Rain museum on Rain plan/i })).toBeInTheDocument();
+    await expect(canvas.getByRole("button", { name: /Late coffee on Plan A/i })).toBeInTheDocument();
+  },
+};
+
+export const RequestedPlanExample: Story = {
+  args: {
+    ...Owner.args,
+    items: pageRequestedPlanExampleItems,
+    graphItems: pageRequestedPlanExampleItems,
+    selectedItemId: "page-requested-main-0800",
+    showAllPaths: true,
+    pathOptions: [
+      { id: "main", name: "Main", scope: "trip" },
+      { id: "path-2026-06-19-sub-a", name: "Plan A", scope: "day", day: "2026-06-19" },
+    ],
+  },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole("button", { name: /Main 08:00 block on Main/i })).toHaveClass("activity-path-graph-node--selected");
+    await expect(canvas.getByRole("button", { name: /Plan A 09:00 branch on Plan A/i })).toBeInTheDocument();
+    await expect(canvas.getByRole("button", { name: /Plan A 12:30 branch on Plan A/i })).toBeInTheDocument();
+    await expect(canvas.getByRole("button", { name: /Main 16:00 block on Main/i })).toBeInTheDocument();
+  },
+};
+
+export const StressPaths: Story = {
+  args: {
+    ...Owner.args,
+    items: pageStressPathItems,
+    graphItems: pageStressPathItems,
+    selectedItemId: "page-stress-0800-main",
+    showAllPaths: true,
+    pathOptions: [
+      { id: "main", name: "Main", scope: "trip" },
+      { id: "path-2026-06-19-sub-a", name: "Plan A", scope: "day", day: "2026-06-19" },
+      { id: "path-2026-06-19-sub-b", name: "Plan B", scope: "day", day: "2026-06-19" },
+      { id: "path-2026-06-19-sub-c", name: "Plan C", scope: "day", day: "2026-06-19" },
+    ],
+  },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole("button", { name: /Harbour breakfast on Main/i })).toHaveClass("activity-path-graph-node--selected");
+    await expect(canvas.getByRole("button", { name: /Taxi direct route on Plan C/i })).toBeInTheDocument();
   },
 };
 

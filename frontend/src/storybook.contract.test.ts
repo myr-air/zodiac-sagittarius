@@ -71,7 +71,7 @@ describe("Storybook template catalog", () => {
   it("documents page-level role, density, and viewport states per cockpit page", () => {
     const requiredPageStates: Array<[string, string[]]> = [
       ["components/OverviewPage.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty", "AddTaskDialogOpen", "Tablet", "Desktop1024", "Desktop1440", "Mobile"]],
-      ["components/ItineraryPage.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty", "OverlapConflictWarning", "PlanAExample", "TableOverflow", "Tablet", "Desktop1024", "Desktop1440", "Mobile"]],
+      ["components/ItineraryPage.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty", "OverlapConflictWarning", "PlanAExample", "BranchGraph", "RequestedPlanExample", "StressPaths", "TableOverflow", "Tablet", "Desktop1024", "Desktop1440", "Mobile"]],
       ["components/TimelinePage.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty", "Tablet", "Desktop1024", "Desktop1440", "Mobile"]],
       ["components/MapPage.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty", "LiveMapLoading", "LiveMapFailure", "Tablet", "Desktop1024", "Desktop1440", "Mobile"]],
       ["components/MembersPage.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty", "Tablet", "Desktop1024", "Desktop1440", "Mobile"]],
