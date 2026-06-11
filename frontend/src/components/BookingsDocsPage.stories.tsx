@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import { expect } from "storybook/test";
+import { expect, userEvent } from "storybook/test";
 import { seedTrip } from "@/src/trip/seed";
 import { tripFixture } from "@/src/trip/trip-fixtures";
 import type { BookingDoc } from "@/src/trip/types";
@@ -129,6 +129,17 @@ export const Empty: Story = {
   },
   play: async ({ canvas }) => {
     await expect(canvas.getByText(/No items in this view/i)).toBeVisible();
+  },
+};
+
+export const AddBookingDialogOpen: Story = {
+  args: Owner.args,
+  play: async ({ canvas }) => {
+    await userEvent.click(canvas.getByRole("button", { name: /Add booking/i }));
+    await expect(canvas.getByRole("dialog", { name: /Add booking/i })).toHaveClass("booking-dialog");
+    await expect(canvas.getByText("Confirmation code")).toBeVisible();
+    await expect(canvas.getByText("Linked itinerary")).toBeVisible();
+    await expect(canvas.getByRole("button", { name: /Save booking/i })).toBeVisible();
   },
 };
 

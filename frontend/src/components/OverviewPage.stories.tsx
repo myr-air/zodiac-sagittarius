@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import { expect, userEvent } from "storybook/test";
 import { buildDenseTripFixture, buildEmptyTripFixture, tripFixture } from "@/src/trip/trip-fixtures";
 import { weatherBriefings } from "./WeatherBriefing.fixtures";
 import { OverviewPage } from "./OverviewPage";
@@ -65,6 +66,17 @@ export const Empty: Story = {
     suggestions: [],
     tasks: [],
     dailyBriefings: [],
+  },
+};
+
+export const AddTaskDialogOpen: Story = {
+  args: Owner.args,
+  play: async ({ canvas }) => {
+    await userEvent.click(canvas.getByRole("button", { name: /Add checklist/i }));
+    await expect(canvas.getByRole("dialog", { name: /Add checklist/i })).toBeVisible();
+    await expect(canvas.getByPlaceholderText(/For example, book dinner/i)).toBeVisible();
+    await expect(canvas.getByText("Keep it in")).toBeVisible();
+    await expect(canvas.getAllByRole("button", { name: /Add checklist item/i })[1]).toBeDisabled();
   },
 };
 

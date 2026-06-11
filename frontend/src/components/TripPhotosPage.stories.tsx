@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import { expect, userEvent } from "storybook/test";
 import { tripFixture } from "@/src/trip/trip-fixtures";
 import type { TripPhotoAlbumLink } from "@/src/trip/types";
 import { TripPhotosPage } from "./TripPhotosPage";
@@ -80,6 +81,17 @@ export const Empty: Story = {
   args: {
     ...Owner.args,
     photoAlbumLinks: [],
+  },
+};
+
+export const AddAlbumDialogOpen: Story = {
+  args: Owner.args,
+  play: async ({ canvas }) => {
+    await userEvent.click(canvas.getByRole("button", { name: /Add album/i }));
+    await expect(canvas.getByRole("dialog", { name: /Add album/i })).toHaveClass("photos-dialog");
+    await expect(canvas.getByText("Album link")).toBeVisible();
+    await expect(canvas.getByText("Related itinerary")).toBeVisible();
+    await expect(canvas.getByRole("button", { name: /Save album/i })).toBeVisible();
   },
 };
 

@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import { expect } from "storybook/test";
+import { expect, userEvent } from "storybook/test";
 import { buildDenseTripFixture, buildEmptyTripFixture, tripFixture } from "@/src/trip/trip-fixtures";
 import { buildExpenseSummary } from "@/src/trip/expenses";
 import { TripExpensesPage } from "./TripExpensesPage";
@@ -74,6 +74,17 @@ export const Empty: Story = {
     ...Owner.args,
     trip: emptyTrip,
     expenseSummary: buildExpenseSummary(emptyTrip.expenses, tripFixture.currentMembers.owner.id),
+  },
+};
+
+export const AddExpenseDialogOpen: Story = {
+  args: Owner.args,
+  play: async ({ canvas }) => {
+    await userEvent.click(canvas.getByRole("button", { name: /Add expense/i }));
+    await expect(canvas.getByRole("dialog", { name: /Add expense/i })).toHaveClass("expense-dialog");
+    await expect(canvas.getByLabelText("Expense title")).toBeVisible();
+    await expect(canvas.getByLabelText("Amount")).toBeVisible();
+    await expect(canvas.getByRole("button", { name: /Save expense/i })).toBeDisabled();
   },
 };
 
