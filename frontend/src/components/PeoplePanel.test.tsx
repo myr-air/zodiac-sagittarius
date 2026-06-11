@@ -275,8 +275,10 @@ describe("PeoplePanel", () => {
 
     expect(screen.getByText(/ออฟไลน์ 1 ชม./i)).toHaveClass("presence-pill", "inline-flex", "whitespace-nowrap");
     expect(screen.queryByLabelText(/Role for Explorer Friend/i)).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /คัดลอกลิงก์เชิญ/i })).toBeDisabled();
-    expect(screen.getByRole("button", { name: /เปิดฟอร์มเพิ่มสมาชิก/i })).toBeDisabled();
+    expect(screen.queryByRole("button", { name: /คัดลอกลิงก์เชิญ/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /เปิดฟอร์มเพิ่มสมาชิก/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /ล้างตัวกรอง/i })).toBeInTheDocument();
+    expect(screen.getByRole("status")).toHaveTextContent("อ่านอย่างเดียว");
   });
 
   it("bridges the empty member state to Tailwind classes", () => {

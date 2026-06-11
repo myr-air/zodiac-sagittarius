@@ -282,33 +282,42 @@ export function TripMembersPage({
         </div>
         <div className={memberCommandActionsClassName}>
           <button className={cn(memberActionButtonClassName, memberResetButtonClassName)} type="button" onClick={resetFilters}>{t.members.actions.clear}</button>
-          <button className={cn(memberActionButtonClassName, inviteCopyButtonClassName)} type="button" disabled={!canManagePeople} onClick={copyInviteLink}>
-            <Icon name="copy" />
-            {t.members.actions.copyInvite}
-          </button>
-          {onRotateJoinInviteToken ? (
-            <button className={cn(memberActionButtonClassName, memberCreateButtonClassName)} type="button" disabled={!canManagePeople || isRotatingInviteToken} onClick={rotateInviteToken}>
-              <Icon name="key" />
-              {isRotatingInviteToken ? t.members.actions.rotatingInvite : t.members.actions.rotateInvite}
-            </button>
-          ) : null}
-          <button
-            aria-expanded={createPanelOpen}
-            className={cn(memberActionButtonClassName, memberCreateButtonClassName)}
-            type="button"
-            disabled={!canManagePeople}
-            onClick={() => setCreatePanelOpen((current) => !current)}
-          >
-            <Icon name="plus" />
-            {createPanelOpen ? t.members.actions.closeCreate : t.members.actions.openCreate}
-          </button>
+          {canManagePeople ? (
+            <>
+              <button className={cn(memberActionButtonClassName, inviteCopyButtonClassName)} type="button" onClick={copyInviteLink}>
+                <Icon name="copy" />
+                {t.members.actions.copyInvite}
+              </button>
+              {onRotateJoinInviteToken ? (
+                <button className={cn(memberActionButtonClassName, memberCreateButtonClassName)} type="button" disabled={isRotatingInviteToken} onClick={rotateInviteToken}>
+                  <Icon name="key" />
+                  {isRotatingInviteToken ? t.members.actions.rotatingInvite : t.members.actions.rotateInvite}
+                </button>
+              ) : null}
+              <button
+                aria-expanded={createPanelOpen}
+                className={cn(memberActionButtonClassName, memberCreateButtonClassName)}
+                type="button"
+                onClick={() => setCreatePanelOpen((current) => !current)}
+              >
+                <Icon name="plus" />
+                {createPanelOpen ? t.members.actions.closeCreate : t.members.actions.openCreate}
+              </button>
+            </>
+          ) : (
+            <span className={copyFeedbackClassName} data-state={copyState} role="status">
+              {t.members.copy.readOnly}
+            </span>
+          )}
         </div>
-        <div className={memberCommandMetaClassName}>
-          <code>{inviteLink}</code>
-          <span className={copyFeedbackClassName} data-state={copyState} role="status">
-            {copyState === "copied" ? t.common.status.copied : copyState === "error" ? t.common.status.copyFailed : canManagePeople ? t.members.copy.ready : t.members.copy.readOnly}
-          </span>
-        </div>
+        {canManagePeople ? (
+          <div className={memberCommandMetaClassName}>
+            <code>{inviteLink}</code>
+            <span className={copyFeedbackClassName} data-state={copyState} role="status">
+              {copyState === "copied" ? t.common.status.copied : copyState === "error" ? t.common.status.copyFailed : t.members.copy.ready}
+            </span>
+          </div>
+        ) : null}
       </section>
 
       {createPanelOpen ? (

@@ -175,15 +175,12 @@ describe("TripMembersPage", () => {
     expect(props.onCreateMember).not.toHaveBeenCalled();
   });
 
-  it("renders read-only member controls without mutating callbacks", () => {
+  it("renders read-only member controls without management actions", () => {
     const props = renderMembers({ canManagePeople: false });
-    const inviteButton = screen.getByRole("button", { name: /คัดลอกลิงก์เชิญ/i });
 
-    expect(inviteButton).toBeDisabled();
-    expect(screen.getByRole("button", { name: /เปิดฟอร์มเพิ่มสมาชิก/i })).toBeDisabled();
-    (inviteButton as HTMLButtonElement).disabled = false;
-    fireEvent.click(inviteButton);
-
+    expect(screen.queryByRole("button", { name: /คัดลอกลิงก์เชิญ/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /เปิดฟอร์มเพิ่มสมาชิก/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /ล้างตัวกรอง/i })).toBeInTheDocument();
     expect(screen.getByRole("status")).toHaveTextContent("อ่านอย่างเดียว");
     expect(props.onCreateMember).not.toHaveBeenCalled();
   });
