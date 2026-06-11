@@ -49,16 +49,18 @@ describe("OverviewPage role lenses", () => {
     expect(screen.getByRole("heading", { name: /วันนี้ต้องโฟกัส/i })).toBeInTheDocument();
   }, 30_000);
 
-  it("renders the photo-first cockpit hero and visual highlight board from trip data", () => {
+  it("renders the cockpit status hero and visual highlight board from trip data", () => {
     renderOverview("member-beam");
 
     const hero = screen.getByRole("region", { name: /Hong Kong \+ Shenzhen Trip/i });
     expect(screen.getByRole("region", { name: /Trip overview/i })).toHaveClass("overview-page", "grid", "gap-3");
-    expect(hero).toHaveClass("overview-hero", "grid", "overflow-hidden", "rounded-(--radius-lg)");
+    expect(hero).toHaveClass("overview-hero", "grid", "overflow-hidden", "rounded-(--radius-lg)", "bg-(--color-surface)");
+    expect(hero).toHaveClass("min-h-[168px]", "shadow-[0_12px_26px_rgb(55_47_38_/_0.06)]");
     expect(hero).toHaveTextContent(/Hong Kong/i);
     expect(hero).toHaveTextContent(/HK\$/i);
     expect(within(hero).getByText(/ศูนย์จัดการทริป/i)).toBeInTheDocument();
-    expect(hero.querySelectorAll(".overview-hero-polaroid")).toHaveLength(3);
+    expect(hero.querySelector(".overview-hero-polaroid")).not.toBeInTheDocument();
+    expect(hero.querySelector(".overview-hero-aside")).toHaveClass("bg-(--color-surface-subtle)", "rounded-(--radius-md)");
 
     const cockpit = screen.getByRole("region", { name: /travel cockpit/i });
     expect(cockpit).toHaveClass("overview-travel-cockpit", "grid", "grid-cols-3", "gap-3");
@@ -80,7 +82,7 @@ describe("OverviewPage role lenses", () => {
     expect(within(board).getAllByRole("listitem")).toHaveLength(4);
   });
 
-  it("keeps the photo-first overview useful for empty trips", () => {
+  it("keeps the cockpit overview useful for empty trips", () => {
     render(
       <OverviewPage
         currentMemberId="member-beam"
