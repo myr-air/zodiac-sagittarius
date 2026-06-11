@@ -56,6 +56,14 @@ export const Viewer: Story = {
   },
 };
 
+export const Traveler: Story = {
+  args: {
+    ...Owner.args,
+    currentMember: tripFixture.currentMembers.traveler,
+    canEditPhotoAlbums: true,
+  },
+};
+
 export const OwnerThai: Story = {
   args: Owner.args,
   parameters: { locale: "th" },

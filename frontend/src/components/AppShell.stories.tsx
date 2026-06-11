@@ -77,6 +77,11 @@ export const Mobile: Story = {
   parameters: { viewport: { defaultViewport: "mobile320" } },
 };
 
+export const Tablet: Story = {
+  args: { ...Owner.args, collapsed: true },
+  parameters: { viewport: { defaultViewport: "tablet768" } },
+};
+
 export const OwnerThai: Story = {
   args: Owner.args,
   parameters: { locale: "th" },

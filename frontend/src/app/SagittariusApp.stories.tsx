@@ -271,3 +271,51 @@ export const MobileMembers: Story = {
     viewport: { defaultViewport: "mobile320" },
   },
 };
+export const TabletExpenses: Story = {
+  args: { initialView: "expenses" },
+  parameters: {
+    viewport: { defaultViewport: "tablet768" },
+  },
+};
+export const MobileExpenses: Story = {
+  args: { initialView: "expenses" },
+  parameters: {
+    viewport: { defaultViewport: "mobile320" },
+  },
+};
+export const TabletBookings: Story = {
+  args: { initialView: "bookings" },
+  parameters: {
+    viewport: { defaultViewport: "tablet768" },
+  },
+};
+export const MobileBookings: Story = {
+  args: { initialView: "bookings" },
+  parameters: {
+    viewport: { defaultViewport: "mobile320" },
+  },
+};
+export const TabletPhotos: Story = {
+  args: { initialView: "photos" },
+  parameters: {
+    viewport: { defaultViewport: "tablet768" },
+  },
+};
+export const MobilePhotos: Story = {
+  args: { initialView: "photos" },
+  parameters: {
+    viewport: { defaultViewport: "mobile320" },
+  },
+};
+export const TabletSettings: Story = {
+  args: { initialView: "settings" },
+  parameters: {
+    viewport: { defaultViewport: "tablet768" },
+  },
+};
+export const MobileSettings: Story = {
+  args: { initialView: "settings" },
+  parameters: {
+    viewport: { defaultViewport: "mobile320" },
+  },
+};

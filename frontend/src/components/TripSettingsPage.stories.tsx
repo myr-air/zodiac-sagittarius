@@ -43,6 +43,15 @@ export const Viewer: Story = {
   },
 };
 
+export const Traveler: Story = {
+  args: {
+    ...Owner.args,
+    canEdit: false,
+    currentMember: tripFixture.currentMembers.traveler,
+  },
+  play: Viewer.play,
+};
+
 export const Thai: Story = {
   args: Owner.args,
   parameters: { locale: "th" },
@@ -54,4 +63,9 @@ export const Thai: Story = {
 export const Mobile: Story = {
   args: Owner.args,
   parameters: { viewport: { defaultViewport: "mobile320" } },
+};
+
+export const Tablet: Story = {
+  args: Owner.args,
+  parameters: { viewport: { defaultViewport: "tablet768" } },
 };

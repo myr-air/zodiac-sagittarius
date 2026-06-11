@@ -73,10 +73,10 @@ describe("Storybook template catalog", () => {
       ["components/MapPage.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty", "Tablet", "Mobile"]],
       ["components/MembersPage.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty", "Tablet", "Mobile"]],
       ["components/ExpensesPage.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty", "Tablet", "Mobile"]],
-      ["components/TripPhotosPage.stories.tsx", ["Owner", "OwnerThai", "Viewer", "Dense", "Empty", "Tablet", "Mobile"]],
-      ["components/BookingsDocsPage.stories.tsx", ["Owner", "Traveler", "Viewer", "Empty", "Mobile"]],
-      ["components/TripSettingsPage.stories.tsx", ["Owner", "Viewer", "Thai", "Mobile"]],
-      ["components/TripJoinGate.stories.tsx", ["RoomCredentials", "TripAccess", "Thai", "Mobile"]],
+      ["components/TripPhotosPage.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty", "Tablet", "Mobile"]],
+      ["components/BookingsDocsPage.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty", "Tablet", "Mobile"]],
+      ["components/TripSettingsPage.stories.tsx", ["Owner", "Traveler", "Viewer", "Thai", "Tablet", "Mobile"]],
+      ["components/TripJoinGate.stories.tsx", ["RoomCredentials", "TripAccess", "Thai", "Tablet", "Mobile"]],
     ];
 
     requiredPageStates.forEach(([file, stateNames]) => {
@@ -104,6 +104,14 @@ describe("Storybook template catalog", () => {
       "MobileMap",
       "TabletMembers",
       "MobileMembers",
+      "TabletExpenses",
+      "MobileExpenses",
+      "TabletBookings",
+      "MobileBookings",
+      "TabletPhotos",
+      "MobilePhotos",
+      "TabletSettings",
+      "MobileSettings",
     ]);
   });
 

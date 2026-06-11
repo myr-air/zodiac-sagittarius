@@ -54,3 +54,8 @@ export const Mobile: Story = {
   args: RoomCredentials.args,
   parameters: { viewport: { defaultViewport: "mobile320" } },
 };
+
+export const Tablet: Story = {
+  args: RoomCredentials.args,
+  parameters: { viewport: { defaultViewport: "tablet768" } },
+};
