@@ -296,7 +296,7 @@ export interface PatchTaskApiRequest {
 export interface PatchItineraryItemApiRequest {
   clientMutationId: string;
   expectedVersion: number;
-  patch: Partial<Pick<ItineraryItem, "pathGroupId" | "pathId" | "pathName" | "pathRole" | "parentItemId" | "itemKind" | "timeMode" | "isPlanBlock" | "status" | "priority" | "day" | "durationMinutes" | "activity" | "activityType" | "place" | "transportation" | "details" | "note">> & {
+  patch: Partial<Pick<ItineraryItem, "pathGroupId" | "pathId" | "pathName" | "pathRole" | "parentItemId" | "itemKind" | "timeMode" | "isPlanBlock" | "status" | "priority" | "day" | "sortOrder" | "durationMinutes" | "activity" | "activityType" | "place" | "transportation" | "details" | "note">> & {
     startTime?: string | null;
     address?: string | null;
     coordinates?: ItineraryCoordinates | null;

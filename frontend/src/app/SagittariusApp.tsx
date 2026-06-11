@@ -937,7 +937,14 @@ export function SagittariusApp({
         (item) => item.id === targetItemId,
       );
       if (!draggedItem || !targetItem) return;
-      if (draggedItem.day !== targetItem.day) {
+      const movedItem = nextTrip.itineraryItems.find(
+        (item) => item.id === draggedItemId,
+      );
+      if (!movedItem) return;
+      const parentChanged =
+        (draggedItem.parentItemId ?? null) !==
+        (movedItem.parentItemId ?? null);
+      if (draggedItem.day !== movedItem.day || parentChanged) {
         await resolvedApiClient.patchItineraryItem(
           trip.id,
           draggedItemId,
@@ -945,7 +952,11 @@ export function SagittariusApp({
           {
             clientMutationId: nextClientMutationId("itinerary-day-move"),
             expectedVersion: draggedItem.version,
-            patch: { day: targetItem.day },
+            patch: {
+              day: movedItem.day,
+              parentItemId: movedItem.parentItemId ?? null,
+              sortOrder: movedItem.sortOrder,
+            },
           },
         );
         setTripState((current) => ({ ...current, trip: nextTrip }));
@@ -996,6 +1007,53 @@ export function SagittariusApp({
     setContextRailVisibility(true);
   }
 
+  async function moveItemIntoPlanBlock(
+    draggedItemId: string,
+    planBlockItemId: string,
+  ) {
+    /* v8 ignore next */
+    if (!canEdit || draggedItemId === planBlockItemId) return;
+    const nextTrip = moveTripItemIntoPlanBlock(
+      trip,
+      draggedItemId,
+      planBlockItemId,
+      selectedPlanVariantId,
+    );
+    if (!nextTrip) return;
+
+    const draggedItem = trip.itineraryItems.find(
+      (item) => item.id === draggedItemId,
+    );
+    const movedItem = nextTrip.itineraryItems.find(
+      (item) => item.id === draggedItemId,
+    );
+    if (!draggedItem || !movedItem) return;
+
+    if (isApiMode && resolvedApiClient && participantSession) {
+      await resolvedApiClient.patchItineraryItem(
+        trip.id,
+        draggedItemId,
+        participantSession.sessionToken,
+        {
+          clientMutationId: nextClientMutationId("itinerary-block-move"),
+          expectedVersion: draggedItem.version,
+          patch: {
+            day: movedItem.day,
+            parentItemId: movedItem.parentItemId ?? null,
+            sortOrder: movedItem.sortOrder,
+          },
+        },
+      );
+      setTripState((current) => ({ ...current, trip: nextTrip }));
+      setSelectedItemId(draggedItemId);
+      setContextRailVisibility(true);
+      return;
+    }
+
+    commitTrip(() => nextTrip, draggedItemId);
+    setContextRailVisibility(true);
+  }
+
   async function moveItemToDay(draggedItemId: string, targetDay: string) {
     /* v8 ignore next */
     if (!canEdit) return;
@@ -1020,7 +1078,7 @@ export function SagittariusApp({
         {
           clientMutationId: nextClientMutationId("itinerary-day-move"),
           expectedVersion: draggedItem.version,
-          patch: { day: targetDay },
+          patch: { day: targetDay, parentItemId: null },
         },
       );
       setTripState((current) => ({ ...current, trip: nextTrip }));
@@ -1270,6 +1328,12 @@ export function SagittariusApp({
       targetItem.planVariantId !== planVariantId
     )
       return null;
+    const nextParentItemId = targetItem.parentItemId ?? null;
+    if (
+      nextParentItemId === draggedItem.id ||
+      hasDescendantItem(current.itineraryItems, draggedItem.id, targetItem.id)
+    )
+      return null;
 
     /* v8 ignore next 3 */
     const targetDayItems = current.itineraryItems
@@ -1295,6 +1359,7 @@ export function SagittariusApp({
       {
         ...draggedItem,
         day: targetItem.day,
+        parentItemId: nextParentItemId,
         updatedAt: localMutationTimestamp,
         version: draggedItem.version + 1,
       },
@@ -1338,6 +1403,7 @@ export function SagittariusApp({
       {
         ...draggedItem,
         day: targetDay,
+        parentItemId: null,
         updatedAt: localMutationTimestamp,
         version: draggedItem.version + 1,
       },
@@ -1350,6 +1416,82 @@ export function SagittariusApp({
         (item) => nextItemsById.get(item.id) ?? item,
       ),
     };
+  }
+
+  function moveTripItemIntoPlanBlock(
+    current: Trip,
+    draggedItemId: string,
+    planBlockItemId: string,
+    planVariantId: string,
+  ): Trip | null {
+    const draggedItem = current.itineraryItems.find(
+      (item) => item.id === draggedItemId,
+    );
+    const planBlock = current.itineraryItems.find(
+      (item) => item.id === planBlockItemId,
+    );
+    if (
+      !draggedItem ||
+      !planBlock ||
+      !planBlock.isPlanBlock ||
+      draggedItem.id === planBlock.id ||
+      draggedItem.planVariantId !== planVariantId ||
+      planBlock.planVariantId !== planVariantId ||
+      hasDescendantItem(current.itineraryItems, draggedItem.id, planBlock.id)
+    )
+      return null;
+
+    const targetDayItems = current.itineraryItems
+      .filter(
+        (item) =>
+          item.planVariantId === planBlock.planVariantId &&
+          item.day === planBlock.day &&
+          item.id !== draggedItemId,
+      )
+      .sort(
+        (a, b) =>
+          a.sortOrder - b.sortOrder || a.startTime.localeCompare(b.startTime),
+      );
+    const blockIndex = targetDayItems.findIndex(
+      (item) => item.id === planBlockItemId,
+    );
+    if (blockIndex < 0) return null;
+    const childCount = targetDayItems.filter(
+      (item) => item.parentItemId === planBlockItemId,
+    ).length;
+    const insertIndex = blockIndex + childCount + 1;
+    const nextDayItems = [
+      ...targetDayItems.slice(0, insertIndex),
+      {
+        ...draggedItem,
+        day: planBlock.day,
+        parentItemId: planBlock.id,
+        updatedAt: localMutationTimestamp,
+        version: draggedItem.version + 1,
+      },
+      ...targetDayItems.slice(insertIndex),
+    ].map((item, index) => ({ ...item, sortOrder: (index + 1) * 100 }));
+    const nextItemsById = new Map(nextDayItems.map((item) => [item.id, item]));
+
+    return {
+      ...current,
+      itineraryItems: current.itineraryItems.map(
+        (item) => nextItemsById.get(item.id) ?? item,
+      ),
+    };
+  }
+
+  function hasDescendantItem(
+    items: ItineraryItem[],
+    parentItemId: string,
+    candidateItemId: string,
+  ): boolean {
+    let currentItem = items.find((item) => item.id === candidateItemId);
+    while (currentItem?.parentItemId) {
+      if (currentItem.parentItemId === parentItemId) return true;
+      currentItem = items.find((item) => item.id === currentItem?.parentItemId);
+    }
+    return false;
   }
 
   async function updateSelectedStop(values: StopFormValues) {
@@ -3518,6 +3660,7 @@ export function SagittariusApp({
                   onAddStop={addStop}
                   onSelectItem={selectItem}
                   onMoveItem={moveItem}
+                  onMoveItemIntoPlanBlock={moveItemIntoPlanBlock}
                   onMoveItemToDay={moveItemToDay}
                   onMoveItemToPath={moveItemToPath}
                   onUpdateItemInline={updateItineraryItemInline}

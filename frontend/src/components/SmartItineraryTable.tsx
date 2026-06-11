@@ -81,6 +81,7 @@ interface SmartItineraryTableProps {
   onAddStop: (day?: string) => void;
   onSelectItem: (itemId: string) => void;
   onMoveItem: (draggedItemId: string, targetItemId: string) => void;
+  onMoveItemIntoPlanBlock: (draggedItemId: string, planBlockItemId: string) => void;
   onMoveItemToDay: (draggedItemId: string, targetDay: string) => void;
   onMoveItemToPath?: (itemId: string, pathId: string) => void;
   onUpdateItemInline?: (
@@ -220,6 +221,8 @@ const inlineActivityStackClassName = "grid min-w-0 gap-0.5";
 const childActivityStackClassName = "border-l-2 border-(--color-route-border) pl-3";
 const blockToggleButtonClassName =
   "inline-flex min-h-7 w-fit items-center gap-1.5 rounded-(--radius-sm) border border-(--color-route-border) bg-(--color-route-soft) px-2 text-[11px] font-extrabold text-(--color-route) aria-expanded:[&_.icon]:rotate-90 [&_.icon]:size-3.5 [&_.icon]:transition-transform";
+const blockDropButtonClassName =
+  "inline-flex min-h-7 w-fit items-center gap-1.5 rounded-(--radius-sm) border border-dashed border-(--color-route-border) bg-(--color-surface) px-2 text-[11px] font-extrabold text-(--color-route) transition-[background,border-color,box-shadow] data-[active=true]:bg-(--color-route-soft) data-[active=true]:shadow-[0_0_0_2px_rgb(186_230_253_/_0.72)] disabled:cursor-not-allowed disabled:opacity-50";
 const inlineFieldClassName =
   "inline-row-field min-h-[24px] w-full min-w-0 rounded-(--radius-sm) border border-transparent bg-transparent px-1.5 py-0 text-xs leading-4 text-(--color-text) outline-none transition-[background,border-color,box-shadow] duration-150 placeholder:text-(--color-text-muted) hover:not-read-only:border-(--color-border) hover:not-read-only:bg-(--color-surface) focus:border-(--color-route-border) focus:bg-(--color-surface) focus:shadow-[0_0_0_2px_rgb(186_230_253_/_0.55)] read-only:cursor-pointer read-only:truncate read-only:px-0 read-only:font-semibold disabled:cursor-not-allowed disabled:text-(--color-text-muted)";
 const inlineActivityFieldClassName = cn(inlineFieldClassName, "font-semibold");
@@ -354,6 +357,7 @@ export function SmartItineraryTable({
   onAddStop,
   onSelectItem,
   onMoveItem,
+  onMoveItemIntoPlanBlock,
   onMoveItemToDay,
   onMoveItemToPath,
   onUpdateItemInline,
@@ -388,7 +392,8 @@ export function SmartItineraryTable({
     draggedItemId: string | null;
     overItemId: string | null;
     overDay: string | null;
-  }>({ draggedItemId: null, overItemId: null, overDay: null });
+    overBlockId: string | null;
+  }>({ draggedItemId: null, overItemId: null, overDay: null, overBlockId: null });
   const [pendingDeleteItem, setPendingDeleteItem] =
     useState<ItineraryItem | null>(null);
   const [durationEditor, setDurationEditor] = useState<{
@@ -516,7 +521,12 @@ export function SmartItineraryTable({
   function startDrag(event: DragEvent<HTMLButtonElement>, itemId: string) {
     event.dataTransfer.effectAllowed = "move";
     event.dataTransfer.setData("text/plain", itemId);
-    setDragState({ draggedItemId: itemId, overItemId: null, overDay: null });
+    setDragState({
+      draggedItemId: itemId,
+      overItemId: null,
+      overDay: null,
+      overBlockId: null,
+    });
   }
 
   function startTouchDrag(
@@ -525,7 +535,12 @@ export function SmartItineraryTable({
   ) {
     if (!canRestructureItems || event.pointerType !== "pen") return;
     touchDragRef.current = { itemId, pointerId: event.pointerId };
-    setDragState({ draggedItemId: itemId, overItemId: null, overDay: null });
+    setDragState({
+      draggedItemId: itemId,
+      overItemId: null,
+      overDay: null,
+      overBlockId: null,
+    });
     event.currentTarget.setPointerCapture?.(event.pointerId);
     event.preventDefault();
   }
@@ -538,7 +553,12 @@ export function SmartItineraryTable({
     const touch = event.changedTouches[0];
     if (!touch) return;
     touchDragRef.current = { itemId, touchId: touch.identifier };
-    setDragState({ draggedItemId: itemId, overItemId: null, overDay: null });
+    setDragState({
+      draggedItemId: itemId,
+      overItemId: null,
+      overDay: null,
+      overBlockId: null,
+    });
     event.preventDefault();
   }
 
@@ -552,7 +572,36 @@ export function SmartItineraryTable({
     setDragState((current) =>
       current.overItemId === targetItemId && current.overDay === null
         ? current
-        : { draggedItemId, overItemId: targetItemId, overDay: null },
+        : {
+            draggedItemId,
+            overItemId: targetItemId,
+            overDay: null,
+            overBlockId: null,
+          },
+    );
+  }
+
+  function previewBlockDrop(
+    event: DragEvent<HTMLElement>,
+    planBlockItemId: string,
+  ) {
+    if (!canRestructureItems) return;
+    const draggedItemId =
+      dragState.draggedItemId ?? event.dataTransfer.getData("text/plain");
+    if (!draggedItemId || draggedItemId === planBlockItemId) return;
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "move";
+    setDragState((current) =>
+      current.overBlockId === planBlockItemId &&
+      current.overItemId === null &&
+      current.overDay === null
+        ? current
+        : {
+            draggedItemId,
+            overItemId: null,
+            overDay: null,
+            overBlockId: planBlockItemId,
+          },
     );
   }
 
@@ -566,7 +615,12 @@ export function SmartItineraryTable({
     setDragState((current) =>
       current.overDay === targetDay && current.overItemId === null
         ? current
-        : { draggedItemId, overItemId: null, overDay: targetDay },
+        : {
+            draggedItemId,
+            overItemId: null,
+            overDay: targetDay,
+            overBlockId: null,
+          },
     );
   }
 
@@ -576,6 +630,20 @@ export function SmartItineraryTable({
     const draggedItemId = event.dataTransfer.getData("text/plain");
     if (draggedItemId && draggedItemId !== targetItemId)
       onMoveItem(draggedItemId, targetItemId);
+    clearDragPreview();
+  }
+
+  function dropIntoBlock(
+    event: DragEvent<HTMLElement>,
+    planBlockItemId: string,
+  ) {
+    if (!canRestructureItems) return;
+    event.preventDefault();
+    event.stopPropagation();
+    const draggedItemId =
+      event.dataTransfer.getData("text/plain") || dragState.draggedItemId;
+    if (draggedItemId && draggedItemId !== planBlockItemId)
+      onMoveItemIntoPlanBlock(draggedItemId, planBlockItemId);
     clearDragPreview();
   }
 
@@ -589,7 +657,12 @@ export function SmartItineraryTable({
   }
 
   function clearDragPreview() {
-    setDragState({ draggedItemId: null, overItemId: null, overDay: null });
+    setDragState({
+      draggedItemId: null,
+      overItemId: null,
+      overDay: null,
+      overBlockId: null,
+    });
     touchDragRef.current = null;
   }
 
@@ -598,8 +671,22 @@ export function SmartItineraryTable({
       const current = touchDragRef.current;
       if (!current || current.pointerId !== event.pointerId) return;
       const target = document.elementFromPoint(event.clientX, event.clientY);
+      const blockDrop = target?.closest<HTMLElement>("[data-plan-block-drop]");
       const itemRow = target?.closest<HTMLElement>("[data-item-id]");
       const dayRow = target?.closest<HTMLElement>("[data-day-drop]");
+      if (blockDrop) {
+        const targetBlockId = blockDrop.dataset.planBlockDrop;
+        if (targetBlockId && targetBlockId !== current.itemId) {
+          setDragState({
+            draggedItemId: current.itemId,
+            overItemId: null,
+            overDay: null,
+            overBlockId: targetBlockId,
+          });
+          event.preventDefault();
+        }
+        return;
+      }
       if (itemRow) {
         const targetItemId = itemRow.dataset.itemId;
         if (targetItemId && targetItemId !== current.itemId) {
@@ -607,6 +694,7 @@ export function SmartItineraryTable({
             draggedItemId: current.itemId,
             overItemId: targetItemId,
             overDay: null,
+            overBlockId: null,
           });
           event.preventDefault();
         }
@@ -619,6 +707,7 @@ export function SmartItineraryTable({
             draggedItemId: current.itemId,
             overItemId: null,
             overDay: targetDay,
+            overBlockId: null,
           });
           event.preventDefault();
         }
@@ -629,11 +718,15 @@ export function SmartItineraryTable({
       const current = touchDragRef.current;
       if (!current || current.pointerId !== event.pointerId) return;
       const target = document.elementFromPoint(event.clientX, event.clientY);
+      const blockDrop = target?.closest<HTMLElement>("[data-plan-block-drop]");
       const itemRow = target?.closest<HTMLElement>("[data-item-id]");
       const dayRow = target?.closest<HTMLElement>("[data-day-drop]");
+      const targetBlockId = blockDrop?.dataset.planBlockDrop;
       const targetItemId = itemRow?.dataset.itemId;
       const targetDay = dayRow?.dataset.dayDrop;
-      if (targetItemId && targetItemId !== current.itemId)
+      if (targetBlockId && targetBlockId !== current.itemId)
+        onMoveItemIntoPlanBlock(current.itemId, targetBlockId);
+      else if (targetItemId && targetItemId !== current.itemId)
         onMoveItem(current.itemId, targetItemId);
       else if (targetDay) onMoveItemToDay(current.itemId, targetDay);
       clearDragPreview();
@@ -652,8 +745,22 @@ export function SmartItineraryTable({
       );
       if (!touch) return;
       const target = document.elementFromPoint(touch.clientX, touch.clientY);
+      const blockDrop = target?.closest<HTMLElement>("[data-plan-block-drop]");
       const itemRow = target?.closest<HTMLElement>("[data-item-id]");
       const dayRow = target?.closest<HTMLElement>("[data-day-drop]");
+      if (blockDrop) {
+        const targetBlockId = blockDrop.dataset.planBlockDrop;
+        if (targetBlockId && targetBlockId !== current.itemId) {
+          setDragState({
+            draggedItemId: current.itemId,
+            overItemId: null,
+            overDay: null,
+            overBlockId: targetBlockId,
+          });
+          event.preventDefault();
+        }
+        return;
+      }
       if (itemRow) {
         const targetItemId = itemRow.dataset.itemId;
         if (targetItemId && targetItemId !== current.itemId) {
@@ -661,6 +768,7 @@ export function SmartItineraryTable({
             draggedItemId: current.itemId,
             overItemId: targetItemId,
             overDay: null,
+            overBlockId: null,
           });
           event.preventDefault();
         }
@@ -673,6 +781,7 @@ export function SmartItineraryTable({
             draggedItemId: current.itemId,
             overItemId: null,
             overDay: targetDay,
+            overBlockId: null,
           });
           event.preventDefault();
         }
@@ -687,11 +796,15 @@ export function SmartItineraryTable({
       );
       if (!touch) return;
       const target = document.elementFromPoint(touch.clientX, touch.clientY);
+      const blockDrop = target?.closest<HTMLElement>("[data-plan-block-drop]");
       const itemRow = target?.closest<HTMLElement>("[data-item-id]");
       const dayRow = target?.closest<HTMLElement>("[data-day-drop]");
+      const targetBlockId = blockDrop?.dataset.planBlockDrop;
       const targetItemId = itemRow?.dataset.itemId;
       const targetDay = dayRow?.dataset.dayDrop;
-      if (targetItemId && targetItemId !== current.itemId)
+      if (targetBlockId && targetBlockId !== current.itemId)
+        onMoveItemIntoPlanBlock(current.itemId, targetBlockId);
+      else if (targetItemId && targetItemId !== current.itemId)
         onMoveItem(current.itemId, targetItemId);
       else if (targetDay) onMoveItemToDay(current.itemId, targetDay);
       clearDragPreview();
@@ -720,7 +833,12 @@ export function SmartItineraryTable({
       window.removeEventListener("touchend", handleTouchEnd);
       window.removeEventListener("touchcancel", cancelTouch);
     };
-  }, [canRestructureItems, onMoveItem, onMoveItemToDay]);
+  }, [
+    canRestructureItems,
+    onMoveItem,
+    onMoveItemIntoPlanBlock,
+    onMoveItemToDay,
+  ]);
 
   function importFile(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
@@ -988,13 +1106,16 @@ export function SmartItineraryTable({
               onClearDayPath={onClearDayPath}
               onAutoResolveDayOverlaps={onAutoResolveDayOverlaps}
               onDropItem={dropItem}
+              onDropIntoPlanBlock={dropIntoBlock}
               onDropOnDay={dropOnDay}
               onAddStop={onAddStop}
               onMoveItem={onMoveItem}
+              onMoveItemIntoPlanBlock={onMoveItemIntoPlanBlock}
               onMoveItemToDay={onMoveItemToDay}
               onMoveItemToPath={onMoveItemToPath}
               onUpdateItemInline={onUpdateItemInline}
               onPreviewDayDrop={previewDayDrop}
+              onPreviewBlockDrop={previewBlockDrop}
               onPreviewDrop={previewDrop}
               onSelectItem={onSelectItem}
               onStartDrag={startDrag}
@@ -1261,13 +1382,16 @@ function DayGroup({
   onClearDayPath,
   onAutoResolveDayOverlaps,
   onDropItem,
+  onDropIntoPlanBlock,
   onDropOnDay,
   onAddStop,
   onMoveItem,
+  onMoveItemIntoPlanBlock,
   onMoveItemToDay,
   onMoveItemToPath,
   onUpdateItemInline,
   onPreviewDayDrop,
+  onPreviewBlockDrop,
   onPreviewDrop,
   onSelectItem,
   onStartDrag,
@@ -1302,15 +1426,24 @@ function DayGroup({
     draggedItemId: string | null;
     overItemId: string | null;
     overDay: string | null;
+    overBlockId: string | null;
   };
   onClearDragPreview: () => void;
   onChangeDayPath?: (day: string, pathId: string) => void;
   onClearDayPath?: (day: string) => void;
   onAutoResolveDayOverlaps?: (day: string) => void;
   onDropItem: (event: DragEvent<HTMLElement>, targetItemId: string) => void;
+  onDropIntoPlanBlock: (
+    event: DragEvent<HTMLElement>,
+    planBlockItemId: string,
+  ) => void;
   onDropOnDay: (event: DragEvent<HTMLElement>, targetDay: string) => void;
   onAddStop: (day?: string) => void;
   onMoveItem: (draggedItemId: string, targetItemId: string) => void;
+  onMoveItemIntoPlanBlock: (
+    draggedItemId: string,
+    planBlockItemId: string,
+  ) => void;
   onMoveItemToDay: (draggedItemId: string, targetDay: string) => void;
   onMoveItemToPath?: (itemId: string, pathId: string) => void;
   onUpdateItemInline?: (
@@ -1318,6 +1451,10 @@ function DayGroup({
     patch: InlineItineraryItemPatch,
   ) => void | Promise<void>;
   onPreviewDayDrop: (event: DragEvent<HTMLElement>, targetDay: string) => void;
+  onPreviewBlockDrop: (
+    event: DragEvent<HTMLElement>,
+    planBlockItemId: string,
+  ) => void;
   onPreviewDrop: (event: DragEvent<HTMLElement>, targetItemId: string) => void;
   onSelectItem: (itemId: string) => void;
   onStartDrag: (event: DragEvent<HTMLButtonElement>, itemId: string) => void;
@@ -1565,18 +1702,55 @@ function DayGroup({
                       <span>{itineraryLabels.openDetails}</span>
                     </button>
                     {item.isPlanBlock ? (
-                      <button
-                        type="button"
-                        className={blockToggleButtonClassName}
-                        aria-expanded={!blockCollapsed}
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          onTogglePlanBlock(item.id);
-                        }}
-                      >
-                        <Icon name="chevronRight" />
-                        <span>{blockCollapsed ? "Expand block" : "Collapse block"}</span>
-                      </button>
+                      <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+                        <button
+                          type="button"
+                          className={blockToggleButtonClassName}
+                          aria-expanded={!blockCollapsed}
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            onTogglePlanBlock(item.id);
+                          }}
+                        >
+                          <Icon name="chevronRight" />
+                          <span>
+                            {blockCollapsed ? "Expand block" : "Collapse block"}
+                          </span>
+                        </button>
+                        <button
+                          type="button"
+                          className={blockDropButtonClassName}
+                          data-plan-block-drop={item.id}
+                          data-active={
+                            dragState.overBlockId === item.id
+                              ? "true"
+                              : undefined
+                          }
+                          disabled={!canEdit}
+                          onDragOver={(event) =>
+                            onPreviewBlockDrop(event, item.id)
+                          }
+                          onDrop={(event) =>
+                            onDropIntoPlanBlock(event, item.id)
+                          }
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            if (
+                              dragState.draggedItemId &&
+                              dragState.draggedItemId !== item.id
+                            ) {
+                              onMoveItemIntoPlanBlock(
+                                dragState.draggedItemId,
+                                item.id,
+                              );
+                              onClearDragPreview();
+                            }
+                          }}
+                        >
+                          <Icon name="plus" />
+                          <span>Into block</span>
+                        </button>
+                      </div>
                     ) : null}
                     <InlineTextField
                       ariaLabel={itineraryLabels.row.inlineActivity({
@@ -1887,6 +2061,7 @@ function getRowClassName(
     draggedItemId: string | null;
     overItemId: string | null;
     overDay: string | null;
+    overBlockId: string | null;
   },
   samePathOverlapItemIds: Set<string> = new Set(),
 ): string {
