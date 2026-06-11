@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { ApiVersionInfo, WebVersionInfo } from "@/src/app-version";
+import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
 import { Icon } from "./icons";
 
@@ -42,6 +43,7 @@ const detailValueClassName = "break-words text-sm font-extrabold leading-5 text-
 const mutedValueClassName = "text-sm font-semibold leading-5 text-(--color-text-muted)";
 
 export function AboutAppPage({ webVersion }: AboutAppPageProps) {
+  const { t } = useI18n();
   const [apiVersion, setApiVersion] = useState<ApiVersionState>({ status: "loading" });
 
   useEffect(() => {
@@ -66,7 +68,7 @@ export function AboutAppPage({ webVersion }: AboutAppPageProps) {
   }, [webVersion.apiVersionUrl]);
 
   const apiValue = apiVersion.status === "ready" ? apiVersion.value : null;
-  const statusLabel = apiVersion.status === "ready" ? "API connected" : apiVersion.status === "loading" ? "Checking API" : "API unavailable";
+  const statusLabel = apiVersion.status === "ready" ? t.aboutApp.status.connected : apiVersion.status === "loading" ? t.aboutApp.status.checking : t.aboutApp.status.unavailable;
   const statusClassName = apiVersion.status === "ready" ? statusPillReadyClassName : apiVersion.status === "loading" ? statusPillLoadingClassName : statusPillUnavailableClassName;
 
   return (
@@ -74,10 +76,10 @@ export function AboutAppPage({ webVersion }: AboutAppPageProps) {
       <div className={shellClassName}>
         <header className={heroClassName}>
           <div className={heroCopyClassName}>
-            <span className={eyebrowClassName}><Icon name="settings" /> Application status</span>
-            <h1 className={titleClassName}>About Joii</h1>
+            <span className={eyebrowClassName}><Icon name="settings" /> {t.aboutApp.eyebrow}</span>
+            <h1 className={titleClassName}>{t.aboutApp.title}</h1>
             <p className={subtitleClassName}>
-              Version, runtime, and deployment details for the shared travel planning cockpit.
+              {t.aboutApp.subtitle}
             </p>
             <span className={cn(statusPillClassName, statusClassName)}>
               <Icon name={apiVersion.status === "ready" ? "check" : apiVersion.status === "loading" ? "clock" : "warning"} />
@@ -92,44 +94,44 @@ export function AboutAppPage({ webVersion }: AboutAppPageProps) {
               <circle cx="286" cy="78" r="10" />
             </svg>
             <div className={heroStatusCardClassName}>
-              <span className={labelClassName}>Deployment track</span>
+              <span className={labelClassName}>{t.aboutApp.deploymentTrack}</span>
               <strong className={detailValueClassName}>{webVersion.environment}</strong>
             </div>
           </div>
         </header>
 
         <section className={sectionClassName} aria-labelledby="version-heading">
-          <h2 className={sectionTitleClassName} id="version-heading">Application versions</h2>
+          <h2 className={sectionTitleClassName} id="version-heading">{t.aboutApp.versionsTitle}</h2>
           <div className={versionGridClassName}>
             <VersionPanel
-              label="Web app version"
+              label={t.aboutApp.webVersion}
               icon="layout"
               value={`${webVersion.service} v${webVersion.version}`}
               details={[
-                ["Build SHA", webVersion.buildSha],
-                ["Build time", webVersion.buildTime],
+                [t.aboutApp.buildSha, webVersion.buildSha],
+                [t.aboutApp.buildTime, webVersion.buildTime],
               ]}
             />
             <VersionPanel
-              label="API version"
+              label={t.aboutApp.apiVersion}
               icon="cloud"
-              value={apiValue ? `${apiValue.service} v${apiValue.version}` : apiVersion.status === "loading" ? "Checking API version" : "API version unavailable"}
+              value={apiValue ? `${apiValue.service} v${apiValue.version}` : apiVersion.status === "loading" ? t.aboutApp.checkingApiVersion : t.aboutApp.apiVersionUnavailable}
               muted={!apiValue}
               details={[
-                ["Build SHA", apiValue?.buildSha ?? "unavailable"],
-                ["Build time", apiValue?.buildTime ?? "unavailable"],
+                [t.aboutApp.buildSha, apiValue?.buildSha ?? t.aboutApp.unavailableValue],
+                [t.aboutApp.buildTime, apiValue?.buildTime ?? t.aboutApp.unavailableValue],
               ]}
             />
           </div>
         </section>
 
         <section className={sectionClassName} aria-labelledby="details-heading">
-          <h2 className={sectionTitleClassName} id="details-heading">System details</h2>
+          <h2 className={sectionTitleClassName} id="details-heading">{t.aboutApp.detailsTitle}</h2>
           <div className={detailGridClassName}>
-            <DetailRow label="Environment" value={apiValue?.environment ?? webVersion.environment} />
-            <DetailRow label="Runtime mode" value={webVersion.runtimeMode} />
-            <DetailRow label="API host" value={webVersion.apiHost} />
-            <DetailRow label="Schema version" value={apiValue?.schemaVersion ?? webVersion.schemaVersion} />
+            <DetailRow label={t.aboutApp.environment} value={apiValue?.environment ?? webVersion.environment} />
+            <DetailRow label={t.aboutApp.runtimeMode} value={webVersion.runtimeMode} />
+            <DetailRow label={t.aboutApp.apiHost} value={webVersion.apiHost} />
+            <DetailRow label={t.aboutApp.schemaVersion} value={apiValue?.schemaVersion ?? webVersion.schemaVersion} />
           </div>
         </section>
       </div>

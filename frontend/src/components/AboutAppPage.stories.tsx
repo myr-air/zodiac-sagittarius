@@ -68,6 +68,16 @@ export const ApiUnavailable: Story = {
   },
 };
 
+export const Thai: Story = {
+  args: Ready.args,
+  parameters: { locale: "th" },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole("heading", { name: "เกี่ยวกับ Joii" })).toBeVisible();
+    await expect(await canvas.findByText("เชื่อมต่อ API แล้ว")).toBeVisible();
+    await expect(canvas.getByRole("heading", { name: "เวอร์ชันแอป" })).toBeVisible();
+  },
+};
+
 export const Mobile: Story = {
   args: Ready.args,
   parameters: { viewport: { defaultViewport: "mobile320" } },

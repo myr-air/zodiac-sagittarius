@@ -57,4 +57,27 @@ describe("AboutAppPage", () => {
     });
     expect(screen.getAllByText("local")).toHaveLength(2);
   });
+
+  it("renders the status page in Thai", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          buildSha: "def5678",
+          buildTime: "2026-06-08T02:03:04.000Z",
+          environment: "production",
+          schemaVersion: "0019_photo_album_links",
+          service: "sagittarius-api",
+          version: "0.1.0",
+        }),
+      }),
+    );
+
+    renderWithI18n(<AboutAppPage webVersion={webVersion} />, { locale: "th" });
+
+    expect(await screen.findByRole("heading", { name: "เกี่ยวกับ Joii" })).toBeInTheDocument();
+    expect(screen.getByText("เวอร์ชันเว็บแอป")).toBeInTheDocument();
+    expect(await screen.findByText("เชื่อมต่อ API แล้ว")).toBeInTheDocument();
+  });
 });
