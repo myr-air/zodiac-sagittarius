@@ -107,6 +107,8 @@ import type {
   PlaceResolutionCandidate,
   PlaceResolutionRequest,
   PlaceResolutionResponse,
+  PlanCheck,
+  PlanSuggestion,
   SettlementSuggestion,
   StopNote,
   Suggestion,
@@ -243,7 +245,7 @@ export function SagittariusApp({
   accountSuccessRedirectHref,
   portalSection = "dashboard",
 }: SagittariusAppProps) {
-  const { t } = useI18n();
+  const { locale, t } = useI18n();
   /* v8 ignore next 3 */
   const resolvedApiClient = useMemo(
     () =>
@@ -296,6 +298,8 @@ export function SagittariusApp({
   const [suggestions, setSuggestions] = useState<Suggestion[]>(() =>
     tripFixtureSuggestions.map((suggestion) => ({ ...suggestion })),
   );
+  const [latestPlanCheck, setLatestPlanCheck] = useState<PlanCheck | null>(null);
+  const [planCheckRunning, setPlanCheckRunning] = useState(false);
   const [tasks, setTasks] = useState<TripTask[]>(() =>
     tripFixtureTasks.map((task) => ({ ...task })),
   );
@@ -933,7 +937,14 @@ export function SagittariusApp({
         (item) => item.id === targetItemId,
       );
       if (!draggedItem || !targetItem) return;
-      if (draggedItem.day !== targetItem.day) {
+      const movedItem = nextTrip.itineraryItems.find(
+        (item) => item.id === draggedItemId,
+      );
+      if (!movedItem) return;
+      const parentChanged =
+        (draggedItem.parentItemId ?? null) !==
+        (movedItem.parentItemId ?? null);
+      if (draggedItem.day !== movedItem.day || parentChanged) {
         await resolvedApiClient.patchItineraryItem(
           trip.id,
           draggedItemId,
@@ -941,7 +952,11 @@ export function SagittariusApp({
           {
             clientMutationId: nextClientMutationId("itinerary-day-move"),
             expectedVersion: draggedItem.version,
-            patch: { day: targetItem.day },
+            patch: {
+              day: movedItem.day,
+              parentItemId: movedItem.parentItemId ?? null,
+              sortOrder: movedItem.sortOrder,
+            },
           },
         );
         setTripState((current) => ({ ...current, trip: nextTrip }));
@@ -992,6 +1007,53 @@ export function SagittariusApp({
     setContextRailVisibility(true);
   }
 
+  async function moveItemIntoPlanBlock(
+    draggedItemId: string,
+    planBlockItemId: string,
+  ) {
+    /* v8 ignore next */
+    if (!canEdit || draggedItemId === planBlockItemId) return;
+    const nextTrip = moveTripItemIntoPlanBlock(
+      trip,
+      draggedItemId,
+      planBlockItemId,
+      selectedPlanVariantId,
+    );
+    if (!nextTrip) return;
+
+    const draggedItem = trip.itineraryItems.find(
+      (item) => item.id === draggedItemId,
+    );
+    const movedItem = nextTrip.itineraryItems.find(
+      (item) => item.id === draggedItemId,
+    );
+    if (!draggedItem || !movedItem) return;
+
+    if (isApiMode && resolvedApiClient && participantSession) {
+      await resolvedApiClient.patchItineraryItem(
+        trip.id,
+        draggedItemId,
+        participantSession.sessionToken,
+        {
+          clientMutationId: nextClientMutationId("itinerary-block-move"),
+          expectedVersion: draggedItem.version,
+          patch: {
+            day: movedItem.day,
+            parentItemId: movedItem.parentItemId ?? null,
+            sortOrder: movedItem.sortOrder,
+          },
+        },
+      );
+      setTripState((current) => ({ ...current, trip: nextTrip }));
+      setSelectedItemId(draggedItemId);
+      setContextRailVisibility(true);
+      return;
+    }
+
+    commitTrip(() => nextTrip, draggedItemId);
+    setContextRailVisibility(true);
+  }
+
   async function moveItemToDay(draggedItemId: string, targetDay: string) {
     /* v8 ignore next */
     if (!canEdit) return;
@@ -1016,7 +1078,7 @@ export function SagittariusApp({
         {
           clientMutationId: nextClientMutationId("itinerary-day-move"),
           expectedVersion: draggedItem.version,
-          patch: { day: targetDay },
+          patch: { day: targetDay, parentItemId: null },
         },
       );
       setTripState((current) => ({ ...current, trip: nextTrip }));
@@ -1104,6 +1166,12 @@ export function SagittariusApp({
       tripId: trip.id,
       planVariantId: selectedPlanVariantId,
       ...pathFields,
+      parentItemId: values.parentItemId ?? null,
+      itemKind: values.itemKind,
+      timeMode: values.timeMode,
+      isPlanBlock: values.isPlanBlock,
+      status: values.status,
+      priority: values.priority,
       day,
       sortOrder: getNextSortOrder(planItems, day),
       startTime: values.startTime,
@@ -1151,6 +1219,12 @@ export function SagittariusApp({
           pathId: branchPlacement.item.pathId,
           pathName: branchPlacement.item.pathName,
           pathRole: branchPlacement.item.pathRole,
+          parentItemId: values.parentItemId ?? null,
+          itemKind: values.itemKind,
+          timeMode: values.timeMode,
+          isPlanBlock: values.isPlanBlock,
+          status: values.status,
+          priority: values.priority,
           day,
           startTime: values.startTime,
           activity: values.activity,
@@ -1207,6 +1281,32 @@ export function SagittariusApp({
     setDialogState(null);
   }
 
+  async function promoteFoodRecommendation(item: ItineraryItem) {
+    if (!canEdit || item.itemKind !== "foodRecommendation") return;
+    await createStop({
+      day: item.day,
+      parentItemId: item.parentItemId ?? null,
+      itemKind: "meal",
+      timeMode: item.timeMode ?? "flexible",
+      isPlanBlock: false,
+      status: "planned",
+      priority: item.priority ?? "normal",
+      startTime: item.startTime,
+      activity: item.activity,
+      activityType: "food",
+      place: item.place,
+      durationMinutes: item.durationMinutes,
+      transportation: item.transportation,
+      details: {
+        ...(item.details ?? {}),
+        promotedFromItemId: item.id,
+        sourceItemKind: item.itemKind,
+      },
+      note: item.note,
+      saveUnresolved: true,
+    });
+  }
+
   function moveTripItem(
     current: Trip,
     draggedItemId: string,
@@ -1226,6 +1326,12 @@ export function SagittariusApp({
       !targetItem ||
       draggedItem.planVariantId !== planVariantId ||
       targetItem.planVariantId !== planVariantId
+    )
+      return null;
+    const nextParentItemId = targetItem.parentItemId ?? null;
+    if (
+      nextParentItemId === draggedItem.id ||
+      hasDescendantItem(current.itineraryItems, draggedItem.id, targetItem.id)
     )
       return null;
 
@@ -1253,6 +1359,7 @@ export function SagittariusApp({
       {
         ...draggedItem,
         day: targetItem.day,
+        parentItemId: nextParentItemId,
         updatedAt: localMutationTimestamp,
         version: draggedItem.version + 1,
       },
@@ -1296,6 +1403,7 @@ export function SagittariusApp({
       {
         ...draggedItem,
         day: targetDay,
+        parentItemId: null,
         updatedAt: localMutationTimestamp,
         version: draggedItem.version + 1,
       },
@@ -1308,6 +1416,82 @@ export function SagittariusApp({
         (item) => nextItemsById.get(item.id) ?? item,
       ),
     };
+  }
+
+  function moveTripItemIntoPlanBlock(
+    current: Trip,
+    draggedItemId: string,
+    planBlockItemId: string,
+    planVariantId: string,
+  ): Trip | null {
+    const draggedItem = current.itineraryItems.find(
+      (item) => item.id === draggedItemId,
+    );
+    const planBlock = current.itineraryItems.find(
+      (item) => item.id === planBlockItemId,
+    );
+    if (
+      !draggedItem ||
+      !planBlock ||
+      !planBlock.isPlanBlock ||
+      draggedItem.id === planBlock.id ||
+      draggedItem.planVariantId !== planVariantId ||
+      planBlock.planVariantId !== planVariantId ||
+      hasDescendantItem(current.itineraryItems, draggedItem.id, planBlock.id)
+    )
+      return null;
+
+    const targetDayItems = current.itineraryItems
+      .filter(
+        (item) =>
+          item.planVariantId === planBlock.planVariantId &&
+          item.day === planBlock.day &&
+          item.id !== draggedItemId,
+      )
+      .sort(
+        (a, b) =>
+          a.sortOrder - b.sortOrder || a.startTime.localeCompare(b.startTime),
+      );
+    const blockIndex = targetDayItems.findIndex(
+      (item) => item.id === planBlockItemId,
+    );
+    if (blockIndex < 0) return null;
+    const childCount = targetDayItems.filter(
+      (item) => item.parentItemId === planBlockItemId,
+    ).length;
+    const insertIndex = blockIndex + childCount + 1;
+    const nextDayItems = [
+      ...targetDayItems.slice(0, insertIndex),
+      {
+        ...draggedItem,
+        day: planBlock.day,
+        parentItemId: planBlock.id,
+        updatedAt: localMutationTimestamp,
+        version: draggedItem.version + 1,
+      },
+      ...targetDayItems.slice(insertIndex),
+    ].map((item, index) => ({ ...item, sortOrder: (index + 1) * 100 }));
+    const nextItemsById = new Map(nextDayItems.map((item) => [item.id, item]));
+
+    return {
+      ...current,
+      itineraryItems: current.itineraryItems.map(
+        (item) => nextItemsById.get(item.id) ?? item,
+      ),
+    };
+  }
+
+  function hasDescendantItem(
+    items: ItineraryItem[],
+    parentItemId: string,
+    candidateItemId: string,
+  ): boolean {
+    let currentItem = items.find((item) => item.id === candidateItemId);
+    while (currentItem?.parentItemId) {
+      if (currentItem.parentItemId === parentItemId) return true;
+      currentItem = items.find((item) => item.id === currentItem?.parentItemId);
+    }
+    return false;
   }
 
   async function updateSelectedStop(values: StopFormValues) {
@@ -1356,6 +1540,12 @@ export function SagittariusApp({
           expectedVersion: dialogState.item.version,
           patch: {
             day: editDay,
+            parentItemId: values.parentItemId ?? null,
+            itemKind: values.itemKind,
+            timeMode: values.timeMode,
+            isPlanBlock: values.isPlanBlock,
+            status: values.status,
+            priority: values.priority,
             startTime: values.startTime,
             activity: values.activity,
             activityType: values.activityType,
@@ -1418,6 +1608,12 @@ export function SagittariusApp({
       const updatedItem = {
         ...dialogState.item,
         day: editDay,
+        parentItemId: values.parentItemId ?? null,
+        itemKind: values.itemKind,
+        timeMode: values.timeMode,
+        isPlanBlock: values.isPlanBlock,
+        status: values.status,
+        priority: values.priority,
         startTime: values.startTime,
         activity: values.activity,
         activityType: values.activityType,
@@ -1859,6 +2055,7 @@ export function SagittariusApp({
   function replaceCockpitFromApi(cockpit: TripCockpit) {
     setTripState({ trip: cockpit.trip, past: [], future: [] });
     setSuggestions(cockpit.suggestions);
+    setLatestPlanCheck(cockpit.latestPlanCheck ?? null);
     setTasks(cockpit.tasks);
     setStopNotes(cockpit.stopNotes);
     setBackendExpenseSummary(cockpit.expenseSummary);
@@ -2092,6 +2289,84 @@ export function SagittariusApp({
     setContextRailVisibility(true);
   }
 
+  async function runPlanCheck() {
+    if (!canEdit) return;
+    setPlanCheckRunning(true);
+    try {
+      if (isApiMode && resolvedApiClient?.runPlanCheck && participantSession) {
+        const check = await resolvedApiClient.runPlanCheck(
+          trip.id,
+          participantSession.sessionToken,
+        );
+        setLatestPlanCheck(check);
+        return;
+      }
+      setLatestPlanCheck(buildLocalPlanCheck(trip, currentMember.id));
+    } finally {
+      setPlanCheckRunning(false);
+    }
+  }
+
+  async function updatePlanSuggestionStatus(
+    suggestion: PlanSuggestion,
+    status: PlanSuggestion["status"],
+  ) {
+    if (!canReviewSuggestions && status !== "snoozed") return;
+    if (status === "accepted") {
+      const applied = await applyPlanSuggestionAction(suggestion);
+      if (!applied) return;
+    }
+    if (isApiMode && resolvedApiClient?.patchPlanSuggestion && participantSession) {
+      const patched = await resolvedApiClient.patchPlanSuggestion(
+        trip.id,
+        suggestion.id,
+        participantSession.sessionToken,
+        {
+          expectedVersion: suggestion.version,
+          status,
+          snoozedUntil: status === "snoozed" ? new Date(Date.now() + 86_400_000).toISOString() : null,
+        },
+      );
+      setLatestPlanCheck((current) =>
+        current
+          ? {
+              ...current,
+              suggestions: current.suggestions.map((candidate) =>
+                candidate.id === patched.id ? patched : candidate,
+              ),
+            }
+          : current,
+      );
+      return;
+    }
+    setLatestPlanCheck((current) =>
+      current
+        ? {
+            ...current,
+            suggestions: current.suggestions.map((candidate) =>
+              candidate.id === suggestion.id
+                ? { ...candidate, status, version: candidate.version + 1 }
+                : candidate,
+            ),
+          }
+        : current,
+    );
+  }
+
+  async function applyPlanSuggestionAction(
+    suggestion: PlanSuggestion,
+  ): Promise<boolean> {
+    if (suggestion.actionKind !== "editItem") return true;
+    const action = parsePlanSuggestionEditAction(suggestion.actionPayload);
+    if (!action) {
+      const targetItemId = suggestion.targetItemIds[0];
+      if (targetItemId) editItem(targetItemId);
+      return false;
+    }
+    await updateItineraryItemInline(action.itemId, action.patch);
+    return true;
+  }
+
   async function createTask(input: {
     title: string;
     visibility: TripTask["visibility"];
@@ -2161,6 +2436,8 @@ export function SagittariusApp({
           countries: nextCountries,
           startDate: values.startDate,
           endDate: values.endDate,
+          partySize: values.partySize,
+          defaultTimezone: values.defaultTimezone,
         },
       );
       const changedItems = shiftedItems.filter((shiftedItem) => {
@@ -2195,6 +2472,8 @@ export function SagittariusApp({
           countries: patchedTrip.countries,
           startDate: patchedTrip.startDate,
           endDate: patchedTrip.endDate,
+          partySize: patchedTrip.partySize,
+          defaultTimezone: patchedTrip.defaultTimezone,
           activePlanVariantId:
             patchedTrip.activePlanVariantId || current.trip.activePlanVariantId,
           itineraryItems: current.trip.itineraryItems.map(
@@ -2213,6 +2492,8 @@ export function SagittariusApp({
       countries: nextCountries,
       startDate: values.startDate,
       endDate: values.endDate,
+      partySize: values.partySize,
+      defaultTimezone: values.defaultTimezone,
       itineraryItems: shiftItineraryItemsToStartDate(
         current.itineraryItems,
         current.startDate,
@@ -3358,54 +3639,66 @@ export function SagittariusApp({
                 onToggleTaskStatus={toggleTaskStatus}
               />
             ) : currentView === "itinerary" ? (
-              <SmartItineraryTable
-                canRedo={tripState.future.length > 0}
-                canRestructure={canEdit}
-                canUndo={tripState.past.length > 0}
-                contextRailOpen={contextRailOpen}
-                endDate={trip.endDate}
-                graphItems={activePlanItems}
-                items={planItems}
-                dailyBriefings={visibleDailyBriefings}
-                itineraryView={itineraryView}
-                pathOptions={pathOptions}
-                tripSheets={trip.planVariants}
-                selectedTripSheetId={selectedPlanVariantId}
-                onChangeTripSheet={switchTripSheet}
-                onCreateTripSheet={createTripSheet}
-                tripSheetError={tripSheetError}
-                isTripSheetBusy={isTripSheetBusy}
-                role={currentMember.role}
-                startDate={trip.startDate}
-                selectedItemId={selectedItemIdForView}
-                selectedTripPathId={
-                  pathSelection.tripPathId ?? mainItineraryPathId
-                }
-                dayPathOverrides={pathSelection.dayPathOverrides ?? {}}
-                showAllPaths={Boolean(pathSelection.showAll)}
-                tripName={trip.name}
-                onAddStop={addStop}
-                onSelectItem={selectItem}
-                onMoveItem={moveItem}
-                onMoveItemToDay={moveItemToDay}
-                onMoveItemToPath={moveItemToPath}
-                onUpdateItemInline={updateItineraryItemInline}
-                onEditItem={editItem}
-                onDeleteItem={deleteStop}
-                onExportItinerary={exportItinerary}
-                onImportItinerary={importItinerary}
-                onChangeTripPath={changeTripPath}
-                onChangeDayPath={changeDayPath}
-                onClearDayPath={clearDayPath}
-                onClearAllDayPaths={clearAllDayPaths}
-                onAutoResolveDayOverlaps={autoResolveDayOverlaps}
-                onToggleShowAllPaths={toggleShowAllPaths}
-                onRedo={redo}
-                onToggleContextRail={() =>
-                  setContextRailVisibility(!contextRailOpen)
-                }
-                onUndo={undo}
-              />
+              <>
+                <PlanCheckPanel
+                  canMutate={canReviewSuggestions}
+                  canRun={canEdit}
+                  check={latestPlanCheck}
+                  locale={locale}
+                  running={planCheckRunning}
+                  onRun={runPlanCheck}
+                  onUpdateSuggestionStatus={updatePlanSuggestionStatus}
+                />
+                <SmartItineraryTable
+                  canRedo={tripState.future.length > 0}
+                  canRestructure={canEdit}
+                  canUndo={tripState.past.length > 0}
+                  contextRailOpen={contextRailOpen}
+                  endDate={trip.endDate}
+                  graphItems={activePlanItems}
+                  items={planItems}
+                  dailyBriefings={visibleDailyBriefings}
+                  itineraryView={itineraryView}
+                  pathOptions={pathOptions}
+                  tripSheets={trip.planVariants}
+                  selectedTripSheetId={selectedPlanVariantId}
+                  onChangeTripSheet={switchTripSheet}
+                  onCreateTripSheet={createTripSheet}
+                  tripSheetError={tripSheetError}
+                  isTripSheetBusy={isTripSheetBusy}
+                  role={currentMember.role}
+                  startDate={trip.startDate}
+                  selectedItemId={selectedItemIdForView}
+                  selectedTripPathId={
+                    pathSelection.tripPathId ?? mainItineraryPathId
+                  }
+                  dayPathOverrides={pathSelection.dayPathOverrides ?? {}}
+                  showAllPaths={Boolean(pathSelection.showAll)}
+                  tripName={trip.name}
+                  onAddStop={addStop}
+                  onSelectItem={selectItem}
+                  onMoveItem={moveItem}
+                  onMoveItemIntoPlanBlock={moveItemIntoPlanBlock}
+                  onMoveItemToDay={moveItemToDay}
+                  onMoveItemToPath={moveItemToPath}
+                  onUpdateItemInline={updateItineraryItemInline}
+                  onEditItem={editItem}
+                  onDeleteItem={deleteStop}
+                  onExportItinerary={exportItinerary}
+                  onImportItinerary={importItinerary}
+                  onChangeTripPath={changeTripPath}
+                  onChangeDayPath={changeDayPath}
+                  onClearDayPath={clearDayPath}
+                  onClearAllDayPaths={clearAllDayPaths}
+                  onAutoResolveDayOverlaps={autoResolveDayOverlaps}
+                  onToggleShowAllPaths={toggleShowAllPaths}
+                  onRedo={redo}
+                  onToggleContextRail={() =>
+                    setContextRailVisibility(!contextRailOpen)
+                  }
+                  onUndo={undo}
+                />
+              </>
             ) : currentView === "map" ? (
               <RouteMapView
                 countries={trip.countries ?? []}
@@ -3497,6 +3790,11 @@ export function SagittariusApp({
             }}
             onDelete={
               dialogState.mode === "edit" ? deleteSelectedStop : undefined
+            }
+            onPromoteFoodRecommendation={
+              dialogState.mode === "edit"
+                ? () => void promoteFoodRecommendation(dialogState.item)
+                : undefined
             }
             onSubmit={
               dialogState.mode === "edit" ? updateSelectedStop : createStop
@@ -4259,6 +4557,154 @@ function slugifyFilePart(value: string): string {
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-|-$/g, "") || "trip"
+  );
+}
+
+function buildLocalPlanCheck(trip: Trip, memberId: string): PlanCheck {
+  const suggestions: PlanSuggestion[] = trip.itineraryItems.flatMap((item, index) => {
+    const missing: string[] = [];
+    if (item.timeMode !== "flexible" && !item.startTime.trim()) missing.push("time");
+    if (item.timeMode !== "flexible" && (item.durationMinutes === null || item.durationMinutes <= 0)) missing.push("duration");
+    if (item.itemKind === "travel" && !Array.isArray(item.details.transportSegments)) missing.push("transport segments");
+    if (!missing.length) return [];
+    const detail = missing.join(", ");
+    const patch =
+      missing.includes("time")
+        ? { timeMode: "flexible", startTime: null, durationMinutes: null }
+        : missing.includes("duration")
+          ? { durationMinutes: 60 }
+          : undefined;
+    return [{
+      id: `local-plan-suggestion-${index + 1}`,
+      tripId: trip.id,
+      planCheckId: "local-plan-check",
+      severity: "warning",
+      scope: "item",
+      targetItemIds: [item.id],
+      explanation: {
+        en: `${item.activity} is missing ${detail}.`,
+        th: `${item.activity} ยังขาด ${detail}`,
+      },
+      recommendedAction: {
+        en: "Open the item details and complete the missing fields.",
+        th: "เปิดรายละเอียดรายการนี้แล้วเติมข้อมูลที่ขาด",
+      },
+      actionKind: "editItem",
+      actionPayload: patch ? { itemId: item.id, patch } : { itemId: item.id },
+      status: "pending",
+      snoozedUntil: null,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      version: 1,
+    } satisfies PlanSuggestion];
+  });
+
+  return {
+    id: "local-plan-check",
+    tripId: trip.id,
+    createdBy: memberId,
+    itineraryFingerprint: trip.itineraryItems.map((item) => `${item.id}:${item.version}`).join("|"),
+    stale: false,
+    status: "complete",
+    languageMetadata: { provider: "local-rules" },
+    createdAt: new Date().toISOString(),
+    completedAt: new Date().toISOString(),
+    version: 1,
+    suggestions,
+  };
+}
+
+export function parsePlanSuggestionEditAction(
+  payload: Record<string, unknown>,
+): { itemId: string; patch: InlineItineraryItemPatch } | null {
+  const itemId = typeof payload.itemId === "string" ? payload.itemId : "";
+  const rawPatch = payload.patch;
+  if (!itemId || !isPlainRecord(rawPatch)) return null;
+  const patch: InlineItineraryItemPatch = {};
+  if (rawPatch.timeMode === "scheduled" || rawPatch.timeMode === "flexible") {
+    patch.timeMode = rawPatch.timeMode;
+  }
+  if (typeof rawPatch.startTime === "string" || rawPatch.startTime === null) {
+    patch.startTime = rawPatch.startTime ?? "";
+  }
+  if (
+    typeof rawPatch.durationMinutes === "number" ||
+    rawPatch.durationMinutes === null
+  ) {
+    patch.durationMinutes = rawPatch.durationMinutes;
+  }
+  if (typeof rawPatch.parentItemId === "string" || rawPatch.parentItemId === null) {
+    patch.parentItemId = rawPatch.parentItemId;
+  }
+  if (typeof rawPatch.status === "string") {
+    patch.status = rawPatch.status as ItineraryItem["status"];
+  }
+  if (typeof rawPatch.priority === "string") {
+    patch.priority = rawPatch.priority as ItineraryItem["priority"];
+  }
+  return Object.keys(patch).length ? { itemId, patch } : null;
+}
+
+function isPlainRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function PlanCheckPanel({
+  canMutate,
+  canRun,
+  check,
+  locale,
+  running,
+  onRun,
+  onUpdateSuggestionStatus,
+}: {
+  canMutate: boolean;
+  canRun: boolean;
+  check: PlanCheck | null;
+  locale: "en" | "th";
+  running: boolean;
+  onRun: () => void;
+  onUpdateSuggestionStatus: (suggestion: PlanSuggestion, status: PlanSuggestion["status"]) => void;
+}) {
+  const pendingSuggestions = check?.suggestions.filter((suggestion) => suggestion.status === "pending") ?? [];
+  return (
+    <section className="mx-6 mt-5 grid gap-3 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) p-3 shadow-[var(--shadow-soft)] max-[767px]:mx-3" aria-label="Plan Check">
+      <div className="flex flex-wrap items-center gap-2">
+        <strong className="text-sm font-extrabold text-(--color-text)">Plan Check</strong>
+        {check?.stale ? <span className="rounded-(--radius-sm) bg-amber-100 px-2 py-1 text-[11px] font-extrabold text-amber-800">stale</span> : null}
+        <span className="text-xs font-bold text-(--color-text-muted)">{pendingSuggestions.length} pending</span>
+        <Button type="button" variant="secondary" onClick={onRun} disabled={!canRun || running}>
+          <Icon name="check" />
+          {running ? "Checking..." : "Run Plan Check"}
+        </Button>
+      </div>
+      {check ? (
+        <div className="grid gap-2">
+          {check.suggestions.length ? check.suggestions.map((suggestion) => {
+            const explanation = suggestion.explanation[locale] || suggestion.explanation.en;
+            const action = suggestion.recommendedAction[locale] || suggestion.recommendedAction.en;
+            return (
+              <article key={suggestion.id} className="grid gap-1 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) p-2">
+                <div className="flex flex-wrap items-center gap-2 text-[11px] font-extrabold">
+                  <span>{suggestion.severity}</span>
+                  <span>{suggestion.scope}</span>
+                  <span>{suggestion.status}</span>
+                </div>
+                <strong className="text-sm text-(--color-text)">{explanation}</strong>
+                <p className="m-0 text-xs font-semibold text-(--color-text-muted)">{action}</p>
+                {suggestion.status === "pending" ? (
+                  <div className="flex flex-wrap gap-2">
+                    <Button type="button" variant="secondary" disabled={!canMutate} onClick={() => onUpdateSuggestionStatus(suggestion, "accepted")}>Accept</Button>
+                    <Button type="button" variant="secondary" disabled={!canMutate} onClick={() => onUpdateSuggestionStatus(suggestion, "dismissed")}>Dismiss</Button>
+                    <Button type="button" variant="secondary" disabled={!canMutate} onClick={() => onUpdateSuggestionStatus(suggestion, "snoozed")}>Snooze</Button>
+                  </div>
+                ) : null}
+              </article>
+            );
+          }) : <p className="m-0 text-xs font-bold text-(--color-text-muted)">No findings.</p>}
+        </div>
+      ) : null}
+    </section>
   );
 }
 

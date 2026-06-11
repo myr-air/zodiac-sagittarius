@@ -84,7 +84,7 @@ describe("trip participant auth", () => {
   it("maps roles to trip capabilities", () => {
     expect(canTripRole("organizer", "managePeople")).toBe(true);
     expect(canTripRole("traveler", "createSuggestion")).toBe(true);
-    expect(canTripRole("traveler", "editItinerary")).toBe(false);
+    expect(canTripRole("traveler", "editItinerary")).toBe(true);
     expect(canTripRole("viewer", "viewPlan")).toBe(true);
     expect(canTripRole("viewer", "createSuggestion")).toBe(false);
   });

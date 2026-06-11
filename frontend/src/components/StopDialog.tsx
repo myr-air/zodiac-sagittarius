@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import type { ActivityType, ItineraryItem, PlaceResolutionCandidate } from "@/src/trip/types";
+import type { ActivityType, ItineraryItem, ItineraryItemKind, ItineraryItemPriority, ItineraryItemStatus, ItineraryTimeMode, PlaceResolutionCandidate } from "@/src/trip/types";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { formatDayLabel, getTripDates } from "@/src/trip/itinerary";
 import { Button } from "./ui";
@@ -32,11 +32,17 @@ interface StopDetailValues {
 export interface StopFormValues {
   day: string;
   pathId?: string;
+  parentItemId?: string | null;
+  itemKind: ItineraryItemKind;
+  timeMode: ItineraryTimeMode;
+  isPlanBlock: boolean;
+  status: ItineraryItemStatus;
+  priority: ItineraryItemPriority;
   startTime: string;
   activity: string;
   activityType: ActivityType;
   place: string;
-  durationMinutes: number;
+  durationMinutes: number | null;
   transportation: string;
   details: Record<string, unknown>;
   note: string;
@@ -57,6 +63,7 @@ interface StopDialogProps {
   manualPathOptions?: StopManualPathOption[];
   onClose: () => void;
   onDelete?: () => void;
+  onPromoteFoodRecommendation?: () => void;
   onSubmit: (values: StopFormValues) => void;
   placeResolution?: { state: "idle" | "resolving" | "ambiguous" | "unresolved"; candidates: PlaceResolutionCandidate[] };
   startDate?: string;
@@ -113,6 +120,11 @@ const fieldIds = {
   taxRefundNote: "stop-tax-refund-note",
   ticketRef: "stop-ticket-ref",
   transportation: "stop-transportation",
+  itemKind: "stop-item-kind",
+  timeMode: "stop-time-mode",
+  isPlanBlock: "stop-is-plan-block",
+  status: "stop-status",
+  priority: "stop-priority",
 };
 
 const emptyDetailValues: StopDetailValues = {
@@ -135,12 +147,18 @@ const emptyDetailValues: StopDetailValues = {
   ticketRef: "",
 };
 
-export function StopDialog({ mode, endDate, initialDay, initialItem, manualPathOptions = [], onClose, onDelete, onSubmit, placeResolution, startDate }: StopDialogProps) {
+export function StopDialog({ mode, endDate, initialDay, initialItem, manualPathOptions = [], onClose, onDelete, onPromoteFoodRecommendation, onSubmit, placeResolution, startDate }: StopDialogProps) {
   const { locale, t } = useI18n();
   const dayOptions = startDate && endDate ? getTripDates(startDate, endDate) : [];
   const [values, setValues] = useState<StopFormValues>(() => ({
     day: initialItem?.day ?? initialDay ?? startDate ?? "",
     pathId: initialItem?.pathRole === "alternative" ? initialItem.pathId : "main",
+    parentItemId: initialItem?.parentItemId ?? null,
+    itemKind: initialItem?.itemKind ?? "activity",
+    timeMode: initialItem?.timeMode ?? "scheduled",
+    isPlanBlock: initialItem?.isPlanBlock ?? false,
+    status: initialItem?.status ?? "idea",
+    priority: initialItem?.priority ?? "normal",
     startTime: initialItem?.startTime ?? "16:30",
     activity: initialItem?.activity ?? "",
     activityType: initialItem?.activityType ?? "experience",
@@ -161,7 +179,7 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, manualPathO
   const title = mode === "create" ? t.stopDialog.titles.create : t.stopDialog.titles.edit;
   const detailLabels = stopDetailLabels(locale);
   const endTime = addMinutesToTime(values.startTime, Math.max(1, Number(values.durationMinutes) || 1));
-  const minuteOptions = durationMinuteOptions(values.durationMinutes % 60);
+  const minuteOptions = durationMinuteOptions((values.durationMinutes ?? 45) % 60);
 
   function update<K extends keyof StopFormValues>(key: K, value: StopFormValues[K]) {
     setValues((current) => ({ ...current, [key]: value }));
@@ -211,11 +229,12 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, manualPathO
       ...values,
       activity: values.activity.trim(),
       activityType: detailTypeToActivityType[detailType],
+      startTime: values.timeMode === "flexible" ? "" : values.startTime,
+      durationMinutes: values.timeMode === "flexible" ? null : Math.max(1, Number(values.durationMinutes) || 1),
       details,
       place: nextPlace.trim(),
       transportation: values.transportation.trim(),
       note: values.note.trim(),
-      durationMinutes: Math.max(1, Number(values.durationMinutes) || 1),
       resolvedPlace: saveUnresolved ? undefined : selectedCandidate,
       saveUnresolved,
     };
@@ -262,6 +281,48 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, manualPathO
                 </select>
               </label>
             ) : null}
+            <label htmlFor={fieldIds.itemKind}>
+              <span>Item kind</span>
+              <select id={fieldIds.itemKind} value={values.itemKind} onChange={(event) => update("itemKind", event.target.value as ItineraryItemKind)}>
+                {["travel", "activity", "lodging", "meal", "note", "preparation", "foodRecommendation"].map((option) => (
+                  <option value={option} key={option}>{option}</option>
+                ))}
+              </select>
+            </label>
+            <label htmlFor={fieldIds.timeMode}>
+              <span>Time mode</span>
+              <select id={fieldIds.timeMode} value={values.timeMode} onChange={(event) => update("timeMode", event.target.value as ItineraryTimeMode)}>
+                <option value="scheduled">scheduled</option>
+                <option value="flexible">flexible</option>
+              </select>
+            </label>
+            <label htmlFor={fieldIds.status}>
+              <span>Status</span>
+              <select id={fieldIds.status} value={values.status} onChange={(event) => update("status", event.target.value as ItineraryItemStatus)}>
+                {["idea", "planned", "booked", "confirmed", "done", "skipped"].map((option) => (
+                  <option value={option} key={option}>{option}</option>
+                ))}
+              </select>
+            </label>
+            <label htmlFor={fieldIds.priority}>
+              <span>Priority</span>
+              <select id={fieldIds.priority} value={values.priority} onChange={(event) => update("priority", event.target.value as ItineraryItemPriority)}>
+                {["low", "normal", "high", "must"].map((option) => (
+                  <option value={option} key={option}>{option}</option>
+                ))}
+              </select>
+            </label>
+            <label className={dialogFieldWideClassName} htmlFor={fieldIds.isPlanBlock}>
+              <span>
+                <input
+                  id={fieldIds.isPlanBlock}
+                  type="checkbox"
+                  checked={values.isPlanBlock}
+                  onChange={(event) => update("isPlanBlock", event.target.checked)}
+                />
+                Plan block
+              </span>
+            </label>
             <label htmlFor={fieldIds.activityType}>
               <span>{t.stopDialog.fields.type}</span>
               <select id={fieldIds.activityType} value={detailType} onChange={(event) => setDetailType(event.target.value as StopDetailType)}>
@@ -272,11 +333,11 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, manualPathO
             </label>
             <label htmlFor={fieldIds.startTime}>
               <span>{t.stopDialog.fields.startTime}</span>
-              <TimePickerField id={fieldIds.startTime} value={values.startTime} onChange={(value) => update("startTime", value)} required />
+              <TimePickerField id={fieldIds.startTime} value={values.startTime} onChange={(value) => update("startTime", value)} required={values.timeMode !== "flexible"} />
             </label>
             <label htmlFor={fieldIds.endTime}>
               <span>{t.stopDialog.fields.endTime}</span>
-              <TimePickerField id={fieldIds.endTime} value={endTime} onChange={updateEndTime} required />
+              <TimePickerField id={fieldIds.endTime} value={endTime} onChange={updateEndTime} required={values.timeMode !== "flexible"} />
             </label>
             <label htmlFor={fieldIds.durationHours}>
               <span>{t.stopDialog.fields.hours}</span>
@@ -284,17 +345,17 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, manualPathO
                 id={fieldIds.durationHours}
                 min={0}
                 type="number"
-                value={Math.floor(values.durationMinutes / 60)}
-                onChange={(event) => updateDuration(Number(event.target.value), values.durationMinutes % 60)}
-                required
+                value={Math.floor((values.durationMinutes ?? 45) / 60)}
+                onChange={(event) => updateDuration(Number(event.target.value), (values.durationMinutes ?? 45) % 60)}
+                required={values.timeMode !== "flexible"}
               />
             </label>
             <label htmlFor={fieldIds.durationMinutes}>
               <span>{t.stopDialog.fields.minutes}</span>
               <select
                 id={fieldIds.durationMinutes}
-                value={values.durationMinutes % 60}
-                onChange={(event) => updateDuration(Math.floor(values.durationMinutes / 60), Number(event.target.value))}
+                value={(values.durationMinutes ?? 45) % 60}
+                onChange={(event) => updateDuration(Math.floor((values.durationMinutes ?? 45) / 60), Number(event.target.value))}
               >
                 {minuteOptions.map((minutes) => (
                   <option value={minutes} key={minutes}>{minutes}</option>
@@ -353,6 +414,11 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, manualPathO
             ) : <span />}
             <span />
             <div className={dialogPrimaryActionsClassName}>
+              {initialItem?.itemKind === "foodRecommendation" && onPromoteFoodRecommendation ? (
+                <Button type="button" variant="secondary" onClick={onPromoteFoodRecommendation}>
+                  Promote to meal
+                </Button>
+              ) : null}
               {placeResolution?.state === "unresolved" ? (
                 <Button type="button" variant="ghost" onClick={submitUnresolved}>{t.stopDialog.actions.saveUnresolved}</Button>
               ) : null}

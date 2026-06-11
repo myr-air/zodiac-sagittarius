@@ -36,6 +36,7 @@ function renderTable(
     onAddStop: vi.fn(),
     onSelectItem: vi.fn(),
     onMoveItem: vi.fn(),
+    onMoveItemIntoPlanBlock: vi.fn(),
     onMoveItemToDay: vi.fn(),
     onMoveItemToPath: vi.fn(),
     onUpdateItemInline: vi.fn(),
@@ -103,6 +104,7 @@ describe("SmartItineraryTable", () => {
           onAddStop={vi.fn()}
           onSelectItem={vi.fn()}
           onMoveItem={vi.fn()}
+          onMoveItemIntoPlanBlock={vi.fn()}
           onMoveItemToDay={vi.fn()}
           onExportItinerary={vi.fn()}
           onImportItinerary={vi.fn()}
@@ -1770,6 +1772,45 @@ describe("SmartItineraryTable", () => {
     expect(props.onMoveItemToDay).toHaveBeenCalledWith(
       "item-dimdim",
       "2026-06-20",
+    );
+  });
+
+  it("drops a dragged item into a plan block target", () => {
+    const onMoveItemIntoPlanBlock = vi.fn();
+    const props = renderTable({
+      items: [
+        {
+          ...tripFixture.planItems[0],
+          id: "block-morning",
+          activity: "Morning block",
+          isPlanBlock: true,
+          itemKind: "activity",
+          parentItemId: null,
+          sortOrder: 100,
+        },
+        {
+          ...tripFixture.planItems[1],
+          id: "item-cafe",
+          activity: "Cafe option",
+          parentItemId: null,
+          sortOrder: 200,
+        },
+      ],
+      onMoveItemIntoPlanBlock,
+      selectedItemId: "block-morning",
+    });
+    const dataTransfer = createDataTransfer();
+    dataTransfer.setData("text/plain", "item-cafe");
+
+    const blockDropTarget = screen.getByRole("button", {
+      name: /Into block/i,
+    });
+    fireEvent.dragOver(blockDropTarget, { dataTransfer });
+    fireEvent.drop(blockDropTarget, { dataTransfer });
+
+    expect(props.onMoveItemIntoPlanBlock).toHaveBeenCalledWith(
+      "item-cafe",
+      "block-morning",
     );
   });
 

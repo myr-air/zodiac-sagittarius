@@ -12,6 +12,7 @@ pub mod join;
 pub mod members;
 pub mod photo_albums;
 pub mod place_resolution;
+pub mod plan_checks;
 pub mod plan_variants;
 pub mod stop_notes;
 pub mod suggestions;
@@ -141,6 +142,18 @@ fn api_v1() -> Router<AppState> {
         .route(
             "/trips/{trip_id}/itinerary-imports",
             post(itinerary_imports::import_itinerary),
+        )
+        .route(
+            "/trips/{trip_id}/plan-checks",
+            post(plan_checks::run_plan_check),
+        )
+        .route(
+            "/trips/{trip_id}/plan-checks/latest",
+            get(plan_checks::latest_plan_check),
+        )
+        .route(
+            "/trips/{trip_id}/plan-suggestions/{suggestion_id}",
+            patch(plan_checks::patch_plan_suggestion),
         )
         .route(
             "/trips/{trip_id}/places/resolve",

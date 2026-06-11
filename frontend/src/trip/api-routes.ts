@@ -38,6 +38,10 @@ export const tripApiRoutes = {
   itineraryItem: (tripId: string, itemId: string) =>
     `/api/v1/trips/${tripPathSegment(tripId)}/itinerary-items/${encodePathSegment(itemId)}`,
   reorderItineraryItems: (tripId: string) => `/api/v1/trips/${tripPathSegment(tripId)}/itinerary-items/order`,
+  planChecks: (tripId: string) => `/api/v1/trips/${tripPathSegment(tripId)}/plan-checks`,
+  latestPlanCheck: (tripId: string) => `/api/v1/trips/${tripPathSegment(tripId)}/plan-checks/latest`,
+  planSuggestion: (tripId: string, suggestionId: string) =>
+    `/api/v1/trips/${tripPathSegment(tripId)}/plan-suggestions/${encodePathSegment(suggestionId)}`,
   suggestions: (tripId: string) => `/api/v1/trips/${tripPathSegment(tripId)}/suggestions`,
   suggestion: (tripId: string, suggestionId: string) =>
     `/api/v1/trips/${tripPathSegment(tripId)}/suggestions/${encodePathSegment(suggestionId)}`,

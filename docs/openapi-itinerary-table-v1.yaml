@@ -1,0 +1,290 @@
+openapi: 3.1.0
+info:
+  title: Sagittarius Itinerary Table V1
+  version: 1.0.0
+paths:
+  /api/v1/trips:
+    post:
+      summary: Create an account trip with V1 trip metadata.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AccountTripCreateRequest"
+      responses:
+        "201":
+          description: Trip created.
+  /api/v1/trips/{tripId}:
+    patch:
+      summary: Patch trip core settings and V1 trip metadata.
+      parameters:
+        - $ref: "#/components/parameters/TripId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TripPatchRequest"
+      responses:
+        "200":
+          description: Trip updated.
+  /api/v1/trips/{tripId}/itinerary-items:
+    post:
+      summary: Create an itinerary item with V1 hierarchy, timing, and details fields.
+      parameters:
+        - $ref: "#/components/parameters/TripId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ItineraryItemCreateRequest"
+      responses:
+        "201":
+          description: Itinerary item created.
+  /api/v1/trips/{tripId}/itinerary-items/{itemId}:
+    patch:
+      summary: Patch an itinerary item with V1 hierarchy, timing, and details fields.
+      parameters:
+        - $ref: "#/components/parameters/TripId"
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [clientMutationId, expectedVersion, patch]
+              properties:
+                clientMutationId:
+                  type: string
+                expectedVersion:
+                  type: integer
+                patch:
+                  $ref: "#/components/schemas/ItineraryItemPatch"
+      responses:
+        "200":
+          description: Itinerary item updated.
+        "409":
+          description: Version conflict.
+  /api/v1/trips/{tripId}/plan-checks:
+    post:
+      summary: Run deterministic Plan Check and store bilingual suggestions.
+      parameters:
+        - $ref: "#/components/parameters/TripId"
+      responses:
+        "201":
+          description: Plan Check completed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlanCheck"
+  /api/v1/trips/{tripId}/plan-checks/latest:
+    get:
+      summary: Read the latest Plan Check with stale status.
+      parameters:
+        - $ref: "#/components/parameters/TripId"
+      responses:
+        "200":
+          description: Latest Plan Check or null.
+  /api/v1/trips/{tripId}/plan-suggestions/{suggestionId}:
+    patch:
+      summary: Accept, dismiss, or snooze a stored Plan Check suggestion.
+      parameters:
+        - $ref: "#/components/parameters/TripId"
+        - name: suggestionId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PlanSuggestionPatchRequest"
+      responses:
+        "200":
+          description: Plan suggestion updated.
+        "409":
+          description: Version conflict.
+components:
+  parameters:
+    TripId:
+      name: tripId
+      in: path
+      required: true
+      schema:
+        type: string
+  schemas:
+    AccountTripCreateRequest:
+      type: object
+      required: [name, destinationLabel, startDate, endDate]
+      properties:
+        name:
+          type: string
+        destinationLabel:
+          type: string
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        partySize:
+          type: integer
+          minimum: 1
+        defaultTimezone:
+          type: string
+    TripPatchRequest:
+      type: object
+      required: [clientMutationId, expectedVersion]
+      properties:
+        clientMutationId:
+          type: string
+        expectedVersion:
+          type: integer
+        name:
+          type: string
+        destinationLabel:
+          type: string
+        countries:
+          type: array
+          items:
+            type: string
+        partySize:
+          type: integer
+          minimum: 1
+        defaultTimezone:
+          type: string
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        activePlanVariantId:
+          type: string
+    ItineraryItemCreateRequest:
+      allOf:
+        - $ref: "#/components/schemas/ItineraryItemPatch"
+        - type: object
+          required: [clientMutationId, day, activity, activityType]
+          properties:
+            clientMutationId:
+              type: string
+            planVariantId:
+              type: string
+    ItineraryItemPatch:
+      type: object
+      properties:
+        pathGroupId:
+          type: string
+        pathId:
+          type: string
+        pathName:
+          type: string
+        pathRole:
+          enum: [main, alternative]
+        parentItemId:
+          type: [string, "null"]
+        itemKind:
+          enum: [travel, activity, lodging, meal, note, preparation, foodRecommendation]
+        timeMode:
+          enum: [scheduled, flexible]
+        isPlanBlock:
+          type: boolean
+        status:
+          enum: [idea, planned, booked, confirmed, done, skipped]
+        priority:
+          enum: [low, normal, high, must]
+        day:
+          type: string
+          format: date
+        sortOrder:
+          type: integer
+        startTime:
+          type: [string, "null"]
+        durationMinutes:
+          type: [integer, "null"]
+        activity:
+          type: string
+        activityType:
+          enum: [travel, food, shopping, attraction, experience, stay]
+        place:
+          type: string
+        details:
+          type: object
+          additionalProperties: true
+    LocalizedText:
+      type: object
+      required: [en, th]
+      properties:
+        en:
+          type: string
+        th:
+          type: string
+    PlanCheck:
+      type: object
+      required: [id, tripId, itineraryFingerprint, status, stale, suggestions]
+      properties:
+        id:
+          type: string
+        tripId:
+          type: string
+        itineraryFingerprint:
+          type: string
+        status:
+          enum: [running, complete, failed]
+        stale:
+          type: boolean
+        suggestions:
+          type: array
+          items:
+            $ref: "#/components/schemas/PlanSuggestion"
+    PlanSuggestion:
+      type: object
+      required: [id, severity, scope, explanation, recommendedAction, status, version]
+      properties:
+        id:
+          type: string
+        severity:
+          enum: [info, warning, critical]
+        scope:
+          enum: [trip, day, item]
+        targetItemIds:
+          type: array
+          items:
+            type: string
+        explanation:
+          $ref: "#/components/schemas/LocalizedText"
+        recommendedAction:
+          $ref: "#/components/schemas/LocalizedText"
+        actionKind:
+          type: [string, "null"]
+        actionPayload:
+          type: object
+          additionalProperties: true
+        status:
+          enum: [pending, accepted, dismissed, snoozed]
+        snoozedUntil:
+          type: [string, "null"]
+        version:
+          type: integer
+    PlanSuggestionPatchRequest:
+      type: object
+      required: [clientMutationId, expectedVersion, status]
+      properties:
+        clientMutationId:
+          type: string
+        expectedVersion:
+          type: integer
+        status:
+          enum: [accepted, dismissed, snoozed]
+        snoozedUntil:
+          type: [string, "null"]

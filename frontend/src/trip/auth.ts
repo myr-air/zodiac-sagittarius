@@ -7,7 +7,7 @@ export const tripParticipantSessionStorageKey = "sagittarius:trip-participant-se
 const roleCapabilities: Record<TripRole, TripCapability[]> = {
   owner: ["viewPlan", "editItinerary", "reviewSuggestions", "createSuggestion", "viewExpenses", "editExpenses", "managePeople", "managePhotoAlbums"],
   organizer: ["viewPlan", "editItinerary", "reviewSuggestions", "createSuggestion", "viewExpenses", "editExpenses", "managePeople", "managePhotoAlbums"],
-  traveler: ["viewPlan", "createSuggestion", "viewExpenses", "managePhotoAlbums"],
+  traveler: ["viewPlan", "editItinerary", "createSuggestion", "viewExpenses", "managePhotoAlbums"],
   viewer: ["viewPlan"],
 };
 

@@ -226,8 +226,8 @@ describe("itinerary planning domain", () => {
 
     expect(view.sortedItems.map((item) => item.id)).toEqual([
       "item-overlap-b",
-      "item-safe-stop",
       "item-overlap-a",
+      "item-safe-stop",
       "item-invalid-fields",
       "item-other-day",
     ]);
@@ -239,7 +239,7 @@ describe("itinerary planning domain", () => {
       {
         day: hongKongDay,
         warningCount: 6,
-        ids: ["item-overlap-b", "item-safe-stop", "item-overlap-a", "item-invalid-fields"],
+        ids: ["item-overlap-b", "item-overlap-a", "item-safe-stop", "item-invalid-fields"],
       },
       {
         day: shenzhenDay,
@@ -465,6 +465,45 @@ describe("itinerary planning domain", () => {
     expect(summary.groupSpend).toBeGreaterThan(0);
     expect(summary.currentUserNetLabel).toMatch(/You/);
     expect(summary.settlementSuggestions.length).toBeGreaterThan(0);
+  });
+
+  it("orders scheduled rows before flexible rows while keeping flexible manual order", () => {
+    const base = seedTrip.itineraryItems[0];
+    const scheduledLate = { ...base, id: "scheduled-late", day: arrivalDay, startTime: "15:00", sortOrder: 3, timeMode: "scheduled" as const };
+    const scheduledEarly = { ...base, id: "scheduled-early", day: arrivalDay, startTime: "09:00", sortOrder: 4, timeMode: "scheduled" as const };
+    const flexibleFirst = { ...base, id: "flexible-first", day: arrivalDay, startTime: "", sortOrder: 1, timeMode: "flexible" as const, durationMinutes: null };
+    const flexibleSecond = { ...base, id: "flexible-second", day: arrivalDay, startTime: "", sortOrder: 2, timeMode: "flexible" as const, durationMinutes: null };
+
+    expect(sortItemsForDay([flexibleSecond, scheduledLate, flexibleFirst, scheduledEarly], arrivalDay).map((item) => item.id)).toEqual([
+      "scheduled-early",
+      "scheduled-late",
+      "flexible-first",
+      "flexible-second",
+    ]);
+  });
+
+  it("warns when a timed child sits outside its plan block window", () => {
+    const base = seedTrip.itineraryItems[0];
+    const block = {
+      ...base,
+      id: "block-morning",
+      activity: "Morning block",
+      day: arrivalDay,
+      startTime: "09:00",
+      durationMinutes: 60,
+      isPlanBlock: true,
+    };
+    const child = {
+      ...base,
+      id: "child-late",
+      parentItemId: block.id,
+      activity: "Late child",
+      day: arrivalDay,
+      startTime: "10:30",
+      durationMinutes: 30,
+    };
+
+    expect(validateItineraryItem(child, [block, child]).map((warning) => warning.code)).toContain("child-outside-plan-block");
   });
 
   it("saves through a repository boundary instead of direct UI storage", () => {

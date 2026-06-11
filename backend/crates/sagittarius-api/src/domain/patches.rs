@@ -24,6 +24,8 @@ pub struct PatchTripRequest {
     pub name: Option<String>,
     pub destination_label: Option<String>,
     pub countries: Option<Vec<String>>,
+    pub party_size: Option<i32>,
+    pub default_timezone: Option<String>,
     pub start_date: Option<Date>,
     pub end_date: Option<Date>,
     pub active_plan_variant_id: Option<Uuid>,
@@ -38,6 +40,12 @@ pub struct CreateItineraryItemRequest {
     pub path_id: Option<String>,
     pub path_name: Option<String>,
     pub path_role: Option<String>,
+    pub parent_item_id: Option<Uuid>,
+    pub item_kind: Option<String>,
+    pub time_mode: Option<String>,
+    pub is_plan_block: Option<bool>,
+    pub status: Option<String>,
+    pub priority: Option<String>,
     pub day: Date,
     pub start_time: Option<String>,
     pub activity: String,
@@ -456,11 +464,22 @@ impl CreateItineraryItemRequest {
             validate_hh_mm(start_time)?;
         }
         validate_required_text(&self.activity, "activity is required")?;
+        if let Some(item_kind) = &self.item_kind {
+            validate_item_kind(item_kind)?;
+        }
+        if let Some(time_mode) = &self.time_mode {
+            validate_time_mode(time_mode)?;
+        }
+        if let Some(status) = &self.status {
+            validate_item_status(status)?;
+        }
+        if let Some(priority) = &self.priority {
+            validate_item_priority(priority)?;
+        }
         validate_activity_type(&self.activity_type)?;
         if let Some(path_role) = &self.path_role {
             validate_path_role(path_role)?;
         }
-        validate_required_text(&self.place, "place is required")?;
         validate_optional_map_link(self.map_link.as_deref())?;
         if self
             .duration_minutes
@@ -687,8 +706,15 @@ pub struct ItineraryItemPatch {
     pub path_id: Option<String>,
     pub path_name: Option<String>,
     pub path_role: Option<String>,
+    pub parent_item_id: Option<Uuid>,
+    pub item_kind: Option<String>,
+    pub time_mode: Option<String>,
+    pub is_plan_block: Option<bool>,
+    pub status: Option<String>,
+    pub priority: Option<String>,
     pub day: Option<Date>,
-    pub start_time: Option<String>,
+    #[serde(default, deserialize_with = "deserialize_nullable_string_patch")]
+    pub start_time: Option<Option<String>>,
     pub duration_minutes: Option<i32>,
     pub activity: Option<String>,
     pub activity_type: Option<String>,
@@ -707,7 +733,7 @@ pub struct ItineraryItemPatch {
 
 impl ItineraryItemPatch {
     pub fn validate(&self) -> Result<(), ServiceError> {
-        if let Some(start_time) = &self.start_time {
+        if let Some(Some(start_time)) = &self.start_time {
             validate_hh_mm(start_time)?;
         }
 
@@ -726,6 +752,18 @@ impl ItineraryItemPatch {
 
         if let Some(path_role) = &self.path_role {
             validate_path_role(path_role)?;
+        }
+        if let Some(item_kind) = &self.item_kind {
+            validate_item_kind(item_kind)?;
+        }
+        if let Some(time_mode) = &self.time_mode {
+            validate_time_mode(time_mode)?;
+        }
+        if let Some(status) = &self.status {
+            validate_item_status(status)?;
+        }
+        if let Some(priority) = &self.priority {
+            validate_item_priority(priority)?;
         }
         validate_optional_map_link(self.map_link.as_deref())?;
         validate_coordinate_patch(self.latitude, self.longitude)?;
@@ -887,6 +925,35 @@ fn validate_path_role(value: &str) -> Result<(), ServiceError> {
     match value {
         "main" | "alternative" => Ok(()),
         _ => Err(ServiceError::InvalidRequest("path_role is invalid")),
+    }
+}
+
+fn validate_item_kind(value: &str) -> Result<(), ServiceError> {
+    match value {
+        "travel" | "activity" | "lodging" | "meal" | "note" | "preparation"
+        | "foodRecommendation" => Ok(()),
+        _ => Err(ServiceError::InvalidRequest("item_kind is invalid")),
+    }
+}
+
+fn validate_time_mode(value: &str) -> Result<(), ServiceError> {
+    match value {
+        "scheduled" | "flexible" => Ok(()),
+        _ => Err(ServiceError::InvalidRequest("time_mode is invalid")),
+    }
+}
+
+fn validate_item_status(value: &str) -> Result<(), ServiceError> {
+    match value {
+        "idea" | "planned" | "booked" | "confirmed" | "done" | "skipped" => Ok(()),
+        _ => Err(ServiceError::InvalidRequest("status is invalid")),
+    }
+}
+
+fn validate_item_priority(value: &str) -> Result<(), ServiceError> {
+    match value {
+        "low" | "normal" | "high" | "must" => Ok(()),
+        _ => Err(ServiceError::InvalidRequest("priority is invalid")),
     }
 }
 
@@ -1337,7 +1404,7 @@ mod tests {
     #[test]
     fn itinerary_patch_accepts_valid_time_activity_type_and_duration() {
         let patch = ItineraryItemPatch {
-            start_time: Some("09:30".to_string()),
+            start_time: Some(Some("09:30".to_string())),
             duration_minutes: Some(45),
             activity_type: Some("experience".to_string()),
             ..ItineraryItemPatch::default()
@@ -1350,7 +1417,7 @@ mod tests {
     fn itinerary_patch_rejects_bad_time_shapes_and_ranges() {
         for value in ["0930", "9:30", "09:3", "aa:30", "09:bb", "24:00", "23:60"] {
             let patch = ItineraryItemPatch {
-                start_time: Some(value.to_string()),
+                start_time: Some(Some(value.to_string())),
                 ..ItineraryItemPatch::default()
             };
 

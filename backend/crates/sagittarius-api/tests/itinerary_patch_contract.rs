@@ -197,7 +197,7 @@ async fn itinerary_patch_contract_rejects_unsafe_map_link(pool: sqlx::PgPool) {
 }
 
 #[sqlx::test(migrations = "../../migrations")]
-async fn itinerary_patch_contract_traveler_cannot_patch_item(pool: sqlx::PgPool) {
+async fn itinerary_patch_contract_traveler_can_patch_v1_item_fields(pool: sqlx::PgPool) {
     support::seed_trip(&pool).await;
     let token = support::create_session(&pool, support::TRAVELER_ID).await;
     let app = support::app(pool);
@@ -217,7 +217,11 @@ async fn itinerary_patch_contract_traveler_cannot_patch_item(pool: sqlx::PgPool)
                         "clientMutationId": "web-patch-3",
                         "expectedVersion": 4,
                         "patch": {
-                            "startTime": "09:00"
+                            "startTime": "09:00",
+                            "itemKind": "meal",
+                            "timeMode": "scheduled",
+                            "status": "planned",
+                            "priority": "must"
                         }
                     })
                     .to_string(),
@@ -226,7 +230,13 @@ async fn itinerary_patch_contract_traveler_cannot_patch_item(pool: sqlx::PgPool)
         )
         .await
         .unwrap();
-    assert_eq!(response.status(), StatusCode::FORBIDDEN);
+    assert_eq!(response.status(), StatusCode::OK);
+    let body: serde_json::Value =
+        serde_json::from_slice(&to_bytes(response.into_body(), 65536).await.unwrap()).unwrap();
+    assert_eq!(body["startTime"], "09:00");
+    assert_eq!(body["itemKind"], "meal");
+    assert_eq!(body["status"], "planned");
+    assert_eq!(body["priority"], "must");
 }
 
 #[sqlx::test(migrations = "../../migrations")]

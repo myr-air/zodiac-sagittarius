@@ -40,6 +40,7 @@ export const Owner: Story = {
     onAddStop: noop,
     onSelectItem: noop,
     onMoveItem: noop,
+    onMoveItemIntoPlanBlock: noop,
     onMoveItemToDay: noop,
     onMoveItemToPath: noop,
     onExportItinerary: noop,

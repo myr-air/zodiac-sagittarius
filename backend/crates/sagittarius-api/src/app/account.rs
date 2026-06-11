@@ -84,6 +84,7 @@ const MAX_ACCOUNT_DISPLAY_NAME_LENGTH: usize = 80;
 const MAX_ACCOUNT_LOCALE_LENGTH: usize = 32;
 const MAX_ACCOUNT_TIMEZONE_LENGTH: usize = 64;
 const MAX_TRIP_TEXT_LENGTH: usize = 120;
+const MAX_TRIP_TIMEZONE_LENGTH: usize = 64;
 const MAX_JOIN_ID_LENGTH: usize = 32;
 const MIN_JOIN_PASSWORD_LENGTH: usize = 8;
 const MAX_JOIN_PASSWORD_LENGTH: usize = 256;
@@ -102,6 +103,8 @@ pub struct AccountTripCreateInput {
     pub destination_label: String,
     pub destination_cities: Vec<TripCity>,
     pub countries: Vec<String>,
+    pub party_size: Option<i32>,
+    pub default_timezone: Option<String>,
     pub start_date: time::Date,
     pub end_date: time::Date,
     pub owner_display_name: String,
@@ -466,6 +469,22 @@ pub async fn create_trip(
         validate_country_code(&input.origin_country_code, "origin country code")?;
     let destination_cities = validate_trip_cities(&input.destination_cities)?;
     let countries = validate_trip_countries(&input.countries)?;
+    let party_size = validate_party_size(input.party_size.unwrap_or(1))?;
+    let timezone_candidate = input
+        .default_timezone
+        .as_deref()
+        .filter(|value| !value.trim().is_empty())
+        .or_else(|| {
+            destination_cities
+                .first()
+                .map(|city| city.timezone.as_str())
+        })
+        .unwrap_or("Asia/Bangkok");
+    let default_timezone = validate_trip_text_with_len(
+        timezone_candidate,
+        MAX_TRIP_TIMEZONE_LENGTH,
+        "default timezone",
+    )?;
     let destination_cities_label = destination_cities
         .iter()
         .map(|city| city.city.as_str())
@@ -514,6 +533,8 @@ pub async fn create_trip(
             destination_label: &destination_label,
             destination_cities: &destination_cities,
             countries: &countries,
+            party_size,
+            default_timezone: &default_timezone,
             start_date: input.start_date,
             end_date: input.end_date,
             join_id: &join_id,
@@ -1281,12 +1302,28 @@ async fn create_member_session(
 }
 
 fn validate_trip_text(value: &str, field: &'static str) -> Result<String, ServiceError> {
+    validate_trip_text_with_len(value, MAX_TRIP_TEXT_LENGTH, field)
+}
+
+fn validate_trip_text_with_len(
+    value: &str,
+    max_len: usize,
+    field: &'static str,
+) -> Result<String, ServiceError> {
     let trimmed = value.trim();
-    if trimmed.is_empty() || trimmed.chars().count() > MAX_TRIP_TEXT_LENGTH {
+    if trimmed.is_empty() || trimmed.chars().count() > max_len {
         return Err(ServiceError::InvalidRequest(field));
     }
 
     Ok(trimmed.to_string())
+}
+
+fn validate_party_size(value: i32) -> Result<i32, ServiceError> {
+    if !(1..=999).contains(&value) {
+        return Err(ServiceError::InvalidRequest("party size"));
+    }
+
+    Ok(value)
 }
 
 fn validate_trip_countries(countries: &[String]) -> Result<Vec<String>, ServiceError> {
@@ -1900,6 +1937,8 @@ fn account_trip_from_record(record: AccountTripRecord) -> AccountTripSummary {
         destination_label: record.destination_label,
         destination_cities: record.destination_cities.0,
         countries: record.countries,
+        party_size: record.party_size,
+        default_timezone: record.default_timezone,
         start_date: record.start_date,
         end_date: record.end_date,
         role: record.role,

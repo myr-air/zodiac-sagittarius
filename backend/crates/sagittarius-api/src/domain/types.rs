@@ -160,6 +160,8 @@ pub struct TripSummary {
     pub destination_label: String,
     pub destination_cities: Vec<TripCity>,
     pub countries: Vec<String>,
+    pub party_size: i32,
+    pub default_timezone: String,
     pub start_date: Date,
     pub end_date: Date,
     pub join_id: String,
@@ -188,6 +190,8 @@ pub struct AccountTripSummary {
     pub destination_label: String,
     pub destination_cities: Vec<TripCity>,
     pub countries: Vec<String>,
+    pub party_size: i32,
+    pub default_timezone: String,
     pub start_date: Date,
     pub end_date: Date,
     pub role: TripRole,
@@ -397,6 +401,12 @@ pub struct ItineraryItemSummary {
     pub path_id: Option<String>,
     pub path_name: Option<String>,
     pub path_role: Option<String>,
+    pub parent_item_id: Option<Uuid>,
+    pub item_kind: String,
+    pub time_mode: String,
+    pub is_plan_block: bool,
+    pub status: String,
+    pub priority: String,
     pub day: Date,
     pub sort_order: i32,
     pub start_time: String,
@@ -436,6 +446,18 @@ pub struct ItineraryImportItem {
     pub path_id: Option<String>,
     pub path_name: Option<String>,
     pub path_role: Option<String>,
+    #[serde(default)]
+    pub parent_item_id: Option<Uuid>,
+    #[serde(default = "default_import_item_kind")]
+    pub item_kind: String,
+    #[serde(default = "default_import_time_mode")]
+    pub time_mode: String,
+    #[serde(default)]
+    pub is_plan_block: bool,
+    #[serde(default = "default_import_status")]
+    pub status: String,
+    #[serde(default = "default_import_priority")]
+    pub priority: String,
     pub day: Date,
     pub sort_order: i32,
     pub start_time: String,
@@ -458,6 +480,22 @@ fn empty_object() -> Value {
     serde_json::json!({})
 }
 
+fn default_import_item_kind() -> String {
+    "activity".to_string()
+}
+
+fn default_import_time_mode() -> String {
+    "scheduled".to_string()
+}
+
+fn default_import_status() -> String {
+    "idea".to_string()
+}
+
+fn default_import_priority() -> String {
+    "normal".to_string()
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ItineraryImportDocument {
@@ -468,6 +506,49 @@ pub struct ItineraryImportDocument {
     pub exported_at: String,
     pub trip: ItineraryImportTrip,
     pub items: Vec<ItineraryImportItem>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LocalizedText {
+    pub en: String,
+    pub th: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PlanSuggestionSummary {
+    pub id: Uuid,
+    pub trip_id: Uuid,
+    pub plan_check_id: Uuid,
+    pub severity: String,
+    pub scope: String,
+    pub target_item_ids: Vec<Uuid>,
+    pub explanation: LocalizedText,
+    pub recommended_action: LocalizedText,
+    pub action_kind: Option<String>,
+    pub action_payload: Value,
+    pub status: String,
+    pub snoozed_until: Option<String>,
+    pub created_at: String,
+    pub updated_at: String,
+    pub version: i64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PlanCheckSummary {
+    pub id: Uuid,
+    pub trip_id: Uuid,
+    pub created_by: Uuid,
+    pub itinerary_fingerprint: String,
+    pub stale: bool,
+    pub status: String,
+    pub language_metadata: Value,
+    pub created_at: String,
+    pub completed_at: Option<String>,
+    pub version: i64,
+    pub suggestions: Vec<PlanSuggestionSummary>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -620,6 +701,7 @@ pub struct TripCockpit {
     pub plan_variants: Vec<PlanVariantSummary>,
     pub itinerary_items: Vec<ItineraryItemSummary>,
     pub suggestions: Vec<SuggestionSummary>,
+    pub latest_plan_check: Option<PlanCheckSummary>,
     pub tasks: Vec<TripTaskSummary>,
     pub stop_notes: Vec<StopNoteSummary>,
     pub expenses: Vec<ExpenseItemSummary>,
@@ -741,6 +823,8 @@ mod account_type_tests {
             destination_label: "Chiang Mai".to_string(),
             destination_cities: vec![chiang_mai.clone()],
             countries: vec!["Thailand".to_string()],
+            party_size: 4,
+            default_timezone: "Asia/Bangkok".to_string(),
             start_date,
             end_date,
             role: TripRole::Owner,
@@ -754,6 +838,8 @@ mod account_type_tests {
         assert_eq!(value["destinationLabel"], "Chiang Mai");
         assert_eq!(value["destinationCities"][0]["city"], "Chiang Mai");
         assert_eq!(value["countries"], serde_json::json!(["Thailand"]));
+        assert_eq!(value["partySize"], 4);
+        assert_eq!(value["defaultTimezone"], "Asia/Bangkok");
         assert_eq!(
             value["startDate"],
             serde_json::to_value(start_date).unwrap()
@@ -809,6 +895,8 @@ mod account_type_tests {
                 destination_label: "Chiang Mai".to_string(),
                 destination_cities: vec![chiang_mai],
                 countries: vec!["Thailand".to_string()],
+                party_size: 4,
+                default_timezone: "Asia/Bangkok".to_string(),
                 start_date,
                 end_date,
                 join_id: "CM2026".to_string(),
@@ -829,6 +917,8 @@ mod account_type_tests {
         assert_eq!(value["trip"]["originCity"], "Bangkok");
         assert_eq!(value["trip"]["destinationLabel"], "Chiang Mai");
         assert_eq!(value["trip"]["countries"], serde_json::json!(["Thailand"]));
+        assert_eq!(value["trip"]["partySize"], 4);
+        assert_eq!(value["trip"]["defaultTimezone"], "Asia/Bangkok");
         assert_eq!(value["ownerMemberId"], owner_member_id.to_string());
         assert_eq!(
             value["memberSession"]["memberId"],

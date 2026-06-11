@@ -8,10 +8,11 @@ use crate::db::models::{
     AuthAttemptLockRecord, AuthenticatedMemberSessionRecord, BookingDocExternalLinkRecord,
     BookingDocRecord, ExpenseRecord, ExpenseReminderRecord, ExpenseSplitRecord,
     ItineraryItemRecord, MemberSessionPolicyRecord, NewBookingDoc, NewExpense, NewExpenseReminder,
-    NewItineraryItem, NewPhotoAlbumLink, NewPlanVariant, NewRealtimeEvent, NewStopNote,
-    NewSuggestion, NewTripMember, NewTripTask, PhotoAlbumLinkRecord, PlaceGeocodeCacheRecord,
-    PlanVariantRecord, RealtimeEventRecord, StopNoteRecord, SuggestionRecord, TripAuthRecord,
-    TripDailyBriefingRecord, TripMemberAuthRecord, TripMemberRecord, TripTaskRecord,
+    NewItineraryItem, NewPhotoAlbumLink, NewPlanCheck, NewPlanSuggestion, NewPlanVariant,
+    NewRealtimeEvent, NewStopNote, NewSuggestion, NewTripMember, NewTripTask, PhotoAlbumLinkRecord,
+    PlaceGeocodeCacheRecord, PlanCheckRecord, PlanSuggestionRecord, PlanVariantRecord,
+    RealtimeEventRecord, StopNoteRecord, SuggestionRecord, TripAuthRecord, TripDailyBriefingRecord,
+    TripMemberAuthRecord, TripMemberRecord, TripTaskRecord,
 };
 
 pub async fn lock_auth_attempt(
@@ -82,7 +83,8 @@ pub async fn find_trip_by_join_id(
     sqlx::query_as::<_, TripAuthRecord>(
         "select
            id, name, origin_label, origin_city, origin_country, origin_country_code,
-           destination_label, destination_cities, countries, start_date, end_date, join_id, join_password_hash,
+           destination_label, destination_cities, countries, party_size, default_timezone,
+           start_date, end_date, join_id, join_password_hash,
            active_plan_variant_id, owner_member_id, version
          from trips
          where join_id = $1 and deleted_at is null",
@@ -99,7 +101,8 @@ pub async fn find_trip_by_id(
     sqlx::query_as::<_, TripAuthRecord>(
         "select
            id, name, origin_label, origin_city, origin_country, origin_country_code,
-           destination_label, destination_cities, countries, start_date, end_date, join_id, join_password_hash,
+           destination_label, destination_cities, countries, party_size, default_timezone,
+           start_date, end_date, join_id, join_password_hash,
            active_plan_variant_id, owner_member_id, version
          from trips
          where id = $1 and deleted_at is null",
@@ -116,7 +119,8 @@ pub async fn lock_trip(
     sqlx::query_as::<_, TripAuthRecord>(
         "select
            id, name, origin_label, origin_city, origin_country, origin_country_code,
-           destination_label, destination_cities, countries, start_date, end_date, join_id, join_password_hash,
+           destination_label, destination_cities, countries, party_size, default_timezone,
+           start_date, end_date, join_id, join_password_hash,
            active_plan_variant_id, owner_member_id, version
          from trips
          where id = $1 and deleted_at is null
@@ -141,12 +145,15 @@ pub async fn update_trip_metadata(
              start_date = coalesce($5, start_date),
              end_date = coalesce($6, end_date),
              active_plan_variant_id = coalesce($7, active_plan_variant_id),
-             version = $8,
+             party_size = coalesce($8, party_size),
+             default_timezone = coalesce($9, default_timezone),
+             version = $10,
              updated_at = now()
          where id = $1 and deleted_at is null
          returning
            id, name, origin_label, origin_city, origin_country, origin_country_code,
-           destination_label, destination_cities, countries, start_date, end_date, join_id, join_password_hash,
+           destination_label, destination_cities, countries, party_size, default_timezone,
+           start_date, end_date, join_id, join_password_hash,
            active_plan_variant_id, owner_member_id, version",
     )
     .bind(trip_id)
@@ -156,6 +163,8 @@ pub async fn update_trip_metadata(
     .bind(patch.start_date)
     .bind(patch.end_date)
     .bind(patch.active_plan_variant_id)
+    .bind(patch.party_size)
+    .bind(patch.default_timezone.as_deref())
     .bind(version)
     .fetch_optional(&mut **tx)
     .await
@@ -175,7 +184,8 @@ pub async fn update_trip_active_plan_variant(
          where id = $1 and deleted_at is null
          returning
            id, name, origin_label, origin_city, origin_country, origin_country_code,
-           destination_label, destination_cities, countries, start_date, end_date, join_id, join_password_hash,
+           destination_label, destination_cities, countries, party_size, default_timezone,
+           start_date, end_date, join_id, join_password_hash,
            active_plan_variant_id, owner_member_id, version",
     )
     .bind(trip_id)
@@ -741,7 +751,9 @@ pub async fn list_itinerary_items(
 ) -> Result<Vec<ItineraryItemRecord>, sqlx::Error> {
     sqlx::query_as::<_, ItineraryItemRecord>(
         "select
-           id, trip_id, plan_variant_id, path_group_id, path_id, path_name, path_role, day, sort_order,
+           id, trip_id, plan_variant_id, path_group_id, path_id, path_name, path_role,
+           parent_item_id, item_kind, time_mode, is_plan_block, status, priority,
+           day, sort_order,
            coalesce(to_char(start_time, 'HH24:MI'), '') as start_time,
            activity, activity_type, place, link_label, map_link, address,
            latitude::float8 as latitude, longitude::float8 as longitude,
@@ -928,7 +940,9 @@ pub async fn lock_itinerary_item(
 ) -> Result<Option<ItineraryItemRecord>, sqlx::Error> {
     sqlx::query_as::<_, ItineraryItemRecord>(
         "select
-           id, trip_id, plan_variant_id, path_group_id, path_id, path_name, path_role, day, sort_order,
+           id, trip_id, plan_variant_id, path_group_id, path_id, path_name, path_role,
+           parent_item_id, item_kind, time_mode, is_plan_block, status, priority,
+           day, sort_order,
            coalesce(to_char(start_time, 'HH24:MI'), '') as start_time,
            activity, activity_type, place, link_label, map_link, address,
            latitude::float8 as latitude, longitude::float8 as longitude,
@@ -955,24 +969,32 @@ pub async fn update_itinerary_item(
              path_id = coalesce($3, path_id),
              path_name = coalesce($4, path_name),
              path_role = coalesce($5, path_role),
-             day = coalesce($6, day),
-             start_time = coalesce($7::time, start_time),
-             duration_minutes = coalesce($8, duration_minutes),
-             activity = coalesce($9, activity),
-             activity_type = coalesce($10, activity_type),
-             place = coalesce($11, place),
-             map_link = coalesce($12, map_link),
-             address = case when $13 then $14 else address end,
-             latitude = case when $15 then $16 else latitude end,
-             longitude = case when $17 then $18 else longitude end,
-             transportation = coalesce($19, transportation),
-             details = coalesce($20, details),
-             note = coalesce($21, note),
-             version = $22,
+             parent_item_id = coalesce($6, parent_item_id),
+             item_kind = coalesce($7, item_kind),
+             time_mode = coalesce($8, time_mode),
+             is_plan_block = coalesce($9, is_plan_block),
+             status = coalesce($10, status),
+             priority = coalesce($11, priority),
+             day = coalesce($12, day),
+             start_time = case when $13 then $14::time else start_time end,
+             duration_minutes = coalesce($15, duration_minutes),
+             activity = coalesce($16, activity),
+             activity_type = coalesce($17, activity_type),
+             place = coalesce($18, place),
+             map_link = coalesce($19, map_link),
+             address = case when $20 then $21 else address end,
+             latitude = case when $22 then $23 else latitude end,
+             longitude = case when $24 then $25 else longitude end,
+             transportation = coalesce($26, transportation),
+             details = coalesce($27, details),
+             note = coalesce($28, note),
+             version = $29,
              updated_at = now()
          where id = $1 and deleted_at is null
          returning
-           id, trip_id, plan_variant_id, path_group_id, path_id, path_name, path_role, day, sort_order,
+           id, trip_id, plan_variant_id, path_group_id, path_id, path_name, path_role,
+           parent_item_id, item_kind, time_mode, is_plan_block, status, priority,
+           day, sort_order,
            coalesce(to_char(start_time, 'HH24:MI'), '') as start_time,
            activity, activity_type, place, link_label, map_link, address,
            latitude::float8 as latitude, longitude::float8 as longitude,
@@ -984,8 +1006,15 @@ pub async fn update_itinerary_item(
     .bind(patch.path_id.as_deref())
     .bind(patch.path_name.as_deref())
     .bind(patch.path_role.as_deref())
+    .bind(patch.parent_item_id)
+    .bind(patch.item_kind.as_deref())
+    .bind(patch.time_mode.as_deref())
+    .bind(patch.is_plan_block)
+    .bind(patch.status.as_deref())
+    .bind(patch.priority.as_deref())
     .bind(patch.day)
-    .bind(patch.start_time.as_deref())
+    .bind(patch.start_time.is_some())
+    .bind(patch.start_time.as_ref().and_then(|value| value.as_deref()))
     .bind(patch.duration_minutes)
     .bind(patch.activity.as_deref())
     .bind(patch.activity_type.as_deref())
@@ -1034,12 +1063,23 @@ pub async fn insert_itinerary_item(
 ) -> Result<ItineraryItemRecord, sqlx::Error> {
     sqlx::query_as::<_, ItineraryItemRecord>(
         "insert into itinerary_items (
-           id, trip_id, plan_variant_id, path_group_id, path_id, path_name, path_role, day, sort_order, start_time, activity, activity_type,
-           place, map_link, address, latitude, longitude, duration_minutes, transportation, details, note, created_by, version
+           id, trip_id, plan_variant_id, path_group_id, path_id, path_name, path_role,
+           parent_item_id, item_kind, time_mode, is_plan_block, status, priority,
+           day, sort_order, start_time, activity, activity_type,
+           place, map_link, address, latitude, longitude, duration_minutes, transportation,
+           details, note, created_by, version
          )
-         values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10::time, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, 1)
+         values (
+           $1, $2, $3, $4, $5, $6, $7,
+           $8, $9, $10, $11, $12, $13,
+           $14, $15, $16::time, $17, $18,
+           $19, $20, $21, $22, $23, $24, $25,
+           $26, $27, $28, 1
+         )
          returning
-           id, trip_id, plan_variant_id, path_group_id, path_id, path_name, path_role, day, sort_order,
+           id, trip_id, plan_variant_id, path_group_id, path_id, path_name, path_role,
+           parent_item_id, item_kind, time_mode, is_plan_block, status, priority,
+           day, sort_order,
            coalesce(to_char(start_time, 'HH24:MI'), '') as start_time,
            activity, activity_type, place, link_label, map_link, address,
            latitude::float8 as latitude, longitude::float8 as longitude,
@@ -1053,6 +1093,12 @@ pub async fn insert_itinerary_item(
     .bind(item.path_id)
     .bind(item.path_name)
     .bind(item.path_role)
+    .bind(item.parent_item_id)
+    .bind(item.item_kind)
+    .bind(item.time_mode)
+    .bind(item.is_plan_block)
+    .bind(item.status)
+    .bind(item.priority)
     .bind(item.day)
     .bind(item.sort_order)
     .bind(item.start_time)
@@ -1082,7 +1128,9 @@ pub async fn delete_itinerary_item(
          set deleted_at = now(), version = $2, updated_at = now()
          where id = $1 and deleted_at is null
          returning
-           id, trip_id, plan_variant_id, path_group_id, path_id, path_name, path_role, day, sort_order,
+           id, trip_id, plan_variant_id, path_group_id, path_id, path_name, path_role,
+           parent_item_id, item_kind, time_mode, is_plan_block, status, priority,
+           day, sort_order,
            coalesce(to_char(start_time, 'HH24:MI'), '') as start_time,
            activity, activity_type, place, link_label, map_link, address,
            latitude::float8 as latitude, longitude::float8 as longitude,
@@ -1114,7 +1162,9 @@ pub async fn reorder_itinerary_items(
                and day = $4
                and deleted_at is null
              returning
-               id, trip_id, plan_variant_id, path_group_id, path_id, path_name, path_role, day, sort_order,
+               id, trip_id, plan_variant_id, path_group_id, path_id, path_name, path_role,
+               parent_item_id, item_kind, time_mode, is_plan_block, status, priority,
+               day, sort_order,
                coalesce(to_char(start_time, 'HH24:MI'), '') as start_time,
                activity, activity_type, place, link_label, map_link, address,
                latitude::float8 as latitude, longitude::float8 as longitude,
@@ -1234,6 +1284,146 @@ pub async fn update_suggestion_status(
     .bind(suggestion_id)
     .bind(status)
     .bind(resolved_by)
+    .fetch_optional(&mut **tx)
+    .await
+}
+
+pub async fn find_latest_plan_check(
+    pool: &PgPool,
+    trip_id: Uuid,
+) -> Result<Option<PlanCheckRecord>, sqlx::Error> {
+    sqlx::query_as::<_, PlanCheckRecord>(
+        "select
+           id, trip_id, created_by, itinerary_fingerprint, language_metadata,
+           status, created_at::text as created_at, completed_at::text as completed_at, version
+         from plan_checks
+         where trip_id = $1
+         order by created_at desc
+         limit 1",
+    )
+    .bind(trip_id)
+    .fetch_optional(pool)
+    .await
+}
+
+pub async fn list_plan_suggestions(
+    pool: &PgPool,
+    plan_check_id: Uuid,
+) -> Result<Vec<PlanSuggestionRecord>, sqlx::Error> {
+    sqlx::query_as::<_, PlanSuggestionRecord>(
+        "select
+           id, trip_id, plan_check_id, severity, scope, target_item_ids,
+           explanation_i18n, recommended_action_i18n, action_kind, action_payload,
+           status, snoozed_until::text as snoozed_until,
+           created_at::text as created_at, updated_at::text as updated_at, version
+         from plan_suggestions
+         where plan_check_id = $1
+         order by
+           case severity when 'critical' then 0 when 'warning' then 1 else 2 end,
+           created_at,
+           id",
+    )
+    .bind(plan_check_id)
+    .fetch_all(pool)
+    .await
+}
+
+pub async fn insert_plan_check(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    check: NewPlanCheck<'_>,
+) -> Result<PlanCheckRecord, sqlx::Error> {
+    sqlx::query_as::<_, PlanCheckRecord>(
+        "insert into plan_checks (
+           id, trip_id, created_by, itinerary_fingerprint, language_metadata,
+           status, completed_at
+         )
+         values ($1, $2, $3, $4, $5, 'complete', now())
+         returning
+           id, trip_id, created_by, itinerary_fingerprint, language_metadata,
+           status, created_at::text as created_at, completed_at::text as completed_at, version",
+    )
+    .bind(check.id)
+    .bind(check.trip_id)
+    .bind(check.created_by)
+    .bind(check.itinerary_fingerprint)
+    .bind(check.language_metadata)
+    .fetch_one(&mut **tx)
+    .await
+}
+
+pub async fn insert_plan_suggestion(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    suggestion: NewPlanSuggestion<'_>,
+) -> Result<PlanSuggestionRecord, sqlx::Error> {
+    sqlx::query_as::<_, PlanSuggestionRecord>(
+        "insert into plan_suggestions (
+           id, trip_id, plan_check_id, severity, scope, target_item_ids,
+           explanation_i18n, recommended_action_i18n, action_kind, action_payload
+         )
+         values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+         returning
+           id, trip_id, plan_check_id, severity, scope, target_item_ids,
+           explanation_i18n, recommended_action_i18n, action_kind, action_payload,
+           status, snoozed_until::text as snoozed_until,
+           created_at::text as created_at, updated_at::text as updated_at, version",
+    )
+    .bind(suggestion.id)
+    .bind(suggestion.trip_id)
+    .bind(suggestion.plan_check_id)
+    .bind(suggestion.severity)
+    .bind(suggestion.scope)
+    .bind(suggestion.target_item_ids)
+    .bind(suggestion.explanation_i18n)
+    .bind(suggestion.recommended_action_i18n)
+    .bind(suggestion.action_kind)
+    .bind(suggestion.action_payload)
+    .fetch_one(&mut **tx)
+    .await
+}
+
+pub async fn lock_plan_suggestion(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    suggestion_id: Uuid,
+) -> Result<Option<PlanSuggestionRecord>, sqlx::Error> {
+    sqlx::query_as::<_, PlanSuggestionRecord>(
+        "select
+           id, trip_id, plan_check_id, severity, scope, target_item_ids,
+           explanation_i18n, recommended_action_i18n, action_kind, action_payload,
+           status, snoozed_until::text as snoozed_until,
+           created_at::text as created_at, updated_at::text as updated_at, version
+         from plan_suggestions
+         where id = $1
+         for update",
+    )
+    .bind(suggestion_id)
+    .fetch_optional(&mut **tx)
+    .await
+}
+
+pub async fn update_plan_suggestion_status(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    suggestion_id: Uuid,
+    status: &str,
+    snoozed_until: Option<&str>,
+    next_version: i64,
+) -> Result<Option<PlanSuggestionRecord>, sqlx::Error> {
+    sqlx::query_as::<_, PlanSuggestionRecord>(
+        "update plan_suggestions
+         set status = $2,
+             snoozed_until = $3::timestamptz,
+             version = $4,
+             updated_at = now()
+         where id = $1
+         returning
+           id, trip_id, plan_check_id, severity, scope, target_item_ids,
+           explanation_i18n, recommended_action_i18n, action_kind, action_payload,
+           status, snoozed_until::text as snoozed_until,
+           created_at::text as created_at, updated_at::text as updated_at, version",
+    )
+    .bind(suggestion_id)
+    .bind(status)
+    .bind(snoozed_until)
+    .bind(next_version)
     .fetch_optional(&mut **tx)
     .await
 }

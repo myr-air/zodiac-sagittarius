@@ -569,6 +569,8 @@ pub async fn list_account_trips(
            trips.destination_label,
            trips.destination_cities,
            trips.countries,
+           trips.party_size,
+           trips.default_timezone,
            trips.start_date,
            trips.end_date,
            trip_members.role,
@@ -976,6 +978,8 @@ pub async fn insert_account_trip(
            destination_label,
            destination_cities,
            countries,
+           party_size,
+           default_timezone,
            start_date,
            end_date,
            join_id,
@@ -983,7 +987,7 @@ pub async fn insert_account_trip(
            active_plan_variant_id,
            owner_member_id
          )
-         values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+         values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
          returning
            id,
            name,
@@ -994,6 +998,8 @@ pub async fn insert_account_trip(
            destination_label,
            destination_cities,
            countries,
+           party_size,
+           default_timezone,
            start_date,
            end_date,
            join_id,
@@ -1011,6 +1017,8 @@ pub async fn insert_account_trip(
     .bind(trip.destination_label)
     .bind(Json(trip.destination_cities.to_vec()))
     .bind(trip.countries)
+    .bind(trip.party_size)
+    .bind(trip.default_timezone)
     .bind(trip.start_date)
     .bind(trip.end_date)
     .bind(trip.join_id)

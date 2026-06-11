@@ -1,6 +1,7 @@
 use std::{collections::BTreeMap, env};
 
 use serde::Deserialize;
+#[cfg(test)]
 use sqlx::types::Json;
 use time::{Date, Duration, OffsetDateTime};
 use uuid::Uuid;
@@ -670,6 +671,12 @@ mod tests {
                 path_id: None,
                 path_name: None,
                 path_role: None,
+                parent_item_id: None,
+                item_kind: "travel".to_string(),
+                time_mode: "scheduled".to_string(),
+                is_plan_block: false,
+                status: "planned".to_string(),
+                priority: "normal".to_string(),
                 day: date,
                 sort_order: 1,
                 start_time: "08:00".to_string(),
@@ -698,6 +705,12 @@ mod tests {
                 path_id: None,
                 path_name: None,
                 path_role: None,
+                parent_item_id: None,
+                item_kind: "activity".to_string(),
+                time_mode: "scheduled".to_string(),
+                is_plan_block: false,
+                status: "planned".to_string(),
+                priority: "normal".to_string(),
                 day: date,
                 sort_order: 2,
                 start_time: "09:00".to_string(),
@@ -726,6 +739,12 @@ mod tests {
                 path_id: None,
                 path_name: None,
                 path_role: None,
+                parent_item_id: None,
+                item_kind: "activity".to_string(),
+                time_mode: "scheduled".to_string(),
+                is_plan_block: false,
+                status: "planned".to_string(),
+                priority: "normal".to_string(),
                 day: next_date,
                 sort_order: 1,
                 start_time: "10:00".to_string(),
@@ -785,6 +804,8 @@ mod tests {
                 longitude: 100.5018,
             }]),
             countries: vec!["TH".to_string()],
+            party_size: 2,
+            default_timezone: "Asia/Bangkok".to_string(),
             start_date: Date::from_calendar_date(2026, Month::July, 10).unwrap(),
             end_date: Date::from_calendar_date(2026, Month::July, 12).unwrap(),
             join_id: "JOIN".to_string(),
@@ -801,6 +822,12 @@ mod tests {
             path_id: None,
             path_name: None,
             path_role: None,
+            parent_item_id: None,
+            item_kind: "meal".to_string(),
+            time_mode: "scheduled".to_string(),
+            is_plan_block: false,
+            status: "planned".to_string(),
+            priority: "normal".to_string(),
             day: Date::from_calendar_date(2026, Month::July, 10).unwrap(),
             sort_order: 1,
             start_time: "08:00".to_string(),

@@ -15,6 +15,12 @@ export interface ItineraryExportItem {
   pathId?: string;
   pathName?: string;
   pathRole?: ItineraryItem["pathRole"];
+  itemKind?: ItineraryItem["itemKind"];
+  timeMode?: ItineraryItem["timeMode"];
+  parentItemId?: string | null;
+  isPlanBlock?: boolean;
+  status?: ItineraryItem["status"];
+  priority?: ItineraryItem["priority"];
   day: string;
   sortOrder: number;
   startTime: string;
@@ -43,8 +49,10 @@ export interface ItineraryExportDocument {
     | "name"
     | "destinationLabel"
     | "startDate"
-    | "endDate"
-    | "activePlanVariantId"
+      | "endDate"
+      | "activePlanVariantId"
+      | "partySize"
+      | "defaultTimezone"
   >;
   items: ItineraryExportItem[];
 }
@@ -69,6 +77,8 @@ export function buildItineraryExport({
       startDate: trip.startDate,
       endDate: trip.endDate,
       activePlanVariantId: trip.activePlanVariantId,
+      partySize: trip.partySize,
+      defaultTimezone: trip.defaultTimezone,
     },
     items: items.map(toExportItem),
   };
@@ -101,6 +111,12 @@ function toExportItem(item: ItineraryItem): ItineraryExportItem {
     pathId: item.pathId,
     pathName: item.pathName,
     pathRole: item.pathRole,
+    itemKind: item.itemKind,
+    timeMode: item.timeMode,
+    parentItemId: item.parentItemId ?? null,
+    isPlanBlock: item.isPlanBlock,
+    status: item.status,
+    priority: item.priority,
     day: item.day,
     sortOrder: item.sortOrder,
     startTime: item.startTime,
@@ -129,9 +145,15 @@ function parseExportItem(value: unknown): ItineraryExportItem {
     pathId: readOptionalString(item, "pathId"),
     pathName: readOptionalString(item, "pathName"),
     pathRole: readOptionalPathRole(item, "pathRole"),
+    itemKind: readOptionalItemKind(item.itemKind) ?? itemKindFromActivityType(readActivityType(item.activityType)),
+    timeMode: readOptionalTimeMode(item.timeMode) ?? (item.startTime === null ? "flexible" : "scheduled"),
+    parentItemId: readOptionalNullableString(item, "parentItemId"),
+    isPlanBlock: typeof item.isPlanBlock === "boolean" ? item.isPlanBlock : false,
+    status: readOptionalStatus(item.status) ?? "planned",
+    priority: readOptionalPriority(item.priority) ?? "normal",
     day: readString(item, "day"),
     sortOrder: readNumber(item, "sortOrder"),
-    startTime: readString(item, "startTime"),
+    startTime: item.startTime === null ? "" : readString(item, "startTime"),
     activity: readString(item, "activity"),
     activityType: readActivityType(item.activityType),
     place: readString(item, "place"),
@@ -150,6 +172,18 @@ function parseExportItem(value: unknown): ItineraryExportItem {
     advisories: readAdvisories(item.advisories),
     note: typeof item.note === "string" ? item.note : "",
   };
+}
+
+function readOptionalNullableString(
+  item: Record<string, unknown>,
+  key: string,
+): string | null | undefined {
+  const value = item[key];
+  if (value === undefined) return undefined;
+  if (value === null) return null;
+  if (typeof value !== "string")
+    throw new Error("Unsupported itinerary import file.");
+  return value;
 }
 
 function readDetails(value: unknown): ItineraryItem["details"] {
@@ -204,6 +238,54 @@ function readActivityType(value: unknown): ItineraryItem["activityType"] {
     value === "stay"
   )
     return value;
+  throw new Error("Unsupported itinerary import file.");
+}
+
+function readOptionalItemKind(value: unknown): ItineraryItem["itemKind"] | undefined {
+  if (value === undefined || value === null) return undefined;
+  if (
+    value === "travel" ||
+    value === "activity" ||
+    value === "lodging" ||
+    value === "meal" ||
+    value === "note" ||
+    value === "preparation" ||
+    value === "foodRecommendation"
+  )
+    return value;
+  throw new Error("Unsupported itinerary import file.");
+}
+
+function itemKindFromActivityType(activityType: ItineraryItem["activityType"]): ItineraryItem["itemKind"] {
+  if (activityType === "travel") return "travel";
+  if (activityType === "food") return "meal";
+  if (activityType === "stay") return "lodging";
+  return "activity";
+}
+
+function readOptionalTimeMode(value: unknown): ItineraryItem["timeMode"] | undefined {
+  if (value === undefined || value === null) return undefined;
+  if (value === "scheduled" || value === "flexible") return value;
+  throw new Error("Unsupported itinerary import file.");
+}
+
+function readOptionalStatus(value: unknown): ItineraryItem["status"] | undefined {
+  if (value === undefined || value === null) return undefined;
+  if (
+    value === "idea" ||
+    value === "planned" ||
+    value === "booked" ||
+    value === "confirmed" ||
+    value === "done" ||
+    value === "skipped"
+  )
+    return value;
+  throw new Error("Unsupported itinerary import file.");
+}
+
+function readOptionalPriority(value: unknown): ItineraryItem["priority"] | undefined {
+  if (value === undefined || value === null) return undefined;
+  if (value === "low" || value === "normal" || value === "high" || value === "must") return value;
   throw new Error("Unsupported itinerary import file.");
 }
 

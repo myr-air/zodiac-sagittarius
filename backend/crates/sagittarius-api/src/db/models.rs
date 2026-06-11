@@ -4,8 +4,9 @@ use uuid::Uuid;
 
 use crate::domain::types::{
     AccountSessionKind, ClaimableMember, ExpenseItemSummary, ItineraryCoordinates,
-    ItineraryItemSummary, PlanVariantSummary, StopNoteSummary, SuggestionSummary, TripCity,
-    TripMemberAccessStatus, TripMemberSummary, TripRole, TripSummary, TripTaskSummary,
+    ItineraryItemSummary, LocalizedText, PlanCheckSummary, PlanSuggestionSummary,
+    PlanVariantSummary, StopNoteSummary, SuggestionSummary, TripCity, TripMemberAccessStatus,
+    TripMemberSummary, TripRole, TripSummary, TripTaskSummary,
 };
 
 #[derive(Debug, Clone, FromRow)]
@@ -19,6 +20,8 @@ pub struct TripAuthRecord {
     pub destination_label: String,
     pub destination_cities: Json<Vec<TripCity>>,
     pub countries: Vec<String>,
+    pub party_size: i32,
+    pub default_timezone: String,
     pub start_date: Date,
     pub end_date: Date,
     pub join_id: String,
@@ -40,6 +43,8 @@ impl From<TripAuthRecord> for TripSummary {
             destination_label: record.destination_label,
             destination_cities: record.destination_cities.0,
             countries: record.countries,
+            party_size: record.party_size,
+            default_timezone: record.default_timezone,
             start_date: record.start_date,
             end_date: record.end_date,
             join_id: record.join_id,
@@ -171,6 +176,8 @@ pub struct NewAccountTrip<'a> {
     pub destination_label: &'a str,
     pub destination_cities: &'a [TripCity],
     pub countries: &'a [String],
+    pub party_size: i32,
+    pub default_timezone: &'a str,
     pub start_date: Date,
     pub end_date: Date,
     pub join_id: &'a str,
@@ -222,6 +229,12 @@ pub struct NewItineraryItem<'a> {
     pub path_id: Option<&'a str>,
     pub path_name: Option<&'a str>,
     pub path_role: Option<&'a str>,
+    pub parent_item_id: Option<Uuid>,
+    pub item_kind: &'a str,
+    pub time_mode: &'a str,
+    pub is_plan_block: bool,
+    pub status: &'a str,
+    pub priority: &'a str,
     pub day: Date,
     pub sort_order: i32,
     pub start_time: Option<&'a str>,
@@ -259,6 +272,8 @@ pub struct AccountTripRecord {
     pub destination_label: String,
     pub destination_cities: Json<Vec<TripCity>>,
     pub countries: Vec<String>,
+    pub party_size: i32,
+    pub default_timezone: String,
     pub start_date: Date,
     pub end_date: Date,
     pub role: TripRole,
@@ -418,6 +433,12 @@ pub struct ItineraryItemRecord {
     pub path_id: Option<String>,
     pub path_name: Option<String>,
     pub path_role: Option<String>,
+    pub parent_item_id: Option<Uuid>,
+    pub item_kind: String,
+    pub time_mode: String,
+    pub is_plan_block: bool,
+    pub status: String,
+    pub priority: String,
     pub day: Date,
     pub sort_order: i32,
     pub start_time: String,
@@ -482,6 +503,12 @@ impl From<ItineraryItemRecord> for ItineraryItemSummary {
             path_id: record.path_id,
             path_name: record.path_name,
             path_role: record.path_role,
+            parent_item_id: record.parent_item_id,
+            item_kind: record.item_kind,
+            time_mode: record.time_mode,
+            is_plan_block: record.is_plan_block,
+            status: record.status,
+            priority: record.priority,
             day: record.day,
             sort_order: record.sort_order,
             start_time: record.start_time,
@@ -516,6 +543,116 @@ pub struct SuggestionRecord {
     pub source_version: Option<i64>,
     pub status: String,
     pub created_at: String,
+}
+
+#[derive(Debug, Clone, FromRow)]
+pub struct PlanCheckRecord {
+    pub id: Uuid,
+    pub trip_id: Uuid,
+    pub created_by: Uuid,
+    pub itinerary_fingerprint: String,
+    pub language_metadata: serde_json::Value,
+    pub status: String,
+    pub created_at: String,
+    pub completed_at: Option<String>,
+    pub version: i64,
+}
+
+#[derive(Debug, Clone, FromRow)]
+pub struct PlanSuggestionRecord {
+    pub id: Uuid,
+    pub trip_id: Uuid,
+    pub plan_check_id: Uuid,
+    pub severity: String,
+    pub scope: String,
+    pub target_item_ids: Vec<Uuid>,
+    pub explanation_i18n: serde_json::Value,
+    pub recommended_action_i18n: serde_json::Value,
+    pub action_kind: Option<String>,
+    pub action_payload: serde_json::Value,
+    pub status: String,
+    pub snoozed_until: Option<String>,
+    pub created_at: String,
+    pub updated_at: String,
+    pub version: i64,
+}
+
+impl PlanSuggestionRecord {
+    pub fn into_summary(self) -> PlanSuggestionSummary {
+        PlanSuggestionSummary {
+            id: self.id,
+            trip_id: self.trip_id,
+            plan_check_id: self.plan_check_id,
+            severity: self.severity,
+            scope: self.scope,
+            target_item_ids: self.target_item_ids,
+            explanation: localized_text(self.explanation_i18n),
+            recommended_action: localized_text(self.recommended_action_i18n),
+            action_kind: self.action_kind,
+            action_payload: self.action_payload,
+            status: self.status,
+            snoozed_until: self.snoozed_until,
+            created_at: self.created_at,
+            updated_at: self.updated_at,
+            version: self.version,
+        }
+    }
+}
+
+pub fn plan_check_summary(
+    record: PlanCheckRecord,
+    stale: bool,
+    suggestions: Vec<PlanSuggestionSummary>,
+) -> PlanCheckSummary {
+    PlanCheckSummary {
+        id: record.id,
+        trip_id: record.trip_id,
+        created_by: record.created_by,
+        itinerary_fingerprint: record.itinerary_fingerprint,
+        stale,
+        status: record.status,
+        language_metadata: record.language_metadata,
+        created_at: record.created_at,
+        completed_at: record.completed_at,
+        version: record.version,
+        suggestions,
+    }
+}
+
+fn localized_text(value: serde_json::Value) -> LocalizedText {
+    LocalizedText {
+        en: value
+            .get("en")
+            .and_then(|entry| entry.as_str())
+            .unwrap_or("")
+            .to_string(),
+        th: value
+            .get("th")
+            .and_then(|entry| entry.as_str())
+            .unwrap_or("")
+            .to_string(),
+    }
+}
+
+pub struct NewPlanCheck<'a> {
+    pub id: Uuid,
+    pub trip_id: Uuid,
+    pub created_by: Uuid,
+    pub itinerary_fingerprint: &'a str,
+    pub language_metadata: &'a serde_json::Value,
+}
+
+pub struct NewPlanSuggestion<'a> {
+    pub id: Uuid,
+    pub trip_id: Uuid,
+    pub plan_check_id: Uuid,
+    pub severity: &'a str,
+    pub scope: &'a str,
+    pub target_item_ids: &'a [Uuid],
+    pub explanation_i18n: &'a serde_json::Value,
+    pub recommended_action_i18n: &'a serde_json::Value,
+    pub action_kind: Option<&'a str>,
+    pub action_payload: &'a serde_json::Value,
 }
 
 impl From<SuggestionRecord> for SuggestionSummary {
@@ -838,6 +975,12 @@ mod tests {
             path_id: None,
             path_name: None,
             path_role: None,
+            parent_item_id: None,
+            item_kind: "meal".to_string(),
+            time_mode: "scheduled".to_string(),
+            is_plan_block: false,
+            status: "planned".to_string(),
+            priority: "normal".to_string(),
             day: Date::from_calendar_date(2026, time::Month::May, 29).unwrap(),
             sort_order: 1,
             start_time: "09:00".to_string(),
