@@ -11,15 +11,15 @@ interface PageHeaderProps {
   motif?: ReactNode;
 }
 
-const pageHeaderClassName = "page-header relative flex min-h-[96px] min-w-0 items-center justify-between justify-self-stretch gap-4 overflow-hidden rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) px-5 py-3.5 shadow-[0_10px_22px_rgb(55_47_38_/_0.055)] mb-4 max-[1199px]:items-start max-[1199px]:flex-col max-[767px]:min-h-0 max-[767px]:gap-3 max-[767px]:px-4 max-[767px]:py-3";
-const pageHeaderCopyClassName = "page-header-copy relative z-[1] grid min-w-0 gap-[5px]";
-const eyebrowClassName = "eyebrow m-0 mb-[5px] text-xs font-black leading-4 text-(--color-primary-strong)";
-const titleClassName = "m-0 text-[26px] font-black leading-[34px] text-(--color-text) max-[1199px]:text-[22px] max-[1199px]:leading-[30px]";
+const pageHeaderClassName = "page-header relative isolate mb-4 flex min-h-[108px] min-w-0 items-center justify-between justify-self-stretch gap-4 overflow-hidden rounded-(--radius-lg) border border-[color-mix(in_srgb,var(--color-primary-border)_42%,var(--color-border))] bg-[color-mix(in_srgb,var(--color-surface)_88%,var(--color-postcard))] px-5 py-4 shadow-[0_6px_8px_rgb(55_47_38_/_0.045)] max-[1199px]:items-start max-[1199px]:flex-col max-[767px]:min-h-0 max-[767px]:gap-3 max-[767px]:px-4 max-[767px]:py-3";
+const pageHeaderCopyClassName = "page-header-copy relative z-[1] grid min-w-0 gap-1.5";
+const eyebrowClassName = "eyebrow m-0 inline-flex w-fit items-center rounded-full border border-(--color-primary-border) bg-(--color-primary-soft) px-2.5 py-0.5 text-xs font-black leading-4 text-(--color-primary-strong)";
+const titleClassName = "m-0 text-[27px] font-black leading-[35px] text-(--color-text) [text-wrap:balance] max-[1199px]:text-[22px] max-[1199px]:leading-[30px]";
 const subtitleClassName = "m-0 text-sm font-bold leading-5 text-(--color-text-muted)";
 const descriptionClassName = "page-header-description m-0 max-w-[560px] text-[13px] font-semibold leading-5 text-(--color-text-muted)";
-const metaClassName = "page-header-meta mt-2 inline-flex flex-wrap gap-2 text-xs font-extrabold text-(--color-text-muted) [&_.icon]:text-(--color-primary-strong) [&>span]:inline-flex [&>span]:min-h-7 [&>span]:items-center [&>span]:gap-1.5 [&>span]:rounded-full [&>span]:border [&>span]:border-(--color-border) [&>span]:bg-(--color-surface-subtle) [&>span]:px-[10px] [&>span]:py-1";
-const motifClassName = "page-header-motif relative z-[1] grid max-w-44 flex-none place-items-center opacity-80 max-[1199px]:hidden";
-const userCardClassName = "page-current-user relative z-[1] grid min-w-[236px] grid-cols-[40px_minmax(0,1fr)] items-center gap-3 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface-subtle) px-3.5 py-3 max-[1199px]:w-full max-[1199px]:min-w-0";
+const metaClassName = "page-header-meta mt-2 inline-flex flex-wrap gap-2 text-xs font-extrabold text-(--color-text-muted) [&_.icon]:text-(--color-primary-strong) [&>span]:inline-flex [&>span]:min-h-7 [&>span]:items-center [&>span]:gap-1.5 [&>span]:rounded-full [&>span]:border [&>span]:border-[color-mix(in_srgb,var(--color-route-border)_68%,var(--color-border))] [&>span]:bg-[rgb(255_255_255_/_0.74)] [&>span]:px-[10px] [&>span]:py-1";
+const motifClassName = "page-header-motif relative z-[1] grid max-w-44 flex-none place-items-center opacity-90 max-[1199px]:hidden";
+const userCardClassName = "page-current-user relative z-[1] grid min-w-[236px] grid-cols-[40px_minmax(0,1fr)] items-center gap-3 rounded-(--radius-md) border border-[color-mix(in_srgb,var(--color-primary-border)_46%,var(--color-border))] bg-[rgb(255_255_255_/_0.72)] px-3.5 py-3 max-[1199px]:w-full max-[1199px]:min-w-0";
 const userAvatarClassName = "person-avatar !size-10";
 const userCopyClassName = "grid min-w-0 gap-0.5";
 const userNameClassName = "overflow-hidden text-ellipsis whitespace-nowrap text-[13px] font-extrabold leading-[18px] text-(--color-text)";

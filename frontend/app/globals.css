@@ -243,10 +243,13 @@ button:disabled,
 .page-header::after {
   content: "";
   position: absolute;
-  inset: auto 16px 0;
-  height: 2px;
-  background: linear-gradient(90deg, var(--color-primary), var(--color-route), transparent 72%);
-  opacity: 0.5;
+  right: 18px;
+  bottom: 13px;
+  width: min(240px, 38%);
+  height: 34px;
+  border-bottom: 2px dashed color-mix(in srgb, var(--color-route) 38%, transparent);
+  border-radius: 999px;
+  opacity: 0.52;
 }
 
 .page-header::before {
@@ -254,7 +257,15 @@ button:disabled,
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: linear-gradient(90deg, rgb(194 79 22 / 0.055), transparent 34%), linear-gradient(180deg, rgb(255 255 255 / 0.82), transparent 54%);
+  background:
+    radial-gradient(circle at 84% 23%, rgb(194 79 22 / 0.16) 0 2px, transparent 2.6px),
+    radial-gradient(circle at 91% 58%, rgb(37 99 235 / 0.16) 0 2px, transparent 2.6px),
+    linear-gradient(90deg, rgb(37 99 235 / 0.04) 1px, transparent 1px),
+    linear-gradient(0deg, rgb(37 99 235 / 0.035) 1px, transparent 1px),
+    radial-gradient(520px 190px at 86% 0%, rgb(56 189 248 / 0.12), transparent 62%),
+    linear-gradient(90deg, rgb(194 79 22 / 0.06), transparent 38%),
+    linear-gradient(180deg, rgb(255 255 255 / 0.86), transparent 58%);
+  background-size: auto, auto, 42px 42px, 42px 42px, auto, auto, auto;
   opacity: 1;
 }
 
