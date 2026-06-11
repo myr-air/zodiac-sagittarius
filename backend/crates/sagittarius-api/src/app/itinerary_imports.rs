@@ -9,11 +9,10 @@ use uuid::Uuid;
 use crate::app::auth;
 use crate::db;
 use crate::db::PgPool;
-use crate::domain::capabilities::can;
 use crate::domain::errors::ServiceError;
 use crate::domain::patches::ImportItineraryRequest;
 use crate::domain::types::{
-    Capability, ItineraryImportDocument, ItineraryImportItem, ItineraryImportTrip,
+    ItineraryImportDocument, ItineraryImportItem, ItineraryImportTrip, TripRole,
 };
 
 const IMPORT_SCHEMA: &str = "joii.itinerary.export";
@@ -30,7 +29,7 @@ pub async fn import_itinerary(
     let session = db::queries::find_active_member_session(pool, trip_id, &token_hash)
         .await?
         .ok_or(ServiceError::Unauthenticated)?;
-    if !can(session.role, Capability::EditItinerary) {
+    if !can_import_itinerary(session.role) {
         return Err(ServiceError::Forbidden);
     }
 
@@ -98,6 +97,10 @@ async fn convert_with_ai_provider(
             "unsupported itinerary ai provider",
         )),
     }
+}
+
+fn can_import_itinerary(role: TripRole) -> bool {
+    matches!(role, TripRole::Owner | TripRole::Organizer)
 }
 
 async fn convert_with_openrouter(

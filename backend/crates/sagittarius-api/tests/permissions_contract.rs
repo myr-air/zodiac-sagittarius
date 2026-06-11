@@ -25,7 +25,7 @@ fn role_capabilities_match_frontend_contract() {
         (TripRole::Organizer, Capability::CreatePrivateTask, true),
         (TripRole::Organizer, Capability::UpdateOwnPrivateTask, true),
         (TripRole::Traveler, Capability::ViewPlan, true),
-        (TripRole::Traveler, Capability::EditItinerary, false),
+        (TripRole::Traveler, Capability::EditItinerary, true),
         (TripRole::Traveler, Capability::ReviewSuggestions, false),
         (TripRole::Traveler, Capability::CreateSuggestion, true),
         (TripRole::Traveler, Capability::ViewExpenses, true),

@@ -16,7 +16,7 @@ use crate::domain::errors::ServiceError;
 use crate::domain::patches::PatchDailyBriefingRequest;
 use crate::domain::types::{
     BriefingCoordinates, BriefingSourceMeta, Capability, DailyBriefingOverrides, TextBriefingBlock,
-    TripDailyBriefing, WeatherBriefingBlock,
+    TripDailyBriefing, TripRole, WeatherBriefingBlock,
 };
 
 pub async fn list_daily_briefings(
@@ -61,7 +61,7 @@ pub async fn patch_daily_briefing(
     let session = db::queries::find_active_member_session_in_tx(&mut tx, trip_id, &token_hash)
         .await?
         .ok_or(ServiceError::Unauthenticated)?;
-    if !can(session.role, Capability::EditItinerary) {
+    if !can_patch_manual_overrides(session.role) {
         return Err(ServiceError::Forbidden);
     }
 
@@ -604,6 +604,10 @@ fn parse_overrides(value: serde_json::Value) -> Result<DailyBriefingOverrides, S
 
 fn trim_override(value: String) -> String {
     value.trim().to_string()
+}
+
+fn can_patch_manual_overrides(role: TripRole) -> bool {
+    matches!(role, TripRole::Owner | TripRole::Organizer)
 }
 
 #[cfg(test)]
