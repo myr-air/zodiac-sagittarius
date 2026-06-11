@@ -450,6 +450,15 @@ describe("AccountAccessPanel", () => {
     );
 
     expect(screen.queryByRole("tablist", { name: /Access mode/i })).not.toBeInTheDocument();
+    const entryPage = document.querySelector(".account-page--entry");
+    const accountLoginFlow = document.querySelector(".account-login-flow");
+    expect(entryPage).toHaveClass("bg-(--color-page)");
+    expect(entryPage?.className).not.toContain("linear-gradient");
+    expect(accountLoginFlow).toHaveClass(
+      "bg-(--color-surface)",
+      "shadow-[0_14px_34px_rgb(15_23_42_/_0.1)]",
+    );
+    expect(accountLoginFlow?.className).not.toContain("0_24px_54px");
     expect(screen.getByRole("main", { name: /Account register/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /Travel ideas. Perfectly planned./i })).toBeInTheDocument();
     const accessTabs = screen.getByRole("navigation", { name: /Account access/i });
@@ -1308,8 +1317,29 @@ describe("AccountAccessPanel", () => {
       />,
     );
 
-    expect(screen.getByRole("region", { name: /Live trip preview/i })).toHaveClass("sticky");
-    expect(screen.getByRole("group", { name: /Create trip status/i })).toHaveClass("sticky");
+    const preview = screen.getByRole("region", { name: /Live trip preview/i });
+    const createTripStatus = screen.getByRole("group", { name: /Create trip status/i });
+    const wizardMain = document.querySelector(".trip-wizard-main");
+    const tripNameField = screen.getByLabelText(/Trip name/i).closest(".trip-name-field");
+    expect(document.querySelector(".account-page--portal-new-trip")).toHaveClass("!bg-(--color-page)");
+    expect(wizardMain).toHaveClass(
+      "bg-(--color-surface)",
+      "shadow-[var(--shadow-soft)]",
+    );
+    expect(wizardMain?.className).not.toContain("255_255_255");
+    expect(tripNameField).toHaveClass("[&_input]:bg-(--color-surface)", "[&_input]:shadow-none");
+    expect(preview).toHaveClass(
+      "sticky",
+      "bg-(--color-surface)",
+      "shadow-[var(--shadow-soft)]",
+    );
+    expect(preview.className).not.toContain("255_255_255");
+    expect(createTripStatus).toHaveClass(
+      "sticky",
+      "bg-(--color-surface)",
+      "shadow-[0_-8px_18px_rgb(15_23_42_/_0.05)]",
+    );
+    expect(createTripStatus.className).not.toContain("backdrop-blur");
     expect(screen.getByText(/Required:/i)).toBeInTheDocument();
     expect(screen.getByRole("navigation", { name: /Trip creation workflow/i })).toBeInTheDocument();
     expect(screen.getByText(/Next: add destination detail/i)).toBeInTheDocument();
