@@ -185,7 +185,13 @@ async fn trip_load_refreshes_organizer_session_but_not_viewer_session(pool: sqlx
     let viewer_refreshed = support::stored_member_session_expires_at(&pool, &viewer_token).await;
 
     assert!(organizer_refreshed >= time::OffsetDateTime::now_utc() + time::Duration::hours(71));
-    assert_eq!(viewer_refreshed, viewer_expiry);
+    assert_eq!(viewer_refreshed, truncate_to_postgres_precision(viewer_expiry));
+}
+
+fn truncate_to_postgres_precision(timestamp: time::OffsetDateTime) -> time::OffsetDateTime {
+    timestamp
+        .replace_nanosecond((timestamp.nanosecond() / 1_000) * 1_000)
+        .unwrap()
 }
 
 #[sqlx::test(migrations = "../../migrations")]
