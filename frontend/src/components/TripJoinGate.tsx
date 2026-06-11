@@ -248,7 +248,7 @@ export function TripJoinGate({ trip, apiClient, embedded = false, variant = "def
   return (
     <PageElement className={cn(joinPageClassName, embedded ? embeddedJoinPageClassName : "")} aria-label={t.join.pageLabel}>
       <section className={cn(joinShellClassName, embedded ? embeddedJoinShellClassName : "", isTripAccessVariant ? tripAccessJoinShellClassName : "")}>
-        <div className={tripAccessVisualClassName} aria-label={t.join.visual.label}>
+        <div className={tripAccessVisualClassName} role="group" aria-label={t.join.visual.label}>
           <span className={tripAccessVisualWashClassName} />
           <div className={tripAccessPhotoStackClassName} aria-hidden="true">
             <span className={cn(tripAccessPhotoClassName, tripAccessPhotoKrabiClassName)} />
@@ -337,7 +337,7 @@ export function TripJoinGate({ trip, apiClient, embedded = false, variant = "def
                 <Icon name="chevronLeft" className="size-3.5" />
                 {t.join.backToRoom}
               </button>
-              <div className={participantGridClassName} aria-label={t.join.participantListLabel}>
+              <div className={participantGridClassName} role="group" aria-label={t.join.participantListLabel}>
                 {participantMembers.map((member) => (
                   <Fragment key={member.id}>
                     <button
