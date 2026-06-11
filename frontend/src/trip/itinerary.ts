@@ -52,7 +52,7 @@ export function sortItemsForDay(items: ItineraryItem[], day: string): ItineraryI
   return items
     .filter((item) => item.day === day)
     .slice()
-    .sort((a, b) => a.sortOrder - b.sortOrder || a.startTime.localeCompare(b.startTime));
+    .sort(compareItineraryItemsWithinDay);
 }
 
 export function resolveItineraryPathItems(items: ItineraryItem[], selection: ItineraryPathSelection = {}): ItineraryItem[] {
@@ -133,7 +133,10 @@ export function buildItineraryView(items: ItineraryItem[]): ItineraryView {
     const baseWarningsByItem = new Map<string, ValidationWarning[]>();
 
     for (const item of dayItems) {
-      baseWarningsByItem.set(item.id, validateItemFields(item));
+      baseWarningsByItem.set(item.id, [
+        ...validateItemFields(item),
+        ...validateHierarchyFields(item, dayItems),
+      ]);
     }
 
     const overlapWarningsByItem = buildOverlapWarnings(dayItems);
@@ -163,7 +166,7 @@ function sortItineraryItems(items: ItineraryItem[]): ItineraryItem[] {
   return [...items].sort((a, b) => {
     const dayCompare = a.day.localeCompare(b.day);
     if (dayCompare !== 0) return dayCompare;
-    return a.sortOrder - b.sortOrder || a.startTime.localeCompare(b.startTime) || a.id.localeCompare(b.id);
+    return compareItineraryItemsWithinDay(a, b);
   });
 }
 
@@ -195,7 +198,10 @@ export function groupItemsByDay(items: ItineraryItem[]): ItineraryDayGroup[] {
 }
 
 export function validateItineraryItem(item: ItineraryItem, dayItems: ItineraryItem[]): ValidationWarning[] {
-  const warnings = validateItemFields(item);
+  const warnings = [
+    ...validateItemFields(item),
+    ...validateHierarchyFields(item, dayItems),
+  ];
   const overlapWarnings = buildOverlapWarnings(dayItems);
   const itemOverlapWarnings = overlapWarnings.get(item.id);
   if (itemOverlapWarnings) warnings.push(...itemOverlapWarnings);
@@ -206,6 +212,7 @@ function buildOverlapWarnings(dayItems: ItineraryItem[]): Map<string, Validation
   const warningsByItemId = new Map<string, ValidationWarning[]>();
   const validIntervals = dayItems
     .map((item) => {
+      if (item.timeMode === "flexible") return null;
       const start = parseTime(item.startTime);
       if (start === null || item.durationMinutes === null || item.durationMinutes <= 0) return null;
       return { item, start, end: start + item.durationMinutes };
@@ -258,14 +265,15 @@ function buildOverlapWarnings(dayItems: ItineraryItem[]): Map<string, Validation
 function validateItemFields(item: ItineraryItem): ValidationWarning[] {
   const warnings: ValidationWarning[] = [];
   const start = parseTime(item.startTime);
+  const isFlexible = item.timeMode === "flexible";
 
-  if (!item.startTime.trim()) {
+  if (!isFlexible && !item.startTime.trim()) {
     warnings.push({ code: "missing-start-time", message: "Add a start time before this stop can appear in Now / Next.", itemId: item.id });
-  } else if (start === null) {
+  } else if (!isFlexible && start === null) {
     warnings.push({ code: "invalid-start-time", message: "Use 24-hour time, for example 13:30.", itemId: item.id });
   }
 
-  if (item.durationMinutes === null || item.durationMinutes <= 0) {
+  if (!isFlexible && (item.durationMinutes === null || item.durationMinutes <= 0)) {
     warnings.push({ code: "missing-duration", message: "Add duration so route timing can be checked.", itemId: item.id });
   }
 
@@ -278,6 +286,29 @@ function validateItemFields(item: ItineraryItem): ValidationWarning[] {
   }
 
   return warnings;
+}
+
+function validateHierarchyFields(item: ItineraryItem, dayItems: ItineraryItem[]): ValidationWarning[] {
+  if (!item.parentItemId || item.timeMode === "flexible") return [];
+  const parent = dayItems.find((candidate) => candidate.id === item.parentItemId);
+  if (!parent || !parent.isPlanBlock || parent.timeMode === "flexible") return [];
+
+  const parentStart = parseTime(parent.startTime);
+  const childStart = parseTime(item.startTime);
+  if (parentStart === null || childStart === null || parent.durationMinutes === null || item.durationMinutes === null) {
+    return [];
+  }
+
+  const parentEnd = parentStart + parent.durationMinutes;
+  const childEnd = childStart + item.durationMinutes;
+  if (childStart < parentStart || childEnd > parentEnd) {
+    return [{
+      code: "child-outside-plan-block",
+      message: `This child item sits outside ${parent.activity}; adjust the time or move it out of the block.`,
+      itemId: item.id,
+    }];
+  }
+  return [];
 }
 
 export function getNowNext(items: ItineraryItem[], day: string, currentTime: string): { current: ItineraryItem | null; next: ItineraryItem | null; fallbackReason: string | null } {
@@ -304,6 +335,22 @@ export function getNowNext(items: ItineraryItem[], day: string, currentTime: str
 function itemDuration(item: ItineraryItem): number {
   /* v8 ignore next */
   return item.durationMinutes ?? 45;
+}
+
+function compareItineraryItemsWithinDay(a: ItineraryItem, b: ItineraryItem): number {
+  const aFlexible = a.timeMode === "flexible";
+  const bFlexible = b.timeMode === "flexible";
+  if (aFlexible !== bFlexible) return aFlexible ? 1 : -1;
+
+  if (!aFlexible) {
+    const aTime = parseTime(a.startTime);
+    const bTime = parseTime(b.startTime);
+    if (aTime !== null && bTime !== null && aTime !== bTime) return aTime - bTime;
+    if (aTime !== null && bTime === null) return -1;
+    if (aTime === null && bTime !== null) return 1;
+  }
+
+  return a.sortOrder - b.sortOrder || a.startTime.localeCompare(b.startTime) || a.id.localeCompare(b.id);
 }
 
 export function parseTime(value: string): number | null {

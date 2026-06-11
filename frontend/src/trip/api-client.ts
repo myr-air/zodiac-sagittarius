@@ -7,6 +7,8 @@ import type {
   ItineraryAdvisory,
   ItineraryCoordinates,
   ItineraryItem,
+  PlanCheck,
+  PlanSuggestion,
   Member,
   PlanVariant,
   StopNote,
@@ -43,6 +45,8 @@ export interface TripSummaryResponse {
   destinationLabel: string;
   destinationCities?: TripCity[];
   countries?: string[];
+  partySize?: number;
+  defaultTimezone?: string;
   startDate: string;
   endDate: string;
   joinId: string;
@@ -81,6 +85,12 @@ export interface ItineraryItemResponse {
   pathId?: string;
   pathName?: string;
   pathRole?: ItineraryItem["pathRole"];
+  parentItemId?: string | null;
+  itemKind?: ItineraryItem["itemKind"];
+  timeMode?: ItineraryItem["timeMode"];
+  isPlanBlock?: boolean;
+  status?: ItineraryItem["status"];
+  priority?: ItineraryItem["priority"];
   day: string;
   sortOrder: number;
   startTime: string;
@@ -138,6 +148,7 @@ export interface TripCockpitResponse {
   expenseSummary: ExpenseSummary | null;
   bookingDocs: BookingDoc[];
   photoAlbumLinks: TripPhotoAlbumLink[];
+  latestPlanCheck?: PlanCheck | null;
 }
 
 export interface JoinTripResponse {
@@ -158,6 +169,7 @@ export interface TripCockpit {
   tasks: TripTask[];
   stopNotes: StopNote[];
   expenseSummary: ExpenseSummary | null;
+  latestPlanCheck?: PlanCheck | null;
 }
 
 export class TripApiError extends Error {
@@ -192,6 +204,9 @@ export interface TripApiClient {
   patchItineraryItem(tripId: string, itemId: string, sessionToken: string, request: PatchItineraryItemApiRequest): Promise<ItineraryItem>;
   deleteItineraryItem(tripId: string, itemId: string, sessionToken: string): Promise<ItineraryItem>;
   reorderItineraryItems(tripId: string, sessionToken: string, request: ReorderItineraryItemsApiRequest): Promise<ItineraryItem[]>;
+  runPlanCheck?: (tripId: string, sessionToken: string) => Promise<PlanCheck>;
+  latestPlanCheck?: (tripId: string, sessionToken: string) => Promise<PlanCheck | null>;
+  patchPlanSuggestion?: (tripId: string, suggestionId: string, sessionToken: string, request: PatchPlanSuggestionApiRequest) => Promise<PlanSuggestion>;
   resolvePlace?: (tripId: string, sessionToken: string, request: PlaceResolutionRequest) => Promise<PlaceResolutionResponse>;
   importItinerary(tripId: string, sessionToken: string, request: ImportItineraryApiRequest): Promise<ItineraryExportDocument>;
   createSuggestion(tripId: string, sessionToken: string, request: CreateSuggestionApiRequest): Promise<Suggestion>;
@@ -240,6 +255,8 @@ export interface PatchTripApiRequest {
   name?: string;
   destinationLabel?: string;
   countries?: string[];
+  partySize?: number;
+  defaultTimezone?: string;
   startDate?: string;
   endDate?: string;
   activePlanVariantId?: string;
@@ -279,7 +296,8 @@ export interface PatchTaskApiRequest {
 export interface PatchItineraryItemApiRequest {
   clientMutationId: string;
   expectedVersion: number;
-  patch: Partial<Pick<ItineraryItem, "pathGroupId" | "pathId" | "pathName" | "pathRole" | "day" | "startTime" | "durationMinutes" | "activity" | "activityType" | "place" | "transportation" | "details" | "note">> & {
+  patch: Partial<Pick<ItineraryItem, "pathGroupId" | "pathId" | "pathName" | "pathRole" | "parentItemId" | "itemKind" | "timeMode" | "isPlanBlock" | "status" | "priority" | "day" | "durationMinutes" | "activity" | "activityType" | "place" | "transportation" | "details" | "note">> & {
+    startTime?: string | null;
     address?: string | null;
     coordinates?: ItineraryCoordinates | null;
     mapLink?: string | null;
@@ -293,6 +311,12 @@ export interface CreateItineraryItemApiRequest {
   pathId?: string;
   pathName?: string;
   pathRole?: ItineraryItem["pathRole"];
+  parentItemId?: string | null;
+  itemKind?: ItineraryItem["itemKind"];
+  timeMode?: ItineraryItem["timeMode"];
+  isPlanBlock?: boolean;
+  status?: ItineraryItem["status"];
+  priority?: ItineraryItem["priority"];
   day: string;
   startTime?: string | null;
   activity: string;
@@ -312,6 +336,12 @@ export interface ReorderItineraryItemsApiRequest {
   planVariantId: string;
   day: string;
   itemIds: string[];
+}
+
+export interface PatchPlanSuggestionApiRequest {
+  expectedVersion: number;
+  status: PlanSuggestion["status"];
+  snoozedUntil?: string | null;
 }
 
 export interface CreateSuggestionApiRequest {
@@ -585,6 +615,25 @@ export function createTripApiClient(options: TripApiClientOptions = {}): TripApi
       });
       return items.map(mapItineraryItem);
     },
+    runPlanCheck(tripId, sessionToken) {
+      return request<PlanCheck>(tripApiRoutes.planChecks(tripId), {
+        method: "POST",
+        headers: { Authorization: `Bearer ${sessionToken}` },
+      });
+    },
+    latestPlanCheck(tripId, sessionToken) {
+      return request<PlanCheck | null>(tripApiRoutes.latestPlanCheck(tripId), {
+        method: "GET",
+        headers: { Authorization: `Bearer ${sessionToken}` },
+      });
+    },
+    patchPlanSuggestion(tripId, suggestionId, sessionToken, suggestionRequest) {
+      return request<PlanSuggestion>(tripApiRoutes.planSuggestion(tripId, suggestionId), {
+        method: "PATCH",
+        headers: { Authorization: `Bearer ${sessionToken}` },
+        body: JSON.stringify(suggestionRequest),
+      });
+    },
     resolvePlace(tripId, sessionToken, resolveRequest) {
       return request<PlaceResolutionResponse>(tripApiRoutes.resolvePlace(tripId), {
         method: "POST",
@@ -781,6 +830,7 @@ export function mapCockpitResponse(response: TripCockpitResponse): TripCockpit {
     tasks: response.tasks.map(mapTask),
     stopNotes: response.stopNotes,
     expenseSummary: response.expenseSummary,
+    latestPlanCheck: response.latestPlanCheck ?? null,
   };
 }
 
@@ -811,6 +861,8 @@ function mapTripSummary(trip: TripSummaryResponse): Trip {
     destinationLabel: trip.destinationLabel,
     destinationCities: trip.destinationCities ?? [],
     countries: trip.countries ?? [],
+    partySize: trip.partySize ?? 1,
+    defaultTimezone: trip.defaultTimezone ?? trip.destinationCities?.[0]?.timezone ?? "Asia/Bangkok",
     startDate: trip.startDate,
     endDate: trip.endDate,
     activePlanVariantId: trip.activePlanVariantId ?? "",
@@ -864,6 +916,11 @@ function mapPlanVariant(variant: PlanVariantResponse): PlanVariant {
 function mapItineraryItem(item: ItineraryItemResponse): ItineraryItem {
   return {
     ...item,
+    itemKind: item.itemKind ?? "activity",
+    timeMode: item.timeMode ?? "scheduled",
+    isPlanBlock: item.isPlanBlock ?? false,
+    status: item.status ?? "idea",
+    priority: item.priority ?? "normal",
     coordinates: item.coordinates ?? undefined,
     address: item.address ?? undefined,
     details: item.details ?? {},

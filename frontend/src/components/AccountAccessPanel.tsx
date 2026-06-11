@@ -359,6 +359,8 @@ const defaultTripForm = (ownerDisplayName = "", profile?: AccountSettings["profi
     destinationLabel: "",
     destinationCities: [],
     countries: [],
+    partySize: 1,
+    defaultTimezone: "",
     startDate: new Date().toISOString().slice(0, 10),
     endDate: new Date(Date.now() + 3 * 86_400_000).toISOString().slice(0, 10),
     ownerDisplayName,
@@ -2277,6 +2279,25 @@ function PortalTripWizard({
                     />
                   </label>
                 </div>
+                <div className={tripCalendarSummaryClassName}>
+                  <label>
+                    <span>{wizard.fields.partySize}</span>
+                    <input
+                      type="number"
+                      min={1}
+                      max={99}
+                      value={tripForm.partySize ?? 1}
+                      onChange={(event) => onChange((current) => ({ ...current, partySize: Math.max(1, Number(event.target.value) || 1) }))}
+                    />
+                  </label>
+                  <label>
+                    <span>{wizard.fields.defaultTimezone}</span>
+                    <input
+                      value={tripForm.defaultTimezone || selectedDestinationCities[0]?.timezone || "Asia/Bangkok"}
+                      onChange={(event) => onChange((current) => ({ ...current, defaultTimezone: event.target.value }))}
+                    />
+                  </label>
+                </div>
                 <strong>{previewStartDate} - {previewEndDate}</strong>
                 <div className={tripCalendarGridClassName}>
                   {calendarDays.map((day) => (
@@ -2748,6 +2769,8 @@ function normalizedTripForm(form: AccountTripCreateRequest, defaultOwnerDisplayN
     originCountry: form.originCountry.trim() || "Thailand",
     originCountryCode: form.originCountryCode.trim().toUpperCase() || "TH",
     countries: countryNames,
+    partySize: Math.max(1, Math.trunc(form.partySize ?? 1)),
+    defaultTimezone: (form.defaultTimezone?.trim() || destinationCities[0]?.timezone || "Asia/Bangkok").slice(0, 64),
     destinationCities,
     destinationLabel: destinationCities.length ? destinationCities.map((city) => city.city).join(", ") : form.destinationLabel.trim() || name,
     ownerDisplayName: form.ownerDisplayName.trim() || defaultOwnerDisplayName,

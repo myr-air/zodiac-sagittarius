@@ -15,6 +15,10 @@ import {
 import { createPortal } from "react-dom";
 import type {
   ActivityType,
+  ItineraryItemKind,
+  ItineraryItemPriority,
+  ItineraryItemStatus,
+  ItineraryTimeMode,
   ItineraryItem,
   PlanVariant,
   TripDailyBriefing,
@@ -108,6 +112,10 @@ export type InlineItineraryItemPatch = Partial<
     | "activity"
     | "place"
     | "activityType"
+    | "itemKind"
+    | "timeMode"
+    | "status"
+    | "priority"
     | "transportation"
   >
 >;
@@ -209,6 +217,9 @@ const activityCellClassName = "activity-cell min-w-0";
 const rowSelectClassName =
   "row-select inline-flex min-h-8 w-fit min-w-0 items-center gap-1.5 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) px-2 py-0.5 text-[11px] font-extrabold leading-4 text-(--color-route) transition-[background,border-color,color] duration-150 hover:bg-(--color-route-soft) hover:border-(--color-route-border) focus-visible:bg-(--color-route-soft) focus-visible:border-(--color-route-border) focus-visible:outline-none";
 const inlineActivityStackClassName = "grid min-w-0 gap-0.5";
+const childActivityStackClassName = "border-l-2 border-(--color-route-border) pl-3";
+const blockToggleButtonClassName =
+  "inline-flex min-h-7 w-fit items-center gap-1.5 rounded-(--radius-sm) border border-(--color-route-border) bg-(--color-route-soft) px-2 text-[11px] font-extrabold text-(--color-route) aria-expanded:[&_.icon]:rotate-90 [&_.icon]:size-3.5 [&_.icon]:transition-transform";
 const inlineFieldClassName =
   "inline-row-field min-h-[24px] w-full min-w-0 rounded-(--radius-sm) border border-transparent bg-transparent px-1.5 py-0 text-xs leading-4 text-(--color-text) outline-none transition-[background,border-color,box-shadow] duration-150 placeholder:text-(--color-text-muted) hover:not-read-only:border-(--color-border) hover:not-read-only:bg-(--color-surface) focus:border-(--color-route-border) focus:bg-(--color-surface) focus:shadow-[0_0_0_2px_rgb(186_230_253_/_0.55)] read-only:cursor-pointer read-only:truncate read-only:px-0 read-only:font-semibold disabled:cursor-not-allowed disabled:text-(--color-text-muted)";
 const inlineActivityFieldClassName = cn(inlineFieldClassName, "font-semibold");
@@ -301,6 +312,25 @@ const activityTypeOptions: ActivityType[] = [
   "shopping",
   "stay",
 ];
+const itineraryItemKindOptions: ItineraryItemKind[] = [
+  "travel",
+  "activity",
+  "lodging",
+  "meal",
+  "note",
+  "preparation",
+  "foodRecommendation",
+];
+const itineraryTimeModeOptions: ItineraryTimeMode[] = ["scheduled", "flexible"];
+const itineraryStatusOptions: ItineraryItemStatus[] = [
+  "idea",
+  "planned",
+  "booked",
+  "confirmed",
+  "done",
+  "skipped",
+];
+const itineraryPriorityOptions: ItineraryItemPriority[] = ["low", "normal", "high", "must"];
 const durationPresetMinutes = [15, 30, 45, 60, 90, 120];
 
 export function SmartItineraryTable({
@@ -341,7 +371,7 @@ export function SmartItineraryTable({
   const importInputRef = useRef<HTMLInputElement>(null);
   const allDisplayItems = graphItems ?? items;
   const filterOptions = dedupePathOptions(pathOptions, allDisplayItems);
-  const canEdit = role === "owner" || role === "organizer";
+  const canEdit = role === "owner" || role === "organizer" || role === "traveler";
   const canRestructureItems = canEdit && canRestructure;
   const [selectedPathIds, setSelectedPathIds] = useState<string[]>(() =>
     filterOptions.map((option) => option.id),
@@ -353,6 +383,7 @@ export function SmartItineraryTable({
     null,
   );
   const [collapsedDays, setCollapsedDays] = useState<string[]>([]);
+  const [collapsedPlanBlockIds, setCollapsedPlanBlockIds] = useState<string[]>([]);
   const [dragState, setDragState] = useState<{
     draggedItemId: string | null;
     overItemId: string | null;
@@ -439,6 +470,14 @@ export function SmartItineraryTable({
       current.includes(day)
         ? current.filter((item) => item !== day)
         : [...current, day],
+    );
+  }
+
+  function togglePlanBlock(itemId: string) {
+    setCollapsedPlanBlockIds((current) =>
+      current.includes(itemId)
+        ? current.filter((id) => id !== itemId)
+        : [...current, itemId],
     );
   }
 
@@ -929,6 +968,7 @@ export function SmartItineraryTable({
             <DayGroup
               canEdit={canRestructureItems}
               collapsed={collapsedDays.includes(group.day)}
+              collapsedPlanBlockIds={collapsedPlanBlockIds}
               dragState={dragState}
               graphColumnWidth={graphColumnWidth}
               graphItems={graphItemsByDay.get(group.day) ?? []}
@@ -968,6 +1008,7 @@ export function SmartItineraryTable({
               onCommitDuration={commitDuration}
               onCommitCustomDuration={commitCustomDuration}
               onToggleDay={toggleDay}
+              onTogglePlanBlock={togglePlanBlock}
             />
           ))}
         </table>
@@ -1213,6 +1254,7 @@ function DayGroup({
   selectedItemId,
   canEdit,
   collapsed,
+  collapsedPlanBlockIds,
   dragState,
   onClearDragPreview,
   onChangeDayPath,
@@ -1239,6 +1281,7 @@ function DayGroup({
   onCommitDuration,
   onCommitCustomDuration,
   onToggleDay,
+  onTogglePlanBlock,
 }: {
   graphColumnWidth: number;
   graphItems: ItineraryItem[];
@@ -1254,6 +1297,7 @@ function DayGroup({
   selectedItemId: string;
   canEdit: boolean;
   collapsed: boolean;
+  collapsedPlanBlockIds: string[];
   dragState: {
     draggedItemId: string | null;
     overItemId: string | null;
@@ -1303,6 +1347,7 @@ function DayGroup({
   onCommitDuration: (itemId: string, minutes: number) => void;
   onCommitCustomDuration: () => void;
   onToggleDay: (day: string) => void;
+  onTogglePlanBlock: (itemId: string) => void;
 }) {
   const dayLabel = formatDayLabel(group.day, startDate, locale);
   const dayA11yLabel = formatDayLabel(group.day, startDate, "en");
@@ -1316,6 +1361,7 @@ function DayGroup({
     (option) => option.id !== mainItineraryPathId,
   );
   const samePathOverlapItemIds = findSamePathOverlapItemIds(group.items);
+  const visibleItems = visiblePlanBlockItems(group.items, collapsedPlanBlockIds);
   const showGraph =
     !collapsed && (graphItems.length > 0 || group.items.length > 0);
 
@@ -1333,7 +1379,7 @@ function DayGroup({
         {showGraph ? (
           <td
             className={graphCellClassName}
-            rowSpan={Math.max(2, group.items.length + 2)}
+            rowSpan={Math.max(2, visibleItems.length + 2)}
           >
             <ActivityPathGraphDay
               canEdit={canEdit}
@@ -1416,10 +1462,12 @@ function DayGroup({
         </th>
       </tr>
       {!collapsed
-        ? group.items.map((item, index) => {
-            const moveUpTargetId = group.items[index - 1]?.id;
-            const nextItem = group.items[index + 1];
-            const moveDownTargetId = group.items[index + 2]?.id;
+        ? visibleItems.map((item, index) => {
+            const moveUpTargetId = visibleItems[index - 1]?.id;
+            const nextItem = visibleItems[index + 1];
+            const moveDownTargetId = visibleItems[index + 2]?.id;
+            const isChild = Boolean(item.parentItemId);
+            const blockCollapsed = item.isPlanBlock && collapsedPlanBlockIds.includes(item.id);
 
             return (
               <tr
@@ -1496,7 +1544,7 @@ function DayGroup({
                 </td>
                 <td className={activityCellClassName}>
                   <div
-                    className={inlineActivityStackClassName}
+                    className={cn(inlineActivityStackClassName, isChild && childActivityStackClassName)}
                     aria-label={itineraryLabels.row.select({
                       activity: item.activity,
                     })}
@@ -1516,6 +1564,20 @@ function DayGroup({
                       <Icon name="panel" className="size-3.5" />
                       <span>{itineraryLabels.openDetails}</span>
                     </button>
+                    {item.isPlanBlock ? (
+                      <button
+                        type="button"
+                        className={blockToggleButtonClassName}
+                        aria-expanded={!blockCollapsed}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          onTogglePlanBlock(item.id);
+                        }}
+                      >
+                        <Icon name="chevronRight" />
+                        <span>{blockCollapsed ? "Expand block" : "Collapse block"}</span>
+                      </button>
+                    ) : null}
                     <InlineTextField
                       ariaLabel={itineraryLabels.row.inlineActivity({
                         activity: item.activity,
@@ -1547,19 +1609,38 @@ function DayGroup({
                   </div>
                 </td>
                 <td>
-                  <InlineActivityTypeSelect
-                    activity={item.activity}
-                    ariaLabel={itineraryLabels.row.inlineType({
-                      activity: item.activity,
-                    })}
-                    canEdit={canEdit}
-                    key={`${item.id}:type:${item.activityType}`}
-                    locale={locale}
-                    value={item.activityType}
-                    onCommit={(activityType) =>
-                      onUpdateItemInline?.(item.id, { activityType })
-                    }
-                  />
+                  <div className={inlineActivityStackClassName}>
+                    <InlineItemKindSelect
+                      activity={item.activity}
+                      canEdit={canEdit}
+                      value={item.itemKind ?? "activity"}
+                      onCommit={(itemKind) => onUpdateItemInline?.(item.id, { itemKind })}
+                    />
+                    <InlineActivityTypeSelect
+                      activity={item.activity}
+                      ariaLabel={itineraryLabels.row.inlineType({
+                        activity: item.activity,
+                      })}
+                      canEdit={canEdit}
+                      key={`${item.id}:type:${item.activityType}`}
+                      locale={locale}
+                      value={item.activityType}
+                      onCommit={(activityType) =>
+                        onUpdateItemInline?.(item.id, { activityType })
+                      }
+                    />
+                    <InlineTimeModeSelect
+                      activity={item.activity}
+                      canEdit={canEdit}
+                      value={item.timeMode ?? "scheduled"}
+                      onCommit={(timeMode) =>
+                        onUpdateItemInline?.(item.id, {
+                          timeMode,
+                          ...(timeMode === "flexible" ? { startTime: "", durationMinutes: null } : {}),
+                        })
+                      }
+                    />
+                  </div>
                 </td>
                 <td>
                   <a
@@ -1571,19 +1652,33 @@ function DayGroup({
                   </a>
                 </td>
                 <td>
-                  <InlineTextField
-                    ariaLabel={itineraryLabels.row.inlineTransportation({
-                      activity: item.activity,
-                    })}
-                    canEdit={canEdit}
-                    className={inlineSubtleFieldClassName}
-                    itemValue={displayTransportation(item)}
-                    key={`${item.id}:transportation:${displayTransportation(item)}`}
-                    placeholder="—"
-                    onCommit={(value) =>
-                      onUpdateItemInline?.(item.id, { transportation: value })
-                    }
-                  />
+                  <div className={inlineActivityStackClassName}>
+                    <InlineTextField
+                      ariaLabel={itineraryLabels.row.inlineTransportation({
+                        activity: item.activity,
+                      })}
+                      canEdit={canEdit}
+                      className={inlineSubtleFieldClassName}
+                      itemValue={displayTransportation(item)}
+                      key={`${item.id}:transportation:${displayTransportation(item)}`}
+                      placeholder="—"
+                      onCommit={(value) =>
+                        onUpdateItemInline?.(item.id, { transportation: value })
+                      }
+                    />
+                    <InlineStatusSelect
+                      activity={item.activity}
+                      canEdit={canEdit}
+                      value={item.status ?? "idea"}
+                      onCommit={(status) => onUpdateItemInline?.(item.id, { status })}
+                    />
+                    <InlinePrioritySelect
+                      activity={item.activity}
+                      canEdit={canEdit}
+                      value={item.priority ?? "normal"}
+                      onCommit={(priority) => onUpdateItemInline?.(item.id, { priority })}
+                    />
+                  </div>
                 </td>
                 <td className={rowActionCellClassName}>
                   <div className={rowActionsClassName}>
@@ -1689,6 +1784,11 @@ function mergeTripDayGroups(
   return Array.from(days)
     .sort()
     .map((day) => groupsByDay.get(day) ?? { day, items: [], warningCount: 0 });
+}
+
+function visiblePlanBlockItems(items: ItineraryItem[], collapsedPlanBlockIds: string[]): ItineraryItem[] {
+  const collapsed = new Set(collapsedPlanBlockIds);
+  return items.filter((item) => !item.parentItemId || !collapsed.has(item.parentItemId));
 }
 
 function groupGraphItemsByDay(
@@ -2341,6 +2441,118 @@ function InlineActivityTypeSelect({
       optionKeyPrefix={activity}
       onCommit={(nextValue) => {
         if (nextValue !== value) void onCommit(nextValue as ActivityType);
+      }}
+    />
+  );
+}
+
+function InlineItemKindSelect({
+  activity,
+  canEdit,
+  onCommit,
+  value,
+}: {
+  activity: string;
+  canEdit: boolean;
+  onCommit: (value: ItineraryItemKind) => void | Promise<void>;
+  value: ItineraryItemKind;
+}) {
+  return (
+    <InlineOptionPicker
+      ariaLabel={`Item kind for ${activity}`}
+      disabled={!canEdit}
+      value={value}
+      options={itineraryItemKindOptions.map((option) => ({
+        value: option,
+        label: option === "foodRecommendation" ? "food rec" : option,
+      }))}
+      optionKeyPrefix={`${activity}-kind`}
+      onCommit={(nextValue) => {
+        if (nextValue !== value) void onCommit(nextValue as ItineraryItemKind);
+      }}
+    />
+  );
+}
+
+function InlineTimeModeSelect({
+  activity,
+  canEdit,
+  onCommit,
+  value,
+}: {
+  activity: string;
+  canEdit: boolean;
+  onCommit: (value: ItineraryTimeMode) => void | Promise<void>;
+  value: ItineraryTimeMode;
+}) {
+  return (
+    <InlineOptionPicker
+      ariaLabel={`Time mode for ${activity}`}
+      disabled={!canEdit}
+      value={value}
+      options={itineraryTimeModeOptions.map((option) => ({
+        value: option,
+        label: option,
+      }))}
+      optionKeyPrefix={`${activity}-time-mode`}
+      onCommit={(nextValue) => {
+        if (nextValue !== value) void onCommit(nextValue as ItineraryTimeMode);
+      }}
+    />
+  );
+}
+
+function InlineStatusSelect({
+  activity,
+  canEdit,
+  onCommit,
+  value,
+}: {
+  activity: string;
+  canEdit: boolean;
+  onCommit: (value: ItineraryItemStatus) => void | Promise<void>;
+  value: ItineraryItemStatus;
+}) {
+  return (
+    <InlineOptionPicker
+      ariaLabel={`Status for ${activity}`}
+      disabled={!canEdit}
+      value={value}
+      options={itineraryStatusOptions.map((option) => ({
+        value: option,
+        label: option,
+      }))}
+      optionKeyPrefix={`${activity}-status`}
+      onCommit={(nextValue) => {
+        if (nextValue !== value) void onCommit(nextValue as ItineraryItemStatus);
+      }}
+    />
+  );
+}
+
+function InlinePrioritySelect({
+  activity,
+  canEdit,
+  onCommit,
+  value,
+}: {
+  activity: string;
+  canEdit: boolean;
+  onCommit: (value: ItineraryItemPriority) => void | Promise<void>;
+  value: ItineraryItemPriority;
+}) {
+  return (
+    <InlineOptionPicker
+      ariaLabel={`Priority for ${activity}`}
+      disabled={!canEdit}
+      value={value}
+      options={itineraryPriorityOptions.map((option) => ({
+        value: option,
+        label: option,
+      }))}
+      optionKeyPrefix={`${activity}-priority`}
+      onCommit={(nextValue) => {
+        if (nextValue !== value) void onCommit(nextValue as ItineraryItemPriority);
       }}
     />
   );

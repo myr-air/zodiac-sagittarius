@@ -8,6 +8,7 @@ pub fn can(role: TripRole, capability: Capability) -> bool {
         TripRole::Traveler => matches!(
             capability,
             Capability::ViewPlan
+                | Capability::EditItinerary
                 | Capability::CreateSuggestion
                 | Capability::ViewExpenses
                 | Capability::CreateSharedTask
@@ -45,7 +46,7 @@ mod tests {
         assert!(can(TripRole::Traveler, Capability::CreatePrivateTask));
         assert!(can(TripRole::Traveler, Capability::UpdateOwnPrivateTask));
         assert!(can(TripRole::Traveler, Capability::ManagePhotoAlbums));
-        assert!(!can(TripRole::Traveler, Capability::EditItinerary));
+        assert!(can(TripRole::Traveler, Capability::EditItinerary));
         assert!(!can(TripRole::Traveler, Capability::ManagePeople));
         assert!(!can(TripRole::Traveler, Capability::EditExpenses));
         assert!(!can(TripRole::Traveler, Capability::EditBookings));

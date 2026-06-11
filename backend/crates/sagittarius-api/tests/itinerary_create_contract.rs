@@ -22,6 +22,11 @@ async fn itinerary_create_contract_accepts_address_and_coordinates(pool: sqlx::P
                     json!({
                         "clientMutationId": "web-create-location",
                         "planVariantId": support::PLAN_ID,
+                        "itemKind": "meal",
+                        "timeMode": "scheduled",
+                        "isPlanBlock": false,
+                        "status": "booked",
+                        "priority": "high",
                         "day": "2026-06-19",
                         "startTime": "11:30",
                         "activity": "Coffee break",
@@ -51,6 +56,11 @@ async fn itinerary_create_contract_accepts_address_and_coordinates(pool: sqlx::P
     let body: Value =
         serde_json::from_slice(&to_bytes(response.into_body(), 65536).await.unwrap()).unwrap();
     assert_eq!(body["activity"], "Coffee break");
+    assert_eq!(body["itemKind"], "meal");
+    assert_eq!(body["timeMode"], "scheduled");
+    assert_eq!(body["isPlanBlock"], false);
+    assert_eq!(body["status"], "booked");
+    assert_eq!(body["priority"], "high");
     assert_eq!(body["address"], "K11 Musea, Tsim Sha Tsui, Hong Kong");
     assert_eq!(body["coordinates"]["lat"], 22.2939);
     assert_eq!(body["coordinates"]["lng"], 114.1698);

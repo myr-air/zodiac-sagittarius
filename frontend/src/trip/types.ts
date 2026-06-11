@@ -14,6 +14,10 @@ export type TripCapability =
 export type PlanVariantKind = "main" | "backup" | "draft" | "split";
 
 export type ActivityType = "travel" | "food" | "shopping" | "attraction" | "experience" | "stay";
+export type ItineraryItemKind = "travel" | "activity" | "lodging" | "meal" | "note" | "preparation" | "foodRecommendation";
+export type ItineraryTimeMode = "scheduled" | "flexible";
+export type ItineraryItemStatus = "idea" | "planned" | "booked" | "confirmed" | "done" | "skipped";
+export type ItineraryItemPriority = "low" | "normal" | "high" | "must";
 export type ItineraryItemDetails = Record<string, unknown>;
 
 export type AdvisorySeverity = "info" | "warning" | "critical";
@@ -161,6 +165,12 @@ export interface ItineraryItem {
   pathId?: string;
   pathName?: string;
   pathRole?: ItineraryPathRole;
+  parentItemId?: string | null;
+  itemKind?: ItineraryItemKind;
+  timeMode?: ItineraryTimeMode;
+  isPlanBlock?: boolean;
+  status?: ItineraryItemStatus;
+  priority?: ItineraryItemPriority;
   day: string;
   sortOrder: number;
   startTime: string;
@@ -353,6 +363,8 @@ export interface Trip {
   destinationLabel: string;
   destinationCities?: TripCity[];
   countries?: string[];
+  partySize?: number;
+  defaultTimezone?: string;
   startDate: string;
   endDate: string;
   activePlanVariantId: string;
@@ -389,6 +401,7 @@ export type ValidationWarningCode =
   | "missing-transportation"
   | "time-order-conflict"
   | "overlap"
+  | "child-outside-plan-block"
   | "unresolved-location"
   | "stale-location";
 
@@ -406,6 +419,48 @@ export interface NowNextState {
 
 export type SuggestionType = "add" | "edit" | "delete" | "reorder";
 export type SuggestionStatus = "pending" | "approved" | "rejected" | "conflicted";
+
+export interface LocalizedText {
+  en: string;
+  th: string;
+}
+
+export type PlanSuggestionSeverity = "info" | "warning" | "critical";
+export type PlanSuggestionScope = "item" | "betweenItems" | "day" | "trip";
+export type PlanSuggestionStatus = "pending" | "accepted" | "dismissed" | "snoozed";
+export type PlanSuggestionActionKind = "accept" | "dismiss" | "snooze" | "convertToItem" | "editItem";
+
+export interface PlanSuggestion {
+  id: string;
+  tripId: string;
+  planCheckId: string;
+  severity: PlanSuggestionSeverity;
+  scope: PlanSuggestionScope;
+  targetItemIds: string[];
+  explanation: LocalizedText;
+  recommendedAction: LocalizedText;
+  actionKind?: PlanSuggestionActionKind | null;
+  actionPayload: Record<string, unknown>;
+  status: PlanSuggestionStatus;
+  snoozedUntil?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  version: number;
+}
+
+export interface PlanCheck {
+  id: string;
+  tripId: string;
+  createdBy: string;
+  itineraryFingerprint: string;
+  stale: boolean;
+  status: "running" | "complete" | "failed";
+  languageMetadata: Record<string, unknown>;
+  createdAt: string;
+  completedAt?: string | null;
+  version: number;
+  suggestions: PlanSuggestion[];
+}
 
 export type EditableSuggestionPatch = Partial<
   Pick<

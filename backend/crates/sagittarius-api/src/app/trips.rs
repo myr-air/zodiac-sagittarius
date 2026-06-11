@@ -3,7 +3,7 @@ use std::collections::BTreeMap;
 
 use uuid::Uuid;
 
-use crate::app::{auth, bookings, events, photo_albums};
+use crate::app::{auth, bookings, events, photo_albums, plan_checks};
 use crate::db;
 use crate::db::PgPool;
 use crate::db::models::{ExpenseReminderRecord, ExpenseSplitRecord};
@@ -104,6 +104,7 @@ pub async fn load_cockpit(
         bookings::list_visible_booking_docs(pool, session_trip_id, session_member_id, session.role)
             .await?;
     let photo_album_links = photo_albums::list_photo_album_links(pool, session_trip_id).await?;
+    let latest_plan_check = plan_checks::latest_plan_check_for_trip(pool, session_trip_id).await?;
 
     Ok(TripCockpit {
         trip: trip.into(),
@@ -111,6 +112,7 @@ pub async fn load_cockpit(
         plan_variants: plan_variants.into_iter().map(Into::into).collect(),
         itinerary_items: itinerary_items.into_iter().map(Into::into).collect(),
         suggestions: suggestions.into_iter().map(Into::into).collect(),
+        latest_plan_check,
         tasks: tasks.into_iter().map(Into::into).collect(),
         stop_notes: stop_notes.into_iter().map(Into::into).collect(),
         expenses: expense_rows.into_iter().map(Into::into).collect(),
@@ -217,6 +219,16 @@ fn validate_trip_patch(request: &PatchTripRequest) -> Result<(), ServiceError> {
         for country in countries {
             validate_text(country, "country")?;
         }
+    }
+    if let Some(party_size) = request.party_size {
+        if party_size <= 0 {
+            return Err(ServiceError::InvalidRequest(
+                "partySize must be greater than zero",
+            ));
+        }
+    }
+    if let Some(default_timezone) = &request.default_timezone {
+        validate_text(default_timezone, "defaultTimezone")?;
     }
     if let (Some(start_date), Some(end_date)) = (request.start_date, request.end_date) {
         if start_date > end_date {

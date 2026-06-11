@@ -34,6 +34,8 @@ export interface AccountTripSummary {
   destinationLabel: string;
   destinationCities?: TripCity[];
   countries?: string[];
+  partySize?: number;
+  defaultTimezone?: string;
   startDate: string;
   endDate: string;
   role: TripRole;
@@ -135,6 +137,8 @@ export interface AccountTripCreateRequest {
   destinationLabel: string;
   destinationCities: TripCity[];
   countries: string[];
+  partySize?: number;
+  defaultTimezone?: string;
   startDate: string;
   endDate: string;
   ownerDisplayName: string;

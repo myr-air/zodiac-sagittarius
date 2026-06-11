@@ -24,9 +24,17 @@ describe("itinerary import/export JSON", () => {
         startDate: tripFixture.trip.startDate,
         endDate: tripFixture.trip.endDate,
         activePlanVariantId: tripFixture.trip.activePlanVariantId,
+        partySize: tripFixture.trip.partySize,
+        defaultTimezone: tripFixture.trip.defaultTimezone,
       },
       items: tripFixture.planItems.map((item) => ({
         id: item.id,
+        itemKind: item.itemKind,
+        timeMode: item.timeMode,
+        parentItemId: item.parentItemId ?? null,
+        isPlanBlock: item.isPlanBlock,
+        status: item.status,
+        priority: item.priority,
         day: item.day,
         sortOrder: item.sortOrder,
         startTime: item.startTime,
@@ -106,6 +114,52 @@ describe("itinerary import/export JSON", () => {
     expect(parseItineraryImport(JSON.stringify(payload))[0].details).toEqual(payload.items[0].details);
   });
 
+  it("preserves V1 hierarchy and flexible item fields in export and import", () => {
+    const flexibleChild = {
+      ...tripFixture.planItems[0],
+      id: "food-rec-1",
+      itemKind: "foodRecommendation" as const,
+      timeMode: "flexible" as const,
+      parentItemId: "block-1",
+      isPlanBlock: false,
+      status: "idea" as const,
+      priority: "high" as const,
+      startTime: "",
+      durationMinutes: null,
+      details: {
+        sourceLink: "https://example.test/noodles",
+        cuisine: "Cantonese",
+      },
+    };
+
+    const payload = buildItineraryExport({
+      exportedAt: "2026-06-04T00:00:00.000Z",
+      items: [flexibleChild],
+      trip: tripFixture.trip,
+    });
+
+    expect(payload.items[0]).toMatchObject({
+      itemKind: "foodRecommendation",
+      timeMode: "flexible",
+      parentItemId: "block-1",
+      isPlanBlock: false,
+      status: "idea",
+      priority: "high",
+      startTime: "",
+      durationMinutes: null,
+    });
+    expect(parseItineraryImport(JSON.stringify(payload))[0]).toMatchObject({
+      itemKind: "foodRecommendation",
+      timeMode: "flexible",
+      parentItemId: "block-1",
+      isPlanBlock: false,
+      status: "idea",
+      priority: "high",
+      startTime: "",
+      durationMinutes: null,
+    });
+  });
+
   it("parses JSON v1 imports and rejects unsupported files", () => {
     const payload = buildItineraryExport({
       exportedAt: "2026-06-04T12:00:00.000Z",
@@ -113,9 +167,15 @@ describe("itinerary import/export JSON", () => {
       trip: tripFixture.trip,
     });
 
-    expect(parseItineraryImport(JSON.stringify(payload))).toEqual([
-      payload.items[0],
-    ]);
+    expect(parseItineraryImport(JSON.stringify(payload))[0]).toMatchObject({
+      ...payload.items[0],
+      itemKind: "travel",
+      timeMode: "scheduled",
+      parentItemId: null,
+      isPlanBlock: false,
+      status: "planned",
+      priority: "normal",
+    });
     expect(() => parseItineraryImport("{}")).toThrow(
       /unsupported itinerary import/i,
     );

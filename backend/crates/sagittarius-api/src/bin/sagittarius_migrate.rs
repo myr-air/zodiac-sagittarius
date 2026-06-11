@@ -115,6 +115,10 @@ fn embedded_migrations() -> Vec<Migration> {
             version: "0022_itinerary_item_details.sql",
             sql: include_str!("../../../../migrations/0022_itinerary_item_details.sql"),
         },
+        Migration {
+            version: "0023_itinerary_table_v1.sql",
+            sql: include_str!("../../../../migrations/0023_itinerary_table_v1.sql"),
+        },
     ]
 }
 

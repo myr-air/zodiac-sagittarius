@@ -2721,7 +2721,7 @@ describe("Sagittarius cockpit UI", () => {
     ).not.toBeInTheDocument();
   }, 45_000);
 
-  it("creates traveler suggestions through the API client after backend login", async () => {
+  it("allows travelers to edit itinerary items after backend login", async () => {
     const user = userEvent.setup();
     installLocalStorageStub();
     const selectedItem = seedTrip.itineraryItems.find(
@@ -2856,21 +2856,9 @@ describe("Sagittarius cockpit UI", () => {
     );
     await user.click(screen.getByRole("button", { name: /เริ่มใช้งาน/i }));
     await openFirstStopDetails(user);
-    await user.click(screen.getByRole("button", { name: /เสนอแก้ไข/i }));
 
-    expect(apiClient.createSuggestion).toHaveBeenCalledWith(
-      travelerTrip.id,
-      "traveler-session-token",
-      expect.objectContaining({
-        type: "edit",
-        targetItemId: selectedItem.id,
-        sourceVersion: selectedItem.version,
-        proposedPatch: { activity: selectedItem.activity },
-      }),
-    );
-    expect(
-      screen.getByText(/Explorer Friend เสนอการปรับแผน/i),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /แก้ไขรายละเอียด/i })).toBeEnabled();
+    expect(apiClient.createSuggestion).not.toHaveBeenCalled();
   });
 
   it("deletes itinerary stops through the API client in API mode", async () => {
@@ -4086,7 +4074,7 @@ describe("Sagittarius cockpit UI", () => {
     ).toBeInTheDocument();
   });
 
-  it("reorders itinerary rows with drag and drop", () => {
+  it("keeps scheduled rows sorted by time after drag and drop", () => {
     render(<SagittariusApp initialView="itinerary" />);
 
     const dataTransfer = createDataTransfer();
@@ -4121,7 +4109,7 @@ describe("Sagittarius cockpit UI", () => {
       name: /เลือกจุด Dim Dim Sum/i,
     });
     expect(
-      victoriaSelectAfter.compareDocumentPosition(dimDimSelectAfter) &
+      dimDimSelectAfter.compareDocumentPosition(victoriaSelectAfter) &
         Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
   });
@@ -4539,7 +4527,7 @@ describe("Sagittarius cockpit UI", () => {
     ).toBeInTheDocument();
   }, 45_000);
 
-  it("lets travelers submit a suggestion instead of directly editing a stop", async () => {
+  it("lets travelers directly edit a stop", async () => {
     const user = userEvent.setup();
     render(<SagittariusApp initialView="itinerary" />);
 
@@ -4548,15 +4536,8 @@ describe("Sagittarius cockpit UI", () => {
       "member-nam",
     );
     await openFirstStopDetails(user);
-    await user.click(screen.getByRole("button", { name: /เสนอแก้ไข/i }));
 
-    expect(screen.getByText(/คำแนะนำ \(3\)/i)).toBeInTheDocument();
-    expect(
-      screen.getByText(/Explorer Friend เสนอการปรับแผน/i),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: /ปรับเวลาอัตโนมัติ/i }),
-    ).toBeDisabled();
+    expect(screen.getByRole("button", { name: /แก้ไขรายละเอียด/i })).toBeEnabled();
   });
 
   it("uses the stop workspace for notes, booking prep, and suggestion review", async () => {
@@ -5006,10 +4987,10 @@ describe("Sagittarius cockpit UI", () => {
     const stopButtons = screen.getAllByRole("button", { name: /^เลือกจุด / });
     expect(stopButtons).toHaveLength(2);
     expect(stopButtons[0]).toHaveAccessibleName(
-      /เลือกจุด Evening check-in stop/i,
+      /เลือกจุด Morning market visit/i,
     );
     expect(stopButtons[1]).toHaveAccessibleName(
-      /เลือกจุด Morning market visit/i,
+      /เลือกจุด Evening check-in stop/i,
     );
   });
 

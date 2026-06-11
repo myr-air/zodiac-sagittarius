@@ -13,6 +13,8 @@ export interface TripSettingsFormValues {
   destinationLabel: string;
   startDate: string;
   endDate: string;
+  partySize: number;
+  defaultTimezone: string;
 }
 
 interface TripSettingsPageProps {
@@ -68,7 +70,16 @@ function TripSettingsPageContent({ canEdit, currentMember, trip, onSave }: TripS
       return shiftedDay < form.startDate || shiftedDay > form.endDate;
     }).length;
   }, [form.endDate, form.startDate, invalidDateRange, trip.itineraryItems, trip.startDate]);
-  const canSubmit = Boolean(canEdit && !invalidDateRange && form.name.trim() && form.destinationLabel.trim() && status !== "saving");
+  const canSubmit = Boolean(
+    canEdit &&
+      !invalidDateRange &&
+      form.name.trim() &&
+      form.destinationLabel.trim() &&
+      form.defaultTimezone.trim() &&
+      Number.isFinite(form.partySize) &&
+      form.partySize >= 1 &&
+      status !== "saving",
+  );
 
   async function submitSettings(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -81,6 +92,8 @@ function TripSettingsPageContent({ canEdit, currentMember, trip, onSave }: TripS
         destinationLabel: form.destinationLabel.trim(),
         startDate: form.startDate,
         endDate: form.endDate,
+        partySize: Math.max(1, Math.floor(form.partySize || 1)),
+        defaultTimezone: form.defaultTimezone.trim(),
       });
       setStatus("saved");
     } catch {
@@ -144,6 +157,33 @@ function TripSettingsPageContent({ canEdit, currentMember, trip, onSave }: TripS
                 />
               </label>
             </div>
+            <div className={fieldGridClassName}>
+              <label className={labelClassName}>
+                <span>{t.tripSettings.partySize}</span>
+                <input
+                  className={inputClassName}
+                  disabled={!canEdit}
+                  min={1}
+                  type="number"
+                  value={form.partySize}
+                  onChange={(event) =>
+                    setForm((current) => ({
+                      ...current,
+                      partySize: Number(event.target.value),
+                    }))
+                  }
+                />
+              </label>
+              <label className={labelClassName}>
+                <span>{t.tripSettings.defaultTimezone}</span>
+                <input
+                  className={inputClassName}
+                  disabled={!canEdit}
+                  value={form.defaultTimezone}
+                  onChange={(event) => setForm((current) => ({ ...current, defaultTimezone: event.target.value }))}
+                />
+              </label>
+            </div>
             {!canEdit ? <p className={cn(messageClassName, errorClassName)}>{t.tripSettings.editLocked}</p> : null}
             {invalidDateRange ? <p className={cn(messageClassName, errorClassName)}>{t.tripSettings.invalidDate}</p> : null}
             {error ? <p className={cn(messageClassName, errorClassName)}>{error}</p> : null}
@@ -169,7 +209,15 @@ function TripSettingsPageContent({ canEdit, currentMember, trip, onSave }: TripS
 }
 
 function tripSettingsStateKey(trip: Trip): string {
-  return [trip.id, trip.name, trip.destinationLabel, trip.startDate, trip.endDate].join(":");
+  return [
+    trip.id,
+    trip.name,
+    trip.destinationLabel,
+    trip.startDate,
+    trip.endDate,
+    trip.partySize,
+    trip.defaultTimezone,
+  ].join(":");
 }
 
 function tripToForm(trip: Trip): TripSettingsFormValues {
@@ -178,6 +226,8 @@ function tripToForm(trip: Trip): TripSettingsFormValues {
     destinationLabel: trip.destinationLabel,
     startDate: trip.startDate,
     endDate: trip.endDate,
+    partySize: trip.partySize ?? 1,
+    defaultTimezone: trip.defaultTimezone ?? "Asia/Bangkok",
   };
 }
 
