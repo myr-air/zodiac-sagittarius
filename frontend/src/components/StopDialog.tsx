@@ -171,8 +171,8 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, manualPathO
   const [detailType, setDetailType] = useState<StopDetailType>(() => detailTypeFromActivityType(initialItem?.activityType ?? "experience"));
   const [detailValues, setDetailValues] = useState<StopDetailValues>(() => ({
     ...emptyDetailValues,
-    detail: initialItem?.note ?? "",
-    mode: initialItem?.transportation ?? "",
+    ...structuredDetailValues(initialItem?.details),
+    mode: readStringDetail(initialItem?.details?.mode) || initialItem?.transportation || "",
   }));
   const [selectedCandidate, setSelectedCandidate] = useState<PlaceResolutionCandidate | undefined>();
 
@@ -558,6 +558,15 @@ function detailKeysForType(detailType: StopDetailType): Array<keyof StopDetailVa
 
 function readStringDetail(value: unknown): string {
   return typeof value === "string" ? value : "";
+}
+
+function structuredDetailValues(details: Record<string, unknown> | undefined): Partial<StopDetailValues> {
+  if (!details) return {};
+  return Object.fromEntries(
+    Object.keys(emptyDetailValues)
+      .map((key) => [key, readStringDetail(details[key])] as const)
+      .filter(([, value]) => value),
+  ) as Partial<StopDetailValues>;
 }
 
 function trimmedDetailValues(values: StopDetailValues): StopDetailValues {

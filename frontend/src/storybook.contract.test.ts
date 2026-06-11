@@ -78,6 +78,7 @@ describe("Storybook template catalog", () => {
       ["components/BookingsDocsPage.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty", "Tablet", "Desktop1024", "Desktop1440", "Mobile"]],
       ["components/TripSettingsPage.stories.tsx", ["Owner", "Traveler", "Viewer", "Thai", "Tablet", "Desktop1024", "Desktop1440", "Mobile"]],
       ["components/TripJoinGate.stories.tsx", ["RoomCredentials", "TripAccess", "SelectIdentity", "Thai", "Tablet", "Mobile"]],
+      ["components/StopDialog.stories.tsx", ["Create", "Edit", "AmbiguousPlace", "TransportationForm", "FoodForm", "StayForm", "ShoppingForm", "Mobile", "Thai"]],
       ["components/AboutAppPage.stories.tsx", ["Ready", "ApiUnavailable", "Mobile"]],
     ];
 

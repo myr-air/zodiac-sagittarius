@@ -114,6 +114,38 @@ describe("StopDialog", () => {
     }));
   });
 
+  it("prefills structured category detail fields when editing a stop", () => {
+    renderEn(
+      <StopDialog
+        mode="edit"
+        initialItem={{
+          ...tripFixture.planItems[0],
+          activity: "DMK -> HKG",
+          activityType: "travel",
+          place: "",
+          transportation: "Plane",
+          details: {
+            kind: "transportation",
+            origin: "Don Mueang International Airport",
+            destination: "Hong Kong International Airport",
+            mode: "Plane",
+            ticketRef: "FD ticket",
+            costNote: "Prepaid group fare",
+          },
+        }}
+        onClose={vi.fn()}
+        onSubmit={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByLabelText("Type")).toHaveValue("transportation");
+    expect(screen.getByLabelText("From")).toHaveValue("Don Mueang International Airport");
+    expect(screen.getByLabelText("To")).toHaveValue("Hong Kong International Airport");
+    expect(screen.getByLabelText("By")).toHaveValue("Plane");
+    expect(screen.getByLabelText("Ticket / pass")).toHaveValue("FD ticket");
+    expect(screen.queryByLabelText("Transportation")).not.toBeInTheDocument();
+  });
+
   it("detects route activity text and fills transportation times", () => {
     renderEn(<StopDialog mode="create" onClose={vi.fn()} onSubmit={vi.fn()} />);
 
