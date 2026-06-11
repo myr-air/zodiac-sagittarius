@@ -68,8 +68,8 @@ describe("Storybook template catalog", () => {
   it("documents page-level role, density, and viewport states per cockpit page", () => {
     const requiredPageStates: Array<[string, string[]]> = [
       ["components/OverviewPage.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty", "Tablet", "Mobile"]],
-      ["components/ItineraryPage.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty", "OverlapConflictWarning", "Tablet", "Mobile"]],
-      ["components/TimelinePage.stories.tsx", ["Owner", "OwnerThai", "Dense", "Empty", "Tablet", "Mobile"]],
+      ["components/ItineraryPage.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty", "OverlapConflictWarning", "TableOverflow", "Tablet", "Mobile"]],
+      ["components/TimelinePage.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty", "Tablet", "Mobile"]],
       ["components/MapPage.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty", "Tablet", "Mobile"]],
       ["components/MembersPage.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty", "Tablet", "Mobile"]],
       ["components/ExpensesPage.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty", "Tablet", "Mobile"]],

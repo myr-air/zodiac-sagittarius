@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import { expect } from "storybook/test";
 import { buildDenseTripFixture, buildEmptyTripFixture, tripFixture } from "@/src/trip/trip-fixtures";
 import { TimelineView } from "./TimelineView";
 
@@ -30,6 +31,19 @@ export const Owner: Story = {
 export const OwnerThai: Story = {
   args: Owner.args,
   parameters: { locale: "th" },
+};
+
+export const Traveler: Story = {
+  args: Owner.args,
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole("region", { name: /Trip timeline/i })).toHaveClass("timeline-panel");
+    await expect(canvas.getByRole("button", { name: /Select timeline stop Dim Dim Sum/i })).toHaveAttribute("aria-pressed", "true");
+  },
+};
+
+export const Viewer: Story = {
+  args: Owner.args,
+  play: Traveler.play,
 };
 
 export const Dense: Story = {
