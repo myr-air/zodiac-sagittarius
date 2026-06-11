@@ -53,6 +53,7 @@ describe("Storybook template catalog", () => {
       "Pages/Bookings & Docs",
       "Pages/Trip Settings",
       "Pages/Home Landing",
+      "Pages/About",
       "Pages/Stop Dialog",
       "Pages/Trip Join Gate",
     ].forEach((title) => expect(stories).toContain(`title: "${title}"`));
@@ -77,6 +78,7 @@ describe("Storybook template catalog", () => {
       ["components/BookingsDocsPage.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty", "Tablet", "Mobile"]],
       ["components/TripSettingsPage.stories.tsx", ["Owner", "Traveler", "Viewer", "Thai", "Tablet", "Mobile"]],
       ["components/TripJoinGate.stories.tsx", ["RoomCredentials", "TripAccess", "Thai", "Tablet", "Mobile"]],
+      ["components/AboutAppPage.stories.tsx", ["Ready", "ApiUnavailable", "Mobile"]],
     ];
 
     requiredPageStates.forEach(([file, stateNames]) => {
