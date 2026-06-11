@@ -24,7 +24,7 @@ const tempClassName = "weather-forecast-temp inline-flex items-baseline justify-
 const tempHighClassName = "weather-forecast-temp-high text-[16px] font-black text-(--color-text)";
 const tempLowClassName = "weather-forecast-temp-low text-[16px] font-bold text-(--color-text-muted)";
 const pendingClassName = "weather-forecast-pending text-[12px] font-black leading-4 text-(--color-text-muted)";
-const emptyClassName = "rounded-(--radius-md) border border-(--color-border) bg-(--color-surface-subtle) px-4 py-3 text-xs font-black text-(--color-text-muted)";
+const emptyClassName = "weather-forecast-empty-state rounded-(--radius-md) border border-(--color-border) bg-(--color-surface-subtle) px-4 py-3 text-xs font-black text-(--color-text-muted)";
 
 export function WeatherForecastStrip({ briefings, locale, selectedDate, onSelect }: WeatherForecastStripProps) {
   const copy = weatherStripCopy(locale);
