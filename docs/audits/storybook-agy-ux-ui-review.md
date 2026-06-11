@@ -1,63 +1,74 @@
 # Storybook AGY UX/UI Review
 
-Generated: 2026-06-11T02:05:45.465Z
+Generated: 2026-06-11T02:50:54.216Z
 Command: agy --add-dir /Users/xiivth/workspace/zodiac/sagittarius/.worktrees/reference-ui-redesign -p <storybook-ux-ui-prompt>
 
 ## Output
 
-I will list the contents of the `/Users/xiivth/workspace/zodiac/sagittarius` directory to see the project structure and locate the frontend folder.
-I will list the contents of the `frontend` folder inside `/Users/xiivth/workspace/zodiac/sagittarius` to locate the source code, Storybook configuration, and contract files.
-I will view the `frontend/src/storybook.contract.test.ts` file to understand the contract requirements and the existing tests for the Storybook components.
-I will search for all story files in the frontend workspace using a `find` command.
-I will view the `frontend/.storybook/preview.ts` file to see the global configuration for Storybook.
-I will list the files in the `frontend/.storybook` folder to see what configuration and mocks are defined for Storybook.
-I will view the `frontend/.storybook/msw-handlers.ts` file to see how data loading is mocked for components and pages.
-I will view the `src/app/SagittariusApp.stories.tsx` file to see how the overall application workspace shell and different sections/views are configured and tested in Storybook.
-I will use the `grep_search` tool to search for occurrences of `viewport` across the story files to see how viewports are configured.
-I will view the `src/components/ItineraryPage.stories.tsx` file to check the coverage of itinerary page states, role states, responsive widths, and path/overlap states.
-I will search for the definition of the required role and density states (Owner, Traveler, Viewer, Empty, Dense, Mobile) across the story files.
-I will search for the word `Traveler` in the story files to see where it is declared.
-I will search for `Viewer` within all story files to see where it is defined.
-I will search for the titles defined in all story files to see how stories are structured and categorized.
-I will search for the title declarations in story files to map them to the corresponding story categories.
-I will run `node -v` to verify if Node.js is available on the system.
-I will view the contents of the `src/components/ItineraryTemplate.stories.tsx` file to see how it defines the stories, role states, path alternatives, and viewport sizes.
-I will view `frontend/src/components/ui.stories.tsx` to check what categories and stories it exposes.
-I will view `frontend/src/components/Badge.stories.tsx` to check what categories and stories it exposes.
-I will view the `frontend/src/components/OverviewPage.stories.tsx` file to see how it is tested.
-I will view `frontend/src/components/TimelinePage.stories.tsx` to inspect its stories.
-I will view `frontend/src/components/MapPage.stories.tsx` to inspect its stories.
-I will view `frontend/src/components/MembersPage.stories.tsx` to inspect its stories.
-I will view `frontend/src/components/OverviewTemplate.stories.tsx` to see what states it covers.
-I will view the `frontend/src/components/TimelineTemplate.stories.tsx` file to see what stories and configurations it includes.
-I will view the `frontend/src/components/MapTemplate.stories.tsx` file.
-I will view the `frontend/src/components/MembersTemplate.stories.tsx` file.
-I will view the `frontend/.storybook/main.ts` file to see if any custom viewports or builders are configured.
-I will view the `frontend/src/components/AppShell.stories.tsx` file to see how the Workspace Shell is tested.
-I will view the beginning of the `frontend/src/app/SagittariusApp.tsx` file to see how the main application component is declared and structured.
-I will view lines 190 to 240 of `frontend/src/app/SagittariusApp.tsx` to inspect its props.
-I will search for occurrences of `role` in `frontend/src/app/SagittariusApp.tsx` to understand how the role of the user (e.g. owner, traveler, viewer) is resolved and handled in the application.
-I will view lines 330 to 395 of `frontend/src/app/SagittariusApp.tsx` to understand how the participant session and current member role are resolved.
-I will check where `currentMemberId` is defined or used in `frontend/src/app/SagittariusApp.tsx`.
-I will view lines 300 to 335 of `frontend/src/app/SagittariusApp.tsx` to see how `currentMemberId` state is initialized.
-I will search for `setCurrentMemberId` to see how it can be changed.
-I will view lines 3240 to 3280 of `frontend/src/app/SagittariusApp.tsx` to see how the role switcher is rendered and if it is available in the UI.
-I will view the contents of the `frontend/src/styles.contract.test.ts` file to see how style contracts are verified, especially regarding table overflow.
-I will view `frontend/src/components/SuggestionPanel.stories.tsx` to see if there are testing gaps in suggestion role/state previews.
-I will view the `frontend/src/components/PeoplePanel.stories.tsx` file.
-I will view `frontend/src/components/WeatherBriefingDrawer.stories.tsx` to check for testing gaps.
-I will view `frontend/src/components/ExpensesPage.stories.tsx` to check what stories are defined for the expenses section.
-I will view `frontend/src/components/motifs.stories.tsx` to ensure there are no issues or gaps.
-I will write the complete UX/UI audit report of the Sagittarius Storybook catalog into an artifact file. This report will detail the gaps identified, the evidence supporting them, and concrete recommendations for stories and assertions to resolve these gaps.
-I have completed the Storybook UX/UI catalog audit for the Sagittarius Cockpit. 
+I will start by reviewing the modern web guidance skill instructions to ensure compliance with frontend best practices, then explore the project directories.
+I will list the contents of the `sagittarius` repository to find the location of the codebase.
+I will list the contents of the `frontend` directory in the current workspace.
+I will run a command to check the current git status and branch structure to determine if we are in the redesigned UI branch or using a worktree.
+I will list the contents of the `.worktrees/reference-ui-redesign` directory to see if the worktree contains the frontend code we are auditing.
+I will list all the story files in both the main frontend directory and the worktree frontend directory to see which one we should audit, or if they correspond.
+I will check if there are any stories in the main `frontend/src` directory as well.
+I will check the differences between the current branch (`main`) and the worktree branch (`codex/reference-ui-redesign-worktree`) to understand if the worktree contains modifications we need to inspect.
+I will view the `storybook.contract.test.ts` file in the current main branch to understand the test contract.
+I will view the `storybook.contract.test.ts` file in the worktree directory to see if there are differences in the test contract.
+I will check the documentation directory in the workspace to see if the files relating to the storybook QA/review exist.
+I will list the contents of the `docs/audits` directory in the current workspace.
+I will view the `docs/storybook-ux-ui-qa.md` file from the worktree branch.
+I will view the `storybook-agy-ux-ui-review.md` file in the worktree to understand what the existing review contains.
+I will view the contents of the `run-storybook-agy-ux-qa.ts` script in the worktree to see how it runs or what it is doing.
+I will view the Storybook preview config `frontend/.storybook/preview.ts` in the worktree directory.
+I will view the `SagittariusApp.stories.tsx` file in the worktree.
+I will search for the definition of the traveler and viewer role states in the stories using grep.
+I will search for the definition of the Viewer role exports across the stories.
+I will view the `ItineraryPage.stories.tsx` file in the worktree to inspect how the itinerary page and table states are tested.
+I will view the `ItineraryTemplate.stories.tsx` file in the worktree.
+I will search for the definition of the Empty state export in the stories to see where it is covered.
+I will search for the definition of the Dense state export across all stories.
+I will search for the definition of the `SagittariusApp` component in `frontend/src/app/SagittariusApp.tsx` to see how it takes arguments for roles, locales, views, etc.
+I will view the `SagittariusApp.tsx` file around line 233 to examine its component signature and props.
+I will search for participant session / member role resolution logic inside `SagittariusApp.tsx` to understand how the role (owner, traveler, viewer) is resolved.
+I will view lines 330 to 400 of `frontend/src/app/SagittariusApp.tsx` to inspect how session member and roles are determined.
+I will search for the definition of `currentMemberId` state inside `SagittariusApp.tsx`.
+I will view `SagittariusApp.tsx` around line 322 to check the initialization of `currentMemberId`.
+I will view `SagittariusApp.tsx` around lines 3240 to 3280 to see the role switcher logic and UI.
+I will search for `canTripRole` to see how the traveler, owner, and viewer roles map to itinerary planning permissions.
+I will run the frontend vitest tests to see if all tests, including the storybook contract tests, are passing on the current branch.
+I will run the storybook contract tests in the redesigned UI worktree to see if they pass there as well.
+I will view the `OverviewPage.stories.tsx` file to check the coverage of role, responsiveness, and density states.
+I will view the `OverviewTemplate.stories.tsx` file to check if it matches the page coverage.
+I will view the `TimelinePage.stories.tsx` file.
+I will view the `TimelineTemplate.stories.tsx` file.
+I will search for the props of the `TimelineView` component to see if it utilizes the `role` prop.
+I will view `TimelineView.tsx` from lines 1 to 40 to check its component properties.
+I will view `MapPage.stories.tsx` in the worktree.
+I will view `MembersPage.stories.tsx` in the worktree.
+I will view the `ExpensesPage.stories.tsx` file in the worktree.
+I will view `TripPhotosPage.stories.tsx` in the worktree.
+I will view the `TripPhotosPage.tsx` file to check the permissions or differences between owner, traveler, and viewer for photo albums.
+I will view `SuggestionPanel.stories.tsx` to check for localization or role state coverage.
+I will view the `LanguageSwitch.stories.tsx` file in the worktree.
+I will view `ui.stories.tsx` in the worktree.
+I will view `Badge.stories.tsx` in the worktree.
+I will view `motifs.stories.tsx` in the worktree.
+I will view the `WeatherBriefingDrawer.stories.tsx` file in the worktree.
+I will view the `WeatherForecastStrip.stories.tsx` file in the worktree.
+I will view `AppShell.stories.tsx` in the worktree.
+I will view `HomeLanding.stories.tsx` in the worktree.
+I will view the `PeoplePanel.stories.tsx` file in the worktree.
+I will write a detailed Storybook UX/UI Catalog Audit Report into the conversation artifact directory to present the findings ordered by severity with clear code references and recommended testing additions.
+I have completed the Storybook UX/UI catalog audit for the Sagittarius planning cockpit. 
 
-The detailed findings, evidence from the codebase, and recommended story templates or play assertions have been compiled into the following artifact:
+The detailed findings, codebase evidence, and recommended story configurations/assertions are documented in the audit report artifact:
 
-* **Audit Report**: [storybook_ux_ui_audit.md](file:///Users/xiivth/.gemini/antigravity-cli/brain/4aabb42f-5195-434d-8525-b92ea440565b/storybook_ux_ui_audit.md)
+* **Audit Report**: [storybook_ux_ui_audit_report.md](file:///Users/xiivth/.gemini/antigravity-cli/brain/eb3120fb-6a55-4b02-b88e-79289976582c/storybook_ux_ui_audit_report.md)
 
-### Key Decisions/Open Questions for Your Input:
-1. **Apply Changes**: Would you like me to go ahead and implement these recommended stories and play assertions across the story files (e.g., [SagittariusApp.stories.tsx](file:///Users/xiivth/workspace/zodiac/sagittarius/frontend/src/app/SagittariusApp.stories.tsx), [ItineraryPage.stories.tsx](file:///Users/xiivth/workspace/zodiac/sagittarius/frontend/src/components/ItineraryPage.stories.tsx), and [preview.ts](file:///Users/xiivth/workspace/zodiac/sagittarius/frontend/.storybook/preview.ts))?
-2. **Viewport Naming**: Do you have preferred names or precise aspect ratios for the 320, 768, 1024, and 1440 width viewports, or should we stick to the standard ones outlined in the report?
+### Key Decisions / Next Steps for Your Input:
+1. **Implementation**: Would you like me to implement these missing stories and play assertions across [SagittariusApp.stories.tsx](file:///Users/xiivth/workspace/zodiac/sagittarius/.worktrees/reference-ui-redesign/frontend/src/app/SagittariusApp.stories.tsx), [ItineraryPage.stories.tsx](file:///Users/xiivth/workspace/zodiac/sagittarius/.worktrees/reference-ui-redesign/frontend/src/components/ItineraryPage.stories.tsx), [ItineraryTemplate.stories.tsx](file:///Users/xiivth/workspace/zodiac/sagittarius/.worktrees/reference-ui-redesign/frontend/src/components/ItineraryTemplate.stories.tsx), and [AppShell.stories.tsx](file:///Users/xiivth/workspace/zodiac/sagittarius/.worktrees/reference-ui-redesign/frontend/src/components/AppShell.stories.tsx)?
+2. **Specific Scenario Requirements**: Are there any additional state or viewport validations you would like added beyond the standard 320, 768, 1024, and 1440 width breakpoints?
 
 ## Stderr
 
