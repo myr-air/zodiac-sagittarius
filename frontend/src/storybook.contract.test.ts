@@ -70,7 +70,7 @@ describe("Storybook template catalog", () => {
       ["components/OverviewPage.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty", "Tablet", "Mobile"]],
       ["components/ItineraryPage.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty", "OverlapConflictWarning", "Tablet", "Mobile"]],
       ["components/TimelinePage.stories.tsx", ["Owner", "OwnerThai", "Dense", "Empty", "Tablet", "Mobile"]],
-      ["components/MapPage.stories.tsx", ["Owner", "OwnerThai", "Dense", "Empty", "Tablet", "Mobile"]],
+      ["components/MapPage.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty", "Tablet", "Mobile"]],
       ["components/MembersPage.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty", "Tablet", "Mobile"]],
       ["components/ExpensesPage.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty", "Tablet", "Mobile"]],
       ["components/TripPhotosPage.stories.tsx", ["Owner", "OwnerThai", "Viewer", "Dense", "Empty", "Tablet", "Mobile"]],

@@ -26,6 +26,14 @@ export const OwnerThai: Story = {
   parameters: { locale: "th" },
 };
 
+export const Traveler: Story = {
+  args: Owner.args,
+};
+
+export const Viewer: Story = {
+  args: Owner.args,
+};
+
 export const Dense: Story = {
   args: {
     ...Owner.args,
