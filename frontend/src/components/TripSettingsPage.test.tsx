@@ -28,6 +28,6 @@ describe("TripSettingsPage", () => {
       "text-(--color-primary-strong)",
     );
     expect(screen.getByRole("form", { name: "Trip details" })).toHaveClass("bg-(--color-surface)");
-    expect(screen.getByRole("complementary", { name: "Plan impact" })).toHaveClass("bg-(--color-surface)");
+    expect(screen.getByRole("region", { name: "Plan impact" })).toHaveClass("bg-(--color-surface)");
   });
 });

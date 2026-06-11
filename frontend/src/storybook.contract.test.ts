@@ -42,6 +42,8 @@ describe("Storybook template catalog", () => {
       "Pages/Members",
       "Pages/Photos",
       "Pages/Expenses",
+      "Pages/Bookings & Docs",
+      "Pages/Trip Settings",
       "Pages/Home Landing",
       "Pages/Stop Dialog",
     ].forEach((title) => expect(stories).toContain(`title: "${title}"`));

@@ -195,13 +195,13 @@ function TripSettingsPageContent({ canEdit, currentMember, trip, onSave }: TripS
             </div>
           </form>
 
-          <aside className={sideCardClassName} aria-label={t.tripSettings.planImpact}>
+          <section className={sideCardClassName} aria-label={t.tripSettings.planImpact}>
             <h2 className="text-[16px] font-[900] text-(--color-text)">{t.tripSettings.planImpact}</h2>
             <div className={impactLineClassName}>
               <Icon name={outsideStopCount ? "warning" : "check"} />
               <span>{outsideStopCount ? t.tripSettings.outsideStops({ count: outsideStopCount }) : t.tripSettings.noImpact}</span>
             </div>
-          </aside>
+          </section>
         </div>
       </div>
     </section>
