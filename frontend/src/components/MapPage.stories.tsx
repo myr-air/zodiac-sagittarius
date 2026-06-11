@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import { expect } from "storybook/test";
 import { buildDenseTripFixture, buildEmptyTripFixture, tripFixture } from "@/src/trip/trip-fixtures";
 import { RouteMapView } from "./RouteMapView";
 
@@ -25,6 +26,11 @@ export const Owner: Story = {
 export const OwnerThai: Story = {
   args: Owner.args,
   parameters: { locale: "th" },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole("region", { name: /แผนที่เส้นทาง/i })).toHaveClass("route-map-panel");
+    await expect(canvas.getByText("แผนที่")).toBeVisible();
+    await expect(canvas.getByLabelText(/เลือกวันบนแผนที่/i)).toBeVisible();
+  },
 };
 
 export const Traveler: Story = {

@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import { expect } from "storybook/test";
 import { buildDenseTripFixture, tripFixture } from "@/src/trip/trip-fixtures";
 import { TripMembersPage } from "./TripMembersPage";
 
@@ -35,6 +36,11 @@ export const Owner: Story = {
 export const OwnerThai: Story = {
   args: Owner.args,
   parameters: { locale: "th" },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole("region", { name: /สมาชิกทริป/i })).toHaveClass("members-page");
+    await expect(canvas.getByText("สมาชิกในทริป")).toBeVisible();
+    await expect(canvas.getByRole("button", { name: /คัดลอกลิงก์เชิญ/i })).toBeVisible();
+  },
 };
 
 export const Traveler: Story = {

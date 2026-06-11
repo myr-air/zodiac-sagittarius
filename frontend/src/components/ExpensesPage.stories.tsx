@@ -58,6 +58,11 @@ export const Viewer: Story = {
 export const OwnerThai: Story = {
   args: Owner.args,
   parameters: { locale: "th" },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole("region", { name: /เงินทริป/i })).toHaveClass("expenses-page");
+    await expect(canvas.getByRole("region", { name: /สรุปเงิน/i })).toBeVisible();
+    await expect(canvas.getByRole("button", { name: /เพิ่มค่าใช้จ่าย/i })).toBeEnabled();
+  },
 };
 
 export const Dense: Story = {
