@@ -261,9 +261,19 @@ describe("SmartItineraryTable", () => {
 
     await user.click(screen.getByRole("button", { name: /แสดงตัวกรอง/i }));
     const filterRegion = screen.getByRole("region", { name: /ตัวกรองแผน/i });
+    const filterShell = filterRegion.closest(".itinerary-filter-shell");
 
+    expect(filterShell).toHaveClass(
+      "itinerary-filter-shell",
+      "bg-(--color-surface)",
+    );
+    expect(filterShell?.className).not.toContain("255_255_255");
     expect(filterRegion).toBeInTheDocument();
     expect(within(filterRegion).getByLabelText("Plan 1")).toBeInTheDocument();
+    expect(within(filterRegion).getByLabelText("Plan 1").closest("label")).toHaveClass(
+      "bg-(--color-surface)",
+      "hover:bg-(--color-route-soft)",
+    );
     expect(
       within(filterRegion).getByLabelText("Rain plan"),
     ).toBeInTheDocument();
@@ -347,6 +357,11 @@ describe("SmartItineraryTable", () => {
     const dayPathMenu = screen.getByRole("listbox", {
       name: /Path for Day 2/i,
     });
+    expect(dayPathMenu).toHaveClass(
+      "inline-option-picker-menu",
+      "shadow-[0_10px_22px_rgb(15_23_42_/_0.12)]",
+    );
+    expect(dayPathMenu.className).not.toContain("0_18px_44px");
     expect(
       within(dayPathMenu).getByRole("option", { name: "Plan A" }),
     ).toBeInTheDocument();
@@ -1416,10 +1431,12 @@ describe("SmartItineraryTable", () => {
     });
     expect(inspector).toHaveClass(
       "mobile-itinerary-inspector",
+      "shadow-[0_-10px_24px_rgb(15_23_42_/_0.12)]",
       "max-[767px]:grid",
       "max-[767px]:sticky",
       "max-[767px]:bottom-0",
     );
+    expect(inspector.className).not.toContain("0_-18px_46px");
     expect(inspector.closest(".table-scroll")).toBeNull();
     expect(within(inspector).getByText(/Dim Dim Sum/i)).toBeInTheDocument();
 
@@ -1637,6 +1654,11 @@ describe("SmartItineraryTable", () => {
     const firstDialog = screen.getByRole("dialog", {
       name: /ยืนยันการลบ Dim Dim Sum/i,
     });
+    expect(firstDialog).toHaveClass(
+      "delete-confirm-dialog",
+      "shadow-[0_14px_34px_rgb(15_23_42_/_0.14)]",
+    );
+    expect(firstDialog.className).not.toContain("0_24px_70px");
     expect(onDeleteItem).not.toHaveBeenCalled();
 
     await user.click(

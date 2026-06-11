@@ -115,6 +115,11 @@ describe("AppShell", () => {
     await user.click(within(memberCard).getByRole("button", { name: "เปลี่ยนตัวตน" }));
     const dialog = screen.getByRole("dialog", { name: /เปลี่ยนตัวตน/i });
     expect(dialog).toHaveTextContent("Explorer Friend");
+    expect(dialog).toHaveClass(
+      "identity-switch-dialog",
+      "shadow-[0_14px_34px_rgb(15_23_42_/_0.16)]",
+    );
+    expect(dialog.className).not.toContain("0_24px_70px");
     await user.click(within(dialog).getByRole("button", { name: /เปลี่ยนตัวตน/i }));
     expect(confirm).not.toHaveBeenCalled();
     expect(onLeaveParticipantSession).toHaveBeenCalled();

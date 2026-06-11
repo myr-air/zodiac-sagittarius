@@ -3002,6 +3002,11 @@ describe("Sagittarius cockpit UI", () => {
     const dialog = screen.getByRole("dialog", {
       name: new RegExp(`ยืนยันการลบ ${selectedItem.activity}`, "i"),
     });
+    expect(dialog).toHaveClass(
+      "delete-confirm-dialog",
+      "shadow-[0_14px_34px_rgb(15_23_42_/_0.14)]",
+    );
+    expect(dialog.className).not.toContain("0_24px_70px");
     await user.click(within(dialog).getByRole("button", { name: /ไม่ลบ/i }));
 
     expect(apiClient.deleteItineraryItem).not.toHaveBeenCalled();
@@ -4224,6 +4229,11 @@ describe("Sagittarius cockpit UI", () => {
     const dialog = await screen.findByRole("dialog", {
       name: /ตั้งค่า import itinerary/i,
     });
+    expect(dialog).toHaveClass(
+      "import-options-dialog",
+      "shadow-[0_14px_34px_rgb(15_23_42_/_0.16)]",
+    );
+    expect(dialog.className).not.toContain("0_24px_70px");
     expect(dialog).toHaveTextContent("Imported noodle lunch");
     await user.clear(within(dialog).getByLabelText(/ชื่อ path/i));
     await user.type(within(dialog).getByLabelText(/ชื่อ path/i), "Plan B");

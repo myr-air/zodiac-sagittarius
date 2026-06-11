@@ -135,6 +135,11 @@ describe("TripMembersPage", () => {
     await user.click(screen.getByRole("button", { name: /ยกเลิก/i }));
     await user.click(screen.getByRole("button", { name: /เปลี่ยนรหัสผ่าน Demo Traveler/i }));
     const passwordDialog = screen.getByRole("dialog", { name: /เปลี่ยนรหัสผ่าน Demo Traveler/i });
+    expect(passwordDialog).toHaveClass(
+      "member-task-dialog",
+      "shadow-[0_14px_34px_rgb(15_23_42_/_0.16)]",
+    );
+    expect(passwordDialog.className).not.toContain("0_24px_70px");
     await user.type(within(passwordDialog).getByLabelText(/รหัสผ่านใหม่/i), "123");
     await user.click(within(passwordDialog).getByRole("button", { name: /บันทึกรหัสผ่าน/i }));
     expect(within(passwordDialog).getByRole("alert")).toHaveTextContent("รหัสผ่านต้องมีอย่างน้อย 4 ตัวอักษร");

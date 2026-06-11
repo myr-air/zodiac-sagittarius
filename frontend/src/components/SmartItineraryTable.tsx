@@ -147,7 +147,7 @@ const tripSheetSecondaryButtonClassName =
 const tripSheetMessageClassName =
   "m-0 basis-full text-xs font-bold text-(--color-warning-strong)";
 const itineraryFilterShellClassName =
-  "itinerary-filter-shell -mt-1 mb-[14px] grid gap-2 rounded-(--radius-lg) border border-(--color-border) bg-[rgb(255_255_255_/_0.9)] px-3 py-2.5 text-(--color-route) shadow-[var(--shadow-soft)]";
+  "itinerary-filter-shell -mt-1 mb-[14px] grid gap-2 rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) px-3 py-2.5 text-(--color-route) shadow-[var(--shadow-soft)]";
 const itineraryFilterBarClassName =
   "itinerary-filter-bar flex min-w-0 flex-wrap items-center gap-2";
 const pathFilterButtonClassName =
@@ -157,7 +157,7 @@ const pathFilterSummaryClassName =
 const pathFilterPanelClassName =
   "itinerary-filter-panel flex min-w-0 flex-wrap gap-1.5 border-t border-[#d7e7f2] pt-2";
 const pathFilterOptionClassName =
-  "inline-flex min-h-8 items-center gap-2 rounded-(--radius-sm) border border-[#d7e7f2] bg-white/80 px-2.5 text-xs font-semibold text-[#0369a1] hover:border-(--color-route-border) hover:bg-white";
+  "inline-flex min-h-8 items-center gap-2 rounded-(--radius-sm) border border-[#d7e7f2] bg-(--color-surface) px-2.5 text-xs font-semibold text-[#0369a1] hover:border-(--color-route-border) hover:bg-(--color-route-soft)";
 const importInputClassName = "sr-only";
 const tableScrollClassName =
   "table-scroll m-0 h-auto min-h-0 w-full max-w-full overflow-x-auto overflow-y-hidden rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) shadow-[var(--shadow-panel)] [contain:paint]";
@@ -241,7 +241,7 @@ const inlineOptionPickerButtonClassName = cn(
 );
 const inlineOptionPickerCaretClassName = "shrink-0 text-(--color-text-subtle)";
 const floatingOptionMenuClassName =
-  "inline-option-picker-menu fixed z-[15] grid max-h-[min(260px,calc(100vh_-_24px))] overflow-auto rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) p-1 shadow-[0_18px_44px_rgb(15_23_42_/_0.18)]";
+  "inline-option-picker-menu fixed z-[15] grid max-h-[min(260px,calc(100vh_-_24px))] overflow-auto rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) p-1 shadow-[0_10px_22px_rgb(15_23_42_/_0.12)]";
 const floatingOptionButtonClassName =
   "grid min-h-8 w-full min-w-0 cursor-pointer grid-cols-[minmax(0,1fr)_16px] items-center gap-2 rounded-(--radius-sm) px-2.5 py-1.5 text-left text-xs font-bold text-(--color-text) transition-colors hover:bg-(--color-route-soft) focus-visible:bg-(--color-route-soft) focus-visible:outline-none aria-selected:bg-(--color-route-soft) aria-selected:text-(--color-route) data-[active=true]:bg-(--color-route-soft)";
 const mapLinkClassName = "map-link text-[#1d4ed8] underline underline-offset-2";
@@ -252,7 +252,7 @@ const addStopRowDropTargetClassName =
 const addStopInlineButtonClassName =
   "inline-flex min-h-8 w-full items-center justify-center gap-2 rounded-(--radius-sm) border border-dashed border-(--color-route-border) bg-[rgb(239_246_255_/_0.72)] px-3 text-[12px] font-extrabold text-(--color-route) transition-[background,border-color,color] duration-150 hover:enabled:bg-(--color-route-soft) disabled:cursor-not-allowed disabled:border-(--color-border) disabled:bg-transparent disabled:text-(--color-text-subtle)";
 const mobileInspectorClassName =
-  "mobile-itinerary-inspector mt-3 hidden gap-4 rounded-t-(--radius-lg) rounded-b-(--radius-md) border border-(--color-border-strong) bg-(--color-surface) p-4 shadow-[0_-18px_46px_rgb(15_23_42_/_0.16)] max-[767px]:sticky max-[767px]:bottom-0 max-[767px]:z-10 max-[767px]:grid";
+  "mobile-itinerary-inspector mt-3 hidden gap-4 rounded-t-(--radius-lg) rounded-b-(--radius-md) border border-(--color-border-strong) bg-(--color-surface) p-4 shadow-[0_-10px_24px_rgb(15_23_42_/_0.12)] max-[767px]:sticky max-[767px]:bottom-0 max-[767px]:z-10 max-[767px]:grid";
 const mobileInspectorHandleClassName =
   "mx-auto h-1.5 w-12 rounded-full bg-(--color-border-strong)";
 const mobileInspectorHeaderClassName =
@@ -290,7 +290,7 @@ const graphCellClassName =
 const deleteModalBackdropClassName =
   "modal-backdrop fixed inset-0 z-20 grid place-items-center bg-[rgb(15_23_42_/_0.28)] p-5";
 const deleteDialogClassName =
-  "delete-confirm-dialog grid w-[min(420px,100%)] gap-3 rounded-(--radius-lg) border border-(--color-danger-border) bg-(--color-surface) p-4 shadow-[0_24px_70px_rgb(15_23_42_/_0.22)]";
+  "delete-confirm-dialog grid w-[min(420px,100%)] gap-3 rounded-(--radius-lg) border border-(--color-danger-border) bg-(--color-surface) p-4 shadow-[0_14px_34px_rgb(15_23_42_/_0.14)]";
 const deleteDialogTitleClassName =
   "m-0 text-base font-extrabold leading-[22px] text-[#991b1b]";
 const deleteDialogBodyClassName =

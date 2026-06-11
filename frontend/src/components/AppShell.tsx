@@ -69,7 +69,7 @@ const memberCardRoleClassName = "text-(--color-text-muted)";
 const memberSwitchButtonClassName = "member-switch-button min-h-8 whitespace-nowrap rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-2 text-[11px] font-extrabold text-(--color-primary-strong) data-[collapsed=true]:hidden max-[1199px]:hidden";
 const memberFallbackIconClassName = "data-[collapsed=true]:hidden max-[1199px]:hidden";
 const identityDialogBackdropClassName = "modal-backdrop fixed inset-0 z-20 grid place-items-center bg-[rgb(15_23_42_/_0.28)] p-5";
-const identityDialogClassName = "identity-switch-dialog grid w-[min(420px,100%)] gap-3 rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) p-4 shadow-[0_24px_70px_rgb(15_23_42_/_0.22)]";
+const identityDialogClassName = "identity-switch-dialog grid w-[min(420px,100%)] gap-3 rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) p-4 shadow-[0_14px_34px_rgb(15_23_42_/_0.16)]";
 const identityDialogTitleClassName = "m-0 text-base font-extrabold leading-[22px] text-(--color-text)";
 const identityDialogBodyClassName = "m-0 text-sm font-medium leading-6 text-(--color-text-muted)";
 const identityDialogActionsClassName = "mt-1 flex justify-end gap-2";

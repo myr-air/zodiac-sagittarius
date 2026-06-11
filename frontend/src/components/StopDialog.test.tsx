@@ -53,6 +53,11 @@ describe("StopDialog", () => {
     render(<StopDialog mode="create" onClose={vi.fn()} onSubmit={vi.fn()} />);
 
     expect(screen.getByLabelText("เวลาเริ่ม")).toHaveAttribute("type", "text");
+    expect(screen.getByRole("dialog", { name: "เพิ่มกิจกรรม" })).toHaveClass(
+      "stop-dialog",
+      "shadow-[0_14px_34px_rgb(15_23_42_/_0.16)]",
+    );
+    expect(screen.getByRole("dialog", { name: "เพิ่มกิจกรรม" }).className).not.toContain("0_24px_70px");
     expect(screen.getAllByRole("button", { name: "Open time picker" })).toHaveLength(2);
     expect(screen.getByLabelText("เวลาเริ่ม")).toHaveAttribute("id", "stop-start-time");
     expect(screen.getByText("เวลาเริ่ม").closest("label")).toHaveAttribute("for", "stop-start-time");
