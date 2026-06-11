@@ -39,11 +39,11 @@ const providers = ["all", "google_photos", "icloud", "google_drive", "dropbox", 
 const providerOptions = providers.filter((provider) => provider !== "all") as TripPhotoAlbumProvider[];
 const accessOptions = ["view_only", "collaborative", "upload_request"] satisfies TripPhotoAlbumAccess[];
 
-const pageClassName = "trip-photos-page grid min-h-full min-w-0 grid-rows-[auto_auto_minmax(0,1fr)] gap-3 bg-[linear-gradient(180deg,#f7fbfa_0%,var(--color-page)_46%)] px-6 py-[22px] pb-7 max-[767px]:px-3 max-[767px]:py-4";
+const pageClassName = "trip-photos-page grid min-h-full min-w-0 grid-rows-[auto_auto_minmax(0,1fr)] gap-3 bg-transparent px-6 py-[22px] pb-7 max-[767px]:px-3 max-[767px]:py-4";
 const summaryClassName = "photos-summary grid grid-cols-4 gap-3 max-[1199px]:grid-cols-2 max-[767px]:grid-cols-1";
-const statClassName = "photos-stat grid min-h-[86px] gap-1 rounded-(--radius-lg) border border-[rgb(15_118_110_/_0.14)] bg-[linear-gradient(145deg,#ffffff_0%,#f4fffc_100%)] p-3.5 shadow-[0_10px_24px_rgb(15_23_42_/_0.05)] [&_.icon]:text-(--color-primary) [&>span]:text-xs [&>span]:font-bold [&>span]:text-(--color-text-muted) [&>strong]:text-xl [&>strong]:font-black [&>strong]:text-(--color-text)";
+const statClassName = "photos-stat grid min-h-[86px] gap-1 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) p-3.5 shadow-[0_8px_18px_rgb(55_47_38_/_0.035)] [&_.icon]:text-(--color-primary) [&>span]:text-xs [&>span]:font-bold [&>span]:text-(--color-text-muted) [&>strong]:text-xl [&>strong]:font-black [&>strong]:text-(--color-text)";
 const contentClassName = "photos-content grid min-h-0 grid-cols-[minmax(0,1fr)_330px] gap-3 max-[1199px]:grid-cols-1";
-const panelClassName = "photos-panel grid min-h-0 gap-3 rounded-(--radius-lg) border border-[rgb(15_23_42_/_0.08)] bg-[rgb(255_255_255_/_0.95)] p-3.5 shadow-[0_14px_28px_rgb(15_23_42_/_0.05)]";
+const panelClassName = "photos-panel grid min-h-0 gap-3 rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) p-3.5 shadow-[0_10px_22px_rgb(55_47_38_/_0.045)]";
 const providerGridClassName = "photos-providers grid grid-cols-7 gap-2 max-[1399px]:grid-cols-4 max-[767px]:grid-cols-2";
 const providerButtonClassName = "grid min-h-[76px] content-between gap-2 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) p-3 text-left transition-[background-color,border-color,box-shadow,transform] duration-150 hover:-translate-y-0.5 hover:border-(--color-primary-border) hover:bg-[#fbfffd] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary)";
 const selectedProviderClassName = "border-(--color-primary-border) bg-(--color-primary-soft) shadow-[0_8px_18px_rgb(15_118_110_/_0.1)]";
@@ -51,7 +51,7 @@ const cardGridClassName = "photo-album-grid grid grid-cols-[repeat(auto-fit,minm
 const albumCardClassName = "photo-album-card grid min-h-[214px] grid-rows-[auto_minmax(0,1fr)_auto] gap-3 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) p-3 text-left text-sm shadow-[0_8px_18px_rgb(15_23_42_/_0.035)] transition-[background-color,border-color,box-shadow,transform] duration-150 hover:-translate-y-0.5 hover:border-(--color-primary-border) hover:bg-[#fbfefd]";
 const selectedAlbumClassName = "border-(--color-primary-border) bg-(--color-primary-soft) shadow-[0_10px_22px_rgb(15_118_110_/_0.09)]";
 const albumCoverClassName = "photo-album-cover min-h-[74px] overflow-hidden rounded-(--radius-md) border border-(--color-border) bg-[linear-gradient(135deg,rgb(236_254_255),rgb(255_247_237)_54%,rgb(239_246_255))] bg-cover bg-center";
-const inspectorClassName = "photos-inspector sticky top-3 grid max-h-[calc(100vh-92px)] content-start gap-3 overflow-auto rounded-(--radius-lg) border border-[rgb(15_23_42_/_0.08)] bg-[rgb(255_255_255_/_0.96)] p-3.5 shadow-[0_14px_28px_rgb(15_23_42_/_0.05)] max-[1199px]:static max-[1199px]:max-h-none";
+const inspectorClassName = "photos-inspector sticky top-3 grid max-h-[calc(100vh-92px)] content-start gap-3 overflow-auto rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) p-3.5 shadow-[0_10px_22px_rgb(55_47_38_/_0.045)] max-[1199px]:static max-[1199px]:max-h-none";
 const inspectorSectionClassName = "grid gap-2 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface-subtle) p-2.5 text-sm";
 const dialogBackdropClassName = "modal-backdrop fixed inset-0 z-20 grid place-items-center bg-[rgb(15_23_42_/_0.28)] p-4";
 const dialogClassName = "photos-dialog grid max-h-[min(720px,calc(100vh_-_32px))] w-full max-w-[720px] grid-rows-[auto_minmax(0,1fr)] overflow-hidden rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) shadow-[0_24px_70px_rgb(15_23_42_/_0.28)]";

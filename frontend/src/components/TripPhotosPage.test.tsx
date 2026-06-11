@@ -64,7 +64,8 @@ describe("TripPhotosPage", () => {
   it("renders the album hub, summary, provider filters, safe links, and inspector", () => {
     renderPage();
 
-    expect(screen.getByRole("region", { name: "Photos & Albums" })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Photos & Albums" })).toHaveClass("trip-photos-page", "bg-transparent");
+    expect(screen.getByText("3 albums").closest(".photos-stat")).toHaveClass("bg-(--color-surface)", "rounded-(--radius-md)");
     expect(screen.getByText("3 albums")).toBeInTheDocument();
     expect(screen.getByText("1 collaborative")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Google Photos, 1 albums" })).toBeInTheDocument();

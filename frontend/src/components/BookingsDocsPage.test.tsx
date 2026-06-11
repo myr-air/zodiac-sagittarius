@@ -16,7 +16,8 @@ describe("BookingsDocsPage", () => {
   it("renders booking summaries, folders, ticket cards, and selected booking inspector", () => {
     renderPage();
 
-    expect(screen.getByRole("region", { name: "Bookings & Docs" })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Bookings & Docs" })).toHaveClass("bookings-docs-page", "bg-transparent");
+    expect(screen.getByText("HKD 8,660").closest(".booking-stat")).toHaveClass("bg-(--color-surface)", "rounded-(--radius-md)");
     expect(screen.getByText("HKD 8,660")).toBeInTheDocument();
     expect(screen.getByText("2 need action")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Transport/i })).toBeInTheDocument();

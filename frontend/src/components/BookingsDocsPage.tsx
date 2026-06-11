@@ -67,11 +67,11 @@ const bookingFolders: Array<{
   { id: "needs_action", title: "Needs action", description: "Missing, unpaid, or pending", icon: "warning", status: "needs_action" },
 ];
 
-const pageClassName = "bookings-docs-page grid min-h-full min-w-0 grid-rows-[auto_minmax(0,1fr)] gap-3 bg-[linear-gradient(180deg,#f7fbfa_0%,var(--color-page)_46%)] px-6 py-[22px] pb-7 max-[767px]:px-3 max-[767px]:py-4";
+const pageClassName = "bookings-docs-page grid min-h-full min-w-0 grid-rows-[auto_minmax(0,1fr)] gap-3 bg-transparent px-6 py-[22px] pb-7 max-[767px]:px-3 max-[767px]:py-4";
 const summaryClassName = "bookings-summary grid grid-cols-4 gap-3 max-[1199px]:grid-cols-2 max-[767px]:grid-cols-1";
-const statClassName = "booking-stat grid min-h-[96px] gap-1 rounded-(--radius-lg) border border-[rgb(15_118_110_/_0.14)] bg-[linear-gradient(145deg,#ffffff_0%,#f4fffc_100%)] p-3.5 shadow-[0_10px_24px_rgb(15_23_42_/_0.05)] [&_.icon]:text-(--color-primary) [&>span]:text-xs [&>span]:font-bold [&>span]:text-(--color-text-muted) [&>strong]:text-xl [&>strong]:font-black [&>strong]:tabular-nums [&>strong]:text-(--color-text)";
+const statClassName = "booking-stat grid min-h-[92px] gap-1 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) p-3.5 shadow-[0_8px_18px_rgb(55_47_38_/_0.035)] [&_.icon]:text-(--color-primary) [&>span]:text-xs [&>span]:font-bold [&>span]:text-(--color-text-muted) [&>strong]:text-xl [&>strong]:font-black [&>strong]:tabular-nums [&>strong]:text-(--color-text)";
 const contentClassName = "bookings-content grid min-h-0 grid-cols-[minmax(0,1fr)_330px] gap-3 max-[1199px]:grid-cols-1";
-const panelClassName = "bookings-panel grid min-h-0 gap-3 rounded-(--radius-lg) border border-[rgb(15_23_42_/_0.08)] bg-[rgb(255_255_255_/_0.95)] p-3.5 shadow-[0_14px_28px_rgb(15_23_42_/_0.05)]";
+const panelClassName = "bookings-panel grid min-h-0 gap-3 rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) p-3.5 shadow-[0_10px_22px_rgb(55_47_38_/_0.045)]";
 const folderGridClassName = "booking-folders grid grid-cols-6 gap-2 max-[1399px]:grid-cols-3 max-[767px]:grid-cols-2";
 const folderButtonClassName = "group grid min-h-[72px] content-between gap-1.5 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) p-2.5 text-left transition-[background-color,border-color,box-shadow,transform] duration-150 hover:-translate-y-0.5 hover:border-(--color-primary-border) hover:bg-[#fbfffd] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary)";
 const selectedFolderClassName = "border-(--color-primary-border) bg-(--color-primary-soft) shadow-[0_8px_18px_rgb(15_118_110_/_0.1)]";
@@ -83,7 +83,7 @@ const ticketCardClassName = "booking-ticket-card grid min-h-[156px] grid-rows-[a
 const selectedTicketClassName = "border-(--color-primary-border) bg-(--color-primary-soft) shadow-[0_10px_22px_rgb(15_118_110_/_0.09)]";
 const lockedRowClassName = "booking-row-locked flex min-h-[58px] items-center justify-between gap-2 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface-subtle) px-3 py-2 text-sm";
 const badgeClassName = "inline-flex w-fit items-center gap-1.5 rounded-full border px-2 py-0.5 text-[11px] font-extrabold capitalize";
-const inspectorClassName = "booking-inspector sticky top-3 grid max-h-[calc(100vh-92px)] content-start gap-3 overflow-auto rounded-(--radius-lg) border border-[rgb(15_23_42_/_0.08)] bg-[rgb(255_255_255_/_0.96)] p-3.5 shadow-[0_14px_28px_rgb(15_23_42_/_0.05)] max-[1199px]:static max-[1199px]:max-h-none";
+const inspectorClassName = "booking-inspector sticky top-3 grid max-h-[calc(100vh-92px)] content-start gap-3 overflow-auto rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) p-3.5 shadow-[0_10px_22px_rgb(55_47_38_/_0.045)] max-[1199px]:static max-[1199px]:max-h-none";
 const inspectorSectionClassName = "grid gap-2 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface-subtle) p-2.5 text-sm";
 const dialogBackdropClassName = "modal-backdrop fixed inset-0 z-20 grid place-items-center bg-[rgb(15_23_42_/_0.28)] p-4";
 const dialogClassName = "booking-dialog grid max-h-[min(760px,calc(100vh_-_32px))] w-full max-w-[760px] grid-rows-[auto_minmax(0,1fr)] overflow-hidden rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) shadow-[0_24px_70px_rgb(15_23_42_/_0.28)]";

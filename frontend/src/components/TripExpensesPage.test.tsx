@@ -32,8 +32,9 @@ describe("TripExpensesPage", () => {
   it("renders a travel money cockpit with balances, ledger filters, and settle-up actions", () => {
     renderExpenses();
 
-    expect(screen.getByRole("region", { name: /เงินทริป/i })).toHaveClass("expenses-page", "grid");
+    expect(screen.getByRole("region", { name: /เงินทริป/i })).toHaveClass("expenses-page", "grid", "bg-transparent");
     expect(screen.getByRole("region", { name: /สรุปเงิน/i })).toHaveTextContent("HK$");
+    expect(screen.getByRole("region", { name: /สรุปเงิน/i }).querySelector(".expense-stat")).toHaveClass("bg-(--color-surface)", "rounded-(--radius-md)");
     expect(screen.getByRole("region", { name: /ยอดคงเหลือของเพื่อน/i })).toHaveTextContent("Travel Mate");
     expect(screen.getByRole("table", { name: /รายการค่าใช้จ่าย/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /เพิ่มค่าใช้จ่าย/i })).toBeEnabled();
