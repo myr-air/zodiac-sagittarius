@@ -300,18 +300,29 @@ describe("RouteMapView", () => {
     const panel = screen.getByRole("region", { name: /แผนที่เส้นทาง/i });
     expect(panel).toHaveClass("route-map-panel", "grid", "min-h-0");
 
-    expect(document.querySelector(".route-map-layout")).toHaveClass("route-map-layout", "h-full", "min-h-0", "bg-(--color-surface)");
+    expect(document.querySelector(".route-map-layout")).toHaveClass(
+      "route-map-layout",
+      "h-full",
+      "min-h-0",
+      "bg-[linear-gradient(135deg,var(--color-surface)_0%,var(--color-route-soft)_100%)]",
+    );
     const canvas = screen.getByLabelText(/ตัวอย่างแผนที่เส้นทางฮ่องกงและเซินเจิ้น/i);
-    expect(canvas).toHaveClass("route-map-canvas", "relative", "min-h-[560px]", "overflow-hidden", "bg-(--color-surface-subtle)");
+    expect(canvas).toHaveClass(
+      "route-map-canvas",
+      "relative",
+      "min-h-[560px]",
+      "overflow-hidden",
+      "bg-[linear-gradient(135deg,var(--color-surface)_0%,var(--color-route-soft)_100%)]",
+    );
     expect(canvas.className).not.toContain("radial-gradient");
     expect(canvas).toHaveAttribute("data-live-map-state", "error");
 
     const dayTwoButton = screen.getByRole("button", { name: /วันที่ 2/i });
-    expect(dayTwoButton).toHaveClass("map-day-filter-button", "inline-flex", "bg-(--color-surface)");
-    expect(screen.getByText("Hong Kong")).toHaveClass("map-zone", "absolute", "bg-(--color-surface)");
+    expect(dayTwoButton).toHaveClass("map-day-filter-button", "inline-flex", "bg-[rgb(255_255_255_/_0.78)]");
+    expect(screen.getByText("Hong Kong")).toHaveClass("map-zone", "absolute", "bg-[rgb(255_255_255_/_0.82)]");
     expect(document.querySelector(".route-map-svg")).toHaveClass("route-map-svg", "absolute", "inset-0");
     expect(document.querySelector(".route-marker")).toHaveClass("route-marker", "absolute", "grid");
-    expect(screen.getByText(/OpenFreeMap/i)).toHaveClass("map-source-note", "absolute", "bg-(--color-surface)");
+    expect(screen.getByText(/OpenFreeMap/i)).toHaveClass("map-source-note", "absolute", "bg-[rgb(255_255_255_/_0.86)]");
   });
 
   it("mounts, filters, and cleans up a live MapLibre route", async () => {
