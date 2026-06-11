@@ -12,4 +12,11 @@ describe("HomeLanding", () => {
       name: "Plan trips with friends easier and more fun",
     })).toBeInTheDocument();
   });
+
+  it("keeps the public header brand concise", () => {
+    renderWithI18n(<HomeLanding />, { locale: "en" });
+
+    expect(screen.getAllByRole("link", { name: "Joii home" })[0]).toHaveTextContent(/^Joii$/);
+    expect(screen.queryByText("Joii Travel Planning")).not.toBeInTheDocument();
+  });
 });

@@ -12,7 +12,7 @@ const workflowStepMeta = [
   {
     key: "invite",
     icon: "users",
-    tone: "teal",
+    tone: "coral",
   },
   {
     key: "plan",
@@ -22,25 +22,25 @@ const workflowStepMeta = [
   {
     key: "travel",
     icon: "wallet",
-    tone: "violet",
+    tone: "sky",
   },
-] satisfies Array<{ key: "invite" | "plan" | "travel"; icon: "users" | "list" | "wallet"; tone: "teal" | "sand" | "violet" }>;
+] satisfies Array<{ key: "invite" | "plan" | "travel"; icon: "users" | "list" | "wallet"; tone: "coral" | "sand" | "sky" }>;
 
 const previewDayKeys = ["first", "second", "third"] as const;
 const checklistKeys = ["flights", "hotel", "cash", "packing"] as const;
 const checkedChecklistKeys = new Set<(typeof checklistKeys)[number]>(["flights", "hotel", "cash"]);
 const workflowToneClassNames = {
-  teal: {
-    number: "bg-(--color-primary) text-white shadow-[0_14px_24px_rgb(15_118_110_/_0.24)]",
-    icon: "bg-[#f2f8f9] text-[#078a95]",
+  coral: {
+    number: "bg-(--color-primary) text-white shadow-[0_14px_24px_rgb(194_79_22_/_0.22)]",
+    icon: "bg-(--color-primary-soft) text-(--color-primary-strong)",
   },
   sand: {
     number: "bg-[#d4cab0] text-[#4c4733] shadow-[0_14px_24px_rgb(97_92_71_/_0.18)]",
     icon: "bg-[#f5f3ed] text-[#7b745e]",
   },
-  violet: {
-    number: "bg-[#d8b4fe] text-[#5c3b82] shadow-[0_14px_24px_rgb(108_83_139_/_0.2)]",
-    icon: "bg-[#f0e7fb] text-[#6c538b]",
+  sky: {
+    number: "bg-(--color-route) text-white shadow-[0_14px_24px_rgb(37_99_235_/_0.18)]",
+    icon: "bg-(--color-route-soft) text-(--color-route)",
   },
 } satisfies Record<(typeof workflowStepMeta)[number]["tone"], { number: string; icon: string }>;
 
@@ -54,7 +54,7 @@ const homeNavActionsClassName =
   "home-nav-actions flex items-center gap-3 max-[760px]:grid max-[760px]:grid-cols-[auto_minmax(86px,0.7fr)_minmax(132px,1fr)] max-[760px]:gap-2.5 max-[420px]:grid-cols-[auto_minmax(0,1fr)]";
 const homeNavSecondaryActionsClassName = "home-nav-secondary-actions inline-flex items-center gap-2.5 max-[760px]:contents";
 const homeLanguageSwitchClassName =
-  "home-language-switch min-h-[42px] border-[color-mix(in_srgb,var(--color-primary)_36%,white)] bg-[rgb(255_255_255_/_0.86)] shadow-[0_10px_22px_rgb(15_118_110_/_0.08)] [&_.language-switch-option--active]:bg-(--color-primary) [&_.language-switch-option--active]:text-white";
+  "home-language-switch min-h-[42px] border-[color-mix(in_srgb,var(--color-primary)_36%,white)] bg-[rgb(255_255_255_/_0.86)] shadow-[0_10px_22px_rgb(194_79_22_/_0.08)] [&_.language-switch-option--active]:bg-(--color-primary) [&_.language-switch-option--active]:text-white";
 
 const homePageClassName =
   "home-page min-h-screen overflow-hidden bg-[linear-gradient(180deg,rgb(255_255_255_/_0.88),rgb(240_253_250_/_0.46)_54%,rgb(255_247_237_/_0.26)),linear-gradient(90deg,rgb(37_99_235_/_0.06)_1px,transparent_1px),linear-gradient(0deg,rgb(37_99_235_/_0.055)_1px,transparent_1px),radial-gradient(720px_420px_at_13%_31%,rgb(20_184_166_/_0.16),transparent_72%),radial-gradient(620px_360px_at_86%_18%,rgb(251_113_133_/_0.13),transparent_70%),radial-gradient(760px_430px_at_74%_88%,rgb(250_204_21_/_0.12),transparent_72%),var(--paper-grain),var(--color-page)] [background-size:auto,112px_112px,112px_112px,auto,auto,auto,140px_140px,auto] max-[760px]:overflow-x-hidden";
@@ -65,17 +65,17 @@ const homeButtonBaseClassName =
 const homeLinkButtonClassName = cn(
   "home-link-button",
   homeButtonBaseClassName,
-  "border border-[color-mix(in_srgb,var(--color-primary)_68%,white)] bg-[rgb(255_255_255_/_0.82)] px-[18px] text-(--color-primary-strong) hover:border-(--color-primary) hover:bg-[rgb(236_254_255_/_0.82)] hover:shadow-[0_12px_24px_rgb(15_118_110_/_0.1)]",
+  "border border-[color-mix(in_srgb,var(--color-primary)_68%,white)] bg-[rgb(255_255_255_/_0.82)] px-[18px] text-(--color-primary-strong) hover:border-(--color-primary) hover:bg-(--color-primary-soft) hover:shadow-[0_12px_24px_rgb(194_79_22_/_0.1)]",
 );
 const homePrimaryButtonClassName = cn(
   "home-primary-button",
   homeButtonBaseClassName,
-  "gap-2.5 border border-(--color-primary) bg-[linear-gradient(135deg,var(--color-primary),#0891b2)] px-[18px] text-white shadow-[0_16px_28px_rgb(15_118_110_/_0.18)] hover:-translate-y-px hover:shadow-[0_18px_32px_rgb(15_118_110_/_0.22)]",
+  "gap-2.5 border border-(--color-primary) bg-[linear-gradient(135deg,var(--color-primary),var(--color-primary-strong))] px-[18px] text-white shadow-[0_16px_28px_rgb(194_79_22_/_0.2)] hover:-translate-y-px hover:shadow-[0_18px_32px_rgb(194_79_22_/_0.24)]",
 );
 const homeSecondaryButtonClassName = cn(
   "home-secondary-button",
   homeButtonBaseClassName,
-  "gap-3 border border-[color-mix(in_srgb,var(--color-primary)_68%,white)] bg-[rgb(255_255_255_/_0.82)] px-6 text-(--color-primary-strong) hover:border-(--color-primary) hover:bg-[rgb(236_254_255_/_0.82)] hover:shadow-[0_12px_24px_rgb(15_118_110_/_0.1)]",
+  "gap-3 border border-[color-mix(in_srgb,var(--color-route)_40%,white)] bg-[rgb(255_255_255_/_0.82)] px-6 text-(--color-route) hover:border-(--color-route-border) hover:bg-(--color-route-soft) hover:shadow-[0_12px_24px_rgb(37_99_235_/_0.1)]",
 );
 const homeLargeButtonClassName = "home-large-button min-h-14 px-[26px] max-[760px]:min-h-[50px]";
 
@@ -138,7 +138,7 @@ const homeChecklistItemClassName = "home-checklist-item relative pl-6 text-[12.5
 const homeWorkflowClassName =
   "home-workflow relative scroll-mt-[18px] bg-[linear-gradient(90deg,rgb(37_99_235_/_0.035)_1px,transparent_1px),linear-gradient(0deg,rgb(37_99_235_/_0.03)_1px,transparent_1px),linear-gradient(180deg,rgb(255_255_255_/_0.94),rgb(255_255_255_/_0.9))] bg-[length:72px_72px,72px_72px,auto] px-5 pt-[76px] pb-[86px] text-center max-[760px]:px-3.5 max-[760px]:pt-[54px] max-[760px]:pb-16";
 const homeWorkflowTitleClassName = "m-0 text-[42px] font-black leading-[52px] text-(--color-text) [text-wrap:balance] max-[760px]:text-[30px] max-[760px]:leading-[38px]";
-const homeWorkflowHighlightClassName = "home-workflow-highlight relative inline-block text-[#078a95]";
+const homeWorkflowHighlightClassName = "home-workflow-highlight relative inline-block text-(--color-primary-strong)";
 const homeWorkflowDetailClassName = "mx-auto mt-5 mb-0 text-xl font-[450] leading-8 text-(--color-text-muted) max-[760px]:text-base max-[760px]:leading-[26px]";
 const homeWorkflowGridClassName = "home-workflow-grid mx-auto mt-[92px] grid w-[min(100%,1320px)] grid-cols-3 gap-[72px] max-[760px]:mt-[42px] max-[760px]:grid-cols-1 max-[760px]:gap-3.5";
 const homeWorkflowItemClassName =
@@ -176,7 +176,7 @@ export function HomeLanding() {
               <path d="M12 18c8 2 16 8 18 18" />
             </svg>
           </span>
-          Joii Travel Planning
+          Joii
         </Link>
 
         <div className={homeNavActionsClassName}>
