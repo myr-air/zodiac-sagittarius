@@ -111,7 +111,7 @@ async function fetchFrankfurterRate(
   }
 }
 
-function buildBackendRatesUrl(source: MajorCurrencyCode, target: MajorCurrencyCode, backendBaseUrl = ""): string {
+export function buildBackendRatesUrl(source: MajorCurrencyCode, target: MajorCurrencyCode, backendBaseUrl = ""): string {
   const baseUrl = backendBaseUrl.endsWith("/") ? backendBaseUrl.slice(0, -1) : backendBaseUrl;
   return `${baseUrl}${backendRatesPath}?${new URLSearchParams({ base: source, quote: target })}`;
 }

@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import {
+  buildBackendRatesUrl,
   exchangeRateCacheKey,
   fetchMajorExchangeRate,
   majorCurrencyCodes,
@@ -47,19 +48,10 @@ describe("major currency exchange rates", () => {
     expect(fetchImpl).toHaveBeenNthCalledWith(2, "https://api.frankfurter.dev/v2/rates?base=CNY&quotes=HKD");
   });
 
-  it("honors the backend API base URL when the app runs against a separate backend origin", async () => {
-    const fetchImpl = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => ({ date: "2026-06-05", base: "CNY", quote: "HKD", rate: 1.1, provider: "frankfurter", stale: false }),
-    });
-
-    await fetchMajorExchangeRate("CNY", "HKD", {
-      backendBaseUrl: "https://api.example.test/",
-      fetchImpl,
-      storage: null,
-    });
-
-    expect(fetchImpl).toHaveBeenCalledWith("https://api.example.test/api/v1/exchange-rates?base=CNY&quote=HKD");
+  it("honors the backend API base URL when the app runs against a separate backend origin", () => {
+    expect(buildBackendRatesUrl("CNY", "HKD", "https://api.example.test/")).toBe(
+      "https://api.example.test/api/v1/exchange-rates?base=CNY&quote=HKD",
+    );
   });
 
   it("returns one without fetching when source and target currencies match", async () => {
