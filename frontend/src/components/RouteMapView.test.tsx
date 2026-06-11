@@ -225,6 +225,39 @@ describe("RouteMapView", () => {
     expect(screen.getByText("Victoria Harbour")).toBeInTheDocument();
   });
 
+  it("can preview live map loading and failure states without mounting MapLibre", () => {
+    const { rerender } = render(
+      <RouteMapView
+        endDate={tripFixture.trip.endDate}
+        items={tripFixture.planItems}
+        liveMapAvailability="loading"
+        liveMapEnabled
+        startDate={tripFixture.trip.startDate}
+        tripName={tripFixture.trip.name}
+      />,
+    );
+
+    expect(screen.getByLabelText(/ตัวอย่างแผนที่เส้นทางฮ่องกงและเซินเจิ้น/i)).toHaveAttribute("data-live-map-state", "loading");
+    expect(screen.getByText("กำลังโหลดแผนที่จาก OpenFreeMap")).toHaveClass("route-map-status");
+    expect(maplibreMock.maps).toHaveLength(0);
+
+    rerender(
+      <RouteMapView
+        endDate={tripFixture.trip.endDate}
+        items={tripFixture.planItems}
+        liveMapAvailability="error"
+        liveMapEnabled
+        startDate={tripFixture.trip.startDate}
+        tripName={tripFixture.trip.name}
+      />,
+    );
+
+    expect(screen.getByRole("status")).toHaveTextContent("โหลดแผนที่สดไม่สำเร็จ แสดงแผนผังสำรองไว้ก่อน");
+    expect(screen.queryByRole("button", { name: "ลองโหลดแผนที่สดอีกครั้ง" })).not.toBeInTheDocument();
+    expect(screen.getByText("Hong Kong")).toBeInTheDocument();
+    expect(maplibreMock.maps).toHaveLength(0);
+  });
+
   it("retries the live map after a tile failure remounts MapLibre", async () => {
     const user = userEvent.setup();
 

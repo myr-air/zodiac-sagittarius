@@ -13,6 +13,7 @@ interface RouteMapViewProps {
   endDate: string;
   items: ItineraryItem[];
   itineraryView?: ItineraryView;
+  liveMapAvailability?: "auto" | "loading" | "error";
   liveMapEnabled?: boolean;
   startDate: string;
   tripName: string;
@@ -180,6 +181,7 @@ export function RouteMapView({
   endDate,
   itineraryView,
   items,
+  liveMapAvailability = "auto",
   liveMapEnabled = process.env.NODE_ENV !== "test",
   startDate,
   tripName,
@@ -210,7 +212,8 @@ export function RouteMapView({
   );
   const fallbackViewport = useMemo(() => fallbackRouteViewport(destinationLabel, countries), [countries, destinationLabel]);
   const warningCount = itineraryView?.warningCount ?? items.reduce((total, item) => total + (item.advisories?.length ?? 0), 0);
-  const [liveMapState, setLiveMapState] = useState<"idle" | "loading" | "ready" | "error">("idle");
+  const [autoLiveMapState, setAutoLiveMapState] = useState<"idle" | "loading" | "ready" | "error">("idle");
+  const liveMapState = liveMapAvailability === "auto" ? autoLiveMapState : liveMapAvailability;
   const [liveMapRetryKey, setLiveMapRetryKey] = useState(0);
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<import("maplibre-gl").Map | null>(null);
@@ -226,14 +229,14 @@ export function RouteMapView({
   }, [liveRoutePoints]);
 
   useEffect(() => {
-    if (!mapContainerRef.current || mapRef.current || !liveMapEnabled) return undefined;
+    if (!mapContainerRef.current || mapRef.current || !liveMapEnabled || liveMapAvailability !== "auto") return undefined;
 
     let disposed = false;
     const liveMapContainer = mapContainerRef.current;
     const mountedMarkers = markersRef.current;
 
     async function mountLiveMap() {
-      setLiveMapState("loading");
+      setAutoLiveMapState("loading");
 
       try {
         const maplibregl = await import("maplibre-gl");
@@ -259,16 +262,16 @@ export function RouteMapView({
           if (disposed) return;
           applyRouteMapTheme(map);
           container.inert = false;
-          setLiveMapState("ready");
+          setAutoLiveMapState("ready");
         });
 
         map.on("error", () => {
           if (disposed) return;
-          setLiveMapState("error");
+          setAutoLiveMapState("error");
         });
       } catch {
         /* v8 ignore next */
-        if (!disposed) setLiveMapState("error");
+        if (!disposed) setAutoLiveMapState("error");
       }
     }
 
@@ -287,7 +290,7 @@ export function RouteMapView({
         liveMapContainer.inert = false;
       }
     };
-  }, [fallbackViewport.center, fallbackViewport.zoom, liveMapEnabled, liveMapRetryKey]);
+  }, [fallbackViewport.center, fallbackViewport.zoom, liveMapAvailability, liveMapEnabled, liveMapRetryKey]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -357,7 +360,7 @@ export function RouteMapView({
     if (mapContainerRef.current) {
       mapContainerRef.current.inert = false;
     }
-    setLiveMapState("idle");
+    setAutoLiveMapState("idle");
     setLiveMapRetryKey((key) => key + 1);
   }
 
@@ -420,7 +423,7 @@ export function RouteMapView({
             <>
               <div className={routeMapStatusClassName} role="status">
                 <p className="m-0">{liveMapStatusText(liveMapState, t.map.liveLoading, t.map.liveError)}</p>
-                {liveMapEnabled ? (
+                {liveMapEnabled && liveMapAvailability === "auto" ? (
                   <button className={routeMapRetryButtonClassName} type="button" onClick={handleRetryLiveMap}>
                     <Icon name="redo" />
                     {t.map.retryLiveMap}

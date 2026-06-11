@@ -55,6 +55,33 @@ export const Empty: Story = {
   },
 };
 
+export const LiveMapLoading: Story = {
+  args: {
+    ...Owner.args,
+    liveMapAvailability: "loading",
+    liveMapEnabled: true,
+  },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByLabelText(/Map preview.*Hong Kong and Shenzhen/i)).toHaveAttribute("data-live-map-state", "loading");
+    await expect(canvas.getByText(/Loading map from OpenFreeMap/i)).toHaveClass("route-map-status");
+    await expect(canvas.getByText("Hong Kong")).toBeVisible();
+  },
+};
+
+export const LiveMapFailure: Story = {
+  args: {
+    ...Owner.args,
+    liveMapAvailability: "error",
+    liveMapEnabled: true,
+  },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByLabelText(/Map preview.*Hong Kong and Shenzhen/i)).toHaveAttribute("data-live-map-state", "error");
+    await expect(canvas.getByRole("status")).toHaveTextContent(/Could not load the live map/i);
+    await expect(canvas.queryByRole("button", { name: /Retry live map/i })).toBeNull();
+    await expect(canvas.getByText(/OpenFreeMap/i)).toHaveClass("map-source-note");
+  },
+};
+
 export const Tablet: Story = {
   args: Owner.args,
   parameters: { viewport: { defaultViewport: "tablet768" } },
