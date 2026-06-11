@@ -44,7 +44,10 @@ const pendingBriefing = (date: string): TripDailyBriefing => ({
 describe("WeatherForecastStrip", () => {
   it("renders one-line forecast segments with high and low temperature hierarchy", async () => {
     const onSelect = vi.fn();
-    render(<WeatherForecastStrip briefings={[briefing("2026-07-12", 33, 28)]} locale="en" selectedDate={null} onSelect={onSelect} />);
+    const { container } = render(<WeatherForecastStrip briefings={[briefing("2026-07-12", 33, 28)]} locale="en" selectedDate={null} onSelect={onSelect} />);
+
+    expect(container.querySelector(".weather-forecast-row")).toHaveClass("max-[767px]:snap-x", "max-[767px]:snap-mandatory");
+    expect(screen.getByRole("button", { name: /Sun, Jul 12 Rain 33° 28°/ })).toHaveClass("max-[767px]:w-[106px]", "max-[767px]:shrink-0");
 
     expect(screen.getByRole("button", { name: /Sun, Jul 12 Rain 33° 28°/ })).toBeInTheDocument();
     expect(screen.getByText("33°")).toHaveClass("weather-forecast-temp-high");
