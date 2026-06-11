@@ -149,12 +149,27 @@ export const Viewer: Story = {
     ...Owner.args,
     role: "viewer",
   },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByText(/Editing requires organizer access/i)).toBeVisible();
+    await expect(canvas.getByRole("button", { name: /^Import$/i })).toBeDisabled();
+    await expect(canvas.queryByRole("button", { name: /^New sheet$/i })).toBeNull();
+    await expect(canvas.getAllByRole("button", { name: /Add stop or activity/i })[0]).toBeDisabled();
+    await expect(canvas.getByRole("button", { name: /Edit Dim Dim Sum/i })).toBeDisabled();
+    await expect(canvas.getByRole("button", { name: /Delete Dim Dim Sum/i })).toBeDisabled();
+  },
 };
 
 export const Traveler: Story = {
   args: {
     ...Owner.args,
     role: "traveler",
+  },
+  play: async ({ canvas }) => {
+    await expect(canvas.queryByText(/Editing requires organizer access/i)).toBeNull();
+    await expect(canvas.queryByRole("button", { name: /^New sheet$/i })).toBeNull();
+    await expect(canvas.getAllByRole("button", { name: /Add stop or activity/i })[0]).toBeEnabled();
+    await expect(canvas.getByRole("button", { name: /Edit Dim Dim Sum/i })).toBeEnabled();
+    await expect(canvas.getByRole("button", { name: /Delete Dim Dim Sum/i })).toBeEnabled();
   },
 };
 
