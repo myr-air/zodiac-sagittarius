@@ -44,7 +44,10 @@ describe("TripJoinGate", () => {
     render(<TripJoinGate trip={seedTrip} onTripChange={vi.fn()} onAuthenticated={vi.fn()} />);
 
     expect(screen.queryByRole("complementary", { name: /Trip access preview/i })).not.toBeInTheDocument();
-    expect(screen.getByLabelText(/Trip access preview/i)).toHaveClass("trip-access-visual");
+    const preview = screen.getByLabelText(/Trip access preview/i);
+    expect(preview).toHaveClass("trip-access-visual", "bg-(--color-surface-subtle)");
+    expect(preview.className).not.toContain("linear-gradient");
+    expect(preview.className).not.toContain("radial-gradient");
   });
 
   it("marks trip room credentials with browser password-manager autocomplete hints", () => {

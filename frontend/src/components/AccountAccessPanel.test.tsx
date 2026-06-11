@@ -513,7 +513,10 @@ describe("AccountAccessPanel", () => {
     );
 
     expect(screen.queryByRole("tablist", { name: /Access mode/i })).not.toBeInTheDocument();
-    expect(screen.getByRole("main", { name: /Trip access/i })).toBeInTheDocument();
+    const tripAccessPage = screen.getByRole("main", { name: /Trip access/i });
+    expect(tripAccessPage).toBeInTheDocument();
+    expect(tripAccessPage).toHaveClass("account-page--trip-access", "bg-(--color-page)");
+    expect(tripAccessPage.className).not.toContain("linear-gradient");
     expect(screen.getByRole("heading", { name: /Enter trip room/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Language and currency/i })).toBeInTheDocument();
     expect(screen.queryByRole("link", { name: /เปิด seed trip/i })).not.toBeInTheDocument();
