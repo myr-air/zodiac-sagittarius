@@ -73,6 +73,16 @@ export const Tablet: Story = {
   parameters: { viewport: { defaultViewport: "tablet768" } },
 };
 
+export const Desktop1024: Story = {
+  args: Owner.args,
+  parameters: { viewport: { defaultViewport: "desktop1024" } },
+};
+
+export const Desktop1440: Story = {
+  args: Owner.args,
+  parameters: { viewport: { defaultViewport: "desktop1440" } },
+};
+
 export const Mobile: Story = {
   args: Owner.args,
   parameters: { viewport: { defaultViewport: "mobile320" } },
