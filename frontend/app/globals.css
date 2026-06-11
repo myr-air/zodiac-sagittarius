@@ -432,17 +432,7 @@ button:disabled,
 }
 
 .home-product-preview::before {
-  content: "";
-  position: absolute;
-  top: -76px;
-  left: -74px;
-  width: 160px;
-  height: 118px;
-  border-top: 3px solid var(--color-route);
-  border-left: 3px solid var(--color-route);
-  border-radius: 44% 0 0 0;
-  opacity: 0.36;
-  transform: rotate(-12deg);
+  content: none;
 }
 
 .home-day-image::after {

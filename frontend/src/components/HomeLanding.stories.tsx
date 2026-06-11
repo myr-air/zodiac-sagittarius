@@ -16,6 +16,12 @@ type Story = StoryObj<typeof meta>;
 
 export const PixelPerfect: Story = {};
 
+export const Tablet: Story = {
+  parameters: {
+    viewport: { defaultViewport: "tablet768" },
+  },
+};
+
 export const Mobile: Story = {
   parameters: {
     viewport: { defaultViewport: "mobile320" },
