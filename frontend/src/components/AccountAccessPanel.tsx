@@ -236,7 +236,7 @@ const tripBoardingPassClassName =
 const tripMainTicketClassName =
   "trip-main-ticket relative grid gap-4 rounded-[10px] border border-(--color-border) bg-white p-5 max-[767px]:[.account-page--portal-new-trip_&]:p-4 [&_.trip-preview-map]:min-h-[170px] [&_.trip-preview-map]:rounded-[9px] max-[767px]:[.account-page--portal-new-trip_&_.trip-preview-map]:min-h-[148px] [&>p]:m-0 [&>p]:flex [&>p]:items-center [&>p]:gap-2 [&>p]:text-[13px] [&>p]:text-(--color-text-muted) [&>strong]:block [&>strong]:[overflow-wrap:anywhere] [&>strong]:text-[24px] [&>strong]:leading-8 [&>strong]:text-(--color-text) max-[767px]:[.account-page--portal-new-trip_&>strong]:text-2xl max-[767px]:[.account-page--portal-new-trip_&>strong]:leading-[29px]";
 const tripPreviewMapClassName =
-  "trip-preview-map relative min-h-[168px] overflow-hidden rounded-[18px] border border-[color-mix(in_srgb,var(--color-route-border)_82%,white)] bg-[linear-gradient(90deg,rgb(37_99_235_/_0.07)_1px,transparent_1px),linear-gradient(0deg,rgb(37_99_235_/_0.07)_1px,transparent_1px),radial-gradient(circle_at_24%_32%,rgb(20_184_166_/_0.2),transparent_25%),radial-gradient(circle_at_76%_62%,rgb(56_189_248_/_0.22),transparent_28%),linear-gradient(160deg,rgb(236_253_245_/_0.96),rgb(239_246_255_/_0.94))] [background-size:34px_34px,34px_34px,auto,auto,auto] max-[767px]:min-h-[138px]";
+  "trip-preview-map relative min-h-[168px] overflow-hidden rounded-[18px] border border-[color-mix(in_srgb,var(--color-route-border)_82%,white)] bg-[linear-gradient(90deg,rgb(37_99_235_/_0.07)_1px,transparent_1px),linear-gradient(0deg,rgb(37_99_235_/_0.07)_1px,transparent_1px),radial-gradient(circle_at_24%_32%,rgb(194_79_22_/_0.18),transparent_25%),radial-gradient(circle_at_76%_62%,rgb(37_99_235_/_0.18),transparent_28%),linear-gradient(160deg,rgb(255_247_237_/_0.96),rgb(239_246_255_/_0.94))] [background-size:34px_34px,34px_34px,auto,auto,auto] max-[767px]:min-h-[138px]";
 const tripPreviewMapLiveClassName = "trip-preview-map--live isolate";
 const tripPreviewMapReadyClassName = "trip-preview-map--ready bg-[#eef8ff]";
 const tripPreviewMapCanvasClassName = "trip-preview-map-canvas absolute inset-0 z-[1]";
@@ -292,7 +292,7 @@ const settingsProfilePreviewClassName = "settings-profile-preview grid grid-cols
 const portalSearchClassName =
   "portal-search grid min-h-[46px] grid-cols-[20px_minmax(0,1fr)] items-center gap-2.5 rounded-(--radius-md) border border-(--color-border-strong) bg-(--color-surface) px-3 text-(--color-text-muted) [&_input]:min-w-0 [&_input]:border-0 [&_input]:bg-transparent [&_input]:font-[inherit] [&_input]:font-[750] [&_input]:text-(--color-text) [&_input]:outline-0";
 const portalMapPreviewClassName =
-  "portal-map-preview relative min-h-[220px] overflow-hidden rounded-(--radius-lg) border border-(--color-border) bg-[linear-gradient(90deg,rgb(15_23_42_/_0.06)_1px,transparent_1px),linear-gradient(0deg,rgb(15_23_42_/_0.06)_1px,transparent_1px),radial-gradient(circle_at_24%_30%,rgb(20_184_166_/_0.18),transparent_24%),radial-gradient(circle_at_76%_68%,rgb(59_130_246_/_0.16),transparent_26%),var(--color-surface-subtle)] bg-[length:34px_34px,34px_34px,auto,auto,auto] max-[767px]:min-h-[180px]";
+  "portal-map-preview relative min-h-[220px] overflow-hidden rounded-(--radius-lg) border border-(--color-border) bg-[linear-gradient(90deg,rgb(15_23_42_/_0.06)_1px,transparent_1px),linear-gradient(0deg,rgb(15_23_42_/_0.06)_1px,transparent_1px),radial-gradient(circle_at_24%_30%,rgb(194_79_22_/_0.16),transparent_24%),radial-gradient(circle_at_76%_68%,rgb(37_99_235_/_0.14),transparent_26%),var(--color-surface-subtle)] bg-[length:34px_34px,34px_34px,auto,auto,auto] max-[767px]:min-h-[180px]";
 const portalMapPinClassName =
   "portal-map-pin absolute left-[var(--pin-x)] top-[var(--pin-y)] z-[1] grid size-[34px] place-items-center rounded-full border border-(--color-primary-border) bg-(--color-surface) text-(--color-primary-strong) shadow-[var(--shadow-soft)]";
 const accountDeviceListClassName = "account-device-list grid gap-2";
@@ -1053,7 +1053,7 @@ function EmailLoginPanel({
       });
       await accountClient.updateSettings(session.sessionToken, {
         displayName: displayName.trim() || normalizedEmail.split("@")[0] || t.access.dashboard.fallbackName,
-        avatarColor: "#0f766e",
+        avatarColor: "#c2410c",
         locale,
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC",
       });
@@ -1618,7 +1618,7 @@ function AccountDashboard({
         {portalSection === "dashboard" ? <section className={portalProfileCardClassName} id="portal-dashboard">
           <PanelHeading icon="home" title={t.access.portal.sections.dashboard.title} detail={t.access.portal.sections.dashboard.detail} />
           <div className={accountProfileRowClassName}>
-            <span className={accountAvatarClassName} style={{ backgroundColor: settings?.profile.avatarColor ?? "#0f766e" }} aria-hidden="true">
+            <span className={accountAvatarClassName} style={{ backgroundColor: settings?.profile.avatarColor ?? "#c2410c" }} aria-hidden="true">
               {(settings?.profile.displayName ?? t.access.dashboard.fallbackName).slice(0, 1)}
             </span>
             <div>

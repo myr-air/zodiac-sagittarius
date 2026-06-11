@@ -1959,7 +1959,7 @@ const accountSettings: AccountSettings = {
   profile: {
     id: "user-aom",
     displayName: "Aom",
-    avatarColor: "#0f766e",
+    avatarColor: "#c2410c",
     locale: "th-TH",
     timezone: "Asia/Bangkok",
     primaryEmail: "aom@example.test",
