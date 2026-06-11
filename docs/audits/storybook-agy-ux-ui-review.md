@@ -1,53 +1,72 @@
 # Storybook AGY UX/UI Review
 
-Generated: 2026-06-11T07:33:11.690Z
+Generated: 2026-06-11T08:16:34.649Z
 Command: agy --add-dir /Users/xiivth/workspace/zodiac/sagittarius/.worktrees/reference-ui-redesign -p <storybook-ux-ui-prompt>
 
 ## Output
 
-I will start by listing the contents of the target directory to verify the workspace structure and locate the Storybook source files.
-I will view the instructions in the `modern-web-guidance` skill file as required for client-side and web-related tasks.
-I will list all the Storybook story files (`*.stories.tsx`) within the `frontend/src` directory to see the scope of components currently defined in the catalog.
-I will examine the Storybook preview configuration file to check what global viewports, decorators, languages, and parameters are defined.
-I will view the contract test file to see what Storybook integration tests are running and how stories are verified programmatically.
-I will view `frontend/src/app/SagittariusApp.stories.tsx` to understand the stories for the main cockpit app and see how different access roles and responsive widths/viewports are defined.
-I will use `grep_search` to find which Storybook story files define the required role states (`Traveler`, `Viewer`), density states (`Dense`, `Empty`), and check where they are declared.
-I will search for `Viewer` state stories to see where they are defined.
-I will search for `Empty` and `Dense` story states using `grep_search`.
-I will search for `Dense` story states using `grep_search`.
-I will examine the `frontend/src/components/ItineraryTemplate.stories.tsx` file to see how the Smart Itinerary Table and its various itinerary path states are set up, including alternative routes (Plan A/B), overlap stress, and table overflow, and what roles it covers.
-I will view the page-level story `frontend/src/components/ItineraryPage.stories.tsx` to check what viewports, role states, or path states are tested at the page component level.
-I will list the contents of the `frontend/.storybook` directory to see if there are other configuration files (like `main.ts` or MSW handlers) that contain relevant definitions.
-I will view `frontend/.storybook/main.ts` to check the Storybook framework options and configuration.
-I will use `grep_search` to find all references to the keyword `viewport` in the story files. This will help identify what responsive width coverage currently exists.
-I will search for `export const` in `frontend/src/components/OverviewTemplate.stories.tsx` to see what states/roles are defined there.
-I will search for `export const` in `frontend/src/components/TimelineTemplate.stories.tsx` to see what states/roles are defined there.
-I will search for `export const` in `frontend/src/components/MapTemplate.stories.tsx` to check what states/roles are defined there.
-I will search for `export const` in `frontend/src/components/MembersTemplate.stories.tsx` to check what states/roles are defined there.
-I will search for references to `role` within the `SmartItineraryTable.tsx` file to see how owner, traveler, and viewer roles affect the rendering and UI of the itinerary table.
-I will search for `role` across the components in the `frontend/src/components` directory to understand how the role system affects the shell and other views.
-I will search for `canEdit` and `canManageTripSheets` in `SmartItineraryTable.tsx` to see exactly which interactive elements (such as buttons, forms, drag-and-drop, and sheets management) are hidden or disabled when a user has a restricted role (e.g., traveler or viewer).
-I will search for `canManageTripSheets` in `SmartItineraryTable.tsx` to understand how the ability to manage trip sheets is controlled and what UI parts are affected.
-I will view `frontend/src/styles.contract.test.ts` to see what styling contract tests verify, specifically regarding horizontal scrolling and overflow for the smart itinerary table.
-I will search for `export const` in `frontend/src/components/OverviewPage.stories.tsx` to check what stories are defined there.
-I will search for `export const` in `frontend/src/components/TimelinePage.stories.tsx` to check what stories are defined there.
-I will search for `export const` in `frontend/src/components/MapPage.stories.tsx` to check what stories are defined there.
-I will search for `export const` in `frontend/src/components/MembersPage.stories.tsx` to check what stories are defined there.
-I will search for how empty state/no-items is handled in `SmartItineraryTable.tsx` to see if there's specific rendering logic for when the trip has zero stops.
-I will check how `items` are rendered in `SmartItineraryTable.tsx` by searching for references to the `.map` function or loops on `items`.
-I will search for the word `items` in `SmartItineraryTable.tsx` to find where the array of itinerary items is processed.
-I will search for `overlap` or `warning` in `SmartItineraryTable.tsx` to see how timing conflicts are detected, highlighted, and if they generate warnings.
-I will search for `truncate` or `ellipsis` in `SmartItineraryTable.tsx` to see if text overflow is handled using CSS truncation, which is important for our data-extreme validation.
-I will now compile the detailed Sagittarius Storybook UX/UI Catalog Audit Report. I will write this report as a markdown artifact in the designated conversation directory, ordering the findings by severity and detailing specific file references, evidence, and recommended Storybook story additions or play function assertions.
-I have completed a thorough audit of the Sagittarius Storybook UX/UI catalog. 
+I will list the current permission grants to see what directories I can access directly.
+I will read the `modern-web-guidance` skill instructions first, as required by the system instructions for front-end tasks.
+I will run a command to list all the best practice guides available via the `modern-web-guidance` tool.
+I will run a command to list the contents of the Sagittarius frontend directory to verify the workspace structure and make sure we can access the project.
+I will check if I can view `package.json` directly from the Sagittarius workspace.
+I will find all the Storybook story files in the frontend directory.
+I will view the contract test file `src/storybook.contract.test.ts` to see what kinds of tests are run against the Storybook components and understand the existing contract.
+I will run the Storybook tests via Vitest to see if all current contract tests are passing.
+I will view the QA documentation file `storybook-ux-ui-qa.md` to see what is documented about Sagittarius Storybook UX/UI QA.
+I will check the status of the background task running the Storybook tests.
+I will view the log of the Storybook tests to see the execution status.
+I will inspect the script `scripts/run-storybook-agy-ux-qa.ts` to understand how it performs the Storybook UX/UI QA check.
+I will check the output of the background task running the Storybook tests.
+I will check the status of the tasks running in the background.
+I will view `src/app/SagittariusApp.stories.tsx` to understand the main cockpit app-level Storybook stories and their structure.
+I will view the `ItineraryPage.stories.tsx` file to see how the itinerary page's story and play assertions are structured.
+I will search for `TableOverflow` across all story files to see where it is defined.
+I will view `src/components/ItineraryTemplate.stories.tsx` to inspect how it defines the template and the `TableOverflow` story.
+I will check if the Storybook Vitest contract tests have finished.
+I will check the list of background tasks to see if it has finished or is still running.
+I will view `frontend/.storybook/preview.ts` to examine the global parameters, decorators, viewports, and localization settings for Storybook.
+I will view `src/components/OverviewPage.stories.tsx` to check how the Overview page is tested.
+I will view `src/components/OverviewTemplate.stories.tsx` to see if there are any play assertions or more detailed tests on the Overview template.
+I will view `src/components/TimelinePage.stories.tsx` to inspect viewport and role coverage for the Timeline page.
+I will check if there is a role or access-related logic inside the Timeline components by searching for references to "role" in that folder.
+I will view `src/components/BookingsDocsPage.stories.tsx` to check how the Bookings & Docs page stories are configured and if there are gaps in roles or viewport widths.
+I will view `src/components/TripSettingsPage.stories.tsx` to check how the Trip Settings page is tested and identify gaps.
+I will view `src/components/TripJoinGate.stories.tsx` to check how the Trip Join Gate is tested and identify gaps.
+I will view `src/components/MapPage.stories.tsx` to check how the Map page is tested and identify gaps.
+I will view `src/components/MembersPage.stories.tsx` to check how the Members page is tested.
+I will view `src/components/MembersTemplate.stories.tsx` to check how the members template is tested.
+I will view `src/components/ExpensesPage.stories.tsx` to check how the Expenses page is covered.
+I will view `src/components/TripPhotosPage.stories.tsx` to inspect how photos are covered.
+I will view `src/components/AppShell.stories.tsx` to check what stories are defined for the application's shell layout and if there are gaps in roles, viewports, or translation.
+I will view `src/components/SuggestionPanel.stories.tsx` to inspect Suggestion Panel stories.
+I will view `src/components/SuggestionPanel.tsx` to see if it supports role-based controls or permissions.
+I will view `src/components/PeoplePanel.stories.tsx` to check how the People Panel is covered in Storybook.
+I will view `src/components/WeatherBriefingDrawer.stories.tsx` to check how the weather briefing drawer is tested.
+I will view `src/components/WeatherForecastStrip.stories.tsx` to inspect stories for the weather forecast strip.
+I will view `src/components/StopDialog.stories.tsx` to inspect stories for the Stop Dialog.
+I will view `src/components/HomeLanding.stories.tsx` to check how the landing page is tested.
+I will view `src/i18n/LanguageSwitch.stories.tsx` to check how the bilingual toggle is tested.
+I will view `src/components/AccountAccessPanel.stories.tsx` to inspect stories for the Account Access Panel.
+I will view `src/components/ui.stories.tsx` to check what UI component stories exist (buttons, badges, etc.) and look for gaps.
+I will view `src/components/Badge.stories.tsx` to check coverage for badges.
+I will view `src/components/PageHeader.stories.tsx` to check how the Page Header is tested.
+I will view `src/components/motifs.stories.tsx` to check coverage for design motifs.
+I will generate a detailed audit report of the Sagittarius Storybook UX/UI catalog as a markdown artifact. This report will document all the identified gaps categorized by severity, present evidence from the codebase, and recommend specific Storybook stories or play assertions to close each gap.
+I have audited the Sagittarius Storybook catalog to identify testing gaps, verify role and viewport coverage, and evaluate itinerary states.
 
-The full audit report has been generated as an artifact:
-👉 [storybook_audit_report.md](file:///Users/xiivth/.gemini/antigravity-cli/brain/ee5feeb9-feb6-4041-8514-b3d069937b18/storybook_audit_report.md)
+The detailed findings and recommendations have been compiled into the following artifact:
+* [storybook_ux_ui_audit_report.md](file:///Users/xiivth/.gemini/antigravity-cli/brain/41e9ae37-8ec5-4876-b120-d1712d460e9f/storybook_ux_ui_audit_report.md)
 
-### Key Decisions & Actions Required
-1. **Responsive Viewport Configuration**: We need to configure custom viewports (320px, 768px, 1024px, 1440px) in [preview.ts](file:///Users/xiivth/workspace/zodiac/sagittarius/frontend/.storybook/preview.ts) and add corresponding stories to the main cockpit and page story files.
-2. **Role States Integration**: The contract test is currently passing due to global checks, but we need to add explicit `Traveler`, `Viewer`, `Dense`, and `Empty` stories with play assertions to the integration stories ([SagittariusApp.stories.tsx](file:///Users/xiivth/workspace/zodiac/sagittarius/frontend/src/app/SagittariusApp.stories.tsx)).
-3. **Itinerary Overlap Warnings & Auto-Fix Action**: We need to introduce an `OverlapConflict` story with overlapping itinerary items on the same path and mock the `onAutoResolveDayOverlaps` callback to verify the rendering and interaction of the warning state.
+### Summary of Completed Work
+1. **Catalog Audited**: Reviewed the coverage, viewports, role permutations, and translation states across all `.stories.tsx` files.
+2. **Contract Tested**: Validated the existing contract suite using Vitest (which successfully passed all 188 assertions across 29 test files).
+3. **Artifact Created**: Generated a prioritized audit report detailing actionable gaps with concrete references and suggested verification codes.
+
+### Key Decisions & Next Steps
+Before we begin resolving these gaps, I would like your input on the following:
+* **Play Assertions**: Would you like me to implement the recommended play assertions for the main cockpit views ([TimelinePage.stories.tsx](file:///Users/xiivth/workspace/zodiac/sagittarius/.worktrees/reference-ui-redesign/frontend/src/components/TimelinePage.stories.tsx), [MapPage.stories.tsx](file:///Users/xiivth/workspace/zodiac/sagittarius/.worktrees/reference-ui-redesign/frontend/src/components/MapPage.stories.tsx), [MembersPage.stories.tsx](file:///Users/xiivth/workspace/zodiac/sagittarius/.worktrees/reference-ui-redesign/frontend/src/components/MembersPage.stories.tsx), and [TripPhotosPage.stories.tsx](file:///Users/xiivth/workspace/zodiac/sagittarius/.worktrees/reference-ui-redesign/frontend/src/components/TripPhotosPage.stories.tsx))?
+* **Contract Updates**: Should we update [storybook.contract.test.ts](file:///Users/xiivth/workspace/zodiac/sagittarius/.worktrees/reference-ui-redesign/frontend/src/storybook.contract.test.ts) to enforce these new viewport (e.g. desktop1024, desktop1440) and role stories?
 
 ## Stderr
 
