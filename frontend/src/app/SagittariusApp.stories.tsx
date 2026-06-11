@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { expect } from "storybook/test";
 import { seedTripJoinId } from "@/src/trip/auth";
+import { tripFixture } from "@/src/trip/trip-fixtures";
 import { SagittariusApp } from "./SagittariusApp";
 
 const meta = {
@@ -15,6 +16,16 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 const storyTripId = "trip-1";
+const travelerMemberId = tripFixture.currentMembers.traveler.id;
+const viewerMemberId = tripFixture.currentMembers.viewer.id;
+
+function addStopButtons(canvasElement: HTMLElement) {
+  return Array.from(
+    canvasElement.querySelectorAll<HTMLButtonElement>(
+      'button[aria-label^="Add stop"]',
+    ),
+  );
+}
 
 export const Cockpit: Story = {};
 export const ApiJoin: Story = { args: { accessMode: "trip-access", requireJoin: true, dataSource: "api" } };
@@ -157,6 +168,22 @@ export const OwnerThai: Story = {
   play: async ({ canvasElement }) => {
     await expect(canvasElement.ownerDocument.documentElement).toHaveAttribute("lang", "th");
     await expect(canvasElement.querySelector(".workspace-shell")).toBeInTheDocument();
+  },
+};
+export const Traveler: Story = {
+  args: { initialView: "itinerary", initialMemberId: travelerMemberId },
+  play: async ({ canvasElement }) => {
+    await expect(canvasElement.querySelector(".workspace-shell")).toBeInTheDocument();
+    await expect(canvasElement.querySelector(".smart-table")).toBeInTheDocument();
+    await expect(addStopButtons(canvasElement)[0]).toBeEnabled();
+  },
+};
+export const Viewer: Story = {
+  args: { initialView: "itinerary", initialMemberId: viewerMemberId },
+  play: async ({ canvasElement }) => {
+    await expect(canvasElement.querySelector(".workspace-shell")).toBeInTheDocument();
+    await expect(canvasElement.querySelector(".smart-table")).toBeInTheDocument();
+    await expect(addStopButtons(canvasElement)[0]).toBeDisabled();
   },
 };
 export const Desktop1024: Story = {

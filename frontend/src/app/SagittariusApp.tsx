@@ -214,6 +214,7 @@ interface SagittariusAppProps {
     | "trip-access";
   accountSuccessRedirectHref?: string;
   portalSection?: PortalSection;
+  initialMemberId?: string;
 }
 
 export function resolveJoinPostAuthReturnTo(
@@ -244,6 +245,7 @@ export function SagittariusApp({
   accessMode = "combined",
   accountSuccessRedirectHref,
   portalSection = "dashboard",
+  initialMemberId,
 }: SagittariusAppProps) {
   const { locale, t } = useI18n();
   /* v8 ignore next 3 */
@@ -324,7 +326,7 @@ export function SagittariusApp({
   const [navigatedView, setNavigatedView] = useState<PlanningView | null>(null);
   const selectedPlanVariantId = tripState.trip.activePlanVariantId;
   const [currentMemberId, setCurrentMemberId] = useState(
-    seedTrip.members[0].id,
+    initialMemberId ?? seedTrip.members[0].id,
   );
   const [selectedItemId, setSelectedItemId] = useState("item-dimdim");
   const [dialogState, setDialogState] = useState<
