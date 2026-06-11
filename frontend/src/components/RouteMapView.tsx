@@ -445,7 +445,7 @@ export function RouteMapView({
               </ol>
             </aside>
           ) : null}
-          <p className={mapSourceNoteClassName}>{t.map.sourceNote}</p>
+          {liveMapState === "error" || !liveMapEnabled ? <p className={mapSourceNoteClassName}>{t.map.sourceNote}</p> : null}
         </div>
       </div>
     </section>
