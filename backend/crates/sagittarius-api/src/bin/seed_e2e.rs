@@ -36,6 +36,9 @@ const MIGRATIONS: &[&str] = &[
     include_str!("../../../../migrations/0018_auth_attempt_locks.sql"),
     include_str!("../../../../migrations/0019_photo_album_links.sql"),
     include_str!("../../../../migrations/0020_trip_city_routes.sql"),
+    include_str!("../../../../migrations/0021_trusted_device_active_label_unique.sql"),
+    include_str!("../../../../migrations/0022_itinerary_item_details.sql"),
+    include_str!("../../../../migrations/0023_itinerary_table_v1.sql"),
 ];
 
 #[tokio::main]
