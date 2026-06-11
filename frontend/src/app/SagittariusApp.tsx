@@ -2312,6 +2312,10 @@ export function SagittariusApp({
     status: PlanSuggestion["status"],
   ) {
     if (!canReviewSuggestions && status !== "snoozed") return;
+    if (status === "accepted") {
+      const applied = await applyPlanSuggestionAction(suggestion);
+      if (!applied) return;
+    }
     if (isApiMode && resolvedApiClient?.patchPlanSuggestion && participantSession) {
       const patched = await resolvedApiClient.patchPlanSuggestion(
         trip.id,
@@ -2347,6 +2351,20 @@ export function SagittariusApp({
           }
         : current,
     );
+  }
+
+  async function applyPlanSuggestionAction(
+    suggestion: PlanSuggestion,
+  ): Promise<boolean> {
+    if (suggestion.actionKind !== "editItem") return true;
+    const action = parsePlanSuggestionEditAction(suggestion.actionPayload);
+    if (!action) {
+      const targetItemId = suggestion.targetItemIds[0];
+      if (targetItemId) editItem(targetItemId);
+      return false;
+    }
+    await updateItineraryItemInline(action.itemId, action.patch);
+    return true;
   }
 
   async function createTask(input: {
@@ -4550,6 +4568,12 @@ function buildLocalPlanCheck(trip: Trip, memberId: string): PlanCheck {
     if (item.itemKind === "travel" && !Array.isArray(item.details.transportSegments)) missing.push("transport segments");
     if (!missing.length) return [];
     const detail = missing.join(", ");
+    const patch =
+      missing.includes("time")
+        ? { timeMode: "flexible", startTime: null, durationMinutes: null }
+        : missing.includes("duration")
+          ? { durationMinutes: 60 }
+          : undefined;
     return [{
       id: `local-plan-suggestion-${index + 1}`,
       tripId: trip.id,
@@ -4566,7 +4590,7 @@ function buildLocalPlanCheck(trip: Trip, memberId: string): PlanCheck {
         th: "เปิดรายละเอียดรายการนี้แล้วเติมข้อมูลที่ขาด",
       },
       actionKind: "editItem",
-      actionPayload: { itemId: item.id },
+      actionPayload: patch ? { itemId: item.id, patch } : { itemId: item.id },
       status: "pending",
       snoozedUntil: null,
       createdAt: new Date().toISOString(),
@@ -4588,6 +4612,41 @@ function buildLocalPlanCheck(trip: Trip, memberId: string): PlanCheck {
     version: 1,
     suggestions,
   };
+}
+
+export function parsePlanSuggestionEditAction(
+  payload: Record<string, unknown>,
+): { itemId: string; patch: InlineItineraryItemPatch } | null {
+  const itemId = typeof payload.itemId === "string" ? payload.itemId : "";
+  const rawPatch = payload.patch;
+  if (!itemId || !isPlainRecord(rawPatch)) return null;
+  const patch: InlineItineraryItemPatch = {};
+  if (rawPatch.timeMode === "scheduled" || rawPatch.timeMode === "flexible") {
+    patch.timeMode = rawPatch.timeMode;
+  }
+  if (typeof rawPatch.startTime === "string" || rawPatch.startTime === null) {
+    patch.startTime = rawPatch.startTime ?? "";
+  }
+  if (
+    typeof rawPatch.durationMinutes === "number" ||
+    rawPatch.durationMinutes === null
+  ) {
+    patch.durationMinutes = rawPatch.durationMinutes;
+  }
+  if (typeof rawPatch.parentItemId === "string" || rawPatch.parentItemId === null) {
+    patch.parentItemId = rawPatch.parentItemId;
+  }
+  if (typeof rawPatch.status === "string") {
+    patch.status = rawPatch.status as ItineraryItem["status"];
+  }
+  if (typeof rawPatch.priority === "string") {
+    patch.priority = rawPatch.priority as ItineraryItem["priority"];
+  }
+  return Object.keys(patch).length ? { itemId, patch } : null;
+}
+
+function isPlainRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 function PlanCheckPanel({

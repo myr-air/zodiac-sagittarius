@@ -108,6 +108,7 @@ interface SmartItineraryTableProps {
 export type InlineItineraryItemPatch = Partial<
   Pick<
     ItineraryItem,
+    | "parentItemId"
     | "startTime"
     | "durationMinutes"
     | "activity"

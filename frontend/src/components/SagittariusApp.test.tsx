@@ -16,6 +16,7 @@ import {
   nextLocalStopNoteId,
   nextLocalSuggestionId,
   nextLocalTaskId,
+  parsePlanSuggestionEditAction,
   replaceSuggestionById,
 } from "@/src/app/SagittariusApp";
 import {
@@ -162,6 +163,35 @@ describe("Sagittarius cockpit UI", () => {
     );
     vi.unstubAllGlobals();
     vi.useRealTimers();
+  });
+
+  it("parses safe structured Plan Check edit actions", () => {
+    expect(
+      parsePlanSuggestionEditAction({
+        itemId: "item-1",
+        patch: {
+          timeMode: "flexible",
+          startTime: null,
+          durationMinutes: null,
+          parentItemId: null,
+        },
+      }),
+    ).toEqual({
+      itemId: "item-1",
+      patch: {
+        timeMode: "flexible",
+        startTime: "",
+        durationMinutes: null,
+        parentItemId: null,
+      },
+    });
+    expect(
+      parsePlanSuggestionEditAction({
+        itemId: "item-1",
+        patch: { unknownField: "ignored" },
+      }),
+    ).toBeNull();
+    expect(parsePlanSuggestionEditAction({ itemId: "item-1" })).toBeNull();
   });
 
   it("can require trip participant authentication before opening the cockpit", async () => {

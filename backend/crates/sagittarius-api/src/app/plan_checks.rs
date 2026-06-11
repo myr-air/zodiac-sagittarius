@@ -213,25 +213,25 @@ fn build_findings(default_timezone: &str, items: &[ItineraryItemSummary]) -> Vec
     let mut findings = Vec::new();
     for item in items {
         if item.time_mode == "scheduled" && item.start_time.trim().is_empty() {
-            findings.push(item_finding(
+            findings.push(item_patch_finding(
                 "warning",
                 item,
                 "Missing scheduled time.",
                 "ยังไม่มีเวลาสำหรับรายการที่ตั้งเป็น scheduled",
                 "Add a time or switch this row to flexible.",
                 "เพิ่มเวลา หรือเปลี่ยนรายการนี้เป็น flexible",
-                Some("editItem"),
+                json!({ "timeMode": "flexible", "startTime": null, "durationMinutes": null }),
             ));
         }
         if item.duration_minutes.is_none() && item.time_mode == "scheduled" {
-            findings.push(item_finding(
+            findings.push(item_patch_finding(
                 "info",
                 item,
                 "Missing duration makes route timing harder to check.",
                 "ยังไม่มีระยะเวลา ทำให้ตรวจจังหวะการเดินทางได้ยาก",
                 "Add a realistic duration.",
                 "เพิ่มระยะเวลาที่สมจริง",
-                Some("editItem"),
+                json!({ "durationMinutes": 60 }),
             ));
         }
         if item.item_kind == "travel" && transport_segments(item).is_empty() {
@@ -310,6 +310,28 @@ fn item_finding(
     }
 }
 
+fn item_patch_finding(
+    severity: &'static str,
+    item: &ItineraryItemSummary,
+    explanation_en: &str,
+    explanation_th: &str,
+    action_en: &str,
+    action_th: &str,
+    patch: Value,
+) -> Finding {
+    Finding {
+        severity,
+        scope: "item",
+        target_item_ids: vec![item.id],
+        explanation_en: format!("{} {}", item.activity, explanation_en),
+        explanation_th: format!("{} {}", item.activity, explanation_th),
+        action_en: action_en.to_string(),
+        action_th: action_th.to_string(),
+        action_kind: Some("editItem"),
+        action_payload: json!({ "itemId": item.id, "patch": patch }),
+    }
+}
+
 fn overlap_findings(items: &[ItineraryItemSummary]) -> Vec<Finding> {
     let mut findings = Vec::new();
     let mut sorted = items
@@ -381,7 +403,11 @@ fn plan_block_child_findings(items: &[ItineraryItemSummary]) -> Vec<Finding> {
                     .to_string(),
                 action_th: "ย้ายรายการย่อยให้อยู่ในช่วง block หรือปรับเวลา block".to_string(),
                 action_kind: Some("editItem"),
-                action_payload: json!({ "itemId": child.id, "parentItemId": parent.id }),
+                action_payload: json!({
+                    "itemId": child.id,
+                    "parentItemId": parent.id,
+                    "patch": { "parentItemId": null }
+                }),
             });
         }
     }
