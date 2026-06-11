@@ -68,6 +68,7 @@ describe("BookingsDocsPage", () => {
 
     await user.click(screen.getByRole("button", { name: "Add booking" }));
     let dialog = screen.getByRole("dialog", { name: "Add booking" });
+    expect(dialog).toHaveClass("shadow-[0_14px_34px_rgb(15_23_42_/_0.16)]");
     fireEvent.change(within(dialog).getByLabelText("Title"), { target: { value: "Airport Express pass" } });
     fireEvent.change(within(dialog).getByLabelText("Type"), { target: { value: "public_transport" } });
     fireEvent.change(within(dialog).getByLabelText("Status"), { target: { value: "booked" } });

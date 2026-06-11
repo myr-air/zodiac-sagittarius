@@ -70,7 +70,10 @@ describe("TripPhotosPage", () => {
     expect(screen.getByText("1 collaborative")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Google Photos, 1 albums" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Select Google Photos group album/i })).toBeInTheDocument();
-    expect(screen.getByLabelText("Cover for Google Photos group album")).toHaveStyle({ backgroundImage: "url(https://images.example.test/hong-kong-album.jpg)" });
+    const cover = screen.getByLabelText("Cover for Google Photos group album");
+    expect(cover).toHaveClass("bg-(--color-surface-subtle)");
+    expect(cover.className).not.toContain("linear-gradient");
+    expect(cover).toHaveStyle({ backgroundImage: "url(https://images.example.test/hong-kong-album.jpg)" });
     expect(screen.getByRole("heading", { name: "Google Photos group album" })).toBeInTheDocument();
     expect(screen.getByText("photos.app.goo.gl")).toBeInTheDocument();
     expect(screen.queryByText("https://photos.app.goo.gl/group")).not.toBeInTheDocument();
@@ -99,6 +102,7 @@ describe("TripPhotosPage", () => {
 
     await user.click(screen.getByRole("button", { name: "Add album" }));
     let dialog = screen.getByRole("dialog", { name: "Add album" });
+    expect(dialog).toHaveClass("shadow-[0_14px_34px_rgb(15_23_42_/_0.16)]");
     fireEvent.change(within(dialog).getByLabelText("Title"), { target: { value: "iCloud family album" } });
     fireEvent.change(within(dialog).getByLabelText("Provider"), { target: { value: "icloud" } });
     fireEvent.change(within(dialog).getByLabelText("Access"), { target: { value: "view_only" } });

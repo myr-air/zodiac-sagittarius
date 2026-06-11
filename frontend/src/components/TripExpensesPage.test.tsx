@@ -35,6 +35,9 @@ describe("TripExpensesPage", () => {
     expect(screen.getByRole("region", { name: /เงินทริป/i })).toHaveClass("expenses-page", "grid", "bg-transparent");
     expect(screen.getByRole("region", { name: /สรุปเงิน/i })).toHaveTextContent("HK$");
     expect(screen.getByRole("region", { name: /สรุปเงิน/i }).querySelector(".expense-stat")).toHaveClass("bg-(--color-surface)", "rounded-(--radius-md)");
+    expect(document.querySelector(".expense-ledger-table thead")).toHaveClass("bg-(--color-surface-subtle)");
+    expect(document.querySelector(".expense-ledger-table thead")?.className).not.toContain("linear-gradient");
+    expect(document.querySelector(".expenses-panel")?.textContent).toContain("Travel Mate");
     expect(screen.getByRole("region", { name: /ยอดคงเหลือของเพื่อน/i })).toHaveTextContent("Travel Mate");
     expect(screen.getByRole("table", { name: /รายการค่าใช้จ่าย/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /เพิ่มค่าใช้จ่าย/i })).toBeEnabled();
@@ -47,6 +50,7 @@ describe("TripExpensesPage", () => {
 
     await user.click(screen.getByRole("button", { name: /เพิ่มค่าใช้จ่าย/i }));
     const dialog = screen.getByRole("dialog", { name: /เพิ่มค่าใช้จ่าย/i });
+    expect(dialog).toHaveClass("shadow-[0_14px_34px_rgb(15_23_42_/_0.16)]");
     await user.type(within(dialog).getByLabelText(/ชื่อค่าใช้จ่าย/i), "Airport taxi");
     await user.clear(within(dialog).getByLabelText(/จำนวนเงิน/i));
     await user.type(within(dialog).getByLabelText(/จำนวนเงิน/i), "300");
