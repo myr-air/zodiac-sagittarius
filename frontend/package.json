@@ -24,6 +24,7 @@
     "test:staging-preflight": "bun run scripts/check-staging-preflight.ts",
     "test:staging-signoff": "bun run scripts/check-staging-signoff.ts",
     "test:storybook": "NODE_OPTIONS=--no-warnings vitest --project storybook run",
+    "test:storybook:agy": "bun run scripts/run-storybook-agy-ux-qa.ts",
     "test:watch": "NODE_OPTIONS=--no-warnings vitest",
     "typecheck": "NODE_OPTIONS=--no-warnings next typegen && tsc --noEmit",
     "verify:frontend": "bun run lint && bun run typecheck && bun run test && bun run test:storybook && bun run build && bun run build-storybook"

@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import { expect } from "storybook/test";
 import { seedTripJoinId } from "@/src/trip/auth";
 import { SagittariusApp } from "./SagittariusApp";
 
@@ -143,15 +144,67 @@ export const TripMembersAccess: Story = {
     nextjs: { navigation: { pathname: `/trips/${storyTripId}/members` } },
   },
 };
-export const Owner: Story = { args: { initialView: "overview" } };
-export const OwnerThai: Story = { args: { initialView: "overview" }, parameters: { locale: "th" } };
-export const Itinerary: Story = { args: { initialView: "itinerary" } };
+export const Owner: Story = {
+  args: { initialView: "overview" },
+  play: async ({ canvasElement }) => {
+    await expect(canvasElement.querySelector(".workspace-shell")).toBeInTheDocument();
+    await expect(canvasElement.querySelector(".planning-main")).toBeInTheDocument();
+  },
+};
+export const OwnerThai: Story = {
+  args: { initialView: "overview" },
+  parameters: { locale: "th" },
+  play: async ({ canvasElement }) => {
+    await expect(canvasElement.ownerDocument.documentElement).toHaveAttribute("lang", "th");
+    await expect(canvasElement.querySelector(".workspace-shell")).toBeInTheDocument();
+  },
+};
+export const Desktop1024: Story = {
+  args: { initialView: "overview" },
+  parameters: {
+    viewport: { defaultViewport: "desktop1024" },
+  },
+  play: async ({ canvasElement }) => {
+    await expect(canvasElement.querySelector(".workspace-shell")).toBeInTheDocument();
+    await expect(canvasElement.querySelector(".workspace-grid")).toHaveClass("grid-cols-[minmax(0,1fr)]");
+    await expect(canvasElement.querySelector(".side-rail")).toBeInTheDocument();
+  },
+};
+export const Desktop1440: Story = {
+  args: { initialView: "overview" },
+  parameters: {
+    viewport: { defaultViewport: "desktop1440" },
+  },
+  play: Desktop1024.play,
+};
+export const Itinerary: Story = {
+  args: { initialView: "itinerary" },
+  play: async ({ canvasElement }) => {
+    await expect(canvasElement.querySelector(".table-panel")).toBeInTheDocument();
+    await expect(canvasElement.querySelector(".table-scroll")).toHaveClass("overflow-x-auto");
+    await expect(canvasElement.querySelector(".smart-table")).toHaveClass("min-w-[1080px]");
+  },
+};
 export const Timeline: Story = { args: { initialView: "timeline" } };
 export const Map: Story = { args: { initialView: "map" } };
 export const Members: Story = { args: { initialView: "members" } };
 export const Mobile: Story = {
   args: { initialView: "overview" },
   parameters: {
-    viewport: { defaultViewport: "mobile1" },
+    viewport: { defaultViewport: "mobile320" },
   },
+};
+export const TabletItinerary: Story = {
+  args: { initialView: "itinerary" },
+  parameters: {
+    viewport: { defaultViewport: "tablet768" },
+  },
+  play: Itinerary.play,
+};
+export const MobileItinerary: Story = {
+  args: { initialView: "itinerary" },
+  parameters: {
+    viewport: { defaultViewport: "mobile320" },
+  },
+  play: Itinerary.play,
 };

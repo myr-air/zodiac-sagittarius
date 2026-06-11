@@ -51,7 +51,7 @@ describe("shared UI primitives", () => {
     expect(screen.getByRole("banner")).toHaveClass(
       "page-header",
       "min-h-[112px]",
-      "shadow-[var(--shadow-soft)]",
+      "shadow-[var(--shadow-panel)]",
     );
     expect(screen.queryByText("Plan")).not.toBeInTheDocument();
 

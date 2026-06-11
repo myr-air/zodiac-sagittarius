@@ -29,7 +29,7 @@ export const MobileOverflow: Story = {
     selectedDate: null,
     onSelect: () => {},
   },
-  parameters: { viewport: { defaultViewport: "mobile1" } },
+  parameters: { viewport: { defaultViewport: "mobile320" } },
 };
 
 export const Thai: Story = {

@@ -231,6 +231,28 @@ export const OwnerThai: Story = {
 
 export const Viewer: Story = { args: { ...Owner.args, role: "viewer" } };
 export const Dense: Story = { args: { ...Owner.args, items: buildDenseTripFixture().itineraryItems } };
+export const TableOverflow: Story = {
+  args: {
+    ...Owner.args,
+    items: stressPathItems.map((item, index) => ({
+      ...item,
+      id: `overflow-${item.id}`,
+      activity: `${item.activity} with long operational copy for table overflow validation ${index + 1}`,
+      place: `${item.place} · gate notes, booking reference, and meet-up details`,
+      transport: "Airport Express transfer with luggage coordination",
+    })),
+    graphItems: stressPathItems,
+    selectedItemId: "overflow-stress-0800-main",
+    showAllPaths: true,
+  },
+  parameters: {
+    viewport: { defaultViewport: "mobile320" },
+  },
+  play: async ({ canvasElement }) => {
+    await expect(canvasElement.querySelector(".table-scroll")).toHaveClass("table-scroll", "overflow-x-auto", "max-w-full");
+    await expect(canvasElement.querySelector(".smart-table")).toHaveClass("smart-table", "min-w-[1080px]");
+  },
+};
 export const BranchGraph: Story = {
   args: {
     ...Owner.args,

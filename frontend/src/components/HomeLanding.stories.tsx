@@ -18,6 +18,6 @@ export const PixelPerfect: Story = {};
 
 export const Mobile: Story = {
   parameters: {
-    viewport: { defaultViewport: "mobile1" },
+    viewport: { defaultViewport: "mobile320" },
   },
 };

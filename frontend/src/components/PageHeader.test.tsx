@@ -16,7 +16,7 @@ describe("PageHeader", () => {
 
     const header = screen.getByRole("banner");
 
-    expect(header).toHaveClass("page-header", "rounded-(--radius-lg)", "shadow-[var(--shadow-soft)]", "max-[767px]:min-h-[132px]");
+    expect(header).toHaveClass("page-header", "rounded-(--radius-lg)", "shadow-[var(--shadow-panel)]", "max-[767px]:min-h-[132px]");
     expect(header.className).toContain("bg-[linear-gradient(135deg");
     expect(header.className).not.toContain("bg-[image:var(--watercolor-surface-wash),var(--paper-grain)]");
     expect(header.className).not.toContain("shadow-[0_12px_30px");

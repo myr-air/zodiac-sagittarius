@@ -51,5 +51,5 @@ export const MobileSheet: Story = {
     onClose: () => {},
     onSaveOverrides: () => {},
   },
-  parameters: { viewport: { defaultViewport: "mobile1" } },
+  parameters: { viewport: { defaultViewport: "mobile320" } },
 };

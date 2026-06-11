@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
@@ -42,9 +42,23 @@ describe("Storybook template catalog", () => {
 
   it("documents role and density states", () => {
     const stories = storyText();
-    ["Owner", "OwnerThai", "Traveler", "Viewer", "Empty", "Dense", "Mobile"].forEach((stateName) => {
+    ["Owner", "OwnerThai", "Traveler", "Viewer", "Empty", "Dense", "Mobile", "TabletItinerary", "MobileItinerary", "Desktop1024", "Desktop1440", "TableOverflow"].forEach((stateName) => {
       expect(stories).toContain(`export const ${stateName}`);
     });
+  });
+
+  it("keeps viewport and antigravity UX QA entry points available", () => {
+    const preview = readFileSync(join(".storybook", "preview.ts"), "utf8");
+    const packageJson = JSON.parse(readFileSync("package.json", "utf8")) as { scripts?: Record<string, string> };
+    const stories = storyText();
+
+    ["mobile320", "tablet768", "desktop1024", "desktop1440"].forEach((viewportName) => {
+      expect(preview).toContain(viewportName);
+    });
+    expect(stories).not.toContain('defaultViewport: "mobile1"');
+    expect(packageJson.scripts?.["test:storybook:agy"]).toBe("bun run scripts/run-storybook-agy-ux-qa.ts");
+    expect(existsSync(join("scripts", "run-storybook-agy-ux-qa.ts"))).toBe(true);
+    expect(existsSync(join("..", "docs", "storybook-ux-ui-qa.md"))).toBe(true);
   });
 
   it("wraps stories in bilingual i18n controls with English as the default", () => {
