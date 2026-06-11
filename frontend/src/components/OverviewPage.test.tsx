@@ -54,13 +54,14 @@ describe("OverviewPage role lenses", () => {
 
     const hero = screen.getByRole("region", { name: /Hong Kong \+ Shenzhen Trip/i });
     expect(screen.getByRole("region", { name: /Trip overview/i })).toHaveClass("overview-page", "grid", "gap-3");
-    expect(hero).toHaveClass("overview-hero", "grid", "overflow-hidden", "rounded-(--radius-lg)", "bg-(--color-surface)");
-    expect(hero).toHaveClass("min-h-[168px]", "shadow-[0_12px_26px_rgb(55_47_38_/_0.06)]");
+    expect(hero).toHaveClass("overview-hero", "grid", "overflow-hidden", "rounded-(--radius-lg)");
+    expect(hero).toHaveClass("min-h-[168px]", "bg-[linear-gradient(135deg,var(--color-surface)_0%,var(--overview-hero-sky)_100%)]");
+    expect(hero).toHaveClass("shadow-[0_1px_0_rgb(15_23_42_/_0.04)]");
     expect(hero).toHaveTextContent(/Hong Kong/i);
     expect(hero).toHaveTextContent(/HK\$/i);
     expect(within(hero).getByText(/ศูนย์จัดการทริป/i)).toBeInTheDocument();
     expect(hero.querySelector(".overview-hero-polaroid")).not.toBeInTheDocument();
-    expect(hero.querySelector(".overview-hero-aside")).toHaveClass("bg-(--color-surface-subtle)", "rounded-(--radius-md)");
+    expect(hero.querySelector(".overview-hero-aside")).toHaveClass("bg-[rgb(255_255_255_/_0.72)]", "rounded-(--radius-md)");
 
     const cockpit = screen.getByRole("region", { name: /travel cockpit/i });
     expect(cockpit).toHaveClass("overview-travel-cockpit", "grid", "grid-cols-3", "gap-3");
