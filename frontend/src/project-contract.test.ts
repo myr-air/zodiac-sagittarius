@@ -370,7 +370,8 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(repoRoot, ".dockerignore"))).toBe(true);
     expect(existsSync(join(repoRoot, "backend/Dockerfile"))).toBe(true);
     expect(existsSync(join(repoRoot, "frontend/Dockerfile"))).toBe(true);
-    expect(makefile).toContain("production-readiness-local: staging-preflight verify frontend-e2e-local frontend-e2e-auth-browser api-trace-smoke perf-smoke db-rollback-stop-notes-test");
+    expect(makefile).toContain("production-readiness-fast: staging-preflight verify frontend-e2e-local frontend-e2e-auth-browser api-trace-smoke db-rollback-stop-notes-test");
+    expect(makefile).toContain("production-readiness-local: production-readiness-fast perf-smoke");
     expect(makefile).toContain("container-build:");
     expect(makefile).toContain("staging-preflight: db-ensure-psql");
     expect(makefile).toContain("staging-signoff-check:");
@@ -461,7 +462,7 @@ describe("Sagittarius project scaffold", () => {
     expect(workflow).toContain("bun install --frozen-lockfile");
     expect(workflow).toContain("bunx playwright install --with-deps chromium");
     expect(workflow).toContain('SAGITTARIUS_PERF_SMOKE_MAX_P95_MS: "3000"');
-    expect(workflow).toContain("make production-readiness-local PSQL=psql");
+    expect(workflow).toContain("make production-readiness-fast PSQL=psql");
     expect(workflow).toContain("name: Production container image build");
     expect(workflow).toContain("make container-build");
     expect(workflow).toContain(
