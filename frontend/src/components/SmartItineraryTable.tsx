@@ -377,6 +377,7 @@ export function SmartItineraryTable({
   const allDisplayItems = graphItems ?? items;
   const filterOptions = dedupePathOptions(pathOptions, allDisplayItems);
   const canEdit = role === "owner" || role === "organizer" || role === "traveler";
+  const canManageTripSheets = role === "owner" || role === "organizer";
   const canRestructureItems = canEdit && canRestructure;
   const [selectedPathIds, setSelectedPathIds] = useState<string[]>(() =>
     filterOptions.map((option) => option.id),
@@ -453,7 +454,7 @@ export function SmartItineraryTable({
   )
     ? selectedTripSheetId
     : (tripSheets[0]?.id ?? "");
-  const sheetControlsDisabled = !canEdit || isTripSheetBusy || tripSheets.length === 0;
+  const sheetControlsDisabled = !canManageTripSheets || isTripSheetBusy || tripSheets.length === 0;
   const tripSheetMessage = newTripSheetError ?? tripSheetError;
 
   useEffect(() => {
@@ -849,7 +850,7 @@ export function SmartItineraryTable({
 
   async function submitNewTripSheet(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (isTripSheetBusy) return;
+    if (isTripSheetBusy || !canManageTripSheets) return;
     const name = newTripSheetName.trim();
     if (!name) {
       setNewTripSheetError(t.itinerary.tripSheets.emptyName);
@@ -949,7 +950,7 @@ export function SmartItineraryTable({
             ))}
           </select>
         </label>
-        {canEdit ? (
+        {canManageTripSheets ? (
           isCreatingTripSheet ? (
             <form
               className={tripSheetCreateFormClassName}
