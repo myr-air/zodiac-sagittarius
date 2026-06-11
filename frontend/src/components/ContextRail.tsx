@@ -153,7 +153,7 @@ const detailHeadingClassName =
 const detailMetaLineClassName =
   "m-0 inline-flex gap-[9px] text-xs leading-4 text-(--color-text-muted) [&_.icon]:text-(--color-text-muted)";
 const detailButtonClassName = "min-h-8 py-[5px]";
-const emptyWarningClassName = "empty-warning text-(--color-text-subtle)";
+const emptyWarningClassName = "empty-warning text-(--color-text-muted)";
 
 export function ContextRail({
   trip,
@@ -293,8 +293,9 @@ export function ContextRail({
     <aside
       className={`${contextRailClassName} ${open ? contextRailOpenClassName : contextRailClosedClassName}`}
       data-state={open ? "open" : "closed"}
-      aria-hidden={!open}
+      aria-hidden={open ? undefined : true}
       aria-label={t.contextRail.pageLabel}
+      inert={open ? undefined : true}
     >
       <div className={railInspectorClassName}>
         <div className={inspectorTitleClassName}>

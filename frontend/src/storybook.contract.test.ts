@@ -28,6 +28,7 @@ describe("Storybook template catalog", () => {
     [
       "Design System/Buttons",
       "Design System/Badges",
+      "Design System/Context Rail",
       "Design System/Language Switch",
       "Design System/Page Header",
       "Design System/People Panel",
@@ -80,6 +81,7 @@ describe("Storybook template catalog", () => {
       ["components/TripJoinGate.stories.tsx", ["RoomCredentials", "TripAccess", "SelectIdentity", "Thai", "Tablet", "Mobile"]],
       ["components/StopDialog.stories.tsx", ["Create", "Edit", "AmbiguousPlace", "TransportationForm", "FoodForm", "StayForm", "ShoppingForm", "Mobile", "Thai"]],
       ["components/AboutAppPage.stories.tsx", ["Ready", "ApiUnavailable", "Mobile"]],
+      ["components/ContextRail.stories.tsx", ["NotesOpen", "BookingTab", "SuggestionsTab", "TripExpensesOnly", "ReadOnlyTraveler", "Closed", "Mobile"]],
     ];
 
     requiredPageStates.forEach(([file, stateNames]) => {
