@@ -93,6 +93,25 @@ export const AddExpenseDialogOpen: Story = {
   },
 };
 
+export const FilteredLedger: Story = {
+  args: Owner.args,
+  play: async ({ canvas }) => {
+    const ledger = canvas.getByRole("table", { name: /Expense ledger/i });
+    await expect(ledger).toHaveClass("expense-ledger-table");
+
+    await userEvent.type(canvas.getByLabelText(/Search expenses/i), "tram");
+    await expect(canvas.getByText("Peak Tram tickets")).toBeVisible();
+    await expect(canvas.queryByText("Dim Dim Sum brunch")).toBeNull();
+
+    await userEvent.selectOptions(canvas.getByLabelText("Category"), "transport");
+    await expect(canvas.getByText(/No expenses match this filter/i)).toBeVisible();
+
+    await userEvent.click(canvas.getByRole("button", { name: /Clear filters/i }));
+    await expect(canvas.getByText("Dim Dim Sum brunch")).toBeVisible();
+    await expect(canvas.getByText("Octopus top-up")).toBeVisible();
+  },
+};
+
 export const Tablet: Story = {
   args: Owner.args,
   parameters: { viewport: { defaultViewport: "tablet768" } },

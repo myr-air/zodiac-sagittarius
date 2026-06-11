@@ -44,6 +44,25 @@ describe("TripExpensesPage", () => {
     expect(screen.getAllByRole("button", { name: /บันทึกจ่ายคืน/i }).length).toBeGreaterThan(0);
   });
 
+  it("filters the expense ledger by search text and category, then resets filters", async () => {
+    const user = userEvent.setup();
+    renderExpenses();
+
+    await user.type(screen.getByLabelText(/ค้นหาค่าใช้จ่าย/i), "tram");
+
+    expect(screen.getByText("Peak Tram tickets")).toBeInTheDocument();
+    expect(screen.queryByText("Dim Dim Sum brunch")).not.toBeInTheDocument();
+
+    await user.selectOptions(screen.getByLabelText("ประเภท"), "transport");
+
+    expect(screen.getByText("ไม่พบค่าใช้จ่ายตามตัวกรอง")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: /ล้างตัวกรอง/i }));
+
+    expect(screen.getByText("Dim Dim Sum brunch")).toBeInTheDocument();
+    expect(screen.getByText("Octopus top-up")).toBeInTheDocument();
+  });
+
   it("creates an expense with exact splits and an itinerary link", async () => {
     const user = userEvent.setup();
     const props = renderExpenses();
