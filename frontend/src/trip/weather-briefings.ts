@@ -9,13 +9,13 @@ export interface ThaiWeekdayTone {
 }
 
 const weekdayTones: ThaiWeekdayTone[] = [
-  { name: "sunday", className: "text-rose-600", chipClassName: "bg-rose-100/70 text-rose-600 border-rose-200" },
-  { name: "monday", className: "text-yellow-600", chipClassName: "bg-amber-100/70 text-amber-700 border-amber-200" },
-  { name: "tuesday", className: "text-pink-600", chipClassName: "bg-fuchsia-100/70 text-fuchsia-600 border-fuchsia-200" },
-  { name: "wednesday", className: "text-emerald-600", chipClassName: "bg-emerald-100/70 text-emerald-600 border-emerald-200" },
-  { name: "thursday", className: "text-orange-600", chipClassName: "bg-orange-100/70 text-orange-700 border-orange-200" },
-  { name: "friday", className: "text-sky-600", chipClassName: "bg-sky-100/70 text-sky-600 border-sky-200" },
-  { name: "saturday", className: "text-violet-600", chipClassName: "bg-indigo-100/70 text-violet-600 border-violet-200" },
+  { name: "sunday", className: "text-rose-800", chipClassName: "bg-rose-100/70 text-rose-800 border-rose-200" },
+  { name: "monday", className: "text-amber-900", chipClassName: "bg-amber-100/70 text-amber-900 border-amber-200" },
+  { name: "tuesday", className: "text-fuchsia-800", chipClassName: "bg-fuchsia-100/70 text-fuchsia-800 border-fuchsia-200" },
+  { name: "wednesday", className: "text-emerald-800", chipClassName: "bg-emerald-100/70 text-emerald-800 border-emerald-200" },
+  { name: "thursday", className: "text-orange-800", chipClassName: "bg-orange-100/70 text-orange-800 border-orange-200" },
+  { name: "friday", className: "text-sky-800", chipClassName: "bg-sky-100/70 text-sky-800 border-sky-200" },
+  { name: "saturday", className: "text-violet-800", chipClassName: "bg-indigo-100/70 text-violet-800 border-violet-200" },
 ];
 
 export function briefingsForStrip(briefings: TripDailyBriefing[]): TripDailyBriefing[] {
