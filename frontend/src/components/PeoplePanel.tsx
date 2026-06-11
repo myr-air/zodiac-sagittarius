@@ -3,7 +3,7 @@ import type { Member, TripMemberAccessStatus, TripRole } from "@/src/trip/types"
 import { useI18n } from "@/src/i18n/I18nProvider";
 
 const peopleModuleClassName = "detail-section people-module grid w-full min-w-0 gap-3 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) p-3.5";
-const peopleHeadingClassName = "m-0 text-[15px] font-extrabold leading-[21px] text-[#334155]";
+const peopleHeadingClassName = "m-0 text-[15px] font-extrabold leading-[21px] text-(--color-text)";
 const peopleListClassName = "people-list grid min-w-0 gap-2";
 const personRowClassName = "person-row grid min-h-[68px] min-w-0 grid-cols-[34px_minmax(220px,1fr)_auto] items-center gap-2.5 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) p-2.5 text-[11px] leading-4 text-(--color-text-muted) data-[access-status=disabled]:opacity-70 max-[1199px]:grid-cols-[34px_minmax(0,1fr)]";
 const personAvatarClassName = "person-avatar grid size-[34px] place-items-center rounded-full text-sm font-extrabold text-white";
@@ -11,8 +11,8 @@ const memberIdentityClassName = "member-identity grid min-w-0 gap-1 [&_span]:tex
 const memberStatusStackClassName = "member-status-stack flex min-w-0 flex-wrap gap-1.5";
 const memberStatePillClassName = "member-state-pill inline-flex min-h-[22px] items-center rounded-full border px-2 py-0.5 text-[11px] font-extrabold leading-4";
 const memberStatePillToneClassNames = {
-  active: "member-state-pill--active border-(--color-success-border) bg-(--color-success-soft) text-[#15803d]",
-  claimed: "member-state-pill--claimed border-(--color-success-border) bg-(--color-success-soft) text-[#15803d]",
+  active: "member-state-pill--active border-(--color-success-border) bg-(--color-success-soft) text-(--color-success)",
+  claimed: "member-state-pill--claimed border-(--color-success-border) bg-(--color-success-soft) text-(--color-success)",
   disabled: "member-state-pill--disabled border-(--color-danger-border) bg-(--color-danger-soft) text-(--color-danger)",
   pending: "member-state-pill--pending border-(--color-warning-border) bg-(--color-warning-soft) text-(--color-warning-strong)",
 } satisfies Record<"active" | "claimed" | "disabled" | "pending", string>;
