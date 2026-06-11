@@ -133,3 +133,32 @@ export const Mobile: Story = {
     await expect(canvas.getByRole("tablist", { name: /Stop detail tabs/i })).toHaveClass("inspector-tabs");
   },
 };
+
+export const Thai: Story = {
+  args: baseArgs,
+  parameters: { locale: "th" },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole("complementary", { name: /ข้อมูลประกอบการวางแผน/i })).toHaveClass("context-rail--open");
+    await expect(canvas.getByRole("tab", { name: "โน้ต" })).toHaveAttribute("aria-selected", "true");
+    await expect(canvas.getByRole("tab", { name: "การจอง" })).toBeInTheDocument();
+    await expect(canvas.getByRole("tab", { name: "ข้อเสนอ" })).toBeInTheDocument();
+  },
+};
+
+export const Desktop1024: Story = {
+  args: baseArgs,
+  parameters: { viewport: { defaultViewport: "desktop1024" } },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole("complementary", { name: /Planning context/i })).toHaveClass("context-rail--open");
+    await expect(canvas.getByRole("tablist", { name: /Stop detail tabs/i })).toHaveClass("inspector-tabs");
+  },
+};
+
+export const Desktop1440: Story = {
+  args: baseArgs,
+  parameters: { viewport: { defaultViewport: "desktop1440" } },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole("complementary", { name: /Planning context/i })).toHaveClass("context-rail--open");
+    await expect(canvas.getByRole("region", { name: /Selected stop detail/i })).toBeInTheDocument();
+  },
+};

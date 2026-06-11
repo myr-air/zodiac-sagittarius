@@ -144,3 +144,41 @@ export const Mobile: Story = {
     await expect(body.getByRole("button", { name: "Apply" })).toBeVisible();
   },
 };
+
+export const Thai: Story = {
+  args: {
+    kind: "datetime",
+    label: "เวลาเริ่มการจอง",
+    value: "2026-06-18T09:00",
+  },
+  parameters: { locale: "th" },
+  play: async ({ canvas, canvasElement }) => {
+    await expect(canvas.getByLabelText("เวลาเริ่มการจอง")).toHaveValue("2026-06-18T09:00");
+    await userEvent.click(canvas.getByRole("button", { name: /Open date and time picker/i }));
+    const body = within(canvasElement.ownerDocument.body);
+    await expect(body.getByRole("dialog", { name: /Joii date time picker/i })).toBeVisible();
+    await expect(body.getByText("June 2026")).toBeVisible();
+  },
+};
+
+export const Desktop1024: Story = {
+  args: DateTimePicker.args,
+  parameters: { viewport: { defaultViewport: "desktop1024" } },
+  play: async ({ canvas, canvasElement }) => {
+    await userEvent.click(canvas.getByRole("button", { name: /Open date and time picker/i }));
+    const body = within(canvasElement.ownerDocument.body);
+    await expect(body.getByRole("dialog", { name: /Joii date time picker/i })).toBeVisible();
+    await expect(body.getByRole("button", { name: "Apply" })).toBeVisible();
+  },
+};
+
+export const Desktop1440: Story = {
+  args: DatePicker.args,
+  parameters: { viewport: { defaultViewport: "desktop1440" } },
+  play: async ({ canvas, canvasElement }) => {
+    await userEvent.click(canvas.getByRole("button", { name: /Open date picker/i }));
+    const body = within(canvasElement.ownerDocument.body);
+    await expect(body.getByRole("dialog", { name: /Joii date time picker/i })).toBeVisible();
+    await expect(body.getByText("June 2026")).toBeVisible();
+  },
+};

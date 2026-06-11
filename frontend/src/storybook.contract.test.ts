@@ -82,8 +82,8 @@ describe("Storybook template catalog", () => {
       ["components/TripJoinGate.stories.tsx", ["RoomCredentials", "TripAccess", "SelectIdentity", "Thai", "Tablet", "Mobile"]],
       ["components/StopDialog.stories.tsx", ["Create", "Edit", "AmbiguousPlace", "TransportationForm", "FoodForm", "StayForm", "ShoppingForm", "Mobile", "Thai"]],
       ["components/AboutAppPage.stories.tsx", ["Ready", "ApiUnavailable", "Thai", "Mobile"]],
-      ["components/ContextRail.stories.tsx", ["NotesOpen", "BookingTab", "SuggestionsTab", "TripExpensesOnly", "ReadOnlyTraveler", "Closed", "Mobile"]],
-      ["components/DateTimePickers.stories.tsx", ["TimePicker", "DatePicker", "DateTimePicker", "Disabled", "Mobile"]],
+      ["components/ContextRail.stories.tsx", ["NotesOpen", "BookingTab", "SuggestionsTab", "TripExpensesOnly", "ReadOnlyTraveler", "Closed", "Mobile", "Thai", "Desktop1024", "Desktop1440"]],
+      ["components/DateTimePickers.stories.tsx", ["TimePicker", "DatePicker", "DateTimePicker", "Disabled", "Mobile", "Thai", "Desktop1024", "Desktop1440"]],
     ];
 
     requiredPageStates.forEach(([file, stateNames]) => {
