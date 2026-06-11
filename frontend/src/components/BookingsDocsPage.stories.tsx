@@ -107,7 +107,10 @@ export const OwnerThai: Story = {
   args: Owner.args,
   parameters: { locale: "th" },
   play: async ({ canvas }) => {
-    await expect(canvas.getByRole("region", { name: /Bookings & Docs/i })).toBeVisible();
+    await expect(canvas.getByRole("region", { name: /การจองและเอกสาร/i })).toHaveClass("bookings-docs-page");
+    await expect(canvas.getByRole("button", { name: /เพิ่มการจอง/i })).toBeVisible();
+    await expect(canvas.getByLabelText(/สรุปการจอง/i)).toBeVisible();
+    await expect(canvas.getByLabelText(/โฟลเดอร์การจอง/i)).toBeVisible();
     await expect(canvas.getByText(/มิ\.ย\. 2026/i)).toBeVisible();
   },
 };

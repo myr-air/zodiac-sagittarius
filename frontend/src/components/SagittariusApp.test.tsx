@@ -310,35 +310,35 @@ describe("Sagittarius cockpit UI", () => {
     render(<SagittariusApp initialView="bookings" />);
 
     expect(
-      screen.getByRole("region", { name: "Bookings & Docs" }),
+      screen.getByRole("region", { name: /Bookings & Docs|การจองและเอกสาร/i }),
     ).toBeInTheDocument();
     expect(
       screen.getByRole("button", {
-        name: /Select Bangkok to Hong Kong flight/i,
+        name: /Select Bangkok to Hong Kong flight|เลือก Bangkok to Hong Kong flight/i,
       }),
     ).toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: "Add booking" }));
-    const dialog = screen.getByRole("dialog", { name: "Add booking" });
-    fireEvent.change(within(dialog).getByLabelText("Title"), {
+    await user.click(screen.getByRole("button", { name: /Add booking|เพิ่มการจอง/i }));
+    const dialog = screen.getByRole("dialog", { name: /Add booking|เพิ่มการจอง/i });
+    fireEvent.change(within(dialog).getByRole("textbox", { name: /^(Title|ชื่อ)$/i }), {
       target: { value: "Airport Express pass" },
     });
-    fireEvent.change(within(dialog).getByLabelText("Type"), {
+    fireEvent.change(within(dialog).getByRole("combobox", { name: /^(Type|ประเภท)$/i }), {
       target: { value: "public_transport" },
     });
-    fireEvent.change(within(dialog).getByLabelText("Status"), {
+    fireEvent.change(within(dialog).getByRole("combobox", { name: /^(Status|สถานะ)$/i }), {
       target: { value: "booked" },
     });
-    fireEvent.change(within(dialog).getByLabelText("External link"), {
+    fireEvent.change(within(dialog).getByRole("textbox", { name: /^(External link|ลิงก์ภายนอก)$/i }), {
       target: { value: "https://drive.google.com/airport-express" },
     });
     await user.click(
-      within(dialog).getByRole("button", { name: "Save booking" }),
+      within(dialog).getByRole("button", { name: /Save booking|บันทึกการจอง/i }),
     );
 
     expect(
       await screen.findByRole("button", {
-        name: /Select Airport Express pass/i,
+        name: /Select Airport Express pass|เลือก Airport Express pass/i,
       }),
     ).toBeInTheDocument();
   });
@@ -496,29 +496,29 @@ describe("Sagittarius cockpit UI", () => {
     );
 
     expect(
-      await screen.findByRole("region", { name: "Bookings & Docs" }),
+      await screen.findByRole("region", { name: /Bookings & Docs|การจองและเอกสาร/i }),
     ).toBeInTheDocument();
     expect(
       screen.getByRole("button", {
-        name: /Select Bangkok to Hong Kong flight/i,
+        name: /Select Bangkok to Hong Kong flight|เลือก Bangkok to Hong Kong flight/i,
       }),
     ).toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: "Add booking" }));
-    const dialog = screen.getByRole("dialog", { name: "Add booking" });
-    fireEvent.change(within(dialog).getByLabelText("Title"), {
+    await user.click(screen.getByRole("button", { name: /Add booking|เพิ่มการจอง/i }));
+    const dialog = screen.getByRole("dialog", { name: /Add booking|เพิ่มการจอง/i });
+    fireEvent.change(within(dialog).getByRole("textbox", { name: /^(Title|ชื่อ)$/i }), {
       target: { value: "Airport Express pass" },
     });
-    fireEvent.change(within(dialog).getByLabelText("Type"), {
+    fireEvent.change(within(dialog).getByRole("combobox", { name: /^(Type|ประเภท)$/i }), {
       target: { value: "public_transport" },
     });
-    fireEvent.change(within(dialog).getByLabelText("Status"), {
+    fireEvent.change(within(dialog).getByRole("combobox", { name: /^(Status|สถานะ)$/i }), {
       target: { value: "booked" },
     });
-    fireEvent.change(within(dialog).getByLabelText("External link"), {
+    fireEvent.change(within(dialog).getByRole("textbox", { name: /^(External link|ลิงก์ภายนอก)$/i }), {
       target: { value: "https://drive.google.com/airport-express" },
     });
     await user.click(
-      within(dialog).getByRole("button", { name: "Save booking" }),
+      within(dialog).getByRole("button", { name: /Save booking|บันทึกการจอง/i }),
     );
 
     await waitFor(() =>
@@ -532,7 +532,7 @@ describe("Sagittarius cockpit UI", () => {
           status: "booked",
           externalLinks: [
             expect.objectContaining({
-              label: "External link",
+              label: expect.stringMatching(/External link|ลิงก์ภายนอก/),
               url: "https://drive.google.com/airport-express",
               provider: null,
             }),
@@ -542,7 +542,7 @@ describe("Sagittarius cockpit UI", () => {
     );
     expect(
       await screen.findByRole("button", {
-        name: /Select Airport Express pass/i,
+        name: /Select Airport Express pass|เลือก Airport Express pass/i,
       }),
     ).toBeInTheDocument();
   });
@@ -591,21 +591,21 @@ describe("Sagittarius cockpit UI", () => {
     );
 
     expect(
-      await screen.findByRole("region", { name: "Bookings & Docs" }),
+      await screen.findByRole("region", { name: /Bookings & Docs|การจองและเอกสาร/i }),
     ).toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: "Add booking" }));
-    const dialog = screen.getByRole("dialog", { name: "Add booking" });
-    fireEvent.change(within(dialog).getByLabelText("Title"), {
+    await user.click(screen.getByRole("button", { name: /Add booking|เพิ่มการจอง/i }));
+    const dialog = screen.getByRole("dialog", { name: /Add booking|เพิ่มการจอง/i });
+    fireEvent.change(within(dialog).getByRole("textbox", { name: /^(Title|ชื่อ)$/i }), {
       target: { value: "Airport Express pass" },
     });
-    fireEvent.change(within(dialog).getByLabelText("Type"), {
+    fireEvent.change(within(dialog).getByRole("combobox", { name: /^(Type|ประเภท)$/i }), {
       target: { value: "public_transport" },
     });
-    fireEvent.change(within(dialog).getByLabelText("Status"), {
+    fireEvent.change(within(dialog).getByRole("combobox", { name: /^(Status|สถานะ)$/i }), {
       target: { value: "booked" },
     });
     await user.click(
-      within(dialog).getByRole("button", { name: "Save booking" }),
+      within(dialog).getByRole("button", { name: /Save booking|บันทึกการจอง/i }),
     );
 
     await waitFor(() =>
