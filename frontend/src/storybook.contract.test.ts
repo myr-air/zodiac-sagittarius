@@ -25,6 +25,10 @@ describe("Storybook template catalog", () => {
       "Design System/People Panel",
       "Design System/Suggestion Panel",
       "Design System/Travel Motifs",
+      "Design System/Weather Briefing Drawer",
+      "Design System/Weather Forecast Strip",
+      "Pages/Account Access",
+      "Sagittarius/App",
       "Templates/Workspace Shell",
       "Templates/Overview",
       "Templates/Itinerary",
@@ -36,7 +40,10 @@ describe("Storybook template catalog", () => {
       "Pages/Timeline",
       "Pages/Map",
       "Pages/Members",
+      "Pages/Photos",
+      "Pages/Expenses",
       "Pages/Home Landing",
+      "Pages/Stop Dialog",
     ].forEach((title) => expect(stories).toContain(`title: "${title}"`));
   });
 
@@ -111,6 +118,9 @@ describe("Storybook template catalog", () => {
     expect(stories).toContain('initialJoinCode: seedTripJoinId');
     expect(stories).toContain('pathname: "/join"');
     expect(stories).toContain('pathname: `/join/${seedTripJoinId}`');
+    expect(stories).toContain('title: "Pages/Account Access"');
+    expect(stories).toContain("export const NewTripBuilder");
+    expect(stories).toContain("export const NewTripMobile");
   });
 
   it("requires access-gated app stories to declare an explicit access mode", () => {
