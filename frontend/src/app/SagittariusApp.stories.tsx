@@ -243,7 +243,7 @@ export const Viewer: Story = {
     await expect(addStopButtons(canvasElement)[0]).toBeDisabled();
   },
 };
-export const Desktop1024: Story = {
+export const Desktop1024Overview: Story = {
   args: { initialView: "overview" },
   parameters: {
     viewport: { defaultViewport: "desktop1024" },
@@ -254,12 +254,12 @@ export const Desktop1024: Story = {
     await expect(canvasElement.querySelector(".side-rail")).toBeInTheDocument();
   },
 };
-export const Desktop1440: Story = {
+export const Desktop1440Overview: Story = {
   args: { initialView: "overview" },
   parameters: {
     viewport: { defaultViewport: "desktop1440" },
   },
-  play: Desktop1024.play,
+  play: Desktop1024Overview.play,
 };
 export const Desktop1024Itinerary: Story = {
   args: { initialView: "itinerary" },
@@ -394,7 +394,14 @@ export const Empty: Story = {
     await expect(canvasElement.querySelector(".overview-page")).toBeInTheDocument();
   },
 };
-export const Mobile: Story = {
+export const TabletOverview: Story = {
+  args: { initialView: "overview" },
+  parameters: {
+    viewport: { defaultViewport: "tablet768" },
+  },
+  play: expectOverviewView,
+};
+export const MobileOverview: Story = {
   args: { initialView: "overview" },
   parameters: {
     viewport: { defaultViewport: "mobile320" },

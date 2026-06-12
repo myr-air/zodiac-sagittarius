@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { expect } from "storybook/test";
 import { buildDenseTripFixture, buildEmptyTripFixture, tripFixture } from "@/src/trip/trip-fixtures";
+import type { ItineraryItem } from "@/src/trip/types";
 import { RouteMapView } from "./RouteMapView";
 
 const meta = {
@@ -12,6 +13,27 @@ const meta = {
 export default meta;
 
 type Story = StoryObj<typeof meta>;
+
+const mapPlanABAlternativeItems: ItineraryItem[] = [
+  ["map-plan-ab-main-breakfast", "08:00", 60, 100, "Harbour breakfast", "Main", undefined, "main"],
+  ["map-plan-ab-a-gallery", "10:00", 75, 200, "Plan A gallery route", "Plan A", "path-2026-06-19-sub-a", "alternative"],
+  ["map-plan-ab-b-harbour", "14:00", 90, 300, "Plan B harbour route", "Plan B", "path-2026-06-19-sub-b", "alternative"],
+  ["map-plan-ab-main-dinner", "18:00", 75, 400, "Main dinner meet-up", "Main", undefined, "main"],
+].map(([id, startTime, durationMinutes, sortOrder, activity, pathName, pathId, pathRole], index) => ({
+  ...tripFixture.planItems[index % tripFixture.planItems.length],
+  id: id as string,
+  day: "2026-06-19",
+  startTime: startTime as string,
+  durationMinutes: durationMinutes as number,
+  sortOrder: sortOrder as number,
+  activity: activity as string,
+  activityType: "experience",
+  place: `${pathName} checkpoint`,
+  pathGroupId: "map-plan-ab-clean-branch",
+  pathId: pathId as string | undefined,
+  pathName: pathId ? pathName as string : undefined,
+  pathRole: pathRole as ItineraryItem["pathRole"],
+}));
 
 export const Owner: Story = {
   args: {
@@ -79,6 +101,18 @@ export const LiveMapFailure: Story = {
     await expect(canvas.getByRole("status")).toHaveTextContent(/Could not load the live map/i);
     await expect(canvas.queryByRole("button", { name: /Retry live map/i })).toBeNull();
     await expect(canvas.getByText(/OpenFreeMap/i)).toHaveClass("map-source-note");
+  },
+};
+
+export const PlanABAlternatives: Story = {
+  args: {
+    ...Owner.args,
+    items: mapPlanABAlternativeItems,
+  },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole("region", { name: /Route map/i })).toHaveClass("route-map-panel");
+    await expect(canvas.getByText("Plan A gallery route")).toBeVisible();
+    await expect(canvas.getByText("Plan B harbour route")).toBeVisible();
   },
 };
 

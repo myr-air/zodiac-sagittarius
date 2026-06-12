@@ -1,10 +1,12 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import { expect } from "storybook/test";
+import { expect, fn, userEvent, within } from "storybook/test";
 import { buildDenseTripFixture, buildEmptyTripFixture, tripFixture } from "@/src/trip/trip-fixtures";
 import type { ItineraryItem } from "@/src/trip/types";
 import { SmartItineraryTable } from "./SmartItineraryTable";
 
 const noop = () => {};
+const onStoryChangeDayPath = fn();
+const onStoryUpdateItemInline = fn();
 const pageBranchGraphItems: ItineraryItem[] = [
   {
     ...tripFixture.planItems[0],
@@ -104,6 +106,26 @@ const pagePlanAExampleItems: ItineraryItem[] = [
     pathRole: "main",
   },
 ];
+const pagePlanABAlternativeItems: ItineraryItem[] = [
+  ["page-plan-ab-main-breakfast", "08:00", 60, 100, "Harbour breakfast", "Main", undefined, "main"],
+  ["page-plan-ab-a-gallery", "10:00", 75, 200, "Plan A gallery route", "Plan A", "path-2026-06-19-sub-a", "alternative"],
+  ["page-plan-ab-b-harbour", "14:00", 90, 300, "Plan B harbour route", "Plan B", "path-2026-06-19-sub-b", "alternative"],
+  ["page-plan-ab-main-dinner", "18:00", 75, 400, "Main dinner meet-up", "Main", undefined, "main"],
+].map(([id, startTime, durationMinutes, sortOrder, activity, pathName, pathId, pathRole]) => ({
+  ...tripFixture.planItems[0],
+  id: id as string,
+  day: "2026-06-19",
+  startTime: startTime as string,
+  durationMinutes: durationMinutes as number,
+  sortOrder: sortOrder as number,
+  activity: activity as string,
+  activityType: "experience",
+  place: `${pathName} checkpoint`,
+  pathGroupId: "page-plan-ab-clean-branch",
+  pathId: pathId as string | undefined,
+  pathName: pathId ? pathName as string : undefined,
+  pathRole: pathRole as ItineraryItem["pathRole"],
+}));
 const pageRequestedPlanExampleItems: ItineraryItem[] = [
   ["page-requested-main-0800", "08:00", 60, 100, "Main 08:00 block", undefined, undefined, "main"],
   ["page-requested-main-0900", "09:00", 120, 200, "Main 09:00 block", undefined, undefined, "main"],
@@ -313,6 +335,63 @@ export const PlanAExample: Story = {
     await expect(canvas.getByRole("button", { name: /Harbour breakfast on Main/i })).toHaveClass("activity-path-graph-node--selected");
     await expect(canvas.getByRole("button", { name: /Plan A museum stop on Plan A/i })).toBeInTheDocument();
     await expect(canvas.getByRole("button", { name: /Plan A cafe backup on Plan A/i })).toBeInTheDocument();
+  },
+};
+
+export const PlanABAlternatives: Story = {
+  args: {
+    ...Owner.args,
+    items: pagePlanABAlternativeItems,
+    graphItems: pagePlanABAlternativeItems,
+    selectedItemId: "page-plan-ab-main-breakfast",
+    showAllPaths: true,
+    pathOptions: [
+      { id: "main", name: "Main", scope: "trip" },
+      { id: "path-2026-06-19-sub-a", name: "Plan A", scope: "day", day: "2026-06-19" },
+      { id: "path-2026-06-19-sub-b", name: "Plan B", scope: "day", day: "2026-06-19" },
+    ],
+  },
+  play: async ({ canvas, canvasElement }) => {
+    await expect(canvas.getByRole("group", { name: /Activity path graph for Day 2/i })).toHaveClass("activity-path-graph");
+    await expect(canvas.getByRole("button", { name: /Harbour breakfast on Main/i })).toHaveClass("activity-path-graph-node--selected");
+    await expect(canvas.getByRole("button", { name: /Plan A gallery route on Plan A/i })).toBeInTheDocument();
+    await expect(canvas.getByRole("button", { name: /Plan B harbour route on Plan B/i })).toBeInTheDocument();
+    await expect(canvasElement.querySelector(".data-row--path-overlap")).not.toBeInTheDocument();
+  },
+};
+
+export const PathAndDurationInteractions: Story = {
+  args: {
+    ...Owner.args,
+    items: pagePlanABAlternativeItems,
+    graphItems: pagePlanABAlternativeItems,
+    selectedItemId: "page-plan-ab-main-breakfast",
+    showAllPaths: false,
+    pathOptions: [
+      { id: "main", name: "Main", scope: "trip" },
+      { id: "path-2026-06-19-sub-a", name: "Plan A", scope: "day", day: "2026-06-19" },
+      { id: "path-2026-06-19-sub-b", name: "Plan B", scope: "day", day: "2026-06-19" },
+    ],
+    onChangeDayPath: onStoryChangeDayPath,
+    onUpdateItemInline: onStoryUpdateItemInline,
+  },
+  play: async ({ canvas, canvasElement }) => {
+    const documentCanvas = within(canvasElement.ownerDocument.body);
+    const dayToggle = canvas.getByRole("button", { name: /Collapse Day 2/i });
+    await userEvent.click(dayToggle);
+    await expect(dayToggle).toHaveAttribute("aria-expanded", "false");
+    await userEvent.click(dayToggle);
+    await expect(dayToggle).toHaveAttribute("aria-expanded", "true");
+
+    await userEvent.click(canvas.getByRole("button", { name: /Path for Day 2/i }));
+    const dayPathMenu = documentCanvas.getByRole("listbox", { name: /Path for Day 2/i });
+    await userEvent.click(within(dayPathMenu).getByRole("option", { name: "Plan B" }));
+    await expect(onStoryChangeDayPath).toHaveBeenCalledWith("2026-06-19", "path-2026-06-19-sub-b");
+
+    await userEvent.click(canvas.getByRole("button", { name: /Edit duration Harbour breakfast/i }));
+    const durationEditor = documentCanvas.getByRole("region", { name: /Edit duration Harbour breakfast/i });
+    await userEvent.click(within(durationEditor).getByRole("button", { name: /1 h 30 m/i }));
+    await expect(onStoryUpdateItemInline).toHaveBeenCalledWith("page-plan-ab-main-breakfast", { durationMinutes: 90 });
   },
 };
 

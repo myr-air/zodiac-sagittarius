@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { expect } from "storybook/test";
 import { buildDenseTripFixture, buildEmptyTripFixture, tripFixture } from "@/src/trip/trip-fixtures";
+import type { ItineraryItem } from "@/src/trip/types";
 import { TimelineView } from "./TimelineView";
 
 const noop = () => {};
@@ -14,6 +15,32 @@ const meta = {
 export default meta;
 
 type Story = StoryObj<typeof meta>;
+
+async function expectTimelineStructure(canvasElement: HTMLElement) {
+  await expect(canvasElement.querySelector(".timeline-panel")).toBeInTheDocument();
+  await expect(canvasElement.querySelector(".timeline-grid")).toHaveClass("timeline-grid", "grid", "grid-cols-3");
+}
+
+const timelinePlanABAlternativeItems: ItineraryItem[] = [
+  ["timeline-plan-ab-main-breakfast", "08:00", 60, 100, "Harbour breakfast", "Main", undefined, "main"],
+  ["timeline-plan-ab-a-gallery", "10:00", 75, 200, "Plan A gallery route", "Plan A", "path-2026-06-19-sub-a", "alternative"],
+  ["timeline-plan-ab-b-harbour", "14:00", 90, 300, "Plan B harbour route", "Plan B", "path-2026-06-19-sub-b", "alternative"],
+  ["timeline-plan-ab-main-dinner", "18:00", 75, 400, "Main dinner meet-up", "Main", undefined, "main"],
+].map(([id, startTime, durationMinutes, sortOrder, activity, pathName, pathId, pathRole], index) => ({
+  ...tripFixture.planItems[index % tripFixture.planItems.length],
+  id: id as string,
+  day: "2026-06-19",
+  startTime: startTime as string,
+  durationMinutes: durationMinutes as number,
+  sortOrder: sortOrder as number,
+  activity: activity as string,
+  activityType: "experience",
+  place: `${pathName} checkpoint`,
+  pathGroupId: "timeline-plan-ab-clean-branch",
+  pathId: pathId as string | undefined,
+  pathName: pathId ? pathName as string : undefined,
+  pathRole: pathRole as ItineraryItem["pathRole"],
+}));
 
 export const Owner: Story = {
   args: {
@@ -57,6 +84,10 @@ export const Dense: Story = {
     items: buildDenseTripFixture().itineraryItems,
     selectedItemId: "",
   },
+  play: async ({ canvasElement }) => {
+    await expectTimelineStructure(canvasElement);
+    await expect(canvasElement.querySelectorAll(".timeline-day").length).toBeGreaterThan(3);
+  },
 };
 
 export const Empty: Story = {
@@ -65,11 +96,33 @@ export const Empty: Story = {
     items: buildEmptyTripFixture().itineraryItems,
     selectedItemId: "",
   },
+  play: async ({ canvasElement }) => {
+    await expectTimelineStructure(canvasElement);
+    await expect(canvasElement.querySelectorAll(".timeline-stop").length).toBe(0);
+  },
+};
+
+export const PlanABAlternatives: Story = {
+  args: {
+    ...Owner.args,
+    items: timelinePlanABAlternativeItems,
+    selectedItemId: "timeline-plan-ab-main-breakfast",
+  },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole("region", { name: /Trip timeline/i })).toHaveClass("timeline-panel");
+    await expect(canvas.getByRole("button", { name: /Select timeline stop Harbour breakfast/i })).toHaveAttribute("aria-pressed", "true");
+    await expect(canvas.getByRole("button", { name: /Select timeline stop Plan A gallery route/i })).toBeInTheDocument();
+    await expect(canvas.getByRole("button", { name: /Select timeline stop Plan B harbour route/i })).toBeInTheDocument();
+  },
 };
 
 export const Tablet: Story = {
   args: Owner.args,
   parameters: { viewport: { defaultViewport: "tablet768" } },
+  play: async ({ canvasElement }) => {
+    await expectTimelineStructure(canvasElement);
+    await expect(canvasElement.querySelector(".timeline-grid")).toHaveClass("max-[1199px]:grid-cols-2");
+  },
 };
 
 export const Desktop1024: Story = {
@@ -85,4 +138,9 @@ export const Desktop1440: Story = {
 export const Mobile: Story = {
   args: Owner.args,
   parameters: { viewport: { defaultViewport: "mobile320" } },
+  play: async ({ canvasElement }) => {
+    await expectTimelineStructure(canvasElement);
+    await expect(canvasElement.querySelector(".timeline-grid")).toHaveClass("max-[767px]:grid-cols-1");
+    await expect(canvasElement.querySelector(".timeline-stop-button")).toHaveClass("max-[767px]:grid-cols-[62px_32px_minmax(0,1fr)]");
+  },
 };
