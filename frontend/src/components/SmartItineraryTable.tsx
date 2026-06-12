@@ -222,11 +222,14 @@ const activityCellClassName = "activity-cell min-w-0";
 const rowSelectClassName =
   "row-select inline-flex min-h-8 w-fit min-w-0 items-center gap-1.5 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) px-2 py-0.5 text-[11px] font-extrabold leading-4 text-(--color-route) transition-[background,border-color,color] duration-150 hover:bg-(--color-route-soft) hover:border-(--color-route-border) focus-visible:bg-(--color-route-soft) focus-visible:border-(--color-route-border) focus-visible:outline-none";
 const inlineActivityStackClassName = "grid min-w-0 gap-0.5";
-const childActivityStackClassName = "border-l-2 border-(--color-route-border) pl-3";
+const childActivityStackClassName =
+  "relative pl-4 before:absolute before:left-0 before:top-1.5 before:h-5 before:w-3 before:rounded-bl-(--radius-sm) before:border-b before:border-l before:border-(--color-route-border) before:content-['']";
 const hierarchyMetaClassName =
   "inline-flex min-w-0 flex-wrap items-center gap-1.5 text-[10px] font-extrabold leading-4 text-(--color-text-muted)";
 const hierarchyChipClassName =
   "inline-flex min-h-5 items-center gap-1 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) px-1.5 text-[10px] font-extrabold text-(--color-text-muted) [&_.icon]:size-3";
+const activityHierarchyChipClassName =
+  "border-[color-mix(in_srgb,var(--color-border)_72%,var(--color-route-border))] bg-(--color-surface) text-(--color-text-muted)";
 const blockHierarchyChipClassName =
   "border-(--color-route-border) bg-(--color-route-soft) text-(--color-route)";
 const commitmentChipClassName =
@@ -2724,7 +2727,6 @@ function RowHierarchyMeta({
   const status = item.status ?? "idea";
   const priority = item.priority ?? "normal";
   const showCommitment = status !== "idea" || priority === "must" || priority === "high";
-  if (!item.isPlanBlock && !item.parentItemId && !showCommitment) return null;
 
   return (
     <div className={hierarchyMetaClassName} aria-label={`Structure for ${item.activity}`}>
@@ -2732,6 +2734,11 @@ function RowHierarchyMeta({
         <span className={cn(hierarchyChipClassName, blockHierarchyChipClassName)}>
           <Icon name="list" />
           Activity block · {childCount} sub-item{childCount === 1 ? "" : "s"}
+        </span>
+      ) : !item.parentItemId ? (
+        <span className={cn(hierarchyChipClassName, activityHierarchyChipClassName)}>
+          <Icon name="list" />
+          Activity
         </span>
       ) : null}
       {item.parentItemId ? (

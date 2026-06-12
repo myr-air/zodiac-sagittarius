@@ -2041,16 +2041,27 @@ describe("SmartItineraryTable", () => {
           priority: "normal",
           sortOrder: 200,
         },
+        {
+          ...tripFixture.planItems[2],
+          id: "solo-market",
+          activity: "Market walk",
+          parentItemId: null,
+          status: "idea",
+          priority: "normal",
+          sortOrder: 300,
+        },
       ],
       selectedItemId: "block-flight",
     });
 
     const blockStructure = screen.getByLabelText("Structure for Flight to Hong Kong");
     const childStructure = screen.getByLabelText("Structure for Check in");
+    const activityStructure = screen.getByLabelText("Structure for Market walk");
     expect(within(blockStructure).getByText("Activity block · 1 sub-item")).toBeInTheDocument();
     expect(within(blockStructure).getByText("confirmed · must")).toBeInTheDocument();
     expect(within(childStructure).getByText("Sub-activity")).toBeInTheDocument();
     expect(within(childStructure).getByText("planned")).toBeInTheDocument();
+    expect(within(activityStructure).getByText("Activity")).toBeInTheDocument();
     expect(screen.getByRole("row", { name: /Flight to Hong Kong/i })).toHaveAttribute(
       "data-hierarchy-level",
       "1",
@@ -2058,6 +2069,10 @@ describe("SmartItineraryTable", () => {
     expect(screen.getByRole("row", { name: /Check in/i })).toHaveAttribute(
       "data-hierarchy-level",
       "2",
+    );
+    expect(screen.getByRole("row", { name: /Market walk/i })).toHaveAttribute(
+      "data-hierarchy-level",
+      "1",
     );
   });
 
