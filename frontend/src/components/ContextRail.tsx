@@ -63,7 +63,7 @@ interface ContextRailProps {
 
 const suggestionListClassName = "suggestion-list grid gap-1.5";
 const suggestionItemBaseClassName =
-  "suggestion-item grid grid-cols-[18px_minmax(0,1fr)] gap-2 text-xs leading-4 text-[#334155] [&_.icon]:size-4 [&>div]:grid [&>div]:gap-0.5 [&_strong]:font-semibold [&_span]:text-(--color-text-muted)";
+  "suggestion-item grid grid-cols-[18px_minmax(0,1fr)] gap-2 text-xs leading-4 text-(--color-text-muted) [&_.icon]:size-4 [&>div]:grid [&>div]:gap-0.5 [&_strong]:font-semibold [&_strong]:text-(--color-text) [&_span]:text-(--color-text-muted)";
 const suggestionItemToneClassNames = {
   conflicted: "suggestion-item--conflicted [&_.icon]:text-(--color-warning)",
   pending: "suggestion-item--pending [&_.icon]:text-(--color-success)",
@@ -122,15 +122,15 @@ const railInspectorClassName =
 const inspectorTitleClassName =
   "inspector-title grid min-h-[50px] grid-cols-[minmax(0,1fr)_36px] items-center gap-3 px-3.5 pl-4";
 const inspectorTitleHeadingClassName =
-  "m-0 overflow-hidden text-ellipsis whitespace-nowrap text-[15px] font-extrabold leading-[22px] text-[#0f172a]";
+  "m-0 overflow-hidden text-ellipsis whitespace-nowrap text-[15px] font-extrabold leading-[22px] text-(--color-text)";
 const inspectorCloseButtonClassName =
-  "grid size-9 place-items-center border-0 bg-transparent text-[#0f172a] [&_.icon]:rotate-180";
+  "grid size-9 place-items-center border-0 bg-transparent text-(--color-text) [&_.icon]:rotate-180";
 const inspectorTabsClassName =
   "inspector-tabs flex h-9 gap-6 border-y border-(--color-border) px-4 max-[767px]:gap-[18px] max-[767px]:overflow-x-auto";
 const inspectorTabClassName =
   "border-0 border-b-2 border-transparent bg-transparent text-xs font-bold text-(--color-text-muted) aria-selected:border-(--color-primary) aria-selected:text-(--color-primary-strong)";
 const mapLinkClassName =
-  "map-link ml-[27px] text-xs font-semibold text-[#2563eb] no-underline";
+  "map-link ml-[27px] text-xs font-semibold text-(--color-route) no-underline";
 const detailMapClassName =
   "detail-map relative min-h-[105px] overflow-hidden rounded-(--radius-sm) border border-(--color-border) bg-[linear-gradient(90deg,rgb(203_213_225_/_0.7)_1px,transparent_1px),linear-gradient(0deg,rgb(203_213_225_/_0.7)_1px,transparent_1px),linear-gradient(135deg,#f8fafc,#e0f2fe)] bg-[length:37px_37px,37px_37px,auto]";
 const mapRoadBaseClassName =
@@ -143,17 +143,17 @@ const mapRoadThreeClassName =
   "map-road-3 left-[98px] top-[88px] w-[180px] -rotate-[8deg] bg-[#bae6fd]";
 const mapWaterClassName =
   "map-water absolute right-0 bottom-0 h-[69px] w-[145px] rounded-tl-full bg-[rgb(125_211_252_/_0.28)]";
-const mapPoiClassName = "map-poi absolute text-[11px] font-bold text-[#64748b]";
+const mapPoiClassName = "map-poi absolute text-[11px] font-bold text-(--color-text-subtle)";
 const mapMarkerClassName =
-  "map-marker absolute left-1/2 top-1/2 grid size-9 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-[#ef4444] text-white shadow-[0_10px_20px_rgb(239_68_68_/_0.24)]";
+  "map-marker absolute left-1/2 top-1/2 grid size-9 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-(--color-danger) text-white shadow-[0_10px_20px_rgb(220_38_38_/_0.22)]";
 const detailSectionClassName =
   "detail-section grid gap-1.5 border-b border-(--color-border) px-4 py-2.5";
 const detailHeadingClassName =
-  "m-0 text-[13px] font-extrabold leading-[18px] text-[#334155]";
+  "m-0 text-[13px] font-extrabold leading-[18px] text-(--color-text-muted)";
 const detailMetaLineClassName =
-  "m-0 inline-flex gap-[9px] text-xs leading-4 text-[#334155] [&_.icon]:text-(--color-text-muted)";
+  "m-0 inline-flex gap-[9px] text-xs leading-4 text-(--color-text-muted) [&_.icon]:text-(--color-text-muted)";
 const detailButtonClassName = "min-h-8 py-[5px]";
-const emptyWarningClassName = "empty-warning text-(--color-text-subtle)";
+const emptyWarningClassName = "empty-warning text-(--color-text-muted)";
 
 export function ContextRail({
   trip,
@@ -293,8 +293,9 @@ export function ContextRail({
     <aside
       className={`${contextRailClassName} ${open ? contextRailOpenClassName : contextRailClosedClassName}`}
       data-state={open ? "open" : "closed"}
-      aria-hidden={!open}
+      aria-hidden={open ? undefined : true}
       aria-label={t.contextRail.pageLabel}
+      inert={open ? undefined : true}
     >
       <div className={railInspectorClassName}>
         <div className={inspectorTitleClassName}>

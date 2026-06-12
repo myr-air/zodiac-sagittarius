@@ -43,8 +43,32 @@ const preview: Preview = {
     },
     backgrounds: {
       options: {
-        studio: { name: "Friendly Trip Studio", value: "#f8fafc" },
+        studio: { name: "Calm Travel Ops", value: "#f2efeb" },
         white: { name: "White", value: "#ffffff" },
+      },
+    },
+    viewport: {
+      options: {
+        mobile320: {
+          name: "Mobile 320",
+          styles: { width: "320px", height: "720px" },
+          type: "mobile",
+        },
+        tablet768: {
+          name: "Tablet 768",
+          styles: { width: "768px", height: "900px" },
+          type: "tablet",
+        },
+        desktop1024: {
+          name: "Desktop 1024",
+          styles: { width: "1024px", height: "900px" },
+          type: "desktop",
+        },
+        desktop1440: {
+          name: "Desktop 1440",
+          styles: { width: "1440px", height: "1000px" },
+          type: "desktop",
+        },
       },
     },
     a11y: {

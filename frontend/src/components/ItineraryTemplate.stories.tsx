@@ -104,6 +104,26 @@ const planAExampleItems: ItineraryItem[] = [
     pathRole: "main",
   },
 ];
+const planABAlternativeItems: ItineraryItem[] = [
+  ["story-plan-ab-main-breakfast", "08:00", 60, 100, "Harbour breakfast", "Main", undefined, "main"],
+  ["story-plan-ab-a-gallery", "10:00", 75, 200, "Plan A gallery route", "Plan A", "path-2026-06-19-sub-a", "alternative"],
+  ["story-plan-ab-b-harbour", "14:00", 90, 300, "Plan B harbour route", "Plan B", "path-2026-06-19-sub-b", "alternative"],
+  ["story-plan-ab-main-dinner", "18:00", 75, 400, "Main dinner meet-up", "Main", undefined, "main"],
+].map(([id, startTime, durationMinutes, sortOrder, activity, pathName, pathId, pathRole]) => ({
+  ...tripFixture.planItems[0],
+  id: id as string,
+  day: "2026-06-19",
+  startTime: startTime as string,
+  durationMinutes: durationMinutes as number,
+  sortOrder: sortOrder as number,
+  activity: activity as string,
+  activityType: "experience",
+  place: `${pathName} checkpoint`,
+  pathGroupId: "story-plan-ab-clean-branch",
+  pathId: pathId as string | undefined,
+  pathName: pathId ? pathName as string : undefined,
+  pathRole: pathRole as ItineraryItem["pathRole"],
+}));
 const requestedPlanExampleItems: ItineraryItem[] = [
   ["requested-main-0800", "08:00", 60, 100, "Main 08:00 block", undefined, undefined, "main"],
   ["requested-main-0900", "09:00", 120, 200, "Main 09:00 block", undefined, undefined, "main"],
@@ -230,7 +250,35 @@ export const OwnerThai: Story = {
 };
 
 export const Viewer: Story = { args: { ...Owner.args, role: "viewer" } };
+export const Traveler: Story = {
+  args: { ...Owner.args, role: "traveler" },
+  play: async ({ canvas }) => {
+    await expect(canvas.getAllByRole("button", { name: /Add stop or activity/i })[0]).toBeEnabled();
+  },
+};
 export const Dense: Story = { args: { ...Owner.args, items: buildDenseTripFixture().itineraryItems } };
+export const TableOverflow: Story = {
+  args: {
+    ...Owner.args,
+    items: stressPathItems.map((item, index) => ({
+      ...item,
+      id: `overflow-${item.id}`,
+      activity: `${item.activity} with long operational copy for table overflow validation ${index + 1}`,
+      place: `${item.place} · gate notes, booking reference, and meet-up details`,
+      transport: "Airport Express transfer with luggage coordination",
+    })),
+    graphItems: stressPathItems,
+    selectedItemId: "overflow-stress-0800-main",
+    showAllPaths: true,
+  },
+  parameters: {
+    viewport: { defaultViewport: "mobile320" },
+  },
+  play: async ({ canvasElement }) => {
+    await expect(canvasElement.querySelector(".table-scroll")).toHaveClass("table-scroll", "overflow-x-auto", "max-w-full");
+    await expect(canvasElement.querySelector(".smart-table")).toHaveClass("smart-table", "min-w-[1080px]");
+  },
+};
 export const BranchGraph: Story = {
   args: {
     ...Owner.args,
@@ -265,6 +313,26 @@ export const PlanAExample: Story = {
     await expect(canvas.getByRole("button", { name: /Harbour breakfast on Main/i })).toHaveClass("activity-path-graph-node--selected");
     await expect(canvas.getByRole("button", { name: /Plan A museum stop on Plan A/i })).toBeInTheDocument();
     await expect(canvas.getByRole("button", { name: /Plan A cafe backup on Plan A/i })).toBeInTheDocument();
+  },
+};
+export const PlanABAlternatives: Story = {
+  args: {
+    ...Owner.args,
+    items: planABAlternativeItems,
+    graphItems: planABAlternativeItems,
+    selectedItemId: "story-plan-ab-main-breakfast",
+    showAllPaths: true,
+    pathOptions: [
+      { id: "main", name: "Main", scope: "trip" },
+      { id: "path-2026-06-19-sub-a", name: "Plan A", scope: "day", day: "2026-06-19" },
+      { id: "path-2026-06-19-sub-b", name: "Plan B", scope: "day", day: "2026-06-19" },
+    ],
+  },
+  play: async ({ canvas, canvasElement }) => {
+    await expect(canvas.getByRole("button", { name: /Harbour breakfast on Main/i })).toHaveClass("activity-path-graph-node--selected");
+    await expect(canvas.getByRole("button", { name: /Plan A gallery route on Plan A/i })).toBeInTheDocument();
+    await expect(canvas.getByRole("button", { name: /Plan B harbour route on Plan B/i })).toBeInTheDocument();
+    await expect(canvasElement.querySelector(".data-row--path-overlap")).not.toBeInTheDocument();
   },
 };
 export const RequestedPlanExample: Story = {

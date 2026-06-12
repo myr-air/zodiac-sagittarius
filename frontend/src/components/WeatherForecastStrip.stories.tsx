@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import { expect } from "storybook/test";
 import { weatherBriefings } from "./WeatherBriefing.fixtures";
 import { WeatherForecastStrip } from "./WeatherForecastStrip";
 
@@ -29,7 +30,7 @@ export const MobileOverflow: Story = {
     selectedDate: null,
     onSelect: () => {},
   },
-  parameters: { viewport: { defaultViewport: "mobile1" } },
+  parameters: { viewport: { defaultViewport: "mobile320" } },
 };
 
 export const Thai: Story = {
@@ -38,5 +39,19 @@ export const Thai: Story = {
     locale: "th",
     selectedDate: null,
     onSelect: () => {},
+  },
+};
+
+export const Empty: Story = {
+  args: {
+    briefings: [],
+    locale: "en",
+    selectedDate: null,
+    onSelect: () => {},
+  },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole("region", { name: /Daily weather forecast/i })).toHaveClass("weather-forecast-strip");
+    await expect(canvas.getByText(/No weather data yet/i)).toHaveClass("weather-forecast-empty-state");
+    await expect(canvas.queryByRole("button")).toBeNull();
   },
 };

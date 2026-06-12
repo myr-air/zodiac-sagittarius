@@ -24,21 +24,21 @@ interface TripMembersPageProps {
 
 const membersPageClassName = "members-page grid min-h-full min-w-0 grid-rows-[auto_minmax(0,1fr)] gap-3 bg-(--color-page) px-6 py-[22px] pb-7 max-[767px]:px-3 max-[767px]:py-4";
 const memberStatGridClassName = "member-stat-grid grid w-full grid-cols-5 gap-3 max-[1199px]:grid-cols-3 max-[767px]:grid-cols-1";
-const memberStatClassName = "member-stat grid min-h-[126px] min-w-0 content-start gap-2 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) p-3.5 shadow-[0_10px_24px_rgb(15_23_42_/_0.04)] max-[479px]:min-h-[58px] max-[479px]:grid-cols-[28px_minmax(0,1fr)] [&_.icon]:text-(--color-primary) [&>span]:text-xs [&>span]:font-bold [&>span]:text-(--color-text-muted) [&>strong]:text-2xl [&>strong]:font-extrabold [&>strong]:leading-[30px] [&>strong]:text-(--color-text) [&>strong]:tabular-nums max-[479px]:[&>strong]:col-start-2 max-[479px]:[&>strong]:justify-self-start max-[479px]:[&>strong]:text-xl max-[479px]:[&>strong]:leading-6";
+const memberStatClassName = "member-stat grid min-h-[126px] min-w-0 content-start gap-2 rounded-(--radius-md) border border-[color-mix(in_srgb,var(--color-route-border)_58%,var(--color-border))] bg-[linear-gradient(145deg,rgb(255_255_255)_0%,color-mix(in_srgb,var(--color-primary-soft)_46%,var(--color-surface))_100%)] p-3.5 shadow-[0_1px_0_rgb(15_23_42_/_0.04)] max-[479px]:min-h-[58px] max-[479px]:grid-cols-[28px_minmax(0,1fr)] [&_.icon]:text-(--color-primary) [&>span]:text-xs [&>span]:font-bold [&>span]:text-(--color-text-muted) [&>strong]:text-2xl [&>strong]:font-extrabold [&>strong]:leading-[30px] [&>strong]:text-(--color-text) [&>strong]:tabular-nums max-[479px]:[&>strong]:col-start-2 max-[479px]:[&>strong]:justify-self-start max-[479px]:[&>strong]:text-xl max-[479px]:[&>strong]:leading-6";
 const fieldGroupClassName = "[&_label]:grid [&_label]:min-w-0 [&_label]:gap-[5px] [&_label>span]:text-[11px] [&_label>span]:font-extrabold [&_label>span]:leading-[15px] [&_label>span]:text-(--color-text-muted) [&_input]:min-h-[34px] [&_input]:w-full [&_input]:rounded-(--radius-sm) [&_input]:border [&_input]:border-(--color-border) [&_input]:bg-(--color-surface) [&_input]:px-2.5 [&_input]:text-xs [&_input]:font-bold [&_input]:text-(--color-text) [&_select]:min-h-[34px] [&_select]:w-full [&_select]:rounded-(--radius-sm) [&_select]:border [&_select]:border-(--color-border) [&_select]:bg-(--color-surface) [&_select]:px-2.5 [&_select]:text-xs [&_select]:font-bold [&_select]:text-(--color-text) [&_input:disabled]:bg-(--color-surface-muted) [&_select:disabled]:bg-(--color-surface-muted) [&_input:disabled]:text-(--color-text-subtle) [&_select:disabled]:text-(--color-text-subtle)";
-const memberCommandBarClassName = "member-command-bar grid min-w-0 gap-3 rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) p-4 shadow-[0_12px_28px_rgb(15_23_42_/_0.05)] max-[1199px]:grid-cols-1 max-[767px]:p-3";
+const memberCommandBarClassName = "member-command-bar grid min-w-0 gap-3 rounded-(--radius-lg) border border-[color-mix(in_srgb,var(--color-primary-border)_52%,var(--color-border))] bg-[linear-gradient(135deg,rgb(255_255_255)_0%,color-mix(in_srgb,var(--color-route-soft)_56%,var(--color-surface))_100%)] p-4 shadow-[0_1px_0_rgb(15_23_42_/_0.04)] max-[1199px]:grid-cols-1 max-[767px]:p-3";
 const memberCommandFieldsClassName = cn("member-command-fields grid min-w-0 grid-cols-3 gap-3 max-[1199px]:grid-cols-1", fieldGroupClassName);
 const memberCommandActionsClassName = "member-command-actions flex min-w-0 flex-wrap items-center justify-end gap-2 max-[1199px]:justify-start max-[767px]:w-full max-[767px]:[&>*]:flex-[1_1_180px]";
 const memberCommandMetaClassName = "member-command-meta grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-2 max-[1199px]:grid-cols-1 [&_code]:overflow-hidden [&_code]:rounded-(--radius-sm) [&_code]:border [&_code]:border-(--color-border) [&_code]:bg-(--color-surface-muted) [&_code]:px-[9px] [&_code]:py-[7px] [&_code]:text-xs [&_code]:text-(--color-text-muted) [&_code]:text-ellipsis [&_code]:whitespace-nowrap";
 const memberActionButtonClassName = "inline-flex min-h-10 min-w-0 items-center justify-center gap-2 rounded-(--radius-md) border px-3 text-sm font-extrabold leading-5 transition-[border-color,box-shadow,transform,background,color] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-primary-border)";
 const memberResetButtonClassName = "member-filter-reset border-(--color-border) bg-(--color-surface-subtle) text-(--color-text-muted) hover:border-(--color-primary-border) hover:bg-(--color-primary-soft) hover:text-(--color-primary-strong) max-[767px]:w-full";
-const inviteCopyButtonClassName = "invite-copy-button border-(--color-primary) bg-(--color-primary) text-white hover:-translate-y-px hover:shadow-[0_12px_22px_rgb(15_118_110_/_0.18)] disabled:cursor-not-allowed disabled:border-(--color-border) disabled:bg-(--color-surface-muted) disabled:text-(--color-text-muted) disabled:shadow-none";
-const memberCreateButtonClassName = "member-create-button border-(--color-primary) bg-(--color-primary-soft) text-(--color-primary-strong) hover:-translate-y-px hover:shadow-[0_12px_22px_rgb(15_118_110_/_0.12)] disabled:cursor-not-allowed disabled:border-(--color-border) disabled:bg-(--color-surface-muted) disabled:text-(--color-text-muted) disabled:shadow-none";
+const inviteCopyButtonClassName = "invite-copy-button border-(--color-primary) bg-(--color-primary) text-white hover:-translate-y-px hover:shadow-[0_6px_8px_rgb(15_118_110_/_0.18)] disabled:cursor-not-allowed disabled:border-(--color-border) disabled:bg-(--color-surface-muted) disabled:text-(--color-text-muted) disabled:shadow-none";
+const memberCreateButtonClassName = "member-create-button border-(--color-primary-border) bg-(--color-primary-soft) text-(--color-primary-strong) hover:-translate-y-px hover:border-(--color-primary) hover:shadow-[0_6px_8px_rgb(15_118_110_/_0.12)] disabled:cursor-not-allowed disabled:border-(--color-border) disabled:bg-(--color-surface-muted) disabled:text-(--color-text-muted) disabled:shadow-none";
 const copyFeedbackClassName = "copy-feedback inline-flex min-h-8 items-center justify-center rounded-full border border-(--color-border) bg-(--color-surface-subtle) px-3 text-xs font-extrabold leading-4 text-(--color-text-muted) data-[state=copied]:text-(--color-success) data-[state=error]:text-(--color-danger)";
-const memberCreatePanelClassName = "member-create-panel grid min-w-0 gap-3 rounded-(--radius-lg) border border-(--color-primary-border) bg-(--color-primary-soft) p-4 max-[1199px]:grid-cols-1 max-[767px]:p-3";
+const memberCreatePanelClassName = "member-create-panel grid min-w-0 gap-3 rounded-(--radius-lg) border border-(--color-primary-border) bg-[linear-gradient(135deg,var(--color-primary-soft)_0%,rgb(255_255_255)_100%)] p-4 shadow-[0_1px_0_rgb(15_23_42_/_0.04)] max-[1199px]:grid-cols-1 max-[767px]:p-3";
 const memberCreateFormClassName = cn("member-create-form grid min-w-0 grid-cols-[minmax(0,1fr)_minmax(180px,240px)_auto] items-end gap-3 max-[1199px]:grid-cols-1", fieldGroupClassName);
 const memberDialogBackdropClassName = "modal-backdrop fixed inset-0 z-20 grid place-items-center bg-[rgb(15_23_42_/_0.28)] p-5";
-const memberDialogClassName = cn("member-task-dialog grid w-[min(460px,100%)] gap-3 rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) p-4 shadow-[0_24px_70px_rgb(15_23_42_/_0.22)]", fieldGroupClassName);
+const memberDialogClassName = cn("member-task-dialog grid w-[min(460px,100%)] gap-3 rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) p-4 shadow-[0_10px_18px_rgb(15_23_42_/_0.14)]", fieldGroupClassName);
 const memberDialogTitleClassName = "m-0 text-base font-extrabold leading-[22px] text-(--color-text)";
 const memberDialogBodyClassName = "m-0 text-sm font-medium leading-6 text-(--color-text-muted)";
 const memberDialogActionsClassName = "mt-1 flex justify-end gap-2";
@@ -282,33 +282,42 @@ export function TripMembersPage({
         </div>
         <div className={memberCommandActionsClassName}>
           <button className={cn(memberActionButtonClassName, memberResetButtonClassName)} type="button" onClick={resetFilters}>{t.members.actions.clear}</button>
-          <button className={cn(memberActionButtonClassName, inviteCopyButtonClassName)} type="button" disabled={!canManagePeople} onClick={copyInviteLink}>
-            <Icon name="copy" />
-            {t.members.actions.copyInvite}
-          </button>
-          {onRotateJoinInviteToken ? (
-            <button className={cn(memberActionButtonClassName, memberCreateButtonClassName)} type="button" disabled={!canManagePeople || isRotatingInviteToken} onClick={rotateInviteToken}>
-              <Icon name="key" />
-              {isRotatingInviteToken ? t.members.actions.rotatingInvite : t.members.actions.rotateInvite}
-            </button>
-          ) : null}
-          <button
-            aria-expanded={createPanelOpen}
-            className={cn(memberActionButtonClassName, memberCreateButtonClassName)}
-            type="button"
-            disabled={!canManagePeople}
-            onClick={() => setCreatePanelOpen((current) => !current)}
-          >
-            <Icon name="plus" />
-            {createPanelOpen ? t.members.actions.closeCreate : t.members.actions.openCreate}
-          </button>
+          {canManagePeople ? (
+            <>
+              <button className={cn(memberActionButtonClassName, inviteCopyButtonClassName)} type="button" onClick={copyInviteLink}>
+                <Icon name="copy" />
+                {t.members.actions.copyInvite}
+              </button>
+              {onRotateJoinInviteToken ? (
+                <button className={cn(memberActionButtonClassName, memberCreateButtonClassName)} type="button" disabled={isRotatingInviteToken} onClick={rotateInviteToken}>
+                  <Icon name="key" />
+                  {isRotatingInviteToken ? t.members.actions.rotatingInvite : t.members.actions.rotateInvite}
+                </button>
+              ) : null}
+              <button
+                aria-expanded={createPanelOpen}
+                className={cn(memberActionButtonClassName, memberCreateButtonClassName)}
+                type="button"
+                onClick={() => setCreatePanelOpen((current) => !current)}
+              >
+                <Icon name="plus" />
+                {createPanelOpen ? t.members.actions.closeCreate : t.members.actions.openCreate}
+              </button>
+            </>
+          ) : (
+            <span className={copyFeedbackClassName} data-state={copyState} role="status">
+              {t.members.copy.readOnly}
+            </span>
+          )}
         </div>
-        <div className={memberCommandMetaClassName}>
-          <code>{inviteLink}</code>
-          <span className={copyFeedbackClassName} data-state={copyState} role="status">
-            {copyState === "copied" ? t.common.status.copied : copyState === "error" ? t.common.status.copyFailed : canManagePeople ? t.members.copy.ready : t.members.copy.readOnly}
-          </span>
-        </div>
+        {canManagePeople ? (
+          <div className={memberCommandMetaClassName}>
+            <code>{inviteLink}</code>
+            <span className={copyFeedbackClassName} data-state={copyState} role="status">
+              {copyState === "copied" ? t.common.status.copied : copyState === "error" ? t.common.status.copyFailed : t.members.copy.ready}
+            </span>
+          </div>
+        ) : null}
       </section>
 
       {createPanelOpen ? (

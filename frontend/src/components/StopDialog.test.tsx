@@ -53,6 +53,11 @@ describe("StopDialog", () => {
     render(<StopDialog mode="create" onClose={vi.fn()} onSubmit={vi.fn()} />);
 
     expect(screen.getByLabelText("เวลาเริ่ม")).toHaveAttribute("type", "text");
+    expect(screen.getByRole("dialog", { name: "เพิ่มกิจกรรม" })).toHaveClass(
+      "stop-dialog",
+      "shadow-[0_14px_34px_rgb(15_23_42_/_0.16)]",
+    );
+    expect(screen.getByRole("dialog", { name: "เพิ่มกิจกรรม" }).className).not.toContain("0_24px_70px");
     expect(screen.getAllByRole("button", { name: "Open time picker" })).toHaveLength(2);
     expect(screen.getByLabelText("เวลาเริ่ม")).toHaveAttribute("id", "stop-start-time");
     expect(screen.getByText("เวลาเริ่ม").closest("label")).toHaveAttribute("for", "stop-start-time");
@@ -107,6 +112,38 @@ describe("StopDialog", () => {
       transportation: "",
       note: "",
     }));
+  });
+
+  it("prefills structured category detail fields when editing a stop", () => {
+    renderEn(
+      <StopDialog
+        mode="edit"
+        initialItem={{
+          ...tripFixture.planItems[0],
+          activity: "DMK -> HKG",
+          activityType: "travel",
+          place: "",
+          transportation: "Plane",
+          details: {
+            kind: "transportation",
+            origin: "Don Mueang International Airport",
+            destination: "Hong Kong International Airport",
+            mode: "Plane",
+            ticketRef: "FD ticket",
+            costNote: "Prepaid group fare",
+          },
+        }}
+        onClose={vi.fn()}
+        onSubmit={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByLabelText("Type")).toHaveValue("transportation");
+    expect(screen.getByLabelText("From")).toHaveValue("Don Mueang International Airport");
+    expect(screen.getByLabelText("To")).toHaveValue("Hong Kong International Airport");
+    expect(screen.getByLabelText("By")).toHaveValue("Plane");
+    expect(screen.getByLabelText("Ticket / pass")).toHaveValue("FD ticket");
+    expect(screen.queryByLabelText("Transportation")).not.toBeInTheDocument();
   });
 
   it("detects route activity text and fills transportation times", () => {

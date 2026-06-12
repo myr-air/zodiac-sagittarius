@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import { expect } from "storybook/test";
 import { weatherBriefings } from "./WeatherBriefing.fixtures";
 import { WeatherBriefingDrawer } from "./WeatherBriefingDrawer";
 
@@ -19,6 +20,14 @@ const drawerBriefing = {
   festival: { title: "Festival", body: "Waterfront light show runs in the evening. Confidence medium.", meta: { source: "Curated research", sourceUrl: null, fetchedAt: "2026-06-04T00:00:00Z", expiresAt: "2026-07-01T00:00:00Z", confidence: "medium" as const, unavailableReason: null } },
   facts: { title: "Daily facts", body: "Currency HKD. Emergency number 999. Sunset around 19:10.", meta: { source: "REST Countries", sourceUrl: null, fetchedAt: "2026-06-04T00:00:00Z", expiresAt: "2027-01-01T00:00:00Z", confidence: "high" as const, unavailableReason: null } },
   outfitAdvice: { title: "Outfit advice", body: "Light breathable shirt, compact umbrella, and shoes that can handle wet pavement.", meta: { source: "Sagittarius", sourceUrl: null, fetchedAt: "2026-06-04T00:00:00Z", expiresAt: "2026-06-04T06:00:00Z", confidence: "medium" as const, unavailableReason: null } },
+};
+
+const partialBriefing = {
+  ...weatherBriefings[5],
+  holiday: null,
+  festival: { title: "Festival", body: "Festival data is still being checked for this date.", meta: { source: "Curated research", sourceUrl: null, fetchedAt: null, expiresAt: null, confidence: "unknown" as const, unavailableReason: "Pending source review" } },
+  facts: null,
+  outfitAdvice: null,
 };
 
 export const OrganizerDrawer: Story = {
@@ -51,5 +60,22 @@ export const MobileSheet: Story = {
     onClose: () => {},
     onSaveOverrides: () => {},
   },
-  parameters: { viewport: { defaultViewport: "mobile1" } },
+  parameters: { viewport: { defaultViewport: "mobile320" } },
+};
+
+export const PartialData: Story = {
+  args: {
+    briefing: partialBriefing,
+    locale: "en",
+    canEdit: true,
+    isOpen: true,
+    onClose: () => {},
+    onSaveOverrides: () => {},
+  },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole("region", { name: /Weather briefing/i })).toHaveClass("weather-briefing-drawer");
+    await expect(canvas.getByRole("heading", { name: /^Forecast pending$/i })).toBeVisible();
+    await expect(canvas.getAllByText(/No data yet/i).length).toBeGreaterThan(1);
+    await expect(canvas.getByLabelText(/Outfit advice override/i)).toBeVisible();
+  },
 };

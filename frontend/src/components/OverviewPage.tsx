@@ -29,47 +29,35 @@ interface OverviewPageProps {
 const overviewPageClassName = "overview-page grid min-h-full min-w-0 max-w-full overflow-hidden gap-3 bg-transparent px-6 py-[22px] pb-7 max-[767px]:px-3 max-[767px]:py-4 max-[767px]:pb-4";
 const overviewCockpitClassName = "overview-travel-cockpit mb-3.5 grid w-full min-w-0 max-w-full grid-cols-3 gap-3 overflow-hidden max-[1199px]:grid-cols-2 max-[767px]:grid-cols-2 max-[767px]:[&_.overview-cockpit-card:nth-child(3)]:col-span-full";
 const overviewHeroBaseClassName =
-  "overview-hero relative mb-3 grid min-h-[220px] min-w-0 max-w-full grid-cols-[minmax(0,1fr)_minmax(260px,320px)] items-center gap-6 overflow-hidden rounded-(--radius-lg) border border-(--color-border) bg-[linear-gradient(115deg,rgb(255_255_255_/_0.98),rgb(255_255_255_/_0.9)_44%,rgb(255_241_234_/_0.58)_72%),linear-gradient(180deg,var(--overview-hero-sky)_0%,#ffffff_58%,var(--overview-hero-ground)_100%)] p-6 shadow-[var(--shadow-panel)] [--overview-hero-accent:var(--color-primary)] [--overview-hero-ground:#f7d9b8] [--overview-hero-horizon:#8bd3e6] [--overview-hero-ink:#18191f] [--overview-hero-sky:#eaf6ff] max-[1199px]:grid-cols-[minmax(0,1fr)_minmax(240px,300px)] max-[767px]:min-h-0 max-[767px]:grid-cols-1 max-[767px]:gap-3 max-[767px]:p-4";
+  "overview-hero relative mb-3 grid min-h-[168px] min-w-0 max-w-full grid-cols-[minmax(0,1fr)_minmax(236px,280px)] items-center gap-4 overflow-hidden rounded-(--radius-lg) border border-[color-mix(in_srgb,var(--overview-hero-accent)_22%,var(--color-border))] bg-[linear-gradient(135deg,var(--color-surface)_0%,var(--overview-hero-sky)_100%)] p-5 shadow-[0_1px_0_rgb(15_23_42_/_0.04)] [--overview-hero-accent:var(--color-primary)] [--overview-hero-ground:#f7d9b8] [--overview-hero-horizon:#8bd3e6] [--overview-hero-ink:#18191f] [--overview-hero-sky:#eaf6ff] max-[1199px]:grid-cols-[minmax(0,1fr)_minmax(220px,260px)] max-[767px]:min-h-0 max-[767px]:grid-cols-1 max-[767px]:gap-3 max-[767px]:p-4";
 const overviewHeroToneClassNames = {
-  harbor: "[--overview-hero-accent:#ff773d] [--overview-hero-ground:#d6f2ef] [--overview-hero-horizon:#4fb8cc] [--overview-hero-sky:#e8f8ff]",
-  city: "[--overview-hero-accent:#ff773d] [--overview-hero-ground:#f6dfb6] [--overview-hero-horizon:#7c91d8] [--overview-hero-sky:#eef1ff]",
-  coast: "[--overview-hero-accent:#ff773d] [--overview-hero-ground:#fde68a] [--overview-hero-horizon:#38bdf8] [--overview-hero-sky:#e6f8ff]",
-  market: "[--overview-hero-accent:#ff773d] [--overview-hero-ground:#fee2b8] [--overview-hero-horizon:#fb7185] [--overview-hero-sky:#fff1df]",
+  harbor: "[--overview-hero-accent:var(--color-primary)] [--overview-hero-ground:#d6f2ef] [--overview-hero-horizon:#4fb8cc] [--overview-hero-sky:#e8f8ff]",
+  city: "[--overview-hero-accent:var(--color-primary)] [--overview-hero-ground:#f6dfb6] [--overview-hero-horizon:#7c91d8] [--overview-hero-sky:#eef1ff]",
+  coast: "[--overview-hero-accent:var(--color-route)] [--overview-hero-ground:#fde68a] [--overview-hero-horizon:#38bdf8] [--overview-hero-sky:#e6f8ff]",
+  market: "[--overview-hero-accent:var(--color-warning)] [--overview-hero-ground:#fee2b8] [--overview-hero-horizon:#fb7185] [--overview-hero-sky:#fff1df]",
 } satisfies Record<DestinationTone, string>;
 const overviewHeroCopyClassName = "overview-hero-copy relative z-[2] grid min-w-0 max-w-[760px] content-center gap-2.5";
-const overviewHeroKickerClassName = "overview-hero-kicker w-fit max-w-full overflow-hidden rounded-full border border-[color-mix(in_srgb,var(--overview-hero-accent)_24%,white)] bg-[rgb(255_255_255_/_0.72)] px-2.5 py-1.5 text-xs font-[850] leading-4 text-(--overview-hero-accent) text-ellipsis whitespace-nowrap";
-const overviewHeroTitleClassName = "m-0 text-[34px] font-[950] leading-[40px] text-(--overview-hero-ink) max-[767px]:text-[28px] max-[767px]:leading-8";
+const overviewHeroKickerClassName = "overview-hero-kicker w-fit max-w-full overflow-hidden rounded-full border border-[color-mix(in_srgb,var(--overview-hero-accent)_26%,white)] bg-[rgb(255_255_255_/_0.78)] px-2.5 py-1.5 text-xs font-[850] leading-4 text-(--overview-hero-accent) text-ellipsis whitespace-nowrap";
+const overviewHeroTitleClassName = "m-0 text-[30px] font-[950] leading-[36px] text-(--overview-hero-ink) max-[767px]:text-[26px] max-[767px]:leading-8";
 const overviewHeroRoleClassName = "overview-hero-role m-0 max-w-[620px] text-[15px] font-bold leading-[23px] text-[color-mix(in_srgb,var(--overview-hero-ink)_78%,var(--color-text-muted))] max-[767px]:text-[13px] max-[767px]:leading-5";
-const overviewHeroMetaClassName = "overview-hero-meta mt-1 flex flex-wrap gap-2 max-[767px]:grid max-[767px]:grid-cols-1 [&_.icon]:text-(--overview-hero-accent) [&_span]:inline-flex [&_span]:min-h-8 [&_span]:min-w-0 [&_span]:max-w-full [&_span]:items-center [&_span]:gap-[7px] [&_span]:rounded-(--radius-sm) [&_span]:border [&_span]:border-white/60 [&_span]:bg-white/70 [&_span]:px-[9px] [&_span]:py-1.5 [&_span]:text-xs [&_span]:font-extrabold [&_span]:leading-4 [&_span]:text-(--color-text) [&_span]:shadow-[0_8px_18px_rgb(15_23_42_/_0.05)] max-[767px]:[&_span]:overflow-hidden max-[767px]:[&_span]:text-ellipsis max-[767px]:[&_span]:whitespace-nowrap";
-const overviewHeroVisualClassName =
-  "overview-hero-visual absolute bottom-[22px] right-[min(360px,26vw)] top-[22px] z-[1] hidden min-h-0 w-[min(300px,28vw)] overflow-hidden rounded-(--radius-lg) border border-white/60 bg-[radial-gradient(circle_at_72%_18%,#fff7b8_0_28px,rgb(255_247_184_/_0.34)_29px_54px,transparent_55px),linear-gradient(180deg,rgb(255_255_255_/_0.18),transparent_44%),linear-gradient(180deg,var(--overview-hero-sky),color-mix(in_srgb,var(--overview-hero-horizon)_28%,white)_56%,var(--overview-hero-ground))] opacity-40 shadow-[inset_0_0_0_1px_rgb(255_255_255_/_0.32)] [&>span]:absolute [&>span]:block [&>span]:pointer-events-none";
-const overviewHeroSkylineClassName = "overview-hero-skyline";
-const overviewHeroRouteClassName = "overview-hero-route bottom-[17%] right-[9%] h-[46%] w-[74%] -rotate-[7deg] rounded-bl-full border-b-4 border-l-4 border-b-white/90 border-l-white/70";
-const overviewHeroMarkerClassName =
-  "overview-hero-marker bottom-[39%] left-[18%] size-[18px] -rotate-45 rounded-[999px_999px_999px_2px] border-4 border-white/90 bg-(--overview-hero-accent) shadow-[0_10px_18px_rgb(15_23_42_/_0.14)]";
-const overviewHeroPolaroidStackClassName =
-  "overview-hero-polaroid-stack absolute right-[392px] top-1/2 z-[1] hidden h-[212px] w-[246px] -translate-y-1/2 select-none pointer-events-none xl:block";
-const overviewHeroPolaroidClassName =
-  "overview-hero-polaroid absolute grid w-[150px] shrink-0 gap-2 border-[8px] border-white bg-white p-1.5 pb-5 shadow-[0_10px_22px_rgb(15_23_42_/_0.12)] transition-[transform,box-shadow] duration-300 ease-out [&_span]:text-center [&_span]:font-mono [&_span]:text-[9px] [&_span]:font-extrabold [&_span]:uppercase [&_span]:tracking-[0.12em] [&_span]:text-(--overview-hero-accent)";
-const overviewHeroPolaroidFrameClassName =
-  "relative aspect-[4/3] w-full overflow-hidden rounded-[2px] border border-slate-100 bg-slate-50";
-const overviewHeroAsideClassName = "overview-hero-aside relative z-[2] grid min-w-0 content-center gap-2.5 self-center rounded-(--radius-lg) border border-white/80 bg-white/86 p-3 shadow-[0_14px_30px_rgb(55_47_38_/_0.09)] max-[1199px]:col-auto max-[1199px]:grid-cols-1 max-[1199px]:items-center max-[767px]:grid-cols-1 [&_.page-current-user]:min-w-0 [&_.page-current-user]:w-full [&_.page-current-user]:border-transparent [&_.page-current-user]:bg-transparent [&_.page-current-user]:shadow-none";
-const overviewHeroSettlementsClassName = "overview-hero-settlements justify-self-stretch rounded-full border border-[color-mix(in_srgb,var(--overview-hero-accent)_26%,white)] bg-[rgb(255_255_255_/_0.7)] px-2.5 py-1.5 text-center text-xs font-[850] leading-4 text-(--overview-hero-accent)";
-const cockpitCardBaseClassName = "overview-cockpit-card grid min-h-[126px] min-w-0 content-start gap-2 rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) p-3.5 text-left text-inherit shadow-[var(--shadow-soft)] max-[767px]:min-h-[104px] [&_small]:min-w-0 [&_small]:text-xs [&_small]:font-bold [&_small]:leading-[17px] [&_small]:text-(--color-text-muted) [&_strong]:min-w-0 [&_strong]:text-[22px] [&_strong]:font-black [&_strong]:leading-7 [&_strong]:text-(--color-text) [&_strong]:[overflow-wrap:anywhere]";
-const cockpitCardButtonClassName = "overview-cockpit-card--button cursor-pointer transition-[border-color,box-shadow,transform] duration-150 hover:-translate-y-px hover:border-(--color-primary) hover:shadow-[0_16px_30px_rgb(15_23_42_/_0.08)] focus-visible:-translate-y-px focus-visible:border-(--color-primary) focus-visible:shadow-[0_16px_30px_rgb(15_23_42_/_0.08)] focus-visible:outline-none";
+const overviewHeroMetaClassName = "overview-hero-meta mt-1 flex flex-wrap gap-2 max-[767px]:grid max-[767px]:grid-cols-1 [&_.icon]:text-(--overview-hero-accent) [&_span]:inline-flex [&_span]:min-h-8 [&_span]:min-w-0 [&_span]:max-w-full [&_span]:items-center [&_span]:gap-[7px] [&_span]:rounded-(--radius-sm) [&_span]:border [&_span]:border-[color-mix(in_srgb,var(--overview-hero-accent)_18%,white)] [&_span]:bg-[rgb(255_255_255_/_0.74)] [&_span]:px-[9px] [&_span]:py-1.5 [&_span]:text-xs [&_span]:font-extrabold [&_span]:leading-4 [&_span]:text-(--color-text) max-[767px]:[&_span]:overflow-hidden max-[767px]:[&_span]:text-ellipsis max-[767px]:[&_span]:whitespace-nowrap";
+const overviewHeroAsideClassName = "overview-hero-aside relative z-[2] grid min-w-0 content-center gap-2.5 self-center rounded-(--radius-md) border border-[color-mix(in_srgb,var(--overview-hero-accent)_18%,white)] bg-[rgb(255_255_255_/_0.72)] p-3 shadow-[inset_0_1px_0_rgb(255_255_255_/_0.78)] max-[1199px]:col-auto max-[1199px]:grid-cols-1 max-[1199px]:items-center max-[767px]:grid-cols-1 [&_.page-current-user]:min-w-0 [&_.page-current-user]:w-full [&_.page-current-user]:border-transparent [&_.page-current-user]:bg-transparent [&_.page-current-user]:shadow-none";
+const overviewHeroSettlementsClassName = "overview-hero-settlements justify-self-stretch rounded-(--radius-sm) border border-[color-mix(in_srgb,var(--overview-hero-accent)_26%,white)] bg-[rgb(255_255_255_/_0.82)] px-2.5 py-1.5 text-center text-xs font-[850] leading-4 text-(--overview-hero-accent)";
+const cockpitCardBaseClassName = "overview-cockpit-card relative grid min-h-[126px] min-w-0 content-start gap-2 overflow-hidden rounded-(--radius-lg) border border-[color-mix(in_srgb,var(--overview-cockpit-accent)_16%,var(--color-border))] bg-[linear-gradient(150deg,var(--color-surface)_0%,var(--overview-cockpit-wash)_100%)] p-3.5 text-left text-inherit shadow-[inset_0_1px_0_rgb(255_255_255_/_0.72)] [--overview-cockpit-accent:var(--color-primary)] [--overview-cockpit-wash:var(--color-surface-subtle)] max-[767px]:min-h-[104px] [&_small]:min-w-0 [&_small]:text-xs [&_small]:font-bold [&_small]:leading-[17px] [&_small]:text-(--color-text-muted) [&_strong]:min-w-0 [&_strong]:text-[22px] [&_strong]:font-black [&_strong]:leading-7 [&_strong]:text-(--color-text) [&_strong]:[overflow-wrap:anywhere]";
+const cockpitCardButtonClassName = "overview-cockpit-card--button cursor-pointer transition-[border-color,box-shadow,transform] duration-150 hover:-translate-y-px hover:border-(--overview-cockpit-accent) hover:shadow-[0_4px_8px_rgb(15_23_42_/_0.06)] focus-visible:-translate-y-px focus-visible:border-(--overview-cockpit-accent) focus-visible:shadow-[0_0_0_3px_rgb(15_118_110_/_0.16)] focus-visible:outline-none";
 const overviewReadinessChipsClassName = "overview-readiness-chips flex min-w-0 flex-wrap gap-1.5 [&_span]:min-w-0 [&_span]:rounded-(--radius-sm) [&_span]:border [&_span]:border-[color-mix(in_srgb,var(--color-primary)_14%,var(--color-border))] [&_span]:bg-[rgb(255_255_255_/_0.68)] [&_span]:px-[7px] [&_span]:py-1 [&_span]:text-[11px] [&_span]:font-extrabold [&_span]:leading-[15px] [&_span]:text-(--color-text-muted)";
 const modalBackdropClassName = "modal-backdrop fixed inset-0 z-20 grid place-items-center bg-[rgb(15_23_42_/_0.28)] p-5 max-[767px]:items-end max-[767px]:p-2.5";
-const taskDialogClassName = "stop-dialog overview-task-dialog max-h-[calc(100vh-40px)] w-[min(480px,100%)] overflow-auto rounded-(--radius-lg) border border-(--color-border-strong) bg-(--color-surface) shadow-[0_30px_90px_rgb(15_23_42_/_0.24)]";
-const taskDialogTitleRowClassName = "dialog-title-row grid min-h-[62px] grid-cols-[minmax(0,1fr)_34px] items-center gap-3 border-b border-(--color-border) bg-[linear-gradient(180deg,var(--color-surface)_0%,var(--color-surface-subtle)_100%)] py-0 pl-5 pr-[18px] [&_button]:grid [&_button]:size-[34px] [&_button]:cursor-pointer [&_button]:place-items-center [&_button]:rounded-(--radius-sm) [&_button]:border [&_button]:border-transparent [&_button]:bg-transparent [&_button]:text-(--color-text-muted) [&_button]:transition-[background,border-color,color] [&_button]:duration-200 [&_button:focus-visible]:border-(--color-border) [&_button:focus-visible]:bg-(--color-surface) [&_button:focus-visible]:text-(--color-text) [&_button:hover]:border-(--color-border) [&_button:hover]:bg-(--color-surface) [&_button:hover]:text-(--color-text) [&_h2]:m-0 [&_h2]:text-lg [&_h2]:font-black [&_h2]:leading-6 [&_h2]:text-[#0f172a] [&_.icon]:size-[18px]";
-const taskDialogGridClassName = "dialog-grid grid grid-cols-2 gap-3.5 px-5 pb-5 pt-[18px] max-[767px]:grid-cols-1 [&_input]:min-h-11 [&_input]:w-full [&_input]:rounded-[10px] [&_input]:border [&_input]:border-(--color-border) [&_input]:bg-(--color-surface-subtle) [&_input]:px-3 [&_input]:text-sm [&_input]:font-bold [&_input]:text-(--color-text) [&_input]:transition-[background,border-color,box-shadow] [&_input]:duration-200 [&_input:focus]:border-(--color-primary-border) [&_input:focus]:bg-(--color-surface) [&_input:focus]:shadow-[0_0_0_3px_rgb(37_99_235_/_0.12)] [&_input:focus]:outline-none [&_label]:grid [&_label]:min-w-0 [&_label]:gap-[7px] [&_label>span]:text-xs [&_label>span]:font-extrabold [&_label>span]:leading-4 [&_label>span]:text-(--color-text) [&_select]:min-h-11 [&_select]:w-full [&_select]:rounded-[10px] [&_select]:border [&_select]:border-(--color-border) [&_select]:bg-(--color-surface-subtle) [&_select]:px-3 [&_select]:text-sm [&_select]:font-bold [&_select]:text-(--color-text) [&_select]:transition-[background,border-color,box-shadow] [&_select]:duration-200 [&_select:focus]:border-(--color-primary-border) [&_select:focus]:bg-(--color-surface) [&_select:focus]:shadow-[0_0_0_3px_rgb(37_99_235_/_0.12)] [&_select:focus]:outline-none [&_select:disabled]:bg-(--color-surface-muted) [&_select:disabled]:text-(--color-text-subtle)";
+const taskDialogClassName = "stop-dialog overview-task-dialog max-h-[calc(100vh-40px)] w-[min(480px,100%)] overflow-auto rounded-(--radius-lg) border border-(--color-border-strong) bg-(--color-surface) shadow-[0_14px_34px_rgb(15_23_42_/_0.16)]";
+const taskDialogTitleRowClassName = "dialog-title-row grid min-h-[62px] grid-cols-[minmax(0,1fr)_34px] items-center gap-3 border-b border-(--color-border) bg-[linear-gradient(180deg,var(--color-surface)_0%,var(--color-surface-subtle)_100%)] py-0 pl-5 pr-[18px] [&_button]:grid [&_button]:size-[34px] [&_button]:cursor-pointer [&_button]:place-items-center [&_button]:rounded-(--radius-sm) [&_button]:border [&_button]:border-transparent [&_button]:bg-transparent [&_button]:text-(--color-text-muted) [&_button]:transition-[background,border-color,color] [&_button]:duration-200 [&_button:focus-visible]:border-(--color-border) [&_button:focus-visible]:bg-(--color-surface) [&_button:focus-visible]:text-(--color-text) [&_button:hover]:border-(--color-border) [&_button:hover]:bg-(--color-surface) [&_button:hover]:text-(--color-text) [&_h2]:m-0 [&_h2]:text-lg [&_h2]:font-black [&_h2]:leading-6 [&_h2]:text-(--color-text) [&_.icon]:size-[18px]";
+const taskDialogGridClassName = "dialog-grid grid grid-cols-2 gap-3.5 px-5 pb-5 pt-[18px] max-[767px]:grid-cols-1 [&_input]:min-h-11 [&_input]:w-full [&_input]:rounded-[10px] [&_input]:border [&_input]:border-(--color-border) [&_input]:bg-(--color-surface-subtle) [&_input]:px-3 [&_input]:text-sm [&_input]:font-bold [&_input]:text-(--color-text) [&_input]:transition-[background,border-color,box-shadow] [&_input]:duration-200 [&_input:focus]:border-(--color-primary-border) [&_input:focus]:bg-(--color-surface) [&_input:focus]:shadow-[0_0_0_3px_rgb(255_196_168_/_0.28)] [&_input:focus]:outline-none [&_label]:grid [&_label]:min-w-0 [&_label]:gap-[7px] [&_label>span]:text-xs [&_label>span]:font-extrabold [&_label>span]:leading-4 [&_label>span]:text-(--color-text) [&_select]:min-h-11 [&_select]:w-full [&_select]:rounded-[10px] [&_select]:border [&_select]:border-(--color-border) [&_select]:bg-(--color-surface-subtle) [&_select]:px-3 [&_select]:text-sm [&_select]:font-bold [&_select]:text-(--color-text) [&_select]:transition-[background,border-color,box-shadow] [&_select]:duration-200 [&_select:focus]:border-(--color-primary-border) [&_select:focus]:bg-(--color-surface) [&_select:focus]:shadow-[0_0_0_3px_rgb(255_196_168_/_0.28)] [&_select:focus]:outline-none [&_select:disabled]:bg-(--color-surface-muted) [&_select:disabled]:text-(--color-text-subtle)";
 const dialogFieldWideClassName = "dialog-field-wide col-span-full";
 const taskDialogFormClassName = "overview-task-form overview-task-form--dialog grid grid-cols-1 gap-0 p-0";
 const taskDialogActionsClassName = "dialog-actions flex justify-end gap-2.5 border-t border-(--color-border) bg-(--color-surface-subtle) px-5 pb-[18px] pt-3.5 max-[767px]:grid [&_.button]:min-h-[38px] [&_.button]:min-w-[104px] [&_.button]:w-auto";
 const overviewGridClassName = "overview-grid m-0 grid w-full min-w-0 max-w-full grid-cols-[minmax(0,1.18fr)_minmax(300px,0.82fr)] gap-3 overflow-hidden max-[1199px]:grid-cols-1";
-const overviewPanelClassName = "overview-panel grid min-h-40 min-w-0 max-w-full content-start gap-2.5 overflow-hidden rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) p-4 shadow-[var(--shadow-soft)] [&>span]:text-xs [&>span]:font-bold [&>span]:text-(--color-text-muted) [&>strong]:text-xl [&>strong]:font-extrabold [&>strong]:leading-7 [&>strong]:text-(--color-text)";
+const overviewPanelClassName = "overview-panel grid min-h-40 min-w-0 max-w-full content-start gap-2.5 overflow-hidden rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) p-4 shadow-[0_1px_0_rgb(15_23_42_/_0.04)] [&>span]:text-xs [&>span]:font-bold [&>span]:text-(--color-text-muted) [&>strong]:text-xl [&>strong]:font-extrabold [&>strong]:leading-7 [&>strong]:text-(--color-text)";
 const overviewPanelWideClassName = "overview-panel--wide col-start-1 max-[1199px]:col-auto";
 const overviewPanelHealthClassName = "overview-panel--health min-h-[132px]";
-const overviewPanelButtonClassName = "overview-panel--button w-full cursor-pointer text-left text-inherit transition-[border-color,box-shadow,transform] duration-150 hover:-translate-y-px hover:border-(--color-primary) hover:shadow-[var(--shadow-soft)] focus-visible:-translate-y-px focus-visible:border-(--color-primary) focus-visible:shadow-[var(--shadow-soft)] focus-visible:outline-none";
+const overviewPanelButtonClassName = "overview-panel--button w-full cursor-pointer text-left text-inherit transition-[border-color,box-shadow,transform] duration-150 hover:-translate-y-px hover:border-(--color-primary) hover:shadow-[0_4px_8px_rgb(15_23_42_/_0.06)] focus-visible:-translate-y-px focus-visible:border-(--color-primary) focus-visible:shadow-[0_0_0_3px_rgb(15_118_110_/_0.16)] focus-visible:outline-none";
 const overviewTaskPanelClassName = "overview-task-panel col-start-2 row-[1/span_2] min-h-0 self-start max-[1199px]:col-auto max-[1199px]:row-auto";
 const overviewPanelTitleClassName = "overview-panel-title inline-flex items-center gap-2 text-(--color-primary-strong) [&_h2]:m-0 [&_h2]:text-[15px] [&_h2]:font-extrabold [&_h2]:leading-[22px] [&_h2]:text-(--color-text)";
 const overviewMutedClassName = "overview-muted text-xs font-bold text-(--color-text-muted)";
@@ -77,25 +65,26 @@ const overviewNextStopClassName = "overview-next-stop grid gap-[5px] [&_p]:m-0 [
 const overviewHealthGridClassName = "overview-health-grid grid grid-cols-3 gap-2 max-[520px]:grid-cols-1 [&_span]:grid [&_span]:min-h-[58px] [&_span]:gap-0.5 [&_span]:rounded-(--radius-sm) [&_span]:border [&_span]:border-(--color-border) [&_span]:bg-(--color-surface-subtle) [&_span]:p-2.5 [&_span]:text-xs [&_span]:font-bold [&_span]:leading-4 [&_span]:text-(--color-text-muted) [&_strong]:text-[22px] [&_strong]:font-extrabold [&_strong]:leading-[26px] [&_strong]:text-(--color-text)";
 const overviewStopListClassName = "overview-stop-list m-0 grid list-none gap-2 p-0 [&_li]:grid [&_li]:gap-[3px] [&_li]:rounded-(--radius-sm) [&_li]:border [&_li]:border-(--color-border) [&_li]:bg-(--color-surface-subtle) [&_li]:px-3 [&_li]:py-2.5 [&_small]:text-xs [&_small]:font-bold [&_small]:leading-4 [&_small]:text-(--color-text-muted) [&_span]:text-xs [&_span]:font-bold [&_span]:leading-4 [&_span]:text-(--color-text-muted) [&_strong]:text-sm [&_strong]:font-extrabold [&_strong]:leading-5 [&_strong]:text-(--color-text)";
 const overviewFocusListClassName = "overview-focus-list m-0 mt-2 grid list-none gap-1.5 p-0 [&_li]:flex [&_li]:flex-wrap [&_li]:items-center [&_li]:gap-x-2.5 [&_li]:gap-y-1.5 [&_li]:border-t [&_li]:border-(--color-border) [&_li]:pt-2 [&_span]:text-xs [&_span]:font-bold [&_span]:leading-4 [&_span]:text-(--color-text-muted) [&_strong]:text-[13px] [&_strong]:font-extrabold [&_strong]:leading-[18px] [&_strong]:text-(--color-text)";
-const overviewHighlightBoardClassName = "overview-highlight-board mb-4 min-w-0 max-w-full overflow-hidden rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) p-3 shadow-[var(--shadow-soft)]";
+const overviewHighlightBoardClassName = "overview-highlight-board mb-4 min-w-0 max-w-full overflow-hidden rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) p-3 shadow-[0_1px_0_rgb(15_23_42_/_0.04)]";
 const overviewBoardTitleClassName = "overview-board-title mb-2.5 flex items-center gap-[9px] text-(--color-text) [&_.icon]:text-(--color-primary) [&_h2]:m-0 [&_h2]:text-[15px] [&_h2]:font-black [&_h2]:leading-[22px] [&_p]:m-0 [&_p]:text-xs [&_p]:font-bold [&_p]:leading-[17px] [&_p]:text-(--color-text-muted)";
-const overviewHighlightListClassName = "overview-highlight-list m-0 grid list-none grid-cols-[repeat(4,minmax(150px,1fr))] gap-2.5 p-0 max-[1199px]:grid-cols-3 max-[767px]:flex max-[767px]:overflow-x-auto max-[767px]:pb-3.5 max-[767px]:scroll-snap-x max-[767px]:-mx-3 max-[767px]:px-3 [&::-webkit-scrollbar]:hidden";
+const overviewHighlightListClassName = "overview-highlight-list m-0 grid list-none grid-cols-[repeat(4,minmax(150px,1fr))] gap-2.5 p-0 max-[1199px]:grid-cols-3 max-[767px]:flex max-[767px]:overflow-x-auto max-[767px]:overscroll-x-contain max-[767px]:pb-3.5 max-[767px]:snap-x max-[767px]:snap-mandatory max-[767px]:-mx-3 max-[767px]:px-3 [&::-webkit-scrollbar]:hidden";
 const overviewHighlightItemClassName =
-  "overview-highlight-item relative grid min-h-[178px] min-w-0 content-end overflow-hidden rounded-(--radius-md) border border-[color-mix(in_srgb,var(--overview-highlight-accent)_18%,white)] bg-[linear-gradient(180deg,transparent_0_34%,rgb(255_255_255_/_0.78)_66%,rgb(255_255_255_/_0.94)),radial-gradient(circle_at_22%_22%,rgb(255_255_255_/_0.86)_0_16px,transparent_17px),linear-gradient(135deg,var(--overview-highlight-wash),color-mix(in_srgb,var(--overview-highlight-accent)_18%,white))] px-3 pb-3 pt-[88px] [--overview-highlight-accent:#0284c7] [--overview-highlight-wash:#e0f2fe] max-[767px]:min-h-[150px] max-[767px]:w-[240px] max-[767px]:shrink-0 max-[767px]:scroll-snap-align-start [&_small]:relative [&_small]:z-[1] [&_small]:min-w-0 [&_small]:overflow-hidden [&_small]:text-ellipsis [&_small]:whitespace-nowrap [&_small]:text-[11px] [&_small]:font-bold [&_small]:leading-[15px] [&_small]:text-(--color-text-muted) [&_span]:relative [&_span]:z-[1] [&_span]:text-[11px] [&_span]:font-[850] [&_span]:leading-[15px] [&_span]:text-(--overview-highlight-accent) [&_strong]:relative [&_strong]:z-[1] [&_strong]:min-w-0 [&_strong]:overflow-hidden [&_strong]:text-ellipsis [&_strong]:whitespace-nowrap [&_strong]:text-[13px] [&_strong]:font-black [&_strong]:leading-[18px] [&_strong]:text-(--color-text)";
+  "overview-highlight-item relative grid min-h-[178px] min-w-0 content-end overflow-hidden rounded-(--radius-md) border border-[color-mix(in_srgb,var(--overview-highlight-accent)_18%,white)] bg-[linear-gradient(180deg,transparent_0_34%,rgb(255_255_255_/_0.78)_66%,rgb(255_255_255_/_0.94)),radial-gradient(circle_at_22%_22%,rgb(255_255_255_/_0.86)_0_16px,transparent_17px),linear-gradient(135deg,var(--overview-highlight-wash),color-mix(in_srgb,var(--overview-highlight-accent)_18%,white))] px-3 pb-3 pt-[88px] [--overview-highlight-accent:#0284c7] [--overview-highlight-wash:#e0f2fe] max-[767px]:min-h-[150px] max-[767px]:w-[240px] max-[767px]:shrink-0 max-[767px]:snap-start [&_small]:relative [&_small]:z-[1] [&_small]:min-w-0 [&_small]:overflow-hidden [&_small]:text-ellipsis [&_small]:whitespace-nowrap [&_small]:text-[11px] [&_small]:font-bold [&_small]:leading-[15px] [&_small]:text-(--color-text-muted) [&_span]:relative [&_span]:z-[1] [&_span]:text-[11px] [&_span]:font-[850] [&_span]:leading-[15px] [&_span]:text-(--overview-highlight-accent) [&_strong]:relative [&_strong]:z-[1] [&_strong]:min-w-0 [&_strong]:text-[13px] [&_strong]:font-black [&_strong]:leading-[18px] [&_strong]:text-(--color-text) [&_strong]:[overflow-wrap:anywhere]";
 const overviewHighlightToneClassNames = {
-  harbor: "[--overview-highlight-accent:#0f766e] [--overview-highlight-wash:#ccfbf1]",
-  city: "[--overview-highlight-accent:#4f46e5] [--overview-highlight-wash:#e0e7ff]",
-  coast: "[--overview-highlight-accent:#0284c7] [--overview-highlight-wash:#cffafe]",
-  market: "[--overview-highlight-accent:#c2410c] [--overview-highlight-wash:#ffedd5]",
+  harbor: "[--overview-highlight-accent:var(--color-primary)] [--overview-highlight-wash:var(--color-primary-soft)]",
+  city: "[--overview-highlight-accent:var(--color-route)] [--overview-highlight-wash:var(--color-route-soft)]",
+  coast: "[--overview-highlight-accent:var(--color-route)] [--overview-highlight-wash:var(--color-route-soft)]",
+  market: "[--overview-highlight-accent:var(--color-warning-strong)] [--overview-highlight-wash:var(--color-warning-soft)]",
 } satisfies Record<DestinationTone, string>;
 const overviewTaskToolbarClassName = "overview-task-toolbar flex flex-wrap items-center justify-between gap-2";
 const overviewTaskFiltersClassName = "overview-task-filters inline-flex w-fit max-w-full rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-muted) p-0.5";
 const overviewTaskFilterClassName = "overview-task-filter min-h-8 rounded-[calc(var(--radius-sm)-2px)] border-0 bg-transparent px-2.5 text-xs font-extrabold text-(--color-text-muted)";
 const overviewTaskFilterActiveClassName = "overview-task-filter--active bg-(--color-surface) text-(--color-primary-strong) shadow-[0_1px_4px_rgb(15_23_42_/_0.06)]";
-const overviewTaskAddButtonClassName = "overview-task-add-button inline-flex min-h-[34px] w-[34px] flex-none items-center justify-center rounded-(--radius-sm) border border-(--color-primary-border) bg-(--color-primary) p-0 text-xl font-extrabold leading-none text-white transition-[background,border-color,box-shadow,transform] duration-200 hover:border-(--color-primary) hover:bg-(--color-primary-strong) hover:shadow-[0_8px_18px_rgb(37_99_235_/_0.18)] active:translate-y-px focus-visible:outline focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[rgb(37_99_235_/_0.22)]";
+const overviewTaskAddButtonClassName = "overview-task-add-button inline-flex min-h-[34px] w-[34px] flex-none items-center justify-center rounded-(--radius-sm) border border-(--color-primary-border) bg-(--color-primary) p-0 text-xl font-extrabold leading-none text-white transition-[background,border-color,box-shadow,transform] duration-200 hover:border-(--color-primary) hover:bg-(--color-primary-strong) hover:shadow-[0_8px_18px_rgb(194_79_22_/_0.18)] active:translate-y-px focus-visible:outline focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[rgb(194_79_22_/_0.22)]";
 const personalTaskFormClassName = "overview-task-form overview-task-form--personal grid grid-cols-[minmax(140px,1fr)_auto] items-end gap-2 [&_button]:min-h-[34px] [&_button]:rounded-(--radius-sm) [&_button]:border [&_button]:border-(--color-primary-border) [&_button]:bg-(--color-primary) [&_button]:px-3 [&_button]:text-xs [&_button]:font-extrabold [&_button]:text-white [&_button:disabled]:border-(--color-border) [&_button:disabled]:bg-(--color-surface-muted) [&_button:disabled]:text-(--color-text-subtle) [&_input]:min-h-[34px] [&_input]:w-full [&_input]:rounded-(--radius-sm) [&_input]:border [&_input]:border-(--color-border) [&_input]:bg-(--color-surface) [&_input]:px-2.5 [&_input]:text-xs [&_input]:font-bold [&_input]:text-(--color-text) [&_label]:grid [&_label]:min-w-0 [&_label]:gap-[5px] [&_label>span]:text-[11px] [&_label>span]:font-extrabold [&_label>span]:leading-[15px] [&_label>span]:text-(--color-text-muted) w-full max-[767px]:grid-cols-1 max-[767px]:[&_button]:w-full";
 const overviewTaskListClassName = "overview-task-list m-0 grid list-none gap-2 p-0 text-[13px] font-semibold leading-5 text-(--color-text-muted)";
 const overviewTaskItemClassName = "overview-task-item grid min-h-10 grid-cols-[minmax(0,1fr)_auto] items-center gap-2.5 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) px-2.5 py-2 max-[767px]:grid-cols-1 [&_input]:size-4 [&_input]:accent-[var(--color-primary)] [&_label]:inline-flex [&_label]:min-w-0 [&_label]:items-center [&_label]:gap-[9px] [&_label>span]:overflow-hidden [&_label>span]:text-ellipsis [&_label>span]:whitespace-nowrap [&_label>span]:text-[13px] [&_label>span]:leading-[18px] [&_small]:whitespace-nowrap [&_small]:text-[11px] [&_small]:font-extrabold [&_small]:text-(--color-text-muted)";
+const overviewTaskItemInteractiveClassName = "transition-[border-color,box-shadow,background] duration-150 hover:border-(--color-primary-border) hover:bg-(--color-surface)";
 const overviewTaskMetaClassName = "overview-task-meta inline-flex flex-wrap justify-end gap-1.5";
 const overviewUndoToastClassName = "overview-undo-toast fixed bottom-5 right-5 z-[80] inline-flex max-w-[min(420px,calc(100vw-32px))] items-center gap-3 rounded-(--radius-md) border border-(--color-primary) bg-(--color-surface) px-3.5 py-3 text-[13px] font-extrabold text-(--color-text) shadow-[var(--shadow-panel)] [&_button]:min-h-8 [&_button]:cursor-pointer [&_button]:rounded-(--radius-sm) [&_button]:border [&_button]:border-(--color-border-strong) [&_button]:bg-(--color-primary-soft) [&_button]:px-2.5 [&_button]:text-(--color-primary-strong) [&_button]:font-extrabold";
 
@@ -324,7 +313,7 @@ export function OverviewPage({
               {visibleTasks.length ? (
                 <ul className={overviewTaskListClassName}>
                   {visibleTasks.map((task) => (
-                    <li className={cn(overviewTaskItemClassName, "hover:border-teal-600/30 hover:shadow-xs transition-all duration-200")} key={task.id} aria-label={task.title} data-status={task.status}>
+                    <li className={cn(overviewTaskItemClassName, overviewTaskItemInteractiveClassName)} key={task.id} aria-label={task.title} data-status={task.status}>
                       <label>
                         <input type="checkbox" checked={task.status === "done"} onChange={() => toggleTask(task)} />
                         <span className={task.status === "done" ? "line-through text-(--color-text-muted) font-normal" : "text-(--color-text) font-bold"}>
@@ -469,7 +458,7 @@ export function OverviewPage({
           {visibleTasks.length ? (
             <ul className={overviewTaskListClassName}>
               {visibleTasks.map((task) => (
-                <li className={cn(overviewTaskItemClassName, "hover:border-teal-600/30 hover:shadow-xs transition-all duration-200")} key={task.id} aria-label={task.title} data-status={task.status}>
+                <li className={cn(overviewTaskItemClassName, overviewTaskItemInteractiveClassName)} key={task.id} aria-label={task.title} data-status={task.status}>
                   <label>
                     <input type="checkbox" checked={task.status === "done"} onChange={() => toggleTask(task)} />
                     <span className={task.status === "done" ? "line-through text-(--color-text-muted) font-normal" : "text-(--color-text) font-bold"}>
@@ -803,38 +792,36 @@ function TripCompletedPostcard({ trip, items, groupSpendLabel, locale }: { trip:
   const stopCount = items.length;
 
   return (
-    <div className="relative overflow-hidden rounded-xl border border-amber-200/60 bg-(--color-paper-warm) p-5 shadow-[0_8px_24px_rgba(245_158_11_/_0.04)] bg-[image:var(--paper-grain)] bg-[length:120px_120px]">
-      {/* Decorative Stamp */}
-      <div className="absolute top-4 right-4 w-12 h-14 border-2 border-dashed border-amber-300/40 rounded-xs flex flex-col items-center justify-center rotate-[6deg] select-none opacity-60">
-        <Icon name="location" className="size-5 text-amber-500/50" />
-        <span className="text-[7px] font-black text-amber-600/40 uppercase mt-0.5 tracking-wider font-mono">Joii Map</span>
+    <div className="relative overflow-hidden rounded-(--radius-md) border border-(--color-warning-border) bg-(--color-warning-soft) bg-[image:var(--paper-grain)] bg-[length:120px_120px] p-5">
+      <div className="absolute top-4 right-4 flex h-14 w-12 rotate-[6deg] select-none flex-col items-center justify-center rounded-(--radius-sm) border-2 border-dashed border-(--color-warning-border) opacity-70">
+        <Icon name="location" className="size-5 text-(--color-warning-strong)" />
+        <span className="mt-0.5 font-mono text-[7px] font-black uppercase tracking-normal text-(--color-warning-strong)">Joii Map</span>
       </div>
 
-      <div className="flex flex-col gap-2.5 max-w-[85%]">
-        <strong className="text-base font-extrabold text-amber-900/90 leading-tight flex items-center gap-1.5">
-          <Icon name="calendar" className="size-4.5 text-amber-700" />
+      <div className="flex max-w-[85%] flex-col gap-2.5">
+        <strong className="flex items-center gap-1.5 text-base font-extrabold leading-tight text-(--color-text)">
+          <Icon name="calendar" className="size-4.5 text-(--color-warning-strong)" />
           {locale === "th" ? "ขอบคุณสำหรับการเดินทาง!" : "Thank you for traveling!"}
         </strong>
-        <p className="m-0 text-xs font-bold leading-relaxed text-amber-800/80">
+        <p className="m-0 text-xs font-bold leading-relaxed text-(--color-text-muted)">
           {locale === "th" 
             ? `ทริป ${trip.name} ได้เสร็จสิ้นลงแล้วอย่างสมบูรณ์แบบ หวังว่าคุณจะได้รับความทรงจำและมิตรภาพที่ยอดเยี่ยมระหว่างเดินทาง!`
             : `The ${trip.name} has completed. Hope this journey left you with beautiful memories and meaningful connections!`}
         </p>
       </div>
 
-      {/* Stats row */}
-      <div className="grid grid-cols-3 gap-2 border-t border-amber-200/40 pt-4 mt-4 text-center">
+      <div className="mt-4 grid grid-cols-3 gap-2 border-t border-(--color-warning-border) pt-4 text-center">
         <div className="flex flex-col gap-0.5">
-          <span className="text-[10px] font-extrabold uppercase tracking-wider text-amber-700/60">{locale === "th" ? "ระยะเวลา" : "Duration"}</span>
-          <strong className="text-lg font-black text-amber-900">{dayCount} {locale === "th" ? "วัน" : "Days"}</strong>
+          <span className="text-[10px] font-extrabold uppercase tracking-normal text-(--color-warning-strong)">{locale === "th" ? "ระยะเวลา" : "Duration"}</span>
+          <strong className="text-lg font-black text-(--color-text)">{dayCount} {locale === "th" ? "วัน" : "Days"}</strong>
         </div>
-        <div className="flex flex-col gap-0.5 border-x border-amber-200/40">
-          <span className="text-[10px] font-extrabold uppercase tracking-wider text-amber-700/60">{locale === "th" ? "สถานที่เช็คอิน" : "Places Visited"}</span>
-          <strong className="text-lg font-black text-amber-900">{stopCount} {locale === "th" ? "จุด" : "Stops"}</strong>
+        <div className="flex flex-col gap-0.5 border-x border-(--color-warning-border)">
+          <span className="text-[10px] font-extrabold uppercase tracking-normal text-(--color-warning-strong)">{locale === "th" ? "สถานที่เช็คอิน" : "Places Visited"}</span>
+          <strong className="text-lg font-black text-(--color-text)">{stopCount} {locale === "th" ? "จุด" : "Stops"}</strong>
         </div>
         <div className="flex flex-col gap-0.5">
-          <span className="text-[10px] font-extrabold uppercase tracking-wider text-amber-700/60">{locale === "th" ? "ยอดใช้จ่ายรวม" : "Total Budget"}</span>
-          <strong className="text-lg font-black text-amber-900">{groupSpendLabel}</strong>
+          <span className="text-[10px] font-extrabold uppercase tracking-normal text-(--color-warning-strong)">{locale === "th" ? "ยอดใช้จ่ายรวม" : "Total Budget"}</span>
+          <strong className="text-lg font-black text-(--color-text)">{groupSpendLabel}</strong>
         </div>
       </div>
     </div>
@@ -852,27 +839,25 @@ function TaskAssigneeBadge({ task, trip, labels }: { task: TripTask; trip: Trip;
   const isPrivate = task.visibility === "private";
   const member = task.assigneeId ? trip.members.find((m) => m.id === task.assigneeId) : null;
   const name = member?.displayName ?? labels.tripMember;
-  const color = member?.color ?? "#cbd5e1";
+  const color = member?.color ?? "var(--color-text-subtle)";
   const initial = name.slice(0, 1).toUpperCase();
 
   return (
     <div className="inline-flex flex-wrap items-center gap-1.5">
-      {/* Visibility Badge */}
       <small className={cn(
-        "inline-flex items-center text-[10px] font-bold px-1.5 py-0.5 rounded-sm border",
+        "inline-flex items-center rounded-sm border px-1.5 py-0.5 text-[10px] font-bold",
         isPrivate 
-          ? "bg-teal-50 text-teal-700 border-teal-100/50" 
-          : "bg-blue-50 text-blue-700 border-blue-100/50"
+          ? "border-(--color-primary-border) bg-(--color-primary-soft) text-(--color-primary-strong)" 
+          : "border-(--color-route-border) bg-(--color-route-soft) text-(--color-route)"
       )}>
         {isPrivate ? labels.private : labels.shared}
       </small>
 
-      {/* Assignee Badge */}
       {task.visibility !== "private" && (
         task.assigneeId ? (
           <div className="inline-flex items-center gap-1">
             <span
-              className="w-[18px] h-[18px] rounded-full flex items-center justify-center text-[9px] font-black text-white shrink-0 shadow-2xs"
+              className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full text-[9px] font-black text-white"
               style={{ backgroundColor: color }}
               title={name}
             >
@@ -883,7 +868,7 @@ function TaskAssigneeBadge({ task, trip, labels }: { task: TripTask; trip: Trip;
             </span>
           </div>
         ) : (
-          <small className="inline-flex items-center bg-slate-50 border border-slate-200/50 text-[10px] font-bold text-slate-500 px-1.5 py-0.5 rounded-sm">
+          <small className="inline-flex items-center rounded-sm border border-(--color-border) bg-(--color-surface-subtle) px-1.5 py-0.5 text-[10px] font-bold text-(--color-text-muted)">
             {labels.unassigned}
           </small>
         )
@@ -922,10 +907,10 @@ function OverviewHero({
         <div className="flex flex-wrap items-center gap-2 mb-1">
           <span className={overviewHeroKickerClassName}>{destinationLabel}</span>
           <span className={cn(
-            "text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider shadow-2xs border",
-            countdown.type === "incoming" && "bg-teal-50 text-teal-700 border-teal-100 dark:bg-teal-950/30 dark:text-teal-400 dark:border-teal-900/30",
-            countdown.type === "active" && "bg-amber-50 text-amber-700 border-amber-100 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-900/30",
-            countdown.type === "completed" && "bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700"
+            "text-[11px] font-extrabold px-2 py-0.5 rounded-full border",
+            countdown.type === "incoming" && "bg-(--color-primary-soft) text-(--color-primary-strong) border-(--color-primary-border)",
+            countdown.type === "active" && "bg-(--color-warning-soft) text-(--color-warning-strong) border-(--color-warning-border)",
+            countdown.type === "completed" && "bg-(--color-surface-muted) text-(--color-text-muted) border-(--color-border)"
           )}>
             {countdown.text}
           </span>
@@ -939,40 +924,6 @@ function OverviewHero({
           <span><Icon name="wallet" /> {groupSpendLabel}</span>
         </div>
       </div>
-      {visual.polaroids.length ? (
-        <div className={overviewHeroPolaroidStackClassName} aria-hidden="true">
-          {visual.polaroids.map((polaroid, index) => (
-            <div
-              className={cn(
-                overviewHeroPolaroidClassName,
-                index === 0 && "left-0 top-10 rotate-[-8deg] opacity-95",
-                index === 1 && "left-[48px] top-2 z-[2] w-[166px] rotate-[-1deg] shadow-[0_12px_26px_rgb(15_23_42_/_0.14)]",
-                index === 2 && "right-0 top-[58px] rotate-[7deg] opacity-95",
-              )}
-              key={`${polaroid.imageUrl}:${polaroid.caption}`}
-            >
-              <div className={overviewHeroPolaroidFrameClassName}>
-                <Image
-                  src={polaroid.imageUrl}
-                  alt=""
-                  fill
-                  sizes={index === 1 ? "166px" : "150px"}
-                  className="object-cover"
-                  priority={index === 1}
-                  loading={index === 1 ? "eager" : undefined}
-                />
-              </div>
-              <span>{polaroid.caption}</span>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className={overviewHeroVisualClassName} aria-hidden="true">
-          <span className={overviewHeroSkylineClassName} />
-          <span className={overviewHeroRouteClassName} />
-          <span className={overviewHeroMarkerClassName} />
-        </div>
-      )}
       <div className={overviewHeroAsideClassName}>
         {currentMemberCard}
         <span className={overviewHeroSettlementsClassName}>{t.overview.money.settlementsCount({ count: settlementCount })}</span>
@@ -997,21 +948,29 @@ function CockpitCard({
   onClick?: () => void;
 }) {
   const iconColors = {
-    route: "bg-teal-50 text-teal-700 border border-teal-100/80 dark:bg-teal-950/40 dark:text-teal-400 dark:border-teal-900/40",
-    wallet: "bg-amber-50 text-amber-700 border border-amber-100/80 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-900/40",
-    users: "bg-sky-50 text-sky-700 border border-sky-100/80 dark:bg-sky-950/40 dark:text-sky-400 dark:border-sky-900/40",
-    calendar: "bg-indigo-50 text-indigo-700 border border-indigo-100/80 dark:bg-indigo-950/40 dark:text-indigo-400 dark:border-indigo-900/40",
-    location: "bg-emerald-50 text-emerald-700 border border-emerald-100/80 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-900/40",
-    check: "bg-purple-50 text-purple-700 border border-purple-100/80 dark:bg-purple-950/40 dark:text-purple-400 dark:border-purple-900/40",
-  }[icon] || "bg-slate-50 text-slate-700";
+    route: "border border-(--color-route-border) bg-(--color-route-soft) text-(--color-route)",
+    wallet: "border border-(--color-warning-border) bg-(--color-warning-soft) text-(--color-warning-strong)",
+    users: "border border-(--color-route-border) bg-(--color-route-soft) text-(--color-route)",
+    calendar: "border border-(--color-primary-border) bg-(--color-primary-soft) text-(--color-primary-strong)",
+    location: "border border-(--color-primary-border) bg-(--color-primary-soft) text-(--color-primary-strong)",
+    check: "border border-(--color-success-border) bg-(--color-success-soft) text-(--color-success)",
+  }[icon] || "border border-(--color-border) bg-(--color-surface-subtle) text-(--color-text-muted)";
+  const cardTone = {
+    route: "[--overview-cockpit-accent:var(--color-route)] [--overview-cockpit-wash:var(--color-route-soft)]",
+    wallet: "[--overview-cockpit-accent:var(--color-warning-strong)] [--overview-cockpit-wash:var(--color-warning-soft)]",
+    users: "[--overview-cockpit-accent:var(--color-primary)] [--overview-cockpit-wash:var(--color-primary-soft)]",
+    calendar: "[--overview-cockpit-accent:var(--color-primary)] [--overview-cockpit-wash:var(--color-primary-soft)]",
+    location: "[--overview-cockpit-accent:var(--color-route)] [--overview-cockpit-wash:var(--color-route-soft)]",
+    check: "[--overview-cockpit-accent:var(--color-success)] [--overview-cockpit-wash:var(--color-success-soft)]",
+  }[icon] || "";
 
   const content = (
     <div className="flex flex-col gap-2 w-full">
       <div className="flex items-center gap-2">
-        <div className={cn("size-8 rounded-full flex items-center justify-center shrink-0 shadow-xs", iconColors)}>
+        <div className={cn("flex size-8 shrink-0 items-center justify-center rounded-full", iconColors)}>
           <Icon name={icon} className="size-4" />
         </div>
-        <span className="text-[11px] font-extrabold uppercase tracking-wider text-(--color-text-muted)">
+        <span className="text-[11px] font-extrabold uppercase tracking-normal text-(--color-text-muted)">
           {label}
         </span>
       </div>
@@ -1031,8 +990,9 @@ function CockpitCard({
       <button
         className={cn(
           cockpitCardBaseClassName,
+          cardTone,
           cockpitCardButtonClassName,
-          "hover:scale-[1.01] hover:border-(--color-primary) active:scale-[0.99] transition-all duration-200"
+          "active:translate-y-px"
         )}
         type="button"
         aria-label={ariaLabel}
@@ -1044,7 +1004,7 @@ function CockpitCard({
   }
 
   return (
-    <div className={cn(cockpitCardBaseClassName, "hover:scale-[1.01] hover:border-slate-300 transition-all duration-200")}>
+    <div className={cn(cockpitCardBaseClassName, cardTone)}>
       {content}
     </div>
   );
@@ -1071,8 +1031,8 @@ function HighlightBoard({ items, startDate, locale, emptyMessage, title, subtitl
                 className={cn(
                   overviewHighlightItemClassName,
                   !imgUrl && overviewHighlightToneClassNames[highlightTone(item, index)],
-                  imgUrl && "border-slate-200/60 bg-slate-900",
-                  "hover:scale-[1.02] hover:shadow-[0_12px_24px_rgba(15,23,42,0.08)] transition-all duration-300 group cursor-pointer"
+                  imgUrl && "border-(--color-border-strong) bg-(--color-text)",
+                  "group cursor-pointer transition-[border-color,box-shadow,transform] duration-150 hover:-translate-y-0.5 hover:border-(--color-primary-border)"
                 )}
                 key={item.id}
               >
@@ -1087,16 +1047,16 @@ function HighlightBoard({ items, startDate, locale, emptyMessage, title, subtitl
                       priority={index === 0}
                       loading={index === 0 ? "eager" : undefined}
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/40 to-transparent z-[1]" />
+                    <div className="absolute inset-0 z-[1] bg-[linear-gradient(180deg,rgb(15_23_42_/_0.12),rgb(15_23_42_/_0.82))]" />
                   </>
                 )}
-                <span className={cn("relative z-10 text-[11px] font-bold uppercase tracking-wider mb-1", imgUrl ? "text-slate-300" : "text-(--overview-highlight-accent)")}>
+                <span className={cn("relative z-10 mb-1 text-[11px] font-bold uppercase tracking-normal", imgUrl ? "text-white/82" : "text-(--overview-highlight-accent)")}>
                   {formatDayLabel(item.day, startDate, locale)} · {item.startTime}
                 </span>
-                <strong className={cn("relative z-10 text-sm font-black leading-snug mb-0.5", imgUrl ? "text-white group-hover:text-teal-200 transition-colors" : "text-(--color-text)")}>
+                <strong className={cn("relative z-10 mb-0.5 text-sm font-black leading-snug [overflow-wrap:anywhere]", imgUrl ? "text-white" : "text-(--color-text)")}>
                   {item.activity}
                 </strong>
-                <small className={cn("relative z-10 text-[11px] font-bold overflow-hidden text-ellipsis whitespace-nowrap", imgUrl ? "text-slate-300" : "text-(--color-text-muted)")}>
+                <small className={cn("relative z-10 overflow-hidden text-ellipsis whitespace-nowrap text-[11px] font-bold", imgUrl ? "text-white/78" : "text-(--color-text-muted)")}>
                   {item.place}
                 </small>
               </li>

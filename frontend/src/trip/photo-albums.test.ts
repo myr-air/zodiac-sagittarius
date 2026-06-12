@@ -3,6 +3,7 @@ import {
   buildPhotoAlbumSummary,
   filterPhotoAlbumLinks,
   findPhotoAlbumRelations,
+  safePhotoAlbumCoverHref,
   safePhotoAlbumHref,
 } from "./photo-albums";
 import type { ItineraryItem, Member, Trip, TripPhotoAlbumLink } from "./types";
@@ -72,6 +73,13 @@ describe("photo album helpers", () => {
     expect(safePhotoAlbumHref("https://photos.app.goo.gl/example")).toBe("https://photos.app.goo.gl/example");
     expect(safePhotoAlbumHref("javascript:alert(1)")).toBeNull();
     expect(safePhotoAlbumHref("data:text/html;base64,PHNjcmlwdA==")).toBeNull();
+  });
+
+  it("allows same-origin cover assets while blocking unsafe cover URLs", () => {
+    expect(safePhotoAlbumCoverHref("/landing/auth/photo-hong-kong-skyline.png")).toBe("/landing/auth/photo-hong-kong-skyline.png");
+    expect(safePhotoAlbumCoverHref("https://images.example.test/cover.jpg")).toBe("https://images.example.test/cover.jpg");
+    expect(safePhotoAlbumCoverHref("//evil.example.test/cover.jpg")).toBeNull();
+    expect(safePhotoAlbumCoverHref("javascript:alert(1)")).toBeNull();
   });
 
   it("finds owner and itinerary relations for the inspector", () => {

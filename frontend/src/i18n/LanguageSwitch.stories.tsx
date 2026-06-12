@@ -31,5 +31,5 @@ export const ThaiSelected: Story = {
 
 export const CompactRail: Story = {
   args: { className: "side-rail-language" },
-  parameters: { viewport: { defaultViewport: "mobile1" } },
+  parameters: { viewport: { defaultViewport: "mobile320" } },
 };

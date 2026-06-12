@@ -25,13 +25,14 @@ export function WeatherBriefingDrawer({ briefing, locale, canEdit, isOpen, onClo
   const copy = weatherDrawerCopy(locale);
   const weather = briefing.weather;
   const outfitBody = briefing.manualOverrides.outfitAdvice ?? briefing.outfitAdvice?.body ?? emptyText(locale);
+  const summary = formatWeatherSummary(weather?.conditionLabel, weather?.temperatureMaxCelsius, weather?.temperatureMinCelsius, locale);
 
   return (
       <section className={drawerClassName} role="region" aria-label={copy.regionLabel}>
         <header className={drawerHeaderClassName}>
           <div>
             <p className="m-0 text-xs font-black leading-4 text-(--color-text-muted)">{formatFullDate(briefing.date, locale)} · {briefing.locationLabel}</p>
-            <h2 className="m-0 mt-1 text-2xl font-black leading-8 text-(--color-text)">{weather?.conditionLabel ?? emptyText(locale)} · {formatTemp(weather?.temperatureMaxCelsius)} {formatTemp(weather?.temperatureMinCelsius)}</h2>
+            <h2 className="m-0 mt-1 text-2xl font-black leading-8 text-(--color-text)">{summary}</h2>
           </div>
           <Button type="button" variant="ghost" onClick={onClose}>{copy.close}</Button>
         </header>
@@ -134,6 +135,12 @@ function formatFullDate(date: string, locale: Locale): string {
 function formatTemp(value: number | null | undefined): string {
   if (typeof value !== "number") return "--°";
   return `${Math.round(value)}°`;
+}
+
+function formatWeatherSummary(conditionLabel: string | null | undefined, high: number | null | undefined, low: number | null | undefined, locale: Locale): string {
+  const condition = conditionLabel ?? emptyText(locale);
+  if (typeof high !== "number" && typeof low !== "number") return condition;
+  return `${condition} · ${formatTemp(high)} ${formatTemp(low)}`;
 }
 
 function formatPercent(value: number | null | undefined): string {

@@ -64,6 +64,13 @@ describe("WeatherBriefingDrawer", () => {
     expect(screen.getByLabelText(/ปรับคำแนะนำการแต่งตัว/i)).toBeInTheDocument();
   });
 
+  it("keeps missing temperature data out of the weather summary", () => {
+    render(<WeatherBriefingDrawer briefing={{ ...briefing, weather: { ...briefing.weather!, conditionLabel: "Forecast pending", temperatureMaxCelsius: null, temperatureMinCelsius: null } }} locale="en" canEdit isOpen onClose={() => {}} />);
+
+    expect(screen.getByRole("heading", { name: "Forecast pending" })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: /--° --°/ })).not.toBeInTheDocument();
+  });
+
   it("submits manual overrides with date and version", async () => {
     const onSaveOverrides = vi.fn();
     render(<WeatherBriefingDrawer briefing={briefing} locale="en" canEdit isOpen onClose={() => {}} onSaveOverrides={onSaveOverrides} />);

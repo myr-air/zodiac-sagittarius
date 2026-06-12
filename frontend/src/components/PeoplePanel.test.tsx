@@ -96,11 +96,18 @@ describe("PeoplePanel", () => {
       />,
     );
 
-    expect(screen.getByRole("region", { name: /People and presence/i })).toHaveClass("detail-section", "people-module", "grid", "gap-3");
+    expect(screen.getByRole("region", { name: /People and presence/i })).toHaveClass(
+      "detail-section",
+      "people-module",
+      "grid",
+      "gap-3",
+      "shadow-[0_1px_0_rgb(15_23_42_/_0.04)]",
+    );
     expect(screen.getAllByText(/Explorer Friend/i)[0].closest(".person-row")).toHaveClass(
       "person-row",
       "grid",
       "rounded-(--radius-sm)",
+      "shadow-[0_1px_0_rgb(15_23_42_/_0.035)]",
     );
     expect(screen.getByLabelText(/Status for Explorer Friend/i)).toHaveClass("member-status-stack", "flex", "flex-wrap");
     expect(screen.getByLabelText(/Role for Explorer Friend/i)).toHaveClass("member-role-select", "min-h-8");
@@ -275,8 +282,10 @@ describe("PeoplePanel", () => {
 
     expect(screen.getByText(/ออฟไลน์ 1 ชม./i)).toHaveClass("presence-pill", "inline-flex", "whitespace-nowrap");
     expect(screen.queryByLabelText(/Role for Explorer Friend/i)).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /คัดลอกลิงก์เชิญ/i })).toBeDisabled();
-    expect(screen.getByRole("button", { name: /เปิดฟอร์มเพิ่มสมาชิก/i })).toBeDisabled();
+    expect(screen.queryByRole("button", { name: /คัดลอกลิงก์เชิญ/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /เปิดฟอร์มเพิ่มสมาชิก/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /ล้างตัวกรอง/i })).toBeInTheDocument();
+    expect(screen.getByRole("status")).toHaveTextContent("อ่านอย่างเดียว");
   });
 
   it("bridges the empty member state to Tailwind classes", () => {

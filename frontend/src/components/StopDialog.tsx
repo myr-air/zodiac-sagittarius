@@ -81,7 +81,7 @@ const detailTypeToActivityType: Record<StopDetailType, ActivityType> = {
   transportation: "travel",
 };
 const modalBackdropClassName = "modal-backdrop fixed inset-0 z-20 grid place-items-center bg-[rgb(15_23_42_/_0.28)] p-5 max-[767px]:items-end max-[767px]:p-2.5";
-const stopDialogClassName = "stop-dialog max-h-[calc(100vh-40px)] w-[min(620px,100%)] overflow-auto rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) shadow-[0_24px_70px_rgb(15_23_42_/_0.22)]";
+const stopDialogClassName = "stop-dialog max-h-[calc(100vh-40px)] w-[min(620px,100%)] overflow-auto rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) shadow-[0_14px_34px_rgb(15_23_42_/_0.16)]";
 const dialogTitleRowClassName = "dialog-title-row grid min-h-[54px] grid-cols-[minmax(0,1fr)_34px] items-center gap-3 border-b border-(--color-border) px-4 [&_button]:grid [&_button]:size-[34px] [&_button]:rotate-180 [&_button]:place-items-center [&_button]:border-0 [&_button]:bg-transparent [&_button]:text-(--color-text-muted) [&_h2]:m-0 [&_h2]:text-base [&_h2]:font-extrabold [&_h2]:leading-[22px] [&_h2]:text-[#0f172a]";
 const stopFormClassName = "stop-form grid gap-4 p-4";
 const dialogGridClassName = "dialog-grid grid grid-cols-2 gap-3 max-[767px]:grid-cols-1 [&_input]:min-h-[38px] [&_input]:w-full [&_input]:rounded-(--radius-sm) [&_input]:border [&_input]:border-(--color-border-strong) [&_input]:bg-(--color-surface) [&_input]:px-2.5 [&_input]:py-2 [&_input]:text-[13px] [&_input]:text-(--color-text) [&_label]:grid [&_label]:min-w-0 [&_label]:gap-1.5 [&_label>span]:text-xs [&_label>span]:font-bold [&_label>span]:text-(--color-text-muted) [&_select]:min-h-[38px] [&_select]:w-full [&_select]:rounded-(--radius-sm) [&_select]:border [&_select]:border-(--color-border-strong) [&_select]:bg-(--color-surface) [&_select]:px-2.5 [&_select]:py-2 [&_select]:text-[13px] [&_select]:text-(--color-text) [&_textarea]:min-h-[38px] [&_textarea]:w-full [&_textarea]:resize-y [&_textarea]:rounded-(--radius-sm) [&_textarea]:border [&_textarea]:border-(--color-border-strong) [&_textarea]:bg-(--color-surface) [&_textarea]:px-2.5 [&_textarea]:py-2 [&_textarea]:text-[13px] [&_textarea]:text-(--color-text)";
@@ -171,8 +171,8 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, manualPathO
   const [detailType, setDetailType] = useState<StopDetailType>(() => detailTypeFromActivityType(initialItem?.activityType ?? "experience"));
   const [detailValues, setDetailValues] = useState<StopDetailValues>(() => ({
     ...emptyDetailValues,
-    detail: initialItem?.note ?? "",
-    mode: initialItem?.transportation ?? "",
+    ...structuredDetailValues(initialItem?.details),
+    mode: readStringDetail(initialItem?.details?.mode) || initialItem?.transportation || "",
   }));
   const [selectedCandidate, setSelectedCandidate] = useState<PlaceResolutionCandidate | undefined>();
 
@@ -558,6 +558,15 @@ function detailKeysForType(detailType: StopDetailType): Array<keyof StopDetailVa
 
 function readStringDetail(value: unknown): string {
   return typeof value === "string" ? value : "";
+}
+
+function structuredDetailValues(details: Record<string, unknown> | undefined): Partial<StopDetailValues> {
+  if (!details) return {};
+  return Object.fromEntries(
+    Object.keys(emptyDetailValues)
+      .map((key) => [key, readStringDetail(details[key])] as const)
+      .filter(([, value]) => value),
+  ) as Partial<StopDetailValues>;
 }
 
 function trimmedDetailValues(values: StopDetailValues): StopDetailValues {

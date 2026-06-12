@@ -124,7 +124,7 @@ import type {
 const localMutationTimestamp = "2026-05-28T00:00:00.000Z";
 const accountSessionStorageKey = "sagittarius-account-session";
 const workspaceToastClassName =
-  "workspace-toast pointer-events-auto fixed left-1/2 top-5 z-[60] flex w-[min(480px,calc(100vw-32px))] -translate-x-1/2 items-start gap-3 rounded-(--radius-lg) border border-(--color-route-border) bg-[rgba(239,246,255,0.94)] px-4 py-3 shadow-[0_8px_32px_rgba(15,23,42,0.16)] backdrop-blur-[10px] max-[767px]:top-3";
+  "workspace-toast pointer-events-auto fixed left-1/2 top-5 z-[60] flex w-[min(480px,calc(100vw-32px))] -translate-x-1/2 items-start gap-3 rounded-(--radius-lg) border border-(--color-route-border) bg-(--color-route-soft) px-4 py-3 shadow-[0_10px_22px_rgb(15_23_42_/_0.1)] max-[767px]:top-3";
 const workspaceToastIconClassName = "mt-0.5 shrink-0 text-(--color-route)";
 const workspaceToastBodyClassName =
   "min-w-0 flex-1 [&_span]:block [&_span]:text-[12.5px] [&_span]:leading-5 [&_span]:text-(--color-text-muted) [&_strong]:text-[13.5px] [&_strong]:font-[850] [&_strong]:text-(--color-route)";
@@ -134,14 +134,14 @@ const workspaceToastDismissClassName =
 const appDeleteModalBackdropClassName =
   "modal-backdrop fixed inset-0 z-20 grid place-items-center bg-[rgb(15_23_42_/_0.28)] p-5";
 const appDeleteDialogClassName =
-  "delete-confirm-dialog grid w-[min(420px,100%)] gap-3 rounded-(--radius-lg) border border-(--color-danger-border) bg-(--color-surface) p-4 shadow-[0_24px_70px_rgb(15_23_42_/_0.22)]";
+  "delete-confirm-dialog grid w-[min(420px,100%)] gap-3 rounded-(--radius-lg) border border-(--color-danger-border) bg-(--color-surface) p-4 shadow-[0_14px_34px_rgb(15_23_42_/_0.14)]";
 const appDeleteDialogTitleClassName =
   "m-0 text-base font-extrabold leading-[22px] text-[#991b1b]";
 const appDeleteDialogBodyClassName =
   "m-0 text-sm font-medium leading-6 text-(--color-text-muted)";
 const appDeleteDialogActionsClassName = "mt-1 flex justify-end gap-2";
 const importDialogClassName =
-  "import-options-dialog grid w-[min(520px,100%)] gap-3 rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) p-4 shadow-[0_24px_70px_rgb(15_23_42_/_0.22)]";
+  "import-options-dialog grid w-[min(520px,100%)] gap-3 rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) p-4 shadow-[0_14px_34px_rgb(15_23_42_/_0.16)]";
 const importDialogTitleClassName =
   "m-0 text-base font-extrabold leading-[22px] text-(--color-text)";
 const importDialogBodyClassName =
@@ -214,6 +214,8 @@ interface SagittariusAppProps {
     | "trip-access";
   accountSuccessRedirectHref?: string;
   portalSection?: PortalSection;
+  initialMemberId?: string;
+  initialTrip?: Trip;
 }
 
 export function resolveJoinPostAuthReturnTo(
@@ -244,6 +246,8 @@ export function SagittariusApp({
   accessMode = "combined",
   accountSuccessRedirectHref,
   portalSection = "dashboard",
+  initialMemberId,
+  initialTrip = seedTrip,
 }: SagittariusAppProps) {
   const { locale, t } = useI18n();
   /* v8 ignore next 3 */
@@ -269,7 +273,7 @@ export function SagittariusApp({
     past: Trip[];
     future: Trip[];
   }>(() => ({
-    trip: seedTrip,
+    trip: initialTrip,
     past: [],
     future: [],
   }));
@@ -324,7 +328,7 @@ export function SagittariusApp({
   const [navigatedView, setNavigatedView] = useState<PlanningView | null>(null);
   const selectedPlanVariantId = tripState.trip.activePlanVariantId;
   const [currentMemberId, setCurrentMemberId] = useState(
-    seedTrip.members[0].id,
+    initialMemberId ?? initialTrip.members[0].id,
   );
   const [selectedItemId, setSelectedItemId] = useState("item-dimdim");
   const [dialogState, setDialogState] = useState<
@@ -509,7 +513,7 @@ export function SagittariusApp({
     const timeout = window.setTimeout(() => {
       if (cancelled) return;
       const persistedTrip = loadPersistedTrip();
-      const nextTrip = persistedTrip ?? seedTrip;
+      const nextTrip = persistedTrip ?? initialTrip;
       const persistedSession = loadPersistedParticipantSession(
         requireJoin,
         nextTrip,
@@ -533,7 +537,7 @@ export function SagittariusApp({
       cancelled = true;
       window.clearTimeout(timeout);
     };
-  }, [isApiMode, requireJoin, routeTripId]);
+  }, [initialTrip, isApiMode, requireJoin, routeTripId]);
 
   useEffect(() => {
     if (accountSessionLoaded) return;
@@ -2041,7 +2045,7 @@ export function SagittariusApp({
 
   function leaveParticipantSession() {
     setParticipantSession(null);
-    setCurrentMemberId(seedTrip.members[0].id);
+    setCurrentMemberId(initialTrip.members[0].id);
     setContextRailVisibility(false);
     clearParticipantSession();
     setIsCockpitLoaded(false);

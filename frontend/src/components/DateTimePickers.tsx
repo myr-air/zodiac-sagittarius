@@ -1,10 +1,10 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode, type RefObject } from "react";
+import { useEffect, useMemo, useRef, useState, type MutableRefObject, type ReactNode, type RefObject } from "react";
 import { createPortal } from "react-dom";
 import { cn } from "@/src/lib/cn";
 import { Button } from "./ui";
 
 const pickerPanelClassName =
-  "joii-picker fixed z-[40] grid max-h-[calc(100dvh-16px)] gap-3 overflow-auto rounded-(--radius-lg) border border-[#d7e7f2] bg-(--color-surface) p-3 text-(--color-text) shadow-[0_20px_42px_rgb(14_165_233_/_0.12),0_8px_16px_rgb(15_23_42_/_0.07)]";
+  "joii-picker fixed z-[40] grid max-h-[calc(100dvh-16px)] gap-3 overflow-auto rounded-(--radius-lg) border border-(--color-route-border) bg-(--color-surface) p-3 text-(--color-text) shadow-[0_20px_42px_rgb(37_99_235_/_0.1),0_8px_16px_rgb(15_23_42_/_0.07)]";
 const inputWrapClassName = "relative min-w-0";
 const triggerClassName =
   "absolute inset-y-1 right-1 inline-grid min-h-0 w-8 place-items-center rounded-(--radius-sm) border border-transparent bg-transparent text-(--color-text-muted) transition-colors hover:bg-(--color-route-soft) hover:text-(--color-route)";
@@ -72,6 +72,7 @@ export function TimePickerField({
   value: string;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const suppressOpenOnFocusRef = useRef(false);
   const [open, setOpen] = useState(false);
   const [position, setPosition] = usePickerPosition(open, inputRef, 300);
   const normalizedValue = normalizeTime(value);
@@ -93,7 +94,10 @@ export function TimePickerField({
         value={value}
         onBlur={onBlur}
         onChange={(event) => onChange(event.target.value)}
-        onFocus={() => setOpen(true)}
+        onFocus={() => {
+          if (suppressOpenOnFocusRef.current) return;
+          setOpen(true);
+        }}
       />
       <PickerTrigger disabled={disabled} label="Open time picker" onClick={() => setOpen((current) => !current)} />
       {open
@@ -102,6 +106,7 @@ export function TimePickerField({
               inputRef={inputRef}
               position={position}
               setPosition={setPosition}
+              suppressOpenOnFocusRef={suppressOpenOnFocusRef}
               width={300}
               onClose={() => setOpen(false)}
             >
@@ -111,7 +116,7 @@ export function TimePickerField({
                   onChange(nextValue);
                   onSelect?.(nextValue);
                   setOpen(false);
-                  inputRef.current?.focus();
+                  focusInputWithoutOpening(inputRef, suppressOpenOnFocusRef);
                 }}
               />
             </PickerPanel>,
@@ -137,6 +142,7 @@ export function DatePickerField({
   value: string;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const suppressOpenOnFocusRef = useRef(false);
   const [open, setOpen] = useState(false);
   const [position, setPosition] = usePickerPosition(open, inputRef, 320);
   const [visibleMonth, setVisibleMonth] = useState(() => monthStart(value || todayDate()));
@@ -163,7 +169,10 @@ export function DatePickerField({
         value={value}
         onBlur={onBlur}
         onChange={(event) => onChange(event.target.value)}
-        onFocus={openPicker}
+        onFocus={() => {
+          if (suppressOpenOnFocusRef.current) return;
+          openPicker();
+        }}
       />
       <PickerTrigger
         disabled={disabled}
@@ -182,6 +191,7 @@ export function DatePickerField({
               inputRef={inputRef}
               position={position}
               setPosition={setPosition}
+              suppressOpenOnFocusRef={suppressOpenOnFocusRef}
               width={320}
               onClose={() => setOpen(false)}
             >
@@ -192,7 +202,7 @@ export function DatePickerField({
                 onSelect={(nextValue) => {
                   onChange(nextValue);
                   setOpen(false);
-                  inputRef.current?.focus();
+                  focusInputWithoutOpening(inputRef, suppressOpenOnFocusRef);
                 }}
               />
             </PickerPanel>,
@@ -215,6 +225,7 @@ export function DateTimePickerField({
   value: string;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const suppressOpenOnFocusRef = useRef(false);
   const [open, setOpen] = useState(false);
   const [position, setPosition] = usePickerPosition(open, inputRef, 340);
   const [visibleMonth, setVisibleMonth] = useState(() => monthStart(value.slice(0, 10) || todayDate()));
@@ -245,7 +256,10 @@ export function DateTimePickerField({
         type="text"
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        onFocus={openPicker}
+        onFocus={() => {
+          if (suppressOpenOnFocusRef.current) return;
+          openPicker();
+        }}
       />
       <PickerTrigger
         disabled={disabled}
@@ -264,6 +278,7 @@ export function DateTimePickerField({
               inputRef={inputRef}
               position={position}
               setPosition={setPosition}
+              suppressOpenOnFocusRef={suppressOpenOnFocusRef}
               width={340}
               onClose={() => setOpen(false)}
             >
@@ -291,6 +306,17 @@ export function DateTimePickerField({
         : null}
     </div>
   );
+}
+
+function focusInputWithoutOpening(
+  inputRef: RefObject<HTMLInputElement | null>,
+  suppressOpenOnFocusRef: MutableRefObject<boolean>,
+) {
+  suppressOpenOnFocusRef.current = true;
+  inputRef.current?.focus();
+  window.requestAnimationFrame(() => {
+    suppressOpenOnFocusRef.current = false;
+  });
 }
 
 function PickerTrigger({
@@ -322,6 +348,7 @@ function PickerPanel({
   onClose,
   position,
   setPosition,
+  suppressOpenOnFocusRef,
   width,
 }: {
   children: ReactNode;
@@ -329,6 +356,7 @@ function PickerPanel({
   onClose: () => void;
   position: { left: number; top: number; width: number };
   setPosition: (position: { left: number; top: number; width: number }) => void;
+  suppressOpenOnFocusRef: MutableRefObject<boolean>;
   width: number;
 }) {
   const panelRef = useRef<HTMLElement>(null);
@@ -398,7 +426,7 @@ function PickerPanel({
         if (event.key === "Escape") {
           event.preventDefault();
           onClose();
-          inputRef.current?.focus();
+          focusInputWithoutOpening(inputRef, suppressOpenOnFocusRef);
         }
       }}
     >

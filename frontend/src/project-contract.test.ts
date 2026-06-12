@@ -106,7 +106,7 @@ describe("Sagittarius project scaffold", () => {
 
     expect(css).toContain("--color-primary: #c24f16");
     expect(css).toContain("--color-route: #2563eb");
-    expect(css).toContain("--color-warning: #f59e0b");
+    expect(css).toContain("--color-warning: #b45309");
   });
 
   it("documents the Rust/PostgreSQL API data contract", () => {

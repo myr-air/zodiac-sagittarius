@@ -46,7 +46,7 @@ const buttonVariantClassNames = {
     "button--primary",
     "bg-(--color-primary)",
     "text-white",
-    "shadow-[0_10px_20px_rgb(15_118_110_/_0.16)]",
+    "shadow-[0_10px_20px_rgb(194_79_22_/_0.18)]",
     "hover:enabled:bg-(--color-primary-strong)",
   ],
   secondary: [

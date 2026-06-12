@@ -165,7 +165,7 @@ describe("RouteMapView", () => {
     );
 
     expect(screen.getByText("0/3 มีพิกัด · 3 ยังไม่ระบุ")).toBeInTheDocument();
-    expect(screen.getByRole("complementary", { name: "กิจกรรมที่ยังไม่มีพิกัด" })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "กิจกรรมที่ยังไม่มีพิกัด" })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /วันที่ 1/ })).not.toBeInTheDocument();
     expect(screen.getByText("กำลังโหลดแผนที่จาก OpenFreeMap")).toBeInTheDocument();
   });
@@ -225,6 +225,39 @@ describe("RouteMapView", () => {
     expect(screen.getByText("Victoria Harbour")).toBeInTheDocument();
   });
 
+  it("can preview live map loading and failure states without mounting MapLibre", () => {
+    const { rerender } = render(
+      <RouteMapView
+        endDate={tripFixture.trip.endDate}
+        items={tripFixture.planItems}
+        liveMapAvailability="loading"
+        liveMapEnabled
+        startDate={tripFixture.trip.startDate}
+        tripName={tripFixture.trip.name}
+      />,
+    );
+
+    expect(screen.getByLabelText(/ตัวอย่างแผนที่เส้นทางฮ่องกงและเซินเจิ้น/i)).toHaveAttribute("data-live-map-state", "loading");
+    expect(screen.getByText("กำลังโหลดแผนที่จาก OpenFreeMap")).toHaveClass("route-map-status");
+    expect(maplibreMock.maps).toHaveLength(0);
+
+    rerender(
+      <RouteMapView
+        endDate={tripFixture.trip.endDate}
+        items={tripFixture.planItems}
+        liveMapAvailability="error"
+        liveMapEnabled
+        startDate={tripFixture.trip.startDate}
+        tripName={tripFixture.trip.name}
+      />,
+    );
+
+    expect(screen.getByRole("status")).toHaveTextContent("โหลดแผนที่สดไม่สำเร็จ แสดงแผนผังสำรองไว้ก่อน");
+    expect(screen.queryByRole("button", { name: "ลองโหลดแผนที่สดอีกครั้ง" })).not.toBeInTheDocument();
+    expect(screen.getByText("Hong Kong")).toBeInTheDocument();
+    expect(maplibreMock.maps).toHaveLength(0);
+  });
+
   it("retries the live map after a tile failure remounts MapLibre", async () => {
     const user = userEvent.setup();
 
@@ -267,17 +300,29 @@ describe("RouteMapView", () => {
     const panel = screen.getByRole("region", { name: /แผนที่เส้นทาง/i });
     expect(panel).toHaveClass("route-map-panel", "grid", "min-h-0");
 
-    expect(document.querySelector(".route-map-layout")).toHaveClass("route-map-layout", "h-full", "min-h-0");
+    expect(document.querySelector(".route-map-layout")).toHaveClass(
+      "route-map-layout",
+      "h-full",
+      "min-h-0",
+      "bg-[linear-gradient(135deg,var(--color-surface)_0%,var(--color-route-soft)_100%)]",
+    );
     const canvas = screen.getByLabelText(/ตัวอย่างแผนที่เส้นทางฮ่องกงและเซินเจิ้น/i);
-    expect(canvas).toHaveClass("route-map-canvas", "relative", "min-h-[560px]", "overflow-hidden");
+    expect(canvas).toHaveClass(
+      "route-map-canvas",
+      "relative",
+      "min-h-[560px]",
+      "overflow-hidden",
+      "bg-[linear-gradient(135deg,var(--color-surface)_0%,var(--color-route-soft)_100%)]",
+    );
+    expect(canvas.className).not.toContain("radial-gradient");
     expect(canvas).toHaveAttribute("data-live-map-state", "error");
 
     const dayTwoButton = screen.getByRole("button", { name: /วันที่ 2/i });
-    expect(dayTwoButton).toHaveClass("map-day-filter-button", "inline-flex");
-    expect(screen.getByText("Hong Kong")).toHaveClass("map-zone", "absolute");
+    expect(dayTwoButton).toHaveClass("map-day-filter-button", "inline-flex", "bg-[rgb(255_255_255_/_0.78)]");
+    expect(screen.getByText("Hong Kong")).toHaveClass("map-zone", "absolute", "bg-[rgb(255_255_255_/_0.82)]");
     expect(document.querySelector(".route-map-svg")).toHaveClass("route-map-svg", "absolute", "inset-0");
     expect(document.querySelector(".route-marker")).toHaveClass("route-marker", "absolute", "grid");
-    expect(screen.getByText(/OpenFreeMap/i)).toHaveClass("map-source-note", "absolute");
+    expect(screen.getByText(/OpenFreeMap/i)).toHaveClass("map-source-note", "absolute", "bg-[rgb(255_255_255_/_0.86)]");
   });
 
   it("mounts, filters, and cleans up a live MapLibre route", async () => {
@@ -296,6 +341,7 @@ describe("RouteMapView", () => {
     expect(maplibreMock.maps[0]?.setPaintProperty).toHaveBeenCalledWith("background", "background-color", "#f6fbfd");
     expect(maplibreMock.maps[0]?.setPaintProperty).toHaveBeenCalledWith("label_country_1", "text-color", "#0f3f46");
     expect(document.querySelector(".route-live-map")).not.toHaveProperty("inert", true);
+    expect(document.querySelector(".route-live-map")).not.toHaveAttribute("tabindex");
     expect(document.querySelector(".route-live-map button")).toHaveAttribute("tabindex", "-1");
     expect(maplibreMock.markers.length).toBeGreaterThan(1);
 
@@ -503,7 +549,7 @@ describe("RouteMapView", () => {
   it("exercises route map helper fallbacks directly", () => {
     expect(liveMapStatusText("error", "กำลังโหลด", "โหลดไม่สำเร็จ")).toBe("โหลดไม่สำเร็จ");
     expect(activeDayLabel("missing-day", [], "ทุกวัน", "เลือกวัน")).toBe("เลือกวัน");
-    expect(dayColorFor("missing-day", [])).toBe("#ff773d");
+    expect(dayColorFor("missing-day", [])).toBe("#c24f16");
 
     const map = { flyTo: vi.fn(), fitBounds: vi.fn() };
     fitLiveRoute(map as never, []);

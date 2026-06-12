@@ -1,9 +1,14 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { expect } from "storybook/test";
-import { tripFixture } from "@/src/trip/trip-fixtures";
+import { buildDenseTripFixture, tripFixture } from "@/src/trip/trip-fixtures";
 import { TripMembersPage } from "./TripMembersPage";
 
 const noop = () => {};
+const denseTrip = buildDenseTripFixture();
+const singleMemberTrip = {
+  ...tripFixture.trip,
+  members: [tripFixture.currentMembers.owner],
+};
 
 const meta = {
   title: "Templates/Members",
@@ -49,5 +54,29 @@ export const Traveler: Story = {
     ...Owner.args,
     currentMember: tripFixture.currentMembers.traveler,
     canManagePeople: false,
+  },
+};
+
+export const Viewer: Story = {
+  args: {
+    ...Owner.args,
+    currentMember: tripFixture.currentMembers.viewer,
+    canManagePeople: false,
+  },
+};
+
+export const Dense: Story = {
+  args: {
+    ...Owner.args,
+    trip: denseTrip,
+    currentMember: denseTrip.members.find((member) => member.role === "owner") ?? tripFixture.currentMembers.owner,
+  },
+};
+
+export const Empty: Story = {
+  args: {
+    ...Owner.args,
+    trip: singleMemberTrip,
+    currentMember: tripFixture.currentMembers.owner,
   },
 };

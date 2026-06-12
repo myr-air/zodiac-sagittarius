@@ -24,7 +24,7 @@ export const LongThaiLabel: ButtonStory = {
 };
 export const Mobile: ButtonStory = {
   args: { children: "เปิดทริป", variant: "primary" },
-  parameters: { viewport: { defaultViewport: "mobile1" } },
+  parameters: { viewport: { defaultViewport: "mobile320" } },
 };
 export const CssCheck: ButtonStory = {
   args: { children: "Submit", variant: "primary" },

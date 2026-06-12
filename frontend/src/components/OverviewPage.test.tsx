@@ -49,16 +49,19 @@ describe("OverviewPage role lenses", () => {
     expect(screen.getByRole("heading", { name: /วันนี้ต้องโฟกัส/i })).toBeInTheDocument();
   }, 30_000);
 
-  it("renders the photo-first cockpit hero and visual highlight board from trip data", () => {
+  it("renders the cockpit status hero and visual highlight board from trip data", () => {
     renderOverview("member-beam");
 
     const hero = screen.getByRole("region", { name: /Hong Kong \+ Shenzhen Trip/i });
     expect(screen.getByRole("region", { name: /Trip overview/i })).toHaveClass("overview-page", "grid", "gap-3");
     expect(hero).toHaveClass("overview-hero", "grid", "overflow-hidden", "rounded-(--radius-lg)");
+    expect(hero).toHaveClass("min-h-[168px]", "bg-[linear-gradient(135deg,var(--color-surface)_0%,var(--overview-hero-sky)_100%)]");
+    expect(hero).toHaveClass("shadow-[0_1px_0_rgb(15_23_42_/_0.04)]");
     expect(hero).toHaveTextContent(/Hong Kong/i);
     expect(hero).toHaveTextContent(/HK\$/i);
     expect(within(hero).getByText(/ศูนย์จัดการทริป/i)).toBeInTheDocument();
-    expect(hero.querySelectorAll(".overview-hero-polaroid")).toHaveLength(3);
+    expect(hero.querySelector(".overview-hero-polaroid")).not.toBeInTheDocument();
+    expect(hero.querySelector(".overview-hero-aside")).toHaveClass("bg-[rgb(255_255_255_/_0.72)]", "rounded-(--radius-md)");
 
     const cockpit = screen.getByRole("region", { name: /travel cockpit/i });
     expect(cockpit).toHaveClass("overview-travel-cockpit", "grid", "grid-cols-3", "gap-3");
@@ -75,11 +78,12 @@ describe("OverviewPage role lenses", () => {
     expect(within(board).getByRole("heading", { name: /ไฮไลต์ทริป/i })).toBeInTheDocument();
     expect(within(board).getByText(/ของกินและสถานที่จากแผนนี้/i)).toBeInTheDocument();
     expect(within(board).getByText(/Dim Dim Sum ที่ Tim Ho Wan/i)).toBeInTheDocument();
-    expect(within(board).getByText(/อาหารเย็นที่ Temple Street Night Market/i)).toBeInTheDocument();
+    expect(within(board).getByText(/อาหารเย็นที่ Temple Street Night Market/i)).toHaveClass("[overflow-wrap:anywhere]");
+    expect(within(board).getByRole("list")).toHaveClass("overview-highlight-list", "max-[767px]:snap-x", "max-[767px]:overscroll-x-contain");
     expect(within(board).getAllByRole("listitem")).toHaveLength(4);
   });
 
-  it("keeps the photo-first overview useful for empty trips", () => {
+  it("keeps the cockpit overview useful for empty trips", () => {
     render(
       <OverviewPage
         currentMemberId="member-beam"

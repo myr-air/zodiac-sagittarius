@@ -44,7 +44,12 @@ const pendingBriefing = (date: string): TripDailyBriefing => ({
 describe("WeatherForecastStrip", () => {
   it("renders one-line forecast segments with high and low temperature hierarchy", async () => {
     const onSelect = vi.fn();
-    render(<WeatherForecastStrip briefings={[briefing("2026-07-12", 33, 28)]} locale="en" selectedDate={null} onSelect={onSelect} />);
+    const { container } = render(<WeatherForecastStrip briefings={[briefing("2026-07-12", 33, 28)]} locale="en" selectedDate={null} onSelect={onSelect} />);
+
+    expect(container.querySelector(".weather-forecast-strip")).toHaveClass("bg-(--color-surface)", "border-(--color-border)");
+    expect(container.querySelector(".weather-forecast-strip")?.className).not.toContain("backdrop-blur");
+    expect(container.querySelector(".weather-forecast-row")).toHaveClass("max-[767px]:snap-x", "max-[767px]:snap-mandatory");
+    expect(screen.getByRole("button", { name: /Sun, Jul 12 Rain 33° 28°/ })).toHaveClass("max-[767px]:w-[106px]", "max-[767px]:shrink-0");
 
     expect(screen.getByRole("button", { name: /Sun, Jul 12 Rain 33° 28°/ })).toBeInTheDocument();
     expect(screen.getByText("33°")).toHaveClass("weather-forecast-temp-high");
@@ -57,7 +62,7 @@ describe("WeatherForecastStrip", () => {
   it("uses Thai weekday color on day text instead of a bottom bar", () => {
     render(<WeatherForecastStrip briefings={[briefing("2026-07-13", 32, 27)]} locale="en" selectedDate={null} onSelect={() => {}} />);
 
-    expect(screen.getByText("Mon, Jul 13")).toHaveClass("text-yellow-600");
+    expect(screen.getByText("Mon, Jul 13")).toHaveClass("text-amber-900");
   });
 
   it("shows pending forecasts without emoji glyphs or repeated missing temperatures", () => {

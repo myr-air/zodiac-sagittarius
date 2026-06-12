@@ -49,8 +49,11 @@ describe("TripMembersPage", () => {
       "member-stat",
       "grid",
       "rounded-(--radius-md)",
+      "shadow-[0_1px_0_rgb(15_23_42_/_0.04)]",
     );
+    expect(screen.getAllByText(/สมาชิกทั้งหมด/i)[0].closest(".member-stat")?.className).not.toContain("0_10px_24px");
     expect(screen.getByRole("region", { name: /แถบคำสั่งสมาชิก/i })).toHaveClass("member-command-bar", "grid", "gap-3");
+    expect(screen.getByRole("region", { name: /แถบคำสั่งสมาชิก/i })).toHaveClass("shadow-[0_1px_0_rgb(15_23_42_/_0.04)]");
 
     fireEvent.click(screen.getByRole("button", { name: /คัดลอกลิงก์เชิญ/i }));
     await act(async () => {
@@ -78,6 +81,7 @@ describe("TripMembersPage", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /เปิดฟอร์มเพิ่มสมาชิก/i }));
     expect(screen.getByRole("region", { name: /เพิ่มสมาชิก/i })).toHaveClass("member-create-panel", "grid", "rounded-(--radius-lg)");
+    expect(screen.getByRole("region", { name: /เพิ่มสมาชิก/i })).toHaveClass("shadow-[0_1px_0_rgb(15_23_42_/_0.04)]");
     expect(screen.getByLabelText(/ชื่อสมาชิกใหม่/i).closest("form")).toHaveClass("member-create-form", "grid", "gap-3");
     fireEvent.change(screen.getByLabelText(/ชื่อสมาชิกใหม่/i), { target: { value: "Guide" } });
     fireEvent.change(screen.getByLabelText(/สิทธิ์สมาชิกใหม่/i), { target: { value: "organizer" } });
@@ -135,6 +139,12 @@ describe("TripMembersPage", () => {
     await user.click(screen.getByRole("button", { name: /ยกเลิก/i }));
     await user.click(screen.getByRole("button", { name: /เปลี่ยนรหัสผ่าน Demo Traveler/i }));
     const passwordDialog = screen.getByRole("dialog", { name: /เปลี่ยนรหัสผ่าน Demo Traveler/i });
+    expect(passwordDialog).toHaveClass(
+      "member-task-dialog",
+      "shadow-[0_10px_18px_rgb(15_23_42_/_0.14)]",
+    );
+    expect(passwordDialog.className).not.toContain("0_24px_70px");
+    expect(passwordDialog.className).not.toContain("0_14px_34px");
     await user.type(within(passwordDialog).getByLabelText(/รหัสผ่านใหม่/i), "123");
     await user.click(within(passwordDialog).getByRole("button", { name: /บันทึกรหัสผ่าน/i }));
     expect(within(passwordDialog).getByRole("alert")).toHaveTextContent("รหัสผ่านต้องมีอย่างน้อย 4 ตัวอักษร");
@@ -175,15 +185,12 @@ describe("TripMembersPage", () => {
     expect(props.onCreateMember).not.toHaveBeenCalled();
   });
 
-  it("renders read-only member controls without mutating callbacks", () => {
+  it("renders read-only member controls without management actions", () => {
     const props = renderMembers({ canManagePeople: false });
-    const inviteButton = screen.getByRole("button", { name: /คัดลอกลิงก์เชิญ/i });
 
-    expect(inviteButton).toBeDisabled();
-    expect(screen.getByRole("button", { name: /เปิดฟอร์มเพิ่มสมาชิก/i })).toBeDisabled();
-    (inviteButton as HTMLButtonElement).disabled = false;
-    fireEvent.click(inviteButton);
-
+    expect(screen.queryByRole("button", { name: /คัดลอกลิงก์เชิญ/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /เปิดฟอร์มเพิ่มสมาชิก/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /ล้างตัวกรอง/i })).toBeInTheDocument();
     expect(screen.getByRole("status")).toHaveTextContent("อ่านอย่างเดียว");
     expect(props.onCreateMember).not.toHaveBeenCalled();
   });

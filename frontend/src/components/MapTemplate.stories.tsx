@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { expect } from "storybook/test";
-import { buildDenseTripFixture, tripFixture } from "@/src/trip/trip-fixtures";
+import { buildDenseTripFixture, buildEmptyTripFixture, tripFixture } from "@/src/trip/trip-fixtures";
 import { RouteMapView } from "./RouteMapView";
 
 const meta = {
@@ -35,4 +35,10 @@ export const OwnerThai: Story = {
   },
 };
 
+export const Traveler: Story = { args: Owner.args };
+
+export const Viewer: Story = { args: Owner.args };
+
 export const Dense: Story = { args: { ...Owner.args, items: buildDenseTripFixture().itineraryItems } };
+
+export const Empty: Story = { args: { ...Owner.args, items: buildEmptyTripFixture().itineraryItems } };

@@ -51,6 +51,13 @@ export function safePhotoAlbumHref(value: string | null | undefined): string | n
   return safeExternalHref(value) || null;
 }
 
+export function safePhotoAlbumCoverHref(value: string | null | undefined): string | null {
+  const trimmed = value?.trim();
+  if (!trimmed) return null;
+  if (trimmed.startsWith("/") && !trimmed.startsWith("//")) return trimmed;
+  return safePhotoAlbumHref(trimmed);
+}
+
 export function findPhotoAlbumRelations(album: TripPhotoAlbumLink, trip: Trip): PhotoAlbumRelations {
   const relatedItemIds = new Set(album.relatedItineraryItemIds);
   return {

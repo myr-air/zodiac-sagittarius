@@ -50,8 +50,9 @@ describe("shared UI primitives", () => {
     expect(screen.getByRole("heading", { name: "Itinerary", level: 1 })).toBeInTheDocument();
     expect(screen.getByRole("banner")).toHaveClass(
       "page-header",
-      "min-h-[112px]",
-      "shadow-[var(--shadow-soft)]",
+      "min-h-[108px]",
+      "bg-[color-mix(in_srgb,var(--color-surface)_88%,var(--color-postcard))]",
+      "shadow-[0_6px_8px_rgb(55_47_38_/_0.045)]",
     );
     expect(screen.queryByText("Plan")).not.toBeInTheDocument();
 
@@ -68,7 +69,7 @@ describe("shared UI primitives", () => {
     );
 
     expect(screen.getByText("Plan")).toHaveClass("eyebrow");
-    expect(screen.getByText("Plan")).toHaveClass("text-(--color-primary-strong)");
+    expect(screen.getByText("Plan")).toHaveClass("bg-(--color-primary-soft)", "text-(--color-primary-strong)");
     expect(screen.getByText("Plan").className).not.toContain("uppercase");
     expect(screen.getByRole("heading", { name: "Day one", level: 2 })).toBeInTheDocument();
     expect(screen.getByText("A compact overview")).toHaveClass("page-header-description");
@@ -88,7 +89,7 @@ describe("shared UI primitives", () => {
     expect(screen.getByText("Aom")).toBeInTheDocument();
     expect(screen.getByText("Current user")).toBeInTheDocument();
     expect(screen.getByText("A")).toHaveStyle({ backgroundColor: "#0f766e" });
-    expect(screen.getByText("Aom").closest(".page-current-user")).toHaveClass("grid", "min-w-[252px]");
+    expect(screen.getByText("Aom").closest(".page-current-user")).toHaveClass("grid", "min-w-[236px]", "bg-[rgb(255_255_255_/_0.72)]");
   });
 
   it("renders every supported icon branch", () => {

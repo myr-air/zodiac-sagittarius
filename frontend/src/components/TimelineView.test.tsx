@@ -30,6 +30,10 @@ describe("TimelineView", () => {
 
     const grid = timeline.querySelector(".timeline-grid");
     expect(grid).toHaveClass("timeline-grid", "grid", "gap-3");
+    expect(timeline.querySelector(".timeline-day")).toHaveClass(
+      "bg-[linear-gradient(135deg,var(--color-surface)_0%,var(--color-route-soft)_100%)]",
+      "shadow-[0_1px_0_rgb(15_23_42_/_0.04)]",
+    );
 
     const selectedButton = screen.getByRole("button", { name: /เลือกจุดในไทม์ไลน์ Dim Dim Sum/i });
     const selectedStop = selectedButton.closest(".timeline-stop");
