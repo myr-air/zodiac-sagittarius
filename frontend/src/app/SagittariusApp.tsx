@@ -451,11 +451,19 @@ export function SagittariusApp({
   const selectedDay =
     selectedItem?.day ?? itineraryView.dayGroups[0]?.day ?? trip.startDate;
   const selectedItemIdForView = selectedItem?.id ?? "";
+  const scopedTripPlanRecords = useMemo(
+    () =>
+      selectTripPlanRecords(trip, selectedPlanVariantId, {
+        stopNotes,
+        tasks,
+      }),
+    [selectedPlanVariantId, stopNotes, tasks, trip],
+  );
   const expenseSummary = useMemo(
     () =>
       backendExpenseSummary ??
       buildExpenseSummary(
-        trip.expenses,
+        scopedTripPlanRecords.expenses,
         currentMember.id,
         trip.expenseReminders ?? [],
       ),
@@ -463,18 +471,34 @@ export function SagittariusApp({
       backendExpenseSummary,
       currentMember.id,
       trip.expenseReminders,
-      trip.expenses,
+      scopedTripPlanRecords.expenses,
+    ],
+  );
+  const scopedTripForRecords = useMemo(
+    () => ({
+      ...trip,
+      bookingDocs: scopedTripPlanRecords.bookingDocs,
+      expenses: scopedTripPlanRecords.expenses,
+      itineraryItems: activePlanItems,
+      stopNotes: scopedTripPlanRecords.stopNotes,
+    }),
+    [
+      activePlanItems,
+      scopedTripPlanRecords.bookingDocs,
+      scopedTripPlanRecords.expenses,
+      scopedTripPlanRecords.stopNotes,
+      trip,
     ],
   );
   const itineraryCommitmentsByItemId = useMemo(
     () =>
       buildItineraryCommitmentsByItemId({
-        bookingDocs: trip.bookingDocs ?? [],
-        expenses: trip.expenses,
-        stopNotes,
-        tasks,
+        bookingDocs: scopedTripPlanRecords.bookingDocs,
+        expenses: scopedTripPlanRecords.expenses,
+        stopNotes: scopedTripPlanRecords.stopNotes,
+        tasks: scopedTripPlanRecords.tasks,
       }),
-    [stopNotes, tasks, trip.bookingDocs, trip.expenses],
+    [scopedTripPlanRecords],
   );
 
   function changeTripPath(pathId: string) {
@@ -3768,10 +3792,10 @@ export function SagittariusApp({
               />
             ) : currentView === "bookings" ? (
               <BookingsDocsPage
-                trip={{ ...trip, stopNotes }}
-                tasks={tasks}
+                trip={scopedTripForRecords}
+                tasks={scopedTripPlanRecords.tasks}
                 currentMember={currentMember}
-                bookingDocs={trip.bookingDocs ?? []}
+                bookingDocs={scopedTripPlanRecords.bookingDocs}
                 canEditBookings={canEditBookings}
                 onCreateBookingDoc={createBookingDoc}
                 onUpdateBookingDoc={updateBookingDoc}
@@ -3789,7 +3813,7 @@ export function SagittariusApp({
               />
             ) : currentView === "expenses" ? (
               <TripExpensesPage
-                trip={trip}
+                trip={scopedTripForRecords}
                 currentMember={currentMember}
                 expenseSummary={expenseSummary}
                 canEditExpenses={canEditExpenses}
@@ -4346,6 +4370,60 @@ function tripPlanIdForBookingRecord(
     if (tripPlanId) return tripPlanId;
   }
   return tripPlanIdForRecord(trip, null);
+}
+
+function selectTripPlanRecords(
+  trip: Trip,
+  selectedTripPlanId: string,
+  records: {
+    stopNotes: StopNote[];
+    tasks: TripTask[];
+  },
+): {
+  bookingDocs: BookingDoc[];
+  expenses: Expense[];
+  stopNotes: StopNote[];
+  tasks: TripTask[];
+} {
+  const fallbackTripPlanId =
+    selectedTripPlanId || trip.mainTripPlanId || trip.activePlanVariantId;
+  const itemPlanById = new Map(
+    trip.itineraryItems.map((item) => [item.id, item.planVariantId]),
+  );
+  const belongsToSelectedPlan = (
+    explicitTripPlanId?: string | null,
+    linkedItemIds: Array<string | null | undefined> = [],
+  ) => {
+    if (explicitTripPlanId) return explicitTripPlanId === fallbackTripPlanId;
+
+    for (const itemId of linkedItemIds) {
+      if (!itemId) continue;
+      const itemTripPlanId = itemPlanById.get(itemId);
+      if (itemTripPlanId) return itemTripPlanId === fallbackTripPlanId;
+    }
+
+    return (
+      fallbackTripPlanId === (trip.mainTripPlanId || trip.activePlanVariantId)
+    );
+  };
+
+  return {
+    bookingDocs: (trip.bookingDocs ?? []).filter((bookingDoc) =>
+      belongsToSelectedPlan(
+        bookingDoc.tripPlanId,
+        bookingDoc.relatedItineraryItemIds,
+      ),
+    ),
+    expenses: trip.expenses.filter((expense) =>
+      belongsToSelectedPlan(expense.tripPlanId, [expense.itineraryItemId]),
+    ),
+    stopNotes: records.stopNotes.filter((note) =>
+      belongsToSelectedPlan(note.tripPlanId, [note.itemId]),
+    ),
+    tasks: records.tasks.filter((task) =>
+      belongsToSelectedPlan(task.tripPlanId, [task.relatedItemId]),
+    ),
+  };
 }
 
 function applyImportedRecordsToTrip({
