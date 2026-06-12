@@ -258,7 +258,7 @@ describe("Trip API client", () => {
     expect(cockpit.tasks).toEqual([
       {
         id: cockpitResponse.tasks[0].id,
-        tripPlanId: cockpitResponse.planVariants[0].id,
+        tripPlanId: cockpitResponse.planVariants![0].id,
         title: "Buy eSIM",
         status: "open",
         visibility: "private",
@@ -272,7 +272,7 @@ describe("Trip API client", () => {
     expect(cockpit.stopNotes).toEqual(cockpitResponse.stopNotes);
     expect(cockpit.trip.expenses[0]).toMatchObject({
       id: cockpitResponse.expenses[0].id,
-      tripPlanId: cockpitResponse.planVariants[0].id,
+      tripPlanId: cockpitResponse.planVariants![0].id,
       amount: 240,
       splits: { "018f4e81-77a4-7b8f-b3bd-0d0f493ac561": 240 },
     });
@@ -286,7 +286,7 @@ describe("Trip API client", () => {
     });
     expect(cockpit.trip.bookingDocs?.[0]).toMatchObject({
       id: "booking-api-flight",
-      tripPlanId: cockpitResponse.planVariants[0].id,
+      tripPlanId: cockpitResponse.planVariants![0].id,
       externalLinks: [{ id: "booking-api-flight-link", label: "Drive", url: "https://drive.google.com/api-flight", provider: "Google Drive" }],
     });
     expect(cockpit.trip.photoAlbumLinks?.[0]).toMatchObject({
@@ -692,7 +692,7 @@ describe("Trip API client", () => {
 
   it("maps canonical trip plan fields while preserving legacy plan variant fields", () => {
     const canonicalPlan = {
-      ...cockpitResponse.planVariants[0],
+      ...cockpitResponse.planVariants![0],
       status: "proposal" as const,
       kind: "split" as const,
       name: "Client proposal",
@@ -718,6 +718,39 @@ describe("Trip API client", () => {
     expect(cockpit.trip.tripPlans?.[0]).toMatchObject({
       id: canonicalPlan.id,
       status: "proposal",
+    });
+  });
+
+  it("maps a canonical-only cockpit payload without legacy planVariants", () => {
+    const canonicalPlan = {
+      ...cockpitResponse.tripPlans![0],
+      id: "018f4e82-3000-7c00-b111-0000000000c1",
+      status: "draft" as const,
+      kind: "draft" as const,
+      name: "Draft route",
+    };
+    const { planVariants: _legacyPlanVariants, ...canonicalOnlyResponse } = {
+      ...cockpitResponse,
+      trip: {
+        ...cockpitResponse.trip,
+        activePlanVariantId: null,
+        mainTripPlanId: canonicalPlan.id,
+      },
+      tripPlans: [canonicalPlan],
+    };
+
+    const cockpit = mapCockpitResponse(canonicalOnlyResponse);
+
+    expect(cockpit.trip.activePlanVariantId).toBe(canonicalPlan.id);
+    expect(cockpit.trip.mainTripPlanId).toBe(canonicalPlan.id);
+    expect(cockpit.trip.planVariants).toHaveLength(1);
+    expect(cockpit.trip.planVariants[0]).toMatchObject({
+      id: canonicalPlan.id,
+      status: "draft",
+    });
+    expect(cockpit.trip.tripPlans?.[0]).toMatchObject({
+      id: canonicalPlan.id,
+      status: "draft",
     });
   });
 
@@ -931,7 +964,7 @@ describe("Trip API client", () => {
     const createdSuggestion = {
       id: "018f4e85-1111-7000-8000-000000000001",
       tripId: cockpitResponse.trip.id,
-      planVariantId: cockpitResponse.trip.activePlanVariantId ?? cockpitResponse.planVariants[0].id,
+      planVariantId: cockpitResponse.trip.activePlanVariantId ?? cockpitResponse.planVariants![0].id,
       proposerId: cockpitResponse.members[0].id,
       type: "edit",
       targetItemId: patchedItem.id,
@@ -959,7 +992,7 @@ describe("Trip API client", () => {
       clientMutationId: "web-suggestion-1",
       type: "edit",
       targetItemId: patchedItem.id,
-      planVariantId: cockpitResponse.trip.activePlanVariantId ?? cockpitResponse.planVariants[0].id,
+      planVariantId: cockpitResponse.trip.activePlanVariantId ?? cockpitResponse.planVariants![0].id,
       sourceVersion: 5,
       proposedPatch: { note: "Book ahead" },
     });

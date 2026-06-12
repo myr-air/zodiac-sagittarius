@@ -550,18 +550,28 @@ impl CreatePlanVariantRequest {
         validate_client_mutation_id(&self.client_mutation_id)?;
         validate_required_text(&self.name, "plan variant name is required")?;
         validate_plan_status_input(self.kind.as_deref(), self.status.as_deref())?;
+        reject_main_plan_status(self.kind.as_deref(), self.status.as_deref())?;
         if let Some(description) = &self.description {
             validate_sized_text(description, "plan variant description is too long")?;
         }
-        if let Some(creation_mode) = &self.creation_mode {
-            match creation_mode.as_str() {
-                "blank" | "duplicate-current" | "import" => {}
-                _ => {
-                    return Err(ServiceError::InvalidRequest(
-                        "trip plan creation mode is invalid",
-                    ));
-                }
+        let creation_mode = self.creation_mode.as_deref().unwrap_or("blank");
+        match creation_mode {
+            "blank" => {}
+            "duplicate-current" | "import" => {
+                return Err(ServiceError::InvalidRequest(
+                    "trip plan creation mode is not supported yet",
+                ));
             }
+            _ => {
+                return Err(ServiceError::InvalidRequest(
+                    "trip plan creation mode is invalid",
+                ));
+            }
+        }
+        if self.source_trip_plan_id.is_some() {
+            return Err(ServiceError::InvalidRequest(
+                "source trip plan is not supported for blank creation",
+            ));
         }
 
         Ok(())
@@ -589,8 +599,16 @@ impl PlanVariantPatch {
             validate_required_text(name, "plan variant name is required")?;
         }
         validate_plan_status_input(self.kind.as_deref(), self.status.as_deref())?;
+        reject_main_plan_status(self.kind.as_deref(), self.status.as_deref())?;
         if let Some(description) = &self.description {
             validate_sized_text(description, "plan variant description is too long")?;
+        }
+        if self.name.is_none()
+            && self.kind.is_none()
+            && self.status.is_none()
+            && self.description.is_none()
+        {
+            return Err(ServiceError::InvalidRequest("trip plan patch is empty"));
         }
 
         Ok(())
@@ -1378,6 +1396,15 @@ fn validate_plan_status_input(
                 "trip plan status does not match legacy kind",
             ));
         }
+    }
+    Ok(())
+}
+
+fn reject_main_plan_status(kind: Option<&str>, status: Option<&str>) -> Result<(), ServiceError> {
+    if matches!(status, Some("main")) || matches!(kind, Some("main")) {
+        return Err(ServiceError::InvalidRequest(
+            "use set-main to select the main trip plan",
+        ));
     }
     Ok(())
 }

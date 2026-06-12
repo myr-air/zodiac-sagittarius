@@ -259,6 +259,135 @@ async fn trip_plan_contract_accepts_canonical_routes_and_status(pool: sqlx::PgPo
 }
 
 #[sqlx::test(migrations = "../../migrations")]
+async fn trip_plan_contract_rejects_unsupported_creation_modes_and_main_status(
+    pool: sqlx::PgPool,
+) {
+    support::seed_trip(&pool).await;
+    let token = support::create_session(&pool, support::ORGANIZER_ID).await;
+    let app = support::app(pool.clone());
+
+    for (client_mutation_id, body) in [
+        (
+            "web-trip-plan-create-duplicate",
+            json!({
+                "clientMutationId": "web-trip-plan-create-duplicate",
+                "name": "Copied plan",
+                "status": "draft",
+                "creationMode": "duplicate-current"
+            }),
+        ),
+        (
+            "web-trip-plan-create-source",
+            json!({
+                "clientMutationId": "web-trip-plan-create-source",
+                "name": "Copied source plan",
+                "status": "draft",
+                "sourceTripPlanId": support::PLAN_ID
+            }),
+        ),
+        (
+            "web-trip-plan-create-main-status",
+            json!({
+                "clientMutationId": "web-trip-plan-create-main-status",
+                "name": "Main by status",
+                "status": "main"
+            }),
+        ),
+        (
+            "web-trip-plan-create-main-kind",
+            json!({
+                "clientMutationId": "web-trip-plan-create-main-kind",
+                "name": "Main by kind",
+                "kind": "main"
+            }),
+        ),
+    ] {
+        let response = app
+            .clone()
+            .oneshot(
+                Request::builder()
+                    .method(Method::POST)
+                    .uri(format!("/api/v1/trips/{}/trip-plans", support::TRIP_ID))
+                    .header(header::AUTHORIZATION, format!("Bearer {token}"))
+                    .header(header::CONTENT_TYPE, "application/json")
+                    .body(Body::from(body.to_string()))
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(
+            response.status(),
+            StatusCode::BAD_REQUEST,
+            "{client_mutation_id} should be rejected"
+        );
+    }
+
+    let rejected_count: i64 = sqlx::query_scalar(
+        "select count(*) from plan_variants
+         where trip_id = $1
+           and name in ('Copied plan', 'Copied source plan', 'Main by status', 'Main by kind')",
+    )
+    .bind(Uuid::parse_str(support::TRIP_ID).unwrap())
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(rejected_count, 0);
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn trip_plan_contract_rejects_main_status_and_empty_patch(pool: sqlx::PgPool) {
+    support::seed_trip(&pool).await;
+    let token = support::create_session(&pool, support::ORGANIZER_ID).await;
+    let app = support::app(pool);
+
+    for (client_mutation_id, patch) in [
+        (
+            "web-trip-plan-patch-main-status",
+            json!({
+                "status": "main"
+            }),
+        ),
+        (
+            "web-trip-plan-patch-main-kind",
+            json!({
+                "kind": "main"
+            }),
+        ),
+        ("web-trip-plan-patch-empty", json!({})),
+    ] {
+        let response = app
+            .clone()
+            .oneshot(
+                Request::builder()
+                    .method(Method::PATCH)
+                    .uri(format!(
+                        "/api/v1/trips/{}/trip-plans/{}",
+                        support::TRIP_ID,
+                        support::PLAN_ID
+                    ))
+                    .header(header::AUTHORIZATION, format!("Bearer {token}"))
+                    .header(header::CONTENT_TYPE, "application/json")
+                    .body(Body::from(
+                        json!({
+                            "clientMutationId": client_mutation_id,
+                            "expectedVersion": 1,
+                            "patch": patch
+                        })
+                        .to_string(),
+                    ))
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(
+            response.status(),
+            StatusCode::BAD_REQUEST,
+            "{client_mutation_id} should be rejected"
+        );
+    }
+}
+
+#[sqlx::test(migrations = "../../migrations")]
 async fn plan_variant_contract_viewer_cannot_create(pool: sqlx::PgPool) {
     support::seed_trip(&pool).await;
     let token = support::create_session(&pool, support::VIEWER_ID).await;

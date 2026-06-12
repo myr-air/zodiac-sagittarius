@@ -80,7 +80,9 @@ export interface PlanVariantResponse {
   version: number;
 }
 
-export type TripPlanResponse = PlanVariantResponse;
+export interface TripPlanResponse extends PlanVariantResponse {
+  status: PlanStatus;
+}
 
 export interface ItineraryItemResponse {
   id: string;
@@ -147,7 +149,7 @@ export interface ExpenseResponse {
 export interface TripCockpitResponse {
   trip: TripSummaryResponse;
   members: TripMemberResponse[];
-  planVariants: PlanVariantResponse[];
+  planVariants?: PlanVariantResponse[];
   tripPlans?: TripPlanResponse[];
   itineraryItems: ItineraryItemResponse[];
   suggestions: SuggestionResponse[];
@@ -834,11 +836,13 @@ export function mapCockpitResponse(response: TripCockpitResponse): TripCockpit {
       status: 0,
     });
   }
-  const planResponses = response.tripPlans ?? response.planVariants;
+  const legacyPlanResponses = response.planVariants ?? [];
+  const canonicalPlanResponses = response.tripPlans ?? [];
+  const planResponses = canonicalPlanResponses.length ? canonicalPlanResponses : legacyPlanResponses;
   const mainTripPlanId = response.trip.mainTripPlanId ?? response.trip.activePlanVariantId ?? planResponses[0]?.id ?? "";
   const activePlanVariantId = response.trip.activePlanVariantId ?? mainTripPlanId;
-  const planVariants = response.planVariants.length ? response.planVariants : planResponses;
-  const tripPlans = planResponses.length ? planResponses : response.planVariants;
+  const planVariants = legacyPlanResponses.length ? legacyPlanResponses : planResponses;
+  const tripPlans = canonicalPlanResponses.length ? canonicalPlanResponses : legacyPlanResponses;
   return {
     trip: {
       ...mapTripSummary(response.trip),

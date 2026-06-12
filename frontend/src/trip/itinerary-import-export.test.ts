@@ -24,6 +24,7 @@ describe("itinerary import/export JSON", () => {
         startDate: tripFixture.trip.startDate,
         endDate: tripFixture.trip.endDate,
         activePlanVariantId: tripFixture.trip.activePlanVariantId,
+        mainTripPlanId: tripFixture.trip.mainTripPlanId,
         partySize: tripFixture.trip.partySize,
         defaultTimezone: tripFixture.trip.defaultTimezone,
       },
@@ -38,6 +39,8 @@ describe("itinerary import/export JSON", () => {
         day: item.day,
         sortOrder: item.sortOrder,
         startTime: item.startTime,
+        endTime: item.endTime ?? null,
+        endOffsetDays: item.endOffsetDays ?? 0,
         activity: item.activity,
         activityType: item.activityType,
         place: item.place,
@@ -125,6 +128,8 @@ describe("itinerary import/export JSON", () => {
       status: "idea" as const,
       priority: "high" as const,
       startTime: "",
+      endTime: null,
+      endOffsetDays: 0,
       durationMinutes: null,
       details: {
         sourceLink: "https://example.test/noodles",
@@ -146,6 +151,8 @@ describe("itinerary import/export JSON", () => {
       status: "idea",
       priority: "high",
       startTime: "",
+      endTime: null,
+      endOffsetDays: 0,
       durationMinutes: null,
     });
     expect(parseItineraryImport(JSON.stringify(payload))[0]).toMatchObject({
@@ -156,7 +163,37 @@ describe("itinerary import/export JSON", () => {
       status: "idea",
       priority: "high",
       startTime: "",
+      endTime: null,
+      endOffsetDays: 0,
       durationMinutes: null,
+    });
+  });
+
+  it("preserves optional time windows with cross-day endings in export and import", () => {
+    const overnightItem = {
+      ...tripFixture.planItems[0],
+      id: "item-overnight-flight",
+      startTime: "23:00",
+      endTime: "02:00",
+      endOffsetDays: 1,
+      durationMinutes: 180,
+    };
+
+    const payload = buildItineraryExport({
+      exportedAt: "2026-06-04T00:00:00.000Z",
+      items: [overnightItem],
+      trip: tripFixture.trip,
+    });
+
+    expect(payload.items[0]).toMatchObject({
+      startTime: "23:00",
+      endTime: "02:00",
+      endOffsetDays: 1,
+    });
+    expect(parseItineraryImport(JSON.stringify(payload))[0]).toMatchObject({
+      startTime: "23:00",
+      endTime: "02:00",
+      endOffsetDays: 1,
     });
   });
 

@@ -24,6 +24,8 @@ export interface ItineraryExportItem {
   day: string;
   sortOrder: number;
   startTime: string;
+  endTime?: string | null;
+  endOffsetDays?: number;
   activity: string;
   activityType: ItineraryItem["activityType"];
   place: string;
@@ -49,10 +51,11 @@ export interface ItineraryExportDocument {
     | "name"
     | "destinationLabel"
     | "startDate"
-      | "endDate"
-      | "activePlanVariantId"
-      | "partySize"
-      | "defaultTimezone"
+    | "endDate"
+    | "activePlanVariantId"
+    | "mainTripPlanId"
+    | "partySize"
+    | "defaultTimezone"
   >;
   items: ItineraryExportItem[];
 }
@@ -77,6 +80,7 @@ export function buildItineraryExport({
       startDate: trip.startDate,
       endDate: trip.endDate,
       activePlanVariantId: trip.activePlanVariantId,
+      mainTripPlanId: trip.mainTripPlanId,
       partySize: trip.partySize,
       defaultTimezone: trip.defaultTimezone,
     },
@@ -120,6 +124,8 @@ function toExportItem(item: ItineraryItem): ItineraryExportItem {
     day: item.day,
     sortOrder: item.sortOrder,
     startTime: item.startTime,
+    endTime: item.endTime ?? null,
+    endOffsetDays: item.endOffsetDays ?? 0,
     activity: item.activity,
     activityType: item.activityType,
     place: item.place,
@@ -154,6 +160,8 @@ function parseExportItem(value: unknown): ItineraryExportItem {
     day: readString(item, "day"),
     sortOrder: readNumber(item, "sortOrder"),
     startTime: item.startTime === null ? "" : readString(item, "startTime"),
+    endTime: readOptionalNullableString(item, "endTime"),
+    endOffsetDays: item.endOffsetDays === undefined ? 0 : readNumber(item, "endOffsetDays"),
     activity: readString(item, "activity"),
     activityType: readActivityType(item.activityType),
     place: readString(item, "place"),
