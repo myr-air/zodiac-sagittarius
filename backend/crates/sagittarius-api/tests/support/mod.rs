@@ -192,16 +192,17 @@ pub async fn stored_member_session_expires_at(
 pub async fn seed_tasks(pool: &PgPool) {
     sqlx::query(
         "insert into trip_tasks (
-           id, trip_id, title, status, visibility, kind, created_by, assignee_id
+           id, trip_id, trip_plan_id, title, status, visibility, kind, created_by, assignee_id
          )
          values
-           (gen_random_uuid(), $1, 'Buy eSIM', 'open', 'private', 'prep', $2, $2),
-           (gen_random_uuid(), $1, 'Book Peak Tram', 'done', 'shared', 'booking', $3, $3),
-           (gen_random_uuid(), $1, 'Private owner task', 'open', 'private', 'prep', $3, $3)",
+           (gen_random_uuid(), $1, $4, 'Buy eSIM', 'open', 'private', 'prep', $2, $2),
+           (gen_random_uuid(), $1, $4, 'Book Peak Tram', 'done', 'shared', 'booking', $3, $3),
+           (gen_random_uuid(), $1, $4, 'Private owner task', 'open', 'private', 'prep', $3, $3)",
     )
     .bind(Uuid::parse_str(TRIP_ID).unwrap())
     .bind(Uuid::parse_str(TRAVELER_ID).unwrap())
     .bind(Uuid::parse_str(ORGANIZER_ID).unwrap())
+    .bind(Uuid::parse_str(PLAN_ID).unwrap())
     .execute(pool)
     .await
     .unwrap();
@@ -209,11 +210,12 @@ pub async fn seed_tasks(pool: &PgPool) {
 
 pub async fn seed_stop_note(pool: &PgPool) {
     sqlx::query(
-        "insert into stop_notes (id, trip_id, itinerary_item_id, author_id, body, version)
-         values ($1, $2, $3, $4, 'Bring printed booking voucher', 2)",
+        "insert into stop_notes (id, trip_id, trip_plan_id, itinerary_item_id, author_id, body, version)
+         values ($1, $2, $3, $4, $5, 'Bring printed booking voucher', 2)",
     )
     .bind(Uuid::parse_str(STOP_NOTE_ID).unwrap())
     .bind(Uuid::parse_str(TRIP_ID).unwrap())
+    .bind(Uuid::parse_str(PLAN_ID).unwrap())
     .bind(Uuid::parse_str(ITEM_ID).unwrap())
     .bind(Uuid::parse_str(TRAVELER_ID).unwrap())
     .execute(pool)
@@ -226,12 +228,13 @@ pub async fn seed_expense(pool: &PgPool) {
     let traveler_id = Uuid::parse_str(TRAVELER_ID).unwrap();
     sqlx::query(
         "insert into expenses (
-           id, trip_id, title, amount_minor, currency, paid_by, category, splits, itinerary_item_id
+           id, trip_id, trip_plan_id, title, amount_minor, currency, paid_by, category, splits, itinerary_item_id
          )
-         values ($1, $2, 'Dim sum breakfast', 24000, 'HKD', $3, 'food', $4, $5)",
+         values ($1, $2, $3, 'Dim sum breakfast', 24000, 'HKD', $4, 'food', $5, $6)",
     )
     .bind(Uuid::parse_str(EXPENSE_ID).unwrap())
     .bind(Uuid::parse_str(TRIP_ID).unwrap())
+    .bind(Uuid::parse_str(PLAN_ID).unwrap())
     .bind(owner_id)
     .bind(serde_json::json!({
         owner_id.to_string(): 12000,

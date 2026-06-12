@@ -146,6 +146,7 @@ async fn plan_variant_contract_organizer_can_create_patch_and_publish(pool: sqlx
 #[sqlx::test(migrations = "../../migrations")]
 async fn trip_plan_contract_accepts_canonical_routes_and_status(pool: sqlx::PgPool) {
     support::seed_trip(&pool).await;
+    support::seed_expense(&pool).await;
     let token = support::create_session(&pool, support::ORGANIZER_ID).await;
     let app = support::app(pool.clone());
 
@@ -244,6 +245,17 @@ async fn trip_plan_contract_accepts_canonical_routes_and_status(pool: sqlx::PgPo
             .await
             .unwrap();
     assert_eq!(previous_status, "backup");
+
+    let expense_trip_plan_id: Uuid =
+        sqlx::query_scalar("select trip_plan_id from expenses where id = $1")
+            .bind(Uuid::parse_str(support::EXPENSE_ID).unwrap())
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+    assert_eq!(
+        expense_trip_plan_id,
+        Uuid::parse_str(support::PLAN_ID).unwrap()
+    );
 }
 
 #[sqlx::test(migrations = "../../migrations")]

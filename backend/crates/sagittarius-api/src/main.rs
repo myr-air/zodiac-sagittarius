@@ -194,16 +194,17 @@ async fn seed_sample_trip_data(pool: &sqlx::PgPool) -> Result<(), sqlx::Error> {
 
     sqlx::query(
         "insert into trip_tasks (
-           id, trip_id, title, status, visibility, kind, created_by, assignee_id
+           id, trip_id, trip_plan_id, title, status, visibility, kind, created_by, assignee_id
          )
          values
-           ($4, $1, 'Buy eSIM', 'open', 'private', 'prep', $2, $2),
-           ($5, $1, 'Book Peak Tram', 'done', 'shared', 'booking', $3, $3)
+           ($4, $1, $6, 'Buy eSIM', 'open', 'private', 'prep', $2, $2),
+           ($5, $1, $6, 'Book Peak Tram', 'done', 'shared', 'booking', $3, $3)
          on conflict (id) do update
          set title = excluded.title,
              status = excluded.status,
              visibility = excluded.visibility,
              kind = excluded.kind,
+             trip_plan_id = excluded.trip_plan_id,
              assignee_id = excluded.assignee_id,
              updated_at = now()",
     )
@@ -212,15 +213,16 @@ async fn seed_sample_trip_data(pool: &sqlx::PgPool) -> Result<(), sqlx::Error> {
     .bind(organizer_id)
     .bind(Uuid::parse_str(TASK_ESIM_ID).expect("static uuid"))
     .bind(Uuid::parse_str(TASK_PEAK_TRAM_ID).expect("static uuid"))
+    .bind(plan_id)
     .execute(&mut *tx)
     .await?;
 
     sqlx::query(
         "insert into expenses (
-           id, trip_id, title, amount_minor, currency, paid_by, category, splits
+           id, trip_id, trip_plan_id, title, amount_minor, currency, paid_by, category, splits
          )
          values (
-           $4, $1, 'Dim sum breakfast', 24000, 'HKD', $2, 'food',
+           $4, $1, $5, 'Dim sum breakfast', 24000, 'HKD', $2, 'food',
            $3::jsonb
          )
          on conflict (id) do update
@@ -229,6 +231,7 @@ async fn seed_sample_trip_data(pool: &sqlx::PgPool) -> Result<(), sqlx::Error> {
              currency = excluded.currency,
              paid_by = excluded.paid_by,
              category = excluded.category,
+             trip_plan_id = excluded.trip_plan_id,
              splits = excluded.splits,
              updated_at = now()",
     )
@@ -239,6 +242,7 @@ async fn seed_sample_trip_data(pool: &sqlx::PgPool) -> Result<(), sqlx::Error> {
         traveler_id.to_string(): 12000
     }))
     .bind(Uuid::parse_str(EXPENSE_ID).expect("static uuid"))
+    .bind(plan_id)
     .execute(&mut *tx)
     .await?;
 

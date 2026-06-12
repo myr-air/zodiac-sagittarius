@@ -802,6 +802,20 @@ pub async fn plan_variant_exists_for_trip(
     .await
 }
 
+pub async fn active_plan_variant_id_for_trip(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    trip_id: Uuid,
+) -> Result<Option<Uuid>, sqlx::Error> {
+    sqlx::query_scalar(
+        "select active_plan_variant_id
+         from trips
+         where id = $1 and deleted_at is null",
+    )
+    .bind(trip_id)
+    .fetch_optional(&mut **tx)
+    .await
+}
+
 pub async fn list_itinerary_items(
     pool: &PgPool,
     trip_id: Uuid,
@@ -1492,7 +1506,7 @@ pub async fn list_visible_tasks(
 ) -> Result<Vec<TripTaskRecord>, sqlx::Error> {
     sqlx::query_as::<_, TripTaskRecord>(
         "select
-           id, trip_id, title, status, visibility, kind, created_by, assignee_id,
+           id, trip_id, trip_plan_id, title, status, visibility, kind, created_by, assignee_id,
            related_item_id, version
          from trip_tasks
          where trip_id = $1
@@ -1512,7 +1526,7 @@ pub async fn list_stop_notes(
 ) -> Result<Vec<StopNoteRecord>, sqlx::Error> {
     sqlx::query_as::<_, StopNoteRecord>(
         "select
-           id, trip_id, itinerary_item_id, author_id, body,
+           id, trip_id, trip_plan_id, itinerary_item_id, author_id, body,
            created_at::text as created_at, updated_at::text as updated_at, version
          from stop_notes
          where trip_id = $1 and deleted_at is null
@@ -1528,14 +1542,15 @@ pub async fn insert_stop_note(
     note: NewStopNote<'_>,
 ) -> Result<StopNoteRecord, sqlx::Error> {
     sqlx::query_as::<_, StopNoteRecord>(
-        "insert into stop_notes (id, trip_id, itinerary_item_id, author_id, body, version)
-         values ($1, $2, $3, $4, $5, 1)
+        "insert into stop_notes (id, trip_id, trip_plan_id, itinerary_item_id, author_id, body, version)
+         values ($1, $2, $3, $4, $5, $6, 1)
          returning
-           id, trip_id, itinerary_item_id, author_id, body,
+           id, trip_id, trip_plan_id, itinerary_item_id, author_id, body,
            created_at::text as created_at, updated_at::text as updated_at, version",
     )
     .bind(note.id)
     .bind(note.trip_id)
+    .bind(note.trip_plan_id)
     .bind(note.itinerary_item_id)
     .bind(note.author_id)
     .bind(note.body)
@@ -1549,7 +1564,7 @@ pub async fn lock_stop_note(
 ) -> Result<Option<StopNoteRecord>, sqlx::Error> {
     sqlx::query_as::<_, StopNoteRecord>(
         "select
-           id, trip_id, itinerary_item_id, author_id, body,
+           id, trip_id, trip_plan_id, itinerary_item_id, author_id, body,
            created_at::text as created_at, updated_at::text as updated_at, version
          from stop_notes
          where id = $1 and deleted_at is null
@@ -1571,7 +1586,7 @@ pub async fn update_stop_note(
          set body = $2, version = $3, updated_at = now()
          where id = $1 and deleted_at is null
          returning
-           id, trip_id, itinerary_item_id, author_id, body,
+           id, trip_id, trip_plan_id, itinerary_item_id, author_id, body,
            created_at::text as created_at, updated_at::text as updated_at, version",
     )
     .bind(note_id)
@@ -1591,7 +1606,7 @@ pub async fn delete_stop_note(
          set deleted_at = now(), version = $2, updated_at = now()
          where id = $1 and deleted_at is null
          returning
-           id, trip_id, itinerary_item_id, author_id, body,
+           id, trip_id, trip_plan_id, itinerary_item_id, author_id, body,
            created_at::text as created_at, updated_at::text as updated_at, version",
     )
     .bind(note_id)
@@ -1606,16 +1621,17 @@ pub async fn insert_task(
 ) -> Result<TripTaskRecord, sqlx::Error> {
     sqlx::query_as::<_, TripTaskRecord>(
         "insert into trip_tasks (
-           id, trip_id, title, status, visibility, kind, created_by, assignee_id, related_item_id,
+           id, trip_id, trip_plan_id, title, status, visibility, kind, created_by, assignee_id, related_item_id,
            version
          )
-         values ($1, $2, $3, 'open', $4, $5, $6, $7, $8, 1)
+         values ($1, $2, $3, $4, 'open', $5, $6, $7, $8, $9, 1)
          returning
-           id, trip_id, title, status, visibility, kind, created_by, assignee_id,
+           id, trip_id, trip_plan_id, title, status, visibility, kind, created_by, assignee_id,
            related_item_id, version",
     )
     .bind(task.id)
     .bind(task.trip_id)
+    .bind(task.trip_plan_id)
     .bind(task.title)
     .bind(task.visibility)
     .bind(task.kind)
@@ -1632,7 +1648,7 @@ pub async fn lock_task(
 ) -> Result<Option<TripTaskRecord>, sqlx::Error> {
     sqlx::query_as::<_, TripTaskRecord>(
         "select
-           id, trip_id, title, status, visibility, kind, created_by, assignee_id,
+           id, trip_id, trip_plan_id, title, status, visibility, kind, created_by, assignee_id,
            related_item_id, version
          from trip_tasks
          where id = $1 and deleted_at is null
@@ -1659,7 +1675,7 @@ pub async fn update_task(
              updated_at = now()
          where id = $1 and deleted_at is null
          returning
-           id, trip_id, title, status, visibility, kind, created_by, assignee_id,
+           id, trip_id, trip_plan_id, title, status, visibility, kind, created_by, assignee_id,
            related_item_id, version",
     )
     .bind(task_id)
@@ -1707,6 +1723,22 @@ pub async fn itinerary_item_exists_for_trip(
     .bind(trip_id)
     .bind(item_id)
     .fetch_one(&mut **tx)
+    .await
+}
+
+pub async fn itinerary_item_plan_variant_id_for_trip(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    trip_id: Uuid,
+    item_id: Uuid,
+) -> Result<Option<Uuid>, sqlx::Error> {
+    sqlx::query_scalar(
+        "select plan_variant_id
+         from itinerary_items
+         where trip_id = $1 and id = $2 and deleted_at is null",
+    )
+    .bind(trip_id)
+    .bind(item_id)
+    .fetch_optional(&mut **tx)
     .await
 }
 
@@ -1779,7 +1811,7 @@ pub async fn list_expenses(
 ) -> Result<Vec<ExpenseRecord>, sqlx::Error> {
     sqlx::query_as::<_, ExpenseRecord>(
         "select
-           id, trip_id, title, amount_minor, currency, exchange_rate_to_settlement_currency, notes, receipt_url, line_items, comments, paid_by, category, splits,
+           id, trip_id, trip_plan_id, title, amount_minor, currency, exchange_rate_to_settlement_currency, notes, receipt_url, line_items, comments, paid_by, category, splits,
            itinerary_item_id, version
          from expenses
          where trip_id = $1 and deleted_at is null
@@ -1796,16 +1828,17 @@ pub async fn insert_expense(
 ) -> Result<ExpenseRecord, sqlx::Error> {
     sqlx::query_as::<_, ExpenseRecord>(
         "insert into expenses (
-           id, trip_id, title, amount_minor, currency, exchange_rate_to_settlement_currency, notes, receipt_url, line_items, comments, paid_by, category, splits,
+           id, trip_id, trip_plan_id, title, amount_minor, currency, exchange_rate_to_settlement_currency, notes, receipt_url, line_items, comments, paid_by, category, splits,
            itinerary_item_id, version
          )
-         values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, 1)
+         values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, 1)
          returning
-           id, trip_id, title, amount_minor, currency, exchange_rate_to_settlement_currency, notes, receipt_url, line_items, comments, paid_by, category, splits,
+           id, trip_id, trip_plan_id, title, amount_minor, currency, exchange_rate_to_settlement_currency, notes, receipt_url, line_items, comments, paid_by, category, splits,
            itinerary_item_id, version",
     )
     .bind(expense.id)
     .bind(expense.trip_id)
+    .bind(expense.trip_plan_id)
     .bind(expense.title)
     .bind(expense.amount_minor)
     .bind(expense.currency)
@@ -1828,7 +1861,7 @@ pub async fn lock_expense(
 ) -> Result<Option<ExpenseRecord>, sqlx::Error> {
     sqlx::query_as::<_, ExpenseRecord>(
         "select
-           id, trip_id, title, amount_minor, currency, exchange_rate_to_settlement_currency, notes, receipt_url, line_items, comments, paid_by, category, splits,
+           id, trip_id, trip_plan_id, title, amount_minor, currency, exchange_rate_to_settlement_currency, notes, receipt_url, line_items, comments, paid_by, category, splits,
            itinerary_item_id, version
          from expenses
          where id = $1 and deleted_at is null
@@ -1863,7 +1896,7 @@ pub async fn update_expense(
              updated_at = now()
          where id = $1 and deleted_at is null
          returning
-           id, trip_id, title, amount_minor, currency, exchange_rate_to_settlement_currency, notes, receipt_url, line_items, comments, paid_by, category, splits,
+           id, trip_id, trip_plan_id, title, amount_minor, currency, exchange_rate_to_settlement_currency, notes, receipt_url, line_items, comments, paid_by, category, splits,
            itinerary_item_id, version",
     )
     .bind(expense_id)
@@ -1895,7 +1928,7 @@ pub async fn delete_expense(
          set deleted_at = now(), version = $2, updated_at = now()
          where id = $1 and deleted_at is null
          returning
-           id, trip_id, title, amount_minor, currency, exchange_rate_to_settlement_currency, notes, receipt_url, line_items, comments, paid_by, category, splits,
+           id, trip_id, trip_plan_id, title, amount_minor, currency, exchange_rate_to_settlement_currency, notes, receipt_url, line_items, comments, paid_by, category, splits,
            itinerary_item_id, version",
     )
     .bind(expense_id)
@@ -1910,7 +1943,7 @@ pub async fn list_booking_docs(
 ) -> Result<Vec<BookingDocRecord>, sqlx::Error> {
     sqlx::query_as::<_, BookingDocRecord>(
         "select
-           id, trip_id, type, title, status, visibility, owner_member_id, provider_name,
+           id, trip_id, trip_plan_id, type, title, status, visibility, owner_member_id, provider_name,
            confirmation_code, starts_at, ends_at, timezone, price_minor, currency, notes,
            created_by, created_at, updated_at, version
          from booking_docs
@@ -2005,7 +2038,7 @@ pub async fn lock_booking_doc(
 ) -> Result<Option<BookingDocRecord>, sqlx::Error> {
     sqlx::query_as::<_, BookingDocRecord>(
         "select
-           id, trip_id, type, title, status, visibility, owner_member_id, provider_name,
+           id, trip_id, trip_plan_id, type, title, status, visibility, owner_member_id, provider_name,
            confirmation_code, starts_at, ends_at, timezone, price_minor, currency, notes,
            created_by, created_at, updated_at, version
          from booking_docs
@@ -2023,22 +2056,23 @@ pub async fn insert_booking_doc(
 ) -> Result<BookingDocRecord, sqlx::Error> {
     sqlx::query_as::<_, BookingDocRecord>(
         "insert into booking_docs (
-           id, trip_id, type, title, status, visibility, owner_member_id, provider_name,
+           id, trip_id, trip_plan_id, type, title, status, visibility, owner_member_id, provider_name,
            confirmation_code, starts_at, ends_at, timezone, price_minor, currency, notes,
            created_by, version
          )
          values (
            $1, $2, $3, $4, $5, $6, $7, $8,
            $9, $10, $11, $12, $13, $14, $15,
-           $16, 1
+           $16, $17, 1
          )
          returning
-           id, trip_id, type, title, status, visibility, owner_member_id, provider_name,
+           id, trip_id, trip_plan_id, type, title, status, visibility, owner_member_id, provider_name,
            confirmation_code, starts_at, ends_at, timezone, price_minor, currency, notes,
            created_by, created_at, updated_at, version",
     )
     .bind(booking.id)
     .bind(booking.trip_id)
+    .bind(booking.trip_plan_id)
     .bind(booking.r#type)
     .bind(booking.title)
     .bind(booking.status)
@@ -2087,7 +2121,7 @@ pub async fn update_booking_doc(
              updated_at = now()
          where id = $1 and deleted_at is null
          returning
-           id, trip_id, type, title, status, visibility, owner_member_id, provider_name,
+           id, trip_id, trip_plan_id, type, title, status, visibility, owner_member_id, provider_name,
            confirmation_code, starts_at, ends_at, timezone, price_minor, currency, notes,
            created_by, created_at, updated_at, version",
     )
@@ -2139,7 +2173,7 @@ pub async fn soft_delete_booking_doc(
          set deleted_at = now(), version = $2, updated_at = now()
          where id = $1 and deleted_at is null
          returning
-           id, trip_id, type, title, status, visibility, owner_member_id, provider_name,
+           id, trip_id, trip_plan_id, type, title, status, visibility, owner_member_id, provider_name,
            confirmation_code, starts_at, ends_at, timezone, price_minor, currency, notes,
            created_by, created_at, updated_at, version",
     )

@@ -692,6 +692,7 @@ pub struct NewSuggestion<'a> {
 pub struct TripTaskRecord {
     pub id: Uuid,
     pub trip_id: Uuid,
+    pub trip_plan_id: Option<Uuid>,
     pub title: String,
     pub status: String,
     pub visibility: String,
@@ -707,6 +708,7 @@ impl From<TripTaskRecord> for TripTaskSummary {
         Self {
             id: record.id,
             trip_id: record.trip_id,
+            trip_plan_id: record.trip_plan_id,
             title: record.title,
             status: record.status,
             visibility: record.visibility,
@@ -722,6 +724,7 @@ impl From<TripTaskRecord> for TripTaskSummary {
 pub struct NewTripTask<'a> {
     pub id: Uuid,
     pub trip_id: Uuid,
+    pub trip_plan_id: Option<Uuid>,
     pub title: &'a str,
     pub visibility: &'a str,
     pub kind: Option<&'a str>,
@@ -734,6 +737,7 @@ pub struct NewTripTask<'a> {
 pub struct StopNoteRecord {
     pub id: Uuid,
     pub trip_id: Uuid,
+    pub trip_plan_id: Option<Uuid>,
     pub itinerary_item_id: Uuid,
     pub author_id: Uuid,
     pub body: String,
@@ -747,6 +751,7 @@ impl From<StopNoteRecord> for StopNoteSummary {
         Self {
             id: record.id,
             trip_id: record.trip_id,
+            trip_plan_id: record.trip_plan_id,
             item_id: record.itinerary_item_id,
             author_id: record.author_id,
             body: record.body,
@@ -760,6 +765,7 @@ impl From<StopNoteRecord> for StopNoteSummary {
 pub struct NewStopNote<'a> {
     pub id: Uuid,
     pub trip_id: Uuid,
+    pub trip_plan_id: Option<Uuid>,
     pub itinerary_item_id: Uuid,
     pub author_id: Uuid,
     pub body: &'a str,
@@ -779,6 +785,7 @@ pub struct ExpenseSplitRecord {
 pub struct ExpenseRecord {
     pub id: Uuid,
     pub trip_id: Uuid,
+    pub trip_plan_id: Option<Uuid>,
     pub title: String,
     pub amount_minor: i32,
     pub currency: String,
@@ -819,6 +826,7 @@ impl From<ExpenseRecord> for ExpenseItemSummary {
         Self {
             id: record.id,
             trip_id: record.trip_id,
+            trip_plan_id: record.trip_plan_id,
             title: record.title,
             amount_minor: record.amount_minor,
             currency: record.currency,
@@ -839,6 +847,7 @@ impl From<ExpenseRecord> for ExpenseItemSummary {
 pub struct NewExpense<'a> {
     pub id: Uuid,
     pub trip_id: Uuid,
+    pub trip_plan_id: Option<Uuid>,
     pub title: &'a str,
     pub amount_minor: i32,
     pub currency: &'a str,
@@ -857,6 +866,7 @@ pub struct NewExpense<'a> {
 pub struct BookingDocRecord {
     pub id: Uuid,
     pub trip_id: Uuid,
+    pub trip_plan_id: Option<Uuid>,
     pub r#type: String,
     pub title: String,
     pub status: String,
@@ -891,6 +901,7 @@ pub struct BookingDocExternalLinkRecord {
 pub struct NewBookingDoc<'a> {
     pub id: Uuid,
     pub trip_id: Uuid,
+    pub trip_plan_id: Option<Uuid>,
     pub r#type: &'a str,
     pub title: &'a str,
     pub status: &'a str,

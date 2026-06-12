@@ -227,28 +227,26 @@ Notes:
 - If `kind = 'split'` must remain accepted, map it to `status = 'proposal'` and write back `kind = 'draft'` or keep `kind = 'split'` only for legacy rows until Phase 2 decides.
 - The unique main status index should be added only after code updates previous main status transactionally.
 
-Phase 2 preparation draft:
+Phase 2 plan-scoped record migration:
 
 ```sql
--- 0026_plan_scoped_records_prepare.sql
+-- 0026_plan_scoped_records.sql
 
-ALTER TABLE expenses ADD COLUMN IF NOT EXISTS trip_plan_id uuid;
-ALTER TABLE booking_docs ADD COLUMN IF NOT EXISTS trip_plan_id uuid;
 ALTER TABLE trip_tasks ADD COLUMN IF NOT EXISTS trip_plan_id uuid;
+ALTER TABLE expenses ADD COLUMN IF NOT EXISTS trip_plan_id uuid;
 ALTER TABLE stop_notes ADD COLUMN IF NOT EXISTS trip_plan_id uuid;
+ALTER TABLE booking_docs ADD COLUMN IF NOT EXISTS trip_plan_id uuid;
 
-UPDATE expenses e
-SET trip_plan_id = COALESCE(i.plan_variant_id, t.active_plan_variant_id)
-FROM trips t
-LEFT JOIN itinerary_items i
-  ON i.id = e.itinerary_item_id AND i.trip_id = e.trip_id
-WHERE t.id = e.trip_id
-  AND e.trip_plan_id IS NULL;
-
--- Repeat the same backfill pattern for bookings/tasks/notes after confirming table names and nullable item links.
+-- Backfill existing tasks/expenses/bookings to the current main trip plan.
+-- Backfill stop notes from their required itinerary item plan.
+-- Add composite FKs to plan_variants(id, trip_id) and active lookup indexes.
 ```
 
-Phase 2 constraints should wait until service code enforces cross-plan integrity.
+Phase 2 keeps `trip_plan_id` nullable for legacy raw inserts and support scripts,
+but application writes should set it. Create flows should default to the linked
+itinerary item's plan when there is one, otherwise to the current Main Plan.
+Switching Main Plan must not update `trip_plan_id` on existing Actual Expenses,
+bookings, tasks, or notes.
 
 ## Backend Implementation Notes
 
@@ -310,9 +308,12 @@ Required changes:
 | Backend API | `backend/crates/sagittarius-api/tests/plan_variants_contract.rs` or new `trip_plans_contract.rs` | Create Trip Plan through canonical route and receive both `status` and `kind`. |
 | Backend API | same | Patch Trip Plan status to `proposal`; legacy `kind` still accepted. |
 | Backend API | same | Set Main Plan updates main pointer and previous plan status to `backup`. |
-| Backend API | same | Set Main Plan does not update expenses/bookings/tasks/notes counts or IDs. |
-| Backend API | `backend/crates/sagittarius-api/tests/trip_load_contract.rs` | Cockpit payload includes `tripPlans/mainTripPlanId` and legacy `planVariants/activePlanVariantId`. |
+| Backend API | same | Set Main Plan does not update existing Actual Expense `tripPlanId`. |
+| Backend schema | `backend/crates/sagittarius-api/tests/schema_contract.rs` | `trip_plan_id` exists on expenses/bookings/tasks/notes with composite plan FK and active indexes. |
+| Backend API | `backend/crates/sagittarius-api/tests/trip_load_contract.rs` | Cockpit payload includes `tripPlans/mainTripPlanId`, legacy `planVariants/activePlanVariantId`, and record `tripPlanId`. |
+| Backend API | `backend/crates/sagittarius-api/tests/tasks_contract.rs`, `stop_notes_contract.rs`, `bookings_contract.rs` | Create flows return record `tripPlanId` and default to the linked item plan or current Main Plan. |
 | Frontend API | `frontend/src/trip/api-client.test.ts` | Maps canonical-only, legacy-only, and mixed cockpit payloads into consistent `Trip`. |
+| Frontend API | same | Preserves plan-scoped `tripPlanId` for expenses, tasks, notes, and booking docs. |
 | Frontend API | same | Calls `/trip-plans` when available or old `/plan-variants` during compatibility. |
 | Frontend app | `frontend/src/components/SagittariusApp.test.tsx` | Selector label is `Trip Plan`, not `Trip Sheet`. |
 | Frontend app | same | Switching Main Plan does not relabel/move expenses in local mode. |
@@ -328,7 +329,9 @@ Required changes:
 4. Update frontend API mapper and types.
 5. Rename visible copy to Trip Plan.
 6. Add/adjust tests in the matrix above.
-7. Only after this passes, start Phase 2 plan-scoped records.
+7. Add Phase 2 plan-scoped record migration, backend response/request fields,
+   and create-flow defaults.
+8. Only after this passes, start Phase 3 hierarchy/time-window data changes.
 
 ## Acceptance Criteria
 
@@ -336,12 +339,13 @@ Required changes:
 - Cockpit payload has `tripPlans` and `mainTripPlanId`.
 - Legacy `planVariants` and `activePlanVariantId` still work.
 - Plan Status supports `main`, `draft`, `proposal`, and `backup`.
+- Expenses, booking docs, tasks, and stop notes expose `tripPlanId`.
 - Setting Main Plan does not mutate Actual Expenses or other plan-scoped records.
 - Tests prove mixed canonical/legacy payload compatibility.
 
 ## Handoff Notes For Later Phases
 
-- Phase 2 must add real `trip_plan_id` ownership and cross-plan integrity checks before plan-specific expenses/bookings/tasks are presented as safe.
+- Later Phase 2 hardening can make `trip_plan_id` non-null after legacy raw inserts and support scripts all write scoped records.
 - Phase 3 should decide whether to store `end_time` plus `end_offset_days`, or store a full end timestamp for Time Windows.
 - Phase 4 should delete or rewrite automatic overlap-to-path behavior only after explicit Alternative Path actions exist.
 - Phase 5 should keep the itinerary page as the primary planning surface and use booking/ticket pages only for detail editing.

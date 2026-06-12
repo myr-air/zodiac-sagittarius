@@ -64,13 +64,21 @@ pub async fn create_expense(
     {
         return Err(ServiceError::VersionConflict);
     }
-    validate_expense_links(&mut tx, trip_id, request.paid_by, request.itinerary_item_id).await?;
+    let trip_plan_id = resolve_expense_trip_plan_id(
+        &mut tx,
+        trip_id,
+        request.trip_plan_id,
+        request.paid_by,
+        request.itinerary_item_id,
+    )
+    .await?;
 
     let record = db::queries::insert_expense(
         &mut tx,
         NewExpense {
             id: Uuid::now_v7(),
             trip_id,
+            trip_plan_id,
             title: request.title.trim(),
             amount_minor: request.amount_minor,
             currency: request.currency.as_deref().unwrap_or("HKD").trim(),
@@ -293,6 +301,48 @@ async fn validate_expense_links(
     }
 
     Ok(())
+}
+
+async fn resolve_expense_trip_plan_id(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    trip_id: Uuid,
+    requested_trip_plan_id: Option<Uuid>,
+    paid_by: Uuid,
+    itinerary_item_id: Option<Uuid>,
+) -> Result<Option<Uuid>, ServiceError> {
+    if let Some(trip_plan_id) = requested_trip_plan_id {
+        if !db::queries::plan_variant_exists_for_trip(tx, trip_id, trip_plan_id).await? {
+            return Err(ServiceError::NotFound);
+        }
+    }
+    if !db::queries::trip_member_exists(tx, trip_id, paid_by).await? {
+        return Err(ServiceError::NotFound);
+    }
+
+    let item_trip_plan_id = if let Some(item_id) = itinerary_item_id {
+        Some(
+            db::queries::itinerary_item_plan_variant_id_for_trip(tx, trip_id, item_id)
+                .await?
+                .ok_or(ServiceError::NotFound)?,
+        )
+    } else {
+        None
+    };
+    if let (Some(requested), Some(item_plan)) = (requested_trip_plan_id, item_trip_plan_id) {
+        if requested != item_plan {
+            return Err(ServiceError::InvalidRequest(
+                "tripPlanId must match itinerary item plan",
+            ));
+        }
+    }
+    if requested_trip_plan_id.is_some() || item_trip_plan_id.is_some() {
+        return Ok(requested_trip_plan_id.or(item_trip_plan_id));
+    }
+
+    db::queries::active_plan_variant_id_for_trip(tx, trip_id)
+        .await?
+        .ok_or(ServiceError::NotFound)
+        .map(Some)
 }
 
 async fn write_reminder_event(

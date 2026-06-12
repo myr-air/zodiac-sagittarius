@@ -38,6 +38,7 @@ async fn trip_load_contract_returns_cockpit_payload_and_filters_private_tasks(po
     assert_eq!(body["itineraryItems"][0]["id"], support::ITEM_ID);
     assert_eq!(body["suggestions"].as_array().unwrap().len(), 0);
     assert_eq!(body["stopNotes"][0]["id"], support::STOP_NOTE_ID);
+    assert_eq!(body["stopNotes"][0]["tripPlanId"], support::PLAN_ID);
     assert_eq!(body["stopNotes"][0]["itemId"], support::ITEM_ID);
     assert_eq!(body["stopNotes"][0]["authorId"], support::TRAVELER_ID);
     assert_eq!(
@@ -57,6 +58,11 @@ async fn trip_load_contract_returns_cockpit_payload_and_filters_private_tasks(po
     assert!(
         tasks
             .iter()
+            .all(|task| task["tripPlanId"] == support::PLAN_ID)
+    );
+    assert!(
+        tasks
+            .iter()
             .any(|task| task["createdBy"] == support::TRAVELER_ID)
     );
     assert!(tasks.iter().all(|task| {
@@ -72,6 +78,7 @@ async fn trip_load_contract_returns_cockpit_payload_and_filters_private_tasks(po
     assert_eq!(body["expenseSummary"]["groupSpend"].as_f64(), Some(240.0));
     assert!(body["expenseSummary"]["netByMember"].is_object());
     assert_eq!(body["expenses"][0]["id"], support::EXPENSE_ID);
+    assert_eq!(body["expenses"][0]["tripPlanId"], support::PLAN_ID);
     assert_eq!(body["expenses"][0]["itineraryItemId"], support::ITEM_ID);
     assert_eq!(body["expenses"][0]["amountMinor"], 24000);
 }
@@ -185,7 +192,10 @@ async fn trip_load_refreshes_organizer_session_but_not_viewer_session(pool: sqlx
     let viewer_refreshed = support::stored_member_session_expires_at(&pool, &viewer_token).await;
 
     assert!(organizer_refreshed >= time::OffsetDateTime::now_utc() + time::Duration::hours(71));
-    assert_eq!(viewer_refreshed, truncate_to_postgres_precision(viewer_expiry));
+    assert_eq!(
+        viewer_refreshed,
+        truncate_to_postgres_precision(viewer_expiry)
+    );
 }
 
 fn truncate_to_postgres_precision(timestamp: time::OffsetDateTime) -> time::OffsetDateTime {

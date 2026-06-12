@@ -35,6 +35,7 @@ async fn stop_note_contract_traveler_can_create_note_for_trip_item(pool: sqlx::P
     assert_eq!(response.status(), StatusCode::OK);
     let body: Value =
         serde_json::from_slice(&to_bytes(response.into_body(), 65536).await.unwrap()).unwrap();
+    assert_eq!(body["tripPlanId"], support::PLAN_ID);
     assert_eq!(body["itemId"], support::ITEM_ID);
     assert_eq!(body["authorId"], support::TRAVELER_ID);
     assert_eq!(body["body"], "Meet outside exit B");

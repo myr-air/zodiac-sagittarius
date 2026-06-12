@@ -40,10 +40,22 @@ pub async fn create_stop_note(
         return Err(ServiceError::VersionConflict);
     }
 
-    if !db::queries::itinerary_item_exists_for_trip(&mut tx, trip_id, request.itinerary_item_id)
-        .await?
-    {
-        return Err(ServiceError::NotFound);
+    let item_trip_plan_id = db::queries::itinerary_item_plan_variant_id_for_trip(
+        &mut tx,
+        trip_id,
+        request.itinerary_item_id,
+    )
+    .await?
+    .ok_or(ServiceError::NotFound)?;
+    if let Some(trip_plan_id) = request.trip_plan_id {
+        if trip_plan_id != item_trip_plan_id {
+            return Err(ServiceError::InvalidRequest(
+                "tripPlanId must match itinerary item plan",
+            ));
+        }
+        if !db::queries::plan_variant_exists_for_trip(&mut tx, trip_id, trip_plan_id).await? {
+            return Err(ServiceError::NotFound);
+        }
     }
 
     let note = db::queries::insert_stop_note(
@@ -51,6 +63,7 @@ pub async fn create_stop_note(
         NewStopNote {
             id: Uuid::now_v7(),
             trip_id,
+            trip_plan_id: Some(request.trip_plan_id.unwrap_or(item_trip_plan_id)),
             itinerary_item_id: request.itinerary_item_id,
             author_id: session.member_id,
             body: request.body.trim(),

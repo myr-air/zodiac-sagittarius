@@ -80,6 +80,7 @@ pub async fn create_booking_doc(
         return Err(ServiceError::VersionConflict);
     }
 
+    let trip_plan_id = resolve_booking_trip_plan_id(&mut tx, trip_id, &request).await?;
     validate_create_references(&mut tx, trip_id, &request).await?;
 
     let booking_id = Uuid::now_v7();
@@ -91,6 +92,7 @@ pub async fn create_booking_doc(
         NewBookingDoc {
             id: booking_id,
             trip_id,
+            trip_plan_id,
             r#type: request.r#type.trim(),
             title: request.title.trim(),
             status: request.status.trim(),
@@ -378,6 +380,62 @@ async fn validate_create_references(
     .await
 }
 
+async fn resolve_booking_trip_plan_id(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    trip_id: Uuid,
+    request: &CreateBookingDocRequest,
+) -> Result<Option<Uuid>, ServiceError> {
+    if let Some(trip_plan_id) = request.trip_plan_id {
+        if !db::queries::plan_variant_exists_for_trip(tx, trip_id, trip_plan_id).await? {
+            return Err(ServiceError::NotFound);
+        }
+    }
+
+    let itinerary_plan_ids =
+        unique_itinerary_item_plan_ids(tx, trip_id, &request.related_itinerary_item_ids).await?;
+    if let Some(requested) = request.trip_plan_id {
+        if itinerary_plan_ids
+            .iter()
+            .any(|item_trip_plan_id| *item_trip_plan_id != requested)
+        {
+            return Err(ServiceError::InvalidRequest(
+                "tripPlanId must match related itinerary item plans",
+            ));
+        }
+        return Ok(Some(requested));
+    }
+    if let Some(derived) = itinerary_plan_ids.first() {
+        return Ok(Some(*derived));
+    }
+
+    db::queries::active_plan_variant_id_for_trip(tx, trip_id)
+        .await?
+        .ok_or(ServiceError::NotFound)
+        .map(Some)
+}
+
+async fn unique_itinerary_item_plan_ids(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    trip_id: Uuid,
+    item_ids: &[Uuid],
+) -> Result<Vec<Uuid>, ServiceError> {
+    let mut plan_ids = Vec::new();
+    for item_id in unique_uuids(item_ids) {
+        let plan_id = db::queries::itinerary_item_plan_variant_id_for_trip(tx, trip_id, item_id)
+            .await?
+            .ok_or(ServiceError::NotFound)?;
+        if !plan_ids.contains(&plan_id) {
+            plan_ids.push(plan_id);
+        }
+    }
+    if plan_ids.len() > 1 {
+        return Err(ServiceError::InvalidRequest(
+            "booking doc itinerary relations must belong to one trip plan",
+        ));
+    }
+    Ok(plan_ids)
+}
+
 async fn validate_patch_references(
     tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
     trip_id: Uuid,
@@ -538,6 +596,7 @@ fn summary_from_record(
     BookingDocSummary {
         id: record.id,
         trip_id: record.trip_id,
+        trip_plan_id: record.trip_plan_id,
         r#type: record.r#type,
         title: record.title,
         status: record.status,

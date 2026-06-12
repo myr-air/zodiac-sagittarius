@@ -198,6 +198,7 @@ export interface ItineraryItem {
 export interface Expense {
   id: string;
   tripId?: string;
+  tripPlanId?: string | null;
   title: string;
   amount: number;
   amountMinor?: number;
@@ -249,6 +250,7 @@ export type TripTaskKind = "prep" | "booking";
 
 export interface TripTask {
   id: string;
+  tripPlanId?: string | null;
   title: string;
   status: TripTaskStatus;
   visibility: TripTaskVisibility;
@@ -262,6 +264,7 @@ export interface TripTask {
 export interface StopNote {
   id: string;
   tripId: string;
+  tripPlanId?: string | null;
   itemId: string;
   authorId: string;
   body: string;
@@ -303,6 +306,7 @@ export interface BookingDocExternalLink {
 export interface BookingDoc {
   id: string;
   tripId: string;
+  tripPlanId?: string | null;
   type: BookingDocType;
   title: string;
   status: BookingDocStatus;

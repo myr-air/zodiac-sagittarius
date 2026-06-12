@@ -50,6 +50,10 @@ async fn migration_creates_vertical_slice_indexes(pool: sqlx::PgPool) {
         "suggestions_trip_status_idx",
         "trip_tasks_trip_visibility_status_idx",
         "trip_tasks_assignee_status_idx",
+        "trip_tasks_trip_plan_active_idx",
+        "expenses_trip_plan_active_idx",
+        "stop_notes_trip_plan_item_idx",
+        "booking_docs_trip_plan_active_idx",
         "trip_member_sessions_member_active_idx",
         "stop_notes_trip_item_created_at_idx",
         "trip_daily_briefings_trip_date_idx",
@@ -62,6 +66,56 @@ async fn migration_creates_vertical_slice_indexes(pool: sqlx::PgPool) {
             "missing index {index_name}"
         );
     }
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn plan_scoped_record_schema_adds_trip_plan_columns_and_fkeys(pool: sqlx::PgPool) {
+    let columns: Vec<(String, String)> = sqlx::query_as(
+        "select table_name::text, column_name::text
+         from information_schema.columns
+         where table_schema = 'public'
+           and table_name in ('trip_tasks', 'expenses', 'stop_notes', 'booking_docs')
+           and column_name = 'trip_plan_id'
+         order by table_name",
+    )
+    .fetch_all(&pool)
+    .await
+    .unwrap();
+
+    assert_eq!(
+        columns,
+        vec![
+            ("booking_docs".to_string(), "trip_plan_id".to_string()),
+            ("expenses".to_string(), "trip_plan_id".to_string()),
+            ("stop_notes".to_string(), "trip_plan_id".to_string()),
+            ("trip_tasks".to_string(), "trip_plan_id".to_string()),
+        ]
+    );
+
+    let constraints: Vec<String> = sqlx::query_scalar(
+        "select conname::text
+         from pg_constraint
+         where conname in (
+           'trip_tasks_trip_plan_fkey',
+           'expenses_trip_plan_fkey',
+           'stop_notes_trip_plan_fkey',
+           'booking_docs_trip_plan_fkey'
+         )
+         order by conname",
+    )
+    .fetch_all(&pool)
+    .await
+    .unwrap();
+
+    assert_eq!(
+        constraints,
+        vec![
+            "booking_docs_trip_plan_fkey".to_string(),
+            "expenses_trip_plan_fkey".to_string(),
+            "stop_notes_trip_plan_fkey".to_string(),
+            "trip_tasks_trip_plan_fkey".to_string(),
+        ]
+    );
 }
 
 #[sqlx::test(migrations = "../../migrations")]

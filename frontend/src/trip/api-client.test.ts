@@ -95,6 +95,7 @@ const cockpitResponse: TripCockpitResponse = {
     {
       id: "018f4e83-5410-7d8b-8f25-fd52c5e7bd30",
       tripId: "018f4e80-5788-7de0-a45c-8a555d17fc2d",
+      tripPlanId: "018f4e82-3000-7c00-b111-000000000001",
       itemId: "018f4e83-5410-7d8b-8f25-fd52c5e7bd1f",
       authorId: "018f4e81-77a4-7b8f-b3bd-0d0f493ac561",
       body: "Bring voucher",
@@ -107,6 +108,7 @@ const cockpitResponse: TripCockpitResponse = {
     {
       id: "018f4e86-1111-7000-8000-000000000001",
       tripId: "018f4e80-5788-7de0-a45c-8a555d17fc2d",
+      tripPlanId: "018f4e82-3000-7c00-b111-000000000001",
       title: "Dim sum breakfast",
       amountMinor: 24000,
       currency: "HKD",
@@ -133,6 +135,7 @@ const cockpitResponse: TripCockpitResponse = {
     {
       id: "018f4e84-1111-7000-8000-000000000001",
       tripId: "018f4e80-5788-7de0-a45c-8a555d17fc2d",
+      tripPlanId: "018f4e82-3000-7c00-b111-000000000001",
       title: "Buy eSIM",
       status: "open",
       visibility: "private",
@@ -153,6 +156,7 @@ const cockpitResponse: TripCockpitResponse = {
     {
       id: "booking-api-flight",
       tripId: "018f4e80-5788-7de0-a45c-8a555d17fc2d",
+      tripPlanId: "018f4e82-3000-7c00-b111-000000000001",
       type: "flight",
       title: "API flight voucher",
       status: "confirmed",
@@ -252,6 +256,7 @@ describe("Trip API client", () => {
     expect(cockpit.tasks).toEqual([
       {
         id: cockpitResponse.tasks[0].id,
+        tripPlanId: cockpitResponse.planVariants[0].id,
         title: "Buy eSIM",
         status: "open",
         visibility: "private",
@@ -265,6 +270,7 @@ describe("Trip API client", () => {
     expect(cockpit.stopNotes).toEqual(cockpitResponse.stopNotes);
     expect(cockpit.trip.expenses[0]).toMatchObject({
       id: cockpitResponse.expenses[0].id,
+      tripPlanId: cockpitResponse.planVariants[0].id,
       amount: 240,
       splits: { "018f4e81-77a4-7b8f-b3bd-0d0f493ac561": 240 },
     });
@@ -276,6 +282,7 @@ describe("Trip API client", () => {
     });
     expect(cockpit.trip.bookingDocs?.[0]).toMatchObject({
       id: "booking-api-flight",
+      tripPlanId: cockpitResponse.planVariants[0].id,
       externalLinks: [{ id: "booking-api-flight-link", label: "Drive", url: "https://drive.google.com/api-flight", provider: "Google Drive" }],
     });
     expect(cockpit.trip.photoAlbumLinks?.[0]).toMatchObject({

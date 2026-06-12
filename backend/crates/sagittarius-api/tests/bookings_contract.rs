@@ -66,6 +66,7 @@ async fn organizer_can_create_patch_and_delete_booking_doc(pool: sqlx::PgPool) {
     let booking_id = created["id"].as_str().expect("booking id").to_string();
     let create_version = created["version"].as_i64().unwrap();
     assert_eq!(created["title"], "Airport flight");
+    assert_eq!(created["tripPlanId"], support::PLAN_ID);
     assert_eq!(created["priceAmount"], 2400.25);
     assert_eq!(created["travelerIds"][0], support::TRAVELER_ID);
     assert_eq!(created["externalLinks"][0]["label"], "Drive");
@@ -90,13 +91,13 @@ async fn organizer_can_create_patch_and_delete_booking_doc(pool: sqlx::PgPool) {
             .unwrap(),
     )
     .unwrap();
-    assert!(
-        cockpit["bookingDocs"]
-            .as_array()
-            .unwrap()
-            .iter()
-            .any(|booking| booking["id"] == booking_id)
-    );
+    let loaded_booking = cockpit["bookingDocs"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|booking| booking["id"] == booking_id)
+        .expect("created booking is in cockpit");
+    assert_eq!(loaded_booking["tripPlanId"], support::PLAN_ID);
 
     let patch_response = app
         .clone()

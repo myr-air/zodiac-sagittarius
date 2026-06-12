@@ -37,6 +37,7 @@ async fn tasks_contract_traveler_creates_and_updates_own_private_task(pool: sqlx
     let body: Value =
         serde_json::from_slice(&to_bytes(created.into_body(), 65536).await.unwrap()).unwrap();
     let task_id = body["id"].as_str().unwrap();
+    assert_eq!(body["tripPlanId"], json!(support::PLAN_ID));
     assert_eq!(body["assigneeId"], json!(support::TRAVELER_ID));
     assert_eq!(body["version"], json!(1));
 

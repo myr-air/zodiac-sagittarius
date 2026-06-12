@@ -50,9 +50,10 @@ pub async fn create_task(
     } else {
         request.assignee_id
     };
-    validate_task_references(
+    let trip_plan_id = resolve_task_trip_plan_id(
         &mut tx,
         session.trip_id,
+        request.trip_plan_id,
         assignee_id,
         request.related_item_id,
     )
@@ -63,6 +64,7 @@ pub async fn create_task(
         NewTripTask {
             id: Uuid::now_v7(),
             trip_id: session.trip_id,
+            trip_plan_id,
             title: request.title.trim(),
             visibility: request.visibility.as_str(),
             kind: request.kind.as_deref(),
@@ -170,12 +172,19 @@ fn can_patch_task(
     }
 }
 
-async fn validate_task_references(
+async fn resolve_task_trip_plan_id(
     tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
     trip_id: Uuid,
+    requested_trip_plan_id: Option<Uuid>,
     assignee_id: Option<Uuid>,
     related_item_id: Option<Uuid>,
-) -> Result<(), ServiceError> {
+) -> Result<Option<Uuid>, ServiceError> {
+    if let Some(trip_plan_id) = requested_trip_plan_id {
+        if !db::queries::plan_variant_exists_for_trip(tx, trip_id, trip_plan_id).await? {
+            return Err(ServiceError::NotFound);
+        }
+    }
+
     if let Some(assignee_id) = assignee_id {
         let assignee_exists = db::queries::trip_member_exists(tx, trip_id, assignee_id).await?;
         if !assignee_exists {
@@ -183,15 +192,42 @@ async fn validate_task_references(
         }
     }
 
-    if let Some(related_item_id) = related_item_id {
-        let item_exists =
-            db::queries::itinerary_item_exists_for_trip(tx, trip_id, related_item_id).await?;
-        if !item_exists {
-            return Err(ServiceError::NotFound);
+    let related_item_trip_plan_id = if let Some(related_item_id) = related_item_id {
+        Some(
+            db::queries::itinerary_item_plan_variant_id_for_trip(tx, trip_id, related_item_id)
+                .await?
+                .ok_or(ServiceError::NotFound)?,
+        )
+    } else {
+        None
+    };
+    if let (Some(requested), Some(related)) = (requested_trip_plan_id, related_item_trip_plan_id) {
+        if requested != related {
+            return Err(ServiceError::InvalidRequest(
+                "tripPlanId must match related itinerary item plan",
+            ));
         }
     }
 
-    Ok(())
+    if requested_trip_plan_id.is_some() || related_item_trip_plan_id.is_some() {
+        return Ok(requested_trip_plan_id.or(related_item_trip_plan_id));
+    }
+
+    db::queries::active_plan_variant_id_for_trip(tx, trip_id)
+        .await?
+        .ok_or(ServiceError::NotFound)
+        .map(Some)
+}
+
+async fn validate_task_references(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    trip_id: Uuid,
+    assignee_id: Option<Uuid>,
+    related_item_id: Option<Uuid>,
+) -> Result<(), ServiceError> {
+    resolve_task_trip_plan_id(tx, trip_id, None, assignee_id, related_item_id)
+        .await
+        .map(|_| ())
 }
 
 async fn validate_patch_references(
@@ -238,6 +274,7 @@ mod tests {
         TripTaskRecord {
             id: Uuid::now_v7(),
             trip_id: Uuid::now_v7(),
+            trip_plan_id: Some(Uuid::now_v7()),
             title: "Task".to_string(),
             status: "open".to_string(),
             visibility: visibility.to_string(),

@@ -126,6 +126,7 @@ export interface TripTaskResponse extends TripTask {
 export interface ExpenseResponse {
   id: string;
   tripId: string;
+  tripPlanId?: string | null;
   title: string;
   amountMinor: number;
   currency: string;
@@ -241,6 +242,7 @@ export interface TripApiClient {
 
 export interface CreateTaskApiRequest {
   clientMutationId: string;
+  tripPlanId?: string | null;
   title: string;
   visibility: TripTask["visibility"];
   kind?: TripTask["kind"];
@@ -365,6 +367,7 @@ export interface CreateSuggestionApiRequest {
 
 export interface CreateStopNoteApiRequest {
   clientMutationId: string;
+  tripPlanId?: string | null;
   itineraryItemId: string;
   body: string;
 }
@@ -396,6 +399,7 @@ export interface UpdatePresenceApiRequest {
 
 export interface CreateExpenseApiRequest {
   clientMutationId: string;
+  tripPlanId?: string | null;
   title: string;
   amountMinor: number;
   currency?: string;
@@ -895,6 +899,7 @@ function mapTripSummary(trip: TripSummaryResponse): Trip {
 function mapTask(task: TripTaskResponse): TripTask {
   return {
     id: task.id,
+    tripPlanId: task.tripPlanId,
     title: task.title,
     status: task.status,
     visibility: task.visibility,
@@ -954,6 +959,7 @@ function mapExpense(expense: ExpenseResponse): Expense {
   return {
     id: expense.id,
     tripId: expense.tripId,
+    tripPlanId: expense.tripPlanId,
     title: expense.title,
     amount: expense.amountMinor / 100,
     amountMinor: expense.amountMinor,

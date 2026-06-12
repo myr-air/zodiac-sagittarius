@@ -575,6 +575,7 @@ pub struct SuggestionSummary {
 pub struct TripTaskSummary {
     pub id: Uuid,
     pub trip_id: Uuid,
+    pub trip_plan_id: Option<Uuid>,
     pub title: String,
     pub status: String,
     pub visibility: String,
@@ -590,6 +591,7 @@ pub struct TripTaskSummary {
 pub struct StopNoteSummary {
     pub id: Uuid,
     pub trip_id: Uuid,
+    pub trip_plan_id: Option<Uuid>,
     pub item_id: Uuid,
     pub author_id: Uuid,
     pub body: String,
@@ -623,6 +625,7 @@ pub struct ExpenseSummary {
 pub struct ExpenseItemSummary {
     pub id: Uuid,
     pub trip_id: Uuid,
+    pub trip_plan_id: Option<Uuid>,
     pub title: String,
     pub amount_minor: i32,
     pub currency: String,
@@ -653,6 +656,7 @@ pub struct BookingDocExternalLinkSummary {
 pub struct BookingDocSummary {
     pub id: Uuid,
     pub trip_id: Uuid,
+    pub trip_plan_id: Option<Uuid>,
     pub r#type: String,
     pub title: String,
     pub status: String,

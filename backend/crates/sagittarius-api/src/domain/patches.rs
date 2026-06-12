@@ -119,6 +119,7 @@ pub struct ImportItineraryRequest {
 #[serde(rename_all = "camelCase")]
 pub struct CreateStopNoteRequest {
     pub client_mutation_id: String,
+    pub trip_plan_id: Option<Uuid>,
     pub itinerary_item_id: Uuid,
     pub body: String,
 }
@@ -135,6 +136,7 @@ pub struct PatchStopNoteRequest {
 #[serde(rename_all = "camelCase")]
 pub struct CreateExpenseRequest {
     pub client_mutation_id: String,
+    pub trip_plan_id: Option<Uuid>,
     pub title: String,
     pub amount_minor: i32,
     pub currency: Option<String>,
@@ -228,6 +230,7 @@ pub struct CreateSuggestionRequest {
 #[serde(rename_all = "camelCase")]
 pub struct CreateTaskRequest {
     pub client_mutation_id: String,
+    pub trip_plan_id: Option<Uuid>,
     pub title: String,
     pub visibility: String,
     pub kind: Option<String>,
@@ -247,6 +250,7 @@ pub struct PatchTaskRequest {
 #[serde(rename_all = "camelCase")]
 pub struct CreateBookingDocRequest {
     pub client_mutation_id: String,
+    pub trip_plan_id: Option<Uuid>,
     pub r#type: String,
     pub title: String,
     pub status: String,
