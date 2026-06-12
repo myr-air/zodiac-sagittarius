@@ -146,7 +146,10 @@ async fn plan_variant_contract_organizer_can_create_patch_and_publish(pool: sqlx
 #[sqlx::test(migrations = "../../migrations")]
 async fn trip_plan_contract_accepts_canonical_routes_and_status(pool: sqlx::PgPool) {
     support::seed_trip(&pool).await;
+    support::seed_tasks(&pool).await;
+    support::seed_stop_note(&pool).await;
     support::seed_expense(&pool).await;
+    support::seed_booking_doc(&pool).await;
     let token = support::create_session(&pool, support::ORGANIZER_ID).await;
     let app = support::app(pool.clone());
 
@@ -256,6 +259,65 @@ async fn trip_plan_contract_accepts_canonical_routes_and_status(pool: sqlx::PgPo
         expense_trip_plan_id,
         Uuid::parse_str(support::PLAN_ID).unwrap()
     );
+
+    let unchanged_record_counts =
+        plan_scoped_record_counts_by_plan(&pool, Uuid::parse_str(support::PLAN_ID).unwrap()).await;
+    assert_eq!(
+        unchanged_record_counts,
+        [
+            ("booking_docs", 1),
+            ("expenses", 1),
+            ("stop_notes", 1),
+            ("trip_tasks", 3)
+        ]
+    );
+
+    let moved_record_count: i64 = sqlx::query_scalar(
+        "select
+           (select count(*) from booking_docs where trip_plan_id = $1)
+         + (select count(*) from expenses where trip_plan_id = $1)
+         + (select count(*) from stop_notes where trip_plan_id = $1)
+         + (select count(*) from trip_tasks where trip_plan_id = $1)",
+    )
+    .bind(Uuid::parse_str(trip_plan_id).unwrap())
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(moved_record_count, 0);
+}
+
+async fn plan_scoped_record_counts_by_plan(
+    pool: &sqlx::PgPool,
+    trip_plan_id: Uuid,
+) -> [(&'static str, i64); 4] {
+    let booking_docs =
+        sqlx::query_scalar("select count(*) from booking_docs where trip_plan_id = $1")
+            .bind(trip_plan_id)
+            .fetch_one(pool)
+            .await
+            .unwrap();
+    let expenses = sqlx::query_scalar("select count(*) from expenses where trip_plan_id = $1")
+        .bind(trip_plan_id)
+        .fetch_one(pool)
+        .await
+        .unwrap();
+    let stop_notes = sqlx::query_scalar("select count(*) from stop_notes where trip_plan_id = $1")
+        .bind(trip_plan_id)
+        .fetch_one(pool)
+        .await
+        .unwrap();
+    let trip_tasks = sqlx::query_scalar("select count(*) from trip_tasks where trip_plan_id = $1")
+        .bind(trip_plan_id)
+        .fetch_one(pool)
+        .await
+        .unwrap();
+
+    [
+        ("booking_docs", booking_docs),
+        ("expenses", expenses),
+        ("stop_notes", stop_notes),
+        ("trip_tasks", trip_tasks),
+    ]
 }
 
 #[sqlx::test(migrations = "../../migrations")]

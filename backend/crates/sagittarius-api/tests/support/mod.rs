@@ -14,6 +14,7 @@ pub const ALT_PLAN_ID: &str = "018f4e82-3000-7c00-b111-000000000002";
 pub const ITEM_ID: &str = "018f4e83-5410-7d8b-8f25-fd52c5e7bd1f";
 pub const STOP_NOTE_ID: &str = "018f4e83-5410-7d8b-8f25-fd52c5e7bd30";
 pub const EXPENSE_ID: &str = "018f4e86-1111-7000-8000-000000000001";
+pub const BOOKING_DOC_ID: &str = "018f4e87-2222-7000-8000-000000000001";
 
 pub fn app(pool: PgPool) -> Router {
     sagittarius_api::api::router(sagittarius_api::app::AppState::with_pool_for_tests(pool))
@@ -241,6 +242,29 @@ pub async fn seed_expense(pool: &PgPool) {
         traveler_id.to_string(): 12000
     }))
     .bind(Uuid::parse_str(ITEM_ID).unwrap())
+    .execute(pool)
+    .await
+    .unwrap();
+}
+
+pub async fn seed_booking_doc(pool: &PgPool) {
+    sqlx::query(
+        "insert into booking_docs (
+           id, trip_id, trip_plan_id, type, title, status, visibility, owner_member_id,
+           provider_name, confirmation_code, starts_at, ends_at, timezone, price_minor,
+           currency, notes, created_by, version
+         )
+         values (
+           $1, $2, $3, 'flight', 'Main plan flight', 'confirmed', 'shared', $4,
+           'HK Express', 'UO-2026', '2026-06-18T09:00:00+07:00',
+           '2026-06-18T12:00:00+07:00', 'Asia/Bangkok', 240025,
+           'THB', 'Seed booking doc', $4, 1
+         )",
+    )
+    .bind(Uuid::parse_str(BOOKING_DOC_ID).unwrap())
+    .bind(Uuid::parse_str(TRIP_ID).unwrap())
+    .bind(Uuid::parse_str(PLAN_ID).unwrap())
+    .bind(Uuid::parse_str(ORGANIZER_ID).unwrap())
     .execute(pool)
     .await
     .unwrap();
