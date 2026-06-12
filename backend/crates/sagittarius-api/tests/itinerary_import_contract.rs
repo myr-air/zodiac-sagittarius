@@ -320,6 +320,240 @@ async fn itinerary_import_contract_rejects_invalid_hierarchy(pool: sqlx::PgPool)
 }
 
 #[sqlx::test(migrations = "../../migrations")]
+async fn itinerary_import_contract_accepts_compatible_plan_metadata(pool: sqlx::PgPool) {
+    support::seed_trip(&pool).await;
+    let token = support::create_session(&pool, support::ORGANIZER_ID).await;
+    let app = support::app(pool);
+
+    let mut legacy_only = base_import_source(json!([import_item(
+        "legacy-1",
+        "2026-06-19",
+        Value::Null,
+        true
+    )]));
+    legacy_only["trip"]
+        .as_object_mut()
+        .unwrap()
+        .remove("mainTripPlanId");
+
+    let mut canonical_only = base_import_source(json!([import_item(
+        "canonical-1",
+        "2026-06-19",
+        Value::Null,
+        true
+    )]));
+    canonical_only["trip"]
+        .as_object_mut()
+        .unwrap()
+        .remove("activePlanVariantId");
+
+    let mut neither = base_import_source(json!([import_item(
+        "neither-1",
+        "2026-06-19",
+        Value::Null,
+        true
+    )]));
+    neither["trip"]
+        .as_object_mut()
+        .unwrap()
+        .remove("activePlanVariantId");
+    neither["trip"]
+        .as_object_mut()
+        .unwrap()
+        .remove("mainTripPlanId");
+
+    for source in [legacy_only, canonical_only, neither] {
+        let response = app
+            .clone()
+            .oneshot(
+                Request::builder()
+                    .method(Method::POST)
+                    .uri(format!(
+                        "/api/v1/trips/{}/itinerary-imports",
+                        support::TRIP_ID
+                    ))
+                    .header(header::AUTHORIZATION, format!("Bearer {token}"))
+                    .header(header::CONTENT_TYPE, "application/json")
+                    .body(Body::from(
+                        json!({
+                            "fileName": "itinerary.json",
+                            "contentType": "application/json",
+                            "mode": "json",
+                            "content": source.to_string()
+                        })
+                        .to_string(),
+                    ))
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+
+        assert_eq!(response.status(), StatusCode::OK);
+        let body: Value =
+            serde_json::from_slice(&to_bytes(response.into_body(), 131072).await.unwrap()).unwrap();
+        assert_eq!(
+            body["trip"]["activePlanVariantId"],
+            support::PLAN_ID.to_string()
+        );
+        assert_eq!(body["trip"]["mainTripPlanId"], support::PLAN_ID.to_string());
+    }
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn itinerary_import_contract_rejects_dangling_record_references(pool: sqlx::PgPool) {
+    support::seed_trip(&pool).await;
+    let token = support::create_session(&pool, support::ORGANIZER_ID).await;
+    let app = support::app(pool);
+
+    async fn import_status(app: &axum::Router, token: &str, source: Value) -> StatusCode {
+        app.clone()
+            .oneshot(
+                Request::builder()
+                    .method(Method::POST)
+                    .uri(format!(
+                        "/api/v1/trips/{}/itinerary-imports",
+                        support::TRIP_ID
+                    ))
+                    .header(header::AUTHORIZATION, format!("Bearer {token}"))
+                    .header(header::CONTENT_TYPE, "application/json")
+                    .body(Body::from(
+                        json!({
+                            "fileName": "itinerary.json",
+                            "contentType": "application/json",
+                            "mode": "json",
+                            "content": source.to_string()
+                        })
+                        .to_string(),
+                    ))
+                    .unwrap(),
+            )
+            .await
+            .unwrap()
+            .status()
+    }
+
+    let items = json!([import_item("block-1", "2026-06-19", Value::Null, true)]);
+    let record_cases = [
+        json!({
+            "expenses": [
+                {
+                    "id": "expense-1",
+                    "title": "Missing item receipt",
+                    "itineraryItemId": "missing-item"
+                }
+            ],
+            "bookingDocs": [],
+            "stopNotes": [],
+            "tasks": []
+        }),
+        json!({
+            "expenses": [],
+            "bookingDocs": [],
+            "stopNotes": [],
+            "tasks": [
+                {
+                    "id": "task-1",
+                    "title": "Missing item task",
+                    "relatedItemId": "missing-item"
+                }
+            ]
+        }),
+        json!({
+            "expenses": [],
+            "bookingDocs": [],
+            "stopNotes": [
+                {
+                    "id": "note-1",
+                    "itemId": "missing-item",
+                    "body": "Missing item note"
+                }
+            ],
+            "tasks": []
+        }),
+        json!({
+            "expenses": [
+                {
+                    "id": "expense-1",
+                    "title": "Valid receipt",
+                    "itineraryItemId": "block-1"
+                }
+            ],
+            "bookingDocs": [
+                {
+                    "id": "booking-1",
+                    "relatedItineraryItemIds": ["block-1"],
+                    "relatedTaskIds": ["missing-task"],
+                    "relatedExpenseIds": ["expense-1"],
+                    "noteIds": []
+                }
+            ],
+            "stopNotes": [],
+            "tasks": []
+        }),
+        json!({
+            "expenses": [],
+            "bookingDocs": [
+                {
+                    "id": "booking-1",
+                    "relatedItineraryItemIds": ["missing-item"],
+                    "relatedTaskIds": [],
+                    "relatedExpenseIds": [],
+                    "noteIds": []
+                }
+            ],
+            "stopNotes": [],
+            "tasks": []
+        }),
+        json!({
+            "expenses": [
+                {
+                    "id": "expense-1",
+                    "title": "Duplicate A",
+                    "itineraryItemId": "block-1"
+                },
+                {
+                    "id": "expense-1",
+                    "title": "Duplicate B",
+                    "itineraryItemId": "block-1"
+                }
+            ],
+            "bookingDocs": [],
+            "stopNotes": [],
+            "tasks": []
+        }),
+        json!({
+            "expenses": [],
+            "bookingDocs": [],
+            "stopNotes": [
+                {
+                    "id": "note-1",
+                    "body": "Missing required item id"
+                }
+            ],
+            "tasks": []
+        }),
+        json!({
+            "expenses": { "id": "expense-1" },
+            "bookingDocs": [],
+            "stopNotes": [],
+            "tasks": []
+        }),
+    ];
+
+    for records in record_cases {
+        assert_eq!(
+            import_status(
+                &app,
+                &token,
+                base_import_source_with_records(items.clone(), records)
+            )
+            .await,
+            StatusCode::BAD_REQUEST
+        );
+    }
+}
+
+#[sqlx::test(migrations = "../../migrations")]
 async fn itinerary_import_contract_traveler_cannot_import(pool: sqlx::PgPool) {
     support::seed_trip(&pool).await;
     let token = support::create_session(&pool, support::TRAVELER_ID).await;
@@ -353,6 +587,18 @@ async fn itinerary_import_contract_traveler_cannot_import(pool: sqlx::PgPool) {
 }
 
 fn base_import_source(items: Value) -> Value {
+    base_import_source_with_records(
+        items,
+        json!({
+            "expenses": [],
+            "bookingDocs": [],
+            "stopNotes": [],
+            "tasks": []
+        }),
+    )
+}
+
+fn base_import_source_with_records(items: Value, records: Value) -> Value {
     json!({
         "schema": "joii.itinerary.export",
         "version": 1,
@@ -368,12 +614,7 @@ fn base_import_source(items: Value) -> Value {
             "tripPlans": []
         },
         "items": items,
-        "records": {
-            "expenses": [],
-            "bookingDocs": [],
-            "stopNotes": [],
-            "tasks": []
-        }
+        "records": records
     })
 }
 

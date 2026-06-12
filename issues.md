@@ -16,6 +16,8 @@ assignment, labels, comments, and closing history.
   - [#17 Production migrations need owner-capable database role](https://github.com/myr-air/zodiac-sagittarius/issues/17)
 - Active design follow-ups:
   - [#22 Production web redesign audit follow-up](https://github.com/myr-air/zodiac-sagittarius/issues/22), sourced from [redesign.md](redesign.md)
+- Active itinerary backend follow-ups:
+  - [#24 Decide plan-check scope for Trip Plan UX](https://github.com/myr-air/zodiac-sagittarius/issues/24)
 - Production readiness follow-ups closed on 2026-06-07:
   - [#9 Production readiness local gate fails in auth browser e2e under next dev](https://github.com/myr-air/zodiac-sagittarius/issues/9)
   - [#10 Production browser QA fails because trip nav selector uses raw UUID instead of encoded route](https://github.com/myr-air/zodiac-sagittarius/issues/10)

@@ -50,8 +50,8 @@ pub async fn import_itinerary(
         destination_label: trip.destination_label.clone(),
         start_date: trip.start_date,
         end_date: trip.end_date,
-        active_plan_variant_id,
-        main_trip_plan_id: active_plan_variant_id,
+        active_plan_variant_id: Some(active_plan_variant_id),
+        main_trip_plan_id: Some(active_plan_variant_id),
         trip_plans: plan_variants
             .into_iter()
             .map(PlanVariantSummary::from)
@@ -88,6 +88,7 @@ fn parse_json_import(
     document.source = "json".to_string();
     document.trip = trip_context.clone();
     normalize_items(&mut document.items)?;
+    validate_record_references(&document)?;
     Ok(document)
 }
 
@@ -236,6 +237,7 @@ fn parse_ai_import_document(
     document.source = "ai".to_string();
     document.trip = trip_context.clone();
     normalize_items(&mut document.items)?;
+    validate_record_references(&document)?;
     Ok(document)
 }
 
@@ -291,7 +293,10 @@ fn itinerary_conversion_prompt(
         trip_context.destination_label,
         trip_context.start_date,
         trip_context.end_date,
-        trip_context.active_plan_variant_id,
+        trip_context
+            .active_plan_variant_id
+            .map(|id| id.to_string())
+            .unwrap_or_else(|| "unknown".to_string()),
         request.file_name.as_deref().unwrap_or("unknown"),
         request.content_type.as_deref().unwrap_or("text/plain"),
         request.content
@@ -302,7 +307,7 @@ fn itinerary_json_schema() -> Value {
     let trip_schema = json!({
         "type": "object",
         "additionalProperties": false,
-        "required": ["id", "name", "destinationLabel", "startDate", "endDate", "activePlanVariantId", "mainTripPlanId"],
+        "required": ["id", "name", "destinationLabel", "startDate", "endDate"],
         "properties": {
             "id": { "type": "string" },
             "name": { "type": "string" },
@@ -471,6 +476,177 @@ fn normalize_items(items: &mut [ItineraryImportItem]) -> Result<(), ServiceError
         }
     }
     Ok(())
+}
+
+fn validate_record_references(document: &ItineraryImportDocument) -> Result<(), ServiceError> {
+    let item_ids: HashSet<&str> = document.items.iter().map(|item| item.id.as_str()).collect();
+    let records = document
+        .records
+        .as_object()
+        .ok_or(ServiceError::InvalidRequest(
+            "import records must be an object",
+        ))?;
+
+    let expenses = record_entries(records, "expenses")?;
+    let tasks = record_entries(records, "tasks")?;
+    let stop_notes = record_entries(records, "stopNotes")?;
+    let booking_docs = record_entries(records, "bookingDocs")?;
+
+    let expense_ids = collect_record_ids(&expenses, "expense")?;
+    let task_ids = collect_record_ids(&tasks, "task")?;
+    let note_ids = collect_record_ids(&stop_notes, "stop note")?;
+    collect_record_ids(&booking_docs, "booking doc")?;
+
+    for expense in expenses {
+        validate_optional_link(expense, "itineraryItemId", &item_ids, "itinerary item")?;
+    }
+    for task in tasks {
+        validate_optional_link(task, "relatedItemId", &item_ids, "itinerary item")?;
+    }
+    for note in stop_notes {
+        validate_required_link(note, "itemId", &item_ids, "itinerary item")?;
+    }
+    for booking_doc in booking_docs {
+        validate_link_array(
+            booking_doc,
+            "relatedItineraryItemIds",
+            &item_ids,
+            "itinerary item",
+        )?;
+        validate_link_array(booking_doc, "relatedTaskIds", &task_ids, "task")?;
+        validate_link_array(booking_doc, "relatedExpenseIds", &expense_ids, "expense")?;
+        validate_link_array(booking_doc, "noteIds", &note_ids, "stop note")?;
+    }
+
+    Ok(())
+}
+
+fn record_entries<'a>(
+    records: &'a serde_json::Map<String, Value>,
+    bucket: &'static str,
+) -> Result<Vec<&'a serde_json::Map<String, Value>>, ServiceError> {
+    match records.get(bucket) {
+        None | Some(Value::Null) => Ok(Vec::new()),
+        Some(Value::Array(entries)) => entries
+            .iter()
+            .map(|entry| {
+                entry.as_object().ok_or(ServiceError::InvalidRequest(
+                    "import record entries must be objects",
+                ))
+            })
+            .collect(),
+        Some(_) => Err(ServiceError::InvalidRequest(
+            "import record buckets must be arrays",
+        )),
+    }
+}
+
+fn collect_record_ids<'a>(
+    records: &[&'a serde_json::Map<String, Value>],
+    record_name: &'static str,
+) -> Result<HashSet<&'a str>, ServiceError> {
+    let mut ids = HashSet::new();
+    for record in records.iter().copied() {
+        let id = required_string(record, "id", record_name)?;
+        if !ids.insert(id) {
+            return Err(ServiceError::InvalidRequest(
+                "import records must have unique ids",
+            ));
+        }
+    }
+    Ok(ids)
+}
+
+fn validate_optional_link(
+    record: &serde_json::Map<String, Value>,
+    field: &'static str,
+    allowed_ids: &HashSet<&str>,
+    target_name: &'static str,
+) -> Result<(), ServiceError> {
+    match record.get(field) {
+        None | Some(Value::Null) => Ok(()),
+        Some(Value::String(id)) if allowed_ids.contains(id.as_str()) => Ok(()),
+        Some(Value::String(_)) => Err(ServiceError::InvalidRequest(
+            "import record references must exist in the import document",
+        )),
+        Some(_) => Err(ServiceError::InvalidRequest(
+            "import record references must be strings",
+        )),
+    }
+    .map_err(|error| record_reference_error(error, field, target_name))
+}
+
+fn validate_required_link(
+    record: &serde_json::Map<String, Value>,
+    field: &'static str,
+    allowed_ids: &HashSet<&str>,
+    target_name: &'static str,
+) -> Result<(), ServiceError> {
+    let id = required_string(record, field, target_name)?;
+    if allowed_ids.contains(id) {
+        return Ok(());
+    }
+    Err(ServiceError::InvalidRequest(
+        "import record references must exist in the import document",
+    ))
+}
+
+fn validate_link_array(
+    record: &serde_json::Map<String, Value>,
+    field: &'static str,
+    allowed_ids: &HashSet<&str>,
+    target_name: &'static str,
+) -> Result<(), ServiceError> {
+    let Some(value) = record.get(field) else {
+        return Err(ServiceError::InvalidRequest(
+            "import record link arrays are required",
+        ));
+    };
+    let Some(entries) = value.as_array() else {
+        return Err(ServiceError::InvalidRequest(
+            "import record link arrays must be arrays",
+        ));
+    };
+    for entry in entries {
+        let Some(id) = entry.as_str() else {
+            return Err(ServiceError::InvalidRequest(
+                "import record references must be strings",
+            ));
+        };
+        if !allowed_ids.contains(id) {
+            return Err(record_reference_error(
+                ServiceError::InvalidRequest(
+                    "import record references must exist in the import document",
+                ),
+                field,
+                target_name,
+            ));
+        }
+    }
+    Ok(())
+}
+
+fn required_string<'a>(
+    record: &'a serde_json::Map<String, Value>,
+    field: &'static str,
+    record_name: &'static str,
+) -> Result<&'a str, ServiceError> {
+    match record.get(field).and_then(Value::as_str) {
+        Some(value) if !value.trim().is_empty() => Ok(value),
+        _ => Err(record_reference_error(
+            ServiceError::InvalidRequest("import records must include ids"),
+            field,
+            record_name,
+        )),
+    }
+}
+
+fn record_reference_error(
+    error: ServiceError,
+    _field: &'static str,
+    _target_name: &'static str,
+) -> ServiceError {
+    error
 }
 
 fn validate_activity_type(value: &str) -> Result<(), ServiceError> {

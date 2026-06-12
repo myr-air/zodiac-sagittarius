@@ -441,8 +441,10 @@ pub struct ItineraryImportTrip {
     pub destination_label: String,
     pub start_date: Date,
     pub end_date: Date,
-    pub active_plan_variant_id: Uuid,
-    pub main_trip_plan_id: Uuid,
+    #[serde(default)]
+    pub active_plan_variant_id: Option<Uuid>,
+    #[serde(default)]
+    pub main_trip_plan_id: Option<Uuid>,
     #[serde(default)]
     pub trip_plans: Vec<TripPlanSummary>,
 }
