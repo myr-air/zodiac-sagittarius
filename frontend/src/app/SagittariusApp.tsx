@@ -3174,6 +3174,8 @@ export function SagittariusApp({
     const document = buildItineraryExport({
       exportedAt: new Date().toISOString(),
       items: planItems,
+      stopNotes,
+      tasks,
       trip,
     });
     const blob = new Blob([`${JSON.stringify(document, null, 2)}\n`], {

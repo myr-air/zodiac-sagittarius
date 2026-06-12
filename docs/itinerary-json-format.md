@@ -58,7 +58,13 @@ Schema envelope:
       ],
       "note": "ร้านนี้เหมาะกับมื้อเช้าแบบไม่เร่ง"
     }
-  ]
+  ],
+  "records": {
+    "expenses": [],
+    "bookingDocs": [],
+    "stopNotes": [],
+    "tasks": []
+  }
 }
 ```
 
@@ -79,7 +85,12 @@ Import behavior:
   neither as compatibility metadata. The current destination trip id and target
   Trip Plan are supplied by the importing app state, so source metadata never
   switches the destination Main Plan by itself.
-- Other plan variants, members, tasks, expenses, notes, and suggestions are not changed.
+- Exports carry plan-scoped `expenses`, `bookingDocs`, `stopNotes`, and `tasks`
+  under `records` so a Trip Plan can be round-tripped without losing booking,
+  ticket, note, checklist, or Actual Expense context. Current import apply still
+  applies itinerary rows only; records are preserved in the normalized document
+  for preview and future explicit record import.
+- Other plan variants, members, and suggestions are not changed.
 
 ## Import Normalizer Endpoint
 

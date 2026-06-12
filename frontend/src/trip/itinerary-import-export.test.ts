@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildItineraryExport,
   parseItineraryImport,
+  parseItineraryImportDocument,
 } from "./itinerary-import-export";
 import { tripFixture } from "./trip-fixtures";
 
@@ -54,7 +55,51 @@ describe("itinerary import/export JSON", () => {
         advisories: item.advisories,
         note: item.note,
       })),
+      records: {
+        expenses: tripFixture.trip.expenses,
+        bookingDocs: tripFixture.trip.bookingDocs,
+        stopNotes: [],
+        tasks: [],
+      },
     });
+  });
+
+  it("preserves plan-scoped records in export and import documents", () => {
+    const planId = tripFixture.trip.activePlanVariantId;
+    const exported = buildItineraryExport({
+      exportedAt: "2026-06-04T12:00:00.000Z",
+      items: tripFixture.planItems,
+      stopNotes: tripFixture.stopNotes.map((note) => ({ ...note, tripPlanId: planId })),
+      tasks: tripFixture.tasks.map((task) => ({ ...task, tripPlanId: planId })),
+      trip: {
+        ...tripFixture.trip,
+        expenses: tripFixture.trip.expenses.map((expense) => ({
+          ...expense,
+          tripId: tripFixture.trip.id,
+          tripPlanId: planId,
+        })),
+        bookingDocs: (tripFixture.trip.bookingDocs ?? []).map((booking) => ({
+          ...booking,
+          tripPlanId: planId,
+        })),
+      },
+    });
+
+    expect(exported.records).toEqual({
+      expenses: tripFixture.trip.expenses.map((expense) => ({
+        ...expense,
+        tripId: tripFixture.trip.id,
+        tripPlanId: planId,
+      })),
+      bookingDocs: (tripFixture.trip.bookingDocs ?? []).map((booking) => ({
+        ...booking,
+        tripPlanId: planId,
+      })),
+      stopNotes: tripFixture.stopNotes.map((note) => ({ ...note, tripPlanId: planId })),
+      tasks: tripFixture.tasks.map((task) => ({ ...task, tripPlanId: planId })),
+    });
+    expect(parseItineraryImportDocument(JSON.stringify(exported)).records).toEqual(exported.records);
+    expect(parseItineraryImport(JSON.stringify(exported))).toHaveLength(exported.items.length);
   });
 
   it("preserves activity branch group fields in export and import", () => {
