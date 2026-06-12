@@ -310,7 +310,7 @@ export function SagittariusApp({
   const [latestPlanCheck, setLatestPlanCheck] = useState<PlanCheck | null>(null);
   const [planCheckRunning, setPlanCheckRunning] = useState(false);
   const [tasks, setTasks] = useState<TripTask[]>(() =>
-    tripFixtureTasks.map((task) => ({ ...task })),
+    (initialTrip.tasks ?? tripFixtureTasks).map((task) => ({ ...task })),
   );
   const [stopNotes, setStopNotes] = useState<StopNote[]>(() =>
     tripFixtureStopNotes.map((note) => ({ ...note })),
@@ -4316,6 +4316,7 @@ function applyImportedRecordsToTrip({
       expenses: nextExpenses,
       bookingDocs: nextBookingDocs,
       stopNotes: nextStopNotes,
+      tasks: [...(trip.tasks ?? existingTasks), ...nextTasks],
     },
     stopNotes: nextStopNotes.slice(existingStopNotes.length),
     tasks: nextTasks,

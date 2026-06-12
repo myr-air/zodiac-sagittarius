@@ -4314,6 +4314,9 @@ describe("Sagittarius cockpit UI", () => {
     const importedNote = persistedTrip.stopNotes?.find(
       (note) => note.body === "Ask for the corner table.",
     );
+    const importedTask = persistedTrip.tasks?.find(
+      (task) => task.title === "Confirm imported lunch",
+    );
     expect(importedExpense).toMatchObject({
       tripId: seedTrip.id,
       tripPlanId: seedTrip.activePlanVariantId,
@@ -4337,6 +4340,12 @@ describe("Sagittarius cockpit UI", () => {
       version: 1,
     });
     expect(importedNote?.id).toMatch(/^note-local-/);
+    expect(importedTask).toMatchObject({
+      tripPlanId: seedTrip.activePlanVariantId,
+      relatedItemId: "imported-lunch",
+      version: 1,
+    });
+    expect(importedTask?.id).toMatch(/^task-local-/);
     await user.click(screen.getByRole("link", { name: /ภาพรวม/i }));
     expect(
       await screen.findByText("Confirm imported lunch"),

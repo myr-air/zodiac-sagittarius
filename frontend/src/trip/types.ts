@@ -388,6 +388,7 @@ export interface Trip {
   bookingDocs?: BookingDoc[];
   photoAlbumLinks?: TripPhotoAlbumLink[];
   stopNotes?: StopNote[];
+  tasks?: TripTask[];
   expenseReminders?: ExpenseReminder[];
   version?: number;
 }
