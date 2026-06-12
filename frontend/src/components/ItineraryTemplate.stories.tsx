@@ -250,6 +250,12 @@ export const OwnerThai: Story = {
 };
 
 export const Viewer: Story = { args: { ...Owner.args, role: "viewer" } };
+export const Traveler: Story = {
+  args: { ...Owner.args, role: "traveler" },
+  play: async ({ canvas }) => {
+    await expect(canvas.getAllByRole("button", { name: /Add stop or activity/i })[0]).toBeEnabled();
+  },
+};
 export const Dense: Story = { args: { ...Owner.args, items: buildDenseTripFixture().itineraryItems } };
 export const TableOverflow: Story = {
   args: {

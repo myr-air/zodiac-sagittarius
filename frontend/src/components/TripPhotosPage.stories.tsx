@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import { expect, userEvent } from "storybook/test";
+import { expect, userEvent, within } from "storybook/test";
 import { tripFixture } from "@/src/trip/trip-fixtures";
 import type { TripPhotoAlbumLink } from "@/src/trip/types";
 import { TripPhotosPage } from "./TripPhotosPage";
@@ -62,6 +62,13 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
+async function expectPhotosResponsiveContract(canvasElement: HTMLElement) {
+  const canvas = within(canvasElement);
+  await expect(canvas.getByRole("region", { name: /Photos & albums|รูปภาพและอัลบั้ม/i })).toHaveClass("trip-photos-page");
+  await expect(canvas.getByLabelText(/Photo album summary|สรุปอัลบั้มรูปภาพ/i)).toBeVisible();
+  await expect(canvas.getByLabelText(/Photo providers|ผู้ให้บริการรูปภาพ/i)).toBeVisible();
+}
+
 export const Owner: Story = {
   args: {
     trip: tripFixture.trip,
@@ -72,6 +79,10 @@ export const Owner: Story = {
     onUpdatePhotoAlbum: noop,
     onDeletePhotoAlbum: noop,
   },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole("region", { name: /Photos & albums/i })).toHaveClass("trip-photos-page");
+    await expect(canvas.getByRole("button", { name: /Add album/i })).toBeVisible();
+  },
 };
 
 export const Viewer: Story = {
@@ -79,6 +90,10 @@ export const Viewer: Story = {
     ...Owner.args,
     currentMember: tripFixture.currentMembers.viewer,
     canEditPhotoAlbums: false,
+  },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole("region", { name: /Photos & albums/i })).toHaveClass("trip-photos-page");
+    await expect(canvas.queryByRole("button", { name: /Add album/i })).toBeNull();
   },
 };
 
@@ -88,6 +103,7 @@ export const Traveler: Story = {
     currentMember: tripFixture.currentMembers.traveler,
     canEditPhotoAlbums: true,
   },
+  play: Owner.play,
 };
 
 export const OwnerThai: Story = {
@@ -146,19 +162,31 @@ export const CoverStates: Story = {
 export const Tablet: Story = {
   args: Owner.args,
   parameters: { viewport: { defaultViewport: "tablet768" } },
+  play: async ({ canvasElement }) => {
+    await expectPhotosResponsiveContract(canvasElement);
+  },
 };
 
 export const Desktop1024: Story = {
   args: Owner.args,
   parameters: { viewport: { defaultViewport: "desktop1024" } },
+  play: async ({ canvasElement }) => {
+    await expectPhotosResponsiveContract(canvasElement);
+  },
 };
 
 export const Desktop1440: Story = {
   args: Owner.args,
   parameters: { viewport: { defaultViewport: "desktop1440" } },
+  play: async ({ canvasElement }) => {
+    await expectPhotosResponsiveContract(canvasElement);
+  },
 };
 
 export const Mobile: Story = {
   args: Owner.args,
   parameters: { viewport: { defaultViewport: "mobile320" } },
+  play: async ({ canvasElement }) => {
+    await expectPhotosResponsiveContract(canvasElement);
+  },
 };

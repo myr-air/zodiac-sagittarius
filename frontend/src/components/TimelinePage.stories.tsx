@@ -155,11 +155,17 @@ export const Tablet: Story = {
 export const Desktop1024: Story = {
   args: Owner.args,
   parameters: { viewport: { defaultViewport: "desktop1024" } },
+  play: async ({ canvasElement }) => {
+    await expectTimelineStructure(canvasElement);
+  },
 };
 
 export const Desktop1440: Story = {
   args: Owner.args,
   parameters: { viewport: { defaultViewport: "desktop1440" } },
+  play: async ({ canvasElement }) => {
+    await expectTimelineStructure(canvasElement);
+  },
 };
 
 export const Mobile: Story = {

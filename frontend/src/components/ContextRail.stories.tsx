@@ -134,6 +134,16 @@ export const Mobile: Story = {
   },
 };
 
+export const Tablet: Story = {
+  args: baseArgs,
+  parameters: { viewport: { defaultViewport: "tablet768" } },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole("complementary", { name: /Planning context/i })).toHaveClass("context-rail--open");
+    await expect(canvas.getByRole("tablist", { name: /Stop detail tabs/i })).toHaveClass("inspector-tabs");
+    await expect(canvas.getByRole("region", { name: /Selected stop detail/i })).toBeInTheDocument();
+  },
+};
+
 export const Thai: Story = {
   args: baseArgs,
   parameters: { locale: "th" },

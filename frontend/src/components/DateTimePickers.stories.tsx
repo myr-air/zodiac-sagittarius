@@ -145,6 +145,17 @@ export const Mobile: Story = {
   },
 };
 
+export const Tablet: Story = {
+  args: DateTimePicker.args,
+  parameters: { viewport: { defaultViewport: "tablet768" } },
+  play: async ({ canvas, canvasElement }) => {
+    await userEvent.click(canvas.getByRole("button", { name: /Open date and time picker/i }));
+    const body = within(canvasElement.ownerDocument.body);
+    await expect(body.getByRole("dialog", { name: /Joii date time picker/i })).toBeVisible();
+    await expect(body.getByRole("button", { name: "Apply" })).toBeVisible();
+  },
+};
+
 export const Thai: Story = {
   args: {
     kind: "datetime",

@@ -60,6 +60,11 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
+async function expectBookingsResponsiveContract(canvasElement: HTMLElement) {
+  await expect(canvasElement.querySelector(".bookings-content")).toHaveClass("bookings-content", "max-[1199px]:grid-cols-1");
+  await expect(canvasElement.querySelector(".booking-inspector")).toHaveClass("booking-inspector", "max-[1199px]:static", "max-[1199px]:max-h-none");
+}
+
 export const Owner: Story = {
   args: {
     trip: seedTrip,
@@ -149,7 +154,8 @@ export const AddBookingDialogOpen: Story = {
 export const Mobile: Story = {
   args: Owner.args,
   parameters: { viewport: { defaultViewport: "mobile320" } },
-  play: async ({ canvas }) => {
+  play: async ({ canvas, canvasElement }) => {
+    await expectBookingsResponsiveContract(canvasElement);
     await expect(canvas.getByRole("region", { name: /Bookings & Docs|การจองและเอกสาร/i })).toHaveClass("bookings-docs-page");
     await expect(canvas.getByLabelText(/Booking folders|โฟลเดอร์การจอง/i)).toBeVisible();
     await expect(canvas.getByRole("button", { name: /Add booking|เพิ่มการจอง/i })).toBeVisible();
@@ -159,14 +165,23 @@ export const Mobile: Story = {
 export const Tablet: Story = {
   args: Owner.args,
   parameters: { viewport: { defaultViewport: "tablet768" } },
+  play: async ({ canvasElement }) => {
+    await expectBookingsResponsiveContract(canvasElement);
+  },
 };
 
 export const Desktop1024: Story = {
   args: Owner.args,
   parameters: { viewport: { defaultViewport: "desktop1024" } },
+  play: async ({ canvasElement }) => {
+    await expectBookingsResponsiveContract(canvasElement);
+  },
 };
 
 export const Desktop1440: Story = {
   args: Owner.args,
   parameters: { viewport: { defaultViewport: "desktop1440" } },
+  play: async ({ canvasElement }) => {
+    await expectBookingsResponsiveContract(canvasElement);
+  },
 };

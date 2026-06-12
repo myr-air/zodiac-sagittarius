@@ -6,6 +6,7 @@ import { SmartItineraryTable } from "./SmartItineraryTable";
 
 const noop = () => {};
 const onStoryChangeDayPath = fn();
+const onStoryAutoResolveDayOverlaps = fn();
 const onStoryMoveItemToPath = fn();
 const onStoryToggleShowAllPaths = fn();
 const onStoryUpdateItemInline = fn();
@@ -186,6 +187,11 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
+async function expectItineraryResponsiveContract(canvasElement: HTMLElement) {
+  await expect(canvasElement.querySelector(".table-scroll")).toHaveClass("table-scroll", "overflow-x-auto", "max-w-full");
+  await expect(canvasElement.querySelector(".smart-table")).toHaveClass("smart-table", "min-w-[1080px]");
+}
+
 export const Owner: Story = {
   args: {
     canRedo: false,
@@ -227,6 +233,13 @@ export const Owner: Story = {
     onRedo: noop,
     onToggleContextRail: noop,
     onUndo: noop,
+  },
+  play: async ({ canvas, canvasElement }) => {
+    await expectItineraryResponsiveContract(canvasElement);
+    await expect(canvas.getByRole("button", { name: /^Import$/i })).toBeEnabled();
+    await expect(canvas.getByRole("button", { name: /^New sheet$/i })).toBeEnabled();
+    await expect(canvas.getAllByRole("button", { name: /Add stop or activity/i })[0]).toBeEnabled();
+    await expect(canvas.getByRole("button", { name: /Edit Dim Dim Sum/i })).toBeEnabled();
   },
 };
 
@@ -288,6 +301,7 @@ export const Empty: Story = {
 export const OverlapConflictWarning: Story = {
   args: {
     ...Owner.args,
+    onAutoResolveDayOverlaps: onStoryAutoResolveDayOverlaps,
     selectedItemId: "overlap-dim-sum",
     items: [
       {
@@ -314,8 +328,10 @@ export const OverlapConflictWarning: Story = {
       },
     ],
   },
-  play: async ({ canvasElement }) => {
+  play: async ({ canvas, canvasElement }) => {
     await expect(canvasElement.querySelector(".data-row--path-overlap")).toBeInTheDocument();
+    await userEvent.click(canvas.getByRole("button", { name: /Auto fix overlaps/i }));
+    await expect(onStoryAutoResolveDayOverlaps).toHaveBeenCalledWith(tripFixture.trip.startDate);
   },
 };
 
@@ -488,8 +504,7 @@ export const TableOverflow: Story = {
   },
   parameters: { viewport: { defaultViewport: "mobile320" } },
   play: async ({ canvasElement }) => {
-    await expect(canvasElement.querySelector(".table-scroll")).toHaveClass("table-scroll", "overflow-x-auto", "max-w-full");
-    await expect(canvasElement.querySelector(".smart-table")).toHaveClass("smart-table", "min-w-[1080px]");
+    await expectItineraryResponsiveContract(canvasElement);
     await expect(canvasElement.querySelector(".activity-path-graph")).toBeInTheDocument();
   },
 };
@@ -497,19 +512,54 @@ export const TableOverflow: Story = {
 export const Tablet: Story = {
   args: Owner.args,
   parameters: { viewport: { defaultViewport: "tablet768" } },
+  play: async ({ canvasElement }) => {
+    await expectItineraryResponsiveContract(canvasElement);
+  },
 };
 
 export const Desktop1024: Story = {
   args: Owner.args,
   parameters: { viewport: { defaultViewport: "desktop1024" } },
+  play: async ({ canvasElement }) => {
+    await expectItineraryResponsiveContract(canvasElement);
+  },
 };
 
 export const Desktop1440: Story = {
   args: Owner.args,
   parameters: { viewport: { defaultViewport: "desktop1440" } },
+  play: async ({ canvasElement }) => {
+    await expectItineraryResponsiveContract(canvasElement);
+  },
 };
 
 export const Mobile: Story = {
   args: Owner.args,
   parameters: { viewport: { defaultViewport: "mobile320" } },
+  play: async ({ canvas, canvasElement }) => {
+    await expectItineraryResponsiveContract(canvasElement);
+    const inspector = canvas.getByRole("region", { name: /Selected stop details/i });
+    const inspectorCanvas = within(inspector);
+    await expect(inspector).toHaveClass("mobile-itinerary-inspector");
+    await expect(inspectorCanvas.getByLabelText(/Edit activity Dim Dim Sum/i)).toBeEnabled();
+    await expect(inspectorCanvas.getByRole("button", { name: /Edit Dim Dim Sum/i })).toBeEnabled();
+    await expect(inspectorCanvas.getByRole("button", { name: /Delete Dim Dim Sum/i })).toBeEnabled();
+  },
+};
+
+export const MobileViewer: Story = {
+  args: {
+    ...Owner.args,
+    role: "viewer",
+  },
+  parameters: { viewport: { defaultViewport: "mobile320" } },
+  play: async ({ canvas, canvasElement }) => {
+    await expectItineraryResponsiveContract(canvasElement);
+    const inspector = canvas.getByRole("region", { name: /Selected stop details/i });
+    const inspectorCanvas = within(inspector);
+    await expect(inspector).toHaveClass("mobile-itinerary-inspector");
+    await expect(inspectorCanvas.getByLabelText(/Edit activity Dim Dim Sum/i)).toHaveAttribute("readonly");
+    await expect(inspectorCanvas.getByRole("button", { name: /Edit Dim Dim Sum/i })).toBeDisabled();
+    await expect(inspectorCanvas.getByRole("button", { name: /Delete Dim Dim Sum/i })).toBeDisabled();
+  },
 };

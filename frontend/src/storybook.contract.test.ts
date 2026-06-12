@@ -71,7 +71,7 @@ describe("Storybook template catalog", () => {
   it("documents page-level role, density, and viewport states per cockpit page", () => {
     const requiredPageStates: Array<[string, string[]]> = [
       ["components/OverviewPage.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty", "AddTaskDialogOpen", "Tablet", "Desktop1024", "Desktop1440", "Mobile"]],
-      ["components/ItineraryPage.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty", "OverlapConflictWarning", "PlanAExample", "BranchGraph", "RequestedPlanExample", "StressPaths", "TableOverflow", "Tablet", "Desktop1024", "Desktop1440", "Mobile"]],
+      ["components/ItineraryPage.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty", "OverlapConflictWarning", "PlanAExample", "PlanABAlternatives", "BranchGraph", "RequestedPlanExample", "StressPaths", "TableOverflow", "Tablet", "Desktop1024", "Desktop1440", "Mobile", "MobileViewer"]],
       ["components/TimelinePage.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty", "Tablet", "Desktop1024", "Desktop1440", "Mobile"]],
       ["components/MapPage.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty", "LiveMapLoading", "LiveMapFailure", "Tablet", "Desktop1024", "Desktop1440", "Mobile"]],
       ["components/MembersPage.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty", "Tablet", "Desktop1024", "Desktop1440", "Mobile"]],
@@ -79,11 +79,13 @@ describe("Storybook template catalog", () => {
       ["components/TripPhotosPage.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty", "AddAlbumDialogOpen", "CoverStates", "Tablet", "Desktop1024", "Desktop1440", "Mobile"]],
       ["components/BookingsDocsPage.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty", "AddBookingDialogOpen", "Tablet", "Desktop1024", "Desktop1440", "Mobile"]],
       ["components/TripSettingsPage.stories.tsx", ["Owner", "Traveler", "Viewer", "Thai", "Tablet", "Desktop1024", "Desktop1440", "Mobile"]],
-      ["components/TripJoinGate.stories.tsx", ["RoomCredentials", "TripAccess", "SelectIdentity", "Thai", "Tablet", "Mobile"]],
-      ["components/StopDialog.stories.tsx", ["Create", "Edit", "AmbiguousPlace", "TransportationForm", "FoodForm", "StayForm", "ShoppingForm", "Mobile", "Thai"]],
-      ["components/AboutAppPage.stories.tsx", ["Ready", "ApiUnavailable", "Thai", "Mobile"]],
-      ["components/ContextRail.stories.tsx", ["NotesOpen", "BookingTab", "SuggestionsTab", "TripExpensesOnly", "ReadOnlyTraveler", "Closed", "Mobile", "Thai", "Desktop1024", "Desktop1440"]],
-      ["components/DateTimePickers.stories.tsx", ["TimePicker", "DatePicker", "DateTimePicker", "Disabled", "Mobile", "Thai", "Desktop1024", "Desktop1440"]],
+      ["components/TripJoinGate.stories.tsx", ["RoomCredentials", "TripAccess", "SelectIdentity", "Thai", "Tablet", "Mobile", "Desktop1024", "Desktop1440"]],
+      ["components/StopDialog.stories.tsx", ["Create", "Edit", "AmbiguousPlace", "TransportationForm", "FoodForm", "StayForm", "ShoppingForm", "Mobile", "Tablet", "Desktop1024", "Desktop1440", "Thai"]],
+      ["components/AboutAppPage.stories.tsx", ["Ready", "ApiUnavailable", "Thai", "Mobile", "Tablet", "Desktop1024", "Desktop1440"]],
+      ["components/ContextRail.stories.tsx", ["NotesOpen", "BookingTab", "SuggestionsTab", "TripExpensesOnly", "ReadOnlyTraveler", "Closed", "Mobile", "Tablet", "Thai", "Desktop1024", "Desktop1440"]],
+      ["components/DateTimePickers.stories.tsx", ["TimePicker", "DatePicker", "DateTimePicker", "Disabled", "Mobile", "Tablet", "Thai", "Desktop1024", "Desktop1440"]],
+      ["components/HomeLanding.stories.tsx", ["PixelPerfect", "Thai", "Tablet", "Mobile", "Desktop1024", "Desktop1440"]],
+      ["components/AccountAccessPanel.stories.tsx", ["AccountLogin", "AccountRegister", "AccountLoginThai", "TripAccess", "PortalDashboard", "NewTripBuilder", "NewTripMobile", "AccountLoginTablet", "AccountLoginDesktop1024", "AccountLoginDesktop1440", "TripAccessTablet", "TripAccessDesktop1024", "TripAccessDesktop1440", "NewTripTablet", "NewTripDesktop1024", "NewTripDesktop1440"]],
     ];
 
     requiredPageStates.forEach(([file, stateNames]) => {
@@ -103,6 +105,10 @@ describe("Storybook template catalog", () => {
 
   it("documents app-level responsive stories for every primary cockpit view", () => {
     expectStoryExports("app/SagittariusApp.stories.tsx", [
+      "TabletOverview",
+      "MobileOverview",
+      "Desktop1024Overview",
+      "Desktop1440Overview",
       "TabletItinerary",
       "MobileItinerary",
       "Desktop1024Itinerary",
@@ -136,6 +142,21 @@ describe("Storybook template catalog", () => {
       "Desktop1024Settings",
       "Desktop1440Settings",
     ]);
+  });
+
+  it("documents structural template states for shell and reusable cockpit views", () => {
+    const requiredTemplateStates: Array<[string, string[]]> = [
+      ["components/AppShell.stories.tsx", ["Owner", "Traveler", "Viewer", "Mobile", "Tablet", "OwnerThai"]],
+      ["components/OverviewTemplate.stories.tsx", ["Owner", "Traveler", "OwnerThai", "Viewer", "Empty", "Dense"]],
+      ["components/ItineraryTemplate.stories.tsx", ["Owner", "OwnerThai", "Viewer", "Traveler", "Dense", "TableOverflow", "BranchGraph", "PlanAExample", "PlanABAlternatives", "RequestedPlanExample", "StressPaths"]],
+      ["components/TimelineTemplate.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty"]],
+      ["components/MapTemplate.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty"]],
+      ["components/MembersTemplate.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty"]],
+    ];
+
+    requiredTemplateStates.forEach(([file, stateNames]) => {
+      expectStoryExports(file, stateNames);
+    });
   });
 
   it("keeps viewport and antigravity UX QA entry points available", () => {

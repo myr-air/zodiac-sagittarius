@@ -81,4 +81,29 @@ export const Thai: Story = {
 export const Mobile: Story = {
   args: Ready.args,
   parameters: { viewport: { defaultViewport: "mobile320" } },
+  play: async ({ canvas, canvasElement }) => {
+    await expect(canvas.getByRole("heading", { name: "About Joii" })).toBeVisible();
+    await expect(canvasElement.querySelector(".about-hero > [aria-hidden='true']")).toHaveClass("hidden", "md:block");
+  },
+};
+
+export const Tablet: Story = {
+  args: Ready.args,
+  parameters: { viewport: { defaultViewport: "tablet768" } },
+  play: async ({ canvas, canvasElement }) => {
+    await expect(canvas.getByRole("heading", { name: "About Joii" })).toBeVisible();
+    await expect(canvasElement.querySelector(".about-hero")).toHaveClass("md:grid-cols-[minmax(0,1fr)_300px]");
+  },
+};
+
+export const Desktop1024: Story = {
+  args: Ready.args,
+  parameters: { viewport: { defaultViewport: "desktop1024" } },
+  play: Tablet.play,
+};
+
+export const Desktop1440: Story = {
+  args: Ready.args,
+  parameters: { viewport: { defaultViewport: "desktop1440" } },
+  play: Tablet.play,
 };

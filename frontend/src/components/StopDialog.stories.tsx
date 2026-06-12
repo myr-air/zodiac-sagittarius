@@ -199,6 +199,28 @@ export const ShoppingForm: Story = {
 export const Mobile: Story = {
   args: Create.args,
   parameters: { viewport: { defaultViewport: "mobile320" } },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole("dialog", { name: /Add activity/i })).toHaveClass("stop-dialog");
+    await expect(canvas.getByRole("textbox", { name: /^Activity$/i })).toBeVisible();
+  },
+};
+
+export const Tablet: Story = {
+  args: Create.args,
+  parameters: { viewport: { defaultViewport: "tablet768" } },
+  play: Create.play,
+};
+
+export const Desktop1024: Story = {
+  args: Edit.args,
+  parameters: { viewport: { defaultViewport: "desktop1024" } },
+  play: Edit.play,
+};
+
+export const Desktop1440: Story = {
+  args: Edit.args,
+  parameters: { viewport: { defaultViewport: "desktop1440" } },
+  play: Edit.play,
 };
 
 export const Thai: Story = {

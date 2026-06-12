@@ -46,6 +46,11 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
+async function expectJoinResponsiveContract(canvasElement: HTMLElement) {
+  await expect(canvasElement.querySelector(".participant-grid")).toHaveClass("participant-grid", "max-[767px]:grid-cols-1");
+  await expect(canvasElement.querySelector(".trip-access-photo-stack")).toHaveClass("trip-access-photo-stack", "max-[767px]:min-h-[172px]");
+}
+
 export const RoomCredentials: Story = {
   args: {
     trip: seedTrip,
@@ -96,14 +101,47 @@ export const SelectIdentity: Story = {
 export const Thai: Story = {
   args: RoomCredentials.args,
   parameters: { locale: "th" },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole("heading", { name: /เข้าห้อง trip/i })).toBeVisible();
+    await expect(canvas.getByLabelText(/Trip ID/i)).toHaveValue("HK-SZ-2025");
+    await expect(canvas.getByRole("button", { name: /เข้าห้อง trip/i })).toBeVisible();
+  },
 };
 
 export const Mobile: Story = {
-  args: RoomCredentials.args,
+  args: SelectIdentity.args,
   parameters: { viewport: { defaultViewport: "mobile320" } },
+  play: async ({ canvas, canvasElement }) => {
+    await expect(await canvas.findByRole("heading", { name: /Choose identity/i })).toBeVisible();
+    await expectJoinResponsiveContract(canvasElement);
+    await expect(canvas.getByRole("main", { name: /Join trip/i })).toBeVisible();
+  },
 };
 
 export const Tablet: Story = {
-  args: RoomCredentials.args,
+  args: SelectIdentity.args,
   parameters: { viewport: { defaultViewport: "tablet768" } },
+  play: async ({ canvas, canvasElement }) => {
+    await expect(await canvas.findByRole("heading", { name: /Choose identity/i })).toBeVisible();
+    await expectJoinResponsiveContract(canvasElement);
+  },
+};
+
+export const Desktop1024: Story = {
+  args: SelectIdentity.args,
+  parameters: { viewport: { defaultViewport: "desktop1024" } },
+  play: async ({ canvas, canvasElement }) => {
+    await expect(await canvas.findByRole("heading", { name: /Choose identity/i })).toBeVisible();
+    await expectJoinResponsiveContract(canvasElement);
+  },
+};
+
+export const Desktop1440: Story = {
+  args: TripAccess.args,
+  parameters: { viewport: { defaultViewport: "desktop1440" } },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole("main", { name: /Join trip/i })).toBeVisible();
+    await expect(canvas.getByLabelText(/Trip access preview/i)).toHaveClass("trip-access-visual");
+    await expect(canvas.getByRole("heading", { name: /Enter trip room/i })).toBeVisible();
+  },
 };

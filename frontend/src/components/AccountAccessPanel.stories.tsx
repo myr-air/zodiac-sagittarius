@@ -225,6 +225,17 @@ export const AccountRegister: Story = {
   },
 };
 
+export const AccountLoginThai: Story = {
+  args: AccountLogin.args,
+  parameters: { locale: "th" },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole("main", { name: /Account sign in/i })).toBeVisible();
+    await expect(canvas.getAllByText(/อีเมล \*/i).length).toBeGreaterThan(0);
+    await expect(canvas.getByLabelText(/อีเมล/i)).toHaveAttribute("autocomplete", "username");
+    await expect(canvas.getByRole("button", { name: /เข้า account/i })).toBeDisabled();
+  },
+};
+
 export const TripAccess: Story = {
   args: {
     ...AccountLogin.args,
@@ -265,4 +276,62 @@ export const NewTripBuilder: Story = {
 export const NewTripMobile: Story = {
   args: NewTripBuilder.args,
   parameters: { viewport: { defaultViewport: "mobile320" } },
+  play: async ({ canvas }) => {
+    await expect(await canvas.findByLabelText(/Trip name/i)).toBeVisible();
+    await expect(canvas.getByRole("main", { name: /Account portal/i })).toHaveClass("account-page--portal-new-trip");
+  },
+};
+
+export const AccountLoginTablet: Story = {
+  args: AccountLogin.args,
+  parameters: { viewport: { defaultViewport: "tablet768" } },
+  play: AccountLogin.play,
+};
+
+export const AccountLoginDesktop1024: Story = {
+  args: AccountLogin.args,
+  parameters: { viewport: { defaultViewport: "desktop1024" } },
+  play: AccountLogin.play,
+};
+
+export const AccountLoginDesktop1440: Story = {
+  args: AccountLogin.args,
+  parameters: { viewport: { defaultViewport: "desktop1440" } },
+  play: AccountLogin.play,
+};
+
+export const TripAccessTablet: Story = {
+  args: TripAccess.args,
+  parameters: { viewport: { defaultViewport: "tablet768" } },
+  play: TripAccess.play,
+};
+
+export const TripAccessDesktop1024: Story = {
+  args: TripAccess.args,
+  parameters: { viewport: { defaultViewport: "desktop1024" } },
+  play: TripAccess.play,
+};
+
+export const TripAccessDesktop1440: Story = {
+  args: TripAccess.args,
+  parameters: { viewport: { defaultViewport: "desktop1440" } },
+  play: TripAccess.play,
+};
+
+export const NewTripTablet: Story = {
+  args: NewTripBuilder.args,
+  parameters: { viewport: { defaultViewport: "tablet768" } },
+  play: NewTripBuilder.play,
+};
+
+export const NewTripDesktop1024: Story = {
+  args: NewTripBuilder.args,
+  parameters: { viewport: { defaultViewport: "desktop1024" } },
+  play: NewTripBuilder.play,
+};
+
+export const NewTripDesktop1440: Story = {
+  args: NewTripBuilder.args,
+  parameters: { viewport: { defaultViewport: "desktop1440" } },
+  play: NewTripBuilder.play,
 };

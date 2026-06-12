@@ -14,6 +14,12 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
+async function expectMapResponsiveContract(canvasElement: HTMLElement) {
+  await expect(canvasElement.querySelector(".route-map-panel")).toHaveClass("route-map-panel", "grid");
+  await expect(canvasElement.querySelector(".route-map-canvas")).toHaveClass("route-map-canvas", "max-[767px]:h-[58vh]", "max-[767px]:min-h-[390px]");
+  await expect(canvasElement.querySelector(".route-stop-list")).toHaveClass("route-stop-list", "max-[767px]:hidden");
+}
+
 const mapPlanABAlternativeItems: ItineraryItem[] = [
   ["map-plan-ab-main-breakfast", "08:00", 60, 100, "Harbour breakfast", "Main", undefined, "main"],
   ["map-plan-ab-a-gallery", "10:00", 75, 200, "Plan A gallery route", "Plan A", "path-2026-06-19-sub-a", "alternative"],
@@ -147,19 +153,31 @@ export const StopsWithoutCoordinates: Story = {
 export const Tablet: Story = {
   args: Owner.args,
   parameters: { viewport: { defaultViewport: "tablet768" } },
+  play: async ({ canvasElement }) => {
+    await expectMapResponsiveContract(canvasElement);
+  },
 };
 
 export const Desktop1024: Story = {
   args: Owner.args,
   parameters: { viewport: { defaultViewport: "desktop1024" } },
+  play: async ({ canvasElement }) => {
+    await expectMapResponsiveContract(canvasElement);
+  },
 };
 
 export const Desktop1440: Story = {
   args: Owner.args,
   parameters: { viewport: { defaultViewport: "desktop1440" } },
+  play: async ({ canvasElement }) => {
+    await expectMapResponsiveContract(canvasElement);
+  },
 };
 
 export const Mobile: Story = {
   args: Owner.args,
   parameters: { viewport: { defaultViewport: "mobile320" } },
+  play: async ({ canvasElement }) => {
+    await expectMapResponsiveContract(canvasElement);
+  },
 };

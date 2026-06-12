@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import { expect, userEvent } from "storybook/test";
+import { expect, userEvent, within } from "storybook/test";
 import { buildDenseTripFixture, buildEmptyTripFixture, tripFixture } from "@/src/trip/trip-fixtures";
 import { buildExpenseSummary } from "@/src/trip/expenses";
 import { TripExpensesPage } from "./TripExpensesPage";
@@ -17,6 +17,13 @@ const meta = {
 export default meta;
 
 type Story = StoryObj<typeof meta>;
+
+async function expectExpensesResponsiveContract(canvasElement: HTMLElement) {
+  const canvas = within(canvasElement);
+  await expect(canvas.getByRole("region", { name: /Trip money|เงินทริป/i })).toHaveClass("expenses-page");
+  await expect(canvas.getByRole("region", { name: /Money summary|สรุปเงิน/i })).toBeVisible();
+  await expect(canvas.getByRole("table", { name: /Expense ledger|รายการค่าใช้จ่าย/i })).toHaveClass("expense-ledger-table");
+}
 
 export const Owner: Story = {
   args: {
@@ -119,24 +126,31 @@ export const FilteredLedger: Story = {
 export const Tablet: Story = {
   args: Owner.args,
   parameters: { viewport: { defaultViewport: "tablet768" } },
+  play: async ({ canvasElement }) => {
+    await expectExpensesResponsiveContract(canvasElement);
+  },
 };
 
 export const Desktop1024: Story = {
   args: Owner.args,
   parameters: { viewport: { defaultViewport: "desktop1024" } },
+  play: async ({ canvasElement }) => {
+    await expectExpensesResponsiveContract(canvasElement);
+  },
 };
 
 export const Desktop1440: Story = {
   args: Owner.args,
   parameters: { viewport: { defaultViewport: "desktop1440" } },
+  play: async ({ canvasElement }) => {
+    await expectExpensesResponsiveContract(canvasElement);
+  },
 };
 
 export const Mobile: Story = {
   args: Owner.args,
   parameters: { viewport: { defaultViewport: "mobile320" } },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole("region", { name: /Trip money|เงินทริป/i })).toHaveClass("expenses-page");
-    await expect(canvas.getByRole("region", { name: /Money summary|สรุปเงิน/i })).toBeVisible();
-    await expect(canvas.getByRole("table", { name: /Expense ledger|รายการค่าใช้จ่าย/i })).toHaveClass("expense-ledger-table");
+  play: async ({ canvasElement }) => {
+    await expectExpensesResponsiveContract(canvasElement);
   },
 };

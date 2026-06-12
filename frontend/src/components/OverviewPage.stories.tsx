@@ -35,6 +35,13 @@ export const Owner: Story = {
     onSaveDailyBriefingOverrides: () => {},
     onToggleTaskStatus: () => {},
   },
+  play: async ({ canvas, canvasElement }) => {
+    await expectOverviewStructure(canvasElement);
+    await expect(canvas.getByRole("region", { name: /Trip readiness/i })).toBeVisible();
+    await expect(canvas.getByRole("region", { name: /Trip checklist/i })).toBeVisible();
+    await expect(canvas.getByRole("button", { name: /Add checklist item/i })).toBeVisible();
+    await expect(canvas.getByRole("group", { name: /Checklist scope/i })).toBeVisible();
+  },
 };
 
 export const OwnerThai: Story = {
@@ -53,6 +60,14 @@ export const Traveler: Story = {
     currentMemberId: tripFixture.currentMembers.traveler.id,
     expenseSummary: tripFixture.expenseSummaries.traveler,
   },
+  play: async ({ canvas, canvasElement }) => {
+    await expectOverviewStructure(canvasElement);
+    await expect(canvas.getByRole("region", { name: /Today and next focus/i })).toBeVisible();
+    await expect(canvas.getByRole("region", { name: /Traveler highlights/i })).toBeVisible();
+    await expect(canvas.getByRole("region", { name: /My travel checklist/i })).toBeVisible();
+    await expect(canvas.getByPlaceholderText(/For example, pack a travel adapter/i)).toBeVisible();
+    await expect(canvas.queryByRole("region", { name: /Trip readiness/i })).toBeNull();
+  },
 };
 
 export const Viewer: Story = {
@@ -60,6 +75,13 @@ export const Viewer: Story = {
     ...Owner.args,
     currentMemberId: tripFixture.currentMembers.viewer.id,
     expenseSummary: tripFixture.expenseSummaries.viewer,
+  },
+  play: async ({ canvas, canvasElement }) => {
+    await expectOverviewStructure(canvasElement);
+    await expect(canvas.getByRole("region", { name: /Read-only trip snapshot/i })).toBeVisible();
+    await expect(canvas.getByRole("region", { name: /Next important stop/i })).toBeVisible();
+    await expect(canvas.queryByRole("textbox")).toBeNull();
+    await expect(canvas.queryByRole("button", { name: /Add checklist item/i })).toBeNull();
   },
 };
 
@@ -115,11 +137,19 @@ export const Tablet: Story = {
 export const Desktop1024: Story = {
   args: Owner.args,
   parameters: { viewport: { defaultViewport: "desktop1024" } },
+  play: async ({ canvasElement }) => {
+    await expectOverviewStructure(canvasElement);
+    await expect(canvasElement.querySelector(".overview-grid")).toHaveClass("max-[1199px]:grid-cols-1");
+  },
 };
 
 export const Desktop1440: Story = {
   args: Owner.args,
   parameters: { viewport: { defaultViewport: "desktop1440" } },
+  play: async ({ canvasElement }) => {
+    await expectOverviewStructure(canvasElement);
+    await expect(canvasElement.querySelector(".overview-travel-cockpit")).toHaveClass("grid-cols-3");
+  },
 };
 
 export const Mobile: Story = {

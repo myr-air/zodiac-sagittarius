@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { expect } from "storybook/test";
-import { buildEmptyTripFixture, tripFixture } from "@/src/trip/trip-fixtures";
+import { buildDenseTripFixture, buildEmptyTripFixture, tripFixture } from "@/src/trip/trip-fixtures";
 import { TimelineView } from "./TimelineView";
 
 const noop = () => {};
@@ -40,6 +40,24 @@ export const OwnerThai: Story = {
     await expect(canvas.getByRole("button", { name: /เลือกจุดในไทม์ไลน์ Dim Dim Sum/i })).toHaveAttribute("aria-pressed", "true");
     await expect(canvas.getByRole("region", { name: /ไทม์ไลน์ทริป/i })).toHaveClass("timeline-panel", "grid");
     await expect(canvas.getByRole("button", { name: /เลือกจุดในไทม์ไลน์ Dim Dim Sum/i })).toHaveClass("timeline-stop-button", "grid");
+  },
+};
+
+export const Traveler: Story = {
+  args: Owner.args,
+  play: Owner.play,
+};
+
+export const Viewer: Story = {
+  args: Owner.args,
+  play: Owner.play,
+};
+
+export const Dense: Story = {
+  args: {
+    ...Owner.args,
+    items: buildDenseTripFixture().itineraryItems,
+    selectedItemId: "",
   },
 };
 
