@@ -26,6 +26,7 @@ describe("itinerary import/export JSON", () => {
         endDate: tripFixture.trip.endDate,
         activePlanVariantId: tripFixture.trip.activePlanVariantId,
         mainTripPlanId: tripFixture.trip.mainTripPlanId,
+        tripPlans: tripFixture.trip.tripPlans ?? tripFixture.trip.planVariants,
         partySize: tripFixture.trip.partySize,
         defaultTimezone: tripFixture.trip.defaultTimezone,
       },
@@ -100,6 +101,50 @@ describe("itinerary import/export JSON", () => {
     });
     expect(parseItineraryImportDocument(JSON.stringify(exported)).records).toEqual(exported.records);
     expect(parseItineraryImport(JSON.stringify(exported))).toHaveLength(exported.items.length);
+  });
+
+  it("preserves Trip Plan metadata in export and import documents", () => {
+    const tripPlans = [
+      {
+        ...tripFixture.trip.planVariants[0],
+        kind: "main" as const,
+        status: "main" as const,
+        description: "Current usable plan",
+        version: 7,
+      },
+      {
+        id: "plan-client-proposal",
+        tripId: tripFixture.trip.id,
+        name: "Client proposal",
+        kind: "draft" as const,
+        status: "proposal" as const,
+        description: "Presented to tour guests",
+        version: 2,
+      },
+    ];
+
+    const exported = buildItineraryExport({
+      exportedAt: "2026-06-04T12:00:00.000Z",
+      items: [tripFixture.planItems[0]],
+      trip: {
+        ...tripFixture.trip,
+        activePlanVariantId: tripPlans[1].id,
+        mainTripPlanId: tripPlans[0].id,
+        planVariants: tripPlans,
+        tripPlans,
+      },
+    });
+
+    expect(exported.trip).toMatchObject({
+      activePlanVariantId: "plan-client-proposal",
+      mainTripPlanId: tripPlans[0].id,
+      tripPlans,
+    });
+    expect(parseItineraryImportDocument(JSON.stringify(exported)).trip).toMatchObject({
+      activePlanVariantId: "plan-client-proposal",
+      mainTripPlanId: tripPlans[0].id,
+      tripPlans,
+    });
   });
 
   it("keeps unlinked records scoped to the exported Trip Plan instead of the current Main Plan", () => {
@@ -317,6 +362,7 @@ describe("itinerary import/export JSON", () => {
       id: "",
       activePlanVariantId: "",
       mainTripPlanId: undefined,
+      tripPlans: [],
     });
     expect(document.records).toEqual({
       expenses: [],

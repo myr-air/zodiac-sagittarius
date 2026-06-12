@@ -6,6 +6,7 @@ import type {
   ItineraryItem,
   StopNote,
   Trip,
+  TripPlan,
   TripTask,
 } from "./types";
 import { safeExternalHref } from "./safe-links";
@@ -58,6 +59,7 @@ export interface ItineraryExportDocument {
     | "endDate"
     | "activePlanVariantId"
     | "mainTripPlanId"
+    | "tripPlans"
     | "partySize"
     | "defaultTimezone"
   >;
@@ -98,6 +100,7 @@ export function buildItineraryExport({
       endDate: trip.endDate,
       activePlanVariantId: trip.activePlanVariantId,
       mainTripPlanId: trip.mainTripPlanId,
+      tripPlans: trip.tripPlans ?? trip.planVariants,
       partySize: trip.partySize,
       defaultTimezone: trip.defaultTimezone,
     },
@@ -252,6 +255,7 @@ function parseExportTrip(value: unknown): ItineraryExportDocument["trip"] {
       endDate: "",
       activePlanVariantId: "",
       mainTripPlanId: undefined,
+      tripPlans: [],
       partySize: undefined,
       defaultTimezone: undefined,
     };
@@ -270,9 +274,29 @@ function parseExportTrip(value: unknown): ItineraryExportDocument["trip"] {
     mainTripPlanId:
       readOptionalString(value, "mainTripPlanId") ??
       readOptionalString(value, "activePlanVariantId"),
+    tripPlans: readTripPlans(value.tripPlans),
     partySize: readOptionalNumber(value, "partySize"),
     defaultTimezone: readOptionalString(value, "defaultTimezone"),
   };
+}
+
+function readTripPlans(value: unknown): TripPlan[] {
+  if (value === undefined || value === null) return [];
+  if (!Array.isArray(value) || value.some((entry) => !isRecord(entry))) {
+    throw new Error("Unsupported itinerary import file.");
+  }
+  return value.map((entry) => {
+    const plan = entry as Record<string, unknown>;
+    return {
+      id: readString(plan, "id"),
+      tripId: readString(plan, "tripId"),
+      name: readString(plan, "name"),
+      kind: readPlanVariantKind(plan.kind),
+      status: readOptionalPlanStatus(plan.status),
+      description: typeof plan.description === "string" ? plan.description : "",
+      version: readOptionalNumber(plan, "version"),
+    };
+  });
 }
 
 function parseExportRecords(value: unknown): ItineraryExportRecords {
@@ -441,6 +465,17 @@ function itemKindFromActivityType(activityType: ItineraryItem["activityType"]): 
   if (activityType === "food") return "meal";
   if (activityType === "stay") return "lodging";
   return "activity";
+}
+
+function readPlanVariantKind(value: unknown): TripPlan["kind"] {
+  if (value === "main" || value === "backup" || value === "draft" || value === "split") return value;
+  throw new Error("Unsupported itinerary import file.");
+}
+
+function readOptionalPlanStatus(value: unknown): TripPlan["status"] | undefined {
+  if (value === undefined || value === null) return undefined;
+  if (value === "main" || value === "backup" || value === "draft" || value === "proposal") return value;
+  throw new Error("Unsupported itinerary import file.");
 }
 
 function readOptionalTimeMode(value: unknown): ItineraryItem["timeMode"] | undefined {
