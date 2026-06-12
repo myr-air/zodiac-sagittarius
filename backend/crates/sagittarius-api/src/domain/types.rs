@@ -517,6 +517,17 @@ pub struct ItineraryImportDocument {
     pub exported_at: String,
     pub trip: ItineraryImportTrip,
     pub items: Vec<ItineraryImportItem>,
+    #[serde(default = "default_import_records")]
+    pub records: Value,
+}
+
+fn default_import_records() -> Value {
+    serde_json::json!({
+        "expenses": [],
+        "bookingDocs": [],
+        "stopNotes": [],
+        "tasks": []
+    })
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

@@ -337,6 +337,33 @@ describe("Trip API client", () => {
         activePlanVariantId: cockpitResponse.trip.activePlanVariantId,
       },
       items: [],
+      records: {
+        expenses: [
+          {
+            id: "import-expense",
+            tripId: cockpitResponse.trip.id,
+            tripPlanId: cockpitResponse.trip.activePlanVariantId,
+            title: "Imported ticket receipt",
+            amount: 120,
+            paidBy: "018f4e81-77a4-7b8f-b3bd-0d0f493ac561",
+            splits: { "018f4e81-77a4-7b8f-b3bd-0d0f493ac561": 120 },
+            category: "tickets",
+            itineraryItemId: "import-flight-block",
+          },
+        ],
+        bookingDocs: [],
+        stopNotes: [],
+        tasks: [],
+      },
+    };
+    const normalizedDocument = {
+      ...document,
+      trip: {
+        ...document.trip,
+        mainTripPlanId: cockpitResponse.trip.activePlanVariantId,
+        partySize: undefined,
+        defaultTimezone: undefined,
+      },
     };
     const fetchImpl = vi.fn().mockResolvedValueOnce(jsonResponse(document));
     const client = createTripApiClient({ baseUrl: "https://api.example.test", fetchImpl });
@@ -346,7 +373,7 @@ describe("Trip API client", () => {
       contentType: "text/markdown",
       mode: "auto",
       content: "09:00 breakfast at Central",
-    })).resolves.toEqual(document);
+    })).resolves.toEqual(normalizedDocument);
 
     expect(fetchImpl).toHaveBeenCalledWith(
       `https://api.example.test/api/v1/trips/${cockpitResponse.trip.id}/itinerary-imports`,

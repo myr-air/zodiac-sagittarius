@@ -27,7 +27,7 @@ import type {
   EditableSuggestionPatch,
   SuggestionType,
 } from "./types";
-import type { ItineraryExportDocument } from "./itinerary-import-export";
+import { parseItineraryImportDocument, type ItineraryExportDocument } from "./itinerary-import-export";
 import { tripApiRoutes } from "./api-routes";
 import { normalizeExpenseSplitsFromMinor } from "./expenses";
 
@@ -622,12 +622,13 @@ export function createTripApiClient(options: TripApiClientOptions = {}): TripApi
       });
       return mapItineraryItem(item);
     },
-    importItinerary(tripId, sessionToken, importRequest) {
-      return request<ItineraryExportDocument>(tripApiRoutes.itineraryImports(tripId), {
+    async importItinerary(tripId, sessionToken, importRequest) {
+      const document = await request<unknown>(tripApiRoutes.itineraryImports(tripId), {
         method: "POST",
         headers: { Authorization: `Bearer ${sessionToken}` },
         body: JSON.stringify(importRequest),
       });
+      return parseItineraryImportDocument(JSON.stringify(document));
     },
     async reorderItineraryItems(tripId, sessionToken, reorderRequest) {
       const items = await request<ItineraryItemResponse[]>(tripApiRoutes.reorderItineraryItems(tripId), {

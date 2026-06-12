@@ -80,7 +80,67 @@ async fn itinerary_import_contract_organizer_can_normalize_json_import(pool: sql
                 "advisories": [],
                 "note": "Sub-activity remains attached to the block"
             }
-        ]
+        ],
+        "records": {
+            "expenses": [
+                {
+                    "id": "import-expense",
+                    "tripId": support::TRIP_ID,
+                    "tripPlanId": support::PLAN_ID,
+                    "title": "Imported ticket receipt",
+                    "amount": 120,
+                    "paidBy": support::ORGANIZER_ID,
+                    "splits": { support::ORGANIZER_ID.to_string(): 120 },
+                    "category": "tickets",
+                    "itineraryItemId": "import-flight-block"
+                }
+            ],
+            "bookingDocs": [
+                {
+                    "id": "import-booking",
+                    "tripId": support::TRIP_ID,
+                    "tripPlanId": support::PLAN_ID,
+                    "type": "flight",
+                    "title": "Imported flight ticket",
+                    "status": "booked",
+                    "visibility": "shared",
+                    "travelerIds": [support::ORGANIZER_ID],
+                    "externalLinks": [],
+                    "relatedItineraryItemIds": ["import-flight-block"],
+                    "relatedTaskIds": ["import-task"],
+                    "relatedExpenseIds": ["import-expense"],
+                    "noteIds": ["import-note"],
+                    "createdBy": support::ORGANIZER_ID,
+                    "updatedAt": "2026-06-04T12:00:00.000Z",
+                    "version": 1
+                }
+            ],
+            "stopNotes": [
+                {
+                    "id": "import-note",
+                    "tripId": support::TRIP_ID,
+                    "tripPlanId": support::PLAN_ID,
+                    "itemId": "import-flight-block",
+                    "authorId": support::ORGANIZER_ID,
+                    "body": "Imported note",
+                    "createdAt": "2026-06-04T12:00:00.000Z",
+                    "version": 1
+                }
+            ],
+            "tasks": [
+                {
+                    "id": "import-task",
+                    "tripPlanId": support::PLAN_ID,
+                    "title": "Confirm imported ticket",
+                    "status": "open",
+                    "visibility": "shared",
+                    "kind": "booking",
+                    "createdBy": support::ORGANIZER_ID,
+                    "relatedItemId": "import-flight-block",
+                    "version": 1
+                }
+            ]
+        }
     });
 
     let response = app
@@ -126,6 +186,23 @@ async fn itinerary_import_contract_organizer_can_normalize_json_import(pool: sql
     assert_eq!(body["items"][1]["pathRole"], "alternative");
     assert_eq!(body["items"][1]["timeMode"], "flexible");
     assert_eq!(body["items"][1]["priority"], "high");
+    assert_eq!(body["records"]["expenses"][0]["id"], "import-expense");
+    assert_eq!(
+        body["records"]["bookingDocs"][0]["relatedExpenseIds"][0],
+        "import-expense"
+    );
+    assert_eq!(
+        body["records"]["bookingDocs"][0]["relatedTaskIds"][0],
+        "import-task"
+    );
+    assert_eq!(
+        body["records"]["stopNotes"][0]["itemId"],
+        "import-flight-block"
+    );
+    assert_eq!(
+        body["records"]["tasks"][0]["relatedItemId"],
+        "import-flight-block"
+    );
 }
 
 #[sqlx::test(migrations = "../../migrations")]
