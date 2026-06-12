@@ -166,6 +166,86 @@ async fn itinerary_patch_contract_patches_address_and_coordinates(pool: sqlx::Pg
 }
 
 #[sqlx::test(migrations = "../../migrations")]
+async fn itinerary_patch_contract_rejects_clearing_end_time_with_offset(pool: sqlx::PgPool) {
+    support::seed_trip(&pool).await;
+    let token = support::create_session(&pool, support::ORGANIZER_ID).await;
+    let app = support::app(pool.clone());
+
+    let cross_day = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method(Method::PATCH)
+                .uri(format!(
+                    "/api/v1/trips/{}/itinerary-items/{}",
+                    support::TRIP_ID,
+                    support::ITEM_ID
+                ))
+                .header(header::AUTHORIZATION, format!("Bearer {token}"))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({
+                        "clientMutationId": "web-patch-cross-day-first",
+                        "expectedVersion": 4,
+                        "patch": {
+                            "endTime": "02:00",
+                            "endOffsetDays": 1
+                        }
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(cross_day.status(), StatusCode::OK);
+
+    let rejected = app
+        .oneshot(
+            Request::builder()
+                .method(Method::PATCH)
+                .uri(format!(
+                    "/api/v1/trips/{}/itinerary-items/{}",
+                    support::TRIP_ID,
+                    support::ITEM_ID
+                ))
+                .header(header::AUTHORIZATION, format!("Bearer {token}"))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({
+                        "clientMutationId": "web-patch-clear-end-time-offset-stale",
+                        "expectedVersion": 5,
+                        "patch": {
+                            "endTime": null
+                        }
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(rejected.status(), StatusCode::BAD_REQUEST);
+    let body: Value =
+        serde_json::from_slice(&to_bytes(rejected.into_body(), 65536).await.unwrap()).unwrap();
+    assert_eq!(body["code"], "invalid_request");
+
+    let stored: (Option<String>, i32, i64) = sqlx::query_as(
+        "select to_char(end_time, 'HH24:MI') as end_time, end_offset_days, version
+         from itinerary_items
+         where id = $1",
+    )
+    .bind(Uuid::parse_str(support::ITEM_ID).unwrap())
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(stored.0.as_deref(), Some("02:00"));
+    assert_eq!(stored.1, 1);
+    assert_eq!(stored.2, 5);
+}
+
+#[sqlx::test(migrations = "../../migrations")]
 async fn itinerary_patch_contract_rejects_unsafe_map_link(pool: sqlx::PgPool) {
     support::seed_trip(&pool).await;
     let token = support::create_session(&pool, support::ORGANIZER_ID).await;

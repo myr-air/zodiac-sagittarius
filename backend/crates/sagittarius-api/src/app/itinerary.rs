@@ -59,6 +59,12 @@ pub async fn patch_itinerary_item(
     let mut patch = request.patch.clone();
     let target_parent_item_id = patch.parent_item_id.unwrap_or(existing.parent_item_id);
     let target_day = patch.day.unwrap_or(existing.day);
+    let target_end_time = patch
+        .end_time
+        .clone()
+        .unwrap_or_else(|| existing.end_time.clone());
+    let target_end_offset_days = patch.end_offset_days.unwrap_or(existing.end_offset_days);
+    validate_time_window_end_offset(target_end_time.as_deref(), target_end_offset_days)?;
     validate_itinerary_block_patch(
         &mut tx,
         trip_id,
@@ -172,6 +178,10 @@ pub async fn create_itinerary_item(
     {
         return Err(ServiceError::NotFound);
     }
+    validate_time_window_end_offset(
+        request.end_time.as_deref(),
+        request.end_offset_days.unwrap_or(0),
+    )?;
 
     let item_id = Uuid::now_v7();
     validate_itinerary_parent(
@@ -382,6 +392,19 @@ fn patch_has_path_fields(patch: &ItineraryItemPatch) -> bool {
         || patch.path_id.is_some()
         || patch.path_name.is_some()
         || patch.path_role.is_some()
+}
+
+fn validate_time_window_end_offset(
+    end_time: Option<&str>,
+    end_offset_days: i32,
+) -> Result<(), ServiceError> {
+    if end_time.is_none() && end_offset_days != 0 {
+        return Err(ServiceError::InvalidRequest(
+            "end_offset_days must be 0 when end_time is empty",
+        ));
+    }
+
+    Ok(())
 }
 
 async fn validate_itinerary_block_patch(
