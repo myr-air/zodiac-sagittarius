@@ -77,6 +77,31 @@ describe("StopDialog", () => {
     }));
   });
 
+  it("prefills a quick-created sub-activity parent in create mode", () => {
+    const onSubmit = vi.fn();
+    renderEn(
+      <StopDialog
+        mode="create"
+        initialDay="2026-06-19"
+        initialParentItemId="block-flight"
+        onClose={vi.fn()}
+        onSubmit={onSubmit}
+      />,
+    );
+
+    expect(screen.getByLabelText("Plan block")).toBeDisabled();
+
+    fireEvent.change(screen.getByLabelText("Activity"), { target: { value: "Check in" } });
+    fireEvent.change(screen.getByLabelText("Place"), { target: { value: "DMK" } });
+    fireEvent.submit(screen.getByRole("button", { name: "Save activity" }).closest("form")!);
+
+    expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({
+      day: "2026-06-19",
+      parentItemId: "block-flight",
+      isPlanBlock: false,
+    }));
+  });
+
   it("uses the Joii time input, split duration controls, and a standard close icon", () => {
     render(<StopDialog mode="create" onClose={vi.fn()} onSubmit={vi.fn()} />);
 

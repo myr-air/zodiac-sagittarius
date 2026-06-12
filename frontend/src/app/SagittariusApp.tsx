@@ -338,7 +338,7 @@ export function SagittariusApp({
   );
   const [selectedItemId, setSelectedItemId] = useState("item-dimdim");
   const [dialogState, setDialogState] = useState<
-    | { mode: "create"; day?: string }
+    | { mode: "create"; day?: string; parentItemId?: string | null }
     | { mode: "edit"; item: ItineraryItem }
     | null
   >(null);
@@ -937,11 +937,17 @@ export function SagittariusApp({
     return true;
   }
 
-  function addStop(day?: string) {
+  function addStop(day?: string, parentItemId?: string | null) {
     /* v8 ignore next */
     if (!canEdit) return;
     setStopPlaceResolution({ state: "idle", candidates: [] });
-    setDialogState({ mode: "create", day });
+    setDialogState({ mode: "create", day, parentItemId: parentItemId ?? null });
+  }
+
+  function addSubActivity(parentItemId: string) {
+    const parentItem = trip.itineraryItems.find((item) => item.id === parentItemId);
+    if (!parentItem || !parentItem.isPlanBlock) return;
+    addStop(parentItem.day, parentItem.id);
   }
 
   function selectItem(itemId: string) {
@@ -3762,6 +3768,7 @@ export function SagittariusApp({
                   showAllPaths={Boolean(pathSelection.showAll)}
                   tripName={trip.name}
                   onAddStop={addStop}
+                  onAddSubActivity={addSubActivity}
                   onSelectItem={selectItem}
                   onMoveItem={moveItem}
                   onMoveItemIntoPlanBlock={moveItemIntoPlanBlock}
@@ -3862,6 +3869,11 @@ export function SagittariusApp({
             initialDay={
               dialogState.mode === "create"
                 ? (dialogState.day ?? selectedDay)
+                : undefined
+            }
+            initialParentItemId={
+              dialogState.mode === "create"
+                ? dialogState.parentItemId
                 : undefined
             }
             manualPathOptions={

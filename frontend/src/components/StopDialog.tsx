@@ -60,6 +60,7 @@ interface StopDialogProps {
   endDate?: string;
   initialDay?: string;
   initialItem?: ItineraryItem;
+  initialParentItemId?: string | null;
   manualPathOptions?: StopManualPathOption[];
   onClose: () => void;
   onDelete?: () => void;
@@ -147,13 +148,13 @@ const emptyDetailValues: StopDetailValues = {
   ticketRef: "",
 };
 
-export function StopDialog({ mode, endDate, initialDay, initialItem, manualPathOptions = [], onClose, onDelete, onPromoteFoodRecommendation, onSubmit, placeResolution, startDate }: StopDialogProps) {
+export function StopDialog({ mode, endDate, initialDay, initialItem, initialParentItemId = null, manualPathOptions = [], onClose, onDelete, onPromoteFoodRecommendation, onSubmit, placeResolution, startDate }: StopDialogProps) {
   const { locale, t } = useI18n();
   const dayOptions = startDate && endDate ? getTripDates(startDate, endDate) : [];
   const [values, setValues] = useState<StopFormValues>(() => ({
     day: initialItem?.day ?? initialDay ?? startDate ?? "",
     pathId: initialItem?.pathRole === "alternative" ? initialItem.pathId : "main",
-    parentItemId: initialItem?.parentItemId ?? null,
+    parentItemId: initialItem?.parentItemId ?? initialParentItemId,
     itemKind: initialItem?.itemKind ?? "activity",
     timeMode: initialItem?.timeMode ?? "scheduled",
     isPlanBlock: initialItem?.isPlanBlock ?? false,

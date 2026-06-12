@@ -82,6 +82,7 @@ interface SmartItineraryTableProps {
   showAllPaths?: boolean;
   tripName: string;
   onAddStop: (day?: string) => void;
+  onAddSubActivity?: (parentItemId: string) => void;
   onSelectItem: (itemId: string) => void;
   onMoveItem: (draggedItemId: string, targetItemId: string) => void;
   onMoveItemIntoPlanBlock: (draggedItemId: string, planBlockItemId: string) => void;
@@ -392,6 +393,7 @@ export function SmartItineraryTable({
   showAllPaths = false,
   tripName,
   onAddStop,
+  onAddSubActivity,
   onSelectItem,
   onMoveItem,
   onMoveItemIntoPlanBlock,
@@ -1203,6 +1205,7 @@ export function SmartItineraryTable({
               onDropIntoPlanBlock={dropIntoBlock}
               onDropOnDay={dropOnDay}
               onAddStop={onAddStop}
+              onAddSubActivity={onAddSubActivity}
               onMoveItem={onMoveItem}
               onMoveItemIntoPlanBlock={onMoveItemIntoPlanBlock}
               onMoveItemToDay={onMoveItemToDay}
@@ -1476,6 +1479,7 @@ function DayGroup({
   onDropIntoPlanBlock,
   onDropOnDay,
   onAddStop,
+  onAddSubActivity,
   onMoveItem,
   onMoveItemIntoPlanBlock,
   onMoveItemToDay,
@@ -1530,6 +1534,7 @@ function DayGroup({
   ) => void;
   onDropOnDay: (event: DragEvent<HTMLElement>, targetDay: string) => void;
   onAddStop: (day?: string) => void;
+  onAddSubActivity?: (parentItemId: string) => void;
   onMoveItem: (draggedItemId: string, targetItemId: string) => void;
   onMoveItemIntoPlanBlock: (
     draggedItemId: string,
@@ -1943,6 +1948,15 @@ function DayGroup({
                 </td>
                 <td className={rowActionCellClassName}>
                   <div className={rowActionsClassName}>
+                    <button
+                      type="button"
+                      className={rowActionButtonClassName}
+                      aria-label={`Add sub-activity under ${item.activity}`}
+                      disabled={!canEdit || !item.isPlanBlock}
+                      onClick={() => onAddSubActivity?.(item.id)}
+                    >
+                      <Icon name="plus" />
+                    </button>
                     <button
                       type="button"
                       className={rowActionButtonClassName}

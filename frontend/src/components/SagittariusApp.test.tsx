@@ -4829,6 +4829,60 @@ describe("Sagittarius cockpit UI", () => {
     );
   });
 
+  it("quick-adds a sub-activity under an activity block from the itinerary row", async () => {
+    const user = userEvent.setup();
+    const storage = installLocalStorageStub();
+    const blockItem = {
+      ...seedTrip.itineraryItems[0],
+      id: "block-flight",
+      activity: "Flight to Hong Kong",
+      place: "DMK",
+      isPlanBlock: true,
+      parentItemId: null,
+      sortOrder: 100,
+    };
+    storage.setItem(
+      tripStorageKey,
+      JSON.stringify({
+        ...seedTrip,
+        itineraryItems: [blockItem],
+      }),
+    );
+
+    render(<SagittariusApp initialView="itinerary" />);
+
+    await user.click(
+      await screen.findByRole("button", {
+        name: /Add sub-activity under Flight to Hong Kong/i,
+      }),
+    );
+    const dialog = await screen.findByRole("dialog", { name: /เพิ่มกิจกรรม/i });
+    expect(within(dialog).getByLabelText("Plan block")).toBeDisabled();
+    fireEvent.change(within(dialog).getByLabelText("กิจกรรม"), {
+      target: { value: "Airport check in" },
+    });
+    fireEvent.change(within(dialog).getByLabelText("สถานที่"), {
+      target: { value: "DMK terminal" },
+    });
+    await user.click(
+      within(dialog).getByRole("button", { name: "บันทึกกิจกรรม" }),
+    );
+
+    expect(
+      await screen.findByRole("row", { name: /Airport check in/i }),
+    ).toHaveAttribute("data-hierarchy-level", "2");
+    const persistedTrip = JSON.parse(storage.getItem(tripStorageKey)!) as Trip;
+    expect(persistedTrip.itineraryItems).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          activity: "Airport check in",
+          parentItemId: "block-flight",
+          isPlanBlock: false,
+        }),
+      ]),
+    );
+  });
+
   it("imports itinerary rows into the current Trip Plan and keeps path fields", async () => {
     const user = userEvent.setup();
     const storage = installLocalStorageStub();

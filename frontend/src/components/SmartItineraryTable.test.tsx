@@ -39,6 +39,7 @@ function renderTable(
     onMoveItemIntoPlanBlock: vi.fn(),
     onMoveItemToDay: vi.fn(),
     onMoveItemToPath: vi.fn(),
+    onAddSubActivity: vi.fn(),
     onUpdateItemInline: vi.fn(),
     onEditItem: vi.fn(),
     onDeleteItem: vi.fn(),
@@ -1963,6 +1964,46 @@ describe("SmartItineraryTable", () => {
       "item-cafe",
       "block-morning",
     );
+  });
+
+  it("opens a quick sub-activity action from an activity block row", async () => {
+    const user = userEvent.setup();
+    const onAddSubActivity = vi.fn();
+    renderTable({
+      items: [
+        {
+          ...tripFixture.planItems[0],
+          id: "block-flight",
+          activity: "Flight to Hong Kong",
+          isPlanBlock: true,
+          parentItemId: null,
+          sortOrder: 100,
+        },
+        {
+          ...tripFixture.planItems[1],
+          id: "solo-market",
+          activity: "Market walk",
+          isPlanBlock: false,
+          parentItemId: null,
+          sortOrder: 200,
+        },
+      ],
+      onAddSubActivity,
+      selectedItemId: "block-flight",
+    });
+
+    await user.click(
+      within(screen.getByRole("row", { name: /Flight to Hong Kong/i }))
+        .getByRole("button", { name: /Add sub-activity under Flight to Hong Kong/i }),
+    );
+
+    expect(onAddSubActivity).toHaveBeenCalledWith("block-flight");
+    expect(
+      within(screen.getByRole("row", { name: /Market walk/i })).getByRole(
+        "button",
+        { name: /Add sub-activity under Market walk/i },
+      ),
+    ).toBeDisabled();
   });
 
   it("does not drop an activity block into another activity block or sub-activity lane", () => {
