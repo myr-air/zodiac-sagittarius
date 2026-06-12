@@ -42,7 +42,8 @@ pub async fn create_plan_variant(
             id: Uuid::now_v7(),
             trip_id,
             name: request.name.trim(),
-            kind: request.kind.as_str(),
+            kind: request.effective_kind(),
+            status: request.effective_status(),
             description: request.description.as_deref().unwrap_or("").trim(),
         },
     )
@@ -160,6 +161,37 @@ pub async fn publish_plan_variant(
     )
     .await?;
 
+    if let Some(previous_main_id) = trip.active_plan_variant_id {
+        if previous_main_id != plan_variant_id {
+            let previous_main = db::queries::lock_plan_variant(&mut tx, previous_main_id)
+                .await?
+                .ok_or(ServiceError::NotFound)?;
+            let previous_status = request
+                .previous_main_next_status
+                .as_deref()
+                .unwrap_or("backup");
+            let previous_kind = legacy_kind_for_plan_status(previous_status);
+            db::queries::update_plan_variant_status(
+                &mut tx,
+                previous_main_id,
+                previous_kind,
+                previous_status,
+                previous_main.version + 1,
+            )
+            .await?;
+        }
+    }
+
+    let updated_variant = db::queries::update_plan_variant_status(
+        &mut tx,
+        plan_variant_id,
+        "main",
+        "main",
+        variant.version + 1,
+    )
+    .await?
+    .ok_or(ServiceError::NotFound)?;
+
     let updated_trip = db::queries::update_trip_active_plan_variant(
         &mut tx,
         trip_id,
@@ -171,6 +203,8 @@ pub async fn publish_plan_variant(
     let summary = TripSummary::from(updated_trip);
     let payload = serde_json::json!({
         "activePlanVariantId": plan_variant_id,
+        "mainTripPlanId": plan_variant_id,
+        "tripPlan": PlanVariantSummary::from(updated_variant),
         "trip": summary,
     });
     let event = events::insert(
@@ -192,6 +226,15 @@ pub async fn publish_plan_variant(
     realtime.publish(event).await;
 
     Ok(summary)
+}
+
+fn legacy_kind_for_plan_status(status: &str) -> &'static str {
+    match status {
+        "proposal" => "split",
+        "main" => "main",
+        "backup" => "backup",
+        _ => "draft",
+    }
 }
 
 async fn reject_duplicate_mutation(

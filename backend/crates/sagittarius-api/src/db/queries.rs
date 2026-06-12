@@ -659,7 +659,13 @@ pub async fn list_plan_variants(
     trip_id: Uuid,
 ) -> Result<Vec<PlanVariantRecord>, sqlx::Error> {
     sqlx::query_as::<_, PlanVariantRecord>(
-        "select id, trip_id, name, kind, description, version
+        "select id, trip_id, name, kind,
+           coalesce(status, case
+             when kind = 'split' then 'proposal'
+             when kind in ('main', 'draft', 'backup') then kind
+             else 'draft'
+           end) as status,
+           description, version
          from plan_variants
          where trip_id = $1
          order by created_at, name",
@@ -674,7 +680,13 @@ pub async fn lock_plan_variant(
     plan_variant_id: Uuid,
 ) -> Result<Option<PlanVariantRecord>, sqlx::Error> {
     sqlx::query_as::<_, PlanVariantRecord>(
-        "select id, trip_id, name, kind, description, version
+        "select id, trip_id, name, kind,
+           coalesce(status, case
+             when kind = 'split' then 'proposal'
+             when kind in ('main', 'draft', 'backup') then kind
+             else 'draft'
+           end) as status,
+           description, version
          from plan_variants
          where id = $1
          for update",
@@ -689,14 +701,21 @@ pub async fn insert_plan_variant(
     plan_variant: NewPlanVariant<'_>,
 ) -> Result<PlanVariantRecord, sqlx::Error> {
     sqlx::query_as::<_, PlanVariantRecord>(
-        "insert into plan_variants (id, trip_id, name, kind, description)
-         values ($1, $2, $3, $4, $5)
-         returning id, trip_id, name, kind, description, version",
+        "insert into plan_variants (id, trip_id, name, kind, status, description)
+         values ($1, $2, $3, $4, $5, $6)
+         returning id, trip_id, name, kind,
+           coalesce(status, case
+             when kind = 'split' then 'proposal'
+             when kind in ('main', 'draft', 'backup') then kind
+             else 'draft'
+           end) as status,
+           description, version",
     )
     .bind(plan_variant.id)
     .bind(plan_variant.trip_id)
     .bind(plan_variant.name)
     .bind(plan_variant.kind)
+    .bind(plan_variant.status)
     .bind(plan_variant.description)
     .fetch_one(&mut **tx)
     .await
@@ -712,16 +731,54 @@ pub async fn update_plan_variant(
         "update plan_variants
          set name = coalesce($2, name),
              kind = coalesce($3, kind),
-             description = coalesce($4, description),
-             version = $5,
+             status = coalesce($4, status),
+             description = coalesce($5, description),
+             version = $6,
              updated_at = now()
          where id = $1
-         returning id, trip_id, name, kind, description, version",
+         returning id, trip_id, name, kind,
+           coalesce(status, case
+             when kind = 'split' then 'proposal'
+             when kind in ('main', 'draft', 'backup') then kind
+             else 'draft'
+           end) as status,
+           description, version",
     )
     .bind(plan_variant_id)
     .bind(patch.name.as_deref().map(str::trim))
-    .bind(patch.kind.as_deref())
+    .bind(patch.effective_kind())
+    .bind(patch.effective_status())
     .bind(patch.description.as_deref().map(str::trim))
+    .bind(version)
+    .fetch_optional(&mut **tx)
+    .await
+}
+
+pub async fn update_plan_variant_status(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    plan_variant_id: Uuid,
+    kind: &str,
+    status: &str,
+    version: i64,
+) -> Result<Option<PlanVariantRecord>, sqlx::Error> {
+    sqlx::query_as::<_, PlanVariantRecord>(
+        "update plan_variants
+         set kind = $2,
+             status = $3,
+             version = $4,
+             updated_at = now()
+         where id = $1
+         returning id, trip_id, name, kind,
+           coalesce(status, case
+             when kind = 'split' then 'proposal'
+             when kind in ('main', 'draft', 'backup') then kind
+             else 'draft'
+           end) as status,
+           description, version",
+    )
+    .bind(plan_variant_id)
+    .bind(kind)
+    .bind(status)
     .bind(version)
     .fetch_optional(&mut **tx)
     .await

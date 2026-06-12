@@ -28,6 +28,11 @@ export const tripApiRoutes = {
     `/api/v1/trips/${tripPathSegment(tripId)}/plan-variants/${encodePathSegment(planVariantId)}`,
   planVariantPublications: (tripId: string, planVariantId: string) =>
     `/api/v1/trips/${tripPathSegment(tripId)}/plan-variants/${encodePathSegment(planVariantId)}/publications`,
+  tripPlans: (tripId: string) => `/api/v1/trips/${tripPathSegment(tripId)}/trip-plans`,
+  tripPlan: (tripId: string, tripPlanId: string) =>
+    `/api/v1/trips/${tripPathSegment(tripId)}/trip-plans/${encodePathSegment(tripPlanId)}`,
+  setMainTripPlan: (tripId: string, tripPlanId: string) =>
+    `/api/v1/trips/${tripPathSegment(tripId)}/trip-plans/${encodePathSegment(tripPlanId)}/set-main`,
   resetMemberClaim: (tripId: string, memberId: string) =>
     `/api/v1/trips/${tripPathSegment(tripId)}/members/${encodePathSegment(memberId)}/claim-resets`,
   tasks: (tripId: string) => `/api/v1/trips/${tripPathSegment(tripId)}/tasks`,

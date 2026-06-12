@@ -45,6 +45,18 @@ const cockpitResponse: TripCockpitResponse = {
       tripId: "018f4e80-5788-7de0-a45c-8a555d17fc2d",
       name: "Main",
       kind: "main",
+      status: "main",
+      description: "Primary plan",
+      version: 1,
+    },
+  ],
+  tripPlans: [
+    {
+      id: "018f4e82-3000-7c00-b111-000000000001",
+      tripId: "018f4e80-5788-7de0-a45c-8a555d17fc2d",
+      name: "Main",
+      kind: "main",
+      status: "main",
       description: "Primary plan",
       version: 1,
     },
@@ -661,9 +673,41 @@ describe("Trip API client", () => {
       ...cockpitResponse,
       trip: { ...cockpitResponse.trip, activePlanVariantId: null },
       planVariants: [],
+      tripPlans: [],
     });
 
     expect(cockpit.trip.activePlanVariantId).toBe("");
+  });
+
+  it("maps canonical trip plan fields while preserving legacy plan variant fields", () => {
+    const canonicalPlan = {
+      ...cockpitResponse.planVariants[0],
+      status: "proposal" as const,
+      kind: "split" as const,
+      name: "Client proposal",
+    };
+    const cockpit = mapCockpitResponse({
+      ...cockpitResponse,
+      trip: {
+        ...cockpitResponse.trip,
+        activePlanVariantId: null,
+        mainTripPlanId: canonicalPlan.id,
+      },
+      planVariants: [],
+      tripPlans: [canonicalPlan],
+    });
+
+    expect(cockpit.trip.activePlanVariantId).toBe(canonicalPlan.id);
+    expect(cockpit.trip.mainTripPlanId).toBe(canonicalPlan.id);
+    expect(cockpit.trip.planVariants[0]).toMatchObject({
+      id: canonicalPlan.id,
+      kind: "split",
+      status: "proposal",
+    });
+    expect(cockpit.trip.tripPlans?.[0]).toMatchObject({
+      id: canonicalPlan.id,
+      status: "proposal",
+    });
   });
 
   it("patches trip metadata through the authenticated trip route", async () => {
@@ -791,12 +835,13 @@ describe("Trip API client", () => {
     );
   });
 
-  it("creates patches and publishes plan variants through authenticated backend routes", async () => {
+  it("creates patches and sets main trip plans through authenticated backend routes", async () => {
     const createdVariant = {
       id: "018f4e82-3000-7c00-b111-000000000099",
       tripId: cockpitResponse.trip.id,
       name: "Rain backup",
       kind: "backup" as const,
+      status: "backup" as const,
       description: "Indoor route",
       version: 1,
     };
@@ -808,6 +853,7 @@ describe("Trip API client", () => {
     const publishedTrip = {
       ...cockpitResponse.trip,
       activePlanVariantId: createdVariant.id,
+      mainTripPlanId: createdVariant.id,
       version: 2,
     };
     const fetchImpl = vi
@@ -820,7 +866,7 @@ describe("Trip API client", () => {
     const created = await client.createPlanVariant(cockpitResponse.trip.id, "session-token", {
       clientMutationId: "web-plan-create-1",
       name: "Rain backup",
-      kind: "backup",
+      status: "backup",
       description: "Indoor route",
     });
     const patched = await client.patchPlanVariant(cockpitResponse.trip.id, created.id, "session-token", {
@@ -830,11 +876,12 @@ describe("Trip API client", () => {
     });
     const trip = await client.publishPlanVariant(cockpitResponse.trip.id, created.id, "session-token", {
       clientMutationId: "web-plan-publish-1",
+      previousMainNextStatus: "backup",
     });
 
     expect(fetchImpl).toHaveBeenNthCalledWith(
       1,
-      `https://api.example.test/api/v1/trips/${cockpitResponse.trip.id}/plan-variants`,
+      `https://api.example.test/api/v1/trips/${cockpitResponse.trip.id}/trip-plans`,
       expect.objectContaining({
         method: "POST",
         headers: expect.objectContaining({ Authorization: "Bearer session-token" }),
@@ -842,7 +889,7 @@ describe("Trip API client", () => {
     );
     expect(fetchImpl).toHaveBeenNthCalledWith(
       2,
-      `https://api.example.test/api/v1/trips/${cockpitResponse.trip.id}/plan-variants/${createdVariant.id}`,
+      `https://api.example.test/api/v1/trips/${cockpitResponse.trip.id}/trip-plans/${createdVariant.id}`,
       expect.objectContaining({
         method: "PATCH",
         body: JSON.stringify({ clientMutationId: "web-plan-patch-1", expectedVersion: 1, patch: { name: "Rain day backup" } }),
@@ -850,15 +897,16 @@ describe("Trip API client", () => {
     );
     expect(fetchImpl).toHaveBeenNthCalledWith(
       3,
-      `https://api.example.test/api/v1/trips/${cockpitResponse.trip.id}/plan-variants/${createdVariant.id}/publications`,
+      `https://api.example.test/api/v1/trips/${cockpitResponse.trip.id}/trip-plans/${createdVariant.id}/set-main`,
       expect.objectContaining({
         method: "POST",
-        body: JSON.stringify({ clientMutationId: "web-plan-publish-1" }),
+        body: JSON.stringify({ clientMutationId: "web-plan-publish-1", previousMainNextStatus: "backup" }),
       }),
     );
-    expect(created).toMatchObject({ id: createdVariant.id, kind: "backup", version: 1 });
+    expect(created).toMatchObject({ id: createdVariant.id, kind: "backup", status: "backup", version: 1 });
     expect(patched).toMatchObject({ name: "Rain day backup", version: 2 });
     expect(trip.activePlanVariantId).toBe(createdVariant.id);
+    expect(trip.mainTripPlanId).toBe(createdVariant.id);
     expect(trip.version).toBe(2);
   });
 

@@ -106,10 +106,13 @@ pub async fn load_cockpit(
     let photo_album_links = photo_albums::list_photo_album_links(pool, session_trip_id).await?;
     let latest_plan_check = plan_checks::latest_plan_check_for_trip(pool, session_trip_id).await?;
 
+    let plan_summaries: Vec<_> = plan_variants.into_iter().map(Into::into).collect();
+
     Ok(TripCockpit {
         trip: trip.into(),
         members: members.into_iter().map(Into::into).collect(),
-        plan_variants: plan_variants.into_iter().map(Into::into).collect(),
+        plan_variants: plan_summaries.clone(),
+        trip_plans: plan_summaries,
         itinerary_items: itinerary_items.into_iter().map(Into::into).collect(),
         suggestions: suggestions.into_iter().map(Into::into).collect(),
         latest_plan_check,

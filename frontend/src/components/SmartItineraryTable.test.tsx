@@ -183,10 +183,10 @@ describe("SmartItineraryTable", () => {
     expect(onImportItinerary).toHaveBeenCalledWith(file);
   });
 
-  it("renders the current Trip Sheet selector with existing sheet names", () => {
+  it("renders the current Trip Plan selector with existing plan names", () => {
     renderTable();
 
-    const selector = screen.getByLabelText("Trip Sheet");
+    const selector = screen.getByLabelText("Trip Plan");
 
     expect(selector).toHaveValue(tripFixture.trip.activePlanVariantId);
     expect(
@@ -198,64 +198,64 @@ describe("SmartItineraryTable", () => {
     ).toBeInTheDocument();
   });
 
-  it("calls onChangeTripSheet when the Trip Sheet selector changes", async () => {
+  it("calls onChangeTripSheet when the Trip Plan selector changes", async () => {
     const user = userEvent.setup();
     const onChangeTripSheet = vi.fn();
     renderTable({ onChangeTripSheet });
 
-    await user.selectOptions(screen.getByLabelText("Trip Sheet"), "plan-rain");
+    await user.selectOptions(screen.getByLabelText("Trip Plan"), "plan-rain");
 
     expect(onChangeTripSheet).toHaveBeenCalledWith("plan-rain");
   });
 
-  it("lets an organizer create a named Trip Sheet", async () => {
+  it("lets an organizer create a named Trip Plan", async () => {
     const user = userEvent.setup();
     const onCreateTripSheet = vi.fn();
     renderTable({ role: "organizer", onCreateTripSheet });
 
-    await user.click(screen.getByRole("button", { name: "เพิ่ม sheet" }));
-    await user.type(screen.getByLabelText("ชื่อ sheet"), "Food crawl");
-    await user.click(screen.getByRole("button", { name: "สร้าง sheet" }));
+    await user.click(screen.getByRole("button", { name: "เพิ่มแผน" }));
+    await user.type(screen.getByLabelText("ชื่อแผน"), "Food crawl");
+    await user.click(screen.getByRole("button", { name: "สร้างแผน" }));
 
     expect(onCreateTripSheet).toHaveBeenCalledWith("Food crawl");
   });
 
-  it("keeps the Trip Sheet create form open when creation fails", async () => {
+  it("keeps the Trip Plan create form open when creation fails", async () => {
     const user = userEvent.setup();
     const onCreateTripSheet = vi.fn().mockResolvedValue(false);
-    renderTable({ onCreateTripSheet, tripSheetError: "Could not update Trip Sheet." });
+    renderTable({ onCreateTripSheet, tripSheetError: "Could not update Trip Plan." });
 
-    await user.click(screen.getByRole("button", { name: "เพิ่ม sheet" }));
-    await user.type(screen.getByLabelText("ชื่อ sheet"), "Retry sheet");
-    await user.click(screen.getByRole("button", { name: "สร้าง sheet" }));
+    await user.click(screen.getByRole("button", { name: "เพิ่มแผน" }));
+    await user.type(screen.getByLabelText("ชื่อแผน"), "Retry sheet");
+    await user.click(screen.getByRole("button", { name: "สร้างแผน" }));
 
     expect(onCreateTripSheet).toHaveBeenCalledWith("Retry sheet");
-    expect(screen.getByLabelText("ชื่อ sheet")).toHaveValue("Retry sheet");
-    expect(screen.getByText("Could not update Trip Sheet.")).toBeInTheDocument();
+    expect(screen.getByLabelText("ชื่อแผน")).toHaveValue("Retry sheet");
+    expect(screen.getByText("Could not update Trip Plan.")).toBeInTheDocument();
   });
 
-  it("disables Trip Sheet switching and hides creation for travelers and viewers", () => {
+  it("disables Trip Plan switching and hides creation for travelers and viewers", () => {
     renderTable({ role: "traveler" });
 
-    expect(screen.getByLabelText("Trip Sheet")).toBeDisabled();
+    expect(screen.getByLabelText("Trip Plan")).toBeDisabled();
     expect(
-      screen.queryByRole("button", { name: "เพิ่ม sheet" }),
+      screen.queryByRole("button", { name: "เพิ่มแผน" }),
     ).not.toBeInTheDocument();
 
     cleanup();
     renderTable({ role: "viewer" });
 
-    expect(screen.getByLabelText("Trip Sheet")).toBeDisabled();
+    expect(screen.getByLabelText("Trip Plan")).toBeDisabled();
     expect(
-      screen.queryByRole("button", { name: "เพิ่ม sheet" }),
+      screen.queryByRole("button", { name: "เพิ่มแผน" }),
     ).not.toBeInTheDocument();
   });
 
-  it("keeps the activity path filter UI separate from Trip Sheets", async () => {
+  it("keeps the activity path filter UI separate from Trip Plans", async () => {
     const user = userEvent.setup();
     renderTable();
 
-    expect(screen.getByLabelText("Trip Sheet")).toBeInTheDocument();
+    expect(screen.getByLabelText("Trip Plan")).toBeInTheDocument();
     expect(
       screen.queryByRole("region", { name: /ตัวกรองแผน/i }),
     ).not.toBeInTheDocument();

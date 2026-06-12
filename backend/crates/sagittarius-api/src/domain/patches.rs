@@ -66,8 +66,11 @@ pub struct CreateItineraryItemRequest {
 pub struct CreatePlanVariantRequest {
     pub client_mutation_id: String,
     pub name: String,
-    pub kind: String,
+    pub kind: Option<String>,
+    pub status: Option<String>,
     pub description: Option<String>,
+    pub source_trip_plan_id: Option<Uuid>,
+    pub creation_mode: Option<String>,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -83,6 +86,7 @@ pub struct PatchPlanVariantRequest {
 pub struct PlanVariantPatch {
     pub name: Option<String>,
     pub kind: Option<String>,
+    pub status: Option<String>,
     pub description: Option<String>,
 }
 
@@ -90,6 +94,7 @@ pub struct PlanVariantPatch {
 #[serde(rename_all = "camelCase")]
 pub struct PublishPlanVariantRequest {
     pub client_mutation_id: String,
+    pub previous_main_next_status: Option<String>,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -527,12 +532,30 @@ impl CreatePlanVariantRequest {
     pub fn validate(&self) -> Result<(), ServiceError> {
         validate_client_mutation_id(&self.client_mutation_id)?;
         validate_required_text(&self.name, "plan variant name is required")?;
-        validate_plan_variant_kind(&self.kind)?;
+        validate_plan_status_input(self.kind.as_deref(), self.status.as_deref())?;
         if let Some(description) = &self.description {
             validate_sized_text(description, "plan variant description is too long")?;
         }
+        if let Some(creation_mode) = &self.creation_mode {
+            match creation_mode.as_str() {
+                "blank" | "duplicate-current" | "import" => {}
+                _ => {
+                    return Err(ServiceError::InvalidRequest(
+                        "trip plan creation mode is invalid",
+                    ));
+                }
+            }
+        }
 
         Ok(())
+    }
+
+    pub fn effective_status(&self) -> &str {
+        effective_plan_status(self.kind.as_deref(), self.status.as_deref()).unwrap_or("draft")
+    }
+
+    pub fn effective_kind(&self) -> &str {
+        legacy_kind_for_plan_status(self.effective_status())
     }
 }
 
@@ -548,20 +571,35 @@ impl PlanVariantPatch {
         if let Some(name) = &self.name {
             validate_required_text(name, "plan variant name is required")?;
         }
-        if let Some(kind) = &self.kind {
-            validate_plan_variant_kind(kind)?;
-        }
+        validate_plan_status_input(self.kind.as_deref(), self.status.as_deref())?;
         if let Some(description) = &self.description {
             validate_sized_text(description, "plan variant description is too long")?;
         }
 
         Ok(())
     }
+
+    pub fn effective_status(&self) -> Option<&str> {
+        effective_plan_status(self.kind.as_deref(), self.status.as_deref())
+    }
+
+    pub fn effective_kind(&self) -> Option<&str> {
+        self.effective_status().map(legacy_kind_for_plan_status)
+    }
 }
 
 impl PublishPlanVariantRequest {
     pub fn validate(&self) -> Result<(), ServiceError> {
-        validate_client_mutation_id(&self.client_mutation_id)
+        validate_client_mutation_id(&self.client_mutation_id)?;
+        if let Some(status) = &self.previous_main_next_status {
+            validate_plan_status(status)?;
+            if status == "main" {
+                return Err(ServiceError::InvalidRequest(
+                    "previous main next status cannot be main",
+                ));
+            }
+        }
+        Ok(())
     }
 }
 
@@ -1291,10 +1329,58 @@ fn split_share_minor(value: &Value) -> Option<i64> {
         .or_else(|| value.as_f64().map(|number| number.round() as i64))
 }
 
-fn validate_plan_variant_kind(value: &str) -> Result<(), ServiceError> {
+fn validate_plan_status_input(
+    kind: Option<&str>,
+    status: Option<&str>,
+) -> Result<(), ServiceError> {
+    if let Some(kind) = kind {
+        validate_plan_variant_kind(kind)?;
+    }
+    if let Some(status) = status {
+        validate_plan_status(status)?;
+    }
+    if let (Some(kind), Some(status)) = (kind, status) {
+        let kind_status = status_for_legacy_kind(kind)?;
+        if kind_status != status {
+            return Err(ServiceError::InvalidRequest(
+                "trip plan status does not match legacy kind",
+            ));
+        }
+    }
+    Ok(())
+}
+
+fn effective_plan_status<'a>(kind: Option<&'a str>, status: Option<&'a str>) -> Option<&'a str> {
+    status.or_else(|| kind.and_then(|value| status_for_legacy_kind(value).ok()))
+}
+
+fn validate_plan_status(value: &str) -> Result<(), ServiceError> {
     match value {
-        "main" | "backup" | "draft" | "split" => Ok(()),
+        "main" | "backup" | "draft" | "proposal" => Ok(()),
+        _ => Err(ServiceError::InvalidRequest("trip plan status is invalid")),
+    }
+}
+
+fn validate_plan_variant_kind(value: &str) -> Result<(), ServiceError> {
+    status_for_legacy_kind(value).map(|_| ())
+}
+
+fn status_for_legacy_kind(value: &str) -> Result<&'static str, ServiceError> {
+    match value {
+        "main" => Ok("main"),
+        "backup" => Ok("backup"),
+        "draft" => Ok("draft"),
+        "split" => Ok("proposal"),
         _ => Err(ServiceError::InvalidRequest("plan variant kind is invalid")),
+    }
+}
+
+fn legacy_kind_for_plan_status(value: &str) -> &'static str {
+    match value {
+        "proposal" => "split",
+        "main" => "main",
+        "backup" => "backup",
+        _ => "draft",
     }
 }
 

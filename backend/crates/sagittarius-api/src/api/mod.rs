@@ -134,6 +134,18 @@ fn api_v1() -> Router<AppState> {
             "/trips/{trip_id}/plan-variants/{plan_variant_id}/publications",
             post(plan_variants::publish_plan_variant),
         )
+        .route(
+            "/trips/{trip_id}/trip-plans",
+            post(plan_variants::create_trip_plan),
+        )
+        .route(
+            "/trips/{trip_id}/trip-plans/{trip_plan_id}",
+            patch(plan_variants::patch_trip_plan),
+        )
+        .route(
+            "/trips/{trip_id}/trip-plans/{trip_plan_id}/set-main",
+            post(plan_variants::set_main_trip_plan),
+        )
         .route("/trips/{trip_id}/events/stream", get(ws::trip_ws))
         .route(
             "/trips/{trip_id}/itinerary-items",

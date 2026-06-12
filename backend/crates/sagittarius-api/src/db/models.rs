@@ -49,6 +49,7 @@ impl From<TripAuthRecord> for TripSummary {
             end_date: record.end_date,
             join_id: record.join_id,
             active_plan_variant_id: record.active_plan_variant_id,
+            main_trip_plan_id: record.active_plan_variant_id,
             owner_member_id: record.owner_member_id,
             version: record.version,
         }
@@ -200,6 +201,7 @@ pub struct NewAccountPlanVariant<'a> {
     pub trip_id: Uuid,
     pub name: &'a str,
     pub kind: &'a str,
+    pub status: &'a str,
     pub description: &'a str,
 }
 
@@ -208,6 +210,7 @@ pub struct NewPlanVariant<'a> {
     pub trip_id: Uuid,
     pub name: &'a str,
     pub kind: &'a str,
+    pub status: &'a str,
     pub description: &'a str,
 }
 
@@ -407,6 +410,7 @@ pub struct PlanVariantRecord {
     pub trip_id: Uuid,
     pub name: String,
     pub kind: String,
+    pub status: String,
     pub description: String,
     pub version: i64,
 }
@@ -418,6 +422,7 @@ impl From<PlanVariantRecord> for PlanVariantSummary {
             trip_id: record.trip_id,
             name: record.name,
             kind: record.kind,
+            status: record.status,
             description: record.description,
             version: record.version,
         }

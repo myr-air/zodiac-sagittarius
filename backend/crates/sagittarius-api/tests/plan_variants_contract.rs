@@ -38,6 +38,7 @@ async fn plan_variant_contract_organizer_can_create_patch_and_publish(pool: sqlx
         serde_json::from_slice(&to_bytes(create.into_body(), 65536).await.unwrap()).unwrap();
     assert_eq!(created["name"], "Rain backup");
     assert_eq!(created["kind"], "backup");
+    assert_eq!(created["status"], "backup");
     assert_eq!(created["version"], 1);
     let plan_variant_id = created["id"].as_str().unwrap();
 
@@ -72,6 +73,7 @@ async fn plan_variant_contract_organizer_can_create_patch_and_publish(pool: sqlx
         serde_json::from_slice(&to_bytes(patch.into_body(), 65536).await.unwrap()).unwrap();
     assert_eq!(patched["name"], "Rain day backup");
     assert_eq!(patched["description"], "Indoor route with shorter walks");
+    assert_eq!(patched["status"], "backup");
     assert_eq!(patched["version"], 2);
 
     let stale = app
@@ -129,6 +131,7 @@ async fn plan_variant_contract_organizer_can_create_patch_and_publish(pool: sqlx
     let trip: Value =
         serde_json::from_slice(&to_bytes(publish.into_body(), 65536).await.unwrap()).unwrap();
     assert_eq!(trip["activePlanVariantId"], plan_variant_id);
+    assert_eq!(trip["mainTripPlanId"], plan_variant_id);
     assert_eq!(trip["version"], 2);
 
     let event_count: i64 =
@@ -138,6 +141,109 @@ async fn plan_variant_contract_organizer_can_create_patch_and_publish(pool: sqlx
             .await
             .unwrap();
     assert_eq!(event_count, 3);
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn trip_plan_contract_accepts_canonical_routes_and_status(pool: sqlx::PgPool) {
+    support::seed_trip(&pool).await;
+    let token = support::create_session(&pool, support::ORGANIZER_ID).await;
+    let app = support::app(pool.clone());
+
+    let create = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method(Method::POST)
+                .uri(format!("/api/v1/trips/{}/trip-plans", support::TRIP_ID))
+                .header(header::AUTHORIZATION, format!("Bearer {token}"))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({
+                        "clientMutationId": "web-trip-plan-create-1",
+                        "name": "Client proposal",
+                        "status": "proposal",
+                        "description": "Proposal for tour clients",
+                        "creationMode": "blank"
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(create.status(), StatusCode::CREATED);
+    let created: Value =
+        serde_json::from_slice(&to_bytes(create.into_body(), 65536).await.unwrap()).unwrap();
+    assert_eq!(created["name"], "Client proposal");
+    assert_eq!(created["kind"], "split");
+    assert_eq!(created["status"], "proposal");
+    let trip_plan_id = created["id"].as_str().unwrap();
+
+    let patch = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method(Method::PATCH)
+                .uri(format!(
+                    "/api/v1/trips/{}/trip-plans/{trip_plan_id}",
+                    support::TRIP_ID
+                ))
+                .header(header::AUTHORIZATION, format!("Bearer {token}"))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({
+                        "clientMutationId": "web-trip-plan-patch-1",
+                        "expectedVersion": 1,
+                        "patch": {
+                            "status": "backup"
+                        }
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(patch.status(), StatusCode::OK);
+    let patched: Value =
+        serde_json::from_slice(&to_bytes(patch.into_body(), 65536).await.unwrap()).unwrap();
+    assert_eq!(patched["kind"], "backup");
+    assert_eq!(patched["status"], "backup");
+
+    let set_main = app
+        .oneshot(
+            Request::builder()
+                .method(Method::POST)
+                .uri(format!(
+                    "/api/v1/trips/{}/trip-plans/{trip_plan_id}/set-main",
+                    support::TRIP_ID
+                ))
+                .header(header::AUTHORIZATION, format!("Bearer {token}"))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({
+                        "clientMutationId": "web-trip-plan-main-1",
+                        "previousMainNextStatus": "backup"
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(set_main.status(), StatusCode::OK);
+    let trip: Value =
+        serde_json::from_slice(&to_bytes(set_main.into_body(), 65536).await.unwrap()).unwrap();
+    assert_eq!(trip["activePlanVariantId"], trip_plan_id);
+    assert_eq!(trip["mainTripPlanId"], trip_plan_id);
+
+    let previous_status: String =
+        sqlx::query_scalar("select status from plan_variants where id = $1")
+            .bind(Uuid::parse_str(support::PLAN_ID).unwrap())
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+    assert_eq!(previous_status, "backup");
 }
 
 #[sqlx::test(migrations = "../../migrations")]

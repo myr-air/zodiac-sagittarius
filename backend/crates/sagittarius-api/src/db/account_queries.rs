@@ -1056,13 +1056,14 @@ pub async fn insert_account_plan_variant(
     plan_variant: NewAccountPlanVariant<'_>,
 ) -> Result<(), sqlx::Error> {
     sqlx::query(
-        "insert into plan_variants (id, trip_id, name, kind, description)
-         values ($1, $2, $3, $4, $5)",
+        "insert into plan_variants (id, trip_id, name, kind, status, description)
+         values ($1, $2, $3, $4, $5, $6)",
     )
     .bind(plan_variant.id)
     .bind(plan_variant.trip_id)
     .bind(plan_variant.name)
     .bind(plan_variant.kind)
+    .bind(plan_variant.status)
     .bind(plan_variant.description)
     .execute(&mut **tx)
     .await?;

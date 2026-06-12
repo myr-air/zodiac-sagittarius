@@ -4249,17 +4249,17 @@ describe("Sagittarius cockpit UI", () => {
     expect(alert).not.toHaveBeenCalled();
   });
 
-  it("creates a named local Trip Sheet and selects it without copying itinerary rows", async () => {
+  it("creates a named local Trip Plan and selects it without copying itinerary rows", async () => {
     const user = userEvent.setup();
     render(<SagittariusApp initialView="itinerary" />);
 
-    const selector = await screen.findByLabelText("Trip Sheet");
-    await user.click(screen.getByRole("button", { name: "เพิ่ม sheet" }));
-    await user.type(screen.getByLabelText("ชื่อ sheet"), "Museum Day");
-    await user.click(screen.getByRole("button", { name: "สร้าง sheet" }));
+    const selector = await screen.findByLabelText("Trip Plan");
+    await user.click(screen.getByRole("button", { name: "เพิ่มแผน" }));
+    await user.type(screen.getByLabelText("ชื่อแผน"), "Museum Day");
+    await user.click(screen.getByRole("button", { name: "สร้างแผน" }));
 
     await waitFor(() =>
-      expect(screen.getByLabelText("Trip Sheet")).toHaveDisplayValue(
+      expect(screen.getByLabelText("Trip Plan")).toHaveDisplayValue(
         "Museum Day",
       ),
     );
@@ -4272,7 +4272,7 @@ describe("Sagittarius cockpit UI", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("switches local Trip Sheets and changes visible itinerary rows by planVariantId", async () => {
+  it("switches local Trip Plans and changes visible itinerary rows by planVariantId", async () => {
     const user = userEvent.setup();
     const storage = installLocalStorageStub();
     const draftTrip = tripWithSheets();
@@ -4282,7 +4282,7 @@ describe("Sagittarius cockpit UI", () => {
 
     await screen.findByRole("option", { name: "Rain Sheet" });
     await screen.findByRole("row", { name: /Dim Dim Sum/i });
-    await user.selectOptions(screen.getByLabelText("Trip Sheet"), [
+    await user.selectOptions(screen.getByLabelText("Trip Plan"), [
       "plan-variant-backup",
     ]);
 
@@ -4294,7 +4294,7 @@ describe("Sagittarius cockpit UI", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("adds new local stops to the current Trip Sheet after switching sheets", async () => {
+  it("adds new local stops to the current Trip Plan after switching plans", async () => {
     const user = userEvent.setup();
     const storage = installLocalStorageStub();
     const draftTrip = tripWithSheets();
@@ -4303,7 +4303,7 @@ describe("Sagittarius cockpit UI", () => {
     render(<SagittariusApp initialView="itinerary" />);
 
     await screen.findByRole("option", { name: "Rain Sheet" });
-    await user.selectOptions(screen.getByLabelText("Trip Sheet"), [
+    await user.selectOptions(screen.getByLabelText("Trip Plan"), [
       "plan-variant-backup",
     ]);
     await user.click(
@@ -4336,7 +4336,7 @@ describe("Sagittarius cockpit UI", () => {
     );
   });
 
-  it("imports itinerary rows into the current Trip Sheet and keeps path fields", async () => {
+  it("imports itinerary rows into the current Trip Plan and keeps path fields", async () => {
     const user = userEvent.setup();
     const storage = installLocalStorageStub();
     const draftTrip = tripWithSheets();
@@ -4344,7 +4344,7 @@ describe("Sagittarius cockpit UI", () => {
     render(<SagittariusApp initialView="itinerary" />);
 
     await screen.findByRole("option", { name: "Rain Sheet" });
-    await user.selectOptions(screen.getByLabelText("Trip Sheet"), [
+    await user.selectOptions(screen.getByLabelText("Trip Plan"), [
       "plan-variant-backup",
     ]);
 
@@ -4413,7 +4413,7 @@ describe("Sagittarius cockpit UI", () => {
     );
   });
 
-  it("creates and publishes a Trip Sheet through the API, then selects the returned active sheet", async () => {
+  it("creates and publishes a Trip Plan through the API, then selects the returned active plan", async () => {
     const user = userEvent.setup();
     const apiTrip = {
       ...tripWithSheets(),
@@ -4448,9 +4448,9 @@ describe("Sagittarius cockpit UI", () => {
     );
     await loginApiTrip(user);
 
-    await user.click(await screen.findByRole("button", { name: "เพิ่ม sheet" }));
-    await user.type(screen.getByLabelText("ชื่อ sheet"), "API Sheet");
-    await user.click(screen.getByRole("button", { name: "สร้าง sheet" }));
+    await user.click(await screen.findByRole("button", { name: "เพิ่มแผน" }));
+    await user.type(screen.getByLabelText("ชื่อแผน"), "API Sheet");
+    await user.click(screen.getByRole("button", { name: "สร้างแผน" }));
 
     await waitFor(() =>
       expect(apiClient.createPlanVariant).toHaveBeenCalledWith(
@@ -4470,11 +4470,11 @@ describe("Sagittarius cockpit UI", () => {
       expect.objectContaining({ clientMutationId: expect.any(String) }),
     );
     await waitFor(() =>
-      expect(screen.getByLabelText("Trip Sheet")).toHaveValue(createdSheet.id),
+      expect(screen.getByLabelText("Trip Plan")).toHaveValue(createdSheet.id),
     );
   }, 45_000);
 
-  it("reloads cockpit state when API Trip Sheet publish hits a version conflict", async () => {
+  it("reloads cockpit state when API Trip Plan publish hits a version conflict", async () => {
     const user = userEvent.setup();
     const apiTrip = {
       ...tripWithSheets(),
@@ -4546,7 +4546,7 @@ describe("Sagittarius cockpit UI", () => {
     );
     await loginApiTrip(user);
 
-    await user.selectOptions(await screen.findByLabelText("Trip Sheet"), [
+    await user.selectOptions(await screen.findByLabelText("Trip Plan"), [
       "plan-variant-backup",
     ]);
 
@@ -4558,7 +4558,7 @@ describe("Sagittarius cockpit UI", () => {
     );
     await waitFor(() => expect(loadTrip.mock.calls.length).toBeGreaterThanOrEqual(2));
     await waitFor(() =>
-      expect(screen.getByLabelText("Trip Sheet")).toHaveValue(
+      expect(screen.getByLabelText("Trip Plan")).toHaveValue(
         reloadedSheet.id,
       ),
     );

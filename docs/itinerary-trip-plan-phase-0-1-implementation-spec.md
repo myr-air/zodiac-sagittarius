@@ -196,7 +196,7 @@ Behavior:
 Phase 1 should add aliases and prepare status values without renaming tables.
 
 ```sql
--- 0024_trip_plan_compatibility.sql
+-- 0025_trip_plan_compatibility.sql
 
 ALTER TABLE plan_variants
   ADD COLUMN IF NOT EXISTS status text;
@@ -210,31 +210,27 @@ END
 WHERE status IS NULL;
 
 ALTER TABLE plan_variants
-  ALTER COLUMN status SET DEFAULT 'draft';
-
-ALTER TABLE plan_variants
   ADD CONSTRAINT plan_variants_status_check
-  CHECK (status IN ('main', 'draft', 'proposal', 'backup')) NOT VALID;
+  CHECK (status IS NULL OR status IN ('main', 'draft', 'proposal', 'backup')) NOT VALID;
 
 ALTER TABLE plan_variants
   VALIDATE CONSTRAINT plan_variants_status_check;
-
-CREATE UNIQUE INDEX IF NOT EXISTS plan_variants_one_main_per_trip_idx
-  ON plan_variants (trip_id)
-  WHERE status = 'main';
 ```
 
 Notes:
 
 - Keep `kind` during Phase 1.
-- New writes should set both `status` and compatibility `kind`.
+- Leave `status` nullable in the compatibility migration so legacy raw inserts,
+  fixtures, and support scripts can continue to work while reads derive status
+  from `kind`.
+- New app writes should set both `status` and compatibility `kind`.
 - If `kind = 'split'` must remain accepted, map it to `status = 'proposal'` and write back `kind = 'draft'` or keep `kind = 'split'` only for legacy rows until Phase 2 decides.
 - The unique main status index should be added only after code updates previous main status transactionally.
 
 Phase 2 preparation draft:
 
 ```sql
--- 0025_plan_scoped_records_prepare.sql
+-- 0026_plan_scoped_records_prepare.sql
 
 ALTER TABLE expenses ADD COLUMN IF NOT EXISTS trip_plan_id uuid;
 ALTER TABLE booking_docs ADD COLUMN IF NOT EXISTS trip_plan_id uuid;

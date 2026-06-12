@@ -166,6 +166,7 @@ pub struct TripSummary {
     pub end_date: Date,
     pub join_id: String,
     pub active_plan_variant_id: Option<Uuid>,
+    pub main_trip_plan_id: Option<Uuid>,
     pub owner_member_id: Uuid,
     pub version: i64,
 }
@@ -315,9 +316,12 @@ pub struct PlanVariantSummary {
     pub trip_id: Uuid,
     pub name: String,
     pub kind: String,
+    pub status: String,
     pub description: String,
     pub version: i64,
 }
+
+pub type TripPlanSummary = PlanVariantSummary;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -699,6 +703,7 @@ pub struct TripCockpit {
     pub trip: TripSummary,
     pub members: Vec<TripMemberSummary>,
     pub plan_variants: Vec<PlanVariantSummary>,
+    pub trip_plans: Vec<TripPlanSummary>,
     pub itinerary_items: Vec<ItineraryItemSummary>,
     pub suggestions: Vec<SuggestionSummary>,
     pub latest_plan_check: Option<PlanCheckSummary>,
@@ -901,6 +906,7 @@ mod account_type_tests {
                 end_date,
                 join_id: "CM2026".to_string(),
                 active_plan_variant_id: Some(plan_variant_id),
+                main_trip_plan_id: Some(plan_variant_id),
                 owner_member_id,
                 version: 1,
             },

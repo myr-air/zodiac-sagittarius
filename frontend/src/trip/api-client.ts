@@ -10,6 +10,7 @@ import type {
   PlanCheck,
   PlanSuggestion,
   Member,
+  PlanStatus,
   PlanVariant,
   StopNote,
   Suggestion,
@@ -51,6 +52,7 @@ export interface TripSummaryResponse {
   endDate: string;
   joinId: string;
   activePlanVariantId: string | null;
+  mainTripPlanId?: string | null;
   ownerMemberId: string;
   version: number;
 }
@@ -73,9 +75,12 @@ export interface PlanVariantResponse {
   tripId: string;
   name: string;
   kind: PlanVariant["kind"];
+  status?: PlanStatus;
   description: string;
   version: number;
 }
+
+export type TripPlanResponse = PlanVariantResponse;
 
 export interface ItineraryItemResponse {
   id: string;
@@ -140,6 +145,7 @@ export interface TripCockpitResponse {
   trip: TripSummaryResponse;
   members: TripMemberResponse[];
   planVariants: PlanVariantResponse[];
+  tripPlans?: TripPlanResponse[];
   itineraryItems: ItineraryItemResponse[];
   suggestions: SuggestionResponse[];
   tasks: TripTaskResponse[];
@@ -273,18 +279,22 @@ export interface PatchDailyBriefingApiRequest {
 export interface CreatePlanVariantApiRequest {
   clientMutationId: string;
   name: string;
-  kind: PlanVariant["kind"];
+  kind?: PlanVariant["kind"];
+  status?: PlanStatus;
   description?: string;
+  sourceTripPlanId?: string;
+  creationMode?: "blank" | "duplicate-current" | "import";
 }
 
 export interface PatchPlanVariantApiRequest {
   clientMutationId: string;
   expectedVersion: number;
-  patch: Partial<Pick<PlanVariant, "name" | "kind" | "description">>;
+  patch: Partial<Pick<PlanVariant, "name" | "kind" | "status" | "description">>;
 }
 
 export interface PublishPlanVariantApiRequest {
   clientMutationId: string;
+  previousMainNextStatus?: Exclude<PlanStatus, "main">;
 }
 
 export interface PatchTaskApiRequest {
@@ -535,7 +545,7 @@ export function createTripApiClient(options: TripApiClientOptions = {}): TripApi
       return mapTripSummary(trip);
     },
     async createPlanVariant(tripId, sessionToken, planRequest) {
-      const variant = await request<PlanVariantResponse>(tripApiRoutes.planVariants(tripId), {
+      const variant = await request<PlanVariantResponse>(tripApiRoutes.tripPlans(tripId), {
         method: "POST",
         headers: { Authorization: `Bearer ${sessionToken}` },
         body: JSON.stringify(planRequest),
@@ -543,7 +553,7 @@ export function createTripApiClient(options: TripApiClientOptions = {}): TripApi
       return mapPlanVariant(variant);
     },
     async patchPlanVariant(tripId, planVariantId, sessionToken, planRequest) {
-      const variant = await request<PlanVariantResponse>(tripApiRoutes.planVariant(tripId, planVariantId), {
+      const variant = await request<PlanVariantResponse>(tripApiRoutes.tripPlan(tripId, planVariantId), {
         method: "PATCH",
         headers: { Authorization: `Bearer ${sessionToken}` },
         body: JSON.stringify(planRequest),
@@ -551,7 +561,7 @@ export function createTripApiClient(options: TripApiClientOptions = {}): TripApi
       return mapPlanVariant(variant);
     },
     async publishPlanVariant(tripId, planVariantId, sessionToken, publishRequest) {
-      const trip = await request<TripSummaryResponse>(tripApiRoutes.planVariantPublications(tripId, planVariantId), {
+      const trip = await request<TripSummaryResponse>(tripApiRoutes.setMainTripPlan(tripId, planVariantId), {
         method: "POST",
         headers: { Authorization: `Bearer ${sessionToken}` },
         body: JSON.stringify(publishRequest),
@@ -814,12 +824,18 @@ export function mapCockpitResponse(response: TripCockpitResponse): TripCockpit {
       status: 0,
     });
   }
-  const activePlanVariantId = response.trip.activePlanVariantId ?? response.planVariants[0]?.id ?? "";
+  const planResponses = response.tripPlans ?? response.planVariants;
+  const mainTripPlanId = response.trip.mainTripPlanId ?? response.trip.activePlanVariantId ?? planResponses[0]?.id ?? "";
+  const activePlanVariantId = response.trip.activePlanVariantId ?? mainTripPlanId;
+  const planVariants = response.planVariants.length ? response.planVariants : planResponses;
+  const tripPlans = planResponses.length ? planResponses : response.planVariants;
   return {
     trip: {
       ...mapTripSummary(response.trip),
       activePlanVariantId,
-      planVariants: response.planVariants.map(mapPlanVariant),
+      mainTripPlanId,
+      planVariants: planVariants.map(mapPlanVariant),
+      tripPlans: tripPlans.map(mapPlanVariant),
       members: response.members.map(mapMember),
       itineraryItems: response.itineraryItems.map(mapItineraryItem),
       expenses: response.expenses.map(mapExpense),
@@ -866,7 +882,9 @@ function mapTripSummary(trip: TripSummaryResponse): Trip {
     startDate: trip.startDate,
     endDate: trip.endDate,
     activePlanVariantId: trip.activePlanVariantId ?? "",
+    mainTripPlanId: trip.mainTripPlanId ?? trip.activePlanVariantId ?? "",
     planVariants: [],
+    tripPlans: [],
     members: [],
     itineraryItems: [],
     expenses: [],
@@ -908,9 +926,14 @@ function mapPlanVariant(variant: PlanVariantResponse): PlanVariant {
     tripId: variant.tripId,
     name: variant.name,
     kind: variant.kind,
+    status: variant.status ?? statusForLegacyKind(variant.kind),
     description: variant.description,
     version: variant.version,
   };
+}
+
+function statusForLegacyKind(kind: PlanVariant["kind"]): PlanStatus {
+  return kind === "split" ? "proposal" : kind;
 }
 
 function mapItineraryItem(item: ItineraryItemResponse): ItineraryItem {
