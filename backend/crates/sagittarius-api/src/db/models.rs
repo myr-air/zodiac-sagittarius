@@ -419,15 +419,26 @@ pub struct PlanVariantRecord {
 
 impl From<PlanVariantRecord> for PlanVariantSummary {
     fn from(record: PlanVariantRecord) -> Self {
+        let status = record.status;
+        let kind = legacy_kind_for_plan_status(&status).to_string();
         Self {
             id: record.id,
             trip_id: record.trip_id,
             name: record.name,
-            kind: record.kind,
-            status: record.status,
+            kind,
+            status,
             description: record.description,
             version: record.version,
         }
+    }
+}
+
+fn legacy_kind_for_plan_status(status: &str) -> &'static str {
+    match status {
+        "main" => "main",
+        "backup" => "backup",
+        "proposal" => "split",
+        _ => "draft",
     }
 }
 

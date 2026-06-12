@@ -127,10 +127,15 @@ async fn trip_load_contract_viewer_hides_expense_summary_and_private_tasks(pool:
 #[sqlx::test(migrations = "../../migrations")]
 async fn trip_load_contract_uses_pointer_when_status_metadata_disagrees(pool: sqlx::PgPool) {
     support::seed_trip(&pool).await;
+    sqlx::query("update plan_variants set kind = 'draft', status = 'draft' where id = $1")
+        .bind(uuid::Uuid::parse_str(support::PLAN_ID).unwrap())
+        .execute(&pool)
+        .await
+        .unwrap();
     let stale_status_plan_id = uuid::Uuid::now_v7();
     sqlx::query(
         "insert into plan_variants (id, trip_id, name, kind, status, description)
-         values ($1, $2, 'Stale status main', 'main', 'main', 'Raw support script drift')",
+         values ($1, $2, 'Stale status main', 'draft', 'proposal', 'Raw support script drift')",
     )
     .bind(stale_status_plan_id)
     .bind(uuid::Uuid::parse_str(support::TRIP_ID).unwrap())
@@ -158,7 +163,12 @@ async fn trip_load_contract_uses_pointer_when_status_metadata_disagrees(pool: sq
     assert_eq!(body["trip"]["activePlanVariantId"], support::PLAN_ID);
     assert_eq!(body["trip"]["mainTripPlanId"], support::PLAN_ID);
     assert!(body["tripPlans"].as_array().unwrap().iter().any(|plan| {
-        plan["id"] == stale_status_plan_id.to_string() && plan["status"] == "main"
+        plan["id"] == support::PLAN_ID && plan["kind"] == "main" && plan["status"] == "main"
+    }));
+    assert!(body["tripPlans"].as_array().unwrap().iter().any(|plan| {
+        plan["id"] == stale_status_plan_id.to_string()
+            && plan["kind"] == "split"
+            && plan["status"] == "proposal"
     }));
 }
 

@@ -303,6 +303,9 @@ async fn trip_plan_contract_accepts_canonical_routes_and_status(pool: sqlx::PgPo
     assert_eq!(payload["mainTripPlanId"], trip_plan_id);
     assert_eq!(payload["tripPlan"]["id"], trip_plan_id);
     assert_eq!(payload["tripPlan"]["status"], "main");
+    assert_eq!(payload["previousMainTripPlan"]["id"], support::PLAN_ID);
+    assert_eq!(payload["previousMainTripPlan"]["kind"], "backup");
+    assert_eq!(payload["previousMainTripPlan"]["status"], "backup");
     assert_eq!(payload["trip"]["mainTripPlanId"], trip_plan_id);
 }
 
