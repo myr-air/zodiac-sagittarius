@@ -3413,6 +3413,7 @@ export function SagittariusApp({
         }
         const importedRecords = await createImportedRecordsThroughApi({
           apiClient: resolvedApiClient,
+          createdItems,
           createdItemIdsByImportId,
           currentMemberId: currentMember.id,
           records: pendingItineraryImport.records,
@@ -4376,7 +4377,19 @@ function applyImportedRecordsToTrip({
     const appliedItem = appliedItems[index];
     if (appliedItem) itemIdMap.set(item.id, appliedItem.id);
   });
-  const tripPlanId = trip.activePlanVariantId;
+  const importedItemsById = new Map(appliedItems.map((item) => [item.id, item]));
+  const recordTripPlanId = (itemId?: string | null) =>
+    itemId && importedItemsById.has(itemId)
+      ? (importedItemsById.get(itemId)?.planVariantId ??
+          tripPlanIdForRecord(trip, itemId))
+      : tripPlanIdForRecord(trip, itemId ?? null);
+  const bookingRecordTripPlanId = (itemIds: string[]) => {
+    for (const itemId of itemIds) {
+      const tripPlanId = recordTripPlanId(itemId);
+      if (tripPlanId) return tripPlanId;
+    }
+    return tripPlanIdForRecord(trip, null);
+  };
   const expenseIdMap = new Map<string, string>();
   const taskIdMap = new Map<string, string>();
   const noteIdMap = new Map<string, string>();
@@ -4387,52 +4400,56 @@ function applyImportedRecordsToTrip({
 
   for (const expense of records.expenses) {
     const id = nextLocalExpenseId(nextExpenses);
+    const itineraryItemId = remapOptionalId(expense.itineraryItemId, itemIdMap);
     expenseIdMap.set(expense.id, id);
     nextExpenses.push({
       ...expense,
       id,
       tripId: trip.id,
-      tripPlanId,
-      itineraryItemId: remapOptionalId(expense.itineraryItemId, itemIdMap),
+      tripPlanId: recordTripPlanId(itineraryItemId),
+      itineraryItemId,
       version: 1,
     });
   }
 
   for (const task of records.tasks) {
     const id = nextLocalTaskId([...existingTasks, ...nextTasks]);
+    const relatedItemId = remapOptionalId(task.relatedItemId, itemIdMap);
     taskIdMap.set(task.id, id);
     nextTasks.push({
       ...task,
       id,
-      tripPlanId,
-      relatedItemId: remapOptionalId(task.relatedItemId, itemIdMap),
+      tripPlanId: recordTripPlanId(relatedItemId),
+      relatedItemId,
       version: 1,
     });
   }
 
   for (const note of records.stopNotes) {
     const id = nextLocalStopNoteId(nextStopNotes);
+    const itemId = itemIdMap.get(note.itemId) ?? note.itemId;
     noteIdMap.set(note.id, id);
     nextStopNotes.push({
       ...note,
       id,
       tripId: trip.id,
-      tripPlanId,
-      itemId: itemIdMap.get(note.itemId) ?? note.itemId,
+      tripPlanId: recordTripPlanId(itemId),
+      itemId,
       updatedAt: note.updatedAt ?? note.createdAt,
       version: 1,
     });
   }
 
   for (const bookingDoc of records.bookingDocs) {
+    const relatedItineraryItemIds = bookingDoc.relatedItineraryItemIds.map((id) =>
+      itemIdMap.get(id) ?? id,
+    );
     nextBookingDocs.push({
       ...bookingDoc,
       id: nextLocalBookingDocId(nextBookingDocs),
       tripId: trip.id,
-      tripPlanId,
-      relatedItineraryItemIds: bookingDoc.relatedItineraryItemIds.map((id) =>
-        itemIdMap.get(id) ?? id,
-      ),
+      tripPlanId: bookingRecordTripPlanId(relatedItineraryItemIds),
+      relatedItineraryItemIds,
       relatedTaskIds: bookingDoc.relatedTaskIds.map((id) =>
         taskIdMap.get(id) ?? id,
       ),
@@ -4502,6 +4519,7 @@ function buildItineraryCommitmentsByItemId({
 
 async function createImportedRecordsThroughApi({
   apiClient,
+  createdItems,
   createdItemIdsByImportId,
   currentMemberId,
   records,
@@ -4509,13 +4527,26 @@ async function createImportedRecordsThroughApi({
   trip,
 }: {
   apiClient: TripApiClient;
+  createdItems: ItineraryItem[];
   createdItemIdsByImportId: Map<string, string>;
   currentMemberId: string;
   records: ItineraryExportRecords;
   sessionToken: string;
   trip: Trip;
 }): Promise<ItineraryExportRecords> {
-  const tripPlanId = trip.activePlanVariantId || trip.mainTripPlanId || null;
+  const createdItemsById = new Map(createdItems.map((item) => [item.id, item]));
+  const recordTripPlanId = (itemId?: string | null) =>
+    itemId && createdItemsById.has(itemId)
+      ? (createdItemsById.get(itemId)?.planVariantId ??
+          tripPlanIdForRecord(trip, itemId))
+      : tripPlanIdForRecord(trip, itemId ?? null);
+  const bookingRecordTripPlanId = (itemIds: string[]) => {
+    for (const itemId of itemIds) {
+      const tripPlanId = recordTripPlanId(itemId);
+      if (tripPlanId) return tripPlanId;
+    }
+    return tripPlanIdForRecord(trip, null);
+  };
   const expenseIdMap = new Map<string, string>();
   const taskIdMap = new Map<string, string>();
   const noteIdMap = new Map<string, string>();
@@ -4525,20 +4556,21 @@ async function createImportedRecordsThroughApi({
   const bookingDocs: BookingDoc[] = [];
 
   for (const task of records.tasks) {
+    const relatedItemId = remapOptionalId(
+      task.relatedItemId,
+      createdItemIdsByImportId,
+    );
     const createdTask = await apiClient.createTask(
       trip.id,
       sessionToken,
       {
         clientMutationId: nextClientMutationId("itinerary-import-task"),
-        tripPlanId,
+        tripPlanId: recordTripPlanId(relatedItemId),
         title: task.title,
         visibility: task.visibility,
         kind: task.kind,
         assigneeId: task.assigneeId ?? null,
-        relatedItemId: remapOptionalId(
-          task.relatedItemId,
-          createdItemIdsByImportId,
-        ),
+        relatedItemId,
       },
     );
     taskIdMap.set(task.id, createdTask.id);
@@ -4546,14 +4578,15 @@ async function createImportedRecordsThroughApi({
   }
 
   for (const note of records.stopNotes) {
+    const itineraryItemId =
+      createdItemIdsByImportId.get(note.itemId) ?? note.itemId;
     const createdNote = await apiClient.createStopNote(
       trip.id,
       sessionToken,
       {
         clientMutationId: nextClientMutationId("itinerary-import-note"),
-        tripPlanId,
-        itineraryItemId:
-          createdItemIdsByImportId.get(note.itemId) ?? note.itemId,
+        tripPlanId: recordTripPlanId(itineraryItemId),
+        itineraryItemId,
         body: note.body,
       },
     );
@@ -4562,6 +4595,10 @@ async function createImportedRecordsThroughApi({
   }
 
   for (const expense of records.expenses) {
+    const itineraryItemId = remapOptionalId(
+      expense.itineraryItemId,
+      createdItemIdsByImportId,
+    );
     const amountMinor =
       typeof expense.amountMinor === "number"
         ? expense.amountMinor
@@ -4571,7 +4608,7 @@ async function createImportedRecordsThroughApi({
       sessionToken,
       {
         clientMutationId: nextClientMutationId("itinerary-import-expense"),
-        tripPlanId,
+        tripPlanId: recordTripPlanId(itineraryItemId),
         title: expense.title,
         amountMinor,
         currency: expense.currency ?? "HKD",
@@ -4584,10 +4621,7 @@ async function createImportedRecordsThroughApi({
         paidBy: expense.paidBy || currentMemberId,
         category: expense.category,
         splits: expenseSplitsToMinor(expense.splits ?? {}),
-        itineraryItemId: remapOptionalId(
-          expense.itineraryItemId,
-          createdItemIdsByImportId,
-        ),
+        itineraryItemId,
       },
     );
     expenseIdMap.set(expense.id, createdExpense.id);
@@ -4595,6 +4629,9 @@ async function createImportedRecordsThroughApi({
   }
 
   for (const bookingDoc of records.bookingDocs) {
+    const relatedItineraryItemIds = bookingDoc.relatedItineraryItemIds.map(
+      (id) => createdItemIdsByImportId.get(id) ?? id,
+    );
     const createdBookingDoc = await apiClient.createBookingDoc(
       trip.id,
       sessionToken,
@@ -4615,10 +4652,8 @@ async function createImportedRecordsThroughApi({
           currency: bookingDoc.currency,
           travelerIds: bookingDoc.travelerIds,
           externalLinks: bookingDoc.externalLinks,
-          tripPlanId,
-          relatedItineraryItemIds: bookingDoc.relatedItineraryItemIds.map(
-            (id) => createdItemIdsByImportId.get(id) ?? id,
-          ),
+          tripPlanId: bookingRecordTripPlanId(relatedItineraryItemIds),
+          relatedItineraryItemIds,
           relatedTaskIds: bookingDoc.relatedTaskIds.map(
             (id) => taskIdMap.get(id) ?? id,
           ),

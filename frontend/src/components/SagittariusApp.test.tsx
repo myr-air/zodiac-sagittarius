@@ -4184,10 +4184,16 @@ describe("Sagittarius cockpit UI", () => {
 
   it("imports itinerary files through an app dialog instead of native prompts", async () => {
     const user = userEvent.setup();
+    const storage = installLocalStorageStub();
     const prompt = vi.spyOn(window, "prompt");
     const confirm = vi.spyOn(window, "confirm");
     const alert = vi.spyOn(window, "alert");
+    storage.setItem(tripStorageKey, JSON.stringify(tripWithSheets()));
     render(<SagittariusApp initialView="itinerary" />);
+    await screen.findByRole("option", { name: "Rain Sheet" });
+    await user.selectOptions(screen.getByLabelText("Trip Plan"), [
+      "plan-variant-backup",
+    ]);
     const file = new File(
       [
         JSON.stringify({
@@ -4326,14 +4332,14 @@ describe("Sagittarius cockpit UI", () => {
     );
     expect(importedExpense).toMatchObject({
       tripId: seedTrip.id,
-      tripPlanId: seedTrip.activePlanVariantId,
+      tripPlanId: "plan-variant-backup",
       itineraryItemId: "imported-lunch",
       version: 1,
     });
     expect(importedExpense?.id).toMatch(/^expense-local-/);
     expect(importedBooking).toMatchObject({
       tripId: seedTrip.id,
-      tripPlanId: seedTrip.activePlanVariantId,
+      tripPlanId: "plan-variant-backup",
       relatedItineraryItemIds: ["imported-lunch"],
       relatedExpenseIds: [importedExpense?.id],
       noteIds: [importedNote?.id],
@@ -4342,13 +4348,13 @@ describe("Sagittarius cockpit UI", () => {
     expect(importedBooking?.id).toMatch(/^booking-local-/);
     expect(importedNote).toMatchObject({
       tripId: seedTrip.id,
-      tripPlanId: seedTrip.activePlanVariantId,
+      tripPlanId: "plan-variant-backup",
       itemId: "imported-lunch",
       version: 1,
     });
     expect(importedNote?.id).toMatch(/^note-local-/);
     expect(importedTask).toMatchObject({
-      tripPlanId: seedTrip.activePlanVariantId,
+      tripPlanId: "plan-variant-backup",
       relatedItemId: "imported-lunch",
       version: 1,
     });
