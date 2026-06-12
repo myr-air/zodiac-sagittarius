@@ -414,6 +414,10 @@ export type ValidationWarningCode =
   | "missing-transportation"
   | "time-order-conflict"
   | "overlap"
+  | "missing-parent-item"
+  | "invalid-parent-plan-block"
+  | "nested-sub-activity"
+  | "parent-scope-mismatch"
   | "child-outside-plan-block"
   | "unresolved-location"
   | "stale-location";
