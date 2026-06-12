@@ -4707,9 +4707,14 @@ describe("Sagittarius cockpit UI", () => {
         noteIds: ["api-note"],
       }),
     );
-    expect(
-      await screen.findByRole("row", { name: /Imported API flight block/i }),
-    ).toBeInTheDocument();
+    const importedRow = await screen.findByRole("row", {
+      name: /Imported API flight block/i,
+    });
+    expect(importedRow).toBeInTheDocument();
+    expect(within(importedRow).getByText("1 booking")).toBeInTheDocument();
+    expect(within(importedRow).getByText("1 expense")).toBeInTheDocument();
+    expect(within(importedRow).getByText("1 task")).toBeInTheDocument();
+    expect(within(importedRow).getByText("1 note")).toBeInTheDocument();
   }, 45_000);
 
   it("creates a named local Trip Plan and selects it without copying itinerary rows", async () => {
