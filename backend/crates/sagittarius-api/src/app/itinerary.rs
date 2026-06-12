@@ -6,7 +6,8 @@ use crate::db::PgPool;
 use crate::domain::capabilities::can;
 use crate::domain::errors::ServiceError;
 use crate::domain::patches::{
-    CreateItineraryItemRequest, PatchItineraryItemRequest, ReorderItineraryItemsRequest,
+    CreateItineraryItemRequest, ItineraryItemPatch, PatchItineraryItemRequest,
+    ReorderItineraryItemsRequest,
 };
 use crate::domain::types::{Capability, ItineraryItemSummary};
 use crate::realtime::RealtimeHub;
@@ -55,11 +56,9 @@ pub async fn patch_itinerary_item(
         return Err(ServiceError::VersionConflictWithLatest(latest));
     }
 
-    let target_parent_item_id = request
-        .patch
-        .parent_item_id
-        .unwrap_or(existing.parent_item_id);
-    let target_day = request.patch.day.unwrap_or(existing.day);
+    let mut patch = request.patch.clone();
+    let target_parent_item_id = patch.parent_item_id.unwrap_or(existing.parent_item_id);
+    let target_day = patch.day.unwrap_or(existing.day);
     validate_itinerary_block_patch(
         &mut tx,
         trip_id,
@@ -78,12 +77,44 @@ pub async fn patch_itinerary_item(
         target_parent_item_id,
     )
     .await?;
+    if let Some(parent_path_fields) =
+        resolve_parent_path_fields(&mut tx, trip_id, target_parent_item_id).await?
+    {
+        validate_child_path_patch(&existing, &patch, &parent_path_fields)?;
+        apply_path_fields_to_patch(&mut patch, &parent_path_fields);
+    }
 
     let updated_record =
-        db::queries::update_itinerary_item(&mut tx, item_id, &request.patch, existing.version + 1)
+        db::queries::update_itinerary_item(&mut tx, item_id, &patch, existing.version + 1)
             .await?
             .ok_or(ServiceError::NotFound)?;
     let updated = ItineraryItemSummary::from(updated_record);
+    let mut events_to_publish = Vec::new();
+    if existing.parent_item_id.is_none() && patch_has_path_fields(&patch) {
+        let child_records = db::queries::update_itinerary_child_path_fields(
+            &mut tx,
+            trip_id,
+            item_id,
+            updated.path_group_id.as_deref(),
+            updated.path_id.as_deref(),
+            updated.path_name.as_deref(),
+            updated.path_role.as_deref(),
+        )
+        .await?;
+        for child in child_records {
+            let child = ItineraryItemSummary::from(child);
+            events_to_publish.push(
+                insert_item_event(
+                    &mut tx,
+                    &child,
+                    "itinerary_item.updated",
+                    None,
+                    Some(session.member_id),
+                )
+                .await?,
+            );
+        }
+    }
     let payload = serde_json::to_value(&updated)
         .map_err(|_| ServiceError::InvalidRequest("event payload could not be serialized"))?;
     let event = events::insert(
@@ -103,6 +134,9 @@ pub async fn patch_itinerary_item(
 
     tx.commit().await?;
     realtime.publish(event).await;
+    for event in events_to_publish {
+        realtime.publish(event).await;
+    }
 
     Ok(updated)
 }
@@ -149,6 +183,11 @@ pub async fn create_itinerary_item(
         request.parent_item_id,
     )
     .await?;
+    let parent_path_fields =
+        resolve_parent_path_fields(&mut tx, trip_id, request.parent_item_id).await?;
+    if let Some(parent_path_fields) = &parent_path_fields {
+        validate_child_create_path_fields(&request, parent_path_fields)?;
+    }
 
     let sort_order = db::queries::next_itinerary_sort_order(
         &mut tx,
@@ -159,16 +198,32 @@ pub async fn create_itinerary_item(
     .await?;
     let empty_details = serde_json::json!({});
     let details = request.details.as_ref().unwrap_or(&empty_details);
+    let path_group_id = parent_path_fields
+        .as_ref()
+        .and_then(|fields| fields.path_group_id.as_deref())
+        .or(request.path_group_id.as_deref());
+    let path_id = parent_path_fields
+        .as_ref()
+        .and_then(|fields| fields.path_id.as_deref())
+        .or(request.path_id.as_deref());
+    let path_name = parent_path_fields
+        .as_ref()
+        .and_then(|fields| fields.path_name.as_deref())
+        .or(request.path_name.as_deref());
+    let path_role = parent_path_fields
+        .as_ref()
+        .and_then(|fields| fields.path_role.as_deref())
+        .or(request.path_role.as_deref());
     let record = db::queries::insert_itinerary_item(
         &mut tx,
         db::models::NewItineraryItem {
             id: item_id,
             trip_id,
             plan_variant_id: request.plan_variant_id,
-            path_group_id: request.path_group_id.as_deref(),
-            path_id: request.path_id.as_deref(),
-            path_name: request.path_name.as_deref(),
-            path_role: request.path_role.as_deref(),
+            path_group_id,
+            path_id,
+            path_name,
+            path_role,
             parent_item_id: request.parent_item_id,
             item_kind: request.item_kind.as_deref().unwrap_or("activity"),
             time_mode: request.time_mode.as_deref().unwrap_or("scheduled"),
@@ -209,6 +264,124 @@ pub async fn create_itinerary_item(
     realtime.publish(event).await;
 
     Ok(created)
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct ItineraryPathFields {
+    path_group_id: Option<String>,
+    path_id: Option<String>,
+    path_name: Option<String>,
+    path_role: Option<String>,
+}
+
+impl ItineraryPathFields {
+    fn from_patch(
+        existing: &crate::db::models::ItineraryItemRecord,
+        patch: &ItineraryItemPatch,
+    ) -> Self {
+        Self {
+            path_group_id: patch
+                .path_group_id
+                .clone()
+                .or_else(|| existing.path_group_id.clone()),
+            path_id: patch.path_id.clone().or_else(|| existing.path_id.clone()),
+            path_name: patch
+                .path_name
+                .clone()
+                .or_else(|| existing.path_name.clone()),
+            path_role: patch
+                .path_role
+                .clone()
+                .or_else(|| existing.path_role.clone()),
+        }
+    }
+
+    fn from_tuple(
+        fields: (
+            Option<String>,
+            Option<String>,
+            Option<String>,
+            Option<String>,
+        ),
+    ) -> Self {
+        Self {
+            path_group_id: fields.0,
+            path_id: fields.1,
+            path_name: fields.2,
+            path_role: fields.3,
+        }
+    }
+}
+
+async fn resolve_parent_path_fields(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    trip_id: Uuid,
+    parent_item_id: Option<Uuid>,
+) -> Result<Option<ItineraryPathFields>, ServiceError> {
+    let Some(parent_item_id) = parent_item_id else {
+        return Ok(None);
+    };
+    db::queries::itinerary_item_path_fields_for_trip(tx, trip_id, parent_item_id)
+        .await?
+        .ok_or(ServiceError::NotFound)
+        .map(ItineraryPathFields::from_tuple)
+        .map(Some)
+}
+
+fn validate_child_create_path_fields(
+    request: &CreateItineraryItemRequest,
+    parent_path_fields: &ItineraryPathFields,
+) -> Result<(), ServiceError> {
+    let requested = ItineraryPathFields {
+        path_group_id: request.path_group_id.clone(),
+        path_id: request.path_id.clone(),
+        path_name: request.path_name.clone(),
+        path_role: request.path_role.clone(),
+    };
+    if requested.path_group_id.is_none()
+        && requested.path_id.is_none()
+        && requested.path_name.is_none()
+        && requested.path_role.is_none()
+    {
+        return Ok(());
+    }
+    if requested == *parent_path_fields {
+        return Ok(());
+    }
+    Err(ServiceError::InvalidRequest(
+        "sub-activity path must match parent activity block",
+    ))
+}
+
+fn validate_child_path_patch(
+    existing: &crate::db::models::ItineraryItemRecord,
+    patch: &ItineraryItemPatch,
+    parent_path_fields: &ItineraryPathFields,
+) -> Result<(), ServiceError> {
+    if !patch_has_path_fields(patch) {
+        return Ok(());
+    }
+    let requested = ItineraryPathFields::from_patch(existing, patch);
+    if requested == *parent_path_fields {
+        return Ok(());
+    }
+    Err(ServiceError::InvalidRequest(
+        "sub-activity path must match parent activity block",
+    ))
+}
+
+fn apply_path_fields_to_patch(patch: &mut ItineraryItemPatch, fields: &ItineraryPathFields) {
+    patch.path_group_id = fields.path_group_id.clone();
+    patch.path_id = fields.path_id.clone();
+    patch.path_name = fields.path_name.clone();
+    patch.path_role = fields.path_role.clone();
+}
+
+fn patch_has_path_fields(patch: &ItineraryItemPatch) -> bool {
+    patch.path_group_id.is_some()
+        || patch.path_id.is_some()
+        || patch.path_name.is_some()
+        || patch.path_role.is_some()
 }
 
 async fn validate_itinerary_block_patch(

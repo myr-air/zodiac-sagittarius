@@ -395,6 +395,132 @@ async fn itinerary_patch_contract_rejects_activity_block_day_move_without_childr
 }
 
 #[sqlx::test(migrations = "../../migrations")]
+async fn itinerary_patch_contract_rejects_child_only_alternative_path_change(pool: sqlx::PgPool) {
+    support::seed_trip(&pool).await;
+    let token = support::create_session(&pool, support::ORGANIZER_ID).await;
+    let app = support::app(pool);
+
+    let child = create_itinerary_item(
+        &app,
+        &token,
+        "web-create-child-for-path-mismatch",
+        json!({
+            "parentItemId": support::ITEM_ID,
+            "activity": "Queue for table",
+            "startTime": "08:45",
+            "place": "The Elements"
+        }),
+    )
+    .await;
+
+    let response = app
+        .oneshot(
+            Request::builder()
+                .method(Method::PATCH)
+                .uri(format!(
+                    "/api/v1/trips/{}/itinerary-items/{}",
+                    support::TRIP_ID,
+                    child["id"].as_str().unwrap()
+                ))
+                .header(header::AUTHORIZATION, format!("Bearer {token}"))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({
+                        "clientMutationId": "web-patch-child-path-mismatch",
+                        "expectedVersion": 1,
+                        "patch": {
+                            "pathGroupId": "group-child-only",
+                            "pathId": "path-2025-05-16-sub-a",
+                            "pathName": "Plan A",
+                            "pathRole": "alternative"
+                        }
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::BAD_REQUEST);
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn itinerary_patch_contract_parent_path_change_cascades_to_sub_activities(
+    pool: sqlx::PgPool,
+) {
+    support::seed_trip(&pool).await;
+    let token = support::create_session(&pool, support::ORGANIZER_ID).await;
+    let app = support::app(pool.clone());
+
+    let child = create_itinerary_item(
+        &app,
+        &token,
+        "web-create-child-for-path-cascade",
+        json!({
+            "parentItemId": support::ITEM_ID,
+            "activity": "Queue for table",
+            "startTime": "08:45",
+            "place": "The Elements"
+        }),
+    )
+    .await;
+    let child_id = Uuid::parse_str(child["id"].as_str().unwrap()).unwrap();
+
+    let response = app
+        .oneshot(
+            Request::builder()
+                .method(Method::PATCH)
+                .uri(format!(
+                    "/api/v1/trips/{}/itinerary-items/{}",
+                    support::TRIP_ID,
+                    support::ITEM_ID
+                ))
+                .header(header::AUTHORIZATION, format!("Bearer {token}"))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({
+                        "clientMutationId": "web-patch-parent-path-cascade",
+                        "expectedVersion": 4,
+                        "patch": {
+                            "pathGroupId": "group-flight",
+                            "pathId": "path-2025-05-16-sub-a",
+                            "pathName": "Plan A",
+                            "pathRole": "alternative"
+                        }
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::OK);
+
+    let stored_child: (
+        Option<String>,
+        Option<String>,
+        Option<String>,
+        Option<String>,
+        i64,
+    ) = sqlx::query_as(
+        "select path_group_id, path_id, path_name, path_role, version
+             from itinerary_items
+             where id = $1",
+    )
+    .bind(child_id)
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(stored_child.0.as_deref(), Some("group-flight"));
+    assert_eq!(stored_child.1.as_deref(), Some("path-2025-05-16-sub-a"));
+    assert_eq!(stored_child.2.as_deref(), Some("Plan A"));
+    assert_eq!(stored_child.3.as_deref(), Some("alternative"));
+    assert_eq!(stored_child.4, 2);
+}
+
+#[sqlx::test(migrations = "../../migrations")]
 async fn itinerary_patch_contract_duplicate_client_mutation_id_conflicts(pool: sqlx::PgPool) {
     support::seed_trip(&pool).await;
     let token = support::create_session(&pool, support::ORGANIZER_ID).await;

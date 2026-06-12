@@ -1117,6 +1117,48 @@ pub async fn update_itinerary_item(
     .await
 }
 
+pub async fn update_itinerary_child_path_fields(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    trip_id: Uuid,
+    parent_item_id: Uuid,
+    path_group_id: Option<&str>,
+    path_id: Option<&str>,
+    path_name: Option<&str>,
+    path_role: Option<&str>,
+) -> Result<Vec<ItineraryItemRecord>, sqlx::Error> {
+    sqlx::query_as::<_, ItineraryItemRecord>(
+        "update itinerary_items
+         set path_group_id = $3,
+             path_id = $4,
+             path_name = $5,
+             path_role = $6,
+             version = version + 1,
+             updated_at = now()
+         where trip_id = $1
+           and parent_item_id = $2
+           and deleted_at is null
+         returning
+           id, trip_id, plan_variant_id, path_group_id, path_id, path_name, path_role,
+           parent_item_id, item_kind, time_mode, is_plan_block, status, priority,
+           day, sort_order,
+           coalesce(to_char(start_time, 'HH24:MI'), '') as start_time,
+           to_char(end_time, 'HH24:MI') as end_time,
+           end_offset_days,
+           activity, activity_type, place, link_label, map_link, address,
+           latitude::float8 as latitude, longitude::float8 as longitude,
+           duration_minutes, transportation, details, advisories, note, created_by,
+           updated_at::text as updated_at, version",
+    )
+    .bind(trip_id)
+    .bind(parent_item_id)
+    .bind(path_group_id)
+    .bind(path_id)
+    .bind(path_name)
+    .bind(path_role)
+    .fetch_all(&mut **tx)
+    .await
+}
+
 pub async fn next_itinerary_sort_order(
     tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
     trip_id: Uuid,
@@ -1753,6 +1795,30 @@ pub async fn itinerary_item_plan_variant_id_for_trip(
 ) -> Result<Option<Uuid>, sqlx::Error> {
     sqlx::query_scalar(
         "select plan_variant_id
+         from itinerary_items
+         where trip_id = $1 and id = $2 and deleted_at is null",
+    )
+    .bind(trip_id)
+    .bind(item_id)
+    .fetch_optional(&mut **tx)
+    .await
+}
+
+pub async fn itinerary_item_path_fields_for_trip(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    trip_id: Uuid,
+    item_id: Uuid,
+) -> Result<
+    Option<(
+        Option<String>,
+        Option<String>,
+        Option<String>,
+        Option<String>,
+    )>,
+    sqlx::Error,
+> {
+    sqlx::query_as(
+        "select path_group_id, path_id, path_name, path_role
          from itinerary_items
          where trip_id = $1 and id = $2 and deleted_at is null",
     )

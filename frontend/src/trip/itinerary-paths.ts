@@ -64,8 +64,12 @@ export function applyManualActivityPath(trip: Trip, itemId: string, targetPathId
     if (branchItem.pathGroupId === pathGroupId) return branchItem;
     return { ...branchItem, pathGroupId };
   });
+  const branchItemsWithChildren = cascadePathFieldsToSubActivities(
+    trip.itineraryItems,
+    normalizedBranchItems,
+  );
   const nextItem = nextItemsById.get(item.id) ?? item;
-  return buildActivityBranchPlacement(trip, nextItem, normalizedBranchItems, trip.itineraryItems);
+  return buildActivityBranchPlacement(trip, nextItem, branchItemsWithChildren, trip.itineraryItems);
 }
 
 export function deriveManualActivityPathOptions(trip: Trip, itemId: string): ManualActivityPathOption[] {
@@ -164,6 +168,26 @@ function sortBranchItems(items: ItineraryItem[]): ItineraryItem[] {
     if (timeCompare !== 0) return timeCompare;
     return left.sortOrder - right.sortOrder || left.id.localeCompare(right.id);
   });
+}
+
+function cascadePathFieldsToSubActivities(
+  allItems: ItineraryItem[],
+  branchItems: ItineraryItem[],
+): ItineraryItem[] {
+  const nextItemsById = new Map(branchItems.map((branchItem) => [branchItem.id, branchItem]));
+  for (const branchItem of branchItems) {
+    const subActivities = allItems.filter((item) => item.parentItemId === branchItem.id);
+    for (const subActivity of subActivities) {
+      nextItemsById.set(subActivity.id, {
+        ...subActivity,
+        pathGroupId: branchItem.pathGroupId,
+        pathId: branchItem.pathId,
+        pathName: branchItem.pathName,
+        pathRole: branchItem.pathRole,
+      });
+    }
+  }
+  return Array.from(nextItemsById.values());
 }
 
 function buildActivityBranchPlacement(

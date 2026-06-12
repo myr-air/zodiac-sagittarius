@@ -1127,12 +1127,24 @@ export function SagittariusApp({
       const patchedBranchItemsById = new Map(
         patchedBranchItems.map((item) => [item.id, item]),
       );
+      const branchPlacementItemsById = new Map(
+        branchPlacement.trip.itineraryItems
+          .filter((item) =>
+            branchPlacement.changedExistingItems.some(
+              (changedItem) => changedItem.id === item.id,
+            ),
+          )
+          .map((item) => [item.id, item]),
+      );
       setTripState((current) => ({
         ...current,
         trip: {
           ...current.trip,
           itineraryItems: current.trip.itineraryItems.map(
-            (item) => patchedBranchItemsById.get(item.id) ?? item,
+            (item) =>
+              patchedBranchItemsById.get(item.id) ??
+              branchPlacementItemsById.get(item.id) ??
+              item,
           ),
         },
       }));
@@ -1263,6 +1275,15 @@ export function SagittariusApp({
       };
       const patchedBranchItemsById = new Map(
         patchedBranchItems.map((item) => [item.id, item]),
+      );
+      const branchPlacementItemsById = new Map(
+        branchPlacement.trip.itineraryItems
+          .filter((item) =>
+            branchPlacement.changedExistingItems.some(
+              (changedItem) => changedItem.id === item.id,
+            ),
+          )
+          .map((item) => [item.id, item]),
       );
       setTripState((current) => ({
         ...current,
@@ -1603,6 +1624,15 @@ export function SagittariusApp({
       const patchedBranchItemsById = new Map(
         patchedBranchItems.map((item) => [item.id, item]),
       );
+      const branchPlacementItemsById = new Map(
+        branchPlacement.trip.itineraryItems
+          .filter((item) =>
+            branchPlacement.changedExistingItems.some(
+              (changedItem) => changedItem.id === item.id,
+            ),
+          )
+          .map((item) => [item.id, item]),
+      );
       setTripState((current) => ({
         ...current,
         trip: {
@@ -1610,6 +1640,8 @@ export function SagittariusApp({
           itineraryItems: current.trip.itineraryItems.map((item) => {
             if (patchedBranchItemsById.has(item.id))
               return patchedBranchItemsById.get(item.id) ?? item;
+            if (branchPlacementItemsById.has(item.id))
+              return branchPlacementItemsById.get(item.id) ?? item;
             return item.id === itemId ? branchPlacement.item : item;
           }),
         },
@@ -4158,7 +4190,11 @@ async function patchApiItineraryBranchItems(
   sessionToken: string,
 ): Promise<ItineraryItem[]> {
   const patchedItems: ItineraryItem[] = [];
-  for (const item of items) {
+  const changedItemIds = new Set(items.map((item) => item.id));
+  const itemsToPatch = items.filter(
+    (item) => !item.parentItemId || !changedItemIds.has(item.parentItemId),
+  );
+  for (const item of itemsToPatch) {
     patchedItems.push(
       await apiClient.patchItineraryItem(tripId, item.id, sessionToken, {
         clientMutationId: nextClientMutationId("itinerary-branch"),

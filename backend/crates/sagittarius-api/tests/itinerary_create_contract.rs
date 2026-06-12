@@ -187,6 +187,83 @@ async fn itinerary_create_contract_rejects_nested_sub_activity(pool: sqlx::PgPoo
 }
 
 #[sqlx::test(migrations = "../../migrations")]
+async fn itinerary_create_contract_sub_activity_inherits_parent_path(pool: sqlx::PgPool) {
+    support::seed_trip(&pool).await;
+    let token = support::create_session(&pool, support::ORGANIZER_ID).await;
+    let app = support::app(pool);
+
+    let parent = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method(Method::POST)
+                .uri(format!(
+                    "/api/v1/trips/{}/itinerary-items",
+                    support::TRIP_ID
+                ))
+                .header(header::AUTHORIZATION, format!("Bearer {token}"))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({
+                        "clientMutationId": "web-create-alt-parent",
+                        "planVariantId": support::PLAN_ID,
+                        "pathGroupId": "group-flight",
+                        "pathId": "path-2025-05-16-sub-a",
+                        "pathName": "Plan A",
+                        "pathRole": "alternative",
+                        "day": "2025-05-16",
+                        "startTime": "07:00",
+                        "activity": "Flight to Hong Kong",
+                        "activityType": "travel",
+                        "place": "BKK"
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(parent.status(), StatusCode::OK);
+    let parent_body: Value =
+        serde_json::from_slice(&to_bytes(parent.into_body(), 65536).await.unwrap()).unwrap();
+
+    let child = app
+        .oneshot(
+            Request::builder()
+                .method(Method::POST)
+                .uri(format!(
+                    "/api/v1/trips/{}/itinerary-items",
+                    support::TRIP_ID
+                ))
+                .header(header::AUTHORIZATION, format!("Bearer {token}"))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({
+                        "clientMutationId": "web-create-alt-child",
+                        "planVariantId": support::PLAN_ID,
+                        "parentItemId": parent_body["id"].as_str().unwrap(),
+                        "day": "2025-05-16",
+                        "startTime": "08:00",
+                        "activity": "Check in",
+                        "activityType": "travel",
+                        "place": "BKK"
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(child.status(), StatusCode::OK);
+    let child_body: Value =
+        serde_json::from_slice(&to_bytes(child.into_body(), 65536).await.unwrap()).unwrap();
+    assert_eq!(child_body["pathGroupId"], "group-flight");
+    assert_eq!(child_body["pathId"], "path-2025-05-16-sub-a");
+    assert_eq!(child_body["pathName"], "Plan A");
+    assert_eq!(child_body["pathRole"], "alternative");
+}
+
+#[sqlx::test(migrations = "../../migrations")]
 async fn itinerary_create_contract_rejects_unsafe_map_link(pool: sqlx::PgPool) {
     support::seed_trip(&pool).await;
     let token = support::create_session(&pool, support::ORGANIZER_ID).await;

@@ -169,6 +169,72 @@ describe("itinerary path import application", () => {
     });
   });
 
+  it("moves sub-activities with their parent activity block when assigning an explicit path", () => {
+    const block = {
+      ...tripFixture.planItems[0],
+      id: "item-flight-block",
+      day: "2026-06-19",
+      startTime: "04:00",
+      durationMinutes: 540,
+      sortOrder: 100,
+      isPlanBlock: true,
+      pathGroupId: undefined,
+      pathId: undefined,
+      pathName: undefined,
+      pathRole: undefined,
+    };
+    const child = {
+      ...tripFixture.planItems[1],
+      id: "item-flight-checkin",
+      parentItemId: "item-flight-block",
+      day: "2026-06-19",
+      startTime: "06:00",
+      durationMinutes: 60,
+      sortOrder: 200,
+      pathGroupId: undefined,
+      pathId: undefined,
+      pathName: undefined,
+      pathRole: undefined,
+    };
+    const overlap = {
+      ...tripFixture.planItems[2],
+      id: "item-hotel-breakfast",
+      day: "2026-06-19",
+      startTime: "06:30",
+      durationMinutes: 45,
+      sortOrder: 300,
+      pathGroupId: undefined,
+      pathId: undefined,
+      pathName: undefined,
+      pathRole: undefined,
+    };
+    const trip = {
+      ...tripFixture.trip,
+      itineraryItems: [block, child, overlap],
+    };
+
+    const placement = applyManualActivityPath(trip, "item-flight-block", "path-2026-06-19-sub-a");
+    const itemsById = new Map(placement.trip.itineraryItems.map((item) => [item.id, item]));
+
+    expect(itemsById.get("item-flight-block")).toMatchObject({
+      pathGroupId: "path-group-item-flight-block",
+      pathId: "path-2026-06-19-sub-a",
+      pathName: "Plan A",
+      pathRole: "alternative",
+    });
+    expect(itemsById.get("item-flight-checkin")).toMatchObject({
+      pathGroupId: "path-group-item-flight-block",
+      pathId: "path-2026-06-19-sub-a",
+      pathName: "Plan A",
+      pathRole: "alternative",
+    });
+    expect(placement.changedExistingItems.map((item) => item.id)).toEqual([
+      "item-flight-block",
+      "item-flight-checkin",
+      "item-hotel-breakfast",
+    ]);
+  });
+
   it("exposes manual path choices for an overlapping activity branch", () => {
     const mainItem = {
       ...tripFixture.planItems[0],
