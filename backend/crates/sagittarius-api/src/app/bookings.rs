@@ -746,6 +746,7 @@ mod tests {
         BookingDocRecord {
             id: Uuid::now_v7(),
             trip_id: Uuid::now_v7(),
+            trip_plan_id: None,
             r#type: "flight".to_string(),
             title: "Flight".to_string(),
             status: "confirmed".to_string(),

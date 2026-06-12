@@ -1725,6 +1725,7 @@ pub async fn update_task(
     tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
     task_id: Uuid,
     patch: &crate::domain::patches::TaskPatch,
+    trip_plan_id: Option<Uuid>,
     next_version: i64,
 ) -> Result<Option<TripTaskRecord>, sqlx::Error> {
     sqlx::query_as::<_, TripTaskRecord>(
@@ -1733,7 +1734,8 @@ pub async fn update_task(
              status = coalesce($3, status),
              assignee_id = case when $4 then $5 else assignee_id end,
              related_item_id = case when $6 then $7 else related_item_id end,
-             version = $8,
+             trip_plan_id = $8,
+             version = $9,
              updated_at = now()
          where id = $1 and deleted_at is null
          returning
@@ -1747,6 +1749,7 @@ pub async fn update_task(
     .bind(patch.assignee_id.unwrap_or(None))
     .bind(patch.related_item_id.is_some())
     .bind(patch.related_item_id.unwrap_or(None))
+    .bind(trip_plan_id)
     .bind(next_version)
     .fetch_optional(&mut **tx)
     .await
@@ -1998,6 +2001,7 @@ pub async fn update_expense(
     tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
     expense_id: Uuid,
     patch: &crate::domain::patches::PatchExpenseRequest,
+    trip_plan_id: Option<Uuid>,
     next_version: i64,
 ) -> Result<Option<ExpenseRecord>, sqlx::Error> {
     sqlx::query_as::<_, ExpenseRecord>(
@@ -2014,7 +2018,8 @@ pub async fn update_expense(
              category = coalesce($11, category),
              splits = coalesce($12, splits),
              itinerary_item_id = case when $13 then $14 else itinerary_item_id end,
-             version = $15,
+             trip_plan_id = $15,
+             version = $16,
              updated_at = now()
          where id = $1 and deleted_at is null
          returning
@@ -2035,6 +2040,7 @@ pub async fn update_expense(
     .bind(patch.splits.as_ref())
     .bind(patch.itinerary_item_id.is_some())
     .bind(patch.itinerary_item_id.unwrap_or(None))
+    .bind(trip_plan_id)
     .bind(next_version)
     .fetch_optional(&mut **tx)
     .await

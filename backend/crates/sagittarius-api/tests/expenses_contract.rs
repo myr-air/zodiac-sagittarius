@@ -7,7 +7,7 @@ use tower::ServiceExt;
 use uuid::Uuid;
 
 #[sqlx::test(migrations = "../../migrations")]
-async fn expenses_contract_patch_rejects_cross_plan_itinerary_relink(pool: sqlx::PgPool) {
+async fn expenses_contract_patch_relinks_to_new_item_plan(pool: sqlx::PgPool) {
     support::seed_trip(&pool).await;
     support::seed_expense(&pool).await;
     let alt_item_id = support::seed_alt_plan_item(&pool).await;
@@ -38,10 +38,12 @@ async fn expenses_contract_patch_rejects_cross_plan_itinerary_relink(pool: sqlx:
         .await
         .unwrap();
 
-    assert_eq!(response.status(), StatusCode::BAD_REQUEST);
+    assert_eq!(response.status(), StatusCode::OK);
     let body: Value =
         serde_json::from_slice(&to_bytes(response.into_body(), 65536).await.unwrap()).unwrap();
-    assert_eq!(body["code"], "invalid_request");
+    assert_eq!(body["tripPlanId"], support::ALT_PLAN_ID);
+    assert_eq!(body["itineraryItemId"], alt_item_id.to_string());
+    assert_eq!(body["version"], 2);
 
     let stored: (Uuid, Uuid, i64) = sqlx::query_as(
         "select trip_plan_id, itinerary_item_id, version
@@ -52,7 +54,7 @@ async fn expenses_contract_patch_rejects_cross_plan_itinerary_relink(pool: sqlx:
     .fetch_one(&pool)
     .await
     .unwrap();
-    assert_eq!(stored.0, Uuid::parse_str(support::PLAN_ID).unwrap());
-    assert_eq!(stored.1, Uuid::parse_str(support::ITEM_ID).unwrap());
-    assert_eq!(stored.2, 1);
+    assert_eq!(stored.0, Uuid::parse_str(support::ALT_PLAN_ID).unwrap());
+    assert_eq!(stored.1, alt_item_id);
+    assert_eq!(stored.2, 2);
 }

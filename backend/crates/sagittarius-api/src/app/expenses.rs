@@ -220,7 +220,7 @@ pub async fn patch_expense(
         next_itinerary_item_id,
     )
     .await?;
-    validate_expense_plan_scope(
+    let next_trip_plan_id = resolve_expense_patch_trip_plan_id(
         &mut tx,
         trip_id,
         existing.trip_plan_id,
@@ -232,10 +232,15 @@ pub async fn patch_expense(
         request.amount_minor.unwrap_or(existing.amount_minor),
     )?;
 
-    let updated =
-        db::queries::update_expense(&mut tx, expense_id, &request, request.expected_version + 1)
-            .await?
-            .ok_or(ServiceError::NotFound)?;
+    let updated = db::queries::update_expense(
+        &mut tx,
+        expense_id,
+        &request,
+        next_trip_plan_id,
+        request.expected_version + 1,
+    )
+    .await?
+    .ok_or(ServiceError::NotFound)?;
     let expense = ExpenseItemSummary::from(updated);
     let event = write_event(
         &mut tx,
@@ -311,26 +316,26 @@ async fn validate_expense_links(
     Ok(())
 }
 
-async fn validate_expense_plan_scope(
+async fn resolve_expense_patch_trip_plan_id(
     tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
     trip_id: Uuid,
     expense_trip_plan_id: Option<Uuid>,
     itinerary_item_id: Option<Uuid>,
-) -> Result<(), ServiceError> {
+) -> Result<Option<Uuid>, ServiceError> {
     let Some(item_id) = itinerary_item_id else {
-        return Ok(());
+        if expense_trip_plan_id.is_some() {
+            return Ok(expense_trip_plan_id);
+        }
+        return db::queries::active_plan_variant_id_for_trip(tx, trip_id)
+            .await?
+            .ok_or(ServiceError::NotFound)
+            .map(Some);
     };
     let item_trip_plan_id =
         db::queries::itinerary_item_plan_variant_id_for_trip(tx, trip_id, item_id)
             .await?
             .ok_or(ServiceError::NotFound)?;
-    if Some(item_trip_plan_id) != expense_trip_plan_id {
-        return Err(ServiceError::InvalidRequest(
-            "itineraryItemId must match expense Trip Plan",
-        ));
-    }
-
-    Ok(())
+    Ok(Some(item_trip_plan_id))
 }
 
 async fn resolve_expense_trip_plan_id(

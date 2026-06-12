@@ -134,12 +134,19 @@ pub async fn patch_task(
         return Err(ServiceError::VersionConflictWithLatest(latest));
     }
 
-    validate_patch_references(&mut tx, existing.trip_id, &existing, &request.patch).await?;
+    let next_trip_plan_id =
+        resolve_task_patch_trip_plan_id(&mut tx, existing.trip_id, &existing, &request.patch)
+            .await?;
 
-    let updated_record =
-        db::queries::update_task(&mut tx, task_id, &request.patch, existing.version + 1)
-            .await?
-            .ok_or(ServiceError::NotFound)?;
+    let updated_record = db::queries::update_task(
+        &mut tx,
+        task_id,
+        &request.patch,
+        next_trip_plan_id,
+        existing.version + 1,
+    )
+    .await?
+    .ok_or(ServiceError::NotFound)?;
     let updated = TripTaskSummary::from(updated_record);
     let event = insert_task_event(
         &mut tx,
@@ -230,30 +237,30 @@ async fn validate_task_references(
         .map(|_| ())
 }
 
-async fn validate_patch_references(
+async fn resolve_task_patch_trip_plan_id(
     tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
     trip_id: Uuid,
     existing: &crate::db::models::TripTaskRecord,
     patch: &TaskPatch,
-) -> Result<(), ServiceError> {
+) -> Result<Option<Uuid>, ServiceError> {
     let assignee_id = patch.assignee_id.unwrap_or(existing.assignee_id);
     let related_item_id = patch.related_item_id.unwrap_or(existing.related_item_id);
     validate_task_references(tx, trip_id, assignee_id, related_item_id).await?;
 
     let Some(item_id) = related_item_id else {
-        return Ok(());
+        if existing.trip_plan_id.is_some() {
+            return Ok(existing.trip_plan_id);
+        }
+        return db::queries::active_plan_variant_id_for_trip(tx, trip_id)
+            .await?
+            .ok_or(ServiceError::NotFound)
+            .map(Some);
     };
     let related_item_trip_plan_id =
         db::queries::itinerary_item_plan_variant_id_for_trip(tx, trip_id, item_id)
             .await?
             .ok_or(ServiceError::NotFound)?;
-    if Some(related_item_trip_plan_id) != existing.trip_plan_id {
-        return Err(ServiceError::InvalidRequest(
-            "relatedItemId must match task Trip Plan",
-        ));
-    }
-
-    Ok(())
+    Ok(Some(related_item_trip_plan_id))
 }
 
 async fn insert_task_event(

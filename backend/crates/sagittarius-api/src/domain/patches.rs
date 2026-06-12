@@ -1598,6 +1598,7 @@ mod tests {
     fn task_create_validation_covers_required_fields_and_enums() {
         let valid = CreateTaskRequest {
             client_mutation_id: "task-create".to_string(),
+            trip_plan_id: None,
             title: "Book ferry".to_string(),
             visibility: "shared".to_string(),
             kind: Some("booking".to_string()),
@@ -1680,6 +1681,7 @@ mod tests {
         let member = Uuid::now_v7();
         let valid = CreateExpenseRequest {
             client_mutation_id: "expense-create".to_string(),
+            trip_plan_id: None,
             title: "Dinner".to_string(),
             amount_minor: 10_000,
             currency: Some("HKD".to_string()),
@@ -1737,6 +1739,7 @@ mod tests {
         let member = Uuid::now_v7();
         let create = CreateExpenseRequest {
             client_mutation_id: "expense-create".to_string(),
+            trip_plan_id: None,
             title: "Dinner".to_string(),
             amount_minor: 10_000,
             currency: Some("CNY".to_string()),
@@ -1780,6 +1783,7 @@ mod tests {
     fn valid_booking_doc_request() -> CreateBookingDocRequest {
         CreateBookingDocRequest {
             client_mutation_id: "booking-create".to_string(),
+            trip_plan_id: None,
             r#type: "flight".to_string(),
             title: "Flight to Chiang Mai".to_string(),
             status: "booked".to_string(),
