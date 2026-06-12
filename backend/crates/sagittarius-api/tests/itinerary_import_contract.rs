@@ -22,7 +22,18 @@ async fn itinerary_import_contract_organizer_can_normalize_json_import(pool: sql
             "startDate": "2026-06-18",
             "endDate": "2026-06-23",
             "activePlanVariantId": support::PLAN_ID,
-            "mainTripPlanId": support::PLAN_ID
+            "mainTripPlanId": support::PLAN_ID,
+            "tripPlans": [
+                {
+                    "id": support::PLAN_ID,
+                    "tripId": support::TRIP_ID,
+                    "name": "Main",
+                    "kind": "main",
+                    "status": "main",
+                    "description": "Primary plan",
+                    "version": 1
+                }
+            ]
         },
         "items": [
             {
@@ -178,6 +189,12 @@ async fn itinerary_import_contract_organizer_can_normalize_json_import(pool: sql
         support::PLAN_ID.to_string()
     );
     assert_eq!(body["trip"]["mainTripPlanId"], support::PLAN_ID.to_string());
+    assert_eq!(
+        body["trip"]["tripPlans"][0]["id"],
+        support::PLAN_ID.to_string()
+    );
+    assert_eq!(body["trip"]["tripPlans"][0]["kind"], "main");
+    assert_eq!(body["trip"]["tripPlans"][0]["status"], "main");
     assert_eq!(body["items"][0]["activity"], "Flight to Hong Kong");
     assert_eq!(body["items"][0]["isPlanBlock"], true);
     assert_eq!(body["items"][0]["endTime"], "02:00");

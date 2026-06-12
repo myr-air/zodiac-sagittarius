@@ -443,6 +443,8 @@ pub struct ItineraryImportTrip {
     pub end_date: Date,
     pub active_plan_variant_id: Uuid,
     pub main_trip_plan_id: Uuid,
+    #[serde(default)]
+    pub trip_plans: Vec<TripPlanSummary>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

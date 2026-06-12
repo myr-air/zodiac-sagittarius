@@ -12,7 +12,7 @@ use crate::db::PgPool;
 use crate::domain::errors::ServiceError;
 use crate::domain::patches::ImportItineraryRequest;
 use crate::domain::types::{
-    ItineraryImportDocument, ItineraryImportItem, ItineraryImportTrip, TripRole,
+    ItineraryImportDocument, ItineraryImportItem, ItineraryImportTrip, PlanVariantSummary, TripRole,
 };
 
 const IMPORT_SCHEMA: &str = "joii.itinerary.export";
@@ -33,9 +33,11 @@ pub async fn import_itinerary(
         return Err(ServiceError::Forbidden);
     }
 
-    let trip = db::queries::find_trip_by_id(pool, trip_id)
-        .await?
-        .ok_or(ServiceError::NotFound)?;
+    let (trip, plan_variants) = tokio::try_join!(
+        db::queries::find_trip_by_id(pool, trip_id),
+        db::queries::list_plan_variants(pool, trip_id),
+    )?;
+    let trip = trip.ok_or(ServiceError::NotFound)?;
     let active_plan_variant_id =
         trip.active_plan_variant_id
             .ok_or(ServiceError::InvalidRequest(
@@ -49,6 +51,10 @@ pub async fn import_itinerary(
         end_date: trip.end_date,
         active_plan_variant_id,
         main_trip_plan_id: active_plan_variant_id,
+        trip_plans: plan_variants
+            .into_iter()
+            .map(PlanVariantSummary::from)
+            .collect(),
     };
 
     let mode = request.mode.as_deref().unwrap_or("auto");
@@ -303,7 +309,24 @@ fn itinerary_json_schema() -> Value {
             "startDate": { "type": "string" },
             "endDate": { "type": "string" },
             "activePlanVariantId": { "type": "string" },
-            "mainTripPlanId": { "type": "string" }
+            "mainTripPlanId": { "type": "string" },
+            "tripPlans": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["id", "tripId", "name", "kind", "status", "description", "version"],
+                    "properties": {
+                        "id": { "type": "string" },
+                        "tripId": { "type": "string" },
+                        "name": { "type": "string" },
+                        "kind": { "type": "string" },
+                        "status": { "type": "string" },
+                        "description": { "type": "string" },
+                        "version": { "type": "integer" }
+                    }
+                }
+            }
         }
     });
     let coordinates_schema = json!({
