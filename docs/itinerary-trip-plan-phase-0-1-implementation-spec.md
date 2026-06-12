@@ -530,5 +530,5 @@ These are not Phase 0/1 release requirements. They document the next slice so Ph
 
 - Phase 2: ship plan-scoped record DDL and create-flow defaults for expenses, tasks, stop notes, and booking docs.
 - Phase 3: store itinerary Time Windows as `start_time`, optional `end_time`, and `end_offset_days`.
-- Phase 4: remove automatic overlap-to-path behavior only after explicit Alternative Path actions exist.
+- Phase 4: sibling overlaps remain warnings only; automatic overlap-to-path behavior is removed, and Alternative Path changes happen through explicit organizer actions.
 - Phase 5: keep the itinerary page as the primary planning surface and use booking/ticket pages for detail editing.

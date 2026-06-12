@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { tripFixture } from "./trip-fixtures";
-import { applyImportedItemsToItineraryPath, applyItemToActivityBranch, applyManualActivityPath, autoResolveSamePathOverlaps, deriveManualActivityPathOptions } from "./itinerary-paths";
+import { applyImportedItemsToItineraryPath, applyItemToActivityBranch, applyManualActivityPath, deriveManualActivityPathOptions } from "./itinerary-paths";
 import type { ItineraryExportItem } from "./itinerary-import-export";
 
 const importItem: ItineraryExportItem = {
@@ -20,7 +20,7 @@ const importItem: ItineraryExportItem = {
 };
 
 describe("itinerary path import application", () => {
-  it("moves overlapping created activities into sub paths while keeping the first activity on main", () => {
+  it("keeps overlapping created activities on main until an organizer explicitly chooses an alternative path", () => {
     const mainItem = {
       ...tripFixture.planItems[0],
       id: "item-main-long",
@@ -61,25 +61,15 @@ describe("itinerary path import application", () => {
     const withLate = applyItemToActivityBranch(withMiddle, lateItem).trip;
     const itemsById = new Map(withLate.itineraryItems.map((item) => [item.id, item]));
 
-    expect(itemsById.get("item-main-long")).toMatchObject({
-      pathGroupId: "path-group-item-main-long",
-      pathRole: "main",
-    });
-    expect(itemsById.get("item-middle")).toMatchObject({
-      pathGroupId: "path-group-item-main-long",
-      pathId: "path-2026-06-19-sub-a",
-      pathName: "Plan A",
-      pathRole: "alternative",
-    });
-    expect(itemsById.get("item-late")).toMatchObject({
-      pathGroupId: "path-group-item-main-long",
-      pathId: "path-2026-06-19-sub-b",
-      pathName: "Plan B",
-      pathRole: "alternative",
-    });
+    expect(itemsById.get("item-main-long")).toMatchObject({ pathRole: undefined });
+    expect(itemsById.get("item-main-long")?.pathGroupId).toBeUndefined();
+    expect(itemsById.get("item-middle")).toMatchObject({ pathRole: "main" });
+    expect(itemsById.get("item-middle")?.pathGroupId).toBeUndefined();
+    expect(itemsById.get("item-late")).toMatchObject({ pathRole: "main" });
+    expect(itemsById.get("item-late")?.pathGroupId).toBeUndefined();
   });
 
-  it("manually promotes an overlapping activity to main and lets organizers assign plan A or B", () => {
+  it("lets organizers explicitly assign overlapping activities to plan A or B", () => {
     const mainItem = {
       ...tripFixture.planItems[0],
       id: "item-main-long",
@@ -111,15 +101,14 @@ describe("itinerary path import application", () => {
       durationMinutes: 45,
       sortOrder: 300,
     };
-    const autoTrip = applyItemToActivityBranch(
+    const flatTrip = applyItemToActivityBranch(
       applyItemToActivityBranch({ ...tripFixture.trip, itineraryItems: [mainItem] }, middleItem).trip,
       lateItem,
     ).trip;
 
-    const promotedTrip = applyManualActivityPath(autoTrip, "item-middle", "main").trip;
-    const planBTrip = applyManualActivityPath(promotedTrip, "item-main-long", "path-2026-06-19-sub-b").trip;
-    const planATrip = applyManualActivityPath(planBTrip, "item-late", "path-2026-06-19-sub-a").trip;
-    const itemsById = new Map(planATrip.itineraryItems.map((item) => [item.id, item]));
+    const planATrip = applyManualActivityPath(flatTrip, "item-late", "path-2026-06-19-sub-a").trip;
+    const planBTrip = applyManualActivityPath(planATrip, "item-main-long", "path-2026-06-19-sub-b").trip;
+    const itemsById = new Map(planBTrip.itineraryItems.map((item) => [item.id, item]));
 
     expect(itemsById.get("item-middle")).toMatchObject({
       pathGroupId: "path-group-item-main-long",
@@ -164,9 +153,9 @@ describe("itinerary path import application", () => {
       pathName: undefined,
       pathRole: undefined,
     };
-    const autoTrip = applyItemToActivityBranch({ ...tripFixture.trip, itineraryItems: [mainItem] }, middleItem).trip;
+    const flatTrip = applyItemToActivityBranch({ ...tripFixture.trip, itineraryItems: [mainItem] }, middleItem).trip;
 
-    const next = applyManualActivityPath(autoTrip, "item-main-long", "path-2026-06-19-sub-b").trip;
+    const next = applyManualActivityPath(flatTrip, "item-main-long", "path-2026-06-19-sub-b").trip;
     const itemsById = new Map(next.itineraryItems.map((item) => [item.id, item]));
 
     expect(itemsById.get("item-main-long")).toMatchObject({
@@ -177,64 +166,6 @@ describe("itinerary path import application", () => {
     expect(itemsById.get("item-middle")).toMatchObject({
       pathGroupId: "path-group-item-main-long",
       pathRole: "main",
-    });
-  });
-
-  it("auto resolves same-plan overlap by moving later activities into free plans", () => {
-    const earlyItem = {
-      ...tripFixture.planItems[0],
-      id: "item-early",
-      day: "2026-06-19",
-      startTime: "08:00",
-      durationMinutes: 225,
-      sortOrder: 100,
-      pathGroupId: undefined,
-      pathId: undefined,
-      pathName: undefined,
-      pathRole: "main" as const,
-    };
-    const middleItem = {
-      ...tripFixture.planItems[1],
-      id: "item-middle",
-      day: "2026-06-19",
-      startTime: "08:30",
-      durationMinutes: 60,
-      sortOrder: 200,
-      pathGroupId: undefined,
-      pathId: undefined,
-      pathName: undefined,
-      pathRole: "main" as const,
-    };
-    const lateItem = {
-      ...middleItem,
-      id: "item-late",
-      startTime: "09:00",
-      durationMinutes: 45,
-      sortOrder: 300,
-    };
-    const trip = {
-      ...tripFixture.trip,
-      itineraryItems: [earlyItem, middleItem, lateItem],
-    };
-
-    const next = autoResolveSamePathOverlaps(trip, { day: "2026-06-19", planVariantId: trip.activePlanVariantId }).trip;
-    const itemsById = new Map(next.itineraryItems.map((item) => [item.id, item]));
-
-    expect(itemsById.get("item-early")).toMatchObject({
-      pathGroupId: "path-group-item-early",
-      pathRole: "main",
-    });
-    expect(itemsById.get("item-middle")).toMatchObject({
-      pathGroupId: "path-group-item-early",
-      pathId: "path-2026-06-19-sub-a",
-      pathName: "Plan A",
-      pathRole: "alternative",
-    });
-    expect(itemsById.get("item-late")).toMatchObject({
-      pathGroupId: "path-group-item-early",
-      pathId: "path-2026-06-19-sub-b",
-      pathName: "Plan B",
-      pathRole: "alternative",
     });
   });
 
@@ -327,7 +258,7 @@ describe("itinerary path import application", () => {
       pathId: "path-rain",
       pathName: "Rain plan",
       pathRole: "alternative",
-      pathGroupId: `path-group-${trip.itineraryItems[0].id}`,
+      pathGroupId: "path-group-import-rain-museum",
     });
     expect(next.itineraryPaths?.find((path) => path.id === "path-rain")).toMatchObject({
       name: "Rain plan",

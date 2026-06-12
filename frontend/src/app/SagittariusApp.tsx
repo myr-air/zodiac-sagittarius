@@ -76,7 +76,6 @@ import {
   applyImportedItemsToItineraryPath,
   applyItemToActivityBranch,
   applyManualActivityPath,
-  autoResolveSamePathOverlaps,
   deriveManualActivityPathOptions,
   type ItineraryImportApplyTarget,
 } from "@/src/trip/itinerary-paths";
@@ -1572,17 +1571,17 @@ export function SagittariusApp({
             : item,
         ),
       };
-      const autoBranchPlacement = applyItemToActivityBranch(
+      const pathPlacement = applyItemToActivityBranch(
         tripWithPatchedItem,
         { ...patchedItem, day: values.day || patchedItem.day },
       );
       const branchPlacement = values.pathId
         ? applyManualActivityPath(
-            autoBranchPlacement.trip,
+            pathPlacement.trip,
             itemId,
             values.pathId,
           )
-        : autoBranchPlacement;
+        : pathPlacement;
       const patchedBranchItems = await patchApiItineraryBranchItems(
         branchPlacement.changedExistingItems,
         resolvedApiClient,
@@ -1638,17 +1637,17 @@ export function SagittariusApp({
           item.id === itemId ? updatedItem : item,
         ),
       };
-      const autoBranchPlacement = applyItemToActivityBranch(
+      const pathPlacement = applyItemToActivityBranch(
         tripWithUpdatedItem,
         updatedItem,
       );
       return values.pathId
         ? applyManualActivityPath(
-            autoBranchPlacement.trip,
+            pathPlacement.trip,
             itemId,
             values.pathId,
           ).trip
-        : autoBranchPlacement.trip;
+        : pathPlacement.trip;
     });
     setSelectedItemId(itemId);
     setContextRailVisibility(true);
@@ -1798,70 +1797,6 @@ export function SagittariusApp({
       };
     }, itemId);
     setContextRailVisibility(true);
-  }
-
-  async function autoResolveDayOverlaps(day: string) {
-    /* v8 ignore next */
-    if (!canEdit) return;
-
-    if (isApiMode && resolvedApiClient && participantSession) {
-      let currentTrip = trip;
-      for (let attempt = 0; attempt < 2; attempt += 1) {
-        const placement = autoResolveSamePathOverlaps(currentTrip, {
-          day,
-          planVariantId: selectedPlanVariantId,
-        });
-        if (placement.changedExistingItems.length === 0) return;
-        try {
-          const patchedBranchItems = await patchApiItineraryBranchItems(
-            placement.changedExistingItems,
-            resolvedApiClient,
-            currentTrip.id,
-            participantSession.sessionToken,
-          );
-          const patchedBranchItemsById = new Map(
-            patchedBranchItems.map((item) => [item.id, item]),
-          );
-          setTripState((state) => ({
-            ...state,
-            trip: {
-              ...state.trip,
-              itineraryItems: state.trip.itineraryItems.map(
-                (item) => patchedBranchItemsById.get(item.id) ?? item,
-              ),
-            },
-          }));
-          return;
-        } catch (error) {
-          if (
-            !(error instanceof TripApiError) ||
-            error.code !== "version_conflict" ||
-            attempt > 0
-          )
-            throw error;
-          const cockpit = await resolvedApiClient.loadTrip(
-            currentTrip.id,
-            participantSession.sessionToken,
-          );
-          replaceCockpitFromApi(cockpit);
-          currentTrip = cockpit.trip;
-        }
-      }
-      return;
-    }
-
-    const previewPlacement = autoResolveSamePathOverlaps(trip, {
-      day,
-      planVariantId: selectedPlanVariantId,
-    });
-    if (previewPlacement.changedExistingItems.length === 0) return;
-    commitTrip(
-      (current) =>
-        autoResolveSamePathOverlaps(current, {
-          day,
-          planVariantId: selectedPlanVariantId,
-        }).trip,
-    );
   }
 
   async function deleteSelectedStop() {
@@ -3694,7 +3629,6 @@ export function SagittariusApp({
                   onChangeDayPath={changeDayPath}
                   onClearDayPath={clearDayPath}
                   onClearAllDayPaths={clearAllDayPaths}
-                  onAutoResolveDayOverlaps={autoResolveDayOverlaps}
                   onToggleShowAllPaths={toggleShowAllPaths}
                   onRedo={redo}
                   onToggleContextRail={() =>

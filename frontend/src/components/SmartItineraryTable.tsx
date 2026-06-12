@@ -99,7 +99,6 @@ interface SmartItineraryTableProps {
   onChangeDayPath?: (day: string, pathId: string) => void;
   onClearDayPath?: (day: string) => void;
   onClearAllDayPaths?: () => void;
-  onAutoResolveDayOverlaps?: (day: string) => void;
   onToggleShowAllPaths?: (showAll: boolean) => void;
   onRedo: () => void;
   onToggleContextRail: () => void;
@@ -190,8 +189,6 @@ const dayPathPickerClassName =
   "min-h-8 max-w-[172px] px-2 text-[11px] max-[767px]:max-w-[112px]";
 const dayClearPathButtonClassName =
   "inline-flex min-h-8 items-center rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-2 text-[11px] font-extrabold text-(--color-text-muted) disabled:opacity-40 max-[767px]:px-1.5";
-const dayAutoOverlapButtonClassName =
-  "inline-flex min-h-8 items-center rounded-(--radius-sm) border border-(--color-danger-border) bg-(--color-danger-soft) px-2 text-[11px] font-extrabold text-[#b91c1c] transition-colors hover:enabled:border-(--color-danger) disabled:opacity-40 max-[767px]:px-1.5";
 const dataRowClassName =
   "data-row cursor-pointer transition-[background,box-shadow,transform] duration-[160ms] hover:[&_td]:bg-(--color-surface-subtle) focus-visible:[&_td]:bg-(--color-route-soft) focus-visible:[&_td]:shadow-[inset_0_0_0_2px_var(--color-route-border)] [&_td]:transition-[background,border-color,box-shadow,color,font-size,height,opacity,padding] [&_td]:duration-[180ms]";
 const dataRowSelectedClassName =
@@ -375,7 +372,6 @@ export function SmartItineraryTable({
   onCreateTripSheet,
   onChangeDayPath,
   onClearDayPath,
-  onAutoResolveDayOverlaps,
   onToggleShowAllPaths,
 }: SmartItineraryTableProps) {
   const { locale, t } = useI18n();
@@ -1121,7 +1117,6 @@ export function SmartItineraryTable({
               onClearDragPreview={clearDragPreview}
               onChangeDayPath={onChangeDayPath}
               onClearDayPath={onClearDayPath}
-              onAutoResolveDayOverlaps={onAutoResolveDayOverlaps}
               onDropItem={dropItem}
               onDropIntoPlanBlock={dropIntoBlock}
               onDropOnDay={dropOnDay}
@@ -1397,7 +1392,6 @@ function DayGroup({
   onClearDragPreview,
   onChangeDayPath,
   onClearDayPath,
-  onAutoResolveDayOverlaps,
   onDropItem,
   onDropIntoPlanBlock,
   onDropOnDay,
@@ -1448,7 +1442,6 @@ function DayGroup({
   onClearDragPreview: () => void;
   onChangeDayPath?: (day: string, pathId: string) => void;
   onClearDayPath?: (day: string) => void;
-  onAutoResolveDayOverlaps?: (day: string) => void;
   onDropItem: (event: DragEvent<HTMLElement>, targetItemId: string) => void;
   onDropIntoPlanBlock: (
     event: DragEvent<HTMLElement>,
@@ -1571,45 +1564,30 @@ function DayGroup({
               </span>
             </button>
             <DayWeatherChip briefing={dailyBriefing} dayLabel={dayA11yLabel} />
-            {samePathOverlapItemIds.size > 0 || hasAlternativePathOptions ? (
+            {hasAlternativePathOptions ? (
               <span className={dayPathControlsClassName}>
-                {samePathOverlapItemIds.size > 0 ? (
-                  <button
-                    type="button"
-                    className={dayAutoOverlapButtonClassName}
-                    aria-label={`Auto fix overlaps for ${dayA11yLabel}`}
-                    disabled={!canEdit}
-                    onClick={() => onAutoResolveDayOverlaps?.(group.day)}
-                  >
-                    Auto
-                  </button>
-                ) : null}
-                {hasAlternativePathOptions ? (
-                  <>
-                    <InlineOptionPicker
-                      buttonClassName={dayPathPickerClassName}
-                      ariaLabel={`Path for ${dayA11yLabel}`}
-                      value={dayPathOverride || mainItineraryPathId}
-                      disabled={!canEdit || showAllPaths}
-                      options={dayPathOptions.map((option) => ({
-                        value: option.id,
-                        label: option.name,
-                      }))}
-                      onCommit={(pathId) =>
-                        onChangeDayPath?.(group.day, pathId)
-                      }
-                    />
-                    <button
-                      type="button"
-                      className={dayClearPathButtonClassName}
-                      aria-label={`Clear path override for ${dayA11yLabel}`}
-                      disabled={!canEdit || showAllPaths || !dayPathOverride}
-                      onClick={() => onClearDayPath?.(group.day)}
-                    >
-                      Clear
-                    </button>
-                  </>
-                ) : null}
+                <InlineOptionPicker
+                  buttonClassName={dayPathPickerClassName}
+                  ariaLabel={`Path for ${dayA11yLabel}`}
+                  value={dayPathOverride || mainItineraryPathId}
+                  disabled={!canEdit || showAllPaths}
+                  options={dayPathOptions.map((option) => ({
+                    value: option.id,
+                    label: option.name,
+                  }))}
+                  onCommit={(pathId) =>
+                    onChangeDayPath?.(group.day, pathId)
+                  }
+                />
+                <button
+                  type="button"
+                  className={dayClearPathButtonClassName}
+                  aria-label={`Clear path override for ${dayA11yLabel}`}
+                  disabled={!canEdit || showAllPaths || !dayPathOverride}
+                  onClick={() => onClearDayPath?.(group.day)}
+                >
+                  Clear
+                </button>
               </span>
             ) : null}
           </div>

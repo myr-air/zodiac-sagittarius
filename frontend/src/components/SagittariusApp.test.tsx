@@ -2647,7 +2647,7 @@ describe("Sagittarius cockpit UI", () => {
     );
   }, 45_000);
 
-  it("reloads the latest API trip and clears auto overlap resolution when item versions conflict", async () => {
+  it("keeps API same-plan overlaps as warnings without auto resolution", async () => {
     const user = userEvent.setup();
     const day = "2026-06-18";
     const baseItem = seedTrip.itineraryItems.find((item) => item.day === day)!;
@@ -2684,46 +2684,19 @@ describe("Sagittarius cockpit UI", () => {
       joinPasswordHash: "",
       itineraryItems: [overlapMain, overlapLater],
     };
-    const resolvedTrip = {
-      ...overlapTrip,
-      itineraryItems: [
-        {
-          ...overlapMain,
-          pathGroupId: "path-group-item-overlap-main",
-          version: 5,
-        },
-        {
-          ...overlapLater,
-          pathGroupId: "path-group-item-overlap-main",
-          pathId: "path-2026-06-18-sub-a",
-          pathName: "Plan A",
-          pathRole: "alternative" as const,
-          version: 5,
-        },
-      ],
-    };
-    let patchConflicted = false;
     const loadTrip = vi.fn().mockImplementation(() =>
       Promise.resolve({
-        trip: patchConflicted ? resolvedTrip : overlapTrip,
+        trip: overlapTrip,
         suggestions: [],
         tasks: [],
         stopNotes: [],
         expenseSummary: null,
       }),
     );
+    const patchItineraryItem = vi.fn();
     const apiClient = createApiClientForTrip(overlapTrip, {
       loadTrip,
-      patchItineraryItem: vi.fn().mockImplementationOnce(() => {
-        patchConflicted = true;
-        return Promise.reject(
-          new TripApiError({
-            code: "version_conflict",
-            message: "version conflict",
-            status: 409,
-          }),
-        );
-      }),
+      patchItineraryItem,
     });
 
     render(
@@ -2736,19 +2709,18 @@ describe("Sagittarius cockpit UI", () => {
     );
 
     await loginApiTrip(user);
-    const autoButton = await screen.findByRole("button", {
-      name: /Auto fix overlaps for Day 1/i,
-    });
-    await waitFor(() => expect(autoButton).toBeEnabled());
-    await user.click(autoButton);
-
     await waitFor(() =>
-      expect(apiClient.patchItineraryItem).toHaveBeenCalledTimes(1),
+      expect(screen.getByRole("row", { name: /API overlap main/i })).toHaveClass(
+        "data-row--path-overlap",
+      ),
     );
-    expect(loadTrip.mock.calls.length).toBeGreaterThanOrEqual(2);
+    expect(screen.getByRole("row", { name: /API overlap later/i })).toHaveClass(
+      "data-row--path-overlap",
+    );
     expect(
       screen.queryByRole("button", { name: /Auto fix overlaps for Day 1/i }),
     ).not.toBeInTheDocument();
+    expect(patchItineraryItem).not.toHaveBeenCalled();
   }, 45_000);
 
   it("allows travelers to edit itinerary items after backend login", async () => {
@@ -4705,7 +4677,7 @@ describe("Sagittarius cockpit UI", () => {
     expect(newStopSelector).toBeInTheDocument();
     expect(
       screen.getByRole("button", {
-        name: /Coffee break at K11 Musea on Plan A/i,
+        name: /Coffee break at K11 Musea on Main/i,
       }),
     ).toBeInTheDocument();
     await user.click(newStopSelector);
@@ -4824,7 +4796,7 @@ describe("Sagittarius cockpit UI", () => {
     ).toBeInTheDocument();
   });
 
-  it("keeps a generated day plan visible in the graph and selectable from the matching day path selector", async () => {
+  it("keeps a newly added day item on main until an alternative path is chosen explicitly", async () => {
     const user = userEvent.setup();
     render(<SagittariusApp initialView="itinerary" />);
 
@@ -4852,31 +4824,18 @@ describe("Sagittarius cockpit UI", () => {
       }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: /Day filter coffee on Plan A/i }),
+      screen.getByRole("button", { name: /Day filter coffee on Main/i }),
     ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /Day filter coffee on Plan A/i }),
+    ).not.toBeInTheDocument();
     await user.click(
       screen.getByRole("button", { name: /กรองแผน|แสดงตัวกรอง/i }),
     );
-    expect(screen.getByLabelText("Plan A")).toBeInTheDocument();
-
-    await user.click(screen.getByRole("button", { name: /Path for Day 2/i }));
-    await user.click(
-      within(
-        screen.getByRole("listbox", { name: /Path for Day 2/i }),
-      ).getByRole("option", { name: "Plan A" }),
-    );
-
+    expect(screen.queryByLabelText("Plan A")).not.toBeInTheDocument();
     expect(
-      await screen.findByRole("button", {
-        name: /เลือกจุด Day filter coffee/i,
-      }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: /Path for Day 2/i }),
-    ).toHaveTextContent("Plan A");
-    expect(
-      screen.getByRole("button", { name: /เลือกจุด เดินเล่นย่าน Central/i }),
-    ).toBeInTheDocument();
+      screen.queryByRole("button", { name: /Path for Day 2/i }),
+    ).not.toBeInTheDocument();
   });
 
   it("adds a new itinerary stop into the selected item's day", async () => {

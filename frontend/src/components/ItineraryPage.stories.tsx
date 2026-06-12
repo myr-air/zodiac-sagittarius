@@ -6,7 +6,6 @@ import { SmartItineraryTable } from "./SmartItineraryTable";
 
 const noop = () => {};
 const onStoryChangeDayPath = fn();
-const onStoryAutoResolveDayOverlaps = fn();
 const onStoryMoveItemToPath = fn();
 const onStoryToggleShowAllPaths = fn();
 const onStoryUpdateItemInline = fn();
@@ -237,7 +236,7 @@ export const Owner: Story = {
   play: async ({ canvas, canvasElement }) => {
     await expectItineraryResponsiveContract(canvasElement);
     await expect(canvas.getByRole("button", { name: /^Import$/i })).toBeEnabled();
-    await expect(canvas.getByRole("button", { name: /^New sheet$/i })).toBeEnabled();
+    await expect(canvas.getByRole("button", { name: /^New plan$/i })).toBeEnabled();
     await expect(canvas.getAllByRole("button", { name: /Add stop or activity/i })[0]).toBeEnabled();
     await expect(canvas.getByRole("button", { name: /Edit Dim Dim Sum/i })).toBeEnabled();
   },
@@ -301,7 +300,6 @@ export const Empty: Story = {
 export const OverlapConflictWarning: Story = {
   args: {
     ...Owner.args,
-    onAutoResolveDayOverlaps: onStoryAutoResolveDayOverlaps,
     selectedItemId: "overlap-dim-sum",
     items: [
       {
@@ -330,8 +328,7 @@ export const OverlapConflictWarning: Story = {
   },
   play: async ({ canvas, canvasElement }) => {
     await expect(canvasElement.querySelector(".data-row--path-overlap")).toBeInTheDocument();
-    await userEvent.click(canvas.getByRole("button", { name: /Auto fix overlaps/i }));
-    await expect(onStoryAutoResolveDayOverlaps).toHaveBeenCalledWith(tripFixture.trip.startDate);
+    await expect(canvas.queryByRole("button", { name: /Auto fix overlaps/i })).toBeNull();
   },
 };
 

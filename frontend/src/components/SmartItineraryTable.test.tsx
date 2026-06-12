@@ -48,7 +48,6 @@ function renderTable(
     onCreateTripSheet: vi.fn(),
     onChangeDayPath: vi.fn(),
     onClearDayPath: vi.fn(),
-    onAutoResolveDayOverlaps: vi.fn(),
     onToggleShowAllPaths: vi.fn(),
     onRedo: vi.fn(),
     onToggleContextRail: vi.fn(),
@@ -1235,8 +1234,7 @@ describe("SmartItineraryTable", () => {
     );
   });
 
-  it("shows an auto fix button only for days with same-plan overlaps", async () => {
-    const user = userEvent.setup();
+  it("keeps same-plan overlaps as warnings without showing an auto fix button", () => {
     const samePlanA = {
       ...tripFixture.planItems[0],
       id: "same-plan-a",
@@ -1255,21 +1253,23 @@ describe("SmartItineraryTable", () => {
       sortOrder: 200,
       activity: "Same plan B",
     };
-    const onAutoResolveDayOverlaps = vi.fn();
     renderTable({
       items: [samePlanA, samePlanB],
       selectedItemId: "same-plan-a",
-      onAutoResolveDayOverlaps,
     });
 
+    expect(screen.getByRole("row", { name: /Same plan A/i })).toHaveClass(
+      "data-row--path-overlap",
+    );
+    expect(screen.getByRole("row", { name: /Same plan B/i })).toHaveClass(
+      "data-row--path-overlap",
+    );
     expect(
       screen.queryByRole("button", { name: /Auto fix overlaps for Day 1/i }),
     ).not.toBeInTheDocument();
-    await user.click(
-      screen.getByRole("button", { name: /Auto fix overlaps for Day 2/i }),
-    );
-
-    expect(onAutoResolveDayOverlaps).toHaveBeenCalledWith("2026-06-19");
+    expect(
+      screen.queryByRole("button", { name: /Auto fix overlaps for Day 2/i }),
+    ).not.toBeInTheDocument();
   });
 
   it("does not mark rows that overlap across different plans", () => {
