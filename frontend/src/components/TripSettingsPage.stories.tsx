@@ -16,6 +16,10 @@ const meta = {
 export default meta;
 
 type Story = StoryObj<typeof meta>;
+const planImpactTrip = {
+  ...seedTrip,
+  endDate: seedTrip.startDate,
+};
 
 export const Owner: Story = {
   args: {
@@ -57,6 +61,18 @@ export const Thai: Story = {
   parameters: { locale: "th" },
   play: async ({ canvas }) => {
     await expect(canvas.getByRole("region", { name: /ตั้งค่าทริป/i })).toBeVisible();
+  },
+};
+
+export const PlanImpactWarning: Story = {
+  args: {
+    ...Owner.args,
+    trip: planImpactTrip,
+  },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole("region", { name: /Trip settings/i })).toHaveClass("trip-settings-page");
+    await expect(canvas.getByRole("region", { name: /Plan impact/i })).toBeVisible();
+    await expect(canvas.getByText(/planned stops will sit outside the new trip dates/i)).toBeVisible();
   },
 };
 

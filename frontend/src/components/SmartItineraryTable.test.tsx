@@ -49,6 +49,7 @@ function renderTable(
     onChangeDayPath: vi.fn(),
     onClearDayPath: vi.fn(),
     onAutoResolveDayOverlaps: vi.fn(),
+    onToggleShowAllPaths: vi.fn(),
     onRedo: vi.fn(),
     onToggleContextRail: vi.fn(),
     onUndo: vi.fn(),
@@ -332,6 +333,17 @@ describe("SmartItineraryTable", () => {
     expect(
       screen.queryByRole("row", { name: /เปิดรายละเอียดของ Plan A museum/i }),
     ).not.toBeInTheDocument();
+  });
+
+  it("toggles all itinerary paths from the filter bar", async () => {
+    const user = userEvent.setup();
+    const onToggleShowAllPaths = vi.fn();
+    renderTable({ onToggleShowAllPaths });
+
+    const toggle = screen.getByRole("checkbox", { name: /แสดงทุก path/i });
+    expect(toggle).not.toBeChecked();
+    await user.click(toggle);
+    expect(onToggleShowAllPaths).toHaveBeenCalledWith(true);
   });
 
   it("keeps generated day plans out of the trip-wide filter while showing them on the matching day", async () => {

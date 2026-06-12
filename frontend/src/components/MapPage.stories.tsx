@@ -34,6 +34,21 @@ const mapPlanABAlternativeItems: ItineraryItem[] = [
   pathName: pathId ? pathName as string : undefined,
   pathRole: pathRole as ItineraryItem["pathRole"],
 }));
+const mapStopsWithoutCoordinatesItems: ItineraryItem[] = [
+  {
+    ...tripFixture.planItems[0],
+    id: "map-unresolved-dinner",
+    activity: "Unresolved dinner venue",
+    place: "Confirm after local friend replies",
+    coordinates: undefined,
+  },
+  {
+    ...tripFixture.planItems[1],
+    id: "map-resolved-fallback-stop",
+    activity: "Resolved harbour checkpoint",
+    coordinates: { lat: 22.2939, lng: 114.1698 },
+  },
+];
 
 export const Owner: Story = {
   args: {
@@ -113,6 +128,19 @@ export const PlanABAlternatives: Story = {
     await expect(canvas.getByRole("region", { name: /Route map/i })).toHaveClass("route-map-panel");
     await expect(canvas.getByText("Plan A gallery route")).toBeVisible();
     await expect(canvas.getByText("Plan B harbour route")).toBeVisible();
+  },
+};
+
+export const StopsWithoutCoordinates: Story = {
+  args: {
+    ...Owner.args,
+    items: mapStopsWithoutCoordinatesItems,
+  },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole("region", { name: /Route map/i })).toHaveClass("route-map-panel");
+    await expect(canvas.getByLabelText(/Activities without coordinates/i)).toBeVisible();
+    await expect(canvas.getByText(/1 activities need coordinates/i)).toBeVisible();
+    await expect(canvas.getByText("Unresolved dinner venue")).toBeVisible();
   },
 };
 

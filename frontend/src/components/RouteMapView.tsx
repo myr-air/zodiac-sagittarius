@@ -433,7 +433,7 @@ export function RouteMapView({
             </>
           )}
           {visibleUnresolvedItems.length > 0 ? (
-            <aside className={unresolvedPanelClassName} aria-label={t.map.unresolvedLabel}>
+            <div className={unresolvedPanelClassName} role="region" aria-label={t.map.unresolvedLabel}>
               <div className={unresolvedPanelHeaderClassName}>
                 <Icon name="warning" />
                 <span>{t.map.unresolvedTitle({ count: visibleUnresolvedItems.length })}</span>
@@ -446,7 +446,7 @@ export function RouteMapView({
                   </li>
                 ))}
               </ol>
-            </aside>
+            </div>
           ) : null}
           {liveMapState === "error" || !liveMapEnabled ? <p className={mapSourceNoteClassName}>{t.map.sourceNote}</p> : null}
         </div>

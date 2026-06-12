@@ -154,6 +154,8 @@ const pathFilterButtonClassName =
   "inline-flex min-h-8 min-w-[148px] items-center justify-center gap-2 rounded-full border border-(--color-primary-border) bg-(--color-primary-soft) px-2.5 text-xs font-extrabold text-(--color-primary-strong) transition-[background,border-color,color] duration-150 hover:border-(--color-primary) hover:bg-(--color-primary-soft) hover:text-(--color-primary-strong) aria-[expanded=true]:border-(--color-primary-border) aria-[expanded=true]:bg-(--color-primary-soft) aria-[expanded=true]:text-(--color-primary-strong) [&_.icon]:size-4 [&_.icon]:transition-transform [&_.icon]:duration-[150ms] aria-[expanded=true]:[&_.icon]:rotate-90";
 const pathFilterSummaryClassName =
   "min-w-0 flex-1 truncate text-xs font-semibold text-(--color-text-muted)";
+const showAllPathsToggleClassName =
+  "show-all-paths-toggle inline-flex min-h-8 items-center gap-2 rounded-(--radius-sm) border border-(--color-route-border) bg-[rgb(255_255_255_/_0.72)] px-2.5 text-xs font-extrabold text-(--color-route) transition-[background,border-color,color] duration-150 hover:bg-(--color-route-soft) has-[:checked]:border-(--color-primary-border) has-[:checked]:bg-(--color-primary-soft) has-[:checked]:text-(--color-primary-strong) [&_input]:size-4 [&_input]:accent-[var(--color-primary)]";
 const pathFilterPanelClassName =
   "itinerary-filter-panel flex min-w-0 flex-wrap gap-1.5 border-t border-(--color-route-border) pt-2";
 const pathFilterOptionClassName =
@@ -371,6 +373,7 @@ export function SmartItineraryTable({
   onChangeDayPath,
   onClearDayPath,
   onAutoResolveDayOverlaps,
+  onToggleShowAllPaths,
 }: SmartItineraryTableProps) {
   const { locale, t } = useI18n();
   const importInputRef = useRef<HTMLInputElement>(null);
@@ -1028,6 +1031,15 @@ export function SmartItineraryTable({
           <span className={pathFilterSummaryClassName}>
             {selectedFilterLabel}
           </span>
+          <label className={showAllPathsToggleClassName}>
+            <input
+              type="checkbox"
+              checked={showAllPaths}
+              disabled={!onToggleShowAllPaths}
+              onChange={(event) => onToggleShowAllPaths?.(event.target.checked)}
+            />
+            <span>{t.itinerary.filters.showAllPaths}</span>
+          </label>
         </div>
         {planFiltersExpanded ? (
           <div

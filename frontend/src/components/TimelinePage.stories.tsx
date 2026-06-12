@@ -41,6 +41,20 @@ const timelinePlanABAlternativeItems: ItineraryItem[] = [
   pathName: pathId ? pathName as string : undefined,
   pathRole: pathRole as ItineraryItem["pathRole"],
 }));
+const timelineAdvisoryItems: ItineraryItem[] = [
+  {
+    ...tripFixture.planItems[0],
+    id: "timeline-advisory-main",
+    activity: "Peak tram timed entry",
+    advisories: [{ code: "ticket-window", label: "Book timed ticket", severity: "warning" }],
+  },
+  {
+    ...tripFixture.planItems[1],
+    id: "timeline-advisory-followup",
+    activity: "Harbour transfer buffer",
+    advisories: [],
+  },
+];
 
 export const Owner: Story = {
   args: {
@@ -113,6 +127,19 @@ export const PlanABAlternatives: Story = {
     await expect(canvas.getByRole("button", { name: /Select timeline stop Harbour breakfast/i })).toHaveAttribute("aria-pressed", "true");
     await expect(canvas.getByRole("button", { name: /Select timeline stop Plan A gallery route/i })).toBeInTheDocument();
     await expect(canvas.getByRole("button", { name: /Select timeline stop Plan B harbour route/i })).toBeInTheDocument();
+  },
+};
+
+export const AdvisoryWarning: Story = {
+  args: {
+    ...Owner.args,
+    items: timelineAdvisoryItems,
+    selectedItemId: "timeline-advisory-main",
+  },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole("region", { name: /Trip timeline/i })).toHaveClass("timeline-panel");
+    await expect(canvas.getByRole("button", { name: /Select timeline stop Peak tram timed entry/i })).toHaveAttribute("aria-pressed", "true");
+    await expect(canvas.getByText("Book timed ticket")).toHaveClass("timeline-warning");
   },
 };
 

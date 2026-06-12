@@ -165,7 +165,7 @@ describe("RouteMapView", () => {
     );
 
     expect(screen.getByText("0/3 มีพิกัด · 3 ยังไม่ระบุ")).toBeInTheDocument();
-    expect(screen.getByRole("complementary", { name: "กิจกรรมที่ยังไม่มีพิกัด" })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "กิจกรรมที่ยังไม่มีพิกัด" })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /วันที่ 1/ })).not.toBeInTheDocument();
     expect(screen.getByText("กำลังโหลดแผนที่จาก OpenFreeMap")).toBeInTheDocument();
   });

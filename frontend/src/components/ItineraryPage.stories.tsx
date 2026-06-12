@@ -6,6 +6,8 @@ import { SmartItineraryTable } from "./SmartItineraryTable";
 
 const noop = () => {};
 const onStoryChangeDayPath = fn();
+const onStoryMoveItemToPath = fn();
+const onStoryToggleShowAllPaths = fn();
 const onStoryUpdateItemInline = fn();
 const pageBranchGraphItems: ItineraryItem[] = [
   {
@@ -373,6 +375,8 @@ export const PathAndDurationInteractions: Story = {
       { id: "path-2026-06-19-sub-b", name: "Plan B", scope: "day", day: "2026-06-19" },
     ],
     onChangeDayPath: onStoryChangeDayPath,
+    onMoveItemToPath: onStoryMoveItemToPath,
+    onToggleShowAllPaths: onStoryToggleShowAllPaths,
     onUpdateItemInline: onStoryUpdateItemInline,
   },
   play: async ({ canvas, canvasElement }) => {
@@ -387,6 +391,12 @@ export const PathAndDurationInteractions: Story = {
     const dayPathMenu = documentCanvas.getByRole("listbox", { name: /Path for Day 2/i });
     await userEvent.click(within(dayPathMenu).getByRole("option", { name: "Plan B" }));
     await expect(onStoryChangeDayPath).toHaveBeenCalledWith("2026-06-19", "path-2026-06-19-sub-b");
+
+    await userEvent.click(canvas.getByRole("checkbox", { name: /Show all paths/i }));
+    await expect(onStoryToggleShowAllPaths).toHaveBeenCalledWith(true);
+
+    await userEvent.selectOptions(canvas.getByRole("combobox", { name: /Move Harbour breakfast to path/i }), "path-2026-06-19-sub-a");
+    await expect(onStoryMoveItemToPath).toHaveBeenCalledWith("page-plan-ab-main-breakfast", "path-2026-06-19-sub-a");
 
     await userEvent.click(canvas.getByRole("button", { name: /Edit duration Harbour breakfast/i }));
     const durationEditor = documentCanvas.getByRole("region", { name: /Edit duration Harbour breakfast/i });
