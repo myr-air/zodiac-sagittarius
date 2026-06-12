@@ -136,7 +136,7 @@ export function parseItineraryImportDocument(source: string): ItineraryExportDoc
     source: parsed.source === "json" || parsed.source === "ai" ? parsed.source : undefined,
     exportedAt: readString(parsed, "exportedAt"),
     trip: parseExportTrip(parsed.trip),
-    items: parsed.items.map(parseExportItem),
+    items: normalizeImportedHierarchy(parsed.items.map(parseExportItem)),
     records: parseExportRecords(parsed.records),
   };
 }
@@ -365,6 +365,26 @@ function parseExportItem(value: unknown): ItineraryExportItem {
     advisories: readAdvisories(item.advisories),
     note: typeof item.note === "string" ? item.note : "",
   };
+}
+
+function normalizeImportedHierarchy(items: ItineraryExportItem[]): ItineraryExportItem[] {
+  const itemsById = new Map(items.map((item) => [item.id, item]));
+  const parentIds = new Set<string>();
+  for (const item of items) {
+    if (item.parentItemId) parentIds.add(item.parentItemId);
+  }
+
+  return items.map((item) => {
+    if (!item.parentItemId) {
+      return parentIds.has(item.id) ? { ...item, isPlanBlock: true } : item;
+    }
+    const parent = itemsById.get(item.parentItemId);
+    if (!parent) throw new Error("Unsupported itinerary import file.");
+    if (parent.parentItemId || item.day !== parent.day) {
+      throw new Error("Unsupported itinerary import file.");
+    }
+    return { ...item, isPlanBlock: false };
+  });
 }
 
 function readOptionalNullableString(
