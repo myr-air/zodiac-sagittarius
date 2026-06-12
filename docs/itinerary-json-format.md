@@ -87,10 +87,10 @@ Import behavior:
   switches the destination Main Plan by itself.
 - Exports carry plan-scoped `expenses`, `bookingDocs`, `stopNotes`, and `tasks`
   under `records` so a Trip Plan can be round-tripped without losing booking,
-  ticket, note, checklist, or Actual Expense context. Local import apply remaps
+  ticket, note, checklist, or Actual Expense context. Import apply remaps
   imported record ids, links records to the newly imported itinerary rows, and
-  scopes them to the current destination Trip Plan. Source Trip Plan metadata
-  never switches the destination Main Plan by itself.
+  scopes them to the current destination Trip Plan in local and API mode. Source
+  Trip Plan metadata never switches the destination Main Plan by itself.
 - Other plan variants, members, and suggestions are not changed.
 
 ## Import Normalizer Endpoint

@@ -21,7 +21,11 @@ import {
 } from "@/src/app/SagittariusApp";
 import {
   TripApiError,
+  type CreateBookingDocApiRequest,
   type CreateExpenseApiRequest,
+  type CreateItineraryItemApiRequest,
+  type CreateStopNoteApiRequest,
+  type CreateTaskApiRequest,
   type TripApiClient,
   type TripCockpit,
 } from "@/src/trip/api-client";
@@ -4289,7 +4293,7 @@ describe("Sagittarius cockpit UI", () => {
       "Records detected: 1 expenses, 1 bookings, 1 notes, 1 tasks",
     );
     expect(dialog).toHaveTextContent(
-      "Local import applies them to the current Trip Plan",
+      "Import applies them to the current Trip Plan",
     );
     await user.clear(within(dialog).getByLabelText(/ชื่อ path/i));
     await user.type(within(dialog).getByLabelText(/ชื่อ path/i), "Plan B");
@@ -4341,6 +4345,363 @@ describe("Sagittarius cockpit UI", () => {
     expect(confirm).not.toHaveBeenCalled();
     expect(alert).not.toHaveBeenCalled();
   });
+
+  it("applies API itinerary imports with hierarchy, time windows, and remapped records", async () => {
+    const user = userEvent.setup();
+    const apiTrip = {
+      ...tripWithSheets(),
+      members: [{ ...seedTrip.members[0], claimPasswordHash: null }],
+      expenses: [],
+      bookingDocs: [],
+      stopNotes: [],
+    };
+    const importedDocument = {
+      schema: "joii.itinerary.export" as const,
+      version: 1 as const,
+      exportedAt: "2026-06-06T00:00:00.000Z",
+      trip: {
+        id: apiTrip.id,
+        name: apiTrip.name,
+        destinationLabel: apiTrip.destinationLabel,
+        startDate: apiTrip.startDate,
+        endDate: apiTrip.endDate,
+        activePlanVariantId: apiTrip.activePlanVariantId,
+        mainTripPlanId: apiTrip.mainTripPlanId,
+      },
+      items: [
+        {
+          id: "import-flight-block",
+          itemKind: "travel" as const,
+          timeMode: "scheduled" as const,
+          isPlanBlock: true,
+          status: "confirmed" as const,
+          priority: "must" as const,
+          day: "2026-06-19",
+          sortOrder: 100,
+          startTime: "23:00",
+          endTime: "02:00",
+          endOffsetDays: 1,
+          activity: "Imported API flight block",
+          activityType: "travel" as const,
+          place: "BKK",
+          linkLabel: "Map",
+          mapLink: "",
+          durationMinutes: 180,
+          transportation: "Flight",
+          details: { bookingRef: "QR349" },
+          note: "Keep airport buffer",
+        },
+        {
+          id: "import-checkin",
+          parentItemId: "import-flight-block",
+          itemKind: "preparation" as const,
+          timeMode: "flexible" as const,
+          isPlanBlock: false,
+          status: "planned" as const,
+          priority: "high" as const,
+          day: "2026-06-19",
+          sortOrder: 110,
+          startTime: "",
+          endTime: null,
+          endOffsetDays: 0,
+          activity: "Imported API check-in",
+          activityType: "travel" as const,
+          place: "Hotel lobby",
+          linkLabel: "Map",
+          mapLink: "",
+          durationMinutes: null,
+          transportation: "",
+          details: {},
+          note: "Sub-activity",
+        },
+      ],
+      records: {
+        expenses: [
+          {
+            id: "import-expense",
+            tripId: apiTrip.id,
+            tripPlanId: apiTrip.activePlanVariantId,
+            title: "Imported API receipt",
+            amount: 120,
+            paidBy: "member-aom",
+            splits: { "member-aom": 120 },
+            category: "tickets" as const,
+            itineraryItemId: "import-flight-block",
+            version: 7,
+          },
+        ],
+        bookingDocs: [
+          {
+            id: "import-booking",
+            tripId: apiTrip.id,
+            tripPlanId: apiTrip.activePlanVariantId,
+            type: "flight" as const,
+            title: "Imported API ticket",
+            status: "booked" as const,
+            visibility: "shared" as const,
+            ownerMemberId: "member-aom",
+            providerName: "Cathay",
+            confirmationCode: "CX-API",
+            startsAt: null,
+            endsAt: null,
+            timezone: "Asia/Bangkok",
+            priceAmount: 120,
+            currency: "HKD",
+            travelerIds: ["member-aom"],
+            externalLinks: [],
+            relatedItineraryItemIds: ["import-flight-block"],
+            relatedTaskIds: ["import-task"],
+            relatedExpenseIds: ["import-expense"],
+            noteIds: ["import-note"],
+            notes: "Imported booking context",
+            createdBy: "member-aom",
+            updatedAt: "2026-06-06T00:00:00.000Z",
+            version: 3,
+          },
+        ],
+        stopNotes: [
+          {
+            id: "import-note",
+            tripId: apiTrip.id,
+            tripPlanId: apiTrip.activePlanVariantId,
+            itemId: "import-flight-block",
+            authorId: "member-aom",
+            body: "Imported API note",
+            createdAt: "2026-06-06T00:00:00.000Z",
+            version: 4,
+          },
+        ],
+        tasks: [
+          {
+            id: "import-task",
+            tripPlanId: apiTrip.activePlanVariantId,
+            title: "Confirm imported API ticket",
+            status: "open" as const,
+            visibility: "shared" as const,
+            kind: "booking" as const,
+            createdBy: "member-aom",
+            assigneeId: "member-aom",
+            relatedItemId: "import-flight-block",
+            version: 5,
+          },
+        ],
+      },
+    };
+    const createItineraryItem = vi
+      .fn()
+      .mockImplementation(
+        (
+          _tripId: string,
+          _sessionToken: string,
+          request: CreateItineraryItemApiRequest,
+        ) =>
+          Promise.resolve({
+            id:
+              request.activity === "Imported API flight block"
+                ? "api-flight-block"
+                : "api-checkin",
+            tripId: apiTrip.id,
+            createdBy: "member-aom",
+            updatedAt: "2026-06-06T00:00:00.000Z",
+            version: 1,
+            linkLabel: "Map",
+            advisories: [],
+            ...request,
+            mapLink: request.mapLink ?? "",
+            address: request.address ?? undefined,
+            coordinates: request.coordinates ?? undefined,
+            endTime: request.endTime ?? null,
+            endOffsetDays: request.endOffsetDays ?? 0,
+            durationMinutes: request.durationMinutes ?? null,
+            transportation: request.transportation ?? "",
+            details: request.details ?? {},
+            note: request.note ?? "",
+          }),
+      );
+    const createTask = vi
+      .fn()
+      .mockImplementation(
+        (
+          _tripId: string,
+          _sessionToken: string,
+          request: CreateTaskApiRequest,
+        ) =>
+          Promise.resolve({
+            id: "api-task",
+            status: "open",
+            createdBy: "member-aom",
+            version: 1,
+            ...request,
+          }),
+      );
+    const createStopNote = vi
+      .fn()
+      .mockImplementation(
+        (
+          _tripId: string,
+          _sessionToken: string,
+          request: CreateStopNoteApiRequest,
+        ) =>
+          Promise.resolve({
+            id: "api-note",
+            tripId: apiTrip.id,
+            tripPlanId: request.tripPlanId,
+            itemId: request.itineraryItemId,
+            authorId: "member-aom",
+            body: request.body,
+            createdAt: "2026-06-06T00:00:00.000Z",
+            updatedAt: "2026-06-06T00:00:00.000Z",
+            version: 1,
+          }),
+      );
+    const createExpense = vi
+      .fn()
+      .mockImplementation(
+        (
+          _tripId: string,
+          _sessionToken: string,
+          request: CreateExpenseApiRequest,
+        ) =>
+          Promise.resolve({
+            id: "api-expense",
+            tripId: apiTrip.id,
+            amount: request.amountMinor / 100,
+            version: 1,
+            ...request,
+            notes: request.notes ?? "",
+            receiptUrl: request.receiptUrl ?? null,
+            lineItems: request.lineItems ?? [],
+            comments: request.comments ?? [],
+            splits: normalizeExpenseSplitsFromMinor(request.splits),
+          }),
+      );
+    const createBookingDoc = vi
+      .fn()
+      .mockImplementation(
+        (
+          _tripId: string,
+          _sessionToken: string,
+          request: CreateBookingDocApiRequest,
+        ) =>
+          Promise.resolve({
+            id: "api-booking",
+            tripId: apiTrip.id,
+            createdBy: "member-aom",
+            updatedAt: "2026-06-06T00:00:00.000Z",
+            version: 1,
+            ...request,
+            externalLinks: request.externalLinks.map((link, index) => ({
+              id: `api-link-${index + 1}`,
+              ...link,
+            })),
+          }),
+      );
+    const apiClient = createApiClientForTrip(apiTrip, {
+      importItinerary: vi.fn().mockResolvedValue(importedDocument),
+      createItineraryItem,
+      createTask,
+      createStopNote,
+      createExpense,
+      createBookingDoc,
+      getExpenseSummary: vi.fn().mockResolvedValue({
+        groupSpend: 120,
+        netByMember: {},
+        currentUserNetLabel: "settled",
+        settlementSuggestions: [],
+      }),
+    });
+
+    render(
+      <SagittariusApp
+        requireJoin
+        dataSource="api"
+        initialView="itinerary"
+        apiClient={apiClient}
+      />,
+    );
+    await loginApiTrip(user);
+
+    await user.upload(
+      screen.getByLabelText(/นำเข้า itinerary JSON/i),
+      new File(["raw itinerary"], "itinerary.json", {
+        type: "application/json",
+      }),
+    );
+    const dialog = await screen.findByRole("dialog", {
+      name: /ตั้งค่า import itinerary/i,
+    });
+    await user.click(
+      within(dialog).getByRole("button", { name: /import itinerary/i }),
+    );
+
+    await waitFor(() => expect(createItineraryItem).toHaveBeenCalledTimes(2));
+    expect(createItineraryItem).toHaveBeenNthCalledWith(
+      1,
+      apiTrip.id,
+      "session-token",
+      expect.objectContaining({
+        activity: "Imported API flight block",
+        itemKind: "travel",
+        timeMode: "scheduled",
+        isPlanBlock: true,
+        status: "confirmed",
+        priority: "must",
+        endTime: "02:00",
+        endOffsetDays: 1,
+      }),
+    );
+    expect(createItineraryItem).toHaveBeenNthCalledWith(
+      2,
+      apiTrip.id,
+      "session-token",
+      expect.objectContaining({
+        activity: "Imported API check-in",
+        parentItemId: "api-flight-block",
+        itemKind: "preparation",
+        timeMode: "flexible",
+      }),
+    );
+    expect(createTask).toHaveBeenCalledWith(
+      apiTrip.id,
+      "session-token",
+      expect.objectContaining({
+        tripPlanId: apiTrip.activePlanVariantId,
+        relatedItemId: "api-flight-block",
+      }),
+    );
+    expect(createStopNote).toHaveBeenCalledWith(
+      apiTrip.id,
+      "session-token",
+      expect.objectContaining({
+        tripPlanId: apiTrip.activePlanVariantId,
+        itineraryItemId: "api-flight-block",
+      }),
+    );
+    expect(createExpense).toHaveBeenCalledWith(
+      apiTrip.id,
+      "session-token",
+      expect.objectContaining({
+        tripPlanId: apiTrip.activePlanVariantId,
+        amountMinor: 12000,
+        splits: { "member-aom": 12000 },
+        itineraryItemId: "api-flight-block",
+      }),
+    );
+    expect(createBookingDoc).toHaveBeenCalledWith(
+      apiTrip.id,
+      "session-token",
+      expect.objectContaining({
+        tripPlanId: apiTrip.activePlanVariantId,
+        relatedItineraryItemIds: ["api-flight-block"],
+        relatedTaskIds: ["api-task"],
+        relatedExpenseIds: ["api-expense"],
+        noteIds: ["api-note"],
+      }),
+    );
+    expect(
+      await screen.findByRole("row", { name: /Imported API flight block/i }),
+    ).toBeInTheDocument();
+  }, 45_000);
 
   it("creates a named local Trip Plan and selects it without copying itinerary rows", async () => {
     const user = userEvent.setup();

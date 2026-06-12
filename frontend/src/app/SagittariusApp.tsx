@@ -3265,7 +3265,10 @@ export function SagittariusApp({
           );
         }
         const createdItems: ItineraryItem[] = [];
+        const createdItemIdsByImportId = new Map<string, string>();
+        const createdItemIdsByPreviewId = new Map<string, string>();
         for (const item of previewImportedItems) {
+          const importedItem = pendingItineraryImport.items[createdItems.length];
           const createdItem = await resolvedApiClient.createItineraryItem(
             trip.id,
             participantSession.sessionToken,
@@ -3276,12 +3279,25 @@ export function SagittariusApp({
               pathId: item.pathId,
               pathName: item.pathName,
               pathRole: item.pathRole,
+              parentItemId: resolveCreatedImportId(item.parentItemId, [
+                createdItemIdsByImportId,
+                createdItemIdsByPreviewId,
+              ]),
+              itemKind: item.itemKind,
+              timeMode: item.timeMode,
+              isPlanBlock: item.isPlanBlock,
+              status: item.status,
+              priority: item.priority,
               day: item.day,
               startTime: item.startTime,
+              endTime: item.endTime,
+              endOffsetDays: item.endOffsetDays,
               activity: item.activity,
               activityType: item.activityType,
               place: item.place,
               mapLink: item.mapLink,
+              address: item.address,
+              coordinates: item.coordinates,
               durationMinutes: item.durationMinutes,
               transportation: item.transportation,
               details: item.details,
@@ -3289,11 +3305,22 @@ export function SagittariusApp({
             },
           );
           createdItems.push(createdItem);
+          if (importedItem) {
+            createdItemIdsByImportId.set(importedItem.id, createdItem.id);
+          }
+          createdItemIdsByPreviewId.set(item.id, createdItem.id);
         }
+        const importedRecords = await createImportedRecordsThroughApi({
+          apiClient: resolvedApiClient,
+          createdItemIdsByImportId,
+          currentMemberId: currentMember.id,
+          records: pendingItineraryImport.records,
+          sessionToken: participantSession.sessionToken,
+          trip,
+        });
         const deletedIds = new Set(deletedItems.map((item) => item.id));
-        setTripState((current) => ({
-          ...current,
-          trip: {
+        setTripState((current) => {
+          const nextTrip = {
             ...current.trip,
             itineraryPaths: previewTrip.itineraryPaths,
             itineraryItems: [
@@ -3302,8 +3329,33 @@ export function SagittariusApp({
               ),
               ...createdItems,
             ],
-          },
-        }));
+            expenses: [
+              ...current.trip.expenses,
+              ...importedRecords.expenses,
+            ],
+            bookingDocs: [
+              ...(current.trip.bookingDocs ?? []),
+              ...importedRecords.bookingDocs,
+            ],
+          };
+          latestTripRef.current = nextTrip;
+          return { ...current, trip: nextTrip };
+        });
+        if (importedRecords.tasks.length > 0)
+          setTasks((current) => [...current, ...importedRecords.tasks]);
+        if (importedRecords.stopNotes.length > 0)
+          setStopNotes((current) => [
+            ...current,
+            ...importedRecords.stopNotes,
+          ]);
+        if (importedRecords.expenses.length > 0) {
+          setBackendExpenseSummary(
+            await resolvedApiClient.getExpenseSummary(
+              trip.id,
+              participantSession.sessionToken,
+            ),
+          );
+        }
         const nextSelectedItemId = createdItems[0]?.id ?? "";
         setSelectedItemId(nextSelectedItemId);
         setContextRailVisibility(Boolean(nextSelectedItemId));
@@ -4270,6 +4322,154 @@ function applyImportedRecordsToTrip({
   };
 }
 
+async function createImportedRecordsThroughApi({
+  apiClient,
+  createdItemIdsByImportId,
+  currentMemberId,
+  records,
+  sessionToken,
+  trip,
+}: {
+  apiClient: TripApiClient;
+  createdItemIdsByImportId: Map<string, string>;
+  currentMemberId: string;
+  records: ItineraryExportRecords;
+  sessionToken: string;
+  trip: Trip;
+}): Promise<ItineraryExportRecords> {
+  const tripPlanId = trip.activePlanVariantId || trip.mainTripPlanId || null;
+  const expenseIdMap = new Map<string, string>();
+  const taskIdMap = new Map<string, string>();
+  const noteIdMap = new Map<string, string>();
+  const tasks: TripTask[] = [];
+  const stopNotes: StopNote[] = [];
+  const expenses: Expense[] = [];
+  const bookingDocs: BookingDoc[] = [];
+
+  for (const task of records.tasks) {
+    const createdTask = await apiClient.createTask(
+      trip.id,
+      sessionToken,
+      {
+        clientMutationId: nextClientMutationId("itinerary-import-task"),
+        tripPlanId,
+        title: task.title,
+        visibility: task.visibility,
+        kind: task.kind,
+        assigneeId: task.assigneeId ?? null,
+        relatedItemId: remapOptionalId(
+          task.relatedItemId,
+          createdItemIdsByImportId,
+        ),
+      },
+    );
+    taskIdMap.set(task.id, createdTask.id);
+    tasks.push(createdTask);
+  }
+
+  for (const note of records.stopNotes) {
+    const createdNote = await apiClient.createStopNote(
+      trip.id,
+      sessionToken,
+      {
+        clientMutationId: nextClientMutationId("itinerary-import-note"),
+        tripPlanId,
+        itineraryItemId:
+          createdItemIdsByImportId.get(note.itemId) ?? note.itemId,
+        body: note.body,
+      },
+    );
+    noteIdMap.set(note.id, createdNote.id);
+    stopNotes.push(createdNote);
+  }
+
+  for (const expense of records.expenses) {
+    const amountMinor =
+      typeof expense.amountMinor === "number"
+        ? expense.amountMinor
+        : Math.round((expense.amount ?? 0) * 100);
+    const createdExpense = await apiClient.createExpense(
+      trip.id,
+      sessionToken,
+      {
+        clientMutationId: nextClientMutationId("itinerary-import-expense"),
+        tripPlanId,
+        title: expense.title,
+        amountMinor,
+        currency: expense.currency ?? "HKD",
+        exchangeRateToSettlementCurrency:
+          expense.exchangeRateToSettlementCurrency ?? 1,
+        notes: expense.notes ?? "",
+        receiptUrl: expense.receiptUrl ?? null,
+        lineItems: expense.lineItems ?? [],
+        comments: expense.comments ?? [],
+        paidBy: expense.paidBy || currentMemberId,
+        category: expense.category,
+        splits: expenseSplitsToMinor(expense.splits ?? {}),
+        itineraryItemId: remapOptionalId(
+          expense.itineraryItemId,
+          createdItemIdsByImportId,
+        ),
+      },
+    );
+    expenseIdMap.set(expense.id, createdExpense.id);
+    expenses.push(createdExpense);
+  }
+
+  for (const bookingDoc of records.bookingDocs) {
+    const createdBookingDoc = await apiClient.createBookingDoc(
+      trip.id,
+      sessionToken,
+      {
+        clientMutationId: nextClientMutationId("itinerary-import-booking"),
+        ...serializeBookingDocInputForApi({
+          type: bookingDoc.type,
+          title: bookingDoc.title,
+          status: bookingDoc.status,
+          visibility: bookingDoc.visibility,
+          ownerMemberId: bookingDoc.ownerMemberId,
+          providerName: bookingDoc.providerName,
+          confirmationCode: bookingDoc.confirmationCode,
+          startsAt: bookingDoc.startsAt,
+          endsAt: bookingDoc.endsAt,
+          timezone: bookingDoc.timezone,
+          priceAmount: bookingDoc.priceAmount,
+          currency: bookingDoc.currency,
+          travelerIds: bookingDoc.travelerIds,
+          externalLinks: bookingDoc.externalLinks,
+          tripPlanId,
+          relatedItineraryItemIds: bookingDoc.relatedItineraryItemIds.map(
+            (id) => createdItemIdsByImportId.get(id) ?? id,
+          ),
+          relatedTaskIds: bookingDoc.relatedTaskIds.map(
+            (id) => taskIdMap.get(id) ?? id,
+          ),
+          relatedExpenseIds: bookingDoc.relatedExpenseIds.map(
+            (id) => expenseIdMap.get(id) ?? id,
+          ),
+          noteIds: bookingDoc.noteIds.map((id) => noteIdMap.get(id) ?? id),
+          notes: bookingDoc.notes,
+        }),
+      },
+    );
+    bookingDocs.push(createdBookingDoc);
+  }
+
+  return { bookingDocs, expenses, stopNotes, tasks };
+}
+
+function resolveCreatedImportId(
+  id: string | null | undefined,
+  idMaps: Map<string, string>[],
+): string | null | undefined {
+  if (typeof id !== "string") return id;
+  for (const idMap of idMaps) {
+    const mappedId = idMap.get(id);
+    if (mappedId) return mappedId;
+  }
+  return id;
+}
+
 function remapOptionalId(
   id: string | null | undefined,
   idMap: Map<string, string>,
@@ -4294,7 +4494,9 @@ export function nextLocalPhotoAlbumId(photoAlbumLinks: TripPhotoAlbumLink[]): st
   return id;
 }
 
-function serializeBookingDocInputForApi(input: BookingDocInput) {
+function serializeBookingDocInputForApi(
+  input: BookingDocInput & { tripPlanId?: string | null },
+) {
   return {
     ...input,
     title: input.title.trim(),
@@ -4668,8 +4870,8 @@ function ItineraryImportOptionsDialog({
           <p className={importDialogBodyClassName}>
             Records detected: {records.expenses.length} expenses,{" "}
             {records.bookingDocs.length} bookings, {records.stopNotes.length}{" "}
-            notes, {records.tasks.length} tasks. Local import applies them to
-            the current Trip Plan with new local ids.
+            notes, {records.tasks.length} tasks. Import applies them to the
+            current Trip Plan with new ids.
           </p>
         ) : null}
         <div className={importDialogFieldsClassName}>
