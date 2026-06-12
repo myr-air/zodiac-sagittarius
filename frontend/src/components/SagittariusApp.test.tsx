@@ -82,7 +82,15 @@ function tripWithSheets(): Trip {
   return {
     ...seedTrip,
     activePlanVariantId: mainSheet.id,
-    planVariants: [mainSheet, backupSheet],
+    mainTripPlanId: mainSheet.id,
+    planVariants: [
+      { ...mainSheet, kind: "main", status: "main" },
+      { ...backupSheet, kind: "draft", status: "draft" },
+    ],
+    tripPlans: [
+      { ...mainSheet, kind: "main", status: "main" },
+      { ...backupSheet, kind: "draft", status: "draft" },
+    ],
     itineraryItems: [
       { ...mainItem, planVariantId: mainSheet.id },
       {
@@ -4225,7 +4233,9 @@ describe("Sagittarius cockpit UI", () => {
     const user = userEvent.setup();
     render(<SagittariusApp initialView="itinerary" />);
 
-    const selector = await screen.findByLabelText("Trip Plan");
+    const selector = (await screen.findByLabelText(
+      "Trip Plan",
+    )) as HTMLSelectElement;
     await user.click(screen.getByRole("button", { name: "เพิ่มแผน" }));
     await user.type(screen.getByLabelText("ชื่อแผน"), "Museum Day");
     await user.click(screen.getByRole("button", { name: "สร้างแผน" }));
@@ -4242,6 +4252,15 @@ describe("Sagittarius cockpit UI", () => {
     expect(
       screen.queryByRole("row", { name: /Dim Dim Sum/i }),
     ).not.toBeInTheDocument();
+    const persistedTrip = JSON.parse(
+      window.localStorage.getItem(tripStorageKey)!,
+    ) as Trip;
+    expect(persistedTrip.activePlanVariantId).toBe(selector.value);
+    expect(persistedTrip.mainTripPlanId).toBe(selector.value);
+    expect(persistedTrip.planVariants).toEqual(persistedTrip.tripPlans);
+    expect(
+      persistedTrip.planVariants.find((plan) => plan.id === selector.value),
+    ).toMatchObject({ kind: "main", status: "main" });
   });
 
   it("switches local Trip Plans and changes visible itinerary rows by planVariantId", async () => {
@@ -4264,6 +4283,20 @@ describe("Sagittarius cockpit UI", () => {
     expect(
       screen.queryByRole("row", { name: /Dim Dim Sum/i }),
     ).not.toBeInTheDocument();
+    const persistedTrip = JSON.parse(storage.getItem(tripStorageKey)!) as Trip;
+    expect(persistedTrip.activePlanVariantId).toBe("plan-variant-backup");
+    expect(persistedTrip.mainTripPlanId).toBe("plan-variant-backup");
+    expect(persistedTrip.planVariants).toEqual(persistedTrip.tripPlans);
+    expect(
+      persistedTrip.planVariants.find(
+        (plan) => plan.id === "plan-variant-backup",
+      ),
+    ).toMatchObject({ kind: "main", status: "main" });
+    expect(
+      persistedTrip.planVariants.find(
+        (plan) => plan.id === seedTrip.activePlanVariantId,
+      ),
+    ).toMatchObject({ kind: "backup", status: "backup" });
   });
 
   it("adds new local stops to the current Trip Plan after switching plans", async () => {
@@ -4396,13 +4429,16 @@ describe("Sagittarius cockpit UI", () => {
       tripId: apiTrip.id,
       name: "API Sheet",
       kind: "draft",
+      status: "draft",
       description: "",
       version: 1,
     };
     const publishedTrip: Trip = {
       ...apiTrip,
       activePlanVariantId: createdSheet.id,
+      mainTripPlanId: createdSheet.id,
       planVariants: [...apiTrip.planVariants, createdSheet],
+      tripPlans: [...(apiTrip.tripPlans ?? apiTrip.planVariants), createdSheet],
       version: (apiTrip.version ?? 0) + 1,
     };
     const apiClient = createApiClientForTrip(apiTrip, {
@@ -4457,13 +4493,16 @@ describe("Sagittarius cockpit UI", () => {
       tripId: apiTrip.id,
       name: "Reloaded Sheet",
       kind: "draft",
+      status: "draft",
       description: "",
       version: 3,
     };
     const reloadedTrip: Trip = {
       ...apiTrip,
       activePlanVariantId: reloadedSheet.id,
+      mainTripPlanId: reloadedSheet.id,
       planVariants: [...apiTrip.planVariants, reloadedSheet],
+      tripPlans: [...(apiTrip.tripPlans ?? apiTrip.planVariants), reloadedSheet],
       itineraryItems: [
         {
           ...apiTrip.itineraryItems[0],

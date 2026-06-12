@@ -272,7 +272,7 @@ export function SagittariusApp({
     past: Trip[];
     future: Trip[];
   }>(() => ({
-    trip: initialTrip,
+    trip: normalizeTripPlanAliases(initialTrip),
     past: [],
     future: [],
   }));
@@ -512,7 +512,7 @@ export function SagittariusApp({
     const timeout = window.setTimeout(() => {
       if (cancelled) return;
       const persistedTrip = loadPersistedTrip();
-      const nextTrip = persistedTrip ?? initialTrip;
+      const nextTrip = normalizeTripPlanAliases(persistedTrip ?? initialTrip);
       const persistedSession = loadPersistedParticipantSession(
         requireJoin,
         nextTrip,
@@ -521,7 +521,7 @@ export function SagittariusApp({
       );
 
       if (persistedTrip) {
-        setTripState({ trip: persistedTrip, past: [], future: [] });
+        setTripState({ trip: nextTrip, past: [], future: [] });
       }
       if (persistedSession) {
         setParticipantSession(persistedSession);
@@ -788,13 +788,18 @@ export function SagittariusApp({
       variantsById.set(variant.id, variant);
     }
     if (createdVariant) variantsById.set(createdVariant.id, createdVariant);
-    return {
+    return normalizeTripPlanAliases({
       ...currentTrip,
       activePlanVariantId:
         publishedTrip.activePlanVariantId || fallbackActivePlanVariantId,
+      mainTripPlanId:
+        publishedTrip.mainTripPlanId ||
+        publishedTrip.activePlanVariantId ||
+        fallbackActivePlanVariantId,
       planVariants: Array.from(variantsById.values()),
+      tripPlans: publishedTrip.tripPlans ?? Array.from(variantsById.values()),
       version: publishedTrip.version ?? currentTrip.version,
-    };
+    });
   }
 
   async function switchTripSheet(sheetId: string): Promise<boolean> {
@@ -835,7 +840,11 @@ export function SagittariusApp({
       return true;
     }
 
-    commitTrip((current) => ({ ...current, activePlanVariantId: sheetId }));
+    commitTrip((current) => ({
+      ...current,
+      activePlanVariantId: sheetId,
+      mainTripPlanId: sheetId,
+    }));
     return true;
   }
 
@@ -896,13 +905,16 @@ export function SagittariusApp({
         tripId: current.id,
         name: trimmedName,
         kind: "draft",
+        status: "draft",
         description: "",
         version: 1,
       };
       return {
         ...current,
         activePlanVariantId: variant.id,
+        mainTripPlanId: variant.id,
         planVariants: [...current.planVariants, variant],
+        tripPlans: [...(current.tripPlans ?? current.planVariants), variant],
       };
     });
     return true;
@@ -1913,7 +1925,7 @@ export function SagittariusApp({
     nextSelectedItemId?: string,
   ) {
     setTripState((current) => {
-      const nextTrip = updater(current.trip);
+      const nextTrip = normalizeTripPlanAliases(updater(current.trip));
       persistTripDraft(nextTrip);
       return {
         trip: nextTrip,
@@ -1987,12 +1999,17 @@ export function SagittariusApp({
   }
 
   function replaceTripFromJoin(nextTrip: Trip) {
-    if (!isApiMode) persistTripDraft(nextTrip);
-    setTripState({ trip: nextTrip, past: [], future: [] });
+    const normalizedTrip = normalizeTripPlanAliases(nextTrip);
+    if (!isApiMode) persistTripDraft(normalizedTrip);
+    setTripState({ trip: normalizedTrip, past: [], future: [] });
   }
 
   function replaceCockpitFromApi(cockpit: TripCockpit) {
-    setTripState({ trip: cockpit.trip, past: [], future: [] });
+    setTripState({
+      trip: normalizeTripPlanAliases(cockpit.trip),
+      past: [],
+      future: [],
+    });
     setSuggestions(cockpit.suggestions);
     setLatestPlanCheck(cockpit.latestPlanCheck ?? null);
     setTasks(cockpit.tasks);
@@ -3962,6 +3979,56 @@ function nextLocalPlanVariantId(planVariants: PlanVariant[]): string {
   return id;
 }
 
+function normalizeTripPlanAliases(trip: Trip): Trip {
+  const plansById = new Map<string, PlanVariant>();
+  for (const plan of trip.tripPlans ?? []) plansById.set(plan.id, plan);
+  for (const variant of trip.planVariants) plansById.set(variant.id, variant);
+
+  const plans = Array.from(plansById.values());
+  const mainTripPlanId =
+    trip.mainTripPlanId || trip.activePlanVariantId || plans[0]?.id || "";
+  const normalizedPlans = plans.map((plan) =>
+    normalizeTripPlanSummary(plan, mainTripPlanId),
+  );
+
+  return {
+    ...trip,
+    activePlanVariantId: mainTripPlanId,
+    mainTripPlanId,
+    planVariants: normalizedPlans,
+    tripPlans: normalizedPlans,
+  };
+}
+
+function normalizeTripPlanSummary(
+  plan: PlanVariant,
+  mainTripPlanId: string,
+): PlanVariant {
+  const status =
+    plan.id === mainTripPlanId
+      ? "main"
+      : plan.status === "main"
+        ? "backup"
+        : plan.status ?? planStatusForLegacyKind(plan.kind);
+  return {
+    ...plan,
+    kind: legacyKindForPlanStatus(status),
+    status,
+  };
+}
+
+function planStatusForLegacyKind(
+  kind: PlanVariant["kind"],
+): NonNullable<PlanVariant["status"]> {
+  return kind === "split" ? "proposal" : kind;
+}
+
+function legacyKindForPlanStatus(
+  status: NonNullable<PlanVariant["status"]>,
+): PlanVariant["kind"] {
+  return status === "proposal" ? "split" : status;
+}
+
 export function nextLocalSuggestionId(suggestions: Suggestion[]): string {
   const existingIds = new Set(suggestions.map((suggestion) => suggestion.id));
   let index =
@@ -4168,7 +4235,7 @@ function loadPersistedTrip(): Trip | null {
   const rawTrip = getBrowserLocalStorage()?.getItem(tripStorageKey);
   if (!rawTrip) return null;
   try {
-    return JSON.parse(rawTrip) as Trip;
+    return normalizeTripPlanAliases(JSON.parse(rawTrip) as Trip);
   } catch {
     getBrowserLocalStorage()?.removeItem(tripStorageKey);
     return null;
@@ -4280,7 +4347,10 @@ function persistAccountSession(session: AccountSession | null) {
 }
 
 function persistTripDraft(trip: Trip) {
-  getBrowserLocalStorage()?.setItem(tripStorageKey, JSON.stringify(trip));
+  getBrowserLocalStorage()?.setItem(
+    tripStorageKey,
+    JSON.stringify(normalizeTripPlanAliases(trip)),
+  );
 }
 
 function shiftItineraryItemsToStartDate(
