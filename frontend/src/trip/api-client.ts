@@ -206,6 +206,9 @@ export interface TripApiClient {
   listDailyBriefings(tripId: string, sessionToken: string): Promise<TripDailyBriefing[]>;
   patchDailyBriefing(tripId: string, date: string, sessionToken: string, request: PatchDailyBriefingApiRequest): Promise<TripDailyBriefing>;
   patchTrip(tripId: string, sessionToken: string, request: PatchTripApiRequest): Promise<Trip>;
+  createTripPlan?: (tripId: string, sessionToken: string, request: CreatePlanVariantApiRequest) => Promise<PlanVariant>;
+  patchTripPlan?: (tripId: string, tripPlanId: string, sessionToken: string, request: PatchPlanVariantApiRequest) => Promise<PlanVariant>;
+  setMainTripPlan?: (tripId: string, tripPlanId: string, sessionToken: string, request: PublishPlanVariantApiRequest) => Promise<Trip>;
   createPlanVariant(tripId: string, sessionToken: string, request: CreatePlanVariantApiRequest): Promise<PlanVariant>;
   patchPlanVariant(tripId: string, planVariantId: string, sessionToken: string, request: PatchPlanVariantApiRequest): Promise<PlanVariant>;
   publishPlanVariant(tripId: string, planVariantId: string, sessionToken: string, request: PublishPlanVariantApiRequest): Promise<Trip>;
@@ -492,6 +495,47 @@ export function createTripApiClient(options: TripApiClientOptions = {}): TripApi
     return response.json() as Promise<T>;
   }
 
+  async function createTripPlan(
+    tripId: string,
+    sessionToken: string,
+    planRequest: CreatePlanVariantApiRequest,
+  ): Promise<PlanVariant> {
+    const variant = await request<PlanVariantResponse>(tripApiRoutes.tripPlans(tripId), {
+      method: "POST",
+      headers: { Authorization: `Bearer ${sessionToken}` },
+      body: JSON.stringify(planRequest),
+    });
+    return mapPlanVariant(variant);
+  }
+
+  async function patchTripPlan(
+    tripId: string,
+    tripPlanId: string,
+    sessionToken: string,
+    planRequest: PatchPlanVariantApiRequest,
+  ): Promise<PlanVariant> {
+    const variant = await request<PlanVariantResponse>(tripApiRoutes.tripPlan(tripId, tripPlanId), {
+      method: "PATCH",
+      headers: { Authorization: `Bearer ${sessionToken}` },
+      body: JSON.stringify(planRequest),
+    });
+    return mapPlanVariant(variant);
+  }
+
+  async function setMainTripPlan(
+    tripId: string,
+    tripPlanId: string,
+    sessionToken: string,
+    publishRequest: PublishPlanVariantApiRequest,
+  ): Promise<Trip> {
+    const trip = await request<TripSummaryResponse>(tripApiRoutes.setMainTripPlan(tripId, tripPlanId), {
+      method: "POST",
+      headers: { Authorization: `Bearer ${sessionToken}` },
+      body: JSON.stringify(publishRequest),
+    });
+    return mapTripSummary(trip);
+  }
+
   return {
     joinTrip(credentials) {
       return request<JoinTripResponse>(tripApiRoutes.joinSession(), {
@@ -556,30 +600,12 @@ export function createTripApiClient(options: TripApiClientOptions = {}): TripApi
       });
       return mapTripSummary(trip);
     },
-    async createPlanVariant(tripId, sessionToken, planRequest) {
-      const variant = await request<PlanVariantResponse>(tripApiRoutes.tripPlans(tripId), {
-        method: "POST",
-        headers: { Authorization: `Bearer ${sessionToken}` },
-        body: JSON.stringify(planRequest),
-      });
-      return mapPlanVariant(variant);
-    },
-    async patchPlanVariant(tripId, planVariantId, sessionToken, planRequest) {
-      const variant = await request<PlanVariantResponse>(tripApiRoutes.tripPlan(tripId, planVariantId), {
-        method: "PATCH",
-        headers: { Authorization: `Bearer ${sessionToken}` },
-        body: JSON.stringify(planRequest),
-      });
-      return mapPlanVariant(variant);
-    },
-    async publishPlanVariant(tripId, planVariantId, sessionToken, publishRequest) {
-      const trip = await request<TripSummaryResponse>(tripApiRoutes.setMainTripPlan(tripId, planVariantId), {
-        method: "POST",
-        headers: { Authorization: `Bearer ${sessionToken}` },
-        body: JSON.stringify(publishRequest),
-      });
-      return mapTripSummary(trip);
-    },
+    createTripPlan,
+    patchTripPlan,
+    setMainTripPlan,
+    createPlanVariant: createTripPlan,
+    patchPlanVariant: patchTripPlan,
+    publishPlanVariant: setMainTripPlan,
     async createTask(tripId, sessionToken, taskRequest) {
       const task = await request<TripTaskResponse>(tripApiRoutes.tasks(tripId), {
         method: "POST",

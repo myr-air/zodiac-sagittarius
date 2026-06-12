@@ -827,7 +827,10 @@ export function SagittariusApp({
     if (isApiMode && resolvedApiClient && participantSession) {
       setIsTripSheetBusy(true);
       try {
-        const publishedTrip = await resolvedApiClient.publishPlanVariant(
+        const setMainTripPlan =
+          resolvedApiClient.setMainTripPlan ??
+          resolvedApiClient.publishPlanVariant;
+        const publishedTrip = await setMainTripPlan(
           trip.id,
           sheetId,
           participantSession.sessionToken,
@@ -875,7 +878,13 @@ export function SagittariusApp({
     if (isApiMode && resolvedApiClient && participantSession) {
       setIsTripSheetBusy(true);
       try {
-        const createdVariant = await resolvedApiClient.createPlanVariant(
+        const createTripPlan =
+          resolvedApiClient.createTripPlan ??
+          resolvedApiClient.createPlanVariant;
+        const setMainTripPlan =
+          resolvedApiClient.setMainTripPlan ??
+          resolvedApiClient.publishPlanVariant;
+        const createdVariant = await createTripPlan(
           trip.id,
           participantSession.sessionToken,
           {
@@ -885,7 +894,7 @@ export function SagittariusApp({
             description: "",
           },
         );
-        const publishedTrip = await resolvedApiClient.publishPlanVariant(
+        const publishedTrip = await setMainTripPlan(
           trip.id,
           createdVariant.id,
           participantSession.sessionToken,

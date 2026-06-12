@@ -53,20 +53,20 @@ describe.skipIf(!required && !hasCredentials)("real Sagittarius API e2e", () => 
     });
     expect(patchedTrip).toMatchObject({ id: join.trip.id, version: (cockpit.trip.version ?? 1) + 1 });
 
-    const createdVariant = await client.createPlanVariant(join.trip.id, session.sessionToken, {
+    const createdVariant = await client.createTripPlan!(join.trip.id, session.sessionToken, {
       clientMutationId: `e2e-plan-create-${runId}`,
       name: `E2E backup ${runId}`,
       kind: "backup",
       description: "created by real API e2e",
     });
     expect(createdVariant).toMatchObject({ name: `E2E backup ${runId}`, kind: "backup", version: 1 });
-    const patchedVariant = await client.patchPlanVariant(join.trip.id, createdVariant.id, session.sessionToken, {
+    const patchedVariant = await client.patchTripPlan!(join.trip.id, createdVariant.id, session.sessionToken, {
       clientMutationId: `e2e-plan-patch-${runId}`,
       expectedVersion: createdVariant.version ?? 1,
       patch: { description: "updated by real API e2e" },
     });
     expect(patchedVariant).toMatchObject({ id: createdVariant.id, description: "updated by real API e2e", version: 2 });
-    const publishedTrip = await client.publishPlanVariant(join.trip.id, createdVariant.id, session.sessionToken, {
+    const publishedTrip = await client.setMainTripPlan!(join.trip.id, createdVariant.id, session.sessionToken, {
       clientMutationId: `e2e-plan-publish-${runId}`,
     });
     expect(publishedTrip.activePlanVariantId).toBe(createdVariant.id);

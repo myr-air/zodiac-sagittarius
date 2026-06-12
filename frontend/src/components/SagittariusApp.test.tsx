@@ -5093,8 +5093,8 @@ describe("Sagittarius cockpit UI", () => {
       version: (apiTrip.version ?? 0) + 1,
     };
     const apiClient = createApiClientForTrip(apiTrip, {
-      createPlanVariant: vi.fn().mockResolvedValue(createdSheet),
-      publishPlanVariant: vi.fn().mockResolvedValue(publishedTrip),
+      createTripPlan: vi.fn().mockResolvedValue(createdSheet),
+      setMainTripPlan: vi.fn().mockResolvedValue(publishedTrip),
     });
 
     render(
@@ -5112,7 +5112,7 @@ describe("Sagittarius cockpit UI", () => {
     await user.click(screen.getByRole("button", { name: "สร้างแผน" }));
 
     await waitFor(() =>
-      expect(apiClient.createPlanVariant).toHaveBeenCalledWith(
+      expect(apiClient.createTripPlan!).toHaveBeenCalledWith(
         apiTrip.id,
         "session-token",
         expect.objectContaining({
@@ -5122,7 +5122,7 @@ describe("Sagittarius cockpit UI", () => {
         }),
       ),
     );
-    expect(apiClient.publishPlanVariant).toHaveBeenCalledWith(
+    expect(apiClient.setMainTripPlan!).toHaveBeenCalledWith(
       apiTrip.id,
       createdSheet.id,
       "session-token",
@@ -5186,10 +5186,10 @@ describe("Sagittarius cockpit UI", () => {
         tasks: [],
         stopNotes: [],
         expenseSummary: null,
-      });
+    });
     const apiClient = createApiClientForTrip(apiTrip, {
       loadTrip,
-      publishPlanVariant: vi.fn().mockRejectedValue(
+      setMainTripPlan: vi.fn().mockRejectedValue(
         new TripApiError({
           code: "version_conflict",
           message: "version conflict",
@@ -5212,7 +5212,7 @@ describe("Sagittarius cockpit UI", () => {
       "plan-variant-backup",
     ]);
 
-    expect(apiClient.publishPlanVariant).toHaveBeenCalledWith(
+    expect(apiClient.setMainTripPlan!).toHaveBeenCalledWith(
       apiTrip.id,
       "plan-variant-backup",
       "session-token",

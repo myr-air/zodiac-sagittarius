@@ -361,6 +361,7 @@ describe("Trip API client", () => {
       trip: {
         ...document.trip,
         mainTripPlanId: cockpitResponse.trip.activePlanVariantId,
+        tripPlans: [],
         partySize: undefined,
         defaultTimezone: undefined,
       },
@@ -985,7 +986,7 @@ describe("Trip API client", () => {
     );
   });
 
-  it("creates patches and sets main trip plans through authenticated backend routes", async () => {
+  it("creates patches and sets main trip plans through canonical methods and backend routes", async () => {
     const createdVariant = {
       id: "018f4e82-3000-7c00-b111-000000000099",
       tripId: cockpitResponse.trip.id,
@@ -1013,18 +1014,18 @@ describe("Trip API client", () => {
       .mockResolvedValueOnce(jsonResponse(publishedTrip));
     const client = createTripApiClient({ baseUrl: "https://api.example.test", fetchImpl });
 
-    const created = await client.createPlanVariant(cockpitResponse.trip.id, "session-token", {
+    const created = await client.createTripPlan!(cockpitResponse.trip.id, "session-token", {
       clientMutationId: "web-plan-create-1",
       name: "Rain backup",
       status: "backup",
       description: "Indoor route",
     });
-    const patched = await client.patchPlanVariant(cockpitResponse.trip.id, created.id, "session-token", {
+    const patched = await client.patchTripPlan!(cockpitResponse.trip.id, created.id, "session-token", {
       clientMutationId: "web-plan-patch-1",
       expectedVersion: 1,
       patch: { name: "Rain day backup" },
     });
-    const trip = await client.publishPlanVariant(cockpitResponse.trip.id, created.id, "session-token", {
+    const trip = await client.setMainTripPlan!(cockpitResponse.trip.id, created.id, "session-token", {
       clientMutationId: "web-plan-publish-1",
       previousMainNextStatus: "backup",
     });
