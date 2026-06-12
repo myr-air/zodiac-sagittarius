@@ -81,11 +81,11 @@ pub async fn seed_trip(pool: &PgPool) {
     .unwrap();
     sqlx::query(
         "insert into itinerary_items (
-           id, trip_id, plan_variant_id, day, sort_order, start_time, activity, activity_type,
-           place, map_link, duration_minutes, transportation, note, created_by, version
+           id, trip_id, plan_variant_id, is_plan_block, day, sort_order, start_time, activity,
+           activity_type, place, map_link, duration_minutes, transportation, note, created_by, version
          )
          values (
-           $1, $2, $3, '2025-05-16', 100, '08:30', 'Dim Dim Sum', 'food',
+           $1, $2, $3, true, '2025-05-16', 100, '08:30', 'Dim Dim Sum', 'food',
            'The Elements', 'https://maps.google.com', 60, 'walk', 'breakfast', $4, 4
          )",
     )

@@ -1839,9 +1839,9 @@ pub async fn itinerary_item_parent_for_trip(
     tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
     trip_id: Uuid,
     item_id: Uuid,
-) -> Result<Option<(Uuid, time::Date, Option<Uuid>)>, sqlx::Error> {
+) -> Result<Option<(Uuid, time::Date, Option<Uuid>, bool)>, sqlx::Error> {
     sqlx::query_as(
-        "select plan_variant_id, day, parent_item_id
+        "select plan_variant_id, day, parent_item_id, is_plan_block
          from itinerary_items
          where trip_id = $1 and id = $2 and deleted_at is null",
     )

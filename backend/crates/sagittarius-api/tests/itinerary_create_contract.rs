@@ -200,6 +200,78 @@ async fn itinerary_create_contract_rejects_end_offset_without_end_time(pool: sql
 }
 
 #[sqlx::test(migrations = "../../migrations")]
+async fn itinerary_create_contract_rejects_non_block_parent(pool: sqlx::PgPool) {
+    support::seed_trip(&pool).await;
+    let token = support::create_session(&pool, support::ORGANIZER_ID).await;
+    let app = support::app(pool);
+
+    let parent = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method(Method::POST)
+                .uri(format!(
+                    "/api/v1/trips/{}/itinerary-items",
+                    support::TRIP_ID
+                ))
+                .header(header::AUTHORIZATION, format!("Bearer {token}"))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({
+                        "clientMutationId": "web-create-plain-parent",
+                        "planVariantId": support::PLAN_ID,
+                        "day": "2025-05-16",
+                        "startTime": "09:30",
+                        "activity": "Plain activity",
+                        "activityType": "food",
+                        "place": "Cafe"
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(parent.status(), StatusCode::OK);
+    let parent_body: Value =
+        serde_json::from_slice(&to_bytes(parent.into_body(), 65536).await.unwrap()).unwrap();
+    assert_eq!(parent_body["isPlanBlock"], false);
+
+    let child = app
+        .oneshot(
+            Request::builder()
+                .method(Method::POST)
+                .uri(format!(
+                    "/api/v1/trips/{}/itinerary-items",
+                    support::TRIP_ID
+                ))
+                .header(header::AUTHORIZATION, format!("Bearer {token}"))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({
+                        "clientMutationId": "web-create-child-under-plain-parent",
+                        "planVariantId": support::PLAN_ID,
+                        "parentItemId": parent_body["id"].as_str().unwrap(),
+                        "day": "2025-05-16",
+                        "startTime": "09:45",
+                        "activity": "Invalid sub-activity",
+                        "activityType": "food",
+                        "place": "Cafe"
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(child.status(), StatusCode::BAD_REQUEST);
+    let body: Value =
+        serde_json::from_slice(&to_bytes(child.into_body(), 65536).await.unwrap()).unwrap();
+    assert_eq!(body["code"], "invalid_request");
+}
+
+#[sqlx::test(migrations = "../../migrations")]
 async fn itinerary_create_contract_rejects_nested_sub_activity(pool: sqlx::PgPool) {
     support::seed_trip(&pool).await;
     let token = support::create_session(&pool, support::ORGANIZER_ID).await;
@@ -425,6 +497,7 @@ async fn itinerary_create_contract_sub_activity_inherits_parent_path(pool: sqlx:
                         "pathId": "path-2025-05-16-sub-a",
                         "pathName": "Plan A",
                         "pathRole": "alternative",
+                        "isPlanBlock": true,
                         "day": "2025-05-16",
                         "startTime": "07:00",
                         "activity": "Flight to Hong Kong",

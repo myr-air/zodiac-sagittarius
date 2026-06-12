@@ -470,7 +470,7 @@ async fn validate_itinerary_parent(
         ));
     }
 
-    let (parent_plan_variant_id, parent_day, grandparent_item_id) =
+    let (parent_plan_variant_id, parent_day, grandparent_item_id, parent_is_plan_block) =
         db::queries::itinerary_item_parent_for_trip(tx, trip_id, parent_item_id)
             .await?
             .ok_or(ServiceError::NotFound)?;
@@ -482,6 +482,11 @@ async fn validate_itinerary_parent(
     if grandparent_item_id.is_some() {
         return Err(ServiceError::InvalidRequest(
             "itinerary hierarchy supports activity and sub-activity only",
+        ));
+    }
+    if !parent_is_plan_block {
+        return Err(ServiceError::InvalidRequest(
+            "sub-activity parent must be an activity block",
         ));
     }
 

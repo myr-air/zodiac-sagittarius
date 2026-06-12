@@ -592,6 +592,69 @@ async fn itinerary_patch_contract_rejects_sub_activity_becoming_plan_block(pool:
 }
 
 #[sqlx::test(migrations = "../../migrations")]
+async fn itinerary_patch_contract_rejects_non_block_parent(pool: sqlx::PgPool) {
+    support::seed_trip(&pool).await;
+    let token = support::create_session(&pool, support::ORGANIZER_ID).await;
+    let app = support::app(pool);
+
+    let child = create_itinerary_item(
+        &app,
+        &token,
+        "web-create-child-before-non-block-parent",
+        json!({
+            "parentItemId": support::ITEM_ID,
+            "activity": "Queue for table",
+            "startTime": "08:45",
+            "place": "The Elements"
+        }),
+    )
+    .await;
+    let plain_parent = create_itinerary_item(
+        &app,
+        &token,
+        "web-create-plain-parent-for-patch",
+        json!({
+            "activity": "Plain activity",
+            "startTime": "09:30",
+            "place": "Cafe"
+        }),
+    )
+    .await;
+    assert_eq!(plain_parent["isPlanBlock"], false);
+
+    let response = app
+        .oneshot(
+            Request::builder()
+                .method(Method::PATCH)
+                .uri(format!(
+                    "/api/v1/trips/{}/itinerary-items/{}",
+                    support::TRIP_ID,
+                    child["id"].as_str().unwrap()
+                ))
+                .header(header::AUTHORIZATION, format!("Bearer {token}"))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({
+                        "clientMutationId": "web-patch-child-under-plain-parent",
+                        "expectedVersion": 1,
+                        "patch": {
+                            "parentItemId": plain_parent["id"]
+                        }
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::BAD_REQUEST);
+    let body: Value =
+        serde_json::from_slice(&to_bytes(response.into_body(), 65536).await.unwrap()).unwrap();
+    assert_eq!(body["code"], "invalid_request");
+}
+
+#[sqlx::test(migrations = "../../migrations")]
 async fn itinerary_patch_contract_rejects_parent_from_another_plan(pool: sqlx::PgPool) {
     support::seed_trip(&pool).await;
     let alt_item_id = support::seed_alt_plan_item(&pool).await;
