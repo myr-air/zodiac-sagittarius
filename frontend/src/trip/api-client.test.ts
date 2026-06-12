@@ -608,20 +608,24 @@ describe("Trip API client", () => {
 
   it("uses default fetch and fills partial backend error bodies", async () => {
     const fetchImpl = vi.fn().mockResolvedValueOnce(jsonResponse({ code: "forbidden" }, 403));
-    vi.stubGlobal("fetch", fetchImpl);
-    const client = createTripApiClient();
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = fetchImpl as unknown as typeof fetch;
+    try {
+      const client = createTripApiClient();
 
-    await expect(client.joinTrip({ joinId: "HK-SZ-2025", password: "seed-trip-pass" })).rejects.toMatchObject({
-      code: "forbidden",
-      message: "request failed with 403",
-      status: 403,
-    });
+      await expect(client.joinTrip({ joinId: "HK-SZ-2025", password: "seed-trip-pass" })).rejects.toMatchObject({
+        code: "forbidden",
+        message: "request failed with 403",
+        status: 403,
+      });
 
-    expect(fetchImpl).toHaveBeenCalledWith(
-      "/api/v1/trip-join-sessions",
-      expect.objectContaining({ method: "POST" }),
-    );
-    vi.unstubAllGlobals();
+      expect(fetchImpl).toHaveBeenCalledWith(
+        "/api/v1/trip-join-sessions",
+        expect.objectContaining({ method: "POST" }),
+      );
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
   });
 
   it("fills missing backend error codes while preserving messages", async () => {
@@ -742,12 +746,12 @@ describe("Trip API client", () => {
     expect(cockpit.trip.mainTripPlanId).toBe(canonicalPlan.id);
     expect(cockpit.trip.planVariants[0]).toMatchObject({
       id: canonicalPlan.id,
-      kind: "split",
-      status: "proposal",
+      kind: "main",
+      status: "main",
     });
     expect(cockpit.trip.tripPlans?.[0]).toMatchObject({
       id: canonicalPlan.id,
-      status: "proposal",
+      status: "main",
     });
   });
 
@@ -774,12 +778,12 @@ describe("Trip API client", () => {
     expect(cockpit.trip.mainTripPlanId).toBe(legacyPlan.id);
     expect(cockpit.trip.planVariants[0]).toMatchObject({
       id: legacyPlan.id,
-      kind: "split",
-      status: "proposal",
+      kind: "main",
+      status: "main",
     });
     expect(cockpit.trip.tripPlans?.[0]).toMatchObject({
       id: legacyPlan.id,
-      status: "proposal",
+      status: "main",
     });
   });
 
@@ -808,11 +812,12 @@ describe("Trip API client", () => {
     expect(cockpit.trip.planVariants).toHaveLength(1);
     expect(cockpit.trip.planVariants[0]).toMatchObject({
       id: canonicalPlan.id,
-      status: "draft",
+      kind: "main",
+      status: "main",
     });
     expect(cockpit.trip.tripPlans?.[0]).toMatchObject({
       id: canonicalPlan.id,
-      status: "draft",
+      status: "main",
     });
   });
 
@@ -845,7 +850,14 @@ describe("Trip API client", () => {
 
     expect(cockpit.trip.activePlanVariantId).toBe(pointerPlan.id);
     expect(cockpit.trip.mainTripPlanId).toBe(pointerPlan.id);
-    expect(cockpit.trip.tripPlans?.find((plan) => plan.id === staleStatusPlan.id)?.status).toBe("main");
+    expect(cockpit.trip.tripPlans?.find((plan) => plan.id === pointerPlan.id)).toMatchObject({
+      kind: "main",
+      status: "main",
+    });
+    expect(cockpit.trip.tripPlans?.find((plan) => plan.id === staleStatusPlan.id)).toMatchObject({
+      kind: "backup",
+      status: "backup",
+    });
   });
 
   it("patches trip metadata through the authenticated trip route", async () => {

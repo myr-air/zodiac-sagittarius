@@ -844,13 +844,19 @@ export function mapCockpitResponse(response: TripCockpitResponse): TripCockpit {
   const activePlanVariantId = response.trip.activePlanVariantId ?? mainTripPlanId;
   const planVariants = legacyPlanResponses.length ? legacyPlanResponses : planResponses;
   const tripPlans = canonicalPlanResponses.length ? canonicalPlanResponses : legacyPlanResponses;
+  const mappedPlanVariants = planVariants.map((plan) =>
+    normalizePlanVariantForMainPointer(mapPlanVariant(plan), mainTripPlanId),
+  );
+  const mappedTripPlans = tripPlans.map((plan) =>
+    normalizePlanVariantForMainPointer(mapPlanVariant(plan), mainTripPlanId),
+  );
   return {
     trip: {
       ...mapTripSummary(response.trip),
       activePlanVariantId,
       mainTripPlanId,
-      planVariants: planVariants.map(mapPlanVariant),
-      tripPlans: tripPlans.map(mapPlanVariant),
+      planVariants: mappedPlanVariants,
+      tripPlans: mappedTripPlans,
       members: response.members.map(mapMember),
       itineraryItems: response.itineraryItems.map(mapItineraryItem),
       expenses: response.expenses.map(mapExpense),
@@ -937,12 +943,13 @@ function mapMember(member: TripMemberResponse): Member {
 }
 
 function mapPlanVariant(variant: PlanVariantResponse): PlanVariant {
+  const status = variant.status ?? statusForLegacyKind(variant.kind);
   return {
     id: variant.id,
     tripId: variant.tripId,
     name: variant.name,
-    kind: variant.kind,
-    status: variant.status ?? statusForLegacyKind(variant.kind),
+    kind: legacyKindForPlanStatus(status),
+    status,
     description: variant.description,
     version: variant.version,
   };
@@ -950,6 +957,27 @@ function mapPlanVariant(variant: PlanVariantResponse): PlanVariant {
 
 function statusForLegacyKind(kind: PlanVariant["kind"]): PlanStatus {
   return kind === "split" ? "proposal" : kind;
+}
+
+function legacyKindForPlanStatus(status: PlanStatus): PlanVariant["kind"] {
+  return status === "proposal" ? "split" : status;
+}
+
+function normalizePlanVariantForMainPointer(
+  plan: PlanVariant,
+  mainTripPlanId: string,
+): PlanVariant {
+  const status =
+    plan.id === mainTripPlanId
+      ? "main"
+      : plan.status === "main"
+        ? "backup"
+        : plan.status ?? statusForLegacyKind(plan.kind);
+  return {
+    ...plan,
+    kind: legacyKindForPlanStatus(status),
+    status,
+  };
 }
 
 function mapItineraryItem(item: ItineraryItemResponse): ItineraryItem {
