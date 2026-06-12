@@ -5352,6 +5352,8 @@ describe("Sagittarius cockpit UI", () => {
     await user.clear(within(dialog).getByLabelText(/^ชั่วโมง$/i));
     await user.type(within(dialog).getByLabelText(/^ชั่วโมง$/i), "0");
     await user.selectOptions(within(dialog).getByLabelText(/^นาที$/i), "45");
+    await user.clear(within(dialog).getByLabelText(/^เวลาจบ$/i));
+    await user.type(within(dialog).getByLabelText(/^เวลาจบ$/i), "18:15");
     await user.clear(within(dialog).getByLabelText(/การเดินทาง/i));
     await user.type(within(dialog).getByLabelText(/การเดินทาง/i), "เดิน");
     await user.click(
@@ -5365,6 +5367,17 @@ describe("Sagittarius cockpit UI", () => {
         name: /เลือกจุด Coffee break at K11 Musea/i,
       });
     expect(newStopSelector).toBeInTheDocument();
+    const persistedTrip = JSON.parse(localStorage.getItem(tripStorageKey)!) as Trip;
+    expect(
+      persistedTrip.itineraryItems.find(
+        (item) => item.activity === "Coffee break at K11 Musea",
+      ),
+    ).toMatchObject({
+      startTime: "16:45",
+      endTime: "18:15",
+      endOffsetDays: 0,
+      durationMinutes: 90,
+    });
     expect(
       screen.getByRole("button", {
         name: /Coffee break at K11 Musea on Main/i,

@@ -136,6 +136,24 @@ describe("StopDialog", () => {
     expect(screen.getByLabelText("End time")).toHaveValue("18:30");
   });
 
+  it("submits explicit cross-day end time windows", () => {
+    const onSubmit = vi.fn();
+    renderEn(<StopDialog mode="create" onClose={vi.fn()} onSubmit={onSubmit} />);
+
+    fireEvent.change(screen.getByLabelText("Activity"), { target: { value: "Night flight" } });
+    fireEvent.change(screen.getByLabelText("Place"), { target: { value: "Airport" } });
+    fireEvent.change(screen.getByLabelText("Start time"), { target: { value: "23:00" } });
+    fireEvent.change(screen.getByLabelText("End time"), { target: { value: "02:00" } });
+    fireEvent.submit(screen.getByRole("button", { name: "Save activity" }).closest("form")!);
+
+    expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({
+      startTime: "23:00",
+      endTime: "02:00",
+      endOffsetDays: 1,
+      durationMinutes: 180,
+    }));
+  });
+
   it("shows transportation detail fields and submits a compatible travel payload", () => {
     const onSubmit = vi.fn();
     renderEn(<StopDialog mode="create" onClose={vi.fn()} onSubmit={onSubmit} />);

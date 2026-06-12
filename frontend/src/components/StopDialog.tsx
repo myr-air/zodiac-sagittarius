@@ -39,6 +39,8 @@ export interface StopFormValues {
   status: ItineraryItemStatus;
   priority: ItineraryItemPriority;
   startTime: string;
+  endTime: string | null;
+  endOffsetDays: number;
   activity: string;
   activityType: ActivityType;
   place: string;
@@ -104,6 +106,7 @@ const fieldIds = {
   path: "stop-path",
   durationHours: "stop-duration-hours",
   durationMinutes: "stop-duration-minutes",
+  endOffsetDays: "stop-end-offset-days",
   endTime: "stop-end-time",
   entryWindow: "stop-entry-window",
   meal: "stop-meal",
@@ -161,6 +164,13 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, initialPare
     status: initialItem?.status ?? "idea",
     priority: initialItem?.priority ?? "normal",
     startTime: initialItem?.startTime ?? "16:30",
+    endTime:
+      initialItem?.endTime ??
+      addMinutesToTime(
+        initialItem?.startTime ?? "16:30",
+        Math.max(1, Number(initialItem?.durationMinutes ?? 45) || 1),
+      ),
+    endOffsetDays: initialItem?.endOffsetDays ?? 0,
     activity: initialItem?.activity ?? "",
     activityType: initialItem?.activityType ?? "experience",
     place: initialItem?.place ?? "",
@@ -180,20 +190,71 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, initialPare
   const title = mode === "create" ? t.stopDialog.titles.create : t.stopDialog.titles.edit;
   const detailLabels = stopDetailLabels(locale);
   const isSubActivity = Boolean(values.parentItemId);
-  const endTime = addMinutesToTime(values.startTime, Math.max(1, Number(values.durationMinutes) || 1));
   const minuteOptions = durationMinuteOptions((values.durationMinutes ?? 45) % 60);
 
   function update<K extends keyof StopFormValues>(key: K, value: StopFormValues[K]) {
     setValues((current) => ({ ...current, [key]: value }));
   }
 
+  function updateStartTime(startTime: string) {
+    const nextDuration = values.endTime
+      ? durationBetweenTimes(startTime, values.endTime, values.endOffsetDays)
+      : null;
+    setValues((current) => ({
+      ...current,
+      startTime,
+      ...(nextDuration !== null ? { durationMinutes: nextDuration } : {}),
+    }));
+  }
+
   function updateDuration(hours: number, minutes: number) {
-    update("durationMinutes", hours * 60 + minutes);
+    const durationMinutes = Math.max(1, hours * 60 + minutes);
+    const nextEnd = endWindowFromDuration(values.startTime, durationMinutes);
+    setValues((current) => ({
+      ...current,
+      durationMinutes,
+      ...(nextEnd
+        ? { endTime: nextEnd.endTime, endOffsetDays: nextEnd.endOffsetDays }
+        : {}),
+    }));
   }
 
   function updateEndTime(nextEndTime: string) {
-    const nextDuration = durationBetweenTimes(values.startTime, nextEndTime);
-    if (nextDuration !== null) update("durationMinutes", nextDuration);
+    if (!nextEndTime) {
+      setValues((current) => ({
+        ...current,
+        endTime: null,
+        endOffsetDays: 0,
+      }));
+      return;
+    }
+    const nextEndOffsetDays = endOffsetDaysBetweenTimes(values.startTime, nextEndTime);
+    const nextDuration = durationBetweenTimes(
+      values.startTime,
+      nextEndTime,
+      nextEndOffsetDays,
+    );
+    setValues((current) => ({
+      ...current,
+      endTime: nextEndTime,
+      endOffsetDays: nextEndOffsetDays,
+      ...(nextDuration !== null ? { durationMinutes: nextDuration } : {}),
+    }));
+  }
+
+  function toggleNextDayEnd() {
+    if (!values.endTime) return;
+    const endOffsetDays = values.endOffsetDays > 0 ? 0 : 1;
+    const durationMinutes = durationBetweenTimes(
+      values.startTime,
+      values.endTime,
+      endOffsetDays,
+    );
+    setValues((current) => ({
+      ...current,
+      endOffsetDays,
+      ...(durationMinutes !== null ? { durationMinutes } : {}),
+    }));
   }
 
   function updateDetail<K extends keyof StopDetailValues>(key: K, value: StopDetailValues[K]) {
@@ -212,11 +273,21 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, initialPare
       origin: parsedRoute.origin,
     }));
     if (parsedRoute.startTime && parsedRoute.durationMinutes) {
+      const parsedEnd = endWindowFromDuration(
+        parsedRoute.startTime,
+        parsedRoute.durationMinutes,
+      );
       setValues((current) => ({
         ...current,
         activity,
         durationMinutes: parsedRoute.durationMinutes ?? current.durationMinutes,
         startTime: parsedRoute.startTime ?? current.startTime,
+        ...(parsedEnd
+          ? {
+              endTime: parsedEnd.endTime,
+              endOffsetDays: parsedEnd.endOffsetDays,
+            }
+          : {}),
       }));
     }
   }
@@ -233,6 +304,11 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, initialPare
       activityType: detailTypeToActivityType[detailType],
       isPlanBlock: values.parentItemId ? false : values.isPlanBlock,
       startTime: values.timeMode === "flexible" ? "" : values.startTime,
+      endTime: values.timeMode === "flexible" ? null : values.endTime,
+      endOffsetDays:
+        values.timeMode === "flexible" || !values.endTime
+          ? 0
+          : values.endOffsetDays,
       durationMinutes: values.timeMode === "flexible" ? null : Math.max(1, Number(values.durationMinutes) || 1),
       details,
       place: nextPlace.trim(),
@@ -337,11 +413,24 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, initialPare
             </label>
             <label htmlFor={fieldIds.startTime}>
               <span>{t.stopDialog.fields.startTime}</span>
-              <TimePickerField id={fieldIds.startTime} value={values.startTime} onChange={(value) => update("startTime", value)} required={values.timeMode !== "flexible"} />
+              <TimePickerField id={fieldIds.startTime} value={values.startTime} onChange={updateStartTime} required={values.timeMode !== "flexible"} />
             </label>
             <label htmlFor={fieldIds.endTime}>
               <span>{t.stopDialog.fields.endTime}</span>
-              <TimePickerField id={fieldIds.endTime} value={endTime} onChange={updateEndTime} required={values.timeMode !== "flexible"} />
+              <TimePickerField id={fieldIds.endTime} value={values.endTime ?? ""} onChange={updateEndTime} required={values.timeMode !== "flexible"} />
+            </label>
+            <label htmlFor={fieldIds.endOffsetDays}>
+              <span>+1</span>
+              <button
+                id={fieldIds.endOffsetDays}
+                type="button"
+                aria-label={`Toggle next-day end ${values.activity || "activity"}`}
+                aria-pressed={values.endOffsetDays > 0}
+                disabled={values.timeMode === "flexible" || !values.endTime}
+                onClick={toggleNextDayEnd}
+              >
+                ⁺¹
+              </button>
             </label>
             <label htmlFor={fieldIds.durationHours}>
               <span>{t.stopDialog.fields.hours}</span>
@@ -591,11 +680,35 @@ function addMinutesToTime(startTime: string, durationMinutes: number): string {
   return minutesToTime(total);
 }
 
-function durationBetweenTimes(startTime: string, endTime: string): number | null {
+function endWindowFromDuration(
+  startTime: string,
+  durationMinutes: number,
+): { endOffsetDays: number; endTime: string } | null {
+  const start = timeToMinutes(startTime);
+  if (start === null) return null;
+  const total = start + Math.max(1, durationMinutes);
+  return {
+    endTime: minutesToTime(total % (24 * 60)),
+    endOffsetDays: Math.floor(total / (24 * 60)),
+  };
+}
+
+function endOffsetDaysBetweenTimes(startTime: string, endTime: string): number {
+  const start = timeToMinutes(startTime);
+  const end = timeToMinutes(endTime);
+  if (start === null || end === null) return 0;
+  return end <= start ? 1 : 0;
+}
+
+function durationBetweenTimes(
+  startTime: string,
+  endTime: string,
+  endOffsetDays = endOffsetDaysBetweenTimes(startTime, endTime),
+): number | null {
   const start = timeToMinutes(startTime);
   const end = timeToMinutes(endTime);
   if (start === null || end === null) return null;
-  const duration = (end - start + 24 * 60) % (24 * 60);
+  const duration = end + endOffsetDays * 24 * 60 - start;
   return Math.max(1, duration);
 }
 
