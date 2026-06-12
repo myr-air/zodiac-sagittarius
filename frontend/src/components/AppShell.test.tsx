@@ -29,6 +29,8 @@ describe("AppShell", () => {
       "grid-cols-[236px_minmax(0,1fr)]",
       "data-[sidebar-collapsed=true]:grid-cols-[74px_minmax(0,1fr)]",
       "max-[767px]:block",
+      "max-[767px]:max-w-[100vw]",
+      "max-[767px]:overflow-x-hidden",
     );
     expect(screen.getByRole("navigation", { name: /เมนูวางแผน Joii/i })).toHaveClass(
       "side-rail",
@@ -37,6 +39,7 @@ describe("AppShell", () => {
       "max-[767px]:static",
     );
     expect(container.querySelector(".rail-links")).toHaveClass(
+      "max-[767px]:box-border",
       "max-[767px]:w-full",
       "max-[767px]:max-w-full",
       "max-[767px]:overflow-x-auto",
