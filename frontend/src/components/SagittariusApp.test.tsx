@@ -212,6 +212,28 @@ function tripWithSheetsAndPlanScopedRecords(selectedPlanId = "plan-variant-backu
         version: 1,
       },
     ],
+    tasks: [
+      {
+        id: "task-main-dimsum",
+        tripPlanId: mainItem.planVariantId,
+        title: "Main plan brunch task",
+        status: "open",
+        visibility: "shared",
+        kind: "booking",
+        createdBy: "member-aom",
+        relatedItemId: mainItem.id,
+      },
+      {
+        id: "task-backup-gallery",
+        tripPlanId: backupItem.planVariantId,
+        title: "Backup gallery task",
+        status: "open",
+        visibility: "shared",
+        kind: "booking",
+        createdBy: "member-aom",
+        relatedItemId: backupItem.id,
+      },
+    ],
   };
 }
 
@@ -4932,6 +4954,15 @@ describe("Sagittarius cockpit UI", () => {
     expect(
       screen.queryByText("Main plan brunch booking"),
     ).not.toBeInTheDocument();
+  });
+
+  it("shows selected Trip Plan tasks on overview instead of tasks from other plans", async () => {
+    const trip = tripWithSheetsAndPlanScopedRecords();
+
+    render(<SagittariusApp initialTrip={trip} initialView="overview" />);
+
+    expect(await screen.findByText("Backup gallery task")).toBeInTheDocument();
+    expect(screen.queryByText("Main plan brunch task")).not.toBeInTheDocument();
   });
 
   it("adds new local stops to the current Trip Plan after switching plans", async () => {

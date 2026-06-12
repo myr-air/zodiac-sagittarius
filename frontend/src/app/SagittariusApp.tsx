@@ -490,6 +490,13 @@ export function SagittariusApp({
       trip,
     ],
   );
+  const scopedSuggestions = useMemo(
+    () =>
+      suggestions.filter(
+        (suggestion) => suggestion.planVariantId === selectedPlanVariantId,
+      ),
+    [selectedPlanVariantId, suggestions],
+  );
   const itineraryCommitmentsByItemId = useMemo(
     () =>
       buildItineraryCommitmentsByItemId({
@@ -3825,13 +3832,13 @@ export function SagittariusApp({
               />
             ) : currentView === "overview" ? (
               <OverviewPage
-                trip={trip}
+                trip={scopedTripForRecords}
                 currentMemberId={currentMember.id}
                 expenseSummary={expenseSummary}
                 items={planItems}
                 itineraryView={itineraryView}
-                suggestions={suggestions}
-                tasks={tasks}
+                suggestions={scopedSuggestions}
+                tasks={scopedTripPlanRecords.tasks}
                 dailyBriefings={visibleDailyBriefings}
                 onOpenExpenses={openExpensesWorkspace}
                 onCreateTask={createTask}
@@ -3936,11 +3943,11 @@ export function SagittariusApp({
           ) : null}
           {supportsContextRail && contextRailMounted ? (
             <ContextRail
-              trip={trip}
+              trip={scopedTripForRecords}
               selectedItem={selectedItem}
-              suggestions={suggestions}
-              stopNotes={stopNotes}
-              tasks={tasks}
+              suggestions={scopedSuggestions}
+              stopNotes={scopedTripPlanRecords.stopNotes}
+              tasks={scopedTripPlanRecords.tasks}
               currentMember={currentMember}
               expenseSummary={expenseSummary}
               canEdit={canEdit}
