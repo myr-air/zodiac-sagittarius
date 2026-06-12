@@ -211,12 +211,7 @@ export function validateItineraryItem(item: ItineraryItem, dayItems: ItineraryIt
 function buildOverlapWarnings(dayItems: ItineraryItem[]): Map<string, ValidationWarning[]> {
   const warningsByItemId = new Map<string, ValidationWarning[]>();
   const validIntervals = dayItems
-    .map((item) => {
-      if (item.timeMode === "flexible") return null;
-      const start = parseTime(item.startTime);
-      if (start === null || item.durationMinutes === null || item.durationMinutes <= 0) return null;
-      return { item, start, end: start + item.durationMinutes };
-    })
+    .map((item) => getTimeWindowInterval(item))
     .filter((entry): entry is { item: ItineraryItem; start: number; end: number } => entry !== null)
     .sort((a, b) => a.start - b.start || a.end - b.end || a.item.sortOrder - b.item.sortOrder);
 
@@ -273,8 +268,8 @@ function validateItemFields(item: ItineraryItem): ValidationWarning[] {
     warnings.push({ code: "invalid-start-time", message: "Use 24-hour time, for example 13:30.", itemId: item.id });
   }
 
-  if (!isFlexible && (item.durationMinutes === null || item.durationMinutes <= 0)) {
-    warnings.push({ code: "missing-duration", message: "Add duration so route timing can be checked.", itemId: item.id });
+  if (!isFlexible && !item.endTime && (item.durationMinutes === null || item.durationMinutes <= 0)) {
+    warnings.push({ code: "missing-duration", message: "Add an end time or duration so route timing can be checked.", itemId: item.id });
   }
 
   if (!item.mapLink.trim()) {
@@ -293,15 +288,11 @@ function validateHierarchyFields(item: ItineraryItem, dayItems: ItineraryItem[])
   const parent = dayItems.find((candidate) => candidate.id === item.parentItemId);
   if (!parent || !parent.isPlanBlock || parent.timeMode === "flexible") return [];
 
-  const parentStart = parseTime(parent.startTime);
-  const childStart = parseTime(item.startTime);
-  if (parentStart === null || childStart === null || parent.durationMinutes === null || item.durationMinutes === null) {
-    return [];
-  }
+  const parentInterval = getTimeWindowInterval(parent);
+  const childInterval = getTimeWindowInterval(item);
+  if (!parentInterval || !childInterval) return [];
 
-  const parentEnd = parentStart + parent.durationMinutes;
-  const childEnd = childStart + item.durationMinutes;
-  if (childStart < parentStart || childEnd > parentEnd) {
+  if (childInterval.start < parentInterval.start || childInterval.end > parentInterval.end) {
     return [{
       code: "child-outside-plan-block",
       message: `This child item sits outside ${parent.activity}; adjust the time or move it out of the block.`,
@@ -316,13 +307,13 @@ export function getNowNext(items: ItineraryItem[], day: string, currentTime: str
   if (nowMinutes === null) return { current: null, next: null, fallbackReason: "Current time is unavailable." };
 
   const timedItems = sortItemsForDay(items, day)
-    .map((item) => ({ item, start: parseTime(item.startTime), duration: itemDuration(item) }))
-    .filter((entry): entry is { item: ItineraryItem; start: number; duration: number } => entry.start !== null)
+    .map((item) => getTimeWindowInterval(item))
+    .filter((entry): entry is { item: ItineraryItem; start: number; end: number } => entry !== null)
     .sort((a, b) => a.start - b.start);
 
   if (timedItems.length === 0) return { current: null, next: null, fallbackReason: "No timed stops for this day yet." };
 
-  const current = timedItems.find((entry) => nowMinutes >= entry.start && nowMinutes < entry.start + entry.duration);
+  const current = timedItems.find((entry) => nowMinutes >= entry.start && nowMinutes < entry.end);
   const next = timedItems.find((entry) => entry.start > nowMinutes);
 
   return {
@@ -332,9 +323,31 @@ export function getNowNext(items: ItineraryItem[], day: string, currentTime: str
   };
 }
 
-function itemDuration(item: ItineraryItem): number {
-  /* v8 ignore next */
-  return item.durationMinutes ?? 45;
+export function getTimeWindowInterval(
+  item: ItineraryItem,
+): { item: ItineraryItem; start: number; end: number } | null {
+  if (item.timeMode === "flexible") return null;
+  const start = parseTime(item.startTime);
+  if (start === null) return null;
+
+  const endTime = item.endTime?.trim();
+  if (endTime) {
+    const end = parseTime(endTime);
+    if (end === null) return null;
+    const endOffsetDays = item.endOffsetDays ?? 0;
+    const endWithOffset = end + endOffsetDays * 24 * 60;
+    if (endWithOffset <= start) return null;
+    return { item, start, end: endWithOffset };
+  }
+
+  if (
+    item.durationMinutes === null ||
+    item.durationMinutes === undefined ||
+    item.durationMinutes <= 0
+  ) {
+    return null;
+  }
+  return { item, start, end: start + item.durationMinutes };
 }
 
 function compareItineraryItemsWithinDay(a: ItineraryItem, b: ItineraryItem): number {

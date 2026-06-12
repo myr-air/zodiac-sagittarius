@@ -30,6 +30,7 @@ import type { Locale } from "@/src/i18n/types";
 import { cn } from "@/src/lib/cn";
 import {
   formatDayLabel,
+  getTimeWindowInterval,
   getTripDates,
   groupItemsByDay,
   mainItineraryPathId,
@@ -2049,9 +2050,8 @@ function overlapsEarlierItem(
 function itemInterval(
   item: ItineraryItem,
 ): { start: number; end: number } | null {
-  const start = parseTime(item.startTime);
-  if (start === null) return null;
-  return { start, end: start + (item.durationMinutes ?? 45) };
+  const interval = getTimeWindowInterval(item);
+  return interval ? { start: interval.start, end: interval.end } : null;
 }
 
 function getRowClassName(
@@ -2743,16 +2743,7 @@ function findSamePathOverlapItemIds(items: ItineraryItem[]): Set<string> {
 
   for (const groupItems of groups.values()) {
     const intervals = groupItems
-      .map((item) => {
-        const start = parseTime(item.startTime);
-        if (
-          start === null ||
-          item.durationMinutes === null ||
-          item.durationMinutes <= 0
-        )
-          return null;
-        return { item, start, end: start + item.durationMinutes };
-      })
+      .map((item) => getTimeWindowInterval(item))
       .filter(
         (entry): entry is { item: ItineraryItem; start: number; end: number } =>
           entry !== null,

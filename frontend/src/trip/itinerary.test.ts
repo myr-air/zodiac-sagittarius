@@ -323,6 +323,27 @@ describe("itinerary planning domain", () => {
     expect(validateItineraryItem({ ...item, startTime: " " }, [item]).map((warning) => warning.code)).toContain("missing-start-time");
   });
 
+  it("uses explicit end time windows when duration is not set", () => {
+    const overnight = {
+      ...seedTrip.itineraryItems.find((item) => item.id === "item-dimdim")!,
+      id: "item-explicit-window",
+      day: hongKongDay,
+      startTime: "23:00",
+      endTime: "02:00",
+      endOffsetDays: 1,
+      durationMinutes: null,
+    };
+
+    expect(
+      validateItineraryItem(overnight, [overnight]).map(
+        (warning) => warning.code,
+      ),
+    ).not.toContain("missing-duration");
+    expect(getNowNext([overnight], hongKongDay, "23:30").current?.id).toBe(
+      "item-explicit-window",
+    );
+  });
+
   it("derives now and next for the on-trip context", () => {
     const state = getNowNext(seedTrip.itineraryItems, hongKongDay, "09:10");
 

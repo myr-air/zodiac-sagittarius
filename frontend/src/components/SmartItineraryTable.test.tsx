@@ -1272,6 +1272,69 @@ describe("SmartItineraryTable", () => {
     ).not.toBeInTheDocument();
   });
 
+  it("shows cross-day end times with superscript offset", () => {
+    const overnightItem = {
+      ...tripFixture.planItems[0],
+      id: "overnight-flight-window",
+      day: "2026-06-19",
+      startTime: "23:00",
+      endTime: "02:00",
+      endOffsetDays: 1,
+      durationMinutes: null,
+      activity: "Overnight flight window",
+      sortOrder: 100,
+    };
+
+    renderTable({
+      items: [overnightItem],
+      selectedItemId: overnightItem.id,
+    });
+
+    const row = screen.getByRole("row", {
+      name: /Overnight flight window/i,
+    });
+    expect(within(row).getByText("23:00-02:00⁺¹")).toBeInTheDocument();
+  });
+
+  it("uses end time windows for same-plan overlap warnings", () => {
+    const overnightItem = {
+      ...tripFixture.planItems[0],
+      id: "overnight-window-overlap",
+      day: "2026-06-19",
+      startTime: "23:00",
+      endTime: "02:00",
+      endOffsetDays: 1,
+      durationMinutes: null,
+      activity: "Overnight window overlap",
+      sortOrder: 100,
+      pathRole: "main" as const,
+    };
+    const lateItem = {
+      ...tripFixture.planItems[1],
+      id: "late-window-overlap",
+      day: "2026-06-19",
+      startTime: "23:30",
+      endTime: "23:45",
+      endOffsetDays: 0,
+      durationMinutes: null,
+      activity: "Late window overlap",
+      sortOrder: 200,
+      pathRole: "main" as const,
+    };
+
+    renderTable({
+      items: [overnightItem, lateItem],
+      selectedItemId: overnightItem.id,
+    });
+
+    expect(
+      screen.getByRole("row", { name: /Overnight window overlap/i }),
+    ).toHaveClass("data-row--path-overlap");
+    expect(
+      screen.getByRole("row", { name: /Late window overlap/i }),
+    ).toHaveClass("data-row--path-overlap");
+  });
+
   it("does not mark rows that overlap across different plans", () => {
     const mainItem = {
       ...tripFixture.planItems[0],
