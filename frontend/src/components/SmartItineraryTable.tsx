@@ -23,6 +23,7 @@ import type {
   PlanVariant,
   TripDailyBriefing,
   TripRole,
+  ValidationWarning,
 } from "@/src/trip/types";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import type { Messages } from "@/src/i18n/messages";
@@ -35,6 +36,7 @@ import {
   groupItemsByDay,
   mainItineraryPathId,
   parseTime,
+  validateItineraryItem,
   type ItineraryDayGroup,
   type ItineraryPathOption,
   type ItineraryView,
@@ -208,6 +210,8 @@ const dataRowSelectedClassName =
   "data-row--selected [&_td:first-child]:shadow-[inset_3px_0_0_var(--color-primary),inset_0_1px_0_var(--color-primary-border),inset_0_-1px_0_var(--color-primary-border)] [&_td:last-child]:shadow-[inset_-1px_0_0_var(--color-primary-border),inset_0_1px_0_var(--color-primary-border),inset_0_-1px_0_var(--color-primary-border)] [&_td]:bg-(--color-primary-soft) [&_td]:shadow-[inset_0_1px_0_var(--color-primary-border),inset_0_-1px_0_var(--color-primary-border)]";
 const dataRowPathOverlapClassName =
   "data-row--path-overlap [&_td]:!bg-(--color-danger-soft) hover:[&_td]:!bg-(--color-danger-soft) [&_td:first-child]:shadow-[inset_2px_0_0_var(--color-danger-border)] [&_td:last-child]:shadow-[inset_-1px_0_0_var(--color-danger-border)] [&_td]:shadow-[inset_0_1px_0_var(--color-danger-border),inset_0_-1px_0_var(--color-danger-border)]";
+const dataRowWarningClassName =
+  "data-row--has-warning [&_td]:bg-(--color-warning-soft) hover:[&_td]:bg-(--color-warning-soft) [&_td:first-child]:shadow-[inset_2px_0_0_var(--color-warning-border)] [&_td]:shadow-[inset_0_1px_0_var(--color-warning-border),inset_0_-1px_0_var(--color-warning-border)]";
 const dataRowDraggingClassName =
   "data-row--dragging cursor-grabbing [&_td]:bg-(--color-surface-muted) [&_td]:opacity-[0.54]";
 const dataRowDropTargetClassName =
@@ -248,6 +252,8 @@ const commitmentChipClassName =
   "border-[color-mix(in_srgb,var(--color-primary)_28%,var(--color-border))] bg-(--color-primary-soft) text-(--color-primary-strong)";
 const recordCommitmentChipClassName =
   "border-[color-mix(in_srgb,var(--color-warning)_24%,var(--color-border))] bg-(--color-warning-soft) text-(--color-warning-strong)";
+const warningChipClassName =
+  "border-(--color-warning-border) bg-(--color-warning-soft) text-(--color-warning-strong)";
 const blockToggleButtonClassName =
   "inline-flex min-h-7 w-fit items-center gap-1.5 rounded-(--radius-sm) border border-(--color-route-border) bg-(--color-route-soft) px-2 text-[11px] font-extrabold text-(--color-route) aria-expanded:[&_.icon]:rotate-90 [&_.icon]:size-3.5 [&_.icon]:transition-transform";
 const blockDropButtonClassName =
@@ -473,11 +479,8 @@ export function SmartItineraryTable({
     t.itinerary.filters.selectedCount,
     t.itinerary.filters.selectedNames,
   );
-  const groups = mergeTripDayGroups(
-    groupItemsByDay(displayItems),
-    startDate,
-    endDate,
-  );
+  const displayDayGroups = groupItemsByDay(displayItems);
+  const groups = mergeTripDayGroups(displayDayGroups, startDate, endDate);
   const dailyBriefingsByDate = useMemo(
     () => new Map(dailyBriefings.map((briefing) => [briefing.date, briefing])),
     [dailyBriefings],
@@ -485,10 +488,7 @@ export function SmartItineraryTable({
   const graphItemsByDay = groupGraphItemsByDay(displayItems);
   const warningCount =
     itineraryView?.warningCount ??
-    displayItems.reduce(
-      (total, item) => total + (item.advisories?.length ?? 0),
-      0,
-    );
+    displayDayGroups.reduce((total, group) => total + group.warningCount, 0);
   const totalMinutes = displayItems.reduce(
     (total, item) => total + (item.durationMinutes ?? 0),
     0,
@@ -1704,6 +1704,7 @@ function DayGroup({
               ? group.items.filter((candidate) => candidate.parentItemId === item.id).length
               : 0;
             const blockCollapsed = item.isPlanBlock && collapsedPlanBlockIds.includes(item.id);
+            const itemWarnings = validateItineraryItem(item, group.items);
 
             return (
               <tr
@@ -1715,6 +1716,7 @@ function DayGroup({
                   selectedItemId,
                   dragState,
                   samePathOverlapItemIds,
+                  itemWarnings.length > 0,
                 )}
                 data-item-id={item.id}
                 data-hierarchy-level={isChild ? 2 : 1}
@@ -1886,6 +1888,8 @@ function DayGroup({
                       childCount={childCount}
                       commitment={commitmentsByItemId[item.id]}
                       item={item}
+                      locale={locale}
+                      warnings={itemWarnings}
                     />
                   </div>
                 </td>
@@ -2153,10 +2157,12 @@ function getRowClassName(
     overBlockId: string | null;
   },
   samePathOverlapItemIds: Set<string> = new Set(),
+  hasWarnings = false,
 ): string {
   return cn(
     dataRowClassName,
     selectedItemId === item.id && dataRowSelectedClassName,
+    hasWarnings && dataRowWarningClassName,
     samePathOverlapItemIds.has(item.id) && dataRowPathOverlapClassName,
     dragState.draggedItemId === item.id && dataRowDraggingClassName,
     dragState.overItemId === item.id && dataRowDropTargetClassName,
@@ -2795,15 +2801,22 @@ function RowHierarchyMeta({
   childCount,
   commitment,
   item,
+  locale,
+  warnings,
 }: {
   childCount: number;
   commitment?: ItineraryCommitmentSummary;
   item: ItineraryItem;
+  locale: Locale;
+  warnings: ValidationWarning[];
 }) {
   const status = item.status ?? "idea";
   const priority = item.priority ?? "normal";
   const showCommitment = status !== "idea" || priority === "must" || priority === "high";
   const commitmentChips = buildCommitmentChips(commitment);
+  const sortedWarnings = sortValidationWarningsForDisplay(warnings);
+  const warningChips = sortedWarnings.slice(0, 2);
+  const remainingWarningCount = Math.max(0, warnings.length - warningChips.length);
 
   return (
     <div className={hierarchyMetaClassName} aria-label={`Structure for ${item.activity}`}>
@@ -2840,8 +2853,114 @@ function RowHierarchyMeta({
           {chip.label}
         </span>
       ))}
+      {warningChips.map((warning) => (
+        <span
+          className={cn(hierarchyChipClassName, warningChipClassName)}
+          key={warning.code}
+          title={warning.message}
+        >
+          <Icon name="warning" />
+          {formatValidationWarningLabel(warning, locale)}
+        </span>
+      ))}
+      {remainingWarningCount > 0 ? (
+        <span className={cn(hierarchyChipClassName, warningChipClassName)}>
+          <Icon name="warning" />
+          +{remainingWarningCount}
+        </span>
+      ) : null}
     </div>
   );
+}
+
+function sortValidationWarningsForDisplay(
+  warnings: ValidationWarning[],
+): ValidationWarning[] {
+  return [...warnings].sort(
+    (left, right) =>
+      validationWarningPriority(left) - validationWarningPriority(right),
+  );
+}
+
+function validationWarningPriority(warning: ValidationWarning): number {
+  if (
+    warning.code === "missing-parent-item" ||
+    warning.code === "invalid-parent-plan-block" ||
+    warning.code === "nested-sub-activity" ||
+    warning.code === "parent-scope-mismatch" ||
+    warning.code === "child-outside-plan-block"
+  ) {
+    return 0;
+  }
+  if (warning.code === "overlap" || warning.code === "time-order-conflict") {
+    return 1;
+  }
+  return 2;
+}
+
+function formatValidationWarningLabel(
+  warning: ValidationWarning,
+  locale: Locale,
+): string {
+  const labels: Record<ValidationWarning["code"], { en: string; th: string }> = {
+    "missing-start-time": {
+      en: "Start time",
+      th: "เวลาเริ่ม",
+    },
+    "invalid-start-time": {
+      en: "Invalid time",
+      th: "เวลาไม่ถูกต้อง",
+    },
+    "missing-duration": {
+      en: "End or duration",
+      th: "เวลาจบ/ระยะเวลา",
+    },
+    "missing-map-link": {
+      en: "Map link",
+      th: "ลิงก์แผนที่",
+    },
+    "missing-transportation": {
+      en: "Transport",
+      th: "การเดินทาง",
+    },
+    "time-order-conflict": {
+      en: "Time order",
+      th: "ลำดับเวลา",
+    },
+    overlap: {
+      en: "Overlap",
+      th: "เวลาซ้อน",
+    },
+    "missing-parent-item": {
+      en: "Missing parent",
+      th: "ไม่พบกิจกรรมแม่",
+    },
+    "invalid-parent-plan-block": {
+      en: "Parent block",
+      th: "แม่ต้องเป็น block",
+    },
+    "nested-sub-activity": {
+      en: "Nested sub-activity",
+      th: "ซ้อน sub-activity",
+    },
+    "parent-scope-mismatch": {
+      en: "Parent scope",
+      th: "แผน/วันไม่ตรง",
+    },
+    "child-outside-plan-block": {
+      en: "Outside block",
+      th: "นอก block",
+    },
+    "unresolved-location": {
+      en: "Location",
+      th: "สถานที่",
+    },
+    "stale-location": {
+      en: "Stale location",
+      th: "สถานที่เก่า",
+    },
+  };
+  return labels[warning.code]?.[locale] ?? warning.code;
 }
 
 function buildCommitmentChips(

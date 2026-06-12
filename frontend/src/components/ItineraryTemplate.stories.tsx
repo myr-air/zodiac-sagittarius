@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import { expect } from "storybook/test";
+import { expect, waitFor } from "storybook/test";
 import { buildDenseTripFixture, tripFixture } from "@/src/trip/trip-fixtures";
 import type { ItineraryItem } from "@/src/trip/types";
 import { SmartItineraryTable } from "./SmartItineraryTable";
@@ -318,6 +318,40 @@ export const HierarchyBlocks: Story = {
   play: async ({ canvas }) => {
     await expect(canvas.getByLabelText("Structure for Flight to Hong Kong")).toBeVisible();
     await expect(canvas.getByLabelText("Structure for Check in")).toBeVisible();
+  },
+};
+
+export const HierarchyWarnings: Story = {
+  args: {
+    ...Owner.args,
+    items: [
+      {
+        ...tripFixture.planItems[0],
+        id: "story-plain-parent",
+        activity: "Plain parent",
+        isPlanBlock: false,
+        parentItemId: null,
+        day: "2026-06-19",
+        sortOrder: 100,
+      },
+      {
+        ...tripFixture.planItems[1],
+        id: "story-child-under-plain-parent",
+        activity: "Child under plain parent",
+        parentItemId: "story-plain-parent",
+        day: "2026-06-19",
+        sortOrder: 200,
+      },
+    ],
+    selectedItemId: "story-child-under-plain-parent",
+    selectedTripPathId: "main",
+    dayPathOverrides: {},
+  },
+  play: async ({ canvas, canvasElement }) => {
+    await expect(await canvas.findByText("Parent block")).toBeVisible();
+    await waitFor(() => {
+      expect(canvasElement.querySelector(".data-row--has-warning")).toBeInTheDocument();
+    });
   },
 };
 export const TableOverflow: Story = {

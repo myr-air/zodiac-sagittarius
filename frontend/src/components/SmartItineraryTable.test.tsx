@@ -2204,6 +2204,39 @@ describe("SmartItineraryTable", () => {
     );
   });
 
+  it("surfaces hierarchy warnings inline on affected rows", () => {
+    renderTable({
+      items: [
+        {
+          ...tripFixture.planItems[0],
+          id: "plain-parent",
+          activity: "Plain parent",
+          isPlanBlock: false,
+          parentItemId: null,
+          sortOrder: 100,
+        },
+        {
+          ...tripFixture.planItems[1],
+          id: "child-under-plain",
+          activity: "Child under plain parent",
+          parentItemId: "plain-parent",
+          sortOrder: 200,
+        },
+      ],
+      selectedItemId: "child-under-plain",
+    });
+
+    const row = screen.getByRole("row", {
+      name: /Child under plain parent/i,
+    });
+    expect(row).toHaveClass("data-row--has-warning");
+    const structure = within(row).getByLabelText(
+      "Structure for Child under plain parent",
+    );
+    expect(within(structure).getByText("แม่ต้องเป็น block")).toBeInTheDocument();
+    expect(screen.getByText("4 คำเตือน")).toBeInTheDocument();
+  });
+
   it("ignores missing and self-targeted drag payloads", () => {
     const props = renderTable();
     const row = screen
