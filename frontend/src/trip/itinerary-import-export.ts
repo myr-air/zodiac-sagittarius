@@ -183,12 +183,14 @@ function toExportRecords({
   trip: Trip;
 }): ItineraryExportRecords {
   const itemIds = new Set(items.map((item) => item.id));
+  const itemPlanIds = items
+    .map((item) => item.planVariantId)
+    .filter((value): value is string => Boolean(value));
   const planIds = new Set(
-    [
-      ...items.map((item) => item.planVariantId),
-      trip.mainTripPlanId,
-      trip.activePlanVariantId,
-    ].filter((value): value is string => Boolean(value)),
+    (itemPlanIds.length > 0
+      ? itemPlanIds
+      : [trip.mainTripPlanId, trip.activePlanVariantId]
+    ).filter((value): value is string => Boolean(value)),
   );
   const expenses = trip.expenses.filter(
     (expense) =>

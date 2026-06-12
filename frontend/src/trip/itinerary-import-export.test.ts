@@ -102,6 +102,45 @@ describe("itinerary import/export JSON", () => {
     expect(parseItineraryImport(JSON.stringify(exported))).toHaveLength(exported.items.length);
   });
 
+  it("keeps unlinked records scoped to the exported Trip Plan instead of the current Main Plan", () => {
+    const backupPlanId = "plan-backup-export";
+    const backupItem = {
+      ...tripFixture.planItems[0],
+      id: "backup-plan-stop",
+      planVariantId: backupPlanId,
+      activity: "Backup plan stop",
+    };
+    const mainPlanExpense = {
+      ...tripFixture.trip.expenses[0],
+      id: "main-plan-expense",
+      tripId: tripFixture.trip.id,
+      tripPlanId: tripFixture.trip.activePlanVariantId,
+      itineraryItemId: null,
+      title: "Main plan only receipt",
+    };
+    const backupPlanExpense = {
+      ...tripFixture.trip.expenses[0],
+      id: "backup-plan-expense",
+      tripId: tripFixture.trip.id,
+      tripPlanId: backupPlanId,
+      itineraryItemId: null,
+      title: "Backup plan estimate",
+    };
+
+    const exported = buildItineraryExport({
+      exportedAt: "2026-06-04T12:00:00.000Z",
+      items: [backupItem],
+      trip: {
+        ...tripFixture.trip,
+        expenses: [mainPlanExpense, backupPlanExpense],
+      },
+    });
+
+    expect(exported.records?.expenses.map((expense) => expense.id)).toEqual([
+      "backup-plan-expense",
+    ]);
+  });
+
   it("preserves activity branch group fields in export and import", () => {
     const branchedItem = {
       ...tripFixture.planItems[0],
