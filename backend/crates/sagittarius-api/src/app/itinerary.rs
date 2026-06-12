@@ -60,6 +60,15 @@ pub async fn patch_itinerary_item(
         .parent_item_id
         .unwrap_or(existing.parent_item_id);
     let target_day = request.patch.day.unwrap_or(existing.day);
+    validate_itinerary_block_patch(
+        &mut tx,
+        trip_id,
+        item_id,
+        existing.day,
+        target_day,
+        target_parent_item_id,
+    )
+    .await?;
     validate_itinerary_parent(
         &mut tx,
         trip_id,
@@ -200,6 +209,33 @@ pub async fn create_itinerary_item(
     realtime.publish(event).await;
 
     Ok(created)
+}
+
+async fn validate_itinerary_block_patch(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    trip_id: Uuid,
+    item_id: Uuid,
+    existing_day: time::Date,
+    target_day: time::Date,
+    target_parent_item_id: Option<Uuid>,
+) -> Result<(), ServiceError> {
+    let has_children = db::queries::itinerary_item_has_children(tx, trip_id, item_id).await?;
+    if !has_children {
+        return Ok(());
+    }
+
+    if target_parent_item_id.is_some() {
+        return Err(ServiceError::InvalidRequest(
+            "activity block with sub-activities cannot become a sub-activity",
+        ));
+    }
+    if target_day != existing_day {
+        return Err(ServiceError::InvalidRequest(
+            "activity block with sub-activities cannot move days without its children",
+        ));
+    }
+
+    Ok(())
 }
 
 async fn validate_itinerary_parent(

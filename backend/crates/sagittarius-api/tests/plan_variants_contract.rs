@@ -259,9 +259,7 @@ async fn trip_plan_contract_accepts_canonical_routes_and_status(pool: sqlx::PgPo
 }
 
 #[sqlx::test(migrations = "../../migrations")]
-async fn trip_plan_contract_rejects_unsupported_creation_modes_and_main_status(
-    pool: sqlx::PgPool,
-) {
+async fn trip_plan_contract_rejects_unsupported_creation_modes_and_main_status(pool: sqlx::PgPool) {
     support::seed_trip(&pool).await;
     let token = support::create_session(&pool, support::ORGANIZER_ID).await;
     let app = support::app(pool.clone());

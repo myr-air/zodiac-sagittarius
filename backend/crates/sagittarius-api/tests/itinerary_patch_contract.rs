@@ -283,6 +283,118 @@ async fn itinerary_patch_contract_invalid_activity_type_returns_invalid_request(
 }
 
 #[sqlx::test(migrations = "../../migrations")]
+async fn itinerary_patch_contract_rejects_activity_block_becoming_sub_activity(pool: sqlx::PgPool) {
+    support::seed_trip(&pool).await;
+    let token = support::create_session(&pool, support::ORGANIZER_ID).await;
+    let app = support::app(pool);
+
+    let child = create_itinerary_item(
+        &app,
+        &token,
+        "web-create-child-for-block-patch",
+        json!({
+            "parentItemId": support::ITEM_ID,
+            "activity": "Queue for table",
+            "startTime": "08:45",
+            "place": "The Elements"
+        }),
+    )
+    .await;
+    assert_eq!(child["parentItemId"], support::ITEM_ID);
+
+    let target_parent = create_itinerary_item(
+        &app,
+        &token,
+        "web-create-target-parent-for-block-patch",
+        json!({
+            "activity": "Nearby coffee",
+            "startTime": "09:30",
+            "place": "Kowloon Station"
+        }),
+    )
+    .await;
+
+    let response = app
+        .oneshot(
+            Request::builder()
+                .method(Method::PATCH)
+                .uri(format!(
+                    "/api/v1/trips/{}/itinerary-items/{}",
+                    support::TRIP_ID,
+                    support::ITEM_ID
+                ))
+                .header(header::AUTHORIZATION, format!("Bearer {token}"))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({
+                        "clientMutationId": "web-patch-block-into-child",
+                        "expectedVersion": 4,
+                        "patch": {
+                            "parentItemId": target_parent["id"]
+                        }
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::BAD_REQUEST);
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn itinerary_patch_contract_rejects_activity_block_day_move_without_children(
+    pool: sqlx::PgPool,
+) {
+    support::seed_trip(&pool).await;
+    let token = support::create_session(&pool, support::ORGANIZER_ID).await;
+    let app = support::app(pool);
+
+    let child = create_itinerary_item(
+        &app,
+        &token,
+        "web-create-child-for-day-move",
+        json!({
+            "parentItemId": support::ITEM_ID,
+            "activity": "Queue for table",
+            "startTime": "08:45",
+            "place": "The Elements"
+        }),
+    )
+    .await;
+    assert_eq!(child["parentItemId"], support::ITEM_ID);
+
+    let response = app
+        .oneshot(
+            Request::builder()
+                .method(Method::PATCH)
+                .uri(format!(
+                    "/api/v1/trips/{}/itinerary-items/{}",
+                    support::TRIP_ID,
+                    support::ITEM_ID
+                ))
+                .header(header::AUTHORIZATION, format!("Bearer {token}"))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({
+                        "clientMutationId": "web-patch-block-day-without-child",
+                        "expectedVersion": 4,
+                        "patch": {
+                            "day": "2025-05-17"
+                        }
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::BAD_REQUEST);
+}
+
+#[sqlx::test(migrations = "../../migrations")]
 async fn itinerary_patch_contract_duplicate_client_mutation_id_conflicts(pool: sqlx::PgPool) {
     support::seed_trip(&pool).await;
     let token = support::create_session(&pool, support::ORGANIZER_ID).await;
@@ -343,4 +455,44 @@ async fn itinerary_patch_contract_duplicate_client_mutation_id_conflicts(pool: s
         .unwrap();
 
     assert_eq!(duplicate.status(), StatusCode::CONFLICT);
+}
+
+async fn create_itinerary_item(
+    app: &axum::Router,
+    token: &str,
+    client_mutation_id: &str,
+    overrides: Value,
+) -> Value {
+    let mut body = json!({
+        "clientMutationId": client_mutation_id,
+        "planVariantId": support::PLAN_ID,
+        "day": "2025-05-16",
+        "activity": "Generated activity",
+        "activityType": "food",
+        "place": "The Elements"
+    });
+    let body_object = body.as_object_mut().unwrap();
+    for (key, value) in overrides.as_object().unwrap() {
+        body_object.insert(key.clone(), value.clone());
+    }
+
+    let response = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method(Method::POST)
+                .uri(format!(
+                    "/api/v1/trips/{}/itinerary-items",
+                    support::TRIP_ID
+                ))
+                .header(header::AUTHORIZATION, format!("Bearer {token}"))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(body.to_string()))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::OK);
+    serde_json::from_slice(&to_bytes(response.into_body(), 65536).await.unwrap()).unwrap()
 }

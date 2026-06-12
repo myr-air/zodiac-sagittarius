@@ -1778,6 +1778,26 @@ pub async fn itinerary_item_parent_for_trip(
     .await
 }
 
+pub async fn itinerary_item_has_children(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    trip_id: Uuid,
+    item_id: Uuid,
+) -> Result<bool, sqlx::Error> {
+    let child_count: i64 = sqlx::query_scalar(
+        "select count(*)
+         from itinerary_items
+         where trip_id = $1
+           and parent_item_id = $2
+           and deleted_at is null",
+    )
+    .bind(trip_id)
+    .bind(item_id)
+    .fetch_one(&mut **tx)
+    .await?;
+
+    Ok(child_count > 0)
+}
+
 pub async fn list_expense_splits(
     pool: &PgPool,
     trip_id: Uuid,
