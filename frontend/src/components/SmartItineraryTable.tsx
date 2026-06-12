@@ -238,6 +238,12 @@ const inlineTimeInputClassName = cn(
   inlineFieldClassName,
   "text-center font-[650] tabular-nums",
 );
+const timeWindowInlineClassName =
+  "inline-flex w-full min-w-0 items-center justify-center gap-0.5";
+const timeWindowSeparatorClassName =
+  "shrink-0 text-[10px] font-black leading-none text-(--color-text-subtle)";
+const endOffsetToggleClassName =
+  "inline-flex h-6 min-w-6 shrink-0 items-center justify-center rounded-(--radius-sm) border border-transparent px-1 text-[10px] font-black leading-none text-(--color-text-muted) transition-[background,border-color,color] duration-150 hover:not-disabled:border-(--color-route-border) hover:not-disabled:bg-(--color-route-soft) hover:not-disabled:text-(--color-route) focus-visible:border-(--color-route-border) focus-visible:bg-(--color-route-soft) focus-visible:text-(--color-route) focus-visible:outline-none aria-pressed:border-(--color-route-border) aria-pressed:bg-(--color-route-soft) aria-pressed:text-(--color-route) disabled:cursor-not-allowed disabled:opacity-40";
 const inlineOptionPickerButtonClassName = cn(
   inlineFieldClassName,
   "inline-option-picker-button inline-flex !min-h-8 items-center justify-between gap-2 text-left font-semibold",
@@ -279,6 +285,11 @@ const mobileInspectorSubtleFieldClassName = cn(
 const mobileInspectorTimeFieldClassName = cn(
   mobileInspectorFieldClassName,
   "text-left tabular-nums",
+);
+const mobileInspectorTimeWindowClassName = "grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)_auto] items-center gap-1";
+const mobileInspectorEndOffsetToggleClassName = cn(
+  endOffsetToggleClassName,
+  "h-12 min-w-12 border-(--color-border) bg-(--color-surface-subtle) text-xs",
 );
 const mobileInspectorTypeButtonClassName =
   "min-h-12 border-(--color-border) bg-(--color-surface-subtle) px-3 text-sm font-bold";
@@ -1280,22 +1291,19 @@ function MobileSelectedStopInspector({
             onCommit={(place) => onUpdateItemInline?.(item.id, { place })}
           />
         </label>
-        <label className={mobileInspectorLabelClassName}>
+        <span className={mobileInspectorLabelClassName}>
           {itineraryLabels.headers.time}
-          <InlineTextField
-            ariaLabel={itineraryLabels.row.inlineTime({
-              activity: item.activity,
-            })}
+          <TimeWindowInlineEditor
             canEdit={canEdit}
-            className={mobileInspectorTimeFieldClassName}
-            itemValue={item.startTime}
-            key={`${item.id}:mobile-time:${item.startTime}`}
-            type="time"
-            onCommit={(startTime) =>
-              onUpdateItemInline?.(item.id, { startTime })
-            }
+            endInputClassName={mobileInspectorTimeFieldClassName}
+            endOffsetToggleClassName={mobileInspectorEndOffsetToggleClassName}
+            item={item}
+            labels={itineraryLabels}
+            startInputClassName={mobileInspectorTimeFieldClassName}
+            wrapperClassName={mobileInspectorTimeWindowClassName}
+            onUpdateItemInline={onUpdateItemInline}
           />
-        </label>
+        </span>
         <span className={mobileInspectorLabelClassName}>
           {itineraryLabels.headers.type}
           <InlineActivityTypeSelect
@@ -1644,18 +1652,15 @@ function DayGroup({
                 </td>
                 <td className={timeCellClassName}>
                   <div className={timeStackClassName}>
-                    <InlineTextField
-                      ariaLabel={itineraryLabels.row.inlineTime({
-                        activity: item.activity,
-                      })}
+                    <TimeWindowInlineEditor
                       canEdit={canEdit}
-                      className={inlineTimeInputClassName}
-                      itemValue={item.startTime}
-                      key={`${item.id}:time:${item.startTime}`}
-                      type="time"
-                      onCommit={(value) =>
-                        onUpdateItemInline?.(item.id, { startTime: value })
-                      }
+                      endInputClassName={inlineTimeInputClassName}
+                      endOffsetToggleClassName={endOffsetToggleClassName}
+                      item={item}
+                      labels={itineraryLabels}
+                      startInputClassName={inlineTimeInputClassName}
+                      wrapperClassName={timeWindowInlineClassName}
+                      onUpdateItemInline={onUpdateItemInline}
                     />
                     {item.endTime ? (
                       <span className="text-[11px] leading-none text-(--color-text-muted)">
@@ -2103,6 +2108,87 @@ function DayWeatherChip({
           <span>{formatWeatherTemp(low)}</span>
         </>
       ) : <span>{condition}</span>}
+    </span>
+  );
+}
+
+function TimeWindowInlineEditor({
+  canEdit,
+  endInputClassName,
+  endOffsetToggleClassName,
+  item,
+  labels,
+  startInputClassName,
+  wrapperClassName,
+  onUpdateItemInline,
+}: {
+  canEdit: boolean;
+  endInputClassName: string;
+  endOffsetToggleClassName: string;
+  item: ItineraryItem;
+  labels: Messages["itinerary"];
+  startInputClassName: string;
+  wrapperClassName: string;
+  onUpdateItemInline?: (
+    itemId: string,
+    patch: InlineItineraryItemPatch,
+  ) => void | Promise<void>;
+}) {
+  const endOffsetDays = item.endOffsetDays ?? 0;
+  const hasEndTime = Boolean(item.endTime);
+
+  return (
+    <span className={wrapperClassName}>
+      <InlineTextField
+        ariaLabel={labels.row.inlineTime({
+          activity: item.activity,
+        })}
+        canEdit={canEdit}
+        className={startInputClassName}
+        itemValue={item.startTime}
+        key={`${item.id}:time:${item.startTime}`}
+        type="time"
+        onCommit={(startTime) =>
+          onUpdateItemInline?.(item.id, { startTime })
+        }
+      />
+      <span className={timeWindowSeparatorClassName} aria-hidden="true">
+        -
+      </span>
+      <InlineTextField
+        ariaLabel={labels.row.inlineEndTime({
+          activity: item.activity,
+        })}
+        canEdit={canEdit}
+        className={endInputClassName}
+        itemValue={item.endTime ?? ""}
+        key={`${item.id}:end-time:${item.endTime ?? ""}`}
+        type="time"
+        onCommit={(endTime) =>
+          onUpdateItemInline?.(
+            item.id,
+            endTime
+              ? { endTime, endOffsetDays }
+              : { endTime: null, endOffsetDays: 0 },
+          )
+        }
+      />
+      <button
+        type="button"
+        aria-label={labels.row.toggleNextDayEnd({
+          activity: item.activity,
+        })}
+        aria-pressed={endOffsetDays > 0}
+        className={endOffsetToggleClassName}
+        disabled={!canEdit || !hasEndTime}
+        onClick={() =>
+          onUpdateItemInline?.(item.id, {
+            endOffsetDays: endOffsetDays > 0 ? 0 : 1,
+          })
+        }
+      >
+        ⁺¹
+      </button>
     </span>
   );
 }

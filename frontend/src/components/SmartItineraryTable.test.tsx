@@ -1296,6 +1296,49 @@ describe("SmartItineraryTable", () => {
     expect(within(row).getByText("23:00-02:00⁺¹")).toBeInTheDocument();
   });
 
+  it("edits end time and next-day offset inline", () => {
+    const onUpdateItemInline = vi.fn();
+    const overnightItem = {
+      ...tripFixture.planItems[0],
+      id: "overnight-flight-window",
+      day: "2026-06-19",
+      startTime: "23:00",
+      endTime: "02:00",
+      endOffsetDays: 0,
+      durationMinutes: null,
+      activity: "Overnight flight window",
+      sortOrder: 100,
+    };
+
+    renderTable({
+      items: [overnightItem],
+      onUpdateItemInline,
+      selectedItemId: overnightItem.id,
+    });
+
+    const row = screen.getByRole("row", {
+      name: /Overnight flight window/i,
+    });
+    fireEvent.click(
+      within(row).getByRole("button", {
+        name: /สลับเวลาจบข้ามวัน Overnight flight window/i,
+      }),
+    );
+    expect(onUpdateItemInline).toHaveBeenCalledWith(overnightItem.id, {
+      endOffsetDays: 1,
+    });
+
+    const endTime = within(row).getByLabelText(
+      /แก้ไขเวลาจบ Overnight flight window/i,
+    );
+    fireEvent.change(endTime, { target: { value: "" } });
+    fireEvent.blur(endTime);
+    expect(onUpdateItemInline).toHaveBeenCalledWith(overnightItem.id, {
+      endTime: null,
+      endOffsetDays: 0,
+    });
+  });
+
   it("uses end time windows for same-plan overlap warnings", () => {
     const overnightItem = {
       ...tripFixture.planItems[0],
@@ -1457,6 +1500,10 @@ describe("SmartItineraryTable", () => {
     await user.clear(time);
     await user.type(time, "10:15{Enter}");
 
+    const endTime = within(row).getByLabelText(/แก้ไขเวลาจบ Dim Dim Sum/i);
+    fireEvent.change(endTime, { target: { value: "11:45" } });
+    fireEvent.blur(endTime);
+
     await user.click(
       within(row).getByRole("button", { name: /แก้ไขประเภท Dim Dim Sum/i }),
     );
@@ -1482,6 +1529,10 @@ describe("SmartItineraryTable", () => {
     });
     expect(onUpdateItemInline).toHaveBeenCalledWith("item-dimdim", {
       startTime: "10:15",
+    });
+    expect(onUpdateItemInline).toHaveBeenCalledWith("item-dimdim", {
+      endTime: "11:45",
+      endOffsetDays: 0,
     });
     expect(onUpdateItemInline).toHaveBeenCalledWith("item-dimdim", {
       activityType: "experience",
@@ -1531,6 +1582,10 @@ describe("SmartItineraryTable", () => {
     await user.clear(time);
     await user.type(time, "10:15{Enter}");
 
+    const endTime = within(inspector).getByLabelText(/แก้ไขเวลาจบ Dim Dim Sum/i);
+    fireEvent.change(endTime, { target: { value: "11:45" } });
+    fireEvent.blur(endTime);
+
     await user.click(
       within(inspector).getByRole("button", { name: /แก้ไขประเภท Dim Dim Sum/i }),
     );
@@ -1562,6 +1617,10 @@ describe("SmartItineraryTable", () => {
     });
     expect(onUpdateItemInline).toHaveBeenCalledWith("item-dimdim", {
       startTime: "10:15",
+    });
+    expect(onUpdateItemInline).toHaveBeenCalledWith("item-dimdim", {
+      endTime: "11:45",
+      endOffsetDays: 0,
     });
     expect(onUpdateItemInline).toHaveBeenCalledWith("item-dimdim", {
       activityType: "experience",
