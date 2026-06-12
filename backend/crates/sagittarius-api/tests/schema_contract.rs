@@ -55,6 +55,8 @@ async fn migration_creates_vertical_slice_indexes(pool: sqlx::PgPool) {
         "stop_notes_trip_plan_item_idx",
         "booking_docs_trip_plan_active_idx",
         "itinerary_items_time_window_idx",
+        "itinerary_items_parent_scope_idx",
+        "itinerary_items_parent_scope_key",
         "trip_member_sessions_member_active_idx",
         "stop_notes_trip_item_created_at_idx",
         "trip_daily_briefings_trip_date_idx",
@@ -94,14 +96,75 @@ async fn itinerary_schema_stores_time_windows(pool: sqlx::PgPool) {
     let constraints: Vec<String> = sqlx::query_scalar(
         "select conname::text
          from pg_constraint
-         where conname = 'itinerary_items_no_self_parent_check'",
+         where conname in (
+           'itinerary_items_no_self_parent_check',
+           'itinerary_items_parent_scope_fkey'
+         )
+         order by conname",
     )
     .fetch_all(&pool)
     .await
     .unwrap();
     assert_eq!(
         constraints,
-        vec!["itinerary_items_no_self_parent_check".to_string()]
+        vec![
+            "itinerary_items_no_self_parent_check".to_string(),
+            "itinerary_items_parent_scope_fkey".to_string(),
+        ]
+    );
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn itinerary_schema_rejects_parent_outside_child_day_or_plan(pool: sqlx::PgPool) {
+    support::seed_trip(&pool).await;
+
+    let other_plan_id = uuid::Uuid::now_v7();
+    sqlx::query(
+        "insert into plan_variants (id, trip_id, name, kind, status)
+         values ($1, $2, 'Backup', 'backup', 'backup')",
+    )
+    .bind(other_plan_id)
+    .bind(uuid::Uuid::parse_str(support::TRIP_ID).unwrap())
+    .execute(&pool)
+    .await
+    .unwrap();
+
+    let parent_id = uuid::Uuid::now_v7();
+    sqlx::query(
+        "insert into itinerary_items (
+           id, trip_id, plan_variant_id, day, sort_order, start_time,
+           activity, activity_type, place, created_by
+         )
+         values ($1, $2, $3, '2025-05-17', 100, '09:00',
+           'Other day parent', 'experience', 'Hotel', $4)",
+    )
+    .bind(parent_id)
+    .bind(uuid::Uuid::parse_str(support::TRIP_ID).unwrap())
+    .bind(other_plan_id)
+    .bind(uuid::Uuid::parse_str(support::ORGANIZER_ID).unwrap())
+    .execute(&pool)
+    .await
+    .unwrap();
+
+    let child_result = sqlx::query(
+        "insert into itinerary_items (
+           id, trip_id, plan_variant_id, parent_item_id, day, sort_order,
+           start_time, activity, activity_type, place, created_by
+         )
+         values ($1, $2, $3, $4, '2025-05-16', 200,
+           '09:15', 'Invalid child', 'experience', 'Hotel', $5)",
+    )
+    .bind(uuid::Uuid::now_v7())
+    .bind(uuid::Uuid::parse_str(support::TRIP_ID).unwrap())
+    .bind(uuid::Uuid::parse_str(support::PLAN_ID).unwrap())
+    .bind(parent_id)
+    .bind(uuid::Uuid::parse_str(support::ORGANIZER_ID).unwrap())
+    .execute(&pool)
+    .await;
+
+    assert!(
+        child_result.is_err(),
+        "DB must reject parent_item_id outside the child's trip plan/day scope",
     );
 }
 
