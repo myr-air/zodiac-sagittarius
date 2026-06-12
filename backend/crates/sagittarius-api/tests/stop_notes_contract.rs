@@ -53,6 +53,50 @@ async fn stop_note_contract_traveler_can_create_note_for_trip_item(pool: sqlx::P
 }
 
 #[sqlx::test(migrations = "../../migrations")]
+async fn stop_note_contract_rejects_trip_plan_that_conflicts_with_item_plan(pool: sqlx::PgPool) {
+    support::seed_trip(&pool).await;
+    let alt_item_id = support::seed_alt_plan_item(&pool).await;
+    let token = support::create_session(&pool, support::TRAVELER_ID).await;
+    let app = support::app(pool.clone());
+
+    let response = app
+        .oneshot(
+            Request::builder()
+                .method(Method::POST)
+                .uri(format!("/api/v1/trips/{}/stop-notes", support::TRIP_ID))
+                .header(header::AUTHORIZATION, format!("Bearer {token}"))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({
+                        "clientMutationId": "stop-note-mismatched-plan",
+                        "tripPlanId": support::PLAN_ID,
+                        "itineraryItemId": alt_item_id,
+                        "body": "Alt plan note should stay scoped"
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::BAD_REQUEST);
+    let body: Value =
+        serde_json::from_slice(&to_bytes(response.into_body(), 65536).await.unwrap()).unwrap();
+    assert_eq!(body["code"], "invalid_request");
+
+    let stored_count: i64 = sqlx::query_scalar(
+        "select count(*)
+         from stop_notes
+         where body = 'Alt plan note should stay scoped'",
+    )
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(stored_count, 0);
+}
+
+#[sqlx::test(migrations = "../../migrations")]
 async fn stop_note_contract_viewer_cannot_create_note(pool: sqlx::PgPool) {
     support::seed_trip(&pool).await;
     let token = support::create_session(&pool, support::VIEWER_ID).await;
