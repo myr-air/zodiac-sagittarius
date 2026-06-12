@@ -328,8 +328,7 @@ button:disabled,
 .bookings-panel,
 .photos-panel,
 .expenses-panel,
-.expenses-page > *,
-.members-page > * {
+.expenses-page > * {
   background-color: var(--color-surface);
 }
 
@@ -337,7 +336,6 @@ button:disabled,
 .bookings-panel,
 .photos-panel,
 .expenses-panel,
-.members-page > *,
 .expenses-page > *,
 .booking-ticket-card,
 .photo-album-card {
@@ -1057,7 +1055,11 @@ button:disabled,
   .bookings-docs-page .booking-stat,
   .bookings-docs-page .booking-inspector,
   .expenses-page > *,
-  .members-page > *,
+  .members-page .page-header,
+  .member-stat,
+  .member-command-bar,
+  .member-create-panel,
+  .people-module,
   .timeline-panel > *,
   .overview-panel,
   .overview-cockpit-card {
