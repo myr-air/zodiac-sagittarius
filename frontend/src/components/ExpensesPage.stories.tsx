@@ -40,6 +40,10 @@ export const Traveler: Story = {
     currentMember: tripFixture.currentMembers.traveler,
     expenseSummary: tripFixture.expenseSummaries.traveler,
   },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole("region", { name: /Trip money/i })).toHaveClass("expenses-page");
+    await expect(canvas.getByRole("button", { name: /Add expense/i })).toBeEnabled();
+  },
 };
 
 export const Viewer: Story = {
@@ -130,4 +134,9 @@ export const Desktop1440: Story = {
 export const Mobile: Story = {
   args: Owner.args,
   parameters: { viewport: { defaultViewport: "mobile320" } },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole("region", { name: /Trip money|เงินทริป/i })).toHaveClass("expenses-page");
+    await expect(canvas.getByRole("region", { name: /Money summary|สรุปเงิน/i })).toBeVisible();
+    await expect(canvas.getByRole("table", { name: /Expense ledger|รายการค่าใช้จ่าย/i })).toHaveClass("expense-ledger-table");
+  },
 };

@@ -326,17 +326,13 @@ button:disabled,
 .table-scroll,
 .route-map-layout,
 .bookings-panel,
-.photos-panel,
-.expenses-panel,
-.expenses-page > * {
+.photos-panel {
   background-color: var(--color-surface);
 }
 
 .panel,
 .bookings-panel,
 .photos-panel,
-.expenses-panel,
-.expenses-page > *,
 .booking-ticket-card,
 .photo-album-card {
   border-color: var(--color-border);
@@ -344,8 +340,7 @@ button:disabled,
 }
 
 .booking-stat,
-.photos-stat,
-.expense-stat {
+.photos-stat {
   border-color: var(--color-border);
   background:
     radial-gradient(74px 54px at 92% 8%, rgb(194 79 22 / 0.08), transparent 70%),
@@ -1054,7 +1049,11 @@ button:disabled,
   .bookings-docs-page .bookings-panel,
   .bookings-docs-page .booking-stat,
   .bookings-docs-page .booking-inspector,
-  .expenses-page > *,
+  .expenses-page .page-header,
+  .expense-stat,
+  .expenses-panel,
+  .expenses-command-bar,
+  .expenses-table-wrap,
   .members-page .page-header,
   .member-stat,
   .member-command-bar,
