@@ -497,6 +497,10 @@ export function SagittariusApp({
       ),
     [selectedPlanVariantId, suggestions],
   );
+  const scopedPlanCheck = useMemo(
+    () => scopePlanCheckToItems(latestPlanCheck, activePlanItems),
+    [activePlanItems, latestPlanCheck],
+  );
   const itineraryCommitmentsByItemId = useMemo(
     () =>
       buildItineraryCommitmentsByItemId({
@@ -3850,7 +3854,7 @@ export function SagittariusApp({
                 <PlanCheckPanel
                   canMutate={canReviewSuggestions}
                   canRun={canEdit}
-                  check={latestPlanCheck}
+                  check={scopedPlanCheck}
                   locale={locale}
                   running={planCheckRunning}
                   onRun={runPlanCheck}
@@ -5340,6 +5344,21 @@ function buildLocalPlanCheck(trip: Trip, memberId: string): PlanCheck {
     completedAt: new Date().toISOString(),
     version: 1,
     suggestions,
+  };
+}
+
+function scopePlanCheckToItems(
+  check: PlanCheck | null,
+  items: ItineraryItem[],
+): PlanCheck | null {
+  if (!check) return null;
+  const itemIds = new Set(items.map((item) => item.id));
+  return {
+    ...check,
+    suggestions: check.suggestions.filter(
+      (suggestion) =>
+        suggestion.targetItemIds.some((itemId) => itemIds.has(itemId)),
+    ),
   };
 }
 

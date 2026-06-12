@@ -237,6 +237,30 @@ function tripWithSheetsAndPlanScopedRecords(selectedPlanId = "plan-variant-backu
   };
 }
 
+function tripWithSheetsAndPlanCheckFindings(): Trip {
+  const trip = tripWithSheetsAndPlanScopedRecords();
+  return {
+    ...trip,
+    itineraryItems: trip.itineraryItems.map((item) =>
+      item.id === "item-dimdim"
+        ? {
+            ...item,
+            activity: "Main broken brunch",
+            durationMinutes: null,
+            timeMode: "scheduled",
+          }
+        : item.id === "item-rain-gallery"
+          ? {
+              ...item,
+              activity: "Backup broken gallery",
+              durationMinutes: null,
+              timeMode: "scheduled",
+            }
+          : item,
+    ),
+  };
+}
+
 describe("Sagittarius cockpit UI", () => {
   beforeEach(() => {
     installLocalStorageStub();
@@ -4963,6 +4987,22 @@ describe("Sagittarius cockpit UI", () => {
 
     expect(await screen.findByText("Backup gallery task")).toBeInTheDocument();
     expect(screen.queryByText("Main plan brunch task")).not.toBeInTheDocument();
+  });
+
+  it("shows Plan Check findings only for the selected Trip Plan", async () => {
+    const user = userEvent.setup();
+    const trip = tripWithSheetsAndPlanCheckFindings();
+
+    render(<SagittariusApp initialTrip={trip} initialView="itinerary" />);
+
+    await user.click(screen.getByRole("button", { name: /Run Plan Check/i }));
+
+    expect(
+      await screen.findByText(/Backup broken gallery ยังขาด duration/i),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText(/Main broken brunch ยังขาด duration/i),
+    ).not.toBeInTheDocument();
   });
 
   it("adds new local stops to the current Trip Plan after switching plans", async () => {
