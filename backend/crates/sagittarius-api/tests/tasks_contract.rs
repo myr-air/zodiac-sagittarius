@@ -403,3 +403,80 @@ async fn tasks_contract_patch_rejects_unknown_task_duplicate_mutation_and_bad_re
         .unwrap();
     assert_eq!(duplicate_patch.status(), StatusCode::CONFLICT);
 }
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn tasks_contract_patch_rejects_cross_plan_related_item_relink(pool: sqlx::PgPool) {
+    support::seed_trip(&pool).await;
+    let alt_item_id = support::seed_alt_plan_item(&pool).await;
+    let organizer = support::create_session(&pool, support::ORGANIZER_ID).await;
+    let app = support::app(pool.clone());
+
+    let created = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method(Method::POST)
+                .uri(format!("/api/v1/trips/{}/tasks", support::TRIP_ID))
+                .header(header::AUTHORIZATION, format!("Bearer {organizer}"))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({
+                        "clientMutationId": "web-task-main-plan",
+                        "title": "Confirm airport transfer",
+                        "visibility": "shared",
+                        "kind": "booking",
+                        "relatedItemId": support::ITEM_ID
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(created.status(), StatusCode::CREATED);
+    let body: Value =
+        serde_json::from_slice(&to_bytes(created.into_body(), 65536).await.unwrap()).unwrap();
+    assert_eq!(body["tripPlanId"], support::PLAN_ID);
+    let task_id = body["id"].as_str().unwrap();
+
+    let response = app
+        .oneshot(
+            Request::builder()
+                .method(Method::PATCH)
+                .uri(format!(
+                    "/api/v1/trips/{}/tasks/{task_id}",
+                    support::TRIP_ID
+                ))
+                .header(header::AUTHORIZATION, format!("Bearer {organizer}"))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({
+                        "clientMutationId": "web-task-cross-plan-relink",
+                        "expectedVersion": 1,
+                        "patch": { "relatedItemId": alt_item_id }
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::BAD_REQUEST);
+    let body: Value =
+        serde_json::from_slice(&to_bytes(response.into_body(), 65536).await.unwrap()).unwrap();
+    assert_eq!(body["code"], "invalid_request");
+
+    let stored: (Uuid, Uuid, i64) = sqlx::query_as(
+        "select trip_plan_id, related_item_id, version
+         from trip_tasks
+         where id = $1",
+    )
+    .bind(Uuid::parse_str(task_id).unwrap())
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(stored.0, Uuid::parse_str(support::PLAN_ID).unwrap());
+    assert_eq!(stored.1, Uuid::parse_str(support::ITEM_ID).unwrap());
+    assert_eq!(stored.2, 1);
+}

@@ -134,7 +134,7 @@ pub async fn patch_task(
         return Err(ServiceError::VersionConflictWithLatest(latest));
     }
 
-    validate_patch_references(&mut tx, existing.trip_id, &request.patch).await?;
+    validate_patch_references(&mut tx, existing.trip_id, &existing, &request.patch).await?;
 
     let updated_record =
         db::queries::update_task(&mut tx, task_id, &request.patch, existing.version + 1)
@@ -233,11 +233,27 @@ async fn validate_task_references(
 async fn validate_patch_references(
     tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
     trip_id: Uuid,
+    existing: &crate::db::models::TripTaskRecord,
     patch: &TaskPatch,
 ) -> Result<(), ServiceError> {
-    let assignee_id = patch.assignee_id.flatten();
-    let related_item_id = patch.related_item_id.flatten();
-    validate_task_references(tx, trip_id, assignee_id, related_item_id).await
+    let assignee_id = patch.assignee_id.unwrap_or(existing.assignee_id);
+    let related_item_id = patch.related_item_id.unwrap_or(existing.related_item_id);
+    validate_task_references(tx, trip_id, assignee_id, related_item_id).await?;
+
+    let Some(item_id) = related_item_id else {
+        return Ok(());
+    };
+    let related_item_trip_plan_id =
+        db::queries::itinerary_item_plan_variant_id_for_trip(tx, trip_id, item_id)
+            .await?
+            .ok_or(ServiceError::NotFound)?;
+    if Some(related_item_trip_plan_id) != existing.trip_plan_id {
+        return Err(ServiceError::InvalidRequest(
+            "relatedItemId must match task Trip Plan",
+        ));
+    }
+
+    Ok(())
 }
 
 async fn insert_task_event(

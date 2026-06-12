@@ -210,13 +210,21 @@ pub async fn patch_expense(
             .map_err(|_| ServiceError::InvalidRequest("latest expense could not be serialized"))?;
         return Err(ServiceError::VersionConflictWithLatest(latest));
     }
+    let next_itinerary_item_id = request
+        .itinerary_item_id
+        .unwrap_or(existing.itinerary_item_id);
     validate_expense_links(
         &mut tx,
         trip_id,
         request.paid_by.unwrap_or(existing.paid_by),
-        request
-            .itinerary_item_id
-            .unwrap_or(existing.itinerary_item_id),
+        next_itinerary_item_id,
+    )
+    .await?;
+    validate_expense_plan_scope(
+        &mut tx,
+        trip_id,
+        existing.trip_plan_id,
+        next_itinerary_item_id,
     )
     .await?;
     validate_expense_splits_total(
@@ -298,6 +306,28 @@ async fn validate_expense_links(
         if !db::queries::itinerary_item_exists_for_trip(tx, trip_id, item_id).await? {
             return Err(ServiceError::NotFound);
         }
+    }
+
+    Ok(())
+}
+
+async fn validate_expense_plan_scope(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    trip_id: Uuid,
+    expense_trip_plan_id: Option<Uuid>,
+    itinerary_item_id: Option<Uuid>,
+) -> Result<(), ServiceError> {
+    let Some(item_id) = itinerary_item_id else {
+        return Ok(());
+    };
+    let item_trip_plan_id =
+        db::queries::itinerary_item_plan_variant_id_for_trip(tx, trip_id, item_id)
+            .await?
+            .ok_or(ServiceError::NotFound)?;
+    if Some(item_trip_plan_id) != expense_trip_plan_id {
+        return Err(ServiceError::InvalidRequest(
+            "itineraryItemId must match expense Trip Plan",
+        ));
     }
 
     Ok(())
