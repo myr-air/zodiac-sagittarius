@@ -674,7 +674,10 @@ describe("Trip API client", () => {
 
   it("resolves and rotates tokenized join invite links through encoded routes", async () => {
     const inviteResponse = {
-      trip: cockpitResponse.trip,
+      trip: {
+        ...cockpitResponse.trip,
+        mainTripPlanId: cockpitResponse.trip.activePlanVariantId,
+      },
       claimableMembers: cockpitResponse.members,
       joinSessionToken: "fresh-join-session-token",
       expiresAt: "2026-06-11T12:00:00.000Z",
@@ -748,6 +751,38 @@ describe("Trip API client", () => {
     });
   });
 
+  it("maps legacy-only plan variants to canonical Trip Plan state", () => {
+    const legacyPlan = {
+      ...cockpitResponse.planVariants![0],
+      kind: "split" as const,
+      status: undefined,
+      name: "Legacy client proposal",
+    };
+    const { tripPlans: _canonicalTripPlans, ...legacyOnlyResponse } = {
+      ...cockpitResponse,
+      trip: {
+        ...cockpitResponse.trip,
+        activePlanVariantId: legacyPlan.id,
+        mainTripPlanId: undefined,
+      },
+      planVariants: [legacyPlan],
+    };
+
+    const cockpit = mapCockpitResponse(legacyOnlyResponse);
+
+    expect(cockpit.trip.activePlanVariantId).toBe(legacyPlan.id);
+    expect(cockpit.trip.mainTripPlanId).toBe(legacyPlan.id);
+    expect(cockpit.trip.planVariants[0]).toMatchObject({
+      id: legacyPlan.id,
+      kind: "split",
+      status: "proposal",
+    });
+    expect(cockpit.trip.tripPlans?.[0]).toMatchObject({
+      id: legacyPlan.id,
+      status: "proposal",
+    });
+  });
+
   it("maps a canonical-only cockpit payload without legacy planVariants", () => {
     const canonicalPlan = {
       ...cockpitResponse.tripPlans![0],
@@ -779,6 +814,38 @@ describe("Trip API client", () => {
       id: canonicalPlan.id,
       status: "draft",
     });
+  });
+
+  it("keeps the Main Plan pointer authoritative when plan status disagrees", () => {
+    const pointerPlan = {
+      ...cockpitResponse.tripPlans![0],
+      id: "018f4e82-3000-7c00-b111-0000000000c2",
+      kind: "draft" as const,
+      status: "draft" as const,
+      name: "Pointer draft",
+    };
+    const staleStatusPlan = {
+      ...cockpitResponse.tripPlans![0],
+      id: "018f4e82-3000-7c00-b111-0000000000c3",
+      kind: "main" as const,
+      status: "main" as const,
+      name: "Stale status main",
+    };
+
+    const cockpit = mapCockpitResponse({
+      ...cockpitResponse,
+      trip: {
+        ...cockpitResponse.trip,
+        activePlanVariantId: pointerPlan.id,
+        mainTripPlanId: pointerPlan.id,
+      },
+      planVariants: [pointerPlan, staleStatusPlan],
+      tripPlans: [pointerPlan, staleStatusPlan],
+    });
+
+    expect(cockpit.trip.activePlanVariantId).toBe(pointerPlan.id);
+    expect(cockpit.trip.mainTripPlanId).toBe(pointerPlan.id);
+    expect(cockpit.trip.tripPlans?.find((plan) => plan.id === staleStatusPlan.id)?.status).toBe("main");
   });
 
   it("patches trip metadata through the authenticated trip route", async () => {
@@ -979,6 +1046,29 @@ describe("Trip API client", () => {
     expect(trip.activePlanVariantId).toBe(createdVariant.id);
     expect(trip.mainTripPlanId).toBe(createdVariant.id);
     expect(trip.version).toBe(2);
+  });
+
+  it("normalizes canonical trip plan route responses that still omit status", async () => {
+    const legacyShapedVariant = {
+      id: "018f4e82-3000-7c00-b111-000000000098",
+      tripId: cockpitResponse.trip.id,
+      name: "Legacy-shaped proposal",
+      kind: "split" as const,
+      description: "Compatibility response",
+      version: 1,
+    };
+    const fetchImpl = vi.fn().mockResolvedValueOnce(jsonResponse(legacyShapedVariant, 201));
+    const client = createTripApiClient({ baseUrl: "https://api.example.test", fetchImpl });
+
+    await expect(client.createPlanVariant(cockpitResponse.trip.id, "session-token", {
+      clientMutationId: "web-plan-create-legacy-shaped",
+      name: "Legacy-shaped proposal",
+      kind: "split",
+    })).resolves.toMatchObject({
+      id: legacyShapedVariant.id,
+      kind: "split",
+      status: "proposal",
+    });
   });
 
   it("patches itinerary items and creates or resolves suggestions through authenticated backend routes", async () => {

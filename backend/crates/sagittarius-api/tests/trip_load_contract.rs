@@ -33,8 +33,14 @@ async fn trip_load_contract_returns_cockpit_payload_and_filters_private_tasks(po
 
     assert_eq!(body["trip"]["id"], support::TRIP_ID);
     assert_eq!(body["trip"]["joinPasswordHash"], Value::Null);
+    assert_eq!(body["trip"]["activePlanVariantId"], support::PLAN_ID);
+    assert_eq!(body["trip"]["mainTripPlanId"], support::PLAN_ID);
     assert_eq!(body["members"].as_array().unwrap().len(), 4);
     assert_eq!(body["planVariants"].as_array().unwrap().len(), 1);
+    assert_eq!(body["tripPlans"].as_array().unwrap().len(), 1);
+    assert_eq!(body["planVariants"][0]["id"], support::PLAN_ID);
+    assert_eq!(body["tripPlans"][0]["id"], support::PLAN_ID);
+    assert_eq!(body["tripPlans"][0]["status"], "main");
     assert_eq!(body["itineraryItems"][0]["id"], support::ITEM_ID);
     assert_eq!(body["suggestions"].as_array().unwrap().len(), 0);
     assert_eq!(body["stopNotes"][0]["id"], support::STOP_NOTE_ID);
@@ -116,6 +122,44 @@ async fn trip_load_contract_viewer_hides_expense_summary_and_private_tasks(pool:
         .collect();
     assert_eq!(task_titles, vec!["Book Peak Tram"]);
     assert!(tasks.iter().all(|task| task["visibility"] == "shared"));
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn trip_load_contract_uses_pointer_when_status_metadata_disagrees(pool: sqlx::PgPool) {
+    support::seed_trip(&pool).await;
+    let stale_status_plan_id = uuid::Uuid::now_v7();
+    sqlx::query(
+        "insert into plan_variants (id, trip_id, name, kind, status, description)
+         values ($1, $2, 'Stale status main', 'main', 'main', 'Raw support script drift')",
+    )
+    .bind(stale_status_plan_id)
+    .bind(uuid::Uuid::parse_str(support::TRIP_ID).unwrap())
+    .execute(&pool)
+    .await
+    .unwrap();
+    let organizer_token = support::create_session(&pool, support::ORGANIZER_ID).await;
+    let app = support::app(pool);
+
+    let response = app
+        .oneshot(
+            Request::builder()
+                .method(Method::GET)
+                .uri(format!("/api/v1/trips/{}", support::TRIP_ID))
+                .header(header::AUTHORIZATION, format!("Bearer {organizer_token}"))
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::OK);
+    let body: Value =
+        serde_json::from_slice(&to_bytes(response.into_body(), 131072).await.unwrap()).unwrap();
+    assert_eq!(body["trip"]["activePlanVariantId"], support::PLAN_ID);
+    assert_eq!(body["trip"]["mainTripPlanId"], support::PLAN_ID);
+    assert!(body["tripPlans"].as_array().unwrap().iter().any(|plan| {
+        plan["id"] == stale_status_plan_id.to_string() && plan["status"] == "main"
+    }));
 }
 
 #[sqlx::test(migrations = "../../migrations")]

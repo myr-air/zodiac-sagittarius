@@ -284,6 +284,26 @@ async fn trip_plan_contract_accepts_canonical_routes_and_status(pool: sqlx::PgPo
     .await
     .unwrap();
     assert_eq!(moved_record_count, 0);
+
+    let (event_type, aggregate_type, payload): (String, String, Value) = sqlx::query_as(
+        "select event_type, aggregate_type, payload
+         from realtime_events
+         where aggregate_id = $1
+           and event_type = 'plan_variant.updated'
+         order by created_at desc
+         limit 1",
+    )
+    .bind(Uuid::parse_str(trip_plan_id).unwrap())
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(event_type, "plan_variant.updated");
+    assert_eq!(aggregate_type, "plan_variant");
+    assert_eq!(payload["activePlanVariantId"], trip_plan_id);
+    assert_eq!(payload["mainTripPlanId"], trip_plan_id);
+    assert_eq!(payload["tripPlan"]["id"], trip_plan_id);
+    assert_eq!(payload["tripPlan"]["status"], "main");
+    assert_eq!(payload["trip"]["mainTripPlanId"], trip_plan_id);
 }
 
 async fn plan_scoped_record_counts_by_plan(
@@ -361,6 +381,31 @@ async fn trip_plan_contract_rejects_unsupported_creation_modes_and_main_status(p
                 "kind": "main"
             }),
         ),
+        (
+            "web-trip-plan-create-conflict",
+            json!({
+                "clientMutationId": "web-trip-plan-create-conflict",
+                "name": "Conflicting status",
+                "kind": "draft",
+                "status": "proposal"
+            }),
+        ),
+        (
+            "web-trip-plan-create-bad-status",
+            json!({
+                "clientMutationId": "web-trip-plan-create-bad-status",
+                "name": "Bad status",
+                "status": "archived"
+            }),
+        ),
+        (
+            "web-trip-plan-create-bad-kind",
+            json!({
+                "clientMutationId": "web-trip-plan-create-bad-kind",
+                "name": "Bad kind",
+                "kind": "rain"
+            }),
+        ),
     ] {
         let response = app
             .clone()
@@ -380,12 +425,29 @@ async fn trip_plan_contract_rejects_unsupported_creation_modes_and_main_status(p
             StatusCode::BAD_REQUEST,
             "{client_mutation_id} should be rejected"
         );
+        let error_body: Value =
+            serde_json::from_slice(&to_bytes(response.into_body(), 65536).await.unwrap()).unwrap();
+        assert_eq!(error_body["code"], "invalid_request");
+        assert!(
+            error_body["message"]
+                .as_str()
+                .is_some_and(|message| !message.is_empty()),
+            "{client_mutation_id} should include a useful message",
+        );
     }
 
     let rejected_count: i64 = sqlx::query_scalar(
         "select count(*) from plan_variants
          where trip_id = $1
-           and name in ('Copied plan', 'Copied source plan', 'Main by status', 'Main by kind')",
+           and name in (
+             'Copied plan',
+             'Copied source plan',
+             'Main by status',
+             'Main by kind',
+             'Conflicting status',
+             'Bad status',
+             'Bad kind'
+           )",
     )
     .bind(Uuid::parse_str(support::TRIP_ID).unwrap())
     .fetch_one(&pool)
@@ -411,6 +473,25 @@ async fn trip_plan_contract_rejects_main_status_and_empty_patch(pool: sqlx::PgPo
             "web-trip-plan-patch-main-kind",
             json!({
                 "kind": "main"
+            }),
+        ),
+        (
+            "web-trip-plan-patch-conflict",
+            json!({
+                "kind": "draft",
+                "status": "proposal"
+            }),
+        ),
+        (
+            "web-trip-plan-patch-bad-status",
+            json!({
+                "status": "archived"
+            }),
+        ),
+        (
+            "web-trip-plan-patch-bad-kind",
+            json!({
+                "kind": "rain"
             }),
         ),
         ("web-trip-plan-patch-empty", json!({})),
@@ -443,6 +524,15 @@ async fn trip_plan_contract_rejects_main_status_and_empty_patch(pool: sqlx::PgPo
             response.status(),
             StatusCode::BAD_REQUEST,
             "{client_mutation_id} should be rejected"
+        );
+        let error_body: Value =
+            serde_json::from_slice(&to_bytes(response.into_body(), 65536).await.unwrap()).unwrap();
+        assert_eq!(error_body["code"], "invalid_request");
+        assert!(
+            error_body["message"]
+                .as_str()
+                .is_some_and(|message| !message.is_empty()),
+            "{client_mutation_id} should include a useful message",
         );
     }
 }

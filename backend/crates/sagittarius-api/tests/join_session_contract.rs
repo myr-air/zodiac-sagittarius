@@ -416,6 +416,10 @@ async fn join_invite_token_resolves_to_fresh_join_session(pool: sqlx::PgPool) {
             .unwrap();
     assert_eq!(resolve_body["trip"]["id"], support::TRIP_ID);
     assert_eq!(resolve_body["trip"]["joinId"], "HK-SZ-2025");
+    assert_eq!(
+        resolve_body["trip"]["mainTripPlanId"], resolve_body["trip"]["activePlanVariantId"],
+        "invite-token-current response must expose canonical and legacy Main Plan pointers",
+    );
     assert_ne!(
         resolve_body["joinSessionToken"].as_str().unwrap(),
         invite_token,

@@ -155,11 +155,90 @@ async fn plan_scoped_record_schema_adds_trip_plan_columns_and_fkeys(pool: sqlx::
     );
 }
 
+#[sqlx::test(migrations = "../../migrations")]
+async fn trip_plan_compatibility_schema_adds_status_and_keeps_composite_identity(
+    pool: sqlx::PgPool,
+) {
+    let columns: Vec<(String, String, String)> = sqlx::query_as(
+        "select column_name::text, data_type::text, is_nullable::text
+         from information_schema.columns
+         where table_schema = 'public'
+           and table_name = 'plan_variants'
+           and column_name = 'status'",
+    )
+    .fetch_all(&pool)
+    .await
+    .unwrap();
+    assert_eq!(
+        columns,
+        vec![("status".to_string(), "text".to_string(), "YES".to_string(),)],
+    );
+
+    let status_check: Option<String> = sqlx::query_scalar(
+        "select pg_get_constraintdef(oid)
+         from pg_constraint
+         where conname = 'plan_variants_status_check'",
+    )
+    .fetch_optional(&pool)
+    .await
+    .unwrap();
+    let status_check = status_check.expect("missing plan_variants_status_check");
+    for status in ["main", "draft", "proposal", "backup"] {
+        assert!(
+            status_check.contains(status),
+            "status check must allow {status}: {status_check}",
+        );
+    }
+
+    let composite_unique_count: i64 = sqlx::query_scalar(
+        "select count(*)
+         from pg_constraint
+         where conrelid = 'plan_variants'::regclass
+           and contype in ('p', 'u')
+           and conkey = ARRAY[
+             (select attnum from pg_attribute where attrelid = 'plan_variants'::regclass and attname = 'id'),
+             (select attnum from pg_attribute where attrelid = 'plan_variants'::regclass and attname = 'trip_id')
+           ]::smallint[]",
+    )
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert!(
+        composite_unique_count >= 1,
+        "plan_variants(id, trip_id) must stay unique for composite FKs",
+    );
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn trip_plan_compatibility_backfills_split_kind_to_proposal_status(pool: sqlx::PgPool) {
+    support::seed_trip(&pool).await;
+    let plan_id = uuid::Uuid::now_v7();
+
+    sqlx::query("insert into plan_variants (id, trip_id, name, kind, status) values ($1, $2, 'Legacy split', 'split', null)")
+        .bind(plan_id)
+        .bind(uuid::Uuid::parse_str(support::TRIP_ID).unwrap())
+        .execute(&pool)
+        .await
+        .unwrap();
+
+    let status: String = sqlx::query_scalar(
+        "select coalesce(status, case when kind = 'split' then 'proposal' else kind end)
+         from plan_variants
+         where id = $1",
+    )
+    .bind(plan_id)
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(status, "proposal");
+}
+
 #[test]
 fn plan_scoped_record_migration_keeps_linked_expenses_with_item_plan() {
     let migration = include_str!("../../../migrations/0026_plan_scoped_records.sql");
     let linked_backfill = "UPDATE expenses expense\nSET trip_plan_id = item.plan_variant_id";
-    let fallback_backfill = "UPDATE expenses expense\nSET trip_plan_id = trips.active_plan_variant_id";
+    let fallback_backfill =
+        "UPDATE expenses expense\nSET trip_plan_id = trips.active_plan_variant_id";
 
     assert!(
         migration.contains(linked_backfill),
