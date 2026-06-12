@@ -1,5 +1,6 @@
 use serde::Deserialize;
 use serde_json::{Value, json};
+use std::collections::{HashMap, HashSet};
 use std::process::Stdio;
 use std::time::Duration;
 use tokio::io::AsyncWriteExt;
@@ -440,6 +441,33 @@ fn normalize_items(items: &mut [ItineraryImportItem]) -> Result<(), ServiceError
             return Err(ServiceError::InvalidRequest(
                 "end offset days cannot be negative",
             ));
+        }
+    }
+
+    let items_by_id: HashMap<String, (time::Date, Option<String>)> = items
+        .iter()
+        .map(|item| (item.id.clone(), (item.day, item.parent_item_id.clone())))
+        .collect();
+    let parent_ids: HashSet<String> = items
+        .iter()
+        .filter_map(|item| item.parent_item_id.clone())
+        .collect();
+
+    for item in items.iter_mut() {
+        if let Some(parent_item_id) = &item.parent_item_id {
+            let Some((parent_day, grandparent_item_id)) = items_by_id.get(parent_item_id) else {
+                return Err(ServiceError::InvalidRequest(
+                    "sub-activity parent must be present in import",
+                ));
+            };
+            if grandparent_item_id.is_some() || *parent_day != item.day {
+                return Err(ServiceError::InvalidRequest(
+                    "itinerary import hierarchy supports same-day activity and sub-activity only",
+                ));
+            }
+            item.is_plan_block = false;
+        } else if parent_ids.contains(&item.id) {
+            item.is_plan_block = true;
         }
     }
     Ok(())

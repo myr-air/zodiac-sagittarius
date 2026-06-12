@@ -223,6 +223,103 @@ async fn itinerary_import_contract_organizer_can_normalize_json_import(pool: sql
 }
 
 #[sqlx::test(migrations = "../../migrations")]
+async fn itinerary_import_contract_rejects_invalid_hierarchy(pool: sqlx::PgPool) {
+    support::seed_trip(&pool).await;
+    let token = support::create_session(&pool, support::ORGANIZER_ID).await;
+    let app = support::app(pool);
+
+    async fn import_status(app: &axum::Router, token: &str, source: Value) -> StatusCode {
+        app.clone()
+            .oneshot(
+                Request::builder()
+                    .method(Method::POST)
+                    .uri(format!(
+                        "/api/v1/trips/{}/itinerary-imports",
+                        support::TRIP_ID
+                    ))
+                    .header(header::AUTHORIZATION, format!("Bearer {token}"))
+                    .header(header::CONTENT_TYPE, "application/json")
+                    .body(Body::from(
+                        json!({
+                            "fileName": "itinerary.json",
+                            "contentType": "application/json",
+                            "mode": "json",
+                            "content": source.to_string()
+                        })
+                        .to_string(),
+                    ))
+                    .unwrap(),
+            )
+            .await
+            .unwrap()
+            .status()
+    }
+
+    let source = base_import_source(json!([
+        import_item("block-1", "2026-06-19", Value::Null, false),
+        import_item("child-1", "2026-06-19", "block-1", false),
+    ]));
+    let ok = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method(Method::POST)
+                .uri(format!(
+                    "/api/v1/trips/{}/itinerary-imports",
+                    support::TRIP_ID
+                ))
+                .header(header::AUTHORIZATION, format!("Bearer {token}"))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({
+                        "fileName": "itinerary.json",
+                        "contentType": "application/json",
+                        "mode": "json",
+                        "content": source.to_string()
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(ok.status(), StatusCode::OK);
+    let body: Value =
+        serde_json::from_slice(&to_bytes(ok.into_body(), 131072).await.unwrap()).unwrap();
+    assert_eq!(body["items"][0]["isPlanBlock"], true);
+    assert_eq!(body["items"][1]["isPlanBlock"], false);
+
+    let grandchild = base_import_source(json!([
+        import_item("block-1", "2026-06-19", Value::Null, true),
+        import_item("child-1", "2026-06-19", "block-1", false),
+        import_item("grandchild-1", "2026-06-19", "child-1", false),
+    ]));
+    let cross_day = base_import_source(json!([
+        import_item("block-1", "2026-06-19", Value::Null, true),
+        import_item("child-1", "2026-06-20", "block-1", false),
+    ]));
+    let missing_parent = base_import_source(json!([import_item(
+        "child-1",
+        "2026-06-19",
+        "missing-block",
+        false
+    ),]));
+
+    assert_eq!(
+        import_status(&app, &token, grandchild).await,
+        StatusCode::BAD_REQUEST
+    );
+    assert_eq!(
+        import_status(&app, &token, cross_day).await,
+        StatusCode::BAD_REQUEST
+    );
+    assert_eq!(
+        import_status(&app, &token, missing_parent).await,
+        StatusCode::BAD_REQUEST
+    );
+}
+
+#[sqlx::test(migrations = "../../migrations")]
 async fn itinerary_import_contract_traveler_cannot_import(pool: sqlx::PgPool) {
     support::seed_trip(&pool).await;
     let token = support::create_session(&pool, support::TRAVELER_ID).await;
@@ -253,4 +350,67 @@ async fn itinerary_import_contract_traveler_cannot_import(pool: sqlx::PgPool) {
         .unwrap();
 
     assert_eq!(response.status(), StatusCode::FORBIDDEN);
+}
+
+fn base_import_source(items: Value) -> Value {
+    json!({
+        "schema": "joii.itinerary.export",
+        "version": 1,
+        "exportedAt": "2026-06-04T12:00:00.000Z",
+        "trip": {
+            "id": support::TRIP_ID,
+            "name": "Hong Kong + Shenzhen Trip",
+            "destinationLabel": "Hong Kong + Shenzhen",
+            "startDate": "2026-06-18",
+            "endDate": "2026-06-23",
+            "activePlanVariantId": support::PLAN_ID,
+            "mainTripPlanId": support::PLAN_ID,
+            "tripPlans": []
+        },
+        "items": items,
+        "records": {
+            "expenses": [],
+            "bookingDocs": [],
+            "stopNotes": [],
+            "tasks": []
+        }
+    })
+}
+
+fn import_item(
+    id: &str,
+    day: &str,
+    parent_item_id: impl Into<Value>,
+    is_plan_block: bool,
+) -> Value {
+    json!({
+        "id": id,
+        "pathGroupId": null,
+        "pathId": null,
+        "pathName": null,
+        "pathRole": null,
+        "parentItemId": parent_item_id.into(),
+        "itemKind": "activity",
+        "timeMode": "scheduled",
+        "isPlanBlock": is_plan_block,
+        "status": "planned",
+        "priority": "normal",
+        "day": day,
+        "sortOrder": 100,
+        "startTime": "09:00",
+        "endTime": null,
+        "endOffsetDays": 0,
+        "activity": format!("Import item {id}"),
+        "activityType": "experience",
+        "place": "Central",
+        "linkLabel": "Map",
+        "mapLink": "",
+        "coordinates": null,
+        "address": null,
+        "durationMinutes": 60,
+        "transportation": "",
+        "details": {},
+        "advisories": [],
+        "note": ""
+    })
 }
