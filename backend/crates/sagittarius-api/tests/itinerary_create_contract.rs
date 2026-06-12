@@ -118,6 +118,48 @@ async fn itinerary_create_contract_accepts_cross_day_time_window(pool: sqlx::PgP
 }
 
 #[sqlx::test(migrations = "../../migrations")]
+async fn itinerary_create_contract_accepts_end_time_without_start_time(pool: sqlx::PgPool) {
+    support::seed_trip(&pool).await;
+    let token = support::create_session(&pool, support::ORGANIZER_ID).await;
+    let app = support::app(pool);
+
+    let response = app
+        .oneshot(
+            Request::builder()
+                .method(Method::POST)
+                .uri(format!(
+                    "/api/v1/trips/{}/itinerary-items",
+                    support::TRIP_ID
+                ))
+                .header(header::AUTHORIZATION, format!("Bearer {token}"))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({
+                        "clientMutationId": "web-create-end-time-only",
+                        "planVariantId": support::PLAN_ID,
+                        "day": "2025-05-16",
+                        "endTime": "22:00",
+                        "activity": "Hotel lights-out target",
+                        "activityType": "stay",
+                        "place": "Hotel"
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::OK);
+    let body: Value =
+        serde_json::from_slice(&to_bytes(response.into_body(), 65536).await.unwrap()).unwrap();
+    assert_eq!(body["startTime"], "");
+    assert_eq!(body["endTime"], "22:00");
+    assert_eq!(body["endOffsetDays"], 0);
+    assert_eq!(body["durationMinutes"], Value::Null);
+}
+
+#[sqlx::test(migrations = "../../migrations")]
 async fn itinerary_create_contract_rejects_end_offset_without_end_time(pool: sqlx::PgPool) {
     support::seed_trip(&pool).await;
     let token = support::create_session(&pool, support::ORGANIZER_ID).await;
@@ -224,6 +266,87 @@ async fn itinerary_create_contract_rejects_nested_sub_activity(pool: sqlx::PgPoo
         .unwrap();
 
     assert_eq!(grandchild.status(), StatusCode::BAD_REQUEST);
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn itinerary_create_contract_rejects_parent_from_another_plan(pool: sqlx::PgPool) {
+    support::seed_trip(&pool).await;
+    let alt_item_id = support::seed_alt_plan_item(&pool).await;
+    let token = support::create_session(&pool, support::ORGANIZER_ID).await;
+    let app = support::app(pool);
+
+    let response = app
+        .oneshot(
+            Request::builder()
+                .method(Method::POST)
+                .uri(format!(
+                    "/api/v1/trips/{}/itinerary-items",
+                    support::TRIP_ID
+                ))
+                .header(header::AUTHORIZATION, format!("Bearer {token}"))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({
+                        "clientMutationId": "web-create-parent-other-plan",
+                        "planVariantId": support::PLAN_ID,
+                        "parentItemId": alt_item_id,
+                        "day": "2025-05-16",
+                        "startTime": "09:15",
+                        "activity": "Impossible child",
+                        "activityType": "travel",
+                        "place": "Station"
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::BAD_REQUEST);
+    let body: Value =
+        serde_json::from_slice(&to_bytes(response.into_body(), 65536).await.unwrap()).unwrap();
+    assert_eq!(body["code"], "invalid_request");
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn itinerary_create_contract_rejects_parent_from_another_day(pool: sqlx::PgPool) {
+    support::seed_trip(&pool).await;
+    let token = support::create_session(&pool, support::ORGANIZER_ID).await;
+    let app = support::app(pool);
+
+    let response = app
+        .oneshot(
+            Request::builder()
+                .method(Method::POST)
+                .uri(format!(
+                    "/api/v1/trips/{}/itinerary-items",
+                    support::TRIP_ID
+                ))
+                .header(header::AUTHORIZATION, format!("Bearer {token}"))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({
+                        "clientMutationId": "web-create-parent-other-day",
+                        "planVariantId": support::PLAN_ID,
+                        "parentItemId": support::ITEM_ID,
+                        "day": "2025-05-17",
+                        "startTime": "09:15",
+                        "activity": "Wrong day child",
+                        "activityType": "travel",
+                        "place": "Station"
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::BAD_REQUEST);
+    let body: Value =
+        serde_json::from_slice(&to_bytes(response.into_body(), 65536).await.unwrap()).unwrap();
+    assert_eq!(body["code"], "invalid_request");
 }
 
 #[sqlx::test(migrations = "../../migrations")]

@@ -246,6 +246,63 @@ async fn itinerary_patch_contract_rejects_clearing_end_time_with_offset(pool: sq
 }
 
 #[sqlx::test(migrations = "../../migrations")]
+async fn itinerary_patch_contract_accepts_end_time_without_start_time(pool: sqlx::PgPool) {
+    support::seed_trip(&pool).await;
+    let token = support::create_session(&pool, support::ORGANIZER_ID).await;
+    let app = support::app(pool.clone());
+
+    let response = app
+        .oneshot(
+            Request::builder()
+                .method(Method::PATCH)
+                .uri(format!(
+                    "/api/v1/trips/{}/itinerary-items/{}",
+                    support::TRIP_ID,
+                    support::ITEM_ID
+                ))
+                .header(header::AUTHORIZATION, format!("Bearer {token}"))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({
+                        "clientMutationId": "web-patch-end-time-only",
+                        "expectedVersion": 4,
+                        "patch": {
+                            "startTime": null,
+                            "endTime": "22:00",
+                            "endOffsetDays": 0
+                        }
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::OK);
+    let body: Value =
+        serde_json::from_slice(&to_bytes(response.into_body(), 65536).await.unwrap()).unwrap();
+    assert_eq!(body["startTime"], "");
+    assert_eq!(body["endTime"], "22:00");
+    assert_eq!(body["endOffsetDays"], 0);
+
+    let stored: (Option<String>, Option<String>, i64) = sqlx::query_as(
+        "select to_char(start_time, 'HH24:MI') as start_time,
+                to_char(end_time, 'HH24:MI') as end_time,
+                version
+         from itinerary_items
+         where id = $1",
+    )
+    .bind(Uuid::parse_str(support::ITEM_ID).unwrap())
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(stored.0, None);
+    assert_eq!(stored.1.as_deref(), Some("22:00"));
+    assert_eq!(stored.2, 5);
+}
+
+#[sqlx::test(migrations = "../../migrations")]
 async fn itinerary_patch_contract_rejects_unsafe_map_link(pool: sqlx::PgPool) {
     support::seed_trip(&pool).await;
     let token = support::create_session(&pool, support::ORGANIZER_ID).await;
@@ -472,6 +529,96 @@ async fn itinerary_patch_contract_rejects_activity_block_day_move_without_childr
         .unwrap();
 
     assert_eq!(response.status(), StatusCode::BAD_REQUEST);
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn itinerary_patch_contract_rejects_parent_from_another_plan(pool: sqlx::PgPool) {
+    support::seed_trip(&pool).await;
+    let alt_item_id = support::seed_alt_plan_item(&pool).await;
+    let token = support::create_session(&pool, support::ORGANIZER_ID).await;
+    let app = support::app(pool);
+
+    let response = app
+        .oneshot(
+            Request::builder()
+                .method(Method::PATCH)
+                .uri(format!(
+                    "/api/v1/trips/{}/itinerary-items/{}",
+                    support::TRIP_ID,
+                    support::ITEM_ID
+                ))
+                .header(header::AUTHORIZATION, format!("Bearer {token}"))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({
+                        "clientMutationId": "web-patch-parent-other-plan",
+                        "expectedVersion": 4,
+                        "patch": {
+                            "parentItemId": alt_item_id
+                        }
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::BAD_REQUEST);
+    let body: Value =
+        serde_json::from_slice(&to_bytes(response.into_body(), 65536).await.unwrap()).unwrap();
+    assert_eq!(body["code"], "invalid_request");
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn itinerary_patch_contract_rejects_parent_from_another_day(pool: sqlx::PgPool) {
+    support::seed_trip(&pool).await;
+    let token = support::create_session(&pool, support::ORGANIZER_ID).await;
+    let app = support::app(pool);
+
+    let day_two_item = create_itinerary_item(
+        &app,
+        &token,
+        "web-create-day-two-parent",
+        json!({
+            "day": "2025-05-17",
+            "activity": "Day two hotel breakfast",
+            "startTime": "08:00",
+            "place": "Hotel"
+        }),
+    )
+    .await;
+
+    let response = app
+        .oneshot(
+            Request::builder()
+                .method(Method::PATCH)
+                .uri(format!(
+                    "/api/v1/trips/{}/itinerary-items/{}",
+                    support::TRIP_ID,
+                    support::ITEM_ID
+                ))
+                .header(header::AUTHORIZATION, format!("Bearer {token}"))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({
+                        "clientMutationId": "web-patch-parent-other-day",
+                        "expectedVersion": 4,
+                        "patch": {
+                            "parentItemId": day_two_item["id"]
+                        }
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::BAD_REQUEST);
+    let body: Value =
+        serde_json::from_slice(&to_bytes(response.into_body(), 65536).await.unwrap()).unwrap();
+    assert_eq!(body["code"], "invalid_request");
 }
 
 #[sqlx::test(migrations = "../../migrations")]

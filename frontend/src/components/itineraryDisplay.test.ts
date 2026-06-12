@@ -21,6 +21,7 @@ describe("itinerary display formatting", () => {
     expect(formatEndTime("23:30", 90)).toBe("01:00");
     expect(formatTimeWindow({ startTime: "23:00", endTime: "02:00", endOffsetDays: 1 })).toBe("23:00-02:00⁺¹");
     expect(formatTimeWindow({ startTime: "09:00", endTime: null, endOffsetDays: 0 })).toBe("09:00");
+    expect(formatTimeWindow({ startTime: "", endTime: "22:00", endOffsetDays: 0 })).toBe("22:00");
   });
 
   it("formats Thai fixture dates", () => {
