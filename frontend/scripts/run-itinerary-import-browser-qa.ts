@@ -112,7 +112,43 @@ const importDocument = {
         itineraryItemId: "browser-flight-block",
       },
     ],
-    bookingDocs: [],
+    bookingDocs: [
+      {
+        id: "browser-booking",
+        tripId: "trip-seed",
+        tripPlanId: "plan-main",
+        type: "flight",
+        title: "Browser QA booking",
+        status: "confirmed",
+        visibility: "shared",
+        ownerMemberId: null,
+        providerName: "Browser Airways",
+        confirmationCode: "BQA-349",
+        startsAt: "2026-06-19T23:00:00+07:00",
+        endsAt: "2026-06-20T02:00:00+08:00",
+        timezone: "Asia/Bangkok",
+        priceAmount: 120,
+        currency: "HKD",
+        travelerIds: ["member-aom"],
+        externalLinks: [
+          {
+            id: "browser-booking-link",
+            label: "Booking voucher",
+            url: "https://example.test/browser-booking",
+            provider: "Browser QA",
+            accessNote: "QA fixture",
+          },
+        ],
+        relatedItineraryItemIds: ["browser-flight-block"],
+        relatedTaskIds: ["browser-task"],
+        relatedExpenseIds: ["browser-expense"],
+        noteIds: ["browser-note"],
+        notes: "Browser QA booking document",
+        createdBy: "member-aom",
+        updatedAt: "2026-06-12T13:50:00.000Z",
+        version: 1,
+      },
+    ],
     stopNotes: [
       {
         id: "browser-note",
@@ -210,7 +246,7 @@ async function runImportQa(
   });
   await dialog.waitFor({ state: "visible", timeout: 10_000 });
   const dialogText = (await dialog.textContent()) ?? "";
-  if (!dialogText.includes("Records detected: 1 expenses, 0 bookings, 1 notes, 1 tasks")) {
+  if (!dialogText.includes("Records detected: 1 expenses, 1 bookings, 1 notes, 1 tasks")) {
     throw new Error(`Import dialog did not summarize imported records for ${name}.`);
   }
   await dialog.getByRole("button", { name: /import itinerary/i }).click();
@@ -224,6 +260,10 @@ async function runImportQa(
   assertContains(bodyText, "23:00-02:00", `${name} visible cross-day time`);
   assertContains(bodyText, "⁺¹", `${name} visible +1 offset`);
   assertContains(bodyText, "1 sub", `${name} visible sub-activity count`);
+  assertContains(bodyText, "1 booking", `${name} visible booking commitment`);
+  assertContains(bodyText, "1 expense", `${name} visible expense commitment`);
+  assertContains(bodyText, "1 task", `${name} visible task commitment`);
+  assertContains(bodyText, "1 note", `${name} visible note commitment`);
 
   const persisted = await page.evaluate((key) => {
     const raw = window.localStorage.getItem(key);
@@ -242,6 +282,9 @@ async function runImportQa(
       expense: trip.expenses?.find((expense: { title?: string }) =>
         expense.title === "Browser QA receipt",
       ) ?? null,
+      booking: trip.bookingDocs?.find((booking: { title?: string }) =>
+        booking.title === "Browser QA booking",
+      ) ?? null,
       note: trip.stopNotes?.find((note: { body?: string }) =>
         note.body === "Browser QA note",
       ) ?? null,
@@ -251,6 +294,7 @@ async function runImportQa(
     };
   }, tripStorageKey) as {
     block: null | Record<string, unknown>;
+    booking: null | Record<string, unknown>;
     expense: null | Record<string, unknown>;
     itemCount: number;
     note: null | Record<string, unknown>;
@@ -278,6 +322,15 @@ async function runImportQa(
     title: "Browser QA receipt",
     tripPlanId: "plan-main",
   }, `${name} expense`);
+  expectObject(persisted.booking, {
+    title: "Browser QA booking",
+    tripPlanId: "plan-main",
+  }, `${name} booking`);
+  expectArrayContains(
+    persisted.booking?.relatedItineraryItemIds,
+    "browser-flight-block",
+    `${name} booking itinerary link`,
+  );
   expectObject(persisted.note, {
     body: "Browser QA note",
     itemId: "browser-flight-block",
@@ -297,7 +350,7 @@ async function runImportQa(
   await context.close();
 
   evidence.checks.push(
-    `${name} imported hierarchy, cross-day time, plan-scoped expense, note, and task without console/page/network errors or body overflow.`,
+    `${name} imported hierarchy, cross-day time, commitment chips, plan-scoped booking, expense, note, and task without console/page/network errors or body overflow.`,
   );
 }
 
@@ -305,10 +358,26 @@ async function assertNoHorizontalPageOverflow(page: Page, name: string) {
   const result = await page.evaluate(() => {
     const doc = document.documentElement;
     const body = document.body;
+    const viewportWidth = window.innerWidth;
+    const offenders = Array.from(document.querySelectorAll<HTMLElement>("body *"))
+      .map((element) => {
+        const rect = element.getBoundingClientRect();
+        return {
+          className: element.className?.toString() ?? "",
+          left: Math.round(rect.left),
+          right: Math.round(rect.right),
+          tagName: element.tagName.toLowerCase(),
+          text: element.textContent?.trim().replace(/\s+/g, " ").slice(0, 120) ?? "",
+          width: Math.round(rect.width),
+        };
+      })
+      .filter((entry) => entry.right > viewportWidth + 1 || entry.left < -1)
+      .slice(0, 8);
     return {
       bodyScrollWidth: body.scrollWidth,
       docScrollWidth: doc.scrollWidth,
       innerWidth: window.innerWidth,
+      offenders,
     };
   });
   if (
@@ -337,6 +406,12 @@ function expectObject(
     if (actual[key] !== value) {
       throw new Error(`${label} expected ${key}=${JSON.stringify(value)}, got ${JSON.stringify(actual[key])}.`);
     }
+  }
+}
+
+function expectArrayContains(actual: unknown, expected: string, label: string) {
+  if (!Array.isArray(actual) || !actual.includes(expected)) {
+    throw new Error(`${label} missing ${JSON.stringify(expected)}.`);
   }
 }
 

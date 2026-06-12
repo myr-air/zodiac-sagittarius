@@ -21,7 +21,12 @@ describe("Itinerary import browser QA harness", () => {
     expect(script).toContain("desktop-1280");
     expect(script).toContain("mobile-390");
     expect(script).toContain("Browser QA flight block");
+    expect(script).toContain("Browser QA booking");
     expect(script).toContain("Browser QA task");
+    expect(script).toContain("1 booking");
+    expect(script).toContain("1 expense");
+    expect(script).toContain("1 task");
+    expect(script).toContain("1 note");
     expect(script).toContain("assertNoHorizontalPageOverflow");
     expect(script).toContain("console errors");
     expect(script).toContain("evidence.json");
