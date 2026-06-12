@@ -3953,6 +3953,7 @@ export function SagittariusApp({
               suggestions={scopedSuggestions}
               stopNotes={scopedTripPlanRecords.stopNotes}
               tasks={scopedTripPlanRecords.tasks}
+              bookingDocs={scopedTripPlanRecords.bookingDocs}
               currentMember={currentMember}
               expenseSummary={expenseSummary}
               canEdit={canEdit}

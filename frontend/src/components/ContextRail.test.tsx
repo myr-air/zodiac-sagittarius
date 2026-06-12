@@ -18,6 +18,7 @@ function renderRail(
     suggestions: tripFixture.suggestions,
     stopNotes: tripFixture.stopNotes,
     tasks: tripFixture.tasks,
+    bookingDocs: tripFixture.trip.bookingDocs ?? [],
     currentMember: tripFixture.currentMembers.owner,
     expenseSummary: tripFixture.expenseSummaries.owner,
     canEdit: true,
@@ -115,8 +116,84 @@ describe("ContextRail", () => {
       screen.getByText("ไม่มีคำเตือนการจองสำหรับจุดนี้"),
     ).toBeInTheDocument();
     expect(
+      screen.getByText("ยังไม่มีเอกสารการจองที่ผูกกับจุดนี้"),
+    ).toBeInTheDocument();
+    expect(
       screen.getByText("ยังไม่มี checklist ที่ผูกกับจุดนี้"),
     ).toBeInTheDocument();
+  });
+
+  it("shows booking docs linked to the selected itinerary item", async () => {
+    renderRail({
+      bookingDocs: [
+        {
+          id: "booking-dimdim-1",
+          tripId: tripFixture.trip.id,
+          tripPlanId: selectedItem.planVariantId,
+          type: "activity_ticket",
+          title: "Dim Dim Sum reservation",
+          status: "booked",
+          visibility: "shared",
+          ownerMemberId: tripFixture.currentMembers.owner.id,
+          providerName: "Dim Dim Sum",
+          confirmationCode: "DDS-42",
+          startsAt: null,
+          endsAt: null,
+          timezone: "Asia/Hong_Kong",
+          priceAmount: null,
+          currency: null,
+          travelerIds: [tripFixture.currentMembers.owner.id],
+          externalLinks: [],
+          relatedItineraryItemIds: [selectedItem.id],
+          relatedTaskIds: [],
+          relatedExpenseIds: [],
+          noteIds: [],
+          notes: "Window table",
+          createdBy: tripFixture.currentMembers.owner.id,
+          updatedAt: "2026-06-10T00:00:00.000Z",
+          version: 1,
+        },
+        {
+          id: "booking-other-1",
+          tripId: tripFixture.trip.id,
+          tripPlanId: selectedItem.planVariantId,
+          type: "other",
+          title: "Other stop ticket",
+          status: "booked",
+          visibility: "shared",
+          ownerMemberId: tripFixture.currentMembers.owner.id,
+          providerName: null,
+          confirmationCode: null,
+          startsAt: null,
+          endsAt: null,
+          timezone: "Asia/Hong_Kong",
+          priceAmount: null,
+          currency: null,
+          travelerIds: [],
+          externalLinks: [],
+          relatedItineraryItemIds: ["other-item"],
+          relatedTaskIds: [],
+          relatedExpenseIds: [],
+          noteIds: [],
+          notes: null,
+          createdBy: tripFixture.currentMembers.owner.id,
+          updatedAt: "2026-06-10T00:00:00.000Z",
+          version: 1,
+        },
+      ],
+    });
+
+    await userEvent.click(screen.getByRole("tab", { name: "การจอง" }));
+    const bookingPanel = screen.getByRole("region", {
+      name: "การจองและการเตรียมตัวของจุดนี้",
+    });
+    expect(
+      within(bookingPanel).getByText("Dim Dim Sum reservation"),
+    ).toBeInTheDocument();
+    expect(within(bookingPanel).getByText("การจอง · booked")).toBeInTheDocument();
+    expect(
+      within(bookingPanel).queryByText("Other stop ticket"),
+    ).not.toBeInTheDocument();
   });
 
   it("ignores empty note form submissions even when the browser submits the form", () => {

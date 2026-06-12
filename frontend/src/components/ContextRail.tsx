@@ -1,5 +1,6 @@
 import { type FormEvent, useMemo, useState } from "react";
 import type {
+  BookingDoc,
   Expense,
   ExpenseSummary,
   ItineraryItem,
@@ -25,6 +26,7 @@ interface ContextRailProps {
   suggestions: Suggestion[];
   stopNotes: StopNote[];
   tasks: TripTask[];
+  bookingDocs: BookingDoc[];
   currentMember: Member;
   expenseSummary: ExpenseSummary;
   canEdit: boolean;
@@ -102,6 +104,8 @@ const bookingAdvisoryClassName =
   "booking-advisory inline-flex w-fit items-center gap-1.5 rounded-full border border-(--color-warning-border) bg-(--color-warning-soft) px-2 py-1 text-[11px] font-black text-(--color-warning-strong) [&_.icon]:size-3.5";
 const bookingTaskClassName =
   "stop-booking-task grid grid-cols-[minmax(0,1fr)_auto] items-center gap-1 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) px-2.5 py-[9px] data-[status=done]:[&_span]:text-(--color-text-muted) data-[status=done]:[&_span]:line-through";
+const bookingDocClassName =
+  "stop-booking-doc grid gap-1 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) px-2.5 py-[9px] text-xs [&_strong]:font-extrabold [&_strong]:leading-4 [&_strong]:text-(--color-text) [&_span]:text-[11px] [&_span]:font-bold [&_span]:leading-4 [&_span]:text-(--color-text-muted)";
 const bookingTaskLabelClassName =
   "inline-flex min-w-0 items-center gap-2 [&_input]:size-[15px] [&_input]:accent-[var(--color-primary)] [&_span]:text-xs [&_span]:font-extrabold [&_span]:leading-4 [&_span]:text-(--color-text)";
 const bookingTaskMetaClassName =
@@ -161,6 +165,7 @@ export function ContextRail({
   suggestions,
   stopNotes,
   tasks,
+  bookingDocs,
   currentMember,
   expenseSummary,
   canEdit,
@@ -224,6 +229,12 @@ export function ContextRail({
             .includes(selectedItem.activity.toLowerCase())),
     );
   }, [selectedItem, tasks]);
+  const selectedBookingDocs = useMemo(() => {
+    if (!selectedItem) return [];
+    return bookingDocs.filter((bookingDoc) =>
+      bookingDoc.relatedItineraryItemIds.includes(selectedItem.id),
+    );
+  }, [bookingDocs, selectedItem]);
   const selectedSuggestions = useMemo(() => {
     if (!selectedItem) return [];
     return suggestions.filter(
@@ -576,6 +587,21 @@ export function ContextRail({
                     </span>
                   ) : null}
                 </div>
+                <ul className={`stop-booking-doc-list ${moduleListClassName}`}>
+                  {selectedBookingDocs.map((bookingDoc) => (
+                    <li className={bookingDocClassName} key={bookingDoc.id}>
+                      <strong>{bookingDoc.title}</strong>
+                      <span>
+                        {t.contextRail.booking.booking} · {bookingDoc.status}
+                      </span>
+                    </li>
+                  ))}
+                  {!selectedBookingDocs.length ? (
+                    <li className={emptyWarningClassName}>
+                      {t.contextRail.booking.noBookings}
+                    </li>
+                  ) : null}
+                </ul>
                 <ul className={`stop-booking-task-list ${moduleListClassName}`}>
                   {selectedTasks.map((task) => (
                     <li
