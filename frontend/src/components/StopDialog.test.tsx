@@ -49,6 +49,34 @@ describe("StopDialog", () => {
     expect(onClose).toHaveBeenCalledTimes(2);
   });
 
+  it("does not let a sub-activity submit as a plan block", () => {
+    const onSubmit = vi.fn();
+    renderEn(
+      <StopDialog
+        mode="edit"
+        initialItem={{
+          ...tripFixture.planItems[1],
+          id: "child-checkin",
+          activity: "Check in",
+          parentItemId: "block-flight",
+          isPlanBlock: true,
+        }}
+        onClose={vi.fn()}
+        onSubmit={onSubmit}
+      />,
+    );
+
+    expect(screen.getByLabelText("Plan block")).toBeDisabled();
+    expect(screen.getByLabelText("Plan block")).not.toBeChecked();
+
+    fireEvent.submit(screen.getByRole("button", { name: "Save changes" }).closest("form")!);
+
+    expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({
+      parentItemId: "block-flight",
+      isPlanBlock: false,
+    }));
+  });
+
   it("uses the Joii time input, split duration controls, and a standard close icon", () => {
     render(<StopDialog mode="create" onClose={vi.fn()} onSubmit={vi.fn()} />);
 

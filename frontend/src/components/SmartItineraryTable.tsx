@@ -437,6 +437,10 @@ export function SmartItineraryTable({
   const displayItems = allDisplayItems.filter((item) =>
     selectedPathIdSet.has(itineraryItemPathId(item)),
   );
+  const itemsById = useMemo(
+    () => new Map(allDisplayItems.map((item) => [item.id, item])),
+    [allDisplayItems],
+  );
   const selectedItem =
     displayItems.find((item) => item.id === selectedItemId) ??
     allDisplayItems.find((item) => item.id === selectedItemId) ??
@@ -590,7 +594,12 @@ export function SmartItineraryTable({
     if (!canRestructureItems) return;
     const draggedItemId =
       dragState.draggedItemId ?? event.dataTransfer.getData("text/plain");
-    if (!draggedItemId || draggedItemId === targetItemId) return;
+    if (
+      !draggedItemId ||
+      draggedItemId === targetItemId ||
+      !canMoveItemToSiblingTarget(draggedItemId, targetItemId, itemsById)
+    )
+      return;
     event.preventDefault();
     event.dataTransfer.dropEffect = "move";
     setDragState((current) =>
@@ -612,7 +621,12 @@ export function SmartItineraryTable({
     if (!canRestructureItems) return;
     const draggedItemId =
       dragState.draggedItemId ?? event.dataTransfer.getData("text/plain");
-    if (!draggedItemId || draggedItemId === planBlockItemId) return;
+    if (
+      !draggedItemId ||
+      draggedItemId === planBlockItemId ||
+      !canMoveItemIntoPlanBlockTarget(draggedItemId, itemsById)
+    )
+      return;
     event.preventDefault();
     event.dataTransfer.dropEffect = "move";
     setDragState((current) =>
@@ -652,7 +666,11 @@ export function SmartItineraryTable({
     if (!canRestructureItems) return;
     event.preventDefault();
     const draggedItemId = event.dataTransfer.getData("text/plain");
-    if (draggedItemId && draggedItemId !== targetItemId)
+    if (
+      draggedItemId &&
+      draggedItemId !== targetItemId &&
+      canMoveItemToSiblingTarget(draggedItemId, targetItemId, itemsById)
+    )
       onMoveItem(draggedItemId, targetItemId);
     clearDragPreview();
   }
@@ -666,7 +684,11 @@ export function SmartItineraryTable({
     event.stopPropagation();
     const draggedItemId =
       event.dataTransfer.getData("text/plain") || dragState.draggedItemId;
-    if (draggedItemId && draggedItemId !== planBlockItemId)
+    if (
+      draggedItemId &&
+      draggedItemId !== planBlockItemId &&
+      canMoveItemIntoPlanBlockTarget(draggedItemId, itemsById)
+    )
       onMoveItemIntoPlanBlock(draggedItemId, planBlockItemId);
     clearDragPreview();
   }
@@ -700,7 +722,11 @@ export function SmartItineraryTable({
       const dayRow = target?.closest<HTMLElement>("[data-day-drop]");
       if (blockDrop) {
         const targetBlockId = blockDrop.dataset.planBlockDrop;
-        if (targetBlockId && targetBlockId !== current.itemId) {
+        if (
+          targetBlockId &&
+          targetBlockId !== current.itemId &&
+          canMoveItemIntoPlanBlockTarget(current.itemId, itemsById)
+        ) {
           setDragState({
             draggedItemId: current.itemId,
             overItemId: null,
@@ -713,7 +739,11 @@ export function SmartItineraryTable({
       }
       if (itemRow) {
         const targetItemId = itemRow.dataset.itemId;
-        if (targetItemId && targetItemId !== current.itemId) {
+        if (
+          targetItemId &&
+          targetItemId !== current.itemId &&
+          canMoveItemToSiblingTarget(current.itemId, targetItemId, itemsById)
+        ) {
           setDragState({
             draggedItemId: current.itemId,
             overItemId: targetItemId,
@@ -748,9 +778,17 @@ export function SmartItineraryTable({
       const targetBlockId = blockDrop?.dataset.planBlockDrop;
       const targetItemId = itemRow?.dataset.itemId;
       const targetDay = dayRow?.dataset.dayDrop;
-      if (targetBlockId && targetBlockId !== current.itemId)
+      if (
+        targetBlockId &&
+        targetBlockId !== current.itemId &&
+        canMoveItemIntoPlanBlockTarget(current.itemId, itemsById)
+      )
         onMoveItemIntoPlanBlock(current.itemId, targetBlockId);
-      else if (targetItemId && targetItemId !== current.itemId)
+      else if (
+        targetItemId &&
+        targetItemId !== current.itemId &&
+        canMoveItemToSiblingTarget(current.itemId, targetItemId, itemsById)
+      )
         onMoveItem(current.itemId, targetItemId);
       else if (targetDay) onMoveItemToDay(current.itemId, targetDay);
       clearDragPreview();
@@ -826,9 +864,17 @@ export function SmartItineraryTable({
       const targetBlockId = blockDrop?.dataset.planBlockDrop;
       const targetItemId = itemRow?.dataset.itemId;
       const targetDay = dayRow?.dataset.dayDrop;
-      if (targetBlockId && targetBlockId !== current.itemId)
+      if (
+        targetBlockId &&
+        targetBlockId !== current.itemId &&
+        canMoveItemIntoPlanBlockTarget(current.itemId, itemsById)
+      )
         onMoveItemIntoPlanBlock(current.itemId, targetBlockId);
-      else if (targetItemId && targetItemId !== current.itemId)
+      else if (
+        targetItemId &&
+        targetItemId !== current.itemId &&
+        canMoveItemToSiblingTarget(current.itemId, targetItemId, itemsById)
+      )
         onMoveItem(current.itemId, targetItemId);
       else if (targetDay) onMoveItemToDay(current.itemId, targetDay);
       clearDragPreview();
@@ -859,6 +905,7 @@ export function SmartItineraryTable({
     };
   }, [
     canRestructureItems,
+    itemsById,
     onMoveItem,
     onMoveItemIntoPlanBlock,
     onMoveItemToDay,
@@ -2860,6 +2907,25 @@ function itineraryItemPathId(item: ItineraryItem): string {
   return item.pathRole === "alternative"
     ? (item.pathId ?? item.id)
     : mainItineraryPathId;
+}
+
+function canMoveItemToSiblingTarget(
+  draggedItemId: string,
+  targetItemId: string,
+  itemsById: Map<string, ItineraryItem>,
+): boolean {
+  const draggedItem = itemsById.get(draggedItemId);
+  const targetItem = itemsById.get(targetItemId);
+  if (!draggedItem || !targetItem) return false;
+  return !draggedItem.isPlanBlock || !targetItem.parentItemId;
+}
+
+function canMoveItemIntoPlanBlockTarget(
+  draggedItemId: string,
+  itemsById: Map<string, ItineraryItem>,
+): boolean {
+  const draggedItem = itemsById.get(draggedItemId);
+  return Boolean(draggedItem && !draggedItem.isPlanBlock);
 }
 
 function mapHref(item: ItineraryItem): string {

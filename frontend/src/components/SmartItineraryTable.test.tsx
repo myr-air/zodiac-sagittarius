@@ -1965,6 +1965,59 @@ describe("SmartItineraryTable", () => {
     );
   });
 
+  it("does not drop an activity block into another activity block or sub-activity lane", () => {
+    const onMoveItem = vi.fn();
+    const onMoveItemIntoPlanBlock = vi.fn();
+    renderTable({
+      items: [
+        {
+          ...tripFixture.planItems[0],
+          id: "block-flight",
+          activity: "Flight block",
+          isPlanBlock: true,
+          parentItemId: null,
+          sortOrder: 100,
+        },
+        {
+          ...tripFixture.planItems[1],
+          id: "block-hotel",
+          activity: "Hotel block",
+          isPlanBlock: true,
+          parentItemId: null,
+          sortOrder: 200,
+        },
+        {
+          ...tripFixture.planItems[2],
+          id: "child-checkin",
+          activity: "Check in",
+          isPlanBlock: false,
+          parentItemId: "block-hotel",
+          sortOrder: 300,
+        },
+      ],
+      onMoveItem,
+      onMoveItemIntoPlanBlock,
+      selectedItemId: "block-flight",
+    });
+    const dataTransfer = createDataTransfer();
+    dataTransfer.setData("text/plain", "block-flight");
+
+    fireEvent.drop(
+      within(screen.getByRole("row", { name: /Hotel block/i })).getByRole(
+        "button",
+        { name: /Into block/i },
+      ),
+      { dataTransfer },
+    );
+    fireEvent.drop(
+      screen.getByRole("button", { name: /เลือกจุด Check in/i }).closest("tr")!,
+      { dataTransfer },
+    );
+
+    expect(onMoveItemIntoPlanBlock).not.toHaveBeenCalled();
+    expect(onMoveItem).not.toHaveBeenCalled();
+  });
+
   it("renders compact hierarchy and commitment chips for blocks and sub-activities", () => {
     renderTable({
       items: [

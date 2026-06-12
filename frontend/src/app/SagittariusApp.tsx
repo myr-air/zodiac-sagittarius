@@ -1164,6 +1164,7 @@ export function SagittariusApp({
   }
 
   async function createStop(values: StopFormValues) {
+    values = normalizeStopHierarchyValues(values);
     const day = values.day || selectedDay;
     setStopPlaceResolution(
       effectivePlaceResolver && !values.resolvedPlace && !values.saveUnresolved
@@ -1373,6 +1374,7 @@ export function SagittariusApp({
     const nextParentItemId = targetItem.parentItemId ?? null;
     if (
       nextParentItemId === draggedItem.id ||
+      (draggedItem.isPlanBlock && nextParentItemId) ||
       hasDescendantItem(current.itineraryItems, draggedItem.id, targetItem.id)
     )
       return null;
@@ -1476,6 +1478,7 @@ export function SagittariusApp({
       !draggedItem ||
       !planBlock ||
       !planBlock.isPlanBlock ||
+      draggedItem.isPlanBlock ||
       draggedItem.id === planBlock.id ||
       draggedItem.planVariantId !== planVariantId ||
       planBlock.planVariantId !== planVariantId ||
@@ -1539,6 +1542,7 @@ export function SagittariusApp({
   async function updateSelectedStop(values: StopFormValues) {
     /* v8 ignore next */
     if (dialogState?.mode !== "edit") return;
+    values = normalizeStopHierarchyValues(values);
     const itemId = dialogState.item.id;
     const editDay = values.day || dialogState.item.day;
     const shouldResolvePlace =
@@ -4060,6 +4064,10 @@ function normalizeTripPlanSummary(
     kind: legacyKindForPlanStatus(status),
     status,
   };
+}
+
+function normalizeStopHierarchyValues(values: StopFormValues): StopFormValues {
+  return values.parentItemId ? { ...values, isPlanBlock: false } : values;
 }
 
 function planStatusForLegacyKind(

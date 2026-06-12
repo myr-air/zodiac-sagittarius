@@ -178,6 +178,7 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, manualPathO
 
   const title = mode === "create" ? t.stopDialog.titles.create : t.stopDialog.titles.edit;
   const detailLabels = stopDetailLabels(locale);
+  const isSubActivity = Boolean(values.parentItemId);
   const endTime = addMinutesToTime(values.startTime, Math.max(1, Number(values.durationMinutes) || 1));
   const minuteOptions = durationMinuteOptions((values.durationMinutes ?? 45) % 60);
 
@@ -229,6 +230,7 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, manualPathO
       ...values,
       activity: values.activity.trim(),
       activityType: detailTypeToActivityType[detailType],
+      isPlanBlock: values.parentItemId ? false : values.isPlanBlock,
       startTime: values.timeMode === "flexible" ? "" : values.startTime,
       durationMinutes: values.timeMode === "flexible" ? null : Math.max(1, Number(values.durationMinutes) || 1),
       details,
@@ -317,7 +319,8 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, manualPathO
                 <input
                   id={fieldIds.isPlanBlock}
                   type="checkbox"
-                  checked={values.isPlanBlock}
+                  checked={values.isPlanBlock && !isSubActivity}
+                  disabled={isSubActivity}
                   onChange={(event) => update("isPlanBlock", event.target.checked)}
                 />
                 Plan block
