@@ -40,6 +40,7 @@ function renderTable(
     onMoveItemToDay: vi.fn(),
     onMoveItemToPath: vi.fn(),
     onAddSubActivity: vi.fn(),
+    onAddTaskForItem: vi.fn(),
     onUpdateItemInline: vi.fn(),
     onEditItem: vi.fn(),
     onDeleteItem: vi.fn(),
@@ -2004,6 +2005,30 @@ describe("SmartItineraryTable", () => {
         { name: /Add sub-activity under Market walk/i },
       ),
     ).toBeDisabled();
+  });
+
+  it("opens a quick task action from an itinerary row", async () => {
+    const user = userEvent.setup();
+    const onAddTaskForItem = vi.fn();
+    renderTable({
+      items: [
+        {
+          ...tripFixture.planItems[0],
+          id: "item-flight",
+          activity: "Flight to Hong Kong",
+          sortOrder: 100,
+        },
+      ],
+      onAddTaskForItem,
+      selectedItemId: "item-flight",
+    });
+
+    await user.click(
+      within(screen.getByRole("row", { name: /Flight to Hong Kong/i }))
+        .getByRole("button", { name: /Add task for Flight to Hong Kong/i }),
+    );
+
+    expect(onAddTaskForItem).toHaveBeenCalledWith("item-flight");
   });
 
   it("does not drop an activity block into another activity block or sub-activity lane", () => {

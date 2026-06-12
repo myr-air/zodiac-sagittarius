@@ -2386,6 +2386,7 @@ export function SagittariusApp({
     title: string;
     visibility: TripTask["visibility"];
     assigneeId?: string | null;
+    relatedItemId?: string | null;
   }) {
     const title = input.title.trim();
     /* v8 ignore next */
@@ -2405,7 +2406,7 @@ export function SagittariusApp({
             visibility === "shared"
               ? input.assigneeId || null
               : currentMember.id,
-          relatedItemId: null,
+          relatedItemId: input.relatedItemId ?? null,
         },
       );
       setTasks((current) => [...current, task]);
@@ -2423,8 +2424,21 @@ export function SagittariusApp({
         /* v8 ignore next */
         assigneeId:
           visibility === "shared" ? input.assigneeId || null : currentMember.id,
+        relatedItemId: input.relatedItemId ?? null,
       },
     ]);
+  }
+
+  async function createItineraryTask(itemId: string) {
+    if (!canEdit) return;
+    const item = trip.itineraryItems.find((candidate) => candidate.id === itemId);
+    if (!item) return;
+    await createTask({
+      title: `Plan: ${item.activity}`,
+      visibility: "shared",
+      assigneeId: null,
+      relatedItemId: item.id,
+    });
   }
 
   async function saveTripSettings(values: TripSettingsFormValues) {
@@ -3769,6 +3783,7 @@ export function SagittariusApp({
                   tripName={trip.name}
                   onAddStop={addStop}
                   onAddSubActivity={addSubActivity}
+                  onAddTaskForItem={(itemId) => void createItineraryTask(itemId)}
                   onSelectItem={selectItem}
                   onMoveItem={moveItem}
                   onMoveItemIntoPlanBlock={moveItemIntoPlanBlock}

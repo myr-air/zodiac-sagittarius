@@ -4883,6 +4883,37 @@ describe("Sagittarius cockpit UI", () => {
     );
   });
 
+  it("quick-adds a linked planning task from the itinerary row", async () => {
+    const user = userEvent.setup();
+    const storage = installLocalStorageStub();
+    const taskItem = {
+      ...seedTrip.itineraryItems[0],
+      id: "item-flight",
+      activity: "Flight to Hong Kong",
+      place: "DMK",
+      sortOrder: 100,
+    };
+    storage.setItem(
+      tripStorageKey,
+      JSON.stringify({
+        ...seedTrip,
+        itineraryItems: [taskItem],
+        tasks: [],
+      }),
+    );
+
+    render(<SagittariusApp initialView="itinerary" />);
+
+    await user.click(
+      await screen.findByRole("button", {
+        name: /Add task for Flight to Hong Kong/i,
+      }),
+    );
+
+    const structure = await screen.findByLabelText("Structure for Flight to Hong Kong");
+    expect(within(structure).getByText("1 task")).toBeInTheDocument();
+  });
+
   it("imports itinerary rows into the current Trip Plan and keeps path fields", async () => {
     const user = userEvent.setup();
     const storage = installLocalStorageStub();

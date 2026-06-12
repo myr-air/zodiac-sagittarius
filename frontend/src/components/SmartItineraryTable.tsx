@@ -83,6 +83,7 @@ interface SmartItineraryTableProps {
   tripName: string;
   onAddStop: (day?: string) => void;
   onAddSubActivity?: (parentItemId: string) => void;
+  onAddTaskForItem?: (itemId: string) => void;
   onSelectItem: (itemId: string) => void;
   onMoveItem: (draggedItemId: string, targetItemId: string) => void;
   onMoveItemIntoPlanBlock: (draggedItemId: string, planBlockItemId: string) => void;
@@ -394,6 +395,7 @@ export function SmartItineraryTable({
   tripName,
   onAddStop,
   onAddSubActivity,
+  onAddTaskForItem,
   onSelectItem,
   onMoveItem,
   onMoveItemIntoPlanBlock,
@@ -1206,6 +1208,7 @@ export function SmartItineraryTable({
               onDropOnDay={dropOnDay}
               onAddStop={onAddStop}
               onAddSubActivity={onAddSubActivity}
+              onAddTaskForItem={onAddTaskForItem}
               onMoveItem={onMoveItem}
               onMoveItemIntoPlanBlock={onMoveItemIntoPlanBlock}
               onMoveItemToDay={onMoveItemToDay}
@@ -1480,6 +1483,7 @@ function DayGroup({
   onDropOnDay,
   onAddStop,
   onAddSubActivity,
+  onAddTaskForItem,
   onMoveItem,
   onMoveItemIntoPlanBlock,
   onMoveItemToDay,
@@ -1535,6 +1539,7 @@ function DayGroup({
   onDropOnDay: (event: DragEvent<HTMLElement>, targetDay: string) => void;
   onAddStop: (day?: string) => void;
   onAddSubActivity?: (parentItemId: string) => void;
+  onAddTaskForItem?: (itemId: string) => void;
   onMoveItem: (draggedItemId: string, targetItemId: string) => void;
   onMoveItemIntoPlanBlock: (
     draggedItemId: string,
@@ -1956,6 +1961,15 @@ function DayGroup({
                       onClick={() => onAddSubActivity?.(item.id)}
                     >
                       <Icon name="plus" />
+                    </button>
+                    <button
+                      type="button"
+                      className={rowActionButtonClassName}
+                      aria-label={`Add task for ${item.activity}`}
+                      disabled={!canEdit}
+                      onClick={() => onAddTaskForItem?.(item.id)}
+                    >
+                      <Icon name="check" />
                     </button>
                     <button
                       type="button"
