@@ -30,7 +30,11 @@ This spec is the contract for the first itinerary redesign slice. Phase 0 record
 - Do not remove `planVariants`, `activePlanVariantId`, or `kind`.
 - Do not finish plan-scoping every booking, task, note, or expense in Phase 1. That is Phase 2, though its DDL draft is included below for review.
 - Do not rebuild the itinerary hierarchy UI in Phase 0/1.
-- Do not remove automatic overlap-to-path behavior in Phase 0/1. That belongs to Phase 4 after explicit Alternative Path controls are ready.
+- Do not remove legacy overlap-to-path compatibility data in Phase 0/1. That
+  belongs to Phase 4 after explicit Alternative Path controls are ready.
+  Phase 0/1 must not describe newly detected overlaps as canonical Alternative
+  Paths, must not synthesize Alternative Paths during import, and must keep
+  sibling overlaps as warnings at the product language boundary.
 
 Repository reality check:
 
@@ -340,7 +344,10 @@ Rules:
   `kind: "main"`. Main Plan selection must go through the set-main route so the
   trip pointer and previous Main Plan are updated together.
 - Phase 1 supports only blank creation semantics. Omitted `creationMode` and `creationMode: "blank"` create an empty Trip Plan.
-- `creationMode: "duplicate-current"` and `creationMode: "import"` must return `400 invalid_request` until copy/import semantics are implemented; silently creating a blank plan for those modes is not allowed.
+- `creationMode: "duplicate-current"`, `creationMode: "import"`, and any
+  unknown non-blank `creationMode` must return `400 invalid_request` until
+  copy/import semantics are implemented; silently creating a blank plan for
+  those modes is not allowed.
 - `sourceTripPlanId` is accepted only with a supported non-blank creation mode; with Phase 1 blank creation it must be ignored when absent and rejected when present.
 
 Invalid Phase 1 create request:
@@ -366,6 +373,16 @@ Expected error:
 Tests assert `400`, `code: "invalid_request"`, and no row write. The exact
 `message` text is not contractual unless the route later promotes
 mode-specific copy to a public API guarantee.
+
+Create validation failures:
+
+| Input problem | HTTP/code | Write/event behavior |
+| --- | --- | --- |
+| `status: "main"` or legacy `kind: "main"` | `400 invalid_request` | No plan row write and no realtime event. |
+| Unknown `status` or unknown legacy `kind` | `400 invalid_request` | No plan row write and no realtime event. |
+| Mismatched `status` and `kind` after mapping | `400 invalid_request` | No plan row write and no realtime event. |
+| `creationMode` is `duplicate-current`, `import`, or an unknown non-blank value | `400 invalid_request` | No plan row write and no realtime event. |
+| `sourceTripPlanId` is present while `creationMode` is absent or `blank` | `400 invalid_request` | No plan row write and no realtime event. |
 
 ### Patch Trip Plan
 
@@ -418,6 +435,16 @@ Rules:
 - Patch route cannot set `status: "main"` or `kind: "main"`. Use set-main.
 - Stale patch tests must use a fresh `clientMutationId` so version conflicts
   are distinct from duplicate mutation conflicts.
+
+Patch validation failures:
+
+| Input problem | HTTP/code | Write/event behavior |
+| --- | --- | --- |
+| Missing `expectedVersion` | `400 invalid_request` | No plan row write and no realtime event. |
+| Empty `patch` or no supported plan fields | `400 invalid_request` | No plan row write and no realtime event. |
+| `status: "main"` or legacy `kind: "main"` | `400 invalid_request` | No plan row write and no realtime event. |
+| Unknown `status` or unknown legacy `kind` | `400 invalid_request` | No plan row write and no realtime event. |
+| Mismatched `status` and `kind` after mapping | `400 invalid_request` | No plan row write and no realtime event. |
 
 Version conflict response shape:
 
@@ -514,11 +541,21 @@ Rules:
   `previousMainTripPlan` or set it to `null`.
 - The selected Trip Plan becomes `status: "main"` and compatibility `kind: "main"`.
 - The previous Main Plan becomes `backup` by default, or `previousMainNextStatus` if provided.
-- `previousMainNextStatus` cannot be `main`.
+- `previousMainNextStatus` may be omitted or set to `draft`, `proposal`, or
+  `backup`. It cannot be `main`.
 - The transaction must not move or rewrite Actual Expenses, Plan Commitments, booking docs, tasks, stop notes, or itinerary items.
 - A no-op set-main on the current Main Plan may still refresh that plan status to `main`, but must not demote it first.
 - Set-main has no `expectedVersion` in Phase 1. Concurrency is last-writer-wins after row locks, with duplicate `clientMutationId` rejected by the existing mutation guard.
 - A later hardening phase may add `expectedTripVersion`; Phase 1 tests should document the current idempotency and last-writer behavior rather than implying stale set-main conflicts.
+
+Set-main validation failures:
+
+| Input problem | HTTP/code | Write/event behavior |
+| --- | --- | --- |
+| `previousMainNextStatus: "main"` | `400 invalid_request` | No trip pointer write, no plan status write, and no realtime event. |
+| Unknown `previousMainNextStatus` | `400 invalid_request` | No trip pointer write, no plan status write, and no realtime event. |
+| `previousMainNextStatus` has the wrong JSON type | `400 invalid_request` | No trip pointer write, no plan status write, and no realtime event. |
+| Duplicate `clientMutationId` | Existing duplicate mutation error | No second pointer/status write and no duplicate realtime event. |
 
 ## Migration DDL Draft
 
@@ -572,6 +609,22 @@ Notes:
   will not recreate the column on the next upgrade. No Phase 1 uniqueness,
   routing, or Main Plan identity invariant may depend only on this column, so
   an application rollback remains compatible while `kind` is still written.
+- Emergency-only downgrade sketch:
+
+  ```sql
+  ALTER TABLE plan_variants
+    DROP CONSTRAINT IF EXISTS plan_variants_status_check;
+
+  ALTER TABLE plan_variants
+    DROP COLUMN IF EXISTS status;
+
+  DELETE FROM schema_migrations
+  WHERE version = '0025';
+  ```
+
+  This is not the normal rollback path. It requires coordinated operator
+  approval, a backup, and a follow-up migrator run to prove the migration can be
+  recreated.
 - Repair stance: if legacy support scripts insert `status = NULL`, read paths
   must derive status from `kind`; the next application write should persist both
   `kind` and `status`.
@@ -686,6 +739,10 @@ Phase 2 rules:
 - Existing Actual Expenses linked to an itinerary item are backfilled to that
   itinerary item's Trip Plan. Existing Actual Expenses without an itinerary link
   are backfilled to the Main Plan active at migration time.
+- The unlinked Actual Expense backfill is attribution metadata for
+  compatibility, not evidence that the money occurred in that Trip Plan.
+  Product and API copy must avoid implying certainty until a user audits,
+  moves, cancels, refunds, or duplicates the expense as a Plan Estimate.
 - Switching Main Plan after migration must not update existing `trip_plan_id` values.
 - Stop notes linked to itinerary items inherit the item's plan.
 - Create flows should default to the linked itinerary item's plan when present, otherwise to the current Main Plan.
@@ -705,6 +762,10 @@ Phase 2 rules:
 - Before making `trip_plan_id` non-null, audit records with no active Main Plan
   at backfill time and records that intentionally are trip-wide rather than
   plan-scoped.
+- Before hardening Actual Expense scope, produce an audit report for unlinked
+  expenses that were inferred to the active Main Plan, including expense id,
+  trip id, inferred trip plan id, amount, paid-by member, created time, and
+  whether a linked itinerary item later provides a stronger scope.
 - Backfilling booking docs to the current Main Plan is a compatibility default
   only. Linked itinerary items remain the stronger source for later repair
   because a booking can be attached to a ticketed segment or journey block.
@@ -883,7 +944,8 @@ Conflict rule:
 - Export metadata includes both `mainTripPlanId` and deprecated
   `activePlanVariantId`.
 - Import accepts legacy-only, canonical-only, and mixed metadata. The current
-  trip id and selected Main Plan remain controlled by the destination trip.
+  trip id and selected destination Trip Plan remain controlled by the import
+  flow. Import does not change the destination Main Plan.
 - Import parser accepts `metadata.activePlanVariantId`,
   `metadata.mainTripPlanId`, both, or neither as compatibility metadata. If a
   legacy file carries those aliases under `trip` instead of `metadata`, the
@@ -897,6 +959,24 @@ Conflict rule:
   fields (`endTime`, `endOffsetDays`).
 - Import must not flatten sub-activities or convert sibling overlaps into
   Alternative Paths.
+
+## Cost And Commitment Boundary
+
+Phase 0/1 protects the terms needed for later cost planning without creating the
+full workflow yet.
+
+- Actual Expenses remain real paid or committed money. Set-main and Trip Plan
+  create/patch must not move, relabel, duplicate, or delete them.
+- Plan Estimates are not stored as Actual Expenses in Phase 0/1. If an organizer
+  wants to compare projected costs, that work waits for the Plan Estimate model
+  or uses clearly labeled local-only planning notes outside the Actual Expense
+  ledger.
+- Plan Commitments are represented only by existing booking/ticket/document
+  surfaces in Phase 0/1. A future commitment model may link a commitment to an
+  Actual Expense when money is paid, but Phase 0/1 must not infer that link.
+- Import/export may preserve plan-scoped records already present in the file,
+  but importing a plan must not convert estimates into Actual Expenses or treat
+  booking docs as paid unless the source record is explicitly an Actual Expense.
 
 ## Implementation Touchpoints
 
@@ -1024,6 +1104,18 @@ Phase 0/1 release evidence must include the exact command for each layer that
 was run. If a listed test is split into an existing broader file, the commit
 message or PR notes should name the scenario-level assertion that covers it.
 
+Minimum command evidence matrix:
+
+| Layer | Command |
+| --- | --- |
+| Backend schema/contracts | `rtk cargo test -p sagittarius-api --test schema_contract -- --nocapture` |
+| Backend Trip Plan API | `rtk cargo test -p sagittarius-api --test plan_variants_contract -- --nocapture` |
+| Backend cockpit/account/realtime | `rtk cargo test -p sagittarius-api --test trip_load_contract --test account_trip_contract --test realtime_contract -- --nocapture` |
+| Frontend API mapping/routes/import-export | `cd frontend && rtk bunx vitest --project unit run src/trip/api-client.test.ts src/trip/api-contract.test.ts src/trip/itinerary-import-export.test.ts` |
+| Frontend local UI/table copy | `cd frontend && rtk bunx vitest --project unit run src/app/SagittariusApp.test.tsx src/components/SagittariusApp.test.tsx src/components/SmartItineraryTable.test.tsx src/project-contract.test.ts` |
+| Frontend type safety | `cd frontend && rtk bun run typecheck` |
+| Whole-workspace release claim gate | `rtk python3 ~/.codex/aries/scripts/check_all.py` |
+
 ### Phase 2 Preview
 
 These are not Phase 0/1 release requirements. They document the next slice so Phase 1 does not block the later model.
@@ -1081,5 +1173,8 @@ them impossible.
 
 - Phase 2: use the already-applied nullable plan-scoped record columns to harden create/patch defaults, same-plan service checks, and repair behavior for expenses, tasks, stop notes, booking docs, and booking-item relation rows.
 - Phase 3: use the already-applied hierarchy/time columns to harden Plan Day -> Activity -> Sub-activity behavior, Time Windows, and cross-day end display.
-- Phase 4: sibling overlaps remain warnings only; automatic overlap-to-path behavior is removed, and Alternative Path changes happen through explicit organizer actions.
+- Phase 4: sibling overlaps remain warnings only; legacy overlap-generated path
+  compatibility data is either migrated, deleted, or explicitly converted by an
+  organizer, and Alternative Path changes happen through explicit organizer
+  actions. Add ADR coverage before implementing that migration.
 - Phase 5: keep the itinerary page as the primary planning surface and use booking/ticket pages for detail editing.

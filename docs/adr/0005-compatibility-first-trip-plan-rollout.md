@@ -7,3 +7,15 @@ Phase 0/1 will ship Trip Plan language and canonical API aliases before any stor
 **Consequences**: Phase 0/1 must be treated as a contract phase. It may add aliases, validation, routes, migration columns, and tests, but it must not silently move actual expenses, flatten activities, remove legacy fields, infer the Main Plan from repairable status metadata, or make unsupported duplicate/import plan creation look successful.
 
 **Phase 0/1 freeze**: Phase 1 acceptance is blocked until [the implementation spec](../itinerary-trip-plan-phase-0-1-implementation-spec.md) lists the additive API request/response diffs for cockpit, account trip create/join responses, create, patch, set-main, realtime, and import/export; the `plan_variants.status` migration DDL draft with rollback and raw-write repair rules; and the exact tests that prove canonical-only, legacy-only, and mixed payloads all normalize to the same Trip Plan state.
+
+**Concurrency boundary**: Set-main does not take `expectedVersion` in Phase 1.
+The compatibility route is last-writer-wins after transactional row locks, while
+duplicate `clientMutationId` values remain rejected by the existing mutation
+guard. Adding a future optional `expectedTripVersion` is allowed as a hardening
+change; making it mandatory or changing no-version behavior requires a new ADR.
+
+**Legacy path boundary**: Existing overlap-generated path data may remain as
+compatibility state in Phase 0/1, but it is not canonical Alternative Path
+semantics. New imports must not synthesize Alternative Paths from sibling
+overlaps, and Phase 4 needs a separate ADR before deleting, migrating, or
+explicitly converting legacy path data.
