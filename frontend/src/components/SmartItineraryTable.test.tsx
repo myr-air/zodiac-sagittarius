@@ -1094,7 +1094,7 @@ describe("SmartItineraryTable", () => {
     );
   });
 
-  it("moves an overlapping activity dot to the Plan A position", () => {
+  it("keeps overlapping main activity dots on Main until an alternative is chosen explicitly", () => {
     const mainItem = {
       ...tripFixture.planItems[0],
       id: "overlap-main-dot",
@@ -1111,7 +1111,7 @@ describe("SmartItineraryTable", () => {
       day: "2026-06-19",
       startTime: "08:30",
       durationMinutes: 45,
-      activity: "Overlap plan A dot",
+      activity: "Overlap second main dot",
       sortOrder: 200,
       pathRole: "main" as const,
     };
@@ -1134,43 +1134,38 @@ describe("SmartItineraryTable", () => {
     const mainDot = screen.getByRole("button", {
       name: /Overlap main dot on Main/i,
     });
-    const planADot = screen.getByRole("button", {
-      name: /Overlap plan A dot on Plan A/i,
+    const secondMainDot = screen.getByRole("button", {
+      name: /Overlap second main dot on Main/i,
     });
-    const startToPlanALine = Array.from(
+    const startToSecondMainLine = Array.from(
       document.querySelectorAll(".activity-path-graph-line"),
     ).find(
       (line) =>
         line.getAttribute("data-from-y") === "23.75" &&
         line.getAttribute("data-to-x") ===
-          `${Number.parseFloat(planADot.style.left)}` &&
+          `${Number.parseFloat(secondMainDot.style.left)}` &&
         line.getAttribute("data-to-y") ===
-          `${Number.parseFloat(planADot.style.top) + 18}`,
+          `${Number.parseFloat(secondMainDot.style.top) + 18}`,
     );
     const mainDotCenter = {
       x: Number.parseFloat(mainDot.style.left),
       y: Number.parseFloat(mainDot.style.top) + 18,
     };
-    const planADotCenter = {
-      x: Number.parseFloat(planADot.style.left),
-      y: Number.parseFloat(planADot.style.top) + 18,
+    const secondMainDotCenter = {
+      x: Number.parseFloat(secondMainDot.style.left),
+      y: Number.parseFloat(secondMainDot.style.top) + 18,
     };
-    const dotToDotLine = Array.from(
-      document.querySelectorAll(".activity-path-graph-line"),
-    ).find(
-      (line) =>
-        line.getAttribute("data-from-x") === `${mainDotCenter.x}` &&
-        line.getAttribute("data-from-y") === `${mainDotCenter.y}` &&
-        line.getAttribute("data-to-x") === `${planADotCenter.x}` &&
-        line.getAttribute("data-to-y") === `${planADotCenter.y}`,
-    );
-    expect(Number.parseFloat(planADot.style.left)).toBeGreaterThan(
+    expect(Number.parseFloat(secondMainDot.style.left)).toBe(
       Number.parseFloat(mainDot.style.left),
     );
-    expect(dotToDotLine).toBeUndefined();
-    expect(startToPlanALine).toBeDefined();
-    expect(startToPlanALine?.getAttribute("d")).toContain(" C ");
-    expect(startToPlanALine?.getAttribute("d")).toContain("47.5");
+    expect(secondMainDotCenter.x).toBe(mainDotCenter.x);
+    expect(secondMainDotCenter.y).toBeGreaterThan(mainDotCenter.y);
+    expect(startToSecondMainLine).toBeDefined();
+    expect(
+      screen.queryByRole("button", {
+        name: /Overlap second main dot on Plan A/i,
+      }),
+    ).not.toBeInTheDocument();
     expect(screen.getByLabelText(/Start of Day 2/i)).toHaveClass(
       "activity-path-graph-anchor",
     );
@@ -1179,7 +1174,7 @@ describe("SmartItineraryTable", () => {
     );
     expect(
       document.querySelectorAll(".activity-path-graph-line").length,
-    ).toBeGreaterThanOrEqual(3);
+    ).toBeGreaterThanOrEqual(2);
   });
 
   it("hides day path controls when the day only has the main plan", () => {

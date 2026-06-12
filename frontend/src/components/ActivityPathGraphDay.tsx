@@ -51,11 +51,10 @@ export function ActivityPathGraphDay({
   onSelectItem,
 }: ActivityPathGraphDayProps) {
   const pathMetaById = buildPathMeta(day, graphItems, pathOptions);
-  const planAPathId = findPlanAPathId(day, pathOptions, pathMetaById);
-  const pathIds = buildVisibleLanePathIds(rowItems, planAPathId);
+  const pathIds = buildVisibleLanePathIds(rowItems);
   const laneXByPathId = buildLaneXByPathId(pathIds, graphWidth);
   const height = Math.max(dayRowHeight + addStopRowHeight, dayRowHeight + rowItems.length * rowStep + addStopRowHeight);
-  const graphNodes = buildGraphNodes(rowItems, pathMetaById, planAPathId, laneXByPathId, graphWidth);
+  const graphNodes = buildGraphNodes(rowItems, pathMetaById, laneXByPathId, graphWidth);
   const graphEdges = buildGraphEdges(graphNodes, graphWidth, height);
 
   return (
@@ -154,37 +153,32 @@ function buildLaneXByPathId(pathIds: string[], graphWidth: number): Map<string, 
   return new Map(pathIds.map((pathId, index) => [pathId, firstLaneX + index * dotLaneGap]));
 }
 
-function buildVisibleLanePathIds(rowItems: ItineraryItem[], planAPathId: string): string[] {
+function buildVisibleLanePathIds(rowItems: ItineraryItem[]): string[] {
   const pathIds = new Set<string>([mainItineraryPathId]);
-  rowItems.forEach((item, index) => {
-    const pathId = itineraryItemPathId(item);
-    pathIds.add(shouldUseVisualPlanA(item, pathId, rowItems.slice(0, index)) ? planAPathId : pathId);
-  });
+  rowItems.forEach((item) => pathIds.add(itineraryItemPathId(item)));
   return Array.from(pathIds);
 }
 
 function buildGraphNodes(
   rowItems: ItineraryItem[],
   pathMetaById: Map<string, { name: string; color: string }>,
-  planAPathId: string,
   laneXByPathId: Map<string, number>,
   graphWidth: number,
 ): GraphNode[] {
   return rowItems.map((item, index) => {
     const pathId = itineraryItemPathId(item);
-    const visualPathId = shouldUseVisualPlanA(item, pathId, rowItems.slice(0, index)) ? planAPathId : pathId;
-    const pathMeta = pathMetaById.get(visualPathId) ?? pathMetaById.get(pathId) ?? pathMetaById.get(mainItineraryPathId);
+    const pathMeta = pathMetaById.get(pathId) ?? pathMetaById.get(mainItineraryPathId);
     const interval = itemInterval(item);
     return {
       id: item.id,
       color: pathMeta?.color ?? laneColors[0],
       end: interval?.end ?? null,
       item,
-      pathId: visualPathId,
+      pathId,
       pathName: pathMeta?.name ?? "Main",
       sourcePathId: pathId,
       start: interval?.start ?? null,
-      x: laneXByPathId.get(visualPathId) ?? laneXByPathId.get(pathId) ?? graphWidth / 2,
+      x: laneXByPathId.get(pathId) ?? graphWidth / 2,
       y: dayRowHeight + rowStep / 2 + index * rowStep,
     };
   });
@@ -427,30 +421,7 @@ function buildPathMeta(day: string, graphItems: ItineraryItem[], pathOptions: It
     if (item.day !== day || item.pathRole !== "alternative" || !item.pathId) continue;
     options.set(item.pathId, item.pathName ?? humanizePathId(item.pathId));
   }
-  if (!Array.from(options.values()).some((name) => name.toLowerCase() === "plan a")) options.set("visual-plan-a", "Plan A");
   return new Map(Array.from(options, ([id, name], index) => [id, { name, color: laneColors[index % laneColors.length] ?? laneColors[0] }]));
-}
-
-function findPlanAPathId(day: string, pathOptions: ItineraryPathOption[], pathMetaById: Map<string, { name: string; color: string }>): string {
-  const planAOption = pathOptions.find((option) => option.id !== mainItineraryPathId && (option.scope === "trip" || option.day === day) && option.name.toLowerCase() === "plan a");
-  if (planAOption) return planAOption.id;
-  for (const [pathId, meta] of pathMetaById) {
-    if (meta.name.toLowerCase() === "plan a") return pathId;
-  }
-  return mainItineraryPathId;
-}
-
-function shouldUseVisualPlanA(item: ItineraryItem, pathId: string, earlierItems: ItineraryItem[]): boolean {
-  return pathId === mainItineraryPathId && !item.pathGroupId && overlapsEarlierItem(item, earlierItems);
-}
-
-function overlapsEarlierItem(item: ItineraryItem, earlierItems: ItineraryItem[]): boolean {
-  const interval = itemInterval(item);
-  if (!interval) return false;
-  return earlierItems.some((earlierItem) => {
-    const earlierInterval = itemInterval(earlierItem);
-    return Boolean(earlierInterval && interval.start < earlierInterval.end && earlierInterval.start < interval.end);
-  });
 }
 
 function itemInterval(item: ItineraryItem): { start: number; end: number } | null {

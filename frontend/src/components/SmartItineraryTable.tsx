@@ -467,7 +467,7 @@ export function SmartItineraryTable({
     (total, item) => total + (item.durationMinutes ?? 0),
     0,
   );
-  const graphColumnWidth = buildGraphColumnWidth(displayItems, pathOptions);
+  const graphColumnWidth = buildGraphColumnWidth(displayItems);
   const smartTableStyle = {
     "--graph-column-width": `${graphColumnWidth}px`,
   } as CSSProperties;
@@ -1994,26 +1994,18 @@ function groupGraphItemsByDay(
   return itemsByDay;
 }
 
-function buildGraphColumnWidth(
-  items: ItineraryItem[],
-  pathOptions: ItineraryPathOption[],
-): number {
+function buildGraphColumnWidth(items: ItineraryItem[]): number {
   const pathCountsByDay = new Map<string, Set<string>>();
-  const planAPathId = findPlanAPathId(pathOptions);
   const itemsByDay = groupGraphItemsByDay(items);
   for (const [day, dayItems] of itemsByDay) {
     const dayPaths =
       pathCountsByDay.get(day) ?? new Set<string>([mainItineraryPathId]);
-    dayItems.forEach((item, itemIndex) => {
+    dayItems.forEach((item) => {
       const pathId =
         item.pathRole === "alternative"
           ? (item.pathId ?? item.id)
           : mainItineraryPathId;
-      dayPaths.add(
-        shouldUseVisualPlanA(item, pathId, dayItems.slice(0, itemIndex))
-          ? planAPathId
-          : pathId,
-      );
+      dayPaths.add(pathId);
     });
     pathCountsByDay.set(day, dayPaths);
   }
@@ -2025,51 +2017,6 @@ function buildGraphColumnWidth(
     graphColumnMinWidth,
     graphColumnSidePadding * 2 + (laneCount - 1) * graphColumnLaneGap + 12,
   );
-}
-
-function findPlanAPathId(pathOptions: ItineraryPathOption[]): string {
-  return (
-    pathOptions.find(
-      (option) =>
-        option.id !== mainItineraryPathId &&
-        option.name.toLowerCase() === "plan a",
-    )?.id ?? "visual-plan-a"
-  );
-}
-
-function shouldUseVisualPlanA(
-  item: ItineraryItem,
-  pathId: string,
-  earlierItems: ItineraryItem[],
-): boolean {
-  return (
-    pathId === mainItineraryPathId &&
-    !item.pathGroupId &&
-    overlapsEarlierItem(item, earlierItems)
-  );
-}
-
-function overlapsEarlierItem(
-  item: ItineraryItem,
-  earlierItems: ItineraryItem[],
-): boolean {
-  const interval = itemInterval(item);
-  if (!interval) return false;
-  return earlierItems.some((earlierItem) => {
-    const earlierInterval = itemInterval(earlierItem);
-    return Boolean(
-      earlierInterval &&
-      interval.start < earlierInterval.end &&
-      earlierInterval.start < interval.end,
-    );
-  });
-}
-
-function itemInterval(
-  item: ItineraryItem,
-): { start: number; end: number } | null {
-  const interval = getTimeWindowInterval(item);
-  return interval ? { start: interval.start, end: interval.end } : null;
 }
 
 function getRowClassName(
