@@ -48,6 +48,7 @@ pub async fn import_itinerary(
         start_date: trip.start_date,
         end_date: trip.end_date,
         active_plan_variant_id,
+        main_trip_plan_id: active_plan_variant_id,
     };
 
     let mode = request.mode.as_deref().unwrap_or("auto");
@@ -291,6 +292,64 @@ fn itinerary_conversion_prompt(
 }
 
 fn itinerary_json_schema() -> Value {
+    let trip_schema = json!({
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "name", "destinationLabel", "startDate", "endDate", "activePlanVariantId", "mainTripPlanId"],
+        "properties": {
+            "id": { "type": "string" },
+            "name": { "type": "string" },
+            "destinationLabel": { "type": "string" },
+            "startDate": { "type": "string" },
+            "endDate": { "type": "string" },
+            "activePlanVariantId": { "type": "string" },
+            "mainTripPlanId": { "type": "string" }
+        }
+    });
+    let coordinates_schema = json!({
+        "type": ["object", "null"],
+        "additionalProperties": false,
+        "required": ["lat", "lng"],
+        "properties": {
+            "lat": { "type": "number" },
+            "lng": { "type": "number" }
+        }
+    });
+    let item_schema = json!({
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "day", "sortOrder", "startTime", "activity", "activityType", "place", "linkLabel", "mapLink", "durationMinutes", "transportation", "details", "advisories", "note"],
+        "properties": {
+            "id": { "type": "string" },
+            "pathGroupId": { "type": ["string", "null"] },
+            "pathId": { "type": ["string", "null"] },
+            "pathName": { "type": ["string", "null"] },
+            "pathRole": { "enum": ["main", "alternative", null] },
+            "parentItemId": { "type": ["string", "null"] },
+            "itemKind": { "enum": ["travel", "activity", "lodging", "meal", "note", "preparation", "foodRecommendation", null] },
+            "timeMode": { "enum": ["scheduled", "flexible", null] },
+            "isPlanBlock": { "type": ["boolean", "null"] },
+            "status": { "enum": ["idea", "planned", "booked", "confirmed", "done", "skipped", null] },
+            "priority": { "enum": ["low", "normal", "high", "must", null] },
+            "day": { "type": "string" },
+            "sortOrder": { "type": "integer" },
+            "startTime": { "type": "string" },
+            "endTime": { "type": ["string", "null"] },
+            "endOffsetDays": { "type": ["integer", "null"] },
+            "activity": { "type": "string" },
+            "activityType": { "enum": ["travel", "food", "shopping", "attraction", "experience", "stay"] },
+            "place": { "type": "string" },
+            "linkLabel": { "type": "string" },
+            "mapLink": { "type": "string" },
+            "coordinates": coordinates_schema,
+            "address": { "type": ["string", "null"] },
+            "durationMinutes": { "type": ["integer", "null"] },
+            "transportation": { "type": "string" },
+            "details": { "type": "object" },
+            "advisories": { "type": "array" },
+            "note": { "type": "string" }
+        }
+    });
     json!({
         "type": "object",
         "additionalProperties": false,
@@ -299,46 +358,10 @@ fn itinerary_json_schema() -> Value {
             "schema": { "const": IMPORT_SCHEMA },
             "version": { "const": IMPORT_VERSION },
             "exportedAt": { "type": "string" },
-            "trip": {
-                "type": "object",
-                "additionalProperties": false,
-                "required": ["id", "name", "destinationLabel", "startDate", "endDate", "activePlanVariantId"],
-                "properties": {
-                    "id": { "type": "string" },
-                    "name": { "type": "string" },
-                    "destinationLabel": { "type": "string" },
-                    "startDate": { "type": "string" },
-                    "endDate": { "type": "string" },
-                    "activePlanVariantId": { "type": "string" }
-                }
-            },
+            "trip": trip_schema,
             "items": {
                 "type": "array",
-                "items": {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "required": ["id", "day", "sortOrder", "startTime", "activity", "activityType", "place", "linkLabel", "mapLink", "durationMinutes", "transportation", "details", "advisories", "note"],
-                    "properties": {
-                        "id": { "type": "string" },
-                        "pathGroupId": { "type": ["string", "null"] },
-                        "pathId": { "type": ["string", "null"] },
-                        "pathName": { "type": ["string", "null"] },
-                        "pathRole": { "enum": ["main", "alternative", null] },
-                        "day": { "type": "string" },
-                        "sortOrder": { "type": "integer" },
-                        "startTime": { "type": "string" },
-                        "activity": { "type": "string" },
-                        "activityType": { "enum": ["travel", "food", "shopping", "attraction", "experience", "stay"] },
-                        "place": { "type": "string" },
-                        "linkLabel": { "type": "string" },
-                        "mapLink": { "type": "string" },
-                        "durationMinutes": { "type": ["integer", "null"] },
-                        "transportation": { "type": "string" },
-                        "details": { "type": "object" },
-                        "advisories": { "type": "array" },
-                        "note": { "type": "string" }
-                    }
-                }
+                "items": item_schema
             }
         }
     })
@@ -358,6 +381,15 @@ fn normalize_items(items: &mut [ItineraryImportItem]) -> Result<(), ServiceError
                 return Err(ServiceError::InvalidRequest("unsupported path role"));
             }
         }
+        validate_item_kind(&item.item_kind)?;
+        validate_time_mode(&item.time_mode)?;
+        validate_status(&item.status)?;
+        validate_priority(&item.priority)?;
+        if item.end_offset_days < 0 {
+            return Err(ServiceError::InvalidRequest(
+                "end offset days cannot be negative",
+            ));
+        }
     }
     Ok(())
 }
@@ -370,6 +402,44 @@ fn validate_activity_type(value: &str) -> Result<(), ServiceError> {
         return Ok(());
     }
     Err(ServiceError::InvalidRequest("unsupported activity type"))
+}
+
+fn validate_item_kind(value: &str) -> Result<(), ServiceError> {
+    if matches!(
+        value,
+        "travel" | "activity" | "lodging" | "meal" | "note" | "preparation" | "foodRecommendation"
+    ) {
+        return Ok(());
+    }
+    Err(ServiceError::InvalidRequest("unsupported item kind"))
+}
+
+fn validate_time_mode(value: &str) -> Result<(), ServiceError> {
+    if matches!(value, "scheduled" | "flexible") {
+        return Ok(());
+    }
+    Err(ServiceError::InvalidRequest("unsupported time mode"))
+}
+
+fn validate_status(value: &str) -> Result<(), ServiceError> {
+    if matches!(
+        value,
+        "idea" | "planned" | "booked" | "confirmed" | "done" | "skipped"
+    ) {
+        return Ok(());
+    }
+    Err(ServiceError::InvalidRequest(
+        "unsupported import item status",
+    ))
+}
+
+fn validate_priority(value: &str) -> Result<(), ServiceError> {
+    if matches!(value, "low" | "normal" | "high" | "must") {
+        return Ok(());
+    }
+    Err(ServiceError::InvalidRequest(
+        "unsupported import item priority",
+    ))
 }
 
 #[derive(Debug, Deserialize)]

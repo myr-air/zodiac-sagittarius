@@ -21,23 +21,66 @@ async fn itinerary_import_contract_organizer_can_normalize_json_import(pool: sql
             "destinationLabel": "Hong Kong + Shenzhen",
             "startDate": "2026-06-18",
             "endDate": "2026-06-23",
-            "activePlanVariantId": support::PLAN_ID
+            "activePlanVariantId": support::PLAN_ID,
+            "mainTripPlanId": support::PLAN_ID
         },
-        "items": [{
-            "id": "import-stop-1",
-            "day": "2026-06-19",
-            "sortOrder": 100,
-            "startTime": "09:15",
-            "activity": "Imported breakfast",
-            "activityType": "food",
-            "place": "Central",
-            "linkLabel": "Map",
-            "mapLink": "https://maps.example.test",
-            "durationMinutes": 45,
-            "transportation": "MTR",
-            "advisories": [],
-            "note": "From text file"
-        }]
+        "items": [
+            {
+                "id": "import-flight-block",
+                "pathGroupId": "group-hkg-arrival",
+                "pathId": "path-main",
+                "pathName": "Main arrival",
+                "pathRole": "main",
+                "itemKind": "travel",
+                "timeMode": "scheduled",
+                "isPlanBlock": true,
+                "status": "confirmed",
+                "priority": "must",
+                "day": "2026-06-19",
+                "sortOrder": 100,
+                "startTime": "23:00",
+                "endTime": "02:00",
+                "endOffsetDays": 1,
+                "activity": "Flight to Hong Kong",
+                "activityType": "travel",
+                "place": "BKK",
+                "linkLabel": "Map",
+                "mapLink": "https://maps.example.test",
+                "durationMinutes": 180,
+                "transportation": "Flight",
+                "details": { "bookingRef": "QR349" },
+                "advisories": [],
+                "note": "Keep airport buffer"
+            },
+            {
+                "id": "import-checkin",
+                "pathGroupId": "group-hkg-arrival",
+                "pathId": "path-rain",
+                "pathName": "Rain arrival",
+                "pathRole": "alternative",
+                "parentItemId": "import-flight-block",
+                "itemKind": "preparation",
+                "timeMode": "flexible",
+                "isPlanBlock": false,
+                "status": "planned",
+                "priority": "high",
+                "day": "2026-06-19",
+                "sortOrder": 200,
+                "startTime": "",
+                "endTime": null,
+                "endOffsetDays": 0,
+                "activity": "Check in online",
+                "activityType": "travel",
+                "place": "Hotel lobby",
+                "linkLabel": "Map",
+                "mapLink": "https://maps.example.test/checkin",
+                "durationMinutes": null,
+                "transportation": "",
+                "details": {},
+                "advisories": [],
+                "note": "Sub-activity remains attached to the block"
+            }
+        ]
     });
 
     let response = app
@@ -70,7 +113,19 @@ async fn itinerary_import_contract_organizer_can_normalize_json_import(pool: sql
     assert_eq!(body["schema"], "joii.itinerary.export");
     assert_eq!(body["version"], 1);
     assert_eq!(body["source"], "json");
-    assert_eq!(body["items"][0]["activity"], "Imported breakfast");
+    assert_eq!(
+        body["trip"]["activePlanVariantId"],
+        support::PLAN_ID.to_string()
+    );
+    assert_eq!(body["trip"]["mainTripPlanId"], support::PLAN_ID.to_string());
+    assert_eq!(body["items"][0]["activity"], "Flight to Hong Kong");
+    assert_eq!(body["items"][0]["isPlanBlock"], true);
+    assert_eq!(body["items"][0]["endTime"], "02:00");
+    assert_eq!(body["items"][0]["endOffsetDays"], 1);
+    assert_eq!(body["items"][1]["parentItemId"], "import-flight-block");
+    assert_eq!(body["items"][1]["pathRole"], "alternative");
+    assert_eq!(body["items"][1]["timeMode"], "flexible");
+    assert_eq!(body["items"][1]["priority"], "high");
 }
 
 #[sqlx::test(migrations = "../../migrations")]

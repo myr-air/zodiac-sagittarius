@@ -34,9 +34,17 @@ Schema envelope:
       "pathId": "path-rain",
       "pathName": "Rain plan",
       "pathRole": "alternative",
+      "parentItemId": null,
+      "itemKind": "meal",
+      "timeMode": "scheduled",
+      "isPlanBlock": false,
+      "status": "planned",
+      "priority": "normal",
       "day": "2025-05-16",
       "sortOrder": 100,
       "startTime": "08:30",
+      "endTime": "09:30",
+      "endOffsetDays": 0,
       "activity": "Dim Dim Sum ที่ Tim Ho Wan",
       "activityType": "food",
       "place": "Shop G72, G/F, The Elements",
@@ -61,6 +69,10 @@ Import behavior:
   an existing named path, or a new named path.
 - Imported rows can carry optional activity branch fields: `pathGroupId`,
   `pathId`, `pathName`, and `pathRole`.
+- Imported rows preserve itinerary hierarchy and time-window fields:
+  `parentItemId`, `itemKind`, `timeMode`, `isPlanBlock`, `status`, `priority`,
+  `endTime`, and `endOffsetDays`. `parentItemId` is a string because local
+  exports can use stable client ids before rows exist in the backend database.
 - The export metadata includes canonical `mainTripPlanId` beside deprecated
   `activePlanVariantId`.
 - Import accepts `trip.activePlanVariantId`, `trip.mainTripPlanId`, both, or

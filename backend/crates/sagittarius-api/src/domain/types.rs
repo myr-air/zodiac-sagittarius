@@ -442,6 +442,7 @@ pub struct ItineraryImportTrip {
     pub start_date: Date,
     pub end_date: Date,
     pub active_plan_variant_id: Uuid,
+    pub main_trip_plan_id: Uuid,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -453,7 +454,7 @@ pub struct ItineraryImportItem {
     pub path_name: Option<String>,
     pub path_role: Option<String>,
     #[serde(default)]
-    pub parent_item_id: Option<Uuid>,
+    pub parent_item_id: Option<String>,
     #[serde(default = "default_import_item_kind")]
     pub item_kind: String,
     #[serde(default = "default_import_time_mode")]
