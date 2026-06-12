@@ -269,6 +269,57 @@ async fn itinerary_create_contract_rejects_nested_sub_activity(pool: sqlx::PgPoo
 }
 
 #[sqlx::test(migrations = "../../migrations")]
+async fn itinerary_create_contract_rejects_sub_activity_plan_block(pool: sqlx::PgPool) {
+    support::seed_trip(&pool).await;
+    let token = support::create_session(&pool, support::ORGANIZER_ID).await;
+    let app = support::app(pool.clone());
+
+    let response = app
+        .oneshot(
+            Request::builder()
+                .method(Method::POST)
+                .uri(format!(
+                    "/api/v1/trips/{}/itinerary-items",
+                    support::TRIP_ID
+                ))
+                .header(header::AUTHORIZATION, format!("Bearer {token}"))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({
+                        "clientMutationId": "web-create-sub-activity-block",
+                        "planVariantId": support::PLAN_ID,
+                        "parentItemId": support::ITEM_ID,
+                        "isPlanBlock": true,
+                        "day": "2025-05-16",
+                        "startTime": "09:15",
+                        "activity": "Impossible nested block",
+                        "activityType": "travel",
+                        "place": "Station"
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::BAD_REQUEST);
+    let body: Value =
+        serde_json::from_slice(&to_bytes(response.into_body(), 65536).await.unwrap()).unwrap();
+    assert_eq!(body["code"], "invalid_request");
+
+    let stored_count: i64 = sqlx::query_scalar(
+        "select count(*)
+         from itinerary_items
+         where activity = 'Impossible nested block'",
+    )
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(stored_count, 0);
+}
+
+#[sqlx::test(migrations = "../../migrations")]
 async fn itinerary_create_contract_rejects_parent_from_another_plan(pool: sqlx::PgPool) {
     support::seed_trip(&pool).await;
     let alt_item_id = support::seed_alt_plan_item(&pool).await;

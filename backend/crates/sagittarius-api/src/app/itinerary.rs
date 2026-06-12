@@ -64,7 +64,9 @@ pub async fn patch_itinerary_item(
         .clone()
         .unwrap_or_else(|| existing.end_time.clone());
     let target_end_offset_days = patch.end_offset_days.unwrap_or(existing.end_offset_days);
+    let target_is_plan_block = patch.is_plan_block.unwrap_or(existing.is_plan_block);
     validate_time_window_end_offset(target_end_time.as_deref(), target_end_offset_days)?;
+    validate_sub_activity_not_plan_block(target_parent_item_id, target_is_plan_block)?;
     validate_itinerary_block_patch(
         &mut tx,
         trip_id,
@@ -181,6 +183,10 @@ pub async fn create_itinerary_item(
     validate_time_window_end_offset(
         request.end_time.as_deref(),
         request.end_offset_days.unwrap_or(0),
+    )?;
+    validate_sub_activity_not_plan_block(
+        request.parent_item_id,
+        request.is_plan_block.unwrap_or(false),
     )?;
 
     let item_id = Uuid::now_v7();
@@ -401,6 +407,19 @@ fn validate_time_window_end_offset(
     if end_time.is_none() && end_offset_days != 0 {
         return Err(ServiceError::InvalidRequest(
             "end_offset_days must be 0 when end_time is empty",
+        ));
+    }
+
+    Ok(())
+}
+
+fn validate_sub_activity_not_plan_block(
+    parent_item_id: Option<Uuid>,
+    is_plan_block: bool,
+) -> Result<(), ServiceError> {
+    if parent_item_id.is_some() && is_plan_block {
+        return Err(ServiceError::InvalidRequest(
+            "sub-activity cannot be an activity block",
         ));
     }
 
