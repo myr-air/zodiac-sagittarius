@@ -2421,6 +2421,7 @@ export function SagittariusApp({
           title,
           visibility,
           kind: "prep",
+          tripPlanId: tripPlanIdForRecord(trip, input.relatedItemId ?? null),
           /* v8 ignore next */
           assigneeId:
             visibility === "shared"
@@ -2440,6 +2441,7 @@ export function SagittariusApp({
         status: "open",
         visibility,
         kind: "prep",
+        tripPlanId: tripPlanIdForRecord(trip, input.relatedItemId ?? null),
         createdBy: currentMember.id,
         /* v8 ignore next */
         assigneeId:
@@ -2564,7 +2566,11 @@ export function SagittariusApp({
           participantSession.sessionToken,
           {
             clientMutationId,
-            ...serializeBookingDocInputForApi({ ...input, title }),
+            ...serializeBookingDocInputForApi({
+              ...input,
+              title,
+              tripPlanId: tripPlanIdForBookingRecord(trip, input),
+            }),
           },
         );
         const nextTrip = {
@@ -2594,6 +2600,7 @@ export function SagittariusApp({
     const bookingDoc: BookingDoc = {
       id: nextLocalBookingDocId(trip.bookingDocs ?? []),
       tripId: trip.id,
+      tripPlanId: tripPlanIdForBookingRecord(trip, input),
       ...input,
       title,
       externalLinks: input.externalLinks.map((link, index) => ({
@@ -2924,6 +2931,7 @@ export function SagittariusApp({
         {
           clientMutationId: nextClientMutationId("stop-note-create"),
           itineraryItemId: input.itemId,
+          tripPlanId: tripPlanIdForRecord(trip, input.itemId),
           body,
         },
       );
@@ -2935,6 +2943,7 @@ export function SagittariusApp({
       {
         id: nextLocalStopNoteId(current),
         tripId: trip.id,
+        tripPlanId: tripPlanIdForRecord(trip, input.itemId),
         itemId: input.itemId,
         authorId: currentMember.id,
         body,
@@ -3057,6 +3066,7 @@ export function SagittariusApp({
             receiptUrl: repeatedInput.receiptUrl ?? null,
             lineItems: repeatedInput.lineItems,
             comments: repeatedInput.comments ?? [],
+            tripPlanId: tripPlanIdForRecord(trip, repeatedInput.itemId),
             paidBy: repeatedInput.paidBy,
             category: repeatedInput.category,
             splits: expenseSplitsToMinor(splits),
@@ -3097,6 +3107,7 @@ export function SagittariusApp({
           receiptUrl: repeatedInput.receiptUrl ?? null,
           lineItems: repeatedInput.lineItems ?? [],
           comments: repeatedInput.comments ?? [],
+          tripPlanId: tripPlanIdForRecord(current, repeatedInput.itemId),
           paidBy: repeatedInput.paidBy,
           category: repeatedInput.category,
           splits,
@@ -4310,6 +4321,30 @@ export function nextLocalBookingDocId(bookingDocs: BookingDoc[]): string {
   }
 
   return id;
+}
+
+function tripPlanIdForRecord(
+  trip: Trip,
+  itineraryItemId?: string | null,
+): string | null {
+  if (itineraryItemId) {
+    const item = trip.itineraryItems.find(
+      (candidate) => candidate.id === itineraryItemId,
+    );
+    if (item?.planVariantId) return item.planVariantId;
+  }
+  return trip.activePlanVariantId || trip.mainTripPlanId || null;
+}
+
+function tripPlanIdForBookingRecord(
+  trip: Trip,
+  input: Pick<BookingDocInput, "relatedItineraryItemIds">,
+): string | null {
+  for (const itemId of input.relatedItineraryItemIds) {
+    const tripPlanId = tripPlanIdForRecord(trip, itemId);
+    if (tripPlanId) return tripPlanId;
+  }
+  return tripPlanIdForRecord(trip, null);
 }
 
 function applyImportedRecordsToTrip({

@@ -1500,6 +1500,13 @@ describe("Sagittarius cockpit UI", () => {
     expect(
       screen.getByRole("table", { name: /รายการค่าใช้จ่าย/i }),
     ).toHaveTextContent("HK$100.00");
+    const persistedTrip = JSON.parse(localStorage.getItem(tripStorageKey)!) as Trip;
+    expect(
+      persistedTrip.expenses.find((expense) => expense.title === "Late night taxi"),
+    ).toMatchObject({
+      tripPlanId: seedTrip.activePlanVariantId,
+      itineraryItemId: null,
+    });
   });
 
   it("creates overview tasks through the API client after backend login", async () => {
@@ -4985,6 +4992,7 @@ describe("Sagittarius cockpit UI", () => {
         status: "draft",
         type: "flight",
         title: "Flight to Hong Kong booking draft",
+        tripPlanId: seedTrip.activePlanVariantId,
         priceAmount: null,
         relatedItineraryItemIds: ["item-flight"],
         relatedExpenseIds: [],
