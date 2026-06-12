@@ -180,6 +180,55 @@ const stressPathItems: ItineraryItem[] = [
   pathRole: pathRole as ItineraryItem["pathRole"],
 }));
 
+const hierarchyBlockItems: ItineraryItem[] = [
+  {
+    ...tripFixture.planItems[0],
+    id: "story-flight-block",
+    activity: "Flight to Hong Kong",
+    activityType: "travel",
+    itemKind: "travel",
+    isPlanBlock: true,
+    parentItemId: null,
+    day: "2026-06-19",
+    startTime: "04:00",
+    endTime: "13:00",
+    durationMinutes: 540,
+    status: "confirmed",
+    priority: "must",
+    sortOrder: 100,
+  },
+  {
+    ...tripFixture.planItems[1],
+    id: "story-flight-checkin",
+    activity: "Check in",
+    activityType: "travel",
+    itemKind: "preparation",
+    parentItemId: "story-flight-block",
+    day: "2026-06-19",
+    startTime: "06:00",
+    endTime: "06:45",
+    durationMinutes: 45,
+    status: "planned",
+    priority: "normal",
+    sortOrder: 200,
+  },
+  {
+    ...tripFixture.planItems[2],
+    id: "story-flight-immigration",
+    activity: "Immigration",
+    activityType: "travel",
+    itemKind: "preparation",
+    parentItemId: "story-flight-block",
+    day: "2026-06-19",
+    startTime: "11:15",
+    endTime: "12:15",
+    durationMinutes: 60,
+    status: "planned",
+    priority: "high",
+    sortOrder: 300,
+  },
+];
+
 const meta = {
   title: "Templates/Itinerary",
   component: SmartItineraryTable,
@@ -257,6 +306,20 @@ export const Traveler: Story = {
   },
 };
 export const Dense: Story = { args: { ...Owner.args, items: buildDenseTripFixture().itineraryItems } };
+export const HierarchyBlocks: Story = {
+  args: {
+    ...Owner.args,
+    items: hierarchyBlockItems,
+    graphItems: hierarchyBlockItems,
+    selectedItemId: "story-flight-block",
+    selectedTripPathId: "main",
+    dayPathOverrides: {},
+  },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByLabelText("Structure for Flight to Hong Kong")).toBeVisible();
+    await expect(canvas.getByLabelText("Structure for Check in")).toBeVisible();
+  },
+};
 export const TableOverflow: Story = {
   args: {
     ...Owner.args,

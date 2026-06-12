@@ -223,6 +223,14 @@ const rowSelectClassName =
   "row-select inline-flex min-h-8 w-fit min-w-0 items-center gap-1.5 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) px-2 py-0.5 text-[11px] font-extrabold leading-4 text-(--color-route) transition-[background,border-color,color] duration-150 hover:bg-(--color-route-soft) hover:border-(--color-route-border) focus-visible:bg-(--color-route-soft) focus-visible:border-(--color-route-border) focus-visible:outline-none";
 const inlineActivityStackClassName = "grid min-w-0 gap-0.5";
 const childActivityStackClassName = "border-l-2 border-(--color-route-border) pl-3";
+const hierarchyMetaClassName =
+  "inline-flex min-w-0 flex-wrap items-center gap-1.5 text-[10px] font-extrabold leading-4 text-(--color-text-muted)";
+const hierarchyChipClassName =
+  "inline-flex min-h-5 items-center gap-1 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) px-1.5 text-[10px] font-extrabold text-(--color-text-muted) [&_.icon]:size-3";
+const blockHierarchyChipClassName =
+  "border-(--color-route-border) bg-(--color-route-soft) text-(--color-route)";
+const commitmentChipClassName =
+  "border-[color-mix(in_srgb,var(--color-primary)_28%,var(--color-border))] bg-(--color-primary-soft) text-(--color-primary-strong)";
 const blockToggleButtonClassName =
   "inline-flex min-h-7 w-fit items-center gap-1.5 rounded-(--radius-sm) border border-(--color-route-border) bg-(--color-route-soft) px-2 text-[11px] font-extrabold text-(--color-route) aria-expanded:[&_.icon]:rotate-90 [&_.icon]:size-3.5 [&_.icon]:transition-transform";
 const blockDropButtonClassName =
@@ -1608,6 +1616,9 @@ function DayGroup({
             const nextItem = visibleItems[index + 1];
             const moveDownTargetId = visibleItems[index + 2]?.id;
             const isChild = Boolean(item.parentItemId);
+            const childCount = item.isPlanBlock
+              ? group.items.filter((candidate) => candidate.parentItemId === item.id).length
+              : 0;
             const blockCollapsed = item.isPlanBlock && collapsedPlanBlockIds.includes(item.id);
 
             return (
@@ -1622,6 +1633,7 @@ function DayGroup({
                   samePathOverlapItemIds,
                 )}
                 data-item-id={item.id}
+                data-hierarchy-level={isChild ? 2 : 1}
                 key={item.id}
                 onDragOver={(event) => onPreviewDrop(event, item.id)}
                 onDrop={(event) => onDropItem(event, item.id)}
@@ -1786,6 +1798,7 @@ function DayGroup({
                         onUpdateItemInline?.(item.id, { place: value })
                       }
                     />
+                    <RowHierarchyMeta item={item} childCount={childCount} />
                   </div>
                 </td>
                 <td>
@@ -2704,6 +2717,43 @@ function InlineActivityTypeSelect({
         if (nextValue !== value) void onCommit(nextValue as ActivityType);
       }}
     />
+  );
+}
+
+function RowHierarchyMeta({
+  childCount,
+  item,
+}: {
+  childCount: number;
+  item: ItineraryItem;
+}) {
+  const status = item.status ?? "idea";
+  const priority = item.priority ?? "normal";
+  const showCommitment = status !== "idea" || priority === "must" || priority === "high";
+  if (!item.isPlanBlock && !item.parentItemId && !showCommitment) return null;
+
+  return (
+    <div className={hierarchyMetaClassName} aria-label={`Structure for ${item.activity}`}>
+      {item.isPlanBlock ? (
+        <span className={cn(hierarchyChipClassName, blockHierarchyChipClassName)}>
+          <Icon name="list" />
+          Activity block · {childCount} sub-item{childCount === 1 ? "" : "s"}
+        </span>
+      ) : null}
+      {item.parentItemId ? (
+        <span className={hierarchyChipClassName}>
+          <Icon name="chevronRight" />
+          Sub-activity
+        </span>
+      ) : null}
+      {showCommitment ? (
+        <span className={cn(hierarchyChipClassName, commitmentChipClassName)}>
+          <Icon name="check" />
+          {status}
+          {priority === "must" || priority === "high" ? ` · ${priority}` : ""}
+        </span>
+      ) : null}
+    </div>
   );
 }
 

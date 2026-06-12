@@ -1970,6 +1970,49 @@ describe("SmartItineraryTable", () => {
     );
   });
 
+  it("renders compact hierarchy and commitment chips for blocks and sub-activities", () => {
+    renderTable({
+      items: [
+        {
+          ...tripFixture.planItems[0],
+          id: "block-flight",
+          activity: "Flight to Hong Kong",
+          isPlanBlock: true,
+          itemKind: "travel",
+          parentItemId: null,
+          status: "confirmed",
+          priority: "must",
+          sortOrder: 100,
+        },
+        {
+          ...tripFixture.planItems[1],
+          id: "child-checkin",
+          activity: "Check in",
+          parentItemId: "block-flight",
+          status: "planned",
+          priority: "normal",
+          sortOrder: 200,
+        },
+      ],
+      selectedItemId: "block-flight",
+    });
+
+    const blockStructure = screen.getByLabelText("Structure for Flight to Hong Kong");
+    const childStructure = screen.getByLabelText("Structure for Check in");
+    expect(within(blockStructure).getByText("Activity block · 1 sub-item")).toBeInTheDocument();
+    expect(within(blockStructure).getByText("confirmed · must")).toBeInTheDocument();
+    expect(within(childStructure).getByText("Sub-activity")).toBeInTheDocument();
+    expect(within(childStructure).getByText("planned")).toBeInTheDocument();
+    expect(screen.getByRole("row", { name: /Flight to Hong Kong/i })).toHaveAttribute(
+      "data-hierarchy-level",
+      "1",
+    );
+    expect(screen.getByRole("row", { name: /Check in/i })).toHaveAttribute(
+      "data-hierarchy-level",
+      "2",
+    );
+  });
+
   it("ignores missing and self-targeted drag payloads", () => {
     const props = renderTable();
     const row = screen
