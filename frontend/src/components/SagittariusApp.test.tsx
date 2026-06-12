@@ -4948,6 +4948,50 @@ describe("Sagittarius cockpit UI", () => {
     expect(within(context).getByText("Planning note for Flight to Hong Kong")).toBeInTheDocument();
   });
 
+  it("quick-adds a booking draft from the itinerary row", async () => {
+    const user = userEvent.setup();
+    const storage = installLocalStorageStub();
+    const bookingItem = {
+      ...seedTrip.itineraryItems[0],
+      id: "item-flight",
+      activity: "Flight to Hong Kong",
+      activityType: "travel" as const,
+      transportation: "Plane",
+      place: "DMK",
+      sortOrder: 100,
+    };
+    storage.setItem(
+      tripStorageKey,
+      JSON.stringify({
+        ...seedTrip,
+        bookingDocs: [],
+        itineraryItems: [bookingItem],
+      }),
+    );
+
+    render(<SagittariusApp initialView="itinerary" />);
+
+    await user.click(
+      await screen.findByRole("button", {
+        name: /Add booking draft for Flight to Hong Kong/i,
+      }),
+    );
+
+    const structure = await screen.findByLabelText("Structure for Flight to Hong Kong");
+    expect(within(structure).getByText("1 booking")).toBeInTheDocument();
+    const persistedTrip = JSON.parse(storage.getItem(tripStorageKey)!) as Trip;
+    expect(persistedTrip.bookingDocs).toEqual([
+      expect.objectContaining({
+        status: "draft",
+        type: "flight",
+        title: "Flight to Hong Kong booking draft",
+        priceAmount: null,
+        relatedItineraryItemIds: ["item-flight"],
+        relatedExpenseIds: [],
+      }),
+    ]);
+  });
+
   it("imports itinerary rows into the current Trip Plan and keeps path fields", async () => {
     const user = userEvent.setup();
     const storage = installLocalStorageStub();

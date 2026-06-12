@@ -81,6 +81,7 @@ interface SmartItineraryTableProps {
   dayPathOverrides?: Record<string, string | undefined>;
   showAllPaths?: boolean;
   tripName: string;
+  onAddBookingForItem?: (itemId: string) => void;
   onAddStop: (day?: string) => void;
   onAddSubActivity?: (parentItemId: string) => void;
   onAddNoteForItem?: (itemId: string) => void;
@@ -394,6 +395,7 @@ export function SmartItineraryTable({
   dayPathOverrides = {},
   showAllPaths = false,
   tripName,
+  onAddBookingForItem,
   onAddStop,
   onAddSubActivity,
   onAddNoteForItem,
@@ -1208,6 +1210,7 @@ export function SmartItineraryTable({
               onDropItem={dropItem}
               onDropIntoPlanBlock={dropIntoBlock}
               onDropOnDay={dropOnDay}
+              onAddBookingForItem={onAddBookingForItem}
               onAddStop={onAddStop}
               onAddSubActivity={onAddSubActivity}
               onAddNoteForItem={onAddNoteForItem}
@@ -1484,6 +1487,7 @@ function DayGroup({
   onDropItem,
   onDropIntoPlanBlock,
   onDropOnDay,
+  onAddBookingForItem,
   onAddStop,
   onAddSubActivity,
   onAddNoteForItem,
@@ -1541,6 +1545,7 @@ function DayGroup({
     planBlockItemId: string,
   ) => void;
   onDropOnDay: (event: DragEvent<HTMLElement>, targetDay: string) => void;
+  onAddBookingForItem?: (itemId: string) => void;
   onAddStop: (day?: string) => void;
   onAddSubActivity?: (parentItemId: string) => void;
   onAddNoteForItem?: (itemId: string) => void;
@@ -1984,6 +1989,15 @@ function DayGroup({
                       onClick={() => onAddNoteForItem?.(item.id)}
                     >
                       <Icon name="note" />
+                    </button>
+                    <button
+                      type="button"
+                      className={rowActionButtonClassName}
+                      aria-label={`Add booking draft for ${item.activity}`}
+                      disabled={!canEdit}
+                      onClick={() => onAddBookingForItem?.(item.id)}
+                    >
+                      <Icon name="ticket" />
                     </button>
                     <button
                       type="button"

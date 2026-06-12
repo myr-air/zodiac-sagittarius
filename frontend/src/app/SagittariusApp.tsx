@@ -98,6 +98,7 @@ import { decodeTripId } from "@/src/trip/ids";
 import { approveSuggestion } from "@/src/trip/suggestions";
 import type {
   BookingDoc,
+  BookingDocType,
   DailyBriefingOverrides,
   Expense,
   ExpenseComment,
@@ -2590,6 +2591,33 @@ export function SagittariusApp({
     }));
   }
 
+  async function createItineraryBookingDraft(itemId: string) {
+    if (!canEditBookings) return;
+    const item = trip.itineraryItems.find((candidate) => candidate.id === itemId);
+    if (!item) return;
+    await createBookingDoc({
+      type: bookingTypeForItineraryItem(item),
+      title: `${item.activity} booking draft`,
+      status: "draft",
+      visibility: "shared",
+      ownerMemberId: currentMember.id,
+      providerName: null,
+      confirmationCode: null,
+      startsAt: null,
+      endsAt: null,
+      timezone: trip.defaultTimezone ?? null,
+      priceAmount: null,
+      currency: null,
+      travelerIds: trip.members.map((member) => member.id),
+      externalLinks: [],
+      relatedItineraryItemIds: [item.id],
+      relatedTaskIds: [],
+      relatedExpenseIds: [],
+      noteIds: [],
+      notes: item.place ? `Draft from itinerary: ${item.place}` : "Draft from itinerary",
+    });
+  }
+
   async function updateBookingDoc(
     bookingDocId: string,
     input: BookingDocInput,
@@ -3793,6 +3821,7 @@ export function SagittariusApp({
                   dayPathOverrides={pathSelection.dayPathOverrides ?? {}}
                   showAllPaths={Boolean(pathSelection.showAll)}
                   tripName={trip.name}
+                  onAddBookingForItem={(itemId) => void createItineraryBookingDraft(itemId)}
                   onAddStop={addStop}
                   onAddSubActivity={addSubActivity}
                   onAddNoteForItem={(itemId) => void createItineraryNote(itemId)}
@@ -4608,6 +4637,19 @@ function serializeBookingDocInputForApi(
       accessNote: link.accessNote?.trim() || null,
     })),
   };
+}
+
+function bookingTypeForItineraryItem(item: ItineraryItem): BookingDocType {
+  const mode = typeof item.details?.mode === "string" ? item.details.mode.toLowerCase() : "";
+  const transportation = item.transportation.toLowerCase();
+  const activity = item.activity.toLowerCase();
+  const haystack = `${mode} ${transportation} ${activity}`;
+  if (item.activityType === "stay" || item.itemKind === "lodging") return "hotel";
+  if (/\bflight\b|\bplane\b|\bairport\b|\bairline\b/.test(haystack)) return "flight";
+  if (/\btrain\b|\brail\b|\bmtr\b/.test(haystack)) return "train";
+  if (/\bbus\b|\bferry\b|\bshuttle\b|\btram\b|\btaxi\b/.test(haystack)) return "public_transport";
+  if (item.activityType === "attraction" || item.itemKind === "activity") return "activity_ticket";
+  return "other";
 }
 
 function serializePhotoAlbumInputForApi(input: TripPhotoAlbumInput) {

@@ -33,6 +33,7 @@ function renderTable(
     dayPathOverrides: {},
     showAllPaths: false,
     tripName: tripFixture.trip.name,
+    onAddBookingForItem: vi.fn(),
     onAddStop: vi.fn(),
     onSelectItem: vi.fn(),
     onMoveItem: vi.fn(),
@@ -2054,6 +2055,30 @@ describe("SmartItineraryTable", () => {
     );
 
     expect(onAddNoteForItem).toHaveBeenCalledWith("item-flight");
+  });
+
+  it("opens a quick booking draft action from an itinerary row", async () => {
+    const user = userEvent.setup();
+    const onAddBookingForItem = vi.fn();
+    renderTable({
+      items: [
+        {
+          ...tripFixture.planItems[0],
+          id: "item-flight",
+          activity: "Flight to Hong Kong",
+          sortOrder: 100,
+        },
+      ],
+      onAddBookingForItem,
+      selectedItemId: "item-flight",
+    });
+
+    await user.click(
+      within(screen.getByRole("row", { name: /Flight to Hong Kong/i }))
+        .getByRole("button", { name: /Add booking draft for Flight to Hong Kong/i }),
+    );
+
+    expect(onAddBookingForItem).toHaveBeenCalledWith("item-flight");
   });
 
   it("does not drop an activity block into another activity block or sub-activity lane", () => {
