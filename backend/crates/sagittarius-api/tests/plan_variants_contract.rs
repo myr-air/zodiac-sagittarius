@@ -343,11 +343,19 @@ async fn plan_scoped_record_counts_by_plan(
     ]
 }
 
+async fn realtime_event_count(pool: &sqlx::PgPool) -> i64 {
+    sqlx::query_scalar("select count(*) from realtime_events")
+        .fetch_one(pool)
+        .await
+        .unwrap()
+}
+
 #[sqlx::test(migrations = "../../migrations")]
 async fn trip_plan_contract_rejects_unsupported_creation_modes_and_main_status(pool: sqlx::PgPool) {
     support::seed_trip(&pool).await;
     let token = support::create_session(&pool, support::ORGANIZER_ID).await;
     let app = support::app(pool.clone());
+    let initial_event_count = realtime_event_count(&pool).await;
 
     for (client_mutation_id, body) in [
         (
@@ -357,6 +365,24 @@ async fn trip_plan_contract_rejects_unsupported_creation_modes_and_main_status(p
                 "name": "Copied plan",
                 "status": "draft",
                 "creationMode": "duplicate-current"
+            }),
+        ),
+        (
+            "web-trip-plan-create-import",
+            json!({
+                "clientMutationId": "web-trip-plan-create-import",
+                "name": "Imported plan",
+                "status": "draft",
+                "creationMode": "import"
+            }),
+        ),
+        (
+            "web-trip-plan-create-unknown-mode",
+            json!({
+                "clientMutationId": "web-trip-plan-create-unknown-mode",
+                "name": "Unknown mode",
+                "status": "draft",
+                "creationMode": "clone-later"
             }),
         ),
         (
@@ -444,6 +470,8 @@ async fn trip_plan_contract_rejects_unsupported_creation_modes_and_main_status(p
          where trip_id = $1
            and name in (
              'Copied plan',
+             'Imported plan',
+             'Unknown mode',
              'Copied source plan',
              'Main by status',
              'Main by kind',
@@ -457,13 +485,15 @@ async fn trip_plan_contract_rejects_unsupported_creation_modes_and_main_status(p
     .await
     .unwrap();
     assert_eq!(rejected_count, 0);
+    assert_eq!(realtime_event_count(&pool).await, initial_event_count);
 }
 
 #[sqlx::test(migrations = "../../migrations")]
 async fn trip_plan_contract_rejects_main_status_and_empty_patch(pool: sqlx::PgPool) {
     support::seed_trip(&pool).await;
     let token = support::create_session(&pool, support::ORGANIZER_ID).await;
-    let app = support::app(pool);
+    let app = support::app(pool.clone());
+    let initial_event_count = realtime_event_count(&pool).await;
 
     for (client_mutation_id, patch) in [
         (
@@ -538,6 +568,158 @@ async fn trip_plan_contract_rejects_main_status_and_empty_patch(pool: sqlx::PgPo
             "{client_mutation_id} should include a useful message",
         );
     }
+
+    let missing_expected_version = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method(Method::PATCH)
+                .uri(format!(
+                    "/api/v1/trips/{}/trip-plans/{}",
+                    support::TRIP_ID,
+                    support::PLAN_ID
+                ))
+                .header(header::AUTHORIZATION, format!("Bearer {token}"))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({
+                        "clientMutationId": "web-trip-plan-patch-missing-version",
+                        "patch": {
+                            "status": "backup"
+                        }
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(missing_expected_version.status(), StatusCode::BAD_REQUEST);
+    let error_body: Value = serde_json::from_slice(
+        &to_bytes(missing_expected_version.into_body(), 65536)
+            .await
+            .unwrap(),
+    )
+    .unwrap();
+    assert_eq!(error_body["code"], "invalid_request");
+
+    let plan_version: i64 = sqlx::query_scalar("select version from plan_variants where id = $1")
+        .bind(Uuid::parse_str(support::PLAN_ID).unwrap())
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+    assert_eq!(plan_version, 1);
+    assert_eq!(realtime_event_count(&pool).await, initial_event_count);
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn trip_plan_contract_rejects_invalid_set_main_status_without_writes(pool: sqlx::PgPool) {
+    support::seed_trip(&pool).await;
+    let token = support::create_session(&pool, support::ORGANIZER_ID).await;
+    let app = support::app(pool.clone());
+    let initial_event_count = realtime_event_count(&pool).await;
+
+    let create = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method(Method::POST)
+                .uri(format!("/api/v1/trips/{}/trip-plans", support::TRIP_ID))
+                .header(header::AUTHORIZATION, format!("Bearer {token}"))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({
+                        "clientMutationId": "web-trip-plan-create-for-invalid-main",
+                        "name": "Invalid set-main target",
+                        "status": "backup"
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(create.status(), StatusCode::CREATED);
+    let created: Value =
+        serde_json::from_slice(&to_bytes(create.into_body(), 65536).await.unwrap()).unwrap();
+    let trip_plan_id = created["id"].as_str().unwrap();
+    let event_count_after_create = realtime_event_count(&pool).await;
+
+    for (client_mutation_id, body) in [
+        (
+            "web-trip-plan-main-main-status",
+            json!({
+                "clientMutationId": "web-trip-plan-main-main-status",
+                "previousMainNextStatus": "main"
+            }),
+        ),
+        (
+            "web-trip-plan-main-bad-status",
+            json!({
+                "clientMutationId": "web-trip-plan-main-bad-status",
+                "previousMainNextStatus": "archived"
+            }),
+        ),
+        (
+            "web-trip-plan-main-bad-type",
+            json!({
+                "clientMutationId": "web-trip-plan-main-bad-type",
+                "previousMainNextStatus": 42
+            }),
+        ),
+    ] {
+        let response = app
+            .clone()
+            .oneshot(
+                Request::builder()
+                    .method(Method::POST)
+                    .uri(format!(
+                        "/api/v1/trips/{}/trip-plans/{trip_plan_id}/set-main",
+                        support::TRIP_ID
+                    ))
+                    .header(header::AUTHORIZATION, format!("Bearer {token}"))
+                    .header(header::CONTENT_TYPE, "application/json")
+                    .body(Body::from(body.to_string()))
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(
+            response.status(),
+            StatusCode::BAD_REQUEST,
+            "{client_mutation_id} should be rejected"
+        );
+        let error_body: Value =
+            serde_json::from_slice(&to_bytes(response.into_body(), 65536).await.unwrap()).unwrap();
+        assert_eq!(error_body["code"], "invalid_request");
+        assert!(
+            error_body["message"]
+                .as_str()
+                .is_some_and(|message| !message.is_empty()),
+            "{client_mutation_id} should include a useful message",
+        );
+    }
+
+    let active_plan_variant_id: Uuid =
+        sqlx::query_scalar("select active_plan_variant_id from trips where id = $1")
+            .bind(Uuid::parse_str(support::TRIP_ID).unwrap())
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+    assert_eq!(
+        active_plan_variant_id,
+        Uuid::parse_str(support::PLAN_ID).unwrap()
+    );
+
+    let target_status: String =
+        sqlx::query_scalar("select status from plan_variants where id = $1")
+            .bind(Uuid::parse_str(trip_plan_id).unwrap())
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+    assert_eq!(target_status, "backup");
+    assert_eq!(realtime_event_count(&pool).await, event_count_after_create);
+    assert_eq!(initial_event_count + 1, event_count_after_create);
 }
 
 #[sqlx::test(migrations = "../../migrations")]
