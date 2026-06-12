@@ -17,9 +17,17 @@ WHERE task.trip_id = trips.id
   AND task.trip_plan_id IS NULL;
 
 UPDATE expenses expense
+SET trip_plan_id = item.plan_variant_id
+FROM itinerary_items item
+WHERE expense.trip_id = item.trip_id
+  AND expense.itinerary_item_id = item.id
+  AND expense.trip_plan_id IS NULL;
+
+UPDATE expenses expense
 SET trip_plan_id = trips.active_plan_variant_id
 FROM trips
 WHERE expense.trip_id = trips.id
+  AND expense.itinerary_item_id IS NULL
   AND expense.trip_plan_id IS NULL;
 
 UPDATE stop_notes note

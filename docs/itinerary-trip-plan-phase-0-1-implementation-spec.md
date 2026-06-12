@@ -554,9 +554,8 @@ Phase 2 rules:
   because a booking can be attached to a ticketed segment or journey block.
 - The current migration path already contains
   [0026_plan_scoped_records.sql](../backend/migrations/0026_plan_scoped_records.sql).
-  If the shipped file still backfills linked expenses to the active Main Plan,
-  the Phase 2 implementation must add a repair migration or amend the migration
-  before production use so linked Actual Expenses satisfy ADR 0003.
+  It backfills linked Actual Expenses from the linked itinerary item's Trip
+  Plan before falling back unlinked expenses to the active Main Plan.
 - DB FKs in `0026` prove only that a record belongs to a plan in the same trip.
   Later hardening still needs service checks, triggers, or expanded composite
   FKs for same-plan itinerary item links and booking relation tables.

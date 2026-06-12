@@ -155,6 +155,30 @@ async fn plan_scoped_record_schema_adds_trip_plan_columns_and_fkeys(pool: sqlx::
     );
 }
 
+#[test]
+fn plan_scoped_record_migration_keeps_linked_expenses_with_item_plan() {
+    let migration = include_str!("../../../migrations/0026_plan_scoped_records.sql");
+    let linked_backfill = "UPDATE expenses expense\nSET trip_plan_id = item.plan_variant_id";
+    let fallback_backfill = "UPDATE expenses expense\nSET trip_plan_id = trips.active_plan_variant_id";
+
+    assert!(
+        migration.contains(linked_backfill),
+        "linked Actual Expenses must backfill from itinerary_items.plan_variant_id",
+    );
+    assert!(
+        migration.contains("AND expense.itinerary_item_id = item.id"),
+        "linked Actual Expenses must join through itinerary_item_id",
+    );
+    assert!(
+        migration.contains("AND expense.itinerary_item_id IS NULL"),
+        "Main Plan fallback must only apply to unlinked Actual Expenses",
+    );
+    assert!(
+        migration.find(linked_backfill).unwrap() < migration.find(fallback_backfill).unwrap(),
+        "linked expense backfill must run before the Main Plan fallback",
+    );
+}
+
 #[sqlx::test(migrations = "../../migrations")]
 async fn trips_cycle_foreign_keys_are_deferred(pool: sqlx::PgPool) {
     let constraints: Vec<(String, bool, bool)> = sqlx::query_as(
