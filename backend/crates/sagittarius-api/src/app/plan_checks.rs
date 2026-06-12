@@ -223,14 +223,17 @@ fn build_findings(default_timezone: &str, items: &[ItineraryItemSummary]) -> Vec
                 json!({ "timeMode": "flexible", "startTime": null, "durationMinutes": null }),
             ));
         }
-        if item.duration_minutes.is_none() && item.time_mode == "scheduled" {
+        if item.end_time.is_none()
+            && item.duration_minutes.is_none()
+            && item.time_mode == "scheduled"
+        {
             findings.push(item_patch_finding(
                 "info",
                 item,
-                "Missing duration makes route timing harder to check.",
-                "ยังไม่มีระยะเวลา ทำให้ตรวจจังหวะการเดินทางได้ยาก",
-                "Add a realistic duration.",
-                "เพิ่มระยะเวลาที่สมจริง",
+                "Missing end time or duration makes route timing harder to check.",
+                "ยังไม่มีเวลาสิ้นสุดหรือระยะเวลา ทำให้ตรวจจังหวะการเดินทางได้ยาก",
+                "Add an end time or realistic duration.",
+                "เพิ่มเวลาสิ้นสุดหรือระยะเวลาที่สมจริง",
                 json!({ "durationMinutes": 60 }),
             ));
         }
@@ -337,16 +340,12 @@ fn overlap_findings(items: &[ItineraryItemSummary]) -> Vec<Finding> {
     let mut sorted = items
         .iter()
         .filter_map(|item| {
-            let start = parse_time(&item.start_time)?;
-            let duration = item.duration_minutes?;
-            if duration <= 0 {
-                return None;
-            }
+            let interval = time_window_interval(item)?;
             Some((
                 item,
                 itinerary_overlap_path_key(item),
-                start,
-                start + duration,
+                interval.start,
+                interval.end,
             ))
         })
         .collect::<Vec<_>>();
@@ -412,16 +411,13 @@ fn plan_block_child_findings(items: &[ItineraryItemSummary]) -> Vec<Finding> {
         else {
             continue;
         };
-        let Some(parent_start) = parse_time(&parent.start_time) else {
+        let Some(parent_interval) = time_window_interval(parent) else {
             continue;
         };
-        let Some(child_start) = parse_time(&child.start_time) else {
+        let Some(child_interval) = time_window_interval(child) else {
             continue;
         };
-        let parent_end = parent_start + parent.duration_minutes.unwrap_or(0);
-        let child_end = child_start + child.duration_minutes.unwrap_or(0);
-        if child_start < parent_start
-            || (parent.duration_minutes.is_some() && child_end > parent_end)
+        if child_interval.start < parent_interval.start || child_interval.end > parent_interval.end
         {
             findings.push(Finding {
                 severity: "warning",
@@ -448,6 +444,37 @@ fn plan_block_child_findings(items: &[ItineraryItemSummary]) -> Vec<Finding> {
         }
     }
     findings
+}
+
+struct TimeWindowInterval {
+    start: i32,
+    end: i32,
+}
+
+fn time_window_interval(item: &ItineraryItemSummary) -> Option<TimeWindowInterval> {
+    if item.time_mode == "flexible" {
+        return None;
+    }
+    let start = parse_time(&item.start_time)?;
+    if let Some(end_time) = item
+        .end_time
+        .as_deref()
+        .filter(|value| !value.trim().is_empty())
+    {
+        let end = parse_time(end_time)? + item.end_offset_days * 24 * 60;
+        if end <= start {
+            return None;
+        }
+        return Some(TimeWindowInterval { start, end });
+    }
+    let duration = item.duration_minutes?;
+    if duration <= 0 {
+        return None;
+    }
+    Some(TimeWindowInterval {
+        start,
+        end: start + duration,
+    })
 }
 
 fn parse_time(value: &str) -> Option<i32> {
