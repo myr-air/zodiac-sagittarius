@@ -490,6 +490,11 @@ pub async fn delete_itinerary_item(
     if !can(session.role, Capability::EditItinerary) {
         return Err(ServiceError::Forbidden);
     }
+    if db::queries::itinerary_item_has_children(&mut tx, trip_id, item_id).await? {
+        return Err(ServiceError::InvalidRequest(
+            "activity block with sub-activities cannot be deleted",
+        ));
+    }
 
     let deleted = db::queries::delete_itinerary_item(&mut tx, item_id, existing.version + 1)
         .await?

@@ -748,6 +748,103 @@ async fn itinerary_patch_contract_parent_path_change_cascades_to_sub_activities(
 }
 
 #[sqlx::test(migrations = "../../migrations")]
+async fn itinerary_patch_contract_deletes_leaf_activity(pool: sqlx::PgPool) {
+    support::seed_trip(&pool).await;
+    let token = support::create_session(&pool, support::ORGANIZER_ID).await;
+    let app = support::app(pool.clone());
+
+    let response = app
+        .oneshot(
+            Request::builder()
+                .method(Method::DELETE)
+                .uri(format!(
+                    "/api/v1/trips/{}/itinerary-items/{}",
+                    support::TRIP_ID,
+                    support::ITEM_ID
+                ))
+                .header(header::AUTHORIZATION, format!("Bearer {token}"))
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::OK);
+    let body: Value =
+        serde_json::from_slice(&to_bytes(response.into_body(), 65536).await.unwrap()).unwrap();
+    assert_eq!(body["id"], support::ITEM_ID);
+    assert_eq!(body["version"], 5);
+
+    let stored: (Option<String>, i64) = sqlx::query_as(
+        "select deleted_at::text, version
+         from itinerary_items
+         where id = $1",
+    )
+    .bind(Uuid::parse_str(support::ITEM_ID).unwrap())
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert!(stored.0.is_some());
+    assert_eq!(stored.1, 5);
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn itinerary_patch_contract_rejects_deleting_activity_block_with_sub_activities(
+    pool: sqlx::PgPool,
+) {
+    support::seed_trip(&pool).await;
+    let token = support::create_session(&pool, support::ORGANIZER_ID).await;
+    let app = support::app(pool.clone());
+
+    let child = create_itinerary_item(
+        &app,
+        &token,
+        "web-create-child-before-delete-block",
+        json!({
+            "parentItemId": support::ITEM_ID,
+            "activity": "Queue for table",
+            "startTime": "08:45",
+            "place": "The Elements"
+        }),
+    )
+    .await;
+    assert_eq!(child["parentItemId"], support::ITEM_ID);
+
+    let response = app
+        .oneshot(
+            Request::builder()
+                .method(Method::DELETE)
+                .uri(format!(
+                    "/api/v1/trips/{}/itinerary-items/{}",
+                    support::TRIP_ID,
+                    support::ITEM_ID
+                ))
+                .header(header::AUTHORIZATION, format!("Bearer {token}"))
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::BAD_REQUEST);
+    let body: Value =
+        serde_json::from_slice(&to_bytes(response.into_body(), 65536).await.unwrap()).unwrap();
+    assert_eq!(body["code"], "invalid_request");
+
+    let stored: (Option<String>, i64) = sqlx::query_as(
+        "select deleted_at::text, version
+         from itinerary_items
+         where id = $1",
+    )
+    .bind(Uuid::parse_str(support::ITEM_ID).unwrap())
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(stored.0, None);
+    assert_eq!(stored.1, 4);
+}
+
+#[sqlx::test(migrations = "../../migrations")]
 async fn itinerary_patch_contract_duplicate_client_mutation_id_conflicts(pool: sqlx::PgPool) {
     support::seed_trip(&pool).await;
     let token = support::create_session(&pool, support::ORGANIZER_ID).await;
