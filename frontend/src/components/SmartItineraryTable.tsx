@@ -83,6 +83,7 @@ interface SmartItineraryTableProps {
   tripName: string;
   onAddStop: (day?: string) => void;
   onAddSubActivity?: (parentItemId: string) => void;
+  onAddNoteForItem?: (itemId: string) => void;
   onAddTaskForItem?: (itemId: string) => void;
   onSelectItem: (itemId: string) => void;
   onMoveItem: (draggedItemId: string, targetItemId: string) => void;
@@ -395,6 +396,7 @@ export function SmartItineraryTable({
   tripName,
   onAddStop,
   onAddSubActivity,
+  onAddNoteForItem,
   onAddTaskForItem,
   onSelectItem,
   onMoveItem,
@@ -1208,6 +1210,7 @@ export function SmartItineraryTable({
               onDropOnDay={dropOnDay}
               onAddStop={onAddStop}
               onAddSubActivity={onAddSubActivity}
+              onAddNoteForItem={onAddNoteForItem}
               onAddTaskForItem={onAddTaskForItem}
               onMoveItem={onMoveItem}
               onMoveItemIntoPlanBlock={onMoveItemIntoPlanBlock}
@@ -1483,6 +1486,7 @@ function DayGroup({
   onDropOnDay,
   onAddStop,
   onAddSubActivity,
+  onAddNoteForItem,
   onAddTaskForItem,
   onMoveItem,
   onMoveItemIntoPlanBlock,
@@ -1539,6 +1543,7 @@ function DayGroup({
   onDropOnDay: (event: DragEvent<HTMLElement>, targetDay: string) => void;
   onAddStop: (day?: string) => void;
   onAddSubActivity?: (parentItemId: string) => void;
+  onAddNoteForItem?: (itemId: string) => void;
   onAddTaskForItem?: (itemId: string) => void;
   onMoveItem: (draggedItemId: string, targetItemId: string) => void;
   onMoveItemIntoPlanBlock: (
@@ -1970,6 +1975,15 @@ function DayGroup({
                       onClick={() => onAddTaskForItem?.(item.id)}
                     >
                       <Icon name="check" />
+                    </button>
+                    <button
+                      type="button"
+                      className={rowActionButtonClassName}
+                      aria-label={`Add note for ${item.activity}`}
+                      disabled={!canEdit}
+                      onClick={() => onAddNoteForItem?.(item.id)}
+                    >
+                      <Icon name="note" />
                     </button>
                     <button
                       type="button"

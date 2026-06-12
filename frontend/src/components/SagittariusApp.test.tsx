@@ -4914,6 +4914,40 @@ describe("Sagittarius cockpit UI", () => {
     expect(within(structure).getByText("1 task")).toBeInTheDocument();
   });
 
+  it("quick-adds a planning note from the itinerary row and opens details", async () => {
+    const user = userEvent.setup();
+    const storage = installLocalStorageStub();
+    const noteItem = {
+      ...seedTrip.itineraryItems[0],
+      id: "item-flight",
+      activity: "Flight to Hong Kong",
+      place: "DMK",
+      sortOrder: 100,
+    };
+    storage.setItem(
+      tripStorageKey,
+      JSON.stringify({
+        ...seedTrip,
+        itineraryItems: [noteItem],
+      }),
+    );
+
+    render(<SagittariusApp initialView="itinerary" />);
+
+    await user.click(
+      await screen.findByRole("button", {
+        name: /Add note for Flight to Hong Kong/i,
+      }),
+    );
+
+    const structure = await screen.findByLabelText("Structure for Flight to Hong Kong");
+    expect(within(structure).getByText("1 note")).toBeInTheDocument();
+    const context = await screen.findByRole("complementary", {
+      name: /ข้อมูลประกอบการวางแผน/i,
+    });
+    expect(within(context).getByText("Planning note for Flight to Hong Kong")).toBeInTheDocument();
+  });
+
   it("imports itinerary rows into the current Trip Plan and keeps path fields", async () => {
     const user = userEvent.setup();
     const storage = installLocalStorageStub();

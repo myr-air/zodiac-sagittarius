@@ -40,6 +40,7 @@ function renderTable(
     onMoveItemToDay: vi.fn(),
     onMoveItemToPath: vi.fn(),
     onAddSubActivity: vi.fn(),
+    onAddNoteForItem: vi.fn(),
     onAddTaskForItem: vi.fn(),
     onUpdateItemInline: vi.fn(),
     onEditItem: vi.fn(),
@@ -2029,6 +2030,30 @@ describe("SmartItineraryTable", () => {
     );
 
     expect(onAddTaskForItem).toHaveBeenCalledWith("item-flight");
+  });
+
+  it("opens a quick note action from an itinerary row", async () => {
+    const user = userEvent.setup();
+    const onAddNoteForItem = vi.fn();
+    renderTable({
+      items: [
+        {
+          ...tripFixture.planItems[0],
+          id: "item-flight",
+          activity: "Flight to Hong Kong",
+          sortOrder: 100,
+        },
+      ],
+      onAddNoteForItem,
+      selectedItemId: "item-flight",
+    });
+
+    await user.click(
+      within(screen.getByRole("row", { name: /Flight to Hong Kong/i }))
+        .getByRole("button", { name: /Add note for Flight to Hong Kong/i }),
+    );
+
+    expect(onAddNoteForItem).toHaveBeenCalledWith("item-flight");
   });
 
   it("does not drop an activity block into another activity block or sub-activity lane", () => {

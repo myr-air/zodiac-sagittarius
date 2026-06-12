@@ -2896,6 +2896,18 @@ export function SagittariusApp({
     ]);
   }
 
+  async function createItineraryNote(itemId: string) {
+    if (!canCreateStopNote) return;
+    const item = trip.itineraryItems.find((candidate) => candidate.id === itemId);
+    if (!item) return;
+    await createStopNote({
+      itemId: item.id,
+      body: `Planning note for ${item.activity}`,
+    });
+    setSelectedItemId(item.id);
+    setContextRailVisibility(true);
+  }
+
   async function updateStopNote(input: { noteId: string; body: string }) {
     const body = input.body.trim();
     if (!body) return;
@@ -3783,6 +3795,7 @@ export function SagittariusApp({
                   tripName={trip.name}
                   onAddStop={addStop}
                   onAddSubActivity={addSubActivity}
+                  onAddNoteForItem={(itemId) => void createItineraryNote(itemId)}
                   onAddTaskForItem={(itemId) => void createItineraryTask(itemId)}
                   onSelectItem={selectItem}
                   onMoveItem={moveItem}
