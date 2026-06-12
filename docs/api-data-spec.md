@@ -5,7 +5,7 @@ Version: 2026-05-30.
 
 ## Goals
 
-- Store a collaborative trip plan with plan variants, itinerary rows, suggestions, expenses, documents, and member presence.
+- Store a collaborative trip plan with Trip Plans, itinerary rows, suggestions, expenses, documents, and member presence.
 - Keep the Smart Itinerary Table as the source of truth.
 - Support optimistic concurrency from the frontend using `version`, `updatedAt`, and `clientMutationId`.
 - Stream collaborative changes over WebSocket without requiring a page refresh.
@@ -84,6 +84,7 @@ CREATE TABLE plan_variants (
   trip_id uuid NOT NULL REFERENCES trips(id),
   name text NOT NULL,
   kind text NOT NULL CHECK (kind IN ('main', 'backup', 'draft', 'split')),
+  status text CHECK (status IS NULL OR status IN ('main', 'draft', 'proposal', 'backup')),
   description text NOT NULL DEFAULT '',
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
@@ -264,15 +265,23 @@ Base path: `/api/v1`.
 ### Trips
 
 - `GET /api/v1/trips/:tripId`
-  Returns the full planning cockpit payload: trip, members, variants, itinerary items, suggestions, and expense summary.
+  Returns the full planning cockpit payload: trip, members, Trip Plans, itinerary items, suggestions, and expense summary.
 - `PATCH /api/v1/trips/:tripId`
-  Updates trip metadata and active plan variant.
+  Updates trip metadata. During Phase 1 compatibility, Main Plan identity is exposed as `mainTripPlanId` and legacy `activePlanVariantId`.
 
-### Plan Variants
+### Trip Plans
 
+- `POST /api/v1/trips/:tripId/trip-plans`
+- `PATCH /api/v1/trips/:tripId/trip-plans/:tripPlanId`
+- `POST /api/v1/trips/:tripId/trip-plans/:tripPlanId/set-main`
 - `POST /api/v1/trips/:tripId/plan-variants`
 - `PATCH /api/v1/trips/:tripId/plan-variants/:planVariantId`
 - `POST /api/v1/trips/:tripId/plan-variants/:planVariantId/publications`
+
+Phase 1 compatibility: canonical API fields/routes are `tripPlans`,
+`mainTripPlanId`, `status`, and `/trip-plans`; `planVariants`,
+`activePlanVariantId`, `kind`, and `/plan-variants` are legacy wire aliases
+retained during compatibility.
 
 ### Itinerary Items
 
@@ -414,8 +423,31 @@ The current frontend seed maps directly to this response:
     "startDate": "2025-05-15",
     "endDate": "2025-05-20",
     "activePlanVariantId": "plan-main",
+    "mainTripPlanId": "plan-main",
     "version": 1
   },
+  "planVariants": [
+    {
+      "id": "plan-main",
+      "tripId": "trip-hong-kong-shenzhen",
+      "name": "Main",
+      "kind": "main",
+      "status": "main",
+      "description": "",
+      "version": 1
+    }
+  ],
+  "tripPlans": [
+    {
+      "id": "plan-main",
+      "tripId": "trip-hong-kong-shenzhen",
+      "name": "Main",
+      "kind": "main",
+      "status": "main",
+      "description": "",
+      "version": 1
+    }
+  ],
   "itineraryItems": [
     {
       "id": "item-dimdim",

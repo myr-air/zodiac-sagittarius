@@ -79,6 +79,19 @@ Canonical readers should prefer `mainTripPlanId`, `tripPlans`, and `status`
 when present, but Phase 1 compatibility readers must be symmetric: canonical
 mixed, canonical-only, and legacy-only payloads normalize to one local shape.
 
+Compatibility response policy:
+
+- Additive fields are mandatory in new backend responses for routes touched in
+  Phase 1. Legacy fields remain mandatory wherever existing callers already
+  depend on them.
+- Canonical route facades return the same JSON body shape as the legacy route
+  plus canonical aliases; they do not introduce a parallel DTO that can drift.
+- Error responses keep the existing envelope: `code`, `message`, and optional
+  `latest` for version conflicts. Phase 1 only adds validation cases, not a new
+  error format.
+- Serialization order is not part of the contract. Presence, values, status
+  mapping, and compatibility aliases are the contract.
+
 ## API Response Diffs
 
 ### Load Cockpit
@@ -177,8 +190,7 @@ Canonical request:
   "name": "Rain route",
   "status": "draft",
   "description": "Indoor route for heavy rain",
-  "sourceTripPlanId": "plan-main",
-  "creationMode": "duplicate-current"
+  "creationMode": "blank"
 }
 ```
 
@@ -220,6 +232,26 @@ Rules:
 - Phase 1 supports only blank creation semantics. Omitted `creationMode` and `creationMode: "blank"` create an empty Trip Plan.
 - `creationMode: "duplicate-current"` and `creationMode: "import"` must return `400 invalid_request` until copy/import semantics are implemented; silently creating a blank plan for those modes is not allowed.
 - `sourceTripPlanId` is accepted only with a supported non-blank creation mode; with Phase 1 blank creation it must be ignored when absent and rejected when present.
+
+Invalid Phase 1 create request:
+
+```json
+{
+  "clientMutationId": "web-trip-plan-create-duplicate",
+  "name": "Copied plan",
+  "status": "draft",
+  "creationMode": "duplicate-current"
+}
+```
+
+Expected error:
+
+```json
+{
+  "code": "invalid_request",
+  "message": "duplicate-current trip plan creation is not supported yet"
+}
+```
 
 ### Patch Trip Plan
 
@@ -272,6 +304,24 @@ Rules:
 - Patch route cannot set `status: "main"` or `kind: "main"`. Use set-main.
 - Stale patch tests must use a fresh `clientMutationId` so version conflicts
   are distinct from duplicate mutation conflicts.
+
+Version conflict response shape:
+
+```json
+{
+  "code": "version_conflict",
+  "message": "Trip plan changed",
+  "latest": {
+    "id": "plan-premium",
+    "tripId": "trip-1",
+    "name": "Premium hotels proposal",
+    "kind": "split",
+    "status": "proposal",
+    "description": "Client-facing upgrade option",
+    "version": 4
+  }
+}
+```
 
 ### Set Main Plan
 
@@ -373,6 +423,19 @@ Notes:
 - Do not rename or drop `kind` in Phase 1.
 - Do not rely on `status = 'main'` for identity. `trips.active_plan_variant_id`
   remains the stored Main Plan pointer and is exposed as `mainTripPlanId`.
+- Rollback stance: this migration is additive and forward-only in normal
+  environments. Emergency rollback should keep the nullable `status` column in
+  place because old binaries ignore it and new binaries need it for aliases.
+- If an emergency database downgrade is required, drop
+  `plan_variants_status_check` before dropping `plan_variants.status`. No Phase
+  1 uniqueness, routing, or Main Plan identity invariant may depend only on this
+  column, so an application rollback remains compatible while `kind` is still
+  written.
+- Repair stance: if legacy support scripts insert `status = NULL`, read paths
+  must derive status from `kind`; the next application write should persist both
+  `kind` and `status`.
+- Acceptance uses the real migration path file
+  [0025_trip_plan_compatibility.sql](../backend/migrations/0025_trip_plan_compatibility.sql).
 
 ### Phase 2 Draft: Plan-scoped Records
 
@@ -381,17 +444,10 @@ This DDL is included here because Phase 0/1 API decisions depend on the boundary
 ```sql
 -- 0026_plan_scoped_records.sql
 
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1
-    FROM pg_constraint
-    WHERE conname = 'plan_variants_id_trip_id_key'
-  ) THEN
-    ALTER TABLE plan_variants
-      ADD CONSTRAINT plan_variants_id_trip_id_key UNIQUE (id, trip_id);
-  END IF;
-END $$;
+-- Prerequisite: the baseline schema already has a UNIQUE (id, trip_id)
+-- key on plan_variants. Do not add a second uniqueness constraint if that
+-- key already exists; tests should assert FK compatibility, not a specific
+-- constraint name.
 
 ALTER TABLE trip_tasks ADD COLUMN IF NOT EXISTS trip_plan_id uuid;
 ALTER TABLE expenses ADD COLUMN IF NOT EXISTS trip_plan_id uuid;
@@ -405,9 +461,17 @@ WHERE task.trip_id = trips.id
   AND task.trip_plan_id IS NULL;
 
 UPDATE expenses expense
+SET trip_plan_id = item.plan_variant_id
+FROM itinerary_items item
+WHERE expense.trip_id = item.trip_id
+  AND expense.itinerary_item_id = item.id
+  AND expense.trip_plan_id IS NULL;
+
+UPDATE expenses expense
 SET trip_plan_id = trips.active_plan_variant_id
 FROM trips
 WHERE expense.trip_id = trips.id
+  AND expense.itinerary_item_id IS NULL
   AND expense.trip_plan_id IS NULL;
 
 UPDATE stop_notes note
@@ -463,7 +527,9 @@ CREATE INDEX IF NOT EXISTS booking_docs_trip_plan_active_idx
 
 Phase 2 rules:
 
-- Existing Actual Expenses are backfilled to the Main Plan active at migration time.
+- Existing Actual Expenses linked to an itinerary item are backfilled to that
+  itinerary item's Trip Plan. Existing Actual Expenses without an itinerary link
+  are backfilled to the Main Plan active at migration time.
 - Switching Main Plan after migration must not update existing `trip_plan_id` values.
 - Stop notes linked to itinerary items inherit the item's plan.
 - Create flows should default to the linked itinerary item's plan when present, otherwise to the current Main Plan.
@@ -478,14 +544,19 @@ Phase 2 rules:
   to a concrete Trip Plan using the linked itinerary item or reject the mutation
   with a repairable error.
 - Composite FKs require `plan_variants(id, trip_id)` to be unique. The base
-  migration already creates that unique key today, but the draft repeats the
-  prerequisite defensively so future reshuffles do not break the FK.
+  migration already creates that unique key today. Do not add a duplicate
+  uniqueness constraint with a new name just to satisfy the draft.
 - Before making `trip_plan_id` non-null, audit records with no active Main Plan
   at backfill time and records that intentionally are trip-wide rather than
   plan-scoped.
 - Backfilling booking docs to the current Main Plan is a compatibility default
   only. Linked itinerary items remain the stronger source for later repair
   because a booking can be attached to a ticketed segment or journey block.
+- The current migration path already contains
+  [0026_plan_scoped_records.sql](../backend/migrations/0026_plan_scoped_records.sql).
+  If the shipped file still backfills linked expenses to the active Main Plan,
+  the Phase 2 implementation must add a repair migration or amend the migration
+  before production use so linked Actual Expenses satisfy ADR 0003.
 - DB FKs in `0026` prove only that a record belongs to a plan in the same trip.
   Later hardening still needs service checks, triggers, or expanded composite
   FKs for same-plan itinerary item links and booking relation tables.
@@ -548,6 +619,13 @@ shape even before the UI rewrite.
   `activePlanVariantId`.
 - Import accepts legacy-only, canonical-only, and mixed metadata. The current
   trip id and selected Main Plan remain controlled by the destination trip.
+- Import parser accepts `trip.activePlanVariantId`, `trip.mainTripPlanId`, both,
+  or neither as compatibility metadata. The parser may return only normalized
+  items; the importing app layer supplies the destination trip id and target
+  Trip Plan.
+- Import does not switch the destination Main Plan just because the file names a
+  different `mainTripPlanId`. The imported rows are applied to the current
+  target Trip Plan chosen by the import flow.
 - Export/import must preserve path fields (`pathGroupId`, `pathId`, `pathName`,
   `pathRole`), hierarchy fields (`parentItemId`, `isPlanBlock`), and time-window
   fields (`endTime`, `endOffsetDays`).
@@ -621,7 +699,7 @@ shape even before the UI rewrite.
 | 1 | Backend schema | `backend/crates/sagittarius-api/tests/schema_contract.rs` | Existing `kind = 'split'` rows are backfilled to `status = 'proposal'`. |
 | 1 | Backend schema | `backend/crates/sagittarius-api/tests/schema_contract.rs` | `plan_variants(id, trip_id)` remains unique so composite FKs from trips, itinerary items, and later plan-scoped records stay valid. |
 | 1 | Backend route | `backend/crates/sagittarius-api/tests/route_contract.rs` | Canonical `/trip-plans`, `/trip-plans/:id`, and `/trip-plans/:id/set-main` routes exist while legacy `/plan-variants`, `/plan-variants/:id`, and `/plan-variants/:id/publications` routes remain. |
-| 1 | Backend type | `backend/crates/sagittarius-api/src/domain/types.rs` unit test | `TripSummary` serializes both `activePlanVariantId` and `mainTripPlanId`; `TripCockpit` serializes both `planVariants` and `tripPlans`. |
+| 1 | Backend serialization | `backend/crates/sagittarius-api/tests/trip_load_contract.rs`, `backend/crates/sagittarius-api/tests/account_trip_contract.rs` | `TripSummary` serializes both `activePlanVariantId` and `mainTripPlanId`; cockpit serializes both `planVariants` and `tripPlans`. |
 | 1 | Backend API | `backend/crates/sagittarius-api/tests/plan_variants_contract.rs` | Canonical create route accepts omitted `creationMode` or `creationMode: "blank"` with `status: "draft"` and returns `kind: "draft"` plus `status: "draft"`. |
 | 1 | Backend API | `backend/crates/sagittarius-api/tests/plan_variants_contract.rs` | Canonical create route rejects `creationMode: "duplicate-current"` or `"import"` until copy/import semantics are implemented. |
 | 1 | Backend API | `backend/crates/sagittarius-api/tests/plan_variants_contract.rs` | Canonical create route rejects `sourceTripPlanId` when `creationMode` is absent or `blank`. |
@@ -629,6 +707,8 @@ shape even before the UI rewrite.
 | 1 | Backend API | `backend/crates/sagittarius-api/tests/plan_variants_contract.rs` | Legacy create route accepts `kind: "split"` and returns `status: "proposal"`. |
 | 1 | Backend API | `backend/crates/sagittarius-api/tests/plan_variants_contract.rs` | Request with conflicting `kind: "draft"` and `status: "proposal"` is rejected. |
 | 1 | Backend API | `backend/crates/sagittarius-api/tests/plan_variants_contract.rs` | Unknown `status` and unknown legacy `kind` both return `400 invalid_request` with no row write. |
+| 1 | Backend API | `backend/crates/sagittarius-api/tests/plan_variants_contract.rs` | Every Phase 1 validation failure keeps the existing error envelope with `code` and `message`. |
+| 1 | Backend permissions | `backend/crates/sagittarius-api/tests/plan_variants_contract.rs` | Canonical `/trip-plans` create/patch/set-main routes enforce the same owner/organizer-only mutation capability as legacy routes; traveler/viewer attempts return `403` and write no rows or events. |
 | 1 | Backend API | `backend/crates/sagittarius-api/tests/plan_variants_contract.rs` | Patch route requires `expectedVersion`; stale version returns latest plan summary. |
 | 1 | Backend API | `backend/crates/sagittarius-api/tests/plan_variants_contract.rs` | Stale patch with a unique `clientMutationId` returns `version_conflict`; duplicate `clientMutationId` returns the duplicate mutation error. |
 | 1 | Backend API | `backend/crates/sagittarius-api/tests/plan_variants_contract.rs` | Patch `status: "proposal"` returns compatibility `kind: "split"`. |
@@ -654,10 +734,15 @@ shape even before the UI rewrite.
 | 1 | Frontend local mode | `frontend/src/app/SagittariusApp.test.tsx` | Local create/rename/set-main keeps `activePlanVariantId`, `mainTripPlanId`, `planVariants`, and `tripPlans` mirrored. |
 | 1 | Frontend UI | `frontend/src/components/SagittariusApp.test.tsx` | Visible selector/copy says Trip Plan, not Trip Sheet. |
 | 1 | Frontend table | `frontend/src/components/SmartItineraryTable.test.tsx` | Itinerary plan selector behavior remains stable with Trip Plan wording. |
+| 1 | Frontend language guard | `frontend/src/project-contract.test.ts` or `frontend/src/i18n/messages.test.ts` | New product copy does not introduce non-compatibility `Plan Variant`, `plan variant`, or Trip Sheet wording. |
 | 1 | Import/export | `frontend/src/trip/itinerary-import-export.test.ts` | Transitional export includes both `mainTripPlanId` and deprecated `activePlanVariantId`. |
-| 1 | Import/export | `frontend/src/trip/itinerary-import-export.test.ts` | Transitional import accepts legacy metadata and canonical metadata, then applies the current trip id and selected Main Plan without flattening path fields. |
+| 1 | Import/export | `frontend/src/trip/itinerary-import-export.test.ts` | Transitional import accepts legacy metadata and canonical metadata, then applies the current destination trip id and target Trip Plan without flattening path fields or switching Main Plan. |
 | 1 | Import/export | `frontend/src/trip/itinerary-import-export.test.ts` | Export/import round trip preserves `parentItemId`, `isPlanBlock`, `endTime`, and `endOffsetDays`. |
 | 1 | E2E/API | `frontend/src/trip/real-api.e2e.test.ts` | Create blank, patch, reload, and set-main Trip Plan through real API compatibility path. |
+
+Phase 0/1 release evidence must include the exact command for each layer that
+was run. If a listed test is split into an existing broader file, the commit
+message or PR notes should name the scenario-level assertion that covers it.
 
 ### Phase 2 Preview
 

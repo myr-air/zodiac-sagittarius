@@ -24,7 +24,8 @@ Schema envelope:
     "destinationLabel": "Hong Kong + Shenzhen",
     "startDate": "2025-05-15",
     "endDate": "2025-05-20",
-    "activePlanVariantId": "plan-main"
+    "activePlanVariantId": "plan-main",
+    "mainTripPlanId": "plan-main"
   },
   "items": [
     {
@@ -60,7 +61,12 @@ Import behavior:
   an existing named path, or a new named path.
 - Imported rows can carry optional activity branch fields: `pathGroupId`,
   `pathId`, `pathName`, and `pathRole`.
-- The current trip id and active plan variant id are applied during import.
+- The export metadata includes canonical `mainTripPlanId` beside deprecated
+  `activePlanVariantId`.
+- Import accepts `trip.activePlanVariantId`, `trip.mainTripPlanId`, both, or
+  neither as compatibility metadata. The current destination trip id and target
+  Trip Plan are supplied by the importing app state, so source metadata never
+  switches the destination Main Plan by itself.
 - Other plan variants, members, tasks, expenses, notes, and suggestions are not changed.
 
 ## Import Normalizer Endpoint
