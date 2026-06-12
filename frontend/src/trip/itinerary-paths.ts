@@ -107,7 +107,9 @@ export function applyImportedItemsToItineraryPath(
     const id = nextUniqueImportedItemId(item.id, usedIds);
     usedIds.add(id);
     const day = targetDay ?? item.day;
-    const pathGroupId = item.pathGroupId ?? (target.pathId === mainItineraryPathId ? undefined : `path-group-${id}`);
+    const pathGroupId = target.pathId === mainItineraryPathId
+      ? undefined
+      : item.pathGroupId ?? `path-group-${id}`;
     return {
       ...item,
       id,

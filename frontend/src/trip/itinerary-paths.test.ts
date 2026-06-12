@@ -333,6 +333,51 @@ describe("itinerary path import application", () => {
     });
   });
 
+  it("imports overlapping rows into main without synthesizing alternative paths", () => {
+    const existingMain = {
+      ...tripFixture.planItems[0],
+      id: "existing-main",
+      day: "2026-06-19",
+      startTime: "08:00",
+      durationMinutes: 90,
+      sortOrder: 100,
+      pathGroupId: undefined,
+      pathId: undefined,
+      pathName: undefined,
+      pathRole: "main" as const,
+    };
+    const overlappingImport = {
+      ...importItem,
+      id: "import-overlap-main",
+      day: "2026-06-19",
+      startTime: "08:30",
+      durationMinutes: 60,
+      pathGroupId: "legacy-overlap-group",
+      pathId: "legacy-plan-a",
+      pathName: "Legacy Plan A",
+      pathRole: "alternative" as const,
+    };
+    const next = applyImportedItemsToItineraryPath({
+      ...tripFixture.trip,
+      itineraryItems: [existingMain],
+    }, [overlappingImport], {
+      memberId: "member-aom",
+      pathId: "main",
+      pathName: "Main",
+      scope: "trip",
+      mode: "keep-alternatives",
+    });
+    const imported = next.itineraryItems.find((item) => item.id === "import-overlap-main");
+
+    expect(imported).toMatchObject({
+      pathRole: "main",
+    });
+    expect(imported?.pathGroupId).toBeUndefined();
+    expect(imported?.pathId).toBeUndefined();
+    expect(imported?.pathName).toBeUndefined();
+    expect(next.itineraryPaths).toBe(tripFixture.trip.itineraryPaths);
+  });
+
   it("replaces only the selected target path and keeps other paths", () => {
     const existingRain = {
       ...tripFixture.planItems[0],
