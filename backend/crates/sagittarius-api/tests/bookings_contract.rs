@@ -4,6 +4,7 @@ use axum::body::{Body, to_bytes};
 use http::{Method, Request, StatusCode, header};
 use serde_json::{Value, json};
 use tower::ServiceExt;
+use uuid::Uuid;
 
 #[sqlx::test(migrations = "../../migrations")]
 async fn organizer_can_create_patch_and_delete_booking_doc(pool: sqlx::PgPool) {
@@ -194,6 +195,72 @@ async fn organizer_can_create_patch_and_delete_booking_doc(pool: sqlx::PgPool) {
             .iter()
             .any(|booking| booking["id"] == booking_id)
     );
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn booking_patch_relinks_to_new_item_plan(pool: sqlx::PgPool) {
+    support::seed_trip(&pool).await;
+    support::seed_booking_doc(&pool).await;
+    let alt_item_id = support::seed_alt_plan_item(&pool).await;
+    let organizer_token = support::create_session(&pool, support::ORGANIZER_ID).await;
+    let app = support::app(pool.clone());
+
+    let response = app
+        .oneshot(
+            Request::builder()
+                .method(Method::PATCH)
+                .uri(format!(
+                    "/api/v1/trips/{}/bookings/{}",
+                    support::TRIP_ID,
+                    support::BOOKING_DOC_ID
+                ))
+                .header(header::AUTHORIZATION, format!("Bearer {organizer_token}"))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({
+                        "clientMutationId": "booking-relink-alt-plan",
+                        "expectedVersion": 1,
+                        "patch": {
+                            "relatedItineraryItemIds": [alt_item_id]
+                        }
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::OK);
+    let body: Value =
+        serde_json::from_slice(&to_bytes(response.into_body(), 131072).await.unwrap()).unwrap();
+    assert_eq!(body["tripPlanId"], support::ALT_PLAN_ID);
+    assert_eq!(body["relatedItineraryItemIds"][0], alt_item_id.to_string());
+    assert_eq!(body["version"], 2);
+
+    let stored: (Uuid, i64) = sqlx::query_as(
+        "select trip_plan_id, version
+         from booking_docs
+         where id = $1",
+    )
+    .bind(Uuid::parse_str(support::BOOKING_DOC_ID).unwrap())
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(stored.0, Uuid::parse_str(support::ALT_PLAN_ID).unwrap());
+    assert_eq!(stored.1, 2);
+
+    let relation_count: i64 = sqlx::query_scalar(
+        "select count(*)
+         from booking_doc_itinerary_items
+         where booking_doc_id = $1 and itinerary_item_id = $2",
+    )
+    .bind(Uuid::parse_str(support::BOOKING_DOC_ID).unwrap())
+    .bind(alt_item_id)
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(relation_count, 1);
 }
 
 #[sqlx::test(migrations = "../../migrations")]

@@ -196,6 +196,18 @@ pub async fn patch_booking_doc(
 
     validate_patch_references(&mut tx, trip_id, &request.patch).await?;
     validate_patch_times(&request.patch)?;
+    let patched_itinerary_item_ids = request
+        .patch
+        .related_itinerary_item_ids
+        .as_deref()
+        .unwrap_or(&existing_summary.related_itinerary_item_ids);
+    let next_trip_plan_id = resolve_booking_patch_trip_plan_id(
+        &mut tx,
+        trip_id,
+        existing.trip_plan_id,
+        patched_itinerary_item_ids,
+    )
+    .await?;
 
     let external_link_requests = request
         .patch
@@ -206,6 +218,7 @@ pub async fn patch_booking_doc(
         &mut tx,
         booking_id,
         &request,
+        next_trip_plan_id,
         request.expected_version + 1,
     )
     .await?
@@ -454,6 +467,27 @@ async fn validate_patch_references(
         patch.note_ids.as_deref(),
     )
     .await
+}
+
+async fn resolve_booking_patch_trip_plan_id(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    trip_id: Uuid,
+    existing_trip_plan_id: Option<Uuid>,
+    related_itinerary_item_ids: &[Uuid],
+) -> Result<Option<Uuid>, ServiceError> {
+    let itinerary_plan_ids =
+        unique_itinerary_item_plan_ids(tx, trip_id, related_itinerary_item_ids).await?;
+    if let Some(derived) = itinerary_plan_ids.first() {
+        return Ok(Some(*derived));
+    }
+    if existing_trip_plan_id.is_some() {
+        return Ok(existing_trip_plan_id);
+    }
+
+    db::queries::active_plan_variant_id_for_trip(tx, trip_id)
+        .await?
+        .ok_or(ServiceError::NotFound)
+        .map(Some)
 }
 
 async fn validate_owner(

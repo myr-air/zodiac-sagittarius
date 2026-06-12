@@ -2223,6 +2223,7 @@ pub async fn update_booking_doc(
     tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
     booking_id: Uuid,
     patch: &crate::domain::patches::PatchBookingDocRequest,
+    trip_plan_id: Option<Uuid>,
     next_version: i64,
 ) -> Result<Option<BookingDocRecord>, sqlx::Error> {
     let patch = &patch.patch;
@@ -2245,7 +2246,8 @@ pub async fn update_booking_doc(
              price_minor = case when $18 then $19 else price_minor end,
              currency = case when $20 then $21 else currency end,
              notes = case when $22 then $23 else notes end,
-             version = $24,
+             trip_plan_id = $24,
+             version = $25,
              updated_at = now()
          where id = $1 and deleted_at is null
          returning
@@ -2286,6 +2288,7 @@ pub async fn update_booking_doc(
     .bind(patch.currency.as_ref().and_then(|value| value.as_deref()))
     .bind(patch.notes.is_some())
     .bind(patch.notes.as_ref().and_then(|value| value.as_deref()))
+    .bind(trip_plan_id)
     .bind(next_version)
     .fetch_optional(&mut **tx)
     .await
