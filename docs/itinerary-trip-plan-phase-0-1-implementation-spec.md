@@ -84,6 +84,7 @@ in local mode.
 | Realtime set-main payload | `activePlanVariantId` | Add `mainTripPlanId`, nested `tripPlan.status`, and `previousMainTripPlan` when a different previous Main Plan is demoted. | No. |
 | Account trip create | `trip.activePlanVariantId` | Add `trip.mainTripPlanId`. | No. |
 | Join/session trip summary | `trip.activePlanVariantId` | Add `trip.mainTripPlanId` to join-session and invite-token-current responses. | No. |
+| Backend itinerary import response | `trip.activePlanVariantId` | Add `trip.mainTripPlanId` and `trip.tripPlans[]`; keep normalized imported rows and plan-scoped `records`. | No. |
 | Import/export metadata | `activePlanVariantId` | Add `mainTripPlanId`; keep deprecated active pointer. | No. |
 | Frontend local trip state | `activePlanVariantId`, `planVariants` | Add `mainTripPlanId`, optional `tripPlans`, and normalize missing aliases. | No. |
 
@@ -556,6 +557,67 @@ Set-main validation failures:
 | Unknown `previousMainNextStatus` | `400 invalid_request` | No trip pointer write, no plan status write, and no realtime event. |
 | `previousMainNextStatus` has the wrong JSON type | `400 invalid_request` | No trip pointer write, no plan status write, and no realtime event. |
 | Duplicate `clientMutationId` | Existing duplicate mutation error | No second pointer/status write and no duplicate realtime event. |
+
+### Backend Itinerary Import Normalizer
+
+Route:
+
+```text
+POST /api/v1/trips/:tripId/itinerary-imports
+```
+
+Legacy response fragment:
+
+```json
+{
+  "trip": {
+    "id": "trip-1",
+    "activePlanVariantId": "plan-main"
+  },
+  "items": []
+}
+```
+
+Phase 1 response fragment:
+
+```json
+{
+  "trip": {
+    "id": "trip-1",
+    "activePlanVariantId": "plan-main",
+    "mainTripPlanId": "plan-main",
+    "tripPlans": [
+      {
+        "id": "plan-main",
+        "tripId": "trip-1",
+        "name": "Main",
+        "kind": "main",
+        "status": "main",
+        "description": "",
+        "version": 1
+      }
+    ]
+  },
+  "items": [],
+  "records": {
+    "expenses": [],
+    "bookingDocs": [],
+    "stopNotes": [],
+    "tasks": []
+  }
+}
+```
+
+Rules:
+
+- The normalizer response describes the destination trip context, not a source
+  file request to switch the destination Main Plan.
+- `trip.mainTripPlanId` mirrors the destination `activePlanVariantId`.
+- `trip.tripPlans[]` includes destination Trip Plans with both `status` and
+  legacy `kind` so a client can attach normalized rows to the selected Trip Plan.
+- The response preserves normalized hierarchy, path fields, time-window fields,
+  and plan-scoped `records`; it must not flatten sub-activities or synthesize
+  Alternative Paths from overlaps.
 
 ## Migration DDL Draft
 
@@ -1083,6 +1145,7 @@ full workflow yet.
 | 1 | Backend realtime | `backend/crates/sagittarius-api/tests/realtime_contract.rs` | Set-main event wrapper remains `plan_variant.updated` / `plan_variant` in Phase 1 while the payload includes canonical Trip Plan aliases. |
 | 1 | Backend auth/account | `backend/crates/sagittarius-api/tests/account_trip_contract.rs` | Account trip create response includes `mainTripPlanId` wherever it already exposes `activePlanVariantId`. |
 | 1 | Backend auth/account | `backend/crates/sagittarius-api/tests/account_trip_contract.rs` | Join-session and invite-token-current trip summaries include `mainTripPlanId` wherever they already expose `activePlanVariantId`. |
+| 1 | Backend import | `backend/crates/sagittarius-api/tests/itinerary_import_contract.rs` | Itinerary import normalizer response includes destination `trip.mainTripPlanId`, destination `trip.tripPlans[]` with `status/kind`, hierarchy/time/path fields, and plan-scoped `records` without switching the destination Main Plan. |
 | 1 | Frontend route | `frontend/src/trip/api-contract.test.ts` | Route helpers produce canonical `/trip-plans` paths and keep legacy helpers. |
 | 1 | Frontend mapper | `frontend/src/trip/api-client.test.ts` | Mixed cockpit payload maps `tripPlans/mainTripPlanId` and legacy fields to consistent `Trip`. |
 | 1 | Frontend mapper | `frontend/src/trip/api-client.test.ts` | Legacy-only cockpit payload maps `status` from `kind` and mirrors `mainTripPlanId`. |
@@ -1111,6 +1174,7 @@ Minimum command evidence matrix:
 | Backend schema/contracts | `rtk cargo test -p sagittarius-api --test schema_contract -- --nocapture` |
 | Backend Trip Plan API | `rtk cargo test -p sagittarius-api --test plan_variants_contract -- --nocapture` |
 | Backend cockpit/account/realtime | `rtk cargo test -p sagittarius-api --test trip_load_contract --test account_trip_contract --test realtime_contract -- --nocapture` |
+| Backend itinerary import | `rtk cargo test -p sagittarius-api --test itinerary_import_contract -- --nocapture` |
 | Frontend API mapping/routes/import-export | `cd frontend && rtk bunx vitest --project unit run src/trip/api-client.test.ts src/trip/api-contract.test.ts src/trip/itinerary-import-export.test.ts` |
 | Frontend local UI/table copy | `cd frontend && rtk bunx vitest --project unit run src/app/SagittariusApp.test.tsx src/components/SagittariusApp.test.tsx src/components/SmartItineraryTable.test.tsx src/project-contract.test.ts` |
 | Frontend type safety | `cd frontend && rtk bun run typecheck` |
