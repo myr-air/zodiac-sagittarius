@@ -2051,6 +2051,14 @@ describe("SmartItineraryTable", () => {
           sortOrder: 300,
         },
       ],
+      commitmentsByItemId: {
+        "block-flight": {
+          bookingCount: 1,
+          expenseCount: 2,
+          noteCount: 1,
+          openTaskCount: 1,
+        },
+      },
       selectedItemId: "block-flight",
     });
 
@@ -2059,6 +2067,10 @@ describe("SmartItineraryTable", () => {
     const activityStructure = screen.getByLabelText("Structure for Market walk");
     expect(within(blockStructure).getByText("Activity block · 1 sub-item")).toBeInTheDocument();
     expect(within(blockStructure).getByText("confirmed · must")).toBeInTheDocument();
+    expect(within(blockStructure).getByText("1 booking")).toBeInTheDocument();
+    expect(within(blockStructure).getByText("2 expenses")).toBeInTheDocument();
+    expect(within(blockStructure).getByText("1 task")).toBeInTheDocument();
+    expect(within(blockStructure).getByText("1 note")).toBeInTheDocument();
     expect(within(childStructure).getByText("Sub-activity")).toBeInTheDocument();
     expect(within(childStructure).getByText("planned")).toBeInTheDocument();
     expect(within(activityStructure).getByText("Activity")).toBeInTheDocument();

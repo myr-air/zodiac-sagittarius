@@ -62,6 +62,7 @@ interface SmartItineraryTableProps {
   canRedo: boolean;
   canRestructure?: boolean;
   canUndo: boolean;
+  commitmentsByItemId?: Record<string, ItineraryCommitmentSummary>;
   contextRailOpen: boolean;
   endDate: string;
   graphItems?: ItineraryItem[];
@@ -124,6 +125,13 @@ export type InlineItineraryItemPatch = Partial<
     | "transportation"
   >
 >;
+
+export interface ItineraryCommitmentSummary {
+  bookingCount?: number;
+  expenseCount?: number;
+  noteCount?: number;
+  openTaskCount?: number;
+}
 
 const tablePanelClassName =
   "table-panel grid h-auto min-h-full min-w-0 grid-rows-[auto_minmax(0,1fr)] overflow-visible bg-transparent px-6 py-[22px] pb-7 max-[767px]:px-3 max-[767px]:pb-3";
@@ -234,6 +242,8 @@ const blockHierarchyChipClassName =
   "border-(--color-route-border) bg-(--color-route-soft) text-(--color-route)";
 const commitmentChipClassName =
   "border-[color-mix(in_srgb,var(--color-primary)_28%,var(--color-border))] bg-(--color-primary-soft) text-(--color-primary-strong)";
+const recordCommitmentChipClassName =
+  "border-[color-mix(in_srgb,var(--color-warning)_24%,var(--color-border))] bg-(--color-warning-soft) text-(--color-warning-strong)";
 const blockToggleButtonClassName =
   "inline-flex min-h-7 w-fit items-center gap-1.5 rounded-(--radius-sm) border border-(--color-route-border) bg-(--color-route-soft) px-2 text-[11px] font-extrabold text-(--color-route) aria-expanded:[&_.icon]:rotate-90 [&_.icon]:size-3.5 [&_.icon]:transition-transform";
 const blockDropButtonClassName =
@@ -368,6 +378,7 @@ export function SmartItineraryTable({
   graphItems,
   itineraryView,
   items,
+  commitmentsByItemId = {},
   dailyBriefings = [],
   tripSheets,
   selectedTripSheetId,
@@ -1170,6 +1181,7 @@ export function SmartItineraryTable({
               canEdit={canRestructureItems}
               collapsed={collapsedDays.includes(group.day)}
               collapsedPlanBlockIds={collapsedPlanBlockIds}
+              commitmentsByItemId={commitmentsByItemId}
               dragState={dragState}
               graphColumnWidth={graphColumnWidth}
               graphItems={graphItemsByDay.get(group.day) ?? []}
@@ -1455,6 +1467,7 @@ function DayGroup({
   canEdit,
   collapsed,
   collapsedPlanBlockIds,
+  commitmentsByItemId,
   dragState,
   onClearDragPreview,
   onChangeDayPath,
@@ -1500,6 +1513,7 @@ function DayGroup({
   canEdit: boolean;
   collapsed: boolean;
   collapsedPlanBlockIds: string[];
+  commitmentsByItemId: Record<string, ItineraryCommitmentSummary>;
   dragState: {
     draggedItemId: string | null;
     overItemId: string | null;
@@ -1848,7 +1862,11 @@ function DayGroup({
                         onUpdateItemInline?.(item.id, { place: value })
                       }
                     />
-                    <RowHierarchyMeta item={item} childCount={childCount} />
+                    <RowHierarchyMeta
+                      childCount={childCount}
+                      commitment={commitmentsByItemId[item.id]}
+                      item={item}
+                    />
                   </div>
                 </td>
                 <td>
@@ -2719,14 +2737,17 @@ function InlineActivityTypeSelect({
 
 function RowHierarchyMeta({
   childCount,
+  commitment,
   item,
 }: {
   childCount: number;
+  commitment?: ItineraryCommitmentSummary;
   item: ItineraryItem;
 }) {
   const status = item.status ?? "idea";
   const priority = item.priority ?? "normal";
   const showCommitment = status !== "idea" || priority === "must" || priority === "high";
+  const commitmentChips = buildCommitmentChips(commitment);
 
   return (
     <div className={hierarchyMetaClassName} aria-label={`Structure for ${item.activity}`}>
@@ -2754,8 +2775,49 @@ function RowHierarchyMeta({
           {priority === "must" || priority === "high" ? ` · ${priority}` : ""}
         </span>
       ) : null}
+      {commitmentChips.map((chip) => (
+        <span
+          className={cn(hierarchyChipClassName, recordCommitmentChipClassName)}
+          key={chip.label}
+        >
+          <Icon name={chip.icon} />
+          {chip.label}
+        </span>
+      ))}
     </div>
   );
+}
+
+function buildCommitmentChips(
+  commitment: ItineraryCommitmentSummary | undefined,
+): Array<{ icon: "check" | "note" | "ticket" | "wallet"; label: string }> {
+  if (!commitment) return [];
+  const chips: Array<{ icon: "check" | "note" | "ticket" | "wallet"; label: string }> = [];
+  if (commitment.bookingCount) {
+    chips.push({
+      icon: "ticket",
+      label: `${commitment.bookingCount} booking${commitment.bookingCount === 1 ? "" : "s"}`,
+    });
+  }
+  if (commitment.expenseCount) {
+    chips.push({
+      icon: "wallet",
+      label: `${commitment.expenseCount} expense${commitment.expenseCount === 1 ? "" : "s"}`,
+    });
+  }
+  if (commitment.openTaskCount) {
+    chips.push({
+      icon: "check",
+      label: `${commitment.openTaskCount} task${commitment.openTaskCount === 1 ? "" : "s"}`,
+    });
+  }
+  if (commitment.noteCount) {
+    chips.push({
+      icon: "note",
+      label: `${commitment.noteCount} note${commitment.noteCount === 1 ? "" : "s"}`,
+    });
+  }
+  return chips;
 }
 
 function InlineItemKindSelect({

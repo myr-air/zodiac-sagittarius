@@ -19,6 +19,7 @@ import { OverviewPage } from "@/src/components/OverviewPage";
 import { RouteMapView } from "@/src/components/RouteMapView";
 import {
   SmartItineraryTable,
+  type ItineraryCommitmentSummary,
   type InlineItineraryItemPatch,
 } from "@/src/components/SmartItineraryTable";
 import { StopDialog, type StopFormValues } from "@/src/components/StopDialog";
@@ -463,6 +464,16 @@ export function SagittariusApp({
       trip.expenseReminders,
       trip.expenses,
     ],
+  );
+  const itineraryCommitmentsByItemId = useMemo(
+    () =>
+      buildItineraryCommitmentsByItemId({
+        bookingDocs: trip.bookingDocs ?? [],
+        expenses: trip.expenses,
+        stopNotes,
+        tasks,
+      }),
+    [stopNotes, tasks, trip.bookingDocs, trip.expenses],
   );
 
   function changeTripPath(pathId: string) {
@@ -3731,6 +3742,7 @@ export function SagittariusApp({
                   endDate={trip.endDate}
                   graphItems={activePlanItems}
                   items={planItems}
+                  commitmentsByItemId={itineraryCommitmentsByItemId}
                   dailyBriefings={visibleDailyBriefings}
                   itineraryView={itineraryView}
                   pathOptions={pathOptions}
@@ -4321,6 +4333,48 @@ function applyImportedRecordsToTrip({
     stopNotes: nextStopNotes.slice(existingStopNotes.length),
     tasks: nextTasks,
   };
+}
+
+function buildItineraryCommitmentsByItemId({
+  bookingDocs,
+  expenses,
+  stopNotes,
+  tasks,
+}: {
+  bookingDocs: BookingDoc[];
+  expenses: Expense[];
+  stopNotes: StopNote[];
+  tasks: TripTask[];
+}): Record<string, ItineraryCommitmentSummary> {
+  const commitments = new Map<string, ItineraryCommitmentSummary>();
+  const ensure = (itemId: string) => {
+    const current = commitments.get(itemId) ?? {};
+    commitments.set(itemId, current);
+    return current;
+  };
+
+  for (const booking of bookingDocs) {
+    for (const itemId of booking.relatedItineraryItemIds) {
+      const current = ensure(itemId);
+      current.bookingCount = (current.bookingCount ?? 0) + 1;
+    }
+  }
+  for (const expense of expenses) {
+    if (!expense.itineraryItemId) continue;
+    const current = ensure(expense.itineraryItemId);
+    current.expenseCount = (current.expenseCount ?? 0) + 1;
+  }
+  for (const task of tasks) {
+    if (!task.relatedItemId || task.status === "done") continue;
+    const current = ensure(task.relatedItemId);
+    current.openTaskCount = (current.openTaskCount ?? 0) + 1;
+  }
+  for (const note of stopNotes) {
+    const current = ensure(note.itemId);
+    current.noteCount = (current.noteCount ?? 0) + 1;
+  }
+
+  return Object.fromEntries(commitments);
 }
 
 async function createImportedRecordsThroughApi({
