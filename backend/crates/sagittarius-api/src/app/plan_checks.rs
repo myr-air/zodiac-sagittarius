@@ -342,14 +342,40 @@ fn overlap_findings(items: &[ItineraryItemSummary]) -> Vec<Finding> {
             if duration <= 0 {
                 return None;
             }
-            Some((item, start, start + duration))
+            Some((
+                item,
+                itinerary_overlap_path_key(item),
+                start,
+                start + duration,
+            ))
         })
         .collect::<Vec<_>>();
-    sorted.sort_by_key(|(item, start, _)| (item.day, *start, item.sort_order));
-    for pair in sorted.windows(2) {
-        let (a, _, a_end) = pair[0];
-        let (b, b_start, _) = pair[1];
-        if a.day == b.day && b_start < a_end {
+    sorted.sort_by(|left, right| {
+        let (left_item, left_path, left_start, _) = left;
+        let (right_item, right_path, right_start, _) = right;
+        (
+            left_item.plan_variant_id,
+            left_item.day,
+            left_path,
+            *left_start,
+            left_item.sort_order,
+        )
+            .cmp(&(
+                right_item.plan_variant_id,
+                right_item.day,
+                right_path,
+                *right_start,
+                right_item.sort_order,
+            ))
+    });
+    for (index, (a, a_path, _, a_end)) in sorted.iter().enumerate() {
+        for (b, b_path, b_start, _) in sorted.iter().skip(index + 1) {
+            if a.plan_variant_id != b.plan_variant_id || a.day != b.day || a_path != b_path {
+                continue;
+            }
+            if *b_start >= *a_end {
+                break;
+            }
             findings.push(Finding {
                 severity: "warning",
                 scope: "betweenItems",
@@ -365,6 +391,16 @@ fn overlap_findings(items: &[ItineraryItemSummary]) -> Vec<Finding> {
         }
     }
     findings
+}
+
+fn itinerary_overlap_path_key(item: &ItineraryItemSummary) -> String {
+    if item.path_role.as_deref() == Some("alternative") {
+        return item
+            .path_id
+            .clone()
+            .unwrap_or_else(|| format!("alternative:{}", item.id));
+    }
+    "main".to_string()
 }
 
 fn plan_block_child_findings(items: &[ItineraryItemSummary]) -> Vec<Finding> {
