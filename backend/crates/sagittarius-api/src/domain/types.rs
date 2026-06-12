@@ -566,6 +566,7 @@ pub struct PlanSuggestionSummary {
 pub struct PlanCheckSummary {
     pub id: Uuid,
     pub trip_id: Uuid,
+    pub trip_plan_id: Option<Uuid>,
     pub created_by: Uuid,
     pub itinerary_fingerprint: String,
     pub stale: bool,

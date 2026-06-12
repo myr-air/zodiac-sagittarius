@@ -290,6 +290,15 @@ retained during compatibility.
 - `DELETE /api/v1/trips/:tripId/itinerary-items/:itemId`
 - `PATCH /api/v1/trips/:tripId/itinerary-items/order`
 
+### Plan Checks
+
+- `POST /api/v1/trips/:tripId/plan-checks`
+- `GET /api/v1/trips/:tripId/plan-checks/latest`
+
+Both Plan Check routes accept optional `?tripPlanId=:tripPlanId`. When present,
+the stored check, suggestions, and stale fingerprint are scoped to that Trip
+Plan. When omitted, the compatibility behavior remains trip-wide.
+
 Example PATCH:
 
 ```json

@@ -218,8 +218,8 @@ export interface TripApiClient {
   patchItineraryItem(tripId: string, itemId: string, sessionToken: string, request: PatchItineraryItemApiRequest): Promise<ItineraryItem>;
   deleteItineraryItem(tripId: string, itemId: string, sessionToken: string): Promise<ItineraryItem>;
   reorderItineraryItems(tripId: string, sessionToken: string, request: ReorderItineraryItemsApiRequest): Promise<ItineraryItem[]>;
-  runPlanCheck?: (tripId: string, sessionToken: string) => Promise<PlanCheck>;
-  latestPlanCheck?: (tripId: string, sessionToken: string) => Promise<PlanCheck | null>;
+  runPlanCheck?: (tripId: string, sessionToken: string, tripPlanId?: string | null) => Promise<PlanCheck>;
+  latestPlanCheck?: (tripId: string, sessionToken: string, tripPlanId?: string | null) => Promise<PlanCheck | null>;
   patchPlanSuggestion?: (tripId: string, suggestionId: string, sessionToken: string, request: PatchPlanSuggestionApiRequest) => Promise<PlanSuggestion>;
   resolvePlace?: (tripId: string, sessionToken: string, request: PlaceResolutionRequest) => Promise<PlaceResolutionResponse>;
   importItinerary(tripId: string, sessionToken: string, request: ImportItineraryApiRequest): Promise<ItineraryExportDocument>;
@@ -664,14 +664,14 @@ export function createTripApiClient(options: TripApiClientOptions = {}): TripApi
       });
       return items.map(mapItineraryItem);
     },
-    runPlanCheck(tripId, sessionToken) {
-      return request<PlanCheck>(tripApiRoutes.planChecks(tripId), {
+    runPlanCheck(tripId, sessionToken, tripPlanId) {
+      return request<PlanCheck>(tripApiRoutes.planChecks(tripId, tripPlanId), {
         method: "POST",
         headers: { Authorization: `Bearer ${sessionToken}` },
       });
     },
-    latestPlanCheck(tripId, sessionToken) {
-      return request<PlanCheck | null>(tripApiRoutes.latestPlanCheck(tripId), {
+    latestPlanCheck(tripId, sessionToken, tripPlanId) {
+      return request<PlanCheck | null>(tripApiRoutes.latestPlanCheck(tripId, tripPlanId), {
         method: "GET",
         headers: { Authorization: `Bearer ${sessionToken}` },
       });

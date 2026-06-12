@@ -15,6 +15,7 @@ pub async fn run_plan_check(
     pool: &PgPool,
     trip_id: Uuid,
     session_token: &str,
+    trip_plan_id: Option<Uuid>,
 ) -> Result<PlanCheckSummary, ServiceError> {
     let token_hash = auth::hash_session_token(session_token)?;
     let mut tx = pool.begin().await?;
@@ -26,6 +27,16 @@ pub async fn run_plan_check(
     {
         return Err(ServiceError::Forbidden);
     }
+    if let Some(trip_plan_id) = trip_plan_id {
+        let exists =
+            db::queries::plan_variant_exists_for_trip(&mut tx, session.trip_id, trip_plan_id)
+                .await?;
+        if !exists {
+            return Err(ServiceError::InvalidRequest(
+                "tripPlanId must belong to the trip",
+            ));
+        }
+    }
     let trip = db::queries::find_trip_by_id(pool, session.trip_id)
         .await?
         .ok_or(ServiceError::NotFound)?;
@@ -34,22 +45,25 @@ pub async fn run_plan_check(
         .into_iter()
         .map(Into::into)
         .collect();
-    let fingerprint = itinerary_fingerprint(&items);
+    let scoped_items = scope_items_to_trip_plan(&items, trip_plan_id);
+    let fingerprint = itinerary_fingerprint(&scoped_items);
     let check_record = db::queries::insert_plan_check(
         &mut tx,
         NewPlanCheck {
             id: Uuid::now_v7(),
             trip_id: session.trip_id,
+            trip_plan_id,
             created_by: session.member_id,
             itinerary_fingerprint: &fingerprint,
             language_metadata: &json!({
                 "mode": "bilingual",
-                "provider": std::env::var("SAGITTARIUS_AI_PROVIDER").unwrap_or_else(|_| "rules".to_string())
+                "provider": std::env::var("SAGITTARIUS_AI_PROVIDER").unwrap_or_else(|_| "rules".to_string()),
+                "tripPlanId": trip_plan_id
             }),
         },
     )
     .await?;
-    let findings = build_findings(&trip.default_timezone, &items);
+    let findings = build_findings(&trip.default_timezone, &scoped_items);
     let mut suggestions = Vec::with_capacity(findings.len());
     for finding in findings {
         let record = db::queries::insert_plan_suggestion(
@@ -79,6 +93,7 @@ pub async fn latest_plan_check(
     pool: &PgPool,
     trip_id: Uuid,
     session_token: &str,
+    trip_plan_id: Option<Uuid>,
 ) -> Result<Option<PlanCheckSummary>, ServiceError> {
     let token_hash = auth::hash_session_token(session_token)?;
     let session = db::queries::find_active_member_session(pool, trip_id, &token_hash)
@@ -87,14 +102,23 @@ pub async fn latest_plan_check(
     if !can(session.role, Capability::ViewPlan) {
         return Err(ServiceError::Forbidden);
     }
-    latest_plan_check_for_trip(pool, session.trip_id).await
+    latest_plan_check_for_trip_and_plan(pool, session.trip_id, trip_plan_id).await
 }
 
 pub async fn latest_plan_check_for_trip(
     pool: &PgPool,
     trip_id: Uuid,
 ) -> Result<Option<PlanCheckSummary>, ServiceError> {
-    let Some(check) = db::queries::find_latest_plan_check(pool, trip_id).await? else {
+    latest_plan_check_for_trip_and_plan(pool, trip_id, None).await
+}
+
+pub async fn latest_plan_check_for_trip_and_plan(
+    pool: &PgPool,
+    trip_id: Uuid,
+    trip_plan_id: Option<Uuid>,
+) -> Result<Option<PlanCheckSummary>, ServiceError> {
+    let Some(check) = db::queries::find_latest_plan_check(pool, trip_id, trip_plan_id).await?
+    else {
         return Ok(None);
     };
     let items: Vec<ItineraryItemSummary> = db::queries::list_itinerary_items(pool, trip_id)
@@ -102,13 +126,28 @@ pub async fn latest_plan_check_for_trip(
         .into_iter()
         .map(Into::into)
         .collect();
-    let stale = check.itinerary_fingerprint != itinerary_fingerprint(&items);
+    let scoped_items = scope_items_to_trip_plan(&items, check.trip_plan_id);
+    let stale = check.itinerary_fingerprint != itinerary_fingerprint(&scoped_items);
     let suggestions = db::queries::list_plan_suggestions(pool, check.id)
         .await?
         .into_iter()
         .map(|record| record.into_summary())
         .collect();
     Ok(Some(plan_check_summary(check, stale, suggestions)))
+}
+
+fn scope_items_to_trip_plan(
+    items: &[ItineraryItemSummary],
+    trip_plan_id: Option<Uuid>,
+) -> Vec<ItineraryItemSummary> {
+    match trip_plan_id {
+        Some(trip_plan_id) => items
+            .iter()
+            .filter(|item| item.plan_variant_id == trip_plan_id)
+            .cloned()
+            .collect(),
+        None => items.to_vec(),
+    }
 }
 
 pub async fn patch_plan_suggestion(

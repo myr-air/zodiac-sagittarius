@@ -77,6 +77,12 @@ paths:
       summary: Run deterministic Plan Check and store bilingual suggestions.
       parameters:
         - $ref: "#/components/parameters/TripId"
+        - name: tripPlanId
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Optional Trip Plan scope. When omitted, the check covers the full trip for compatibility.
       responses:
         "201":
           description: Plan Check completed.
@@ -89,6 +95,12 @@ paths:
       summary: Read the latest Plan Check with stale status.
       parameters:
         - $ref: "#/components/parameters/TripId"
+        - name: tripPlanId
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Optional Trip Plan scope. When provided, returns the latest check for that Trip Plan.
       responses:
         "200":
           description: Latest Plan Check or null.
@@ -237,6 +249,9 @@ components:
           type: string
         tripId:
           type: string
+        tripPlanId:
+          type: string
+          nullable: true
         itineraryFingerprint:
           type: string
         status:

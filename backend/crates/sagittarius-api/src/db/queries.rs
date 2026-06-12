@@ -1424,17 +1424,20 @@ pub async fn update_suggestion_status(
 pub async fn find_latest_plan_check(
     pool: &PgPool,
     trip_id: Uuid,
+    trip_plan_id: Option<Uuid>,
 ) -> Result<Option<PlanCheckRecord>, sqlx::Error> {
     sqlx::query_as::<_, PlanCheckRecord>(
         "select
-           id, trip_id, created_by, itinerary_fingerprint, language_metadata,
+           id, trip_id, trip_plan_id, created_by, itinerary_fingerprint, language_metadata,
            status, created_at::text as created_at, completed_at::text as completed_at, version
          from plan_checks
          where trip_id = $1
+           and ($2::uuid is null or trip_plan_id = $2)
          order by created_at desc
          limit 1",
     )
     .bind(trip_id)
+    .bind(trip_plan_id)
     .fetch_optional(pool)
     .await
 }
@@ -1467,16 +1470,17 @@ pub async fn insert_plan_check(
 ) -> Result<PlanCheckRecord, sqlx::Error> {
     sqlx::query_as::<_, PlanCheckRecord>(
         "insert into plan_checks (
-           id, trip_id, created_by, itinerary_fingerprint, language_metadata,
+           id, trip_id, trip_plan_id, created_by, itinerary_fingerprint, language_metadata,
            status, completed_at
          )
-         values ($1, $2, $3, $4, $5, 'complete', now())
+         values ($1, $2, $3, $4, $5, $6, 'complete', now())
          returning
-           id, trip_id, created_by, itinerary_fingerprint, language_metadata,
+           id, trip_id, trip_plan_id, created_by, itinerary_fingerprint, language_metadata,
            status, created_at::text as created_at, completed_at::text as completed_at, version",
     )
     .bind(check.id)
     .bind(check.trip_id)
+    .bind(check.trip_plan_id)
     .bind(check.created_by)
     .bind(check.itinerary_fingerprint)
     .bind(check.language_metadata)

@@ -2367,11 +2367,12 @@ export function SagittariusApp({
         const check = await resolvedApiClient.runPlanCheck(
           trip.id,
           participantSession.sessionToken,
+          selectedPlanVariantId,
         );
         setLatestPlanCheck(check);
         return;
       }
-      setLatestPlanCheck(buildLocalPlanCheck(trip, currentMember.id));
+      setLatestPlanCheck(buildLocalPlanCheck(trip, currentMember.id, selectedPlanVariantId));
     } finally {
       setPlanCheckRunning(false);
     }
@@ -5293,8 +5294,9 @@ function slugifyFilePart(value: string): string {
   );
 }
 
-function buildLocalPlanCheck(trip: Trip, memberId: string): PlanCheck {
-  const suggestions: PlanSuggestion[] = trip.itineraryItems.flatMap((item, index) => {
+function buildLocalPlanCheck(trip: Trip, memberId: string, tripPlanId?: string | null): PlanCheck {
+  const scopedItems = tripPlanId ? trip.itineraryItems.filter((item) => item.planVariantId === tripPlanId) : trip.itineraryItems;
+  const suggestions: PlanSuggestion[] = scopedItems.flatMap((item, index) => {
     const missing: string[] = [];
     if (item.timeMode !== "flexible" && !item.startTime.trim()) missing.push("time");
     if (item.timeMode !== "flexible" && (item.durationMinutes === null || item.durationMinutes <= 0)) missing.push("duration");
@@ -5335,8 +5337,9 @@ function buildLocalPlanCheck(trip: Trip, memberId: string): PlanCheck {
   return {
     id: "local-plan-check",
     tripId: trip.id,
+    tripPlanId,
     createdBy: memberId,
-    itineraryFingerprint: trip.itineraryItems.map((item) => `${item.id}:${item.version}`).join("|"),
+    itineraryFingerprint: scopedItems.map((item) => `${item.id}:${item.version}`).join("|"),
     stale: false,
     status: "complete",
     languageMetadata: { provider: "local-rules" },
@@ -5352,6 +5355,7 @@ function scopePlanCheckToItems(
   items: ItineraryItem[],
 ): PlanCheck | null {
   if (!check) return null;
+  if (check.tripPlanId && !items.some((item) => item.planVariantId === check.tripPlanId)) return null;
   const itemIds = new Set(items.map((item) => item.id));
   return {
     ...check,

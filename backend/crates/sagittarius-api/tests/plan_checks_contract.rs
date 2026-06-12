@@ -65,6 +65,155 @@ async fn plan_checks_contract_ignores_overlaps_across_explicit_alternative_paths
 }
 
 #[sqlx::test(migrations = "../../migrations")]
+async fn plan_checks_contract_scopes_latest_and_staleness_by_trip_plan(pool: sqlx::PgPool) {
+    support::seed_trip(&pool).await;
+    let trip_id = Uuid::parse_str(support::TRIP_ID).unwrap();
+    let main_plan_id = Uuid::parse_str(support::PLAN_ID).unwrap();
+    let alt_plan_id = Uuid::parse_str(support::ALT_PLAN_ID).unwrap();
+    let alt_item_id = Uuid::parse_str("018f4e83-5410-7d8b-8f25-fd52c5e7bdb1").unwrap();
+
+    sqlx::query(
+        "insert into plan_variants (id, trip_id, name, kind, status, description)
+         values ($1, $2, 'Backup', 'backup', 'backup', 'Scoped check backup')",
+    )
+    .bind(alt_plan_id)
+    .bind(trip_id)
+    .execute(&pool)
+    .await
+    .unwrap();
+    sqlx::query(
+        "insert into itinerary_items (
+           id, trip_id, plan_variant_id, day, sort_order, start_time,
+           activity, activity_type, place, map_link, duration_minutes,
+           transportation, note, created_by, version
+         )
+         values (
+           $1, $2, $3, '2025-05-16', 100, null,
+           'Backup unscheduled stop', 'experience', 'Tsim Sha Tsui',
+           'https://maps.example.test/backup', null, 'walk', 'backup only',
+           $4, 1
+         )",
+    )
+    .bind(alt_item_id)
+    .bind(trip_id)
+    .bind(alt_plan_id)
+    .bind(Uuid::parse_str(support::OWNER_ID).unwrap())
+    .execute(&pool)
+    .await
+    .unwrap();
+
+    let token = support::create_session(&pool, support::ORGANIZER_ID).await;
+    let app = support::app(pool.clone());
+
+    let response = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method(Method::POST)
+                .uri(format!(
+                    "/api/v1/trips/{}/plan-checks?tripPlanId={}",
+                    support::TRIP_ID,
+                    support::ALT_PLAN_ID
+                ))
+                .header(header::AUTHORIZATION, format!("Bearer {token}"))
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::OK);
+    let body: Value =
+        serde_json::from_slice(&to_bytes(response.into_body(), 65536).await.unwrap()).unwrap();
+    assert_eq!(body["tripPlanId"], support::ALT_PLAN_ID);
+    let scoped_check_id = body["id"].as_str().unwrap().to_string();
+    let suggestions = body["suggestions"].as_array().unwrap();
+    assert!(!suggestions.is_empty());
+    assert!(suggestions.iter().all(|suggestion| {
+        suggestion["targetItemIds"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .all(|id| id == &alt_item_id.to_string())
+    }));
+
+    let stored_trip_plan_id: Uuid =
+        sqlx::query_scalar("select trip_plan_id from plan_checks where id = $1")
+            .bind(Uuid::parse_str(&scoped_check_id).unwrap())
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+    assert_eq!(stored_trip_plan_id, alt_plan_id);
+
+    sqlx::query(
+        "update itinerary_items
+         set version = version + 1
+         where trip_id = $1 and plan_variant_id = $2",
+    )
+    .bind(trip_id)
+    .bind(main_plan_id)
+    .execute(&pool)
+    .await
+    .unwrap();
+
+    let response = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method(Method::GET)
+                .uri(format!(
+                    "/api/v1/trips/{}/plan-checks/latest?tripPlanId={}",
+                    support::TRIP_ID,
+                    support::ALT_PLAN_ID
+                ))
+                .header(header::AUTHORIZATION, format!("Bearer {token}"))
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::OK);
+    let latest: Value =
+        serde_json::from_slice(&to_bytes(response.into_body(), 65536).await.unwrap()).unwrap();
+    assert_eq!(latest["id"], scoped_check_id);
+    assert_eq!(latest["tripPlanId"], support::ALT_PLAN_ID);
+    assert_eq!(latest["stale"], false);
+
+    sqlx::query(
+        "update itinerary_items
+         set version = version + 1
+         where id = $1",
+    )
+    .bind(alt_item_id)
+    .execute(&pool)
+    .await
+    .unwrap();
+
+    let response = app
+        .oneshot(
+            Request::builder()
+                .method(Method::GET)
+                .uri(format!(
+                    "/api/v1/trips/{}/plan-checks/latest?tripPlanId={}",
+                    support::TRIP_ID,
+                    support::ALT_PLAN_ID
+                ))
+                .header(header::AUTHORIZATION, format!("Bearer {token}"))
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::OK);
+    let latest: Value =
+        serde_json::from_slice(&to_bytes(response.into_body(), 65536).await.unwrap()).unwrap();
+    assert_eq!(latest["id"], scoped_check_id);
+    assert_eq!(latest["stale"], true);
+}
+
+#[sqlx::test(migrations = "../../migrations")]
 async fn plan_checks_contract_uses_explicit_time_windows_for_overlaps_and_child_bounds(
     pool: sqlx::PgPool,
 ) {

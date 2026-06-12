@@ -54,6 +54,7 @@ async fn migration_creates_vertical_slice_indexes(pool: sqlx::PgPool) {
         "expenses_trip_plan_active_idx",
         "stop_notes_trip_plan_item_idx",
         "booking_docs_trip_plan_active_idx",
+        "plan_checks_trip_plan_created_idx",
         "itinerary_items_time_window_idx",
         "itinerary_items_parent_scope_idx",
         "itinerary_items_parent_scope_key",
@@ -216,6 +217,37 @@ async fn plan_scoped_record_schema_adds_trip_plan_columns_and_fkeys(pool: sqlx::
             "trip_tasks_trip_plan_fkey".to_string(),
         ]
     );
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn plan_check_schema_adds_trip_plan_scope(pool: sqlx::PgPool) {
+    let columns: Vec<(String, String)> = sqlx::query_as(
+        "select column_name::text, data_type::text
+         from information_schema.columns
+         where table_schema = 'public'
+           and table_name = 'plan_checks'
+           and column_name = 'trip_plan_id'
+         order by column_name",
+    )
+    .fetch_all(&pool)
+    .await
+    .unwrap();
+
+    assert_eq!(
+        columns,
+        vec![("trip_plan_id".to_string(), "uuid".to_string())]
+    );
+
+    let constraints: Vec<String> = sqlx::query_scalar(
+        "select conname::text
+         from pg_constraint
+         where conname = 'plan_checks_trip_plan_fkey'
+         order by conname",
+    )
+    .fetch_all(&pool)
+    .await
+    .unwrap();
+    assert_eq!(constraints, vec!["plan_checks_trip_plan_fkey".to_string()]);
 }
 
 #[sqlx::test(migrations = "../../migrations")]

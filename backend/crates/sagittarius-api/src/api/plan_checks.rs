@@ -1,6 +1,6 @@
 use axum::{
     Json,
-    extract::{Path, State},
+    extract::{Path, Query, State},
 };
 use serde::Deserialize;
 use uuid::Uuid;
@@ -18,23 +18,38 @@ pub struct PatchPlanSuggestionRequest {
     pub snoozed_until: Option<String>,
 }
 
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PlanCheckQuery {
+    pub trip_plan_id: Option<Uuid>,
+}
+
 pub async fn run_plan_check(
     State(state): State<AppState>,
     Path(trip_id): Path<Uuid>,
+    Query(query): Query<PlanCheckQuery>,
     BearerToken(session_token): BearerToken,
 ) -> Result<Json<PlanCheckSummary>, ServiceError> {
     Ok(Json(
-        app::plan_checks::run_plan_check(&state.pool, trip_id, &session_token).await?,
+        app::plan_checks::run_plan_check(&state.pool, trip_id, &session_token, query.trip_plan_id)
+            .await?,
     ))
 }
 
 pub async fn latest_plan_check(
     State(state): State<AppState>,
     Path(trip_id): Path<Uuid>,
+    Query(query): Query<PlanCheckQuery>,
     BearerToken(session_token): BearerToken,
 ) -> Result<Json<Option<PlanCheckSummary>>, ServiceError> {
     Ok(Json(
-        app::plan_checks::latest_plan_check(&state.pool, trip_id, &session_token).await?,
+        app::plan_checks::latest_plan_check(
+            &state.pool,
+            trip_id,
+            &session_token,
+            query.trip_plan_id,
+        )
+        .await?,
     ))
 }
 

@@ -1478,6 +1478,7 @@ describe("Trip API client", () => {
     const planCheck = {
       id: "plan-check-1",
       tripId: cockpitResponse.trip.id,
+      tripPlanId: cockpitResponse.trip.activePlanVariantId,
       createdBy: cockpitResponse.members[0].id,
       itineraryFingerprint: "abc",
       stale: false,
@@ -1511,8 +1512,8 @@ describe("Trip API client", () => {
       .mockResolvedValueOnce(jsonResponse(patchedSuggestion));
     const client = createTripApiClient({ baseUrl: "https://api.example.test", fetchImpl });
 
-    await expect(client.runPlanCheck?.(cockpitResponse.trip.id, "session-token")).resolves.toEqual(planCheck);
-    await expect(client.latestPlanCheck?.(cockpitResponse.trip.id, "session-token")).resolves.toEqual(planCheck);
+    await expect(client.runPlanCheck?.(cockpitResponse.trip.id, "session-token", cockpitResponse.trip.activePlanVariantId)).resolves.toEqual(planCheck);
+    await expect(client.latestPlanCheck?.(cockpitResponse.trip.id, "session-token", cockpitResponse.trip.activePlanVariantId)).resolves.toEqual(planCheck);
     await expect(client.patchPlanSuggestion?.(cockpitResponse.trip.id, "suggestion-1", "session-token", {
       expectedVersion: 1,
       status: "dismissed",
@@ -1520,12 +1521,12 @@ describe("Trip API client", () => {
 
     expect(fetchImpl).toHaveBeenNthCalledWith(
       1,
-      `https://api.example.test/api/v1/trips/${cockpitResponse.trip.id}/plan-checks`,
+      `https://api.example.test/api/v1/trips/${cockpitResponse.trip.id}/plan-checks?tripPlanId=${cockpitResponse.trip.activePlanVariantId}`,
       expect.objectContaining({ method: "POST" }),
     );
     expect(fetchImpl).toHaveBeenNthCalledWith(
       2,
-      `https://api.example.test/api/v1/trips/${cockpitResponse.trip.id}/plan-checks/latest`,
+      `https://api.example.test/api/v1/trips/${cockpitResponse.trip.id}/plan-checks/latest?tripPlanId=${cockpitResponse.trip.activePlanVariantId}`,
       expect.objectContaining({ method: "GET" }),
     );
     expect(fetchImpl).toHaveBeenNthCalledWith(

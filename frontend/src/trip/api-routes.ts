@@ -43,8 +43,10 @@ export const tripApiRoutes = {
   itineraryItem: (tripId: string, itemId: string) =>
     `/api/v1/trips/${tripPathSegment(tripId)}/itinerary-items/${encodePathSegment(itemId)}`,
   reorderItineraryItems: (tripId: string) => `/api/v1/trips/${tripPathSegment(tripId)}/itinerary-items/order`,
-  planChecks: (tripId: string) => `/api/v1/trips/${tripPathSegment(tripId)}/plan-checks`,
-  latestPlanCheck: (tripId: string) => `/api/v1/trips/${tripPathSegment(tripId)}/plan-checks/latest`,
+  planChecks: (tripId: string, tripPlanId?: string | null) =>
+    `/api/v1/trips/${tripPathSegment(tripId)}/plan-checks${tripPlanId ? `?${new URLSearchParams({ tripPlanId })}` : ""}`,
+  latestPlanCheck: (tripId: string, tripPlanId?: string | null) =>
+    `/api/v1/trips/${tripPathSegment(tripId)}/plan-checks/latest${tripPlanId ? `?${new URLSearchParams({ tripPlanId })}` : ""}`,
   planSuggestion: (tripId: string, suggestionId: string) =>
     `/api/v1/trips/${tripPathSegment(tripId)}/plan-suggestions/${encodePathSegment(suggestionId)}`,
   suggestions: (tripId: string) => `/api/v1/trips/${tripPathSegment(tripId)}/suggestions`,

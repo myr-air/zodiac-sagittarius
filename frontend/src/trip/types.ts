@@ -464,6 +464,7 @@ export interface PlanSuggestion {
 export interface PlanCheck {
   id: string;
   tripId: string;
+  tripPlanId?: string | null;
   createdBy: string;
   itineraryFingerprint: string;
   stale: boolean;

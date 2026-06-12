@@ -571,6 +571,7 @@ pub struct SuggestionRecord {
 pub struct PlanCheckRecord {
     pub id: Uuid,
     pub trip_id: Uuid,
+    pub trip_plan_id: Option<Uuid>,
     pub created_by: Uuid,
     pub itinerary_fingerprint: String,
     pub language_metadata: serde_json::Value,
@@ -629,6 +630,7 @@ pub fn plan_check_summary(
     PlanCheckSummary {
         id: record.id,
         trip_id: record.trip_id,
+        trip_plan_id: record.trip_plan_id,
         created_by: record.created_by,
         itinerary_fingerprint: record.itinerary_fingerprint,
         stale,
@@ -659,6 +661,7 @@ fn localized_text(value: serde_json::Value) -> LocalizedText {
 pub struct NewPlanCheck<'a> {
     pub id: Uuid,
     pub trip_id: Uuid,
+    pub trip_plan_id: Option<Uuid>,
     pub created_by: Uuid,
     pub itinerary_fingerprint: &'a str,
     pub language_metadata: &'a serde_json::Value,
