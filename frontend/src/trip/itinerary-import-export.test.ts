@@ -264,6 +264,29 @@ describe("itinerary import/export JSON", () => {
     expect(() => parseItineraryImport("{")).toThrow(/valid JSON/i);
   });
 
+  it("accepts compatibility imports without source trip metadata", () => {
+    const payload = {
+      schema: "joii.itinerary.export",
+      version: 1,
+      exportedAt: "2026-06-04T12:00:00.000Z",
+      items: [tripFixture.planItems[0]],
+    };
+
+    const document = parseItineraryImportDocument(JSON.stringify(payload));
+
+    expect(document.trip).toMatchObject({
+      id: "",
+      activePlanVariantId: "",
+      mainTripPlanId: undefined,
+    });
+    expect(document.records).toEqual({
+      expenses: [],
+      bookingDocs: [],
+      stopNotes: [],
+      tasks: [],
+    });
+  });
+
   it("drops unsafe map links from imported itinerary items", () => {
     const payload = buildItineraryExport({
       exportedAt: "2026-06-04T12:00:00.000Z",

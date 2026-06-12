@@ -81,8 +81,9 @@ import {
 } from "@/src/trip/itinerary-paths";
 import {
   buildItineraryExport,
-  parseItineraryImport,
+  parseItineraryImportDocument,
   type ItineraryExportItem,
+  type ItineraryExportRecords,
 } from "@/src/trip/itinerary-import-export";
 import { buildFallbackBriefings } from "@/src/trip/weather-briefings";
 import {
@@ -156,6 +157,11 @@ const portalLoadingCardClassName =
 interface PendingItineraryImport {
   fileName: string;
   items: ItineraryExportItem[];
+  records: ItineraryExportRecords;
+}
+
+function emptyItineraryExportRecords(): ItineraryExportRecords {
+  return { bookingDocs: [], expenses: [], stopNotes: [], tasks: [] };
 }
 const portalSkeletonBaseClassName =
   "portal-skeleton block overflow-hidden rounded-(--radius-md) bg-[linear-gradient(90deg,var(--color-surface-subtle),rgb(226_232_240_/_0.72),var(--color-surface-subtle))] bg-[length:220%_100%] animate-[portal-skeleton-pulse_1.2s_ease-in-out_infinite] motion-reduce:animate-none";
@@ -3208,8 +3214,12 @@ export function SagittariusApp({
                 content,
               },
             )
-          : { items: parseItineraryImport(content) };
-      setPendingItineraryImport({ fileName: file.name, items: document.items });
+          : parseItineraryImportDocument(content);
+      setPendingItineraryImport({
+        fileName: file.name,
+        items: document.items,
+        records: document.records ?? emptyItineraryExportRecords(),
+      });
       setItineraryImportError(null);
     } catch (caught) {
       setItineraryImportError(
@@ -3797,6 +3807,7 @@ export function SagittariusApp({
             importedItems={pendingItineraryImport.items}
             memberId={currentMember.id}
             pathOptions={pathOptions}
+            records={pendingItineraryImport.records}
             startDate={trip.startDate}
             onApply={(target) => void applyPendingItineraryImport(target)}
             onClose={() => setPendingItineraryImport(null)}
@@ -4444,6 +4455,7 @@ function ItineraryImportOptionsDialog({
   importedItems,
   memberId,
   pathOptions,
+  records,
   startDate,
   currentTripPathId,
   onApply,
@@ -4452,11 +4464,17 @@ function ItineraryImportOptionsDialog({
   importedItems: ItineraryExportItem[];
   memberId: string;
   pathOptions: ItineraryPathOption[];
+  records: ItineraryExportRecords;
   startDate: string;
   currentTripPathId: string;
   onApply: (target: ItineraryImportApplyTarget) => void;
   onClose: () => void;
 }) {
+  const recordCount =
+    records.expenses.length +
+    records.bookingDocs.length +
+    records.stopNotes.length +
+    records.tasks.length;
   const currentPathName =
     pathOptions.find((option) => option.id === currentTripPathId)?.name ??
     "Main";
@@ -4502,6 +4520,14 @@ function ItineraryImportOptionsDialog({
         <p className={importDialogBodyClassName}>
           {previewLabel} · {importedItems.length} activities
         </p>
+        {recordCount > 0 ? (
+          <p className={importDialogBodyClassName}>
+            Records detected: {records.expenses.length} expenses,{" "}
+            {records.bookingDocs.length} bookings, {records.stopNotes.length}{" "}
+            notes, {records.tasks.length} tasks. This import applies itinerary
+            rows only; records stay in the preview payload.
+          </p>
+        ) : null}
         <div className={importDialogFieldsClassName}>
           <label>
             <span>ชื่อ path</span>

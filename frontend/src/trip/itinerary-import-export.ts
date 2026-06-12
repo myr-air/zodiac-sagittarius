@@ -241,6 +241,19 @@ function matchesLinkedItem(
 }
 
 function parseExportTrip(value: unknown): ItineraryExportDocument["trip"] {
+  if (value === undefined || value === null) {
+    return {
+      id: "",
+      name: "",
+      destinationLabel: "",
+      startDate: "",
+      endDate: "",
+      activePlanVariantId: "",
+      mainTripPlanId: undefined,
+      partySize: undefined,
+      defaultTimezone: undefined,
+    };
+  }
   if (!isRecord(value)) throw new Error("Unsupported itinerary import file.");
   return {
     id: readString(value, "id"),

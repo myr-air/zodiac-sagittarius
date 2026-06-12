@@ -4199,6 +4199,24 @@ describe("Sagittarius cockpit UI", () => {
               note: "Bring cash",
             },
           ],
+          records: {
+            expenses: [
+              {
+                id: "imported-expense",
+                tripId: seedTrip.id,
+                tripPlanId: seedTrip.activePlanVariantId,
+                title: "Imported real receipt",
+                amount: 120,
+                paidBy: "member-aom",
+                splits: { "member-aom": 120 },
+                category: "food",
+                itineraryItemId: "imported-lunch",
+              },
+            ],
+            bookingDocs: [],
+            stopNotes: [],
+            tasks: [],
+          },
         }),
       ],
       "itinerary.json",
@@ -4215,6 +4233,12 @@ describe("Sagittarius cockpit UI", () => {
     );
     expect(dialog.className).not.toContain("0_24px_70px");
     expect(dialog).toHaveTextContent("Imported noodle lunch");
+    expect(dialog).toHaveTextContent(
+      "Records detected: 1 expenses, 0 bookings, 0 notes, 0 tasks",
+    );
+    expect(dialog).toHaveTextContent(
+      "This import applies itinerary rows only",
+    );
     await user.clear(within(dialog).getByLabelText(/ชื่อ path/i));
     await user.type(within(dialog).getByLabelText(/ชื่อ path/i), "Plan B");
     await user.click(
@@ -4224,6 +4248,10 @@ describe("Sagittarius cockpit UI", () => {
     expect(
       screen.getByRole("row", { name: /Imported noodle lunch/i }),
     ).toBeInTheDocument();
+    const persistedTrip = JSON.parse(localStorage.getItem(tripStorageKey)!) as Trip;
+    expect(
+      persistedTrip.expenses.some((expense) => expense.id === "imported-expense"),
+    ).toBe(false);
     expect(prompt).not.toHaveBeenCalled();
     expect(confirm).not.toHaveBeenCalled();
     expect(alert).not.toHaveBeenCalled();
