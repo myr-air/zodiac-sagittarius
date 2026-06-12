@@ -325,21 +325,17 @@ button:disabled,
 
 .table-scroll,
 .route-map-layout,
-.bookings-panel,
 .photos-panel {
   background-color: var(--color-surface);
 }
 
 .panel,
-.bookings-panel,
 .photos-panel,
-.booking-ticket-card,
 .photo-album-card {
   border-color: var(--color-border);
   box-shadow: var(--shadow-soft);
 }
 
-.booking-stat,
 .photos-stat {
   border-color: var(--color-border);
   background:
@@ -348,7 +344,6 @@ button:disabled,
   box-shadow: var(--shadow-soft);
 }
 
-.booking-ticket-card:hover,
 .photo-album-card:hover,
 .overview-panel--button:hover,
 .overview-panel--button:focus-visible {

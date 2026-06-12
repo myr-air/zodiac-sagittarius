@@ -17,15 +17,24 @@ describe("BookingsDocsPage", () => {
     renderPage();
 
     expect(screen.getByRole("region", { name: "Bookings & Docs" })).toHaveClass("bookings-docs-page", "bg-transparent");
-    expect(screen.getByText("HKD 8,660").closest(".booking-stat")).toHaveClass("bg-(--color-surface)", "rounded-(--radius-md)");
+    expect(screen.getByText("HKD 8,660").closest(".booking-stat")).toHaveClass(
+      "rounded-(--radius-md)",
+      "shadow-[0_1px_0_rgb(15_23_42_/_0.04)]",
+    );
+    expect(screen.getByText("HKD 8,660").closest(".booking-stat")?.className).not.toContain("0_8px_18px");
     expect(screen.getByText("HKD 8,660")).toBeInTheDocument();
     expect(screen.getByText("2 need action")).toBeInTheDocument();
+    expect(document.querySelector(".bookings-panel")).toHaveClass("shadow-[0_1px_0_rgb(15_23_42_/_0.04)]");
+    expect(document.querySelector(".booking-inspector")).toHaveClass("shadow-[0_1px_0_rgb(15_23_42_/_0.04)]");
     expect(screen.getByRole("button", { name: /Transport/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Transport/i })).toHaveClass("min-h-[72px]");
     expect(screen.getByRole("button", { name: /Travel docs/i })).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Thu, Jun 18" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Select Bangkok to Hong Kong flight/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Select Bangkok to Hong Kong flight/i }).closest(".booking-ticket-card")).toHaveClass("min-h-[156px]");
+    expect(screen.getByRole("button", { name: /Select Bangkok to Hong Kong flight/i }).closest(".booking-ticket-card")).toHaveClass(
+      "min-h-[156px]",
+      "shadow-[0_1px_0_rgb(15_23_42_/_0.035)]",
+    );
     expect(screen.getByRole("heading", { name: "Bangkok to Hong Kong flight" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Open Airline booking/i })).toHaveAttribute("href", "https://example.com/airline/booking/QR349-HK");
   });
@@ -68,7 +77,8 @@ describe("BookingsDocsPage", () => {
 
     await user.click(screen.getByRole("button", { name: "Add booking" }));
     let dialog = screen.getByRole("dialog", { name: "Add booking" });
-    expect(dialog).toHaveClass("shadow-[0_14px_34px_rgb(15_23_42_/_0.16)]");
+    expect(dialog).toHaveClass("shadow-[0_10px_18px_rgb(15_23_42_/_0.14)]");
+    expect(dialog.className).not.toContain("0_14px_34px");
     fireEvent.change(within(dialog).getByLabelText("Title"), { target: { value: "Airport Express pass" } });
     fireEvent.change(within(dialog).getByLabelText("Type"), { target: { value: "public_transport" } });
     fireEvent.change(within(dialog).getByLabelText("Status"), { target: { value: "booked" } });
