@@ -373,6 +373,33 @@ fn itinerary_json_schema() -> Value {
             "note": { "type": "string" }
         }
     });
+    let record_item_schema = json!({
+        "type": "object",
+        "additionalProperties": true
+    });
+    let records_schema = json!({
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["expenses", "bookingDocs", "stopNotes", "tasks"],
+        "properties": {
+            "expenses": {
+                "type": "array",
+                "items": record_item_schema
+            },
+            "bookingDocs": {
+                "type": "array",
+                "items": record_item_schema
+            },
+            "stopNotes": {
+                "type": "array",
+                "items": record_item_schema
+            },
+            "tasks": {
+                "type": "array",
+                "items": record_item_schema
+            }
+        }
+    });
     json!({
         "type": "object",
         "additionalProperties": false,
@@ -385,7 +412,8 @@ fn itinerary_json_schema() -> Value {
             "items": {
                 "type": "array",
                 "items": item_schema
-            }
+            },
+            "records": records_schema
         }
     })
 }
@@ -478,4 +506,34 @@ struct OpenRouterChoice {
 #[derive(Debug, Deserialize)]
 struct OpenRouterMessage {
     content: String,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::itinerary_json_schema;
+
+    #[test]
+    fn ai_import_schema_preserves_trip_plans_and_plan_scoped_records() {
+        let schema = itinerary_json_schema();
+
+        assert_eq!(
+            schema["properties"]["trip"]["properties"]["tripPlans"]["type"],
+            "array"
+        );
+        assert_eq!(
+            schema["properties"]["records"]["required"],
+            serde_json::json!(["expenses", "bookingDocs", "stopNotes", "tasks"])
+        );
+
+        for bucket in ["expenses", "bookingDocs", "stopNotes", "tasks"] {
+            assert_eq!(
+                schema["properties"]["records"]["properties"][bucket]["type"],
+                "array"
+            );
+            assert_eq!(
+                schema["properties"]["records"]["properties"][bucket]["items"]["type"],
+                "object"
+            );
+        }
+    }
 }
