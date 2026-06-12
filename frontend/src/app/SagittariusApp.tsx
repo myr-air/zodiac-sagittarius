@@ -3252,6 +3252,9 @@ export function SagittariusApp({
       const previewImportedItems = previewTrip.itineraryItems.filter(
         (item) => !currentIds.has(item.id),
       );
+      const appliedImportedItems = previewTrip.itineraryItems.slice(
+        -pendingItineraryImport.items.length,
+      );
 
       if (isApiMode && resolvedApiClient && participantSession) {
         for (const item of deletedItems) {
@@ -3308,8 +3311,23 @@ export function SagittariusApp({
         return;
       }
 
-      const nextSelectedItemId = previewImportedItems[0]?.id ?? "";
-      commitTrip(() => previewTrip, nextSelectedItemId);
+      const nextSelectedItemId = appliedImportedItems[0]?.id ?? "";
+      const tripWithImportedRecords = applyImportedRecordsToTrip({
+        appliedItems: appliedImportedItems,
+        existingStopNotes: stopNotes,
+        existingTasks: tasks,
+        importedItems: pendingItineraryImport.items,
+        records: pendingItineraryImport.records,
+        trip: previewTrip,
+      });
+      commitTrip(() => tripWithImportedRecords.trip, nextSelectedItemId);
+      if (tripWithImportedRecords.tasks.length > 0)
+        setTasks((current) => [...current, ...tripWithImportedRecords.tasks]);
+      if (tripWithImportedRecords.stopNotes.length > 0)
+        setStopNotes((current) => [
+          ...current,
+          ...tripWithImportedRecords.stopNotes,
+        ]);
       setContextRailVisibility(Boolean(nextSelectedItemId));
       setPendingItineraryImport(null);
       setItineraryImportError(null);
@@ -4142,6 +4160,124 @@ export function nextLocalBookingDocId(bookingDocs: BookingDoc[]): string {
   return id;
 }
 
+function applyImportedRecordsToTrip({
+  appliedItems,
+  existingStopNotes,
+  existingTasks,
+  importedItems,
+  records,
+  trip,
+}: {
+  appliedItems: ItineraryItem[];
+  existingStopNotes: StopNote[];
+  existingTasks: TripTask[];
+  importedItems: ItineraryExportItem[];
+  records: ItineraryExportRecords;
+  trip: Trip;
+}): { trip: Trip; stopNotes: StopNote[]; tasks: TripTask[] } {
+  if (
+    records.expenses.length === 0 &&
+    records.bookingDocs.length === 0 &&
+    records.stopNotes.length === 0 &&
+    records.tasks.length === 0
+  ) {
+    return { trip, stopNotes: [], tasks: [] };
+  }
+
+  const itemIdMap = new Map<string, string>();
+  importedItems.forEach((item, index) => {
+    const appliedItem = appliedItems[index];
+    if (appliedItem) itemIdMap.set(item.id, appliedItem.id);
+  });
+  const tripPlanId = trip.activePlanVariantId;
+  const expenseIdMap = new Map<string, string>();
+  const taskIdMap = new Map<string, string>();
+  const noteIdMap = new Map<string, string>();
+  const nextExpenses = [...trip.expenses];
+  const nextTasks: TripTask[] = [];
+  const nextStopNotes = [...existingStopNotes];
+  const nextBookingDocs = [...(trip.bookingDocs ?? [])];
+
+  for (const expense of records.expenses) {
+    const id = nextLocalExpenseId(nextExpenses);
+    expenseIdMap.set(expense.id, id);
+    nextExpenses.push({
+      ...expense,
+      id,
+      tripId: trip.id,
+      tripPlanId,
+      itineraryItemId: remapOptionalId(expense.itineraryItemId, itemIdMap),
+      version: 1,
+    });
+  }
+
+  for (const task of records.tasks) {
+    const id = nextLocalTaskId([...existingTasks, ...nextTasks]);
+    taskIdMap.set(task.id, id);
+    nextTasks.push({
+      ...task,
+      id,
+      tripPlanId,
+      relatedItemId: remapOptionalId(task.relatedItemId, itemIdMap),
+      version: 1,
+    });
+  }
+
+  for (const note of records.stopNotes) {
+    const id = nextLocalStopNoteId(nextStopNotes);
+    noteIdMap.set(note.id, id);
+    nextStopNotes.push({
+      ...note,
+      id,
+      tripId: trip.id,
+      tripPlanId,
+      itemId: itemIdMap.get(note.itemId) ?? note.itemId,
+      updatedAt: note.updatedAt ?? note.createdAt,
+      version: 1,
+    });
+  }
+
+  for (const bookingDoc of records.bookingDocs) {
+    nextBookingDocs.push({
+      ...bookingDoc,
+      id: nextLocalBookingDocId(nextBookingDocs),
+      tripId: trip.id,
+      tripPlanId,
+      relatedItineraryItemIds: bookingDoc.relatedItineraryItemIds.map((id) =>
+        itemIdMap.get(id) ?? id,
+      ),
+      relatedTaskIds: bookingDoc.relatedTaskIds.map((id) =>
+        taskIdMap.get(id) ?? id,
+      ),
+      relatedExpenseIds: bookingDoc.relatedExpenseIds.map((id) =>
+        expenseIdMap.get(id) ?? id,
+      ),
+      noteIds: bookingDoc.noteIds.map((id) => noteIdMap.get(id) ?? id),
+      updatedAt: localMutationTimestamp,
+      version: 1,
+    });
+  }
+
+  return {
+    trip: {
+      ...trip,
+      expenses: nextExpenses,
+      bookingDocs: nextBookingDocs,
+      stopNotes: nextStopNotes,
+    },
+    stopNotes: nextStopNotes.slice(existingStopNotes.length),
+    tasks: nextTasks,
+  };
+}
+
+function remapOptionalId(
+  id: string | null | undefined,
+  idMap: Map<string, string>,
+): string | null | undefined {
+  if (typeof id !== "string") return id;
+  return idMap.get(id) ?? id;
+}
+
 export function nextLocalPhotoAlbumId(photoAlbumLinks: TripPhotoAlbumLink[]): string {
   const existingIds = new Set(photoAlbumLinks.map((album) => album.id));
   let index =
@@ -4532,8 +4668,8 @@ function ItineraryImportOptionsDialog({
           <p className={importDialogBodyClassName}>
             Records detected: {records.expenses.length} expenses,{" "}
             {records.bookingDocs.length} bookings, {records.stopNotes.length}{" "}
-            notes, {records.tasks.length} tasks. This import applies itinerary
-            rows only; records stay in the preview payload.
+            notes, {records.tasks.length} tasks. Local import applies them to
+            the current Trip Plan with new local ids.
           </p>
         ) : null}
         <div className={importDialogFieldsClassName}>

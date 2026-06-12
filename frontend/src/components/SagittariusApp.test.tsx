@@ -4213,9 +4213,61 @@ describe("Sagittarius cockpit UI", () => {
                 itineraryItemId: "imported-lunch",
               },
             ],
-            bookingDocs: [],
-            stopNotes: [],
-            tasks: [],
+            bookingDocs: [
+              {
+                id: "imported-booking",
+                tripId: seedTrip.id,
+                tripPlanId: seedTrip.activePlanVariantId,
+                type: "activity_ticket",
+                title: "Imported lunch reservation",
+                status: "booked",
+                visibility: "shared",
+                ownerMemberId: "member-aom",
+                providerName: "Central Market",
+                confirmationCode: "NOODLE-1",
+                startsAt: null,
+                endsAt: null,
+                timezone: "Asia/Hong_Kong",
+                priceAmount: 120,
+                currency: "HKD",
+                travelerIds: ["member-aom"],
+                externalLinks: [],
+                relatedItineraryItemIds: ["imported-lunch"],
+                relatedTaskIds: ["imported-task"],
+                relatedExpenseIds: ["imported-expense"],
+                noteIds: ["imported-note"],
+                notes: "Imported booking context",
+                createdBy: "member-aom",
+                updatedAt: "2026-06-06T00:00:00.000Z",
+                version: 7,
+              },
+            ],
+            stopNotes: [
+              {
+                id: "imported-note",
+                tripId: seedTrip.id,
+                tripPlanId: seedTrip.activePlanVariantId,
+                itemId: "imported-lunch",
+                authorId: "member-aom",
+                body: "Ask for the corner table.",
+                createdAt: "2026-06-06T00:00:00.000Z",
+                version: 3,
+              },
+            ],
+            tasks: [
+              {
+                id: "imported-task",
+                tripPlanId: seedTrip.activePlanVariantId,
+                title: "Confirm imported lunch",
+                status: "open",
+                visibility: "shared",
+                kind: "booking",
+                createdBy: "member-aom",
+                assigneeId: "member-aom",
+                relatedItemId: "imported-lunch",
+                version: 5,
+              },
+            ],
           },
         }),
       ],
@@ -4234,10 +4286,10 @@ describe("Sagittarius cockpit UI", () => {
     expect(dialog.className).not.toContain("0_24px_70px");
     expect(dialog).toHaveTextContent("Imported noodle lunch");
     expect(dialog).toHaveTextContent(
-      "Records detected: 1 expenses, 0 bookings, 0 notes, 0 tasks",
+      "Records detected: 1 expenses, 1 bookings, 1 notes, 1 tasks",
     );
     expect(dialog).toHaveTextContent(
-      "This import applies itinerary rows only",
+      "Local import applies them to the current Trip Plan",
     );
     await user.clear(within(dialog).getByLabelText(/ชื่อ path/i));
     await user.type(within(dialog).getByLabelText(/ชื่อ path/i), "Plan B");
@@ -4249,9 +4301,42 @@ describe("Sagittarius cockpit UI", () => {
       screen.getByRole("row", { name: /Imported noodle lunch/i }),
     ).toBeInTheDocument();
     const persistedTrip = JSON.parse(localStorage.getItem(tripStorageKey)!) as Trip;
+    const importedExpense = persistedTrip.expenses.find(
+      (expense) => expense.title === "Imported real receipt",
+    );
+    const importedBooking = persistedTrip.bookingDocs?.find(
+      (booking) => booking.title === "Imported lunch reservation",
+    );
+    const importedNote = persistedTrip.stopNotes?.find(
+      (note) => note.body === "Ask for the corner table.",
+    );
+    expect(importedExpense).toMatchObject({
+      tripId: seedTrip.id,
+      tripPlanId: seedTrip.activePlanVariantId,
+      itineraryItemId: "imported-lunch",
+      version: 1,
+    });
+    expect(importedExpense?.id).toMatch(/^expense-local-/);
+    expect(importedBooking).toMatchObject({
+      tripId: seedTrip.id,
+      tripPlanId: seedTrip.activePlanVariantId,
+      relatedItineraryItemIds: ["imported-lunch"],
+      relatedExpenseIds: [importedExpense?.id],
+      noteIds: [importedNote?.id],
+      version: 1,
+    });
+    expect(importedBooking?.id).toMatch(/^booking-local-/);
+    expect(importedNote).toMatchObject({
+      tripId: seedTrip.id,
+      tripPlanId: seedTrip.activePlanVariantId,
+      itemId: "imported-lunch",
+      version: 1,
+    });
+    expect(importedNote?.id).toMatch(/^note-local-/);
+    await user.click(screen.getByRole("link", { name: /ภาพรวม/i }));
     expect(
-      persistedTrip.expenses.some((expense) => expense.id === "imported-expense"),
-    ).toBe(false);
+      await screen.findByText("Confirm imported lunch"),
+    ).toBeInTheDocument();
     expect(prompt).not.toHaveBeenCalled();
     expect(confirm).not.toHaveBeenCalled();
     expect(alert).not.toHaveBeenCalled();
