@@ -54,6 +54,7 @@ async fn migration_creates_vertical_slice_indexes(pool: sqlx::PgPool) {
         "expenses_trip_plan_active_idx",
         "stop_notes_trip_plan_item_idx",
         "booking_docs_trip_plan_active_idx",
+        "itinerary_items_time_window_idx",
         "trip_member_sessions_member_active_idx",
         "stop_notes_trip_item_created_at_idx",
         "trip_daily_briefings_trip_date_idx",
@@ -66,6 +67,42 @@ async fn migration_creates_vertical_slice_indexes(pool: sqlx::PgPool) {
             "missing index {index_name}"
         );
     }
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn itinerary_schema_stores_time_windows(pool: sqlx::PgPool) {
+    let columns: Vec<(String, String)> = sqlx::query_as(
+        "select column_name::text, data_type::text
+         from information_schema.columns
+         where table_schema = 'public'
+           and table_name = 'itinerary_items'
+           and column_name in ('end_time', 'end_offset_days')
+         order by column_name",
+    )
+    .fetch_all(&pool)
+    .await
+    .unwrap();
+
+    assert_eq!(
+        columns,
+        vec![
+            ("end_offset_days".to_string(), "integer".to_string()),
+            ("end_time".to_string(), "time without time zone".to_string()),
+        ]
+    );
+
+    let constraints: Vec<String> = sqlx::query_scalar(
+        "select conname::text
+         from pg_constraint
+         where conname = 'itinerary_items_no_self_parent_check'",
+    )
+    .fetch_all(&pool)
+    .await
+    .unwrap();
+    assert_eq!(
+        constraints,
+        vec!["itinerary_items_no_self_parent_check".to_string()]
+    );
 }
 
 #[sqlx::test(migrations = "../../migrations")]

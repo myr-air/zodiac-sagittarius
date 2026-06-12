@@ -178,6 +178,8 @@ export interface ItineraryItem {
   day: string;
   sortOrder: number;
   startTime: string;
+  endTime?: string | null;
+  endOffsetDays?: number;
   activity: string;
   activityType: ActivityType;
   place: string;

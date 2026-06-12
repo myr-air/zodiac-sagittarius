@@ -414,6 +414,8 @@ pub struct ItineraryItemSummary {
     pub day: Date,
     pub sort_order: i32,
     pub start_time: String,
+    pub end_time: Option<String>,
+    pub end_offset_days: i32,
     pub activity: String,
     pub activity_type: String,
     pub place: String,
@@ -465,6 +467,10 @@ pub struct ItineraryImportItem {
     pub day: Date,
     pub sort_order: i32,
     pub start_time: String,
+    #[serde(default)]
+    pub end_time: Option<String>,
+    #[serde(default)]
+    pub end_offset_days: i32,
     pub activity: String,
     pub activity_type: String,
     pub place: String,

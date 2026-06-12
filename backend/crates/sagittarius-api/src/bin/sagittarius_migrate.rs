@@ -131,6 +131,10 @@ fn embedded_migrations() -> Vec<Migration> {
             version: "0026_plan_scoped_records.sql",
             sql: include_str!("../../../../migrations/0026_plan_scoped_records.sql"),
         },
+        Migration {
+            version: "0027_itinerary_hierarchy_time_windows.sql",
+            sql: include_str!("../../../../migrations/0027_itinerary_hierarchy_time_windows.sql"),
+        },
     ]
 }
 

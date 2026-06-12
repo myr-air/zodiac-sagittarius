@@ -101,6 +101,8 @@ CREATE TABLE itinerary_items (
   day date NOT NULL,
   sort_order integer NOT NULL,
   start_time time,
+  end_time time,
+  end_offset_days integer NOT NULL DEFAULT 0,
   activity text NOT NULL,
   activity_type text NOT NULL,
   place text NOT NULL,

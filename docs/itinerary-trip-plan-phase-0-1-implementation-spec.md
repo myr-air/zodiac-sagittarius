@@ -340,12 +340,14 @@ Required changes:
 - Legacy `planVariants` and `activePlanVariantId` still work.
 - Plan Status supports `main`, `draft`, `proposal`, and `backup`.
 - Expenses, booking docs, tasks, and stop notes expose `tripPlanId`.
+- Itinerary items expose optional `endTime` and `endOffsetDays`.
+- Itinerary parent validation enforces Plan Day -> Activity -> Sub-activity only.
 - Setting Main Plan does not mutate Actual Expenses or other plan-scoped records.
 - Tests prove mixed canonical/legacy payload compatibility.
 
 ## Handoff Notes For Later Phases
 
 - Later Phase 2 hardening can make `trip_plan_id` non-null after legacy raw inserts and support scripts all write scoped records.
-- Phase 3 should decide whether to store `end_time` plus `end_offset_days`, or store a full end timestamp for Time Windows.
+- Phase 3 stores Time Windows as `start_time`, optional `end_time`, and `end_offset_days`.
 - Phase 4 should delete or rewrite automatic overlap-to-path behavior only after explicit Alternative Path actions exist.
 - Phase 5 should keep the itinerary page as the primary planning surface and use booking/ticket pages only for detail editing.

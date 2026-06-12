@@ -99,6 +99,8 @@ export interface ItineraryItemResponse {
   day: string;
   sortOrder: number;
   startTime: string;
+  endTime?: string | null;
+  endOffsetDays?: number;
   activity: string;
   activityType: ItineraryItem["activityType"];
   place: string;
@@ -310,6 +312,8 @@ export interface PatchItineraryItemApiRequest {
   expectedVersion: number;
   patch: Partial<Pick<ItineraryItem, "pathGroupId" | "pathId" | "pathName" | "pathRole" | "parentItemId" | "itemKind" | "timeMode" | "isPlanBlock" | "status" | "priority" | "day" | "sortOrder" | "durationMinutes" | "activity" | "activityType" | "place" | "transportation" | "details" | "note">> & {
     startTime?: string | null;
+    endTime?: string | null;
+    endOffsetDays?: number;
     address?: string | null;
     coordinates?: ItineraryCoordinates | null;
     mapLink?: string | null;
@@ -331,6 +335,8 @@ export interface CreateItineraryItemApiRequest {
   priority?: ItineraryItem["priority"];
   day: string;
   startTime?: string | null;
+  endTime?: string | null;
+  endOffsetDays?: number;
   activity: string;
   activityType: ItineraryItem["activityType"];
   place: string;
@@ -949,6 +955,8 @@ function mapItineraryItem(item: ItineraryItemResponse): ItineraryItem {
     isPlanBlock: item.isPlanBlock ?? false,
     status: item.status ?? "idea",
     priority: item.priority ?? "normal",
+    endTime: item.endTime ?? null,
+    endOffsetDays: item.endOffsetDays ?? 0,
     coordinates: item.coordinates ?? undefined,
     address: item.address ?? undefined,
     details: item.details ?? {},

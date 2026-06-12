@@ -48,6 +48,8 @@ pub struct CreateItineraryItemRequest {
     pub priority: Option<String>,
     pub day: Date,
     pub start_time: Option<String>,
+    pub end_time: Option<String>,
+    pub end_offset_days: Option<i32>,
     pub activity: String,
     pub activity_type: String,
     pub place: String,
@@ -472,6 +474,17 @@ impl CreateItineraryItemRequest {
         if let Some(start_time) = &self.start_time {
             validate_hh_mm(start_time)?;
         }
+        if let Some(end_time) = &self.end_time {
+            validate_hh_mm(end_time)?;
+        }
+        if self
+            .end_offset_days
+            .is_some_and(|offset| !(0..=7).contains(&offset))
+        {
+            return Err(ServiceError::InvalidRequest(
+                "end_offset_days must be between 0 and 7",
+            ));
+        }
         validate_required_text(&self.activity, "activity is required")?;
         if let Some(item_kind) = &self.item_kind {
             validate_item_kind(item_kind)?;
@@ -748,7 +761,8 @@ pub struct ItineraryItemPatch {
     pub path_id: Option<String>,
     pub path_name: Option<String>,
     pub path_role: Option<String>,
-    pub parent_item_id: Option<Uuid>,
+    #[serde(default, deserialize_with = "deserialize_nullable_uuid_patch")]
+    pub parent_item_id: Option<Option<Uuid>>,
     pub item_kind: Option<String>,
     pub time_mode: Option<String>,
     pub is_plan_block: Option<bool>,
@@ -757,6 +771,9 @@ pub struct ItineraryItemPatch {
     pub day: Option<Date>,
     #[serde(default, deserialize_with = "deserialize_nullable_string_patch")]
     pub start_time: Option<Option<String>>,
+    #[serde(default, deserialize_with = "deserialize_nullable_string_patch")]
+    pub end_time: Option<Option<String>>,
+    pub end_offset_days: Option<i32>,
     pub duration_minutes: Option<i32>,
     pub activity: Option<String>,
     pub activity_type: Option<String>,
@@ -777,6 +794,17 @@ impl ItineraryItemPatch {
     pub fn validate(&self) -> Result<(), ServiceError> {
         if let Some(Some(start_time)) = &self.start_time {
             validate_hh_mm(start_time)?;
+        }
+        if let Some(Some(end_time)) = &self.end_time {
+            validate_hh_mm(end_time)?;
+        }
+        if self
+            .end_offset_days
+            .is_some_and(|offset| !(0..=7).contains(&offset))
+        {
+            return Err(ServiceError::InvalidRequest(
+                "end_offset_days must be between 0 and 7",
+            ));
         }
 
         if self

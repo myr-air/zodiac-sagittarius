@@ -47,6 +47,34 @@ export function formatEndTime(startTime: string, minutes: number | null): string
   return `${String(endHour).padStart(2, "0")}:${String(endMinute).padStart(2, "0")}`;
 }
 
+export function formatTimeWindow(item: Pick<ItineraryItem, "startTime" | "endTime" | "endOffsetDays">): string {
+  const startTime = item.startTime?.trim();
+  const endTime = item.endTime?.trim();
+  if (!startTime && !endTime) return "—";
+  if (!endTime) return startTime || "—";
+  const offset = item.endOffsetDays && item.endOffsetDays > 0 ? `⁺${toSuperscriptNumber(item.endOffsetDays)}` : "";
+  return startTime ? `${startTime}-${endTime}${offset}` : `${endTime}${offset}`;
+}
+
+function toSuperscriptNumber(value: number): string {
+  const superscripts: Record<string, string> = {
+    "0": "⁰",
+    "1": "¹",
+    "2": "²",
+    "3": "³",
+    "4": "⁴",
+    "5": "⁵",
+    "6": "⁶",
+    "7": "⁷",
+    "8": "⁸",
+    "9": "⁹",
+  };
+  return String(value)
+    .split("")
+    .map((digit) => superscripts[digit] ?? digit)
+    .join("");
+}
+
 export function formatThaiDate(value: string, locale: Locale = "en"): string {
   return new Intl.DateTimeFormat(locale === "th" ? "th-TH" : "en-US", {
     day: "numeric",

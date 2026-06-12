@@ -55,6 +55,21 @@ pub async fn patch_itinerary_item(
         return Err(ServiceError::VersionConflictWithLatest(latest));
     }
 
+    let target_parent_item_id = request
+        .patch
+        .parent_item_id
+        .unwrap_or(existing.parent_item_id);
+    let target_day = request.patch.day.unwrap_or(existing.day);
+    validate_itinerary_parent(
+        &mut tx,
+        trip_id,
+        item_id,
+        existing.plan_variant_id,
+        target_day,
+        target_parent_item_id,
+    )
+    .await?;
+
     let updated_record =
         db::queries::update_itinerary_item(&mut tx, item_id, &request.patch, existing.version + 1)
             .await?
@@ -115,6 +130,17 @@ pub async fn create_itinerary_item(
         return Err(ServiceError::NotFound);
     }
 
+    let item_id = Uuid::now_v7();
+    validate_itinerary_parent(
+        &mut tx,
+        trip_id,
+        item_id,
+        request.plan_variant_id,
+        request.day,
+        request.parent_item_id,
+    )
+    .await?;
+
     let sort_order = db::queries::next_itinerary_sort_order(
         &mut tx,
         trip_id,
@@ -127,7 +153,7 @@ pub async fn create_itinerary_item(
     let record = db::queries::insert_itinerary_item(
         &mut tx,
         db::models::NewItineraryItem {
-            id: Uuid::now_v7(),
+            id: item_id,
             trip_id,
             plan_variant_id: request.plan_variant_id,
             path_group_id: request.path_group_id.as_deref(),
@@ -143,6 +169,8 @@ pub async fn create_itinerary_item(
             day: request.day,
             sort_order,
             start_time: request.start_time.as_deref(),
+            end_time: request.end_time.as_deref(),
+            end_offset_days: request.end_offset_days.unwrap_or(0),
             activity: request.activity.trim(),
             activity_type: request.activity_type.as_str(),
             place: request.place.trim(),
@@ -172,6 +200,41 @@ pub async fn create_itinerary_item(
     realtime.publish(event).await;
 
     Ok(created)
+}
+
+async fn validate_itinerary_parent(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    trip_id: Uuid,
+    item_id: Uuid,
+    plan_variant_id: Uuid,
+    day: time::Date,
+    parent_item_id: Option<Uuid>,
+) -> Result<(), ServiceError> {
+    let Some(parent_item_id) = parent_item_id else {
+        return Ok(());
+    };
+    if parent_item_id == item_id {
+        return Err(ServiceError::InvalidRequest(
+            "itinerary item cannot be its own parent",
+        ));
+    }
+
+    let (parent_plan_variant_id, parent_day, grandparent_item_id) =
+        db::queries::itinerary_item_parent_for_trip(tx, trip_id, parent_item_id)
+            .await?
+            .ok_or(ServiceError::NotFound)?;
+    if parent_plan_variant_id != plan_variant_id || parent_day != day {
+        return Err(ServiceError::InvalidRequest(
+            "sub-activity parent must be in the same trip plan and day",
+        ));
+    }
+    if grandparent_item_id.is_some() {
+        return Err(ServiceError::InvalidRequest(
+            "itinerary hierarchy supports activity and sub-activity only",
+        ));
+    }
+
+    Ok(())
 }
 
 pub async fn delete_itinerary_item(

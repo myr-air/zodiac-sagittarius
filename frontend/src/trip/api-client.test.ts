@@ -73,6 +73,8 @@ const cockpitResponse: TripCockpitResponse = {
       day: "2025-05-16",
       sortOrder: 100,
       startTime: "08:30",
+      endTime: "09:30",
+      endOffsetDays: 0,
       activity: "Dim Dim Sum",
       activityType: "food",
       place: "The Elements",
@@ -279,6 +281,8 @@ describe("Trip API client", () => {
       pathId: "path-rain",
       pathName: "Rain plan",
       pathRole: "alternative",
+      endTime: "09:30",
+      endOffsetDays: 0,
     });
     expect(cockpit.trip.bookingDocs?.[0]).toMatchObject({
       id: "booking-api-flight",

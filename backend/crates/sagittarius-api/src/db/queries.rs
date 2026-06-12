@@ -826,6 +826,8 @@ pub async fn list_itinerary_items(
            parent_item_id, item_kind, time_mode, is_plan_block, status, priority,
            day, sort_order,
            coalesce(to_char(start_time, 'HH24:MI'), '') as start_time,
+           to_char(end_time, 'HH24:MI') as end_time,
+           end_offset_days,
            activity, activity_type, place, link_label, map_link, address,
            latitude::float8 as latitude, longitude::float8 as longitude,
            duration_minutes, transportation, details, advisories, note, created_by,
@@ -1015,6 +1017,8 @@ pub async fn lock_itinerary_item(
            parent_item_id, item_kind, time_mode, is_plan_block, status, priority,
            day, sort_order,
            coalesce(to_char(start_time, 'HH24:MI'), '') as start_time,
+           to_char(end_time, 'HH24:MI') as end_time,
+           end_offset_days,
            activity, activity_type, place, link_label, map_link, address,
            latitude::float8 as latitude, longitude::float8 as longitude,
            duration_minutes, transportation, details, advisories, note, created_by,
@@ -1040,26 +1044,28 @@ pub async fn update_itinerary_item(
              path_id = coalesce($3, path_id),
              path_name = coalesce($4, path_name),
              path_role = coalesce($5, path_role),
-             parent_item_id = coalesce($6, parent_item_id),
-             item_kind = coalesce($7, item_kind),
-             time_mode = coalesce($8, time_mode),
-             is_plan_block = coalesce($9, is_plan_block),
-             status = coalesce($10, status),
-             priority = coalesce($11, priority),
-             day = coalesce($12, day),
-             start_time = case when $13 then $14::time else start_time end,
-             duration_minutes = coalesce($15, duration_minutes),
-             activity = coalesce($16, activity),
-             activity_type = coalesce($17, activity_type),
-             place = coalesce($18, place),
-             map_link = coalesce($19, map_link),
-             address = case when $20 then $21 else address end,
-             latitude = case when $22 then $23 else latitude end,
-             longitude = case when $24 then $25 else longitude end,
-             transportation = coalesce($26, transportation),
-             details = coalesce($27, details),
-             note = coalesce($28, note),
-             version = $29,
+             parent_item_id = case when $6 then $7 else parent_item_id end,
+             item_kind = coalesce($8, item_kind),
+             time_mode = coalesce($9, time_mode),
+             is_plan_block = coalesce($10, is_plan_block),
+             status = coalesce($11, status),
+             priority = coalesce($12, priority),
+             day = coalesce($13, day),
+             start_time = case when $14 then $15::time else start_time end,
+             end_time = case when $16 then $17::time else end_time end,
+             end_offset_days = coalesce($18, end_offset_days),
+             duration_minutes = coalesce($19, duration_minutes),
+             activity = coalesce($20, activity),
+             activity_type = coalesce($21, activity_type),
+             place = coalesce($22, place),
+             map_link = coalesce($23, map_link),
+             address = case when $24 then $25 else address end,
+             latitude = case when $26 then $27 else latitude end,
+             longitude = case when $28 then $29 else longitude end,
+             transportation = coalesce($30, transportation),
+             details = coalesce($31, details),
+             note = coalesce($32, note),
+             version = $33,
              updated_at = now()
          where id = $1 and deleted_at is null
          returning
@@ -1067,6 +1073,8 @@ pub async fn update_itinerary_item(
            parent_item_id, item_kind, time_mode, is_plan_block, status, priority,
            day, sort_order,
            coalesce(to_char(start_time, 'HH24:MI'), '') as start_time,
+           to_char(end_time, 'HH24:MI') as end_time,
+           end_offset_days,
            activity, activity_type, place, link_label, map_link, address,
            latitude::float8 as latitude, longitude::float8 as longitude,
            duration_minutes, transportation, details, advisories, note, created_by,
@@ -1077,7 +1085,8 @@ pub async fn update_itinerary_item(
     .bind(patch.path_id.as_deref())
     .bind(patch.path_name.as_deref())
     .bind(patch.path_role.as_deref())
-    .bind(patch.parent_item_id)
+    .bind(patch.parent_item_id.is_some())
+    .bind(patch.parent_item_id.unwrap_or(None))
     .bind(patch.item_kind.as_deref())
     .bind(patch.time_mode.as_deref())
     .bind(patch.is_plan_block)
@@ -1086,6 +1095,9 @@ pub async fn update_itinerary_item(
     .bind(patch.day)
     .bind(patch.start_time.is_some())
     .bind(patch.start_time.as_ref().and_then(|value| value.as_deref()))
+    .bind(patch.end_time.is_some())
+    .bind(patch.end_time.as_ref().and_then(|value| value.as_deref()))
+    .bind(patch.end_offset_days)
     .bind(patch.duration_minutes)
     .bind(patch.activity.as_deref())
     .bind(patch.activity_type.as_deref())
@@ -1136,22 +1148,24 @@ pub async fn insert_itinerary_item(
         "insert into itinerary_items (
            id, trip_id, plan_variant_id, path_group_id, path_id, path_name, path_role,
            parent_item_id, item_kind, time_mode, is_plan_block, status, priority,
-           day, sort_order, start_time, activity, activity_type,
+           day, sort_order, start_time, end_time, end_offset_days, activity, activity_type,
            place, map_link, address, latitude, longitude, duration_minutes, transportation,
            details, note, created_by, version
          )
          values (
            $1, $2, $3, $4, $5, $6, $7,
            $8, $9, $10, $11, $12, $13,
-           $14, $15, $16::time, $17, $18,
-           $19, $20, $21, $22, $23, $24, $25,
-           $26, $27, $28, 1
+           $14, $15, $16::time, $17::time, $18, $19, $20,
+           $21, $22, $23, $24, $25, $26, $27,
+           $28, $29, $30, 1
          )
          returning
            id, trip_id, plan_variant_id, path_group_id, path_id, path_name, path_role,
            parent_item_id, item_kind, time_mode, is_plan_block, status, priority,
            day, sort_order,
            coalesce(to_char(start_time, 'HH24:MI'), '') as start_time,
+           to_char(end_time, 'HH24:MI') as end_time,
+           end_offset_days,
            activity, activity_type, place, link_label, map_link, address,
            latitude::float8 as latitude, longitude::float8 as longitude,
            duration_minutes, transportation, details, advisories, note, created_by,
@@ -1173,6 +1187,8 @@ pub async fn insert_itinerary_item(
     .bind(item.day)
     .bind(item.sort_order)
     .bind(item.start_time)
+    .bind(item.end_time)
+    .bind(item.end_offset_days)
     .bind(item.activity)
     .bind(item.activity_type)
     .bind(item.place)
@@ -1203,6 +1219,8 @@ pub async fn delete_itinerary_item(
            parent_item_id, item_kind, time_mode, is_plan_block, status, priority,
            day, sort_order,
            coalesce(to_char(start_time, 'HH24:MI'), '') as start_time,
+           to_char(end_time, 'HH24:MI') as end_time,
+           end_offset_days,
            activity, activity_type, place, link_label, map_link, address,
            latitude::float8 as latitude, longitude::float8 as longitude,
            duration_minutes, transportation, details, advisories, note, created_by,
@@ -1237,6 +1255,8 @@ pub async fn reorder_itinerary_items(
                parent_item_id, item_kind, time_mode, is_plan_block, status, priority,
                day, sort_order,
                coalesce(to_char(start_time, 'HH24:MI'), '') as start_time,
+               to_char(end_time, 'HH24:MI') as end_time,
+               end_offset_days,
                activity, activity_type, place, link_label, map_link, address,
                latitude::float8 as latitude, longitude::float8 as longitude,
                duration_minutes, transportation, details, advisories, note, created_by,
@@ -1733,6 +1753,22 @@ pub async fn itinerary_item_plan_variant_id_for_trip(
 ) -> Result<Option<Uuid>, sqlx::Error> {
     sqlx::query_scalar(
         "select plan_variant_id
+         from itinerary_items
+         where trip_id = $1 and id = $2 and deleted_at is null",
+    )
+    .bind(trip_id)
+    .bind(item_id)
+    .fetch_optional(&mut **tx)
+    .await
+}
+
+pub async fn itinerary_item_parent_for_trip(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    trip_id: Uuid,
+    item_id: Uuid,
+) -> Result<Option<(Uuid, time::Date, Option<Uuid>)>, sqlx::Error> {
+    sqlx::query_as(
+        "select plan_variant_id, day, parent_item_id
          from itinerary_items
          where trip_id = $1 and id = $2 and deleted_at is null",
     )

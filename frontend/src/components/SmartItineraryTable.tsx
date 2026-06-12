@@ -51,6 +51,7 @@ import {
   activityTypeLabel,
   dayRouteLabel,
   formatDuration,
+  formatTimeWindow,
   formatThaiDate,
 } from "./itineraryDisplay";
 import { ActivityPathGraphDay } from "./ActivityPathGraphDay";
@@ -110,6 +111,8 @@ export type InlineItineraryItemPatch = Partial<
     ItineraryItem,
     | "parentItemId"
     | "startTime"
+    | "endTime"
+    | "endOffsetDays"
     | "durationMinutes"
     | "activity"
     | "place"
@@ -1235,7 +1238,7 @@ function MobileSelectedStopInspector({
       <div className={mobileInspectorHeaderClassName}>
         <h2 className={mobileInspectorTitleClassName}>{item.activity}</h2>
         <p className={mobileInspectorMetaClassName}>
-          <span>{item.startTime}</span>
+          <span>{formatTimeWindow(item)}</span>
           <span>·</span>
           <span>{formatDuration(item.durationMinutes, locale)}</span>
           <span>·</span>
@@ -1675,6 +1678,11 @@ function DayGroup({
                         onUpdateItemInline?.(item.id, { startTime: value })
                       }
                     />
+                    {item.endTime ? (
+                      <span className="text-[11px] leading-none text-(--color-text-muted)">
+                        {formatTimeWindow(item)}
+                      </span>
+                    ) : null}
                     <DurationEditorPopover
                       canEdit={canEdit}
                       editor={
