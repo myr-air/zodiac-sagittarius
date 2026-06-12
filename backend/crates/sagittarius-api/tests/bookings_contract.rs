@@ -264,6 +264,111 @@ async fn booking_patch_relinks_to_new_item_plan(pool: sqlx::PgPool) {
 }
 
 #[sqlx::test(migrations = "../../migrations")]
+async fn booking_patch_rejects_related_records_from_another_plan(pool: sqlx::PgPool) {
+    support::seed_trip(&pool).await;
+    support::seed_booking_doc(&pool).await;
+    let alt_item_id = support::seed_alt_plan_item(&pool).await;
+    let alt_task_id = Uuid::now_v7();
+    let alt_expense_id = Uuid::now_v7();
+    let alt_note_id = Uuid::now_v7();
+    let trip_id = Uuid::parse_str(support::TRIP_ID).unwrap();
+    let alt_plan_id = Uuid::parse_str(support::ALT_PLAN_ID).unwrap();
+    let owner_id = Uuid::parse_str(support::OWNER_ID).unwrap();
+    let traveler_id = Uuid::parse_str(support::TRAVELER_ID).unwrap();
+    sqlx::query(
+        "insert into trip_tasks (
+           id, trip_id, trip_plan_id, title, status, visibility, kind, created_by, related_item_id
+         )
+         values ($1, $2, $3, 'Alt task', 'open', 'shared', 'booking', $4, $5)",
+    )
+    .bind(alt_task_id)
+    .bind(trip_id)
+    .bind(alt_plan_id)
+    .bind(owner_id)
+    .bind(alt_item_id)
+    .execute(&pool)
+    .await
+    .unwrap();
+    sqlx::query(
+        "insert into expenses (
+           id, trip_id, trip_plan_id, title, amount_minor, currency, paid_by, category, splits, itinerary_item_id
+         )
+         values ($1, $2, $3, 'Alt expense', 1000, 'HKD', $4, 'transport', $5, $6)",
+    )
+    .bind(alt_expense_id)
+    .bind(trip_id)
+    .bind(alt_plan_id)
+    .bind(owner_id)
+    .bind(json!({
+        owner_id.to_string(): 500,
+        traveler_id.to_string(): 500
+    }))
+    .bind(alt_item_id)
+    .execute(&pool)
+    .await
+    .unwrap();
+    sqlx::query(
+        "insert into stop_notes (id, trip_id, trip_plan_id, itinerary_item_id, author_id, body, version)
+         values ($1, $2, $3, $4, $5, 'Alt note', 1)",
+    )
+    .bind(alt_note_id)
+    .bind(trip_id)
+    .bind(alt_plan_id)
+    .bind(alt_item_id)
+    .bind(traveler_id)
+    .execute(&pool)
+    .await
+    .unwrap();
+
+    let organizer_token = support::create_session(&pool, support::ORGANIZER_ID).await;
+    let app = support::app(pool.clone());
+    let response = app
+        .oneshot(
+            Request::builder()
+                .method(Method::PATCH)
+                .uri(format!(
+                    "/api/v1/trips/{}/bookings/{}",
+                    support::TRIP_ID,
+                    support::BOOKING_DOC_ID
+                ))
+                .header(header::AUTHORIZATION, format!("Bearer {organizer_token}"))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({
+                        "clientMutationId": "booking-cross-plan-record-links",
+                        "expectedVersion": 1,
+                        "patch": {
+                            "relatedTaskIds": [alt_task_id],
+                            "relatedExpenseIds": [alt_expense_id],
+                            "noteIds": [alt_note_id]
+                        }
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::BAD_REQUEST);
+    let body: Value =
+        serde_json::from_slice(&to_bytes(response.into_body(), 131072).await.unwrap()).unwrap();
+    assert_eq!(body["code"], "invalid_request");
+
+    let stored: (Uuid, i64) = sqlx::query_as(
+        "select trip_plan_id, version
+         from booking_docs
+         where id = $1",
+    )
+    .bind(Uuid::parse_str(support::BOOKING_DOC_ID).unwrap())
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(stored.0, Uuid::parse_str(support::PLAN_ID).unwrap());
+    assert_eq!(stored.1, 1);
+}
+
+#[sqlx::test(migrations = "../../migrations")]
 async fn booking_create_rejects_duplicate_external_link_ids(pool: sqlx::PgPool) {
     support::seed_trip(&pool).await;
     support::seed_tasks(&pool).await;

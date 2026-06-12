@@ -80,8 +80,17 @@ pub async fn create_booking_doc(
         return Err(ServiceError::VersionConflict);
     }
 
-    let trip_plan_id = resolve_booking_trip_plan_id(&mut tx, trip_id, &request).await?;
     validate_create_references(&mut tx, trip_id, &request).await?;
+    let trip_plan_id = resolve_booking_trip_plan_id(&mut tx, trip_id, &request).await?;
+    validate_related_record_plan_scope(
+        &mut tx,
+        trip_id,
+        trip_plan_id,
+        &request.related_task_ids,
+        &request.related_expense_ids,
+        &request.note_ids,
+    )
+    .await?;
 
     let booking_id = Uuid::now_v7();
     let external_link_requests = normalize_external_link_requests(&request.external_links);
@@ -196,6 +205,13 @@ pub async fn patch_booking_doc(
 
     validate_patch_references(&mut tx, trip_id, &request.patch).await?;
     validate_patch_times(&request.patch)?;
+    let external_link_requests = request
+        .patch
+        .external_links
+        .as_ref()
+        .map(|links| normalize_external_link_requests(links));
+    let patched_relations =
+        patched_relations(&existing_summary, &request.patch, &external_link_requests);
     let patched_itinerary_item_ids = request
         .patch
         .related_itinerary_item_ids
@@ -208,12 +224,15 @@ pub async fn patch_booking_doc(
         patched_itinerary_item_ids,
     )
     .await?;
-
-    let external_link_requests = request
-        .patch
-        .external_links
-        .as_ref()
-        .map(|links| normalize_external_link_requests(links));
+    validate_related_record_plan_scope(
+        &mut tx,
+        trip_id,
+        next_trip_plan_id,
+        &patched_relations.related_task_ids,
+        &patched_relations.related_expense_ids,
+        &patched_relations.note_ids,
+    )
+    .await?;
     let updated = db::queries::update_booking_doc(
         &mut tx,
         booking_id,
@@ -237,8 +256,7 @@ pub async fn patch_booking_doc(
     )
     .await?;
 
-    let relations = patched_relations(&existing_summary, &request.patch, &external_link_requests);
-    let booking_doc = summary_from_record(updated, relations);
+    let booking_doc = summary_from_record(updated, patched_relations);
     let event = write_event(
         &mut tx,
         &booking_doc,
@@ -488,6 +506,48 @@ async fn resolve_booking_patch_trip_plan_id(
         .await?
         .ok_or(ServiceError::NotFound)
         .map(Some)
+}
+
+async fn validate_related_record_plan_scope(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    trip_id: Uuid,
+    booking_trip_plan_id: Option<Uuid>,
+    task_ids: &[Uuid],
+    expense_ids: &[Uuid],
+    note_ids: &[Uuid],
+) -> Result<(), ServiceError> {
+    validate_related_plan_ids(
+        db::queries::task_trip_plan_ids_for_trip(tx, trip_id, task_ids).await?,
+        booking_trip_plan_id,
+        "related task Trip Plan must match booking doc Trip Plan",
+    )?;
+    validate_related_plan_ids(
+        db::queries::expense_trip_plan_ids_for_trip(tx, trip_id, expense_ids).await?,
+        booking_trip_plan_id,
+        "related expense Trip Plan must match booking doc Trip Plan",
+    )?;
+    validate_related_plan_ids(
+        db::queries::stop_note_trip_plan_ids_for_trip(tx, trip_id, note_ids).await?,
+        booking_trip_plan_id,
+        "related note Trip Plan must match booking doc Trip Plan",
+    )?;
+
+    Ok(())
+}
+
+fn validate_related_plan_ids(
+    related_plan_ids: Vec<Option<Uuid>>,
+    booking_trip_plan_id: Option<Uuid>,
+    message: &'static str,
+) -> Result<(), ServiceError> {
+    if related_plan_ids
+        .into_iter()
+        .any(|related_plan_id| related_plan_id != booking_trip_plan_id)
+    {
+        return Err(ServiceError::InvalidRequest(message));
+    }
+
+    Ok(())
 }
 
 async fn validate_owner(

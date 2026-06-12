@@ -2749,6 +2749,26 @@ pub async fn task_ids_exist_for_trip(
     Ok(existing_count == unique_uuid_count(task_ids))
 }
 
+pub async fn task_trip_plan_ids_for_trip(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    trip_id: Uuid,
+    task_ids: &[Uuid],
+) -> Result<Vec<Option<Uuid>>, sqlx::Error> {
+    if task_ids.is_empty() {
+        return Ok(Vec::new());
+    }
+
+    sqlx::query_scalar(
+        "select distinct trip_plan_id
+         from trip_tasks
+         where trip_id = $1 and id = any($2) and deleted_at is null",
+    )
+    .bind(trip_id)
+    .bind(task_ids)
+    .fetch_all(&mut **tx)
+    .await
+}
+
 pub async fn expense_ids_exist_for_trip(
     tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
     trip_id: Uuid,
@@ -2771,6 +2791,26 @@ pub async fn expense_ids_exist_for_trip(
     Ok(existing_count == unique_uuid_count(expense_ids))
 }
 
+pub async fn expense_trip_plan_ids_for_trip(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    trip_id: Uuid,
+    expense_ids: &[Uuid],
+) -> Result<Vec<Option<Uuid>>, sqlx::Error> {
+    if expense_ids.is_empty() {
+        return Ok(Vec::new());
+    }
+
+    sqlx::query_scalar(
+        "select distinct trip_plan_id
+         from expenses
+         where trip_id = $1 and id = any($2) and deleted_at is null",
+    )
+    .bind(trip_id)
+    .bind(expense_ids)
+    .fetch_all(&mut **tx)
+    .await
+}
+
 pub async fn stop_note_ids_exist_for_trip(
     tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
     trip_id: Uuid,
@@ -2791,6 +2831,26 @@ pub async fn stop_note_ids_exist_for_trip(
     .await?;
 
     Ok(existing_count == unique_uuid_count(note_ids))
+}
+
+pub async fn stop_note_trip_plan_ids_for_trip(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    trip_id: Uuid,
+    note_ids: &[Uuid],
+) -> Result<Vec<Option<Uuid>>, sqlx::Error> {
+    if note_ids.is_empty() {
+        return Ok(Vec::new());
+    }
+
+    sqlx::query_scalar(
+        "select distinct trip_plan_id
+         from stop_notes
+         where trip_id = $1 and id = any($2) and deleted_at is null",
+    )
+    .bind(trip_id)
+    .bind(note_ids)
+    .fetch_all(&mut **tx)
+    .await
 }
 
 fn unique_uuid_count(ids: &[Uuid]) -> i64 {
