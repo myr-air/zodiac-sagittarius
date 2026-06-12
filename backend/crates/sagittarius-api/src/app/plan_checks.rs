@@ -381,9 +381,9 @@ fn overlap_findings(items: &[ItineraryItemSummary]) -> Vec<Finding> {
                 target_item_ids: vec![a.id, b.id],
                 explanation_en: format!("{} overlaps with {}.", a.activity, b.activity),
                 explanation_th: format!("{} เวลาซ้อนกับ {}", a.activity, b.activity),
-                action_en: "Adjust time, duration, or move one item to an alternative path."
+                action_en: "Adjust time or duration. If both activities are intentional, use the explicit Alternative Path control."
                     .to_string(),
-                action_th: "ปรับเวลา ระยะเวลา หรือย้ายหนึ่งรายการไป path ทางเลือก".to_string(),
+                action_th: "ปรับเวลา/ระยะเวลา หรือถ้าตั้งใจให้มีสองทางเลือก ให้ใช้ปุ่ม Alternative Path แบบ explicit".to_string(),
                 action_kind: Some("editItem"),
                 action_payload: json!({ "itemIds": [a.id, b.id] }),
             });

@@ -150,6 +150,15 @@ async fn plan_checks_contract_uses_explicit_time_windows_for_overlaps_and_child_
             && target_ids.iter().any(|id| id == &seed_item_id)
             && target_ids.iter().any(|id| id == &overlap_item_id)
     });
+    let explicit_end_overlap = suggestions
+        .iter()
+        .find(|suggestion| {
+            let target_ids = suggestion["targetItemIds"].as_array().unwrap();
+            suggestion["scope"] == "betweenItems"
+                && target_ids.iter().any(|id| id == &seed_item_id)
+                && target_ids.iter().any(|id| id == &overlap_item_id)
+        })
+        .unwrap();
     let has_child_bounds_warning = suggestions.iter().any(|suggestion| {
         let target_ids = suggestion["targetItemIds"].as_array().unwrap();
         suggestion["scope"] == "item"
@@ -163,6 +172,25 @@ async fn plan_checks_contract_uses_explicit_time_windows_for_overlaps_and_child_
     });
 
     assert!(has_explicit_end_overlap);
+    assert_eq!(explicit_end_overlap["severity"], "warning");
+    assert!(
+        explicit_end_overlap["recommendedAction"]["en"]
+            .as_str()
+            .unwrap()
+            .contains("explicit Alternative Path")
+    );
+    assert!(
+        !explicit_end_overlap["recommendedAction"]["en"]
+            .as_str()
+            .unwrap()
+            .contains("move one item")
+    );
+    assert!(
+        explicit_end_overlap["recommendedAction"]["th"]
+            .as_str()
+            .unwrap()
+            .contains("explicit")
+    );
     assert!(has_child_bounds_warning);
     assert!(!explicit_end_missing_duration);
 }
