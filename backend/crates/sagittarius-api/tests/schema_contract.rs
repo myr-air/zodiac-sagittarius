@@ -234,11 +234,32 @@ async fn trip_plan_compatibility_backfills_split_kind_to_proposal_status(pool: s
 }
 
 #[test]
-fn plan_scoped_record_migration_keeps_linked_expenses_with_item_plan() {
+fn plan_scoped_record_migration_keeps_linked_records_with_item_plan() {
     let migration = include_str!("../../../migrations/0026_plan_scoped_records.sql");
+    let linked_task_backfill = "UPDATE trip_tasks task\nSET trip_plan_id = item.plan_variant_id";
+    let fallback_task_backfill =
+        "UPDATE trip_tasks task\nSET trip_plan_id = trips.active_plan_variant_id";
     let linked_backfill = "UPDATE expenses expense\nSET trip_plan_id = item.plan_variant_id";
     let fallback_backfill =
         "UPDATE expenses expense\nSET trip_plan_id = trips.active_plan_variant_id";
+
+    assert!(
+        migration.contains(linked_task_backfill),
+        "linked trip tasks must backfill from itinerary_items.plan_variant_id",
+    );
+    assert!(
+        migration.contains("AND task.related_item_id = item.id"),
+        "linked trip tasks must join through related_item_id",
+    );
+    assert!(
+        migration.contains("AND task.related_item_id IS NULL"),
+        "Main Plan fallback must only apply to unlinked trip tasks",
+    );
+    assert!(
+        migration.find(linked_task_backfill).unwrap()
+            < migration.find(fallback_task_backfill).unwrap(),
+        "linked task backfill must run before the Main Plan fallback",
+    );
 
     assert!(
         migration.contains(linked_backfill),

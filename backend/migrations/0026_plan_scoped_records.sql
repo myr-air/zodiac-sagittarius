@@ -11,9 +11,17 @@ ALTER TABLE booking_docs
   ADD COLUMN IF NOT EXISTS trip_plan_id uuid;
 
 UPDATE trip_tasks task
+SET trip_plan_id = item.plan_variant_id
+FROM itinerary_items item
+WHERE task.trip_id = item.trip_id
+  AND task.related_item_id = item.id
+  AND task.trip_plan_id IS NULL;
+
+UPDATE trip_tasks task
 SET trip_plan_id = trips.active_plan_variant_id
 FROM trips
 WHERE task.trip_id = trips.id
+  AND task.related_item_id IS NULL
   AND task.trip_plan_id IS NULL;
 
 UPDATE expenses expense
