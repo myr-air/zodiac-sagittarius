@@ -166,6 +166,18 @@ export function upsertExpenseReminder(reminders: ExpenseReminder[], reminder: Ex
   return [...nextReminders, reminder];
 }
 
+export function filterExpenseRemindersForTripPlan(
+  reminders: ExpenseReminder[],
+  tripPlanId: string | null | undefined,
+  mainTripPlanId: string | null | undefined,
+): ExpenseReminder[] {
+  if (!tripPlanId) return reminders;
+  return reminders.filter((reminder) => {
+    const reminderTripPlanId = reminder.tripPlanId ?? mainTripPlanId ?? null;
+    return reminderTripPlanId === tripPlanId;
+  });
+}
+
 export function buildExpenseCsv({ trip, expenseSummary }: BuildExpenseStatementInput): string {
   const settlementCurrency = expenseSummary.settlementCurrency ?? "HKD";
   const memberNames = new Map(trip.members.map((member) => [member.id, member.displayName]));
@@ -251,8 +263,8 @@ function attachReminderHistory(suggestions: SettlementSuggestion[], reminders: E
   });
 }
 
-function expenseReminderKey(input: Pick<ExpenseReminder, "from" | "to" | "amount">): string {
-  return `${input.from}|${input.to}|${Math.round(input.amount * 100)}`;
+function expenseReminderKey(input: Pick<ExpenseReminder, "tripPlanId" | "from" | "to" | "amount">): string {
+  return `${input.tripPlanId ?? ""}|${input.from}|${input.to}|${Math.round(input.amount * 100)}`;
 }
 
 function formatExpenseComments(comments: ExpenseComment[], members: Member[]): string[] {

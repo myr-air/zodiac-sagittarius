@@ -233,6 +233,7 @@ export interface ExpenseComment {
 }
 
 export interface ExpenseReminder {
+  tripPlanId?: string | null;
   from: string;
   to: string;
   amount: number;

@@ -63,6 +63,7 @@ import {
   buildExpenseSplits,
   buildExpenseSummary,
   expenseSplitsToMinor,
+  filterExpenseRemindersForTripPlan,
   upsertExpenseReminder,
 } from "@/src/trip/expenses";
 import {
@@ -486,7 +487,11 @@ export function SagittariusApp({
       return buildExpenseSummary(
         scopedTripPlanRecords.expenses,
         currentMember.id,
-        trip.expenseReminders ?? [],
+        filterExpenseRemindersForTripPlan(
+          trip.expenseReminders ?? [],
+          selectedTripPlanId,
+          trip.mainTripPlanId || trip.activePlanVariantId,
+        ),
       );
     },
     [
@@ -494,6 +499,8 @@ export function SagittariusApp({
       currentMember.id,
       selectedTripPlanId,
       trip.expenseReminders,
+      trip.mainTripPlanId,
+      trip.activePlanVariantId,
       scopedTripPlanRecords.expenses,
     ],
   );
@@ -3452,6 +3459,7 @@ export function SagittariusApp({
     commitTrip((current) => ({
       ...current,
       expenseReminders: upsertExpenseReminder(current.expenseReminders ?? [], {
+        tripPlanId: selectedTripPlanId,
         from: suggestion.from,
         to: suggestion.to,
         amount: suggestion.amount,
