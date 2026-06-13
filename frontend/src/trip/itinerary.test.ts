@@ -503,6 +503,61 @@ describe("itinerary planning domain", () => {
     ]);
   });
 
+  it("keeps sub-activities directly under their parent activity block", () => {
+    const base = seedTrip.itineraryItems[0];
+    const block = {
+      ...base,
+      id: "block-flight",
+      activity: "Flight to Hong Kong",
+      day: arrivalDay,
+      startTime: "04:00",
+      sortOrder: 100,
+      isPlanBlock: true,
+      parentItemId: null,
+    };
+    const unrelatedEarly = {
+      ...base,
+      id: "activity-breakfast",
+      activity: "Breakfast",
+      day: arrivalDay,
+      startTime: "05:30",
+      sortOrder: 110,
+      isPlanBlock: false,
+      parentItemId: null,
+    };
+    const child = {
+      ...base,
+      id: "child-checkin",
+      activity: "Check in",
+      day: arrivalDay,
+      startTime: "06:00",
+      sortOrder: 300,
+      isPlanBlock: false,
+      parentItemId: "block-flight",
+    };
+    const laterActivity = {
+      ...base,
+      id: "activity-market",
+      activity: "Market walk",
+      day: arrivalDay,
+      startTime: "07:00",
+      sortOrder: 200,
+      isPlanBlock: false,
+      parentItemId: null,
+    };
+
+    expect(
+      sortItemsForDay([child, laterActivity, unrelatedEarly, block], arrivalDay).map(
+        (item) => item.id,
+      ),
+    ).toEqual([
+      "block-flight",
+      "child-checkin",
+      "activity-breakfast",
+      "activity-market",
+    ]);
+  });
+
   it("warns when a timed child sits outside its plan block window", () => {
     const base = seedTrip.itineraryItems[0];
     const block = {
