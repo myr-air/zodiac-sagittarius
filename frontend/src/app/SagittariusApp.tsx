@@ -1323,20 +1323,30 @@ export function SagittariusApp({
       placeResolution.candidate,
       values.place,
     );
+    const parentItem = values.parentItemId
+      ? trip.itineraryItems.find((item) => item.id === values.parentItemId)
+      : undefined;
     const targetPathId = selectedItineraryPathIdForDay(day, pathSelection);
     const targetPathName = pathOptions.find(
       (option) => option.id === targetPathId,
     )?.name;
     const nextItemId = nextLocalItemId(trip.itineraryItems, "item-new");
-    const pathFields = itineraryItemPathFieldsForTarget(
-      `path-group-${nextItemId}`,
-      targetPathId,
-      targetPathName,
-    );
+    const pathFields = parentItem
+      ? {
+          pathGroupId: parentItem.pathGroupId,
+          pathId: parentItem.pathId,
+          pathName: parentItem.pathName,
+          pathRole: parentItem.pathRole ?? "main",
+        }
+      : itineraryItemPathFieldsForTarget(
+          `path-group-${nextItemId}`,
+          targetPathId,
+          targetPathName,
+        );
     const draftItem: ItineraryItem = {
       id: nextItemId,
       tripId: trip.id,
-      planVariantId: selectedTripPlanId,
+      planVariantId: parentItem?.planVariantId ?? selectedTripPlanId,
       ...pathFields,
       parentItemId: values.parentItemId ?? null,
       itemKind: values.itemKind,
@@ -1366,7 +1376,16 @@ export function SagittariusApp({
       version: 1,
     };
     const branchPlacement =
-      targetPathId === mainItineraryPathId
+      parentItem
+        ? {
+            trip: {
+              ...trip,
+              itineraryItems: [...trip.itineraryItems, draftItem],
+            },
+            item: draftItem,
+            changedExistingItems: [],
+          }
+        : targetPathId === mainItineraryPathId
         ? applyItemToActivityBranch(trip, draftItem)
         : {
             trip: {
@@ -1388,7 +1407,7 @@ export function SagittariusApp({
         participantSession.sessionToken,
         {
           clientMutationId: nextClientMutationId("itinerary-create"),
-          planVariantId: selectedTripPlanId,
+          planVariantId: parentItem?.planVariantId ?? selectedTripPlanId,
           pathGroupId: branchPlacement.item.pathGroupId,
           pathId: branchPlacement.item.pathId,
           pathName: branchPlacement.item.pathName,
@@ -1445,7 +1464,12 @@ export function SagittariusApp({
 
     commitTrip(
       (current) =>
-        targetPathId === mainItineraryPathId
+        parentItem
+          ? {
+              ...current,
+              itineraryItems: [...current.itineraryItems, draftItem],
+            }
+          : targetPathId === mainItineraryPathId
           ? applyItemToActivityBranch(current, draftItem).trip
           : {
               ...current,

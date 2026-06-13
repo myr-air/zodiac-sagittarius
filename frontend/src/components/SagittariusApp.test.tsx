@@ -5166,6 +5166,64 @@ describe("Sagittarius cockpit UI", () => {
     );
   });
 
+  it("quick-adds a sub-activity on the parent activity block path", async () => {
+    const user = userEvent.setup();
+    const storage = installLocalStorageStub();
+    const blockItem = {
+      ...seedTrip.itineraryItems[0],
+      id: "block-rain-flight",
+      activity: "Rain route flight",
+      place: "DMK",
+      pathGroupId: "path-group-rain",
+      pathId: "path-rain",
+      pathName: "Rain plan",
+      pathRole: "alternative" as const,
+      isPlanBlock: true,
+      parentItemId: null,
+      sortOrder: 100,
+    };
+    storage.setItem(
+      tripStorageKey,
+      JSON.stringify({
+        ...seedTrip,
+        itineraryItems: [blockItem],
+      }),
+    );
+
+    render(<SagittariusApp initialView="itinerary" />);
+
+    await user.click(
+      await screen.findByRole("button", {
+        name: /Add sub-activity under Rain route flight/i,
+      }),
+    );
+    const dialog = await screen.findByRole("dialog", { name: /เพิ่มกิจกรรม/i });
+    fireEvent.change(within(dialog).getByLabelText("กิจกรรม"), {
+      target: { value: "Rain route check in" },
+    });
+    fireEvent.change(within(dialog).getByLabelText("สถานที่"), {
+      target: { value: "DMK terminal" },
+    });
+    await user.click(
+      within(dialog).getByRole("button", { name: "บันทึกกิจกรรม" }),
+    );
+
+    const persistedTrip = JSON.parse(storage.getItem(tripStorageKey)!) as Trip;
+    expect(persistedTrip.itineraryItems).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          activity: "Rain route check in",
+          parentItemId: "block-rain-flight",
+          isPlanBlock: false,
+          pathGroupId: "path-group-rain",
+          pathId: "path-rain",
+          pathName: "Rain plan",
+          pathRole: "alternative",
+        }),
+      ]),
+    );
+  });
+
   it("quick-adds a linked planning task from the itinerary row", async () => {
     const user = userEvent.setup();
     const storage = installLocalStorageStub();
