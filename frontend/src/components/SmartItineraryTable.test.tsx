@@ -49,6 +49,7 @@ function renderTable(
     onExportItinerary: vi.fn(),
     onImportItinerary: vi.fn(),
     onChangeTripPlan: vi.fn(),
+    onChangeTripPlanStatus: vi.fn(),
     onCreateTripPlan: vi.fn(),
     onChangeDayPath: vi.fn(),
     onClearDayPath: vi.fn(),
@@ -113,6 +114,7 @@ describe("SmartItineraryTable", () => {
           onExportItinerary={vi.fn()}
           onImportItinerary={vi.fn()}
           onChangeTripPlan={vi.fn()}
+          onChangeTripPlanStatus={vi.fn()}
           onCreateTripPlan={vi.fn()}
           onRedo={vi.fn()}
           onToggleContextRail={vi.fn()}
@@ -209,6 +211,20 @@ describe("SmartItineraryTable", () => {
     await user.selectOptions(screen.getByLabelText("Trip Plan"), "plan-rain");
 
     expect(onChangeTripPlan).toHaveBeenCalledWith("plan-rain");
+  });
+
+  it("calls onChangeTripPlanStatus when the Trip Plan status changes", async () => {
+    const user = userEvent.setup();
+    const onChangeTripPlanStatus = vi.fn();
+    renderTable({
+      selectedTripPlanId: "plan-rain",
+      onChangeTripPlanStatus,
+    });
+
+    await user.selectOptions(screen.getByLabelText("สถานะแผน"), "proposal");
+
+    expect(onChangeTripPlanStatus).toHaveBeenCalledWith("plan-rain", "proposal");
+    expect(screen.getByRole("option", { name: "แผนหลัก" })).toBeDisabled();
   });
 
   it("lets an organizer create a named Trip Plan", async () => {

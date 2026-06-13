@@ -106,6 +106,7 @@ import type {
   ExpenseLineItem,
   ExpenseSummary,
   ItineraryItem,
+  PlanStatus,
   PlanVariant,
   PlaceResolutionCandidate,
   PlaceResolutionRequest,
@@ -902,6 +903,63 @@ export function SagittariusApp({
       activePlanVariantId: tripPlanId,
       mainTripPlanId: tripPlanId,
     }));
+    return true;
+  }
+
+  async function updateTripPlanStatus(
+    tripPlanId: string,
+    status: Exclude<PlanStatus, "main">,
+  ): Promise<boolean> {
+    if (!canEdit || !tripPlanId) return false;
+    const currentPlan = trip.planVariants.find((plan) => plan.id === tripPlanId);
+    if (!currentPlan || currentPlan.status === "main") return false;
+    setTripPlanError(null);
+
+    if (isApiMode && resolvedApiClient && participantSession) {
+      setIsTripPlanBusy(true);
+      try {
+        const patchTripPlanMutation =
+          resolvedApiClient.patchTripPlan ??
+          resolvedApiClient.patchPlanVariant;
+        const updatedPlan = await patchTripPlanMutation(
+          trip.id,
+          tripPlanId,
+          participantSession.sessionToken,
+          {
+            clientMutationId: nextClientMutationId("trip-plan-status"),
+            expectedVersion: currentPlan.version ?? 1,
+            patch: { status },
+          },
+        );
+        setTripState((current) => {
+          const nextTrip = updateTripPlanInTrip(current.trip, updatedPlan);
+          latestTripRef.current = nextTrip;
+          return { ...current, trip: nextTrip };
+        });
+      } catch (error) {
+        if (
+          error instanceof TripApiError &&
+          error.code === "version_conflict"
+        ) {
+          await reloadTripPlanConflict();
+          return true;
+        }
+        setTripPlanError(t.itinerary.tripPlans.error);
+        return false;
+      } finally {
+        setIsTripPlanBusy(false);
+      }
+      return true;
+    }
+
+    commitTrip((current) =>
+      updateTripPlanInTrip(current, {
+        ...currentPlan,
+        kind: legacyKindForPlanStatus(status),
+        status,
+        version: (currentPlan.version ?? 1) + 1,
+      }),
+    );
     return true;
   }
 
@@ -3877,6 +3935,7 @@ export function SagittariusApp({
                   tripPlans={trip.planVariants}
                   selectedTripPlanId={selectedPlanVariantId}
                   onChangeTripPlan={switchTripPlan}
+                  onChangeTripPlanStatus={updateTripPlanStatus}
                   onCreateTripPlan={createTripPlan}
                   tripPlanError={tripPlanError}
                   isTripPlanBusy={isTripPlanBusy}
@@ -4267,6 +4326,17 @@ function normalizeTripPlanAliases(trip: Trip): Trip {
     planVariants: normalizedPlans,
     tripPlans: normalizedPlans,
   };
+}
+
+function updateTripPlanInTrip(trip: Trip, updatedPlan: PlanVariant): Trip {
+  const existingPlans = trip.tripPlans ?? trip.planVariants;
+  const mergePlan = (plan: PlanVariant) =>
+    plan.id === updatedPlan.id ? { ...plan, ...updatedPlan } : plan;
+  return normalizeTripPlanAliases({
+    ...trip,
+    planVariants: trip.planVariants.map(mergePlan),
+    tripPlans: existingPlans.map(mergePlan),
+  });
 }
 
 function normalizeTripPlanSummary(

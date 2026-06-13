@@ -381,6 +381,7 @@ export const messages = {
       tripPlans: {
         label: "Trip Plan",
         selectorLabel: "Trip Plan",
+        statusLabel: "Plan status",
         create: "New plan",
         nameLabel: "Plan name",
         namePlaceholder: "Name this plan",
@@ -1526,6 +1527,7 @@ export const messages = {
       tripPlans: {
         label: "Trip Plan",
         selectorLabel: "Trip Plan",
+        statusLabel: "สถานะแผน",
         create: "เพิ่มแผน",
         nameLabel: "ชื่อแผน",
         namePlaceholder: "ตั้งชื่อแผน",

@@ -4378,7 +4378,7 @@ describe("Sagittarius cockpit UI", () => {
     const alert = vi.spyOn(window, "alert");
     storage.setItem(tripStorageKey, JSON.stringify(tripWithSheets()));
     render(<SagittariusApp initialView="itinerary" />);
-    await screen.findByRole("option", { name: "Rain Sheet" });
+    await screen.findByRole("option", { name: "Rain Sheet - ร่าง" });
     await user.selectOptions(screen.getByLabelText("Trip Plan"), [
       "plan-variant-backup",
     ]);
@@ -4931,11 +4931,11 @@ describe("Sagittarius cockpit UI", () => {
 
     await waitFor(() =>
       expect(screen.getByLabelText("Trip Plan")).toHaveDisplayValue(
-        "Museum Day",
+        "Museum Day - แผนหลัก",
       ),
     );
     expect(selector).toHaveValue(
-      (screen.getByRole("option", { name: "Museum Day" }) as HTMLOptionElement)
+      (screen.getByRole("option", { name: "Museum Day - แผนหลัก" }) as HTMLOptionElement)
         .value,
     );
     expect(
@@ -4960,7 +4960,7 @@ describe("Sagittarius cockpit UI", () => {
 
     render(<SagittariusApp initialView="itinerary" />);
 
-    await screen.findByRole("option", { name: "Rain Sheet" });
+    await screen.findByRole("option", { name: "Rain Sheet - ร่าง" });
     await screen.findByRole("row", { name: /Dim Dim Sum/i });
     await user.selectOptions(screen.getByLabelText("Trip Plan"), [
       "plan-variant-backup",
@@ -5049,7 +5049,7 @@ describe("Sagittarius cockpit UI", () => {
 
     render(<SagittariusApp initialView="itinerary" />);
 
-    await screen.findByRole("option", { name: "Rain Sheet" });
+    await screen.findByRole("option", { name: "Rain Sheet - ร่าง" });
     await user.selectOptions(screen.getByLabelText("Trip Plan"), [
       "plan-variant-backup",
     ]);
@@ -5254,7 +5254,7 @@ describe("Sagittarius cockpit UI", () => {
     storage.setItem(tripStorageKey, JSON.stringify(draftTrip));
     render(<SagittariusApp initialView="itinerary" />);
 
-    await screen.findByRole("option", { name: "Rain Sheet" });
+    await screen.findByRole("option", { name: "Rain Sheet - ร่าง" });
     await user.selectOptions(screen.getByLabelText("Trip Plan"), [
       "plan-variant-backup",
     ]);

@@ -102,6 +102,10 @@ interface SmartItineraryTableProps {
   onExportItinerary: () => void;
   onImportItinerary: (file: File) => void;
   onChangeTripPlan: (tripPlanId: string) => boolean | void | Promise<boolean | void>;
+  onChangeTripPlanStatus: (
+    tripPlanId: string,
+    status: Exclude<PlanStatus, "main">,
+  ) => boolean | void | Promise<boolean | void>;
   onCreateTripPlan: (name: string) => boolean | void | Promise<boolean | void>;
   onChangeTripPath?: (pathId: string) => void;
   onChangeDayPath?: (day: string, pathId: string) => void;
@@ -419,6 +423,7 @@ export function SmartItineraryTable({
   onExportItinerary,
   onImportItinerary,
   onChangeTripPlan,
+  onChangeTripPlanStatus,
   onCreateTripPlan,
   onChangeDayPath,
   onClearDayPath,
@@ -504,7 +509,12 @@ export function SmartItineraryTable({
   )
     ? selectedTripPlanId
     : (tripPlans[0]?.id ?? "");
+  const selectedTripPlan =
+    tripPlans.find((plan) => plan.id === selectedTripPlanIdForControl) ?? null;
+  const selectedTripPlanStatus = selectedTripPlan ? tripPlanStatus(selectedTripPlan) : "draft";
   const tripPlanControlsDisabled = !canManageTripPlans || isTripPlanBusy || tripPlans.length === 0;
+  const tripPlanStatusDisabled =
+    tripPlanControlsDisabled || !selectedTripPlan || selectedTripPlanStatus === "main";
   const tripPlanMessage = newTripPlanError ?? tripPlanError;
 
   useEffect(() => {
@@ -1041,6 +1051,27 @@ export function SmartItineraryTable({
                 {formatTripPlanOptionLabel(plan, t.itinerary.tripPlans.status)}
               </option>
             ))}
+          </select>
+        </label>
+        <label className={tripPlanFieldClassName}>
+          <span>{t.itinerary.tripPlans.statusLabel}</span>
+          <select
+            className={tripPlanSelectClassName}
+            value={selectedTripPlanStatus}
+            disabled={tripPlanStatusDisabled}
+            onChange={(event) =>
+              onChangeTripPlanStatus(
+                selectedTripPlanIdForControl,
+                event.target.value as Exclude<PlanStatus, "main">,
+              )
+            }
+          >
+            <option value="main" disabled>
+              {t.itinerary.tripPlans.status.main}
+            </option>
+            <option value="draft">{t.itinerary.tripPlans.status.draft}</option>
+            <option value="backup">{t.itinerary.tripPlans.status.backup}</option>
+            <option value="proposal">{t.itinerary.tripPlans.status.proposal}</option>
           </select>
         </label>
         {canManageTripPlans ? (
@@ -3268,6 +3299,10 @@ function formatTripPlanOptionLabel(
   plan: PlanVariant,
   statusLabels: Readonly<Record<PlanStatus, string>>,
 ): string {
-  const status = plan.status ?? (plan.kind === "split" ? "proposal" : plan.kind);
+  const status = tripPlanStatus(plan);
   return `${plan.name} - ${statusLabels[status]}`;
+}
+
+function tripPlanStatus(plan: PlanVariant): PlanStatus {
+  return plan.status ?? (plan.kind === "split" ? "proposal" : plan.kind);
 }
