@@ -764,7 +764,7 @@ describe("Trip API client", () => {
       status: undefined,
       name: "Legacy client proposal",
     };
-    const { tripPlans: _canonicalTripPlans, ...legacyOnlyResponse } = {
+    const legacyOnlyResponse = {
       ...cockpitResponse,
       trip: {
         ...cockpitResponse.trip,
@@ -773,6 +773,7 @@ describe("Trip API client", () => {
       },
       planVariants: [legacyPlan],
     };
+    delete legacyOnlyResponse.tripPlans;
 
     const cockpit = mapCockpitResponse(legacyOnlyResponse);
 
@@ -797,7 +798,7 @@ describe("Trip API client", () => {
       kind: "draft" as const,
       name: "Draft route",
     };
-    const { planVariants: _legacyPlanVariants, ...canonicalOnlyResponse } = {
+    const canonicalOnlyResponse = {
       ...cockpitResponse,
       trip: {
         ...cockpitResponse.trip,
@@ -806,6 +807,7 @@ describe("Trip API client", () => {
       },
       tripPlans: [canonicalPlan],
     };
+    delete canonicalOnlyResponse.planVariants;
 
     const cockpit = mapCockpitResponse(canonicalOnlyResponse);
 
@@ -824,7 +826,8 @@ describe("Trip API client", () => {
   });
 
   it("rejects canonical cockpit tripPlans that omit status", () => {
-    const { status: _status, ...canonicalPlanWithoutStatus } = cockpitResponse.tripPlans![0];
+    const canonicalPlanWithoutStatus = { ...cockpitResponse.tripPlans![0] };
+    delete (canonicalPlanWithoutStatus as Partial<typeof canonicalPlanWithoutStatus>).status;
 
     expect(() =>
       mapCockpitResponse({

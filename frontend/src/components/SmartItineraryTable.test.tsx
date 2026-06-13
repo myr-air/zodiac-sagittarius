@@ -1687,7 +1687,6 @@ describe("SmartItineraryTable", () => {
   });
 
   it("shows derived duration in the row without opening a duration picker", async () => {
-    const user = userEvent.setup();
     const onUpdateItemInline = vi.fn();
     renderTable({ onUpdateItemInline });
     const row = screen.getByRole("row", { name: /Dim Dim Sum/i });
@@ -1698,7 +1697,7 @@ describe("SmartItineraryTable", () => {
       within(row).queryByRole("button", { name: /แก้ไขระยะเวลา Dim Dim Sum/i }),
     ).not.toBeInTheDocument();
 
-    await user.click(duration);
+    fireEvent.click(duration);
 
     expect(
       screen.queryByRole("region", { name: /แก้ไขระยะเวลา Dim Dim Sum/i }),
@@ -1707,7 +1706,6 @@ describe("SmartItineraryTable", () => {
   });
 
   it("keeps duration as derived text when editing time windows inline", async () => {
-    const user = userEvent.setup();
     const onUpdateItemInline = vi.fn();
     renderTable({ onUpdateItemInline });
     const row = screen.getByRole("row", { name: /Dim Dim Sum/i });

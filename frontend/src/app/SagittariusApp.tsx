@@ -1425,15 +1425,6 @@ export function SagittariusApp({
       const patchedBranchItemsById = new Map(
         patchedBranchItems.map((item) => [item.id, item]),
       );
-      const branchPlacementItemsById = new Map(
-        branchPlacement.trip.itineraryItems
-          .filter((item) =>
-            branchPlacement.changedExistingItems.some(
-              (changedItem) => changedItem.id === item.id,
-            ),
-          )
-          .map((item) => [item.id, item]),
-      );
       setTripState((current) => ({
         ...current,
         trip: {
