@@ -26,6 +26,7 @@ describe("itinerary import/export JSON", () => {
         endDate: tripFixture.trip.endDate,
         activePlanVariantId: tripFixture.trip.activePlanVariantId,
         mainTripPlanId: tripFixture.trip.mainTripPlanId,
+        planVariants: tripFixture.trip.tripPlans ?? tripFixture.trip.planVariants,
         tripPlans: tripFixture.trip.tripPlans ?? tripFixture.trip.planVariants,
         partySize: tripFixture.trip.partySize,
         defaultTimezone: tripFixture.trip.defaultTimezone,
@@ -116,7 +117,7 @@ describe("itinerary import/export JSON", () => {
         id: "plan-client-proposal",
         tripId: tripFixture.trip.id,
         name: "Client proposal",
-        kind: "draft" as const,
+        kind: "split" as const,
         status: "proposal" as const,
         description: "Presented to tour guests",
         version: 2,
@@ -138,13 +139,91 @@ describe("itinerary import/export JSON", () => {
     expect(exported.trip).toMatchObject({
       activePlanVariantId: "plan-client-proposal",
       mainTripPlanId: tripPlans[0].id,
+      planVariants: tripPlans,
       tripPlans,
     });
     expect(parseItineraryImportDocument(JSON.stringify(exported)).trip).toMatchObject({
       activePlanVariantId: "plan-client-proposal",
       mainTripPlanId: tripPlans[0].id,
+      planVariants: tripPlans,
       tripPlans,
     });
+  });
+
+  it("normalizes legacy-only Trip Plan metadata in import documents", () => {
+    const legacyPlan = {
+      ...tripFixture.trip.planVariants[0],
+      status: undefined,
+      kind: "split" as const,
+      version: 3,
+    };
+    const payload = buildItineraryExport({
+      exportedAt: "2026-06-04T12:00:00.000Z",
+      items: [tripFixture.planItems[0]],
+      trip: tripFixture.trip,
+    });
+    const legacyOnlyPayload = {
+      ...payload,
+      trip: {
+        ...payload.trip,
+        tripPlans: undefined,
+        planVariants: [legacyPlan],
+      },
+    };
+
+    const document = parseItineraryImportDocument(JSON.stringify(legacyOnlyPayload));
+
+    expect(document.trip.planVariants).toEqual([
+      {
+        ...legacyPlan,
+        status: "proposal",
+      },
+    ]);
+    expect(document.trip.tripPlans).toEqual(document.trip.planVariants);
+  });
+
+  it("rejects mixed Trip Plan aliases when identities or versions drift", () => {
+    const payload = buildItineraryExport({
+      exportedAt: "2026-06-04T12:00:00.000Z",
+      items: [tripFixture.planItems[0]],
+      trip: tripFixture.trip,
+    });
+    const tripPlans = payload.trip.tripPlans ?? [];
+    expect(tripPlans).not.toHaveLength(0);
+
+    expect(() =>
+      parseItineraryImportDocument(
+        JSON.stringify({
+          ...payload,
+          trip: {
+            ...payload.trip,
+            planVariants: [
+              {
+                ...tripPlans[0],
+                id: "different-plan-id",
+              },
+            ],
+          },
+        }),
+      ),
+    ).toThrow(/unsupported itinerary import/i);
+
+    expect(() =>
+      parseItineraryImportDocument(
+        JSON.stringify({
+          ...payload,
+          trip: {
+            ...payload.trip,
+            planVariants: [
+              {
+                ...tripPlans[0],
+                version: (tripPlans[0].version ?? 0) + 1,
+              },
+            ],
+          },
+        }),
+      ),
+    ).toThrow(/unsupported itinerary import/i);
   });
 
   it("keeps unlinked records scoped to the exported Trip Plan instead of the current Main Plan", () => {
@@ -437,6 +516,7 @@ describe("itinerary import/export JSON", () => {
       id: "",
       activePlanVariantId: "",
       mainTripPlanId: undefined,
+      planVariants: [],
       tripPlans: [],
     });
     expect(document.records).toEqual({
