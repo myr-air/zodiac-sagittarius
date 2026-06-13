@@ -484,6 +484,89 @@ async fn tasks_contract_patch_relinks_to_new_item_plan(pool: sqlx::PgPool) {
 }
 
 #[sqlx::test(migrations = "../../migrations")]
+async fn tasks_contract_patch_repairs_legacy_null_trip_plan_id(pool: sqlx::PgPool) {
+    support::seed_trip(&pool).await;
+    let traveler = support::create_session(&pool, support::TRAVELER_ID).await;
+    let app = support::app(pool.clone());
+
+    let created = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method(Method::POST)
+                .uri(format!("/api/v1/trips/{}/tasks", support::TRIP_ID))
+                .header(header::AUTHORIZATION, format!("Bearer {traveler}"))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({
+                        "clientMutationId": "web-task-legacy-null-create",
+                        "title": "Legacy unscoped task",
+                        "visibility": "private"
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(created.status(), StatusCode::CREATED);
+    let body: Value =
+        serde_json::from_slice(&to_bytes(created.into_body(), 65536).await.unwrap()).unwrap();
+    let task_id = body["id"].as_str().unwrap();
+
+    sqlx::query(
+        "update trip_tasks
+         set trip_plan_id = null
+         where id = $1",
+    )
+    .bind(Uuid::parse_str(task_id).unwrap())
+    .execute(&pool)
+    .await
+    .unwrap();
+
+    let response = app
+        .oneshot(
+            Request::builder()
+                .method(Method::PATCH)
+                .uri(format!(
+                    "/api/v1/trips/{}/tasks/{task_id}",
+                    support::TRIP_ID
+                ))
+                .header(header::AUTHORIZATION, format!("Bearer {traveler}"))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({
+                        "clientMutationId": "web-task-legacy-null-repair",
+                        "expectedVersion": 1,
+                        "patch": { "title": "Legacy unscoped task repaired" }
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::OK);
+    let body: Value =
+        serde_json::from_slice(&to_bytes(response.into_body(), 65536).await.unwrap()).unwrap();
+    assert_eq!(body["tripPlanId"], support::PLAN_ID);
+    assert_eq!(body["version"], 2);
+
+    let stored: (Uuid, i64) = sqlx::query_as(
+        "select trip_plan_id, version
+         from trip_tasks
+         where id = $1",
+    )
+    .bind(Uuid::parse_str(task_id).unwrap())
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(stored.0, Uuid::parse_str(support::PLAN_ID).unwrap());
+    assert_eq!(stored.1, 2);
+}
+
+#[sqlx::test(migrations = "../../migrations")]
 async fn tasks_contract_rejects_trip_plan_that_conflicts_with_related_item_plan(
     pool: sqlx::PgPool,
 ) {
