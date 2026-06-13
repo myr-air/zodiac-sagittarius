@@ -182,6 +182,11 @@ components:
           format: date
         activePlanVariantId:
           type: string
+          deprecated: true
+          description: Legacy pointer alias. Phase 1 clients must use /trip-plans/{tripPlanId}/set-main for Main Plan changes.
+        mainTripPlanId:
+          type: string
+          description: Canonical pointer alias. Phase 1 clients must use /trip-plans/{tripPlanId}/set-main for Main Plan changes.
     ItineraryItemCreateRequest:
       allOf:
         - $ref: "#/components/schemas/ItineraryItemPatch"
