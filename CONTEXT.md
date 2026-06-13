@@ -13,8 +13,12 @@ The trip plan currently selected as the plan to use in real life. Any trip plan 
 _Avoid_: Original plan, default-only plan
 
 **Backup Plan**:
-A named trip plan kept as an alternative to the main plan, such as a rain plan, budget plan, or client proposal.
-_Avoid_: Draft sheet, Plan A
+A named trip plan kept as an operational fallback to the main plan, such as a rain plan or budget plan.
+_Avoid_: Draft sheet, Plan A, proposal plan
+
+**Proposal Plan**:
+A named trip plan prepared for presentation or comparison before it is chosen for real-world use.
+_Avoid_: Backup Plan
 
 **Plan Status**:
 The role of a trip plan in the planning workflow, such as main, draft, proposal, or backup. A plan status is separate from the plan's name.

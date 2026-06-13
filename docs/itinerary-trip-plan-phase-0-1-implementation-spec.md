@@ -23,6 +23,9 @@ This spec is the contract for the first itinerary redesign slice. Phase 0 record
 - Add canonical `/trip-plans` routes as facades over the current plan variant service.
 - Add `plan_variants.status` without renaming `plan_variants`.
 - Update frontend API mapping so canonical-only, legacy-only, and mixed payloads normalize to the same local trip state.
+- Split itinerary workspace selection from Main Plan mutation: selecting a Trip
+  Plan for viewing/editing is local UI state, while choosing the real-use Main
+  Plan is an explicit set-main mutation.
 
 ## Non-goals
 
@@ -87,6 +90,7 @@ in local mode.
 | Backend itinerary import response | `trip.activePlanVariantId` | Add `trip.mainTripPlanId` and `trip.tripPlans[]`; keep normalized imported rows and plan-scoped `records`. | No. |
 | Import/export metadata | `activePlanVariantId` | Add `mainTripPlanId`; keep deprecated active pointer. | No. |
 | Frontend local trip state | `activePlanVariantId`, `planVariants` | Add `mainTripPlanId`, optional `tripPlans`, and normalize missing aliases. | No. |
+| Itinerary workspace selection | Selector calls publish/set-main implicitly | Selector only changes the working Trip Plan; explicit set-main command changes `mainTripPlanId`/`activePlanVariantId`. | No implicit set-main. |
 
 Canonical readers should prefer `mainTripPlanId`, `tripPlans`, and `status`
 when present, but Phase 1 compatibility readers must be symmetric: canonical
@@ -158,6 +162,26 @@ Examples:
   `status = NULL`: response emits `kind: "split"`, `status: "proposal"`.
 
 ## API Response Diffs
+
+### Compatibility Payload Variants
+
+Frontend and import/export readers must normalize these payload families to the
+same local Trip Plan state:
+
+| Variant | Required behavior |
+| --- | --- |
+| Legacy-only | Read `activePlanVariantId`, `planVariants[]`, and `kind`; derive `mainTripPlanId`, `tripPlans[]`, and `status`. |
+| Canonical mixed | Prefer `mainTripPlanId`, `tripPlans[]`, and `status`; verify legacy aliases mirror the canonical values when both are present. |
+| Canonical-only | Read `mainTripPlanId`, `tripPlans[]`, and `status`; mirror into local compatibility fields required by existing UI code. |
+| Drifted mixed | Treat unequal `tripPlans[]` and `planVariants[]` identities or versions as contract drift; frontend mappers must surface `invalid_response` instead of silently choosing one list. |
+
+The backend Phase 1 routes should normally emit canonical mixed payloads.
+Canonical-only payloads are accepted by frontend tests so the UI is ready for
+the later legacy-removal phase; legacy-only payloads remain accepted for old
+fixtures and compatibility clients. Backend tests should prevent drift at the
+source; frontend tests should reject impossible identity/version drift while
+still accepting value-level repairable `kind/status` drift according to the
+Main Plan repair precedence.
 
 ### Load Cockpit
 
@@ -366,6 +390,9 @@ Rules:
   `kind: "main"`. Main Plan selection must go through the set-main route so the
   trip pointer and previous Main Plan are updated together.
 - Phase 1 supports only blank creation semantics. Omitted `creationMode` and `creationMode: "blank"` create an empty Trip Plan.
+- Phase 1 Trip Plan summaries do not store `startsOn` or `endsOn`. A plan's
+  visible date range is derived from its Plan Days/itinerary rows until a later
+  phase adds explicit plan-date fields.
 - `creationMode: "duplicate-current"`, `creationMode: "import"`, and any
   unknown non-blank `creationMode` must return `400 invalid_request` until
   copy/import semantics are implemented; silently creating a blank plan for
@@ -569,6 +596,10 @@ Rules:
 - A no-op set-main on the current Main Plan may still refresh that plan status to `main`, but must not demote it first.
 - Set-main has no `expectedVersion` in Phase 1. Concurrency is last-writer-wins after row locks, with duplicate `clientMutationId` rejected by the existing mutation guard.
 - A later hardening phase may add `expectedTripVersion`; Phase 1 tests should document the current idempotency and last-writer behavior rather than implying stale set-main conflicts.
+- A frontend Trip Plan selector must not call this route. This route is used
+  only by the explicit set-main command because choosing a plan to inspect,
+  edit, import into, or present to a client is not the same as selecting the
+  plan for real-world use.
 
 Set-main validation failures:
 
@@ -1140,9 +1171,39 @@ full workflow yet.
 - Plan Commitments are represented only by existing booking/ticket/document
   surfaces in Phase 0/1. A future commitment model may link a commitment to an
   Actual Expense when money is paid, but Phase 0/1 must not infer that link.
+- Inline itinerary actions for flight, hotel, train, ferry, bus, or other
+  reservations create or link a Plan Commitment draft first. They must not
+  create an Actual Expense unless the user explicitly marks money as paid or
+  committed in the expense/payment flow.
 - Import/export may preserve plan-scoped records already present in the file,
   but importing a plan must not convert estimates into Actual Expenses or treat
   booking docs as paid unless the source record is explicitly an Actual Expense.
+
+## Itinerary Workspace Phase 1 Contract
+
+Phase 1 does not rebuild the hierarchy UI, but it fixes the state contract that
+the later inline editor depends on.
+
+- The itinerary workspace has a selected Trip Plan for viewing, editing,
+  creating rows, and import target selection.
+- The selected Trip Plan defaults to `mainTripPlanId` when available, then
+  `activePlanVariantId`, then the first available Trip Plan.
+- Changing the selected Trip Plan filters the visible itinerary rows and changes
+  the target for new local rows/imported rows, but it does not mutate the Main
+  Plan pointer.
+- Creating a blank Trip Plan selects the new draft/proposal/backup for editing
+  without making it Main.
+- The explicit set-main command calls `/trip-plans/:id/set-main` in API mode or
+  updates both local pointer aliases in local mode. It also keeps selected plan
+  status labels coherent.
+- Status editing is allowed for non-main selected plans and disabled for the
+  current Main Plan; the Main Plan status changes only through set-main.
+- Set-main, selector changes, create, patch, and import do not move Actual
+  Expenses or Plan Commitments.
+- The hierarchy-ready row model must keep top-level Activities and
+  Sub-activities grouped by `parentItemId`; when time fields exist, display
+  duration as derived text and show cross-day endings with `+N` as a superscript
+  marker such as `02:00+1`.
 
 ## Implementation Touchpoints
 
@@ -1158,6 +1219,10 @@ full workflow yet.
   - Reject `status: "main"` and `kind: "main"` in create/patch requests.
   - Reject unsupported non-blank `creationMode` values until duplicate/import semantics exist.
   - Validate `previousMainNextStatus` and reject `main`.
+- [domain/capabilities.rs](../backend/crates/sagittarius-api/src/domain/capabilities.rs)
+  - Introduce or enforce a Trip Plan management capability that maps to
+    owner/organizer roles only; traveler `EditItinerary` must not imply
+    create/patch/set-main permission for Trip Plans.
 - [api/plan_variants.rs](../backend/crates/sagittarius-api/src/api/plan_variants.rs)
   - Keep legacy handlers.
   - Add canonical handlers returning `TripPlanSummary` aliases.
@@ -1245,6 +1310,8 @@ full workflow yet.
 | 1 | Backend API | `backend/crates/sagittarius-api/tests/plan_variants_contract.rs` | Reusing the same `clientMutationId` on set-main is rejected by duplicate mutation guard. |
 | 1 | Backend API | `backend/crates/sagittarius-api/tests/plan_variants_contract.rs` | Same-plan set-main does not demote the current Main Plan before refreshing selected status. |
 | 1 | Backend API | `backend/crates/sagittarius-api/tests/plan_variants_contract.rs` | Set-main does not update expenses, booking docs, stop notes, trip tasks, or itinerary item plan ids. |
+| 1 | Backend API | `backend/crates/sagittarius-api/tests/plan_variants_contract.rs`, `backend/crates/sagittarius-api/tests/expenses_contract.rs` | Seed plan-scoped expenses, tasks, notes, and booking docs, run set-main, and assert their `trip_plan_id` values and itinerary item links are unchanged. |
+| 1 | Backend permissions | `backend/crates/sagittarius-api/tests/permissions_contract.rs`, `backend/crates/sagittarius-api/tests/plan_variants_contract.rs` | Traveler role may edit itinerary when allowed by existing policy but still receives `403` for legacy and canonical Trip Plan create/patch/set-main. |
 | 1 | Backend cockpit | `backend/crates/sagittarius-api/tests/trip_load_contract.rs` | Cockpit response includes `trip.mainTripPlanId`, `trip.activePlanVariantId`, `tripPlans[]`, and `planVariants[]`. |
 | 1 | Backend cockpit | `backend/crates/sagittarius-api/tests/trip_load_contract.rs` | If `status = 'main'` disagrees with `trips.active_plan_variant_id`, cockpit still exposes the pointer as `mainTripPlanId`. |
 | 1 | Backend cockpit | `backend/crates/sagittarius-api/tests/trip_load_contract.rs` | Raw non-null `kind/status` drift emits a coherent mapped pair according to repair precedence; response aliases never disagree. |
@@ -1258,20 +1325,27 @@ full workflow yet.
 | 1 | Backend import | `backend/crates/sagittarius-api/tests/itinerary_import_contract.rs` | Itinerary import normalizer response includes destination `trip.mainTripPlanId`, destination `trip.tripPlans[]` with `status/kind`, hierarchy/time/path fields, and plan-scoped `records` without switching the destination Main Plan. |
 | 1 | Frontend route | `frontend/src/trip/api-contract.test.ts` | Route helpers produce canonical `/trip-plans` paths and keep legacy helpers. |
 | 1 | Frontend mapper | `frontend/src/trip/api-client.test.ts` | Mixed cockpit payload maps `tripPlans/mainTripPlanId` and legacy fields to consistent `Trip`. |
-| 1 | Frontend mapper | `frontend/src/trip/api-client.test.ts` | Mixed cockpit payload with divergent `tripPlans[]` and `planVariants[]` is treated as contract drift; canonical `tripPlans[]` wins or the mapper rejects the payload according to the chosen implementation, but it must not silently expose two different plan lists. |
+| 1 | Frontend mapper | `frontend/src/trip/api-client.test.ts` | Mixed cockpit payload with divergent `tripPlans[]` and `planVariants[]` identities or versions is rejected as `invalid_response`; the mapper must not silently expose two different plan lists. |
 | 1 | Frontend mapper | `frontend/src/trip/api-client.test.ts` | Legacy-only cockpit payload maps `status` from `kind` and mirrors `mainTripPlanId`. |
 | 1 | Frontend mapper | `frontend/src/trip/api-client.test.ts` | Canonical-only cockpit payload with `tripPlans` and no `planVariants` still produces `trip.planVariants` for existing UI callers. |
 | 1 | Frontend mapper | `frontend/src/trip/api-client.test.ts` | Pointer/status disagreement keeps `trip.mainTripPlanId` as selected and does not infer selection from a `status: "main"` plan. |
 | 1 | Frontend mapper | `frontend/src/trip/api-client.test.ts` | Canonical create/patch/set-main client methods call `/trip-plans` and `/set-main`. |
 | 1 | Frontend mapper | `frontend/src/trip/api-client.test.ts` | Canonical create/patch responses without `status` are rejected or normalized through a documented compatibility path before they are treated as `TripPlanResponse`. |
 | 1 | Frontend local mode | `frontend/src/components/SagittariusApp.test.tsx` | Local create/rename/set-main keeps `activePlanVariantId`, `mainTripPlanId`, `planVariants`, and `tripPlans` mirrored. |
+| 1 | Frontend local mode | `frontend/src/components/SagittariusApp.test.tsx` | Selecting a draft/proposal/backup Trip Plan changes visible itinerary rows and add/import targets without changing `activePlanVariantId` or `mainTripPlanId`. |
+| 1 | Frontend local mode | `frontend/src/components/SagittariusApp.test.tsx` | Creating a blank Trip Plan selects it for editing but leaves the current Main Plan pointer unchanged until set-main is clicked. |
+| 1 | Frontend local mode | `frontend/src/components/SagittariusApp.test.tsx` | Explicit set-main on the selected draft changes both `mainTripPlanId` and deprecated `activePlanVariantId`, marks the selected plan main, and demotes the previous main to backup or the requested next status. |
+| 1 | Frontend API mode | `frontend/src/components/SagittariusApp.test.tsx` | Itinerary selector does not call `/set-main`; the explicit set-main command calls canonical `/trip-plans/:id/set-main` and reloads/merges version-conflict-safe state. |
 | 1 | Frontend UI | `frontend/src/components/SagittariusApp.test.tsx` | Visible selector/copy says Trip Plan, not Trip Sheet. |
-| 1 | Frontend table | `frontend/src/components/SmartItineraryTable.test.tsx` | Itinerary plan selector behavior remains stable with Trip Plan wording. |
+| 1 | Frontend table | `frontend/src/components/SmartItineraryTable.test.tsx` | Itinerary Trip Plan selector invokes only `onChangeTripPlan`; set-main has a separate button/action that invokes only `onSetMainTripPlan`. |
+| 1 | Frontend table | `frontend/src/components/SmartItineraryTable.test.tsx` | Plan status control is disabled for the selected Main Plan and enabled for selected non-main plans when the role can manage Trip Plans. |
+| 1 | Frontend table | `frontend/src/components/SmartItineraryTable.test.tsx` | Viewer/traveler roles cannot create Trip Plans, edit plan status, or set-main from the itinerary table. |
 | 1 | Frontend language guard | `frontend/src/project-contract.test.ts` or `frontend/src/i18n/messages.test.ts` | New product copy does not introduce non-compatibility `Plan Variant`, `plan variant`, or Trip Sheet wording. |
 | 1 | Import/export | `frontend/src/trip/itinerary-import-export.test.ts` | Transitional export includes top-level `trip.mainTripPlanId` and deprecated `trip.activePlanVariantId`. |
 | 1 | Import/export | `frontend/src/trip/itinerary-import-export.test.ts` | Transitional import accepts top-level `trip` legacy-only, canonical-only, mixed, and missing plan aliases, then applies the current destination trip id and target Trip Plan without flattening path fields or switching Main Plan. |
 | 1 | Import/export | `frontend/src/trip/itinerary-import-export.test.ts` | Conflicting top-level source `trip.activePlanVariantId` and `trip.mainTripPlanId` prefer canonical metadata only for source-file reporting and still do not switch the destination Main Plan. |
 | 1 | Import/export | `frontend/src/trip/itinerary-import-export.test.ts` | Export/import round trip preserves `parentItemId`, `isPlanBlock`, `endTime`, and `endOffsetDays`. |
+| 1 | Backend import | `backend/crates/sagittarius-api/tests/itinerary_import_contract.rs` | Import rejects or reports invalid hierarchy for grandchild nesting, parent cycles, and parent references across Trip Plan or Plan Day; it must not flatten the hierarchy to hide those errors. |
 | 1 | E2E/API | `frontend/src/trip/real-api.e2e.test.ts` | Create blank, patch, reload, and set-main Trip Plan through real API compatibility path and assert `tripPlans`, `mainTripPlanId`, and returned plan `status`. |
 
 Phase 0/1 release evidence must include the exact command for each layer that
