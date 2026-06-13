@@ -182,6 +182,10 @@ async fn trip_load_contract_uses_pointer_when_status_metadata_disagrees(pool: sq
         serde_json::from_slice(&to_bytes(response.into_body(), 131072).await.unwrap()).unwrap();
     assert_eq!(body["trip"]["activePlanVariantId"], support::PLAN_ID);
     assert_eq!(body["trip"]["mainTripPlanId"], support::PLAN_ID);
+    assert_eq!(
+        body["planVariants"], body["tripPlans"],
+        "legacy and canonical Trip Plan aliases must stay coherent after repair",
+    );
     assert!(body["tripPlans"].as_array().unwrap().iter().any(|plan| {
         plan["id"] == support::PLAN_ID && plan["kind"] == "main" && plan["status"] == "main"
     }));
