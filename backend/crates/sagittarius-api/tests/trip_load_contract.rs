@@ -408,6 +408,64 @@ async fn trip_patch_contract_updates_metadata_and_rejects_stale_versions(pool: s
 }
 
 #[sqlx::test(migrations = "../../migrations")]
+async fn trip_patch_contract_rejects_main_plan_pointer_mutation(pool: sqlx::PgPool) {
+    support::seed_trip(&pool).await;
+    let trip_id = uuid::Uuid::parse_str(support::TRIP_ID).unwrap();
+    let alt_plan_id = uuid::Uuid::parse_str(support::ALT_PLAN_ID).unwrap();
+    sqlx::query(
+        "insert into plan_variants (id, trip_id, name, kind, status, description)
+         values ($1, $2, 'Draft option', 'draft', 'draft', 'Draft route')",
+    )
+    .bind(alt_plan_id)
+    .bind(trip_id)
+    .execute(&pool)
+    .await
+    .unwrap();
+    let owner_token = support::create_session(&pool, support::OWNER_ID).await;
+    let app = support::app(pool.clone());
+
+    for (field, client_mutation_id) in [
+        ("activePlanVariantId", "trip-patch-main-plan-legacy"),
+        ("mainTripPlanId", "trip-patch-main-plan-canonical"),
+    ] {
+        let response = app
+            .clone()
+            .oneshot(
+                Request::builder()
+                    .method(Method::PATCH)
+                    .uri(format!("/api/v1/trips/{}", support::TRIP_ID))
+                    .header(header::AUTHORIZATION, format!("Bearer {owner_token}"))
+                    .header(header::CONTENT_TYPE, "application/json")
+                    .body(Body::from(
+                        json!({
+                            "clientMutationId": client_mutation_id,
+                            "expectedVersion": 1,
+                            field: support::ALT_PLAN_ID
+                        })
+                        .to_string(),
+                    ))
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+
+        assert_eq!(response.status(), StatusCode::BAD_REQUEST);
+        let body: Value =
+            serde_json::from_slice(&to_bytes(response.into_body(), 65536).await.unwrap()).unwrap();
+        assert_eq!(body["code"], "invalid_request");
+    }
+
+    let trip_row: (uuid::Uuid, i64) =
+        sqlx::query_as("select active_plan_variant_id, version from trips where id = $1")
+            .bind(trip_id)
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+    assert_eq!(trip_row.0, uuid::Uuid::parse_str(support::PLAN_ID).unwrap());
+    assert_eq!(trip_row.1, 1);
+}
+
+#[sqlx::test(migrations = "../../migrations")]
 async fn trip_patch_contract_viewer_cannot_update_metadata(pool: sqlx::PgPool) {
     support::seed_trip(&pool).await;
     let viewer_token = support::create_session(&pool, support::VIEWER_ID).await;

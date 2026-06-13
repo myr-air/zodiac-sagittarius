@@ -177,18 +177,6 @@ pub async fn patch_trip(
             "startDate must be before endDate",
         ));
     }
-    if let Some(active_plan_variant_id) = request.active_plan_variant_id {
-        let variants = db::queries::list_plan_variants(pool, trip_id).await?;
-        if !variants
-            .iter()
-            .any(|variant| variant.id == active_plan_variant_id)
-        {
-            return Err(ServiceError::InvalidRequest(
-                "activePlanVariantId is invalid",
-            ));
-        }
-    }
-
     let updated =
         db::queries::update_trip_metadata(&mut tx, trip_id, &request, request.expected_version + 1)
             .await?
@@ -248,6 +236,11 @@ fn validate_trip_patch(request: &PatchTripRequest) -> Result<(), ServiceError> {
                 "startDate must be before endDate",
             ));
         }
+    }
+    if request.active_plan_variant_id.is_some() || request.main_trip_plan_id.is_some() {
+        return Err(ServiceError::InvalidRequest(
+            "use set-main to change the main trip plan",
+        ));
     }
 
     Ok(())

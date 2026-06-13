@@ -29,6 +29,7 @@ pub struct PatchTripRequest {
     pub start_date: Option<Date>,
     pub end_date: Option<Date>,
     pub active_plan_variant_id: Option<Uuid>,
+    pub main_trip_plan_id: Option<Uuid>,
 }
 
 #[derive(Debug, Clone, Deserialize)]
