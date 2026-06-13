@@ -1353,6 +1353,27 @@ pub async fn reorder_itinerary_items(
     Ok(rows)
 }
 
+pub async fn itinerary_item_reorder_scope(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    trip_id: Uuid,
+    plan_variant_id: Uuid,
+    day: time::Date,
+) -> Result<Vec<(Uuid, Option<Uuid>)>, sqlx::Error> {
+    sqlx::query_as(
+        "select id, parent_item_id
+         from itinerary_items
+         where trip_id = $1
+           and plan_variant_id = $2
+           and day = $3
+           and deleted_at is null",
+    )
+    .bind(trip_id)
+    .bind(plan_variant_id)
+    .bind(day)
+    .fetch_all(&mut **tx)
+    .await
+}
+
 pub async fn realtime_event_exists_for_client_mutation(
     tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
     trip_id: Uuid,

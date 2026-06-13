@@ -1,3 +1,5 @@
+use std::collections::{HashMap, HashSet};
+
 use uuid::Uuid;
 
 use crate::app::{auth, events};
@@ -571,6 +573,8 @@ pub async fn reorder_itinerary_items(
         return Err(ServiceError::VersionConflict);
     }
 
+    validate_reorder_scope(&mut tx, trip_id, &request).await?;
+
     let rows = db::queries::reorder_itinerary_items(
         &mut tx,
         trip_id,
@@ -608,6 +612,58 @@ pub async fn reorder_itinerary_items(
     realtime.publish(event).await;
 
     Ok(items)
+}
+
+async fn validate_reorder_scope(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    trip_id: Uuid,
+    request: &ReorderItineraryItemsRequest,
+) -> Result<(), ServiceError> {
+    let requested: HashSet<Uuid> = request.item_ids.iter().copied().collect();
+    if requested.len() != request.item_ids.len() {
+        return Err(ServiceError::InvalidRequest(
+            "itinerary reorder item_ids must be unique",
+        ));
+    }
+
+    let scope_items = db::queries::itinerary_item_reorder_scope(
+        tx,
+        trip_id,
+        request.plan_variant_id,
+        request.day,
+    )
+    .await?;
+    let scope: HashSet<Uuid> = scope_items.iter().map(|(item_id, _)| *item_id).collect();
+    if scope != requested {
+        return Err(ServiceError::InvalidRequest(
+            "itinerary reorder must include every item in the Plan Day",
+        ));
+    }
+
+    let requested_index: HashMap<Uuid, usize> = request
+        .item_ids
+        .iter()
+        .enumerate()
+        .map(|(index, item_id)| (*item_id, index))
+        .collect();
+    for (item_id, parent_item_id) in scope_items {
+        let Some(parent_item_id) = parent_item_id else {
+            continue;
+        };
+        let Some(parent_index) = requested_index.get(&parent_item_id) else {
+            continue;
+        };
+        let Some(item_index) = requested_index.get(&item_id) else {
+            continue;
+        };
+        if parent_index > item_index {
+            return Err(ServiceError::InvalidRequest(
+                "itinerary reorder must keep parent activities before sub-activities",
+            ));
+        }
+    }
+
+    Ok(())
 }
 
 async fn insert_item_event(

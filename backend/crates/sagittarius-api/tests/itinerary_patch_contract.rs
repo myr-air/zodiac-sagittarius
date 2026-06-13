@@ -1057,6 +1057,112 @@ async fn itinerary_patch_contract_rejects_deleting_activity_block_with_sub_activ
 }
 
 #[sqlx::test(migrations = "../../migrations")]
+async fn itinerary_reorder_contract_rejects_partial_or_child_first_day_order(pool: sqlx::PgPool) {
+    support::seed_trip(&pool).await;
+    let token = support::create_session(&pool, support::ORGANIZER_ID).await;
+    let app = support::app(pool.clone());
+
+    let child = create_itinerary_item(
+        &app,
+        &token,
+        "web-reorder-create-child",
+        json!({
+            "parentItemId": support::ITEM_ID,
+            "activity": "Queue for table",
+            "startTime": "08:45",
+            "place": "The Elements"
+        }),
+    )
+    .await;
+    let top_level = create_itinerary_item(
+        &app,
+        &token,
+        "web-reorder-create-top-level",
+        json!({
+            "activity": "Nearby coffee",
+            "startTime": "09:30",
+            "place": "Kowloon Station"
+        }),
+    )
+    .await;
+    let child_id = child["id"].as_str().unwrap();
+    let top_level_id = top_level["id"].as_str().unwrap();
+
+    let partial = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method(Method::PATCH)
+                .uri(format!(
+                    "/api/v1/trips/{}/itinerary-items/order",
+                    support::TRIP_ID
+                ))
+                .header(header::AUTHORIZATION, format!("Bearer {token}"))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({
+                        "clientMutationId": "web-reorder-partial-day",
+                        "planVariantId": support::PLAN_ID,
+                        "day": "2025-05-16",
+                        "itemIds": [top_level_id, support::ITEM_ID]
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(partial.status(), StatusCode::BAD_REQUEST);
+
+    let child_first = app
+        .oneshot(
+            Request::builder()
+                .method(Method::PATCH)
+                .uri(format!(
+                    "/api/v1/trips/{}/itinerary-items/order",
+                    support::TRIP_ID
+                ))
+                .header(header::AUTHORIZATION, format!("Bearer {token}"))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({
+                        "clientMutationId": "web-reorder-child-first",
+                        "planVariantId": support::PLAN_ID,
+                        "day": "2025-05-16",
+                        "itemIds": [child_id, support::ITEM_ID, top_level_id]
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(child_first.status(), StatusCode::BAD_REQUEST);
+
+    let stored: Vec<(Uuid, i32)> = sqlx::query_as(
+        "select id, sort_order
+         from itinerary_items
+         where id = any($1)
+         order by id",
+    )
+    .bind(vec![
+        Uuid::parse_str(support::ITEM_ID).unwrap(),
+        Uuid::parse_str(child_id).unwrap(),
+        Uuid::parse_str(top_level_id).unwrap(),
+    ])
+    .fetch_all(&pool)
+    .await
+    .unwrap();
+    let sort_by_id: std::collections::HashMap<Uuid, i32> = stored.into_iter().collect();
+    assert_eq!(sort_by_id[&Uuid::parse_str(support::ITEM_ID).unwrap()], 100);
+    assert_eq!(sort_by_id[&Uuid::parse_str(child_id).unwrap()], 110);
+    assert_eq!(
+        sort_by_id[&Uuid::parse_str(top_level_id).unwrap()],
+        top_level["sortOrder"].as_i64().unwrap() as i32
+    );
+}
+
+#[sqlx::test(migrations = "../../migrations")]
 async fn itinerary_patch_contract_duplicate_client_mutation_id_conflicts(pool: sqlx::PgPool) {
     support::seed_trip(&pool).await;
     let token = support::create_session(&pool, support::ORGANIZER_ID).await;

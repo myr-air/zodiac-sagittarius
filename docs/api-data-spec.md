@@ -381,6 +381,9 @@ existing `code`/`message` envelope.
 - `PATCH /api/v1/trips/:tripId/itinerary-items/:itemId`
 - `DELETE /api/v1/trips/:tripId/itinerary-items/:itemId`
 - `PATCH /api/v1/trips/:tripId/itinerary-items/order`
+  Reorder requests are full Plan Day orders for one Trip Plan/day. `itemIds`
+  must include every non-deleted item in that scope exactly once, and parent
+  activities must appear before their sub-activities.
 
 ### Plan Checks
 
@@ -587,5 +590,6 @@ The current frontend seed maps directly to this response:
 
 - If `expectedVersion` does not match the stored row, return `409 Conflict` with the latest entity.
 - If a WebSocket event has the same `clientMutationId` as a pending frontend mutation, the frontend should mark it confirmed instead of applying a duplicate row.
-- Reorder writes should be transactional and emit one `itinerary_items.reordered` event.
+- Reorder writes should validate the full Plan Day scope before updating,
+  write transactionally, and emit one `itinerary_items.reordered` event.
 - Suggestion approval should update target itinerary rows and mark the suggestion resolved in the same transaction.
