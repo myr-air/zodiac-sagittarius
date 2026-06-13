@@ -9,14 +9,12 @@ const render = (ui: Parameters<typeof renderWithI18n>[0]) => renderWithI18n(ui, 
 const renderEn = (ui: Parameters<typeof renderWithI18n>[0]) => renderWithI18n(ui, { locale: "en" });
 
 describe("StopDialog", () => {
-  it("trims submitted values and clamps invalid durations", async () => {
+  it("trims submitted values and allows optional end time", async () => {
     const onSubmit = vi.fn();
     render(<StopDialog mode="create" onClose={vi.fn()} onSubmit={onSubmit} />);
 
     fireEvent.change(screen.getByLabelText("กิจกรรม"), { target: { value: "  Dessert stop  " } });
     fireEvent.change(screen.getByLabelText("สถานที่"), { target: { value: "  Central  " } });
-    fireEvent.change(screen.getByLabelText("ชั่วโมง"), { target: { value: "0" } });
-    fireEvent.change(screen.getByLabelText("นาที"), { target: { value: "0" } });
     fireEvent.change(screen.getByLabelText("ประเภท"), { target: { value: "experience" } });
     fireEvent.change(screen.getByLabelText("การเดินทาง"), { target: { value: "  walk  " } });
     fireEvent.change(screen.getByLabelText("โน้ต"), { target: { value: "  book ahead  " } });
@@ -25,7 +23,8 @@ describe("StopDialog", () => {
     expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({
       activity: "Dessert stop",
       place: "Central",
-      durationMinutes: 1,
+      endTime: null,
+      durationMinutes: null,
       activityType: "experience",
       transportation: "walk",
       note: "book ahead",
@@ -115,7 +114,7 @@ describe("StopDialog", () => {
     }));
   });
 
-  it("uses the Joii time input, split duration controls, and a standard close icon", () => {
+  it("uses Joii time inputs, derived duration text, and a standard close icon", () => {
     render(<StopDialog mode="create" onClose={vi.fn()} onSubmit={vi.fn()} />);
 
     expect(screen.getByLabelText("เวลาเริ่ม")).toHaveAttribute("type", "text");
@@ -128,25 +127,27 @@ describe("StopDialog", () => {
     expect(screen.getByLabelText("เวลาเริ่ม")).toHaveAttribute("id", "stop-start-time");
     expect(screen.getByText("เวลาเริ่ม").closest("label")).toHaveAttribute("for", "stop-start-time");
     expect(screen.getByLabelText("เวลาจบ")).toHaveAttribute("id", "stop-end-time");
-    expect(screen.getByLabelText("ชั่วโมง")).toBeInTheDocument();
-    expect(screen.getByLabelText("นาที")).toBeInTheDocument();
+    expect(screen.getByLabelText("เวลาจบ")).not.toBeRequired();
+    expect(screen.getByText("ระยะเวลา")).toBeInTheDocument();
+    expect(screen.getByText("—")).toBeInTheDocument();
+    expect(screen.queryByLabelText("ชั่วโมง")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("นาที")).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "ปิดฟอร์ม" }).querySelector("svg path")).toHaveAttribute("d", "M18 6 6 18M6 6l12 12");
     expect(screen.queryByRole("button", { name: "ลบจุดนี้" })).not.toBeInTheDocument();
     expect(screen.queryByLabelText("วัน")).not.toBeInTheDocument();
   });
 
-  it("keeps end time and duration synchronized", () => {
+  it("derives duration from start and end time", () => {
     renderEn(<StopDialog mode="create" onClose={vi.fn()} onSubmit={vi.fn()} />);
 
-    expect(screen.getByLabelText("End time")).toHaveValue("17:15");
+    expect(screen.getByLabelText("End time")).toHaveValue("");
+    expect(screen.getByText("—")).toBeInTheDocument();
 
     fireEvent.change(screen.getByLabelText("End time"), { target: { value: "18:00" } });
-    expect(screen.getByLabelText("Hours")).toHaveValue(1);
-    expect(screen.getByLabelText("Minutes")).toHaveValue("30");
+    expect(screen.getByText("1 h 30 m")).toBeInTheDocument();
 
-    fireEvent.change(screen.getByLabelText("Hours"), { target: { value: "2" } });
-    fireEvent.change(screen.getByLabelText("Minutes"), { target: { value: "0" } });
-    expect(screen.getByLabelText("End time")).toHaveValue("18:30");
+    fireEvent.change(screen.getByLabelText("End time"), { target: { value: "" } });
+    expect(screen.getByText("—")).toBeInTheDocument();
   });
 
   it("submits explicit cross-day end time windows", () => {
@@ -267,8 +268,7 @@ describe("StopDialog", () => {
     expect(screen.getByLabelText("To")).toHaveValue("Hongkong");
     expect(screen.getByLabelText("Start time")).toHaveValue("08:22");
     expect(screen.getByLabelText("End time")).toHaveValue("08:36");
-    expect(screen.getByLabelText("Hours")).toHaveValue(0);
-    expect(screen.getByLabelText("Minutes")).toHaveValue("14");
+    expect(screen.getByText("14 m")).toBeInTheDocument();
   });
 
   it("uses the generic activity template for ordinary places and activities", () => {

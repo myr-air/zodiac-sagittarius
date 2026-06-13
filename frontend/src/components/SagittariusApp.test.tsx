@@ -5684,9 +5684,6 @@ describe("Sagittarius cockpit UI", () => {
     );
     await user.clear(within(dialog).getByLabelText(/สถานที่/i));
     await user.type(within(dialog).getByLabelText(/สถานที่/i), "K11 Musea");
-    await user.clear(within(dialog).getByLabelText(/^ชั่วโมง$/i));
-    await user.type(within(dialog).getByLabelText(/^ชั่วโมง$/i), "0");
-    await user.selectOptions(within(dialog).getByLabelText(/^นาที$/i), "45");
     await user.clear(within(dialog).getByLabelText(/^เวลาจบ$/i));
     await user.type(within(dialog).getByLabelText(/^เวลาจบ$/i), "18:15");
     await user.clear(within(dialog).getByLabelText(/การเดินทาง/i));
@@ -5744,9 +5741,8 @@ describe("Sagittarius cockpit UI", () => {
     );
     await user.clear(within(dialog).getByLabelText(/สถานที่/i));
     await user.type(within(dialog).getByLabelText(/สถานที่/i), "K11 Musea");
-    await user.clear(within(dialog).getByLabelText(/^ชั่วโมง$/i));
-    await user.type(within(dialog).getByLabelText(/^ชั่วโมง$/i), "0");
-    await user.selectOptions(within(dialog).getByLabelText(/^นาที$/i), "45");
+    await user.clear(within(dialog).getByLabelText(/^เวลาจบ$/i));
+    await user.type(within(dialog).getByLabelText(/^เวลาจบ$/i), "17:30");
     await user.click(
       within(dialog).getByRole("button", { name: /บันทึกกิจกรรม/i }),
     );
@@ -5900,7 +5896,8 @@ describe("Sagittarius cockpit UI", () => {
       within(dialog).getByLabelText(/สถานที่/i),
       "Shenzhen Garden",
     );
-    await user.selectOptions(within(dialog).getByLabelText(/^นาที$/i), "30");
+    await user.clear(within(dialog).getByLabelText(/^เวลาจบ$/i));
+    await user.type(within(dialog).getByLabelText(/^เวลาจบ$/i), "17:15");
     await user.clear(within(dialog).getByLabelText(/การเดินทาง/i));
     await user.type(within(dialog).getByLabelText(/การเดินทาง/i), "เดิน");
     await user.click(

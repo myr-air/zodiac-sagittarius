@@ -4,7 +4,7 @@ import { useI18n } from "@/src/i18n/I18nProvider";
 import { formatDayLabel, getTripDates } from "@/src/trip/itinerary";
 import { Button } from "./ui";
 import { Icon } from "./icons";
-import { formatThaiDate } from "./itineraryDisplay";
+import { formatDuration, formatThaiDate } from "./itineraryDisplay";
 import { TimePickerField } from "./DateTimePickers";
 
 type StopDetailType = "transportation" | "stay" | "experience" | "task";
@@ -102,8 +102,7 @@ const fieldIds = {
   detail: "stop-detail",
   destination: "stop-destination",
   path: "stop-path",
-  durationHours: "stop-duration-hours",
-  durationMinutes: "stop-duration-minutes",
+  derivedDuration: "stop-derived-duration",
   endOffsetDays: "stop-end-offset-days",
   endTime: "stop-end-time",
   entryWindow: "stop-entry-window",
@@ -162,17 +161,18 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, initialPare
     status: initialItem?.status ?? "idea",
     priority: initialItem?.priority ?? "normal",
     startTime: initialItem?.startTime ?? "16:30",
-    endTime:
-      initialItem?.endTime ??
-      addMinutesToTime(
-        initialItem?.startTime ?? "16:30",
-        Math.max(1, Number(initialItem?.durationMinutes ?? 45) || 1),
-      ),
+    endTime: initialItem
+      ? (initialItem.endTime ??
+        addMinutesToTime(
+          initialItem.startTime,
+          Math.max(1, Number(initialItem.durationMinutes ?? 45) || 1),
+        ))
+      : null,
     endOffsetDays: initialItem?.endOffsetDays ?? 0,
     activity: initialItem?.activity ?? "",
     activityType: initialItem?.activityType ?? "experience",
     place: initialItem?.place ?? "",
-    durationMinutes: initialItem?.durationMinutes ?? 45,
+    durationMinutes: initialItem?.durationMinutes ?? null,
     transportation: initialItem?.transportation ?? "",
     details: initialItem?.details ?? {},
     note: initialItem?.note ?? "",
@@ -188,7 +188,10 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, initialPare
   const title = mode === "create" ? t.stopDialog.titles.create : t.stopDialog.titles.edit;
   const detailLabels = stopDetailLabels(locale);
   const isSubActivity = Boolean(values.parentItemId);
-  const minuteOptions = durationMinuteOptions((values.durationMinutes ?? 45) % 60);
+  const derivedDuration =
+    values.timeMode === "flexible" || !values.endTime
+      ? null
+      : values.durationMinutes;
 
   function update<K extends keyof StopFormValues>(key: K, value: StopFormValues[K]) {
     setValues((current) => ({ ...current, [key]: value }));
@@ -201,19 +204,7 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, initialPare
     setValues((current) => ({
       ...current,
       startTime,
-      ...(nextDuration !== null ? { durationMinutes: nextDuration } : {}),
-    }));
-  }
-
-  function updateDuration(hours: number, minutes: number) {
-    const durationMinutes = Math.max(1, hours * 60 + minutes);
-    const nextEnd = endWindowFromDuration(values.startTime, durationMinutes);
-    setValues((current) => ({
-      ...current,
-      durationMinutes,
-      ...(nextEnd
-        ? { endTime: nextEnd.endTime, endOffsetDays: nextEnd.endOffsetDays }
-        : {}),
+      durationMinutes: nextDuration,
     }));
   }
 
@@ -223,6 +214,7 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, initialPare
         ...current,
         endTime: null,
         endOffsetDays: 0,
+        durationMinutes: null,
       }));
       return;
     }
@@ -236,7 +228,7 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, initialPare
       ...current,
       endTime: nextEndTime,
       endOffsetDays: nextEndOffsetDays,
-      ...(nextDuration !== null ? { durationMinutes: nextDuration } : {}),
+      durationMinutes: nextDuration,
     }));
   }
 
@@ -251,7 +243,7 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, initialPare
     setValues((current) => ({
       ...current,
       endOffsetDays,
-      ...(durationMinutes !== null ? { durationMinutes } : {}),
+      durationMinutes,
     }));
   }
 
@@ -331,7 +323,10 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, initialPare
         values.timeMode === "flexible" || !values.endTime
           ? 0
           : values.endOffsetDays,
-      durationMinutes: values.timeMode === "flexible" ? null : Math.max(1, Number(values.durationMinutes) || 1),
+      durationMinutes:
+        values.timeMode === "flexible" || !values.endTime
+          ? null
+          : Math.max(1, Number(values.durationMinutes) || 1),
       details,
       place: nextPlace.trim(),
       transportation: values.transportation.trim(),
@@ -444,7 +439,7 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, initialPare
             </label>
             <label htmlFor={fieldIds.endTime}>
               <span>{t.stopDialog.fields.endTime}</span>
-              <TimePickerField id={fieldIds.endTime} value={values.endTime ?? ""} onChange={updateEndTime} required={values.timeMode !== "flexible"} />
+              <TimePickerField id={fieldIds.endTime} value={values.endTime ?? ""} onChange={updateEndTime} />
             </label>
             <label htmlFor={fieldIds.endOffsetDays}>
               <span>+1</span>
@@ -459,29 +454,10 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, initialPare
                 ⁺¹
               </button>
             </label>
-            <label htmlFor={fieldIds.durationHours}>
-              <span>{t.stopDialog.fields.hours}</span>
-              <input
-                id={fieldIds.durationHours}
-                min={0}
-                type="number"
-                value={Math.floor((values.durationMinutes ?? 45) / 60)}
-                onChange={(event) => updateDuration(Number(event.target.value), (values.durationMinutes ?? 45) % 60)}
-                required={values.timeMode !== "flexible"}
-              />
-            </label>
-            <label htmlFor={fieldIds.durationMinutes}>
-              <span>{t.stopDialog.fields.minutes}</span>
-              <select
-                id={fieldIds.durationMinutes}
-                value={(values.durationMinutes ?? 45) % 60}
-                onChange={(event) => updateDuration(Math.floor((values.durationMinutes ?? 45) / 60), Number(event.target.value))}
-              >
-                {minuteOptions.map((minutes) => (
-                  <option value={minutes} key={minutes}>{minutes}</option>
-                ))}
-              </select>
-            </label>
+            <div aria-labelledby={fieldIds.derivedDuration}>
+              <span id={fieldIds.derivedDuration}>{t.itinerary.headers.duration}</span>
+              <strong>{formatDuration(derivedDuration, locale)}</strong>
+            </div>
             <label className={dialogFieldWideClassName} htmlFor={fieldIds.activity}>
               <span>{t.stopDialog.fields.activity}</span>
               <input id={fieldIds.activity} value={values.activity} onChange={(event) => updateActivity(event.target.value)} required />
@@ -789,10 +765,6 @@ function minutesToTime(value: number): string {
   const hour = Math.floor(value / 60);
   const minute = value % 60;
   return `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
-}
-
-function durationMinuteOptions(currentMinute: number): number[] {
-  return Array.from(new Set([0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, currentMinute])).sort((a, b) => a - b);
 }
 
 function stopDetailLabels(locale: "en" | "th") {
