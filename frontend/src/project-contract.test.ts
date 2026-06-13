@@ -6,6 +6,31 @@ import { describe, expect, it } from "vitest";
 const testDir = dirname(fileURLToPath(import.meta.url));
 const frontendRoot = resolve(testDir, "..");
 const repoRoot = resolve(frontendRoot, "..");
+const productCopySourceRoots = [
+  "app",
+  "src/app",
+  "src/components",
+  "src/i18n",
+];
+
+function collectProductCopyFiles(root: string): string[] {
+  const entries = readdirSync(root);
+  const files: string[] = [];
+  for (const entry of entries) {
+    const path = join(root, entry);
+    const stat = statSync(path);
+    if (stat.isDirectory()) {
+      if (["node_modules", ".next", "storybook-static"].includes(entry)) continue;
+      files.push(...collectProductCopyFiles(path));
+      continue;
+    }
+    if (!/\.[cm]?[jt]sx?$/.test(entry)) continue;
+    if (/\.(test|spec|stories)\.[cm]?[jt]sx?$/.test(entry)) continue;
+    if (entry === "types.ts" || entry === "api-client.ts") continue;
+    files.push(path);
+  }
+  return files;
+}
 
 describe("Sagittarius project scaffold", () => {
   it("separates frontend and backend services behind a root Makefile", () => {
@@ -115,6 +140,19 @@ describe("Sagittarius project scaffold", () => {
     expect(messages).toContain("Trip Plan");
     expect(messages).not.toMatch(/\bTrip Sheet\b/i);
     expect(messages).not.toMatch(/\bPlan Variant\b/i);
+  });
+
+  it("keeps production frontend copy on Trip Plan terminology", () => {
+    const productCopy = productCopySourceRoots
+      .flatMap((root) => collectProductCopyFiles(join(frontendRoot, root)))
+      .map((file) => readFileSync(file, "utf8"))
+      .join("\n");
+
+    expect(productCopy).toContain("Trip Plan");
+    expect(productCopy).not.toMatch(/\bTrip Sheet\b/i);
+    expect(productCopy).not.toMatch(/\bPlan Variant\b/i);
+    expect(productCopy).not.toMatch(/\bplan variant\b/);
+    expect(productCopy).not.toMatch(/\btrip sheet\b/i);
   });
 
   it("documents the Rust/PostgreSQL API data contract", () => {
