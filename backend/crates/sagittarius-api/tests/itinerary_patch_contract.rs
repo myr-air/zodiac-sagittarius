@@ -335,6 +335,46 @@ async fn itinerary_patch_contract_clears_end_time_and_duration(pool: sqlx::PgPoo
 }
 
 #[sqlx::test(migrations = "../../migrations")]
+async fn itinerary_patch_contract_normalizes_raw_end_offset_drift_on_load(pool: sqlx::PgPool) {
+    support::seed_trip(&pool).await;
+    sqlx::query(
+        "update itinerary_items
+         set end_time = null, end_offset_days = 3
+         where id = $1",
+    )
+    .bind(Uuid::parse_str(support::ITEM_ID).unwrap())
+    .execute(&pool)
+    .await
+    .unwrap();
+    let token = support::create_session(&pool, support::TRAVELER_ID).await;
+    let app = support::app(pool.clone());
+
+    let response = app
+        .oneshot(
+            Request::builder()
+                .method(Method::GET)
+                .uri(format!("/api/v1/trips/{}", support::TRIP_ID))
+                .header(header::AUTHORIZATION, format!("Bearer {token}"))
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::OK);
+    let body: Value =
+        serde_json::from_slice(&to_bytes(response.into_body(), 131072).await.unwrap()).unwrap();
+    let item = body["itineraryItems"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|item| item["id"] == support::ITEM_ID)
+        .unwrap();
+    assert_eq!(item["endTime"], Value::Null);
+    assert_eq!(item["endOffsetDays"], 0);
+}
+
+#[sqlx::test(migrations = "../../migrations")]
 async fn itinerary_patch_contract_accepts_end_time_without_start_time(pool: sqlx::PgPool) {
     support::seed_trip(&pool).await;
     let token = support::create_session(&pool, support::ORGANIZER_ID).await;
