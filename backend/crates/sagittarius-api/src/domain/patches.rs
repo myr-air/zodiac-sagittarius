@@ -69,10 +69,14 @@ pub struct CreateItineraryItemRequest {
 pub struct CreatePlanVariantRequest {
     pub client_mutation_id: String,
     pub name: String,
+    #[serde(default, deserialize_with = "deserialize_non_null_option")]
     pub kind: Option<String>,
+    #[serde(default, deserialize_with = "deserialize_non_null_option")]
     pub status: Option<String>,
     pub description: Option<String>,
+    #[serde(default, deserialize_with = "deserialize_non_null_option")]
     pub source_trip_plan_id: Option<Uuid>,
+    #[serde(default, deserialize_with = "deserialize_non_null_option")]
     pub creation_mode: Option<String>,
 }
 
@@ -88,7 +92,9 @@ pub struct PatchPlanVariantRequest {
 #[serde(rename_all = "camelCase")]
 pub struct PlanVariantPatch {
     pub name: Option<String>,
+    #[serde(default, deserialize_with = "deserialize_non_null_option")]
     pub kind: Option<String>,
+    #[serde(default, deserialize_with = "deserialize_non_null_option")]
     pub status: Option<String>,
     pub description: Option<String>,
 }
@@ -97,6 +103,7 @@ pub struct PlanVariantPatch {
 #[serde(rename_all = "camelCase")]
 pub struct PublishPlanVariantRequest {
     pub client_mutation_id: String,
+    #[serde(default, deserialize_with = "deserialize_non_null_option")]
     pub previous_main_next_status: Option<String>,
 }
 
@@ -1536,6 +1543,16 @@ where
     D: Deserializer<'de>,
 {
     Option::<Uuid>::deserialize(deserializer).map(Some)
+}
+
+fn deserialize_non_null_option<'de, D, T>(deserializer: D) -> Result<Option<T>, D::Error>
+where
+    D: Deserializer<'de>,
+    T: Deserialize<'de>,
+{
+    Option::<T>::deserialize(deserializer)?
+        .map(Some)
+        .ok_or_else(|| serde::de::Error::custom("field cannot be null"))
 }
 
 #[cfg(test)]

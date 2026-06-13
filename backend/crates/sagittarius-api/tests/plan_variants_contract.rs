@@ -682,6 +682,24 @@ async fn trip_plan_contract_rejects_unsupported_creation_modes_and_main_status(p
             }),
         ),
         (
+            "web-trip-plan-create-null-source",
+            json!({
+                "clientMutationId": "web-trip-plan-create-null-source",
+                "name": "Null source",
+                "status": "draft",
+                "sourceTripPlanId": null
+            }),
+        ),
+        (
+            "web-trip-plan-create-null-mode",
+            json!({
+                "clientMutationId": "web-trip-plan-create-null-mode",
+                "name": "Null mode",
+                "status": "draft",
+                "creationMode": null
+            }),
+        ),
+        (
             "web-trip-plan-create-main-status",
             json!({
                 "clientMutationId": "web-trip-plan-create-main-status",
@@ -715,11 +733,27 @@ async fn trip_plan_contract_rejects_unsupported_creation_modes_and_main_status(p
             }),
         ),
         (
+            "web-trip-plan-create-null-status",
+            json!({
+                "clientMutationId": "web-trip-plan-create-null-status",
+                "name": "Null status",
+                "status": null
+            }),
+        ),
+        (
             "web-trip-plan-create-bad-kind",
             json!({
                 "clientMutationId": "web-trip-plan-create-bad-kind",
                 "name": "Bad kind",
                 "kind": "rain"
+            }),
+        ),
+        (
+            "web-trip-plan-create-null-kind",
+            json!({
+                "clientMutationId": "web-trip-plan-create-null-kind",
+                "name": "Null kind",
+                "kind": null
             }),
         ),
     ] {
@@ -760,11 +794,15 @@ async fn trip_plan_contract_rejects_unsupported_creation_modes_and_main_status(p
              'Imported plan',
              'Unknown mode',
              'Copied source plan',
+             'Null source',
+             'Null mode',
              'Main by status',
              'Main by kind',
              'Conflicting status',
              'Bad status',
-             'Bad kind'
+             'Null status',
+             'Bad kind',
+             'Null kind'
            )",
     )
     .bind(Uuid::parse_str(support::TRIP_ID).unwrap())
@@ -809,9 +847,21 @@ async fn trip_plan_contract_rejects_main_status_and_empty_patch(pool: sqlx::PgPo
             }),
         ),
         (
+            "web-trip-plan-patch-null-status",
+            json!({
+                "status": null
+            }),
+        ),
+        (
             "web-trip-plan-patch-bad-kind",
             json!({
                 "kind": "rain"
+            }),
+        ),
+        (
+            "web-trip-plan-patch-null-kind",
+            json!({
+                "kind": null
             }),
         ),
         ("web-trip-plan-patch-empty", json!({})),
@@ -952,6 +1002,13 @@ async fn trip_plan_contract_rejects_invalid_set_main_status_without_writes(pool:
             json!({
                 "clientMutationId": "web-trip-plan-main-bad-type",
                 "previousMainNextStatus": 42
+            }),
+        ),
+        (
+            "web-trip-plan-main-null-status",
+            json!({
+                "clientMutationId": "web-trip-plan-main-null-status",
+                "previousMainNextStatus": null
             }),
         ),
     ] {
