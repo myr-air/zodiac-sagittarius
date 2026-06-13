@@ -333,6 +333,18 @@ async fn trip_plan_contract_accepts_canonical_routes_and_status(pool: sqlx::PgPo
     assert_eq!(payload["previousMainTripPlan"]["kind"], "backup");
     assert_eq!(payload["previousMainTripPlan"]["status"], "backup");
     assert_eq!(payload["trip"]["mainTripPlanId"], trip_plan_id);
+
+    let canonical_duplicate_event_count: i64 = sqlx::query_scalar(
+        "select count(*)
+         from realtime_events
+         where aggregate_id = $1
+           and event_type = 'trip_plan.updated'",
+    )
+    .bind(Uuid::parse_str(trip_plan_id).unwrap())
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(canonical_duplicate_event_count, 0);
 }
 
 #[sqlx::test(migrations = "../../migrations")]
@@ -837,6 +849,92 @@ async fn trip_plan_contract_rejects_invalid_set_main_status_without_writes(pool:
     assert_eq!(target_status, "backup");
     assert_eq!(realtime_event_count(&pool).await, event_count_after_create);
     assert_eq!(initial_event_count + 1, event_count_after_create);
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn trip_plan_contract_noop_set_main_keeps_previous_main_payload_null(pool: sqlx::PgPool) {
+    support::seed_trip(&pool).await;
+    sqlx::query(
+        "update plan_variants
+         set kind = 'draft', status = 'proposal'
+         where id = $1",
+    )
+    .bind(Uuid::parse_str(support::PLAN_ID).unwrap())
+    .execute(&pool)
+    .await
+    .unwrap();
+    let token = support::create_session(&pool, support::ORGANIZER_ID).await;
+    let app = support::app(pool.clone());
+    let initial_event_count = realtime_event_count(&pool).await;
+
+    let response = app
+        .oneshot(
+            Request::builder()
+                .method(Method::POST)
+                .uri(format!(
+                    "/api/v1/trips/{}/trip-plans/{}/set-main",
+                    support::TRIP_ID,
+                    support::PLAN_ID
+                ))
+                .header(header::AUTHORIZATION, format!("Bearer {token}"))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({
+                        "clientMutationId": "web-trip-plan-main-noop"
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::OK);
+    let trip: Value =
+        serde_json::from_slice(&to_bytes(response.into_body(), 65536).await.unwrap()).unwrap();
+    assert_eq!(trip["activePlanVariantId"], support::PLAN_ID);
+    assert_eq!(trip["mainTripPlanId"], support::PLAN_ID);
+
+    let stored_pair: (String, String) =
+        sqlx::query_as("select kind, status from plan_variants where id = $1")
+            .bind(Uuid::parse_str(support::PLAN_ID).unwrap())
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+    assert_eq!(stored_pair, ("main".to_string(), "main".to_string()));
+
+    let event_count_after_noop = realtime_event_count(&pool).await;
+    assert_eq!(event_count_after_noop, initial_event_count + 1);
+
+    let payload: Value = sqlx::query_scalar(
+        "select payload
+         from realtime_events
+         where client_mutation_id = 'web-trip-plan-main-noop'
+           and event_type = 'plan_variant.updated'
+           and aggregate_type = 'plan_variant'",
+    )
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(payload["activePlanVariantId"], support::PLAN_ID);
+    assert_eq!(payload["mainTripPlanId"], support::PLAN_ID);
+    assert_eq!(payload["tripPlan"]["id"], support::PLAN_ID);
+    assert_eq!(payload["tripPlan"]["kind"], "main");
+    assert_eq!(payload["tripPlan"]["status"], "main");
+    assert_eq!(payload["previousMainTripPlan"], Value::Null);
+    assert_eq!(payload["trip"]["activePlanVariantId"], support::PLAN_ID);
+    assert_eq!(payload["trip"]["mainTripPlanId"], support::PLAN_ID);
+
+    let canonical_duplicate_event_count: i64 = sqlx::query_scalar(
+        "select count(*)
+         from realtime_events
+         where client_mutation_id = 'web-trip-plan-main-noop'
+           and event_type = 'trip_plan.updated'",
+    )
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(canonical_duplicate_event_count, 0);
 }
 
 #[sqlx::test(migrations = "../../migrations")]
