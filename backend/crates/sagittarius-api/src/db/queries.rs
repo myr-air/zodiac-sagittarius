@@ -1645,11 +1645,15 @@ pub async fn update_stop_note(
     tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
     note_id: Uuid,
     body: &str,
+    trip_plan_id: Option<Uuid>,
     next_version: i64,
 ) -> Result<Option<StopNoteRecord>, sqlx::Error> {
     sqlx::query_as::<_, StopNoteRecord>(
         "update stop_notes
-         set body = $2, version = $3, updated_at = now()
+         set body = $2,
+             trip_plan_id = $3,
+             version = $4,
+             updated_at = now()
          where id = $1 and deleted_at is null
          returning
            id, trip_id, trip_plan_id, itinerary_item_id, author_id, body,
@@ -1657,6 +1661,7 @@ pub async fn update_stop_note(
     )
     .bind(note_id)
     .bind(body)
+    .bind(trip_plan_id)
     .bind(next_version)
     .fetch_optional(&mut **tx)
     .await

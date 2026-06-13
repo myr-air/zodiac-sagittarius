@@ -195,6 +195,61 @@ async fn stop_note_contract_author_can_patch_and_stale_patch_conflicts(pool: sql
 }
 
 #[sqlx::test(migrations = "../../migrations")]
+async fn stop_note_contract_patch_repairs_legacy_null_trip_plan_id(pool: sqlx::PgPool) {
+    support::seed_trip(&pool).await;
+    support::seed_stop_note(&pool).await;
+    sqlx::query("update stop_notes set trip_plan_id = null where id = $1")
+        .bind(Uuid::parse_str(support::STOP_NOTE_ID).unwrap())
+        .execute(&pool)
+        .await
+        .unwrap();
+    let token = support::create_session(&pool, support::TRAVELER_ID).await;
+    let app = support::app(pool.clone());
+
+    let response = app
+        .oneshot(
+            Request::builder()
+                .method(Method::PATCH)
+                .uri(format!(
+                    "/api/v1/trips/{}/stop-notes/{}",
+                    support::TRIP_ID,
+                    support::STOP_NOTE_ID
+                ))
+                .header(header::AUTHORIZATION, format!("Bearer {token}"))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({
+                        "clientMutationId": "stop-note-patch-repair-plan",
+                        "expectedVersion": 2,
+                        "body": "Legacy scope repaired"
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::OK);
+    let body: Value =
+        serde_json::from_slice(&to_bytes(response.into_body(), 65536).await.unwrap()).unwrap();
+    assert_eq!(body["tripPlanId"], support::PLAN_ID);
+    assert_eq!(body["body"], "Legacy scope repaired");
+    assert_eq!(body["version"], 3);
+
+    let stored_trip_plan_id: Uuid =
+        sqlx::query_scalar("select trip_plan_id from stop_notes where id = $1")
+            .bind(Uuid::parse_str(support::STOP_NOTE_ID).unwrap())
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+    assert_eq!(
+        stored_trip_plan_id,
+        Uuid::parse_str(support::PLAN_ID).unwrap()
+    );
+}
+
+#[sqlx::test(migrations = "../../migrations")]
 async fn stop_note_contract_author_can_delete_note(pool: sqlx::PgPool) {
     support::seed_trip(&pool).await;
     support::seed_stop_note(&pool).await;

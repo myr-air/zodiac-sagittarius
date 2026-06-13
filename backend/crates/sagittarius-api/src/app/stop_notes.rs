@@ -127,11 +127,19 @@ pub async fn patch_stop_note(
         })?;
         return Err(ServiceError::VersionConflictWithLatest(latest));
     }
+    let trip_plan_id = db::queries::itinerary_item_plan_variant_id_for_trip(
+        &mut tx,
+        trip_id,
+        existing.itinerary_item_id,
+    )
+    .await?
+    .ok_or(ServiceError::NotFound)?;
 
     let updated = db::queries::update_stop_note(
         &mut tx,
         note_id,
         request.body.trim(),
+        Some(trip_plan_id),
         request.expected_version + 1,
     )
     .await?
