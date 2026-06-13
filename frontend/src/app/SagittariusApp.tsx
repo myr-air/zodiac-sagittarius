@@ -426,10 +426,17 @@ export function SagittariusApp({
     [selectedTripPlanId, trip.itineraryItems],
   );
   useEffect(() => {
-    setSelectedTripPlanId((current) => {
-      if (trip.planVariants.some((plan) => plan.id === current)) return current;
-      return initialSelectedTripPlanId(trip);
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (cancelled) return;
+      setSelectedTripPlanId((current) => {
+        if (trip.planVariants.some((plan) => plan.id === current)) return current;
+        return initialSelectedTripPlanId(trip);
+      });
     });
+    return () => {
+      cancelled = true;
+    };
   }, [trip]);
   const pathOptions = useMemo(
     () =>
