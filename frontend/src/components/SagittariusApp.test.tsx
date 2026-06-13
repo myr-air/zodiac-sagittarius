@@ -22,12 +22,8 @@ import {
 } from "@/src/app/SagittariusApp";
 import {
   TripApiError,
-  type CreateBookingDocApiRequest,
   type CreateExpenseApiRequest,
   type CreateItineraryItemApiRequest,
-  type CreateStopNoteApiRequest,
-  type CreateTaskApiRequest,
-  type PlanCheck,
   type TripApiClient,
   type TripCockpit,
 } from "@/src/trip/api-client";
@@ -40,6 +36,7 @@ import { seedTrip } from "@/src/trip/seed";
 import { encodeTripId } from "@/src/trip/ids";
 import type {
   ItineraryItem,
+  PlanCheck,
   PlanVariant,
   StopNote,
   Suggestion,
@@ -4496,7 +4493,7 @@ describe("Sagittarius cockpit UI", () => {
       "Records detected: 1 expenses, 1 bookings, 1 notes, 1 tasks",
     );
     expect(dialog).toHaveTextContent(
-      "Import applies them to the current Trip Plan",
+      "They stay as source references and are not imported into this Trip Plan",
     );
     await user.clear(within(dialog).getByLabelText(/ชื่อ path/i));
     await user.type(within(dialog).getByLabelText(/ชื่อ path/i), "Plan B");
@@ -4508,57 +4505,36 @@ describe("Sagittarius cockpit UI", () => {
       screen.getByRole("row", { name: /Imported noodle lunch/i }),
     ).toBeInTheDocument();
     const persistedTrip = JSON.parse(localStorage.getItem(tripStorageKey)!) as Trip;
-    const importedExpense = persistedTrip.expenses.find(
-      (expense) => expense.title === "Imported real receipt",
-    );
-    const importedBooking = persistedTrip.bookingDocs?.find(
-      (booking) => booking.title === "Imported lunch reservation",
-    );
-    const importedNote = persistedTrip.stopNotes?.find(
-      (note) => note.body === "Ask for the corner table.",
-    );
-    const importedTask = persistedTrip.tasks?.find(
-      (task) => task.title === "Confirm imported lunch",
-    );
-    expect(importedExpense).toMatchObject({
-      tripId: seedTrip.id,
-      tripPlanId: "plan-variant-backup",
-      itineraryItemId: "imported-lunch",
-      version: 1,
-    });
-    expect(importedExpense?.id).toMatch(/^expense-local-/);
-    expect(importedBooking).toMatchObject({
-      tripId: seedTrip.id,
-      tripPlanId: "plan-variant-backup",
-      relatedItineraryItemIds: ["imported-lunch"],
-      relatedExpenseIds: [importedExpense?.id],
-      noteIds: [importedNote?.id],
-      version: 1,
-    });
-    expect(importedBooking?.id).toMatch(/^booking-local-/);
-    expect(importedNote).toMatchObject({
-      tripId: seedTrip.id,
-      tripPlanId: "plan-variant-backup",
-      itemId: "imported-lunch",
-      version: 1,
-    });
-    expect(importedNote?.id).toMatch(/^note-local-/);
-    expect(importedTask).toMatchObject({
-      tripPlanId: "plan-variant-backup",
-      relatedItemId: "imported-lunch",
-      version: 1,
-    });
-    expect(importedTask?.id).toMatch(/^task-local-/);
+    expect(
+      persistedTrip.expenses.some(
+        (expense) => expense.title === "Imported real receipt",
+      ),
+    ).toBe(false);
+    expect(
+      (persistedTrip.bookingDocs ?? []).some(
+        (booking) => booking.title === "Imported lunch reservation",
+      ),
+    ).toBe(false);
+    expect(
+      (persistedTrip.stopNotes ?? []).some(
+        (note) => note.body === "Ask for the corner table.",
+      ),
+    ).toBe(false);
+    expect(
+      (persistedTrip.tasks ?? []).some(
+        (task) => task.title === "Confirm imported lunch",
+      ),
+    ).toBe(false);
     await user.click(screen.getByRole("link", { name: /ภาพรวม/i }));
     expect(
-      await screen.findByText("Confirm imported lunch"),
-    ).toBeInTheDocument();
+      screen.queryByText("Confirm imported lunch"),
+    ).not.toBeInTheDocument();
     expect(prompt).not.toHaveBeenCalled();
     expect(confirm).not.toHaveBeenCalled();
     expect(alert).not.toHaveBeenCalled();
   });
 
-  it("applies API itinerary imports with hierarchy, time windows, and remapped records", async () => {
+  it("applies API itinerary imports with hierarchy and keeps records source-only", async () => {
     const user = userEvent.setup();
     const apiTrip = {
       ...tripWithPlans(),
@@ -4730,84 +4706,10 @@ describe("Sagittarius cockpit UI", () => {
             note: request.note ?? "",
           }),
       );
-    const createTask = vi
-      .fn()
-      .mockImplementation(
-        (
-          _tripId: string,
-          _sessionToken: string,
-          request: CreateTaskApiRequest,
-        ) =>
-          Promise.resolve({
-            id: "api-task",
-            status: "open",
-            createdBy: "member-aom",
-            version: 1,
-            ...request,
-          }),
-      );
-    const createStopNote = vi
-      .fn()
-      .mockImplementation(
-        (
-          _tripId: string,
-          _sessionToken: string,
-          request: CreateStopNoteApiRequest,
-        ) =>
-          Promise.resolve({
-            id: "api-note",
-            tripId: apiTrip.id,
-            tripPlanId: request.tripPlanId,
-            itemId: request.itineraryItemId,
-            authorId: "member-aom",
-            body: request.body,
-            createdAt: "2026-06-06T00:00:00.000Z",
-            updatedAt: "2026-06-06T00:00:00.000Z",
-            version: 1,
-          }),
-      );
-    const createExpense = vi
-      .fn()
-      .mockImplementation(
-        (
-          _tripId: string,
-          _sessionToken: string,
-          request: CreateExpenseApiRequest,
-        ) =>
-          Promise.resolve({
-            id: "api-expense",
-            tripId: apiTrip.id,
-            amount: request.amountMinor / 100,
-            version: 1,
-            ...request,
-            notes: request.notes ?? "",
-            receiptUrl: request.receiptUrl ?? null,
-            lineItems: request.lineItems ?? [],
-            comments: request.comments ?? [],
-            splits: normalizeExpenseSplitsFromMinor(request.splits),
-          }),
-      );
-    const createBookingDoc = vi
-      .fn()
-      .mockImplementation(
-        (
-          _tripId: string,
-          _sessionToken: string,
-          request: CreateBookingDocApiRequest,
-        ) =>
-          Promise.resolve({
-            id: "api-booking",
-            tripId: apiTrip.id,
-            createdBy: "member-aom",
-            updatedAt: "2026-06-06T00:00:00.000Z",
-            version: 1,
-            ...request,
-            externalLinks: request.externalLinks.map((link, index) => ({
-              id: `api-link-${index + 1}`,
-              ...link,
-            })),
-          }),
-      );
+    const createTask = vi.fn();
+    const createStopNote = vi.fn();
+    const createExpense = vi.fn();
+    const createBookingDoc = vi.fn();
     const apiClient = createApiClientForTrip(apiTrip, {
       importItinerary: vi.fn().mockResolvedValue(importedDocument),
       createItineraryItem,
@@ -4878,51 +4780,18 @@ describe("Sagittarius cockpit UI", () => {
         timeMode: "flexible",
       }),
     );
-    expect(createTask).toHaveBeenCalledWith(
-      apiTrip.id,
-      "session-token",
-      expect.objectContaining({
-        tripPlanId: "plan-variant-backup",
-        relatedItemId: "api-flight-block",
-      }),
-    );
-    expect(createStopNote).toHaveBeenCalledWith(
-      apiTrip.id,
-      "session-token",
-      expect.objectContaining({
-        tripPlanId: "plan-variant-backup",
-        itineraryItemId: "api-flight-block",
-      }),
-    );
-    expect(createExpense).toHaveBeenCalledWith(
-      apiTrip.id,
-      "session-token",
-      expect.objectContaining({
-        tripPlanId: "plan-variant-backup",
-        amountMinor: 12000,
-        splits: { "member-aom": 12000 },
-        itineraryItemId: "api-flight-block",
-      }),
-    );
-    expect(createBookingDoc).toHaveBeenCalledWith(
-      apiTrip.id,
-      "session-token",
-      expect.objectContaining({
-        tripPlanId: "plan-variant-backup",
-        relatedItineraryItemIds: ["api-flight-block"],
-        relatedTaskIds: ["api-task"],
-        relatedExpenseIds: ["api-expense"],
-        noteIds: ["api-note"],
-      }),
-    );
+    expect(createTask).not.toHaveBeenCalled();
+    expect(createStopNote).not.toHaveBeenCalled();
+    expect(createExpense).not.toHaveBeenCalled();
+    expect(createBookingDoc).not.toHaveBeenCalled();
     const importedRow = await screen.findByRole("row", {
       name: /Imported API flight block/i,
     });
     expect(importedRow).toBeInTheDocument();
-    expect(within(importedRow).getByText("1 booking")).toBeInTheDocument();
-    expect(within(importedRow).getByText("1 expense")).toBeInTheDocument();
-    expect(within(importedRow).getByText("1 task")).toBeInTheDocument();
-    expect(within(importedRow).getByText("1 note")).toBeInTheDocument();
+    expect(within(importedRow).queryByText("1 booking")).not.toBeInTheDocument();
+    expect(within(importedRow).queryByText("1 expense")).not.toBeInTheDocument();
+    expect(within(importedRow).queryByText("1 task")).not.toBeInTheDocument();
+    expect(within(importedRow).queryByText("1 note")).not.toBeInTheDocument();
   }, 45_000);
 
   it("creates a named local Trip Plan and selects it without copying itinerary rows", async () => {
@@ -5916,7 +5785,10 @@ describe("Sagittarius cockpit UI", () => {
         name: /เลือกจุด Promoted after demote coffee/i,
       }),
     ).toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: /ปิดรายละเอียด/i }));
+    const closeDetails = screen.queryByRole("button", {
+      name: /ปิดรายละเอียด/i,
+    });
+    if (closeDetails) await user.click(closeDetails);
     await user.click(
       screen.getByRole("button", { name: /เลือกจุด เดินเล่นย่าน Central/i }),
     );
