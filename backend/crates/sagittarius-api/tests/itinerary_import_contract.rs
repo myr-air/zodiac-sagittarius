@@ -413,6 +413,68 @@ async fn itinerary_import_contract_accepts_compatible_plan_metadata(pool: sqlx::
 }
 
 #[sqlx::test(migrations = "../../migrations")]
+async fn itinerary_import_contract_conflicting_source_plan_aliases_do_not_switch_main_plan(
+    pool: sqlx::PgPool,
+) {
+    support::seed_trip(&pool).await;
+    let token = support::create_session(&pool, support::ORGANIZER_ID).await;
+    let app = support::app(pool.clone());
+    let mut source = base_import_source(json!([import_item(
+        "conflict-source-1",
+        "2026-06-19",
+        Value::Null,
+        true
+    )]));
+    source["trip"]["activePlanVariantId"] = json!("018f4e82-3000-7c00-b111-0000000000a1");
+    source["trip"]["mainTripPlanId"] = json!("018f4e82-3000-7c00-b111-0000000000a2");
+
+    let response = app
+        .oneshot(
+            Request::builder()
+                .method(Method::POST)
+                .uri(format!(
+                    "/api/v1/trips/{}/itinerary-imports",
+                    support::TRIP_ID
+                ))
+                .header(header::AUTHORIZATION, format!("Bearer {token}"))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({
+                        "fileName": "itinerary.json",
+                        "contentType": "application/json",
+                        "mode": "json",
+                        "content": source.to_string()
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::OK);
+    let body: Value =
+        serde_json::from_slice(&to_bytes(response.into_body(), 131072).await.unwrap()).unwrap();
+    assert_eq!(
+        body["trip"]["activePlanVariantId"],
+        support::PLAN_ID.to_string()
+    );
+    assert_eq!(body["trip"]["mainTripPlanId"], support::PLAN_ID.to_string());
+    assert_eq!(body["items"][0]["id"], "conflict-source-1");
+
+    let stored_main_plan_id: uuid::Uuid =
+        sqlx::query_scalar("select active_plan_variant_id from trips where id = $1")
+            .bind(uuid::Uuid::parse_str(support::TRIP_ID).unwrap())
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+    assert_eq!(
+        stored_main_plan_id,
+        uuid::Uuid::parse_str(support::PLAN_ID).unwrap()
+    );
+}
+
+#[sqlx::test(migrations = "../../migrations")]
 async fn itinerary_import_contract_rejects_dangling_record_references(pool: sqlx::PgPool) {
     support::seed_trip(&pool).await;
     let token = support::create_session(&pool, support::ORGANIZER_ID).await;
