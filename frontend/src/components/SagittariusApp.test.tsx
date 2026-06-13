@@ -5255,6 +5255,15 @@ describe("Sagittarius cockpit UI", () => {
           schema: "joii.itinerary.export",
           version: 1,
           exportedAt: "2026-06-06T00:00:00.000Z",
+          trip: {
+            id: "source-trip-conflicting-aliases",
+            name: "Source trip",
+            destinationLabel: "Source destination",
+            startDate: seedTrip.startDate,
+            endDate: seedTrip.endDate,
+            activePlanVariantId: "source-legacy-plan",
+            mainTripPlanId: "source-canonical-main-plan",
+          },
           items: [
             {
               id: "imported-current-sheet",
@@ -5312,6 +5321,8 @@ describe("Sagittarius cockpit UI", () => {
         }),
       ]),
     );
+    expect(persistedTrip.activePlanVariantId).toBe(draftTrip.activePlanVariantId);
+    expect(persistedTrip.mainTripPlanId).toBe(draftTrip.mainTripPlanId);
   });
 
   it("creates a Trip Plan through the API, then selects it without publishing", async () => {
