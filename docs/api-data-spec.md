@@ -442,6 +442,13 @@ Example PATCH:
 
 - `POST /api/v1/trip-join-sessions`
   Verifies `{ joinCode, tripPassword }` and returns safe trip metadata, claimable members, and a short-lived `joinSessionToken`.
+  Phase 1 trip summaries include both `mainTripPlanId` and deprecated
+  `activePlanVariantId`. The join response does not need to include a Trip
+  Plan list.
+- `GET /api/v1/trip-join-invite-tokens/current?token=:token`
+  Returns safe invite-token trip metadata for the current token. Phase 1 trip
+  summaries include both `mainTripPlanId` and deprecated
+  `activePlanVariantId`, without requiring a Trip Plan list.
 - `POST /api/v1/trips/:tripId/members/:memberId/claims`
   First-time guest participant claim with `{ participantPassword }`; stores a password hash and returns a member session.
 - `POST /api/v1/trips/:tripId/member-sessions`

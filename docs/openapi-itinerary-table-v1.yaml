@@ -93,6 +93,10 @@ paths:
           description: Invalid request.
         "409":
           description: Version conflict with latest Trip Plan summary.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VersionConflictTripPlanResponse"
   /api/v1/trips/{tripId}/trip-plans/{tripPlanId}/set-main:
     post:
       summary: Select a Trip Plan as the Main Plan.
@@ -154,6 +158,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/TripPlanSummary"
+        "400":
+          description: Invalid request.
+        "409":
+          description: Version conflict with latest Trip Plan summary.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VersionConflictTripPlanResponse"
   /api/v1/trips/{tripId}/plan-variants/{planVariantId}/publications:
     post:
       summary: Legacy Main Plan selection route retained during Phase 1 compatibility.
@@ -348,6 +360,24 @@ components:
       properties:
         trip:
           $ref: "#/components/schemas/TripSummary"
+    ErrorResponse:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+    VersionConflictTripPlanResponse:
+      allOf:
+        - $ref: "#/components/schemas/ErrorResponse"
+        - type: object
+          required: [latest]
+          properties:
+            code:
+              const: version_conflict
+            latest:
+              $ref: "#/components/schemas/TripPlanSummary"
     TripPlanSummary:
       type: object
       required: [id, tripId, name, kind, status, description, version]
@@ -563,7 +593,7 @@ components:
       properties:
         trip:
           type: object
-          required: [id, activePlanVariantId, mainTripPlanId, tripPlans]
+          required: [id, activePlanVariantId, mainTripPlanId, planVariants, tripPlans]
           properties:
             id:
               type: string
@@ -572,6 +602,11 @@ components:
               deprecated: true
             mainTripPlanId:
               type: string
+            planVariants:
+              type: array
+              deprecated: true
+              items:
+                $ref: "#/components/schemas/TripPlanSummary"
             tripPlans:
               type: array
               items:
