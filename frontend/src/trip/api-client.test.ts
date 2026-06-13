@@ -822,6 +822,55 @@ describe("Trip API client", () => {
     });
   });
 
+  it("prefers canonical tripPlans when mixed cockpit aliases drift", () => {
+    const canonicalPlan = {
+      ...cockpitResponse.tripPlans![0],
+      id: "018f4e82-3000-7c00-b111-0000000000c4",
+      kind: "draft" as const,
+      status: "draft" as const,
+      name: "Canonical draft",
+      version: 3,
+    };
+    const staleLegacyPlan = {
+      ...cockpitResponse.planVariants![0],
+      id: "018f4e82-3000-7c00-b111-0000000000c5",
+      kind: "backup" as const,
+      status: "backup" as const,
+      name: "Stale legacy backup",
+      version: 1,
+    };
+
+    const cockpit = mapCockpitResponse({
+      ...cockpitResponse,
+      trip: {
+        ...cockpitResponse.trip,
+        activePlanVariantId: staleLegacyPlan.id,
+        mainTripPlanId: canonicalPlan.id,
+      },
+      planVariants: [staleLegacyPlan],
+      tripPlans: [canonicalPlan],
+    });
+
+    expect(cockpit.trip.activePlanVariantId).toBe(staleLegacyPlan.id);
+    expect(cockpit.trip.mainTripPlanId).toBe(canonicalPlan.id);
+    expect(cockpit.trip.tripPlans).toHaveLength(1);
+    expect(cockpit.trip.planVariants).toHaveLength(1);
+    expect(cockpit.trip.tripPlans?.[0]).toMatchObject({
+      id: canonicalPlan.id,
+      name: "Canonical draft",
+      kind: "main",
+      status: "main",
+      version: 3,
+    });
+    expect(cockpit.trip.planVariants[0]).toMatchObject({
+      id: canonicalPlan.id,
+      name: "Canonical draft",
+      kind: "main",
+      status: "main",
+      version: 3,
+    });
+  });
+
   it("keeps the Main Plan pointer authoritative when plan status disagrees", () => {
     const pointerPlan = {
       ...cockpitResponse.tripPlans![0],

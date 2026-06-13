@@ -868,12 +868,10 @@ export function mapCockpitResponse(response: TripCockpitResponse): TripCockpit {
   const planResponses = canonicalPlanResponses.length ? canonicalPlanResponses : legacyPlanResponses;
   const mainTripPlanId = response.trip.mainTripPlanId ?? response.trip.activePlanVariantId ?? planResponses[0]?.id ?? "";
   const activePlanVariantId = response.trip.activePlanVariantId ?? mainTripPlanId;
-  const planVariants = legacyPlanResponses.length ? legacyPlanResponses : planResponses;
-  const tripPlans = canonicalPlanResponses.length ? canonicalPlanResponses : legacyPlanResponses;
-  const mappedPlanVariants = planVariants.map((plan) =>
+  const mappedPlanVariants = planResponses.map((plan) =>
     normalizePlanVariantForMainPointer(mapPlanVariant(plan), mainTripPlanId),
   );
-  const mappedTripPlans = tripPlans.map((plan) =>
+  const mappedTripPlans = planResponses.map((plan) =>
     normalizePlanVariantForMainPointer(mapPlanVariant(plan), mainTripPlanId),
   );
   return {
