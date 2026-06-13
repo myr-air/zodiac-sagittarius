@@ -2559,7 +2559,11 @@ export function SagittariusApp({
           title,
           visibility,
           kind: "prep",
-          tripPlanId: tripPlanIdForRecord(trip, input.relatedItemId ?? null),
+          tripPlanId: tripPlanIdForRecord(
+            trip,
+            input.relatedItemId ?? null,
+            selectedTripPlanId,
+          ),
           /* v8 ignore next */
           assigneeId:
             visibility === "shared"
@@ -2579,7 +2583,11 @@ export function SagittariusApp({
         status: "open",
         visibility,
         kind: "prep",
-        tripPlanId: tripPlanIdForRecord(trip, input.relatedItemId ?? null),
+        tripPlanId: tripPlanIdForRecord(
+          trip,
+          input.relatedItemId ?? null,
+          selectedTripPlanId,
+        ),
         createdBy: currentMember.id,
         /* v8 ignore next */
         assigneeId:
@@ -2707,7 +2715,11 @@ export function SagittariusApp({
             ...serializeBookingDocInputForApi({
               ...input,
               title,
-              tripPlanId: tripPlanIdForBookingRecord(trip, input),
+              tripPlanId: tripPlanIdForBookingRecord(
+                trip,
+                input,
+                selectedTripPlanId,
+              ),
             }),
           },
         );
@@ -2738,7 +2750,7 @@ export function SagittariusApp({
     const bookingDoc: BookingDoc = {
       id: nextLocalBookingDocId(trip.bookingDocs ?? []),
       tripId: trip.id,
-      tripPlanId: tripPlanIdForBookingRecord(trip, input),
+      tripPlanId: tripPlanIdForBookingRecord(trip, input, selectedTripPlanId),
       ...input,
       title,
       externalLinks: input.externalLinks.map((link, index) => ({
@@ -3070,7 +3082,11 @@ export function SagittariusApp({
         {
           clientMutationId: nextClientMutationId("stop-note-create"),
           itineraryItemId: input.itemId,
-          tripPlanId: tripPlanIdForRecord(trip, input.itemId),
+          tripPlanId: tripPlanIdForRecord(
+            trip,
+            input.itemId,
+            selectedTripPlanId,
+          ),
           body,
         },
       );
@@ -3082,7 +3098,7 @@ export function SagittariusApp({
       {
         id: nextLocalStopNoteId(current),
         tripId: trip.id,
-        tripPlanId: tripPlanIdForRecord(trip, input.itemId),
+        tripPlanId: tripPlanIdForRecord(trip, input.itemId, selectedTripPlanId),
         itemId: input.itemId,
         authorId: currentMember.id,
         body,
@@ -3205,7 +3221,11 @@ export function SagittariusApp({
             receiptUrl: repeatedInput.receiptUrl ?? null,
             lineItems: repeatedInput.lineItems,
             comments: repeatedInput.comments ?? [],
-            tripPlanId: tripPlanIdForRecord(trip, repeatedInput.itemId),
+            tripPlanId: tripPlanIdForRecord(
+              trip,
+              repeatedInput.itemId,
+              selectedTripPlanId,
+            ),
             paidBy: repeatedInput.paidBy,
             category: repeatedInput.category,
             splits: expenseSplitsToMinor(splits),
@@ -3250,7 +3270,11 @@ export function SagittariusApp({
           receiptUrl: repeatedInput.receiptUrl ?? null,
           lineItems: repeatedInput.lineItems ?? [],
           comments: repeatedInput.comments ?? [],
-          tripPlanId: tripPlanIdForRecord(current, repeatedInput.itemId),
+          tripPlanId: tripPlanIdForRecord(
+            current,
+            repeatedInput.itemId,
+            selectedTripPlanId,
+          ),
           paidBy: repeatedInput.paidBy,
           category: repeatedInput.category,
           splits,
@@ -4464,6 +4488,7 @@ export function nextLocalBookingDocId(bookingDocs: BookingDoc[]): string {
 function tripPlanIdForRecord(
   trip: Trip,
   itineraryItemId?: string | null,
+  fallbackTripPlanId?: string | null,
 ): string | null {
   if (itineraryItemId) {
     const item = trip.itineraryItems.find(
@@ -4471,7 +4496,9 @@ function tripPlanIdForRecord(
     );
     if (item?.planVariantId) return item.planVariantId;
   }
-  return trip.activePlanVariantId || trip.mainTripPlanId || null;
+  return (
+    fallbackTripPlanId || trip.mainTripPlanId || trip.activePlanVariantId || null
+  );
 }
 
 function initialSelectedTripPlanId(trip: Trip): string {
@@ -4487,12 +4514,13 @@ function initialSelectedTripPlanId(trip: Trip): string {
 function tripPlanIdForBookingRecord(
   trip: Trip,
   input: Pick<BookingDocInput, "relatedItineraryItemIds">,
+  fallbackTripPlanId?: string | null,
 ): string | null {
   for (const itemId of input.relatedItineraryItemIds) {
     const tripPlanId = tripPlanIdForRecord(trip, itemId);
     if (tripPlanId) return tripPlanId;
   }
-  return tripPlanIdForRecord(trip, null);
+  return tripPlanIdForRecord(trip, null, fallbackTripPlanId);
 }
 
 function selectTripPlanRecords(

@@ -1695,6 +1695,45 @@ describe("Sagittarius cockpit UI", () => {
     });
   });
 
+  it("adds unlinked local expenses to the selected Trip Plan", async () => {
+    const user = userEvent.setup();
+    const storage = installLocalStorageStub();
+    const draftTrip = tripWithPlans();
+    storage.setItem(tripStorageKey, JSON.stringify(draftTrip));
+
+    render(<SagittariusApp initialView="itinerary" />);
+
+    await screen.findByRole("option", { name: "Rain Plan - ร่าง" });
+    await user.selectOptions(screen.getByLabelText("Trip Plan"), [
+      "plan-variant-backup",
+    ]);
+    await user.click(screen.getByRole("link", { name: /ค่าใช้จ่าย/i }));
+    await user.click(
+      await screen.findByRole("button", { name: /เพิ่มค่าใช้จ่าย/i }),
+    );
+    const dialog = screen.getByRole("dialog", { name: /เพิ่มค่าใช้จ่าย/i });
+    await user.type(
+      within(dialog).getByLabelText(/ชื่อค่าใช้จ่าย/i),
+      "Rain plan taxi",
+    );
+    await user.clear(within(dialog).getByLabelText(/จำนวนเงิน/i));
+    await user.type(within(dialog).getByLabelText(/จำนวนเงิน/i), "180");
+    await user.click(
+      within(dialog).getByRole("button", { name: /บันทึกค่าใช้จ่าย/i }),
+    );
+
+    expect(await screen.findByText("Rain plan taxi")).toBeInTheDocument();
+    const persistedTrip = JSON.parse(storage.getItem(tripStorageKey)!) as Trip;
+    expect(
+      persistedTrip.expenses.find((expense) => expense.title === "Rain plan taxi"),
+    ).toMatchObject({
+      tripPlanId: "plan-variant-backup",
+      itineraryItemId: null,
+    });
+    expect(persistedTrip.mainTripPlanId).toBe(draftTrip.mainTripPlanId);
+    expect(persistedTrip.activePlanVariantId).toBe(draftTrip.activePlanVariantId);
+  });
+
   it("creates overview tasks through the API client after backend login", async () => {
     const user = userEvent.setup();
     const ownerTrip = {
