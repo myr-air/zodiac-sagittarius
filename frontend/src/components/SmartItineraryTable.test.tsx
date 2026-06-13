@@ -249,6 +249,15 @@ describe("SmartItineraryTable", () => {
     expect(screen.getByRole("option", { name: "แผนหลัก" })).toBeDisabled();
   });
 
+  it("disables status changes and set-main for the current Main Plan", () => {
+    renderTable({
+      selectedTripPlanId: tripFixture.trip.mainTripPlanId ?? tripFixture.trip.activePlanVariantId,
+    });
+
+    expect(screen.getByLabelText("สถานะแผน")).toBeDisabled();
+    expect(screen.getByRole("button", { name: "ใช้เป็นแผนหลัก" })).toBeDisabled();
+  });
+
   it("lets an organizer create a named Trip Plan", async () => {
     const user = userEvent.setup();
     const onCreateTripPlan = vi.fn();
