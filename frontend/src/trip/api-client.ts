@@ -865,6 +865,8 @@ export function mapCockpitResponse(response: TripCockpitResponse): TripCockpit {
   }
   const legacyPlanResponses = response.planVariants ?? [];
   const canonicalPlanResponses = (response.tripPlans ?? []).map(assertTripPlanResponse);
+  assertTripPlanResponseAliasesMatch(canonicalPlanResponses, legacyPlanResponses);
+  assertMainPlanPointerAliasesMatch(response.trip);
   const planResponses = canonicalPlanResponses.length ? canonicalPlanResponses : legacyPlanResponses;
   const mainTripPlanId = response.trip.mainTripPlanId ?? response.trip.activePlanVariantId ?? planResponses[0]?.id ?? "";
   const activePlanVariantId = response.trip.activePlanVariantId ?? mainTripPlanId;
@@ -992,6 +994,45 @@ function assertTripPlanResponse(variant: PlanVariantResponse): TripPlanResponse 
     });
   }
   return variant as TripPlanResponse;
+}
+
+function assertTripPlanResponseAliasesMatch(
+  canonicalPlans: TripPlanResponse[],
+  legacyPlans: PlanVariantResponse[],
+): void {
+  if (canonicalPlans.length === 0 || legacyPlans.length === 0) return;
+  if (canonicalPlans.length !== legacyPlans.length) {
+    throwInvalidTripPlanAliasDrift();
+  }
+  for (const [index, canonicalPlan] of canonicalPlans.entries()) {
+    const legacyPlan = legacyPlans[index];
+    if (
+      !legacyPlan ||
+      canonicalPlan.id !== legacyPlan.id ||
+      canonicalPlan.name !== legacyPlan.name ||
+      canonicalPlan.version !== legacyPlan.version
+    ) {
+      throwInvalidTripPlanAliasDrift();
+    }
+  }
+}
+
+function assertMainPlanPointerAliasesMatch(trip: TripSummaryResponse): void {
+  if (
+    trip.activePlanVariantId &&
+    trip.mainTripPlanId &&
+    trip.activePlanVariantId !== trip.mainTripPlanId
+  ) {
+    throwInvalidTripPlanAliasDrift();
+  }
+}
+
+function throwInvalidTripPlanAliasDrift(): never {
+  throw new TripApiError({
+    code: "invalid_response",
+    message: "cockpit Trip Plan compatibility aliases do not match",
+    status: 0,
+  });
 }
 
 function statusForLegacyKind(kind: PlanVariant["kind"]): PlanStatus {

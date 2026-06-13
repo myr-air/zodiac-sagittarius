@@ -361,6 +361,7 @@ describe("Trip API client", () => {
       trip: {
         ...document.trip,
         mainTripPlanId: cockpitResponse.trip.activePlanVariantId,
+        planVariants: [],
         tripPlans: [],
         partySize: undefined,
         defaultTimezone: undefined,
@@ -834,7 +835,7 @@ describe("Trip API client", () => {
     ).toThrow(TripApiError);
   });
 
-  it("prefers canonical tripPlans when mixed cockpit aliases drift", () => {
+  it("rejects mixed cockpit Trip Plan aliases when identities or versions drift", () => {
     const canonicalPlan = {
       ...cockpitResponse.tripPlans![0],
       id: "018f4e82-3000-7c00-b111-0000000000c4",
@@ -852,35 +853,48 @@ describe("Trip API client", () => {
       version: 1,
     };
 
-    const cockpit = mapCockpitResponse({
-      ...cockpitResponse,
-      trip: {
-        ...cockpitResponse.trip,
-        activePlanVariantId: staleLegacyPlan.id,
-        mainTripPlanId: canonicalPlan.id,
-      },
-      planVariants: [staleLegacyPlan],
-      tripPlans: [canonicalPlan],
-    });
+    expect(() =>
+      mapCockpitResponse({
+        ...cockpitResponse,
+        trip: {
+          ...cockpitResponse.trip,
+          activePlanVariantId: canonicalPlan.id,
+          mainTripPlanId: canonicalPlan.id,
+        },
+        planVariants: [staleLegacyPlan],
+        tripPlans: [canonicalPlan],
+      }),
+    ).toThrow(TripApiError);
 
-    expect(cockpit.trip.activePlanVariantId).toBe(staleLegacyPlan.id);
-    expect(cockpit.trip.mainTripPlanId).toBe(canonicalPlan.id);
-    expect(cockpit.trip.tripPlans).toHaveLength(1);
-    expect(cockpit.trip.planVariants).toHaveLength(1);
-    expect(cockpit.trip.tripPlans?.[0]).toMatchObject({
-      id: canonicalPlan.id,
-      name: "Canonical draft",
-      kind: "main",
-      status: "main",
-      version: 3,
-    });
-    expect(cockpit.trip.planVariants[0]).toMatchObject({
-      id: canonicalPlan.id,
-      name: "Canonical draft",
-      kind: "main",
-      status: "main",
-      version: 3,
-    });
+    expect(() =>
+      mapCockpitResponse({
+        ...cockpitResponse,
+        trip: {
+          ...cockpitResponse.trip,
+          activePlanVariantId: canonicalPlan.id,
+          mainTripPlanId: canonicalPlan.id,
+        },
+        planVariants: [{ ...canonicalPlan, version: canonicalPlan.version - 1 }],
+        tripPlans: [canonicalPlan],
+      }),
+    ).toThrow(TripApiError);
+  });
+
+  it("rejects mixed cockpit Main Plan pointer aliases when they drift", () => {
+    const plan = cockpitResponse.tripPlans![0];
+
+    expect(() =>
+      mapCockpitResponse({
+        ...cockpitResponse,
+        trip: {
+          ...cockpitResponse.trip,
+          activePlanVariantId: "018f4e82-3000-7c00-b111-0000000000d1",
+          mainTripPlanId: plan.id,
+        },
+        planVariants: [plan],
+        tripPlans: [plan],
+      }),
+    ).toThrow(TripApiError);
   });
 
   it("keeps the Main Plan pointer authoritative when plan status disagrees", () => {
