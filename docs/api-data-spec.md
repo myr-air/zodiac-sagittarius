@@ -141,6 +141,7 @@ CREATE TABLE suggestions (
 CREATE TABLE expenses (
   id uuid PRIMARY KEY,
   trip_id uuid NOT NULL REFERENCES trips(id),
+  trip_plan_id uuid REFERENCES plan_variants(id),
   title text NOT NULL,
   amount_minor integer NOT NULL,
   currency text NOT NULL DEFAULT 'HKD',
@@ -212,6 +213,13 @@ CREATE INDEX trip_join_sessions_trip_active_idx
 CREATE INDEX realtime_events_trip_created_idx
   ON realtime_events (trip_id, created_at DESC);
 ```
+
+Compatibility note: `trip_plan_id` on expenses is nullable during the Trip Plan
+compatibility window because legacy rows and support scripts may predate
+plan-scoped records. When present, it identifies the Trip Plan where the Actual
+Expense occurred. Changing the Main Plan must not rewrite existing
+`expenses.trip_plan_id`; moving, cancelling, refunding, or duplicating an
+Actual Expense as a Plan Estimate is an explicit user action.
 
 ## REST API
 

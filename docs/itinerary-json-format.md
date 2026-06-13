@@ -71,8 +71,12 @@ Schema envelope:
 Import behavior:
 
 - Only files with `schema: "joii.itinerary.export"` and `version: 1` are accepted.
-- Import asks for a target path before applying rows. The target can be main,
-  an existing named path, or a new named path.
+- Import asks for a target Trip Plan before applying rows. Imported rows are
+  assigned to that destination Trip Plan unless a later import mode explicitly
+  says otherwise.
+- Imported rows may also carry optional Activity Path fields for comparing
+  route options inside a day or itinerary block. Activity Path is separate from
+  the target Trip Plan.
 - Imported rows can carry optional activity branch fields: `pathGroupId`,
   `pathId`, `pathName`, and `pathRole`.
 - Imported rows preserve itinerary hierarchy and time-window fields:

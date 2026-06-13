@@ -19,3 +19,11 @@ compatibility state in Phase 0/1, but it is not canonical Alternative Path
 semantics. New imports must not synthesize Alternative Paths from sibling
 overlaps, and Phase 4 needs a separate ADR before deleting, migrating, or
 explicitly converting legacy path data.
+
+**Contract freeze detail**: Phase 1 compatibility responses must be additive and
+deterministic. Backend-owned Trip Plan responses emit `status`; mixed
+`tripPlans`/`planVariants` payloads must not drift; import/export compatibility
+uses the existing top-level `trip` envelope rather than inventing a parallel
+`metadata` envelope; create, patch, and set-main realtime mutations keep legacy
+`plan_variant.*` wrappers while carrying canonical aliases; and Main Plan repair
+always follows the stored trip pointer before repairable status metadata.
