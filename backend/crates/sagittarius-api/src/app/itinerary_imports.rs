@@ -54,7 +54,12 @@ pub async fn import_itinerary(
         main_trip_plan_id: Some(active_plan_variant_id),
         trip_plans: plan_variants
             .into_iter()
-            .map(PlanVariantSummary::from)
+            .map(|record| {
+                PlanVariantSummary::from_record_for_main_pointer(
+                    record,
+                    Some(active_plan_variant_id),
+                )
+            })
             .collect(),
     };
 

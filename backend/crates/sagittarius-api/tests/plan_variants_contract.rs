@@ -182,6 +182,19 @@ async fn trip_plan_contract_accepts_canonical_routes_and_status(pool: sqlx::PgPo
     assert_eq!(created["kind"], "split");
     assert_eq!(created["status"], "proposal");
     let trip_plan_id = created["id"].as_str().unwrap();
+    let create_event_payload: Value = sqlx::query_scalar(
+        "select payload
+         from realtime_events
+         where client_mutation_id = 'web-trip-plan-create-1'
+           and event_type = 'plan_variant.created'
+           and aggregate_type = 'plan_variant'",
+    )
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(create_event_payload["id"], trip_plan_id);
+    assert_eq!(create_event_payload["kind"], "split");
+    assert_eq!(create_event_payload["status"], "proposal");
 
     let patch = app
         .clone()
@@ -213,6 +226,19 @@ async fn trip_plan_contract_accepts_canonical_routes_and_status(pool: sqlx::PgPo
         serde_json::from_slice(&to_bytes(patch.into_body(), 65536).await.unwrap()).unwrap();
     assert_eq!(patched["kind"], "backup");
     assert_eq!(patched["status"], "backup");
+    let patch_event_payload: Value = sqlx::query_scalar(
+        "select payload
+         from realtime_events
+         where client_mutation_id = 'web-trip-plan-patch-1'
+           and event_type = 'plan_variant.updated'
+           and aggregate_type = 'plan_variant'",
+    )
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(patch_event_payload["id"], trip_plan_id);
+    assert_eq!(patch_event_payload["kind"], "backup");
+    assert_eq!(patch_event_payload["status"], "backup");
 
     let set_main = app
         .oneshot(
@@ -307,6 +333,97 @@ async fn trip_plan_contract_accepts_canonical_routes_and_status(pool: sqlx::PgPo
     assert_eq!(payload["previousMainTripPlan"]["kind"], "backup");
     assert_eq!(payload["previousMainTripPlan"]["status"], "backup");
     assert_eq!(payload["trip"]["mainTripPlanId"], trip_plan_id);
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn trip_plan_contract_repairs_current_main_status_drift_on_patch(pool: sqlx::PgPool) {
+    support::seed_trip(&pool).await;
+    sqlx::query(
+        "update plan_variants
+         set kind = 'draft', status = 'proposal'
+         where id = $1",
+    )
+    .bind(Uuid::parse_str(support::PLAN_ID).unwrap())
+    .execute(&pool)
+    .await
+    .unwrap();
+    let token = support::create_session(&pool, support::ORGANIZER_ID).await;
+    let app = support::app(pool.clone());
+
+    let patch = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method(Method::PATCH)
+                .uri(format!(
+                    "/api/v1/trips/{}/trip-plans/{}",
+                    support::TRIP_ID,
+                    support::PLAN_ID
+                ))
+                .header(header::AUTHORIZATION, format!("Bearer {token}"))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({
+                        "clientMutationId": "web-trip-plan-main-drift-patch",
+                        "expectedVersion": 1,
+                        "patch": {
+                            "name": "Main repaired"
+                        }
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(patch.status(), StatusCode::OK);
+    let patched: Value =
+        serde_json::from_slice(&to_bytes(patch.into_body(), 65536).await.unwrap()).unwrap();
+    assert_eq!(patched["name"], "Main repaired");
+    assert_eq!(patched["kind"], "main");
+    assert_eq!(patched["status"], "main");
+    assert_eq!(patched["version"], 2);
+
+    let stored_pair: (String, String) =
+        sqlx::query_as("select kind, status from plan_variants where id = $1")
+            .bind(Uuid::parse_str(support::PLAN_ID).unwrap())
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+    assert_eq!(stored_pair, ("main".to_string(), "main".to_string()));
+
+    let stale = app
+        .oneshot(
+            Request::builder()
+                .method(Method::PATCH)
+                .uri(format!(
+                    "/api/v1/trips/{}/trip-plans/{}",
+                    support::TRIP_ID,
+                    support::PLAN_ID
+                ))
+                .header(header::AUTHORIZATION, format!("Bearer {token}"))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({
+                        "clientMutationId": "web-trip-plan-main-drift-stale",
+                        "expectedVersion": 1,
+                        "patch": {
+                            "description": "stale write"
+                        }
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(stale.status(), StatusCode::CONFLICT);
+    let stale_body: Value =
+        serde_json::from_slice(&to_bytes(stale.into_body(), 65536).await.unwrap()).unwrap();
+    assert_eq!(stale_body["code"], "version_conflict");
+    assert_eq!(stale_body["latest"]["kind"], "main");
+    assert_eq!(stale_body["latest"]["status"], "main");
+    assert_eq!(stale_body["latest"]["version"], 2);
 }
 
 async fn plan_scoped_record_counts_by_plan(

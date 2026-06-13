@@ -142,6 +142,16 @@ async fn trip_load_contract_uses_pointer_when_status_metadata_disagrees(pool: sq
     .execute(&pool)
     .await
     .unwrap();
+    let second_raw_main_id = uuid::Uuid::now_v7();
+    sqlx::query(
+        "insert into plan_variants (id, trip_id, name, kind, status, description)
+         values ($1, $2, 'Raw duplicate main', 'main', 'main', 'Raw duplicate main drift')",
+    )
+    .bind(second_raw_main_id)
+    .bind(uuid::Uuid::parse_str(support::TRIP_ID).unwrap())
+    .execute(&pool)
+    .await
+    .unwrap();
     let organizer_token = support::create_session(&pool, support::ORGANIZER_ID).await;
     let app = support::app(pool);
 
@@ -169,6 +179,11 @@ async fn trip_load_contract_uses_pointer_when_status_metadata_disagrees(pool: sq
         plan["id"] == stale_status_plan_id.to_string()
             && plan["kind"] == "split"
             && plan["status"] == "proposal"
+    }));
+    assert!(body["tripPlans"].as_array().unwrap().iter().any(|plan| {
+        plan["id"] == second_raw_main_id.to_string()
+            && plan["kind"] == "backup"
+            && plan["status"] == "backup"
     }));
 }
 

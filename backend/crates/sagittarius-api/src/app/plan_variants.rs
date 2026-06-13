@@ -82,6 +82,7 @@ pub async fn patch_plan_variant(
     if existing.trip_id != trip_id {
         return Err(ServiceError::NotFound);
     }
+    let main_trip_plan_id = db::queries::active_plan_variant_id_for_trip(&mut tx, trip_id).await?;
     let session = db::queries::find_active_member_session_in_tx(&mut tx, trip_id, &token_hash)
         .await?
         .ok_or(ServiceError::Unauthenticated)?;
@@ -97,12 +98,15 @@ pub async fn patch_plan_variant(
     .await?;
 
     if existing.version != request.expected_version {
-        let latest = serde_json::to_value(PlanVariantSummary::from(existing))
-            .map_err(|_| ServiceError::InvalidRequest("latest variant could not be serialized"))?;
+        let latest = serde_json::to_value(PlanVariantSummary::from_record_for_main_pointer(
+            existing,
+            main_trip_plan_id,
+        ))
+        .map_err(|_| ServiceError::InvalidRequest("latest variant could not be serialized"))?;
         return Err(ServiceError::VersionConflictWithLatest(latest));
     }
 
-    let updated_record = db::queries::update_plan_variant(
+    let mut updated_record = db::queries::update_plan_variant(
         &mut tx,
         plan_variant_id,
         &request.patch,
@@ -110,7 +114,21 @@ pub async fn patch_plan_variant(
     )
     .await?
     .ok_or(ServiceError::NotFound)?;
-    let updated = PlanVariantSummary::from(updated_record);
+    let mut updated =
+        PlanVariantSummary::from_record_for_main_pointer(updated_record.clone(), main_trip_plan_id);
+    if updated.kind != updated_record.kind || updated.status != updated_record.status {
+        updated_record = db::queries::update_plan_variant_status(
+            &mut tx,
+            plan_variant_id,
+            &updated.kind,
+            &updated.status,
+            updated_record.version,
+        )
+        .await?
+        .ok_or(ServiceError::NotFound)?;
+        updated =
+            PlanVariantSummary::from_record_for_main_pointer(updated_record, main_trip_plan_id);
+    }
     let event = insert_variant_event(
         &mut tx,
         &updated,

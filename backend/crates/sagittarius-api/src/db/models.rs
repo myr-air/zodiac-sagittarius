@@ -433,6 +433,23 @@ impl From<PlanVariantRecord> for PlanVariantSummary {
     }
 }
 
+impl PlanVariantSummary {
+    pub fn from_record_for_main_pointer(
+        record: PlanVariantRecord,
+        main_trip_plan_id: Option<Uuid>,
+    ) -> Self {
+        let mut summary = PlanVariantSummary::from(record);
+        if Some(summary.id) == main_trip_plan_id {
+            summary.kind = "main".to_string();
+            summary.status = "main".to_string();
+        } else if summary.status == "main" {
+            summary.kind = "backup".to_string();
+            summary.status = "backup".to_string();
+        }
+        summary
+    }
+}
+
 fn legacy_kind_for_plan_status(status: &str) -> &'static str {
     match status {
         "main" => "main",

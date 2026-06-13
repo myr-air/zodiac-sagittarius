@@ -11,7 +11,7 @@ use crate::domain::capabilities::can;
 use crate::domain::errors::ServiceError;
 use crate::domain::patches::PatchTripRequest;
 use crate::domain::types::{
-    Capability, ExpenseSummary, PlanVariantSummary, SettlementSuggestion, TripCockpit, TripSummary,
+    Capability, ExpenseSummary, SettlementSuggestion, TripCockpit, TripSummary,
 };
 use crate::realtime::RealtimeHub;
 
@@ -109,9 +109,11 @@ pub async fn load_cockpit(
     let trip_summary = TripSummary::from(trip);
     let plan_summaries: Vec<_> = plan_variants
         .into_iter()
-        .map(Into::into)
-        .map(|summary| {
-            normalize_plan_summary_for_main_pointer(summary, trip_summary.main_trip_plan_id)
+        .map(|record| {
+            crate::domain::types::PlanVariantSummary::from_record_for_main_pointer(
+                record,
+                trip_summary.main_trip_plan_id,
+            )
         })
         .collect();
 
@@ -130,17 +132,6 @@ pub async fn load_cockpit(
         booking_docs,
         photo_album_links,
     })
-}
-
-fn normalize_plan_summary_for_main_pointer(
-    mut summary: PlanVariantSummary,
-    main_trip_plan_id: Option<Uuid>,
-) -> PlanVariantSummary {
-    if Some(summary.id) == main_trip_plan_id {
-        summary.kind = "main".to_string();
-        summary.status = "main".to_string();
-    }
-    summary
 }
 
 pub async fn patch_trip(
