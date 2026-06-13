@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { createTripApiClient, mapCockpitResponse, type TripCockpitResponse } from "./api-client";
+import { createTripApiClient, mapCockpitResponse, TripApiError, type TripCockpitResponse } from "./api-client";
 
 const cockpitResponse: TripCockpitResponse = {
   trip: {
@@ -822,6 +822,18 @@ describe("Trip API client", () => {
     });
   });
 
+  it("rejects canonical cockpit tripPlans that omit status", () => {
+    const { status: _status, ...canonicalPlanWithoutStatus } = cockpitResponse.tripPlans![0];
+
+    expect(() =>
+      mapCockpitResponse({
+        ...cockpitResponse,
+        planVariants: [],
+        tripPlans: [canonicalPlanWithoutStatus as unknown as NonNullable<TripCockpitResponse["tripPlans"]>[number]],
+      }),
+    ).toThrow(TripApiError);
+  });
+
   it("prefers canonical tripPlans when mixed cockpit aliases drift", () => {
     const canonicalPlan = {
       ...cockpitResponse.tripPlans![0],
@@ -1110,7 +1122,7 @@ describe("Trip API client", () => {
     expect(trip.version).toBe(2);
   });
 
-  it("normalizes canonical trip plan route responses that still omit status", async () => {
+  it("rejects canonical trip plan route responses that omit status", async () => {
     const legacyShapedVariant = {
       id: "018f4e82-3000-7c00-b111-000000000098",
       tripId: cockpitResponse.trip.id,
@@ -1122,14 +1134,15 @@ describe("Trip API client", () => {
     const fetchImpl = vi.fn().mockResolvedValueOnce(jsonResponse(legacyShapedVariant, 201));
     const client = createTripApiClient({ baseUrl: "https://api.example.test", fetchImpl });
 
-    await expect(client.createPlanVariant(cockpitResponse.trip.id, "session-token", {
-      clientMutationId: "web-plan-create-legacy-shaped",
-      name: "Legacy-shaped proposal",
-      kind: "split",
-    })).resolves.toMatchObject({
-      id: legacyShapedVariant.id,
-      kind: "split",
-      status: "proposal",
+    await expect(
+      client.createTripPlan!(cockpitResponse.trip.id, "session-token", {
+        clientMutationId: "web-plan-create-legacy-shaped",
+        name: "Legacy-shaped proposal",
+        kind: "split",
+      }),
+    ).rejects.toMatchObject({
+      code: "invalid_response",
+      status: 0,
     });
   });
 

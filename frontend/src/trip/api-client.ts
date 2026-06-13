@@ -500,12 +500,12 @@ export function createTripApiClient(options: TripApiClientOptions = {}): TripApi
     sessionToken: string,
     planRequest: CreatePlanVariantApiRequest,
   ): Promise<PlanVariant> {
-    const variant = await request<PlanVariantResponse>(tripApiRoutes.tripPlans(tripId), {
+    const variant = await request<TripPlanResponse>(tripApiRoutes.tripPlans(tripId), {
       method: "POST",
       headers: { Authorization: `Bearer ${sessionToken}` },
       body: JSON.stringify(planRequest),
     });
-    return mapPlanVariant(variant);
+    return mapTripPlanResponse(variant);
   }
 
   async function patchTripPlan(
@@ -514,12 +514,12 @@ export function createTripApiClient(options: TripApiClientOptions = {}): TripApi
     sessionToken: string,
     planRequest: PatchPlanVariantApiRequest,
   ): Promise<PlanVariant> {
-    const variant = await request<PlanVariantResponse>(tripApiRoutes.tripPlan(tripId, tripPlanId), {
+    const variant = await request<TripPlanResponse>(tripApiRoutes.tripPlan(tripId, tripPlanId), {
       method: "PATCH",
       headers: { Authorization: `Bearer ${sessionToken}` },
       body: JSON.stringify(planRequest),
     });
-    return mapPlanVariant(variant);
+    return mapTripPlanResponse(variant);
   }
 
   async function setMainTripPlan(
@@ -864,7 +864,7 @@ export function mapCockpitResponse(response: TripCockpitResponse): TripCockpit {
     });
   }
   const legacyPlanResponses = response.planVariants ?? [];
-  const canonicalPlanResponses = response.tripPlans ?? [];
+  const canonicalPlanResponses = (response.tripPlans ?? []).map(assertTripPlanResponse);
   const planResponses = canonicalPlanResponses.length ? canonicalPlanResponses : legacyPlanResponses;
   const mainTripPlanId = response.trip.mainTripPlanId ?? response.trip.activePlanVariantId ?? planResponses[0]?.id ?? "";
   const activePlanVariantId = response.trip.activePlanVariantId ?? mainTripPlanId;
@@ -977,6 +977,21 @@ function mapPlanVariant(variant: PlanVariantResponse): PlanVariant {
     description: variant.description,
     version: variant.version,
   };
+}
+
+function mapTripPlanResponse(variant: TripPlanResponse): PlanVariant {
+  return mapPlanVariant(assertTripPlanResponse(variant));
+}
+
+function assertTripPlanResponse(variant: PlanVariantResponse): TripPlanResponse {
+  if (!variant.status) {
+    throw new TripApiError({
+      code: "invalid_response",
+      message: "canonical trip plan response is missing status",
+      status: 0,
+    });
+  }
+  return variant as TripPlanResponse;
 }
 
 function statusForLegacyKind(kind: PlanVariant["kind"]): PlanStatus {
