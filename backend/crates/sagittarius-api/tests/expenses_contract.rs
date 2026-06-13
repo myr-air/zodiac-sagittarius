@@ -56,6 +56,57 @@ async fn expenses_contract_create_without_item_defaults_to_current_main_plan(poo
 }
 
 #[sqlx::test(migrations = "../../migrations")]
+async fn expenses_contract_create_unlinked_uses_requested_trip_plan(pool: sqlx::PgPool) {
+    support::seed_trip(&pool).await;
+    support::seed_plan_variant(&pool).await;
+    let organizer = support::create_session(&pool, support::ORGANIZER_ID).await;
+    let app = support::app(pool.clone());
+
+    let response = app
+        .oneshot(
+            Request::builder()
+                .method(Method::POST)
+                .uri(format!("/api/v1/trips/{}/expenses", support::TRIP_ID))
+                .header(header::AUTHORIZATION, format!("Bearer {organizer}"))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({
+                        "clientMutationId": "web-expense-alt-requested-plan",
+                        "tripPlanId": support::ALT_PLAN_ID,
+                        "title": "Rain plan taxi",
+                        "amountMinor": 18000,
+                        "currency": "HKD",
+                        "paidBy": support::OWNER_ID,
+                        "category": "transport",
+                        "splits": { support::OWNER_ID: 18000 }
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::OK);
+    let body: Value =
+        serde_json::from_slice(&to_bytes(response.into_body(), 65536).await.unwrap()).unwrap();
+    assert_eq!(body["tripPlanId"], support::ALT_PLAN_ID);
+    assert_eq!(body["itineraryItemId"], Value::Null);
+
+    let stored: (Uuid, Option<Uuid>) = sqlx::query_as(
+        "select trip_plan_id, itinerary_item_id
+         from expenses
+         where id = $1",
+    )
+    .bind(Uuid::parse_str(body["id"].as_str().unwrap()).unwrap())
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(stored.0, Uuid::parse_str(support::ALT_PLAN_ID).unwrap());
+    assert_eq!(stored.1, None);
+}
+
+#[sqlx::test(migrations = "../../migrations")]
 async fn expenses_contract_summary_can_be_scoped_to_trip_plan(pool: sqlx::PgPool) {
     support::seed_trip(&pool).await;
     support::seed_expense(&pool).await;
