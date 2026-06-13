@@ -359,6 +359,10 @@ fn plan_scoped_record_migration_keeps_linked_records_with_item_plan() {
     let linked_backfill = "UPDATE expenses expense\nSET trip_plan_id = item.plan_variant_id";
     let fallback_backfill =
         "UPDATE expenses expense\nSET trip_plan_id = trips.active_plan_variant_id";
+    let linked_stop_note_backfill =
+        "UPDATE stop_notes note\nSET trip_plan_id = item.plan_variant_id";
+    let booking_fallback_backfill =
+        "UPDATE booking_docs booking\nSET trip_plan_id = trips.active_plan_variant_id";
 
     assert!(
         migration.contains(linked_task_backfill),
@@ -393,6 +397,29 @@ fn plan_scoped_record_migration_keeps_linked_records_with_item_plan() {
     assert!(
         migration.find(linked_backfill).unwrap() < migration.find(fallback_backfill).unwrap(),
         "linked expense backfill must run before the Main Plan fallback",
+    );
+
+    assert!(
+        migration.contains(linked_stop_note_backfill),
+        "linked stop notes must backfill from itinerary_items.plan_variant_id",
+    );
+    assert!(
+        migration.contains("AND note.itinerary_item_id = item.id"),
+        "linked stop notes must join through itinerary_item_id",
+    );
+    assert!(
+        migration.find(linked_stop_note_backfill).unwrap()
+            < migration.find(booking_fallback_backfill).unwrap(),
+        "linked stop note backfill must stay before booking compatibility fallback",
+    );
+
+    assert!(
+        migration.contains(booking_fallback_backfill),
+        "booking docs currently use a Main Plan compatibility fallback pending Phase 2 relation audit",
+    );
+    assert!(
+        !migration.contains("UPDATE booking_docs booking\nSET trip_plan_id = item.plan_variant_id"),
+        "booking docs must not infer item-plan scope before Phase 2 relation audit exists",
     );
 }
 
