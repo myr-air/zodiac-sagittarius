@@ -16,6 +16,7 @@ import {
   nextLocalStopNoteId,
   nextLocalSuggestionId,
   nextLocalTaskId,
+  normalizeInlineTimePatch,
   parsePlanSuggestionEditAction,
   replaceSuggestionById,
 } from "@/src/app/SagittariusApp";
@@ -356,6 +357,41 @@ describe("Sagittarius cockpit UI", () => {
       }),
     ).toBeNull();
     expect(parsePlanSuggestionEditAction({ itemId: "item-1" })).toBeNull();
+  });
+
+  it("normalizes inline time-window edits into matching duration patches", () => {
+    const item = {
+      ...seedTrip.itineraryItems[0],
+      startTime: "23:00",
+      endTime: "01:00",
+      endOffsetDays: 1,
+      durationMinutes: 120,
+    };
+
+    expect(normalizeInlineTimePatch(item, { endTime: "02:30" })).toMatchObject({
+      endTime: "02:30",
+      durationMinutes: 210,
+    });
+    expect(
+      normalizeInlineTimePatch(item, {
+        endTime: "02:00",
+        endOffsetDays: 0,
+      }),
+    ).toMatchObject({
+      endTime: "02:00",
+      endOffsetDays: 1,
+      durationMinutes: 180,
+    });
+    expect(
+      normalizeInlineTimePatch(item, {
+        endTime: null,
+        endOffsetDays: 1,
+      }),
+    ).toMatchObject({
+      endTime: null,
+      endOffsetDays: 0,
+      durationMinutes: null,
+    });
   });
 
   it("can require trip participant authentication before opening the cockpit", async () => {

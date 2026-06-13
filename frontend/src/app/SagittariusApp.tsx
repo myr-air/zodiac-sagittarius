@@ -69,6 +69,7 @@ import {
   buildItineraryView,
   deriveItineraryPathOptions,
   mainItineraryPathId,
+  parseTime,
   resolveItineraryPathItems,
   type ItineraryPathOption,
   type ItineraryPathSelection,
@@ -1807,7 +1808,7 @@ export function SagittariusApp({
     function buildInlinePatch(
       item: ItineraryItem,
     ): InlineItineraryItemPatch | null {
-      const nextPatch: InlineItineraryItemPatch = { ...patch };
+      const nextPatch = normalizeInlineTimePatch(item, patch);
       if (nextPatch.activity !== undefined)
         nextPatch.activity = nextPatch.activity.trim();
       if (nextPatch.place !== undefined)
@@ -5365,6 +5366,44 @@ function scopePlanCheckToItems(
         suggestion.targetItemIds.some((itemId) => itemIds.has(itemId)),
     ),
   };
+}
+
+export function normalizeInlineTimePatch(
+  item: ItineraryItem,
+  patch: InlineItineraryItemPatch,
+): InlineItineraryItemPatch {
+  const nextPatch: InlineItineraryItemPatch = { ...patch };
+  const hasStartTime = nextPatch.startTime !== undefined;
+  const hasEndTime = nextPatch.endTime !== undefined;
+  const hasEndOffsetDays = nextPatch.endOffsetDays !== undefined;
+  if (!hasStartTime && !hasEndTime && !hasEndOffsetDays) return nextPatch;
+
+  const startTime = hasStartTime ? nextPatch.startTime : item.startTime;
+  const endTime = hasEndTime ? nextPatch.endTime : item.endTime;
+  if (!endTime) {
+    if (hasEndTime) {
+      nextPatch.endOffsetDays = 0;
+      nextPatch.durationMinutes = null;
+    }
+    return nextPatch;
+  }
+
+  const start = parseTime(startTime ?? "");
+  const end = parseTime(endTime);
+  if (start === null || end === null) return nextPatch;
+
+  let endOffsetDays = hasEndOffsetDays
+    ? (nextPatch.endOffsetDays ?? 0)
+    : (item.endOffsetDays ?? 0);
+  if (endOffsetDays === 0 && end <= start) {
+    endOffsetDays = 1;
+    nextPatch.endOffsetDays = 1;
+  }
+  const durationMinutes = end + endOffsetDays * 24 * 60 - start;
+  if (durationMinutes > 0) {
+    nextPatch.durationMinutes = durationMinutes;
+  }
+  return nextPatch;
 }
 
 export function parsePlanSuggestionEditAction(
