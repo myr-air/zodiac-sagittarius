@@ -8,6 +8,12 @@ Phase 0/1 will ship Trip Plan language and canonical API aliases before any stor
 
 **Phase 0/1 freeze**: Phase 1 acceptance is blocked until [the implementation spec](../itinerary-trip-plan-phase-0-1-implementation-spec.md) lists the additive API request/response diffs for cockpit, account trip create/join responses, create, patch, set-main, realtime, and import/export; the `plan_variants.status` migration DDL draft with rollback and raw-write repair rules; and the exact tests that prove canonical-only, legacy-only, and mixed payloads all normalize to the same Trip Plan state.
 
+**Code-start gate**: The implementation spec is the pre-code packet for Phase
+0/1. If implementation discovers that a route, migration, or test target in the
+packet is wrong, the spec and this ADR must be updated before changing
+production code. This keeps the Trip Plan compatibility contract explicit while
+the storage and UI still carry legacy names.
+
 **Concurrency boundary**: Set-main does not take `expectedVersion` in Phase 1.
 The compatibility route is last-writer-wins after transactional row locks, while
 duplicate `clientMutationId` values remain rejected by the existing mutation
