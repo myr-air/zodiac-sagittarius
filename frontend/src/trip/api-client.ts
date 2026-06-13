@@ -541,12 +541,12 @@ export function createTripApiClient(options: TripApiClientOptions = {}): TripApi
       return request<JoinTripResponse>(tripApiRoutes.joinSession(), {
         method: "POST",
         body: JSON.stringify({ joinCode: credentials.joinId, tripPassword: credentials.password }),
-      });
+      }).then(mapJoinTripResponse);
     },
     resolveJoinInviteToken(token) {
       return request<JoinTripResponse>(tripApiRoutes.joinInviteTokenCurrent(token), {
         method: "GET",
-      });
+      }).then(mapJoinTripResponse);
     },
     rotateJoinInviteToken(tripId, sessionToken) {
       return request<JoinInviteTokenResponse>(tripApiRoutes.joinInviteTokens(tripId), {
@@ -945,6 +945,11 @@ function mapTripSummary(trip: TripSummaryResponse): Trip {
   };
 }
 
+function mapJoinTripResponse(response: JoinTripResponse): JoinTripResponse {
+  assertMainPlanPointerAliasesMatch(response.trip);
+  return response;
+}
+
 function mapTask(task: TripTaskResponse): TripTask {
   return {
     id: task.id,
@@ -1028,7 +1033,7 @@ function assertTripPlanResponseAliasesMatch(
   }
 }
 
-function assertMainPlanPointerAliasesMatch(trip: TripSummaryResponse): void {
+export function assertMainPlanPointerAliasesMatch(trip: TripSummaryResponse): void {
   if (
     trip.activePlanVariantId &&
     trip.mainTripPlanId &&
@@ -1041,7 +1046,7 @@ function assertMainPlanPointerAliasesMatch(trip: TripSummaryResponse): void {
 function throwInvalidTripPlanAliasDrift(): never {
   throw new TripApiError({
     code: "invalid_response",
-    message: "cockpit Trip Plan compatibility aliases do not match",
+    message: "Trip Plan compatibility aliases do not match",
     status: 0,
   });
 }

@@ -715,6 +715,30 @@ describe("Trip API client", () => {
     );
   });
 
+  it("rejects join and invite Main Plan pointer alias drift", async () => {
+    const driftedJoinResponse = {
+      trip: {
+        ...cockpitResponse.trip,
+        activePlanVariantId: "legacy-main-plan",
+        mainTripPlanId: "canonical-main-plan",
+      },
+      claimableMembers: cockpitResponse.members,
+      joinSessionToken: "join-session-token",
+      expiresAt: "2026-06-11T12:00:00.000Z",
+    };
+    const fetchImpl = vi.fn()
+      .mockResolvedValueOnce(jsonResponse(driftedJoinResponse))
+      .mockResolvedValueOnce(jsonResponse(driftedJoinResponse));
+    const client = createTripApiClient({ baseUrl: "https://api.example.test", fetchImpl });
+
+    await expect(client.joinTrip({ joinId: "HK-SZ-2025", password: "seed-trip-pass" })).rejects.toMatchObject({
+      code: "invalid_response",
+    });
+    await expect(client.resolveJoinInviteToken?.("invite-token")).rejects.toMatchObject({
+      code: "invalid_response",
+    });
+  });
+
   it("falls back to an empty active plan id when the backend has no active or listed variant", () => {
     const cockpit = mapCockpitResponse({
       ...cockpitResponse,

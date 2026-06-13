@@ -14,7 +14,13 @@ import {
   verifyTripCredentials,
   verifyTripParticipantPassword,
 } from "@/src/trip/auth";
-import { TripApiError, type JoinTripResponse, type TripApiClient, type TripCockpit } from "@/src/trip/api-client";
+import {
+  assertMainPlanPointerAliasesMatch,
+  TripApiError,
+  type JoinTripResponse,
+  type TripApiClient,
+  type TripCockpit,
+} from "@/src/trip/api-client";
 import type { Member, Trip, TripParticipantSession } from "@/src/trip/types";
 
 interface TripJoinGateProps {
@@ -417,6 +423,7 @@ function participantStatusLabel(member: Member, labels: Messages["join"]["member
 }
 
 export function tripFromJoinResponse(response: JoinTripResponse): Trip {
+  assertMainPlanPointerAliasesMatch(response.trip);
   return {
     id: response.trip.id,
     joinId: response.trip.joinId,

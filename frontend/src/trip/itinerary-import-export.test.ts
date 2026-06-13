@@ -260,6 +260,34 @@ describe("itinerary import/export JSON", () => {
     ).toThrow(/unsupported itinerary import/i);
   });
 
+  it("rejects mixed Trip Plan aliases when mapped kind or status drifts", () => {
+    const payload = buildItineraryExport({
+      exportedAt: "2026-06-04T12:00:00.000Z",
+      items: [tripFixture.planItems[0]],
+      trip: tripFixture.trip,
+    });
+    const tripPlans = payload.trip.tripPlans ?? [];
+    expect(tripPlans).not.toHaveLength(0);
+
+    expect(() =>
+      parseItineraryImportDocument(
+        JSON.stringify({
+          ...payload,
+          trip: {
+            ...payload.trip,
+            planVariants: [
+              {
+                ...tripPlans[0],
+                kind: "split",
+                status: "proposal",
+              },
+            ],
+          },
+        }),
+      ),
+    ).toThrow(/unsupported itinerary import/i);
+  });
+
   it("keeps unlinked records scoped to the exported Trip Plan instead of the current Main Plan", () => {
     const backupPlanId = "plan-backup-export";
     const backupItem = {

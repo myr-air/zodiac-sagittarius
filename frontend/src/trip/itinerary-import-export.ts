@@ -336,7 +336,9 @@ function assertTripPlanAliasesMatch(canonical: TripPlan[], legacy: TripPlan[]): 
       !legacyPlan ||
       canonicalPlan.id !== legacyPlan.id ||
       canonicalPlan.name !== legacyPlan.name ||
-      canonicalPlan.version !== legacyPlan.version
+      canonicalPlan.version !== legacyPlan.version ||
+      canonicalPlan.kind !== legacyPlan.kind ||
+      canonicalPlan.status !== legacyPlan.status
     ) {
       throw new Error("Unsupported itinerary import file.");
     }
