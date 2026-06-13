@@ -880,6 +880,35 @@ describe("Trip API client", () => {
     ).toThrow(TripApiError);
   });
 
+  it("rejects mixed cockpit Trip Plan aliases when mapped kind and status drift", () => {
+    const canonicalPlan = {
+      ...cockpitResponse.tripPlans![0],
+      id: "018f4e82-3000-7c00-b111-0000000000c6",
+      kind: "draft" as const,
+      status: "draft" as const,
+      name: "Draft route",
+      version: 3,
+    };
+    const legacyPlan = {
+      ...canonicalPlan,
+      kind: "backup" as const,
+      status: "backup" as const,
+    };
+
+    expect(() =>
+      mapCockpitResponse({
+        ...cockpitResponse,
+        trip: {
+          ...cockpitResponse.trip,
+          activePlanVariantId: cockpitResponse.trip.activePlanVariantId,
+          mainTripPlanId: cockpitResponse.trip.activePlanVariantId ?? undefined,
+        },
+        planVariants: [legacyPlan],
+        tripPlans: [canonicalPlan],
+      }),
+    ).toThrow(TripApiError);
+  });
+
   it("rejects mixed cockpit Main Plan pointer aliases when they drift", () => {
     const plan = cockpitResponse.tripPlans![0];
 

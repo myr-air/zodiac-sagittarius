@@ -865,8 +865,14 @@ export function mapCockpitResponse(response: TripCockpitResponse): TripCockpit {
   }
   const legacyPlanResponses = response.planVariants ?? [];
   const canonicalPlanResponses = (response.tripPlans ?? []).map(assertTripPlanResponse);
-  assertTripPlanResponseAliasesMatch(canonicalPlanResponses, legacyPlanResponses);
   assertMainPlanPointerAliasesMatch(response.trip);
+  const mainTripPlanIdForAliasCheck =
+    response.trip.mainTripPlanId ??
+    response.trip.activePlanVariantId ??
+    canonicalPlanResponses[0]?.id ??
+    legacyPlanResponses[0]?.id ??
+    "";
+  assertTripPlanResponseAliasesMatch(canonicalPlanResponses, legacyPlanResponses, mainTripPlanIdForAliasCheck);
   const planResponses = canonicalPlanResponses.length ? canonicalPlanResponses : legacyPlanResponses;
   const mainTripPlanId = response.trip.mainTripPlanId ?? response.trip.activePlanVariantId ?? planResponses[0]?.id ?? "";
   const activePlanVariantId = response.trip.activePlanVariantId ?? mainTripPlanId;
@@ -999,6 +1005,7 @@ function assertTripPlanResponse(variant: PlanVariantResponse): TripPlanResponse 
 function assertTripPlanResponseAliasesMatch(
   canonicalPlans: TripPlanResponse[],
   legacyPlans: PlanVariantResponse[],
+  mainTripPlanId: string,
 ): void {
   if (canonicalPlans.length === 0 || legacyPlans.length === 0) return;
   if (canonicalPlans.length !== legacyPlans.length) {
@@ -1006,11 +1013,15 @@ function assertTripPlanResponseAliasesMatch(
   }
   for (const [index, canonicalPlan] of canonicalPlans.entries()) {
     const legacyPlan = legacyPlans[index];
+    const mappedCanonicalPlan = normalizePlanVariantForMainPointer(mapPlanVariant(canonicalPlan), mainTripPlanId);
+    const mappedLegacyPlan = normalizePlanVariantForMainPointer(mapPlanVariant(legacyPlan), mainTripPlanId);
     if (
       !legacyPlan ||
       canonicalPlan.id !== legacyPlan.id ||
       canonicalPlan.name !== legacyPlan.name ||
-      canonicalPlan.version !== legacyPlan.version
+      canonicalPlan.version !== legacyPlan.version ||
+      mappedCanonicalPlan.kind !== mappedLegacyPlan.kind ||
+      mappedCanonicalPlan.status !== mappedLegacyPlan.status
     ) {
       throwInvalidTripPlanAliasDrift();
     }
