@@ -847,6 +847,7 @@ pub struct ExpenseRecord {
 pub struct ExpenseReminderRecord {
     pub id: Uuid,
     pub trip_id: Uuid,
+    pub trip_plan_id: Uuid,
     pub from_member_id: Uuid,
     pub to_member_id: Uuid,
     pub amount_minor: i32,
@@ -857,6 +858,7 @@ pub struct ExpenseReminderRecord {
 pub struct NewExpenseReminder {
     pub id: Uuid,
     pub trip_id: Uuid,
+    pub trip_plan_id: Uuid,
     pub from_member_id: Uuid,
     pub to_member_id: Uuid,
     pub amount_minor: i32,

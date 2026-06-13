@@ -1952,17 +1952,20 @@ pub async fn list_expense_splits(
 pub async fn list_expense_reminders(
     pool: &PgPool,
     trip_id: Uuid,
+    trip_plan_id: Option<Uuid>,
 ) -> Result<Vec<ExpenseReminderRecord>, sqlx::Error> {
     sqlx::query_as::<_, ExpenseReminderRecord>(
         "select
-           id, trip_id, from_member_id, to_member_id, amount_minor,
+           id, trip_id, trip_plan_id, from_member_id, to_member_id, amount_minor,
            to_char(last_reminded_at at time zone 'UTC', 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"') as last_reminded_at,
            version
          from expense_reminders
          where trip_id = $1
+           and ($2::uuid is null or trip_plan_id = $2)
          order by updated_at",
     )
     .bind(trip_id)
+    .bind(trip_plan_id)
     .fetch_all(pool)
     .await
 }
@@ -1973,22 +1976,23 @@ pub async fn upsert_expense_reminder(
 ) -> Result<ExpenseReminderRecord, sqlx::Error> {
     sqlx::query_as::<_, ExpenseReminderRecord>(
         "insert into expense_reminders (
-           id, trip_id, from_member_id, to_member_id, amount_minor, created_by
+           id, trip_id, trip_plan_id, from_member_id, to_member_id, amount_minor, created_by
          )
-         values ($1, $2, $3, $4, $5, $6)
-         on conflict (trip_id, from_member_id, to_member_id, amount_minor)
+         values ($1, $2, $3, $4, $5, $6, $7)
+         on conflict (trip_id, trip_plan_id, from_member_id, to_member_id, amount_minor)
          do update set
            last_reminded_at = now(),
            updated_at = now(),
            created_by = excluded.created_by,
            version = expense_reminders.version + 1
          returning
-           id, trip_id, from_member_id, to_member_id, amount_minor,
+           id, trip_id, trip_plan_id, from_member_id, to_member_id, amount_minor,
            to_char(last_reminded_at at time zone 'UTC', 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"') as last_reminded_at,
            version",
     )
     .bind(reminder.id)
     .bind(reminder.trip_id)
+    .bind(reminder.trip_plan_id)
     .bind(reminder.from_member_id)
     .bind(reminder.to_member_id)
     .bind(reminder.amount_minor)

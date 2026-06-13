@@ -192,6 +192,114 @@ async fn expenses_contract_summary_can_be_scoped_to_trip_plan(pool: sqlx::PgPool
 }
 
 #[sqlx::test(migrations = "../../migrations")]
+async fn expenses_contract_reminder_history_is_scoped_to_trip_plan(pool: sqlx::PgPool) {
+    support::seed_trip(&pool).await;
+    support::seed_expense(&pool).await;
+    support::seed_plan_variant(&pool).await;
+    let organizer = support::create_session(&pool, support::ORGANIZER_ID).await;
+    let app = support::app(pool.clone());
+    let trip_id = Uuid::parse_str(support::TRIP_ID).unwrap();
+    let alt_plan_id = Uuid::parse_str(support::ALT_PLAN_ID).unwrap();
+    let owner_id = Uuid::parse_str(support::OWNER_ID).unwrap();
+    let traveler_id = Uuid::parse_str(support::TRAVELER_ID).unwrap();
+
+    sqlx::query(
+        "insert into expenses (
+           id, trip_id, trip_plan_id, title, amount_minor, currency, paid_by, category, splits
+         )
+         values (gen_random_uuid(), $1, $2, 'Alt matching expense', 24000, 'HKD', $3, 'food', $4)",
+    )
+    .bind(trip_id)
+    .bind(alt_plan_id)
+    .bind(owner_id)
+    .bind(serde_json::json!({
+        support::OWNER_ID: 12000,
+        support::TRAVELER_ID: 12000
+    }))
+    .execute(&pool)
+    .await
+    .unwrap();
+
+    let alt_reminder_response = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method(Method::POST)
+                .uri(format!(
+                    "/api/v1/trips/{}/expenses/reminders?tripPlanId={}",
+                    support::TRIP_ID,
+                    support::ALT_PLAN_ID
+                ))
+                .header(header::AUTHORIZATION, format!("Bearer {organizer}"))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({
+                        "clientMutationId": "web-expense-reminder-alt-plan",
+                        "from": support::TRAVELER_ID,
+                        "to": support::OWNER_ID,
+                        "amountMinor": 12000
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(alt_reminder_response.status(), StatusCode::OK);
+    let alt_body: Value = serde_json::from_slice(
+        &to_bytes(alt_reminder_response.into_body(), 65536)
+            .await
+            .unwrap(),
+    )
+    .unwrap();
+    let alt_suggestion = alt_body["settlementSuggestions"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|suggestion| {
+            suggestion["from"] == traveler_id.to_string()
+                && suggestion["to"] == owner_id.to_string()
+                && suggestion["amount"] == 120.0
+        })
+        .expect("alt settlement suggestion");
+    assert!(alt_suggestion["lastRemindedAt"].as_str().is_some());
+
+    let main_summary_response = app
+        .oneshot(
+            Request::builder()
+                .method(Method::GET)
+                .uri(format!(
+                    "/api/v1/trips/{}/expenses/summary?tripPlanId={}",
+                    support::TRIP_ID,
+                    support::PLAN_ID
+                ))
+                .header(header::AUTHORIZATION, format!("Bearer {organizer}"))
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(main_summary_response.status(), StatusCode::OK);
+    let main_body: Value = serde_json::from_slice(
+        &to_bytes(main_summary_response.into_body(), 65536)
+            .await
+            .unwrap(),
+    )
+    .unwrap();
+    let main_suggestion = main_body["settlementSuggestions"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|suggestion| {
+            suggestion["from"] == traveler_id.to_string()
+                && suggestion["to"] == owner_id.to_string()
+                && suggestion["amount"] == 120.0
+        })
+        .expect("main settlement suggestion");
+    assert_eq!(main_suggestion["lastRemindedAt"], Value::Null);
+}
+
+#[sqlx::test(migrations = "../../migrations")]
 async fn expenses_contract_patch_relinks_to_new_item_plan(pool: sqlx::PgPool) {
     support::seed_trip(&pool).await;
     support::seed_expense(&pool).await;

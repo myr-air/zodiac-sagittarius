@@ -62,6 +62,7 @@ async fn migration_creates_vertical_slice_indexes(pool: sqlx::PgPool) {
         "stop_notes_trip_item_created_at_idx",
         "trip_daily_briefings_trip_date_idx",
         "expense_reminders_trip_pair_idx",
+        "expense_reminders_trip_plan_pair_idx",
         "realtime_events_trip_id_idx",
         "realtime_events_client_mutation_id_idx",
     ] {

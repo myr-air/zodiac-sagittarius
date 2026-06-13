@@ -29,7 +29,7 @@ pub async fn get_expense_summary(
 
     let (splits, reminders) = tokio::try_join!(
         db::queries::list_expense_splits(pool, trip_id, trip_plan_id),
-        db::queries::list_expense_reminders(pool, trip_id),
+        db::queries::list_expense_reminders(pool, trip_id, trip_plan_id),
     )?;
     Ok(trips::build_expense_summary(
         splits,
@@ -146,12 +146,15 @@ pub async fn record_expense_reminder(
     {
         return Err(ServiceError::NotFound);
     }
+    let reminder_trip_plan_id =
+        resolve_expense_reminder_trip_plan_id(&mut tx, trip_id, trip_plan_id).await?;
 
     let reminder = db::queries::upsert_expense_reminder(
         &mut tx,
         NewExpenseReminder {
             id: Uuid::now_v7(),
             trip_id,
+            trip_plan_id: reminder_trip_plan_id,
             from_member_id: request.from,
             to_member_id: request.to,
             amount_minor: request.amount_minor,
@@ -300,6 +303,25 @@ pub async fn delete_expense(
     Ok(expense)
 }
 
+async fn resolve_expense_reminder_trip_plan_id(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    trip_id: Uuid,
+    requested_trip_plan_id: Option<Uuid>,
+) -> Result<Uuid, ServiceError> {
+    if let Some(trip_plan_id) = requested_trip_plan_id {
+        if !db::queries::plan_variant_exists_for_trip(tx, trip_id, trip_plan_id).await? {
+            return Err(ServiceError::InvalidRequest(
+                "tripPlanId must belong to the trip",
+            ));
+        }
+        return Ok(trip_plan_id);
+    }
+
+    db::queries::active_plan_variant_id_for_trip(tx, trip_id)
+        .await?
+        .ok_or(ServiceError::NotFound)
+}
+
 async fn validate_expense_links(
     tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
     trip_id: Uuid,
@@ -391,6 +413,7 @@ async fn write_reminder_event(
     let payload = serde_json::json!({
         "id": reminder.id,
         "tripId": reminder.trip_id,
+        "tripPlanId": reminder.trip_plan_id,
         "from": reminder.from_member_id,
         "to": reminder.to_member_id,
         "amountMinor": reminder.amount_minor,

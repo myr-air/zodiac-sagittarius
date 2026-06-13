@@ -11,7 +11,7 @@ questions from this file without opening the implementation:
 | Packet part | Where it lives | What must be true before code starts |
 | --- | --- | --- |
 | API response diffs | [Phase 0/1 API Diff Checklist](#phase-01-api-diff-checklist) and [API Response Diffs](#api-response-diffs) | Every touched route names canonical aliases, legacy aliases, validation behavior, and drift handling. |
-| Migration DDL draft | [Migration DDL Draft](#migration-ddl-draft) | The draft matches shipped migrations `0025`-`0028`, and the spec names what the database intentionally does not enforce yet. |
+| Migration DDL draft | [Migration DDL Draft](#migration-ddl-draft) | The draft matches shipped migrations `0025`-`0029`, and the spec names what the database intentionally does not enforce yet. |
 | Exact test matrix | [Exact Test Matrix](#exact-test-matrix) | Scenario-level assertions map to `API-*`, `DDL-*`, and `TEST-*` ids; file-level coverage alone is not enough. |
 
 The controlling ADRs for this packet are:
@@ -41,7 +41,7 @@ this packet is reviewed as the Phase 0/1 acceptance baseline:
 2. The route-by-route response diff contract below names every API surface that
    must add canonical aliases and every legacy alias that must stay.
 3. The DDL section below is treated as the migration draft and repository
-   reality check. `0025`, `0026`, `0027`, and `0028` already exist in the migration
+   reality check. `0025`, `0026`, `0027`, `0028`, and `0029` already exist in the migration
    path; Phase 0/1 work must not rewrite their intent without a new ADR.
 4. The exact test matrix below is the implementation checklist. A code slice
    may split scenarios across files, but it must preserve the listed
@@ -63,7 +63,7 @@ slice must declare which row ids from this spec it covers.
 | `DOC-ADR-01` | [ADR 0005](./adr/0005-compatibility-first-trip-plan-rollout.md) records the compatibility-first decision and implementation-start gate. | Do not rename storage or remove legacy aliases in Phase 1. |
 | `DOC-ADR-02` | [ADR 0006](./adr/0006-phase-0-1-contract-gate-before-code.md) records that API diffs, DDL draft, and exact test matrix are pre-code artifacts. | Do not start a production-code slice by discovering or changing the contract in code first. |
 | `DOC-API-01` | The API diff sections below cover cockpit load, account trip create, join summaries, create, patch, set-main, realtime, import, and import/export envelopes. | Do not add a canonical alias in only one layer. Backend response, realtime payload, frontend mapper, local mapper, docs, and tests move together. |
-| `DOC-DDL-01` | The DDL draft below matches migration files `0025`, `0026`, `0027`, and `0028`, with rollback stance and drift repair rules. | Do not introduce Phase 1 behavior that requires stronger DB invariants than the shipped migrations enforce. |
+| `DOC-DDL-01` | The DDL draft below matches migration files `0025`, `0026`, `0027`, `0028`, and `0029`, with rollback stance and drift repair rules. | Do not introduce Phase 1 behavior that requires stronger DB invariants than the shipped migrations enforce. |
 | `DOC-TEST-01` | The exact test matrix below names scenario-level assertions and command evidence. | Do not claim implementation readiness from file-level coverage alone; each changed route/mapper/schema path needs a mapped assertion. |
 | `DOC-SCOPE-01` | Phase 2/3 preview rows are separated from Phase 0/1 release-blocking rows. | Do not accidentally turn preview behavior into a hidden Phase 1 requirement without updating ADR/spec first. |
 
@@ -129,6 +129,9 @@ Repository reality check:
   migrations that Phase 2/3 will introduce for the first time. Most new fields
   are nullable during compatibility; `itinerary_items.end_offset_days` is
   intentionally non-null with default `0`.
+- `0029_expense_reminder_trip_plan_scope.sql` hardens settlement reminder
+  history to the Trip Plan scope so reminder timestamps from one draft/main
+  plan do not appear on another plan with the same payer, receiver, and amount.
 - Phase 0/1 implementation must not undo those migrations. It must make the
   compatibility contract explicit before the next behavior/UI slice builds on
   the columns that already exist.
@@ -1046,6 +1049,7 @@ older support scripts working during the compatibility window.
 | `0026_plan_scoped_records.sql` | Phase 2 schema preview already in path | Do not remove or reinterpret in Phase 1 | Keep `trip_plan_id` nullable; set-main must not rewrite existing scoped records. |
 | `0027_itinerary_hierarchy_time_windows.sql` | Phase 3 schema preview already in path | Do not remove or flatten in Phase 1 | Preserve hierarchy/time fields in import/export and API mappers even before the hierarchy UI rebuild. |
 | `0028_plan_check_trip_plan_scope.sql` | Plan Check sidecar already in path | Preserve as an additive scoped-check surface | Keep `plan_checks.trip_plan_id` nullable; Plan Check scoping is allowed as a sidecar and must not redefine Trip Plan compatibility semantics. |
+| `0029_expense_reminder_trip_plan_scope.sql` | Expense reminder scope hardening | Required migration surface | Store reminder history per Trip Plan and keep legacy omitted-`tripPlanId` writes mapped to the current Main Plan. |
 
 ### DDL Review IDs
 
@@ -1063,6 +1067,7 @@ code must respect.
 | `DDL-HIER-01` | `0027_itinerary_hierarchy_time_windows.sql` | Parent FK includes `(parent_item_id, trip_id, plan_variant_id, day)` and is immediate, not deferrable. | Phase 1 import/export must preserve hierarchy fields, and Phase 3 service code must use valid update sequences. |
 | `DDL-HIER-02` | `0027_itinerary_hierarchy_time_windows.sql` | `end_time` is nullable and `end_offset_days` is non-null `0..7`, but DB does not enforce `end_offset_days = 0` when `end_time IS NULL`. | Phase 3 read/write validation must normalize or reject raw drift before exposing a real Time Window. |
 | `DDL-CHECK-01` | `0028_plan_check_trip_plan_scope.sql` | `plan_checks.trip_plan_id` exists as nullable FK to `(plan_variants.id, trip_id)` and is indexed only when present. | Optional Plan Check scoping can coexist with legacy trip-wide checks without changing Main Plan or itinerary import semantics. |
+| `DDL-REMINDER-01` | `0029_expense_reminder_trip_plan_scope.sql` | `expense_reminders.trip_plan_id` is non-null, backfilled from the active Main Plan, and participates in the unique reminder key. | Reminder history attaches only to settlement suggestions in the requested Trip Plan; whole-trip reads can still include all reminders. |
 
 The SQL below is therefore both a draft contract and a repository check. If the
 real migration differs from the block, update the migration only through a
@@ -1072,7 +1077,7 @@ undocumented variant.
 Repository reconciliation rule: the SQL blocks in this section are expected to
 match the checked-in migration files byte-for-byte in intent, but comments and
 surrounding explanatory notes may be richer here. If a reviewer finds a
-semantic mismatch between this spec and `backend/migrations/0025`-`0028`, stop
+semantic mismatch between this spec and `backend/migrations/0025`-`0029`, stop
 the implementation slice and resolve the document or migration through a
 separate schema-review commit first.
 
@@ -1331,7 +1336,7 @@ Phase 2 rules:
   columns in place. Dropping them is a coordinated database downgrade because
   the migrator records the migration as applied.
 - Phase 0/1 deliberately does not provide a column-drop downgrade recipe for
-  `0026`, `0027`, or `0028`. If an operator must remove those additive preview
+  `0026`, `0027`, `0028`, or `0029`. If an operator must remove those additive preview
   columns or constraints, write a separate schema rollback ADR/runbook that
   names drop ordering, data backup, and the exact `schema_migrations` repair for
   the migration filenames being removed.
@@ -1372,6 +1377,56 @@ Rules:
 - Application rollback should keep the nullable column in place. Dropping it is
   a coordinated database downgrade because the migrator records `0028` as
   applied.
+
+### Expense Reminder Trip Plan Scope
+
+`0029_expense_reminder_trip_plan_scope.sql` is a Phase 2 hardening migration
+for reminder history attached to settlement suggestions. The reminder itself is
+not paid money, but leaking a reminder timestamp from one Trip Plan to another
+makes Actual Expense follow-up look more real than it is.
+
+```sql
+-- 0029_expense_reminder_trip_plan_scope.sql
+
+ALTER TABLE expense_reminders
+  ADD COLUMN IF NOT EXISTS trip_plan_id uuid;
+
+UPDATE expense_reminders reminder
+SET trip_plan_id = trips.active_plan_variant_id
+FROM trips
+WHERE reminder.trip_id = trips.id
+  AND reminder.trip_plan_id IS NULL;
+
+ALTER TABLE expense_reminders
+  ALTER COLUMN trip_plan_id SET NOT NULL;
+
+ALTER TABLE expense_reminders
+  ADD CONSTRAINT expense_reminders_trip_plan_fkey
+  FOREIGN KEY (trip_plan_id, trip_id) REFERENCES plan_variants(id, trip_id) NOT VALID;
+
+ALTER TABLE expense_reminders VALIDATE CONSTRAINT expense_reminders_trip_plan_fkey;
+
+ALTER TABLE expense_reminders
+  DROP CONSTRAINT IF EXISTS expense_reminders_trip_id_from_member_id_to_member_id_amount_minor_key;
+
+ALTER TABLE expense_reminders
+  ADD CONSTRAINT expense_reminders_trip_plan_pair_key
+  UNIQUE (trip_id, trip_plan_id, from_member_id, to_member_id, amount_minor);
+
+CREATE INDEX IF NOT EXISTS expense_reminders_trip_plan_pair_idx
+  ON expense_reminders (trip_id, trip_plan_id, from_member_id, to_member_id, amount_minor);
+```
+
+Rules:
+
+- Scoped summary reads attach reminder history only from the requested Trip
+  Plan.
+- Legacy reminder writes without `tripPlanId` map to the current Main Plan for
+  compatibility instead of remaining unscoped.
+- Whole-trip summary reads may still include all reminders because they are the
+  legacy aggregate view.
+- Application rollback should keep the non-null column in place. Dropping it
+  requires a coordinated downgrade because the unique reminder key changes.
 
 ### Phase 3 Draft: Hierarchy And Time Windows
 

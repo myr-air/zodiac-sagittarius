@@ -83,7 +83,7 @@ pub async fn load_cockpit(
         },
         async {
             if can_view_expenses {
-                db::queries::list_expense_reminders(pool, session_trip_id).await
+                db::queries::list_expense_reminders(pool, session_trip_id, None).await
             } else {
                 Ok(Vec::new())
             }
@@ -566,6 +566,7 @@ mod tests {
                 ExpenseReminderRecord {
                     id: Uuid::now_v7(),
                     trip_id: Uuid::now_v7(),
+                    trip_plan_id: Uuid::now_v7(),
                     from_member_id: debtor,
                     to_member_id: payer,
                     amount_minor: 4_000,
@@ -575,6 +576,7 @@ mod tests {
                 ExpenseReminderRecord {
                     id: Uuid::now_v7(),
                     trip_id: Uuid::now_v7(),
+                    trip_plan_id: Uuid::now_v7(),
                     from_member_id: debtor,
                     to_member_id: payer,
                     amount_minor: 4_500,
