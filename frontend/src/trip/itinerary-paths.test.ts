@@ -333,6 +333,54 @@ describe("itinerary path import application", () => {
     });
   });
 
+  it("remaps imported sub-activity parents when imported ids collide with existing rows", () => {
+    const existingItem = {
+      ...tripFixture.planItems[0],
+      id: "import-flight-block",
+      day: "2026-06-19",
+      sortOrder: 100,
+    };
+    const importedBlock: ItineraryExportItem = {
+      ...importItem,
+      id: "import-flight-block",
+      day: "2026-06-20",
+      sortOrder: 100,
+      activity: "Imported flight block",
+      isPlanBlock: true,
+      parentItemId: null,
+    };
+    const importedChild: ItineraryExportItem = {
+      ...importItem,
+      id: "import-flight-checkin",
+      day: "2026-06-20",
+      sortOrder: 200,
+      activity: "Imported check-in",
+      parentItemId: "import-flight-block",
+      isPlanBlock: false,
+    };
+
+    const next = applyImportedItemsToItineraryPath(
+      { ...tripFixture.trip, itineraryItems: [existingItem] },
+      [importedBlock, importedChild],
+      {
+        memberId: "member-aom",
+        pathId: "main",
+        pathName: "Main",
+        scope: "trip",
+        mode: "keep-alternatives",
+      },
+    );
+
+    expect(next.itineraryItems.map((item) => item.id)).toEqual([
+      "import-flight-block",
+      "import-flight-block-2",
+      "import-flight-checkin",
+    ]);
+    expect(next.itineraryItems.find((item) => item.id === "import-flight-checkin")).toMatchObject({
+      parentItemId: "import-flight-block-2",
+    });
+  });
+
   it("imports overlapping rows into main without synthesizing alternative paths", () => {
     const existingMain = {
       ...tripFixture.planItems[0],

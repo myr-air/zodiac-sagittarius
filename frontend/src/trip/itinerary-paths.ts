@@ -103,9 +103,15 @@ export function applyImportedItemsToItineraryPath(
     ? trip.itineraryItems.filter((item) => !isTargetPathItem(item, target.pathId, targetDay))
     : trip.itineraryItems;
   const usedIds = new Set(retainedItems.map((item) => item.id));
-  const nextImportedItems = importedItems.map((item, index) => {
+  const importedIdMap = new Map<string, string>();
+  for (const item of importedItems) {
     const id = nextUniqueImportedItemId(item.id, usedIds);
     usedIds.add(id);
+    importedIdMap.set(item.id, id);
+  }
+
+  const nextImportedItems = importedItems.map((item, index) => {
+    const id = importedIdMap.get(item.id) ?? item.id;
     const day = targetDay ?? item.day;
     const pathGroupId = target.pathId === mainItineraryPathId
       ? undefined
@@ -115,6 +121,9 @@ export function applyImportedItemsToItineraryPath(
       id,
       tripId: trip.id,
       planVariantId: trip.activePlanVariantId,
+      parentItemId: item.parentItemId
+        ? (importedIdMap.get(item.parentItemId) ?? item.parentItemId)
+        : item.parentItemId,
       pathGroupId,
       pathId: target.pathId === mainItineraryPathId ? undefined : target.pathId,
       pathName: target.pathId === mainItineraryPathId ? undefined : target.pathName,
