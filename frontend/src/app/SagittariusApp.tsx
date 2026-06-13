@@ -2758,14 +2758,15 @@ export function SagittariusApp({
     if (!canEditBookings) return;
     const item = trip.itineraryItems.find((candidate) => candidate.id === itemId);
     if (!item) return;
+    const draftDetails = bookingDraftDetailsForItineraryItem(item);
     await createBookingDoc({
       type: bookingTypeForItineraryItem(item),
       title: `${item.activity} booking draft`,
       status: "draft",
       visibility: "shared",
       ownerMemberId: currentMember.id,
-      providerName: null,
-      confirmationCode: null,
+      providerName: draftDetails.providerName,
+      confirmationCode: draftDetails.confirmationCode,
       startsAt: null,
       endsAt: null,
       timezone: trip.defaultTimezone ?? null,
@@ -2777,7 +2778,7 @@ export function SagittariusApp({
       relatedTaskIds: [],
       relatedExpenseIds: [],
       noteIds: [],
-      notes: item.place ? `Draft from itinerary: ${item.place}` : "Draft from itinerary",
+      notes: draftDetails.notes,
     });
   }
 
@@ -4989,6 +4990,41 @@ function bookingTypeForItineraryItem(item: ItineraryItem): BookingDocType {
   if (/\bbus\b|\bferry\b|\bshuttle\b|\btram\b|\btaxi\b/.test(haystack)) return "public_transport";
   if (item.activityType === "attraction" || item.itemKind === "activity") return "activity_ticket";
   return "other";
+}
+
+function bookingDraftDetailsForItineraryItem(item: ItineraryItem): {
+  confirmationCode: string | null;
+  notes: string;
+  providerName: string | null;
+} {
+  const providerName =
+    readItineraryDetailString(item.details, "provider") ||
+    readItineraryDetailString(item.details, "mode") ||
+    null;
+  const confirmationCode =
+    readItineraryDetailString(item.details, "bookingRef") ||
+    readItineraryDetailString(item.details, "ticketRef") ||
+    null;
+  const notes = [
+    item.place ? `Draft from itinerary: ${item.place}` : "Draft from itinerary",
+    readItineraryDetailString(item.details, "entryWindow"),
+    readItineraryDetailString(item.details, "costNote"),
+    readItineraryDetailString(item.details, "detail"),
+  ].filter((value): value is string => Boolean(value));
+
+  return {
+    confirmationCode,
+    notes: notes.join("\n"),
+    providerName,
+  };
+}
+
+function readItineraryDetailString(
+  details: ItineraryItem["details"] | null | undefined,
+  key: string,
+): string {
+  const value = details?.[key];
+  return typeof value === "string" ? value.trim() : "";
 }
 
 function serializePhotoAlbumInputForApi(input: TripPhotoAlbumInput) {

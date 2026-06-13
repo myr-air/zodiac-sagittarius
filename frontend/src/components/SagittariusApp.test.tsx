@@ -5322,6 +5322,12 @@ describe("Sagittarius cockpit UI", () => {
       activityType: "travel" as const,
       transportation: "Plane",
       place: "DMK",
+      details: {
+        kind: "transportation",
+        mode: "Thai AirAsia",
+        ticketRef: "FD-3023",
+        costNote: "Estimate THB 4,200 before ticket issue",
+      },
       sortOrder: 100,
     };
     storage.setItem(
@@ -5350,9 +5356,13 @@ describe("Sagittarius cockpit UI", () => {
         type: "flight",
         title: "Flight to Hong Kong booking draft",
         tripPlanId: seedTrip.activePlanVariantId,
+        providerName: "Thai AirAsia",
+        confirmationCode: "FD-3023",
         priceAmount: null,
         relatedItineraryItemIds: ["item-flight"],
         relatedExpenseIds: [],
+        notes:
+          "Draft from itinerary: DMK\nEstimate THB 4,200 before ticket issue",
       }),
     ]);
   });
