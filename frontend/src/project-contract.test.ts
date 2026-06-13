@@ -109,6 +109,14 @@ describe("Sagittarius project scaffold", () => {
     expect(css).toContain("--color-warning: #b45309");
   });
 
+  it("uses Trip Plan language in product copy instead of rollout compatibility names", () => {
+    const messages = readFileSync(join(frontendRoot, "src/i18n/messages.ts"), "utf8");
+
+    expect(messages).toContain("Trip Plan");
+    expect(messages).not.toMatch(/\bTrip Sheet\b/i);
+    expect(messages).not.toMatch(/\bPlan Variant\b/i);
+  });
+
   it("documents the Rust/PostgreSQL API data contract", () => {
     const spec = readFileSync(join(repoRoot, "docs/api-data-spec.md"), "utf8");
 
