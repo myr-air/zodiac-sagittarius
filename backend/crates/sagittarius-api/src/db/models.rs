@@ -531,6 +531,11 @@ impl From<ItineraryItemRecord> for ItineraryItemSummary {
             (Some(lat), Some(lng)) => Some(ItineraryCoordinates { lat, lng }),
             _ => None,
         };
+        let end_offset_days = if record.end_time.is_some() {
+            record.end_offset_days
+        } else {
+            0
+        };
 
         Self {
             id: record.id,
@@ -550,7 +555,7 @@ impl From<ItineraryItemRecord> for ItineraryItemSummary {
             sort_order: record.sort_order,
             start_time: record.start_time,
             end_time: record.end_time,
-            end_offset_days: record.end_offset_days,
+            end_offset_days,
             activity: record.activity,
             activity_type: record.activity_type,
             place: record.place,
