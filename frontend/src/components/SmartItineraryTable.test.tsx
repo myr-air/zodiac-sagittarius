@@ -1343,6 +1343,31 @@ describe("SmartItineraryTable", () => {
     expect(row.querySelector("sup")).toHaveTextContent("+1");
   });
 
+  it("does not show a next-day marker for same-day end times", () => {
+    const sameDayItem = {
+      ...tripFixture.planItems[0],
+      id: "same-day-flight-window",
+      day: "2026-06-19",
+      startTime: "09:00",
+      endTime: "10:00",
+      endOffsetDays: 0,
+      durationMinutes: null,
+      activity: "Same day flight window",
+      sortOrder: 100,
+    };
+
+    renderTable({
+      items: [sameDayItem],
+      selectedItemId: sameDayItem.id,
+    });
+
+    const row = screen.getByRole("row", {
+      name: /Same day flight window/i,
+    });
+    expect(row).toHaveTextContent("09:00-10:00");
+    expect(row).not.toHaveTextContent("+1");
+  });
+
   it("edits end time and next-day offset inline", () => {
     const onUpdateItemInline = vi.fn();
     const overnightItem = {

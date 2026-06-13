@@ -2241,7 +2241,11 @@ function TimeWindowInlineEditor({
           })
         }
       >
-        <EndOffsetSup value={1} />
+        {endOffsetDays > 0 ? (
+          <EndOffsetSup value={endOffsetDays} />
+        ) : (
+          <Icon name="clock" className="size-3" />
+        )}
       </button>
     </span>
   );
