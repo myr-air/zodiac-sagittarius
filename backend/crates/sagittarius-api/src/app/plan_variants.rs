@@ -25,7 +25,7 @@ pub async fn create_plan_variant(
     let session = db::queries::find_active_member_session_in_tx(&mut tx, trip_id, &token_hash)
         .await?
         .ok_or(ServiceError::Unauthenticated)?;
-    if !can(session.role, Capability::EditItinerary) {
+    if !can(session.role, Capability::ManageTripPlans) {
         return Err(ServiceError::Forbidden);
     }
     reject_duplicate_mutation(
@@ -86,7 +86,7 @@ pub async fn patch_plan_variant(
     let session = db::queries::find_active_member_session_in_tx(&mut tx, trip_id, &token_hash)
         .await?
         .ok_or(ServiceError::Unauthenticated)?;
-    if !can(session.role, Capability::EditItinerary) {
+    if !can(session.role, Capability::ManageTripPlans) {
         return Err(ServiceError::Forbidden);
     }
     reject_duplicate_mutation(
@@ -168,7 +168,7 @@ pub async fn publish_plan_variant(
     let session = db::queries::find_active_member_session_in_tx(&mut tx, trip_id, &token_hash)
         .await?
         .ok_or(ServiceError::Unauthenticated)?;
-    if !can(session.role, Capability::EditItinerary) {
+    if !can(session.role, Capability::ManageTripPlans) {
         return Err(ServiceError::Forbidden);
     }
     reject_duplicate_mutation(

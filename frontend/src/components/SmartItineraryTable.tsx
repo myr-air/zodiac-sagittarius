@@ -42,6 +42,7 @@ import {
   type ItineraryPathOption,
   type ItineraryView,
 } from "@/src/trip/itinerary";
+import { canTripRole } from "@/src/trip/auth";
 import { safeExternalHref } from "@/src/trip/safe-links";
 import {
   formatWeatherTemp,
@@ -438,7 +439,7 @@ export function SmartItineraryTable({
   const allDisplayItems = graphItems ?? items;
   const filterOptions = dedupePathOptions(pathOptions, allDisplayItems);
   const canEdit = role === "owner" || role === "organizer" || role === "traveler";
-  const canManageTripPlans = role === "owner" || role === "organizer";
+  const canManageTripPlans = canTripRole(role, "manageTripPlans");
   const canRestructureItems = canEdit && canRestructure;
   const [selectedPathIds, setSelectedPathIds] = useState<string[]>(() =>
     filterOptions.map((option) => option.id),

@@ -868,3 +868,146 @@ async fn plan_variant_contract_viewer_cannot_create(pool: sqlx::PgPool) {
 
     assert_eq!(response.status(), StatusCode::FORBIDDEN);
 }
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn plan_variant_contract_traveler_cannot_manage_trip_plans(pool: sqlx::PgPool) {
+    support::seed_trip(&pool).await;
+    let alt_plan_id = support::seed_plan_variant(&pool).await;
+    let token = support::create_session(&pool, support::TRAVELER_ID).await;
+    let app = support::app(pool.clone());
+    let initial_event_count = realtime_event_count(&pool).await;
+    let initial_target: (String, Option<String>, i64) =
+        sqlx::query_as("select name, status, version from plan_variants where id = $1")
+            .bind(alt_plan_id)
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+
+    for (label, method, uri, body) in [
+        (
+            "legacy create",
+            Method::POST,
+            format!("/api/v1/trips/{}/plan-variants", support::TRIP_ID),
+            json!({
+                "clientMutationId": "web-plan-create-traveler-forbidden",
+                "name": "Traveler legacy plan",
+                "kind": "draft",
+                "description": "Should not be created"
+            }),
+        ),
+        (
+            "canonical create",
+            Method::POST,
+            format!("/api/v1/trips/{}/trip-plans", support::TRIP_ID),
+            json!({
+                "clientMutationId": "web-trip-plan-create-traveler-forbidden",
+                "name": "Traveler canonical plan",
+                "status": "draft",
+                "description": "Should not be created"
+            }),
+        ),
+        (
+            "legacy patch",
+            Method::PATCH,
+            format!(
+                "/api/v1/trips/{}/plan-variants/{alt_plan_id}",
+                support::TRIP_ID
+            ),
+            json!({
+                "clientMutationId": "web-plan-patch-traveler-forbidden",
+                "expectedVersion": 1,
+                "patch": {
+                    "name": "Traveler patched legacy plan"
+                }
+            }),
+        ),
+        (
+            "canonical patch",
+            Method::PATCH,
+            format!(
+                "/api/v1/trips/{}/trip-plans/{alt_plan_id}",
+                support::TRIP_ID
+            ),
+            json!({
+                "clientMutationId": "web-trip-plan-patch-traveler-forbidden",
+                "expectedVersion": 1,
+                "patch": {
+                    "status": "proposal"
+                }
+            }),
+        ),
+        (
+            "legacy publish",
+            Method::POST,
+            format!(
+                "/api/v1/trips/{}/plan-variants/{alt_plan_id}/publications",
+                support::TRIP_ID
+            ),
+            json!({
+                "clientMutationId": "web-plan-publish-traveler-forbidden"
+            }),
+        ),
+        (
+            "canonical set-main",
+            Method::POST,
+            format!(
+                "/api/v1/trips/{}/trip-plans/{alt_plan_id}/set-main",
+                support::TRIP_ID
+            ),
+            json!({
+                "clientMutationId": "web-trip-plan-main-traveler-forbidden",
+                "previousMainNextStatus": "backup"
+            }),
+        ),
+    ] {
+        let response = app
+            .clone()
+            .oneshot(
+                Request::builder()
+                    .method(method)
+                    .uri(uri)
+                    .header(header::AUTHORIZATION, format!("Bearer {token}"))
+                    .header(header::CONTENT_TYPE, "application/json")
+                    .body(Body::from(body.to_string()))
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(
+            response.status(),
+            StatusCode::FORBIDDEN,
+            "{label} should require trip plan management"
+        );
+    }
+
+    let created_count: i64 = sqlx::query_scalar(
+        "select count(*) from plan_variants
+         where trip_id = $1
+           and name in ('Traveler legacy plan', 'Traveler canonical plan')",
+    )
+    .bind(Uuid::parse_str(support::TRIP_ID).unwrap())
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(created_count, 0);
+
+    let current_target: (String, Option<String>, i64) =
+        sqlx::query_as("select name, status, version from plan_variants where id = $1")
+            .bind(alt_plan_id)
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+    assert_eq!(current_target, initial_target);
+
+    let active_plan_variant_id: Uuid =
+        sqlx::query_scalar("select active_plan_variant_id from trips where id = $1")
+            .bind(Uuid::parse_str(support::TRIP_ID).unwrap())
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+    assert_eq!(
+        active_plan_variant_id,
+        Uuid::parse_str(support::PLAN_ID).unwrap()
+    );
+    assert_eq!(realtime_event_count(&pool).await, initial_event_count);
+}

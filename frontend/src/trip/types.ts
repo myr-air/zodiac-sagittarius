@@ -9,6 +9,7 @@ export type TripCapability =
   | "viewExpenses"
   | "editExpenses"
   | "managePeople"
+  | "manageTripPlans"
   | "managePhotoAlbums";
 
 export type PlanStatus = "main" | "backup" | "draft" | "proposal";

@@ -410,8 +410,7 @@ export function SagittariusApp({
   );
   const canEditExpenses = canTripRole(currentMember.role, "editExpenses");
   const canManagePeople = canTripRole(currentMember.role, "managePeople");
-  const canManageTripPlans =
-    currentMember.role === "owner" || currentMember.role === "organizer";
+  const canManageTripPlans = canTripRole(currentMember.role, "manageTripPlans");
   const canEditBookings = canEdit || canEditExpenses;
   const canEditPhotoAlbums = canTripRole(currentMember.role, "managePhotoAlbums");
   const canCreateStopNote = canCreateSuggestion || canEdit;

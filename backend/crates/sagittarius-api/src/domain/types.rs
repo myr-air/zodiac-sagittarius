@@ -23,6 +23,7 @@ pub enum Capability {
     ViewExpenses,
     EditExpenses,
     ManagePeople,
+    ManageTripPlans,
     CreateSharedTask,
     CreatePrivateTask,
     UpdateOwnPrivateTask,
