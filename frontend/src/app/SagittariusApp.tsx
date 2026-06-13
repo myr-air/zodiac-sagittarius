@@ -1331,6 +1331,9 @@ export function SagittariusApp({
       (option) => option.id === targetPathId,
     )?.name;
     const nextItemId = nextLocalItemId(trip.itineraryItems, "item-new");
+    const sortOrder = parentItem
+      ? getNextChildSortOrder(planItems, parentItem)
+      : getNextSortOrder(planItems, day);
     const pathFields = parentItem
       ? {
           pathGroupId: parentItem.pathGroupId,
@@ -1355,7 +1358,7 @@ export function SagittariusApp({
       status: values.status,
       priority: values.priority,
       day,
-      sortOrder: getNextSortOrder(planItems, day),
+      sortOrder,
       startTime: values.startTime,
       endTime: values.endTime,
       endOffsetDays: values.endOffsetDays,
@@ -4186,6 +4189,14 @@ function getNextSortOrder(items: ItineraryItem[], day: string): number {
     .map((item) => item.sortOrder);
   /* v8 ignore next */
   return dayOrders.length ? Math.max(...dayOrders) + 100 : 100;
+}
+
+function getNextChildSortOrder(items: ItineraryItem[], parentItem: ItineraryItem): number {
+  const siblingOrders = items
+    .filter((item) => item.day === parentItem.day && item.parentItemId === parentItem.id)
+    .map((item) => item.sortOrder);
+  if (siblingOrders.length) return Math.max(...siblingOrders) + 10;
+  return parentItem.sortOrder + 10;
 }
 
 function buildMapLink(place: string): string {

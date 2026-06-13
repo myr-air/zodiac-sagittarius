@@ -5129,11 +5129,27 @@ describe("Sagittarius cockpit UI", () => {
       parentItemId: null,
       sortOrder: 100,
     };
+    const existingChild = {
+      ...seedTrip.itineraryItems[1],
+      id: "block-flight-checkin",
+      activity: "Airport shuttle",
+      parentItemId: "block-flight",
+      isPlanBlock: false,
+      sortOrder: 110,
+    };
+    const laterActivity = {
+      ...seedTrip.itineraryItems[2],
+      id: "later-market",
+      activity: "Later market walk",
+      parentItemId: null,
+      isPlanBlock: false,
+      sortOrder: 300,
+    };
     storage.setItem(
       tripStorageKey,
       JSON.stringify({
         ...seedTrip,
-        itineraryItems: [blockItem],
+        itineraryItems: [blockItem, existingChild, laterActivity],
       }),
     );
 
@@ -5166,6 +5182,7 @@ describe("Sagittarius cockpit UI", () => {
           activity: "Airport check in",
           parentItemId: "block-flight",
           isPlanBlock: false,
+          sortOrder: 120,
         }),
       ]),
     );
@@ -5220,6 +5237,7 @@ describe("Sagittarius cockpit UI", () => {
           activity: "Rain route check in",
           parentItemId: "block-rain-flight",
           isPlanBlock: false,
+          sortOrder: 110,
           pathGroupId: "path-group-rain",
           pathId: "path-rain",
           pathName: "Rain plan",
