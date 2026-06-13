@@ -304,6 +304,10 @@ async fn itinerary_import_contract_rejects_invalid_hierarchy(pool: sqlx::PgPool)
         "missing-block",
         false
     ),]));
+    let duplicate_item_id = base_import_source(json!([
+        import_item("dup-item", "2026-06-19", Value::Null, false),
+        import_item("dup-item", "2026-06-19", Value::Null, false),
+    ]));
 
     assert_eq!(
         import_status(&app, &token, grandchild).await,
@@ -315,6 +319,10 @@ async fn itinerary_import_contract_rejects_invalid_hierarchy(pool: sqlx::PgPool)
     );
     assert_eq!(
         import_status(&app, &token, missing_parent).await,
+        StatusCode::BAD_REQUEST
+    );
+    assert_eq!(
+        import_status(&app, &token, duplicate_item_id).await,
         StatusCode::BAD_REQUEST
     );
 }

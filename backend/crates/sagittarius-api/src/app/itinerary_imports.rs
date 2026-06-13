@@ -454,6 +454,15 @@ fn normalize_items(items: &mut [ItineraryImportItem]) -> Result<(), ServiceError
         }
     }
 
+    let mut item_ids = HashSet::new();
+    for item in items.iter() {
+        if !item_ids.insert(item.id.as_str()) {
+            return Err(ServiceError::InvalidRequest(
+                "import items must have unique ids",
+            ));
+        }
+    }
+
     let items_by_id: HashMap<String, (time::Date, Option<String>)> = items
         .iter()
         .map(|item| (item.id.clone(), (item.day, item.parent_item_id.clone())))
