@@ -34,7 +34,7 @@ paths:
                 $ref: "#/components/schemas/CockpitResponse"
     patch:
       summary: Patch trip core settings and V1 trip metadata.
-      description: Phase 1 metadata patch must reject activePlanVariantId and mainTripPlanId pointer mutations unless it delegates to the full Trip Plan set-main transaction and realtime event semantics.
+      description: Phase 1 metadata patch rejects activePlanVariantId and mainTripPlanId pointer mutations with 400 invalid_request. Use /trip-plans/{tripPlanId}/set-main for Main Plan changes.
       parameters:
         - $ref: "#/components/parameters/TripId"
       requestBody:
@@ -246,7 +246,7 @@ paths:
           required: false
           schema:
             type: string
-          description: Optional Trip Plan scope. When omitted, the check covers the full trip for compatibility.
+          description: Optional Trip Plan scope. When omitted, the check covers the full trip for compatibility. When supplied, the Trip Plan id must belong to the trip and does not mutate the Main Plan pointer.
       responses:
         "201":
           description: Plan Check completed.
@@ -264,7 +264,7 @@ paths:
           required: false
           schema:
             type: string
-          description: Optional Trip Plan scope. When provided, returns the latest check for that Trip Plan.
+          description: Optional Trip Plan scope. When provided, returns the latest check for that Trip Plan. The Trip Plan id must belong to the trip and does not mutate the Main Plan pointer.
       responses:
         "200":
           description: Latest Plan Check or null.
@@ -465,10 +465,10 @@ components:
         activePlanVariantId:
           type: string
           deprecated: true
-          description: Legacy pointer alias. Phase 1 metadata patch rejects this field unless delegated to /trip-plans/{tripPlanId}/set-main semantics.
+          description: Legacy pointer alias. Phase 1 metadata patch rejects this field; use /trip-plans/{tripPlanId}/set-main.
         mainTripPlanId:
           type: string
-          description: Canonical pointer alias. Phase 1 metadata patch rejects this field unless delegated to /trip-plans/{tripPlanId}/set-main semantics.
+          description: Canonical pointer alias. Phase 1 metadata patch rejects this field; use /trip-plans/{tripPlanId}/set-main.
     ItineraryItemCreateRequest:
       allOf:
         - $ref: "#/components/schemas/ItineraryItemPatch"

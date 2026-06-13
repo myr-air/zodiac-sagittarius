@@ -214,6 +214,34 @@ async fn plan_checks_contract_scopes_latest_and_staleness_by_trip_plan(pool: sql
 }
 
 #[sqlx::test(migrations = "../../migrations")]
+async fn plan_checks_contract_rejects_latest_scope_outside_trip(pool: sqlx::PgPool) {
+    support::seed_trip(&pool).await;
+    let token = support::create_session(&pool, support::ORGANIZER_ID).await;
+    let app = support::app(pool);
+    let outside_trip_plan_id = "018f4e82-3000-7c00-b111-00000000ffff";
+
+    let response = app
+        .oneshot(
+            Request::builder()
+                .method(Method::GET)
+                .uri(format!(
+                    "/api/v1/trips/{}/plan-checks/latest?tripPlanId={outside_trip_plan_id}",
+                    support::TRIP_ID
+                ))
+                .header(header::AUTHORIZATION, format!("Bearer {token}"))
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::BAD_REQUEST);
+    let body: Value =
+        serde_json::from_slice(&to_bytes(response.into_body(), 65536).await.unwrap()).unwrap();
+    assert_eq!(body["code"], "invalid_request");
+}
+
+#[sqlx::test(migrations = "../../migrations")]
 async fn plan_checks_contract_uses_explicit_time_windows_for_overlaps_and_child_bounds(
     pool: sqlx::PgPool,
 ) {

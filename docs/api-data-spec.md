@@ -354,8 +354,8 @@ Base path: `/api/v1`.
 - `PATCH /api/v1/trips/:tripId`
   Updates trip metadata. During Phase 1 compatibility, Main Plan identity is
   exposed as `mainTripPlanId` and legacy `activePlanVariantId`, but this route
-  must reject pointer mutations unless it delegates to the full set-main
-  transaction, status repair, and realtime event semantics.
+  rejects pointer mutations with `400 invalid_request`. Set-main is the only
+  Phase 1 route that changes the Main Plan pointer.
 
 ### Trip Plans
 
@@ -401,8 +401,10 @@ existing `code`/`message` envelope.
 - `GET /api/v1/trips/:tripId/plan-checks/latest`
 
 Both Plan Check routes accept optional `?tripPlanId=:tripPlanId`. When present,
-the stored check, suggestions, and stale fingerprint are scoped to that Trip
-Plan. When omitted, the compatibility behavior remains trip-wide.
+`tripPlanId` must belong to the trip; the stored check, suggestions, and stale
+fingerprint are scoped to that Trip Plan and do not mutate `mainTripPlanId` or
+`activePlanVariantId`. When omitted, the compatibility behavior remains
+trip-wide.
 
 Example PATCH:
 

@@ -27,16 +27,7 @@ pub async fn run_plan_check(
     {
         return Err(ServiceError::Forbidden);
     }
-    if let Some(trip_plan_id) = trip_plan_id {
-        let exists =
-            db::queries::plan_variant_exists_for_trip(&mut tx, session.trip_id, trip_plan_id)
-                .await?;
-        if !exists {
-            return Err(ServiceError::InvalidRequest(
-                "tripPlanId must belong to the trip",
-            ));
-        }
-    }
+    validate_trip_plan_scope(&mut tx, session.trip_id, trip_plan_id).await?;
     let trip = db::queries::find_trip_by_id(pool, session.trip_id)
         .await?
         .ok_or(ServiceError::NotFound)?;
@@ -96,12 +87,15 @@ pub async fn latest_plan_check(
     trip_plan_id: Option<Uuid>,
 ) -> Result<Option<PlanCheckSummary>, ServiceError> {
     let token_hash = auth::hash_session_token(session_token)?;
-    let session = db::queries::find_active_member_session(pool, trip_id, &token_hash)
+    let mut tx = pool.begin().await?;
+    let session = db::queries::find_active_member_session_in_tx(&mut tx, trip_id, &token_hash)
         .await?
         .ok_or(ServiceError::Unauthenticated)?;
     if !can(session.role, Capability::ViewPlan) {
         return Err(ServiceError::Forbidden);
     }
+    validate_trip_plan_scope(&mut tx, session.trip_id, trip_plan_id).await?;
+    tx.commit().await?;
     latest_plan_check_for_trip_and_plan(pool, session.trip_id, trip_plan_id).await
 }
 
@@ -148,6 +142,23 @@ fn scope_items_to_trip_plan(
             .collect(),
         None => items.to_vec(),
     }
+}
+
+async fn validate_trip_plan_scope(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    trip_id: Uuid,
+    trip_plan_id: Option<Uuid>,
+) -> Result<(), ServiceError> {
+    let Some(trip_plan_id) = trip_plan_id else {
+        return Ok(());
+    };
+    let exists = db::queries::plan_variant_exists_for_trip(tx, trip_id, trip_plan_id).await?;
+    if !exists {
+        return Err(ServiceError::InvalidRequest(
+            "tripPlanId must belong to the trip",
+        ));
+    }
+    Ok(())
 }
 
 pub async fn patch_plan_suggestion(
