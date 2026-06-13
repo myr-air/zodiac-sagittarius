@@ -2034,6 +2034,59 @@ describe("SmartItineraryTable", () => {
     ).toBeDisabled();
   });
 
+  it("disables deleting an activity block until its sub-activities are moved", async () => {
+    const user = userEvent.setup();
+    const onDeleteItem = vi.fn();
+    renderTable({
+      items: [
+        {
+          ...tripFixture.planItems[0],
+          id: "block-flight",
+          activity: "Flight to Hong Kong",
+          isPlanBlock: true,
+          parentItemId: null,
+          sortOrder: 100,
+        },
+        {
+          ...tripFixture.planItems[1],
+          id: "child-checkin",
+          activity: "Check in",
+          isPlanBlock: false,
+          parentItemId: "block-flight",
+          sortOrder: 110,
+        },
+        {
+          ...tripFixture.planItems[2],
+          id: "solo-market",
+          activity: "Market walk",
+          isPlanBlock: false,
+          parentItemId: null,
+          sortOrder: 200,
+        },
+      ],
+      onDeleteItem,
+      selectedItemId: "block-flight",
+    });
+
+    const blockRow = screen.getByRole("row", { name: /Flight to Hong Kong/i });
+    const childRow = screen.getByRole("row", { name: /Check in/i });
+
+    expect(
+      within(blockRow).getByRole("button", { name: /ลบ Flight to Hong Kong/i }),
+    ).toBeDisabled();
+    expect(
+      within(childRow).getByRole("button", { name: /ลบ Check in/i }),
+    ).toBeEnabled();
+
+    await user.click(
+      within(blockRow).getByRole("button", { name: /ลบ Flight to Hong Kong/i }),
+    );
+    expect(
+      screen.queryByRole("dialog", { name: /ยืนยันการลบ Flight to Hong Kong/i }),
+    ).not.toBeInTheDocument();
+    expect(onDeleteItem).not.toHaveBeenCalled();
+  });
+
   it("opens a quick task action from an itinerary row", async () => {
     const user = userEvent.setup();
     const onAddTaskForItem = vi.fn();

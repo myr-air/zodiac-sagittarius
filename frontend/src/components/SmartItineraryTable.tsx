@@ -458,6 +458,10 @@ export function SmartItineraryTable({
     () => new Map(allDisplayItems.map((item) => [item.id, item])),
     [allDisplayItems],
   );
+  const childCountByParentId = useMemo(
+    () => countChildrenByParentId(allDisplayItems),
+    [allDisplayItems],
+  );
   const selectedItem =
     displayItems.find((item) => item.id === selectedItemId) ??
     allDisplayItems.find((item) => item.id === selectedItemId) ??
@@ -1244,6 +1248,7 @@ export function SmartItineraryTable({
       {selectedItem ? (
         <MobileSelectedStopInspector
           canEdit={canEdit}
+          canDelete={!childCountByParentId.has(selectedItem.id)}
           item={selectedItem}
           itineraryLabels={t.itinerary}
           locale={locale}
@@ -1301,6 +1306,7 @@ export function SmartItineraryTable({
 
 function MobileSelectedStopInspector({
   canEdit,
+  canDelete,
   item,
   itineraryLabels,
   locale,
@@ -1309,6 +1315,7 @@ function MobileSelectedStopInspector({
   onUpdateItemInline,
 }: {
   canEdit: boolean;
+  canDelete: boolean;
   item: ItineraryItem;
   itineraryLabels: Messages["itinerary"];
   locale: Locale;
@@ -1442,7 +1449,7 @@ function MobileSelectedStopInspector({
         <button
           type="button"
           className={mobileInspectorActionButtonClassName}
-          disabled={!canEdit}
+          disabled={!canEdit || !canDelete}
           aria-label={itineraryLabels.row.delete({ activity: item.activity })}
           onClick={() => onDeleteItem?.(item)}
         >
@@ -1674,6 +1681,7 @@ function DayGroup({
             const childCount = item.isPlanBlock
               ? group.items.filter((candidate) => candidate.parentItemId === item.id).length
               : 0;
+            const canDeleteItem = childCount === 0;
             const blockCollapsed = item.isPlanBlock && collapsedPlanBlockIds.includes(item.id);
             const itemWarnings = validateItineraryItem(item, group.items);
 
@@ -2007,7 +2015,7 @@ function DayGroup({
                       aria-label={itineraryLabels.row.delete({
                         activity: item.activity,
                       })}
-                      disabled={!canEdit}
+                      disabled={!canEdit || !canDeleteItem}
                       onClick={() => onDeleteItem?.(item)}
                     >
                       <Icon name="trash" />
@@ -2963,6 +2971,15 @@ function canMoveItemIntoPlanBlockTarget(
 ): boolean {
   const draggedItem = itemsById.get(draggedItemId);
   return Boolean(draggedItem && !draggedItem.isPlanBlock);
+}
+
+function countChildrenByParentId(items: ItineraryItem[]): Map<string, number> {
+  const counts = new Map<string, number>();
+  for (const item of items) {
+    if (!item.parentItemId) continue;
+    counts.set(item.parentItemId, (counts.get(item.parentItemId) ?? 0) + 1);
+  }
+  return counts;
 }
 
 function mapHref(item: ItineraryItem): string {
