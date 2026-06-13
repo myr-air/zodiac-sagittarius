@@ -27,6 +27,7 @@ import {
   type CreateItineraryItemApiRequest,
   type CreateStopNoteApiRequest,
   type CreateTaskApiRequest,
+  type PlanCheck,
   type TripApiClient,
   type TripCockpit,
 } from "@/src/trip/api-client";
@@ -5496,6 +5497,92 @@ describe("Sagittarius cockpit UI", () => {
     );
   }, 45_000);
 
+  it("runs API Plan Check for the selected Trip Plan without publishing it", async () => {
+    const user = userEvent.setup();
+    const apiTrip = {
+      ...tripWithPlans(),
+      members: [{ ...seedTrip.members[0], claimPasswordHash: null }],
+    };
+    const runPlanCheck = vi.fn().mockImplementation(
+      (
+        tripId: string,
+        _sessionToken: string,
+        tripPlanId?: string | null,
+      ): Promise<PlanCheck> =>
+        Promise.resolve({
+          id: "plan-check-rain",
+          tripId,
+          tripPlanId: tripPlanId ?? null,
+          createdBy: "member-aom",
+          itineraryFingerprint: "rain-plan-fingerprint",
+          stale: false,
+          status: "complete",
+          languageMetadata: { provider: "rules" },
+          createdAt: "2026-06-10T00:00:00.000Z",
+          completedAt: "2026-06-10T00:00:01.000Z",
+          version: 1,
+          suggestions: [
+            {
+              id: "suggestion-rain",
+              tripId,
+              planCheckId: "plan-check-rain",
+              severity: "warning",
+              scope: "item",
+              targetItemIds: ["item-rain-gallery"],
+              explanation: {
+                en: "Rain plan gallery is missing duration.",
+                th: "Rain plan gallery ยังขาด duration",
+              },
+              recommendedAction: {
+                en: "Add duration.",
+                th: "เพิ่ม duration",
+              },
+              actionKind: "editItem",
+              actionPayload: { itemId: "item-rain-gallery" },
+              status: "pending",
+              snoozedUntil: null,
+              createdAt: "2026-06-10T00:00:00.000Z",
+              updatedAt: "2026-06-10T00:00:00.000Z",
+              version: 1,
+            },
+          ],
+        }),
+    );
+    const apiClient = createApiClientForTrip(apiTrip, {
+      latestPlanCheck: vi.fn(),
+      runPlanCheck,
+      setMainTripPlan: vi.fn(),
+    });
+
+    render(
+      <SagittariusApp
+        requireJoin
+        dataSource="api"
+        initialView="itinerary"
+        apiClient={apiClient}
+      />,
+    );
+    await loginApiTrip(user);
+
+    await user.selectOptions(await screen.findByLabelText("Trip Plan"), [
+      "plan-variant-backup",
+    ]);
+    await user.click(screen.getByRole("button", { name: /Run Plan Check/i }));
+
+    await waitFor(() =>
+      expect(runPlanCheck).toHaveBeenCalledWith(
+        apiTrip.id,
+        "session-token",
+        "plan-variant-backup",
+      ),
+    );
+    expect(apiClient.latestPlanCheck!).not.toHaveBeenCalled();
+    expect(apiClient.setMainTripPlan!).not.toHaveBeenCalled();
+    expect(
+      await screen.findByText(/Rain plan gallery ยังขาด duration/i),
+    ).toBeInTheDocument();
+  }, 45_000);
+
   it("reloads cockpit state when API Trip Plan publish hits a version conflict", async () => {
     const user = userEvent.setup();
     const apiTrip = {
@@ -6215,8 +6302,18 @@ function createApiClientForTrip(
     createMember: vi.fn(),
     patchMember: vi.fn(),
     resetMemberClaim: vi.fn(),
-    getExpenseSummary: vi.fn(),
-    recordExpenseReminder: vi.fn(),
+    getExpenseSummary: vi.fn().mockResolvedValue({
+      groupSpend: 0,
+      netByMember: {},
+      currentUserNetLabel: "settled",
+      settlementSuggestions: [],
+    }),
+    recordExpenseReminder: vi.fn().mockResolvedValue({
+      groupSpend: 0,
+      netByMember: {},
+      currentUserNetLabel: "settled",
+      settlementSuggestions: [],
+    }),
     createExpense: vi
       .fn()
       .mockImplementation(
