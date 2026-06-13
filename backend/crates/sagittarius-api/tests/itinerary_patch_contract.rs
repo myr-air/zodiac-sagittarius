@@ -246,6 +246,95 @@ async fn itinerary_patch_contract_rejects_clearing_end_time_with_offset(pool: sq
 }
 
 #[sqlx::test(migrations = "../../migrations")]
+async fn itinerary_patch_contract_clears_end_time_and_duration(pool: sqlx::PgPool) {
+    support::seed_trip(&pool).await;
+    let token = support::create_session(&pool, support::ORGANIZER_ID).await;
+    let app = support::app(pool.clone());
+
+    let cross_day = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method(Method::PATCH)
+                .uri(format!(
+                    "/api/v1/trips/{}/itinerary-items/{}",
+                    support::TRIP_ID,
+                    support::ITEM_ID
+                ))
+                .header(header::AUTHORIZATION, format!("Bearer {token}"))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({
+                        "clientMutationId": "web-patch-clearable-window-first",
+                        "expectedVersion": 4,
+                        "patch": {
+                            "endTime": "02:00",
+                            "endOffsetDays": 1,
+                            "durationMinutes": 180
+                        }
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(cross_day.status(), StatusCode::OK);
+
+    let cleared = app
+        .oneshot(
+            Request::builder()
+                .method(Method::PATCH)
+                .uri(format!(
+                    "/api/v1/trips/{}/itinerary-items/{}",
+                    support::TRIP_ID,
+                    support::ITEM_ID
+                ))
+                .header(header::AUTHORIZATION, format!("Bearer {token}"))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({
+                        "clientMutationId": "web-patch-clear-window-duration",
+                        "expectedVersion": 5,
+                        "patch": {
+                            "endTime": null,
+                            "endOffsetDays": 0,
+                            "durationMinutes": null
+                        }
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(cleared.status(), StatusCode::OK);
+    let body: Value =
+        serde_json::from_slice(&to_bytes(cleared.into_body(), 65536).await.unwrap()).unwrap();
+    assert_eq!(body["endTime"], Value::Null);
+    assert_eq!(body["endOffsetDays"], 0);
+    assert_eq!(body["durationMinutes"], Value::Null);
+
+    let stored: (Option<String>, i32, Option<i32>, i64) = sqlx::query_as(
+        "select to_char(end_time, 'HH24:MI') as end_time,
+                end_offset_days,
+                duration_minutes,
+                version
+         from itinerary_items
+         where id = $1",
+    )
+    .bind(Uuid::parse_str(support::ITEM_ID).unwrap())
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(stored.0, None);
+    assert_eq!(stored.1, 0);
+    assert_eq!(stored.2, None);
+    assert_eq!(stored.3, 6);
+}
+
+#[sqlx::test(migrations = "../../migrations")]
 async fn itinerary_patch_contract_accepts_end_time_without_start_time(pool: sqlx::PgPool) {
     support::seed_trip(&pool).await;
     let token = support::create_session(&pool, support::ORGANIZER_ID).await;

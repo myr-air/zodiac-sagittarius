@@ -792,7 +792,8 @@ pub struct ItineraryItemPatch {
     #[serde(default, deserialize_with = "deserialize_nullable_string_patch")]
     pub end_time: Option<Option<String>>,
     pub end_offset_days: Option<i32>,
-    pub duration_minutes: Option<i32>,
+    #[serde(default, deserialize_with = "deserialize_nullable_i32_patch")]
+    pub duration_minutes: Option<Option<i32>>,
     pub activity: Option<String>,
     pub activity_type: Option<String>,
     pub place: Option<String>,
@@ -827,6 +828,7 @@ impl ItineraryItemPatch {
 
         if self
             .duration_minutes
+            .flatten()
             .is_some_and(|duration_minutes| duration_minutes <= 0)
         {
             return Err(ServiceError::InvalidRequest(
@@ -1519,6 +1521,13 @@ where
     Option::<f64>::deserialize(deserializer).map(Some)
 }
 
+fn deserialize_nullable_i32_patch<'de, D>(deserializer: D) -> Result<Option<Option<i32>>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    Option::<i32>::deserialize(deserializer).map(Some)
+}
+
 fn deserialize_nullable_uuid_patch<'de, D>(
     deserializer: D,
 ) -> Result<Option<Option<Uuid>>, D::Error>
@@ -1550,7 +1559,7 @@ mod tests {
     fn itinerary_patch_accepts_valid_time_activity_type_and_duration() {
         let patch = ItineraryItemPatch {
             start_time: Some(Some("09:30".to_string())),
-            duration_minutes: Some(45),
+            duration_minutes: Some(Some(45)),
             activity_type: Some("experience".to_string()),
             ..ItineraryItemPatch::default()
         };
@@ -1576,7 +1585,7 @@ mod tests {
     #[test]
     fn itinerary_patch_rejects_bad_duration_and_activity_type() {
         let bad_duration = ItineraryItemPatch {
-            duration_minutes: Some(0),
+            duration_minutes: Some(Some(0)),
             ..ItineraryItemPatch::default()
         };
         assert_eq!(

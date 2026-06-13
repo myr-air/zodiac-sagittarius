@@ -1054,18 +1054,18 @@ pub async fn update_itinerary_item(
              start_time = case when $14 then $15::time else start_time end,
              end_time = case when $16 then $17::time else end_time end,
              end_offset_days = coalesce($18, end_offset_days),
-             duration_minutes = coalesce($19, duration_minutes),
-             activity = coalesce($20, activity),
-             activity_type = coalesce($21, activity_type),
-             place = coalesce($22, place),
-             map_link = coalesce($23, map_link),
-             address = case when $24 then $25 else address end,
-             latitude = case when $26 then $27 else latitude end,
-             longitude = case when $28 then $29 else longitude end,
-             transportation = coalesce($30, transportation),
-             details = coalesce($31, details),
-             note = coalesce($32, note),
-             version = $33,
+             duration_minutes = case when $19 then $20 else duration_minutes end,
+             activity = coalesce($21, activity),
+             activity_type = coalesce($22, activity_type),
+             place = coalesce($23, place),
+             map_link = coalesce($24, map_link),
+             address = case when $25 then $26 else address end,
+             latitude = case when $27 then $28 else latitude end,
+             longitude = case when $29 then $30 else longitude end,
+             transportation = coalesce($31, transportation),
+             details = coalesce($32, details),
+             note = coalesce($33, note),
+             version = $34,
              updated_at = now()
          where id = $1 and deleted_at is null
          returning
@@ -1098,7 +1098,8 @@ pub async fn update_itinerary_item(
     .bind(patch.end_time.is_some())
     .bind(patch.end_time.as_ref().and_then(|value| value.as_deref()))
     .bind(patch.end_offset_days)
-    .bind(patch.duration_minutes)
+    .bind(patch.duration_minutes.is_some())
+    .bind(patch.duration_minutes.flatten())
     .bind(patch.activity.as_deref())
     .bind(patch.activity_type.as_deref())
     .bind(patch.place.as_deref())
