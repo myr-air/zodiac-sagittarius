@@ -5366,6 +5366,73 @@ describe("Sagittarius cockpit UI", () => {
     );
   }, 45_000);
 
+  it("sets the selected API Trip Plan as Main only from the explicit action", async () => {
+    const user = userEvent.setup();
+    const apiTrip = {
+      ...tripWithPlans(),
+      members: [{ ...seedTrip.members[0], claimPasswordHash: null }],
+    };
+    const publishedTrip: Trip = {
+      ...apiTrip,
+      activePlanVariantId: "plan-variant-backup",
+      mainTripPlanId: "plan-variant-backup",
+      planVariants: [],
+      tripPlans: [],
+      version: (apiTrip.version ?? 0) + 1,
+    };
+    const apiClient = createApiClientForTrip(apiTrip, {
+      setMainTripPlan: vi.fn().mockResolvedValue(publishedTrip),
+    });
+
+    render(
+      <SagittariusApp
+        requireJoin
+        dataSource="api"
+        initialView="itinerary"
+        apiClient={apiClient}
+      />,
+    );
+    await loginApiTrip(user);
+
+    await user.selectOptions(await screen.findByLabelText("Trip Plan"), [
+      "plan-variant-backup",
+    ]);
+    expect(apiClient.setMainTripPlan!).not.toHaveBeenCalled();
+
+    await user.click(screen.getByRole("button", { name: "ใช้เป็นแผนหลัก" }));
+
+    await waitFor(() =>
+      expect(apiClient.setMainTripPlan!).toHaveBeenCalledWith(
+        apiTrip.id,
+        "plan-variant-backup",
+        "session-token",
+        expect.objectContaining({ clientMutationId: expect.any(String) }),
+      ),
+    );
+    await waitFor(() =>
+      expect(screen.getByLabelText("Trip Plan")).toHaveValue(
+        "plan-variant-backup",
+      ),
+    );
+    const selector = screen.getByLabelText("Trip Plan") as HTMLSelectElement;
+    const optionLabels = Array.from(selector.options).map(
+      (option) => option.textContent,
+    );
+    expect(
+      optionLabels.some(
+        (label) => label?.includes("Rain Plan") && label.includes("หลัก"),
+      ),
+    ).toBe(true);
+    expect(
+      optionLabels.some(
+        (label) => label?.includes("แผนหลัก") && label.includes("สำรอง"),
+      ),
+    ).toBe(true);
+    expect(
+      screen.getByRole("row", { name: /Rain plan gallery/i }),
+    ).toBeInTheDocument();
+  }, 45_000);
+
   it("runs API Plan Check for the selected Trip Plan without publishing it", async () => {
     const user = userEvent.setup();
     const apiTrip = {
