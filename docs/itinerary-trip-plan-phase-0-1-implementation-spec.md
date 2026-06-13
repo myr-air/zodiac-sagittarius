@@ -13,7 +13,7 @@ this packet is reviewed as the Phase 0/1 acceptance baseline:
 2. The route-by-route response diff contract below names every API surface that
    must add canonical aliases and every legacy alias that must stay.
 3. The DDL section below is treated as the migration draft and repository
-   reality check. `0025`, `0026`, and `0027` already exist in the migration
+   reality check. `0025`, `0026`, `0027`, and `0028` already exist in the migration
    path; Phase 0/1 work must not rewrite their intent without a new ADR.
 4. The exact test matrix below is the implementation checklist. A code slice
    may split scenarios across files, but it must preserve the listed
@@ -23,6 +23,20 @@ If implementation discovers that a listed route, column, or test target is
 wrong, update this spec and the ADR first, then change code. That keeps the
 domain decision trace ahead of the implementation instead of reverse-engineered
 after the fact.
+
+### Implementation-start Checklist
+
+Use this checklist before the first production-code commit in a Phase 1 slice.
+The implementation can be split into smaller commits, but every committed code
+slice must declare which row ids from this spec it covers.
+
+| Gate | Required artifact | Code-start rule |
+| --- | --- | --- |
+| `DOC-ADR-01` | [ADR 0005](./adr/0005-compatibility-first-trip-plan-rollout.md) records the compatibility-first decision and implementation-start gate. | Do not rename storage or remove legacy aliases in Phase 1. |
+| `DOC-API-01` | The API diff sections below cover cockpit load, account trip create, join summaries, create, patch, set-main, realtime, import, and import/export envelopes. | Do not add a canonical alias in only one layer. Backend response, realtime payload, frontend mapper, local mapper, docs, and tests move together. |
+| `DOC-DDL-01` | The DDL draft below matches migration files `0025`, `0026`, `0027`, and `0028`, with rollback stance and drift repair rules. | Do not introduce Phase 1 behavior that requires stronger DB invariants than the shipped migrations enforce. |
+| `DOC-TEST-01` | The exact test matrix below names scenario-level assertions and command evidence. | Do not claim implementation readiness from file-level coverage alone; each changed route/mapper/schema path needs a mapped assertion. |
+| `DOC-SCOPE-01` | Phase 2/3 preview rows are separated from Phase 0/1 release-blocking rows. | Do not accidentally turn preview behavior into a hidden Phase 1 requirement without updating ADR/spec first. |
 
 ## Phase Boundaries
 
@@ -118,6 +132,23 @@ Phase 1 route owners must update the route response, realtime payload, frontend
 wire mapper, local-mode mapper, import/export mapper, and docs together. A
 canonical alias added only in one layer is incomplete.
 
+### Phase 1 Diff Traceability IDs
+
+Implementation PRs should reference these ids in commit messages, PR notes, or
+test names so reviewers can verify which API diff each code change implements.
+
+| ID | Surface | Required diff | Minimum matching test rows |
+| --- | --- | --- | --- |
+| `API-LOAD-01` | `GET /api/v1/trips/:tripId` | Add `trip.mainTripPlanId`, `tripPlans[]`, and `TripPlanSummary.status`; keep `activePlanVariantId`, `planVariants[]`, and `kind`. | Backend cockpit rows, frontend mixed/legacy/canonical mapper rows. |
+| `API-ACCOUNT-01` | `POST /api/v1/account/trips` | Add `trip.mainTripPlanId` wherever `activePlanVariantId` is returned. | Backend auth/account row. |
+| `API-JOIN-01` | Join-session and invite-token current summaries | Add `trip.mainTripPlanId` without requiring a Trip Plan list. | Backend auth/account row. |
+| `API-CREATE-01` | Canonical and legacy create routes | Add `/trip-plans`, return `kind/status`, validate status/kind/mode/source ids, keep `/plan-variants`. | Backend create, route, permissions, realtime, frontend route/client rows. |
+| `API-PATCH-01` | Canonical and legacy patch routes | Add `/trip-plans/:id`, require `expectedVersion`, return `kind/status` in success and `latest`, keep legacy route. | Backend patch, route, permissions, realtime, frontend route/client rows. |
+| `API-MAIN-01` | Canonical and legacy set-main routes | Add `/trip-plans/:id/set-main`, return both pointer aliases, keep legacy publication route, do not move records. | Backend set-main, realtime, record-scope, frontend selector/set-main rows. |
+| `API-TRIP-PATCH-01` | `PATCH /api/v1/trips/:tripId` | Reject direct Main Plan pointer mutation unless delegated to full set-main transaction/event semantics. | Backend trips API row and OpenAPI/docs rows. |
+| `API-IMPORT-01` | Backend itinerary import normalizer | Return destination `trip.mainTripPlanId`, destination `trip.tripPlans[]`, hierarchy/time/path fields, and compatibility `records`; do not switch Main Plan. | Backend import rows and frontend import/export rows. |
+| `API-EXPORT-01` | Frontend import/export envelope | Export both pointer aliases and both plan-list aliases; import legacy-only, canonical-only, mixed, conflicting, and missing aliases without switching destination Main Plan. | Frontend import/export and import-target rows. |
+
 | Surface | Before Phase 1 | Phase 1 additive diff | Removal allowed? |
 | --- | --- | --- | --- |
 | Cockpit trip summary | `trip.activePlanVariantId` | Add `trip.mainTripPlanId` with the same value. | No. |
@@ -130,7 +161,7 @@ canonical alias added only in one layer is incomplete.
 | Realtime set-main payload | `activePlanVariantId` | Add `mainTripPlanId`, nested `tripPlan.status`, and `previousMainTripPlan` when a different previous Main Plan is demoted. | No. |
 | Account trip create | `trip.activePlanVariantId` | Add `trip.mainTripPlanId`. | No. |
 | Join/session trip summary | `trip.activePlanVariantId` | Add `trip.mainTripPlanId` to join-session and invite-token-current responses. | No. |
-| Backend itinerary import response | `trip.activePlanVariantId` | Add `trip.mainTripPlanId` and `trip.tripPlans[]`; keep normalized imported rows and plan-scoped `records`. | No. |
+| Backend itinerary import response | `trip.activePlanVariantId` | Add `trip.mainTripPlanId` and `trip.tripPlans[]`; keep normalized imported rows and compatibility `records`. | No. |
 | Import/export metadata | `activePlanVariantId` | Add `mainTripPlanId`; keep deprecated active pointer. | No. |
 | API reference docs | `activePlanVariantId`, `planVariants`, `kind`, and `/plan-variants` only | Document canonical aliases and canonical routes in `docs/api-data-spec.md`; update OpenAPI schemas touched by itinerary/import responses. | No. |
 | Frontend local trip state | `activePlanVariantId`, `planVariants` | Add `mainTripPlanId`, optional `tripPlans`, and normalize missing aliases. | No. |
@@ -153,7 +184,7 @@ below remain authoritative for JSON shape details.
 | `POST /api/v1/trips/:tripId/trip-plans/:tripPlanId/set-main` | `mainTripPlanId`; realtime payload `tripPlan.status` and `previousMainTripPlan.status` when demoting | `activePlanVariantId`; realtime wrapper `plan_variant.updated` / `plan_variant` | Reject invalid `previousMainNextStatus`; duplicate `clientMutationId` is handled by mutation guard; no `expectedVersion` in Phase 1. |
 | `POST /api/v1/trips/:tripId/plan-variants/:planVariantId/publications` | Same as canonical set-main | Existing legacy route and pointer alias | Same validation as canonical set-main route. |
 | `PATCH /api/v1/trips/:tripId` | No Main Plan mutation in Phase 1 | Existing metadata patch fields | Reject `activePlanVariantId` and `mainTripPlanId` unless the route delegates to the full set-main transaction and event semantics. |
-| `POST /api/v1/trips/:tripId/itinerary-imports` | Destination `trip.mainTripPlanId`, destination `trip.tripPlans[]`, plan-scoped `records` | Destination `trip.activePlanVariantId`; imported item fields | Does not switch destination Main Plan; preserves hierarchy/time/path fields and rejects invalid hierarchy/time input according to import contract. |
+| `POST /api/v1/trips/:tripId/itinerary-imports` | Destination `trip.mainTripPlanId`, destination `trip.tripPlans[]`, compatibility `records` | Destination `trip.activePlanVariantId`; imported item fields | Does not switch destination Main Plan; preserves hierarchy/time/path fields and rejects invalid hierarchy/time input according to import contract. |
 | Frontend export envelope | `trip.mainTripPlanId`, `trip.tripPlans[]`, `tripPlans[].status` | `trip.activePlanVariantId`, `planVariants[]`, `kind` | Import accepts legacy-only, canonical-only, mixed, conflicting source aliases, and missing aliases without changing destination Main Plan. |
 
 Canonical readers should prefer `mainTripPlanId`, `tripPlans`, and `status`
@@ -800,7 +831,7 @@ Rules:
   destination state. If later UI needs source metadata reporting, add a separate
   non-mutating source metadata field instead of overloading `trip`.
 - The response preserves normalized hierarchy, path fields, time-window fields,
-  and plan-scoped `records`; it must not flatten sub-activities or synthesize
+  and compatibility `records`; it must not flatten sub-activities or synthesize
   Alternative Paths from overlaps.
 
 ## Migration DDL Draft
@@ -815,6 +846,24 @@ older support scripts working during the compatibility window.
 | `0025_trip_plan_compatibility.sql` | Phase 1 contract | Required migration surface | Keep nullable `plan_variants.status`, keep `kind`, and serialize coherent `kind/status` pairs at the API boundary. |
 | `0026_plan_scoped_records.sql` | Phase 2 schema preview already in path | Do not remove or reinterpret in Phase 1 | Keep `trip_plan_id` nullable; set-main must not rewrite existing scoped records. |
 | `0027_itinerary_hierarchy_time_windows.sql` | Phase 3 schema preview already in path | Do not remove or flatten in Phase 1 | Preserve hierarchy/time fields in import/export and API mappers even before the hierarchy UI rebuild. |
+| `0028_plan_check_trip_plan_scope.sql` | Plan Check sidecar already in path | Preserve as an additive scoped-check surface | Keep `plan_checks.trip_plan_id` nullable; Plan Check scoping is allowed as a sidecar and must not redefine Trip Plan compatibility semantics. |
+
+### DDL Review IDs
+
+These ids are the migration-review counterpart to the API diff ids. They are
+not separate migrations; they name the parts of the shipped DDL that Phase 1
+code must respect.
+
+| ID | Migration | Review assertion | Phase 1 behavior unlocked |
+| --- | --- | --- | --- |
+| `DDL-PLAN-01` | `0025_trip_plan_compatibility.sql` | `plan_variants.status` exists, remains nullable, and is checked against `main/draft/proposal/backup`. | API can emit canonical `status` while legacy raw rows with `NULL` status still load. |
+| `DDL-PLAN-02` | `0025_trip_plan_compatibility.sql` | Backfill maps legacy `kind = 'split'` to `status = 'proposal'`; unknown legacy kind falls back to `draft`. | Compatibility readers/writers can use deterministic `kind/status` mapping. |
+| `DDL-PLAN-03` | `0025_trip_plan_compatibility.sql` | DB does not enforce a unique `status = 'main'` row and does not enforce `kind/status` agreement. | Service/API repair precedence must use `trips.active_plan_variant_id` as the Main Plan identity. |
+| `DDL-RECORD-01` | `0026_plan_scoped_records.sql` | `trip_plan_id` columns on expenses, booking docs, stop notes, and trip tasks remain nullable with same-trip FK validation. | Set-main can prove it does not move records, while Phase 2 still owns strict record behavior. |
+| `DDL-RECORD-02` | `0026_plan_scoped_records.sql` | Linked tasks, expenses, and stop notes backfill from itinerary item plan before unlinked rows fall back to the active Main Plan. | Later Phase 2 audits can distinguish strong linked scope from inferred compatibility scope. |
+| `DDL-HIER-01` | `0027_itinerary_hierarchy_time_windows.sql` | Parent FK includes `(parent_item_id, trip_id, plan_variant_id, day)` and is immediate, not deferrable. | Phase 1 import/export must preserve hierarchy fields, and Phase 3 service code must use valid update sequences. |
+| `DDL-HIER-02` | `0027_itinerary_hierarchy_time_windows.sql` | `end_time` is nullable and `end_offset_days` is non-null `0..7`, but DB does not enforce `end_offset_days = 0` when `end_time IS NULL`. | Phase 3 read/write validation must normalize or reject raw drift before exposing a real Time Window. |
+| `DDL-CHECK-01` | `0028_plan_check_trip_plan_scope.sql` | `plan_checks.trip_plan_id` exists as nullable FK to `(plan_variants.id, trip_id)` and is indexed only when present. | Optional Plan Check scoping can coexist with legacy trip-wide checks without changing Main Plan or itinerary import semantics. |
 
 The SQL below is therefore both a draft contract and a repository check. If the
 real migration differs from the block, update the migration only through a
@@ -1064,6 +1113,43 @@ Phase 2 rules:
 - Application rollback across `0026` should keep nullable `trip_plan_id`
   columns in place. Dropping them is a coordinated database downgrade because
   the migrator records the migration as applied.
+
+### Plan Check Scope Sidecar
+
+`0028_plan_check_trip_plan_scope.sql` is already in the migration path and is
+not the main Phase 0/1 Trip Plan compatibility contract. It is documented here
+because it uses the same Trip Plan FK pattern and must not be confused with
+itinerary selection or Main Plan mutation.
+
+```sql
+-- 0028_plan_check_trip_plan_scope.sql
+
+ALTER TABLE plan_checks
+  ADD COLUMN IF NOT EXISTS trip_plan_id uuid;
+
+ALTER TABLE plan_checks
+  DROP CONSTRAINT IF EXISTS plan_checks_trip_plan_fkey;
+
+ALTER TABLE plan_checks
+  ADD CONSTRAINT plan_checks_trip_plan_fkey
+  FOREIGN KEY (trip_plan_id, trip_id) REFERENCES plan_variants(id, trip_id)
+  DEFERRABLE INITIALLY DEFERRED;
+
+CREATE INDEX IF NOT EXISTS plan_checks_trip_plan_created_idx
+  ON plan_checks (trip_id, trip_plan_id, created_at DESC)
+  WHERE trip_plan_id IS NOT NULL;
+```
+
+Rules:
+
+- `trip_plan_id` is nullable so legacy trip-wide Plan Checks remain valid.
+- Scoped Plan Checks are read/write sidecar data; they do not switch the Main
+  Plan and do not imply records or itinerary rows moved between Trip Plans.
+- The FK is deferrable because Plan Check writes may be part of broader
+  transaction flows, unlike the immediate hierarchy parent FK in `0027`.
+- Application rollback should keep the nullable column in place. Dropping it is
+  a coordinated database downgrade because the migrator records `0028` as
+  applied.
 
 ### Phase 3 Draft: Hierarchy And Time Windows
 
@@ -1405,6 +1491,24 @@ reviewer can map the code back to this table without re-deriving the product
 decision. If a row is intentionally deferred, move it to the Phase 2 or Phase 3
 preview table in the same commit.
 
+Traceability rule: when implementation starts, add the relevant API/DDL ids
+from `API-*` and `DDL-*` to test names, helper comments, or PR notes. A row is
+accepted only when the assertion proves the stated behavior, not merely that the
+route or component rendered.
+
+Minimum row groups:
+
+| Group id | Covers | Must include |
+| --- | --- | --- |
+| `TEST-DOC-01` | Phase 0 language and ADR freeze | Glossary/ADR rows for Trip Plan, Main Plan, Actual Expense, compatibility-first rollout. |
+| `TEST-SCHEMA-01` | `DDL-PLAN-*`, `DDL-RECORD-*`, `DDL-HIER-*`, `DDL-CHECK-01` | Schema-contract rows for `status`, nullable record scope, parent-scope FK, Plan Check scope, and raw drift boundaries. |
+| `TEST-BE-PLAN-01` | `API-CREATE-01`, `API-PATCH-01`, `API-MAIN-01` | Backend plan route rows covering success, validation, conflict, permissions, duplicate mutation, and no record moves. |
+| `TEST-BE-READ-01` | `API-LOAD-01`, `API-ACCOUNT-01`, `API-JOIN-01`, `API-IMPORT-01` | Backend cockpit/account/join/import rows covering aliases and pointer-authoritative repair. |
+| `TEST-BE-RT-01` | Realtime compatibility for Trip Plan mutations | Create/patch/set-main event wrapper rows with canonical payload aliases. |
+| `TEST-FE-MAP-01` | Frontend API compatibility readers | Mixed, legacy-only, canonical-only, and drifted payload mapper rows. |
+| `TEST-FE-UI-01` | Itinerary workspace vs Main Plan selection | Local/API mode selector rows proving selector changes edit target while set-main is explicit. |
+| `TEST-IMPORT-01` | Import/export compatibility | Envelope, conflicting metadata, target Trip Plan, hierarchy/time preservation, and no Actual Expense cloning rows. |
+
 | Phase | Layer | Test file | Exact scenario |
 | --- | --- | --- | --- |
 | 0 | Docs | `CONTEXT.md` | Glossary contains Trip Plan, Main Plan, Backup Plan, Plan Status, Actual Expense, Plan Estimate, Plan Commitment. |
@@ -1419,6 +1523,7 @@ preview table in the same commit.
 | 1 | Backend schema | `backend/crates/sagittarius-api/tests/schema_contract.rs` | Raw non-null `kind/status` mismatch is documented as app-repairable drift, not a DB invariant; API reads still expose pointer-authoritative Main Plan identity. |
 | 1 | Backend schema | `backend/crates/sagittarius-api/tests/schema_contract.rs` | The Phase 2 DDL draft backfills `trip_tasks.trip_plan_id` from `trip_tasks.related_item_id -> itinerary_items.plan_variant_id` before falling back only unlinked tasks to the active Main Plan. |
 | 1 | Backend schema | `backend/crates/sagittarius-api/tests/schema_contract.rs` | The already-applied hierarchy DDL has `itinerary_items_parent_scope_key` and `itinerary_items_parent_scope_fkey` across `(parent_item_id, trip_id, plan_variant_id, day)` so cross-trip, cross-plan, and cross-day parents are blocked at the FK layer. |
+| 1 | Backend schema | `backend/crates/sagittarius-api/tests/schema_contract.rs` | The Plan Check sidecar DDL has nullable `plan_checks.trip_plan_id`, a deferrable same-trip FK to Trip Plans, and a partial created-at index for scoped checks. |
 | 1 | Backend schema | `backend/crates/sagittarius-api/tests/schema_contract.rs` | The migration contract documents that `VALIDATE CONSTRAINT` and non-concurrent index creation are acceptable only under the current small-data maintenance-window assumption; large-table rollout requires a staged migration ADR. |
 | 1 | Backend route | `backend/crates/sagittarius-api/tests/route_contract.rs` | Canonical `/trip-plans`, `/trip-plans/:id`, and `/trip-plans/:id/set-main` routes exist while legacy `/plan-variants`, `/plan-variants/:id`, and `/plan-variants/:id/publications` routes remain. |
 | 1 | Backend serialization | `backend/crates/sagittarius-api/tests/trip_load_contract.rs`, `backend/crates/sagittarius-api/tests/account_trip_contract.rs` | `TripSummary` serializes both `activePlanVariantId` and `mainTripPlanId`; cockpit serializes both `planVariants` and `tripPlans`. |
@@ -1464,7 +1569,10 @@ preview table in the same commit.
 | 1 | Backend realtime | `backend/crates/sagittarius-api/tests/realtime_contract.rs` | Patch event wrapper remains `plan_variant.updated` / `plan_variant` and payload includes both `kind` and `status`. |
 | 1 | Backend auth/account | `backend/crates/sagittarius-api/tests/account_trip_contract.rs` | Account trip create response includes `mainTripPlanId` wherever it already exposes `activePlanVariantId`. |
 | 1 | Backend auth/account | `backend/crates/sagittarius-api/tests/account_trip_contract.rs` | Join-session and invite-token-current trip summaries include `mainTripPlanId` wherever they already expose `activePlanVariantId`. |
-| 1 | Backend import | `backend/crates/sagittarius-api/tests/itinerary_import_contract.rs` | Itinerary import normalizer response includes destination `trip.mainTripPlanId`, destination `trip.tripPlans[]` with `status/kind`, hierarchy/time/path fields, and plan-scoped `records` without switching the destination Main Plan. |
+| 1 | Frontend auth/join mapper | `frontend/src/trip/api-client.test.ts`, `frontend/src/components/TripJoinGate.test.tsx` | Join-trip and invite-token-current responses reject mismatched `mainTripPlanId`/`activePlanVariantId` as `invalid_response`; the join gate surfaces the invalid response instead of accepting alias drift. |
+| 1 | Backend plan checks | `backend/crates/sagittarius-api/tests/plan_checks_contract.rs` | Running or reading a scoped Plan Check uses the selected Trip Plan id supplied by the request, not the Main Plan pointer. Omitting `tripPlanId` remains the legacy whole-trip check. |
+| 1 | Frontend plan checks | `frontend/src/components/SagittariusApp.test.tsx` | In API mode, changing the itinerary Trip Plan selector causes subsequent Plan Check run/latest calls to use the selected Trip Plan id without calling set-main. |
+| 1 | Backend import | `backend/crates/sagittarius-api/tests/itinerary_import_contract.rs` | Itinerary import normalizer response includes destination `trip.mainTripPlanId`, destination `trip.tripPlans[]` with `status/kind`, hierarchy/time/path fields, and compatibility `records` without switching the destination Main Plan. |
 | 1 | Backend import | `backend/crates/sagittarius-api/tests/itinerary_import_contract.rs` | Conflicting source-file `activePlanVariantId` and `mainTripPlanId` do not switch the destination Main Plan and do not get echoed as authoritative destination `trip` state. |
 | 1 | Frontend route | `frontend/src/trip/api-contract.test.ts` | Route helpers produce canonical `/trip-plans` paths and keep legacy helpers. |
 | 1 | Frontend mapper | `frontend/src/trip/api-client.test.ts` | Mixed cockpit payload maps `tripPlans/mainTripPlanId` and legacy fields to consistent `Trip`. |
@@ -1488,6 +1596,7 @@ preview table in the same commit.
 | 1 | Import/export | `frontend/src/trip/itinerary-import-export.test.ts` | Transitional export includes top-level `trip.mainTripPlanId` and deprecated `trip.activePlanVariantId`. |
 | 1 | Import/export | `frontend/src/trip/itinerary-import-export.test.ts` | Transitional import accepts top-level `trip` legacy-only, canonical-only, mixed, and missing plan aliases, then applies the current destination trip id and target Trip Plan without flattening path fields or switching Main Plan. |
 | 1 | Import/export | `frontend/src/trip/itinerary-import-export.test.ts` | Conflicting top-level source `trip.activePlanVariantId` and `trip.mainTripPlanId` prefer canonical metadata only for source-file reporting and still do not switch the destination Main Plan. |
+| 1 | Import/export | `frontend/src/trip/itinerary-import-export.test.ts` | Mixed import metadata with divergent `tripPlans[]` and `planVariants[]` mapped `kind/status`, order, identity, or version is rejected as `invalid_response`; import must not silently normalize disagreeing plan-list aliases. |
 | 1 | Import/export | `frontend/src/trip/itinerary-import-export.test.ts` | Export/import round trip preserves `parentItemId`, `isPlanBlock`, `endTime`, and `endOffsetDays`. |
 | 1 | Import/export | `frontend/src/trip/itinerary-import-export.test.ts` | Phase 1 import/export preserves existing plan-scoped record references only as compatibility data and does not clone Actual Expenses, paid commitments, or booking docs into a new Trip Plan. |
 | 1 | Import target | `frontend/src/trip/itinerary-paths.test.ts` | Importing into a selected draft/proposal target writes rows to the selected `tripPlanId`, preserves `parentItemId`, and leaves `mainTripPlanId` plus deprecated `activePlanVariantId` unchanged. |

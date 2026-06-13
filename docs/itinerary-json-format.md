@@ -89,12 +89,14 @@ Import behavior:
   neither as compatibility metadata. The current destination trip id and target
   Trip Plan are supplied by the importing app state, so source metadata never
   switches the destination Main Plan by itself.
-- Exports carry plan-scoped `expenses`, `bookingDocs`, `stopNotes`, and `tasks`
-  under `records` so a Trip Plan can be round-tripped without losing booking,
-  ticket, note, checklist, or Actual Expense context. Import apply remaps
-  imported record ids, links records to the newly imported itinerary rows, and
-  scopes them to the current destination Trip Plan in local and API mode. Source
-  Trip Plan metadata never switches the destination Main Plan by itself.
+- Exports carry compatibility `expenses`, `bookingDocs`, `stopNotes`, and
+  `tasks` under `records` so later phases can round-trip booking, ticket, note,
+  checklist, or Actual Expense context without losing source information. Phase
+  1 import preserves this record payload as compatibility data and may remap ids
+  for preview/apply bookkeeping, but it must not clone paid Actual Expenses,
+  create paid commitments, or rely on source Trip Plan metadata to switch the
+  destination Main Plan. Durable same-plan record creation, repair, or rejection
+  belongs to the Phase 2 plan-scoped record behavior.
 - Other plan variants, members, and suggestions are not changed.
 
 ## Import Normalizer Endpoint

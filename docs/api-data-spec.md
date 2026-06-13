@@ -88,7 +88,8 @@ CREATE TABLE plan_variants (
   description text NOT NULL DEFAULT '',
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
-  version bigint NOT NULL DEFAULT 1
+  version bigint NOT NULL DEFAULT 1,
+  UNIQUE (id, trip_id)
 );
 
 CREATE TABLE itinerary_items (
@@ -289,6 +290,10 @@ Compatibility notes:
   hardening.
 - `path_*` fields are legacy compatibility data during Phase 0/1. Import/export
   preserves them, but sibling overlaps must not synthesize Alternative Paths.
+- `activity_type` still carries the legacy detailed API enum in storage and
+  OpenAPI during compatibility. Product copy should use the broader Activity
+  Type language from `CONTEXT.md`; collapsing the wire enum is a later API
+  compatibility change.
 - The normative Phase 0/1 Trip Plan rollout contract, including additive API
   diffs, migration DDL, validation failures, and exact tests, lives in
   [itinerary-trip-plan-phase-0-1-implementation-spec.md](./itinerary-trip-plan-phase-0-1-implementation-spec.md).
@@ -377,6 +382,11 @@ existing `code`/`message` envelope.
 
 ### Itinerary Items
 
+- `POST /api/v1/trips/:tripId/itinerary-imports`
+  Normalizes Joii JSON or free-text input into destination itinerary rows.
+  Phase 1 responses include destination `trip.mainTripPlanId`,
+  destination `trip.tripPlans[]`, hierarchy/time/path fields, and compatibility
+  `records` without switching the destination Main Plan.
 - `POST /api/v1/trips/:tripId/itinerary-items`
 - `PATCH /api/v1/trips/:tripId/itinerary-items/:itemId`
 - `DELETE /api/v1/trips/:tripId/itinerary-items/:itemId`

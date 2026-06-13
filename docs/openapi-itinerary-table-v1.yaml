@@ -3,7 +3,7 @@ info:
   title: Sagittarius Itinerary Table V1
   version: 1.0.0
 paths:
-  /api/v1/trips:
+  /api/v1/account/trips:
     post:
       summary: Create an account trip with V1 trip metadata.
       requestBody:
@@ -15,7 +15,23 @@ paths:
       responses:
         "201":
           description: Trip created.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AccountTripCreateResponse"
   /api/v1/trips/{tripId}:
+    get:
+      summary: Load the Phase 1 planning cockpit.
+      description: Response includes canonical Trip Plan aliases and retained legacy aliases. Mixed aliases must not drift.
+      parameters:
+        - $ref: "#/components/parameters/TripId"
+      responses:
+        "200":
+          description: Cockpit loaded.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CockpitResponse"
     patch:
       summary: Patch trip core settings and V1 trip metadata.
       description: Phase 1 metadata patch must reject activePlanVariantId and mainTripPlanId pointer mutations unless it delegates to the full Trip Plan set-main transaction and realtime event semantics.
@@ -172,6 +188,25 @@ paths:
       responses:
         "201":
           description: Itinerary item created.
+  /api/v1/trips/{tripId}/itinerary-imports:
+    post:
+      summary: Normalize itinerary import input for a destination Trip Plan.
+      description: Phase 1 returns destination Trip Plan aliases, hierarchy/time/path fields, and compatibility records without switching the destination Main Plan.
+      parameters:
+        - $ref: "#/components/parameters/TripId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ItineraryImportRequest"
+      responses:
+        "200":
+          description: Import normalized.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ItineraryImportResponse"
   /api/v1/trips/{tripId}/itinerary-items/{itemId}:
     patch:
       summary: Patch an itinerary item with V1 hierarchy, timing, and details fields.
@@ -288,6 +323,31 @@ components:
           type: string
         version:
           type: integer
+    CockpitResponse:
+      type: object
+      required: [trip, planVariants, tripPlans, itineraryItems]
+      properties:
+        trip:
+          $ref: "#/components/schemas/TripSummary"
+        planVariants:
+          type: array
+          deprecated: true
+          items:
+            $ref: "#/components/schemas/TripPlanSummary"
+        tripPlans:
+          type: array
+          items:
+            $ref: "#/components/schemas/TripPlanSummary"
+        itineraryItems:
+          type: array
+          items:
+            $ref: "#/components/schemas/ItineraryItem"
+    AccountTripCreateResponse:
+      type: object
+      required: [trip]
+      properties:
+        trip:
+          $ref: "#/components/schemas/TripSummary"
     TripPlanSummary:
       type: object
       required: [id, tripId, name, kind, status, description, version]
@@ -466,6 +526,84 @@ components:
         details:
           type: object
           additionalProperties: true
+    ItineraryItem:
+      allOf:
+        - $ref: "#/components/schemas/ItineraryItemPatch"
+        - type: object
+          required: [id, tripId, planVariantId, day, sortOrder, activity, activityType, version]
+          properties:
+            id:
+              type: string
+            tripId:
+              type: string
+            planVariantId:
+              type: string
+            version:
+              type: integer
+    ItineraryImportRequest:
+      type: object
+      required: [clientMutationId, mode, content]
+      properties:
+        clientMutationId:
+          type: string
+        fileName:
+          type: string
+        contentType:
+          type: string
+        mode:
+          enum: [auto, json, ai]
+        content:
+          type: string
+        targetTripPlanId:
+          type: string
+          description: Destination Trip Plan selected by the app. Source metadata must not switch the destination Main Plan.
+    ItineraryImportResponse:
+      type: object
+      required: [trip, items, records]
+      properties:
+        trip:
+          type: object
+          required: [id, activePlanVariantId, mainTripPlanId, tripPlans]
+          properties:
+            id:
+              type: string
+            activePlanVariantId:
+              type: string
+              deprecated: true
+            mainTripPlanId:
+              type: string
+            tripPlans:
+              type: array
+              items:
+                $ref: "#/components/schemas/TripPlanSummary"
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ItineraryItem"
+        records:
+          type: object
+          required: [expenses, bookingDocs, stopNotes, tasks]
+          properties:
+            expenses:
+              type: array
+              items:
+                type: object
+                additionalProperties: true
+            bookingDocs:
+              type: array
+              items:
+                type: object
+                additionalProperties: true
+            stopNotes:
+              type: array
+              items:
+                type: object
+                additionalProperties: true
+            tasks:
+              type: array
+              items:
+                type: object
+                additionalProperties: true
     LocalizedText:
       type: object
       required: [en, th]

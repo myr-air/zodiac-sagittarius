@@ -33,3 +33,10 @@ uses the existing top-level `trip` envelope rather than inventing a parallel
 `metadata` envelope; create, patch, and set-main realtime mutations keep legacy
 `plan_variant.*` wrappers while carrying canonical aliases; and Main Plan repair
 always follows the stored trip pointer before repairable status metadata.
+
+**Implementation-start gate**: Production code for Phase 1 starts only after the
+implementation spec contains three reviewable artifacts: route-by-route API
+request/response diffs, the additive migration DDL draft with rollback and drift
+repair stance, and an exact test matrix with scenario-level assertions. A future
+implementation PR should reference those artifacts by section or row id before
+claiming the Trip Plan compatibility contract is implemented.
