@@ -303,6 +303,16 @@ async fn itinerary_import_contract_rejects_invalid_hierarchy(pool: sqlx::PgPool)
         import_item("block-1", "2026-06-19", Value::Null, true),
         import_item("child-1", "2026-06-20", "block-1", false),
     ]));
+    let self_parent = base_import_source(json!([import_item(
+        "self-parent",
+        "2026-06-19",
+        "self-parent",
+        false
+    ),]));
+    let parent_cycle = base_import_source(json!([
+        import_item("cycle-a", "2026-06-19", "cycle-b", false),
+        import_item("cycle-b", "2026-06-19", "cycle-a", false),
+    ]));
     let missing_parent = base_import_source(json!([import_item(
         "child-1",
         "2026-06-19",
@@ -320,6 +330,14 @@ async fn itinerary_import_contract_rejects_invalid_hierarchy(pool: sqlx::PgPool)
     );
     assert_eq!(
         import_status(&app, &token, cross_day).await,
+        StatusCode::BAD_REQUEST
+    );
+    assert_eq!(
+        import_status(&app, &token, self_parent).await,
+        StatusCode::BAD_REQUEST
+    );
+    assert_eq!(
+        import_status(&app, &token, parent_cycle).await,
         StatusCode::BAD_REQUEST
     );
     assert_eq!(
@@ -623,6 +641,62 @@ async fn itinerary_import_contract_rejects_dangling_record_references(pool: sqlx
                 base_import_source_with_records(items.clone(), records)
             )
             .await,
+            StatusCode::BAD_REQUEST
+        );
+    }
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn itinerary_import_contract_rejects_invalid_time_window_offsets(pool: sqlx::PgPool) {
+    support::seed_trip(&pool).await;
+    let token = support::create_session(&pool, support::ORGANIZER_ID).await;
+    let app = support::app(pool);
+
+    async fn import_status(app: &axum::Router, token: &str, source: Value) -> StatusCode {
+        app.clone()
+            .oneshot(
+                Request::builder()
+                    .method(Method::POST)
+                    .uri(format!(
+                        "/api/v1/trips/{}/itinerary-imports",
+                        support::TRIP_ID
+                    ))
+                    .header(header::AUTHORIZATION, format!("Bearer {token}"))
+                    .header(header::CONTENT_TYPE, "application/json")
+                    .body(Body::from(
+                        json!({
+                            "fileName": "itinerary.json",
+                            "contentType": "application/json",
+                            "mode": "json",
+                            "content": source.to_string()
+                        })
+                        .to_string(),
+                    ))
+                    .unwrap(),
+            )
+            .await
+            .unwrap()
+            .status()
+    }
+
+    let mut missing_end_time = import_item("offset-no-end", "2026-06-19", Value::Null, false);
+    missing_end_time["endOffsetDays"] = json!(1);
+
+    let mut too_large_offset = import_item("offset-too-large", "2026-06-19", Value::Null, false);
+    too_large_offset["endTime"] = json!("02:00");
+    too_large_offset["endOffsetDays"] = json!(8);
+
+    let mut negative_offset = import_item("offset-negative", "2026-06-19", Value::Null, false);
+    negative_offset["endTime"] = json!("02:00");
+    negative_offset["endOffsetDays"] = json!(-1);
+
+    for source in [
+        base_import_source(json!([missing_end_time])),
+        base_import_source(json!([too_large_offset])),
+        base_import_source(json!([negative_offset])),
+    ] {
+        assert_eq!(
+            import_status(&app, &token, source).await,
             StatusCode::BAD_REQUEST
         );
     }

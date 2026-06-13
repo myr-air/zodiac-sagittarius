@@ -463,9 +463,14 @@ fn normalize_items(items: &mut [ItineraryImportItem]) -> Result<(), ServiceError
         validate_time_mode(&item.time_mode)?;
         validate_status(&item.status)?;
         validate_priority(&item.priority)?;
-        if item.end_offset_days < 0 {
+        if !(0..=7).contains(&item.end_offset_days) {
             return Err(ServiceError::InvalidRequest(
-                "end offset days cannot be negative",
+                "end offset days must be between 0 and 7",
+            ));
+        }
+        if item.end_time.is_none() && item.end_offset_days != 0 {
+            return Err(ServiceError::InvalidRequest(
+                "end offset days must be 0 when end time is empty",
             ));
         }
     }
