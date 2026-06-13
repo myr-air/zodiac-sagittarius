@@ -193,6 +193,11 @@ async fn itinerary_import_contract_organizer_can_normalize_json_import(pool: sql
         body["trip"]["tripPlans"][0]["id"],
         support::PLAN_ID.to_string()
     );
+    assert_eq!(
+        body["trip"]["planVariants"][0]["id"],
+        support::PLAN_ID.to_string()
+    );
+    assert_eq!(body["trip"]["planVariants"], body["trip"]["tripPlans"]);
     assert_eq!(body["trip"]["tripPlans"][0]["kind"], "main");
     assert_eq!(body["trip"]["tripPlans"][0]["status"], "main");
     assert_eq!(body["items"][0]["activity"], "Flight to Hong Kong");

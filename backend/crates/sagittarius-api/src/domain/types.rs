@@ -447,6 +447,8 @@ pub struct ItineraryImportTrip {
     #[serde(default)]
     pub main_trip_plan_id: Option<Uuid>,
     #[serde(default)]
+    pub plan_variants: Vec<PlanVariantSummary>,
+    #[serde(default)]
     pub trip_plans: Vec<TripPlanSummary>,
 }
 

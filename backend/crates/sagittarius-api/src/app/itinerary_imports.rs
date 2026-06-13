@@ -44,6 +44,12 @@ pub async fn import_itinerary(
             .ok_or(ServiceError::InvalidRequest(
                 "trip has no active plan variant",
             ))?;
+    let trip_plans: Vec<_> = plan_variants
+        .into_iter()
+        .map(|record| {
+            PlanVariantSummary::from_record_for_main_pointer(record, Some(active_plan_variant_id))
+        })
+        .collect();
     let trip_context = ItineraryImportTrip {
         id: trip.id,
         name: trip.name.clone(),
@@ -52,15 +58,8 @@ pub async fn import_itinerary(
         end_date: trip.end_date,
         active_plan_variant_id: Some(active_plan_variant_id),
         main_trip_plan_id: Some(active_plan_variant_id),
-        trip_plans: plan_variants
-            .into_iter()
-            .map(|record| {
-                PlanVariantSummary::from_record_for_main_pointer(
-                    record,
-                    Some(active_plan_variant_id),
-                )
-            })
-            .collect(),
+        plan_variants: trip_plans.clone(),
+        trip_plans,
     };
 
     let mode = request.mode.as_deref().unwrap_or("auto");
@@ -321,6 +320,23 @@ fn itinerary_json_schema() -> Value {
             "endDate": { "type": "string" },
             "activePlanVariantId": { "type": "string" },
             "mainTripPlanId": { "type": "string" },
+            "planVariants": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["id", "tripId", "name", "kind", "status", "description", "version"],
+                    "properties": {
+                        "id": { "type": "string" },
+                        "tripId": { "type": "string" },
+                        "name": { "type": "string" },
+                        "kind": { "type": "string" },
+                        "status": { "type": "string" },
+                        "description": { "type": "string" },
+                        "version": { "type": "integer" }
+                    }
+                }
+            },
             "tripPlans": {
                 "type": "array",
                 "items": {
@@ -736,6 +752,10 @@ mod tests {
 
         assert_eq!(
             schema["properties"]["trip"]["properties"]["tripPlans"]["type"],
+            "array"
+        );
+        assert_eq!(
+            schema["properties"]["trip"]["properties"]["planVariants"]["type"],
             "array"
         );
         assert_eq!(
