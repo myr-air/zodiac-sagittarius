@@ -378,7 +378,7 @@ export const messages = {
         selectedCount: ({ count }: { count: number }) => `${count} selected`,
         selectedNames: ({ names }: { names: string }) => `Selected: ${names}`,
       },
-      tripSheets: {
+      tripPlans: {
         label: "Trip Plan",
         selectorLabel: "Trip Plan",
         create: "New plan",
@@ -1517,7 +1517,7 @@ export const messages = {
         selectedCount: ({ count }: { count: number }) => `เลือก ${count} แผน`,
         selectedNames: ({ names }: { names: string }) => `เลือก: ${names}`,
       },
-      tripSheets: {
+      tripPlans: {
         label: "Trip Plan",
         selectorLabel: "Trip Plan",
         create: "เพิ่มแผน",

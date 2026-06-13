@@ -353,8 +353,8 @@ export function SagittariusApp({
   const [itineraryImportError, setItineraryImportError] = useState<
     string | null
   >(null);
-  const [tripSheetError, setTripSheetError] = useState<string | null>(null);
-  const [isTripSheetBusy, setIsTripSheetBusy] = useState(false);
+  const [tripPlanError, setTripPlanError] = useState<string | null>(null);
+  const [isTripPlanBusy, setIsTripPlanBusy] = useState(false);
   const [pathSelection, setPathSelection] = useState<ItineraryPathSelection>({
     tripPathId: mainItineraryPathId,
     dayPathOverrides: {},
@@ -819,7 +819,7 @@ export function SagittariusApp({
     };
   }, [contextRailOpen, setContextRailVisibility]);
 
-  async function reloadTripSheetConflict() {
+  async function reloadTripPlanConflict() {
     if (!resolvedApiClient || !participantSession) return;
     const cockpit = await resolvedApiClient.loadTrip(
       trip.id,
@@ -829,7 +829,7 @@ export function SagittariusApp({
     latestTripRef.current = cockpit.trip;
   }
 
-  function mergePublishedTripSheet(
+  function mergePublishedTripPlan(
     currentTrip: Trip,
     publishedTrip: Trip,
     fallbackActivePlanVariantId: string,
@@ -856,27 +856,27 @@ export function SagittariusApp({
     });
   }
 
-  async function switchTripSheet(sheetId: string): Promise<boolean> {
-    if (!canEdit || !sheetId || sheetId === selectedPlanVariantId) return false;
-    setTripSheetError(null);
+  async function switchTripPlan(tripPlanId: string): Promise<boolean> {
+    if (!canEdit || !tripPlanId || tripPlanId === selectedPlanVariantId) return false;
+    setTripPlanError(null);
 
     if (isApiMode && resolvedApiClient && participantSession) {
-      setIsTripSheetBusy(true);
+      setIsTripPlanBusy(true);
       try {
         const setMainTripPlan =
           resolvedApiClient.setMainTripPlan ??
           resolvedApiClient.publishPlanVariant;
         const publishedTrip = await setMainTripPlan(
           trip.id,
-          sheetId,
+          tripPlanId,
           participantSession.sessionToken,
-          { clientMutationId: nextClientMutationId("trip-sheet-publish") },
+          { clientMutationId: nextClientMutationId("trip-plan-set-main") },
         );
         setTripState((current) => {
-          const nextTrip = mergePublishedTripSheet(
+          const nextTrip = mergePublishedTripPlan(
             current.trip,
             publishedTrip,
-            sheetId,
+            tripPlanId,
           );
           latestTripRef.current = nextTrip;
           return { ...current, trip: nextTrip };
@@ -886,45 +886,45 @@ export function SagittariusApp({
           error instanceof TripApiError &&
           error.code === "version_conflict"
         ) {
-          await reloadTripSheetConflict();
+          await reloadTripPlanConflict();
           return true;
         }
-        setTripSheetError(t.itinerary.tripSheets.error);
+        setTripPlanError(t.itinerary.tripPlans.error);
         return false;
       } finally {
-        setIsTripSheetBusy(false);
+        setIsTripPlanBusy(false);
       }
       return true;
     }
 
     commitTrip((current) => ({
       ...current,
-      activePlanVariantId: sheetId,
-      mainTripPlanId: sheetId,
+      activePlanVariantId: tripPlanId,
+      mainTripPlanId: tripPlanId,
     }));
     return true;
   }
 
-  async function createTripSheet(name: string): Promise<boolean> {
+  async function createTripPlan(name: string): Promise<boolean> {
     if (!canEdit) return false;
     const trimmedName = name.trim();
     if (!trimmedName) return false;
-    setTripSheetError(null);
+    setTripPlanError(null);
 
     if (isApiMode && resolvedApiClient && participantSession) {
-      setIsTripSheetBusy(true);
+      setIsTripPlanBusy(true);
       try {
-        const createTripPlan =
+        const createTripPlanMutation =
           resolvedApiClient.createTripPlan ??
           resolvedApiClient.createPlanVariant;
         const setMainTripPlan =
           resolvedApiClient.setMainTripPlan ??
           resolvedApiClient.publishPlanVariant;
-        const createdVariant = await createTripPlan(
+        const createdVariant = await createTripPlanMutation(
           trip.id,
           participantSession.sessionToken,
           {
-            clientMutationId: nextClientMutationId("trip-sheet-create"),
+            clientMutationId: nextClientMutationId("trip-plan-create"),
             name: trimmedName,
             kind: "draft",
             description: "",
@@ -934,10 +934,10 @@ export function SagittariusApp({
           trip.id,
           createdVariant.id,
           participantSession.sessionToken,
-          { clientMutationId: nextClientMutationId("trip-sheet-publish") },
+          { clientMutationId: nextClientMutationId("trip-plan-set-main") },
         );
         setTripState((current) => {
-          const nextTrip = mergePublishedTripSheet(
+          const nextTrip = mergePublishedTripPlan(
             current.trip,
             publishedTrip,
             createdVariant.id,
@@ -951,13 +951,13 @@ export function SagittariusApp({
           error instanceof TripApiError &&
           error.code === "version_conflict"
         ) {
-          await reloadTripSheetConflict();
+          await reloadTripPlanConflict();
           return true;
         }
-        setTripSheetError(t.itinerary.tripSheets.error);
+        setTripPlanError(t.itinerary.tripPlans.error);
         return false;
       } finally {
-        setIsTripSheetBusy(false);
+        setIsTripPlanBusy(false);
       }
       return true;
     }
@@ -3874,12 +3874,12 @@ export function SagittariusApp({
                   dailyBriefings={visibleDailyBriefings}
                   itineraryView={itineraryView}
                   pathOptions={pathOptions}
-                  tripSheets={trip.planVariants}
-                  selectedTripSheetId={selectedPlanVariantId}
-                  onChangeTripSheet={switchTripSheet}
-                  onCreateTripSheet={createTripSheet}
-                  tripSheetError={tripSheetError}
-                  isTripSheetBusy={isTripSheetBusy}
+                  tripPlans={trip.planVariants}
+                  selectedTripPlanId={selectedPlanVariantId}
+                  onChangeTripPlan={switchTripPlan}
+                  onCreateTripPlan={createTripPlan}
+                  tripPlanError={tripPlanError}
+                  isTripPlanBusy={isTripPlanBusy}
                   role={currentMember.role}
                   startDate={trip.startDate}
                   selectedItemId={selectedItemIdForView}

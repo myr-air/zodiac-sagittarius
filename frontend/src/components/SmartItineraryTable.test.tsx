@@ -17,10 +17,10 @@ function renderTable(
     contextRailOpen: false,
     endDate: tripFixture.trip.endDate,
     items: tripFixture.planItems,
-    tripSheets: tripFixture.trip.planVariants,
-    selectedTripSheetId: tripFixture.trip.activePlanVariantId,
-    tripSheetError: null,
-    isTripSheetBusy: false,
+    tripPlans: tripFixture.trip.planVariants,
+    selectedTripPlanId: tripFixture.trip.activePlanVariantId,
+    tripPlanError: null,
+    isTripPlanBusy: false,
     role: "owner",
     startDate: tripFixture.trip.startDate,
     selectedItemId: tripFixture.planItems[0].id,
@@ -48,8 +48,8 @@ function renderTable(
     onDeleteItem: vi.fn(),
     onExportItinerary: vi.fn(),
     onImportItinerary: vi.fn(),
-    onChangeTripSheet: vi.fn(),
-    onCreateTripSheet: vi.fn(),
+    onChangeTripPlan: vi.fn(),
+    onCreateTripPlan: vi.fn(),
     onChangeDayPath: vi.fn(),
     onClearDayPath: vi.fn(),
     onToggleShowAllPaths: vi.fn(),
@@ -97,10 +97,10 @@ describe("SmartItineraryTable", () => {
           contextRailOpen={false}
           endDate={tripFixture.trip.endDate}
           items={tripFixture.planItems}
-          tripSheets={tripFixture.trip.planVariants}
-          selectedTripSheetId={tripFixture.trip.activePlanVariantId}
-          tripSheetError={null}
-          isTripSheetBusy={false}
+          tripPlans={tripFixture.trip.planVariants}
+          selectedTripPlanId={tripFixture.trip.activePlanVariantId}
+          tripPlanError={null}
+          isTripPlanBusy={false}
           role="owner"
           startDate={tripFixture.trip.startDate}
           selectedItemId={tripFixture.planItems[0].id}
@@ -112,8 +112,8 @@ describe("SmartItineraryTable", () => {
           onMoveItemToDay={vi.fn()}
           onExportItinerary={vi.fn()}
           onImportItinerary={vi.fn()}
-          onChangeTripSheet={vi.fn()}
-          onCreateTripSheet={vi.fn()}
+          onChangeTripPlan={vi.fn()}
+          onCreateTripPlan={vi.fn()}
           onRedo={vi.fn()}
           onToggleContextRail={vi.fn()}
           onUndo={vi.fn()}
@@ -201,39 +201,39 @@ describe("SmartItineraryTable", () => {
     ).toBeInTheDocument();
   });
 
-  it("calls onChangeTripSheet when the Trip Plan selector changes", async () => {
+  it("calls onChangeTripPlan when the Trip Plan selector changes", async () => {
     const user = userEvent.setup();
-    const onChangeTripSheet = vi.fn();
-    renderTable({ onChangeTripSheet });
+    const onChangeTripPlan = vi.fn();
+    renderTable({ onChangeTripPlan });
 
     await user.selectOptions(screen.getByLabelText("Trip Plan"), "plan-rain");
 
-    expect(onChangeTripSheet).toHaveBeenCalledWith("plan-rain");
+    expect(onChangeTripPlan).toHaveBeenCalledWith("plan-rain");
   });
 
   it("lets an organizer create a named Trip Plan", async () => {
     const user = userEvent.setup();
-    const onCreateTripSheet = vi.fn();
-    renderTable({ role: "organizer", onCreateTripSheet });
+    const onCreateTripPlan = vi.fn();
+    renderTable({ role: "organizer", onCreateTripPlan });
 
     await user.click(screen.getByRole("button", { name: "เพิ่มแผน" }));
     await user.type(screen.getByLabelText("ชื่อแผน"), "Food crawl");
     await user.click(screen.getByRole("button", { name: "สร้างแผน" }));
 
-    expect(onCreateTripSheet).toHaveBeenCalledWith("Food crawl");
+    expect(onCreateTripPlan).toHaveBeenCalledWith("Food crawl");
   });
 
   it("keeps the Trip Plan create form open when creation fails", async () => {
     const user = userEvent.setup();
-    const onCreateTripSheet = vi.fn().mockResolvedValue(false);
-    renderTable({ onCreateTripSheet, tripSheetError: "Could not update Trip Plan." });
+    const onCreateTripPlan = vi.fn().mockResolvedValue(false);
+    renderTable({ onCreateTripPlan, tripPlanError: "Could not update Trip Plan." });
 
     await user.click(screen.getByRole("button", { name: "เพิ่มแผน" }));
-    await user.type(screen.getByLabelText("ชื่อแผน"), "Retry sheet");
+    await user.type(screen.getByLabelText("ชื่อแผน"), "Retry plan");
     await user.click(screen.getByRole("button", { name: "สร้างแผน" }));
 
-    expect(onCreateTripSheet).toHaveBeenCalledWith("Retry sheet");
-    expect(screen.getByLabelText("ชื่อแผน")).toHaveValue("Retry sheet");
+    expect(onCreateTripPlan).toHaveBeenCalledWith("Retry plan");
+    expect(screen.getByLabelText("ชื่อแผน")).toHaveValue("Retry plan");
     expect(screen.getByText("Could not update Trip Plan.")).toBeInTheDocument();
   });
 
