@@ -205,13 +205,17 @@ pub async fn create_itinerary_item(
         validate_child_create_path_fields(&request, parent_path_fields)?;
     }
 
-    let sort_order = db::queries::next_itinerary_sort_order(
-        &mut tx,
-        trip_id,
-        request.plan_variant_id,
-        request.day,
-    )
-    .await?;
+    let sort_order = if let Some(parent_item_id) = request.parent_item_id {
+        db::queries::next_itinerary_child_sort_order(&mut tx, trip_id, parent_item_id).await?
+    } else {
+        db::queries::next_itinerary_sort_order(
+            &mut tx,
+            trip_id,
+            request.plan_variant_id,
+            request.day,
+        )
+        .await?
+    };
     let empty_details = serde_json::json!({});
     let details = request.details.as_ref().unwrap_or(&empty_details);
     let path_group_id = parent_path_fields

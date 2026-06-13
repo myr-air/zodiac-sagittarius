@@ -1183,6 +1183,38 @@ pub async fn next_itinerary_sort_order(
     Ok(max_sort_order.unwrap_or(0) + 100)
 }
 
+pub async fn next_itinerary_child_sort_order(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    trip_id: Uuid,
+    parent_item_id: Uuid,
+) -> Result<i32, sqlx::Error> {
+    let parent_sort_order: i32 = sqlx::query_scalar(
+        "select sort_order
+         from itinerary_items
+         where trip_id = $1
+           and id = $2
+           and deleted_at is null",
+    )
+    .bind(trip_id)
+    .bind(parent_item_id)
+    .fetch_one(&mut **tx)
+    .await?;
+
+    let max_child_sort_order: Option<i32> = sqlx::query_scalar(
+        "select max(sort_order)
+         from itinerary_items
+         where trip_id = $1
+           and parent_item_id = $2
+           and deleted_at is null",
+    )
+    .bind(trip_id)
+    .bind(parent_item_id)
+    .fetch_one(&mut **tx)
+    .await?;
+
+    Ok(max_child_sort_order.unwrap_or(parent_sort_order) + 10)
+}
+
 pub async fn insert_itinerary_item(
     tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
     item: NewItineraryItem<'_>,

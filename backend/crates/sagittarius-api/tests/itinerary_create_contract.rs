@@ -341,6 +341,81 @@ async fn itinerary_create_contract_rejects_nested_sub_activity(pool: sqlx::PgPoo
 }
 
 #[sqlx::test(migrations = "../../migrations")]
+async fn itinerary_create_contract_places_new_sub_activities_after_existing_siblings(
+    pool: sqlx::PgPool,
+) {
+    support::seed_trip(&pool).await;
+    let token = support::create_session(&pool, support::ORGANIZER_ID).await;
+    let app = support::app(pool);
+
+    let first_child = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method(Method::POST)
+                .uri(format!(
+                    "/api/v1/trips/{}/itinerary-items",
+                    support::TRIP_ID
+                ))
+                .header(header::AUTHORIZATION, format!("Bearer {token}"))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({
+                        "clientMutationId": "web-create-first-ordered-sub-activity",
+                        "planVariantId": support::PLAN_ID,
+                        "parentItemId": support::ITEM_ID,
+                        "day": "2025-05-16",
+                        "startTime": "08:45",
+                        "activity": "Order noodles",
+                        "activityType": "food",
+                        "place": "The Elements"
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(first_child.status(), StatusCode::OK);
+    let first_child_body: Value =
+        serde_json::from_slice(&to_bytes(first_child.into_body(), 65536).await.unwrap()).unwrap();
+
+    let second_child = app
+        .oneshot(
+            Request::builder()
+                .method(Method::POST)
+                .uri(format!(
+                    "/api/v1/trips/{}/itinerary-items",
+                    support::TRIP_ID
+                ))
+                .header(header::AUTHORIZATION, format!("Bearer {token}"))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({
+                        "clientMutationId": "web-create-second-ordered-sub-activity",
+                        "planVariantId": support::PLAN_ID,
+                        "parentItemId": support::ITEM_ID,
+                        "day": "2025-05-16",
+                        "startTime": "09:00",
+                        "activity": "Split bill",
+                        "activityType": "food",
+                        "place": "The Elements"
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(second_child.status(), StatusCode::OK);
+    let second_child_body: Value =
+        serde_json::from_slice(&to_bytes(second_child.into_body(), 65536).await.unwrap()).unwrap();
+
+    assert_eq!(first_child_body["sortOrder"], 110);
+    assert_eq!(second_child_body["sortOrder"], 120);
+}
+
+#[sqlx::test(migrations = "../../migrations")]
 async fn itinerary_create_contract_rejects_sub_activity_plan_block(pool: sqlx::PgPool) {
     support::seed_trip(&pool).await;
     let token = support::create_session(&pool, support::ORGANIZER_ID).await;
