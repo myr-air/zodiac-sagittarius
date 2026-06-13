@@ -108,6 +108,21 @@ const pagePlanAExampleItems: ItineraryItem[] = [
     pathRole: "main",
   },
 ];
+const pageWindowOnlyDurationItems: ItineraryItem[] = [
+  {
+    ...tripFixture.planItems[0],
+    id: "page-window-only-duration",
+    day: "2026-06-19",
+    startTime: "09:00",
+    endTime: "10:45",
+    endOffsetDays: 0,
+    durationMinutes: null,
+    sortOrder: 100,
+    activity: "Window only duration",
+    place: "Main checkpoint",
+    pathRole: "main",
+  },
+];
 const pagePlanABAlternativeItems: ItineraryItem[] = [
   ["page-plan-ab-main-breakfast", "08:00", 60, 100, "Harbour breakfast", "Main", undefined, "main"],
   ["page-plan-ab-a-gallery", "10:00", 75, 200, "Plan A gallery route", "Plan A", "path-2026-06-19-sub-a", "alternative"],
@@ -252,6 +267,14 @@ export const OwnerThai: Story = {
     await expect(canvas.getByRole("region", { name: /ตารางแผนการเดินทาง/i })).toHaveClass("table-panel", "grid");
     await expect(canvas.getByLabelText(/รายการแผนการเดินทางแบบเลื่อนได้/i)).toHaveClass("table-scroll", "overflow-x-auto");
     await expect(canvas.getByRole("table", { name: /รายการแผนการเดินทาง แยกตามวัน/i })).toHaveClass("smart-table", "min-w-[1080px]");
+  },
+};
+
+export const TimeWindowDuration: Story = {
+  args: {
+    ...Owner.args,
+    items: pageWindowOnlyDurationItems,
+    selectedItemId: "page-window-only-duration",
   },
 };
 

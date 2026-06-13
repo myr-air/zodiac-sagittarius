@@ -1339,7 +1339,7 @@ function MobileSelectedStopInspector({
             <TimeWindowText item={item} />
           </span>
           <span>·</span>
-          <span>{formatDuration(item.durationMinutes, locale)}</span>
+          <span>{formatDuration(derivedDurationMinutes(item), locale)}</span>
           <span>·</span>
           <span>{item.pathName ?? "Main"}</span>
         </p>
@@ -1433,7 +1433,7 @@ function MobileSelectedStopInspector({
         </label>
       </div>
       <span className={mobileInspectorDurationClassName}>
-        {itineraryLabels.headers.duration}: {formatDuration(item.durationMinutes, locale)}
+        {itineraryLabels.headers.duration}: {formatDuration(derivedDurationMinutes(item), locale)}
       </span>
       <div className={mobileInspectorActionsClassName}>
         <button
@@ -2370,9 +2370,15 @@ function DurationDisplay({
 
   return (
     <span className={durationPillClassName} aria-label={durationLabel}>
-      {formatDuration(item.durationMinutes, locale)}
+      {formatDuration(derivedDurationMinutes(item), locale)}
     </span>
   );
+}
+
+function derivedDurationMinutes(item: ItineraryItem): number | null {
+  const interval = getTimeWindowInterval(item);
+  if (interval) return interval.end - interval.start;
+  return item.durationMinutes;
 }
 
 interface InlineOptionPickerOption {

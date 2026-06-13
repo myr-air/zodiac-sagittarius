@@ -1739,6 +1739,30 @@ describe("SmartItineraryTable", () => {
     expect(onUpdateItemInline).not.toHaveBeenCalled();
   });
 
+  it("derives row and inspector duration from start and end time windows", () => {
+    const windowOnlyItem = {
+      ...tripFixture.planItems[0],
+      id: "window-only-duration",
+      startTime: "09:00",
+      endTime: "10:45",
+      endOffsetDays: 0,
+      durationMinutes: null,
+      activity: "Window only duration",
+    };
+
+    renderTable({
+      items: [windowOnlyItem],
+      selectedItemId: windowOnlyItem.id,
+    });
+
+    const row = screen.getByRole("row", { name: /Window only duration/i });
+    expect(within(row).getByLabelText(/ระยะเวลา Window only duration/i)).toHaveTextContent("1 h 45 m");
+    expect(
+      within(screen.getByRole("region", { name: "รายละเอียดจุดที่เลือก" }))
+        .getByText(/ระยะเวลา: 1 h 45 m/i),
+    ).toBeInTheDocument();
+  });
+
   it("keeps duration as derived text when editing time windows inline", async () => {
     const onUpdateItemInline = vi.fn();
     renderTable({ onUpdateItemInline });
