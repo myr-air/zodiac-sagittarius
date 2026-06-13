@@ -27,4 +27,16 @@ describe("trip auth API contract", () => {
       "/api/v1/trips/trip%201/plan-variants/plan%20%2F%20rain/publications",
     );
   });
+
+  it("builds plan-scoped expense summary routes", () => {
+    expect(tripApiRoutes.expensesSummary("trip 1", "plan / rain")).toBe(
+      "/api/v1/trips/trip%201/expenses/summary?tripPlanId=plan+%2F+rain",
+    );
+    expect(tripApiRoutes.expenseReminders("trip 1", "plan / rain")).toBe(
+      "/api/v1/trips/trip%201/expenses/reminders?tripPlanId=plan+%2F+rain",
+    );
+    expect(tripApiRoutes.expensesSummary("trip 1")).toBe(
+      "/api/v1/trips/trip%201/expenses/summary",
+    );
+  });
 });

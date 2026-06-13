@@ -1912,14 +1912,18 @@ pub async fn itinerary_item_has_children(
 pub async fn list_expense_splits(
     pool: &PgPool,
     trip_id: Uuid,
+    trip_plan_id: Option<Uuid>,
 ) -> Result<Vec<ExpenseSplitRecord>, sqlx::Error> {
     sqlx::query_as::<_, ExpenseSplitRecord>(
         "select paid_by, amount_minor, currency, exchange_rate_to_settlement_currency, category, splits
          from expenses
-         where trip_id = $1 and deleted_at is null
+         where trip_id = $1
+           and ($2::uuid is null or trip_plan_id = $2)
+           and deleted_at is null
          order by created_at",
     )
     .bind(trip_id)
+    .bind(trip_plan_id)
     .fetch_all(pool)
     .await
 }

@@ -1010,6 +1010,10 @@ Phase 2 rules:
   Product and API copy must avoid implying certainty until a user audits,
   moves, cancels, refunds, or duplicates the expense as a Plan Estimate.
 - Switching Main Plan after migration must not update existing `trip_plan_id` values.
+- Expense summary reads may be scoped with `tripPlanId`; a scoped summary must
+  calculate totals, balances, settlement suggestions, and reminder attachment
+  from only that Trip Plan's Actual Expenses. Omitting `tripPlanId` remains the
+  compatibility whole-trip summary.
 - Stop notes linked to itinerary items inherit the item's plan.
 - Create flows should default to the linked itinerary item's plan when present, otherwise to the current Main Plan.
 - Patch and relink flows must follow the same rule as create flows: changing an

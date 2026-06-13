@@ -321,7 +321,7 @@ export function SagittariusApp({
   );
   const [dailyBriefings, setDailyBriefings] = useState<TripDailyBriefing[]>([]);
   const [backendExpenseSummary, setBackendExpenseSummary] =
-    useState<ExpenseSummary | null>(null);
+    useState<{ tripPlanId: string; summary: ExpenseSummary } | null>(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [contextRailOpen, setContextRailOpen] = useState(false);
   const [contextRailMounted, setContextRailMounted] = useState(false);
@@ -478,16 +478,21 @@ export function SagittariusApp({
     [selectedTripPlanId, stopNotes, tasks, trip],
   );
   const expenseSummary = useMemo(
-    () =>
-      backendExpenseSummary ??
-      buildExpenseSummary(
+    () => {
+      if (backendExpenseSummary?.tripPlanId === selectedTripPlanId) {
+        return backendExpenseSummary.summary;
+      }
+
+      return buildExpenseSummary(
         scopedTripPlanRecords.expenses,
         currentMember.id,
         trip.expenseReminders ?? [],
-      ),
+      );
+    },
     [
       backendExpenseSummary,
       currentMember.id,
+      selectedTripPlanId,
       trip.expenseReminders,
       scopedTripPlanRecords.expenses,
     ],
@@ -693,11 +698,13 @@ export function SagittariusApp({
       .loadTrip(participantSession.tripId, participantSession.sessionToken)
       .then((cockpit) => {
         if (cancelled) return;
+        const loadedTripPlanId = initialSelectedTripPlanId(cockpit.trip);
         setTripState({ trip: cockpit.trip, past: [], future: [] });
+        setSelectedTripPlanId(loadedTripPlanId);
         setSuggestions(cockpit.suggestions);
         setTasks(cockpit.tasks);
         setStopNotes(cockpit.stopNotes);
-        setBackendExpenseSummary(cockpit.expenseSummary);
+        setBackendExpenseSummary(null);
         setIsCockpitLoaded(true);
       })
       .catch((caught) => {
@@ -2222,7 +2229,7 @@ export function SagittariusApp({
     setLatestPlanCheck(cockpit.latestPlanCheck ?? null);
     setTasks(cockpit.tasks);
     setStopNotes(cockpit.stopNotes);
-    setBackendExpenseSummary(cockpit.expenseSummary);
+    setBackendExpenseSummary(null);
     setIsCockpitLoaded(true);
   }
 
@@ -3213,10 +3220,14 @@ export function SagittariusApp({
         },
       }));
       setBackendExpenseSummary(
-        await resolvedApiClient.getExpenseSummary(
-          trip.id,
-          participantSession.sessionToken,
-        ),
+        {
+          tripPlanId: selectedTripPlanId,
+          summary: await resolvedApiClient.getExpenseSummary(
+            trip.id,
+            participantSession.sessionToken,
+            selectedTripPlanId,
+          ),
+        },
       );
       return;
     }
@@ -3267,10 +3278,14 @@ export function SagittariusApp({
         },
       }));
       setBackendExpenseSummary(
-        await resolvedApiClient.getExpenseSummary(
-          trip.id,
-          participantSession.sessionToken,
-        ),
+        {
+          tripPlanId: selectedTripPlanId,
+          summary: await resolvedApiClient.getExpenseSummary(
+            trip.id,
+            participantSession.sessionToken,
+            selectedTripPlanId,
+          ),
+        },
       );
       return;
     }
@@ -3347,10 +3362,14 @@ export function SagittariusApp({
         },
       }));
       setBackendExpenseSummary(
-        await resolvedApiClient.getExpenseSummary(
-          trip.id,
-          participantSession.sessionToken,
-        ),
+        {
+          tripPlanId: selectedTripPlanId,
+          summary: await resolvedApiClient.getExpenseSummary(
+            trip.id,
+            participantSession.sessionToken,
+            selectedTripPlanId,
+          ),
+        },
       );
       return;
     }
@@ -3387,16 +3406,20 @@ export function SagittariusApp({
     const amountMinor = Math.round(suggestion.amount * 100);
     if (isApiMode && resolvedApiClient && participantSession) {
       setBackendExpenseSummary(
-        await resolvedApiClient.recordExpenseReminder(
-          trip.id,
-          participantSession.sessionToken,
-          {
-            clientMutationId: nextClientMutationId("expense-reminder"),
-            from: suggestion.from,
-            to: suggestion.to,
-            amountMinor,
-          },
-        ),
+        {
+          tripPlanId: selectedTripPlanId,
+          summary: await resolvedApiClient.recordExpenseReminder(
+            trip.id,
+            participantSession.sessionToken,
+            {
+              clientMutationId: nextClientMutationId("expense-reminder"),
+              from: suggestion.from,
+              to: suggestion.to,
+              amountMinor,
+            },
+            selectedTripPlanId,
+          ),
+        },
       );
       return;
     }
@@ -3582,10 +3605,14 @@ export function SagittariusApp({
           ]);
         if (importedRecords.expenses.length > 0) {
           setBackendExpenseSummary(
-            await resolvedApiClient.getExpenseSummary(
-              trip.id,
-              participantSession.sessionToken,
-            ),
+            {
+              tripPlanId: selectedTripPlanId,
+              summary: await resolvedApiClient.getExpenseSummary(
+                trip.id,
+                participantSession.sessionToken,
+                selectedTripPlanId,
+              ),
+            },
           );
         }
         const nextSelectedItemId = createdItems[0]?.id ?? "";

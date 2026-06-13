@@ -17,6 +17,7 @@ pub async fn get_expense_summary(
     pool: &PgPool,
     trip_id: Uuid,
     session_token: &str,
+    trip_plan_id: Option<Uuid>,
 ) -> Result<ExpenseSummary, ServiceError> {
     let token_hash = auth::hash_session_token(session_token)?;
     let session = db::queries::find_active_member_session(pool, trip_id, &token_hash)
@@ -27,7 +28,7 @@ pub async fn get_expense_summary(
     }
 
     let (splits, reminders) = tokio::try_join!(
-        db::queries::list_expense_splits(pool, trip_id),
+        db::queries::list_expense_splits(pool, trip_id, trip_plan_id),
         db::queries::list_expense_reminders(pool, trip_id),
     )?;
     Ok(trips::build_expense_summary(
@@ -117,6 +118,7 @@ pub async fn record_expense_reminder(
     realtime: &RealtimeHub,
     trip_id: Uuid,
     session_token: &str,
+    trip_plan_id: Option<Uuid>,
     request: RecordExpenseReminderRequest,
 ) -> Result<ExpenseSummary, ServiceError> {
     request.validate()?;
@@ -168,7 +170,7 @@ pub async fn record_expense_reminder(
     tx.commit().await?;
     realtime.publish(event).await;
 
-    get_expense_summary(pool, trip_id, session_token).await
+    get_expense_summary(pool, trip_id, session_token, trip_plan_id).await
 }
 
 pub async fn patch_expense(

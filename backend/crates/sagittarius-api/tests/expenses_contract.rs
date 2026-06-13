@@ -56,6 +56,91 @@ async fn expenses_contract_create_without_item_defaults_to_current_main_plan(poo
 }
 
 #[sqlx::test(migrations = "../../migrations")]
+async fn expenses_contract_summary_can_be_scoped_to_trip_plan(pool: sqlx::PgPool) {
+    support::seed_trip(&pool).await;
+    support::seed_expense(&pool).await;
+    support::seed_alt_plan_item(&pool).await;
+    let organizer = support::create_session(&pool, support::ORGANIZER_ID).await;
+    let app = support::app(pool.clone());
+
+    sqlx::query(
+        "insert into expenses (
+           id, trip_id, trip_plan_id, title, amount_minor, currency, paid_by, category, splits
+         )
+         values (gen_random_uuid(), $1, $2, 'Alt plan deposit', 5000, 'HKD', $3, 'transport', $4)",
+    )
+    .bind(Uuid::parse_str(support::TRIP_ID).unwrap())
+    .bind(Uuid::parse_str(support::ALT_PLAN_ID).unwrap())
+    .bind(Uuid::parse_str(support::OWNER_ID).unwrap())
+    .bind(serde_json::json!({ support::OWNER_ID: 5000 }))
+    .execute(&pool)
+    .await
+    .unwrap();
+
+    let main_summary = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method(Method::GET)
+                .uri(format!(
+                    "/api/v1/trips/{}/expenses/summary?tripPlanId={}",
+                    support::TRIP_ID,
+                    support::PLAN_ID
+                ))
+                .header(header::AUTHORIZATION, format!("Bearer {organizer}"))
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(main_summary.status(), StatusCode::OK);
+    let main_body: Value =
+        serde_json::from_slice(&to_bytes(main_summary.into_body(), 65536).await.unwrap()).unwrap();
+
+    let alt_summary = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method(Method::GET)
+                .uri(format!(
+                    "/api/v1/trips/{}/expenses/summary?tripPlanId={}",
+                    support::TRIP_ID,
+                    support::ALT_PLAN_ID
+                ))
+                .header(header::AUTHORIZATION, format!("Bearer {organizer}"))
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(alt_summary.status(), StatusCode::OK);
+    let alt_body: Value =
+        serde_json::from_slice(&to_bytes(alt_summary.into_body(), 65536).await.unwrap()).unwrap();
+
+    let trip_summary = app
+        .oneshot(
+            Request::builder()
+                .method(Method::GET)
+                .uri(format!(
+                    "/api/v1/trips/{}/expenses/summary",
+                    support::TRIP_ID
+                ))
+                .header(header::AUTHORIZATION, format!("Bearer {organizer}"))
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(trip_summary.status(), StatusCode::OK);
+    let trip_body: Value =
+        serde_json::from_slice(&to_bytes(trip_summary.into_body(), 65536).await.unwrap()).unwrap();
+
+    assert_eq!(main_body["groupSpend"], 240.0);
+    assert_eq!(alt_body["groupSpend"], 50.0);
+    assert_eq!(trip_body["groupSpend"], 290.0);
+}
+
+#[sqlx::test(migrations = "../../migrations")]
 async fn expenses_contract_patch_relinks_to_new_item_plan(pool: sqlx::PgPool) {
     support::seed_trip(&pool).await;
     support::seed_expense(&pool).await;

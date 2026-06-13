@@ -234,8 +234,8 @@ export interface TripApiClient {
   createMember(tripId: string, sessionToken: string, request: CreateMemberApiRequest): Promise<Member>;
   patchMember(tripId: string, memberId: string, sessionToken: string, request: PatchMemberApiRequest): Promise<Member>;
   resetMemberClaim(tripId: string, memberId: string, sessionToken: string): Promise<Member>;
-  getExpenseSummary(tripId: string, sessionToken: string): Promise<ExpenseSummary>;
-  recordExpenseReminder(tripId: string, sessionToken: string, request: RecordExpenseReminderApiRequest): Promise<ExpenseSummary>;
+  getExpenseSummary(tripId: string, sessionToken: string, tripPlanId?: string | null): Promise<ExpenseSummary>;
+  recordExpenseReminder(tripId: string, sessionToken: string, request: RecordExpenseReminderApiRequest, tripPlanId?: string | null): Promise<ExpenseSummary>;
   createExpense(tripId: string, sessionToken: string, request: CreateExpenseApiRequest): Promise<Expense>;
   patchExpense(tripId: string, expenseId: string, sessionToken: string, request: PatchExpenseApiRequest): Promise<Expense>;
   deleteExpense(tripId: string, expenseId: string, sessionToken: string): Promise<Expense>;
@@ -769,14 +769,14 @@ export function createTripApiClient(options: TripApiClientOptions = {}): TripApi
       });
       return mapMember(member);
     },
-    getExpenseSummary(tripId, sessionToken) {
-      return request<ExpenseSummary>(tripApiRoutes.expensesSummary(tripId), {
+    getExpenseSummary(tripId, sessionToken, tripPlanId) {
+      return request<ExpenseSummary>(tripApiRoutes.expensesSummary(tripId, tripPlanId), {
         method: "GET",
         headers: { Authorization: `Bearer ${sessionToken}` },
       });
     },
-    recordExpenseReminder(tripId, sessionToken, reminderRequest) {
-      return request<ExpenseSummary>(tripApiRoutes.expenseReminders(tripId), {
+    recordExpenseReminder(tripId, sessionToken, reminderRequest, tripPlanId) {
+      return request<ExpenseSummary>(tripApiRoutes.expenseReminders(tripId, tripPlanId), {
         method: "POST",
         headers: { Authorization: `Bearer ${sessionToken}` },
         body: JSON.stringify(reminderRequest),

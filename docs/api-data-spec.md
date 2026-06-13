@@ -416,6 +416,9 @@ Example PATCH:
 ### Expenses
 
 - `GET /api/v1/trips/:tripId/expenses/summary`
+  Accepts optional `tripPlanId` query parameter. When present, totals,
+  balances, and settlement suggestions are calculated from expenses scoped to
+  that Trip Plan only. Omitting it keeps the legacy whole-trip summary.
 - `POST /api/v1/trips/:tripId/expenses`
 - `PATCH /api/v1/trips/:tripId/expenses/:expenseId`
 - `DELETE /api/v1/trips/:tripId/expenses/:expenseId`

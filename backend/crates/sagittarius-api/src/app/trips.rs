@@ -76,7 +76,7 @@ pub async fn load_cockpit(
         },
         async {
             if can_view_expenses {
-                db::queries::list_expense_splits(pool, session_trip_id).await
+                db::queries::list_expense_splits(pool, session_trip_id, None).await
             } else {
                 Ok(Vec::new())
             }

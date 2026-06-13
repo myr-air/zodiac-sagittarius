@@ -52,8 +52,10 @@ export const tripApiRoutes = {
   suggestions: (tripId: string) => `/api/v1/trips/${tripPathSegment(tripId)}/suggestions`,
   suggestion: (tripId: string, suggestionId: string) =>
     `/api/v1/trips/${tripPathSegment(tripId)}/suggestions/${encodePathSegment(suggestionId)}`,
-  expensesSummary: (tripId: string) => `/api/v1/trips/${tripPathSegment(tripId)}/expenses/summary`,
-  expenseReminders: (tripId: string) => `/api/v1/trips/${tripPathSegment(tripId)}/expenses/reminders`,
+  expensesSummary: (tripId: string, tripPlanId?: string | null) =>
+    `/api/v1/trips/${tripPathSegment(tripId)}/expenses/summary${tripPlanId ? `?${new URLSearchParams({ tripPlanId })}` : ""}`,
+  expenseReminders: (tripId: string, tripPlanId?: string | null) =>
+    `/api/v1/trips/${tripPathSegment(tripId)}/expenses/reminders${tripPlanId ? `?${new URLSearchParams({ tripPlanId })}` : ""}`,
   expenses: (tripId: string) => `/api/v1/trips/${tripPathSegment(tripId)}/expenses`,
   expense: (tripId: string, expenseId: string) => `/api/v1/trips/${tripPathSegment(tripId)}/expenses/${encodePathSegment(expenseId)}`,
   bookings: (tripId: string) => `/api/v1/trips/${tripPathSegment(tripId)}/bookings`,

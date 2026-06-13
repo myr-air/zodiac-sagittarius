@@ -1,5 +1,8 @@
-use axum::Json;
-use axum::extract::{Path, State};
+use axum::{
+    Json,
+    extract::{Path, Query, State},
+};
+use serde::Deserialize;
 use uuid::Uuid;
 
 use crate::api::extractors::BearerToken;
@@ -11,12 +14,25 @@ use crate::domain::patches::{
 };
 use crate::domain::types::{ExpenseItemSummary, ExpenseSummary};
 
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ExpenseSummaryQuery {
+    pub trip_plan_id: Option<Uuid>,
+}
+
 pub async fn get_expense_summary(
     State(state): State<AppState>,
     Path(trip_id): Path<Uuid>,
+    Query(query): Query<ExpenseSummaryQuery>,
     BearerToken(session_token): BearerToken,
 ) -> Result<Json<ExpenseSummary>, ServiceError> {
-    let summary = app::expenses::get_expense_summary(&state.pool, trip_id, &session_token).await?;
+    let summary = app::expenses::get_expense_summary(
+        &state.pool,
+        trip_id,
+        &session_token,
+        query.trip_plan_id,
+    )
+    .await?;
 
     Ok(Json(summary))
 }
@@ -42,6 +58,7 @@ pub async fn create_expense(
 pub async fn record_expense_reminder(
     State(state): State<AppState>,
     Path(trip_id): Path<Uuid>,
+    Query(query): Query<ExpenseSummaryQuery>,
     BearerToken(session_token): BearerToken,
     Json(request): Json<RecordExpenseReminderRequest>,
 ) -> Result<Json<ExpenseSummary>, ServiceError> {
@@ -50,6 +67,7 @@ pub async fn record_expense_reminder(
         &state.realtime,
         trip_id,
         &session_token,
+        query.trip_plan_id,
         request,
     )
     .await?;
