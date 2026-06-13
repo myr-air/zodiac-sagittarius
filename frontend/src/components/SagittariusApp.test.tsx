@@ -5484,7 +5484,8 @@ describe("Sagittarius cockpit UI", () => {
         "session-token",
         expect.objectContaining({
           name: "API Sheet",
-          kind: "draft",
+          status: "draft",
+          creationMode: "blank",
           description: "",
         }),
       ),

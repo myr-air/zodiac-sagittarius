@@ -1017,7 +1017,8 @@ export function SagittariusApp({
           {
             clientMutationId: nextClientMutationId("trip-plan-create"),
             name: trimmedName,
-            kind: "draft",
+            status: "draft",
+            creationMode: "blank",
             description: "",
           },
         );
@@ -3995,7 +3996,7 @@ export function SagittariusApp({
                   dailyBriefings={visibleDailyBriefings}
                   itineraryView={itineraryView}
                   pathOptions={pathOptions}
-                  tripPlans={trip.planVariants}
+                  tripPlans={trip.tripPlans ?? trip.planVariants}
                   selectedTripPlanId={selectedTripPlanId}
                   mainTripPlanId={trip.mainTripPlanId || trip.activePlanVariantId}
                   onChangeTripPlan={selectTripPlan}
