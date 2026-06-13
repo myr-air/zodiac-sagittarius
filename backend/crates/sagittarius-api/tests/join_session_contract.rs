@@ -56,6 +56,10 @@ async fn join_session_contract_hides_hashes_and_claim_creates_session(pool: sqlx
     let join_session_token = join_body["joinSessionToken"].as_str().unwrap();
     assert_eq!(join_body["trip"]["id"], support::TRIP_ID);
     assert_eq!(join_body["trip"]["joinId"], "HK-SZ-2025");
+    assert_eq!(
+        join_body["trip"]["mainTripPlanId"], join_body["trip"]["activePlanVariantId"],
+        "trip-join-sessions response must expose canonical and legacy Main Plan pointers",
+    );
     assert!(!join_session_token.is_empty());
     assert!(join_body["expiresAt"].as_str().unwrap().contains('T'));
     assert!(join_body["trip"].get("joinPasswordHash").is_none());
