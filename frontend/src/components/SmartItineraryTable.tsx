@@ -20,6 +20,7 @@ import type {
   ItineraryItemStatus,
   ItineraryTimeMode,
   ItineraryItem,
+  PlanStatus,
   PlanVariant,
   TripDailyBriefing,
   TripRole,
@@ -1037,7 +1038,7 @@ export function SmartItineraryTable({
           >
             {tripPlans.map((plan) => (
               <option value={plan.id} key={plan.id}>
-                {plan.name}
+                {formatTripPlanOptionLabel(plan, t.itinerary.tripPlans.status)}
               </option>
             ))}
           </select>
@@ -3261,4 +3262,12 @@ function formatSelectedPlanLabel(
   return namesLabel({
     names: `${selectedNames.slice(0, 2).join(", ")} +${selectedNames.length - 2}`,
   });
+}
+
+function formatTripPlanOptionLabel(
+  plan: PlanVariant,
+  statusLabels: Readonly<Record<PlanStatus, string>>,
+): string {
+  const status = plan.status ?? (plan.kind === "split" ? "proposal" : plan.kind);
+  return `${plan.name} - ${statusLabels[status]}`;
 }

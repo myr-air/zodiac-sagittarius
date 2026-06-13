@@ -389,6 +389,12 @@ export const messages = {
         emptyName: "Enter a plan name.",
         busy: "Updating plan...",
         error: "Could not update Trip Plan.",
+        status: {
+          main: "Main",
+          draft: "Draft",
+          backup: "Backup",
+          proposal: "Proposal",
+        },
       },
       dayToggle: {
         expand: ({ day }: { day: string }) => `Expand ${day}`,
@@ -1528,6 +1534,12 @@ export const messages = {
         emptyName: "ใส่ชื่อแผนก่อน",
         busy: "กำลังอัปเดตแผน...",
         error: "อัปเดต Trip Plan ไม่สำเร็จ",
+        status: {
+          main: "แผนหลัก",
+          draft: "ร่าง",
+          backup: "สำรอง",
+          proposal: "นำเสนอ",
+        },
       },
       dayToggle: {
         expand: ({ day }: { day: string }) => `ขยาย ${day}`,

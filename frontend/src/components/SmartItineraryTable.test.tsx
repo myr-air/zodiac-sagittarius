@@ -193,11 +193,11 @@ describe("SmartItineraryTable", () => {
 
     expect(selector).toHaveValue(tripFixture.trip.activePlanVariantId);
     expect(
-      screen.getByRole("option", { name: "แผนหลัก (V1)" }),
+      screen.getByRole("option", { name: "แผนหลัก (V1) - แผนหลัก" }),
     ).toBeInTheDocument();
-    expect(screen.getByRole("option", { name: "แผนฝนตก" })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "แผนฝนตก - สำรอง" })).toBeInTheDocument();
     expect(
-      screen.getByRole("option", { name: "ร่างปรับเวลา" }),
+      screen.getByRole("option", { name: "ร่างปรับเวลา - ร่าง" }),
     ).toBeInTheDocument();
   });
 
