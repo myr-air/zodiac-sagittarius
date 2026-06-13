@@ -4832,6 +4832,9 @@ describe("Sagittarius cockpit UI", () => {
     );
     await loginApiTrip(user);
 
+    await user.selectOptions(await screen.findByLabelText("Trip Plan"), [
+      "plan-variant-backup",
+    ]);
     await user.upload(
       screen.getByLabelText(/นำเข้า itinerary JSON/i),
       new File(["raw itinerary"], "itinerary.json", {
@@ -4851,6 +4854,7 @@ describe("Sagittarius cockpit UI", () => {
       apiTrip.id,
       "session-token",
       expect.objectContaining({
+        planVariantId: "plan-variant-backup",
         activity: "Imported API flight block",
         itemKind: "travel",
         timeMode: "scheduled",
@@ -4866,6 +4870,7 @@ describe("Sagittarius cockpit UI", () => {
       apiTrip.id,
       "session-token",
       expect.objectContaining({
+        planVariantId: "plan-variant-backup",
         activity: "Imported API check-in",
         parentItemId: "api-flight-block",
         itemKind: "preparation",
@@ -4876,7 +4881,7 @@ describe("Sagittarius cockpit UI", () => {
       apiTrip.id,
       "session-token",
       expect.objectContaining({
-        tripPlanId: apiTrip.activePlanVariantId,
+        tripPlanId: "plan-variant-backup",
         relatedItemId: "api-flight-block",
       }),
     );
@@ -4884,7 +4889,7 @@ describe("Sagittarius cockpit UI", () => {
       apiTrip.id,
       "session-token",
       expect.objectContaining({
-        tripPlanId: apiTrip.activePlanVariantId,
+        tripPlanId: "plan-variant-backup",
         itineraryItemId: "api-flight-block",
       }),
     );
@@ -4892,7 +4897,7 @@ describe("Sagittarius cockpit UI", () => {
       apiTrip.id,
       "session-token",
       expect.objectContaining({
-        tripPlanId: apiTrip.activePlanVariantId,
+        tripPlanId: "plan-variant-backup",
         amountMinor: 12000,
         splits: { "member-aom": 12000 },
         itineraryItemId: "api-flight-block",
@@ -4902,7 +4907,7 @@ describe("Sagittarius cockpit UI", () => {
       apiTrip.id,
       "session-token",
       expect.objectContaining({
-        tripPlanId: apiTrip.activePlanVariantId,
+        tripPlanId: "plan-variant-backup",
         relatedItineraryItemIds: ["api-flight-block"],
         relatedTaskIds: ["api-task"],
         relatedExpenseIds: ["api-expense"],
