@@ -414,10 +414,8 @@ export const PathAndDurationInteractions: Story = {
     await userEvent.selectOptions(canvas.getByRole("combobox", { name: /Move Harbour breakfast to path/i }), "path-2026-06-19-sub-a");
     await expect(onStoryMoveItemToPath).toHaveBeenCalledWith("page-plan-ab-main-breakfast", "path-2026-06-19-sub-a");
 
-    await userEvent.click(canvas.getByRole("button", { name: /Edit duration Harbour breakfast/i }));
-    const durationEditor = documentCanvas.getByRole("region", { name: /Edit duration Harbour breakfast/i });
-    await userEvent.click(within(durationEditor).getByRole("button", { name: /1 h 30 m/i }));
-    await expect(onStoryUpdateItemInline).toHaveBeenCalledWith("page-plan-ab-main-breakfast", { durationMinutes: 90 });
+    await expect(canvas.getByLabelText(/Duration Harbour breakfast/i)).toHaveTextContent("1 h");
+    await expect(canvas.queryByRole("button", { name: /Edit duration Harbour breakfast/i })).not.toBeInTheDocument();
   },
 };
 

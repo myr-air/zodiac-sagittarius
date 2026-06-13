@@ -2805,7 +2805,7 @@ describe("Sagittarius cockpit UI", () => {
     ).not.toBeInTheDocument();
   }, 45_000);
 
-  it("edits itinerary duration inline through the API client after backend login", async () => {
+  it("edits itinerary time window inline through the API client after backend login", async () => {
     const user = userEvent.setup();
     installLocalStorageStub();
     const selectedItem = seedTrip.itineraryItems.find(
@@ -2814,6 +2814,8 @@ describe("Sagittarius cockpit UI", () => {
     const ownerTrip = { ...seedTrip, joinPasswordHash: "" };
     const patchedItem = {
       ...selectedItem,
+      endTime: "10:00",
+      endOffsetDays: 0,
       durationMinutes: 90,
       version: selectedItem.version + 1,
     };
@@ -2832,14 +2834,9 @@ describe("Sagittarius cockpit UI", () => {
 
     await loginApiTrip(user);
     const row = await screen.findByRole("row", { name: /Dim Dim Sum/i });
-    await user.click(
-      within(row).getByRole("button", { name: /แก้ไขระยะเวลา Dim Dim Sum/i }),
-    );
-    await user.click(
-      within(
-        screen.getByRole("region", { name: /แก้ไขระยะเวลา Dim Dim Sum/i }),
-      ).getByRole("button", { name: /1 h 30 m/i }),
-    );
+    const endTime = within(row).getByLabelText(/แก้ไขเวลาจบ Dim Dim Sum/i);
+    fireEvent.change(endTime, { target: { value: "10:00" } });
+    fireEvent.blur(endTime);
 
     await waitFor(() =>
       expect(apiClient.patchItineraryItem).toHaveBeenCalledWith(
@@ -2848,7 +2845,11 @@ describe("Sagittarius cockpit UI", () => {
         "session-token",
         expect.objectContaining({
           expectedVersion: selectedItem.version,
-          patch: expect.objectContaining({ durationMinutes: 90 }),
+          patch: expect.objectContaining({
+            endTime: "10:00",
+            endOffsetDays: 0,
+            durationMinutes: 90,
+          }),
         }),
       ),
     );

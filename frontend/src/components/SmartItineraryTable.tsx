@@ -5,11 +5,9 @@ import {
   useState,
   type CSSProperties,
   type ChangeEvent,
-  type Dispatch,
   type DragEvent,
   type FormEvent,
   type PointerEvent as ReactPointerEvent,
-  type SetStateAction,
   type TouchEvent as ReactTouchEvent,
 } from "react";
 import { createPortal } from "react-dom";
@@ -333,9 +331,8 @@ const mobileInspectorEndOffsetToggleClassName = cn(
 );
 const mobileInspectorTypeButtonClassName =
   "min-h-12 border-(--color-border) bg-(--color-surface-subtle) px-3 text-sm font-bold";
-const mobileInspectorDurationClassName = "grid grid-cols-3 gap-2.5";
-const mobileInspectorDurationButtonClassName =
-  "min-h-12 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) px-2 text-xs font-extrabold text-(--color-text) transition-[background,border-color,color] duration-150 hover:enabled:border-(--color-route-border) hover:enabled:bg-(--color-route-soft) hover:enabled:text-(--color-route) disabled:cursor-not-allowed disabled:opacity-50";
+const mobileInspectorDurationClassName =
+  "inline-flex min-h-12 items-center rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) px-3 text-sm font-extrabold tabular-nums text-(--color-text-muted)";
 const mobileInspectorActionsClassName = "flex flex-wrap gap-2";
 const mobileInspectorActionButtonClassName =
   "inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) px-3 text-xs font-extrabold text-(--color-text) transition-[background,border-color,color] duration-150 hover:enabled:border-(--color-route-border) hover:enabled:bg-(--color-route-soft) hover:enabled:text-(--color-route) disabled:cursor-not-allowed disabled:opacity-50";
@@ -350,18 +347,6 @@ const deleteDialogTitleClassName =
 const deleteDialogBodyClassName =
   "m-0 text-sm font-medium leading-6 text-(--color-text-muted)";
 const deleteDialogActionsClassName = "mt-1 flex justify-end gap-2";
-const durationDialogClassName =
-  "duration-dialog fixed z-[30] grid w-[min(300px,calc(100vw-24px))] gap-3 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) p-3 shadow-[0_12px_28px_rgb(15_23_42_/_0.12)]";
-const durationDialogTitleClassName =
-  "m-0 text-sm font-extrabold leading-5 text-(--color-text)";
-const durationPresetGridClassName = "grid grid-cols-3 gap-2";
-const durationPresetButtonClassName =
-  "min-h-9 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) px-2 text-xs font-extrabold text-(--color-text) transition-[background,border-color,color] duration-150 hover:border-(--color-route-border) hover:bg-(--color-route-soft) hover:text-(--color-route)";
-const durationCustomGridClassName = "grid grid-cols-2 gap-2";
-const durationInputLabelClassName =
-  "grid gap-1 text-[11px] font-extrabold text-(--color-text-muted)";
-const durationInputClassName =
-  "min-h-9 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-2 text-sm font-bold tabular-nums text-(--color-text) outline-none focus:border-(--color-primary-border) focus:shadow-[0_0_0_2px_rgb(255_196_168_/_0.55)]";
 const activityTypeOptions: ActivityType[] = [
   "food",
   "attraction",
@@ -389,8 +374,6 @@ const itineraryStatusOptions: ItineraryItemStatus[] = [
   "skipped",
 ];
 const itineraryPriorityOptions: ItineraryItemPriority[] = ["low", "normal", "high", "must"];
-const durationPresetMinutes = [15, 30, 45, 60, 90, 120];
-
 export function SmartItineraryTable({
   canRestructure = true,
   endDate,
@@ -460,11 +443,6 @@ export function SmartItineraryTable({
   }>({ draggedItemId: null, overItemId: null, overDay: null, overBlockId: null });
   const [pendingDeleteItem, setPendingDeleteItem] =
     useState<ItineraryItem | null>(null);
-  const [durationEditor, setDurationEditor] = useState<{
-    item: ItineraryItem;
-    hours: string;
-    minutes: string;
-  } | null>(null);
   const knownFilterIdsRef = useRef<string[]>(
     filterOptions.map((option) => option.id),
   );
@@ -556,30 +534,6 @@ export function SmartItineraryTable({
         ? current.filter((id) => id !== itemId)
         : [...current, itemId],
     );
-  }
-
-  function openDurationEditor(item: ItineraryItem) {
-    const durationMinutes = item.durationMinutes ?? 45;
-    setDurationEditor({
-      item,
-      hours: String(Math.floor(durationMinutes / 60)),
-      minutes: String(durationMinutes % 60),
-    });
-  }
-
-  function commitDuration(itemId: string, minutes: number) {
-    if (!canEdit) return;
-    onUpdateItemInline?.(itemId, {
-      durationMinutes: Math.max(1, Math.round(minutes)),
-    });
-    setDurationEditor(null);
-  }
-
-  function commitCustomDuration() {
-    if (!durationEditor) return;
-    const hours = Number(durationEditor.hours) || 0;
-    const minutes = Number(durationEditor.minutes) || 0;
-    commitDuration(durationEditor.item.id, hours * 60 + minutes);
   }
 
   function togglePlanFilter(pathId: string) {
@@ -1282,11 +1236,6 @@ export function SmartItineraryTable({
               onStartTouchGesture={startTouchGesture}
               onEditItem={onEditItem}
               onDeleteItem={setPendingDeleteItem}
-              durationEditor={durationEditor}
-              onEditDuration={openDurationEditor}
-              onSetDurationEditor={setDurationEditor}
-              onCommitDuration={commitDuration}
-              onCommitCustomDuration={commitCustomDuration}
               onToggleDay={toggleDay}
               onTogglePlanBlock={togglePlanBlock}
             />
@@ -1477,21 +1426,9 @@ function MobileSelectedStopInspector({
           />
         </label>
       </div>
-      <div className={mobileInspectorDurationClassName}>
-        {durationPresetMinutes.map((minutes) => (
-          <button
-            type="button"
-            className={mobileInspectorDurationButtonClassName}
-            disabled={!canEdit}
-            key={minutes}
-            onClick={() =>
-              onUpdateItemInline?.(item.id, { durationMinutes: minutes })
-            }
-          >
-            {formatDuration(minutes, locale)}
-          </button>
-        ))}
-      </div>
+      <span className={mobileInspectorDurationClassName}>
+        {itineraryLabels.headers.duration}: {formatDuration(item.durationMinutes, locale)}
+      </span>
       <div className={mobileInspectorActionsClassName}>
         <button
           type="button"
@@ -1561,11 +1498,6 @@ function DayGroup({
   onStartTouchGesture,
   onEditItem,
   onDeleteItem,
-  durationEditor,
-  onEditDuration,
-  onSetDurationEditor,
-  onCommitDuration,
-  onCommitCustomDuration,
   onToggleDay,
   onTogglePlanBlock,
 }: {
@@ -1634,21 +1566,6 @@ function DayGroup({
   ) => void;
   onEditItem?: (itemId: string) => void;
   onDeleteItem?: (item: ItineraryItem) => void;
-  durationEditor: {
-    item: ItineraryItem;
-    hours: string;
-    minutes: string;
-  } | null;
-  onEditDuration: (item: ItineraryItem) => void;
-  onSetDurationEditor: Dispatch<
-    SetStateAction<{
-      item: ItineraryItem;
-      hours: string;
-      minutes: string;
-    } | null>
-  >;
-  onCommitDuration: (itemId: string, minutes: number) => void;
-  onCommitCustomDuration: () => void;
   onToggleDay: (day: string) => void;
   onTogglePlanBlock: (itemId: string) => void;
 }) {
@@ -1820,22 +1737,7 @@ function DayGroup({
                         <TimeWindowText item={item} />
                       </span>
                     ) : null}
-                    <DurationEditorPopover
-                      canEdit={canEdit}
-                      editor={
-                        durationEditor?.item.id === item.id
-                          ? durationEditor
-                          : null
-                      }
-                      item={item}
-                      labels={itineraryLabels}
-                      locale={locale}
-                      onClose={() => onSetDurationEditor(() => null)}
-                      onCommitCustomDuration={onCommitCustomDuration}
-                      onCommitDuration={onCommitDuration}
-                      onEditDuration={onEditDuration}
-                      onSetDurationEditor={onSetDurationEditor}
-                    />
+                    <DurationDisplay item={item} labels={itineraryLabels} locale={locale} />
                   </div>
                 </td>
                 <td className={activityCellClassName}>
@@ -2442,211 +2344,23 @@ function InlineTextField({
   );
 }
 
-function DurationEditorPopover({
-  canEdit,
-  editor,
+function DurationDisplay({
   item,
   labels,
   locale,
-  onClose,
-  onCommitCustomDuration,
-  onCommitDuration,
-  onEditDuration,
-  onSetDurationEditor,
 }: {
-  canEdit: boolean;
-  editor: {
-    item: ItineraryItem;
-    hours: string;
-    minutes: string;
-  } | null;
   item: ItineraryItem;
   labels: Messages["itinerary"];
   locale: Locale;
-  onClose: () => void;
-  onCommitCustomDuration: () => void;
-  onCommitDuration: (itemId: string, minutes: number) => void;
-  onEditDuration: (item: ItineraryItem) => void;
-  onSetDurationEditor: Dispatch<
-    SetStateAction<{
-      item: ItineraryItem;
-      hours: string;
-      minutes: string;
-    } | null>
-  >;
 }) {
-  const buttonRef = useRef<HTMLButtonElement>(null);
-  const panelRef = useRef<HTMLElement>(null);
-  const [position, setPosition] = useState({
-    left: 8,
-    top: 8,
-    width: 300,
-  });
-  const durationLabel = (canEdit
-    ? labels.row.inlineDuration
-    : labels.row.duration)({
+  const durationLabel = labels.row.duration({
     activity: item.activity,
   });
-  const title = labels.row.durationDialogTitle({ activity: item.activity });
-
-  useEffect(() => {
-    if (!editor) return;
-
-    function updatePosition() {
-      const triggerRect = buttonRef.current?.getBoundingClientRect();
-      if (!triggerRect) return;
-      const viewportWidth = window.innerWidth;
-      const viewportHeight = window.innerHeight;
-      const width = Math.min(300, viewportWidth - 16);
-      const panelHeight = Math.min(
-        panelRef.current?.getBoundingClientRect().height ?? 276,
-        viewportHeight - 16,
-      );
-      const preferredLeft =
-        triggerRect.left + triggerRect.width / 2 - width / 2;
-      const left = Math.min(
-        Math.max(8, preferredLeft),
-        Math.max(8, viewportWidth - width - 8),
-      );
-      const belowTop = triggerRect.bottom + 6;
-      const aboveTop = triggerRect.top - panelHeight - 6;
-      const hasSpaceBelow = belowTop + panelHeight <= viewportHeight - 8;
-      const top = hasSpaceBelow
-        ? belowTop
-        : Math.min(
-            Math.max(8, aboveTop),
-            Math.max(8, viewportHeight - panelHeight - 8),
-          );
-      setPosition({ left, top, width });
-    }
-
-    updatePosition();
-    const frame = window.requestAnimationFrame(updatePosition);
-    window.addEventListener("resize", updatePosition);
-    window.addEventListener("scroll", updatePosition, true);
-    return () => {
-      window.cancelAnimationFrame(frame);
-      window.removeEventListener("resize", updatePosition);
-      window.removeEventListener("scroll", updatePosition, true);
-    };
-  }, [editor]);
-
-  useEffect(() => {
-    if (!editor) return;
-    function closeOnOutside(event: MouseEvent | TouchEvent) {
-      const target = event.target as Node | null;
-      if (!target) return;
-      if (
-        buttonRef.current?.contains(target) ||
-        panelRef.current?.contains(target)
-      )
-        return;
-      onClose();
-    }
-    document.addEventListener("mousedown", closeOnOutside);
-    document.addEventListener("touchstart", closeOnOutside);
-    return () => {
-      document.removeEventListener("mousedown", closeOnOutside);
-      document.removeEventListener("touchstart", closeOnOutside);
-    };
-  }, [editor, onClose]);
 
   return (
-    <>
-      <button
-        ref={buttonRef}
-        type="button"
-        className={durationPillClassName}
-        disabled={!canEdit}
-        aria-expanded={editor ? "true" : "false"}
-        aria-label={durationLabel}
-        onClick={() => (editor ? onClose() : onEditDuration(item))}
-      >
-        {formatDuration(item.durationMinutes, locale)}
-      </button>
-      {editor
-        ? createPortal(
-            <section
-              ref={panelRef}
-              className={durationDialogClassName}
-              role="region"
-              aria-label={title}
-              style={{
-                left: position.left,
-                top: position.top,
-                width: position.width,
-              }}
-              onKeyDown={(event) => {
-                if (event.key === "Escape") {
-                  event.preventDefault();
-                  onClose();
-                  buttonRef.current?.focus();
-                }
-              }}
-            >
-              <h3 className={durationDialogTitleClassName}>{title}</h3>
-              <div className={durationPresetGridClassName}>
-                {durationPresetMinutes.map((minutes) => (
-                  <button
-                    type="button"
-                    className={durationPresetButtonClassName}
-                    key={minutes}
-                    onClick={() => onCommitDuration(item.id, minutes)}
-                  >
-                    {formatDuration(minutes, locale)}
-                  </button>
-                ))}
-              </div>
-              <div className={durationCustomGridClassName}>
-                <label className={durationInputLabelClassName}>
-                  {labels.row.durationHours}
-                  <input
-                    className={durationInputClassName}
-                    inputMode="numeric"
-                    min={0}
-                    type="number"
-                    value={editor.hours}
-                    onChange={(event) =>
-                      onSetDurationEditor((current) =>
-                        current
-                          ? { ...current, hours: event.target.value }
-                          : current,
-                      )
-                    }
-                  />
-                </label>
-                <label className={durationInputLabelClassName}>
-                  {labels.row.durationMinutes}
-                  <input
-                    className={durationInputClassName}
-                    inputMode="numeric"
-                    max={59}
-                    min={0}
-                    type="number"
-                    value={editor.minutes}
-                    onChange={(event) =>
-                      onSetDurationEditor((current) =>
-                        current
-                          ? { ...current, minutes: event.target.value }
-                          : current,
-                      )
-                    }
-                  />
-                </label>
-              </div>
-              <div className={deleteDialogActionsClassName}>
-                <Button type="button" variant="ghost" onClick={onClose}>
-                  {labels.row.durationCancel}
-                </Button>
-                <Button type="button" onClick={onCommitCustomDuration}>
-                  {labels.row.durationSave}
-                </Button>
-              </div>
-            </section>,
-            document.body,
-          )
-        : null}
-    </>
+    <span className={durationPillClassName} aria-label={durationLabel}>
+      {formatDuration(item.durationMinutes, locale)}
+    </span>
   );
 }
 

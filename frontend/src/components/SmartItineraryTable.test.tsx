@@ -1647,9 +1647,10 @@ describe("SmartItineraryTable", () => {
     await user.clear(transportation);
     await user.type(transportation, "Walk{Enter}");
 
-    await user.click(
-      within(inspector).getByRole("button", { name: /1 h 30 m/i }),
-    );
+    expect(within(inspector).getByText(/ระยะเวลา: 1 h/i)).toBeInTheDocument();
+    expect(
+      within(inspector).queryByRole("button", { name: /1 h 30 m/i }),
+    ).not.toBeInTheDocument();
 
     const editButton = within(inspector).getByRole("button", {
       name: /แก้ไข Dim Dim Sum/i,
@@ -1675,9 +1676,6 @@ describe("SmartItineraryTable", () => {
     expect(onUpdateItemInline).toHaveBeenCalledWith("item-dimdim", {
       transportation: "Walk",
     });
-    expect(onUpdateItemInline).toHaveBeenCalledWith("item-dimdim", {
-      durationMinutes: 90,
-    });
     expect(
       onUpdateItemInline.mock.calls.every(([, patch]) =>
         !("pathGroupId" in patch) &&
@@ -1688,66 +1686,46 @@ describe("SmartItineraryTable", () => {
     ).toBe(true);
   });
 
-  it("edits duration from a compact row duration picker", async () => {
+  it("shows derived duration in the row without opening a duration picker", async () => {
     const user = userEvent.setup();
     const onUpdateItemInline = vi.fn();
     renderTable({ onUpdateItemInline });
     const row = screen.getByRole("row", { name: /Dim Dim Sum/i });
 
-    await user.click(
-      within(row).getByRole("button", { name: /แก้ไขระยะเวลา Dim Dim Sum/i }),
-    );
-    const durationEditor = screen.getByRole("region", {
-      name: /แก้ไขระยะเวลา Dim Dim Sum/i,
-    });
+    const duration = within(row).getByLabelText(/ระยะเวลา Dim Dim Sum/i);
+    expect(duration).toHaveTextContent("1 h");
     expect(
-      screen.queryByRole("dialog", { name: /แก้ไขระยะเวลา Dim Dim Sum/i }),
+      within(row).queryByRole("button", { name: /แก้ไขระยะเวลา Dim Dim Sum/i }),
     ).not.toBeInTheDocument();
-    expect(durationEditor.closest("tr")).toBeNull();
-    expect(row).toContainElement(
-      within(row).getByRole("button", { name: /แก้ไขระยะเวลา Dim Dim Sum/i }),
-    );
-    await user.click(
-      within(durationEditor).getByRole("button", { name: /1 h 30 m/i }),
-    );
+
+    await user.click(duration);
+
+    expect(
+      screen.queryByRole("region", { name: /แก้ไขระยะเวลา Dim Dim Sum/i }),
+    ).not.toBeInTheDocument();
+    expect(onUpdateItemInline).not.toHaveBeenCalled();
+  });
+
+  it("keeps duration as derived text when editing time windows inline", async () => {
+    const user = userEvent.setup();
+    const onUpdateItemInline = vi.fn();
+    renderTable({ onUpdateItemInline });
+    const row = screen.getByRole("row", { name: /Dim Dim Sum/i });
+    const endTime = within(row).getByLabelText(/แก้ไขเวลาจบ Dim Dim Sum/i);
+
+    fireEvent.change(endTime, { target: { value: "10:30" } });
+    fireEvent.blur(endTime);
 
     expect(onUpdateItemInline).toHaveBeenCalledWith("item-dimdim", {
-      durationMinutes: 90,
+      endTime: "10:30",
+      endOffsetDays: 0,
     });
     expect(
       screen.queryByRole("region", { name: /แก้ไขระยะเวลา Dim Dim Sum/i }),
     ).not.toBeInTheDocument();
-  });
-
-  it("saves a custom duration from the row duration picker", async () => {
-    const user = userEvent.setup();
-    const onUpdateItemInline = vi.fn();
-    renderTable({ onUpdateItemInline });
-    const row = screen.getByRole("row", { name: /Dim Dim Sum/i });
-
-    await user.click(
-      within(row).getByRole("button", { name: /แก้ไขระยะเวลา Dim Dim Sum/i }),
-    );
-    const editor = screen.getByRole("region", {
-      name: /แก้ไขระยะเวลา Dim Dim Sum/i,
-    });
-    await user.clear(
-      within(editor).getByRole("spinbutton", { name: /ชั่วโมง/i }),
-    );
-    await user.type(
-      within(editor).getByRole("spinbutton", { name: /ชั่วโมง/i }),
-      "2",
-    );
-    await user.clear(within(editor).getByRole("spinbutton", { name: /นาที/i }));
-    await user.type(
-      within(editor).getByRole("spinbutton", { name: /นาที/i }),
-      "10",
-    );
-    await user.click(within(editor).getByRole("button", { name: /บันทึก/i }));
-
-    expect(onUpdateItemInline).toHaveBeenCalledWith("item-dimdim", {
-      durationMinutes: 130,
-    });
+    expect(
+      within(row).queryByRole("button", { name: /แก้ไขระยะเวลา Dim Dim Sum/i }),
+    ).not.toBeInTheDocument();
   });
 
   it("cancels a flat inline edit with Escape", async () => {
@@ -1780,9 +1758,10 @@ describe("SmartItineraryTable", () => {
     expect(
       within(row).getByLabelText(/^แก้ไขเวลา Dim Dim Sum/i),
     ).toBeDisabled();
+    expect(within(row).getByLabelText(/ระยะเวลา Dim Dim Sum/i)).toHaveTextContent("1 h");
     expect(
-      within(row).getByRole("button", { name: /ระยะเวลา Dim Dim Sum/i }),
-    ).toBeDisabled();
+      within(row).queryByRole("button", { name: /ระยะเวลา Dim Dim Sum/i }),
+    ).not.toBeInTheDocument();
     expect(
       within(row).getByRole("button", { name: /ประเภท Dim Dim Sum/i }),
     ).toBeDisabled();
