@@ -75,3 +75,48 @@ async fn cors_preflight_allows_new_join_session_route() {
 
     assert_eq!(response.status(), StatusCode::OK);
 }
+
+#[tokio::test]
+async fn trip_plan_routes_keep_canonical_and_legacy_mutation_paths() {
+    let trip_id = "018f0000-0000-7000-8000-000000000001";
+    let plan_id = "018f0000-0000-7000-8000-000000000002";
+
+    for (method, path) in [
+        (Method::POST, format!("/api/v1/trips/{trip_id}/trip-plans")),
+        (
+            Method::PATCH,
+            format!("/api/v1/trips/{trip_id}/trip-plans/{plan_id}"),
+        ),
+        (
+            Method::POST,
+            format!("/api/v1/trips/{trip_id}/trip-plans/{plan_id}/set-main"),
+        ),
+        (
+            Method::POST,
+            format!("/api/v1/trips/{trip_id}/plan-variants"),
+        ),
+        (
+            Method::PATCH,
+            format!("/api/v1/trips/{trip_id}/plan-variants/{plan_id}"),
+        ),
+        (
+            Method::POST,
+            format!("/api/v1/trips/{trip_id}/plan-variants/{plan_id}/publications"),
+        ),
+    ] {
+        let app = sagittarius_api::api::router(sagittarius_api::app::AppState::test());
+        let response = app
+            .oneshot(
+                Request::builder()
+                    .method(method)
+                    .uri(path)
+                    .header(CONTENT_TYPE, "application/json")
+                    .body(Body::from("{}"))
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+
+        assert_eq!(response.status(), StatusCode::UNAUTHORIZED);
+    }
+}
