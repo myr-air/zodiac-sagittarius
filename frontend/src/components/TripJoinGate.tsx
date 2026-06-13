@@ -416,7 +416,7 @@ function participantStatusLabel(member: Member, labels: Messages["join"]["member
   return labels.ready;
 }
 
-function tripFromJoinResponse(response: JoinTripResponse): Trip {
+export function tripFromJoinResponse(response: JoinTripResponse): Trip {
   return {
     id: response.trip.id,
     joinId: response.trip.joinId,
@@ -427,6 +427,8 @@ function tripFromJoinResponse(response: JoinTripResponse): Trip {
     endDate: response.trip.endDate,
     /* v8 ignore next */
     activePlanVariantId: response.trip.activePlanVariantId ?? "",
+    mainTripPlanId:
+      response.trip.mainTripPlanId ?? response.trip.activePlanVariantId ?? "",
     planVariants: [],
     members: response.claimableMembers.map((member) => ({
       id: member.id,
