@@ -99,6 +99,12 @@ CREATE TABLE itinerary_items (
   path_id text,
   path_name text,
   path_role text CHECK (path_role IS NULL OR path_role IN ('main', 'alternative')),
+  parent_item_id uuid,
+  item_kind text NOT NULL DEFAULT 'activity',
+  time_mode text NOT NULL DEFAULT 'scheduled',
+  is_plan_block boolean NOT NULL DEFAULT false,
+  status text NOT NULL DEFAULT 'idea',
+  priority text NOT NULL DEFAULT 'normal',
   day date NOT NULL,
   sort_order integer NOT NULL,
   start_time time,
@@ -159,6 +165,36 @@ CREATE TABLE expenses (
   version bigint NOT NULL DEFAULT 1
 );
 
+CREATE TABLE trip_tasks (
+  id uuid PRIMARY KEY,
+  trip_id uuid NOT NULL REFERENCES trips(id),
+  trip_plan_id uuid REFERENCES plan_variants(id),
+  related_item_id uuid REFERENCES itinerary_items(id),
+  title text NOT NULL,
+  status text NOT NULL,
+  visibility text NOT NULL,
+  kind text NOT NULL,
+  created_by uuid REFERENCES trip_members(id),
+  assignee_id uuid REFERENCES trip_members(id),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  deleted_at timestamptz,
+  version bigint NOT NULL DEFAULT 1
+);
+
+CREATE TABLE stop_notes (
+  id uuid PRIMARY KEY,
+  trip_id uuid NOT NULL REFERENCES trips(id),
+  trip_plan_id uuid REFERENCES plan_variants(id),
+  itinerary_item_id uuid REFERENCES itinerary_items(id),
+  body text NOT NULL,
+  author_id uuid REFERENCES trip_members(id),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  deleted_at timestamptz,
+  version bigint NOT NULL DEFAULT 1
+);
+
 CREATE TABLE documents (
   id uuid PRIMARY KEY,
   trip_id uuid NOT NULL REFERENCES trips(id),
@@ -169,6 +205,30 @@ CREATE TABLE documents (
   size_bytes bigint NOT NULL,
   uploaded_by uuid NOT NULL REFERENCES trip_members(id),
   created_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE booking_docs (
+  id uuid PRIMARY KEY,
+  trip_id uuid NOT NULL REFERENCES trips(id),
+  trip_plan_id uuid REFERENCES plan_variants(id),
+  type text NOT NULL,
+  title text NOT NULL,
+  status text NOT NULL,
+  visibility text NOT NULL,
+  owner_member_id uuid REFERENCES trip_members(id),
+  provider_name text,
+  confirmation_code text,
+  starts_at timestamptz,
+  ends_at timestamptz,
+  timezone text,
+  price_minor integer,
+  currency text,
+  notes text,
+  created_by uuid REFERENCES trip_members(id),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  deleted_at timestamptz,
+  version bigint NOT NULL DEFAULT 1
 );
 
 CREATE TABLE account_vault_items (
@@ -214,12 +274,24 @@ CREATE INDEX realtime_events_trip_created_idx
   ON realtime_events (trip_id, created_at DESC);
 ```
 
-Compatibility note: `trip_plan_id` on expenses is nullable during the Trip Plan
-compatibility window because legacy rows and support scripts may predate
-plan-scoped records. When present, it identifies the Trip Plan where the Actual
-Expense occurred. Changing the Main Plan must not rewrite existing
-`expenses.trip_plan_id`; moving, cancelling, refunding, or duplicating an
-Actual Expense as a Plan Estimate is an explicit user action.
+Compatibility notes:
+
+- `trip_plan_id` on expenses, trip tasks, stop notes, and booking docs is
+  nullable during the Trip Plan compatibility window because legacy rows and
+  support scripts may predate plan-scoped records. When present, it identifies
+  the Trip Plan where the record belongs.
+- Changing the Main Plan must not rewrite existing plan-scoped records. Moving,
+  cancelling, refunding, or duplicating an Actual Expense as a Plan Estimate is
+  an explicit user action.
+- `parent_item_id` creates exactly one itinerary nesting level:
+  Plan Day -> Activity -> Sub-activity. Grandchildren and cycles are invalid at
+  the service boundary even when a raw SQL write can still express them before
+  hardening.
+- `path_*` fields are legacy compatibility data during Phase 0/1. Import/export
+  preserves them, but sibling overlaps must not synthesize Alternative Paths.
+- The normative Phase 0/1 Trip Plan rollout contract, including additive API
+  diffs, migration DDL, validation failures, and exact tests, lives in
+  [itinerary-trip-plan-phase-0-1-implementation-spec.md](./itinerary-trip-plan-phase-0-1-implementation-spec.md).
 
 ## REST API
 
@@ -275,7 +347,10 @@ Base path: `/api/v1`.
 - `GET /api/v1/trips/:tripId`
   Returns the full planning cockpit payload: trip, members, Trip Plans, itinerary items, suggestions, and expense summary.
 - `PATCH /api/v1/trips/:tripId`
-  Updates trip metadata. During Phase 1 compatibility, Main Plan identity is exposed as `mainTripPlanId` and legacy `activePlanVariantId`.
+  Updates trip metadata. During Phase 1 compatibility, Main Plan identity is
+  exposed as `mainTripPlanId` and legacy `activePlanVariantId`, but this route
+  must reject pointer mutations unless it delegates to the full set-main
+  transaction, status repair, and realtime event semantics.
 
 ### Trip Plans
 
@@ -290,6 +365,15 @@ Phase 1 compatibility: canonical API fields/routes are `tripPlans`,
 `mainTripPlanId`, `status`, and `/trip-plans`; `planVariants`,
 `activePlanVariantId`, `kind`, and `/plan-variants` are legacy wire aliases
 retained during compatibility.
+
+Create and patch accept canonical `status` and deprecated `kind`, reject
+`status/kind = "main"`, and reject mismatched `kind/status` pairs. Set-main is
+the only Phase 1 route that changes the Main Plan pointer. Set-main has no
+`expectedVersion`; it is last-writer-wins after transactional row locks, while
+duplicate `clientMutationId` values remain rejected by the mutation guard.
+Successful create/patch/set-main events keep legacy `plan_variant.*` wrappers
+and include canonical aliases in the payload. Validation errors keep the
+existing `code`/`message` envelope.
 
 ### Itinerary Items
 
@@ -364,11 +448,16 @@ Example PATCH:
 | --- | --- | --- | --- | --- |
 | View trip plan | Yes | Yes | Yes | Yes |
 | Edit itinerary directly | Yes | Yes | No | No |
+| Manage Trip Plans | Yes | Yes | No | No |
 | Create suggestions | Yes | Yes | Yes | No |
 | Review suggestions | Yes | Yes | No | No |
 | View expense summary | Yes | Yes | Yes | No |
 | Edit expenses | Yes | Yes | No | No |
 | Manage participants | Yes | Yes | No | No |
+
+`Edit itinerary directly` does not imply `Manage Trip Plans`. A traveler may be
+allowed to participate through suggestions or future scoped itinerary flows
+without being able to create, patch, or set the Main Plan.
 
 ## WebSocket
 

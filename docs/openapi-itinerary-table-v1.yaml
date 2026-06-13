@@ -18,6 +18,7 @@ paths:
   /api/v1/trips/{tripId}:
     patch:
       summary: Patch trip core settings and V1 trip metadata.
+      description: Phase 1 metadata patch must reject activePlanVariantId and mainTripPlanId pointer mutations unless it delegates to the full Trip Plan set-main transaction and realtime event semantics.
       parameters:
         - $ref: "#/components/parameters/TripId"
       requestBody:
@@ -29,6 +30,134 @@ paths:
       responses:
         "200":
           description: Trip updated.
+        "400":
+          description: Invalid request, including direct Main Plan pointer mutation.
+  /api/v1/trips/{tripId}/trip-plans:
+    post:
+      summary: Create a canonical Trip Plan.
+      description: Phase 1 facade over plan_variants storage. Create cannot set status or kind to main; use set-main.
+      parameters:
+        - $ref: "#/components/parameters/TripId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TripPlanCreateRequest"
+      responses:
+        "201":
+          description: Trip Plan created.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TripPlanSummary"
+        "400":
+          description: Invalid status, kind/status mismatch, unsupported creation mode, or illegal sourceTripPlanId.
+  /api/v1/trips/{tripId}/trip-plans/{tripPlanId}:
+    patch:
+      summary: Patch a canonical Trip Plan.
+      description: Phase 1 facade over plan_variants storage. Patch cannot set status or kind to main; use set-main.
+      parameters:
+        - $ref: "#/components/parameters/TripId"
+        - $ref: "#/components/parameters/TripPlanId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TripPlanPatchRequest"
+      responses:
+        "200":
+          description: Trip Plan patched.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TripPlanSummary"
+        "400":
+          description: Invalid request.
+        "409":
+          description: Version conflict with latest Trip Plan summary.
+  /api/v1/trips/{tripId}/trip-plans/{tripPlanId}/set-main:
+    post:
+      summary: Select a Trip Plan as the Main Plan.
+      description: Explicit Main Plan mutation. Phase 1 has no expectedVersion; duplicate clientMutationId values are rejected by the mutation guard.
+      parameters:
+        - $ref: "#/components/parameters/TripId"
+        - $ref: "#/components/parameters/TripPlanId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetMainTripPlanRequest"
+      responses:
+        "200":
+          description: Trip summary with canonical and legacy Main Plan aliases.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TripSummary"
+        "400":
+          description: Invalid previousMainNextStatus.
+  /api/v1/trips/{tripId}/plan-variants:
+    post:
+      summary: Legacy Trip Plan create route retained during Phase 1 compatibility.
+      deprecated: true
+      parameters:
+        - $ref: "#/components/parameters/TripId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TripPlanCreateRequest"
+      responses:
+        "201":
+          description: Plan variant created with canonical status alias.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TripPlanSummary"
+  /api/v1/trips/{tripId}/plan-variants/{planVariantId}:
+    patch:
+      summary: Legacy Trip Plan patch route retained during Phase 1 compatibility.
+      deprecated: true
+      parameters:
+        - $ref: "#/components/parameters/TripId"
+        - $ref: "#/components/parameters/PlanVariantId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TripPlanPatchRequest"
+      responses:
+        "200":
+          description: Plan variant patched with canonical status alias.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TripPlanSummary"
+  /api/v1/trips/{tripId}/plan-variants/{planVariantId}/publications:
+    post:
+      summary: Legacy Main Plan selection route retained during Phase 1 compatibility.
+      deprecated: true
+      parameters:
+        - $ref: "#/components/parameters/TripId"
+        - $ref: "#/components/parameters/PlanVariantId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetMainTripPlanRequest"
+      responses:
+        "200":
+          description: Trip summary with canonical and legacy Main Plan aliases.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TripSummary"
   /api/v1/trips/{tripId}/itinerary-items:
     post:
       summary: Create an itinerary item with V1 hierarchy, timing, and details fields.
@@ -133,7 +262,100 @@ components:
       required: true
       schema:
         type: string
+    TripPlanId:
+      name: tripPlanId
+      in: path
+      required: true
+      schema:
+        type: string
+    PlanVariantId:
+      name: planVariantId
+      in: path
+      required: true
+      schema:
+        type: string
   schemas:
+    TripSummary:
+      type: object
+      required: [id, activePlanVariantId, mainTripPlanId, version]
+      properties:
+        id:
+          type: string
+        activePlanVariantId:
+          type: string
+          deprecated: true
+        mainTripPlanId:
+          type: string
+        version:
+          type: integer
+    TripPlanSummary:
+      type: object
+      required: [id, tripId, name, kind, status, description, version]
+      properties:
+        id:
+          type: string
+        tripId:
+          type: string
+        name:
+          type: string
+        kind:
+          enum: [main, backup, draft, split]
+          deprecated: true
+        status:
+          enum: [main, draft, proposal, backup]
+        description:
+          type: string
+        version:
+          type: integer
+    TripPlanCreateRequest:
+      type: object
+      required: [clientMutationId, name]
+      properties:
+        clientMutationId:
+          type: string
+        name:
+          type: string
+        status:
+          enum: [draft, proposal, backup]
+        kind:
+          enum: [backup, draft, split]
+          deprecated: true
+        description:
+          type: string
+        creationMode:
+          enum: [blank]
+          description: Phase 1 supports only blank creation. Omitted value also means blank.
+        sourceTripPlanId:
+          type: string
+          description: Rejected in Phase 1 unless a later non-blank creation mode supports it.
+    TripPlanPatchRequest:
+      type: object
+      required: [clientMutationId, expectedVersion, patch]
+      properties:
+        clientMutationId:
+          type: string
+        expectedVersion:
+          type: integer
+        patch:
+          type: object
+          properties:
+            name:
+              type: string
+            status:
+              enum: [draft, proposal, backup]
+            kind:
+              enum: [backup, draft, split]
+              deprecated: true
+            description:
+              type: string
+    SetMainTripPlanRequest:
+      type: object
+      required: [clientMutationId]
+      properties:
+        clientMutationId:
+          type: string
+        previousMainNextStatus:
+          enum: [draft, proposal, backup]
     AccountTripCreateRequest:
       type: object
       required: [name, destinationLabel, startDate, endDate]
@@ -183,10 +405,10 @@ components:
         activePlanVariantId:
           type: string
           deprecated: true
-          description: Legacy pointer alias. Phase 1 clients must use /trip-plans/{tripPlanId}/set-main for Main Plan changes.
+          description: Legacy pointer alias. Phase 1 metadata patch rejects this field unless delegated to /trip-plans/{tripPlanId}/set-main semantics.
         mainTripPlanId:
           type: string
-          description: Canonical pointer alias. Phase 1 clients must use /trip-plans/{tripPlanId}/set-main for Main Plan changes.
+          description: Canonical pointer alias. Phase 1 metadata patch rejects this field unless delegated to /trip-plans/{tripPlanId}/set-main semantics.
     ItineraryItemCreateRequest:
       allOf:
         - $ref: "#/components/schemas/ItineraryItemPatch"
@@ -229,6 +451,12 @@ components:
           type: [string, "null"]
         durationMinutes:
           type: [integer, "null"]
+        endTime:
+          type: [string, "null"]
+        endOffsetDays:
+          type: integer
+          minimum: 0
+          maximum: 7
         activity:
           type: string
         activityType:
