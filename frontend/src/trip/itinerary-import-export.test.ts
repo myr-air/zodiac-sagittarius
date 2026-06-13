@@ -182,6 +182,40 @@ describe("itinerary import/export JSON", () => {
     expect(document.trip.tripPlans).toEqual(document.trip.planVariants);
   });
 
+  it("normalizes canonical-only Trip Plan metadata in import documents", () => {
+    const canonicalPlan = {
+      ...tripFixture.trip.planVariants[0],
+      kind: "main" as const,
+      status: "main" as const,
+      description: "Canonical Trip Plan export",
+      version: 4,
+    };
+    const payload = buildItineraryExport({
+      exportedAt: "2026-06-04T12:00:00.000Z",
+      items: [tripFixture.planItems[0]],
+      trip: tripFixture.trip,
+    });
+    const canonicalOnlyPayload = {
+      ...payload,
+      trip: {
+        ...payload.trip,
+        activePlanVariantId: undefined,
+        mainTripPlanId: canonicalPlan.id,
+        planVariants: undefined,
+        tripPlans: [canonicalPlan],
+      },
+    };
+
+    const document = parseItineraryImportDocument(JSON.stringify(canonicalOnlyPayload));
+
+    expect(document.trip).toMatchObject({
+      activePlanVariantId: canonicalPlan.id,
+      mainTripPlanId: canonicalPlan.id,
+      planVariants: [canonicalPlan],
+      tripPlans: [canonicalPlan],
+    });
+  });
+
   it("rejects mixed Trip Plan aliases when identities or versions drift", () => {
     const payload = buildItineraryExport({
       exportedAt: "2026-06-04T12:00:00.000Z",
