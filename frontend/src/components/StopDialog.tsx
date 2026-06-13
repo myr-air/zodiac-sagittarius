@@ -7,7 +7,7 @@ import { Icon } from "./icons";
 import { formatThaiDate } from "./itineraryDisplay";
 import { TimePickerField } from "./DateTimePickers";
 
-type StopDetailType = "transportation" | "food" | "stay" | "attraction" | "event" | "task" | "shopping" | "experience";
+type StopDetailType = "transportation" | "stay" | "experience" | "task";
 
 interface StopDetailValues {
   bookingRef: string;
@@ -72,13 +72,9 @@ interface StopDialogProps {
   startDate?: string;
 }
 
-const detailTypeOptions: StopDetailType[] = ["transportation", "food", "stay", "attraction", "event", "task", "shopping", "experience"];
+const detailTypeOptions: StopDetailType[] = ["transportation", "stay", "experience", "task"];
 const detailTypeToActivityType: Record<StopDetailType, ActivityType> = {
-  attraction: "attraction",
-  event: "attraction",
   experience: "experience",
-  food: "food",
-  shopping: "shopping",
   stay: "stay",
   task: "experience",
   transportation: "travel",
@@ -89,6 +85,8 @@ const dialogTitleRowClassName = "dialog-title-row grid min-h-[54px] grid-cols-[m
 const stopFormClassName = "stop-form grid gap-4 p-4";
 const dialogGridClassName = "dialog-grid grid grid-cols-2 gap-3 max-[767px]:grid-cols-1 [&_input]:min-h-[38px] [&_input]:w-full [&_input]:rounded-(--radius-sm) [&_input]:border [&_input]:border-(--color-border-strong) [&_input]:bg-(--color-surface) [&_input]:px-2.5 [&_input]:py-2 [&_input]:text-[13px] [&_input]:text-(--color-text) [&_label]:grid [&_label]:min-w-0 [&_label]:gap-1.5 [&_label>span]:text-xs [&_label>span]:font-bold [&_label>span]:text-(--color-text-muted) [&_select]:min-h-[38px] [&_select]:w-full [&_select]:rounded-(--radius-sm) [&_select]:border [&_select]:border-(--color-border-strong) [&_select]:bg-(--color-surface) [&_select]:px-2.5 [&_select]:py-2 [&_select]:text-[13px] [&_select]:text-(--color-text) [&_textarea]:min-h-[38px] [&_textarea]:w-full [&_textarea]:resize-y [&_textarea]:rounded-(--radius-sm) [&_textarea]:border [&_textarea]:border-(--color-border-strong) [&_textarea]:bg-(--color-surface) [&_textarea]:px-2.5 [&_textarea]:py-2 [&_textarea]:text-[13px] [&_textarea]:text-(--color-text)";
 const dialogFieldWideClassName = "dialog-field-wide col-span-full";
+const advancedDetailsClassName = "advanced-stop-fields col-span-full rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) px-3 py-2 [&_summary]:cursor-pointer [&_summary]:text-xs [&_summary]:font-extrabold [&_summary]:text-(--color-text-muted)";
+const advancedDetailsGridClassName = "mt-3 grid grid-cols-2 gap-3 max-[767px]:grid-cols-1";
 const dialogActionsClassName = "dialog-actions grid grid-cols-[auto_1fr_auto] items-center gap-2.5 max-[767px]:grid-cols-1";
 const dialogPrimaryActionsClassName = "dialog-primary-actions flex justify-end gap-2.5 max-[767px]:grid";
 const placeCandidateListClassName = "place-candidate-list grid gap-2";
@@ -179,7 +177,7 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, initialPare
     details: initialItem?.details ?? {},
     note: initialItem?.note ?? "",
   }));
-  const [detailType, setDetailType] = useState<StopDetailType>(() => detailTypeFromActivityType(initialItem?.activityType ?? "experience"));
+  const [detailType, setDetailType] = useState<StopDetailType>(() => detailTypeFromItem(initialItem));
   const [detailValues, setDetailValues] = useState<StopDetailValues>(() => ({
     ...emptyDetailValues,
     ...structuredDetailValues(initialItem?.details),
@@ -261,12 +259,36 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, initialPare
     setDetailValues((current) => ({ ...current, [key]: value }));
   }
 
+  function updateDetailType(nextDetailType: StopDetailType) {
+    setDetailType(nextDetailType);
+    setValues((current) => {
+      const nextActivityType = resolveActivityType(nextDetailType, current.activityType);
+      return {
+        ...current,
+        activityType: nextActivityType,
+        itemKind: itemKindForDetailType(nextDetailType),
+        isPlanBlock:
+          nextDetailType === "transportation" && !current.parentItemId
+            ? true
+            : nextDetailType === "task"
+              ? false
+              : current.isPlanBlock,
+        timeMode: nextDetailType === "task" ? "flexible" : current.timeMode,
+        startTime: nextDetailType === "task" ? "" : current.startTime,
+        endTime: nextDetailType === "task" ? null : current.endTime,
+        endOffsetDays: nextDetailType === "task" ? 0 : current.endOffsetDays,
+        durationMinutes:
+          nextDetailType === "task" ? null : current.durationMinutes,
+      };
+    });
+  }
+
   function updateActivity(activity: string) {
     update("activity", activity);
     const parsedRoute = parseRouteActivity(activity);
     if (!parsedRoute) return;
 
-    setDetailType("transportation");
+    updateDetailType("transportation");
     setDetailValues((current) => ({
       ...current,
       destination: parsedRoute.destination,
@@ -301,7 +323,7 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, initialPare
     return {
       ...values,
       activity: values.activity.trim(),
-      activityType: detailTypeToActivityType[detailType],
+      activityType: resolveActivityType(detailType, values.activityType),
       isPlanBlock: values.parentItemId ? false : values.isPlanBlock,
       startTime: values.timeMode === "flexible" ? "" : values.startTime,
       endTime: values.timeMode === "flexible" ? null : values.endTime,
@@ -360,57 +382,62 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, initialPare
                 </select>
               </label>
             ) : null}
-            <label htmlFor={fieldIds.itemKind}>
-              <span>Item kind</span>
-              <select id={fieldIds.itemKind} value={values.itemKind} onChange={(event) => update("itemKind", event.target.value as ItineraryItemKind)}>
-                {["travel", "activity", "lodging", "meal", "note", "preparation", "foodRecommendation"].map((option) => (
-                  <option value={option} key={option}>{option}</option>
-                ))}
-              </select>
-            </label>
-            <label htmlFor={fieldIds.timeMode}>
-              <span>Time mode</span>
-              <select id={fieldIds.timeMode} value={values.timeMode} onChange={(event) => update("timeMode", event.target.value as ItineraryTimeMode)}>
-                <option value="scheduled">scheduled</option>
-                <option value="flexible">flexible</option>
-              </select>
-            </label>
-            <label htmlFor={fieldIds.status}>
-              <span>Status</span>
-              <select id={fieldIds.status} value={values.status} onChange={(event) => update("status", event.target.value as ItineraryItemStatus)}>
-                {["idea", "planned", "booked", "confirmed", "done", "skipped"].map((option) => (
-                  <option value={option} key={option}>{option}</option>
-                ))}
-              </select>
-            </label>
-            <label htmlFor={fieldIds.priority}>
-              <span>Priority</span>
-              <select id={fieldIds.priority} value={values.priority} onChange={(event) => update("priority", event.target.value as ItineraryItemPriority)}>
-                {["low", "normal", "high", "must"].map((option) => (
-                  <option value={option} key={option}>{option}</option>
-                ))}
-              </select>
-            </label>
-            <label className={dialogFieldWideClassName} htmlFor={fieldIds.isPlanBlock}>
-              <span>
-                <input
-                  id={fieldIds.isPlanBlock}
-                  type="checkbox"
-                  checked={values.isPlanBlock && !isSubActivity}
-                  disabled={isSubActivity}
-                  onChange={(event) => update("isPlanBlock", event.target.checked)}
-                />
-                Plan block
-              </span>
-            </label>
             <label htmlFor={fieldIds.activityType}>
               <span>{t.stopDialog.fields.type}</span>
-              <select id={fieldIds.activityType} value={detailType} onChange={(event) => setDetailType(event.target.value as StopDetailType)}>
+              <select id={fieldIds.activityType} value={detailType} onChange={(event) => updateDetailType(event.target.value as StopDetailType)}>
                 {detailTypeOptions.map((option) => (
                   <option value={option} key={option}>{detailLabels.types[option]}</option>
                 ))}
               </select>
             </label>
+            <details className={advancedDetailsClassName}>
+              <summary>{detailLabels.fields.advanced}</summary>
+              <div className={advancedDetailsGridClassName}>
+                <label htmlFor={fieldIds.itemKind}>
+                  <span>Item kind</span>
+                  <select id={fieldIds.itemKind} value={values.itemKind} onChange={(event) => update("itemKind", event.target.value as ItineraryItemKind)}>
+                    {["travel", "activity", "lodging", "meal", "note", "preparation", "foodRecommendation"].map((option) => (
+                      <option value={option} key={option}>{option}</option>
+                    ))}
+                  </select>
+                </label>
+                <label htmlFor={fieldIds.timeMode}>
+                  <span>Time mode</span>
+                  <select id={fieldIds.timeMode} value={values.timeMode} onChange={(event) => update("timeMode", event.target.value as ItineraryTimeMode)}>
+                    <option value="scheduled">scheduled</option>
+                    <option value="flexible">flexible</option>
+                  </select>
+                </label>
+                <label htmlFor={fieldIds.status}>
+                  <span>Status</span>
+                  <select id={fieldIds.status} value={values.status} onChange={(event) => update("status", event.target.value as ItineraryItemStatus)}>
+                    {["idea", "planned", "booked", "confirmed", "done", "skipped"].map((option) => (
+                      <option value={option} key={option}>{option}</option>
+                    ))}
+                  </select>
+                </label>
+                <label htmlFor={fieldIds.priority}>
+                  <span>Priority</span>
+                  <select id={fieldIds.priority} value={values.priority} onChange={(event) => update("priority", event.target.value as ItineraryItemPriority)}>
+                    {["low", "normal", "high", "must"].map((option) => (
+                      <option value={option} key={option}>{option}</option>
+                    ))}
+                  </select>
+                </label>
+                <label className={dialogFieldWideClassName} htmlFor={fieldIds.isPlanBlock}>
+                  <span>
+                    <input
+                      id={fieldIds.isPlanBlock}
+                      type="checkbox"
+                      checked={values.isPlanBlock && !isSubActivity}
+                      disabled={isSubActivity}
+                      onChange={(event) => update("isPlanBlock", event.target.checked)}
+                    />
+                    Plan block
+                  </span>
+                </label>
+              </div>
+            </details>
             <label htmlFor={fieldIds.startTime}>
               <span>{t.stopDialog.fields.startTime}</span>
               <TimePickerField id={fieldIds.startTime} value={values.startTime} onChange={updateStartTime} required={values.timeMode !== "flexible"} />
@@ -548,17 +575,6 @@ function StopDetailFields({
     );
   }
 
-  if (detailType === "food") {
-    return (
-      <>
-        <DetailInput id={fieldIds.meal} label={detailLabels.fields.meal} value={detailValues.meal} onChange={(value) => updateDetail("meal", value)} />
-        <DetailInput id={fieldIds.reservationName} label={detailLabels.fields.reservationName} value={detailValues.reservationName} onChange={(value) => updateDetail("reservationName", value)} />
-        <DetailInput id={fieldIds.mustTry} label={detailLabels.fields.mustTry} value={detailValues.mustTry} onChange={(value) => updateDetail("mustTry", value)} />
-        <DetailInput id={fieldIds.budgetNote} label={detailLabels.fields.budgetNote} value={detailValues.budgetNote} onChange={(value) => updateDetail("budgetNote", value)} />
-      </>
-    );
-  }
-
   if (detailType === "stay") {
     return (
       <>
@@ -569,31 +585,11 @@ function StopDetailFields({
     );
   }
 
-  if (detailType === "attraction" || detailType === "event") {
-    return (
-      <>
-        <DetailInput id={fieldIds.entryWindow} label={detailLabels.fields.entryWindow} value={detailValues.entryWindow} onChange={(value) => updateDetail("entryWindow", value)} />
-        <DetailInput id={fieldIds.ticketRef} label={detailLabels.fields.ticketRef} value={detailValues.ticketRef} onChange={(value) => updateDetail("ticketRef", value)} />
-        <DetailInput id={fieldIds.mustSee} label={detailLabels.fields.mustSee} value={detailValues.mustSee} onChange={(value) => updateDetail("mustSee", value)} />
-      </>
-    );
-  }
-
   if (detailType === "task") {
     return (
       <>
         <DetailInput id={fieldIds.detail} label={detailLabels.fields.detail} value={detailValues.detail} onChange={(value) => updateDetail("detail", value)} />
         <DetailInput id={fieldIds.meetingPoint} label={detailLabels.fields.relatedPlace} value={detailValues.meetingPoint} onChange={(value) => updateDetail("meetingPoint", value)} />
-      </>
-    );
-  }
-
-  if (detailType === "shopping") {
-    return (
-      <>
-        <DetailInput id={fieldIds.targetItems} label={detailLabels.fields.targetItems} value={detailValues.targetItems} onChange={(value) => updateDetail("targetItems", value)} />
-        <DetailInput id={fieldIds.budgetNote} label={detailLabels.fields.budgetNote} value={detailValues.budgetNote} onChange={(value) => updateDetail("budgetNote", value)} />
-        <DetailInput id={fieldIds.taxRefundNote} label={detailLabels.fields.taxRefundNote} value={detailValues.taxRefundNote} onChange={(value) => updateDetail("taxRefundNote", value)} />
       </>
     );
   }
@@ -631,20 +627,11 @@ function detailKeysForType(detailType: StopDetailType): Array<keyof StopDetailVa
   if (detailType === "transportation") {
     return ["origin", "destination", "mode", "ticketRef", "costNote"];
   }
-  if (detailType === "food") {
-    return ["meal", "reservationName", "mustTry", "budgetNote"];
-  }
   if (detailType === "stay") {
     return ["entryWindow", "bookingRef", "detail"];
   }
-  if (detailType === "attraction" || detailType === "event") {
-    return ["entryWindow", "ticketRef", "mustSee"];
-  }
   if (detailType === "task") {
     return ["detail", "meetingPoint"];
-  }
-  if (detailType === "shopping") {
-    return ["targetItems", "budgetNote", "taxRefundNote"];
   }
   return ["provider", "meetingPoint", "bookingRef"];
 }
@@ -670,7 +657,43 @@ function trimmedDetailValues(values: StopDetailValues): StopDetailValues {
 
 function detailTypeFromActivityType(activityType: ActivityType): StopDetailType {
   if (activityType === "travel") return "transportation";
-  return activityType;
+  if (activityType === "stay") return "stay";
+  return "experience";
+}
+
+function detailTypeFromItem(item: ItineraryItem | undefined): StopDetailType {
+  const rawKind = item?.details?.kind;
+  if (
+    rawKind === "transportation" ||
+    rawKind === "stay" ||
+    rawKind === "experience" ||
+    rawKind === "task"
+  ) {
+    return rawKind;
+  }
+  return detailTypeFromActivityType(item?.activityType ?? "experience");
+}
+
+function resolveActivityType(
+  detailType: StopDetailType,
+  currentActivityType: ActivityType,
+): ActivityType {
+  if (detailType === "transportation" || detailType === "stay") {
+    return detailTypeToActivityType[detailType];
+  }
+  if (detailType === "experience") {
+    return currentActivityType === "travel" || currentActivityType === "stay"
+      ? "experience"
+      : currentActivityType;
+  }
+  return "experience";
+}
+
+function itemKindForDetailType(detailType: StopDetailType): ItineraryItemKind {
+  if (detailType === "transportation") return "travel";
+  if (detailType === "stay") return "lodging";
+  if (detailType === "task") return "note";
+  return "activity";
 }
 
 function addMinutesToTime(startTime: string, durationMinutes: number): string {
@@ -776,16 +799,13 @@ function stopDetailLabels(locale: "en" | "th") {
   if (locale === "th") {
     return {
       types: {
-        attraction: "สถานที่",
-        event: "อีเวนต์ / รอบเวลา",
-        experience: "กิจกรรม",
-        food: "อาหาร",
-        shopping: "ช้อปปิ้ง",
+        experience: "กิจกรรม / สถานที่",
         stay: "ที่พัก",
-        task: "งานต้องทำ",
-        transportation: "การเดินทาง",
+        task: "โน้ต / สิ่งที่ต้องทำ",
+        transportation: "การเดินทางแบบเป็นช่วง",
       },
       fields: {
+        advanced: "ตัวเลือกเพิ่มเติม",
         bookingRef: "เลขจอง / booking",
         budgetNote: "งบ / ค่าใช้จ่าย",
         checkWindow: "เวลาเช็กอิน / เช็กเอาต์",
@@ -812,16 +832,13 @@ function stopDetailLabels(locale: "en" | "th") {
 
   return {
     types: {
-      attraction: "Attraction",
-      event: "Event",
-      experience: "Experience",
-      food: "Food",
-      shopping: "Shopping",
+      experience: "Activity / place",
       stay: "Stay",
-      task: "Task",
-      transportation: "Transportation",
+      task: "Note / task",
+      transportation: "Journey",
     },
     fields: {
+      advanced: "More options",
       bookingRef: "Booking ref",
       budgetNote: "Budget note",
       checkWindow: "Check-in / out",

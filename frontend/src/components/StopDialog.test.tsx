@@ -17,7 +17,7 @@ describe("StopDialog", () => {
     fireEvent.change(screen.getByLabelText("สถานที่"), { target: { value: "  Central  " } });
     fireEvent.change(screen.getByLabelText("ชั่วโมง"), { target: { value: "0" } });
     fireEvent.change(screen.getByLabelText("นาที"), { target: { value: "0" } });
-    fireEvent.change(screen.getByLabelText("ประเภท"), { target: { value: "food" } });
+    fireEvent.change(screen.getByLabelText("ประเภท"), { target: { value: "experience" } });
     fireEvent.change(screen.getByLabelText("การเดินทาง"), { target: { value: "  walk  " } });
     fireEvent.change(screen.getByLabelText("โน้ต"), { target: { value: "  book ahead  " } });
     fireEvent.submit(screen.getByRole("button", { name: "บันทึกกิจกรรม" }).closest("form")!);
@@ -26,10 +26,23 @@ describe("StopDialog", () => {
       activity: "Dessert stop",
       place: "Central",
       durationMinutes: 1,
-      activityType: "food",
+      activityType: "experience",
       transportation: "walk",
       note: "book ahead",
     }));
+  });
+
+  it("keeps add templates intentionally small and hides technical fields behind more options", () => {
+    renderEn(<StopDialog mode="create" onClose={vi.fn()} onSubmit={vi.fn()} />);
+
+    expect(screen.getByLabelText("Type")).toHaveTextContent("Journey");
+    expect(screen.getByLabelText("Type")).toHaveTextContent("Stay");
+    expect(screen.getByLabelText("Type")).toHaveTextContent("Activity / place");
+    expect(screen.getByLabelText("Type")).toHaveTextContent("Note / task");
+    expect(screen.getByLabelText("Type")).not.toHaveTextContent("Food");
+    expect(screen.getByLabelText("Type")).not.toHaveTextContent("Shopping");
+    expect(screen.getByText("More options").closest("details")).not.toHaveAttribute("open");
+    expect(screen.getByLabelText("Item kind")).toBeInTheDocument();
   });
 
   it("prefills edit mode from the selected itinerary item and closes from both controls", async () => {
@@ -160,6 +173,7 @@ describe("StopDialog", () => {
 
     fireEvent.change(screen.getByLabelText("Type"), { target: { value: "transportation" } });
     expect(screen.getByLabelText("Place")).not.toBeRequired();
+    expect(screen.getByLabelText("Plan block")).toBeChecked();
     fireEvent.change(screen.getByLabelText("Activity"), { target: { value: "DMK -> HKG" } });
     fireEvent.change(screen.getByLabelText("From"), { target: { value: "Don Mueang International Airport (DMK)" } });
     fireEvent.change(screen.getByLabelText("To"), { target: { value: "Hong Kong International Airport (HKG)" } });
@@ -171,6 +185,8 @@ describe("StopDialog", () => {
     expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({
       activity: "DMK -> HKG",
       activityType: "travel",
+      itemKind: "travel",
+      isPlanBlock: true,
       details: {
         kind: "transportation",
         origin: "Don Mueang International Airport (DMK)",
@@ -182,6 +198,30 @@ describe("StopDialog", () => {
       place: "Hong Kong International Airport (HKG)",
       transportation: "",
       note: "",
+    }));
+  });
+
+  it("uses note templates for flexible planning notes without required times", () => {
+    const onSubmit = vi.fn();
+    renderEn(<StopDialog mode="create" onClose={vi.fn()} onSubmit={onSubmit} />);
+
+    fireEvent.change(screen.getByLabelText("Type"), { target: { value: "task" } });
+    fireEvent.change(screen.getByLabelText("Activity"), { target: { value: "Collect passport spelling" } });
+    fireEvent.change(screen.getByLabelText("Place"), { target: { value: "Shared sheet" } });
+    fireEvent.change(screen.getByLabelText("Detail"), { target: { value: "Ask everyone before ticket issue" } });
+    fireEvent.submit(screen.getByRole("button", { name: "Save activity" }).closest("form")!);
+
+    expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({
+      activityType: "experience",
+      itemKind: "note",
+      timeMode: "flexible",
+      startTime: "",
+      endTime: null,
+      durationMinutes: null,
+      details: {
+        kind: "task",
+        detail: "Ask everyone before ticket issue",
+      },
     }));
   });
 
@@ -231,23 +271,23 @@ describe("StopDialog", () => {
     expect(screen.getByLabelText("Minutes")).toHaveValue("14");
   });
 
-  it("shows event fields and maps events to attraction itinerary items", () => {
+  it("uses the generic activity template for ordinary places and activities", () => {
     const onSubmit = vi.fn();
     renderEn(<StopDialog mode="create" onClose={vi.fn()} onSubmit={onSubmit} />);
 
-    fireEvent.change(screen.getByLabelText("Type"), { target: { value: "event" } });
-    expect(screen.getByLabelText("Round / time slot")).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("Type"), { target: { value: "experience" } });
+    expect(screen.getByLabelText("Provider")).toBeInTheDocument();
 
     fireEvent.change(screen.getByLabelText("Activity"), { target: { value: "Talent park light show" } });
     fireEvent.change(screen.getByLabelText("Place"), { target: { value: "Talent park" } });
-    fireEvent.change(screen.getByLabelText("Round / time slot"), { target: { value: "19:30 / 20:30 / 21:30" } });
+    fireEvent.change(screen.getByLabelText("Provider"), { target: { value: "City park" } });
     fireEvent.submit(screen.getByRole("button", { name: "Save activity" }).closest("form")!);
 
     expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({
-      activityType: "attraction",
+      activityType: "experience",
       details: {
-        kind: "event",
-        entryWindow: "19:30 / 20:30 / 21:30",
+        kind: "experience",
+        provider: "City park",
       },
       note: "",
     }));
