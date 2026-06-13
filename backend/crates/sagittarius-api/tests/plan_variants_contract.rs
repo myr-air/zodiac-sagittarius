@@ -637,6 +637,52 @@ async fn realtime_event_count(pool: &sqlx::PgPool) -> i64 {
         .unwrap()
 }
 
+async fn seed_cross_trip_plan(pool: &sqlx::PgPool) -> Uuid {
+    let trip_id = Uuid::now_v7();
+    let owner_id = Uuid::now_v7();
+    let plan_id = Uuid::now_v7();
+    let mut tx = pool.begin().await.unwrap();
+    sqlx::query("set constraints all deferred")
+        .execute(&mut *tx)
+        .await
+        .unwrap();
+    sqlx::query(
+        "insert into trips (
+           id, name, destination_label, countries, start_date, end_date,
+           join_id, join_password_hash, active_plan_variant_id, owner_member_id
+         )
+         values ($1, 'Other trip', 'Other city', '{}', '2026-07-01', '2026-07-02',
+           $2, 'hash', $3, $4)",
+    )
+    .bind(trip_id)
+    .bind(format!("OTHER-{}", trip_id.simple()))
+    .bind(plan_id)
+    .bind(owner_id)
+    .execute(&mut *tx)
+    .await
+    .unwrap();
+    sqlx::query(
+        "insert into trip_members (id, trip_id, display_name, role, color)
+         values ($1, $2, 'Other owner', 'owner', '#0f766e')",
+    )
+    .bind(owner_id)
+    .bind(trip_id)
+    .execute(&mut *tx)
+    .await
+    .unwrap();
+    sqlx::query(
+        "insert into plan_variants (id, trip_id, name, kind, status, description)
+         values ($1, $2, 'Other main', 'main', 'main', '')",
+    )
+    .bind(plan_id)
+    .bind(trip_id)
+    .execute(&mut *tx)
+    .await
+    .unwrap();
+    tx.commit().await.unwrap();
+    plan_id
+}
+
 #[sqlx::test(migrations = "../../migrations")]
 async fn trip_plan_contract_rejects_unsupported_creation_modes_and_main_status(pool: sqlx::PgPool) {
     support::seed_trip(&pool).await;
@@ -1064,6 +1110,110 @@ async fn trip_plan_contract_rejects_invalid_set_main_status_without_writes(pool:
     assert_eq!(target_status, "backup");
     assert_eq!(realtime_event_count(&pool).await, event_count_after_create);
     assert_eq!(initial_event_count + 1, event_count_after_create);
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn trip_plan_contract_rejects_missing_and_cross_trip_targets_without_writes(
+    pool: sqlx::PgPool,
+) {
+    support::seed_trip(&pool).await;
+    let token = support::create_session(&pool, support::ORGANIZER_ID).await;
+    let app = support::app(pool.clone());
+    let missing_plan_id = Uuid::now_v7();
+    let cross_trip_plan_id = seed_cross_trip_plan(&pool).await;
+    let initial_event_count = realtime_event_count(&pool).await;
+    let initial_main: Uuid =
+        sqlx::query_scalar("select active_plan_variant_id from trips where id = $1")
+            .bind(Uuid::parse_str(support::TRIP_ID).unwrap())
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+    let initial_main_status: (String, Option<String>, i64) =
+        sqlx::query_as("select kind, status, version from plan_variants where id = $1")
+            .bind(Uuid::parse_str(support::PLAN_ID).unwrap())
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+
+    for (label, target_id, method, uri_suffix, body) in [
+        (
+            "patch missing target",
+            missing_plan_id,
+            Method::PATCH,
+            "",
+            json!({
+                "clientMutationId": "web-trip-plan-patch-missing-target",
+                "expectedVersion": 1,
+                "patch": { "name": "Should not write" }
+            }),
+        ),
+        (
+            "patch cross-trip target",
+            cross_trip_plan_id,
+            Method::PATCH,
+            "",
+            json!({
+                "clientMutationId": "web-trip-plan-patch-cross-trip-target",
+                "expectedVersion": 1,
+                "patch": { "name": "Should not cross write" }
+            }),
+        ),
+        (
+            "set-main missing target",
+            missing_plan_id,
+            Method::POST,
+            "/set-main",
+            json!({
+                "clientMutationId": "web-trip-plan-main-missing-target"
+            }),
+        ),
+        (
+            "set-main cross-trip target",
+            cross_trip_plan_id,
+            Method::POST,
+            "/set-main",
+            json!({
+                "clientMutationId": "web-trip-plan-main-cross-trip-target"
+            }),
+        ),
+    ] {
+        let response = app
+            .clone()
+            .oneshot(
+                Request::builder()
+                    .method(method)
+                    .uri(format!(
+                        "/api/v1/trips/{}/trip-plans/{target_id}{uri_suffix}",
+                        support::TRIP_ID
+                    ))
+                    .header(header::AUTHORIZATION, format!("Bearer {token}"))
+                    .header(header::CONTENT_TYPE, "application/json")
+                    .body(Body::from(body.to_string()))
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::NOT_FOUND, "{label}");
+        let error_body: Value =
+            serde_json::from_slice(&to_bytes(response.into_body(), 65536).await.unwrap()).unwrap();
+        assert_eq!(error_body["code"], "not_found", "{label}");
+    }
+
+    let current_main: Uuid =
+        sqlx::query_scalar("select active_plan_variant_id from trips where id = $1")
+            .bind(Uuid::parse_str(support::TRIP_ID).unwrap())
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+    let current_main_status: (String, Option<String>, i64) =
+        sqlx::query_as("select kind, status, version from plan_variants where id = $1")
+            .bind(Uuid::parse_str(support::PLAN_ID).unwrap())
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+    assert_eq!(current_main, initial_main);
+    assert_eq!(current_main_status, initial_main_status);
+    assert_eq!(realtime_event_count(&pool).await, initial_event_count);
 }
 
 #[sqlx::test(migrations = "../../migrations")]
