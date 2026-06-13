@@ -381,6 +381,67 @@ describe("itinerary path import application", () => {
     });
   });
 
+  it("imports into a selected draft Trip Plan without switching the Main Plan", () => {
+    const draftTripPlanId = "plan-selected-draft";
+    const importedBlock: ItineraryExportItem = {
+      ...importItem,
+      id: "import-journey-block",
+      day: "2026-06-20",
+      sortOrder: 100,
+      activity: "Flight to Hong Kong",
+      isPlanBlock: true,
+      parentItemId: null,
+    };
+    const importedChild: ItineraryExportItem = {
+      ...importItem,
+      id: "import-checkin",
+      day: "2026-06-20",
+      sortOrder: 200,
+      activity: "Airport check-in",
+      parentItemId: "import-journey-block",
+      isPlanBlock: false,
+    };
+    const trip = {
+      ...tripFixture.trip,
+      mainTripPlanId: tripFixture.trip.activePlanVariantId,
+      tripPlans: [
+        ...(tripFixture.trip.tripPlans ?? tripFixture.trip.planVariants),
+        {
+          id: draftTripPlanId,
+          tripId: tripFixture.trip.id,
+          name: "Client proposal",
+          kind: "draft" as const,
+          status: "draft" as const,
+          description: "Draft plan for review",
+          version: 1,
+        },
+      ],
+      itineraryItems: [],
+    };
+
+    const next = applyImportedItemsToItineraryPath(trip, [importedBlock, importedChild], {
+      memberId: "member-aom",
+      tripPlanId: draftTripPlanId,
+      pathId: "main",
+      pathName: "Main",
+      scope: "trip",
+      mode: "keep-alternatives",
+    });
+    const imported = next.itineraryItems.filter((item) => item.id.startsWith("import-"));
+
+    expect(next.mainTripPlanId).toBe(trip.mainTripPlanId);
+    expect(next.activePlanVariantId).toBe(trip.activePlanVariantId);
+    expect(imported).toHaveLength(2);
+    expect(imported.map((item) => item.planVariantId)).toEqual([
+      draftTripPlanId,
+      draftTripPlanId,
+    ]);
+    expect(next.itineraryItems.find((item) => item.id === "import-checkin")).toMatchObject({
+      parentItemId: "import-journey-block",
+      planVariantId: draftTripPlanId,
+    });
+  });
+
   it("imports overlapping rows into main without synthesizing alternative paths", () => {
     const existingMain = {
       ...tripFixture.planItems[0],
