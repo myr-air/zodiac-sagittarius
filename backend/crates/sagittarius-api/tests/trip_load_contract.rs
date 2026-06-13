@@ -477,6 +477,10 @@ async fn trip_patch_contract_rejects_main_plan_pointer_mutation(pool: sqlx::PgPo
     .unwrap();
     let owner_token = support::create_session(&pool, support::OWNER_ID).await;
     let app = support::app(pool.clone());
+    let initial_event_count: i64 = sqlx::query_scalar("select count(*) from realtime_events")
+        .fetch_one(&pool)
+        .await
+        .unwrap();
 
     for (field, client_mutation_id) in [
         ("activePlanVariantId", "trip-patch-main-plan-legacy"),
@@ -517,6 +521,12 @@ async fn trip_patch_contract_rejects_main_plan_pointer_mutation(pool: sqlx::PgPo
             .unwrap();
     assert_eq!(trip_row.0, uuid::Uuid::parse_str(support::PLAN_ID).unwrap());
     assert_eq!(trip_row.1, 1);
+    let event_count_after_rejections: i64 =
+        sqlx::query_scalar("select count(*) from realtime_events")
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+    assert_eq!(event_count_after_rejections, initial_event_count);
 }
 
 #[sqlx::test(migrations = "../../migrations")]
