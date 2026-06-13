@@ -54,7 +54,6 @@ import {
   activityTypeLabel,
   dayRouteLabel,
   formatDuration,
-  formatTimeWindow,
   formatThaiDate,
 } from "./itineraryDisplay";
 import { ActivityPathGraphDay } from "./ActivityPathGraphDay";
@@ -275,6 +274,8 @@ const timeWindowSeparatorClassName =
   "shrink-0 text-[10px] font-black leading-none text-(--color-text-subtle)";
 const endOffsetToggleClassName =
   "inline-flex h-6 min-w-6 shrink-0 items-center justify-center rounded-(--radius-sm) border border-transparent px-1 text-[10px] font-black leading-none text-(--color-text-muted) transition-[background,border-color,color] duration-150 hover:not-disabled:border-(--color-route-border) hover:not-disabled:bg-(--color-route-soft) hover:not-disabled:text-(--color-route) focus-visible:border-(--color-route-border) focus-visible:bg-(--color-route-soft) focus-visible:text-(--color-route) focus-visible:outline-none aria-pressed:border-(--color-route-border) aria-pressed:bg-(--color-route-soft) aria-pressed:text-(--color-route) disabled:cursor-not-allowed disabled:opacity-40";
+const endOffsetSupClassName =
+  "ml-0.5 align-super text-[0.72em] font-black leading-none";
 const inlineOptionPickerButtonClassName = cn(
   inlineFieldClassName,
   "inline-option-picker-button inline-flex !min-h-8 items-center justify-between gap-2 text-left font-semibold",
@@ -1327,7 +1328,9 @@ function MobileSelectedStopInspector({
       <div className={mobileInspectorHeaderClassName}>
         <h2 className={mobileInspectorTitleClassName}>{item.activity}</h2>
         <p className={mobileInspectorMetaClassName}>
-          <span>{formatTimeWindow(item)}</span>
+          <span>
+            <TimeWindowText item={item} />
+          </span>
           <span>·</span>
           <span>{formatDuration(item.durationMinutes, locale)}</span>
           <span>·</span>
@@ -1762,7 +1765,7 @@ function DayGroup({
                     />
                     {item.endTime ? (
                       <span className="text-[11px] leading-none text-(--color-text-muted)">
-                        {formatTimeWindow(item)}
+                        <TimeWindowText item={item} />
                       </span>
                     ) : null}
                     <DurationEditorPopover
@@ -2277,10 +2280,35 @@ function TimeWindowInlineEditor({
           })
         }
       >
-        ⁺¹
+        <EndOffsetSup value={1} />
       </button>
     </span>
   );
+}
+
+function TimeWindowText({
+  item,
+}: {
+  item: Pick<ItineraryItem, "startTime" | "endTime" | "endOffsetDays">;
+}) {
+  const startTime = item.startTime?.trim();
+  const endTime = item.endTime?.trim();
+  if (!startTime && !endTime) return <>—</>;
+  if (!endTime) return <>{startTime || "—"}</>;
+
+  return (
+    <>
+      {startTime ? `${startTime}-` : null}
+      {endTime}
+      {(item.endOffsetDays ?? 0) > 0 ? (
+        <EndOffsetSup value={item.endOffsetDays ?? 0} />
+      ) : null}
+    </>
+  );
+}
+
+function EndOffsetSup({ value }: { value: number }) {
+  return <sup className={endOffsetSupClassName}>+{value}</sup>;
 }
 
 function InlineTextField({

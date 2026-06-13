@@ -1292,7 +1292,8 @@ describe("SmartItineraryTable", () => {
     const row = screen.getByRole("row", {
       name: /Overnight flight window/i,
     });
-    expect(within(row).getByText("23:00-02:00⁺¹")).toBeInTheDocument();
+    expect(row).toHaveTextContent("23:00-02:00+1");
+    expect(row.querySelector("sup")).toHaveTextContent("+1");
   });
 
   it("edits end time and next-day offset inline", () => {
