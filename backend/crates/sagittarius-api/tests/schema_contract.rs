@@ -116,6 +116,28 @@ async fn itinerary_schema_stores_time_windows(pool: sqlx::PgPool) {
 }
 
 #[sqlx::test(migrations = "../../migrations")]
+async fn itinerary_parent_scope_fkey_is_immediate(pool: sqlx::PgPool) {
+    let constraints: Vec<(String, bool, bool)> = sqlx::query_as(
+        "select conname::text, condeferrable, condeferred
+         from pg_constraint
+         where conname = 'itinerary_items_parent_scope_fkey'
+         order by conname",
+    )
+    .fetch_all(&pool)
+    .await
+    .unwrap();
+
+    assert_eq!(
+        constraints,
+        vec![(
+            "itinerary_items_parent_scope_fkey".to_string(),
+            false,
+            false,
+        )]
+    );
+}
+
+#[sqlx::test(migrations = "../../migrations")]
 async fn itinerary_schema_rejects_parent_outside_child_day_or_plan(pool: sqlx::PgPool) {
     support::seed_trip(&pool).await;
 
