@@ -4931,11 +4931,11 @@ describe("Sagittarius cockpit UI", () => {
 
     await waitFor(() =>
       expect(screen.getByLabelText("Trip Plan")).toHaveDisplayValue(
-        "Museum Day - แผนหลัก",
+        "Museum Day - ร่าง",
       ),
     );
     expect(selector).toHaveValue(
-      (screen.getByRole("option", { name: "Museum Day - แผนหลัก" }) as HTMLOptionElement)
+      (screen.getByRole("option", { name: "Museum Day - ร่าง" }) as HTMLOptionElement)
         .value,
     );
     expect(
@@ -4944,12 +4944,14 @@ describe("Sagittarius cockpit UI", () => {
     const persistedTrip = JSON.parse(
       window.localStorage.getItem(tripStorageKey)!,
     ) as Trip;
-    expect(persistedTrip.activePlanVariantId).toBe(selector.value);
-    expect(persistedTrip.mainTripPlanId).toBe(selector.value);
+    expect(persistedTrip.activePlanVariantId).toBe(seedTrip.activePlanVariantId);
+    expect(persistedTrip.mainTripPlanId).toBe(
+      seedTrip.mainTripPlanId ?? seedTrip.activePlanVariantId,
+    );
     expect(persistedTrip.planVariants).toEqual(persistedTrip.tripPlans);
     expect(
       persistedTrip.planVariants.find((plan) => plan.id === selector.value),
-    ).toMatchObject({ kind: "main", status: "main" });
+    ).toMatchObject({ kind: "draft", status: "draft" });
   });
 
   it("switches local Trip Plans and changes visible itinerary rows by planVariantId", async () => {
@@ -4973,19 +4975,45 @@ describe("Sagittarius cockpit UI", () => {
       screen.queryByRole("row", { name: /Dim Dim Sum/i }),
     ).not.toBeInTheDocument();
     const persistedTrip = JSON.parse(storage.getItem(tripStorageKey)!) as Trip;
-    expect(persistedTrip.activePlanVariantId).toBe("plan-variant-backup");
-    expect(persistedTrip.mainTripPlanId).toBe("plan-variant-backup");
+    expect(persistedTrip.activePlanVariantId).toBe(draftTrip.activePlanVariantId);
+    expect(persistedTrip.mainTripPlanId).toBe(draftTrip.mainTripPlanId);
     expect(persistedTrip.planVariants).toEqual(persistedTrip.tripPlans);
     expect(
       persistedTrip.planVariants.find(
         (plan) => plan.id === "plan-variant-backup",
       ),
-    ).toMatchObject({ kind: "main", status: "main" });
-    expect(
-      persistedTrip.planVariants.find(
-        (plan) => plan.id === seedTrip.activePlanVariantId,
-      ),
-    ).toMatchObject({ kind: "backup", status: "backup" });
+    ).toMatchObject({ kind: "draft", status: "draft" });
+  });
+
+  it("sets the selected local Trip Plan as Main only from the explicit action", async () => {
+    const user = userEvent.setup();
+    const storage = installLocalStorageStub();
+    const draftTrip = tripWithSheets();
+    storage.setItem(tripStorageKey, JSON.stringify(draftTrip));
+
+    render(<SagittariusApp initialView="itinerary" />);
+
+    await screen.findByRole("option", { name: "Rain Sheet - ร่าง" });
+    await user.selectOptions(screen.getByLabelText("Trip Plan"), [
+      "plan-variant-backup",
+    ]);
+    await user.click(screen.getByRole("button", { name: "ใช้เป็นแผนหลัก" }));
+
+    await waitFor(() => {
+      const persistedTrip = JSON.parse(storage.getItem(tripStorageKey)!) as Trip;
+      expect(persistedTrip.activePlanVariantId).toBe("plan-variant-backup");
+      expect(persistedTrip.mainTripPlanId).toBe("plan-variant-backup");
+      expect(
+        persistedTrip.planVariants.find(
+          (plan) => plan.id === "plan-variant-backup",
+        ),
+      ).toMatchObject({ kind: "main", status: "main" });
+      expect(
+        persistedTrip.planVariants.find(
+          (plan) => plan.id === seedTrip.activePlanVariantId,
+        ),
+      ).toMatchObject({ kind: "backup", status: "backup" });
+    });
   });
 
   it("shows plan-scoped records on secondary detail pages for the selected Trip Plan", async () => {
@@ -5324,7 +5352,7 @@ describe("Sagittarius cockpit UI", () => {
     );
   });
 
-  it("creates and publishes a Trip Plan through the API, then selects the returned active plan", async () => {
+  it("creates a Trip Plan through the API, then selects it without publishing", async () => {
     const user = userEvent.setup();
     const apiTrip = {
       ...tripWithSheets(),
@@ -5339,17 +5367,9 @@ describe("Sagittarius cockpit UI", () => {
       description: "",
       version: 1,
     };
-    const publishedTrip: Trip = {
-      ...apiTrip,
-      activePlanVariantId: createdSheet.id,
-      mainTripPlanId: createdSheet.id,
-      planVariants: [...apiTrip.planVariants, createdSheet],
-      tripPlans: [...(apiTrip.tripPlans ?? apiTrip.planVariants), createdSheet],
-      version: (apiTrip.version ?? 0) + 1,
-    };
     const apiClient = createApiClientForTrip(apiTrip, {
       createTripPlan: vi.fn().mockResolvedValue(createdSheet),
-      setMainTripPlan: vi.fn().mockResolvedValue(publishedTrip),
+      setMainTripPlan: vi.fn(),
     });
 
     render(
@@ -5377,12 +5397,7 @@ describe("Sagittarius cockpit UI", () => {
         }),
       ),
     );
-    expect(apiClient.setMainTripPlan!).toHaveBeenCalledWith(
-      apiTrip.id,
-      createdSheet.id,
-      "session-token",
-      expect.objectContaining({ clientMutationId: expect.any(String) }),
-    );
+    expect(apiClient.setMainTripPlan!).not.toHaveBeenCalled();
     await waitFor(() =>
       expect(screen.getByLabelText("Trip Plan")).toHaveValue(createdSheet.id),
     );
@@ -5466,6 +5481,7 @@ describe("Sagittarius cockpit UI", () => {
     await user.selectOptions(await screen.findByLabelText("Trip Plan"), [
       "plan-variant-backup",
     ]);
+    await user.click(screen.getByRole("button", { name: "ใช้เป็นแผนหลัก" }));
 
     expect(apiClient.setMainTripPlan!).toHaveBeenCalledWith(
       apiTrip.id,

@@ -19,6 +19,7 @@ function renderTable(
     items: tripFixture.planItems,
     tripPlans: tripFixture.trip.planVariants,
     selectedTripPlanId: tripFixture.trip.activePlanVariantId,
+    mainTripPlanId: tripFixture.trip.mainTripPlanId ?? tripFixture.trip.activePlanVariantId,
     tripPlanError: null,
     isTripPlanBusy: false,
     role: "owner",
@@ -50,6 +51,7 @@ function renderTable(
     onImportItinerary: vi.fn(),
     onChangeTripPlan: vi.fn(),
     onChangeTripPlanStatus: vi.fn(),
+    onSetMainTripPlan: vi.fn(),
     onCreateTripPlan: vi.fn(),
     onChangeDayPath: vi.fn(),
     onClearDayPath: vi.fn(),
@@ -100,6 +102,7 @@ describe("SmartItineraryTable", () => {
           items={tripFixture.planItems}
           tripPlans={tripFixture.trip.planVariants}
           selectedTripPlanId={tripFixture.trip.activePlanVariantId}
+          mainTripPlanId={tripFixture.trip.mainTripPlanId ?? tripFixture.trip.activePlanVariantId}
           tripPlanError={null}
           isTripPlanBusy={false}
           role="owner"
@@ -115,6 +118,7 @@ describe("SmartItineraryTable", () => {
           onImportItinerary={vi.fn()}
           onChangeTripPlan={vi.fn()}
           onChangeTripPlanStatus={vi.fn()}
+          onSetMainTripPlan={vi.fn()}
           onCreateTripPlan={vi.fn()}
           onRedo={vi.fn()}
           onToggleContextRail={vi.fn()}
@@ -206,11 +210,29 @@ describe("SmartItineraryTable", () => {
   it("calls onChangeTripPlan when the Trip Plan selector changes", async () => {
     const user = userEvent.setup();
     const onChangeTripPlan = vi.fn();
-    renderTable({ onChangeTripPlan });
+    const onSetMainTripPlan = vi.fn();
+    renderTable({ onChangeTripPlan, onSetMainTripPlan });
 
     await user.selectOptions(screen.getByLabelText("Trip Plan"), "plan-rain");
 
     expect(onChangeTripPlan).toHaveBeenCalledWith("plan-rain");
+    expect(onSetMainTripPlan).not.toHaveBeenCalled();
+  });
+
+  it("calls onSetMainTripPlan only from the explicit set-main action", async () => {
+    const user = userEvent.setup();
+    const onChangeTripPlan = vi.fn();
+    const onSetMainTripPlan = vi.fn();
+    renderTable({
+      selectedTripPlanId: "plan-rain",
+      onChangeTripPlan,
+      onSetMainTripPlan,
+    });
+
+    await user.click(screen.getByRole("button", { name: "ใช้เป็นแผนหลัก" }));
+
+    expect(onSetMainTripPlan).toHaveBeenCalledWith("plan-rain");
+    expect(onChangeTripPlan).not.toHaveBeenCalled();
   });
 
   it("calls onChangeTripPlanStatus when the Trip Plan status changes", async () => {
@@ -253,10 +275,15 @@ describe("SmartItineraryTable", () => {
     expect(screen.getByText("Could not update Trip Plan.")).toBeInTheDocument();
   });
 
-  it("disables Trip Plan switching and hides creation for travelers and viewers", () => {
+  it("lets travelers and viewers switch visible Trip Plans without management actions", () => {
     renderTable({ role: "traveler" });
 
-    expect(screen.getByLabelText("Trip Plan")).toBeDisabled();
+    expect(screen.getByLabelText("Trip Plan")).toBeEnabled();
+    expect(screen.queryByLabelText("สถานะแผน")).toBeInTheDocument();
+    expect(screen.getByLabelText("สถานะแผน")).toBeDisabled();
+    expect(
+      screen.queryByRole("button", { name: "ใช้เป็นแผนหลัก" }),
+    ).not.toBeInTheDocument();
     expect(
       screen.queryByRole("button", { name: "เพิ่มแผน" }),
     ).not.toBeInTheDocument();
@@ -264,7 +291,11 @@ describe("SmartItineraryTable", () => {
     cleanup();
     renderTable({ role: "viewer" });
 
-    expect(screen.getByLabelText("Trip Plan")).toBeDisabled();
+    expect(screen.getByLabelText("Trip Plan")).toBeEnabled();
+    expect(screen.getByLabelText("สถานะแผน")).toBeDisabled();
+    expect(
+      screen.queryByRole("button", { name: "ใช้เป็นแผนหลัก" }),
+    ).not.toBeInTheDocument();
     expect(
       screen.queryByRole("button", { name: "เพิ่มแผน" }),
     ).not.toBeInTheDocument();

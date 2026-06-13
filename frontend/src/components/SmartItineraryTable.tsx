@@ -72,6 +72,7 @@ interface SmartItineraryTableProps {
   dailyBriefings?: TripDailyBriefing[];
   tripPlans: PlanVariant[];
   selectedTripPlanId: string;
+  mainTripPlanId: string;
   tripPlanError: string | null;
   isTripPlanBusy: boolean;
   role: TripRole;
@@ -106,6 +107,7 @@ interface SmartItineraryTableProps {
     tripPlanId: string,
     status: Exclude<PlanStatus, "main">,
   ) => boolean | void | Promise<boolean | void>;
+  onSetMainTripPlan: (tripPlanId: string) => boolean | void | Promise<boolean | void>;
   onCreateTripPlan: (name: string) => boolean | void | Promise<boolean | void>;
   onChangeTripPath?: (pathId: string) => void;
   onChangeDayPath?: (day: string, pathId: string) => void;
@@ -398,6 +400,7 @@ export function SmartItineraryTable({
   dailyBriefings = [],
   tripPlans,
   selectedTripPlanId,
+  mainTripPlanId,
   tripPlanError,
   isTripPlanBusy,
   pathOptions = [{ id: mainItineraryPathId, name: "Main", scope: "trip" }],
@@ -424,6 +427,7 @@ export function SmartItineraryTable({
   onImportItinerary,
   onChangeTripPlan,
   onChangeTripPlanStatus,
+  onSetMainTripPlan,
   onCreateTripPlan,
   onChangeDayPath,
   onClearDayPath,
@@ -512,9 +516,14 @@ export function SmartItineraryTable({
   const selectedTripPlan =
     tripPlans.find((plan) => plan.id === selectedTripPlanIdForControl) ?? null;
   const selectedTripPlanStatus = selectedTripPlan ? tripPlanStatus(selectedTripPlan) : "draft";
-  const tripPlanControlsDisabled = !canManageTripPlans || isTripPlanBusy || tripPlans.length === 0;
+  const selectedTripPlanIsMain =
+    Boolean(selectedTripPlanIdForControl) && selectedTripPlanIdForControl === mainTripPlanId;
+  const tripPlanSelectorDisabled = isTripPlanBusy || tripPlans.length === 0;
+  const tripPlanControlsDisabled = !canManageTripPlans || tripPlanSelectorDisabled;
   const tripPlanStatusDisabled =
-    tripPlanControlsDisabled || !selectedTripPlan || selectedTripPlanStatus === "main";
+    tripPlanControlsDisabled || !selectedTripPlan || selectedTripPlanIsMain;
+  const setMainTripPlanDisabled =
+    tripPlanControlsDisabled || !selectedTripPlan || selectedTripPlanIsMain;
   const tripPlanMessage = newTripPlanError ?? tripPlanError;
 
   useEffect(() => {
@@ -1043,7 +1052,7 @@ export function SmartItineraryTable({
           <select
             className={tripPlanSelectClassName}
             value={selectedTripPlanIdForControl}
-            disabled={tripPlanControlsDisabled}
+            disabled={tripPlanSelectorDisabled}
             onChange={(event) => onChangeTripPlan(event.target.value)}
           >
             {tripPlans.map((plan) => (
@@ -1074,6 +1083,16 @@ export function SmartItineraryTable({
             <option value="proposal">{t.itinerary.tripPlans.status.proposal}</option>
           </select>
         </label>
+        {canManageTripPlans ? (
+          <Button
+            type="button"
+            disabled={setMainTripPlanDisabled}
+            className={tripPlanButtonClassName}
+            onClick={() => onSetMainTripPlan(selectedTripPlanIdForControl)}
+          >
+            {t.itinerary.tripPlans.setMain}
+          </Button>
+        ) : null}
         {canManageTripPlans ? (
           isCreatingTripPlan ? (
             <form

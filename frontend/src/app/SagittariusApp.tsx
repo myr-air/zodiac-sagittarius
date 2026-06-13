@@ -335,7 +335,9 @@ export function SagittariusApp({
     return () => clearTimeout(timer);
   }, [requireJoin, toastDismissed]);
   const [navigatedView, setNavigatedView] = useState<PlanningView | null>(null);
-  const selectedPlanVariantId = tripState.trip.activePlanVariantId;
+  const [selectedTripPlanId, setSelectedTripPlanId] = useState(() =>
+    initialSelectedTripPlanId(initialTrip),
+  );
   const [currentMemberId, setCurrentMemberId] = useState(
     initialMemberId ?? initialTrip.members[0].id,
   );
@@ -408,6 +410,8 @@ export function SagittariusApp({
   );
   const canEditExpenses = canTripRole(currentMember.role, "editExpenses");
   const canManagePeople = canTripRole(currentMember.role, "managePeople");
+  const canManageTripPlans =
+    currentMember.role === "owner" || currentMember.role === "organizer";
   const canEditBookings = canEdit || canEditExpenses;
   const canEditPhotoAlbums = canTripRole(currentMember.role, "managePhotoAlbums");
   const canCreateStopNote = canCreateSuggestion || canEdit;
@@ -418,10 +422,16 @@ export function SagittariusApp({
   const activePlanItems = useMemo(
     () =>
       trip.itineraryItems.filter(
-        (item) => item.planVariantId === selectedPlanVariantId,
+        (item) => item.planVariantId === selectedTripPlanId,
       ),
-    [selectedPlanVariantId, trip.itineraryItems],
+    [selectedTripPlanId, trip.itineraryItems],
   );
+  useEffect(() => {
+    setSelectedTripPlanId((current) => {
+      if (trip.planVariants.some((plan) => plan.id === current)) return current;
+      return initialSelectedTripPlanId(trip);
+    });
+  }, [trip]);
   const pathOptions = useMemo(
     () =>
       deriveItineraryPathOptions(activePlanItems, trip.itineraryPaths ?? []),
@@ -455,11 +465,11 @@ export function SagittariusApp({
   const selectedItemIdForView = selectedItem?.id ?? "";
   const scopedTripPlanRecords = useMemo(
     () =>
-      selectTripPlanRecords(trip, selectedPlanVariantId, {
+      selectTripPlanRecords(trip, selectedTripPlanId, {
         stopNotes,
         tasks,
       }),
-    [selectedPlanVariantId, stopNotes, tasks, trip],
+    [selectedTripPlanId, stopNotes, tasks, trip],
   );
   const expenseSummary = useMemo(
     () =>
@@ -495,9 +505,9 @@ export function SagittariusApp({
   const scopedSuggestions = useMemo(
     () =>
       suggestions.filter(
-        (suggestion) => suggestion.planVariantId === selectedPlanVariantId,
+        (suggestion) => suggestion.planVariantId === selectedTripPlanId,
       ),
-    [selectedPlanVariantId, suggestions],
+    [selectedTripPlanId, suggestions],
   );
   const scopedPlanCheck = useMemo(
     () => scopePlanCheckToItems(latestPlanCheck, activePlanItems),
@@ -577,6 +587,7 @@ export function SagittariusApp({
 
       if (persistedTrip) {
         setTripState({ trip: nextTrip, past: [], future: [] });
+        setSelectedTripPlanId(initialSelectedTripPlanId(nextTrip));
       }
       if (persistedSession) {
         setParticipantSession(persistedSession);
@@ -822,13 +833,14 @@ export function SagittariusApp({
 
   async function reloadTripPlanConflict() {
     if (!resolvedApiClient || !participantSession) return;
-    const cockpit = await resolvedApiClient.loadTrip(
-      trip.id,
-      participantSession.sessionToken,
-    );
-    replaceCockpitFromApi(cockpit);
-    latestTripRef.current = cockpit.trip;
-  }
+  const cockpit = await resolvedApiClient.loadTrip(
+    trip.id,
+    participantSession.sessionToken,
+  );
+  replaceCockpitFromApi(cockpit);
+  setSelectedTripPlanId(initialSelectedTripPlanId(cockpit.trip));
+  latestTripRef.current = cockpit.trip;
+}
 
   function mergePublishedTripPlan(
     currentTrip: Trip,
@@ -857,8 +869,17 @@ export function SagittariusApp({
     });
   }
 
-  async function switchTripPlan(tripPlanId: string): Promise<boolean> {
-    if (!canEdit || !tripPlanId || tripPlanId === selectedPlanVariantId) return false;
+  function selectTripPlan(tripPlanId: string): boolean {
+    if (!tripPlanId || !trip.planVariants.some((plan) => plan.id === tripPlanId)) {
+      return false;
+    }
+    setSelectedTripPlanId(tripPlanId);
+    return true;
+  }
+
+  async function setMainTripPlan(tripPlanId: string): Promise<boolean> {
+    const mainTripPlanId = trip.mainTripPlanId || trip.activePlanVariantId;
+    if (!canManageTripPlans || !tripPlanId || tripPlanId === mainTripPlanId) return false;
     setTripPlanError(null);
 
     if (isApiMode && resolvedApiClient && participantSession) {
@@ -882,6 +903,7 @@ export function SagittariusApp({
           latestTripRef.current = nextTrip;
           return { ...current, trip: nextTrip };
         });
+        setSelectedTripPlanId(tripPlanId);
       } catch (error) {
         if (
           error instanceof TripApiError &&
@@ -903,6 +925,7 @@ export function SagittariusApp({
       activePlanVariantId: tripPlanId,
       mainTripPlanId: tripPlanId,
     }));
+    setSelectedTripPlanId(tripPlanId);
     return true;
   }
 
@@ -910,7 +933,7 @@ export function SagittariusApp({
     tripPlanId: string,
     status: Exclude<PlanStatus, "main">,
   ): Promise<boolean> {
-    if (!canEdit || !tripPlanId) return false;
+    if (!canManageTripPlans || !tripPlanId) return false;
     const currentPlan = trip.planVariants.find((plan) => plan.id === tripPlanId);
     if (!currentPlan || currentPlan.status === "main") return false;
     setTripPlanError(null);
@@ -964,7 +987,7 @@ export function SagittariusApp({
   }
 
   async function createTripPlan(name: string): Promise<boolean> {
-    if (!canEdit) return false;
+    if (!canManageTripPlans) return false;
     const trimmedName = name.trim();
     if (!trimmedName) return false;
     setTripPlanError(null);
@@ -975,9 +998,6 @@ export function SagittariusApp({
         const createTripPlanMutation =
           resolvedApiClient.createTripPlan ??
           resolvedApiClient.createPlanVariant;
-        const setMainTripPlan =
-          resolvedApiClient.setMainTripPlan ??
-          resolvedApiClient.publishPlanVariant;
         const createdVariant = await createTripPlanMutation(
           trip.id,
           participantSession.sessionToken,
@@ -988,22 +1008,12 @@ export function SagittariusApp({
             description: "",
           },
         );
-        const publishedTrip = await setMainTripPlan(
-          trip.id,
-          createdVariant.id,
-          participantSession.sessionToken,
-          { clientMutationId: nextClientMutationId("trip-plan-set-main") },
-        );
         setTripState((current) => {
-          const nextTrip = mergePublishedTripPlan(
-            current.trip,
-            publishedTrip,
-            createdVariant.id,
-            createdVariant,
-          );
+          const nextTrip = updateTripPlanInTrip(current.trip, createdVariant);
           latestTripRef.current = nextTrip;
           return { ...current, trip: nextTrip };
         });
+        setSelectedTripPlanId(createdVariant.id);
       } catch (error) {
         if (
           error instanceof TripApiError &&
@@ -1020,6 +1030,7 @@ export function SagittariusApp({
       return true;
     }
 
+    let createdTripPlanId = "";
     commitTrip((current) => {
       const variant: PlanVariant = {
         id: nextLocalPlanVariantId(current.planVariants),
@@ -1030,14 +1041,14 @@ export function SagittariusApp({
         description: "",
         version: 1,
       };
+      createdTripPlanId = variant.id;
       return {
         ...current,
-        activePlanVariantId: variant.id,
-        mainTripPlanId: variant.id,
         planVariants: [...current.planVariants, variant],
         tripPlans: [...(current.tripPlans ?? current.planVariants), variant],
       };
     });
+    if (createdTripPlanId) setSelectedTripPlanId(createdTripPlanId);
     return true;
   }
 
@@ -1067,7 +1078,7 @@ export function SagittariusApp({
       trip,
       draggedItemId,
       targetItemId,
-      selectedPlanVariantId,
+      selectedTripPlanId,
     );
     if (!nextTrip) return;
 
@@ -1159,7 +1170,7 @@ export function SagittariusApp({
       trip,
       draggedItemId,
       planBlockItemId,
-      selectedPlanVariantId,
+      selectedTripPlanId,
     );
     if (!nextTrip) return;
 
@@ -1204,7 +1215,7 @@ export function SagittariusApp({
       trip,
       draggedItemId,
       targetDay,
-      selectedPlanVariantId,
+      selectedTripPlanId,
     );
     if (!nextTrip) return;
 
@@ -1319,7 +1330,7 @@ export function SagittariusApp({
     const draftItem: ItineraryItem = {
       id: nextItemId,
       tripId: trip.id,
-      planVariantId: selectedPlanVariantId,
+      planVariantId: selectedTripPlanId,
       ...pathFields,
       parentItemId: values.parentItemId ?? null,
       itemKind: values.itemKind,
@@ -1371,7 +1382,7 @@ export function SagittariusApp({
         participantSession.sessionToken,
         {
           clientMutationId: nextClientMutationId("itinerary-create"),
-          planVariantId: selectedPlanVariantId,
+          planVariantId: selectedTripPlanId,
           pathGroupId: branchPlacement.item.pathGroupId,
           pathId: branchPlacement.item.pathId,
           pathName: branchPlacement.item.pathName,
@@ -2426,12 +2437,12 @@ export function SagittariusApp({
         const check = await resolvedApiClient.runPlanCheck(
           trip.id,
           participantSession.sessionToken,
-          selectedPlanVariantId,
+          selectedTripPlanId,
         );
         setLatestPlanCheck(check);
         return;
       }
-      setLatestPlanCheck(buildLocalPlanCheck(trip, currentMember.id, selectedPlanVariantId));
+      setLatestPlanCheck(buildLocalPlanCheck(trip, currentMember.id, selectedTripPlanId));
     } finally {
       setPlanCheckRunning(false);
     }
@@ -3933,8 +3944,10 @@ export function SagittariusApp({
                   itineraryView={itineraryView}
                   pathOptions={pathOptions}
                   tripPlans={trip.planVariants}
-                  selectedTripPlanId={selectedPlanVariantId}
-                  onChangeTripPlan={switchTripPlan}
+                  selectedTripPlanId={selectedTripPlanId}
+                  mainTripPlanId={trip.mainTripPlanId || trip.activePlanVariantId}
+                  onChangeTripPlan={selectTripPlan}
+                  onSetMainTripPlan={setMainTripPlan}
                   onChangeTripPlanStatus={updateTripPlanStatus}
                   onCreateTripPlan={createTripPlan}
                   tripPlanError={tripPlanError}
@@ -4091,6 +4104,7 @@ export function SagittariusApp({
             memberId={currentMember.id}
             pathOptions={pathOptions}
             records={pendingItineraryImport.records}
+            tripPlanId={selectedTripPlanId}
             startDate={trip.startDate}
             onApply={(target) => void applyPendingItineraryImport(target)}
             onClose={() => setPendingItineraryImport(null)}
@@ -4330,12 +4344,17 @@ function normalizeTripPlanAliases(trip: Trip): Trip {
 
 function updateTripPlanInTrip(trip: Trip, updatedPlan: PlanVariant): Trip {
   const existingPlans = trip.tripPlans ?? trip.planVariants;
+  const hasPlan = trip.planVariants.some((plan) => plan.id === updatedPlan.id);
   const mergePlan = (plan: PlanVariant) =>
     plan.id === updatedPlan.id ? { ...plan, ...updatedPlan } : plan;
   return normalizeTripPlanAliases({
     ...trip,
-    planVariants: trip.planVariants.map(mergePlan),
-    tripPlans: existingPlans.map(mergePlan),
+    planVariants: hasPlan
+      ? trip.planVariants.map(mergePlan)
+      : [...trip.planVariants, updatedPlan],
+    tripPlans: existingPlans.some((plan) => plan.id === updatedPlan.id)
+      ? existingPlans.map(mergePlan)
+      : [...existingPlans, updatedPlan],
   });
 }
 
@@ -4443,6 +4462,16 @@ function tripPlanIdForRecord(
     if (item?.planVariantId) return item.planVariantId;
   }
   return trip.activePlanVariantId || trip.mainTripPlanId || null;
+}
+
+function initialSelectedTripPlanId(trip: Trip): string {
+  return (
+    trip.mainTripPlanId ||
+    trip.activePlanVariantId ||
+    trip.tripPlans?.[0]?.id ||
+    trip.planVariants[0]?.id ||
+    ""
+  );
 }
 
 function tripPlanIdForBookingRecord(
@@ -5192,6 +5221,7 @@ function ItineraryImportOptionsDialog({
   records,
   startDate,
   currentTripPathId,
+  tripPlanId,
   onApply,
   onClose,
 }: {
@@ -5201,6 +5231,7 @@ function ItineraryImportOptionsDialog({
   records: ItineraryExportRecords;
   startDate: string;
   currentTripPathId: string;
+  tripPlanId: string;
   onApply: (target: ItineraryImportApplyTarget) => void;
   onClose: () => void;
 }) {
@@ -5232,6 +5263,7 @@ function ItineraryImportOptionsDialog({
         pathName,
         pathOptions,
         scope,
+        tripPlanId,
       }),
     );
   }
@@ -5326,6 +5358,7 @@ function buildItineraryImportApplyTarget({
   pathName,
   pathOptions,
   scope,
+  tripPlanId,
 }: {
   day?: string;
   memberId: string;
@@ -5333,6 +5366,7 @@ function buildItineraryImportApplyTarget({
   pathName: string;
   pathOptions: ItineraryPathOption[];
   scope: ItineraryImportApplyTarget["scope"];
+  tripPlanId: string;
 }): ItineraryImportApplyTarget {
   const existingPath = pathOptions.find(
     (option) =>
@@ -5348,6 +5382,7 @@ function buildItineraryImportApplyTarget({
     pathId === mainItineraryPathId ? "Main" : (existingPath?.name ?? pathName);
   return {
     memberId,
+    tripPlanId,
     pathId,
     pathName: normalizedPathName,
     scope,

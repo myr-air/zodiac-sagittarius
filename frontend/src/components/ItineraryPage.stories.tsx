@@ -200,6 +200,7 @@ export const Owner: Story = {
     items: tripFixture.planItems,
     tripPlans: tripFixture.trip.planVariants,
     selectedTripPlanId: tripFixture.trip.activePlanVariantId,
+    mainTripPlanId: tripFixture.trip.mainTripPlanId ?? tripFixture.trip.activePlanVariantId,
     tripPlanError: null,
     isTripPlanBusy: false,
     pathOptions: [
@@ -224,6 +225,7 @@ export const Owner: Story = {
     onImportItinerary: noop,
     onChangeTripPlan: noop,
     onChangeTripPlanStatus: noop,
+    onSetMainTripPlan: noop,
     onCreateTripPlan: noop,
     onChangeTripPath: noop,
     onChangeDayPath: noop,

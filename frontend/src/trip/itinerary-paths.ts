@@ -4,6 +4,7 @@ import type { ItineraryItem, ItineraryPath, ItineraryPathScope, Trip } from "./t
 
 export interface ItineraryImportApplyTarget {
   memberId: string;
+  tripPlanId?: string;
   pathId: string;
   pathName: string;
   scope: ItineraryPathScope;
@@ -120,7 +121,7 @@ export function applyImportedItemsToItineraryPath(
       ...item,
       id,
       tripId: trip.id,
-      planVariantId: trip.activePlanVariantId,
+      planVariantId: target.tripPlanId || trip.activePlanVariantId,
       parentItemId: item.parentItemId
         ? (importedIdMap.get(item.parentItemId) ?? item.parentItemId)
         : item.parentItemId,
