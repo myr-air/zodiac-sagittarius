@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import { expect, waitFor } from "storybook/test";
+import { expect, userEvent, waitFor } from "storybook/test";
 import { buildDenseTripFixture, tripFixture } from "@/src/trip/trip-fixtures";
 import type { ItineraryItem } from "@/src/trip/types";
 import { SmartItineraryTable } from "./SmartItineraryTable";
@@ -335,6 +335,9 @@ export const HierarchyWarnings: Story = {
         isPlanBlock: false,
         parentItemId: null,
         day: "2026-06-19",
+        startTime: "09:00",
+        endTime: "10:00",
+        durationMinutes: 60,
         sortOrder: 100,
       },
       {
@@ -343,7 +346,33 @@ export const HierarchyWarnings: Story = {
         activity: "Child under plain parent",
         parentItemId: "story-plain-parent",
         day: "2026-06-19",
+        startTime: "09:15",
+        endTime: "09:45",
+        durationMinutes: 30,
         sortOrder: 200,
+      },
+      {
+        ...tripFixture.planItems[2],
+        id: "story-window-block",
+        activity: "Window block",
+        isPlanBlock: true,
+        parentItemId: null,
+        day: "2026-06-19",
+        startTime: "10:00",
+        endTime: "11:00",
+        durationMinutes: 60,
+        sortOrder: 300,
+      },
+      {
+        ...tripFixture.planItems[3],
+        id: "story-child-outside-window",
+        activity: "Child outside window",
+        parentItemId: "story-window-block",
+        day: "2026-06-19",
+        startTime: "09:30",
+        endTime: "11:30",
+        durationMinutes: 120,
+        sortOrder: 400,
       },
     ],
     selectedItemId: "story-child-under-plain-parent",
@@ -355,6 +384,29 @@ export const HierarchyWarnings: Story = {
     await waitFor(() => {
       expect(canvasElement.querySelector(".data-row--has-warning")).toBeInTheDocument();
     });
+    await expect(
+      canvas.queryByRole("button", { name: /Promote Plain parent to activity block/i }),
+    ).not.toBeInTheDocument();
+    await userEvent.click(canvas.getByRole("button", { name: /Fix structure for Child under plain parent/i }));
+    await expect(
+      canvas.getByRole("button", {
+        name: /Promote Plain parent to activity block for Child under plain parent/i,
+      }),
+    ).toBeVisible();
+    await expect(
+      canvas.getByRole("button", {
+        name: /Detach sub-activity Child under plain parent from its activity block/i,
+      }),
+    ).toBeVisible();
+    await userEvent.click(canvas.getByRole("button", { name: /Fix structure for Child outside window/i }));
+    await expect(
+      canvas.getByRole("button", { name: /Expand Window block to fit Child outside window/i }),
+    ).toBeVisible();
+    await expect(
+      canvas.getByRole("button", {
+        name: /Detach sub-activity Child outside window from its activity block/i,
+      }),
+    ).toBeVisible();
   },
 };
 export const TableOverflow: Story = {
