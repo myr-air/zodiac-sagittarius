@@ -1837,7 +1837,9 @@ function DayGroup({
                         >
                           <Icon name="chevronRight" />
                           <span>
-                            {blockCollapsed ? "Expand block" : "Collapse block"}
+                            {blockCollapsed
+                              ? itineraryLabels.row.expandBlock
+                              : itineraryLabels.row.collapseBlock}
                           </span>
                         </button>
                         <button
@@ -1871,7 +1873,7 @@ function DayGroup({
                           }}
                         >
                           <Icon name="plus" />
-                          <span>Into block</span>
+                          <span>{itineraryLabels.row.intoBlock}</span>
                         </button>
                       </div>
                     ) : null}
@@ -1991,14 +1993,14 @@ function DayGroup({
                       className={rowActionButtonClassName}
                       aria-label={
                         item.isPlanBlock
-                          ? `Add sub-activity under ${item.activity}`
-                          : `Convert ${item.activity} to activity block`
+                          ? itineraryLabels.row.addSubActivity({ activity: item.activity })
+                          : itineraryLabels.row.convertToBlock({ activity: item.activity })
                       }
                       disabled={!canEdit}
                       title={
                         item.isPlanBlock
-                          ? `Add sub-activity under ${item.activity}`
-                          : `Convert ${item.activity} to activity block`
+                          ? itineraryLabels.row.addSubActivity({ activity: item.activity })
+                          : itineraryLabels.row.convertToBlock({ activity: item.activity })
                       }
                       onClick={() => {
                         if (item.isPlanBlock) {
@@ -2014,9 +2016,14 @@ function DayGroup({
                       <button
                         type="button"
                         className={rowActionButtonClassName}
-                        aria-label={`Promote ${parentItem.activity} to activity block for ${item.activity}`}
+                        aria-label={itineraryLabels.row.promoteParentBlock({
+                          parent: parentItem.activity,
+                          child: item.activity,
+                        })}
                         disabled={!canEdit}
-                        title={`Promote ${parentItem.activity} to activity block`}
+                        title={itineraryLabels.row.promoteParentBlockTitle({
+                          parent: parentItem.activity,
+                        })}
                         onClick={() => {
                           onUpdateItemInline?.(parentItem.id, { isPlanBlock: true });
                         }}
@@ -2028,9 +2035,15 @@ function DayGroup({
                       <button
                         type="button"
                         className={rowActionButtonClassName}
-                        aria-label={`Expand ${parentItem.activity} to fit ${item.activity}`}
+                        aria-label={itineraryLabels.row.expandBlockToFit({
+                          parent: parentItem.activity,
+                          child: item.activity,
+                        })}
                         disabled={!canEdit}
-                        title={`Expand ${parentItem.activity} to fit ${item.activity}`}
+                        title={itineraryLabels.row.expandBlockToFitTitle({
+                          parent: parentItem.activity,
+                          child: item.activity,
+                        })}
                         onClick={() => {
                           onUpdateItemInline?.(parentItem.id, fitParentBlockPatch);
                         }}
@@ -2042,9 +2055,13 @@ function DayGroup({
                       <button
                         type="button"
                         className={rowActionButtonClassName}
-                        aria-label={`Detach sub-activity ${item.activity} from its activity block`}
+                        aria-label={itineraryLabels.row.detachSubActivity({
+                          activity: item.activity,
+                        })}
                         disabled={!canEdit}
-                        title={`Detach ${item.activity} from its activity block`}
+                        title={itineraryLabels.row.detachSubActivityTitle({
+                          activity: item.activity,
+                        })}
                         onClick={() => {
                           onUpdateItemInline?.(item.id, { parentItemId: null });
                         }}

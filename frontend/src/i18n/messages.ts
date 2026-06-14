@@ -409,6 +409,22 @@ export const messages = {
         moveDown: ({ activity }: { activity: string }) => `Move ${activity} down`,
         edit: ({ activity }: { activity: string }) => `Edit ${activity}`,
         delete: ({ activity }: { activity: string }) => `Delete ${activity}`,
+        addSubActivity: ({ activity }: { activity: string }) => `Add sub-activity under ${activity}`,
+        convertToBlock: ({ activity }: { activity: string }) => `Convert ${activity} to activity block`,
+        promoteParentBlock: ({ parent, child }: { parent: string; child: string }) =>
+          `Promote ${parent} to activity block for ${child}`,
+        promoteParentBlockTitle: ({ parent }: { parent: string }) => `Promote ${parent} to activity block`,
+        expandBlockToFit: ({ parent, child }: { parent: string; child: string }) =>
+          `Expand ${parent} to fit ${child}`,
+        expandBlockToFitTitle: ({ parent, child }: { parent: string; child: string }) =>
+          `Expand ${parent} to fit ${child}`,
+        detachSubActivity: ({ activity }: { activity: string }) =>
+          `Detach sub-activity ${activity} from its activity block`,
+        detachSubActivityTitle: ({ activity }: { activity: string }) =>
+          `Detach ${activity} from its activity block`,
+        expandBlock: "Expand block",
+        collapseBlock: "Collapse block",
+        intoBlock: "Into block",
         inlineActivity: ({ activity }: { activity: string }) => `Edit activity ${activity}`,
         inlinePlace: ({ activity }: { activity: string }) => `Edit place ${activity}`,
         inlineTime: ({ activity }: { activity: string }) => `Edit time ${activity}`,
@@ -1565,6 +1581,22 @@ export const messages = {
         moveDown: ({ activity }: { activity: string }) => `ย้าย ${activity} ลง`,
         edit: ({ activity }: { activity: string }) => `แก้ไข ${activity}`,
         delete: ({ activity }: { activity: string }) => `ลบ ${activity}`,
+        addSubActivity: ({ activity }: { activity: string }) => `เพิ่ม sub-activity ใต้ ${activity}`,
+        convertToBlock: ({ activity }: { activity: string }) => `เปลี่ยน ${activity} เป็น activity block`,
+        promoteParentBlock: ({ parent, child }: { parent: string; child: string }) =>
+          `เปลี่ยน ${parent} เป็น activity block สำหรับ ${child}`,
+        promoteParentBlockTitle: ({ parent }: { parent: string }) => `เปลี่ยน ${parent} เป็น activity block`,
+        expandBlockToFit: ({ parent, child }: { parent: string; child: string }) =>
+          `ขยาย ${parent} ให้ครอบ ${child}`,
+        expandBlockToFitTitle: ({ parent, child }: { parent: string; child: string }) =>
+          `ขยาย ${parent} ให้ครอบ ${child}`,
+        detachSubActivity: ({ activity }: { activity: string }) =>
+          `แยก sub-activity ${activity} ออกจาก block`,
+        detachSubActivityTitle: ({ activity }: { activity: string }) =>
+          `แยก ${activity} ออกจาก block`,
+        expandBlock: "ขยาย block",
+        collapseBlock: "ย่อ block",
+        intoBlock: "ใส่ใน block",
         inlineActivity: ({ activity }: { activity: string }) => `แก้ไขกิจกรรม ${activity}`,
         inlinePlace: ({ activity }: { activity: string }) => `แก้ไขสถานที่ ${activity}`,
         inlineTime: ({ activity }: { activity: string }) => `แก้ไขเวลา ${activity}`,

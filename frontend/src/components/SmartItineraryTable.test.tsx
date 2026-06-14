@@ -2124,7 +2124,7 @@ describe("SmartItineraryTable", () => {
     dataTransfer.setData("text/plain", "item-cafe");
 
     const blockDropTarget = screen.getByRole("button", {
-      name: /Into block/i,
+      name: /ใส่ใน block/i,
     });
     fireEvent.dragOver(blockDropTarget, { dataTransfer });
     fireEvent.drop(blockDropTarget, { dataTransfer });
@@ -2165,14 +2165,14 @@ describe("SmartItineraryTable", () => {
 
     await user.click(
       within(screen.getByRole("row", { name: /Flight to Hong Kong/i }))
-        .getByRole("button", { name: /Add sub-activity under Flight to Hong Kong/i }),
+        .getByRole("button", { name: /เพิ่ม sub-activity ใต้ Flight to Hong Kong/i }),
     );
 
     expect(onAddSubActivity).toHaveBeenCalledWith("block-flight");
     await user.click(
       within(screen.getByRole("row", { name: /Market walk/i })).getByRole(
         "button",
-        { name: /Convert Market walk to activity block/i },
+        { name: /เปลี่ยน Market walk เป็น activity block/i },
       ),
     );
 
@@ -2347,7 +2347,7 @@ describe("SmartItineraryTable", () => {
     fireEvent.drop(
       within(screen.getByRole("row", { name: /Hotel block/i })).getByRole(
         "button",
-        { name: /Into block/i },
+        { name: /ใส่ใน block/i },
       ),
       { dataTransfer },
     );
@@ -2494,7 +2494,7 @@ describe("SmartItineraryTable", () => {
 
     await user.click(
       within(childRow).getByRole("button", {
-        name: /Promote Plain parent to activity block for Child under plain parent/i,
+        name: /เปลี่ยน Plain parent เป็น activity block สำหรับ Child under plain parent/i,
       }),
     );
     expect(onUpdateItemInline).toHaveBeenCalledWith("plain-parent", {
@@ -2503,7 +2503,7 @@ describe("SmartItineraryTable", () => {
 
     await user.click(
       within(childRow).getByRole("button", {
-        name: /Detach sub-activity Child under plain parent from its activity block/i,
+        name: /แยก sub-activity Child under plain parent ออกจาก block/i,
       }),
     );
     expect(onUpdateItemInline).toHaveBeenCalledWith("child-under-plain", {
@@ -2542,12 +2542,12 @@ describe("SmartItineraryTable", () => {
 
     expect(
       within(childRow).getByRole("button", {
-        name: /Promote Plain parent to activity block for Child under plain parent/i,
+        name: /เปลี่ยน Plain parent เป็น activity block สำหรับ Child under plain parent/i,
       }),
     ).toBeDisabled();
     expect(
       within(childRow).getByRole("button", {
-        name: /Detach sub-activity Child under plain parent from its activity block/i,
+        name: /แยก sub-activity Child under plain parent ออกจาก block/i,
       }),
     ).toBeDisabled();
     expect(onUpdateItemInline).not.toHaveBeenCalled();
@@ -2592,7 +2592,7 @@ describe("SmartItineraryTable", () => {
 
     await user.click(
       within(childRow).getByRole("button", {
-        name: /Expand Flight to Hong Kong to fit Airport check-in/i,
+        name: /ขยาย Flight to Hong Kong ให้ครอบ Airport check-in/i,
       }),
     );
 
@@ -2641,7 +2641,7 @@ describe("SmartItineraryTable", () => {
     await user.click(
       within(screen.getByRole("row", { name: /Arrival transfer/i })).getByRole(
         "button",
-        { name: /Expand Night train window to fit Arrival transfer/i },
+        { name: /ขยาย Night train window ให้ครอบ Arrival transfer/i },
       ),
     );
 

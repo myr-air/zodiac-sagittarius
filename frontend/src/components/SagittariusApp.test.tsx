@@ -3012,7 +3012,7 @@ describe("Sagittarius cockpit UI", () => {
     fireEvent.drop(
       within(
         screen.getByRole("row", { name: /API rain route block/i }),
-      ).getByRole("button", { name: /Into block/i }),
+      ).getByRole("button", { name: /ใส่ใน block/i }),
       { dataTransfer },
     );
 
@@ -5400,7 +5400,7 @@ describe("Sagittarius cockpit UI", () => {
 
     await user.click(
       await screen.findByRole("button", {
-        name: /Add sub-activity under Flight to Hong Kong/i,
+        name: /เพิ่ม sub-activity ใต้ Flight to Hong Kong/i,
       }),
     );
     const dialog = await screen.findByRole("dialog", { name: /เพิ่มกิจกรรม/i });
@@ -5455,7 +5455,7 @@ describe("Sagittarius cockpit UI", () => {
 
     await user.click(
       await screen.findByRole("button", {
-        name: /Convert Market walk to activity block/i,
+        name: /เปลี่ยน Market walk เป็น activity block/i,
       }),
     );
 
@@ -5466,7 +5466,7 @@ describe("Sagittarius cockpit UI", () => {
 
     await user.click(
       within(promotedRow).getByRole("button", {
-        name: /Add sub-activity under Market walk/i,
+        name: /เพิ่ม sub-activity ใต้ Market walk/i,
       }),
     );
     const dialog = await screen.findByRole("dialog", { name: /เพิ่มกิจกรรม/i });
@@ -5527,7 +5527,7 @@ describe("Sagittarius cockpit UI", () => {
 
     await user.click(
       await screen.findByRole("button", {
-        name: /Add sub-activity under Rain route flight/i,
+        name: /เพิ่ม sub-activity ใต้ Rain route flight/i,
       }),
     );
     const dialog = await screen.findByRole("dialog", { name: /เพิ่มกิจกรรม/i });
