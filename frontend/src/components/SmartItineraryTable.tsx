@@ -231,6 +231,11 @@ const rowActionsClassName =
   "row-actions flex items-center justify-center gap-1";
 const rowActionButtonClassName =
   "row-action-button inline-grid size-8 shrink-0 place-items-center rounded-(--radius-sm) border-0 bg-transparent text-(--color-text-subtle) transition-[color,background] duration-150 hover:not-disabled:bg-(--color-route-soft) hover:not-disabled:text-(--color-route) disabled:cursor-not-allowed disabled:opacity-[0.42]";
+const rowFixMenuClassName = "row-fix-menu relative";
+const rowFixSummaryClassName =
+  "row-fix-summary inline-grid size-8 shrink-0 place-items-center rounded-(--radius-sm) border-0 bg-transparent text-(--color-warning-strong) transition-[color,background] duration-150 hover:not-disabled:bg-(--color-warning-soft) disabled:cursor-not-allowed disabled:opacity-[0.42]";
+const rowFixPanelClassName =
+  "absolute right-0 top-9 z-20 grid min-w-10 gap-1 rounded-(--radius-sm) border border-(--color-warning-border) bg-(--color-surface) p-1 shadow-[0_12px_28px_rgb(15_23_42_/_0.14)]";
 const minutesPerDay = 24 * 60;
 const timeHeaderClassName =
   "time-header max-[767px]:sticky max-[767px]:left-0 max-[767px]:z-[5] max-[767px]:shadow-[6px_0_12px_rgb(15_23_42_/_0.08)]";
@@ -1637,6 +1642,7 @@ function DayGroup({
   const visibleItems = visiblePlanBlockItems(group.items, collapsedPlanBlockIds);
   const showGraph =
     !collapsed && (graphItems.length > 0 || group.items.length > 0);
+  const [openFixMenuItemId, setOpenFixMenuItemId] = useState<string | null>(null);
 
   return (
     <tbody
@@ -1739,6 +1745,11 @@ function DayGroup({
               parentItem && itemWarnings.some((warning) => warning.code === "child-outside-plan-block")
                 ? buildFitParentBlockPatch(parentItem, item)
                 : null;
+            const hasHierarchyFixActions = Boolean(
+              (canPromoteParentBlock && parentItem) ||
+              (fitParentBlockPatch && parentItem) ||
+              item.parentItemId,
+            );
 
             return (
               <tr
@@ -2012,62 +2023,91 @@ function DayGroup({
                     >
                       <Icon name={item.isPlanBlock ? "plus" : "list"} />
                     </button>
-                    {canPromoteParentBlock && parentItem ? (
-                      <button
-                        type="button"
-                        className={rowActionButtonClassName}
-                        aria-label={itineraryLabels.row.promoteParentBlock({
-                          parent: parentItem.activity,
-                          child: item.activity,
-                        })}
-                        disabled={!canEdit}
-                        title={itineraryLabels.row.promoteParentBlockTitle({
-                          parent: parentItem.activity,
-                        })}
-                        onClick={() => {
-                          onUpdateItemInline?.(parentItem.id, { isPlanBlock: true });
-                        }}
-                      >
-                        <Icon name="list" />
-                      </button>
-                    ) : null}
-                    {fitParentBlockPatch && parentItem ? (
-                      <button
-                        type="button"
-                        className={rowActionButtonClassName}
-                        aria-label={itineraryLabels.row.expandBlockToFit({
-                          parent: parentItem.activity,
-                          child: item.activity,
-                        })}
-                        disabled={!canEdit}
-                        title={itineraryLabels.row.expandBlockToFitTitle({
-                          parent: parentItem.activity,
-                          child: item.activity,
-                        })}
-                        onClick={() => {
-                          onUpdateItemInline?.(parentItem.id, fitParentBlockPatch);
-                        }}
-                      >
-                        <Icon name="clock" />
-                      </button>
-                    ) : null}
-                    {item.parentItemId ? (
-                      <button
-                        type="button"
-                        className={rowActionButtonClassName}
-                        aria-label={itineraryLabels.row.detachSubActivity({
-                          activity: item.activity,
-                        })}
-                        disabled={!canEdit}
-                        title={itineraryLabels.row.detachSubActivityTitle({
-                          activity: item.activity,
-                        })}
-                        onClick={() => {
-                          onUpdateItemInline?.(item.id, { parentItemId: null });
-                        }}
-                      >
-                        <Icon name="x" />
-                      </button>
+                    {hasHierarchyFixActions ? (
+                      <div className={rowFixMenuClassName}>
+                        <button
+                          type="button"
+                          className={rowFixSummaryClassName}
+                          aria-label={itineraryLabels.row.fixHierarchy({
+                            activity: item.activity,
+                          })}
+                          aria-expanded={openFixMenuItemId === item.id}
+                          title={itineraryLabels.row.fixHierarchy({
+                            activity: item.activity,
+                          })}
+                          onClick={() =>
+                            setOpenFixMenuItemId((current) =>
+                              current === item.id ? null : item.id,
+                            )
+                          }
+                        >
+                          <Icon name="warning" />
+                        </button>
+                        {openFixMenuItemId === item.id ? (
+                          <div className={rowFixPanelClassName}>
+                            {canPromoteParentBlock && parentItem ? (
+                              <button
+                                type="button"
+                                className={rowActionButtonClassName}
+                                aria-label={itineraryLabels.row.promoteParentBlock({
+                                  parent: parentItem.activity,
+                                  child: item.activity,
+                                })}
+                                disabled={!canEdit}
+                                title={itineraryLabels.row.promoteParentBlockTitle({
+                                  parent: parentItem.activity,
+                                })}
+                                onClick={() => {
+                                  onUpdateItemInline?.(parentItem.id, { isPlanBlock: true });
+                                  setOpenFixMenuItemId(null);
+                                }}
+                              >
+                                <Icon name="list" />
+                              </button>
+                            ) : null}
+                            {fitParentBlockPatch && parentItem ? (
+                              <button
+                                type="button"
+                                className={rowActionButtonClassName}
+                                aria-label={itineraryLabels.row.expandBlockToFit({
+                                  parent: parentItem.activity,
+                                  child: item.activity,
+                                })}
+                                disabled={!canEdit}
+                                title={itineraryLabels.row.expandBlockToFitTitle({
+                                  parent: parentItem.activity,
+                                  child: item.activity,
+                                })}
+                                onClick={() => {
+                                  onUpdateItemInline?.(parentItem.id, fitParentBlockPatch);
+                                  setOpenFixMenuItemId(null);
+                                }}
+                              >
+                                <Icon name="clock" />
+                              </button>
+                            ) : null}
+                            {item.parentItemId ? (
+                              <button
+                                type="button"
+                                className={rowActionButtonClassName}
+                                aria-label={itineraryLabels.row.detachSubActivity({
+                                  activity: item.activity,
+                                })}
+                                disabled={!canEdit}
+                                title={itineraryLabels.row.detachSubActivityTitle({
+                                  activity: item.activity,
+                                })}
+                                onClick={() => {
+                                  onUpdateItemInline?.(item.id, { parentItemId: null });
+                                  setOpenFixMenuItemId(null);
+                                }}
+                              >
+                                <Icon name="x" />
+                              </button>
+                            ) : null}
+                          </div>
+                        ) : null}
+                      </div>
                     ) : null}
                     <button
                       type="button"

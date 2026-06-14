@@ -418,6 +418,7 @@ export const messages = {
           `Expand ${parent} to fit ${child}`,
         expandBlockToFitTitle: ({ parent, child }: { parent: string; child: string }) =>
           `Expand ${parent} to fit ${child}`,
+        fixHierarchy: ({ activity }: { activity: string }) => `Fix structure for ${activity}`,
         detachSubActivity: ({ activity }: { activity: string }) =>
           `Detach sub-activity ${activity} from its activity block`,
         detachSubActivityTitle: ({ activity }: { activity: string }) =>
@@ -1590,6 +1591,7 @@ export const messages = {
           `ขยาย ${parent} ให้ครอบ ${child}`,
         expandBlockToFitTitle: ({ parent, child }: { parent: string; child: string }) =>
           `ขยาย ${parent} ให้ครอบ ${child}`,
+        fixHierarchy: ({ activity }: { activity: string }) => `แก้โครงสร้างของ ${activity}`,
         detachSubActivity: ({ activity }: { activity: string }) =>
           `แยก sub-activity ${activity} ออกจาก block`,
         detachSubActivityTitle: ({ activity }: { activity: string }) =>

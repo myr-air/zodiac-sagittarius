@@ -2494,6 +2494,11 @@ describe("SmartItineraryTable", () => {
 
     await user.click(
       within(childRow).getByRole("button", {
+        name: /แก้โครงสร้างของ Child under plain parent/i,
+      }),
+    );
+    await user.click(
+      within(childRow).getByRole("button", {
         name: /เปลี่ยน Plain parent เป็น activity block สำหรับ Child under plain parent/i,
       }),
     );
@@ -2501,6 +2506,11 @@ describe("SmartItineraryTable", () => {
       isPlanBlock: true,
     });
 
+    await user.click(
+      within(childRow).getByRole("button", {
+        name: /แก้โครงสร้างของ Child under plain parent/i,
+      }),
+    );
     await user.click(
       within(childRow).getByRole("button", {
         name: /แยก sub-activity Child under plain parent ออกจาก block/i,
@@ -2540,6 +2550,16 @@ describe("SmartItineraryTable", () => {
       name: /Child under plain parent/i,
     });
 
+    expect(
+      within(childRow).getByRole("button", {
+        name: /แก้โครงสร้างของ Child under plain parent/i,
+      }),
+    ).toBeInTheDocument();
+    fireEvent.click(
+      within(childRow).getByRole("button", {
+        name: /แก้โครงสร้างของ Child under plain parent/i,
+      }),
+    );
     expect(
       within(childRow).getByRole("button", {
         name: /เปลี่ยน Plain parent เป็น activity block สำหรับ Child under plain parent/i,
@@ -2592,6 +2612,11 @@ describe("SmartItineraryTable", () => {
 
     await user.click(
       within(childRow).getByRole("button", {
+        name: /แก้โครงสร้างของ Airport check-in/i,
+      }),
+    );
+    await user.click(
+      within(childRow).getByRole("button", {
         name: /ขยาย Flight to Hong Kong ให้ครอบ Airport check-in/i,
       }),
     );
@@ -2638,6 +2663,12 @@ describe("SmartItineraryTable", () => {
       selectedItemId: "child-arrival",
     });
 
+    await user.click(
+      within(screen.getByRole("row", { name: /Arrival transfer/i })).getByRole(
+        "button",
+        { name: /แก้โครงสร้างของ Arrival transfer/i },
+      ),
+    );
     await user.click(
       within(screen.getByRole("row", { name: /Arrival transfer/i })).getByRole(
         "button",
