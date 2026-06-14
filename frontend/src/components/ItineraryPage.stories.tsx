@@ -245,6 +245,7 @@ export const Owner: Story = {
     onChangeTripPlanStatus: noop,
     onSetMainTripPlan: noop,
     onCreateTripPlan: noop,
+    onRenameTripPlan: noop,
     onChangeTripPath: noop,
     onChangeDayPath: noop,
     onClearDayPath: noop,

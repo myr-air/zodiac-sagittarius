@@ -3409,7 +3409,7 @@ describe("Sagittarius cockpit UI", () => {
       "Trip Plan",
     )) as HTMLSelectElement;
     await user.click(screen.getByRole("button", { name: "เพิ่มแผน" }));
-    await user.type(screen.getByLabelText("ชื่อแผน"), "Museum Day");
+    await user.type(screen.getByPlaceholderText("ตั้งชื่อแผน"), "Museum Day");
     await user.click(screen.getByRole("button", { name: "สร้างแผน" }));
 
     await waitFor(() =>
@@ -3605,7 +3605,7 @@ describe("Sagittarius cockpit UI", () => {
 
     await openItineraryHeaderControls(user);
     await user.click(await screen.findByRole("button", { name: "เพิ่มแผน" }));
-    await user.type(screen.getByLabelText("ชื่อแผน"), "API Plan");
+    await user.type(screen.getByPlaceholderText("ตั้งชื่อแผน"), "API Plan");
     await user.click(screen.getByRole("button", { name: "สร้างแผน" }));
 
     await waitFor(() =>

@@ -114,9 +114,10 @@ describe("Calm Travel Ops CSS contract", () => {
     expect(smartTableSource).toContain("allowOverflow");
     expect(smartTableSource).toContain("page-header-actions relative z-[20]");
     expect(smartTableSource).toContain("itinerary-header-controls absolute right-0 top-[calc(100%_+_8px)]");
-    expect(smartTableSource).toContain("w-[min(560px,calc(100vw_-_32px))]");
-    expect(smartTableSource).toContain("grid-cols-[minmax(0,1fr)_minmax(160px,196px)]");
-    expect(smartTableSource).toContain("min-h-9 w-full min-w-0 rounded-(--radius-sm)");
+    expect(smartTableSource).toContain("w-[min(640px,calc(100vw_-_32px))]");
+    expect(smartTableSource).toContain("grid-cols-[minmax(220px,1fr)_minmax(150px,180px)]");
+    expect(smartTableSource).toContain("min-h-10 w-full min-w-0 rounded-(--radius-sm)");
+    expect(smartTableSource).toContain("itinerary-filter-panel grid min-w-0 grid-cols-[repeat(auto-fit,minmax(118px,1fr))]");
     expect(smartTableSource).toContain("[transition:opacity_160ms_var(--motion-ease-out),transform_160ms_var(--motion-ease-out),box-shadow_160ms_var(--motion-ease-out)]");
     expect(smartTableSource).toContain("data-[state=closed]:opacity-0");
     expect(smartTableSource).toContain("motion-reduce:transition-none");

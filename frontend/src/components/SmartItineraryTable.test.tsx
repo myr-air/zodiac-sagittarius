@@ -54,6 +54,7 @@ function renderTable(
     onChangeTripPlanStatus: vi.fn(),
     onSetMainTripPlan: vi.fn(),
     onCreateTripPlan: vi.fn(),
+    onRenameTripPlan: vi.fn(),
     onChangeDayPath: vi.fn(),
     onClearDayPath: vi.fn(),
     onToggleShowAllPaths: vi.fn(),
@@ -142,6 +143,7 @@ describe("SmartItineraryTable", () => {
           onChangeTripPlanStatus={vi.fn()}
           onSetMainTripPlan={vi.fn()}
           onCreateTripPlan={vi.fn()}
+          onRenameTripPlan={vi.fn()}
           onRedo={vi.fn()}
           onToggleContextRail={vi.fn()}
           onUndo={vi.fn()}
@@ -187,11 +189,13 @@ describe("SmartItineraryTable", () => {
     const onChangeTripPlan = vi.fn();
     const onChangeTripPlanStatus = vi.fn();
     const onSetMainTripPlan = vi.fn();
+    const onRenameTripPlan = vi.fn().mockResolvedValue(true);
     renderTable({
       selectedTripPlanId: "plan-rain",
       onChangeTripPlan,
       onChangeTripPlanStatus,
       onSetMainTripPlan,
+      onRenameTripPlan,
     });
 
     await openHeaderControls(user);
@@ -205,6 +209,12 @@ describe("SmartItineraryTable", () => {
 
     await user.selectOptions(screen.getByLabelText("สถานะแผน"), "proposal");
     expect(onChangeTripPlanStatus).toHaveBeenCalledWith("plan-rain", "proposal");
+
+    const nameInput = screen.getByLabelText("ชื่อแผน");
+    await user.clear(nameInput);
+    await user.type(nameInput, "Rain window");
+    await user.click(screen.getByRole("button", { name: "บันทึกชื่อ" }));
+    expect(onRenameTripPlan).toHaveBeenCalledWith("plan-rain", "Rain window");
 
     await user.click(screen.getByRole("button", { name: "ใช้เป็นแผนหลัก" }));
     expect(onSetMainTripPlan).toHaveBeenCalledWith("plan-rain");
@@ -241,14 +251,19 @@ describe("SmartItineraryTable", () => {
       "right-0",
       "top-[calc(100%_+_8px)]",
       "z-[30]",
-      "max-h-[min(70vh,560px)]",
-      "w-[min(560px,calc(100vw_-_32px))]",
+      "max-h-[min(72vh,620px)]",
+      "w-[min(640px,calc(100vw_-_32px))]",
       "data-[state=closed]:opacity-0",
       "motion-reduce:transition-none",
     );
     expect(controlsPanel?.querySelector("select")).toHaveClass(
       "w-full",
       "min-w-0",
+    );
+    expect(controlsPanel?.querySelector(".trip-plan-create-form")).toBeNull();
+    expect(controlsPanel?.querySelector(".itinerary-filter-panel")).toHaveClass(
+      "grid",
+      "grid-cols-[repeat(auto-fit,minmax(118px,1fr))]",
     );
 
     await user.keyboard("{Escape}");
@@ -270,11 +285,11 @@ describe("SmartItineraryTable", () => {
 
     await openHeaderControls(user);
     await user.click(screen.getByRole("button", { name: "เพิ่มแผน" }));
-    await user.type(screen.getByLabelText("ชื่อแผน"), "Food crawl");
+    await user.type(screen.getByPlaceholderText("ตั้งชื่อแผน"), "Food crawl");
     await user.click(screen.getByRole("button", { name: "สร้างแผน" }));
 
     expect(onCreateTripPlan).toHaveBeenCalledWith("Food crawl");
-    expect(screen.getByLabelText("ชื่อแผน")).toHaveValue("Food crawl");
+    expect(screen.getByPlaceholderText("ตั้งชื่อแผน")).toHaveValue("Food crawl");
     expect(screen.getByText("Could not update Trip Plan.")).toBeInTheDocument();
   });
 

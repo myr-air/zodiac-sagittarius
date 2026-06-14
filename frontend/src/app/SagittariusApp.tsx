@@ -1059,6 +1059,64 @@ export function SagittariusApp({
     return true;
   }
 
+  async function renameTripPlan(
+    tripPlanId: string,
+    name: string,
+  ): Promise<boolean> {
+    if (!canManageTripPlans || !tripPlanId) return false;
+    const trimmedName = name.trim();
+    if (!trimmedName) return false;
+    const currentPlan = trip.planVariants.find((plan) => plan.id === tripPlanId);
+    if (!currentPlan || currentPlan.name === trimmedName) return false;
+    setTripPlanError(null);
+
+    if (isApiMode && resolvedApiClient && participantSession) {
+      setIsTripPlanBusy(true);
+      try {
+        const patchTripPlanMutation =
+          resolvedApiClient.patchTripPlan ??
+          resolvedApiClient.patchPlanVariant;
+        const updatedPlan = await patchTripPlanMutation(
+          trip.id,
+          tripPlanId,
+          participantSession.sessionToken,
+          {
+            clientMutationId: nextClientMutationId("trip-plan-rename"),
+            expectedVersion: currentPlan.version ?? 1,
+            patch: { name: trimmedName },
+          },
+        );
+        setTripState((current) => {
+          const nextTrip = updateTripPlanInTrip(current.trip, updatedPlan);
+          latestTripRef.current = nextTrip;
+          return { ...current, trip: nextTrip };
+        });
+      } catch (error) {
+        if (
+          error instanceof TripApiError &&
+          error.code === "version_conflict"
+        ) {
+          await reloadTripPlanConflict();
+          return true;
+        }
+        setTripPlanError(t.itinerary.tripPlans.error);
+        return false;
+      } finally {
+        setIsTripPlanBusy(false);
+      }
+      return true;
+    }
+
+    commitTrip((current) =>
+      updateTripPlanInTrip(current, {
+        ...currentPlan,
+        name: trimmedName,
+        version: (currentPlan.version ?? 1) + 1,
+      }),
+    );
+    return true;
+  }
+
   async function createTripPlan(name: string): Promise<boolean> {
     if (!canManageTripPlans) return false;
     const trimmedName = name.trim();
@@ -4256,6 +4314,7 @@ export function SagittariusApp({
                   onSetMainTripPlan={setMainTripPlan}
                   onChangeTripPlanStatus={updateTripPlanStatus}
                   onCreateTripPlan={createTripPlan}
+                  onRenameTripPlan={renameTripPlan}
                   tripPlanError={tripPlanError}
                   isTripPlanBusy={isTripPlanBusy}
                   role={currentMember.role}

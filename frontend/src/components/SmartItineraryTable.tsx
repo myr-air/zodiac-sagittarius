@@ -97,6 +97,7 @@ interface SmartItineraryTableProps {
   ) => boolean | void | Promise<boolean | void>;
   onSetMainTripPlan: (tripPlanId: string) => boolean | void | Promise<boolean | void>;
   onCreateTripPlan: (name: string) => boolean | void | Promise<boolean | void>;
+  onRenameTripPlan: (tripPlanId: string, name: string) => boolean | void | Promise<boolean | void>;
   onChangeTripPath?: (pathId: string) => void;
   onChangeDayPath?: (day: string, pathId: string) => void;
   onClearDayPath?: (day: string) => void;
@@ -150,35 +151,42 @@ const pageHeaderNoteClassName =
 const headerControlsButtonClassName =
   "itinerary-header-controls-button inline-flex min-h-9 max-w-full items-center justify-center gap-2 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-3 text-xs font-extrabold text-(--color-text) transition-[background,border-color,color] duration-150 hover:border-(--color-primary-border) hover:bg-(--color-primary-soft) hover:text-(--color-primary-strong) aria-[expanded=true]:border-(--color-primary-border) aria-[expanded=true]:bg-(--color-primary-soft) aria-[expanded=true]:text-(--color-primary-strong) [&_.icon]:size-4";
 const headerControlsPanelClassName =
-  "itinerary-header-controls absolute right-0 top-[calc(100%_+_8px)] z-[30] grid max-h-[min(70vh,560px)] w-[min(560px,calc(100vw_-_32px))] min-w-0 origin-top-right gap-3 overflow-y-auto overscroll-contain rounded-(--radius-md) border border-[color-mix(in_srgb,var(--color-primary)_18%,var(--color-border))] bg-[color-mix(in_srgb,var(--color-surface)_94%,var(--color-primary-soft))] p-3 text-left shadow-[0_18px_42px_rgb(55_47_38_/_0.16)] [transition:opacity_160ms_var(--motion-ease-out),transform_160ms_var(--motion-ease-out),box-shadow_160ms_var(--motion-ease-out)] will-change-[opacity,transform] data-[state=closed]:pointer-events-none data-[state=closed]:-translate-y-1.5 data-[state=closed]:scale-[0.98] data-[state=closed]:opacity-0 data-[state=open]:translate-y-0 data-[state=open]:scale-100 data-[state=open]:opacity-100 motion-reduce:transform-none motion-reduce:transition-none max-[767px]:left-0 max-[767px]:right-auto max-[767px]:top-[calc(100%_+_6px)] max-[767px]:w-[min(100%,calc(100vw_-_24px))] max-[767px]:origin-top-left";
+  "itinerary-header-controls absolute right-0 top-[calc(100%_+_8px)] z-[30] grid max-h-[min(72vh,620px)] w-[min(640px,calc(100vw_-_32px))] min-w-0 origin-top-right overflow-y-auto overscroll-contain rounded-(--radius-md) border border-[color-mix(in_srgb,var(--color-primary)_22%,var(--color-border))] bg-(--color-surface) p-0 text-left shadow-[0_8px_8px_rgb(55_47_38_/_0.10)] [transition:opacity_160ms_var(--motion-ease-out),transform_160ms_var(--motion-ease-out),box-shadow_160ms_var(--motion-ease-out)] will-change-[opacity,transform] data-[state=closed]:pointer-events-none data-[state=closed]:-translate-y-1.5 data-[state=closed]:scale-[0.98] data-[state=closed]:opacity-0 data-[state=open]:translate-y-0 data-[state=open]:scale-100 data-[state=open]:opacity-100 motion-reduce:transform-none motion-reduce:transition-none max-[767px]:fixed max-[767px]:inset-x-3 max-[767px]:top-20 max-[767px]:max-h-[calc(100vh_-_96px)] max-[767px]:w-auto max-[767px]:origin-top";
+const headerControlsTitleBarClassName =
+  "grid min-w-0 gap-1 border-b border-(--color-border) bg-[linear-gradient(180deg,var(--color-surface)_0%,var(--color-surface-subtle)_100%)] px-4 py-3";
+const headerControlsTitleClassName =
+  "flex min-w-0 items-center justify-between gap-3 text-sm font-extrabold text-(--color-text)";
+const headerControlsContentClassName = "grid min-w-0 gap-0";
 const headerControlsSectionClassName =
-  "grid min-w-0 gap-2";
+  "grid min-w-0 gap-3 border-b border-(--color-border) px-4 py-3 last:border-b-0";
 const headerControlsSectionHeaderClassName =
-  "flex min-w-0 flex-wrap items-center justify-between gap-2 text-xs font-extrabold text-(--color-text-muted) [&_strong]:text-(--color-text)";
+  "flex min-w-0 flex-wrap items-center justify-between gap-2 text-xs font-bold text-(--color-text-muted) [&_strong]:text-(--color-text)";
 const headerControlsGridClassName =
-  "grid min-w-0 grid-cols-[minmax(0,1fr)_minmax(160px,196px)] items-end gap-2 max-[640px]:grid-cols-1";
+  "grid min-w-0 grid-cols-[minmax(220px,1fr)_minmax(150px,180px)] items-end gap-2 rounded-(--radius-sm) bg-(--color-surface-subtle) p-2 max-[640px]:grid-cols-1";
 const tripPlanFieldClassName =
   "grid min-w-0 gap-1 text-[11px] font-extrabold text-(--color-text-muted)";
 const tripPlanSelectClassName =
-  "min-h-9 w-full min-w-0 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) px-2.5 text-sm font-bold text-(--color-text) outline-none focus:border-(--color-primary-border) focus:shadow-[0_0_0_2px_rgb(255_196_168_/_0.55)] disabled:cursor-not-allowed disabled:opacity-50";
+  "min-h-10 w-full min-w-0 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-2.5 text-sm font-bold text-(--color-text) outline-none transition-[border-color,box-shadow] duration-150 focus:border-(--color-primary-border) focus:shadow-[0_0_0_2px_rgb(255_196_168_/_0.55)] disabled:cursor-not-allowed disabled:opacity-50";
+const tripPlanActionsClassName =
+  "grid min-w-0 grid-cols-2 gap-2 max-[640px]:grid-cols-1";
 const tripPlanCreateFormClassName =
-  "trip-plan-create-form flex min-w-[260px] flex-wrap items-end gap-2";
+  "trip-plan-create-form col-span-full grid min-w-0 grid-cols-[minmax(0,1fr)_auto_auto] items-end gap-2 max-[640px]:grid-cols-1";
 const tripPlanNameFieldClassName =
-  "grid min-w-[180px] flex-1 gap-1 text-[11px] font-extrabold text-(--color-text-muted)";
+  "grid min-w-0 gap-1 text-[11px] font-extrabold text-(--color-text-muted)";
 const tripPlanNameInputClassName =
-  "min-h-9 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-2.5 text-sm font-bold text-(--color-text) outline-none placeholder:text-(--color-text-muted) focus:border-(--color-primary-border) focus:shadow-[0_0_0_2px_rgb(255_196_168_/_0.55)] disabled:cursor-not-allowed disabled:opacity-50";
+  "min-h-10 w-full min-w-0 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-2.5 text-sm font-bold text-(--color-text) outline-none placeholder:text-(--color-text-muted) focus:border-(--color-primary-border) focus:shadow-[0_0_0_2px_rgb(255_196_168_/_0.55)] disabled:cursor-not-allowed disabled:opacity-50";
 const tripPlanButtonClassName =
-  "min-h-9 rounded-(--radius-sm) px-3 text-xs font-extrabold";
+  "min-h-10 rounded-(--radius-sm) px-3 text-xs font-extrabold";
 const tripPlanSecondaryButtonClassName =
-  "inline-flex min-h-9 items-center justify-center rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) px-3 text-xs font-extrabold text-(--color-text-muted) transition-colors hover:enabled:border-(--color-route-border) hover:enabled:bg-(--color-route-soft) hover:enabled:text-(--color-route) disabled:cursor-not-allowed disabled:opacity-50";
+  "inline-flex min-h-10 items-center justify-center rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) px-3 text-xs font-extrabold text-(--color-text-muted) transition-colors hover:enabled:border-(--color-route-border) hover:enabled:bg-(--color-route-soft) hover:enabled:text-(--color-route) disabled:cursor-not-allowed disabled:opacity-50";
 const pathFilterSummaryClassName =
   "min-w-0 truncate text-xs font-semibold text-(--color-text-muted)";
 const showAllPathsToggleClassName =
-  "show-all-paths-toggle inline-flex min-h-8 items-center gap-2 rounded-(--radius-sm) border border-(--color-route-border) bg-[rgb(255_255_255_/_0.72)] px-2.5 text-xs font-extrabold text-(--color-route) transition-[background,border-color,color] duration-150 hover:bg-(--color-route-soft) has-[:checked]:border-(--color-primary-border) has-[:checked]:bg-(--color-primary-soft) has-[:checked]:text-(--color-primary-strong) [&_input]:size-4 [&_input]:accent-[var(--color-primary)]";
+  "show-all-paths-toggle inline-grid min-h-9 w-full grid-cols-[auto_minmax(0,1fr)] items-center gap-2 rounded-(--radius-sm) border border-(--color-route-border) bg-(--color-surface) px-2.5 text-xs font-extrabold text-(--color-route) transition-[background,border-color,color] duration-150 hover:bg-(--color-route-soft) has-[:checked]:border-(--color-primary-border) has-[:checked]:bg-(--color-primary-soft) has-[:checked]:text-(--color-primary-strong) [&_input]:size-4 [&_input]:accent-[var(--color-primary)]";
 const pathFilterPanelClassName =
-  "itinerary-filter-panel flex min-w-0 flex-wrap gap-1.5";
+  "itinerary-filter-panel grid min-w-0 grid-cols-[repeat(auto-fit,minmax(118px,1fr))] gap-1.5";
 const pathFilterOptionClassName =
-  "inline-flex min-h-8 items-center gap-2 rounded-(--radius-sm) border border-(--color-route-border) bg-(--color-surface) px-2.5 text-xs font-semibold text-(--color-route) hover:border-(--color-route-border) hover:bg-(--color-route-soft)";
+  "inline-grid min-h-9 min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-2 rounded-(--radius-sm) border border-(--color-route-border) bg-(--color-surface) px-2.5 text-xs font-semibold text-(--color-route) transition-[background,border-color,color] duration-150 hover:border-(--color-route-border) hover:bg-(--color-route-soft) [&_span]:truncate";
 const tableScrollClassName =
   "table-scroll m-0 h-auto min-h-0 w-full max-w-full overflow-x-auto overflow-y-hidden rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) shadow-[0_1px_0_rgb(15_23_42_/_0.04)] [contain:paint]";
 const smartTableClassName =
@@ -250,6 +258,7 @@ export function SmartItineraryTable({
   onChangeTripPlanStatus,
   onSetMainTripPlan,
   onCreateTripPlan,
+  onRenameTripPlan,
   onChangeDayPath,
   onClearDayPath,
   onToggleShowAllPaths,
@@ -267,6 +276,10 @@ export function SmartItineraryTable({
   const [renderHeaderControls, setRenderHeaderControls] = useState(false);
   const [isCreatingTripPlan, setIsCreatingTripPlan] = useState(false);
   const [newTripPlanName, setNewTripPlanName] = useState("");
+  const [editedTripPlanNameDraft, setEditedTripPlanNameDraft] = useState<{
+    name: string;
+    planId: string;
+  } | null>(null);
   const [newTripPlanError, setNewTripPlanError] = useState<string | null>(
     null,
   );
@@ -312,6 +325,12 @@ export function SmartItineraryTable({
   const selectedTripPlan =
     tripPlans.find((plan) => plan.id === selectedTripPlanIdForControl) ?? null;
   const selectedTripPlanStatus = selectedTripPlan ? tripPlanStatus(selectedTripPlan) : "draft";
+  const editedTripPlanName =
+    editedTripPlanNameDraft &&
+    selectedTripPlan &&
+    editedTripPlanNameDraft.planId === selectedTripPlan.id
+      ? editedTripPlanNameDraft.name
+      : (selectedTripPlan?.name ?? "");
   const selectedTripPlanIsMain =
     Boolean(selectedTripPlanIdForControl) && selectedTripPlanIdForControl === mainTripPlanId;
   const tripPlanSelectorDisabled = isTripPlanBusy || tripPlans.length === 0;
@@ -320,6 +339,11 @@ export function SmartItineraryTable({
     tripPlanControlsDisabled || !selectedTripPlan || selectedTripPlanIsMain;
   const setMainTripPlanDisabled =
     tripPlanControlsDisabled || !selectedTripPlan || selectedTripPlanIsMain;
+  const renameTripPlanDisabled =
+    tripPlanControlsDisabled ||
+    !selectedTripPlan ||
+    !editedTripPlanName.trim() ||
+    editedTripPlanName.trim() === selectedTripPlan.name;
   const tripPlanMessage = newTripPlanError ?? tripPlanError;
 
   useEffect(() => {
@@ -403,6 +427,21 @@ export function SmartItineraryTable({
     setIsCreatingTripPlan(false);
   }
 
+  async function submitRenameTripPlan(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (isTripPlanBusy || !canManageTripPlans || !selectedTripPlan) return;
+    const name = editedTripPlanName.trim();
+    if (!name) {
+      setNewTripPlanError(t.itinerary.tripPlans.emptyName);
+      return;
+    }
+    if (name === selectedTripPlan.name) return;
+    setNewTripPlanError(null);
+    const renamed = await onRenameTripPlan(selectedTripPlan.id, name);
+    if (renamed === false) return;
+    setEditedTripPlanNameDraft({ name, planId: selectedTripPlan.id });
+  }
+
   return (
     <section
       className={tablePanelClassName}
@@ -479,159 +518,203 @@ export function SmartItineraryTable({
                 id="itinerary-header-controls"
                 aria-hidden={!headerControlsExpanded}
               >
-                <div className={headerControlsSectionClassName}>
-                  <div className={headerControlsSectionHeaderClassName}>
+                <div className={headerControlsTitleBarClassName}>
+                  <div className={headerControlsTitleClassName}>
                     <strong>{t.itinerary.tripPlans.selectorLabel}</strong>
                     {isTripPlanBusy ? (
-                      <span>{t.itinerary.tripPlans.busy}</span>
+                      <span className={pathFilterSummaryClassName}>
+                        {t.itinerary.tripPlans.busy}
+                      </span>
                     ) : tripPlanMessage ? (
-                      <span>{tripPlanMessage}</span>
+                      <span className={pathFilterSummaryClassName}>
+                        {tripPlanMessage}
+                      </span>
                     ) : null}
                   </div>
-                  <div className={headerControlsGridClassName}>
-                    <label className={tripPlanFieldClassName}>
-                      <span>{t.itinerary.tripPlans.selectorLabel}</span>
-                      <select
-                        className={tripPlanSelectClassName}
-                        value={selectedTripPlanIdForControl}
-                        disabled={tripPlanSelectorDisabled}
-                        onChange={(event) => onChangeTripPlan(event.target.value)}
-                      >
-                        {tripPlans.map((plan) => (
-                          <option value={plan.id} key={plan.id}>
-                            {formatTripPlanOptionLabel(
-                              plan,
-                              t.itinerary.tripPlans.status,
-                            )}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                    <label className={tripPlanFieldClassName}>
-                      <span>{t.itinerary.tripPlans.statusLabel}</span>
-                      <select
-                        className={tripPlanSelectClassName}
-                        value={selectedTripPlanStatus}
-                        disabled={tripPlanStatusDisabled}
-                        onChange={(event) =>
-                          onChangeTripPlanStatus(
-                            selectedTripPlanIdForControl,
-                            event.target.value as Exclude<PlanStatus, "main">,
-                          )
-                        }
-                      >
-                        <option value="main" disabled>
-                          {t.itinerary.tripPlans.status.main}
-                        </option>
-                        <option value="draft">
-                          {t.itinerary.tripPlans.status.draft}
-                        </option>
-                        <option value="backup">
-                          {t.itinerary.tripPlans.status.backup}
-                        </option>
-                        <option value="proposal">
-                          {t.itinerary.tripPlans.status.proposal}
-                        </option>
-                      </select>
-                    </label>
-                    {canManageTripPlans ? (
-                      <Button
-                        type="button"
-                        disabled={setMainTripPlanDisabled}
-                        className={tripPlanButtonClassName}
-                        onClick={() =>
-                          onSetMainTripPlan(selectedTripPlanIdForControl)
-                        }
-                      >
-                        {t.itinerary.tripPlans.setMain}
-                      </Button>
-                    ) : null}
-                    {canManageTripPlans ? (
-                      isCreatingTripPlan ? (
-                        <form
-                          className={tripPlanCreateFormClassName}
-                          onSubmit={submitNewTripPlan}
+                  <span className={pathFilterSummaryClassName}>
+                    {selectedTripPlan?.name ?? t.itinerary.tripPlans.selectorLabel}
+                  </span>
+                </div>
+                <div className={headerControlsContentClassName}>
+                  <div className={headerControlsSectionClassName}>
+                    <form
+                      className={headerControlsGridClassName}
+                      onSubmit={submitRenameTripPlan}
+                    >
+                      <label className={tripPlanFieldClassName}>
+                        <span>{t.itinerary.tripPlans.selectorLabel}</span>
+                        <select
+                          className={tripPlanSelectClassName}
+                          value={selectedTripPlanIdForControl}
+                          disabled={tripPlanSelectorDisabled}
+                          onChange={(event) => {
+                            setNewTripPlanError(null);
+                            setEditedTripPlanNameDraft(null);
+                            onChangeTripPlan(event.target.value);
+                          }}
                         >
-                          <label className={tripPlanNameFieldClassName}>
-                            <span>{t.itinerary.tripPlans.nameLabel}</span>
-                            <input
-                              className={tripPlanNameInputClassName}
-                              value={newTripPlanName}
-                              disabled={isTripPlanBusy}
-                              placeholder={t.itinerary.tripPlans.namePlaceholder}
-                              onChange={(event) => {
-                                setNewTripPlanName(event.target.value);
-                                setNewTripPlanError(null);
-                              }}
-                            />
-                          </label>
-                          <Button
-                            type="submit"
-                            disabled={isTripPlanBusy}
-                            className={tripPlanButtonClassName}
-                          >
-                            {t.itinerary.tripPlans.createConfirm}
-                          </Button>
-                          <button
-                            type="button"
-                            className={tripPlanSecondaryButtonClassName}
-                            disabled={isTripPlanBusy}
-                            onClick={() => {
-                              setIsCreatingTripPlan(false);
-                              setNewTripPlanName("");
-                              setNewTripPlanError(null);
-                            }}
-                          >
-                            {t.itinerary.tripPlans.createCancel}
-                          </button>
-                        </form>
-                      ) : (
+                          {tripPlans.map((plan) => (
+                            <option value={plan.id} key={plan.id}>
+                              {formatTripPlanOptionLabel(
+                                plan,
+                                t.itinerary.tripPlans.status,
+                              )}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      <label className={tripPlanFieldClassName}>
+                        <span>{t.itinerary.tripPlans.statusLabel}</span>
+                        <select
+                          className={tripPlanSelectClassName}
+                          value={selectedTripPlanStatus}
+                          disabled={tripPlanStatusDisabled}
+                          onChange={(event) =>
+                            onChangeTripPlanStatus(
+                              selectedTripPlanIdForControl,
+                              event.target.value as Exclude<PlanStatus, "main">,
+                            )
+                          }
+                        >
+                          <option value="main" disabled>
+                            {t.itinerary.tripPlans.status.main}
+                          </option>
+                          <option value="draft">
+                            {t.itinerary.tripPlans.status.draft}
+                          </option>
+                          <option value="backup">
+                            {t.itinerary.tripPlans.status.backup}
+                          </option>
+                          <option value="proposal">
+                            {t.itinerary.tripPlans.status.proposal}
+                          </option>
+                        </select>
+                      </label>
+                      <label className={tripPlanFieldClassName}>
+                        <span>{t.itinerary.tripPlans.nameLabel}</span>
+                        <input
+                          className={tripPlanNameInputClassName}
+                          value={editedTripPlanName}
+                          disabled={tripPlanControlsDisabled || !selectedTripPlan}
+                          onChange={(event) => {
+                            if (!selectedTripPlan) return;
+                            setEditedTripPlanNameDraft({
+                              name: event.target.value,
+                              planId: selectedTripPlan.id,
+                            });
+                            setNewTripPlanError(null);
+                          }}
+                        />
+                      </label>
+                      <Button
+                        type="submit"
+                        disabled={renameTripPlanDisabled}
+                        className={tripPlanButtonClassName}
+                      >
+                        {t.itinerary.tripPlans.saveName}
+                      </Button>
+                    </form>
+                    {canManageTripPlans ? (
+                      <div className={tripPlanActionsClassName}>
                         <Button
                           type="button"
-                          disabled={isTripPlanBusy}
+                          disabled={setMainTripPlanDisabled}
                           className={tripPlanButtonClassName}
-                          onClick={() => setIsCreatingTripPlan(true)}
+                          onClick={() =>
+                            onSetMainTripPlan(selectedTripPlanIdForControl)
+                          }
                         >
-                          {t.itinerary.tripPlans.create}
+                          {t.itinerary.tripPlans.setMain}
                         </Button>
-                      )
+                        {isCreatingTripPlan ? (
+                          <form
+                            className={tripPlanCreateFormClassName}
+                            onSubmit={submitNewTripPlan}
+                          >
+                            <label className={tripPlanNameFieldClassName}>
+                              <span>{t.itinerary.tripPlans.nameLabel}</span>
+                              <input
+                                className={tripPlanNameInputClassName}
+                                value={newTripPlanName}
+                                disabled={isTripPlanBusy}
+                                placeholder={t.itinerary.tripPlans.namePlaceholder}
+                                onChange={(event) => {
+                                  setNewTripPlanName(event.target.value);
+                                  setNewTripPlanError(null);
+                                }}
+                              />
+                            </label>
+                            <Button
+                              type="submit"
+                              disabled={isTripPlanBusy}
+                              className={tripPlanButtonClassName}
+                            >
+                              {t.itinerary.tripPlans.createConfirm}
+                            </Button>
+                            <button
+                              type="button"
+                              className={tripPlanSecondaryButtonClassName}
+                              disabled={isTripPlanBusy}
+                              onClick={() => {
+                                setIsCreatingTripPlan(false);
+                                setNewTripPlanName("");
+                                setNewTripPlanError(null);
+                              }}
+                            >
+                              {t.itinerary.tripPlans.createCancel}
+                            </button>
+                          </form>
+                        ) : (
+                          <Button
+                            type="button"
+                            disabled={isTripPlanBusy}
+                            className={tripPlanButtonClassName}
+                            onClick={() => setIsCreatingTripPlan(true)}
+                          >
+                            {t.itinerary.tripPlans.create}
+                          </Button>
+                        )}
+                      </div>
                     ) : null}
                   </div>
-                </div>
-                <div className={headerControlsSectionClassName}>
-                  <div className={headerControlsSectionHeaderClassName}>
-                    <strong>{t.itinerary.filters.panelLabel}</strong>
-                    <span className={pathFilterSummaryClassName}>
-                      {selectedFilterLabel}
-                    </span>
-                  </div>
-                  <label className={showAllPathsToggleClassName}>
-                    <input
-                      type="checkbox"
-                      checked={showAllPaths}
-                      disabled={!onToggleShowAllPaths}
-                      onChange={(event) =>
-                        onToggleShowAllPaths?.(event.target.checked)
-                      }
-                    />
-                    <span>{t.itinerary.filters.showAllPaths}</span>
-                  </label>
-                  <div
-                    className={pathFilterPanelClassName}
-                    id="itinerary-plan-filters"
-                    role="region"
-                    aria-label={t.itinerary.filters.panelLabel}
-                  >
-                    {filterOptions.map((option) => (
-                      <label className={pathFilterOptionClassName} key={option.id}>
-                        <input
-                          type="checkbox"
-                          checked={selectedPathIdSet.has(option.id)}
-                          onChange={() => togglePlanFilter(option.id)}
-                        />
-                        <span>{option.name}</span>
-                      </label>
-                    ))}
+                  <div className={headerControlsSectionClassName}>
+                    <div className={headerControlsSectionHeaderClassName}>
+                      <strong>{t.itinerary.filters.panelLabel}</strong>
+                      <span className={pathFilterSummaryClassName}>
+                        {selectedFilterLabel}
+                      </span>
+                    </div>
+                    <label className={showAllPathsToggleClassName}>
+                      <input
+                        type="checkbox"
+                        checked={showAllPaths}
+                        disabled={!onToggleShowAllPaths}
+                        onChange={(event) =>
+                          onToggleShowAllPaths?.(event.target.checked)
+                        }
+                      />
+                      <span>{t.itinerary.filters.showAllPaths}</span>
+                    </label>
+                    <div
+                      className={pathFilterPanelClassName}
+                      id="itinerary-plan-filters"
+                      role="region"
+                      aria-label={t.itinerary.filters.panelLabel}
+                    >
+                      {filterOptions.map((option) => (
+                        <label
+                          className={pathFilterOptionClassName}
+                          key={option.id}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={selectedPathIdSet.has(option.id)}
+                            onChange={() => togglePlanFilter(option.id)}
+                          />
+                          <span>{option.name}</span>
+                        </label>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
