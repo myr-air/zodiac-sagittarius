@@ -383,12 +383,8 @@ button:disabled,
 }
 
 @media (min-width: 1280px) {
-  body {
-    padding: 28px;
-  }
-
   .app-layout {
-    min-height: calc(100vh - 56px);
+    min-height: 100vh;
     overflow: hidden;
     border: 1px solid rgb(216 206 196 / 0.86);
     border-radius: 16px;
@@ -399,7 +395,7 @@ button:disabled,
   .side-rail,
   .workspace-grid,
   .planning-main {
-    height: calc(100vh - 58px);
+    height: 100vh;
   }
 
   .side-rail {

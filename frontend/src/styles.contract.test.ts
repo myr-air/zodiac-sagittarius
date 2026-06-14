@@ -95,9 +95,10 @@ describe("Calm Travel Ops CSS contract", () => {
 
   it("contains horizontal scrolling to the smart table viewport", () => {
     expect(css).toMatch(/body\s*{[^}]*overflow-x:\s*hidden/s);
+    expect(css).not.toMatch(/body\s*{[^}]*padding:\s*28px/s);
     expect(appSource).toContain("planning-main h-full min-h-0 min-w-0 overflow-y-auto");
     expect(smartTableSource).toContain("table-scroll m-0 h-auto min-h-0 w-full max-w-full overflow-x-auto");
-    expect(smartTableSource).toContain("smart-table w-full min-w-[1080px] table-fixed border-collapse");
+    expect(smartTableSource).toContain("smart-table w-full min-w-[520px] table-fixed border-collapse");
   });
 
   it("keeps vertical scrolling on the planning shell instead of nesting table scrollbars", () => {
@@ -140,14 +141,14 @@ describe("Calm Travel Ops CSS contract", () => {
     expect(css).toMatch(/\.timeline-stop::before\s*{[^}]*content:\s*""/s);
   });
 
-  it("animates row drag previews, day collapse, and drawer transitions", () => {
+  it("keeps drawer transitions and the blank itinerary row skeleton contract", () => {
     expect(css).toContain("@keyframes drawer-slide-in");
     expect(contextRailSource).toContain("[transition:transform_220ms_ease,opacity_180ms_ease,box-shadow_220ms_ease]");
     expect(contextRailSource).toContain("data-[state=closed]:translate-x-6");
     expect(contextRailSource).toContain("shadow-[-28px_0_54px_rgb(15_23_42_/_0.18)]");
-    expect(smartTableSource).toContain("data-row cursor-pointer");
-    expect(smartTableSource).toContain("data-row--drop-target translate-y-px");
-    expect(css).toMatch(/\.day-group\[data-state="closed"\]\s+\.data-row td\s*{[^}]*height:\s*0/s);
+    expect(smartTableSource).toContain("item-placeholder-row [&_td]:bg-(--color-surface)");
+    expect(smartTableSource).toContain("item-placeholder-cell min-w-0 bg-(--color-surface)");
+    expect(smartTableSource).toContain("item-placeholder-canvas");
   });
 
 });

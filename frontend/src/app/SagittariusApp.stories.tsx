@@ -21,14 +21,6 @@ const viewerMemberId = tripFixture.currentMembers.viewer.id;
 const denseTrip = buildDenseTripFixture();
 const emptyTrip = buildEmptyTripFixture();
 
-function addStopButtons(canvasElement: HTMLElement) {
-  return Array.from(
-    canvasElement.querySelectorAll<HTMLButtonElement>(
-      'button[aria-label^="Add stop"]',
-    ),
-  );
-}
-
 async function expectWorkspaceView(
   canvasElement: HTMLElement,
   viewClassName: string,
@@ -46,7 +38,8 @@ async function expectOverviewView({ canvasElement }: { canvasElement: HTMLElemen
 async function expectItineraryView({ canvasElement }: { canvasElement: HTMLElement }) {
   await expectWorkspaceView(canvasElement, ".table-panel");
   await expect(canvasElement.querySelector(".table-scroll")).toHaveClass("overflow-x-auto");
-  await expect(canvasElement.querySelector(".smart-table")).toHaveClass("min-w-[1080px]");
+  await expect(canvasElement.querySelector(".smart-table")).toHaveClass("min-w-[520px]");
+  await expect(canvasElement.querySelector(".item-placeholder-cell")).toBeInTheDocument();
 }
 
 async function expectTimelineView({ canvasElement }: { canvasElement: HTMLElement }) {
@@ -232,7 +225,8 @@ export const Traveler: Story = {
   play: async ({ canvasElement }) => {
     await expect(canvasElement.querySelector(".workspace-shell")).toBeInTheDocument();
     await expect(canvasElement.querySelector(".smart-table")).toBeInTheDocument();
-    await expect(addStopButtons(canvasElement)[0]).toBeEnabled();
+    await expect(canvasElement.querySelector(".item-placeholder-cell")).toBeInTheDocument();
+    await expect(canvasElement.querySelector('button[aria-label^="Add stop"]')).toBeNull();
   },
 };
 export const Viewer: Story = {
@@ -240,7 +234,8 @@ export const Viewer: Story = {
   play: async ({ canvasElement }) => {
     await expect(canvasElement.querySelector(".workspace-shell")).toBeInTheDocument();
     await expect(canvasElement.querySelector(".smart-table")).toBeInTheDocument();
-    await expect(addStopButtons(canvasElement)[0]).toBeDisabled();
+    await expect(canvasElement.querySelector(".item-placeholder-cell")).toBeInTheDocument();
+    await expect(canvasElement.querySelector('button[aria-label^="Add stop"]')).toBeNull();
   },
 };
 export const Desktop1024Overview: Story = {

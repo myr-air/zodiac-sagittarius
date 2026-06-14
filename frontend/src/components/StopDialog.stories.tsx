@@ -166,11 +166,9 @@ export const FoodForm: Story = {
     }),
   },
   play: async ({ canvas }) => {
-    await expect(canvas.getByLabelText("Type")).toHaveValue("food");
-    await expect(canvas.getByLabelText("Restaurant / vendor")).toHaveValue("Central Market");
-    await expect(canvas.getByLabelText("Cuisine / menu")).toHaveValue("Cantonese dim sum");
+    await expect(canvas.getByLabelText("Type")).toHaveValue("experience");
+    await expect(canvas.getByLabelText("Provider")).toHaveValue("Central Market");
     await expect(canvas.getByLabelText("Booking ref")).toHaveValue("Lunch shortlist");
-    await expect(canvas.getByLabelText("Cost note")).toHaveValue("HKD 160 per person estimate");
   },
 };
 
@@ -215,10 +213,9 @@ export const ShoppingForm: Story = {
     }),
   },
   play: async ({ canvas }) => {
-    await expect(canvas.getByLabelText("Type")).toHaveValue("shopping");
-    await expect(canvas.getByLabelText("Store / area")).toHaveValue("Sneaker Street");
-    await expect(canvas.getByLabelText("Shopping list")).toHaveValue("Limited colorways, socks, gifts");
-    await expect(canvas.getByLabelText("Budget / time note")).toHaveValue("Cap group browsing at 45 minutes");
+    await expect(canvas.getByLabelText("Type")).toHaveValue("experience");
+    await expect(canvas.getByLabelText("Provider")).toHaveValue("");
+    await expect(canvas.getByLabelText("Booking ref")).toHaveValue("");
   },
 };
 

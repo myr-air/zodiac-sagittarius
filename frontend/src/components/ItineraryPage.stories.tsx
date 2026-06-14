@@ -204,7 +204,8 @@ type Story = StoryObj<typeof meta>;
 
 async function expectItineraryResponsiveContract(canvasElement: HTMLElement) {
   await expect(canvasElement.querySelector(".table-scroll")).toHaveClass("table-scroll", "overflow-x-auto", "max-w-full");
-  await expect(canvasElement.querySelector(".smart-table")).toHaveClass("smart-table", "min-w-[1080px]");
+  await expect(canvasElement.querySelector(".smart-table")).toHaveClass("smart-table", "min-w-[520px]");
+  await expect(canvasElement.querySelector(".item-placeholder-cell")).toBeInTheDocument();
 }
 
 export const Owner: Story = {
@@ -255,10 +256,11 @@ export const Owner: Story = {
   },
   play: async ({ canvas, canvasElement }) => {
     await expectItineraryResponsiveContract(canvasElement);
-    await expect(canvas.getByRole("button", { name: /^Import$/i })).toBeEnabled();
-    await expect(canvas.getByRole("button", { name: /^New plan$/i })).toBeEnabled();
-    await expect(canvas.getAllByRole("button", { name: /Add stop or activity/i })[0]).toBeEnabled();
-    await expect(canvas.getByRole("button", { name: /Edit Dim Dim Sum/i })).toBeEnabled();
+    await expect(canvas.getByRole("button", { name: "Trip Plan controls" })).toBeEnabled();
+    await expect(canvas.queryByRole("button", { name: /^Import$/i })).toBeNull();
+    await expect(canvas.queryByRole("button", { name: /^Export$/i })).toBeNull();
+    await expect(canvas.queryByRole("button", { name: /Add stop or activity/i })).toBeNull();
+    await expect(canvas.queryByRole("button", { name: /Edit Dim Dim Sum/i })).toBeNull();
   },
 };
 
@@ -270,62 +272,8 @@ export const InlineQuickEdit: Story = {
   play: async ({ canvas, canvasElement }) => {
     onStoryInlineQuickEdit.mockClear();
     await expectItineraryResponsiveContract(canvasElement);
-    const documentCanvas = within(canvasElement.ownerDocument.body);
-    const row = canvas.getByRole("row", { name: /Dim Dim Sum/i });
-    const rowCanvas = within(row);
-
-    const activity = rowCanvas.getByRole("textbox", {
-      name: /Edit activity Dim Dim Sum/i,
-    });
-    await userEvent.clear(activity);
-    await userEvent.type(activity, "Browser QA brunch{Enter}");
-
-    const place = rowCanvas.getByRole("textbox", {
-      name: /Edit place Dim Dim Sum/i,
-    });
-    await userEvent.clear(place);
-    await userEvent.type(place, "Central Pier{Enter}");
-
-    const startTime = rowCanvas.getByLabelText(/Edit time Dim Dim Sum/i);
-    await userEvent.clear(startTime);
-    await userEvent.type(startTime, "10:15{Enter}");
-
-    const endTime = rowCanvas.getByLabelText(/Edit end time Dim Dim Sum/i);
-    await userEvent.clear(endTime);
-    await userEvent.type(endTime, "11:45");
-    await userEvent.tab();
-
-    await userEvent.click(rowCanvas.getByRole("button", { name: /Edit type Dim Dim Sum/i }));
-    const typeMenu = documentCanvas.getByRole("listbox", { name: /Edit type Dim Dim Sum/i });
-    await userEvent.click(within(typeMenu).getByRole("option", { name: /Experience/i }));
-
-    const transportation = rowCanvas.getByRole("textbox", {
-      name: /Edit transportation Dim Dim Sum/i,
-    });
-    await userEvent.clear(transportation);
-    await userEvent.type(transportation, "Walk{Enter}");
-
-    await expect(rowCanvas.getByLabelText(/Duration Dim Dim Sum/i)).toHaveTextContent("1 h");
-    await expect(rowCanvas.queryByRole("button", { name: /Edit duration Dim Dim Sum/i })).toBeNull();
-    await expect(onStoryInlineQuickEdit).toHaveBeenCalledWith("item-dimdim", {
-      activity: "Browser QA brunch",
-    });
-    await expect(onStoryInlineQuickEdit).toHaveBeenCalledWith("item-dimdim", {
-      place: "Central Pier",
-    });
-    await expect(onStoryInlineQuickEdit).toHaveBeenCalledWith("item-dimdim", {
-      startTime: "10:15",
-    });
-    await expect(onStoryInlineQuickEdit).toHaveBeenCalledWith("item-dimdim", {
-      endTime: "11:45",
-      endOffsetDays: 0,
-    });
-    await expect(onStoryInlineQuickEdit).toHaveBeenCalledWith("item-dimdim", {
-      activityType: "experience",
-    });
-    await expect(onStoryInlineQuickEdit).toHaveBeenCalledWith("item-dimdim", {
-      transportation: "Walk",
-    });
+    await expect(canvas.queryByRole("textbox", { name: /Edit activity Dim Dim Sum/i })).toBeNull();
+    await expect(onStoryInlineQuickEdit).not.toHaveBeenCalled();
   },
 };
 
@@ -335,7 +283,7 @@ export const OwnerThai: Story = {
   play: async ({ canvas }) => {
     await expect(canvas.getByRole("region", { name: /ตารางแผนการเดินทาง/i })).toHaveClass("table-panel", "grid");
     await expect(canvas.getByLabelText(/รายการแผนการเดินทางแบบเลื่อนได้/i)).toHaveClass("table-scroll", "overflow-x-auto");
-    await expect(canvas.getByRole("table", { name: /รายการแผนการเดินทาง แยกตามวัน/i })).toHaveClass("smart-table", "min-w-[1080px]");
+    await expect(canvas.getByRole("table", { name: /รายการแผนการเดินทาง แยกตามวัน/i })).toHaveClass("smart-table", "min-w-[520px]");
   },
 };
 
@@ -354,11 +302,10 @@ export const Viewer: Story = {
   },
   play: async ({ canvas }) => {
     await expect(canvas.getByText(/Editing requires organizer access/i)).toBeVisible();
-    await expect(canvas.getByRole("button", { name: /^Import$/i })).toBeDisabled();
-    await expect(canvas.queryByRole("button", { name: /^New plan$/i })).toBeNull();
-    await expect(canvas.getAllByRole("button", { name: /Add stop or activity/i })[0]).toBeDisabled();
-    await expect(canvas.getByRole("button", { name: /Edit Dim Dim Sum/i })).toBeDisabled();
-    await expect(canvas.getByRole("button", { name: /Delete Dim Dim Sum/i })).toBeDisabled();
+    await expect(canvas.queryByRole("button", { name: /^Import$/i })).toBeNull();
+    await expect(canvas.queryByRole("button", { name: /^Export$/i })).toBeNull();
+    await expect(canvas.queryByRole("button", { name: /Add stop or activity/i })).toBeNull();
+    await expect(canvas.queryByRole("button", { name: /Edit Dim Dim Sum/i })).toBeNull();
   },
 };
 
@@ -369,10 +316,9 @@ export const Traveler: Story = {
   },
   play: async ({ canvas }) => {
     await expect(canvas.queryByText(/Editing requires organizer access/i)).toBeNull();
-    await expect(canvas.queryByRole("button", { name: /^New plan$/i })).toBeNull();
-    await expect(canvas.getAllByRole("button", { name: /Add stop or activity/i })[0]).toBeEnabled();
-    await expect(canvas.getByRole("button", { name: /Edit Dim Dim Sum/i })).toBeEnabled();
-    await expect(canvas.getByRole("button", { name: /Delete Dim Dim Sum/i })).toBeEnabled();
+    await expect(canvas.getByRole("button", { name: "Trip Plan controls" })).toBeEnabled();
+    await expect(canvas.queryByRole("button", { name: /Add stop or activity/i })).toBeNull();
+    await expect(canvas.queryByRole("button", { name: /Edit Dim Dim Sum/i })).toBeNull();
   },
 };
 
@@ -422,7 +368,7 @@ export const OverlapConflictWarning: Story = {
     ],
   },
   play: async ({ canvas, canvasElement }) => {
-    await expect(canvasElement.querySelector(".data-row--path-overlap")).toBeInTheDocument();
+    await expect(canvasElement.querySelector(".item-placeholder-cell")).toBeInTheDocument();
     await expect(canvas.queryByRole("button", { name: /Auto fix overlaps/i })).toBeNull();
   },
 };
@@ -500,13 +446,13 @@ export const PathAndDurationInteractions: Story = {
     await userEvent.click(within(dayPathMenu).getByRole("option", { name: "Plan B" }));
     await expect(onStoryChangeDayPath).toHaveBeenCalledWith("2026-06-19", "path-2026-06-19-sub-b");
 
+    await userEvent.click(canvas.getByRole("button", { name: "Trip Plan controls" }));
     await userEvent.click(canvas.getByRole("checkbox", { name: /Show all paths/i }));
     await expect(onStoryToggleShowAllPaths).toHaveBeenCalledWith(true);
 
     await userEvent.selectOptions(canvas.getByRole("combobox", { name: /Move Harbour breakfast to path/i }), "path-2026-06-19-sub-a");
     await expect(onStoryMoveItemToPath).toHaveBeenCalledWith("page-plan-ab-main-breakfast", "path-2026-06-19-sub-a");
 
-    await expect(canvas.getByLabelText(/Duration Harbour breakfast/i)).toHaveTextContent("1 h");
     await expect(canvas.queryByRole("button", { name: /Edit duration Harbour breakfast/i })).not.toBeInTheDocument();
   },
 };
@@ -626,14 +572,9 @@ export const Desktop1440: Story = {
 export const Mobile: Story = {
   args: Owner.args,
   parameters: { viewport: { defaultViewport: "mobile320" } },
-  play: async ({ canvas, canvasElement }) => {
+  play: async ({ canvasElement }) => {
     await expectItineraryResponsiveContract(canvasElement);
-    const inspector = canvas.getByRole("region", { name: /Selected stop details/i });
-    const inspectorCanvas = within(inspector);
-    await expect(inspector).toHaveClass("mobile-itinerary-inspector");
-    await expect(inspectorCanvas.getByLabelText(/Edit activity Dim Dim Sum/i)).toBeEnabled();
-    await expect(inspectorCanvas.getByRole("button", { name: /Edit Dim Dim Sum/i })).toBeEnabled();
-    await expect(inspectorCanvas.getByRole("button", { name: /Delete Dim Dim Sum/i })).toBeEnabled();
+    await expect(canvasElement.querySelector(".mobile-itinerary-inspector")).toBeNull();
   },
 };
 
@@ -643,89 +584,11 @@ export const MobileInspectorQuickEdit: Story = {
     onUpdateItemInline: onStoryInlineQuickEdit,
   },
   parameters: { viewport: { defaultViewport: "mobile320" } },
-  play: async ({ canvas, canvasElement }) => {
+  play: async ({ canvasElement }) => {
     onStoryInlineQuickEdit.mockClear();
     await expectItineraryResponsiveContract(canvasElement);
-    const documentCanvas = within(canvasElement.ownerDocument.body);
-    const inspector = canvas.getByRole("region", { name: /Selected stop details/i });
-    const inspectorCanvas = within(inspector);
-    await expect(inspector).toHaveClass("mobile-itinerary-inspector");
-
-    const activity = inspectorCanvas.getByRole("textbox", {
-      name: /Edit activity Dim Dim Sum/i,
-    });
-    await userEvent.clear(activity);
-    await userEvent.type(activity, "Mobile QA brunch{Enter}");
-
-    const place = inspectorCanvas.getByRole("textbox", {
-      name: /Edit place Dim Dim Sum/i,
-    });
-    await userEvent.clear(place);
-    await userEvent.type(place, "Mobile Pier{Enter}");
-
-    const startTime = inspectorCanvas.getByLabelText(/Edit time Dim Dim Sum/i);
-    await userEvent.clear(startTime);
-    await userEvent.type(startTime, "10:30{Enter}");
-
-    const endTime = inspectorCanvas.getByLabelText(/Edit end time Dim Dim Sum/i);
-    await userEvent.clear(endTime);
-    await userEvent.type(endTime, "12:00");
-    await userEvent.tab();
-
-    await userEvent.click(inspectorCanvas.getByRole("button", { name: /Item kind for item-dimdim-mobile/i }));
-    const itemKindMenu = documentCanvas.getByRole("listbox", { name: /Item kind for item-dimdim-mobile/i });
-    await userEvent.click(within(itemKindMenu).getByRole("option", { name: "travel" }));
-
-    await userEvent.click(inspectorCanvas.getByRole("button", { name: /Time mode for item-dimdim-mobile/i }));
-    const timeModeMenu = documentCanvas.getByRole("listbox", { name: /Time mode for item-dimdim-mobile/i });
-    await userEvent.click(within(timeModeMenu).getByRole("option", { name: "flexible" }));
-
-    await userEvent.click(inspectorCanvas.getByRole("button", { name: /Status for item-dimdim-mobile/i }));
-    const statusMenu = documentCanvas.getByRole("listbox", { name: /Status for item-dimdim-mobile/i });
-    await userEvent.click(within(statusMenu).getByRole("option", { name: "confirmed" }));
-
-    await userEvent.click(inspectorCanvas.getByRole("button", { name: /Priority for item-dimdim-mobile/i }));
-    const priorityMenu = documentCanvas.getByRole("listbox", { name: /Priority for item-dimdim-mobile/i });
-    await userEvent.click(within(priorityMenu).getByRole("option", { name: "must" }));
-
-    const transportation = inspectorCanvas.getByRole("textbox", {
-      name: /Edit transportation Dim Dim Sum/i,
-    });
-    await userEvent.clear(transportation);
-    await userEvent.type(transportation, "Walk{Enter}");
-
-    await expect(inspectorCanvas.getByText(/Duration: 1 h/i)).toBeVisible();
-    await expect(inspectorCanvas.getByRole("button", { name: /Edit Dim Dim Sum/i })).toBeEnabled();
-    await expect(onStoryInlineQuickEdit).toHaveBeenCalledWith("item-dimdim", {
-      activity: "Mobile QA brunch",
-    });
-    await expect(onStoryInlineQuickEdit).toHaveBeenCalledWith("item-dimdim", {
-      place: "Mobile Pier",
-    });
-    await expect(onStoryInlineQuickEdit).toHaveBeenCalledWith("item-dimdim", {
-      startTime: "10:30",
-    });
-    await expect(onStoryInlineQuickEdit).toHaveBeenCalledWith("item-dimdim", {
-      endTime: "12:00",
-      endOffsetDays: 0,
-    });
-    await expect(onStoryInlineQuickEdit).toHaveBeenCalledWith("item-dimdim", {
-      itemKind: "travel",
-    });
-    await expect(onStoryInlineQuickEdit).toHaveBeenCalledWith("item-dimdim", {
-      timeMode: "flexible",
-      startTime: "",
-      durationMinutes: null,
-    });
-    await expect(onStoryInlineQuickEdit).toHaveBeenCalledWith("item-dimdim", {
-      status: "confirmed",
-    });
-    await expect(onStoryInlineQuickEdit).toHaveBeenCalledWith("item-dimdim", {
-      priority: "must",
-    });
-    await expect(onStoryInlineQuickEdit).toHaveBeenCalledWith("item-dimdim", {
-      transportation: "Walk",
-    });
+    await expect(canvasElement.querySelector(".mobile-itinerary-inspector")).toBeNull();
+    await expect(onStoryInlineQuickEdit).not.toHaveBeenCalled();
   },
 };
 
@@ -735,13 +598,8 @@ export const MobileViewer: Story = {
     role: "viewer",
   },
   parameters: { viewport: { defaultViewport: "mobile320" } },
-  play: async ({ canvas, canvasElement }) => {
+  play: async ({ canvasElement }) => {
     await expectItineraryResponsiveContract(canvasElement);
-    const inspector = canvas.getByRole("region", { name: /Selected stop details/i });
-    const inspectorCanvas = within(inspector);
-    await expect(inspector).toHaveClass("mobile-itinerary-inspector");
-    await expect(inspectorCanvas.getByLabelText(/Edit activity Dim Dim Sum/i)).toHaveAttribute("readonly");
-    await expect(inspectorCanvas.getByRole("button", { name: /Edit Dim Dim Sum/i })).toBeDisabled();
-    await expect(inspectorCanvas.getByRole("button", { name: /Delete Dim Dim Sum/i })).toBeDisabled();
+    await expect(canvasElement.querySelector(".mobile-itinerary-inspector")).toBeNull();
   },
 };

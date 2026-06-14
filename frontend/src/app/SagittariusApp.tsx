@@ -114,8 +114,6 @@ import type {
   PlaceResolutionCandidate,
   PlaceResolutionRequest,
   PlaceResolutionResponse,
-  PlanCheck,
-  PlanSuggestion,
   SettlementSuggestion,
   StopNote,
   Suggestion,
@@ -263,7 +261,7 @@ export function SagittariusApp({
   initialMemberId,
   initialTrip = seedTrip,
 }: SagittariusAppProps) {
-  const { locale, t } = useI18n();
+  const { t } = useI18n();
   /* v8 ignore next 3 */
   const resolvedApiClient = useMemo(
     () =>
@@ -317,8 +315,6 @@ export function SagittariusApp({
   const [suggestions, setSuggestions] = useState<Suggestion[]>(() =>
     tripFixtureSuggestions.map((suggestion) => ({ ...suggestion })),
   );
-  const [latestPlanCheck, setLatestPlanCheck] = useState<PlanCheck | null>(null);
-  const [planCheckRunning, setPlanCheckRunning] = useState(false);
   const [tasks, setTasks] = useState<TripTask[]>(() =>
     (initialTrip.tasks ?? tripFixtureTasks).map((task) => ({ ...task })),
   );
@@ -536,10 +532,6 @@ export function SagittariusApp({
         (suggestion) => suggestion.planVariantId === selectedTripPlanId,
       ),
     [selectedTripPlanId, suggestions],
-  );
-  const scopedPlanCheck = useMemo(
-    () => scopePlanCheckToItems(latestPlanCheck, activePlanItems),
-    [activePlanItems, latestPlanCheck],
   );
   const itineraryCommitmentsByItemId = useMemo(
     () =>
@@ -2325,7 +2317,6 @@ export function SagittariusApp({
       future: [],
     });
     setSuggestions(cockpit.suggestions);
-    setLatestPlanCheck(cockpit.latestPlanCheck ?? null);
     setTasks(cockpit.tasks);
     setStopNotes(cockpit.stopNotes);
     setBackendExpenseSummary(null);
@@ -2555,73 +2546,6 @@ export function SagittariusApp({
         createdAt: new Date().toISOString(),
       },
     ]);
-  }
-
-  async function runPlanCheck() {
-    if (!canEdit) return;
-    setPlanCheckRunning(true);
-    try {
-      if (isApiMode && resolvedApiClient?.runPlanCheck && participantSession) {
-        const check = await resolvedApiClient.runPlanCheck(
-          trip.id,
-          participantSession.sessionToken,
-          selectedTripPlanId,
-        );
-        setLatestPlanCheck(check);
-        return;
-      }
-      setLatestPlanCheck(buildLocalPlanCheck(trip, currentMember.id, selectedTripPlanId));
-    } finally {
-      setPlanCheckRunning(false);
-    }
-  }
-
-  async function updatePlanSuggestionStatus(
-    suggestion: PlanSuggestion,
-    status: PlanSuggestion["status"],
-  ) {
-    if (!canReviewSuggestions && status !== "snoozed") return;
-    if (isApiMode && resolvedApiClient?.patchPlanSuggestion && participantSession) {
-      const patched = await resolvedApiClient.patchPlanSuggestion(
-        trip.id,
-        suggestion.id,
-        participantSession.sessionToken,
-        {
-          expectedVersion: suggestion.version,
-          status,
-          snoozedUntil: status === "snoozed" ? new Date(Date.now() + 86_400_000).toISOString() : null,
-        },
-      );
-      setLatestPlanCheck((current) =>
-        current
-          ? {
-              ...current,
-              suggestions: current.suggestions.map((candidate) =>
-                candidate.id === patched.id ? patched : candidate,
-              ),
-            }
-          : current,
-      );
-      return;
-    }
-    setLatestPlanCheck((current) =>
-      current
-        ? {
-            ...current,
-            suggestions: current.suggestions.map((candidate) =>
-              candidate.id === suggestion.id
-                ? { ...candidate, status, version: candidate.version + 1 }
-                : candidate,
-            ),
-          }
-        : current,
-    );
-  }
-
-  function reviewPlanSuggestionEdit(suggestion: PlanSuggestion) {
-    const action = parsePlanSuggestionEditAction(suggestion.actionPayload);
-    const targetItemId = action?.itemId ?? suggestion.targetItemIds[0];
-    if (targetItemId) editItem(targetItemId);
   }
 
   async function createTask(input: {
@@ -4313,17 +4237,6 @@ export function SagittariusApp({
                 onToggleTaskStatus={toggleTaskStatus}
               />
             ) : currentView === "itinerary" ? (
-              <>
-                <PlanCheckPanel
-                  canMutate={canReviewSuggestions}
-                  canRun={canEdit}
-                  check={scopedPlanCheck}
-                  locale={locale}
-                  running={planCheckRunning}
-                  onRun={runPlanCheck}
-                  onReviewSuggestionEdit={reviewPlanSuggestionEdit}
-                  onUpdateSuggestionStatus={updatePlanSuggestionStatus}
-                />
                 <SmartItineraryTable
                   canRedo={tripState.future.length > 0}
                   canRestructure={canEdit}
@@ -4382,7 +4295,6 @@ export function SagittariusApp({
                   }
                   onUndo={undo}
                 />
-              </>
             ) : currentView === "map" ? (
               <RouteMapView
                 countries={trip.countries ?? []}
@@ -6036,84 +5948,6 @@ function slugifyFilePart(value: string): string {
   );
 }
 
-function buildLocalPlanCheck(trip: Trip, memberId: string, tripPlanId?: string | null): PlanCheck {
-  const scopedItems = tripPlanId ? trip.itineraryItems.filter((item) => item.planVariantId === tripPlanId) : trip.itineraryItems;
-  const suggestions: PlanSuggestion[] = scopedItems.flatMap((item, index) => {
-    const missing: string[] = [];
-    if (item.timeMode !== "flexible" && !item.startTime.trim()) missing.push("time");
-    if (item.timeMode !== "flexible" && (item.durationMinutes === null || item.durationMinutes <= 0)) missing.push("duration");
-    if (item.itemKind === "travel" && !Array.isArray(item.details.transportSegments)) missing.push("transport segments");
-    if (!missing.length) return [];
-    const detail = missing.join(", ");
-    const patch =
-      missing.includes("time")
-        ? {
-            timeMode: "flexible",
-            startTime: null,
-            endTime: null,
-            endOffsetDays: 0,
-            durationMinutes: null,
-          }
-        : missing.includes("duration")
-          ? { durationMinutes: 60 }
-          : undefined;
-    return [{
-      id: `local-plan-suggestion-${index + 1}`,
-      tripId: trip.id,
-      planCheckId: "local-plan-check",
-      severity: "warning",
-      scope: "item",
-      targetItemIds: [item.id],
-      explanation: {
-        en: `${item.activity} is missing ${detail}.`,
-        th: `${item.activity} ยังขาด ${detail}`,
-      },
-      recommendedAction: {
-        en: "Open the item details and complete the missing fields.",
-        th: "เปิดรายละเอียดรายการนี้แล้วเติมข้อมูลที่ขาด",
-      },
-      actionKind: "editItem",
-      actionPayload: patch ? { itemId: item.id, patch } : { itemId: item.id },
-      status: "pending",
-      snoozedUntil: null,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      version: 1,
-    } satisfies PlanSuggestion];
-  });
-
-  return {
-    id: "local-plan-check",
-    tripId: trip.id,
-    tripPlanId,
-    createdBy: memberId,
-    itineraryFingerprint: scopedItems.map((item) => `${item.id}:${item.version}`).join("|"),
-    stale: false,
-    status: "complete",
-    languageMetadata: { provider: "local-rules" },
-    createdAt: new Date().toISOString(),
-    completedAt: new Date().toISOString(),
-    version: 1,
-    suggestions,
-  };
-}
-
-function scopePlanCheckToItems(
-  check: PlanCheck | null,
-  items: ItineraryItem[],
-): PlanCheck | null {
-  if (!check) return null;
-  if (check.tripPlanId && !items.some((item) => item.planVariantId === check.tripPlanId)) return null;
-  const itemIds = new Set(items.map((item) => item.id));
-  return {
-    ...check,
-    suggestions: check.suggestions.filter(
-      (suggestion) =>
-        suggestion.targetItemIds.some((itemId) => itemIds.has(itemId)),
-    ),
-  };
-}
-
 export function normalizeInlineTimePatch(
   item: ItineraryItem,
   patch: InlineItineraryItemPatch,
@@ -6150,115 +5984,6 @@ export function normalizeInlineTimePatch(
     nextPatch.durationMinutes = durationMinutes;
   }
   return nextPatch;
-}
-
-export function parsePlanSuggestionEditAction(
-  payload: Record<string, unknown>,
-): { itemId: string; patch: InlineItineraryItemPatch } | null {
-  const itemId = typeof payload.itemId === "string" ? payload.itemId : "";
-  const rawPatch = payload.patch;
-  if (!itemId || !isPlainRecord(rawPatch)) return null;
-  const patch: InlineItineraryItemPatch = {};
-  if (rawPatch.timeMode === "scheduled" || rawPatch.timeMode === "flexible") {
-    patch.timeMode = rawPatch.timeMode;
-    if (rawPatch.timeMode === "flexible") {
-      patch.startTime = "";
-      patch.endTime = null;
-      patch.endOffsetDays = 0;
-      patch.durationMinutes = null;
-    }
-  }
-  if (typeof rawPatch.startTime === "string" || rawPatch.startTime === null) {
-    patch.startTime = rawPatch.startTime ?? "";
-  }
-  if (typeof rawPatch.endTime === "string" || rawPatch.endTime === null) {
-    patch.endTime = rawPatch.endTime ?? null;
-  }
-  if (typeof rawPatch.endOffsetDays === "number") {
-    patch.endOffsetDays = Math.max(0, Math.floor(rawPatch.endOffsetDays));
-  }
-  if (
-    typeof rawPatch.durationMinutes === "number" ||
-    rawPatch.durationMinutes === null
-  ) {
-    patch.durationMinutes = rawPatch.durationMinutes;
-  }
-  if (typeof rawPatch.parentItemId === "string" || rawPatch.parentItemId === null) {
-    patch.parentItemId = rawPatch.parentItemId;
-  }
-  if (typeof rawPatch.status === "string") {
-    patch.status = rawPatch.status as ItineraryItem["status"];
-  }
-  if (typeof rawPatch.priority === "string") {
-    patch.priority = rawPatch.priority as ItineraryItem["priority"];
-  }
-  return Object.keys(patch).length ? { itemId, patch } : null;
-}
-
-function isPlainRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-
-function PlanCheckPanel({
-  canMutate,
-  canRun,
-  check,
-  locale,
-  running,
-  onRun,
-  onReviewSuggestionEdit,
-  onUpdateSuggestionStatus,
-}: {
-  canMutate: boolean;
-  canRun: boolean;
-  check: PlanCheck | null;
-  locale: "en" | "th";
-  running: boolean;
-  onRun: () => void;
-  onReviewSuggestionEdit: (suggestion: PlanSuggestion) => void;
-  onUpdateSuggestionStatus: (suggestion: PlanSuggestion, status: PlanSuggestion["status"]) => void;
-}) {
-  const pendingSuggestions = check?.suggestions.filter((suggestion) => suggestion.status === "pending") ?? [];
-  return (
-    <section className="mx-6 mt-5 grid gap-3 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) p-3 shadow-[var(--shadow-soft)] max-[767px]:mx-3" aria-label="Plan Check">
-      <div className="flex flex-wrap items-center gap-2">
-        <strong className="text-sm font-extrabold text-(--color-text)">Plan Check</strong>
-        {check?.stale ? <span className="rounded-(--radius-sm) bg-amber-100 px-2 py-1 text-[11px] font-extrabold text-amber-800">stale</span> : null}
-        <span className="text-xs font-bold text-(--color-text-muted)">{pendingSuggestions.length} pending</span>
-        <Button type="button" variant="secondary" onClick={onRun} disabled={!canRun || running}>
-          <Icon name="check" />
-          {running ? "Checking..." : "Run Plan Check"}
-        </Button>
-      </div>
-      {check ? (
-        <div className="grid gap-2">
-          {check.suggestions.length ? check.suggestions.map((suggestion) => {
-            const explanation = suggestion.explanation[locale] || suggestion.explanation.en;
-            const action = suggestion.recommendedAction[locale] || suggestion.recommendedAction.en;
-            return (
-              <article key={suggestion.id} className="grid gap-1 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) p-2">
-                <div className="flex flex-wrap items-center gap-2 text-[11px] font-extrabold">
-                  <span>{suggestion.severity}</span>
-                  <span>{suggestion.scope}</span>
-                  <span>{suggestion.status}</span>
-                </div>
-                <strong className="text-sm text-(--color-text)">{explanation}</strong>
-                <p className="m-0 text-xs font-semibold text-(--color-text-muted)">{action}</p>
-                {suggestion.status === "pending" ? (
-                  <div className="flex flex-wrap gap-2">
-                    <Button type="button" variant="secondary" disabled={!canMutate} onClick={() => onReviewSuggestionEdit(suggestion)}>Review edit</Button>
-                    <Button type="button" variant="secondary" disabled={!canMutate} onClick={() => onUpdateSuggestionStatus(suggestion, "dismissed")}>Dismiss</Button>
-                    <Button type="button" variant="secondary" disabled={!canMutate} onClick={() => onUpdateSuggestionStatus(suggestion, "snoozed")}>Snooze</Button>
-                    <Button type="button" variant="ghost" onClick={() => undefined}>Keep reviewing</Button>
-                  </div>
-                ) : null}
-              </article>
-            );
-          }) : <p className="m-0 text-xs font-bold text-(--color-text-muted)">No findings.</p>}
-        </div>
-      ) : null}
-    </section>
-  );
 }
 
 interface WorkspaceToastProps {

@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import { expect, userEvent, waitFor } from "storybook/test";
+import { expect } from "storybook/test";
 import { buildDenseTripFixture, tripFixture } from "@/src/trip/trip-fixtures";
 import type { ItineraryItem } from "@/src/trip/types";
 import { SmartItineraryTable } from "./SmartItineraryTable";
@@ -287,7 +287,9 @@ export const Owner: Story = {
     onUndo: noop,
   },
   play: async ({ canvas }) => {
-    await expect(canvas.getByRole("button", { name: /Select stop Dim Dim Sum/i })).toHaveAttribute("aria-pressed", "true");
+    await expect(canvas.getByRole("button", { name: "Trip Plan controls" })).toBeEnabled();
+    await expect(canvas.getByRole("group", { name: /Activity path graph for Day 2/i })).toHaveClass("activity-path-graph");
+    await expect(canvas.queryByRole("button", { name: /Add stop or activity/i })).toBeNull();
   },
 };
 
@@ -295,10 +297,9 @@ export const OwnerThai: Story = {
   args: Owner.args,
   parameters: { locale: "th" },
   play: async ({ canvas }) => {
-    await expect(canvas.getByRole("button", { name: /เลือกจุด Dim Dim Sum/i })).toHaveAttribute("aria-pressed", "true");
     await expect(canvas.getByRole("region", { name: /ตารางแผนการเดินทาง/i })).toHaveClass("table-panel", "grid");
     await expect(canvas.getByLabelText(/รายการแผนการเดินทางแบบเลื่อนได้/i)).toHaveClass("table-scroll", "overflow-x-auto");
-    await expect(canvas.getByRole("table", { name: /รายการแผนการเดินทาง แยกตามวัน/i })).toHaveClass("smart-table", "min-w-[1080px]");
+    await expect(canvas.getByRole("table", { name: /รายการแผนการเดินทาง แยกตามวัน/i })).toHaveClass("smart-table", "min-w-[520px]");
   },
 };
 
@@ -306,7 +307,8 @@ export const Viewer: Story = { args: { ...Owner.args, role: "viewer" } };
 export const Traveler: Story = {
   args: { ...Owner.args, role: "traveler" },
   play: async ({ canvas }) => {
-    await expect(canvas.getAllByRole("button", { name: /Add stop or activity/i })[0]).toBeEnabled();
+    await expect(canvas.getByRole("button", { name: "Trip Plan controls" })).toBeEnabled();
+    await expect(canvas.queryByRole("button", { name: /Add stop or activity/i })).toBeNull();
   },
 };
 export const Dense: Story = { args: { ...Owner.args, items: buildDenseTripFixture().itineraryItems } };
@@ -320,8 +322,8 @@ export const HierarchyBlocks: Story = {
     dayPathOverrides: {},
   },
   play: async ({ canvas }) => {
-    await expect(canvas.getByLabelText("Structure for Flight to Hong Kong")).toBeVisible();
-    await expect(canvas.getByLabelText("Structure for Check in")).toBeVisible();
+    await expect(canvas.getByRole("button", { name: /Flight to Hong Kong on Main/i })).toHaveClass("activity-path-graph-node--selected");
+    await expect(canvas.queryByLabelText("Structure for Flight to Hong Kong")).toBeNull();
   },
 };
 
@@ -381,33 +383,9 @@ export const HierarchyWarnings: Story = {
     dayPathOverrides: {},
   },
   play: async ({ canvas, canvasElement }) => {
-    await expect(await canvas.findByText("Parent block")).toBeVisible();
-    await waitFor(() => {
-      expect(canvasElement.querySelector(".data-row--has-warning")).toBeInTheDocument();
-    });
-    await expect(
-      canvas.queryByRole("button", { name: /Promote Plain parent to activity block/i }),
-    ).not.toBeInTheDocument();
-    await userEvent.click(canvas.getByRole("button", { name: /Fix structure for Child under plain parent/i }));
-    await expect(
-      canvas.getByRole("button", {
-        name: /Promote Plain parent to activity block for Child under plain parent/i,
-      }),
-    ).toBeVisible();
-    await expect(
-      canvas.getByRole("button", {
-        name: /Detach sub-activity Child under plain parent from its activity block/i,
-      }),
-    ).toBeVisible();
-    await userEvent.click(canvas.getByRole("button", { name: /Fix structure for Child outside window/i }));
-    await expect(
-      canvas.getByRole("button", { name: /Expand Window block to fit Child outside window/i }),
-    ).toBeVisible();
-    await expect(
-      canvas.getByRole("button", {
-        name: /Detach sub-activity Child outside window from its activity block/i,
-      }),
-    ).toBeVisible();
+    await expect(canvasElement.querySelector(".item-placeholder-cell")).toBeInTheDocument();
+    await expect(canvas.queryByText("Parent block")).toBeNull();
+    await expect(canvas.queryByRole("button", { name: /Fix structure/i })).toBeNull();
   },
 };
 export const TableOverflow: Story = {
@@ -429,7 +407,7 @@ export const TableOverflow: Story = {
   },
   play: async ({ canvasElement }) => {
     await expect(canvasElement.querySelector(".table-scroll")).toHaveClass("table-scroll", "overflow-x-auto", "max-w-full");
-    await expect(canvasElement.querySelector(".smart-table")).toHaveClass("smart-table", "min-w-[1080px]");
+    await expect(canvasElement.querySelector(".smart-table")).toHaveClass("smart-table", "min-w-[520px]");
   },
 };
 export const BranchGraph: Story = {
