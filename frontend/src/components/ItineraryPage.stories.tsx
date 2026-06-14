@@ -636,6 +636,98 @@ export const Mobile: Story = {
   },
 };
 
+export const MobileInspectorQuickEdit: Story = {
+  args: {
+    ...Owner.args,
+    onUpdateItemInline: onStoryInlineQuickEdit,
+  },
+  parameters: { viewport: { defaultViewport: "mobile320" } },
+  play: async ({ canvas, canvasElement }) => {
+    onStoryInlineQuickEdit.mockClear();
+    await expectItineraryResponsiveContract(canvasElement);
+    const documentCanvas = within(canvasElement.ownerDocument.body);
+    const inspector = canvas.getByRole("region", { name: /Selected stop details/i });
+    const inspectorCanvas = within(inspector);
+    await expect(inspector).toHaveClass("mobile-itinerary-inspector");
+
+    const activity = inspectorCanvas.getByRole("textbox", {
+      name: /Edit activity Dim Dim Sum/i,
+    });
+    await userEvent.clear(activity);
+    await userEvent.type(activity, "Mobile QA brunch{Enter}");
+
+    const place = inspectorCanvas.getByRole("textbox", {
+      name: /Edit place Dim Dim Sum/i,
+    });
+    await userEvent.clear(place);
+    await userEvent.type(place, "Mobile Pier{Enter}");
+
+    const startTime = inspectorCanvas.getByLabelText(/Edit time Dim Dim Sum/i);
+    await userEvent.clear(startTime);
+    await userEvent.type(startTime, "10:30{Enter}");
+
+    const endTime = inspectorCanvas.getByLabelText(/Edit end time Dim Dim Sum/i);
+    await userEvent.clear(endTime);
+    await userEvent.type(endTime, "12:00");
+    await userEvent.tab();
+
+    await userEvent.click(inspectorCanvas.getByRole("button", { name: /Item kind for item-dimdim-mobile/i }));
+    const itemKindMenu = documentCanvas.getByRole("listbox", { name: /Item kind for item-dimdim-mobile/i });
+    await userEvent.click(within(itemKindMenu).getByRole("option", { name: "travel" }));
+
+    await userEvent.click(inspectorCanvas.getByRole("button", { name: /Time mode for item-dimdim-mobile/i }));
+    const timeModeMenu = documentCanvas.getByRole("listbox", { name: /Time mode for item-dimdim-mobile/i });
+    await userEvent.click(within(timeModeMenu).getByRole("option", { name: "flexible" }));
+
+    await userEvent.click(inspectorCanvas.getByRole("button", { name: /Status for item-dimdim-mobile/i }));
+    const statusMenu = documentCanvas.getByRole("listbox", { name: /Status for item-dimdim-mobile/i });
+    await userEvent.click(within(statusMenu).getByRole("option", { name: "confirmed" }));
+
+    await userEvent.click(inspectorCanvas.getByRole("button", { name: /Priority for item-dimdim-mobile/i }));
+    const priorityMenu = documentCanvas.getByRole("listbox", { name: /Priority for item-dimdim-mobile/i });
+    await userEvent.click(within(priorityMenu).getByRole("option", { name: "must" }));
+
+    const transportation = inspectorCanvas.getByRole("textbox", {
+      name: /Edit transportation Dim Dim Sum/i,
+    });
+    await userEvent.clear(transportation);
+    await userEvent.type(transportation, "Walk{Enter}");
+
+    await expect(inspectorCanvas.getByText(/Duration: 1 h/i)).toBeVisible();
+    await expect(inspectorCanvas.getByRole("button", { name: /Edit Dim Dim Sum/i })).toBeEnabled();
+    await expect(onStoryInlineQuickEdit).toHaveBeenCalledWith("item-dimdim", {
+      activity: "Mobile QA brunch",
+    });
+    await expect(onStoryInlineQuickEdit).toHaveBeenCalledWith("item-dimdim", {
+      place: "Mobile Pier",
+    });
+    await expect(onStoryInlineQuickEdit).toHaveBeenCalledWith("item-dimdim", {
+      startTime: "10:30",
+    });
+    await expect(onStoryInlineQuickEdit).toHaveBeenCalledWith("item-dimdim", {
+      endTime: "12:00",
+      endOffsetDays: 0,
+    });
+    await expect(onStoryInlineQuickEdit).toHaveBeenCalledWith("item-dimdim", {
+      itemKind: "travel",
+    });
+    await expect(onStoryInlineQuickEdit).toHaveBeenCalledWith("item-dimdim", {
+      timeMode: "flexible",
+      startTime: "",
+      durationMinutes: null,
+    });
+    await expect(onStoryInlineQuickEdit).toHaveBeenCalledWith("item-dimdim", {
+      status: "confirmed",
+    });
+    await expect(onStoryInlineQuickEdit).toHaveBeenCalledWith("item-dimdim", {
+      priority: "must",
+    });
+    await expect(onStoryInlineQuickEdit).toHaveBeenCalledWith("item-dimdim", {
+      transportation: "Walk",
+    });
+  },
+};
+
 export const MobileViewer: Story = {
   args: {
     ...Owner.args,
