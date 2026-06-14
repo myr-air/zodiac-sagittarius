@@ -198,12 +198,16 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, initialPare
   }
 
   function updateStartTime(startTime: string) {
+    const nextEndOffsetDays = values.endTime
+      ? endOffsetDaysBetweenTimes(startTime, values.endTime)
+      : 0;
     const nextDuration = values.endTime
-      ? durationBetweenTimes(startTime, values.endTime, values.endOffsetDays)
+      ? durationBetweenTimes(startTime, values.endTime, nextEndOffsetDays)
       : null;
     setValues((current) => ({
       ...current,
       startTime,
+      endOffsetDays: values.endTime ? nextEndOffsetDays : current.endOffsetDays,
       durationMinutes: nextDuration,
     }));
   }
