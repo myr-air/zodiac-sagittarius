@@ -65,6 +65,26 @@ describe("Sagittarius project scaffold", () => {
     expect(readFileSync(join(frontendRoot, ".storybook/main.ts"), "utf8")).toContain("@storybook/nextjs-vite");
   });
 
+  it("keeps project-side routing docs current", () => {
+    const map = readFileSync(join(repoRoot, "docs/MAP.md"), "utf8");
+    const commands = readFileSync(join(repoRoot, "docs/COMMANDS.md"), "utf8");
+
+    expect(map).toContain("[AGENTS.md](../AGENTS.md)");
+    expect(map).toContain("[CONTEXT.md](../CONTEXT.md)");
+    expect(map).toContain("[docs/COMMANDS.md](./COMMANDS.md)");
+    expect(map).toContain("[frontend/src/trip/](../frontend/src/trip)");
+    expect(map).toContain("[frontend/src/components/](../frontend/src/components)");
+    expect(map).toContain("[backend/crates/sagittarius-api/src/api/](../backend/crates/sagittarius-api/src/api)");
+    expect(map).toContain("[backend/migrations/](../backend/migrations)");
+    expect(map).toContain("[docs/itinerary-trip-plan-phase-0-1-implementation-spec.md](./itinerary-trip-plan-phase-0-1-implementation-spec.md)");
+
+    expect(commands).toContain("Use `rtk` for shell commands");
+    expect(commands).toContain("| Backend schema/contracts | `backend/` | `rtk cargo test -p sagittarius-api --test schema_contract -- --nocapture` |");
+    expect(commands).toContain("| Frontend type safety | `frontend/` | `rtk bun run typecheck` |");
+    expect(commands).toContain("| Real API e2e compatibility | Repository root | `rtk make frontend-e2e-local` |");
+    expect(commands).toContain("| Aries profile gate before strong claims | `/Users/xiivth/.codex/aries` | `rtk python3 scripts/check_all.py` |");
+  });
+
   it("uses Next App Router with trip-scoped production routes", () => {
     expect(readFileSync(join(frontendRoot, "app/page.tsx"), "utf8")).toContain("HomeLanding");
     expect(readFileSync(join(frontendRoot, "src/components/HomeLanding.tsx"), "utf8")).toContain("LanguageSwitch");
