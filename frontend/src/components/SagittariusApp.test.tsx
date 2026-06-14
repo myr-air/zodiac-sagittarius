@@ -5713,38 +5713,6 @@ describe("Sagittarius cockpit UI", () => {
         }),
       );
     });
-    fireEvent.change(
-      within(context).getByLabelText(
-        "ผู้ให้บริการของ Flight to Hong Kong booking draft",
-      ),
-      { target: { value: "Corrected Air" } },
-    );
-    fireEvent.blur(
-      within(context).getByLabelText(
-        "ผู้ให้บริการของ Flight to Hong Kong booking draft",
-      ),
-    );
-    fireEvent.change(
-      within(context).getByLabelText(
-        "รหัสอ้างอิงของ Flight to Hong Kong booking draft",
-      ),
-      { target: { value: "COR-100" } },
-    );
-    fireEvent.blur(
-      within(context).getByLabelText(
-        "รหัสอ้างอิงของ Flight to Hong Kong booking draft",
-      ),
-    );
-
-    await waitFor(() => {
-      persistedTrip = JSON.parse(storage.getItem(tripStorageKey)!) as Trip;
-      expect(persistedTrip.bookingDocs?.[0]).toEqual(
-        expect.objectContaining({
-          providerName: "Corrected Air",
-          confirmationCode: "COR-100",
-        }),
-      );
-    });
   });
 
   it("imports itinerary rows into the current Trip Plan and keeps path fields", async () => {
@@ -6157,6 +6125,63 @@ describe("Sagittarius cockpit UI", () => {
       expect.objectContaining({
         expectedVersion: 1,
         patch: expect.objectContaining({
+          type: "train",
+          title: "Rain plan gallery booking draft",
+          relatedItineraryItemIds: ["item-rain-gallery"],
+        }),
+      }),
+    );
+    fireEvent.change(
+      within(context).getByLabelText(
+        "ผู้ให้บริการของ Rain plan gallery booking draft",
+      ),
+      { target: { value: "MTR" } },
+    );
+    fireEvent.blur(
+      within(context).getByLabelText(
+        "ผู้ให้บริการของ Rain plan gallery booking draft",
+      ),
+    );
+
+    await waitFor(() => expect(patchBookingDoc).toHaveBeenCalledTimes(2));
+    expect(patchBookingDoc).toHaveBeenNthCalledWith(
+      2,
+      apiTrip.id,
+      "api-quick-booking",
+      "session-token",
+      expect.objectContaining({
+        expectedVersion: 2,
+        patch: expect.objectContaining({
+          providerName: "MTR",
+          type: "train",
+          title: "Rain plan gallery booking draft",
+          relatedItineraryItemIds: ["item-rain-gallery"],
+        }),
+      }),
+    );
+    fireEvent.change(
+      within(context).getByLabelText(
+        "รหัสอ้างอิงของ Rain plan gallery booking draft",
+      ),
+      { target: { value: "MTR-22" } },
+    );
+    fireEvent.blur(
+      within(context).getByLabelText(
+        "รหัสอ้างอิงของ Rain plan gallery booking draft",
+      ),
+    );
+
+    await waitFor(() => expect(patchBookingDoc).toHaveBeenCalledTimes(3));
+    expect(patchBookingDoc).toHaveBeenNthCalledWith(
+      3,
+      apiTrip.id,
+      "api-quick-booking",
+      "session-token",
+      expect.objectContaining({
+        expectedVersion: 3,
+        patch: expect.objectContaining({
+          confirmationCode: "MTR-22",
+          providerName: "MTR",
           type: "train",
           title: "Rain plan gallery booking draft",
           relatedItineraryItemIds: ["item-rain-gallery"],

@@ -289,6 +289,7 @@ export function SagittariusApp({
   }));
   const latestTripRef = useRef(tripState.trip);
   const inlineUpdateQueueRef = useRef<Map<string, Promise<void>>>(new Map());
+  const bookingDocUpdateQueueRef = useRef<Map<string, Promise<void>>>(new Map());
   const [participantSession, setParticipantSession] =
     useState<TripParticipantSession | null>(null);
   const [isCockpitLoaded, setIsCockpitLoaded] = useState(false);
@@ -2882,6 +2883,34 @@ export function SagittariusApp({
     bookingDocId: string,
     input: BookingDocInput,
   ) {
+    await queueBookingDocUpdate(bookingDocId, () =>
+      runBookingDocUpdate(bookingDocId, input),
+    );
+  }
+
+  async function queueBookingDocUpdate(
+    bookingDocId: string,
+    update: () => void | Promise<void>,
+  ) {
+    const previousUpdate =
+      bookingDocUpdateQueueRef.current.get(bookingDocId) ?? Promise.resolve();
+    const queuedUpdate = previousUpdate
+      .catch(() => undefined)
+      .then(() => update());
+    bookingDocUpdateQueueRef.current.set(bookingDocId, queuedUpdate);
+    try {
+      await queuedUpdate;
+    } finally {
+      if (bookingDocUpdateQueueRef.current.get(bookingDocId) === queuedUpdate) {
+        bookingDocUpdateQueueRef.current.delete(bookingDocId);
+      }
+    }
+  }
+
+  async function runBookingDocUpdate(
+    bookingDocId: string,
+    input: BookingDocInput,
+  ) {
     if (!canEditBookings) return;
     if (isApiMode && resolvedApiClient && participantSession) {
       for (let attempt = 0; attempt < 2; attempt += 1) {
@@ -2992,43 +3021,45 @@ export function SagittariusApp({
       providerName?: string | null;
     },
   ) {
-    const bookingDoc = latestTripRef.current.bookingDocs?.find(
-      (candidate) => candidate.id === bookingDocId,
-    );
-    if (!bookingDoc) return;
-    const providerName =
-      patch.providerName !== undefined
-        ? patch.providerName
-        : bookingDoc.providerName;
-    const confirmationCode =
-      patch.confirmationCode !== undefined
-        ? patch.confirmationCode
-        : bookingDoc.confirmationCode;
-    if (
-      providerName === bookingDoc.providerName &&
-      confirmationCode === bookingDoc.confirmationCode
-    )
-      return;
-    await updateBookingDoc(bookingDoc.id, {
-      type: bookingDoc.type,
-      title: bookingDoc.title,
-      status: bookingDoc.status,
-      visibility: bookingDoc.visibility,
-      ownerMemberId: bookingDoc.ownerMemberId,
-      providerName,
-      confirmationCode,
-      startsAt: bookingDoc.startsAt,
-      endsAt: bookingDoc.endsAt,
-      timezone: bookingDoc.timezone,
-      priceAmount: bookingDoc.priceAmount,
-      currency: bookingDoc.currency,
-      travelerIds: bookingDoc.travelerIds,
-      externalLinks: bookingDoc.externalLinks,
-      relatedItineraryItemIds: bookingDoc.relatedItineraryItemIds,
-      relatedTaskIds: bookingDoc.relatedTaskIds,
-      relatedExpenseIds: bookingDoc.relatedExpenseIds,
-      noteIds: bookingDoc.noteIds,
-      notes: bookingDoc.notes,
+    await queueBookingDocUpdate(bookingDocId, async () => {
+      const bookingDoc = latestTripRef.current.bookingDocs?.find(
+        (candidate) => candidate.id === bookingDocId,
+      );
+      if (!bookingDoc) return;
+      const providerName =
+        patch.providerName !== undefined
+          ? patch.providerName
+          : bookingDoc.providerName;
+      const confirmationCode =
+        patch.confirmationCode !== undefined
+          ? patch.confirmationCode
+          : bookingDoc.confirmationCode;
+      if (
+        providerName === bookingDoc.providerName &&
+        confirmationCode === bookingDoc.confirmationCode
+      )
+        return;
+      await runBookingDocUpdate(bookingDoc.id, {
+        type: bookingDoc.type,
+        title: bookingDoc.title,
+        status: bookingDoc.status,
+        visibility: bookingDoc.visibility,
+        ownerMemberId: bookingDoc.ownerMemberId,
+        providerName,
+        confirmationCode,
+        startsAt: bookingDoc.startsAt,
+        endsAt: bookingDoc.endsAt,
+        timezone: bookingDoc.timezone,
+        priceAmount: bookingDoc.priceAmount,
+        currency: bookingDoc.currency,
+        travelerIds: bookingDoc.travelerIds,
+        externalLinks: bookingDoc.externalLinks,
+        relatedItineraryItemIds: bookingDoc.relatedItineraryItemIds,
+        relatedTaskIds: bookingDoc.relatedTaskIds,
+        relatedExpenseIds: bookingDoc.relatedExpenseIds,
+        noteIds: bookingDoc.noteIds,
+        notes: bookingDoc.notes,
+      });
     });
   }
 

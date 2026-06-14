@@ -662,8 +662,27 @@ export function ContextRail({
                           defaultValue={bookingDoc.providerName ?? ""}
                           disabled={!canEdit || !onChangeBookingDocQuickFields}
                           placeholder={t.contextRail.booking.providerPlaceholder}
+                          onChange={(event) => {
+                            event.currentTarget.dataset.draftValue =
+                              event.currentTarget.value;
+                          }}
                           onBlur={(event) => {
-                            const value = event.currentTarget.value.trim();
+                            const value = (
+                              event.currentTarget.dataset.draftValue ??
+                              event.currentTarget.value
+                            ).trim();
+                            if (value === (bookingDoc.providerName ?? "")) return;
+                            void onChangeBookingDocQuickFields?.(bookingDoc.id, {
+                              providerName: value || null,
+                            });
+                          }}
+                          onKeyDown={(event) => {
+                            if (event.key !== "Enter") return;
+                            event.preventDefault();
+                            const value = (
+                              event.currentTarget.dataset.draftValue ??
+                              event.currentTarget.value
+                            ).trim();
                             if (value === (bookingDoc.providerName ?? "")) return;
                             void onChangeBookingDocQuickFields?.(bookingDoc.id, {
                               providerName: value || null,
@@ -681,8 +700,27 @@ export function ContextRail({
                           defaultValue={bookingDoc.confirmationCode ?? ""}
                           disabled={!canEdit || !onChangeBookingDocQuickFields}
                           placeholder={t.contextRail.booking.referencePlaceholder}
+                          onChange={(event) => {
+                            event.currentTarget.dataset.draftValue =
+                              event.currentTarget.value;
+                          }}
                           onBlur={(event) => {
-                            const value = event.currentTarget.value.trim();
+                            const value = (
+                              event.currentTarget.dataset.draftValue ??
+                              event.currentTarget.value
+                            ).trim();
+                            if (value === (bookingDoc.confirmationCode ?? "")) return;
+                            void onChangeBookingDocQuickFields?.(bookingDoc.id, {
+                              confirmationCode: value || null,
+                            });
+                          }}
+                          onKeyDown={(event) => {
+                            if (event.key !== "Enter") return;
+                            event.preventDefault();
+                            const value = (
+                              event.currentTarget.dataset.draftValue ??
+                              event.currentTarget.value
+                            ).trim();
                             if (value === (bookingDoc.confirmationCode ?? "")) return;
                             void onChangeBookingDocQuickFields?.(bookingDoc.id, {
                               confirmationCode: value || null,
