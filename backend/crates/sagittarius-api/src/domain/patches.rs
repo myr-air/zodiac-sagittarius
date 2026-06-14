@@ -1740,6 +1740,7 @@ mod tests {
         let valid = PatchExpenseRequest {
             client_mutation_id: "expense-patch".to_string(),
             expected_version: 2,
+            trip_plan_id: None,
             title: None,
             amount_minor: Some(10_000),
             currency: None,
@@ -1790,6 +1791,7 @@ mod tests {
         let patch = PatchExpenseRequest {
             client_mutation_id: "expense-patch".to_string(),
             expected_version: 2,
+            trip_plan_id: None,
             title: None,
             amount_minor: None,
             currency: None,
