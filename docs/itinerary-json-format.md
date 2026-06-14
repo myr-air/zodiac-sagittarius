@@ -91,12 +91,13 @@ Import behavior:
   switches the destination Main Plan by itself.
 - Exports carry compatibility `expenses`, `bookingDocs`, `stopNotes`, and
   `tasks` under `records` so later phases can round-trip booking, ticket, note,
-  checklist, or Actual Expense context without losing source information. Phase
-  1 import preserves this record payload as compatibility data and may remap ids
-  for preview/apply bookkeeping, but it must not clone paid Actual Expenses,
-  create paid commitments, or rely on source Trip Plan metadata to switch the
-  destination Main Plan. Durable same-plan record creation, repair, or rejection
-  belongs to the Phase 2 plan-scoped record behavior.
+  checklist, or Actual Expense context without losing source information.
+- Import record handling is explicit. `Clone linked records` creates linked
+  expenses, booking docs, notes, and tasks in the selected destination Trip Plan
+  and remaps item/record links during apply. `Activities only` imports the
+  itinerary rows while leaving the source records as reference context in the
+  uploaded file. Invalid or dangling record references are rejected before apply.
+  Neither mode switches the destination Main Plan.
 - Other plan variants, members, and suggestions are not changed.
 
 ## Import Normalizer Endpoint

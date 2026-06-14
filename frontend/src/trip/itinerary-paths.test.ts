@@ -313,6 +313,7 @@ describe("itinerary path import application", () => {
       scope: "day",
       day: "2026-06-19",
       mode: "keep-alternatives",
+      recordMode: "clone-linked",
     });
 
     expect(next.itineraryItems.map((item) => item.id)).toEqual([
@@ -368,6 +369,7 @@ describe("itinerary path import application", () => {
         pathName: "Main",
         scope: "trip",
         mode: "keep-alternatives",
+        recordMode: "clone-linked",
       },
     );
 
@@ -426,6 +428,7 @@ describe("itinerary path import application", () => {
       pathName: "Main",
       scope: "trip",
       mode: "keep-alternatives",
+      recordMode: "clone-linked",
     });
     const imported = next.itineraryItems.filter((item) => item.id.startsWith("import-"));
 
@@ -475,6 +478,7 @@ describe("itinerary path import application", () => {
       pathName: "Main",
       scope: "trip",
       mode: "keep-alternatives",
+      recordMode: "clone-linked",
     });
     const imported = next.itineraryItems.find((item) => item.id === "import-overlap-main");
 
@@ -525,6 +529,7 @@ describe("itinerary path import application", () => {
       scope: "day",
       day: "2026-06-19",
       mode: "replace-target",
+      recordMode: "clone-linked",
     });
 
     expect(next.itineraryItems.map((item) => item.id)).toEqual(["existing-slow", "import-rain-museum"]);

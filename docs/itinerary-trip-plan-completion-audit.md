@@ -27,7 +27,7 @@ Last audited on 2026-06-14 from branch `codex/itinerary-hierarchy-docs`.
 | `REQ-INLINE-01` | Itinerary page is the primary planning surface with inline edits and optional details hidden behind quick controls. | Proved for current itinerary table row and mobile inspector edit paths; itinerary-first booking template quick-create, paid booking lifecycle review, and import browser surface are covered | `SmartItineraryTable.tsx` inline fields; `StopDialog.tsx`; itinerary booking template menu; component tests; `ItineraryPage` Storybook browser tests; `BookingsDocsPage` paid lifecycle Storybook test; itinerary import browser QA. | Future new booking lifecycle actions should add browser coverage when introduced. |
 | `REQ-API-01` | Phase 1 API adds canonical Trip Plan aliases and routes while retaining legacy compatibility aliases and routes. | Proved | Backend contract lanes, frontend mapper lanes, docs/OpenAPI grep, real API e2e. | None for Phase 1 compatibility; storage rename remains explicitly out of scope. |
 | `REQ-DB-01` | Migration DDL draft matches additive migrations `0025` through `0029`, and DB limits are documented. | Proved for documented migration contract | `docs/itinerary-trip-plan-phase-0-1-implementation-spec.md`; backend `schema_contract.rs`; schema test lane. | Future DB hardening needs new ADR/spec before changing already-shipped migration intent. |
-| `REQ-IMPORT-01` | Import/export preserves Trip Plan aliases, selected destination plan, hierarchy/time/path fields, and does not switch Main Plan. | Proved for Phase 1 compatibility | `itinerary-import-export.test.ts`; `itinerary_import_contract.rs`; import target tests; frontend mapper lane. | Full copy/import creation modes and record clone/reference/reject policy are later-phase work. |
+| `REQ-IMPORT-01` | Import/export preserves Trip Plan aliases, selected destination plan, hierarchy/time/path fields, supports explicit clone-vs-reference record handling, rejects invalid record references, and does not switch Main Plan. | Proved for current import/export and apply policy | `itinerary-import-export.test.ts`; `itinerary_import_contract.rs`; import target tests; frontend import apply policy tests; frontend mapper lane; `docs/itinerary-json-format.md`. | Future richer whole-Trip-Plan copy modes should add their own UX and browser coverage when introduced. |
 
 ## Fresh Command Evidence
 
@@ -64,6 +64,8 @@ These commands were run from the current worktree during the audit continuation:
 | Frontend hierarchy move/reparent UI policy | `rtk bun run test src/components/SmartItineraryTable.test.tsx --testNamePattern "plan block\|sub-activity\|hierarchy\|dragged\|drops"`; `rtk bun run test src/components/SagittariusApp.test.tsx --testNamePattern "plan block\|sub-activity\|hierarchy\|dragged\|move"` | Passed: SmartItineraryTable 10 selected tests and SagittariusApp 7 selected tests. Coverage includes drag/drop into plan blocks, compact hierarchy rendering, hierarchy warnings/fix choices, local/API sub-activity creation and movement, and hierarchy-level persistence. |
 | Frontend itinerary inline quick-edit browser smoke | `rtk bun run test:storybook src/components/ItineraryPage.stories.tsx` | Passed: 1 Storybook file, 22 browser tests. The `InlineQuickEdit` play flow edits activity, place, start time, end time, activity type, and transportation from the row controls; `MobileInspectorQuickEdit` edits activity, place, start time, end time, item kind, time mode, status, priority, and transportation from the mobile inspector. Both assert `onUpdateItemInline` patches and derived duration behavior. |
 | Frontend paid booking lifecycle browser smoke | `rtk bun run test:storybook src/components/BookingsDocsPage.stories.tsx` | Passed: 1 Storybook file, 12 browser tests. The `PaidCommitmentLifecycle` play flow creates a paid booking linked to an existing Actual Expense, then edits an existing flight booking to `paid` and links the same existing Actual Expense through `onUpdateBookingDoc`; no expense creation path is invoked by the booking workflow. |
+| Frontend import apply policy | `rtk bun run test src/components/SagittariusApp.test.tsx --testNamePattern "import"` | Passed: 1 file, 4 selected tests. Coverage includes default clone-linked record apply into the selected Trip Plan, API import linked-record creation, read-only import blocking, and `Activities only` mode that imports itinerary rows while leaving uploaded source expenses/bookings uncreated. |
+| Frontend import/export policy | `rtk bun run test src/trip/itinerary-paths.test.ts src/trip/itinerary-import-export.test.ts` | Passed: 2 files, 28 tests. Coverage includes Trip Plan alias normalization, hierarchy/time/path preservation, exported record filtering by selected Trip Plan/items, and source paid record preservation. |
 
 ## Completion Decision
 
@@ -73,10 +75,11 @@ booking docs is also strongly evidenced by backend and frontend tests. The
 import browser QA now proves the desktop/mobile display path for hierarchy,
 cross-day time, and imported record scoping. The paid booking lifecycle browser
 smoke now proves the current organizer path for paid/committed booking review
-without creating duplicate Actual Expenses. The full requested product end state
-is still not marked complete here because later-phase copy/import creation modes,
-record clone/reference/reject policy, and future richer organizer audit UX remain
-outside the current proved scope.
+without creating duplicate Actual Expenses. Import apply now has explicit
+clone-linked versus activities-only record handling with dangling references
+rejected before apply. The full requested product end state is still not marked
+complete here because future richer organizer audit UX remains outside the
+current proved scope.
 
 Do not mark the persistent goal complete until those remaining rows either have
 direct implementation and verification evidence or are explicitly removed from

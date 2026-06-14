@@ -10,6 +10,7 @@ export interface ItineraryImportApplyTarget {
   scope: ItineraryPathScope;
   day?: string;
   mode: "keep-alternatives" | "replace-target";
+  recordMode: "clone-linked" | "activities-only";
 }
 
 export interface ItineraryActivityBranchPlacement {

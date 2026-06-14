@@ -60,6 +60,7 @@ The source of truth is [docs/itinerary-trip-plan-phase-0-1-implementation-spec.m
 | Backend Plan Check scope | `backend/` | `rtk cargo test -p sagittarius-api --test plan_checks_contract -- --nocapture` |
 | API documentation contract | Repository root | `rtk rg "tripPlans|mainTripPlanId|/trip-plans|activePlanVariantId|planVariants|/plan-variants" docs/api-data-spec.md docs/openapi-itinerary-table-v1.yaml` |
 | Frontend API mapping/routes/import-export | `frontend/` | `rtk bun run test src/trip/api-client.test.ts src/trip/api-contract.test.ts src/trip/itinerary-import-export.test.ts` |
+| Frontend import apply policy | `frontend/` | `rtk bun run test src/components/SagittariusApp.test.tsx --testNamePattern "import"` |
 | Frontend local UI/table copy | `frontend/` | `rtk bun run test src/components/SagittariusApp.test.tsx src/components/SmartItineraryTable.test.tsx src/project-contract.test.ts` |
 | Frontend type safety | `frontend/` | `rtk bun run typecheck` |
 | Real API e2e compatibility | Repository root | `rtk make frontend-e2e-local` |

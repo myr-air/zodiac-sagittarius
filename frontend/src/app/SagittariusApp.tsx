@@ -3841,7 +3841,10 @@ export function SagittariusApp({
         const importedPlanRecords = buildImportedPlanRecordsForTripPlan({
           appliedImportedItems: createdItems,
           importedItems: pendingItineraryImport.items,
-          records: pendingItineraryImport.records,
+          records:
+            target.recordMode === "clone-linked"
+              ? pendingItineraryImport.records
+              : emptyItineraryExportRecords(),
           targetTrip: previewTrip,
           tripPlanId: target.tripPlanId || trip.activePlanVariantId,
         });
@@ -3896,7 +3899,10 @@ export function SagittariusApp({
       const importedPlanRecords = buildImportedPlanRecordsForTripPlan({
         appliedImportedItems,
         importedItems: pendingItineraryImport.items,
-        records: pendingItineraryImport.records,
+        records:
+          target.recordMode === "clone-linked"
+            ? pendingItineraryImport.records
+            : emptyItineraryExportRecords(),
         targetTrip: previewTrip,
         tripPlanId: target.tripPlanId || trip.activePlanVariantId,
       });
@@ -5623,6 +5629,8 @@ function ItineraryImportOptionsDialog({
   const [day, setDay] = useState(importedItems[0]?.day ?? startDate);
   const [mode, setMode] =
     useState<ItineraryImportApplyTarget["mode"]>("replace-target");
+  const [recordMode, setRecordMode] =
+    useState<ItineraryImportApplyTarget["recordMode"]>("clone-linked");
   const previewLabel = importedItems[0]?.activity ?? "No activities";
 
   function submitImport(event: FormEvent<HTMLFormElement>) {
@@ -5637,6 +5645,7 @@ function ItineraryImportOptionsDialog({
         mode,
         pathName,
         pathOptions,
+        recordMode,
         scope,
         tripPlanId,
       }),
@@ -5666,7 +5675,7 @@ function ItineraryImportOptionsDialog({
             Records detected: {records.expenses.length} expenses,{" "}
             {records.bookingDocs.length} bookings, {records.stopNotes.length}{" "}
             notes, {records.tasks.length} tasks. Linked records will be
-            imported into this Trip Plan.
+            imported only when record handling is set to clone.
           </p>
         ) : null}
         <div className={importDialogFieldsClassName}>
@@ -5714,6 +5723,22 @@ function ItineraryImportOptionsDialog({
               </option>
             </select>
           </label>
+          {recordCount > 0 ? (
+            <label>
+              <span>Record handling</span>
+              <select
+                value={recordMode}
+                onChange={(event) =>
+                  setRecordMode(
+                    event.target.value as ItineraryImportApplyTarget["recordMode"],
+                  )
+                }
+              >
+                <option value="clone-linked">Clone linked records</option>
+                <option value="activities-only">Activities only</option>
+              </select>
+            </label>
+          ) : null}
         </div>
         <div className={appDeleteDialogActionsClassName}>
           <Button type="button" variant="ghost" onClick={onClose}>
@@ -5732,6 +5757,7 @@ function buildItineraryImportApplyTarget({
   mode,
   pathName,
   pathOptions,
+  recordMode,
   scope,
   tripPlanId,
 }: {
@@ -5740,6 +5766,7 @@ function buildItineraryImportApplyTarget({
   mode: ItineraryImportApplyTarget["mode"];
   pathName: string;
   pathOptions: ItineraryPathOption[];
+  recordMode: ItineraryImportApplyTarget["recordMode"];
   scope: ItineraryImportApplyTarget["scope"];
   tripPlanId: string;
 }): ItineraryImportApplyTarget {
@@ -5763,6 +5790,7 @@ function buildItineraryImportApplyTarget({
     scope,
     day,
     mode,
+    recordMode,
   };
 }
 

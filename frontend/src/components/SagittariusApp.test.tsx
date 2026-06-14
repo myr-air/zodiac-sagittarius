@@ -4790,7 +4790,10 @@ describe("Sagittarius cockpit UI", () => {
       "Records detected: 1 expenses, 1 bookings, 1 notes, 1 tasks",
     );
     expect(dialog).toHaveTextContent(
-      "Linked records will be imported into this Trip Plan",
+      "Linked records will be imported only when record handling is set to clone",
+    );
+    expect(within(dialog).getByLabelText("Record handling")).toHaveDisplayValue(
+      "Clone linked records",
     );
     await user.clear(within(dialog).getByLabelText(/ชื่อ path/i));
     await user.type(within(dialog).getByLabelText(/ชื่อ path/i), "Plan B");
@@ -4850,6 +4853,120 @@ describe("Sagittarius cockpit UI", () => {
     expect(prompt).not.toHaveBeenCalled();
     expect(confirm).not.toHaveBeenCalled();
     expect(alert).not.toHaveBeenCalled();
+  });
+
+  it("can import activities only while leaving source records as references", async () => {
+    const user = userEvent.setup();
+    const storage = installLocalStorageStub();
+    storage.setItem(tripStorageKey, JSON.stringify(tripWithPlans()));
+    render(<SagittariusApp initialView="itinerary" />);
+    await screen.findByRole("option", { name: "Rain Plan - ร่าง" });
+    await user.selectOptions(screen.getByLabelText("Trip Plan"), [
+      "plan-variant-backup",
+    ]);
+
+    const file = new File(
+      [
+        JSON.stringify({
+          schema: "joii.itinerary.export",
+          version: 1,
+          exportedAt: "2026-06-06T00:00:00.000Z",
+          items: [
+            {
+              id: "imported-reference-stop",
+              day: "2026-06-19",
+              sortOrder: 42,
+              startTime: "14:15",
+              activity: "Imported reference stop",
+              activityType: "food",
+              place: "Central Market",
+              linkLabel: "Map",
+              mapLink: "",
+              durationMinutes: 55,
+              transportation: "MTR",
+              note: "Use source records as reference",
+            },
+          ],
+          records: {
+            expenses: [
+              {
+                id: "reference-expense",
+                tripId: seedTrip.id,
+                tripPlanId: seedTrip.activePlanVariantId,
+                title: "Reference-only real receipt",
+                amount: 120,
+                paidBy: "member-aom",
+                splits: { "member-aom": 120 },
+                category: "food",
+                itineraryItemId: "imported-reference-stop",
+              },
+            ],
+            bookingDocs: [
+              {
+                id: "reference-booking",
+                tripId: seedTrip.id,
+                tripPlanId: seedTrip.activePlanVariantId,
+                type: "activity_ticket",
+                title: "Reference-only reservation",
+                status: "paid",
+                visibility: "shared",
+                ownerMemberId: "member-aom",
+                providerName: "Central Market",
+                confirmationCode: "REF-1",
+                startsAt: null,
+                endsAt: null,
+                timezone: "Asia/Hong_Kong",
+                priceAmount: 120,
+                currency: "HKD",
+                travelerIds: ["member-aom"],
+                externalLinks: [],
+                relatedItineraryItemIds: ["imported-reference-stop"],
+                relatedTaskIds: [],
+                relatedExpenseIds: ["reference-expense"],
+                noteIds: [],
+                notes: "Reference-only booking context",
+                createdBy: "member-aom",
+                updatedAt: "2026-06-06T00:00:00.000Z",
+                version: 7,
+              },
+            ],
+            stopNotes: [],
+            tasks: [],
+          },
+        }),
+      ],
+      "itinerary.json",
+      { type: "application/json" },
+    );
+
+    await user.upload(screen.getByLabelText(/นำเข้า itinerary JSON/i), file);
+    const dialog = await screen.findByRole("dialog", {
+      name: /ตั้งค่า import itinerary/i,
+    });
+    await user.selectOptions(
+      within(dialog).getByLabelText("Record handling"),
+      "activities-only",
+    );
+    await user.click(
+      within(dialog).getByRole("button", { name: /import itinerary/i }),
+    );
+
+    const importedRow = screen.getByRole("row", {
+      name: /Imported reference stop/i,
+    });
+    expect(importedRow).toBeInTheDocument();
+    expect(importedRow).not.toHaveTextContent("1 booking");
+    expect(importedRow).not.toHaveTextContent("1 expense");
+    const persistedTrip = JSON.parse(localStorage.getItem(tripStorageKey)!) as Trip;
+    expect(
+      persistedTrip.itineraryItems.some((item) => item.id === "imported-reference-stop"),
+    ).toBe(true);
+    expect(
+      persistedTrip.expenses.some((expense) => expense.id === "reference-expense"),
+    ).toBe(false);
+    expect(
+      (persistedTrip.bookingDocs ?? []).some((booking) => booking.id === "reference-booking"),
+    ).toBe(false);
   });
 
   it("applies API itinerary imports with hierarchy and creates linked records in the selected Trip Plan", async () => {
