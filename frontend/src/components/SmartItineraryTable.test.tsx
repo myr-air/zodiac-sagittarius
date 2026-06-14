@@ -354,6 +354,8 @@ describe("SmartItineraryTable", () => {
                 conditionLabel: "Rain",
                 temperatureMaxCelsius: 33,
                 temperatureMinCelsius: 28,
+                sunrise: "2026-06-19T05:46",
+                sunset: "2026-06-19T18:47",
               }
             : null,
         },
@@ -363,6 +365,38 @@ describe("SmartItineraryTable", () => {
     const weatherChip = screen.getByLabelText(/Weather for Day 2/i);
     expect(weatherChip.querySelector(".icon")).toBeInTheDocument();
     expect(weatherChip).toHaveTextContent("33° 28°");
+    expect(weatherChip).toHaveTextContent("05:46/18:47");
+  });
+
+  it("saves custom day titles inline with the daily briefing version", async () => {
+    const user = userEvent.setup();
+    const onSaveDayTitle = vi.fn();
+    renderTable({
+      dailyBriefings: [
+        {
+          ...weatherBriefings[1],
+          date: "2026-06-19",
+          version: 7,
+          manualOverrides: { dayTitle: "Old title" },
+        },
+      ],
+      onSaveDayTitle,
+    });
+
+    const titleInput = screen.getByLabelText("Trip day title for Day 2");
+    expect(titleInput).toHaveAttribute("maxLength", "48");
+    expect(titleInput).toHaveValue("Old title");
+    await user.clear(titleInput);
+    await user.type(titleInput, "Shenzhen border hop");
+    await user.tab();
+
+    await waitFor(() => {
+      expect(onSaveDayTitle).toHaveBeenCalledWith(
+        "2026-06-19",
+        7,
+        "Shenzhen border hop",
+      );
+    });
   });
 
   it("renders only graph and blank item canvas columns for activity rows", () => {

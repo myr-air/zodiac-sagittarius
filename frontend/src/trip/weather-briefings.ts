@@ -63,6 +63,14 @@ export function formatWeatherTemp(value: number | null | undefined): string {
   return `${Math.round(value)}°`;
 }
 
+export function formatSolarTime(value: string | null | undefined): string | null {
+  if (!value) return null;
+  const localTime = value.match(/T(\d{2}:\d{2})/)?.[1];
+  if (localTime) return localTime;
+  const timeOnly = value.match(/^(\d{2}:\d{2})/)?.[1];
+  return timeOnly ?? null;
+}
+
 function firstItineraryForDates(itineraryItems: ItineraryItem[]): Map<string, ItineraryItem> {
   const byDate = new Map<string, ItineraryItem>();
 
@@ -87,6 +95,8 @@ function fallbackWeatherBriefing(tripId: string, date: string, locationLabel: st
       conditionLabel: "Forecast pending",
       temperatureMaxCelsius: null,
       temperatureMinCelsius: null,
+      sunrise: null,
+      sunset: null,
       humidityPercent: null,
       windSpeedKph: null,
       rainChancePercent: null,

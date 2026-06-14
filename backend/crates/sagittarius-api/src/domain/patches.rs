@@ -221,6 +221,7 @@ pub struct UpdatePresenceRequest {
 pub struct PatchDailyBriefingRequest {
     pub client_mutation_id: String,
     pub expected_version: i64,
+    pub day_title: Option<Option<String>>,
     pub outfit_advice: Option<Option<String>>,
     pub festival_note: Option<Option<String>>,
     pub facts_note: Option<Option<String>>,
@@ -470,6 +471,7 @@ impl PatchPhotoAlbumLinkRequest {
 impl PatchDailyBriefingRequest {
     pub fn validate(&self) -> Result<(), ServiceError> {
         validate_client_mutation_id(&self.client_mutation_id)?;
+        validate_optional_day_title(&self.day_title)?;
         validate_optional_override(&self.outfit_advice, "outfitAdvice")?;
         validate_optional_override(&self.festival_note, "festivalNote")?;
         validate_optional_override(&self.facts_note, "factsNote")?;
@@ -1105,6 +1107,15 @@ fn validate_optional_override(
     Ok(())
 }
 
+fn validate_optional_day_title(value: &Option<Option<String>>) -> Result<(), ServiceError> {
+    if let Some(Some(text)) = value {
+        if text.chars().count() > 48 {
+            return Err(ServiceError::InvalidRequest("dayTitle is too long"));
+        }
+    }
+    Ok(())
+}
+
 fn validate_task_visibility(value: &str) -> Result<(), ServiceError> {
     match value {
         "private" | "shared" => Ok(()),
@@ -1573,6 +1584,25 @@ mod tests {
     #[should_panic(expected = "expected invalid request")]
     fn invalid_message_panics_for_non_invalid_request() {
         invalid_message(Ok(()));
+    }
+
+    #[test]
+    fn daily_briefing_patch_accepts_short_day_title_and_rejects_long_title() {
+        let valid = PatchDailyBriefingRequest {
+            client_mutation_id: "daily-title".to_string(),
+            expected_version: 1,
+            day_title: Some(Some("Bangkok -> Hong Kong".to_string())),
+            outfit_advice: None,
+            festival_note: None,
+            facts_note: None,
+        };
+        assert!(valid.validate().is_ok());
+
+        let invalid = PatchDailyBriefingRequest {
+            day_title: Some(Some("x".repeat(49))),
+            ..valid
+        };
+        assert_eq!(invalid_message(invalid.validate()), "dayTitle is too long");
     }
 
     #[test]

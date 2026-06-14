@@ -4031,6 +4031,8 @@ function dailyBriefingFixture(tripId: string, date: string): TripDailyBriefing {
       conditionLabel: "Rain",
       temperatureMaxCelsius: 33,
       temperatureMinCelsius: 28,
+      sunrise: `${date}T05:46`,
+      sunset: `${date}T18:47`,
       humidityPercent: 82,
       windSpeedKph: 16,
       rainChancePercent: 64,

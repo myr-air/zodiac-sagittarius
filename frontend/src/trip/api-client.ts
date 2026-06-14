@@ -280,6 +280,7 @@ export interface PatchTripApiRequest {
 export interface PatchDailyBriefingApiRequest {
   clientMutationId: string;
   expectedVersion: number;
+  dayTitle?: string | null;
   outfitAdvice?: string | null;
   festivalNote?: string | null;
   factsNote?: string | null;

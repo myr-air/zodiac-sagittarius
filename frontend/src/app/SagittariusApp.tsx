@@ -2272,7 +2272,7 @@ export function SagittariusApp({
     }
 
     setDailyBriefings((current) =>
-      current.map((briefing) =>
+      (current.length ? current : buildFallbackBriefings(trip)).map((briefing) =>
         briefing.date === date
           ? {
               ...briefing,
@@ -4315,6 +4315,9 @@ export function SagittariusApp({
                   onChangeTripPlanStatus={updateTripPlanStatus}
                   onCreateTripPlan={createTripPlan}
                   onRenameTripPlan={renameTripPlan}
+                  onSaveDayTitle={(date, version, title) =>
+                    saveDailyBriefingOverrides(date, version, { dayTitle: title })
+                  }
                   tripPlanError={tripPlanError}
                   isTripPlanBusy={isTripPlanBusy}
                   role={currentMember.role}

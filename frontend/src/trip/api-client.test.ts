@@ -1606,6 +1606,7 @@ describe("Trip API client", () => {
     await expect(client.patchDailyBriefing(cockpitResponse.trip.id, "2026-07-09", "session-token", {
       clientMutationId: "briefing-1",
       expectedVersion: 1,
+      dayTitle: "Dim sum day",
       outfitAdvice: "Bring umbrella",
     })).resolves.toMatchObject({ manualOverrides: { outfitAdvice: "Bring umbrella" }, version: 2 });
 
@@ -1626,6 +1627,7 @@ describe("Trip API client", () => {
         body: JSON.stringify({
           clientMutationId: "briefing-1",
           expectedVersion: 1,
+          dayTitle: "Dim sum day",
           outfitAdvice: "Bring umbrella",
         }),
       }),

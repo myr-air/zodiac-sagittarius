@@ -1,6 +1,7 @@
 import { type FormEvent, useState } from "react";
 import type { Locale } from "@/src/i18n/types";
 import type { DailyBriefingOverrides, TextBriefingBlock, TripDailyBriefing } from "@/src/trip/types";
+import { formatSolarTime } from "@/src/trip/weather-briefings";
 import { Button } from "./ui";
 
 interface WeatherBriefingDrawerProps {
@@ -26,6 +27,8 @@ export function WeatherBriefingDrawer({ briefing, locale, canEdit, isOpen, onClo
   const weather = briefing.weather;
   const outfitBody = briefing.manualOverrides.outfitAdvice ?? briefing.outfitAdvice?.body ?? emptyText(locale);
   const summary = formatWeatherSummary(weather?.conditionLabel, weather?.temperatureMaxCelsius, weather?.temperatureMinCelsius, locale);
+  const sunrise = formatSolarTime(weather?.sunrise);
+  const sunset = formatSolarTime(weather?.sunset);
 
   return (
       <section className={drawerClassName} role="region" aria-label={copy.regionLabel}>
@@ -43,6 +46,11 @@ export function WeatherBriefingDrawer({ briefing, locale, canEdit, isOpen, onClo
             <p className="m-0 text-sm font-bold text-(--color-text-muted)">
               {copy.humidity} {formatPercent(weather?.humidityPercent)} · {copy.wind} {formatSpeed(weather?.windSpeedKph)} · {copy.rain} {formatPercent(weather?.rainChancePercent)}
             </p>
+            {sunrise && sunset ? (
+              <p className="m-0 text-sm font-bold text-(--color-text-muted)">
+                {copy.sunrise} {sunrise} · {copy.sunset} {sunset}
+              </p>
+            ) : null}
             <SourceMeta source={weather?.meta.source} fetchedAt={weather?.meta.fetchedAt} expiresAt={weather?.meta.expiresAt} locale={locale} />
           </section>
 
@@ -166,6 +174,8 @@ function weatherDrawerCopy(locale: Locale) {
         humidity: "ความชื้น",
         wind: "ลม",
         rain: "ฝน",
+        sunrise: "พระอาทิตย์ขึ้น",
+        sunset: "พระอาทิตย์ตก",
         outfitAdvice: "คำแนะนำการแต่งตัว",
         holiday: "วันหยุด",
         festival: "เทศกาล",
@@ -186,6 +196,8 @@ function weatherDrawerCopy(locale: Locale) {
         humidity: "Humidity",
         wind: "Wind",
         rain: "Rain",
+        sunrise: "Sunrise",
+        sunset: "Sunset",
         outfitAdvice: "Outfit advice",
         holiday: "Holiday",
         festival: "Festival",

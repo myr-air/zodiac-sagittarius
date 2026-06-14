@@ -21,6 +21,8 @@ function briefing(date: string, conditionCode: string, conditionLabel: string, h
       conditionLabel,
       temperatureMaxCelsius: high,
       temperatureMinCelsius: low,
+      sunrise: high === null ? null : `${date}T05:46`,
+      sunset: high === null ? null : `${date}T18:47`,
       humidityPercent: 78,
       windSpeedKph: 14,
       rainChancePercent: conditionCode === "rain" ? 64 : 20,

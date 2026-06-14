@@ -128,6 +128,8 @@ export interface WeatherBriefingBlock {
   conditionLabel: string;
   temperatureMaxCelsius: number | null;
   temperatureMinCelsius: number | null;
+  sunrise: string | null;
+  sunset: string | null;
   humidityPercent: number | null;
   windSpeedKph: number | null;
   rainChancePercent: number | null;
@@ -141,6 +143,7 @@ export interface TextBriefingBlock {
 }
 
 export interface DailyBriefingOverrides {
+  dayTitle?: string | null;
   outfitAdvice?: string | null;
   festivalNote?: string | null;
   factsNote?: string | null;

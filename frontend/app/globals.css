@@ -240,6 +240,19 @@ button:disabled,
   box-shadow: 0 0 0 5px rgb(194 79 22 / 0.15);
 }
 
+.day-title-input,
+.day-title-input:focus,
+.day-title-input:focus-visible {
+  appearance: none;
+  outline: 0 !important;
+  outline-offset: 0 !important;
+  box-shadow: none !important;
+  border-top: 0;
+  border-right: 0;
+  border-left: 0;
+  border-radius: 0;
+}
+
 .page-header::after {
   content: "";
   position: absolute;

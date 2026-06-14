@@ -356,6 +356,8 @@ pub struct WeatherBriefingBlock {
     pub condition_label: String,
     pub temperature_max_celsius: Option<f64>,
     pub temperature_min_celsius: Option<f64>,
+    pub sunrise: Option<String>,
+    pub sunset: Option<String>,
     pub humidity_percent: Option<i32>,
     pub wind_speed_kph: Option<f64>,
     pub rain_chance_percent: Option<i32>,
@@ -373,6 +375,7 @@ pub struct TextBriefingBlock {
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct DailyBriefingOverrides {
+    pub day_title: Option<String>,
     pub outfit_advice: Option<String>,
     pub festival_note: Option<String>,
     pub facts_note: Option<String>,

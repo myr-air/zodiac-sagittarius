@@ -15,6 +15,8 @@ const briefing: TripDailyBriefing = {
     conditionLabel: "Rain",
     temperatureMaxCelsius: 33,
     temperatureMinCelsius: 28,
+    sunrise: "2026-07-12T05:46",
+    sunset: "2026-07-12T18:47",
     humidityPercent: 82,
     windSpeedKph: 16,
     rainChancePercent: 64,
@@ -40,6 +42,7 @@ describe("WeatherBriefingDrawer", () => {
     expect(screen.queryByRole("dialog", { name: /weather briefing/i })).not.toBeInTheDocument();
     expect(screen.getByText(/Rain · 33° 28°/)).toBeInTheDocument();
     expect(screen.getByText(/Humidity 82%/)).toBeInTheDocument();
+    expect(screen.getByText(/Sunrise 05:46 · Sunset 18:47/)).toBeInTheDocument();
     expect(screen.getByText("Light shirt and compact umbrella.")).toBeInTheDocument();
 
     await userEvent.click(screen.getAllByRole("button", { name: /close/i }).at(-1)!);

@@ -29,6 +29,7 @@ import {
 } from "@/src/trip/itinerary";
 import { canTripRole } from "@/src/trip/auth";
 import {
+  formatSolarTime,
   formatWeatherTemp,
   weatherGraphicLabel,
   weatherIconForCondition,
@@ -98,6 +99,7 @@ interface SmartItineraryTableProps {
   onSetMainTripPlan: (tripPlanId: string) => boolean | void | Promise<boolean | void>;
   onCreateTripPlan: (name: string) => boolean | void | Promise<boolean | void>;
   onRenameTripPlan: (tripPlanId: string, name: string) => boolean | void | Promise<boolean | void>;
+  onSaveDayTitle?: (date: string, version: number, title: string | null) => void | Promise<void>;
   onChangeTripPath?: (pathId: string) => void;
   onChangeDayPath?: (day: string, pathId: string) => void;
   onClearDayPath?: (day: string) => void;
@@ -194,6 +196,7 @@ const smartTableClassName =
 const graphColumnMinWidth = 30;
 const graphColumnSidePadding = 9;
 const graphColumnLaneGap = 18;
+const dayTitleMaxLength = 48;
 const dayGroupClassName = "day-group";
 const daySpacerRowClassName =
   "day-spacer-row [&_td]:!h-3 [&_td]:!border-0 [&_td]:!bg-(--color-page) [&_td]:!p-0";
@@ -202,9 +205,15 @@ const dayRowClassName =
 const dayRowContentClassName =
   "day-row-content flex h-[39px] w-full min-w-0 items-center gap-[9px]";
 const dayToggleClassName =
-  "day-toggle flex min-h-8 min-w-0 items-center gap-[9px] border-0 bg-transparent p-0 text-left text-(--color-text-muted) aria-[expanded=true]:[&_.icon]:rotate-90 [&_.icon]:transition-transform [&_.icon]:duration-[140ms] [&_strong]:text-(--color-text)";
+  "day-toggle flex min-h-8 shrink-0 items-center gap-[7px] border-0 bg-transparent p-0 text-left text-(--color-text-muted) aria-[expanded=true]:[&_.icon]:rotate-90 [&_.icon]:transition-transform [&_.icon]:duration-[140ms]";
+const dayOrdinalClassName =
+  "day-ordinal shrink-0 text-sm font-extrabold text-(--color-text)";
+const dayTitleInputClassName =
+  "day-title-input min-h-8 min-w-0 max-w-[260px] appearance-none rounded-none border-0 border-b border-solid border-(--color-border-strong) border-x-0 border-t-0 bg-transparent px-0.5 text-xs font-bold leading-5 text-(--color-text-muted) outline-none shadow-none transition-[border-color,color,max-width] duration-150 placeholder:text-(--color-text-muted) hover:border-(--color-text-muted) hover:text-(--color-text) focus:max-w-[340px] focus:border-(--color-primary) focus:border-x-0 focus:border-t-0 focus:text-(--color-text) focus:outline-none focus:shadow-none focus-visible:border-x-0 focus-visible:border-t-0 focus-visible:outline-none focus-visible:shadow-none focus-visible:[box-shadow:none] disabled:pointer-events-none max-[767px]:max-w-[150px] max-[767px]:focus:max-w-[190px]";
+const dayDateClassName =
+  "day-date inline-flex shrink-0 items-center gap-[7px] text-(--color-text-muted)";
 const dayRouteClassName =
-  "day-route ml-[18px] font-semibold text-(--color-text-muted) max-[767px]:hidden";
+  "day-route ml-[10px] min-w-0 max-[767px]:ml-0";
 const dayWeatherChipClassName =
   "day-weather-chip inline-flex min-h-7 shrink-0 items-center gap-1.5 rounded-(--radius-sm) border border-(--color-route-border) bg-(--color-route-soft) px-2 text-[11px] font-extrabold text-(--color-route) [&_strong]:text-(--color-text)";
 const dayPathControlsClassName =
@@ -259,6 +268,7 @@ export function SmartItineraryTable({
   onSetMainTripPlan,
   onCreateTripPlan,
   onRenameTripPlan,
+  onSaveDayTitle,
   onChangeDayPath,
   onClearDayPath,
   onToggleShowAllPaths,
@@ -764,6 +774,7 @@ export function SmartItineraryTable({
               onClearDayPath={onClearDayPath}
               onMoveItemToPath={onMoveItemToPath}
               onSelectItem={onSelectItem}
+              onSaveDayTitle={onSaveDayTitle}
               onToggleDay={toggleDay}
             />
           ))}
@@ -792,6 +803,7 @@ function DayGroup({
   onClearDayPath,
   onMoveItemToPath,
   onSelectItem,
+  onSaveDayTitle,
   onToggleDay,
 }: {
   graphColumnWidth: number;
@@ -812,10 +824,13 @@ function DayGroup({
   onClearDayPath?: (day: string) => void;
   onMoveItemToPath?: (itemId: string, pathId: string) => void;
   onSelectItem: (itemId: string) => void;
+  onSaveDayTitle?: (date: string, version: number, title: string | null) => void | Promise<void>;
   onToggleDay: (day: string) => void;
 }) {
   const dayLabel = formatDayLabel(group.day, startDate, locale);
   const dayA11yLabel = formatDayLabel(group.day, startDate, "en");
+  const defaultDayTitle = dayRouteLabel(group.day, locale);
+  const dayTitle = dailyBriefing?.manualOverrides.dayTitle?.trim() || defaultDayTitle;
   const dayPathOptions = pathOptions.filter(
     (option) =>
       option.id === mainItineraryPathId ||
@@ -874,13 +889,24 @@ function DayGroup({
               onClick={() => onToggleDay(group.day)}
             >
               <Icon name="chevronRight" />
-              <strong>{dayLabel}</strong>
+              <strong className={dayOrdinalClassName}>{dayLabel}</strong>
+            </button>
+            <span className={dayDateClassName}>
               <span>·</span>
               <span>{formatThaiDate(group.day, locale)}</span>
-              <span className={dayRouteClassName}>
-                {dayRouteLabel(group.day, locale)}
-              </span>
-            </button>
+            </span>
+            <span className={dayRouteClassName}>
+              <DayTitleEditor
+                canEdit={canEdit && Boolean(dailyBriefing && onSaveDayTitle)}
+                date={group.day}
+                defaultTitle={defaultDayTitle}
+                dayLabel={dayA11yLabel}
+                key={`${group.day}:${dailyBriefing?.version ?? 1}:${dayTitle}`}
+                title={dayTitle}
+                version={dailyBriefing?.version ?? 1}
+                onSaveDayTitle={onSaveDayTitle}
+              />
+            </span>
             <DayWeatherChip briefing={dailyBriefing} dayLabel={dayA11yLabel} />
             {hasAlternativePathOptions ? (
               <span className={dayPathControlsClassName}>
@@ -934,6 +960,69 @@ function DayGroup({
         </tr>
       ) : null}
     </tbody>
+  );
+}
+
+function DayTitleEditor({
+  canEdit,
+  date,
+  dayLabel,
+  defaultTitle,
+  onSaveDayTitle,
+  title,
+  version,
+}: {
+  canEdit: boolean;
+  date: string;
+  dayLabel: string;
+  defaultTitle: string;
+  onSaveDayTitle?: (date: string, version: number, title: string | null) => void | Promise<void>;
+  title: string;
+  version: number;
+}) {
+  const [draft, setDraft] = useState(title.slice(0, dayTitleMaxLength));
+  const [sourceTitle, setSourceTitle] = useState(title.slice(0, dayTitleMaxLength));
+  const [saving, setSaving] = useState(false);
+
+  async function commit(nextValue: string) {
+    if (!canEdit || !onSaveDayTitle || saving) return;
+    const trimmed = nextValue.trim();
+    const normalizedTitle = trimmed || defaultTitle;
+    if (normalizedTitle === sourceTitle) {
+      setDraft(sourceTitle);
+      return;
+    }
+    setSaving(true);
+    try {
+      await onSaveDayTitle(date, version, trimmed ? normalizedTitle : null);
+      setSourceTitle(normalizedTitle);
+      setDraft(normalizedTitle);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <input
+      aria-label={`Trip day title for ${dayLabel}`}
+      data-day-label={dayLabel}
+      className={dayTitleInputClassName}
+      disabled={!canEdit || saving}
+      maxLength={dayTitleMaxLength}
+      title={`${draft.length}/${dayTitleMaxLength}`}
+      value={draft}
+      onBlur={() => void commit(draft)}
+      onChange={(event) => setDraft(event.target.value)}
+      onKeyDown={(event) => {
+        if (event.key === "Enter") {
+          event.currentTarget.blur();
+        }
+        if (event.key === "Escape") {
+          setDraft(sourceTitle);
+          event.currentTarget.blur();
+        }
+      }}
+    />
   );
 }
 
@@ -1008,8 +1097,14 @@ function DayWeatherChip({
   const condition = weatherGraphicLabel(weather?.conditionCode);
   const high = weather?.temperatureMaxCelsius;
   const low = weather?.temperatureMinCelsius;
+  const sunrise = formatSolarTime(weather?.sunrise);
+  const sunset = formatSolarTime(weather?.sunset);
   const hasForecastTemps = typeof high === "number" && typeof low === "number";
-  const weatherLabel = hasForecastTemps ? `${condition} ${formatWeatherTemp(high)} ${formatWeatherTemp(low)}` : condition;
+  const solarLabel = sunrise && sunset ? `sunrise ${sunrise} sunset ${sunset}` : "";
+  const weatherLabel = [
+    hasForecastTemps ? `${condition} ${formatWeatherTemp(high)} ${formatWeatherTemp(low)}` : condition,
+    solarLabel,
+  ].filter(Boolean).join(" ");
   return (
     <span
       className={dayWeatherChipClassName}
@@ -1023,6 +1118,7 @@ function DayWeatherChip({
         <>
           <strong>{formatWeatherTemp(high)}</strong>{" "}
           <span>{formatWeatherTemp(low)}</span>
+          {sunrise && sunset ? <span>{sunrise}/{sunset}</span> : null}
         </>
       ) : <span>{condition}</span>}
     </span>

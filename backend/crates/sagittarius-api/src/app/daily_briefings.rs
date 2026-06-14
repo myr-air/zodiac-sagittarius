@@ -71,6 +71,9 @@ pub async fn patch_daily_briefing(
         .find(|record| record.briefing_date == briefing_date)
         .ok_or(ServiceError::NotFound)?;
     let mut overrides = parse_overrides(current.manual_overrides.clone())?;
+    if let Some(value) = request.day_title {
+        overrides.day_title = value.and_then(trim_optional_override);
+    }
     if let Some(value) = request.outfit_advice {
         overrides.outfit_advice = value.map(trim_override);
     }
@@ -280,6 +283,8 @@ fn fallback_weather(date: Date) -> WeatherBriefingBlock {
         condition_label: "Forecast pending".to_string(),
         temperature_max_celsius: None,
         temperature_min_celsius: None,
+        sunrise: None,
+        sunset: None,
         humidity_percent: None,
         wind_speed_kph: None,
         rain_chance_percent: None,
@@ -323,6 +328,8 @@ async fn fetch_open_meteo_weather(
     let weather_code = daily.weather_code.first().copied()?;
     let high = daily.temperature_2m_max.first().copied().flatten();
     let low = daily.temperature_2m_min.first().copied().flatten();
+    let sunrise = daily.sunrise.first().cloned().flatten();
+    let sunset = daily.sunset.first().cloned().flatten();
     let rain_chance = daily
         .precipitation_probability_max
         .first()
@@ -348,6 +355,8 @@ async fn fetch_open_meteo_weather(
         condition_label: condition_label.to_string(),
         temperature_max_celsius: high,
         temperature_min_celsius: low,
+        sunrise,
+        sunset,
         humidity_percent: humidity,
         wind_speed_kph: wind_speed,
         rain_chance_percent: rain_chance,
@@ -371,7 +380,7 @@ async fn fetch_open_meteo_weather(
 
 fn open_meteo_url(date: Date, coordinates: &BriefingCoordinates) -> String {
     format!(
-        "https://api.open-meteo.com/v1/forecast?latitude={:.5}&longitude={:.5}&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_speed_10m_max&hourly=relative_humidity_2m&timezone=auto&start_date={date}&end_date={date}",
+        "https://api.open-meteo.com/v1/forecast?latitude={:.5}&longitude={:.5}&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,precipitation_probability_max,wind_speed_10m_max&hourly=relative_humidity_2m&timezone=auto&start_date={date}&end_date={date}",
         coordinates.lat, coordinates.lng,
     )
 }
@@ -506,6 +515,8 @@ async fn fetch_wttr_weather(
         condition_label: condition_label.to_string(),
         temperature_max_celsius: max_temperature,
         temperature_min_celsius: min_temperature,
+        sunrise: None,
+        sunset: None,
         humidity_percent: humidity,
         wind_speed_kph,
         rain_chance_percent: rain_chance,
@@ -588,6 +599,8 @@ struct OpenMeteoDaily {
     weather_code: Vec<i32>,
     temperature_2m_max: Vec<Option<f64>>,
     temperature_2m_min: Vec<Option<f64>>,
+    sunrise: Vec<Option<String>>,
+    sunset: Vec<Option<String>>,
     precipitation_probability_max: Vec<Option<i32>>,
     wind_speed_10m_max: Vec<Option<f64>>,
 }
@@ -604,6 +617,15 @@ fn parse_overrides(value: serde_json::Value) -> Result<DailyBriefingOverrides, S
 
 fn trim_override(value: String) -> String {
     value.trim().to_string()
+}
+
+fn trim_optional_override(value: String) -> Option<String> {
+    let trimmed = value.trim().to_string();
+    if trimmed.is_empty() {
+        None
+    } else {
+        Some(trimmed)
+    }
 }
 
 fn can_patch_manual_overrides(role: TripRole) -> bool {
@@ -634,12 +656,32 @@ mod tests {
     }
 
     #[test]
+    fn open_meteo_url_requests_sunrise_and_sunset_daily_fields() {
+        let date = Date::from_calendar_date(2026, Month::July, 10).unwrap();
+        let coordinates = BriefingCoordinates {
+            lat: 22.3193,
+            lng: 114.1694,
+        };
+
+        let url = open_meteo_url(date, &coordinates);
+
+        assert!(
+            url.contains(
+                "daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,"
+            )
+        );
+        assert!(url.contains("timezone=auto"));
+    }
+
+    #[test]
     fn outfit_advice_responds_to_hot_rainy_weather() {
         let weather = WeatherBriefingBlock {
             condition_code: "rain".to_string(),
             condition_label: "Rain".to_string(),
             temperature_max_celsius: Some(33.0),
             temperature_min_celsius: Some(28.0),
+            sunrise: Some("2026-07-10T05:46".to_string()),
+            sunset: Some("2026-07-10T18:47".to_string()),
             humidity_percent: Some(82),
             wind_speed_kph: Some(12.0),
             rain_chance_percent: Some(64),

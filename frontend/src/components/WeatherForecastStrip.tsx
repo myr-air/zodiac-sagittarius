@@ -1,7 +1,7 @@
 import type { Locale } from "@/src/i18n/types";
 import { cn } from "@/src/lib/cn";
 import type { TripDailyBriefing } from "@/src/trip/types";
-import { briefingsForStrip, formatWeatherTemp, thaiWeekdayTone, weatherGraphicLabel, weatherIconForCondition } from "@/src/trip/weather-briefings";
+import { briefingsForStrip, formatSolarTime, formatWeatherTemp, thaiWeekdayTone, weatherGraphicLabel, weatherIconForCondition } from "@/src/trip/weather-briefings";
 import { Icon } from "./icons";
 
 interface WeatherForecastStripProps {
@@ -23,6 +23,7 @@ const iconClassName = "weather-forecast-icon text-[30px] leading-none";
 const tempClassName = "weather-forecast-temp inline-flex items-baseline justify-center gap-1.5 leading-none";
 const tempHighClassName = "weather-forecast-temp-high text-[16px] font-black text-(--color-text)";
 const tempLowClassName = "weather-forecast-temp-low text-[16px] font-bold text-(--color-text-muted)";
+const solarClassName = "weather-forecast-solar inline-flex items-center justify-center gap-1 text-[11px] font-extrabold leading-4 text-(--color-text-muted)";
 const pendingClassName = "weather-forecast-pending text-[12px] font-black leading-4 text-(--color-text-muted)";
 const emptyClassName = "weather-forecast-empty-state rounded-(--radius-md) border border-(--color-border) bg-(--color-surface-subtle) px-4 py-3 text-xs font-black text-(--color-text-muted)";
 
@@ -47,10 +48,13 @@ export function WeatherForecastStrip({ briefings, locale, selectedDate, onSelect
           const condition = weatherGraphicLabel(weather?.conditionCode);
           const hasForecastTemps = typeof high === "number" && typeof low === "number";
           const temperatureLabel = hasForecastTemps ? `${formatWeatherTemp(high)} ${formatWeatherTemp(low)}` : "";
+          const sunrise = formatSolarTime(weather?.sunrise);
+          const sunset = formatSolarTime(weather?.sunset);
+          const solarLabel = sunrise && sunset ? `${copy.sunrise} ${sunrise} ${copy.sunset} ${sunset}` : "";
 
           return (
               <button
-                aria-label={[dayLabel, condition, temperatureLabel].filter(Boolean).join(" ")}
+                aria-label={[dayLabel, condition, temperatureLabel, solarLabel].filter(Boolean).join(" ")}
                 className={cn(segmentClassName, selectedDate === briefing.date && selectedClassName)}
                 key={`${briefing.date}-${briefing.locationKey}`}
                 type="button"
@@ -66,6 +70,7 @@ export function WeatherForecastStrip({ briefings, locale, selectedDate, onSelect
                   <span className={tempLowClassName}>{formatWeatherTemp(low)}</span>
                 </span>
               ) : <span className={pendingClassName}>{condition}</span>}
+              {sunrise && sunset ? <span className={solarClassName}>{sunrise} / {sunset}</span> : null}
             </button>
           );
         })}
@@ -82,6 +87,6 @@ function formatDayLabel(date: string, locale: Locale): string {
 
 function weatherStripCopy(locale: Locale) {
   return locale === "th"
-    ? { regionLabel: "พยากรณ์อากาศรายวัน", empty: "ยังไม่มีข้อมูลพยากรณ์อากาศ" }
-    : { regionLabel: "Daily weather forecast", empty: "No weather data yet" };
+    ? { regionLabel: "พยากรณ์อากาศรายวัน", empty: "ยังไม่มีข้อมูลพยากรณ์อากาศ", sunrise: "พระอาทิตย์ขึ้น", sunset: "ตก" }
+    : { regionLabel: "Daily weather forecast", empty: "No weather data yet", sunrise: "Sunrise", sunset: "sunset" };
 }

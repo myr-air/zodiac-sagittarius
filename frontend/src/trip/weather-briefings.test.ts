@@ -13,6 +13,8 @@ const briefing = (date: string, high: number | null, low: number | null): TripDa
     conditionLabel: "Rain",
     temperatureMaxCelsius: high,
     temperatureMinCelsius: low,
+    sunrise: "2026-07-11T05:46",
+    sunset: "2026-07-11T18:47",
     humidityPercent: 82,
     windSpeedKph: 14,
     rainChancePercent: 64,
