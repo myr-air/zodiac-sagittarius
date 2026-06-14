@@ -1352,6 +1352,35 @@ describe("SmartItineraryTable", () => {
     expect(row.querySelector("sup")).toHaveTextContent("+1");
   });
 
+  it("shows cross-day end times with superscript offset in the mobile inspector", () => {
+    const overnightItem = {
+      ...tripFixture.planItems[0],
+      id: "overnight-flight-window-mobile",
+      day: "2026-06-19",
+      startTime: "23:00",
+      endTime: "02:00",
+      endOffsetDays: 1,
+      durationMinutes: null,
+      activity: "Overnight flight window",
+      sortOrder: 100,
+    };
+
+    renderTable({
+      items: [overnightItem],
+      selectedItemId: overnightItem.id,
+    });
+
+    const inspector = screen.getByRole("region", {
+      name: "รายละเอียดจุดที่เลือก",
+    });
+    const toggle = within(inspector).getByRole("button", {
+      name: /สลับเวลาจบข้ามวัน Overnight flight window/i,
+    });
+
+    expect(toggle).toHaveAttribute("aria-pressed", "true");
+    expect(toggle.querySelector("sup")).toHaveTextContent("+1");
+  });
+
   it("does not show a next-day marker for same-day end times", () => {
     const sameDayItem = {
       ...tripFixture.planItems[0],
