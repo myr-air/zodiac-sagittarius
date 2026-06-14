@@ -9,6 +9,7 @@ const onStoryChangeDayPath = fn();
 const onStoryMoveItemToPath = fn();
 const onStoryToggleShowAllPaths = fn();
 const onStoryUpdateItemInline = fn();
+const onStoryInlineQuickEdit = fn();
 const pageBranchGraphItems: ItineraryItem[] = [
   {
     ...tripFixture.planItems[0],
@@ -257,6 +258,73 @@ export const Owner: Story = {
     await expect(canvas.getByRole("button", { name: /^New plan$/i })).toBeEnabled();
     await expect(canvas.getAllByRole("button", { name: /Add stop or activity/i })[0]).toBeEnabled();
     await expect(canvas.getByRole("button", { name: /Edit Dim Dim Sum/i })).toBeEnabled();
+  },
+};
+
+export const InlineQuickEdit: Story = {
+  args: {
+    ...Owner.args,
+    onUpdateItemInline: onStoryInlineQuickEdit,
+  },
+  play: async ({ canvas, canvasElement }) => {
+    onStoryInlineQuickEdit.mockClear();
+    await expectItineraryResponsiveContract(canvasElement);
+    const documentCanvas = within(canvasElement.ownerDocument.body);
+    const row = canvas.getByRole("row", { name: /Dim Dim Sum/i });
+    const rowCanvas = within(row);
+
+    const activity = rowCanvas.getByRole("textbox", {
+      name: /Edit activity Dim Dim Sum/i,
+    });
+    await userEvent.clear(activity);
+    await userEvent.type(activity, "Browser QA brunch{Enter}");
+
+    const place = rowCanvas.getByRole("textbox", {
+      name: /Edit place Dim Dim Sum/i,
+    });
+    await userEvent.clear(place);
+    await userEvent.type(place, "Central Pier{Enter}");
+
+    const startTime = rowCanvas.getByLabelText(/Edit time Dim Dim Sum/i);
+    await userEvent.clear(startTime);
+    await userEvent.type(startTime, "10:15{Enter}");
+
+    const endTime = rowCanvas.getByLabelText(/Edit end time Dim Dim Sum/i);
+    await userEvent.clear(endTime);
+    await userEvent.type(endTime, "11:45");
+    await userEvent.tab();
+
+    await userEvent.click(rowCanvas.getByRole("button", { name: /Edit type Dim Dim Sum/i }));
+    const typeMenu = documentCanvas.getByRole("listbox", { name: /Edit type Dim Dim Sum/i });
+    await userEvent.click(within(typeMenu).getByRole("option", { name: /Experience/i }));
+
+    const transportation = rowCanvas.getByRole("textbox", {
+      name: /Edit transportation Dim Dim Sum/i,
+    });
+    await userEvent.clear(transportation);
+    await userEvent.type(transportation, "Walk{Enter}");
+
+    await expect(rowCanvas.getByLabelText(/Duration Dim Dim Sum/i)).toHaveTextContent("1 h");
+    await expect(rowCanvas.queryByRole("button", { name: /Edit duration Dim Dim Sum/i })).toBeNull();
+    await expect(onStoryInlineQuickEdit).toHaveBeenCalledWith("item-dimdim", {
+      activity: "Browser QA brunch",
+    });
+    await expect(onStoryInlineQuickEdit).toHaveBeenCalledWith("item-dimdim", {
+      place: "Central Pier",
+    });
+    await expect(onStoryInlineQuickEdit).toHaveBeenCalledWith("item-dimdim", {
+      startTime: "10:15",
+    });
+    await expect(onStoryInlineQuickEdit).toHaveBeenCalledWith("item-dimdim", {
+      endTime: "11:45",
+      endOffsetDays: 0,
+    });
+    await expect(onStoryInlineQuickEdit).toHaveBeenCalledWith("item-dimdim", {
+      activityType: "experience",
+    });
+    await expect(onStoryInlineQuickEdit).toHaveBeenCalledWith("item-dimdim", {
+      transportation: "Walk",
+    });
   },
 };
 
