@@ -2283,7 +2283,7 @@ describe("SmartItineraryTable", () => {
     expect(onAddNoteForItem).toHaveBeenCalledWith("item-flight");
   });
 
-  it("opens a quick booking draft action from an itinerary row", async () => {
+  it("opens quick booking draft template choices from an itinerary row", async () => {
     const user = userEvent.setup();
     const onAddBookingForItem = vi.fn();
     renderTable({
@@ -2303,8 +2303,39 @@ describe("SmartItineraryTable", () => {
       within(screen.getByRole("row", { name: /Flight to Hong Kong/i }))
         .getByRole("button", { name: /Add booking draft for Flight to Hong Kong/i }),
     );
+    await user.click(
+      screen.getByRole("menuitem", { name: /Recommended/i }),
+    );
 
-    expect(onAddBookingForItem).toHaveBeenCalledWith("item-flight");
+    expect(onAddBookingForItem).toHaveBeenCalledWith(
+      "item-flight",
+      "recommended",
+    );
+  });
+
+  it("lets an organizer choose a hotel booking template from an itinerary row", async () => {
+    const user = userEvent.setup();
+    const onAddBookingForItem = vi.fn();
+    renderTable({
+      items: [
+        {
+          ...tripFixture.planItems[0],
+          id: "item-hotel",
+          activity: "Overnight stay",
+          sortOrder: 100,
+        },
+      ],
+      onAddBookingForItem,
+      selectedItemId: "item-hotel",
+    });
+
+    await user.click(
+      within(screen.getByRole("row", { name: /Overnight stay/i }))
+        .getByRole("button", { name: /Add booking draft for Overnight stay/i }),
+    );
+    await user.click(screen.getByRole("menuitem", { name: /Hotel/i }));
+
+    expect(onAddBookingForItem).toHaveBeenCalledWith("item-hotel", "hotel");
   });
 
   it("does not drop an activity block into another activity block or sub-activity lane", () => {

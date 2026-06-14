@@ -22,8 +22,8 @@ Last audited on 2026-06-14 from branch `codex/itinerary-hierarchy-docs`.
 | `REQ-HIER-03` | When the system catches a hierarchy issue, the user chooses the correction. | Proved for current table UI | `SmartItineraryTable.tsx` row fix menu; `SmartItineraryTable.test.tsx`; `ItineraryTemplate.stories.tsx`; commit `f50ec9ff`. | Re-run Storybook/browser smoke before final UX sign-off. |
 | `REQ-TIME-01` | Users enter start and optional end time; duration is derived/displayed, not the main input. | Proved for frontend table/dialog | `StopDialog.tsx`; `SmartItineraryTable.tsx`; `StopDialog.test.tsx`; `SmartItineraryTable.test.tsx`. | Backend raw drift hardening for all read paths remains part of Phase 3 guard coverage. |
 | `REQ-TIME-02` | End time can be omitted and can cross days; next-day endings show `+1` after the end time. | Proved for frontend display and contracts | `itineraryDisplay.test.ts`; `StopDialog.test.tsx`; `SmartItineraryTable.test.tsx`; DDL `0027` with `end_offset_days`. | Browser visual QA should be rerun for the superscript-like display before broad UX sign-off. |
-| `REQ-JOURNEY-01` | A flight/train/etc. can be modeled as a broader journey block with ticketed segment and buffer steps as sub-activities. | Partly proved | `CONTEXT.md` Journey Block/Ticketed Segment language; Storybook `HierarchyBlocks`; hierarchy/time UI. | Dedicated itinerary quick-create templates for flight/hotel/train commitments are not yet fully implemented. |
-| `REQ-INLINE-01` | Itinerary page is the primary planning surface with inline edits and optional details hidden behind quick controls. | Partly proved | `SmartItineraryTable.tsx` inline fields; `StopDialog.tsx`; current component tests. | Full commitment/ticket/hotel quick-edit flow from the itinerary surface needs a separate Phase 2/3 implementation slice. |
+| `REQ-JOURNEY-01` | A flight/train/etc. can be modeled as a broader journey block with ticketed segment and buffer steps as sub-activities. | Proved for frontend modeling and booking-template quick-create | `CONTEXT.md` Journey Block/Ticketed Segment language; Storybook `HierarchyBlocks`; hierarchy/time UI; itinerary booking template tests. | Browser QA and backend policy hardening remain before broad Phase 3 sign-off. |
+| `REQ-INLINE-01` | Itinerary page is the primary planning surface with inline edits and optional details hidden behind quick controls. | Partly proved; itinerary-first booking template quick-create is covered | `SmartItineraryTable.tsx` inline fields; `StopDialog.tsx`; itinerary booking template menu; current component tests. | Full browser QA and any deeper paid/committed booking lifecycle workflows remain separate Phase 3 slices. |
 | `REQ-API-01` | Phase 1 API adds canonical Trip Plan aliases and routes while retaining legacy compatibility aliases and routes. | Proved | Backend contract lanes, frontend mapper lanes, docs/OpenAPI grep, real API e2e. | None for Phase 1 compatibility; storage rename remains explicitly out of scope. |
 | `REQ-DB-01` | Migration DDL draft matches additive migrations `0025` through `0029`, and DB limits are documented. | Proved for documented migration contract | `docs/itinerary-trip-plan-phase-0-1-implementation-spec.md`; backend `schema_contract.rs`; schema test lane. | Future DB hardening needs new ADR/spec before changing already-shipped migration intent. |
 | `REQ-IMPORT-01` | Import/export preserves Trip Plan aliases, selected destination plan, hierarchy/time/path fields, and does not switch Main Plan. | Proved for Phase 1 compatibility | `itinerary-import-export.test.ts`; `itinerary_import_contract.rs`; import target tests; frontend mapper lane. | Full copy/import creation modes and record clone/reference/reject policy are later-phase work. |
@@ -53,6 +53,7 @@ These commands were run from the current worktree during the audit continuation:
 | Frontend explicit Actual Expense move request | `rtk bun run test src/trip/api-client.test.ts` | Passed: 1 file, 37 tests. |
 | Frontend Actual Expense plan correction UI | `rtk bun run test src/components/TripExpensesPage.test.tsx` | Passed: 1 file, 17 tests, including Trip Plan selection for unlinked expenses and linked-stop plan lock. |
 | Frontend local app Actual Expense plan correction | `rtk bun run test src/components/SagittariusApp.test.tsx --testNamePattern "expense\|Trip Plan"` | Passed: 1 file, 18 tests, including local unlinked expense move to an organizer-selected Trip Plan. |
+| Frontend itinerary booking templates | `rtk bun run test src/components/SmartItineraryTable.test.tsx src/components/SagittariusApp.test.tsx --testNamePattern "booking draft\|booking template\|Trip Plan"` | Passed: 2 files, 29 selected tests, including template menu choices and hotel/flight booking draft creation from itinerary rows. |
 
 ## Completion Decision
 
@@ -60,8 +61,7 @@ Phase 0/1 Trip Plan compatibility is strongly evidenced by the current command
 matrix. Current Phase 2 service behavior for expenses, tasks, stop notes, and
 booking docs is also strongly evidenced by backend and frontend tests. The full
 requested product end state is not yet fully proved because organizer-facing
-cancel/refund/duplicate-as-estimate workflows, itinerary-first
-commitment/ticket quick-create workflows, and full Phase 3 hierarchy/time
+cancel/refund/duplicate-as-estimate workflows and full Phase 3 hierarchy/time
 browser QA remain later or partially implemented slices.
 
 Do not mark the persistent goal complete until those remaining rows either have

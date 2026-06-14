@@ -5700,6 +5700,7 @@ describe("Sagittarius cockpit UI", () => {
         name: /Add booking draft for Flight to Hong Kong/i,
       }),
     );
+    await user.click(screen.getByRole("menuitem", { name: /Recommended/i }));
 
     const structure = await screen.findByLabelText("Structure for Flight to Hong Kong");
     expect(within(structure).getByText("1 booking")).toBeInTheDocument();
@@ -5710,13 +5711,13 @@ describe("Sagittarius cockpit UI", () => {
       "aria-selected",
       "true",
     );
-    expect(within(context).getByText("Flight to Hong Kong booking draft")).toBeInTheDocument();
+    expect(within(context).getByText("Flight to Hong Kong flight ticket draft")).toBeInTheDocument();
     let persistedTrip = JSON.parse(storage.getItem(tripStorageKey)!) as Trip;
     expect(persistedTrip.bookingDocs).toEqual([
       expect.objectContaining({
         status: "draft",
         type: "flight",
-        title: "Flight to Hong Kong booking draft",
+        title: "Flight to Hong Kong flight ticket draft",
         tripPlanId: seedTrip.activePlanVariantId,
         providerName: "Thai AirAsia",
         confirmationCode: "FD-3023",
@@ -5733,7 +5734,7 @@ describe("Sagittarius cockpit UI", () => {
 
     fireEvent.change(
       within(context).getByLabelText(
-        "ประเภทการจองของ Flight to Hong Kong booking draft",
+        "ประเภทการจองของ Flight to Hong Kong flight ticket draft",
       ),
       { target: { value: "train" } },
     );
@@ -5742,10 +5743,64 @@ describe("Sagittarius cockpit UI", () => {
       persistedTrip = JSON.parse(storage.getItem(tripStorageKey)!) as Trip;
       expect(persistedTrip.bookingDocs?.[0]).toEqual(
         expect.objectContaining({
-          title: "Flight to Hong Kong booking draft",
+          title: "Flight to Hong Kong flight ticket draft",
           type: "train",
         }),
       );
+    });
+  });
+
+  it("quick-adds a chosen hotel booking template from the itinerary row", async () => {
+    const user = userEvent.setup();
+    const storage = installLocalStorageStub();
+    const stayItem = {
+      ...seedTrip.itineraryItems[0],
+      id: "item-custom-stay",
+      activity: "Custom stay window",
+      activityType: "travel" as const,
+      transportation: "",
+      day: "2026-06-20",
+      startTime: "15:00",
+      endTime: "11:00",
+      endOffsetDays: 1,
+      place: "Central Hotel",
+      details: {
+        provider: "Joii Stay",
+        bookingRef: "HTL-2200",
+      },
+      sortOrder: 100,
+    };
+    storage.setItem(
+      tripStorageKey,
+      JSON.stringify({
+        ...seedTrip,
+        bookingDocs: [],
+        itineraryItems: [stayItem],
+      }),
+    );
+
+    render(<SagittariusApp initialView="itinerary" />);
+
+    await user.click(
+      await screen.findByRole("button", {
+        name: /Add booking draft for Custom stay window/i,
+      }),
+    );
+    await user.click(screen.getByRole("menuitem", { name: /Hotel/i }));
+
+    await waitFor(() => {
+      const persistedTrip = JSON.parse(storage.getItem(tripStorageKey)!) as Trip;
+      expect(persistedTrip.bookingDocs).toEqual([
+        expect.objectContaining({
+          type: "hotel",
+          title: "Custom stay window hotel booking draft",
+          providerName: "Joii Stay",
+          confirmationCode: "HTL-2200",
+          startsAt: "2026-06-20T15:00:00",
+          endsAt: "2026-06-21T11:00:00",
+          relatedItineraryItemIds: ["item-custom-stay"],
+        }),
+      ]);
     });
   });
 
@@ -6112,6 +6167,7 @@ describe("Sagittarius cockpit UI", () => {
         name: /Add booking draft for Rain plan gallery/i,
       }),
     );
+    await user.click(screen.getByRole("menuitem", { name: /Recommended/i }));
 
     await waitFor(() => expect(createBookingDoc).toHaveBeenCalledTimes(1));
     expect(createTask).toHaveBeenCalledWith(

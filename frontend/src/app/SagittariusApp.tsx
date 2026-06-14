@@ -19,6 +19,7 @@ import { OverviewPage } from "@/src/components/OverviewPage";
 import { RouteMapView } from "@/src/components/RouteMapView";
 import {
   SmartItineraryTable,
+  type ItineraryBookingTemplate,
   type ItineraryCommitmentSummary,
   type InlineItineraryItemPatch,
 } from "@/src/components/SmartItineraryTable";
@@ -2847,15 +2848,22 @@ export function SagittariusApp({
     }));
   }
 
-  async function createItineraryBookingDraft(itemId: string) {
+  async function createItineraryBookingDraft(
+    itemId: string,
+    template: ItineraryBookingTemplate = "recommended",
+  ) {
     if (!canEditBookings) return;
     const item = trip.itineraryItems.find((candidate) => candidate.id === itemId);
     if (!item) return;
     const draftDetails = bookingDraftDetailsForItineraryItem(item);
     const timeWindow = bookingDraftTimeWindowForItineraryItem(item);
+    const bookingType =
+      template === "recommended"
+        ? bookingTypeForItineraryItem(item)
+        : bookingTypeForBookingTemplate(template);
     await createBookingDoc({
-      type: bookingTypeForItineraryItem(item),
-      title: `${item.activity} booking draft`,
+      type: bookingType,
+      title: bookingDraftTitleForItineraryItem(item, bookingType),
       status: "draft",
       visibility: "shared",
       ownerMemberId: currentMember.id,
@@ -4238,7 +4246,9 @@ export function SagittariusApp({
                   dayPathOverrides={pathSelection.dayPathOverrides ?? {}}
                   showAllPaths={Boolean(pathSelection.showAll)}
                   tripName={trip.name}
-                  onAddBookingForItem={(itemId) => void createItineraryBookingDraft(itemId)}
+                  onAddBookingForItem={(itemId, template) =>
+                    void createItineraryBookingDraft(itemId, template)
+                  }
                   onAddStop={addStop}
                   onAddSubActivity={addSubActivity}
                   onAddNoteForItem={(itemId) => void createItineraryNote(itemId)}
@@ -5173,6 +5183,27 @@ export function bookingTypeForItineraryItem(item: ItineraryItem): BookingDocType
     return "hotel";
   if (item.activityType === "attraction" || item.itemKind === "activity") return "activity_ticket";
   return "other";
+}
+
+function bookingTypeForBookingTemplate(
+  template: Exclude<ItineraryBookingTemplate, "recommended">,
+): BookingDocType {
+  if (template === "activity_ticket") return "activity_ticket";
+  return template;
+}
+
+function bookingDraftTitleForItineraryItem(
+  item: ItineraryItem,
+  bookingType: BookingDocType,
+): string {
+  const suffixByType: Partial<Record<BookingDocType, string>> = {
+    activity_ticket: "ticket draft",
+    flight: "flight ticket draft",
+    hotel: "hotel booking draft",
+    public_transport: "transport booking draft",
+    train: "train ticket draft",
+  };
+  return `${item.activity} ${suffixByType[bookingType] ?? "booking draft"}`;
 }
 
 function bookingDraftDetailsForItineraryItem(item: ItineraryItem): {

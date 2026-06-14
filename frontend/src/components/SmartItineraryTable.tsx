@@ -82,7 +82,10 @@ interface SmartItineraryTableProps {
   dayPathOverrides?: Record<string, string | undefined>;
   showAllPaths?: boolean;
   tripName: string;
-  onAddBookingForItem?: (itemId: string) => void;
+  onAddBookingForItem?: (
+    itemId: string,
+    template?: ItineraryBookingTemplate,
+  ) => void;
   onAddStop: (day?: string) => void;
   onAddSubActivity?: (parentItemId: string) => void;
   onAddNoteForItem?: (itemId: string) => void;
@@ -116,6 +119,13 @@ interface SmartItineraryTableProps {
   onToggleContextRail: () => void;
   onUndo: () => void;
 }
+
+export type ItineraryBookingTemplate =
+  | "recommended"
+  | "flight"
+  | "train"
+  | "hotel"
+  | "activity_ticket";
 
 export type InlineItineraryItemPatch = Partial<
   Pick<
@@ -236,7 +246,23 @@ const rowFixSummaryClassName =
   "row-fix-summary inline-grid size-8 shrink-0 place-items-center rounded-(--radius-sm) border-0 bg-transparent text-(--color-warning-strong) transition-[color,background] duration-150 hover:not-disabled:bg-(--color-warning-soft) disabled:cursor-not-allowed disabled:opacity-[0.42]";
 const rowFixPanelClassName =
   "absolute right-0 top-9 z-20 grid min-w-10 gap-1 rounded-(--radius-sm) border border-(--color-warning-border) bg-(--color-surface) p-1 shadow-[0_12px_28px_rgb(15_23_42_/_0.14)]";
+const rowBookingMenuClassName = "row-booking-menu relative";
+const rowBookingPanelClassName =
+  "absolute right-0 top-9 z-20 grid min-w-[156px] gap-1 rounded-(--radius-sm) border border-(--color-route-border) bg-(--color-surface) p-1 shadow-[0_12px_28px_rgb(15_23_42_/_0.14)]";
+const rowBookingMenuButtonClassName =
+  "inline-flex min-h-8 w-full items-center gap-2 rounded-(--radius-sm) border-0 bg-transparent px-2.5 text-left text-xs font-bold text-(--color-text) transition-colors hover:bg-(--color-route-soft) focus-visible:bg-(--color-route-soft) focus-visible:outline-none [&_.icon]:size-3.5";
 const minutesPerDay = 24 * 60;
+const itineraryBookingTemplates = [
+  { id: "recommended", icon: "ticket", label: "Recommended" },
+  { id: "flight", icon: "route", label: "Flight" },
+  { id: "train", icon: "route", label: "Train" },
+  { id: "hotel", icon: "home", label: "Hotel" },
+  { id: "activity_ticket", icon: "ticket", label: "Activity ticket" },
+] satisfies Array<{
+  id: ItineraryBookingTemplate;
+  icon: "home" | "route" | "ticket";
+  label: string;
+}>;
 const timeHeaderClassName =
   "time-header max-[767px]:sticky max-[767px]:left-0 max-[767px]:z-[5] max-[767px]:shadow-[6px_0_12px_rgb(15_23_42_/_0.08)]";
 const timeCellClassName =
@@ -1590,7 +1616,10 @@ function DayGroup({
     planBlockItemId: string,
   ) => void;
   onDropOnDay: (event: DragEvent<HTMLElement>, targetDay: string) => void;
-  onAddBookingForItem?: (itemId: string) => void;
+  onAddBookingForItem?: (
+    itemId: string,
+    template?: ItineraryBookingTemplate,
+  ) => void;
   onAddStop: (day?: string) => void;
   onAddSubActivity?: (parentItemId: string) => void;
   onAddNoteForItem?: (itemId: string) => void;
@@ -1643,6 +1672,8 @@ function DayGroup({
   const showGraph =
     !collapsed && (graphItems.length > 0 || group.items.length > 0);
   const [openFixMenuItemId, setOpenFixMenuItemId] = useState<string | null>(null);
+  const [openBookingMenuItemId, setOpenBookingMenuItemId] =
+    useState<string | null>(null);
 
   return (
     <tbody
@@ -2127,15 +2158,45 @@ function DayGroup({
                     >
                       <Icon name="note" />
                     </button>
-                    <button
-                      type="button"
-                      className={rowActionButtonClassName}
-                      aria-label={`Add booking draft for ${item.activity}`}
-                      disabled={!canEdit}
-                      onClick={() => onAddBookingForItem?.(item.id)}
-                    >
-                      <Icon name="ticket" />
-                    </button>
+                    <div className={rowBookingMenuClassName}>
+                      <button
+                        type="button"
+                        className={rowActionButtonClassName}
+                        aria-label={`Add booking draft for ${item.activity}`}
+                        aria-expanded={openBookingMenuItemId === item.id}
+                        disabled={!canEdit}
+                        onClick={() =>
+                          setOpenBookingMenuItemId((current) =>
+                            current === item.id ? null : item.id,
+                          )
+                        }
+                      >
+                        <Icon name="ticket" />
+                      </button>
+                      {openBookingMenuItemId === item.id ? (
+                        <div
+                          className={rowBookingPanelClassName}
+                          role="menu"
+                          aria-label={`Booking draft templates for ${item.activity}`}
+                        >
+                          {itineraryBookingTemplates.map((template) => (
+                            <button
+                              key={template.id}
+                              type="button"
+                              role="menuitem"
+                              className={rowBookingMenuButtonClassName}
+                              onClick={() => {
+                                onAddBookingForItem?.(item.id, template.id);
+                                setOpenBookingMenuItemId(null);
+                              }}
+                            >
+                              <Icon name={template.icon} />
+                              {template.label}
+                            </button>
+                          ))}
+                        </div>
+                      ) : null}
+                    </div>
                     <button
                       type="button"
                       className={rowActionButtonClassName}
