@@ -166,7 +166,7 @@ async fn itinerary_patch_contract_patches_address_and_coordinates(pool: sqlx::Pg
 }
 
 #[sqlx::test(migrations = "../../migrations")]
-async fn itinerary_patch_contract_rejects_clearing_end_time_with_offset(pool: sqlx::PgPool) {
+async fn itinerary_patch_contract_normalizes_clearing_end_time_with_offset(pool: sqlx::PgPool) {
     support::seed_trip(&pool).await;
     let token = support::create_session(&pool, support::ORGANIZER_ID).await;
     let app = support::app(pool.clone());
@@ -200,7 +200,7 @@ async fn itinerary_patch_contract_rejects_clearing_end_time_with_offset(pool: sq
         .unwrap();
     assert_eq!(cross_day.status(), StatusCode::OK);
 
-    let rejected = app
+    let normalized = app
         .oneshot(
             Request::builder()
                 .method(Method::PATCH)
@@ -226,10 +226,11 @@ async fn itinerary_patch_contract_rejects_clearing_end_time_with_offset(pool: sq
         .await
         .unwrap();
 
-    assert_eq!(rejected.status(), StatusCode::BAD_REQUEST);
+    assert_eq!(normalized.status(), StatusCode::OK);
     let body: Value =
-        serde_json::from_slice(&to_bytes(rejected.into_body(), 65536).await.unwrap()).unwrap();
-    assert_eq!(body["code"], "invalid_request");
+        serde_json::from_slice(&to_bytes(normalized.into_body(), 65536).await.unwrap()).unwrap();
+    assert_eq!(body["endTime"], Value::Null);
+    assert_eq!(body["endOffsetDays"], 0);
 
     let stored: (Option<String>, i32, i64) = sqlx::query_as(
         "select to_char(end_time, 'HH24:MI') as end_time, end_offset_days, version
@@ -240,9 +241,9 @@ async fn itinerary_patch_contract_rejects_clearing_end_time_with_offset(pool: sq
     .fetch_one(&pool)
     .await
     .unwrap();
-    assert_eq!(stored.0.as_deref(), Some("02:00"));
-    assert_eq!(stored.1, 1);
-    assert_eq!(stored.2, 5);
+    assert_eq!(stored.0, None);
+    assert_eq!(stored.1, 0);
+    assert_eq!(stored.2, 6);
 }
 
 #[sqlx::test(migrations = "../../migrations")]
@@ -332,46 +333,6 @@ async fn itinerary_patch_contract_clears_end_time_and_duration(pool: sqlx::PgPoo
     assert_eq!(stored.1, 0);
     assert_eq!(stored.2, None);
     assert_eq!(stored.3, 6);
-}
-
-#[sqlx::test(migrations = "../../migrations")]
-async fn itinerary_patch_contract_normalizes_raw_end_offset_drift_on_load(pool: sqlx::PgPool) {
-    support::seed_trip(&pool).await;
-    sqlx::query(
-        "update itinerary_items
-         set end_time = null, end_offset_days = 3
-         where id = $1",
-    )
-    .bind(Uuid::parse_str(support::ITEM_ID).unwrap())
-    .execute(&pool)
-    .await
-    .unwrap();
-    let token = support::create_session(&pool, support::TRAVELER_ID).await;
-    let app = support::app(pool.clone());
-
-    let response = app
-        .oneshot(
-            Request::builder()
-                .method(Method::GET)
-                .uri(format!("/api/v1/trips/{}", support::TRIP_ID))
-                .header(header::AUTHORIZATION, format!("Bearer {token}"))
-                .body(Body::empty())
-                .unwrap(),
-        )
-        .await
-        .unwrap();
-
-    assert_eq!(response.status(), StatusCode::OK);
-    let body: Value =
-        serde_json::from_slice(&to_bytes(response.into_body(), 131072).await.unwrap()).unwrap();
-    let item = body["itineraryItems"]
-        .as_array()
-        .unwrap()
-        .iter()
-        .find(|item| item["id"] == support::ITEM_ID)
-        .unwrap();
-    assert_eq!(item["endTime"], Value::Null);
-    assert_eq!(item["endOffsetDays"], 0);
 }
 
 #[sqlx::test(migrations = "../../migrations")]

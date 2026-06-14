@@ -117,6 +117,68 @@ async fn itinerary_schema_stores_time_windows(pool: sqlx::PgPool) {
 }
 
 #[sqlx::test(migrations = "../../migrations")]
+async fn itinerary_end_offset_requires_end_time(pool: sqlx::PgPool) {
+    let mut tx = pool.begin().await.unwrap();
+    sqlx::query("set constraints all deferred")
+        .execute(&mut *tx)
+        .await
+        .unwrap();
+
+    insert_trip(
+        &mut tx,
+        support::TRIP_ID,
+        support::OWNER_ID,
+        support::PLAN_ID,
+        "join-main",
+    )
+    .await;
+    insert_member(&mut tx, support::OWNER_ID, support::TRIP_ID, "owner").await;
+    insert_plan(&mut tx, support::PLAN_ID, support::TRIP_ID).await;
+
+    tx.commit().await.unwrap();
+
+    sqlx::query(
+        "insert into itinerary_items (
+           id, trip_id, plan_variant_id, day, sort_order, start_time, end_time,
+           end_offset_days, activity, activity_type, place, created_by
+         )
+         values (
+           $1::uuid, $2::uuid, $3::uuid, '2026-06-01', 1, '09:00', null,
+           0, 'Flexible stop', 'experience', 'Cafe', $4::uuid
+         )",
+    )
+    .bind(support::ITEM_ID)
+    .bind(support::TRIP_ID)
+    .bind(support::PLAN_ID)
+    .bind(support::OWNER_ID)
+    .execute(&pool)
+    .await
+    .unwrap();
+
+    let result = sqlx::query(
+        "insert into itinerary_items (
+           id, trip_id, plan_variant_id, day, sort_order, start_time, end_time,
+           end_offset_days, activity, activity_type, place, created_by
+         )
+         values (
+           $1::uuid, $2::uuid, $3::uuid, '2026-06-01', 2, '10:00', null,
+           1, 'Invalid overnight stop', 'experience', 'Cafe', $4::uuid
+         )",
+    )
+    .bind("018f4e80-5788-7de0-a45c-8a555d17fc4d")
+    .bind(support::TRIP_ID)
+    .bind(support::PLAN_ID)
+    .bind(support::OWNER_ID)
+    .execute(&pool)
+    .await;
+
+    assert!(
+        result.is_err(),
+        "end_offset_days > 0 without end_time was accepted"
+    );
+}
+
+#[sqlx::test(migrations = "../../migrations")]
 async fn itinerary_parent_scope_fkey_is_immediate(pool: sqlx::PgPool) {
     let constraints: Vec<(String, bool, bool)> = sqlx::query_as(
         "select conname::text, condeferrable, condeferred
