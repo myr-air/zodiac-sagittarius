@@ -1393,6 +1393,7 @@ describe("Trip API client", () => {
     const patchRequest = {
       clientMutationId: "web-expense-2",
       expectedVersion: 1,
+      tripPlanId: cockpitResponse.trip.activePlanVariantId,
       title: "Taxi edited",
       amountMinor: 15000,
       currency: "CNY",

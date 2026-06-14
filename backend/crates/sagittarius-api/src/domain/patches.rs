@@ -166,6 +166,7 @@ pub struct CreateExpenseRequest {
 pub struct PatchExpenseRequest {
     pub client_mutation_id: String,
     pub expected_version: i64,
+    pub trip_plan_id: Option<Uuid>,
     pub title: Option<String>,
     pub amount_minor: Option<i32>,
     pub currency: Option<String>,
@@ -713,6 +714,7 @@ impl PatchExpenseRequest {
             validate_expense_splits_total(splits, amount_minor)?;
         }
         if self.title.is_none()
+            && self.trip_plan_id.is_none()
             && self.amount_minor.is_none()
             && self.currency.is_none()
             && self.exchange_rate_to_settlement_currency.is_none()

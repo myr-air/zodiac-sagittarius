@@ -15,8 +15,8 @@ Last audited on 2026-06-14 from branch `codex/itinerary-hierarchy-docs`.
 | `REQ-LANG-01` | Product language uses Trip Plan, Main Plan, Plan Status, Actual Expense, Activity Block, Sub-activity, and Time Window consistently. | Proved for Phase 0/1 | `CONTEXT.md`; ADRs `0001` through `0006`; `frontend/src/project-contract.test.ts`; command evidence from frontend UI/table/copy lane. | Continue guarding legacy docs under `docs/superpowers/` as historical-only references. |
 | `REQ-PLAN-01` | A trip can have multiple named Trip Plans for real use, drafts, backups, or proposals. | Proved for Phase 1 compatibility | `docs/itinerary-trip-plan-phase-0-1-implementation-spec.md`; backend `plan_variants_contract.rs`; frontend `SagittariusApp.test.tsx` and `SmartItineraryTable.test.tsx`; real API e2e. | Phase 2/3 can add richer copy/import plan creation modes after explicit ADR/spec update. |
 | `REQ-PLAN-02` | Any Trip Plan can be selected as the Main Plan, and Main Plan selection is separate from the plan currently being edited/viewed. | Proved for Phase 1 compatibility | Backend set-main contract; frontend selector/set-main tests; real API e2e; API docs and OpenAPI routes. | Browser smoke for the complete Trip Plan selector + set-main flow should be rerun before broad UX sign-off. |
-| `REQ-PLAN-03` | Plans may have different dates, transport, tickets, and records; data should be plan-scoped instead of globally mixed. | Partly proved | DDL `0026`; schema contract; frontend import target tests; set-main no-record-move tests. | Phase 2 service behavior remains: strict create/patch defaults, same-plan relation validation, repair/audit of nullable or inferred `trip_plan_id` rows. |
-| `REQ-EXP-01` | Actual Expenses are real money and must not automatically move to a new plan. | Proved for set-main; incomplete for full Phase 2 behavior | `CONTEXT.md`; ADR `0003`; `plan_variants_contract.rs` set-main record-stability assertions; expense copy clarified in UI/docs. | Explicit user-driven move/cancel/refund/duplicate-as-estimate flows are not yet fully implemented as a product workflow. |
+| `REQ-PLAN-03` | Plans may have different dates, transport, tickets, and records; data should be plan-scoped instead of globally mixed. | Proved for current Phase 2 service scope | DDL `0026`; schema contract; backend `expenses_contract.rs`, `tasks_contract.rs`, `stop_notes_contract.rs`, and `bookings_contract.rs`; frontend API/app tests; set-main no-record-move tests. | Dedicated organizer audit UX for inferred compatibility scopes remains future work. |
+| `REQ-EXP-01` | Actual Expenses are real money and must not automatically move to a new plan. | Proved for scope, summary, reminders, explicit API move of unlinked expenses, and no automatic Main Plan moves; incomplete for full organizer UI/estimate workflows | `CONTEXT.md`; ADR `0003`; `expenses_contract.rs`; `plan_variants_contract.rs` set-main record-stability assertions; frontend API/app tests; expense copy clarified in UI/docs. | User-facing move/cancel/refund/duplicate-as-estimate workflows are not yet fully implemented as a product workflow. |
 | `REQ-HIER-01` | Itinerary shape is Plan Day -> Activity -> Sub-activity, with one sub-activity level and Activity Blocks for grouped journeys. | Partly proved | ADR `0004`; DDL `0027`; backend create/patch hierarchy contracts; frontend itinerary ordering and hierarchy tests; Storybook `HierarchyBlocks`. | Full Phase 3 service/UI sign-off still needs complete browser QA and policy coverage for all move/reparent sequences. |
 | `REQ-HIER-02` | Sibling overlaps and child-outside-parent are warnings, not automatic Alternative Paths or automatic fixes. | Proved for current frontend behavior | `frontend/src/trip/itinerary.test.ts`; `SmartItineraryTable.test.tsx`; `ItineraryTemplate.stories.tsx` hierarchy warning story. | Backend import/create/patch policy should remain aligned as Phase 3 hardens hierarchy behavior. |
 | `REQ-HIER-03` | When the system catches a hierarchy issue, the user chooses the correction. | Proved for current table UI | `SmartItineraryTable.tsx` row fix menu; `SmartItineraryTable.test.tsx`; `ItineraryTemplate.stories.tsx`; commit `f50ec9ff`. | Re-run Storybook/browser smoke before final UX sign-off. |
@@ -46,14 +46,21 @@ These commands were run from the current worktree during the audit continuation:
 | Real API compatibility | `rtk make frontend-e2e-local` | Passed: 2 e2e tests. |
 | Frontend type safety | `rtk bun run typecheck` | Passed. |
 | Aries global profile | `rtk python3 ~/.codex/aries/scripts/check_global.py` | Passed. |
+| Backend Phase 2 expenses | `rtk cargo test -p sagittarius-api --test expenses_contract -- --nocapture` | Passed: 8 tests. |
+| Backend Phase 2 records | `rtk cargo test -p sagittarius-api --test tasks_contract --test stop_notes_contract --test bookings_contract -- --nocapture` | Passed: 25 tests. |
+| Frontend Phase 2 API/app scope | `rtk bun run test src/trip/api-client.test.ts src/components/SagittariusApp.test.tsx` | Passed: 2 files, 161 tests. |
+| Backend explicit Actual Expense move | `rtk cargo test -p sagittarius-api --test expenses_contract -- --nocapture` | Passed: 10 tests, including explicit unlinked expense move and linked-item conflict rejection. |
+| Frontend explicit Actual Expense move request | `rtk bun run test src/trip/api-client.test.ts` | Passed: 1 file, 37 tests. |
 
 ## Completion Decision
 
 Phase 0/1 Trip Plan compatibility is strongly evidenced by the current command
-matrix. The full requested product end state is not yet fully proved because
-Phase 2 plan-scoped record behavior, explicit Actual Expense move/estimate
-flows, itinerary-first commitment/ticket quick-create workflows, and full
-Phase 3 hierarchy/time browser QA remain later or partially implemented slices.
+matrix. Current Phase 2 service behavior for expenses, tasks, stop notes, and
+booking docs is also strongly evidenced by backend and frontend tests. The full
+requested product end state is not yet fully proved because organizer-facing
+move/cancel/refund/duplicate-as-estimate workflows, itinerary-first
+commitment/ticket quick-create workflows, and full Phase 3 hierarchy/time
+browser QA remain later or partially implemented slices.
 
 Do not mark the persistent goal complete until those remaining rows either have
 direct implementation and verification evidence or are explicitly removed from

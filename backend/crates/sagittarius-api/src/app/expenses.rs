@@ -229,6 +229,7 @@ pub async fn patch_expense(
     let next_trip_plan_id = resolve_expense_patch_trip_plan_id(
         &mut tx,
         trip_id,
+        request.trip_plan_id,
         existing.trip_plan_id,
         next_itinerary_item_id,
     )
@@ -362,23 +363,43 @@ async fn validate_expense_links(
 async fn resolve_expense_patch_trip_plan_id(
     tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
     trip_id: Uuid,
+    requested_trip_plan_id: Option<Uuid>,
     expense_trip_plan_id: Option<Uuid>,
     itinerary_item_id: Option<Uuid>,
 ) -> Result<Option<Uuid>, ServiceError> {
-    let Some(item_id) = itinerary_item_id else {
-        if expense_trip_plan_id.is_some() {
-            return Ok(expense_trip_plan_id);
+    if let Some(trip_plan_id) = requested_trip_plan_id {
+        if !db::queries::plan_variant_exists_for_trip(tx, trip_id, trip_plan_id).await? {
+            return Err(ServiceError::NotFound);
         }
-        return db::queries::active_plan_variant_id_for_trip(tx, trip_id)
-            .await?
-            .ok_or(ServiceError::NotFound)
-            .map(Some);
+    }
+
+    let item_trip_plan_id = if let Some(item_id) = itinerary_item_id {
+        Some(
+            db::queries::itinerary_item_plan_variant_id_for_trip(tx, trip_id, item_id)
+                .await?
+                .ok_or(ServiceError::NotFound)?,
+        )
+    } else {
+        None
     };
-    let item_trip_plan_id =
-        db::queries::itinerary_item_plan_variant_id_for_trip(tx, trip_id, item_id)
-            .await?
-            .ok_or(ServiceError::NotFound)?;
-    Ok(Some(item_trip_plan_id))
+    if let (Some(requested), Some(item_plan)) = (requested_trip_plan_id, item_trip_plan_id) {
+        if requested != item_plan {
+            return Err(ServiceError::InvalidRequest(
+                "tripPlanId must match itinerary item plan",
+            ));
+        }
+    }
+    if requested_trip_plan_id.is_some() || item_trip_plan_id.is_some() {
+        return Ok(requested_trip_plan_id.or(item_trip_plan_id));
+    }
+    if expense_trip_plan_id.is_some() {
+        return Ok(expense_trip_plan_id);
+    }
+
+    db::queries::active_plan_variant_id_for_trip(tx, trip_id)
+        .await?
+        .ok_or(ServiceError::NotFound)
+        .map(Some)
 }
 
 async fn resolve_expense_trip_plan_id(

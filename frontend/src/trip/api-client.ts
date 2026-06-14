@@ -435,6 +435,7 @@ export interface RecordExpenseReminderApiRequest {
 export interface PatchExpenseApiRequest {
   clientMutationId: string;
   expectedVersion: number;
+  tripPlanId?: string | null;
   title?: string;
   amountMinor?: number;
   currency?: string;
