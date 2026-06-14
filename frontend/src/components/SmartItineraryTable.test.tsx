@@ -242,9 +242,13 @@ describe("SmartItineraryTable", () => {
       "top-[calc(100%_+_8px)]",
       "z-[30]",
       "max-h-[min(70vh,560px)]",
-      "w-[min(424px,calc(100vw_-_32px))]",
+      "w-[min(560px,calc(100vw_-_32px))]",
       "data-[state=closed]:opacity-0",
       "motion-reduce:transition-none",
+    );
+    expect(controlsPanel?.querySelector("select")).toHaveClass(
+      "w-full",
+      "min-w-0",
     );
 
     await user.keyboard("{Escape}");
