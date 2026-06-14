@@ -1846,7 +1846,7 @@ function DayGroup({
               graphItems={graphItems}
               graphWidth={graphColumnWidth}
               pathOptions={pathOptions}
-              rowItems={group.items}
+              rowItems={visibleItems}
               selectedItemId={selectedItemId}
               onMoveItemToPath={onMoveItemToPath}
               onSelectItem={onSelectItem}

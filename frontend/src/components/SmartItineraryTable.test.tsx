@@ -599,6 +599,76 @@ describe("SmartItineraryTable", () => {
     expect(secondDot).toHaveStyle({ top: "118px" });
   });
 
+  it("aligns graph dots with visible rows after collapsing an activity block", async () => {
+    const user = userEvent.setup();
+    const blockItem = {
+      ...tripFixture.planItems[0],
+      id: "graph-block",
+      day: "2026-06-19",
+      startTime: "08:00",
+      durationMinutes: 60,
+      activity: "Graph block",
+      isPlanBlock: true,
+      parentItemId: null,
+      pathRole: "main" as const,
+      sortOrder: 100,
+    };
+    const childItem = {
+      ...tripFixture.planItems[1],
+      id: "graph-block-child",
+      day: "2026-06-19",
+      startTime: "08:15",
+      durationMinutes: 20,
+      activity: "Graph hidden child",
+      isPlanBlock: false,
+      parentItemId: "graph-block",
+      pathRole: "main" as const,
+      sortOrder: 110,
+    };
+    const afterBlockItem = {
+      ...tripFixture.planItems[2],
+      id: "graph-after-block",
+      day: "2026-06-19",
+      startTime: "09:30",
+      durationMinutes: 30,
+      activity: "Graph after block",
+      isPlanBlock: false,
+      parentItemId: null,
+      pathRole: "main" as const,
+      sortOrder: 200,
+    };
+
+    renderTable({
+      items: [blockItem, childItem, afterBlockItem],
+      graphItems: [blockItem, childItem, afterBlockItem],
+      selectedItemId: "graph-block",
+    });
+
+    expect(
+      screen.getByRole("button", { name: /Graph hidden child on Main/i }),
+    ).toHaveStyle({ top: "118px" });
+    expect(
+      screen.getByRole("button", { name: /Graph after block on Main/i }),
+    ).toHaveStyle({ top: "177px" });
+
+    await user.click(
+      within(screen.getByRole("row", { name: /Graph block/i })).getByRole(
+        "button",
+        { name: /ย่อ block|Collapse block/i },
+      ),
+    );
+
+    expect(
+      screen.queryByRole("row", { name: /Graph hidden child/i }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /Graph hidden child on Main/i }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /Graph after block on Main/i }),
+    ).toHaveStyle({ top: "118px" });
+  });
+
   it("offers a keyboard fallback for changing an activity path", async () => {
     const user = userEvent.setup();
     const onMoveItemToPath = vi.fn();
