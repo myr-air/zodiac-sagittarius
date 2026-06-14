@@ -85,7 +85,7 @@ interface SmartItineraryTableProps {
   onAddBookingForItem?: (
     itemId: string,
     template?: ItineraryBookingTemplate,
-  ) => void;
+  ) => string | void | Promise<string | void>;
   onAddStop: (day?: string) => void;
   onAddSubActivity?: (parentItemId: string) => void | Promise<void>;
   onAddNoteForItem?: (itemId: string) => void;
@@ -477,6 +477,9 @@ export function SmartItineraryTable({
   }>({ draggedItemId: null, overItemId: null, overDay: null, overBlockId: null });
   const [pendingDeleteItem, setPendingDeleteItem] =
     useState<ItineraryItem | null>(null);
+  const [bookingDraftMessage, setBookingDraftMessage] = useState<string | null>(
+    null,
+  );
   const knownFilterIdsRef = useRef<string[]>(
     filterOptions.map((option) => option.id),
   );
@@ -572,6 +575,29 @@ export function SmartItineraryTable({
         ? current.filter((id) => id !== itemId)
         : [...current, itemId],
     );
+  }
+
+  async function chooseBookingTemplate(
+    item: ItineraryItem,
+    template: (typeof itineraryBookingTemplates)[number],
+  ) {
+    setBookingDraftMessage(null);
+    try {
+      const createdTitle = await onAddBookingForItem?.(item.id, template.id);
+      setBookingDraftMessage(
+        t.itinerary.row.bookingDraftCreated({
+          activity: item.activity,
+          title:
+            typeof createdTitle === "string" && createdTitle.trim()
+              ? createdTitle
+              : template.label,
+        }),
+      );
+    } catch {
+      setBookingDraftMessage(
+        t.itinerary.row.bookingDraftFailed({ activity: item.activity }),
+      );
+    }
   }
 
   function togglePlanFilter(pathId: string) {
@@ -1143,6 +1169,15 @@ export function SmartItineraryTable({
         ) : tripPlanMessage ? (
           <p className={tripPlanMessageClassName}>{tripPlanMessage}</p>
         ) : null}
+        {bookingDraftMessage ? (
+          <p
+            className={tripPlanMessageClassName}
+            role="status"
+            aria-live="polite"
+          >
+            {bookingDraftMessage}
+          </p>
+        ) : null}
       </div>
       <div className={itineraryFilterShellClassName}>
         <div className={itineraryFilterBarClassName}>
@@ -1255,7 +1290,7 @@ export function SmartItineraryTable({
               onDropItem={dropItem}
               onDropIntoPlanBlock={dropIntoBlock}
               onDropOnDay={dropOnDay}
-              onAddBookingForItem={onAddBookingForItem}
+              onChooseBookingTemplate={chooseBookingTemplate}
               onAddStop={onAddStop}
               onAddSubActivity={onAddSubActivity}
               onAddNoteForItem={onAddNoteForItem}
@@ -1572,7 +1607,7 @@ function DayGroup({
   onDropItem,
   onDropIntoPlanBlock,
   onDropOnDay,
-  onAddBookingForItem,
+  onChooseBookingTemplate,
   onAddStop,
   onAddSubActivity,
   onAddNoteForItem,
@@ -1625,10 +1660,10 @@ function DayGroup({
     planBlockItemId: string,
   ) => void;
   onDropOnDay: (event: DragEvent<HTMLElement>, targetDay: string) => void;
-  onAddBookingForItem?: (
-    itemId: string,
-    template?: ItineraryBookingTemplate,
-  ) => void;
+  onChooseBookingTemplate: (
+    item: ItineraryItem,
+    template: (typeof itineraryBookingTemplates)[number],
+  ) => void | Promise<void>;
   onAddStop: (day?: string) => void;
   onAddSubActivity?: (parentItemId: string) => void | Promise<void>;
   onAddNoteForItem?: (itemId: string) => void;
@@ -2206,8 +2241,12 @@ function DayGroup({
                               type="button"
                               role="menuitem"
                               className={rowBookingMenuButtonClassName}
+                              aria-label={itineraryLabels.row.createBookingDraft({
+                                activity: item.activity,
+                                template: template.label,
+                              })}
                               onClick={() => {
-                                onAddBookingForItem?.(item.id, template.id);
+                                void onChooseBookingTemplate(item, template);
                                 setOpenBookingMenuItemId(null);
                               }}
                             >

@@ -98,6 +98,7 @@ import {
 import { tripStorageKey } from "@/src/trip/repository";
 import { seedTrip } from "@/src/trip/seed";
 import { decodeTripId } from "@/src/trip/ids";
+import { safeExternalHref } from "@/src/trip/safe-links";
 import { approveSuggestion } from "@/src/trip/suggestions";
 import type {
   BookingDoc,
@@ -1427,6 +1428,7 @@ export function SagittariusApp({
     const locationFields = locationFieldsFromCandidate(
       placeResolution.candidate,
       values.place,
+      values.mapLink,
     );
     const parentItem = values.parentItemId
       ? trip.itineraryItems.find((item) => item.id === values.parentItemId)
@@ -1605,6 +1607,7 @@ export function SagittariusApp({
       activity: item.activity,
       activityType: "food",
       place: item.place,
+      mapLink: item.mapLink,
       durationMinutes: item.durationMinutes,
       transportation: item.transportation,
       details: {
@@ -1823,6 +1826,8 @@ export function SagittariusApp({
     const editDay = values.day || dialogState.item.day;
     const shouldResolvePlace =
       values.place !== dialogState.item.place ||
+      safeExternalHref(values.mapLink) !==
+        safeExternalHref(dialogState.item.mapLink) ||
       Boolean(values.resolvedPlace) ||
       Boolean(values.saveUnresolved);
     setStopPlaceResolution(
@@ -1846,7 +1851,11 @@ export function SagittariusApp({
     }
     setStopPlaceResolution({ state: "idle", candidates: [] });
     const locationFields = shouldResolvePlace
-      ? locationFieldsFromCandidate(placeResolution.candidate, values.place)
+      ? locationFieldsFromCandidate(
+          placeResolution.candidate,
+          values.place,
+          values.mapLink,
+        )
       : {
           address: dialogState.item.address ?? dialogState.item.place,
           coordinates: dialogState.item.coordinates,
@@ -2797,10 +2806,10 @@ export function SagittariusApp({
     }));
   }
 
-  async function createBookingDoc(input: BookingDocInput) {
-    if (!canEditBookings) return;
+  async function createBookingDoc(input: BookingDocInput): Promise<BookingDoc | null> {
+    if (!canEditBookings) return null;
     const title = input.title.trim();
-    if (!title) return;
+    if (!title) return null;
     if (isApiMode && resolvedApiClient && participantSession) {
       const clientMutationId = nextClientMutationId("booking-doc-create");
       try {
@@ -2827,6 +2836,7 @@ export function SagittariusApp({
         };
         latestTripRef.current = nextTrip;
         setTripState((current) => ({ ...current, trip: nextTrip }));
+        return bookingDoc;
       } catch (error) {
         if (
           !(error instanceof TripApiError) ||
@@ -2840,7 +2850,7 @@ export function SagittariusApp({
         replaceCockpitFromApi(cockpit);
         latestTripRef.current = cockpit.trip;
       }
-      return;
+      return null;
     }
     const bookingDoc: BookingDoc = {
       id: nextLocalBookingDocId(trip.bookingDocs ?? []),
@@ -2862,6 +2872,7 @@ export function SagittariusApp({
       ...current,
       bookingDocs: [...(current.bookingDocs ?? []), bookingDoc],
     }));
+    return bookingDoc;
   }
 
   async function createItineraryBookingDraft(
@@ -2877,7 +2888,7 @@ export function SagittariusApp({
       template === "recommended"
         ? bookingTypeForItineraryItem(item)
         : bookingTypeForBookingTemplate(template);
-    await createBookingDoc({
+    const bookingDoc = await createBookingDoc({
       type: bookingType,
       title: bookingDraftTitleForItineraryItem(item, bookingType),
       status: "draft",
@@ -2901,6 +2912,7 @@ export function SagittariusApp({
     setContextRailPreferredTab("booking");
     setSelectedItemId(item.id);
     setContextRailVisibility(true);
+    return bookingDoc?.title;
   }
 
   async function updateBookingDoc(
@@ -4222,7 +4234,9 @@ export function SagittariusApp({
                 currentMember={currentMember}
                 bookingDocs={scopedTripPlanRecords.bookingDocs}
                 canEditBookings={canEditBookings}
-                onCreateBookingDoc={createBookingDoc}
+                onCreateBookingDoc={async (input) => {
+                  await createBookingDoc(input);
+                }}
                 onUpdateBookingDoc={updateBookingDoc}
                 onDeleteBookingDoc={deleteBookingDoc}
               />
@@ -4307,9 +4321,7 @@ export function SagittariusApp({
                   dayPathOverrides={pathSelection.dayPathOverrides ?? {}}
                   showAllPaths={Boolean(pathSelection.showAll)}
                   tripName={trip.name}
-                  onAddBookingForItem={(itemId, template) =>
-                    void createItineraryBookingDraft(itemId, template)
-                  }
+                  onAddBookingForItem={createItineraryBookingDraft}
                   onAddStop={addStop}
                   onAddSubActivity={addSubActivity}
                   onAddNoteForItem={(itemId) => void createItineraryNote(itemId)}
@@ -4604,6 +4616,8 @@ async function resolveStopPlace(
 }> {
   if (values.resolvedPlace)
     return { candidate: values.resolvedPlace, state: null };
+  if (safeExternalHref(values.mapLink))
+    return { candidate: null, state: null };
   if (values.saveUnresolved || !resolver)
     return { candidate: null, state: null };
   try {
@@ -4633,17 +4647,19 @@ async function resolveStopPlace(
 function locationFieldsFromCandidate(
   candidate: PlaceResolutionCandidate | null,
   place: string,
+  mapLink?: string | null,
 ) {
+  const explicitMapLink = safeExternalHref(mapLink);
   return candidate
     ? {
         address: candidate.address,
         coordinates: candidate.coordinates,
-        mapLink: candidate.mapLink,
+        mapLink: explicitMapLink || candidate.mapLink,
       }
     : {
         address: place,
         coordinates: undefined,
-        mapLink: buildMapLink(place),
+        mapLink: explicitMapLink || buildMapLink(place),
       };
 }
 

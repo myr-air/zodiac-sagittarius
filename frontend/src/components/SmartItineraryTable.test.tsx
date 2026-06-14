@@ -2302,12 +2302,17 @@ describe("SmartItineraryTable", () => {
         .getByRole("button", { name: /Add booking draft for Flight to Hong Kong/i }),
     );
     await user.click(
-      screen.getByRole("menuitem", { name: /Recommended/i }),
+      screen.getByRole("menuitem", {
+        name: /Recommended.*Flight to Hong Kong/i,
+      }),
     );
 
     expect(onAddBookingForItem).toHaveBeenCalledWith(
       "item-flight",
       "recommended",
+    );
+    expect(await screen.findByRole("status")).toHaveTextContent(
+      /Recommended.*Flight to Hong Kong/i,
     );
   });
 

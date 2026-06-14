@@ -26,6 +26,8 @@ const qaRows = {
   flexible: "Browser QA flexible checklist",
   openEnded: "Browser QA open-ended market",
   expense: "Browser QA actual expense",
+  mapLink:
+    "https://uri.amap.com/marker?position=114.1694,22.3193&name=Mong%20Kok%20Market",
 };
 
 interface QaEvidence {
@@ -153,7 +155,7 @@ async function runItineraryEntryQa(
   await context.close();
 
   evidence.checks.push(
-    `${name} manually entered a parent journey block, sub-item, flexible/no-time row, open-ended place row, booking draft, and actual expense in Trip Plan ${targetTripPlanId}; verified itinerary rows, details rail, bookings page, expenses page, reload persistence, console/page/network observations, and horizontal overflow.`,
+    `${name} manually entered a parent journey block, sub-item, flexible/no-time row, open-ended place row with explicit Amap map link, booking draft with visible status result, and actual expense in Trip Plan ${targetTripPlanId}; verified itinerary rows, details rail, bookings page, expenses page, reload persistence, console/page/network observations, and horizontal overflow.`,
   );
 }
 
@@ -201,6 +203,7 @@ async function addOpenEndedPlace(page: Page) {
   const dialog = await openAddDialog(page);
   await dialog.locator("#stop-activity").fill(qaRows.openEnded);
   await dialog.locator("#stop-place").fill("Mong Kok Market");
+  await dialog.locator("#stop-map-link").fill(qaRows.mapLink);
   await dialog.locator("#stop-start-time").fill("14:20");
   await dialog.locator("#stop-end-time").fill("");
   await saveDialog(dialog);
@@ -212,8 +215,14 @@ async function createBookingDraft(page: Page) {
   await blockRow.getByRole("button", { name: new RegExp(`Add booking draft for ${escapeRegex(qaRows.block)}`, "i") }).click();
   await page
     .getByRole("menu", { name: new RegExp(`Booking draft templates for ${escapeRegex(qaRows.block)}`, "i") })
-    .getByRole("menuitem", { name: "Flight" })
+    .getByRole("menuitem", { name: new RegExp(`Flight.*${escapeRegex(qaRows.block)}`, "i") })
     .click();
+  await page
+    .getByRole("status")
+    .filter({
+      hasText: new RegExp(`${escapeRegex(qaRows.block)} flight ticket draft`, "i"),
+    })
+    .waitFor();
   await page.waitForFunction(
     ({ key, title }) => {
       const raw = window.localStorage.getItem(key);
@@ -301,7 +310,7 @@ async function verifyPersistedRecords(page: Page, name: string, blockId: string)
     durationMinutes: null,
     planVariantId: targetTripPlanId,
   }, `${name} open-ended row`);
-  if (!openEnded?.mapLink?.includes("maps.google.com")) {
+  if (openEnded?.mapLink !== qaRows.mapLink) {
     throw new Error(`${name} open-ended map link was ${JSON.stringify(openEnded?.mapLink)}.`);
   }
   expectObject(booking, {

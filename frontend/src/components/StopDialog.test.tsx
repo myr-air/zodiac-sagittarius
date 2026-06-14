@@ -431,6 +431,9 @@ describe("StopDialog", () => {
       />,
     );
 
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      /Coordinates could not be resolved|ยังหาพิกัดไม่ได้/i,
+    );
     fireEvent.change(screen.getByLabelText("กิจกรรม"), { target: { value: "Late snack" } });
     fireEvent.change(screen.getByLabelText("สถานที่"), { target: { value: "near hotel" } });
     await userEvent.click(screen.getByRole("button", { name: /บันทึกแบบยังไม่ระบุพิกัด/i }));
@@ -439,6 +442,32 @@ describe("StopDialog", () => {
       activity: "Late snack",
       place: "near hotel",
       saveUnresolved: true,
+    }));
+  });
+
+  it("submits organizer map links as first-class itinerary source data", async () => {
+    const onSubmit = vi.fn();
+    renderEn(<StopDialog mode="create" onClose={vi.fn()} onSubmit={onSubmit} />);
+
+    fireEvent.change(screen.getByLabelText("Activity"), {
+      target: { value: "Hong Kong Disneyland" },
+    });
+    fireEvent.change(screen.getByLabelText("Place"), {
+      target: { value: "Hong Kong Disneyland" },
+    });
+    fireEvent.change(screen.getByLabelText("Map link"), {
+      target: {
+        value:
+          "https://uri.amap.com/marker?position=114.0413,22.3129&name=Hong%20Kong%20Disneyland",
+      },
+    });
+    fireEvent.submit(screen.getByRole("button", { name: "Save activity" }).closest("form")!);
+
+    expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({
+      activity: "Hong Kong Disneyland",
+      mapLink:
+        "https://uri.amap.com/marker?position=114.0413,22.3129&name=Hong%20Kong%20Disneyland",
+      place: "Hong Kong Disneyland",
     }));
   });
 });

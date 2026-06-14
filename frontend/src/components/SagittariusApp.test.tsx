@@ -557,6 +557,49 @@ describe("Sagittarius cockpit UI", () => {
     expect(screen.getAllByDisplayValue("ติ่มซำ แถว Elements").length).toBeGreaterThan(0);
   });
 
+  it("preserves explicit map links without forcing coordinate resolution", async () => {
+    const user = userEvent.setup();
+    const storage = installLocalStorageStub();
+    const placeResolver = vi.fn().mockResolvedValue({
+      status: "unresolved",
+      candidates: [],
+    });
+    render(
+      <SagittariusApp initialView="itinerary" placeResolver={placeResolver} />,
+    );
+
+    await user.click(
+      screen.getByRole("button", { name: "เพิ่มสถานที่ / กิจกรรม วันที่ 1" }),
+    );
+    fireEvent.change(screen.getByLabelText("กิจกรรม"), {
+      target: { value: "Hong Kong Disneyland" },
+    });
+    fireEvent.change(screen.getByLabelText("สถานที่"), {
+      target: { value: "Hong Kong Disneyland" },
+    });
+    fireEvent.change(screen.getByLabelText("ลิงก์แผนที่"), {
+      target: {
+        value:
+          "https://uri.amap.com/marker?position=114.0413,22.3129&name=Hong%20Kong%20Disneyland",
+      },
+    });
+    await user.click(screen.getByRole("button", { name: "บันทึกกิจกรรม" }));
+
+    expect(placeResolver).not.toHaveBeenCalled();
+    expect(
+      await screen.findByRole("row", { name: /Hong Kong Disneyland/i }),
+    ).toBeInTheDocument();
+    const persistedTrip = JSON.parse(storage.getItem(tripStorageKey)!) as Trip;
+    const persistedItem = persistedTrip.itineraryItems.find(
+      (item) => item.activity === "Hong Kong Disneyland",
+    );
+    expect(persistedItem).toEqual(expect.objectContaining({
+      mapLink:
+        "https://uri.amap.com/marker?position=114.0413,22.3129&name=Hong%20Kong%20Disneyland",
+    }));
+    expect(persistedItem?.coordinates).toBeUndefined();
+  });
+
   it("opens the Bookings & Docs workspace and creates a local booking record", async () => {
     const user = userEvent.setup();
     render(<SagittariusApp initialView="bookings" />);
@@ -6120,6 +6163,9 @@ describe("Sagittarius cockpit UI", () => {
     );
     await user.click(screen.getByRole("menuitem", { name: /Recommended/i }));
 
+    expect(await screen.findByRole("status")).toHaveTextContent(
+      /Flight to Hong Kong flight ticket draft/i,
+    );
     const structure = await screen.findByLabelText("Structure for Flight to Hong Kong");
     expect(within(structure).getByText("1 booking")).toBeInTheDocument();
     const context = await screen.findByRole("complementary", {
