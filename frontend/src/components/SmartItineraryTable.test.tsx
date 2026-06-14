@@ -149,7 +149,9 @@ describe("SmartItineraryTable", () => {
       </>,
     );
 
-    const actions = screen.getByRole("group", { name: /Itinerary actions/i });
+    const actions = screen.getByRole("group", {
+      name: /Itinerary actions|คำสั่งแผนการเดินทาง/i,
+    });
     expect(
       within(actions).getByRole("button", { name: "Trip Plan controls" }),
     ).toBeInTheDocument();
@@ -214,6 +216,47 @@ describe("SmartItineraryTable", () => {
     await openHeaderControls(user);
     expect(screen.getByLabelText("สถานะแผน")).toBeDisabled();
     expect(screen.getByRole("button", { name: "ใช้เป็นแผนหลัก" })).toBeDisabled();
+  });
+
+  it("renders Trip Plan controls as an animated overlay instead of inline layout", async () => {
+    const user = userEvent.setup();
+    renderTable();
+
+    const actions = screen.getByRole("group", {
+      name: /Itinerary actions|คำสั่งแผนการเดินทาง/i,
+    });
+    const header = screen.getByRole("banner");
+    const controlsButton = await openHeaderControls(user);
+    const controlsPanel = document.querySelector<HTMLElement>(
+      "#itinerary-header-controls",
+    );
+
+    expect(header).toHaveClass("overflow-visible");
+    expect(controlsButton).toHaveAttribute("aria-expanded", "true");
+    expect(controlsPanel).not.toBeNull();
+    expect(controlsPanel).toHaveAttribute("data-state", "open");
+    expect(controlsPanel?.closest(".page-header-actions")).toBe(actions);
+    expect(controlsPanel).toHaveClass(
+      "absolute",
+      "right-0",
+      "top-[calc(100%_+_8px)]",
+      "z-[30]",
+      "max-h-[min(70vh,560px)]",
+      "w-[min(424px,calc(100vw_-_32px))]",
+      "data-[state=closed]:opacity-0",
+      "motion-reduce:transition-none",
+    );
+
+    await user.keyboard("{Escape}");
+
+    expect(controlsButton).toHaveAttribute("aria-expanded", "false");
+    expect(controlsPanel).toHaveAttribute("data-state", "closed");
+    expect(controlsPanel).toHaveAttribute("aria-hidden", "true");
+    await waitFor(() => {
+      expect(
+        document.querySelector("#itinerary-header-controls"),
+      ).not.toBeInTheDocument();
+    });
   });
 
   it("lets organizers create a named Trip Plan and keeps failed creation editable", async () => {

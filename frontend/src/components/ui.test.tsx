@@ -51,6 +51,7 @@ describe("shared UI primitives", () => {
     expect(screen.getByRole("banner")).toHaveClass(
       "page-header",
       "min-h-[108px]",
+      "overflow-hidden",
       "bg-[color-mix(in_srgb,var(--color-surface)_88%,var(--color-postcard))]",
       "shadow-[0_6px_8px_rgb(55_47_38_/_0.045)]",
     );
@@ -58,6 +59,7 @@ describe("shared UI primitives", () => {
 
     rerender(
       <PageHeader
+        allowOverflow
         eyebrow="Plan"
         title="Itinerary"
         subtitle="Day one"
@@ -68,6 +70,7 @@ describe("shared UI primitives", () => {
       />,
     );
 
+    expect(screen.getByRole("banner")).toHaveClass("overflow-visible");
     expect(screen.getByText("Plan")).toHaveClass("eyebrow");
     expect(screen.getByText("Plan")).toHaveClass("bg-(--color-primary-soft)", "text-(--color-primary-strong)");
     expect(screen.getByText("Plan").className).not.toContain("uppercase");

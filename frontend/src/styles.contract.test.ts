@@ -110,6 +110,19 @@ describe("Calm Travel Ops CSS contract", () => {
     expect(smartTableSource).toContain("[contain:paint]");
   });
 
+  it("renders itinerary header controls as an animated overlay", () => {
+    expect(smartTableSource).toContain("allowOverflow");
+    expect(smartTableSource).toContain("page-header-actions relative z-[20]");
+    expect(smartTableSource).toContain("itinerary-header-controls absolute right-0 top-[calc(100%_+_8px)]");
+    expect(smartTableSource).toContain("w-[min(424px,calc(100vw_-_32px))]");
+    expect(smartTableSource).toContain("[transition:opacity_160ms_var(--motion-ease-out),transform_160ms_var(--motion-ease-out),box-shadow_160ms_var(--motion-ease-out)]");
+    expect(smartTableSource).toContain("data-[state=closed]:opacity-0");
+    expect(smartTableSource).toContain("motion-reduce:transition-none");
+    expect(css).toContain("@keyframes itinerary-controls-popover-in");
+    expect(css).toContain("@keyframes itinerary-controls-popover-out");
+    expect(css).toMatch(/\.itinerary-header-controls\[data-state="open"\]\s*{[^}]*animation:\s*itinerary-controls-popover-in 160ms/s);
+  });
+
   it("defines desktop, tablet, mobile, focus, and reduced-motion states", () => {
     expect(contextRailSource).toContain("max-[1199px]:static");
     expect(contextRailSource).toContain("max-[1199px]:border-l-0");

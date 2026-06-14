@@ -144,13 +144,13 @@ export interface ItineraryCommitmentSummary {
 const tablePanelClassName =
   "table-panel grid h-auto min-h-full min-w-0 grid-rows-[auto_minmax(0,1fr)] overflow-visible bg-transparent px-6 py-[22px] pb-7 max-[767px]:px-3 max-[767px]:pb-3";
 const pageHeaderActionsClassName =
-  "page-header-actions relative z-[2] grid w-[min(460px,100%)] min-w-0 justify-items-end gap-2 max-[1199px]:w-full max-[1199px]:justify-items-stretch";
+  "page-header-actions relative z-[20] grid w-[min(460px,100%)] min-w-0 justify-items-end gap-2 overflow-visible max-[1199px]:w-full max-[1199px]:justify-items-stretch";
 const pageHeaderNoteClassName =
   "page-header-note m-0 text-right text-xs font-bold text-(--color-warning-strong) max-[1199px]:text-left";
 const headerControlsButtonClassName =
   "itinerary-header-controls-button inline-flex min-h-9 max-w-full items-center justify-center gap-2 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-3 text-xs font-extrabold text-(--color-text) transition-[background,border-color,color] duration-150 hover:border-(--color-primary-border) hover:bg-(--color-primary-soft) hover:text-(--color-primary-strong) aria-[expanded=true]:border-(--color-primary-border) aria-[expanded=true]:bg-(--color-primary-soft) aria-[expanded=true]:text-(--color-primary-strong) [&_.icon]:size-4";
 const headerControlsPanelClassName =
-  "itinerary-header-controls grid w-full gap-3 rounded-(--radius-md) border border-[color-mix(in_srgb,var(--color-primary)_18%,var(--color-border))] bg-[color-mix(in_srgb,var(--color-surface)_94%,var(--color-primary-soft))] p-3 text-left shadow-[0_8px_18px_rgb(55_47_38_/_0.08)]";
+  "itinerary-header-controls absolute right-0 top-[calc(100%_+_8px)] z-[30] grid max-h-[min(70vh,560px)] w-[min(424px,calc(100vw_-_32px))] min-w-0 origin-top-right gap-3 overflow-y-auto overscroll-contain rounded-(--radius-md) border border-[color-mix(in_srgb,var(--color-primary)_18%,var(--color-border))] bg-[color-mix(in_srgb,var(--color-surface)_94%,var(--color-primary-soft))] p-3 text-left shadow-[0_18px_42px_rgb(55_47_38_/_0.16)] [transition:opacity_160ms_var(--motion-ease-out),transform_160ms_var(--motion-ease-out),box-shadow_160ms_var(--motion-ease-out)] will-change-[opacity,transform] data-[state=closed]:pointer-events-none data-[state=closed]:-translate-y-1.5 data-[state=closed]:scale-[0.98] data-[state=closed]:opacity-0 data-[state=open]:translate-y-0 data-[state=open]:scale-100 data-[state=open]:opacity-100 motion-reduce:transform-none motion-reduce:transition-none max-[767px]:left-0 max-[767px]:right-auto max-[767px]:top-[calc(100%_+_6px)] max-[767px]:w-[min(100%,calc(100vw_-_24px))] max-[767px]:origin-top-left";
 const headerControlsSectionClassName =
   "grid min-w-0 gap-2";
 const headerControlsSectionHeaderClassName =
@@ -264,12 +264,15 @@ export function SmartItineraryTable({
     filterOptions.map((option) => option.id),
   );
   const [headerControlsExpanded, setHeaderControlsExpanded] = useState(false);
+  const [renderHeaderControls, setRenderHeaderControls] = useState(false);
   const [isCreatingTripPlan, setIsCreatingTripPlan] = useState(false);
   const [newTripPlanName, setNewTripPlanName] = useState("");
   const [newTripPlanError, setNewTripPlanError] = useState<string | null>(
     null,
   );
   const [collapsedDays, setCollapsedDays] = useState<string[]>([]);
+  const headerControlsRef = useRef<HTMLDivElement>(null);
+  const headerControlsButtonRef = useRef<HTMLButtonElement>(null);
   const knownFilterIdsRef = useRef<string[]>(
     filterOptions.map((option) => option.id),
   );
@@ -334,6 +337,41 @@ export function SmartItineraryTable({
     });
   }, [filterOptions]);
 
+  useEffect(() => {
+    if (headerControlsExpanded || !renderHeaderControls) return;
+
+    const timeoutId = window.setTimeout(() => {
+      setRenderHeaderControls(false);
+    }, 170);
+    return () => window.clearTimeout(timeoutId);
+  }, [headerControlsExpanded, renderHeaderControls]);
+
+  useEffect(() => {
+    if (!headerControlsExpanded) return;
+
+    function closeOnOutside(event: MouseEvent | TouchEvent) {
+      const target = event.target as Node | null;
+      if (!target) return;
+      if (headerControlsRef.current?.contains(target)) return;
+      setHeaderControlsExpanded(false);
+    }
+
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key !== "Escape") return;
+      setHeaderControlsExpanded(false);
+      headerControlsButtonRef.current?.focus();
+    }
+
+    document.addEventListener("mousedown", closeOnOutside);
+    document.addEventListener("touchstart", closeOnOutside);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("mousedown", closeOnOutside);
+      document.removeEventListener("touchstart", closeOnOutside);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [headerControlsExpanded]);
+
   function toggleDay(day: string) {
     setCollapsedDays((current) =>
       current.includes(day)
@@ -372,6 +410,7 @@ export function SmartItineraryTable({
       id="itinerary"
     >
       <PageHeader
+        allowOverflow
         title={t.itinerary.title}
         subtitle={tripName}
         meta={
@@ -399,17 +438,22 @@ export function SmartItineraryTable({
         }
         aside={
           <div
+            ref={headerControlsRef}
             className={pageHeaderActionsClassName}
             role="group"
             aria-label={t.itinerary.actionsLabel}
           >
             <button
+              ref={headerControlsButtonRef}
               type="button"
               className={headerControlsButtonClassName}
               aria-label={`${t.itinerary.tripPlans.selectorLabel} controls`}
               aria-controls="itinerary-header-controls"
               aria-expanded={headerControlsExpanded}
-              onClick={() => setHeaderControlsExpanded((current) => !current)}
+              onClick={() => {
+                if (!headerControlsExpanded) setRenderHeaderControls(true);
+                setHeaderControlsExpanded((current) => !current);
+              }}
             >
               <Icon name="settings" />
               <span className="min-w-0 truncate">
@@ -428,10 +472,12 @@ export function SmartItineraryTable({
                 {t.itinerary.editRequiresOrganizer}
               </p>
             ) : null}
-            {headerControlsExpanded ? (
+            {renderHeaderControls ? (
               <div
                 className={headerControlsPanelClassName}
+                data-state={headerControlsExpanded ? "open" : "closed"}
                 id="itinerary-header-controls"
+                aria-hidden={!headerControlsExpanded}
               >
                 <div className={headerControlsSectionClassName}>
                   <div className={headerControlsSectionHeaderClassName}>

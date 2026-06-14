@@ -354,6 +354,44 @@ button:disabled,
   border-bottom-color: transparent;
 }
 
+.itinerary-header-controls[data-state="closed"] {
+  pointer-events: none;
+}
+
+@keyframes itinerary-controls-popover-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes itinerary-controls-popover-out {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.98);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .itinerary-header-controls[data-state="open"] {
+    animation: itinerary-controls-popover-in 160ms var(--motion-ease-out) both;
+  }
+
+  .itinerary-header-controls[data-state="closed"] {
+    animation: itinerary-controls-popover-out 140ms ease-in both;
+  }
+}
+
 .smart-table thead th:first-child {
   border-top-left-radius: var(--radius-lg);
 }
