@@ -410,7 +410,10 @@ Both Plan Check routes accept optional `?tripPlanId=:tripPlanId`. When present,
 `tripPlanId` must belong to the trip; the stored check, suggestions, and stale
 fingerprint are scoped to that Trip Plan and do not mutate `mainTripPlanId` or
 `activePlanVariantId`. When omitted, the compatibility behavior remains
-trip-wide.
+trip-wide. Suggestions are review items: `recommendedAction`, `actionKind`, and
+`actionPayload` can guide an edit, dismiss, or snooze flow, but running a Plan
+Check never silently rewrites itinerary rows, Trip Plans, Actual Expenses, or
+Plan Commitments.
 
 Example PATCH:
 

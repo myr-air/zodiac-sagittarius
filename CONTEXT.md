@@ -40,6 +40,10 @@ _Avoid_: Actual expense
 A booking, ticket, hotel stay, transport reservation, or other real-world commitment tied to a trip plan. A plan commitment may have a linked actual expense when money has been paid or committed.
 _Avoid_: Standalone booking
 
+**Plan Check Suggestion**:
+A system-detected planning issue or improvement candidate. A plan check suggestion can recommend an edit, dismissal, snooze, or review path, but it does not change the itinerary, trip plan, actual expenses, or commitments until a person explicitly chooses what to do.
+_Avoid_: Auto-fix, silent correction
+
 **Journey Block**:
 An activity block that represents the full operational window of a journey, including buffer time before and after the ticketed segment. The ticketed flight, train, or transport segment can be a sub-activity within the journey block.
 _Avoid_: Flight-only activity
