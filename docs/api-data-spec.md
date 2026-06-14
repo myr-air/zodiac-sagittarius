@@ -433,8 +433,9 @@ Example PATCH:
 - `GET /api/v1/trips/:tripId/expenses/summary`
   Accepts optional `tripPlanId` query parameter. When present, totals,
   balances, settlement suggestions, and reminder history are calculated from
-  expenses and reminders scoped to that Trip Plan only. Omitting it keeps the
-  legacy whole-trip summary.
+  expenses and reminders scoped to that Trip Plan only. The Trip Plan id must
+  belong to the trip; missing or cross-trip ids return `400 invalid_request`.
+  Omitting it keeps the legacy whole-trip summary.
 - `POST /api/v1/trips/:tripId/expenses/reminders`
   Accepts optional `tripPlanId` query parameter. When present, the reminder is
   recorded for that Trip Plan's settlement suggestion only. Omitting it records

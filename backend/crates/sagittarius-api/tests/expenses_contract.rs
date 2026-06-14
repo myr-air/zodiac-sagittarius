@@ -192,6 +192,37 @@ async fn expenses_contract_summary_can_be_scoped_to_trip_plan(pool: sqlx::PgPool
 }
 
 #[sqlx::test(migrations = "../../migrations")]
+async fn expenses_contract_summary_rejects_trip_plan_outside_trip(pool: sqlx::PgPool) {
+    support::seed_trip(&pool).await;
+    support::seed_other_trip_item(&pool).await;
+    let organizer = support::create_session(&pool, support::ORGANIZER_ID).await;
+    let app = support::app(pool.clone());
+    let other_trip_plan_id = "018f4e82-3000-7c00-b111-000000000003";
+    let missing_trip_plan_id = "018f4e82-3000-7c00-b111-000000000099";
+
+    for trip_plan_id in [other_trip_plan_id, missing_trip_plan_id] {
+        let response = app
+            .clone()
+            .oneshot(
+                Request::builder()
+                    .method(Method::GET)
+                    .uri(format!(
+                        "/api/v1/trips/{}/expenses/summary?tripPlanId={}",
+                        support::TRIP_ID,
+                        trip_plan_id
+                    ))
+                    .header(header::AUTHORIZATION, format!("Bearer {organizer}"))
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+
+        assert_eq!(response.status(), StatusCode::BAD_REQUEST);
+    }
+}
+
+#[sqlx::test(migrations = "../../migrations")]
 async fn expenses_contract_reminder_history_is_scoped_to_trip_plan(pool: sqlx::PgPool) {
     support::seed_trip(&pool).await;
     support::seed_expense(&pool).await;

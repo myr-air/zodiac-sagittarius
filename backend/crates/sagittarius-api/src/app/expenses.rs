@@ -26,6 +26,7 @@ pub async fn get_expense_summary(
     if !can(session.role, Capability::ViewExpenses) {
         return Err(ServiceError::Forbidden);
     }
+    validate_expense_summary_trip_plan_id(pool, trip_id, trip_plan_id).await?;
 
     let (splits, reminders) = tokio::try_join!(
         db::queries::list_expense_splits(pool, trip_id, trip_plan_id),
@@ -301,6 +302,24 @@ pub async fn delete_expense(
     realtime.publish(event).await;
 
     Ok(expense)
+}
+
+async fn validate_expense_summary_trip_plan_id(
+    pool: &PgPool,
+    trip_id: Uuid,
+    requested_trip_plan_id: Option<Uuid>,
+) -> Result<(), ServiceError> {
+    let Some(trip_plan_id) = requested_trip_plan_id else {
+        return Ok(());
+    };
+    let mut tx = pool.begin().await?;
+    if !db::queries::plan_variant_exists_for_trip(&mut tx, trip_id, trip_plan_id).await? {
+        return Err(ServiceError::InvalidRequest(
+            "tripPlanId must belong to the trip",
+        ));
+    }
+    tx.commit().await?;
+    Ok(())
 }
 
 async fn resolve_expense_reminder_trip_plan_id(

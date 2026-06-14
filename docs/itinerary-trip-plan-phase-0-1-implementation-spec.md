@@ -1278,7 +1278,9 @@ Phase 2 rules:
 - Expense summary reads may be scoped with `tripPlanId`; a scoped summary must
   calculate totals, balances, settlement suggestions, and reminder attachment
   from only that Trip Plan's Actual Expenses. Omitting `tripPlanId` remains the
-  compatibility whole-trip summary.
+  compatibility whole-trip summary. A supplied `tripPlanId` must belong to the
+  trip; missing or cross-trip ids return `400 invalid_request` instead of an
+  empty scoped summary.
 - Stop notes linked to itinerary items inherit the item's plan. Unlinked stop
   notes remain nullable after `0026`; Phase 2 must repair or reject later
   writes instead of guessing a plan after migration.
