@@ -1412,6 +1412,51 @@ function MobileSelectedStopInspector({
             }
           />
         </span>
+        <span className={mobileInspectorLabelClassName}>
+          Kind
+          <InlineItemKindSelect
+            activity={`${item.id}-mobile`}
+            buttonClassName={mobileInspectorTypeButtonClassName}
+            canEdit={canEdit}
+            value={item.itemKind ?? "activity"}
+            onCommit={(itemKind) => onUpdateItemInline?.(item.id, { itemKind })}
+          />
+        </span>
+        <span className={mobileInspectorLabelClassName}>
+          Time mode
+          <InlineTimeModeSelect
+            activity={`${item.id}-mobile`}
+            buttonClassName={mobileInspectorTypeButtonClassName}
+            canEdit={canEdit}
+            value={item.timeMode ?? "scheduled"}
+            onCommit={(timeMode) =>
+              onUpdateItemInline?.(item.id, {
+                timeMode,
+                ...(timeMode === "flexible" ? { startTime: "", durationMinutes: null } : {}),
+              })
+            }
+          />
+        </span>
+        <span className={mobileInspectorLabelClassName}>
+          Status
+          <InlineStatusSelect
+            activity={`${item.id}-mobile`}
+            buttonClassName={mobileInspectorTypeButtonClassName}
+            canEdit={canEdit}
+            value={item.status ?? "idea"}
+            onCommit={(status) => onUpdateItemInline?.(item.id, { status })}
+          />
+        </span>
+        <span className={mobileInspectorLabelClassName}>
+          Priority
+          <InlinePrioritySelect
+            activity={`${item.id}-mobile`}
+            buttonClassName={mobileInspectorTypeButtonClassName}
+            canEdit={canEdit}
+            value={item.priority ?? "normal"}
+            onCommit={(priority) => onUpdateItemInline?.(item.id, { priority })}
+          />
+        </span>
         <label
           className={cn(
             mobileInspectorLabelClassName,
@@ -2808,11 +2853,13 @@ function buildCommitmentChips(
 
 function InlineItemKindSelect({
   activity,
+  buttonClassName = "",
   canEdit,
   onCommit,
   value,
 }: {
   activity: string;
+  buttonClassName?: string;
   canEdit: boolean;
   onCommit: (value: ItineraryItemKind) => void | Promise<void>;
   value: ItineraryItemKind;
@@ -2820,6 +2867,7 @@ function InlineItemKindSelect({
   return (
     <InlineOptionPicker
       ariaLabel={`Item kind for ${activity}`}
+      buttonClassName={buttonClassName}
       disabled={!canEdit}
       value={value}
       options={itineraryItemKindOptions.map((option) => ({
@@ -2836,11 +2884,13 @@ function InlineItemKindSelect({
 
 function InlineTimeModeSelect({
   activity,
+  buttonClassName = "",
   canEdit,
   onCommit,
   value,
 }: {
   activity: string;
+  buttonClassName?: string;
   canEdit: boolean;
   onCommit: (value: ItineraryTimeMode) => void | Promise<void>;
   value: ItineraryTimeMode;
@@ -2848,6 +2898,7 @@ function InlineTimeModeSelect({
   return (
     <InlineOptionPicker
       ariaLabel={`Time mode for ${activity}`}
+      buttonClassName={buttonClassName}
       disabled={!canEdit}
       value={value}
       options={itineraryTimeModeOptions.map((option) => ({
@@ -2864,11 +2915,13 @@ function InlineTimeModeSelect({
 
 function InlineStatusSelect({
   activity,
+  buttonClassName = "",
   canEdit,
   onCommit,
   value,
 }: {
   activity: string;
+  buttonClassName?: string;
   canEdit: boolean;
   onCommit: (value: ItineraryItemStatus) => void | Promise<void>;
   value: ItineraryItemStatus;
@@ -2876,6 +2929,7 @@ function InlineStatusSelect({
   return (
     <InlineOptionPicker
       ariaLabel={`Status for ${activity}`}
+      buttonClassName={buttonClassName}
       disabled={!canEdit}
       value={value}
       options={itineraryStatusOptions.map((option) => ({
@@ -2892,11 +2946,13 @@ function InlineStatusSelect({
 
 function InlinePrioritySelect({
   activity,
+  buttonClassName = "",
   canEdit,
   onCommit,
   value,
 }: {
   activity: string;
+  buttonClassName?: string;
   canEdit: boolean;
   onCommit: (value: ItineraryItemPriority) => void | Promise<void>;
   value: ItineraryItemPriority;
@@ -2904,6 +2960,7 @@ function InlinePrioritySelect({
   return (
     <InlineOptionPicker
       ariaLabel={`Priority for ${activity}`}
+      buttonClassName={buttonClassName}
       disabled={!canEdit}
       value={value}
       options={itineraryPriorityOptions.map((option) => ({

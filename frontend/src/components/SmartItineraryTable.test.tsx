@@ -1675,6 +1675,46 @@ describe("SmartItineraryTable", () => {
         .getByRole("option", { name: /กิจกรรม/i }),
     );
 
+    await user.click(
+      within(inspector).getByRole("button", {
+        name: /Item kind for item-dimdim-mobile/i,
+      }),
+    );
+    await user.click(
+      within(screen.getByRole("listbox", { name: /Item kind for item-dimdim-mobile/i }))
+        .getByRole("option", { name: "travel" }),
+    );
+
+    await user.click(
+      within(inspector).getByRole("button", {
+        name: /Time mode for item-dimdim-mobile/i,
+      }),
+    );
+    await user.click(
+      within(screen.getByRole("listbox", { name: /Time mode for item-dimdim-mobile/i }))
+        .getByRole("option", { name: "flexible" }),
+    );
+
+    await user.click(
+      within(inspector).getByRole("button", {
+        name: /Status for item-dimdim-mobile/i,
+      }),
+    );
+    await user.click(
+      within(screen.getByRole("listbox", { name: /Status for item-dimdim-mobile/i }))
+        .getByRole("option", { name: "confirmed" }),
+    );
+
+    await user.click(
+      within(inspector).getByRole("button", {
+        name: /Priority for item-dimdim-mobile/i,
+      }),
+    );
+    await user.click(
+      within(screen.getByRole("listbox", { name: /Priority for item-dimdim-mobile/i }))
+        .getByRole("option", { name: "must" }),
+    );
+
     const transportation = within(inspector).getByRole("textbox", {
       name: /แก้ไขการเดินทาง Dim Dim Sum/i,
     });
@@ -1706,6 +1746,20 @@ describe("SmartItineraryTable", () => {
     });
     expect(onUpdateItemInline).toHaveBeenCalledWith("item-dimdim", {
       activityType: "experience",
+    });
+    expect(onUpdateItemInline).toHaveBeenCalledWith("item-dimdim", {
+      itemKind: "travel",
+    });
+    expect(onUpdateItemInline).toHaveBeenCalledWith("item-dimdim", {
+      timeMode: "flexible",
+      startTime: "",
+      durationMinutes: null,
+    });
+    expect(onUpdateItemInline).toHaveBeenCalledWith("item-dimdim", {
+      status: "confirmed",
+    });
+    expect(onUpdateItemInline).toHaveBeenCalledWith("item-dimdim", {
+      priority: "must",
     });
     expect(onUpdateItemInline).toHaveBeenCalledWith("item-dimdim", {
       transportation: "Walk",
