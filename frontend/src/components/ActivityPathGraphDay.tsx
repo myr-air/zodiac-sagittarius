@@ -1,7 +1,7 @@
 import { cn } from "@/src/lib/cn";
 import { mainItineraryPathId, parseTime, type ItineraryPathOption } from "@/src/trip/itinerary";
 import type { ItineraryItem } from "@/src/trip/types";
-import type { CSSProperties } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type RefObject } from "react";
 
 interface ActivityPathGraphDayProps {
   canEdit: boolean;
@@ -50,16 +50,19 @@ export function ActivityPathGraphDay({
   onMoveItemToPath,
   onSelectItem,
 }: ActivityPathGraphDayProps) {
+  const graphRef = useRef<HTMLDivElement>(null);
   const pathMetaById = buildPathMeta(day, graphItems, pathOptions);
   const pathIds = buildVisibleLanePathIds(rowItems);
   const laneXByPathId = buildLaneXByPathId(pathIds, graphWidth);
-  const height = Math.max(dayRowHeight + addStopRowHeight, dayRowHeight + rowItems.length * rowStep + addStopRowHeight);
-  const graphNodes = buildGraphNodes(rowItems, pathMetaById, laneXByPathId, graphWidth);
-  const graphEdges = buildGraphEdges(graphNodes, graphWidth, height);
+  const fallbackLayout = useMemo(() => buildFallbackGraphLayout(rowItems), [rowItems]);
+  const measuredLayout = useRenderedGraphLayout(graphRef, day, rowItems, fallbackLayout);
+  const graphLayout = measuredLayout ?? fallbackLayout;
+  const graphNodes = buildGraphNodes(rowItems, pathMetaById, laneXByPathId, graphWidth, graphLayout.itemYById);
+  const graphEdges = buildGraphEdges(graphNodes, graphWidth, graphLayout.startY, graphLayout.endY);
 
   return (
-    <div className={graphClassName} role="group" aria-label={`Activity path graph for ${dayLabel}`} style={{ height }}>
-      <svg className="pointer-events-none absolute inset-0 z-[1] h-full w-full" viewBox={`0 0 ${graphWidth} ${height}`} aria-hidden="true">
+    <div ref={graphRef} className={graphClassName} role="group" aria-label={`Activity path graph for ${dayLabel}`} style={{ height: graphLayout.height }}>
+      <svg className="pointer-events-none absolute inset-0 z-[1] h-full w-full" viewBox={`0 0 ${graphWidth} ${graphLayout.height}`} aria-hidden="true">
         {graphEdges.map((edge) => (
           <path
             key={edge.id}
@@ -78,12 +81,12 @@ export function ActivityPathGraphDay({
           />
         ))}
       </svg>
-      <span aria-label={`Start of ${dayLabel}`} className={anchorClassName} role="img" style={{ top: dayRowHeight / 2 - dotSize / 2 }} />
+      <span aria-label={`Start of ${dayLabel}`} className={anchorClassName} role="img" style={{ top: graphLayout.startY - dotSize / 2 }} />
       <span
         aria-label={`End of ${dayLabel}`}
         className={anchorClassName}
         role="img"
-        style={{ top: dayRowHeight + rowItems.length * rowStep + addStopRowHeight / 2 - dotSize / 2 }}
+        style={{ top: graphLayout.endY - dotSize / 2 }}
       />
       {graphNodes.map(({ color, item, pathName, sourcePathId, x, y }) => {
         return (
@@ -147,6 +150,144 @@ interface GraphEdge {
 
 type PushGraphEdge = (from: GraphPoint, to: GraphPoint, color: string, dashed?: boolean) => void;
 
+interface GraphLayout {
+  endY: number;
+  height: number;
+  itemYById: Map<string, number>;
+  startY: number;
+}
+
+function buildFallbackGraphLayout(rowItems: ItineraryItem[]): GraphLayout {
+  const height = Math.max(dayRowHeight + addStopRowHeight, dayRowHeight + rowItems.length * rowStep + addStopRowHeight);
+  return {
+    endY: dayRowHeight + rowItems.length * rowStep + addStopRowHeight / 2,
+    height,
+    itemYById: new Map(rowItems.map((item, index) => [item.id, dayRowHeight + rowStep / 2 + index * rowStep])),
+    startY: dayRowHeight / 2,
+  };
+}
+
+function useRenderedGraphLayout(
+  graphRef: RefObject<HTMLDivElement | null>,
+  day: string,
+  rowItems: ItineraryItem[],
+  fallbackLayout: GraphLayout,
+): GraphLayout | null {
+  const [layout, setLayout] = useState<GraphLayout | null>(null);
+
+  useEffect(() => {
+    const graphElement = graphRef.current;
+    const ownerWindow = graphElement?.ownerDocument.defaultView;
+    if (!graphElement || !ownerWindow) {
+      setLayout(null);
+      return;
+    }
+
+    let animationFrame = 0;
+    const updateLayout = () => {
+      const nextLayout = measureRenderedGraphLayout(graphElement, day, rowItems, fallbackLayout);
+      setLayout((currentLayout) => (areGraphLayoutsEqual(currentLayout, nextLayout) ? currentLayout : nextLayout));
+    };
+    const scheduleUpdate = () => {
+      ownerWindow.cancelAnimationFrame(animationFrame);
+      animationFrame = ownerWindow.requestAnimationFrame(updateLayout);
+    };
+
+    updateLayout();
+    scheduleUpdate();
+    ownerWindow.addEventListener("resize", scheduleUpdate);
+
+    const resizeObserver = typeof ownerWindow.ResizeObserver === "function" ? new ownerWindow.ResizeObserver(scheduleUpdate) : null;
+    if (resizeObserver) {
+      for (const element of collectGraphMeasurementElements(graphElement, day, rowItems)) resizeObserver.observe(element);
+    }
+
+    return () => {
+      ownerWindow.cancelAnimationFrame(animationFrame);
+      ownerWindow.removeEventListener("resize", scheduleUpdate);
+      resizeObserver?.disconnect();
+    };
+  }, [day, fallbackLayout, graphRef, rowItems]);
+
+  return layout;
+}
+
+function measureRenderedGraphLayout(
+  graphElement: HTMLDivElement,
+  day: string,
+  rowItems: ItineraryItem[],
+  fallbackLayout: GraphLayout,
+): GraphLayout | null {
+  const tbody = graphElement.closest("tbody");
+  const dayRow = graphElement.closest("tr");
+  const addStopRow = findAddStopRow(tbody, day);
+  if (!tbody || !dayRow || !addStopRow) return null;
+
+  const graphRect = graphElement.getBoundingClientRect();
+  const dayRect = dayRow.getBoundingClientRect();
+  const addStopRect = addStopRow.getBoundingClientRect();
+  if (!isUsableRect(dayRect) || !isUsableRect(addStopRect)) return null;
+
+  const itemYById = new Map<string, number>();
+  let measuredBottom = Math.max(dayRect.bottom, addStopRect.bottom);
+  for (const item of rowItems) {
+    const itemRow = findItemRow(tbody, item.id);
+    if (!itemRow) return null;
+    const itemRect = itemRow.getBoundingClientRect();
+    if (!isUsableRect(itemRect)) return null;
+    itemYById.set(item.id, rowCenterY(itemRect, graphRect));
+    measuredBottom = Math.max(measuredBottom, itemRect.bottom);
+  }
+
+  return {
+    endY: rowCenterY(addStopRect, graphRect),
+    height: Math.max(fallbackLayout.height, roundPathNumber(measuredBottom - graphRect.top)),
+    itemYById,
+    startY: rowCenterY(dayRect, graphRect),
+  };
+}
+
+function collectGraphMeasurementElements(graphElement: HTMLDivElement, day: string, rowItems: ItineraryItem[]): HTMLElement[] {
+  const tbody = graphElement.closest("tbody");
+  const elements = new Set<HTMLElement>([graphElement]);
+  const dayRow = graphElement.closest<HTMLElement>("tr");
+  const addStopRow = findAddStopRow(tbody, day);
+  if (dayRow) elements.add(dayRow);
+  if (addStopRow) elements.add(addStopRow);
+  for (const item of rowItems) {
+    const itemRow = findItemRow(tbody, item.id);
+    if (itemRow) elements.add(itemRow);
+  }
+  return Array.from(elements);
+}
+
+function findAddStopRow(tbody: Element | null, day: string): HTMLElement | null {
+  const addStopRow = tbody?.querySelector<HTMLElement>("[data-day-drop]");
+  return addStopRow?.dataset.dayDrop === day ? addStopRow : null;
+}
+
+function findItemRow(tbody: Element | null, itemId: string): HTMLElement | null {
+  return Array.from(tbody?.querySelectorAll<HTMLElement>("[data-item-id]") ?? []).find((row) => row.dataset.itemId === itemId) ?? null;
+}
+
+function rowCenterY(rowRect: DOMRect, graphRect: DOMRect): number {
+  return roundPathNumber(rowRect.top - graphRect.top + rowRect.height / 2);
+}
+
+function isUsableRect(rect: DOMRect): boolean {
+  return Number.isFinite(rect.top) && Number.isFinite(rect.height) && rect.height > 0;
+}
+
+function areGraphLayoutsEqual(left: GraphLayout | null, right: GraphLayout | null): boolean {
+  if (left === right) return true;
+  if (!left || !right) return false;
+  if (left.height !== right.height || left.startY !== right.startY || left.endY !== right.endY || left.itemYById.size !== right.itemYById.size) return false;
+  for (const [itemId, leftY] of left.itemYById) {
+    if (right.itemYById.get(itemId) !== leftY) return false;
+  }
+  return true;
+}
+
 function buildLaneXByPathId(pathIds: string[], graphWidth: number): Map<string, number> {
   const laneCount = Math.max(1, pathIds.length);
   const firstLaneX = graphWidth / 2 - ((laneCount - 1) * dotLaneGap) / 2;
@@ -164,8 +305,9 @@ function buildGraphNodes(
   pathMetaById: Map<string, { name: string; color: string }>,
   laneXByPathId: Map<string, number>,
   graphWidth: number,
+  itemYById: Map<string, number>,
 ): GraphNode[] {
-  return rowItems.map((item, index) => {
+  return rowItems.map((item) => {
     const pathId = itineraryItemPathId(item);
     const pathMeta = pathMetaById.get(pathId) ?? pathMetaById.get(mainItineraryPathId);
     const interval = itemInterval(item);
@@ -179,14 +321,14 @@ function buildGraphNodes(
       sourcePathId: pathId,
       start: interval?.start ?? null,
       x: laneXByPathId.get(pathId) ?? graphWidth / 2,
-      y: dayRowHeight + rowStep / 2 + index * rowStep,
+      y: itemYById.get(item.id) ?? 0,
     };
   });
 }
 
-function buildGraphEdges(nodes: GraphNode[], graphWidth: number, height: number): GraphEdge[] {
-  const startPoint: GraphPoint = { id: "start", pathId: mainItineraryPathId, x: graphWidth / 2, y: dayRowHeight / 2 };
-  const endPoint: GraphPoint = { id: "end", pathId: mainItineraryPathId, x: graphWidth / 2, y: height - addStopRowHeight / 2 };
+function buildGraphEdges(nodes: GraphNode[], graphWidth: number, startY: number, endY: number): GraphEdge[] {
+  const startPoint: GraphPoint = { id: "start", pathId: mainItineraryPathId, x: graphWidth / 2, y: startY };
+  const endPoint: GraphPoint = { id: "end", pathId: mainItineraryPathId, x: graphWidth / 2, y: endY };
   const mainNodes = nodes.filter((node) => node.pathId === mainItineraryPathId);
   const { edges, pushEdge } = createGraphEdgeCollector();
 
@@ -328,7 +470,9 @@ function buildEdgePath(edge: GraphEdge): string {
   }
 
   const directionX = edge.to.x >= edge.from.x ? 1 : -1;
-  const edgeY = edge.from.id === "start" ? dayRowHeight : edge.to.id === "end" ? edge.to.y - directionY * (addStopRowHeight / 2) : edge.from.y + directionY * (rowStep / 2);
+  const verticalGap = Math.abs(edge.to.y - edge.from.y);
+  const turnOffset = Math.min(rowStep / 2, Math.max(8, verticalGap / 2));
+  const edgeY = edge.from.id === "start" ? edge.from.y + directionY * turnOffset : edge.to.id === "end" ? edge.to.y - directionY * turnOffset : edge.from.y + directionY * turnOffset;
   const cornerRadius = Math.max(
     4,
     Math.min(16, Math.abs(edge.to.x - edge.from.x) * 0.75, Math.abs(edgeY - edge.from.y), Math.abs(edge.to.y - edgeY)),

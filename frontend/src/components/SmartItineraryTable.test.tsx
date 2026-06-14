@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, screen, within } from "@testing-library/react";
+import { cleanup, fireEvent, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { tripFixture } from "@/src/trip/trip-fixtures";
@@ -86,6 +86,20 @@ function findGraphLine(
       line.getAttribute("data-to-x") === `${toCenter.x}` &&
       line.getAttribute("data-to-y") === `${toCenter.y}`,
   );
+}
+
+function layoutRect(top: number, height: number, width = 120): DOMRect {
+  return {
+    bottom: top + height,
+    height,
+    left: 0,
+    right: width,
+    top,
+    width,
+    x: 0,
+    y: top,
+    toJSON: () => ({}),
+  } as DOMRect;
 }
 
 function getImportFileInput(): HTMLInputElement {
@@ -597,6 +611,53 @@ describe("SmartItineraryTable", () => {
     });
     expect(firstDot).toHaveStyle({ top: "59px" });
     expect(secondDot).toHaveStyle({ top: "118px" });
+  });
+
+  it("aligns graph dots with measured rendered row centers", async () => {
+    const firstItem = {
+      ...tripFixture.planItems[0],
+      id: "graph-measured-first",
+      day: "2026-06-19",
+      activity: "Graph measured first",
+      pathGroupId: "path-group-measured-height",
+      pathRole: "main" as const,
+    };
+    const secondItem = {
+      ...tripFixture.planItems[1],
+      id: "graph-measured-second",
+      day: "2026-06-19",
+      activity: "Graph measured second",
+      pathGroupId: "path-group-measured-height",
+      pathRole: "main" as const,
+      sortOrder: firstItem.sortOrder + 10,
+    };
+    const rectSpy = vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(function mockRect(this: HTMLElement) {
+      if (this.classList.contains("activity-path-graph")) return layoutRect(100, 284, 76);
+      if (this.tagName === "TR" && this.querySelector(".activity-path-graph")) return layoutRect(100, 60);
+      if (this.dataset.itemId === "graph-measured-first") return layoutRect(160, 108);
+      if (this.dataset.itemId === "graph-measured-second") return layoutRect(268, 72);
+      if (this.dataset.dayDrop === "2026-06-19") return layoutRect(340, 44);
+      return layoutRect(0, 0);
+    });
+
+    try {
+      renderTable({
+        items: [firstItem, secondItem],
+        graphItems: [firstItem, secondItem],
+        selectedItemId: "graph-measured-first",
+      });
+
+      const firstDot = screen.getByRole("button", {
+        name: /Graph measured first on Main/i,
+      });
+      const secondDot = screen.getByRole("button", {
+        name: /Graph measured second on Main/i,
+      });
+      await waitFor(() => expect(firstDot).toHaveStyle({ top: "96px" }));
+      expect(secondDot).toHaveStyle({ top: "186px" });
+    } finally {
+      rectSpy.mockRestore();
+    }
   });
 
   it("aligns graph dots with visible rows after collapsing an activity block", async () => {
