@@ -11,6 +11,7 @@ Use `rtk` for shell commands. Working directory matters: frontend commands run f
 | Find text | Repository root | `rtk rg "pattern" path` |
 | Read project map | Repository root | `rtk sed -n '1,220p' docs/MAP.md` |
 | Read command map | Repository root | `rtk sed -n '1,220p' docs/COMMANDS.md` |
+| Read itinerary completion audit | Repository root | `rtk sed -n '1,240p' docs/itinerary-trip-plan-completion-audit.md` |
 
 ## Local Development
 

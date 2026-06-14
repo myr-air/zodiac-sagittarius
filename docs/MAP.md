@@ -11,6 +11,7 @@ Sagittarius is a group-trip planning cockpit. Use this map as the first project-
 ## Product And Domain Decisions
 
 - [docs/itinerary-trip-plan-phase-0-1-implementation-spec.md](./itinerary-trip-plan-phase-0-1-implementation-spec.md): Trip Plan compatibility API, DDL draft, exact test matrix, and implementation touchpoints.
+- [docs/itinerary-trip-plan-completion-audit.md](./itinerary-trip-plan-completion-audit.md): current requirement-by-requirement completion audit for the requested itinerary redesign end state.
 - [docs/adr/](./adr/): architecture decision records for Trip Plan language, Main Plan selection, plan-scoped records, hierarchy/time windows, and compatibility-first rollout.
 - [docs/itinerary-json-format.md](./itinerary-json-format.md): import/export file format for itinerary data.
 - [docs/api-data-spec.md](./api-data-spec.md): API behavior and data-contract notes.
