@@ -16,7 +16,7 @@ interface ActivityPathGraphDayProps {
   onSelectItem: (itemId: string) => void;
 }
 
-const graphClassName = "activity-path-graph relative min-h-full w-full bg-(--color-surface-subtle)";
+const graphClassName = "activity-path-graph relative w-full bg-(--color-surface-subtle)";
 const dotClassName =
   "activity-path-graph-node absolute z-[3] left-1/2 size-9 -translate-x-1/2 rounded-full border-0 bg-transparent p-0 transition-transform hover:scale-105 focus-visible:outline-none before:absolute before:left-1/2 before:top-1/2 before:size-3 before:-translate-x-1/2 before:-translate-y-1/2 before:rounded-full before:border-2 before:border-(--color-surface) before:bg-(--activity-path-node-color) before:shadow-[0_1px_4px_rgb(15_23_42_/_0.18)] after:absolute after:left-1/2 after:top-1/2 after:size-4 after:-translate-x-1/2 after:-translate-y-1/2 after:rounded-full after:opacity-0 after:ring-2 after:ring-(--color-primary-strong) after:ring-offset-1 after:ring-offset-(--color-surface)";
 const selectedDotClassName = "activity-path-graph-node--selected after:opacity-100";
@@ -61,8 +61,13 @@ export function ActivityPathGraphDay({
   const graphEdges = buildGraphEdges(graphNodes, graphWidth, graphLayout.startY, graphLayout.endY);
 
   return (
-    <div ref={graphRef} className={graphClassName} role="group" aria-label={`Activity path graph for ${dayLabel}`} style={{ height: graphLayout.height }}>
-      <svg className="pointer-events-none absolute inset-0 z-[1] h-full w-full" viewBox={`0 0 ${graphWidth} ${graphLayout.height}`} aria-hidden="true">
+    <div ref={graphRef} className={graphClassName} role="group" aria-label={`Activity path graph for ${dayLabel}`} style={{ height: fallbackLayout.height }}>
+      <svg
+        className="pointer-events-none absolute left-0 top-0 z-[1] w-full overflow-visible"
+        viewBox={`0 0 ${graphWidth} ${graphLayout.height}`}
+        aria-hidden="true"
+        style={{ height: graphLayout.height }}
+      >
         {graphEdges.map((edge) => (
           <path
             key={edge.id}
