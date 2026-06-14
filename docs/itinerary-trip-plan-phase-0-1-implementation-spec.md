@@ -1948,17 +1948,18 @@ message or PR notes should name the scenario-level assertion that covers it.
 
 Minimum command evidence matrix:
 
-| Layer | Command |
-| --- | --- |
-| Backend schema/contracts | `rtk cargo test -p sagittarius-api --test schema_contract -- --nocapture` |
-| Backend Trip Plan API | `rtk cargo test -p sagittarius-api --test plan_variants_contract -- --nocapture` |
-| Backend cockpit/account/join/realtime | `rtk cargo test -p sagittarius-api --test trip_load_contract --test account_trip_contract --test join_session_contract --test realtime_contract -- --nocapture` |
-| Backend itinerary import | `rtk cargo test -p sagittarius-api --test itinerary_import_contract -- --nocapture` |
-| API documentation contract | `rtk rg "tripPlans|mainTripPlanId|/trip-plans|activePlanVariantId|planVariants|/plan-variants" docs/api-data-spec.md docs/openapi-itinerary-table-v1.yaml` |
-| Frontend API mapping/routes/import-export | `rtk bun --cwd frontend x vitest --project unit run src/trip/api-client.test.ts src/trip/api-contract.test.ts src/trip/itinerary-import-export.test.ts` |
-| Frontend local UI/table copy | `rtk bun --cwd frontend x vitest --project unit run src/components/SagittariusApp.test.tsx src/components/SmartItineraryTable.test.tsx src/project-contract.test.ts` |
-| Frontend type safety | `rtk bun --cwd frontend run typecheck` |
-| Whole-workspace release claim gate | `rtk python3 ~/.codex/aries/scripts/check_all.py` |
+| Layer | Working directory | Command |
+| --- | --- | --- |
+| Backend schema/contracts | Repository root | `rtk cargo test -p sagittarius-api --test schema_contract -- --nocapture` |
+| Backend Trip Plan API | Repository root | `rtk cargo test -p sagittarius-api --test plan_variants_contract -- --nocapture` |
+| Backend cockpit/account/join/realtime | Repository root | `rtk cargo test -p sagittarius-api --test trip_load_contract --test account_trip_contract --test join_session_contract --test realtime_contract -- --nocapture` |
+| Backend itinerary import | Repository root | `rtk cargo test -p sagittarius-api --test itinerary_import_contract -- --nocapture` |
+| API documentation contract | Repository root | `rtk rg "tripPlans|mainTripPlanId|/trip-plans|activePlanVariantId|planVariants|/plan-variants" docs/api-data-spec.md docs/openapi-itinerary-table-v1.yaml` |
+| Frontend API mapping/routes/import-export | `frontend/` | `rtk bun run test src/trip/api-client.test.ts src/trip/api-contract.test.ts src/trip/itinerary-import-export.test.ts` |
+| Frontend local UI/table copy | `frontend/` | `rtk bun run test src/components/SagittariusApp.test.tsx src/components/SmartItineraryTable.test.tsx src/project-contract.test.ts` |
+| Frontend type safety | `frontend/` | `rtk bun run typecheck` |
+| E2E real API compatibility | Repository root | `rtk make frontend-e2e-local` |
+| Whole-workspace release claim gate | `/Users/xiivth/.codex/aries` | `rtk python3 scripts/check_all.py` |
 
 ### Phase 2 Preview
 
