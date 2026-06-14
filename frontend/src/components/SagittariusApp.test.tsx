@@ -4532,7 +4532,7 @@ describe("Sagittarius cockpit UI", () => {
       "Records detected: 1 expenses, 1 bookings, 1 notes, 1 tasks",
     );
     expect(dialog).toHaveTextContent(
-      "They stay as source references and are not imported into this Trip Plan",
+      "Linked records will be imported into this Trip Plan",
     );
     await user.clear(within(dialog).getByLabelText(/ชื่อ path/i));
     await user.type(within(dialog).getByLabelText(/ชื่อ path/i), "Plan B");
@@ -4540,34 +4540,55 @@ describe("Sagittarius cockpit UI", () => {
       within(dialog).getByRole("button", { name: /import itinerary/i }),
     );
 
-    expect(
-      screen.getByRole("row", { name: /Imported noodle lunch/i }),
-    ).toBeInTheDocument();
+    const importedRow = screen.getByRole("row", {
+      name: /Imported noodle lunch/i,
+    });
+    expect(importedRow).toBeInTheDocument();
+    expect(importedRow).toHaveTextContent("1 booking");
+    expect(importedRow).toHaveTextContent("1 expense");
+    expect(importedRow).toHaveTextContent("1 note");
+    expect(importedRow).toHaveTextContent("1 task");
     const persistedTrip = JSON.parse(localStorage.getItem(tripStorageKey)!) as Trip;
-    expect(
-      persistedTrip.expenses.some(
-        (expense) => expense.title === "Imported real receipt",
-      ),
-    ).toBe(false);
-    expect(
-      (persistedTrip.bookingDocs ?? []).some(
-        (booking) => booking.title === "Imported lunch reservation",
-      ),
-    ).toBe(false);
-    expect(
-      (persistedTrip.stopNotes ?? []).some(
-        (note) => note.body === "Ask for the corner table.",
-      ),
-    ).toBe(false);
-    expect(
-      (persistedTrip.tasks ?? []).some(
-        (task) => task.title === "Confirm imported lunch",
-      ),
-    ).toBe(false);
-    await user.click(screen.getByRole("link", { name: /ภาพรวม/i }));
-    expect(
-      screen.queryByText("Confirm imported lunch"),
-    ).not.toBeInTheDocument();
+    const importedItem = persistedTrip.itineraryItems.find(
+      (item) => item.id === "imported-lunch",
+    );
+    expect(importedItem?.planVariantId).toBe("plan-variant-backup");
+    expect(persistedTrip.expenses).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          itineraryItemId: "imported-lunch",
+          title: "Imported real receipt",
+          tripPlanId: importedItem?.planVariantId,
+        }),
+      ]),
+    );
+    expect(persistedTrip.bookingDocs ?? []).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          relatedItineraryItemIds: ["imported-lunch"],
+          title: "Imported lunch reservation",
+          tripPlanId: importedItem?.planVariantId,
+        }),
+      ]),
+    );
+    expect(persistedTrip.stopNotes ?? []).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          body: "Ask for the corner table.",
+          itemId: "imported-lunch",
+          tripPlanId: importedItem?.planVariantId,
+        }),
+      ]),
+    );
+    expect(persistedTrip.tasks ?? []).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          relatedItemId: "imported-lunch",
+          title: "Confirm imported lunch",
+          tripPlanId: importedItem?.planVariantId,
+        }),
+      ]),
+    );
     expect(prompt).not.toHaveBeenCalled();
     expect(confirm).not.toHaveBeenCalled();
     expect(alert).not.toHaveBeenCalled();

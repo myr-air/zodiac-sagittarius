@@ -17,6 +17,8 @@ const evidenceDir =
   joinPath(tmpdir(), "sagittarius-itinerary-import-browser-qa");
 const storyUrl = `${trimTrailingSlash(storybookBaseUrl)}/iframe.html?id=sagittarius-app--itinerary&viewMode=story`;
 const tripStorageKey = "sagittarius:trip-draft";
+const mainTripPlanId = "plan-main";
+const importTargetTripPlanId = "plan-rain";
 
 interface QaEvidence {
   checks: string[];
@@ -236,6 +238,13 @@ async function runImportQa(
   await page.evaluate((key) => window.localStorage.removeItem(key), tripStorageKey);
   await screenshot(page, `${name}-initial.png`);
 
+  const tripPlanSelector = page.getByLabel("Trip Plan");
+  await tripPlanSelector.selectOption(importTargetTripPlanId);
+  const selectedTripPlanId = await tripPlanSelector.inputValue();
+  if (selectedTripPlanId !== importTargetTripPlanId) {
+    throw new Error(`${name} could not select import target Trip Plan ${importTargetTripPlanId}.`);
+  }
+
   await page.locator('input[type="file"]').first().setInputFiles({
     name: "browser-qa-itinerary.json",
     mimeType: "application/json",
@@ -258,21 +267,27 @@ async function runImportQa(
   const bodyText = await page.locator("body").innerText();
   assertContains(bodyText, "Browser QA flight block", `${name} visible imported block`);
   assertContains(bodyText, "23:00-02:00", `${name} visible cross-day time`);
-  assertContains(bodyText, "⁺¹", `${name} visible +1 offset`);
   assertContains(bodyText, "1 sub", `${name} visible sub-activity count`);
   assertContains(bodyText, "1 booking", `${name} visible booking commitment`);
   assertContains(bodyText, "1 expense", `${name} visible expense commitment`);
   assertContains(bodyText, "1 task", `${name} visible task commitment`);
   assertContains(bodyText, "1 note", `${name} visible note commitment`);
+  const importedBlockRow = page.getByRole("row", { name: /Browser QA flight block/i });
+  const importedBlockSup = await importedBlockRow.locator("sup").first().textContent();
+  if (importedBlockSup !== "+1") {
+    throw new Error(`${name} visible cross-day offset was ${JSON.stringify(importedBlockSup)} instead of +1.`);
+  }
 
   const persisted = await page.evaluate((key) => {
     const raw = window.localStorage.getItem(key);
     if (!raw) return null;
     const trip = JSON.parse(raw);
     return {
+      activePlanVariantId: trip.activePlanVariantId ?? null,
       itemCount: trip.itineraryItems?.filter((item: { activity?: string }) =>
         String(item.activity).startsWith("Browser QA"),
       ).length ?? 0,
+      mainTripPlanId: trip.mainTripPlanId ?? null,
       block: trip.itineraryItems?.find((item: { activity?: string }) =>
         item.activity === "Browser QA flight block",
       ) ?? null,
@@ -296,13 +311,21 @@ async function runImportQa(
     block: null | Record<string, unknown>;
     booking: null | Record<string, unknown>;
     expense: null | Record<string, unknown>;
+    activePlanVariantId: null | string;
     itemCount: number;
+    mainTripPlanId: null | string;
     note: null | Record<string, unknown>;
     sub: null | Record<string, unknown>;
     task: null | Record<string, unknown>;
   } | null;
 
   if (!persisted) throw new Error(`${name} did not persist an imported trip draft.`);
+  if (persisted.activePlanVariantId !== mainTripPlanId) {
+    throw new Error(`${name} import changed activePlanVariantId to ${persisted.activePlanVariantId}.`);
+  }
+  if (persisted.mainTripPlanId !== mainTripPlanId) {
+    throw new Error(`${name} import changed mainTripPlanId to ${persisted.mainTripPlanId}.`);
+  }
   if (persisted.itemCount !== 2) throw new Error(`${name} expected 2 imported items, got ${persisted.itemCount}.`);
   expectObject(persisted.block, {
     activity: "Browser QA flight block",
@@ -310,21 +333,23 @@ async function runImportQa(
     endTime: "02:00",
     isPlanBlock: true,
     itemKind: "travel",
+    planVariantId: importTargetTripPlanId,
     status: "confirmed",
   }, `${name} activity block`);
   expectObject(persisted.sub, {
     activity: "Browser QA check-in",
     parentItemId: "browser-flight-block",
+    planVariantId: importTargetTripPlanId,
     timeMode: "flexible",
   }, `${name} sub-activity`);
   expectObject(persisted.expense, {
     itineraryItemId: "browser-flight-block",
     title: "Browser QA receipt",
-    tripPlanId: "plan-main",
+    tripPlanId: importTargetTripPlanId,
   }, `${name} expense`);
   expectObject(persisted.booking, {
     title: "Browser QA booking",
-    tripPlanId: "plan-main",
+    tripPlanId: importTargetTripPlanId,
   }, `${name} booking`);
   expectArrayContains(
     persisted.booking?.relatedItineraryItemIds,
@@ -334,12 +359,12 @@ async function runImportQa(
   expectObject(persisted.note, {
     body: "Browser QA note",
     itemId: "browser-flight-block",
-    tripPlanId: "plan-main",
+    tripPlanId: importTargetTripPlanId,
   }, `${name} note`);
   expectObject(persisted.task, {
     relatedItemId: "browser-flight-block",
     title: "Browser QA task",
-    tripPlanId: "plan-main",
+    tripPlanId: importTargetTripPlanId,
   }, `${name} task`);
 
   await assertNoHorizontalPageOverflow(page, name);
@@ -350,7 +375,7 @@ async function runImportQa(
   await context.close();
 
   evidence.checks.push(
-    `${name} imported hierarchy, cross-day time, commitment chips, plan-scoped booking, expense, note, and task without console/page/network errors or body overflow.`,
+    `${name} imported hierarchy into selected Trip Plan ${importTargetTripPlanId}, preserved Main Plan ${mainTripPlanId}, rendered cross-day time and commitment chips, and kept booking, expense, note, and task plan-scoped without console/page/network errors or body overflow.`,
   );
 }
 

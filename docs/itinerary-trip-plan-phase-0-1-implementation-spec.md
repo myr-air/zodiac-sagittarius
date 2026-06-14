@@ -1834,7 +1834,7 @@ corresponding `API-*` or `DDL-*` row is claimed complete.
 | `TEST-API-CHECK-01` | Backend + frontend | Plan Check run/latest use selected `tripPlanId` when supplied, preserve legacy whole-trip behavior when omitted, and never call or imply set-main. |
 | `TEST-FE-MAP-01` | Frontend | API readers accept canonical-only, legacy-only, and mirrored mixed payloads, but reject divergent mixed aliases as `invalid_response`. |
 | `TEST-FE-UI-01` | Frontend | Itinerary Trip Plan selection changes visible/edit/import target only; explicit set-main is separate and permission-gated. |
-| `TEST-IMPORT-01` | Backend + frontend | Import/export preserves pointer aliases, plan-list aliases, hierarchy/time/path fields, selected destination Trip Plan, unchanged Main Plan, and source-only records. |
+| `TEST-IMPORT-01` | Backend + frontend | Import/export preserves pointer aliases, plan-list aliases, hierarchy/time/path fields, selected destination Trip Plan, unchanged Main Plan, local UI re-scopes linked records into the selected Trip Plan, and the API import endpoint keeps records source-only until record creation endpoints are wired into that flow. |
 | `TEST-E2E-API-01` | E2E | Real API flow creates, patches, reloads, and sets Main Trip Plan through compatibility paths while asserting aliases and status. |
 
 | Phase | Layer | Test file | Exact scenario |
