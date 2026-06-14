@@ -160,7 +160,7 @@ async fn itinerary_create_contract_accepts_end_time_without_start_time(pool: sql
 }
 
 #[sqlx::test(migrations = "../../migrations")]
-async fn itinerary_create_contract_rejects_end_offset_without_end_time(pool: sqlx::PgPool) {
+async fn itinerary_create_contract_normalizes_end_offset_without_end_time(pool: sqlx::PgPool) {
     support::seed_trip(&pool).await;
     let token = support::create_session(&pool, support::ORGANIZER_ID).await;
     let app = support::app(pool);
@@ -193,10 +193,11 @@ async fn itinerary_create_contract_rejects_end_offset_without_end_time(pool: sql
         .await
         .unwrap();
 
-    assert_eq!(response.status(), StatusCode::BAD_REQUEST);
+    assert_eq!(response.status(), StatusCode::OK);
     let body: Value =
         serde_json::from_slice(&to_bytes(response.into_body(), 65536).await.unwrap()).unwrap();
-    assert_eq!(body["code"], "invalid_request");
+    assert_eq!(body["endTime"], Value::Null);
+    assert_eq!(body["endOffsetDays"], 0);
 }
 
 #[sqlx::test(migrations = "../../migrations")]

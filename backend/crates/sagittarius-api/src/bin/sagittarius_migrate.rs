@@ -143,6 +143,10 @@ fn embedded_migrations() -> Vec<Migration> {
             version: "0029_expense_reminder_trip_plan_scope.sql",
             sql: include_str!("../../../../migrations/0029_expense_reminder_trip_plan_scope.sql"),
         },
+        Migration {
+            version: "0030_itinerary_end_offset_sanitize.sql",
+            sql: include_str!("../../../../migrations/0030_itinerary_end_offset_sanitize.sql"),
+        },
     ]
 }
 
@@ -352,6 +356,7 @@ mod tests {
         assert!(versions.contains("0021_trusted_device_active_label_unique.sql"));
         assert!(versions.contains("0028_plan_check_trip_plan_scope.sql"));
         assert!(versions.contains("0029_expense_reminder_trip_plan_scope.sql"));
+        assert!(versions.contains("0030_itinerary_end_offset_sanitize.sql"));
     }
 
     #[test]

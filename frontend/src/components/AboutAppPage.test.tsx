@@ -12,7 +12,7 @@ const webVersion = {
   runtimeMode: "api",
   schemaVersion: "frontend-static",
   service: "sagittarius-web",
-  version: "0.1.2",
+  version: "0.1.3",
 } as const;
 
 describe("AboutAppPage", () => {
@@ -27,7 +27,7 @@ describe("AboutAppPage", () => {
           environment: "production",
           schemaVersion: "0019_photo_album_links",
           service: "sagittarius-api",
-          version: "0.1.2",
+          version: "0.1.3",
         }),
       }),
     );
@@ -36,8 +36,8 @@ describe("AboutAppPage", () => {
 
     expect(await screen.findByRole("heading", { name: "About Joii" })).toBeInTheDocument();
     expect(screen.getByText("Web app version")).toBeInTheDocument();
-    expect(screen.getByText("sagittarius-web v0.1.2")).toBeInTheDocument();
-    expect(await screen.findByText("sagittarius-api v0.1.2")).toBeInTheDocument();
+    expect(screen.getByText("sagittarius-web v0.1.3")).toBeInTheDocument();
+    expect(await screen.findByText("sagittarius-api v0.1.3")).toBeInTheDocument();
     expect(screen.getByText("abc1234")).toBeInTheDocument();
     expect(screen.getByText("def5678")).toBeInTheDocument();
     expect(screen.getByText("api.example.test")).toBeInTheDocument();
@@ -51,7 +51,7 @@ describe("AboutAppPage", () => {
 
     renderWithI18n(<AboutAppPage webVersion={{ ...webVersion, runtimeMode: "local", apiHost: "local" }} />);
 
-    expect(await screen.findByText("sagittarius-web v0.1.2")).toBeInTheDocument();
+    expect(await screen.findByText("sagittarius-web v0.1.3")).toBeInTheDocument();
     await waitFor(() => {
       expect(screen.getByText("API version unavailable")).toBeInTheDocument();
     });
@@ -69,7 +69,7 @@ describe("AboutAppPage", () => {
           environment: "production",
           schemaVersion: "0019_photo_album_links",
           service: "sagittarius-api",
-          version: "0.1.2",
+          version: "0.1.3",
         }),
       }),
     );

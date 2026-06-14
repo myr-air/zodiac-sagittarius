@@ -65,7 +65,11 @@ pub async fn patch_itinerary_item(
         .end_time
         .clone()
         .unwrap_or_else(|| existing.end_time.clone());
-    let target_end_offset_days = patch.end_offset_days.unwrap_or(existing.end_offset_days);
+    let mut target_end_offset_days = patch.end_offset_days.unwrap_or(existing.end_offset_days);
+    if target_end_time.is_none() && target_end_offset_days != 0 {
+        target_end_offset_days = 0;
+        patch.end_offset_days = Some(0);
+    }
     let target_is_plan_block = patch.is_plan_block.unwrap_or(existing.is_plan_block);
     validate_time_window_end_offset(target_end_time.as_deref(), target_end_offset_days)?;
     validate_sub_activity_not_plan_block(target_parent_item_id, target_is_plan_block)?;
@@ -182,10 +186,11 @@ pub async fn create_itinerary_item(
     {
         return Err(ServiceError::NotFound);
     }
-    validate_time_window_end_offset(
+    let end_offset_days = normalized_end_offset_days(
         request.end_time.as_deref(),
         request.end_offset_days.unwrap_or(0),
-    )?;
+    );
+    validate_time_window_end_offset(request.end_time.as_deref(), end_offset_days)?;
     validate_sub_activity_not_plan_block(
         request.parent_item_id,
         request.is_plan_block.unwrap_or(false),
@@ -256,7 +261,7 @@ pub async fn create_itinerary_item(
             sort_order,
             start_time: request.start_time.as_deref(),
             end_time: request.end_time.as_deref(),
-            end_offset_days: request.end_offset_days.unwrap_or(0),
+            end_offset_days,
             activity: request.activity.trim(),
             activity_type: request.activity_type.as_str(),
             place: request.place.trim(),
@@ -417,6 +422,14 @@ fn validate_time_window_end_offset(
     }
 
     Ok(())
+}
+
+fn normalized_end_offset_days(end_time: Option<&str>, end_offset_days: i32) -> i32 {
+    if end_time.is_none() {
+        0
+    } else {
+        end_offset_days
+    }
 }
 
 fn validate_sub_activity_not_plan_block(
