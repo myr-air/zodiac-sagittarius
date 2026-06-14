@@ -351,6 +351,12 @@ Base path: `/api/v1`.
 
 - `GET /api/v1/trips/:tripId`
   Returns the full planning cockpit payload: trip, members, Trip Plans, itinerary items, suggestions, and expense summary.
+  Phase 1 cockpit load is a whole-trip compatibility payload. It includes
+  plan-scoped records from every Trip Plan that the member can view, preserving
+  each record's `tripPlanId` or linked itinerary item id so the frontend can
+  filter the selected Trip Plan locally. Use scoped endpoints, such as expense
+  summary with `tripPlanId`, when the response itself must be selected-plan
+  scoped.
 - `PATCH /api/v1/trips/:tripId`
   Updates trip metadata. During Phase 1 compatibility, Main Plan identity is
   exposed as `mainTripPlanId` and legacy `activePlanVariantId`, but this route

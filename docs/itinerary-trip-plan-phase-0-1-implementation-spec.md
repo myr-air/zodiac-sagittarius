@@ -1698,6 +1698,12 @@ the later inline editor depends on.
 - Changing the selected Trip Plan filters the visible itinerary rows and changes
   the target for new local rows/imported rows, but it does not mutate the Main
   Plan pointer.
+- API cockpit load remains a whole-trip compatibility payload in Phase 1. It
+  returns records from all visible Trip Plans with `tripPlanId` and linked item
+  ids intact; the frontend scopes the itinerary workspace to the selected Trip
+  Plan locally, while explicitly scoped endpoints such as expense summary and
+  Plan Check receive `tripPlanId` when their response must match the selected
+  plan.
 - Creating a blank Trip Plan selects the new draft/proposal/backup for editing
   without making it Main.
 - The explicit set-main command calls `/trip-plans/:id/set-main` in API mode or

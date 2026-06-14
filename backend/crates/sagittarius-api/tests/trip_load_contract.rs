@@ -90,6 +90,158 @@ async fn trip_load_contract_returns_cockpit_payload_and_filters_private_tasks(po
 }
 
 #[sqlx::test(migrations = "../../migrations")]
+async fn trip_load_contract_returns_whole_trip_plan_scoped_records(pool: sqlx::PgPool) {
+    support::seed_trip(&pool).await;
+    support::set_trip_dates(&pool, "2026-06-01", "2026-06-30").await;
+    let traveler_token = support::create_session(&pool, support::TRAVELER_ID).await;
+    support::seed_tasks(&pool).await;
+    support::seed_stop_note(&pool).await;
+    support::seed_expense(&pool).await;
+    support::seed_booking_doc(&pool).await;
+    let alt_item_id = support::seed_alt_plan_item(&pool).await;
+
+    sqlx::query(
+        "insert into trip_tasks (
+           id, trip_id, trip_plan_id, title, status, visibility, kind, created_by, assignee_id
+         )
+         values (gen_random_uuid(), $1, $2, 'Alt plan check-in', 'open', 'shared', 'booking', $3, $3)",
+    )
+    .bind(uuid::Uuid::parse_str(support::TRIP_ID).unwrap())
+    .bind(uuid::Uuid::parse_str(support::ALT_PLAN_ID).unwrap())
+    .bind(uuid::Uuid::parse_str(support::TRAVELER_ID).unwrap())
+    .execute(&pool)
+    .await
+    .unwrap();
+    sqlx::query(
+        "insert into stop_notes (
+           id, trip_id, trip_plan_id, itinerary_item_id, author_id, body, version
+         )
+         values (gen_random_uuid(), $1, $2, $3, $4, 'Alt plan terminal note', 1)",
+    )
+    .bind(uuid::Uuid::parse_str(support::TRIP_ID).unwrap())
+    .bind(uuid::Uuid::parse_str(support::ALT_PLAN_ID).unwrap())
+    .bind(alt_item_id)
+    .bind(uuid::Uuid::parse_str(support::TRAVELER_ID).unwrap())
+    .execute(&pool)
+    .await
+    .unwrap();
+    sqlx::query(
+        "insert into expenses (
+           id, trip_id, trip_plan_id, title, amount_minor, currency, paid_by, category, splits,
+           itinerary_item_id
+         )
+         values (gen_random_uuid(), $1, $2, 'Alt plan airport bus', 5000, 'HKD', $3, 'transport', $4, $5)",
+    )
+    .bind(uuid::Uuid::parse_str(support::TRIP_ID).unwrap())
+    .bind(uuid::Uuid::parse_str(support::ALT_PLAN_ID).unwrap())
+    .bind(uuid::Uuid::parse_str(support::OWNER_ID).unwrap())
+    .bind(serde_json::json!({
+        support::OWNER_ID: 2500,
+        support::TRAVELER_ID: 2500
+    }))
+    .bind(alt_item_id)
+    .execute(&pool)
+    .await
+    .unwrap();
+    sqlx::query(
+        "insert into booking_docs (
+           id, trip_id, trip_plan_id, type, title, status, visibility, owner_member_id,
+           provider_name, confirmation_code, starts_at, ends_at, timezone, price_minor,
+           currency, notes, created_by, version
+         )
+         values (
+           gen_random_uuid(), $1, $2, 'activity_ticket', 'Alt gallery booking', 'draft', 'shared', $3,
+           'M+', null, '2026-06-18T10:00:00+07:00',
+           '2026-06-18T12:00:00+07:00', 'Asia/Bangkok', 5000,
+           'HKD', 'Alt booking doc', $3, 1
+         )",
+    )
+    .bind(uuid::Uuid::parse_str(support::TRIP_ID).unwrap())
+    .bind(uuid::Uuid::parse_str(support::ALT_PLAN_ID).unwrap())
+    .bind(uuid::Uuid::parse_str(support::TRAVELER_ID).unwrap())
+    .execute(&pool)
+    .await
+    .unwrap();
+    let app = support::app(pool);
+
+    let response = app
+        .oneshot(
+            Request::builder()
+                .method(Method::GET)
+                .uri(format!("/api/v1/trips/{}", support::TRIP_ID))
+                .header(header::AUTHORIZATION, format!("Bearer {traveler_token}"))
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::OK);
+    let body: Value =
+        serde_json::from_slice(&to_bytes(response.into_body(), 131072).await.unwrap()).unwrap();
+
+    assert_eq!(body["tripPlans"].as_array().unwrap().len(), 2);
+    assert!(
+        body["tripPlans"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|plan| { plan["id"] == support::PLAN_ID && plan["status"] == "main" })
+    );
+    assert!(
+        body["tripPlans"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|plan| { plan["id"] == support::ALT_PLAN_ID && plan["status"] == "draft" })
+    );
+    assert!(
+        body["itineraryItems"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|item| {
+                item["id"] == support::ITEM_ID && item["planVariantId"] == support::PLAN_ID
+            })
+    );
+    assert!(
+        body["itineraryItems"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|item| {
+                item["id"] == alt_item_id.to_string()
+                    && item["planVariantId"] == support::ALT_PLAN_ID
+            })
+    );
+    assert!(body["tasks"].as_array().unwrap().iter().any(|task| {
+        task["title"] == "Book Peak Tram" && task["tripPlanId"] == support::PLAN_ID
+    }));
+    assert!(body["tasks"].as_array().unwrap().iter().any(|task| {
+        task["title"] == "Alt plan check-in" && task["tripPlanId"] == support::ALT_PLAN_ID
+    }));
+    assert!(body["stopNotes"].as_array().unwrap().iter().any(|note| {
+        note["body"] == "Bring printed booking voucher" && note["tripPlanId"] == support::PLAN_ID
+    }));
+    assert!(body["stopNotes"].as_array().unwrap().iter().any(|note| {
+        note["body"] == "Alt plan terminal note" && note["tripPlanId"] == support::ALT_PLAN_ID
+    }));
+    assert!(body["expenses"].as_array().unwrap().iter().any(|expense| {
+        expense["title"] == "Dim sum breakfast" && expense["tripPlanId"] == support::PLAN_ID
+    }));
+    assert!(body["expenses"].as_array().unwrap().iter().any(|expense| {
+        expense["title"] == "Alt plan airport bus" && expense["tripPlanId"] == support::ALT_PLAN_ID
+    }));
+    assert_eq!(body["expenseSummary"]["groupSpend"].as_f64(), Some(290.0));
+    assert!(body["bookingDocs"].as_array().unwrap().iter().any(|doc| {
+        doc["title"] == "Main plan flight" && doc["tripPlanId"] == support::PLAN_ID
+    }));
+    assert!(body["bookingDocs"].as_array().unwrap().iter().any(|doc| {
+        doc["title"] == "Alt gallery booking" && doc["tripPlanId"] == support::ALT_PLAN_ID
+    }));
+}
+
+#[sqlx::test(migrations = "../../migrations")]
 async fn trip_load_contract_viewer_hides_expense_summary_and_private_tasks(pool: sqlx::PgPool) {
     support::seed_trip(&pool).await;
     let viewer_token = support::create_session(&pool, support::VIEWER_ID).await;
