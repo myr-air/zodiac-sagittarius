@@ -2796,11 +2796,9 @@ export function SagittariusApp({
             ...serializeBookingDocInputForApi({
               ...input,
               title,
-              tripPlanId: tripPlanIdForBookingRecord(
-                trip,
-                input,
-                selectedTripPlanId,
-              ),
+              tripPlanId:
+                input.tripPlanId ??
+                tripPlanIdForBookingRecord(trip, input, selectedTripPlanId),
             }),
           },
         );
@@ -2831,7 +2829,9 @@ export function SagittariusApp({
     const bookingDoc: BookingDoc = {
       id: nextLocalBookingDocId(trip.bookingDocs ?? []),
       tripId: trip.id,
-      tripPlanId: tripPlanIdForBookingRecord(trip, input, selectedTripPlanId),
+      tripPlanId:
+        input.tripPlanId ??
+        tripPlanIdForBookingRecord(trip, input, selectedTripPlanId),
       ...input,
       title,
       externalLinks: input.externalLinks.map((link, index) => ({
@@ -3638,6 +3638,43 @@ export function SagittariusApp({
     }));
   }
 
+  async function duplicateExpenseAsEstimate(expense: Expense) {
+    if (!canEditBookings) return;
+    const sourceTripPlanId =
+      expense.tripPlanId ||
+      selectedTripPlanId ||
+      trip.mainTripPlanId ||
+      trip.activePlanVariantId;
+    const linkedItem = expense.itineraryItemId
+      ? trip.itineraryItems.find((item) => item.id === expense.itineraryItemId)
+      : null;
+    await createBookingDoc({
+      tripPlanId: sourceTripPlanId,
+      type: bookingTypeForExpenseEstimate(expense),
+      title: `Estimate: ${expense.title}`,
+      status: "draft",
+      visibility: "shared",
+      ownerMemberId: currentMember.id,
+      providerName: null,
+      confirmationCode: null,
+      startsAt: null,
+      endsAt: null,
+      timezone: trip.defaultTimezone ?? null,
+      priceAmount: expense.amount,
+      currency: expense.currency ?? "HKD",
+      travelerIds: trip.members.map((member) => member.id),
+      externalLinks: [],
+      relatedItineraryItemIds: linkedItem ? [linkedItem.id] : [],
+      relatedTaskIds: [],
+      relatedExpenseIds: [],
+      noteIds: [],
+      notes: [
+        "Plan estimate copied from an Actual Expense. This does not create or move real money.",
+        `Source actual expense: ${expense.title}`,
+      ].join("\n"),
+    });
+  }
+
   async function recordPaybackReminder(suggestion: SettlementSuggestion) {
     const amountMinor = Math.round(suggestion.amount * 100);
     if (isApiMode && resolvedApiClient && participantSession) {
@@ -4188,6 +4225,7 @@ export function SagittariusApp({
                 onCreateExpense={createExpense}
                 onUpdateExpense={updateExpense}
                 onDeleteExpense={deleteExpense}
+                onDuplicateExpenseAsEstimate={duplicateExpenseAsEstimate}
                 onRecordPaybackReminder={recordPaybackReminder}
               />
             ) : currentView === "overview" ? (
@@ -5204,6 +5242,13 @@ function bookingDraftTitleForItineraryItem(
     train: "train ticket draft",
   };
   return `${item.activity} ${suffixByType[bookingType] ?? "booking draft"}`;
+}
+
+function bookingTypeForExpenseEstimate(expense: Expense): BookingDocType {
+  if (expense.category === "stay") return "hotel";
+  if (expense.category === "tickets") return "activity_ticket";
+  if (expense.category === "transport") return "public_transport";
+  return "other";
 }
 
 function bookingDraftDetailsForItineraryItem(item: ItineraryItem): {

@@ -27,6 +27,7 @@ interface TripExpensesPageProps {
   onCreateExpense: (input: ExpenseInput) => void | Promise<void>;
   onUpdateExpense: (input: ExpenseUpdateInput) => void | Promise<void>;
   onDeleteExpense: (expenseId: string) => void;
+  onDuplicateExpenseAsEstimate?: (expense: Expense) => void | Promise<void>;
   onRecordPaybackReminder?: (suggestion: SettlementSuggestion) => void | Promise<void>;
 }
 
@@ -109,6 +110,7 @@ export function TripExpensesPage({
   onCreateExpense,
   onUpdateExpense,
   onDeleteExpense,
+  onDuplicateExpenseAsEstimate,
   onRecordPaybackReminder,
 }: TripExpensesPageProps) {
   const { locale, t } = useI18n();
@@ -396,6 +398,14 @@ export function TripExpensesPage({
                         <span className={actionCellClassName}>
                           <IconButton type="button" aria-label={t.expenses.actions.editExpense({ title: expense.title })} disabled={!canEditExpenses} onClick={() => setDialogExpense(expense)}>
                             <Icon name="edit" />
+                          </IconButton>
+                          <IconButton
+                            type="button"
+                            aria-label={t.expenses.actions.duplicateAsEstimate({ title: expense.title })}
+                            disabled={!canEditExpenses || !onDuplicateExpenseAsEstimate}
+                            onClick={() => void onDuplicateExpenseAsEstimate?.(expense)}
+                          >
+                            <Icon name="copy" />
                           </IconButton>
                           <IconButton type="button" aria-label={t.expenses.actions.deleteExpense({ title: expense.title })} disabled={!canEditExpenses} onClick={() => onDeleteExpense(expense.id)}>
                             <Icon name="trash" />

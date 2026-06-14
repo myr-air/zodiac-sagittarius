@@ -1817,6 +1817,44 @@ describe("Sagittarius cockpit UI", () => {
     });
   });
 
+  it("duplicates a local actual expense as a booking estimate without creating real money", async () => {
+    const user = userEvent.setup();
+    const storage = installLocalStorageStub();
+    const draftTrip = tripWithPlans();
+    storage.setItem(tripStorageKey, JSON.stringify({
+      ...draftTrip,
+      bookingDocs: [],
+    }));
+
+    render(<SagittariusApp initialView="expenses" />);
+
+    await screen.findByRole("region", { name: /เงินทริป/i });
+    await user.click(
+      screen.getByRole("button", {
+        name: /ทำ Dim Dim Sum brunch เป็น estimate/i,
+      }),
+    );
+
+    await waitFor(() => {
+      const persistedTrip = JSON.parse(storage.getItem(tripStorageKey)!) as Trip;
+      expect(persistedTrip.expenses).toHaveLength(draftTrip.expenses.length);
+      expect(persistedTrip.bookingDocs).toEqual([
+        expect.objectContaining({
+          type: "other",
+          title: "Estimate: Dim Dim Sum brunch",
+          status: "draft",
+          priceAmount: 512,
+          currency: "HKD",
+          tripPlanId: draftTrip.activePlanVariantId,
+          relatedExpenseIds: [],
+          notes: expect.stringContaining(
+            "This does not create or move real money.",
+          ),
+        }),
+      ]);
+    });
+  });
+
   it("creates overview tasks through the API client after backend login", async () => {
     const user = userEvent.setup();
     const ownerTrip = {

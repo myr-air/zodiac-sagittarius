@@ -127,6 +127,27 @@ describe("TripExpensesPage", () => {
     }));
   });
 
+  it("offers a duplicate-as-estimate action without editing the actual expense", async () => {
+    const user = userEvent.setup();
+    const props = renderExpenses({
+      onDuplicateExpenseAsEstimate: vi.fn(),
+    });
+
+    await user.click(
+      screen.getByRole("button", {
+        name: /ทำ Dim Dim Sum brunch เป็น estimate/i,
+      }),
+    );
+
+    expect(props.onDuplicateExpenseAsEstimate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: "expense-dimsum",
+        title: "Dim Dim Sum brunch",
+      }),
+    );
+    expect(props.onUpdateExpense).not.toHaveBeenCalled();
+  });
+
   it("locks the Trip Plan to the linked stop when editing a linked expense", async () => {
     const user = userEvent.setup();
     const trip = {
