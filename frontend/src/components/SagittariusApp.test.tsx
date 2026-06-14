@@ -1786,6 +1786,37 @@ describe("Sagittarius cockpit UI", () => {
     expect(persistedTrip.activePlanVariantId).toBe(draftTrip.activePlanVariantId);
   });
 
+  it("moves an unlinked local actual expense to the organizer-selected Trip Plan", async () => {
+    const user = userEvent.setup();
+    const storage = installLocalStorageStub();
+    const draftTrip = tripWithPlans();
+    storage.setItem(tripStorageKey, JSON.stringify(draftTrip));
+
+    render(<SagittariusApp initialView="expenses" />);
+
+    await screen.findByRole("region", { name: /เงินทริป/i });
+    await user.click(screen.getByRole("button", { name: /แก้ไข Dim Dim Sum brunch/i }));
+    const dialog = screen.getByRole("dialog", { name: /แก้ไขค่าใช้จ่าย/i });
+    await user.selectOptions(within(dialog).getByLabelText("Trip Plan"), [
+      "plan-variant-backup",
+    ]);
+    await user.click(
+      within(dialog).getByRole("button", { name: /บันทึกค่าใช้จ่าย/i }),
+    );
+
+    await waitFor(() => {
+      const persistedTrip = JSON.parse(storage.getItem(tripStorageKey)!) as Trip;
+      expect(
+        persistedTrip.expenses.find((expense) => expense.id === "expense-dimsum"),
+      ).toMatchObject({
+        tripPlanId: "plan-variant-backup",
+        itineraryItemId: null,
+      });
+      expect(persistedTrip.mainTripPlanId).toBe(draftTrip.mainTripPlanId);
+      expect(persistedTrip.activePlanVariantId).toBe(draftTrip.activePlanVariantId);
+    });
+  });
+
   it("creates overview tasks through the API client after backend login", async () => {
     const user = userEvent.setup();
     const ownerTrip = {

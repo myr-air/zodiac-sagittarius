@@ -3368,6 +3368,7 @@ export function SagittariusApp({
     itemId: string | null;
     title: string;
     amount: number;
+    tripPlanId?: string | null;
     paidBy: string;
     category: Expense["category"];
     currency?: string;
@@ -3417,7 +3418,7 @@ export function SagittariusApp({
             tripPlanId: tripPlanIdForRecord(
               trip,
               repeatedInput.itemId,
-              selectedTripPlanId,
+              repeatedInput.tripPlanId ?? selectedTripPlanId,
             ),
             paidBy: repeatedInput.paidBy,
             category: repeatedInput.category,
@@ -3466,7 +3467,7 @@ export function SagittariusApp({
           tripPlanId: tripPlanIdForRecord(
             current,
             repeatedInput.itemId,
-            selectedTripPlanId,
+            repeatedInput.tripPlanId ?? selectedTripPlanId,
           ),
           paidBy: repeatedInput.paidBy,
           category: repeatedInput.category,
@@ -3527,6 +3528,7 @@ export function SagittariusApp({
     lineItems?: ExpenseLineItem[];
     comments?: ExpenseComment[];
     itemId?: string | null;
+    tripPlanId?: string | null;
     splits?: Record<string, number>;
   }) {
     if (!canEditExpenses) return;
@@ -3546,6 +3548,11 @@ export function SagittariusApp({
       input.itemId === undefined
         ? (existing.itineraryItemId ?? null)
         : input.itemId;
+    const tripPlanId = tripPlanIdForRecord(
+      trip,
+      itineraryItemId,
+      input.tripPlanId ?? existing.tripPlanId ?? selectedTripPlanId,
+    );
     if (isApiMode && resolvedApiClient && participantSession) {
       const expense = await resolvedApiClient.patchExpense(
         trip.id,
@@ -3565,6 +3572,7 @@ export function SagittariusApp({
           receiptUrl: input.receiptUrl ?? existing.receiptUrl ?? null,
           lineItems: input.lineItems ?? existing.lineItems ?? [],
           comments: input.comments ?? existing.comments ?? [],
+          tripPlanId,
           paidBy: input.paidBy,
           category: input.category,
           splits: expenseSplitsToMinor(splits),
@@ -3610,6 +3618,7 @@ export function SagittariusApp({
               receiptUrl: input.receiptUrl ?? expense.receiptUrl ?? null,
               lineItems: input.lineItems ?? expense.lineItems ?? [],
               comments: input.comments ?? expense.comments ?? [],
+              tripPlanId,
               paidBy: input.paidBy,
               category: input.category,
               splits,
@@ -4166,6 +4175,7 @@ export function SagittariusApp({
                 currentMember={currentMember}
                 expenseSummary={expenseSummary}
                 canEditExpenses={canEditExpenses}
+                selectedTripPlanId={selectedTripPlanId}
                 apiBaseUrl={process.env.NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL ?? ""}
                 onCreateExpense={createExpense}
                 onUpdateExpense={updateExpense}

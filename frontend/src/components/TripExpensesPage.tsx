@@ -22,6 +22,7 @@ interface TripExpensesPageProps {
   currentMember: Member;
   expenseSummary: ExpenseSummary;
   canEditExpenses: boolean;
+  selectedTripPlanId?: string | null;
   apiBaseUrl?: string;
   onCreateExpense: (input: ExpenseInput) => void | Promise<void>;
   onUpdateExpense: (input: ExpenseUpdateInput) => void | Promise<void>;
@@ -31,6 +32,7 @@ interface TripExpensesPageProps {
 
 export interface ExpenseInput {
   itemId: string | null;
+  tripPlanId?: string | null;
   title: string;
   amount: number;
   currency: string;
@@ -102,6 +104,7 @@ export function TripExpensesPage({
   currentMember,
   expenseSummary,
   canEditExpenses,
+  selectedTripPlanId,
   apiBaseUrl = "",
   onCreateExpense,
   onUpdateExpense,
@@ -419,6 +422,7 @@ export function TripExpensesPage({
           trip={trip}
           currentMember={currentMember}
           settlementCurrency={settlementCurrency}
+          selectedTripPlanId={selectedTripPlanId}
           apiBaseUrl={apiBaseUrl}
           onClose={() => setDialogExpense(null)}
           onCreateExpense={async (input) => {
@@ -450,6 +454,7 @@ function ExpenseDialog({
   trip,
   currentMember,
   settlementCurrency,
+  selectedTripPlanId,
   apiBaseUrl,
   onClose,
   onCreateExpense,
@@ -459,6 +464,7 @@ function ExpenseDialog({
   trip: Trip;
   currentMember: Member;
   settlementCurrency: string;
+  selectedTripPlanId?: string | null;
   apiBaseUrl: string;
   onClose: () => void;
   onCreateExpense: (input: ExpenseInput) => void | Promise<void>;
@@ -479,6 +485,15 @@ function ExpenseDialog({
   const [paidBy, setPaidBy] = useState(expense?.paidBy ?? currentMember.id);
   const [category, setCategory] = useState<Expense["category"]>(expense?.category ?? "transport");
   const [itemId, setItemId] = useState(expense?.itineraryItemId ?? "");
+  const [tripPlanId, setTripPlanId] = useState(
+    expense?.tripPlanId ??
+      selectedTripPlanId ??
+      trip.mainTripPlanId ??
+      trip.activePlanVariantId ??
+      trip.tripPlans?.[0]?.id ??
+      trip.planVariants[0]?.id ??
+      "",
+  );
   const [splitMode, setSplitMode] = useState<ExpenseSplitMode>(expense?.lineItems?.length ? "itemized" : expense ? "exact" : "equal");
   const [splitValues, setSplitValues] = useState<Record<string, string>>(
     Object.fromEntries(trip.members.map((member) => [member.id, expense ? String(expense.splits[member.id] ?? 0) : "0"])),
@@ -515,6 +530,9 @@ function ExpenseDialog({
   const splitTotal = sumShares(splits);
   const splitMismatch = (splitMode === "exact" || splitMode === "percentage" || splitMode === "itemized") && Math.abs(splitTotal - amountNumber) > 0.01;
   const invalidItemizedLines = splitMode === "itemized" && (!validLineItems.length || validLineItems.length !== lineItems.length);
+  const linkedItem = itemId ? trip.itineraryItems.find((item) => item.id === itemId) : null;
+  const effectiveTripPlanId = linkedItem?.planVariantId ?? tripPlanId;
+  const tripPlanOptions = trip.tripPlans ?? trip.planVariants;
 
   useEffect(() => {
     let cancelled = false;
@@ -583,12 +601,21 @@ function ExpenseDialog({
     setCommentDraft("");
   }
 
+  function changeItemId(nextItemId: string) {
+    setItemId(nextItemId);
+    const nextLinkedItem = nextItemId ? trip.itineraryItems.find((item) => item.id === nextItemId) : null;
+    if (nextLinkedItem?.planVariantId) {
+      setTripPlanId(nextLinkedItem.planVariantId);
+    }
+  }
+
   async function submitExpense(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const trimmedTitle = title.trim();
     if (isSaving || !trimmedTitle || !Number.isFinite(amountNumber) || amountNumber <= 0 || splitMismatch || !hasValidExchangeRate || invalidItemizedLines || !hasValidRepeatCount) return;
     const input: ExpenseInput = {
       itemId: itemId || null,
+      tripPlanId: effectiveTripPlanId || null,
       title: trimmedTitle,
       amount: amountNumber,
       currency: normalizedCurrency,
@@ -686,9 +713,24 @@ function ExpenseDialog({
                 {categories.map((candidate) => <option key={candidate} value={candidate}>{candidate}</option>)}
               </select>
             </label>
+            <div className="grid gap-1.5">
+              <label className={fieldClassName}>
+                <span>{t.expenses.fields.tripPlan}</span>
+                <select
+                  value={effectiveTripPlanId}
+                  disabled={Boolean(linkedItem)}
+                  onChange={(event) => setTripPlanId(event.target.value)}
+                >
+                  {tripPlanOptions.map((plan) => (
+                    <option key={plan.id} value={plan.id}>{plan.name}</option>
+                  ))}
+                </select>
+              </label>
+              {linkedItem ? <span className={balanceMetaClassName}>{t.expenses.dialog.planLockedToLinkedStop}</span> : null}
+            </div>
             <label className={fieldClassName}>
               <span>{t.expenses.fields.linkedStop}</span>
-              <select value={itemId} onChange={(event) => setItemId(event.target.value)}>
+              <select value={itemId} onChange={(event) => changeItemId(event.target.value)}>
                 <option value="">{t.expenses.fields.noLinkedStop}</option>
                 {trip.itineraryItems.map((item) => <option key={item.id} value={item.id}>{item.activity}</option>)}
               </select>

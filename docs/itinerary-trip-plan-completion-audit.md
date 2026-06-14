@@ -16,7 +16,7 @@ Last audited on 2026-06-14 from branch `codex/itinerary-hierarchy-docs`.
 | `REQ-PLAN-01` | A trip can have multiple named Trip Plans for real use, drafts, backups, or proposals. | Proved for Phase 1 compatibility | `docs/itinerary-trip-plan-phase-0-1-implementation-spec.md`; backend `plan_variants_contract.rs`; frontend `SagittariusApp.test.tsx` and `SmartItineraryTable.test.tsx`; real API e2e. | Phase 2/3 can add richer copy/import plan creation modes after explicit ADR/spec update. |
 | `REQ-PLAN-02` | Any Trip Plan can be selected as the Main Plan, and Main Plan selection is separate from the plan currently being edited/viewed. | Proved for Phase 1 compatibility | Backend set-main contract; frontend selector/set-main tests; real API e2e; API docs and OpenAPI routes. | Browser smoke for the complete Trip Plan selector + set-main flow should be rerun before broad UX sign-off. |
 | `REQ-PLAN-03` | Plans may have different dates, transport, tickets, and records; data should be plan-scoped instead of globally mixed. | Proved for current Phase 2 service scope | DDL `0026`; schema contract; backend `expenses_contract.rs`, `tasks_contract.rs`, `stop_notes_contract.rs`, and `bookings_contract.rs`; frontend API/app tests; set-main no-record-move tests. | Dedicated organizer audit UX for inferred compatibility scopes remains future work. |
-| `REQ-EXP-01` | Actual Expenses are real money and must not automatically move to a new plan. | Proved for scope, summary, reminders, explicit API move of unlinked expenses, and no automatic Main Plan moves; incomplete for full organizer UI/estimate workflows | `CONTEXT.md`; ADR `0003`; `expenses_contract.rs`; `plan_variants_contract.rs` set-main record-stability assertions; frontend API/app tests; expense copy clarified in UI/docs. | User-facing move/cancel/refund/duplicate-as-estimate workflows are not yet fully implemented as a product workflow. |
+| `REQ-EXP-01` | Actual Expenses are real money and must not automatically move to a new plan. | Proved for scope, summary, reminders, explicit API move of unlinked expenses, organizer-selected UI move of unlinked expenses, and no automatic Main Plan moves; incomplete for cancel/refund/estimate workflows | `CONTEXT.md`; ADR `0003`; `expenses_contract.rs`; `plan_variants_contract.rs` set-main record-stability assertions; frontend API/app tests; expense copy clarified in UI/docs. | User-facing cancel/refund/duplicate-as-estimate workflows are not yet fully implemented as a product workflow. |
 | `REQ-HIER-01` | Itinerary shape is Plan Day -> Activity -> Sub-activity, with one sub-activity level and Activity Blocks for grouped journeys. | Partly proved | ADR `0004`; DDL `0027`; backend create/patch hierarchy contracts; frontend itinerary ordering and hierarchy tests; Storybook `HierarchyBlocks`. | Full Phase 3 service/UI sign-off still needs complete browser QA and policy coverage for all move/reparent sequences. |
 | `REQ-HIER-02` | Sibling overlaps and child-outside-parent are warnings, not automatic Alternative Paths or automatic fixes. | Proved for current frontend behavior | `frontend/src/trip/itinerary.test.ts`; `SmartItineraryTable.test.tsx`; `ItineraryTemplate.stories.tsx` hierarchy warning story. | Backend import/create/patch policy should remain aligned as Phase 3 hardens hierarchy behavior. |
 | `REQ-HIER-03` | When the system catches a hierarchy issue, the user chooses the correction. | Proved for current table UI | `SmartItineraryTable.tsx` row fix menu; `SmartItineraryTable.test.tsx`; `ItineraryTemplate.stories.tsx`; commit `f50ec9ff`. | Re-run Storybook/browser smoke before final UX sign-off. |
@@ -51,6 +51,8 @@ These commands were run from the current worktree during the audit continuation:
 | Frontend Phase 2 API/app scope | `rtk bun run test src/trip/api-client.test.ts src/components/SagittariusApp.test.tsx` | Passed: 2 files, 161 tests. |
 | Backend explicit Actual Expense move | `rtk cargo test -p sagittarius-api --test expenses_contract -- --nocapture` | Passed: 10 tests, including explicit unlinked expense move and linked-item conflict rejection. |
 | Frontend explicit Actual Expense move request | `rtk bun run test src/trip/api-client.test.ts` | Passed: 1 file, 37 tests. |
+| Frontend Actual Expense plan correction UI | `rtk bun run test src/components/TripExpensesPage.test.tsx` | Passed: 1 file, 17 tests, including Trip Plan selection for unlinked expenses and linked-stop plan lock. |
+| Frontend local app Actual Expense plan correction | `rtk bun run test src/components/SagittariusApp.test.tsx --testNamePattern "expense\|Trip Plan"` | Passed: 1 file, 18 tests, including local unlinked expense move to an organizer-selected Trip Plan. |
 
 ## Completion Decision
 
@@ -58,7 +60,7 @@ Phase 0/1 Trip Plan compatibility is strongly evidenced by the current command
 matrix. Current Phase 2 service behavior for expenses, tasks, stop notes, and
 booking docs is also strongly evidenced by backend and frontend tests. The full
 requested product end state is not yet fully proved because organizer-facing
-move/cancel/refund/duplicate-as-estimate workflows, itinerary-first
+cancel/refund/duplicate-as-estimate workflows, itinerary-first
 commitment/ticket quick-create workflows, and full Phase 3 hierarchy/time
 browser QA remain later or partially implemented slices.
 
