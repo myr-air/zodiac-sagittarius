@@ -380,6 +380,18 @@ describe("Sagittarius cockpit UI", () => {
       endOffsetDays: 1,
       durationMinutes: 180,
     });
+    expect(normalizeInlineTimePatch(item, { startTime: "00:30" })).toMatchObject(
+      {
+        startTime: "00:30",
+        endOffsetDays: 0,
+        durationMinutes: 30,
+      },
+    );
+    expect(normalizeInlineTimePatch(item, { endTime: "23:30" })).toMatchObject({
+      endTime: "23:30",
+      endOffsetDays: 0,
+      durationMinutes: 30,
+    });
     expect(
       normalizeInlineTimePatch(item, {
         endTime: null,

@@ -5602,12 +5602,12 @@ export function normalizeInlineTimePatch(
   const end = parseTime(endTime);
   if (start === null || end === null) return nextPatch;
 
+  const minimumEndOffsetDays = end <= start ? 1 : 0;
   let endOffsetDays = hasEndOffsetDays
-    ? (nextPatch.endOffsetDays ?? 0)
-    : (item.endOffsetDays ?? 0);
-  if (endOffsetDays === 0 && end <= start) {
-    endOffsetDays = 1;
-    nextPatch.endOffsetDays = 1;
+    ? Math.max(nextPatch.endOffsetDays ?? 0, minimumEndOffsetDays)
+    : minimumEndOffsetDays;
+  if (endOffsetDays !== (nextPatch.endOffsetDays ?? item.endOffsetDays ?? 0)) {
+    nextPatch.endOffsetDays = endOffsetDays;
   }
   const durationMinutes = end + endOffsetDays * 24 * 60 - start;
   if (durationMinutes > 0) {
