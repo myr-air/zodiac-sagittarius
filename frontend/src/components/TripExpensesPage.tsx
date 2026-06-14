@@ -209,6 +209,24 @@ export function TripExpensesPage({
     });
   }
 
+  function recordRefund(expense: Expense) {
+    const splits = refundSplits(expense);
+    const amount = sumShares(splits);
+    if (amount <= 0) return;
+    onCreateExpense({
+      itemId: expense.itineraryItemId ?? null,
+      tripPlanId: expense.tripPlanId ?? selectedTripPlanId ?? null,
+      title: `Refund: ${expense.title}`,
+      amount,
+      currency: expense.currency ?? settlementCurrency,
+      exchangeRateToSettlementCurrency: expense.exchangeRateToSettlementCurrency ?? 1,
+      notes: `Refund settlement for actual expense: ${expense.title}`,
+      paidBy: expense.paidBy,
+      category: "settlement",
+      splits,
+    });
+  }
+
   return (
     <section className={expensesPageClassName} aria-label={t.expenses.pageLabel}>
       <PageHeader
@@ -407,7 +425,15 @@ export function TripExpensesPage({
                           >
                             <Icon name="copy" />
                           </IconButton>
-                          <IconButton type="button" aria-label={t.expenses.actions.deleteExpense({ title: expense.title })} disabled={!canEditExpenses} onClick={() => onDeleteExpense(expense.id)}>
+                          <IconButton
+                            type="button"
+                            aria-label={t.expenses.actions.recordRefund({ title: expense.title })}
+                            disabled={!canEditExpenses || expense.category === "settlement" || refundAmount(expense) <= 0}
+                            onClick={() => recordRefund(expense)}
+                          >
+                            <Icon name="wallet" />
+                          </IconButton>
+                          <IconButton type="button" aria-label={t.expenses.actions.cancelExpense({ title: expense.title })} disabled={!canEditExpenses} onClick={() => onDeleteExpense(expense.id)}>
                             <Icon name="trash" />
                           </IconButton>
                         </span>
@@ -876,6 +902,18 @@ function categoryTone(category: Expense["category"]): { background: string; bord
 
 function sumShares(splits: Record<string, number>): number {
   return Math.round(Object.values(splits).reduce((sum, share) => sum + share, 0) * 100) / 100;
+}
+
+function refundSplits(expense: Expense): Record<string, number> {
+  return Object.fromEntries(
+    Object.entries(expense.splits).filter(
+      ([memberId, amount]) => memberId !== expense.paidBy && amount > 0,
+    ),
+  );
+}
+
+function refundAmount(expense: Expense): number {
+  return sumShares(refundSplits(expense));
 }
 
 function slugifyFilePart(value: string): string {

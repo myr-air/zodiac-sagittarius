@@ -1855,6 +1855,45 @@ describe("Sagittarius cockpit UI", () => {
     });
   });
 
+  it("records a local actual expense refund as a settlement without removing the source", async () => {
+    const user = userEvent.setup();
+    const storage = installLocalStorageStub();
+    const draftTrip = tripWithPlans();
+    storage.setItem(tripStorageKey, JSON.stringify(draftTrip));
+
+    render(<SagittariusApp initialView="expenses" />);
+
+    await screen.findByRole("region", { name: /เงินทริป/i });
+    await user.click(
+      screen.getByRole("button", {
+        name: /บันทึก refund ของ Dim Dim Sum brunch/i,
+      }),
+    );
+
+    await waitFor(() => {
+      const persistedTrip = JSON.parse(storage.getItem(tripStorageKey)!) as Trip;
+      expect(
+        persistedTrip.expenses.find((expense) => expense.id === "expense-dimsum"),
+      ).toBeTruthy();
+      expect(persistedTrip.expenses).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            title: "Refund: Dim Dim Sum brunch",
+            amount: 384,
+            category: "settlement",
+            paidBy: "member-aom",
+            tripPlanId: draftTrip.activePlanVariantId,
+            splits: {
+              "member-beam": 128,
+              "member-nam": 128,
+              "member-family": 128,
+            },
+          }),
+        ]),
+      );
+    });
+  });
+
   it("creates overview tasks through the API client after backend login", async () => {
     const user = userEvent.setup();
     const ownerTrip = {

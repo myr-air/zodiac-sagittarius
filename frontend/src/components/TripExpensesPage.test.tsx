@@ -148,6 +148,46 @@ describe("TripExpensesPage", () => {
     expect(props.onUpdateExpense).not.toHaveBeenCalled();
   });
 
+  it("records a refund as a settlement instead of changing the original expense", async () => {
+    const user = userEvent.setup();
+    const props = renderExpenses();
+
+    await user.click(
+      screen.getByRole("button", {
+        name: /บันทึก refund ของ Dim Dim Sum brunch/i,
+      }),
+    );
+
+    expect(props.onCreateExpense).toHaveBeenCalledWith({
+      itemId: null,
+      tripPlanId: null,
+      title: "Refund: Dim Dim Sum brunch",
+      amount: 384,
+      currency: "HKD",
+      exchangeRateToSettlementCurrency: 1,
+      notes: "Refund settlement for actual expense: Dim Dim Sum brunch",
+      paidBy: "member-aom",
+      category: "settlement",
+      splits: {
+        "member-beam": 128,
+        "member-nam": 128,
+        "member-family": 128,
+      },
+    });
+    expect(props.onUpdateExpense).not.toHaveBeenCalled();
+  });
+
+  it("cancels an actual expense through the ledger action", async () => {
+    const user = userEvent.setup();
+    const props = renderExpenses();
+
+    await user.click(
+      screen.getByRole("button", { name: /ยกเลิก Dim Dim Sum brunch/i }),
+    );
+
+    expect(props.onDeleteExpense).toHaveBeenCalledWith("expense-dimsum");
+  });
+
   it("locks the Trip Plan to the linked stop when editing a linked expense", async () => {
     const user = userEvent.setup();
     const trip = {
