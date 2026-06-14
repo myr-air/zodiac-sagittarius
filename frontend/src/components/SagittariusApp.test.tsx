@@ -35,6 +35,7 @@ import { tripStorageKey } from "@/src/trip/repository";
 import { seedTrip } from "@/src/trip/seed";
 import { encodeTripId } from "@/src/trip/ids";
 import type {
+  BookingDoc,
   ItineraryItem,
   PlanCheck,
   PlanVariant,
@@ -5781,6 +5782,167 @@ describe("Sagittarius cockpit UI", () => {
         "session-token",
         "plan-variant-backup",
       ),
+    );
+    expect(apiClient.setMainTripPlan!).not.toHaveBeenCalled();
+  }, 45_000);
+
+  it("quick-adds API row records into the selected Trip Plan without publishing", async () => {
+    const user = userEvent.setup();
+    const apiTrip = {
+      ...tripWithPlans(),
+      members: [{ ...seedTrip.members[0], claimPasswordHash: null }],
+      bookingDocs: [],
+    };
+    const createTask = vi.fn().mockImplementation(
+      (
+        _tripId: string,
+        _sessionToken: string,
+        request: {
+          assigneeId?: string | null;
+          kind?: TripTask["kind"];
+          relatedItemId?: string | null;
+          title: string;
+          tripPlanId?: string | null;
+          visibility: TripTask["visibility"];
+        },
+      ) =>
+        Promise.resolve({
+          id: "api-quick-task",
+          tripPlanId: request.tripPlanId,
+          title: request.title,
+          status: "open",
+          visibility: request.visibility,
+          kind: request.kind,
+          createdBy: "member-aom",
+          assigneeId: request.assigneeId ?? null,
+          relatedItemId: request.relatedItemId ?? null,
+          version: 1,
+        }),
+    );
+    const createStopNote = vi.fn().mockImplementation(
+      (
+        _tripId: string,
+        _sessionToken: string,
+        request: {
+          body: string;
+          itineraryItemId: string;
+          tripPlanId?: string | null;
+        },
+      ) =>
+        Promise.resolve({
+          id: "api-quick-note",
+          tripId: apiTrip.id,
+          tripPlanId: request.tripPlanId,
+          itemId: request.itineraryItemId,
+          authorId: "member-aom",
+          body: request.body,
+          createdAt: "2026-06-06T00:00:00.000Z",
+          version: 1,
+        }),
+    );
+    const createBookingDoc = vi.fn().mockImplementation(
+      (
+        _tripId: string,
+        _sessionToken: string,
+        request: {
+          relatedItineraryItemIds: string[];
+          title: string;
+          tripPlanId?: string | null;
+          type: BookingDoc["type"];
+        },
+      ) =>
+        Promise.resolve({
+          id: "api-quick-booking",
+          tripId: apiTrip.id,
+          tripPlanId: request.tripPlanId,
+          type: request.type,
+          title: request.title,
+          status: "draft",
+          visibility: "shared",
+          ownerMemberId: "member-aom",
+          providerName: null,
+          confirmationCode: null,
+          startsAt: null,
+          endsAt: null,
+          timezone: null,
+          priceAmount: null,
+          currency: null,
+          travelerIds: apiTrip.members.map((member) => member.id),
+          externalLinks: [],
+          relatedItineraryItemIds: request.relatedItineraryItemIds,
+          relatedTaskIds: [],
+          relatedExpenseIds: [],
+          noteIds: [],
+          notes: null,
+          createdBy: "member-aom",
+          updatedAt: "2026-06-06T00:00:00.000Z",
+          version: 1,
+        }),
+    );
+    const apiClient = createApiClientForTrip(apiTrip, {
+      createTask,
+      createStopNote,
+      createBookingDoc,
+      setMainTripPlan: vi.fn(),
+    });
+
+    render(
+      <SagittariusApp
+        requireJoin
+        dataSource="api"
+        initialView="itinerary"
+        apiClient={apiClient}
+      />,
+    );
+    await loginApiTrip(user);
+    await user.selectOptions(await screen.findByLabelText("Trip Plan"), [
+      "plan-variant-backup",
+    ]);
+    const row = await screen.findByRole("row", { name: /Rain plan gallery/i });
+
+    await user.click(
+      within(row).getByRole("button", {
+        name: /Add task for Rain plan gallery/i,
+      }),
+    );
+    await user.click(
+      within(row).getByRole("button", {
+        name: /Add note for Rain plan gallery/i,
+      }),
+    );
+    await user.click(
+      within(row).getByRole("button", {
+        name: /Add booking draft for Rain plan gallery/i,
+      }),
+    );
+
+    await waitFor(() => expect(createBookingDoc).toHaveBeenCalledTimes(1));
+    expect(createTask).toHaveBeenCalledWith(
+      apiTrip.id,
+      "session-token",
+      expect.objectContaining({
+        tripPlanId: "plan-variant-backup",
+        title: "Plan: Rain plan gallery",
+        relatedItemId: "item-rain-gallery",
+      }),
+    );
+    expect(createStopNote).toHaveBeenCalledWith(
+      apiTrip.id,
+      "session-token",
+      expect.objectContaining({
+        tripPlanId: "plan-variant-backup",
+        itineraryItemId: "item-rain-gallery",
+        body: "Planning note for Rain plan gallery",
+      }),
+    );
+    expect(createBookingDoc).toHaveBeenCalledWith(
+      apiTrip.id,
+      "session-token",
+      expect.objectContaining({
+        tripPlanId: "plan-variant-backup",
+        title: "Rain plan gallery booking draft",
+        relatedItineraryItemIds: ["item-rain-gallery"],
+      }),
     );
     expect(apiClient.setMainTripPlan!).not.toHaveBeenCalled();
   }, 45_000);
