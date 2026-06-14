@@ -3598,6 +3598,19 @@ export function SagittariusApp({
           }
           createdItemIdsByPreviewId.set(item.id, createdItem.id);
         }
+        const importedPlanRecords = buildImportedPlanRecordsForTripPlan({
+          appliedImportedItems: createdItems,
+          importedItems: pendingItineraryImport.items,
+          records: pendingItineraryImport.records,
+          targetTrip: previewTrip,
+          tripPlanId: target.tripPlanId || trip.activePlanVariantId,
+        });
+        const createdPlanRecords = await createImportedPlanRecordsViaApi({
+          apiClient: resolvedApiClient,
+          sessionToken: participantSession.sessionToken,
+          tripId: trip.id,
+          records: importedPlanRecords,
+        });
         const deletedIds = new Set(deletedItems.map((item) => item.id));
         setTripState((current) => {
           const nextTrip = {
@@ -3609,10 +3622,29 @@ export function SagittariusApp({
               ),
               ...createdItems,
             ],
+            bookingDocs: upsertById(
+              current.trip.bookingDocs ?? [],
+              createdPlanRecords.bookingDocs,
+            ),
+            expenses: upsertById(current.trip.expenses, createdPlanRecords.expenses),
           };
           latestTripRef.current = nextTrip;
           return { ...current, trip: nextTrip };
         });
+        setTasks((current) => upsertById(current, createdPlanRecords.tasks));
+        setStopNotes((current) =>
+          upsertById(current, createdPlanRecords.stopNotes),
+        );
+        if (createdPlanRecords.expenses.length > 0) {
+          setBackendExpenseSummary({
+            tripPlanId: selectedTripPlanId,
+            summary: await resolvedApiClient.getExpenseSummary(
+              trip.id,
+              participantSession.sessionToken,
+              selectedTripPlanId,
+            ),
+          });
+        }
         const nextSelectedItemId = createdItems[0]?.id ?? "";
         setSelectedItemId(nextSelectedItemId);
         setContextRailVisibility(Boolean(nextSelectedItemId));
@@ -4692,6 +4724,133 @@ function mergeImportedRecordsIntoTripPlan(
     expenses: upsertById(targetTrip.expenses, records.expenses),
     stopNotes: upsertById(targetTrip.stopNotes ?? [], records.stopNotes),
     tasks: upsertById(targetTrip.tasks ?? [], records.tasks),
+  };
+}
+
+async function createImportedPlanRecordsViaApi({
+  apiClient,
+  records,
+  sessionToken,
+  tripId,
+}: {
+  apiClient: TripApiClient;
+  records: {
+    bookingDocs: BookingDoc[];
+    expenses: Expense[];
+    stopNotes: StopNote[];
+    tasks: TripTask[];
+  };
+  sessionToken: string;
+  tripId: string;
+}): Promise<{
+  bookingDocs: BookingDoc[];
+  expenses: Expense[];
+  stopNotes: StopNote[];
+  tasks: TripTask[];
+}> {
+  const taskIdMap = new Map<string, string>();
+  const expenseIdMap = new Map<string, string>();
+  const noteIdMap = new Map<string, string>();
+  const createdTasks: TripTask[] = [];
+  const createdExpenses: Expense[] = [];
+  const createdStopNotes: StopNote[] = [];
+  const createdBookingDocs: BookingDoc[] = [];
+
+  for (const task of records.tasks) {
+    let createdTask = await apiClient.createTask(tripId, sessionToken, {
+      clientMutationId: nextClientMutationId("itinerary-import-task-create"),
+      tripPlanId: task.tripPlanId,
+      title: task.title,
+      visibility: task.visibility,
+      kind: task.kind,
+      assigneeId: task.assigneeId,
+      relatedItemId: task.relatedItemId,
+    });
+    if (task.status !== createdTask.status) {
+      createdTask = await apiClient.patchTask(tripId, createdTask.id, sessionToken, {
+        clientMutationId: nextClientMutationId("itinerary-import-task-status"),
+        expectedVersion: createdTask.version ?? 1,
+        patch: { status: task.status },
+      });
+    }
+    taskIdMap.set(task.id, createdTask.id);
+    createdTasks.push(createdTask);
+  }
+
+  for (const expense of records.expenses) {
+    const createdExpense = await apiClient.createExpense(tripId, sessionToken, {
+      clientMutationId: nextClientMutationId("itinerary-import-expense-create"),
+      tripPlanId: expense.tripPlanId,
+      title: expense.title,
+      amountMinor:
+        expense.amountMinor ?? Math.round((expense.amount ?? 0) * 100),
+      currency: expense.currency ?? "HKD",
+      exchangeRateToSettlementCurrency:
+        expense.exchangeRateToSettlementCurrency ?? 1,
+      notes: expense.notes ?? null,
+      receiptUrl: expense.receiptUrl ?? null,
+      lineItems: expense.lineItems ?? [],
+      comments: expense.comments ?? [],
+      paidBy: expense.paidBy,
+      category: expense.category,
+      splits: expenseSplitsToMinor(expense.splits),
+      itineraryItemId: expense.itineraryItemId ?? null,
+    });
+    expenseIdMap.set(expense.id, createdExpense.id);
+    createdExpenses.push(createdExpense);
+  }
+
+  for (const note of records.stopNotes) {
+    const createdNote = await apiClient.createStopNote(tripId, sessionToken, {
+      clientMutationId: nextClientMutationId("itinerary-import-note-create"),
+      tripPlanId: note.tripPlanId,
+      itineraryItemId: note.itemId,
+      body: note.body,
+    });
+    noteIdMap.set(note.id, createdNote.id);
+    createdStopNotes.push(createdNote);
+  }
+
+  for (const bookingDoc of records.bookingDocs) {
+    const createdBookingDoc = await apiClient.createBookingDoc(
+      tripId,
+      sessionToken,
+      {
+        clientMutationId: nextClientMutationId("itinerary-import-booking-create"),
+        tripPlanId: bookingDoc.tripPlanId,
+        type: bookingDoc.type,
+        title: bookingDoc.title,
+        status: bookingDoc.status,
+        visibility: bookingDoc.visibility,
+        ownerMemberId: bookingDoc.ownerMemberId,
+        providerName: bookingDoc.providerName,
+        confirmationCode: bookingDoc.confirmationCode,
+        startsAt: bookingDoc.startsAt,
+        endsAt: bookingDoc.endsAt,
+        timezone: bookingDoc.timezone,
+        priceAmount: bookingDoc.priceAmount,
+        currency: bookingDoc.currency,
+        travelerIds: bookingDoc.travelerIds,
+        externalLinks: bookingDoc.externalLinks,
+        relatedItineraryItemIds: bookingDoc.relatedItineraryItemIds,
+        relatedTaskIds: bookingDoc.relatedTaskIds.map(
+          (taskId) => taskIdMap.get(taskId) ?? taskId,
+        ),
+        relatedExpenseIds: bookingDoc.relatedExpenseIds.map(
+          (expenseId) => expenseIdMap.get(expenseId) ?? expenseId,
+        ),
+        noteIds: bookingDoc.noteIds.map((noteId) => noteIdMap.get(noteId) ?? noteId),
+        notes: bookingDoc.notes,
+      },
+    );
+    createdBookingDocs.push(createdBookingDoc);
+  }
+
+  return {
+    bookingDocs: createdBookingDocs,
+    expenses: createdExpenses,
+    stopNotes: createdStopNotes,
+    tasks: createdTasks,
   };
 }
 

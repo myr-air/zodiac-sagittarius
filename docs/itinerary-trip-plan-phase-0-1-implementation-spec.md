@@ -980,11 +980,14 @@ Rules:
 - The response preserves normalized hierarchy, path fields, time-window fields,
   and compatibility `records`; it must not flatten sub-activities or synthesize
   Alternative Paths from overlaps.
-- In Phase 1, `records` are non-authoritative source compatibility payload.
-  Import may preserve or remap record ids only inside preview/apply metadata; it
-  must not insert, update, clone, or re-scope destination expenses, booking
-  docs, stop notes, or tasks, and must not rewrite record `tripPlanId`. Durable
-  destination record creation or repair is Phase 2.
+- The backend import normalizer treats `records` as non-authoritative source
+  compatibility payload and must not mutate destination expenses, booking docs,
+  stop notes, or tasks while normalizing a file.
+- The frontend apply flow may create linked destination records from that
+  metadata after the user confirms the import. It must re-scope only records
+  linked to imported itinerary item ids, map those links to created destination
+  item/record ids, write them into the selected Trip Plan, and leave the Main
+  Plan pointer unchanged.
 
 ### Plan Check Scope Diff
 
@@ -1834,7 +1837,7 @@ corresponding `API-*` or `DDL-*` row is claimed complete.
 | `TEST-API-CHECK-01` | Backend + frontend | Plan Check run/latest use selected `tripPlanId` when supplied, preserve legacy whole-trip behavior when omitted, and never call or imply set-main. |
 | `TEST-FE-MAP-01` | Frontend | API readers accept canonical-only, legacy-only, and mirrored mixed payloads, but reject divergent mixed aliases as `invalid_response`. |
 | `TEST-FE-UI-01` | Frontend | Itinerary Trip Plan selection changes visible/edit/import target only; explicit set-main is separate and permission-gated. |
-| `TEST-IMPORT-01` | Backend + frontend | Import/export preserves pointer aliases, plan-list aliases, hierarchy/time/path fields, selected destination Trip Plan, unchanged Main Plan, local UI re-scopes linked records into the selected Trip Plan, and the API import endpoint keeps records source-only until record creation endpoints are wired into that flow. |
+| `TEST-IMPORT-01` | Backend + frontend | Import/export preserves pointer aliases, plan-list aliases, hierarchy/time/path fields, selected destination Trip Plan, unchanged Main Plan, backend normalizer records as source metadata, and frontend local/API apply flows re-scope linked records into the selected Trip Plan with remapped item/record ids. |
 | `TEST-E2E-API-01` | E2E | Real API flow creates, patches, reloads, and sets Main Trip Plan through compatibility paths while asserting aliases and status. |
 
 | Phase | Layer | Test file | Exact scenario |
@@ -1931,7 +1934,7 @@ corresponding `API-*` or `DDL-*` row is claimed complete.
 | 1 | Import/export | `frontend/src/trip/itinerary-import-export.test.ts` | Conflicting top-level source `trip.activePlanVariantId` and `trip.mainTripPlanId` prefer canonical metadata only for source-file reporting and still do not switch the destination Main Plan. |
 | 1 | Import/export | `frontend/src/trip/itinerary-import-export.test.ts` | Mixed import metadata with divergent nested `trip.tripPlans[]` and `trip.planVariants[]` mapped `kind/status`, order, identity, or version is rejected as `invalid_response`; import must not silently normalize disagreeing plan-list aliases. |
 | 1 | Import/export | `frontend/src/trip/itinerary-import-export.test.ts` | Export/import round trip preserves `parentItemId`, `isPlanBlock`, `endTime`, and `endOffsetDays`. |
-| 1 | Import/export | `frontend/src/trip/itinerary-import-export.test.ts` | Phase 1 import/export treats existing plan-scoped `records` as non-authoritative compatibility payload only; import may keep them in preview/apply metadata but does not insert, update, clone, re-scope, or rewrite destination Actual Expenses, paid commitments, tasks, stop notes, or booking docs. |
+| 1 | Import/export | `frontend/src/trip/itinerary-import-export.test.ts`, `frontend/src/components/SagittariusApp.test.tsx`, `frontend/scripts/run-itinerary-import-browser-qa.ts` | Import/export preserves plan-scoped `records` as source metadata; frontend local/API apply creates only records linked to imported item ids, re-scopes them into the selected Trip Plan, remaps created destination ids, shows commitment chips, and leaves Main Plan pointers unchanged. |
 | 1 | Import target | `frontend/src/trip/itinerary-paths.test.ts` | Importing into a selected draft/proposal target writes rows to the selected `tripPlanId`, preserves `parentItemId`, and leaves `mainTripPlanId` plus deprecated `activePlanVariantId` unchanged. |
 | 1 | Backend import | `backend/crates/sagittarius-api/tests/itinerary_import_contract.rs` | Import preserves hierarchy fields and does not flatten sub-activities; DB-invalid parent scope is rejected or reported without applying. Grandchild depth and cycle policy remain Phase 3 service behavior unless a later Phase 1 import-only validation row is added. |
 | 1 | E2E/API | `frontend/src/trip/real-api.e2e.test.ts` | Create blank, patch, reload, and set-main Trip Plan through real API compatibility path and assert `tripPlans`, `mainTripPlanId`, and returned plan `status`. |
