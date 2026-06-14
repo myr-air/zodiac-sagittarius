@@ -305,14 +305,20 @@ describe("ContextRail", () => {
       },
     });
 
-    fireEvent.change(screen.getByLabelText("ชื่อค่าใช้จ่าย"), {
+    expect(
+      screen.getByText(
+        "ใช้เฉพาะเงินที่จ่ายแล้วหรือผูกพันต้องจ่าย ประมาณการให้เก็บใน booking draft หรือโน้ต",
+      ),
+    ).toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText("ชื่อค่าใช้จ่ายจริง"), {
       target: { value: "Taxi" },
     });
     fireEvent.change(screen.getByLabelText("จำนวนเงิน"), {
       target: { value: "120" },
     });
     fireEvent.click(
-      screen.getByRole("button", { name: "เพิ่ม/แก้ไขค่าใช้จ่าย" }),
+      screen.getByRole("button", { name: "เพิ่ม/แก้ไขค่าใช้จ่ายจริง" }),
     );
 
     expect(props.onCreateExpense).toHaveBeenCalledWith({
@@ -326,7 +332,7 @@ describe("ContextRail", () => {
     fireEvent.click(
       screen.getByRole("button", { name: /Edit expense Dim sum/i }),
     );
-    fireEvent.change(screen.getByLabelText("ชื่อค่าใช้จ่าย"), {
+    fireEvent.change(screen.getByLabelText("ชื่อค่าใช้จ่ายจริง"), {
       target: { value: "Dim sum edited" },
     });
     fireEvent.change(screen.getByLabelText("จำนวนเงิน"), {

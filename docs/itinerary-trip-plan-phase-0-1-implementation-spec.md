@@ -1678,6 +1678,10 @@ full workflow yet.
   reservations create or link a Plan Commitment draft first. They must not
   create an Actual Expense unless the user explicitly marks money as paid or
   committed in the expense/payment flow.
+- Automated booking/ticket classification is advisory. When the system detects
+  or guesses the wrong reservation type, provider, or reference, the user must
+  be able to correct it from the itinerary context without recreating the
+  draft; explicit user corrections win over later inferred values.
 - Import/export may preserve plan-scoped records already present in the file,
   but in Phase 1 those `records` are non-authoritative source compatibility
   payload. Import may keep them in preview/apply metadata, but it must not

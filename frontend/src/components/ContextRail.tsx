@@ -925,6 +925,9 @@ export function ContextRail({
             ))}
           </div>
           <form className={expenseFormClassName} onSubmit={submitExpense}>
+            <p className="m-0 text-[11px] font-bold leading-4 text-(--color-text-muted)">
+              {t.contextRail.expenses.actualOnlyHint}
+            </p>
             <label>
               <span>{t.contextRail.expenses.formTitle}</span>
               <input
