@@ -582,6 +582,72 @@ describe("itinerary planning domain", () => {
     expect(validateItineraryItem(child, [block, child]).map((warning) => warning.code)).toContain("child-outside-plan-block");
   });
 
+  it("checks overlap only between sibling activities or sibling sub-activities", () => {
+    const base = seedTrip.itineraryItems[0];
+    const journeyBlock = {
+      ...base,
+      id: "block-flight-window",
+      activity: "Flight to Hong Kong",
+      day: arrivalDay,
+      startTime: "04:00",
+      endTime: "13:00",
+      durationMinutes: 540,
+      isPlanBlock: true,
+      parentItemId: null,
+    };
+    const ticketedSegment = {
+      ...base,
+      id: "child-ticketed-flight",
+      activity: "Ticketed flight",
+      day: arrivalDay,
+      startTime: "07:00",
+      endTime: "11:00",
+      durationMinutes: 240,
+      isPlanBlock: false,
+      parentItemId: journeyBlock.id,
+    };
+    const immigration = {
+      ...base,
+      id: "child-immigration",
+      activity: "Immigration",
+      day: arrivalDay,
+      startTime: "10:30",
+      endTime: "12:00",
+      durationMinutes: 90,
+      isPlanBlock: false,
+      parentItemId: journeyBlock.id,
+    };
+    const parallelTopLevel = {
+      ...base,
+      id: "activity-airport-meeting",
+      activity: "Airport meeting",
+      day: arrivalDay,
+      startTime: "06:00",
+      endTime: "08:00",
+      durationMinutes: 120,
+      isPlanBlock: false,
+      parentItemId: null,
+    };
+
+    expect(
+      validateItineraryItem(ticketedSegment, [journeyBlock, ticketedSegment]).map(
+        (warning) => warning.code,
+      ),
+    ).not.toContain("overlap");
+    expect(
+      validateItineraryItem(journeyBlock, [journeyBlock, parallelTopLevel]).map(
+        (warning) => warning.code,
+      ),
+    ).toContain("overlap");
+    expect(
+      validateItineraryItem(ticketedSegment, [
+        journeyBlock,
+        ticketedSegment,
+        immigration,
+      ]).map((warning) => warning.code),
+    ).toContain("overlap");
+  });
+
   it("warns when hierarchy rows break Day > Activity block > Sub-activity", () => {
     const base = seedTrip.itineraryItems[0];
     const block = {

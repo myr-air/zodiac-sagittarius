@@ -217,50 +217,59 @@ export function validateItineraryItem(item: ItineraryItem, dayItems: ItineraryIt
 
 function buildOverlapWarnings(dayItems: ItineraryItem[]): Map<string, ValidationWarning[]> {
   const warningsByItemId = new Map<string, ValidationWarning[]>();
-  const validIntervals = dayItems
-    .map((item) => getTimeWindowInterval(item))
-    .filter((entry): entry is { item: ItineraryItem; start: number; end: number } => entry !== null)
-    .sort((a, b) => a.start - b.start || a.end - b.end || a.item.sortOrder - b.item.sortOrder);
+  const intervalsBySiblingScope = new Map<string, Array<{ item: ItineraryItem; start: number; end: number }>>();
+  for (const item of dayItems) {
+    const interval = getTimeWindowInterval(item);
+    if (!interval) continue;
+    const siblingScope = item.parentItemId ? `parent:${item.parentItemId}` : "top-level";
+    intervalsBySiblingScope.set(siblingScope, [
+      ...(intervalsBySiblingScope.get(siblingScope) ?? []),
+      interval,
+    ]);
+  }
 
-  if (validIntervals.length < 2) return warningsByItemId;
+  for (const validIntervals of intervalsBySiblingScope.values()) {
+    validIntervals.sort((a, b) => a.start - b.start || a.end - b.end || a.item.sortOrder - b.item.sortOrder);
+    if (validIntervals.length < 2) continue;
 
-  let group: Array<{ item: ItineraryItem; end: number }> = [];
-  let groupMaxEnd = 0;
+    let group: Array<{ item: ItineraryItem; end: number }> = [];
+    let groupMaxEnd = 0;
 
-  const addOverlapWarningGroup = (groupItems: Array<{ item: ItineraryItem; end: number }>) => {
-    if (groupItems.length < 2) return;
-    const primary = groupItems[0]?.item;
-    const secondary = groupItems[1]?.item;
-    if (!primary || !secondary) return;
-    for (const entry of groupItems) {
-      const overlapTarget = entry.item.id === primary.id ? secondary : primary;
-      warningsByItemId.set(entry.item.id, [{
-        code: "overlap",
-        message: `This stop overlaps ${overlapTarget.activity}; ตรวจเวลาอีกครั้งก่อน publish.`,
-        itemId: entry.item.id,
-      }]);
-    }
-  };
+    const addOverlapWarningGroup = (groupItems: Array<{ item: ItineraryItem; end: number }>) => {
+      if (groupItems.length < 2) return;
+      const primary = groupItems[0]?.item;
+      const secondary = groupItems[1]?.item;
+      if (!primary || !secondary) return;
+      for (const entry of groupItems) {
+        const overlapTarget = entry.item.id === primary.id ? secondary : primary;
+        warningsByItemId.set(entry.item.id, [{
+          code: "overlap",
+          message: `This stop overlaps ${overlapTarget.activity}; ตรวจเวลาอีกครั้งก่อน publish.`,
+          itemId: entry.item.id,
+        }]);
+      }
+    };
 
-  for (const entry of validIntervals) {
-    if (!group.length) {
+    for (const entry of validIntervals) {
+      if (!group.length) {
+        group = [entry];
+        groupMaxEnd = entry.end;
+        continue;
+      }
+
+      if (entry.start < groupMaxEnd) {
+        group.push(entry);
+        groupMaxEnd = Math.max(groupMaxEnd, entry.end);
+        continue;
+      }
+
+      addOverlapWarningGroup(group);
       group = [entry];
       groupMaxEnd = entry.end;
-      continue;
-    }
-
-    if (entry.start < groupMaxEnd) {
-      group.push(entry);
-      groupMaxEnd = Math.max(groupMaxEnd, entry.end);
-      continue;
     }
 
     addOverlapWarningGroup(group);
-    group = [entry];
-    groupMaxEnd = entry.end;
   }
-
-  addOverlapWarningGroup(group);
   return warningsByItemId;
 }
 

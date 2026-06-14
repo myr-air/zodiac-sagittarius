@@ -2463,6 +2463,55 @@ describe("SmartItineraryTable", () => {
     expect(screen.getByText("4 คำเตือน")).toBeInTheDocument();
   });
 
+  it("does not flag parent-child time containment as an overlap", () => {
+    renderTable({
+      items: [
+        {
+          ...tripFixture.planItems[0],
+          id: "block-flight-window",
+          activity: "Flight to Hong Kong",
+          startTime: "04:00",
+          endTime: "13:00",
+          durationMinutes: 540,
+          isPlanBlock: true,
+          parentItemId: null,
+          sortOrder: 100,
+        },
+        {
+          ...tripFixture.planItems[1],
+          id: "child-ticketed-flight",
+          activity: "Ticketed flight",
+          startTime: "07:00",
+          endTime: "11:00",
+          durationMinutes: 240,
+          isPlanBlock: false,
+          parentItemId: "block-flight-window",
+          sortOrder: 200,
+        },
+        {
+          ...tripFixture.planItems[2],
+          id: "child-immigration",
+          activity: "Immigration",
+          startTime: "10:30",
+          endTime: "12:00",
+          durationMinutes: 90,
+          isPlanBlock: false,
+          parentItemId: "block-flight-window",
+          sortOrder: 300,
+        },
+      ],
+      selectedItemId: "block-flight-window",
+    });
+
+    const blockRow = screen.getByRole("row", { name: /Flight to Hong Kong/i });
+    const ticketedRow = screen.getByRole("row", { name: /Ticketed flight/i });
+    const immigrationRow = screen.getByRole("row", { name: /Immigration/i });
+
+    expect(within(blockRow).queryByText("เวลาซ้อน")).not.toBeInTheDocument();
+    expect(within(ticketedRow).getByText("เวลาซ้อน")).toBeInTheDocument();
+    expect(within(immigrationRow).getByText("เวลาซ้อน")).toBeInTheDocument();
+  });
+
   it("ignores missing and self-targeted drag payloads", () => {
     const props = renderTable();
     const row = screen
