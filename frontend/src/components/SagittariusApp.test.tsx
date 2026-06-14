@@ -1734,10 +1734,9 @@ describe("Sagittarius cockpit UI", () => {
       within(dialog).getByRole("button", { name: /บันทึกค่าใช้จ่าย/i }),
     );
 
-    expect(await screen.findByText("Late night taxi")).toBeInTheDocument();
-    expect(
-      screen.getByRole("table", { name: /รายการค่าใช้จ่าย/i }),
-    ).toHaveTextContent("HK$100.00");
+    const expenseTable = screen.getByRole("table", { name: /รายการค่าใช้จ่าย/i });
+    expect(within(expenseTable).getByText("Late night taxi")).toBeInTheDocument();
+    expect(expenseTable).toHaveTextContent("HK$100.00");
     const persistedTrip = JSON.parse(localStorage.getItem(tripStorageKey)!) as Trip;
     expect(
       persistedTrip.expenses.find((expense) => expense.title === "Late night taxi"),
@@ -1774,7 +1773,10 @@ describe("Sagittarius cockpit UI", () => {
       within(dialog).getByRole("button", { name: /บันทึกค่าใช้จ่าย/i }),
     );
 
-    expect(await screen.findByText("Rain plan taxi")).toBeInTheDocument();
+    const expenseTable = screen.getByRole("table", { name: /รายการค่าใช้จ่าย/i });
+    await waitFor(() => {
+      expect(within(expenseTable).getByText("Rain plan taxi")).toBeInTheDocument();
+    });
     const persistedTrip = JSON.parse(storage.getItem(tripStorageKey)!) as Trip;
     expect(
       persistedTrip.expenses.find((expense) => expense.title === "Rain plan taxi"),
@@ -6593,8 +6595,12 @@ describe("Sagittarius cockpit UI", () => {
           ],
         }),
     );
+    const patchItineraryItem = vi.fn();
+    const patchPlanSuggestion = vi.fn();
     const apiClient = createApiClientForTrip(apiTrip, {
       latestPlanCheck: vi.fn(),
+      patchItineraryItem,
+      patchPlanSuggestion,
       runPlanCheck,
       setMainTripPlan: vi.fn(),
     });
@@ -6626,6 +6632,19 @@ describe("Sagittarius cockpit UI", () => {
     expect(
       await screen.findByText(/Rain plan gallery ยังขาด duration/i),
     ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Keep reviewing" })).toBeEnabled();
+
+    await user.click(screen.getByRole("button", { name: "Keep reviewing" }));
+    expect(screen.getByText("pending")).toBeInTheDocument();
+    expect(patchItineraryItem).not.toHaveBeenCalled();
+    expect(patchPlanSuggestion).not.toHaveBeenCalled();
+
+    await user.click(screen.getByRole("button", { name: "Review edit" }));
+    expect(
+      await screen.findByRole("dialog", { name: /แก้ไขรายละเอียด/i }),
+    ).toBeInTheDocument();
+    expect(patchItineraryItem).not.toHaveBeenCalled();
+    expect(patchPlanSuggestion).not.toHaveBeenCalled();
   }, 45_000);
 
   it("reloads cockpit state when API Trip Plan publish hits a version conflict", async () => {

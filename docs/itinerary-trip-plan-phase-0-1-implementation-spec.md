@@ -1037,9 +1037,9 @@ Rules:
   `activePlanVariantId`, Trip Plan status, itinerary rows, Actual Expenses, or
   Plan Commitments.
 - Plan Check suggestions are review items. They may include
-  `recommendedAction`, `actionKind`, and `actionPayload` so the UI can open an
-  edit flow or offer dismiss/snooze, but the check runner must not silently
-  apply the payload or rewrite itinerary hierarchy, time windows, Actual
+  `recommendedAction`, `actionKind`, and `actionPayload` so the UI can open a
+  review-edit flow or offer dismiss/snooze/keep-reviewing, but the check runner
+  must not silently apply the payload or rewrite itinerary hierarchy, time windows, Actual
   Expenses, or Plan Commitments.
 - The frontend selector may pass the selected Trip Plan id to Plan Check calls,
   but it must not call set-main as part of Plan Check.
@@ -1851,7 +1851,7 @@ corresponding `API-*` or `DDL-*` row is claimed complete.
 | `TEST-API-TRIP-PATCH-01` | Backend | Direct `PATCH /trips/:tripId` pointer fields are rejected with no pointer/status/version/event side effect. |
 | `TEST-API-READ-01` | Backend | Account trip create, join-session, invite-token-current, and import normalizer responses include canonical aliases where they expose legacy pointers. |
 | `TEST-API-RT-01` | Backend realtime | Create/patch/set-main use legacy `plan_variant.*` wrappers with canonical aliases in payloads and no events on failed mutations. |
-| `TEST-API-CHECK-01` | Backend + frontend | Plan Check run/latest use selected `tripPlanId` when supplied, preserve legacy whole-trip behavior when omitted, never call or imply set-main, and surface edit/dismiss/snooze choices instead of silently correcting rows. |
+| `TEST-API-CHECK-01` | Backend + frontend | Plan Check run/latest use selected `tripPlanId` when supplied, preserve legacy whole-trip behavior when omitted, never call or imply set-main, and surface review-edit/dismiss/snooze/keep-reviewing choices instead of silently correcting rows. |
 | `TEST-FE-MAP-01` | Frontend | API readers accept canonical-only, legacy-only, and mirrored mixed payloads, but reject divergent mixed aliases as `invalid_response`. |
 | `TEST-FE-UI-01` | Frontend | Itinerary Trip Plan selection changes visible/edit/import target only; explicit set-main is separate and permission-gated. |
 | `TEST-IMPORT-01` | Backend + frontend | Import/export preserves pointer aliases, plan-list aliases, hierarchy/time/path fields, selected destination Trip Plan, unchanged Main Plan, backend normalizer records as source metadata, and frontend local/API apply flows re-scope linked records into the selected Trip Plan with remapped item/record ids. |
@@ -1922,7 +1922,7 @@ corresponding `API-*` or `DDL-*` row is claimed complete.
 | 1 | Backend auth/join | `backend/crates/sagittarius-api/tests/join_session_contract.rs` | Join-session and invite-token-current trip summaries include `mainTripPlanId` wherever they already expose `activePlanVariantId`. |
 | 1 | Frontend auth/join mapper | `frontend/src/trip/api-client.test.ts`, `frontend/src/components/TripJoinGate.test.tsx` | Join-trip and invite-token-current responses reject mismatched `mainTripPlanId`/`activePlanVariantId` as `invalid_response`; the join gate surfaces the invalid response instead of accepting alias drift. |
 | 1 | Backend plan checks | `backend/crates/sagittarius-api/tests/plan_checks_contract.rs` | `API-CHECK-01`: running or reading a scoped Plan Check uses the selected Trip Plan id supplied by the request, not the Main Plan pointer. Omitting `tripPlanId` remains the legacy whole-trip check, a supplied id must belong to the trip, and findings expose `editItem`/review payloads without applying them automatically. |
-| 1 | Frontend plan checks | `frontend/src/components/SagittariusApp.test.tsx` | `API-CHECK-01`: in API mode, changing the itinerary Trip Plan selector causes subsequent Plan Check run/latest calls to use the selected Trip Plan id without calling set-main; findings stay user-reviewed edit/dismiss/snooze choices. |
+| 1 | Frontend plan checks | `frontend/src/components/SagittariusApp.test.tsx` | `API-CHECK-01`: in API mode, changing the itinerary Trip Plan selector causes subsequent Plan Check run/latest calls to use the selected Trip Plan id without calling set-main; findings stay user-reviewed edit/dismiss/snooze/keep-reviewing choices and review-edit opens the item editor without applying `actionPayload.patch`. |
 | 1 | Backend import | `backend/crates/sagittarius-api/tests/itinerary_import_contract.rs` | Itinerary import normalizer response includes destination `trip.mainTripPlanId`, destination `trip.tripPlans[]` with `status/kind`, hierarchy/time/path fields, and compatibility `records` without switching the destination Main Plan. |
 | 1 | Backend import | `backend/crates/sagittarius-api/tests/itinerary_import_contract.rs` | Itinerary import normalizer response includes nested destination `trip.planVariants[]` mirroring `trip.tripPlans[]`; cockpit remains the only Phase 1 surface with top-level plan lists. |
 | 1 | Backend import | `backend/crates/sagittarius-api/tests/itinerary_import_contract.rs` | Conflicting source-file `activePlanVariantId` and `mainTripPlanId` do not switch the destination Main Plan and do not get echoed as authoritative destination `trip` state. |
@@ -1971,7 +1971,9 @@ Minimum command evidence matrix:
 | Backend Trip Plan API | `backend/` | `rtk cargo test -p sagittarius-api --test plan_variants_contract -- --nocapture` |
 | Backend cockpit/account/join/realtime | `backend/` | `rtk cargo test -p sagittarius-api --test trip_load_contract --test account_trip_contract --test join_session_contract --test realtime_contract -- --nocapture` |
 | Backend itinerary import | `backend/` | `rtk cargo test -p sagittarius-api --test itinerary_import_contract -- --nocapture` |
+| Backend Plan Check scope | `backend/` | `rtk cargo test -p sagittarius-api --test plan_checks_contract -- --nocapture` |
 | API documentation contract | Repository root | `rtk rg "tripPlans|mainTripPlanId|/trip-plans|activePlanVariantId|planVariants|/plan-variants" docs/api-data-spec.md docs/openapi-itinerary-table-v1.yaml` |
+| Plan Check and hierarchy explicit-choice docs | Repository root | `rtk rg "Plan Check|silently|actionPayload|parentItemId|Alternative Path|explicit" CONTEXT.md docs/api-data-spec.md docs/openapi-itinerary-table-v1.yaml docs/itinerary-trip-plan-phase-0-1-implementation-spec.md docs/adr/0004-itinerary-hierarchy-and-time-windows.md` |
 | Frontend API mapping/routes/import-export | `frontend/` | `rtk bun run test src/trip/api-client.test.ts src/trip/api-contract.test.ts src/trip/itinerary-import-export.test.ts` |
 | Frontend local UI/table copy | `frontend/` | `rtk bun run test src/components/SagittariusApp.test.tsx src/components/SmartItineraryTable.test.tsx src/project-contract.test.ts` |
 | Frontend type safety | `frontend/` | `rtk bun run typecheck` |

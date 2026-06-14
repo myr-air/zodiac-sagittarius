@@ -2563,10 +2563,6 @@ export function SagittariusApp({
     status: PlanSuggestion["status"],
   ) {
     if (!canReviewSuggestions && status !== "snoozed") return;
-    if (status === "accepted") {
-      const applied = await applyPlanSuggestionAction(suggestion);
-      if (!applied) return;
-    }
     if (isApiMode && resolvedApiClient?.patchPlanSuggestion && participantSession) {
       const patched = await resolvedApiClient.patchPlanSuggestion(
         trip.id,
@@ -2604,18 +2600,10 @@ export function SagittariusApp({
     );
   }
 
-  async function applyPlanSuggestionAction(
-    suggestion: PlanSuggestion,
-  ): Promise<boolean> {
-    if (suggestion.actionKind !== "editItem") return true;
+  function reviewPlanSuggestionEdit(suggestion: PlanSuggestion) {
     const action = parsePlanSuggestionEditAction(suggestion.actionPayload);
-    if (!action) {
-      const targetItemId = suggestion.targetItemIds[0];
-      if (targetItemId) editItem(targetItemId);
-      return false;
-    }
-    await updateItineraryItemInline(action.itemId, action.patch);
-    return true;
+    const targetItemId = action?.itemId ?? suggestion.targetItemIds[0];
+    if (targetItemId) editItem(targetItemId);
   }
 
   async function createTask(input: {
@@ -4258,6 +4246,7 @@ export function SagittariusApp({
                   locale={locale}
                   running={planCheckRunning}
                   onRun={runPlanCheck}
+                  onReviewSuggestionEdit={reviewPlanSuggestionEdit}
                   onUpdateSuggestionStatus={updatePlanSuggestionStatus}
                 />
                 <SmartItineraryTable
@@ -5956,6 +5945,7 @@ function PlanCheckPanel({
   locale,
   running,
   onRun,
+  onReviewSuggestionEdit,
   onUpdateSuggestionStatus,
 }: {
   canMutate: boolean;
@@ -5964,6 +5954,7 @@ function PlanCheckPanel({
   locale: "en" | "th";
   running: boolean;
   onRun: () => void;
+  onReviewSuggestionEdit: (suggestion: PlanSuggestion) => void;
   onUpdateSuggestionStatus: (suggestion: PlanSuggestion, status: PlanSuggestion["status"]) => void;
 }) {
   const pendingSuggestions = check?.suggestions.filter((suggestion) => suggestion.status === "pending") ?? [];
@@ -5994,9 +5985,10 @@ function PlanCheckPanel({
                 <p className="m-0 text-xs font-semibold text-(--color-text-muted)">{action}</p>
                 {suggestion.status === "pending" ? (
                   <div className="flex flex-wrap gap-2">
-                    <Button type="button" variant="secondary" disabled={!canMutate} onClick={() => onUpdateSuggestionStatus(suggestion, "accepted")}>Accept</Button>
+                    <Button type="button" variant="secondary" disabled={!canMutate} onClick={() => onReviewSuggestionEdit(suggestion)}>Review edit</Button>
                     <Button type="button" variant="secondary" disabled={!canMutate} onClick={() => onUpdateSuggestionStatus(suggestion, "dismissed")}>Dismiss</Button>
                     <Button type="button" variant="secondary" disabled={!canMutate} onClick={() => onUpdateSuggestionStatus(suggestion, "snoozed")}>Snooze</Button>
+                    <Button type="button" variant="ghost" onClick={() => undefined}>Keep reviewing</Button>
                   </div>
                 ) : null}
               </article>

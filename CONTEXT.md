@@ -41,7 +41,7 @@ A booking, ticket, hotel stay, transport reservation, or other real-world commit
 _Avoid_: Standalone booking
 
 **Plan Check Suggestion**:
-A system-detected planning issue or improvement candidate. A plan check suggestion can recommend an edit, dismissal, snooze, or review path, but it does not change the itinerary, trip plan, actual expenses, or commitments until a person explicitly chooses what to do.
+A system-detected planning issue or improvement candidate. A plan check suggestion can recommend a review/edit, dismissal, snooze, or keep-reviewing path, but it does not change the itinerary, trip plan, actual expenses, or commitments until a person explicitly edits or marks the suggestion.
 _Avoid_: Auto-fix, silent correction
 
 **Journey Block**:

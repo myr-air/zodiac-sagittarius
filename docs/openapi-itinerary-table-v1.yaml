@@ -251,6 +251,7 @@ paths:
   /api/v1/trips/{tripId}/plan-checks:
     post:
       summary: Run deterministic Plan Check and store bilingual suggestions.
+      description: Plan Check creates review suggestions only. It may return review-edit payloads, dismiss paths, snooze paths, or a keep-reviewing path for the user to choose, but the runner does not silently rewrite itinerary rows, Trip Plans, Actual Expenses, or Plan Commitments.
       parameters:
         - $ref: "#/components/parameters/TripId"
         - name: tripPlanId
@@ -258,7 +259,7 @@ paths:
           required: false
           schema:
             type: string
-          description: Optional Trip Plan scope. When omitted, the check covers the full trip for compatibility. When supplied, the Trip Plan id must belong to the trip and does not mutate the Main Plan pointer.
+          description: Optional Trip Plan scope. When omitted, the check covers the full trip for compatibility. When supplied, the Trip Plan id must belong to the trip and does not mutate the Main Plan pointer. Scope selection does not apply any suggested correction.
       responses:
         "201":
           description: Plan Check completed.
@@ -269,6 +270,7 @@ paths:
   /api/v1/trips/{tripId}/plan-checks/latest:
     get:
       summary: Read the latest Plan Check with stale status.
+      description: Reads stored review suggestions and stale status only. Reading a Plan Check does not apply the suggestion actionPayload; users must choose review-edit, dismiss, snooze, or keep reviewing through explicit follow-up actions.
       parameters:
         - $ref: "#/components/parameters/TripId"
         - name: tripPlanId
@@ -276,13 +278,14 @@ paths:
           required: false
           schema:
             type: string
-          description: Optional Trip Plan scope. When provided, returns the latest check for that Trip Plan. The Trip Plan id must belong to the trip and does not mutate the Main Plan pointer.
+          description: Optional Trip Plan scope. When provided, returns the latest check for that Trip Plan. The Trip Plan id must belong to the trip and does not mutate the Main Plan pointer or apply suggested corrections.
       responses:
         "200":
           description: Latest Plan Check or null.
   /api/v1/trips/{tripId}/plan-suggestions/{suggestionId}:
     patch:
-      summary: Accept, dismiss, or snooze a stored Plan Check suggestion.
+      summary: Mark a stored Plan Check suggestion as reviewed, dismissed, or snoozed.
+      description: Status updates do not apply suggestion actionPayload values. Editing the itinerary is a separate user-confirmed itinerary mutation.
       parameters:
         - $ref: "#/components/parameters/TripId"
         - name: suggestionId
@@ -677,7 +680,7 @@ components:
         severity:
           enum: [info, warning, critical]
         scope:
-          enum: [trip, day, item]
+          enum: [trip, day, item, betweenItems]
         targetItemIds:
           type: array
           items:
@@ -699,10 +702,8 @@ components:
           type: integer
     PlanSuggestionPatchRequest:
       type: object
-      required: [clientMutationId, expectedVersion, status]
+      required: [expectedVersion, status]
       properties:
-        clientMutationId:
-          type: string
         expectedVersion:
           type: integer
         status:

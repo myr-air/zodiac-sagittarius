@@ -59,6 +59,7 @@ The source of truth is [docs/itinerary-trip-plan-phase-0-1-implementation-spec.m
 | Backend itinerary import | `backend/` | `rtk cargo test -p sagittarius-api --test itinerary_import_contract -- --nocapture` |
 | Backend Plan Check scope | `backend/` | `rtk cargo test -p sagittarius-api --test plan_checks_contract -- --nocapture` |
 | API documentation contract | Repository root | `rtk rg "tripPlans|mainTripPlanId|/trip-plans|activePlanVariantId|planVariants|/plan-variants" docs/api-data-spec.md docs/openapi-itinerary-table-v1.yaml` |
+| Plan Check and hierarchy explicit-choice docs | Repository root | `rtk rg "Plan Check|silently|actionPayload|parentItemId|Alternative Path|explicit" CONTEXT.md docs/api-data-spec.md docs/openapi-itinerary-table-v1.yaml docs/itinerary-trip-plan-phase-0-1-implementation-spec.md docs/adr/0004-itinerary-hierarchy-and-time-windows.md` |
 | Frontend API mapping/routes/import-export | `frontend/` | `rtk bun run test src/trip/api-client.test.ts src/trip/api-contract.test.ts src/trip/itinerary-import-export.test.ts` |
 | Frontend import apply policy | `frontend/` | `rtk bun run test src/components/SagittariusApp.test.tsx --testNamePattern "import"` |
 | Frontend Actual Expense scope audit UI | `frontend/` | `rtk bun run test src/components/TripExpensesPage.test.tsx && rtk bun run test:storybook src/components/ExpensesPage.stories.tsx` |
