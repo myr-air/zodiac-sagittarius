@@ -124,7 +124,9 @@ describe("ContextRail", () => {
   });
 
   it("shows booking docs linked to the selected itinerary item", async () => {
+    const onChangeBookingDocType = vi.fn();
     renderRail({
+      onChangeBookingDocType,
       bookingDocs: [
         {
           id: "booking-dimdim-1",
@@ -191,6 +193,15 @@ describe("ContextRail", () => {
       within(bookingPanel).getByText("Dim Dim Sum reservation"),
     ).toBeInTheDocument();
     expect(within(bookingPanel).getByText("การจอง · booked")).toBeInTheDocument();
+    const typeSelect = within(bookingPanel).getByLabelText(
+      "ประเภทการจองของ Dim Dim Sum reservation",
+    );
+    expect(typeSelect).toHaveValue("activity_ticket");
+    fireEvent.change(typeSelect, { target: { value: "other" } });
+    expect(onChangeBookingDocType).toHaveBeenCalledWith(
+      "booking-dimdim-1",
+      "other",
+    );
     expect(
       within(bookingPanel).queryByText("Other stop ticket"),
     ).not.toBeInTheDocument();

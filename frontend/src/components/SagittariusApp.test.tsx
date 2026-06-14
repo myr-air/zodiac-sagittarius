@@ -10,6 +10,7 @@ import type { ReactElement } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   SagittariusApp,
+  bookingTypeForItineraryItem,
   resolveJoinPostAuthReturnTo,
   nextClientMutationId,
   nextLocalItemId,
@@ -403,6 +404,44 @@ describe("Sagittarius cockpit UI", () => {
       endOffsetDays: 0,
       durationMinutes: null,
     });
+  });
+
+  it("classifies Thai itinerary rows into booking draft types", () => {
+    const baseItem = seedTrip.itineraryItems[0];
+
+    expect(
+      bookingTypeForItineraryItem({
+        ...baseItem,
+        activity: "บินไปฮ่องกง",
+        activityType: "travel",
+        transportation: "เครื่องบิน",
+      }),
+    ).toBe("flight");
+    expect(
+      bookingTypeForItineraryItem({
+        ...baseItem,
+        activity: "นั่งรถไฟเข้าเมือง",
+        activityType: "travel",
+        transportation: "รถไฟ",
+      }),
+    ).toBe("train");
+    expect(
+      bookingTypeForItineraryItem({
+        ...baseItem,
+        activity: "เช็คอินโรงแรม",
+        activityType: "experience",
+        itemKind: "activity",
+        transportation: "",
+      }),
+    ).toBe("hotel");
+    expect(
+      bookingTypeForItineraryItem({
+        ...baseItem,
+        activity: "รถรับส่งจากโรงแรมไปสนามบิน",
+        activityType: "travel",
+        transportation: "รถรับส่ง",
+      }),
+    ).toBe("public_transport");
   });
 
   it("can require trip participant authentication before opening the cockpit", async () => {
@@ -5638,7 +5677,7 @@ describe("Sagittarius cockpit UI", () => {
       "true",
     );
     expect(within(context).getByText("Flight to Hong Kong booking draft")).toBeInTheDocument();
-    const persistedTrip = JSON.parse(storage.getItem(tripStorageKey)!) as Trip;
+    let persistedTrip = JSON.parse(storage.getItem(tripStorageKey)!) as Trip;
     expect(persistedTrip.bookingDocs).toEqual([
       expect.objectContaining({
         status: "draft",
@@ -5657,6 +5696,23 @@ describe("Sagittarius cockpit UI", () => {
           "Draft from itinerary: DMK\nEstimate THB 4,200 before ticket issue",
       }),
     ]);
+
+    fireEvent.change(
+      within(context).getByLabelText(
+        "ประเภทการจองของ Flight to Hong Kong booking draft",
+      ),
+      { target: { value: "train" } },
+    );
+
+    await waitFor(() => {
+      persistedTrip = JSON.parse(storage.getItem(tripStorageKey)!) as Trip;
+      expect(persistedTrip.bookingDocs?.[0]).toEqual(
+        expect.objectContaining({
+          title: "Flight to Hong Kong booking draft",
+          type: "train",
+        }),
+      );
+    });
   });
 
   it("imports itinerary rows into the current Trip Plan and keeps path fields", async () => {

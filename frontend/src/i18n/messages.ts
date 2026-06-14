@@ -647,6 +647,8 @@ export const messages = {
         noBookings: "No booking docs linked to this stop.",
         noTasks: "No checklist items linked to this stop.",
         booking: "Booking",
+        type: "Type",
+        typeFor: ({ title }: { title: string }) => `Booking type for ${title}`,
         prep: "Prep",
       },
       suggestions: {
@@ -1794,6 +1796,8 @@ export const messages = {
         noBookings: "ยังไม่มีเอกสารการจองที่ผูกกับจุดนี้",
         noTasks: "ยังไม่มี checklist ที่ผูกกับจุดนี้",
         booking: "การจอง",
+        type: "ประเภท",
+        typeFor: ({ title }: { title: string }) => `ประเภทการจองของ ${title}`,
         prep: "เตรียมตัว",
       },
       suggestions: {

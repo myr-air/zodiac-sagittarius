@@ -2954,6 +2954,37 @@ export function SagittariusApp({
     }));
   }
 
+  async function changeBookingDocType(
+    bookingDocId: string,
+    type: BookingDocType,
+  ) {
+    const bookingDoc = latestTripRef.current.bookingDocs?.find(
+      (candidate) => candidate.id === bookingDocId,
+    );
+    if (!bookingDoc || bookingDoc.type === type) return;
+    await updateBookingDoc(bookingDoc.id, {
+      type,
+      title: bookingDoc.title,
+      status: bookingDoc.status,
+      visibility: bookingDoc.visibility,
+      ownerMemberId: bookingDoc.ownerMemberId,
+      providerName: bookingDoc.providerName,
+      confirmationCode: bookingDoc.confirmationCode,
+      startsAt: bookingDoc.startsAt,
+      endsAt: bookingDoc.endsAt,
+      timezone: bookingDoc.timezone,
+      priceAmount: bookingDoc.priceAmount,
+      currency: bookingDoc.currency,
+      travelerIds: bookingDoc.travelerIds,
+      externalLinks: bookingDoc.externalLinks,
+      relatedItineraryItemIds: bookingDoc.relatedItineraryItemIds,
+      relatedTaskIds: bookingDoc.relatedTaskIds,
+      relatedExpenseIds: bookingDoc.relatedExpenseIds,
+      noteIds: bookingDoc.noteIds,
+      notes: bookingDoc.notes,
+    });
+  }
+
   async function deleteBookingDoc(bookingDocId: string) {
     if (!canEditBookings) return;
     if (isApiMode && resolvedApiClient && participantSession) {
@@ -4194,6 +4225,7 @@ export function SagittariusApp({
               canEditExpenses={canEditExpenses}
               open={contextRailOpen}
               preferredTab={contextRailPreferredTab}
+              onChangeBookingDocType={changeBookingDocType}
               onCreateNote={createStopNote}
               onCreateExpense={createExpense}
               onUpdateExpense={updateExpense}
@@ -5034,15 +5066,22 @@ function serializeBookingDocInputForApi(
   };
 }
 
-function bookingTypeForItineraryItem(item: ItineraryItem): BookingDocType {
+export function bookingTypeForItineraryItem(item: ItineraryItem): BookingDocType {
   const mode = typeof item.details?.mode === "string" ? item.details.mode.toLowerCase() : "";
   const transportation = item.transportation.toLowerCase();
   const activity = item.activity.toLowerCase();
   const haystack = `${mode} ${transportation} ${activity}`;
-  if (item.activityType === "stay" || item.itemKind === "lodging") return "hotel";
-  if (/\bflight\b|\bplane\b|\bairport\b|\bairline\b/.test(haystack)) return "flight";
-  if (/\btrain\b|\brail\b|\bmtr\b/.test(haystack)) return "train";
-  if (/\bbus\b|\bferry\b|\bshuttle\b|\btram\b|\btaxi\b/.test(haystack)) return "public_transport";
+  if (/\bflight\b|\bplane\b|\bairline\b|เครื่องบิน|สายการบิน|(^|\s)บิน/.test(haystack))
+    return "flight";
+  if (/\btrain\b|\brail\b|\bmtr\b|รถไฟ|ราง|สถานีรถไฟ/.test(haystack)) return "train";
+  if (/\bbus\b|\bferry\b|\bshuttle\b|\btram\b|\btaxi\b|รถบัส|บัส|เรือ|เฟอร์รี่|รถรับส่ง|แท็กซี่|รถราง/.test(haystack))
+    return "public_transport";
+  if (
+    item.activityType === "stay" ||
+    item.itemKind === "lodging" ||
+    /โรงแรม|ที่พัก|พักค้างคืน|เช็คอิน|check[-\s]?in/.test(haystack)
+  )
+    return "hotel";
   if (item.activityType === "attraction" || item.itemKind === "activity") return "activity_ticket";
   return "other";
 }

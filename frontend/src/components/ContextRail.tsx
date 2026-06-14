@@ -1,6 +1,7 @@
 import { type FormEvent, useEffect, useMemo, useState } from "react";
 import type {
   BookingDoc,
+  BookingDocType,
   Expense,
   ExpenseSummary,
   ItineraryItem,
@@ -36,6 +37,10 @@ interface ContextRailProps {
   canEditExpenses: boolean;
   open: boolean;
   preferredTab?: ContextRailTab;
+  onChangeBookingDocType?: (
+    bookingDocId: string,
+    type: BookingDocType,
+  ) => void | Promise<void>;
   onCreateNote: (input: { itemId: string; body: string }) => void;
   onCreateExpense: (input: {
     itemId: string | null;
@@ -109,6 +114,8 @@ const bookingTaskClassName =
   "stop-booking-task grid grid-cols-[minmax(0,1fr)_auto] items-center gap-1 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) px-2.5 py-[9px] data-[status=done]:[&_span]:text-(--color-text-muted) data-[status=done]:[&_span]:line-through";
 const bookingDocClassName =
   "stop-booking-doc grid gap-1 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) px-2.5 py-[9px] text-xs [&_strong]:font-extrabold [&_strong]:leading-4 [&_strong]:text-(--color-text) [&_span]:text-[11px] [&_span]:font-bold [&_span]:leading-4 [&_span]:text-(--color-text-muted)";
+const bookingDocTypeSelectClassName =
+  "min-h-8 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-2 text-[11px] font-extrabold text-(--color-text) outline-none focus:border-(--color-primary-border) focus:shadow-[0_0_0_2px_rgb(255_196_168_/_0.55)] disabled:cursor-not-allowed disabled:opacity-60";
 const bookingTaskLabelClassName =
   "inline-flex min-w-0 items-center gap-2 [&_input]:size-[15px] [&_input]:accent-[var(--color-primary)] [&_span]:text-xs [&_span]:font-extrabold [&_span]:leading-4 [&_span]:text-(--color-text)";
 const bookingTaskMetaClassName =
@@ -161,6 +168,17 @@ const detailMetaLineClassName =
   "m-0 inline-flex gap-[9px] text-xs leading-4 text-(--color-text-muted) [&_.icon]:text-(--color-text-muted)";
 const detailButtonClassName = "min-h-8 py-[5px]";
 const emptyWarningClassName = "empty-warning text-(--color-text-muted)";
+const bookingDocTypeOptions: BookingDocType[] = [
+  "flight",
+  "train",
+  "public_transport",
+  "hotel",
+  "insurance",
+  "passport",
+  "visa",
+  "activity_ticket",
+  "other",
+];
 
 export function ContextRail({
   trip,
@@ -178,6 +196,7 @@ export function ContextRail({
   canEditExpenses,
   open,
   preferredTab = "notes",
+  onChangeBookingDocType,
   onCreateNote,
   onCreateExpense,
   onUpdateExpense,
@@ -600,6 +619,29 @@ export function ContextRail({
                       <span>
                         {t.contextRail.booking.booking} · {bookingDoc.status}
                       </span>
+                      <label className="grid gap-1">
+                        <span>{t.contextRail.booking.type}</span>
+                        <select
+                          aria-label={t.contextRail.booking.typeFor({
+                            title: bookingDoc.title,
+                          })}
+                          className={bookingDocTypeSelectClassName}
+                          disabled={!canEdit || !onChangeBookingDocType}
+                          value={bookingDoc.type}
+                          onChange={(event) =>
+                            void onChangeBookingDocType?.(
+                              bookingDoc.id,
+                              event.target.value as BookingDocType,
+                            )
+                          }
+                        >
+                          {bookingDocTypeOptions.map((type) => (
+                            <option key={type} value={type}>
+                              {formatBookingDocTypeLabel(type)}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
                     </li>
                   ))}
                   {!selectedBookingDocs.length ? (
@@ -899,4 +941,11 @@ function taskKindLabel(
 ): string {
   /* v8 ignore next */
   return task.kind === "booking" ? labels.booking : labels.prep;
+}
+
+function formatBookingDocTypeLabel(type: BookingDocType): string {
+  return type
+    .split("_")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
 }
