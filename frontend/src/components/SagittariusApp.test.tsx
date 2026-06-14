@@ -6558,6 +6558,7 @@ describe("Sagittarius cockpit UI", () => {
     const user = userEvent.setup();
     const apiTrip = {
       ...tripWithPlans(),
+      defaultTimezone: "Asia/Bangkok",
       members: [{ ...seedTrip.members[0], claimPasswordHash: null }],
       bookingDocs: [],
     };
@@ -6750,6 +6751,8 @@ describe("Sagittarius cockpit UI", () => {
         tripPlanId: "plan-variant-backup",
         title: "Rain plan gallery booking draft",
         relatedItineraryItemIds: ["item-rain-gallery"],
+        startsAt: "2026-06-19T08:30:00+07:00",
+        timezone: "Asia/Bangkok",
       }),
     );
     const context = await screen.findByRole("complementary", {

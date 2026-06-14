@@ -12,7 +12,7 @@ const webVersion = {
   runtimeMode: "api",
   schemaVersion: "frontend-static",
   service: "sagittarius-web",
-  version: "0.1.4",
+  version: "0.1.5",
 } as const;
 
 const apiVersion = {
@@ -21,7 +21,7 @@ const apiVersion = {
   environment: "staging",
   schemaVersion: "0019_photo_album_links",
   service: "sagittarius-api",
-  version: "0.1.4",
+  version: "0.1.5",
 } as const;
 
 const meta = {
@@ -49,7 +49,7 @@ export const Ready: Story = {
   play: async ({ canvas }) => {
     await expect(canvas.getByRole("heading", { name: "About Joii" })).toBeVisible();
     await expect(await canvas.findByText("API connected")).toBeVisible();
-    await expect(await canvas.findByText("sagittarius-api v0.1.4")).toBeVisible();
+    await expect(await canvas.findByText("sagittarius-api v0.1.5")).toBeVisible();
   },
 };
 
