@@ -411,6 +411,7 @@ export function SagittariusApp({
     currentMember.role,
     "reviewSuggestions",
   );
+  const canViewExpenses = canTripRole(currentMember.role, "viewExpenses");
   const canEditExpenses = canTripRole(currentMember.role, "editExpenses");
   const canManagePeople = canTripRole(currentMember.role, "managePeople");
   const canManageTripPlans = canTripRole(currentMember.role, "manageTripPlans");
@@ -749,6 +750,56 @@ export function SagittariusApp({
       cancelled = true;
     };
   }, [isApiMode, participantSession, resolvedApiClient]);
+
+  useEffect(() => {
+    if (
+      !isApiMode ||
+      !participantSession ||
+      !resolvedApiClient ||
+      !isCockpitLoaded ||
+      !canViewExpenses ||
+      !selectedTripPlanId
+    ) {
+      return undefined;
+    }
+    if (backendExpenseSummary?.tripPlanId === selectedTripPlanId) {
+      return undefined;
+    }
+
+    let cancelled = false;
+    void Promise.resolve(
+      resolvedApiClient.getExpenseSummary(
+        participantSession.tripId,
+        participantSession.sessionToken,
+        selectedTripPlanId,
+      ),
+    )
+      .then((summary) => {
+        if (cancelled || !summary) return;
+        setBackendExpenseSummary({ tripPlanId: selectedTripPlanId, summary });
+      })
+      .catch((caught) => {
+        if (cancelled) return;
+        if (isAuthFailure(caught)) {
+          clearParticipantSession();
+          setParticipantSession(null);
+          setAccessError("unauthenticated");
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    backendExpenseSummary?.tripPlanId,
+    canViewExpenses,
+    clearParticipantSession,
+    isApiMode,
+    isCockpitLoaded,
+    participantSession,
+    resolvedApiClient,
+    selectedTripPlanId,
+  ]);
 
   useEffect(() => {
     if (!isApiMode || !participantSession || !resolvedApiClient)

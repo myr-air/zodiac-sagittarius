@@ -5730,6 +5730,61 @@ describe("Sagittarius cockpit UI", () => {
     );
   }, 45_000);
 
+  it("refreshes API expense summary for the selected Trip Plan without publishing", async () => {
+    const user = userEvent.setup();
+    const apiTrip = {
+      ...tripWithPlans(),
+      members: [{ ...seedTrip.members[0], claimPasswordHash: null }],
+    };
+    const getExpenseSummary = vi.fn().mockImplementation(
+      (
+        _tripId: string,
+        _sessionToken: string,
+        tripPlanId?: string | null,
+      ) =>
+        Promise.resolve({
+          groupSpend: tripPlanId === "plan-variant-backup" ? 88 : 42,
+          netByMember: {},
+          currentUserNetLabel: "settled",
+          settlementSuggestions: [],
+        }),
+    );
+    const apiClient = createApiClientForTrip(apiTrip, {
+      getExpenseSummary,
+      setMainTripPlan: vi.fn(),
+    });
+
+    render(
+      <SagittariusApp
+        requireJoin
+        dataSource="api"
+        initialView="itinerary"
+        apiClient={apiClient}
+      />,
+    );
+    await loginApiTrip(user);
+
+    await waitFor(() =>
+      expect(getExpenseSummary).toHaveBeenCalledWith(
+        apiTrip.id,
+        "session-token",
+        apiTrip.activePlanVariantId,
+      ),
+    );
+    await user.selectOptions(await screen.findByLabelText("Trip Plan"), [
+      "plan-variant-backup",
+    ]);
+
+    await waitFor(() =>
+      expect(getExpenseSummary).toHaveBeenCalledWith(
+        apiTrip.id,
+        "session-token",
+        "plan-variant-backup",
+      ),
+    );
+    expect(apiClient.setMainTripPlan!).not.toHaveBeenCalled();
+  }, 45_000);
+
   it("sets the selected API Trip Plan as Main only from the explicit action", async () => {
     const user = userEvent.setup();
     const apiTrip = {
