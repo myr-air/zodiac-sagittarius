@@ -70,7 +70,7 @@ describe("shared UI primitives", () => {
       />,
     );
 
-    expect(screen.getByRole("banner")).toHaveClass("overflow-visible");
+    expect(screen.getByRole("banner")).toHaveClass("z-[40]", "overflow-visible");
     expect(screen.getByText("Plan")).toHaveClass("eyebrow");
     expect(screen.getByText("Plan")).toHaveClass("bg-(--color-primary-soft)", "text-(--color-primary-strong)");
     expect(screen.getByText("Plan").className).not.toContain("uppercase");

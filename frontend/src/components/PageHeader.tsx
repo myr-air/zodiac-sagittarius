@@ -29,7 +29,7 @@ const userLabelClassName = "text-xs text-(--color-text-muted)";
 
 export function PageHeader({ allowOverflow = false, eyebrow, title, subtitle, description, meta, aside, motif }: PageHeaderProps) {
   return (
-    <header className={cn(pageHeaderClassName, allowOverflow ? "overflow-visible" : "overflow-hidden")}>
+    <header className={cn(pageHeaderClassName, allowOverflow ? "z-[40] overflow-visible" : "overflow-hidden")}>
       <div className={pageHeaderCopyClassName}>
         {eyebrow ? <p className={eyebrowClassName}>{eyebrow}</p> : null}
         <h1 className={titleClassName}>{title}</h1>

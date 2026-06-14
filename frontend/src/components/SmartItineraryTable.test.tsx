@@ -231,7 +231,7 @@ describe("SmartItineraryTable", () => {
       "#itinerary-header-controls",
     );
 
-    expect(header).toHaveClass("overflow-visible");
+    expect(header).toHaveClass("z-[40]", "overflow-visible");
     expect(controlsButton).toHaveAttribute("aria-expanded", "true");
     expect(controlsPanel).not.toBeNull();
     expect(controlsPanel).toHaveAttribute("data-state", "open");
