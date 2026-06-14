@@ -1724,9 +1724,13 @@ function DayGroup({
             const nextItem = visibleItems[index + 1];
             const moveDownTargetId = visibleItems[index + 2]?.id;
             const isChild = Boolean(item.parentItemId);
+            const parentItem = item.parentItemId
+              ? group.items.find((candidate) => candidate.id === item.parentItemId)
+              : undefined;
             const childCount = item.isPlanBlock
               ? group.items.filter((candidate) => candidate.parentItemId === item.id).length
               : 0;
+            const canPromoteParentBlock = Boolean(parentItem && !parentItem.isPlanBlock);
             const canDeleteItem = childCount === 0;
             const blockCollapsed = item.isPlanBlock && collapsedPlanBlockIds.includes(item.id);
             const itemWarnings = validateItineraryItem(item, group.items);
@@ -2001,6 +2005,34 @@ function DayGroup({
                     >
                       <Icon name={item.isPlanBlock ? "plus" : "list"} />
                     </button>
+                    {canPromoteParentBlock && parentItem ? (
+                      <button
+                        type="button"
+                        className={rowActionButtonClassName}
+                        aria-label={`Promote ${parentItem.activity} to activity block for ${item.activity}`}
+                        disabled={!canEdit}
+                        title={`Promote ${parentItem.activity} to activity block`}
+                        onClick={() => {
+                          onUpdateItemInline?.(parentItem.id, { isPlanBlock: true });
+                        }}
+                      >
+                        <Icon name="list" />
+                      </button>
+                    ) : null}
+                    {item.parentItemId ? (
+                      <button
+                        type="button"
+                        className={rowActionButtonClassName}
+                        aria-label={`Detach sub-activity ${item.activity} from its activity block`}
+                        disabled={!canEdit}
+                        title={`Detach ${item.activity} from its activity block`}
+                        onClick={() => {
+                          onUpdateItemInline?.(item.id, { parentItemId: null });
+                        }}
+                      >
+                        <Icon name="x" />
+                      </button>
+                    ) : null}
                     <button
                       type="button"
                       className={rowActionButtonClassName}

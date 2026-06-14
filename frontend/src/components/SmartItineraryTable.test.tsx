@@ -2463,6 +2463,96 @@ describe("SmartItineraryTable", () => {
     expect(screen.getByText("4 คำเตือน")).toBeInTheDocument();
   });
 
+  it("offers inline hierarchy correction actions on sub-activity rows", async () => {
+    const user = userEvent.setup();
+    const onUpdateItemInline = vi.fn();
+    renderTable({
+      items: [
+        {
+          ...tripFixture.planItems[0],
+          id: "plain-parent",
+          activity: "Plain parent",
+          isPlanBlock: false,
+          parentItemId: null,
+          sortOrder: 100,
+        },
+        {
+          ...tripFixture.planItems[1],
+          id: "child-under-plain",
+          activity: "Child under plain parent",
+          parentItemId: "plain-parent",
+          sortOrder: 200,
+        },
+      ],
+      onUpdateItemInline,
+      selectedItemId: "child-under-plain",
+    });
+
+    const childRow = screen.getByRole("row", {
+      name: /Child under plain parent/i,
+    });
+
+    await user.click(
+      within(childRow).getByRole("button", {
+        name: /Promote Plain parent to activity block for Child under plain parent/i,
+      }),
+    );
+    expect(onUpdateItemInline).toHaveBeenCalledWith("plain-parent", {
+      isPlanBlock: true,
+    });
+
+    await user.click(
+      within(childRow).getByRole("button", {
+        name: /Detach sub-activity Child under plain parent from its activity block/i,
+      }),
+    );
+    expect(onUpdateItemInline).toHaveBeenCalledWith("child-under-plain", {
+      parentItemId: null,
+    });
+  });
+
+  it("keeps hierarchy correction actions read-only for viewers", () => {
+    const onUpdateItemInline = vi.fn();
+    renderTable({
+      items: [
+        {
+          ...tripFixture.planItems[0],
+          id: "plain-parent",
+          activity: "Plain parent",
+          isPlanBlock: false,
+          parentItemId: null,
+          sortOrder: 100,
+        },
+        {
+          ...tripFixture.planItems[1],
+          id: "child-under-plain",
+          activity: "Child under plain parent",
+          parentItemId: "plain-parent",
+          sortOrder: 200,
+        },
+      ],
+      onUpdateItemInline,
+      role: "viewer",
+      selectedItemId: "child-under-plain",
+    });
+
+    const childRow = screen.getByRole("row", {
+      name: /Child under plain parent/i,
+    });
+
+    expect(
+      within(childRow).getByRole("button", {
+        name: /Promote Plain parent to activity block for Child under plain parent/i,
+      }),
+    ).toBeDisabled();
+    expect(
+      within(childRow).getByRole("button", {
+        name: /Detach sub-activity Child under plain parent from its activity block/i,
+      }),
+    ).toBeDisabled();
+    expect(onUpdateItemInline).not.toHaveBeenCalled();
+  });
+
   it("does not flag parent-child time containment as an overlap", () => {
     renderTable({
       items: [
