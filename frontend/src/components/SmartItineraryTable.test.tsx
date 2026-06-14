@@ -2553,6 +2553,106 @@ describe("SmartItineraryTable", () => {
     expect(onUpdateItemInline).not.toHaveBeenCalled();
   });
 
+  it("expands an activity block to fit an out-of-bounds sub-activity", async () => {
+    const user = userEvent.setup();
+    const onUpdateItemInline = vi.fn();
+    renderTable({
+      items: [
+        {
+          ...tripFixture.planItems[0],
+          id: "block-flight-window",
+          activity: "Flight to Hong Kong",
+          startTime: "06:00",
+          endTime: "10:00",
+          endOffsetDays: 0,
+          durationMinutes: 240,
+          isPlanBlock: true,
+          parentItemId: null,
+          sortOrder: 100,
+        },
+        {
+          ...tripFixture.planItems[1],
+          id: "child-checkin",
+          activity: "Airport check-in",
+          startTime: "04:30",
+          endTime: "11:00",
+          endOffsetDays: 0,
+          durationMinutes: 390,
+          isPlanBlock: false,
+          parentItemId: "block-flight-window",
+          sortOrder: 200,
+        },
+      ],
+      onUpdateItemInline,
+      selectedItemId: "child-checkin",
+    });
+
+    const childRow = screen.getByRole("row", { name: /Airport check-in/i });
+    expect(within(childRow).getByText("นอก block")).toBeInTheDocument();
+
+    await user.click(
+      within(childRow).getByRole("button", {
+        name: /Expand Flight to Hong Kong to fit Airport check-in/i,
+      }),
+    );
+
+    expect(onUpdateItemInline).toHaveBeenCalledWith("block-flight-window", {
+      startTime: "04:30",
+      endTime: "11:00",
+      endOffsetDays: 0,
+      durationMinutes: 390,
+    });
+  });
+
+  it("expands an activity block across midnight when the child ends next day", async () => {
+    const user = userEvent.setup();
+    const onUpdateItemInline = vi.fn();
+    renderTable({
+      items: [
+        {
+          ...tripFixture.planItems[0],
+          id: "block-night-train",
+          activity: "Night train window",
+          startTime: "22:00",
+          endTime: "23:00",
+          endOffsetDays: 0,
+          durationMinutes: 60,
+          isPlanBlock: true,
+          parentItemId: null,
+          sortOrder: 100,
+        },
+        {
+          ...tripFixture.planItems[1],
+          id: "child-arrival",
+          activity: "Arrival transfer",
+          startTime: "23:30",
+          endTime: "02:00",
+          endOffsetDays: 1,
+          durationMinutes: 150,
+          isPlanBlock: false,
+          parentItemId: "block-night-train",
+          sortOrder: 200,
+        },
+      ],
+      onUpdateItemInline,
+      selectedItemId: "child-arrival",
+    });
+
+    await user.click(
+      within(screen.getByRole("row", { name: /Arrival transfer/i })).getByRole(
+        "button",
+        { name: /Expand Night train window to fit Arrival transfer/i },
+      ),
+    );
+
+    expect(onUpdateItemInline).toHaveBeenCalledWith("block-night-train", {
+      startTime: "22:00",
+      endTime: "02:00",
+      endOffsetDays: 1,
+      durationMinutes: 240,
+    });
+  });
+
   it("does not flag parent-child time containment as an overlap", () => {
     renderTable({
       items: [

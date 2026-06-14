@@ -231,6 +231,7 @@ const rowActionsClassName =
   "row-actions flex items-center justify-center gap-1";
 const rowActionButtonClassName =
   "row-action-button inline-grid size-8 shrink-0 place-items-center rounded-(--radius-sm) border-0 bg-transparent text-(--color-text-subtle) transition-[color,background] duration-150 hover:not-disabled:bg-(--color-route-soft) hover:not-disabled:text-(--color-route) disabled:cursor-not-allowed disabled:opacity-[0.42]";
+const minutesPerDay = 24 * 60;
 const timeHeaderClassName =
   "time-header max-[767px]:sticky max-[767px]:left-0 max-[767px]:z-[5] max-[767px]:shadow-[6px_0_12px_rgb(15_23_42_/_0.08)]";
 const timeCellClassName =
@@ -1734,6 +1735,10 @@ function DayGroup({
             const canDeleteItem = childCount === 0;
             const blockCollapsed = item.isPlanBlock && collapsedPlanBlockIds.includes(item.id);
             const itemWarnings = validateItineraryItem(item, group.items);
+            const fitParentBlockPatch =
+              parentItem && itemWarnings.some((warning) => warning.code === "child-outside-plan-block")
+                ? buildFitParentBlockPatch(parentItem, item)
+                : null;
 
             return (
               <tr
@@ -2019,6 +2024,20 @@ function DayGroup({
                         <Icon name="list" />
                       </button>
                     ) : null}
+                    {fitParentBlockPatch && parentItem ? (
+                      <button
+                        type="button"
+                        className={rowActionButtonClassName}
+                        aria-label={`Expand ${parentItem.activity} to fit ${item.activity}`}
+                        disabled={!canEdit}
+                        title={`Expand ${parentItem.activity} to fit ${item.activity}`}
+                        onClick={() => {
+                          onUpdateItemInline?.(parentItem.id, fitParentBlockPatch);
+                        }}
+                      >
+                        <Icon name="clock" />
+                      </button>
+                    ) : null}
                     {item.parentItemId ? (
                       <button
                         type="button"
@@ -2167,6 +2186,33 @@ function mergeTripDayGroups(
 function visiblePlanBlockItems(items: ItineraryItem[], collapsedPlanBlockIds: string[]): ItineraryItem[] {
   const collapsed = new Set(collapsedPlanBlockIds);
   return items.filter((item) => !item.parentItemId || !collapsed.has(item.parentItemId));
+}
+
+function buildFitParentBlockPatch(
+  parent: ItineraryItem,
+  child: ItineraryItem,
+): InlineItineraryItemPatch | null {
+  const parentInterval = getTimeWindowInterval(parent);
+  const childInterval = getTimeWindowInterval(child);
+  if (!parentInterval || !childInterval) return null;
+
+  const start = Math.min(parentInterval.start, childInterval.start);
+  const end = Math.max(parentInterval.end, childInterval.end);
+  if (end <= start) return null;
+
+  return {
+    startTime: formatTimeFromAbsoluteMinutes(start),
+    endTime: formatTimeFromAbsoluteMinutes(end),
+    endOffsetDays: Math.floor(end / minutesPerDay),
+    durationMinutes: end - start,
+  };
+}
+
+function formatTimeFromAbsoluteMinutes(minutes: number): string {
+  const minuteOfDay = ((minutes % minutesPerDay) + minutesPerDay) % minutesPerDay;
+  const hours = Math.floor(minuteOfDay / 60);
+  const mins = minuteOfDay % 60;
+  return `${hours.toString().padStart(2, "0")}:${mins.toString().padStart(2, "0")}`;
 }
 
 function groupGraphItemsByDay(
