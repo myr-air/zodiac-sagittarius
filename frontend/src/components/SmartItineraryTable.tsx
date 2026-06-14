@@ -103,6 +103,7 @@ interface SmartItineraryTableProps {
   onDeleteItem?: (itemId: string) => void;
   onExportItinerary: () => void;
   onImportItinerary: (file: File) => void;
+  onImportItineraryText?: (content: string, sourceName: string) => void | Promise<void>;
   onChangeTripPlan: (tripPlanId: string) => boolean | void | Promise<boolean | void>;
   onChangeTripPlanStatus: (
     tripPlanId: string,
@@ -381,6 +382,21 @@ const deleteDialogTitleClassName =
 const deleteDialogBodyClassName =
   "m-0 text-sm font-medium leading-6 text-(--color-text-muted)";
 const deleteDialogActionsClassName = "mt-1 flex justify-end gap-2";
+const importDialogClassName =
+  "itinerary-import-dialog grid w-[min(560px,100%)] gap-4 rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) p-4 shadow-[0_14px_34px_rgb(15_23_42_/_0.16)]";
+const importDialogTitleClassName =
+  "m-0 text-base font-extrabold leading-[22px] text-(--color-text)";
+const importDialogBodyClassName =
+  "m-0 text-sm font-medium leading-6 text-(--color-text-muted)";
+const importDialogControlsClassName = "grid gap-3";
+const importDialogFileButtonClassName =
+  "inline-flex min-h-11 items-center justify-center gap-2 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) px-3 text-sm font-extrabold text-(--color-text) transition-[background,border-color,color] duration-150 hover:enabled:border-(--color-route-border) hover:enabled:bg-(--color-route-soft) hover:enabled:text-(--color-route)";
+const importDialogPasteFieldClassName =
+  "grid gap-1 text-sm font-bold text-(--color-text)";
+const importDialogTextareaClassName =
+  "min-h-36 resize-y rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) px-3 py-2 text-sm font-medium leading-6 text-(--color-text) outline-none focus:border-(--color-route-border) focus:ring-2 focus:ring-(--color-route-soft)";
+const importDialogErrorClassName =
+  "m-0 text-xs font-bold text-(--color-danger)";
 const activityTypeOptions: ActivityType[] = [
   "food",
   "attraction",
@@ -443,6 +459,7 @@ export function SmartItineraryTable({
   onDeleteItem,
   onExportItinerary,
   onImportItinerary,
+  onImportItineraryText,
   onChangeTripPlan,
   onChangeTripPlanStatus,
   onSetMainTripPlan,
@@ -478,6 +495,11 @@ export function SmartItineraryTable({
   const [pendingDeleteItem, setPendingDeleteItem] =
     useState<ItineraryItem | null>(null);
   const [bookingDraftMessage, setBookingDraftMessage] = useState<string | null>(
+    null,
+  );
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [pastedImportText, setPastedImportText] = useState("");
+  const [pastedImportError, setPastedImportError] = useState<string | null>(
     null,
   );
   const knownFilterIdsRef = useRef<string[]>(
@@ -975,8 +997,31 @@ export function SmartItineraryTable({
 
   function importFile(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
-    if (file) onImportItinerary(file);
+    if (file) {
+      onImportItinerary(file);
+      setImportDialogOpen(false);
+      setPastedImportError(null);
+    }
     event.target.value = "";
+  }
+
+  async function submitPastedImport(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const content = pastedImportText.trim();
+    if (!content) {
+      setPastedImportError(t.itinerary.importPasteEmpty);
+      return;
+    }
+    setPastedImportError(null);
+    if (onImportItineraryText) {
+      await onImportItineraryText(content, "pasted-itinerary.csv");
+    } else {
+      onImportItinerary(
+        new File([content], "pasted-itinerary.csv", { type: "text/csv" }),
+      );
+    }
+    setPastedImportText("");
+    setImportDialogOpen(false);
   }
 
   async function submitNewTripPlan(event: FormEvent<HTMLFormElement>) {
@@ -1036,13 +1081,14 @@ export function SmartItineraryTable({
               ref={importInputRef}
               className={importInputClassName}
               type="file"
-              accept="application/json,.json"
-              aria-label={t.itinerary.importJsonInput}
+              accept="application/json,.json,text/csv,.csv,text/tab-separated-values,.tsv,text/plain,.txt"
+              aria-hidden="true"
+              tabIndex={-1}
               onChange={importFile}
             />
             <Button
               type="button"
-              onClick={() => importInputRef.current?.click()}
+              onClick={() => setImportDialogOpen(true)}
               disabled={!canRestructureItems}
               className="import-itinerary-button min-w-[104px] !bg-(--color-primary) !shadow-[0_10px_20px_color-mix(in_srgb,var(--color-primary)_18%,transparent)] hover:enabled:!bg-(--color-primary-strong) max-[767px]:flex-1"
             >
@@ -1368,6 +1414,64 @@ export function SmartItineraryTable({
               </Button>
             </div>
           </section>
+        </div>
+      ) : null}
+      {importDialogOpen ? (
+        <div className={deleteModalBackdropClassName} role="presentation">
+          <form
+            className={importDialogClassName}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="itinerary-import-title"
+            onSubmit={submitPastedImport}
+          >
+            <h2 className={importDialogTitleClassName} id="itinerary-import-title">
+              {t.itinerary.importDialogTitle}
+            </h2>
+            <p className={importDialogBodyClassName}>
+              {t.itinerary.importDialogBody}
+            </p>
+            <div className={importDialogControlsClassName}>
+              <button
+                type="button"
+                className={importDialogFileButtonClassName}
+                onClick={() => importInputRef.current?.click()}
+              >
+                <Icon name="import" />
+                {t.itinerary.importFileButton}
+              </button>
+              <label className={importDialogPasteFieldClassName}>
+                <span>{t.itinerary.importPasteLabel}</span>
+                <textarea
+                  className={importDialogTextareaClassName}
+                  value={pastedImportText}
+                  placeholder={t.itinerary.importPastePlaceholder}
+                  onChange={(event) => {
+                    setPastedImportText(event.target.value);
+                    setPastedImportError(null);
+                  }}
+                />
+              </label>
+              {pastedImportError ? (
+                <p className={importDialogErrorClassName} role="alert">
+                  {pastedImportError}
+                </p>
+              ) : null}
+            </div>
+            <div className={deleteDialogActionsClassName}>
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => {
+                  setImportDialogOpen(false);
+                  setPastedImportError(null);
+                }}
+              >
+                {t.itinerary.importCancel}
+              </Button>
+              <Button type="submit">{t.itinerary.importPasteSubmit}</Button>
+            </div>
+          </form>
         </div>
       ) : null}
     </section>

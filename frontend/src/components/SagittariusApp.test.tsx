@@ -65,6 +65,14 @@ function getFirstStopDetailsButton(): HTMLElement {
   return screen.getByRole("button", { name: /เลือกจุด Dim Dim Sum/i });
 }
 
+function getItineraryImportFileInput(): HTMLInputElement {
+  const input = document.querySelector<HTMLInputElement>(
+    'input[type="file"][accept*=".csv"]',
+  );
+  if (!input) throw new Error("Itinerary import file input missing.");
+  return input;
+}
+
 async function openFirstStopDetails(user: ReturnType<typeof userEvent.setup>) {
   await user.click(getFirstStopDetailsButton());
 }
@@ -4898,7 +4906,7 @@ describe("Sagittarius cockpit UI", () => {
       { type: "application/json" },
     );
 
-    await user.upload(screen.getByLabelText(/นำเข้า itinerary JSON/i), file);
+    await user.upload(getItineraryImportFileInput(), file);
     const dialog = await screen.findByRole("dialog", {
       name: /ตั้งค่า import itinerary/i,
     });
@@ -4975,6 +4983,89 @@ describe("Sagittarius cockpit UI", () => {
     expect(prompt).not.toHaveBeenCalled();
     expect(confirm).not.toHaveBeenCalled();
     expect(alert).not.toHaveBeenCalled();
+  });
+
+  it("previews pasted CSV rows and applies them to the selected Trip Plan", async () => {
+    const user = userEvent.setup();
+    const storage = installLocalStorageStub();
+    storage.setItem(tripStorageKey, JSON.stringify(tripWithPlans()));
+    render(<SagittariusApp initialView="itinerary" />);
+
+    await screen.findByRole("option", { name: "Rain Plan - ร่าง" });
+    await user.selectOptions(screen.getByLabelText("Trip Plan"), [
+      "plan-variant-backup",
+    ]);
+    await user.click(screen.getByRole("button", { name: /นำเข้า/i }));
+
+    const sourceDialog = screen.getByRole("dialog", { name: /นำเข้า itinerary/i });
+    fireEvent.change(within(sourceDialog).getByLabelText(/วางข้อมูลตาราง/i), {
+      target: {
+        value: [
+          "Day\tDate\tTime\tPlans\tMaps\tDuration\tTransportation\tNote",
+          "DAY1 Shenzhen\t\t\t\t\t\t\t",
+          "Thursday\t18 June 2026\t13.00 - 14.00\tAirport -> Shenzhen\t\t\t30km+ from Airport\tจองตั๋วล่วงหน้า Bus A21 - 60 HKD",
+          "\t\t20.50 -\tCivic center\thttps://surl.amap.com/5upxC7jrz6pa\t\tmetro 15 min\t",
+        ].join("\n"),
+      },
+    });
+    await user.click(
+      within(sourceDialog).getByRole("button", { name: /Preview pasted rows/i }),
+    );
+
+    const dialog = await screen.findByRole("dialog", {
+      name: /ตั้งค่า import itinerary/i,
+    });
+    expect(dialog).toHaveTextContent("Airport -> Shenzhen · 2 activities");
+    expect(dialog).toHaveTextContent(
+      "Records detected: 0 expenses, 1 bookings, 1 notes, 1 tasks",
+    );
+    expect(within(dialog).getByLabelText("Target Trip Plan")).toHaveDisplayValue(
+      "Rain Plan",
+    );
+    await user.click(
+      within(dialog).getByRole("button", { name: /import itinerary/i }),
+    );
+
+    const importedRow = screen.getByRole("row", {
+      name: /Airport -> Shenzhen/i,
+    });
+    expect(importedRow).toHaveTextContent("1 booking");
+    expect(importedRow).toHaveTextContent("1 note");
+    expect(importedRow).toHaveTextContent("1 task");
+
+    const persistedTrip = JSON.parse(storage.getItem(tripStorageKey)!) as Trip;
+    const airportItem = persistedTrip.itineraryItems.find(
+      (item) => item.activity === "Airport -> Shenzhen",
+    );
+    expect(airportItem).toMatchObject({
+      planVariantId: "plan-variant-backup",
+      activityType: "travel",
+      itemKind: "travel",
+      startTime: "13:00",
+      endTime: "14:00",
+      priority: "high",
+      note: "จองตั๋วล่วงหน้า Bus A21 - 60 HKD",
+    });
+    const civicItem = persistedTrip.itineraryItems.find(
+      (item) => item.activity === "Civic center",
+    );
+    expect(civicItem).toMatchObject({
+      planVariantId: "plan-variant-backup",
+      startTime: "20:50",
+      endTime: null,
+      mapLink: "https://surl.amap.com/5upxC7jrz6pa",
+    });
+    expect(persistedTrip.bookingDocs ?? []).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          tripPlanId: "plan-variant-backup",
+          status: "draft",
+          priceAmount: 60,
+          currency: "HKD",
+          relatedItineraryItemIds: [airportItem?.id],
+        }),
+      ]),
+    );
   });
 
   it("can import activities only while leaving source records as references", async () => {
@@ -5061,7 +5152,7 @@ describe("Sagittarius cockpit UI", () => {
       { type: "application/json" },
     );
 
-    await user.upload(screen.getByLabelText(/นำเข้า itinerary JSON/i), file);
+    await user.upload(getItineraryImportFileInput(), file);
     const dialog = await screen.findByRole("dialog", {
       name: /ตั้งค่า import itinerary/i,
     });
@@ -5421,7 +5512,7 @@ describe("Sagittarius cockpit UI", () => {
       "plan-variant-backup",
     ]);
     await user.upload(
-      screen.getByLabelText(/นำเข้า itinerary JSON/i),
+      getItineraryImportFileInput(),
       new File(["raw itinerary"], "itinerary.json", {
         type: "application/json",
       }),
@@ -6321,7 +6412,7 @@ describe("Sagittarius cockpit UI", () => {
       { type: "application/json" },
     );
 
-    await user.upload(screen.getByLabelText(/นำเข้า itinerary JSON/i), file);
+    await user.upload(getItineraryImportFileInput(), file);
     const dialog = await screen.findByRole("dialog", {
       name: /ตั้งค่า import itinerary/i,
     });

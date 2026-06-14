@@ -6,7 +6,9 @@ describe("messages", () => {
     expect(messages.th.appShell.nav.settings).toBe("ตั้งค่า");
     expect(messages.th.tripSettings.title).toBe("ตั้งค่าทริป");
     expect(messages.th.overview.filters.scopeLabel).toBe("ตัวกรองขอบเขตเช็กลิสต์");
-    expect(messages.th.itinerary.importJsonInput).toBe("นำเข้า itinerary JSON");
+    expect(messages.th.itinerary.importJsonInput).toBe(
+      "นำเข้า itinerary JSON, CSV หรือ pasted table",
+    );
     expect(messages.th.map.sourceNote).toContain("แผนที่สด");
     expect(messages.th.access.portal.nav.dashboard).toBe("แดชบอร์ด");
     expect(messages.th.access.portal.vaultCreate.submit).toBe("บันทึกเข้า Travel Vault");

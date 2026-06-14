@@ -3760,23 +3760,57 @@ export function SagittariusApp({
   async function importItinerary(file: File) {
     /* v8 ignore next */
     if (!canEdit) return;
+    const content = await file.text();
+    await importItineraryContent({
+      fileName: file.name,
+      contentType: file.type || "text/plain",
+      content,
+      preferApi: true,
+    });
+  }
+
+  async function importItineraryText(content: string, sourceName: string) {
+    /* v8 ignore next */
+    if (!canEdit) return;
+    await importItineraryContent({
+      fileName: sourceName,
+      contentType: "text/plain",
+      content,
+      preferApi: false,
+    });
+  }
+
+  async function importItineraryContent({
+    fileName,
+    contentType,
+    content,
+    preferApi,
+  }: {
+    fileName: string;
+    contentType: string;
+    content: string;
+    preferApi: boolean;
+  }) {
     try {
-      const content = await file.text();
       const document =
-        isApiMode && resolvedApiClient && participantSession
+        preferApi &&
+        shouldUseApiItineraryImport({ contentType, fileName }) &&
+        isApiMode &&
+        resolvedApiClient &&
+        participantSession
           ? await resolvedApiClient.importItinerary(
               trip.id,
               participantSession.sessionToken,
               {
-                fileName: file.name,
-                contentType: file.type || "text/plain",
+                fileName,
+                contentType,
                 mode: "auto",
                 content,
               },
             )
           : parseItineraryImportDocument(content);
       setPendingItineraryImport({
-        fileName: file.name,
+        fileName,
         items: document.items,
         records: document.records ?? emptyItineraryExportRecords(),
       });
@@ -3786,6 +3820,27 @@ export function SagittariusApp({
         caught instanceof Error ? caught.message : "Import itinerary ไม่สำเร็จ",
       );
     }
+  }
+
+  function shouldUseApiItineraryImport({
+    contentType,
+    fileName,
+  }: {
+    contentType: string;
+    fileName: string;
+  }): boolean {
+    const lowerName = fileName.toLowerCase();
+    const lowerType = contentType.toLowerCase();
+    if (
+      lowerType.includes("csv") ||
+      lowerType.includes("tab-separated") ||
+      lowerName.endsWith(".csv") ||
+      lowerName.endsWith(".tsv") ||
+      lowerName.endsWith(".txt")
+    ) {
+      return false;
+    }
+    return true;
   }
 
   async function applyPendingItineraryImport(
@@ -4336,6 +4391,7 @@ export function SagittariusApp({
                   onDeleteItem={deleteStop}
                   onExportItinerary={exportItinerary}
                   onImportItinerary={importItinerary}
+                  onImportItineraryText={importItineraryText}
                   onChangeTripPath={changeTripPath}
                   onChangeDayPath={changeDayPath}
                   onClearDayPath={clearDayPath}
@@ -4467,6 +4523,7 @@ export function SagittariusApp({
             memberId={currentMember.id}
             pathOptions={pathOptions}
             records={pendingItineraryImport.records}
+            tripPlanOptions={trip.tripPlans ?? trip.planVariants}
             tripPlanId={selectedTripPlanId}
             startDate={trip.startDate}
             onApply={(target) => void applyPendingItineraryImport(target)}
@@ -5691,6 +5748,7 @@ function ItineraryImportOptionsDialog({
   records,
   startDate,
   currentTripPathId,
+  tripPlanOptions,
   tripPlanId,
   onApply,
   onClose,
@@ -5701,6 +5759,7 @@ function ItineraryImportOptionsDialog({
   records: ItineraryExportRecords;
   startDate: string;
   currentTripPathId: string;
+  tripPlanOptions: PlanVariant[];
   tripPlanId: string;
   onApply: (target: ItineraryImportApplyTarget) => void;
   onClose: () => void;
@@ -5720,6 +5779,7 @@ function ItineraryImportOptionsDialog({
     useState<ItineraryImportApplyTarget["mode"]>("replace-target");
   const [recordMode, setRecordMode] =
     useState<ItineraryImportApplyTarget["recordMode"]>("clone-linked");
+  const [targetTripPlanId, setTargetTripPlanId] = useState(tripPlanId);
   const previewLabel = importedItems[0]?.activity ?? "No activities";
 
   function submitImport(event: FormEvent<HTMLFormElement>) {
@@ -5736,7 +5796,7 @@ function ItineraryImportOptionsDialog({
         pathOptions,
         recordMode,
         scope,
-        tripPlanId,
+        tripPlanId: targetTripPlanId,
       }),
     );
   }
@@ -5768,6 +5828,19 @@ function ItineraryImportOptionsDialog({
           </p>
         ) : null}
         <div className={importDialogFieldsClassName}>
+          <label>
+            <span>Target Trip Plan</span>
+            <select
+              value={targetTripPlanId}
+              onChange={(event) => setTargetTripPlanId(event.target.value)}
+            >
+              {tripPlanOptions.map((plan) => (
+                <option value={plan.id} key={plan.id}>
+                  {plan.name}
+                </option>
+              ))}
+            </select>
+          </label>
           <label>
             <span>ชื่อ path</span>
             <input

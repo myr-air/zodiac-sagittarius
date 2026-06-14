@@ -88,6 +88,14 @@ function findGraphLine(
   );
 }
 
+function getImportFileInput(): HTMLInputElement {
+  const input = document.querySelector<HTMLInputElement>(
+    'input[type="file"][accept*=".csv"]',
+  );
+  if (!input) throw new Error("Import file input missing.");
+  return input;
+}
+
 describe("SmartItineraryTable", () => {
   it("uses English itinerary shell labels by default and Thai after switching", () => {
     renderWithI18n(
@@ -185,11 +193,35 @@ describe("SmartItineraryTable", () => {
       { type: "application/json" },
     );
     await user.upload(
-      screen.getByLabelText(/Import itinerary JSON|นำเข้า itinerary JSON/i),
+      getImportFileInput(),
       file,
     );
 
     expect(onImportItinerary).toHaveBeenCalledWith(file);
+  });
+
+  it("opens a visible import dialog and submits pasted table rows", async () => {
+    const user = userEvent.setup();
+    const onImportItineraryText = vi.fn();
+    renderTable({ onImportItineraryText });
+
+    await user.click(screen.getByRole("button", { name: /นำเข้า/i }));
+
+    const dialog = screen.getByRole("dialog", { name: /นำเข้า itinerary/i });
+    expect(dialog).toHaveTextContent(/JSON\/CSV|spreadsheet/i);
+    await user.click(within(dialog).getByRole("button", { name: /Preview pasted rows/i }));
+    expect(within(dialog).getByRole("alert")).toHaveTextContent(/วาง CSV/i);
+
+    await user.type(
+      within(dialog).getByLabelText(/วางข้อมูลตาราง/i),
+      "Day\tDate\tTime\tPlans\nFriday\t19 June 2026\t9.00 - 10.00\tCoffee",
+    );
+    await user.click(within(dialog).getByRole("button", { name: /Preview pasted rows/i }));
+
+    expect(onImportItineraryText).toHaveBeenCalledWith(
+      "Day\tDate\tTime\tPlans\nFriday\t19 June 2026\t9.00 - 10.00\tCoffee",
+      "pasted-itinerary.csv",
+    );
   });
 
   it("renders the current Trip Plan selector with existing plan names", () => {
