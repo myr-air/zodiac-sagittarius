@@ -3873,6 +3873,12 @@ describe("Sagittarius cockpit UI", () => {
       screen.getByRole("columnheader", { name: /แผนที่ \/ ลิงก์/i }),
     ).toBeInTheDocument();
     expect(
+      screen.queryByRole("columnheader", { name: /ประเภท/i }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("columnheader", { name: /การเดินทาง/i }),
+    ).not.toBeInTheDocument();
+    expect(
       screen.getByRole("button", { name: /เลือกจุด Dim Dim Sum/i }),
     ).toBeInTheDocument();
     expect(

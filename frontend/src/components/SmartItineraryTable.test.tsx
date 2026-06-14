@@ -1749,7 +1749,7 @@ describe("SmartItineraryTable", () => {
     const table = screen.getByRole("table", {
       name: /รายการแผนการเดินทาง แยกตามวัน/i,
     });
-    expect(table).toHaveClass("smart-table", "w-full", "min-w-[1080px]");
+    expect(table).toHaveClass("smart-table", "w-full", "min-w-[920px]");
 
     const selectedRow = screen.getByRole("row", { name: /Dim Dim Sum/i });
     expect(selectedRow).toHaveClass("data-row", "data-row--selected");
@@ -1763,7 +1763,7 @@ describe("SmartItineraryTable", () => {
     ).toHaveClass("map-link", "underline");
   });
 
-  it("saves visible row fields from flat inline controls", async () => {
+  it("saves visible row fields from simplified inline controls", async () => {
     const user = userEvent.setup();
     const onUpdateItemInline = vi.fn();
     renderTable({ onUpdateItemInline });
@@ -1800,11 +1800,11 @@ describe("SmartItineraryTable", () => {
       within(typeMenu).getByRole("option", { name: /กิจกรรม/i }),
     );
 
-    const transportation = within(row).getByRole("textbox", {
-      name: /แก้ไขการเดินทาง Dim Dim Sum/i,
-    });
-    await user.clear(transportation);
-    await user.type(transportation, "Walk{Enter}");
+    expect(
+      within(row).queryByRole("textbox", {
+        name: /แก้ไขการเดินทาง Dim Dim Sum/i,
+      }),
+    ).not.toBeInTheDocument();
 
     expect(onUpdateItemInline).toHaveBeenCalledWith("item-dimdim", {
       activity: "Harbour brunch",
@@ -1821,9 +1821,6 @@ describe("SmartItineraryTable", () => {
     });
     expect(onUpdateItemInline).toHaveBeenCalledWith("item-dimdim", {
       activityType: "experience",
-    });
-    expect(onUpdateItemInline).toHaveBeenCalledWith("item-dimdim", {
-      transportation: "Walk",
     });
   });
 
@@ -2082,8 +2079,8 @@ describe("SmartItineraryTable", () => {
       within(row).getByRole("button", { name: /ประเภท Dim Dim Sum/i }),
     ).toBeDisabled();
     expect(
-      within(row).getByRole("textbox", { name: /การเดินทาง Dim Dim Sum/i }),
-    ).toHaveAttribute("readonly");
+      within(row).queryByRole("textbox", { name: /การเดินทาง Dim Dim Sum/i }),
+    ).not.toBeInTheDocument();
   });
 
   it("shows row action buttons in the last column", async () => {
@@ -2684,6 +2681,58 @@ describe("SmartItineraryTable", () => {
       "data-hierarchy-level",
       "1",
     );
+  });
+
+  it("lays out sub-activity and place as a wrapping inline sentence", async () => {
+    const user = userEvent.setup();
+    const onUpdateItemInline = vi.fn();
+    renderTable({
+      items: [
+        {
+          ...tripFixture.planItems[0],
+          id: "block-flight",
+          activity: "Flight to Hong Kong",
+          isPlanBlock: true,
+          parentItemId: null,
+          sortOrder: 100,
+        },
+        {
+          ...tripFixture.planItems[1],
+          id: "child-checkin",
+          activity: "Airport check-in and document review",
+          place: "Hong Kong International Airport Terminal 1",
+          isPlanBlock: false,
+          parentItemId: "block-flight",
+          sortOrder: 110,
+        },
+      ],
+      onUpdateItemInline,
+      selectedItemId: "block-flight",
+    });
+
+    const childGroup = screen.getByRole("group", {
+      name: /Sub-activity Airport check-in/i,
+    });
+    expect(childGroup).toHaveClass("grid-cols-[24px_minmax(0,1fr)]");
+    expect(within(childGroup).getByText("@")).toBeInTheDocument();
+
+    const activityField = within(childGroup).getByRole("textbox", {
+      name: /แก้ไขกิจกรรม Airport check-in/i,
+    });
+    const placeField = within(childGroup).getByRole("textbox", {
+      name: /แก้ไขสถานที่ Airport check-in/i,
+    });
+    expect(activityField.tagName).toBe("TEXTAREA");
+    expect(activityField).toHaveClass("max-h-10", "resize-none", "flex-[2_1_220px]");
+    expect(placeField.tagName).toBe("TEXTAREA");
+    expect(placeField).toHaveClass("max-h-10", "resize-none", "flex-[1_1_180px]");
+
+    await user.clear(activityField);
+    await user.type(activityField, "Counter check-in{Enter}");
+
+    expect(onUpdateItemInline).toHaveBeenCalledWith("child-checkin", {
+      activity: "Counter check-in",
+    });
   });
 
   it("surfaces hierarchy warnings inline on affected rows", () => {

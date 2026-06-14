@@ -203,7 +203,7 @@ const importInputClassName = "sr-only";
 const tableScrollClassName =
   "table-scroll m-0 h-auto min-h-0 w-full max-w-full overflow-x-auto overflow-y-hidden rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) shadow-[0_1px_0_rgb(15_23_42_/_0.04)] [contain:paint]";
 const smartTableClassName =
-  "smart-table w-full min-w-[1080px] table-fixed border-collapse text-xs leading-4 text-(--color-text) [&_a]:text-(--color-route) [&_a]:underline [&_a]:underline-offset-2 [&_td:first-child]:px-0 [&_td:first-child]:text-center [&_td:nth-child(2)]:w-[38px] [&_td:nth-child(2)]:px-0 [&_td:nth-child(2)]:text-center [&_td:nth-child(3)]:w-[88px] [&_td:nth-child(5)]:w-[94px] [&_td:nth-child(6)]:w-[124px] [&_td:nth-child(7)]:w-[108px] [&_td:nth-child(8)]:w-[148px] [&_td:nth-child(8)]:border-r-0 [&_td]:h-10 [&_td]:border-b [&_td]:border-r [&_td]:border-(--color-border) [&_td]:px-2.5 [&_td]:py-1.5 [&_td]:text-left [&_td]:align-middle [&_th:first-child]:px-0 [&_th:first-child]:text-center [&_th:nth-child(2)]:w-[38px] [&_th:nth-child(2)]:px-0 [&_th:nth-child(2)]:text-center [&_th:nth-child(3)]:w-[88px] [&_th:nth-child(5)]:w-[94px] [&_th:nth-child(6)]:w-[124px] [&_th:nth-child(7)]:w-[108px] [&_th:nth-child(8)]:w-[148px] [&_th:nth-child(8)]:border-r-0 [&_th]:h-9 [&_th]:border-b [&_th]:border-r [&_th]:border-(--color-border-strong) [&_th]:px-2.5 [&_th]:py-1 [&_th]:text-left [&_th]:align-middle [&_thead_th]:sticky [&_thead_th]:top-0 [&_thead_th]:z-[1] [&_thead_th]:h-12 [&_thead_th]:bg-[linear-gradient(180deg,rgb(255_255_255_/_0.98)_0%,rgb(239_246_255_/_0.94)_100%)] [&_thead_th]:text-xs [&_thead_th]:font-[800] [&_thead_th]:text-(--color-text) [&_thead_th]:shadow-[inset_0_-1px_0_var(--color-route-border)]";
+  "smart-table w-full min-w-[920px] table-fixed border-collapse text-xs leading-4 text-(--color-text) [&_a]:text-(--color-route) [&_a]:underline [&_a]:underline-offset-2 [&_td:first-child]:px-0 [&_td:first-child]:text-center [&_td:nth-child(2)]:w-[38px] [&_td:nth-child(2)]:px-0 [&_td:nth-child(2)]:text-center [&_td:nth-child(3)]:w-[128px] [&_td:nth-child(5)]:w-[128px] [&_td:nth-child(6)]:w-[148px] [&_td:nth-child(6)]:border-r-0 [&_td]:h-10 [&_td]:border-b [&_td]:border-r [&_td]:border-(--color-border) [&_td]:px-2.5 [&_td]:py-1.5 [&_td]:text-left [&_td]:align-middle [&_th:first-child]:px-0 [&_th:first-child]:text-center [&_th:nth-child(2)]:w-[38px] [&_th:nth-child(2)]:px-0 [&_th:nth-child(2)]:text-center [&_th:nth-child(3)]:w-[128px] [&_th:nth-child(5)]:w-[128px] [&_th:nth-child(6)]:w-[148px] [&_th:nth-child(6)]:border-r-0 [&_th]:h-9 [&_th]:border-b [&_th]:border-r [&_th]:border-(--color-border-strong) [&_th]:px-2.5 [&_th]:py-1 [&_th]:text-left [&_th]:align-middle [&_thead_th]:sticky [&_thead_th]:top-0 [&_thead_th]:z-[1] [&_thead_th]:h-12 [&_thead_th]:bg-[linear-gradient(180deg,rgb(255_255_255_/_0.98)_0%,rgb(239_246_255_/_0.94)_100%)] [&_thead_th]:text-xs [&_thead_th]:font-[800] [&_thead_th]:text-(--color-text) [&_thead_th]:shadow-[inset_0_-1px_0_var(--color-route-border)]";
 const graphColumnMinWidth = 30;
 const graphColumnSidePadding = 9;
 const graphColumnLaneGap = 18;
@@ -278,6 +278,10 @@ const activityCellClassName = "activity-cell min-w-0";
 const rowSelectClassName =
   "row-select inline-flex min-h-8 w-fit min-w-0 items-center gap-1.5 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) px-2 py-0.5 text-[11px] font-extrabold leading-4 text-(--color-route) transition-[background,border-color,color] duration-150 hover:bg-(--color-route-soft) hover:border-(--color-route-border) focus-visible:bg-(--color-route-soft) focus-visible:border-(--color-route-border) focus-visible:outline-none";
 const inlineActivityStackClassName = "grid min-w-0 gap-0.5";
+const activityCellToolbarClassName =
+  "flex min-w-0 flex-wrap items-center gap-1.5";
+const activityCellTypeButtonClassName =
+  "!min-h-8 !w-[132px] max-w-full px-2 text-[11px]";
 const hierarchyMetaClassName =
   "inline-flex min-w-0 flex-wrap items-center gap-1.5 text-[10px] font-extrabold leading-4 text-(--color-text-muted)";
 const hierarchyChipClassName =
@@ -300,7 +304,7 @@ const subActivityShellClassName =
   "sub-activity-shell mt-1 grid min-w-0 gap-1 border-l border-(--color-route-border) pl-2";
 const subActivityListClassName = "grid min-w-0 gap-1";
 const subActivityRowClassName =
-  "sub-activity-row grid min-h-8 min-w-0 grid-cols-[24px_minmax(0,1fr)_auto] items-center gap-1 rounded-(--radius-sm) border border-transparent bg-[rgb(255_255_255_/_0.62)] px-1 py-0.5 text-[11px] leading-4 transition-[background,border-color,box-shadow,opacity] duration-150";
+  "sub-activity-row grid min-h-10 min-w-0 grid-cols-[24px_minmax(0,1fr)] items-start gap-x-1.5 gap-y-1 rounded-(--radius-sm) border border-transparent bg-[rgb(255_255_255_/_0.62)] px-1.5 py-1 text-[11px] leading-4 transition-[background,border-color,box-shadow,opacity] duration-150";
 const subActivityRowSelectedClassName =
   "sub-activity-row--selected border-(--color-primary-border) bg-(--color-primary-soft)";
 const subActivityRowWarningClassName =
@@ -312,13 +316,15 @@ const subActivityRowDraggingClassName =
 const subActivityRowDropTargetClassName =
   "sub-activity-row--drop-target border-(--color-route-border) bg-(--color-route-soft) shadow-[inset_0_2px_0_var(--color-route)]";
 const subActivityDragButtonClassName =
-  "sub-activity-drag inline-grid size-6 shrink-0 touch-none cursor-grab place-items-center rounded-(--radius-sm) border-0 bg-transparent text-(--color-text-subtle) transition-[background,color] duration-150 hover:not-disabled:bg-(--color-route-soft) hover:not-disabled:text-(--color-route) active:cursor-grabbing disabled:cursor-not-allowed disabled:opacity-[0.42] [&_.icon]:size-3.5";
+  "sub-activity-drag mt-0.5 inline-grid size-6 shrink-0 touch-none cursor-grab place-items-center rounded-(--radius-sm) border-0 bg-transparent text-(--color-text-subtle) transition-[background,color] duration-150 hover:not-disabled:bg-(--color-route-soft) hover:not-disabled:text-(--color-route) active:cursor-grabbing disabled:cursor-not-allowed disabled:opacity-[0.42] [&_.icon]:size-3.5";
 const subActivityContentClassName =
-  "flex min-w-0 items-center gap-1 overflow-hidden";
-const subActivityPlaceWrapClassName =
-  "inline-flex min-w-0 max-w-[150px] shrink-[2] items-center gap-0.5 text-[11px] font-semibold text-(--color-text-muted)";
+  "min-w-0";
+const subActivitySentenceClassName =
+  "flex min-w-0 flex-wrap items-start gap-x-1 gap-y-0.5";
+const subActivityAtClassName =
+  "mt-[3px] shrink-0 text-[11px] font-semibold text-(--color-text-muted)";
 const subActivityToolsClassName =
-  "inline-flex shrink-0 items-center justify-end gap-0.5";
+  "col-start-2 inline-flex min-w-0 flex-wrap items-center justify-end gap-0.5 justify-self-end";
 const subActivityIconButtonClassName =
   "inline-grid size-6 shrink-0 place-items-center rounded-(--radius-sm) border border-transparent bg-transparent text-(--color-text-subtle) transition-[background,border-color,color] duration-150 hover:not-disabled:border-(--color-route-border) hover:not-disabled:bg-(--color-route-soft) hover:not-disabled:text-(--color-route) disabled:cursor-not-allowed disabled:opacity-[0.42] [&_.icon]:size-3.5";
 const subActivityTypeSelectClassName =
@@ -336,10 +342,10 @@ const inlineSubtleFieldClassName = cn(
 );
 const inlineTimeInputClassName = cn(
   inlineFieldClassName,
-  "text-center font-[650] tabular-nums",
+  "min-w-0 px-1 !pr-7 text-center font-[650] tabular-nums",
 );
 const timeWindowInlineClassName =
-  "inline-flex w-full min-w-0 items-center justify-center gap-0.5";
+  "grid w-full min-w-0 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)_24px] items-center gap-0.5";
 const timeWindowSeparatorClassName =
   "shrink-0 text-[10px] font-black leading-none text-(--color-text-subtle)";
 const endOffsetToggleClassName =
@@ -348,15 +354,15 @@ const endOffsetSupClassName =
   "ml-0.5 align-super text-[0.72em] font-black leading-none";
 const subActivityNameFieldClassName = cn(
   inlineFieldClassName,
-  "min-h-6 min-w-[72px] flex-[1_1_120px] px-1 text-[11px] font-semibold leading-4 read-only:px-1",
+  "!w-auto min-h-6 max-h-10 min-w-[150px] flex-[2_1_220px] resize-none overflow-hidden whitespace-normal px-1 text-[11px] font-semibold leading-4 read-only:px-1 read-only:whitespace-normal read-only:text-clip",
 );
 const subActivityPlaceFieldClassName = cn(
   inlineFieldClassName,
-  "min-h-6 min-w-0 px-1 text-[11px] leading-4 text-(--color-text-muted) read-only:px-1",
+  "!w-auto min-h-6 max-h-10 min-w-[130px] flex-[1_1_180px] resize-none overflow-hidden whitespace-normal px-1 text-[11px] leading-4 text-(--color-text-muted) read-only:px-1 read-only:whitespace-normal read-only:text-clip",
 );
 const subActivityTimeInputClassName = cn(
   inlineFieldClassName,
-  "min-h-5 w-[48px] px-0 text-center text-[11px] font-[650] leading-4 tabular-nums read-only:px-0",
+  "min-h-5 w-[64px] px-1 !pr-6 text-center text-[11px] font-[650] leading-4 tabular-nums read-only:px-1",
 );
 const subActivityTimeToggleClassName = cn(
   endOffsetToggleClassName,
@@ -1191,8 +1197,6 @@ export function SmartItineraryTable({
             <col />
             <col />
             <col />
-            <col />
-            <col />
           </colgroup>
           <thead>
             <tr>
@@ -1206,9 +1210,7 @@ export function SmartItineraryTable({
                 {t.itinerary.headers.time}
               </th>
               <th>{t.itinerary.headers.activity}</th>
-              <th>{t.itinerary.headers.type}</th>
               <th>{t.itinerary.headers.map}</th>
-              <th>{t.itinerary.headers.transport}</th>
               <th>{t.itinerary.headers.actions}</th>
             </tr>
           </thead>
@@ -1711,7 +1713,7 @@ function DayGroup({
     >
       {hasTopSpacer ? (
         <tr className={daySpacerRowClassName} aria-hidden="true">
-          <td colSpan={8} />
+          <td colSpan={6} />
         </tr>
       ) : null}
       <tr className={dayRowClassName}>
@@ -1734,7 +1736,7 @@ function DayGroup({
             />
           </td>
         ) : null}
-        <th colSpan={showGraph ? 7 : 8}>
+        <th colSpan={showGraph ? 5 : 6}>
           <div className={dayRowContentClassName}>
             <button
               type="button"
@@ -1853,19 +1855,35 @@ function DayGroup({
                       activity: item.activity,
                     })}
                   >
-                    <button
-                      type="button"
-                      className={rowSelectClassName}
-                      aria-pressed={selectedItemId === item.id}
-                      aria-label={itineraryLabels.row.select({
-                        activity: item.activity,
-                      })}
-                      tabIndex={collapsed ? -1 : undefined}
-                      onClick={() => onOpenItemDetails(item.id)}
-                    >
-                      <Icon name="panel" className="size-3.5" />
-                      <span>{itineraryLabels.openDetails}</span>
-                    </button>
+                    <div className={activityCellToolbarClassName}>
+                      <button
+                        type="button"
+                        className={rowSelectClassName}
+                        aria-pressed={selectedItemId === item.id}
+                        aria-label={itineraryLabels.row.select({
+                          activity: item.activity,
+                        })}
+                        tabIndex={collapsed ? -1 : undefined}
+                        onClick={() => onOpenItemDetails(item.id)}
+                      >
+                        <Icon name="panel" className="size-3.5" />
+                        <span>{itineraryLabels.openDetails}</span>
+                      </button>
+                      <InlineActivityTypeSelect
+                        activity={item.activity}
+                        ariaLabel={itineraryLabels.row.inlineType({
+                          activity: item.activity,
+                        })}
+                        buttonClassName={activityCellTypeButtonClassName}
+                        canEdit={canEdit}
+                        key={`${item.id}:type:${item.activityType}`}
+                        locale={locale}
+                        value={item.activityType}
+                        onCommit={(activityType) =>
+                          onUpdateItemInline?.(item.id, { activityType })
+                        }
+                      />
+                    </div>
                     <InlineTextField
                       ariaLabel={itineraryLabels.row.inlineActivity({
                         activity: item.activity,
@@ -1973,47 +1991,6 @@ function DayGroup({
                   </div>
                 </td>
                 <td>
-                  <div className={inlineActivityStackClassName}>
-                    <InlineItemKindSelect
-                      activity={item.activity}
-                      canEdit={canEdit}
-                      value={item.itemKind ?? "activity"}
-                      onCommit={(itemKind) => onUpdateItemInline?.(item.id, { itemKind })}
-                    />
-                    <InlineActivityTypeSelect
-                      activity={item.activity}
-                      ariaLabel={itineraryLabels.row.inlineType({
-                        activity: item.activity,
-                      })}
-                      canEdit={canEdit}
-                      key={`${item.id}:type:${item.activityType}`}
-                      locale={locale}
-                      value={item.activityType}
-                      onCommit={(activityType) =>
-                        onUpdateItemInline?.(item.id, { activityType })
-                      }
-                    />
-                    <InlineTimeModeSelect
-                      activity={item.activity}
-                      canEdit={canEdit}
-                      value={item.timeMode ?? "scheduled"}
-                      onCommit={(timeMode) =>
-                        onUpdateItemInline?.(item.id, {
-                          timeMode,
-                          ...(timeMode === "flexible"
-                            ? {
-                                startTime: "",
-                                endTime: null,
-                                endOffsetDays: 0,
-                                durationMinutes: null,
-                              }
-                            : {}),
-                        })
-                      }
-                    />
-                  </div>
-                </td>
-                <td>
                   <a
                     className={mapLinkClassName}
                     href={mapHref(item)}
@@ -2021,35 +1998,6 @@ function DayGroup({
                   >
                     {mapLinkLabel(item, itineraryLabels.row.mapFallback)}
                   </a>
-                </td>
-                <td>
-                  <div className={inlineActivityStackClassName}>
-                    <InlineTextField
-                      ariaLabel={itineraryLabels.row.inlineTransportation({
-                        activity: item.activity,
-                      })}
-                      canEdit={canEdit}
-                      className={inlineSubtleFieldClassName}
-                      itemValue={displayTransportation(item)}
-                      key={`${item.id}:transportation:${displayTransportation(item)}`}
-                      placeholder="—"
-                      onCommit={(value) =>
-                        onUpdateItemInline?.(item.id, { transportation: value })
-                      }
-                    />
-                    <InlineStatusSelect
-                      activity={item.activity}
-                      canEdit={canEdit}
-                      value={item.status ?? "idea"}
-                      onCommit={(status) => onUpdateItemInline?.(item.id, { status })}
-                    />
-                    <InlinePrioritySelect
-                      activity={item.activity}
-                      canEdit={canEdit}
-                      value={item.priority ?? "normal"}
-                      onCommit={(priority) => onUpdateItemInline?.(item.id, { priority })}
-                    />
-                  </div>
                 </td>
                 <td className={rowActionCellClassName}>
                   <div className={rowActionsClassName}>
@@ -2175,7 +2123,7 @@ function DayGroup({
         : null}
       {!collapsed ? (
         <tr className={addStopRowClassName} data-day-drop={group.day}>
-          <td colSpan={showGraph ? 7 : 8}>
+          <td colSpan={showGraph ? 5 : 6}>
             <button
               type="button"
               className={addStopInlineButtonClassName}
@@ -2407,34 +2355,38 @@ function SubActivityRow({
         <Icon name="drag" />
       </button>
       <div className={subActivityContentClassName}>
-        <InlineTextField
-          ariaLabel={itineraryLabels.row.inlineActivity({
-            activity: item.activity,
-          })}
-          canEdit={canEdit}
-          className={subActivityNameFieldClassName}
-          itemValue={item.activity}
-          key={`${item.id}:sub-activity:${item.activity}`}
-          required
-          onClick={() => onSelectItem(item.id)}
-          onCommit={(activity) => onUpdateItemInline?.(item.id, { activity })}
-        />
-        {hasPlace ? (
-          <span className={subActivityPlaceWrapClassName}>
-            <span aria-hidden="true">@</span>
-            <InlineTextField
-              ariaLabel={itineraryLabels.row.inlinePlace({
-                activity: item.activity,
-              })}
-              canEdit={canEdit}
-              className={subActivityPlaceFieldClassName}
-              itemValue={item.place}
-              key={`${item.id}:sub-place:${item.place}`}
-              onClick={() => onSelectItem(item.id)}
-              onCommit={(place) => onUpdateItemInline?.(item.id, { place })}
-            />
-          </span>
-        ) : null}
+        <div className={subActivitySentenceClassName}>
+          <InlineTextareaField
+            ariaLabel={itineraryLabels.row.inlineActivity({
+              activity: item.activity,
+            })}
+            canEdit={canEdit}
+            className={subActivityNameFieldClassName}
+            itemValue={item.activity}
+            key={`${item.id}:sub-activity:${item.activity}`}
+            required
+            onClick={() => onSelectItem(item.id)}
+            onCommit={(activity) => onUpdateItemInline?.(item.id, { activity })}
+          />
+          {hasPlace ? (
+            <>
+              <span className={subActivityAtClassName} aria-hidden="true">
+                @
+              </span>
+              <InlineTextareaField
+                ariaLabel={itineraryLabels.row.inlinePlace({
+                  activity: item.activity,
+                })}
+                canEdit={canEdit}
+                className={subActivityPlaceFieldClassName}
+                itemValue={item.place}
+                key={`${item.id}:sub-place:${item.place}`}
+                onClick={() => onSelectItem(item.id)}
+                onCommit={(place) => onUpdateItemInline?.(item.id, { place })}
+              />
+            </>
+          ) : null}
+        </div>
       </div>
       <div className={subActivityToolsClassName}>
         {hasMapLink ? (
@@ -3110,6 +3062,82 @@ function InlineTextField({
         }}
       />
     )
+  );
+}
+
+function InlineTextareaField({
+  ariaLabel,
+  canEdit,
+  className,
+  itemValue,
+  onClick,
+  onCommit,
+  placeholder,
+  required = false,
+}: {
+  ariaLabel: string;
+  canEdit: boolean;
+  className: string;
+  itemValue: string;
+  onClick?: () => void;
+  onCommit: (value: string) => void | Promise<void>;
+  placeholder?: string;
+  required?: boolean;
+}) {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [value, setValue] = useState(itemValue);
+
+  useEffect(() => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+    textarea.style.height = "auto";
+    textarea.style.height = `${Math.min(Math.max(textarea.scrollHeight, 24), 40)}px`;
+  }, [value]);
+
+  function normalizeValue(nextValue: string): string {
+    return nextValue.trim().replace(/\s*\n+\s*/g, " ");
+  }
+
+  function commitValue() {
+    if (!canEdit) return;
+    const nextValue = normalizeValue(value);
+    if (required && nextValue.length === 0) {
+      setValue(itemValue);
+      return;
+    }
+    if (nextValue === itemValue) return;
+    void onCommit(nextValue);
+  }
+
+  function cancelValue() {
+    setValue(itemValue);
+  }
+
+  return (
+    <textarea
+      ref={textareaRef}
+      aria-label={ariaLabel}
+      className={className}
+      placeholder={placeholder}
+      readOnly={!canEdit}
+      rows={1}
+      value={value}
+      onBlur={commitValue}
+      onChange={(event) => setValue(event.target.value)}
+      onClick={onClick}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" && !event.shiftKey) {
+          event.preventDefault();
+          commitValue();
+          event.currentTarget.blur();
+          return;
+        }
+        if (event.key === "Escape") {
+          cancelValue();
+          event.preventDefault();
+        }
+      }}
+    />
   );
 }
 
