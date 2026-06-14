@@ -232,6 +232,7 @@ export const Owner: Story = {
     showAllPaths: false,
     tripName: tripFixture.trip.name,
     onAddStop: noop,
+    onOpenItemDetails: noop,
     onSelectItem: noop,
     onMoveItem: noop,
     onMoveItemIntoPlanBlock: noop,

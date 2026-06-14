@@ -36,6 +36,7 @@ function renderTable(
     tripName: tripFixture.trip.name,
     onAddBookingForItem: vi.fn(),
     onAddStop: vi.fn(),
+    onOpenItemDetails: vi.fn(),
     onSelectItem: vi.fn(),
     onMoveItem: vi.fn(),
     onMoveItemIntoPlanBlock: vi.fn(),
@@ -132,6 +133,7 @@ describe("SmartItineraryTable", () => {
           selectedItemId={tripFixture.planItems[0].id}
           tripName={tripFixture.trip.name}
           onAddStop={vi.fn()}
+          onOpenItemDetails={vi.fn()}
           onSelectItem={vi.fn()}
           onMoveItem={vi.fn()}
           onMoveItemIntoPlanBlock={vi.fn()}
@@ -1693,9 +1695,10 @@ describe("SmartItineraryTable", () => {
     ).not.toHaveClass("data-row--path-overlap");
   });
 
-  it("uses explicit controls for row selection instead of making table rows interactive", () => {
+  it("uses explicit controls for details instead of making table rows interactive", () => {
+    const onOpenItemDetails = vi.fn();
     const onSelectItem = vi.fn();
-    const props = renderTable({ onSelectItem });
+    const props = renderTable({ onOpenItemDetails, onSelectItem });
     const row = screen.getByRole("row", { name: /Dim Dim Sum/i });
 
     expect(row).not.toHaveAttribute("tabindex");
@@ -1707,7 +1710,8 @@ describe("SmartItineraryTable", () => {
     });
     expect(detailsButton).not.toHaveClass("sr-only");
     fireEvent.click(detailsButton);
-    expect(props.onSelectItem).toHaveBeenCalledWith("item-dimdim");
+    expect(props.onOpenItemDetails).toHaveBeenCalledWith("item-dimdim");
+    expect(props.onSelectItem).not.toHaveBeenCalled();
     expect(
       within(row).getByRole("textbox", { name: /แก้ไขสถานที่ Dim Dim Sum/i }),
     ).toHaveValue("Shop G72, G/F, The Elements");

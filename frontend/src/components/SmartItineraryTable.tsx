@@ -90,6 +90,7 @@ interface SmartItineraryTableProps {
   onAddSubActivity?: (parentItemId: string) => void | Promise<void>;
   onAddNoteForItem?: (itemId: string) => void;
   onAddTaskForItem?: (itemId: string) => void;
+  onOpenItemDetails: (itemId: string) => void;
   onSelectItem: (itemId: string) => void;
   onMoveItem: (draggedItemId: string, targetItemId: string) => void;
   onMoveItemIntoPlanBlock: (draggedItemId: string, planBlockItemId: string) => void;
@@ -449,6 +450,7 @@ export function SmartItineraryTable({
   onAddSubActivity,
   onAddNoteForItem,
   onAddTaskForItem,
+  onOpenItemDetails,
   onSelectItem,
   onMoveItem,
   onMoveItemIntoPlanBlock,
@@ -1341,6 +1343,7 @@ export function SmartItineraryTable({
               onAddSubActivity={onAddSubActivity}
               onAddNoteForItem={onAddNoteForItem}
               onAddTaskForItem={onAddTaskForItem}
+              onOpenItemDetails={onOpenItemDetails}
               onMoveItem={onMoveItem}
               onMoveItemIntoPlanBlock={onMoveItemIntoPlanBlock}
               onMoveItemToDay={onMoveItemToDay}
@@ -1716,6 +1719,7 @@ function DayGroup({
   onAddSubActivity,
   onAddNoteForItem,
   onAddTaskForItem,
+  onOpenItemDetails,
   onMoveItem,
   onMoveItemIntoPlanBlock,
   onMoveItemToDay,
@@ -1772,6 +1776,7 @@ function DayGroup({
   onAddSubActivity?: (parentItemId: string) => void | Promise<void>;
   onAddNoteForItem?: (itemId: string) => void;
   onAddTaskForItem?: (itemId: string) => void;
+  onOpenItemDetails: (itemId: string) => void;
   onMoveItem: (draggedItemId: string, targetItemId: string) => void;
   onMoveItemIntoPlanBlock: (
     draggedItemId: string,
@@ -2012,7 +2017,7 @@ function DayGroup({
                         activity: item.activity,
                       })}
                       tabIndex={collapsed ? -1 : undefined}
-                      onClick={() => onSelectItem(item.id)}
+                      onClick={() => onOpenItemDetails(item.id)}
                     >
                       <Icon name="panel" className="size-3.5" />
                       <span>{itineraryLabels.openDetails}</span>

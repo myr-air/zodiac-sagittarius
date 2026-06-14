@@ -883,15 +883,6 @@ export function SagittariusApp({
   }, [participantSession, requireJoin, routeTripId, sessionMember]);
 
   useEffect(() => {
-    if (!supportsContextRail || typeof window === "undefined") return;
-    if (window.sessionStorage.getItem("sagittarius-open-expenses") !== trip.id)
-      return;
-    window.sessionStorage.removeItem("sagittarius-open-expenses");
-    const timeout = window.setTimeout(() => setContextRailVisibility(true), 0);
-    return () => window.clearTimeout(timeout);
-  }, [setContextRailVisibility, supportsContextRail, trip.id]);
-
-  useEffect(() => {
     if (!contextRailOpen) return undefined;
 
     function closeContextRailFromOutside(event: Event) {
@@ -1173,6 +1164,11 @@ export function SagittariusApp({
   function selectItem(itemId: string) {
     setContextRailPreferredTab("notes");
     setSelectedItemId(itemId);
+  }
+
+  function openItemDetails(itemId: string) {
+    setContextRailPreferredTab("notes");
+    setSelectedItemId(itemId);
     setContextRailVisibility(true);
   }
 
@@ -1223,7 +1219,6 @@ export function SagittariusApp({
           trip: replaceItineraryItem(nextTrip, patchedItem),
         }));
         setSelectedItemId(draggedItemId);
-        setContextRailVisibility(true);
         return;
       }
       const orderedIds = nextTrip.itineraryItems
@@ -1261,12 +1256,10 @@ export function SagittariusApp({
           },
         };
       });
-      setContextRailVisibility(true);
       return;
     }
 
     commitTrip(() => nextTrip, draggedItemId);
-    setContextRailVisibility(true);
   }
 
   async function moveItemIntoPlanBlock(
@@ -1311,12 +1304,10 @@ export function SagittariusApp({
         trip: replaceItineraryItem(nextTrip, patchedItem),
       }));
       setSelectedItemId(draggedItemId);
-      setContextRailVisibility(true);
       return;
     }
 
     commitTrip(() => nextTrip, draggedItemId);
-    setContextRailVisibility(true);
   }
 
   async function moveItemToDay(draggedItemId: string, targetDay: string) {
@@ -1348,12 +1339,10 @@ export function SagittariusApp({
       );
       setTripState((current) => ({ ...current, trip: nextTrip }));
       setSelectedItemId(draggedItemId);
-      setContextRailVisibility(true);
       return;
     }
 
     commitTrip(() => nextTrip, draggedItemId);
-    setContextRailVisibility(true);
   }
 
   async function moveItemToPath(itemId: string, pathId: string) {
@@ -1399,12 +1388,10 @@ export function SagittariusApp({
         },
       }));
       setSelectedItemId(itemId);
-      setContextRailVisibility(true);
       return;
     }
 
     commitTrip(() => branchPlacement.trip, itemId);
-    setContextRailVisibility(true);
   }
 
   async function createStop(values: StopFormValues) {
@@ -1944,7 +1931,6 @@ export function SagittariusApp({
         },
       }));
       setSelectedItemId(itemId);
-      setContextRailVisibility(true);
       setDialogState(null);
       return;
     }
@@ -1993,7 +1979,6 @@ export function SagittariusApp({
         : pathPlacement.trip;
     });
     setSelectedItemId(itemId);
-    setContextRailVisibility(true);
     setDialogState(null);
   }
 
@@ -2091,7 +2076,6 @@ export function SagittariusApp({
           latestTripRef.current = nextTrip;
           setTripState((current) => ({ ...current, trip: nextTrip }));
           setSelectedItemId(itemId);
-          setContextRailVisibility(true);
           return;
         } catch (error) {
           if (
@@ -2139,7 +2123,6 @@ export function SagittariusApp({
         ),
       };
     }, itemId);
-    setContextRailVisibility(true);
   }
 
   async function deleteSelectedStop() {
@@ -2190,7 +2173,7 @@ export function SagittariusApp({
         },
       }));
       setSelectedItemId(nextSelectedItemId);
-      setContextRailVisibility(Boolean(nextSelectedItemId));
+      if (!nextSelectedItemId) setContextRailVisibility(false);
       setDialogState((current) =>
         current?.mode === "edit" && current.item.id === itemId ? null : current,
       );
@@ -2208,7 +2191,7 @@ export function SagittariusApp({
       }),
       nextSelectedItemId,
     );
-    setContextRailVisibility(Boolean(nextSelectedItemId));
+    if (!nextSelectedItemId) setContextRailVisibility(false);
     setDialogState((current) =>
       current?.mode === "edit" && current.item.id === itemId ? null : current,
     );
@@ -2555,7 +2538,6 @@ export function SagittariusApp({
         },
       );
       setSuggestions((current) => [...current, suggestion]);
-      setContextRailVisibility(true);
       return;
     }
     setSuggestions((current) => [
@@ -2573,7 +2555,6 @@ export function SagittariusApp({
         createdAt: new Date().toISOString(),
       },
     ]);
-    setContextRailVisibility(true);
   }
 
   async function runPlanCheck() {
@@ -2712,7 +2693,6 @@ export function SagittariusApp({
     });
     setContextRailPreferredTab("booking");
     setSelectedItemId(item.id);
-    setContextRailVisibility(true);
   }
 
   async function saveTripSettings(values: TripSettingsFormValues) {
@@ -2911,7 +2891,6 @@ export function SagittariusApp({
     });
     setContextRailPreferredTab("booking");
     setSelectedItemId(item.id);
-    setContextRailVisibility(true);
     return bookingDoc?.title;
   }
 
@@ -3345,7 +3324,6 @@ export function SagittariusApp({
     });
     setContextRailPreferredTab("notes");
     setSelectedItemId(item.id);
-    setContextRailVisibility(true);
   }
 
   async function updateStopNote(input: { noteId: string; body: string }) {
@@ -3973,7 +3951,7 @@ export function SagittariusApp({
         }
         const nextSelectedItemId = createdItems[0]?.id ?? "";
         setSelectedItemId(nextSelectedItemId);
-        setContextRailVisibility(Boolean(nextSelectedItemId));
+        if (!nextSelectedItemId) setContextRailVisibility(false);
         setPendingItineraryImport(null);
         return;
       }
@@ -3998,7 +3976,7 @@ export function SagittariusApp({
       setStopNotes((current) =>
         upsertById(current, importedPlanRecords.stopNotes),
       );
-      setContextRailVisibility(Boolean(nextSelectedItemId));
+      if (!nextSelectedItemId) setContextRailVisibility(false);
       setPendingItineraryImport(null);
       setItineraryImportError(null);
     } catch (caught) {
@@ -4381,6 +4359,7 @@ export function SagittariusApp({
                   onAddSubActivity={addSubActivity}
                   onAddNoteForItem={(itemId) => void createItineraryNote(itemId)}
                   onAddTaskForItem={(itemId) => void createItineraryTask(itemId)}
+                  onOpenItemDetails={openItemDetails}
                   onSelectItem={selectItem}
                   onMoveItem={moveItem}
                   onMoveItemIntoPlanBlock={moveItemIntoPlanBlock}

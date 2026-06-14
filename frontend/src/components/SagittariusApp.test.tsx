@@ -4357,7 +4357,7 @@ describe("Sagittarius cockpit UI", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("uses timeline selections for details while map day filters stay local", async () => {
+  it("keeps timeline selections separate from opening details while map day filters stay local", async () => {
     const user = userEvent.setup();
     const { unmount } = render(<SagittariusApp initialView="timeline" />);
 
@@ -4367,6 +4367,13 @@ describe("Sagittarius cockpit UI", () => {
         { name: /เลือกจุดในไทม์ไลน์ Victoria Peak/i },
       ),
     );
+    expect(
+      screen.queryByRole("complementary", {
+        name: /ข้อมูลประกอบการวางแผน/i,
+      }),
+    ).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: /เปิดรายละเอียด/i }));
     expect(
       within(
         screen.getByRole("complementary", { name: /ข้อมูลประกอบการวางแผน/i }),
@@ -4461,7 +4468,7 @@ describe("Sagittarius cockpit UI", () => {
     );
   });
 
-  it("opens the right context drawer when selecting a row while details are hidden", async () => {
+  it("opens the right context drawer from the row details control", async () => {
     const user = userEvent.setup();
     const { container } = render(<SagittariusApp initialView="itinerary" />);
 
@@ -4503,7 +4510,7 @@ describe("Sagittarius cockpit UI", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("uses selected table row to drive the right context rail", async () => {
+  it("uses the row details control to drive the right context rail", async () => {
     const user = userEvent.setup();
     render(<SagittariusApp initialView="itinerary" />);
 
@@ -4546,7 +4553,7 @@ describe("Sagittarius cockpit UI", () => {
     );
   });
 
-  it("opens context details for an alternative activity selected from the graph", async () => {
+  it("keeps the right context drawer closed when selecting an activity from the graph", async () => {
     const user = userEvent.setup();
     const storage = installLocalStorageStub();
     const mainItem = {
@@ -4572,20 +4579,75 @@ describe("Sagittarius cockpit UI", () => {
         itineraryItems: [mainItem, alternativeItem],
       }),
     );
-    render(<SagittariusApp initialView="itinerary" />);
+    const { container } = render(<SagittariusApp initialView="itinerary" />);
 
-    await user.click(
-      await screen.findByRole("button", {
-        name: /Graph app alternative on Plan A/i,
+    const graphButton = await screen.findByRole("button", {
+      name: /Graph app alternative on Plan A/i,
+    });
+    await user.click(graphButton);
+
+    expect(graphButton).toHaveClass("activity-path-graph-node--selected");
+    expect(container.querySelector(".workspace-grid")).toHaveAttribute(
+      "data-context-rail",
+      "closed",
+    );
+    expect(
+      screen.queryByRole("complementary", {
+        name: /ข้อมูลประกอบการวางแผน/i,
+      }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("keeps the right context drawer closed after quick-add row actions", async () => {
+    const user = userEvent.setup();
+    const storage = installLocalStorageStub();
+    const actionItem = {
+      ...seedTrip.itineraryItems[0],
+      id: "item-quick-actions",
+      activity: "Quick action stop",
+      place: "DMK",
+      sortOrder: 100,
+    };
+    storage.setItem(
+      tripStorageKey,
+      JSON.stringify({
+        ...seedTrip,
+        itineraryItems: [actionItem],
+        tasks: [],
       }),
     );
 
-    const context = screen.getByRole("complementary", {
-      name: /ข้อมูลประกอบการวางแผน/i,
-    });
+    const { container } = render(<SagittariusApp initialView="itinerary" />);
+
+    await user.click(
+      await screen.findByRole("button", {
+        name: /Add task for Quick action stop/i,
+      }),
+    );
+    await user.click(
+      screen.getByRole("button", {
+        name: /Add note for Quick action stop/i,
+      }),
+    );
+
+    const structure = await screen.findByLabelText(
+      "Structure for Quick action stop",
+    );
     expect(
-      within(context).getByRole("heading", { name: /Graph app alternative/i }),
+      within(structure).getByText("1 task"),
     ).toBeInTheDocument();
+    expect(
+      within(structure).getByText("1 note"),
+    ).toBeInTheDocument();
+    expect(container.querySelector(".workspace-grid")).toHaveAttribute(
+      "data-context-rail",
+      "closed",
+    );
+    expect(
+      screen.queryByRole("complementary", {
+        name: /ข้อมูลประกอบการวางแผน/i,
+      }),
+    ).not.toBeInTheDocument();
   });
 
   it("closes the right context drawer when clicking outside it", async () => {
@@ -6170,17 +6232,25 @@ describe("Sagittarius cockpit UI", () => {
 
     const structure = await screen.findByLabelText("Structure for Flight to Hong Kong");
     expect(within(structure).getByText("1 task")).toBeInTheDocument();
+    expect(
+      screen.queryByRole("complementary", {
+        name: /ข้อมูลประกอบการวางแผน/i,
+      }),
+    ).not.toBeInTheDocument();
+
+    await user.click(
+      screen.getByRole("button", { name: /เลือกจุด Flight to Hong Kong/i }),
+    );
     const context = await screen.findByRole("complementary", {
       name: /ข้อมูลประกอบการวางแผน/i,
     });
-    expect(within(context).getByRole("tab", { name: "การจอง" })).toHaveAttribute(
-      "aria-selected",
-      "true",
-    );
-    expect(within(context).getByText("Plan: Flight to Hong Kong")).toBeInTheDocument();
+    await user.click(within(context).getByRole("tab", { name: "การจอง" }));
+    expect(
+      within(context).getByText("Plan: Flight to Hong Kong"),
+    ).toBeInTheDocument();
   });
 
-  it("quick-adds a planning note from the itinerary row and opens details", async () => {
+  it("quick-adds a planning note from the itinerary row without opening details", async () => {
     const user = userEvent.setup();
     const storage = installLocalStorageStub();
     const noteItem = {
@@ -6208,10 +6278,21 @@ describe("Sagittarius cockpit UI", () => {
 
     const structure = await screen.findByLabelText("Structure for Flight to Hong Kong");
     expect(within(structure).getByText("1 note")).toBeInTheDocument();
+    expect(
+      screen.queryByRole("complementary", {
+        name: /ข้อมูลประกอบการวางแผน/i,
+      }),
+    ).not.toBeInTheDocument();
+
+    await user.click(
+      screen.getByRole("button", { name: /เลือกจุด Flight to Hong Kong/i }),
+    );
     const context = await screen.findByRole("complementary", {
       name: /ข้อมูลประกอบการวางแผน/i,
     });
-    expect(within(context).getByText("Planning note for Flight to Hong Kong")).toBeInTheDocument();
+    expect(
+      within(context).getByText("Planning note for Flight to Hong Kong"),
+    ).toBeInTheDocument();
   });
 
   it("quick-adds a booking draft from the itinerary row", async () => {
@@ -6259,14 +6340,22 @@ describe("Sagittarius cockpit UI", () => {
     );
     const structure = await screen.findByLabelText("Structure for Flight to Hong Kong");
     expect(within(structure).getByText("1 booking")).toBeInTheDocument();
+    expect(
+      screen.queryByRole("complementary", {
+        name: /ข้อมูลประกอบการวางแผน/i,
+      }),
+    ).not.toBeInTheDocument();
+
+    await user.click(
+      screen.getByRole("button", { name: /เลือกจุด Flight to Hong Kong/i }),
+    );
     const context = await screen.findByRole("complementary", {
       name: /ข้อมูลประกอบการวางแผน/i,
     });
-    expect(within(context).getByRole("tab", { name: "การจอง" })).toHaveAttribute(
-      "aria-selected",
-      "true",
-    );
-    expect(within(context).getByText("Flight to Hong Kong flight ticket draft")).toBeInTheDocument();
+    await user.click(within(context).getByRole("tab", { name: "การจอง" }));
+    expect(
+      within(context).getByText("Flight to Hong Kong flight ticket draft"),
+    ).toBeInTheDocument();
     let persistedTrip = JSON.parse(storage.getItem(tripStorageKey)!) as Trip;
     expect(persistedTrip.bookingDocs).toEqual([
       expect.objectContaining({
@@ -6755,9 +6844,14 @@ describe("Sagittarius cockpit UI", () => {
         timezone: "Asia/Bangkok",
       }),
     );
+
+    await user.click(
+      within(row).getByRole("button", { name: /เลือกจุด Rain plan gallery/i }),
+    );
     const context = await screen.findByRole("complementary", {
       name: /ข้อมูลประกอบการวางแผน/i,
     });
+    await user.click(within(context).getByRole("tab", { name: /การจอง/i }));
     fireEvent.change(
       within(context).getByLabelText(
         "ประเภทการจองของ Rain plan gallery booking draft",
