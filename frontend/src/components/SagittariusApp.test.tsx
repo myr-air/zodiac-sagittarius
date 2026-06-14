@@ -5713,6 +5713,38 @@ describe("Sagittarius cockpit UI", () => {
         }),
       );
     });
+    fireEvent.change(
+      within(context).getByLabelText(
+        "ผู้ให้บริการของ Flight to Hong Kong booking draft",
+      ),
+      { target: { value: "Corrected Air" } },
+    );
+    fireEvent.blur(
+      within(context).getByLabelText(
+        "ผู้ให้บริการของ Flight to Hong Kong booking draft",
+      ),
+    );
+    fireEvent.change(
+      within(context).getByLabelText(
+        "รหัสอ้างอิงของ Flight to Hong Kong booking draft",
+      ),
+      { target: { value: "COR-100" } },
+    );
+    fireEvent.blur(
+      within(context).getByLabelText(
+        "รหัสอ้างอิงของ Flight to Hong Kong booking draft",
+      ),
+    );
+
+    await waitFor(() => {
+      persistedTrip = JSON.parse(storage.getItem(tripStorageKey)!) as Trip;
+      expect(persistedTrip.bookingDocs?.[0]).toEqual(
+        expect.objectContaining({
+          providerName: "Corrected Air",
+          confirmationCode: "COR-100",
+        }),
+      );
+    });
   });
 
   it("imports itinerary rows into the current Trip Plan and keeps path fields", async () => {

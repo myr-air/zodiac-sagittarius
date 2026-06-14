@@ -2985,6 +2985,53 @@ export function SagittariusApp({
     });
   }
 
+  async function changeBookingDocQuickFields(
+    bookingDocId: string,
+    patch: {
+      confirmationCode?: string | null;
+      providerName?: string | null;
+    },
+  ) {
+    const bookingDoc = latestTripRef.current.bookingDocs?.find(
+      (candidate) => candidate.id === bookingDocId,
+    );
+    if (!bookingDoc) return;
+    const providerName =
+      patch.providerName !== undefined
+        ? patch.providerName
+        : bookingDoc.providerName;
+    const confirmationCode =
+      patch.confirmationCode !== undefined
+        ? patch.confirmationCode
+        : bookingDoc.confirmationCode;
+    if (
+      providerName === bookingDoc.providerName &&
+      confirmationCode === bookingDoc.confirmationCode
+    )
+      return;
+    await updateBookingDoc(bookingDoc.id, {
+      type: bookingDoc.type,
+      title: bookingDoc.title,
+      status: bookingDoc.status,
+      visibility: bookingDoc.visibility,
+      ownerMemberId: bookingDoc.ownerMemberId,
+      providerName,
+      confirmationCode,
+      startsAt: bookingDoc.startsAt,
+      endsAt: bookingDoc.endsAt,
+      timezone: bookingDoc.timezone,
+      priceAmount: bookingDoc.priceAmount,
+      currency: bookingDoc.currency,
+      travelerIds: bookingDoc.travelerIds,
+      externalLinks: bookingDoc.externalLinks,
+      relatedItineraryItemIds: bookingDoc.relatedItineraryItemIds,
+      relatedTaskIds: bookingDoc.relatedTaskIds,
+      relatedExpenseIds: bookingDoc.relatedExpenseIds,
+      noteIds: bookingDoc.noteIds,
+      notes: bookingDoc.notes,
+    });
+  }
+
   async function deleteBookingDoc(bookingDocId: string) {
     if (!canEditBookings) return;
     if (isApiMode && resolvedApiClient && participantSession) {
@@ -4226,6 +4273,7 @@ export function SagittariusApp({
               open={contextRailOpen}
               preferredTab={contextRailPreferredTab}
               onChangeBookingDocType={changeBookingDocType}
+              onChangeBookingDocQuickFields={changeBookingDocQuickFields}
               onCreateNote={createStopNote}
               onCreateExpense={createExpense}
               onUpdateExpense={updateExpense}

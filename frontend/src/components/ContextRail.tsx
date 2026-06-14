@@ -41,6 +41,13 @@ interface ContextRailProps {
     bookingDocId: string,
     type: BookingDocType,
   ) => void | Promise<void>;
+  onChangeBookingDocQuickFields?: (
+    bookingDocId: string,
+    patch: {
+      confirmationCode?: string | null;
+      providerName?: string | null;
+    },
+  ) => void | Promise<void>;
   onCreateNote: (input: { itemId: string; body: string }) => void;
   onCreateExpense: (input: {
     itemId: string | null;
@@ -116,6 +123,8 @@ const bookingDocClassName =
   "stop-booking-doc grid gap-1 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) px-2.5 py-[9px] text-xs [&_strong]:font-extrabold [&_strong]:leading-4 [&_strong]:text-(--color-text) [&_span]:text-[11px] [&_span]:font-bold [&_span]:leading-4 [&_span]:text-(--color-text-muted)";
 const bookingDocTypeSelectClassName =
   "min-h-8 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-2 text-[11px] font-extrabold text-(--color-text) outline-none focus:border-(--color-primary-border) focus:shadow-[0_0_0_2px_rgb(255_196_168_/_0.55)] disabled:cursor-not-allowed disabled:opacity-60";
+const bookingDocQuickFieldClassName =
+  "min-h-8 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-2 text-[11px] font-bold text-(--color-text) outline-none placeholder:text-(--color-text-muted) focus:border-(--color-primary-border) focus:shadow-[0_0_0_2px_rgb(255_196_168_/_0.55)] disabled:cursor-not-allowed disabled:opacity-60";
 const bookingTaskLabelClassName =
   "inline-flex min-w-0 items-center gap-2 [&_input]:size-[15px] [&_input]:accent-[var(--color-primary)] [&_span]:text-xs [&_span]:font-extrabold [&_span]:leading-4 [&_span]:text-(--color-text)";
 const bookingTaskMetaClassName =
@@ -197,6 +206,7 @@ export function ContextRail({
   open,
   preferredTab = "notes",
   onChangeBookingDocType,
+  onChangeBookingDocQuickFields,
   onCreateNote,
   onCreateExpense,
   onUpdateExpense,
@@ -641,6 +651,44 @@ export function ContextRail({
                             </option>
                           ))}
                         </select>
+                      </label>
+                      <label className="grid gap-1">
+                        <span>{t.contextRail.booking.provider}</span>
+                        <input
+                          aria-label={t.contextRail.booking.providerFor({
+                            title: bookingDoc.title,
+                          })}
+                          className={bookingDocQuickFieldClassName}
+                          defaultValue={bookingDoc.providerName ?? ""}
+                          disabled={!canEdit || !onChangeBookingDocQuickFields}
+                          placeholder={t.contextRail.booking.providerPlaceholder}
+                          onBlur={(event) => {
+                            const value = event.currentTarget.value.trim();
+                            if (value === (bookingDoc.providerName ?? "")) return;
+                            void onChangeBookingDocQuickFields?.(bookingDoc.id, {
+                              providerName: value || null,
+                            });
+                          }}
+                        />
+                      </label>
+                      <label className="grid gap-1">
+                        <span>{t.contextRail.booking.reference}</span>
+                        <input
+                          aria-label={t.contextRail.booking.referenceFor({
+                            title: bookingDoc.title,
+                          })}
+                          className={bookingDocQuickFieldClassName}
+                          defaultValue={bookingDoc.confirmationCode ?? ""}
+                          disabled={!canEdit || !onChangeBookingDocQuickFields}
+                          placeholder={t.contextRail.booking.referencePlaceholder}
+                          onBlur={(event) => {
+                            const value = event.currentTarget.value.trim();
+                            if (value === (bookingDoc.confirmationCode ?? "")) return;
+                            void onChangeBookingDocQuickFields?.(bookingDoc.id, {
+                              confirmationCode: value || null,
+                            });
+                          }}
+                        />
                       </label>
                     </li>
                   ))}

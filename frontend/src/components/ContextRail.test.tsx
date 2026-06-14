@@ -125,8 +125,10 @@ describe("ContextRail", () => {
 
   it("shows booking docs linked to the selected itinerary item", async () => {
     const onChangeBookingDocType = vi.fn();
+    const onChangeBookingDocQuickFields = vi.fn();
     renderRail({
       onChangeBookingDocType,
+      onChangeBookingDocQuickFields,
       bookingDocs: [
         {
           id: "booking-dimdim-1",
@@ -201,6 +203,36 @@ describe("ContextRail", () => {
     expect(onChangeBookingDocType).toHaveBeenCalledWith(
       "booking-dimdim-1",
       "other",
+    );
+    fireEvent.change(
+      within(bookingPanel).getByLabelText(
+        "ผู้ให้บริการของ Dim Dim Sum reservation",
+      ),
+      { target: { value: "Updated supplier" } },
+    );
+    fireEvent.blur(
+      within(bookingPanel).getByLabelText(
+        "ผู้ให้บริการของ Dim Dim Sum reservation",
+      ),
+    );
+    expect(onChangeBookingDocQuickFields).toHaveBeenCalledWith(
+      "booking-dimdim-1",
+      { providerName: "Updated supplier" },
+    );
+    fireEvent.change(
+      within(bookingPanel).getByLabelText(
+        "รหัสอ้างอิงของ Dim Dim Sum reservation",
+      ),
+      { target: { value: "DDS-99" } },
+    );
+    fireEvent.blur(
+      within(bookingPanel).getByLabelText(
+        "รหัสอ้างอิงของ Dim Dim Sum reservation",
+      ),
+    );
+    expect(onChangeBookingDocQuickFields).toHaveBeenCalledWith(
+      "booking-dimdim-1",
+      { confirmationCode: "DDS-99" },
     );
     expect(
       within(bookingPanel).queryByText("Other stop ticket"),
