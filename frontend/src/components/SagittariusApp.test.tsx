@@ -5369,6 +5369,11 @@ describe("Sagittarius cockpit UI", () => {
 
     const structure = await screen.findByLabelText("Structure for Flight to Hong Kong");
     expect(within(structure).getByText("1 task")).toBeInTheDocument();
+    const context = await screen.findByRole("complementary", {
+      name: /ข้อมูลประกอบการวางแผน/i,
+    });
+    await user.click(within(context).getByRole("tab", { name: "การจอง" }));
+    expect(within(context).getByText("Plan: Flight to Hong Kong")).toBeInTheDocument();
   });
 
   it("quick-adds a planning note from the itinerary row and opens details", async () => {
@@ -5446,6 +5451,11 @@ describe("Sagittarius cockpit UI", () => {
 
     const structure = await screen.findByLabelText("Structure for Flight to Hong Kong");
     expect(within(structure).getByText("1 booking")).toBeInTheDocument();
+    const context = await screen.findByRole("complementary", {
+      name: /ข้อมูลประกอบการวางแผน/i,
+    });
+    await user.click(within(context).getByRole("tab", { name: "การจอง" }));
+    expect(within(context).getByText("Flight to Hong Kong booking draft")).toBeInTheDocument();
     const persistedTrip = JSON.parse(storage.getItem(tripStorageKey)!) as Trip;
     expect(persistedTrip.bookingDocs).toEqual([
       expect.objectContaining({

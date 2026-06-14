@@ -2614,6 +2614,8 @@ export function SagittariusApp({
       assigneeId: null,
       relatedItemId: item.id,
     });
+    setSelectedItemId(item.id);
+    setContextRailVisibility(true);
   }
 
   async function saveTripSettings(values: TripSettingsFormValues) {
@@ -2801,6 +2803,8 @@ export function SagittariusApp({
       noteIds: [],
       notes: draftDetails.notes,
     });
+    setSelectedItemId(item.id);
+    setContextRailVisibility(true);
   }
 
   async function updateBookingDoc(
