@@ -2779,6 +2779,7 @@ export function SagittariusApp({
     const item = trip.itineraryItems.find((candidate) => candidate.id === itemId);
     if (!item) return;
     const draftDetails = bookingDraftDetailsForItineraryItem(item);
+    const timeWindow = bookingDraftTimeWindowForItineraryItem(item);
     await createBookingDoc({
       type: bookingTypeForItineraryItem(item),
       title: `${item.activity} booking draft`,
@@ -2787,8 +2788,8 @@ export function SagittariusApp({
       ownerMemberId: currentMember.id,
       providerName: draftDetails.providerName,
       confirmationCode: draftDetails.confirmationCode,
-      startsAt: null,
-      endsAt: null,
+      startsAt: timeWindow.startsAt,
+      endsAt: timeWindow.endsAt,
       timezone: trip.defaultTimezone ?? null,
       priceAmount: null,
       currency: null,
@@ -4994,6 +4995,27 @@ function bookingDraftDetailsForItineraryItem(item: ItineraryItem): {
     notes: notes.join("\n"),
     providerName,
   };
+}
+
+function bookingDraftTimeWindowForItineraryItem(item: ItineraryItem): {
+  endsAt: string | null;
+  startsAt: string | null;
+} {
+  const startTime = item.startTime?.trim();
+  const endTime = item.endTime?.trim();
+  return {
+    startsAt: startTime ? itineraryDateTime(item.day, startTime) : null,
+    endsAt: endTime
+      ? itineraryDateTime(
+          shiftIsoDate(item.day, item.endOffsetDays ?? 0),
+          endTime,
+        )
+      : null,
+  };
+}
+
+function itineraryDateTime(day: string, time: string): string {
+  return `${day}T${time}:00`;
 }
 
 function readItineraryDetailString(
