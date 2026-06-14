@@ -418,7 +418,7 @@ export const messages = {
         edit: ({ activity }: { activity: string }) => `Edit ${activity}`,
         delete: ({ activity }: { activity: string }) => `Delete ${activity}`,
         addSubActivity: ({ activity }: { activity: string }) => `Add sub-activity under ${activity}`,
-        subItemQuick: "+ sub-item",
+        subItemQuick: "Add sub-activity",
         createBookingDraft: ({ activity, template }: { activity: string; template: string }) =>
           `Create ${template} booking draft for ${activity}`,
         bookingDraftCreated: ({ activity, title }: { activity: string; title: string }) =>
@@ -440,7 +440,6 @@ export const messages = {
           `Detach ${activity} from its activity block`,
         expandBlock: "Expand block",
         collapseBlock: "Collapse block",
-        intoBlock: "Into block",
         inlineActivity: ({ activity }: { activity: string }) => `Edit activity ${activity}`,
         inlinePlace: ({ activity }: { activity: string }) => `Edit place ${activity}`,
         inlineTime: ({ activity }: { activity: string }) => `Edit time ${activity}`,
@@ -1623,7 +1622,7 @@ export const messages = {
         edit: ({ activity }: { activity: string }) => `แก้ไข ${activity}`,
         delete: ({ activity }: { activity: string }) => `ลบ ${activity}`,
         addSubActivity: ({ activity }: { activity: string }) => `เพิ่ม sub-activity ใต้ ${activity}`,
-        subItemQuick: "+ sub-item",
+        subItemQuick: "Add sub-activity",
         createBookingDraft: ({ activity, template }: { activity: string; template: string }) =>
           `สร้าง booking draft แบบ ${template} สำหรับ ${activity}`,
         bookingDraftCreated: ({ activity, title }: { activity: string; title: string }) =>
@@ -1645,7 +1644,6 @@ export const messages = {
           `แยก ${activity} ออกจาก block`,
         expandBlock: "ขยาย block",
         collapseBlock: "ย่อ block",
-        intoBlock: "ใส่ใน block",
         inlineActivity: ({ activity }: { activity: string }) => `แก้ไขกิจกรรม ${activity}`,
         inlinePlace: ({ activity }: { activity: string }) => `แก้ไขสถานที่ ${activity}`,
         inlineTime: ({ activity }: { activity: string }) => `แก้ไขเวลา ${activity}`,

@@ -3182,7 +3182,7 @@ describe("Sagittarius cockpit UI", () => {
     );
   }, 45_000);
 
-  it("uses backend-returned path fields after API block drag and drop", async () => {
+  it("uses backend-returned path fields after API quick-adding a sub-activity", async () => {
     const user = userEvent.setup();
     installLocalStorageStub();
     const blockItem = {
@@ -3198,38 +3198,28 @@ describe("Sagittarius cockpit UI", () => {
       pathRole: "alternative" as const,
       sortOrder: 100,
     };
-    const movingItem = {
-      ...seedTrip.itineraryItems[1],
-      id: "api-main-cafe",
-      activity: "API main cafe",
-      day: "2026-06-19",
-      isPlanBlock: false,
-      parentItemId: null,
-      pathGroupId: undefined,
-      pathId: undefined,
-      pathName: undefined,
-      pathRole: "main" as const,
-      sortOrder: 200,
-    };
     const ownerTrip = {
       ...seedTrip,
       joinPasswordHash: "",
-      itineraryItems: [blockItem, movingItem],
+      itineraryItems: [blockItem],
     };
-    const patchedItem = {
-      ...movingItem,
+    const createdItem = {
+      ...seedTrip.itineraryItems[1],
+      id: "api-rain-cafe",
+      activity: "API main cafe",
       day: blockItem.day,
       parentItemId: blockItem.id,
+      isPlanBlock: false,
       pathGroupId: blockItem.pathGroupId,
       pathId: blockItem.pathId,
       pathName: blockItem.pathName,
       pathRole: blockItem.pathRole,
-      sortOrder: 200,
+      sortOrder: 110,
       updatedAt: "2026-05-29T00:00:00.000Z",
-      version: movingItem.version + 1,
+      version: 1,
     };
     const apiClient = createApiClientForTrip(ownerTrip, {
-      patchItineraryItem: vi.fn().mockResolvedValue(patchedItem),
+      createItineraryItem: vi.fn().mockResolvedValue(createdItem),
     });
 
     render(
@@ -3242,36 +3232,40 @@ describe("Sagittarius cockpit UI", () => {
     );
 
     await loginApiTrip(user);
-    const dataTransfer = createDataTransfer();
-    fireEvent.dragStart(
-      await screen.findByRole("button", { name: /ลาก API main cafe/i }),
-      { dataTransfer },
+    await user.click(
+      await screen.findByRole("button", {
+        name: /เพิ่ม sub-activity ใต้ API rain route block/i,
+      }),
     );
-    fireEvent.drop(
-      within(
-        screen.getByRole("row", { name: /API rain route block/i }),
-      ).getByRole("button", { name: /ใส่ใน block/i }),
-      { dataTransfer },
+    const dialog = await screen.findByRole("dialog", { name: /เพิ่มกิจกรรม/i });
+    fireEvent.change(within(dialog).getByLabelText("กิจกรรม"), {
+      target: { value: "API main cafe" },
+    });
+    fireEvent.change(within(dialog).getByLabelText("สถานที่"), {
+      target: { value: "Central" },
+    });
+    await user.click(
+      within(dialog).getByRole("button", { name: "บันทึกกิจกรรม" }),
     );
 
     await waitFor(() =>
-      expect(apiClient.patchItineraryItem).toHaveBeenCalledWith(
+      expect(apiClient.createItineraryItem).toHaveBeenCalledWith(
         ownerTrip.id,
-        movingItem.id,
         "session-token",
         expect.objectContaining({
-          expectedVersion: movingItem.version,
-          patch: expect.objectContaining({
-            day: blockItem.day,
-            parentItemId: blockItem.id,
-            sortOrder: 200,
-          }),
+          activity: "API main cafe",
+          day: blockItem.day,
+          parentItemId: blockItem.id,
+          pathGroupId: blockItem.pathGroupId,
+          pathId: blockItem.pathId,
+          pathName: blockItem.pathName,
+          pathRole: blockItem.pathRole,
         }),
       ),
     );
     expect(
-      await screen.findByRole("row", { name: /API main cafe/i }),
-    ).toHaveAttribute("data-hierarchy-level", "2");
+      await screen.findByRole("group", { name: /Sub-activity API main cafe/i }),
+    ).toBeInTheDocument();
     expect(
       screen.getAllByText("Rain plan").some((element) => element.tagName === "SPAN"),
     ).toBe(true);
@@ -4776,7 +4770,7 @@ describe("Sagittarius cockpit UI", () => {
     ).toBeInTheDocument();
   });
 
-  it("keeps scheduled rows sorted by time after drag and drop", () => {
+  it("keeps scheduled rows sorted when main-row drag is unavailable", () => {
     render(<SagittariusApp initialView="itinerary" />);
 
     const dataTransfer = createDataTransfer();
@@ -4791,14 +4785,9 @@ describe("Sagittarius cockpit UI", () => {
         Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
 
-    fireEvent.dragStart(
-      screen.getByRole("button", { name: /ลาก Victoria Peak/i }),
-      { dataTransfer },
-    );
-    fireEvent.dragOver(
-      screen.getByRole("button", { name: /เลือกจุด Dim Dim Sum/i }),
-      { dataTransfer },
-    );
+    expect(
+      screen.queryByRole("button", { name: /ลาก Victoria Peak/i }),
+    ).not.toBeInTheDocument();
     fireEvent.drop(
       screen.getByRole("button", { name: /เลือกจุด Dim Dim Sum/i }),
       { dataTransfer },
@@ -4816,7 +4805,7 @@ describe("Sagittarius cockpit UI", () => {
     ).toBeTruthy();
   });
 
-  it("shows a drop preview before placing a dragged itinerary row", () => {
+  it("does not show a main-row drop preview after drag handles are removed", () => {
     render(<SagittariusApp initialView="itinerary" />);
 
     const dataTransfer = createDataTransfer();
@@ -4827,14 +4816,10 @@ describe("Sagittarius cockpit UI", () => {
       .getByRole("button", { name: /เลือกจุด Dim Dim Sum/i })
       .closest("tr");
 
-    fireEvent.dragStart(
-      screen.getByRole("button", { name: /ลาก Victoria Peak/i }),
-      { dataTransfer },
-    );
     fireEvent.dragOver(dimDimRow!, { dataTransfer });
 
-    expect(victoriaRow).toHaveClass("data-row--dragging");
-    expect(dimDimRow).toHaveClass("data-row--drop-target");
+    expect(victoriaRow).not.toHaveClass("data-row--dragging");
+    expect(dimDimRow).not.toHaveClass("data-row--drop-target");
 
     fireEvent.drop(dimDimRow!, { dataTransfer });
 
@@ -6002,8 +5987,8 @@ describe("Sagittarius cockpit UI", () => {
     );
 
     expect(
-      await screen.findByRole("row", { name: /Airport check in/i }),
-    ).toHaveAttribute("data-hierarchy-level", "2");
+      await screen.findByRole("group", { name: /Sub-activity Airport check in/i }),
+    ).toBeInTheDocument();
     const persistedTrip = JSON.parse(storage.getItem(tripStorageKey)!) as Trip;
     expect(persistedTrip.itineraryItems).toEqual(
       expect.arrayContaining([
@@ -6049,7 +6034,7 @@ describe("Sagittarius cockpit UI", () => {
     const dialog = await screen.findByRole("dialog", { name: /เพิ่มกิจกรรม/i });
     const promotedRow = await screen.findByRole("row", { name: /Market walk/i });
     expect(
-      within(promotedRow).getByText("Activity block · 0 sub-items"),
+      within(promotedRow).getByText("Activity block · 0 sub-activities"),
     ).toBeInTheDocument();
     expect(
       within(dialog).getByLabelText("Plan block"),
@@ -6065,8 +6050,8 @@ describe("Sagittarius cockpit UI", () => {
     );
 
     expect(
-      await screen.findByRole("row", { name: /Snack stop/i }),
-    ).toHaveAttribute("data-hierarchy-level", "2");
+      await screen.findByRole("group", { name: /Sub-activity Snack stop/i }),
+    ).toBeInTheDocument();
     const persistedTrip = JSON.parse(storage.getItem(tripStorageKey)!) as Trip;
     expect(persistedTrip.itineraryItems).toEqual(
       expect.arrayContaining([
@@ -6124,8 +6109,8 @@ describe("Sagittarius cockpit UI", () => {
     );
 
     expect(
-      await screen.findByRole("row", { name: /Snack stop/i }),
-    ).toHaveAttribute("data-hierarchy-level", "2");
+      await screen.findByRole("group", { name: /Sub-activity Snack stop/i }),
+    ).toBeInTheDocument();
     const persistedTrip = JSON.parse(storage.getItem(tripStorageKey)!) as Trip;
     expect(persistedTrip.itineraryItems).toEqual(
       expect.arrayContaining([

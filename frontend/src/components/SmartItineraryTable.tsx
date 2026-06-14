@@ -47,7 +47,7 @@ import {
   weatherIconForCondition,
 } from "@/src/trip/weather-briefings";
 import { Button } from "./ui";
-import { Icon } from "./icons";
+import { Icon, type IconName } from "./icons";
 import { formatTripRange, PageHeader } from "./PageHeader";
 import {
   activityTypeLabel,
@@ -156,6 +156,11 @@ export interface ItineraryCommitmentSummary {
   openTaskCount?: number;
 }
 
+type ItineraryDragState = {
+  draggedItemId: string | null;
+  overItemId: string | null;
+};
+
 const tablePanelClassName =
   "table-panel grid h-auto min-h-full min-w-0 grid-rows-[auto_minmax(0,1fr)] overflow-visible bg-transparent px-6 py-[22px] pb-7 max-[767px]:px-3 max-[767px]:pb-3";
 const pageHeaderActionsClassName =
@@ -236,18 +241,12 @@ const dataRowDropTargetClassName =
 const dragCellClassName = "drag-cell text-(--color-text-subtle)";
 const reorderControlsClassName =
   "reorder-controls inline-grid grid-cols-[32px] items-center justify-center";
-const dragHandleClassName =
-  "drag-handle inline-grid size-8 shrink-0 touch-none cursor-grab place-items-center rounded-(--radius-sm) border-0 bg-transparent text-(--color-text-subtle) transition-[color,background] duration-150 hover:not-disabled:bg-(--color-route-soft) hover:not-disabled:text-(--color-route) active:cursor-grabbing disabled:cursor-not-allowed disabled:opacity-[0.42]";
 const rowActionCellClassName = "row-actions-cell";
 const rowActionsClassName =
   "row-actions flex items-center justify-center gap-1";
 const rowActionButtonClassName =
   "row-action-button inline-grid size-8 shrink-0 place-items-center rounded-(--radius-sm) border-0 bg-transparent text-(--color-text-subtle) transition-[color,background] duration-150 hover:not-disabled:bg-(--color-route-soft) hover:not-disabled:text-(--color-route) disabled:cursor-not-allowed disabled:opacity-[0.42]";
-const inlineSubItemButtonClassName =
-  "inline-flex min-h-7 w-fit items-center gap-1.5 rounded-(--radius-sm) border border-(--color-route-border) bg-(--color-route-soft) px-2 text-[11px] font-extrabold leading-4 text-(--color-route) transition-[border-color,background,color] duration-150 hover:border-(--color-route) hover:bg-(--color-surface) disabled:cursor-not-allowed disabled:opacity-50 [&_.icon]:size-3.5";
 const rowFixMenuClassName = "row-fix-menu relative";
-const rowFixSummaryClassName =
-  "row-fix-summary inline-grid size-8 shrink-0 place-items-center rounded-(--radius-sm) border-0 bg-transparent text-(--color-warning-strong) transition-[color,background] duration-150 hover:not-disabled:bg-(--color-warning-soft) disabled:cursor-not-allowed disabled:opacity-[0.42]";
 const rowFixPanelClassName =
   "absolute right-0 top-9 z-20 grid min-w-10 gap-1 rounded-(--radius-sm) border border-(--color-warning-border) bg-(--color-surface) p-1 shadow-[0_12px_28px_rgb(15_23_42_/_0.14)]";
 const rowBookingMenuClassName = "row-booking-menu relative";
@@ -279,8 +278,6 @@ const activityCellClassName = "activity-cell min-w-0";
 const rowSelectClassName =
   "row-select inline-flex min-h-8 w-fit min-w-0 items-center gap-1.5 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) px-2 py-0.5 text-[11px] font-extrabold leading-4 text-(--color-route) transition-[background,border-color,color] duration-150 hover:bg-(--color-route-soft) hover:border-(--color-route-border) focus-visible:bg-(--color-route-soft) focus-visible:border-(--color-route-border) focus-visible:outline-none";
 const inlineActivityStackClassName = "grid min-w-0 gap-0.5";
-const childActivityStackClassName =
-  "relative pl-4 before:absolute before:left-0 before:top-1.5 before:h-5 before:w-3 before:rounded-bl-(--radius-sm) before:border-b before:border-l before:border-(--color-route-border) before:content-['']";
 const hierarchyMetaClassName =
   "inline-flex min-w-0 flex-wrap items-center gap-1.5 text-[10px] font-extrabold leading-4 text-(--color-text-muted)";
 const hierarchyChipClassName =
@@ -296,9 +293,40 @@ const recordCommitmentChipClassName =
 const warningChipClassName =
   "border-(--color-warning-border) bg-(--color-warning-soft) text-(--color-warning-strong)";
 const blockToggleButtonClassName =
-  "inline-flex min-h-7 w-fit items-center gap-1.5 rounded-(--radius-sm) border border-(--color-route-border) bg-(--color-route-soft) px-2 text-[11px] font-extrabold text-(--color-route) aria-expanded:[&_.icon]:rotate-90 [&_.icon]:size-3.5 [&_.icon]:transition-transform";
-const blockDropButtonClassName =
-  "inline-flex min-h-7 w-fit items-center gap-1.5 rounded-(--radius-sm) border border-dashed border-(--color-route-border) bg-(--color-surface) px-2 text-[11px] font-extrabold text-(--color-route) transition-[background,border-color,box-shadow] data-[active=true]:bg-(--color-route-soft) data-[active=true]:shadow-[0_0_0_2px_rgb(186_230_253_/_0.72)] disabled:cursor-not-allowed disabled:opacity-50";
+  "block-toggle-button inline-flex min-h-7 w-full min-w-0 items-center justify-between gap-2 rounded-(--radius-sm) border border-(--color-route-border) bg-(--color-route-soft) px-2 text-left text-[11px] font-extrabold text-(--color-route) transition-[background,border-color,color] duration-150 hover:bg-(--color-surface) aria-expanded:[&_.icon]:rotate-90 [&_.icon]:size-3.5 [&_.icon]:transition-transform";
+const blockToggleLabelClassName =
+  "inline-flex min-w-0 items-center gap-1.5 truncate";
+const subActivityShellClassName =
+  "sub-activity-shell mt-1 grid min-w-0 gap-1 border-l border-(--color-route-border) pl-2";
+const subActivityListClassName = "grid min-w-0 gap-1";
+const subActivityRowClassName =
+  "sub-activity-row grid min-h-8 min-w-0 grid-cols-[24px_minmax(0,1fr)_auto] items-center gap-1 rounded-(--radius-sm) border border-transparent bg-[rgb(255_255_255_/_0.62)] px-1 py-0.5 text-[11px] leading-4 transition-[background,border-color,box-shadow,opacity] duration-150";
+const subActivityRowSelectedClassName =
+  "sub-activity-row--selected border-(--color-primary-border) bg-(--color-primary-soft)";
+const subActivityRowWarningClassName =
+  "sub-activity-row--has-warning border-(--color-warning-border) bg-(--color-warning-soft)";
+const subActivityRowPathOverlapClassName =
+  "sub-activity-row--path-overlap border-(--color-danger-border) bg-(--color-danger-soft)";
+const subActivityRowDraggingClassName =
+  "sub-activity-row--dragging opacity-55";
+const subActivityRowDropTargetClassName =
+  "sub-activity-row--drop-target border-(--color-route-border) bg-(--color-route-soft) shadow-[inset_0_2px_0_var(--color-route)]";
+const subActivityDragButtonClassName =
+  "sub-activity-drag inline-grid size-6 shrink-0 touch-none cursor-grab place-items-center rounded-(--radius-sm) border-0 bg-transparent text-(--color-text-subtle) transition-[background,color] duration-150 hover:not-disabled:bg-(--color-route-soft) hover:not-disabled:text-(--color-route) active:cursor-grabbing disabled:cursor-not-allowed disabled:opacity-[0.42] [&_.icon]:size-3.5";
+const subActivityContentClassName =
+  "flex min-w-0 items-center gap-1 overflow-hidden";
+const subActivityPlaceWrapClassName =
+  "inline-flex min-w-0 max-w-[150px] shrink-[2] items-center gap-0.5 text-[11px] font-semibold text-(--color-text-muted)";
+const subActivityToolsClassName =
+  "inline-flex shrink-0 items-center justify-end gap-0.5";
+const subActivityIconButtonClassName =
+  "inline-grid size-6 shrink-0 place-items-center rounded-(--radius-sm) border border-transparent bg-transparent text-(--color-text-subtle) transition-[background,border-color,color] duration-150 hover:not-disabled:border-(--color-route-border) hover:not-disabled:bg-(--color-route-soft) hover:not-disabled:text-(--color-route) disabled:cursor-not-allowed disabled:opacity-[0.42] [&_.icon]:size-3.5";
+const subActivityTypeSelectClassName =
+  "relative inline-grid size-6 shrink-0 place-items-center rounded-(--radius-sm) border border-transparent bg-transparent text-(--color-text-subtle) transition-[background,border-color,color] duration-150 hover:border-(--color-route-border) hover:bg-(--color-route-soft) hover:text-(--color-route) has-[:disabled]:opacity-[0.42] [&_.icon]:size-3.5 [&_select]:absolute [&_select]:inset-0 [&_select]:cursor-pointer [&_select]:opacity-0";
+const subActivityTimeClassName =
+  "inline-flex min-h-6 shrink-0 items-center gap-0.5 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) px-1 tabular-nums text-(--color-text-muted)";
+const subActivityAddButtonClassName =
+  "sub-activity-add inline-flex min-h-8 w-full items-center justify-center gap-2 rounded-(--radius-sm) border border-dashed border-(--color-route-border) bg-[rgb(239_246_255_/_0.64)] px-2 text-[11px] font-extrabold text-(--color-route) transition-[background,border-color,color] duration-150 hover:enabled:bg-(--color-route-soft) disabled:cursor-not-allowed disabled:border-(--color-border) disabled:bg-transparent disabled:text-(--color-text-subtle) [&_.icon]:size-3.5";
 const inlineFieldClassName =
   "inline-row-field min-h-[24px] w-full min-w-0 rounded-(--radius-sm) border border-transparent bg-transparent px-1.5 py-0 text-xs leading-4 text-(--color-text) outline-none transition-[background,border-color,box-shadow] duration-150 placeholder:text-(--color-text-muted) hover:not-read-only:border-(--color-border) hover:not-read-only:bg-(--color-surface) focus:border-(--color-primary-border) focus:bg-(--color-surface) focus:shadow-[0_0_0_2px_rgb(255_196_168_/_0.55)] read-only:cursor-pointer read-only:truncate read-only:px-0 read-only:font-semibold disabled:cursor-not-allowed disabled:text-(--color-text-muted)";
 const inlineActivityFieldClassName = cn(inlineFieldClassName, "font-semibold");
@@ -318,6 +346,22 @@ const endOffsetToggleClassName =
   "inline-flex h-6 min-w-6 shrink-0 items-center justify-center rounded-(--radius-sm) border border-transparent px-1 text-[10px] font-black leading-none text-(--color-text-muted) transition-[background,border-color,color] duration-150 hover:not-disabled:border-(--color-route-border) hover:not-disabled:bg-(--color-route-soft) hover:not-disabled:text-(--color-route) focus-visible:border-(--color-route-border) focus-visible:bg-(--color-route-soft) focus-visible:text-(--color-route) focus-visible:outline-none aria-pressed:border-(--color-route-border) aria-pressed:bg-(--color-route-soft) aria-pressed:text-(--color-route) disabled:cursor-not-allowed disabled:opacity-40";
 const endOffsetSupClassName =
   "ml-0.5 align-super text-[0.72em] font-black leading-none";
+const subActivityNameFieldClassName = cn(
+  inlineFieldClassName,
+  "min-h-6 min-w-[72px] flex-[1_1_120px] px-1 text-[11px] font-semibold leading-4 read-only:px-1",
+);
+const subActivityPlaceFieldClassName = cn(
+  inlineFieldClassName,
+  "min-h-6 min-w-0 px-1 text-[11px] leading-4 text-(--color-text-muted) read-only:px-1",
+);
+const subActivityTimeInputClassName = cn(
+  inlineFieldClassName,
+  "min-h-5 w-[48px] px-0 text-center text-[11px] font-[650] leading-4 tabular-nums read-only:px-0",
+);
+const subActivityTimeToggleClassName = cn(
+  endOffsetToggleClassName,
+  "h-5 min-w-5 px-0 [&_.icon]:size-3",
+);
 const inlineOptionPickerButtonClassName = cn(
   inlineFieldClassName,
   "inline-option-picker-button inline-flex !min-h-8 items-center justify-between gap-2 text-left font-semibold",
@@ -330,8 +374,6 @@ const floatingOptionButtonClassName =
 const mapLinkClassName = "map-link text-(--color-route) underline underline-offset-2";
 const addStopRowClassName =
   "add-stop-row [&_td]:border-b [&_td]:border-r [&_td]:border-dashed [&_td]:border-(--color-border) [&_td]:bg-(--color-surface-subtle) [&_td]:px-2.5 [&_td]:py-1";
-const addStopRowDropTargetClassName =
-  "add-stop-row--drop-target [&_td]:!bg-(--color-route-soft) [&_td]:shadow-[inset_0_0_0_2px_var(--color-route-border)]";
 const addStopInlineButtonClassName =
   "inline-flex min-h-8 w-full items-center justify-center gap-2 rounded-(--radius-sm) border border-dashed border-(--color-route-border) bg-[rgb(239_246_255_/_0.72)] px-3 text-[12px] font-extrabold text-(--color-route) transition-[background,border-color,color] duration-150 hover:enabled:bg-(--color-route-soft) disabled:cursor-not-allowed disabled:border-(--color-border) disabled:bg-transparent disabled:text-(--color-text-subtle)";
 const mobileInspectorClassName =
@@ -453,7 +495,6 @@ export function SmartItineraryTable({
   onOpenItemDetails,
   onSelectItem,
   onMoveItem,
-  onMoveItemIntoPlanBlock,
   onMoveItemToDay,
   onMoveItemToPath,
   onUpdateItemInline,
@@ -488,12 +529,10 @@ export function SmartItineraryTable({
   );
   const [collapsedDays, setCollapsedDays] = useState<string[]>([]);
   const [collapsedPlanBlockIds, setCollapsedPlanBlockIds] = useState<string[]>([]);
-  const [dragState, setDragState] = useState<{
-    draggedItemId: string | null;
-    overItemId: string | null;
-    overDay: string | null;
-    overBlockId: string | null;
-  }>({ draggedItemId: null, overItemId: null, overDay: null, overBlockId: null });
+  const [dragState, setDragState] = useState<ItineraryDragState>({
+    draggedItemId: null,
+    overItemId: null,
+  });
   const [pendingDeleteItem, setPendingDeleteItem] =
     useState<ItineraryItem | null>(null);
   const [bookingDraftMessage, setBookingDraftMessage] = useState<string | null>(
@@ -633,13 +672,15 @@ export function SmartItineraryTable({
   }
 
   function startDrag(event: DragEvent<HTMLButtonElement>, itemId: string) {
+    if (!canRestructureItems || !canStartSubActivityDrag(itemId, itemsById)) {
+      event.preventDefault();
+      return;
+    }
     event.dataTransfer.effectAllowed = "move";
     event.dataTransfer.setData("text/plain", itemId);
     setDragState({
       draggedItemId: itemId,
       overItemId: null,
-      overDay: null,
-      overBlockId: null,
     });
   }
 
@@ -647,13 +688,16 @@ export function SmartItineraryTable({
     event: ReactPointerEvent<HTMLButtonElement>,
     itemId: string,
   ) {
-    if (!canRestructureItems || event.pointerType !== "pen") return;
+    if (
+      !canRestructureItems ||
+      event.pointerType !== "pen" ||
+      !canStartSubActivityDrag(itemId, itemsById)
+    )
+      return;
     touchDragRef.current = { itemId, pointerId: event.pointerId };
     setDragState({
       draggedItemId: itemId,
       overItemId: null,
-      overDay: null,
-      overBlockId: null,
     });
     event.currentTarget.setPointerCapture?.(event.pointerId);
     event.preventDefault();
@@ -663,15 +707,14 @@ export function SmartItineraryTable({
     event: ReactTouchEvent<HTMLButtonElement>,
     itemId: string,
   ) {
-    if (!canRestructureItems) return;
+    if (!canRestructureItems || !canStartSubActivityDrag(itemId, itemsById))
+      return;
     const touch = event.changedTouches[0];
     if (!touch) return;
     touchDragRef.current = { itemId, touchId: touch.identifier };
     setDragState({
       draggedItemId: itemId,
       overItemId: null,
-      overDay: null,
-      overBlockId: null,
     });
     event.preventDefault();
   }
@@ -683,67 +726,21 @@ export function SmartItineraryTable({
     if (
       !draggedItemId ||
       draggedItemId === targetItemId ||
-      !canMoveItemToSiblingTarget(draggedItemId, targetItemId, itemsById)
+      !canMoveSubActivityToSiblingTarget(
+        draggedItemId,
+        targetItemId,
+        itemsById,
+      )
     )
       return;
     event.preventDefault();
     event.dataTransfer.dropEffect = "move";
     setDragState((current) =>
-      current.overItemId === targetItemId && current.overDay === null
+      current.overItemId === targetItemId
         ? current
         : {
             draggedItemId,
             overItemId: targetItemId,
-            overDay: null,
-            overBlockId: null,
-          },
-    );
-  }
-
-  function previewBlockDrop(
-    event: DragEvent<HTMLElement>,
-    planBlockItemId: string,
-  ) {
-    if (!canRestructureItems) return;
-    const draggedItemId =
-      dragState.draggedItemId ?? event.dataTransfer.getData("text/plain");
-    if (
-      !draggedItemId ||
-      draggedItemId === planBlockItemId ||
-      !canMoveItemIntoPlanBlockTarget(draggedItemId, itemsById)
-    )
-      return;
-    event.preventDefault();
-    event.dataTransfer.dropEffect = "move";
-    setDragState((current) =>
-      current.overBlockId === planBlockItemId &&
-      current.overItemId === null &&
-      current.overDay === null
-        ? current
-        : {
-            draggedItemId,
-            overItemId: null,
-            overDay: null,
-            overBlockId: planBlockItemId,
-          },
-    );
-  }
-
-  function previewDayDrop(event: DragEvent<HTMLElement>, targetDay: string) {
-    if (!canRestructureItems) return;
-    const draggedItemId =
-      dragState.draggedItemId ?? event.dataTransfer.getData("text/plain");
-    if (!draggedItemId) return;
-    event.preventDefault();
-    event.dataTransfer.dropEffect = "move";
-    setDragState((current) =>
-      current.overDay === targetDay && current.overItemId === null
-        ? current
-        : {
-            draggedItemId,
-            overItemId: null,
-            overDay: targetDay,
-            overBlockId: null,
           },
     );
   }
@@ -755,36 +752,13 @@ export function SmartItineraryTable({
     if (
       draggedItemId &&
       draggedItemId !== targetItemId &&
-      canMoveItemToSiblingTarget(draggedItemId, targetItemId, itemsById)
+      canMoveSubActivityToSiblingTarget(
+        draggedItemId,
+        targetItemId,
+        itemsById,
+      )
     )
       onMoveItem(draggedItemId, targetItemId);
-    clearDragPreview();
-  }
-
-  function dropIntoBlock(
-    event: DragEvent<HTMLElement>,
-    planBlockItemId: string,
-  ) {
-    if (!canRestructureItems) return;
-    event.preventDefault();
-    event.stopPropagation();
-    const draggedItemId =
-      event.dataTransfer.getData("text/plain") || dragState.draggedItemId;
-    if (
-      draggedItemId &&
-      draggedItemId !== planBlockItemId &&
-      canMoveItemIntoPlanBlockTarget(draggedItemId, itemsById)
-    )
-      onMoveItemIntoPlanBlock(draggedItemId, planBlockItemId);
-    clearDragPreview();
-  }
-
-  function dropOnDay(event: DragEvent<HTMLElement>, targetDay: string) {
-    if (!canRestructureItems) return;
-    event.preventDefault();
-    const draggedItemId =
-      event.dataTransfer.getData("text/plain") || dragState.draggedItemId;
-    if (draggedItemId) onMoveItemToDay(draggedItemId, targetDay);
     clearDragPreview();
   }
 
@@ -792,8 +766,6 @@ export function SmartItineraryTable({
     setDragState({
       draggedItemId: null,
       overItemId: null,
-      overDay: null,
-      overBlockId: null,
     });
     touchDragRef.current = null;
   }
@@ -803,51 +775,21 @@ export function SmartItineraryTable({
       const current = touchDragRef.current;
       if (!current || current.pointerId !== event.pointerId) return;
       const target = document.elementFromPoint(event.clientX, event.clientY);
-      const blockDrop = target?.closest<HTMLElement>("[data-plan-block-drop]");
       const itemRow = target?.closest<HTMLElement>("[data-item-id]");
-      const dayRow = target?.closest<HTMLElement>("[data-day-drop]");
-      if (blockDrop) {
-        const targetBlockId = blockDrop.dataset.planBlockDrop;
-        if (
-          targetBlockId &&
-          targetBlockId !== current.itemId &&
-          canMoveItemIntoPlanBlockTarget(current.itemId, itemsById)
-        ) {
-          setDragState({
-            draggedItemId: current.itemId,
-            overItemId: null,
-            overDay: null,
-            overBlockId: targetBlockId,
-          });
-          event.preventDefault();
-        }
-        return;
-      }
       if (itemRow) {
         const targetItemId = itemRow.dataset.itemId;
         if (
           targetItemId &&
           targetItemId !== current.itemId &&
-          canMoveItemToSiblingTarget(current.itemId, targetItemId, itemsById)
+          canMoveSubActivityToSiblingTarget(
+            current.itemId,
+            targetItemId,
+            itemsById,
+          )
         ) {
           setDragState({
             draggedItemId: current.itemId,
             overItemId: targetItemId,
-            overDay: null,
-            overBlockId: null,
-          });
-          event.preventDefault();
-        }
-        return;
-      }
-      if (dayRow) {
-        const targetDay = dayRow.dataset.dayDrop;
-        if (targetDay) {
-          setDragState({
-            draggedItemId: current.itemId,
-            overItemId: null,
-            overDay: targetDay,
-            overBlockId: null,
           });
           event.preventDefault();
         }
@@ -858,25 +800,18 @@ export function SmartItineraryTable({
       const current = touchDragRef.current;
       if (!current || current.pointerId !== event.pointerId) return;
       const target = document.elementFromPoint(event.clientX, event.clientY);
-      const blockDrop = target?.closest<HTMLElement>("[data-plan-block-drop]");
       const itemRow = target?.closest<HTMLElement>("[data-item-id]");
-      const dayRow = target?.closest<HTMLElement>("[data-day-drop]");
-      const targetBlockId = blockDrop?.dataset.planBlockDrop;
       const targetItemId = itemRow?.dataset.itemId;
-      const targetDay = dayRow?.dataset.dayDrop;
       if (
-        targetBlockId &&
-        targetBlockId !== current.itemId &&
-        canMoveItemIntoPlanBlockTarget(current.itemId, itemsById)
-      )
-        onMoveItemIntoPlanBlock(current.itemId, targetBlockId);
-      else if (
         targetItemId &&
         targetItemId !== current.itemId &&
-        canMoveItemToSiblingTarget(current.itemId, targetItemId, itemsById)
+        canMoveSubActivityToSiblingTarget(
+          current.itemId,
+          targetItemId,
+          itemsById,
+        )
       )
         onMoveItem(current.itemId, targetItemId);
-      else if (targetDay) onMoveItemToDay(current.itemId, targetDay);
       clearDragPreview();
     }
 
@@ -893,43 +828,21 @@ export function SmartItineraryTable({
       );
       if (!touch) return;
       const target = document.elementFromPoint(touch.clientX, touch.clientY);
-      const blockDrop = target?.closest<HTMLElement>("[data-plan-block-drop]");
       const itemRow = target?.closest<HTMLElement>("[data-item-id]");
-      const dayRow = target?.closest<HTMLElement>("[data-day-drop]");
-      if (blockDrop) {
-        const targetBlockId = blockDrop.dataset.planBlockDrop;
-        if (targetBlockId && targetBlockId !== current.itemId) {
-          setDragState({
-            draggedItemId: current.itemId,
-            overItemId: null,
-            overDay: null,
-            overBlockId: targetBlockId,
-          });
-          event.preventDefault();
-        }
-        return;
-      }
       if (itemRow) {
         const targetItemId = itemRow.dataset.itemId;
-        if (targetItemId && targetItemId !== current.itemId) {
+        if (
+          targetItemId &&
+          targetItemId !== current.itemId &&
+          canMoveSubActivityToSiblingTarget(
+            current.itemId,
+            targetItemId,
+            itemsById,
+          )
+        ) {
           setDragState({
             draggedItemId: current.itemId,
             overItemId: targetItemId,
-            overDay: null,
-            overBlockId: null,
-          });
-          event.preventDefault();
-        }
-        return;
-      }
-      if (dayRow) {
-        const targetDay = dayRow.dataset.dayDrop;
-        if (targetDay) {
-          setDragState({
-            draggedItemId: current.itemId,
-            overItemId: null,
-            overDay: targetDay,
-            overBlockId: null,
           });
           event.preventDefault();
         }
@@ -944,25 +857,18 @@ export function SmartItineraryTable({
       );
       if (!touch) return;
       const target = document.elementFromPoint(touch.clientX, touch.clientY);
-      const blockDrop = target?.closest<HTMLElement>("[data-plan-block-drop]");
       const itemRow = target?.closest<HTMLElement>("[data-item-id]");
-      const dayRow = target?.closest<HTMLElement>("[data-day-drop]");
-      const targetBlockId = blockDrop?.dataset.planBlockDrop;
       const targetItemId = itemRow?.dataset.itemId;
-      const targetDay = dayRow?.dataset.dayDrop;
       if (
-        targetBlockId &&
-        targetBlockId !== current.itemId &&
-        canMoveItemIntoPlanBlockTarget(current.itemId, itemsById)
-      )
-        onMoveItemIntoPlanBlock(current.itemId, targetBlockId);
-      else if (
         targetItemId &&
         targetItemId !== current.itemId &&
-        canMoveItemToSiblingTarget(current.itemId, targetItemId, itemsById)
+        canMoveSubActivityToSiblingTarget(
+          current.itemId,
+          targetItemId,
+          itemsById,
+        )
       )
         onMoveItem(current.itemId, targetItemId);
-      else if (targetDay) onMoveItemToDay(current.itemId, targetDay);
       clearDragPreview();
     }
 
@@ -989,13 +895,7 @@ export function SmartItineraryTable({
       window.removeEventListener("touchend", handleTouchEnd);
       window.removeEventListener("touchcancel", cancelTouch);
     };
-  }, [
-    canRestructureItems,
-    itemsById,
-    onMoveItem,
-    onMoveItemIntoPlanBlock,
-    onMoveItemToDay,
-  ]);
+  }, [canRestructureItems, itemsById, onMoveItem]);
 
   function importFile(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
@@ -1336,8 +1236,6 @@ export function SmartItineraryTable({
               onChangeDayPath={onChangeDayPath}
               onClearDayPath={onClearDayPath}
               onDropItem={dropItem}
-              onDropIntoPlanBlock={dropIntoBlock}
-              onDropOnDay={dropOnDay}
               onChooseBookingTemplate={chooseBookingTemplate}
               onAddStop={onAddStop}
               onAddSubActivity={onAddSubActivity}
@@ -1345,12 +1243,9 @@ export function SmartItineraryTable({
               onAddTaskForItem={onAddTaskForItem}
               onOpenItemDetails={onOpenItemDetails}
               onMoveItem={onMoveItem}
-              onMoveItemIntoPlanBlock={onMoveItemIntoPlanBlock}
               onMoveItemToDay={onMoveItemToDay}
               onMoveItemToPath={onMoveItemToPath}
               onUpdateItemInline={onUpdateItemInline}
-              onPreviewDayDrop={previewDayDrop}
-              onPreviewBlockDrop={previewBlockDrop}
               onPreviewDrop={previewDrop}
               onSelectItem={onSelectItem}
               onStartDrag={startDrag}
@@ -1712,8 +1607,6 @@ function DayGroup({
   onChangeDayPath,
   onClearDayPath,
   onDropItem,
-  onDropIntoPlanBlock,
-  onDropOnDay,
   onChooseBookingTemplate,
   onAddStop,
   onAddSubActivity,
@@ -1721,12 +1614,9 @@ function DayGroup({
   onAddTaskForItem,
   onOpenItemDetails,
   onMoveItem,
-  onMoveItemIntoPlanBlock,
   onMoveItemToDay,
   onMoveItemToPath,
   onUpdateItemInline,
-  onPreviewDayDrop,
-  onPreviewBlockDrop,
   onPreviewDrop,
   onSelectItem,
   onStartDrag,
@@ -1753,21 +1643,11 @@ function DayGroup({
   collapsed: boolean;
   collapsedPlanBlockIds: string[];
   commitmentsByItemId: Record<string, ItineraryCommitmentSummary>;
-  dragState: {
-    draggedItemId: string | null;
-    overItemId: string | null;
-    overDay: string | null;
-    overBlockId: string | null;
-  };
+  dragState: ItineraryDragState;
   onClearDragPreview: () => void;
   onChangeDayPath?: (day: string, pathId: string) => void;
   onClearDayPath?: (day: string) => void;
   onDropItem: (event: DragEvent<HTMLElement>, targetItemId: string) => void;
-  onDropIntoPlanBlock: (
-    event: DragEvent<HTMLElement>,
-    planBlockItemId: string,
-  ) => void;
-  onDropOnDay: (event: DragEvent<HTMLElement>, targetDay: string) => void;
   onChooseBookingTemplate: (
     item: ItineraryItem,
     template: (typeof itineraryBookingTemplates)[number],
@@ -1778,21 +1658,12 @@ function DayGroup({
   onAddTaskForItem?: (itemId: string) => void;
   onOpenItemDetails: (itemId: string) => void;
   onMoveItem: (draggedItemId: string, targetItemId: string) => void;
-  onMoveItemIntoPlanBlock: (
-    draggedItemId: string,
-    planBlockItemId: string,
-  ) => void;
   onMoveItemToDay: (draggedItemId: string, targetDay: string) => void;
   onMoveItemToPath?: (itemId: string, pathId: string) => void;
   onUpdateItemInline?: (
     itemId: string,
     patch: InlineItineraryItemPatch,
   ) => void | Promise<void>;
-  onPreviewDayDrop: (event: DragEvent<HTMLElement>, targetDay: string) => void;
-  onPreviewBlockDrop: (
-    event: DragEvent<HTMLElement>,
-    planBlockItemId: string,
-  ) => void;
   onPreviewDrop: (event: DragEvent<HTMLElement>, targetItemId: string) => void;
   onSelectItem: (itemId: string) => void;
   onStartDrag: (event: DragEvent<HTMLButtonElement>, itemId: string) => void;
@@ -1821,9 +1692,14 @@ function DayGroup({
     (option) => option.id !== mainItineraryPathId,
   );
   const samePathOverlapItemIds = findSamePathOverlapItemIds(group.items);
-  const visibleItems = visiblePlanBlockItems(group.items, collapsedPlanBlockIds);
+  const childItemsByParentId = groupSubActivitiesByParentId(group.items);
+  const visibleItems = groupTopLevelItems(group.items);
+  const visibleGraphItems = groupTopLevelItems(graphItems);
+  const warningByItemId = new Map(
+    group.items.map((item) => [item.id, validateItineraryItem(item, group.items)]),
+  );
   const showGraph =
-    !collapsed && (graphItems.length > 0 || group.items.length > 0);
+    !collapsed && (visibleGraphItems.length > 0 || visibleItems.length > 0);
   const [openFixMenuItemId, setOpenFixMenuItemId] = useState<string | null>(null);
   const [openBookingMenuItemId, setOpenBookingMenuItemId] =
     useState<string | null>(null);
@@ -1848,7 +1724,7 @@ function DayGroup({
               canEdit={canEdit}
               day={group.day}
               dayLabel={dayA11yLabel}
-              graphItems={graphItems}
+              graphItems={visibleGraphItems}
               graphWidth={graphColumnWidth}
               pathOptions={pathOptions}
               rowItems={visibleItems}
@@ -1914,28 +1790,19 @@ function DayGroup({
             const moveUpTargetId = visibleItems[index - 1]?.id;
             const nextItem = visibleItems[index + 1];
             const moveDownTargetId = visibleItems[index + 2]?.id;
-            const isChild = Boolean(item.parentItemId);
-            const parentItem = item.parentItemId
-              ? group.items.find((candidate) => candidate.id === item.parentItemId)
-              : undefined;
-            const childCount = item.isPlanBlock
-              ? group.items.filter((candidate) => candidate.parentItemId === item.id).length
-              : 0;
+            const childItems = childItemsByParentId.get(item.id) ?? [];
+            const childCount = childItems.length;
+            const childItemsVisible =
+              !item.isPlanBlock || !collapsedPlanBlockIds.includes(item.id);
+            const visibleChildItems = childItemsVisible ? childItems : [];
             const addSubActivityLabel = itineraryLabels.row.addSubActivity({
               activity: item.activity,
             });
-            const canPromoteParentBlock = Boolean(parentItem && !parentItem.isPlanBlock);
             const canDeleteItem = childCount === 0;
             const blockCollapsed = item.isPlanBlock && collapsedPlanBlockIds.includes(item.id);
-            const itemWarnings = validateItineraryItem(item, group.items);
-            const fitParentBlockPatch =
-              parentItem && itemWarnings.some((warning) => warning.code === "child-outside-plan-block")
-                ? buildFitParentBlockPatch(parentItem, item)
-                : null;
-            const hasHierarchyFixActions = Boolean(
-              (canPromoteParentBlock && parentItem) ||
-              (fitParentBlockPatch && parentItem) ||
-              item.parentItemId,
+            const itemWarnings = warningByItemId.get(item.id) ?? [];
+            const hasChildWarnings = childItems.some(
+              (childItem) => (warningByItemId.get(childItem.id) ?? []).length > 0,
             );
 
             return (
@@ -1948,36 +1815,15 @@ function DayGroup({
                   selectedItemId,
                   dragState,
                   samePathOverlapItemIds,
-                  itemWarnings.length > 0,
+                  itemWarnings.length > 0 || hasChildWarnings,
                 )}
                 data-item-id={item.id}
-                data-hierarchy-level={isChild ? 2 : 1}
+                data-hierarchy-level={1}
                 key={item.id}
-                onDragOver={(event) => onPreviewDrop(event, item.id)}
-                onDrop={(event) => onDropItem(event, item.id)}
               >
                 <td className={dragCellClassName}>
                   <div className={reorderControlsClassName}>
-                    <button
-                      type="button"
-                      className={dragHandleClassName}
-                      draggable={canEdit && !collapsed}
-                      disabled={!canEdit}
-                      tabIndex={collapsed ? -1 : undefined}
-                      aria-label={itineraryLabels.row.drag({
-                        activity: item.activity,
-                      })}
-                      onDragEnd={onClearDragPreview}
-                      onDragStart={(event) => onStartDrag(event, item.id)}
-                      onPointerDown={(event) =>
-                        onStartTouchDrag(event, item.id)
-                      }
-                      onTouchStart={(event) =>
-                        onStartTouchGesture(event, item.id)
-                      }
-                    >
-                      <Icon name="drag" />
-                    </button>
+                    <span className="inline-block size-8" aria-hidden="true" />
                   </div>
                 </td>
                 <td className={timeCellClassName}>
@@ -2002,12 +1848,10 @@ function DayGroup({
                 </td>
                 <td className={activityCellClassName}>
                   <div
-                    className={cn(inlineActivityStackClassName, isChild && childActivityStackClassName)}
+                    className={inlineActivityStackClassName}
                     aria-label={itineraryLabels.row.select({
                       activity: item.activity,
                     })}
-                    onDragOver={(event) => onPreviewDrop(event, item.id)}
-                    onDrop={(event) => onDropItem(event, item.id)}
                   >
                     <button
                       type="button"
@@ -2022,59 +1866,6 @@ function DayGroup({
                       <Icon name="panel" className="size-3.5" />
                       <span>{itineraryLabels.openDetails}</span>
                     </button>
-                    {item.isPlanBlock ? (
-                      <div className="flex min-w-0 flex-wrap items-center gap-1.5">
-                        <button
-                          type="button"
-                          className={blockToggleButtonClassName}
-                          aria-expanded={!blockCollapsed}
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            onTogglePlanBlock(item.id);
-                          }}
-                        >
-                          <Icon name="chevronRight" />
-                          <span>
-                            {blockCollapsed
-                              ? itineraryLabels.row.expandBlock
-                              : itineraryLabels.row.collapseBlock}
-                          </span>
-                        </button>
-                        <button
-                          type="button"
-                          className={blockDropButtonClassName}
-                          data-plan-block-drop={item.id}
-                          data-active={
-                            dragState.overBlockId === item.id
-                              ? "true"
-                              : undefined
-                          }
-                          disabled={!canEdit}
-                          onDragOver={(event) =>
-                            onPreviewBlockDrop(event, item.id)
-                          }
-                          onDrop={(event) =>
-                            onDropIntoPlanBlock(event, item.id)
-                          }
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            if (
-                              dragState.draggedItemId &&
-                              dragState.draggedItemId !== item.id
-                            ) {
-                              onMoveItemIntoPlanBlock(
-                                dragState.draggedItemId,
-                                item.id,
-                              );
-                              onClearDragPreview();
-                            }
-                          }}
-                        >
-                          <Icon name="plus" />
-                          <span>{itineraryLabels.row.intoBlock}</span>
-                        </button>
-                      </div>
-                    ) : null}
                     <InlineTextField
                       ariaLabel={itineraryLabels.row.inlineActivity({
                         activity: item.activity,
@@ -2103,6 +1894,61 @@ function DayGroup({
                         onUpdateItemInline?.(item.id, { place: value })
                       }
                     />
+                    {item.isPlanBlock ? (
+                      <button
+                        type="button"
+                        className={blockToggleButtonClassName}
+                        aria-expanded={!blockCollapsed}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          onTogglePlanBlock(item.id);
+                        }}
+                      >
+                        <span className={blockToggleLabelClassName}>
+                          <Icon name="chevronRight" />
+                          <span>
+                            {blockCollapsed
+                              ? itineraryLabels.row.expandBlock
+                              : itineraryLabels.row.collapseBlock}
+                          </span>
+                        </span>
+                        <span>
+                          {childCount} {childCount === 1 ? "sub-activity" : "sub-activities"}
+                        </span>
+                      </button>
+                    ) : null}
+                    {visibleChildItems.length > 0 ? (
+                      <SubActivityList
+                        canEdit={canEdit}
+                        childItems={visibleChildItems}
+                        childItemsByParentId={childItemsByParentId}
+                        dragState={dragState}
+                        groupItems={group.items}
+                        itineraryLabels={itineraryLabels}
+                        locale={locale}
+                        parentItem={item}
+                        samePathOverlapItemIds={samePathOverlapItemIds}
+                        selectedItemId={selectedItemId}
+                        warningByItemId={warningByItemId}
+                        openFixMenuItemId={openFixMenuItemId}
+                        onClearDragPreview={onClearDragPreview}
+                        onDeleteItem={onDeleteItem}
+                        onDropItem={onDropItem}
+                        onEditItem={onEditItem}
+                        onPreviewDrop={onPreviewDrop}
+                        onSelectItem={onSelectItem}
+                        onStartDrag={onStartDrag}
+                        onStartTouchDrag={onStartTouchDrag}
+                        onStartTouchGesture={onStartTouchGesture}
+                        onToggleFixMenu={(itemId) =>
+                          setOpenFixMenuItemId((current) =>
+                            current === itemId ? null : itemId,
+                          )
+                        }
+                        onCloseFixMenu={() => setOpenFixMenuItemId(null)}
+                        onUpdateItemInline={onUpdateItemInline}
+                      />
+                    ) : null}
                     <RowHierarchyMeta
                       childCount={childCount}
                       commitment={commitmentsByItemId[item.id]}
@@ -2110,10 +1956,10 @@ function DayGroup({
                       locale={locale}
                       warnings={itemWarnings}
                     />
-                    {canEdit && !isChild ? (
+                    {canEdit ? (
                       <button
                         type="button"
-                        className={inlineSubItemButtonClassName}
+                        className={subActivityAddButtonClassName}
                         aria-label={addSubActivityLabel}
                         onClick={(event) => {
                           event.stopPropagation();
@@ -2207,104 +2053,6 @@ function DayGroup({
                 </td>
                 <td className={rowActionCellClassName}>
                   <div className={rowActionsClassName}>
-                    <button
-                      type="button"
-                      className={rowActionButtonClassName}
-                      aria-label={addSubActivityLabel}
-                      disabled={!canEdit}
-                      title={addSubActivityLabel}
-                      onClick={() => {
-                        void onAddSubActivity?.(item.id);
-                      }}
-                    >
-                      <Icon name="plus" />
-                    </button>
-                    {hasHierarchyFixActions ? (
-                      <div className={rowFixMenuClassName}>
-                        <button
-                          type="button"
-                          className={rowFixSummaryClassName}
-                          aria-label={itineraryLabels.row.fixHierarchy({
-                            activity: item.activity,
-                          })}
-                          aria-expanded={openFixMenuItemId === item.id}
-                          title={itineraryLabels.row.fixHierarchy({
-                            activity: item.activity,
-                          })}
-                          onClick={() =>
-                            setOpenFixMenuItemId((current) =>
-                              current === item.id ? null : item.id,
-                            )
-                          }
-                        >
-                          <Icon name="warning" />
-                        </button>
-                        {openFixMenuItemId === item.id ? (
-                          <div className={rowFixPanelClassName}>
-                            {canPromoteParentBlock && parentItem ? (
-                              <button
-                                type="button"
-                                className={rowActionButtonClassName}
-                                aria-label={itineraryLabels.row.promoteParentBlock({
-                                  parent: parentItem.activity,
-                                  child: item.activity,
-                                })}
-                                disabled={!canEdit}
-                                title={itineraryLabels.row.promoteParentBlockTitle({
-                                  parent: parentItem.activity,
-                                })}
-                                onClick={() => {
-                                  onUpdateItemInline?.(parentItem.id, { isPlanBlock: true });
-                                  setOpenFixMenuItemId(null);
-                                }}
-                              >
-                                <Icon name="list" />
-                              </button>
-                            ) : null}
-                            {fitParentBlockPatch && parentItem ? (
-                              <button
-                                type="button"
-                                className={rowActionButtonClassName}
-                                aria-label={itineraryLabels.row.expandBlockToFit({
-                                  parent: parentItem.activity,
-                                  child: item.activity,
-                                })}
-                                disabled={!canEdit}
-                                title={itineraryLabels.row.expandBlockToFitTitle({
-                                  parent: parentItem.activity,
-                                  child: item.activity,
-                                })}
-                                onClick={() => {
-                                  onUpdateItemInline?.(parentItem.id, fitParentBlockPatch);
-                                  setOpenFixMenuItemId(null);
-                                }}
-                              >
-                                <Icon name="clock" />
-                              </button>
-                            ) : null}
-                            {item.parentItemId ? (
-                              <button
-                                type="button"
-                                className={rowActionButtonClassName}
-                                aria-label={itineraryLabels.row.detachSubActivity({
-                                  activity: item.activity,
-                                })}
-                                disabled={!canEdit}
-                                title={itineraryLabels.row.detachSubActivityTitle({
-                                  activity: item.activity,
-                                })}
-                                onClick={() => {
-                                  onUpdateItemInline?.(item.id, { parentItemId: null });
-                                  setOpenFixMenuItemId(null);
-                                }}
-                              >
-                                <Icon name="x" />
-                              </button>
-                            ) : null}
-                          </div>
-                        ) : null}
-                      </div>
-                    ) : null}
                     <button
                       type="button"
                       className={rowActionButtonClassName}
@@ -2426,15 +2174,7 @@ function DayGroup({
           })
         : null}
       {!collapsed ? (
-        <tr
-          className={cn(
-            addStopRowClassName,
-            dragState.overDay === group.day && addStopRowDropTargetClassName,
-          )}
-          data-day-drop={group.day}
-          onDragOver={(event) => onPreviewDayDrop(event, group.day)}
-          onDrop={(event) => onDropOnDay(event, group.day)}
-        >
+        <tr className={addStopRowClassName} data-day-drop={group.day}>
           <td colSpan={showGraph ? 7 : 8}>
             <button
               type="button"
@@ -2450,6 +2190,586 @@ function DayGroup({
         </tr>
       ) : null}
     </tbody>
+  );
+}
+
+function SubActivityList({
+  canEdit,
+  childItems,
+  childItemsByParentId,
+  dragState,
+  groupItems,
+  itineraryLabels,
+  locale,
+  parentItem,
+  samePathOverlapItemIds,
+  selectedItemId,
+  warningByItemId,
+  openFixMenuItemId,
+  onClearDragPreview,
+  onDeleteItem,
+  onDropItem,
+  onEditItem,
+  onPreviewDrop,
+  onSelectItem,
+  onStartDrag,
+  onStartTouchDrag,
+  onStartTouchGesture,
+  onToggleFixMenu,
+  onCloseFixMenu,
+  onUpdateItemInline,
+}: {
+  canEdit: boolean;
+  childItems: ItineraryItem[];
+  childItemsByParentId: Map<string, ItineraryItem[]>;
+  dragState: ItineraryDragState;
+  groupItems: ItineraryItem[];
+  itineraryLabels: Messages["itinerary"];
+  locale: Locale;
+  parentItem: ItineraryItem;
+  samePathOverlapItemIds: Set<string>;
+  selectedItemId: string;
+  warningByItemId: Map<string, ValidationWarning[]>;
+  openFixMenuItemId: string | null;
+  onClearDragPreview: () => void;
+  onDeleteItem?: (item: ItineraryItem) => void;
+  onDropItem: (event: DragEvent<HTMLElement>, targetItemId: string) => void;
+  onEditItem?: (itemId: string) => void;
+  onPreviewDrop: (event: DragEvent<HTMLElement>, targetItemId: string) => void;
+  onSelectItem: (itemId: string) => void;
+  onStartDrag: (event: DragEvent<HTMLButtonElement>, itemId: string) => void;
+  onStartTouchDrag: (
+    event: ReactPointerEvent<HTMLButtonElement>,
+    itemId: string,
+  ) => void;
+  onStartTouchGesture: (
+    event: ReactTouchEvent<HTMLButtonElement>,
+    itemId: string,
+  ) => void;
+  onToggleFixMenu: (itemId: string) => void;
+  onCloseFixMenu: () => void;
+  onUpdateItemInline?: (
+    itemId: string,
+    patch: InlineItineraryItemPatch,
+  ) => void | Promise<void>;
+}) {
+  return (
+    <div
+      className={subActivityShellClassName}
+      aria-label={`Sub-activities for ${parentItem.activity}`}
+    >
+      <div className={subActivityListClassName}>
+        {childItems.map((childItem) => {
+          const warnings = warningByItemId.get(childItem.id) ?? [];
+          const parentForChild = childItem.parentItemId
+            ? groupItems.find((candidate) => candidate.id === childItem.parentItemId)
+            : undefined;
+          const fitParentBlockPatch =
+            parentForChild &&
+            warnings.some((warning) => warning.code === "child-outside-plan-block")
+              ? buildFitParentBlockPatch(parentForChild, childItem)
+              : null;
+
+          return (
+            <SubActivityRow
+              canEdit={canEdit}
+              canDelete={(childItemsByParentId.get(childItem.id) ?? []).length === 0}
+              dragState={dragState}
+              fitParentBlockPatch={fitParentBlockPatch}
+              item={childItem}
+              itineraryLabels={itineraryLabels}
+              key={childItem.id}
+              locale={locale}
+              parentItem={parentForChild}
+              samePathOverlapItemIds={samePathOverlapItemIds}
+              selectedItemId={selectedItemId}
+              warnings={warnings}
+              fixMenuOpen={openFixMenuItemId === childItem.id}
+              onClearDragPreview={onClearDragPreview}
+              onCloseFixMenu={onCloseFixMenu}
+              onDeleteItem={onDeleteItem}
+              onDropItem={onDropItem}
+              onEditItem={onEditItem}
+              onPreviewDrop={onPreviewDrop}
+              onSelectItem={onSelectItem}
+              onStartDrag={onStartDrag}
+              onStartTouchDrag={onStartTouchDrag}
+              onStartTouchGesture={onStartTouchGesture}
+              onToggleFixMenu={() => onToggleFixMenu(childItem.id)}
+              onUpdateItemInline={onUpdateItemInline}
+            />
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function SubActivityRow({
+  canEdit,
+  canDelete,
+  dragState,
+  fitParentBlockPatch,
+  item,
+  itineraryLabels,
+  locale,
+  parentItem,
+  samePathOverlapItemIds,
+  selectedItemId,
+  warnings,
+  fixMenuOpen,
+  onClearDragPreview,
+  onCloseFixMenu,
+  onDeleteItem,
+  onDropItem,
+  onEditItem,
+  onPreviewDrop,
+  onSelectItem,
+  onStartDrag,
+  onStartTouchDrag,
+  onStartTouchGesture,
+  onToggleFixMenu,
+  onUpdateItemInline,
+}: {
+  canEdit: boolean;
+  canDelete: boolean;
+  dragState: ItineraryDragState;
+  fitParentBlockPatch: InlineItineraryItemPatch | null;
+  item: ItineraryItem;
+  itineraryLabels: Messages["itinerary"];
+  locale: Locale;
+  parentItem?: ItineraryItem;
+  samePathOverlapItemIds: Set<string>;
+  selectedItemId: string;
+  warnings: ValidationWarning[];
+  fixMenuOpen: boolean;
+  onClearDragPreview: () => void;
+  onCloseFixMenu: () => void;
+  onDeleteItem?: (item: ItineraryItem) => void;
+  onDropItem: (event: DragEvent<HTMLElement>, targetItemId: string) => void;
+  onEditItem?: (itemId: string) => void;
+  onPreviewDrop: (event: DragEvent<HTMLElement>, targetItemId: string) => void;
+  onSelectItem: (itemId: string) => void;
+  onStartDrag: (event: DragEvent<HTMLButtonElement>, itemId: string) => void;
+  onStartTouchDrag: (
+    event: ReactPointerEvent<HTMLButtonElement>,
+    itemId: string,
+  ) => void;
+  onStartTouchGesture: (
+    event: ReactTouchEvent<HTMLButtonElement>,
+    itemId: string,
+  ) => void;
+  onToggleFixMenu: () => void;
+  onUpdateItemInline?: (
+    itemId: string,
+    patch: InlineItineraryItemPatch,
+  ) => void | Promise<void>;
+}) {
+  const hasPlace = item.place.trim().length > 0;
+  const mapUrl = mapHref(item);
+  const hasMapLink = mapUrl !== "#";
+  const hasTime = item.startTime.trim().length > 0 || Boolean(item.endTime?.trim());
+  const canPromoteParentBlock = Boolean(parentItem && !parentItem.isPlanBlock);
+  const hasFixActions = Boolean(
+    canPromoteParentBlock ||
+      (fitParentBlockPatch && parentItem) ||
+      item.parentItemId,
+  );
+
+  return (
+    <div
+      className={cn(
+        subActivityRowClassName,
+        selectedItemId === item.id && subActivityRowSelectedClassName,
+        warnings.length > 0 && subActivityRowWarningClassName,
+        samePathOverlapItemIds.has(item.id) && subActivityRowPathOverlapClassName,
+        dragState.draggedItemId === item.id && subActivityRowDraggingClassName,
+        dragState.overItemId === item.id && subActivityRowDropTargetClassName,
+      )}
+      data-item-id={item.id}
+      data-sub-activity-id={item.id}
+      role="group"
+      aria-label={`Sub-activity ${item.activity}`}
+      onDragOver={(event) => onPreviewDrop(event, item.id)}
+      onDrop={(event) => onDropItem(event, item.id)}
+    >
+      <button
+        type="button"
+        className={subActivityDragButtonClassName}
+        draggable={canEdit}
+        disabled={!canEdit}
+        aria-label={itineraryLabels.row.drag({ activity: item.activity })}
+        onDragEnd={onClearDragPreview}
+        onDragStart={(event) => onStartDrag(event, item.id)}
+        onPointerDown={(event) => onStartTouchDrag(event, item.id)}
+        onTouchStart={(event) => onStartTouchGesture(event, item.id)}
+      >
+        <Icon name="drag" />
+      </button>
+      <div className={subActivityContentClassName}>
+        <InlineTextField
+          ariaLabel={itineraryLabels.row.inlineActivity({
+            activity: item.activity,
+          })}
+          canEdit={canEdit}
+          className={subActivityNameFieldClassName}
+          itemValue={item.activity}
+          key={`${item.id}:sub-activity:${item.activity}`}
+          required
+          onClick={() => onSelectItem(item.id)}
+          onCommit={(activity) => onUpdateItemInline?.(item.id, { activity })}
+        />
+        {hasPlace ? (
+          <span className={subActivityPlaceWrapClassName}>
+            <span aria-hidden="true">@</span>
+            <InlineTextField
+              ariaLabel={itineraryLabels.row.inlinePlace({
+                activity: item.activity,
+              })}
+              canEdit={canEdit}
+              className={subActivityPlaceFieldClassName}
+              itemValue={item.place}
+              key={`${item.id}:sub-place:${item.place}`}
+              onClick={() => onSelectItem(item.id)}
+              onCommit={(place) => onUpdateItemInline?.(item.id, { place })}
+            />
+          </span>
+        ) : null}
+      </div>
+      <div className={subActivityToolsClassName}>
+        {hasMapLink ? (
+          <a
+            className={subActivityIconButtonClassName}
+            href={mapUrl}
+            aria-label={mapLinkLabel(item, itineraryLabels.row.mapFallback)}
+          >
+            <Icon name="map" />
+          </a>
+        ) : null}
+        <SubActivityTypeIconSelect
+          canEdit={canEdit}
+          item={item}
+          itineraryLabels={itineraryLabels}
+          locale={locale}
+          onUpdateItemInline={onUpdateItemInline}
+        />
+        {hasTime ? (
+          <SubActivityTimeInlineEditor
+            canEdit={canEdit}
+            item={item}
+            labels={itineraryLabels}
+            onUpdateItemInline={onUpdateItemInline}
+          />
+        ) : null}
+        <SubActivityWarnings locale={locale} warnings={warnings} />
+        {hasFixActions ? (
+          <HierarchyFixMenu
+            canEdit={canEdit}
+            canPromoteParentBlock={canPromoteParentBlock}
+            fitParentBlockPatch={fitParentBlockPatch}
+            item={item}
+            open={fixMenuOpen}
+            parentItem={parentItem}
+            itineraryLabels={itineraryLabels}
+            onClose={onCloseFixMenu}
+            onToggle={onToggleFixMenu}
+            onUpdateItemInline={onUpdateItemInline}
+          />
+        ) : null}
+        <button
+          type="button"
+          className={subActivityIconButtonClassName}
+          aria-label={itineraryLabels.row.edit({ activity: item.activity })}
+          disabled={!canEdit}
+          onClick={(event) => {
+            event.stopPropagation();
+            onEditItem?.(item.id);
+          }}
+        >
+          <Icon name="edit" />
+        </button>
+        <button
+          type="button"
+          className={subActivityIconButtonClassName}
+          aria-label={itineraryLabels.row.delete({ activity: item.activity })}
+          disabled={!canEdit || !canDelete}
+          onClick={(event) => {
+            event.stopPropagation();
+            onDeleteItem?.(item);
+          }}
+        >
+          <Icon name="trash" />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function SubActivityTypeIconSelect({
+  canEdit,
+  item,
+  itineraryLabels,
+  locale,
+  onUpdateItemInline,
+}: {
+  canEdit: boolean;
+  item: ItineraryItem;
+  itineraryLabels: Messages["itinerary"];
+  locale: Locale;
+  onUpdateItemInline?: (
+    itemId: string,
+    patch: InlineItineraryItemPatch,
+  ) => void | Promise<void>;
+}) {
+  const label = activityTypeLabel(item.activityType, locale);
+  return (
+    <span className={subActivityTypeSelectClassName} title={label}>
+      <Icon name={activityTypeIconName(item.activityType)} />
+      <select
+        aria-label={itineraryLabels.row.inlineType({
+          activity: item.activity,
+        })}
+        disabled={!canEdit}
+        value={item.activityType}
+        onChange={(event) =>
+          onUpdateItemInline?.(item.id, {
+            activityType: event.target.value as ActivityType,
+          })
+        }
+      >
+        {activityTypeOptions.map((option) => (
+          <option value={option} key={option}>
+            {activityTypeLabel(option, locale)}
+          </option>
+        ))}
+      </select>
+    </span>
+  );
+}
+
+function SubActivityTimeInlineEditor({
+  canEdit,
+  item,
+  labels,
+  onUpdateItemInline,
+}: {
+  canEdit: boolean;
+  item: ItineraryItem;
+  labels: Messages["itinerary"];
+  onUpdateItemInline?: (
+    itemId: string,
+    patch: InlineItineraryItemPatch,
+  ) => void | Promise<void>;
+}) {
+  const startTime = item.startTime.trim();
+  const endTime = item.endTime?.trim() ?? "";
+  const endOffsetDays = item.endOffsetDays ?? 0;
+
+  return (
+    <span className={subActivityTimeClassName}>
+      {startTime ? (
+        <InlineTextField
+          ariaLabel={labels.row.inlineTime({ activity: item.activity })}
+          canEdit={canEdit}
+          className={subActivityTimeInputClassName}
+          itemValue={item.startTime}
+          key={`${item.id}:sub-time:${item.startTime}`}
+          type="time"
+          onCommit={(nextStartTime) =>
+            onUpdateItemInline?.(item.id, { startTime: nextStartTime })
+          }
+        />
+      ) : null}
+      {endTime ? (
+        <>
+          <span className={timeWindowSeparatorClassName} aria-hidden="true">
+            -
+          </span>
+          <InlineTextField
+            ariaLabel={labels.row.inlineEndTime({ activity: item.activity })}
+            canEdit={canEdit}
+            className={subActivityTimeInputClassName}
+            itemValue={endTime}
+            key={`${item.id}:sub-end-time:${endTime}`}
+            type="time"
+            onCommit={(nextEndTime) =>
+              onUpdateItemInline?.(
+                item.id,
+                nextEndTime
+                  ? { endTime: nextEndTime, endOffsetDays }
+                  : { endTime: null, endOffsetDays: 0 },
+              )
+            }
+          />
+          <button
+            type="button"
+            aria-label={labels.row.toggleNextDayEnd({
+              activity: item.activity,
+            })}
+            aria-pressed={endOffsetDays > 0}
+            className={subActivityTimeToggleClassName}
+            disabled={!canEdit}
+            onClick={() =>
+              onUpdateItemInline?.(item.id, {
+                endOffsetDays: endOffsetDays > 0 ? 0 : 1,
+              })
+            }
+          >
+            {endOffsetDays > 0 ? (
+              <EndOffsetSup value={endOffsetDays} />
+            ) : (
+              <Icon name="clock" className="size-3" />
+            )}
+          </button>
+        </>
+      ) : null}
+    </span>
+  );
+}
+
+function SubActivityWarnings({
+  locale,
+  warnings,
+}: {
+  locale: Locale;
+  warnings: ValidationWarning[];
+}) {
+  const sortedWarnings = sortValidationWarningsForDisplay(warnings);
+  const visibleWarnings = sortedWarnings.slice(0, 1);
+  const remainingWarningCount = Math.max(0, warnings.length - visibleWarnings.length);
+  if (!visibleWarnings.length) return null;
+
+  return (
+    <>
+      {visibleWarnings.map((warning) => (
+        <span
+          className={cn(hierarchyChipClassName, warningChipClassName)}
+          key={warning.code}
+          title={warning.message}
+        >
+          <Icon name="warning" />
+          {formatValidationWarningLabel(warning, locale)}
+        </span>
+      ))}
+      {remainingWarningCount > 0 ? (
+        <span className={cn(hierarchyChipClassName, warningChipClassName)}>
+          <Icon name="warning" />+{remainingWarningCount}
+        </span>
+      ) : null}
+    </>
+  );
+}
+
+function HierarchyFixMenu({
+  canEdit,
+  canPromoteParentBlock,
+  fitParentBlockPatch,
+  item,
+  open,
+  parentItem,
+  itineraryLabels,
+  onClose,
+  onToggle,
+  onUpdateItemInline,
+}: {
+  canEdit: boolean;
+  canPromoteParentBlock: boolean;
+  fitParentBlockPatch: InlineItineraryItemPatch | null;
+  item: ItineraryItem;
+  open: boolean;
+  parentItem?: ItineraryItem;
+  itineraryLabels: Messages["itinerary"];
+  onClose: () => void;
+  onToggle: () => void;
+  onUpdateItemInline?: (
+    itemId: string,
+    patch: InlineItineraryItemPatch,
+  ) => void | Promise<void>;
+}) {
+  return (
+    <div className={rowFixMenuClassName}>
+      <button
+        type="button"
+        className={subActivityIconButtonClassName}
+        aria-label={itineraryLabels.row.fixHierarchy({
+          activity: item.activity,
+        })}
+        aria-expanded={open}
+        title={itineraryLabels.row.fixHierarchy({
+          activity: item.activity,
+        })}
+        onClick={(event) => {
+          event.stopPropagation();
+          onToggle();
+        }}
+      >
+        <Icon name="warning" />
+      </button>
+      {open ? (
+        <div className={rowFixPanelClassName}>
+          {canPromoteParentBlock && parentItem ? (
+            <button
+              type="button"
+              className={rowActionButtonClassName}
+              aria-label={itineraryLabels.row.promoteParentBlock({
+                parent: parentItem.activity,
+                child: item.activity,
+              })}
+              disabled={!canEdit}
+              title={itineraryLabels.row.promoteParentBlockTitle({
+                parent: parentItem.activity,
+              })}
+              onClick={() => {
+                onUpdateItemInline?.(parentItem.id, { isPlanBlock: true });
+                onClose();
+              }}
+            >
+              <Icon name="list" />
+            </button>
+          ) : null}
+          {fitParentBlockPatch && parentItem ? (
+            <button
+              type="button"
+              className={rowActionButtonClassName}
+              aria-label={itineraryLabels.row.expandBlockToFit({
+                parent: parentItem.activity,
+                child: item.activity,
+              })}
+              disabled={!canEdit}
+              title={itineraryLabels.row.expandBlockToFitTitle({
+                parent: parentItem.activity,
+                child: item.activity,
+              })}
+              onClick={() => {
+                onUpdateItemInline?.(parentItem.id, fitParentBlockPatch);
+                onClose();
+              }}
+            >
+              <Icon name="clock" />
+            </button>
+          ) : null}
+          {item.parentItemId ? (
+            <button
+              type="button"
+              className={rowActionButtonClassName}
+              aria-label={itineraryLabels.row.detachSubActivity({
+                activity: item.activity,
+              })}
+              disabled={!canEdit}
+              title={itineraryLabels.row.detachSubActivityTitle({
+                activity: item.activity,
+              })}
+              onClick={() => {
+                onUpdateItemInline?.(item.id, { parentItemId: null });
+                onClose();
+              }}
+            >
+              <Icon name="x" />
+            </button>
+          ) : null}
+        </div>
+      ) : null}
+    </div>
   );
 }
 
@@ -2470,9 +2790,26 @@ function mergeTripDayGroups(
     .map((day) => groupsByDay.get(day) ?? { day, items: [], warningCount: 0 });
 }
 
-function visiblePlanBlockItems(items: ItineraryItem[], collapsedPlanBlockIds: string[]): ItineraryItem[] {
-  const collapsed = new Set(collapsedPlanBlockIds);
-  return items.filter((item) => !item.parentItemId || !collapsed.has(item.parentItemId));
+function groupTopLevelItems(items: ItineraryItem[]): ItineraryItem[] {
+  const itemIds = new Set(items.map((item) => item.id));
+  return items.filter(
+    (item) => !item.parentItemId || !itemIds.has(item.parentItemId),
+  );
+}
+
+function groupSubActivitiesByParentId(
+  items: ItineraryItem[],
+): Map<string, ItineraryItem[]> {
+  const itemIds = new Set(items.map((item) => item.id));
+  const childrenByParentId = new Map<string, ItineraryItem[]>();
+  for (const item of items) {
+    if (!item.parentItemId || !itemIds.has(item.parentItemId)) continue;
+    childrenByParentId.set(item.parentItemId, [
+      ...(childrenByParentId.get(item.parentItemId) ?? []),
+      item,
+    ]);
+  }
+  return childrenByParentId;
 }
 
 function buildFitParentBlockPatch(
@@ -2540,12 +2877,7 @@ function buildGraphColumnWidth(items: ItineraryItem[]): number {
 function getRowClassName(
   item: ItineraryItem,
   selectedItemId: string,
-  dragState: {
-    draggedItemId: string | null;
-    overItemId: string | null;
-    overDay: string | null;
-    overBlockId: string | null;
-  },
+  dragState: ItineraryDragState,
   samePathOverlapItemIds: Set<string> = new Set(),
   hasWarnings = false,
 ): string {
@@ -3060,7 +3392,7 @@ function RowHierarchyMeta({
       {item.isPlanBlock ? (
         <span className={cn(hierarchyChipClassName, blockHierarchyChipClassName)}>
           <Icon name="list" />
-          Activity block · {childCount} sub-item{childCount === 1 ? "" : "s"}
+          Activity block · {childCount} sub-activit{childCount === 1 ? "y" : "ies"}
         </span>
       ) : !item.parentItemId ? (
         <span className={cn(hierarchyChipClassName, activityHierarchyChipClassName)}>
@@ -3402,7 +3734,14 @@ function itineraryItemPathId(item: ItineraryItem): string {
     : mainItineraryPathId;
 }
 
-function canMoveItemToSiblingTarget(
+function canStartSubActivityDrag(
+  itemId: string,
+  itemsById: Map<string, ItineraryItem>,
+): boolean {
+  return Boolean(itemsById.get(itemId)?.parentItemId);
+}
+
+function canMoveSubActivityToSiblingTarget(
   draggedItemId: string,
   targetItemId: string,
   itemsById: Map<string, ItineraryItem>,
@@ -3410,15 +3749,8 @@ function canMoveItemToSiblingTarget(
   const draggedItem = itemsById.get(draggedItemId);
   const targetItem = itemsById.get(targetItemId);
   if (!draggedItem || !targetItem) return false;
-  return !draggedItem.isPlanBlock || !targetItem.parentItemId;
-}
-
-function canMoveItemIntoPlanBlockTarget(
-  draggedItemId: string,
-  itemsById: Map<string, ItineraryItem>,
-): boolean {
-  const draggedItem = itemsById.get(draggedItemId);
-  return Boolean(draggedItem && !draggedItem.isPlanBlock);
+  if (!draggedItem.parentItemId || !targetItem.parentItemId) return false;
+  return draggedItem.parentItemId === targetItem.parentItemId;
 }
 
 function countChildrenByParentId(items: ItineraryItem[]): Map<string, number> {
@@ -3428,6 +3760,15 @@ function countChildrenByParentId(items: ItineraryItem[]): Map<string, number> {
     counts.set(item.parentItemId, (counts.get(item.parentItemId) ?? 0) + 1);
   }
   return counts;
+}
+
+function activityTypeIconName(activityType: ActivityType): IconName {
+  if (activityType === "food") return "utensils";
+  if (activityType === "attraction") return "location";
+  if (activityType === "experience") return "ticket";
+  if (activityType === "travel") return "route";
+  if (activityType === "shopping") return "wallet";
+  return "home";
 }
 
 function mapHref(item: ItineraryItem): string {

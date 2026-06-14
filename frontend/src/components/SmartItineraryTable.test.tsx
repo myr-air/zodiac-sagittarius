@@ -713,11 +713,14 @@ describe("SmartItineraryTable", () => {
     });
 
     expect(
-      screen.getByRole("button", { name: /Graph hidden child on Main/i }),
-    ).toHaveStyle({ top: "118px" });
+      screen.queryByRole("button", { name: /Graph hidden child on Main/i }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("group", { name: /Sub-activity Graph hidden child/i }),
+    ).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: /Graph after block on Main/i }),
-    ).toHaveStyle({ top: "177px" });
+    ).toHaveStyle({ top: "118px" });
 
     await user.click(
       within(screen.getByRole("row", { name: /Graph block/i })).getByRole(
@@ -727,7 +730,7 @@ describe("SmartItineraryTable", () => {
     );
 
     expect(
-      screen.queryByRole("row", { name: /Graph hidden child/i }),
+      screen.queryByRole("group", { name: /Sub-activity Graph hidden child/i }),
     ).not.toBeInTheDocument();
     expect(
       screen.queryByRole("button", { name: /Graph hidden child on Main/i }),
@@ -2091,8 +2094,8 @@ describe("SmartItineraryTable", () => {
     const row = screen.getByRole("row", { name: /Dim Dim Sum/i });
 
     expect(
-      within(row).getByRole("button", { name: /ลาก Dim Dim Sum/i }),
-    ).toHaveClass("drag-handle");
+      within(row).queryByRole("button", { name: /ลาก Dim Dim Sum/i }),
+    ).not.toBeInTheDocument();
     expect(
       screen.getByRole("columnheader", { name: /จัดการ/i }),
     ).toBeInTheDocument();
@@ -2156,14 +2159,40 @@ describe("SmartItineraryTable", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("reorders rows from a touch drag on the handle", () => {
-    const props = renderTable();
-    const sourceHandle = screen.getByRole("button", {
-      name: /ลาก Victoria Peak/i,
+  it("reorders sub-activities from a touch drag on the handle", () => {
+    const props = renderTable({
+      items: [
+        {
+          ...tripFixture.planItems[0],
+          id: "block-flight",
+          activity: "Flight block",
+          isPlanBlock: true,
+          parentItemId: null,
+          sortOrder: 100,
+        },
+        {
+          ...tripFixture.planItems[1],
+          id: "child-checkin",
+          activity: "Check in",
+          parentItemId: "block-flight",
+          sortOrder: 110,
+        },
+        {
+          ...tripFixture.planItems[2],
+          id: "child-immigration",
+          activity: "Immigration",
+          parentItemId: "block-flight",
+          sortOrder: 120,
+        },
+      ],
+      selectedItemId: "block-flight",
     });
-    const targetRow = screen
-      .getByRole("button", { name: /เลือกจุด Dim Dim Sum/i })
-      .closest("tr")!;
+    const sourceHandle = screen.getByRole("button", {
+      name: /ลาก Immigration/i,
+    });
+    const targetRow = screen.getByRole("group", {
+      name: /Sub-activity Check in/i,
+    });
     const originalElementFromPoint = document.elementFromPoint;
     Object.defineProperty(document, "elementFromPoint", {
       configurable: true,
@@ -2181,8 +2210,8 @@ describe("SmartItineraryTable", () => {
     });
 
     expect(props.onMoveItem).toHaveBeenCalledWith(
-      "item-victoria-peak",
-      "item-dimdim",
+      "child-immigration",
+      "child-checkin",
     );
     Object.defineProperty(document, "elementFromPoint", {
       configurable: true,
@@ -2201,8 +2230,8 @@ describe("SmartItineraryTable", () => {
       screen.getByText("ต้องมีสิทธิ์ผู้จัดทริปจึงจะแก้ไขได้"),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: /ลาก Dim Dim Sum/i }),
-    ).toBeDisabled();
+      screen.queryByRole("button", { name: /ลาก Dim Dim Sum/i }),
+    ).not.toBeInTheDocument();
   });
 
   it("shows every trip day and offers an empty add row at the bottom of each day", async () => {
@@ -2232,20 +2261,47 @@ describe("SmartItineraryTable", () => {
   });
 
   it("ignores drag previews and drops that cannot move an item", () => {
-    const props = renderTable({ canRestructure: false });
+    const props = renderTable({
+      canRestructure: false,
+      items: [
+        {
+          ...tripFixture.planItems[0],
+          id: "block-flight",
+          activity: "Flight block",
+          isPlanBlock: true,
+          parentItemId: null,
+          sortOrder: 100,
+        },
+        {
+          ...tripFixture.planItems[1],
+          id: "child-checkin",
+          activity: "Check in",
+          parentItemId: "block-flight",
+          sortOrder: 110,
+        },
+        {
+          ...tripFixture.planItems[2],
+          id: "child-immigration",
+          activity: "Immigration",
+          parentItemId: "block-flight",
+          sortOrder: 120,
+        },
+      ],
+      selectedItemId: "block-flight",
+    });
     const dataTransfer = createDataTransfer();
-    const row = screen
-      .getByRole("button", { name: /เลือกจุด Dim Dim Sum/i })
-      .closest("tr")!;
+    const row = screen.getByRole("group", {
+      name: /Sub-activity Immigration/i,
+    });
 
     fireEvent.dragOver(row, { dataTransfer });
     fireEvent.drop(row, { dataTransfer });
 
     expect(props.onMoveItem).not.toHaveBeenCalled();
-    expect(row).not.toHaveClass("data-row--drop-target");
+    expect(row).not.toHaveClass("sub-activity-row--drop-target");
   });
 
-  it("drops a dragged item onto a different day add row", () => {
+  it("does not drag a main activity onto a different day add row", () => {
     const onMoveItemToDay = vi.fn();
     const props = renderTable({ onMoveItemToDay });
     const dataTransfer = createDataTransfer();
@@ -2264,13 +2320,10 @@ describe("SmartItineraryTable", () => {
       { dataTransfer },
     );
 
-    expect(props.onMoveItemToDay).toHaveBeenCalledWith(
-      "item-dimdim",
-      "2026-06-20",
-    );
+    expect(props.onMoveItemToDay).not.toHaveBeenCalled();
   });
 
-  it("drops a dragged item into a plan block target", () => {
+  it("does not render the legacy plan block drop target", () => {
     const onMoveItemIntoPlanBlock = vi.fn();
     const props = renderTable({
       items: [
@@ -2297,16 +2350,14 @@ describe("SmartItineraryTable", () => {
     const dataTransfer = createDataTransfer();
     dataTransfer.setData("text/plain", "item-cafe");
 
-    const blockDropTarget = screen.getByRole("button", {
-      name: /ใส่ใน block/i,
+    expect(
+      screen.queryByRole("button", { name: /ใส่ใน block/i }),
+    ).not.toBeInTheDocument();
+    fireEvent.drop(screen.getByRole("row", { name: /Morning block/i }), {
+      dataTransfer,
     });
-    fireEvent.dragOver(blockDropTarget, { dataTransfer });
-    fireEvent.drop(blockDropTarget, { dataTransfer });
 
-    expect(props.onMoveItemIntoPlanBlock).toHaveBeenCalledWith(
-      "item-cafe",
-      "block-morning",
-    );
+    expect(props.onMoveItemIntoPlanBlock).not.toHaveBeenCalled();
   });
 
   it("opens a visible quick sub-activity action from top-level rows", async () => {
@@ -2387,7 +2438,9 @@ describe("SmartItineraryTable", () => {
     });
 
     const blockRow = screen.getByRole("row", { name: /Flight to Hong Kong/i });
-    const childRow = screen.getByRole("row", { name: /Check in/i });
+    const childRow = screen.getByRole("group", {
+      name: /Sub-activity Check in/i,
+    });
 
     expect(
       within(blockRow).getByRole("button", { name: /ลบ Flight to Hong Kong/i }),
@@ -2550,15 +2603,14 @@ describe("SmartItineraryTable", () => {
     const dataTransfer = createDataTransfer();
     dataTransfer.setData("text/plain", "block-flight");
 
-    fireEvent.drop(
-      within(screen.getByRole("row", { name: /Hotel block/i })).getByRole(
+    expect(
+      within(screen.getByRole("row", { name: /Hotel block/i })).queryByRole(
         "button",
         { name: /ใส่ใน block/i },
       ),
-      { dataTransfer },
-    );
+    ).not.toBeInTheDocument();
     fireEvent.drop(
-      screen.getByRole("button", { name: /เลือกจุด Check in/i }).closest("tr")!,
+      screen.getByRole("group", { name: /Sub-activity Check in/i }),
       { dataTransfer },
     );
 
@@ -2611,24 +2663,22 @@ describe("SmartItineraryTable", () => {
     });
 
     const blockStructure = screen.getByLabelText("Structure for Flight to Hong Kong");
-    const childStructure = screen.getByLabelText("Structure for Check in");
+    const childGroup = screen.getByRole("group", {
+      name: /Sub-activity Check in/i,
+    });
     const activityStructure = screen.getByLabelText("Structure for Market walk");
-    expect(within(blockStructure).getByText("Activity block · 1 sub-item")).toBeInTheDocument();
+    expect(within(blockStructure).getByText("Activity block · 1 sub-activity")).toBeInTheDocument();
     expect(within(blockStructure).getByText("confirmed · must")).toBeInTheDocument();
     expect(within(blockStructure).getByText("1 booking")).toBeInTheDocument();
     expect(within(blockStructure).getByText("2 expenses")).toBeInTheDocument();
     expect(within(blockStructure).getByText("1 task")).toBeInTheDocument();
     expect(within(blockStructure).getByText("1 note")).toBeInTheDocument();
-    expect(within(childStructure).getByText("Sub-activity")).toBeInTheDocument();
-    expect(within(childStructure).getByText("planned")).toBeInTheDocument();
+    expect(childGroup).toBeInTheDocument();
+    expect(within(childGroup).getByDisplayValue("Check in")).toBeInTheDocument();
     expect(within(activityStructure).getByText("Activity")).toBeInTheDocument();
     expect(screen.getByRole("row", { name: /Flight to Hong Kong/i })).toHaveAttribute(
       "data-hierarchy-level",
       "1",
-    );
-    expect(screen.getByRole("row", { name: /Check in/i })).toHaveAttribute(
-      "data-hierarchy-level",
-      "2",
     );
     expect(screen.getByRole("row", { name: /Market walk/i })).toHaveAttribute(
       "data-hierarchy-level",
@@ -2658,14 +2708,12 @@ describe("SmartItineraryTable", () => {
       selectedItemId: "child-under-plain",
     });
 
-    const row = screen.getByRole("row", {
-      name: /Child under plain parent/i,
+    const row = screen.getByRole("row", { name: /Plain parent/i });
+    const childGroup = screen.getByRole("group", {
+      name: /Sub-activity Child under plain parent/i,
     });
     expect(row).toHaveClass("data-row--has-warning");
-    const structure = within(row).getByLabelText(
-      "Structure for Child under plain parent",
-    );
-    expect(within(structure).getByText("แม่ต้องเป็น block")).toBeInTheDocument();
+    expect(within(childGroup).getByText("แม่ต้องเป็น block")).toBeInTheDocument();
     expect(screen.getByText("4 คำเตือน")).toBeInTheDocument();
   });
 
@@ -2694,8 +2742,8 @@ describe("SmartItineraryTable", () => {
       selectedItemId: "child-under-plain",
     });
 
-    const childRow = screen.getByRole("row", {
-      name: /Child under plain parent/i,
+    const childRow = screen.getByRole("group", {
+      name: /Sub-activity Child under plain parent/i,
     });
 
     await user.click(
@@ -2752,8 +2800,8 @@ describe("SmartItineraryTable", () => {
       selectedItemId: "child-under-plain",
     });
 
-    const childRow = screen.getByRole("row", {
-      name: /Child under plain parent/i,
+    const childRow = screen.getByRole("group", {
+      name: /Sub-activity Child under plain parent/i,
     });
 
     expect(
@@ -2813,7 +2861,9 @@ describe("SmartItineraryTable", () => {
       selectedItemId: "child-checkin",
     });
 
-    const childRow = screen.getByRole("row", { name: /Airport check-in/i });
+    const childRow = screen.getByRole("group", {
+      name: /Sub-activity Airport check-in/i,
+    });
     expect(within(childRow).getByText("นอก block")).toBeInTheDocument();
 
     await user.click(
@@ -2870,13 +2920,13 @@ describe("SmartItineraryTable", () => {
     });
 
     await user.click(
-      within(screen.getByRole("row", { name: /Arrival transfer/i })).getByRole(
+      within(screen.getByRole("group", { name: /Sub-activity Arrival transfer/i })).getByRole(
         "button",
         { name: /แก้โครงสร้างของ Arrival transfer/i },
       ),
     );
     await user.click(
-      within(screen.getByRole("row", { name: /Arrival transfer/i })).getByRole(
+      within(screen.getByRole("group", { name: /Sub-activity Arrival transfer/i })).getByRole(
         "button",
         { name: /ขยาย Night train window ให้ครอบ Arrival transfer/i },
       ),
@@ -2930,26 +2980,49 @@ describe("SmartItineraryTable", () => {
       selectedItemId: "block-flight-window",
     });
 
-    const blockRow = screen.getByRole("row", { name: /Flight to Hong Kong/i });
-    const ticketedRow = screen.getByRole("row", { name: /Ticketed flight/i });
-    const immigrationRow = screen.getByRole("row", { name: /Immigration/i });
+    const blockStructure = screen.getByLabelText("Structure for Flight to Hong Kong");
+    const ticketedRow = screen.getByRole("group", {
+      name: /Sub-activity Ticketed flight/i,
+    });
+    const immigrationRow = screen.getByRole("group", {
+      name: /Sub-activity Immigration/i,
+    });
 
-    expect(within(blockRow).queryByText("เวลาซ้อน")).not.toBeInTheDocument();
+    expect(within(blockStructure).queryByText("เวลาซ้อน")).not.toBeInTheDocument();
     expect(within(ticketedRow).getByText("เวลาซ้อน")).toBeInTheDocument();
     expect(within(immigrationRow).getByText("เวลาซ้อน")).toBeInTheDocument();
   });
 
   it("ignores missing and self-targeted drag payloads", () => {
-    const props = renderTable();
-    const row = screen
-      .getByRole("button", { name: /เลือกจุด Dim Dim Sum/i })
-      .closest("tr")!;
+    const props = renderTable({
+      items: [
+        {
+          ...tripFixture.planItems[0],
+          id: "block-flight",
+          activity: "Flight block",
+          isPlanBlock: true,
+          parentItemId: null,
+          sortOrder: 100,
+        },
+        {
+          ...tripFixture.planItems[1],
+          id: "child-checkin",
+          activity: "Check in",
+          parentItemId: "block-flight",
+          sortOrder: 110,
+        },
+      ],
+      selectedItemId: "block-flight",
+    });
+    const row = screen.getByRole("group", {
+      name: /Sub-activity Check in/i,
+    });
 
     fireEvent.dragOver(row, { dataTransfer: createDataTransfer() });
-    expect(row).not.toHaveClass("data-row--drop-target");
+    expect(row).not.toHaveClass("sub-activity-row--drop-target");
 
     const selfTransfer = createDataTransfer();
-    selfTransfer.setData("text/plain", "item-dimdim");
+    selfTransfer.setData("text/plain", "child-checkin");
     fireEvent.dragOver(row, { dataTransfer: selfTransfer });
     fireEvent.drop(row, { dataTransfer: selfTransfer });
 
