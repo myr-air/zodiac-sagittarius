@@ -40,6 +40,11 @@ const MIGRATIONS: &[&str] = &[
     include_str!("../../../../migrations/0022_itinerary_item_details.sql"),
     include_str!("../../../../migrations/0023_itinerary_table_v1.sql"),
     include_str!("../../../../migrations/0024_plan_check_runtime_grants.sql"),
+    include_str!("../../../../migrations/0025_trip_plan_compatibility.sql"),
+    include_str!("../../../../migrations/0026_plan_scoped_records.sql"),
+    include_str!("../../../../migrations/0027_itinerary_hierarchy_time_windows.sql"),
+    include_str!("../../../../migrations/0028_plan_check_trip_plan_scope.sql"),
+    include_str!("../../../../migrations/0029_expense_reminder_trip_plan_scope.sql"),
 ];
 
 #[tokio::main]

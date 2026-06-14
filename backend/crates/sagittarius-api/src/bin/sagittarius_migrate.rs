@@ -139,6 +139,10 @@ fn embedded_migrations() -> Vec<Migration> {
             version: "0028_plan_check_trip_plan_scope.sql",
             sql: include_str!("../../../../migrations/0028_plan_check_trip_plan_scope.sql"),
         },
+        Migration {
+            version: "0029_expense_reminder_trip_plan_scope.sql",
+            sql: include_str!("../../../../migrations/0029_expense_reminder_trip_plan_scope.sql"),
+        },
     ]
 }
 
@@ -338,7 +342,7 @@ mod tests {
     }
 
     #[test]
-    fn embedded_migrations_include_latest_photo_album_link_migration() {
+    fn embedded_migrations_include_latest_plan_scope_migration() {
         let versions = embedded_migrations()
             .iter()
             .map(|migration| migration.version)
@@ -346,6 +350,8 @@ mod tests {
 
         assert!(versions.contains("0019_photo_album_links.sql"));
         assert!(versions.contains("0021_trusted_device_active_label_unique.sql"));
+        assert!(versions.contains("0028_plan_check_trip_plan_scope.sql"));
+        assert!(versions.contains("0029_expense_reminder_trip_plan_scope.sql"));
     }
 
     #[test]
