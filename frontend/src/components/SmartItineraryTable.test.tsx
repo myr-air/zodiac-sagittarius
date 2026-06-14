@@ -2138,6 +2138,7 @@ describe("SmartItineraryTable", () => {
   it("opens a quick sub-activity action from an activity block row", async () => {
     const user = userEvent.setup();
     const onAddSubActivity = vi.fn();
+    const onUpdateItemInline = vi.fn();
     renderTable({
       items: [
         {
@@ -2158,6 +2159,7 @@ describe("SmartItineraryTable", () => {
         },
       ],
       onAddSubActivity,
+      onUpdateItemInline,
       selectedItemId: "block-flight",
     });
 
@@ -2167,12 +2169,17 @@ describe("SmartItineraryTable", () => {
     );
 
     expect(onAddSubActivity).toHaveBeenCalledWith("block-flight");
-    expect(
+    await user.click(
       within(screen.getByRole("row", { name: /Market walk/i })).getByRole(
         "button",
-        { name: /Add sub-activity under Market walk/i },
+        { name: /Convert Market walk to activity block/i },
       ),
-    ).toBeDisabled();
+    );
+
+    expect(onUpdateItemInline).toHaveBeenCalledWith("solo-market", {
+      isPlanBlock: true,
+    });
+    expect(onAddSubActivity).not.toHaveBeenCalledWith("solo-market");
   });
 
   it("disables deleting an activity block until its sub-activities are moved", async () => {

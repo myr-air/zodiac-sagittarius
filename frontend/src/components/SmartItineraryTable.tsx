@@ -128,6 +128,7 @@ export type InlineItineraryItemPatch = Partial<
     | "activity"
     | "place"
     | "activityType"
+    | "isPlanBlock"
     | "itemKind"
     | "timeMode"
     | "status"
@@ -1979,11 +1980,26 @@ function DayGroup({
                     <button
                       type="button"
                       className={rowActionButtonClassName}
-                      aria-label={`Add sub-activity under ${item.activity}`}
-                      disabled={!canEdit || !item.isPlanBlock}
-                      onClick={() => onAddSubActivity?.(item.id)}
+                      aria-label={
+                        item.isPlanBlock
+                          ? `Add sub-activity under ${item.activity}`
+                          : `Convert ${item.activity} to activity block`
+                      }
+                      disabled={!canEdit}
+                      title={
+                        item.isPlanBlock
+                          ? `Add sub-activity under ${item.activity}`
+                          : `Convert ${item.activity} to activity block`
+                      }
+                      onClick={() => {
+                        if (item.isPlanBlock) {
+                          onAddSubActivity?.(item.id);
+                          return;
+                        }
+                        onUpdateItemInline?.(item.id, { isPlanBlock: true });
+                      }}
                     >
-                      <Icon name="plus" />
+                      <Icon name={item.isPlanBlock ? "plus" : "list"} />
                     </button>
                     <button
                       type="button"

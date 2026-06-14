@@ -5389,6 +5389,74 @@ describe("Sagittarius cockpit UI", () => {
     );
   });
 
+  it("promotes a normal activity to a block before quick-adding sub-activities", async () => {
+    const user = userEvent.setup();
+    const storage = installLocalStorageStub();
+    const normalActivity = {
+      ...seedTrip.itineraryItems[0],
+      id: "market-walk",
+      activity: "Market walk",
+      place: "Mong Kok",
+      isPlanBlock: false,
+      parentItemId: null,
+      sortOrder: 100,
+    };
+    storage.setItem(
+      tripStorageKey,
+      JSON.stringify({
+        ...seedTrip,
+        itineraryItems: [normalActivity],
+      }),
+    );
+
+    render(<SagittariusApp initialView="itinerary" />);
+
+    await user.click(
+      await screen.findByRole("button", {
+        name: /Convert Market walk to activity block/i,
+      }),
+    );
+
+    const promotedRow = await screen.findByRole("row", { name: /Market walk/i });
+    expect(
+      within(promotedRow).getByText("Activity block · 0 sub-items"),
+    ).toBeInTheDocument();
+
+    await user.click(
+      within(promotedRow).getByRole("button", {
+        name: /Add sub-activity under Market walk/i,
+      }),
+    );
+    const dialog = await screen.findByRole("dialog", { name: /เพิ่มกิจกรรม/i });
+    fireEvent.change(within(dialog).getByLabelText("กิจกรรม"), {
+      target: { value: "Snack stop" },
+    });
+    fireEvent.change(within(dialog).getByLabelText("สถานที่"), {
+      target: { value: "Street food lane" },
+    });
+    await user.click(
+      within(dialog).getByRole("button", { name: "บันทึกกิจกรรม" }),
+    );
+
+    expect(
+      await screen.findByRole("row", { name: /Snack stop/i }),
+    ).toHaveAttribute("data-hierarchy-level", "2");
+    const persistedTrip = JSON.parse(storage.getItem(tripStorageKey)!) as Trip;
+    expect(persistedTrip.itineraryItems).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: "market-walk",
+          isPlanBlock: true,
+        }),
+        expect.objectContaining({
+          activity: "Snack stop",
+          parentItemId: "market-walk",
+          isPlanBlock: false,
+        }),
+      ]),
+    );
+  });
+
   it("quick-adds a sub-activity on the parent activity block path", async () => {
     const user = userEvent.setup();
     const storage = installLocalStorageStub();
