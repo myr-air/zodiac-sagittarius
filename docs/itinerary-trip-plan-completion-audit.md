@@ -5,7 +5,8 @@ redesign. It is not a release sign-off by itself. A row is `Proved` only when
 the current repository has direct code, documentation, and command evidence for
 the stated scope.
 
-Last audited on 2026-06-14 from branch `codex/itinerary-hierarchy-docs`.
+Last audited on 2026-06-14 from branch `codex/itinerary-hierarchy-docs` at
+commit `f4f3c5c3`.
 
 ## Requirement Ledger
 
@@ -31,7 +32,8 @@ Last audited on 2026-06-14 from branch `codex/itinerary-hierarchy-docs`.
 
 ## Fresh Command Evidence
 
-These commands were run from the current worktree during the audit continuation:
+These commands were rerun from clean commit `f4f3c5c3` during the final audit
+pass:
 
 | Layer | Command | Result |
 | --- | --- | --- |
@@ -72,23 +74,21 @@ These commands were run from the current worktree during the audit continuation:
 
 ## Completion Decision
 
-Phase 0/1 Trip Plan compatibility is strongly evidenced by the current command
-matrix. Current Phase 2 service behavior for expenses, tasks, stop notes, and
-booking docs is also strongly evidenced by backend and frontend tests. The
-import browser QA now proves the desktop/mobile display path for hierarchy,
-cross-day time, and imported record scoping. The paid booking lifecycle browser
-smoke now proves the current organizer path for paid/committed booking review
-without creating duplicate Actual Expenses. Import apply now has explicit
-clone-linked versus activities-only record handling with dangling references
-rejected before apply. The current organizer scope-audit UX now surfaces
-unlinked Actual Expenses with inferred Trip Plan scope and routes organizers into
-the explicit edit flow. Plan Check review now routes findings to review-edit,
-dismiss, snooze, or keep-reviewing choices without applying suggested patches
-silently. The full requested product end state is now broadly
-covered by focused backend, frontend, and browser evidence in this audit, but a
-final release claim still requires rerunning the relevant command matrix fresh
-from the current worktree.
+Phase 0/1 Trip Plan compatibility is evidenced by the current command matrix.
+Current Phase 2 service behavior for expenses, tasks, stop notes, and booking
+docs is evidenced by backend and frontend tests. The import browser QA proves
+the desktop/mobile display path for hierarchy, cross-day time, and imported
+record scoping. The paid booking lifecycle browser smoke proves the current
+organizer path for paid/committed booking review without creating duplicate
+Actual Expenses. Import apply has explicit clone-linked versus activities-only
+record handling with dangling references rejected before apply. The current
+organizer scope-audit UX surfaces unlinked Actual Expenses with inferred Trip
+Plan scope and routes organizers into the explicit edit flow. Plan Check review
+routes findings to review-edit, dismiss, snooze, or keep-reviewing choices
+without applying suggested patches silently.
 
-Do not mark the persistent goal complete until those remaining rows either have
-direct implementation and verification evidence or are explicitly removed from
-the requested end state by a new user decision and ADR/spec update.
+All requirement-ledger rows have direct implementation, documentation, and fresh
+command evidence for the current requested scope. Future richer journey editing,
+non-expense audit surfaces, booking lifecycle actions, or whole-Trip-Plan copy
+modes should add their own ADR/spec rows and browser coverage when introduced,
+but they are not required to satisfy the current requested end state.
