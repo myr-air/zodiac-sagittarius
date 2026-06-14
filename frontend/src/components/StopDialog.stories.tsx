@@ -148,6 +148,32 @@ export const ActivityForm: Story = {
   },
 };
 
+export const FoodForm: Story = {
+  args: {
+    ...Edit.args,
+    initialItem: categoryItem({
+      activity: "Dim sum lunch",
+      activityType: "food",
+      itemKind: "meal",
+      place: "Central Market",
+      details: {
+        kind: "food",
+        provider: "Central Market",
+        cuisine: "Cantonese dim sum",
+        bookingRef: "Lunch shortlist",
+        costNote: "HKD 160 per person estimate",
+      },
+    }),
+  },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByLabelText("Type")).toHaveValue("food");
+    await expect(canvas.getByLabelText("Restaurant / vendor")).toHaveValue("Central Market");
+    await expect(canvas.getByLabelText("Cuisine / menu")).toHaveValue("Cantonese dim sum");
+    await expect(canvas.getByLabelText("Booking ref")).toHaveValue("Lunch shortlist");
+    await expect(canvas.getByLabelText("Cost note")).toHaveValue("HKD 160 per person estimate");
+  },
+};
+
 export const StayForm: Story = {
   args: {
     ...Edit.args,
@@ -169,6 +195,30 @@ export const StayForm: Story = {
     await expect(canvas.getByLabelText("Check-in / out")).toHaveValue("15:00 check-in / 11:00 check-out");
     await expect(canvas.getByLabelText("Booking ref")).toHaveValue("WK-2409");
     await expect(canvas.getByLabelText("Bag / luggage detail")).toHaveValue("Leave bags before the food walk");
+  },
+};
+
+export const ShoppingForm: Story = {
+  args: {
+    ...Edit.args,
+    initialItem: categoryItem({
+      activity: "Sneaker stop",
+      activityType: "shopping",
+      itemKind: "activity",
+      place: "Mong Kok",
+      details: {
+        kind: "shopping",
+        store: "Sneaker Street",
+        shoppingList: "Limited colorways, socks, gifts",
+        budgetNote: "Cap group browsing at 45 minutes",
+      },
+    }),
+  },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByLabelText("Type")).toHaveValue("shopping");
+    await expect(canvas.getByLabelText("Store / area")).toHaveValue("Sneaker Street");
+    await expect(canvas.getByLabelText("Shopping list")).toHaveValue("Limited colorways, socks, gifts");
+    await expect(canvas.getByLabelText("Budget / time note")).toHaveValue("Cap group browsing at 45 minutes");
   },
 };
 
