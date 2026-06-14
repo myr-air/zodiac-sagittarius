@@ -9,8 +9,10 @@ export type TripCapability =
   | "viewExpenses"
   | "editExpenses"
   | "managePeople"
+  | "manageTripPlans"
   | "managePhotoAlbums";
 
+export type PlanStatus = "main" | "backup" | "draft" | "proposal";
 export type PlanVariantKind = "main" | "backup" | "draft" | "split";
 
 export type ActivityType = "travel" | "food" | "shopping" | "attraction" | "experience" | "stay";
@@ -46,9 +48,12 @@ export interface PlanVariant {
   tripId: string;
   name: string;
   kind: PlanVariantKind;
+  status?: PlanStatus;
   description: string;
   version?: number;
 }
+
+export type TripPlan = PlanVariant;
 
 export type ItineraryPathScope = "day" | "trip";
 export type ItineraryPathRole = "main" | "alternative";
@@ -174,6 +179,8 @@ export interface ItineraryItem {
   day: string;
   sortOrder: number;
   startTime: string;
+  endTime?: string | null;
+  endOffsetDays?: number;
   activity: string;
   activityType: ActivityType;
   place: string;
@@ -194,6 +201,7 @@ export interface ItineraryItem {
 export interface Expense {
   id: string;
   tripId?: string;
+  tripPlanId?: string | null;
   title: string;
   amount: number;
   amountMinor?: number;
@@ -225,6 +233,7 @@ export interface ExpenseComment {
 }
 
 export interface ExpenseReminder {
+  tripPlanId?: string | null;
   from: string;
   to: string;
   amount: number;
@@ -245,6 +254,7 @@ export type TripTaskKind = "prep" | "booking";
 
 export interface TripTask {
   id: string;
+  tripPlanId?: string | null;
   title: string;
   status: TripTaskStatus;
   visibility: TripTaskVisibility;
@@ -258,6 +268,7 @@ export interface TripTask {
 export interface StopNote {
   id: string;
   tripId: string;
+  tripPlanId?: string | null;
   itemId: string;
   authorId: string;
   body: string;
@@ -299,6 +310,7 @@ export interface BookingDocExternalLink {
 export interface BookingDoc {
   id: string;
   tripId: string;
+  tripPlanId?: string | null;
   type: BookingDocType;
   title: string;
   status: BookingDocStatus;
@@ -368,7 +380,9 @@ export interface Trip {
   startDate: string;
   endDate: string;
   activePlanVariantId: string;
+  mainTripPlanId?: string;
   planVariants: PlanVariant[];
+  tripPlans?: TripPlan[];
   itineraryPaths?: ItineraryPath[];
   members: Member[];
   itineraryItems: ItineraryItem[];
@@ -376,6 +390,7 @@ export interface Trip {
   bookingDocs?: BookingDoc[];
   photoAlbumLinks?: TripPhotoAlbumLink[];
   stopNotes?: StopNote[];
+  tasks?: TripTask[];
   expenseReminders?: ExpenseReminder[];
   version?: number;
 }
@@ -401,6 +416,10 @@ export type ValidationWarningCode =
   | "missing-transportation"
   | "time-order-conflict"
   | "overlap"
+  | "missing-parent-item"
+  | "invalid-parent-plan-block"
+  | "nested-sub-activity"
+  | "parent-scope-mismatch"
   | "child-outside-plan-block"
   | "unresolved-location"
   | "stale-location";
@@ -451,6 +470,7 @@ export interface PlanSuggestion {
 export interface PlanCheck {
   id: string;
   tripId: string;
+  tripPlanId?: string | null;
   createdBy: string;
   itineraryFingerprint: string;
   stale: boolean;

@@ -1,0 +1,15 @@
+# Phase 0/1 Contract Gate Before Code
+
+Phase 0/1 Trip Plan work must freeze the compatibility contract before production code changes continue. The implementation-start gate is the combination of route-by-route API request/response diffs, an additive migration DDL draft checked against the shipped migration files, and an exact scenario-level test matrix; if implementation discovers a route, column, rollback stance, or test target is wrong, this ADR and the implementation spec must change before the code does.
+
+**Considered Options**: Let API, migration, and test details emerge during implementation, or require a pre-code contract packet. Sagittarius chooses the pre-code packet because Trip Plan compatibility crosses backend DTOs, frontend mappers, local mode, realtime, import/export, booking and expense scope, and already-applied migrations; letting one layer move first would make alias drift and silent record movement too easy to ship.
+
+**Consequences**: Phase 1 implementation commits should reference the spec's `API-*`, `DDL-*`, and `TEST-*` ids. Code may be split into smaller slices, but each slice must preserve canonical and legacy aliases together, keep Main Plan mutation separate from itinerary workspace selection, and prove through tests that Actual Expenses and other plan-scoped records do not move when the Main Plan changes.
+
+**Diff boundary**: The pre-code packet must show the exact additive contract for cockpit load, account trip create, join summaries, canonical and legacy Trip Plan create/patch/set-main routes, direct trip metadata patch rejection, realtime payloads, itinerary import responses, import/export envelopes, and Plan Check scoping. Backend-owned Phase 1 responses emit canonical aliases; compatibility readers may still accept legacy-only and canonical-only payloads for migration safety.
+
+**DDL boundary**: Phase 1 may depend on the already-shipped additive migrations `0025` through `0028`, but it must not reinterpret them as stricter invariants than they enforce. `plan_variants.status` stays nullable, plan-scoped record columns stay nullable, hierarchy/time-window constraints remain partly service-validated, and rollback is an application rollback first unless an operator performs a coordinated database downgrade.
+
+**Repair boundary**: Main Plan identity comes from `trips.active_plan_variant_id`, not raw `plan_variants.status`; nullable or inferred record `trip_plan_id` values are compatibility attribution, not proof that Actual Expenses or commitments belong to a new plan; `0027` parent FKs are immediate, so hierarchy moves need valid service update sequences; and raw `end_time IS NULL` with `end_offset_days > 0` is application drift to normalize or reject before exposing a Time Window.
+
+**Test boundary**: The exact test matrix is executable acceptance criteria, not a list of convenient files. A row is covered only when the assertion proves the named alias, route path, validation code, conflict payload, realtime payload, migration property, selected Trip Plan scope, or unchanged record state directly.

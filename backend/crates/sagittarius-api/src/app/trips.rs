@@ -76,14 +76,14 @@ pub async fn load_cockpit(
         },
         async {
             if can_view_expenses {
-                db::queries::list_expense_splits(pool, session_trip_id).await
+                db::queries::list_expense_splits(pool, session_trip_id, None).await
             } else {
                 Ok(Vec::new())
             }
         },
         async {
             if can_view_expenses {
-                db::queries::list_expense_reminders(pool, session_trip_id).await
+                db::queries::list_expense_reminders(pool, session_trip_id, None).await
             } else {
                 Ok(Vec::new())
             }
@@ -106,10 +106,22 @@ pub async fn load_cockpit(
     let photo_album_links = photo_albums::list_photo_album_links(pool, session_trip_id).await?;
     let latest_plan_check = plan_checks::latest_plan_check_for_trip(pool, session_trip_id).await?;
 
+    let trip_summary = TripSummary::from(trip);
+    let plan_summaries: Vec<_> = plan_variants
+        .into_iter()
+        .map(|record| {
+            crate::domain::types::PlanVariantSummary::from_record_for_main_pointer(
+                record,
+                trip_summary.main_trip_plan_id,
+            )
+        })
+        .collect();
+
     Ok(TripCockpit {
-        trip: trip.into(),
+        trip: trip_summary,
         members: members.into_iter().map(Into::into).collect(),
-        plan_variants: plan_variants.into_iter().map(Into::into).collect(),
+        plan_variants: plan_summaries.clone(),
+        trip_plans: plan_summaries,
         itinerary_items: itinerary_items.into_iter().map(Into::into).collect(),
         suggestions: suggestions.into_iter().map(Into::into).collect(),
         latest_plan_check,
@@ -165,18 +177,6 @@ pub async fn patch_trip(
             "startDate must be before endDate",
         ));
     }
-    if let Some(active_plan_variant_id) = request.active_plan_variant_id {
-        let variants = db::queries::list_plan_variants(pool, trip_id).await?;
-        if !variants
-            .iter()
-            .any(|variant| variant.id == active_plan_variant_id)
-        {
-            return Err(ServiceError::InvalidRequest(
-                "activePlanVariantId is invalid",
-            ));
-        }
-    }
-
     let updated =
         db::queries::update_trip_metadata(&mut tx, trip_id, &request, request.expected_version + 1)
             .await?
@@ -236,6 +236,11 @@ fn validate_trip_patch(request: &PatchTripRequest) -> Result<(), ServiceError> {
                 "startDate must be before endDate",
             ));
         }
+    }
+    if request.active_plan_variant_id.is_some() || request.main_trip_plan_id.is_some() {
+        return Err(ServiceError::InvalidRequest(
+            "use set-main to change the main trip plan",
+        ));
     }
 
     Ok(())
@@ -561,6 +566,7 @@ mod tests {
                 ExpenseReminderRecord {
                     id: Uuid::now_v7(),
                     trip_id: Uuid::now_v7(),
+                    trip_plan_id: Uuid::now_v7(),
                     from_member_id: debtor,
                     to_member_id: payer,
                     amount_minor: 4_000,
@@ -570,6 +576,7 @@ mod tests {
                 ExpenseReminderRecord {
                     id: Uuid::now_v7(),
                     trip_id: Uuid::now_v7(),
+                    trip_plan_id: Uuid::now_v7(),
                     from_member_id: debtor,
                     to_member_id: payer,
                     amount_minor: 4_500,

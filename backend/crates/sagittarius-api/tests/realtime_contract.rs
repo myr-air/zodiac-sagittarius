@@ -1,6 +1,8 @@
 mod support;
 
+use axum::body::Body;
 use futures_util::StreamExt;
+use http::{Method, Request, header};
 use sagittarius_api::api::ws::should_send_live_event;
 use sagittarius_api::app::{AppState, email::EmailDelivery, events, exchange_rates};
 use sagittarius_api::domain::errors::ServiceError;
@@ -10,6 +12,7 @@ use tokio::net::TcpListener;
 use tokio::time::{Duration, timeout};
 use tokio_tungstenite::connect_async;
 use tokio_tungstenite::tungstenite::client::IntoClientRequest;
+use tower::ServiceExt;
 use uuid::Uuid;
 
 #[sqlx::test(migrations = "../../migrations")]
@@ -121,6 +124,156 @@ fn websocket_live_handoff_skips_events_already_sent_by_replay() {
         next_event_id,
         Some(replayed_event_id)
     ));
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn trip_plan_mutations_keep_legacy_realtime_wrapper_with_canonical_payload(
+    pool: sqlx::PgPool,
+) {
+    support::seed_trip(&pool).await;
+    let token = support::create_session(&pool, support::ORGANIZER_ID).await;
+    let app = support::app(pool.clone());
+
+    let create = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method(Method::POST)
+                .uri(format!("/api/v1/trips/{}/trip-plans", support::TRIP_ID))
+                .header(header::AUTHORIZATION, format!("Bearer {token}"))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({
+                        "clientMutationId": "realtime-trip-plan-create",
+                        "name": "Realtime proposal",
+                        "status": "proposal",
+                        "description": "Realtime contract route"
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(create.status(), http::StatusCode::CREATED);
+    let created: serde_json::Value = serde_json::from_slice(
+        &axum::body::to_bytes(create.into_body(), 65536)
+            .await
+            .unwrap(),
+    )
+    .unwrap();
+    let trip_plan_id = created["id"].as_str().expect("trip plan id");
+
+    let create_event: (String, String, serde_json::Value) = sqlx::query_as(
+        "select event_type, aggregate_type, payload
+         from realtime_events
+         where client_mutation_id = 'realtime-trip-plan-create'",
+    )
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(create_event.0, "plan_variant.created");
+    assert_eq!(create_event.1, "plan_variant");
+    assert_eq!(create_event.2["id"], trip_plan_id);
+    assert_eq!(create_event.2["kind"], "split");
+    assert_eq!(create_event.2["status"], "proposal");
+
+    let patch = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method(Method::PATCH)
+                .uri(format!(
+                    "/api/v1/trips/{}/trip-plans/{trip_plan_id}",
+                    support::TRIP_ID
+                ))
+                .header(header::AUTHORIZATION, format!("Bearer {token}"))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({
+                        "clientMutationId": "realtime-trip-plan-patch",
+                        "expectedVersion": 1,
+                        "patch": {
+                            "status": "backup"
+                        }
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(patch.status(), http::StatusCode::OK);
+
+    let patch_event: (String, String, serde_json::Value) = sqlx::query_as(
+        "select event_type, aggregate_type, payload
+         from realtime_events
+         where client_mutation_id = 'realtime-trip-plan-patch'",
+    )
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(patch_event.0, "plan_variant.updated");
+    assert_eq!(patch_event.1, "plan_variant");
+    assert_eq!(patch_event.2["id"], trip_plan_id);
+    assert_eq!(patch_event.2["kind"], "backup");
+    assert_eq!(patch_event.2["status"], "backup");
+
+    let set_main = app
+        .oneshot(
+            Request::builder()
+                .method(Method::POST)
+                .uri(format!(
+                    "/api/v1/trips/{}/trip-plans/{trip_plan_id}/set-main",
+                    support::TRIP_ID
+                ))
+                .header(header::AUTHORIZATION, format!("Bearer {token}"))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({
+                        "clientMutationId": "realtime-trip-plan-main",
+                        "previousMainNextStatus": "draft"
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(set_main.status(), http::StatusCode::OK);
+
+    let set_main_event: (String, String, serde_json::Value) = sqlx::query_as(
+        "select event_type, aggregate_type, payload
+         from realtime_events
+         where client_mutation_id = 'realtime-trip-plan-main'",
+    )
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(set_main_event.0, "plan_variant.updated");
+    assert_eq!(set_main_event.1, "plan_variant");
+    assert_eq!(set_main_event.2["activePlanVariantId"], trip_plan_id);
+    assert_eq!(set_main_event.2["mainTripPlanId"], trip_plan_id);
+    assert_eq!(set_main_event.2["tripPlan"]["id"], trip_plan_id);
+    assert_eq!(set_main_event.2["tripPlan"]["kind"], "main");
+    assert_eq!(set_main_event.2["tripPlan"]["status"], "main");
+    assert_eq!(
+        set_main_event.2["previousMainTripPlan"]["id"],
+        support::PLAN_ID
+    );
+    assert_eq!(set_main_event.2["previousMainTripPlan"]["kind"], "draft");
+    assert_eq!(set_main_event.2["previousMainTripPlan"]["status"], "draft");
+    assert_eq!(set_main_event.2["trip"]["mainTripPlanId"], trip_plan_id);
+
+    let canonical_duplicate_event_count: i64 = sqlx::query_scalar(
+        "select count(*)
+         from realtime_events
+         where event_type in ('trip_plan.created', 'trip_plan.updated')",
+    )
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(canonical_duplicate_event_count, 0);
 }
 
 #[sqlx::test(migrations = "../../migrations")]

@@ -33,6 +33,8 @@ describe.skipIf(!required && !hasCredentials)("real Sagittarius API e2e", () => 
     expect(cockpit.trip.id).toBe(join.trip.id);
     expect(cockpit.trip.members.length).toBeGreaterThan(0);
     expect(cockpit.trip.planVariants.length).toBeGreaterThan(0);
+    expect(cockpit.trip.tripPlans).toEqual(cockpit.trip.planVariants);
+    expect(cockpit.trip.mainTripPlanId).toBe(cockpit.trip.activePlanVariantId);
     let planVariantId = cockpit.trip.activePlanVariantId || cockpit.trip.planVariants[0].id;
     const firstItem = cockpit.trip.itineraryItems[0];
     expect(firstItem).toBeTruthy();
@@ -53,23 +55,52 @@ describe.skipIf(!required && !hasCredentials)("real Sagittarius API e2e", () => 
     });
     expect(patchedTrip).toMatchObject({ id: join.trip.id, version: (cockpit.trip.version ?? 1) + 1 });
 
-    const createdVariant = await client.createPlanVariant(join.trip.id, session.sessionToken, {
+    const createdVariant = await client.createTripPlan!(join.trip.id, session.sessionToken, {
       clientMutationId: `e2e-plan-create-${runId}`,
       name: `E2E backup ${runId}`,
       kind: "backup",
       description: "created by real API e2e",
     });
-    expect(createdVariant).toMatchObject({ name: `E2E backup ${runId}`, kind: "backup", version: 1 });
-    const patchedVariant = await client.patchPlanVariant(join.trip.id, createdVariant.id, session.sessionToken, {
+    expect(createdVariant).toMatchObject({
+      name: `E2E backup ${runId}`,
+      kind: "backup",
+      status: "backup",
+      version: 1,
+    });
+    const patchedVariant = await client.patchTripPlan!(join.trip.id, createdVariant.id, session.sessionToken, {
       clientMutationId: `e2e-plan-patch-${runId}`,
       expectedVersion: createdVariant.version ?? 1,
       patch: { description: "updated by real API e2e" },
     });
-    expect(patchedVariant).toMatchObject({ id: createdVariant.id, description: "updated by real API e2e", version: 2 });
-    const publishedTrip = await client.publishPlanVariant(join.trip.id, createdVariant.id, session.sessionToken, {
+    expect(patchedVariant).toMatchObject({
+      id: createdVariant.id,
+      description: "updated by real API e2e",
+      kind: "backup",
+      status: "backup",
+      version: 2,
+    });
+    const publishedTrip = await client.setMainTripPlan!(join.trip.id, createdVariant.id, session.sessionToken, {
       clientMutationId: `e2e-plan-publish-${runId}`,
     });
     expect(publishedTrip.activePlanVariantId).toBe(createdVariant.id);
+    expect(publishedTrip.mainTripPlanId).toBe(createdVariant.id);
+    const reloadedAfterSetMain = await client.loadTrip(join.trip.id, session.sessionToken);
+    expect(reloadedAfterSetMain.trip.activePlanVariantId).toBe(createdVariant.id);
+    expect(reloadedAfterSetMain.trip.mainTripPlanId).toBe(createdVariant.id);
+    expect(
+      reloadedAfterSetMain.trip.tripPlans?.find((plan) => plan.id === createdVariant.id),
+    ).toMatchObject({
+      id: createdVariant.id,
+      kind: "main",
+      status: "main",
+    });
+    expect(
+      reloadedAfterSetMain.trip.planVariants.find((plan) => plan.id === createdVariant.id),
+    ).toMatchObject({
+      id: createdVariant.id,
+      kind: "main",
+      status: "main",
+    });
     planVariantId = createdVariant.id;
 
     const task = await client.createTask(join.trip.id, session.sessionToken, {

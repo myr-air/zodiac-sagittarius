@@ -148,7 +148,7 @@ describe("Storybook template catalog", () => {
     const requiredTemplateStates: Array<[string, string[]]> = [
       ["components/AppShell.stories.tsx", ["Owner", "Traveler", "Viewer", "Mobile", "Tablet", "OwnerThai"]],
       ["components/OverviewTemplate.stories.tsx", ["Owner", "Traveler", "OwnerThai", "Viewer", "Empty", "Dense"]],
-      ["components/ItineraryTemplate.stories.tsx", ["Owner", "OwnerThai", "Viewer", "Traveler", "Dense", "TableOverflow", "BranchGraph", "PlanAExample", "PlanABAlternatives", "RequestedPlanExample", "StressPaths"]],
+      ["components/ItineraryTemplate.stories.tsx", ["Owner", "OwnerThai", "Viewer", "Traveler", "Dense", "HierarchyBlocks", "HierarchyWarnings", "TableOverflow", "BranchGraph", "PlanAExample", "PlanABAlternatives", "RequestedPlanExample", "StressPaths"]],
       ["components/TimelineTemplate.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty"]],
       ["components/MapTemplate.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty"]],
       ["components/MembersTemplate.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty"]],

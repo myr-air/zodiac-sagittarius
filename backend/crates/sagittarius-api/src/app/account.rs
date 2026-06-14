@@ -564,6 +564,7 @@ pub async fn create_trip(
             trip_id,
             name: "Main",
             kind: "main",
+            status: "main",
             description: "Primary plan",
         },
     )

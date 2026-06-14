@@ -50,10 +50,19 @@ async fn migration_creates_vertical_slice_indexes(pool: sqlx::PgPool) {
         "suggestions_trip_status_idx",
         "trip_tasks_trip_visibility_status_idx",
         "trip_tasks_assignee_status_idx",
+        "trip_tasks_trip_plan_active_idx",
+        "expenses_trip_plan_active_idx",
+        "stop_notes_trip_plan_item_idx",
+        "booking_docs_trip_plan_active_idx",
+        "plan_checks_trip_plan_created_idx",
+        "itinerary_items_time_window_idx",
+        "itinerary_items_parent_scope_idx",
+        "itinerary_items_parent_scope_key",
         "trip_member_sessions_member_active_idx",
         "stop_notes_trip_item_created_at_idx",
         "trip_daily_briefings_trip_date_idx",
         "expense_reminders_trip_pair_idx",
+        "expense_reminders_trip_plan_pair_idx",
         "realtime_events_trip_id_idx",
         "realtime_events_client_mutation_id_idx",
     ] {
@@ -62,6 +71,357 @@ async fn migration_creates_vertical_slice_indexes(pool: sqlx::PgPool) {
             "missing index {index_name}"
         );
     }
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn itinerary_schema_stores_time_windows(pool: sqlx::PgPool) {
+    let columns: Vec<(String, String)> = sqlx::query_as(
+        "select column_name::text, data_type::text
+         from information_schema.columns
+         where table_schema = 'public'
+           and table_name = 'itinerary_items'
+           and column_name in ('end_time', 'end_offset_days')
+         order by column_name",
+    )
+    .fetch_all(&pool)
+    .await
+    .unwrap();
+
+    assert_eq!(
+        columns,
+        vec![
+            ("end_offset_days".to_string(), "integer".to_string()),
+            ("end_time".to_string(), "time without time zone".to_string()),
+        ]
+    );
+
+    let constraints: Vec<String> = sqlx::query_scalar(
+        "select conname::text
+         from pg_constraint
+         where conname in (
+           'itinerary_items_no_self_parent_check',
+           'itinerary_items_parent_scope_fkey'
+         )
+         order by conname",
+    )
+    .fetch_all(&pool)
+    .await
+    .unwrap();
+    assert_eq!(
+        constraints,
+        vec![
+            "itinerary_items_no_self_parent_check".to_string(),
+            "itinerary_items_parent_scope_fkey".to_string(),
+        ]
+    );
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn itinerary_parent_scope_fkey_is_immediate(pool: sqlx::PgPool) {
+    let constraints: Vec<(String, bool, bool)> = sqlx::query_as(
+        "select conname::text, condeferrable, condeferred
+         from pg_constraint
+         where conname = 'itinerary_items_parent_scope_fkey'
+         order by conname",
+    )
+    .fetch_all(&pool)
+    .await
+    .unwrap();
+
+    assert_eq!(
+        constraints,
+        vec![(
+            "itinerary_items_parent_scope_fkey".to_string(),
+            false,
+            false,
+        )]
+    );
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn itinerary_schema_rejects_parent_outside_child_day_or_plan(pool: sqlx::PgPool) {
+    support::seed_trip(&pool).await;
+
+    let other_plan_id = uuid::Uuid::now_v7();
+    sqlx::query(
+        "insert into plan_variants (id, trip_id, name, kind, status)
+         values ($1, $2, 'Backup', 'backup', 'backup')",
+    )
+    .bind(other_plan_id)
+    .bind(uuid::Uuid::parse_str(support::TRIP_ID).unwrap())
+    .execute(&pool)
+    .await
+    .unwrap();
+
+    let parent_id = uuid::Uuid::now_v7();
+    sqlx::query(
+        "insert into itinerary_items (
+           id, trip_id, plan_variant_id, day, sort_order, start_time,
+           activity, activity_type, place, created_by
+         )
+         values ($1, $2, $3, '2025-05-17', 100, '09:00',
+           'Other day parent', 'experience', 'Hotel', $4)",
+    )
+    .bind(parent_id)
+    .bind(uuid::Uuid::parse_str(support::TRIP_ID).unwrap())
+    .bind(other_plan_id)
+    .bind(uuid::Uuid::parse_str(support::ORGANIZER_ID).unwrap())
+    .execute(&pool)
+    .await
+    .unwrap();
+
+    let child_result = sqlx::query(
+        "insert into itinerary_items (
+           id, trip_id, plan_variant_id, parent_item_id, day, sort_order,
+           start_time, activity, activity_type, place, created_by
+         )
+         values ($1, $2, $3, $4, '2025-05-16', 200,
+           '09:15', 'Invalid child', 'experience', 'Hotel', $5)",
+    )
+    .bind(uuid::Uuid::now_v7())
+    .bind(uuid::Uuid::parse_str(support::TRIP_ID).unwrap())
+    .bind(uuid::Uuid::parse_str(support::PLAN_ID).unwrap())
+    .bind(parent_id)
+    .bind(uuid::Uuid::parse_str(support::ORGANIZER_ID).unwrap())
+    .execute(&pool)
+    .await;
+
+    assert!(
+        child_result.is_err(),
+        "DB must reject parent_item_id outside the child's trip plan/day scope",
+    );
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn plan_scoped_record_schema_adds_trip_plan_columns_and_fkeys(pool: sqlx::PgPool) {
+    let columns: Vec<(String, String)> = sqlx::query_as(
+        "select table_name::text, column_name::text
+         from information_schema.columns
+         where table_schema = 'public'
+           and table_name in ('trip_tasks', 'expenses', 'stop_notes', 'booking_docs')
+           and column_name = 'trip_plan_id'
+         order by table_name",
+    )
+    .fetch_all(&pool)
+    .await
+    .unwrap();
+
+    assert_eq!(
+        columns,
+        vec![
+            ("booking_docs".to_string(), "trip_plan_id".to_string()),
+            ("expenses".to_string(), "trip_plan_id".to_string()),
+            ("stop_notes".to_string(), "trip_plan_id".to_string()),
+            ("trip_tasks".to_string(), "trip_plan_id".to_string()),
+        ]
+    );
+
+    let constraints: Vec<String> = sqlx::query_scalar(
+        "select conname::text
+         from pg_constraint
+         where conname in (
+           'trip_tasks_trip_plan_fkey',
+           'expenses_trip_plan_fkey',
+           'stop_notes_trip_plan_fkey',
+           'booking_docs_trip_plan_fkey'
+         )
+         order by conname",
+    )
+    .fetch_all(&pool)
+    .await
+    .unwrap();
+
+    assert_eq!(
+        constraints,
+        vec![
+            "booking_docs_trip_plan_fkey".to_string(),
+            "expenses_trip_plan_fkey".to_string(),
+            "stop_notes_trip_plan_fkey".to_string(),
+            "trip_tasks_trip_plan_fkey".to_string(),
+        ]
+    );
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn plan_check_schema_adds_trip_plan_scope(pool: sqlx::PgPool) {
+    let columns: Vec<(String, String)> = sqlx::query_as(
+        "select column_name::text, data_type::text
+         from information_schema.columns
+         where table_schema = 'public'
+           and table_name = 'plan_checks'
+           and column_name = 'trip_plan_id'
+         order by column_name",
+    )
+    .fetch_all(&pool)
+    .await
+    .unwrap();
+
+    assert_eq!(
+        columns,
+        vec![("trip_plan_id".to_string(), "uuid".to_string())]
+    );
+
+    let constraints: Vec<String> = sqlx::query_scalar(
+        "select conname::text
+         from pg_constraint
+         where conname = 'plan_checks_trip_plan_fkey'
+         order by conname",
+    )
+    .fetch_all(&pool)
+    .await
+    .unwrap();
+    assert_eq!(constraints, vec!["plan_checks_trip_plan_fkey".to_string()]);
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn trip_plan_compatibility_schema_adds_status_and_keeps_composite_identity(
+    pool: sqlx::PgPool,
+) {
+    let columns: Vec<(String, String, String)> = sqlx::query_as(
+        "select column_name::text, data_type::text, is_nullable::text
+         from information_schema.columns
+         where table_schema = 'public'
+           and table_name = 'plan_variants'
+           and column_name = 'status'",
+    )
+    .fetch_all(&pool)
+    .await
+    .unwrap();
+    assert_eq!(
+        columns,
+        vec![("status".to_string(), "text".to_string(), "YES".to_string(),)],
+    );
+
+    let status_check: Option<String> = sqlx::query_scalar(
+        "select pg_get_constraintdef(oid)
+         from pg_constraint
+         where conname = 'plan_variants_status_check'",
+    )
+    .fetch_optional(&pool)
+    .await
+    .unwrap();
+    let status_check = status_check.expect("missing plan_variants_status_check");
+    for status in ["main", "draft", "proposal", "backup"] {
+        assert!(
+            status_check.contains(status),
+            "status check must allow {status}: {status_check}",
+        );
+    }
+
+    let composite_unique_count: i64 = sqlx::query_scalar(
+        "select count(*)
+         from pg_constraint
+         where conrelid = 'plan_variants'::regclass
+           and contype in ('p', 'u')
+           and conkey = ARRAY[
+             (select attnum from pg_attribute where attrelid = 'plan_variants'::regclass and attname = 'id'),
+             (select attnum from pg_attribute where attrelid = 'plan_variants'::regclass and attname = 'trip_id')
+           ]::smallint[]",
+    )
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert!(
+        composite_unique_count >= 1,
+        "plan_variants(id, trip_id) must stay unique for composite FKs",
+    );
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn trip_plan_compatibility_backfills_split_kind_to_proposal_status(pool: sqlx::PgPool) {
+    support::seed_trip(&pool).await;
+    let plan_id = uuid::Uuid::now_v7();
+
+    sqlx::query("insert into plan_variants (id, trip_id, name, kind, status) values ($1, $2, 'Legacy split', 'split', null)")
+        .bind(plan_id)
+        .bind(uuid::Uuid::parse_str(support::TRIP_ID).unwrap())
+        .execute(&pool)
+        .await
+        .unwrap();
+
+    let status: String = sqlx::query_scalar(
+        "select coalesce(status, case when kind = 'split' then 'proposal' else kind end)
+         from plan_variants
+         where id = $1",
+    )
+    .bind(plan_id)
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(status, "proposal");
+}
+
+#[test]
+fn plan_scoped_record_migration_keeps_linked_records_with_item_plan() {
+    let migration = include_str!("../../../migrations/0026_plan_scoped_records.sql");
+    let linked_task_backfill = "UPDATE trip_tasks task\nSET trip_plan_id = item.plan_variant_id";
+    let fallback_task_backfill =
+        "UPDATE trip_tasks task\nSET trip_plan_id = trips.active_plan_variant_id";
+    let linked_backfill = "UPDATE expenses expense\nSET trip_plan_id = item.plan_variant_id";
+    let fallback_backfill =
+        "UPDATE expenses expense\nSET trip_plan_id = trips.active_plan_variant_id";
+    let linked_stop_note_backfill =
+        "UPDATE stop_notes note\nSET trip_plan_id = item.plan_variant_id";
+    let booking_fallback_backfill =
+        "UPDATE booking_docs booking\nSET trip_plan_id = trips.active_plan_variant_id";
+
+    assert!(
+        migration.contains(linked_task_backfill),
+        "linked trip tasks must backfill from itinerary_items.plan_variant_id",
+    );
+    assert!(
+        migration.contains("AND task.related_item_id = item.id"),
+        "linked trip tasks must join through related_item_id",
+    );
+    assert!(
+        migration.contains("AND task.related_item_id IS NULL"),
+        "Main Plan fallback must only apply to unlinked trip tasks",
+    );
+    assert!(
+        migration.find(linked_task_backfill).unwrap()
+            < migration.find(fallback_task_backfill).unwrap(),
+        "linked task backfill must run before the Main Plan fallback",
+    );
+
+    assert!(
+        migration.contains(linked_backfill),
+        "linked Actual Expenses must backfill from itinerary_items.plan_variant_id",
+    );
+    assert!(
+        migration.contains("AND expense.itinerary_item_id = item.id"),
+        "linked Actual Expenses must join through itinerary_item_id",
+    );
+    assert!(
+        migration.contains("AND expense.itinerary_item_id IS NULL"),
+        "Main Plan fallback must only apply to unlinked Actual Expenses",
+    );
+    assert!(
+        migration.find(linked_backfill).unwrap() < migration.find(fallback_backfill).unwrap(),
+        "linked expense backfill must run before the Main Plan fallback",
+    );
+
+    assert!(
+        migration.contains(linked_stop_note_backfill),
+        "linked stop notes must backfill from itinerary_items.plan_variant_id",
+    );
+    assert!(
+        migration.contains("AND note.itinerary_item_id = item.id"),
+        "linked stop notes must join through itinerary_item_id",
+    );
+    assert!(
+        migration.find(linked_stop_note_backfill).unwrap()
+            < migration.find(booking_fallback_backfill).unwrap(),
+        "linked stop note backfill must stay before booking compatibility fallback",
+    );
+
+    assert!(
+        migration.contains(booking_fallback_backfill),
+        "booking docs currently use a Main Plan compatibility fallback pending Phase 2 relation audit",
+    );
+    assert!(
+        !migration.contains("UPDATE booking_docs booking\nSET trip_plan_id = item.plan_variant_id"),
+        "booking docs must not infer item-plan scope before Phase 2 relation audit exists",
+    );
 }
 
 #[sqlx::test(migrations = "../../migrations")]

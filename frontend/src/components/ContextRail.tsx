@@ -1,5 +1,7 @@
-import { type FormEvent, useMemo, useState } from "react";
+import { type FormEvent, useEffect, useMemo, useState } from "react";
 import type {
+  BookingDoc,
+  BookingDocType,
   Expense,
   ExpenseSummary,
   ItineraryItem,
@@ -25,6 +27,7 @@ interface ContextRailProps {
   suggestions: Suggestion[];
   stopNotes: StopNote[];
   tasks: TripTask[];
+  bookingDocs: BookingDoc[];
   currentMember: Member;
   expenseSummary: ExpenseSummary;
   canEdit: boolean;
@@ -33,6 +36,18 @@ interface ContextRailProps {
   canReviewSuggestions: boolean;
   canEditExpenses: boolean;
   open: boolean;
+  preferredTab?: ContextRailTab;
+  onChangeBookingDocType?: (
+    bookingDocId: string,
+    type: BookingDocType,
+  ) => void | Promise<void>;
+  onChangeBookingDocQuickFields?: (
+    bookingDocId: string,
+    patch: {
+      confirmationCode?: string | null;
+      providerName?: string | null;
+    },
+  ) => void | Promise<void>;
   onCreateNote: (input: { itemId: string; body: string }) => void;
   onCreateExpense: (input: {
     itemId: string | null;
@@ -60,6 +75,8 @@ interface ContextRailProps {
   onUpdateNote: (input: { noteId: string; body: string }) => void;
   onClose: () => void;
 }
+
+type ContextRailTab = "notes" | "booking" | "suggestions";
 
 const suggestionListClassName = "suggestion-list grid gap-1.5";
 const suggestionItemBaseClassName =
@@ -102,6 +119,12 @@ const bookingAdvisoryClassName =
   "booking-advisory inline-flex w-fit items-center gap-1.5 rounded-full border border-(--color-warning-border) bg-(--color-warning-soft) px-2 py-1 text-[11px] font-black text-(--color-warning-strong) [&_.icon]:size-3.5";
 const bookingTaskClassName =
   "stop-booking-task grid grid-cols-[minmax(0,1fr)_auto] items-center gap-1 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) px-2.5 py-[9px] data-[status=done]:[&_span]:text-(--color-text-muted) data-[status=done]:[&_span]:line-through";
+const bookingDocClassName =
+  "stop-booking-doc grid gap-1 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) px-2.5 py-[9px] text-xs [&_strong]:font-extrabold [&_strong]:leading-4 [&_strong]:text-(--color-text) [&_span]:text-[11px] [&_span]:font-bold [&_span]:leading-4 [&_span]:text-(--color-text-muted)";
+const bookingDocTypeSelectClassName =
+  "min-h-8 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-2 text-[11px] font-extrabold text-(--color-text) outline-none focus:border-(--color-primary-border) focus:shadow-[0_0_0_2px_rgb(255_196_168_/_0.55)] disabled:cursor-not-allowed disabled:opacity-60";
+const bookingDocQuickFieldClassName =
+  "min-h-8 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-2 text-[11px] font-bold text-(--color-text) outline-none placeholder:text-(--color-text-muted) focus:border-(--color-primary-border) focus:shadow-[0_0_0_2px_rgb(255_196_168_/_0.55)] disabled:cursor-not-allowed disabled:opacity-60";
 const bookingTaskLabelClassName =
   "inline-flex min-w-0 items-center gap-2 [&_input]:size-[15px] [&_input]:accent-[var(--color-primary)] [&_span]:text-xs [&_span]:font-extrabold [&_span]:leading-4 [&_span]:text-(--color-text)";
 const bookingTaskMetaClassName =
@@ -154,6 +177,17 @@ const detailMetaLineClassName =
   "m-0 inline-flex gap-[9px] text-xs leading-4 text-(--color-text-muted) [&_.icon]:text-(--color-text-muted)";
 const detailButtonClassName = "min-h-8 py-[5px]";
 const emptyWarningClassName = "empty-warning text-(--color-text-muted)";
+const bookingDocTypeOptions: BookingDocType[] = [
+  "flight",
+  "train",
+  "public_transport",
+  "hotel",
+  "insurance",
+  "passport",
+  "visa",
+  "activity_ticket",
+  "other",
+];
 
 export function ContextRail({
   trip,
@@ -161,6 +195,7 @@ export function ContextRail({
   suggestions,
   stopNotes,
   tasks,
+  bookingDocs,
   currentMember,
   expenseSummary,
   canEdit,
@@ -169,6 +204,9 @@ export function ContextRail({
   canReviewSuggestions,
   canEditExpenses,
   open,
+  preferredTab = "notes",
+  onChangeBookingDocType,
+  onChangeBookingDocQuickFields,
   onCreateNote,
   onCreateExpense,
   onUpdateExpense,
@@ -182,9 +220,7 @@ export function ContextRail({
   onClose,
 }: ContextRailProps) {
   const { locale, t } = useI18n();
-  const [activeTab, setActiveTab] = useState<
-    "notes" | "booking" | "suggestions"
-  >("notes");
+  const [activeTab, setActiveTab] = useState<ContextRailTab>(preferredTab);
   const [noteBody, setNoteBody] = useState("");
   const [expenseTitle, setExpenseTitle] = useState("");
   const [expenseAmount, setExpenseAmount] = useState("");
@@ -224,6 +260,12 @@ export function ContextRail({
             .includes(selectedItem.activity.toLowerCase())),
     );
   }, [selectedItem, tasks]);
+  const selectedBookingDocs = useMemo(() => {
+    if (!selectedItem) return [];
+    return bookingDocs.filter((bookingDoc) =>
+      bookingDoc.relatedItineraryItemIds.includes(selectedItem.id),
+    );
+  }, [bookingDocs, selectedItem]);
   const selectedSuggestions = useMemo(() => {
     if (!selectedItem) return [];
     return suggestions.filter(
@@ -232,6 +274,10 @@ export function ContextRail({
         (suggestion.status === "pending" || suggestion.status === "conflicted"),
     );
   }, [selectedItem, suggestions]);
+
+  useEffect(() => {
+    if (open) setActiveTab(preferredTab);
+  }, [open, preferredTab, selectedItem?.id]);
 
   function submitNote(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -576,6 +622,120 @@ export function ContextRail({
                     </span>
                   ) : null}
                 </div>
+                <ul className={`stop-booking-doc-list ${moduleListClassName}`}>
+                  {selectedBookingDocs.map((bookingDoc) => (
+                    <li className={bookingDocClassName} key={bookingDoc.id}>
+                      <strong>{bookingDoc.title}</strong>
+                      <span>
+                        {t.contextRail.booking.booking} · {bookingDoc.status}
+                      </span>
+                      <label className="grid gap-1">
+                        <span>{t.contextRail.booking.type}</span>
+                        <select
+                          aria-label={t.contextRail.booking.typeFor({
+                            title: bookingDoc.title,
+                          })}
+                          className={bookingDocTypeSelectClassName}
+                          disabled={!canEdit || !onChangeBookingDocType}
+                          value={bookingDoc.type}
+                          onChange={(event) =>
+                            void onChangeBookingDocType?.(
+                              bookingDoc.id,
+                              event.target.value as BookingDocType,
+                            )
+                          }
+                        >
+                          {bookingDocTypeOptions.map((type) => (
+                            <option key={type} value={type}>
+                              {formatBookingDocTypeLabel(type)}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      <label className="grid gap-1">
+                        <span>{t.contextRail.booking.provider}</span>
+                        <input
+                          aria-label={t.contextRail.booking.providerFor({
+                            title: bookingDoc.title,
+                          })}
+                          className={bookingDocQuickFieldClassName}
+                          defaultValue={bookingDoc.providerName ?? ""}
+                          disabled={!canEdit || !onChangeBookingDocQuickFields}
+                          placeholder={t.contextRail.booking.providerPlaceholder}
+                          onChange={(event) => {
+                            event.currentTarget.dataset.draftValue =
+                              event.currentTarget.value;
+                          }}
+                          onBlur={(event) => {
+                            const value = (
+                              event.currentTarget.dataset.draftValue ??
+                              event.currentTarget.value
+                            ).trim();
+                            if (value === (bookingDoc.providerName ?? "")) return;
+                            void onChangeBookingDocQuickFields?.(bookingDoc.id, {
+                              providerName: value || null,
+                            });
+                          }}
+                          onKeyDown={(event) => {
+                            if (event.key !== "Enter") return;
+                            event.preventDefault();
+                            const value = (
+                              event.currentTarget.dataset.draftValue ??
+                              event.currentTarget.value
+                            ).trim();
+                            if (value === (bookingDoc.providerName ?? "")) return;
+                            void onChangeBookingDocQuickFields?.(bookingDoc.id, {
+                              providerName: value || null,
+                            });
+                          }}
+                        />
+                      </label>
+                      <label className="grid gap-1">
+                        <span>{t.contextRail.booking.reference}</span>
+                        <input
+                          aria-label={t.contextRail.booking.referenceFor({
+                            title: bookingDoc.title,
+                          })}
+                          className={bookingDocQuickFieldClassName}
+                          defaultValue={bookingDoc.confirmationCode ?? ""}
+                          disabled={!canEdit || !onChangeBookingDocQuickFields}
+                          placeholder={t.contextRail.booking.referencePlaceholder}
+                          onChange={(event) => {
+                            event.currentTarget.dataset.draftValue =
+                              event.currentTarget.value;
+                          }}
+                          onBlur={(event) => {
+                            const value = (
+                              event.currentTarget.dataset.draftValue ??
+                              event.currentTarget.value
+                            ).trim();
+                            if (value === (bookingDoc.confirmationCode ?? "")) return;
+                            void onChangeBookingDocQuickFields?.(bookingDoc.id, {
+                              confirmationCode: value || null,
+                            });
+                          }}
+                          onKeyDown={(event) => {
+                            if (event.key !== "Enter") return;
+                            event.preventDefault();
+                            const value = (
+                              event.currentTarget.dataset.draftValue ??
+                              event.currentTarget.value
+                            ).trim();
+                            if (value === (bookingDoc.confirmationCode ?? "")) return;
+                            void onChangeBookingDocQuickFields?.(bookingDoc.id, {
+                              confirmationCode: value || null,
+                            });
+                          }}
+                        />
+                      </label>
+                    </li>
+                  ))}
+                  {!selectedBookingDocs.length ? (
+                    <li className={emptyWarningClassName}>
+                      {t.contextRail.booking.noBookings}
+                    </li>
+                  ) : null}
+                </ul>
                 <ul className={`stop-booking-task-list ${moduleListClassName}`}>
                   {selectedTasks.map((task) => (
                     <li
@@ -765,6 +925,9 @@ export function ContextRail({
             ))}
           </div>
           <form className={expenseFormClassName} onSubmit={submitExpense}>
+            <p className="m-0 text-[11px] font-bold leading-4 text-(--color-text-muted)">
+              {t.contextRail.expenses.actualOnlyHint}
+            </p>
             <label>
               <span>{t.contextRail.expenses.formTitle}</span>
               <input
@@ -867,4 +1030,11 @@ function taskKindLabel(
 ): string {
   /* v8 ignore next */
   return task.kind === "booking" ? labels.booking : labels.prep;
+}
+
+function formatBookingDocTypeLabel(type: BookingDocType): string {
+  return type
+    .split("_")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
 }

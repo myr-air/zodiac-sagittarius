@@ -23,6 +23,7 @@ pub enum Capability {
     ViewExpenses,
     EditExpenses,
     ManagePeople,
+    ManageTripPlans,
     CreateSharedTask,
     CreatePrivateTask,
     UpdateOwnPrivateTask,
@@ -166,6 +167,7 @@ pub struct TripSummary {
     pub end_date: Date,
     pub join_id: String,
     pub active_plan_variant_id: Option<Uuid>,
+    pub main_trip_plan_id: Option<Uuid>,
     pub owner_member_id: Uuid,
     pub version: i64,
 }
@@ -315,9 +317,12 @@ pub struct PlanVariantSummary {
     pub trip_id: Uuid,
     pub name: String,
     pub kind: String,
+    pub status: String,
     pub description: String,
     pub version: i64,
 }
+
+pub type TripPlanSummary = PlanVariantSummary;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -410,6 +415,8 @@ pub struct ItineraryItemSummary {
     pub day: Date,
     pub sort_order: i32,
     pub start_time: String,
+    pub end_time: Option<String>,
+    pub end_offset_days: i32,
     pub activity: String,
     pub activity_type: String,
     pub place: String,
@@ -435,7 +442,14 @@ pub struct ItineraryImportTrip {
     pub destination_label: String,
     pub start_date: Date,
     pub end_date: Date,
-    pub active_plan_variant_id: Uuid,
+    #[serde(default)]
+    pub active_plan_variant_id: Option<Uuid>,
+    #[serde(default)]
+    pub main_trip_plan_id: Option<Uuid>,
+    #[serde(default)]
+    pub plan_variants: Vec<PlanVariantSummary>,
+    #[serde(default)]
+    pub trip_plans: Vec<TripPlanSummary>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -447,7 +461,7 @@ pub struct ItineraryImportItem {
     pub path_name: Option<String>,
     pub path_role: Option<String>,
     #[serde(default)]
-    pub parent_item_id: Option<Uuid>,
+    pub parent_item_id: Option<String>,
     #[serde(default = "default_import_item_kind")]
     pub item_kind: String,
     #[serde(default = "default_import_time_mode")]
@@ -461,6 +475,10 @@ pub struct ItineraryImportItem {
     pub day: Date,
     pub sort_order: i32,
     pub start_time: String,
+    #[serde(default)]
+    pub end_time: Option<String>,
+    #[serde(default)]
+    pub end_offset_days: i32,
     pub activity: String,
     pub activity_type: String,
     pub place: String,
@@ -506,6 +524,17 @@ pub struct ItineraryImportDocument {
     pub exported_at: String,
     pub trip: ItineraryImportTrip,
     pub items: Vec<ItineraryImportItem>,
+    #[serde(default = "default_import_records")]
+    pub records: Value,
+}
+
+fn default_import_records() -> Value {
+    serde_json::json!({
+        "expenses": [],
+        "bookingDocs": [],
+        "stopNotes": [],
+        "tasks": []
+    })
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -540,6 +569,7 @@ pub struct PlanSuggestionSummary {
 pub struct PlanCheckSummary {
     pub id: Uuid,
     pub trip_id: Uuid,
+    pub trip_plan_id: Option<Uuid>,
     pub created_by: Uuid,
     pub itinerary_fingerprint: String,
     pub stale: bool,
@@ -571,6 +601,7 @@ pub struct SuggestionSummary {
 pub struct TripTaskSummary {
     pub id: Uuid,
     pub trip_id: Uuid,
+    pub trip_plan_id: Option<Uuid>,
     pub title: String,
     pub status: String,
     pub visibility: String,
@@ -586,6 +617,7 @@ pub struct TripTaskSummary {
 pub struct StopNoteSummary {
     pub id: Uuid,
     pub trip_id: Uuid,
+    pub trip_plan_id: Option<Uuid>,
     pub item_id: Uuid,
     pub author_id: Uuid,
     pub body: String,
@@ -619,6 +651,7 @@ pub struct ExpenseSummary {
 pub struct ExpenseItemSummary {
     pub id: Uuid,
     pub trip_id: Uuid,
+    pub trip_plan_id: Option<Uuid>,
     pub title: String,
     pub amount_minor: i32,
     pub currency: String,
@@ -649,6 +682,7 @@ pub struct BookingDocExternalLinkSummary {
 pub struct BookingDocSummary {
     pub id: Uuid,
     pub trip_id: Uuid,
+    pub trip_plan_id: Option<Uuid>,
     pub r#type: String,
     pub title: String,
     pub status: String,
@@ -699,6 +733,7 @@ pub struct TripCockpit {
     pub trip: TripSummary,
     pub members: Vec<TripMemberSummary>,
     pub plan_variants: Vec<PlanVariantSummary>,
+    pub trip_plans: Vec<TripPlanSummary>,
     pub itinerary_items: Vec<ItineraryItemSummary>,
     pub suggestions: Vec<SuggestionSummary>,
     pub latest_plan_check: Option<PlanCheckSummary>,
@@ -901,6 +936,7 @@ mod account_type_tests {
                 end_date,
                 join_id: "CM2026".to_string(),
                 active_plan_variant_id: Some(plan_variant_id),
+                main_trip_plan_id: Some(plan_variant_id),
                 owner_member_id,
                 version: 1,
             },

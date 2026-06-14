@@ -229,6 +229,72 @@ describe("expense money helpers", () => {
     ]);
   });
 
+  it("keeps payback reminder history separate by Trip Plan", () => {
+    expect(expenseHelpers.upsertExpenseReminder([
+      {
+        tripPlanId: "plan-main",
+        from: "member-beam",
+        to: "member-aom",
+        amount: 30,
+        lastRemindedAt: "2026-06-05T11:00:00.000Z",
+      },
+    ], {
+      tripPlanId: "plan-rain",
+      from: "member-beam",
+      to: "member-aom",
+      amount: 30,
+      lastRemindedAt: "2026-06-05T12:00:00.000Z",
+    })).toEqual([
+      {
+        tripPlanId: "plan-main",
+        from: "member-beam",
+        to: "member-aom",
+        amount: 30,
+        lastRemindedAt: "2026-06-05T11:00:00.000Z",
+      },
+      {
+        tripPlanId: "plan-rain",
+        from: "member-beam",
+        to: "member-aom",
+        amount: 30,
+        lastRemindedAt: "2026-06-05T12:00:00.000Z",
+      },
+    ]);
+  });
+
+  it("filters reminder history to the selected Trip Plan and treats legacy reminders as Main Plan", () => {
+    const reminders = [
+      {
+        from: "member-beam",
+        to: "member-aom",
+        amount: 30,
+        lastRemindedAt: "2026-06-05T10:00:00.000Z",
+      },
+      {
+        tripPlanId: "plan-rain",
+        from: "member-beam",
+        to: "member-aom",
+        amount: 30,
+        lastRemindedAt: "2026-06-05T12:00:00.000Z",
+      },
+    ];
+
+    expect(
+      expenseHelpers.filterExpenseRemindersForTripPlan(
+        reminders,
+        "plan-main",
+        "plan-main",
+      ),
+    ).toEqual([reminders[0]]);
+    expect(
+      expenseHelpers.filterExpenseRemindersForTripPlan(
+        reminders,
+        "plan-rain",
+        "plan-main",
+      ),
+    ).toEqual([reminders[1]]);
+  });
+
   it("builds a shareable trip money statement with balances, paybacks, and ledger lines", () => {
     const trip = {
       name: "Weekend food crawl",

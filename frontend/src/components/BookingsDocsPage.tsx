@@ -24,6 +24,7 @@ interface BookingsDocsPageProps {
 }
 
 export interface BookingDocInput {
+  tripPlanId?: string | null;
   type: BookingDocType;
   title: string;
   status: BookingDocStatus;

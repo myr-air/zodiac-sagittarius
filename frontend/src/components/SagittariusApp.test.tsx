@@ -10,18 +10,21 @@ import type { ReactElement } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   SagittariusApp,
+  bookingTypeForItineraryItem,
   resolveJoinPostAuthReturnTo,
   nextClientMutationId,
   nextLocalItemId,
   nextLocalStopNoteId,
   nextLocalSuggestionId,
   nextLocalTaskId,
+  normalizeInlineTimePatch,
   parsePlanSuggestionEditAction,
   replaceSuggestionById,
 } from "@/src/app/SagittariusApp";
 import {
   TripApiError,
   type CreateExpenseApiRequest,
+  type CreateItineraryItemApiRequest,
   type TripApiClient,
   type TripCockpit,
 } from "@/src/trip/api-client";
@@ -33,7 +36,9 @@ import { tripStorageKey } from "@/src/trip/repository";
 import { seedTrip } from "@/src/trip/seed";
 import { encodeTripId } from "@/src/trip/ids";
 import type {
+  BookingDoc,
   ItineraryItem,
+  PlanCheck,
   PlanVariant,
   StopNote,
   Suggestion,
@@ -64,14 +69,14 @@ async function openFirstStopDetails(user: ReturnType<typeof userEvent.setup>) {
   await user.click(getFirstStopDetailsButton());
 }
 
-function tripWithSheets(): Trip {
-  const mainSheet = seedTrip.planVariants.find(
+function tripWithPlans(): Trip {
+  const mainPlan = seedTrip.planVariants.find(
     (variant) => variant.id === seedTrip.activePlanVariantId,
   )!;
-  const backupSheet: PlanVariant = {
+  const backupPlan: PlanVariant = {
     id: "plan-variant-backup",
     tripId: seedTrip.id,
-    name: "Rain Sheet",
+    name: "Rain Plan",
     kind: "draft",
     description: "",
     version: 1,
@@ -81,19 +86,179 @@ function tripWithSheets(): Trip {
   )!;
   return {
     ...seedTrip,
-    activePlanVariantId: mainSheet.id,
-    planVariants: [mainSheet, backupSheet],
+    activePlanVariantId: mainPlan.id,
+    mainTripPlanId: mainPlan.id,
+    planVariants: [
+      { ...mainPlan, kind: "main", status: "main" },
+      { ...backupPlan, kind: "draft", status: "draft" },
+    ],
+    tripPlans: [
+      { ...mainPlan, kind: "main", status: "main" },
+      { ...backupPlan, kind: "draft", status: "draft" },
+    ],
     itineraryItems: [
-      { ...mainItem, planVariantId: mainSheet.id },
+      { ...mainItem, planVariantId: mainPlan.id },
       {
         ...mainItem,
         id: "item-rain-gallery",
-        planVariantId: backupSheet.id,
-        activity: "Rain sheet gallery",
+        planVariantId: backupPlan.id,
+        activity: "Rain plan gallery",
         place: "M+ Museum",
         sortOrder: mainItem.sortOrder + 100,
       },
     ],
+  };
+}
+
+function tripWithPlansAndPlanScopedRecords(selectedPlanId = "plan-variant-backup"): Trip {
+  const draftTrip = tripWithPlans();
+  const backupItem = draftTrip.itineraryItems.find(
+    (item) => item.id === "item-rain-gallery",
+  )!;
+  const mainItem = draftTrip.itineraryItems.find(
+    (item) => item.id === "item-dimdim",
+  )!;
+
+  return {
+    ...draftTrip,
+    activePlanVariantId: selectedPlanId,
+    mainTripPlanId: selectedPlanId,
+    planVariants: draftTrip.planVariants.map((plan) =>
+      plan.id === selectedPlanId
+        ? { ...plan, kind: "main", status: "main" }
+        : { ...plan, kind: "backup", status: "backup" },
+    ),
+    tripPlans: draftTrip.tripPlans?.map((plan) =>
+      plan.id === selectedPlanId
+        ? { ...plan, kind: "main", status: "main" }
+        : { ...plan, kind: "backup", status: "backup" },
+    ),
+    expenses: [
+      {
+        id: "expense-main-dimsum",
+        tripId: draftTrip.id,
+        tripPlanId: mainItem.planVariantId,
+        title: "Main plan dim sum receipt",
+        amount: 512,
+        paidBy: "member-aom",
+        splits: { "member-aom": 512 },
+        category: "food",
+        itineraryItemId: mainItem.id,
+      },
+      {
+        id: "expense-backup-gallery",
+        tripId: draftTrip.id,
+        tripPlanId: backupItem.planVariantId,
+        title: "Backup gallery tickets",
+        amount: 240,
+        paidBy: "member-aom",
+        splits: { "member-aom": 240 },
+        category: "tickets",
+        itineraryItemId: backupItem.id,
+      },
+    ],
+    bookingDocs: [
+      {
+        id: "booking-main-dimsum",
+        tripId: draftTrip.id,
+        tripPlanId: mainItem.planVariantId,
+        type: "activity_ticket",
+        title: "Main plan brunch booking",
+        status: "booked",
+        visibility: "shared",
+        ownerMemberId: "member-aom",
+        providerName: "Dim Dim Sum",
+        confirmationCode: "MAIN-BRUNCH",
+        startsAt: null,
+        endsAt: null,
+        timezone: "Asia/Hong_Kong",
+        priceAmount: 512,
+        currency: "HKD",
+        travelerIds: ["member-aom"],
+        externalLinks: [],
+        relatedItineraryItemIds: [mainItem.id],
+        relatedTaskIds: [],
+        relatedExpenseIds: ["expense-main-dimsum"],
+        noteIds: [],
+        notes: null,
+        createdBy: "member-aom",
+        updatedAt: "2026-06-01T00:00:00.000Z",
+        version: 1,
+      },
+      {
+        id: "booking-backup-gallery",
+        tripId: draftTrip.id,
+        tripPlanId: backupItem.planVariantId,
+        type: "activity_ticket",
+        title: "Backup gallery ticket booking",
+        status: "booked",
+        visibility: "shared",
+        ownerMemberId: "member-aom",
+        providerName: "M+ Museum",
+        confirmationCode: "RAIN-GALLERY",
+        startsAt: null,
+        endsAt: null,
+        timezone: "Asia/Hong_Kong",
+        priceAmount: 240,
+        currency: "HKD",
+        travelerIds: ["member-aom"],
+        externalLinks: [],
+        relatedItineraryItemIds: [backupItem.id],
+        relatedTaskIds: [],
+        relatedExpenseIds: ["expense-backup-gallery"],
+        noteIds: [],
+        notes: null,
+        createdBy: "member-aom",
+        updatedAt: "2026-06-01T00:00:00.000Z",
+        version: 1,
+      },
+    ],
+    tasks: [
+      {
+        id: "task-main-dimsum",
+        tripPlanId: mainItem.planVariantId,
+        title: "Main plan brunch task",
+        status: "open",
+        visibility: "shared",
+        kind: "booking",
+        createdBy: "member-aom",
+        relatedItemId: mainItem.id,
+      },
+      {
+        id: "task-backup-gallery",
+        tripPlanId: backupItem.planVariantId,
+        title: "Backup gallery task",
+        status: "open",
+        visibility: "shared",
+        kind: "booking",
+        createdBy: "member-aom",
+        relatedItemId: backupItem.id,
+      },
+    ],
+  };
+}
+
+function tripWithPlansAndPlanCheckFindings(): Trip {
+  const trip = tripWithPlansAndPlanScopedRecords();
+  return {
+    ...trip,
+    itineraryItems: trip.itineraryItems.map((item) =>
+      item.id === "item-dimdim"
+        ? {
+            ...item,
+            activity: "Main broken brunch",
+            durationMinutes: null,
+            timeMode: "scheduled",
+          }
+        : item.id === "item-rain-gallery"
+          ? {
+              ...item,
+              activity: "Backup broken gallery",
+              durationMinutes: null,
+              timeMode: "scheduled",
+            }
+          : item,
+    ),
   };
 }
 
@@ -192,6 +357,91 @@ describe("Sagittarius cockpit UI", () => {
       }),
     ).toBeNull();
     expect(parsePlanSuggestionEditAction({ itemId: "item-1" })).toBeNull();
+  });
+
+  it("normalizes inline time-window edits into matching duration patches", () => {
+    const item = {
+      ...seedTrip.itineraryItems[0],
+      startTime: "23:00",
+      endTime: "01:00",
+      endOffsetDays: 1,
+      durationMinutes: 120,
+    };
+
+    expect(normalizeInlineTimePatch(item, { endTime: "02:30" })).toMatchObject({
+      endTime: "02:30",
+      durationMinutes: 210,
+    });
+    expect(
+      normalizeInlineTimePatch(item, {
+        endTime: "02:00",
+        endOffsetDays: 0,
+      }),
+    ).toMatchObject({
+      endTime: "02:00",
+      endOffsetDays: 1,
+      durationMinutes: 180,
+    });
+    expect(normalizeInlineTimePatch(item, { startTime: "00:30" })).toMatchObject(
+      {
+        startTime: "00:30",
+        endOffsetDays: 0,
+        durationMinutes: 30,
+      },
+    );
+    expect(normalizeInlineTimePatch(item, { endTime: "23:30" })).toMatchObject({
+      endTime: "23:30",
+      endOffsetDays: 0,
+      durationMinutes: 30,
+    });
+    expect(
+      normalizeInlineTimePatch(item, {
+        endTime: null,
+        endOffsetDays: 1,
+      }),
+    ).toMatchObject({
+      endTime: null,
+      endOffsetDays: 0,
+      durationMinutes: null,
+    });
+  });
+
+  it("classifies Thai itinerary rows into booking draft types", () => {
+    const baseItem = seedTrip.itineraryItems[0];
+
+    expect(
+      bookingTypeForItineraryItem({
+        ...baseItem,
+        activity: "บินไปฮ่องกง",
+        activityType: "travel",
+        transportation: "เครื่องบิน",
+      }),
+    ).toBe("flight");
+    expect(
+      bookingTypeForItineraryItem({
+        ...baseItem,
+        activity: "นั่งรถไฟเข้าเมือง",
+        activityType: "travel",
+        transportation: "รถไฟ",
+      }),
+    ).toBe("train");
+    expect(
+      bookingTypeForItineraryItem({
+        ...baseItem,
+        activity: "เช็คอินโรงแรม",
+        activityType: "experience",
+        itemKind: "activity",
+        transportation: "",
+      }),
+    ).toBe("hotel");
+    expect(
+      bookingTypeForItineraryItem({
+        ...baseItem,
+        activity: "รถรับส่งจากโรงแรมไปสนามบิน",
+        activityType: "travel",
+        transportation: "รถรับส่ง",
+      }),
+    ).toBe("public_transport");
   });
 
   it("can require trip participant authentication before opening the cockpit", async () => {
@@ -1484,10 +1734,166 @@ describe("Sagittarius cockpit UI", () => {
       within(dialog).getByRole("button", { name: /บันทึกค่าใช้จ่าย/i }),
     );
 
-    expect(await screen.findByText("Late night taxi")).toBeInTheDocument();
+    const expenseTable = screen.getByRole("table", { name: /รายการค่าใช้จ่าย/i });
+    expect(within(expenseTable).getByText("Late night taxi")).toBeInTheDocument();
+    expect(expenseTable).toHaveTextContent("HK$100.00");
+    const persistedTrip = JSON.parse(localStorage.getItem(tripStorageKey)!) as Trip;
     expect(
-      screen.getByRole("table", { name: /รายการค่าใช้จ่าย/i }),
-    ).toHaveTextContent("HK$100.00");
+      persistedTrip.expenses.find((expense) => expense.title === "Late night taxi"),
+    ).toMatchObject({
+      tripPlanId: seedTrip.activePlanVariantId,
+      itineraryItemId: null,
+    });
+  });
+
+  it("adds unlinked local expenses to the selected Trip Plan", async () => {
+    const user = userEvent.setup();
+    const storage = installLocalStorageStub();
+    const draftTrip = tripWithPlans();
+    storage.setItem(tripStorageKey, JSON.stringify(draftTrip));
+
+    render(<SagittariusApp initialView="itinerary" />);
+
+    await screen.findByRole("option", { name: "Rain Plan - ร่าง" });
+    await user.selectOptions(screen.getByLabelText("Trip Plan"), [
+      "plan-variant-backup",
+    ]);
+    await user.click(screen.getByRole("link", { name: /ค่าใช้จ่าย/i }));
+    await user.click(
+      await screen.findByRole("button", { name: /เพิ่มค่าใช้จ่าย/i }),
+    );
+    const dialog = screen.getByRole("dialog", { name: /เพิ่มค่าใช้จ่าย/i });
+    await user.type(
+      within(dialog).getByLabelText(/ชื่อค่าใช้จ่าย/i),
+      "Rain plan taxi",
+    );
+    await user.clear(within(dialog).getByLabelText(/จำนวนเงิน/i));
+    await user.type(within(dialog).getByLabelText(/จำนวนเงิน/i), "180");
+    await user.click(
+      within(dialog).getByRole("button", { name: /บันทึกค่าใช้จ่าย/i }),
+    );
+
+    const expenseTable = screen.getByRole("table", { name: /รายการค่าใช้จ่าย/i });
+    await waitFor(() => {
+      expect(within(expenseTable).getByText("Rain plan taxi")).toBeInTheDocument();
+    });
+    const persistedTrip = JSON.parse(storage.getItem(tripStorageKey)!) as Trip;
+    expect(
+      persistedTrip.expenses.find((expense) => expense.title === "Rain plan taxi"),
+    ).toMatchObject({
+      tripPlanId: "plan-variant-backup",
+      itineraryItemId: null,
+    });
+    expect(persistedTrip.mainTripPlanId).toBe(draftTrip.mainTripPlanId);
+    expect(persistedTrip.activePlanVariantId).toBe(draftTrip.activePlanVariantId);
+  });
+
+  it("moves an unlinked local actual expense to the organizer-selected Trip Plan", async () => {
+    const user = userEvent.setup();
+    const storage = installLocalStorageStub();
+    const draftTrip = tripWithPlans();
+    storage.setItem(tripStorageKey, JSON.stringify(draftTrip));
+
+    render(<SagittariusApp initialView="expenses" />);
+
+    await screen.findByRole("region", { name: /เงินทริป/i });
+    await user.click(screen.getByRole("button", { name: /แก้ไข Dim Dim Sum brunch/i }));
+    const dialog = screen.getByRole("dialog", { name: /แก้ไขค่าใช้จ่าย/i });
+    await user.selectOptions(within(dialog).getByLabelText("Trip Plan"), [
+      "plan-variant-backup",
+    ]);
+    await user.click(
+      within(dialog).getByRole("button", { name: /บันทึกค่าใช้จ่าย/i }),
+    );
+
+    await waitFor(() => {
+      const persistedTrip = JSON.parse(storage.getItem(tripStorageKey)!) as Trip;
+      expect(
+        persistedTrip.expenses.find((expense) => expense.id === "expense-dimsum"),
+      ).toMatchObject({
+        tripPlanId: "plan-variant-backup",
+        itineraryItemId: null,
+      });
+      expect(persistedTrip.mainTripPlanId).toBe(draftTrip.mainTripPlanId);
+      expect(persistedTrip.activePlanVariantId).toBe(draftTrip.activePlanVariantId);
+    });
+  });
+
+  it("duplicates a local actual expense as a booking estimate without creating real money", async () => {
+    const user = userEvent.setup();
+    const storage = installLocalStorageStub();
+    const draftTrip = tripWithPlans();
+    storage.setItem(tripStorageKey, JSON.stringify({
+      ...draftTrip,
+      bookingDocs: [],
+    }));
+
+    render(<SagittariusApp initialView="expenses" />);
+
+    await screen.findByRole("region", { name: /เงินทริป/i });
+    await user.click(
+      screen.getByRole("button", {
+        name: /ทำ Dim Dim Sum brunch เป็น estimate/i,
+      }),
+    );
+
+    await waitFor(() => {
+      const persistedTrip = JSON.parse(storage.getItem(tripStorageKey)!) as Trip;
+      expect(persistedTrip.expenses).toHaveLength(draftTrip.expenses.length);
+      expect(persistedTrip.bookingDocs).toEqual([
+        expect.objectContaining({
+          type: "other",
+          title: "Estimate: Dim Dim Sum brunch",
+          status: "draft",
+          priceAmount: 512,
+          currency: "HKD",
+          tripPlanId: draftTrip.activePlanVariantId,
+          relatedExpenseIds: [],
+          notes: expect.stringContaining(
+            "This does not create or move real money.",
+          ),
+        }),
+      ]);
+    });
+  });
+
+  it("records a local actual expense refund as a settlement without removing the source", async () => {
+    const user = userEvent.setup();
+    const storage = installLocalStorageStub();
+    const draftTrip = tripWithPlans();
+    storage.setItem(tripStorageKey, JSON.stringify(draftTrip));
+
+    render(<SagittariusApp initialView="expenses" />);
+
+    await screen.findByRole("region", { name: /เงินทริป/i });
+    await user.click(
+      screen.getByRole("button", {
+        name: /บันทึก refund ของ Dim Dim Sum brunch/i,
+      }),
+    );
+
+    await waitFor(() => {
+      const persistedTrip = JSON.parse(storage.getItem(tripStorageKey)!) as Trip;
+      expect(
+        persistedTrip.expenses.find((expense) => expense.id === "expense-dimsum"),
+      ).toBeTruthy();
+      expect(persistedTrip.expenses).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            title: "Refund: Dim Dim Sum brunch",
+            amount: 384,
+            category: "settlement",
+            paidBy: "member-aom",
+            tripPlanId: draftTrip.activePlanVariantId,
+            splits: {
+              "member-beam": 128,
+              "member-nam": 128,
+              "member-family": 128,
+            },
+          }),
+        ]),
+      );
+    });
   });
 
   it("creates overview tasks through the API client after backend login", async () => {
@@ -2598,7 +3004,7 @@ describe("Sagittarius cockpit UI", () => {
     ).not.toBeInTheDocument();
   }, 45_000);
 
-  it("edits itinerary duration inline through the API client after backend login", async () => {
+  it("edits itinerary time window inline through the API client after backend login", async () => {
     const user = userEvent.setup();
     installLocalStorageStub();
     const selectedItem = seedTrip.itineraryItems.find(
@@ -2607,6 +3013,8 @@ describe("Sagittarius cockpit UI", () => {
     const ownerTrip = { ...seedTrip, joinPasswordHash: "" };
     const patchedItem = {
       ...selectedItem,
+      endTime: "10:00",
+      endOffsetDays: 0,
       durationMinutes: 90,
       version: selectedItem.version + 1,
     };
@@ -2625,14 +3033,9 @@ describe("Sagittarius cockpit UI", () => {
 
     await loginApiTrip(user);
     const row = await screen.findByRole("row", { name: /Dim Dim Sum/i });
-    await user.click(
-      within(row).getByRole("button", { name: /แก้ไขระยะเวลา Dim Dim Sum/i }),
-    );
-    await user.click(
-      within(
-        screen.getByRole("region", { name: /แก้ไขระยะเวลา Dim Dim Sum/i }),
-      ).getByRole("button", { name: /1 h 30 m/i }),
-    );
+    const endTime = within(row).getByLabelText(/แก้ไขเวลาจบ Dim Dim Sum/i);
+    fireEvent.change(endTime, { target: { value: "10:00" } });
+    fireEvent.blur(endTime);
 
     await waitFor(() =>
       expect(apiClient.patchItineraryItem).toHaveBeenCalledWith(
@@ -2641,13 +3044,112 @@ describe("Sagittarius cockpit UI", () => {
         "session-token",
         expect.objectContaining({
           expectedVersion: selectedItem.version,
-          patch: expect.objectContaining({ durationMinutes: 90 }),
+          patch: expect.objectContaining({
+            endTime: "10:00",
+            endOffsetDays: 0,
+            durationMinutes: 90,
+          }),
         }),
       ),
     );
   }, 45_000);
 
-  it("reloads the latest API trip and clears auto overlap resolution when item versions conflict", async () => {
+  it("uses backend-returned path fields after API block drag and drop", async () => {
+    const user = userEvent.setup();
+    installLocalStorageStub();
+    const blockItem = {
+      ...seedTrip.itineraryItems[0],
+      id: "api-rain-block",
+      activity: "API rain route block",
+      day: "2026-06-19",
+      isPlanBlock: true,
+      parentItemId: null,
+      pathGroupId: "path-group-rain-api",
+      pathId: "path-rain-api",
+      pathName: "Rain plan",
+      pathRole: "alternative" as const,
+      sortOrder: 100,
+    };
+    const movingItem = {
+      ...seedTrip.itineraryItems[1],
+      id: "api-main-cafe",
+      activity: "API main cafe",
+      day: "2026-06-19",
+      isPlanBlock: false,
+      parentItemId: null,
+      pathGroupId: undefined,
+      pathId: undefined,
+      pathName: undefined,
+      pathRole: "main" as const,
+      sortOrder: 200,
+    };
+    const ownerTrip = {
+      ...seedTrip,
+      joinPasswordHash: "",
+      itineraryItems: [blockItem, movingItem],
+    };
+    const patchedItem = {
+      ...movingItem,
+      day: blockItem.day,
+      parentItemId: blockItem.id,
+      pathGroupId: blockItem.pathGroupId,
+      pathId: blockItem.pathId,
+      pathName: blockItem.pathName,
+      pathRole: blockItem.pathRole,
+      sortOrder: 200,
+      updatedAt: "2026-05-29T00:00:00.000Z",
+      version: movingItem.version + 1,
+    };
+    const apiClient = createApiClientForTrip(ownerTrip, {
+      patchItineraryItem: vi.fn().mockResolvedValue(patchedItem),
+    });
+
+    render(
+      <SagittariusApp
+        requireJoin
+        dataSource="api"
+        initialView="itinerary"
+        apiClient={apiClient}
+      />,
+    );
+
+    await loginApiTrip(user);
+    const dataTransfer = createDataTransfer();
+    fireEvent.dragStart(
+      await screen.findByRole("button", { name: /ลาก API main cafe/i }),
+      { dataTransfer },
+    );
+    fireEvent.drop(
+      within(
+        screen.getByRole("row", { name: /API rain route block/i }),
+      ).getByRole("button", { name: /ใส่ใน block/i }),
+      { dataTransfer },
+    );
+
+    await waitFor(() =>
+      expect(apiClient.patchItineraryItem).toHaveBeenCalledWith(
+        ownerTrip.id,
+        movingItem.id,
+        "session-token",
+        expect.objectContaining({
+          expectedVersion: movingItem.version,
+          patch: expect.objectContaining({
+            day: blockItem.day,
+            parentItemId: blockItem.id,
+            sortOrder: 200,
+          }),
+        }),
+      ),
+    );
+    expect(
+      await screen.findByRole("row", { name: /API main cafe/i }),
+    ).toHaveAttribute("data-hierarchy-level", "2");
+    expect(
+      screen.getAllByText("Rain plan").some((element) => element.tagName === "SPAN"),
+    ).toBe(true);
+  }, 45_000);
+
+  it("keeps API same-plan overlaps as warnings without auto resolution", async () => {
     const user = userEvent.setup();
     const day = "2026-06-18";
     const baseItem = seedTrip.itineraryItems.find((item) => item.day === day)!;
@@ -2684,46 +3186,19 @@ describe("Sagittarius cockpit UI", () => {
       joinPasswordHash: "",
       itineraryItems: [overlapMain, overlapLater],
     };
-    const resolvedTrip = {
-      ...overlapTrip,
-      itineraryItems: [
-        {
-          ...overlapMain,
-          pathGroupId: "path-group-item-overlap-main",
-          version: 5,
-        },
-        {
-          ...overlapLater,
-          pathGroupId: "path-group-item-overlap-main",
-          pathId: "path-2026-06-18-sub-a",
-          pathName: "Plan A",
-          pathRole: "alternative" as const,
-          version: 5,
-        },
-      ],
-    };
-    let patchConflicted = false;
     const loadTrip = vi.fn().mockImplementation(() =>
       Promise.resolve({
-        trip: patchConflicted ? resolvedTrip : overlapTrip,
+        trip: overlapTrip,
         suggestions: [],
         tasks: [],
         stopNotes: [],
         expenseSummary: null,
       }),
     );
+    const patchItineraryItem = vi.fn();
     const apiClient = createApiClientForTrip(overlapTrip, {
       loadTrip,
-      patchItineraryItem: vi.fn().mockImplementationOnce(() => {
-        patchConflicted = true;
-        return Promise.reject(
-          new TripApiError({
-            code: "version_conflict",
-            message: "version conflict",
-            status: 409,
-          }),
-        );
-      }),
+      patchItineraryItem,
     });
 
     render(
@@ -2736,19 +3211,18 @@ describe("Sagittarius cockpit UI", () => {
     );
 
     await loginApiTrip(user);
-    const autoButton = await screen.findByRole("button", {
-      name: /Auto fix overlaps for Day 1/i,
-    });
-    await waitFor(() => expect(autoButton).toBeEnabled());
-    await user.click(autoButton);
-
     await waitFor(() =>
-      expect(apiClient.patchItineraryItem).toHaveBeenCalledTimes(1),
+      expect(screen.getByRole("row", { name: /API overlap main/i })).toHaveClass(
+        "data-row--path-overlap",
+      ),
     );
-    expect(loadTrip.mock.calls.length).toBeGreaterThanOrEqual(2);
+    expect(screen.getByRole("row", { name: /API overlap later/i })).toHaveClass(
+      "data-row--path-overlap",
+    );
     expect(
       screen.queryByRole("button", { name: /Auto fix overlaps for Day 1/i }),
     ).not.toBeInTheDocument();
+    expect(patchItineraryItem).not.toHaveBeenCalled();
   }, 45_000);
 
   it("allows travelers to edit itinerary items after backend login", async () => {
@@ -3048,21 +3522,24 @@ describe("Sagittarius cockpit UI", () => {
     expect(
       within(context).getByRole("button", { name: /บันทึกโน้ต/i }),
     ).toBeDisabled();
-    await user.type(within(context).getByLabelText(/ชื่อค่าใช้จ่าย/i), "Taxi");
+    expect(
+      within(context).getByText(/ใช้เฉพาะเงินที่จ่ายแล้วหรือผูกพันต้องจ่าย/i),
+    ).toBeInTheDocument();
+    await user.type(within(context).getByLabelText(/ชื่อค่าใช้จ่ายจริง/i), "Taxi");
     await user.type(within(context).getByLabelText(/จำนวนเงิน/i), "120");
     expect(
-      within(context).getByRole("button", { name: /เพิ่ม\/แก้ไขค่าใช้จ่าย/i }),
+      within(context).getByRole("button", { name: /เพิ่ม\/แก้ไขค่าใช้จ่ายจริง/i }),
     ).toBeEnabled();
     await user.click(
-      within(context).getByRole("button", { name: /เพิ่ม\/แก้ไขค่าใช้จ่าย/i }),
+      within(context).getByRole("button", { name: /เพิ่ม\/แก้ไขค่าใช้จ่ายจริง/i }),
     );
     expect(
-      within(context).getByRole("button", { name: /เพิ่ม\/แก้ไขค่าใช้จ่าย/i }),
+      within(context).getByRole("button", { name: /เพิ่ม\/แก้ไขค่าใช้จ่ายจริง/i }),
     ).toBeDisabled();
-    await user.type(within(context).getByLabelText(/ชื่อค่าใช้จ่าย/i), "Taxi");
+    await user.type(within(context).getByLabelText(/ชื่อค่าใช้จ่ายจริง/i), "Taxi");
     await user.type(within(context).getByLabelText(/จำนวนเงิน/i), "120");
     expect(
-      within(context).getByRole("button", { name: /เพิ่ม\/แก้ไขค่าใช้จ่าย/i }),
+      within(context).getByRole("button", { name: /เพิ่ม\/แก้ไขค่าใช้จ่ายจริง/i }),
     ).toBeEnabled();
     unmount();
     window.localStorage.clear();
@@ -4193,10 +4670,16 @@ describe("Sagittarius cockpit UI", () => {
 
   it("imports itinerary files through an app dialog instead of native prompts", async () => {
     const user = userEvent.setup();
+    const storage = installLocalStorageStub();
     const prompt = vi.spyOn(window, "prompt");
     const confirm = vi.spyOn(window, "confirm");
     const alert = vi.spyOn(window, "alert");
+    storage.setItem(tripStorageKey, JSON.stringify(tripWithPlans()));
     render(<SagittariusApp initialView="itinerary" />);
+    await screen.findByRole("option", { name: "Rain Plan - ร่าง" });
+    await user.selectOptions(screen.getByLabelText("Trip Plan"), [
+      "plan-variant-backup",
+    ]);
     const file = new File(
       [
         JSON.stringify({
@@ -4219,6 +4702,76 @@ describe("Sagittarius cockpit UI", () => {
               note: "Bring cash",
             },
           ],
+          records: {
+            expenses: [
+              {
+                id: "imported-expense",
+                tripId: seedTrip.id,
+                tripPlanId: seedTrip.activePlanVariantId,
+                title: "Imported real receipt",
+                amount: 120,
+                paidBy: "member-aom",
+                splits: { "member-aom": 120 },
+                category: "food",
+                itineraryItemId: "imported-lunch",
+              },
+            ],
+            bookingDocs: [
+              {
+                id: "imported-booking",
+                tripId: seedTrip.id,
+                tripPlanId: seedTrip.activePlanVariantId,
+                type: "activity_ticket",
+                title: "Imported lunch reservation",
+                status: "booked",
+                visibility: "shared",
+                ownerMemberId: "member-aom",
+                providerName: "Central Market",
+                confirmationCode: "NOODLE-1",
+                startsAt: null,
+                endsAt: null,
+                timezone: "Asia/Hong_Kong",
+                priceAmount: 120,
+                currency: "HKD",
+                travelerIds: ["member-aom"],
+                externalLinks: [],
+                relatedItineraryItemIds: ["imported-lunch"],
+                relatedTaskIds: ["imported-task"],
+                relatedExpenseIds: ["imported-expense"],
+                noteIds: ["imported-note"],
+                notes: "Imported booking context",
+                createdBy: "member-aom",
+                updatedAt: "2026-06-06T00:00:00.000Z",
+                version: 7,
+              },
+            ],
+            stopNotes: [
+              {
+                id: "imported-note",
+                tripId: seedTrip.id,
+                tripPlanId: seedTrip.activePlanVariantId,
+                itemId: "imported-lunch",
+                authorId: "member-aom",
+                body: "Ask for the corner table.",
+                createdAt: "2026-06-06T00:00:00.000Z",
+                version: 3,
+              },
+            ],
+            tasks: [
+              {
+                id: "imported-task",
+                tripPlanId: seedTrip.activePlanVariantId,
+                title: "Confirm imported lunch",
+                status: "open",
+                visibility: "shared",
+                kind: "booking",
+                createdBy: "member-aom",
+                assigneeId: "member-aom",
+                relatedItemId: "imported-lunch",
+                version: 5,
+              },
+            ],
+          },
         }),
       ],
       "itinerary.json",
@@ -4235,116 +4788,82 @@ describe("Sagittarius cockpit UI", () => {
     );
     expect(dialog.className).not.toContain("0_24px_70px");
     expect(dialog).toHaveTextContent("Imported noodle lunch");
+    expect(dialog).toHaveTextContent(
+      "Records detected: 1 expenses, 1 bookings, 1 notes, 1 tasks",
+    );
+    expect(dialog).toHaveTextContent(
+      "Linked records will be imported only when record handling is set to clone",
+    );
+    expect(within(dialog).getByLabelText("Record handling")).toHaveDisplayValue(
+      "Clone linked records",
+    );
     await user.clear(within(dialog).getByLabelText(/ชื่อ path/i));
     await user.type(within(dialog).getByLabelText(/ชื่อ path/i), "Plan B");
     await user.click(
       within(dialog).getByRole("button", { name: /import itinerary/i }),
     );
 
-    expect(
-      screen.getByRole("row", { name: /Imported noodle lunch/i }),
-    ).toBeInTheDocument();
+    const importedRow = screen.getByRole("row", {
+      name: /Imported noodle lunch/i,
+    });
+    expect(importedRow).toBeInTheDocument();
+    expect(importedRow).toHaveTextContent("1 booking");
+    expect(importedRow).toHaveTextContent("1 expense");
+    expect(importedRow).toHaveTextContent("1 note");
+    expect(importedRow).toHaveTextContent("1 task");
+    const persistedTrip = JSON.parse(localStorage.getItem(tripStorageKey)!) as Trip;
+    const importedItem = persistedTrip.itineraryItems.find(
+      (item) => item.id === "imported-lunch",
+    );
+    expect(importedItem?.planVariantId).toBe("plan-variant-backup");
+    expect(persistedTrip.expenses).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          itineraryItemId: "imported-lunch",
+          title: "Imported real receipt",
+          tripPlanId: importedItem?.planVariantId,
+        }),
+      ]),
+    );
+    expect(persistedTrip.bookingDocs ?? []).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          relatedItineraryItemIds: ["imported-lunch"],
+          title: "Imported lunch reservation",
+          tripPlanId: importedItem?.planVariantId,
+        }),
+      ]),
+    );
+    expect(persistedTrip.stopNotes ?? []).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          body: "Ask for the corner table.",
+          itemId: "imported-lunch",
+          tripPlanId: importedItem?.planVariantId,
+        }),
+      ]),
+    );
+    expect(persistedTrip.tasks ?? []).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          relatedItemId: "imported-lunch",
+          title: "Confirm imported lunch",
+          tripPlanId: importedItem?.planVariantId,
+        }),
+      ]),
+    );
     expect(prompt).not.toHaveBeenCalled();
     expect(confirm).not.toHaveBeenCalled();
     expect(alert).not.toHaveBeenCalled();
   });
 
-  it("creates a named local Trip Sheet and selects it without copying itinerary rows", async () => {
-    const user = userEvent.setup();
-    render(<SagittariusApp initialView="itinerary" />);
-
-    const selector = await screen.findByLabelText("Trip Sheet");
-    await user.click(screen.getByRole("button", { name: "เพิ่ม sheet" }));
-    await user.type(screen.getByLabelText("ชื่อ sheet"), "Museum Day");
-    await user.click(screen.getByRole("button", { name: "สร้าง sheet" }));
-
-    await waitFor(() =>
-      expect(screen.getByLabelText("Trip Sheet")).toHaveDisplayValue(
-        "Museum Day",
-      ),
-    );
-    expect(selector).toHaveValue(
-      (screen.getByRole("option", { name: "Museum Day" }) as HTMLOptionElement)
-        .value,
-    );
-    expect(
-      screen.queryByRole("row", { name: /Dim Dim Sum/i }),
-    ).not.toBeInTheDocument();
-  });
-
-  it("switches local Trip Sheets and changes visible itinerary rows by planVariantId", async () => {
+  it("can import activities only while leaving source records as references", async () => {
     const user = userEvent.setup();
     const storage = installLocalStorageStub();
-    const draftTrip = tripWithSheets();
-    storage.setItem(tripStorageKey, JSON.stringify(draftTrip));
-
+    storage.setItem(tripStorageKey, JSON.stringify(tripWithPlans()));
     render(<SagittariusApp initialView="itinerary" />);
-
-    await screen.findByRole("option", { name: "Rain Sheet" });
-    await screen.findByRole("row", { name: /Dim Dim Sum/i });
-    await user.selectOptions(screen.getByLabelText("Trip Sheet"), [
-      "plan-variant-backup",
-    ]);
-
-    expect(
-      await screen.findByRole("row", { name: /Rain sheet gallery/i }),
-    ).toBeInTheDocument();
-    expect(
-      screen.queryByRole("row", { name: /Dim Dim Sum/i }),
-    ).not.toBeInTheDocument();
-  });
-
-  it("adds new local stops to the current Trip Sheet after switching sheets", async () => {
-    const user = userEvent.setup();
-    const storage = installLocalStorageStub();
-    const draftTrip = tripWithSheets();
-    storage.setItem(tripStorageKey, JSON.stringify(draftTrip));
-
-    render(<SagittariusApp initialView="itinerary" />);
-
-    await screen.findByRole("option", { name: "Rain Sheet" });
-    await user.selectOptions(screen.getByLabelText("Trip Sheet"), [
-      "plan-variant-backup",
-    ]);
-    await user.click(
-      await screen.findByRole("button", {
-        name: /เพิ่มสถานที่ \/ กิจกรรม วันที่ 1/i,
-      }),
-    );
-    const dialog = await screen.findByRole("dialog", { name: /เพิ่มกิจกรรม/i });
-    fireEvent.change(within(dialog).getByLabelText("กิจกรรม"), {
-      target: { value: "Sheet coffee" },
-    });
-    fireEvent.change(within(dialog).getByLabelText("สถานที่"), {
-      target: { value: "Sheung Wan" },
-    });
-    await user.click(
-      within(dialog).getByRole("button", { name: "บันทึกกิจกรรม" }),
-    );
-
-    expect(
-      await screen.findByRole("row", { name: /Sheet coffee/i }),
-    ).toBeInTheDocument();
-    const persistedTrip = JSON.parse(storage.getItem(tripStorageKey)!) as Trip;
-    expect(persistedTrip.itineraryItems).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          activity: "Sheet coffee",
-          planVariantId: "plan-variant-backup",
-        }),
-      ]),
-    );
-  });
-
-  it("imports itinerary rows into the current Trip Sheet and keeps path fields", async () => {
-    const user = userEvent.setup();
-    const storage = installLocalStorageStub();
-    const draftTrip = tripWithSheets();
-    storage.setItem(tripStorageKey, JSON.stringify(draftTrip));
-    render(<SagittariusApp initialView="itinerary" />);
-
-    await screen.findByRole("option", { name: "Rain Sheet" });
-    await user.selectOptions(screen.getByLabelText("Trip Sheet"), [
+    await screen.findByRole("option", { name: "Rain Plan - ร่าง" });
+    await user.selectOptions(screen.getByLabelText("Trip Plan"), [
       "plan-variant-backup",
     ]);
 
@@ -4356,6 +4875,1160 @@ describe("Sagittarius cockpit UI", () => {
           exportedAt: "2026-06-06T00:00:00.000Z",
           items: [
             {
+              id: "imported-reference-stop",
+              day: "2026-06-19",
+              sortOrder: 42,
+              startTime: "14:15",
+              activity: "Imported reference stop",
+              activityType: "food",
+              place: "Central Market",
+              linkLabel: "Map",
+              mapLink: "",
+              durationMinutes: 55,
+              transportation: "MTR",
+              note: "Use source records as reference",
+            },
+          ],
+          records: {
+            expenses: [
+              {
+                id: "reference-expense",
+                tripId: seedTrip.id,
+                tripPlanId: seedTrip.activePlanVariantId,
+                title: "Reference-only real receipt",
+                amount: 120,
+                paidBy: "member-aom",
+                splits: { "member-aom": 120 },
+                category: "food",
+                itineraryItemId: "imported-reference-stop",
+              },
+            ],
+            bookingDocs: [
+              {
+                id: "reference-booking",
+                tripId: seedTrip.id,
+                tripPlanId: seedTrip.activePlanVariantId,
+                type: "activity_ticket",
+                title: "Reference-only reservation",
+                status: "paid",
+                visibility: "shared",
+                ownerMemberId: "member-aom",
+                providerName: "Central Market",
+                confirmationCode: "REF-1",
+                startsAt: null,
+                endsAt: null,
+                timezone: "Asia/Hong_Kong",
+                priceAmount: 120,
+                currency: "HKD",
+                travelerIds: ["member-aom"],
+                externalLinks: [],
+                relatedItineraryItemIds: ["imported-reference-stop"],
+                relatedTaskIds: [],
+                relatedExpenseIds: ["reference-expense"],
+                noteIds: [],
+                notes: "Reference-only booking context",
+                createdBy: "member-aom",
+                updatedAt: "2026-06-06T00:00:00.000Z",
+                version: 7,
+              },
+            ],
+            stopNotes: [],
+            tasks: [],
+          },
+        }),
+      ],
+      "itinerary.json",
+      { type: "application/json" },
+    );
+
+    await user.upload(screen.getByLabelText(/นำเข้า itinerary JSON/i), file);
+    const dialog = await screen.findByRole("dialog", {
+      name: /ตั้งค่า import itinerary/i,
+    });
+    await user.selectOptions(
+      within(dialog).getByLabelText("Record handling"),
+      "activities-only",
+    );
+    await user.click(
+      within(dialog).getByRole("button", { name: /import itinerary/i }),
+    );
+
+    const importedRow = screen.getByRole("row", {
+      name: /Imported reference stop/i,
+    });
+    expect(importedRow).toBeInTheDocument();
+    expect(importedRow).not.toHaveTextContent("1 booking");
+    expect(importedRow).not.toHaveTextContent("1 expense");
+    const persistedTrip = JSON.parse(localStorage.getItem(tripStorageKey)!) as Trip;
+    expect(
+      persistedTrip.itineraryItems.some((item) => item.id === "imported-reference-stop"),
+    ).toBe(true);
+    expect(
+      persistedTrip.expenses.some((expense) => expense.id === "reference-expense"),
+    ).toBe(false);
+    expect(
+      (persistedTrip.bookingDocs ?? []).some((booking) => booking.id === "reference-booking"),
+    ).toBe(false);
+  });
+
+  it("applies API itinerary imports with hierarchy and creates linked records in the selected Trip Plan", async () => {
+    const user = userEvent.setup();
+    const apiTrip = {
+      ...tripWithPlans(),
+      members: [{ ...seedTrip.members[0], claimPasswordHash: null }],
+      expenses: [],
+      bookingDocs: [],
+      stopNotes: [],
+    };
+    const importedDocument = {
+      schema: "joii.itinerary.export" as const,
+      version: 1 as const,
+      exportedAt: "2026-06-06T00:00:00.000Z",
+      trip: {
+        id: apiTrip.id,
+        name: apiTrip.name,
+        destinationLabel: apiTrip.destinationLabel,
+        startDate: apiTrip.startDate,
+        endDate: apiTrip.endDate,
+        activePlanVariantId: apiTrip.activePlanVariantId,
+        mainTripPlanId: apiTrip.mainTripPlanId,
+      },
+      items: [
+        {
+          id: "import-flight-block",
+          itemKind: "travel" as const,
+          timeMode: "scheduled" as const,
+          isPlanBlock: true,
+          status: "confirmed" as const,
+          priority: "must" as const,
+          day: "2026-06-19",
+          sortOrder: 100,
+          startTime: "23:00",
+          endTime: "02:00",
+          endOffsetDays: 1,
+          activity: "Imported API flight block",
+          activityType: "travel" as const,
+          place: "BKK",
+          linkLabel: "Map",
+          mapLink: "",
+          durationMinutes: 180,
+          transportation: "Flight",
+          details: { bookingRef: "QR349" },
+          note: "Keep airport buffer",
+        },
+        {
+          id: "import-checkin",
+          parentItemId: "import-flight-block",
+          itemKind: "preparation" as const,
+          timeMode: "flexible" as const,
+          isPlanBlock: false,
+          status: "planned" as const,
+          priority: "high" as const,
+          day: "2026-06-19",
+          sortOrder: 110,
+          startTime: "",
+          endTime: null,
+          endOffsetDays: 0,
+          activity: "Imported API check-in",
+          activityType: "travel" as const,
+          place: "Hotel lobby",
+          linkLabel: "Map",
+          mapLink: "",
+          durationMinutes: null,
+          transportation: "",
+          details: {},
+          note: "Sub-activity",
+        },
+      ],
+      records: {
+        expenses: [
+          {
+            id: "import-expense",
+            tripId: apiTrip.id,
+            tripPlanId: apiTrip.activePlanVariantId,
+            title: "Imported API receipt",
+            amount: 120,
+            paidBy: "member-aom",
+            splits: { "member-aom": 120 },
+            category: "tickets" as const,
+            itineraryItemId: "import-flight-block",
+            version: 7,
+          },
+        ],
+        bookingDocs: [
+          {
+            id: "import-booking",
+            tripId: apiTrip.id,
+            tripPlanId: apiTrip.activePlanVariantId,
+            type: "flight" as const,
+            title: "Imported API ticket",
+            status: "booked" as const,
+            visibility: "shared" as const,
+            ownerMemberId: "member-aom",
+            providerName: "Cathay",
+            confirmationCode: "CX-API",
+            startsAt: null,
+            endsAt: null,
+            timezone: "Asia/Bangkok",
+            priceAmount: 120,
+            currency: "HKD",
+            travelerIds: ["member-aom"],
+            externalLinks: [],
+            relatedItineraryItemIds: ["import-flight-block"],
+            relatedTaskIds: ["import-task"],
+            relatedExpenseIds: ["import-expense"],
+            noteIds: ["import-note"],
+            notes: "Imported booking context",
+            createdBy: "member-aom",
+            updatedAt: "2026-06-06T00:00:00.000Z",
+            version: 3,
+          },
+        ],
+        stopNotes: [
+          {
+            id: "import-note",
+            tripId: apiTrip.id,
+            tripPlanId: apiTrip.activePlanVariantId,
+            itemId: "import-flight-block",
+            authorId: "member-aom",
+            body: "Imported API note",
+            createdAt: "2026-06-06T00:00:00.000Z",
+            version: 4,
+          },
+        ],
+        tasks: [
+          {
+            id: "import-task",
+            tripPlanId: apiTrip.activePlanVariantId,
+            title: "Confirm imported API ticket",
+            status: "open" as const,
+            visibility: "shared" as const,
+            kind: "booking" as const,
+            createdBy: "member-aom",
+            assigneeId: "member-aom",
+            relatedItemId: "import-flight-block",
+            version: 5,
+          },
+        ],
+      },
+    };
+    const createItineraryItem = vi
+      .fn()
+      .mockImplementation(
+        (
+          _tripId: string,
+          _sessionToken: string,
+          request: CreateItineraryItemApiRequest,
+        ) =>
+          Promise.resolve({
+            id:
+              request.activity === "Imported API flight block"
+                ? "api-flight-block"
+                : "api-checkin",
+            tripId: apiTrip.id,
+            createdBy: "member-aom",
+            updatedAt: "2026-06-06T00:00:00.000Z",
+            version: 1,
+            linkLabel: "Map",
+            advisories: [],
+            ...request,
+            mapLink: request.mapLink ?? "",
+            address: request.address ?? undefined,
+            coordinates: request.coordinates ?? undefined,
+            endTime: request.endTime ?? null,
+            endOffsetDays: request.endOffsetDays ?? 0,
+            durationMinutes: request.durationMinutes ?? null,
+            transportation: request.transportation ?? "",
+            details: request.details ?? {},
+            note: request.note ?? "",
+          }),
+      );
+    const createTask = vi.fn().mockImplementation(
+      (
+        _tripId: string,
+        _sessionToken: string,
+        request: {
+          assigneeId?: string | null;
+          kind?: TripTask["kind"];
+          relatedItemId?: string | null;
+          title: string;
+          tripPlanId?: string | null;
+          visibility: TripTask["visibility"];
+        },
+      ) =>
+        Promise.resolve({
+          id: "api-task",
+          tripPlanId: request.tripPlanId,
+          title: request.title,
+          status: "open",
+          visibility: request.visibility,
+          kind: request.kind,
+          createdBy: "member-aom",
+          assigneeId: request.assigneeId ?? null,
+          relatedItemId: request.relatedItemId ?? null,
+          version: 1,
+        }),
+    );
+    const createStopNote = vi.fn().mockImplementation(
+      (
+        _tripId: string,
+        _sessionToken: string,
+        request: {
+          body: string;
+          itineraryItemId: string;
+          tripPlanId?: string | null;
+        },
+      ) =>
+        Promise.resolve({
+          id: "api-note",
+          tripId: apiTrip.id,
+          tripPlanId: request.tripPlanId,
+          itemId: request.itineraryItemId,
+          authorId: "member-aom",
+          body: request.body,
+          createdAt: "2026-06-06T00:00:00.000Z",
+          version: 1,
+        }),
+    );
+    const createExpense = vi.fn().mockImplementation(
+      (
+        _tripId: string,
+        _sessionToken: string,
+        request: CreateExpenseApiRequest,
+      ) =>
+        Promise.resolve({
+          id: "api-expense",
+          tripId: apiTrip.id,
+          tripPlanId: request.tripPlanId,
+          title: request.title,
+          amount: request.amountMinor / 100,
+          amountMinor: request.amountMinor,
+          currency: request.currency ?? "HKD",
+          exchangeRateToSettlementCurrency:
+            request.exchangeRateToSettlementCurrency ?? 1,
+          notes: request.notes ?? "",
+          receiptUrl: request.receiptUrl ?? null,
+          lineItems: request.lineItems ?? [],
+          comments: request.comments ?? [],
+          paidBy: request.paidBy,
+          category: request.category,
+          splits: normalizeExpenseSplitsFromMinor(request.splits),
+          itineraryItemId: request.itineraryItemId ?? null,
+          version: 1,
+        }),
+    );
+    const createBookingDoc = vi.fn().mockImplementation(
+      (
+        _tripId: string,
+        _sessionToken: string,
+        request: {
+          confirmationCode?: string | null;
+          currency?: string | null;
+          endsAt?: string | null;
+          externalLinks: Array<{ accessNote?: string | null; label: string; provider?: string | null; url: string }>;
+          noteIds: string[];
+          notes?: string | null;
+          ownerMemberId?: string | null;
+          priceAmount?: number | null;
+          providerName?: string | null;
+          relatedExpenseIds: string[];
+          relatedItineraryItemIds: string[];
+          relatedTaskIds: string[];
+          startsAt?: string | null;
+          status: "draft" | "needs_action" | "booked" | "confirmed" | "paid" | "cancelled" | "expired";
+          timezone?: string | null;
+          title: string;
+          travelerIds: string[];
+          tripPlanId?: string | null;
+          type: "flight" | "train" | "public_transport" | "hotel" | "insurance" | "passport" | "visa" | "activity_ticket" | "other";
+          visibility: "shared" | "sensitive" | "private";
+        },
+      ) =>
+        Promise.resolve({
+          id: "api-booking",
+          tripId: apiTrip.id,
+          tripPlanId: request.tripPlanId,
+          type: request.type,
+          title: request.title,
+          status: request.status,
+          visibility: request.visibility,
+          ownerMemberId: request.ownerMemberId ?? null,
+          providerName: request.providerName ?? null,
+          confirmationCode: request.confirmationCode ?? null,
+          startsAt: request.startsAt ?? null,
+          endsAt: request.endsAt ?? null,
+          timezone: request.timezone ?? null,
+          priceAmount: request.priceAmount ?? null,
+          currency: request.currency ?? null,
+          travelerIds: request.travelerIds,
+          externalLinks: [],
+          relatedItineraryItemIds: request.relatedItineraryItemIds,
+          relatedTaskIds: request.relatedTaskIds,
+          relatedExpenseIds: request.relatedExpenseIds,
+          noteIds: request.noteIds,
+          notes: request.notes ?? null,
+          createdBy: "member-aom",
+          updatedAt: "2026-06-06T00:00:00.000Z",
+          version: 1,
+        }),
+    );
+    const apiClient = createApiClientForTrip(apiTrip, {
+      importItinerary: vi.fn().mockResolvedValue(importedDocument),
+      createItineraryItem,
+      createTask,
+      createStopNote,
+      createExpense,
+      createBookingDoc,
+      getExpenseSummary: vi.fn().mockResolvedValue({
+        groupSpend: 120,
+        netByMember: {},
+        currentUserNetLabel: "settled",
+        settlementSuggestions: [],
+      }),
+    });
+
+    render(
+      <SagittariusApp
+        requireJoin
+        dataSource="api"
+        initialView="itinerary"
+        apiClient={apiClient}
+      />,
+    );
+    await loginApiTrip(user);
+
+    await user.selectOptions(await screen.findByLabelText("Trip Plan"), [
+      "plan-variant-backup",
+    ]);
+    await user.upload(
+      screen.getByLabelText(/นำเข้า itinerary JSON/i),
+      new File(["raw itinerary"], "itinerary.json", {
+        type: "application/json",
+      }),
+    );
+    const dialog = await screen.findByRole("dialog", {
+      name: /ตั้งค่า import itinerary/i,
+    });
+    await user.click(
+      within(dialog).getByRole("button", { name: /import itinerary/i }),
+    );
+
+    await waitFor(() => expect(createItineraryItem).toHaveBeenCalledTimes(2));
+    expect(createItineraryItem).toHaveBeenNthCalledWith(
+      1,
+      apiTrip.id,
+      "session-token",
+      expect.objectContaining({
+        planVariantId: "plan-variant-backup",
+        activity: "Imported API flight block",
+        itemKind: "travel",
+        timeMode: "scheduled",
+        isPlanBlock: true,
+        status: "confirmed",
+        priority: "must",
+        endTime: "02:00",
+        endOffsetDays: 1,
+      }),
+    );
+    expect(createItineraryItem).toHaveBeenNthCalledWith(
+      2,
+      apiTrip.id,
+      "session-token",
+      expect.objectContaining({
+        planVariantId: "plan-variant-backup",
+        activity: "Imported API check-in",
+        parentItemId: "api-flight-block",
+        itemKind: "preparation",
+        timeMode: "flexible",
+      }),
+    );
+    await waitFor(() => expect(createBookingDoc).toHaveBeenCalledTimes(1));
+    expect(createTask).toHaveBeenCalledWith(
+      apiTrip.id,
+      "session-token",
+      expect.objectContaining({
+        tripPlanId: "plan-variant-backup",
+        title: "Confirm imported API ticket",
+        relatedItemId: "api-flight-block",
+      }),
+    );
+    expect(createExpense).toHaveBeenCalledWith(
+      apiTrip.id,
+      "session-token",
+      expect.objectContaining({
+        tripPlanId: "plan-variant-backup",
+        title: "Imported API receipt",
+        amountMinor: 12000,
+        splits: { "member-aom": 12000 },
+        itineraryItemId: "api-flight-block",
+      }),
+    );
+    expect(createStopNote).toHaveBeenCalledWith(
+      apiTrip.id,
+      "session-token",
+      expect.objectContaining({
+        tripPlanId: "plan-variant-backup",
+        itineraryItemId: "api-flight-block",
+        body: "Imported API note",
+      }),
+    );
+    expect(createBookingDoc).toHaveBeenCalledWith(
+      apiTrip.id,
+      "session-token",
+      expect.objectContaining({
+        tripPlanId: "plan-variant-backup",
+        title: "Imported API ticket",
+        relatedItineraryItemIds: ["api-flight-block"],
+        relatedTaskIds: ["api-task"],
+        relatedExpenseIds: ["api-expense"],
+        noteIds: ["api-note"],
+      }),
+    );
+    const importedRow = await screen.findByRole("row", {
+      name: /Imported API flight block/i,
+    });
+    expect(importedRow).toBeInTheDocument();
+    await waitFor(() => expect(importedRow).toHaveTextContent("1 booking"));
+    expect(importedRow).toHaveTextContent("1 expense");
+    expect(importedRow).toHaveTextContent("1 task");
+    expect(importedRow).toHaveTextContent("1 note");
+  }, 45_000);
+
+  it("creates a named local Trip Plan and selects it without copying itinerary rows", async () => {
+    const user = userEvent.setup();
+    render(<SagittariusApp initialView="itinerary" />);
+
+    const selector = (await screen.findByLabelText(
+      "Trip Plan",
+    )) as HTMLSelectElement;
+    await user.click(screen.getByRole("button", { name: "เพิ่มแผน" }));
+    await user.type(screen.getByLabelText("ชื่อแผน"), "Museum Day");
+    await user.click(screen.getByRole("button", { name: "สร้างแผน" }));
+
+    await waitFor(() =>
+      expect(screen.getByLabelText("Trip Plan")).toHaveDisplayValue(
+        "Museum Day - ร่าง",
+      ),
+    );
+    expect(selector).toHaveValue(
+      (screen.getByRole("option", { name: "Museum Day - ร่าง" }) as HTMLOptionElement)
+        .value,
+    );
+    expect(
+      screen.queryByRole("row", { name: /Dim Dim Sum/i }),
+    ).not.toBeInTheDocument();
+    const persistedTrip = JSON.parse(
+      window.localStorage.getItem(tripStorageKey)!,
+    ) as Trip;
+    expect(persistedTrip.activePlanVariantId).toBe(seedTrip.activePlanVariantId);
+    expect(persistedTrip.mainTripPlanId).toBe(
+      seedTrip.mainTripPlanId ?? seedTrip.activePlanVariantId,
+    );
+    expect(persistedTrip.planVariants).toEqual(persistedTrip.tripPlans);
+    expect(
+      persistedTrip.planVariants.find((plan) => plan.id === selector.value),
+    ).toMatchObject({ kind: "draft", status: "draft" });
+  });
+
+  it("switches local Trip Plans and changes visible itinerary rows by planVariantId", async () => {
+    const user = userEvent.setup();
+    const storage = installLocalStorageStub();
+    const draftTrip = tripWithPlans();
+    storage.setItem(tripStorageKey, JSON.stringify(draftTrip));
+
+    render(<SagittariusApp initialView="itinerary" />);
+
+    await screen.findByRole("option", { name: "Rain Plan - ร่าง" });
+    await screen.findByRole("row", { name: /Dim Dim Sum/i });
+    await user.selectOptions(screen.getByLabelText("Trip Plan"), [
+      "plan-variant-backup",
+    ]);
+
+    expect(
+      await screen.findByRole("row", { name: /Rain plan gallery/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("row", { name: /Dim Dim Sum/i }),
+    ).not.toBeInTheDocument();
+    const persistedTrip = JSON.parse(storage.getItem(tripStorageKey)!) as Trip;
+    expect(persistedTrip.activePlanVariantId).toBe(draftTrip.activePlanVariantId);
+    expect(persistedTrip.mainTripPlanId).toBe(draftTrip.mainTripPlanId);
+    expect(persistedTrip.planVariants).toEqual(persistedTrip.tripPlans);
+    expect(
+      persistedTrip.planVariants.find(
+        (plan) => plan.id === "plan-variant-backup",
+      ),
+    ).toMatchObject({ kind: "draft", status: "draft" });
+  });
+
+  it("sets the selected local Trip Plan as Main only from the explicit action", async () => {
+    const user = userEvent.setup();
+    const storage = installLocalStorageStub();
+    const draftTrip = tripWithPlans();
+    storage.setItem(tripStorageKey, JSON.stringify(draftTrip));
+
+    render(<SagittariusApp initialView="itinerary" />);
+
+    await screen.findByRole("option", { name: "Rain Plan - ร่าง" });
+    await user.selectOptions(screen.getByLabelText("Trip Plan"), [
+      "plan-variant-backup",
+    ]);
+    await user.click(screen.getByRole("button", { name: "ใช้เป็นแผนหลัก" }));
+
+    await waitFor(() => {
+      const persistedTrip = JSON.parse(storage.getItem(tripStorageKey)!) as Trip;
+      expect(persistedTrip.activePlanVariantId).toBe("plan-variant-backup");
+      expect(persistedTrip.mainTripPlanId).toBe("plan-variant-backup");
+      expect(
+        persistedTrip.planVariants.find(
+          (plan) => plan.id === "plan-variant-backup",
+        ),
+      ).toMatchObject({ kind: "main", status: "main" });
+      expect(
+        persistedTrip.planVariants.find(
+          (plan) => plan.id === seedTrip.activePlanVariantId,
+        ),
+      ).toMatchObject({ kind: "backup", status: "backup" });
+    });
+  });
+
+  it("shows plan-scoped records on secondary detail pages for the selected Trip Plan", async () => {
+    const storage = installLocalStorageStub();
+    storage.setItem(
+      tripStorageKey,
+      JSON.stringify(tripWithPlansAndPlanScopedRecords()),
+    );
+
+    const { unmount } = render(<SagittariusApp initialView="expenses" />);
+
+    expect(
+      await screen.findByText("Backup gallery tickets"),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText("Main plan dim sum receipt"),
+    ).not.toBeInTheDocument();
+
+    unmount();
+    render(<SagittariusApp initialView="bookings" />);
+
+    expect(
+      (await screen.findAllByText("Backup gallery ticket booking")).length,
+    ).toBeGreaterThan(0);
+    expect(screen.getAllByText("1 รายการ").length).toBeGreaterThan(0);
+    expect(
+      screen.queryByText("Main plan brunch booking"),
+    ).not.toBeInTheDocument();
+  });
+
+  it("shows selected Trip Plan tasks on overview instead of tasks from other plans", async () => {
+    const trip = tripWithPlansAndPlanScopedRecords();
+
+    render(<SagittariusApp initialTrip={trip} initialView="overview" />);
+
+    expect(await screen.findByText("Backup gallery task")).toBeInTheDocument();
+    expect(screen.queryByText("Main plan brunch task")).not.toBeInTheDocument();
+  });
+
+  it("shows Plan Check findings only for the selected Trip Plan", async () => {
+    const user = userEvent.setup();
+    const trip = tripWithPlansAndPlanCheckFindings();
+
+    render(<SagittariusApp initialTrip={trip} initialView="itinerary" />);
+
+    await user.click(screen.getByRole("button", { name: /Run Plan Check/i }));
+
+    expect(
+      await screen.findByText(/Backup broken gallery ยังขาด duration/i),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText(/Main broken brunch ยังขาด duration/i),
+    ).not.toBeInTheDocument();
+  });
+
+  it("adds new local stops to the current Trip Plan after switching plans", async () => {
+    const user = userEvent.setup();
+    const storage = installLocalStorageStub();
+    const draftTrip = tripWithPlans();
+    storage.setItem(tripStorageKey, JSON.stringify(draftTrip));
+
+    render(<SagittariusApp initialView="itinerary" />);
+
+    await screen.findByRole("option", { name: "Rain Plan - ร่าง" });
+    await user.selectOptions(screen.getByLabelText("Trip Plan"), [
+      "plan-variant-backup",
+    ]);
+    await user.click(
+      await screen.findByRole("button", {
+        name: /เพิ่มสถานที่ \/ กิจกรรม วันที่ 1/i,
+      }),
+    );
+    const dialog = await screen.findByRole("dialog", { name: /เพิ่มกิจกรรม/i });
+    fireEvent.change(within(dialog).getByLabelText("กิจกรรม"), {
+      target: { value: "Plan coffee" },
+    });
+    fireEvent.change(within(dialog).getByLabelText("สถานที่"), {
+      target: { value: "Sheung Wan" },
+    });
+    await user.click(
+      within(dialog).getByRole("button", { name: "บันทึกกิจกรรม" }),
+    );
+
+    expect(
+      await screen.findByRole("row", { name: /Plan coffee/i }),
+    ).toBeInTheDocument();
+    const persistedTrip = JSON.parse(storage.getItem(tripStorageKey)!) as Trip;
+    expect(persistedTrip.itineraryItems).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          activity: "Plan coffee",
+          planVariantId: "plan-variant-backup",
+        }),
+      ]),
+    );
+  });
+
+  it("quick-adds a sub-activity under an activity block from the itinerary row", async () => {
+    const user = userEvent.setup();
+    const storage = installLocalStorageStub();
+    const blockItem = {
+      ...seedTrip.itineraryItems[0],
+      id: "block-flight",
+      activity: "Flight to Hong Kong",
+      place: "DMK",
+      isPlanBlock: true,
+      parentItemId: null,
+      sortOrder: 100,
+    };
+    const existingChild = {
+      ...seedTrip.itineraryItems[1],
+      id: "block-flight-checkin",
+      activity: "Airport shuttle",
+      parentItemId: "block-flight",
+      isPlanBlock: false,
+      sortOrder: 110,
+    };
+    const laterActivity = {
+      ...seedTrip.itineraryItems[2],
+      id: "later-market",
+      activity: "Later market walk",
+      parentItemId: null,
+      isPlanBlock: false,
+      sortOrder: 300,
+    };
+    storage.setItem(
+      tripStorageKey,
+      JSON.stringify({
+        ...seedTrip,
+        itineraryItems: [blockItem, existingChild, laterActivity],
+      }),
+    );
+
+    render(<SagittariusApp initialView="itinerary" />);
+
+    await user.click(
+      await screen.findByRole("button", {
+        name: /เพิ่ม sub-activity ใต้ Flight to Hong Kong/i,
+      }),
+    );
+    const dialog = await screen.findByRole("dialog", { name: /เพิ่มกิจกรรม/i });
+    expect(within(dialog).getByLabelText("Plan block")).toBeDisabled();
+    fireEvent.change(within(dialog).getByLabelText("กิจกรรม"), {
+      target: { value: "Airport check in" },
+    });
+    fireEvent.change(within(dialog).getByLabelText("สถานที่"), {
+      target: { value: "DMK terminal" },
+    });
+    await user.click(
+      within(dialog).getByRole("button", { name: "บันทึกกิจกรรม" }),
+    );
+
+    expect(
+      await screen.findByRole("row", { name: /Airport check in/i }),
+    ).toHaveAttribute("data-hierarchy-level", "2");
+    const persistedTrip = JSON.parse(storage.getItem(tripStorageKey)!) as Trip;
+    expect(persistedTrip.itineraryItems).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          activity: "Airport check in",
+          parentItemId: "block-flight",
+          isPlanBlock: false,
+          sortOrder: 120,
+        }),
+      ]),
+    );
+  });
+
+  it("promotes a normal activity to a block before quick-adding sub-activities", async () => {
+    const user = userEvent.setup();
+    const storage = installLocalStorageStub();
+    const normalActivity = {
+      ...seedTrip.itineraryItems[0],
+      id: "market-walk",
+      activity: "Market walk",
+      place: "Mong Kok",
+      isPlanBlock: false,
+      parentItemId: null,
+      sortOrder: 100,
+    };
+    storage.setItem(
+      tripStorageKey,
+      JSON.stringify({
+        ...seedTrip,
+        itineraryItems: [normalActivity],
+      }),
+    );
+
+    render(<SagittariusApp initialView="itinerary" />);
+
+    await user.click(
+      await screen.findByRole("button", {
+        name: /เปลี่ยน Market walk เป็น activity block/i,
+      }),
+    );
+
+    const promotedRow = await screen.findByRole("row", { name: /Market walk/i });
+    expect(
+      within(promotedRow).getByText("Activity block · 0 sub-items"),
+    ).toBeInTheDocument();
+
+    await user.click(
+      within(promotedRow).getByRole("button", {
+        name: /เพิ่ม sub-activity ใต้ Market walk/i,
+      }),
+    );
+    const dialog = await screen.findByRole("dialog", { name: /เพิ่มกิจกรรม/i });
+    fireEvent.change(within(dialog).getByLabelText("กิจกรรม"), {
+      target: { value: "Snack stop" },
+    });
+    fireEvent.change(within(dialog).getByLabelText("สถานที่"), {
+      target: { value: "Street food lane" },
+    });
+    await user.click(
+      within(dialog).getByRole("button", { name: "บันทึกกิจกรรม" }),
+    );
+
+    expect(
+      await screen.findByRole("row", { name: /Snack stop/i }),
+    ).toHaveAttribute("data-hierarchy-level", "2");
+    const persistedTrip = JSON.parse(storage.getItem(tripStorageKey)!) as Trip;
+    expect(persistedTrip.itineraryItems).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: "market-walk",
+          isPlanBlock: true,
+        }),
+        expect.objectContaining({
+          activity: "Snack stop",
+          parentItemId: "market-walk",
+          isPlanBlock: false,
+        }),
+      ]),
+    );
+  });
+
+  it("quick-adds a sub-activity on the parent activity block path", async () => {
+    const user = userEvent.setup();
+    const storage = installLocalStorageStub();
+    const blockItem = {
+      ...seedTrip.itineraryItems[0],
+      id: "block-rain-flight",
+      activity: "Rain route flight",
+      place: "DMK",
+      pathGroupId: "path-group-rain",
+      pathId: "path-rain",
+      pathName: "Rain plan",
+      pathRole: "alternative" as const,
+      isPlanBlock: true,
+      parentItemId: null,
+      sortOrder: 100,
+    };
+    storage.setItem(
+      tripStorageKey,
+      JSON.stringify({
+        ...seedTrip,
+        itineraryItems: [blockItem],
+      }),
+    );
+
+    render(<SagittariusApp initialView="itinerary" />);
+
+    await user.click(
+      await screen.findByRole("button", {
+        name: /เพิ่ม sub-activity ใต้ Rain route flight/i,
+      }),
+    );
+    const dialog = await screen.findByRole("dialog", { name: /เพิ่มกิจกรรม/i });
+    fireEvent.change(within(dialog).getByLabelText("กิจกรรม"), {
+      target: { value: "Rain route check in" },
+    });
+    fireEvent.change(within(dialog).getByLabelText("สถานที่"), {
+      target: { value: "DMK terminal" },
+    });
+    await user.click(
+      within(dialog).getByRole("button", { name: "บันทึกกิจกรรม" }),
+    );
+
+    const persistedTrip = JSON.parse(storage.getItem(tripStorageKey)!) as Trip;
+    expect(persistedTrip.itineraryItems).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          activity: "Rain route check in",
+          parentItemId: "block-rain-flight",
+          isPlanBlock: false,
+          sortOrder: 110,
+          pathGroupId: "path-group-rain",
+          pathId: "path-rain",
+          pathName: "Rain plan",
+          pathRole: "alternative",
+        }),
+      ]),
+    );
+  });
+
+  it("quick-adds a linked planning task from the itinerary row", async () => {
+    const user = userEvent.setup();
+    const storage = installLocalStorageStub();
+    const taskItem = {
+      ...seedTrip.itineraryItems[0],
+      id: "item-flight",
+      activity: "Flight to Hong Kong",
+      place: "DMK",
+      sortOrder: 100,
+    };
+    storage.setItem(
+      tripStorageKey,
+      JSON.stringify({
+        ...seedTrip,
+        itineraryItems: [taskItem],
+        tasks: [],
+      }),
+    );
+
+    render(<SagittariusApp initialView="itinerary" />);
+
+    await user.click(
+      await screen.findByRole("button", {
+        name: /Add task for Flight to Hong Kong/i,
+      }),
+    );
+
+    const structure = await screen.findByLabelText("Structure for Flight to Hong Kong");
+    expect(within(structure).getByText("1 task")).toBeInTheDocument();
+    const context = await screen.findByRole("complementary", {
+      name: /ข้อมูลประกอบการวางแผน/i,
+    });
+    expect(within(context).getByRole("tab", { name: "การจอง" })).toHaveAttribute(
+      "aria-selected",
+      "true",
+    );
+    expect(within(context).getByText("Plan: Flight to Hong Kong")).toBeInTheDocument();
+  });
+
+  it("quick-adds a planning note from the itinerary row and opens details", async () => {
+    const user = userEvent.setup();
+    const storage = installLocalStorageStub();
+    const noteItem = {
+      ...seedTrip.itineraryItems[0],
+      id: "item-flight",
+      activity: "Flight to Hong Kong",
+      place: "DMK",
+      sortOrder: 100,
+    };
+    storage.setItem(
+      tripStorageKey,
+      JSON.stringify({
+        ...seedTrip,
+        itineraryItems: [noteItem],
+      }),
+    );
+
+    render(<SagittariusApp initialView="itinerary" />);
+
+    await user.click(
+      await screen.findByRole("button", {
+        name: /Add note for Flight to Hong Kong/i,
+      }),
+    );
+
+    const structure = await screen.findByLabelText("Structure for Flight to Hong Kong");
+    expect(within(structure).getByText("1 note")).toBeInTheDocument();
+    const context = await screen.findByRole("complementary", {
+      name: /ข้อมูลประกอบการวางแผน/i,
+    });
+    expect(within(context).getByText("Planning note for Flight to Hong Kong")).toBeInTheDocument();
+  });
+
+  it("quick-adds a booking draft from the itinerary row", async () => {
+    const user = userEvent.setup();
+    const storage = installLocalStorageStub();
+    const bookingItem = {
+      ...seedTrip.itineraryItems[0],
+      id: "item-flight",
+      activity: "Flight to Hong Kong",
+      activityType: "travel" as const,
+      transportation: "Plane",
+      day: "2026-06-19",
+      startTime: "23:00",
+      endTime: "02:00",
+      endOffsetDays: 1,
+      place: "DMK",
+      details: {
+        kind: "transportation",
+        mode: "Thai AirAsia",
+        ticketRef: "FD-3023",
+        costNote: "Estimate THB 4,200 before ticket issue",
+      },
+      sortOrder: 100,
+    };
+    storage.setItem(
+      tripStorageKey,
+      JSON.stringify({
+        ...seedTrip,
+        bookingDocs: [],
+        itineraryItems: [bookingItem],
+      }),
+    );
+
+    render(<SagittariusApp initialView="itinerary" />);
+
+    await user.click(
+      await screen.findByRole("button", {
+        name: /Add booking draft for Flight to Hong Kong/i,
+      }),
+    );
+    await user.click(screen.getByRole("menuitem", { name: /Recommended/i }));
+
+    const structure = await screen.findByLabelText("Structure for Flight to Hong Kong");
+    expect(within(structure).getByText("1 booking")).toBeInTheDocument();
+    const context = await screen.findByRole("complementary", {
+      name: /ข้อมูลประกอบการวางแผน/i,
+    });
+    expect(within(context).getByRole("tab", { name: "การจอง" })).toHaveAttribute(
+      "aria-selected",
+      "true",
+    );
+    expect(within(context).getByText("Flight to Hong Kong flight ticket draft")).toBeInTheDocument();
+    let persistedTrip = JSON.parse(storage.getItem(tripStorageKey)!) as Trip;
+    expect(persistedTrip.bookingDocs).toEqual([
+      expect.objectContaining({
+        status: "draft",
+        type: "flight",
+        title: "Flight to Hong Kong flight ticket draft",
+        tripPlanId: seedTrip.activePlanVariantId,
+        providerName: "Thai AirAsia",
+        confirmationCode: "FD-3023",
+        startsAt: "2026-06-19T23:00:00",
+        endsAt: "2026-06-20T02:00:00",
+        timezone: null,
+        priceAmount: null,
+        relatedItineraryItemIds: ["item-flight"],
+        relatedExpenseIds: [],
+        notes:
+          "Draft from itinerary: DMK\nEstimate THB 4,200 before ticket issue",
+      }),
+    ]);
+
+    fireEvent.change(
+      within(context).getByLabelText(
+        "ประเภทการจองของ Flight to Hong Kong flight ticket draft",
+      ),
+      { target: { value: "train" } },
+    );
+
+    await waitFor(() => {
+      persistedTrip = JSON.parse(storage.getItem(tripStorageKey)!) as Trip;
+      expect(persistedTrip.bookingDocs?.[0]).toEqual(
+        expect.objectContaining({
+          title: "Flight to Hong Kong flight ticket draft",
+          type: "train",
+        }),
+      );
+    });
+  });
+
+  it("quick-adds a chosen hotel booking template from the itinerary row", async () => {
+    const user = userEvent.setup();
+    const storage = installLocalStorageStub();
+    const stayItem = {
+      ...seedTrip.itineraryItems[0],
+      id: "item-custom-stay",
+      activity: "Custom stay window",
+      activityType: "travel" as const,
+      transportation: "",
+      day: "2026-06-20",
+      startTime: "15:00",
+      endTime: "11:00",
+      endOffsetDays: 1,
+      place: "Central Hotel",
+      details: {
+        provider: "Joii Stay",
+        bookingRef: "HTL-2200",
+      },
+      sortOrder: 100,
+    };
+    storage.setItem(
+      tripStorageKey,
+      JSON.stringify({
+        ...seedTrip,
+        bookingDocs: [],
+        itineraryItems: [stayItem],
+      }),
+    );
+
+    render(<SagittariusApp initialView="itinerary" />);
+
+    await user.click(
+      await screen.findByRole("button", {
+        name: /Add booking draft for Custom stay window/i,
+      }),
+    );
+    await user.click(screen.getByRole("menuitem", { name: /Hotel/i }));
+
+    await waitFor(() => {
+      const persistedTrip = JSON.parse(storage.getItem(tripStorageKey)!) as Trip;
+      expect(persistedTrip.bookingDocs).toEqual([
+        expect.objectContaining({
+          type: "hotel",
+          title: "Custom stay window hotel booking draft",
+          providerName: "Joii Stay",
+          confirmationCode: "HTL-2200",
+          startsAt: "2026-06-20T15:00:00",
+          endsAt: "2026-06-21T11:00:00",
+          relatedItineraryItemIds: ["item-custom-stay"],
+        }),
+      ]);
+    });
+  });
+
+  it("imports itinerary rows into the current Trip Plan and keeps path fields", async () => {
+    const user = userEvent.setup();
+    const storage = installLocalStorageStub();
+    const draftTrip = tripWithPlans();
+    storage.setItem(tripStorageKey, JSON.stringify(draftTrip));
+    render(<SagittariusApp initialView="itinerary" />);
+
+    await screen.findByRole("option", { name: "Rain Plan - ร่าง" });
+    await user.selectOptions(screen.getByLabelText("Trip Plan"), [
+      "plan-variant-backup",
+    ]);
+
+    const file = new File(
+      [
+        JSON.stringify({
+          schema: "joii.itinerary.export",
+          version: 1,
+          exportedAt: "2026-06-06T00:00:00.000Z",
+          trip: {
+            id: "source-trip-conflicting-aliases",
+            name: "Source trip",
+            destinationLabel: "Source destination",
+            startDate: seedTrip.startDate,
+            endDate: seedTrip.endDate,
+            activePlanVariantId: "source-legacy-plan",
+            mainTripPlanId: "source-canonical-main-plan",
+          },
+          items: [
+            {
               id: "imported-current-sheet",
               pathGroupId: "imported-path-group",
               pathId: "path-rain-plan",
@@ -4364,7 +6037,7 @@ describe("Sagittarius cockpit UI", () => {
               day: seedTrip.startDate,
               sortOrder: 15,
               startTime: "15:30",
-              activity: "Imported current sheet stop",
+              activity: "Imported current plan stop",
               activityType: "attraction",
               place: "K11 Musea",
               linkLabel: "Map",
@@ -4391,18 +6064,18 @@ describe("Sagittarius cockpit UI", () => {
     );
 
     expect(
-      await screen.findByRole("row", { name: /Imported current sheet stop/i }),
+      await screen.findByRole("row", { name: /Imported current plan stop/i }),
     ).toBeInTheDocument();
     expect(
       screen.getByRole("button", {
-        name: /Imported current sheet stop on Rain import/i,
+        name: /Imported current plan stop on Rain import/i,
       }),
     ).toBeInTheDocument();
     const persistedTrip = JSON.parse(storage.getItem(tripStorageKey)!) as Trip;
     expect(persistedTrip.itineraryItems).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          activity: "Imported current sheet stop",
+          activity: "Imported current plan stop",
           planVariantId: "plan-variant-backup",
           pathGroupId: "imported-path-group",
           pathId: "path-rain-import",
@@ -4411,31 +6084,28 @@ describe("Sagittarius cockpit UI", () => {
         }),
       ]),
     );
+    expect(persistedTrip.activePlanVariantId).toBe(draftTrip.activePlanVariantId);
+    expect(persistedTrip.mainTripPlanId).toBe(draftTrip.mainTripPlanId);
   });
 
-  it("creates and publishes a Trip Sheet through the API, then selects the returned active sheet", async () => {
+  it("creates a Trip Plan through the API, then selects it without publishing", async () => {
     const user = userEvent.setup();
     const apiTrip = {
-      ...tripWithSheets(),
+      ...tripWithPlans(),
       members: [{ ...seedTrip.members[0], claimPasswordHash: null }],
     };
-    const createdSheet: PlanVariant = {
+    const createdPlan: PlanVariant = {
       id: "plan-variant-api-created",
       tripId: apiTrip.id,
-      name: "API Sheet",
+      name: "API Plan",
       kind: "draft",
+      status: "draft",
       description: "",
       version: 1,
     };
-    const publishedTrip: Trip = {
-      ...apiTrip,
-      activePlanVariantId: createdSheet.id,
-      planVariants: [...apiTrip.planVariants, createdSheet],
-      version: (apiTrip.version ?? 0) + 1,
-    };
     const apiClient = createApiClientForTrip(apiTrip, {
-      createPlanVariant: vi.fn().mockResolvedValue(createdSheet),
-      publishPlanVariant: vi.fn().mockResolvedValue(publishedTrip),
+      createTripPlan: vi.fn().mockResolvedValue(createdPlan),
+      setMainTripPlan: vi.fn(),
     });
 
     render(
@@ -4448,56 +6118,562 @@ describe("Sagittarius cockpit UI", () => {
     );
     await loginApiTrip(user);
 
-    await user.click(await screen.findByRole("button", { name: "เพิ่ม sheet" }));
-    await user.type(screen.getByLabelText("ชื่อ sheet"), "API Sheet");
-    await user.click(screen.getByRole("button", { name: "สร้าง sheet" }));
+    await user.click(await screen.findByRole("button", { name: "เพิ่มแผน" }));
+    await user.type(screen.getByLabelText("ชื่อแผน"), "API Plan");
+    await user.click(screen.getByRole("button", { name: "สร้างแผน" }));
 
     await waitFor(() =>
-      expect(apiClient.createPlanVariant).toHaveBeenCalledWith(
+      expect(apiClient.createTripPlan!).toHaveBeenCalledWith(
         apiTrip.id,
         "session-token",
         expect.objectContaining({
-          name: "API Sheet",
-          kind: "draft",
+          name: "API Plan",
+          status: "draft",
+          creationMode: "blank",
           description: "",
         }),
       ),
     );
-    expect(apiClient.publishPlanVariant).toHaveBeenCalledWith(
-      apiTrip.id,
-      createdSheet.id,
-      "session-token",
-      expect.objectContaining({ clientMutationId: expect.any(String) }),
-    );
+    expect(apiClient.setMainTripPlan!).not.toHaveBeenCalled();
     await waitFor(() =>
-      expect(screen.getByLabelText("Trip Sheet")).toHaveValue(createdSheet.id),
+      expect(screen.getByLabelText("Trip Plan")).toHaveValue(createdPlan.id),
     );
   }, 45_000);
 
-  it("reloads cockpit state when API Trip Sheet publish hits a version conflict", async () => {
+  it("refreshes API expense summary for the selected Trip Plan without publishing", async () => {
     const user = userEvent.setup();
     const apiTrip = {
-      ...tripWithSheets(),
+      ...tripWithPlans(),
       members: [{ ...seedTrip.members[0], claimPasswordHash: null }],
     };
-    const reloadedSheet: PlanVariant = {
+    const getExpenseSummary = vi.fn().mockImplementation(
+      (
+        _tripId: string,
+        _sessionToken: string,
+        tripPlanId?: string | null,
+      ) =>
+        Promise.resolve({
+          groupSpend: tripPlanId === "plan-variant-backup" ? 88 : 42,
+          netByMember: {},
+          currentUserNetLabel: "settled",
+          settlementSuggestions: [],
+        }),
+    );
+    const apiClient = createApiClientForTrip(apiTrip, {
+      getExpenseSummary,
+      setMainTripPlan: vi.fn(),
+    });
+
+    render(
+      <SagittariusApp
+        requireJoin
+        dataSource="api"
+        initialView="itinerary"
+        apiClient={apiClient}
+      />,
+    );
+    await loginApiTrip(user);
+
+    await waitFor(() =>
+      expect(getExpenseSummary).toHaveBeenCalledWith(
+        apiTrip.id,
+        "session-token",
+        apiTrip.activePlanVariantId,
+      ),
+    );
+    await user.selectOptions(await screen.findByLabelText("Trip Plan"), [
+      "plan-variant-backup",
+    ]);
+
+    await waitFor(() =>
+      expect(getExpenseSummary).toHaveBeenCalledWith(
+        apiTrip.id,
+        "session-token",
+        "plan-variant-backup",
+      ),
+    );
+    expect(apiClient.setMainTripPlan!).not.toHaveBeenCalled();
+  }, 45_000);
+
+  it("quick-adds API row records into the selected Trip Plan without publishing", async () => {
+    const user = userEvent.setup();
+    const apiTrip = {
+      ...tripWithPlans(),
+      members: [{ ...seedTrip.members[0], claimPasswordHash: null }],
+      bookingDocs: [],
+    };
+    const createTask = vi.fn().mockImplementation(
+      (
+        _tripId: string,
+        _sessionToken: string,
+        request: {
+          assigneeId?: string | null;
+          kind?: TripTask["kind"];
+          relatedItemId?: string | null;
+          title: string;
+          tripPlanId?: string | null;
+          visibility: TripTask["visibility"];
+        },
+      ) =>
+        Promise.resolve({
+          id: "api-quick-task",
+          tripPlanId: request.tripPlanId,
+          title: request.title,
+          status: "open",
+          visibility: request.visibility,
+          kind: request.kind,
+          createdBy: "member-aom",
+          assigneeId: request.assigneeId ?? null,
+          relatedItemId: request.relatedItemId ?? null,
+          version: 1,
+        }),
+    );
+    const createStopNote = vi.fn().mockImplementation(
+      (
+        _tripId: string,
+        _sessionToken: string,
+        request: {
+          body: string;
+          itineraryItemId: string;
+          tripPlanId?: string | null;
+        },
+      ) =>
+        Promise.resolve({
+          id: "api-quick-note",
+          tripId: apiTrip.id,
+          tripPlanId: request.tripPlanId,
+          itemId: request.itineraryItemId,
+          authorId: "member-aom",
+          body: request.body,
+          createdAt: "2026-06-06T00:00:00.000Z",
+          version: 1,
+        }),
+    );
+    const createBookingDoc = vi.fn().mockImplementation(
+      (
+        _tripId: string,
+        _sessionToken: string,
+        request: {
+          relatedItineraryItemIds: string[];
+          title: string;
+          tripPlanId?: string | null;
+          type: BookingDoc["type"];
+        },
+      ) =>
+        Promise.resolve({
+          id: "api-quick-booking",
+          tripId: apiTrip.id,
+          tripPlanId: request.tripPlanId,
+          type: request.type,
+          title: request.title,
+          status: "draft",
+          visibility: "shared",
+          ownerMemberId: "member-aom",
+          providerName: null,
+          confirmationCode: null,
+          startsAt: null,
+          endsAt: null,
+          timezone: null,
+          priceAmount: null,
+          currency: null,
+          travelerIds: apiTrip.members.map((member) => member.id),
+          externalLinks: [],
+          relatedItineraryItemIds: request.relatedItineraryItemIds,
+          relatedTaskIds: [],
+          relatedExpenseIds: [],
+          noteIds: [],
+          notes: null,
+          createdBy: "member-aom",
+          updatedAt: "2026-06-06T00:00:00.000Z",
+          version: 1,
+        }),
+    );
+    const patchBookingDoc = vi.fn().mockImplementation(
+      (
+        _tripId: string,
+        _bookingDocId: string,
+        _sessionToken: string,
+        request: {
+          expectedVersion: number;
+          patch: Partial<BookingDoc>;
+        },
+      ) =>
+        Promise.resolve({
+          id: "api-quick-booking",
+          tripId: apiTrip.id,
+          tripPlanId: "plan-variant-backup",
+          type: request.patch.type ?? "activity_ticket",
+          title: request.patch.title ?? "Rain plan gallery booking draft",
+          status: request.patch.status ?? "draft",
+          visibility: request.patch.visibility ?? "shared",
+          ownerMemberId: request.patch.ownerMemberId ?? "member-aom",
+          providerName: request.patch.providerName ?? null,
+          confirmationCode: request.patch.confirmationCode ?? null,
+          startsAt: request.patch.startsAt ?? null,
+          endsAt: request.patch.endsAt ?? null,
+          timezone: request.patch.timezone ?? null,
+          priceAmount: request.patch.priceAmount ?? null,
+          currency: request.patch.currency ?? null,
+          travelerIds: request.patch.travelerIds ?? apiTrip.members.map((member) => member.id),
+          externalLinks: request.patch.externalLinks ?? [],
+          relatedItineraryItemIds: request.patch.relatedItineraryItemIds ?? ["item-rain-gallery"],
+          relatedTaskIds: request.patch.relatedTaskIds ?? [],
+          relatedExpenseIds: request.patch.relatedExpenseIds ?? [],
+          noteIds: request.patch.noteIds ?? [],
+          notes: request.patch.notes ?? null,
+          createdBy: "member-aom",
+          updatedAt: "2026-06-06T00:05:00.000Z",
+          version: request.expectedVersion + 1,
+        }),
+    );
+    const apiClient = createApiClientForTrip(apiTrip, {
+      createTask,
+      createStopNote,
+      createBookingDoc,
+      patchBookingDoc,
+      setMainTripPlan: vi.fn(),
+    });
+
+    render(
+      <SagittariusApp
+        requireJoin
+        dataSource="api"
+        initialView="itinerary"
+        apiClient={apiClient}
+      />,
+    );
+    await loginApiTrip(user);
+    await user.selectOptions(await screen.findByLabelText("Trip Plan"), [
+      "plan-variant-backup",
+    ]);
+    const row = await screen.findByRole("row", { name: /Rain plan gallery/i });
+
+    await user.click(
+      within(row).getByRole("button", {
+        name: /Add task for Rain plan gallery/i,
+      }),
+    );
+    await user.click(
+      within(row).getByRole("button", {
+        name: /Add note for Rain plan gallery/i,
+      }),
+    );
+    await user.click(
+      within(row).getByRole("button", {
+        name: /Add booking draft for Rain plan gallery/i,
+      }),
+    );
+    await user.click(screen.getByRole("menuitem", { name: /Recommended/i }));
+
+    await waitFor(() => expect(createBookingDoc).toHaveBeenCalledTimes(1));
+    expect(createTask).toHaveBeenCalledWith(
+      apiTrip.id,
+      "session-token",
+      expect.objectContaining({
+        tripPlanId: "plan-variant-backup",
+        title: "Plan: Rain plan gallery",
+        relatedItemId: "item-rain-gallery",
+      }),
+    );
+    expect(createStopNote).toHaveBeenCalledWith(
+      apiTrip.id,
+      "session-token",
+      expect.objectContaining({
+        tripPlanId: "plan-variant-backup",
+        itineraryItemId: "item-rain-gallery",
+        body: "Planning note for Rain plan gallery",
+      }),
+    );
+    expect(createBookingDoc).toHaveBeenCalledWith(
+      apiTrip.id,
+      "session-token",
+      expect.objectContaining({
+        tripPlanId: "plan-variant-backup",
+        title: "Rain plan gallery booking draft",
+        relatedItineraryItemIds: ["item-rain-gallery"],
+      }),
+    );
+    const context = await screen.findByRole("complementary", {
+      name: /ข้อมูลประกอบการวางแผน/i,
+    });
+    fireEvent.change(
+      within(context).getByLabelText(
+        "ประเภทการจองของ Rain plan gallery booking draft",
+      ),
+      { target: { value: "train" } },
+    );
+
+    await waitFor(() => expect(patchBookingDoc).toHaveBeenCalledTimes(1));
+    expect(patchBookingDoc).toHaveBeenCalledWith(
+      apiTrip.id,
+      "api-quick-booking",
+      "session-token",
+      expect.objectContaining({
+        expectedVersion: 1,
+        patch: expect.objectContaining({
+          type: "train",
+          title: "Rain plan gallery booking draft",
+          relatedItineraryItemIds: ["item-rain-gallery"],
+        }),
+      }),
+    );
+    fireEvent.change(
+      within(context).getByLabelText(
+        "ผู้ให้บริการของ Rain plan gallery booking draft",
+      ),
+      { target: { value: "MTR" } },
+    );
+    fireEvent.blur(
+      within(context).getByLabelText(
+        "ผู้ให้บริการของ Rain plan gallery booking draft",
+      ),
+    );
+
+    await waitFor(() => expect(patchBookingDoc).toHaveBeenCalledTimes(2));
+    expect(patchBookingDoc).toHaveBeenNthCalledWith(
+      2,
+      apiTrip.id,
+      "api-quick-booking",
+      "session-token",
+      expect.objectContaining({
+        expectedVersion: 2,
+        patch: expect.objectContaining({
+          providerName: "MTR",
+          type: "train",
+          title: "Rain plan gallery booking draft",
+          relatedItineraryItemIds: ["item-rain-gallery"],
+        }),
+      }),
+    );
+    fireEvent.change(
+      within(context).getByLabelText(
+        "รหัสอ้างอิงของ Rain plan gallery booking draft",
+      ),
+      { target: { value: "MTR-22" } },
+    );
+    fireEvent.blur(
+      within(context).getByLabelText(
+        "รหัสอ้างอิงของ Rain plan gallery booking draft",
+      ),
+    );
+
+    await waitFor(() => expect(patchBookingDoc).toHaveBeenCalledTimes(3));
+    expect(patchBookingDoc).toHaveBeenNthCalledWith(
+      3,
+      apiTrip.id,
+      "api-quick-booking",
+      "session-token",
+      expect.objectContaining({
+        expectedVersion: 3,
+        patch: expect.objectContaining({
+          confirmationCode: "MTR-22",
+          providerName: "MTR",
+          type: "train",
+          title: "Rain plan gallery booking draft",
+          relatedItineraryItemIds: ["item-rain-gallery"],
+        }),
+      }),
+    );
+    expect(apiClient.setMainTripPlan!).not.toHaveBeenCalled();
+  }, 45_000);
+
+  it("sets the selected API Trip Plan as Main only from the explicit action", async () => {
+    const user = userEvent.setup();
+    const apiTrip = {
+      ...tripWithPlans(),
+      members: [{ ...seedTrip.members[0], claimPasswordHash: null }],
+    };
+    const publishedTrip: Trip = {
+      ...apiTrip,
+      activePlanVariantId: "plan-variant-backup",
+      mainTripPlanId: "plan-variant-backup",
+      planVariants: [],
+      tripPlans: [],
+      version: (apiTrip.version ?? 0) + 1,
+    };
+    const apiClient = createApiClientForTrip(apiTrip, {
+      setMainTripPlan: vi.fn().mockResolvedValue(publishedTrip),
+    });
+
+    render(
+      <SagittariusApp
+        requireJoin
+        dataSource="api"
+        initialView="itinerary"
+        apiClient={apiClient}
+      />,
+    );
+    await loginApiTrip(user);
+
+    await user.selectOptions(await screen.findByLabelText("Trip Plan"), [
+      "plan-variant-backup",
+    ]);
+    expect(apiClient.setMainTripPlan!).not.toHaveBeenCalled();
+
+    await user.click(screen.getByRole("button", { name: "ใช้เป็นแผนหลัก" }));
+
+    await waitFor(() =>
+      expect(apiClient.setMainTripPlan!).toHaveBeenCalledWith(
+        apiTrip.id,
+        "plan-variant-backup",
+        "session-token",
+        expect.objectContaining({ clientMutationId: expect.any(String) }),
+      ),
+    );
+    await waitFor(() =>
+      expect(screen.getByLabelText("Trip Plan")).toHaveValue(
+        "plan-variant-backup",
+      ),
+    );
+    const selector = screen.getByLabelText("Trip Plan") as HTMLSelectElement;
+    const optionLabels = Array.from(selector.options).map(
+      (option) => option.textContent,
+    );
+    expect(
+      optionLabels.some(
+        (label) => label?.includes("Rain Plan") && label.includes("หลัก"),
+      ),
+    ).toBe(true);
+    expect(
+      optionLabels.some(
+        (label) => label?.includes("แผนหลัก") && label.includes("สำรอง"),
+      ),
+    ).toBe(true);
+    expect(
+      screen.getByRole("row", { name: /Rain plan gallery/i }),
+    ).toBeInTheDocument();
+  }, 45_000);
+
+  it("runs API Plan Check for the selected Trip Plan without publishing it", async () => {
+    const user = userEvent.setup();
+    const apiTrip = {
+      ...tripWithPlans(),
+      members: [{ ...seedTrip.members[0], claimPasswordHash: null }],
+    };
+    const runPlanCheck = vi.fn().mockImplementation(
+      (
+        tripId: string,
+        _sessionToken: string,
+        tripPlanId?: string | null,
+      ): Promise<PlanCheck> =>
+        Promise.resolve({
+          id: "plan-check-rain",
+          tripId,
+          tripPlanId: tripPlanId ?? null,
+          createdBy: "member-aom",
+          itineraryFingerprint: "rain-plan-fingerprint",
+          stale: false,
+          status: "complete",
+          languageMetadata: { provider: "rules" },
+          createdAt: "2026-06-10T00:00:00.000Z",
+          completedAt: "2026-06-10T00:00:01.000Z",
+          version: 1,
+          suggestions: [
+            {
+              id: "suggestion-rain",
+              tripId,
+              planCheckId: "plan-check-rain",
+              severity: "warning",
+              scope: "item",
+              targetItemIds: ["item-rain-gallery"],
+              explanation: {
+                en: "Rain plan gallery is missing duration.",
+                th: "Rain plan gallery ยังขาด duration",
+              },
+              recommendedAction: {
+                en: "Add duration.",
+                th: "เพิ่ม duration",
+              },
+              actionKind: "editItem",
+              actionPayload: { itemId: "item-rain-gallery" },
+              status: "pending",
+              snoozedUntil: null,
+              createdAt: "2026-06-10T00:00:00.000Z",
+              updatedAt: "2026-06-10T00:00:00.000Z",
+              version: 1,
+            },
+          ],
+        }),
+    );
+    const patchItineraryItem = vi.fn();
+    const patchPlanSuggestion = vi.fn();
+    const apiClient = createApiClientForTrip(apiTrip, {
+      latestPlanCheck: vi.fn(),
+      patchItineraryItem,
+      patchPlanSuggestion,
+      runPlanCheck,
+      setMainTripPlan: vi.fn(),
+    });
+
+    render(
+      <SagittariusApp
+        requireJoin
+        dataSource="api"
+        initialView="itinerary"
+        apiClient={apiClient}
+      />,
+    );
+    await loginApiTrip(user);
+
+    await user.selectOptions(await screen.findByLabelText("Trip Plan"), [
+      "plan-variant-backup",
+    ]);
+    await user.click(screen.getByRole("button", { name: /Run Plan Check/i }));
+
+    await waitFor(() =>
+      expect(runPlanCheck).toHaveBeenCalledWith(
+        apiTrip.id,
+        "session-token",
+        "plan-variant-backup",
+      ),
+    );
+    expect(apiClient.latestPlanCheck!).not.toHaveBeenCalled();
+    expect(apiClient.setMainTripPlan!).not.toHaveBeenCalled();
+    expect(
+      await screen.findByText(/Rain plan gallery ยังขาด duration/i),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Keep reviewing" })).toBeEnabled();
+
+    await user.click(screen.getByRole("button", { name: "Keep reviewing" }));
+    expect(screen.getByText("pending")).toBeInTheDocument();
+    expect(patchItineraryItem).not.toHaveBeenCalled();
+    expect(patchPlanSuggestion).not.toHaveBeenCalled();
+
+    await user.click(screen.getByRole("button", { name: "Review edit" }));
+    expect(
+      await screen.findByRole("dialog", { name: /แก้ไขรายละเอียด/i }),
+    ).toBeInTheDocument();
+    expect(patchItineraryItem).not.toHaveBeenCalled();
+    expect(patchPlanSuggestion).not.toHaveBeenCalled();
+  }, 45_000);
+
+  it("reloads cockpit state when API Trip Plan publish hits a version conflict", async () => {
+    const user = userEvent.setup();
+    const apiTrip = {
+      ...tripWithPlans(),
+      members: [{ ...seedTrip.members[0], claimPasswordHash: null }],
+    };
+    const reloadedPlan: PlanVariant = {
       id: "plan-variant-reloaded",
       tripId: apiTrip.id,
-      name: "Reloaded Sheet",
+      name: "Reloaded Plan",
       kind: "draft",
+      status: "draft",
       description: "",
       version: 3,
     };
     const reloadedTrip: Trip = {
       ...apiTrip,
-      activePlanVariantId: reloadedSheet.id,
-      planVariants: [...apiTrip.planVariants, reloadedSheet],
+      activePlanVariantId: reloadedPlan.id,
+      mainTripPlanId: reloadedPlan.id,
+      planVariants: [...apiTrip.planVariants, reloadedPlan],
+      tripPlans: [...(apiTrip.tripPlans ?? apiTrip.planVariants), reloadedPlan],
       itineraryItems: [
         {
           ...apiTrip.itineraryItems[0],
-          id: "item-reloaded-sheet",
-          planVariantId: reloadedSheet.id,
-          activity: "Reloaded sheet stop",
+          id: "item-reloaded-plan",
+          planVariantId: reloadedPlan.id,
+          activity: "Reloaded plan stop",
         },
       ],
       version: (apiTrip.version ?? 0) + 2,
@@ -4524,10 +6700,10 @@ describe("Sagittarius cockpit UI", () => {
         tasks: [],
         stopNotes: [],
         expenseSummary: null,
-      });
+    });
     const apiClient = createApiClientForTrip(apiTrip, {
       loadTrip,
-      publishPlanVariant: vi.fn().mockRejectedValue(
+      setMainTripPlan: vi.fn().mockRejectedValue(
         new TripApiError({
           code: "version_conflict",
           message: "version conflict",
@@ -4546,11 +6722,12 @@ describe("Sagittarius cockpit UI", () => {
     );
     await loginApiTrip(user);
 
-    await user.selectOptions(await screen.findByLabelText("Trip Sheet"), [
+    await user.selectOptions(await screen.findByLabelText("Trip Plan"), [
       "plan-variant-backup",
     ]);
+    await user.click(screen.getByRole("button", { name: "ใช้เป็นแผนหลัก" }));
 
-    expect(apiClient.publishPlanVariant).toHaveBeenCalledWith(
+    expect(apiClient.setMainTripPlan!).toHaveBeenCalledWith(
       apiTrip.id,
       "plan-variant-backup",
       "session-token",
@@ -4558,12 +6735,12 @@ describe("Sagittarius cockpit UI", () => {
     );
     await waitFor(() => expect(loadTrip.mock.calls.length).toBeGreaterThanOrEqual(2));
     await waitFor(() =>
-      expect(screen.getByLabelText("Trip Sheet")).toHaveValue(
-        reloadedSheet.id,
+      expect(screen.getByLabelText("Trip Plan")).toHaveValue(
+        reloadedPlan.id,
       ),
     );
     expect(
-      screen.getByRole("row", { name: /Reloaded sheet stop/i }),
+      screen.getByRole("row", { name: /Reloaded plan stop/i }),
     ).toBeInTheDocument();
   }, 45_000);
 
@@ -4687,9 +6864,8 @@ describe("Sagittarius cockpit UI", () => {
     );
     await user.clear(within(dialog).getByLabelText(/สถานที่/i));
     await user.type(within(dialog).getByLabelText(/สถานที่/i), "K11 Musea");
-    await user.clear(within(dialog).getByLabelText(/^ชั่วโมง$/i));
-    await user.type(within(dialog).getByLabelText(/^ชั่วโมง$/i), "0");
-    await user.selectOptions(within(dialog).getByLabelText(/^นาที$/i), "45");
+    await user.clear(within(dialog).getByLabelText(/^เวลาจบ$/i));
+    await user.type(within(dialog).getByLabelText(/^เวลาจบ$/i), "18:15");
     await user.clear(within(dialog).getByLabelText(/การเดินทาง/i));
     await user.type(within(dialog).getByLabelText(/การเดินทาง/i), "เดิน");
     await user.click(
@@ -4703,9 +6879,20 @@ describe("Sagittarius cockpit UI", () => {
         name: /เลือกจุด Coffee break at K11 Musea/i,
       });
     expect(newStopSelector).toBeInTheDocument();
+    const persistedTrip = JSON.parse(localStorage.getItem(tripStorageKey)!) as Trip;
+    expect(
+      persistedTrip.itineraryItems.find(
+        (item) => item.activity === "Coffee break at K11 Musea",
+      ),
+    ).toMatchObject({
+      startTime: "16:45",
+      endTime: "18:15",
+      endOffsetDays: 0,
+      durationMinutes: 90,
+    });
     expect(
       screen.getByRole("button", {
-        name: /Coffee break at K11 Musea on Plan A/i,
+        name: /Coffee break at K11 Musea on Main/i,
       }),
     ).toBeInTheDocument();
     await user.click(newStopSelector);
@@ -4734,9 +6921,8 @@ describe("Sagittarius cockpit UI", () => {
     );
     await user.clear(within(dialog).getByLabelText(/สถานที่/i));
     await user.type(within(dialog).getByLabelText(/สถานที่/i), "K11 Musea");
-    await user.clear(within(dialog).getByLabelText(/^ชั่วโมง$/i));
-    await user.type(within(dialog).getByLabelText(/^ชั่วโมง$/i), "0");
-    await user.selectOptions(within(dialog).getByLabelText(/^นาที$/i), "45");
+    await user.clear(within(dialog).getByLabelText(/^เวลาจบ$/i));
+    await user.type(within(dialog).getByLabelText(/^เวลาจบ$/i), "17:30");
     await user.click(
       within(dialog).getByRole("button", { name: /บันทึกกิจกรรม/i }),
     );
@@ -4794,7 +6980,10 @@ describe("Sagittarius cockpit UI", () => {
         name: /เลือกจุด Promoted after demote coffee/i,
       }),
     ).toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: /ปิดรายละเอียด/i }));
+    const closeDetails = screen.queryByRole("button", {
+      name: /ปิดรายละเอียด/i,
+    });
+    if (closeDetails) await user.click(closeDetails);
     await user.click(
       screen.getByRole("button", { name: /เลือกจุด เดินเล่นย่าน Central/i }),
     );
@@ -4824,7 +7013,7 @@ describe("Sagittarius cockpit UI", () => {
     ).toBeInTheDocument();
   });
 
-  it("keeps a generated day plan visible in the graph and selectable from the matching day path selector", async () => {
+  it("keeps a newly added day item on main until an alternative path is chosen explicitly", async () => {
     const user = userEvent.setup();
     render(<SagittariusApp initialView="itinerary" />);
 
@@ -4852,31 +7041,18 @@ describe("Sagittarius cockpit UI", () => {
       }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: /Day filter coffee on Plan A/i }),
+      screen.getByRole("button", { name: /Day filter coffee on Main/i }),
     ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /Day filter coffee on Plan A/i }),
+    ).not.toBeInTheDocument();
     await user.click(
       screen.getByRole("button", { name: /กรองแผน|แสดงตัวกรอง/i }),
     );
-    expect(screen.getByLabelText("Plan A")).toBeInTheDocument();
-
-    await user.click(screen.getByRole("button", { name: /Path for Day 2/i }));
-    await user.click(
-      within(
-        screen.getByRole("listbox", { name: /Path for Day 2/i }),
-      ).getByRole("option", { name: "Plan A" }),
-    );
-
+    expect(screen.queryByLabelText("Plan A")).not.toBeInTheDocument();
     expect(
-      await screen.findByRole("button", {
-        name: /เลือกจุด Day filter coffee/i,
-      }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: /Path for Day 2/i }),
-    ).toHaveTextContent("Plan A");
-    expect(
-      screen.getByRole("button", { name: /เลือกจุด เดินเล่นย่าน Central/i }),
-    ).toBeInTheDocument();
+      screen.queryByRole("button", { name: /Path for Day 2/i }),
+    ).not.toBeInTheDocument();
   });
 
   it("adds a new itinerary stop into the selected item's day", async () => {
@@ -4903,7 +7079,8 @@ describe("Sagittarius cockpit UI", () => {
       within(dialog).getByLabelText(/สถานที่/i),
       "Shenzhen Garden",
     );
-    await user.selectOptions(within(dialog).getByLabelText(/^นาที$/i), "30");
+    await user.clear(within(dialog).getByLabelText(/^เวลาจบ$/i));
+    await user.type(within(dialog).getByLabelText(/^เวลาจบ$/i), "17:15");
     await user.clear(within(dialog).getByLabelText(/การเดินทาง/i));
     await user.type(within(dialog).getByLabelText(/การเดินทาง/i), "เดิน");
     await user.click(
@@ -5192,8 +7369,18 @@ function createApiClientForTrip(
     createMember: vi.fn(),
     patchMember: vi.fn(),
     resetMemberClaim: vi.fn(),
-    getExpenseSummary: vi.fn(),
-    recordExpenseReminder: vi.fn(),
+    getExpenseSummary: vi.fn().mockResolvedValue({
+      groupSpend: 0,
+      netByMember: {},
+      currentUserNetLabel: "settled",
+      settlementSuggestions: [],
+    }),
+    recordExpenseReminder: vi.fn().mockResolvedValue({
+      groupSpend: 0,
+      netByMember: {},
+      currentUserNetLabel: "settled",
+      settlementSuggestions: [],
+    }),
     createExpense: vi
       .fn()
       .mockImplementation(

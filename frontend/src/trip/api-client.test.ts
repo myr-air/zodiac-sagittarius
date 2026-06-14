@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { createTripApiClient, mapCockpitResponse, type TripCockpitResponse } from "./api-client";
+import { createTripApiClient, mapCockpitResponse, TripApiError, type TripCockpitResponse } from "./api-client";
 
 const cockpitResponse: TripCockpitResponse = {
   trip: {
@@ -45,6 +45,18 @@ const cockpitResponse: TripCockpitResponse = {
       tripId: "018f4e80-5788-7de0-a45c-8a555d17fc2d",
       name: "Main",
       kind: "main",
+      status: "main",
+      description: "Primary plan",
+      version: 1,
+    },
+  ],
+  tripPlans: [
+    {
+      id: "018f4e82-3000-7c00-b111-000000000001",
+      tripId: "018f4e80-5788-7de0-a45c-8a555d17fc2d",
+      name: "Main",
+      kind: "main",
+      status: "main",
       description: "Primary plan",
       version: 1,
     },
@@ -61,6 +73,8 @@ const cockpitResponse: TripCockpitResponse = {
       day: "2025-05-16",
       sortOrder: 100,
       startTime: "08:30",
+      endTime: "09:30",
+      endOffsetDays: 0,
       activity: "Dim Dim Sum",
       activityType: "food",
       place: "The Elements",
@@ -83,6 +97,7 @@ const cockpitResponse: TripCockpitResponse = {
     {
       id: "018f4e83-5410-7d8b-8f25-fd52c5e7bd30",
       tripId: "018f4e80-5788-7de0-a45c-8a555d17fc2d",
+      tripPlanId: "018f4e82-3000-7c00-b111-000000000001",
       itemId: "018f4e83-5410-7d8b-8f25-fd52c5e7bd1f",
       authorId: "018f4e81-77a4-7b8f-b3bd-0d0f493ac561",
       body: "Bring voucher",
@@ -95,6 +110,7 @@ const cockpitResponse: TripCockpitResponse = {
     {
       id: "018f4e86-1111-7000-8000-000000000001",
       tripId: "018f4e80-5788-7de0-a45c-8a555d17fc2d",
+      tripPlanId: "018f4e82-3000-7c00-b111-000000000001",
       title: "Dim sum breakfast",
       amountMinor: 24000,
       currency: "HKD",
@@ -121,6 +137,7 @@ const cockpitResponse: TripCockpitResponse = {
     {
       id: "018f4e84-1111-7000-8000-000000000001",
       tripId: "018f4e80-5788-7de0-a45c-8a555d17fc2d",
+      tripPlanId: "018f4e82-3000-7c00-b111-000000000001",
       title: "Buy eSIM",
       status: "open",
       visibility: "private",
@@ -141,6 +158,7 @@ const cockpitResponse: TripCockpitResponse = {
     {
       id: "booking-api-flight",
       tripId: "018f4e80-5788-7de0-a45c-8a555d17fc2d",
+      tripPlanId: "018f4e82-3000-7c00-b111-000000000001",
       type: "flight",
       title: "API flight voucher",
       status: "confirmed",
@@ -240,6 +258,7 @@ describe("Trip API client", () => {
     expect(cockpit.tasks).toEqual([
       {
         id: cockpitResponse.tasks[0].id,
+        tripPlanId: cockpitResponse.planVariants![0].id,
         title: "Buy eSIM",
         status: "open",
         visibility: "private",
@@ -253,6 +272,7 @@ describe("Trip API client", () => {
     expect(cockpit.stopNotes).toEqual(cockpitResponse.stopNotes);
     expect(cockpit.trip.expenses[0]).toMatchObject({
       id: cockpitResponse.expenses[0].id,
+      tripPlanId: cockpitResponse.planVariants![0].id,
       amount: 240,
       splits: { "018f4e81-77a4-7b8f-b3bd-0d0f493ac561": 240 },
     });
@@ -261,9 +281,12 @@ describe("Trip API client", () => {
       pathId: "path-rain",
       pathName: "Rain plan",
       pathRole: "alternative",
+      endTime: "09:30",
+      endOffsetDays: 0,
     });
     expect(cockpit.trip.bookingDocs?.[0]).toMatchObject({
       id: "booking-api-flight",
+      tripPlanId: cockpitResponse.planVariants![0].id,
       externalLinks: [{ id: "booking-api-flight-link", label: "Drive", url: "https://drive.google.com/api-flight", provider: "Google Drive" }],
     });
     expect(cockpit.trip.photoAlbumLinks?.[0]).toMatchObject({
@@ -314,6 +337,35 @@ describe("Trip API client", () => {
         activePlanVariantId: cockpitResponse.trip.activePlanVariantId,
       },
       items: [],
+      records: {
+        expenses: [
+          {
+            id: "import-expense",
+            tripId: cockpitResponse.trip.id,
+            tripPlanId: cockpitResponse.trip.activePlanVariantId,
+            title: "Imported ticket receipt",
+            amount: 120,
+            paidBy: "018f4e81-77a4-7b8f-b3bd-0d0f493ac561",
+            splits: { "018f4e81-77a4-7b8f-b3bd-0d0f493ac561": 120 },
+            category: "tickets",
+            itineraryItemId: "import-flight-block",
+          },
+        ],
+        bookingDocs: [],
+        stopNotes: [],
+        tasks: [],
+      },
+    };
+    const normalizedDocument = {
+      ...document,
+      trip: {
+        ...document.trip,
+        mainTripPlanId: cockpitResponse.trip.activePlanVariantId,
+        planVariants: [],
+        tripPlans: [],
+        partySize: undefined,
+        defaultTimezone: undefined,
+      },
     };
     const fetchImpl = vi.fn().mockResolvedValueOnce(jsonResponse(document));
     const client = createTripApiClient({ baseUrl: "https://api.example.test", fetchImpl });
@@ -323,7 +375,7 @@ describe("Trip API client", () => {
       contentType: "text/markdown",
       mode: "auto",
       content: "09:00 breakfast at Central",
-    })).resolves.toEqual(document);
+    })).resolves.toEqual(normalizedDocument);
 
     expect(fetchImpl).toHaveBeenCalledWith(
       `https://api.example.test/api/v1/trips/${cockpitResponse.trip.id}/itinerary-imports`,
@@ -558,20 +610,24 @@ describe("Trip API client", () => {
 
   it("uses default fetch and fills partial backend error bodies", async () => {
     const fetchImpl = vi.fn().mockResolvedValueOnce(jsonResponse({ code: "forbidden" }, 403));
-    vi.stubGlobal("fetch", fetchImpl);
-    const client = createTripApiClient();
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = fetchImpl as unknown as typeof fetch;
+    try {
+      const client = createTripApiClient();
 
-    await expect(client.joinTrip({ joinId: "HK-SZ-2025", password: "seed-trip-pass" })).rejects.toMatchObject({
-      code: "forbidden",
-      message: "request failed with 403",
-      status: 403,
-    });
+      await expect(client.joinTrip({ joinId: "HK-SZ-2025", password: "seed-trip-pass" })).rejects.toMatchObject({
+        code: "forbidden",
+        message: "request failed with 403",
+        status: 403,
+      });
 
-    expect(fetchImpl).toHaveBeenCalledWith(
-      "/api/v1/trip-join-sessions",
-      expect.objectContaining({ method: "POST" }),
-    );
-    vi.unstubAllGlobals();
+      expect(fetchImpl).toHaveBeenCalledWith(
+        "/api/v1/trip-join-sessions",
+        expect.objectContaining({ method: "POST" }),
+      );
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
   });
 
   it("fills missing backend error codes while preserving messages", async () => {
@@ -624,7 +680,10 @@ describe("Trip API client", () => {
 
   it("resolves and rotates tokenized join invite links through encoded routes", async () => {
     const inviteResponse = {
-      trip: cockpitResponse.trip,
+      trip: {
+        ...cockpitResponse.trip,
+        mainTripPlanId: cockpitResponse.trip.activePlanVariantId,
+      },
       claimableMembers: cockpitResponse.members,
       joinSessionToken: "fresh-join-session-token",
       expiresAt: "2026-06-11T12:00:00.000Z",
@@ -656,14 +715,281 @@ describe("Trip API client", () => {
     );
   });
 
+  it("rejects join and invite Main Plan pointer alias drift", async () => {
+    const driftedJoinResponse = {
+      trip: {
+        ...cockpitResponse.trip,
+        activePlanVariantId: "legacy-main-plan",
+        mainTripPlanId: "canonical-main-plan",
+      },
+      claimableMembers: cockpitResponse.members,
+      joinSessionToken: "join-session-token",
+      expiresAt: "2026-06-11T12:00:00.000Z",
+    };
+    const fetchImpl = vi.fn()
+      .mockResolvedValueOnce(jsonResponse(driftedJoinResponse))
+      .mockResolvedValueOnce(jsonResponse(driftedJoinResponse));
+    const client = createTripApiClient({ baseUrl: "https://api.example.test", fetchImpl });
+
+    await expect(client.joinTrip({ joinId: "HK-SZ-2025", password: "seed-trip-pass" })).rejects.toMatchObject({
+      code: "invalid_response",
+    });
+    await expect(client.resolveJoinInviteToken?.("invite-token")).rejects.toMatchObject({
+      code: "invalid_response",
+    });
+  });
+
   it("falls back to an empty active plan id when the backend has no active or listed variant", () => {
     const cockpit = mapCockpitResponse({
       ...cockpitResponse,
       trip: { ...cockpitResponse.trip, activePlanVariantId: null },
       planVariants: [],
+      tripPlans: [],
     });
 
     expect(cockpit.trip.activePlanVariantId).toBe("");
+  });
+
+  it("maps canonical trip plan fields while preserving legacy plan variant fields", () => {
+    const canonicalPlan = {
+      ...cockpitResponse.planVariants![0],
+      status: "proposal" as const,
+      kind: "split" as const,
+      name: "Client proposal",
+    };
+    const cockpit = mapCockpitResponse({
+      ...cockpitResponse,
+      trip: {
+        ...cockpitResponse.trip,
+        activePlanVariantId: null,
+        mainTripPlanId: canonicalPlan.id,
+      },
+      planVariants: [],
+      tripPlans: [canonicalPlan],
+    });
+
+    expect(cockpit.trip.activePlanVariantId).toBe(canonicalPlan.id);
+    expect(cockpit.trip.mainTripPlanId).toBe(canonicalPlan.id);
+    expect(cockpit.trip.planVariants[0]).toMatchObject({
+      id: canonicalPlan.id,
+      kind: "main",
+      status: "main",
+    });
+    expect(cockpit.trip.tripPlans?.[0]).toMatchObject({
+      id: canonicalPlan.id,
+      status: "main",
+    });
+  });
+
+  it("maps legacy-only plan variants to canonical Trip Plan state", () => {
+    const legacyPlan = {
+      ...cockpitResponse.planVariants![0],
+      kind: "split" as const,
+      status: undefined,
+      name: "Legacy client proposal",
+    };
+    const legacyOnlyResponse = {
+      ...cockpitResponse,
+      trip: {
+        ...cockpitResponse.trip,
+        activePlanVariantId: legacyPlan.id,
+        mainTripPlanId: undefined,
+      },
+      planVariants: [legacyPlan],
+    };
+    delete legacyOnlyResponse.tripPlans;
+
+    const cockpit = mapCockpitResponse(legacyOnlyResponse);
+
+    expect(cockpit.trip.activePlanVariantId).toBe(legacyPlan.id);
+    expect(cockpit.trip.mainTripPlanId).toBe(legacyPlan.id);
+    expect(cockpit.trip.planVariants[0]).toMatchObject({
+      id: legacyPlan.id,
+      kind: "main",
+      status: "main",
+    });
+    expect(cockpit.trip.tripPlans?.[0]).toMatchObject({
+      id: legacyPlan.id,
+      status: "main",
+    });
+  });
+
+  it("maps a canonical-only cockpit payload without legacy planVariants", () => {
+    const canonicalPlan = {
+      ...cockpitResponse.tripPlans![0],
+      id: "018f4e82-3000-7c00-b111-0000000000c1",
+      status: "draft" as const,
+      kind: "draft" as const,
+      name: "Draft route",
+    };
+    const canonicalOnlyResponse = {
+      ...cockpitResponse,
+      trip: {
+        ...cockpitResponse.trip,
+        activePlanVariantId: null,
+        mainTripPlanId: canonicalPlan.id,
+      },
+      tripPlans: [canonicalPlan],
+    };
+    delete canonicalOnlyResponse.planVariants;
+
+    const cockpit = mapCockpitResponse(canonicalOnlyResponse);
+
+    expect(cockpit.trip.activePlanVariantId).toBe(canonicalPlan.id);
+    expect(cockpit.trip.mainTripPlanId).toBe(canonicalPlan.id);
+    expect(cockpit.trip.planVariants).toHaveLength(1);
+    expect(cockpit.trip.planVariants[0]).toMatchObject({
+      id: canonicalPlan.id,
+      kind: "main",
+      status: "main",
+    });
+    expect(cockpit.trip.tripPlans?.[0]).toMatchObject({
+      id: canonicalPlan.id,
+      status: "main",
+    });
+  });
+
+  it("rejects canonical cockpit tripPlans that omit status", () => {
+    const canonicalPlanWithoutStatus = { ...cockpitResponse.tripPlans![0] };
+    delete (canonicalPlanWithoutStatus as Partial<typeof canonicalPlanWithoutStatus>).status;
+
+    expect(() =>
+      mapCockpitResponse({
+        ...cockpitResponse,
+        planVariants: [],
+        tripPlans: [canonicalPlanWithoutStatus as unknown as NonNullable<TripCockpitResponse["tripPlans"]>[number]],
+      }),
+    ).toThrow(TripApiError);
+  });
+
+  it("rejects mixed cockpit Trip Plan aliases when identities or versions drift", () => {
+    const canonicalPlan = {
+      ...cockpitResponse.tripPlans![0],
+      id: "018f4e82-3000-7c00-b111-0000000000c4",
+      kind: "draft" as const,
+      status: "draft" as const,
+      name: "Canonical draft",
+      version: 3,
+    };
+    const staleLegacyPlan = {
+      ...cockpitResponse.planVariants![0],
+      id: "018f4e82-3000-7c00-b111-0000000000c5",
+      kind: "backup" as const,
+      status: "backup" as const,
+      name: "Stale legacy backup",
+      version: 1,
+    };
+
+    expect(() =>
+      mapCockpitResponse({
+        ...cockpitResponse,
+        trip: {
+          ...cockpitResponse.trip,
+          activePlanVariantId: canonicalPlan.id,
+          mainTripPlanId: canonicalPlan.id,
+        },
+        planVariants: [staleLegacyPlan],
+        tripPlans: [canonicalPlan],
+      }),
+    ).toThrow(TripApiError);
+
+    expect(() =>
+      mapCockpitResponse({
+        ...cockpitResponse,
+        trip: {
+          ...cockpitResponse.trip,
+          activePlanVariantId: canonicalPlan.id,
+          mainTripPlanId: canonicalPlan.id,
+        },
+        planVariants: [{ ...canonicalPlan, version: canonicalPlan.version - 1 }],
+        tripPlans: [canonicalPlan],
+      }),
+    ).toThrow(TripApiError);
+  });
+
+  it("rejects mixed cockpit Trip Plan aliases when mapped kind and status drift", () => {
+    const canonicalPlan = {
+      ...cockpitResponse.tripPlans![0],
+      id: "018f4e82-3000-7c00-b111-0000000000c6",
+      kind: "draft" as const,
+      status: "draft" as const,
+      name: "Draft route",
+      version: 3,
+    };
+    const legacyPlan = {
+      ...canonicalPlan,
+      kind: "backup" as const,
+      status: "backup" as const,
+    };
+
+    expect(() =>
+      mapCockpitResponse({
+        ...cockpitResponse,
+        trip: {
+          ...cockpitResponse.trip,
+          activePlanVariantId: cockpitResponse.trip.activePlanVariantId,
+          mainTripPlanId: cockpitResponse.trip.activePlanVariantId ?? undefined,
+        },
+        planVariants: [legacyPlan],
+        tripPlans: [canonicalPlan],
+      }),
+    ).toThrow(TripApiError);
+  });
+
+  it("rejects mixed cockpit Main Plan pointer aliases when they drift", () => {
+    const plan = cockpitResponse.tripPlans![0];
+
+    expect(() =>
+      mapCockpitResponse({
+        ...cockpitResponse,
+        trip: {
+          ...cockpitResponse.trip,
+          activePlanVariantId: "018f4e82-3000-7c00-b111-0000000000d1",
+          mainTripPlanId: plan.id,
+        },
+        planVariants: [plan],
+        tripPlans: [plan],
+      }),
+    ).toThrow(TripApiError);
+  });
+
+  it("keeps the Main Plan pointer authoritative when plan status disagrees", () => {
+    const pointerPlan = {
+      ...cockpitResponse.tripPlans![0],
+      id: "018f4e82-3000-7c00-b111-0000000000c2",
+      kind: "draft" as const,
+      status: "draft" as const,
+      name: "Pointer draft",
+    };
+    const staleStatusPlan = {
+      ...cockpitResponse.tripPlans![0],
+      id: "018f4e82-3000-7c00-b111-0000000000c3",
+      kind: "main" as const,
+      status: "main" as const,
+      name: "Stale status main",
+    };
+
+    const cockpit = mapCockpitResponse({
+      ...cockpitResponse,
+      trip: {
+        ...cockpitResponse.trip,
+        activePlanVariantId: pointerPlan.id,
+        mainTripPlanId: pointerPlan.id,
+      },
+      planVariants: [pointerPlan, staleStatusPlan],
+      tripPlans: [pointerPlan, staleStatusPlan],
+    });
+
+    expect(cockpit.trip.activePlanVariantId).toBe(pointerPlan.id);
+    expect(cockpit.trip.mainTripPlanId).toBe(pointerPlan.id);
+    expect(cockpit.trip.tripPlans?.find((plan) => plan.id === pointerPlan.id)).toMatchObject({
+      kind: "main",
+      status: "main",
+    });
+    expect(cockpit.trip.tripPlans?.find((plan) => plan.id === staleStatusPlan.id)).toMatchObject({
+      kind: "backup",
+      status: "backup",
+    });
   });
 
   it("patches trip metadata through the authenticated trip route", async () => {
@@ -791,12 +1117,13 @@ describe("Trip API client", () => {
     );
   });
 
-  it("creates patches and publishes plan variants through authenticated backend routes", async () => {
+  it("creates patches and sets main trip plans through canonical methods and backend routes", async () => {
     const createdVariant = {
       id: "018f4e82-3000-7c00-b111-000000000099",
       tripId: cockpitResponse.trip.id,
       name: "Rain backup",
       kind: "backup" as const,
+      status: "backup" as const,
       description: "Indoor route",
       version: 1,
     };
@@ -808,6 +1135,7 @@ describe("Trip API client", () => {
     const publishedTrip = {
       ...cockpitResponse.trip,
       activePlanVariantId: createdVariant.id,
+      mainTripPlanId: createdVariant.id,
       version: 2,
     };
     const fetchImpl = vi
@@ -817,24 +1145,25 @@ describe("Trip API client", () => {
       .mockResolvedValueOnce(jsonResponse(publishedTrip));
     const client = createTripApiClient({ baseUrl: "https://api.example.test", fetchImpl });
 
-    const created = await client.createPlanVariant(cockpitResponse.trip.id, "session-token", {
+    const created = await client.createTripPlan!(cockpitResponse.trip.id, "session-token", {
       clientMutationId: "web-plan-create-1",
       name: "Rain backup",
-      kind: "backup",
+      status: "backup",
       description: "Indoor route",
     });
-    const patched = await client.patchPlanVariant(cockpitResponse.trip.id, created.id, "session-token", {
+    const patched = await client.patchTripPlan!(cockpitResponse.trip.id, created.id, "session-token", {
       clientMutationId: "web-plan-patch-1",
       expectedVersion: 1,
       patch: { name: "Rain day backup" },
     });
-    const trip = await client.publishPlanVariant(cockpitResponse.trip.id, created.id, "session-token", {
+    const trip = await client.setMainTripPlan!(cockpitResponse.trip.id, created.id, "session-token", {
       clientMutationId: "web-plan-publish-1",
+      previousMainNextStatus: "backup",
     });
 
     expect(fetchImpl).toHaveBeenNthCalledWith(
       1,
-      `https://api.example.test/api/v1/trips/${cockpitResponse.trip.id}/plan-variants`,
+      `https://api.example.test/api/v1/trips/${cockpitResponse.trip.id}/trip-plans`,
       expect.objectContaining({
         method: "POST",
         headers: expect.objectContaining({ Authorization: "Bearer session-token" }),
@@ -842,7 +1171,7 @@ describe("Trip API client", () => {
     );
     expect(fetchImpl).toHaveBeenNthCalledWith(
       2,
-      `https://api.example.test/api/v1/trips/${cockpitResponse.trip.id}/plan-variants/${createdVariant.id}`,
+      `https://api.example.test/api/v1/trips/${cockpitResponse.trip.id}/trip-plans/${createdVariant.id}`,
       expect.objectContaining({
         method: "PATCH",
         body: JSON.stringify({ clientMutationId: "web-plan-patch-1", expectedVersion: 1, patch: { name: "Rain day backup" } }),
@@ -850,16 +1179,41 @@ describe("Trip API client", () => {
     );
     expect(fetchImpl).toHaveBeenNthCalledWith(
       3,
-      `https://api.example.test/api/v1/trips/${cockpitResponse.trip.id}/plan-variants/${createdVariant.id}/publications`,
+      `https://api.example.test/api/v1/trips/${cockpitResponse.trip.id}/trip-plans/${createdVariant.id}/set-main`,
       expect.objectContaining({
         method: "POST",
-        body: JSON.stringify({ clientMutationId: "web-plan-publish-1" }),
+        body: JSON.stringify({ clientMutationId: "web-plan-publish-1", previousMainNextStatus: "backup" }),
       }),
     );
-    expect(created).toMatchObject({ id: createdVariant.id, kind: "backup", version: 1 });
+    expect(created).toMatchObject({ id: createdVariant.id, kind: "backup", status: "backup", version: 1 });
     expect(patched).toMatchObject({ name: "Rain day backup", version: 2 });
     expect(trip.activePlanVariantId).toBe(createdVariant.id);
+    expect(trip.mainTripPlanId).toBe(createdVariant.id);
     expect(trip.version).toBe(2);
+  });
+
+  it("rejects canonical trip plan route responses that omit status", async () => {
+    const legacyShapedVariant = {
+      id: "018f4e82-3000-7c00-b111-000000000098",
+      tripId: cockpitResponse.trip.id,
+      name: "Legacy-shaped proposal",
+      kind: "split" as const,
+      description: "Compatibility response",
+      version: 1,
+    };
+    const fetchImpl = vi.fn().mockResolvedValueOnce(jsonResponse(legacyShapedVariant, 201));
+    const client = createTripApiClient({ baseUrl: "https://api.example.test", fetchImpl });
+
+    await expect(
+      client.createTripPlan!(cockpitResponse.trip.id, "session-token", {
+        clientMutationId: "web-plan-create-legacy-shaped",
+        name: "Legacy-shaped proposal",
+        kind: "split",
+      }),
+    ).rejects.toMatchObject({
+      code: "invalid_response",
+      status: 0,
+    });
   });
 
   it("patches itinerary items and creates or resolves suggestions through authenticated backend routes", async () => {
@@ -872,7 +1226,7 @@ describe("Trip API client", () => {
     const createdSuggestion = {
       id: "018f4e85-1111-7000-8000-000000000001",
       tripId: cockpitResponse.trip.id,
-      planVariantId: cockpitResponse.trip.activePlanVariantId ?? cockpitResponse.planVariants[0].id,
+      planVariantId: cockpitResponse.trip.activePlanVariantId ?? cockpitResponse.planVariants![0].id,
       proposerId: cockpitResponse.members[0].id,
       type: "edit",
       targetItemId: patchedItem.id,
@@ -900,7 +1254,7 @@ describe("Trip API client", () => {
       clientMutationId: "web-suggestion-1",
       type: "edit",
       targetItemId: patchedItem.id,
-      planVariantId: cockpitResponse.trip.activePlanVariantId ?? cockpitResponse.planVariants[0].id,
+      planVariantId: cockpitResponse.trip.activePlanVariantId ?? cockpitResponse.planVariants![0].id,
       sourceVersion: 5,
       proposedPatch: { note: "Book ahead" },
     });
@@ -1039,6 +1393,7 @@ describe("Trip API client", () => {
     const patchRequest = {
       clientMutationId: "web-expense-2",
       expectedVersion: 1,
+      tripPlanId: cockpitResponse.trip.activePlanVariantId,
       title: "Taxi edited",
       amountMinor: 15000,
       currency: "CNY",
@@ -1150,6 +1505,76 @@ describe("Trip API client", () => {
     });
   });
 
+  it("scopes expense summaries and reminders to the selected Trip Plan", async () => {
+    const selectedTripPlanId = "plan-rain";
+    const scopedSummary = {
+      groupSpend: 90,
+      netByMember: {
+        [cockpitResponse.members[0].id]: 45,
+        [cockpitResponse.members[1].id]: -45,
+      },
+      currentUserNetLabel: "You owe HK$45.00",
+      settlementSuggestions: [],
+    };
+    const reminderSummary = {
+      ...scopedSummary,
+      settlementSuggestions: [
+        {
+          from: cockpitResponse.members[1].id,
+          to: cockpitResponse.members[0].id,
+          amount: 45,
+          lastRemindedAt: "2026-06-05T12:00:00.000Z",
+        },
+      ],
+    };
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValueOnce(jsonResponse(scopedSummary))
+      .mockResolvedValueOnce(jsonResponse(reminderSummary));
+    const client = createTripApiClient({ baseUrl: "https://api.example.test", fetchImpl });
+    const request = {
+      clientMutationId: "web-expense-reminder-scoped",
+      from: cockpitResponse.members[1].id,
+      to: cockpitResponse.members[0].id,
+      amountMinor: 4500,
+    };
+
+    const summary = await client.getExpenseSummary(
+      cockpitResponse.trip.id,
+      "session-token",
+      selectedTripPlanId,
+    );
+    const reminded = await client.recordExpenseReminder(
+      cockpitResponse.trip.id,
+      "session-token",
+      request,
+      selectedTripPlanId,
+    );
+
+    expect(fetchImpl).toHaveBeenNthCalledWith(
+      1,
+      `https://api.example.test/api/v1/trips/${cockpitResponse.trip.id}/expenses/summary?tripPlanId=${selectedTripPlanId}`,
+      expect.objectContaining({
+        method: "GET",
+        headers: expect.objectContaining({ Authorization: "Bearer session-token" }),
+      }),
+    );
+    expect(fetchImpl).toHaveBeenNthCalledWith(
+      2,
+      `https://api.example.test/api/v1/trips/${cockpitResponse.trip.id}/expenses/reminders?tripPlanId=${selectedTripPlanId}`,
+      expect.objectContaining({
+        method: "POST",
+        headers: expect.objectContaining({ Authorization: "Bearer session-token" }),
+        body: JSON.stringify(request),
+      }),
+    );
+    expect(summary.groupSpend).toBe(90);
+    expect(reminded.settlementSuggestions[0]).toMatchObject({
+      amount: 45,
+      lastRemindedAt: "2026-06-05T12:00:00.000Z",
+    });
+  });
+
   it("lists and patches daily briefings through authenticated backend routes", async () => {
     const briefing = {
       tripId: cockpitResponse.trip.id,
@@ -1256,6 +1681,7 @@ describe("Trip API client", () => {
     const planCheck = {
       id: "plan-check-1",
       tripId: cockpitResponse.trip.id,
+      tripPlanId: cockpitResponse.trip.activePlanVariantId,
       createdBy: cockpitResponse.members[0].id,
       itineraryFingerprint: "abc",
       stale: false,
@@ -1289,8 +1715,8 @@ describe("Trip API client", () => {
       .mockResolvedValueOnce(jsonResponse(patchedSuggestion));
     const client = createTripApiClient({ baseUrl: "https://api.example.test", fetchImpl });
 
-    await expect(client.runPlanCheck?.(cockpitResponse.trip.id, "session-token")).resolves.toEqual(planCheck);
-    await expect(client.latestPlanCheck?.(cockpitResponse.trip.id, "session-token")).resolves.toEqual(planCheck);
+    await expect(client.runPlanCheck?.(cockpitResponse.trip.id, "session-token", cockpitResponse.trip.activePlanVariantId)).resolves.toEqual(planCheck);
+    await expect(client.latestPlanCheck?.(cockpitResponse.trip.id, "session-token", cockpitResponse.trip.activePlanVariantId)).resolves.toEqual(planCheck);
     await expect(client.patchPlanSuggestion?.(cockpitResponse.trip.id, "suggestion-1", "session-token", {
       expectedVersion: 1,
       status: "dismissed",
@@ -1298,12 +1724,12 @@ describe("Trip API client", () => {
 
     expect(fetchImpl).toHaveBeenNthCalledWith(
       1,
-      `https://api.example.test/api/v1/trips/${cockpitResponse.trip.id}/plan-checks`,
+      `https://api.example.test/api/v1/trips/${cockpitResponse.trip.id}/plan-checks?tripPlanId=${cockpitResponse.trip.activePlanVariantId}`,
       expect.objectContaining({ method: "POST" }),
     );
     expect(fetchImpl).toHaveBeenNthCalledWith(
       2,
-      `https://api.example.test/api/v1/trips/${cockpitResponse.trip.id}/plan-checks/latest`,
+      `https://api.example.test/api/v1/trips/${cockpitResponse.trip.id}/plan-checks/latest?tripPlanId=${cockpitResponse.trip.activePlanVariantId}`,
       expect.objectContaining({ method: "GET" }),
     );
     expect(fetchImpl).toHaveBeenNthCalledWith(

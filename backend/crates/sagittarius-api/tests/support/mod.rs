@@ -14,6 +14,7 @@ pub const ALT_PLAN_ID: &str = "018f4e82-3000-7c00-b111-000000000002";
 pub const ITEM_ID: &str = "018f4e83-5410-7d8b-8f25-fd52c5e7bd1f";
 pub const STOP_NOTE_ID: &str = "018f4e83-5410-7d8b-8f25-fd52c5e7bd30";
 pub const EXPENSE_ID: &str = "018f4e86-1111-7000-8000-000000000001";
+pub const BOOKING_DOC_ID: &str = "018f4e87-2222-7000-8000-000000000001";
 
 pub fn app(pool: PgPool) -> Router {
     sagittarius_api::api::router(sagittarius_api::app::AppState::with_pool_for_tests(pool))
@@ -80,11 +81,11 @@ pub async fn seed_trip(pool: &PgPool) {
     .unwrap();
     sqlx::query(
         "insert into itinerary_items (
-           id, trip_id, plan_variant_id, day, sort_order, start_time, activity, activity_type,
-           place, map_link, duration_minutes, transportation, note, created_by, version
+           id, trip_id, plan_variant_id, is_plan_block, day, sort_order, start_time, activity,
+           activity_type, place, map_link, duration_minutes, transportation, note, created_by, version
          )
          values (
-           $1, $2, $3, '2025-05-16', 100, '08:30', 'Dim Dim Sum', 'food',
+           $1, $2, $3, true, '2025-05-16', 100, '08:30', 'Dim Dim Sum', 'food',
            'The Elements', 'https://maps.google.com', 60, 'walk', 'breakfast', $4, 4
          )",
     )
@@ -192,16 +193,17 @@ pub async fn stored_member_session_expires_at(
 pub async fn seed_tasks(pool: &PgPool) {
     sqlx::query(
         "insert into trip_tasks (
-           id, trip_id, title, status, visibility, kind, created_by, assignee_id
+           id, trip_id, trip_plan_id, title, status, visibility, kind, created_by, assignee_id
          )
          values
-           (gen_random_uuid(), $1, 'Buy eSIM', 'open', 'private', 'prep', $2, $2),
-           (gen_random_uuid(), $1, 'Book Peak Tram', 'done', 'shared', 'booking', $3, $3),
-           (gen_random_uuid(), $1, 'Private owner task', 'open', 'private', 'prep', $3, $3)",
+           (gen_random_uuid(), $1, $4, 'Buy eSIM', 'open', 'private', 'prep', $2, $2),
+           (gen_random_uuid(), $1, $4, 'Book Peak Tram', 'done', 'shared', 'booking', $3, $3),
+           (gen_random_uuid(), $1, $4, 'Private owner task', 'open', 'private', 'prep', $3, $3)",
     )
     .bind(Uuid::parse_str(TRIP_ID).unwrap())
     .bind(Uuid::parse_str(TRAVELER_ID).unwrap())
     .bind(Uuid::parse_str(ORGANIZER_ID).unwrap())
+    .bind(Uuid::parse_str(PLAN_ID).unwrap())
     .execute(pool)
     .await
     .unwrap();
@@ -209,11 +211,12 @@ pub async fn seed_tasks(pool: &PgPool) {
 
 pub async fn seed_stop_note(pool: &PgPool) {
     sqlx::query(
-        "insert into stop_notes (id, trip_id, itinerary_item_id, author_id, body, version)
-         values ($1, $2, $3, $4, 'Bring printed booking voucher', 2)",
+        "insert into stop_notes (id, trip_id, trip_plan_id, itinerary_item_id, author_id, body, version)
+         values ($1, $2, $3, $4, $5, 'Bring printed booking voucher', 2)",
     )
     .bind(Uuid::parse_str(STOP_NOTE_ID).unwrap())
     .bind(Uuid::parse_str(TRIP_ID).unwrap())
+    .bind(Uuid::parse_str(PLAN_ID).unwrap())
     .bind(Uuid::parse_str(ITEM_ID).unwrap())
     .bind(Uuid::parse_str(TRAVELER_ID).unwrap())
     .execute(pool)
@@ -226,12 +229,13 @@ pub async fn seed_expense(pool: &PgPool) {
     let traveler_id = Uuid::parse_str(TRAVELER_ID).unwrap();
     sqlx::query(
         "insert into expenses (
-           id, trip_id, title, amount_minor, currency, paid_by, category, splits, itinerary_item_id
+           id, trip_id, trip_plan_id, title, amount_minor, currency, paid_by, category, splits, itinerary_item_id
          )
-         values ($1, $2, 'Dim sum breakfast', 24000, 'HKD', $3, 'food', $4, $5)",
+         values ($1, $2, $3, 'Dim sum breakfast', 24000, 'HKD', $4, 'food', $5, $6)",
     )
     .bind(Uuid::parse_str(EXPENSE_ID).unwrap())
     .bind(Uuid::parse_str(TRIP_ID).unwrap())
+    .bind(Uuid::parse_str(PLAN_ID).unwrap())
     .bind(owner_id)
     .bind(serde_json::json!({
         owner_id.to_string(): 12000,
@@ -241,6 +245,67 @@ pub async fn seed_expense(pool: &PgPool) {
     .execute(pool)
     .await
     .unwrap();
+}
+
+pub async fn seed_booking_doc(pool: &PgPool) {
+    sqlx::query(
+        "insert into booking_docs (
+           id, trip_id, trip_plan_id, type, title, status, visibility, owner_member_id,
+           provider_name, confirmation_code, starts_at, ends_at, timezone, price_minor,
+           currency, notes, created_by, version
+         )
+         values (
+           $1, $2, $3, 'flight', 'Main plan flight', 'confirmed', 'shared', $4,
+           'HK Express', 'UO-2026', '2026-06-18T09:00:00+07:00',
+           '2026-06-18T12:00:00+07:00', 'Asia/Bangkok', 240025,
+           'THB', 'Seed booking doc', $4, 1
+         )",
+    )
+    .bind(Uuid::parse_str(BOOKING_DOC_ID).unwrap())
+    .bind(Uuid::parse_str(TRIP_ID).unwrap())
+    .bind(Uuid::parse_str(PLAN_ID).unwrap())
+    .bind(Uuid::parse_str(ORGANIZER_ID).unwrap())
+    .execute(pool)
+    .await
+    .unwrap();
+}
+
+pub async fn seed_alt_plan_item(pool: &PgPool) -> Uuid {
+    let trip_id = Uuid::parse_str(TRIP_ID).unwrap();
+    let alt_plan_id = Uuid::parse_str(ALT_PLAN_ID).unwrap();
+    let owner_id = Uuid::parse_str(OWNER_ID).unwrap();
+    let item_id = Uuid::now_v7();
+
+    let mut tx = pool.begin().await.unwrap();
+    sqlx::query(
+        "insert into plan_variants (id, trip_id, name, kind, status, description)
+         values ($1, $2, 'Airport Timing Draft', 'draft', 'draft', 'Alternate timing plan')",
+    )
+    .bind(alt_plan_id)
+    .bind(trip_id)
+    .execute(&mut *tx)
+    .await
+    .unwrap();
+    sqlx::query(
+        "insert into itinerary_items (
+           id, trip_id, plan_variant_id, day, sort_order, start_time, activity, activity_type,
+           place, duration_minutes, transportation, note, created_by, version
+         )
+         values (
+           $1, $2, $3, '2025-05-16', 200, '09:30', 'Alternate airport transfer', 'travel',
+           'Hong Kong Station', 45, 'train', 'draft plan item', $4, 1
+         )",
+    )
+    .bind(item_id)
+    .bind(trip_id)
+    .bind(alt_plan_id)
+    .bind(owner_id)
+    .execute(&mut *tx)
+    .await
+    .unwrap();
+    tx.commit().await.unwrap();
+
+    item_id
 }
 
 pub async fn insert_event(pool: &PgPool, event_type: &str) -> Uuid {

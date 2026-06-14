@@ -19,6 +19,8 @@ import { OverviewPage } from "@/src/components/OverviewPage";
 import { RouteMapView } from "@/src/components/RouteMapView";
 import {
   SmartItineraryTable,
+  type ItineraryBookingTemplate,
+  type ItineraryCommitmentSummary,
   type InlineItineraryItemPatch,
 } from "@/src/components/SmartItineraryTable";
 import { StopDialog, type StopFormValues } from "@/src/components/StopDialog";
@@ -62,12 +64,14 @@ import {
   buildExpenseSplits,
   buildExpenseSummary,
   expenseSplitsToMinor,
+  filterExpenseRemindersForTripPlan,
   upsertExpenseReminder,
 } from "@/src/trip/expenses";
 import {
   buildItineraryView,
   deriveItineraryPathOptions,
   mainItineraryPathId,
+  parseTime,
   resolveItineraryPathItems,
   type ItineraryPathOption,
   type ItineraryPathSelection,
@@ -76,14 +80,14 @@ import {
   applyImportedItemsToItineraryPath,
   applyItemToActivityBranch,
   applyManualActivityPath,
-  autoResolveSamePathOverlaps,
   deriveManualActivityPathOptions,
   type ItineraryImportApplyTarget,
 } from "@/src/trip/itinerary-paths";
 import {
   buildItineraryExport,
-  parseItineraryImport,
+  parseItineraryImportDocument,
   type ItineraryExportItem,
+  type ItineraryExportRecords,
 } from "@/src/trip/itinerary-import-export";
 import { buildFallbackBriefings } from "@/src/trip/weather-briefings";
 import {
@@ -97,12 +101,14 @@ import { decodeTripId } from "@/src/trip/ids";
 import { approveSuggestion } from "@/src/trip/suggestions";
 import type {
   BookingDoc,
+  BookingDocType,
   DailyBriefingOverrides,
   Expense,
   ExpenseComment,
   ExpenseLineItem,
   ExpenseSummary,
   ItineraryItem,
+  PlanStatus,
   PlanVariant,
   PlaceResolutionCandidate,
   PlaceResolutionRequest,
@@ -157,6 +163,11 @@ const portalLoadingCardClassName =
 interface PendingItineraryImport {
   fileName: string;
   items: ItineraryExportItem[];
+  records: ItineraryExportRecords;
+}
+
+function emptyItineraryExportRecords(): ItineraryExportRecords {
+  return { bookingDocs: [], expenses: [], stopNotes: [], tasks: [] };
 }
 const portalSkeletonBaseClassName =
   "portal-skeleton block overflow-hidden rounded-(--radius-md) bg-[linear-gradient(90deg,var(--color-surface-subtle),rgb(226_232_240_/_0.72),var(--color-surface-subtle))] bg-[length:220%_100%] animate-[portal-skeleton-pulse_1.2s_ease-in-out_infinite] motion-reduce:animate-none";
@@ -273,12 +284,13 @@ export function SagittariusApp({
     past: Trip[];
     future: Trip[];
   }>(() => ({
-    trip: initialTrip,
+    trip: normalizeTripPlanAliases(initialTrip),
     past: [],
     future: [],
   }));
   const latestTripRef = useRef(tripState.trip);
   const inlineUpdateQueueRef = useRef<Map<string, Promise<void>>>(new Map());
+  const bookingDocUpdateQueueRef = useRef<Map<string, Promise<void>>>(new Map());
   const [participantSession, setParticipantSession] =
     useState<TripParticipantSession | null>(null);
   const [isCockpitLoaded, setIsCockpitLoaded] = useState(false);
@@ -305,17 +317,19 @@ export function SagittariusApp({
   const [latestPlanCheck, setLatestPlanCheck] = useState<PlanCheck | null>(null);
   const [planCheckRunning, setPlanCheckRunning] = useState(false);
   const [tasks, setTasks] = useState<TripTask[]>(() =>
-    tripFixtureTasks.map((task) => ({ ...task })),
+    (initialTrip.tasks ?? tripFixtureTasks).map((task) => ({ ...task })),
   );
   const [stopNotes, setStopNotes] = useState<StopNote[]>(() =>
     tripFixtureStopNotes.map((note) => ({ ...note })),
   );
   const [dailyBriefings, setDailyBriefings] = useState<TripDailyBriefing[]>([]);
   const [backendExpenseSummary, setBackendExpenseSummary] =
-    useState<ExpenseSummary | null>(null);
+    useState<{ tripPlanId: string; summary: ExpenseSummary } | null>(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [contextRailOpen, setContextRailOpen] = useState(false);
   const [contextRailMounted, setContextRailMounted] = useState(false);
+  const [contextRailPreferredTab, setContextRailPreferredTab] =
+    useState<"notes" | "booking" | "suggestions">("notes");
   // Auto-dismiss the workspace toast after 6 s when the session is a join-only (temp) session
   useEffect(() => {
     if (!requireJoin || toastDismissed) return;
@@ -326,13 +340,15 @@ export function SagittariusApp({
     return () => clearTimeout(timer);
   }, [requireJoin, toastDismissed]);
   const [navigatedView, setNavigatedView] = useState<PlanningView | null>(null);
-  const selectedPlanVariantId = tripState.trip.activePlanVariantId;
+  const [selectedTripPlanId, setSelectedTripPlanId] = useState(() =>
+    initialSelectedTripPlanId(initialTrip),
+  );
   const [currentMemberId, setCurrentMemberId] = useState(
     initialMemberId ?? initialTrip.members[0].id,
   );
   const [selectedItemId, setSelectedItemId] = useState("item-dimdim");
   const [dialogState, setDialogState] = useState<
-    | { mode: "create"; day?: string }
+    | { mode: "create"; day?: string; parentItemId?: string | null }
     | { mode: "edit"; item: ItineraryItem }
     | null
   >(null);
@@ -345,8 +361,8 @@ export function SagittariusApp({
   const [itineraryImportError, setItineraryImportError] = useState<
     string | null
   >(null);
-  const [tripSheetError, setTripSheetError] = useState<string | null>(null);
-  const [isTripSheetBusy, setIsTripSheetBusy] = useState(false);
+  const [tripPlanError, setTripPlanError] = useState<string | null>(null);
+  const [isTripPlanBusy, setIsTripPlanBusy] = useState(false);
   const [pathSelection, setPathSelection] = useState<ItineraryPathSelection>({
     tripPathId: mainItineraryPathId,
     dayPathOverrides: {},
@@ -397,8 +413,10 @@ export function SagittariusApp({
     currentMember.role,
     "reviewSuggestions",
   );
+  const canViewExpenses = canTripRole(currentMember.role, "viewExpenses");
   const canEditExpenses = canTripRole(currentMember.role, "editExpenses");
   const canManagePeople = canTripRole(currentMember.role, "managePeople");
+  const canManageTripPlans = canTripRole(currentMember.role, "manageTripPlans");
   const canEditBookings = canEdit || canEditExpenses;
   const canEditPhotoAlbums = canTripRole(currentMember.role, "managePhotoAlbums");
   const canCreateStopNote = canCreateSuggestion || canEdit;
@@ -409,10 +427,23 @@ export function SagittariusApp({
   const activePlanItems = useMemo(
     () =>
       trip.itineraryItems.filter(
-        (item) => item.planVariantId === selectedPlanVariantId,
+        (item) => item.planVariantId === selectedTripPlanId,
       ),
-    [selectedPlanVariantId, trip.itineraryItems],
+    [selectedTripPlanId, trip.itineraryItems],
   );
+  useEffect(() => {
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (cancelled) return;
+      setSelectedTripPlanId((current) => {
+        if (trip.planVariants.some((plan) => plan.id === current)) return current;
+        return initialSelectedTripPlanId(trip);
+      });
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [trip]);
   const pathOptions = useMemo(
     () =>
       deriveItineraryPathOptions(activePlanItems, trip.itineraryPaths ?? []),
@@ -444,20 +475,76 @@ export function SagittariusApp({
   const selectedDay =
     selectedItem?.day ?? itineraryView.dayGroups[0]?.day ?? trip.startDate;
   const selectedItemIdForView = selectedItem?.id ?? "";
-  const expenseSummary = useMemo(
+  const scopedTripPlanRecords = useMemo(
     () =>
-      backendExpenseSummary ??
-      buildExpenseSummary(
-        trip.expenses,
+      selectTripPlanRecords(trip, selectedTripPlanId, {
+        stopNotes,
+        tasks,
+      }),
+    [selectedTripPlanId, stopNotes, tasks, trip],
+  );
+  const expenseSummary = useMemo(
+    () => {
+      if (backendExpenseSummary?.tripPlanId === selectedTripPlanId) {
+        return backendExpenseSummary.summary;
+      }
+
+      return buildExpenseSummary(
+        scopedTripPlanRecords.expenses,
         currentMember.id,
-        trip.expenseReminders ?? [],
-      ),
+        filterExpenseRemindersForTripPlan(
+          trip.expenseReminders ?? [],
+          selectedTripPlanId,
+          trip.mainTripPlanId || trip.activePlanVariantId,
+        ),
+      );
+    },
     [
       backendExpenseSummary,
       currentMember.id,
+      selectedTripPlanId,
       trip.expenseReminders,
-      trip.expenses,
+      trip.mainTripPlanId,
+      trip.activePlanVariantId,
+      scopedTripPlanRecords.expenses,
     ],
+  );
+  const scopedTripForRecords = useMemo(
+    () => ({
+      ...trip,
+      bookingDocs: scopedTripPlanRecords.bookingDocs,
+      expenses: scopedTripPlanRecords.expenses,
+      itineraryItems: activePlanItems,
+      stopNotes: scopedTripPlanRecords.stopNotes,
+    }),
+    [
+      activePlanItems,
+      scopedTripPlanRecords.bookingDocs,
+      scopedTripPlanRecords.expenses,
+      scopedTripPlanRecords.stopNotes,
+      trip,
+    ],
+  );
+  const scopedSuggestions = useMemo(
+    () =>
+      suggestions.filter(
+        (suggestion) => suggestion.planVariantId === selectedTripPlanId,
+      ),
+    [selectedTripPlanId, suggestions],
+  );
+  const scopedPlanCheck = useMemo(
+    () => scopePlanCheckToItems(latestPlanCheck, activePlanItems),
+    [activePlanItems, latestPlanCheck],
+  );
+  const itineraryCommitmentsByItemId = useMemo(
+    () =>
+      buildItineraryCommitmentsByItemId({
+        bookingDocs: scopedTripPlanRecords.bookingDocs,
+        expenses: scopedTripPlanRecords.expenses,
+        stopNotes: scopedTripPlanRecords.stopNotes,
+        tasks: scopedTripPlanRecords.tasks,
+      }),
+    [scopedTripPlanRecords],
   );
 
   function changeTripPath(pathId: string) {
@@ -513,7 +600,7 @@ export function SagittariusApp({
     const timeout = window.setTimeout(() => {
       if (cancelled) return;
       const persistedTrip = loadPersistedTrip();
-      const nextTrip = persistedTrip ?? initialTrip;
+      const nextTrip = normalizeTripPlanAliases(persistedTrip ?? initialTrip);
       const persistedSession = loadPersistedParticipantSession(
         requireJoin,
         nextTrip,
@@ -522,7 +609,8 @@ export function SagittariusApp({
       );
 
       if (persistedTrip) {
-        setTripState({ trip: persistedTrip, past: [], future: [] });
+        setTripState({ trip: nextTrip, past: [], future: [] });
+        setSelectedTripPlanId(initialSelectedTripPlanId(nextTrip));
       }
       if (persistedSession) {
         setParticipantSession(persistedSession);
@@ -622,11 +710,13 @@ export function SagittariusApp({
       .loadTrip(participantSession.tripId, participantSession.sessionToken)
       .then((cockpit) => {
         if (cancelled) return;
+        const loadedTripPlanId = initialSelectedTripPlanId(cockpit.trip);
         setTripState({ trip: cockpit.trip, past: [], future: [] });
+        setSelectedTripPlanId(loadedTripPlanId);
         setSuggestions(cockpit.suggestions);
         setTasks(cockpit.tasks);
         setStopNotes(cockpit.stopNotes);
-        setBackendExpenseSummary(cockpit.expenseSummary);
+        setBackendExpenseSummary(null);
         setIsCockpitLoaded(true);
       })
       .catch((caught) => {
@@ -662,6 +752,56 @@ export function SagittariusApp({
       cancelled = true;
     };
   }, [isApiMode, participantSession, resolvedApiClient]);
+
+  useEffect(() => {
+    if (
+      !isApiMode ||
+      !participantSession ||
+      !resolvedApiClient ||
+      !isCockpitLoaded ||
+      !canViewExpenses ||
+      !selectedTripPlanId
+    ) {
+      return undefined;
+    }
+    if (backendExpenseSummary?.tripPlanId === selectedTripPlanId) {
+      return undefined;
+    }
+
+    let cancelled = false;
+    void Promise.resolve(
+      resolvedApiClient.getExpenseSummary(
+        participantSession.tripId,
+        participantSession.sessionToken,
+        selectedTripPlanId,
+      ),
+    )
+      .then((summary) => {
+        if (cancelled || !summary) return;
+        setBackendExpenseSummary({ tripPlanId: selectedTripPlanId, summary });
+      })
+      .catch((caught) => {
+        if (cancelled) return;
+        if (isAuthFailure(caught)) {
+          clearParticipantSession();
+          setParticipantSession(null);
+          setAccessError("unauthenticated");
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    backendExpenseSummary?.tripPlanId,
+    canViewExpenses,
+    clearParticipantSession,
+    isApiMode,
+    isCockpitLoaded,
+    participantSession,
+    resolvedApiClient,
+    selectedTripPlanId,
+  ]);
 
   useEffect(() => {
     if (!isApiMode || !participantSession || !resolvedApiClient)
@@ -766,17 +906,18 @@ export function SagittariusApp({
     };
   }, [contextRailOpen, setContextRailVisibility]);
 
-  async function reloadTripSheetConflict() {
+  async function reloadTripPlanConflict() {
     if (!resolvedApiClient || !participantSession) return;
-    const cockpit = await resolvedApiClient.loadTrip(
-      trip.id,
-      participantSession.sessionToken,
-    );
-    replaceCockpitFromApi(cockpit);
-    latestTripRef.current = cockpit.trip;
-  }
+  const cockpit = await resolvedApiClient.loadTrip(
+    trip.id,
+    participantSession.sessionToken,
+  );
+  replaceCockpitFromApi(cockpit);
+  setSelectedTripPlanId(initialSelectedTripPlanId(cockpit.trip));
+  latestTripRef.current = cockpit.trip;
+}
 
-  function mergePublishedTripSheet(
+  function mergePublishedTripPlan(
     currentTrip: Trip,
     publishedTrip: Trip,
     fallbackActivePlanVariantId: string,
@@ -789,89 +930,107 @@ export function SagittariusApp({
       variantsById.set(variant.id, variant);
     }
     if (createdVariant) variantsById.set(createdVariant.id, createdVariant);
-    return {
+    return normalizeTripPlanAliases({
       ...currentTrip,
       activePlanVariantId:
         publishedTrip.activePlanVariantId || fallbackActivePlanVariantId,
+      mainTripPlanId:
+        publishedTrip.mainTripPlanId ||
+        publishedTrip.activePlanVariantId ||
+        fallbackActivePlanVariantId,
       planVariants: Array.from(variantsById.values()),
+      tripPlans: publishedTrip.tripPlans ?? Array.from(variantsById.values()),
       version: publishedTrip.version ?? currentTrip.version,
-    };
+    });
   }
 
-  async function switchTripSheet(sheetId: string): Promise<boolean> {
-    if (!canEdit || !sheetId || sheetId === selectedPlanVariantId) return false;
-    setTripSheetError(null);
-
-    if (isApiMode && resolvedApiClient && participantSession) {
-      setIsTripSheetBusy(true);
-      try {
-        const publishedTrip = await resolvedApiClient.publishPlanVariant(
-          trip.id,
-          sheetId,
-          participantSession.sessionToken,
-          { clientMutationId: nextClientMutationId("trip-sheet-publish") },
-        );
-        setTripState((current) => {
-          const nextTrip = mergePublishedTripSheet(
-            current.trip,
-            publishedTrip,
-            sheetId,
-          );
-          latestTripRef.current = nextTrip;
-          return { ...current, trip: nextTrip };
-        });
-      } catch (error) {
-        if (
-          error instanceof TripApiError &&
-          error.code === "version_conflict"
-        ) {
-          await reloadTripSheetConflict();
-          return true;
-        }
-        setTripSheetError(t.itinerary.tripSheets.error);
-        return false;
-      } finally {
-        setIsTripSheetBusy(false);
-      }
-      return true;
+  function selectTripPlan(tripPlanId: string): boolean {
+    if (!tripPlanId || !trip.planVariants.some((plan) => plan.id === tripPlanId)) {
+      return false;
     }
-
-    commitTrip((current) => ({ ...current, activePlanVariantId: sheetId }));
+    setSelectedTripPlanId(tripPlanId);
     return true;
   }
 
-  async function createTripSheet(name: string): Promise<boolean> {
-    if (!canEdit) return false;
-    const trimmedName = name.trim();
-    if (!trimmedName) return false;
-    setTripSheetError(null);
+  async function setMainTripPlan(tripPlanId: string): Promise<boolean> {
+    const mainTripPlanId = trip.mainTripPlanId || trip.activePlanVariantId;
+    if (!canManageTripPlans || !tripPlanId || tripPlanId === mainTripPlanId) return false;
+    setTripPlanError(null);
 
     if (isApiMode && resolvedApiClient && participantSession) {
-      setIsTripSheetBusy(true);
+      setIsTripPlanBusy(true);
       try {
-        const createdVariant = await resolvedApiClient.createPlanVariant(
+        const setMainTripPlan =
+          resolvedApiClient.setMainTripPlan ??
+          resolvedApiClient.publishPlanVariant;
+        const publishedTrip = await setMainTripPlan(
           trip.id,
+          tripPlanId,
           participantSession.sessionToken,
-          {
-            clientMutationId: nextClientMutationId("trip-sheet-create"),
-            name: trimmedName,
-            kind: "draft",
-            description: "",
-          },
-        );
-        const publishedTrip = await resolvedApiClient.publishPlanVariant(
-          trip.id,
-          createdVariant.id,
-          participantSession.sessionToken,
-          { clientMutationId: nextClientMutationId("trip-sheet-publish") },
+          { clientMutationId: nextClientMutationId("trip-plan-set-main") },
         );
         setTripState((current) => {
-          const nextTrip = mergePublishedTripSheet(
+          const nextTrip = mergePublishedTripPlan(
             current.trip,
             publishedTrip,
-            createdVariant.id,
-            createdVariant,
+            tripPlanId,
           );
+          latestTripRef.current = nextTrip;
+          return { ...current, trip: nextTrip };
+        });
+        setSelectedTripPlanId(tripPlanId);
+      } catch (error) {
+        if (
+          error instanceof TripApiError &&
+          error.code === "version_conflict"
+        ) {
+          await reloadTripPlanConflict();
+          return true;
+        }
+        setTripPlanError(t.itinerary.tripPlans.error);
+        return false;
+      } finally {
+        setIsTripPlanBusy(false);
+      }
+      return true;
+    }
+
+    commitTrip((current) => ({
+      ...current,
+      activePlanVariantId: tripPlanId,
+      mainTripPlanId: tripPlanId,
+    }));
+    setSelectedTripPlanId(tripPlanId);
+    return true;
+  }
+
+  async function updateTripPlanStatus(
+    tripPlanId: string,
+    status: Exclude<PlanStatus, "main">,
+  ): Promise<boolean> {
+    if (!canManageTripPlans || !tripPlanId) return false;
+    const currentPlan = trip.planVariants.find((plan) => plan.id === tripPlanId);
+    if (!currentPlan || currentPlan.status === "main") return false;
+    setTripPlanError(null);
+
+    if (isApiMode && resolvedApiClient && participantSession) {
+      setIsTripPlanBusy(true);
+      try {
+        const patchTripPlanMutation =
+          resolvedApiClient.patchTripPlan ??
+          resolvedApiClient.patchPlanVariant;
+        const updatedPlan = await patchTripPlanMutation(
+          trip.id,
+          tripPlanId,
+          participantSession.sessionToken,
+          {
+            clientMutationId: nextClientMutationId("trip-plan-status"),
+            expectedVersion: currentPlan.version ?? 1,
+            patch: { status },
+          },
+        );
+        setTripState((current) => {
+          const nextTrip = updateTripPlanInTrip(current.trip, updatedPlan);
           latestTripRef.current = nextTrip;
           return { ...current, trip: nextTrip };
         });
@@ -880,43 +1039,110 @@ export function SagittariusApp({
           error instanceof TripApiError &&
           error.code === "version_conflict"
         ) {
-          await reloadTripSheetConflict();
+          await reloadTripPlanConflict();
           return true;
         }
-        setTripSheetError(t.itinerary.tripSheets.error);
+        setTripPlanError(t.itinerary.tripPlans.error);
         return false;
       } finally {
-        setIsTripSheetBusy(false);
+        setIsTripPlanBusy(false);
       }
       return true;
     }
 
+    commitTrip((current) =>
+      updateTripPlanInTrip(current, {
+        ...currentPlan,
+        kind: legacyKindForPlanStatus(status),
+        status,
+        version: (currentPlan.version ?? 1) + 1,
+      }),
+    );
+    return true;
+  }
+
+  async function createTripPlan(name: string): Promise<boolean> {
+    if (!canManageTripPlans) return false;
+    const trimmedName = name.trim();
+    if (!trimmedName) return false;
+    setTripPlanError(null);
+
+    if (isApiMode && resolvedApiClient && participantSession) {
+      setIsTripPlanBusy(true);
+      try {
+        const createTripPlanMutation =
+          resolvedApiClient.createTripPlan ??
+          resolvedApiClient.createPlanVariant;
+        const createdVariant = await createTripPlanMutation(
+          trip.id,
+          participantSession.sessionToken,
+          {
+            clientMutationId: nextClientMutationId("trip-plan-create"),
+            name: trimmedName,
+            status: "draft",
+            creationMode: "blank",
+            description: "",
+          },
+        );
+        setTripState((current) => {
+          const nextTrip = updateTripPlanInTrip(current.trip, createdVariant);
+          latestTripRef.current = nextTrip;
+          return { ...current, trip: nextTrip };
+        });
+        setSelectedTripPlanId(createdVariant.id);
+      } catch (error) {
+        if (
+          error instanceof TripApiError &&
+          error.code === "version_conflict"
+        ) {
+          await reloadTripPlanConflict();
+          return true;
+        }
+        setTripPlanError(t.itinerary.tripPlans.error);
+        return false;
+      } finally {
+        setIsTripPlanBusy(false);
+      }
+      return true;
+    }
+
+    let createdTripPlanId = "";
     commitTrip((current) => {
       const variant: PlanVariant = {
         id: nextLocalPlanVariantId(current.planVariants),
         tripId: current.id,
         name: trimmedName,
         kind: "draft",
+        status: "draft",
         description: "",
         version: 1,
       };
+      createdTripPlanId = variant.id;
       return {
         ...current,
-        activePlanVariantId: variant.id,
         planVariants: [...current.planVariants, variant],
+        tripPlans: [...(current.tripPlans ?? current.planVariants), variant],
       };
     });
+    if (createdTripPlanId) setSelectedTripPlanId(createdTripPlanId);
     return true;
   }
 
-  function addStop(day?: string) {
+  function addStop(day?: string, parentItemId?: string | null) {
     /* v8 ignore next */
     if (!canEdit) return;
     setStopPlaceResolution({ state: "idle", candidates: [] });
-    setDialogState({ mode: "create", day });
+    setDialogState({ mode: "create", day, parentItemId: parentItemId ?? null });
+  }
+
+  function addSubActivity(parentItemId: string) {
+    const parentItem = trip.itineraryItems.find((item) => item.id === parentItemId);
+    if (!parentItem || !parentItem.isPlanBlock) return;
+    addStop(parentItem.day, parentItem.id);
   }
 
   function selectItem(itemId: string) {
+    setContextRailPreferredTab("notes");
     setSelectedItemId(itemId);
     setContextRailVisibility(true);
   }
@@ -929,7 +1155,7 @@ export function SagittariusApp({
       trip,
       draggedItemId,
       targetItemId,
-      selectedPlanVariantId,
+      selectedTripPlanId,
     );
     if (!nextTrip) return;
 
@@ -949,7 +1175,7 @@ export function SagittariusApp({
         (draggedItem.parentItemId ?? null) !==
         (movedItem.parentItemId ?? null);
       if (draggedItem.day !== movedItem.day || parentChanged) {
-        await resolvedApiClient.patchItineraryItem(
+        const patchedItem = await resolvedApiClient.patchItineraryItem(
           trip.id,
           draggedItemId,
           participantSession.sessionToken,
@@ -963,7 +1189,10 @@ export function SagittariusApp({
             },
           },
         );
-        setTripState((current) => ({ ...current, trip: nextTrip }));
+        setTripState((current) => ({
+          ...current,
+          trip: replaceItineraryItem(nextTrip, patchedItem),
+        }));
         setSelectedItemId(draggedItemId);
         setContextRailVisibility(true);
         return;
@@ -1021,7 +1250,7 @@ export function SagittariusApp({
       trip,
       draggedItemId,
       planBlockItemId,
-      selectedPlanVariantId,
+      selectedTripPlanId,
     );
     if (!nextTrip) return;
 
@@ -1034,7 +1263,7 @@ export function SagittariusApp({
     if (!draggedItem || !movedItem) return;
 
     if (isApiMode && resolvedApiClient && participantSession) {
-      await resolvedApiClient.patchItineraryItem(
+      const patchedItem = await resolvedApiClient.patchItineraryItem(
         trip.id,
         draggedItemId,
         participantSession.sessionToken,
@@ -1048,7 +1277,10 @@ export function SagittariusApp({
           },
         },
       );
-      setTripState((current) => ({ ...current, trip: nextTrip }));
+      setTripState((current) => ({
+        ...current,
+        trip: replaceItineraryItem(nextTrip, patchedItem),
+      }));
       setSelectedItemId(draggedItemId);
       setContextRailVisibility(true);
       return;
@@ -1066,7 +1298,7 @@ export function SagittariusApp({
       trip,
       draggedItemId,
       targetDay,
-      selectedPlanVariantId,
+      selectedTripPlanId,
     );
     if (!nextTrip) return;
 
@@ -1116,12 +1348,24 @@ export function SagittariusApp({
       const patchedBranchItemsById = new Map(
         patchedBranchItems.map((item) => [item.id, item]),
       );
+      const branchPlacementItemsById = new Map(
+        branchPlacement.trip.itineraryItems
+          .filter((item) =>
+            branchPlacement.changedExistingItems.some(
+              (changedItem) => changedItem.id === item.id,
+            ),
+          )
+          .map((item) => [item.id, item]),
+      );
       setTripState((current) => ({
         ...current,
         trip: {
           ...current.trip,
           itineraryItems: current.trip.itineraryItems.map(
-            (item) => patchedBranchItemsById.get(item.id) ?? item,
+            (item) =>
+              patchedBranchItemsById.get(item.id) ??
+              branchPlacementItemsById.get(item.id) ??
+              item,
           ),
         },
       }));
@@ -1135,6 +1379,7 @@ export function SagittariusApp({
   }
 
   async function createStop(values: StopFormValues) {
+    values = normalizeStopHierarchyValues(values);
     const day = values.day || selectedDay;
     setStopPlaceResolution(
       effectivePlaceResolver && !values.resolvedPlace && !values.saveUnresolved
@@ -1155,20 +1400,33 @@ export function SagittariusApp({
       placeResolution.candidate,
       values.place,
     );
+    const parentItem = values.parentItemId
+      ? trip.itineraryItems.find((item) => item.id === values.parentItemId)
+      : undefined;
     const targetPathId = selectedItineraryPathIdForDay(day, pathSelection);
     const targetPathName = pathOptions.find(
       (option) => option.id === targetPathId,
     )?.name;
     const nextItemId = nextLocalItemId(trip.itineraryItems, "item-new");
-    const pathFields = itineraryItemPathFieldsForTarget(
-      `path-group-${nextItemId}`,
-      targetPathId,
-      targetPathName,
-    );
+    const sortOrder = parentItem
+      ? getNextChildSortOrder(planItems, parentItem)
+      : getNextSortOrder(planItems, day);
+    const pathFields = parentItem
+      ? {
+          pathGroupId: parentItem.pathGroupId,
+          pathId: parentItem.pathId,
+          pathName: parentItem.pathName,
+          pathRole: parentItem.pathRole ?? "main",
+        }
+      : itineraryItemPathFieldsForTarget(
+          `path-group-${nextItemId}`,
+          targetPathId,
+          targetPathName,
+        );
     const draftItem: ItineraryItem = {
       id: nextItemId,
       tripId: trip.id,
-      planVariantId: selectedPlanVariantId,
+      planVariantId: parentItem?.planVariantId ?? selectedTripPlanId,
       ...pathFields,
       parentItemId: values.parentItemId ?? null,
       itemKind: values.itemKind,
@@ -1177,8 +1435,10 @@ export function SagittariusApp({
       status: values.status,
       priority: values.priority,
       day,
-      sortOrder: getNextSortOrder(planItems, day),
+      sortOrder,
       startTime: values.startTime,
+      endTime: values.endTime,
+      endOffsetDays: values.endOffsetDays,
       activity: values.activity,
       activityType: values.activityType,
       place: values.place,
@@ -1196,7 +1456,16 @@ export function SagittariusApp({
       version: 1,
     };
     const branchPlacement =
-      targetPathId === mainItineraryPathId
+      parentItem
+        ? {
+            trip: {
+              ...trip,
+              itineraryItems: [...trip.itineraryItems, draftItem],
+            },
+            item: draftItem,
+            changedExistingItems: [],
+          }
+        : targetPathId === mainItineraryPathId
         ? applyItemToActivityBranch(trip, draftItem)
         : {
             trip: {
@@ -1218,7 +1487,7 @@ export function SagittariusApp({
         participantSession.sessionToken,
         {
           clientMutationId: nextClientMutationId("itinerary-create"),
-          planVariantId: selectedPlanVariantId,
+          planVariantId: parentItem?.planVariantId ?? selectedTripPlanId,
           pathGroupId: branchPlacement.item.pathGroupId,
           pathId: branchPlacement.item.pathId,
           pathName: branchPlacement.item.pathName,
@@ -1231,6 +1500,8 @@ export function SagittariusApp({
           priority: values.priority,
           day,
           startTime: values.startTime,
+          endTime: values.endTime,
+          endOffsetDays: values.endOffsetDays,
           activity: values.activity,
           activityType: values.activityType,
           place: values.place,
@@ -1273,7 +1544,12 @@ export function SagittariusApp({
 
     commitTrip(
       (current) =>
-        targetPathId === mainItineraryPathId
+        parentItem
+          ? {
+              ...current,
+              itineraryItems: [...current.itineraryItems, draftItem],
+            }
+          : targetPathId === mainItineraryPathId
           ? applyItemToActivityBranch(current, draftItem).trip
           : {
               ...current,
@@ -1296,6 +1572,8 @@ export function SagittariusApp({
       status: "planned",
       priority: item.priority ?? "normal",
       startTime: item.startTime,
+      endTime: item.endTime ?? null,
+      endOffsetDays: item.endOffsetDays ?? 0,
       activity: item.activity,
       activityType: "food",
       place: item.place,
@@ -1309,6 +1587,15 @@ export function SagittariusApp({
       note: item.note,
       saveUnresolved: true,
     });
+  }
+
+  function replaceItineraryItem(current: Trip, updatedItem: ItineraryItem): Trip {
+    return {
+      ...current,
+      itineraryItems: current.itineraryItems.map((item) =>
+        item.id === updatedItem.id ? updatedItem : item,
+      ),
+    };
   }
 
   function moveTripItem(
@@ -1335,6 +1622,7 @@ export function SagittariusApp({
     const nextParentItemId = targetItem.parentItemId ?? null;
     if (
       nextParentItemId === draggedItem.id ||
+      (draggedItem.isPlanBlock && nextParentItemId) ||
       hasDescendantItem(current.itineraryItems, draggedItem.id, targetItem.id)
     )
       return null;
@@ -1438,6 +1726,7 @@ export function SagittariusApp({
       !draggedItem ||
       !planBlock ||
       !planBlock.isPlanBlock ||
+      draggedItem.isPlanBlock ||
       draggedItem.id === planBlock.id ||
       draggedItem.planVariantId !== planVariantId ||
       planBlock.planVariantId !== planVariantId ||
@@ -1501,6 +1790,7 @@ export function SagittariusApp({
   async function updateSelectedStop(values: StopFormValues) {
     /* v8 ignore next */
     if (dialogState?.mode !== "edit") return;
+    values = normalizeStopHierarchyValues(values);
     const itemId = dialogState.item.id;
     const editDay = values.day || dialogState.item.day;
     const shouldResolvePlace =
@@ -1551,6 +1841,8 @@ export function SagittariusApp({
             status: values.status,
             priority: values.priority,
             startTime: values.startTime,
+            endTime: values.endTime,
+            endOffsetDays: values.endOffsetDays,
             activity: values.activity,
             activityType: values.activityType,
             place: values.place,
@@ -1572,17 +1864,17 @@ export function SagittariusApp({
             : item,
         ),
       };
-      const autoBranchPlacement = applyItemToActivityBranch(
+      const pathPlacement = applyItemToActivityBranch(
         tripWithPatchedItem,
         { ...patchedItem, day: values.day || patchedItem.day },
       );
       const branchPlacement = values.pathId
         ? applyManualActivityPath(
-            autoBranchPlacement.trip,
+            pathPlacement.trip,
             itemId,
             values.pathId,
           )
-        : autoBranchPlacement;
+        : pathPlacement;
       const patchedBranchItems = await patchApiItineraryBranchItems(
         branchPlacement.changedExistingItems,
         resolvedApiClient,
@@ -1592,6 +1884,15 @@ export function SagittariusApp({
       const patchedBranchItemsById = new Map(
         patchedBranchItems.map((item) => [item.id, item]),
       );
+      const branchPlacementItemsById = new Map(
+        branchPlacement.trip.itineraryItems
+          .filter((item) =>
+            branchPlacement.changedExistingItems.some(
+              (changedItem) => changedItem.id === item.id,
+            ),
+          )
+          .map((item) => [item.id, item]),
+      );
       setTripState((current) => ({
         ...current,
         trip: {
@@ -1599,6 +1900,8 @@ export function SagittariusApp({
           itineraryItems: current.trip.itineraryItems.map((item) => {
             if (patchedBranchItemsById.has(item.id))
               return patchedBranchItemsById.get(item.id) ?? item;
+            if (branchPlacementItemsById.has(item.id))
+              return branchPlacementItemsById.get(item.id) ?? item;
             return item.id === itemId ? branchPlacement.item : item;
           }),
         },
@@ -1619,6 +1922,8 @@ export function SagittariusApp({
         status: values.status,
         priority: values.priority,
         startTime: values.startTime,
+        endTime: values.endTime,
+        endOffsetDays: values.endOffsetDays,
         activity: values.activity,
         activityType: values.activityType,
         place: values.place,
@@ -1638,17 +1943,17 @@ export function SagittariusApp({
           item.id === itemId ? updatedItem : item,
         ),
       };
-      const autoBranchPlacement = applyItemToActivityBranch(
+      const pathPlacement = applyItemToActivityBranch(
         tripWithUpdatedItem,
         updatedItem,
       );
       return values.pathId
         ? applyManualActivityPath(
-            autoBranchPlacement.trip,
+            pathPlacement.trip,
             itemId,
             values.pathId,
           ).trip
-        : autoBranchPlacement.trip;
+        : pathPlacement.trip;
     });
     setSelectedItemId(itemId);
     setContextRailVisibility(true);
@@ -1682,7 +1987,7 @@ export function SagittariusApp({
     function buildInlinePatch(
       item: ItineraryItem,
     ): InlineItineraryItemPatch | null {
-      const nextPatch: InlineItineraryItemPatch = { ...patch };
+      const nextPatch = normalizeInlineTimePatch(item, patch);
       if (nextPatch.activity !== undefined)
         nextPatch.activity = nextPatch.activity.trim();
       if (nextPatch.place !== undefined)
@@ -1800,70 +2105,6 @@ export function SagittariusApp({
     setContextRailVisibility(true);
   }
 
-  async function autoResolveDayOverlaps(day: string) {
-    /* v8 ignore next */
-    if (!canEdit) return;
-
-    if (isApiMode && resolvedApiClient && participantSession) {
-      let currentTrip = trip;
-      for (let attempt = 0; attempt < 2; attempt += 1) {
-        const placement = autoResolveSamePathOverlaps(currentTrip, {
-          day,
-          planVariantId: selectedPlanVariantId,
-        });
-        if (placement.changedExistingItems.length === 0) return;
-        try {
-          const patchedBranchItems = await patchApiItineraryBranchItems(
-            placement.changedExistingItems,
-            resolvedApiClient,
-            currentTrip.id,
-            participantSession.sessionToken,
-          );
-          const patchedBranchItemsById = new Map(
-            patchedBranchItems.map((item) => [item.id, item]),
-          );
-          setTripState((state) => ({
-            ...state,
-            trip: {
-              ...state.trip,
-              itineraryItems: state.trip.itineraryItems.map(
-                (item) => patchedBranchItemsById.get(item.id) ?? item,
-              ),
-            },
-          }));
-          return;
-        } catch (error) {
-          if (
-            !(error instanceof TripApiError) ||
-            error.code !== "version_conflict" ||
-            attempt > 0
-          )
-            throw error;
-          const cockpit = await resolvedApiClient.loadTrip(
-            currentTrip.id,
-            participantSession.sessionToken,
-          );
-          replaceCockpitFromApi(cockpit);
-          currentTrip = cockpit.trip;
-        }
-      }
-      return;
-    }
-
-    const previewPlacement = autoResolveSamePathOverlaps(trip, {
-      day,
-      planVariantId: selectedPlanVariantId,
-    });
-    if (previewPlacement.changedExistingItems.length === 0) return;
-    commitTrip(
-      (current) =>
-        autoResolveSamePathOverlaps(current, {
-          day,
-          planVariantId: selectedPlanVariantId,
-        }).trip,
-    );
-  }
-
   async function deleteSelectedStop() {
     /* v8 ignore next */
     if (dialogState?.mode !== "edit" || !canEdit) return;
@@ -1978,7 +2219,7 @@ export function SagittariusApp({
     nextSelectedItemId?: string,
   ) {
     setTripState((current) => {
-      const nextTrip = updater(current.trip);
+      const nextTrip = normalizeTripPlanAliases(updater(current.trip));
       persistTripDraft(nextTrip);
       return {
         trip: nextTrip,
@@ -2052,17 +2293,22 @@ export function SagittariusApp({
   }
 
   function replaceTripFromJoin(nextTrip: Trip) {
-    if (!isApiMode) persistTripDraft(nextTrip);
-    setTripState({ trip: nextTrip, past: [], future: [] });
+    const normalizedTrip = normalizeTripPlanAliases(nextTrip);
+    if (!isApiMode) persistTripDraft(normalizedTrip);
+    setTripState({ trip: normalizedTrip, past: [], future: [] });
   }
 
   function replaceCockpitFromApi(cockpit: TripCockpit) {
-    setTripState({ trip: cockpit.trip, past: [], future: [] });
+    setTripState({
+      trip: normalizeTripPlanAliases(cockpit.trip),
+      past: [],
+      future: [],
+    });
     setSuggestions(cockpit.suggestions);
     setLatestPlanCheck(cockpit.latestPlanCheck ?? null);
     setTasks(cockpit.tasks);
     setStopNotes(cockpit.stopNotes);
-    setBackendExpenseSummary(cockpit.expenseSummary);
+    setBackendExpenseSummary(null);
     setIsCockpitLoaded(true);
   }
 
@@ -2301,11 +2547,12 @@ export function SagittariusApp({
         const check = await resolvedApiClient.runPlanCheck(
           trip.id,
           participantSession.sessionToken,
+          selectedTripPlanId,
         );
         setLatestPlanCheck(check);
         return;
       }
-      setLatestPlanCheck(buildLocalPlanCheck(trip, currentMember.id));
+      setLatestPlanCheck(buildLocalPlanCheck(trip, currentMember.id, selectedTripPlanId));
     } finally {
       setPlanCheckRunning(false);
     }
@@ -2316,10 +2563,6 @@ export function SagittariusApp({
     status: PlanSuggestion["status"],
   ) {
     if (!canReviewSuggestions && status !== "snoozed") return;
-    if (status === "accepted") {
-      const applied = await applyPlanSuggestionAction(suggestion);
-      if (!applied) return;
-    }
     if (isApiMode && resolvedApiClient?.patchPlanSuggestion && participantSession) {
       const patched = await resolvedApiClient.patchPlanSuggestion(
         trip.id,
@@ -2357,24 +2600,17 @@ export function SagittariusApp({
     );
   }
 
-  async function applyPlanSuggestionAction(
-    suggestion: PlanSuggestion,
-  ): Promise<boolean> {
-    if (suggestion.actionKind !== "editItem") return true;
+  function reviewPlanSuggestionEdit(suggestion: PlanSuggestion) {
     const action = parsePlanSuggestionEditAction(suggestion.actionPayload);
-    if (!action) {
-      const targetItemId = suggestion.targetItemIds[0];
-      if (targetItemId) editItem(targetItemId);
-      return false;
-    }
-    await updateItineraryItemInline(action.itemId, action.patch);
-    return true;
+    const targetItemId = action?.itemId ?? suggestion.targetItemIds[0];
+    if (targetItemId) editItem(targetItemId);
   }
 
   async function createTask(input: {
     title: string;
     visibility: TripTask["visibility"];
     assigneeId?: string | null;
+    relatedItemId?: string | null;
   }) {
     const title = input.title.trim();
     /* v8 ignore next */
@@ -2389,12 +2625,17 @@ export function SagittariusApp({
           title,
           visibility,
           kind: "prep",
+          tripPlanId: tripPlanIdForRecord(
+            trip,
+            input.relatedItemId ?? null,
+            selectedTripPlanId,
+          ),
           /* v8 ignore next */
           assigneeId:
             visibility === "shared"
               ? input.assigneeId || null
               : currentMember.id,
-          relatedItemId: null,
+          relatedItemId: input.relatedItemId ?? null,
         },
       );
       setTasks((current) => [...current, task]);
@@ -2408,12 +2649,33 @@ export function SagittariusApp({
         status: "open",
         visibility,
         kind: "prep",
+        tripPlanId: tripPlanIdForRecord(
+          trip,
+          input.relatedItemId ?? null,
+          selectedTripPlanId,
+        ),
         createdBy: currentMember.id,
         /* v8 ignore next */
         assigneeId:
           visibility === "shared" ? input.assigneeId || null : currentMember.id,
+        relatedItemId: input.relatedItemId ?? null,
       },
     ]);
+  }
+
+  async function createItineraryTask(itemId: string) {
+    if (!canEdit) return;
+    const item = trip.itineraryItems.find((candidate) => candidate.id === itemId);
+    if (!item) return;
+    await createTask({
+      title: `Plan: ${item.activity}`,
+      visibility: "shared",
+      assigneeId: null,
+      relatedItemId: item.id,
+    });
+    setContextRailPreferredTab("booking");
+    setSelectedItemId(item.id);
+    setContextRailVisibility(true);
   }
 
   async function saveTripSettings(values: TripSettingsFormValues) {
@@ -2519,7 +2781,13 @@ export function SagittariusApp({
           participantSession.sessionToken,
           {
             clientMutationId,
-            ...serializeBookingDocInputForApi({ ...input, title }),
+            ...serializeBookingDocInputForApi({
+              ...input,
+              title,
+              tripPlanId:
+                input.tripPlanId ??
+                tripPlanIdForBookingRecord(trip, input, selectedTripPlanId),
+            }),
           },
         );
         const nextTrip = {
@@ -2549,6 +2817,9 @@ export function SagittariusApp({
     const bookingDoc: BookingDoc = {
       id: nextLocalBookingDocId(trip.bookingDocs ?? []),
       tripId: trip.id,
+      tripPlanId:
+        input.tripPlanId ??
+        tripPlanIdForBookingRecord(trip, input, selectedTripPlanId),
       ...input,
       title,
       externalLinks: input.externalLinks.map((link, index) => ({
@@ -2565,7 +2836,74 @@ export function SagittariusApp({
     }));
   }
 
+  async function createItineraryBookingDraft(
+    itemId: string,
+    template: ItineraryBookingTemplate = "recommended",
+  ) {
+    if (!canEditBookings) return;
+    const item = trip.itineraryItems.find((candidate) => candidate.id === itemId);
+    if (!item) return;
+    const draftDetails = bookingDraftDetailsForItineraryItem(item);
+    const timeWindow = bookingDraftTimeWindowForItineraryItem(item);
+    const bookingType =
+      template === "recommended"
+        ? bookingTypeForItineraryItem(item)
+        : bookingTypeForBookingTemplate(template);
+    await createBookingDoc({
+      type: bookingType,
+      title: bookingDraftTitleForItineraryItem(item, bookingType),
+      status: "draft",
+      visibility: "shared",
+      ownerMemberId: currentMember.id,
+      providerName: draftDetails.providerName,
+      confirmationCode: draftDetails.confirmationCode,
+      startsAt: timeWindow.startsAt,
+      endsAt: timeWindow.endsAt,
+      timezone: trip.defaultTimezone ?? null,
+      priceAmount: null,
+      currency: null,
+      travelerIds: trip.members.map((member) => member.id),
+      externalLinks: [],
+      relatedItineraryItemIds: [item.id],
+      relatedTaskIds: [],
+      relatedExpenseIds: [],
+      noteIds: [],
+      notes: draftDetails.notes,
+    });
+    setContextRailPreferredTab("booking");
+    setSelectedItemId(item.id);
+    setContextRailVisibility(true);
+  }
+
   async function updateBookingDoc(
+    bookingDocId: string,
+    input: BookingDocInput,
+  ) {
+    await queueBookingDocUpdate(bookingDocId, () =>
+      runBookingDocUpdate(bookingDocId, input),
+    );
+  }
+
+  async function queueBookingDocUpdate(
+    bookingDocId: string,
+    update: () => void | Promise<void>,
+  ) {
+    const previousUpdate =
+      bookingDocUpdateQueueRef.current.get(bookingDocId) ?? Promise.resolve();
+    const queuedUpdate = previousUpdate
+      .catch(() => undefined)
+      .then(() => update());
+    bookingDocUpdateQueueRef.current.set(bookingDocId, queuedUpdate);
+    try {
+      await queuedUpdate;
+    } finally {
+      if (bookingDocUpdateQueueRef.current.get(bookingDocId) === queuedUpdate) {
+        bookingDocUpdateQueueRef.current.delete(bookingDocId);
+      }
+    }
+  }
+
+  async function runBookingDocUpdate(
     bookingDocId: string,
     input: BookingDocInput,
   ) {
@@ -2639,6 +2977,86 @@ export function SagittariusApp({
           : bookingDoc,
       ),
     }));
+  }
+
+  async function changeBookingDocType(
+    bookingDocId: string,
+    type: BookingDocType,
+  ) {
+    const bookingDoc = latestTripRef.current.bookingDocs?.find(
+      (candidate) => candidate.id === bookingDocId,
+    );
+    if (!bookingDoc || bookingDoc.type === type) return;
+    await updateBookingDoc(bookingDoc.id, {
+      type,
+      title: bookingDoc.title,
+      status: bookingDoc.status,
+      visibility: bookingDoc.visibility,
+      ownerMemberId: bookingDoc.ownerMemberId,
+      providerName: bookingDoc.providerName,
+      confirmationCode: bookingDoc.confirmationCode,
+      startsAt: bookingDoc.startsAt,
+      endsAt: bookingDoc.endsAt,
+      timezone: bookingDoc.timezone,
+      priceAmount: bookingDoc.priceAmount,
+      currency: bookingDoc.currency,
+      travelerIds: bookingDoc.travelerIds,
+      externalLinks: bookingDoc.externalLinks,
+      relatedItineraryItemIds: bookingDoc.relatedItineraryItemIds,
+      relatedTaskIds: bookingDoc.relatedTaskIds,
+      relatedExpenseIds: bookingDoc.relatedExpenseIds,
+      noteIds: bookingDoc.noteIds,
+      notes: bookingDoc.notes,
+    });
+  }
+
+  async function changeBookingDocQuickFields(
+    bookingDocId: string,
+    patch: {
+      confirmationCode?: string | null;
+      providerName?: string | null;
+    },
+  ) {
+    await queueBookingDocUpdate(bookingDocId, async () => {
+      const bookingDoc = latestTripRef.current.bookingDocs?.find(
+        (candidate) => candidate.id === bookingDocId,
+      );
+      if (!bookingDoc) return;
+      const providerName =
+        patch.providerName !== undefined
+          ? patch.providerName
+          : bookingDoc.providerName;
+      const confirmationCode =
+        patch.confirmationCode !== undefined
+          ? patch.confirmationCode
+          : bookingDoc.confirmationCode;
+      if (
+        providerName === bookingDoc.providerName &&
+        confirmationCode === bookingDoc.confirmationCode
+      )
+        return;
+      await runBookingDocUpdate(bookingDoc.id, {
+        type: bookingDoc.type,
+        title: bookingDoc.title,
+        status: bookingDoc.status,
+        visibility: bookingDoc.visibility,
+        ownerMemberId: bookingDoc.ownerMemberId,
+        providerName,
+        confirmationCode,
+        startsAt: bookingDoc.startsAt,
+        endsAt: bookingDoc.endsAt,
+        timezone: bookingDoc.timezone,
+        priceAmount: bookingDoc.priceAmount,
+        currency: bookingDoc.currency,
+        travelerIds: bookingDoc.travelerIds,
+        externalLinks: bookingDoc.externalLinks,
+        relatedItineraryItemIds: bookingDoc.relatedItineraryItemIds,
+        relatedTaskIds: bookingDoc.relatedTaskIds,
+        relatedExpenseIds: bookingDoc.relatedExpenseIds,
+        noteIds: bookingDoc.noteIds,
+        notes: bookingDoc.notes,
+      });
+    });
   }
 
   async function deleteBookingDoc(bookingDocId: string) {
@@ -2852,6 +3270,11 @@ export function SagittariusApp({
         {
           clientMutationId: nextClientMutationId("stop-note-create"),
           itineraryItemId: input.itemId,
+          tripPlanId: tripPlanIdForRecord(
+            trip,
+            input.itemId,
+            selectedTripPlanId,
+          ),
           body,
         },
       );
@@ -2863,12 +3286,26 @@ export function SagittariusApp({
       {
         id: nextLocalStopNoteId(current),
         tripId: trip.id,
+        tripPlanId: tripPlanIdForRecord(trip, input.itemId, selectedTripPlanId),
         itemId: input.itemId,
         authorId: currentMember.id,
         body,
         createdAt: new Date().toISOString(),
       },
     ]);
+  }
+
+  async function createItineraryNote(itemId: string) {
+    if (!canCreateStopNote) return;
+    const item = trip.itineraryItems.find((candidate) => candidate.id === itemId);
+    if (!item) return;
+    await createStopNote({
+      itemId: item.id,
+      body: `Planning note for ${item.activity}`,
+    });
+    setContextRailPreferredTab("notes");
+    setSelectedItemId(item.id);
+    setContextRailVisibility(true);
   }
 
   async function updateStopNote(input: { noteId: string; body: string }) {
@@ -2927,6 +3364,7 @@ export function SagittariusApp({
     itemId: string | null;
     title: string;
     amount: number;
+    tripPlanId?: string | null;
     paidBy: string;
     category: Expense["category"];
     currency?: string;
@@ -2973,6 +3411,11 @@ export function SagittariusApp({
             receiptUrl: repeatedInput.receiptUrl ?? null,
             lineItems: repeatedInput.lineItems,
             comments: repeatedInput.comments ?? [],
+            tripPlanId: tripPlanIdForRecord(
+              trip,
+              repeatedInput.itemId,
+              repeatedInput.tripPlanId ?? selectedTripPlanId,
+            ),
             paidBy: repeatedInput.paidBy,
             category: repeatedInput.category,
             splits: expenseSplitsToMinor(splits),
@@ -2989,10 +3432,14 @@ export function SagittariusApp({
         },
       }));
       setBackendExpenseSummary(
-        await resolvedApiClient.getExpenseSummary(
-          trip.id,
-          participantSession.sessionToken,
-        ),
+        {
+          tripPlanId: selectedTripPlanId,
+          summary: await resolvedApiClient.getExpenseSummary(
+            trip.id,
+            participantSession.sessionToken,
+            selectedTripPlanId,
+          ),
+        },
       );
       return;
     }
@@ -3013,6 +3460,11 @@ export function SagittariusApp({
           receiptUrl: repeatedInput.receiptUrl ?? null,
           lineItems: repeatedInput.lineItems ?? [],
           comments: repeatedInput.comments ?? [],
+          tripPlanId: tripPlanIdForRecord(
+            current,
+            repeatedInput.itemId,
+            repeatedInput.tripPlanId ?? selectedTripPlanId,
+          ),
           paidBy: repeatedInput.paidBy,
           category: repeatedInput.category,
           splits,
@@ -3042,10 +3494,14 @@ export function SagittariusApp({
         },
       }));
       setBackendExpenseSummary(
-        await resolvedApiClient.getExpenseSummary(
-          trip.id,
-          participantSession.sessionToken,
-        ),
+        {
+          tripPlanId: selectedTripPlanId,
+          summary: await resolvedApiClient.getExpenseSummary(
+            trip.id,
+            participantSession.sessionToken,
+            selectedTripPlanId,
+          ),
+        },
       );
       return;
     }
@@ -3068,6 +3524,7 @@ export function SagittariusApp({
     lineItems?: ExpenseLineItem[];
     comments?: ExpenseComment[];
     itemId?: string | null;
+    tripPlanId?: string | null;
     splits?: Record<string, number>;
   }) {
     if (!canEditExpenses) return;
@@ -3087,6 +3544,11 @@ export function SagittariusApp({
       input.itemId === undefined
         ? (existing.itineraryItemId ?? null)
         : input.itemId;
+    const tripPlanId = tripPlanIdForRecord(
+      trip,
+      itineraryItemId,
+      input.tripPlanId ?? existing.tripPlanId ?? selectedTripPlanId,
+    );
     if (isApiMode && resolvedApiClient && participantSession) {
       const expense = await resolvedApiClient.patchExpense(
         trip.id,
@@ -3106,6 +3568,7 @@ export function SagittariusApp({
           receiptUrl: input.receiptUrl ?? existing.receiptUrl ?? null,
           lineItems: input.lineItems ?? existing.lineItems ?? [],
           comments: input.comments ?? existing.comments ?? [],
+          tripPlanId,
           paidBy: input.paidBy,
           category: input.category,
           splits: expenseSplitsToMinor(splits),
@@ -3122,10 +3585,14 @@ export function SagittariusApp({
         },
       }));
       setBackendExpenseSummary(
-        await resolvedApiClient.getExpenseSummary(
-          trip.id,
-          participantSession.sessionToken,
-        ),
+        {
+          tripPlanId: selectedTripPlanId,
+          summary: await resolvedApiClient.getExpenseSummary(
+            trip.id,
+            participantSession.sessionToken,
+            selectedTripPlanId,
+          ),
+        },
       );
       return;
     }
@@ -3147,6 +3614,7 @@ export function SagittariusApp({
               receiptUrl: input.receiptUrl ?? expense.receiptUrl ?? null,
               lineItems: input.lineItems ?? expense.lineItems ?? [],
               comments: input.comments ?? expense.comments ?? [],
+              tripPlanId,
               paidBy: input.paidBy,
               category: input.category,
               splits,
@@ -3158,26 +3626,68 @@ export function SagittariusApp({
     }));
   }
 
+  async function duplicateExpenseAsEstimate(expense: Expense) {
+    if (!canEditBookings) return;
+    const sourceTripPlanId =
+      expense.tripPlanId ||
+      selectedTripPlanId ||
+      trip.mainTripPlanId ||
+      trip.activePlanVariantId;
+    const linkedItem = expense.itineraryItemId
+      ? trip.itineraryItems.find((item) => item.id === expense.itineraryItemId)
+      : null;
+    await createBookingDoc({
+      tripPlanId: sourceTripPlanId,
+      type: bookingTypeForExpenseEstimate(expense),
+      title: `Estimate: ${expense.title}`,
+      status: "draft",
+      visibility: "shared",
+      ownerMemberId: currentMember.id,
+      providerName: null,
+      confirmationCode: null,
+      startsAt: null,
+      endsAt: null,
+      timezone: trip.defaultTimezone ?? null,
+      priceAmount: expense.amount,
+      currency: expense.currency ?? "HKD",
+      travelerIds: trip.members.map((member) => member.id),
+      externalLinks: [],
+      relatedItineraryItemIds: linkedItem ? [linkedItem.id] : [],
+      relatedTaskIds: [],
+      relatedExpenseIds: [],
+      noteIds: [],
+      notes: [
+        "Plan estimate copied from an Actual Expense. This does not create or move real money.",
+        `Source actual expense: ${expense.title}`,
+      ].join("\n"),
+    });
+  }
+
   async function recordPaybackReminder(suggestion: SettlementSuggestion) {
     const amountMinor = Math.round(suggestion.amount * 100);
     if (isApiMode && resolvedApiClient && participantSession) {
       setBackendExpenseSummary(
-        await resolvedApiClient.recordExpenseReminder(
-          trip.id,
-          participantSession.sessionToken,
-          {
-            clientMutationId: nextClientMutationId("expense-reminder"),
-            from: suggestion.from,
-            to: suggestion.to,
-            amountMinor,
-          },
-        ),
+        {
+          tripPlanId: selectedTripPlanId,
+          summary: await resolvedApiClient.recordExpenseReminder(
+            trip.id,
+            participantSession.sessionToken,
+            {
+              clientMutationId: nextClientMutationId("expense-reminder"),
+              from: suggestion.from,
+              to: suggestion.to,
+              amountMinor,
+            },
+            selectedTripPlanId,
+          ),
+        },
       );
       return;
     }
     commitTrip((current) => ({
       ...current,
       expenseReminders: upsertExpenseReminder(current.expenseReminders ?? [], {
+        tripPlanId: selectedTripPlanId,
         from: suggestion.from,
         to: suggestion.to,
         amount: suggestion.amount,
@@ -3190,6 +3700,8 @@ export function SagittariusApp({
     const document = buildItineraryExport({
       exportedAt: new Date().toISOString(),
       items: planItems,
+      stopNotes,
+      tasks,
       trip,
     });
     const blob = new Blob([`${JSON.stringify(document, null, 2)}\n`], {
@@ -3222,8 +3734,12 @@ export function SagittariusApp({
                 content,
               },
             )
-          : { items: parseItineraryImport(content) };
-      setPendingItineraryImport({ fileName: file.name, items: document.items });
+          : parseItineraryImportDocument(content);
+      setPendingItineraryImport({
+        fileName: file.name,
+        items: document.items,
+        records: document.records ?? emptyItineraryExportRecords(),
+      });
       setItineraryImportError(null);
     } catch (caught) {
       setItineraryImportError(
@@ -3252,6 +3768,9 @@ export function SagittariusApp({
       const previewImportedItems = previewTrip.itineraryItems.filter(
         (item) => !currentIds.has(item.id),
       );
+      const appliedImportedItems = previewTrip.itineraryItems.slice(
+        -pendingItineraryImport.items.length,
+      );
 
       if (isApiMode && resolvedApiClient && participantSession) {
         for (const item of deletedItems) {
@@ -3262,7 +3781,10 @@ export function SagittariusApp({
           );
         }
         const createdItems: ItineraryItem[] = [];
+        const createdItemIdsByImportId = new Map<string, string>();
+        const createdItemIdsByPreviewId = new Map<string, string>();
         for (const item of previewImportedItems) {
+          const importedItem = pendingItineraryImport.items[createdItems.length];
           const createdItem = await resolvedApiClient.createItineraryItem(
             trip.id,
             participantSession.sessionToken,
@@ -3273,12 +3795,25 @@ export function SagittariusApp({
               pathId: item.pathId,
               pathName: item.pathName,
               pathRole: item.pathRole,
+              parentItemId: resolveCreatedImportId(item.parentItemId, [
+                createdItemIdsByImportId,
+                createdItemIdsByPreviewId,
+              ]),
+              itemKind: item.itemKind,
+              timeMode: item.timeMode,
+              isPlanBlock: item.isPlanBlock,
+              status: item.status,
+              priority: item.priority,
               day: item.day,
               startTime: item.startTime,
+              endTime: item.endTime,
+              endOffsetDays: item.endOffsetDays,
               activity: item.activity,
               activityType: item.activityType,
               place: item.place,
               mapLink: item.mapLink,
+              address: item.address,
+              coordinates: item.coordinates,
               durationMinutes: item.durationMinutes,
               transportation: item.transportation,
               details: item.details,
@@ -3286,11 +3821,30 @@ export function SagittariusApp({
             },
           );
           createdItems.push(createdItem);
+          if (importedItem) {
+            createdItemIdsByImportId.set(importedItem.id, createdItem.id);
+          }
+          createdItemIdsByPreviewId.set(item.id, createdItem.id);
         }
+        const importedPlanRecords = buildImportedPlanRecordsForTripPlan({
+          appliedImportedItems: createdItems,
+          importedItems: pendingItineraryImport.items,
+          records:
+            target.recordMode === "clone-linked"
+              ? pendingItineraryImport.records
+              : emptyItineraryExportRecords(),
+          targetTrip: previewTrip,
+          tripPlanId: target.tripPlanId || trip.activePlanVariantId,
+        });
+        const createdPlanRecords = await createImportedPlanRecordsViaApi({
+          apiClient: resolvedApiClient,
+          sessionToken: participantSession.sessionToken,
+          tripId: trip.id,
+          records: importedPlanRecords,
+        });
         const deletedIds = new Set(deletedItems.map((item) => item.id));
-        setTripState((current) => ({
-          ...current,
-          trip: {
+        setTripState((current) => {
+          const nextTrip = {
             ...current.trip,
             itineraryPaths: previewTrip.itineraryPaths,
             itineraryItems: [
@@ -3299,8 +3853,29 @@ export function SagittariusApp({
               ),
               ...createdItems,
             ],
-          },
-        }));
+            bookingDocs: upsertById(
+              current.trip.bookingDocs ?? [],
+              createdPlanRecords.bookingDocs,
+            ),
+            expenses: upsertById(current.trip.expenses, createdPlanRecords.expenses),
+          };
+          latestTripRef.current = nextTrip;
+          return { ...current, trip: nextTrip };
+        });
+        setTasks((current) => upsertById(current, createdPlanRecords.tasks));
+        setStopNotes((current) =>
+          upsertById(current, createdPlanRecords.stopNotes),
+        );
+        if (createdPlanRecords.expenses.length > 0) {
+          setBackendExpenseSummary({
+            tripPlanId: selectedTripPlanId,
+            summary: await resolvedApiClient.getExpenseSummary(
+              trip.id,
+              participantSession.sessionToken,
+              selectedTripPlanId,
+            ),
+          });
+        }
         const nextSelectedItemId = createdItems[0]?.id ?? "";
         setSelectedItemId(nextSelectedItemId);
         setContextRailVisibility(Boolean(nextSelectedItemId));
@@ -3308,8 +3883,26 @@ export function SagittariusApp({
         return;
       }
 
-      const nextSelectedItemId = previewImportedItems[0]?.id ?? "";
-      commitTrip(() => previewTrip, nextSelectedItemId);
+      const nextSelectedItemId = appliedImportedItems[0]?.id ?? "";
+      const importedPlanRecords = buildImportedPlanRecordsForTripPlan({
+        appliedImportedItems,
+        importedItems: pendingItineraryImport.items,
+        records:
+          target.recordMode === "clone-linked"
+            ? pendingItineraryImport.records
+            : emptyItineraryExportRecords(),
+        targetTrip: previewTrip,
+        tripPlanId: target.tripPlanId || trip.activePlanVariantId,
+      });
+      commitTrip(
+        () =>
+          mergeImportedRecordsIntoTripPlan(previewTrip, importedPlanRecords),
+        nextSelectedItemId,
+      );
+      setTasks((current) => upsertById(current, importedPlanRecords.tasks));
+      setStopNotes((current) =>
+        upsertById(current, importedPlanRecords.stopNotes),
+      );
       setContextRailVisibility(Boolean(nextSelectedItemId));
       setPendingItineraryImport(null);
       setItineraryImportError(null);
@@ -3596,10 +4189,10 @@ export function SagittariusApp({
               />
             ) : currentView === "bookings" ? (
               <BookingsDocsPage
-                trip={{ ...trip, stopNotes }}
-                tasks={tasks}
+                trip={scopedTripForRecords}
+                tasks={scopedTripPlanRecords.tasks}
                 currentMember={currentMember}
-                bookingDocs={trip.bookingDocs ?? []}
+                bookingDocs={scopedTripPlanRecords.bookingDocs}
                 canEditBookings={canEditBookings}
                 onCreateBookingDoc={createBookingDoc}
                 onUpdateBookingDoc={updateBookingDoc}
@@ -3617,25 +4210,27 @@ export function SagittariusApp({
               />
             ) : currentView === "expenses" ? (
               <TripExpensesPage
-                trip={trip}
+                trip={scopedTripForRecords}
                 currentMember={currentMember}
                 expenseSummary={expenseSummary}
                 canEditExpenses={canEditExpenses}
+                selectedTripPlanId={selectedTripPlanId}
                 apiBaseUrl={process.env.NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL ?? ""}
                 onCreateExpense={createExpense}
                 onUpdateExpense={updateExpense}
                 onDeleteExpense={deleteExpense}
+                onDuplicateExpenseAsEstimate={duplicateExpenseAsEstimate}
                 onRecordPaybackReminder={recordPaybackReminder}
               />
             ) : currentView === "overview" ? (
               <OverviewPage
-                trip={trip}
+                trip={scopedTripForRecords}
                 currentMemberId={currentMember.id}
                 expenseSummary={expenseSummary}
                 items={planItems}
                 itineraryView={itineraryView}
-                suggestions={suggestions}
-                tasks={tasks}
+                suggestions={scopedSuggestions}
+                tasks={scopedTripPlanRecords.tasks}
                 dailyBriefings={visibleDailyBriefings}
                 onOpenExpenses={openExpensesWorkspace}
                 onCreateTask={createTask}
@@ -3647,10 +4242,11 @@ export function SagittariusApp({
                 <PlanCheckPanel
                   canMutate={canReviewSuggestions}
                   canRun={canEdit}
-                  check={latestPlanCheck}
+                  check={scopedPlanCheck}
                   locale={locale}
                   running={planCheckRunning}
                   onRun={runPlanCheck}
+                  onReviewSuggestionEdit={reviewPlanSuggestionEdit}
                   onUpdateSuggestionStatus={updatePlanSuggestionStatus}
                 />
                 <SmartItineraryTable
@@ -3661,15 +4257,19 @@ export function SagittariusApp({
                   endDate={trip.endDate}
                   graphItems={activePlanItems}
                   items={planItems}
+                  commitmentsByItemId={itineraryCommitmentsByItemId}
                   dailyBriefings={visibleDailyBriefings}
                   itineraryView={itineraryView}
                   pathOptions={pathOptions}
-                  tripSheets={trip.planVariants}
-                  selectedTripSheetId={selectedPlanVariantId}
-                  onChangeTripSheet={switchTripSheet}
-                  onCreateTripSheet={createTripSheet}
-                  tripSheetError={tripSheetError}
-                  isTripSheetBusy={isTripSheetBusy}
+                  tripPlans={trip.tripPlans ?? trip.planVariants}
+                  selectedTripPlanId={selectedTripPlanId}
+                  mainTripPlanId={trip.mainTripPlanId || trip.activePlanVariantId}
+                  onChangeTripPlan={selectTripPlan}
+                  onSetMainTripPlan={setMainTripPlan}
+                  onChangeTripPlanStatus={updateTripPlanStatus}
+                  onCreateTripPlan={createTripPlan}
+                  tripPlanError={tripPlanError}
+                  isTripPlanBusy={isTripPlanBusy}
                   role={currentMember.role}
                   startDate={trip.startDate}
                   selectedItemId={selectedItemIdForView}
@@ -3679,7 +4279,13 @@ export function SagittariusApp({
                   dayPathOverrides={pathSelection.dayPathOverrides ?? {}}
                   showAllPaths={Boolean(pathSelection.showAll)}
                   tripName={trip.name}
+                  onAddBookingForItem={(itemId, template) =>
+                    void createItineraryBookingDraft(itemId, template)
+                  }
                   onAddStop={addStop}
+                  onAddSubActivity={addSubActivity}
+                  onAddNoteForItem={(itemId) => void createItineraryNote(itemId)}
+                  onAddTaskForItem={(itemId) => void createItineraryTask(itemId)}
                   onSelectItem={selectItem}
                   onMoveItem={moveItem}
                   onMoveItemIntoPlanBlock={moveItemIntoPlanBlock}
@@ -3694,7 +4300,6 @@ export function SagittariusApp({
                   onChangeDayPath={changeDayPath}
                   onClearDayPath={clearDayPath}
                   onClearAllDayPaths={clearAllDayPaths}
-                  onAutoResolveDayOverlaps={autoResolveDayOverlaps}
                   onToggleShowAllPaths={toggleShowAllPaths}
                   onRedo={redo}
                   onToggleContextRail={() =>
@@ -3736,11 +4341,12 @@ export function SagittariusApp({
           ) : null}
           {supportsContextRail && contextRailMounted ? (
             <ContextRail
-              trip={trip}
+              trip={scopedTripForRecords}
               selectedItem={selectedItem}
-              suggestions={suggestions}
-              stopNotes={stopNotes}
-              tasks={tasks}
+              suggestions={scopedSuggestions}
+              stopNotes={scopedTripPlanRecords.stopNotes}
+              tasks={scopedTripPlanRecords.tasks}
+              bookingDocs={scopedTripPlanRecords.bookingDocs}
               currentMember={currentMember}
               expenseSummary={expenseSummary}
               canEdit={canEdit}
@@ -3749,6 +4355,9 @@ export function SagittariusApp({
               canReviewSuggestions={canReviewSuggestions}
               canEditExpenses={canEditExpenses}
               open={contextRailOpen}
+              preferredTab={contextRailPreferredTab}
+              onChangeBookingDocType={changeBookingDocType}
+              onChangeBookingDocQuickFields={changeBookingDocQuickFields}
               onCreateNote={createStopNote}
               onCreateExpense={createExpense}
               onUpdateExpense={updateExpense}
@@ -3783,6 +4392,11 @@ export function SagittariusApp({
                 ? (dialogState.day ?? selectedDay)
                 : undefined
             }
+            initialParentItemId={
+              dialogState.mode === "create"
+                ? dialogState.parentItemId
+                : undefined
+            }
             manualPathOptions={
               dialogState.mode === "edit"
                 ? deriveManualActivityPathOptions(trip, dialogState.item.id)
@@ -3812,6 +4426,8 @@ export function SagittariusApp({
             importedItems={pendingItineraryImport.items}
             memberId={currentMember.id}
             pathOptions={pathOptions}
+            records={pendingItineraryImport.records}
+            tripPlanId={selectedTripPlanId}
             startDate={trip.startDate}
             onApply={(target) => void applyPendingItineraryImport(target)}
             onClose={() => setPendingItineraryImport(null)}
@@ -3872,6 +4488,14 @@ function getNextSortOrder(items: ItineraryItem[], day: string): number {
     .map((item) => item.sortOrder);
   /* v8 ignore next */
   return dayOrders.length ? Math.max(...dayOrders) + 100 : 100;
+}
+
+function getNextChildSortOrder(items: ItineraryItem[], parentItem: ItineraryItem): number {
+  const siblingOrders = items
+    .filter((item) => item.day === parentItem.day && item.parentItemId === parentItem.id)
+    .map((item) => item.sortOrder);
+  if (siblingOrders.length) return Math.max(...siblingOrders) + 10;
+  return parentItem.sortOrder + 10;
 }
 
 function buildMapLink(place: string): string {
@@ -4028,6 +4652,76 @@ function nextLocalPlanVariantId(planVariants: PlanVariant[]): string {
   return id;
 }
 
+function normalizeTripPlanAliases(trip: Trip): Trip {
+  const plansById = new Map<string, PlanVariant>();
+  for (const plan of trip.tripPlans ?? []) plansById.set(plan.id, plan);
+  for (const variant of trip.planVariants) plansById.set(variant.id, variant);
+
+  const plans = Array.from(plansById.values());
+  const mainTripPlanId =
+    trip.mainTripPlanId || trip.activePlanVariantId || plans[0]?.id || "";
+  const normalizedPlans = plans.map((plan) =>
+    normalizeTripPlanSummary(plan, mainTripPlanId),
+  );
+
+  return {
+    ...trip,
+    activePlanVariantId: mainTripPlanId,
+    mainTripPlanId,
+    planVariants: normalizedPlans,
+    tripPlans: normalizedPlans,
+  };
+}
+
+function updateTripPlanInTrip(trip: Trip, updatedPlan: PlanVariant): Trip {
+  const existingPlans = trip.tripPlans ?? trip.planVariants;
+  const hasPlan = trip.planVariants.some((plan) => plan.id === updatedPlan.id);
+  const mergePlan = (plan: PlanVariant) =>
+    plan.id === updatedPlan.id ? { ...plan, ...updatedPlan } : plan;
+  return normalizeTripPlanAliases({
+    ...trip,
+    planVariants: hasPlan
+      ? trip.planVariants.map(mergePlan)
+      : [...trip.planVariants, updatedPlan],
+    tripPlans: existingPlans.some((plan) => plan.id === updatedPlan.id)
+      ? existingPlans.map(mergePlan)
+      : [...existingPlans, updatedPlan],
+  });
+}
+
+function normalizeTripPlanSummary(
+  plan: PlanVariant,
+  mainTripPlanId: string,
+): PlanVariant {
+  const status =
+    plan.id === mainTripPlanId
+      ? "main"
+      : plan.status === "main"
+        ? "backup"
+        : plan.status ?? planStatusForLegacyKind(plan.kind);
+  return {
+    ...plan,
+    kind: legacyKindForPlanStatus(status),
+    status,
+  };
+}
+
+function normalizeStopHierarchyValues(values: StopFormValues): StopFormValues {
+  return values.parentItemId ? { ...values, isPlanBlock: false } : values;
+}
+
+function planStatusForLegacyKind(
+  kind: PlanVariant["kind"],
+): NonNullable<PlanVariant["status"]> {
+  return kind === "split" ? "proposal" : kind;
+}
+
+function legacyKindForPlanStatus(
+  status: NonNullable<PlanVariant["status"]>,
+): PlanVariant["kind"] {
+  return status === "proposal" ? "split" : status;
+}
+
 export function nextLocalSuggestionId(suggestions: Suggestion[]): string {
   const existingIds = new Set(suggestions.map((suggestion) => suggestion.id));
   let index =
@@ -4088,6 +4782,385 @@ export function nextLocalBookingDocId(bookingDocs: BookingDoc[]): string {
   return id;
 }
 
+function tripPlanIdForRecord(
+  trip: Trip,
+  itineraryItemId?: string | null,
+  fallbackTripPlanId?: string | null,
+): string | null {
+  if (itineraryItemId) {
+    const item = trip.itineraryItems.find(
+      (candidate) => candidate.id === itineraryItemId,
+    );
+    if (item?.planVariantId) return item.planVariantId;
+  }
+  return (
+    fallbackTripPlanId || trip.mainTripPlanId || trip.activePlanVariantId || null
+  );
+}
+
+function initialSelectedTripPlanId(trip: Trip): string {
+  return (
+    trip.mainTripPlanId ||
+    trip.activePlanVariantId ||
+    trip.tripPlans?.[0]?.id ||
+    trip.planVariants[0]?.id ||
+    ""
+  );
+}
+
+function tripPlanIdForBookingRecord(
+  trip: Trip,
+  input: Pick<BookingDocInput, "relatedItineraryItemIds">,
+  fallbackTripPlanId?: string | null,
+): string | null {
+  for (const itemId of input.relatedItineraryItemIds) {
+    const tripPlanId = tripPlanIdForRecord(trip, itemId);
+    if (tripPlanId) return tripPlanId;
+  }
+  return tripPlanIdForRecord(trip, null, fallbackTripPlanId);
+}
+
+function selectTripPlanRecords(
+  trip: Trip,
+  selectedTripPlanId: string,
+  records: {
+    stopNotes: StopNote[];
+    tasks: TripTask[];
+  },
+): {
+  bookingDocs: BookingDoc[];
+  expenses: Expense[];
+  stopNotes: StopNote[];
+  tasks: TripTask[];
+} {
+  const fallbackTripPlanId =
+    selectedTripPlanId || trip.mainTripPlanId || trip.activePlanVariantId;
+  const itemPlanById = new Map(
+    trip.itineraryItems.map((item) => [item.id, item.planVariantId]),
+  );
+  const belongsToSelectedPlan = (
+    explicitTripPlanId?: string | null,
+    linkedItemIds: Array<string | null | undefined> = [],
+  ) => {
+    if (explicitTripPlanId) return explicitTripPlanId === fallbackTripPlanId;
+
+    for (const itemId of linkedItemIds) {
+      if (!itemId) continue;
+      const itemTripPlanId = itemPlanById.get(itemId);
+      if (itemTripPlanId) return itemTripPlanId === fallbackTripPlanId;
+    }
+
+    return (
+      fallbackTripPlanId === (trip.mainTripPlanId || trip.activePlanVariantId)
+    );
+  };
+
+  return {
+    bookingDocs: (trip.bookingDocs ?? []).filter((bookingDoc) =>
+      belongsToSelectedPlan(
+        bookingDoc.tripPlanId,
+        bookingDoc.relatedItineraryItemIds,
+      ),
+    ),
+    expenses: trip.expenses.filter((expense) =>
+      belongsToSelectedPlan(expense.tripPlanId, [expense.itineraryItemId]),
+    ),
+    stopNotes: records.stopNotes.filter((note) =>
+      belongsToSelectedPlan(note.tripPlanId, [note.itemId]),
+    ),
+    tasks: records.tasks.filter((task) =>
+      belongsToSelectedPlan(task.tripPlanId, [task.relatedItemId]),
+    ),
+  };
+}
+
+function buildImportedPlanRecordsForTripPlan({
+  appliedImportedItems,
+  importedItems,
+  records,
+  targetTrip,
+  tripPlanId,
+}: {
+  appliedImportedItems: ItineraryItem[];
+  importedItems: ItineraryExportItem[];
+  records: ItineraryExportRecords;
+  targetTrip: Trip;
+  tripPlanId: string;
+}): {
+  bookingDocs: BookingDoc[];
+  expenses: Expense[];
+  stopNotes: StopNote[];
+  tasks: TripTask[];
+} {
+  const sourceItemIds = new Set(importedItems.map((item) => item.id));
+  const itemIdMap = new Map(
+    importedItems.map((item, index) => [
+      item.id,
+      appliedImportedItems[index]?.id ?? item.id,
+    ]),
+  );
+  const mapItemId = (itemId: string) => itemIdMap.get(itemId) ?? itemId;
+  const hasImportedItem = (itemId?: string | null) =>
+    Boolean(itemId && sourceItemIds.has(itemId));
+
+  const importedExpenses = records.expenses
+    .filter((expense) => hasImportedItem(expense.itineraryItemId))
+    .map((expense): Expense => ({
+      ...expense,
+      tripId: targetTrip.id,
+      tripPlanId,
+      itineraryItemId: expense.itineraryItemId
+        ? mapItemId(expense.itineraryItemId)
+        : expense.itineraryItemId,
+    }));
+  const importedBookingDocs = records.bookingDocs
+    .filter((bookingDoc) =>
+      bookingDoc.relatedItineraryItemIds.some((itemId) =>
+        hasImportedItem(itemId),
+      ),
+    )
+    .map((bookingDoc): BookingDoc => ({
+      ...bookingDoc,
+      tripId: targetTrip.id,
+      tripPlanId,
+      relatedItineraryItemIds: bookingDoc.relatedItineraryItemIds.map(mapItemId),
+    }));
+  const importedStopNotes = records.stopNotes
+    .filter((note) => hasImportedItem(note.itemId))
+    .map((note): StopNote => ({
+      ...note,
+      tripId: targetTrip.id,
+      tripPlanId,
+      itemId: mapItemId(note.itemId),
+    }));
+  const importedTasks = records.tasks
+    .filter((task) => hasImportedItem(task.relatedItemId))
+    .map((task): TripTask => ({
+      ...task,
+      tripPlanId,
+      relatedItemId: task.relatedItemId
+        ? mapItemId(task.relatedItemId)
+        : task.relatedItemId,
+    }));
+
+  return {
+    bookingDocs: importedBookingDocs,
+    expenses: importedExpenses,
+    stopNotes: importedStopNotes,
+    tasks: importedTasks,
+  };
+}
+
+function mergeImportedRecordsIntoTripPlan(
+  targetTrip: Trip,
+  records: {
+    bookingDocs: BookingDoc[];
+    expenses: Expense[];
+    stopNotes: StopNote[];
+    tasks: TripTask[];
+  },
+): Trip {
+  return {
+    ...targetTrip,
+    bookingDocs: upsertById(targetTrip.bookingDocs ?? [], records.bookingDocs),
+    expenses: upsertById(targetTrip.expenses, records.expenses),
+    stopNotes: upsertById(targetTrip.stopNotes ?? [], records.stopNotes),
+    tasks: upsertById(targetTrip.tasks ?? [], records.tasks),
+  };
+}
+
+async function createImportedPlanRecordsViaApi({
+  apiClient,
+  records,
+  sessionToken,
+  tripId,
+}: {
+  apiClient: TripApiClient;
+  records: {
+    bookingDocs: BookingDoc[];
+    expenses: Expense[];
+    stopNotes: StopNote[];
+    tasks: TripTask[];
+  };
+  sessionToken: string;
+  tripId: string;
+}): Promise<{
+  bookingDocs: BookingDoc[];
+  expenses: Expense[];
+  stopNotes: StopNote[];
+  tasks: TripTask[];
+}> {
+  const taskIdMap = new Map<string, string>();
+  const expenseIdMap = new Map<string, string>();
+  const noteIdMap = new Map<string, string>();
+  const createdTasks: TripTask[] = [];
+  const createdExpenses: Expense[] = [];
+  const createdStopNotes: StopNote[] = [];
+  const createdBookingDocs: BookingDoc[] = [];
+
+  for (const task of records.tasks) {
+    let createdTask = await apiClient.createTask(tripId, sessionToken, {
+      clientMutationId: nextClientMutationId("itinerary-import-task-create"),
+      tripPlanId: task.tripPlanId,
+      title: task.title,
+      visibility: task.visibility,
+      kind: task.kind,
+      assigneeId: task.assigneeId,
+      relatedItemId: task.relatedItemId,
+    });
+    if (task.status !== createdTask.status) {
+      createdTask = await apiClient.patchTask(tripId, createdTask.id, sessionToken, {
+        clientMutationId: nextClientMutationId("itinerary-import-task-status"),
+        expectedVersion: createdTask.version ?? 1,
+        patch: { status: task.status },
+      });
+    }
+    taskIdMap.set(task.id, createdTask.id);
+    createdTasks.push(createdTask);
+  }
+
+  for (const expense of records.expenses) {
+    const createdExpense = await apiClient.createExpense(tripId, sessionToken, {
+      clientMutationId: nextClientMutationId("itinerary-import-expense-create"),
+      tripPlanId: expense.tripPlanId,
+      title: expense.title,
+      amountMinor:
+        expense.amountMinor ?? Math.round((expense.amount ?? 0) * 100),
+      currency: expense.currency ?? "HKD",
+      exchangeRateToSettlementCurrency:
+        expense.exchangeRateToSettlementCurrency ?? 1,
+      notes: expense.notes ?? null,
+      receiptUrl: expense.receiptUrl ?? null,
+      lineItems: expense.lineItems ?? [],
+      comments: expense.comments ?? [],
+      paidBy: expense.paidBy,
+      category: expense.category,
+      splits: expenseSplitsToMinor(expense.splits),
+      itineraryItemId: expense.itineraryItemId ?? null,
+    });
+    expenseIdMap.set(expense.id, createdExpense.id);
+    createdExpenses.push(createdExpense);
+  }
+
+  for (const note of records.stopNotes) {
+    const createdNote = await apiClient.createStopNote(tripId, sessionToken, {
+      clientMutationId: nextClientMutationId("itinerary-import-note-create"),
+      tripPlanId: note.tripPlanId,
+      itineraryItemId: note.itemId,
+      body: note.body,
+    });
+    noteIdMap.set(note.id, createdNote.id);
+    createdStopNotes.push(createdNote);
+  }
+
+  for (const bookingDoc of records.bookingDocs) {
+    const createdBookingDoc = await apiClient.createBookingDoc(
+      tripId,
+      sessionToken,
+      {
+        clientMutationId: nextClientMutationId("itinerary-import-booking-create"),
+        tripPlanId: bookingDoc.tripPlanId,
+        type: bookingDoc.type,
+        title: bookingDoc.title,
+        status: bookingDoc.status,
+        visibility: bookingDoc.visibility,
+        ownerMemberId: bookingDoc.ownerMemberId,
+        providerName: bookingDoc.providerName,
+        confirmationCode: bookingDoc.confirmationCode,
+        startsAt: bookingDoc.startsAt,
+        endsAt: bookingDoc.endsAt,
+        timezone: bookingDoc.timezone,
+        priceAmount: bookingDoc.priceAmount,
+        currency: bookingDoc.currency,
+        travelerIds: bookingDoc.travelerIds,
+        externalLinks: bookingDoc.externalLinks,
+        relatedItineraryItemIds: bookingDoc.relatedItineraryItemIds,
+        relatedTaskIds: bookingDoc.relatedTaskIds.map(
+          (taskId) => taskIdMap.get(taskId) ?? taskId,
+        ),
+        relatedExpenseIds: bookingDoc.relatedExpenseIds.map(
+          (expenseId) => expenseIdMap.get(expenseId) ?? expenseId,
+        ),
+        noteIds: bookingDoc.noteIds.map((noteId) => noteIdMap.get(noteId) ?? noteId),
+        notes: bookingDoc.notes,
+      },
+    );
+    createdBookingDocs.push(createdBookingDoc);
+  }
+
+  return {
+    bookingDocs: createdBookingDocs,
+    expenses: createdExpenses,
+    stopNotes: createdStopNotes,
+    tasks: createdTasks,
+  };
+}
+
+function upsertById<T extends { id: string }>(current: T[], next: T[]): T[] {
+  if (next.length === 0) return current;
+  const nextById = new Map(next.map((item) => [item.id, item]));
+  const merged = current.map((item) => nextById.get(item.id) ?? item);
+  const currentIds = new Set(current.map((item) => item.id));
+  for (const item of next) {
+    if (!currentIds.has(item.id)) merged.push(item);
+  }
+  return merged;
+}
+
+function buildItineraryCommitmentsByItemId({
+  bookingDocs,
+  expenses,
+  stopNotes,
+  tasks,
+}: {
+  bookingDocs: BookingDoc[];
+  expenses: Expense[];
+  stopNotes: StopNote[];
+  tasks: TripTask[];
+}): Record<string, ItineraryCommitmentSummary> {
+  const commitments = new Map<string, ItineraryCommitmentSummary>();
+  const ensure = (itemId: string) => {
+    const current = commitments.get(itemId) ?? {};
+    commitments.set(itemId, current);
+    return current;
+  };
+
+  for (const booking of bookingDocs) {
+    for (const itemId of booking.relatedItineraryItemIds) {
+      const current = ensure(itemId);
+      current.bookingCount = (current.bookingCount ?? 0) + 1;
+    }
+  }
+  for (const expense of expenses) {
+    if (!expense.itineraryItemId) continue;
+    const current = ensure(expense.itineraryItemId);
+    current.expenseCount = (current.expenseCount ?? 0) + 1;
+  }
+  for (const task of tasks) {
+    if (!task.relatedItemId || task.status === "done") continue;
+    const current = ensure(task.relatedItemId);
+    current.openTaskCount = (current.openTaskCount ?? 0) + 1;
+  }
+  for (const note of stopNotes) {
+    const current = ensure(note.itemId);
+    current.noteCount = (current.noteCount ?? 0) + 1;
+  }
+
+  return Object.fromEntries(commitments);
+}
+
+function resolveCreatedImportId(
+  id: string | null | undefined,
+  idMaps: Map<string, string>[],
+): string | null | undefined {
+  if (typeof id !== "string") return id;
+  for (const idMap of idMaps) {
+    const mappedId = idMap.get(id);
+    if (mappedId) return mappedId;
+  }
+  return id;
+}
+
 export function nextLocalPhotoAlbumId(photoAlbumLinks: TripPhotoAlbumLink[]): string {
   const existingIds = new Set(photoAlbumLinks.map((album) => album.id));
   let index =
@@ -4104,7 +5177,9 @@ export function nextLocalPhotoAlbumId(photoAlbumLinks: TripPhotoAlbumLink[]): st
   return id;
 }
 
-function serializeBookingDocInputForApi(input: BookingDocInput) {
+function serializeBookingDocInputForApi(
+  input: BookingDocInput & { tripPlanId?: string | null },
+) {
   return {
     ...input,
     title: input.title.trim(),
@@ -4121,6 +5196,110 @@ function serializeBookingDocInputForApi(input: BookingDocInput) {
       accessNote: link.accessNote?.trim() || null,
     })),
   };
+}
+
+export function bookingTypeForItineraryItem(item: ItineraryItem): BookingDocType {
+  const mode = typeof item.details?.mode === "string" ? item.details.mode.toLowerCase() : "";
+  const transportation = item.transportation.toLowerCase();
+  const activity = item.activity.toLowerCase();
+  const haystack = `${mode} ${transportation} ${activity}`;
+  if (/\bflight\b|\bplane\b|\bairline\b|เครื่องบิน|สายการบิน|(^|\s)บิน/.test(haystack))
+    return "flight";
+  if (/\btrain\b|\brail\b|\bmtr\b|รถไฟ|ราง|สถานีรถไฟ/.test(haystack)) return "train";
+  if (/\bbus\b|\bferry\b|\bshuttle\b|\btram\b|\btaxi\b|รถบัส|บัส|เรือ|เฟอร์รี่|รถรับส่ง|แท็กซี่|รถราง/.test(haystack))
+    return "public_transport";
+  if (
+    item.activityType === "stay" ||
+    item.itemKind === "lodging" ||
+    /โรงแรม|ที่พัก|พักค้างคืน|เช็คอิน|check[-\s]?in/.test(haystack)
+  )
+    return "hotel";
+  if (item.activityType === "attraction" || item.itemKind === "activity") return "activity_ticket";
+  return "other";
+}
+
+function bookingTypeForBookingTemplate(
+  template: Exclude<ItineraryBookingTemplate, "recommended">,
+): BookingDocType {
+  if (template === "activity_ticket") return "activity_ticket";
+  return template;
+}
+
+function bookingDraftTitleForItineraryItem(
+  item: ItineraryItem,
+  bookingType: BookingDocType,
+): string {
+  const suffixByType: Partial<Record<BookingDocType, string>> = {
+    activity_ticket: "ticket draft",
+    flight: "flight ticket draft",
+    hotel: "hotel booking draft",
+    public_transport: "transport booking draft",
+    train: "train ticket draft",
+  };
+  return `${item.activity} ${suffixByType[bookingType] ?? "booking draft"}`;
+}
+
+function bookingTypeForExpenseEstimate(expense: Expense): BookingDocType {
+  if (expense.category === "stay") return "hotel";
+  if (expense.category === "tickets") return "activity_ticket";
+  if (expense.category === "transport") return "public_transport";
+  return "other";
+}
+
+function bookingDraftDetailsForItineraryItem(item: ItineraryItem): {
+  confirmationCode: string | null;
+  notes: string;
+  providerName: string | null;
+} {
+  const providerName =
+    readItineraryDetailString(item.details, "provider") ||
+    readItineraryDetailString(item.details, "mode") ||
+    null;
+  const confirmationCode =
+    readItineraryDetailString(item.details, "bookingRef") ||
+    readItineraryDetailString(item.details, "ticketRef") ||
+    null;
+  const notes = [
+    item.place ? `Draft from itinerary: ${item.place}` : "Draft from itinerary",
+    readItineraryDetailString(item.details, "entryWindow"),
+    readItineraryDetailString(item.details, "costNote"),
+    readItineraryDetailString(item.details, "detail"),
+  ].filter((value): value is string => Boolean(value));
+
+  return {
+    confirmationCode,
+    notes: notes.join("\n"),
+    providerName,
+  };
+}
+
+function bookingDraftTimeWindowForItineraryItem(item: ItineraryItem): {
+  endsAt: string | null;
+  startsAt: string | null;
+} {
+  const startTime = item.startTime?.trim();
+  const endTime = item.endTime?.trim();
+  return {
+    startsAt: startTime ? itineraryDateTime(item.day, startTime) : null,
+    endsAt: endTime
+      ? itineraryDateTime(
+          shiftIsoDate(item.day, item.endOffsetDays ?? 0),
+          endTime,
+        )
+      : null,
+  };
+}
+
+function itineraryDateTime(day: string, time: string): string {
+  return `${day}T${time}:00`;
+}
+
+function readItineraryDetailString(
+  details: ItineraryItem["details"] | null | undefined,
+  key: string,
+): string {
+  const value = details?.[key];
+  return typeof value === "string" ? value.trim() : "";
 }
 
 function serializePhotoAlbumInputForApi(input: TripPhotoAlbumInput) {
@@ -4157,7 +5336,11 @@ async function patchApiItineraryBranchItems(
   sessionToken: string,
 ): Promise<ItineraryItem[]> {
   const patchedItems: ItineraryItem[] = [];
-  for (const item of items) {
+  const changedItemIds = new Set(items.map((item) => item.id));
+  const itemsToPatch = items.filter(
+    (item) => !item.parentItemId || !changedItemIds.has(item.parentItemId),
+  );
+  for (const item of itemsToPatch) {
     patchedItems.push(
       await apiClient.patchItineraryItem(tripId, item.id, sessionToken, {
         clientMutationId: nextClientMutationId("itinerary-branch"),
@@ -4234,7 +5417,7 @@ function loadPersistedTrip(): Trip | null {
   const rawTrip = getBrowserLocalStorage()?.getItem(tripStorageKey);
   if (!rawTrip) return null;
   try {
-    return JSON.parse(rawTrip) as Trip;
+    return normalizeTripPlanAliases(JSON.parse(rawTrip) as Trip);
   } catch {
     getBrowserLocalStorage()?.removeItem(tripStorageKey);
     return null;
@@ -4346,7 +5529,10 @@ function persistAccountSession(session: AccountSession | null) {
 }
 
 function persistTripDraft(trip: Trip) {
-  getBrowserLocalStorage()?.setItem(tripStorageKey, JSON.stringify(trip));
+  getBrowserLocalStorage()?.setItem(
+    tripStorageKey,
+    JSON.stringify(normalizeTripPlanAliases(trip)),
+  );
 }
 
 function shiftItineraryItemsToStartDate(
@@ -4402,19 +5588,28 @@ function ItineraryImportOptionsDialog({
   importedItems,
   memberId,
   pathOptions,
+  records,
   startDate,
   currentTripPathId,
+  tripPlanId,
   onApply,
   onClose,
 }: {
   importedItems: ItineraryExportItem[];
   memberId: string;
   pathOptions: ItineraryPathOption[];
+  records: ItineraryExportRecords;
   startDate: string;
   currentTripPathId: string;
+  tripPlanId: string;
   onApply: (target: ItineraryImportApplyTarget) => void;
   onClose: () => void;
 }) {
+  const recordCount =
+    records.expenses.length +
+    records.bookingDocs.length +
+    records.stopNotes.length +
+    records.tasks.length;
   const currentPathName =
     pathOptions.find((option) => option.id === currentTripPathId)?.name ??
     "Main";
@@ -4423,6 +5618,8 @@ function ItineraryImportOptionsDialog({
   const [day, setDay] = useState(importedItems[0]?.day ?? startDate);
   const [mode, setMode] =
     useState<ItineraryImportApplyTarget["mode"]>("replace-target");
+  const [recordMode, setRecordMode] =
+    useState<ItineraryImportApplyTarget["recordMode"]>("clone-linked");
   const previewLabel = importedItems[0]?.activity ?? "No activities";
 
   function submitImport(event: FormEvent<HTMLFormElement>) {
@@ -4437,7 +5634,9 @@ function ItineraryImportOptionsDialog({
         mode,
         pathName,
         pathOptions,
+        recordMode,
         scope,
+        tripPlanId,
       }),
     );
   }
@@ -4460,6 +5659,14 @@ function ItineraryImportOptionsDialog({
         <p className={importDialogBodyClassName}>
           {previewLabel} · {importedItems.length} activities
         </p>
+        {recordCount > 0 ? (
+          <p className={importDialogBodyClassName}>
+            Records detected: {records.expenses.length} expenses,{" "}
+            {records.bookingDocs.length} bookings, {records.stopNotes.length}{" "}
+            notes, {records.tasks.length} tasks. Linked records will be
+            imported only when record handling is set to clone.
+          </p>
+        ) : null}
         <div className={importDialogFieldsClassName}>
           <label>
             <span>ชื่อ path</span>
@@ -4505,6 +5712,22 @@ function ItineraryImportOptionsDialog({
               </option>
             </select>
           </label>
+          {recordCount > 0 ? (
+            <label>
+              <span>Record handling</span>
+              <select
+                value={recordMode}
+                onChange={(event) =>
+                  setRecordMode(
+                    event.target.value as ItineraryImportApplyTarget["recordMode"],
+                  )
+                }
+              >
+                <option value="clone-linked">Clone linked records</option>
+                <option value="activities-only">Activities only</option>
+              </select>
+            </label>
+          ) : null}
         </div>
         <div className={appDeleteDialogActionsClassName}>
           <Button type="button" variant="ghost" onClick={onClose}>
@@ -4523,14 +5746,18 @@ function buildItineraryImportApplyTarget({
   mode,
   pathName,
   pathOptions,
+  recordMode,
   scope,
+  tripPlanId,
 }: {
   day?: string;
   memberId: string;
   mode: ItineraryImportApplyTarget["mode"];
   pathName: string;
   pathOptions: ItineraryPathOption[];
+  recordMode: ItineraryImportApplyTarget["recordMode"];
   scope: ItineraryImportApplyTarget["scope"];
+  tripPlanId: string;
 }): ItineraryImportApplyTarget {
   const existingPath = pathOptions.find(
     (option) =>
@@ -4546,11 +5773,13 @@ function buildItineraryImportApplyTarget({
     pathId === mainItineraryPathId ? "Main" : (existingPath?.name ?? pathName);
   return {
     memberId,
+    tripPlanId,
     pathId,
     pathName: normalizedPathName,
     scope,
     day,
     mode,
+    recordMode,
   };
 }
 
@@ -4564,8 +5793,9 @@ function slugifyFilePart(value: string): string {
   );
 }
 
-function buildLocalPlanCheck(trip: Trip, memberId: string): PlanCheck {
-  const suggestions: PlanSuggestion[] = trip.itineraryItems.flatMap((item, index) => {
+function buildLocalPlanCheck(trip: Trip, memberId: string, tripPlanId?: string | null): PlanCheck {
+  const scopedItems = tripPlanId ? trip.itineraryItems.filter((item) => item.planVariantId === tripPlanId) : trip.itineraryItems;
+  const suggestions: PlanSuggestion[] = scopedItems.flatMap((item, index) => {
     const missing: string[] = [];
     if (item.timeMode !== "flexible" && !item.startTime.trim()) missing.push("time");
     if (item.timeMode !== "flexible" && (item.durationMinutes === null || item.durationMinutes <= 0)) missing.push("duration");
@@ -4606,8 +5836,9 @@ function buildLocalPlanCheck(trip: Trip, memberId: string): PlanCheck {
   return {
     id: "local-plan-check",
     tripId: trip.id,
+    tripPlanId,
     createdBy: memberId,
-    itineraryFingerprint: trip.itineraryItems.map((item) => `${item.id}:${item.version}`).join("|"),
+    itineraryFingerprint: scopedItems.map((item) => `${item.id}:${item.version}`).join("|"),
     stale: false,
     status: "complete",
     languageMetadata: { provider: "local-rules" },
@@ -4616,6 +5847,60 @@ function buildLocalPlanCheck(trip: Trip, memberId: string): PlanCheck {
     version: 1,
     suggestions,
   };
+}
+
+function scopePlanCheckToItems(
+  check: PlanCheck | null,
+  items: ItineraryItem[],
+): PlanCheck | null {
+  if (!check) return null;
+  if (check.tripPlanId && !items.some((item) => item.planVariantId === check.tripPlanId)) return null;
+  const itemIds = new Set(items.map((item) => item.id));
+  return {
+    ...check,
+    suggestions: check.suggestions.filter(
+      (suggestion) =>
+        suggestion.targetItemIds.some((itemId) => itemIds.has(itemId)),
+    ),
+  };
+}
+
+export function normalizeInlineTimePatch(
+  item: ItineraryItem,
+  patch: InlineItineraryItemPatch,
+): InlineItineraryItemPatch {
+  const nextPatch: InlineItineraryItemPatch = { ...patch };
+  const hasStartTime = nextPatch.startTime !== undefined;
+  const hasEndTime = nextPatch.endTime !== undefined;
+  const hasEndOffsetDays = nextPatch.endOffsetDays !== undefined;
+  if (!hasStartTime && !hasEndTime && !hasEndOffsetDays) return nextPatch;
+
+  const startTime = hasStartTime ? nextPatch.startTime : item.startTime;
+  const endTime = hasEndTime ? nextPatch.endTime : item.endTime;
+  if (!endTime) {
+    if (hasEndTime) {
+      nextPatch.endOffsetDays = 0;
+      nextPatch.durationMinutes = null;
+    }
+    return nextPatch;
+  }
+
+  const start = parseTime(startTime ?? "");
+  const end = parseTime(endTime);
+  if (start === null || end === null) return nextPatch;
+
+  const minimumEndOffsetDays = end <= start ? 1 : 0;
+  let endOffsetDays = hasEndOffsetDays
+    ? Math.max(nextPatch.endOffsetDays ?? 0, minimumEndOffsetDays)
+    : minimumEndOffsetDays;
+  if (endOffsetDays !== (nextPatch.endOffsetDays ?? item.endOffsetDays ?? 0)) {
+    nextPatch.endOffsetDays = endOffsetDays;
+  }
+  const durationMinutes = end + endOffsetDays * 24 * 60 - start;
+  if (durationMinutes > 0) {
+    nextPatch.durationMinutes = durationMinutes;
+  }
+  return nextPatch;
 }
 
 export function parsePlanSuggestionEditAction(
@@ -4660,6 +5945,7 @@ function PlanCheckPanel({
   locale,
   running,
   onRun,
+  onReviewSuggestionEdit,
   onUpdateSuggestionStatus,
 }: {
   canMutate: boolean;
@@ -4668,6 +5954,7 @@ function PlanCheckPanel({
   locale: "en" | "th";
   running: boolean;
   onRun: () => void;
+  onReviewSuggestionEdit: (suggestion: PlanSuggestion) => void;
   onUpdateSuggestionStatus: (suggestion: PlanSuggestion, status: PlanSuggestion["status"]) => void;
 }) {
   const pendingSuggestions = check?.suggestions.filter((suggestion) => suggestion.status === "pending") ?? [];
@@ -4698,9 +5985,10 @@ function PlanCheckPanel({
                 <p className="m-0 text-xs font-semibold text-(--color-text-muted)">{action}</p>
                 {suggestion.status === "pending" ? (
                   <div className="flex flex-wrap gap-2">
-                    <Button type="button" variant="secondary" disabled={!canMutate} onClick={() => onUpdateSuggestionStatus(suggestion, "accepted")}>Accept</Button>
+                    <Button type="button" variant="secondary" disabled={!canMutate} onClick={() => onReviewSuggestionEdit(suggestion)}>Review edit</Button>
                     <Button type="button" variant="secondary" disabled={!canMutate} onClick={() => onUpdateSuggestionStatus(suggestion, "dismissed")}>Dismiss</Button>
                     <Button type="button" variant="secondary" disabled={!canMutate} onClick={() => onUpdateSuggestionStatus(suggestion, "snoozed")}>Snooze</Button>
+                    <Button type="button" variant="ghost" onClick={() => undefined}>Keep reviewing</Button>
                   </div>
                 ) : null}
               </article>

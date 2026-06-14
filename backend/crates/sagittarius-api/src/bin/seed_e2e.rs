@@ -40,6 +40,11 @@ const MIGRATIONS: &[&str] = &[
     include_str!("../../../../migrations/0022_itinerary_item_details.sql"),
     include_str!("../../../../migrations/0023_itinerary_table_v1.sql"),
     include_str!("../../../../migrations/0024_plan_check_runtime_grants.sql"),
+    include_str!("../../../../migrations/0025_trip_plan_compatibility.sql"),
+    include_str!("../../../../migrations/0026_plan_scoped_records.sql"),
+    include_str!("../../../../migrations/0027_itinerary_hierarchy_time_windows.sql"),
+    include_str!("../../../../migrations/0028_plan_check_trip_plan_scope.sql"),
+    include_str!("../../../../migrations/0029_expense_reminder_trip_plan_scope.sql"),
 ];
 
 #[tokio::main]
@@ -76,11 +81,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 async fn seed_stop_notes(pool: &sqlx::PgPool) -> Result<(), sqlx::Error> {
     sqlx::query(
-        "insert into stop_notes (id, trip_id, itinerary_item_id, author_id, body)
-         values ($1, $2, $3, $4, 'Meet outside exit B after breakfast')",
+        "insert into stop_notes (id, trip_id, trip_plan_id, itinerary_item_id, author_id, body)
+         values ($1, $2, $3, $4, $5, 'Meet outside exit B after breakfast')",
     )
     .bind(Uuid::parse_str(STOP_NOTE_ID).expect("static uuid"))
     .bind(Uuid::parse_str(TRIP_ID).expect("static uuid"))
+    .bind(Uuid::parse_str(PLAN_ID).expect("static uuid"))
     .bind(Uuid::parse_str(ITEM_ID).expect("static uuid"))
     .bind(Uuid::parse_str(TRAVELER_ID).expect("static uuid"))
     .execute(pool)
@@ -93,12 +99,13 @@ async fn seed_expenses(pool: &sqlx::PgPool) -> Result<(), sqlx::Error> {
     let traveler_id = Uuid::parse_str(TRAVELER_ID).expect("static uuid");
     sqlx::query(
         "insert into expenses (
-           id, trip_id, title, amount_minor, currency, paid_by, category, splits, itinerary_item_id
+           id, trip_id, trip_plan_id, title, amount_minor, currency, paid_by, category, splits, itinerary_item_id
          )
-         values ($1, $2, 'Dim sum breakfast', 24000, 'HKD', $3, 'food', $4, $5)",
+         values ($1, $2, $3, 'Dim sum breakfast', 24000, 'HKD', $4, 'food', $5, $6)",
     )
     .bind(Uuid::parse_str(EXPENSE_ID).expect("static uuid"))
     .bind(Uuid::parse_str(TRIP_ID).expect("static uuid"))
+    .bind(Uuid::parse_str(PLAN_ID).expect("static uuid"))
     .bind(owner_id)
     .bind(serde_json::json!({
         owner_id.to_string(): 12000,
@@ -265,16 +272,17 @@ mod tests {
 async fn seed_tasks(pool: &sqlx::PgPool) -> Result<(), sqlx::Error> {
     sqlx::query(
         "insert into trip_tasks (
-           id, trip_id, title, status, visibility, kind, created_by, assignee_id
+           id, trip_id, trip_plan_id, title, status, visibility, kind, created_by, assignee_id
          )
          values
-           (gen_random_uuid(), $1, 'Buy eSIM', 'open', 'private', 'prep', $2, $2),
-           ($4, $1, 'Book Peak Tram', 'done', 'shared', 'booking', $3, $3)",
+           (gen_random_uuid(), $1, $5, 'Buy eSIM', 'open', 'private', 'prep', $2, $2),
+           ($4, $1, $5, 'Book Peak Tram', 'done', 'shared', 'booking', $3, $3)",
     )
     .bind(Uuid::parse_str(TRIP_ID).expect("static uuid"))
     .bind(Uuid::parse_str(TRAVELER_ID).expect("static uuid"))
     .bind(Uuid::parse_str(ORGANIZER_ID).expect("static uuid"))
     .bind(Uuid::parse_str(TASK_ID).expect("static uuid"))
+    .bind(Uuid::parse_str(PLAN_ID).expect("static uuid"))
     .execute(pool)
     .await?;
     Ok(())
@@ -295,17 +303,17 @@ async fn seed_booking_docs(pool: &sqlx::PgPool) -> Result<(), sqlx::Error> {
     let mut tx = pool.begin().await?;
     sqlx::query(
         "insert into booking_docs (
-           id, trip_id, type, title, status, visibility, owner_member_id, provider_name,
+           id, trip_id, trip_plan_id, type, title, status, visibility, owner_member_id, provider_name,
            confirmation_code, starts_at, ends_at, timezone, price_minor, currency, notes, created_by
          )
          values
            (
-             $1, $2, 'flight', 'HK Express flight to Hong Kong', 'confirmed', 'sensitive',
+             $1, $2, $6, 'flight', 'HK Express flight to Hong Kong', 'confirmed', 'sensitive',
              $3, 'HK Express', 'UO-2026', '2026-06-18T03:45:00Z', '2026-06-18T06:30:00Z',
              'Asia/Hong_Kong', 184500, 'HKD', 'Boarding pass is in Drive; check passport names.', $4
            ),
            (
-             $5, $2, 'hotel', 'Tsim Sha Tsui hotel voucher', 'booked', 'shared',
+             $5, $2, $6, 'hotel', 'Tsim Sha Tsui hotel voucher', 'booked', 'shared',
              $4, 'Harbour Stay', 'HS-1842', '2026-06-18T07:00:00Z', '2026-06-23T04:00:00Z',
              'Asia/Hong_Kong', 520000, 'HKD', 'Pay at property; breakfast included.', $4
            )",
@@ -315,6 +323,7 @@ async fn seed_booking_docs(pool: &sqlx::PgPool) -> Result<(), sqlx::Error> {
     .bind(owner_id)
     .bind(organizer_id)
     .bind(hotel_id)
+    .bind(Uuid::parse_str(PLAN_ID).expect("static uuid"))
     .execute(&mut *tx)
     .await?;
 

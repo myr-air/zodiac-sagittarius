@@ -14,7 +14,13 @@ import {
   verifyTripCredentials,
   verifyTripParticipantPassword,
 } from "@/src/trip/auth";
-import { TripApiError, type JoinTripResponse, type TripApiClient, type TripCockpit } from "@/src/trip/api-client";
+import {
+  assertMainPlanPointerAliasesMatch,
+  TripApiError,
+  type JoinTripResponse,
+  type TripApiClient,
+  type TripCockpit,
+} from "@/src/trip/api-client";
 import type { Member, Trip, TripParticipantSession } from "@/src/trip/types";
 
 interface TripJoinGateProps {
@@ -416,7 +422,8 @@ function participantStatusLabel(member: Member, labels: Messages["join"]["member
   return labels.ready;
 }
 
-function tripFromJoinResponse(response: JoinTripResponse): Trip {
+export function tripFromJoinResponse(response: JoinTripResponse): Trip {
+  assertMainPlanPointerAliasesMatch(response.trip);
   return {
     id: response.trip.id,
     joinId: response.trip.joinId,
@@ -427,6 +434,8 @@ function tripFromJoinResponse(response: JoinTripResponse): Trip {
     endDate: response.trip.endDate,
     /* v8 ignore next */
     activePlanVariantId: response.trip.activePlanVariantId ?? "",
+    mainTripPlanId:
+      response.trip.mainTripPlanId ?? response.trip.activePlanVariantId ?? "",
     planVariants: [],
     members: response.claimableMembers.map((member) => ({
       id: member.id,

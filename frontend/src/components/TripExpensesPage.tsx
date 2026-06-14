@@ -22,15 +22,18 @@ interface TripExpensesPageProps {
   currentMember: Member;
   expenseSummary: ExpenseSummary;
   canEditExpenses: boolean;
+  selectedTripPlanId?: string | null;
   apiBaseUrl?: string;
   onCreateExpense: (input: ExpenseInput) => void | Promise<void>;
   onUpdateExpense: (input: ExpenseUpdateInput) => void | Promise<void>;
   onDeleteExpense: (expenseId: string) => void;
+  onDuplicateExpenseAsEstimate?: (expense: Expense) => void | Promise<void>;
   onRecordPaybackReminder?: (suggestion: SettlementSuggestion) => void | Promise<void>;
 }
 
 export interface ExpenseInput {
   itemId: string | null;
+  tripPlanId?: string | null;
   title: string;
   amount: number;
   currency: string;
@@ -96,16 +99,20 @@ const commentsClassName = "grid gap-2 rounded-(--radius-sm) border border-(--col
 const commentRowClassName = "grid gap-0.5 rounded-(--radius-sm) bg-(--color-surface) px-2.5 py-2 text-xs [&_strong]:text-(--color-text) [&_span]:text-(--color-text-muted)";
 const warningClassName = "rounded-(--radius-sm) border border-(--color-warning-border) bg-(--color-warning-soft) px-2.5 py-2 text-xs font-bold text-(--color-warning-strong)";
 const dialogActionsClassName = "flex flex-wrap items-center justify-end gap-2 border-t border-(--color-border) pt-3";
+const scopeAuditListClassName = "grid gap-2";
+const scopeAuditRowClassName = "grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-(--radius-md) border border-(--color-warning-border) bg-(--color-warning-soft) px-2.5 py-2 text-xs";
 
 export function TripExpensesPage({
   trip,
   currentMember,
   expenseSummary,
   canEditExpenses,
+  selectedTripPlanId,
   apiBaseUrl = "",
   onCreateExpense,
   onUpdateExpense,
   onDeleteExpense,
+  onDuplicateExpenseAsEstimate,
   onRecordPaybackReminder,
 }: TripExpensesPageProps) {
   const { locale, t } = useI18n();
@@ -120,6 +127,16 @@ export function TripExpensesPage({
   const owedToYou = Math.max(0, currentNet);
   const statement = useMemo(() => buildExpenseStatement({ trip, expenseSummary }), [expenseSummary, trip]);
   const csv = useMemo(() => buildExpenseCsv({ trip, expenseSummary }), [expenseSummary, trip]);
+  const inferredScopeExpenses = useMemo(
+    () =>
+      trip.expenses.filter(
+        (expense) =>
+          expense.category !== "settlement" &&
+          Boolean(expense.tripPlanId) &&
+          !expense.itineraryItemId,
+      ),
+    [trip.expenses],
+  );
   const categorySpend = useMemo(() => {
     const totals = new Map<Expense["category"], number>();
     for (const expense of trip.expenses) {
@@ -201,6 +218,24 @@ export function TripExpensesPage({
       paidBy: suggestion.from,
       category: "settlement",
       splits: { [suggestion.to]: suggestion.amount },
+    });
+  }
+
+  function recordRefund(expense: Expense) {
+    const splits = refundSplits(expense);
+    const amount = sumShares(splits);
+    if (amount <= 0) return;
+    onCreateExpense({
+      itemId: expense.itineraryItemId ?? null,
+      tripPlanId: expense.tripPlanId ?? selectedTripPlanId ?? null,
+      title: `Refund: ${expense.title}`,
+      amount,
+      currency: expense.currency ?? settlementCurrency,
+      exchangeRateToSettlementCurrency: expense.exchangeRateToSettlementCurrency ?? 1,
+      notes: `Refund settlement for actual expense: ${expense.title}`,
+      paidBy: expense.paidBy,
+      category: "settlement",
+      splits,
     });
   }
 
@@ -311,6 +346,35 @@ export function TripExpensesPage({
               })}
             </div>
           </section>
+
+          {inferredScopeExpenses.length ? (
+            <section className={panelClassName} aria-label={t.expenses.scopeAudit.label}>
+              <h2 className={panelHeadingClassName}><Icon name="warning" /> {t.expenses.scopeAudit.title}</h2>
+              <p className={balanceMetaClassName}>{t.expenses.scopeAudit.summary({ count: inferredScopeExpenses.length })}</p>
+              <div className={scopeAuditListClassName}>
+                {inferredScopeExpenses.map((expense) => (
+                  <div className={scopeAuditRowClassName} key={expense.id}>
+                    <span className="min-w-0">
+                      <strong className={balanceNameClassName}>{expense.title}</strong>
+                      <br />
+                      <span className={balanceMetaClassName}>
+                        {t.expenses.scopeAudit.inferred}: {tripPlanName(trip, expense.tripPlanId)}
+                      </span>
+                    </span>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      className="min-h-8 px-2 py-1 text-xs"
+                      disabled={!canEditExpenses}
+                      onClick={() => setDialogExpense(expense)}
+                    >
+                      {t.expenses.scopeAudit.review({ title: expense.title })}
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </section>
+          ) : null}
         </div>
 
         <section className="grid min-h-0 content-start gap-3" aria-label={t.expenses.ledgerLabel}>
@@ -394,7 +458,23 @@ export function TripExpensesPage({
                           <IconButton type="button" aria-label={t.expenses.actions.editExpense({ title: expense.title })} disabled={!canEditExpenses} onClick={() => setDialogExpense(expense)}>
                             <Icon name="edit" />
                           </IconButton>
-                          <IconButton type="button" aria-label={t.expenses.actions.deleteExpense({ title: expense.title })} disabled={!canEditExpenses} onClick={() => onDeleteExpense(expense.id)}>
+                          <IconButton
+                            type="button"
+                            aria-label={t.expenses.actions.duplicateAsEstimate({ title: expense.title })}
+                            disabled={!canEditExpenses || !onDuplicateExpenseAsEstimate}
+                            onClick={() => void onDuplicateExpenseAsEstimate?.(expense)}
+                          >
+                            <Icon name="copy" />
+                          </IconButton>
+                          <IconButton
+                            type="button"
+                            aria-label={t.expenses.actions.recordRefund({ title: expense.title })}
+                            disabled={!canEditExpenses || expense.category === "settlement" || refundAmount(expense) <= 0}
+                            onClick={() => recordRefund(expense)}
+                          >
+                            <Icon name="wallet" />
+                          </IconButton>
+                          <IconButton type="button" aria-label={t.expenses.actions.cancelExpense({ title: expense.title })} disabled={!canEditExpenses} onClick={() => onDeleteExpense(expense.id)}>
                             <Icon name="trash" />
                           </IconButton>
                         </span>
@@ -419,6 +499,7 @@ export function TripExpensesPage({
           trip={trip}
           currentMember={currentMember}
           settlementCurrency={settlementCurrency}
+          selectedTripPlanId={selectedTripPlanId}
           apiBaseUrl={apiBaseUrl}
           onClose={() => setDialogExpense(null)}
           onCreateExpense={async (input) => {
@@ -450,6 +531,7 @@ function ExpenseDialog({
   trip,
   currentMember,
   settlementCurrency,
+  selectedTripPlanId,
   apiBaseUrl,
   onClose,
   onCreateExpense,
@@ -459,6 +541,7 @@ function ExpenseDialog({
   trip: Trip;
   currentMember: Member;
   settlementCurrency: string;
+  selectedTripPlanId?: string | null;
   apiBaseUrl: string;
   onClose: () => void;
   onCreateExpense: (input: ExpenseInput) => void | Promise<void>;
@@ -479,6 +562,15 @@ function ExpenseDialog({
   const [paidBy, setPaidBy] = useState(expense?.paidBy ?? currentMember.id);
   const [category, setCategory] = useState<Expense["category"]>(expense?.category ?? "transport");
   const [itemId, setItemId] = useState(expense?.itineraryItemId ?? "");
+  const [tripPlanId, setTripPlanId] = useState(
+    expense?.tripPlanId ??
+      selectedTripPlanId ??
+      trip.mainTripPlanId ??
+      trip.activePlanVariantId ??
+      trip.tripPlans?.[0]?.id ??
+      trip.planVariants[0]?.id ??
+      "",
+  );
   const [splitMode, setSplitMode] = useState<ExpenseSplitMode>(expense?.lineItems?.length ? "itemized" : expense ? "exact" : "equal");
   const [splitValues, setSplitValues] = useState<Record<string, string>>(
     Object.fromEntries(trip.members.map((member) => [member.id, expense ? String(expense.splits[member.id] ?? 0) : "0"])),
@@ -515,6 +607,9 @@ function ExpenseDialog({
   const splitTotal = sumShares(splits);
   const splitMismatch = (splitMode === "exact" || splitMode === "percentage" || splitMode === "itemized") && Math.abs(splitTotal - amountNumber) > 0.01;
   const invalidItemizedLines = splitMode === "itemized" && (!validLineItems.length || validLineItems.length !== lineItems.length);
+  const linkedItem = itemId ? trip.itineraryItems.find((item) => item.id === itemId) : null;
+  const effectiveTripPlanId = linkedItem?.planVariantId ?? tripPlanId;
+  const tripPlanOptions = trip.tripPlans ?? trip.planVariants;
 
   useEffect(() => {
     let cancelled = false;
@@ -583,12 +678,21 @@ function ExpenseDialog({
     setCommentDraft("");
   }
 
+  function changeItemId(nextItemId: string) {
+    setItemId(nextItemId);
+    const nextLinkedItem = nextItemId ? trip.itineraryItems.find((item) => item.id === nextItemId) : null;
+    if (nextLinkedItem?.planVariantId) {
+      setTripPlanId(nextLinkedItem.planVariantId);
+    }
+  }
+
   async function submitExpense(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const trimmedTitle = title.trim();
     if (isSaving || !trimmedTitle || !Number.isFinite(amountNumber) || amountNumber <= 0 || splitMismatch || !hasValidExchangeRate || invalidItemizedLines || !hasValidRepeatCount) return;
     const input: ExpenseInput = {
       itemId: itemId || null,
+      tripPlanId: effectiveTripPlanId || null,
       title: trimmedTitle,
       amount: amountNumber,
       currency: normalizedCurrency,
@@ -686,9 +790,24 @@ function ExpenseDialog({
                 {categories.map((candidate) => <option key={candidate} value={candidate}>{candidate}</option>)}
               </select>
             </label>
+            <div className="grid gap-1.5">
+              <label className={fieldClassName}>
+                <span>{t.expenses.fields.tripPlan}</span>
+                <select
+                  value={effectiveTripPlanId}
+                  disabled={Boolean(linkedItem)}
+                  onChange={(event) => setTripPlanId(event.target.value)}
+                >
+                  {tripPlanOptions.map((plan) => (
+                    <option key={plan.id} value={plan.id}>{plan.name}</option>
+                  ))}
+                </select>
+              </label>
+              {linkedItem ? <span className={balanceMetaClassName}>{t.expenses.dialog.planLockedToLinkedStop}</span> : null}
+            </div>
             <label className={fieldClassName}>
               <span>{t.expenses.fields.linkedStop}</span>
-              <select value={itemId} onChange={(event) => setItemId(event.target.value)}>
+              <select value={itemId} onChange={(event) => changeItemId(event.target.value)}>
                 <option value="">{t.expenses.fields.noLinkedStop}</option>
                 {trip.itineraryItems.map((item) => <option key={item.id} value={item.id}>{item.activity}</option>)}
               </select>
@@ -810,6 +929,11 @@ function memberInitial(name: string): string {
   return name.trim().slice(0, 1).toLocaleUpperCase() || "?";
 }
 
+function tripPlanName(trip: Trip, tripPlanId: string | null | undefined): string {
+  const plans = trip.tripPlans ?? trip.planVariants;
+  return plans.find((plan) => plan.id === tripPlanId)?.name ?? tripPlanId ?? "Unassigned";
+}
+
 function categoryTone(category: Expense["category"]): { background: string; border: string; dot: string; text: string } {
   const tones: Record<Expense["category"], { background: string; border: string; dot: string; text: string }> = {
     food: { background: "#fff7ed", border: "#fed7aa", dot: "#f97316", text: "#9a3412" },
@@ -824,6 +948,18 @@ function categoryTone(category: Expense["category"]): { background: string; bord
 
 function sumShares(splits: Record<string, number>): number {
   return Math.round(Object.values(splits).reduce((sum, share) => sum + share, 0) * 100) / 100;
+}
+
+function refundSplits(expense: Expense): Record<string, number> {
+  return Object.fromEntries(
+    Object.entries(expense.splits).filter(
+      ([memberId, amount]) => memberId !== expense.paidBy && amount > 0,
+    ),
+  );
+}
+
+function refundAmount(expense: Expense): number {
+  return sumShares(refundSplits(expense));
 }
 
 function slugifyFilePart(value: string): string {

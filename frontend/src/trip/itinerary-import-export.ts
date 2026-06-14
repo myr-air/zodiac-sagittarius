@@ -1,8 +1,13 @@
 import type {
+  BookingDoc,
+  Expense,
   ItineraryAdvisory,
   ItineraryCoordinates,
   ItineraryItem,
+  StopNote,
   Trip,
+  TripPlan,
+  TripTask,
 } from "./types";
 import { safeExternalHref } from "./safe-links";
 
@@ -24,6 +29,8 @@ export interface ItineraryExportItem {
   day: string;
   sortOrder: number;
   startTime: string;
+  endTime?: string | null;
+  endOffsetDays?: number;
   activity: string;
   activityType: ItineraryItem["activityType"];
   place: string;
@@ -49,23 +56,40 @@ export interface ItineraryExportDocument {
     | "name"
     | "destinationLabel"
     | "startDate"
-      | "endDate"
-      | "activePlanVariantId"
-      | "partySize"
-      | "defaultTimezone"
+    | "endDate"
+    | "activePlanVariantId"
+    | "mainTripPlanId"
+    | "planVariants"
+    | "tripPlans"
+    | "partySize"
+    | "defaultTimezone"
   >;
   items: ItineraryExportItem[];
+  records?: ItineraryExportRecords;
+}
+
+export interface ItineraryExportRecords {
+  expenses: Expense[];
+  bookingDocs: BookingDoc[];
+  stopNotes: StopNote[];
+  tasks: TripTask[];
 }
 
 export function buildItineraryExport({
   exportedAt,
   items,
+  stopNotes,
+  tasks,
   trip,
 }: {
   exportedAt: string;
   items: ItineraryItem[];
+  stopNotes?: StopNote[];
+  tasks?: TripTask[];
   trip: Trip;
 }): ItineraryExportDocument {
+  const exportItems = items.map(toExportItem);
+  const tripPlans = trip.tripPlans ?? trip.planVariants;
   return {
     schema: itineraryExportSchema,
     version: itineraryExportVersion,
@@ -77,14 +101,22 @@ export function buildItineraryExport({
       startDate: trip.startDate,
       endDate: trip.endDate,
       activePlanVariantId: trip.activePlanVariantId,
+      mainTripPlanId: trip.mainTripPlanId,
+      planVariants: tripPlans,
+      tripPlans,
       partySize: trip.partySize,
       defaultTimezone: trip.defaultTimezone,
     },
-    items: items.map(toExportItem),
+    items: exportItems,
+    records: toExportRecords({ items, stopNotes, tasks, trip }),
   };
 }
 
 export function parseItineraryImport(source: string): ItineraryExportItem[] {
+  return parseItineraryImportDocument(source).items;
+}
+
+export function parseItineraryImportDocument(source: string): ItineraryExportDocument {
   let parsed: unknown;
   try {
     parsed = JSON.parse(source);
@@ -101,7 +133,15 @@ export function parseItineraryImport(source: string): ItineraryExportItem[] {
     throw new Error("Unsupported itinerary import file.");
   }
 
-  return parsed.items.map(parseExportItem);
+  return {
+    schema: itineraryExportSchema,
+    version: itineraryExportVersion,
+    source: parsed.source === "json" || parsed.source === "ai" ? parsed.source : undefined,
+    exportedAt: readString(parsed, "exportedAt"),
+    trip: parseExportTrip(parsed.trip),
+    items: normalizeImportedHierarchy(parsed.items.map(parseExportItem)),
+    records: parseExportRecords(parsed.records),
+  };
 }
 
 function toExportItem(item: ItineraryItem): ItineraryExportItem {
@@ -120,6 +160,8 @@ function toExportItem(item: ItineraryItem): ItineraryExportItem {
     day: item.day,
     sortOrder: item.sortOrder,
     startTime: item.startTime,
+    endTime: item.endTime ?? null,
+    endOffsetDays: item.endOffsetDays ?? 0,
     activity: item.activity,
     activityType: item.activityType,
     place: item.place,
@@ -133,6 +175,201 @@ function toExportItem(item: ItineraryItem): ItineraryExportItem {
     advisories: item.advisories,
     note: item.note,
   };
+}
+
+function toExportRecords({
+  items,
+  stopNotes,
+  tasks,
+  trip,
+}: {
+  items: ItineraryItem[];
+  stopNotes?: StopNote[];
+  tasks?: TripTask[];
+  trip: Trip;
+}): ItineraryExportRecords {
+  const itemIds = new Set(items.map((item) => item.id));
+  const itemPlanIds = items
+    .map((item) => item.planVariantId)
+    .filter((value): value is string => Boolean(value));
+  const planIds = new Set(
+    (itemPlanIds.length > 0
+      ? itemPlanIds
+      : [trip.mainTripPlanId, trip.activePlanVariantId]
+    ).filter((value): value is string => Boolean(value)),
+  );
+  const expenses = trip.expenses.filter(
+    (expense) =>
+      matchesTripPlan(expense.tripPlanId, planIds) ||
+      matchesLinkedItem(expense.itineraryItemId, itemIds),
+  );
+  const expenseIds = new Set(expenses.map((expense) => expense.id));
+  const exportStopNotes = (stopNotes ?? trip.stopNotes ?? []).filter(
+    (note) =>
+      matchesTripPlan(note.tripPlanId, planIds) ||
+      matchesLinkedItem(note.itemId, itemIds),
+  );
+  const noteIds = new Set(exportStopNotes.map((note) => note.id));
+  const exportTasks = (tasks ?? []).filter(
+    (task) =>
+      matchesTripPlan(task.tripPlanId, planIds) ||
+      matchesLinkedItem(task.relatedItemId, itemIds),
+  );
+  const taskIds = new Set(exportTasks.map((task) => task.id));
+  const bookingDocs = (trip.bookingDocs ?? []).filter(
+    (booking) =>
+      matchesTripPlan(booking.tripPlanId, planIds) ||
+      booking.relatedItineraryItemIds.some((id) => itemIds.has(id)) ||
+      booking.relatedExpenseIds.some((id) => expenseIds.has(id)) ||
+      booking.relatedTaskIds.some((id) => taskIds.has(id)) ||
+      booking.noteIds.some((id) => noteIds.has(id)),
+  );
+
+  return {
+    expenses,
+    bookingDocs,
+    stopNotes: exportStopNotes,
+    tasks: exportTasks,
+  };
+}
+
+function matchesTripPlan(
+  tripPlanId: string | null | undefined,
+  planIds: Set<string>,
+): boolean {
+  if (tripPlanId === undefined || tripPlanId === null) return true;
+  return typeof tripPlanId === "string" && planIds.has(tripPlanId);
+}
+
+function matchesLinkedItem(
+  itemId: string | null | undefined,
+  itemIds: Set<string>,
+): boolean {
+  return typeof itemId === "string" && itemIds.has(itemId);
+}
+
+function parseExportTrip(value: unknown): ItineraryExportDocument["trip"] {
+  if (value === undefined || value === null) {
+    return {
+      id: "",
+      name: "",
+      destinationLabel: "",
+      startDate: "",
+      endDate: "",
+      activePlanVariantId: "",
+      mainTripPlanId: undefined,
+      planVariants: [],
+      tripPlans: [],
+      partySize: undefined,
+      defaultTimezone: undefined,
+    };
+  }
+  if (!isRecord(value)) throw new Error("Unsupported itinerary import file.");
+  const tripPlanAliases = readTripPlanAliases(value);
+  return {
+    id: readString(value, "id"),
+    name: readString(value, "name"),
+    destinationLabel: readString(value, "destinationLabel"),
+    startDate: readString(value, "startDate"),
+    endDate: readString(value, "endDate"),
+    activePlanVariantId:
+      readOptionalString(value, "activePlanVariantId") ??
+      readOptionalString(value, "mainTripPlanId") ??
+      "",
+    mainTripPlanId:
+      readOptionalString(value, "mainTripPlanId") ??
+      readOptionalString(value, "activePlanVariantId"),
+    planVariants: tripPlanAliases.planVariants,
+    tripPlans: tripPlanAliases.tripPlans,
+    partySize: readOptionalNumber(value, "partySize"),
+    defaultTimezone: readOptionalString(value, "defaultTimezone"),
+  };
+}
+
+function readTripPlanAliases(value: Record<string, unknown>): {
+  planVariants: TripPlan[];
+  tripPlans: TripPlan[];
+} {
+  const canonical = readTripPlans(value.tripPlans);
+  const legacy = readTripPlans(value.planVariants);
+  if (canonical.length > 0 && legacy.length > 0) {
+    assertTripPlanAliasesMatch(canonical, legacy);
+    return {
+      planVariants: canonical,
+      tripPlans: canonical,
+    };
+  }
+  const plans = canonical.length > 0 ? canonical : legacy;
+  return {
+    planVariants: plans,
+    tripPlans: plans,
+  };
+}
+
+function readTripPlans(value: unknown): TripPlan[] {
+  if (value === undefined || value === null) return [];
+  if (!Array.isArray(value) || value.some((entry) => !isRecord(entry))) {
+    throw new Error("Unsupported itinerary import file.");
+  }
+  return value.map((entry) => {
+    const plan = entry as Record<string, unknown>;
+    const kind = readPlanVariantKind(plan.kind);
+    return {
+      id: readString(plan, "id"),
+      tripId: readString(plan, "tripId"),
+      name: readString(plan, "name"),
+      kind,
+      status: readOptionalPlanStatus(plan.status) ?? statusFromPlanKind(kind),
+      description: typeof plan.description === "string" ? plan.description : "",
+      version: readOptionalNumber(plan, "version"),
+    };
+  });
+}
+
+function assertTripPlanAliasesMatch(canonical: TripPlan[], legacy: TripPlan[]): void {
+  if (canonical.length !== legacy.length) {
+    throw new Error("Unsupported itinerary import file.");
+  }
+  for (const [index, canonicalPlan] of canonical.entries()) {
+    const legacyPlan = legacy[index];
+    if (
+      !legacyPlan ||
+      canonicalPlan.id !== legacyPlan.id ||
+      canonicalPlan.name !== legacyPlan.name ||
+      canonicalPlan.version !== legacyPlan.version ||
+      canonicalPlan.kind !== legacyPlan.kind ||
+      canonicalPlan.status !== legacyPlan.status
+    ) {
+      throw new Error("Unsupported itinerary import file.");
+    }
+  }
+}
+
+function parseExportRecords(value: unknown): ItineraryExportRecords {
+  if (value === undefined || value === null) {
+    return { expenses: [], bookingDocs: [], stopNotes: [], tasks: [] };
+  }
+  if (!isRecord(value) || Array.isArray(value)) {
+    throw new Error("Unsupported itinerary import file.");
+  }
+  return {
+    expenses: readRecordArray<Expense>(value, "expenses"),
+    bookingDocs: readRecordArray<BookingDoc>(value, "bookingDocs"),
+    stopNotes: readRecordArray<StopNote>(value, "stopNotes"),
+    tasks: readRecordArray<TripTask>(value, "tasks"),
+  };
+}
+
+function readRecordArray<T>(
+  item: Record<string, unknown>,
+  key: string,
+): T[] {
+  const value = item[key];
+  if (value === undefined || value === null) return [];
+  if (!Array.isArray(value) || value.some((entry) => !isRecord(entry))) {
+    throw new Error("Unsupported itinerary import file.");
+  }
+  return value as T[];
 }
 
 function parseExportItem(value: unknown): ItineraryExportItem {
@@ -154,6 +391,8 @@ function parseExportItem(value: unknown): ItineraryExportItem {
     day: readString(item, "day"),
     sortOrder: readNumber(item, "sortOrder"),
     startTime: item.startTime === null ? "" : readString(item, "startTime"),
+    endTime: readOptionalNullableString(item, "endTime"),
+    endOffsetDays: item.endOffsetDays === undefined ? 0 : readNumber(item, "endOffsetDays"),
     activity: readString(item, "activity"),
     activityType: readActivityType(item.activityType),
     place: readString(item, "place"),
@@ -172,6 +411,26 @@ function parseExportItem(value: unknown): ItineraryExportItem {
     advisories: readAdvisories(item.advisories),
     note: typeof item.note === "string" ? item.note : "",
   };
+}
+
+function normalizeImportedHierarchy(items: ItineraryExportItem[]): ItineraryExportItem[] {
+  const itemsById = new Map(items.map((item) => [item.id, item]));
+  const parentIds = new Set<string>();
+  for (const item of items) {
+    if (item.parentItemId) parentIds.add(item.parentItemId);
+  }
+
+  return items.map((item) => {
+    if (!item.parentItemId) {
+      return parentIds.has(item.id) ? { ...item, isPlanBlock: true } : item;
+    }
+    const parent = itemsById.get(item.parentItemId);
+    if (!parent) throw new Error("Unsupported itinerary import file.");
+    if (parent.parentItemId || item.day !== parent.day) {
+      throw new Error("Unsupported itinerary import file.");
+    }
+    return { ...item, isPlanBlock: false };
+  });
 }
 
 function readOptionalNullableString(
@@ -228,6 +487,17 @@ function readNumber(item: Record<string, unknown>, key: string): number {
   return value;
 }
 
+function readOptionalNumber(
+  item: Record<string, unknown>,
+  key: string,
+): number | undefined {
+  const value = item[key];
+  if (value === undefined || value === null) return undefined;
+  if (typeof value !== "number" || !Number.isFinite(value))
+    throw new Error("Unsupported itinerary import file.");
+  return value;
+}
+
 function readActivityType(value: unknown): ItineraryItem["activityType"] {
   if (
     value === "travel" ||
@@ -261,6 +531,21 @@ function itemKindFromActivityType(activityType: ItineraryItem["activityType"]): 
   if (activityType === "food") return "meal";
   if (activityType === "stay") return "lodging";
   return "activity";
+}
+
+function readPlanVariantKind(value: unknown): TripPlan["kind"] {
+  if (value === "main" || value === "backup" || value === "draft" || value === "split") return value;
+  throw new Error("Unsupported itinerary import file.");
+}
+
+function readOptionalPlanStatus(value: unknown): TripPlan["status"] | undefined {
+  if (value === undefined || value === null) return undefined;
+  if (value === "main" || value === "backup" || value === "draft" || value === "proposal") return value;
+  throw new Error("Unsupported itinerary import file.");
+}
+
+function statusFromPlanKind(kind: TripPlan["kind"]): TripPlan["status"] {
+  return kind === "split" ? "proposal" : kind;
 }
 
 function readOptionalTimeMode(value: unknown): ItineraryItem["timeMode"] | undefined {

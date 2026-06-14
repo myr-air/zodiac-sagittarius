@@ -5,11 +5,9 @@ import {
   useState,
   type CSSProperties,
   type ChangeEvent,
-  type Dispatch,
   type DragEvent,
   type FormEvent,
   type PointerEvent as ReactPointerEvent,
-  type SetStateAction,
   type TouchEvent as ReactTouchEvent,
 } from "react";
 import { createPortal } from "react-dom";
@@ -20,9 +18,11 @@ import type {
   ItineraryItemStatus,
   ItineraryTimeMode,
   ItineraryItem,
+  PlanStatus,
   PlanVariant,
   TripDailyBriefing,
   TripRole,
+  ValidationWarning,
 } from "@/src/trip/types";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import type { Messages } from "@/src/i18n/messages";
@@ -30,14 +30,16 @@ import type { Locale } from "@/src/i18n/types";
 import { cn } from "@/src/lib/cn";
 import {
   formatDayLabel,
+  getTimeWindowInterval,
   getTripDates,
   groupItemsByDay,
   mainItineraryPathId,
-  parseTime,
+  validateItineraryItem,
   type ItineraryDayGroup,
   type ItineraryPathOption,
   type ItineraryView,
 } from "@/src/trip/itinerary";
+import { canTripRole } from "@/src/trip/auth";
 import { safeExternalHref } from "@/src/trip/safe-links";
 import {
   formatWeatherTemp,
@@ -60,15 +62,17 @@ interface SmartItineraryTableProps {
   canRedo: boolean;
   canRestructure?: boolean;
   canUndo: boolean;
+  commitmentsByItemId?: Record<string, ItineraryCommitmentSummary>;
   contextRailOpen: boolean;
   endDate: string;
   graphItems?: ItineraryItem[];
   items: ItineraryItem[];
   dailyBriefings?: TripDailyBriefing[];
-  tripSheets: PlanVariant[];
-  selectedTripSheetId: string;
-  tripSheetError: string | null;
-  isTripSheetBusy: boolean;
+  tripPlans: PlanVariant[];
+  selectedTripPlanId: string;
+  mainTripPlanId: string;
+  tripPlanError: string | null;
+  isTripPlanBusy: boolean;
   role: TripRole;
   startDate: string;
   itineraryView?: ItineraryView;
@@ -78,7 +82,14 @@ interface SmartItineraryTableProps {
   dayPathOverrides?: Record<string, string | undefined>;
   showAllPaths?: boolean;
   tripName: string;
+  onAddBookingForItem?: (
+    itemId: string,
+    template?: ItineraryBookingTemplate,
+  ) => void;
   onAddStop: (day?: string) => void;
+  onAddSubActivity?: (parentItemId: string) => void;
+  onAddNoteForItem?: (itemId: string) => void;
+  onAddTaskForItem?: (itemId: string) => void;
   onSelectItem: (itemId: string) => void;
   onMoveItem: (draggedItemId: string, targetItemId: string) => void;
   onMoveItemIntoPlanBlock: (draggedItemId: string, planBlockItemId: string) => void;
@@ -92,28 +103,42 @@ interface SmartItineraryTableProps {
   onDeleteItem?: (itemId: string) => void;
   onExportItinerary: () => void;
   onImportItinerary: (file: File) => void;
-  onChangeTripSheet: (sheetId: string) => boolean | void | Promise<boolean | void>;
-  onCreateTripSheet: (name: string) => boolean | void | Promise<boolean | void>;
+  onChangeTripPlan: (tripPlanId: string) => boolean | void | Promise<boolean | void>;
+  onChangeTripPlanStatus: (
+    tripPlanId: string,
+    status: Exclude<PlanStatus, "main">,
+  ) => boolean | void | Promise<boolean | void>;
+  onSetMainTripPlan: (tripPlanId: string) => boolean | void | Promise<boolean | void>;
+  onCreateTripPlan: (name: string) => boolean | void | Promise<boolean | void>;
   onChangeTripPath?: (pathId: string) => void;
   onChangeDayPath?: (day: string, pathId: string) => void;
   onClearDayPath?: (day: string) => void;
   onClearAllDayPaths?: () => void;
-  onAutoResolveDayOverlaps?: (day: string) => void;
   onToggleShowAllPaths?: (showAll: boolean) => void;
   onRedo: () => void;
   onToggleContextRail: () => void;
   onUndo: () => void;
 }
 
+export type ItineraryBookingTemplate =
+  | "recommended"
+  | "flight"
+  | "train"
+  | "hotel"
+  | "activity_ticket";
+
 export type InlineItineraryItemPatch = Partial<
   Pick<
     ItineraryItem,
     | "parentItemId"
     | "startTime"
+    | "endTime"
+    | "endOffsetDays"
     | "durationMinutes"
     | "activity"
     | "place"
     | "activityType"
+    | "isPlanBlock"
     | "itemKind"
     | "timeMode"
     | "status"
@@ -122,29 +147,36 @@ export type InlineItineraryItemPatch = Partial<
   >
 >;
 
+export interface ItineraryCommitmentSummary {
+  bookingCount?: number;
+  expenseCount?: number;
+  noteCount?: number;
+  openTaskCount?: number;
+}
+
 const tablePanelClassName =
   "table-panel grid h-auto min-h-full min-w-0 grid-rows-[auto_minmax(0,1fr)] overflow-visible bg-transparent px-6 py-[22px] pb-7 max-[767px]:px-3 max-[767px]:pb-3";
 const pageHeaderActionsClassName =
   "page-header-actions relative z-[1] flex max-w-[260px] min-w-0 flex-wrap items-center justify-end gap-2";
 const pageHeaderNoteClassName =
   "page-header-note m-0 basis-full text-right text-xs font-bold text-(--color-warning-strong)";
-const tripSheetShellClassName =
-  "trip-sheet-shell mb-3 flex min-w-0 flex-wrap items-end gap-2 rounded-(--radius-md) border border-[color-mix(in_srgb,var(--color-primary)_16%,var(--color-border))] bg-[linear-gradient(135deg,var(--color-surface)_0%,var(--color-primary-soft)_100%)] px-3 py-2.5 shadow-[0_1px_0_rgb(15_23_42_/_0.04)]";
-const tripSheetFieldClassName =
+const tripPlanShellClassName =
+  "trip-plan-shell mb-3 flex min-w-0 flex-wrap items-end gap-2 rounded-(--radius-md) border border-[color-mix(in_srgb,var(--color-primary)_16%,var(--color-border))] bg-[linear-gradient(135deg,var(--color-surface)_0%,var(--color-primary-soft)_100%)] px-3 py-2.5 shadow-[0_1px_0_rgb(15_23_42_/_0.04)]";
+const tripPlanFieldClassName =
   "grid min-w-[220px] flex-1 gap-1 text-[11px] font-extrabold text-(--color-text-muted)";
-const tripSheetSelectClassName =
+const tripPlanSelectClassName =
   "min-h-9 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) px-2.5 text-sm font-bold text-(--color-text) outline-none focus:border-(--color-primary-border) focus:shadow-[0_0_0_2px_rgb(255_196_168_/_0.55)] disabled:cursor-not-allowed disabled:opacity-50";
-const tripSheetCreateFormClassName =
-  "trip-sheet-create-form flex min-w-[260px] flex-wrap items-end gap-2";
-const tripSheetNameFieldClassName =
+const tripPlanCreateFormClassName =
+  "trip-plan-create-form flex min-w-[260px] flex-wrap items-end gap-2";
+const tripPlanNameFieldClassName =
   "grid min-w-[180px] flex-1 gap-1 text-[11px] font-extrabold text-(--color-text-muted)";
-const tripSheetNameInputClassName =
+const tripPlanNameInputClassName =
   "min-h-9 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-2.5 text-sm font-bold text-(--color-text) outline-none placeholder:text-(--color-text-muted) focus:border-(--color-primary-border) focus:shadow-[0_0_0_2px_rgb(255_196_168_/_0.55)] disabled:cursor-not-allowed disabled:opacity-50";
-const tripSheetButtonClassName =
+const tripPlanButtonClassName =
   "min-h-9 rounded-(--radius-sm) px-3 text-xs font-extrabold";
-const tripSheetSecondaryButtonClassName =
+const tripPlanSecondaryButtonClassName =
   "inline-flex min-h-9 items-center justify-center rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) px-3 text-xs font-extrabold text-(--color-text-muted) transition-colors hover:enabled:border-(--color-route-border) hover:enabled:bg-(--color-route-soft) hover:enabled:text-(--color-route) disabled:cursor-not-allowed disabled:opacity-50";
-const tripSheetMessageClassName =
+const tripPlanMessageClassName =
   "m-0 basis-full text-xs font-bold text-(--color-warning-strong)";
 const itineraryFilterShellClassName =
   "itinerary-filter-shell -mt-1 mb-[14px] grid gap-2 rounded-(--radius-lg) border border-[color-mix(in_srgb,var(--color-route)_18%,var(--color-border))] bg-[linear-gradient(135deg,var(--color-surface)_0%,var(--color-route-soft)_100%)] px-3 py-2.5 text-(--color-route) shadow-[0_1px_0_rgb(15_23_42_/_0.04)]";
@@ -187,14 +219,14 @@ const dayPathPickerClassName =
   "min-h-8 max-w-[172px] px-2 text-[11px] max-[767px]:max-w-[112px]";
 const dayClearPathButtonClassName =
   "inline-flex min-h-8 items-center rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-2 text-[11px] font-extrabold text-(--color-text-muted) disabled:opacity-40 max-[767px]:px-1.5";
-const dayAutoOverlapButtonClassName =
-  "inline-flex min-h-8 items-center rounded-(--radius-sm) border border-(--color-danger-border) bg-(--color-danger-soft) px-2 text-[11px] font-extrabold text-[#b91c1c] transition-colors hover:enabled:border-(--color-danger) disabled:opacity-40 max-[767px]:px-1.5";
 const dataRowClassName =
   "data-row cursor-pointer transition-[background,box-shadow,transform] duration-[160ms] hover:[&_td]:bg-(--color-surface-subtle) focus-visible:[&_td]:bg-(--color-route-soft) focus-visible:[&_td]:shadow-[inset_0_0_0_2px_var(--color-route-border)] [&_td]:transition-[background,border-color,box-shadow,color,font-size,height,opacity,padding] [&_td]:duration-[180ms]";
 const dataRowSelectedClassName =
   "data-row--selected [&_td:first-child]:shadow-[inset_3px_0_0_var(--color-primary),inset_0_1px_0_var(--color-primary-border),inset_0_-1px_0_var(--color-primary-border)] [&_td:last-child]:shadow-[inset_-1px_0_0_var(--color-primary-border),inset_0_1px_0_var(--color-primary-border),inset_0_-1px_0_var(--color-primary-border)] [&_td]:bg-(--color-primary-soft) [&_td]:shadow-[inset_0_1px_0_var(--color-primary-border),inset_0_-1px_0_var(--color-primary-border)]";
 const dataRowPathOverlapClassName =
   "data-row--path-overlap [&_td]:!bg-(--color-danger-soft) hover:[&_td]:!bg-(--color-danger-soft) [&_td:first-child]:shadow-[inset_2px_0_0_var(--color-danger-border)] [&_td:last-child]:shadow-[inset_-1px_0_0_var(--color-danger-border)] [&_td]:shadow-[inset_0_1px_0_var(--color-danger-border),inset_0_-1px_0_var(--color-danger-border)]";
+const dataRowWarningClassName =
+  "data-row--has-warning [&_td]:bg-(--color-warning-soft) hover:[&_td]:bg-(--color-warning-soft) [&_td:first-child]:shadow-[inset_2px_0_0_var(--color-warning-border)] [&_td]:shadow-[inset_0_1px_0_var(--color-warning-border),inset_0_-1px_0_var(--color-warning-border)]";
 const dataRowDraggingClassName =
   "data-row--dragging cursor-grabbing [&_td]:bg-(--color-surface-muted) [&_td]:opacity-[0.54]";
 const dataRowDropTargetClassName =
@@ -209,6 +241,28 @@ const rowActionsClassName =
   "row-actions flex items-center justify-center gap-1";
 const rowActionButtonClassName =
   "row-action-button inline-grid size-8 shrink-0 place-items-center rounded-(--radius-sm) border-0 bg-transparent text-(--color-text-subtle) transition-[color,background] duration-150 hover:not-disabled:bg-(--color-route-soft) hover:not-disabled:text-(--color-route) disabled:cursor-not-allowed disabled:opacity-[0.42]";
+const rowFixMenuClassName = "row-fix-menu relative";
+const rowFixSummaryClassName =
+  "row-fix-summary inline-grid size-8 shrink-0 place-items-center rounded-(--radius-sm) border-0 bg-transparent text-(--color-warning-strong) transition-[color,background] duration-150 hover:not-disabled:bg-(--color-warning-soft) disabled:cursor-not-allowed disabled:opacity-[0.42]";
+const rowFixPanelClassName =
+  "absolute right-0 top-9 z-20 grid min-w-10 gap-1 rounded-(--radius-sm) border border-(--color-warning-border) bg-(--color-surface) p-1 shadow-[0_12px_28px_rgb(15_23_42_/_0.14)]";
+const rowBookingMenuClassName = "row-booking-menu relative";
+const rowBookingPanelClassName =
+  "absolute right-0 top-9 z-20 grid min-w-[156px] gap-1 rounded-(--radius-sm) border border-(--color-route-border) bg-(--color-surface) p-1 shadow-[0_12px_28px_rgb(15_23_42_/_0.14)]";
+const rowBookingMenuButtonClassName =
+  "inline-flex min-h-8 w-full items-center gap-2 rounded-(--radius-sm) border-0 bg-transparent px-2.5 text-left text-xs font-bold text-(--color-text) transition-colors hover:bg-(--color-route-soft) focus-visible:bg-(--color-route-soft) focus-visible:outline-none [&_.icon]:size-3.5";
+const minutesPerDay = 24 * 60;
+const itineraryBookingTemplates = [
+  { id: "recommended", icon: "ticket", label: "Recommended" },
+  { id: "flight", icon: "route", label: "Flight" },
+  { id: "train", icon: "route", label: "Train" },
+  { id: "hotel", icon: "home", label: "Hotel" },
+  { id: "activity_ticket", icon: "ticket", label: "Activity ticket" },
+] satisfies Array<{
+  id: ItineraryBookingTemplate;
+  icon: "home" | "route" | "ticket";
+  label: string;
+}>;
 const timeHeaderClassName =
   "time-header max-[767px]:sticky max-[767px]:left-0 max-[767px]:z-[5] max-[767px]:shadow-[6px_0_12px_rgb(15_23_42_/_0.08)]";
 const timeCellClassName =
@@ -221,7 +275,22 @@ const activityCellClassName = "activity-cell min-w-0";
 const rowSelectClassName =
   "row-select inline-flex min-h-8 w-fit min-w-0 items-center gap-1.5 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) px-2 py-0.5 text-[11px] font-extrabold leading-4 text-(--color-route) transition-[background,border-color,color] duration-150 hover:bg-(--color-route-soft) hover:border-(--color-route-border) focus-visible:bg-(--color-route-soft) focus-visible:border-(--color-route-border) focus-visible:outline-none";
 const inlineActivityStackClassName = "grid min-w-0 gap-0.5";
-const childActivityStackClassName = "border-l-2 border-(--color-route-border) pl-3";
+const childActivityStackClassName =
+  "relative pl-4 before:absolute before:left-0 before:top-1.5 before:h-5 before:w-3 before:rounded-bl-(--radius-sm) before:border-b before:border-l before:border-(--color-route-border) before:content-['']";
+const hierarchyMetaClassName =
+  "inline-flex min-w-0 flex-wrap items-center gap-1.5 text-[10px] font-extrabold leading-4 text-(--color-text-muted)";
+const hierarchyChipClassName =
+  "inline-flex min-h-5 items-center gap-1 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) px-1.5 text-[10px] font-extrabold text-(--color-text-muted) [&_.icon]:size-3";
+const activityHierarchyChipClassName =
+  "border-[color-mix(in_srgb,var(--color-border)_72%,var(--color-route-border))] bg-(--color-surface) text-(--color-text-muted)";
+const blockHierarchyChipClassName =
+  "border-(--color-route-border) bg-(--color-route-soft) text-(--color-route)";
+const commitmentChipClassName =
+  "border-[color-mix(in_srgb,var(--color-primary)_28%,var(--color-border))] bg-(--color-primary-soft) text-(--color-primary-strong)";
+const recordCommitmentChipClassName =
+  "border-[color-mix(in_srgb,var(--color-warning)_24%,var(--color-border))] bg-(--color-warning-soft) text-(--color-warning-strong)";
+const warningChipClassName =
+  "border-(--color-warning-border) bg-(--color-warning-soft) text-(--color-warning-strong)";
 const blockToggleButtonClassName =
   "inline-flex min-h-7 w-fit items-center gap-1.5 rounded-(--radius-sm) border border-(--color-route-border) bg-(--color-route-soft) px-2 text-[11px] font-extrabold text-(--color-route) aria-expanded:[&_.icon]:rotate-90 [&_.icon]:size-3.5 [&_.icon]:transition-transform";
 const blockDropButtonClassName =
@@ -237,6 +306,14 @@ const inlineTimeInputClassName = cn(
   inlineFieldClassName,
   "text-center font-[650] tabular-nums",
 );
+const timeWindowInlineClassName =
+  "inline-flex w-full min-w-0 items-center justify-center gap-0.5";
+const timeWindowSeparatorClassName =
+  "shrink-0 text-[10px] font-black leading-none text-(--color-text-subtle)";
+const endOffsetToggleClassName =
+  "inline-flex h-6 min-w-6 shrink-0 items-center justify-center rounded-(--radius-sm) border border-transparent px-1 text-[10px] font-black leading-none text-(--color-text-muted) transition-[background,border-color,color] duration-150 hover:not-disabled:border-(--color-route-border) hover:not-disabled:bg-(--color-route-soft) hover:not-disabled:text-(--color-route) focus-visible:border-(--color-route-border) focus-visible:bg-(--color-route-soft) focus-visible:text-(--color-route) focus-visible:outline-none aria-pressed:border-(--color-route-border) aria-pressed:bg-(--color-route-soft) aria-pressed:text-(--color-route) disabled:cursor-not-allowed disabled:opacity-40";
+const endOffsetSupClassName =
+  "ml-0.5 align-super text-[0.72em] font-black leading-none";
 const inlineOptionPickerButtonClassName = cn(
   inlineFieldClassName,
   "inline-option-picker-button inline-flex !min-h-8 items-center justify-between gap-2 text-left font-semibold",
@@ -279,11 +356,15 @@ const mobileInspectorTimeFieldClassName = cn(
   mobileInspectorFieldClassName,
   "text-left tabular-nums",
 );
+const mobileInspectorTimeWindowClassName = "grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)_auto] items-center gap-1";
+const mobileInspectorEndOffsetToggleClassName = cn(
+  endOffsetToggleClassName,
+  "h-12 min-w-12 border-(--color-border) bg-(--color-surface-subtle) text-xs",
+);
 const mobileInspectorTypeButtonClassName =
   "min-h-12 border-(--color-border) bg-(--color-surface-subtle) px-3 text-sm font-bold";
-const mobileInspectorDurationClassName = "grid grid-cols-3 gap-2.5";
-const mobileInspectorDurationButtonClassName =
-  "min-h-12 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) px-2 text-xs font-extrabold text-(--color-text) transition-[background,border-color,color] duration-150 hover:enabled:border-(--color-route-border) hover:enabled:bg-(--color-route-soft) hover:enabled:text-(--color-route) disabled:cursor-not-allowed disabled:opacity-50";
+const mobileInspectorDurationClassName =
+  "inline-flex min-h-12 items-center rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) px-3 text-sm font-extrabold tabular-nums text-(--color-text-muted)";
 const mobileInspectorActionsClassName = "flex flex-wrap gap-2";
 const mobileInspectorActionButtonClassName =
   "inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) px-3 text-xs font-extrabold text-(--color-text) transition-[background,border-color,color] duration-150 hover:enabled:border-(--color-route-border) hover:enabled:bg-(--color-route-soft) hover:enabled:text-(--color-route) disabled:cursor-not-allowed disabled:opacity-50";
@@ -298,18 +379,6 @@ const deleteDialogTitleClassName =
 const deleteDialogBodyClassName =
   "m-0 text-sm font-medium leading-6 text-(--color-text-muted)";
 const deleteDialogActionsClassName = "mt-1 flex justify-end gap-2";
-const durationDialogClassName =
-  "duration-dialog fixed z-[30] grid w-[min(300px,calc(100vw-24px))] gap-3 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) p-3 shadow-[0_12px_28px_rgb(15_23_42_/_0.12)]";
-const durationDialogTitleClassName =
-  "m-0 text-sm font-extrabold leading-5 text-(--color-text)";
-const durationPresetGridClassName = "grid grid-cols-3 gap-2";
-const durationPresetButtonClassName =
-  "min-h-9 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) px-2 text-xs font-extrabold text-(--color-text) transition-[background,border-color,color] duration-150 hover:border-(--color-route-border) hover:bg-(--color-route-soft) hover:text-(--color-route)";
-const durationCustomGridClassName = "grid grid-cols-2 gap-2";
-const durationInputLabelClassName =
-  "grid gap-1 text-[11px] font-extrabold text-(--color-text-muted)";
-const durationInputClassName =
-  "min-h-9 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-2 text-sm font-bold tabular-nums text-(--color-text) outline-none focus:border-(--color-primary-border) focus:shadow-[0_0_0_2px_rgb(255_196_168_/_0.55)]";
 const activityTypeOptions: ActivityType[] = [
   "food",
   "attraction",
@@ -337,19 +406,19 @@ const itineraryStatusOptions: ItineraryItemStatus[] = [
   "skipped",
 ];
 const itineraryPriorityOptions: ItineraryItemPriority[] = ["low", "normal", "high", "must"];
-const durationPresetMinutes = [15, 30, 45, 60, 90, 120];
-
 export function SmartItineraryTable({
   canRestructure = true,
   endDate,
   graphItems,
   itineraryView,
   items,
+  commitmentsByItemId = {},
   dailyBriefings = [],
-  tripSheets,
-  selectedTripSheetId,
-  tripSheetError,
-  isTripSheetBusy,
+  tripPlans,
+  selectedTripPlanId,
+  mainTripPlanId,
+  tripPlanError,
+  isTripPlanBusy,
   pathOptions = [{ id: mainItineraryPathId, name: "Main", scope: "trip" }],
   role,
   startDate,
@@ -357,7 +426,11 @@ export function SmartItineraryTable({
   dayPathOverrides = {},
   showAllPaths = false,
   tripName,
+  onAddBookingForItem,
   onAddStop,
+  onAddSubActivity,
+  onAddNoteForItem,
+  onAddTaskForItem,
   onSelectItem,
   onMoveItem,
   onMoveItemIntoPlanBlock,
@@ -368,11 +441,12 @@ export function SmartItineraryTable({
   onDeleteItem,
   onExportItinerary,
   onImportItinerary,
-  onChangeTripSheet,
-  onCreateTripSheet,
+  onChangeTripPlan,
+  onChangeTripPlanStatus,
+  onSetMainTripPlan,
+  onCreateTripPlan,
   onChangeDayPath,
   onClearDayPath,
-  onAutoResolveDayOverlaps,
   onToggleShowAllPaths,
 }: SmartItineraryTableProps) {
   const { locale, t } = useI18n();
@@ -380,15 +454,15 @@ export function SmartItineraryTable({
   const allDisplayItems = graphItems ?? items;
   const filterOptions = dedupePathOptions(pathOptions, allDisplayItems);
   const canEdit = role === "owner" || role === "organizer" || role === "traveler";
-  const canManageTripSheets = role === "owner" || role === "organizer";
+  const canManageTripPlans = canTripRole(role, "manageTripPlans");
   const canRestructureItems = canEdit && canRestructure;
   const [selectedPathIds, setSelectedPathIds] = useState<string[]>(() =>
     filterOptions.map((option) => option.id),
   );
   const [planFiltersExpanded, setPlanFiltersExpanded] = useState(false);
-  const [isCreatingTripSheet, setIsCreatingTripSheet] = useState(false);
-  const [newTripSheetName, setNewTripSheetName] = useState("");
-  const [newTripSheetError, setNewTripSheetError] = useState<string | null>(
+  const [isCreatingTripPlan, setIsCreatingTripPlan] = useState(false);
+  const [newTripPlanName, setNewTripPlanName] = useState("");
+  const [newTripPlanError, setNewTripPlanError] = useState<string | null>(
     null,
   );
   const [collapsedDays, setCollapsedDays] = useState<string[]>([]);
@@ -401,11 +475,6 @@ export function SmartItineraryTable({
   }>({ draggedItemId: null, overItemId: null, overDay: null, overBlockId: null });
   const [pendingDeleteItem, setPendingDeleteItem] =
     useState<ItineraryItem | null>(null);
-  const [durationEditor, setDurationEditor] = useState<{
-    item: ItineraryItem;
-    hours: string;
-    minutes: string;
-  } | null>(null);
   const knownFilterIdsRef = useRef<string[]>(
     filterOptions.map((option) => option.id),
   );
@@ -418,6 +487,14 @@ export function SmartItineraryTable({
   const displayItems = allDisplayItems.filter((item) =>
     selectedPathIdSet.has(itineraryItemPathId(item)),
   );
+  const itemsById = useMemo(
+    () => new Map(allDisplayItems.map((item) => [item.id, item])),
+    [allDisplayItems],
+  );
+  const childCountByParentId = useMemo(
+    () => countChildrenByParentId(allDisplayItems),
+    [allDisplayItems],
+  );
   const selectedItem =
     displayItems.find((item) => item.id === selectedItemId) ??
     allDisplayItems.find((item) => item.id === selectedItemId) ??
@@ -428,11 +505,8 @@ export function SmartItineraryTable({
     t.itinerary.filters.selectedCount,
     t.itinerary.filters.selectedNames,
   );
-  const groups = mergeTripDayGroups(
-    groupItemsByDay(displayItems),
-    startDate,
-    endDate,
-  );
+  const displayDayGroups = groupItemsByDay(displayItems);
+  const groups = mergeTripDayGroups(displayDayGroups, startDate, endDate);
   const dailyBriefingsByDate = useMemo(
     () => new Map(dailyBriefings.map((briefing) => [briefing.date, briefing])),
     [dailyBriefings],
@@ -440,25 +514,32 @@ export function SmartItineraryTable({
   const graphItemsByDay = groupGraphItemsByDay(displayItems);
   const warningCount =
     itineraryView?.warningCount ??
-    displayItems.reduce(
-      (total, item) => total + (item.advisories?.length ?? 0),
-      0,
-    );
+    displayDayGroups.reduce((total, group) => total + group.warningCount, 0);
   const totalMinutes = displayItems.reduce(
     (total, item) => total + (item.durationMinutes ?? 0),
     0,
   );
-  const graphColumnWidth = buildGraphColumnWidth(displayItems, pathOptions);
+  const graphColumnWidth = buildGraphColumnWidth(displayItems);
   const smartTableStyle = {
     "--graph-column-width": `${graphColumnWidth}px`,
   } as CSSProperties;
-  const selectedSheetId = tripSheets.some(
-    (sheet) => sheet.id === selectedTripSheetId,
+  const selectedTripPlanIdForControl = tripPlans.some(
+    (plan) => plan.id === selectedTripPlanId,
   )
-    ? selectedTripSheetId
-    : (tripSheets[0]?.id ?? "");
-  const sheetControlsDisabled = !canManageTripSheets || isTripSheetBusy || tripSheets.length === 0;
-  const tripSheetMessage = newTripSheetError ?? tripSheetError;
+    ? selectedTripPlanId
+    : (tripPlans[0]?.id ?? "");
+  const selectedTripPlan =
+    tripPlans.find((plan) => plan.id === selectedTripPlanIdForControl) ?? null;
+  const selectedTripPlanStatus = selectedTripPlan ? tripPlanStatus(selectedTripPlan) : "draft";
+  const selectedTripPlanIsMain =
+    Boolean(selectedTripPlanIdForControl) && selectedTripPlanIdForControl === mainTripPlanId;
+  const tripPlanSelectorDisabled = isTripPlanBusy || tripPlans.length === 0;
+  const tripPlanControlsDisabled = !canManageTripPlans || tripPlanSelectorDisabled;
+  const tripPlanStatusDisabled =
+    tripPlanControlsDisabled || !selectedTripPlan || selectedTripPlanIsMain;
+  const setMainTripPlanDisabled =
+    tripPlanControlsDisabled || !selectedTripPlan || selectedTripPlanIsMain;
+  const tripPlanMessage = newTripPlanError ?? tripPlanError;
 
   useEffect(() => {
     setSelectedPathIds((current) => {
@@ -489,30 +570,6 @@ export function SmartItineraryTable({
         ? current.filter((id) => id !== itemId)
         : [...current, itemId],
     );
-  }
-
-  function openDurationEditor(item: ItineraryItem) {
-    const durationMinutes = item.durationMinutes ?? 45;
-    setDurationEditor({
-      item,
-      hours: String(Math.floor(durationMinutes / 60)),
-      minutes: String(durationMinutes % 60),
-    });
-  }
-
-  function commitDuration(itemId: string, minutes: number) {
-    if (!canEdit) return;
-    onUpdateItemInline?.(itemId, {
-      durationMinutes: Math.max(1, Math.round(minutes)),
-    });
-    setDurationEditor(null);
-  }
-
-  function commitCustomDuration() {
-    if (!durationEditor) return;
-    const hours = Number(durationEditor.hours) || 0;
-    const minutes = Number(durationEditor.minutes) || 0;
-    commitDuration(durationEditor.item.id, hours * 60 + minutes);
   }
 
   function togglePlanFilter(pathId: string) {
@@ -571,7 +628,12 @@ export function SmartItineraryTable({
     if (!canRestructureItems) return;
     const draggedItemId =
       dragState.draggedItemId ?? event.dataTransfer.getData("text/plain");
-    if (!draggedItemId || draggedItemId === targetItemId) return;
+    if (
+      !draggedItemId ||
+      draggedItemId === targetItemId ||
+      !canMoveItemToSiblingTarget(draggedItemId, targetItemId, itemsById)
+    )
+      return;
     event.preventDefault();
     event.dataTransfer.dropEffect = "move";
     setDragState((current) =>
@@ -593,7 +655,12 @@ export function SmartItineraryTable({
     if (!canRestructureItems) return;
     const draggedItemId =
       dragState.draggedItemId ?? event.dataTransfer.getData("text/plain");
-    if (!draggedItemId || draggedItemId === planBlockItemId) return;
+    if (
+      !draggedItemId ||
+      draggedItemId === planBlockItemId ||
+      !canMoveItemIntoPlanBlockTarget(draggedItemId, itemsById)
+    )
+      return;
     event.preventDefault();
     event.dataTransfer.dropEffect = "move";
     setDragState((current) =>
@@ -633,7 +700,11 @@ export function SmartItineraryTable({
     if (!canRestructureItems) return;
     event.preventDefault();
     const draggedItemId = event.dataTransfer.getData("text/plain");
-    if (draggedItemId && draggedItemId !== targetItemId)
+    if (
+      draggedItemId &&
+      draggedItemId !== targetItemId &&
+      canMoveItemToSiblingTarget(draggedItemId, targetItemId, itemsById)
+    )
       onMoveItem(draggedItemId, targetItemId);
     clearDragPreview();
   }
@@ -647,7 +718,11 @@ export function SmartItineraryTable({
     event.stopPropagation();
     const draggedItemId =
       event.dataTransfer.getData("text/plain") || dragState.draggedItemId;
-    if (draggedItemId && draggedItemId !== planBlockItemId)
+    if (
+      draggedItemId &&
+      draggedItemId !== planBlockItemId &&
+      canMoveItemIntoPlanBlockTarget(draggedItemId, itemsById)
+    )
       onMoveItemIntoPlanBlock(draggedItemId, planBlockItemId);
     clearDragPreview();
   }
@@ -681,7 +756,11 @@ export function SmartItineraryTable({
       const dayRow = target?.closest<HTMLElement>("[data-day-drop]");
       if (blockDrop) {
         const targetBlockId = blockDrop.dataset.planBlockDrop;
-        if (targetBlockId && targetBlockId !== current.itemId) {
+        if (
+          targetBlockId &&
+          targetBlockId !== current.itemId &&
+          canMoveItemIntoPlanBlockTarget(current.itemId, itemsById)
+        ) {
           setDragState({
             draggedItemId: current.itemId,
             overItemId: null,
@@ -694,7 +773,11 @@ export function SmartItineraryTable({
       }
       if (itemRow) {
         const targetItemId = itemRow.dataset.itemId;
-        if (targetItemId && targetItemId !== current.itemId) {
+        if (
+          targetItemId &&
+          targetItemId !== current.itemId &&
+          canMoveItemToSiblingTarget(current.itemId, targetItemId, itemsById)
+        ) {
           setDragState({
             draggedItemId: current.itemId,
             overItemId: targetItemId,
@@ -729,9 +812,17 @@ export function SmartItineraryTable({
       const targetBlockId = blockDrop?.dataset.planBlockDrop;
       const targetItemId = itemRow?.dataset.itemId;
       const targetDay = dayRow?.dataset.dayDrop;
-      if (targetBlockId && targetBlockId !== current.itemId)
+      if (
+        targetBlockId &&
+        targetBlockId !== current.itemId &&
+        canMoveItemIntoPlanBlockTarget(current.itemId, itemsById)
+      )
         onMoveItemIntoPlanBlock(current.itemId, targetBlockId);
-      else if (targetItemId && targetItemId !== current.itemId)
+      else if (
+        targetItemId &&
+        targetItemId !== current.itemId &&
+        canMoveItemToSiblingTarget(current.itemId, targetItemId, itemsById)
+      )
         onMoveItem(current.itemId, targetItemId);
       else if (targetDay) onMoveItemToDay(current.itemId, targetDay);
       clearDragPreview();
@@ -807,9 +898,17 @@ export function SmartItineraryTable({
       const targetBlockId = blockDrop?.dataset.planBlockDrop;
       const targetItemId = itemRow?.dataset.itemId;
       const targetDay = dayRow?.dataset.dayDrop;
-      if (targetBlockId && targetBlockId !== current.itemId)
+      if (
+        targetBlockId &&
+        targetBlockId !== current.itemId &&
+        canMoveItemIntoPlanBlockTarget(current.itemId, itemsById)
+      )
         onMoveItemIntoPlanBlock(current.itemId, targetBlockId);
-      else if (targetItemId && targetItemId !== current.itemId)
+      else if (
+        targetItemId &&
+        targetItemId !== current.itemId &&
+        canMoveItemToSiblingTarget(current.itemId, targetItemId, itemsById)
+      )
         onMoveItem(current.itemId, targetItemId);
       else if (targetDay) onMoveItemToDay(current.itemId, targetDay);
       clearDragPreview();
@@ -840,6 +939,7 @@ export function SmartItineraryTable({
     };
   }, [
     canRestructureItems,
+    itemsById,
     onMoveItem,
     onMoveItemIntoPlanBlock,
     onMoveItemToDay,
@@ -851,19 +951,19 @@ export function SmartItineraryTable({
     event.target.value = "";
   }
 
-  async function submitNewTripSheet(event: FormEvent<HTMLFormElement>) {
+  async function submitNewTripPlan(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (isTripSheetBusy || !canManageTripSheets) return;
-    const name = newTripSheetName.trim();
+    if (isTripPlanBusy || !canManageTripPlans) return;
+    const name = newTripPlanName.trim();
     if (!name) {
-      setNewTripSheetError(t.itinerary.tripSheets.emptyName);
+      setNewTripPlanError(t.itinerary.tripPlans.emptyName);
       return;
     }
-    setNewTripSheetError(null);
-    const created = await onCreateTripSheet(name);
+    setNewTripPlanError(null);
+    const created = await onCreateTripPlan(name);
     if (created === false) return;
-    setNewTripSheetName("");
-    setIsCreatingTripSheet(false);
+    setNewTripPlanName("");
+    setIsCreatingTripPlan(false);
   }
 
   return (
@@ -937,78 +1037,109 @@ export function SmartItineraryTable({
           </div>
         }
       />
-      <div className={tripSheetShellClassName}>
-        <label className={tripSheetFieldClassName}>
-          <span>{t.itinerary.tripSheets.selectorLabel}</span>
+      <div className={tripPlanShellClassName}>
+        <label className={tripPlanFieldClassName}>
+          <span>{t.itinerary.tripPlans.selectorLabel}</span>
           <select
-            className={tripSheetSelectClassName}
-            value={selectedSheetId}
-            disabled={sheetControlsDisabled}
-            onChange={(event) => onChangeTripSheet(event.target.value)}
+            className={tripPlanSelectClassName}
+            value={selectedTripPlanIdForControl}
+            disabled={tripPlanSelectorDisabled}
+            onChange={(event) => onChangeTripPlan(event.target.value)}
           >
-            {tripSheets.map((sheet) => (
-              <option value={sheet.id} key={sheet.id}>
-                {sheet.name}
+            {tripPlans.map((plan) => (
+              <option value={plan.id} key={plan.id}>
+                {formatTripPlanOptionLabel(plan, t.itinerary.tripPlans.status)}
               </option>
             ))}
           </select>
         </label>
-        {canManageTripSheets ? (
-          isCreatingTripSheet ? (
+        <label className={tripPlanFieldClassName}>
+          <span>{t.itinerary.tripPlans.statusLabel}</span>
+          <select
+            className={tripPlanSelectClassName}
+            value={selectedTripPlanStatus}
+            disabled={tripPlanStatusDisabled}
+            onChange={(event) =>
+              onChangeTripPlanStatus(
+                selectedTripPlanIdForControl,
+                event.target.value as Exclude<PlanStatus, "main">,
+              )
+            }
+          >
+            <option value="main" disabled>
+              {t.itinerary.tripPlans.status.main}
+            </option>
+            <option value="draft">{t.itinerary.tripPlans.status.draft}</option>
+            <option value="backup">{t.itinerary.tripPlans.status.backup}</option>
+            <option value="proposal">{t.itinerary.tripPlans.status.proposal}</option>
+          </select>
+        </label>
+        {canManageTripPlans ? (
+          <Button
+            type="button"
+            disabled={setMainTripPlanDisabled}
+            className={tripPlanButtonClassName}
+            onClick={() => onSetMainTripPlan(selectedTripPlanIdForControl)}
+          >
+            {t.itinerary.tripPlans.setMain}
+          </Button>
+        ) : null}
+        {canManageTripPlans ? (
+          isCreatingTripPlan ? (
             <form
-              className={tripSheetCreateFormClassName}
-              onSubmit={submitNewTripSheet}
+              className={tripPlanCreateFormClassName}
+              onSubmit={submitNewTripPlan}
             >
-              <label className={tripSheetNameFieldClassName}>
-                <span>{t.itinerary.tripSheets.nameLabel}</span>
+              <label className={tripPlanNameFieldClassName}>
+                <span>{t.itinerary.tripPlans.nameLabel}</span>
                 <input
-                  className={tripSheetNameInputClassName}
-                  value={newTripSheetName}
-                  disabled={isTripSheetBusy}
-                  placeholder={t.itinerary.tripSheets.namePlaceholder}
+                  className={tripPlanNameInputClassName}
+                  value={newTripPlanName}
+                  disabled={isTripPlanBusy}
+                  placeholder={t.itinerary.tripPlans.namePlaceholder}
                   onChange={(event) => {
-                    setNewTripSheetName(event.target.value);
-                    setNewTripSheetError(null);
+                    setNewTripPlanName(event.target.value);
+                    setNewTripPlanError(null);
                   }}
                 />
               </label>
               <Button
                 type="submit"
-                disabled={isTripSheetBusy}
-                className={tripSheetButtonClassName}
+                disabled={isTripPlanBusy}
+                className={tripPlanButtonClassName}
               >
-                {t.itinerary.tripSheets.createConfirm}
+                {t.itinerary.tripPlans.createConfirm}
               </Button>
               <button
                 type="button"
-                className={tripSheetSecondaryButtonClassName}
-                disabled={isTripSheetBusy}
+                className={tripPlanSecondaryButtonClassName}
+                disabled={isTripPlanBusy}
                 onClick={() => {
-                  setIsCreatingTripSheet(false);
-                  setNewTripSheetName("");
-                  setNewTripSheetError(null);
+                  setIsCreatingTripPlan(false);
+                  setNewTripPlanName("");
+                  setNewTripPlanError(null);
                 }}
               >
-                {t.itinerary.tripSheets.createCancel}
+                {t.itinerary.tripPlans.createCancel}
               </button>
             </form>
           ) : (
             <Button
               type="button"
-              disabled={isTripSheetBusy}
-              className={tripSheetButtonClassName}
-              onClick={() => setIsCreatingTripSheet(true)}
+              disabled={isTripPlanBusy}
+              className={tripPlanButtonClassName}
+              onClick={() => setIsCreatingTripPlan(true)}
             >
-              {t.itinerary.tripSheets.create}
+              {t.itinerary.tripPlans.create}
             </Button>
           )
         ) : null}
-        {isTripSheetBusy ? (
-          <p className={tripSheetMessageClassName}>
-            {t.itinerary.tripSheets.busy}
+        {isTripPlanBusy ? (
+          <p className={tripPlanMessageClassName}>
+            {t.itinerary.tripPlans.busy}
           </p>
-        ) : tripSheetMessage ? (
-          <p className={tripSheetMessageClassName}>{tripSheetMessage}</p>
+        ) : tripPlanMessage ? (
+          <p className={tripPlanMessageClassName}>{tripPlanMessage}</p>
         ) : null}
       </div>
       <div className={itineraryFilterShellClassName}>
@@ -1101,6 +1232,7 @@ export function SmartItineraryTable({
               canEdit={canRestructureItems}
               collapsed={collapsedDays.includes(group.day)}
               collapsedPlanBlockIds={collapsedPlanBlockIds}
+              commitmentsByItemId={commitmentsByItemId}
               dragState={dragState}
               graphColumnWidth={graphColumnWidth}
               graphItems={graphItemsByDay.get(group.day) ?? []}
@@ -1118,11 +1250,14 @@ export function SmartItineraryTable({
               onClearDragPreview={clearDragPreview}
               onChangeDayPath={onChangeDayPath}
               onClearDayPath={onClearDayPath}
-              onAutoResolveDayOverlaps={onAutoResolveDayOverlaps}
               onDropItem={dropItem}
               onDropIntoPlanBlock={dropIntoBlock}
               onDropOnDay={dropOnDay}
+              onAddBookingForItem={onAddBookingForItem}
               onAddStop={onAddStop}
+              onAddSubActivity={onAddSubActivity}
+              onAddNoteForItem={onAddNoteForItem}
+              onAddTaskForItem={onAddTaskForItem}
               onMoveItem={onMoveItem}
               onMoveItemIntoPlanBlock={onMoveItemIntoPlanBlock}
               onMoveItemToDay={onMoveItemToDay}
@@ -1137,11 +1272,6 @@ export function SmartItineraryTable({
               onStartTouchGesture={startTouchGesture}
               onEditItem={onEditItem}
               onDeleteItem={setPendingDeleteItem}
-              durationEditor={durationEditor}
-              onEditDuration={openDurationEditor}
-              onSetDurationEditor={setDurationEditor}
-              onCommitDuration={commitDuration}
-              onCommitCustomDuration={commitCustomDuration}
               onToggleDay={toggleDay}
               onTogglePlanBlock={togglePlanBlock}
             />
@@ -1151,6 +1281,7 @@ export function SmartItineraryTable({
       {selectedItem ? (
         <MobileSelectedStopInspector
           canEdit={canEdit}
+          canDelete={!childCountByParentId.has(selectedItem.id)}
           item={selectedItem}
           itineraryLabels={t.itinerary}
           locale={locale}
@@ -1208,6 +1339,7 @@ export function SmartItineraryTable({
 
 function MobileSelectedStopInspector({
   canEdit,
+  canDelete,
   item,
   itineraryLabels,
   locale,
@@ -1216,6 +1348,7 @@ function MobileSelectedStopInspector({
   onUpdateItemInline,
 }: {
   canEdit: boolean;
+  canDelete: boolean;
   item: ItineraryItem;
   itineraryLabels: Messages["itinerary"];
   locale: Locale;
@@ -1235,9 +1368,11 @@ function MobileSelectedStopInspector({
       <div className={mobileInspectorHeaderClassName}>
         <h2 className={mobileInspectorTitleClassName}>{item.activity}</h2>
         <p className={mobileInspectorMetaClassName}>
-          <span>{item.startTime}</span>
+          <span>
+            <TimeWindowText item={item} />
+          </span>
           <span>·</span>
-          <span>{formatDuration(item.durationMinutes, locale)}</span>
+          <span>{formatDuration(derivedDurationMinutes(item), locale)}</span>
           <span>·</span>
           <span>{item.pathName ?? "Main"}</span>
         </p>
@@ -1281,22 +1416,19 @@ function MobileSelectedStopInspector({
             onCommit={(place) => onUpdateItemInline?.(item.id, { place })}
           />
         </label>
-        <label className={mobileInspectorLabelClassName}>
+        <span className={mobileInspectorLabelClassName}>
           {itineraryLabels.headers.time}
-          <InlineTextField
-            ariaLabel={itineraryLabels.row.inlineTime({
-              activity: item.activity,
-            })}
+          <TimeWindowInlineEditor
             canEdit={canEdit}
-            className={mobileInspectorTimeFieldClassName}
-            itemValue={item.startTime}
-            key={`${item.id}:mobile-time:${item.startTime}`}
-            type="time"
-            onCommit={(startTime) =>
-              onUpdateItemInline?.(item.id, { startTime })
-            }
+            endInputClassName={mobileInspectorTimeFieldClassName}
+            endOffsetToggleClassName={mobileInspectorEndOffsetToggleClassName}
+            item={item}
+            labels={itineraryLabels}
+            startInputClassName={mobileInspectorTimeFieldClassName}
+            wrapperClassName={mobileInspectorTimeWindowClassName}
+            onUpdateItemInline={onUpdateItemInline}
           />
-        </label>
+        </span>
         <span className={mobileInspectorLabelClassName}>
           {itineraryLabels.headers.type}
           <InlineActivityTypeSelect
@@ -1311,6 +1443,51 @@ function MobileSelectedStopInspector({
             onCommit={(activityType) =>
               onUpdateItemInline?.(item.id, { activityType })
             }
+          />
+        </span>
+        <span className={mobileInspectorLabelClassName}>
+          Kind
+          <InlineItemKindSelect
+            activity={`${item.id}-mobile`}
+            buttonClassName={mobileInspectorTypeButtonClassName}
+            canEdit={canEdit}
+            value={item.itemKind ?? "activity"}
+            onCommit={(itemKind) => onUpdateItemInline?.(item.id, { itemKind })}
+          />
+        </span>
+        <span className={mobileInspectorLabelClassName}>
+          Time mode
+          <InlineTimeModeSelect
+            activity={`${item.id}-mobile`}
+            buttonClassName={mobileInspectorTypeButtonClassName}
+            canEdit={canEdit}
+            value={item.timeMode ?? "scheduled"}
+            onCommit={(timeMode) =>
+              onUpdateItemInline?.(item.id, {
+                timeMode,
+                ...(timeMode === "flexible" ? { startTime: "", durationMinutes: null } : {}),
+              })
+            }
+          />
+        </span>
+        <span className={mobileInspectorLabelClassName}>
+          Status
+          <InlineStatusSelect
+            activity={`${item.id}-mobile`}
+            buttonClassName={mobileInspectorTypeButtonClassName}
+            canEdit={canEdit}
+            value={item.status ?? "idea"}
+            onCommit={(status) => onUpdateItemInline?.(item.id, { status })}
+          />
+        </span>
+        <span className={mobileInspectorLabelClassName}>
+          Priority
+          <InlinePrioritySelect
+            activity={`${item.id}-mobile`}
+            buttonClassName={mobileInspectorTypeButtonClassName}
+            canEdit={canEdit}
+            value={item.priority ?? "normal"}
+            onCommit={(priority) => onUpdateItemInline?.(item.id, { priority })}
           />
         </span>
         <label
@@ -1333,21 +1510,9 @@ function MobileSelectedStopInspector({
           />
         </label>
       </div>
-      <div className={mobileInspectorDurationClassName}>
-        {durationPresetMinutes.map((minutes) => (
-          <button
-            type="button"
-            className={mobileInspectorDurationButtonClassName}
-            disabled={!canEdit}
-            key={minutes}
-            onClick={() =>
-              onUpdateItemInline?.(item.id, { durationMinutes: minutes })
-            }
-          >
-            {formatDuration(minutes, locale)}
-          </button>
-        ))}
-      </div>
+      <span className={mobileInspectorDurationClassName}>
+        {itineraryLabels.headers.duration}: {formatDuration(derivedDurationMinutes(item), locale)}
+      </span>
       <div className={mobileInspectorActionsClassName}>
         <button
           type="button"
@@ -1362,7 +1527,7 @@ function MobileSelectedStopInspector({
         <button
           type="button"
           className={mobileInspectorActionButtonClassName}
-          disabled={!canEdit}
+          disabled={!canEdit || !canDelete}
           aria-label={itineraryLabels.row.delete({ activity: item.activity })}
           onClick={() => onDeleteItem?.(item)}
         >
@@ -1390,15 +1555,19 @@ function DayGroup({
   canEdit,
   collapsed,
   collapsedPlanBlockIds,
+  commitmentsByItemId,
   dragState,
   onClearDragPreview,
   onChangeDayPath,
   onClearDayPath,
-  onAutoResolveDayOverlaps,
   onDropItem,
   onDropIntoPlanBlock,
   onDropOnDay,
+  onAddBookingForItem,
   onAddStop,
+  onAddSubActivity,
+  onAddNoteForItem,
+  onAddTaskForItem,
   onMoveItem,
   onMoveItemIntoPlanBlock,
   onMoveItemToDay,
@@ -1413,11 +1582,6 @@ function DayGroup({
   onStartTouchGesture,
   onEditItem,
   onDeleteItem,
-  durationEditor,
-  onEditDuration,
-  onSetDurationEditor,
-  onCommitDuration,
-  onCommitCustomDuration,
   onToggleDay,
   onTogglePlanBlock,
 }: {
@@ -1436,6 +1600,7 @@ function DayGroup({
   canEdit: boolean;
   collapsed: boolean;
   collapsedPlanBlockIds: string[];
+  commitmentsByItemId: Record<string, ItineraryCommitmentSummary>;
   dragState: {
     draggedItemId: string | null;
     overItemId: string | null;
@@ -1445,14 +1610,20 @@ function DayGroup({
   onClearDragPreview: () => void;
   onChangeDayPath?: (day: string, pathId: string) => void;
   onClearDayPath?: (day: string) => void;
-  onAutoResolveDayOverlaps?: (day: string) => void;
   onDropItem: (event: DragEvent<HTMLElement>, targetItemId: string) => void;
   onDropIntoPlanBlock: (
     event: DragEvent<HTMLElement>,
     planBlockItemId: string,
   ) => void;
   onDropOnDay: (event: DragEvent<HTMLElement>, targetDay: string) => void;
+  onAddBookingForItem?: (
+    itemId: string,
+    template?: ItineraryBookingTemplate,
+  ) => void;
   onAddStop: (day?: string) => void;
+  onAddSubActivity?: (parentItemId: string) => void;
+  onAddNoteForItem?: (itemId: string) => void;
+  onAddTaskForItem?: (itemId: string) => void;
   onMoveItem: (draggedItemId: string, targetItemId: string) => void;
   onMoveItemIntoPlanBlock: (
     draggedItemId: string,
@@ -1482,21 +1653,6 @@ function DayGroup({
   ) => void;
   onEditItem?: (itemId: string) => void;
   onDeleteItem?: (item: ItineraryItem) => void;
-  durationEditor: {
-    item: ItineraryItem;
-    hours: string;
-    minutes: string;
-  } | null;
-  onEditDuration: (item: ItineraryItem) => void;
-  onSetDurationEditor: Dispatch<
-    SetStateAction<{
-      item: ItineraryItem;
-      hours: string;
-      minutes: string;
-    } | null>
-  >;
-  onCommitDuration: (itemId: string, minutes: number) => void;
-  onCommitCustomDuration: () => void;
   onToggleDay: (day: string) => void;
   onTogglePlanBlock: (itemId: string) => void;
 }) {
@@ -1515,6 +1671,9 @@ function DayGroup({
   const visibleItems = visiblePlanBlockItems(group.items, collapsedPlanBlockIds);
   const showGraph =
     !collapsed && (graphItems.length > 0 || group.items.length > 0);
+  const [openFixMenuItemId, setOpenFixMenuItemId] = useState<string | null>(null);
+  const [openBookingMenuItemId, setOpenBookingMenuItemId] =
+    useState<string | null>(null);
 
   return (
     <tbody
@@ -1568,45 +1727,30 @@ function DayGroup({
               </span>
             </button>
             <DayWeatherChip briefing={dailyBriefing} dayLabel={dayA11yLabel} />
-            {samePathOverlapItemIds.size > 0 || hasAlternativePathOptions ? (
+            {hasAlternativePathOptions ? (
               <span className={dayPathControlsClassName}>
-                {samePathOverlapItemIds.size > 0 ? (
-                  <button
-                    type="button"
-                    className={dayAutoOverlapButtonClassName}
-                    aria-label={`Auto fix overlaps for ${dayA11yLabel}`}
-                    disabled={!canEdit}
-                    onClick={() => onAutoResolveDayOverlaps?.(group.day)}
-                  >
-                    Auto
-                  </button>
-                ) : null}
-                {hasAlternativePathOptions ? (
-                  <>
-                    <InlineOptionPicker
-                      buttonClassName={dayPathPickerClassName}
-                      ariaLabel={`Path for ${dayA11yLabel}`}
-                      value={dayPathOverride || mainItineraryPathId}
-                      disabled={!canEdit || showAllPaths}
-                      options={dayPathOptions.map((option) => ({
-                        value: option.id,
-                        label: option.name,
-                      }))}
-                      onCommit={(pathId) =>
-                        onChangeDayPath?.(group.day, pathId)
-                      }
-                    />
-                    <button
-                      type="button"
-                      className={dayClearPathButtonClassName}
-                      aria-label={`Clear path override for ${dayA11yLabel}`}
-                      disabled={!canEdit || showAllPaths || !dayPathOverride}
-                      onClick={() => onClearDayPath?.(group.day)}
-                    >
-                      Clear
-                    </button>
-                  </>
-                ) : null}
+                <InlineOptionPicker
+                  buttonClassName={dayPathPickerClassName}
+                  ariaLabel={`Path for ${dayA11yLabel}`}
+                  value={dayPathOverride || mainItineraryPathId}
+                  disabled={!canEdit || showAllPaths}
+                  options={dayPathOptions.map((option) => ({
+                    value: option.id,
+                    label: option.name,
+                  }))}
+                  onCommit={(pathId) =>
+                    onChangeDayPath?.(group.day, pathId)
+                  }
+                />
+                <button
+                  type="button"
+                  className={dayClearPathButtonClassName}
+                  aria-label={`Clear path override for ${dayA11yLabel}`}
+                  disabled={!canEdit || showAllPaths || !dayPathOverride}
+                  onClick={() => onClearDayPath?.(group.day)}
+                >
+                  Clear
+                </button>
               </span>
             ) : null}
           </div>
@@ -1618,7 +1762,25 @@ function DayGroup({
             const nextItem = visibleItems[index + 1];
             const moveDownTargetId = visibleItems[index + 2]?.id;
             const isChild = Boolean(item.parentItemId);
+            const parentItem = item.parentItemId
+              ? group.items.find((candidate) => candidate.id === item.parentItemId)
+              : undefined;
+            const childCount = item.isPlanBlock
+              ? group.items.filter((candidate) => candidate.parentItemId === item.id).length
+              : 0;
+            const canPromoteParentBlock = Boolean(parentItem && !parentItem.isPlanBlock);
+            const canDeleteItem = childCount === 0;
             const blockCollapsed = item.isPlanBlock && collapsedPlanBlockIds.includes(item.id);
+            const itemWarnings = validateItineraryItem(item, group.items);
+            const fitParentBlockPatch =
+              parentItem && itemWarnings.some((warning) => warning.code === "child-outside-plan-block")
+                ? buildFitParentBlockPatch(parentItem, item)
+                : null;
+            const hasHierarchyFixActions = Boolean(
+              (canPromoteParentBlock && parentItem) ||
+              (fitParentBlockPatch && parentItem) ||
+              item.parentItemId,
+            );
 
             return (
               <tr
@@ -1630,8 +1792,10 @@ function DayGroup({
                   selectedItemId,
                   dragState,
                   samePathOverlapItemIds,
+                  itemWarnings.length > 0,
                 )}
                 data-item-id={item.id}
+                data-hierarchy-level={isChild ? 2 : 1}
                 key={item.id}
                 onDragOver={(event) => onPreviewDrop(event, item.id)}
                 onDrop={(event) => onDropItem(event, item.id)}
@@ -1662,35 +1826,22 @@ function DayGroup({
                 </td>
                 <td className={timeCellClassName}>
                   <div className={timeStackClassName}>
-                    <InlineTextField
-                      ariaLabel={itineraryLabels.row.inlineTime({
-                        activity: item.activity,
-                      })}
+                    <TimeWindowInlineEditor
                       canEdit={canEdit}
-                      className={inlineTimeInputClassName}
-                      itemValue={item.startTime}
-                      key={`${item.id}:time:${item.startTime}`}
-                      type="time"
-                      onCommit={(value) =>
-                        onUpdateItemInline?.(item.id, { startTime: value })
-                      }
-                    />
-                    <DurationEditorPopover
-                      canEdit={canEdit}
-                      editor={
-                        durationEditor?.item.id === item.id
-                          ? durationEditor
-                          : null
-                      }
+                      endInputClassName={inlineTimeInputClassName}
+                      endOffsetToggleClassName={endOffsetToggleClassName}
                       item={item}
                       labels={itineraryLabels}
-                      locale={locale}
-                      onClose={() => onSetDurationEditor(() => null)}
-                      onCommitCustomDuration={onCommitCustomDuration}
-                      onCommitDuration={onCommitDuration}
-                      onEditDuration={onEditDuration}
-                      onSetDurationEditor={onSetDurationEditor}
+                      startInputClassName={inlineTimeInputClassName}
+                      wrapperClassName={timeWindowInlineClassName}
+                      onUpdateItemInline={onUpdateItemInline}
                     />
+                    {item.endTime ? (
+                      <span className="text-[11px] leading-none text-(--color-text-muted)">
+                        <TimeWindowText item={item} />
+                      </span>
+                    ) : null}
+                    <DurationDisplay item={item} labels={itineraryLabels} locale={locale} />
                   </div>
                 </td>
                 <td className={activityCellClassName}>
@@ -1728,7 +1879,9 @@ function DayGroup({
                         >
                           <Icon name="chevronRight" />
                           <span>
-                            {blockCollapsed ? "Expand block" : "Collapse block"}
+                            {blockCollapsed
+                              ? itineraryLabels.row.expandBlock
+                              : itineraryLabels.row.collapseBlock}
                           </span>
                         </button>
                         <button
@@ -1762,7 +1915,7 @@ function DayGroup({
                           }}
                         >
                           <Icon name="plus" />
-                          <span>Into block</span>
+                          <span>{itineraryLabels.row.intoBlock}</span>
                         </button>
                       </div>
                     ) : null}
@@ -1793,6 +1946,13 @@ function DayGroup({
                       onCommit={(value) =>
                         onUpdateItemInline?.(item.id, { place: value })
                       }
+                    />
+                    <RowHierarchyMeta
+                      childCount={childCount}
+                      commitment={commitmentsByItemId[item.id]}
+                      item={item}
+                      locale={locale}
+                      warnings={itemWarnings}
                     />
                   </div>
                 </td>
@@ -1873,6 +2033,173 @@ function DayGroup({
                     <button
                       type="button"
                       className={rowActionButtonClassName}
+                      aria-label={
+                        item.isPlanBlock
+                          ? itineraryLabels.row.addSubActivity({ activity: item.activity })
+                          : itineraryLabels.row.convertToBlock({ activity: item.activity })
+                      }
+                      disabled={!canEdit}
+                      title={
+                        item.isPlanBlock
+                          ? itineraryLabels.row.addSubActivity({ activity: item.activity })
+                          : itineraryLabels.row.convertToBlock({ activity: item.activity })
+                      }
+                      onClick={() => {
+                        if (item.isPlanBlock) {
+                          onAddSubActivity?.(item.id);
+                          return;
+                        }
+                        onUpdateItemInline?.(item.id, { isPlanBlock: true });
+                      }}
+                    >
+                      <Icon name={item.isPlanBlock ? "plus" : "list"} />
+                    </button>
+                    {hasHierarchyFixActions ? (
+                      <div className={rowFixMenuClassName}>
+                        <button
+                          type="button"
+                          className={rowFixSummaryClassName}
+                          aria-label={itineraryLabels.row.fixHierarchy({
+                            activity: item.activity,
+                          })}
+                          aria-expanded={openFixMenuItemId === item.id}
+                          title={itineraryLabels.row.fixHierarchy({
+                            activity: item.activity,
+                          })}
+                          onClick={() =>
+                            setOpenFixMenuItemId((current) =>
+                              current === item.id ? null : item.id,
+                            )
+                          }
+                        >
+                          <Icon name="warning" />
+                        </button>
+                        {openFixMenuItemId === item.id ? (
+                          <div className={rowFixPanelClassName}>
+                            {canPromoteParentBlock && parentItem ? (
+                              <button
+                                type="button"
+                                className={rowActionButtonClassName}
+                                aria-label={itineraryLabels.row.promoteParentBlock({
+                                  parent: parentItem.activity,
+                                  child: item.activity,
+                                })}
+                                disabled={!canEdit}
+                                title={itineraryLabels.row.promoteParentBlockTitle({
+                                  parent: parentItem.activity,
+                                })}
+                                onClick={() => {
+                                  onUpdateItemInline?.(parentItem.id, { isPlanBlock: true });
+                                  setOpenFixMenuItemId(null);
+                                }}
+                              >
+                                <Icon name="list" />
+                              </button>
+                            ) : null}
+                            {fitParentBlockPatch && parentItem ? (
+                              <button
+                                type="button"
+                                className={rowActionButtonClassName}
+                                aria-label={itineraryLabels.row.expandBlockToFit({
+                                  parent: parentItem.activity,
+                                  child: item.activity,
+                                })}
+                                disabled={!canEdit}
+                                title={itineraryLabels.row.expandBlockToFitTitle({
+                                  parent: parentItem.activity,
+                                  child: item.activity,
+                                })}
+                                onClick={() => {
+                                  onUpdateItemInline?.(parentItem.id, fitParentBlockPatch);
+                                  setOpenFixMenuItemId(null);
+                                }}
+                              >
+                                <Icon name="clock" />
+                              </button>
+                            ) : null}
+                            {item.parentItemId ? (
+                              <button
+                                type="button"
+                                className={rowActionButtonClassName}
+                                aria-label={itineraryLabels.row.detachSubActivity({
+                                  activity: item.activity,
+                                })}
+                                disabled={!canEdit}
+                                title={itineraryLabels.row.detachSubActivityTitle({
+                                  activity: item.activity,
+                                })}
+                                onClick={() => {
+                                  onUpdateItemInline?.(item.id, { parentItemId: null });
+                                  setOpenFixMenuItemId(null);
+                                }}
+                              >
+                                <Icon name="x" />
+                              </button>
+                            ) : null}
+                          </div>
+                        ) : null}
+                      </div>
+                    ) : null}
+                    <button
+                      type="button"
+                      className={rowActionButtonClassName}
+                      aria-label={`Add task for ${item.activity}`}
+                      disabled={!canEdit}
+                      onClick={() => onAddTaskForItem?.(item.id)}
+                    >
+                      <Icon name="check" />
+                    </button>
+                    <button
+                      type="button"
+                      className={rowActionButtonClassName}
+                      aria-label={`Add note for ${item.activity}`}
+                      disabled={!canEdit}
+                      onClick={() => onAddNoteForItem?.(item.id)}
+                    >
+                      <Icon name="note" />
+                    </button>
+                    <div className={rowBookingMenuClassName}>
+                      <button
+                        type="button"
+                        className={rowActionButtonClassName}
+                        aria-label={`Add booking draft for ${item.activity}`}
+                        aria-expanded={openBookingMenuItemId === item.id}
+                        disabled={!canEdit}
+                        onClick={() =>
+                          setOpenBookingMenuItemId((current) =>
+                            current === item.id ? null : item.id,
+                          )
+                        }
+                      >
+                        <Icon name="ticket" />
+                      </button>
+                      {openBookingMenuItemId === item.id ? (
+                        <div
+                          className={rowBookingPanelClassName}
+                          role="menu"
+                          aria-label={`Booking draft templates for ${item.activity}`}
+                        >
+                          {itineraryBookingTemplates.map((template) => (
+                            <button
+                              key={template.id}
+                              type="button"
+                              role="menuitem"
+                              className={rowBookingMenuButtonClassName}
+                              onClick={() => {
+                                onAddBookingForItem?.(item.id, template.id);
+                                setOpenBookingMenuItemId(null);
+                              }}
+                            >
+                              <Icon name={template.icon} />
+                              {template.label}
+                            </button>
+                          ))}
+                        </div>
+                      ) : null}
+                    </div>
+                    <button
+                      type="button"
+                      className={rowActionButtonClassName}
                       aria-label={itineraryLabels.row.moveUp({
                         activity: item.activity,
                       })}
@@ -1918,7 +2245,7 @@ function DayGroup({
                       aria-label={itineraryLabels.row.delete({
                         activity: item.activity,
                       })}
-                      disabled={!canEdit}
+                      disabled={!canEdit || !canDeleteItem}
                       onClick={() => onDeleteItem?.(item)}
                     >
                       <Icon name="trash" />
@@ -1979,6 +2306,33 @@ function visiblePlanBlockItems(items: ItineraryItem[], collapsedPlanBlockIds: st
   return items.filter((item) => !item.parentItemId || !collapsed.has(item.parentItemId));
 }
 
+function buildFitParentBlockPatch(
+  parent: ItineraryItem,
+  child: ItineraryItem,
+): InlineItineraryItemPatch | null {
+  const parentInterval = getTimeWindowInterval(parent);
+  const childInterval = getTimeWindowInterval(child);
+  if (!parentInterval || !childInterval) return null;
+
+  const start = Math.min(parentInterval.start, childInterval.start);
+  const end = Math.max(parentInterval.end, childInterval.end);
+  if (end <= start) return null;
+
+  return {
+    startTime: formatTimeFromAbsoluteMinutes(start),
+    endTime: formatTimeFromAbsoluteMinutes(end),
+    endOffsetDays: Math.floor(end / minutesPerDay),
+    durationMinutes: end - start,
+  };
+}
+
+function formatTimeFromAbsoluteMinutes(minutes: number): string {
+  const minuteOfDay = ((minutes % minutesPerDay) + minutesPerDay) % minutesPerDay;
+  const hours = Math.floor(minuteOfDay / 60);
+  const mins = minuteOfDay % 60;
+  return `${hours.toString().padStart(2, "0")}:${mins.toString().padStart(2, "0")}`;
+}
+
 function groupGraphItemsByDay(
   items: ItineraryItem[],
 ): Map<string, ItineraryItem[]> {
@@ -1989,26 +2343,18 @@ function groupGraphItemsByDay(
   return itemsByDay;
 }
 
-function buildGraphColumnWidth(
-  items: ItineraryItem[],
-  pathOptions: ItineraryPathOption[],
-): number {
+function buildGraphColumnWidth(items: ItineraryItem[]): number {
   const pathCountsByDay = new Map<string, Set<string>>();
-  const planAPathId = findPlanAPathId(pathOptions);
   const itemsByDay = groupGraphItemsByDay(items);
   for (const [day, dayItems] of itemsByDay) {
     const dayPaths =
       pathCountsByDay.get(day) ?? new Set<string>([mainItineraryPathId]);
-    dayItems.forEach((item, itemIndex) => {
+    dayItems.forEach((item) => {
       const pathId =
         item.pathRole === "alternative"
           ? (item.pathId ?? item.id)
           : mainItineraryPathId;
-      dayPaths.add(
-        shouldUseVisualPlanA(item, pathId, dayItems.slice(0, itemIndex))
-          ? planAPathId
-          : pathId,
-      );
+      dayPaths.add(pathId);
     });
     pathCountsByDay.set(day, dayPaths);
   }
@@ -2022,52 +2368,6 @@ function buildGraphColumnWidth(
   );
 }
 
-function findPlanAPathId(pathOptions: ItineraryPathOption[]): string {
-  return (
-    pathOptions.find(
-      (option) =>
-        option.id !== mainItineraryPathId &&
-        option.name.toLowerCase() === "plan a",
-    )?.id ?? "visual-plan-a"
-  );
-}
-
-function shouldUseVisualPlanA(
-  item: ItineraryItem,
-  pathId: string,
-  earlierItems: ItineraryItem[],
-): boolean {
-  return (
-    pathId === mainItineraryPathId &&
-    !item.pathGroupId &&
-    overlapsEarlierItem(item, earlierItems)
-  );
-}
-
-function overlapsEarlierItem(
-  item: ItineraryItem,
-  earlierItems: ItineraryItem[],
-): boolean {
-  const interval = itemInterval(item);
-  if (!interval) return false;
-  return earlierItems.some((earlierItem) => {
-    const earlierInterval = itemInterval(earlierItem);
-    return Boolean(
-      earlierInterval &&
-      interval.start < earlierInterval.end &&
-      earlierInterval.start < interval.end,
-    );
-  });
-}
-
-function itemInterval(
-  item: ItineraryItem,
-): { start: number; end: number } | null {
-  const start = parseTime(item.startTime);
-  if (start === null) return null;
-  return { start, end: start + (item.durationMinutes ?? 45) };
-}
-
 function getRowClassName(
   item: ItineraryItem,
   selectedItemId: string,
@@ -2078,10 +2378,12 @@ function getRowClassName(
     overBlockId: string | null;
   },
   samePathOverlapItemIds: Set<string> = new Set(),
+  hasWarnings = false,
 ): string {
   return cn(
     dataRowClassName,
     selectedItemId === item.id && dataRowSelectedClassName,
+    hasWarnings && dataRowWarningClassName,
     samePathOverlapItemIds.has(item.id) && dataRowPathOverlapClassName,
     dragState.draggedItemId === item.id && dataRowDraggingClassName,
     dragState.overItemId === item.id && dataRowDropTargetClassName,
@@ -2119,6 +2421,116 @@ function DayWeatherChip({
       ) : <span>{condition}</span>}
     </span>
   );
+}
+
+function TimeWindowInlineEditor({
+  canEdit,
+  endInputClassName,
+  endOffsetToggleClassName,
+  item,
+  labels,
+  startInputClassName,
+  wrapperClassName,
+  onUpdateItemInline,
+}: {
+  canEdit: boolean;
+  endInputClassName: string;
+  endOffsetToggleClassName: string;
+  item: ItineraryItem;
+  labels: Messages["itinerary"];
+  startInputClassName: string;
+  wrapperClassName: string;
+  onUpdateItemInline?: (
+    itemId: string,
+    patch: InlineItineraryItemPatch,
+  ) => void | Promise<void>;
+}) {
+  const endOffsetDays = item.endOffsetDays ?? 0;
+  const hasEndTime = Boolean(item.endTime);
+
+  return (
+    <span className={wrapperClassName}>
+      <InlineTextField
+        ariaLabel={labels.row.inlineTime({
+          activity: item.activity,
+        })}
+        canEdit={canEdit}
+        className={startInputClassName}
+        itemValue={item.startTime}
+        key={`${item.id}:time:${item.startTime}`}
+        type="time"
+        onCommit={(startTime) =>
+          onUpdateItemInline?.(item.id, { startTime })
+        }
+      />
+      <span className={timeWindowSeparatorClassName} aria-hidden="true">
+        -
+      </span>
+      <InlineTextField
+        ariaLabel={labels.row.inlineEndTime({
+          activity: item.activity,
+        })}
+        canEdit={canEdit}
+        className={endInputClassName}
+        itemValue={item.endTime ?? ""}
+        key={`${item.id}:end-time:${item.endTime ?? ""}`}
+        type="time"
+        onCommit={(endTime) =>
+          onUpdateItemInline?.(
+            item.id,
+            endTime
+              ? { endTime, endOffsetDays }
+              : { endTime: null, endOffsetDays: 0 },
+          )
+        }
+      />
+      <button
+        type="button"
+        aria-label={labels.row.toggleNextDayEnd({
+          activity: item.activity,
+        })}
+        aria-pressed={endOffsetDays > 0}
+        className={endOffsetToggleClassName}
+        disabled={!canEdit || !hasEndTime}
+        onClick={() =>
+          onUpdateItemInline?.(item.id, {
+            endOffsetDays: endOffsetDays > 0 ? 0 : 1,
+          })
+        }
+      >
+        {endOffsetDays > 0 ? (
+          <EndOffsetSup value={endOffsetDays} />
+        ) : (
+          <Icon name="clock" className="size-3" />
+        )}
+      </button>
+    </span>
+  );
+}
+
+function TimeWindowText({
+  item,
+}: {
+  item: Pick<ItineraryItem, "startTime" | "endTime" | "endOffsetDays">;
+}) {
+  const startTime = item.startTime?.trim();
+  const endTime = item.endTime?.trim();
+  if (!startTime && !endTime) return <>—</>;
+  if (!endTime) return <>{startTime || "—"}</>;
+
+  return (
+    <>
+      {startTime ? `${startTime}-` : null}
+      {endTime}
+      {(item.endOffsetDays ?? 0) > 0 ? (
+        <EndOffsetSup value={item.endOffsetDays ?? 0} />
+      ) : null}
+    </>
+  );
+}
+
+function EndOffsetSup({ value }: { value: number }) {
+  return <sup className={endOffsetSupClassName}>+{value}</sup>;
 }
 
 function InlineTextField({
@@ -2200,212 +2612,30 @@ function InlineTextField({
   );
 }
 
-function DurationEditorPopover({
-  canEdit,
-  editor,
+function DurationDisplay({
   item,
   labels,
   locale,
-  onClose,
-  onCommitCustomDuration,
-  onCommitDuration,
-  onEditDuration,
-  onSetDurationEditor,
 }: {
-  canEdit: boolean;
-  editor: {
-    item: ItineraryItem;
-    hours: string;
-    minutes: string;
-  } | null;
   item: ItineraryItem;
   labels: Messages["itinerary"];
   locale: Locale;
-  onClose: () => void;
-  onCommitCustomDuration: () => void;
-  onCommitDuration: (itemId: string, minutes: number) => void;
-  onEditDuration: (item: ItineraryItem) => void;
-  onSetDurationEditor: Dispatch<
-    SetStateAction<{
-      item: ItineraryItem;
-      hours: string;
-      minutes: string;
-    } | null>
-  >;
 }) {
-  const buttonRef = useRef<HTMLButtonElement>(null);
-  const panelRef = useRef<HTMLElement>(null);
-  const [position, setPosition] = useState({
-    left: 8,
-    top: 8,
-    width: 300,
-  });
-  const durationLabel = (canEdit
-    ? labels.row.inlineDuration
-    : labels.row.duration)({
+  const durationLabel = labels.row.duration({
     activity: item.activity,
   });
-  const title = labels.row.durationDialogTitle({ activity: item.activity });
-
-  useEffect(() => {
-    if (!editor) return;
-
-    function updatePosition() {
-      const triggerRect = buttonRef.current?.getBoundingClientRect();
-      if (!triggerRect) return;
-      const viewportWidth = window.innerWidth;
-      const viewportHeight = window.innerHeight;
-      const width = Math.min(300, viewportWidth - 16);
-      const panelHeight = Math.min(
-        panelRef.current?.getBoundingClientRect().height ?? 276,
-        viewportHeight - 16,
-      );
-      const preferredLeft =
-        triggerRect.left + triggerRect.width / 2 - width / 2;
-      const left = Math.min(
-        Math.max(8, preferredLeft),
-        Math.max(8, viewportWidth - width - 8),
-      );
-      const belowTop = triggerRect.bottom + 6;
-      const aboveTop = triggerRect.top - panelHeight - 6;
-      const hasSpaceBelow = belowTop + panelHeight <= viewportHeight - 8;
-      const top = hasSpaceBelow
-        ? belowTop
-        : Math.min(
-            Math.max(8, aboveTop),
-            Math.max(8, viewportHeight - panelHeight - 8),
-          );
-      setPosition({ left, top, width });
-    }
-
-    updatePosition();
-    const frame = window.requestAnimationFrame(updatePosition);
-    window.addEventListener("resize", updatePosition);
-    window.addEventListener("scroll", updatePosition, true);
-    return () => {
-      window.cancelAnimationFrame(frame);
-      window.removeEventListener("resize", updatePosition);
-      window.removeEventListener("scroll", updatePosition, true);
-    };
-  }, [editor]);
-
-  useEffect(() => {
-    if (!editor) return;
-    function closeOnOutside(event: MouseEvent | TouchEvent) {
-      const target = event.target as Node | null;
-      if (!target) return;
-      if (
-        buttonRef.current?.contains(target) ||
-        panelRef.current?.contains(target)
-      )
-        return;
-      onClose();
-    }
-    document.addEventListener("mousedown", closeOnOutside);
-    document.addEventListener("touchstart", closeOnOutside);
-    return () => {
-      document.removeEventListener("mousedown", closeOnOutside);
-      document.removeEventListener("touchstart", closeOnOutside);
-    };
-  }, [editor, onClose]);
 
   return (
-    <>
-      <button
-        ref={buttonRef}
-        type="button"
-        className={durationPillClassName}
-        disabled={!canEdit}
-        aria-expanded={editor ? "true" : "false"}
-        aria-label={durationLabel}
-        onClick={() => (editor ? onClose() : onEditDuration(item))}
-      >
-        {formatDuration(item.durationMinutes, locale)}
-      </button>
-      {editor
-        ? createPortal(
-            <section
-              ref={panelRef}
-              className={durationDialogClassName}
-              role="region"
-              aria-label={title}
-              style={{
-                left: position.left,
-                top: position.top,
-                width: position.width,
-              }}
-              onKeyDown={(event) => {
-                if (event.key === "Escape") {
-                  event.preventDefault();
-                  onClose();
-                  buttonRef.current?.focus();
-                }
-              }}
-            >
-              <h3 className={durationDialogTitleClassName}>{title}</h3>
-              <div className={durationPresetGridClassName}>
-                {durationPresetMinutes.map((minutes) => (
-                  <button
-                    type="button"
-                    className={durationPresetButtonClassName}
-                    key={minutes}
-                    onClick={() => onCommitDuration(item.id, minutes)}
-                  >
-                    {formatDuration(minutes, locale)}
-                  </button>
-                ))}
-              </div>
-              <div className={durationCustomGridClassName}>
-                <label className={durationInputLabelClassName}>
-                  {labels.row.durationHours}
-                  <input
-                    className={durationInputClassName}
-                    inputMode="numeric"
-                    min={0}
-                    type="number"
-                    value={editor.hours}
-                    onChange={(event) =>
-                      onSetDurationEditor((current) =>
-                        current
-                          ? { ...current, hours: event.target.value }
-                          : current,
-                      )
-                    }
-                  />
-                </label>
-                <label className={durationInputLabelClassName}>
-                  {labels.row.durationMinutes}
-                  <input
-                    className={durationInputClassName}
-                    inputMode="numeric"
-                    max={59}
-                    min={0}
-                    type="number"
-                    value={editor.minutes}
-                    onChange={(event) =>
-                      onSetDurationEditor((current) =>
-                        current
-                          ? { ...current, minutes: event.target.value }
-                          : current,
-                      )
-                    }
-                  />
-                </label>
-              </div>
-              <div className={deleteDialogActionsClassName}>
-                <Button type="button" variant="ghost" onClick={onClose}>
-                  {labels.row.durationCancel}
-                </Button>
-                <Button type="button" onClick={onCommitCustomDuration}>
-                  {labels.row.durationSave}
-                </Button>
-              </div>
-            </section>,
-            document.body,
-          )
-        : null}
-    </>
+    <span className={durationPillClassName} aria-label={durationLabel}>
+      {formatDuration(derivedDurationMinutes(item), locale)}
+    </span>
   );
+}
+
+function derivedDurationMinutes(item: ItineraryItem): number | null {
+  const interval = getTimeWindowInterval(item);
+  if (interval) return interval.end - interval.start;
+  return item.durationMinutes;
 }
 
 interface InlineOptionPickerOption {
@@ -2635,13 +2865,213 @@ function InlineActivityTypeSelect({
   );
 }
 
+function RowHierarchyMeta({
+  childCount,
+  commitment,
+  item,
+  locale,
+  warnings,
+}: {
+  childCount: number;
+  commitment?: ItineraryCommitmentSummary;
+  item: ItineraryItem;
+  locale: Locale;
+  warnings: ValidationWarning[];
+}) {
+  const status = item.status ?? "idea";
+  const priority = item.priority ?? "normal";
+  const showCommitment = status !== "idea" || priority === "must" || priority === "high";
+  const commitmentChips = buildCommitmentChips(commitment);
+  const sortedWarnings = sortValidationWarningsForDisplay(warnings);
+  const warningChips = sortedWarnings.slice(0, 2);
+  const remainingWarningCount = Math.max(0, warnings.length - warningChips.length);
+
+  return (
+    <div className={hierarchyMetaClassName} aria-label={`Structure for ${item.activity}`}>
+      {item.isPlanBlock ? (
+        <span className={cn(hierarchyChipClassName, blockHierarchyChipClassName)}>
+          <Icon name="list" />
+          Activity block · {childCount} sub-item{childCount === 1 ? "" : "s"}
+        </span>
+      ) : !item.parentItemId ? (
+        <span className={cn(hierarchyChipClassName, activityHierarchyChipClassName)}>
+          <Icon name="list" />
+          Activity
+        </span>
+      ) : null}
+      {item.parentItemId ? (
+        <span className={hierarchyChipClassName}>
+          <Icon name="chevronRight" />
+          Sub-activity
+        </span>
+      ) : null}
+      {showCommitment ? (
+        <span className={cn(hierarchyChipClassName, commitmentChipClassName)}>
+          <Icon name="check" />
+          {status}
+          {priority === "must" || priority === "high" ? ` · ${priority}` : ""}
+        </span>
+      ) : null}
+      {commitmentChips.map((chip) => (
+        <span
+          className={cn(hierarchyChipClassName, recordCommitmentChipClassName)}
+          key={chip.label}
+        >
+          <Icon name={chip.icon} />
+          {chip.label}
+        </span>
+      ))}
+      {warningChips.map((warning) => (
+        <span
+          className={cn(hierarchyChipClassName, warningChipClassName)}
+          key={warning.code}
+          title={warning.message}
+        >
+          <Icon name="warning" />
+          {formatValidationWarningLabel(warning, locale)}
+        </span>
+      ))}
+      {remainingWarningCount > 0 ? (
+        <span className={cn(hierarchyChipClassName, warningChipClassName)}>
+          <Icon name="warning" />
+          +{remainingWarningCount}
+        </span>
+      ) : null}
+    </div>
+  );
+}
+
+function sortValidationWarningsForDisplay(
+  warnings: ValidationWarning[],
+): ValidationWarning[] {
+  return [...warnings].sort(
+    (left, right) =>
+      validationWarningPriority(left) - validationWarningPriority(right),
+  );
+}
+
+function validationWarningPriority(warning: ValidationWarning): number {
+  if (
+    warning.code === "missing-parent-item" ||
+    warning.code === "invalid-parent-plan-block" ||
+    warning.code === "nested-sub-activity" ||
+    warning.code === "parent-scope-mismatch" ||
+    warning.code === "child-outside-plan-block"
+  ) {
+    return 0;
+  }
+  if (warning.code === "overlap" || warning.code === "time-order-conflict") {
+    return 1;
+  }
+  return 2;
+}
+
+function formatValidationWarningLabel(
+  warning: ValidationWarning,
+  locale: Locale,
+): string {
+  const labels: Record<ValidationWarning["code"], { en: string; th: string }> = {
+    "missing-start-time": {
+      en: "Start time",
+      th: "เวลาเริ่ม",
+    },
+    "invalid-start-time": {
+      en: "Invalid time",
+      th: "เวลาไม่ถูกต้อง",
+    },
+    "missing-duration": {
+      en: "End or duration",
+      th: "เวลาจบ/ระยะเวลา",
+    },
+    "missing-map-link": {
+      en: "Map link",
+      th: "ลิงก์แผนที่",
+    },
+    "missing-transportation": {
+      en: "Transport",
+      th: "การเดินทาง",
+    },
+    "time-order-conflict": {
+      en: "Time order",
+      th: "ลำดับเวลา",
+    },
+    overlap: {
+      en: "Overlap",
+      th: "เวลาซ้อน",
+    },
+    "missing-parent-item": {
+      en: "Missing parent",
+      th: "ไม่พบกิจกรรมแม่",
+    },
+    "invalid-parent-plan-block": {
+      en: "Parent block",
+      th: "แม่ต้องเป็น block",
+    },
+    "nested-sub-activity": {
+      en: "Nested sub-activity",
+      th: "ซ้อน sub-activity",
+    },
+    "parent-scope-mismatch": {
+      en: "Parent scope",
+      th: "แผน/วันไม่ตรง",
+    },
+    "child-outside-plan-block": {
+      en: "Outside block",
+      th: "นอก block",
+    },
+    "unresolved-location": {
+      en: "Location",
+      th: "สถานที่",
+    },
+    "stale-location": {
+      en: "Stale location",
+      th: "สถานที่เก่า",
+    },
+  };
+  return labels[warning.code]?.[locale] ?? warning.code;
+}
+
+function buildCommitmentChips(
+  commitment: ItineraryCommitmentSummary | undefined,
+): Array<{ icon: "check" | "note" | "ticket" | "wallet"; label: string }> {
+  if (!commitment) return [];
+  const chips: Array<{ icon: "check" | "note" | "ticket" | "wallet"; label: string }> = [];
+  if (commitment.bookingCount) {
+    chips.push({
+      icon: "ticket",
+      label: `${commitment.bookingCount} booking${commitment.bookingCount === 1 ? "" : "s"}`,
+    });
+  }
+  if (commitment.expenseCount) {
+    chips.push({
+      icon: "wallet",
+      label: `${commitment.expenseCount} expense${commitment.expenseCount === 1 ? "" : "s"}`,
+    });
+  }
+  if (commitment.openTaskCount) {
+    chips.push({
+      icon: "check",
+      label: `${commitment.openTaskCount} task${commitment.openTaskCount === 1 ? "" : "s"}`,
+    });
+  }
+  if (commitment.noteCount) {
+    chips.push({
+      icon: "note",
+      label: `${commitment.noteCount} note${commitment.noteCount === 1 ? "" : "s"}`,
+    });
+  }
+  return chips;
+}
+
 function InlineItemKindSelect({
   activity,
+  buttonClassName = "",
   canEdit,
   onCommit,
   value,
 }: {
   activity: string;
+  buttonClassName?: string;
   canEdit: boolean;
   onCommit: (value: ItineraryItemKind) => void | Promise<void>;
   value: ItineraryItemKind;
@@ -2649,6 +3079,7 @@ function InlineItemKindSelect({
   return (
     <InlineOptionPicker
       ariaLabel={`Item kind for ${activity}`}
+      buttonClassName={buttonClassName}
       disabled={!canEdit}
       value={value}
       options={itineraryItemKindOptions.map((option) => ({
@@ -2665,11 +3096,13 @@ function InlineItemKindSelect({
 
 function InlineTimeModeSelect({
   activity,
+  buttonClassName = "",
   canEdit,
   onCommit,
   value,
 }: {
   activity: string;
+  buttonClassName?: string;
   canEdit: boolean;
   onCommit: (value: ItineraryTimeMode) => void | Promise<void>;
   value: ItineraryTimeMode;
@@ -2677,6 +3110,7 @@ function InlineTimeModeSelect({
   return (
     <InlineOptionPicker
       ariaLabel={`Time mode for ${activity}`}
+      buttonClassName={buttonClassName}
       disabled={!canEdit}
       value={value}
       options={itineraryTimeModeOptions.map((option) => ({
@@ -2693,11 +3127,13 @@ function InlineTimeModeSelect({
 
 function InlineStatusSelect({
   activity,
+  buttonClassName = "",
   canEdit,
   onCommit,
   value,
 }: {
   activity: string;
+  buttonClassName?: string;
   canEdit: boolean;
   onCommit: (value: ItineraryItemStatus) => void | Promise<void>;
   value: ItineraryItemStatus;
@@ -2705,6 +3141,7 @@ function InlineStatusSelect({
   return (
     <InlineOptionPicker
       ariaLabel={`Status for ${activity}`}
+      buttonClassName={buttonClassName}
       disabled={!canEdit}
       value={value}
       options={itineraryStatusOptions.map((option) => ({
@@ -2721,11 +3158,13 @@ function InlineStatusSelect({
 
 function InlinePrioritySelect({
   activity,
+  buttonClassName = "",
   canEdit,
   onCommit,
   value,
 }: {
   activity: string;
+  buttonClassName?: string;
   canEdit: boolean;
   onCommit: (value: ItineraryItemPriority) => void | Promise<void>;
   value: ItineraryItemPriority;
@@ -2733,6 +3172,7 @@ function InlinePrioritySelect({
   return (
     <InlineOptionPicker
       ariaLabel={`Priority for ${activity}`}
+      buttonClassName={buttonClassName}
       disabled={!canEdit}
       value={value}
       options={itineraryPriorityOptions.map((option) => ({
@@ -2757,16 +3197,7 @@ function findSamePathOverlapItemIds(items: ItineraryItem[]): Set<string> {
 
   for (const groupItems of groups.values()) {
     const intervals = groupItems
-      .map((item) => {
-        const start = parseTime(item.startTime);
-        if (
-          start === null ||
-          item.durationMinutes === null ||
-          item.durationMinutes <= 0
-        )
-          return null;
-        return { item, start, end: start + item.durationMinutes };
-      })
+      .map((item) => getTimeWindowInterval(item))
       .filter(
         (entry): entry is { item: ItineraryItem; start: number; end: number } =>
           entry !== null,
@@ -2800,6 +3231,34 @@ function itineraryItemPathId(item: ItineraryItem): string {
   return item.pathRole === "alternative"
     ? (item.pathId ?? item.id)
     : mainItineraryPathId;
+}
+
+function canMoveItemToSiblingTarget(
+  draggedItemId: string,
+  targetItemId: string,
+  itemsById: Map<string, ItineraryItem>,
+): boolean {
+  const draggedItem = itemsById.get(draggedItemId);
+  const targetItem = itemsById.get(targetItemId);
+  if (!draggedItem || !targetItem) return false;
+  return !draggedItem.isPlanBlock || !targetItem.parentItemId;
+}
+
+function canMoveItemIntoPlanBlockTarget(
+  draggedItemId: string,
+  itemsById: Map<string, ItineraryItem>,
+): boolean {
+  const draggedItem = itemsById.get(draggedItemId);
+  return Boolean(draggedItem && !draggedItem.isPlanBlock);
+}
+
+function countChildrenByParentId(items: ItineraryItem[]): Map<string, number> {
+  const counts = new Map<string, number>();
+  for (const item of items) {
+    if (!item.parentItemId) continue;
+    counts.set(item.parentItemId, (counts.get(item.parentItemId) ?? 0) + 1);
+  }
+  return counts;
 }
 
 function mapHref(item: ItineraryItem): string {
@@ -2863,4 +3322,16 @@ function formatSelectedPlanLabel(
   return namesLabel({
     names: `${selectedNames.slice(0, 2).join(", ")} +${selectedNames.length - 2}`,
   });
+}
+
+function formatTripPlanOptionLabel(
+  plan: PlanVariant,
+  statusLabels: Readonly<Record<PlanStatus, string>>,
+): string {
+  const status = tripPlanStatus(plan);
+  return `${plan.name} - ${statusLabels[status]}`;
+}
+
+function tripPlanStatus(plan: PlanVariant): PlanStatus {
+  return plan.status ?? (plan.kind === "split" ? "proposal" : plan.kind);
 }

@@ -123,6 +123,26 @@ fn embedded_migrations() -> Vec<Migration> {
             version: "0024_plan_check_runtime_grants.sql",
             sql: include_str!("../../../../migrations/0024_plan_check_runtime_grants.sql"),
         },
+        Migration {
+            version: "0025_trip_plan_compatibility.sql",
+            sql: include_str!("../../../../migrations/0025_trip_plan_compatibility.sql"),
+        },
+        Migration {
+            version: "0026_plan_scoped_records.sql",
+            sql: include_str!("../../../../migrations/0026_plan_scoped_records.sql"),
+        },
+        Migration {
+            version: "0027_itinerary_hierarchy_time_windows.sql",
+            sql: include_str!("../../../../migrations/0027_itinerary_hierarchy_time_windows.sql"),
+        },
+        Migration {
+            version: "0028_plan_check_trip_plan_scope.sql",
+            sql: include_str!("../../../../migrations/0028_plan_check_trip_plan_scope.sql"),
+        },
+        Migration {
+            version: "0029_expense_reminder_trip_plan_scope.sql",
+            sql: include_str!("../../../../migrations/0029_expense_reminder_trip_plan_scope.sql"),
+        },
     ]
 }
 
@@ -322,7 +342,7 @@ mod tests {
     }
 
     #[test]
-    fn embedded_migrations_include_latest_photo_album_link_migration() {
+    fn embedded_migrations_include_latest_plan_scope_migration() {
         let versions = embedded_migrations()
             .iter()
             .map(|migration| migration.version)
@@ -330,6 +350,8 @@ mod tests {
 
         assert!(versions.contains("0019_photo_album_links.sql"));
         assert!(versions.contains("0021_trusted_device_active_label_unique.sql"));
+        assert!(versions.contains("0028_plan_check_trip_plan_scope.sql"));
+        assert!(versions.contains("0029_expense_reminder_trip_plan_scope.sql"));
     }
 
     #[test]

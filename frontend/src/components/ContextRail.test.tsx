@@ -18,6 +18,7 @@ function renderRail(
     suggestions: tripFixture.suggestions,
     stopNotes: tripFixture.stopNotes,
     tasks: tripFixture.tasks,
+    bookingDocs: tripFixture.trip.bookingDocs ?? [],
     currentMember: tripFixture.currentMembers.owner,
     expenseSummary: tripFixture.expenseSummaries.owner,
     canEdit: true,
@@ -115,8 +116,127 @@ describe("ContextRail", () => {
       screen.getByText("ไม่มีคำเตือนการจองสำหรับจุดนี้"),
     ).toBeInTheDocument();
     expect(
+      screen.getByText("ยังไม่มีเอกสารการจองที่ผูกกับจุดนี้"),
+    ).toBeInTheDocument();
+    expect(
       screen.getByText("ยังไม่มี checklist ที่ผูกกับจุดนี้"),
     ).toBeInTheDocument();
+  });
+
+  it("shows booking docs linked to the selected itinerary item", async () => {
+    const onChangeBookingDocType = vi.fn();
+    const onChangeBookingDocQuickFields = vi.fn();
+    renderRail({
+      onChangeBookingDocType,
+      onChangeBookingDocQuickFields,
+      bookingDocs: [
+        {
+          id: "booking-dimdim-1",
+          tripId: tripFixture.trip.id,
+          tripPlanId: selectedItem.planVariantId,
+          type: "activity_ticket",
+          title: "Dim Dim Sum reservation",
+          status: "booked",
+          visibility: "shared",
+          ownerMemberId: tripFixture.currentMembers.owner.id,
+          providerName: "Dim Dim Sum",
+          confirmationCode: "DDS-42",
+          startsAt: null,
+          endsAt: null,
+          timezone: "Asia/Hong_Kong",
+          priceAmount: null,
+          currency: null,
+          travelerIds: [tripFixture.currentMembers.owner.id],
+          externalLinks: [],
+          relatedItineraryItemIds: [selectedItem.id],
+          relatedTaskIds: [],
+          relatedExpenseIds: [],
+          noteIds: [],
+          notes: "Window table",
+          createdBy: tripFixture.currentMembers.owner.id,
+          updatedAt: "2026-06-10T00:00:00.000Z",
+          version: 1,
+        },
+        {
+          id: "booking-other-1",
+          tripId: tripFixture.trip.id,
+          tripPlanId: selectedItem.planVariantId,
+          type: "other",
+          title: "Other stop ticket",
+          status: "booked",
+          visibility: "shared",
+          ownerMemberId: tripFixture.currentMembers.owner.id,
+          providerName: null,
+          confirmationCode: null,
+          startsAt: null,
+          endsAt: null,
+          timezone: "Asia/Hong_Kong",
+          priceAmount: null,
+          currency: null,
+          travelerIds: [],
+          externalLinks: [],
+          relatedItineraryItemIds: ["other-item"],
+          relatedTaskIds: [],
+          relatedExpenseIds: [],
+          noteIds: [],
+          notes: null,
+          createdBy: tripFixture.currentMembers.owner.id,
+          updatedAt: "2026-06-10T00:00:00.000Z",
+          version: 1,
+        },
+      ],
+    });
+
+    await userEvent.click(screen.getByRole("tab", { name: "การจอง" }));
+    const bookingPanel = screen.getByRole("region", {
+      name: "การจองและการเตรียมตัวของจุดนี้",
+    });
+    expect(
+      within(bookingPanel).getByText("Dim Dim Sum reservation"),
+    ).toBeInTheDocument();
+    expect(within(bookingPanel).getByText("การจอง · booked")).toBeInTheDocument();
+    const typeSelect = within(bookingPanel).getByLabelText(
+      "ประเภทการจองของ Dim Dim Sum reservation",
+    );
+    expect(typeSelect).toHaveValue("activity_ticket");
+    fireEvent.change(typeSelect, { target: { value: "other" } });
+    expect(onChangeBookingDocType).toHaveBeenCalledWith(
+      "booking-dimdim-1",
+      "other",
+    );
+    fireEvent.change(
+      within(bookingPanel).getByLabelText(
+        "ผู้ให้บริการของ Dim Dim Sum reservation",
+      ),
+      { target: { value: "Updated supplier" } },
+    );
+    fireEvent.blur(
+      within(bookingPanel).getByLabelText(
+        "ผู้ให้บริการของ Dim Dim Sum reservation",
+      ),
+    );
+    expect(onChangeBookingDocQuickFields).toHaveBeenCalledWith(
+      "booking-dimdim-1",
+      { providerName: "Updated supplier" },
+    );
+    fireEvent.change(
+      within(bookingPanel).getByLabelText(
+        "รหัสอ้างอิงของ Dim Dim Sum reservation",
+      ),
+      { target: { value: "DDS-99" } },
+    );
+    fireEvent.blur(
+      within(bookingPanel).getByLabelText(
+        "รหัสอ้างอิงของ Dim Dim Sum reservation",
+      ),
+    );
+    expect(onChangeBookingDocQuickFields).toHaveBeenCalledWith(
+      "booking-dimdim-1",
+      { confirmationCode: "DDS-99" },
+    );
+    expect(
+      within(bookingPanel).queryByText("Other stop ticket"),
+    ).not.toBeInTheDocument();
   });
 
   it("ignores empty note form submissions even when the browser submits the form", () => {
@@ -185,14 +305,20 @@ describe("ContextRail", () => {
       },
     });
 
-    fireEvent.change(screen.getByLabelText("ชื่อค่าใช้จ่าย"), {
+    expect(
+      screen.getByText(
+        "ใช้เฉพาะเงินที่จ่ายแล้วหรือผูกพันต้องจ่าย ประมาณการให้เก็บใน booking draft หรือโน้ต",
+      ),
+    ).toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText("ชื่อค่าใช้จ่ายจริง"), {
       target: { value: "Taxi" },
     });
     fireEvent.change(screen.getByLabelText("จำนวนเงิน"), {
       target: { value: "120" },
     });
     fireEvent.click(
-      screen.getByRole("button", { name: "เพิ่ม/แก้ไขค่าใช้จ่าย" }),
+      screen.getByRole("button", { name: "เพิ่ม/แก้ไขค่าใช้จ่ายจริง" }),
     );
 
     expect(props.onCreateExpense).toHaveBeenCalledWith({
@@ -206,7 +332,7 @@ describe("ContextRail", () => {
     fireEvent.click(
       screen.getByRole("button", { name: /Edit expense Dim sum/i }),
     );
-    fireEvent.change(screen.getByLabelText("ชื่อค่าใช้จ่าย"), {
+    fireEvent.change(screen.getByLabelText("ชื่อค่าใช้จ่ายจริง"), {
       target: { value: "Dim sum edited" },
     });
     fireEvent.change(screen.getByLabelText("จำนวนเงิน"), {

@@ -168,6 +168,39 @@ db-init: db-create
 	@if ! $(PSQL) "$(DATABASE_URL)" -tAc "SELECT 1 FROM information_schema.tables WHERE table_schema='public' AND table_name='auth_attempt_locks'" | grep -q 1; then \
 	  $(PSQL) -v ON_ERROR_STOP=1 "$(DATABASE_URL)" < backend/migrations/0018_auth_attempt_locks.sql; \
 	fi
+	@if ! $(PSQL) "$(DATABASE_URL)" -tAc "SELECT 1 FROM information_schema.tables WHERE table_schema='public' AND table_name='photo_album_links'" | grep -q 1; then \
+	  $(PSQL) -v ON_ERROR_STOP=1 "$(DATABASE_URL)" < backend/migrations/0019_photo_album_links.sql; \
+	fi
+	@if ! $(PSQL) "$(DATABASE_URL)" -tAc "SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='trips' AND column_name='origin_label'" | grep -q 1; then \
+	  $(PSQL) -v ON_ERROR_STOP=1 "$(DATABASE_URL)" < backend/migrations/0020_trip_city_routes.sql; \
+	fi
+	@if ! $(PSQL) "$(DATABASE_URL)" -tAc "SELECT 1 FROM pg_indexes WHERE schemaname='public' AND indexname='trusted_devices_user_active_label_key'" | grep -q 1; then \
+	  $(PSQL) -v ON_ERROR_STOP=1 "$(DATABASE_URL)" < backend/migrations/0021_trusted_device_active_label_unique.sql; \
+	fi
+	@if ! $(PSQL) "$(DATABASE_URL)" -tAc "SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='itinerary_items' AND column_name='details'" | grep -q 1; then \
+	  $(PSQL) -v ON_ERROR_STOP=1 "$(DATABASE_URL)" < backend/migrations/0022_itinerary_item_details.sql; \
+	fi
+	@if ! $(PSQL) "$(DATABASE_URL)" -tAc "SELECT 1 FROM information_schema.tables WHERE table_schema='public' AND table_name='plan_checks'" | grep -q 1; then \
+	  $(PSQL) -v ON_ERROR_STOP=1 "$(DATABASE_URL)" < backend/migrations/0023_itinerary_table_v1.sql; \
+	fi
+	@if ! $(PSQL) "$(DATABASE_URL)" -tAc "SELECT 1 FROM information_schema.role_table_grants WHERE table_schema='public' AND table_name='plan_checks' AND grantee='sagittarius'" | grep -q 1; then \
+	  $(PSQL) -v ON_ERROR_STOP=1 "$(DATABASE_URL)" < backend/migrations/0024_plan_check_runtime_grants.sql; \
+	fi
+	@if ! $(PSQL) "$(DATABASE_URL)" -tAc "SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='plan_variants' AND column_name='status'" | grep -q 1; then \
+	  $(PSQL) -v ON_ERROR_STOP=1 "$(DATABASE_URL)" < backend/migrations/0025_trip_plan_compatibility.sql; \
+	fi
+	@if ! $(PSQL) "$(DATABASE_URL)" -tAc "SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='trip_tasks' AND column_name='trip_plan_id'" | grep -q 1; then \
+	  $(PSQL) -v ON_ERROR_STOP=1 "$(DATABASE_URL)" < backend/migrations/0026_plan_scoped_records.sql; \
+	fi
+	@if ! $(PSQL) "$(DATABASE_URL)" -tAc "SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='itinerary_items' AND column_name='end_time'" | grep -q 1; then \
+	  $(PSQL) -v ON_ERROR_STOP=1 "$(DATABASE_URL)" < backend/migrations/0027_itinerary_hierarchy_time_windows.sql; \
+	fi
+	@if ! $(PSQL) "$(DATABASE_URL)" -tAc "SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='plan_checks' AND column_name='trip_plan_id'" | grep -q 1; then \
+	  $(PSQL) -v ON_ERROR_STOP=1 "$(DATABASE_URL)" < backend/migrations/0028_plan_check_trip_plan_scope.sql; \
+	fi
+	@if ! $(PSQL) "$(DATABASE_URL)" -tAc "SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='expense_reminders' AND column_name='trip_plan_id'" | grep -q 1; then \
+	  $(PSQL) -v ON_ERROR_STOP=1 "$(DATABASE_URL)" < backend/migrations/0029_expense_reminder_trip_plan_scope.sql; \
+	fi
 
 db-init-test: db-create-test
 	@if ! $(PSQL) "$(TEST_DATABASE_URL)" -tAc "SELECT 1 FROM information_schema.tables WHERE table_schema='public' AND table_name='trips'" | grep -q 1; then \
@@ -214,6 +247,39 @@ db-init-test: db-create-test
 	fi
 	@if ! $(PSQL) "$(TEST_DATABASE_URL)" -tAc "SELECT 1 FROM information_schema.tables WHERE table_schema='public' AND table_name='auth_attempt_locks'" | grep -q 1; then \
 	  $(PSQL) -v ON_ERROR_STOP=1 "$(TEST_DATABASE_URL)" < backend/migrations/0018_auth_attempt_locks.sql; \
+	fi
+	@if ! $(PSQL) "$(TEST_DATABASE_URL)" -tAc "SELECT 1 FROM information_schema.tables WHERE table_schema='public' AND table_name='photo_album_links'" | grep -q 1; then \
+	  $(PSQL) -v ON_ERROR_STOP=1 "$(TEST_DATABASE_URL)" < backend/migrations/0019_photo_album_links.sql; \
+	fi
+	@if ! $(PSQL) "$(TEST_DATABASE_URL)" -tAc "SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='trips' AND column_name='origin_label'" | grep -q 1; then \
+	  $(PSQL) -v ON_ERROR_STOP=1 "$(TEST_DATABASE_URL)" < backend/migrations/0020_trip_city_routes.sql; \
+	fi
+	@if ! $(PSQL) "$(TEST_DATABASE_URL)" -tAc "SELECT 1 FROM pg_indexes WHERE schemaname='public' AND indexname='trusted_devices_user_active_label_key'" | grep -q 1; then \
+	  $(PSQL) -v ON_ERROR_STOP=1 "$(TEST_DATABASE_URL)" < backend/migrations/0021_trusted_device_active_label_unique.sql; \
+	fi
+	@if ! $(PSQL) "$(TEST_DATABASE_URL)" -tAc "SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='itinerary_items' AND column_name='details'" | grep -q 1; then \
+	  $(PSQL) -v ON_ERROR_STOP=1 "$(TEST_DATABASE_URL)" < backend/migrations/0022_itinerary_item_details.sql; \
+	fi
+	@if ! $(PSQL) "$(TEST_DATABASE_URL)" -tAc "SELECT 1 FROM information_schema.tables WHERE table_schema='public' AND table_name='plan_checks'" | grep -q 1; then \
+	  $(PSQL) -v ON_ERROR_STOP=1 "$(TEST_DATABASE_URL)" < backend/migrations/0023_itinerary_table_v1.sql; \
+	fi
+	@if ! $(PSQL) "$(TEST_DATABASE_URL)" -tAc "SELECT 1 FROM information_schema.role_table_grants WHERE table_schema='public' AND table_name='plan_checks' AND grantee='sagittarius'" | grep -q 1; then \
+	  $(PSQL) -v ON_ERROR_STOP=1 "$(TEST_DATABASE_URL)" < backend/migrations/0024_plan_check_runtime_grants.sql; \
+	fi
+	@if ! $(PSQL) "$(TEST_DATABASE_URL)" -tAc "SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='plan_variants' AND column_name='status'" | grep -q 1; then \
+	  $(PSQL) -v ON_ERROR_STOP=1 "$(TEST_DATABASE_URL)" < backend/migrations/0025_trip_plan_compatibility.sql; \
+	fi
+	@if ! $(PSQL) "$(TEST_DATABASE_URL)" -tAc "SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='trip_tasks' AND column_name='trip_plan_id'" | grep -q 1; then \
+	  $(PSQL) -v ON_ERROR_STOP=1 "$(TEST_DATABASE_URL)" < backend/migrations/0026_plan_scoped_records.sql; \
+	fi
+	@if ! $(PSQL) "$(TEST_DATABASE_URL)" -tAc "SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='itinerary_items' AND column_name='end_time'" | grep -q 1; then \
+	  $(PSQL) -v ON_ERROR_STOP=1 "$(TEST_DATABASE_URL)" < backend/migrations/0027_itinerary_hierarchy_time_windows.sql; \
+	fi
+	@if ! $(PSQL) "$(TEST_DATABASE_URL)" -tAc "SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='plan_checks' AND column_name='trip_plan_id'" | grep -q 1; then \
+	  $(PSQL) -v ON_ERROR_STOP=1 "$(TEST_DATABASE_URL)" < backend/migrations/0028_plan_check_trip_plan_scope.sql; \
+	fi
+	@if ! $(PSQL) "$(TEST_DATABASE_URL)" -tAc "SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='expense_reminders' AND column_name='trip_plan_id'" | grep -q 1; then \
+	  $(PSQL) -v ON_ERROR_STOP=1 "$(TEST_DATABASE_URL)" < backend/migrations/0029_expense_reminder_trip_plan_scope.sql; \
 	fi
 
 db-ensure-psql:

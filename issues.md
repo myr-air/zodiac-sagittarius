@@ -19,6 +19,8 @@ assignment, labels, comments, and closing history.
 - Production readiness follow-ups closed on 2026-06-07:
   - [#9 Production readiness local gate fails in auth browser e2e under next dev](https://github.com/myr-air/zodiac-sagittarius/issues/9)
   - [#10 Production browser QA fails because trip nav selector uses raw UUID instead of encoded route](https://github.com/myr-air/zodiac-sagittarius/issues/10)
+- Itinerary backend follow-ups closed on 2026-06-13:
+  - [#24 Decide plan-check scope for Trip Plan UX](https://github.com/myr-air/zodiac-sagittarius/issues/24)
 - Open GitHub issues at migration time: none.
 - Production readiness review on 2026-06-07 opened and closed after fixes in
   `codex/fix-production-readiness`:

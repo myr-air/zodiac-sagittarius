@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { activityTypeLabel, dayRouteLabel, formatDuration, formatEndTime, formatThaiDate } from "./itineraryDisplay";
+import { activityTypeLabel, dayRouteLabel, formatDuration, formatEndTime, formatThaiDate, formatTimeWindow } from "./itineraryDisplay";
 
 describe("itinerary display formatting", () => {
   it("labels known route days and activity types", () => {
@@ -19,6 +19,9 @@ describe("itinerary display formatting", () => {
     expect(formatDuration(135, "th")).toBe("2 h 15 m");
     expect(formatEndTime("", 45)).toBe("—");
     expect(formatEndTime("23:30", 90)).toBe("01:00");
+    expect(formatTimeWindow({ startTime: "23:00", endTime: "02:00", endOffsetDays: 1 })).toBe("23:00-02:00⁺¹");
+    expect(formatTimeWindow({ startTime: "09:00", endTime: null, endOffsetDays: 0 })).toBe("09:00");
+    expect(formatTimeWindow({ startTime: "", endTime: "22:00", endOffsetDays: 0 })).toBe("22:00");
   });
 
   it("formats Thai fixture dates", () => {

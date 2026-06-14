@@ -94,6 +94,7 @@ describe("TripExpensesPage", () => {
 
     expect(props.onCreateExpense).toHaveBeenCalledWith({
       itemId: "item-arrive-hkg",
+      tripPlanId: "plan-main",
       title: "Airport taxi",
       amount: 300,
       currency: "HKD",
@@ -108,6 +109,144 @@ describe("TripExpensesPage", () => {
         "member-viewer": 0,
       },
     });
+  });
+
+  it("lets organizers choose the Trip Plan for an unlinked actual expense", async () => {
+    const user = userEvent.setup();
+    const props = renderExpenses({ selectedTripPlanId: "plan-main" });
+
+    await user.click(screen.getByRole("button", { name: /แก้ไข Dim Dim Sum brunch/i }));
+    const dialog = screen.getByRole("dialog", { name: /แก้ไขค่าใช้จ่าย/i });
+    await user.selectOptions(within(dialog).getByLabelText("Trip Plan"), "plan-rain");
+    await user.click(within(dialog).getByRole("button", { name: /บันทึกค่าใช้จ่าย/i }));
+
+    expect(props.onUpdateExpense).toHaveBeenCalledWith(expect.objectContaining({
+      expenseId: "expense-dimsum",
+      itemId: null,
+      tripPlanId: "plan-rain",
+    }));
+  });
+
+  it("surfaces inferred plan scope rows for organizer review", async () => {
+    const user = userEvent.setup();
+    const trip = {
+      ...seedTrip,
+      expenses: [
+        {
+          ...seedTrip.expenses[0],
+          tripPlanId: "plan-rain",
+          itineraryItemId: null,
+        },
+      ],
+    };
+    renderExpenses({
+      trip,
+      selectedTripPlanId: "plan-main",
+      expenseSummary: buildExpenseSummary(trip.expenses, seedTrip.members[1].id),
+    });
+
+    const audit = screen.getByRole("region", { name: /ตรวจ scope ของเงินจริง/i });
+    expect(audit).toHaveTextContent("Dim Dim Sum brunch");
+    expect(audit).toHaveTextContent("scope ที่ระบบเดาไว้: แผนฝนตก");
+
+    await user.click(
+      within(audit).getByRole("button", {
+        name: /ตรวจ scope ของ Dim Dim Sum brunch/i,
+      }),
+    );
+
+    const dialog = screen.getByRole("dialog", { name: /แก้ไขค่าใช้จ่าย/i });
+    expect(within(dialog).getByLabelText("Trip Plan")).toHaveValue("plan-rain");
+  });
+
+  it("offers a duplicate-as-estimate action without editing the actual expense", async () => {
+    const user = userEvent.setup();
+    const props = renderExpenses({
+      onDuplicateExpenseAsEstimate: vi.fn(),
+    });
+
+    await user.click(
+      screen.getByRole("button", {
+        name: /ทำ Dim Dim Sum brunch เป็น estimate/i,
+      }),
+    );
+
+    expect(props.onDuplicateExpenseAsEstimate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: "expense-dimsum",
+        title: "Dim Dim Sum brunch",
+      }),
+    );
+    expect(props.onUpdateExpense).not.toHaveBeenCalled();
+  });
+
+  it("records a refund as a settlement instead of changing the original expense", async () => {
+    const user = userEvent.setup();
+    const props = renderExpenses();
+
+    await user.click(
+      screen.getByRole("button", {
+        name: /บันทึก refund ของ Dim Dim Sum brunch/i,
+      }),
+    );
+
+    expect(props.onCreateExpense).toHaveBeenCalledWith({
+      itemId: null,
+      tripPlanId: null,
+      title: "Refund: Dim Dim Sum brunch",
+      amount: 384,
+      currency: "HKD",
+      exchangeRateToSettlementCurrency: 1,
+      notes: "Refund settlement for actual expense: Dim Dim Sum brunch",
+      paidBy: "member-aom",
+      category: "settlement",
+      splits: {
+        "member-beam": 128,
+        "member-nam": 128,
+        "member-family": 128,
+      },
+    });
+    expect(props.onUpdateExpense).not.toHaveBeenCalled();
+  });
+
+  it("cancels an actual expense through the ledger action", async () => {
+    const user = userEvent.setup();
+    const props = renderExpenses();
+
+    await user.click(
+      screen.getByRole("button", { name: /ยกเลิก Dim Dim Sum brunch/i }),
+    );
+
+    expect(props.onDeleteExpense).toHaveBeenCalledWith("expense-dimsum");
+  });
+
+  it("locks the Trip Plan to the linked stop when editing a linked expense", async () => {
+    const user = userEvent.setup();
+    const trip = {
+      ...seedTrip,
+      expenses: [
+        {
+          ...seedTrip.expenses[0],
+          id: "expense-linked-arrival",
+          title: "Arrival taxi receipt",
+          tripPlanId: "plan-main",
+          itineraryItemId: "item-arrive-hkg",
+        },
+      ],
+    };
+    renderExpenses({
+      trip,
+      selectedTripPlanId: "plan-main",
+      expenseSummary: buildExpenseSummary(trip.expenses, seedTrip.members[1].id),
+    });
+
+    await user.click(screen.getByRole("button", { name: /แก้ไข Arrival taxi receipt/i }));
+    const dialog = screen.getByRole("dialog", { name: /แก้ไขค่าใช้จ่าย/i });
+    const planSelect = within(dialog).getByLabelText("Trip Plan");
+
+    expect(planSelect).toBeDisabled();
+    expect(planSelect).toHaveValue("plan-main");
+    expect(dialog).toHaveTextContent("แผนจะตามจุดที่ผูกไว้");
   });
 
   it("creates a foreign-currency expense with an auto-filled settlement exchange rate", async () => {

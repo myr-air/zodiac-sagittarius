@@ -29,6 +29,7 @@ pub struct PatchTripRequest {
     pub start_date: Option<Date>,
     pub end_date: Option<Date>,
     pub active_plan_variant_id: Option<Uuid>,
+    pub main_trip_plan_id: Option<Uuid>,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -48,6 +49,8 @@ pub struct CreateItineraryItemRequest {
     pub priority: Option<String>,
     pub day: Date,
     pub start_time: Option<String>,
+    pub end_time: Option<String>,
+    pub end_offset_days: Option<i32>,
     pub activity: String,
     pub activity_type: String,
     pub place: String,
@@ -66,8 +69,15 @@ pub struct CreateItineraryItemRequest {
 pub struct CreatePlanVariantRequest {
     pub client_mutation_id: String,
     pub name: String,
-    pub kind: String,
+    #[serde(default, deserialize_with = "deserialize_non_null_option")]
+    pub kind: Option<String>,
+    #[serde(default, deserialize_with = "deserialize_non_null_option")]
+    pub status: Option<String>,
     pub description: Option<String>,
+    #[serde(default, deserialize_with = "deserialize_non_null_option")]
+    pub source_trip_plan_id: Option<Uuid>,
+    #[serde(default, deserialize_with = "deserialize_non_null_option")]
+    pub creation_mode: Option<String>,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -82,7 +92,10 @@ pub struct PatchPlanVariantRequest {
 #[serde(rename_all = "camelCase")]
 pub struct PlanVariantPatch {
     pub name: Option<String>,
+    #[serde(default, deserialize_with = "deserialize_non_null_option")]
     pub kind: Option<String>,
+    #[serde(default, deserialize_with = "deserialize_non_null_option")]
+    pub status: Option<String>,
     pub description: Option<String>,
 }
 
@@ -90,6 +103,8 @@ pub struct PlanVariantPatch {
 #[serde(rename_all = "camelCase")]
 pub struct PublishPlanVariantRequest {
     pub client_mutation_id: String,
+    #[serde(default, deserialize_with = "deserialize_non_null_option")]
+    pub previous_main_next_status: Option<String>,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -114,6 +129,7 @@ pub struct ImportItineraryRequest {
 #[serde(rename_all = "camelCase")]
 pub struct CreateStopNoteRequest {
     pub client_mutation_id: String,
+    pub trip_plan_id: Option<Uuid>,
     pub itinerary_item_id: Uuid,
     pub body: String,
 }
@@ -130,6 +146,7 @@ pub struct PatchStopNoteRequest {
 #[serde(rename_all = "camelCase")]
 pub struct CreateExpenseRequest {
     pub client_mutation_id: String,
+    pub trip_plan_id: Option<Uuid>,
     pub title: String,
     pub amount_minor: i32,
     pub currency: Option<String>,
@@ -149,6 +166,7 @@ pub struct CreateExpenseRequest {
 pub struct PatchExpenseRequest {
     pub client_mutation_id: String,
     pub expected_version: i64,
+    pub trip_plan_id: Option<Uuid>,
     pub title: Option<String>,
     pub amount_minor: Option<i32>,
     pub currency: Option<String>,
@@ -223,6 +241,7 @@ pub struct CreateSuggestionRequest {
 #[serde(rename_all = "camelCase")]
 pub struct CreateTaskRequest {
     pub client_mutation_id: String,
+    pub trip_plan_id: Option<Uuid>,
     pub title: String,
     pub visibility: String,
     pub kind: Option<String>,
@@ -242,6 +261,7 @@ pub struct PatchTaskRequest {
 #[serde(rename_all = "camelCase")]
 pub struct CreateBookingDocRequest {
     pub client_mutation_id: String,
+    pub trip_plan_id: Option<Uuid>,
     pub r#type: String,
     pub title: String,
     pub status: String,
@@ -463,6 +483,17 @@ impl CreateItineraryItemRequest {
         if let Some(start_time) = &self.start_time {
             validate_hh_mm(start_time)?;
         }
+        if let Some(end_time) = &self.end_time {
+            validate_hh_mm(end_time)?;
+        }
+        if self
+            .end_offset_days
+            .is_some_and(|offset| !(0..=7).contains(&offset))
+        {
+            return Err(ServiceError::InvalidRequest(
+                "end_offset_days must be between 0 and 7",
+            ));
+        }
         validate_required_text(&self.activity, "activity is required")?;
         if let Some(item_kind) = &self.item_kind {
             validate_item_kind(item_kind)?;
@@ -527,12 +558,40 @@ impl CreatePlanVariantRequest {
     pub fn validate(&self) -> Result<(), ServiceError> {
         validate_client_mutation_id(&self.client_mutation_id)?;
         validate_required_text(&self.name, "plan variant name is required")?;
-        validate_plan_variant_kind(&self.kind)?;
+        validate_plan_status_input(self.kind.as_deref(), self.status.as_deref())?;
+        reject_main_plan_status(self.kind.as_deref(), self.status.as_deref())?;
         if let Some(description) = &self.description {
             validate_sized_text(description, "plan variant description is too long")?;
         }
+        let creation_mode = self.creation_mode.as_deref().unwrap_or("blank");
+        match creation_mode {
+            "blank" => {}
+            "duplicate-current" | "import" => {
+                return Err(ServiceError::InvalidRequest(
+                    "trip plan creation mode is not supported yet",
+                ));
+            }
+            _ => {
+                return Err(ServiceError::InvalidRequest(
+                    "trip plan creation mode is invalid",
+                ));
+            }
+        }
+        if self.source_trip_plan_id.is_some() {
+            return Err(ServiceError::InvalidRequest(
+                "source trip plan is not supported for blank creation",
+            ));
+        }
 
         Ok(())
+    }
+
+    pub fn effective_status(&self) -> &str {
+        effective_plan_status(self.kind.as_deref(), self.status.as_deref()).unwrap_or("draft")
+    }
+
+    pub fn effective_kind(&self) -> &str {
+        legacy_kind_for_plan_status(self.effective_status())
     }
 }
 
@@ -548,20 +607,43 @@ impl PlanVariantPatch {
         if let Some(name) = &self.name {
             validate_required_text(name, "plan variant name is required")?;
         }
-        if let Some(kind) = &self.kind {
-            validate_plan_variant_kind(kind)?;
-        }
+        validate_plan_status_input(self.kind.as_deref(), self.status.as_deref())?;
+        reject_main_plan_status(self.kind.as_deref(), self.status.as_deref())?;
         if let Some(description) = &self.description {
             validate_sized_text(description, "plan variant description is too long")?;
         }
+        if self.name.is_none()
+            && self.kind.is_none()
+            && self.status.is_none()
+            && self.description.is_none()
+        {
+            return Err(ServiceError::InvalidRequest("trip plan patch is empty"));
+        }
 
         Ok(())
+    }
+
+    pub fn effective_status(&self) -> Option<&str> {
+        effective_plan_status(self.kind.as_deref(), self.status.as_deref())
+    }
+
+    pub fn effective_kind(&self) -> Option<&str> {
+        self.effective_status().map(legacy_kind_for_plan_status)
     }
 }
 
 impl PublishPlanVariantRequest {
     pub fn validate(&self) -> Result<(), ServiceError> {
-        validate_client_mutation_id(&self.client_mutation_id)
+        validate_client_mutation_id(&self.client_mutation_id)?;
+        if let Some(status) = &self.previous_main_next_status {
+            validate_plan_status(status)?;
+            if status == "main" {
+                return Err(ServiceError::InvalidRequest(
+                    "previous main next status cannot be main",
+                ));
+            }
+        }
+        Ok(())
     }
 }
 
@@ -632,6 +714,7 @@ impl PatchExpenseRequest {
             validate_expense_splits_total(splits, amount_minor)?;
         }
         if self.title.is_none()
+            && self.trip_plan_id.is_none()
             && self.amount_minor.is_none()
             && self.currency.is_none()
             && self.exchange_rate_to_settlement_currency.is_none()
@@ -706,7 +789,8 @@ pub struct ItineraryItemPatch {
     pub path_id: Option<String>,
     pub path_name: Option<String>,
     pub path_role: Option<String>,
-    pub parent_item_id: Option<Uuid>,
+    #[serde(default, deserialize_with = "deserialize_nullable_uuid_patch")]
+    pub parent_item_id: Option<Option<Uuid>>,
     pub item_kind: Option<String>,
     pub time_mode: Option<String>,
     pub is_plan_block: Option<bool>,
@@ -715,7 +799,11 @@ pub struct ItineraryItemPatch {
     pub day: Option<Date>,
     #[serde(default, deserialize_with = "deserialize_nullable_string_patch")]
     pub start_time: Option<Option<String>>,
-    pub duration_minutes: Option<i32>,
+    #[serde(default, deserialize_with = "deserialize_nullable_string_patch")]
+    pub end_time: Option<Option<String>>,
+    pub end_offset_days: Option<i32>,
+    #[serde(default, deserialize_with = "deserialize_nullable_i32_patch")]
+    pub duration_minutes: Option<Option<i32>>,
     pub activity: Option<String>,
     pub activity_type: Option<String>,
     pub place: Option<String>,
@@ -736,9 +824,21 @@ impl ItineraryItemPatch {
         if let Some(Some(start_time)) = &self.start_time {
             validate_hh_mm(start_time)?;
         }
+        if let Some(Some(end_time)) = &self.end_time {
+            validate_hh_mm(end_time)?;
+        }
+        if self
+            .end_offset_days
+            .is_some_and(|offset| !(0..=7).contains(&offset))
+        {
+            return Err(ServiceError::InvalidRequest(
+                "end_offset_days must be between 0 and 7",
+            ));
+        }
 
         if self
             .duration_minutes
+            .flatten()
             .is_some_and(|duration_minutes| duration_minutes <= 0)
         {
             return Err(ServiceError::InvalidRequest(
@@ -1291,10 +1391,67 @@ fn split_share_minor(value: &Value) -> Option<i64> {
         .or_else(|| value.as_f64().map(|number| number.round() as i64))
 }
 
-fn validate_plan_variant_kind(value: &str) -> Result<(), ServiceError> {
+fn validate_plan_status_input(
+    kind: Option<&str>,
+    status: Option<&str>,
+) -> Result<(), ServiceError> {
+    if let Some(kind) = kind {
+        validate_plan_variant_kind(kind)?;
+    }
+    if let Some(status) = status {
+        validate_plan_status(status)?;
+    }
+    if let (Some(kind), Some(status)) = (kind, status) {
+        let kind_status = status_for_legacy_kind(kind)?;
+        if kind_status != status {
+            return Err(ServiceError::InvalidRequest(
+                "trip plan status does not match legacy kind",
+            ));
+        }
+    }
+    Ok(())
+}
+
+fn reject_main_plan_status(kind: Option<&str>, status: Option<&str>) -> Result<(), ServiceError> {
+    if matches!(status, Some("main")) || matches!(kind, Some("main")) {
+        return Err(ServiceError::InvalidRequest(
+            "use set-main to select the main trip plan",
+        ));
+    }
+    Ok(())
+}
+
+fn effective_plan_status<'a>(kind: Option<&'a str>, status: Option<&'a str>) -> Option<&'a str> {
+    status.or_else(|| kind.and_then(|value| status_for_legacy_kind(value).ok()))
+}
+
+fn validate_plan_status(value: &str) -> Result<(), ServiceError> {
     match value {
-        "main" | "backup" | "draft" | "split" => Ok(()),
+        "main" | "backup" | "draft" | "proposal" => Ok(()),
+        _ => Err(ServiceError::InvalidRequest("trip plan status is invalid")),
+    }
+}
+
+fn validate_plan_variant_kind(value: &str) -> Result<(), ServiceError> {
+    status_for_legacy_kind(value).map(|_| ())
+}
+
+fn status_for_legacy_kind(value: &str) -> Result<&'static str, ServiceError> {
+    match value {
+        "main" => Ok("main"),
+        "backup" => Ok("backup"),
+        "draft" => Ok("draft"),
+        "split" => Ok("proposal"),
         _ => Err(ServiceError::InvalidRequest("plan variant kind is invalid")),
+    }
+}
+
+fn legacy_kind_for_plan_status(value: &str) -> &'static str {
+    match value {
+        "proposal" => "split",
+        "main" => "main",
+        "backup" => "backup",
+        _ => "draft",
     }
 }
 
@@ -1374,6 +1531,13 @@ where
     Option::<f64>::deserialize(deserializer).map(Some)
 }
 
+fn deserialize_nullable_i32_patch<'de, D>(deserializer: D) -> Result<Option<Option<i32>>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    Option::<i32>::deserialize(deserializer).map(Some)
+}
+
 fn deserialize_nullable_uuid_patch<'de, D>(
     deserializer: D,
 ) -> Result<Option<Option<Uuid>>, D::Error>
@@ -1381,6 +1545,16 @@ where
     D: Deserializer<'de>,
 {
     Option::<Uuid>::deserialize(deserializer).map(Some)
+}
+
+fn deserialize_non_null_option<'de, D, T>(deserializer: D) -> Result<Option<T>, D::Error>
+where
+    D: Deserializer<'de>,
+    T: Deserialize<'de>,
+{
+    Option::<T>::deserialize(deserializer)?
+        .map(Some)
+        .ok_or_else(|| serde::de::Error::custom("field cannot be null"))
 }
 
 #[cfg(test)]
@@ -1405,7 +1579,7 @@ mod tests {
     fn itinerary_patch_accepts_valid_time_activity_type_and_duration() {
         let patch = ItineraryItemPatch {
             start_time: Some(Some("09:30".to_string())),
-            duration_minutes: Some(45),
+            duration_minutes: Some(Some(45)),
             activity_type: Some("experience".to_string()),
             ..ItineraryItemPatch::default()
         };
@@ -1431,7 +1605,7 @@ mod tests {
     #[test]
     fn itinerary_patch_rejects_bad_duration_and_activity_type() {
         let bad_duration = ItineraryItemPatch {
-            duration_minutes: Some(0),
+            duration_minutes: Some(Some(0)),
             ..ItineraryItemPatch::default()
         };
         assert_eq!(
@@ -1453,6 +1627,7 @@ mod tests {
     fn task_create_validation_covers_required_fields_and_enums() {
         let valid = CreateTaskRequest {
             client_mutation_id: "task-create".to_string(),
+            trip_plan_id: None,
             title: "Book ferry".to_string(),
             visibility: "shared".to_string(),
             kind: Some("booking".to_string()),
@@ -1535,6 +1710,7 @@ mod tests {
         let member = Uuid::now_v7();
         let valid = CreateExpenseRequest {
             client_mutation_id: "expense-create".to_string(),
+            trip_plan_id: None,
             title: "Dinner".to_string(),
             amount_minor: 10_000,
             currency: Some("HKD".to_string()),
@@ -1564,6 +1740,7 @@ mod tests {
         let valid = PatchExpenseRequest {
             client_mutation_id: "expense-patch".to_string(),
             expected_version: 2,
+            trip_plan_id: None,
             title: None,
             amount_minor: Some(10_000),
             currency: None,
@@ -1592,6 +1769,7 @@ mod tests {
         let member = Uuid::now_v7();
         let create = CreateExpenseRequest {
             client_mutation_id: "expense-create".to_string(),
+            trip_plan_id: None,
             title: "Dinner".to_string(),
             amount_minor: 10_000,
             currency: Some("CNY".to_string()),
@@ -1613,6 +1791,7 @@ mod tests {
         let patch = PatchExpenseRequest {
             client_mutation_id: "expense-patch".to_string(),
             expected_version: 2,
+            trip_plan_id: None,
             title: None,
             amount_minor: None,
             currency: None,
@@ -1635,6 +1814,7 @@ mod tests {
     fn valid_booking_doc_request() -> CreateBookingDocRequest {
         CreateBookingDocRequest {
             client_mutation_id: "booking-create".to_string(),
+            trip_plan_id: None,
             r#type: "flight".to_string(),
             title: "Flight to Chiang Mai".to_string(),
             status: "booked".to_string(),

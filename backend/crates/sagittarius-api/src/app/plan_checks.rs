@@ -15,6 +15,7 @@ pub async fn run_plan_check(
     pool: &PgPool,
     trip_id: Uuid,
     session_token: &str,
+    trip_plan_id: Option<Uuid>,
 ) -> Result<PlanCheckSummary, ServiceError> {
     let token_hash = auth::hash_session_token(session_token)?;
     let mut tx = pool.begin().await?;
@@ -26,6 +27,7 @@ pub async fn run_plan_check(
     {
         return Err(ServiceError::Forbidden);
     }
+    validate_trip_plan_scope(&mut tx, session.trip_id, trip_plan_id).await?;
     let trip = db::queries::find_trip_by_id(pool, session.trip_id)
         .await?
         .ok_or(ServiceError::NotFound)?;
@@ -34,22 +36,25 @@ pub async fn run_plan_check(
         .into_iter()
         .map(Into::into)
         .collect();
-    let fingerprint = itinerary_fingerprint(&items);
+    let scoped_items = scope_items_to_trip_plan(&items, trip_plan_id);
+    let fingerprint = itinerary_fingerprint(&scoped_items);
     let check_record = db::queries::insert_plan_check(
         &mut tx,
         NewPlanCheck {
             id: Uuid::now_v7(),
             trip_id: session.trip_id,
+            trip_plan_id,
             created_by: session.member_id,
             itinerary_fingerprint: &fingerprint,
             language_metadata: &json!({
                 "mode": "bilingual",
-                "provider": std::env::var("SAGITTARIUS_AI_PROVIDER").unwrap_or_else(|_| "rules".to_string())
+                "provider": std::env::var("SAGITTARIUS_AI_PROVIDER").unwrap_or_else(|_| "rules".to_string()),
+                "tripPlanId": trip_plan_id
             }),
         },
     )
     .await?;
-    let findings = build_findings(&trip.default_timezone, &items);
+    let findings = build_findings(&trip.default_timezone, &scoped_items);
     let mut suggestions = Vec::with_capacity(findings.len());
     for finding in findings {
         let record = db::queries::insert_plan_suggestion(
@@ -79,22 +84,35 @@ pub async fn latest_plan_check(
     pool: &PgPool,
     trip_id: Uuid,
     session_token: &str,
+    trip_plan_id: Option<Uuid>,
 ) -> Result<Option<PlanCheckSummary>, ServiceError> {
     let token_hash = auth::hash_session_token(session_token)?;
-    let session = db::queries::find_active_member_session(pool, trip_id, &token_hash)
+    let mut tx = pool.begin().await?;
+    let session = db::queries::find_active_member_session_in_tx(&mut tx, trip_id, &token_hash)
         .await?
         .ok_or(ServiceError::Unauthenticated)?;
     if !can(session.role, Capability::ViewPlan) {
         return Err(ServiceError::Forbidden);
     }
-    latest_plan_check_for_trip(pool, session.trip_id).await
+    validate_trip_plan_scope(&mut tx, session.trip_id, trip_plan_id).await?;
+    tx.commit().await?;
+    latest_plan_check_for_trip_and_plan(pool, session.trip_id, trip_plan_id).await
 }
 
 pub async fn latest_plan_check_for_trip(
     pool: &PgPool,
     trip_id: Uuid,
 ) -> Result<Option<PlanCheckSummary>, ServiceError> {
-    let Some(check) = db::queries::find_latest_plan_check(pool, trip_id).await? else {
+    latest_plan_check_for_trip_and_plan(pool, trip_id, None).await
+}
+
+pub async fn latest_plan_check_for_trip_and_plan(
+    pool: &PgPool,
+    trip_id: Uuid,
+    trip_plan_id: Option<Uuid>,
+) -> Result<Option<PlanCheckSummary>, ServiceError> {
+    let Some(check) = db::queries::find_latest_plan_check(pool, trip_id, trip_plan_id).await?
+    else {
         return Ok(None);
     };
     let items: Vec<ItineraryItemSummary> = db::queries::list_itinerary_items(pool, trip_id)
@@ -102,13 +120,45 @@ pub async fn latest_plan_check_for_trip(
         .into_iter()
         .map(Into::into)
         .collect();
-    let stale = check.itinerary_fingerprint != itinerary_fingerprint(&items);
+    let scoped_items = scope_items_to_trip_plan(&items, check.trip_plan_id);
+    let stale = check.itinerary_fingerprint != itinerary_fingerprint(&scoped_items);
     let suggestions = db::queries::list_plan_suggestions(pool, check.id)
         .await?
         .into_iter()
         .map(|record| record.into_summary())
         .collect();
     Ok(Some(plan_check_summary(check, stale, suggestions)))
+}
+
+fn scope_items_to_trip_plan(
+    items: &[ItineraryItemSummary],
+    trip_plan_id: Option<Uuid>,
+) -> Vec<ItineraryItemSummary> {
+    match trip_plan_id {
+        Some(trip_plan_id) => items
+            .iter()
+            .filter(|item| item.plan_variant_id == trip_plan_id)
+            .cloned()
+            .collect(),
+        None => items.to_vec(),
+    }
+}
+
+async fn validate_trip_plan_scope(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    trip_id: Uuid,
+    trip_plan_id: Option<Uuid>,
+) -> Result<(), ServiceError> {
+    let Some(trip_plan_id) = trip_plan_id else {
+        return Ok(());
+    };
+    let exists = db::queries::plan_variant_exists_for_trip(tx, trip_id, trip_plan_id).await?;
+    if !exists {
+        return Err(ServiceError::InvalidRequest(
+            "tripPlanId must belong to the trip",
+        ));
+    }
+    Ok(())
 }
 
 pub async fn patch_plan_suggestion(
@@ -223,14 +273,17 @@ fn build_findings(default_timezone: &str, items: &[ItineraryItemSummary]) -> Vec
                 json!({ "timeMode": "flexible", "startTime": null, "durationMinutes": null }),
             ));
         }
-        if item.duration_minutes.is_none() && item.time_mode == "scheduled" {
+        if item.end_time.is_none()
+            && item.duration_minutes.is_none()
+            && item.time_mode == "scheduled"
+        {
             findings.push(item_patch_finding(
                 "info",
                 item,
-                "Missing duration makes route timing harder to check.",
-                "ยังไม่มีระยะเวลา ทำให้ตรวจจังหวะการเดินทางได้ยาก",
-                "Add a realistic duration.",
-                "เพิ่มระยะเวลาที่สมจริง",
+                "Missing end time or duration makes route timing harder to check.",
+                "ยังไม่มีเวลาสิ้นสุดหรือระยะเวลา ทำให้ตรวจจังหวะการเดินทางได้ยาก",
+                "Add an end time or realistic duration.",
+                "เพิ่มเวลาสิ้นสุดหรือระยะเวลาที่สมจริง",
                 json!({ "durationMinutes": 60 }),
             ));
         }
@@ -337,34 +390,66 @@ fn overlap_findings(items: &[ItineraryItemSummary]) -> Vec<Finding> {
     let mut sorted = items
         .iter()
         .filter_map(|item| {
-            let start = parse_time(&item.start_time)?;
-            let duration = item.duration_minutes?;
-            if duration <= 0 {
-                return None;
-            }
-            Some((item, start, start + duration))
+            let interval = time_window_interval(item)?;
+            Some((
+                item,
+                itinerary_overlap_path_key(item),
+                interval.start,
+                interval.end,
+            ))
         })
         .collect::<Vec<_>>();
-    sorted.sort_by_key(|(item, start, _)| (item.day, *start, item.sort_order));
-    for pair in sorted.windows(2) {
-        let (a, _, a_end) = pair[0];
-        let (b, b_start, _) = pair[1];
-        if a.day == b.day && b_start < a_end {
+    sorted.sort_by(|left, right| {
+        let (left_item, left_path, left_start, _) = left;
+        let (right_item, right_path, right_start, _) = right;
+        (
+            left_item.plan_variant_id,
+            left_item.day,
+            left_path,
+            *left_start,
+            left_item.sort_order,
+        )
+            .cmp(&(
+                right_item.plan_variant_id,
+                right_item.day,
+                right_path,
+                *right_start,
+                right_item.sort_order,
+            ))
+    });
+    for (index, (a, a_path, _, a_end)) in sorted.iter().enumerate() {
+        for (b, b_path, b_start, _) in sorted.iter().skip(index + 1) {
+            if a.plan_variant_id != b.plan_variant_id || a.day != b.day || a_path != b_path {
+                continue;
+            }
+            if *b_start >= *a_end {
+                break;
+            }
             findings.push(Finding {
                 severity: "warning",
                 scope: "betweenItems",
                 target_item_ids: vec![a.id, b.id],
                 explanation_en: format!("{} overlaps with {}.", a.activity, b.activity),
                 explanation_th: format!("{} เวลาซ้อนกับ {}", a.activity, b.activity),
-                action_en: "Adjust time, duration, or move one item to an alternative path."
+                action_en: "Adjust time or duration. If both activities are intentional, use the explicit Alternative Path control."
                     .to_string(),
-                action_th: "ปรับเวลา ระยะเวลา หรือย้ายหนึ่งรายการไป path ทางเลือก".to_string(),
+                action_th: "ปรับเวลา/ระยะเวลา หรือถ้าตั้งใจให้มีสองทางเลือก ให้ใช้ปุ่ม Alternative Path แบบ explicit".to_string(),
                 action_kind: Some("editItem"),
                 action_payload: json!({ "itemIds": [a.id, b.id] }),
             });
         }
     }
     findings
+}
+
+fn itinerary_overlap_path_key(item: &ItineraryItemSummary) -> String {
+    if item.path_role.as_deref() == Some("alternative") {
+        return item
+            .path_id
+            .clone()
+            .unwrap_or_else(|| format!("alternative:{}", item.id));
+    }
+    "main".to_string()
 }
 
 fn plan_block_child_findings(items: &[ItineraryItemSummary]) -> Vec<Finding> {
@@ -376,16 +461,13 @@ fn plan_block_child_findings(items: &[ItineraryItemSummary]) -> Vec<Finding> {
         else {
             continue;
         };
-        let Some(parent_start) = parse_time(&parent.start_time) else {
+        let Some(parent_interval) = time_window_interval(parent) else {
             continue;
         };
-        let Some(child_start) = parse_time(&child.start_time) else {
+        let Some(child_interval) = time_window_interval(child) else {
             continue;
         };
-        let parent_end = parent_start + parent.duration_minutes.unwrap_or(0);
-        let child_end = child_start + child.duration_minutes.unwrap_or(0);
-        if child_start < parent_start
-            || (parent.duration_minutes.is_some() && child_end > parent_end)
+        if child_interval.start < parent_interval.start || child_interval.end > parent_interval.end
         {
             findings.push(Finding {
                 severity: "warning",
@@ -412,6 +494,37 @@ fn plan_block_child_findings(items: &[ItineraryItemSummary]) -> Vec<Finding> {
         }
     }
     findings
+}
+
+struct TimeWindowInterval {
+    start: i32,
+    end: i32,
+}
+
+fn time_window_interval(item: &ItineraryItemSummary) -> Option<TimeWindowInterval> {
+    if item.time_mode == "flexible" {
+        return None;
+    }
+    let start = parse_time(&item.start_time)?;
+    if let Some(end_time) = item
+        .end_time
+        .as_deref()
+        .filter(|value| !value.trim().is_empty())
+    {
+        let end = parse_time(end_time)? + item.end_offset_days * 24 * 60;
+        if end <= start {
+            return None;
+        }
+        return Some(TimeWindowInterval { start, end });
+    }
+    let duration = item.duration_minutes?;
+    if duration <= 0 {
+        return None;
+    }
+    Some(TimeWindowInterval {
+        start,
+        end: start + duration,
+    })
 }
 
 fn parse_time(value: &str) -> Option<i32> {

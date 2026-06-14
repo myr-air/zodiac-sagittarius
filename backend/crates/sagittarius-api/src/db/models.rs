@@ -49,6 +49,7 @@ impl From<TripAuthRecord> for TripSummary {
             end_date: record.end_date,
             join_id: record.join_id,
             active_plan_variant_id: record.active_plan_variant_id,
+            main_trip_plan_id: record.active_plan_variant_id,
             owner_member_id: record.owner_member_id,
             version: record.version,
         }
@@ -200,6 +201,7 @@ pub struct NewAccountPlanVariant<'a> {
     pub trip_id: Uuid,
     pub name: &'a str,
     pub kind: &'a str,
+    pub status: &'a str,
     pub description: &'a str,
 }
 
@@ -208,6 +210,7 @@ pub struct NewPlanVariant<'a> {
     pub trip_id: Uuid,
     pub name: &'a str,
     pub kind: &'a str,
+    pub status: &'a str,
     pub description: &'a str,
 }
 
@@ -238,6 +241,8 @@ pub struct NewItineraryItem<'a> {
     pub day: Date,
     pub sort_order: i32,
     pub start_time: Option<&'a str>,
+    pub end_time: Option<&'a str>,
+    pub end_offset_days: i32,
     pub activity: &'a str,
     pub activity_type: &'a str,
     pub place: &'a str,
@@ -407,20 +412,50 @@ pub struct PlanVariantRecord {
     pub trip_id: Uuid,
     pub name: String,
     pub kind: String,
+    pub status: String,
     pub description: String,
     pub version: i64,
 }
 
 impl From<PlanVariantRecord> for PlanVariantSummary {
     fn from(record: PlanVariantRecord) -> Self {
+        let status = record.status;
+        let kind = legacy_kind_for_plan_status(&status).to_string();
         Self {
             id: record.id,
             trip_id: record.trip_id,
             name: record.name,
-            kind: record.kind,
+            kind,
+            status,
             description: record.description,
             version: record.version,
         }
+    }
+}
+
+impl PlanVariantSummary {
+    pub fn from_record_for_main_pointer(
+        record: PlanVariantRecord,
+        main_trip_plan_id: Option<Uuid>,
+    ) -> Self {
+        let mut summary = PlanVariantSummary::from(record);
+        if Some(summary.id) == main_trip_plan_id {
+            summary.kind = "main".to_string();
+            summary.status = "main".to_string();
+        } else if summary.status == "main" {
+            summary.kind = "backup".to_string();
+            summary.status = "backup".to_string();
+        }
+        summary
+    }
+}
+
+fn legacy_kind_for_plan_status(status: &str) -> &'static str {
+    match status {
+        "main" => "main",
+        "backup" => "backup",
+        "proposal" => "split",
+        _ => "draft",
     }
 }
 
@@ -442,6 +477,8 @@ pub struct ItineraryItemRecord {
     pub day: Date,
     pub sort_order: i32,
     pub start_time: String,
+    pub end_time: Option<String>,
+    pub end_offset_days: i32,
     pub activity: String,
     pub activity_type: String,
     pub place: String,
@@ -494,6 +531,11 @@ impl From<ItineraryItemRecord> for ItineraryItemSummary {
             (Some(lat), Some(lng)) => Some(ItineraryCoordinates { lat, lng }),
             _ => None,
         };
+        let end_offset_days = if record.end_time.is_some() {
+            record.end_offset_days
+        } else {
+            0
+        };
 
         Self {
             id: record.id,
@@ -512,6 +554,8 @@ impl From<ItineraryItemRecord> for ItineraryItemSummary {
             day: record.day,
             sort_order: record.sort_order,
             start_time: record.start_time,
+            end_time: record.end_time,
+            end_offset_days,
             activity: record.activity,
             activity_type: record.activity_type,
             place: record.place,
@@ -549,6 +593,7 @@ pub struct SuggestionRecord {
 pub struct PlanCheckRecord {
     pub id: Uuid,
     pub trip_id: Uuid,
+    pub trip_plan_id: Option<Uuid>,
     pub created_by: Uuid,
     pub itinerary_fingerprint: String,
     pub language_metadata: serde_json::Value,
@@ -607,6 +652,7 @@ pub fn plan_check_summary(
     PlanCheckSummary {
         id: record.id,
         trip_id: record.trip_id,
+        trip_plan_id: record.trip_plan_id,
         created_by: record.created_by,
         itinerary_fingerprint: record.itinerary_fingerprint,
         stale,
@@ -637,6 +683,7 @@ fn localized_text(value: serde_json::Value) -> LocalizedText {
 pub struct NewPlanCheck<'a> {
     pub id: Uuid,
     pub trip_id: Uuid,
+    pub trip_plan_id: Option<Uuid>,
     pub created_by: Uuid,
     pub itinerary_fingerprint: &'a str,
     pub language_metadata: &'a serde_json::Value,
@@ -687,6 +734,7 @@ pub struct NewSuggestion<'a> {
 pub struct TripTaskRecord {
     pub id: Uuid,
     pub trip_id: Uuid,
+    pub trip_plan_id: Option<Uuid>,
     pub title: String,
     pub status: String,
     pub visibility: String,
@@ -702,6 +750,7 @@ impl From<TripTaskRecord> for TripTaskSummary {
         Self {
             id: record.id,
             trip_id: record.trip_id,
+            trip_plan_id: record.trip_plan_id,
             title: record.title,
             status: record.status,
             visibility: record.visibility,
@@ -717,6 +766,7 @@ impl From<TripTaskRecord> for TripTaskSummary {
 pub struct NewTripTask<'a> {
     pub id: Uuid,
     pub trip_id: Uuid,
+    pub trip_plan_id: Option<Uuid>,
     pub title: &'a str,
     pub visibility: &'a str,
     pub kind: Option<&'a str>,
@@ -729,6 +779,7 @@ pub struct NewTripTask<'a> {
 pub struct StopNoteRecord {
     pub id: Uuid,
     pub trip_id: Uuid,
+    pub trip_plan_id: Option<Uuid>,
     pub itinerary_item_id: Uuid,
     pub author_id: Uuid,
     pub body: String,
@@ -742,6 +793,7 @@ impl From<StopNoteRecord> for StopNoteSummary {
         Self {
             id: record.id,
             trip_id: record.trip_id,
+            trip_plan_id: record.trip_plan_id,
             item_id: record.itinerary_item_id,
             author_id: record.author_id,
             body: record.body,
@@ -755,6 +807,7 @@ impl From<StopNoteRecord> for StopNoteSummary {
 pub struct NewStopNote<'a> {
     pub id: Uuid,
     pub trip_id: Uuid,
+    pub trip_plan_id: Option<Uuid>,
     pub itinerary_item_id: Uuid,
     pub author_id: Uuid,
     pub body: &'a str,
@@ -774,6 +827,7 @@ pub struct ExpenseSplitRecord {
 pub struct ExpenseRecord {
     pub id: Uuid,
     pub trip_id: Uuid,
+    pub trip_plan_id: Option<Uuid>,
     pub title: String,
     pub amount_minor: i32,
     pub currency: String,
@@ -793,6 +847,7 @@ pub struct ExpenseRecord {
 pub struct ExpenseReminderRecord {
     pub id: Uuid,
     pub trip_id: Uuid,
+    pub trip_plan_id: Uuid,
     pub from_member_id: Uuid,
     pub to_member_id: Uuid,
     pub amount_minor: i32,
@@ -803,6 +858,7 @@ pub struct ExpenseReminderRecord {
 pub struct NewExpenseReminder {
     pub id: Uuid,
     pub trip_id: Uuid,
+    pub trip_plan_id: Uuid,
     pub from_member_id: Uuid,
     pub to_member_id: Uuid,
     pub amount_minor: i32,
@@ -814,6 +870,7 @@ impl From<ExpenseRecord> for ExpenseItemSummary {
         Self {
             id: record.id,
             trip_id: record.trip_id,
+            trip_plan_id: record.trip_plan_id,
             title: record.title,
             amount_minor: record.amount_minor,
             currency: record.currency,
@@ -834,6 +891,7 @@ impl From<ExpenseRecord> for ExpenseItemSummary {
 pub struct NewExpense<'a> {
     pub id: Uuid,
     pub trip_id: Uuid,
+    pub trip_plan_id: Option<Uuid>,
     pub title: &'a str,
     pub amount_minor: i32,
     pub currency: &'a str,
@@ -852,6 +910,7 @@ pub struct NewExpense<'a> {
 pub struct BookingDocRecord {
     pub id: Uuid,
     pub trip_id: Uuid,
+    pub trip_plan_id: Option<Uuid>,
     pub r#type: String,
     pub title: String,
     pub status: String,
@@ -886,6 +945,7 @@ pub struct BookingDocExternalLinkRecord {
 pub struct NewBookingDoc<'a> {
     pub id: Uuid,
     pub trip_id: Uuid,
+    pub trip_plan_id: Option<Uuid>,
     pub r#type: &'a str,
     pub title: &'a str,
     pub status: &'a str,
@@ -984,6 +1044,8 @@ mod tests {
             day: Date::from_calendar_date(2026, time::Month::May, 29).unwrap(),
             sort_order: 1,
             start_time: "09:00".to_string(),
+            end_time: None,
+            end_offset_days: 0,
             activity: "Breakfast".to_string(),
             activity_type: "food".to_string(),
             place: "Central".to_string(),

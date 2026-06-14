@@ -83,10 +83,14 @@ describe("trip participant auth", () => {
 
   it("maps roles to trip capabilities", () => {
     expect(canTripRole("organizer", "managePeople")).toBe(true);
+    expect(canTripRole("owner", "manageTripPlans")).toBe(true);
+    expect(canTripRole("organizer", "manageTripPlans")).toBe(true);
     expect(canTripRole("traveler", "createSuggestion")).toBe(true);
     expect(canTripRole("traveler", "editItinerary")).toBe(true);
+    expect(canTripRole("traveler", "manageTripPlans")).toBe(false);
     expect(canTripRole("viewer", "viewPlan")).toBe(true);
     expect(canTripRole("viewer", "createSuggestion")).toBe(false);
+    expect(canTripRole("viewer", "manageTripPlans")).toBe(false);
   });
 
   it("lets organizers reset a participant claim when someone picked the wrong identity", () => {

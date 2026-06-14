@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import { expect } from "storybook/test";
+import { expect, userEvent, waitFor } from "storybook/test";
 import { buildDenseTripFixture, tripFixture } from "@/src/trip/trip-fixtures";
 import type { ItineraryItem } from "@/src/trip/types";
 import { SmartItineraryTable } from "./SmartItineraryTable";
@@ -180,6 +180,55 @@ const stressPathItems: ItineraryItem[] = [
   pathRole: pathRole as ItineraryItem["pathRole"],
 }));
 
+const hierarchyBlockItems: ItineraryItem[] = [
+  {
+    ...tripFixture.planItems[0],
+    id: "story-flight-block",
+    activity: "Flight to Hong Kong",
+    activityType: "travel",
+    itemKind: "travel",
+    isPlanBlock: true,
+    parentItemId: null,
+    day: "2026-06-19",
+    startTime: "04:00",
+    endTime: "13:00",
+    durationMinutes: 540,
+    status: "confirmed",
+    priority: "must",
+    sortOrder: 100,
+  },
+  {
+    ...tripFixture.planItems[1],
+    id: "story-flight-checkin",
+    activity: "Check in",
+    activityType: "travel",
+    itemKind: "preparation",
+    parentItemId: "story-flight-block",
+    day: "2026-06-19",
+    startTime: "06:00",
+    endTime: "06:45",
+    durationMinutes: 45,
+    status: "planned",
+    priority: "normal",
+    sortOrder: 200,
+  },
+  {
+    ...tripFixture.planItems[2],
+    id: "story-flight-immigration",
+    activity: "Immigration",
+    activityType: "travel",
+    itemKind: "preparation",
+    parentItemId: "story-flight-block",
+    day: "2026-06-19",
+    startTime: "11:15",
+    endTime: "12:15",
+    durationMinutes: 60,
+    status: "planned",
+    priority: "high",
+    sortOrder: 300,
+  },
+];
+
 const meta = {
   title: "Templates/Itinerary",
   component: SmartItineraryTable,
@@ -198,10 +247,11 @@ export const Owner: Story = {
     contextRailOpen: false,
     endDate: tripFixture.trip.endDate,
     items: tripFixture.planItems,
-    tripSheets: tripFixture.trip.planVariants,
-    selectedTripSheetId: tripFixture.trip.activePlanVariantId,
-    tripSheetError: null,
-    isTripSheetBusy: false,
+    tripPlans: tripFixture.trip.planVariants,
+    selectedTripPlanId: tripFixture.trip.activePlanVariantId,
+    mainTripPlanId: tripFixture.trip.mainTripPlanId ?? tripFixture.trip.activePlanVariantId,
+    tripPlanError: null,
+    isTripPlanBusy: false,
     pathOptions: [
       { id: "main", name: "Main", scope: "trip" },
       { id: "path-plan-1", name: "Plan 1", scope: "trip" },
@@ -222,8 +272,10 @@ export const Owner: Story = {
     onMoveItemToPath: noop,
     onExportItinerary: noop,
     onImportItinerary: noop,
-    onChangeTripSheet: noop,
-    onCreateTripSheet: noop,
+    onChangeTripPlan: noop,
+    onChangeTripPlanStatus: noop,
+    onSetMainTripPlan: noop,
+    onCreateTripPlan: noop,
     onChangeTripPath: noop,
     onChangeDayPath: noop,
     onClearDayPath: noop,
@@ -257,6 +309,106 @@ export const Traveler: Story = {
   },
 };
 export const Dense: Story = { args: { ...Owner.args, items: buildDenseTripFixture().itineraryItems } };
+export const HierarchyBlocks: Story = {
+  args: {
+    ...Owner.args,
+    items: hierarchyBlockItems,
+    graphItems: hierarchyBlockItems,
+    selectedItemId: "story-flight-block",
+    selectedTripPathId: "main",
+    dayPathOverrides: {},
+  },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByLabelText("Structure for Flight to Hong Kong")).toBeVisible();
+    await expect(canvas.getByLabelText("Structure for Check in")).toBeVisible();
+  },
+};
+
+export const HierarchyWarnings: Story = {
+  args: {
+    ...Owner.args,
+    items: [
+      {
+        ...tripFixture.planItems[0],
+        id: "story-plain-parent",
+        activity: "Plain parent",
+        isPlanBlock: false,
+        parentItemId: null,
+        day: "2026-06-19",
+        startTime: "09:00",
+        endTime: "10:00",
+        durationMinutes: 60,
+        sortOrder: 100,
+      },
+      {
+        ...tripFixture.planItems[1],
+        id: "story-child-under-plain-parent",
+        activity: "Child under plain parent",
+        parentItemId: "story-plain-parent",
+        day: "2026-06-19",
+        startTime: "09:15",
+        endTime: "09:45",
+        durationMinutes: 30,
+        sortOrder: 200,
+      },
+      {
+        ...tripFixture.planItems[2],
+        id: "story-window-block",
+        activity: "Window block",
+        isPlanBlock: true,
+        parentItemId: null,
+        day: "2026-06-19",
+        startTime: "10:00",
+        endTime: "11:00",
+        durationMinutes: 60,
+        sortOrder: 300,
+      },
+      {
+        ...tripFixture.planItems[3],
+        id: "story-child-outside-window",
+        activity: "Child outside window",
+        parentItemId: "story-window-block",
+        day: "2026-06-19",
+        startTime: "09:30",
+        endTime: "11:30",
+        durationMinutes: 120,
+        sortOrder: 400,
+      },
+    ],
+    selectedItemId: "story-child-under-plain-parent",
+    selectedTripPathId: "main",
+    dayPathOverrides: {},
+  },
+  play: async ({ canvas, canvasElement }) => {
+    await expect(await canvas.findByText("Parent block")).toBeVisible();
+    await waitFor(() => {
+      expect(canvasElement.querySelector(".data-row--has-warning")).toBeInTheDocument();
+    });
+    await expect(
+      canvas.queryByRole("button", { name: /Promote Plain parent to activity block/i }),
+    ).not.toBeInTheDocument();
+    await userEvent.click(canvas.getByRole("button", { name: /Fix structure for Child under plain parent/i }));
+    await expect(
+      canvas.getByRole("button", {
+        name: /Promote Plain parent to activity block for Child under plain parent/i,
+      }),
+    ).toBeVisible();
+    await expect(
+      canvas.getByRole("button", {
+        name: /Detach sub-activity Child under plain parent from its activity block/i,
+      }),
+    ).toBeVisible();
+    await userEvent.click(canvas.getByRole("button", { name: /Fix structure for Child outside window/i }));
+    await expect(
+      canvas.getByRole("button", { name: /Expand Window block to fit Child outside window/i }),
+    ).toBeVisible();
+    await expect(
+      canvas.getByRole("button", {
+        name: /Detach sub-activity Child outside window from its activity block/i,
+      }),
+    ).toBeVisible();
+  },
+};
 export const TableOverflow: Story = {
   args: {
     ...Owner.args,

@@ -25,7 +25,7 @@ pub async fn create_plan_variant(
     let session = db::queries::find_active_member_session_in_tx(&mut tx, trip_id, &token_hash)
         .await?
         .ok_or(ServiceError::Unauthenticated)?;
-    if !can(session.role, Capability::EditItinerary) {
+    if !can(session.role, Capability::ManageTripPlans) {
         return Err(ServiceError::Forbidden);
     }
     reject_duplicate_mutation(
@@ -42,7 +42,8 @@ pub async fn create_plan_variant(
             id: Uuid::now_v7(),
             trip_id,
             name: request.name.trim(),
-            kind: request.kind.as_str(),
+            kind: request.effective_kind(),
+            status: request.effective_status(),
             description: request.description.as_deref().unwrap_or("").trim(),
         },
     )
@@ -81,10 +82,11 @@ pub async fn patch_plan_variant(
     if existing.trip_id != trip_id {
         return Err(ServiceError::NotFound);
     }
+    let main_trip_plan_id = db::queries::active_plan_variant_id_for_trip(&mut tx, trip_id).await?;
     let session = db::queries::find_active_member_session_in_tx(&mut tx, trip_id, &token_hash)
         .await?
         .ok_or(ServiceError::Unauthenticated)?;
-    if !can(session.role, Capability::EditItinerary) {
+    if !can(session.role, Capability::ManageTripPlans) {
         return Err(ServiceError::Forbidden);
     }
     reject_duplicate_mutation(
@@ -96,12 +98,15 @@ pub async fn patch_plan_variant(
     .await?;
 
     if existing.version != request.expected_version {
-        let latest = serde_json::to_value(PlanVariantSummary::from(existing))
-            .map_err(|_| ServiceError::InvalidRequest("latest variant could not be serialized"))?;
+        let latest = serde_json::to_value(PlanVariantSummary::from_record_for_main_pointer(
+            existing,
+            main_trip_plan_id,
+        ))
+        .map_err(|_| ServiceError::InvalidRequest("latest variant could not be serialized"))?;
         return Err(ServiceError::VersionConflictWithLatest(latest));
     }
 
-    let updated_record = db::queries::update_plan_variant(
+    let mut updated_record = db::queries::update_plan_variant(
         &mut tx,
         plan_variant_id,
         &request.patch,
@@ -109,7 +114,21 @@ pub async fn patch_plan_variant(
     )
     .await?
     .ok_or(ServiceError::NotFound)?;
-    let updated = PlanVariantSummary::from(updated_record);
+    let mut updated =
+        PlanVariantSummary::from_record_for_main_pointer(updated_record.clone(), main_trip_plan_id);
+    if updated.kind != updated_record.kind || updated.status != updated_record.status {
+        updated_record = db::queries::update_plan_variant_status(
+            &mut tx,
+            plan_variant_id,
+            &updated.kind,
+            &updated.status,
+            updated_record.version,
+        )
+        .await?
+        .ok_or(ServiceError::NotFound)?;
+        updated =
+            PlanVariantSummary::from_record_for_main_pointer(updated_record, main_trip_plan_id);
+    }
     let event = insert_variant_event(
         &mut tx,
         &updated,
@@ -149,7 +168,7 @@ pub async fn publish_plan_variant(
     let session = db::queries::find_active_member_session_in_tx(&mut tx, trip_id, &token_hash)
         .await?
         .ok_or(ServiceError::Unauthenticated)?;
-    if !can(session.role, Capability::EditItinerary) {
+    if !can(session.role, Capability::ManageTripPlans) {
         return Err(ServiceError::Forbidden);
     }
     reject_duplicate_mutation(
@@ -159,6 +178,40 @@ pub async fn publish_plan_variant(
         &request.client_mutation_id,
     )
     .await?;
+
+    let mut previous_main_summary = None;
+    if let Some(previous_main_id) = trip.active_plan_variant_id {
+        if previous_main_id != plan_variant_id {
+            let previous_main = db::queries::lock_plan_variant(&mut tx, previous_main_id)
+                .await?
+                .ok_or(ServiceError::NotFound)?;
+            let previous_status = request
+                .previous_main_next_status
+                .as_deref()
+                .unwrap_or("backup");
+            let previous_kind = legacy_kind_for_plan_status(previous_status);
+            let updated_previous_main = db::queries::update_plan_variant_status(
+                &mut tx,
+                previous_main_id,
+                previous_kind,
+                previous_status,
+                previous_main.version + 1,
+            )
+            .await?
+            .ok_or(ServiceError::NotFound)?;
+            previous_main_summary = Some(PlanVariantSummary::from(updated_previous_main));
+        }
+    }
+
+    let updated_variant = db::queries::update_plan_variant_status(
+        &mut tx,
+        plan_variant_id,
+        "main",
+        "main",
+        variant.version + 1,
+    )
+    .await?
+    .ok_or(ServiceError::NotFound)?;
 
     let updated_trip = db::queries::update_trip_active_plan_variant(
         &mut tx,
@@ -171,6 +224,9 @@ pub async fn publish_plan_variant(
     let summary = TripSummary::from(updated_trip);
     let payload = serde_json::json!({
         "activePlanVariantId": plan_variant_id,
+        "mainTripPlanId": plan_variant_id,
+        "tripPlan": PlanVariantSummary::from(updated_variant),
+        "previousMainTripPlan": previous_main_summary,
         "trip": summary,
     });
     let event = events::insert(
@@ -192,6 +248,15 @@ pub async fn publish_plan_variant(
     realtime.publish(event).await;
 
     Ok(summary)
+}
+
+fn legacy_kind_for_plan_status(status: &str) -> &'static str {
+    match status {
+        "proposal" => "split",
+        "main" => "main",
+        "backup" => "backup",
+        _ => "draft",
+    }
 }
 
 async fn reject_duplicate_mutation(

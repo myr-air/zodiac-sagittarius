@@ -6,6 +6,31 @@ import { describe, expect, it } from "vitest";
 const testDir = dirname(fileURLToPath(import.meta.url));
 const frontendRoot = resolve(testDir, "..");
 const repoRoot = resolve(frontendRoot, "..");
+const productCopySourceRoots = [
+  "app",
+  "src/app",
+  "src/components",
+  "src/i18n",
+];
+
+function collectProductCopyFiles(root: string): string[] {
+  const entries = readdirSync(root);
+  const files: string[] = [];
+  for (const entry of entries) {
+    const path = join(root, entry);
+    const stat = statSync(path);
+    if (stat.isDirectory()) {
+      if (["node_modules", ".next", "storybook-static"].includes(entry)) continue;
+      files.push(...collectProductCopyFiles(path));
+      continue;
+    }
+    if (!/\.[cm]?[jt]sx?$/.test(entry)) continue;
+    if (/\.(test|spec|stories)\.[cm]?[jt]sx?$/.test(entry)) continue;
+    if (entry === "types.ts" || entry === "api-client.ts") continue;
+    files.push(path);
+  }
+  return files;
+}
 
 describe("Sagittarius project scaffold", () => {
   it("separates frontend and backend services behind a root Makefile", () => {
@@ -38,6 +63,26 @@ describe("Sagittarius project scaffold", () => {
     expect(packageJson.scripts?.storybook).toContain("storybook dev");
     expect(packageJson.scripts?.["build-storybook"]).toContain("storybook build");
     expect(readFileSync(join(frontendRoot, ".storybook/main.ts"), "utf8")).toContain("@storybook/nextjs-vite");
+  });
+
+  it("keeps project-side routing docs current", () => {
+    const map = readFileSync(join(repoRoot, "docs/MAP.md"), "utf8");
+    const commands = readFileSync(join(repoRoot, "docs/COMMANDS.md"), "utf8");
+
+    expect(map).toContain("[AGENTS.md](../AGENTS.md)");
+    expect(map).toContain("[CONTEXT.md](../CONTEXT.md)");
+    expect(map).toContain("[docs/COMMANDS.md](./COMMANDS.md)");
+    expect(map).toContain("[frontend/src/trip/](../frontend/src/trip)");
+    expect(map).toContain("[frontend/src/components/](../frontend/src/components)");
+    expect(map).toContain("[backend/crates/sagittarius-api/src/api/](../backend/crates/sagittarius-api/src/api)");
+    expect(map).toContain("[backend/migrations/](../backend/migrations)");
+    expect(map).toContain("[docs/itinerary-trip-plan-phase-0-1-implementation-spec.md](./itinerary-trip-plan-phase-0-1-implementation-spec.md)");
+
+    expect(commands).toContain("Use `rtk` for shell commands");
+    expect(commands).toContain("| Backend schema/contracts | `backend/` | `rtk cargo test -p sagittarius-api --test schema_contract -- --nocapture` |");
+    expect(commands).toContain("| Frontend type safety | `frontend/` | `rtk bun run typecheck` |");
+    expect(commands).toContain("| Real API e2e compatibility | Repository root | `rtk make frontend-e2e-local` |");
+    expect(commands).toContain("| Aries profile gate before strong claims | `/Users/xiivth/.codex/aries` | `rtk python3 scripts/check_all.py` |");
   });
 
   it("uses Next App Router with trip-scoped production routes", () => {
@@ -109,6 +154,27 @@ describe("Sagittarius project scaffold", () => {
     expect(css).toContain("--color-warning: #b45309");
   });
 
+  it("uses Trip Plan language in product copy instead of rollout compatibility names", () => {
+    const messages = readFileSync(join(frontendRoot, "src/i18n/messages.ts"), "utf8");
+
+    expect(messages).toContain("Trip Plan");
+    expect(messages).not.toMatch(/\bTrip Sheet\b/i);
+    expect(messages).not.toMatch(/\bPlan Variant\b/i);
+  });
+
+  it("keeps production frontend copy on Trip Plan terminology", () => {
+    const productCopy = productCopySourceRoots
+      .flatMap((root) => collectProductCopyFiles(join(frontendRoot, root)))
+      .map((file) => readFileSync(file, "utf8"))
+      .join("\n");
+
+    expect(productCopy).toContain("Trip Plan");
+    expect(productCopy).not.toMatch(/\bTrip Sheet\b/i);
+    expect(productCopy).not.toMatch(/\bPlan Variant\b/i);
+    expect(productCopy).not.toMatch(/\bplan variant\b/);
+    expect(productCopy).not.toMatch(/\btrip sheet\b/i);
+  });
+
   it("documents the Rust/PostgreSQL API data contract", () => {
     const spec = readFileSync(join(repoRoot, "docs/api-data-spec.md"), "utf8");
 
@@ -139,10 +205,18 @@ describe("Sagittarius project scaffold", () => {
     expect(makefile).toContain("backend/migrations/0006_trip_countries.sql");
     expect(makefile).toContain("backend/migrations/0010_itinerary_activity_paths.sql");
     expect(makefile).toContain("backend/migrations/0011_expense_reminders.sql");
+    expect(makefile).toContain("backend/migrations/0025_trip_plan_compatibility.sql");
+    expect(makefile).toContain("backend/migrations/0026_plan_scoped_records.sql");
+    expect(makefile).toContain("backend/migrations/0027_itinerary_hierarchy_time_windows.sql");
+    expect(makefile).toContain("backend/migrations/0028_plan_check_trip_plan_scope.sql");
+    expect(makefile).toContain("backend/migrations/0029_expense_reminder_trip_plan_scope.sql");
     expect(makefile).toContain("table_name='account_vault_items'");
     expect(makefile).toContain("table_name='trips' AND column_name='countries'");
     expect(makefile).toContain("table_name='itinerary_items' AND column_name='path_id'");
     expect(makefile).toContain("table_name='expense_reminders'");
+    expect(makefile).toContain("table_name='trip_tasks' AND column_name='trip_plan_id'");
+    expect(makefile).toContain("table_name='plan_checks' AND column_name='trip_plan_id'");
+    expect(makefile).toContain("table_name='expense_reminders' AND column_name='trip_plan_id'");
     expect(makefile).not.toMatch(/elif ! \$\(PSQL\)[\s\S]*account_vault_items/);
   });
 
@@ -222,6 +296,11 @@ describe("Sagittarius project scaffold", () => {
     expect(seedE2e).toContain("0013_expense_receipts_itemization.sql");
     expect(seedE2e).toContain("0014_expense_notes.sql");
     expect(seedE2e).toContain("0015_expense_comments.sql");
+    expect(seedE2e).toContain("0025_trip_plan_compatibility.sql");
+    expect(seedE2e).toContain("0026_plan_scoped_records.sql");
+    expect(seedE2e).toContain("0027_itinerary_hierarchy_time_windows.sql");
+    expect(seedE2e).toContain("0028_plan_check_trip_plan_scope.sql");
+    expect(seedE2e).toContain("0029_expense_reminder_trip_plan_scope.sql");
     for (const script of [
       "scripts/run-local-real-api-e2e.ts",
       "scripts/run-local-real-browser-auth-e2e.ts",

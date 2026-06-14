@@ -5,7 +5,7 @@ Version: 2026-05-30.
 
 ## Goals
 
-- Store a collaborative trip plan with plan variants, itinerary rows, suggestions, expenses, documents, and member presence.
+- Store a collaborative trip plan with Trip Plans, itinerary rows, suggestions, expenses, documents, and member presence.
 - Keep the Smart Itinerary Table as the source of truth.
 - Support optimistic concurrency from the frontend using `version`, `updatedAt`, and `clientMutationId`.
 - Stream collaborative changes over WebSocket without requiring a page refresh.
@@ -84,10 +84,12 @@ CREATE TABLE plan_variants (
   trip_id uuid NOT NULL REFERENCES trips(id),
   name text NOT NULL,
   kind text NOT NULL CHECK (kind IN ('main', 'backup', 'draft', 'split')),
+  status text CHECK (status IS NULL OR status IN ('main', 'draft', 'proposal', 'backup')),
   description text NOT NULL DEFAULT '',
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
-  version bigint NOT NULL DEFAULT 1
+  version bigint NOT NULL DEFAULT 1,
+  UNIQUE (id, trip_id)
 );
 
 CREATE TABLE itinerary_items (
@@ -98,9 +100,17 @@ CREATE TABLE itinerary_items (
   path_id text,
   path_name text,
   path_role text CHECK (path_role IS NULL OR path_role IN ('main', 'alternative')),
+  parent_item_id uuid,
+  item_kind text NOT NULL DEFAULT 'activity',
+  time_mode text NOT NULL DEFAULT 'scheduled',
+  is_plan_block boolean NOT NULL DEFAULT false,
+  status text NOT NULL DEFAULT 'idea',
+  priority text NOT NULL DEFAULT 'normal',
   day date NOT NULL,
   sort_order integer NOT NULL,
   start_time time,
+  end_time time,
+  end_offset_days integer NOT NULL DEFAULT 0,
   activity text NOT NULL,
   activity_type text NOT NULL,
   place text NOT NULL,
@@ -138,6 +148,7 @@ CREATE TABLE suggestions (
 CREATE TABLE expenses (
   id uuid PRIMARY KEY,
   trip_id uuid NOT NULL REFERENCES trips(id),
+  trip_plan_id uuid REFERENCES plan_variants(id),
   title text NOT NULL,
   amount_minor integer NOT NULL,
   currency text NOT NULL DEFAULT 'HKD',
@@ -155,6 +166,36 @@ CREATE TABLE expenses (
   version bigint NOT NULL DEFAULT 1
 );
 
+CREATE TABLE trip_tasks (
+  id uuid PRIMARY KEY,
+  trip_id uuid NOT NULL REFERENCES trips(id),
+  trip_plan_id uuid REFERENCES plan_variants(id),
+  related_item_id uuid REFERENCES itinerary_items(id),
+  title text NOT NULL,
+  status text NOT NULL,
+  visibility text NOT NULL,
+  kind text NOT NULL,
+  created_by uuid REFERENCES trip_members(id),
+  assignee_id uuid REFERENCES trip_members(id),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  deleted_at timestamptz,
+  version bigint NOT NULL DEFAULT 1
+);
+
+CREATE TABLE stop_notes (
+  id uuid PRIMARY KEY,
+  trip_id uuid NOT NULL REFERENCES trips(id),
+  trip_plan_id uuid REFERENCES plan_variants(id),
+  itinerary_item_id uuid REFERENCES itinerary_items(id),
+  body text NOT NULL,
+  author_id uuid REFERENCES trip_members(id),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  deleted_at timestamptz,
+  version bigint NOT NULL DEFAULT 1
+);
+
 CREATE TABLE documents (
   id uuid PRIMARY KEY,
   trip_id uuid NOT NULL REFERENCES trips(id),
@@ -165,6 +206,30 @@ CREATE TABLE documents (
   size_bytes bigint NOT NULL,
   uploaded_by uuid NOT NULL REFERENCES trip_members(id),
   created_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE booking_docs (
+  id uuid PRIMARY KEY,
+  trip_id uuid NOT NULL REFERENCES trips(id),
+  trip_plan_id uuid REFERENCES plan_variants(id),
+  type text NOT NULL,
+  title text NOT NULL,
+  status text NOT NULL,
+  visibility text NOT NULL,
+  owner_member_id uuid REFERENCES trip_members(id),
+  provider_name text,
+  confirmation_code text,
+  starts_at timestamptz,
+  ends_at timestamptz,
+  timezone text,
+  price_minor integer,
+  currency text,
+  notes text,
+  created_by uuid REFERENCES trip_members(id),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  deleted_at timestamptz,
+  version bigint NOT NULL DEFAULT 1
 );
 
 CREATE TABLE account_vault_items (
@@ -209,6 +274,29 @@ CREATE INDEX trip_join_sessions_trip_active_idx
 CREATE INDEX realtime_events_trip_created_idx
   ON realtime_events (trip_id, created_at DESC);
 ```
+
+Compatibility notes:
+
+- `trip_plan_id` on expenses, trip tasks, stop notes, and booking docs is
+  nullable during the Trip Plan compatibility window because legacy rows and
+  support scripts may predate plan-scoped records. When present, it identifies
+  the Trip Plan where the record belongs.
+- Changing the Main Plan must not rewrite existing plan-scoped records. Moving,
+  cancelling, refunding, or duplicating an Actual Expense as a Plan Estimate is
+  an explicit user action.
+- `parent_item_id` creates exactly one itinerary nesting level:
+  Plan Day -> Activity -> Sub-activity. Grandchildren and cycles are invalid at
+  the service boundary even when a raw SQL write can still express them before
+  hardening.
+- `path_*` fields are legacy compatibility data during Phase 0/1. Import/export
+  preserves them, but sibling overlaps must not synthesize Alternative Paths.
+- `activity_type` still carries the legacy detailed API enum in storage and
+  OpenAPI during compatibility. Product copy should use the broader Activity
+  Type language from `CONTEXT.md`; collapsing the wire enum is a later API
+  compatibility change.
+- The normative Phase 0/1 Trip Plan rollout contract, including additive API
+  diffs, migration DDL, validation failures, and exact tests, lives in
+  [itinerary-trip-plan-phase-0-1-implementation-spec.md](./itinerary-trip-plan-phase-0-1-implementation-spec.md).
 
 ## REST API
 
@@ -262,22 +350,70 @@ Base path: `/api/v1`.
 ### Trips
 
 - `GET /api/v1/trips/:tripId`
-  Returns the full planning cockpit payload: trip, members, variants, itinerary items, suggestions, and expense summary.
+  Returns the full planning cockpit payload: trip, members, Trip Plans, itinerary items, suggestions, and expense summary.
+  Phase 1 cockpit load is a whole-trip compatibility payload. It includes
+  plan-scoped records from every Trip Plan that the member can view, preserving
+  each record's `tripPlanId` or linked itinerary item id so the frontend can
+  filter the selected Trip Plan locally. Use scoped endpoints, such as expense
+  summary with `tripPlanId`, when the response itself must be selected-plan
+  scoped.
 - `PATCH /api/v1/trips/:tripId`
-  Updates trip metadata and active plan variant.
+  Updates trip metadata. During Phase 1 compatibility, Main Plan identity is
+  exposed as `mainTripPlanId` and legacy `activePlanVariantId`, but this route
+  rejects pointer mutations with `400 invalid_request`. Set-main is the only
+  Phase 1 route that changes the Main Plan pointer.
 
-### Plan Variants
+### Trip Plans
 
+- `POST /api/v1/trips/:tripId/trip-plans`
+- `PATCH /api/v1/trips/:tripId/trip-plans/:tripPlanId`
+- `POST /api/v1/trips/:tripId/trip-plans/:tripPlanId/set-main`
 - `POST /api/v1/trips/:tripId/plan-variants`
 - `PATCH /api/v1/trips/:tripId/plan-variants/:planVariantId`
 - `POST /api/v1/trips/:tripId/plan-variants/:planVariantId/publications`
 
+Phase 1 compatibility: canonical API fields/routes are `tripPlans`,
+`mainTripPlanId`, `status`, and `/trip-plans`; `planVariants`,
+`activePlanVariantId`, `kind`, and `/plan-variants` are legacy wire aliases
+retained during compatibility.
+
+Create and patch accept canonical `status` and deprecated `kind`, reject
+`status/kind = "main"`, and reject mismatched `kind/status` pairs. Set-main is
+the only Phase 1 route that changes the Main Plan pointer. Set-main has no
+`expectedVersion`; it is last-writer-wins after transactional row locks, while
+duplicate `clientMutationId` values remain rejected by the mutation guard.
+Successful create/patch/set-main events keep legacy `plan_variant.*` wrappers
+and include canonical aliases in the payload. Validation errors keep the
+existing `code`/`message` envelope.
+
 ### Itinerary Items
 
+- `POST /api/v1/trips/:tripId/itinerary-imports`
+  Normalizes Joii JSON or free-text input into destination itinerary rows.
+  Phase 1 responses include destination `trip.mainTripPlanId`,
+  destination `trip.tripPlans[]`, hierarchy/time/path fields, and compatibility
+  `records` without switching the destination Main Plan.
 - `POST /api/v1/trips/:tripId/itinerary-items`
 - `PATCH /api/v1/trips/:tripId/itinerary-items/:itemId`
 - `DELETE /api/v1/trips/:tripId/itinerary-items/:itemId`
 - `PATCH /api/v1/trips/:tripId/itinerary-items/order`
+  Reorder requests are full Plan Day orders for one Trip Plan/day. `itemIds`
+  must include every non-deleted item in that scope exactly once, and parent
+  activities must appear before their sub-activities.
+
+### Plan Checks
+
+- `POST /api/v1/trips/:tripId/plan-checks`
+- `GET /api/v1/trips/:tripId/plan-checks/latest`
+
+Both Plan Check routes accept optional `?tripPlanId=:tripPlanId`. When present,
+`tripPlanId` must belong to the trip; the stored check, suggestions, and stale
+fingerprint are scoped to that Trip Plan and do not mutate `mainTripPlanId` or
+`activePlanVariantId`. When omitted, the compatibility behavior remains
+trip-wide. Suggestions are review items: `recommendedAction`, `actionKind`, and
+`actionPayload` can guide a review-edit, dismiss, snooze, or keep-reviewing
+flow, but running a Plan Check never silently rewrites itinerary rows, Trip
+Plans, Actual Expenses, or Plan Commitments.
 
 Example PATCH:
 
@@ -304,6 +440,16 @@ Example PATCH:
 ### Expenses
 
 - `GET /api/v1/trips/:tripId/expenses/summary`
+  Accepts optional `tripPlanId` query parameter. When present, totals,
+  balances, settlement suggestions, and reminder history are calculated from
+  expenses and reminders scoped to that Trip Plan only. The Trip Plan id must
+  belong to the trip; missing or cross-trip ids return `400 invalid_request`.
+  Omitting it keeps the legacy whole-trip summary.
+- `POST /api/v1/trips/:tripId/expenses/reminders`
+  Accepts optional `tripPlanId` query parameter. When present, the reminder is
+  recorded for that Trip Plan's settlement suggestion only. Omitting it records
+  the reminder against the current Main Plan for compatibility and returns the
+  legacy whole-trip summary.
 - `POST /api/v1/trips/:tripId/expenses`
 - `PATCH /api/v1/trips/:tripId/expenses/:expenseId`
 - `DELETE /api/v1/trips/:tripId/expenses/:expenseId`
@@ -312,6 +458,13 @@ Example PATCH:
 
 - `POST /api/v1/trip-join-sessions`
   Verifies `{ joinCode, tripPassword }` and returns safe trip metadata, claimable members, and a short-lived `joinSessionToken`.
+  Phase 1 trip summaries include both `mainTripPlanId` and deprecated
+  `activePlanVariantId`. The join response does not need to include a Trip
+  Plan list.
+- `GET /api/v1/trip-join-invite-tokens/current?token=:token`
+  Returns safe invite-token trip metadata for the current token. Phase 1 trip
+  summaries include both `mainTripPlanId` and deprecated
+  `activePlanVariantId`, without requiring a Trip Plan list.
 - `POST /api/v1/trips/:tripId/members/:memberId/claims`
   First-time guest participant claim with `{ participantPassword }`; stores a password hash and returns a member session.
 - `POST /api/v1/trips/:tripId/member-sessions`
@@ -336,11 +489,16 @@ Example PATCH:
 | --- | --- | --- | --- | --- |
 | View trip plan | Yes | Yes | Yes | Yes |
 | Edit itinerary directly | Yes | Yes | No | No |
+| Manage Trip Plans | Yes | Yes | No | No |
 | Create suggestions | Yes | Yes | Yes | No |
 | Review suggestions | Yes | Yes | No | No |
 | View expense summary | Yes | Yes | Yes | No |
 | Edit expenses | Yes | Yes | No | No |
 | Manage participants | Yes | Yes | No | No |
+
+`Edit itinerary directly` does not imply `Manage Trip Plans`. A traveler may be
+allowed to participate through suggestions or future scoped itinerary flows
+without being able to create, patch, or set the Main Plan.
 
 ## WebSocket
 
@@ -412,8 +570,31 @@ The current frontend seed maps directly to this response:
     "startDate": "2025-05-15",
     "endDate": "2025-05-20",
     "activePlanVariantId": "plan-main",
+    "mainTripPlanId": "plan-main",
     "version": 1
   },
+  "planVariants": [
+    {
+      "id": "plan-main",
+      "tripId": "trip-hong-kong-shenzhen",
+      "name": "Main",
+      "kind": "main",
+      "status": "main",
+      "description": "",
+      "version": 1
+    }
+  ],
+  "tripPlans": [
+    {
+      "id": "plan-main",
+      "tripId": "trip-hong-kong-shenzhen",
+      "name": "Main",
+      "kind": "main",
+      "status": "main",
+      "description": "",
+      "version": 1
+    }
+  ],
   "itineraryItems": [
     {
       "id": "item-dimdim",
@@ -444,5 +625,6 @@ The current frontend seed maps directly to this response:
 
 - If `expectedVersion` does not match the stored row, return `409 Conflict` with the latest entity.
 - If a WebSocket event has the same `clientMutationId` as a pending frontend mutation, the frontend should mark it confirmed instead of applying a duplicate row.
-- Reorder writes should be transactional and emit one `itinerary_items.reordered` event.
+- Reorder writes should validate the full Plan Day scope before updating,
+  write transactionally, and emit one `itinerary_items.reordered` event.
 - Suggestion approval should update target itinerary rows and mark the suggestion resolved in the same transaction.

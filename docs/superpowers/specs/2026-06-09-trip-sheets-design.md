@@ -1,5 +1,13 @@
 # Trip Sheets Design
 
+**Status**: Superseded by
+[ADR 0001](../../adr/0001-trip-plan-language-over-plan-variants.md),
+[ADR 0002](../../adr/0002-main-plan-is-a-selection.md), and
+[the Phase 0/1 implementation spec](../../itinerary-trip-plan-phase-0-1-implementation-spec.md).
+This document records the earlier `Trip Sheet` proposal only. New product copy,
+API work, and implementation planning must use `Trip Plan` / `Main Plan`
+language instead.
+
 ## Goal
 
 Add named planner sheets inside one trip without confusing them with activity

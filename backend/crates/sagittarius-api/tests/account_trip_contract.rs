@@ -327,6 +327,10 @@ async fn account_user_can_create_trip_and_becomes_owner(pool: sqlx::PgPool) {
     let owner_member_id = Uuid::parse_str(body["ownerMemberId"].as_str().unwrap()).unwrap();
     let active_plan_variant_id =
         Uuid::parse_str(body["trip"]["activePlanVariantId"].as_str().unwrap()).unwrap();
+    assert_eq!(
+        body["trip"]["mainTripPlanId"], body["trip"]["activePlanVariantId"],
+        "account trip create must expose canonical and legacy Main Plan pointers",
+    );
 
     let trip: (String, String, String, String, String, Uuid, Uuid, i64) = sqlx::query_as(
         "select
@@ -644,6 +648,10 @@ async fn account_trip_join_password_hash_uses_random_salt_and_remains_joinable(p
         .await;
         assert_eq!(status, StatusCode::OK);
         assert_eq!(body["trip"]["joinId"], join_id.to_ascii_uppercase());
+        assert_eq!(
+            body["trip"]["mainTripPlanId"], body["trip"]["activePlanVariantId"],
+            "join response must expose canonical and legacy Main Plan pointers",
+        );
     }
 }
 

@@ -17,10 +17,11 @@ function renderTable(
     contextRailOpen: false,
     endDate: tripFixture.trip.endDate,
     items: tripFixture.planItems,
-    tripSheets: tripFixture.trip.planVariants,
-    selectedTripSheetId: tripFixture.trip.activePlanVariantId,
-    tripSheetError: null,
-    isTripSheetBusy: false,
+    tripPlans: tripFixture.trip.planVariants,
+    selectedTripPlanId: tripFixture.trip.activePlanVariantId,
+    mainTripPlanId: tripFixture.trip.mainTripPlanId ?? tripFixture.trip.activePlanVariantId,
+    tripPlanError: null,
+    isTripPlanBusy: false,
     role: "owner",
     startDate: tripFixture.trip.startDate,
     selectedItemId: tripFixture.planItems[0].id,
@@ -33,22 +34,27 @@ function renderTable(
     dayPathOverrides: {},
     showAllPaths: false,
     tripName: tripFixture.trip.name,
+    onAddBookingForItem: vi.fn(),
     onAddStop: vi.fn(),
     onSelectItem: vi.fn(),
     onMoveItem: vi.fn(),
     onMoveItemIntoPlanBlock: vi.fn(),
     onMoveItemToDay: vi.fn(),
     onMoveItemToPath: vi.fn(),
+    onAddSubActivity: vi.fn(),
+    onAddNoteForItem: vi.fn(),
+    onAddTaskForItem: vi.fn(),
     onUpdateItemInline: vi.fn(),
     onEditItem: vi.fn(),
     onDeleteItem: vi.fn(),
     onExportItinerary: vi.fn(),
     onImportItinerary: vi.fn(),
-    onChangeTripSheet: vi.fn(),
-    onCreateTripSheet: vi.fn(),
+    onChangeTripPlan: vi.fn(),
+    onChangeTripPlanStatus: vi.fn(),
+    onSetMainTripPlan: vi.fn(),
+    onCreateTripPlan: vi.fn(),
     onChangeDayPath: vi.fn(),
     onClearDayPath: vi.fn(),
-    onAutoResolveDayOverlaps: vi.fn(),
     onToggleShowAllPaths: vi.fn(),
     onRedo: vi.fn(),
     onToggleContextRail: vi.fn(),
@@ -94,10 +100,11 @@ describe("SmartItineraryTable", () => {
           contextRailOpen={false}
           endDate={tripFixture.trip.endDate}
           items={tripFixture.planItems}
-          tripSheets={tripFixture.trip.planVariants}
-          selectedTripSheetId={tripFixture.trip.activePlanVariantId}
-          tripSheetError={null}
-          isTripSheetBusy={false}
+          tripPlans={tripFixture.trip.planVariants}
+          selectedTripPlanId={tripFixture.trip.activePlanVariantId}
+          mainTripPlanId={tripFixture.trip.mainTripPlanId ?? tripFixture.trip.activePlanVariantId}
+          tripPlanError={null}
+          isTripPlanBusy={false}
           role="owner"
           startDate={tripFixture.trip.startDate}
           selectedItemId={tripFixture.planItems[0].id}
@@ -109,8 +116,10 @@ describe("SmartItineraryTable", () => {
           onMoveItemToDay={vi.fn()}
           onExportItinerary={vi.fn()}
           onImportItinerary={vi.fn()}
-          onChangeTripSheet={vi.fn()}
-          onCreateTripSheet={vi.fn()}
+          onChangeTripPlan={vi.fn()}
+          onChangeTripPlanStatus={vi.fn()}
+          onSetMainTripPlan={vi.fn()}
+          onCreateTripPlan={vi.fn()}
           onRedo={vi.fn()}
           onToggleContextRail={vi.fn()}
           onUndo={vi.fn()}
@@ -183,79 +192,129 @@ describe("SmartItineraryTable", () => {
     expect(onImportItinerary).toHaveBeenCalledWith(file);
   });
 
-  it("renders the current Trip Sheet selector with existing sheet names", () => {
+  it("renders the current Trip Plan selector with existing plan names", () => {
     renderTable();
 
-    const selector = screen.getByLabelText("Trip Sheet");
+    const selector = screen.getByLabelText("Trip Plan");
 
     expect(selector).toHaveValue(tripFixture.trip.activePlanVariantId);
     expect(
-      screen.getByRole("option", { name: "แผนหลัก (V1)" }),
+      screen.getByRole("option", { name: "แผนหลัก (V1) - แผนหลัก" }),
     ).toBeInTheDocument();
-    expect(screen.getByRole("option", { name: "แผนฝนตก" })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "แผนฝนตก - สำรอง" })).toBeInTheDocument();
     expect(
-      screen.getByRole("option", { name: "ร่างปรับเวลา" }),
+      screen.getByRole("option", { name: "ร่างปรับเวลา - ร่าง" }),
     ).toBeInTheDocument();
   });
 
-  it("calls onChangeTripSheet when the Trip Sheet selector changes", async () => {
+  it("calls onChangeTripPlan when the Trip Plan selector changes", async () => {
     const user = userEvent.setup();
-    const onChangeTripSheet = vi.fn();
-    renderTable({ onChangeTripSheet });
+    const onChangeTripPlan = vi.fn();
+    const onSetMainTripPlan = vi.fn();
+    renderTable({ onChangeTripPlan, onSetMainTripPlan });
 
-    await user.selectOptions(screen.getByLabelText("Trip Sheet"), "plan-rain");
+    await user.selectOptions(screen.getByLabelText("Trip Plan"), "plan-rain");
 
-    expect(onChangeTripSheet).toHaveBeenCalledWith("plan-rain");
+    expect(onChangeTripPlan).toHaveBeenCalledWith("plan-rain");
+    expect(onSetMainTripPlan).not.toHaveBeenCalled();
   });
 
-  it("lets an organizer create a named Trip Sheet", async () => {
+  it("calls onSetMainTripPlan only from the explicit set-main action", async () => {
     const user = userEvent.setup();
-    const onCreateTripSheet = vi.fn();
-    renderTable({ role: "organizer", onCreateTripSheet });
+    const onChangeTripPlan = vi.fn();
+    const onSetMainTripPlan = vi.fn();
+    renderTable({
+      selectedTripPlanId: "plan-rain",
+      onChangeTripPlan,
+      onSetMainTripPlan,
+    });
 
-    await user.click(screen.getByRole("button", { name: "เพิ่ม sheet" }));
-    await user.type(screen.getByLabelText("ชื่อ sheet"), "Food crawl");
-    await user.click(screen.getByRole("button", { name: "สร้าง sheet" }));
+    await user.click(screen.getByRole("button", { name: "ใช้เป็นแผนหลัก" }));
 
-    expect(onCreateTripSheet).toHaveBeenCalledWith("Food crawl");
+    expect(onSetMainTripPlan).toHaveBeenCalledWith("plan-rain");
+    expect(onChangeTripPlan).not.toHaveBeenCalled();
   });
 
-  it("keeps the Trip Sheet create form open when creation fails", async () => {
+  it("calls onChangeTripPlanStatus when the Trip Plan status changes", async () => {
     const user = userEvent.setup();
-    const onCreateTripSheet = vi.fn().mockResolvedValue(false);
-    renderTable({ onCreateTripSheet, tripSheetError: "Could not update Trip Sheet." });
+    const onChangeTripPlanStatus = vi.fn();
+    renderTable({
+      selectedTripPlanId: "plan-rain",
+      onChangeTripPlanStatus,
+    });
 
-    await user.click(screen.getByRole("button", { name: "เพิ่ม sheet" }));
-    await user.type(screen.getByLabelText("ชื่อ sheet"), "Retry sheet");
-    await user.click(screen.getByRole("button", { name: "สร้าง sheet" }));
+    await user.selectOptions(screen.getByLabelText("สถานะแผน"), "proposal");
 
-    expect(onCreateTripSheet).toHaveBeenCalledWith("Retry sheet");
-    expect(screen.getByLabelText("ชื่อ sheet")).toHaveValue("Retry sheet");
-    expect(screen.getByText("Could not update Trip Sheet.")).toBeInTheDocument();
+    expect(onChangeTripPlanStatus).toHaveBeenCalledWith("plan-rain", "proposal");
+    expect(screen.getByRole("option", { name: "แผนหลัก" })).toBeDisabled();
   });
 
-  it("disables Trip Sheet switching and hides creation for travelers and viewers", () => {
+  it("disables status changes and set-main for the current Main Plan", () => {
+    renderTable({
+      selectedTripPlanId: tripFixture.trip.mainTripPlanId ?? tripFixture.trip.activePlanVariantId,
+    });
+
+    expect(screen.getByLabelText("สถานะแผน")).toBeDisabled();
+    expect(screen.getByRole("button", { name: "ใช้เป็นแผนหลัก" })).toBeDisabled();
+  });
+
+  it("lets an organizer create a named Trip Plan", async () => {
+    const user = userEvent.setup();
+    const onCreateTripPlan = vi.fn();
+    renderTable({ role: "organizer", onCreateTripPlan });
+
+    await user.click(screen.getByRole("button", { name: "เพิ่มแผน" }));
+    await user.type(screen.getByLabelText("ชื่อแผน"), "Food crawl");
+    await user.click(screen.getByRole("button", { name: "สร้างแผน" }));
+
+    expect(onCreateTripPlan).toHaveBeenCalledWith("Food crawl");
+  });
+
+  it("keeps the Trip Plan create form open when creation fails", async () => {
+    const user = userEvent.setup();
+    const onCreateTripPlan = vi.fn().mockResolvedValue(false);
+    renderTable({ onCreateTripPlan, tripPlanError: "Could not update Trip Plan." });
+
+    await user.click(screen.getByRole("button", { name: "เพิ่มแผน" }));
+    await user.type(screen.getByLabelText("ชื่อแผน"), "Retry plan");
+    await user.click(screen.getByRole("button", { name: "สร้างแผน" }));
+
+    expect(onCreateTripPlan).toHaveBeenCalledWith("Retry plan");
+    expect(screen.getByLabelText("ชื่อแผน")).toHaveValue("Retry plan");
+    expect(screen.getByText("Could not update Trip Plan.")).toBeInTheDocument();
+  });
+
+  it("lets travelers and viewers switch visible Trip Plans without management actions", () => {
     renderTable({ role: "traveler" });
 
-    expect(screen.getByLabelText("Trip Sheet")).toBeDisabled();
+    expect(screen.getByLabelText("Trip Plan")).toBeEnabled();
+    expect(screen.queryByLabelText("สถานะแผน")).toBeInTheDocument();
+    expect(screen.getByLabelText("สถานะแผน")).toBeDisabled();
     expect(
-      screen.queryByRole("button", { name: "เพิ่ม sheet" }),
+      screen.queryByRole("button", { name: "ใช้เป็นแผนหลัก" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "เพิ่มแผน" }),
     ).not.toBeInTheDocument();
 
     cleanup();
     renderTable({ role: "viewer" });
 
-    expect(screen.getByLabelText("Trip Sheet")).toBeDisabled();
+    expect(screen.getByLabelText("Trip Plan")).toBeEnabled();
+    expect(screen.getByLabelText("สถานะแผน")).toBeDisabled();
     expect(
-      screen.queryByRole("button", { name: "เพิ่ม sheet" }),
+      screen.queryByRole("button", { name: "ใช้เป็นแผนหลัก" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "เพิ่มแผน" }),
     ).not.toBeInTheDocument();
   });
 
-  it("keeps the activity path filter UI separate from Trip Sheets", async () => {
+  it("keeps the activity path filter UI separate from Trip Plans", async () => {
     const user = userEvent.setup();
     renderTable();
 
-    expect(screen.getByLabelText("Trip Sheet")).toBeInTheDocument();
+    expect(screen.getByLabelText("Trip Plan")).toBeInTheDocument();
     expect(
       screen.queryByRole("region", { name: /ตัวกรองแผน/i }),
     ).not.toBeInTheDocument();
@@ -1095,7 +1154,7 @@ describe("SmartItineraryTable", () => {
     );
   });
 
-  it("moves an overlapping activity dot to the Plan A position", () => {
+  it("keeps overlapping main activity dots on Main until an alternative is chosen explicitly", () => {
     const mainItem = {
       ...tripFixture.planItems[0],
       id: "overlap-main-dot",
@@ -1112,7 +1171,7 @@ describe("SmartItineraryTable", () => {
       day: "2026-06-19",
       startTime: "08:30",
       durationMinutes: 45,
-      activity: "Overlap plan A dot",
+      activity: "Overlap second main dot",
       sortOrder: 200,
       pathRole: "main" as const,
     };
@@ -1135,43 +1194,38 @@ describe("SmartItineraryTable", () => {
     const mainDot = screen.getByRole("button", {
       name: /Overlap main dot on Main/i,
     });
-    const planADot = screen.getByRole("button", {
-      name: /Overlap plan A dot on Plan A/i,
+    const secondMainDot = screen.getByRole("button", {
+      name: /Overlap second main dot on Main/i,
     });
-    const startToPlanALine = Array.from(
+    const startToSecondMainLine = Array.from(
       document.querySelectorAll(".activity-path-graph-line"),
     ).find(
       (line) =>
         line.getAttribute("data-from-y") === "23.75" &&
         line.getAttribute("data-to-x") ===
-          `${Number.parseFloat(planADot.style.left)}` &&
+          `${Number.parseFloat(secondMainDot.style.left)}` &&
         line.getAttribute("data-to-y") ===
-          `${Number.parseFloat(planADot.style.top) + 18}`,
+          `${Number.parseFloat(secondMainDot.style.top) + 18}`,
     );
     const mainDotCenter = {
       x: Number.parseFloat(mainDot.style.left),
       y: Number.parseFloat(mainDot.style.top) + 18,
     };
-    const planADotCenter = {
-      x: Number.parseFloat(planADot.style.left),
-      y: Number.parseFloat(planADot.style.top) + 18,
+    const secondMainDotCenter = {
+      x: Number.parseFloat(secondMainDot.style.left),
+      y: Number.parseFloat(secondMainDot.style.top) + 18,
     };
-    const dotToDotLine = Array.from(
-      document.querySelectorAll(".activity-path-graph-line"),
-    ).find(
-      (line) =>
-        line.getAttribute("data-from-x") === `${mainDotCenter.x}` &&
-        line.getAttribute("data-from-y") === `${mainDotCenter.y}` &&
-        line.getAttribute("data-to-x") === `${planADotCenter.x}` &&
-        line.getAttribute("data-to-y") === `${planADotCenter.y}`,
-    );
-    expect(Number.parseFloat(planADot.style.left)).toBeGreaterThan(
+    expect(Number.parseFloat(secondMainDot.style.left)).toBe(
       Number.parseFloat(mainDot.style.left),
     );
-    expect(dotToDotLine).toBeUndefined();
-    expect(startToPlanALine).toBeDefined();
-    expect(startToPlanALine?.getAttribute("d")).toContain(" C ");
-    expect(startToPlanALine?.getAttribute("d")).toContain("47.5");
+    expect(secondMainDotCenter.x).toBe(mainDotCenter.x);
+    expect(secondMainDotCenter.y).toBeGreaterThan(mainDotCenter.y);
+    expect(startToSecondMainLine).toBeDefined();
+    expect(
+      screen.queryByRole("button", {
+        name: /Overlap second main dot on Plan A/i,
+      }),
+    ).not.toBeInTheDocument();
     expect(screen.getByLabelText(/Start of Day 2/i)).toHaveClass(
       "activity-path-graph-anchor",
     );
@@ -1180,7 +1234,7 @@ describe("SmartItineraryTable", () => {
     );
     expect(
       document.querySelectorAll(".activity-path-graph-line").length,
-    ).toBeGreaterThanOrEqual(3);
+    ).toBeGreaterThanOrEqual(2);
   });
 
   it("hides day path controls when the day only has the main plan", () => {
@@ -1235,8 +1289,7 @@ describe("SmartItineraryTable", () => {
     );
   });
 
-  it("shows an auto fix button only for days with same-plan overlaps", async () => {
-    const user = userEvent.setup();
+  it("keeps same-plan overlaps as warnings without showing an auto fix button", () => {
     const samePlanA = {
       ...tripFixture.planItems[0],
       id: "same-plan-a",
@@ -1255,21 +1308,184 @@ describe("SmartItineraryTable", () => {
       sortOrder: 200,
       activity: "Same plan B",
     };
-    const onAutoResolveDayOverlaps = vi.fn();
     renderTable({
       items: [samePlanA, samePlanB],
       selectedItemId: "same-plan-a",
-      onAutoResolveDayOverlaps,
     });
 
+    expect(screen.getByRole("row", { name: /Same plan A/i })).toHaveClass(
+      "data-row--path-overlap",
+    );
+    expect(screen.getByRole("row", { name: /Same plan B/i })).toHaveClass(
+      "data-row--path-overlap",
+    );
     expect(
       screen.queryByRole("button", { name: /Auto fix overlaps for Day 1/i }),
     ).not.toBeInTheDocument();
-    await user.click(
-      screen.getByRole("button", { name: /Auto fix overlaps for Day 2/i }),
-    );
+    expect(
+      screen.queryByRole("button", { name: /Auto fix overlaps for Day 2/i }),
+    ).not.toBeInTheDocument();
+  });
 
-    expect(onAutoResolveDayOverlaps).toHaveBeenCalledWith("2026-06-19");
+  it("shows cross-day end times with superscript offset", () => {
+    const overnightItem = {
+      ...tripFixture.planItems[0],
+      id: "overnight-flight-window",
+      day: "2026-06-19",
+      startTime: "23:00",
+      endTime: "02:00",
+      endOffsetDays: 1,
+      durationMinutes: null,
+      activity: "Overnight flight window",
+      sortOrder: 100,
+    };
+
+    renderTable({
+      items: [overnightItem],
+      selectedItemId: overnightItem.id,
+    });
+
+    const row = screen.getByRole("row", {
+      name: /Overnight flight window/i,
+    });
+    expect(row).toHaveTextContent("23:00-02:00+1");
+    expect(row.querySelector("sup")).toHaveTextContent("+1");
+  });
+
+  it("shows cross-day end times with superscript offset in the mobile inspector", () => {
+    const overnightItem = {
+      ...tripFixture.planItems[0],
+      id: "overnight-flight-window-mobile",
+      day: "2026-06-19",
+      startTime: "23:00",
+      endTime: "02:00",
+      endOffsetDays: 1,
+      durationMinutes: null,
+      activity: "Overnight flight window",
+      sortOrder: 100,
+    };
+
+    renderTable({
+      items: [overnightItem],
+      selectedItemId: overnightItem.id,
+    });
+
+    const inspector = screen.getByRole("region", {
+      name: "รายละเอียดจุดที่เลือก",
+    });
+    const toggle = within(inspector).getByRole("button", {
+      name: /สลับเวลาจบข้ามวัน Overnight flight window/i,
+    });
+
+    expect(toggle).toHaveAttribute("aria-pressed", "true");
+    expect(toggle.querySelector("sup")).toHaveTextContent("+1");
+  });
+
+  it("does not show a next-day marker for same-day end times", () => {
+    const sameDayItem = {
+      ...tripFixture.planItems[0],
+      id: "same-day-flight-window",
+      day: "2026-06-19",
+      startTime: "09:00",
+      endTime: "10:00",
+      endOffsetDays: 0,
+      durationMinutes: null,
+      activity: "Same day flight window",
+      sortOrder: 100,
+    };
+
+    renderTable({
+      items: [sameDayItem],
+      selectedItemId: sameDayItem.id,
+    });
+
+    const row = screen.getByRole("row", {
+      name: /Same day flight window/i,
+    });
+    expect(row).toHaveTextContent("09:00-10:00");
+    expect(row).not.toHaveTextContent("+1");
+  });
+
+  it("edits end time and next-day offset inline", () => {
+    const onUpdateItemInline = vi.fn();
+    const overnightItem = {
+      ...tripFixture.planItems[0],
+      id: "overnight-flight-window",
+      day: "2026-06-19",
+      startTime: "23:00",
+      endTime: "02:00",
+      endOffsetDays: 0,
+      durationMinutes: null,
+      activity: "Overnight flight window",
+      sortOrder: 100,
+    };
+
+    renderTable({
+      items: [overnightItem],
+      onUpdateItemInline,
+      selectedItemId: overnightItem.id,
+    });
+
+    const row = screen.getByRole("row", {
+      name: /Overnight flight window/i,
+    });
+    fireEvent.click(
+      within(row).getByRole("button", {
+        name: /สลับเวลาจบข้ามวัน Overnight flight window/i,
+      }),
+    );
+    expect(onUpdateItemInline).toHaveBeenCalledWith(overnightItem.id, {
+      endOffsetDays: 1,
+    });
+
+    const endTime = within(row).getByLabelText(
+      /แก้ไขเวลาจบ Overnight flight window/i,
+    );
+    fireEvent.change(endTime, { target: { value: "" } });
+    fireEvent.blur(endTime);
+    expect(onUpdateItemInline).toHaveBeenCalledWith(overnightItem.id, {
+      endTime: null,
+      endOffsetDays: 0,
+    });
+  });
+
+  it("uses end time windows for same-plan overlap warnings", () => {
+    const overnightItem = {
+      ...tripFixture.planItems[0],
+      id: "overnight-window-overlap",
+      day: "2026-06-19",
+      startTime: "23:00",
+      endTime: "02:00",
+      endOffsetDays: 1,
+      durationMinutes: null,
+      activity: "Overnight window overlap",
+      sortOrder: 100,
+      pathRole: "main" as const,
+    };
+    const lateItem = {
+      ...tripFixture.planItems[1],
+      id: "late-window-overlap",
+      day: "2026-06-19",
+      startTime: "23:30",
+      endTime: "23:45",
+      endOffsetDays: 0,
+      durationMinutes: null,
+      activity: "Late window overlap",
+      sortOrder: 200,
+      pathRole: "main" as const,
+    };
+
+    renderTable({
+      items: [overnightItem, lateItem],
+      selectedItemId: overnightItem.id,
+    });
+
+    expect(
+      screen.getByRole("row", { name: /Overnight window overlap/i }),
+    ).toHaveClass("data-row--path-overlap");
+    expect(
+      screen.getByRole("row", { name: /Late window overlap/i }),
+    ).toHaveClass("data-row--path-overlap");
   });
 
   it("does not mark rows that overlap across different plans", () => {
@@ -1394,6 +1610,10 @@ describe("SmartItineraryTable", () => {
     await user.clear(time);
     await user.type(time, "10:15{Enter}");
 
+    const endTime = within(row).getByLabelText(/แก้ไขเวลาจบ Dim Dim Sum/i);
+    fireEvent.change(endTime, { target: { value: "11:45" } });
+    fireEvent.blur(endTime);
+
     await user.click(
       within(row).getByRole("button", { name: /แก้ไขประเภท Dim Dim Sum/i }),
     );
@@ -1419,6 +1639,10 @@ describe("SmartItineraryTable", () => {
     });
     expect(onUpdateItemInline).toHaveBeenCalledWith("item-dimdim", {
       startTime: "10:15",
+    });
+    expect(onUpdateItemInline).toHaveBeenCalledWith("item-dimdim", {
+      endTime: "11:45",
+      endOffsetDays: 0,
     });
     expect(onUpdateItemInline).toHaveBeenCalledWith("item-dimdim", {
       activityType: "experience",
@@ -1468,6 +1692,10 @@ describe("SmartItineraryTable", () => {
     await user.clear(time);
     await user.type(time, "10:15{Enter}");
 
+    const endTime = within(inspector).getByLabelText(/แก้ไขเวลาจบ Dim Dim Sum/i);
+    fireEvent.change(endTime, { target: { value: "11:45" } });
+    fireEvent.blur(endTime);
+
     await user.click(
       within(inspector).getByRole("button", { name: /แก้ไขประเภท Dim Dim Sum/i }),
     );
@@ -1476,15 +1704,56 @@ describe("SmartItineraryTable", () => {
         .getByRole("option", { name: /กิจกรรม/i }),
     );
 
+    await user.click(
+      within(inspector).getByRole("button", {
+        name: /Item kind for item-dimdim-mobile/i,
+      }),
+    );
+    await user.click(
+      within(screen.getByRole("listbox", { name: /Item kind for item-dimdim-mobile/i }))
+        .getByRole("option", { name: "travel" }),
+    );
+
+    await user.click(
+      within(inspector).getByRole("button", {
+        name: /Time mode for item-dimdim-mobile/i,
+      }),
+    );
+    await user.click(
+      within(screen.getByRole("listbox", { name: /Time mode for item-dimdim-mobile/i }))
+        .getByRole("option", { name: "flexible" }),
+    );
+
+    await user.click(
+      within(inspector).getByRole("button", {
+        name: /Status for item-dimdim-mobile/i,
+      }),
+    );
+    await user.click(
+      within(screen.getByRole("listbox", { name: /Status for item-dimdim-mobile/i }))
+        .getByRole("option", { name: "confirmed" }),
+    );
+
+    await user.click(
+      within(inspector).getByRole("button", {
+        name: /Priority for item-dimdim-mobile/i,
+      }),
+    );
+    await user.click(
+      within(screen.getByRole("listbox", { name: /Priority for item-dimdim-mobile/i }))
+        .getByRole("option", { name: "must" }),
+    );
+
     const transportation = within(inspector).getByRole("textbox", {
       name: /แก้ไขการเดินทาง Dim Dim Sum/i,
     });
     await user.clear(transportation);
     await user.type(transportation, "Walk{Enter}");
 
-    await user.click(
-      within(inspector).getByRole("button", { name: /1 h 30 m/i }),
-    );
+    expect(within(inspector).getByText(/ระยะเวลา: 1 h/i)).toBeInTheDocument();
+    expect(
+      within(inspector).queryByRole("button", { name: /1 h 30 m/i }),
+    ).not.toBeInTheDocument();
 
     const editButton = within(inspector).getByRole("button", {
       name: /แก้ไข Dim Dim Sum/i,
@@ -1501,13 +1770,28 @@ describe("SmartItineraryTable", () => {
       startTime: "10:15",
     });
     expect(onUpdateItemInline).toHaveBeenCalledWith("item-dimdim", {
+      endTime: "11:45",
+      endOffsetDays: 0,
+    });
+    expect(onUpdateItemInline).toHaveBeenCalledWith("item-dimdim", {
       activityType: "experience",
     });
     expect(onUpdateItemInline).toHaveBeenCalledWith("item-dimdim", {
-      transportation: "Walk",
+      itemKind: "travel",
     });
     expect(onUpdateItemInline).toHaveBeenCalledWith("item-dimdim", {
-      durationMinutes: 90,
+      timeMode: "flexible",
+      startTime: "",
+      durationMinutes: null,
+    });
+    expect(onUpdateItemInline).toHaveBeenCalledWith("item-dimdim", {
+      status: "confirmed",
+    });
+    expect(onUpdateItemInline).toHaveBeenCalledWith("item-dimdim", {
+      priority: "must",
+    });
+    expect(onUpdateItemInline).toHaveBeenCalledWith("item-dimdim", {
+      transportation: "Walk",
     });
     expect(
       onUpdateItemInline.mock.calls.every(([, patch]) =>
@@ -1519,66 +1803,68 @@ describe("SmartItineraryTable", () => {
     ).toBe(true);
   });
 
-  it("edits duration from a compact row duration picker", async () => {
-    const user = userEvent.setup();
+  it("shows derived duration in the row without opening a duration picker", async () => {
     const onUpdateItemInline = vi.fn();
     renderTable({ onUpdateItemInline });
     const row = screen.getByRole("row", { name: /Dim Dim Sum/i });
 
-    await user.click(
-      within(row).getByRole("button", { name: /แก้ไขระยะเวลา Dim Dim Sum/i }),
-    );
-    const durationEditor = screen.getByRole("region", {
-      name: /แก้ไขระยะเวลา Dim Dim Sum/i,
-    });
+    const duration = within(row).getByLabelText(/ระยะเวลา Dim Dim Sum/i);
+    expect(duration).toHaveTextContent("1 h");
     expect(
-      screen.queryByRole("dialog", { name: /แก้ไขระยะเวลา Dim Dim Sum/i }),
+      within(row).queryByRole("button", { name: /แก้ไขระยะเวลา Dim Dim Sum/i }),
     ).not.toBeInTheDocument();
-    expect(durationEditor.closest("tr")).toBeNull();
-    expect(row).toContainElement(
-      within(row).getByRole("button", { name: /แก้ไขระยะเวลา Dim Dim Sum/i }),
-    );
-    await user.click(
-      within(durationEditor).getByRole("button", { name: /1 h 30 m/i }),
-    );
+
+    fireEvent.click(duration);
+
+    expect(
+      screen.queryByRole("region", { name: /แก้ไขระยะเวลา Dim Dim Sum/i }),
+    ).not.toBeInTheDocument();
+    expect(onUpdateItemInline).not.toHaveBeenCalled();
+  });
+
+  it("derives row and inspector duration from start and end time windows", () => {
+    const windowOnlyItem = {
+      ...tripFixture.planItems[0],
+      id: "window-only-duration",
+      startTime: "09:00",
+      endTime: "10:45",
+      endOffsetDays: 0,
+      durationMinutes: null,
+      activity: "Window only duration",
+    };
+
+    renderTable({
+      items: [windowOnlyItem],
+      selectedItemId: windowOnlyItem.id,
+    });
+
+    const row = screen.getByRole("row", { name: /Window only duration/i });
+    expect(within(row).getByLabelText(/ระยะเวลา Window only duration/i)).toHaveTextContent("1 h 45 m");
+    expect(
+      within(screen.getByRole("region", { name: "รายละเอียดจุดที่เลือก" }))
+        .getByText(/ระยะเวลา: 1 h 45 m/i),
+    ).toBeInTheDocument();
+  });
+
+  it("keeps duration as derived text when editing time windows inline", async () => {
+    const onUpdateItemInline = vi.fn();
+    renderTable({ onUpdateItemInline });
+    const row = screen.getByRole("row", { name: /Dim Dim Sum/i });
+    const endTime = within(row).getByLabelText(/แก้ไขเวลาจบ Dim Dim Sum/i);
+
+    fireEvent.change(endTime, { target: { value: "10:30" } });
+    fireEvent.blur(endTime);
 
     expect(onUpdateItemInline).toHaveBeenCalledWith("item-dimdim", {
-      durationMinutes: 90,
+      endTime: "10:30",
+      endOffsetDays: 0,
     });
     expect(
       screen.queryByRole("region", { name: /แก้ไขระยะเวลา Dim Dim Sum/i }),
     ).not.toBeInTheDocument();
-  });
-
-  it("saves a custom duration from the row duration picker", async () => {
-    const user = userEvent.setup();
-    const onUpdateItemInline = vi.fn();
-    renderTable({ onUpdateItemInline });
-    const row = screen.getByRole("row", { name: /Dim Dim Sum/i });
-
-    await user.click(
-      within(row).getByRole("button", { name: /แก้ไขระยะเวลา Dim Dim Sum/i }),
-    );
-    const editor = screen.getByRole("region", {
-      name: /แก้ไขระยะเวลา Dim Dim Sum/i,
-    });
-    await user.clear(
-      within(editor).getByRole("spinbutton", { name: /ชั่วโมง/i }),
-    );
-    await user.type(
-      within(editor).getByRole("spinbutton", { name: /ชั่วโมง/i }),
-      "2",
-    );
-    await user.clear(within(editor).getByRole("spinbutton", { name: /นาที/i }));
-    await user.type(
-      within(editor).getByRole("spinbutton", { name: /นาที/i }),
-      "10",
-    );
-    await user.click(within(editor).getByRole("button", { name: /บันทึก/i }));
-
-    expect(onUpdateItemInline).toHaveBeenCalledWith("item-dimdim", {
-      durationMinutes: 130,
-    });
+    expect(
+      within(row).queryByRole("button", { name: /แก้ไขระยะเวลา Dim Dim Sum/i }),
+    ).not.toBeInTheDocument();
   });
 
   it("cancels a flat inline edit with Escape", async () => {
@@ -1611,9 +1897,10 @@ describe("SmartItineraryTable", () => {
     expect(
       within(row).getByLabelText(/^แก้ไขเวลา Dim Dim Sum/i),
     ).toBeDisabled();
+    expect(within(row).getByLabelText(/ระยะเวลา Dim Dim Sum/i)).toHaveTextContent("1 h");
     expect(
-      within(row).getByRole("button", { name: /ระยะเวลา Dim Dim Sum/i }),
-    ).toBeDisabled();
+      within(row).queryByRole("button", { name: /ระยะเวลา Dim Dim Sum/i }),
+    ).not.toBeInTheDocument();
     expect(
       within(row).getByRole("button", { name: /ประเภท Dim Dim Sum/i }),
     ).toBeDisabled();
@@ -1837,7 +2124,7 @@ describe("SmartItineraryTable", () => {
     dataTransfer.setData("text/plain", "item-cafe");
 
     const blockDropTarget = screen.getByRole("button", {
-      name: /Into block/i,
+      name: /ใส่ใน block/i,
     });
     fireEvent.dragOver(blockDropTarget, { dataTransfer });
     fireEvent.drop(blockDropTarget, { dataTransfer });
@@ -1846,6 +2133,635 @@ describe("SmartItineraryTable", () => {
       "item-cafe",
       "block-morning",
     );
+  });
+
+  it("opens a quick sub-activity action from an activity block row", async () => {
+    const user = userEvent.setup();
+    const onAddSubActivity = vi.fn();
+    const onUpdateItemInline = vi.fn();
+    renderTable({
+      items: [
+        {
+          ...tripFixture.planItems[0],
+          id: "block-flight",
+          activity: "Flight to Hong Kong",
+          isPlanBlock: true,
+          parentItemId: null,
+          sortOrder: 100,
+        },
+        {
+          ...tripFixture.planItems[1],
+          id: "solo-market",
+          activity: "Market walk",
+          isPlanBlock: false,
+          parentItemId: null,
+          sortOrder: 200,
+        },
+      ],
+      onAddSubActivity,
+      onUpdateItemInline,
+      selectedItemId: "block-flight",
+    });
+
+    await user.click(
+      within(screen.getByRole("row", { name: /Flight to Hong Kong/i }))
+        .getByRole("button", { name: /เพิ่ม sub-activity ใต้ Flight to Hong Kong/i }),
+    );
+
+    expect(onAddSubActivity).toHaveBeenCalledWith("block-flight");
+    await user.click(
+      within(screen.getByRole("row", { name: /Market walk/i })).getByRole(
+        "button",
+        { name: /เปลี่ยน Market walk เป็น activity block/i },
+      ),
+    );
+
+    expect(onUpdateItemInline).toHaveBeenCalledWith("solo-market", {
+      isPlanBlock: true,
+    });
+    expect(onAddSubActivity).not.toHaveBeenCalledWith("solo-market");
+  });
+
+  it("disables deleting an activity block until its sub-activities are moved", async () => {
+    const user = userEvent.setup();
+    const onDeleteItem = vi.fn();
+    renderTable({
+      items: [
+        {
+          ...tripFixture.planItems[0],
+          id: "block-flight",
+          activity: "Flight to Hong Kong",
+          isPlanBlock: true,
+          parentItemId: null,
+          sortOrder: 100,
+        },
+        {
+          ...tripFixture.planItems[1],
+          id: "child-checkin",
+          activity: "Check in",
+          isPlanBlock: false,
+          parentItemId: "block-flight",
+          sortOrder: 110,
+        },
+        {
+          ...tripFixture.planItems[2],
+          id: "solo-market",
+          activity: "Market walk",
+          isPlanBlock: false,
+          parentItemId: null,
+          sortOrder: 200,
+        },
+      ],
+      onDeleteItem,
+      selectedItemId: "block-flight",
+    });
+
+    const blockRow = screen.getByRole("row", { name: /Flight to Hong Kong/i });
+    const childRow = screen.getByRole("row", { name: /Check in/i });
+
+    expect(
+      within(blockRow).getByRole("button", { name: /ลบ Flight to Hong Kong/i }),
+    ).toBeDisabled();
+    expect(
+      within(childRow).getByRole("button", { name: /ลบ Check in/i }),
+    ).toBeEnabled();
+
+    await user.click(
+      within(blockRow).getByRole("button", { name: /ลบ Flight to Hong Kong/i }),
+    );
+    expect(
+      screen.queryByRole("dialog", { name: /ยืนยันการลบ Flight to Hong Kong/i }),
+    ).not.toBeInTheDocument();
+    expect(onDeleteItem).not.toHaveBeenCalled();
+  });
+
+  it("opens a quick task action from an itinerary row", async () => {
+    const user = userEvent.setup();
+    const onAddTaskForItem = vi.fn();
+    renderTable({
+      items: [
+        {
+          ...tripFixture.planItems[0],
+          id: "item-flight",
+          activity: "Flight to Hong Kong",
+          sortOrder: 100,
+        },
+      ],
+      onAddTaskForItem,
+      selectedItemId: "item-flight",
+    });
+
+    await user.click(
+      within(screen.getByRole("row", { name: /Flight to Hong Kong/i }))
+        .getByRole("button", { name: /Add task for Flight to Hong Kong/i }),
+    );
+
+    expect(onAddTaskForItem).toHaveBeenCalledWith("item-flight");
+  });
+
+  it("opens a quick note action from an itinerary row", async () => {
+    const user = userEvent.setup();
+    const onAddNoteForItem = vi.fn();
+    renderTable({
+      items: [
+        {
+          ...tripFixture.planItems[0],
+          id: "item-flight",
+          activity: "Flight to Hong Kong",
+          sortOrder: 100,
+        },
+      ],
+      onAddNoteForItem,
+      selectedItemId: "item-flight",
+    });
+
+    await user.click(
+      within(screen.getByRole("row", { name: /Flight to Hong Kong/i }))
+        .getByRole("button", { name: /Add note for Flight to Hong Kong/i }),
+    );
+
+    expect(onAddNoteForItem).toHaveBeenCalledWith("item-flight");
+  });
+
+  it("opens quick booking draft template choices from an itinerary row", async () => {
+    const user = userEvent.setup();
+    const onAddBookingForItem = vi.fn();
+    renderTable({
+      items: [
+        {
+          ...tripFixture.planItems[0],
+          id: "item-flight",
+          activity: "Flight to Hong Kong",
+          sortOrder: 100,
+        },
+      ],
+      onAddBookingForItem,
+      selectedItemId: "item-flight",
+    });
+
+    await user.click(
+      within(screen.getByRole("row", { name: /Flight to Hong Kong/i }))
+        .getByRole("button", { name: /Add booking draft for Flight to Hong Kong/i }),
+    );
+    await user.click(
+      screen.getByRole("menuitem", { name: /Recommended/i }),
+    );
+
+    expect(onAddBookingForItem).toHaveBeenCalledWith(
+      "item-flight",
+      "recommended",
+    );
+  });
+
+  it("lets an organizer choose a hotel booking template from an itinerary row", async () => {
+    const user = userEvent.setup();
+    const onAddBookingForItem = vi.fn();
+    renderTable({
+      items: [
+        {
+          ...tripFixture.planItems[0],
+          id: "item-hotel",
+          activity: "Overnight stay",
+          sortOrder: 100,
+        },
+      ],
+      onAddBookingForItem,
+      selectedItemId: "item-hotel",
+    });
+
+    await user.click(
+      within(screen.getByRole("row", { name: /Overnight stay/i }))
+        .getByRole("button", { name: /Add booking draft for Overnight stay/i }),
+    );
+    await user.click(screen.getByRole("menuitem", { name: /Hotel/i }));
+
+    expect(onAddBookingForItem).toHaveBeenCalledWith("item-hotel", "hotel");
+  });
+
+  it("does not drop an activity block into another activity block or sub-activity lane", () => {
+    const onMoveItem = vi.fn();
+    const onMoveItemIntoPlanBlock = vi.fn();
+    renderTable({
+      items: [
+        {
+          ...tripFixture.planItems[0],
+          id: "block-flight",
+          activity: "Flight block",
+          isPlanBlock: true,
+          parentItemId: null,
+          sortOrder: 100,
+        },
+        {
+          ...tripFixture.planItems[1],
+          id: "block-hotel",
+          activity: "Hotel block",
+          isPlanBlock: true,
+          parentItemId: null,
+          sortOrder: 200,
+        },
+        {
+          ...tripFixture.planItems[2],
+          id: "child-checkin",
+          activity: "Check in",
+          isPlanBlock: false,
+          parentItemId: "block-hotel",
+          sortOrder: 300,
+        },
+      ],
+      onMoveItem,
+      onMoveItemIntoPlanBlock,
+      selectedItemId: "block-flight",
+    });
+    const dataTransfer = createDataTransfer();
+    dataTransfer.setData("text/plain", "block-flight");
+
+    fireEvent.drop(
+      within(screen.getByRole("row", { name: /Hotel block/i })).getByRole(
+        "button",
+        { name: /ใส่ใน block/i },
+      ),
+      { dataTransfer },
+    );
+    fireEvent.drop(
+      screen.getByRole("button", { name: /เลือกจุด Check in/i }).closest("tr")!,
+      { dataTransfer },
+    );
+
+    expect(onMoveItemIntoPlanBlock).not.toHaveBeenCalled();
+    expect(onMoveItem).not.toHaveBeenCalled();
+  });
+
+  it("renders compact hierarchy and commitment chips for blocks and sub-activities", () => {
+    renderTable({
+      items: [
+        {
+          ...tripFixture.planItems[0],
+          id: "block-flight",
+          activity: "Flight to Hong Kong",
+          isPlanBlock: true,
+          itemKind: "travel",
+          parentItemId: null,
+          status: "confirmed",
+          priority: "must",
+          sortOrder: 100,
+        },
+        {
+          ...tripFixture.planItems[1],
+          id: "child-checkin",
+          activity: "Check in",
+          parentItemId: "block-flight",
+          status: "planned",
+          priority: "normal",
+          sortOrder: 200,
+        },
+        {
+          ...tripFixture.planItems[2],
+          id: "solo-market",
+          activity: "Market walk",
+          parentItemId: null,
+          status: "idea",
+          priority: "normal",
+          sortOrder: 300,
+        },
+      ],
+      commitmentsByItemId: {
+        "block-flight": {
+          bookingCount: 1,
+          expenseCount: 2,
+          noteCount: 1,
+          openTaskCount: 1,
+        },
+      },
+      selectedItemId: "block-flight",
+    });
+
+    const blockStructure = screen.getByLabelText("Structure for Flight to Hong Kong");
+    const childStructure = screen.getByLabelText("Structure for Check in");
+    const activityStructure = screen.getByLabelText("Structure for Market walk");
+    expect(within(blockStructure).getByText("Activity block · 1 sub-item")).toBeInTheDocument();
+    expect(within(blockStructure).getByText("confirmed · must")).toBeInTheDocument();
+    expect(within(blockStructure).getByText("1 booking")).toBeInTheDocument();
+    expect(within(blockStructure).getByText("2 expenses")).toBeInTheDocument();
+    expect(within(blockStructure).getByText("1 task")).toBeInTheDocument();
+    expect(within(blockStructure).getByText("1 note")).toBeInTheDocument();
+    expect(within(childStructure).getByText("Sub-activity")).toBeInTheDocument();
+    expect(within(childStructure).getByText("planned")).toBeInTheDocument();
+    expect(within(activityStructure).getByText("Activity")).toBeInTheDocument();
+    expect(screen.getByRole("row", { name: /Flight to Hong Kong/i })).toHaveAttribute(
+      "data-hierarchy-level",
+      "1",
+    );
+    expect(screen.getByRole("row", { name: /Check in/i })).toHaveAttribute(
+      "data-hierarchy-level",
+      "2",
+    );
+    expect(screen.getByRole("row", { name: /Market walk/i })).toHaveAttribute(
+      "data-hierarchy-level",
+      "1",
+    );
+  });
+
+  it("surfaces hierarchy warnings inline on affected rows", () => {
+    renderTable({
+      items: [
+        {
+          ...tripFixture.planItems[0],
+          id: "plain-parent",
+          activity: "Plain parent",
+          isPlanBlock: false,
+          parentItemId: null,
+          sortOrder: 100,
+        },
+        {
+          ...tripFixture.planItems[1],
+          id: "child-under-plain",
+          activity: "Child under plain parent",
+          parentItemId: "plain-parent",
+          sortOrder: 200,
+        },
+      ],
+      selectedItemId: "child-under-plain",
+    });
+
+    const row = screen.getByRole("row", {
+      name: /Child under plain parent/i,
+    });
+    expect(row).toHaveClass("data-row--has-warning");
+    const structure = within(row).getByLabelText(
+      "Structure for Child under plain parent",
+    );
+    expect(within(structure).getByText("แม่ต้องเป็น block")).toBeInTheDocument();
+    expect(screen.getByText("4 คำเตือน")).toBeInTheDocument();
+  });
+
+  it("offers inline hierarchy correction actions on sub-activity rows", async () => {
+    const user = userEvent.setup();
+    const onUpdateItemInline = vi.fn();
+    renderTable({
+      items: [
+        {
+          ...tripFixture.planItems[0],
+          id: "plain-parent",
+          activity: "Plain parent",
+          isPlanBlock: false,
+          parentItemId: null,
+          sortOrder: 100,
+        },
+        {
+          ...tripFixture.planItems[1],
+          id: "child-under-plain",
+          activity: "Child under plain parent",
+          parentItemId: "plain-parent",
+          sortOrder: 200,
+        },
+      ],
+      onUpdateItemInline,
+      selectedItemId: "child-under-plain",
+    });
+
+    const childRow = screen.getByRole("row", {
+      name: /Child under plain parent/i,
+    });
+
+    await user.click(
+      within(childRow).getByRole("button", {
+        name: /แก้โครงสร้างของ Child under plain parent/i,
+      }),
+    );
+    await user.click(
+      within(childRow).getByRole("button", {
+        name: /เปลี่ยน Plain parent เป็น activity block สำหรับ Child under plain parent/i,
+      }),
+    );
+    expect(onUpdateItemInline).toHaveBeenCalledWith("plain-parent", {
+      isPlanBlock: true,
+    });
+
+    await user.click(
+      within(childRow).getByRole("button", {
+        name: /แก้โครงสร้างของ Child under plain parent/i,
+      }),
+    );
+    await user.click(
+      within(childRow).getByRole("button", {
+        name: /แยก sub-activity Child under plain parent ออกจาก block/i,
+      }),
+    );
+    expect(onUpdateItemInline).toHaveBeenCalledWith("child-under-plain", {
+      parentItemId: null,
+    });
+  });
+
+  it("keeps hierarchy correction actions read-only for viewers", () => {
+    const onUpdateItemInline = vi.fn();
+    renderTable({
+      items: [
+        {
+          ...tripFixture.planItems[0],
+          id: "plain-parent",
+          activity: "Plain parent",
+          isPlanBlock: false,
+          parentItemId: null,
+          sortOrder: 100,
+        },
+        {
+          ...tripFixture.planItems[1],
+          id: "child-under-plain",
+          activity: "Child under plain parent",
+          parentItemId: "plain-parent",
+          sortOrder: 200,
+        },
+      ],
+      onUpdateItemInline,
+      role: "viewer",
+      selectedItemId: "child-under-plain",
+    });
+
+    const childRow = screen.getByRole("row", {
+      name: /Child under plain parent/i,
+    });
+
+    expect(
+      within(childRow).getByRole("button", {
+        name: /แก้โครงสร้างของ Child under plain parent/i,
+      }),
+    ).toBeInTheDocument();
+    fireEvent.click(
+      within(childRow).getByRole("button", {
+        name: /แก้โครงสร้างของ Child under plain parent/i,
+      }),
+    );
+    expect(
+      within(childRow).getByRole("button", {
+        name: /เปลี่ยน Plain parent เป็น activity block สำหรับ Child under plain parent/i,
+      }),
+    ).toBeDisabled();
+    expect(
+      within(childRow).getByRole("button", {
+        name: /แยก sub-activity Child under plain parent ออกจาก block/i,
+      }),
+    ).toBeDisabled();
+    expect(onUpdateItemInline).not.toHaveBeenCalled();
+  });
+
+  it("expands an activity block to fit an out-of-bounds sub-activity", async () => {
+    const user = userEvent.setup();
+    const onUpdateItemInline = vi.fn();
+    renderTable({
+      items: [
+        {
+          ...tripFixture.planItems[0],
+          id: "block-flight-window",
+          activity: "Flight to Hong Kong",
+          startTime: "06:00",
+          endTime: "10:00",
+          endOffsetDays: 0,
+          durationMinutes: 240,
+          isPlanBlock: true,
+          parentItemId: null,
+          sortOrder: 100,
+        },
+        {
+          ...tripFixture.planItems[1],
+          id: "child-checkin",
+          activity: "Airport check-in",
+          startTime: "04:30",
+          endTime: "11:00",
+          endOffsetDays: 0,
+          durationMinutes: 390,
+          isPlanBlock: false,
+          parentItemId: "block-flight-window",
+          sortOrder: 200,
+        },
+      ],
+      onUpdateItemInline,
+      selectedItemId: "child-checkin",
+    });
+
+    const childRow = screen.getByRole("row", { name: /Airport check-in/i });
+    expect(within(childRow).getByText("นอก block")).toBeInTheDocument();
+
+    await user.click(
+      within(childRow).getByRole("button", {
+        name: /แก้โครงสร้างของ Airport check-in/i,
+      }),
+    );
+    await user.click(
+      within(childRow).getByRole("button", {
+        name: /ขยาย Flight to Hong Kong ให้ครอบ Airport check-in/i,
+      }),
+    );
+
+    expect(onUpdateItemInline).toHaveBeenCalledWith("block-flight-window", {
+      startTime: "04:30",
+      endTime: "11:00",
+      endOffsetDays: 0,
+      durationMinutes: 390,
+    });
+  });
+
+  it("expands an activity block across midnight when the child ends next day", async () => {
+    const user = userEvent.setup();
+    const onUpdateItemInline = vi.fn();
+    renderTable({
+      items: [
+        {
+          ...tripFixture.planItems[0],
+          id: "block-night-train",
+          activity: "Night train window",
+          startTime: "22:00",
+          endTime: "23:00",
+          endOffsetDays: 0,
+          durationMinutes: 60,
+          isPlanBlock: true,
+          parentItemId: null,
+          sortOrder: 100,
+        },
+        {
+          ...tripFixture.planItems[1],
+          id: "child-arrival",
+          activity: "Arrival transfer",
+          startTime: "23:30",
+          endTime: "02:00",
+          endOffsetDays: 1,
+          durationMinutes: 150,
+          isPlanBlock: false,
+          parentItemId: "block-night-train",
+          sortOrder: 200,
+        },
+      ],
+      onUpdateItemInline,
+      selectedItemId: "child-arrival",
+    });
+
+    await user.click(
+      within(screen.getByRole("row", { name: /Arrival transfer/i })).getByRole(
+        "button",
+        { name: /แก้โครงสร้างของ Arrival transfer/i },
+      ),
+    );
+    await user.click(
+      within(screen.getByRole("row", { name: /Arrival transfer/i })).getByRole(
+        "button",
+        { name: /ขยาย Night train window ให้ครอบ Arrival transfer/i },
+      ),
+    );
+
+    expect(onUpdateItemInline).toHaveBeenCalledWith("block-night-train", {
+      startTime: "22:00",
+      endTime: "02:00",
+      endOffsetDays: 1,
+      durationMinutes: 240,
+    });
+  });
+
+  it("does not flag parent-child time containment as an overlap", () => {
+    renderTable({
+      items: [
+        {
+          ...tripFixture.planItems[0],
+          id: "block-flight-window",
+          activity: "Flight to Hong Kong",
+          startTime: "04:00",
+          endTime: "13:00",
+          durationMinutes: 540,
+          isPlanBlock: true,
+          parentItemId: null,
+          sortOrder: 100,
+        },
+        {
+          ...tripFixture.planItems[1],
+          id: "child-ticketed-flight",
+          activity: "Ticketed flight",
+          startTime: "07:00",
+          endTime: "11:00",
+          durationMinutes: 240,
+          isPlanBlock: false,
+          parentItemId: "block-flight-window",
+          sortOrder: 200,
+        },
+        {
+          ...tripFixture.planItems[2],
+          id: "child-immigration",
+          activity: "Immigration",
+          startTime: "10:30",
+          endTime: "12:00",
+          durationMinutes: 90,
+          isPlanBlock: false,
+          parentItemId: "block-flight-window",
+          sortOrder: 300,
+        },
+      ],
+      selectedItemId: "block-flight-window",
+    });
+
+    const blockRow = screen.getByRole("row", { name: /Flight to Hong Kong/i });
+    const ticketedRow = screen.getByRole("row", { name: /Ticketed flight/i });
+    const immigrationRow = screen.getByRole("row", { name: /Immigration/i });
+
+    expect(within(blockRow).queryByText("เวลาซ้อน")).not.toBeInTheDocument();
+    expect(within(ticketedRow).getByText("เวลาซ้อน")).toBeInTheDocument();
+    expect(within(immigrationRow).getByText("เวลาซ้อน")).toBeInTheDocument();
   });
 
   it("ignores missing and self-targeted drag payloads", () => {

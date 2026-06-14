@@ -49,10 +49,10 @@ export function getTripDates(startDate: string, endDate: string): string[] {
 }
 
 export function sortItemsForDay(items: ItineraryItem[], day: string): ItineraryItem[] {
-  return items
+  return orderHierarchyItemsForDay(items
     .filter((item) => item.day === day)
     .slice()
-    .sort(compareItineraryItemsWithinDay);
+    .sort(compareItineraryItemsWithinDay));
 }
 
 export function resolveItineraryPathItems(items: ItineraryItem[], selection: ItineraryPathSelection = {}): ItineraryItem[] {
@@ -163,11 +163,18 @@ export function buildItineraryView(items: ItineraryItem[]): ItineraryView {
 }
 
 function sortItineraryItems(items: ItineraryItem[]): ItineraryItem[] {
-  return [...items].sort((a, b) => {
-    const dayCompare = a.day.localeCompare(b.day);
-    if (dayCompare !== 0) return dayCompare;
-    return compareItineraryItemsWithinDay(a, b);
-  });
+  const byDay = new Map<string, ItineraryItem[]>();
+  for (const item of items) {
+    byDay.set(item.day, [...(byDay.get(item.day) ?? []), item]);
+  }
+
+  return Array.from(byDay.keys())
+    .sort()
+    .flatMap((day) =>
+      orderHierarchyItemsForDay(
+        (byDay.get(day) ?? []).slice().sort(compareItineraryItemsWithinDay),
+      ),
+    );
 }
 
 function itineraryPathGroupKey(item: ItineraryItem): string {
@@ -210,55 +217,59 @@ export function validateItineraryItem(item: ItineraryItem, dayItems: ItineraryIt
 
 function buildOverlapWarnings(dayItems: ItineraryItem[]): Map<string, ValidationWarning[]> {
   const warningsByItemId = new Map<string, ValidationWarning[]>();
-  const validIntervals = dayItems
-    .map((item) => {
-      if (item.timeMode === "flexible") return null;
-      const start = parseTime(item.startTime);
-      if (start === null || item.durationMinutes === null || item.durationMinutes <= 0) return null;
-      return { item, start, end: start + item.durationMinutes };
-    })
-    .filter((entry): entry is { item: ItineraryItem; start: number; end: number } => entry !== null)
-    .sort((a, b) => a.start - b.start || a.end - b.end || a.item.sortOrder - b.item.sortOrder);
+  const intervalsBySiblingScope = new Map<string, Array<{ item: ItineraryItem; start: number; end: number }>>();
+  for (const item of dayItems) {
+    const interval = getTimeWindowInterval(item);
+    if (!interval) continue;
+    const siblingScope = item.parentItemId ? `parent:${item.parentItemId}` : "top-level";
+    intervalsBySiblingScope.set(siblingScope, [
+      ...(intervalsBySiblingScope.get(siblingScope) ?? []),
+      interval,
+    ]);
+  }
 
-  if (validIntervals.length < 2) return warningsByItemId;
+  for (const validIntervals of intervalsBySiblingScope.values()) {
+    validIntervals.sort((a, b) => a.start - b.start || a.end - b.end || a.item.sortOrder - b.item.sortOrder);
+    if (validIntervals.length < 2) continue;
 
-  let group: Array<{ item: ItineraryItem; end: number }> = [];
-  let groupMaxEnd = 0;
+    let group: Array<{ item: ItineraryItem; end: number }> = [];
+    let groupMaxEnd = 0;
 
-  const addOverlapWarningGroup = (groupItems: Array<{ item: ItineraryItem; end: number }>) => {
-    if (groupItems.length < 2) return;
-    const primary = groupItems[0]?.item;
-    const secondary = groupItems[1]?.item;
-    if (!primary || !secondary) return;
-    for (const entry of groupItems) {
-      const overlapTarget = entry.item.id === primary.id ? secondary : primary;
-      warningsByItemId.set(entry.item.id, [{
-        code: "overlap",
-        message: `This stop overlaps ${overlapTarget.activity}; ตรวจเวลาอีกครั้งก่อน publish.`,
-        itemId: entry.item.id,
-      }]);
-    }
-  };
+    const addOverlapWarningGroup = (groupItems: Array<{ item: ItineraryItem; end: number }>) => {
+      if (groupItems.length < 2) return;
+      const primary = groupItems[0]?.item;
+      const secondary = groupItems[1]?.item;
+      if (!primary || !secondary) return;
+      for (const entry of groupItems) {
+        const overlapTarget = entry.item.id === primary.id ? secondary : primary;
+        warningsByItemId.set(entry.item.id, [{
+          code: "overlap",
+          message: `This stop overlaps ${overlapTarget.activity}; ตรวจเวลาอีกครั้งก่อน publish.`,
+          itemId: entry.item.id,
+        }]);
+      }
+    };
 
-  for (const entry of validIntervals) {
-    if (!group.length) {
+    for (const entry of validIntervals) {
+      if (!group.length) {
+        group = [entry];
+        groupMaxEnd = entry.end;
+        continue;
+      }
+
+      if (entry.start < groupMaxEnd) {
+        group.push(entry);
+        groupMaxEnd = Math.max(groupMaxEnd, entry.end);
+        continue;
+      }
+
+      addOverlapWarningGroup(group);
       group = [entry];
       groupMaxEnd = entry.end;
-      continue;
-    }
-
-    if (entry.start < groupMaxEnd) {
-      group.push(entry);
-      groupMaxEnd = Math.max(groupMaxEnd, entry.end);
-      continue;
     }
 
     addOverlapWarningGroup(group);
-    group = [entry];
-    groupMaxEnd = entry.end;
   }
-
-  addOverlapWarningGroup(group);
   return warningsByItemId;
 }
 
@@ -273,8 +284,8 @@ function validateItemFields(item: ItineraryItem): ValidationWarning[] {
     warnings.push({ code: "invalid-start-time", message: "Use 24-hour time, for example 13:30.", itemId: item.id });
   }
 
-  if (!isFlexible && (item.durationMinutes === null || item.durationMinutes <= 0)) {
-    warnings.push({ code: "missing-duration", message: "Add duration so route timing can be checked.", itemId: item.id });
+  if (!isFlexible && !item.endTime && (item.durationMinutes === null || item.durationMinutes <= 0)) {
+    warnings.push({ code: "missing-duration", message: "Add an end time or duration so route timing can be checked.", itemId: item.id });
   }
 
   if (!item.mapLink.trim()) {
@@ -289,26 +300,57 @@ function validateItemFields(item: ItineraryItem): ValidationWarning[] {
 }
 
 function validateHierarchyFields(item: ItineraryItem, dayItems: ItineraryItem[]): ValidationWarning[] {
-  if (!item.parentItemId || item.timeMode === "flexible") return [];
+  if (!item.parentItemId) return [];
   const parent = dayItems.find((candidate) => candidate.id === item.parentItemId);
-  if (!parent || !parent.isPlanBlock || parent.timeMode === "flexible") return [];
-
-  const parentStart = parseTime(parent.startTime);
-  const childStart = parseTime(item.startTime);
-  if (parentStart === null || childStart === null || parent.durationMinutes === null || item.durationMinutes === null) {
-    return [];
-  }
-
-  const parentEnd = parentStart + parent.durationMinutes;
-  const childEnd = childStart + item.durationMinutes;
-  if (childStart < parentStart || childEnd > parentEnd) {
+  if (!parent) {
     return [{
-      code: "child-outside-plan-block",
-      message: `This child item sits outside ${parent.activity}; adjust the time or move it out of the block.`,
+      code: "missing-parent-item",
+      message: "This sub-activity is linked to a parent that is not in this day plan.",
       itemId: item.id,
     }];
   }
-  return [];
+
+  const warnings: ValidationWarning[] = [];
+  if (parent.parentItemId) {
+    warnings.push({
+      code: "nested-sub-activity",
+      message: "Sub-activities can only sit under an activity block, not under another sub-activity.",
+      itemId: item.id,
+    });
+  }
+
+  if (!parent.isPlanBlock) {
+    warnings.push({
+      code: "invalid-parent-plan-block",
+      message: "Move this sub-activity under an activity block or promote its parent to a block.",
+      itemId: item.id,
+    });
+  }
+
+  if (item.day !== parent.day || item.planVariantId !== parent.planVariantId) {
+    warnings.push({
+      code: "parent-scope-mismatch",
+      message: "Sub-activities must stay in the same day and Trip Plan as their parent block.",
+      itemId: item.id,
+    });
+  }
+
+  if (warnings.length > 0 || item.timeMode === "flexible" || parent.timeMode === "flexible") {
+    return warnings;
+  }
+
+  const parentInterval = getTimeWindowInterval(parent);
+  const childInterval = getTimeWindowInterval(item);
+  if (!parentInterval || !childInterval) return warnings;
+
+  if (childInterval.start < parentInterval.start || childInterval.end > parentInterval.end) {
+    warnings.push({
+      code: "child-outside-plan-block",
+      message: `This child item sits outside ${parent.activity}; adjust the time or move it out of the block.`,
+      itemId: item.id,
+    });
+  }
+  return warnings;
 }
 
 export function getNowNext(items: ItineraryItem[], day: string, currentTime: string): { current: ItineraryItem | null; next: ItineraryItem | null; fallbackReason: string | null } {
@@ -316,13 +358,13 @@ export function getNowNext(items: ItineraryItem[], day: string, currentTime: str
   if (nowMinutes === null) return { current: null, next: null, fallbackReason: "Current time is unavailable." };
 
   const timedItems = sortItemsForDay(items, day)
-    .map((item) => ({ item, start: parseTime(item.startTime), duration: itemDuration(item) }))
-    .filter((entry): entry is { item: ItineraryItem; start: number; duration: number } => entry.start !== null)
+    .map((item) => getTimeWindowInterval(item))
+    .filter((entry): entry is { item: ItineraryItem; start: number; end: number } => entry !== null)
     .sort((a, b) => a.start - b.start);
 
   if (timedItems.length === 0) return { current: null, next: null, fallbackReason: "No timed stops for this day yet." };
 
-  const current = timedItems.find((entry) => nowMinutes >= entry.start && nowMinutes < entry.start + entry.duration);
+  const current = timedItems.find((entry) => nowMinutes >= entry.start && nowMinutes < entry.end);
   const next = timedItems.find((entry) => entry.start > nowMinutes);
 
   return {
@@ -332,9 +374,31 @@ export function getNowNext(items: ItineraryItem[], day: string, currentTime: str
   };
 }
 
-function itemDuration(item: ItineraryItem): number {
-  /* v8 ignore next */
-  return item.durationMinutes ?? 45;
+export function getTimeWindowInterval(
+  item: ItineraryItem,
+): { item: ItineraryItem; start: number; end: number } | null {
+  if (item.timeMode === "flexible") return null;
+  const start = parseTime(item.startTime);
+  if (start === null) return null;
+
+  const endTime = item.endTime?.trim();
+  if (endTime) {
+    const end = parseTime(endTime);
+    if (end === null) return null;
+    const endOffsetDays = item.endOffsetDays ?? 0;
+    const endWithOffset = end + endOffsetDays * 24 * 60;
+    if (endWithOffset <= start) return null;
+    return { item, start, end: endWithOffset };
+  }
+
+  if (
+    item.durationMinutes === null ||
+    item.durationMinutes === undefined ||
+    item.durationMinutes <= 0
+  ) {
+    return null;
+  }
+  return { item, start, end: start + item.durationMinutes };
 }
 
 function compareItineraryItemsWithinDay(a: ItineraryItem, b: ItineraryItem): number {
@@ -351,6 +415,36 @@ function compareItineraryItemsWithinDay(a: ItineraryItem, b: ItineraryItem): num
   }
 
   return a.sortOrder - b.sortOrder || a.startTime.localeCompare(b.startTime) || a.id.localeCompare(b.id);
+}
+
+function orderHierarchyItemsForDay(sortedDayItems: ItineraryItem[]): ItineraryItem[] {
+  const ids = new Set(sortedDayItems.map((item) => item.id));
+  const childrenByParentId = new Map<string, ItineraryItem[]>();
+  for (const item of sortedDayItems) {
+    if (!item.parentItemId || !ids.has(item.parentItemId)) continue;
+    childrenByParentId.set(item.parentItemId, [
+      ...(childrenByParentId.get(item.parentItemId) ?? []),
+      item,
+    ]);
+  }
+
+  const ordered: ItineraryItem[] = [];
+  const emitted = new Set<string>();
+  for (const item of sortedDayItems) {
+    if (item.parentItemId && ids.has(item.parentItemId)) continue;
+    ordered.push(item);
+    emitted.add(item.id);
+    for (const child of childrenByParentId.get(item.id) ?? []) {
+      ordered.push(child);
+      emitted.add(child.id);
+    }
+  }
+
+  for (const item of sortedDayItems) {
+    if (!emitted.has(item.id)) ordered.push(item);
+  }
+
+  return ordered;
 }
 
 export function parseTime(value: string): number | null {

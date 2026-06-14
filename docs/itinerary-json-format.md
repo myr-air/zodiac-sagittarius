@@ -24,7 +24,8 @@ Schema envelope:
     "destinationLabel": "Hong Kong + Shenzhen",
     "startDate": "2025-05-15",
     "endDate": "2025-05-20",
-    "activePlanVariantId": "plan-main"
+    "activePlanVariantId": "plan-main",
+    "mainTripPlanId": "plan-main"
   },
   "items": [
     {
@@ -33,9 +34,17 @@ Schema envelope:
       "pathId": "path-rain",
       "pathName": "Rain plan",
       "pathRole": "alternative",
+      "parentItemId": null,
+      "itemKind": "meal",
+      "timeMode": "scheduled",
+      "isPlanBlock": false,
+      "status": "planned",
+      "priority": "normal",
       "day": "2025-05-16",
       "sortOrder": 100,
       "startTime": "08:30",
+      "endTime": "09:30",
+      "endOffsetDays": 0,
       "activity": "Dim Dim Sum ที่ Tim Ho Wan",
       "activityType": "food",
       "place": "Shop G72, G/F, The Elements",
@@ -49,19 +58,47 @@ Schema envelope:
       ],
       "note": "ร้านนี้เหมาะกับมื้อเช้าแบบไม่เร่ง"
     }
-  ]
+  ],
+  "records": {
+    "expenses": [],
+    "bookingDocs": [],
+    "stopNotes": [],
+    "tasks": []
+  }
 }
 ```
 
 Import behavior:
 
 - Only files with `schema: "joii.itinerary.export"` and `version: 1` are accepted.
-- Import asks for a target path before applying rows. The target can be main,
-  an existing named path, or a new named path.
+- Import asks for a target Trip Plan before applying rows. Imported rows are
+  assigned to that destination Trip Plan unless a later import mode explicitly
+  says otherwise.
+- Imported rows may also carry optional Activity Path fields for comparing
+  route options inside a day or itinerary block. Activity Path is separate from
+  the target Trip Plan.
 - Imported rows can carry optional activity branch fields: `pathGroupId`,
   `pathId`, `pathName`, and `pathRole`.
-- The current trip id and active plan variant id are applied during import.
-- Other plan variants, members, tasks, expenses, notes, and suggestions are not changed.
+- Imported rows preserve itinerary hierarchy and time-window fields:
+  `parentItemId`, `itemKind`, `timeMode`, `isPlanBlock`, `status`, `priority`,
+  `endTime`, and `endOffsetDays`. `parentItemId` is a string because local
+  exports can use stable client ids before rows exist in the backend database.
+- The export metadata includes canonical `mainTripPlanId` beside deprecated
+  `activePlanVariantId`.
+- Import accepts `trip.activePlanVariantId`, `trip.mainTripPlanId`, both, or
+  neither as compatibility metadata. The current destination trip id and target
+  Trip Plan are supplied by the importing app state, so source metadata never
+  switches the destination Main Plan by itself.
+- Exports carry compatibility `expenses`, `bookingDocs`, `stopNotes`, and
+  `tasks` under `records` so later phases can round-trip booking, ticket, note,
+  checklist, or Actual Expense context without losing source information.
+- Import record handling is explicit. `Clone linked records` creates linked
+  expenses, booking docs, notes, and tasks in the selected destination Trip Plan
+  and remaps item/record links during apply. `Activities only` imports the
+  itinerary rows while leaving the source records as reference context in the
+  uploaded file. Invalid or dangling record references are rejected before apply.
+  Neither mode switches the destination Main Plan.
+- Other plan variants, members, and suggestions are not changed.
 
 ## Import Normalizer Endpoint
 

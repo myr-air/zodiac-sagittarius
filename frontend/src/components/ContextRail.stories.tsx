@@ -14,6 +14,7 @@ const baseArgs = {
   suggestions: tripFixture.suggestions,
   stopNotes: tripFixture.stopNotes,
   tasks: tripFixture.tasks,
+  bookingDocs: tripFixture.trip.bookingDocs ?? [],
   currentMember: tripFixture.currentMembers.owner,
   expenseSummary: tripFixture.expenseSummaries.owner,
   canEdit: true,
@@ -63,10 +64,42 @@ export const NotesOpen: Story = {
 };
 
 export const BookingTab: Story = {
-  args: baseArgs,
+  args: {
+    ...baseArgs,
+    bookingDocs: [
+      {
+        id: "story-booking-dimdim",
+        tripId: tripFixture.trip.id,
+        tripPlanId: selectedItem.planVariantId,
+        type: "activity_ticket",
+        title: "Dim Dim Sum reservation",
+        status: "booked",
+        visibility: "shared",
+        ownerMemberId: tripFixture.currentMembers.owner.id,
+        providerName: "Dim Dim Sum",
+        confirmationCode: "DDS-42",
+        startsAt: null,
+        endsAt: null,
+        timezone: "Asia/Hong_Kong",
+        priceAmount: null,
+        currency: null,
+        travelerIds: [tripFixture.currentMembers.owner.id],
+        externalLinks: [],
+        relatedItineraryItemIds: [selectedItem.id],
+        relatedTaskIds: [],
+        relatedExpenseIds: [],
+        noteIds: [],
+        notes: "Window table",
+        createdBy: tripFixture.currentMembers.owner.id,
+        updatedAt: "2026-06-10T00:00:00.000Z",
+        version: 1,
+      },
+    ],
+  },
   play: async ({ canvas }) => {
     await userEvent.click(canvas.getByRole("tab", { name: /Booking/i }));
     await expect(canvas.getByRole("region", { name: /Booking and prep for this stop/i })).toHaveClass("stop-booking-module");
+    await expect(canvas.getByText("Dim Dim Sum reservation")).toBeInTheDocument();
     await expect(canvas.getByRole("checkbox", { name: /Dim Dim Sum/i })).toBeInTheDocument();
   },
 };

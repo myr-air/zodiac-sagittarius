@@ -4,11 +4,13 @@ import type { ItineraryItem, ItineraryPath, ItineraryPathScope, Trip } from "./t
 
 export interface ItineraryImportApplyTarget {
   memberId: string;
+  tripPlanId?: string;
   pathId: string;
   pathName: string;
   scope: ItineraryPathScope;
   day?: string;
   mode: "keep-alternatives" | "replace-target";
+  recordMode: "clone-linked" | "activities-only";
 }
 
 export interface ItineraryActivityBranchPlacement {
@@ -26,54 +28,8 @@ const importMutationTimestamp = "2026-06-04T00:00:00.000Z";
 
 export function applyItemToActivityBranch(trip: Trip, item: ItineraryItem): ItineraryActivityBranchPlacement {
   const existingItems = trip.itineraryItems.filter((candidate) => candidate.id !== item.id);
-  const inputItems = [...existingItems, item];
-  const branchItems = findOverlappingActivityBranch(inputItems, item);
-
-  if (branchItems.length < 2) {
-    const mainItem = { ...item, pathRole: "main" as const, pathId: undefined, pathName: undefined };
-    return buildActivityBranchPlacement(trip, mainItem, [mainItem], inputItems);
-  }
-
-  const sortedBranchItems = sortBranchItems(branchItems);
-  const anchorItem = sortedBranchItems[0] ?? item;
-  const pathGroupId = anchorItem.pathGroupId ?? sortedBranchItems.find((candidate) => candidate.pathGroupId)?.pathGroupId ?? `path-group-${anchorItem.id}`;
-  const nextItemsById = new Map<string, ItineraryItem>();
-  const usedPathIds = new Set(
-    sortedBranchItems
-      .filter((candidate) => candidate.pathRole === "alternative" && candidate.pathId)
-      .map((candidate) => candidate.pathId as string),
-  );
-  let nextSubIndex = 0;
-
-  for (const branchItem of sortedBranchItems) {
-    if (branchItem.id === anchorItem.id) {
-      nextItemsById.set(branchItem.id, {
-        ...branchItem,
-        pathGroupId,
-        pathId: undefined,
-        pathName: undefined,
-        pathRole: "main",
-      });
-      continue;
-    }
-
-    const existingAlternative = branchItem.pathRole === "alternative" && branchItem.pathId
-      ? { pathId: branchItem.pathId, pathName: branchItem.pathName ?? subPathNameFromId(branchItem.pathId) }
-      : null;
-    const subPath = existingAlternative ?? nextAvailableSubPath(branchItem.day, usedPathIds, nextSubIndex);
-    usedPathIds.add(subPath.pathId);
-    nextSubIndex = Math.max(nextSubIndex + 1, subPathIndexFromId(subPath.pathId) + 1);
-    nextItemsById.set(branchItem.id, {
-      ...branchItem,
-      pathGroupId,
-      pathId: subPath.pathId,
-      pathName: subPath.pathName,
-      pathRole: "alternative",
-    });
-  }
-
-  const nextItem = nextItemsById.get(item.id) ?? item;
-  return buildActivityBranchPlacement(trip, nextItem, Array.from(nextItemsById.values()), inputItems);
+  const mainItem = { ...item, pathRole: item.pathRole ?? ("main" as const) };
+  return buildActivityBranchPlacement(trip, mainItem, [mainItem], [...existingItems, mainItem]);
 }
 
 export function applyManualActivityPath(trip: Trip, itemId: string, targetPathId: string): ItineraryActivityBranchPlacement {
@@ -110,46 +66,12 @@ export function applyManualActivityPath(trip: Trip, itemId: string, targetPathId
     if (branchItem.pathGroupId === pathGroupId) return branchItem;
     return { ...branchItem, pathGroupId };
   });
+  const branchItemsWithChildren = cascadePathFieldsToSubActivities(
+    trip.itineraryItems,
+    normalizedBranchItems,
+  );
   const nextItem = nextItemsById.get(item.id) ?? item;
-  return buildActivityBranchPlacement(trip, nextItem, normalizedBranchItems, trip.itineraryItems);
-}
-
-export function autoResolveSamePathOverlaps(
-  trip: Trip,
-  options: { day?: string; planVariantId?: string } = {},
-): ItineraryActivityBranchPlacement {
-  let currentTrip = trip;
-  let lastMovedItem: ItineraryItem | undefined;
-  const maxIterations = Math.max(1, trip.itineraryItems.length * 2);
-
-  for (let iteration = 0; iteration < maxIterations; iteration += 1) {
-    const candidate = findSamePathOverlapMoveCandidate(currentTrip.itineraryItems, options);
-    if (!candidate) break;
-
-    const currentPathId = itineraryItemPathId(candidate);
-    const occupiedPathIds = new Set(findOverlappingActivityBranch(currentTrip.itineraryItems, candidate).filter((item) => item.id !== candidate.id).map(itineraryItemPathId));
-    const pathOptions = deriveManualActivityPathOptions(currentTrip, candidate.id);
-    const targetOption = pathOptions.find((option) => option.id !== currentPathId && option.id !== mainItineraryPathId && !occupiedPathIds.has(option.id))
-      ?? pathOptions.find((option) => option.id !== currentPathId && option.id !== mainItineraryPathId)
-      ?? pathOptions.find((option) => option.id !== currentPathId);
-    if (!targetOption) break;
-
-    const placement = applyManualActivityPath(currentTrip, candidate.id, targetOption.id);
-    currentTrip = placement.trip;
-    lastMovedItem = placement.item;
-  }
-
-  const nextItemsById = new Map(currentTrip.itineraryItems.map((item) => [item.id, item]));
-  const changedExistingItems = trip.itineraryItems.flatMap((item) => {
-    const nextItem = nextItemsById.get(item.id);
-    return nextItem && !samePathFields(item, nextItem) ? [nextItem] : [];
-  });
-
-  return {
-    trip: changedExistingItems.length ? currentTrip : trip,
-    item: lastMovedItem ?? changedExistingItems[0] ?? trip.itineraryItems[0] as ItineraryItem,
-    changedExistingItems,
-  };
+  return buildActivityBranchPlacement(trip, nextItem, branchItemsWithChildren, trip.itineraryItems);
 }
 
 export function deriveManualActivityPathOptions(trip: Trip, itemId: string): ManualActivityPathOption[] {
@@ -173,35 +95,6 @@ export function deriveManualActivityPathOptions(trip: Trip, itemId: string): Man
   return Array.from(options.values());
 }
 
-function findSamePathOverlapMoveCandidate(items: ItineraryItem[], options: { day?: string; planVariantId?: string }): ItineraryItem | undefined {
-  const intervalsByPath = new Map<string, Array<{ item: ItineraryItem; start: number; end: number }>>();
-  for (const item of items) {
-    if (options.day && item.day !== options.day) continue;
-    if (options.planVariantId && item.planVariantId !== options.planVariantId) continue;
-    const start = parseTime(item.startTime);
-    if (start === null) continue;
-    const key = `${item.planVariantId}:${item.day}:${itineraryItemPathId(item)}`;
-    const intervals = intervalsByPath.get(key) ?? [];
-    intervals.push({ item, start, end: start + (item.durationMinutes ?? 45) });
-    intervalsByPath.set(key, intervals);
-  }
-
-  for (const intervals of intervalsByPath.values()) {
-    const sortedIntervals = intervals.sort((left, right) => left.start - right.start || left.item.sortOrder - right.item.sortOrder || left.item.id.localeCompare(right.item.id));
-    for (let leftIndex = 0; leftIndex < sortedIntervals.length; leftIndex += 1) {
-      const left = sortedIntervals[leftIndex];
-      if (!left) continue;
-      for (let rightIndex = leftIndex + 1; rightIndex < sortedIntervals.length; rightIndex += 1) {
-        const right = sortedIntervals[rightIndex];
-        if (!right) continue;
-        if (right.start >= left.end) break;
-        return right.item;
-      }
-    }
-  }
-  return undefined;
-}
-
 export function applyImportedItemsToItineraryPath(
   trip: Trip,
   importedItems: ItineraryExportItem[],
@@ -211,19 +104,28 @@ export function applyImportedItemsToItineraryPath(
   const retainedItems = target.mode === "replace-target"
     ? trip.itineraryItems.filter((item) => !isTargetPathItem(item, target.pathId, targetDay))
     : trip.itineraryItems;
-  const itemsWithMainGroups = ensureOverlappingMainGroups(retainedItems, importedItems, targetDay);
-  const usedIds = new Set(itemsWithMainGroups.map((item) => item.id));
-  const nextImportedItems = importedItems.map((item, index) => {
+  const usedIds = new Set(retainedItems.map((item) => item.id));
+  const importedIdMap = new Map<string, string>();
+  for (const item of importedItems) {
     const id = nextUniqueImportedItemId(item.id, usedIds);
     usedIds.add(id);
+    importedIdMap.set(item.id, id);
+  }
+
+  const nextImportedItems = importedItems.map((item, index) => {
+    const id = importedIdMap.get(item.id) ?? item.id;
     const day = targetDay ?? item.day;
-    const matchedMain = findOverlappingMainItem(itemsWithMainGroups, { ...item, day });
-    const pathGroupId = matchedMain?.pathGroupId ?? item.pathGroupId ?? `path-group-${id}`;
+    const pathGroupId = target.pathId === mainItineraryPathId
+      ? undefined
+      : item.pathGroupId ?? `path-group-${id}`;
     return {
       ...item,
       id,
       tripId: trip.id,
-      planVariantId: trip.activePlanVariantId,
+      planVariantId: target.tripPlanId || trip.activePlanVariantId,
+      parentItemId: item.parentItemId
+        ? (importedIdMap.get(item.parentItemId) ?? item.parentItemId)
+        : item.parentItemId,
       pathGroupId,
       pathId: target.pathId === mainItineraryPathId ? undefined : target.pathId,
       pathName: target.pathId === mainItineraryPathId ? undefined : target.pathName,
@@ -239,21 +141,9 @@ export function applyImportedItemsToItineraryPath(
   return {
     ...trip,
     itineraryPaths: ensureItineraryPath(trip, target),
-    itineraryItems: [...itemsWithMainGroups, ...nextImportedItems],
+    itineraryItems: [...retainedItems, ...nextImportedItems],
     version: (trip.version ?? 0) + 1,
   };
-}
-
-function ensureOverlappingMainGroups(items: ItineraryItem[], importedItems: ItineraryExportItem[], targetDay?: string): ItineraryItem[] {
-  return items.map((item) => {
-    if (!isMainPathItem(item) || item.pathGroupId) return item;
-    const overlapsImport = importedItems.some((importedItem) => overlapsItem(item, { ...importedItem, day: targetDay ?? importedItem.day }));
-    return overlapsImport ? { ...item, pathGroupId: `path-group-${item.id}`, pathRole: "main" } : item;
-  });
-}
-
-function findOverlappingMainItem(items: ItineraryItem[], importedItem: Pick<ItineraryItem, "day" | "startTime" | "durationMinutes">): ItineraryItem | undefined {
-  return items.find((item) => isMainPathItem(item) && overlapsItem(item, importedItem));
 }
 
 function findOverlappingActivityBranch(items: ItineraryItem[], item: ItineraryItem): ItineraryItem[] {
@@ -291,6 +181,26 @@ function sortBranchItems(items: ItineraryItem[]): ItineraryItem[] {
     if (timeCompare !== 0) return timeCompare;
     return left.sortOrder - right.sortOrder || left.id.localeCompare(right.id);
   });
+}
+
+function cascadePathFieldsToSubActivities(
+  allItems: ItineraryItem[],
+  branchItems: ItineraryItem[],
+): ItineraryItem[] {
+  const nextItemsById = new Map(branchItems.map((branchItem) => [branchItem.id, branchItem]));
+  for (const branchItem of branchItems) {
+    const subActivities = allItems.filter((item) => item.parentItemId === branchItem.id);
+    for (const subActivity of subActivities) {
+      nextItemsById.set(subActivity.id, {
+        ...subActivity,
+        pathGroupId: branchItem.pathGroupId,
+        pathId: branchItem.pathId,
+        pathName: branchItem.pathName,
+        pathRole: branchItem.pathRole,
+      });
+    }
+  }
+  return Array.from(nextItemsById.values());
 }
 
 function buildActivityBranchPlacement(

@@ -123,6 +123,31 @@ export const TransportationForm: Story = {
   },
 };
 
+export const ActivityForm: Story = {
+  args: {
+    ...Edit.args,
+    initialItem: categoryItem({
+      activity: "Dim sum lunch",
+      activityType: "experience",
+      itemKind: "activity",
+      place: "Central Market",
+      details: {
+        kind: "experience",
+        provider: "Central Market",
+        meetingPoint: "South entrance",
+        bookingRef: "Lunch shortlist",
+      },
+    }),
+  },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByLabelText("Type")).toHaveValue("experience");
+    await expect(canvas.getByLabelText("Provider")).toHaveValue("Central Market");
+    await expect(canvas.getByLabelText("Meeting point")).toHaveValue("South entrance");
+    await expect(canvas.getByLabelText("Booking ref")).toHaveValue("Lunch shortlist");
+    await expect(canvas.getByLabelText("Transportation")).toBeVisible();
+  },
+};
+
 export const FoodForm: Story = {
   args: {
     ...Edit.args,
@@ -133,19 +158,19 @@ export const FoodForm: Story = {
       place: "Central Market",
       details: {
         kind: "food",
-        meal: "Lunch",
-        reservationName: "Cecilia Puni",
-        mustTry: "Char siu bao",
-        budgetNote: "MYR 60 per person",
+        provider: "Central Market",
+        cuisine: "Cantonese dim sum",
+        bookingRef: "Lunch shortlist",
+        costNote: "HKD 160 per person estimate",
       },
     }),
   },
   play: async ({ canvas }) => {
     await expect(canvas.getByLabelText("Type")).toHaveValue("food");
-    await expect(canvas.getByLabelText("Meal")).toHaveValue("Lunch");
-    await expect(canvas.getByLabelText("Reservation name")).toHaveValue("Cecilia Puni");
-    await expect(canvas.getByLabelText("Must try")).toHaveValue("Char siu bao");
-    await expect(canvas.getByLabelText("Transportation")).toBeVisible();
+    await expect(canvas.getByLabelText("Restaurant / vendor")).toHaveValue("Central Market");
+    await expect(canvas.getByLabelText("Cuisine / menu")).toHaveValue("Cantonese dim sum");
+    await expect(canvas.getByLabelText("Booking ref")).toHaveValue("Lunch shortlist");
+    await expect(canvas.getByLabelText("Cost note")).toHaveValue("HKD 160 per person estimate");
   },
 };
 
@@ -177,22 +202,47 @@ export const ShoppingForm: Story = {
   args: {
     ...Edit.args,
     initialItem: categoryItem({
-      activity: "Souvenir run",
+      activity: "Sneaker stop",
       activityType: "shopping",
-      place: "Central Market",
+      itemKind: "activity",
+      place: "Mong Kok",
       details: {
         kind: "shopping",
-        targetItems: "Batik scarf, coffee, postcard",
-        budgetNote: "MYR 180 shared gift cap",
-        taxRefundNote: "Keep receipts above threshold",
+        store: "Sneaker Street",
+        shoppingList: "Limited colorways, socks, gifts",
+        budgetNote: "Cap group browsing at 45 minutes",
       },
     }),
   },
   play: async ({ canvas }) => {
     await expect(canvas.getByLabelText("Type")).toHaveValue("shopping");
-    await expect(canvas.getByLabelText("Target items")).toHaveValue("Batik scarf, coffee, postcard");
-    await expect(canvas.getByLabelText("Budget note")).toHaveValue("MYR 180 shared gift cap");
-    await expect(canvas.getByLabelText("Tax refund note")).toHaveValue("Keep receipts above threshold");
+    await expect(canvas.getByLabelText("Store / area")).toHaveValue("Sneaker Street");
+    await expect(canvas.getByLabelText("Shopping list")).toHaveValue("Limited colorways, socks, gifts");
+    await expect(canvas.getByLabelText("Budget / time note")).toHaveValue("Cap group browsing at 45 minutes");
+  },
+};
+
+export const NoteTaskForm: Story = {
+  args: {
+    ...Edit.args,
+    initialItem: categoryItem({
+      activity: "Confirm voucher names",
+      activityType: "experience",
+      itemKind: "note",
+      timeMode: "flexible",
+      place: "Central Market",
+      details: {
+        kind: "task",
+        detail: "Check passenger names before ticket issue",
+        meetingPoint: "Shared booking sheet",
+      },
+    }),
+  },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByLabelText("Type")).toHaveValue("task");
+    await expect(canvas.getByLabelText("Detail")).toHaveValue("Check passenger names before ticket issue");
+    await expect(canvas.getByLabelText("Related place")).toHaveValue("Shared booking sheet");
+    await expect(canvas.getByText("More options")).toBeVisible();
   },
 };
 

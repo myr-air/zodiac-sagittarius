@@ -3,7 +3,7 @@ info:
   title: Sagittarius Itinerary Table V1
   version: 1.0.0
 paths:
-  /api/v1/trips:
+  /api/v1/account/trips:
     post:
       summary: Create an account trip with V1 trip metadata.
       requestBody:
@@ -15,9 +15,26 @@ paths:
       responses:
         "201":
           description: Trip created.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AccountTripCreateResponse"
   /api/v1/trips/{tripId}:
+    get:
+      summary: Load the Phase 1 planning cockpit.
+      description: Response includes canonical Trip Plan aliases and retained legacy aliases. Mixed aliases must not drift.
+      parameters:
+        - $ref: "#/components/parameters/TripId"
+      responses:
+        "200":
+          description: Cockpit loaded.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CockpitResponse"
     patch:
       summary: Patch trip core settings and V1 trip metadata.
+      description: Phase 1 metadata patch rejects activePlanVariantId and mainTripPlanId pointer mutations with 400 invalid_request. Use /trip-plans/{tripPlanId}/set-main for Main Plan changes.
       parameters:
         - $ref: "#/components/parameters/TripId"
       requestBody:
@@ -29,6 +46,146 @@ paths:
       responses:
         "200":
           description: Trip updated.
+        "400":
+          description: Invalid request, including direct Main Plan pointer mutation.
+  /api/v1/trips/{tripId}/trip-plans:
+    post:
+      summary: Create a canonical Trip Plan.
+      description: Phase 1 facade over plan_variants storage. Create cannot set status or kind to main; use set-main.
+      parameters:
+        - $ref: "#/components/parameters/TripId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TripPlanCreateRequest"
+      responses:
+        "201":
+          description: Trip Plan created.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TripPlanSummary"
+        "400":
+          description: Invalid status, kind/status mismatch, unsupported creation mode, or illegal sourceTripPlanId.
+  /api/v1/trips/{tripId}/trip-plans/{tripPlanId}:
+    patch:
+      summary: Patch a canonical Trip Plan.
+      description: Phase 1 facade over plan_variants storage. Patch cannot set status or kind to main; use set-main.
+      parameters:
+        - $ref: "#/components/parameters/TripId"
+        - $ref: "#/components/parameters/TripPlanId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TripPlanPatchRequest"
+      responses:
+        "200":
+          description: Trip Plan patched.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TripPlanSummary"
+        "400":
+          description: Invalid request.
+        "409":
+          description: Version conflict with latest Trip Plan summary.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VersionConflictTripPlanResponse"
+  /api/v1/trips/{tripId}/trip-plans/{tripPlanId}/set-main:
+    post:
+      summary: Select a Trip Plan as the Main Plan.
+      description: Explicit Main Plan mutation. Phase 1 has no expectedVersion; duplicate clientMutationId values are rejected by the mutation guard.
+      parameters:
+        - $ref: "#/components/parameters/TripId"
+        - $ref: "#/components/parameters/TripPlanId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetMainTripPlanRequest"
+      responses:
+        "200":
+          description: Trip summary with canonical and legacy Main Plan aliases.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TripSummary"
+        "400":
+          description: Invalid previousMainNextStatus.
+  /api/v1/trips/{tripId}/plan-variants:
+    post:
+      summary: Legacy Trip Plan create route retained during Phase 1 compatibility.
+      deprecated: true
+      parameters:
+        - $ref: "#/components/parameters/TripId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TripPlanCreateRequest"
+      responses:
+        "201":
+          description: Plan variant created with canonical status alias.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TripPlanSummary"
+  /api/v1/trips/{tripId}/plan-variants/{planVariantId}:
+    patch:
+      summary: Legacy Trip Plan patch route retained during Phase 1 compatibility.
+      deprecated: true
+      parameters:
+        - $ref: "#/components/parameters/TripId"
+        - $ref: "#/components/parameters/PlanVariantId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TripPlanPatchRequest"
+      responses:
+        "200":
+          description: Plan variant patched with canonical status alias.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TripPlanSummary"
+        "400":
+          description: Invalid request.
+        "409":
+          description: Version conflict with latest Trip Plan summary.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VersionConflictTripPlanResponse"
+  /api/v1/trips/{tripId}/plan-variants/{planVariantId}/publications:
+    post:
+      summary: Legacy Main Plan selection route retained during Phase 1 compatibility.
+      deprecated: true
+      parameters:
+        - $ref: "#/components/parameters/TripId"
+        - $ref: "#/components/parameters/PlanVariantId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetMainTripPlanRequest"
+      responses:
+        "200":
+          description: Trip summary with canonical and legacy Main Plan aliases.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TripSummary"
   /api/v1/trips/{tripId}/itinerary-items:
     post:
       summary: Create an itinerary item with V1 hierarchy, timing, and details fields.
@@ -43,6 +200,25 @@ paths:
       responses:
         "201":
           description: Itinerary item created.
+  /api/v1/trips/{tripId}/itinerary-imports:
+    post:
+      summary: Normalize itinerary import input for a destination Trip Plan.
+      description: Phase 1 returns destination Trip Plan aliases, hierarchy/time/path fields, and compatibility records without switching the destination Main Plan.
+      parameters:
+        - $ref: "#/components/parameters/TripId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ItineraryImportRequest"
+      responses:
+        "200":
+          description: Import normalized.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ItineraryImportResponse"
   /api/v1/trips/{tripId}/itinerary-items/{itemId}:
     patch:
       summary: Patch an itinerary item with V1 hierarchy, timing, and details fields.
@@ -75,8 +251,15 @@ paths:
   /api/v1/trips/{tripId}/plan-checks:
     post:
       summary: Run deterministic Plan Check and store bilingual suggestions.
+      description: Plan Check creates review suggestions only. It may return review-edit payloads, dismiss paths, snooze paths, or a keep-reviewing path for the user to choose, but the runner does not silently rewrite itinerary rows, Trip Plans, Actual Expenses, or Plan Commitments.
       parameters:
         - $ref: "#/components/parameters/TripId"
+        - name: tripPlanId
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Optional Trip Plan scope. When omitted, the check covers the full trip for compatibility. When supplied, the Trip Plan id must belong to the trip and does not mutate the Main Plan pointer. Scope selection does not apply any suggested correction.
       responses:
         "201":
           description: Plan Check completed.
@@ -87,14 +270,22 @@ paths:
   /api/v1/trips/{tripId}/plan-checks/latest:
     get:
       summary: Read the latest Plan Check with stale status.
+      description: Reads stored review suggestions and stale status only. Reading a Plan Check does not apply the suggestion actionPayload; users must choose review-edit, dismiss, snooze, or keep reviewing through explicit follow-up actions.
       parameters:
         - $ref: "#/components/parameters/TripId"
+        - name: tripPlanId
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Optional Trip Plan scope. When provided, returns the latest check for that Trip Plan. The Trip Plan id must belong to the trip and does not mutate the Main Plan pointer or apply suggested corrections.
       responses:
         "200":
           description: Latest Plan Check or null.
   /api/v1/trips/{tripId}/plan-suggestions/{suggestionId}:
     patch:
-      summary: Accept, dismiss, or snooze a stored Plan Check suggestion.
+      summary: Mark a stored Plan Check suggestion as reviewed, dismissed, or snoozed.
+      description: Status updates do not apply suggestion actionPayload values. Editing the itinerary is a separate user-confirmed itinerary mutation.
       parameters:
         - $ref: "#/components/parameters/TripId"
         - name: suggestionId
@@ -121,7 +312,143 @@ components:
       required: true
       schema:
         type: string
+    TripPlanId:
+      name: tripPlanId
+      in: path
+      required: true
+      schema:
+        type: string
+    PlanVariantId:
+      name: planVariantId
+      in: path
+      required: true
+      schema:
+        type: string
   schemas:
+    TripSummary:
+      type: object
+      required: [id, activePlanVariantId, mainTripPlanId, version]
+      properties:
+        id:
+          type: string
+        activePlanVariantId:
+          type: string
+          deprecated: true
+        mainTripPlanId:
+          type: string
+        version:
+          type: integer
+    CockpitResponse:
+      type: object
+      required: [trip, planVariants, tripPlans, itineraryItems]
+      properties:
+        trip:
+          $ref: "#/components/schemas/TripSummary"
+        planVariants:
+          type: array
+          deprecated: true
+          items:
+            $ref: "#/components/schemas/TripPlanSummary"
+        tripPlans:
+          type: array
+          items:
+            $ref: "#/components/schemas/TripPlanSummary"
+        itineraryItems:
+          type: array
+          items:
+            $ref: "#/components/schemas/ItineraryItem"
+    AccountTripCreateResponse:
+      type: object
+      required: [trip]
+      properties:
+        trip:
+          $ref: "#/components/schemas/TripSummary"
+    ErrorResponse:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+    VersionConflictTripPlanResponse:
+      allOf:
+        - $ref: "#/components/schemas/ErrorResponse"
+        - type: object
+          required: [latest]
+          properties:
+            code:
+              const: version_conflict
+            latest:
+              $ref: "#/components/schemas/TripPlanSummary"
+    TripPlanSummary:
+      type: object
+      required: [id, tripId, name, kind, status, description, version]
+      properties:
+        id:
+          type: string
+        tripId:
+          type: string
+        name:
+          type: string
+        kind:
+          enum: [main, backup, draft, split]
+          deprecated: true
+        status:
+          enum: [main, draft, proposal, backup]
+        description:
+          type: string
+        version:
+          type: integer
+    TripPlanCreateRequest:
+      type: object
+      required: [clientMutationId, name]
+      properties:
+        clientMutationId:
+          type: string
+        name:
+          type: string
+        status:
+          enum: [draft, proposal, backup]
+        kind:
+          enum: [backup, draft, split]
+          deprecated: true
+        description:
+          type: string
+        creationMode:
+          enum: [blank]
+          description: Phase 1 supports only blank creation. Omitted value also means blank.
+        sourceTripPlanId:
+          type: string
+          description: Rejected in Phase 1 unless a later non-blank creation mode supports it.
+    TripPlanPatchRequest:
+      type: object
+      required: [clientMutationId, expectedVersion, patch]
+      properties:
+        clientMutationId:
+          type: string
+        expectedVersion:
+          type: integer
+        patch:
+          type: object
+          properties:
+            name:
+              type: string
+            status:
+              enum: [draft, proposal, backup]
+            kind:
+              enum: [backup, draft, split]
+              deprecated: true
+            description:
+              type: string
+    SetMainTripPlanRequest:
+      type: object
+      required: [clientMutationId]
+      properties:
+        clientMutationId:
+          type: string
+        previousMainNextStatus:
+          enum: [draft, proposal, backup]
     AccountTripCreateRequest:
       type: object
       required: [name, destinationLabel, startDate, endDate]
@@ -170,6 +497,11 @@ components:
           format: date
         activePlanVariantId:
           type: string
+          deprecated: true
+          description: Legacy pointer alias. Phase 1 metadata patch rejects this field; use /trip-plans/{tripPlanId}/set-main.
+        mainTripPlanId:
+          type: string
+          description: Canonical pointer alias. Phase 1 metadata patch rejects this field; use /trip-plans/{tripPlanId}/set-main.
     ItineraryItemCreateRequest:
       allOf:
         - $ref: "#/components/schemas/ItineraryItemPatch"
@@ -212,6 +544,12 @@ components:
           type: [string, "null"]
         durationMinutes:
           type: [integer, "null"]
+        endTime:
+          type: [string, "null"]
+        endOffsetDays:
+          type: integer
+          minimum: 0
+          maximum: 7
         activity:
           type: string
         activityType:
@@ -221,6 +559,89 @@ components:
         details:
           type: object
           additionalProperties: true
+    ItineraryItem:
+      allOf:
+        - $ref: "#/components/schemas/ItineraryItemPatch"
+        - type: object
+          required: [id, tripId, planVariantId, day, sortOrder, activity, activityType, version]
+          properties:
+            id:
+              type: string
+            tripId:
+              type: string
+            planVariantId:
+              type: string
+            version:
+              type: integer
+    ItineraryImportRequest:
+      type: object
+      required: [clientMutationId, mode, content]
+      properties:
+        clientMutationId:
+          type: string
+        fileName:
+          type: string
+        contentType:
+          type: string
+        mode:
+          enum: [auto, json, ai]
+        content:
+          type: string
+        targetTripPlanId:
+          type: string
+          description: Destination Trip Plan selected by the app. Source metadata must not switch the destination Main Plan.
+    ItineraryImportResponse:
+      type: object
+      required: [trip, items, records]
+      properties:
+        trip:
+          type: object
+          required: [id, activePlanVariantId, mainTripPlanId, planVariants, tripPlans]
+          properties:
+            id:
+              type: string
+            activePlanVariantId:
+              type: string
+              deprecated: true
+            mainTripPlanId:
+              type: string
+            planVariants:
+              type: array
+              deprecated: true
+              items:
+                $ref: "#/components/schemas/TripPlanSummary"
+            tripPlans:
+              type: array
+              items:
+                $ref: "#/components/schemas/TripPlanSummary"
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ItineraryItem"
+        records:
+          type: object
+          required: [expenses, bookingDocs, stopNotes, tasks]
+          properties:
+            expenses:
+              type: array
+              items:
+                type: object
+                additionalProperties: true
+            bookingDocs:
+              type: array
+              items:
+                type: object
+                additionalProperties: true
+            stopNotes:
+              type: array
+              items:
+                type: object
+                additionalProperties: true
+            tasks:
+              type: array
+              items:
+                type: object
+                additionalProperties: true
     LocalizedText:
       type: object
       required: [en, th]
@@ -237,6 +658,9 @@ components:
           type: string
         tripId:
           type: string
+        tripPlanId:
+          type: string
+          nullable: true
         itineraryFingerprint:
           type: string
         status:
@@ -256,7 +680,7 @@ components:
         severity:
           enum: [info, warning, critical]
         scope:
-          enum: [trip, day, item]
+          enum: [trip, day, item, betweenItems]
         targetItemIds:
           type: array
           items:
@@ -278,10 +702,8 @@ components:
           type: integer
     PlanSuggestionPatchRequest:
       type: object
-      required: [clientMutationId, expectedVersion, status]
+      required: [expectedVersion, status]
       properties:
-        clientMutationId:
-          type: string
         expectedVersion:
           type: integer
         status:
