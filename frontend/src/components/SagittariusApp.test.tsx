@@ -6003,10 +6003,49 @@ describe("Sagittarius cockpit UI", () => {
           version: 1,
         }),
     );
+    const patchBookingDoc = vi.fn().mockImplementation(
+      (
+        _tripId: string,
+        _bookingDocId: string,
+        _sessionToken: string,
+        request: {
+          expectedVersion: number;
+          patch: Partial<BookingDoc>;
+        },
+      ) =>
+        Promise.resolve({
+          id: "api-quick-booking",
+          tripId: apiTrip.id,
+          tripPlanId: "plan-variant-backup",
+          type: request.patch.type ?? "activity_ticket",
+          title: request.patch.title ?? "Rain plan gallery booking draft",
+          status: request.patch.status ?? "draft",
+          visibility: request.patch.visibility ?? "shared",
+          ownerMemberId: request.patch.ownerMemberId ?? "member-aom",
+          providerName: request.patch.providerName ?? null,
+          confirmationCode: request.patch.confirmationCode ?? null,
+          startsAt: request.patch.startsAt ?? null,
+          endsAt: request.patch.endsAt ?? null,
+          timezone: request.patch.timezone ?? null,
+          priceAmount: request.patch.priceAmount ?? null,
+          currency: request.patch.currency ?? null,
+          travelerIds: request.patch.travelerIds ?? apiTrip.members.map((member) => member.id),
+          externalLinks: request.patch.externalLinks ?? [],
+          relatedItineraryItemIds: request.patch.relatedItineraryItemIds ?? ["item-rain-gallery"],
+          relatedTaskIds: request.patch.relatedTaskIds ?? [],
+          relatedExpenseIds: request.patch.relatedExpenseIds ?? [],
+          noteIds: request.patch.noteIds ?? [],
+          notes: request.patch.notes ?? null,
+          createdBy: "member-aom",
+          updatedAt: "2026-06-06T00:05:00.000Z",
+          version: request.expectedVersion + 1,
+        }),
+    );
     const apiClient = createApiClientForTrip(apiTrip, {
       createTask,
       createStopNote,
       createBookingDoc,
+      patchBookingDoc,
       setMainTripPlan: vi.fn(),
     });
 
@@ -6066,6 +6105,30 @@ describe("Sagittarius cockpit UI", () => {
         tripPlanId: "plan-variant-backup",
         title: "Rain plan gallery booking draft",
         relatedItineraryItemIds: ["item-rain-gallery"],
+      }),
+    );
+    const context = await screen.findByRole("complementary", {
+      name: /ข้อมูลประกอบการวางแผน/i,
+    });
+    fireEvent.change(
+      within(context).getByLabelText(
+        "ประเภทการจองของ Rain plan gallery booking draft",
+      ),
+      { target: { value: "train" } },
+    );
+
+    await waitFor(() => expect(patchBookingDoc).toHaveBeenCalledTimes(1));
+    expect(patchBookingDoc).toHaveBeenCalledWith(
+      apiTrip.id,
+      "api-quick-booking",
+      "session-token",
+      expect.objectContaining({
+        expectedVersion: 1,
+        patch: expect.objectContaining({
+          type: "train",
+          title: "Rain plan gallery booking draft",
+          relatedItineraryItemIds: ["item-rain-gallery"],
+        }),
       }),
     );
     expect(apiClient.setMainTripPlan!).not.toHaveBeenCalled();
