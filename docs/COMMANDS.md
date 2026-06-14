@@ -71,6 +71,7 @@ The source of truth is [docs/itinerary-trip-plan-phase-0-1-implementation-spec.m
 | Local real API e2e | Repository root | `rtk make frontend-e2e-local` |
 | Local auth browser e2e | Repository root | `rtk make frontend-e2e-auth-browser` |
 | Itinerary import browser QA | `frontend/` | `rtk bun run test:itinerary-import-browser-qa` |
+| Trip Plan selector/set-main browser QA | `frontend/` | `rtk bun run test:trip-plan-browser-qa` |
 | Create-trip UX QA | `frontend/` | `rtk bun run test:create-trip-ux-qa` |
 | API trace smoke | Repository root | `rtk make api-trace-smoke` |
 | Perf smoke | Repository root | `rtk make perf-smoke` |
