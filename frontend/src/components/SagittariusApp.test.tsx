@@ -5372,7 +5372,10 @@ describe("Sagittarius cockpit UI", () => {
     const context = await screen.findByRole("complementary", {
       name: /ข้อมูลประกอบการวางแผน/i,
     });
-    await user.click(within(context).getByRole("tab", { name: "การจอง" }));
+    expect(within(context).getByRole("tab", { name: "การจอง" })).toHaveAttribute(
+      "aria-selected",
+      "true",
+    );
     expect(within(context).getByText("Plan: Flight to Hong Kong")).toBeInTheDocument();
   });
 
@@ -5454,7 +5457,10 @@ describe("Sagittarius cockpit UI", () => {
     const context = await screen.findByRole("complementary", {
       name: /ข้อมูลประกอบการวางแผน/i,
     });
-    await user.click(within(context).getByRole("tab", { name: "การจอง" }));
+    expect(within(context).getByRole("tab", { name: "การจอง" })).toHaveAttribute(
+      "aria-selected",
+      "true",
+    );
     expect(within(context).getByText("Flight to Hong Kong booking draft")).toBeInTheDocument();
     const persistedTrip = JSON.parse(storage.getItem(tripStorageKey)!) as Trip;
     expect(persistedTrip.bookingDocs).toEqual([

@@ -1,4 +1,4 @@
-import { type FormEvent, useMemo, useState } from "react";
+import { type FormEvent, useEffect, useMemo, useState } from "react";
 import type {
   BookingDoc,
   Expense,
@@ -35,6 +35,7 @@ interface ContextRailProps {
   canReviewSuggestions: boolean;
   canEditExpenses: boolean;
   open: boolean;
+  preferredTab?: ContextRailTab;
   onCreateNote: (input: { itemId: string; body: string }) => void;
   onCreateExpense: (input: {
     itemId: string | null;
@@ -62,6 +63,8 @@ interface ContextRailProps {
   onUpdateNote: (input: { noteId: string; body: string }) => void;
   onClose: () => void;
 }
+
+type ContextRailTab = "notes" | "booking" | "suggestions";
 
 const suggestionListClassName = "suggestion-list grid gap-1.5";
 const suggestionItemBaseClassName =
@@ -174,6 +177,7 @@ export function ContextRail({
   canReviewSuggestions,
   canEditExpenses,
   open,
+  preferredTab = "notes",
   onCreateNote,
   onCreateExpense,
   onUpdateExpense,
@@ -187,9 +191,7 @@ export function ContextRail({
   onClose,
 }: ContextRailProps) {
   const { locale, t } = useI18n();
-  const [activeTab, setActiveTab] = useState<
-    "notes" | "booking" | "suggestions"
-  >("notes");
+  const [activeTab, setActiveTab] = useState<ContextRailTab>(preferredTab);
   const [noteBody, setNoteBody] = useState("");
   const [expenseTitle, setExpenseTitle] = useState("");
   const [expenseAmount, setExpenseAmount] = useState("");
@@ -243,6 +245,10 @@ export function ContextRail({
         (suggestion.status === "pending" || suggestion.status === "conflicted"),
     );
   }, [selectedItem, suggestions]);
+
+  useEffect(() => {
+    if (open) setActiveTab(preferredTab);
+  }, [open, preferredTab, selectedItem?.id]);
 
   function submitNote(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

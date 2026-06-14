@@ -326,6 +326,8 @@ export function SagittariusApp({
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [contextRailOpen, setContextRailOpen] = useState(false);
   const [contextRailMounted, setContextRailMounted] = useState(false);
+  const [contextRailPreferredTab, setContextRailPreferredTab] =
+    useState<"notes" | "booking" | "suggestions">("notes");
   // Auto-dismiss the workspace toast after 6 s when the session is a join-only (temp) session
   useEffect(() => {
     if (!requireJoin || toastDismissed) return;
@@ -1087,6 +1089,7 @@ export function SagittariusApp({
   }
 
   function selectItem(itemId: string) {
+    setContextRailPreferredTab("notes");
     setSelectedItemId(itemId);
     setContextRailVisibility(true);
   }
@@ -2614,6 +2617,7 @@ export function SagittariusApp({
       assigneeId: null,
       relatedItemId: item.id,
     });
+    setContextRailPreferredTab("booking");
     setSelectedItemId(item.id);
     setContextRailVisibility(true);
   }
@@ -2803,6 +2807,7 @@ export function SagittariusApp({
       noteIds: [],
       notes: draftDetails.notes,
     });
+    setContextRailPreferredTab("booking");
     setSelectedItemId(item.id);
     setContextRailVisibility(true);
   }
@@ -3127,6 +3132,7 @@ export function SagittariusApp({
       itemId: item.id,
       body: `Planning note for ${item.activity}`,
     });
+    setContextRailPreferredTab("notes");
     setSelectedItemId(item.id);
     setContextRailVisibility(true);
   }
@@ -4121,6 +4127,7 @@ export function SagittariusApp({
               canReviewSuggestions={canReviewSuggestions}
               canEditExpenses={canEditExpenses}
               open={contextRailOpen}
+              preferredTab={contextRailPreferredTab}
               onCreateNote={createStopNote}
               onCreateExpense={createExpense}
               onUpdateExpense={updateExpense}
