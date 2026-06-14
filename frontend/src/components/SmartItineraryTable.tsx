@@ -85,9 +85,9 @@ interface SmartItineraryTableProps {
   onAddBookingForItem?: (
     itemId: string,
     template?: ItineraryBookingTemplate,
-  ) => void;
+  ) => string | void | Promise<string | void>;
   onAddStop: (day?: string) => void;
-  onAddSubActivity?: (parentItemId: string) => void;
+  onAddSubActivity?: (parentItemId: string) => void | Promise<void>;
   onAddNoteForItem?: (itemId: string) => void;
   onAddTaskForItem?: (itemId: string) => void;
   onSelectItem: (itemId: string) => void;
@@ -103,6 +103,7 @@ interface SmartItineraryTableProps {
   onDeleteItem?: (itemId: string) => void;
   onExportItinerary: () => void;
   onImportItinerary: (file: File) => void;
+  onImportItineraryText?: (content: string, sourceName: string) => void | Promise<void>;
   onChangeTripPlan: (tripPlanId: string) => boolean | void | Promise<boolean | void>;
   onChangeTripPlanStatus: (
     tripPlanId: string,
@@ -241,6 +242,8 @@ const rowActionsClassName =
   "row-actions flex items-center justify-center gap-1";
 const rowActionButtonClassName =
   "row-action-button inline-grid size-8 shrink-0 place-items-center rounded-(--radius-sm) border-0 bg-transparent text-(--color-text-subtle) transition-[color,background] duration-150 hover:not-disabled:bg-(--color-route-soft) hover:not-disabled:text-(--color-route) disabled:cursor-not-allowed disabled:opacity-[0.42]";
+const inlineSubItemButtonClassName =
+  "inline-flex min-h-7 w-fit items-center gap-1.5 rounded-(--radius-sm) border border-(--color-route-border) bg-(--color-route-soft) px-2 text-[11px] font-extrabold leading-4 text-(--color-route) transition-[border-color,background,color] duration-150 hover:border-(--color-route) hover:bg-(--color-surface) disabled:cursor-not-allowed disabled:opacity-50 [&_.icon]:size-3.5";
 const rowFixMenuClassName = "row-fix-menu relative";
 const rowFixSummaryClassName =
   "row-fix-summary inline-grid size-8 shrink-0 place-items-center rounded-(--radius-sm) border-0 bg-transparent text-(--color-warning-strong) transition-[color,background] duration-150 hover:not-disabled:bg-(--color-warning-soft) disabled:cursor-not-allowed disabled:opacity-[0.42]";
@@ -379,6 +382,21 @@ const deleteDialogTitleClassName =
 const deleteDialogBodyClassName =
   "m-0 text-sm font-medium leading-6 text-(--color-text-muted)";
 const deleteDialogActionsClassName = "mt-1 flex justify-end gap-2";
+const importDialogClassName =
+  "itinerary-import-dialog grid w-[min(560px,100%)] gap-4 rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) p-4 shadow-[0_14px_34px_rgb(15_23_42_/_0.16)]";
+const importDialogTitleClassName =
+  "m-0 text-base font-extrabold leading-[22px] text-(--color-text)";
+const importDialogBodyClassName =
+  "m-0 text-sm font-medium leading-6 text-(--color-text-muted)";
+const importDialogControlsClassName = "grid gap-3";
+const importDialogFileButtonClassName =
+  "inline-flex min-h-11 items-center justify-center gap-2 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) px-3 text-sm font-extrabold text-(--color-text) transition-[background,border-color,color] duration-150 hover:enabled:border-(--color-route-border) hover:enabled:bg-(--color-route-soft) hover:enabled:text-(--color-route)";
+const importDialogPasteFieldClassName =
+  "grid gap-1 text-sm font-bold text-(--color-text)";
+const importDialogTextareaClassName =
+  "min-h-36 resize-y rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) px-3 py-2 text-sm font-medium leading-6 text-(--color-text) outline-none focus:border-(--color-route-border) focus:ring-2 focus:ring-(--color-route-soft)";
+const importDialogErrorClassName =
+  "m-0 text-xs font-bold text-(--color-danger)";
 const activityTypeOptions: ActivityType[] = [
   "food",
   "attraction",
@@ -441,6 +459,7 @@ export function SmartItineraryTable({
   onDeleteItem,
   onExportItinerary,
   onImportItinerary,
+  onImportItineraryText,
   onChangeTripPlan,
   onChangeTripPlanStatus,
   onSetMainTripPlan,
@@ -475,6 +494,14 @@ export function SmartItineraryTable({
   }>({ draggedItemId: null, overItemId: null, overDay: null, overBlockId: null });
   const [pendingDeleteItem, setPendingDeleteItem] =
     useState<ItineraryItem | null>(null);
+  const [bookingDraftMessage, setBookingDraftMessage] = useState<string | null>(
+    null,
+  );
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [pastedImportText, setPastedImportText] = useState("");
+  const [pastedImportError, setPastedImportError] = useState<string | null>(
+    null,
+  );
   const knownFilterIdsRef = useRef<string[]>(
     filterOptions.map((option) => option.id),
   );
@@ -570,6 +597,29 @@ export function SmartItineraryTable({
         ? current.filter((id) => id !== itemId)
         : [...current, itemId],
     );
+  }
+
+  async function chooseBookingTemplate(
+    item: ItineraryItem,
+    template: (typeof itineraryBookingTemplates)[number],
+  ) {
+    setBookingDraftMessage(null);
+    try {
+      const createdTitle = await onAddBookingForItem?.(item.id, template.id);
+      setBookingDraftMessage(
+        t.itinerary.row.bookingDraftCreated({
+          activity: item.activity,
+          title:
+            typeof createdTitle === "string" && createdTitle.trim()
+              ? createdTitle
+              : template.label,
+        }),
+      );
+    } catch {
+      setBookingDraftMessage(
+        t.itinerary.row.bookingDraftFailed({ activity: item.activity }),
+      );
+    }
   }
 
   function togglePlanFilter(pathId: string) {
@@ -947,8 +997,31 @@ export function SmartItineraryTable({
 
   function importFile(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
-    if (file) onImportItinerary(file);
+    if (file) {
+      onImportItinerary(file);
+      setImportDialogOpen(false);
+      setPastedImportError(null);
+    }
     event.target.value = "";
+  }
+
+  async function submitPastedImport(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const content = pastedImportText.trim();
+    if (!content) {
+      setPastedImportError(t.itinerary.importPasteEmpty);
+      return;
+    }
+    setPastedImportError(null);
+    if (onImportItineraryText) {
+      await onImportItineraryText(content, "pasted-itinerary.csv");
+    } else {
+      onImportItinerary(
+        new File([content], "pasted-itinerary.csv", { type: "text/csv" }),
+      );
+    }
+    setPastedImportText("");
+    setImportDialogOpen(false);
   }
 
   async function submitNewTripPlan(event: FormEvent<HTMLFormElement>) {
@@ -1008,13 +1081,14 @@ export function SmartItineraryTable({
               ref={importInputRef}
               className={importInputClassName}
               type="file"
-              accept="application/json,.json"
-              aria-label={t.itinerary.importJsonInput}
+              accept="application/json,.json,text/csv,.csv,text/tab-separated-values,.tsv,text/plain,.txt"
+              aria-hidden="true"
+              tabIndex={-1}
               onChange={importFile}
             />
             <Button
               type="button"
-              onClick={() => importInputRef.current?.click()}
+              onClick={() => setImportDialogOpen(true)}
               disabled={!canRestructureItems}
               className="import-itinerary-button min-w-[104px] !bg-(--color-primary) !shadow-[0_10px_20px_color-mix(in_srgb,var(--color-primary)_18%,transparent)] hover:enabled:!bg-(--color-primary-strong) max-[767px]:flex-1"
             >
@@ -1141,6 +1215,15 @@ export function SmartItineraryTable({
         ) : tripPlanMessage ? (
           <p className={tripPlanMessageClassName}>{tripPlanMessage}</p>
         ) : null}
+        {bookingDraftMessage ? (
+          <p
+            className={tripPlanMessageClassName}
+            role="status"
+            aria-live="polite"
+          >
+            {bookingDraftMessage}
+          </p>
+        ) : null}
       </div>
       <div className={itineraryFilterShellClassName}>
         <div className={itineraryFilterBarClassName}>
@@ -1253,7 +1336,7 @@ export function SmartItineraryTable({
               onDropItem={dropItem}
               onDropIntoPlanBlock={dropIntoBlock}
               onDropOnDay={dropOnDay}
-              onAddBookingForItem={onAddBookingForItem}
+              onChooseBookingTemplate={chooseBookingTemplate}
               onAddStop={onAddStop}
               onAddSubActivity={onAddSubActivity}
               onAddNoteForItem={onAddNoteForItem}
@@ -1331,6 +1414,64 @@ export function SmartItineraryTable({
               </Button>
             </div>
           </section>
+        </div>
+      ) : null}
+      {importDialogOpen ? (
+        <div className={deleteModalBackdropClassName} role="presentation">
+          <form
+            className={importDialogClassName}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="itinerary-import-title"
+            onSubmit={submitPastedImport}
+          >
+            <h2 className={importDialogTitleClassName} id="itinerary-import-title">
+              {t.itinerary.importDialogTitle}
+            </h2>
+            <p className={importDialogBodyClassName}>
+              {t.itinerary.importDialogBody}
+            </p>
+            <div className={importDialogControlsClassName}>
+              <button
+                type="button"
+                className={importDialogFileButtonClassName}
+                onClick={() => importInputRef.current?.click()}
+              >
+                <Icon name="import" />
+                {t.itinerary.importFileButton}
+              </button>
+              <label className={importDialogPasteFieldClassName}>
+                <span>{t.itinerary.importPasteLabel}</span>
+                <textarea
+                  className={importDialogTextareaClassName}
+                  value={pastedImportText}
+                  placeholder={t.itinerary.importPastePlaceholder}
+                  onChange={(event) => {
+                    setPastedImportText(event.target.value);
+                    setPastedImportError(null);
+                  }}
+                />
+              </label>
+              {pastedImportError ? (
+                <p className={importDialogErrorClassName} role="alert">
+                  {pastedImportError}
+                </p>
+              ) : null}
+            </div>
+            <div className={deleteDialogActionsClassName}>
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => {
+                  setImportDialogOpen(false);
+                  setPastedImportError(null);
+                }}
+              >
+                {t.itinerary.importCancel}
+              </Button>
+              <Button type="submit">{t.itinerary.importPasteSubmit}</Button>
+            </div>
+          </form>
         </div>
       ) : null}
     </section>
@@ -1465,7 +1606,14 @@ function MobileSelectedStopInspector({
             onCommit={(timeMode) =>
               onUpdateItemInline?.(item.id, {
                 timeMode,
-                ...(timeMode === "flexible" ? { startTime: "", durationMinutes: null } : {}),
+                ...(timeMode === "flexible"
+                  ? {
+                      startTime: "",
+                      endTime: null,
+                      endOffsetDays: 0,
+                      durationMinutes: null,
+                    }
+                  : {}),
               })
             }
           />
@@ -1563,7 +1711,7 @@ function DayGroup({
   onDropItem,
   onDropIntoPlanBlock,
   onDropOnDay,
-  onAddBookingForItem,
+  onChooseBookingTemplate,
   onAddStop,
   onAddSubActivity,
   onAddNoteForItem,
@@ -1616,12 +1764,12 @@ function DayGroup({
     planBlockItemId: string,
   ) => void;
   onDropOnDay: (event: DragEvent<HTMLElement>, targetDay: string) => void;
-  onAddBookingForItem?: (
-    itemId: string,
-    template?: ItineraryBookingTemplate,
-  ) => void;
+  onChooseBookingTemplate: (
+    item: ItineraryItem,
+    template: (typeof itineraryBookingTemplates)[number],
+  ) => void | Promise<void>;
   onAddStop: (day?: string) => void;
-  onAddSubActivity?: (parentItemId: string) => void;
+  onAddSubActivity?: (parentItemId: string) => void | Promise<void>;
   onAddNoteForItem?: (itemId: string) => void;
   onAddTaskForItem?: (itemId: string) => void;
   onMoveItem: (draggedItemId: string, targetItemId: string) => void;
@@ -1768,6 +1916,9 @@ function DayGroup({
             const childCount = item.isPlanBlock
               ? group.items.filter((candidate) => candidate.parentItemId === item.id).length
               : 0;
+            const addSubActivityLabel = itineraryLabels.row.addSubActivity({
+              activity: item.activity,
+            });
             const canPromoteParentBlock = Boolean(parentItem && !parentItem.isPlanBlock);
             const canDeleteItem = childCount === 0;
             const blockCollapsed = item.isPlanBlock && collapsedPlanBlockIds.includes(item.id);
@@ -1954,6 +2105,20 @@ function DayGroup({
                       locale={locale}
                       warnings={itemWarnings}
                     />
+                    {canEdit && !isChild ? (
+                      <button
+                        type="button"
+                        className={inlineSubItemButtonClassName}
+                        aria-label={addSubActivityLabel}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          void onAddSubActivity?.(item.id);
+                        }}
+                      >
+                        <Icon name="plus" />
+                        <span>{itineraryLabels.row.subItemQuick}</span>
+                      </button>
+                    ) : null}
                   </div>
                 </td>
                 <td>
@@ -1984,7 +2149,14 @@ function DayGroup({
                       onCommit={(timeMode) =>
                         onUpdateItemInline?.(item.id, {
                           timeMode,
-                          ...(timeMode === "flexible" ? { startTime: "", durationMinutes: null } : {}),
+                          ...(timeMode === "flexible"
+                            ? {
+                                startTime: "",
+                                endTime: null,
+                                endOffsetDays: 0,
+                                durationMinutes: null,
+                              }
+                            : {}),
                         })
                       }
                     />
@@ -2033,26 +2205,14 @@ function DayGroup({
                     <button
                       type="button"
                       className={rowActionButtonClassName}
-                      aria-label={
-                        item.isPlanBlock
-                          ? itineraryLabels.row.addSubActivity({ activity: item.activity })
-                          : itineraryLabels.row.convertToBlock({ activity: item.activity })
-                      }
+                      aria-label={addSubActivityLabel}
                       disabled={!canEdit}
-                      title={
-                        item.isPlanBlock
-                          ? itineraryLabels.row.addSubActivity({ activity: item.activity })
-                          : itineraryLabels.row.convertToBlock({ activity: item.activity })
-                      }
+                      title={addSubActivityLabel}
                       onClick={() => {
-                        if (item.isPlanBlock) {
-                          onAddSubActivity?.(item.id);
-                          return;
-                        }
-                        onUpdateItemInline?.(item.id, { isPlanBlock: true });
+                        void onAddSubActivity?.(item.id);
                       }}
                     >
-                      <Icon name={item.isPlanBlock ? "plus" : "list"} />
+                      <Icon name="plus" />
                     </button>
                     {hasHierarchyFixActions ? (
                       <div className={rowFixMenuClassName}>
@@ -2185,8 +2345,12 @@ function DayGroup({
                               type="button"
                               role="menuitem"
                               className={rowBookingMenuButtonClassName}
+                              aria-label={itineraryLabels.row.createBookingDraft({
+                                activity: item.activity,
+                                template: template.label,
+                              })}
                               onClick={() => {
-                                onAddBookingForItem?.(item.id, template.id);
+                                void onChooseBookingTemplate(item, template);
                                 setOpenBookingMenuItemId(null);
                               }}
                             >

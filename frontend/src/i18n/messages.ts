@@ -349,7 +349,15 @@ export const messages = {
       addStop: "Add stop or activity",
       import: "Import",
       export: "Export",
-      importJsonInput: "Import itinerary JSON",
+      importJsonInput: "Import itinerary JSON, CSV, or pasted table",
+      importDialogTitle: "Import itinerary",
+      importDialogBody: "Upload JSON/CSV or paste spreadsheet rows. You can review the detected activities before applying them.",
+      importFileButton: "Choose file",
+      importPasteLabel: "Paste table data",
+      importPastePlaceholder: "Day\tDate\tTime\tPlans\tMaps\tDuration\tTransportation\tNote",
+      importPasteSubmit: "Preview pasted rows",
+      importPasteEmpty: "Paste CSV or table data before previewing.",
+      importCancel: "Cancel",
       hideDetails: "Hide details panel",
       openDetails: "Open details",
       undo: "Undo",
@@ -410,6 +418,13 @@ export const messages = {
         edit: ({ activity }: { activity: string }) => `Edit ${activity}`,
         delete: ({ activity }: { activity: string }) => `Delete ${activity}`,
         addSubActivity: ({ activity }: { activity: string }) => `Add sub-activity under ${activity}`,
+        subItemQuick: "+ sub-item",
+        createBookingDraft: ({ activity, template }: { activity: string; template: string }) =>
+          `Create ${template} booking draft for ${activity}`,
+        bookingDraftCreated: ({ activity, title }: { activity: string; title: string }) =>
+          `Created linked booking draft "${title}" for ${activity}.`,
+        bookingDraftFailed: ({ activity }: { activity: string }) =>
+          `Could not create booking draft for ${activity}.`,
         convertToBlock: ({ activity }: { activity: string }) => `Convert ${activity} to activity block`,
         promoteParentBlock: ({ parent, child }: { parent: string; child: string }) =>
           `Promote ${parent} to activity block for ${child}`,
@@ -733,6 +748,7 @@ export const messages = {
         activity: "Activity",
         type: "Type",
         place: "Place",
+        mapLink: "Map link",
         transportation: "Transportation",
         note: "Note",
       },
@@ -746,7 +762,11 @@ export const messages = {
       },
       placeResolution: {
         candidates: "Place candidates",
-        unresolved: "This place needs location review",
+        unresolved: "Coordinates could not be resolved. Saving without coordinates keeps the place/map link, but the map pin and route checks will need review later.",
+      },
+      messages: {
+        saving: "Saving...",
+        saveFailed: "Could not save activity. Check required fields or try again.",
       },
     },
     suggestions: {
@@ -1534,7 +1554,15 @@ export const messages = {
       addStop: "เพิ่มสถานที่ / กิจกรรม",
       import: "นำเข้า",
       export: "ส่งออก",
-      importJsonInput: "นำเข้า itinerary JSON",
+      importJsonInput: "นำเข้า itinerary JSON, CSV หรือ pasted table",
+      importDialogTitle: "นำเข้า itinerary",
+      importDialogBody: "อัปโหลด JSON/CSV หรือวางตารางจาก spreadsheet แล้วตรวจ preview ก่อนนำเข้า",
+      importFileButton: "เลือกไฟล์",
+      importPasteLabel: "วางข้อมูลตาราง",
+      importPastePlaceholder: "Day\tDate\tTime\tPlans\tMaps\tDuration\tTransportation\tNote",
+      importPasteSubmit: "Preview pasted rows",
+      importPasteEmpty: "วาง CSV หรือข้อมูลตารางก่อน preview",
+      importCancel: "ยกเลิก",
       hideDetails: "ซ่อนแผงรายละเอียด",
       openDetails: "เปิดรายละเอียด",
       undo: "เลิกทำ",
@@ -1595,6 +1623,13 @@ export const messages = {
         edit: ({ activity }: { activity: string }) => `แก้ไข ${activity}`,
         delete: ({ activity }: { activity: string }) => `ลบ ${activity}`,
         addSubActivity: ({ activity }: { activity: string }) => `เพิ่ม sub-activity ใต้ ${activity}`,
+        subItemQuick: "+ sub-item",
+        createBookingDraft: ({ activity, template }: { activity: string; template: string }) =>
+          `สร้าง booking draft แบบ ${template} สำหรับ ${activity}`,
+        bookingDraftCreated: ({ activity, title }: { activity: string; title: string }) =>
+          `สร้าง booking draft "${title}" ที่ผูกกับ ${activity} แล้ว`,
+        bookingDraftFailed: ({ activity }: { activity: string }) =>
+          `สร้าง booking draft สำหรับ ${activity} ไม่สำเร็จ`,
         convertToBlock: ({ activity }: { activity: string }) => `เปลี่ยน ${activity} เป็น activity block`,
         promoteParentBlock: ({ parent, child }: { parent: string; child: string }) =>
           `เปลี่ยน ${parent} เป็น activity block สำหรับ ${child}`,
@@ -1918,6 +1953,7 @@ export const messages = {
         activity: "กิจกรรม",
         type: "ประเภท",
         place: "สถานที่",
+        mapLink: "ลิงก์แผนที่",
         transportation: "การเดินทาง",
         note: "โน้ต",
       },
@@ -1931,7 +1967,11 @@ export const messages = {
       },
       placeResolution: {
         candidates: "ตัวเลือกสถานที่",
-        unresolved: "สถานที่นี้ต้องตรวจพิกัด",
+        unresolved: "ยังหาพิกัดไม่ได้ บันทึกต่อได้โดยเก็บสถานที่/ลิงก์แผนที่ไว้ แต่หมุดแผนที่และการตรวจเส้นทางต้องกลับมาตรวจอีกครั้ง",
+      },
+      messages: {
+        saving: "กำลังบันทึก...",
+        saveFailed: "บันทึกกิจกรรมไม่สำเร็จ ตรวจช่องที่จำเป็นแล้วลองอีกครั้ง",
       },
     },
     suggestions: {

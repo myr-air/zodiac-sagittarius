@@ -98,6 +98,7 @@ import {
 import { tripStorageKey } from "@/src/trip/repository";
 import { seedTrip } from "@/src/trip/seed";
 import { decodeTripId } from "@/src/trip/ids";
+import { safeExternalHref } from "@/src/trip/safe-links";
 import { approveSuggestion } from "@/src/trip/suggestions";
 import type {
   BookingDoc,
@@ -129,6 +130,8 @@ import type {
 
 const localMutationTimestamp = "2026-05-28T00:00:00.000Z";
 const accountSessionStorageKey = "sagittarius-account-session";
+const selectedTripPlanQueryParam = "tripPlanId";
+const selectedTripPlanSessionStoragePrefix = "sagittarius:selected-trip-plan:";
 const workspaceToastClassName =
   "workspace-toast pointer-events-auto fixed left-1/2 top-5 z-[60] flex w-[min(480px,calc(100vw-32px))] -translate-x-1/2 items-start gap-3 rounded-(--radius-lg) border border-(--color-route-border) bg-(--color-route-soft) px-4 py-3 shadow-[0_10px_22px_rgb(15_23_42_/_0.1)] max-[767px]:top-3";
 const workspaceToastIconClassName = "mt-0.5 shrink-0 text-(--color-route)";
@@ -341,7 +344,7 @@ export function SagittariusApp({
   }, [requireJoin, toastDismissed]);
   const [navigatedView, setNavigatedView] = useState<PlanningView | null>(null);
   const [selectedTripPlanId, setSelectedTripPlanId] = useState(() =>
-    initialSelectedTripPlanId(initialTrip),
+    resolveSelectedTripPlanId(initialTrip),
   );
   const [currentMemberId, setCurrentMemberId] = useState(
     initialMemberId ?? initialTrip.members[0].id,
@@ -432,18 +435,20 @@ export function SagittariusApp({
     [selectedTripPlanId, trip.itineraryItems],
   );
   useEffect(() => {
+    if (!sessionRestored && !isApiMode) return;
     let cancelled = false;
     queueMicrotask(() => {
       if (cancelled) return;
       setSelectedTripPlanId((current) => {
-        if (trip.planVariants.some((plan) => plan.id === current)) return current;
-        return initialSelectedTripPlanId(trip);
+        const nextTripPlanId = resolveSelectedTripPlanId(trip, current);
+        rememberSelectedTripPlanId(trip, nextTripPlanId);
+        return nextTripPlanId;
       });
     });
     return () => {
       cancelled = true;
     };
-  }, [trip]);
+  }, [isApiMode, sessionRestored, trip]);
   const pathOptions = useMemo(
     () =>
       deriveItineraryPathOptions(activePlanItems, trip.itineraryPaths ?? []),
@@ -610,7 +615,7 @@ export function SagittariusApp({
 
       if (persistedTrip) {
         setTripState({ trip: nextTrip, past: [], future: [] });
-        setSelectedTripPlanId(initialSelectedTripPlanId(nextTrip));
+        setSelectedTripPlanId(resolveSelectedTripPlanId(nextTrip));
       }
       if (persistedSession) {
         setParticipantSession(persistedSession);
@@ -710,9 +715,10 @@ export function SagittariusApp({
       .loadTrip(participantSession.tripId, participantSession.sessionToken)
       .then((cockpit) => {
         if (cancelled) return;
-        const loadedTripPlanId = initialSelectedTripPlanId(cockpit.trip);
+        const loadedTripPlanId = resolveSelectedTripPlanId(cockpit.trip);
         setTripState({ trip: cockpit.trip, past: [], future: [] });
         setSelectedTripPlanId(loadedTripPlanId);
+        rememberSelectedTripPlanId(cockpit.trip, loadedTripPlanId);
         setSuggestions(cockpit.suggestions);
         setTasks(cockpit.tasks);
         setStopNotes(cockpit.stopNotes);
@@ -795,7 +801,6 @@ export function SagittariusApp({
   }, [
     backendExpenseSummary?.tripPlanId,
     canViewExpenses,
-    clearParticipantSession,
     isApiMode,
     isCockpitLoaded,
     participantSession,
@@ -906,16 +911,23 @@ export function SagittariusApp({
     };
   }, [contextRailOpen, setContextRailVisibility]);
 
-  async function reloadTripPlanConflict() {
+  async function reloadTripPlanConflict(
+    preferredTripPlanId: string | null = selectedTripPlanId,
+  ) {
     if (!resolvedApiClient || !participantSession) return;
-  const cockpit = await resolvedApiClient.loadTrip(
-    trip.id,
-    participantSession.sessionToken,
-  );
-  replaceCockpitFromApi(cockpit);
-  setSelectedTripPlanId(initialSelectedTripPlanId(cockpit.trip));
-  latestTripRef.current = cockpit.trip;
-}
+    const cockpit = await resolvedApiClient.loadTrip(
+      trip.id,
+      participantSession.sessionToken,
+    );
+    replaceCockpitFromApi(cockpit);
+    const reloadedTripPlanId =
+      preferredTripPlanId === null
+        ? initialSelectedTripPlanId(cockpit.trip)
+        : resolveSelectedTripPlanId(cockpit.trip, preferredTripPlanId);
+    setSelectedTripPlanId(reloadedTripPlanId);
+    rememberSelectedTripPlanId(cockpit.trip, reloadedTripPlanId);
+    latestTripRef.current = cockpit.trip;
+  }
 
   function mergePublishedTripPlan(
     currentTrip: Trip,
@@ -949,6 +961,7 @@ export function SagittariusApp({
       return false;
     }
     setSelectedTripPlanId(tripPlanId);
+    rememberSelectedTripPlanId(trip, tripPlanId);
     return true;
   }
 
@@ -979,12 +992,13 @@ export function SagittariusApp({
           return { ...current, trip: nextTrip };
         });
         setSelectedTripPlanId(tripPlanId);
+        rememberSelectedTripPlanId(publishedTrip, tripPlanId);
       } catch (error) {
         if (
           error instanceof TripApiError &&
           error.code === "version_conflict"
         ) {
-          await reloadTripPlanConflict();
+          await reloadTripPlanConflict(null);
           return true;
         }
         setTripPlanError(t.itinerary.tripPlans.error);
@@ -1001,6 +1015,7 @@ export function SagittariusApp({
       mainTripPlanId: tripPlanId,
     }));
     setSelectedTripPlanId(tripPlanId);
+    rememberSelectedTripPlanId(trip, tripPlanId);
     return true;
   }
 
@@ -1090,6 +1105,7 @@ export function SagittariusApp({
           return { ...current, trip: nextTrip };
         });
         setSelectedTripPlanId(createdVariant.id);
+        rememberSelectedTripPlanId(trip, createdVariant.id);
       } catch (error) {
         if (
           error instanceof TripApiError &&
@@ -1124,7 +1140,10 @@ export function SagittariusApp({
         tripPlans: [...(current.tripPlans ?? current.planVariants), variant],
       };
     });
-    if (createdTripPlanId) setSelectedTripPlanId(createdTripPlanId);
+    if (createdTripPlanId) {
+      setSelectedTripPlanId(createdTripPlanId);
+      rememberSelectedTripPlanId(trip, createdTripPlanId);
+    }
     return true;
   }
 
@@ -1132,12 +1151,22 @@ export function SagittariusApp({
     /* v8 ignore next */
     if (!canEdit) return;
     setStopPlaceResolution({ state: "idle", candidates: [] });
+    setContextRailVisibility(false);
     setDialogState({ mode: "create", day, parentItemId: parentItemId ?? null });
   }
 
-  function addSubActivity(parentItemId: string) {
+  async function addSubActivity(parentItemId: string) {
     const parentItem = trip.itineraryItems.find((item) => item.id === parentItemId);
-    if (!parentItem || !parentItem.isPlanBlock) return;
+    if (!parentItem) return;
+    if (!parentItem.isPlanBlock) {
+      try {
+        setTripPlanError(null);
+        await updateItineraryItemInline(parentItem.id, { isPlanBlock: true });
+      } catch {
+        setTripPlanError(t.itinerary.tripPlans.error);
+        return;
+      }
+    }
     addStop(parentItem.day, parentItem.id);
   }
 
@@ -1399,6 +1428,7 @@ export function SagittariusApp({
     const locationFields = locationFieldsFromCandidate(
       placeResolution.candidate,
       values.place,
+      values.mapLink,
     );
     const parentItem = values.parentItemId
       ? trip.itineraryItems.find((item) => item.id === values.parentItemId)
@@ -1537,7 +1567,7 @@ export function SagittariusApp({
         },
       }));
       setSelectedItemId(createdItem.id);
-      setContextRailVisibility(true);
+      setContextRailVisibility(false);
       setDialogState(null);
       return;
     }
@@ -1557,7 +1587,7 @@ export function SagittariusApp({
             },
       draftItem.id,
     );
-    setContextRailVisibility(true);
+    setContextRailVisibility(false);
     setDialogState(null);
   }
 
@@ -1577,6 +1607,7 @@ export function SagittariusApp({
       activity: item.activity,
       activityType: "food",
       place: item.place,
+      mapLink: item.mapLink,
       durationMinutes: item.durationMinutes,
       transportation: item.transportation,
       details: {
@@ -1795,6 +1826,8 @@ export function SagittariusApp({
     const editDay = values.day || dialogState.item.day;
     const shouldResolvePlace =
       values.place !== dialogState.item.place ||
+      safeExternalHref(values.mapLink) !==
+        safeExternalHref(dialogState.item.mapLink) ||
       Boolean(values.resolvedPlace) ||
       Boolean(values.saveUnresolved);
     setStopPlaceResolution(
@@ -1818,7 +1851,11 @@ export function SagittariusApp({
     }
     setStopPlaceResolution({ state: "idle", candidates: [] });
     const locationFields = shouldResolvePlace
-      ? locationFieldsFromCandidate(placeResolution.candidate, values.place)
+      ? locationFieldsFromCandidate(
+          placeResolution.candidate,
+          values.place,
+          values.mapLink,
+        )
       : {
           address: dialogState.item.address ?? dialogState.item.place,
           coordinates: dialogState.item.coordinates,
@@ -2769,10 +2806,10 @@ export function SagittariusApp({
     }));
   }
 
-  async function createBookingDoc(input: BookingDocInput) {
-    if (!canEditBookings) return;
+  async function createBookingDoc(input: BookingDocInput): Promise<BookingDoc | null> {
+    if (!canEditBookings) return null;
     const title = input.title.trim();
-    if (!title) return;
+    if (!title) return null;
     if (isApiMode && resolvedApiClient && participantSession) {
       const clientMutationId = nextClientMutationId("booking-doc-create");
       try {
@@ -2799,6 +2836,7 @@ export function SagittariusApp({
         };
         latestTripRef.current = nextTrip;
         setTripState((current) => ({ ...current, trip: nextTrip }));
+        return bookingDoc;
       } catch (error) {
         if (
           !(error instanceof TripApiError) ||
@@ -2812,7 +2850,7 @@ export function SagittariusApp({
         replaceCockpitFromApi(cockpit);
         latestTripRef.current = cockpit.trip;
       }
-      return;
+      return null;
     }
     const bookingDoc: BookingDoc = {
       id: nextLocalBookingDocId(trip.bookingDocs ?? []),
@@ -2834,6 +2872,7 @@ export function SagittariusApp({
       ...current,
       bookingDocs: [...(current.bookingDocs ?? []), bookingDoc],
     }));
+    return bookingDoc;
   }
 
   async function createItineraryBookingDraft(
@@ -2849,7 +2888,7 @@ export function SagittariusApp({
       template === "recommended"
         ? bookingTypeForItineraryItem(item)
         : bookingTypeForBookingTemplate(template);
-    await createBookingDoc({
+    const bookingDoc = await createBookingDoc({
       type: bookingType,
       title: bookingDraftTitleForItineraryItem(item, bookingType),
       status: "draft",
@@ -2873,6 +2912,7 @@ export function SagittariusApp({
     setContextRailPreferredTab("booking");
     setSelectedItemId(item.id);
     setContextRailVisibility(true);
+    return bookingDoc?.title;
   }
 
   async function updateBookingDoc(
@@ -3720,23 +3760,57 @@ export function SagittariusApp({
   async function importItinerary(file: File) {
     /* v8 ignore next */
     if (!canEdit) return;
+    const content = await file.text();
+    await importItineraryContent({
+      fileName: file.name,
+      contentType: file.type || "text/plain",
+      content,
+      preferApi: true,
+    });
+  }
+
+  async function importItineraryText(content: string, sourceName: string) {
+    /* v8 ignore next */
+    if (!canEdit) return;
+    await importItineraryContent({
+      fileName: sourceName,
+      contentType: "text/plain",
+      content,
+      preferApi: false,
+    });
+  }
+
+  async function importItineraryContent({
+    fileName,
+    contentType,
+    content,
+    preferApi,
+  }: {
+    fileName: string;
+    contentType: string;
+    content: string;
+    preferApi: boolean;
+  }) {
     try {
-      const content = await file.text();
       const document =
-        isApiMode && resolvedApiClient && participantSession
+        preferApi &&
+        shouldUseApiItineraryImport({ contentType, fileName }) &&
+        isApiMode &&
+        resolvedApiClient &&
+        participantSession
           ? await resolvedApiClient.importItinerary(
               trip.id,
               participantSession.sessionToken,
               {
-                fileName: file.name,
-                contentType: file.type || "text/plain",
+                fileName,
+                contentType,
                 mode: "auto",
                 content,
               },
             )
           : parseItineraryImportDocument(content);
       setPendingItineraryImport({
-        fileName: file.name,
+        fileName,
         items: document.items,
         records: document.records ?? emptyItineraryExportRecords(),
       });
@@ -3746,6 +3820,27 @@ export function SagittariusApp({
         caught instanceof Error ? caught.message : "Import itinerary ไม่สำเร็จ",
       );
     }
+  }
+
+  function shouldUseApiItineraryImport({
+    contentType,
+    fileName,
+  }: {
+    contentType: string;
+    fileName: string;
+  }): boolean {
+    const lowerName = fileName.toLowerCase();
+    const lowerType = contentType.toLowerCase();
+    if (
+      lowerType.includes("csv") ||
+      lowerType.includes("tab-separated") ||
+      lowerName.endsWith(".csv") ||
+      lowerName.endsWith(".tsv") ||
+      lowerName.endsWith(".txt")
+    ) {
+      return false;
+    }
+    return true;
   }
 
   async function applyPendingItineraryImport(
@@ -4194,7 +4289,9 @@ export function SagittariusApp({
                 currentMember={currentMember}
                 bookingDocs={scopedTripPlanRecords.bookingDocs}
                 canEditBookings={canEditBookings}
-                onCreateBookingDoc={createBookingDoc}
+                onCreateBookingDoc={async (input) => {
+                  await createBookingDoc(input);
+                }}
                 onUpdateBookingDoc={updateBookingDoc}
                 onDeleteBookingDoc={deleteBookingDoc}
               />
@@ -4279,9 +4376,7 @@ export function SagittariusApp({
                   dayPathOverrides={pathSelection.dayPathOverrides ?? {}}
                   showAllPaths={Boolean(pathSelection.showAll)}
                   tripName={trip.name}
-                  onAddBookingForItem={(itemId, template) =>
-                    void createItineraryBookingDraft(itemId, template)
-                  }
+                  onAddBookingForItem={createItineraryBookingDraft}
                   onAddStop={addStop}
                   onAddSubActivity={addSubActivity}
                   onAddNoteForItem={(itemId) => void createItineraryNote(itemId)}
@@ -4296,6 +4391,7 @@ export function SagittariusApp({
                   onDeleteItem={deleteStop}
                   onExportItinerary={exportItinerary}
                   onImportItinerary={importItinerary}
+                  onImportItineraryText={importItineraryText}
                   onChangeTripPath={changeTripPath}
                   onChangeDayPath={changeDayPath}
                   onClearDayPath={clearDayPath}
@@ -4427,6 +4523,7 @@ export function SagittariusApp({
             memberId={currentMember.id}
             pathOptions={pathOptions}
             records={pendingItineraryImport.records}
+            tripPlanOptions={trip.tripPlans ?? trip.planVariants}
             tripPlanId={selectedTripPlanId}
             startDate={trip.startDate}
             onApply={(target) => void applyPendingItineraryImport(target)}
@@ -4576,6 +4673,8 @@ async function resolveStopPlace(
 }> {
   if (values.resolvedPlace)
     return { candidate: values.resolvedPlace, state: null };
+  if (safeExternalHref(values.mapLink))
+    return { candidate: null, state: null };
   if (values.saveUnresolved || !resolver)
     return { candidate: null, state: null };
   try {
@@ -4605,17 +4704,19 @@ async function resolveStopPlace(
 function locationFieldsFromCandidate(
   candidate: PlaceResolutionCandidate | null,
   place: string,
+  mapLink?: string | null,
 ) {
+  const explicitMapLink = safeExternalHref(mapLink);
   return candidate
     ? {
         address: candidate.address,
         coordinates: candidate.coordinates,
-        mapLink: candidate.mapLink,
+        mapLink: explicitMapLink || candidate.mapLink,
       }
     : {
         address: place,
         coordinates: undefined,
-        mapLink: buildMapLink(place),
+        mapLink: explicitMapLink || buildMapLink(place),
       };
 }
 
@@ -4805,6 +4906,62 @@ function initialSelectedTripPlanId(trip: Trip): string {
     trip.tripPlans?.[0]?.id ||
     trip.planVariants[0]?.id ||
     ""
+  );
+}
+
+function resolveSelectedTripPlanId(
+  trip: Trip,
+  preferredTripPlanId?: string | null,
+): string {
+  if (preferredTripPlanId && tripHasPlan(trip, preferredTripPlanId)) {
+    return preferredTripPlanId;
+  }
+  return browserSelectedTripPlanId(trip) ?? initialSelectedTripPlanId(trip);
+}
+
+function browserSelectedTripPlanId(trip: Trip): string | null {
+  if (typeof window === "undefined") return null;
+  const searchParams = new URLSearchParams(window.location.search);
+  const urlTripPlanId = searchParams.get(selectedTripPlanQueryParam);
+  if (urlTripPlanId && tripHasPlan(trip, urlTripPlanId)) return urlTripPlanId;
+
+  const storedTripPlanId = getBrowserSessionStorage()?.getItem(
+    selectedTripPlanStorageKey(trip.id),
+  );
+  if (storedTripPlanId && tripHasPlan(trip, storedTripPlanId)) {
+    return storedTripPlanId;
+  }
+  return null;
+}
+
+function rememberSelectedTripPlanId(trip: Trip, tripPlanId: string) {
+  if (!tripPlanId || typeof window === "undefined") return;
+  getBrowserSessionStorage()?.setItem(
+    selectedTripPlanStorageKey(trip.id),
+    tripPlanId,
+  );
+
+  const searchParams = new URLSearchParams(window.location.search);
+  const defaultTripPlanId = initialSelectedTripPlanId(trip);
+  if (tripPlanId === defaultTripPlanId) {
+    searchParams.delete(selectedTripPlanQueryParam);
+  } else {
+    searchParams.set(selectedTripPlanQueryParam, tripPlanId);
+  }
+  const nextSearch = searchParams.toString();
+  const nextHref = `${window.location.pathname}${nextSearch ? `?${nextSearch}` : ""}${window.location.hash}`;
+  if (nextHref !== `${window.location.pathname}${window.location.search}${window.location.hash}`) {
+    window.history.replaceState(window.history.state, "", nextHref);
+  }
+}
+
+function selectedTripPlanStorageKey(tripId: string): string {
+  return `${selectedTripPlanSessionStoragePrefix}${tripId}`;
+}
+
+function tripHasPlan(trip: Trip, tripPlanId: string): boolean {
+  return [...trip.planVariants, ...(trip.tripPlans ?? [])].some(
+    (plan) => plan.id === tripPlanId,
   );
 }
 
@@ -5591,6 +5748,7 @@ function ItineraryImportOptionsDialog({
   records,
   startDate,
   currentTripPathId,
+  tripPlanOptions,
   tripPlanId,
   onApply,
   onClose,
@@ -5601,6 +5759,7 @@ function ItineraryImportOptionsDialog({
   records: ItineraryExportRecords;
   startDate: string;
   currentTripPathId: string;
+  tripPlanOptions: PlanVariant[];
   tripPlanId: string;
   onApply: (target: ItineraryImportApplyTarget) => void;
   onClose: () => void;
@@ -5620,6 +5779,7 @@ function ItineraryImportOptionsDialog({
     useState<ItineraryImportApplyTarget["mode"]>("replace-target");
   const [recordMode, setRecordMode] =
     useState<ItineraryImportApplyTarget["recordMode"]>("clone-linked");
+  const [targetTripPlanId, setTargetTripPlanId] = useState(tripPlanId);
   const previewLabel = importedItems[0]?.activity ?? "No activities";
 
   function submitImport(event: FormEvent<HTMLFormElement>) {
@@ -5636,7 +5796,7 @@ function ItineraryImportOptionsDialog({
         pathOptions,
         recordMode,
         scope,
-        tripPlanId,
+        tripPlanId: targetTripPlanId,
       }),
     );
   }
@@ -5668,6 +5828,19 @@ function ItineraryImportOptionsDialog({
           </p>
         ) : null}
         <div className={importDialogFieldsClassName}>
+          <label>
+            <span>Target Trip Plan</span>
+            <select
+              value={targetTripPlanId}
+              onChange={(event) => setTargetTripPlanId(event.target.value)}
+            >
+              {tripPlanOptions.map((plan) => (
+                <option value={plan.id} key={plan.id}>
+                  {plan.name}
+                </option>
+              ))}
+            </select>
+          </label>
           <label>
             <span>ชื่อ path</span>
             <input
@@ -5804,7 +5977,13 @@ function buildLocalPlanCheck(trip: Trip, memberId: string, tripPlanId?: string |
     const detail = missing.join(", ");
     const patch =
       missing.includes("time")
-        ? { timeMode: "flexible", startTime: null, durationMinutes: null }
+        ? {
+            timeMode: "flexible",
+            startTime: null,
+            endTime: null,
+            endOffsetDays: 0,
+            durationMinutes: null,
+          }
         : missing.includes("duration")
           ? { durationMinutes: 60 }
           : undefined;
@@ -5890,7 +6069,7 @@ export function normalizeInlineTimePatch(
   if (start === null || end === null) return nextPatch;
 
   const minimumEndOffsetDays = end <= start ? 1 : 0;
-  let endOffsetDays = hasEndOffsetDays
+  const endOffsetDays = hasEndOffsetDays
     ? Math.max(nextPatch.endOffsetDays ?? 0, minimumEndOffsetDays)
     : minimumEndOffsetDays;
   if (endOffsetDays !== (nextPatch.endOffsetDays ?? item.endOffsetDays ?? 0)) {
@@ -5912,9 +6091,21 @@ export function parsePlanSuggestionEditAction(
   const patch: InlineItineraryItemPatch = {};
   if (rawPatch.timeMode === "scheduled" || rawPatch.timeMode === "flexible") {
     patch.timeMode = rawPatch.timeMode;
+    if (rawPatch.timeMode === "flexible") {
+      patch.startTime = "";
+      patch.endTime = null;
+      patch.endOffsetDays = 0;
+      patch.durationMinutes = null;
+    }
   }
   if (typeof rawPatch.startTime === "string" || rawPatch.startTime === null) {
     patch.startTime = rawPatch.startTime ?? "";
+  }
+  if (typeof rawPatch.endTime === "string" || rawPatch.endTime === null) {
+    patch.endTime = rawPatch.endTime ?? null;
+  }
+  if (typeof rawPatch.endOffsetDays === "number") {
+    patch.endOffsetDays = Math.max(0, Math.floor(rawPatch.endOffsetDays));
   }
   if (
     typeof rawPatch.durationMinutes === "number" ||

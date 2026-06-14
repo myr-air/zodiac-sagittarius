@@ -276,7 +276,14 @@ export function ContextRail({
   }, [selectedItem, suggestions]);
 
   useEffect(() => {
-    if (open) setActiveTab(preferredTab);
+    if (!open) return;
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (!cancelled) setActiveTab(preferredTab);
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [open, preferredTab, selectedItem?.id]);
 
   function submitNote(event: FormEvent<HTMLFormElement>) {

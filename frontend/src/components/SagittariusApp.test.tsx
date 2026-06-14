@@ -65,6 +65,14 @@ function getFirstStopDetailsButton(): HTMLElement {
   return screen.getByRole("button", { name: /เลือกจุด Dim Dim Sum/i });
 }
 
+function getItineraryImportFileInput(): HTMLInputElement {
+  const input = document.querySelector<HTMLInputElement>(
+    'input[type="file"][accept*=".csv"]',
+  );
+  if (!input) throw new Error("Itinerary import file input missing.");
+  return input;
+}
+
 async function openFirstStopDetails(user: ReturnType<typeof userEvent.setup>) {
   await user.click(getFirstStopDetailsButton());
 }
@@ -346,6 +354,8 @@ describe("Sagittarius cockpit UI", () => {
       patch: {
         timeMode: "flexible",
         startTime: "",
+        endTime: null,
+        endOffsetDays: 0,
         durationMinutes: null,
         parentItemId: null,
       },
@@ -553,6 +563,49 @@ describe("Sagittarius cockpit UI", () => {
       ),
     );
     expect(screen.getAllByDisplayValue("ติ่มซำ แถว Elements").length).toBeGreaterThan(0);
+  });
+
+  it("preserves explicit map links without forcing coordinate resolution", async () => {
+    const user = userEvent.setup();
+    const storage = installLocalStorageStub();
+    const placeResolver = vi.fn().mockResolvedValue({
+      status: "unresolved",
+      candidates: [],
+    });
+    render(
+      <SagittariusApp initialView="itinerary" placeResolver={placeResolver} />,
+    );
+
+    await user.click(
+      screen.getByRole("button", { name: "เพิ่มสถานที่ / กิจกรรม วันที่ 1" }),
+    );
+    fireEvent.change(screen.getByLabelText("กิจกรรม"), {
+      target: { value: "Hong Kong Disneyland" },
+    });
+    fireEvent.change(screen.getByLabelText("สถานที่"), {
+      target: { value: "Hong Kong Disneyland" },
+    });
+    fireEvent.change(screen.getByLabelText("ลิงก์แผนที่"), {
+      target: {
+        value:
+          "https://uri.amap.com/marker?position=114.0413,22.3129&name=Hong%20Kong%20Disneyland",
+      },
+    });
+    await user.click(screen.getByRole("button", { name: "บันทึกกิจกรรม" }));
+
+    expect(placeResolver).not.toHaveBeenCalled();
+    expect(
+      await screen.findByRole("row", { name: /Hong Kong Disneyland/i }),
+    ).toBeInTheDocument();
+    const persistedTrip = JSON.parse(storage.getItem(tripStorageKey)!) as Trip;
+    const persistedItem = persistedTrip.itineraryItems.find(
+      (item) => item.activity === "Hong Kong Disneyland",
+    );
+    expect(persistedItem).toEqual(expect.objectContaining({
+      mapLink:
+        "https://uri.amap.com/marker?position=114.0413,22.3129&name=Hong%20Kong%20Disneyland",
+    }));
+    expect(persistedItem?.coordinates).toBeUndefined();
   });
 
   it("opens the Bookings & Docs workspace and creates a local booking record", async () => {
@@ -865,6 +918,81 @@ describe("Sagittarius cockpit UI", () => {
       ),
     );
     expect(apiClient.createBookingDoc).toHaveBeenCalledTimes(1);
+  });
+
+  it("shows an inline itinerary save error when API journey creation fails", async () => {
+    const user = userEvent.setup();
+    installLocalStorageStub();
+    window.history.pushState(
+      null,
+      "",
+      appRoutes.tripItinerary(seedTrip.id),
+    );
+    window.sessionStorage.setItem(
+      tripParticipantSessionStorageKey,
+      JSON.stringify({
+        tripId: seedTrip.id,
+        memberId: seedTrip.members[0].id,
+        sessionToken: "api-itinerary-session",
+        createdAt: "2026-05-29T00:00:00.000Z",
+        expiresAt: "2026-06-28T00:00:00.000Z",
+      }),
+    );
+    const apiClient = createApiClientForTrip(seedTrip, {
+      createItineraryItem: vi
+        .fn()
+        .mockRejectedValue(
+          new TripApiError({
+            code: "validation_failed",
+            message: "invalid journey payload",
+            status: 422,
+          }),
+        ),
+    });
+
+    render(
+      <SagittariusApp
+        accessMode="trip-access"
+        initialView="itinerary"
+        requireJoin
+        dataSource="api"
+        routeTripId={seedTrip.id}
+        apiClient={apiClient}
+      />,
+    );
+
+    expect(
+      await screen.findByRole("region", {
+        name: /Smart itinerary table|ตารางแผนการเดินทาง/i,
+      }),
+    ).toBeInTheDocument();
+    await user.click(
+      screen.getByRole("button", { name: /เพิ่มสถานที่ \/ กิจกรรม วันที่ 1/i }),
+    );
+    const dialog = await screen.findByRole("dialog", { name: /เพิ่มกิจกรรม/i });
+    fireEvent.change(within(dialog).getByLabelText("ประเภท"), {
+      target: { value: "transportation" },
+    });
+    fireEvent.change(within(dialog).getByLabelText("กิจกรรม"), {
+      target: { value: "HKG -> Central" },
+    });
+    fireEvent.change(within(dialog).getByLabelText("จาก"), {
+      target: { value: "Hong Kong International Airport" },
+    });
+    fireEvent.change(within(dialog).getByLabelText("ถึง"), {
+      target: { value: "Central Station" },
+    });
+    await user.click(
+      within(dialog).getByRole("button", { name: "บันทึกกิจกรรม" }),
+    );
+
+    expect(await within(dialog).findByRole("alert")).toHaveTextContent(
+      "บันทึกกิจกรรมไม่สำเร็จ",
+    );
+    expect(apiClient.createItineraryItem).toHaveBeenCalledTimes(1);
+    expect(
+      screen.getByRole("dialog", { name: /เพิ่มกิจกรรม/i }),
+    ).toBeInTheDocument();
   });
 
   it("asks the organizer to choose when place resolution is ambiguous", async () => {
@@ -4778,7 +4906,7 @@ describe("Sagittarius cockpit UI", () => {
       { type: "application/json" },
     );
 
-    await user.upload(screen.getByLabelText(/นำเข้า itinerary JSON/i), file);
+    await user.upload(getItineraryImportFileInput(), file);
     const dialog = await screen.findByRole("dialog", {
       name: /ตั้งค่า import itinerary/i,
     });
@@ -4855,6 +4983,89 @@ describe("Sagittarius cockpit UI", () => {
     expect(prompt).not.toHaveBeenCalled();
     expect(confirm).not.toHaveBeenCalled();
     expect(alert).not.toHaveBeenCalled();
+  });
+
+  it("previews pasted CSV rows and applies them to the selected Trip Plan", async () => {
+    const user = userEvent.setup();
+    const storage = installLocalStorageStub();
+    storage.setItem(tripStorageKey, JSON.stringify(tripWithPlans()));
+    render(<SagittariusApp initialView="itinerary" />);
+
+    await screen.findByRole("option", { name: "Rain Plan - ร่าง" });
+    await user.selectOptions(screen.getByLabelText("Trip Plan"), [
+      "plan-variant-backup",
+    ]);
+    await user.click(screen.getByRole("button", { name: /นำเข้า/i }));
+
+    const sourceDialog = screen.getByRole("dialog", { name: /นำเข้า itinerary/i });
+    fireEvent.change(within(sourceDialog).getByLabelText(/วางข้อมูลตาราง/i), {
+      target: {
+        value: [
+          "Day\tDate\tTime\tPlans\tMaps\tDuration\tTransportation\tNote",
+          "DAY1 Shenzhen\t\t\t\t\t\t\t",
+          "Thursday\t18 June 2026\t13.00 - 14.00\tAirport -> Shenzhen\t\t\t30km+ from Airport\tจองตั๋วล่วงหน้า Bus A21 - 60 HKD",
+          "\t\t20.50 -\tCivic center\thttps://surl.amap.com/5upxC7jrz6pa\t\tmetro 15 min\t",
+        ].join("\n"),
+      },
+    });
+    await user.click(
+      within(sourceDialog).getByRole("button", { name: /Preview pasted rows/i }),
+    );
+
+    const dialog = await screen.findByRole("dialog", {
+      name: /ตั้งค่า import itinerary/i,
+    });
+    expect(dialog).toHaveTextContent("Airport -> Shenzhen · 2 activities");
+    expect(dialog).toHaveTextContent(
+      "Records detected: 0 expenses, 1 bookings, 1 notes, 1 tasks",
+    );
+    expect(within(dialog).getByLabelText("Target Trip Plan")).toHaveDisplayValue(
+      "Rain Plan",
+    );
+    await user.click(
+      within(dialog).getByRole("button", { name: /import itinerary/i }),
+    );
+
+    const importedRow = screen.getByRole("row", {
+      name: /Airport -> Shenzhen/i,
+    });
+    expect(importedRow).toHaveTextContent("1 booking");
+    expect(importedRow).toHaveTextContent("1 note");
+    expect(importedRow).toHaveTextContent("1 task");
+
+    const persistedTrip = JSON.parse(storage.getItem(tripStorageKey)!) as Trip;
+    const airportItem = persistedTrip.itineraryItems.find(
+      (item) => item.activity === "Airport -> Shenzhen",
+    );
+    expect(airportItem).toMatchObject({
+      planVariantId: "plan-variant-backup",
+      activityType: "travel",
+      itemKind: "travel",
+      startTime: "13:00",
+      endTime: "14:00",
+      priority: "high",
+      note: "จองตั๋วล่วงหน้า Bus A21 - 60 HKD",
+    });
+    const civicItem = persistedTrip.itineraryItems.find(
+      (item) => item.activity === "Civic center",
+    );
+    expect(civicItem).toMatchObject({
+      planVariantId: "plan-variant-backup",
+      startTime: "20:50",
+      endTime: null,
+      mapLink: "https://surl.amap.com/5upxC7jrz6pa",
+    });
+    expect(persistedTrip.bookingDocs ?? []).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          tripPlanId: "plan-variant-backup",
+          status: "draft",
+          priceAmount: 60,
+          currency: "HKD",
+          relatedItineraryItemIds: [airportItem?.id],
+        }),
+      ]),
+    );
   });
 
   it("can import activities only while leaving source records as references", async () => {
@@ -4941,7 +5152,7 @@ describe("Sagittarius cockpit UI", () => {
       { type: "application/json" },
     );
 
-    await user.upload(screen.getByLabelText(/นำเข้า itinerary JSON/i), file);
+    await user.upload(getItineraryImportFileInput(), file);
     const dialog = await screen.findByRole("dialog", {
       name: /ตั้งค่า import itinerary/i,
     });
@@ -5301,7 +5512,7 @@ describe("Sagittarius cockpit UI", () => {
       "plan-variant-backup",
     ]);
     await user.upload(
-      screen.getByLabelText(/นำเข้า itinerary JSON/i),
+      getItineraryImportFileInput(),
       new File(["raw itinerary"], "itinerary.json", {
         type: "application/json",
       }),
@@ -5459,6 +5670,39 @@ describe("Sagittarius cockpit UI", () => {
         (plan) => plan.id === "plan-variant-backup",
       ),
     ).toMatchObject({ kind: "draft", status: "draft" });
+    expect(window.location.search).toContain("tripPlanId=plan-variant-backup");
+  });
+
+  it("preserves the selected Trip Plan across reload-style remounts", async () => {
+    const user = userEvent.setup();
+    const storage = installLocalStorageStub();
+    const draftTrip = tripWithPlans();
+    storage.setItem(tripStorageKey, JSON.stringify(draftTrip));
+
+    const { unmount } = render(<SagittariusApp initialView="itinerary" />);
+
+    await screen.findByRole("option", { name: "Rain Plan - ร่าง" });
+    await user.selectOptions(screen.getByLabelText("Trip Plan"), [
+      "plan-variant-backup",
+    ]);
+    expect(
+      await screen.findByRole("row", { name: /Rain plan gallery/i }),
+    ).toBeInTheDocument();
+
+    unmount();
+    render(<SagittariusApp initialView="itinerary" />);
+
+    await waitFor(() =>
+      expect(screen.getByLabelText("Trip Plan")).toHaveValue(
+        "plan-variant-backup",
+      ),
+    );
+    expect(
+      await screen.findByRole("row", { name: /Rain plan gallery/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("row", { name: /Dim Dim Sum/i }),
+    ).not.toBeInTheDocument();
   });
 
   it("sets the selected local Trip Plan as Main only from the explicit action", async () => {
@@ -5585,6 +5829,57 @@ describe("Sagittarius cockpit UI", () => {
         }),
       ]),
     );
+    expect(
+      screen.queryByRole("complementary", { name: /ข้อมูลประกอบการวางแผน/i }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("keeps consecutive add actions usable after saving a row", async () => {
+    const user = userEvent.setup();
+    render(<SagittariusApp initialView="itinerary" />);
+
+    await user.click(
+      screen.getByRole("button", { name: /เลือกจุด Dim Dim Sum/i }),
+    );
+    expect(
+      await screen.findByRole("complementary", {
+        name: /ข้อมูลประกอบการวางแผน/i,
+      }),
+    ).toBeInTheDocument();
+
+    await user.click(
+      screen.getByRole("button", {
+        name: /เพิ่มสถานที่ \/ กิจกรรม วันที่ 1/i,
+      }),
+    );
+    const firstDialog = await screen.findByRole("dialog", {
+      name: /เพิ่มกิจกรรม/i,
+    });
+    fireEvent.change(within(firstDialog).getByLabelText("กิจกรรม"), {
+      target: { value: "Breakfast near hotel" },
+    });
+    fireEvent.change(within(firstDialog).getByLabelText("สถานที่"), {
+      target: { value: "Tsim Sha Tsui" },
+    });
+    await user.click(
+      within(firstDialog).getByRole("button", { name: "บันทึกกิจกรรม" }),
+    );
+
+    expect(
+      await screen.findByRole("row", { name: /Breakfast near hotel/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("complementary", { name: /ข้อมูลประกอบการวางแผน/i }),
+    ).not.toBeInTheDocument();
+
+    await user.click(
+      screen.getByRole("button", {
+        name: /เพิ่มสถานที่ \/ กิจกรรม วันที่ 1/i,
+      }),
+    );
+    expect(
+      await screen.findByRole("dialog", { name: /เพิ่มกิจกรรม/i }),
+    ).toBeInTheDocument();
   });
 
   it("quick-adds a sub-activity under an activity block from the itinerary row", async () => {
@@ -5626,9 +5921,11 @@ describe("Sagittarius cockpit UI", () => {
     render(<SagittariusApp initialView="itinerary" />);
 
     await user.click(
-      await screen.findByRole("button", {
-        name: /เพิ่ม sub-activity ใต้ Flight to Hong Kong/i,
-      }),
+      (
+        await screen.findAllByRole("button", {
+          name: /เพิ่ม sub-activity ใต้ Flight to Hong Kong/i,
+        })
+      )[0],
     );
     const dialog = await screen.findByRole("dialog", { name: /เพิ่มกิจกรรม/i });
     expect(within(dialog).getByLabelText("Plan block")).toBeDisabled();
@@ -5681,20 +5978,77 @@ describe("Sagittarius cockpit UI", () => {
     render(<SagittariusApp initialView="itinerary" />);
 
     await user.click(
-      await screen.findByRole("button", {
-        name: /เปลี่ยน Market walk เป็น activity block/i,
-      }),
+      (
+        await screen.findAllByRole("button", {
+          name: /เพิ่ม sub-activity ใต้ Market walk/i,
+        })
+      )[0],
     );
-
+    const dialog = await screen.findByRole("dialog", { name: /เพิ่มกิจกรรม/i });
     const promotedRow = await screen.findByRole("row", { name: /Market walk/i });
     expect(
       within(promotedRow).getByText("Activity block · 0 sub-items"),
     ).toBeInTheDocument();
+    expect(
+      within(dialog).getByLabelText("Plan block"),
+    ).toBeDisabled();
+    fireEvent.change(within(dialog).getByLabelText("กิจกรรม"), {
+      target: { value: "Snack stop" },
+    });
+    fireEvent.change(within(dialog).getByLabelText("สถานที่"), {
+      target: { value: "Street food lane" },
+    });
+    await user.click(
+      within(dialog).getByRole("button", { name: "บันทึกกิจกรรม" }),
+    );
+
+    expect(
+      await screen.findByRole("row", { name: /Snack stop/i }),
+    ).toHaveAttribute("data-hierarchy-level", "2");
+    const persistedTrip = JSON.parse(storage.getItem(tripStorageKey)!) as Trip;
+    expect(persistedTrip.itineraryItems).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: "market-walk",
+          isPlanBlock: true,
+        }),
+        expect.objectContaining({
+          activity: "Snack stop",
+          parentItemId: "market-walk",
+          isPlanBlock: false,
+        }),
+      ]),
+    );
+  });
+
+  it("keeps the visible sub-item action available on existing activity blocks", async () => {
+    const user = userEvent.setup();
+    const storage = installLocalStorageStub();
+    const normalActivity = {
+      ...seedTrip.itineraryItems[0],
+      id: "market-walk",
+      activity: "Market walk",
+      place: "Mong Kok",
+      isPlanBlock: true,
+      parentItemId: null,
+      sortOrder: 100,
+    };
+    storage.setItem(
+      tripStorageKey,
+      JSON.stringify({
+        ...seedTrip,
+        itineraryItems: [normalActivity],
+      }),
+    );
+
+    render(<SagittariusApp initialView="itinerary" />);
 
     await user.click(
-      within(promotedRow).getByRole("button", {
-        name: /เพิ่ม sub-activity ใต้ Market walk/i,
-      }),
+      (
+        await screen.findAllByRole("button", {
+          name: /เพิ่ม sub-activity ใต้ Market walk/i,
+        })
+      )[0],
     );
     const dialog = await screen.findByRole("dialog", { name: /เพิ่มกิจกรรม/i });
     fireEvent.change(within(dialog).getByLabelText("กิจกรรม"), {
@@ -5753,9 +6107,11 @@ describe("Sagittarius cockpit UI", () => {
     render(<SagittariusApp initialView="itinerary" />);
 
     await user.click(
-      await screen.findByRole("button", {
-        name: /เพิ่ม sub-activity ใต้ Rain route flight/i,
-      }),
+      (
+        await screen.findAllByRole("button", {
+          name: /เพิ่ม sub-activity ใต้ Rain route flight/i,
+        })
+      )[0],
     );
     const dialog = await screen.findByRole("dialog", { name: /เพิ่มกิจกรรม/i });
     fireEvent.change(within(dialog).getByLabelText("กิจกรรม"), {
@@ -5898,6 +6254,9 @@ describe("Sagittarius cockpit UI", () => {
     );
     await user.click(screen.getByRole("menuitem", { name: /Recommended/i }));
 
+    expect(await screen.findByRole("status")).toHaveTextContent(
+      /Flight to Hong Kong flight ticket draft/i,
+    );
     const structure = await screen.findByLabelText("Structure for Flight to Hong Kong");
     expect(within(structure).getByText("1 booking")).toBeInTheDocument();
     const context = await screen.findByRole("complementary", {
@@ -6053,7 +6412,7 @@ describe("Sagittarius cockpit UI", () => {
       { type: "application/json" },
     );
 
-    await user.upload(screen.getByLabelText(/นำเข้า itinerary JSON/i), file);
+    await user.upload(getItineraryImportFileInput(), file);
     const dialog = await screen.findByRole("dialog", {
       name: /ตั้งค่า import itinerary/i,
     });

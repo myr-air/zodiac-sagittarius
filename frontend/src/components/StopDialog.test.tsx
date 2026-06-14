@@ -150,6 +150,43 @@ describe("StopDialog", () => {
     expect(screen.getByText("—")).toBeInTheDocument();
   });
 
+  it("clears stale hidden times when switching to flexible time", () => {
+    const onSubmit = vi.fn();
+    renderEn(<StopDialog mode="create" onClose={vi.fn()} onSubmit={onSubmit} />);
+
+    fireEvent.change(screen.getByLabelText("End time"), { target: { value: "21:30" } });
+    expect(screen.getByText("5 h")).toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText("Time mode"), { target: { value: "flexible" } });
+    expect(screen.getByLabelText("Start time")).toHaveValue("");
+    expect(screen.getByLabelText("End time")).toHaveValue("");
+
+    fireEvent.change(screen.getByLabelText("Activity"), { target: { value: "Tsim Sha Tsui shopping" } });
+    fireEvent.change(screen.getByLabelText("Place"), { target: { value: "Tsim Sha Tsui" } });
+    fireEvent.submit(screen.getByRole("button", { name: "Save activity" }).closest("form")!);
+
+    expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({
+      timeMode: "flexible",
+      startTime: "",
+      endTime: null,
+      endOffsetDays: 0,
+      durationMinutes: null,
+    }));
+  });
+
+  it("shows a save error when async submit fails", async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn().mockRejectedValue(new Error("version conflict"));
+    renderEn(<StopDialog mode="create" onClose={vi.fn()} onSubmit={onSubmit} />);
+
+    fireEvent.change(screen.getByLabelText("Activity"), { target: { value: "Airport transfer" } });
+    fireEvent.change(screen.getByLabelText("Place"), { target: { value: "HKG" } });
+    await user.click(screen.getByRole("button", { name: "Save activity" }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("Could not save activity");
+    expect(screen.getByRole("dialog", { name: "Add activity" })).toBeInTheDocument();
+  });
+
   it("submits explicit cross-day end time windows", () => {
     const onSubmit = vi.fn();
     renderEn(<StopDialog mode="create" onClose={vi.fn()} onSubmit={onSubmit} />);
@@ -394,6 +431,9 @@ describe("StopDialog", () => {
       />,
     );
 
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      /Coordinates could not be resolved|ยังหาพิกัดไม่ได้/i,
+    );
     fireEvent.change(screen.getByLabelText("กิจกรรม"), { target: { value: "Late snack" } });
     fireEvent.change(screen.getByLabelText("สถานที่"), { target: { value: "near hotel" } });
     await userEvent.click(screen.getByRole("button", { name: /บันทึกแบบยังไม่ระบุพิกัด/i }));
@@ -402,6 +442,32 @@ describe("StopDialog", () => {
       activity: "Late snack",
       place: "near hotel",
       saveUnresolved: true,
+    }));
+  });
+
+  it("submits organizer map links as first-class itinerary source data", async () => {
+    const onSubmit = vi.fn();
+    renderEn(<StopDialog mode="create" onClose={vi.fn()} onSubmit={onSubmit} />);
+
+    fireEvent.change(screen.getByLabelText("Activity"), {
+      target: { value: "Hong Kong Disneyland" },
+    });
+    fireEvent.change(screen.getByLabelText("Place"), {
+      target: { value: "Hong Kong Disneyland" },
+    });
+    fireEvent.change(screen.getByLabelText("Map link"), {
+      target: {
+        value:
+          "https://uri.amap.com/marker?position=114.0413,22.3129&name=Hong%20Kong%20Disneyland",
+      },
+    });
+    fireEvent.submit(screen.getByRole("button", { name: "Save activity" }).closest("form")!);
+
+    expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({
+      activity: "Hong Kong Disneyland",
+      mapLink:
+        "https://uri.amap.com/marker?position=114.0413,22.3129&name=Hong%20Kong%20Disneyland",
+      place: "Hong Kong Disneyland",
     }));
   });
 });

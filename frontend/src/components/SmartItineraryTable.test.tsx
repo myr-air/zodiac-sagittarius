@@ -88,6 +88,14 @@ function findGraphLine(
   );
 }
 
+function getImportFileInput(): HTMLInputElement {
+  const input = document.querySelector<HTMLInputElement>(
+    'input[type="file"][accept*=".csv"]',
+  );
+  if (!input) throw new Error("Import file input missing.");
+  return input;
+}
+
 describe("SmartItineraryTable", () => {
   it("uses English itinerary shell labels by default and Thai after switching", () => {
     renderWithI18n(
@@ -185,11 +193,35 @@ describe("SmartItineraryTable", () => {
       { type: "application/json" },
     );
     await user.upload(
-      screen.getByLabelText(/Import itinerary JSON|นำเข้า itinerary JSON/i),
+      getImportFileInput(),
       file,
     );
 
     expect(onImportItinerary).toHaveBeenCalledWith(file);
+  });
+
+  it("opens a visible import dialog and submits pasted table rows", async () => {
+    const user = userEvent.setup();
+    const onImportItineraryText = vi.fn();
+    renderTable({ onImportItineraryText });
+
+    await user.click(screen.getByRole("button", { name: /นำเข้า/i }));
+
+    const dialog = screen.getByRole("dialog", { name: /นำเข้า itinerary/i });
+    expect(dialog).toHaveTextContent(/JSON\/CSV|spreadsheet/i);
+    await user.click(within(dialog).getByRole("button", { name: /Preview pasted rows/i }));
+    expect(within(dialog).getByRole("alert")).toHaveTextContent(/วาง CSV/i);
+
+    await user.type(
+      within(dialog).getByLabelText(/วางข้อมูลตาราง/i),
+      "Day\tDate\tTime\tPlans\nFriday\t19 June 2026\t9.00 - 10.00\tCoffee",
+    );
+    await user.click(within(dialog).getByRole("button", { name: /Preview pasted rows/i }));
+
+    expect(onImportItineraryText).toHaveBeenCalledWith(
+      "Day\tDate\tTime\tPlans\nFriday\t19 June 2026\t9.00 - 10.00\tCoffee",
+      "pasted-itinerary.csv",
+    );
   });
 
   it("renders the current Trip Plan selector with existing plan names", () => {
@@ -1782,6 +1814,8 @@ describe("SmartItineraryTable", () => {
     expect(onUpdateItemInline).toHaveBeenCalledWith("item-dimdim", {
       timeMode: "flexible",
       startTime: "",
+      endTime: null,
+      endOffsetDays: 0,
       durationMinutes: null,
     });
     expect(onUpdateItemInline).toHaveBeenCalledWith("item-dimdim", {
@@ -2135,7 +2169,7 @@ describe("SmartItineraryTable", () => {
     );
   });
 
-  it("opens a quick sub-activity action from an activity block row", async () => {
+  it("opens a visible quick sub-activity action from top-level rows", async () => {
     const user = userEvent.setup();
     const onAddSubActivity = vi.fn();
     const onUpdateItemInline = vi.fn();
@@ -2165,21 +2199,17 @@ describe("SmartItineraryTable", () => {
 
     await user.click(
       within(screen.getByRole("row", { name: /Flight to Hong Kong/i }))
-        .getByRole("button", { name: /เพิ่ม sub-activity ใต้ Flight to Hong Kong/i }),
+        .getAllByRole("button", { name: /เพิ่ม sub-activity ใต้ Flight to Hong Kong/i })[0],
     );
 
     expect(onAddSubActivity).toHaveBeenCalledWith("block-flight");
     await user.click(
-      within(screen.getByRole("row", { name: /Market walk/i })).getByRole(
-        "button",
-        { name: /เปลี่ยน Market walk เป็น activity block/i },
-      ),
+      within(screen.getByRole("row", { name: /Market walk/i }))
+        .getAllByRole("button", { name: /เพิ่ม sub-activity ใต้ Market walk/i })[0],
     );
 
-    expect(onUpdateItemInline).toHaveBeenCalledWith("solo-market", {
-      isPlanBlock: true,
-    });
-    expect(onAddSubActivity).not.toHaveBeenCalledWith("solo-market");
+    expect(onAddSubActivity).toHaveBeenCalledWith("solo-market");
+    expect(onUpdateItemInline).not.toHaveBeenCalled();
   });
 
   it("disables deleting an activity block until its sub-activities are moved", async () => {
@@ -2304,12 +2334,17 @@ describe("SmartItineraryTable", () => {
         .getByRole("button", { name: /Add booking draft for Flight to Hong Kong/i }),
     );
     await user.click(
-      screen.getByRole("menuitem", { name: /Recommended/i }),
+      screen.getByRole("menuitem", {
+        name: /Recommended.*Flight to Hong Kong/i,
+      }),
     );
 
     expect(onAddBookingForItem).toHaveBeenCalledWith(
       "item-flight",
       "recommended",
+    );
+    expect(await screen.findByRole("status")).toHaveTextContent(
+      /Recommended.*Flight to Hong Kong/i,
     );
   });
 
