@@ -1122,7 +1122,7 @@ export function SagittariusApp({
         (draggedItem.parentItemId ?? null) !==
         (movedItem.parentItemId ?? null);
       if (draggedItem.day !== movedItem.day || parentChanged) {
-        await resolvedApiClient.patchItineraryItem(
+        const patchedItem = await resolvedApiClient.patchItineraryItem(
           trip.id,
           draggedItemId,
           participantSession.sessionToken,
@@ -1136,7 +1136,10 @@ export function SagittariusApp({
             },
           },
         );
-        setTripState((current) => ({ ...current, trip: nextTrip }));
+        setTripState((current) => ({
+          ...current,
+          trip: replaceItineraryItem(nextTrip, patchedItem),
+        }));
         setSelectedItemId(draggedItemId);
         setContextRailVisibility(true);
         return;
@@ -1207,7 +1210,7 @@ export function SagittariusApp({
     if (!draggedItem || !movedItem) return;
 
     if (isApiMode && resolvedApiClient && participantSession) {
-      await resolvedApiClient.patchItineraryItem(
+      const patchedItem = await resolvedApiClient.patchItineraryItem(
         trip.id,
         draggedItemId,
         participantSession.sessionToken,
@@ -1221,7 +1224,10 @@ export function SagittariusApp({
           },
         },
       );
-      setTripState((current) => ({ ...current, trip: nextTrip }));
+      setTripState((current) => ({
+        ...current,
+        trip: replaceItineraryItem(nextTrip, patchedItem),
+      }));
       setSelectedItemId(draggedItemId);
       setContextRailVisibility(true);
       return;
@@ -1528,6 +1534,15 @@ export function SagittariusApp({
       note: item.note,
       saveUnresolved: true,
     });
+  }
+
+  function replaceItineraryItem(current: Trip, updatedItem: ItineraryItem): Trip {
+    return {
+      ...current,
+      itineraryItems: current.itineraryItems.map((item) =>
+        item.id === updatedItem.id ? updatedItem : item,
+      ),
+    };
   }
 
   function moveTripItem(

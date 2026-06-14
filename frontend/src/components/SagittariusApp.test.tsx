@@ -2904,6 +2904,101 @@ describe("Sagittarius cockpit UI", () => {
     );
   }, 45_000);
 
+  it("uses backend-returned path fields after API block drag and drop", async () => {
+    const user = userEvent.setup();
+    installLocalStorageStub();
+    const blockItem = {
+      ...seedTrip.itineraryItems[0],
+      id: "api-rain-block",
+      activity: "API rain route block",
+      day: "2026-06-19",
+      isPlanBlock: true,
+      parentItemId: null,
+      pathGroupId: "path-group-rain-api",
+      pathId: "path-rain-api",
+      pathName: "Rain plan",
+      pathRole: "alternative" as const,
+      sortOrder: 100,
+    };
+    const movingItem = {
+      ...seedTrip.itineraryItems[1],
+      id: "api-main-cafe",
+      activity: "API main cafe",
+      day: "2026-06-19",
+      isPlanBlock: false,
+      parentItemId: null,
+      pathGroupId: undefined,
+      pathId: undefined,
+      pathName: undefined,
+      pathRole: "main" as const,
+      sortOrder: 200,
+    };
+    const ownerTrip = {
+      ...seedTrip,
+      joinPasswordHash: "",
+      itineraryItems: [blockItem, movingItem],
+    };
+    const patchedItem = {
+      ...movingItem,
+      day: blockItem.day,
+      parentItemId: blockItem.id,
+      pathGroupId: blockItem.pathGroupId,
+      pathId: blockItem.pathId,
+      pathName: blockItem.pathName,
+      pathRole: blockItem.pathRole,
+      sortOrder: 200,
+      updatedAt: "2026-05-29T00:00:00.000Z",
+      version: movingItem.version + 1,
+    };
+    const apiClient = createApiClientForTrip(ownerTrip, {
+      patchItineraryItem: vi.fn().mockResolvedValue(patchedItem),
+    });
+
+    render(
+      <SagittariusApp
+        requireJoin
+        dataSource="api"
+        initialView="itinerary"
+        apiClient={apiClient}
+      />,
+    );
+
+    await loginApiTrip(user);
+    const dataTransfer = createDataTransfer();
+    fireEvent.dragStart(
+      await screen.findByRole("button", { name: /ลาก API main cafe/i }),
+      { dataTransfer },
+    );
+    fireEvent.drop(
+      within(
+        screen.getByRole("row", { name: /API rain route block/i }),
+      ).getByRole("button", { name: /Into block/i }),
+      { dataTransfer },
+    );
+
+    await waitFor(() =>
+      expect(apiClient.patchItineraryItem).toHaveBeenCalledWith(
+        ownerTrip.id,
+        movingItem.id,
+        "session-token",
+        expect.objectContaining({
+          expectedVersion: movingItem.version,
+          patch: expect.objectContaining({
+            day: blockItem.day,
+            parentItemId: blockItem.id,
+            sortOrder: 200,
+          }),
+        }),
+      ),
+    );
+    expect(
+      await screen.findByRole("row", { name: /API main cafe/i }),
+    ).toHaveAttribute("data-hierarchy-level", "2");
+    expect(
+      screen.getAllByText("Rain plan").some((element) => element.tagName === "SPAN"),
+    ).toBe(true);
+  }, 45_000);
+
   it("keeps API same-plan overlaps as warnings without auto resolution", async () => {
     const user = userEvent.setup();
     const day = "2026-06-18";
