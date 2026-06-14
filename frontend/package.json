@@ -16,6 +16,7 @@
     "test:e2e:local": "bun run scripts/run-local-real-api-e2e.ts",
     "test:e2e:auth-browser": "bun run scripts/run-local-real-browser-auth-e2e.ts",
     "test:itinerary-import-browser-qa": "bun run scripts/run-itinerary-import-browser-qa.ts",
+    "test:itinerary-entry-browser-qa": "bun run scripts/run-itinerary-entry-browser-qa.ts",
     "test:trip-plan-browser-qa": "bun run scripts/run-trip-plan-browser-qa.ts",
     "test:production-browser-qa": "bun run scripts/run-local-production-browser-qa.ts",
     "test:create-trip-ux-qa": "bun run scripts/run-create-trip-ux-qa.ts",

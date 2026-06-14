@@ -129,6 +129,8 @@ import type {
 
 const localMutationTimestamp = "2026-05-28T00:00:00.000Z";
 const accountSessionStorageKey = "sagittarius-account-session";
+const selectedTripPlanQueryParam = "tripPlanId";
+const selectedTripPlanSessionStoragePrefix = "sagittarius:selected-trip-plan:";
 const workspaceToastClassName =
   "workspace-toast pointer-events-auto fixed left-1/2 top-5 z-[60] flex w-[min(480px,calc(100vw-32px))] -translate-x-1/2 items-start gap-3 rounded-(--radius-lg) border border-(--color-route-border) bg-(--color-route-soft) px-4 py-3 shadow-[0_10px_22px_rgb(15_23_42_/_0.1)] max-[767px]:top-3";
 const workspaceToastIconClassName = "mt-0.5 shrink-0 text-(--color-route)";
@@ -341,7 +343,7 @@ export function SagittariusApp({
   }, [requireJoin, toastDismissed]);
   const [navigatedView, setNavigatedView] = useState<PlanningView | null>(null);
   const [selectedTripPlanId, setSelectedTripPlanId] = useState(() =>
-    initialSelectedTripPlanId(initialTrip),
+    resolveSelectedTripPlanId(initialTrip),
   );
   const [currentMemberId, setCurrentMemberId] = useState(
     initialMemberId ?? initialTrip.members[0].id,
@@ -432,18 +434,20 @@ export function SagittariusApp({
     [selectedTripPlanId, trip.itineraryItems],
   );
   useEffect(() => {
+    if (!sessionRestored && !isApiMode) return;
     let cancelled = false;
     queueMicrotask(() => {
       if (cancelled) return;
       setSelectedTripPlanId((current) => {
-        if (trip.planVariants.some((plan) => plan.id === current)) return current;
-        return initialSelectedTripPlanId(trip);
+        const nextTripPlanId = resolveSelectedTripPlanId(trip, current);
+        rememberSelectedTripPlanId(trip, nextTripPlanId);
+        return nextTripPlanId;
       });
     });
     return () => {
       cancelled = true;
     };
-  }, [trip]);
+  }, [isApiMode, sessionRestored, trip]);
   const pathOptions = useMemo(
     () =>
       deriveItineraryPathOptions(activePlanItems, trip.itineraryPaths ?? []),
@@ -610,7 +614,7 @@ export function SagittariusApp({
 
       if (persistedTrip) {
         setTripState({ trip: nextTrip, past: [], future: [] });
-        setSelectedTripPlanId(initialSelectedTripPlanId(nextTrip));
+        setSelectedTripPlanId(resolveSelectedTripPlanId(nextTrip));
       }
       if (persistedSession) {
         setParticipantSession(persistedSession);
@@ -710,9 +714,10 @@ export function SagittariusApp({
       .loadTrip(participantSession.tripId, participantSession.sessionToken)
       .then((cockpit) => {
         if (cancelled) return;
-        const loadedTripPlanId = initialSelectedTripPlanId(cockpit.trip);
+        const loadedTripPlanId = resolveSelectedTripPlanId(cockpit.trip);
         setTripState({ trip: cockpit.trip, past: [], future: [] });
         setSelectedTripPlanId(loadedTripPlanId);
+        rememberSelectedTripPlanId(cockpit.trip, loadedTripPlanId);
         setSuggestions(cockpit.suggestions);
         setTasks(cockpit.tasks);
         setStopNotes(cockpit.stopNotes);
@@ -795,7 +800,6 @@ export function SagittariusApp({
   }, [
     backendExpenseSummary?.tripPlanId,
     canViewExpenses,
-    clearParticipantSession,
     isApiMode,
     isCockpitLoaded,
     participantSession,
@@ -906,16 +910,23 @@ export function SagittariusApp({
     };
   }, [contextRailOpen, setContextRailVisibility]);
 
-  async function reloadTripPlanConflict() {
+  async function reloadTripPlanConflict(
+    preferredTripPlanId: string | null = selectedTripPlanId,
+  ) {
     if (!resolvedApiClient || !participantSession) return;
-  const cockpit = await resolvedApiClient.loadTrip(
-    trip.id,
-    participantSession.sessionToken,
-  );
-  replaceCockpitFromApi(cockpit);
-  setSelectedTripPlanId(initialSelectedTripPlanId(cockpit.trip));
-  latestTripRef.current = cockpit.trip;
-}
+    const cockpit = await resolvedApiClient.loadTrip(
+      trip.id,
+      participantSession.sessionToken,
+    );
+    replaceCockpitFromApi(cockpit);
+    const reloadedTripPlanId =
+      preferredTripPlanId === null
+        ? initialSelectedTripPlanId(cockpit.trip)
+        : resolveSelectedTripPlanId(cockpit.trip, preferredTripPlanId);
+    setSelectedTripPlanId(reloadedTripPlanId);
+    rememberSelectedTripPlanId(cockpit.trip, reloadedTripPlanId);
+    latestTripRef.current = cockpit.trip;
+  }
 
   function mergePublishedTripPlan(
     currentTrip: Trip,
@@ -949,6 +960,7 @@ export function SagittariusApp({
       return false;
     }
     setSelectedTripPlanId(tripPlanId);
+    rememberSelectedTripPlanId(trip, tripPlanId);
     return true;
   }
 
@@ -979,12 +991,13 @@ export function SagittariusApp({
           return { ...current, trip: nextTrip };
         });
         setSelectedTripPlanId(tripPlanId);
+        rememberSelectedTripPlanId(publishedTrip, tripPlanId);
       } catch (error) {
         if (
           error instanceof TripApiError &&
           error.code === "version_conflict"
         ) {
-          await reloadTripPlanConflict();
+          await reloadTripPlanConflict(null);
           return true;
         }
         setTripPlanError(t.itinerary.tripPlans.error);
@@ -1001,6 +1014,7 @@ export function SagittariusApp({
       mainTripPlanId: tripPlanId,
     }));
     setSelectedTripPlanId(tripPlanId);
+    rememberSelectedTripPlanId(trip, tripPlanId);
     return true;
   }
 
@@ -1090,6 +1104,7 @@ export function SagittariusApp({
           return { ...current, trip: nextTrip };
         });
         setSelectedTripPlanId(createdVariant.id);
+        rememberSelectedTripPlanId(trip, createdVariant.id);
       } catch (error) {
         if (
           error instanceof TripApiError &&
@@ -1124,7 +1139,10 @@ export function SagittariusApp({
         tripPlans: [...(current.tripPlans ?? current.planVariants), variant],
       };
     });
-    if (createdTripPlanId) setSelectedTripPlanId(createdTripPlanId);
+    if (createdTripPlanId) {
+      setSelectedTripPlanId(createdTripPlanId);
+      rememberSelectedTripPlanId(trip, createdTripPlanId);
+    }
     return true;
   }
 
@@ -1132,12 +1150,22 @@ export function SagittariusApp({
     /* v8 ignore next */
     if (!canEdit) return;
     setStopPlaceResolution({ state: "idle", candidates: [] });
+    setContextRailVisibility(false);
     setDialogState({ mode: "create", day, parentItemId: parentItemId ?? null });
   }
 
-  function addSubActivity(parentItemId: string) {
+  async function addSubActivity(parentItemId: string) {
     const parentItem = trip.itineraryItems.find((item) => item.id === parentItemId);
-    if (!parentItem || !parentItem.isPlanBlock) return;
+    if (!parentItem) return;
+    if (!parentItem.isPlanBlock) {
+      try {
+        setTripPlanError(null);
+        await updateItineraryItemInline(parentItem.id, { isPlanBlock: true });
+      } catch {
+        setTripPlanError(t.itinerary.tripPlans.error);
+        return;
+      }
+    }
     addStop(parentItem.day, parentItem.id);
   }
 
@@ -1537,7 +1565,7 @@ export function SagittariusApp({
         },
       }));
       setSelectedItemId(createdItem.id);
-      setContextRailVisibility(true);
+      setContextRailVisibility(false);
       setDialogState(null);
       return;
     }
@@ -1557,7 +1585,7 @@ export function SagittariusApp({
             },
       draftItem.id,
     );
-    setContextRailVisibility(true);
+    setContextRailVisibility(false);
     setDialogState(null);
   }
 
@@ -4808,6 +4836,62 @@ function initialSelectedTripPlanId(trip: Trip): string {
   );
 }
 
+function resolveSelectedTripPlanId(
+  trip: Trip,
+  preferredTripPlanId?: string | null,
+): string {
+  if (preferredTripPlanId && tripHasPlan(trip, preferredTripPlanId)) {
+    return preferredTripPlanId;
+  }
+  return browserSelectedTripPlanId(trip) ?? initialSelectedTripPlanId(trip);
+}
+
+function browserSelectedTripPlanId(trip: Trip): string | null {
+  if (typeof window === "undefined") return null;
+  const searchParams = new URLSearchParams(window.location.search);
+  const urlTripPlanId = searchParams.get(selectedTripPlanQueryParam);
+  if (urlTripPlanId && tripHasPlan(trip, urlTripPlanId)) return urlTripPlanId;
+
+  const storedTripPlanId = getBrowserSessionStorage()?.getItem(
+    selectedTripPlanStorageKey(trip.id),
+  );
+  if (storedTripPlanId && tripHasPlan(trip, storedTripPlanId)) {
+    return storedTripPlanId;
+  }
+  return null;
+}
+
+function rememberSelectedTripPlanId(trip: Trip, tripPlanId: string) {
+  if (!tripPlanId || typeof window === "undefined") return;
+  getBrowserSessionStorage()?.setItem(
+    selectedTripPlanStorageKey(trip.id),
+    tripPlanId,
+  );
+
+  const searchParams = new URLSearchParams(window.location.search);
+  const defaultTripPlanId = initialSelectedTripPlanId(trip);
+  if (tripPlanId === defaultTripPlanId) {
+    searchParams.delete(selectedTripPlanQueryParam);
+  } else {
+    searchParams.set(selectedTripPlanQueryParam, tripPlanId);
+  }
+  const nextSearch = searchParams.toString();
+  const nextHref = `${window.location.pathname}${nextSearch ? `?${nextSearch}` : ""}${window.location.hash}`;
+  if (nextHref !== `${window.location.pathname}${window.location.search}${window.location.hash}`) {
+    window.history.replaceState(window.history.state, "", nextHref);
+  }
+}
+
+function selectedTripPlanStorageKey(tripId: string): string {
+  return `${selectedTripPlanSessionStoragePrefix}${tripId}`;
+}
+
+function tripHasPlan(trip: Trip, tripPlanId: string): boolean {
+  return [...trip.planVariants, ...(trip.tripPlans ?? [])].some(
+    (plan) => plan.id === tripPlanId,
+  );
+}
+
 function tripPlanIdForBookingRecord(
   trip: Trip,
   input: Pick<BookingDocInput, "relatedItineraryItemIds">,
@@ -5804,7 +5888,13 @@ function buildLocalPlanCheck(trip: Trip, memberId: string, tripPlanId?: string |
     const detail = missing.join(", ");
     const patch =
       missing.includes("time")
-        ? { timeMode: "flexible", startTime: null, durationMinutes: null }
+        ? {
+            timeMode: "flexible",
+            startTime: null,
+            endTime: null,
+            endOffsetDays: 0,
+            durationMinutes: null,
+          }
         : missing.includes("duration")
           ? { durationMinutes: 60 }
           : undefined;
@@ -5890,7 +5980,7 @@ export function normalizeInlineTimePatch(
   if (start === null || end === null) return nextPatch;
 
   const minimumEndOffsetDays = end <= start ? 1 : 0;
-  let endOffsetDays = hasEndOffsetDays
+  const endOffsetDays = hasEndOffsetDays
     ? Math.max(nextPatch.endOffsetDays ?? 0, minimumEndOffsetDays)
     : minimumEndOffsetDays;
   if (endOffsetDays !== (nextPatch.endOffsetDays ?? item.endOffsetDays ?? 0)) {
@@ -5912,9 +6002,21 @@ export function parsePlanSuggestionEditAction(
   const patch: InlineItineraryItemPatch = {};
   if (rawPatch.timeMode === "scheduled" || rawPatch.timeMode === "flexible") {
     patch.timeMode = rawPatch.timeMode;
+    if (rawPatch.timeMode === "flexible") {
+      patch.startTime = "";
+      patch.endTime = null;
+      patch.endOffsetDays = 0;
+      patch.durationMinutes = null;
+    }
   }
   if (typeof rawPatch.startTime === "string" || rawPatch.startTime === null) {
     patch.startTime = rawPatch.startTime ?? "";
+  }
+  if (typeof rawPatch.endTime === "string" || rawPatch.endTime === null) {
+    patch.endTime = rawPatch.endTime ?? null;
+  }
+  if (typeof rawPatch.endOffsetDays === "number") {
+    patch.endOffsetDays = Math.max(0, Math.floor(rawPatch.endOffsetDays));
   }
   if (
     typeof rawPatch.durationMinutes === "number" ||

@@ -67,7 +67,7 @@ interface StopDialogProps {
   onClose: () => void;
   onDelete?: () => void;
   onPromoteFoodRecommendation?: () => void;
-  onSubmit: (values: StopFormValues) => void;
+  onSubmit: (values: StopFormValues) => void | Promise<void>;
   placeResolution?: { state: "idle" | "resolving" | "ambiguous" | "unresolved"; candidates: PlaceResolutionCandidate[] };
   startDate?: string;
 }
@@ -91,6 +91,7 @@ const dialogActionsClassName = "dialog-actions grid grid-cols-[auto_1fr_auto] it
 const dialogPrimaryActionsClassName = "dialog-primary-actions flex justify-end gap-2.5 max-[767px]:grid";
 const placeCandidateListClassName = "place-candidate-list grid gap-2";
 const placeCandidateButtonClassName = "place-candidate-button grid gap-1 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-3 py-2 text-left text-xs text-(--color-text) transition-[border-color,box-shadow] hover:border-(--color-primary) focus-visible:border-(--color-primary) focus-visible:outline-none aria-pressed:border-(--color-primary) aria-pressed:shadow-[0_0_0_2px_rgb(153_246_228_/_0.42)] [&_strong]:text-sm [&_strong]:font-extrabold [&_span]:text-(--color-text-muted)";
+const dialogErrorClassName = "dialog-error col-span-full rounded-(--radius-sm) border border-(--color-danger-border) bg-(--color-danger-soft) px-3 py-2 text-sm font-bold text-(--color-danger)";
 
 const fieldIds = {
   activity: "stop-activity",
@@ -184,6 +185,8 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, initialPare
     mode: readStringDetail(initialItem?.details?.mode) || initialItem?.transportation || "",
   }));
   const [selectedCandidate, setSelectedCandidate] = useState<PlaceResolutionCandidate | undefined>();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const title = mode === "create" ? t.stopDialog.titles.create : t.stopDialog.titles.edit;
   const detailLabels = stopDetailLabels(locale);
@@ -194,6 +197,7 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, initialPare
       : values.durationMinutes;
 
   function update<K extends keyof StopFormValues>(key: K, value: StopFormValues[K]) {
+    setSubmitError(null);
     setValues((current) => ({ ...current, [key]: value }));
   }
 
@@ -210,6 +214,25 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, initialPare
       endOffsetDays: values.endTime ? nextEndOffsetDays : current.endOffsetDays,
       durationMinutes: nextDuration,
     }));
+  }
+
+  function updateTimeMode(timeMode: ItineraryTimeMode) {
+    setSubmitError(null);
+    setValues((current) =>
+      timeMode === "flexible"
+        ? {
+            ...current,
+            timeMode,
+            startTime: "",
+            endTime: null,
+            endOffsetDays: 0,
+            durationMinutes: null,
+          }
+        : {
+            ...current,
+            timeMode,
+          },
+    );
   }
 
   function updateEndTime(nextEndTime: string) {
@@ -340,13 +363,25 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, initialPare
     };
   }
 
+  async function submitValues(saveUnresolved: boolean) {
+    setSubmitError(null);
+    setIsSubmitting(true);
+    try {
+      await onSubmit(buildSubmitValues(saveUnresolved));
+    } catch {
+      setSubmitError(t.stopDialog.messages.saveFailed);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    onSubmit(buildSubmitValues(false));
+    void submitValues(false);
   }
 
   function submitUnresolved() {
-    onSubmit(buildSubmitValues(true));
+    void submitValues(true);
   }
 
   return (
@@ -402,7 +437,7 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, initialPare
                 </label>
                 <label htmlFor={fieldIds.timeMode}>
                   <span>Time mode</span>
-                  <select id={fieldIds.timeMode} value={values.timeMode} onChange={(event) => update("timeMode", event.target.value as ItineraryTimeMode)}>
+                  <select id={fieldIds.timeMode} value={values.timeMode} onChange={(event) => updateTimeMode(event.target.value as ItineraryTimeMode)}>
                     <option value="scheduled">scheduled</option>
                     <option value="flexible">flexible</option>
                   </select>
@@ -506,6 +541,11 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, initialPare
               <span>{t.stopDialog.fields.note}</span>
               <textarea id={fieldIds.note} value={values.note} onChange={(event) => update("note", event.target.value)} rows={3} />
             </label>
+            {submitError ? (
+              <p className={dialogErrorClassName} role="alert">
+                {submitError}
+              </p>
+            ) : null}
           </div>
 
           <div className={dialogActionsClassName}>
@@ -515,15 +555,15 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, initialPare
             <span />
             <div className={dialogPrimaryActionsClassName}>
               {initialItem?.itemKind === "foodRecommendation" && onPromoteFoodRecommendation ? (
-                <Button type="button" variant="secondary" onClick={onPromoteFoodRecommendation}>
+                <Button type="button" variant="secondary" disabled={isSubmitting} onClick={onPromoteFoodRecommendation}>
                   Promote to meal
                 </Button>
               ) : null}
               {placeResolution?.state === "unresolved" ? (
-                <Button type="button" variant="ghost" onClick={submitUnresolved}>{t.stopDialog.actions.saveUnresolved}</Button>
+                <Button type="button" variant="ghost" disabled={isSubmitting} onClick={submitUnresolved}>{t.stopDialog.actions.saveUnresolved}</Button>
               ) : null}
-              <Button type="button" variant="ghost" onClick={onClose}>{t.stopDialog.actions.cancel}</Button>
-              <Button type="submit">{mode === "create" ? t.stopDialog.actions.create : t.stopDialog.actions.edit}</Button>
+              <Button type="button" variant="ghost" disabled={isSubmitting} onClick={onClose}>{t.stopDialog.actions.cancel}</Button>
+              <Button type="submit" disabled={isSubmitting}>{isSubmitting ? t.stopDialog.messages.saving : mode === "create" ? t.stopDialog.actions.create : t.stopDialog.actions.edit}</Button>
             </div>
           </div>
         </form>

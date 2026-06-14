@@ -87,7 +87,7 @@ interface SmartItineraryTableProps {
     template?: ItineraryBookingTemplate,
   ) => void;
   onAddStop: (day?: string) => void;
-  onAddSubActivity?: (parentItemId: string) => void;
+  onAddSubActivity?: (parentItemId: string) => void | Promise<void>;
   onAddNoteForItem?: (itemId: string) => void;
   onAddTaskForItem?: (itemId: string) => void;
   onSelectItem: (itemId: string) => void;
@@ -241,6 +241,8 @@ const rowActionsClassName =
   "row-actions flex items-center justify-center gap-1";
 const rowActionButtonClassName =
   "row-action-button inline-grid size-8 shrink-0 place-items-center rounded-(--radius-sm) border-0 bg-transparent text-(--color-text-subtle) transition-[color,background] duration-150 hover:not-disabled:bg-(--color-route-soft) hover:not-disabled:text-(--color-route) disabled:cursor-not-allowed disabled:opacity-[0.42]";
+const inlineSubItemButtonClassName =
+  "inline-flex min-h-7 w-fit items-center gap-1.5 rounded-(--radius-sm) border border-(--color-route-border) bg-(--color-route-soft) px-2 text-[11px] font-extrabold leading-4 text-(--color-route) transition-[border-color,background,color] duration-150 hover:border-(--color-route) hover:bg-(--color-surface) disabled:cursor-not-allowed disabled:opacity-50 [&_.icon]:size-3.5";
 const rowFixMenuClassName = "row-fix-menu relative";
 const rowFixSummaryClassName =
   "row-fix-summary inline-grid size-8 shrink-0 place-items-center rounded-(--radius-sm) border-0 bg-transparent text-(--color-warning-strong) transition-[color,background] duration-150 hover:not-disabled:bg-(--color-warning-soft) disabled:cursor-not-allowed disabled:opacity-[0.42]";
@@ -1465,7 +1467,14 @@ function MobileSelectedStopInspector({
             onCommit={(timeMode) =>
               onUpdateItemInline?.(item.id, {
                 timeMode,
-                ...(timeMode === "flexible" ? { startTime: "", durationMinutes: null } : {}),
+                ...(timeMode === "flexible"
+                  ? {
+                      startTime: "",
+                      endTime: null,
+                      endOffsetDays: 0,
+                      durationMinutes: null,
+                    }
+                  : {}),
               })
             }
           />
@@ -1621,7 +1630,7 @@ function DayGroup({
     template?: ItineraryBookingTemplate,
   ) => void;
   onAddStop: (day?: string) => void;
-  onAddSubActivity?: (parentItemId: string) => void;
+  onAddSubActivity?: (parentItemId: string) => void | Promise<void>;
   onAddNoteForItem?: (itemId: string) => void;
   onAddTaskForItem?: (itemId: string) => void;
   onMoveItem: (draggedItemId: string, targetItemId: string) => void;
@@ -1768,6 +1777,9 @@ function DayGroup({
             const childCount = item.isPlanBlock
               ? group.items.filter((candidate) => candidate.parentItemId === item.id).length
               : 0;
+            const addSubActivityLabel = itineraryLabels.row.addSubActivity({
+              activity: item.activity,
+            });
             const canPromoteParentBlock = Boolean(parentItem && !parentItem.isPlanBlock);
             const canDeleteItem = childCount === 0;
             const blockCollapsed = item.isPlanBlock && collapsedPlanBlockIds.includes(item.id);
@@ -1954,6 +1966,20 @@ function DayGroup({
                       locale={locale}
                       warnings={itemWarnings}
                     />
+                    {canEdit && !isChild ? (
+                      <button
+                        type="button"
+                        className={inlineSubItemButtonClassName}
+                        aria-label={addSubActivityLabel}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          void onAddSubActivity?.(item.id);
+                        }}
+                      >
+                        <Icon name="plus" />
+                        <span>{itineraryLabels.row.subItemQuick}</span>
+                      </button>
+                    ) : null}
                   </div>
                 </td>
                 <td>
@@ -1984,7 +2010,14 @@ function DayGroup({
                       onCommit={(timeMode) =>
                         onUpdateItemInline?.(item.id, {
                           timeMode,
-                          ...(timeMode === "flexible" ? { startTime: "", durationMinutes: null } : {}),
+                          ...(timeMode === "flexible"
+                            ? {
+                                startTime: "",
+                                endTime: null,
+                                endOffsetDays: 0,
+                                durationMinutes: null,
+                              }
+                            : {}),
                         })
                       }
                     />
@@ -2033,26 +2066,14 @@ function DayGroup({
                     <button
                       type="button"
                       className={rowActionButtonClassName}
-                      aria-label={
-                        item.isPlanBlock
-                          ? itineraryLabels.row.addSubActivity({ activity: item.activity })
-                          : itineraryLabels.row.convertToBlock({ activity: item.activity })
-                      }
+                      aria-label={addSubActivityLabel}
                       disabled={!canEdit}
-                      title={
-                        item.isPlanBlock
-                          ? itineraryLabels.row.addSubActivity({ activity: item.activity })
-                          : itineraryLabels.row.convertToBlock({ activity: item.activity })
-                      }
+                      title={addSubActivityLabel}
                       onClick={() => {
-                        if (item.isPlanBlock) {
-                          onAddSubActivity?.(item.id);
-                          return;
-                        }
-                        onUpdateItemInline?.(item.id, { isPlanBlock: true });
+                        void onAddSubActivity?.(item.id);
                       }}
                     >
-                      <Icon name={item.isPlanBlock ? "plus" : "list"} />
+                      <Icon name="plus" />
                     </button>
                     {hasHierarchyFixActions ? (
                       <div className={rowFixMenuClassName}>

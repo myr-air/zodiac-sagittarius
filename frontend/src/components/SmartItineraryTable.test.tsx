@@ -1782,6 +1782,8 @@ describe("SmartItineraryTable", () => {
     expect(onUpdateItemInline).toHaveBeenCalledWith("item-dimdim", {
       timeMode: "flexible",
       startTime: "",
+      endTime: null,
+      endOffsetDays: 0,
       durationMinutes: null,
     });
     expect(onUpdateItemInline).toHaveBeenCalledWith("item-dimdim", {
@@ -2135,7 +2137,7 @@ describe("SmartItineraryTable", () => {
     );
   });
 
-  it("opens a quick sub-activity action from an activity block row", async () => {
+  it("opens a visible quick sub-activity action from top-level rows", async () => {
     const user = userEvent.setup();
     const onAddSubActivity = vi.fn();
     const onUpdateItemInline = vi.fn();
@@ -2165,21 +2167,17 @@ describe("SmartItineraryTable", () => {
 
     await user.click(
       within(screen.getByRole("row", { name: /Flight to Hong Kong/i }))
-        .getByRole("button", { name: /เพิ่ม sub-activity ใต้ Flight to Hong Kong/i }),
+        .getAllByRole("button", { name: /เพิ่ม sub-activity ใต้ Flight to Hong Kong/i })[0],
     );
 
     expect(onAddSubActivity).toHaveBeenCalledWith("block-flight");
     await user.click(
-      within(screen.getByRole("row", { name: /Market walk/i })).getByRole(
-        "button",
-        { name: /เปลี่ยน Market walk เป็น activity block/i },
-      ),
+      within(screen.getByRole("row", { name: /Market walk/i }))
+        .getAllByRole("button", { name: /เพิ่ม sub-activity ใต้ Market walk/i })[0],
     );
 
-    expect(onUpdateItemInline).toHaveBeenCalledWith("solo-market", {
-      isPlanBlock: true,
-    });
-    expect(onAddSubActivity).not.toHaveBeenCalledWith("solo-market");
+    expect(onAddSubActivity).toHaveBeenCalledWith("solo-market");
+    expect(onUpdateItemInline).not.toHaveBeenCalled();
   });
 
   it("disables deleting an activity block until its sub-activities are moved", async () => {

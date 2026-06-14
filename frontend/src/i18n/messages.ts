@@ -410,6 +410,7 @@ export const messages = {
         edit: ({ activity }: { activity: string }) => `Edit ${activity}`,
         delete: ({ activity }: { activity: string }) => `Delete ${activity}`,
         addSubActivity: ({ activity }: { activity: string }) => `Add sub-activity under ${activity}`,
+        subItemQuick: "+ sub-item",
         convertToBlock: ({ activity }: { activity: string }) => `Convert ${activity} to activity block`,
         promoteParentBlock: ({ parent, child }: { parent: string; child: string }) =>
           `Promote ${parent} to activity block for ${child}`,
@@ -747,6 +748,10 @@ export const messages = {
       placeResolution: {
         candidates: "Place candidates",
         unresolved: "This place needs location review",
+      },
+      messages: {
+        saving: "Saving...",
+        saveFailed: "Could not save activity. Check required fields or try again.",
       },
     },
     suggestions: {
@@ -1595,6 +1600,7 @@ export const messages = {
         edit: ({ activity }: { activity: string }) => `แก้ไข ${activity}`,
         delete: ({ activity }: { activity: string }) => `ลบ ${activity}`,
         addSubActivity: ({ activity }: { activity: string }) => `เพิ่ม sub-activity ใต้ ${activity}`,
+        subItemQuick: "+ sub-item",
         convertToBlock: ({ activity }: { activity: string }) => `เปลี่ยน ${activity} เป็น activity block`,
         promoteParentBlock: ({ parent, child }: { parent: string; child: string }) =>
           `เปลี่ยน ${parent} เป็น activity block สำหรับ ${child}`,
@@ -1932,6 +1938,10 @@ export const messages = {
       placeResolution: {
         candidates: "ตัวเลือกสถานที่",
         unresolved: "สถานที่นี้ต้องตรวจพิกัด",
+      },
+      messages: {
+        saving: "กำลังบันทึก...",
+        saveFailed: "บันทึกกิจกรรมไม่สำเร็จ ตรวจช่องที่จำเป็นแล้วลองอีกครั้ง",
       },
     },
     suggestions: {

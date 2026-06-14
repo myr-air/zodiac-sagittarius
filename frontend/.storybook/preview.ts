@@ -79,6 +79,9 @@ const preview: Preview = {
     },
   },
   async beforeEach() {
+    if (new URLSearchParams(window.location.search).get("preserveStoryStorage") === "1") {
+      return;
+    }
     localStorage.removeItem("sagittarius:trip-draft");
     localStorage.removeItem("sagittarius:trip-participant-session");
     localStorage.removeItem(localeStorageKey);
