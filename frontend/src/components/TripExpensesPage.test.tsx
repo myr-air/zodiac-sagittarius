@@ -127,6 +127,38 @@ describe("TripExpensesPage", () => {
     }));
   });
 
+  it("surfaces inferred plan scope rows for organizer review", async () => {
+    const user = userEvent.setup();
+    const trip = {
+      ...seedTrip,
+      expenses: [
+        {
+          ...seedTrip.expenses[0],
+          tripPlanId: "plan-rain",
+          itineraryItemId: null,
+        },
+      ],
+    };
+    renderExpenses({
+      trip,
+      selectedTripPlanId: "plan-main",
+      expenseSummary: buildExpenseSummary(trip.expenses, seedTrip.members[1].id),
+    });
+
+    const audit = screen.getByRole("region", { name: /ตรวจ scope ของเงินจริง/i });
+    expect(audit).toHaveTextContent("Dim Dim Sum brunch");
+    expect(audit).toHaveTextContent("scope ที่ระบบเดาไว้: แผนฝนตก");
+
+    await user.click(
+      within(audit).getByRole("button", {
+        name: /ตรวจ scope ของ Dim Dim Sum brunch/i,
+      }),
+    );
+
+    const dialog = screen.getByRole("dialog", { name: /แก้ไขค่าใช้จ่าย/i });
+    expect(within(dialog).getByLabelText("Trip Plan")).toHaveValue("plan-rain");
+  });
+
   it("offers a duplicate-as-estimate action without editing the actual expense", async () => {
     const user = userEvent.setup();
     const props = renderExpenses({

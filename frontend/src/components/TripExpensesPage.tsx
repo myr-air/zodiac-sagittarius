@@ -99,6 +99,8 @@ const commentsClassName = "grid gap-2 rounded-(--radius-sm) border border-(--col
 const commentRowClassName = "grid gap-0.5 rounded-(--radius-sm) bg-(--color-surface) px-2.5 py-2 text-xs [&_strong]:text-(--color-text) [&_span]:text-(--color-text-muted)";
 const warningClassName = "rounded-(--radius-sm) border border-(--color-warning-border) bg-(--color-warning-soft) px-2.5 py-2 text-xs font-bold text-(--color-warning-strong)";
 const dialogActionsClassName = "flex flex-wrap items-center justify-end gap-2 border-t border-(--color-border) pt-3";
+const scopeAuditListClassName = "grid gap-2";
+const scopeAuditRowClassName = "grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-(--radius-md) border border-(--color-warning-border) bg-(--color-warning-soft) px-2.5 py-2 text-xs";
 
 export function TripExpensesPage({
   trip,
@@ -125,6 +127,16 @@ export function TripExpensesPage({
   const owedToYou = Math.max(0, currentNet);
   const statement = useMemo(() => buildExpenseStatement({ trip, expenseSummary }), [expenseSummary, trip]);
   const csv = useMemo(() => buildExpenseCsv({ trip, expenseSummary }), [expenseSummary, trip]);
+  const inferredScopeExpenses = useMemo(
+    () =>
+      trip.expenses.filter(
+        (expense) =>
+          expense.category !== "settlement" &&
+          Boolean(expense.tripPlanId) &&
+          !expense.itineraryItemId,
+      ),
+    [trip.expenses],
+  );
   const categorySpend = useMemo(() => {
     const totals = new Map<Expense["category"], number>();
     for (const expense of trip.expenses) {
@@ -334,6 +346,35 @@ export function TripExpensesPage({
               })}
             </div>
           </section>
+
+          {inferredScopeExpenses.length ? (
+            <section className={panelClassName} aria-label={t.expenses.scopeAudit.label}>
+              <h2 className={panelHeadingClassName}><Icon name="warning" /> {t.expenses.scopeAudit.title}</h2>
+              <p className={balanceMetaClassName}>{t.expenses.scopeAudit.summary({ count: inferredScopeExpenses.length })}</p>
+              <div className={scopeAuditListClassName}>
+                {inferredScopeExpenses.map((expense) => (
+                  <div className={scopeAuditRowClassName} key={expense.id}>
+                    <span className="min-w-0">
+                      <strong className={balanceNameClassName}>{expense.title}</strong>
+                      <br />
+                      <span className={balanceMetaClassName}>
+                        {t.expenses.scopeAudit.inferred}: {tripPlanName(trip, expense.tripPlanId)}
+                      </span>
+                    </span>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      className="min-h-8 px-2 py-1 text-xs"
+                      disabled={!canEditExpenses}
+                      onClick={() => setDialogExpense(expense)}
+                    >
+                      {t.expenses.scopeAudit.review({ title: expense.title })}
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </section>
+          ) : null}
         </div>
 
         <section className="grid min-h-0 content-start gap-3" aria-label={t.expenses.ledgerLabel}>
@@ -886,6 +927,11 @@ function memberById(members: Member[], memberId: string): Member | undefined {
 
 function memberInitial(name: string): string {
   return name.trim().slice(0, 1).toLocaleUpperCase() || "?";
+}
+
+function tripPlanName(trip: Trip, tripPlanId: string | null | undefined): string {
+  const plans = trip.tripPlans ?? trip.planVariants;
+  return plans.find((plan) => plan.id === tripPlanId)?.name ?? tripPlanId ?? "Unassigned";
 }
 
 function categoryTone(category: Expense["category"]): { background: string; border: string; dot: string; text: string } {

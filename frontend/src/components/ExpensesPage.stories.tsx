@@ -1,12 +1,23 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import { expect, userEvent, within } from "storybook/test";
+import { expect, fn, userEvent, within } from "storybook/test";
 import { buildDenseTripFixture, buildEmptyTripFixture, tripFixture } from "@/src/trip/trip-fixtures";
 import { buildExpenseSummary } from "@/src/trip/expenses";
 import { TripExpensesPage } from "./TripExpensesPage";
 
 const noop = () => {};
+const onStoryUpdateExpense = fn();
 const denseTrip = buildDenseTripFixture();
 const emptyTrip = buildEmptyTripFixture();
+const inferredScopeTrip = {
+  ...tripFixture.trip,
+  expenses: [
+    {
+      ...tripFixture.trip.expenses[0],
+      tripPlanId: "plan-rain",
+      itineraryItemId: null,
+    },
+  ],
+};
 
 const meta = {
   title: "Pages/Expenses",
@@ -120,6 +131,29 @@ export const FilteredLedger: Story = {
     await userEvent.click(canvas.getByRole("button", { name: /Clear filters/i }));
     await expect(canvas.getByText("Dim Dim Sum brunch")).toBeVisible();
     await expect(canvas.getByText("Octopus top-up")).toBeVisible();
+  },
+};
+
+export const PlanScopeAudit: Story = {
+  args: {
+    ...Owner.args,
+    trip: inferredScopeTrip,
+    expenseSummary: buildExpenseSummary(inferredScopeTrip.expenses, tripFixture.currentMembers.owner.id),
+    onUpdateExpense: onStoryUpdateExpense,
+  },
+  play: async ({ canvas }) => {
+    onStoryUpdateExpense.mockClear();
+    const audit = canvas.getByRole("region", { name: /Plan scope audit/i });
+    await expect(audit).toHaveTextContent("Dim Dim Sum brunch");
+    await expect(audit).toHaveTextContent("Inferred scope: แผนฝนตก");
+
+    await userEvent.click(
+      within(audit).getByRole("button", {
+        name: /Review scope for Dim Dim Sum brunch/i,
+      }),
+    );
+    const dialog = canvas.getByRole("dialog", { name: /Edit expense/i });
+    await expect(within(dialog).getByLabelText("Trip Plan")).toHaveValue("plan-rain");
   },
 };
 

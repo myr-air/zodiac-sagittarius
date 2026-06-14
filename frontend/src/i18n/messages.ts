@@ -619,6 +619,13 @@ export const messages = {
       reminders: {
         lastSent: ({ date }: { date: string }) => `Last reminded ${date}`,
       },
+      scopeAudit: {
+        label: "Plan scope audit",
+        title: "Plan scope audit",
+        summary: ({ count }: { count: number }) => `${count} unlinked actual expense${count === 1 ? "" : "s"} need Trip Plan review.`,
+        inferred: "Inferred scope",
+        review: ({ title }: { title: string }) => `Review scope for ${title}`,
+      },
       comment: {
         empty: "No comments yet.",
         unknownAuthor: "Traveler",
@@ -1796,6 +1803,13 @@ export const messages = {
       },
       reminders: {
         lastSent: ({ date }: { date: string }) => `เตือนล่าสุด ${date}`,
+      },
+      scopeAudit: {
+        label: "ตรวจ scope ของเงินจริง",
+        title: "ตรวจ scope ของเงินจริง",
+        summary: ({ count }: { count: number }) => `${count} ค่าใช้จ่ายจริงที่ยังไม่ผูกกับแผนต้องตรวจ Trip Plan`,
+        inferred: "scope ที่ระบบเดาไว้",
+        review: ({ title }: { title: string }) => `ตรวจ scope ของ ${title}`,
       },
       comment: {
         empty: "ยังไม่มี comment",
