@@ -169,6 +169,13 @@ describe("Calm Travel Ops CSS contract", () => {
     expect(smartTableSource).toContain("sub-activity-line relative grid");
   });
 
+  it("lets itinerary day headers wrap weather below tablet width", () => {
+    expect(smartTableSource).toContain("day-row-content flex min-h-[39px] w-full min-w-0 flex-wrap");
+    expect(smartTableSource).toContain("max-[520px]:order-3");
+    expect(smartTableSource).toContain("max-[520px]:order-4 max-[520px]:basis-full");
+    expect(smartTableSource).toContain("max-[520px]:w-full max-[520px]:max-w-full");
+  });
+
 });
 
 function collectSourceFiles(root: string): string[] {
