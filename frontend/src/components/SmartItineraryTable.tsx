@@ -8,6 +8,8 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import type {
+  BookingDoc,
+  BookingDocType,
   ItineraryItem,
   PlanStatus,
   PlanVariant,
@@ -44,6 +46,7 @@ import {
   formatThaiDate,
 } from "./itineraryDisplay";
 import { ActivityPathGraphDay } from "./ActivityPathGraphDay";
+import { DateTimePickerField } from "./DateTimePickers";
 
 interface SmartItineraryTableProps {
   canRedo: boolean;
@@ -54,6 +57,7 @@ interface SmartItineraryTableProps {
   endDate: string;
   graphItems?: ItineraryItem[];
   items: ItineraryItem[];
+  bookingDocs?: BookingDoc[];
   dailyBriefings?: TripDailyBriefing[];
   tripPlans: PlanVariant[];
   selectedTripPlanId: string;
@@ -72,6 +76,9 @@ interface SmartItineraryTableProps {
   onAddBookingForItem?: (
     itemId: string,
     template?: ItineraryBookingTemplate,
+  ) => string | void | Promise<string | void>;
+  onSaveBookingForItem?: (
+    input: ItineraryBookingTicketInput,
   ) => string | void | Promise<string | void>;
   onAddStop: (day?: string) => void;
   onAddSubActivity?: (parentItemId: string) => void | Promise<void>;
@@ -117,6 +124,23 @@ export type ItineraryBookingTemplate =
   | "train"
   | "hotel"
   | "activity_ticket";
+
+export interface ItineraryBookingTicketInput {
+  bookingDocId?: string | null;
+  itemId: string;
+  template: ItineraryBookingTemplate;
+  type: BookingDocType;
+  title: string;
+  status: BookingDoc["status"];
+  visibility: BookingDoc["visibility"];
+  providerName?: string | null;
+  confirmationCode?: string | null;
+  startsAt?: string | null;
+  endsAt?: string | null;
+  travelerIds: string[];
+  relatedItineraryItemIds: string[];
+  notes?: string | null;
+}
 
 export type InlineItineraryItemPatch = Partial<
   Pick<
@@ -338,6 +362,31 @@ const timeEditNextDayClassName =
   "inline-flex min-h-7 w-fit items-center gap-1 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-2 text-[11px] font-extrabold text-(--color-text-muted) transition-colors duration-150 hover:border-(--color-route-border) hover:bg-(--color-route-soft) hover:text-(--color-route) aria-[pressed=true]:border-(--color-route-border) aria-[pressed=true]:bg-(--color-route-soft) aria-[pressed=true]:text-(--color-route) disabled:cursor-not-allowed disabled:opacity-50";
 const timeEditModalFooterClassName =
   "flex items-center justify-end gap-2 border-t border-(--color-border) px-3 py-2.5";
+const ticketModalBackdropClassName =
+  "fixed inset-0 z-[74] grid place-items-end bg-[rgb(15_23_42_/_0.32)] p-3 sm:place-items-center";
+const ticketModalClassName =
+  "grid max-h-[min(720px,calc(100dvh_-_24px))] w-full max-w-[620px] grid-rows-[auto_minmax(0,1fr)_auto] overflow-hidden rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) shadow-[0_14px_34px_rgb(15_23_42_/_0.16)]";
+const ticketModalHeaderClassName =
+  "grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-start gap-3 border-b border-(--color-border) px-4 py-3";
+const ticketModalTitleClassName =
+  "min-w-0 text-sm font-extrabold leading-5 text-(--color-text) [&_span]:block [&_span]:truncate [&_small]:block [&_small]:text-[11px] [&_small]:font-bold [&_small]:text-(--color-text-muted)";
+const ticketModalBodyClassName = "grid min-h-0 gap-3 overflow-auto px-4 py-3";
+const ticketModeToggleClassName =
+  "grid grid-cols-2 gap-2 rounded-(--radius-sm) bg-(--color-surface-subtle) p-1";
+const ticketModeButtonClassName =
+  "inline-flex min-h-9 items-center justify-center gap-1.5 rounded-(--radius-sm) border border-transparent px-2 text-xs font-extrabold text-(--color-text-muted) transition-colors duration-150 hover:border-(--color-route-border) hover:bg-(--color-route-soft) hover:text-(--color-route) aria-pressed:border-(--color-route-border) aria-pressed:bg-(--color-route-soft) aria-pressed:text-(--color-route)";
+const ticketExistingGridClassName = "grid gap-1.5";
+const ticketExistingOptionClassName =
+  "grid min-h-11 grid-cols-[auto_minmax(0,1fr)] items-center gap-2 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-2.5 py-2 text-left text-xs transition-colors duration-150 hover:border-(--color-route-border) hover:bg-(--color-route-soft) has-[:checked]:border-(--color-route-border) has-[:checked]:bg-(--color-route-soft) [&_input]:size-4 [&_strong]:block [&_strong]:truncate [&_span]:block [&_span]:truncate [&_span]:font-semibold [&_span]:text-(--color-text-muted)";
+const ticketFieldGridClassName = "grid grid-cols-2 gap-2 max-[640px]:grid-cols-1";
+const ticketFieldClassName =
+  "grid min-w-0 gap-1 text-[11px] font-extrabold leading-4 text-(--color-text-muted) [&_input]:min-h-9 [&_input]:rounded-(--radius-sm) [&_input]:border [&_input]:border-(--color-border) [&_input]:bg-(--color-surface) [&_input]:px-2.5 [&_input]:text-sm [&_textarea]:min-h-[72px] [&_textarea]:resize-y [&_textarea]:rounded-(--radius-sm) [&_textarea]:border [&_textarea]:border-(--color-border) [&_textarea]:bg-(--color-surface) [&_textarea]:px-2.5 [&_textarea]:py-2 [&_textarea]:text-sm";
+const ticketLinkedItemsClassName =
+  "grid max-h-40 gap-1 overflow-auto rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) p-2";
+const ticketLinkedOptionClassName =
+  "grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-2 rounded-(--radius-sm) px-1.5 py-1 text-xs font-semibold text-(--color-text-muted) hover:bg-(--color-surface) [&_input]:size-4 [&_span]:truncate";
+const ticketModalFooterClassName =
+  "flex flex-wrap items-center justify-end gap-2 border-t border-(--color-border) px-4 py-3";
 const inlineFieldClassName =
   "inline-row-field min-h-[24px] w-full min-w-0 rounded-(--radius-sm) border border-transparent bg-transparent px-1.5 py-0 text-xs leading-4 text-(--color-text) outline-none transition-[background,border-color,box-shadow] duration-150 placeholder:text-(--color-text-muted) hover:not-read-only:border-(--color-border) hover:not-read-only:bg-(--color-surface) focus:border-(--color-route-border) focus:bg-(--color-surface) focus:shadow-[0_0_0_2px_rgb(191_219_254_/_0.55)] read-only:cursor-pointer read-only:truncate read-only:px-0 read-only:font-semibold disabled:cursor-not-allowed disabled:text-(--color-text-muted)";
 const inlineOptionPickerButtonClassName = cn(
@@ -374,6 +423,8 @@ export function SmartItineraryTable({
   tripName,
   onAddSubActivity,
   onAddBookingForItem,
+  onSaveBookingForItem,
+  bookingDocs = [],
   onDeleteItem,
   onEditItem,
   onMoveItem,
@@ -900,6 +951,9 @@ export function SmartItineraryTable({
               onClearDayPath={onClearDayPath}
               onAddSubActivity={onAddSubActivity}
               onAddBookingForItem={onAddBookingForItem}
+              onSaveBookingForItem={onSaveBookingForItem}
+              bookingDocs={bookingDocs}
+              bookingLinkItems={items}
               onDeleteItem={onDeleteItem}
               onEditItem={onEditItem}
               onMoveItem={onMoveItem}
@@ -934,6 +988,9 @@ function DayGroup({
   collapsed,
   onAddSubActivity,
   onAddBookingForItem,
+  onSaveBookingForItem,
+  bookingDocs,
+  bookingLinkItems,
   onChangeDayPath,
   onClearDayPath,
   onDeleteItem,
@@ -958,12 +1015,17 @@ function DayGroup({
   dayPathOverride?: string;
   showAllPaths: boolean;
   selectedItemId: string;
+  bookingDocs: BookingDoc[];
+  bookingLinkItems: ItineraryItem[];
   canEdit: boolean;
   collapsed: boolean;
   onAddSubActivity?: (parentItemId: string) => void | Promise<void>;
   onAddBookingForItem?: (
     itemId: string,
     template?: ItineraryBookingTemplate,
+  ) => string | void | Promise<string | void>;
+  onSaveBookingForItem?: (
+    input: ItineraryBookingTicketInput,
   ) => string | void | Promise<string | void>;
   onChangeDayPath?: (day: string, pathId: string) => void;
   onClearDayPath?: (day: string) => void;
@@ -1112,6 +1174,9 @@ function DayGroup({
                   subItems={childItemsByParentId.get(item.id) ?? []}
                   onAddSubActivity={onAddSubActivity}
                   onAddBookingForItem={onAddBookingForItem}
+                  onSaveBookingForItem={onSaveBookingForItem}
+                  bookingDocs={bookingDocs}
+                  bookingLinkItems={bookingLinkItems}
                   onDeleteItem={onDeleteItem}
                   onEditItem={onEditItem}
                   onOpenItemDetails={onOpenItemDetails}
@@ -1203,6 +1268,9 @@ function ActivityCell({
   subItems,
   onAddSubActivity,
   onAddBookingForItem,
+  onSaveBookingForItem,
+  bookingDocs,
+  bookingLinkItems,
   onDeleteItem,
   onEditItem,
   onOpenItemDetails,
@@ -1215,10 +1283,15 @@ function ActivityCell({
   locale: Locale;
   selected: boolean;
   subItems: ItineraryItem[];
+  bookingDocs: BookingDoc[];
+  bookingLinkItems: ItineraryItem[];
   onAddSubActivity?: (parentItemId: string) => void | Promise<void>;
   onAddBookingForItem?: (
     itemId: string,
     template?: ItineraryBookingTemplate,
+  ) => string | void | Promise<string | void>;
+  onSaveBookingForItem?: (
+    input: ItineraryBookingTicketInput,
   ) => string | void | Promise<string | void>;
   onDeleteItem?: (itemId: string) => void;
   onEditItem?: (itemId: string) => void;
@@ -1423,6 +1496,9 @@ function ActivityCell({
             itineraryLabels={itineraryLabels}
             locale={locale}
             onAddBookingForItem={onAddBookingForItem}
+            onSaveBookingForItem={onSaveBookingForItem}
+            bookingDocs={bookingDocs}
+            bookingLinkItems={bookingLinkItems}
           />
           <button
             type="button"
@@ -1446,6 +1522,9 @@ function ActivityCell({
               itineraryLabels={itineraryLabels}
               locale={locale}
               onAddBookingForItem={onAddBookingForItem}
+              onSaveBookingForItem={onSaveBookingForItem}
+              bookingDocs={bookingDocs}
+              bookingLinkItems={bookingLinkItems}
             />
             {item.durationMinutes ? (
               <span className={activityPillClassName}>
@@ -1497,6 +1576,9 @@ function ActivityCell({
             onDeleteItem={onDeleteItem}
             onEditItem={onEditItem}
             onAddBookingForItem={onAddBookingForItem}
+            onSaveBookingForItem={onSaveBookingForItem}
+            bookingDocs={bookingDocs}
+            bookingLinkItems={bookingLinkItems}
             onUpdateItemInline={onUpdateItemInline}
           />
         ) : null}
@@ -1510,6 +1592,9 @@ function ActivityCell({
         subItems={subItems}
         onAddSubActivity={onAddSubActivity}
         onAddBookingForItem={onAddBookingForItem}
+        onSaveBookingForItem={onSaveBookingForItem}
+        bookingDocs={bookingDocs}
+        bookingLinkItems={bookingLinkItems}
         onDeleteItem={onDeleteItem}
         onEditItem={onEditItem}
         onUpdateItemInline={onUpdateItemInline}
@@ -1652,11 +1737,16 @@ function ActivityLocationLine({
 }
 
 function ItineraryBookingButton({
+  bookingDocs,
+  bookingLinkItems,
   item,
   itineraryLabels,
   locale,
   onAddBookingForItem,
+  onSaveBookingForItem,
 }: {
+  bookingDocs: BookingDoc[];
+  bookingLinkItems: ItineraryItem[];
   item: ItineraryItem;
   itineraryLabels: Messages["itinerary"];
   locale: Locale;
@@ -1664,27 +1754,327 @@ function ItineraryBookingButton({
     itemId: string,
     template?: ItineraryBookingTemplate,
   ) => string | void | Promise<string | void>;
+  onSaveBookingForItem?: (
+    input: ItineraryBookingTicketInput,
+  ) => string | void | Promise<string | void>;
 }) {
-  if (!onAddBookingForItem) return null;
+  const [ticketModalOpen, setTicketModalOpen] = useState(false);
+  if (!onAddBookingForItem && !onSaveBookingForItem) return null;
   const icon = bookingIconForItem(item);
   const label = itineraryLabels.row.createBookingDraft({
     activity: item.activity,
     template: bookingTemplateLabel(item, locale),
   });
   return (
-    <button
-      type="button"
-      className={activityBookingButtonClassName}
-      aria-label={label}
-      title={label}
-      onClick={(event) => {
-        event.stopPropagation();
-        void onAddBookingForItem(item.id, bookingTemplateForItem(item));
-      }}
+    <>
+      <button
+        type="button"
+        className={activityBookingButtonClassName}
+        aria-label={label}
+        title={label}
+        onClick={(event) => {
+          event.stopPropagation();
+          if (onSaveBookingForItem) {
+            setTicketModalOpen(true);
+            return;
+          }
+          void onAddBookingForItem?.(item.id, bookingTemplateForItem(item));
+        }}
+      >
+        <Icon name={icon} />
+        <span className="min-w-0 truncate">{bookingTemplateLabel(item, locale)}</span>
+      </button>
+      {ticketModalOpen && onSaveBookingForItem ? (
+        <ItineraryTicketModal
+          bookingDocs={bookingDocs}
+          bookingLinkItems={bookingLinkItems}
+          item={item}
+          locale={locale}
+          onClose={() => setTicketModalOpen(false)}
+          onSave={async (input) => {
+            await onSaveBookingForItem(input);
+            setTicketModalOpen(false);
+          }}
+        />
+      ) : null}
+    </>
+  );
+}
+
+function ItineraryTicketModal({
+  bookingDocs,
+  bookingLinkItems,
+  item,
+  locale,
+  onClose,
+  onSave,
+}: {
+  bookingDocs: BookingDoc[];
+  bookingLinkItems: ItineraryItem[];
+  item: ItineraryItem;
+  locale: Locale;
+  onClose: () => void;
+  onSave: (input: ItineraryBookingTicketInput) => void | Promise<void>;
+}) {
+  const template = bookingTemplateForItem(item);
+  const type = bookingDocTypeForItemTemplate(item, template);
+  const existingCandidates = bookingDocs.filter(
+    (booking) =>
+      booking.relatedItineraryItemIds.includes(item.id) ||
+      booking.type === type ||
+      (type === "public_transport" &&
+        ["flight", "train", "public_transport"].includes(booking.type)),
+  );
+  const initiallyLinked =
+    existingCandidates.find((booking) =>
+      booking.relatedItineraryItemIds.includes(item.id),
+    ) ?? null;
+  const defaultTitle = bookingTitleForItem(item, type);
+  const [mode, setMode] = useState<"existing" | "new">(
+    initiallyLinked ? "existing" : "new",
+  );
+  const [selectedBookingId, setSelectedBookingId] = useState(
+    initiallyLinked?.id ?? existingCandidates[0]?.id ?? "",
+  );
+  const selectedBooking =
+    existingCandidates.find((booking) => booking.id === selectedBookingId) ??
+    null;
+  const initialTicket = mode === "existing" ? selectedBooking : null;
+  const [title, setTitle] = useState(initialTicket?.title ?? defaultTitle);
+  const [providerName, setProviderName] = useState(
+    initialTicket?.providerName ??
+      readItineraryDetailString(item.details, "provider") ??
+      "",
+  );
+  const [confirmationCode, setConfirmationCode] = useState(
+    initialTicket?.confirmationCode ??
+      readItineraryDetailString(item.details, "bookingRef") ??
+      readItineraryDetailString(item.details, "ticketRef") ??
+      "",
+  );
+  const [startsAt, setStartsAt] = useState(
+    toDateTimeLocalValue(initialTicket?.startsAt ?? itineraryDateTimeValue(item.day, item.startTime)),
+  );
+  const [endsAt, setEndsAt] = useState(
+    toDateTimeLocalValue(initialTicket?.endsAt ?? itineraryDateTimeValue(item.day, item.endTime ?? "")),
+  );
+  const [notes, setNotes] = useState(
+    initialTicket?.notes ?? ticketNotesForItem(item, locale),
+  );
+  const [relatedItineraryItemIds, setRelatedItineraryItemIds] = useState(() =>
+    uniqueIds([...(initialTicket?.relatedItineraryItemIds ?? []), item.id]),
+  );
+  const [saving, setSaving] = useState(false);
+  const copy = ticketModalCopy(locale);
+
+  useEffect(() => {
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") onClose();
+    }
+    document.addEventListener("keydown", closeOnEscape);
+    return () => document.removeEventListener("keydown", closeOnEscape);
+  }, [onClose]);
+
+  function hydrateTicketFields(booking: BookingDoc | null) {
+    setTitle(booking?.title ?? defaultTitle);
+    setProviderName(
+      booking?.providerName ??
+        readItineraryDetailString(item.details, "provider") ??
+        "",
+    );
+    setConfirmationCode(
+      booking?.confirmationCode ??
+        readItineraryDetailString(item.details, "bookingRef") ??
+        readItineraryDetailString(item.details, "ticketRef") ??
+        "",
+    );
+    setStartsAt(toDateTimeLocalValue(booking?.startsAt ?? itineraryDateTimeValue(item.day, item.startTime)));
+    setEndsAt(toDateTimeLocalValue(booking?.endsAt ?? itineraryDateTimeValue(item.day, item.endTime ?? "")));
+    setNotes(booking?.notes ?? ticketNotesForItem(item, locale));
+    setRelatedItineraryItemIds(uniqueIds([...(booking?.relatedItineraryItemIds ?? []), item.id]));
+  }
+
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const trimmedTitle = title.trim();
+    if (saving || !trimmedTitle) return;
+    setSaving(true);
+    try {
+      await onSave({
+        bookingDocId: mode === "existing" ? selectedBookingId : null,
+        itemId: item.id,
+        template,
+        type: selectedBooking?.type ?? type,
+        title: trimmedTitle,
+        status: selectedBooking?.status ?? "draft",
+        visibility: selectedBooking?.visibility ?? "shared",
+        providerName: providerName.trim() || null,
+        confirmationCode: confirmationCode.trim() || null,
+        startsAt: fromDateTimeLocalValue(startsAt),
+        endsAt: fromDateTimeLocalValue(endsAt),
+        travelerIds: selectedBooking?.travelerIds ?? [],
+        relatedItineraryItemIds: uniqueIds([...relatedItineraryItemIds, item.id]),
+        notes: notes.trim() || null,
+      });
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  if (typeof document === "undefined") return null;
+
+  return createPortal(
+    <div
+      className={ticketModalBackdropClassName}
+      role="presentation"
+      onClick={onClose}
     >
-      <Icon name={icon} />
-      <span className="min-w-0 truncate">{bookingTemplateLabel(item, locale)}</span>
-    </button>
+      <form
+        className={ticketModalClassName}
+        role="dialog"
+        aria-modal="true"
+        aria-label={copy.title(item.activity)}
+        onClick={(event) => event.stopPropagation()}
+        onSubmit={(event) => void submit(event)}
+      >
+        <header className={ticketModalHeaderClassName}>
+          <strong className={ticketModalTitleClassName}>
+            <span>{copy.title(item.activity)}</span>
+            <small>{copy.subtitle}</small>
+          </strong>
+          <button
+            type="button"
+            className={subActivityModalCloseClassName}
+            aria-label={copy.close}
+            onClick={onClose}
+          >
+            <Icon name="x" />
+          </button>
+        </header>
+        <div className={ticketModalBodyClassName}>
+          <div className={ticketModeToggleClassName}>
+            <button
+              type="button"
+              className={ticketModeButtonClassName}
+              aria-pressed={mode === "new"}
+              onClick={() => {
+                setMode("new");
+                hydrateTicketFields(null);
+              }}
+            >
+              <Icon name="plus" /> {copy.newTicket}
+            </button>
+            <button
+              type="button"
+              className={ticketModeButtonClassName}
+              aria-pressed={mode === "existing"}
+              disabled={!existingCandidates.length}
+              onClick={() => {
+                const booking = selectedBooking ?? existingCandidates[0] ?? null;
+                setMode("existing");
+                setSelectedBookingId(booking?.id ?? "");
+                hydrateTicketFields(booking);
+              }}
+            >
+              <Icon name="ticket" /> {copy.useExisting}
+            </button>
+          </div>
+          {mode === "existing" ? (
+            <div className={ticketExistingGridClassName} role="radiogroup" aria-label={copy.existingTickets}>
+              {existingCandidates.map((booking) => (
+                <label className={ticketExistingOptionClassName} key={booking.id}>
+                  <input
+                    type="radio"
+                    checked={selectedBookingId === booking.id}
+                    onChange={() => {
+                      setSelectedBookingId(booking.id);
+                      hydrateTicketFields(booking);
+                    }}
+                  />
+                  <span>
+                    <strong>{booking.title}</strong>
+                    <span>
+                      {formatBookingSummary(booking, bookingLinkItems)}
+                    </span>
+                  </span>
+                </label>
+              ))}
+              {!existingCandidates.length ? (
+                <p className="m-0 text-xs font-bold text-(--color-text-muted)">
+                  {copy.noExisting}
+                </p>
+              ) : null}
+            </div>
+          ) : null}
+          <div className={ticketFieldGridClassName}>
+            <label className={ticketFieldClassName}>
+              <span>{copy.ticketTitle}</span>
+              <input value={title} onChange={(event) => setTitle(event.target.value)} />
+            </label>
+            <label className={ticketFieldClassName}>
+              <span>{copy.provider}</span>
+              <input value={providerName} onChange={(event) => setProviderName(event.target.value)} />
+            </label>
+            <label className={ticketFieldClassName}>
+              <span>{copy.confirmation}</span>
+              <input value={confirmationCode} onChange={(event) => setConfirmationCode(event.target.value)} />
+            </label>
+            <label className={ticketFieldClassName}>
+              <span>{copy.startsAt}</span>
+              <DateTimePickerField value={startsAt} onChange={setStartsAt} />
+            </label>
+            <label className={ticketFieldClassName}>
+              <span>{copy.endsAt}</span>
+              <DateTimePickerField value={endsAt} onChange={setEndsAt} />
+            </label>
+            <label className={cn(ticketFieldClassName, "col-span-full")}>
+              <span>{copy.notes}</span>
+              <textarea value={notes} onChange={(event) => setNotes(event.target.value)} />
+            </label>
+          </div>
+          <section className="grid gap-1.5" aria-label={copy.linkedActivities}>
+            <strong className="text-xs font-extrabold text-(--color-text-muted)">
+              {copy.linkedActivities}
+            </strong>
+            <div className={ticketLinkedItemsClassName}>
+              {bookingLinkItems.map((candidate) => (
+                <label className={ticketLinkedOptionClassName} key={candidate.id}>
+                  <input
+                    type="checkbox"
+                    checked={relatedItineraryItemIds.includes(candidate.id)}
+                    disabled={candidate.id === item.id}
+                    onChange={() =>
+                      setRelatedItineraryItemIds((current) =>
+                        toggleId(current, candidate.id),
+                      )
+                    }
+                  />
+                  <span>{candidate.day} · {candidate.activity}</span>
+                </label>
+              ))}
+            </div>
+          </section>
+        </div>
+        <footer className={ticketModalFooterClassName}>
+          <button
+            type="button"
+            className="inline-flex min-h-9 items-center justify-center rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-3 text-xs font-extrabold text-(--color-text-muted) hover:bg-(--color-surface-subtle) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-focus)"
+            onClick={onClose}
+          >
+            {copy.cancel}
+          </button>
+          <button
+            type="submit"
+            className="inline-flex min-h-9 items-center justify-center gap-1.5 rounded-(--radius-sm) border border-(--color-route-border) bg-(--color-route) px-3 text-xs font-extrabold text-white hover:bg-[#1d4ed8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-focus) disabled:cursor-not-allowed disabled:opacity-50"
+            disabled={saving || !title.trim() || (mode === "existing" && !selectedBookingId)}
+          >
+            <Icon name="ticket" />
+            {copy.save}
+          </button>
+        </footer>
+      </form>
+    </div>,
+    document.body,
   );
 }
 
@@ -1944,6 +2334,9 @@ function SubActivityModal({
   locale,
   onAddSubActivity,
   onAddBookingForItem,
+  onSaveBookingForItem,
+  bookingDocs,
+  bookingLinkItems,
   onClose,
   onDeleteItem,
   onEditItem,
@@ -1960,6 +2353,11 @@ function SubActivityModal({
     itemId: string,
     template?: ItineraryBookingTemplate,
   ) => string | void | Promise<string | void>;
+  onSaveBookingForItem?: (
+    input: ItineraryBookingTicketInput,
+  ) => string | void | Promise<string | void>;
+  bookingDocs: BookingDoc[];
+  bookingLinkItems: ItineraryItem[];
   onClose: () => void;
   onDeleteItem?: (itemId: string) => void;
   onEditItem?: (itemId: string) => void;
@@ -2017,6 +2415,9 @@ function SubActivityModal({
             subItems={subItems}
             onAddSubActivity={onAddSubActivity}
             onAddBookingForItem={onAddBookingForItem}
+            onSaveBookingForItem={onSaveBookingForItem}
+            bookingDocs={bookingDocs}
+            bookingLinkItems={bookingLinkItems}
             onDeleteItem={onDeleteItem}
             onEditItem={onEditItem}
             onUpdateItemInline={onUpdateItemInline}
@@ -2039,6 +2440,9 @@ function SubActivityList({
   visible = true,
   onAddSubActivity,
   onAddBookingForItem,
+  onSaveBookingForItem,
+  bookingDocs,
+  bookingLinkItems,
   onDeleteItem,
   onEditItem,
   onUpdateItemInline,
@@ -2056,6 +2460,11 @@ function SubActivityList({
     itemId: string,
     template?: ItineraryBookingTemplate,
   ) => string | void | Promise<string | void>;
+  onSaveBookingForItem?: (
+    input: ItineraryBookingTicketInput,
+  ) => string | void | Promise<string | void>;
+  bookingDocs: BookingDoc[];
+  bookingLinkItems: ItineraryItem[];
   onDeleteItem?: (itemId: string) => void;
   onEditItem?: (itemId: string) => void;
   onUpdateItemInline?: (
@@ -2135,6 +2544,9 @@ function SubActivityList({
               itineraryLabels={itineraryLabels}
               locale={locale}
               onAddBookingForItem={onAddBookingForItem}
+              onSaveBookingForItem={onSaveBookingForItem}
+              bookingDocs={bookingDocs}
+              bookingLinkItems={bookingLinkItems}
             />
             <ActivityTypePicker
               buttonClassName={cn(activityMobileTypePickerClassName, "!inline-flex !w-7 max-[520px]:!inline-flex")}
@@ -2524,6 +2936,139 @@ function bookingTemplateLabel(item: ItineraryItem, locale: Locale): string {
     },
   };
   return labels[locale][bookingTemplateForItem(item)];
+}
+
+function bookingDocTypeForItemTemplate(
+  item: ItineraryItem,
+  template: ItineraryBookingTemplate,
+): BookingDocType {
+  if (template === "flight") return "flight";
+  if (template === "train") return "train";
+  if (template === "hotel") return "hotel";
+  if (template === "activity_ticket") return "activity_ticket";
+  const subtype = travelSubtypeForItem(item);
+  if (subtype === "flight") return "flight";
+  if (subtype === "train") return "train";
+  if (item.activityType === "travel") return "public_transport";
+  if (item.activityType === "stay") return "hotel";
+  if (item.activityType === "attraction" || item.activityType === "experience")
+    return "activity_ticket";
+  return "other";
+}
+
+function bookingTitleForItem(item: ItineraryItem, type: BookingDocType): string {
+  const suffixByType: Partial<Record<BookingDocType, string>> = {
+    activity_ticket: "ticket",
+    flight: "flight ticket",
+    hotel: "hotel booking",
+    public_transport: "transport ticket",
+    train: "train ticket",
+  };
+  return `${item.activity} ${suffixByType[type] ?? "booking"}`;
+}
+
+function ticketNotesForItem(item: ItineraryItem, locale: Locale): string {
+  const from = readItineraryDetailString(item.details, "from");
+  const to = readItineraryDetailString(item.details, "to") || item.place;
+  const parts = [
+    locale === "th" ? "จาก itinerary" : "From itinerary",
+    from ? `${locale === "th" ? "จาก" : "From"}: ${from}` : null,
+    to ? `${locale === "th" ? "ถึง" : "To"}: ${to}` : null,
+    item.transportation || null,
+  ].filter(Boolean);
+  return parts.join("\n");
+}
+
+function ticketModalCopy(locale: Locale): {
+  cancel: string;
+  close: string;
+  confirmation: string;
+  endsAt: string;
+  existingTickets: string;
+  linkedActivities: string;
+  newTicket: string;
+  noExisting: string;
+  notes: string;
+  provider: string;
+  save: string;
+  startsAt: string;
+  subtitle: string;
+  ticketTitle: string;
+  title: (activity: string) => string;
+  useExisting: string;
+} {
+  if (locale === "th") {
+    return {
+      cancel: "ยกเลิก",
+      close: "ปิด modal ตั๋ว",
+      confirmation: "เลข booking / ticket",
+      endsAt: "ถึงเวลา",
+      existingTickets: "ตั๋วที่มีอยู่",
+      linkedActivities: "ใช้ตั๋วนี้กับ activity",
+      newTicket: "ตั๋วใหม่",
+      noExisting: "ยังไม่มีตั๋วที่เข้ากับ activity นี้",
+      notes: "โน้ต",
+      provider: "สายการบิน / ผู้ให้บริการ",
+      save: "บันทึกตั๋ว",
+      startsAt: "ออกเวลา",
+      subtitle: "กรอกข้อมูลตั๋ว หรือเลือกตั๋วเดิมเพื่อไม่สร้างซ้ำ",
+      ticketTitle: "ชื่อตั๋ว",
+      title: (activity) => `ตั๋วสำหรับ ${activity}`,
+      useExisting: "ใช้ตั๋วเดิม",
+    };
+  }
+  return {
+    cancel: "Cancel",
+    close: "Close ticket modal",
+    confirmation: "Booking / ticket number",
+    endsAt: "Arrives at",
+    existingTickets: "Existing tickets",
+    linkedActivities: "Use this ticket for activities",
+    newTicket: "New ticket",
+    noExisting: "No matching tickets yet",
+    notes: "Notes",
+    provider: "Airline / provider",
+    save: "Save ticket",
+    startsAt: "Departs at",
+    subtitle: "Enter ticket details or reuse an existing ticket to avoid duplicates.",
+    ticketTitle: "Ticket title",
+    title: (activity) => `Ticket for ${activity}`,
+    useExisting: "Use existing",
+  };
+}
+
+function itineraryDateTimeValue(day: string, time: string | null | undefined): string | null {
+  const trimmed = time?.trim();
+  return trimmed ? `${day}T${trimmed}` : null;
+}
+
+function toDateTimeLocalValue(value: string | null | undefined): string {
+  return value ? value.slice(0, 16) : "";
+}
+
+function fromDateTimeLocalValue(value: string): string | null {
+  return value.trim() || null;
+}
+
+function formatBookingSummary(
+  booking: BookingDoc,
+  items: ItineraryItem[],
+): string {
+  const linkedNames = booking.relatedItineraryItemIds
+    .map((id) => items.find((item) => item.id === id)?.activity)
+    .filter((value): value is string => Boolean(value));
+  const provider = booking.providerName ? `${booking.providerName} · ` : "";
+  return `${provider}${linkedNames.length ? linkedNames.join(", ") : booking.status}`;
+}
+
+function uniqueIds(ids: string[]): string[] {
+  return Array.from(new Set(ids.filter(Boolean)));
+}
+
+function toggleId(ids: string[], id: string): string[] {
+  return ids.includes(id)
+    ? ids.filter((candidate) => candidate !== id)
+    : [...ids, id];
 }
 
 function itemStatusLabel(

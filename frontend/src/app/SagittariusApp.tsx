@@ -19,6 +19,7 @@ import { OverviewPage } from "@/src/components/OverviewPage";
 import { RouteMapView } from "@/src/components/RouteMapView";
 import {
   SmartItineraryTable,
+  type ItineraryBookingTicketInput,
   type ItineraryBookingTemplate,
   type ItineraryCommitmentSummary,
   type InlineItineraryItemPatch,
@@ -2876,6 +2877,73 @@ export function SagittariusApp({
     return bookingDoc?.title;
   }
 
+  async function saveItineraryBookingTicket(input: ItineraryBookingTicketInput) {
+    if (!canEditBookings) return;
+    const currentTrip = latestTripRef.current;
+    const item = currentTrip.itineraryItems.find(
+      (candidate) => candidate.id === input.itemId,
+    );
+    if (!item) return;
+    const relatedItineraryItemIds = uniqueStringIds([
+      ...input.relatedItineraryItemIds,
+      input.itemId,
+    ]);
+    const existingBookingDoc = input.bookingDocId
+      ? currentTrip.bookingDocs?.find(
+          (candidate) => candidate.id === input.bookingDocId,
+        )
+      : null;
+    const bookingDocInput: BookingDocInput = {
+      tripPlanId: existingBookingDoc?.tripPlanId,
+      type: existingBookingDoc?.type ?? input.type,
+      title: input.title,
+      status: existingBookingDoc?.status ?? input.status,
+      visibility: existingBookingDoc?.visibility ?? input.visibility,
+      ownerMemberId: existingBookingDoc?.ownerMemberId ?? currentMember.id,
+      providerName: input.providerName,
+      confirmationCode: input.confirmationCode,
+      startsAt: input.startsAt,
+      endsAt: input.endsAt,
+      timezone: existingBookingDoc?.timezone ?? trip.defaultTimezone ?? null,
+      priceAmount: existingBookingDoc?.priceAmount ?? null,
+      currency: existingBookingDoc?.currency ?? null,
+      travelerIds:
+        existingBookingDoc?.travelerIds.length || input.travelerIds.length
+          ? existingBookingDoc?.travelerIds.length
+            ? existingBookingDoc.travelerIds
+            : input.travelerIds
+          : trip.members.map((member) => member.id),
+      externalLinks: existingBookingDoc?.externalLinks ?? [],
+      relatedItineraryItemIds,
+      relatedTaskIds: existingBookingDoc?.relatedTaskIds ?? [],
+      relatedExpenseIds: existingBookingDoc?.relatedExpenseIds ?? [],
+      noteIds: existingBookingDoc?.noteIds ?? [],
+      notes: input.notes,
+    };
+
+    if (existingBookingDoc) {
+      await updateBookingDoc(existingBookingDoc.id, bookingDocInput);
+    } else {
+      await createBookingDoc(bookingDocInput);
+    }
+
+    for (const relatedItemId of relatedItineraryItemIds) {
+      const relatedItem = latestTripRef.current.itineraryItems.find(
+        (candidate) => candidate.id === relatedItemId,
+      );
+      if (!relatedItem) continue;
+      const nextDetails = syncItineraryDetailsWithBookingTicket(
+        relatedItem,
+        input,
+      );
+      await updateItineraryItemInline(relatedItem.id, { details: nextDetails });
+    }
+
+    setContextRailPreferredTab("booking");
+    setSelectedItemId(item.id);
+    return input.title;
+  }
+
   async function updateBookingDoc(
     bookingDocId: string,
     input: BookingDocInput,
@@ -4329,7 +4397,9 @@ export function SagittariusApp({
                   dayPathOverrides={pathSelection.dayPathOverrides ?? {}}
                   showAllPaths={Boolean(pathSelection.showAll)}
                   tripName={trip.name}
+                  bookingDocs={scopedTripPlanRecords.bookingDocs}
                   onAddBookingForItem={createItineraryBookingDraft}
+                  onSaveBookingForItem={saveItineraryBookingTicket}
                   onAddStop={addStop}
                   onAddSubActivity={addSubActivity}
                   onAddNoteForItem={(itemId) => void createItineraryNote(itemId)}
@@ -5417,6 +5487,51 @@ export function bookingTypeForItineraryItem(item: ItineraryItem): BookingDocType
     return "hotel";
   if (item.activityType === "attraction" || item.itemKind === "activity") return "activity_ticket";
   return "other";
+}
+
+function syncItineraryDetailsWithBookingTicket(
+  item: ItineraryItem,
+  input: ItineraryBookingTicketInput,
+): ItineraryItem["details"] {
+  const nextDetails = { ...(item.details ?? {}) };
+  const mode = itineraryTravelModeForTicket(item, input);
+  if (mode) nextDetails.mode = mode;
+
+  if (input.providerName?.trim()) nextDetails.provider = input.providerName.trim();
+  else delete nextDetails.provider;
+
+  if (input.confirmationCode?.trim()) {
+    nextDetails.bookingRef = input.confirmationCode.trim();
+    nextDetails.ticketRef = input.confirmationCode.trim();
+  } else {
+    delete nextDetails.bookingRef;
+    delete nextDetails.ticketRef;
+  }
+
+  if (input.startsAt) nextDetails.ticketStartsAt = input.startsAt;
+  else delete nextDetails.ticketStartsAt;
+  if (input.endsAt) nextDetails.ticketEndsAt = input.endsAt;
+  else delete nextDetails.ticketEndsAt;
+
+  return nextDetails;
+}
+
+function itineraryTravelModeForTicket(
+  item: ItineraryItem,
+  input: ItineraryBookingTicketInput,
+): string | null {
+  if (item.activityType !== "travel") return null;
+  const existingMode = readItineraryDetailString(item.details, "mode");
+  if (input.itemId !== item.id && existingMode) return existingMode;
+  if (input.template === "flight" || input.type === "flight") return "flight";
+  if (input.template === "train" || input.type === "train") return "train";
+  if (existingMode) return existingMode;
+  if (input.type === "public_transport") return "transport";
+  return null;
+}
+
+function uniqueStringIds(ids: string[]): string[] {
+  return Array.from(new Set(ids.filter(Boolean)));
 }
 
 function bookingTypeForBookingTemplate(
