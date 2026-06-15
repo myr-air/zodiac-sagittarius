@@ -167,7 +167,7 @@ describe("RouteMapView", () => {
     expect(screen.getByText("0/3 มีพิกัด · 3 ยังไม่ระบุ")).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "กิจกรรมที่ยังไม่มีพิกัด" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "หาพิกัด 3 จุด" })).toBeDisabled();
-    expect(screen.queryByRole("button", { name: /วันที่ 1/ })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /วันที่ 1/ })).toBeInTheDocument();
     expect(screen.getByText("กำลังโหลดแผนที่จาก OpenFreeMap")).toBeInTheDocument();
   });
 
@@ -175,7 +175,7 @@ describe("RouteMapView", () => {
     const user = userEvent.setup();
     const onResolveMissingCoordinates = vi.fn();
     const unresolvedItems = tripFixture.planItems
-      .slice(0, 3)
+      .slice(0, 8)
       .map((item) => ({ ...item, coordinates: undefined }));
 
     render(
@@ -188,9 +188,10 @@ describe("RouteMapView", () => {
       />,
     );
 
-    await user.click(screen.getByRole("button", { name: "หาพิกัด 3 จุด" }));
+    await user.click(screen.getByRole("button", { name: /วันที่ 2/ }));
+    await user.click(screen.getByRole("button", { name: "หาพิกัด 1 จุด" }));
 
-    expect(onResolveMissingCoordinates).toHaveBeenCalledWith(unresolvedItems);
+    expect(onResolveMissingCoordinates).toHaveBeenCalledWith(unresolvedItems.filter((item) => item.day === hongKongDay));
   });
 
   it("centers the live map on the destination country when no stop has coordinates", async () => {
