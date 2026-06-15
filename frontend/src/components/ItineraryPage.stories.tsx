@@ -260,8 +260,8 @@ export const Owner: Story = {
     await expect(canvas.getByRole("button", { name: "Trip Plan controls" })).toBeEnabled();
     await expect(canvas.queryByRole("button", { name: /^Import$/i })).toBeNull();
     await expect(canvas.queryByRole("button", { name: /^Export$/i })).toBeNull();
-    await expect(canvas.queryByRole("button", { name: /Add stop or activity/i })).toBeNull();
-    await expect(canvas.queryByRole("button", { name: /Edit Dim Dim Sum/i })).toBeNull();
+    await expect(canvas.getAllByRole("button", { name: /Add stop or activity/i }).length).toBeGreaterThan(0);
+    await expect(canvas.queryAllByRole("button", { name: /Edit Dim Dim Sum/i })).toHaveLength(0);
   },
 };
 
@@ -273,7 +273,9 @@ export const InlineQuickEdit: Story = {
   play: async ({ canvas, canvasElement }) => {
     onStoryInlineQuickEdit.mockClear();
     await expectItineraryResponsiveContract(canvasElement);
-    await expect(canvas.queryByRole("textbox", { name: /Edit activity Dim Dim Sum/i })).toBeNull();
+    await expect(canvas.getByRole("textbox", { name: /Edit activity Dim Dim Sum/i })).toHaveValue(
+      "Dim Dim Sum ที่ Tim Ho Wan",
+    );
     await expect(onStoryInlineQuickEdit).not.toHaveBeenCalled();
   },
 };
@@ -318,8 +320,8 @@ export const Traveler: Story = {
   play: async ({ canvas }) => {
     await expect(canvas.queryByText(/Editing requires organizer access/i)).toBeNull();
     await expect(canvas.getByRole("button", { name: "Trip Plan controls" })).toBeEnabled();
-    await expect(canvas.queryByRole("button", { name: /Add stop or activity/i })).toBeNull();
-    await expect(canvas.queryByRole("button", { name: /Edit Dim Dim Sum/i })).toBeNull();
+    await expect(canvas.getAllByRole("button", { name: /Add stop or activity/i }).length).toBeGreaterThan(0);
+    await expect(canvas.queryAllByRole("button", { name: /Edit Dim Dim Sum/i })).toHaveLength(0);
   },
 };
 

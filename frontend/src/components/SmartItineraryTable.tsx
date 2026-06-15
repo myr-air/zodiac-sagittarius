@@ -715,6 +715,7 @@ export function SmartItineraryTable({
                 data-state={headerControlsExpanded ? "open" : "closed"}
                 id="itinerary-header-controls"
                 aria-hidden={!headerControlsExpanded}
+                inert={headerControlsExpanded ? undefined : true}
               >
                 <div className={headerControlsTitleBarClassName}>
                   <div className={headerControlsTitleClassName}>
