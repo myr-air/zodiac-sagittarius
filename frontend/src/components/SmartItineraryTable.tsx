@@ -146,7 +146,7 @@ export interface ItineraryCommitmentSummary {
 }
 
 const tablePanelClassName =
-  "table-panel grid h-auto min-h-full min-w-0 grid-rows-[auto_minmax(0,1fr)] overflow-visible bg-transparent px-6 py-[22px] pb-7 max-[767px]:px-3 max-[767px]:pb-3";
+  "table-panel grid h-auto min-h-full min-w-0 grid-rows-[auto_minmax(0,1fr)] overflow-visible bg-transparent px-6 py-[22px] pb-7 max-[767px]:px-3 max-[767px]:pb-3 max-[520px]:px-0 max-[520px]:py-0 max-[520px]:pb-0";
 const pageHeaderActionsClassName =
   "page-header-actions relative z-[20] grid w-[min(560px,100%)] min-w-0 justify-items-end gap-2 overflow-visible max-[1199px]:w-full max-[1199px]:justify-items-stretch";
 const pageHeaderNoteClassName =
@@ -191,9 +191,9 @@ const pathFilterPanelClassName =
 const pathFilterOptionClassName =
   "inline-grid min-h-9 min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-2 rounded-(--radius-sm) border border-(--color-route-border) bg-(--color-surface) px-2.5 text-xs font-semibold text-(--color-route) transition-[background,border-color,color] duration-150 hover:border-(--color-route-border) hover:bg-(--color-route-soft) [&_span]:truncate";
 const tableScrollClassName =
-  "table-scroll m-0 h-auto min-h-0 w-full max-w-full overflow-x-auto overflow-y-hidden rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) shadow-[0_1px_0_rgb(15_23_42_/_0.04)] [contain:paint]";
+  "table-scroll m-0 h-auto min-h-0 w-full max-w-full overflow-x-auto overflow-y-hidden rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) shadow-[0_1px_0_rgb(15_23_42_/_0.04)] [contain:paint] max-[520px]:overflow-x-hidden max-[520px]:rounded-none max-[520px]:border-x-0 max-[520px]:shadow-none";
 const smartTableClassName =
-  "smart-table w-full min-w-[520px] table-fixed border-collapse text-xs leading-4 text-(--color-text) [&_td:first-child]:px-0 [&_td:first-child]:text-center [&_td:nth-child(2)]:border-r-0 [&_td]:h-10 [&_td]:border-b [&_td]:border-r [&_td]:border-(--color-border) [&_td]:px-2.5 [&_td]:py-1.5 [&_td]:text-left [&_td]:align-middle [&_th:first-child]:px-0 [&_th:first-child]:text-center [&_th:nth-child(2)]:border-r-0 [&_th]:h-9 [&_th]:border-b [&_th]:border-r [&_th]:border-(--color-border-strong) [&_th]:px-2.5 [&_th]:py-1 [&_th]:text-left [&_th]:align-middle [&_thead_th]:sticky [&_thead_th]:top-0 [&_thead_th]:z-[1] [&_thead_th]:h-12 [&_thead_th]:bg-[linear-gradient(180deg,rgb(255_255_255_/_0.98)_0%,rgb(239_246_255_/_0.94)_100%)] [&_thead_th]:text-xs [&_thead_th]:font-[800] [&_thead_th]:text-(--color-text) [&_thead_th]:shadow-[inset_0_-1px_0_var(--color-route-border)]";
+  "smart-table w-full min-w-[520px] table-fixed border-collapse text-xs leading-4 text-(--color-text) max-[520px]:min-w-full max-[520px]:w-full [&_td:first-child]:px-0 [&_td:first-child]:text-center [&_td:nth-child(2)]:border-r-0 [&_td]:h-10 [&_td]:border-b [&_td]:border-r [&_td]:border-(--color-border) [&_td]:px-2.5 [&_td]:py-1.5 [&_td]:text-left [&_td]:align-middle [&_th:first-child]:px-0 [&_th:first-child]:text-center [&_th:nth-child(2)]:border-r-0 [&_th]:h-9 [&_th]:border-b [&_th]:border-r [&_th]:border-(--color-border-strong) [&_th]:px-2.5 [&_th]:py-1 [&_th]:text-left [&_th]:align-middle [&_thead_th]:sticky [&_thead_th]:top-0 [&_thead_th]:z-[1] [&_thead_th]:h-12 [&_thead_th]:bg-[linear-gradient(180deg,rgb(255_255_255_/_0.98)_0%,rgb(239_246_255_/_0.94)_100%)] [&_thead_th]:text-xs [&_thead_th]:font-[800] [&_thead_th]:text-(--color-text) [&_thead_th]:shadow-[inset_0_-1px_0_var(--color-route-border)]";
 const activityHeaderGridClassName =
   "grid min-w-0 grid-cols-[64px_112px_minmax(0,1fr)] items-center gap-1.5 px-2 text-[11px] font-semibold uppercase text-(--color-text-muted) max-[520px]:hidden";
 const activityHeaderActivityClassName =
@@ -234,31 +234,33 @@ const itemPlaceholderRowClassName =
 const itemPlaceholderCellClassName =
   "item-placeholder-cell min-w-0 bg-(--color-surface) px-0 py-0 align-top";
 const activityCellClassName =
-  "activity-cell grid min-h-[60px] min-w-0 grid-cols-[64px_112px_minmax(0,1fr)] items-stretch gap-1.5 px-2 py-1 transition-[background,box-shadow] duration-150 group-hover/activity:bg-(--color-surface-subtle) data-[selected=true]:bg-(--color-route-soft) data-[selected=true]:shadow-[inset_0_0_0_1px_var(--color-route-border)] max-[520px]:grid-cols-[58px_minmax(0,1fr)] max-[520px]:gap-1 max-[360px]:grid-cols-1 max-[360px]:px-2";
+  "activity-cell grid min-h-[60px] min-w-0 grid-cols-[64px_112px_minmax(0,1fr)] items-stretch gap-1.5 px-2 py-1 transition-[background,box-shadow] duration-150 group-hover/activity:bg-(--color-surface-subtle) data-[selected=true]:bg-(--color-route-soft) data-[selected=true]:shadow-[inset_0_0_0_1px_var(--color-route-border)] max-[520px]:w-full max-[520px]:grid-cols-[58px_minmax(0,1fr)] max-[520px]:items-start max-[520px]:gap-x-1.5 max-[520px]:gap-y-0 max-[520px]:px-2 max-[520px]:py-1.5 max-[360px]:grid-cols-1";
 const activityTimeRailClassName =
-  "flex min-w-0 items-start text-[11px] font-medium leading-4 text-(--color-text-muted) max-[360px]:items-center";
+  "flex min-w-0 items-start text-[11px] font-medium leading-4 text-(--color-text-muted) max-[520px]:grid max-[520px]:justify-items-center max-[520px]:pt-0 max-[360px]:items-center";
 const activityTimeButtonClassName =
   "activity-time-button grid min-h-[52px] w-full content-start justify-items-center rounded-(--radius-sm) border border-transparent bg-transparent px-1 pt-1 text-center font-mono text-[11px] font-medium leading-4 text-(--color-text) outline-none transition-colors duration-150 hover:border-(--color-route-border) hover:bg-(--color-route-soft) hover:text-(--color-route) focus:border-(--color-route-border) focus:bg-(--color-route-soft) focus:text-(--color-route) focus:ring-2 focus:ring-(--color-focus) disabled:cursor-default disabled:text-(--color-text-muted)";
 const activityTimeStartClassName = "block leading-4 font-medium";
 const activityTimeEndClassName =
   "block leading-4 font-normal text-(--color-text-muted) group-hover/activity:text-(--color-text-muted)";
 const activityTypeRailClassName =
-  "flex min-w-0 items-start justify-start max-[520px]:order-3 max-[520px]:col-span-2 max-[360px]:col-span-1";
-const activityBodyClassName = "min-w-0 space-y-1 max-[520px]:col-start-2 max-[520px]:row-span-2 max-[360px]:col-start-auto max-[360px]:row-span-1";
+  "flex min-w-0 items-start justify-start max-[520px]:hidden";
+const activityBodyClassName = "min-w-0 space-y-1 max-[520px]:col-start-2 max-[520px]:w-full max-[520px]:max-w-full max-[360px]:col-start-auto";
 const activityMainLineClassName =
   "grid min-w-0 grid-cols-1 items-start";
 const activitySentenceClassName =
-  "flex min-w-0 items-baseline gap-1 overflow-hidden whitespace-nowrap text-sm font-normal leading-5 text-(--color-text)";
+  "flex min-w-0 items-baseline gap-1 overflow-hidden whitespace-nowrap text-sm font-normal leading-5 text-(--color-text) max-[520px]:block max-[520px]:whitespace-normal";
 const activityTitleInputClassName =
-  "min-h-5 w-auto min-w-[8ch] max-w-[min(44ch,58%)] shrink-0 border-0 border-b border-transparent bg-transparent px-0 py-0 text-sm font-normal leading-5 text-(--color-text) outline-none transition-colors duration-150 [field-sizing:content] placeholder:text-(--color-text-muted) hover:not-disabled:border-(--color-border) focus:border-(--color-route) focus:ring-0 disabled:cursor-default disabled:border-transparent max-[520px]:max-w-[48%]";
+  "min-h-5 w-auto min-w-[8ch] max-w-[min(44ch,58%)] shrink-0 border-0 border-b border-transparent bg-transparent px-0 py-0 text-sm font-normal leading-5 text-(--color-text) outline-none transition-colors duration-150 [field-sizing:content] placeholder:text-(--color-text-muted) hover:not-disabled:border-(--color-border) focus:border-(--color-route) focus:ring-0 disabled:cursor-default disabled:border-transparent max-[520px]:w-full max-[520px]:max-w-full";
 const activityPlaceInputClassName =
   "inline-block min-h-5 min-w-[8ch] max-w-full flex-1 border-0 border-b border-transparent bg-transparent px-0 py-0 text-xs font-normal leading-5 text-(--color-text-muted) outline-none transition-colors duration-150 [field-sizing:content] placeholder:text-(--color-text-muted) hover:not-disabled:border-(--color-border) focus:border-(--color-route) focus:ring-0 disabled:cursor-default disabled:border-transparent";
+const activityMobilePlaceInputClassName =
+  "min-h-5 w-full min-w-0 truncate border-0 border-b border-transparent bg-transparent px-0 py-0 text-xs font-semibold leading-5 text-(--color-text-muted) outline-none transition-colors duration-150 placeholder:text-(--color-text-muted) hover:not-disabled:border-(--color-border) focus:border-(--color-route) focus:ring-0 disabled:cursor-default disabled:border-transparent";
 const activityActionsClassName =
   "flex shrink-0 flex-nowrap items-center justify-end gap-0.5 whitespace-nowrap max-[1023px]:hidden";
 const activityIconButtonClassName =
   "inline-flex size-7 shrink-0 items-center justify-center rounded-(--radius-sm) border border-transparent bg-transparent text-(--color-text-muted) transition-colors duration-150 hover:border-(--color-border) hover:bg-(--color-surface) hover:text-(--color-text) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-focus) [&_.icon]:size-3.5";
 const activityMetaClassName =
-  "grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-1 text-[11px] font-bold leading-4 text-(--color-text-muted)";
+  "grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-1 text-[11px] font-bold leading-4 text-(--color-text-muted) max-[520px]:hidden";
 const activityMetaStatusClassName =
   "flex min-w-0 flex-wrap items-center justify-start gap-1";
 const activityTabletActionsClassName =
@@ -269,6 +271,12 @@ const activityPillClassName =
   "inline-flex min-h-5 max-w-[148px] items-center gap-1 rounded-full border border-(--color-border) bg-(--color-surface-subtle) px-1.5 text-[11px] font-extrabold leading-4 text-(--color-text-muted)";
 const activityTypePickerClassName =
   "activity-type-picker !min-h-[52px] h-full w-full max-w-full shrink-0 items-start justify-start rounded-(--radius-sm) border-(--color-border) bg-(--color-surface-subtle) px-2 pt-1 text-left text-[11px] font-medium text-(--color-text-muted) hover:border-(--color-route-border) hover:bg-(--color-route-soft) hover:text-(--color-route) aria-[expanded=true]:border-(--color-route-border) aria-[expanded=true]:bg-(--color-route-soft) aria-[expanded=true]:text-(--color-route) max-[520px]:!min-h-7 max-[520px]:h-7 max-[520px]:px-1.5 max-[520px]:pt-0.5 [&_.icon]:size-3.5 [&_.inline-option-picker-caret]:hidden";
+const activityMobileLineClassName =
+  "mobile-activity-line hidden min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-1.5 max-[520px]:grid";
+const activityMobileTypePickerClassName =
+  "activity-type-picker-mobile hidden !min-h-7 !w-7 shrink-0 justify-center rounded-(--radius-sm) border-transparent bg-transparent !px-0 !py-0 text-(--color-text-muted) hover:border-(--color-route-border) hover:bg-(--color-route-soft) hover:text-(--color-route) aria-[expanded=true]:border-(--color-route-border) aria-[expanded=true]:bg-(--color-route-soft) aria-[expanded=true]:text-(--color-route) max-[520px]:mt-0.5 max-[520px]:inline-flex [&_.icon]:size-3.5 [&_.inline-option-picker-label]:hidden [&_.inline-option-picker-caret]:hidden";
+const activityMobileStatusClassName =
+  "shrink-0 max-w-[82px] truncate rounded-full border border-(--color-border) bg-(--color-surface-subtle) px-1.5 text-[10px] font-extrabold leading-5 text-(--color-text-muted)";
 const subActivityListClassName =
   "sub-activity-list relative col-start-2 col-span-2 mt-1 grid min-w-0 gap-0.5 border-t border-dashed border-(--color-border) py-1.5 pl-5 before:pointer-events-none before:absolute before:bottom-2 before:left-2 before:top-2 before:w-px before:bg-[linear-gradient(180deg,var(--color-route-border),color-mix(in_srgb,var(--color-route-border)_46%,transparent))] max-[640px]:hidden max-[520px]:col-start-1 max-[520px]:col-span-2 max-[360px]:col-span-1";
 const subActivityModalListClassName =
@@ -1337,6 +1345,21 @@ function ActivityCell({
           locale={locale}
           onSave={(patch) => onUpdateItemInline?.(item.id, patch)}
         />
+        <InlineOptionPicker
+          ariaLabel={itineraryLabels.row.inlineType({
+            activity: item.activity,
+          })}
+          buttonClassName={activityMobileTypePickerClassName}
+          disabled={!editable}
+          options={typeOptions}
+          optionKeyPrefix={`activity-type-mobile-${item.id}`}
+          value={item.activityType}
+          onCommit={(activityType) =>
+            onUpdateItemInline?.(item.id, {
+              activityType: activityType as ItineraryItem["activityType"],
+            })
+          }
+        />
       </div>
       <div className={activityTypeRailClassName}>
         <InlineOptionPicker
@@ -1374,7 +1397,7 @@ function ActivityCell({
               }
             />
             <span
-              className="inline-flex w-[10px] shrink-0 justify-center text-xs font-bold text-(--color-text-muted)"
+              className="inline-flex w-[10px] shrink-0 justify-center text-xs font-bold text-(--color-text-muted) max-[520px]:hidden"
               aria-hidden="true"
             >
               {item.place?.trim() ? "@" : ""}
@@ -1384,7 +1407,7 @@ function ActivityCell({
                 activity: item.activity,
               })}
               autoSize
-              className={activityPlaceInputClassName}
+              className={cn(activityPlaceInputClassName, "max-[520px]:hidden")}
               disabled={!editable}
               key={`${item.id}:place:${item.place}`}
               maxLength={90}
@@ -1393,6 +1416,34 @@ function ActivityCell({
               onCommit={(place) => onUpdateItemInline?.(item.id, { place })}
             />
           </div>
+        </div>
+        <InlineActivityField
+          ariaLabel={itineraryLabels.row.inlinePlace({
+            activity: item.activity,
+          })}
+          className={activityMobilePlaceInputClassName}
+          disabled={!editable}
+          key={`${item.id}:mobile-place:${item.place}`}
+          maxLength={90}
+          placeholder=""
+          value={item.place}
+          onCommit={(place) => onUpdateItemInline?.(item.id, { place })}
+        />
+        <div className={activityMobileLineClassName}>
+          {status ? <span className={activityMobileStatusClassName}>{status}</span> : null}
+          <button
+            type="button"
+            className={activityTabletActionsClassName}
+            aria-label={actionMenuLabel}
+            aria-expanded={actionsExpanded}
+            title={actionMenuLabel}
+            onClick={(event) => {
+              event.stopPropagation();
+              setActionsExpanded((current) => !current);
+            }}
+          >
+            <Icon name="dots" />
+          </button>
         </div>
         <div className={activityMetaClassName}>
           <div className={activityMetaStatusClassName}>

@@ -519,10 +519,10 @@ describe("SmartItineraryTable", () => {
         }),
       ).toBeInTheDocument();
       expect(
-        within(row).getByRole("button", {
+        within(row).getAllByRole("button", {
           name: /แก้ไขประเภท|Edit type/i,
-        }),
-      ).toBeInTheDocument();
+        }).length,
+      ).toBeGreaterThanOrEqual(1);
     }
     expect(itemRows[0]?.querySelector(".activity-cell")).toHaveAttribute(
       "data-selected",
@@ -541,9 +541,9 @@ describe("SmartItineraryTable", () => {
       }),
     ).toHaveClass("size-7");
     expect(
-      within(itemRows[0]).getByRole("button", {
+      within(itemRows[0]).getAllByRole("button", {
         name: /แก้ไขประเภท|Edit type/i,
-      }),
+      }).find((button) => button.className.includes("activity-type-picker ")),
     ).toHaveClass(
       "activity-type-picker",
       "!min-h-[52px]",
@@ -551,9 +551,9 @@ describe("SmartItineraryTable", () => {
       "[&_.inline-option-picker-caret]:hidden",
     );
     expect(
-      within(itemRows[0]).getByRole("button", {
+      within(itemRows[0]).getAllByRole("button", {
         name: /แก้ไขประเภท|Edit type/i,
-      }).querySelector(".icon"),
+      })[0]?.querySelector(".icon"),
     ).toBeInTheDocument();
     const subActivityToggle = within(itemRows[0]).getByRole("button", {
       name: /Sub-activities for/i,
@@ -682,9 +682,11 @@ describe("SmartItineraryTable", () => {
     expect(within(parentRow as HTMLElement).getByDisplayValue("Parent route")).toBeInTheDocument();
     const parentBody = parentRow?.querySelector(".activity-cell > div:nth-of-type(3)");
     expect(parentBody).not.toHaveTextContent("@");
-    expect(
-      within(parentBody as HTMLElement).getByLabelText(/แก้ไขสถานที่|Edit place/i),
-    ).toHaveAttribute("placeholder", "");
+    within(parentBody as HTMLElement)
+      .getAllByLabelText(/แก้ไขสถานที่|Edit place/i)
+      .forEach((placeInput) => {
+        expect(placeInput).toHaveAttribute("placeholder", "");
+      });
     await user.click(
       within(parentRow as HTMLElement).getByRole("button", {
         name: /Sub-activities for Parent route/i,
