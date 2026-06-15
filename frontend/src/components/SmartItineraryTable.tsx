@@ -3621,8 +3621,16 @@ function InlineOptionPicker({
         aria-label={ariaLabel}
         className={cn(inlineOptionPickerButtonClassName, buttonClassName)}
         disabled={disabled}
-        onClick={() => (open ? setOpen(false) : openMenu())}
+        onClick={(event) => {
+          event.stopPropagation();
+          if (open) {
+            setOpen(false);
+          } else {
+            openMenu();
+          }
+        }}
         onKeyDown={(event) => {
+          event.stopPropagation();
           if (event.key === "ArrowDown" || event.key === "ArrowUp") {
             event.preventDefault();
             openMenu();
@@ -3699,7 +3707,10 @@ function InlineOptionPicker({
                     key={`${optionKeyPrefix}-${option.value}`}
                     onMouseEnter={() => setActiveIndex(index)}
                     onFocus={() => setActiveIndex(index)}
-                    onClick={() => commitOption(option)}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      commitOption(option);
+                    }}
                   >
                     <span className="flex min-w-0 items-center gap-2">
                       {option.icon ? (
@@ -3735,7 +3746,10 @@ function InlineOptionPicker({
                       className={floatingOptionButtonClassName}
                       data-active={option.value === selectedSubValue ? "true" : undefined}
                       key={`${optionKeyPrefix}-${activeOption.value}-${option.value}`}
-                      onClick={() => commitSubOption(activeOption, option)}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        commitSubOption(activeOption, option);
+                      }}
                     >
                       <span className="flex min-w-0 items-center gap-2">
                         {option.icon ? (

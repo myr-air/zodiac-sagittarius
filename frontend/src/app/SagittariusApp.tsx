@@ -2046,6 +2046,9 @@ export function SagittariusApp({
     inlineUpdateQueueRef.current.set(itemId, queuedUpdate);
     try {
       await queuedUpdate;
+      setTripPlanError(null);
+    } catch {
+      setTripPlanError(t.itinerary.saveError);
     } finally {
       if (inlineUpdateQueueRef.current.get(itemId) === queuedUpdate) {
         inlineUpdateQueueRef.current.delete(itemId);
