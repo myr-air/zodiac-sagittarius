@@ -25,12 +25,13 @@ describe("BookingsDocsPage", () => {
     expect(document.querySelector(".booking-folder-rail")).toHaveClass("shadow-[0_1px_0_rgb(15_23_42_/_0.04)]");
     expect(document.querySelector(".bookings-file-panel")).toHaveClass("shadow-[0_1px_0_rgb(15_23_42_/_0.04)]");
     expect(document.querySelector(".booking-inspector")).toHaveClass("shadow-[0_1px_0_rgb(15_23_42_/_0.04)]");
-    expect(document.querySelector(".bookings-docs-page")).toHaveClass("max-[767px]:min-h-[calc(100dvh-48px)]", "max-[767px]:px-0", "max-[767px]:gap-0");
+    expect(document.querySelector(".bookings-docs-page")).toHaveClass("max-[767px]:h-[calc(100dvh-48px)]", "max-[767px]:min-h-[calc(100dvh-48px)]", "max-[767px]:overflow-hidden", "max-[767px]:px-0", "max-[767px]:gap-0");
     expect(document.querySelector(".bookings-mobile-add-button")).toHaveClass("hidden", "max-[767px]:fixed", "max-[767px]:right-[60px]");
     expect(document.querySelector(".booking-folder-rail")).toHaveClass("max-[767px]:grid-cols-7", "max-[767px]:rounded-none", "max-[767px]:shadow-none");
-    expect(document.querySelector(".bookings-content")).toHaveClass("grid-cols-[192px_minmax(0,1fr)_300px]", "max-[767px]:grid-rows-[auto_minmax(0,1fr)]");
-    expect(document.querySelector(".bookings-file-panel")).toHaveClass("max-[1199px]:min-h-[520px]", "max-[767px]:grid-rows-[auto_auto_minmax(0,1fr)]", "max-[767px]:rounded-none", "max-[767px]:shadow-none");
-    expect(document.querySelector(".bookings-file-toolbar")).toHaveClass("max-[767px]:p-1.5");
+    expect(document.querySelector(".bookings-content")).toHaveClass("grid-cols-[192px_minmax(0,1fr)_300px]", "max-[767px]:h-full", "max-[767px]:grid-rows-[auto_minmax(0,1fr)]");
+    expect(document.querySelector(".bookings-file-panel")).toHaveClass("max-[1199px]:min-h-[520px]", "max-[767px]:grid-rows-[auto_auto_minmax(0,1fr)]", "max-[767px]:rounded-none", "max-[767px]:border-0", "max-[767px]:shadow-none");
+    expect(document.querySelector(".bookings-file-toolbar")).toHaveClass("max-[767px]:p-0", "max-[767px]:gap-0");
+    expect(document.querySelector(".bookings-file-panel > div:nth-child(2)")).toHaveClass("max-[767px]:px-0");
     expect(document.querySelector(".booking-file-list > div:first-child")).toHaveClass("sticky", "top-0", "min-w-[760px]");
     expect(document.querySelector(".booking-inspector")).toHaveClass("max-[767px]:!fixed", "max-[767px]:pb-[calc(12px+env(safe-area-inset-bottom))]", "max-[767px]:translate-y-full");
     expect(screen.getByText("Everything saved for this trip · 5 visible items")).toHaveClass("max-[767px]:hidden");

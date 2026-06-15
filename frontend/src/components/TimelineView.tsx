@@ -20,9 +20,9 @@ interface TimelineViewProps {
   onToggleContextRail: () => void;
 }
 
-const timelinePanelClassName = "timeline-panel grid min-h-full min-w-0 grid-rows-[auto_minmax(0,1fr)] gap-3 bg-transparent px-6 py-[22px] pb-7 max-[767px]:px-3 max-[767px]:py-4";
-const timelineGridClassName = "timeline-grid mb-[30px] grid w-full grid-cols-3 gap-3 p-0 max-[1199px]:grid-cols-2 max-[767px]:grid-cols-1";
-const timelineDayClassName = "timeline-day overflow-hidden rounded-(--radius-lg) border border-[color-mix(in_srgb,var(--color-route)_16%,var(--color-border))] bg-[linear-gradient(135deg,var(--color-surface)_0%,var(--color-route-soft)_100%)] shadow-[0_1px_0_rgb(15_23_42_/_0.04)]";
+const timelinePanelClassName = "timeline-panel grid min-h-full min-w-0 grid-rows-[auto_minmax(0,1fr)] gap-3 bg-transparent px-6 py-[22px] pb-7 max-[767px]:h-[calc(100dvh-48px)] max-[767px]:min-h-[calc(100dvh-48px)] max-[767px]:gap-0 max-[767px]:overflow-hidden max-[767px]:px-0 max-[767px]:py-0 max-[767px]:pb-0";
+const timelineGridClassName = "timeline-grid mb-[30px] grid w-full grid-cols-3 gap-3 p-0 max-[1199px]:grid-cols-2 max-[767px]:mb-0 max-[767px]:grid-cols-1 max-[767px]:gap-0 max-[767px]:overflow-y-auto";
+const timelineDayClassName = "timeline-day overflow-hidden rounded-(--radius-lg) border border-[color-mix(in_srgb,var(--color-route)_16%,var(--color-border))] bg-[linear-gradient(135deg,var(--color-surface)_0%,var(--color-route-soft)_100%)] shadow-[0_1px_0_rgb(15_23_42_/_0.04)] max-[767px]:rounded-none max-[767px]:border-x-0 max-[767px]:border-t-0 max-[767px]:shadow-none";
 const timelineDayHeaderClassName = "timeline-day-header flex min-h-[50px] items-center justify-between gap-2.5 border-b border-[color-mix(in_srgb,var(--color-route)_18%,var(--color-border))] bg-[rgb(255_255_255_/_0.72)] px-3.5 py-2.5 [&_strong]:text-[13px] [&_strong]:font-extrabold [&_strong]:leading-[18px] [&_strong]:text-(--color-text) [&_span:not(.badge)]:text-[11px] [&_span:not(.badge)]:font-bold [&_span:not(.badge)]:leading-[15px] [&_span:not(.badge)]:text-(--color-text-muted)";
 const timelineDayHeaderCopyClassName = "grid min-w-0 gap-px";
 const timelineStopListClassName = "timeline-stop-list m-0 grid list-none gap-1.5 p-0 [&_.timeline-stop:last-child_.timeline-stop-button]:border-b-0";

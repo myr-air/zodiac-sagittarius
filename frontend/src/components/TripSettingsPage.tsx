@@ -24,14 +24,14 @@ interface TripSettingsPageProps {
   onSave: (values: TripSettingsFormValues) => Promise<void>;
 }
 
-const pageClassName = "trip-settings-page min-h-full bg-transparent px-6 py-[22px] pb-7 max-[767px]:px-3 max-[767px]:py-4";
-const shellClassName = "mx-auto grid max-w-[980px] gap-4";
+const pageClassName = "trip-settings-page min-h-full bg-transparent px-6 py-[22px] pb-7 max-[767px]:min-h-[calc(100dvh-48px)] max-[767px]:px-0 max-[767px]:py-0 max-[767px]:pb-0";
+const shellClassName = "mx-auto grid max-w-[980px] gap-4 max-[767px]:max-w-none max-[767px]:gap-0";
 const headerClassName = "grid gap-3 rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) p-5 shadow-[0_10px_22px_rgb(55_47_38_/_0.045)] max-[767px]:hidden";
 const headerToplineClassName = "flex min-w-0 items-start justify-between gap-3 max-[767px]:flex-wrap";
 const eyebrowClassName = "inline-flex w-fit items-center gap-2 rounded-full border border-(--color-primary-border) bg-(--color-primary-soft) px-3 py-1 text-[11px] font-extrabold text-(--color-primary-strong)";
 const headingClassName = "grid gap-1 [&_h1]:text-[26px] [&_h1]:font-[900] [&_h1]:leading-8 [&_h1]:text-(--color-text) [&_p]:max-w-[620px] [&_p]:text-[13px] [&_p]:leading-5 [&_p]:text-(--color-text-muted)";
-const contentGridClassName = "content-grid grid grid-cols-[minmax(0,1fr)_300px] gap-4 max-[920px]:grid-cols-1";
-const cardClassName = "rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) p-4 shadow-[0_10px_22px_rgb(55_47_38_/_0.045)]";
+const contentGridClassName = "content-grid grid grid-cols-[minmax(0,1fr)_300px] gap-4 max-[920px]:grid-cols-1 max-[767px]:gap-0";
+const cardClassName = "rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) p-4 shadow-[0_10px_22px_rgb(55_47_38_/_0.045)] max-[767px]:rounded-none max-[767px]:border-x-0 max-[767px]:border-t-0 max-[767px]:shadow-none";
 const formClassName = "grid gap-3.5";
 const fieldGridClassName = "field-grid grid grid-cols-2 gap-3 max-[767px]:grid-cols-1";
 const labelClassName = "grid gap-1.5 text-[12px] font-extrabold text-(--color-text)";
