@@ -8,6 +8,7 @@ use uuid::Uuid;
 use crate::app::auth;
 use crate::db;
 use crate::db::PgPool;
+use crate::db::models::PlaceGeocodeCacheRecord;
 use crate::domain::capabilities::can;
 use crate::domain::errors::ServiceError;
 use crate::domain::types::Capability;
@@ -79,11 +80,40 @@ pub async fn resolve_place(
         return Ok(classify_candidates(Vec::new()));
     }
 
+    let query = place_query(&request);
+    let country_codes = destination_country_codes(&request.countries);
+    let normalized_query = normalized_destination_query(&query, &country_codes);
+    if let Some(record) = db::queries::find_place_geocode_cache(pool, &normalized_query).await? {
+        return Ok(classify_candidates(vec![candidate_from_cache(record)]));
+    }
+
     let evidence = brave_place_evidence(&request).await.unwrap_or_default();
-    let candidates = resolve_place_candidates(&request, evidence)
-        .await
-        .unwrap_or_default();
-    Ok(classify_candidates(candidates))
+    let candidates = resolve_query_candidates(
+        &query,
+        &request.countries,
+        confidence_for_request(&request),
+        evidence,
+    )
+    .await
+    .unwrap_or_default();
+    let response = classify_candidates(candidates);
+    if response.status == "resolved" {
+        if let Some(candidate) = response.candidates.first() {
+            let _ = db::queries::upsert_place_geocode_cache(
+                pool,
+                &normalized_query,
+                &query,
+                &country_codes,
+                &candidate_display_name(candidate),
+                &candidate.source,
+                candidate.coordinates.lat,
+                candidate.coordinates.lng,
+            )
+            .await;
+        }
+    }
+
+    Ok(response)
 }
 
 pub async fn resolve_destination_coordinates(
@@ -190,17 +220,31 @@ fn candidate_display_name(candidate: &PlaceCandidate) -> String {
     }
 }
 
-async fn resolve_place_candidates(
-    request: &ResolvePlaceRequest,
-    evidence: Vec<String>,
-) -> Option<Vec<PlaceCandidate>> {
-    resolve_query_candidates(
-        &place_query(request),
-        &request.countries,
-        confidence_for_request(request),
-        evidence,
-    )
-    .await
+fn candidate_from_cache(record: PlaceGeocodeCacheRecord) -> PlaceCandidate {
+    let name = record
+        .display_name
+        .split(',')
+        .next()
+        .map(str::trim)
+        .filter(|value| !value.is_empty())
+        .unwrap_or(record.display_name.as_str())
+        .to_string();
+    let coordinates = PlaceCoordinates {
+        lat: record.latitude,
+        lng: record.longitude,
+    };
+    PlaceCandidate {
+        name,
+        address: record.display_name,
+        coordinates,
+        map_link: osm_map_link(record.latitude, record.longitude),
+        confidence: HIGH_CONFIDENCE_THRESHOLD,
+        source: format!("cache:{}", record.source),
+        evidence: vec![
+            format!("cache-query: {}", record.query),
+            format!("cache-key: {}", record.normalized_query),
+        ],
+    }
 }
 
 async fn resolve_query_candidates(
@@ -602,6 +646,27 @@ mod tests {
                 "Hong Kong + Shenzhen HK CN".to_string(),
             ]
         );
+    }
+
+    #[test]
+    fn cached_place_candidate_preserves_coordinates_without_network() {
+        let record = PlaceGeocodeCacheRecord {
+            normalized_query: "dim dim sum hong kong|hk".to_string(),
+            query: "Dim Dim Sum Hong Kong HK".to_string(),
+            country_codes: vec!["hk".to_string()],
+            display_name: "Dim Dim Sum, Jordan, Hong Kong".to_string(),
+            source: "nominatim".to_string(),
+            latitude: 22.3051,
+            longitude: 114.1722,
+        };
+
+        let candidate = candidate_from_cache(record);
+
+        assert_eq!(candidate.name, "Dim Dim Sum");
+        assert_eq!(candidate.coordinates.lat, 22.3051);
+        assert_eq!(candidate.coordinates.lng, 114.1722);
+        assert_eq!(candidate.source, "cache:nominatim");
+        assert!(candidate.evidence[0].contains("Dim Dim Sum Hong Kong HK"));
     }
 
     #[test]
