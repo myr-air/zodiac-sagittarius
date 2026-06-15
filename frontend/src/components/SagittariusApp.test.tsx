@@ -2649,8 +2649,8 @@ describe("Sagittarius cockpit UI", () => {
     expect(screen.getAllByText(/ศูนย์จัดการทริป/i).length).toBeGreaterThan(0);
     expect(workspaceGrid).toBeInTheDocument();
     expect(workspaceGrid).toContainElement(planningMain as HTMLElement);
-    expect(container.querySelector(".workspace-shell")).toHaveClass("max-[767px]:min-h-[calc(100dvh-48px)]");
-    expect(planningMain).toHaveClass("max-[767px]:min-h-[calc(100dvh-48px)]", "max-[767px]:bg-(--color-surface)");
+    expect(container.querySelector(".workspace-shell")).toHaveClass("max-[1199px]:min-h-[calc(100dvh-48px)]");
+    expect(planningMain).toHaveClass("max-[1199px]:min-h-[calc(100dvh-48px)]", "max-[1199px]:bg-(--color-surface)");
     expect(planningMain).toContainElement(
       screen.getByRole("region", { name: /Trip overview/i }),
     );
