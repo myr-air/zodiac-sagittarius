@@ -18,6 +18,7 @@ describe("TripSettingsPage", () => {
 
     const page = screen.getByRole("region", { name: "Trip settings" });
     expect(page).toHaveClass("trip-settings-page", "bg-transparent");
+    expect(page.querySelector(".content-grid")).toHaveClass("gap-3");
 
     expect(screen.getByRole("heading", { name: "Trip settings", level: 1 }).closest("header")).toHaveClass(
       "page-header",
@@ -26,7 +27,7 @@ describe("TripSettingsPage", () => {
       "max-[767px]:hidden",
     );
     expect(page.querySelector(".page-header-meta")).toHaveClass("[&>span]:bg-(--color-surface-subtle)", "[&>span]:border-(--color-border)");
-    expect(screen.getByRole("form", { name: "Trip details" })).toHaveClass("bg-(--color-surface)");
-    expect(screen.getByRole("region", { name: "Plan impact" })).toHaveClass("bg-(--color-surface)");
+    expect(screen.getByRole("form", { name: "Trip details" })).toHaveClass("bg-(--color-surface)", "shadow-[0_1px_0_rgb(15_23_42_/_0.04)]");
+    expect(screen.getByRole("region", { name: "Plan impact" })).toHaveClass("bg-(--color-surface)", "shadow-[0_1px_0_rgb(15_23_42_/_0.04)]");
   });
 });

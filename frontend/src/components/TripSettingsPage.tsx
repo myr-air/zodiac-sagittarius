@@ -26,9 +26,9 @@ interface TripSettingsPageProps {
 }
 
 const pageClassName = "trip-settings-page min-h-full bg-transparent px-6 py-[22px] pb-7 max-[1199px]:min-h-[calc(100dvh-48px)] max-[1199px]:px-0 max-[1199px]:py-0 max-[1199px]:pb-0";
-const shellClassName = "mx-auto grid max-w-[980px] gap-4 max-[1199px]:max-w-none max-[1199px]:gap-0";
-const contentGridClassName = "content-grid grid grid-cols-[minmax(0,1fr)_300px] gap-4 max-[1199px]:grid-cols-1 max-[1199px]:gap-0";
-const cardClassName = "rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) p-4 shadow-[0_10px_22px_rgb(55_47_38_/_0.045)] max-[1199px]:rounded-none max-[1199px]:border-x-0 max-[1199px]:border-t-0 max-[1199px]:shadow-none";
+const shellClassName = "grid w-full gap-3 max-[1199px]:gap-0";
+const contentGridClassName = "content-grid grid grid-cols-[minmax(0,1fr)_300px] gap-3 max-[1199px]:grid-cols-1 max-[1199px]:gap-0";
+const cardClassName = "rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) p-4 shadow-[0_1px_0_rgb(15_23_42_/_0.04)] max-[1199px]:rounded-none max-[1199px]:border-x-0 max-[1199px]:border-t-0 max-[1199px]:shadow-none";
 const formClassName = "grid gap-3.5";
 const fieldGridClassName = "field-grid grid grid-cols-2 gap-3 max-[767px]:grid-cols-1";
 const labelClassName = "grid gap-1.5 text-[12px] font-extrabold text-(--color-text)";

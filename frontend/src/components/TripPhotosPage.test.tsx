@@ -65,7 +65,13 @@ describe("TripPhotosPage", () => {
     renderPage();
 
     expect(screen.getByRole("region", { name: "Photos & Albums" })).toHaveClass("trip-photos-page", "bg-transparent");
-    expect(screen.getByText("3 albums").closest(".photos-stat")).toHaveClass("bg-(--color-surface)", "rounded-(--radius-md)");
+    expect(screen.getByText("3 albums").closest(".photos-stat")).toHaveClass(
+      "bg-(--color-surface)",
+      "rounded-(--radius-md)",
+      "shadow-[0_1px_0_rgb(15_23_42_/_0.04)]",
+    );
+    expect(document.querySelector(".photos-panel")).toHaveClass("shadow-[0_1px_0_rgb(15_23_42_/_0.04)]");
+    expect(document.querySelector(".photos-inspector")).toHaveClass("shadow-[0_1px_0_rgb(15_23_42_/_0.04)]");
     expect(screen.getByText("3 albums")).toBeInTheDocument();
     expect(screen.getByText("1 collaborative")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Google Photos, 1 albums" })).toBeInTheDocument();

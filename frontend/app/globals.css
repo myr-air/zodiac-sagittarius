@@ -431,6 +431,18 @@ button:disabled,
   box-shadow: var(--shadow-panel);
 }
 
+.trip-photos-page .photos-panel,
+.trip-photos-page .photo-album-card,
+.trip-photos-page .photo-album-card:hover,
+.trip-photos-page .photos-inspector {
+  box-shadow: 0 1px 0 rgb(15 23 42 / 0.04);
+}
+
+.trip-photos-page .photos-stat {
+  background: var(--color-surface);
+  box-shadow: 0 1px 0 rgb(15 23 42 / 0.04);
+}
+
 .smart-table tbody tr:last-child td {
   border-bottom-color: transparent;
 }
