@@ -2851,7 +2851,7 @@ export function SagittariusApp({
       template === "recommended"
         ? bookingTypeForItineraryItem(item)
         : bookingTypeForBookingTemplate(template);
-    const bookingDoc = await createBookingDoc({
+    const bookingDocInput: BookingDocInput = {
       type: bookingType,
       title: bookingDraftTitleForItineraryItem(item, bookingType),
       status: "draft",
@@ -2871,6 +2871,18 @@ export function SagittariusApp({
       relatedExpenseIds: [],
       noteIds: [],
       notes: draftDetails.notes,
+    };
+    const matchingDraft = findDuplicateBookingDoc(
+      latestTripRef.current.bookingDocs ?? [],
+      bookingDocInput,
+    );
+    if (matchingDraft) {
+      setContextRailPreferredTab("booking");
+      setSelectedItemId(item.id);
+      return matchingDraft.title;
+    }
+    const bookingDoc = await createBookingDoc({
+      ...bookingDocInput,
     });
     setContextRailPreferredTab("booking");
     setSelectedItemId(item.id);
@@ -2888,38 +2900,41 @@ export function SagittariusApp({
       ...input.relatedItineraryItemIds,
       input.itemId,
     ]);
-    const existingBookingDoc = input.bookingDocId
+    const explicitBookingDoc = input.bookingDocId
       ? currentTrip.bookingDocs?.find(
           (candidate) => candidate.id === input.bookingDocId,
         )
       : null;
     const bookingDocInput: BookingDocInput = {
-      tripPlanId: existingBookingDoc?.tripPlanId,
-      type: existingBookingDoc?.type ?? input.type,
+      tripPlanId: explicitBookingDoc?.tripPlanId,
+      type: explicitBookingDoc?.type ?? input.type,
       title: input.title,
-      status: existingBookingDoc?.status ?? input.status,
-      visibility: existingBookingDoc?.visibility ?? input.visibility,
-      ownerMemberId: existingBookingDoc?.ownerMemberId ?? currentMember.id,
+      status: explicitBookingDoc?.status ?? input.status,
+      visibility: explicitBookingDoc?.visibility ?? input.visibility,
+      ownerMemberId: explicitBookingDoc?.ownerMemberId ?? currentMember.id,
       providerName: input.providerName,
       confirmationCode: input.confirmationCode,
       startsAt: input.startsAt,
       endsAt: input.endsAt,
-      timezone: existingBookingDoc?.timezone ?? trip.defaultTimezone ?? null,
-      priceAmount: existingBookingDoc?.priceAmount ?? null,
-      currency: existingBookingDoc?.currency ?? null,
+      timezone: explicitBookingDoc?.timezone ?? trip.defaultTimezone ?? null,
+      priceAmount: explicitBookingDoc?.priceAmount ?? null,
+      currency: explicitBookingDoc?.currency ?? null,
       travelerIds:
-        existingBookingDoc?.travelerIds.length || input.travelerIds.length
-          ? existingBookingDoc?.travelerIds.length
-            ? existingBookingDoc.travelerIds
+        explicitBookingDoc?.travelerIds.length || input.travelerIds.length
+          ? explicitBookingDoc?.travelerIds.length
+            ? explicitBookingDoc.travelerIds
             : input.travelerIds
           : trip.members.map((member) => member.id),
-      externalLinks: existingBookingDoc?.externalLinks ?? [],
+      externalLinks: explicitBookingDoc?.externalLinks ?? [],
       relatedItineraryItemIds,
-      relatedTaskIds: existingBookingDoc?.relatedTaskIds ?? [],
-      relatedExpenseIds: existingBookingDoc?.relatedExpenseIds ?? [],
-      noteIds: existingBookingDoc?.noteIds ?? [],
+      relatedTaskIds: explicitBookingDoc?.relatedTaskIds ?? [],
+      relatedExpenseIds: explicitBookingDoc?.relatedExpenseIds ?? [],
+      noteIds: explicitBookingDoc?.noteIds ?? [],
       notes: input.notes,
     };
+    const existingBookingDoc =
+      explicitBookingDoc ??
+      findDuplicateBookingDoc(currentTrip.bookingDocs ?? [], bookingDocInput);
 
     if (existingBookingDoc) {
       await updateBookingDoc(existingBookingDoc.id, bookingDocInput);
@@ -5532,6 +5547,40 @@ function itineraryTravelModeForTicket(
 
 function uniqueStringIds(ids: string[]): string[] {
   return Array.from(new Set(ids.filter(Boolean)));
+}
+
+export function findDuplicateBookingDoc(
+  bookingDocs: BookingDoc[],
+  input: BookingDocInput,
+): BookingDoc | null {
+  const title = normalizeBookingMatchValue(input.title);
+  const startsAt = normalizeBookingDateTimeMatchValue(input.startsAt);
+  const endsAt = normalizeBookingDateTimeMatchValue(input.endsAt);
+  const relatedItemIds = new Set(input.relatedItineraryItemIds);
+  return (
+    bookingDocs.find((bookingDoc) => {
+      if (bookingDoc.type !== input.type) return false;
+      if (normalizeBookingMatchValue(bookingDoc.title) !== title) return false;
+      if (normalizeBookingDateTimeMatchValue(bookingDoc.startsAt) !== startsAt) return false;
+      if (normalizeBookingDateTimeMatchValue(bookingDoc.endsAt) !== endsAt) return false;
+      return bookingDoc.relatedItineraryItemIds.some((itemId) =>
+        relatedItemIds.has(itemId),
+      );
+    }) ?? null
+  );
+}
+
+function normalizeBookingMatchValue(value: string | null | undefined): string {
+  return (value ?? "").trim().toLowerCase();
+}
+
+function normalizeBookingDateTimeMatchValue(
+  value: string | null | undefined,
+): string {
+  return normalizeBookingMatchValue(value).replace(
+    /(\d{2}:\d{2}):00(?=(?:[+-]\d\d:?\d\d|z)?$)/,
+    "$1",
+  );
 }
 
 function bookingTypeForBookingTemplate(

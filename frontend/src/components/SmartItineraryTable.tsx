@@ -301,7 +301,11 @@ const activityTabletActionLayerClassName =
 const activityPillClassName =
   "inline-flex min-h-5 max-w-[148px] items-center gap-1 rounded-full border border-(--color-border) bg-(--color-surface-subtle) px-1.5 text-[11px] font-extrabold leading-4 text-(--color-text-muted)";
 const activityBookingButtonClassName =
-  "inline-flex min-h-5 max-w-[164px] items-center gap-1 rounded-full border border-(--color-route-border) bg-(--color-route-soft) px-1.5 text-[11px] font-extrabold leading-4 text-(--color-route) transition-colors duration-150 hover:border-(--color-primary-border) hover:bg-(--color-primary-soft) hover:text-(--color-primary-strong) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-focus) disabled:cursor-not-allowed disabled:opacity-50 [&_.icon]:size-3.5";
+  "inline-flex min-h-5 max-w-[164px] items-center gap-1 rounded-full border px-1.5 text-[11px] font-extrabold leading-4 transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-focus) disabled:cursor-not-allowed disabled:opacity-50 [&_.icon]:size-3.5";
+const activityBookingButtonEmptyClassName =
+  "border-(--color-border) bg-(--color-surface-subtle) text-(--color-text-muted) hover:border-(--color-border-strong) hover:bg-(--color-surface) hover:text-(--color-text)";
+const activityBookingButtonLinkedClassName =
+  "border-(--color-route-border) bg-(--color-route-soft) text-(--color-route) hover:border-(--color-primary-border) hover:bg-(--color-primary-soft) hover:text-(--color-primary-strong)";
 const activityTypePickerClassName =
   "activity-type-picker !min-h-[52px] h-full w-full max-w-full shrink-0 items-start justify-start rounded-(--radius-sm) border-(--color-border) bg-(--color-surface-subtle) px-2 pt-1 text-left text-[11px] font-medium text-(--color-text-muted) hover:border-(--color-route-border) hover:bg-(--color-route-soft) hover:text-(--color-route) aria-[expanded=true]:border-(--color-route-border) aria-[expanded=true]:bg-(--color-route-soft) aria-[expanded=true]:text-(--color-route) max-[520px]:!min-h-7 max-[520px]:h-7 max-[520px]:px-1.5 max-[520px]:pt-0.5 [&_.icon]:size-3.5 [&_.inline-option-picker-caret]:hidden";
 const activityMobileLineClassName =
@@ -1761,6 +1765,9 @@ function ItineraryBookingButton({
   const [ticketModalOpen, setTicketModalOpen] = useState(false);
   if (!onAddBookingForItem && !onSaveBookingForItem) return null;
   const icon = bookingIconForItem(item);
+  const linkedBooking = bookingDocs.find((booking) =>
+    booking.relatedItineraryItemIds.includes(item.id),
+  );
   const label = itineraryLabels.row.createBookingDraft({
     activity: item.activity,
     template: bookingTemplateLabel(item, locale),
@@ -1769,7 +1776,12 @@ function ItineraryBookingButton({
     <>
       <button
         type="button"
-        className={activityBookingButtonClassName}
+        className={cn(
+          activityBookingButtonClassName,
+          linkedBooking
+            ? activityBookingButtonLinkedClassName
+            : activityBookingButtonEmptyClassName,
+        )}
         aria-label={label}
         title={label}
         onClick={(event) => {

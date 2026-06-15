@@ -673,11 +673,12 @@ describe("SmartItineraryTable", () => {
     expect(within(row as HTMLElement).getByDisplayValue("BKK")).toBeInTheDocument();
     expect(within(row as HTMLElement).getByDisplayValue("HKG")).toBeInTheDocument();
 
-    await user.click(
-      within(row as HTMLElement).getAllByRole("button", {
+    const bookingButton = within(row as HTMLElement).getAllByRole("button", {
         name: /สร้าง booking draft แบบ เครื่องบิน สำหรับ Airport transfer/i,
-      })[0],
-    );
+      })[0];
+    expect(bookingButton).toHaveClass("text-(--color-text-muted)");
+
+    await user.click(bookingButton);
 
     expect(onAddBookingForItem).toHaveBeenCalledWith("travel-flight-row", "flight");
   });
@@ -751,6 +752,15 @@ describe("SmartItineraryTable", () => {
       '[data-item-id="travel-flight-row"]',
     );
     expect(row).not.toBeNull();
+    const linkedBusRow = document.querySelector<HTMLTableRowElement>(
+      '[data-item-id="bus-leg-row"]',
+    );
+    expect(linkedBusRow).not.toBeNull();
+    expect(
+      within(linkedBusRow as HTMLElement).getAllByRole("button", {
+        name: /สร้าง booking draft แบบ รถบัส สำหรับ Terminal shuttle/i,
+      })[0],
+    ).toHaveClass("text-(--color-route)");
 
     await user.click(
       within(row as HTMLElement).getAllByRole("button", {

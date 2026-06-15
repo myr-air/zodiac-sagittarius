@@ -11,6 +11,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   SagittariusApp,
   bookingTypeForItineraryItem,
+  findDuplicateBookingDoc,
   resolveJoinPostAuthReturnTo,
   nextClientMutationId,
   nextLocalItemId,
@@ -3693,6 +3694,75 @@ describe("Sagittarius cockpit UI", () => {
     );
     expect(apiClient.setMainTripPlan!).not.toHaveBeenCalled();
   }, 45_000);
+
+  it("matches existing booking tickets before creating duplicate itinerary tickets", () => {
+    const flightItem = seedTrip.itineraryItems.find(
+      (item) => item.id === "item-flight-bkk-hkg",
+    )!;
+    const flightModeItem = {
+      ...flightItem,
+      details: {
+        ...flightItem.details,
+        mode: "flight",
+      },
+    };
+    const duplicateTicket = {
+      ...seedTrip.bookingDocs![0],
+      id: "booking-flight-ticket-duplicate-guard",
+      title: `${flightModeItem.activity} flight ticket`,
+      startsAt: `${flightModeItem.day}T${flightModeItem.startTime}:00`,
+      endsAt: null,
+      relatedItineraryItemIds: [flightModeItem.id],
+      version: 7,
+    };
+
+    expect(
+      findDuplicateBookingDoc([duplicateTicket], {
+        type: "flight",
+        title: `${flightModeItem.activity} flight ticket`,
+        status: "draft",
+        visibility: "shared",
+        ownerMemberId: seedTrip.members[0].id,
+        providerName: null,
+        confirmationCode: null,
+        startsAt: `${flightModeItem.day}T${flightModeItem.startTime}`,
+        endsAt: null,
+        timezone: seedTrip.defaultTimezone,
+        priceAmount: null,
+        currency: null,
+        travelerIds: [seedTrip.members[0].id],
+        externalLinks: [],
+        relatedItineraryItemIds: [flightModeItem.id],
+        relatedTaskIds: [],
+        relatedExpenseIds: [],
+        noteIds: [],
+        notes: null,
+      }),
+    ).toBe(duplicateTicket);
+    expect(
+      findDuplicateBookingDoc([duplicateTicket], {
+        type: "flight",
+        title: `${flightModeItem.activity} later flight ticket`,
+        status: "draft",
+        visibility: "shared",
+        ownerMemberId: seedTrip.members[0].id,
+        providerName: null,
+        confirmationCode: null,
+        startsAt: `${flightModeItem.day}T${flightModeItem.startTime}`,
+        endsAt: null,
+        timezone: seedTrip.defaultTimezone,
+        priceAmount: null,
+        currency: null,
+        travelerIds: [seedTrip.members[0].id],
+        externalLinks: [],
+        relatedItineraryItemIds: [flightModeItem.id],
+        relatedTaskIds: [],
+        relatedExpenseIds: [],
+        noteIds: [],
+        notes: null,
+      }),
+    ).toBeNull();
+  });
 
   it("sets the selected API Trip Plan as Main only from the explicit action", async () => {
     const user = userEvent.setup();
