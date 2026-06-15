@@ -4,6 +4,7 @@ import {
   useRef,
   useState,
   type CSSProperties,
+  type DragEvent,
   type FormEvent,
 } from "react";
 import { createPortal } from "react-dom";
@@ -38,9 +39,11 @@ import { Button } from "./ui";
 import { Icon } from "./icons";
 import { formatTripRange, PageHeader } from "./PageHeader";
 import {
+  activityTypeLabel,
   dayRouteLabel,
   formatDuration,
   formatThaiDate,
+  formatTimeWindow,
 } from "./itineraryDisplay";
 import { ActivityPathGraphDay } from "./ActivityPathGraphDay";
 
@@ -223,10 +226,48 @@ const dayPathPickerClassName =
 const dayClearPathButtonClassName =
   "inline-flex min-h-8 items-center rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-2 text-[11px] font-extrabold text-(--color-text-muted) disabled:opacity-40 max-[767px]:px-1.5";
 const itemPlaceholderRowClassName =
-  "item-placeholder-row [&_td]:bg-(--color-surface)";
+  "item-placeholder-row activity-row group/activity [&_td]:bg-(--color-surface)";
 const itemPlaceholderCellClassName =
-  "item-placeholder-cell min-w-0 bg-(--color-surface)";
-const itemPlaceholderCanvasClassName = "item-placeholder-canvas min-h-10";
+  "item-placeholder-cell min-w-0 bg-(--color-surface) px-0 py-0 align-top";
+const activityCellClassName =
+  "activity-cell grid min-h-[84px] min-w-0 grid-cols-[72px_minmax(0,1fr)] gap-2 px-3 py-2.5 transition-colors duration-150 group-hover/activity:bg-(--color-surface-subtle) max-[640px]:grid-cols-1 max-[640px]:gap-1.5 max-[640px]:px-2.5";
+const activityTimeRailClassName =
+  "flex min-w-0 flex-col gap-1 text-[11px] font-extrabold leading-4 text-(--color-text-muted) max-[640px]:flex-row max-[640px]:items-center";
+const activityTimeInputClassName =
+  "h-6 w-[58px] border-0 border-b border-dashed border-(--color-border) bg-transparent px-0 text-[11px] font-extrabold leading-4 text-(--color-text) outline-none transition-colors duration-150 focus:border-(--color-route) focus:ring-0 disabled:text-(--color-text-muted)";
+const activityBodyClassName = "min-w-0 space-y-1.5";
+const activityMainLineClassName =
+  "grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-start gap-2 max-[760px]:grid-cols-1";
+const activitySentenceClassName =
+  "min-w-0 text-sm font-extrabold leading-5 text-(--color-text)";
+const activityTitleInputClassName =
+  "min-h-6 w-full min-w-0 border-0 border-b border-transparent bg-transparent px-0 py-0 text-sm font-extrabold leading-5 text-(--color-text) outline-none transition-colors duration-150 placeholder:text-(--color-text-muted) hover:not-disabled:border-(--color-border) focus:border-(--color-route) focus:ring-0 disabled:cursor-default disabled:border-transparent";
+const activityPlaceInputClassName =
+  "inline-block min-h-5 min-w-[120px] max-w-full border-0 border-b border-transparent bg-transparent px-0 py-0 text-xs font-bold leading-5 text-(--color-text-muted) outline-none transition-colors duration-150 placeholder:text-(--color-text-muted) hover:not-disabled:border-(--color-border) focus:border-(--color-route) focus:ring-0 disabled:cursor-default disabled:border-transparent";
+const activityActionsClassName =
+  "flex shrink-0 flex-wrap items-center justify-end gap-1 max-[760px]:justify-start";
+const activityIconButtonClassName =
+  "inline-flex size-7 items-center justify-center rounded-(--radius-sm) border border-transparent bg-transparent text-(--color-text-muted) transition-colors duration-150 hover:border-(--color-border) hover:bg-(--color-surface) hover:text-(--color-text) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-focus)";
+const activityMetaClassName =
+  "flex min-w-0 flex-wrap items-center gap-1.5 text-[11px] font-bold leading-4 text-(--color-text-muted)";
+const activityPillClassName =
+  "inline-flex min-h-5 max-w-[148px] items-center gap-1 rounded-full border border-(--color-border) bg-(--color-surface-subtle) px-2 text-[11px] font-extrabold leading-4 text-(--color-text-muted)";
+const activityTypePickerClassName =
+  "!min-h-7 max-w-[132px] rounded-full border-(--color-border) bg-(--color-surface-subtle) px-2 text-[11px]";
+const subActivityListClassName =
+  "sub-activity-list mt-2 grid min-w-0 gap-1 border-t border-dashed border-(--color-border) pt-2";
+const subActivityLineClassName =
+  "sub-activity-line grid min-w-0 grid-cols-[20px_minmax(56px,72px)_minmax(0,1fr)_auto] items-center gap-1.5 rounded-(--radius-sm) px-1.5 py-1 text-xs leading-4 transition-colors duration-150 hover:bg-(--color-surface-subtle) max-[760px]:grid-cols-[20px_minmax(0,1fr)_auto]";
+const subActivityDragClassName =
+  "inline-flex size-5 cursor-grab items-center justify-center text-(--color-text-subtle) active:cursor-grabbing";
+const subActivityTextClassName =
+  "sub-activity-text min-w-0 text-xs font-bold leading-4 text-(--color-text)";
+const subActivityTitleInputClassName =
+  "min-h-5 w-full min-w-0 border-0 border-b border-transparent bg-transparent px-0 py-0 text-xs font-bold leading-4 text-(--color-text) outline-none transition-colors duration-150 hover:not-disabled:border-(--color-border) focus:border-(--color-route) focus:ring-0 disabled:border-transparent";
+const subActivityActionsClassName =
+  "flex min-w-0 shrink-0 items-center justify-end gap-1";
+const addSubActivityButtonClassName =
+  "mt-1 inline-flex min-h-8 w-full items-center justify-center gap-2 rounded-(--radius-sm) border border-dashed border-(--color-border) bg-(--color-surface-subtle) px-3 text-xs font-extrabold text-(--color-route) transition-colors duration-150 hover:border-(--color-route) hover:bg-(--color-route-soft) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-focus) disabled:cursor-not-allowed disabled:opacity-50";
 const inlineFieldClassName =
   "inline-row-field min-h-[24px] w-full min-w-0 rounded-(--radius-sm) border border-transparent bg-transparent px-1.5 py-0 text-xs leading-4 text-(--color-text) outline-none transition-[background,border-color,box-shadow] duration-150 placeholder:text-(--color-text-muted) hover:not-read-only:border-(--color-border) hover:not-read-only:bg-(--color-surface) focus:border-(--color-primary-border) focus:bg-(--color-surface) focus:shadow-[0_0_0_2px_rgb(255_196_168_/_0.55)] read-only:cursor-pointer read-only:truncate read-only:px-0 read-only:font-semibold disabled:cursor-not-allowed disabled:text-(--color-text-muted)";
 const inlineOptionPickerButtonClassName = cn(
@@ -261,7 +302,13 @@ export function SmartItineraryTable({
   dayPathOverrides = {},
   showAllPaths = false,
   tripName,
+  onAddSubActivity,
+  onDeleteItem,
+  onEditItem,
+  onMoveItem,
+  onOpenItemDetails,
   onSelectItem,
+  onUpdateItemInline,
   onMoveItemToPath,
   onChangeTripPlan,
   onChangeTripPlanStatus,
@@ -749,7 +796,7 @@ export function SmartItineraryTable({
                 <span className="sr-only">Path graph</span>
               </th>
               <th>
-                <span className="sr-only">Itinerary item canvas</span>
+                <span className="sr-only">Activity</span>
               </th>
             </tr>
           </thead>
@@ -772,9 +819,15 @@ export function SmartItineraryTable({
               showAllPaths={showAllPaths}
               onChangeDayPath={onChangeDayPath}
               onClearDayPath={onClearDayPath}
+              onAddSubActivity={onAddSubActivity}
+              onDeleteItem={onDeleteItem}
+              onEditItem={onEditItem}
+              onMoveItem={onMoveItem}
               onMoveItemToPath={onMoveItemToPath}
+              onOpenItemDetails={onOpenItemDetails}
               onSelectItem={onSelectItem}
               onSaveDayTitle={onSaveDayTitle}
+              onUpdateItemInline={onUpdateItemInline}
               onToggleDay={toggleDay}
             />
           ))}
@@ -799,11 +852,17 @@ function DayGroup({
   selectedItemId,
   canEdit,
   collapsed,
+  onAddSubActivity,
   onChangeDayPath,
   onClearDayPath,
+  onDeleteItem,
+  onEditItem,
+  onMoveItem,
   onMoveItemToPath,
+  onOpenItemDetails,
   onSelectItem,
   onSaveDayTitle,
+  onUpdateItemInline,
   onToggleDay,
 }: {
   graphColumnWidth: number;
@@ -820,11 +879,20 @@ function DayGroup({
   selectedItemId: string;
   canEdit: boolean;
   collapsed: boolean;
+  onAddSubActivity?: (parentItemId: string) => void | Promise<void>;
   onChangeDayPath?: (day: string, pathId: string) => void;
   onClearDayPath?: (day: string) => void;
+  onDeleteItem?: (itemId: string) => void;
+  onEditItem?: (itemId: string) => void;
+  onMoveItem: (draggedItemId: string, targetItemId: string) => void;
   onMoveItemToPath?: (itemId: string, pathId: string) => void;
+  onOpenItemDetails: (itemId: string) => void;
   onSelectItem: (itemId: string) => void;
   onSaveDayTitle?: (date: string, version: number, title: string | null) => void | Promise<void>;
+  onUpdateItemInline?: (
+    itemId: string,
+    patch: InlineItineraryItemPatch,
+  ) => void | Promise<void>;
   onToggleDay: (day: string) => void;
 }) {
   const dayLabel = formatDayLabel(group.day, startDate, locale);
@@ -842,6 +910,7 @@ function DayGroup({
   );
   const visibleItems = groupTopLevelItems(group.items);
   const visibleGraphItems = groupTopLevelItems(graphItems);
+  const childItemsByParentId = groupChildItemsByParent(group.items);
   const showGraph =
     !collapsed && (visibleGraphItems.length > 0 || visibleItems.length > 0);
 
@@ -949,7 +1018,21 @@ function DayGroup({
               key={item.id}
             >
               <td className={itemPlaceholderCellClassName}>
-                <div className={itemPlaceholderCanvasClassName} aria-hidden="true" />
+                <ActivityCell
+                  canEdit={canEdit}
+                  item={item}
+                  itineraryLabels={itineraryLabels}
+                  locale={locale}
+                  selected={selectedItemId === item.id}
+                  subItems={childItemsByParentId.get(item.id) ?? []}
+                  onAddSubActivity={onAddSubActivity}
+                  onDeleteItem={onDeleteItem}
+                  onEditItem={onEditItem}
+                  onMoveItem={onMoveItem}
+                  onOpenItemDetails={onOpenItemDetails}
+                  onSelectItem={onSelectItem}
+                  onUpdateItemInline={onUpdateItemInline}
+                />
               </td>
             </tr>
           ))
@@ -1026,6 +1109,448 @@ function DayTitleEditor({
   );
 }
 
+function ActivityCell({
+  canEdit,
+  item,
+  itineraryLabels,
+  locale,
+  selected,
+  subItems,
+  onAddSubActivity,
+  onDeleteItem,
+  onEditItem,
+  onMoveItem,
+  onOpenItemDetails,
+  onSelectItem,
+  onUpdateItemInline,
+}: {
+  canEdit: boolean;
+  item: ItineraryItem;
+  itineraryLabels: Messages["itinerary"];
+  locale: Locale;
+  selected: boolean;
+  subItems: ItineraryItem[];
+  onAddSubActivity?: (parentItemId: string) => void | Promise<void>;
+  onDeleteItem?: (itemId: string) => void;
+  onEditItem?: (itemId: string) => void;
+  onMoveItem: (draggedItemId: string, targetItemId: string) => void;
+  onOpenItemDetails: (itemId: string) => void;
+  onSelectItem: (itemId: string) => void;
+  onUpdateItemInline?: (
+    itemId: string,
+    patch: InlineItineraryItemPatch,
+  ) => void | Promise<void>;
+}) {
+  const editable = canEdit && Boolean(onUpdateItemInline);
+  const timeWindow = formatTimeWindow(item);
+  const typeOptions = activityTypeOptions(locale);
+  const status = item.status ? itemStatusLabel(item.status, locale) : null;
+
+  return (
+    <div
+      className={activityCellClassName}
+      data-selected={selected ? "true" : undefined}
+      onClick={() => onSelectItem(item.id)}
+    >
+      <div className={activityTimeRailClassName}>
+        <InlineActivityField
+          ariaLabel={itineraryLabels.row.inlineTime({ activity: item.activity })}
+          className={activityTimeInputClassName}
+          disabled={!editable}
+          inputMode="numeric"
+          key={`${item.id}:startTime:${item.startTime}`}
+          maxLength={5}
+          placeholder="--:--"
+          value={item.startTime}
+          onCommit={(startTime) =>
+            onUpdateItemInline?.(item.id, { startTime })
+          }
+        />
+        <span className="truncate text-[10px] font-bold text-(--color-text-subtle)">
+          {timeWindow}
+        </span>
+      </div>
+      <div className={activityBodyClassName}>
+        <div className={activityMainLineClassName}>
+          <div className={activitySentenceClassName}>
+            <InlineActivityField
+              ariaLabel={itineraryLabels.row.inlineActivity({
+                activity: item.activity,
+              })}
+              className={activityTitleInputClassName}
+              disabled={!editable}
+              key={`${item.id}:activity:${item.activity}`}
+              maxLength={90}
+              placeholder="Activity"
+              value={item.activity}
+              onCommit={(activity) =>
+                onUpdateItemInline?.(item.id, { activity: activity || item.activity })
+              }
+            />
+            <span className="inline-flex max-w-full items-baseline gap-1 align-baseline">
+              <span className="shrink-0 text-xs font-bold text-(--color-text-muted)">
+                @
+              </span>
+              <InlineActivityField
+                ariaLabel={itineraryLabels.row.inlinePlace({
+                  activity: item.activity,
+                })}
+                className={activityPlaceInputClassName}
+                disabled={!editable}
+                key={`${item.id}:place:${item.place}`}
+                maxLength={90}
+                placeholder="Place"
+                value={item.place}
+                onCommit={(place) => onUpdateItemInline?.(item.id, { place })}
+              />
+            </span>
+          </div>
+          <div className={activityActionsClassName}>
+            <InlineOptionPicker
+              ariaLabel={itineraryLabels.row.inlineType({
+                activity: item.activity,
+              })}
+              buttonClassName={activityTypePickerClassName}
+              disabled={!editable}
+              options={typeOptions}
+              optionKeyPrefix={`activity-type-${item.id}`}
+              value={item.activityType}
+              onCommit={(activityType) =>
+                onUpdateItemInline?.(item.id, {
+                  activityType: activityType as ItineraryItem["activityType"],
+                })
+              }
+            />
+            {item.mapLink ? (
+              <a
+                className={activityIconButtonClassName}
+                href={item.mapLink}
+                target="_blank"
+                rel="noreferrer"
+                aria-label={`${itineraryLabels.row.mapFallback}: ${item.place || item.activity}`}
+                onClick={(event) => event.stopPropagation()}
+              >
+                <Icon name="map" />
+              </a>
+            ) : null}
+            <button
+              type="button"
+              className={activityIconButtonClassName}
+              aria-label={itineraryLabels.row.openDetails({
+                activity: item.activity,
+              })}
+              onClick={(event) => {
+                event.stopPropagation();
+                onOpenItemDetails(item.id);
+              }}
+            >
+              <Icon name="panel" />
+            </button>
+            {onEditItem ? (
+              <button
+                type="button"
+                className={activityIconButtonClassName}
+                aria-label={itineraryLabels.row.edit({
+                  activity: item.activity,
+                })}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onEditItem(item.id);
+                }}
+              >
+                <Icon name="edit" />
+              </button>
+            ) : null}
+            {onDeleteItem ? (
+              <button
+                type="button"
+                className={activityIconButtonClassName}
+                aria-label={itineraryLabels.row.delete({
+                  activity: item.activity,
+                })}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onDeleteItem(item.id);
+                }}
+              >
+                <Icon name="trash" />
+              </button>
+            ) : null}
+          </div>
+        </div>
+        <div className={activityMetaClassName}>
+          {status ? <span className={activityPillClassName}>{status}</span> : null}
+          {item.durationMinutes ? (
+            <span className={activityPillClassName}>
+              <Icon name="clock" className="size-3.5" />
+              {formatDuration(item.durationMinutes, locale)}
+            </span>
+          ) : null}
+          {item.transportation ? (
+            <span className="min-w-0 truncate">
+              {item.transportation}
+            </span>
+          ) : null}
+        </div>
+        <SubActivityList
+          canEdit={canEdit}
+          item={item}
+          itineraryLabels={itineraryLabels}
+          locale={locale}
+          subItems={subItems}
+          onAddSubActivity={onAddSubActivity}
+          onDeleteItem={onDeleteItem}
+          onEditItem={onEditItem}
+          onMoveItem={onMoveItem}
+          onUpdateItemInline={onUpdateItemInline}
+        />
+      </div>
+    </div>
+  );
+}
+
+function SubActivityList({
+  canEdit,
+  item,
+  itineraryLabels,
+  locale,
+  subItems,
+  onAddSubActivity,
+  onDeleteItem,
+  onEditItem,
+  onMoveItem,
+  onUpdateItemInline,
+}: {
+  canEdit: boolean;
+  item: ItineraryItem;
+  itineraryLabels: Messages["itinerary"];
+  locale: Locale;
+  subItems: ItineraryItem[];
+  onAddSubActivity?: (parentItemId: string) => void | Promise<void>;
+  onDeleteItem?: (itemId: string) => void;
+  onEditItem?: (itemId: string) => void;
+  onMoveItem: (draggedItemId: string, targetItemId: string) => void;
+  onUpdateItemInline?: (
+    itemId: string,
+    patch: InlineItineraryItemPatch,
+  ) => void | Promise<void>;
+}) {
+  const editable = canEdit && Boolean(onUpdateItemInline);
+
+  function handleDrop(event: DragEvent<HTMLDivElement>, targetItem: ItineraryItem) {
+    event.preventDefault();
+    event.stopPropagation();
+    const draggedItemId = event.dataTransfer.getData("text/plain");
+    const draggedItem = subItems.find((subItem) => subItem.id === draggedItemId);
+    if (!draggedItem || draggedItem.id === targetItem.id) return;
+    if (draggedItem.parentItemId !== item.id || targetItem.parentItemId !== item.id) return;
+    onMoveItem(draggedItem.id, targetItem.id);
+  }
+
+  return (
+    <div className={subActivityListClassName}>
+      {subItems.map((subItem) => (
+        <div
+          className={subActivityLineClassName}
+          data-sub-item-id={subItem.id}
+          draggable={canEdit}
+          key={subItem.id}
+          onDragOver={(event) => {
+            if (!canEdit) return;
+            event.preventDefault();
+          }}
+          onDragStart={(event) => {
+            if (!canEdit) return;
+            event.stopPropagation();
+            event.dataTransfer.effectAllowed = "move";
+            event.dataTransfer.setData("text/plain", subItem.id);
+          }}
+          onDrop={(event) => handleDrop(event, subItem)}
+        >
+          <span className={subActivityDragClassName} aria-hidden="true">
+            <Icon name="drag" className="size-4" />
+          </span>
+          <InlineActivityField
+            ariaLabel={itineraryLabels.row.inlineTime({
+              activity: subItem.activity,
+            })}
+            className={cn(activityTimeInputClassName, "max-[760px]:hidden")}
+            disabled={!editable}
+            inputMode="numeric"
+            key={`${subItem.id}:startTime:${subItem.startTime}`}
+            maxLength={5}
+            placeholder="--:--"
+            value={subItem.startTime}
+            onCommit={(startTime) =>
+              onUpdateItemInline?.(subItem.id, { startTime })
+            }
+          />
+          <div className={subActivityTextClassName}>
+            <InlineActivityField
+              ariaLabel={itineraryLabels.row.inlineActivity({
+                activity: subItem.activity,
+              })}
+              className={subActivityTitleInputClassName}
+              disabled={!editable}
+              key={`${subItem.id}:activity:${subItem.activity}`}
+              maxLength={80}
+              placeholder="Sub-activity"
+              value={subItem.activity}
+              onCommit={(activity) =>
+                onUpdateItemInline?.(subItem.id, {
+                  activity: activity || subItem.activity,
+                })
+              }
+            />
+            {subItem.place ? (
+              <span className="inline-flex max-w-full items-baseline gap-1 pl-1 text-(--color-text-muted)">
+                <span>@</span>
+                <InlineActivityField
+                  ariaLabel={itineraryLabels.row.inlinePlace({
+                    activity: subItem.activity,
+                  })}
+                  className={cn(activityPlaceInputClassName, "!text-xs")}
+                  disabled={!editable}
+                  key={`${subItem.id}:place:${subItem.place}`}
+                  maxLength={80}
+                  placeholder="Place"
+                  value={subItem.place}
+                  onCommit={(place) =>
+                    onUpdateItemInline?.(subItem.id, { place })
+                  }
+                />
+              </span>
+            ) : null}
+          </div>
+          <div className={subActivityActionsClassName}>
+            {subItem.mapLink ? (
+              <a
+                className={activityIconButtonClassName}
+                href={subItem.mapLink}
+                target="_blank"
+                rel="noreferrer"
+                aria-label={`${itineraryLabels.row.mapFallback}: ${subItem.place || subItem.activity}`}
+                onClick={(event) => event.stopPropagation()}
+              >
+                <Icon name="map" className="size-4" />
+              </a>
+            ) : null}
+            <span className={cn(activityPillClassName, "max-[760px]:hidden")}>
+              {activityTypeLabel(subItem.activityType, locale)}
+            </span>
+            {onEditItem ? (
+              <button
+                type="button"
+                className={activityIconButtonClassName}
+                aria-label={itineraryLabels.row.edit({
+                  activity: subItem.activity,
+                })}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onEditItem(subItem.id);
+                }}
+              >
+                <Icon name="edit" className="size-4" />
+              </button>
+            ) : null}
+            {onDeleteItem ? (
+              <button
+                type="button"
+                className={activityIconButtonClassName}
+                aria-label={itineraryLabels.row.delete({
+                  activity: subItem.activity,
+                })}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onDeleteItem(subItem.id);
+                }}
+              >
+                <Icon name="trash" className="size-4" />
+              </button>
+            ) : null}
+          </div>
+        </div>
+      ))}
+      {onAddSubActivity ? (
+        <button
+          type="button"
+          className={addSubActivityButtonClassName}
+          disabled={!canEdit}
+          onClick={(event) => {
+            event.stopPropagation();
+            void onAddSubActivity(item.id);
+          }}
+        >
+          <Icon name="plus" className="size-4" />
+          {itineraryLabels.row.subItemQuick}
+        </button>
+      ) : null}
+    </div>
+  );
+}
+
+function InlineActivityField({
+  ariaLabel,
+  className,
+  disabled,
+  inputMode,
+  maxLength,
+  onCommit,
+  placeholder,
+  value,
+}: {
+  ariaLabel: string;
+  className: string;
+  disabled: boolean;
+  inputMode?: "numeric" | "text";
+  maxLength: number;
+  onCommit: (value: string) => void | Promise<void>;
+  placeholder: string;
+  value: string;
+}) {
+  const [draft, setDraft] = useState(value);
+  const [source, setSource] = useState(value);
+
+  function reset() {
+    setDraft(source);
+  }
+
+  async function commit(nextValue: string) {
+    const trimmed = nextValue.trim();
+    if (disabled || trimmed === source) {
+      setDraft(source);
+      return;
+    }
+    await onCommit(trimmed);
+    setSource(trimmed);
+    setDraft(trimmed);
+  }
+
+  return (
+    <input
+      aria-label={ariaLabel}
+      className={className}
+      disabled={disabled}
+      inputMode={inputMode}
+      maxLength={maxLength}
+      placeholder={placeholder}
+      value={draft}
+      onBlur={() => void commit(draft)}
+      onChange={(event) => setDraft(event.target.value)}
+      onClick={(event) => event.stopPropagation()}
+      onFocus={(event) => event.currentTarget.select()}
+      onKeyDown={(event) => {
+        event.stopPropagation();
+        if (event.key === "Enter") event.currentTarget.blur();
+        if (event.key === "Escape") {
+          reset();
+          event.currentTarget.blur();
+        }
+      }}
+    />
+  );
+}
+
 function mergeTripDayGroups(
   groups: ItineraryDayGroup[],
   startDate: string,
@@ -1048,6 +1573,69 @@ function groupTopLevelItems(items: ItineraryItem[]): ItineraryItem[] {
   return items.filter(
     (item) => !item.parentItemId || !itemIds.has(item.parentItemId),
   );
+}
+
+function groupChildItemsByParent(
+  items: ItineraryItem[],
+): Map<string, ItineraryItem[]> {
+  const childrenByParent = new Map<string, ItineraryItem[]>();
+  for (const item of items) {
+    if (!item.parentItemId) continue;
+    childrenByParent.set(item.parentItemId, [
+      ...(childrenByParent.get(item.parentItemId) ?? []),
+      item,
+    ]);
+  }
+  for (const [parentId, children] of childrenByParent) {
+    childrenByParent.set(parentId, [...children].sort(compareItineraryItems));
+  }
+  return childrenByParent;
+}
+
+function compareItineraryItems(a: ItineraryItem, b: ItineraryItem): number {
+  if (a.sortOrder !== b.sortOrder) return a.sortOrder - b.sortOrder;
+  if (a.startTime !== b.startTime) return a.startTime.localeCompare(b.startTime);
+  return a.activity.localeCompare(b.activity);
+}
+
+function activityTypeOptions(locale: Locale): InlineOptionPickerOption[] {
+  const types: ItineraryItem["activityType"][] = [
+    "travel",
+    "food",
+    "shopping",
+    "attraction",
+    "experience",
+    "stay",
+  ];
+  return types.map((type) => ({
+    value: type,
+    label: activityTypeLabel(type, locale),
+  }));
+}
+
+function itemStatusLabel(
+  status: NonNullable<ItineraryItem["status"]>,
+  locale: Locale,
+): string {
+  const labels: Record<Locale, Record<NonNullable<ItineraryItem["status"]>, string>> = {
+    en: {
+      idea: "Idea",
+      planned: "Planned",
+      booked: "Booked",
+      confirmed: "Confirmed",
+      done: "Done",
+      skipped: "Skipped",
+    },
+    th: {
+      idea: "ไอเดีย",
+      planned: "วางแผนแล้ว",
+      booked: "จองแล้ว",
+      confirmed: "ยืนยันแล้ว",
+      done: "เสร็จแล้ว",
+      skipped: "ข้าม",
+    },
+  };
+  return labels[locale][status];
 }
 
 function groupGraphItemsByDay(

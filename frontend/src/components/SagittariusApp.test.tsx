@@ -2792,7 +2792,7 @@ describe("Sagittarius cockpit UI", () => {
     ).toBeInTheDocument();
   });
 
-  it("renders the itinerary workspace as a graph plus blank item canvas", async () => {
+  it("renders the itinerary workspace as a graph plus compact activity cells", async () => {
     const user = userEvent.setup();
     const { container } = render(<SagittariusApp initialView="itinerary" />);
 
@@ -2809,9 +2809,7 @@ describe("Sagittarius cockpit UI", () => {
       screen.getByRole("region", { name: /ตารางแผนการเดินทาง/i }),
     ).toBeInTheDocument();
     expect(screen.getByRole("columnheader", { name: "Path graph" })).toBeInTheDocument();
-    expect(
-      screen.getByRole("columnheader", { name: "Itinerary item canvas" }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("columnheader", { name: "Activity" })).toBeInTheDocument();
     expect(
       screen.queryByRole("columnheader", {
         name: /เวลา|แผนที่ \/ ลิงก์|ประเภท|การเดินทาง|จัดการ/i,
@@ -2824,10 +2822,11 @@ describe("Sagittarius cockpit UI", () => {
     expect(itemRows.length).toBeGreaterThan(0);
     for (const row of itemRows) {
       expect(row.querySelector(".item-placeholder-cell")).toBeInTheDocument();
-      expect(row.textContent?.trim()).toBe("");
-      expect(within(row).queryByRole("button")).not.toBeInTheDocument();
-      expect(within(row).queryByRole("link")).not.toBeInTheDocument();
-      expect(within(row).queryByRole("textbox")).not.toBeInTheDocument();
+      expect(row.querySelector(".activity-cell")).toBeInTheDocument();
+      expect(row.textContent?.trim()).not.toBe("");
+      expect(
+        within(row).getByRole("button", { name: /เปิดรายละเอียดของ/i }),
+      ).toBeInTheDocument();
       expect(within(row).queryByRole("combobox")).not.toBeInTheDocument();
     }
 
@@ -2838,8 +2837,8 @@ describe("Sagittarius cockpit UI", () => {
       screen.queryByRole("button", { name: /เพิ่มสถานที่ \/ กิจกรรม/i }),
     ).not.toBeInTheDocument();
     expect(
-      screen.queryByRole("button", { name: /เปิดรายละเอียด/i }),
-    ).not.toBeInTheDocument();
+      screen.getAllByRole("button", { name: /เปิดรายละเอียดของ/i }).length,
+    ).toBeGreaterThan(0);
     expect(container.querySelector(".workspace-grid")).toHaveAttribute(
       "data-context-rail",
       "closed",
@@ -2858,6 +2857,19 @@ describe("Sagittarius cockpit UI", () => {
     expect(container.querySelector(".workspace-grid")).toHaveAttribute(
       "data-context-rail",
       "closed",
+    );
+
+    await user.click(
+      within(itemRows[0]).getByRole("button", { name: /เปิดรายละเอียดของ/i }),
+    );
+    expect(
+      screen.getByRole("complementary", {
+        name: /ข้อมูลประกอบการวางแผน/i,
+      }),
+    ).toBeInTheDocument();
+    expect(container.querySelector(".workspace-grid")).toHaveAttribute(
+      "data-context-rail",
+      "open",
     );
   });
 

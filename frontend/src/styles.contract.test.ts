@@ -157,14 +157,15 @@ describe("Calm Travel Ops CSS contract", () => {
     expect(css).toMatch(/\.timeline-stop::before\s*{[^}]*content:\s*""/s);
   });
 
-  it("keeps drawer transitions and the blank itinerary row skeleton contract", () => {
+  it("keeps drawer transitions and the itinerary activity cell contract", () => {
     expect(css).toContain("@keyframes drawer-slide-in");
     expect(contextRailSource).toContain("[transition:transform_220ms_ease,opacity_180ms_ease,box-shadow_220ms_ease]");
     expect(contextRailSource).toContain("data-[state=closed]:translate-x-6");
     expect(contextRailSource).toContain("shadow-[-28px_0_54px_rgb(15_23_42_/_0.18)]");
-    expect(smartTableSource).toContain("item-placeholder-row [&_td]:bg-(--color-surface)");
+    expect(smartTableSource).toContain("item-placeholder-row activity-row");
     expect(smartTableSource).toContain("item-placeholder-cell min-w-0 bg-(--color-surface)");
-    expect(smartTableSource).toContain("item-placeholder-canvas");
+    expect(smartTableSource).toContain("activity-cell grid min-h-[84px]");
+    expect(smartTableSource).toContain("sub-activity-line grid");
   });
 
 });

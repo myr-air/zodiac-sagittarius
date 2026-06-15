@@ -399,16 +399,16 @@ describe("SmartItineraryTable", () => {
     });
   });
 
-  it("renders only graph and blank item canvas columns for activity rows", () => {
+  it("renders graph and compact activity cells for activity rows", () => {
     renderTable();
 
     const table = document.querySelector(".smart-table");
     expect(table).toHaveClass("smart-table", "min-w-[520px]");
     expect(screen.getByRole("columnheader", { name: "Path graph" })).toBeInTheDocument();
-    expect(screen.getByRole("columnheader", { name: "Itinerary item canvas" })).toBeInTheDocument();
+    expect(screen.getByRole("columnheader", { name: "Activity" })).toBeInTheDocument();
     expect(
       screen.queryByRole("columnheader", {
-        name: /เวลา|Time|Activity|place|Type|Map|Actions|ประเภท|จัดการ/i,
+        name: /เวลา|Time|place|Type|Map|Actions|ประเภท|จัดการ/i,
       }),
     ).not.toBeInTheDocument();
 
@@ -418,23 +418,70 @@ describe("SmartItineraryTable", () => {
     expect(itemRows.length).toBeGreaterThan(0);
     for (const row of itemRows) {
       expect(row.querySelector(".item-placeholder-cell")).toBeInTheDocument();
-      expect(row.textContent?.trim()).toBe("");
-      expect(within(row).queryByRole("button")).not.toBeInTheDocument();
-      expect(within(row).queryByRole("link")).not.toBeInTheDocument();
-      expect(within(row).queryByRole("textbox")).not.toBeInTheDocument();
-      expect(within(row).queryByRole("combobox")).not.toBeInTheDocument();
+      expect(row.querySelector(".activity-cell")).toBeInTheDocument();
+      expect(row.textContent?.trim()).not.toBe("");
+      expect(
+        within(row).getByRole("button", {
+          name: /เปิดรายละเอียดของ|Open details for/i,
+        }),
+      ).toBeInTheDocument();
+      expect(
+        within(row).getByRole("button", {
+          name: /แก้ไขประเภท|Edit type/i,
+        }),
+      ).toBeInTheDocument();
     }
 
-    expect(screen.queryByRole("link", { name: "QR349" })).not.toBeInTheDocument();
-    expect(
-      screen.queryByRole("button", { name: /Open details|เปิดรายละเอียด/i }),
-    ).not.toBeInTheDocument();
     expect(
       screen.queryByRole("region", { name: /รายละเอียดจุดที่เลือก/i }),
     ).not.toBeInTheDocument();
   });
 
-  it("keeps graph nodes selectable while activity cells stay blank", async () => {
+  it("renders sub-activities inside their parent activity cell", async () => {
+    const user = userEvent.setup();
+    const onAddSubActivity = vi.fn();
+    const parent = {
+      ...tripFixture.planItems[0],
+      id: "parent-activity",
+      activity: "Parent route",
+      place: "Hong Kong",
+      day: "2026-06-19",
+      sortOrder: 10,
+    };
+    const child = {
+      ...tripFixture.planItems[1],
+      id: "child-activity",
+      parentItemId: "parent-activity",
+      activity: "Buy Octopus card",
+      place: "Airport station",
+      day: "2026-06-19",
+      sortOrder: 11,
+    };
+
+    renderTable({
+      items: [parent, child],
+      graphItems: [parent, child],
+      selectedItemId: "parent-activity",
+      onAddSubActivity,
+    });
+
+    const parentRow = document.querySelector<HTMLTableRowElement>(
+      '[data-item-id="parent-activity"]',
+    );
+    expect(parentRow).not.toBeNull();
+    expect(within(parentRow as HTMLElement).getByDisplayValue("Parent route")).toBeInTheDocument();
+    expect(within(parentRow as HTMLElement).getByDisplayValue("Buy Octopus card")).toBeInTheDocument();
+    expect(document.querySelector('[data-item-id="child-activity"]')).not.toBeInTheDocument();
+
+    await user.click(
+      within(parentRow as HTMLElement).getByRole("button", {
+        name: /Add sub-activity|เพิ่มกิจกรรมย่อย/i,
+      }),
+    );
+    expect(onAddSubActivity).toHaveBeenCalledWith("parent-activity");
+  });
+
+  it("keeps graph nodes selectable while activity cells remain independent", async () => {
     const user = userEvent.setup();
     const onSelectItem = vi.fn();
     const mainItem = {
@@ -487,7 +534,8 @@ describe("SmartItineraryTable", () => {
     const planRow = document.querySelector<HTMLTableRowElement>(
       '[data-item-id="graph-plan-a"]',
     );
-    expect(planRow?.textContent?.trim()).toBe("");
+    expect(within(planRow as HTMLElement).getByDisplayValue("Graph plan A")).toBeInTheDocument();
+    expect(onSelectItem).toHaveBeenCalledTimes(1);
   });
 
   it("keeps blank data-day-drop anchors for graph measurement without add buttons", () => {
