@@ -16,7 +16,10 @@ import {
 } from "@/src/components/BookingsDocsPage";
 import { ContextRail } from "@/src/components/ContextRail";
 import { OverviewPage } from "@/src/components/OverviewPage";
-import { RouteMapView } from "@/src/components/RouteMapView";
+import {
+  RouteMapView,
+  type MapCoordinateResolutionResult,
+} from "@/src/components/RouteMapView";
 import {
   SmartItineraryTable,
   type ItineraryBookingTicketInput,
@@ -2195,29 +2198,57 @@ export function SagittariusApp({
     }, itemId);
   }
 
-  async function resolveMissingMapCoordinates(itemsToResolve: ItineraryItem[]) {
-    if (!canEdit || !effectivePlaceResolver) return;
+  async function resolveMissingMapCoordinates(itemsToResolve: ItineraryItem[]): Promise<MapCoordinateResolutionResult> {
+    const result: MapCoordinateResolutionResult = {
+      attempted: 0,
+      failed: 0,
+      resolved: 0,
+      skipped: 0,
+    };
+    if (!canEdit || !effectivePlaceResolver) return result;
     for (const item of itemsToResolve) {
       if (item.coordinates) continue;
+      result.attempted += 1;
       const placeHint = mapResolutionPlaceHint(item);
-      if (!placeHint) continue;
-      const response = await effectivePlaceResolver({
-        clientMutationId: nextClientMutationId("map-place-resolve"),
-        activity: mapResolutionActivity(item),
-        placeHint,
-        destinationLabel: trip.destinationLabel,
-        countries: trip.countries ?? [],
-        day: item.day,
-      });
-      if (response.status !== "resolved") continue;
-      const candidate = response.candidates[0];
-      if (!candidate) continue;
-      await updateItineraryItemInline(item.id, {
-        address: candidate.address,
-        coordinates: candidate.coordinates,
-        mapLink: candidate.mapLink,
-      });
+      if (!placeHint) {
+        result.skipped += 1;
+        continue;
+      }
+      try {
+        const response = await effectivePlaceResolver({
+          clientMutationId: nextClientMutationId("map-place-resolve"),
+          activity: mapResolutionActivity(item),
+          placeHint,
+          destinationLabel: trip.destinationLabel,
+          countries: Array.from(
+            new Set(
+              [trip.originCountryCode, ...(trip.countries ?? [])].filter(
+                (country): country is string => Boolean(country),
+              ),
+            ),
+          ),
+          day: item.day,
+        });
+        if (response.status !== "resolved") {
+          result.skipped += 1;
+          continue;
+        }
+        const candidate = response.candidates[0];
+        if (!candidate) {
+          result.skipped += 1;
+          continue;
+        }
+        await updateItineraryItemInline(item.id, {
+          address: candidate.address,
+          coordinates: candidate.coordinates,
+          mapLink: candidate.mapLink,
+        });
+        result.resolved += 1;
+      } catch {
+        result.failed += 1;
+      }
     }
+    return result;
   }
 
   async function deleteSelectedStop() {

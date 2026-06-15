@@ -173,7 +173,12 @@ describe("RouteMapView", () => {
 
   it("requests coordinate resolution for visible unresolved stops", async () => {
     const user = userEvent.setup();
-    const onResolveMissingCoordinates = vi.fn();
+    const onResolveMissingCoordinates = vi.fn(() => ({
+      attempted: 1,
+      failed: 0,
+      resolved: 1,
+      skipped: 0,
+    }));
     const unresolvedItems = tripFixture.planItems
       .slice(0, 8)
       .map((item) => ({ ...item, coordinates: undefined }));
@@ -192,6 +197,38 @@ describe("RouteMapView", () => {
     await user.click(screen.getByRole("button", { name: "หาพิกัด 1 จุด" }));
 
     expect(onResolveMissingCoordinates).toHaveBeenCalledWith(unresolvedItems.filter((item) => item.day === hongKongDay));
+    expect(screen.getByText("พบ 1/1 จุด · 0 จุดต้องตรวจต่อ")).toBeInTheDocument();
+  });
+
+  it("caps all-days coordinate lookup batches and explains the limit", async () => {
+    const user = userEvent.setup();
+    const onResolveMissingCoordinates = vi.fn(() => ({
+      attempted: 8,
+      failed: 1,
+      resolved: 3,
+      skipped: 4,
+    }));
+    const unresolvedItems = tripFixture.planItems
+      .slice(0, 10)
+      .map((item) => ({ ...item, coordinates: undefined }));
+
+    render(
+      <RouteMapView
+        endDate={tripFixture.trip.endDate}
+        items={unresolvedItems}
+        onResolveMissingCoordinates={onResolveMissingCoordinates}
+        startDate={tripFixture.trip.startDate}
+        tripName={tripFixture.trip.name}
+      />,
+    );
+
+    expect(screen.getByRole("button", { name: "หาพิกัด 8 จุด" })).toBeInTheDocument();
+    expect(screen.getByText("หาครั้งละ 8 จุดเพื่อไม่ให้ช้าเกินไป ยังเหลือ 10 จุด")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "หาพิกัด 8 จุด" }));
+
+    expect(onResolveMissingCoordinates).toHaveBeenCalledWith(unresolvedItems.slice(0, 8));
+    expect(screen.getByText("พบ 3/8 จุด · 5 จุดต้องตรวจต่อ")).toBeInTheDocument();
   });
 
   it("centers the live map on the destination country when no stop has coordinates", async () => {

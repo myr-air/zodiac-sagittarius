@@ -15,7 +15,7 @@ interface RouteMapViewProps {
   itineraryView?: ItineraryView;
   liveMapAvailability?: "auto" | "loading" | "error";
   liveMapEnabled?: boolean;
-  onResolveMissingCoordinates?: (items: ItineraryItem[]) => Promise<void> | void;
+  onResolveMissingCoordinates?: (items: ItineraryItem[]) => Promise<MapCoordinateResolutionResult | void> | MapCoordinateResolutionResult | void;
   startDate: string;
   tripName: string;
 }
@@ -52,6 +52,14 @@ interface RouteViewport {
   zoom: number;
 }
 
+export interface MapCoordinateResolutionResult {
+  attempted: number;
+  failed: number;
+  resolved: number;
+  skipped: number;
+}
+
+const maxAllDaysCoordinateResolutionBatch = 8;
 const routeDayColors = ["#c24f16", "#2563eb", "#b45309", "#15803d", "#be123c", "#0369a1"];
 const thailandRouteViewport: RouteViewport = { center: [100.9925, 15.8700], zoom: 5 };
 const hongKongShenzhenRouteViewport: RouteViewport = { center: [114.1800, 22.3900], zoom: 9.8 };
@@ -142,10 +150,11 @@ const routeStopListItemClassName = "route-stop-list-item grid grid-cols-[auto_mi
 const routeStopListIndexClassName = "grid size-5 place-items-center rounded-full bg-[var(--day-color,var(--color-route))] text-[10px] font-black text-white";
 const routeStopListCopyClassName = "min-w-0 truncate";
 const mapSourceNoteClassName = "map-source-note absolute bottom-2 right-2.5 z-[6] m-0 rounded-full border border-(--color-route-border) bg-[rgb(255_255_255_/_0.86)] px-2 py-1 text-[10px] font-extrabold leading-[14px] text-(--color-route)";
-const unresolvedPanelClassName = "map-unresolved-panel absolute bottom-10 left-3 z-[7] grid max-h-[min(220px,42%)] w-[min(380px,calc(100%_-_24px))] gap-2 overflow-hidden rounded-(--radius-md) border border-(--color-warning-border) bg-[linear-gradient(135deg,var(--color-surface)_0%,var(--color-warning-soft)_100%)] p-3 text-(--color-warning-strong) shadow-[0_4px_8px_rgb(249_115_22_/_0.08)] max-[767px]:bottom-2 max-[767px]:left-2 max-[767px]:right-2 max-[767px]:max-h-none max-[767px]:w-auto max-[767px]:gap-1 max-[767px]:rounded-none max-[767px]:border-transparent max-[767px]:bg-none max-[767px]:bg-transparent max-[767px]:p-0 max-[767px]:shadow-none";
+const unresolvedPanelClassName = "map-unresolved-panel absolute bottom-10 left-3 z-[7] grid max-h-[min(220px,42%)] w-[min(380px,calc(100%_-_24px))] gap-2 overflow-hidden rounded-(--radius-md) border border-(--color-warning-border) bg-[linear-gradient(135deg,var(--color-surface)_0%,var(--color-warning-soft)_100%)] p-3 text-(--color-warning-strong) shadow-[0_4px_8px_rgb(249_115_22_/_0.08)] max-[767px]:bottom-auto max-[767px]:left-2 max-[767px]:right-2 max-[767px]:top-[58px] max-[767px]:max-h-none max-[767px]:w-auto max-[767px]:gap-1 max-[767px]:rounded-none max-[767px]:border-transparent max-[767px]:bg-none max-[767px]:bg-transparent max-[767px]:p-0 max-[767px]:shadow-none";
 const unresolvedPanelHeaderClassName = "map-unresolved-header flex min-w-0 items-start gap-2 text-[12px] font-extrabold leading-5 text-(--color-warning-strong) max-[767px]:items-center max-[767px]:text-[11px] max-[767px]:leading-4";
 const unresolvedPanelActionsClassName = "flex min-w-0 items-center justify-between gap-2 max-[767px]:gap-1.5";
 const unresolvedPanelButtonClassName = "inline-flex min-h-8 w-fit shrink-0 items-center justify-center gap-1.5 rounded-(--radius-sm) border border-(--color-warning-border) bg-(--color-surface) px-2.5 text-[11px] font-extrabold text-(--color-warning-strong) transition-colors duration-150 hover:bg-(--color-warning-soft) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-focus) disabled:cursor-not-allowed disabled:opacity-55 [&_.icon]:size-3.5 max-[767px]:min-h-7 max-[767px]:px-2 max-[767px]:text-[10px]";
+const unresolvedPanelStatusClassName = "m-0 min-w-0 text-[11px] font-bold leading-4 text-(--color-warning-strong) max-[767px]:text-[10px]";
 const unresolvedPanelListClassName = "map-unresolved-list m-0 grid gap-1.5 overflow-y-auto p-0 max-[767px]:hidden";
 const unresolvedPanelItemClassName = "map-unresolved-item grid gap-0.5 rounded-(--radius-sm) bg-(--color-surface) px-2 py-1.5 text-[11px] leading-4 text-(--color-warning-strong)";
 const unresolvedPanelItemTitleClassName = "font-extrabold text-(--color-text)";
@@ -209,6 +218,14 @@ export function RouteMapView({
     () => (activeDay === "all" ? unresolvedItems : unresolvedItems.filter((item) => item.day === activeDay)),
     [activeDay, unresolvedItems],
   );
+  const coordinateResolutionBatch = useMemo(
+    () => (
+      activeDay === "all"
+        ? visibleUnresolvedItems.slice(0, maxAllDaysCoordinateResolutionBatch)
+        : visibleUnresolvedItems
+    ),
+    [activeDay, visibleUnresolvedItems],
+  );
   const liveRoutePoints = coordinateRoutePoints;
   const visibleLiveRoutePoints = useMemo(
     () => (activeDay === "all" ? liveRoutePoints : liveRoutePoints.filter((point) => point.item.day === activeDay)),
@@ -218,6 +235,7 @@ export function RouteMapView({
   const warningCount = itineraryView?.warningCount ?? items.reduce((total, item) => total + (item.advisories?.length ?? 0), 0);
   const [autoLiveMapState, setAutoLiveMapState] = useState<"idle" | "loading" | "ready" | "error">("idle");
   const [resolvingMissing, setResolvingMissing] = useState(false);
+  const [resolutionResult, setResolutionResult] = useState<MapCoordinateResolutionResult | null>(null);
   const liveMapState = liveMapAvailability === "auto" ? autoLiveMapState : liveMapAvailability;
   const [liveMapRetryKey, setLiveMapRetryKey] = useState(0);
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
@@ -370,10 +388,12 @@ export function RouteMapView({
   }
 
   async function handleResolveMissingCoordinates() {
-    if (!onResolveMissingCoordinates || visibleUnresolvedItems.length === 0) return;
+    if (!onResolveMissingCoordinates || coordinateResolutionBatch.length === 0) return;
     setResolvingMissing(true);
+    setResolutionResult(null);
     try {
-      await onResolveMissingCoordinates(visibleUnresolvedItems);
+      const result = await onResolveMissingCoordinates(coordinateResolutionBatch);
+      setResolutionResult(result ?? null);
     } finally {
       setResolvingMissing(false);
     }
@@ -463,10 +483,29 @@ export function RouteMapView({
                 >
                   <Icon name="location" />
                   {resolvingMissing
-                    ? t.map.resolvingMissing
-                    : t.map.resolveMissing({ count: visibleUnresolvedItems.length })}
+                    ? t.map.resolvingMissing({ count: coordinateResolutionBatch.length })
+                    : t.map.resolveMissing({ count: coordinateResolutionBatch.length })}
                 </button>
               </div>
+              {resolvingMissing ? (
+                <p className={unresolvedPanelStatusClassName}>
+                  {t.map.resolveProgress({
+                    count: coordinateResolutionBatch.length,
+                    total: visibleUnresolvedItems.length,
+                  })}
+                </p>
+              ) : resolutionResult ? (
+                <p className={unresolvedPanelStatusClassName}>
+                  {t.map.resolveResult(resolutionResult)}
+                </p>
+              ) : activeDay === "all" && visibleUnresolvedItems.length > coordinateResolutionBatch.length ? (
+                <p className={unresolvedPanelStatusClassName}>
+                  {t.map.resolveBatchHint({
+                    count: coordinateResolutionBatch.length,
+                    total: visibleUnresolvedItems.length,
+                  })}
+                </p>
+              ) : null}
               <ol className={unresolvedPanelListClassName}>
                 {visibleUnresolvedItems.slice(0, 6).map((item) => (
                   <li className={unresolvedPanelItemClassName} key={item.id}>

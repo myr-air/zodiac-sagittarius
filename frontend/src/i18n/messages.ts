@@ -475,7 +475,13 @@ export const messages = {
       liveError: "Could not load the live map. Showing the fallback route diagram.",
       retryLiveMap: "Retry live map",
       resolveMissing: ({ count }: { count: number }) => `Find coordinates for ${count}`,
-      resolvingMissing: "Finding coordinates...",
+      resolvingMissing: ({ count }: { count: number }) => `Finding ${count} coordinates...`,
+      resolveBatchHint: ({ count, total }: { count: number; total: number }) => `Runs ${count} at a time to keep map lookup fast. ${total} still need coordinates.`,
+      resolveProgress: ({ count, total }: { count: number; total: number }) => `Looking up ${count} of ${total} unresolved activities.`,
+      resolveResult: ({ attempted, failed, resolved, skipped }: { attempted: number; failed: number; resolved: number; skipped: number }) =>
+        resolved === 0
+          ? `Found 0/${attempted}. Try a day filter or use more specific place names.`
+          : `Found ${resolved}/${attempted}. ${skipped + failed} need review.`,
       resolveUnavailable: "Place resolver is not available",
       visibleStopsLabel: "Visible route stops",
       locationStatus: ({ mapped, total, unresolved }: { mapped: number; total: number; unresolved: number }) => `${mapped}/${total} mapped · ${unresolved} unresolved`,
@@ -1684,7 +1690,13 @@ export const messages = {
       liveError: "โหลดแผนที่สดไม่สำเร็จ แสดงแผนผังสำรองไว้ก่อน",
       retryLiveMap: "ลองโหลดแผนที่สดอีกครั้ง",
       resolveMissing: ({ count }: { count: number }) => `หาพิกัด ${count} จุด`,
-      resolvingMissing: "กำลังหาพิกัด...",
+      resolvingMissing: ({ count }: { count: number }) => `กำลังหา ${count} จุด...`,
+      resolveBatchHint: ({ count, total }: { count: number; total: number }) => `หาครั้งละ ${count} จุดเพื่อไม่ให้ช้าเกินไป ยังเหลือ ${total} จุด`,
+      resolveProgress: ({ count, total }: { count: number; total: number }) => `กำลังค้นหา ${count} จาก ${total} จุดที่ยังไม่มีพิกัด`,
+      resolveResult: ({ attempted, failed, resolved, skipped }: { attempted: number; failed: number; resolved: number; skipped: number }) =>
+        resolved === 0
+          ? `ไม่พบพิกัดใน ${attempted} จุด ลองเลือกเฉพาะวันหรือใส่ชื่อสถานที่ให้เจาะจงขึ้น`
+          : `พบ ${resolved}/${attempted} จุด · ${skipped + failed} จุดต้องตรวจต่อ`,
       resolveUnavailable: "ยังไม่ได้เปิดระบบหาพิกัด",
       visibleStopsLabel: "จุดบนเส้นทางที่แสดงอยู่",
       locationStatus: ({ mapped, total, unresolved }: { mapped: number; total: number; unresolved: number }) => `${mapped}/${total} มีพิกัด · ${unresolved} ยังไม่ระบุ`,
