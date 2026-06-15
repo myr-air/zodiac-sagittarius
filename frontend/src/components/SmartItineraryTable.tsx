@@ -218,7 +218,7 @@ const dayTitleInputClassName =
 const dayDateClassName =
   "day-date inline-flex shrink-0 items-center gap-[7px] text-(--color-text-muted)";
 const dayRouteClassName =
-  "day-route ml-[10px] min-w-0 max-[767px]:ml-0 max-[520px]:order-4 max-[520px]:basis-full";
+  "day-route ml-[10px] min-w-0 max-[767px]:ml-0 max-[520px]:order-4 max-[520px]:ml-6 max-[520px]:basis-[calc(100%_-_1.5rem)]";
 const dayWeatherChipClassName =
   "day-weather-chip inline-flex min-h-6 shrink-0 items-center gap-1 rounded-(--radius-sm) border border-(--color-route-border) bg-(--color-route-soft) px-1.5 text-[11px] font-bold text-(--color-route) max-[520px]:order-3 [&_strong]:text-(--color-text)";
 const dayWeatherSolarClassName =
@@ -274,7 +274,7 @@ const activityTypePickerClassName =
 const activityMobileLineClassName =
   "mobile-activity-line hidden min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-1.5 max-[520px]:grid";
 const activityMobileTypePickerClassName =
-  "activity-type-picker-mobile hidden !min-h-7 !w-7 shrink-0 justify-center rounded-(--radius-sm) border-transparent bg-transparent !px-0 !py-0 text-(--color-text-muted) hover:border-(--color-route-border) hover:bg-(--color-route-soft) hover:text-(--color-route) aria-[expanded=true]:border-(--color-route-border) aria-[expanded=true]:bg-(--color-route-soft) aria-[expanded=true]:text-(--color-route) max-[520px]:-mt-1.5 max-[520px]:inline-flex [&_.icon]:size-3.5 [&_.inline-option-picker-label]:hidden [&_.inline-option-picker-caret]:hidden";
+  "activity-type-picker-mobile !hidden !min-h-7 !w-7 shrink-0 justify-center rounded-(--radius-sm) border-transparent bg-transparent !px-0 !py-0 text-(--color-text-muted) hover:border-(--color-route-border) hover:bg-(--color-route-soft) hover:text-(--color-route) aria-[expanded=true]:border-(--color-route-border) aria-[expanded=true]:bg-(--color-route-soft) aria-[expanded=true]:text-(--color-route) max-[520px]:-mt-1.5 max-[520px]:!inline-flex [&_.icon]:size-3.5 [&_.inline-option-picker-label]:hidden [&_.inline-option-picker-caret]:hidden";
 const activityMobileStatusClassName =
   "shrink-0 max-w-[82px] truncate rounded-full border border-(--color-border) bg-(--color-surface-subtle) px-1.5 text-[10px] font-extrabold leading-5 text-(--color-text-muted)";
 const subActivityListClassName =

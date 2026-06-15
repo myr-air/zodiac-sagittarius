@@ -172,7 +172,7 @@ describe("Calm Travel Ops CSS contract", () => {
   it("lets itinerary day headers wrap weather below tablet width", () => {
     expect(smartTableSource).toContain("day-row-content flex min-h-[39px] w-full min-w-0 flex-wrap");
     expect(smartTableSource).toContain("max-[520px]:order-3");
-    expect(smartTableSource).toContain("max-[520px]:order-4 max-[520px]:basis-full");
+    expect(smartTableSource).toContain("max-[520px]:order-4 max-[520px]:ml-6 max-[520px]:basis-[calc(100%_-_1.5rem)]");
     expect(smartTableSource).toContain("max-[520px]:w-full max-[520px]:max-w-full");
     expect(smartTableSource).toContain("max-[520px]:hidden");
     expect(css).toMatch(/\.day-title-input,[\s\S]*?font-size:\s*13px;/);
@@ -188,7 +188,8 @@ describe("Calm Travel Ops CSS contract", () => {
     expect(smartTableSource).toContain("max-[520px]:w-full max-[520px]:max-w-full");
     expect(smartTableSource).toContain("mobile-activity-line hidden min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-1.5 max-[520px]:grid");
     expect(smartTableSource).toContain("activity-type-picker-mobile");
-    expect(smartTableSource).toContain("max-[520px]:-mt-1.5 max-[520px]:inline-flex");
+    expect(smartTableSource).toContain("activity-type-picker-mobile !hidden");
+    expect(smartTableSource).toContain("max-[520px]:-mt-1.5 max-[520px]:!inline-flex");
     expect(smartTableSource).toContain("[&_.inline-option-picker-label]:hidden");
     expect(css).toMatch(/@media \(max-width:\s*520px\)\s*{[\s\S]*?\.table-panel > \.page-header/s);
     expect(css).toMatch(/\.smart-table colgroup\s*{[\s\S]*?display:\s*none;/);
