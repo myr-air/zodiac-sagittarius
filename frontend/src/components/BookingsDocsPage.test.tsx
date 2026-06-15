@@ -17,7 +17,7 @@ describe("BookingsDocsPage", () => {
     renderPage();
 
     expect(screen.getByRole("region", { name: "Bookings & Docs" })).toHaveClass("bookings-docs-page", "bg-transparent");
-    expect(document.querySelector(".booking-docs-header")).toHaveClass("border-b", "bg-(--color-surface)", "grid-cols-[minmax(0,1fr)_auto]");
+    expect(document.querySelector(".booking-docs-header")).toHaveClass("border-b", "bg-(--color-surface)", "grid-cols-[minmax(0,1fr)_auto]", "max-[767px]:hidden");
     expect(screen.getByRole("heading", { name: "Bookings & Docs" })).toHaveClass("max-[767px]:text-[17px]");
     expect(screen.getByText("Hong Kong + Shenzhen Trip")).toHaveClass("max-[767px]:hidden");
     expect(screen.getByText("Demo Traveler")).toBeInTheDocument();
@@ -25,7 +25,8 @@ describe("BookingsDocsPage", () => {
     expect(document.querySelector(".booking-folder-rail")).toHaveClass("shadow-[0_1px_0_rgb(15_23_42_/_0.04)]");
     expect(document.querySelector(".bookings-file-panel")).toHaveClass("shadow-[0_1px_0_rgb(15_23_42_/_0.04)]");
     expect(document.querySelector(".booking-inspector")).toHaveClass("shadow-[0_1px_0_rgb(15_23_42_/_0.04)]");
-    expect(document.querySelector(".bookings-docs-page")).toHaveClass("max-[767px]:min-h-[calc(100dvh-93px)]", "max-[767px]:px-0", "max-[767px]:gap-0");
+    expect(document.querySelector(".bookings-docs-page")).toHaveClass("max-[767px]:min-h-[calc(100dvh-48px)]", "max-[767px]:px-0", "max-[767px]:gap-0");
+    expect(document.querySelector(".bookings-mobile-add-button")).toHaveClass("hidden", "max-[767px]:fixed", "max-[767px]:right-[60px]");
     expect(document.querySelector(".booking-folder-rail")).toHaveClass("max-[767px]:grid-cols-7", "max-[767px]:rounded-none", "max-[767px]:shadow-none");
     expect(document.querySelector(".bookings-content")).toHaveClass("grid-cols-[192px_minmax(0,1fr)_300px]", "max-[767px]:grid-rows-[auto_minmax(0,1fr)]");
     expect(document.querySelector(".bookings-file-panel")).toHaveClass("max-[1199px]:min-h-[520px]", "max-[767px]:grid-rows-[auto_auto_minmax(0,1fr)]", "max-[767px]:rounded-none", "max-[767px]:shadow-none");
@@ -113,7 +114,7 @@ describe("BookingsDocsPage", () => {
     const onUpdateBookingDoc = vi.fn();
     renderPage({ onCreateBookingDoc, onUpdateBookingDoc });
 
-    await user.click(screen.getByRole("button", { name: "Add booking" }));
+    await user.click(screen.getAllByRole("button", { name: "Add booking" })[0]);
     let dialog = screen.getByRole("dialog", { name: "Add booking" });
     expect(dialog).toHaveClass("shadow-[0_10px_18px_rgb(15_23_42_/_0.14)]");
     expect(dialog.className).not.toContain("0_14px_34px");

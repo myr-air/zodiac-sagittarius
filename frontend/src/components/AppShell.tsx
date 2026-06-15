@@ -46,17 +46,19 @@ export function resolveViewFromPath(pathname: string, tripId: string, initialVie
   return initialView;
 }
 
-const brandRowClassName = "brand-row inline-flex min-h-[70px] w-full box-border items-center justify-between px-4 pl-5 data-[collapsed=true]:min-h-[84px] data-[collapsed=true]:flex-col data-[collapsed=true]:justify-center data-[collapsed=true]:gap-2 data-[collapsed=true]:px-0 data-[collapsed=true]:pl-0 max-[1199px]:min-h-[70px] max-[1199px]:justify-center max-[1199px]:px-0 max-[1199px]:pl-0 max-[767px]:min-h-11 max-[767px]:border-b max-[767px]:border-(--color-border) max-[767px]:flex-row max-[767px]:justify-between max-[767px]:px-3 max-[767px]:pl-3";
+const brandRowClassName = "brand-row inline-flex min-h-[70px] w-full box-border items-center justify-between px-4 pl-5 data-[collapsed=true]:min-h-[84px] data-[collapsed=true]:flex-col data-[collapsed=true]:justify-center data-[collapsed=true]:gap-2 data-[collapsed=true]:px-0 data-[collapsed=true]:pl-0 max-[1199px]:min-h-[70px] max-[1199px]:justify-center max-[1199px]:px-0 max-[1199px]:pl-0 max-[767px]:grid max-[767px]:min-h-12 max-[767px]:grid-cols-[minmax(64px,auto)_minmax(0,1fr)_44px] max-[767px]:gap-2 max-[767px]:border-b max-[767px]:border-(--color-border) max-[767px]:px-3 max-[767px]:pl-3";
 const brandBlockClassName = "brand-block inline-flex min-w-0 items-center gap-[11px]";
 const brandMarkClassName = "brand-mark grid size-[34px] place-items-center rounded-full bg-(--color-primary) text-white font-extrabold shadow-[0_10px_20px_rgb(194_79_22_/_0.2)] [&_.icon]:size-[19px] [&_.icon]:stroke-[2.4] max-[767px]:size-8 max-[767px]:shadow-none max-[767px]:[&_.icon]:size-[17px]";
 const brandCopyClassName = "brand-copy data-[collapsed=true]:hidden max-[1199px]:hidden max-[767px]:!grid max-[767px]:min-w-0 max-[767px]:gap-0";
 const brandNameClassName = "text-xl font-extrabold leading-7 text-(--color-text)";
 const mobileTripNameClassName = "hidden";
+const mobilePageTitleClassName = "mobile-page-title hidden min-w-0 truncate text-center text-[15px] font-black leading-5 text-(--color-text) max-[767px]:block";
+const mobileMenuButtonClassName = "mobile-menu-button hidden min-h-10 w-10 items-center justify-center justify-self-end rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) text-(--color-text) transition-[background,border-color,color] duration-150 hover:border-(--color-primary-border) hover:bg-(--color-primary-soft) hover:text-(--color-primary-strong) aria-[expanded=true]:border-(--color-primary-border) aria-[expanded=true]:bg-(--color-primary-soft) aria-[expanded=true]:text-(--color-primary-strong) focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary) max-[767px]:inline-flex";
 const railToggleClassName = "rail-toggle inline-flex min-h-9 w-9 items-center justify-center rounded-full border border-(--color-border) bg-(--color-surface) text-(--color-text-muted) transition-[color,background,border-color] duration-150 hover:border-(--color-primary-border) hover:bg-(--color-primary-soft) hover:text-(--color-primary-strong) data-[collapsed=true]:min-h-7 data-[collapsed=true]:w-7 data-[collapsed=true]:[&_.icon]:size-3.5 max-[1199px]:hidden";
 const appLayoutClassName = "app-layout grid min-h-screen grid-cols-[236px_minmax(0,1fr)] bg-transparent data-[sidebar-collapsed=true]:grid-cols-[74px_minmax(0,1fr)] max-[1199px]:grid-cols-[74px_minmax(0,1fr)] max-[767px]:block max-[767px]:max-w-[100vw] max-[767px]:overflow-x-hidden";
-const sideRailClassName = "side-rail sticky top-0 z-[5] grid h-screen grid-rows-[70px_1fr_auto_auto] gap-0 overflow-hidden border-r border-(--color-border) bg-(--color-surface) data-[collapsed=true]:grid-rows-[84px_1fr_auto_auto] max-[1199px]:grid-rows-[70px_1fr_auto_auto] max-[767px]:sticky max-[767px]:top-0 max-[767px]:z-20 max-[767px]:h-auto max-[767px]:grid-rows-[auto_auto] max-[767px]:border-b max-[767px]:border-r-0 max-[767px]:bg-[rgb(255_255_255_/_0.96)] max-[767px]:pb-1";
-const railLinksClassName = "rail-links grid w-full box-border content-start gap-1.5 overflow-y-auto overflow-x-hidden px-3 pb-3 pt-2.5 data-[collapsed=true]:px-1.5 max-[1199px]:px-1.5 max-[767px]:box-border max-[767px]:flex max-[767px]:w-full max-[767px]:max-w-full max-[767px]:gap-1 max-[767px]:overflow-x-auto max-[767px]:overflow-y-hidden max-[767px]:overscroll-x-contain max-[767px]:px-2 max-[767px]:pb-1 max-[767px]:pt-1 max-[767px]:[scrollbar-width:none] max-[767px]:[&::-webkit-scrollbar]:hidden max-[767px]:[mask-image:linear-gradient(to_right,transparent,#000_12px,#000_calc(100%-12px),transparent)]";
-const railLinkClassName = "rail-link relative inline-flex min-h-10 items-center gap-[13px] rounded-(--radius-md) px-[13px] text-[13px] font-bold text-(--color-text-muted) no-underline transition-[background,color,box-shadow] duration-150 hover:bg-(--color-surface-subtle) hover:text-(--color-text) data-[collapsed=true]:justify-center data-[collapsed=true]:px-0 max-[1199px]:justify-center max-[1199px]:px-0 max-[767px]:min-h-9 max-[767px]:max-w-[112px] max-[767px]:shrink-0 max-[767px]:justify-start max-[767px]:gap-1.5 max-[767px]:rounded-(--radius-sm) max-[767px]:px-2";
+const sideRailClassName = "side-rail sticky top-0 z-[5] grid h-screen grid-rows-[70px_1fr_auto_auto] gap-0 overflow-hidden border-r border-(--color-border) bg-(--color-surface) data-[collapsed=true]:grid-rows-[84px_1fr_auto_auto] max-[1199px]:grid-rows-[70px_1fr_auto_auto] max-[767px]:sticky max-[767px]:top-0 max-[767px]:z-40 max-[767px]:h-auto max-[767px]:grid-rows-[auto] max-[767px]:overflow-visible max-[767px]:border-b max-[767px]:border-r-0 max-[767px]:bg-[rgb(255_255_255_/_0.98)]";
+const railLinksClassName = "rail-links grid w-full box-border content-start gap-1.5 overflow-y-auto overflow-x-hidden px-3 pb-3 pt-2.5 data-[collapsed=true]:px-1.5 max-[1199px]:px-1.5 max-[767px]:fixed max-[767px]:inset-x-0 max-[767px]:top-12 max-[767px]:z-30 max-[767px]:max-h-[calc(100dvh-48px)] max-[767px]:gap-1 max-[767px]:overflow-y-auto max-[767px]:overscroll-contain max-[767px]:border-b max-[767px]:border-(--color-border) max-[767px]:bg-(--color-surface) max-[767px]:p-2 max-[767px]:shadow-[0_8px_16px_rgb(15_23_42_/_0.10)] max-[767px]:transition-[opacity,transform] max-[767px]:duration-150 max-[767px]:ease-out max-[767px]:data-[mobile-open=false]:pointer-events-none max-[767px]:data-[mobile-open=false]:-translate-y-2 max-[767px]:data-[mobile-open=false]:opacity-0 max-[767px]:data-[mobile-open=true]:translate-y-0 max-[767px]:data-[mobile-open=true]:opacity-100 motion-reduce:max-[767px]:transition-none";
+const railLinkClassName = "rail-link relative inline-flex min-h-10 items-center gap-[13px] rounded-(--radius-md) px-[13px] text-[13px] font-bold text-(--color-text-muted) no-underline transition-[background,color,box-shadow] duration-150 hover:bg-(--color-surface-subtle) hover:text-(--color-text) data-[collapsed=true]:justify-center data-[collapsed=true]:px-0 max-[1199px]:justify-center max-[1199px]:px-0 max-[767px]:min-h-11 max-[767px]:w-full max-[767px]:justify-start max-[767px]:gap-2.5 max-[767px]:rounded-(--radius-sm) max-[767px]:px-3";
 const activeRailLinkClassName = "rail-link--active bg-(--color-primary-soft) text-(--color-primary-strong) shadow-[inset_0_0_0_1px_rgb(194_79_22_/_0.18),0_10px_18px_rgb(55_47_38_/_0.05)]";
 const railLinkLabelClassName = "data-[collapsed=true]:hidden max-[1199px]:hidden max-[767px]:!inline max-[767px]:min-w-0 max-[767px]:truncate";
 const sideRailLanguageClassName = "side-rail-language mx-3.5 mb-1 mt-2 self-start [&_.language-switch-menu]:bottom-[calc(100%+8px)] [&_.language-switch-menu]:left-0 [&_.language-switch-menu]:right-auto [&_.language-switch-menu]:top-auto data-[collapsed=true]:mx-0 data-[collapsed=true]:self-center data-[collapsed=true]:[&_.language-switch-trigger]:w-12 data-[collapsed=true]:[&_.language-switch-trigger]:px-2 data-[collapsed=true]:[&_.language-switch-trigger_span]:hidden max-[1199px]:mx-0 max-[1199px]:self-center max-[1199px]:[&_.language-switch-trigger]:w-12 max-[1199px]:[&_.language-switch-trigger]:px-2 max-[1199px]:[&_.language-switch-trigger_span]:hidden max-[767px]:hidden";
@@ -80,9 +82,13 @@ const identityDialogPrimaryButtonClassName = "inline-flex min-h-9 items-center j
 export function AppShell({ activeView, children, collapsed, currentMember, onLeaveParticipantSession, onNavigateView, trip, onToggleCollapsed }: AppShellProps) {
   const { t } = useI18n();
   const [identityDialogOpen, setIdentityDialogOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const activeLinkRef = useRef<HTMLAnchorElement | null>(null);
   const navItems = tripWorkspaceNavItems(trip.id, t.routes);
   const settingsHref = appRoutes.tripSettings(trip.id);
+  const activeNavLabel = activeView === "settings"
+    ? t.appShell.nav.settings
+    : (navItems.find((item) => item.id === activeView)?.label ?? t.appShell.nav.overview);
 
   useEffect(() => {
     const activeLink = activeLinkRef.current;
@@ -114,6 +120,7 @@ export function AppShell({ activeView, children, collapsed, currentMember, onLea
               <span className={mobileTripNameClassName}>{trip.name}</span>
             </div>
           </div>
+          <strong className={mobilePageTitleClassName}>{activeNavLabel}</strong>
 
           <button
             className={railToggleClassName}
@@ -126,9 +133,24 @@ export function AppShell({ activeView, children, collapsed, currentMember, onLea
           >
             <Icon name={collapsed ? "chevronRight" : "chevronLeft"} />
           </button>
+          <button
+            className={mobileMenuButtonClassName}
+            type="button"
+            aria-controls="mobile-workspace-navigation"
+            aria-expanded={mobileMenuOpen}
+            aria-label={mobileMenuOpen ? t.appShell.closeNavigation : t.appShell.openNavigation}
+            onClick={() => setMobileMenuOpen((current) => !current)}
+            title={mobileMenuOpen ? t.appShell.closeNavigation : t.appShell.openNavigation}
+          >
+            <Icon name={mobileMenuOpen ? "x" : "menu"} />
+          </button>
         </div>
 
-        <div className={railLinksClassName}>
+        <div
+          className={railLinksClassName}
+          data-mobile-open={mobileMenuOpen ? "true" : "false"}
+          id="mobile-workspace-navigation"
+        >
           {navItems.map((item) => {
             const isActive = item.id === activeView;
             return (
@@ -141,6 +163,7 @@ export function AppShell({ activeView, children, collapsed, currentMember, onLea
               key={item.id}
               onClick={onNavigateView ? (event) => {
                 event.preventDefault();
+                setMobileMenuOpen(false);
                 onNavigateView(item.id, item.href);
               } : undefined}
               ref={isActive ? activeLinkRef : undefined}
@@ -158,6 +181,7 @@ export function AppShell({ activeView, children, collapsed, currentMember, onLea
             href={settingsHref}
             onClick={onNavigateView ? (event) => {
               event.preventDefault();
+              setMobileMenuOpen(false);
               onNavigateView("settings", settingsHref);
             } : undefined}
             ref={activeView === "settings" ? activeLinkRef : undefined}

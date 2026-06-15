@@ -67,8 +67,8 @@ const bookingFolders: Array<{
   { id: "external_links", icon: "cloud" },
 ];
 
-const pageClassName = "bookings-docs-page grid min-h-full min-w-0 grid-rows-[auto_minmax(0,1fr)] gap-3 bg-transparent px-6 py-[22px] pb-7 max-[767px]:min-h-[calc(100dvh-93px)] max-[767px]:gap-0 max-[767px]:px-0 max-[767px]:py-0";
-const headerClassName = "booking-docs-header grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-(--color-border) bg-(--color-surface) px-3 py-2.5 max-[767px]:gap-2 max-[767px]:px-3 max-[767px]:py-1.5";
+const pageClassName = "bookings-docs-page grid min-h-full min-w-0 grid-rows-[auto_minmax(0,1fr)] gap-3 bg-transparent px-6 py-[22px] pb-7 max-[767px]:min-h-[calc(100dvh-48px)] max-[767px]:gap-0 max-[767px]:px-0 max-[767px]:py-0";
+const headerClassName = "booking-docs-header grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-(--color-border) bg-(--color-surface) px-3 py-2.5 max-[767px]:hidden";
 const headerCopyClassName = "grid min-w-0 gap-1";
 const headerTitleRowClassName = "flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1";
 const headerTitleClassName = "m-0 text-[20px] font-black leading-7 text-(--color-text) max-[767px]:text-[17px] max-[767px]:leading-6";
@@ -80,6 +80,7 @@ const headerAvatarClassName = "person-avatar !size-7 text-xs";
 const headerUserCopyClassName = "grid min-w-0 gap-0";
 const headerUserNameClassName = "truncate text-xs font-extrabold text-(--color-text)";
 const headerUserLabelClassName = "truncate text-[11px] font-bold text-(--color-text-muted)";
+const mobileAddButtonClassName = "bookings-mobile-add-button hidden max-[767px]:fixed max-[767px]:right-[60px] max-[767px]:top-1.5 max-[767px]:z-[45] max-[767px]:inline-flex max-[767px]:min-h-9 max-[767px]:w-9 max-[767px]:rounded-(--radius-sm) max-[767px]:p-0 max-[767px]:shadow-none";
 const contentClassName = "bookings-content grid min-h-0 grid-cols-[192px_minmax(0,1fr)_300px] gap-3 max-[1199px]:grid-cols-[172px_minmax(0,1fr)] max-[1199px]:[&_.booking-inspector]:col-span-2 max-[767px]:grid-cols-1 max-[767px]:grid-rows-[auto_minmax(0,1fr)] max-[767px]:gap-0 max-[767px]:[&_.booking-inspector]:col-span-1";
 const folderRailClassName = "booking-folder-rail grid min-h-0 content-start gap-1 rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) p-2.5 shadow-[0_1px_0_rgb(15_23_42_/_0.04)] max-[767px]:grid-cols-7 max-[767px]:content-normal max-[767px]:gap-0 max-[767px]:rounded-none max-[767px]:border-x-0 max-[767px]:border-t-0 max-[767px]:p-0 max-[767px]:shadow-none";
 const folderButtonClassName = "group grid min-h-10 grid-cols-[28px_minmax(0,1fr)_auto] items-center gap-2 rounded-(--radius-md) border border-transparent bg-transparent px-2 py-1.5 text-left text-sm font-bold text-(--color-text-muted) transition-[background-color,border-color,color] duration-150 hover:bg-(--color-surface-subtle) hover:text-(--color-text) focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary) [&_.icon]:size-4 max-[767px]:min-h-10 max-[767px]:grid-cols-1 max-[767px]:grid-rows-[18px_12px] max-[767px]:justify-items-center max-[767px]:gap-0 max-[767px]:rounded-none max-[767px]:border-0 max-[767px]:border-b-2 max-[767px]:border-transparent max-[767px]:px-0 max-[767px]:py-1.5 max-[767px]:text-center";
@@ -390,6 +391,11 @@ export function BookingsDocsPage({
         recordCount={bookingDocs.length}
         trip={trip}
       />
+      {canEditBookings ? (
+        <Button className={mobileAddButtonClassName} type="button" onClick={() => setDialogBooking("new")} aria-label={copy.addBooking} title={copy.addBooking}>
+          <Icon name="plus" />
+        </Button>
+      ) : null}
 
       <div className={contentClassName}>
         <nav className={folderRailClassName} aria-label={copy.bookingFolders}>

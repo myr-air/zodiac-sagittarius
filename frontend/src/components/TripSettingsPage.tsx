@@ -26,7 +26,7 @@ interface TripSettingsPageProps {
 
 const pageClassName = "trip-settings-page min-h-full bg-transparent px-6 py-[22px] pb-7 max-[767px]:px-3 max-[767px]:py-4";
 const shellClassName = "mx-auto grid max-w-[980px] gap-4";
-const headerClassName = "grid gap-3 rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) p-5 shadow-[0_10px_22px_rgb(55_47_38_/_0.045)]";
+const headerClassName = "grid gap-3 rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) p-5 shadow-[0_10px_22px_rgb(55_47_38_/_0.045)] max-[767px]:hidden";
 const headerToplineClassName = "flex min-w-0 items-start justify-between gap-3 max-[767px]:flex-wrap";
 const eyebrowClassName = "inline-flex w-fit items-center gap-2 rounded-full border border-(--color-primary-border) bg-(--color-primary-soft) px-3 py-1 text-[11px] font-extrabold text-(--color-primary-strong)";
 const headingClassName = "grid gap-1 [&_h1]:text-[26px] [&_h1]:font-[900] [&_h1]:leading-8 [&_h1]:text-(--color-text) [&_p]:max-w-[620px] [&_p]:text-[13px] [&_p]:leading-5 [&_p]:text-(--color-text-muted)";

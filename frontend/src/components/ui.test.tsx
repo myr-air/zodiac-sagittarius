@@ -51,8 +51,7 @@ describe("shared UI primitives", () => {
     expect(screen.getByRole("banner")).toHaveClass(
       "page-header",
       "min-h-[108px]",
-      "max-[767px]:rounded-none",
-      "max-[767px]:shadow-none",
+      "max-[767px]:hidden",
       "overflow-hidden",
       "bg-[color-mix(in_srgb,var(--color-surface)_88%,var(--color-postcard))]",
       "shadow-[0_6px_8px_rgb(55_47_38_/_0.045)]",

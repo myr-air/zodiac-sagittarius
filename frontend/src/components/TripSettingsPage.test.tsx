@@ -22,6 +22,7 @@ describe("TripSettingsPage", () => {
     expect(screen.getByRole("heading", { name: "Trip settings", level: 1 }).closest("header")).toHaveClass(
       "bg-(--color-surface)",
       "shadow-[0_10px_22px_rgb(55_47_38_/_0.045)]",
+      "max-[767px]:hidden",
     );
     expect(page.querySelector("header span")).toHaveClass(
       "bg-(--color-primary-soft)",

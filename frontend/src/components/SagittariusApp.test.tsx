@@ -425,8 +425,8 @@ describe("Sagittarius cockpit UI", () => {
       screen.getByRole("region", { name: /Trip overview/i }),
     ).toBeInTheDocument();
     expect(
-      screen.queryByRole("button", { name: /เพิ่มสถานที่ \/ กิจกรรม/i }),
-    ).not.toBeInTheDocument();
+      screen.queryAllByRole("button", { name: /เพิ่มสถานที่ \/ กิจกรรม/i }),
+    ).toHaveLength(0);
   }, 45_000);
 
   it("keeps account routes isolated from restored local participant sessions", async () => {
@@ -470,7 +470,7 @@ describe("Sagittarius cockpit UI", () => {
       }),
     ).toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: /Add booking|เพิ่มการจอง/i }));
+    await user.click(screen.getAllByRole("button", { name: /Add booking|เพิ่มการจอง/i })[0]);
     const dialog = screen.getByRole("dialog", { name: /Add booking|เพิ่มการจอง/i });
     fireEvent.change(within(dialog).getByRole("textbox", { name: /^(Title|ชื่อ)$/i }), {
       target: { value: "Airport Express pass" },
@@ -655,7 +655,7 @@ describe("Sagittarius cockpit UI", () => {
         name: /Select Bangkok to Hong Kong flight|เลือก Bangkok to Hong Kong flight/i,
       }),
     ).toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: /Add booking|เพิ่มการจอง/i }));
+    await user.click(screen.getAllByRole("button", { name: /Add booking|เพิ่มการจอง/i })[0]);
     const dialog = screen.getByRole("dialog", { name: /Add booking|เพิ่มการจอง/i });
     fireEvent.change(within(dialog).getByRole("textbox", { name: /^(Title|ชื่อ)$/i }), {
       target: { value: "Airport Express pass" },
@@ -745,7 +745,7 @@ describe("Sagittarius cockpit UI", () => {
     expect(
       await screen.findByRole("region", { name: /Bookings & Docs|การจองและเอกสาร/i }),
     ).toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: /Add booking|เพิ่มการจอง/i }));
+    await user.click(screen.getAllByRole("button", { name: /Add booking|เพิ่มการจอง/i })[0]);
     const dialog = screen.getByRole("dialog", { name: /Add booking|เพิ่มการจอง/i });
     fireEvent.change(within(dialog).getByRole("textbox", { name: /^(Title|ชื่อ)$/i }), {
       target: { value: "Airport Express pass" },
@@ -2656,8 +2656,8 @@ describe("Sagittarius cockpit UI", () => {
       screen.getByRole("region", { name: /Trip overview/i }),
     ).toBeInTheDocument();
     expect(
-      screen.queryByRole("button", { name: /เพิ่มสถานที่ \/ กิจกรรม/i }),
-    ).not.toBeInTheDocument();
+      screen.queryAllByRole("button", { name: /เพิ่มสถานที่ \/ กิจกรรม/i }),
+    ).toHaveLength(0);
     expect(
       screen.queryByRole("button", { name: /เปิดรายละเอียด/i }),
     ).not.toBeInTheDocument();
@@ -2833,9 +2833,6 @@ describe("Sagittarius cockpit UI", () => {
 
     expect(
       screen.queryByRole("button", { name: /^เลือกจุด /i }),
-    ).not.toBeInTheDocument();
-    expect(
-      screen.queryByRole("button", { name: /เพิ่มสถานที่ \/ กิจกรรม/i }),
     ).not.toBeInTheDocument();
     expect(
       screen.getAllByRole("button", { name: /เปิดรายละเอียดของ/i }).length,

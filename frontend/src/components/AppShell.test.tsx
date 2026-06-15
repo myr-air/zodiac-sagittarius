@@ -39,8 +39,8 @@ describe("AppShell", () => {
       "data-[collapsed=true]:grid-rows-[84px_1fr_auto_auto]",
       "max-[1199px]:grid-rows-[70px_1fr_auto_auto]",
       "max-[767px]:sticky",
-      "max-[767px]:z-20",
-      "max-[767px]:pb-1",
+      "max-[767px]:z-40",
+      "max-[767px]:grid-rows-[auto]",
     );
     expect(container.querySelector(".brand-row")).toHaveClass(
       "w-full",
@@ -48,9 +48,9 @@ describe("AppShell", () => {
       "data-[collapsed=true]:flex-col",
       "data-[collapsed=true]:justify-center",
       "max-[1199px]:justify-center",
-      "max-[767px]:min-h-11",
-      "max-[767px]:flex-row",
-      "max-[767px]:justify-between",
+      "max-[767px]:min-h-12",
+      "max-[767px]:grid",
+      "max-[767px]:grid-cols-[minmax(64px,auto)_minmax(0,1fr)_44px]",
     );
     expect(container.querySelector(".rail-toggle")).toHaveClass(
       "data-[collapsed=true]:min-h-7",
@@ -58,24 +58,48 @@ describe("AppShell", () => {
       "max-[1199px]:hidden",
     );
     expect(screen.getByText(seedTrip.name)).toHaveClass("hidden");
+    expect(container.querySelector(".mobile-page-title")).toHaveTextContent("ภาพรวม");
+    expect(container.querySelector(".mobile-page-title")).toHaveClass("max-[767px]:block");
+    expect(screen.getByRole("button", { name: "เปิดเมนู" })).toHaveClass("mobile-menu-button", "max-[767px]:inline-flex");
     expect(container.querySelector(".rail-links")).toHaveClass(
       "w-full",
       "box-border",
       "overflow-x-hidden",
       "data-[collapsed=true]:px-1.5",
       "max-[1199px]:px-1.5",
-      "max-[767px]:box-border",
-      "max-[767px]:w-full",
-      "max-[767px]:max-w-full",
-      "max-[767px]:overflow-x-auto",
-      "max-[767px]:[scrollbar-width:none]",
-      "max-[767px]:[&::-webkit-scrollbar]:hidden",
-      "max-[767px]:[mask-image:linear-gradient(to_right,transparent,#000_12px,#000_calc(100%-12px),transparent)]",
+      "max-[767px]:fixed",
+      "max-[767px]:top-12",
+      "max-[767px]:data-[mobile-open=false]:opacity-0",
+      "max-[767px]:data-[mobile-open=true]:opacity-100",
     );
     expect(container.querySelector(".rail-link")).toHaveClass(
-      "max-[767px]:max-w-[112px]",
-      "max-[767px]:shrink-0",
+      "max-[767px]:min-h-11",
+      "max-[767px]:w-full",
     );
+  });
+
+  it("opens mobile navigation from the merged top header", async () => {
+    const user = userEvent.setup();
+    renderWithI18n(
+      <AppShell
+        activeView="bookings"
+        collapsed={false}
+        currentMember={seedTrip.members[0]}
+        onToggleCollapsed={vi.fn()}
+        trip={seedTrip}
+      >
+        <main>content</main>
+      </AppShell>,
+      { locale: "en" },
+    );
+
+    expect(document.querySelector(".mobile-page-title")).toHaveTextContent("Bookings & Docs");
+    const menu = document.querySelector(".rail-links");
+    expect(menu).toHaveAttribute("data-mobile-open", "false");
+
+    await user.click(screen.getByRole("button", { name: "Open navigation" }));
+    expect(menu).toHaveAttribute("data-mobile-open", "true");
+    expect(screen.getByRole("button", { name: "Close navigation" })).toHaveAttribute("aria-expanded", "true");
   });
 
   it("keeps the active mobile navigation item centered when the view changes", async () => {

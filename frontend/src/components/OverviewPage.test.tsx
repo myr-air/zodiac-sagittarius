@@ -58,6 +58,7 @@ describe("OverviewPage role lenses", () => {
     expect(hero).toHaveClass("min-h-[168px]", "bg-[linear-gradient(135deg,var(--color-surface)_0%,var(--overview-hero-sky)_100%)]");
     expect(hero).toHaveClass("shadow-[0_1px_0_rgb(15_23_42_/_0.04)]");
     expect(hero).toHaveTextContent(/Hong Kong/i);
+    expect(within(hero).getByRole("heading", { name: /Hong Kong \+ Shenzhen Trip/i })).toHaveClass("max-[767px]:hidden");
     expect(hero).toHaveTextContent(/HK\$/i);
     expect(within(hero).getByText(/ศูนย์จัดการทริป/i)).toBeInTheDocument();
     expect(hero.querySelector(".overview-hero-polaroid")).not.toBeInTheDocument();
