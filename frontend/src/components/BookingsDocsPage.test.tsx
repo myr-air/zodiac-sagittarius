@@ -27,8 +27,10 @@ describe("BookingsDocsPage", () => {
     expect(document.querySelector(".booking-inspector")).toHaveClass("shadow-[0_1px_0_rgb(15_23_42_/_0.04)]");
     expect(document.querySelector(".bookings-docs-page")).toHaveClass("max-[767px]:px-0", "max-[767px]:gap-0");
     expect(document.querySelector(".booking-folder-rail")).toHaveClass("max-[767px]:grid-cols-7", "max-[767px]:rounded-none", "max-[767px]:shadow-none");
-    expect(document.querySelector(".bookings-file-panel")).toHaveClass("max-[767px]:rounded-none", "max-[767px]:shadow-none");
+    expect(document.querySelector(".bookings-file-panel")).toHaveClass("max-[767px]:grid-rows-[auto_auto_minmax(360px,1fr)]", "max-[767px]:rounded-none", "max-[767px]:shadow-none");
+    expect(document.querySelector(".bookings-file-toolbar")).toHaveClass("max-[767px]:p-1.5");
     expect(document.querySelector(".booking-inspector")).toHaveClass("max-[767px]:!fixed", "max-[767px]:translate-y-full");
+    expect(screen.getByText("Everything saved for this trip · 5 visible items")).toHaveClass("max-[767px]:hidden");
     expect(screen.getByPlaceholderText("Search bookings, docs, links")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Transport/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Transport/i })).toHaveClass("max-[767px]:grid-cols-1", "max-[767px]:border-b-2");
