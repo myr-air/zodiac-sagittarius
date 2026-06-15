@@ -286,10 +286,25 @@ fn fallback_weather(date: Date) -> WeatherBriefingBlock {
         condition_label: "Forecast pending".to_string(),
         temperature_max_celsius: None,
         temperature_min_celsius: None,
+        apparent_temperature_max_celsius: None,
+        apparent_temperature_min_celsius: None,
         sunrise: None,
         sunset: None,
+        daylight_duration_seconds: None,
+        sunshine_duration_seconds: None,
+        uv_index_max: None,
+        precipitation_sum_mm: None,
+        precipitation_hours: None,
+        rain_sum_mm: None,
         humidity_percent: None,
         wind_speed_kph: None,
+        wind_gusts_kph: None,
+        wind_direction_degrees: None,
+        cloud_cover_mean_percent: None,
+        visibility_mean_meters: None,
+        visibility_min_meters: None,
+        dew_point_mean_celsius: None,
+        pressure_msl_mean_hpa: None,
         rain_chance_percent: None,
         meta: BriefingSourceMeta {
             source: "Sagittarius".to_string(),
@@ -317,6 +332,14 @@ fn weather_needs_refresh(weather: Option<&serde_json::Value>, now: OffsetDateTim
     };
     if weather.condition_code != "unavailable"
         && (weather.sunrise.is_none() || weather.sunset.is_none())
+    {
+        return true;
+    }
+    if weather.condition_code != "unavailable"
+        && weather.meta.source == "Open-Meteo"
+        && weather.apparent_temperature_max_celsius.is_none()
+        && weather.uv_index_max.is_none()
+        && weather.wind_gusts_kph.is_none()
     {
         return true;
     }
@@ -356,17 +379,26 @@ async fn fetch_open_meteo_weather(
     let weather_code = daily.weather_code.first().copied()?;
     let high = daily.temperature_2m_max.first().copied().flatten();
     let low = daily.temperature_2m_min.first().copied().flatten();
+    let apparent_high = first_f64(&daily.apparent_temperature_max);
+    let apparent_low = first_f64(&daily.apparent_temperature_min);
     let sunrise = daily.sunrise.first().cloned().flatten();
     let sunset = daily.sunset.first().cloned().flatten();
-    let rain_chance = daily
-        .precipitation_probability_max
-        .first()
-        .copied()
-        .flatten();
-    let wind_speed = daily.wind_speed_10m_max.first().copied().flatten();
-    let humidity = forecast
-        .hourly
-        .and_then(|hourly| average_i32(&hourly.relative_humidity_2m));
+    let daylight_duration = first_f64(&daily.daylight_duration);
+    let sunshine_duration = first_f64(&daily.sunshine_duration);
+    let uv_index = first_f64(&daily.uv_index_max);
+    let precipitation_sum = first_f64(&daily.precipitation_sum);
+    let precipitation_hours = first_f64(&daily.precipitation_hours);
+    let rain_sum = first_f64(&daily.rain_sum);
+    let rain_chance = first_i32(&daily.precipitation_probability_max);
+    let humidity = first_i32(&daily.relative_humidity_2m_mean);
+    let wind_speed = first_f64(&daily.wind_speed_10m_max);
+    let wind_gusts = first_f64(&daily.wind_gusts_10m_max);
+    let wind_direction = first_i32(&daily.wind_direction_10m_dominant);
+    let cloud_cover = first_i32(&daily.cloud_cover_mean);
+    let visibility_mean = first_f64(&daily.visibility_mean);
+    let visibility_min = first_f64(&daily.visibility_min);
+    let dew_point = first_f64(&daily.dew_point_2m_mean);
+    let pressure = first_f64(&daily.pressure_msl_mean);
     let now = OffsetDateTime::now_utc();
     let expires_at = now + Duration::hours(6);
     let fetched_at = format_briefing_timestamp(now);
@@ -385,10 +417,25 @@ async fn fetch_open_meteo_weather(
         condition_label: condition_label.to_string(),
         temperature_max_celsius: high,
         temperature_min_celsius: low,
+        apparent_temperature_max_celsius: apparent_high,
+        apparent_temperature_min_celsius: apparent_low,
         sunrise,
         sunset,
+        daylight_duration_seconds: daylight_duration,
+        sunshine_duration_seconds: sunshine_duration,
+        uv_index_max: uv_index,
+        precipitation_sum_mm: precipitation_sum,
+        precipitation_hours,
+        rain_sum_mm: rain_sum,
         humidity_percent: humidity,
         wind_speed_kph: wind_speed,
+        wind_gusts_kph: wind_gusts,
+        wind_direction_degrees: wind_direction,
+        cloud_cover_mean_percent: cloud_cover,
+        visibility_mean_meters: visibility_mean,
+        visibility_min_meters: visibility_min,
+        dew_point_mean_celsius: dew_point,
+        pressure_msl_mean_hpa: pressure,
         rain_chance_percent: rain_chance,
         meta: meta.clone(),
     };
@@ -410,9 +457,17 @@ async fn fetch_open_meteo_weather(
 
 fn open_meteo_url(date: Date, coordinates: &BriefingCoordinates) -> String {
     format!(
-        "https://api.open-meteo.com/v1/forecast?latitude={:.5}&longitude={:.5}&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,precipitation_probability_max,wind_speed_10m_max&hourly=relative_humidity_2m&timezone=auto&start_date={date}&end_date={date}",
+        "https://api.open-meteo.com/v1/forecast?latitude={:.5}&longitude={:.5}&daily=weather_code,temperature_2m_max,temperature_2m_min,apparent_temperature_max,apparent_temperature_min,sunrise,sunset,daylight_duration,sunshine_duration,uv_index_max,precipitation_sum,precipitation_hours,precipitation_probability_max,rain_sum,wind_speed_10m_max,wind_gusts_10m_max,wind_direction_10m_dominant,cloud_cover_mean,visibility_mean,visibility_min,relative_humidity_2m_mean,dew_point_2m_mean,pressure_msl_mean&timezone=auto&start_date={date}&end_date={date}",
         coordinates.lat, coordinates.lng,
     )
+}
+
+fn first_f64(values: &[Option<f64>]) -> Option<f64> {
+    values.first().copied().flatten()
+}
+
+fn first_i32(values: &[Option<i32>]) -> Option<i32> {
+    values.first().copied().flatten()
 }
 
 fn wttr_url(coordinates: &BriefingCoordinates) -> String {
@@ -547,10 +602,25 @@ async fn fetch_wttr_weather(
         condition_label: condition_label.to_string(),
         temperature_max_celsius: max_temperature,
         temperature_min_celsius: min_temperature,
+        apparent_temperature_max_celsius: None,
+        apparent_temperature_min_celsius: None,
         sunrise: None,
         sunset: None,
+        daylight_duration_seconds: None,
+        sunshine_duration_seconds: None,
+        uv_index_max: None,
+        precipitation_sum_mm: None,
+        precipitation_hours: None,
+        rain_sum_mm: None,
         humidity_percent: humidity,
         wind_speed_kph,
+        wind_gusts_kph: None,
+        wind_direction_degrees: None,
+        cloud_cover_mean_percent: None,
+        visibility_mean_meters: None,
+        visibility_min_meters: None,
+        dew_point_mean_celsius: None,
+        pressure_msl_mean_hpa: None,
         rain_chance_percent: rain_chance,
         meta: meta.clone(),
     };
@@ -568,16 +638,6 @@ async fn fetch_wttr_weather(
     };
 
     Some((weather, advice))
-}
-
-fn average_i32(values: &[Option<i32>]) -> Option<i32> {
-    let mut count = 0;
-    let mut total = 0;
-    for value in values.iter().flatten() {
-        count += 1;
-        total += value;
-    }
-    (count > 0).then_some(total / count)
 }
 
 fn map_weather_code(code: i32) -> (&'static str, &'static str) {
@@ -623,7 +683,6 @@ fn outfit_advice_for_weather(weather: &WeatherBriefingBlock) -> String {
 #[derive(Debug, Deserialize)]
 struct OpenMeteoForecast {
     daily: OpenMeteoDaily,
-    hourly: Option<OpenMeteoHourly>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -631,15 +690,26 @@ struct OpenMeteoDaily {
     weather_code: Vec<i32>,
     temperature_2m_max: Vec<Option<f64>>,
     temperature_2m_min: Vec<Option<f64>>,
+    apparent_temperature_max: Vec<Option<f64>>,
+    apparent_temperature_min: Vec<Option<f64>>,
     sunrise: Vec<Option<String>>,
     sunset: Vec<Option<String>>,
+    daylight_duration: Vec<Option<f64>>,
+    sunshine_duration: Vec<Option<f64>>,
+    uv_index_max: Vec<Option<f64>>,
+    precipitation_sum: Vec<Option<f64>>,
+    precipitation_hours: Vec<Option<f64>>,
     precipitation_probability_max: Vec<Option<i32>>,
+    rain_sum: Vec<Option<f64>>,
     wind_speed_10m_max: Vec<Option<f64>>,
-}
-
-#[derive(Debug, Deserialize)]
-struct OpenMeteoHourly {
-    relative_humidity_2m: Vec<Option<i32>>,
+    wind_gusts_10m_max: Vec<Option<f64>>,
+    wind_direction_10m_dominant: Vec<Option<i32>>,
+    cloud_cover_mean: Vec<Option<i32>>,
+    visibility_mean: Vec<Option<f64>>,
+    visibility_min: Vec<Option<f64>>,
+    relative_humidity_2m_mean: Vec<Option<i32>>,
+    dew_point_2m_mean: Vec<Option<f64>>,
+    pressure_msl_mean: Vec<Option<f64>>,
 }
 
 fn parse_overrides(value: serde_json::Value) -> Result<DailyBriefingOverrides, ServiceError> {
@@ -697,11 +767,20 @@ mod tests {
 
         let url = open_meteo_url(date, &coordinates);
 
-        assert!(
-            url.contains(
-                "daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,"
-            )
-        );
+        for field in [
+            "sunrise",
+            "sunset",
+            "apparent_temperature_max",
+            "uv_index_max",
+            "precipitation_probability_max",
+            "wind_gusts_10m_max",
+            "visibility_min",
+        ] {
+            assert!(
+                url.contains(field),
+                "missing Open-Meteo daily field {field}"
+            );
+        }
         assert!(url.contains("timezone=auto"));
     }
 
@@ -712,10 +791,25 @@ mod tests {
             condition_label: "Rain".to_string(),
             temperature_max_celsius: Some(33.0),
             temperature_min_celsius: Some(28.0),
+            apparent_temperature_max_celsius: Some(37.0),
+            apparent_temperature_min_celsius: Some(31.0),
             sunrise: Some("2026-07-10T05:46".to_string()),
             sunset: Some("2026-07-10T18:47".to_string()),
+            daylight_duration_seconds: Some(46_860.0),
+            sunshine_duration_seconds: Some(18_000.0),
+            uv_index_max: Some(8.1),
+            precipitation_sum_mm: Some(12.4),
+            precipitation_hours: Some(4.0),
+            rain_sum_mm: Some(11.8),
             humidity_percent: Some(82),
             wind_speed_kph: Some(12.0),
+            wind_gusts_kph: Some(28.0),
+            wind_direction_degrees: Some(188),
+            cloud_cover_mean_percent: Some(80),
+            visibility_mean_meters: Some(8_000.0),
+            visibility_min_meters: Some(2_000.0),
+            dew_point_mean_celsius: Some(25.1),
+            pressure_msl_mean_hpa: Some(1008.0),
             rain_chance_percent: Some(64),
             meta: BriefingSourceMeta {
                 source: "Open-Meteo".to_string(),
@@ -741,10 +835,25 @@ mod tests {
             "conditionLabel": "Rain",
             "temperatureMaxCelsius": 28.0,
             "temperatureMinCelsius": 24.5,
+            "apparentTemperatureMaxCelsius": 33.0,
+            "apparentTemperatureMinCelsius": 29.0,
             "sunrise": "2026-06-18T05:39",
             "sunset": "2026-06-18T19:09",
+            "daylightDurationSeconds": 48590.03,
+            "sunshineDurationSeconds": 5740.03,
+            "uvIndexMax": 1.6,
+            "precipitationSumMm": 19.8,
+            "precipitationHours": 24.0,
+            "rainSumMm": 10.4,
             "humidityPercent": 96,
             "windSpeedKph": 18.2,
+            "windGustsKph": 43.6,
+            "windDirectionDegrees": 188,
+            "cloudCoverMeanPercent": 100,
+            "visibilityMeanMeters": 4569.17,
+            "visibilityMinMeters": 1900.0,
+            "dewPointMeanCelsius": 24.7,
+            "pressureMslMeanHpa": 1009.7,
             "rainChancePercent": 98,
             "meta": {
                 "source": "Open-Meteo",
@@ -790,6 +899,28 @@ mod tests {
                 "temperatureMinCelsius": 24.5,
                 "sunrise": null,
                 "sunset": null,
+                "humidityPercent": 96,
+                "windSpeedKph": 18.2,
+                "rainChancePercent": 98,
+                "meta": {
+                    "source": "Open-Meteo",
+                    "sourceUrl": "https://api.open-meteo.com/v1/forecast",
+                    "fetchedAt": format_briefing_timestamp(now),
+                    "expiresAt": format_briefing_timestamp(now + Duration::hours(6)),
+                    "confidence": "high",
+                    "unavailableReason": null
+                }
+            })),
+            now,
+        ));
+        assert!(weather_needs_refresh(
+            Some(&serde_json::json!({
+                "conditionCode": "rain",
+                "conditionLabel": "Rain",
+                "temperatureMaxCelsius": 28.0,
+                "temperatureMinCelsius": 24.5,
+                "sunrise": "2026-06-18T05:39",
+                "sunset": "2026-06-18T19:09",
                 "humidityPercent": 96,
                 "windSpeedKph": 18.2,
                 "rainChancePercent": 98,

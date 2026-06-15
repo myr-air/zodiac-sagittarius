@@ -366,8 +366,17 @@ describe("SmartItineraryTable", () => {
                 conditionLabel: "Rain",
                 temperatureMaxCelsius: 33,
                 temperatureMinCelsius: 28,
+                apparentTemperatureMaxCelsius: 38,
+                apparentTemperatureMinCelsius: 31,
                 sunrise: "2026-06-19T05:46",
                 sunset: "2026-06-19T18:47",
+                uvIndexMax: 8.2,
+                precipitationSumMm: 12.4,
+                precipitationHours: 4,
+                rainChancePercent: 64,
+                windSpeedKph: 18,
+                windGustsKph: 42,
+                visibilityMinMeters: 1900,
               }
             : null,
         },
@@ -378,6 +387,23 @@ describe("SmartItineraryTable", () => {
     expect(weatherChip.querySelector(".icon")).toBeInTheDocument();
     expect(weatherChip).toHaveTextContent("33° 28°");
     expect(weatherChip).toHaveTextContent("05:46/18:47");
+    expect(weatherChip).toHaveAttribute(
+      "title",
+      expect.stringContaining("Feels 38° 31°"),
+    );
+    expect(weatherChip).toHaveAttribute(
+      "title",
+      expect.stringContaining("Rain 64% · 12.4 mm · 4h"),
+    );
+    expect(weatherChip).toHaveAttribute("title", expect.stringContaining("UV 8.2"));
+    expect(weatherChip).toHaveAttribute(
+      "title",
+      expect.stringContaining("Wind 18 km/h · gust 42 km/h"),
+    );
+    expect(weatherChip).toHaveAttribute(
+      "title",
+      expect.stringContaining("Visibility min 1.9 km"),
+    );
   });
 
   it("hides pending weather chips until real temperature or solar data exists", () => {

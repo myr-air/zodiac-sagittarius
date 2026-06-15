@@ -15,10 +15,18 @@ const briefing: TripDailyBriefing = {
     conditionLabel: "Rain",
     temperatureMaxCelsius: 33,
     temperatureMinCelsius: 28,
+    apparentTemperatureMaxCelsius: 38,
+    apparentTemperatureMinCelsius: 31,
     sunrise: "2026-07-12T05:46",
     sunset: "2026-07-12T18:47",
+    uvIndexMax: 8.2,
+    precipitationSumMm: 12.4,
+    precipitationHours: 4,
     humidityPercent: 82,
     windSpeedKph: 16,
+    windGustsKph: 42,
+    cloudCoverMeanPercent: 80,
+    visibilityMinMeters: 1900,
     rainChancePercent: 64,
     meta: { source: "Open-Meteo", sourceUrl: null, fetchedAt: "2026-06-04T00:00:00Z", expiresAt: "2026-06-04T06:00:00Z", confidence: "high", unavailableReason: null },
   },
@@ -43,6 +51,9 @@ describe("WeatherBriefingDrawer", () => {
     expect(screen.getByText(/Rain · 33° 28°/)).toBeInTheDocument();
     expect(screen.getByText(/Humidity 82%/)).toBeInTheDocument();
     expect(screen.getByText(/Sunrise 05:46 · Sunset 18:47/)).toBeInTheDocument();
+    expect(screen.getByText(/Feels like 38° 31° · UV 8.2/)).toBeInTheDocument();
+    expect(screen.getByText(/Rain amount 12.4 mm · Rain hours 4 h · Wind gust 42 km\/h/)).toBeInTheDocument();
+    expect(screen.getByText(/Min visibility 1.9 km · Cloud cover 80%/)).toBeInTheDocument();
     expect(screen.getByText("Light shirt and compact umbrella.")).toBeInTheDocument();
 
     await userEvent.click(screen.getAllByRole("button", { name: /close/i }).at(-1)!);

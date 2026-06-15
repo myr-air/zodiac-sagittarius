@@ -29,6 +29,7 @@ export function WeatherBriefingDrawer({ briefing, locale, canEdit, isOpen, onClo
   const summary = formatWeatherSummary(weather?.conditionLabel, weather?.temperatureMaxCelsius, weather?.temperatureMinCelsius, locale);
   const sunrise = formatSolarTime(weather?.sunrise);
   const sunset = formatSolarTime(weather?.sunset);
+  const extraWeatherDetails = weather ? buildWeatherDetailLines(weather, locale) : [];
 
   return (
       <section className={drawerClassName} role="region" aria-label={copy.regionLabel}>
@@ -51,6 +52,11 @@ export function WeatherBriefingDrawer({ briefing, locale, canEdit, isOpen, onClo
                 {copy.sunrise} {sunrise} · {copy.sunset} {sunset}
               </p>
             ) : null}
+            {extraWeatherDetails.map((line) => (
+              <p className="m-0 text-sm font-bold text-(--color-text-muted)" key={line}>
+                {line}
+              </p>
+            ))}
             <SourceMeta source={weather?.meta.source} fetchedAt={weather?.meta.fetchedAt} expiresAt={weather?.meta.expiresAt} locale={locale} />
           </section>
 
@@ -161,6 +167,54 @@ function formatSpeed(value: number | null | undefined): string {
   return `${Math.round(value)} km/h`;
 }
 
+function buildWeatherDetailLines(weather: NonNullable<TripDailyBriefing["weather"]>, locale: Locale): string[] {
+  const copy = weatherDrawerCopy(locale);
+  return [
+    joinWeatherParts([
+      formatTempPair(copy.feelsLike, weather.apparentTemperatureMaxCelsius, weather.apparentTemperatureMinCelsius),
+      formatValue(copy.uv, weather.uvIndexMax, ""),
+    ]),
+    joinWeatherParts([
+      formatValue(copy.rainAmount, weather.precipitationSumMm, "mm"),
+      formatValue(copy.rainHours, weather.precipitationHours, "h"),
+      formatValue(copy.windGust, weather.windGustsKph, "km/h", Math.round),
+    ]),
+    joinWeatherParts([
+      formatValue(copy.visibilityMin, metersToKilometers(weather.visibilityMinMeters), "km"),
+      formatPercentValue(copy.cloudCover, weather.cloudCoverMeanPercent),
+    ]),
+  ].filter((line): line is string => Boolean(line));
+}
+
+function joinWeatherParts(parts: Array<string | null>): string | null {
+  const visible = parts.filter(Boolean);
+  return visible.length ? visible.join(" · ") : null;
+}
+
+function formatTempPair(label: string, high: number | null | undefined, low: number | null | undefined): string | null {
+  if (typeof high !== "number" && typeof low !== "number") return null;
+  return `${label} ${[formatTemp(high), formatTemp(low)].filter((value) => value !== "--°").join(" ")}`;
+}
+
+function formatValue(
+  label: string,
+  value: number | null | undefined,
+  unit: string,
+  transform: (value: number) => number | string = (input) => Number.isInteger(input) ? input : input.toFixed(1),
+): string | null {
+  if (typeof value !== "number") return null;
+  return `${label} ${transform(value)}${unit ? ` ${unit}` : ""}`;
+}
+
+function formatPercentValue(label: string, value: number | null | undefined): string | null {
+  if (typeof value !== "number") return null;
+  return `${label} ${value}%`;
+}
+
+function metersToKilometers(value: number | null | undefined): number | null {
+  return typeof value === "number" ? value / 1000 : null;
+}
+
 function emptyText(locale: Locale): string {
   return locale === "th" ? "ยังไม่มีข้อมูล" : "No data yet";
 }
@@ -171,9 +225,16 @@ function weatherDrawerCopy(locale: Locale) {
         regionLabel: "รายละเอียดพยากรณ์อากาศ",
         close: "ปิด",
         weather: "สภาพอากาศ",
+        feelsLike: "รู้สึกเหมือน",
         humidity: "ความชื้น",
         wind: "ลม",
+        windGust: "ลมกระโชก",
         rain: "ฝน",
+        rainAmount: "ปริมาณฝน",
+        rainHours: "ช่วงฝน",
+        uv: "UV",
+        visibilityMin: "ทัศนวิสัยต่ำสุด",
+        cloudCover: "เมฆ",
         sunrise: "พระอาทิตย์ขึ้น",
         sunset: "พระอาทิตย์ตก",
         outfitAdvice: "คำแนะนำการแต่งตัว",
@@ -193,9 +254,16 @@ function weatherDrawerCopy(locale: Locale) {
         regionLabel: "Weather briefing",
         close: "Close",
         weather: "Weather",
+        feelsLike: "Feels like",
         humidity: "Humidity",
         wind: "Wind",
+        windGust: "Wind gust",
         rain: "Rain",
+        rainAmount: "Rain amount",
+        rainHours: "Rain hours",
+        uv: "UV",
+        visibilityMin: "Min visibility",
+        cloudCover: "Cloud cover",
         sunrise: "Sunrise",
         sunset: "Sunset",
         outfitAdvice: "Outfit advice",

@@ -128,10 +128,25 @@ export interface WeatherBriefingBlock {
   conditionLabel: string;
   temperatureMaxCelsius: number | null;
   temperatureMinCelsius: number | null;
+  apparentTemperatureMaxCelsius?: number | null;
+  apparentTemperatureMinCelsius?: number | null;
   sunrise: string | null;
   sunset: string | null;
+  daylightDurationSeconds?: number | null;
+  sunshineDurationSeconds?: number | null;
+  uvIndexMax?: number | null;
+  precipitationSumMm?: number | null;
+  precipitationHours?: number | null;
+  rainSumMm?: number | null;
   humidityPercent: number | null;
   windSpeedKph: number | null;
+  windGustsKph?: number | null;
+  windDirectionDegrees?: number | null;
+  cloudCoverMeanPercent?: number | null;
+  visibilityMeanMeters?: number | null;
+  visibilityMinMeters?: number | null;
+  dewPointMeanCelsius?: number | null;
+  pressureMslMeanHpa?: number | null;
   rainChancePercent: number | null;
   meta: BriefingSourceMeta;
 }
