@@ -274,11 +274,13 @@ const subActivityListClassName =
 const subActivityModalListClassName =
   "sub-activity-list grid min-w-0 gap-1";
 const subActivityLineClassName =
-  "sub-activity-line relative grid min-w-0 grid-cols-[minmax(56px,72px)_minmax(0,1fr)_auto] items-center gap-1.5 rounded-(--radius-sm) px-1.5 py-1 text-xs leading-4 transition-colors duration-150 before:pointer-events-none before:absolute before:left-[-12px] before:top-[18px] before:h-px before:w-3 before:bg-(--color-route-border) hover:bg-(--color-surface-subtle) max-[760px]:grid-cols-[minmax(0,1fr)_auto]";
+  "sub-activity-line relative grid min-w-0 grid-cols-[86px_minmax(0,1fr)_auto] items-center gap-1.5 rounded-(--radius-sm) px-1.5 py-1 text-xs leading-4 transition-colors duration-150 before:pointer-events-none before:absolute before:left-[-12px] before:top-[18px] before:h-px before:w-3 before:bg-(--color-route-border) hover:bg-(--color-surface-subtle) max-[760px]:grid-cols-[minmax(0,1fr)_auto]";
 const subActivityTextClassName =
   "sub-activity-text grid min-w-0 gap-0.5 text-xs font-normal leading-4 text-(--color-text)";
+const subActivityPlaceLineClassName =
+  "grid min-h-5 min-w-0 grid-cols-[10px_minmax(0,1fr)] items-baseline gap-1 text-(--color-text-muted)";
 const subActivityTitleInputClassName =
-  "min-h-5 w-full min-w-0 border-0 border-b border-transparent bg-transparent px-0 py-0 text-xs font-normal leading-4 text-(--color-text) outline-none transition-colors duration-150 hover:not-disabled:border-(--color-border) focus:border-(--color-route) focus:ring-0 disabled:border-transparent";
+  "min-h-5 w-auto min-w-[8ch] max-w-full border-0 border-b border-transparent bg-transparent px-0 py-0 text-xs font-normal leading-4 text-(--color-text) outline-none transition-colors duration-150 [field-sizing:content] hover:not-disabled:border-(--color-border) focus:border-(--color-route) focus:ring-0 disabled:border-transparent";
 const subActivityActionsClassName =
   "flex min-w-0 shrink-0 items-center justify-end gap-1";
 const addSubActivityButtonClassName =
@@ -1360,6 +1362,7 @@ function ActivityCell({
               ariaLabel={itineraryLabels.row.inlineActivity({
                 activity: item.activity,
               })}
+              autoSize
               className={activityTitleInputClassName}
               disabled={!editable}
               key={`${item.id}:activity:${item.activity}`}
@@ -1370,18 +1373,22 @@ function ActivityCell({
                 onUpdateItemInline?.(item.id, { activity: activity || item.activity })
               }
             />
-            <span className="shrink-0 text-xs font-bold text-(--color-text-muted)">
-              @
+            <span
+              className="inline-flex w-[10px] shrink-0 justify-center text-xs font-bold text-(--color-text-muted)"
+              aria-hidden="true"
+            >
+              {item.place?.trim() ? "@" : ""}
             </span>
             <InlineActivityField
               ariaLabel={itineraryLabels.row.inlinePlace({
                 activity: item.activity,
               })}
+              autoSize
               className={activityPlaceInputClassName}
               disabled={!editable}
               key={`${item.id}:place:${item.place}`}
               maxLength={90}
-              placeholder="Place"
+              placeholder=""
               value={item.place}
               onCommit={(place) => onUpdateItemInline?.(item.id, { place })}
             />
@@ -1858,6 +1865,7 @@ function SubActivityList({
               ariaLabel={itineraryLabels.row.inlineActivity({
                 activity: subItem.activity,
               })}
+              autoSize
               className={subActivityTitleInputClassName}
               disabled={!editable}
               key={`${subItem.id}:activity:${subItem.activity}`}
@@ -1870,25 +1878,26 @@ function SubActivityList({
                 })
               }
             />
-            {subItem.place ? (
-              <span className="flex min-w-0 items-baseline gap-1 text-(--color-text-muted)">
-                <span className="shrink-0 text-(--color-text-muted)">@</span>
-                <InlineActivityField
-                  ariaLabel={itineraryLabels.row.inlinePlace({
-                    activity: subItem.activity,
-                  })}
-                  className={cn(activityPlaceInputClassName, "!text-xs")}
-                  disabled={!editable}
-                  key={`${subItem.id}:place:${subItem.place}`}
-                  maxLength={80}
-                  placeholder="Place"
-                  value={subItem.place}
-                  onCommit={(place) =>
-                    onUpdateItemInline?.(subItem.id, { place })
-                  }
-                />
+            <span className={subActivityPlaceLineClassName}>
+              <span className="shrink-0 text-(--color-text-muted)" aria-hidden="true">
+                {subItem.place?.trim() ? "@" : ""}
               </span>
-            ) : null}
+              <InlineActivityField
+                ariaLabel={itineraryLabels.row.inlinePlace({
+                  activity: subItem.activity,
+                })}
+                autoSize
+                className={cn(activityPlaceInputClassName, "!text-xs")}
+                disabled={!editable}
+                key={`${subItem.id}:place:${subItem.place}`}
+                maxLength={80}
+                placeholder=""
+                value={subItem.place}
+                onCommit={(place) =>
+                  onUpdateItemInline?.(subItem.id, { place })
+                }
+              />
+            </span>
           </div>
           <div className={subActivityActionsClassName}>
             {subItem.mapLink ? (
@@ -1959,6 +1968,7 @@ function SubActivityList({
 
 function InlineActivityField({
   ariaLabel,
+  autoSize = false,
   className,
   disabled,
   inputMode,
@@ -1968,6 +1978,7 @@ function InlineActivityField({
   value,
 }: {
   ariaLabel: string;
+  autoSize?: boolean;
   className: string;
   disabled: boolean;
   inputMode?: "numeric" | "text";
@@ -2002,6 +2013,11 @@ function InlineActivityField({
       inputMode={inputMode}
       maxLength={maxLength}
       placeholder={placeholder}
+      size={
+        autoSize
+          ? Math.max(1, Math.min(maxLength, draft.length || placeholder.length || 1))
+          : undefined
+      }
       value={draft}
       onBlur={() => void commit(draft)}
       onChange={(event) => setDraft(event.target.value)}

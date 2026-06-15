@@ -644,7 +644,7 @@ describe("SmartItineraryTable", () => {
       ...tripFixture.planItems[0],
       id: "parent-activity",
       activity: "Parent route",
-      place: "Hong Kong",
+      place: "",
       day: "2026-06-19",
       sortOrder: 10,
     };
@@ -657,10 +657,19 @@ describe("SmartItineraryTable", () => {
       day: "2026-06-19",
       sortOrder: 11,
     };
+    const childWithoutPlace = {
+      ...tripFixture.planItems[2],
+      id: "child-without-place",
+      parentItemId: "parent-activity",
+      activity: "Check stored value",
+      place: "",
+      day: "2026-06-19",
+      sortOrder: 12,
+    };
 
     renderTable({
-      items: [parent, child],
-      graphItems: [parent, child],
+      items: [parent, child, childWithoutPlace],
+      graphItems: [parent, child, childWithoutPlace],
       selectedItemId: "parent-activity",
       onAddSubActivity,
     });
@@ -670,6 +679,11 @@ describe("SmartItineraryTable", () => {
     );
     expect(parentRow).not.toBeNull();
     expect(within(parentRow as HTMLElement).getByDisplayValue("Parent route")).toBeInTheDocument();
+    const parentBody = parentRow?.querySelector(".activity-cell > div:nth-of-type(3)");
+    expect(parentBody).not.toHaveTextContent("@");
+    expect(
+      within(parentBody as HTMLElement).getByLabelText(/แก้ไขสถานที่|Edit place/i),
+    ).toHaveAttribute("placeholder", "");
     await user.click(
       within(parentRow as HTMLElement).getByRole("button", {
         name: /Sub-activities for Parent route/i,
@@ -686,6 +700,16 @@ describe("SmartItineraryTable", () => {
       "relative",
       "before:left-[-12px]",
     );
+    const childWithoutPlaceLine = parentRow?.querySelector(
+      '[data-sub-item-id="child-without-place"]',
+    );
+    expect(childWithoutPlaceLine).not.toHaveTextContent("@");
+    expect(childWithoutPlaceLine?.querySelectorAll("input")).toHaveLength(2);
+    expect(
+      within(childWithoutPlaceLine as HTMLElement).getByLabelText(
+        /แก้ไขสถานที่|Edit place/i,
+      ),
+    ).toHaveAttribute("placeholder", "");
     expect(document.querySelector('[data-item-id="child-activity"]')).not.toBeInTheDocument();
 
     await user.click(
