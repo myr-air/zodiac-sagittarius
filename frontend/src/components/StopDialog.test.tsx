@@ -118,6 +118,10 @@ describe("StopDialog", () => {
     render(<StopDialog mode="create" onClose={vi.fn()} onSubmit={vi.fn()} />);
 
     expect(screen.getByLabelText("เวลาเริ่ม")).toHaveAttribute("type", "text");
+    expect(screen.getByRole("group", { name: "ช่วงเวลา" })).toBeInTheDocument();
+    expect(screen.getByText("ระยะเวลา")).toBeInTheDocument();
+    expect(screen.getByText("ไม่ระบุ")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Toggle next-day end activity" })).toHaveTextContent("+1");
     expect(screen.getByRole("dialog", { name: "เพิ่มกิจกรรม" })).toHaveClass(
       "stop-dialog",
       "shadow-[0_14px_34px_rgb(15_23_42_/_0.16)]",
@@ -129,7 +133,7 @@ describe("StopDialog", () => {
     expect(screen.getByLabelText("เวลาจบ")).toHaveAttribute("id", "stop-end-time");
     expect(screen.getByLabelText("เวลาจบ")).not.toBeRequired();
     expect(screen.getByText("ระยะเวลา")).toBeInTheDocument();
-    expect(screen.getByText("—")).toBeInTheDocument();
+    expect(screen.getByText("ไม่ระบุ")).toBeInTheDocument();
     expect(screen.queryByLabelText("ชั่วโมง")).not.toBeInTheDocument();
     expect(screen.queryByLabelText("นาที")).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "ปิดฟอร์ม" }).querySelector("svg path")).toHaveAttribute("d", "M18 6 6 18M6 6l12 12");
@@ -141,13 +145,13 @@ describe("StopDialog", () => {
     renderEn(<StopDialog mode="create" onClose={vi.fn()} onSubmit={vi.fn()} />);
 
     expect(screen.getByLabelText("End time")).toHaveValue("");
-    expect(screen.getByText("—")).toBeInTheDocument();
+    expect(screen.getByText("Not set")).toBeInTheDocument();
 
     fireEvent.change(screen.getByLabelText("End time"), { target: { value: "18:00" } });
     expect(screen.getByText("1 h 30 m")).toBeInTheDocument();
 
     fireEvent.change(screen.getByLabelText("End time"), { target: { value: "" } });
-    expect(screen.getByText("—")).toBeInTheDocument();
+    expect(screen.getByText("Not set")).toBeInTheDocument();
   });
 
   it("clears stale hidden times when switching to flexible time", () => {

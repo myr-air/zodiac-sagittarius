@@ -80,12 +80,20 @@ const detailTypeToActivityType: Record<StopDetailType, ActivityType> = {
   task: "experience",
   transportation: "travel",
 };
-const modalBackdropClassName = "modal-backdrop fixed inset-0 z-20 grid place-items-center bg-[rgb(15_23_42_/_0.28)] p-5 max-[767px]:items-end max-[767px]:p-2.5";
+const modalBackdropClassName = "modal-backdrop fixed inset-0 z-[70] grid place-items-center bg-[rgb(15_23_42_/_0.28)] p-5 max-[767px]:items-end max-[767px]:p-2.5";
 const stopDialogClassName = "stop-dialog max-h-[calc(100vh-40px)] w-[min(620px,100%)] overflow-auto rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) shadow-[0_14px_34px_rgb(15_23_42_/_0.16)]";
 const dialogTitleRowClassName = "dialog-title-row grid min-h-[54px] grid-cols-[minmax(0,1fr)_34px] items-center gap-3 border-b border-(--color-border) px-4 [&_button]:grid [&_button]:size-[34px] [&_button]:rotate-180 [&_button]:place-items-center [&_button]:border-0 [&_button]:bg-transparent [&_button]:text-(--color-text-muted) [&_h2]:m-0 [&_h2]:text-base [&_h2]:font-extrabold [&_h2]:leading-[22px] [&_h2]:text-[#0f172a]";
 const stopFormClassName = "stop-form grid gap-4 p-4";
 const dialogGridClassName = "dialog-grid grid grid-cols-2 gap-3 max-[767px]:grid-cols-1 [&_input]:min-h-[38px] [&_input]:w-full [&_input]:rounded-(--radius-sm) [&_input]:border [&_input]:border-(--color-border-strong) [&_input]:bg-(--color-surface) [&_input]:px-2.5 [&_input]:py-2 [&_input]:text-[13px] [&_input]:text-(--color-text) [&_label]:grid [&_label]:min-w-0 [&_label]:gap-1.5 [&_label>span]:text-xs [&_label>span]:font-bold [&_label>span]:text-(--color-text-muted) [&_select]:min-h-[38px] [&_select]:w-full [&_select]:rounded-(--radius-sm) [&_select]:border [&_select]:border-(--color-border-strong) [&_select]:bg-(--color-surface) [&_select]:px-2.5 [&_select]:py-2 [&_select]:text-[13px] [&_select]:text-(--color-text) [&_textarea]:min-h-[38px] [&_textarea]:w-full [&_textarea]:resize-y [&_textarea]:rounded-(--radius-sm) [&_textarea]:border [&_textarea]:border-(--color-border-strong) [&_textarea]:bg-(--color-surface) [&_textarea]:px-2.5 [&_textarea]:py-2 [&_textarea]:text-[13px] [&_textarea]:text-(--color-text)";
 const dialogFieldWideClassName = "dialog-field-wide col-span-full";
+const timeWindowGroupClassName =
+  "time-window-group col-span-full grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto_minmax(132px,auto)] items-end gap-3 max-[767px]:grid-cols-1";
+const nextDayToggleLabelClassName =
+  "next-day-toggle-label !flex min-w-[72px] flex-col gap-1.5";
+const nextDayToggleButtonClassName =
+  "inline-flex min-h-[38px] min-w-[58px] items-center justify-center rounded-(--radius-sm) border border-(--color-border-strong) bg-(--color-surface) px-2 text-xs font-extrabold text-(--color-text-muted) transition-[background,border-color,color] duration-150 hover:enabled:border-(--color-route-border) hover:enabled:bg-(--color-route-soft) hover:enabled:text-(--color-route) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-focus) disabled:cursor-not-allowed disabled:opacity-50 aria-pressed:border-(--color-primary-border) aria-pressed:bg-(--color-primary-soft) aria-pressed:text-(--color-primary-strong)";
+const durationSummaryClassName =
+  "duration-summary grid min-h-[38px] min-w-0 content-center gap-0.5 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) px-2.5 py-1.5 text-xs text-(--color-text-muted) [&_strong]:text-sm [&_strong]:font-extrabold [&_strong]:leading-5 [&_strong]:text-(--color-text) [&_span]:font-bold";
 const advancedDetailsClassName = "advanced-stop-fields col-span-full rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) px-3 py-2 [&_summary]:cursor-pointer [&_summary]:text-xs [&_summary]:font-extrabold [&_summary]:text-(--color-text-muted)";
 const advancedDetailsGridClassName = "mt-3 grid grid-cols-2 gap-3 max-[767px]:grid-cols-1";
 const dialogActionsClassName = "dialog-actions grid grid-cols-[auto_1fr_auto] items-center gap-2.5 max-[767px]:grid-cols-1";
@@ -477,36 +485,47 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, initialPare
                 </label>
               </div>
             </details>
-            <label htmlFor={fieldIds.startTime}>
-              <span>{t.stopDialog.fields.startTime}</span>
-              <TimePickerField id={fieldIds.startTime} value={values.startTime} onChange={updateStartTime} required={values.timeMode !== "flexible"} />
-            </label>
-            <label htmlFor={fieldIds.endTime}>
-              <span>{t.stopDialog.fields.endTime}</span>
-              <TimePickerField id={fieldIds.endTime} value={values.endTime ?? ""} onChange={updateEndTime} />
-            </label>
-            <label htmlFor={fieldIds.endOffsetDays}>
-              <span>+1</span>
-              <button
-                id={fieldIds.endOffsetDays}
-                type="button"
-                aria-label={`Toggle next-day end ${values.activity || "activity"}`}
-                aria-pressed={values.endOffsetDays > 0}
-                disabled={values.timeMode === "flexible" || !values.endTime}
-                onClick={toggleNextDayEnd}
-              >
-                ⁺¹
-              </button>
-            </label>
-            <div aria-labelledby={fieldIds.derivedDuration}>
-              <span id={fieldIds.derivedDuration}>{t.itinerary.headers.duration}</span>
-              <strong>{formatDuration(derivedDuration, locale)}</strong>
+            <div
+              className={timeWindowGroupClassName}
+              role="group"
+              aria-label={locale === "th" ? "ช่วงเวลา" : "Time window"}
+            >
+              <label htmlFor={fieldIds.startTime}>
+                <span>{t.stopDialog.fields.startTime}</span>
+                <TimePickerField id={fieldIds.startTime} value={values.startTime} onChange={updateStartTime} required={values.timeMode !== "flexible"} />
+              </label>
+              <label htmlFor={fieldIds.endTime}>
+                <span>{t.stopDialog.fields.endTime}</span>
+                <TimePickerField id={fieldIds.endTime} value={values.endTime ?? ""} onChange={updateEndTime} />
+              </label>
+              <label className={nextDayToggleLabelClassName} htmlFor={fieldIds.endOffsetDays}>
+                <span>{locale === "th" ? "ข้ามวัน" : "Next day"}</span>
+                <button
+                  id={fieldIds.endOffsetDays}
+                  className={nextDayToggleButtonClassName}
+                  type="button"
+                  aria-label={`Toggle next-day end ${values.activity || "activity"}`}
+                  aria-pressed={values.endOffsetDays > 0}
+                  disabled={values.timeMode === "flexible" || !values.endTime}
+                  onClick={toggleNextDayEnd}
+                >
+                  +1
+                </button>
+              </label>
+              <div className={durationSummaryClassName} aria-labelledby={fieldIds.derivedDuration}>
+                <span id={fieldIds.derivedDuration}>{t.itinerary.headers.duration}</span>
+                {derivedDuration ? (
+                  <strong>{formatDuration(derivedDuration, locale)}</strong>
+                ) : (
+                  <strong>{locale === "th" ? "ไม่ระบุ" : "Not set"}</strong>
+                )}
+              </div>
             </div>
             <label className={dialogFieldWideClassName} htmlFor={fieldIds.activity}>
               <span>{t.stopDialog.fields.activity}</span>
               <input id={fieldIds.activity} value={values.activity} onChange={(event) => updateActivity(event.target.value)} required />
             </label>
-            <label htmlFor={fieldIds.place}>
+            <label className={dialogFieldWideClassName} htmlFor={fieldIds.place}>
               <span>{t.stopDialog.fields.place}</span>
               <input id={fieldIds.place} value={values.place} onChange={(event) => update("place", event.target.value)} required={detailType !== "transportation"} />
             </label>

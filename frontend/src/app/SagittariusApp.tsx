@@ -139,7 +139,7 @@ const workspaceToastActionsClassName = "flex shrink-0 items-center gap-2";
 const workspaceToastDismissClassName =
   "ml-1 grid size-9 shrink-0 place-items-center rounded-full text-(--color-text-muted) transition-colors hover:bg-(--color-surface-subtle) hover:text-(--color-text)";
 const appDeleteModalBackdropClassName =
-  "modal-backdrop fixed inset-0 z-20 grid place-items-center bg-[rgb(15_23_42_/_0.28)] p-5";
+  "modal-backdrop fixed inset-0 z-[80] grid place-items-center bg-[rgb(15_23_42_/_0.28)] p-5";
 const appDeleteDialogClassName =
   "delete-confirm-dialog grid w-[min(420px,100%)] gap-3 rounded-(--radius-lg) border border-(--color-danger-border) bg-(--color-surface) p-4 shadow-[0_14px_34px_rgb(15_23_42_/_0.14)]";
 const appDeleteDialogTitleClassName =
