@@ -455,9 +455,25 @@ export function SagittariusApp({
     () => resolveItineraryPathItems(activePlanItems, pathSelection),
     [activePlanItems, pathSelection],
   );
+  const mainPlanItems = useMemo(() => {
+    const mainTripPlanId = trip.mainTripPlanId || trip.activePlanVariantId;
+    const items = trip.itineraryItems.filter(
+      (item) => item.planVariantId === mainTripPlanId,
+    );
+    return resolveItineraryPathItems(items, pathSelection);
+  }, [
+    pathSelection,
+    trip.activePlanVariantId,
+    trip.itineraryItems,
+    trip.mainTripPlanId,
+  ]);
   const itineraryView = useMemo(
     () => buildItineraryView(planItems),
     [planItems],
+  );
+  const mainItineraryView = useMemo(
+    () => buildItineraryView(mainPlanItems),
+    [mainPlanItems],
   );
   const visibleDailyBriefings = useMemo(
     () =>
@@ -2177,6 +2193,31 @@ export function SagittariusApp({
         ),
       };
     }, itemId);
+  }
+
+  async function resolveMissingMapCoordinates(itemsToResolve: ItineraryItem[]) {
+    if (!canEdit || !effectivePlaceResolver) return;
+    for (const item of itemsToResolve) {
+      if (item.coordinates) continue;
+      const placeHint = mapResolutionPlaceHint(item);
+      if (!placeHint) continue;
+      const response = await effectivePlaceResolver({
+        clientMutationId: nextClientMutationId("map-place-resolve"),
+        activity: mapResolutionActivity(item),
+        placeHint,
+        destinationLabel: trip.destinationLabel,
+        countries: trip.countries ?? [],
+        day: item.day,
+      });
+      if (response.status !== "resolved") continue;
+      const candidate = response.candidates[0];
+      if (!candidate) continue;
+      await updateItineraryItemInline(item.id, {
+        address: candidate.address,
+        coordinates: candidate.coordinates,
+        mapLink: candidate.mapLink,
+      });
+    }
   }
 
   async function deleteSelectedStop() {
@@ -4499,10 +4540,15 @@ export function SagittariusApp({
                 countries={trip.countries ?? []}
                 destinationLabel={trip.destinationLabel}
                 endDate={trip.endDate}
-                items={planItems}
-                itineraryView={itineraryView}
+                items={mainPlanItems}
+                itineraryView={mainItineraryView}
                 startDate={trip.startDate}
                 tripName={trip.name}
+                onResolveMissingCoordinates={
+                  canEdit && effectivePlaceResolver
+                    ? resolveMissingMapCoordinates
+                    : undefined
+                }
               />
             ) : (
               <TimelineView
@@ -4688,6 +4734,28 @@ function getNextChildSortOrder(items: ItineraryItem[], parentItem: ItineraryItem
 function buildMapLink(place: string): string {
   /* v8 ignore next */
   return place ? `https://maps.google.com/?q=${encodeURIComponent(place)}` : "";
+}
+
+function mapResolutionPlaceHint(item: ItineraryItem): string {
+  if (item.activityType === "travel") {
+    return (
+      readItineraryDetailString(item.details, "to") ||
+      item.place ||
+      readItineraryDetailString(item.details, "from")
+    ).trim();
+  }
+  return item.place.trim();
+}
+
+function mapResolutionActivity(item: ItineraryItem): string {
+  if (item.activityType !== "travel") return item.activity;
+  const from = readItineraryDetailString(item.details, "from");
+  const to = readItineraryDetailString(item.details, "to") || item.place;
+  return compactText([item.activity, from ? `from ${from}` : "", to ? `to ${to}` : ""]);
+}
+
+function compactText(parts: string[]): string {
+  return parts.join(" ").split(/\s+/).filter(Boolean).join(" ");
 }
 
 function normalizeExpenseRepeatCount(value: number | undefined): number {

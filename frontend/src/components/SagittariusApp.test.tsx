@@ -3324,6 +3324,24 @@ describe("Sagittarius cockpit UI", () => {
     expect(screen.getByText(/6\/16 มีพิกัด/i)).toBeInTheDocument();
   });
 
+  it("keeps the map on the main Trip Plan when a backup plan is selected elsewhere", () => {
+    window.history.replaceState(null, "", "/trips/trip-seed/map?tripPlanId=plan-variant-backup");
+    const trip = {
+      ...tripWithPlans(),
+      itineraryItems: tripWithPlans().itineraryItems.map((item) =>
+        item.planVariantId === "plan-variant-backup"
+          ? { ...item, coordinates: undefined }
+          : item,
+      ),
+    };
+
+    render(<SagittariusApp initialView="map" initialTrip={trip} />);
+
+    const map = screen.getByRole("region", { name: /แผนที่เส้นทาง/i });
+    expect(within(map).queryByText("Rain plan gallery")).not.toBeInTheDocument();
+    expect(screen.getByText(/1\/1 มีพิกัด/i)).toBeInTheDocument();
+  });
+
   it("collapses the left rail and keeps labels accessible", async () => {
     const user = userEvent.setup();
     render(<SagittariusApp initialView="itinerary" />);
