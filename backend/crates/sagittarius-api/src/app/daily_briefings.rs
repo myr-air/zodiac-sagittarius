@@ -3,6 +3,7 @@ use std::{collections::BTreeMap, env};
 use serde::Deserialize;
 #[cfg(test)]
 use sqlx::types::Json;
+use time::format_description::well_known::Rfc3339;
 use time::{Date, Duration, OffsetDateTime};
 use uuid::Uuid;
 
@@ -148,8 +149,9 @@ async fn ensure_briefing_shells(
         return Ok(());
     }
 
+    let now = OffsetDateTime::now_utc();
     for shell in shells {
-        if shell.weather.is_some() {
+        if !weather_needs_refresh(shell.weather.as_ref(), now) {
             continue;
         }
         let Some(coordinates) = shell
@@ -278,6 +280,7 @@ fn record_to_summary(record: TripDailyBriefingRecord) -> TripDailyBriefing {
 }
 
 fn fallback_weather(date: Date) -> WeatherBriefingBlock {
+    let now = OffsetDateTime::now_utc();
     WeatherBriefingBlock {
         condition_code: "unavailable".to_string(),
         condition_label: "Forecast pending".to_string(),
@@ -291,14 +294,39 @@ fn fallback_weather(date: Date) -> WeatherBriefingBlock {
         meta: BriefingSourceMeta {
             source: "Sagittarius".to_string(),
             source_url: None,
-            fetched_at: Some(OffsetDateTime::now_utc().to_string()),
-            expires_at: None,
+            fetched_at: Some(format_briefing_timestamp(now)),
+            expires_at: Some(format_briefing_timestamp(now + Duration::hours(1))),
             confidence: "unknown".to_string(),
             unavailable_reason: Some(format!(
                 "Weather forecast for {date} has not been fetched yet"
             )),
         },
     }
+}
+
+fn format_briefing_timestamp(value: OffsetDateTime) -> String {
+    value.format(&Rfc3339).unwrap_or_else(|_| value.to_string())
+}
+
+fn weather_needs_refresh(weather: Option<&serde_json::Value>, now: OffsetDateTime) -> bool {
+    let Some(weather) = weather else {
+        return true;
+    };
+    let Ok(weather) = serde_json::from_value::<WeatherBriefingBlock>(weather.clone()) else {
+        return true;
+    };
+    if weather.condition_code != "unavailable"
+        && (weather.sunrise.is_none() || weather.sunset.is_none())
+    {
+        return true;
+    }
+    let Some(expires_at) = weather.meta.expires_at.as_deref() else {
+        return true;
+    };
+    let Ok(expires_at) = OffsetDateTime::parse(expires_at, &Rfc3339) else {
+        return true;
+    };
+    expires_at <= now
 }
 
 async fn fetch_weather_for_day(
@@ -341,12 +369,14 @@ async fn fetch_open_meteo_weather(
         .and_then(|hourly| average_i32(&hourly.relative_humidity_2m));
     let now = OffsetDateTime::now_utc();
     let expires_at = now + Duration::hours(6);
+    let fetched_at = format_briefing_timestamp(now);
+    let expires_at = format_briefing_timestamp(expires_at);
     let (condition_code, condition_label) = map_weather_code(weather_code);
     let meta = BriefingSourceMeta {
         source: "Open-Meteo".to_string(),
         source_url: Some(url),
-        fetched_at: Some(now.to_string()),
-        expires_at: Some(expires_at.to_string()),
+        fetched_at: Some(fetched_at.clone()),
+        expires_at: Some(expires_at.clone()),
         confidence: "high".to_string(),
         unavailable_reason: None,
     };
@@ -368,8 +398,8 @@ async fn fetch_open_meteo_weather(
         meta: BriefingSourceMeta {
             source: "Sagittarius".to_string(),
             source_url: None,
-            fetched_at: Some(now.to_string()),
-            expires_at: Some(expires_at.to_string()),
+            fetched_at: Some(fetched_at),
+            expires_at: Some(expires_at),
             confidence: "medium".to_string(),
             unavailable_reason: None,
         },
@@ -499,14 +529,16 @@ async fn fetch_wttr_weather(
 
     let now = OffsetDateTime::now_utc();
     let expires_at = now + Duration::hours(6);
+    let fetched_at = format_briefing_timestamp(now);
+    let expires_at = format_briefing_timestamp(expires_at);
     let (condition_code, condition_label) =
         wttr_condition(rain_chance, wind_speed_kph, max_temperature);
 
     let meta = BriefingSourceMeta {
         source: "wttr.in".to_string(),
         source_url: Some(url),
-        fetched_at: Some(now.to_string()),
-        expires_at: Some(expires_at.to_string()),
+        fetched_at: Some(fetched_at.clone()),
+        expires_at: Some(expires_at.clone()),
         confidence: "medium".to_string(),
         unavailable_reason: None,
     };
@@ -528,8 +560,8 @@ async fn fetch_wttr_weather(
         meta: BriefingSourceMeta {
             source: "Sagittarius".to_string(),
             source_url: None,
-            fetched_at: Some(now.to_string()),
-            expires_at: Some(expires_at.to_string()),
+            fetched_at: Some(fetched_at),
+            expires_at: Some(expires_at),
             confidence: "medium".to_string(),
             unavailable_reason: None,
         },
@@ -699,6 +731,90 @@ mod tests {
             outfit_advice_for_weather(&weather),
             "wear light breathable clothes, pack a compact umbrella."
         );
+    }
+
+    #[test]
+    fn weather_cache_refreshes_only_when_missing_invalid_or_expired() {
+        let now = OffsetDateTime::now_utc();
+        let fresh_weather = serde_json::json!({
+            "conditionCode": "rain",
+            "conditionLabel": "Rain",
+            "temperatureMaxCelsius": 28.0,
+            "temperatureMinCelsius": 24.5,
+            "sunrise": "2026-06-18T05:39",
+            "sunset": "2026-06-18T19:09",
+            "humidityPercent": 96,
+            "windSpeedKph": 18.2,
+            "rainChancePercent": 98,
+            "meta": {
+                "source": "Open-Meteo",
+                "sourceUrl": "https://api.open-meteo.com/v1/forecast",
+                "fetchedAt": format_briefing_timestamp(now),
+                "expiresAt": format_briefing_timestamp(now + Duration::hours(6)),
+                "confidence": "high",
+                "unavailableReason": null
+            }
+        });
+        let expired_weather = serde_json::json!({
+            "conditionCode": "rain",
+            "conditionLabel": "Rain",
+            "temperatureMaxCelsius": 28.0,
+            "temperatureMinCelsius": 24.5,
+            "sunrise": "2026-06-18T05:39",
+            "sunset": "2026-06-18T19:09",
+            "humidityPercent": 96,
+            "windSpeedKph": 18.2,
+            "rainChancePercent": 98,
+            "meta": {
+                "source": "Open-Meteo",
+                "sourceUrl": "https://api.open-meteo.com/v1/forecast",
+                "fetchedAt": format_briefing_timestamp(now - Duration::hours(12)),
+                "expiresAt": format_briefing_timestamp(now - Duration::minutes(1)),
+                "confidence": "high",
+                "unavailableReason": null
+            }
+        });
+
+        assert!(!weather_needs_refresh(Some(&fresh_weather), now));
+        assert!(weather_needs_refresh(Some(&expired_weather), now));
+        assert!(weather_needs_refresh(None, now));
+        assert!(weather_needs_refresh(
+            Some(&serde_json::json!({ "meta": { "expiresAt": "not a timestamp" } })),
+            now,
+        ));
+        assert!(weather_needs_refresh(
+            Some(&serde_json::json!({
+                "conditionCode": "rain",
+                "conditionLabel": "Rain",
+                "temperatureMaxCelsius": 28.0,
+                "temperatureMinCelsius": 24.5,
+                "sunrise": null,
+                "sunset": null,
+                "humidityPercent": 96,
+                "windSpeedKph": 18.2,
+                "rainChancePercent": 98,
+                "meta": {
+                    "source": "Open-Meteo",
+                    "sourceUrl": "https://api.open-meteo.com/v1/forecast",
+                    "fetchedAt": format_briefing_timestamp(now),
+                    "expiresAt": format_briefing_timestamp(now + Duration::hours(6)),
+                    "confidence": "high",
+                    "unavailableReason": null
+                }
+            })),
+            now,
+        ));
+    }
+
+    #[test]
+    fn fallback_weather_is_cached_briefly() {
+        let date = Date::from_calendar_date(2026, Month::June, 18).unwrap();
+        let weather = serde_json::to_value(fallback_weather(date)).unwrap();
+
+        assert!(!weather_needs_refresh(
+            Some(&weather),
+            OffsetDateTime::now_utc()
+        ));
     }
 
     #[test]

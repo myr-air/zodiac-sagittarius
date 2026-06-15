@@ -218,7 +218,7 @@ const dayDateClassName =
 const dayRouteClassName =
   "day-route ml-[10px] min-w-0 max-[767px]:ml-0";
 const dayWeatherChipClassName =
-  "day-weather-chip inline-flex min-h-7 shrink-0 items-center gap-1.5 rounded-(--radius-sm) border border-(--color-route-border) bg-(--color-route-soft) px-2 text-[11px] font-extrabold text-(--color-route) [&_strong]:text-(--color-text)";
+  "day-weather-chip inline-flex min-h-6 shrink-0 items-center gap-1 rounded-(--radius-sm) border border-(--color-route-border) bg-(--color-route-soft) px-1.5 text-[11px] font-extrabold text-(--color-route) [&_strong]:text-(--color-text)";
 const dayPathControlsClassName =
   "ml-auto inline-flex min-w-0 items-center gap-2 max-[767px]:ml-2 max-[767px]:shrink-0";
 const dayPathPickerClassName =
@@ -230,32 +230,32 @@ const itemPlaceholderRowClassName =
 const itemPlaceholderCellClassName =
   "item-placeholder-cell min-w-0 bg-(--color-surface) px-0 py-0 align-top";
 const activityCellClassName =
-  "activity-cell grid min-h-[84px] min-w-0 grid-cols-[72px_minmax(0,1fr)] gap-2 px-3 py-2.5 transition-colors duration-150 group-hover/activity:bg-(--color-surface-subtle) max-[640px]:grid-cols-1 max-[640px]:gap-1.5 max-[640px]:px-2.5";
+  "activity-cell grid min-h-[66px] min-w-0 grid-cols-[66px_minmax(0,1fr)] gap-2 px-2.5 py-1.5 transition-colors duration-150 group-hover/activity:bg-(--color-surface-subtle) max-[640px]:grid-cols-1 max-[640px]:gap-1 max-[640px]:px-2";
 const activityTimeRailClassName =
-  "flex min-w-0 flex-col gap-1 text-[11px] font-extrabold leading-4 text-(--color-text-muted) max-[640px]:flex-row max-[640px]:items-center";
+  "flex min-w-0 flex-col gap-0.5 text-[11px] font-extrabold leading-4 text-(--color-text-muted) max-[640px]:flex-row max-[640px]:items-center";
 const activityTimeInputClassName =
-  "h-6 w-[58px] border-0 border-b border-dashed border-(--color-border) bg-transparent px-0 text-[11px] font-extrabold leading-4 text-(--color-text) outline-none transition-colors duration-150 focus:border-(--color-route) focus:ring-0 disabled:text-(--color-text-muted)";
-const activityBodyClassName = "min-w-0 space-y-1.5";
+  "h-5 w-[54px] border-0 border-b border-dashed border-(--color-border) bg-transparent px-0 text-[11px] font-extrabold leading-4 text-(--color-text) outline-none transition-colors duration-150 focus:border-(--color-route) focus:ring-0 disabled:text-(--color-text-muted)";
+const activityBodyClassName = "min-w-0 space-y-1";
 const activityMainLineClassName =
   "grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-start gap-2 max-[760px]:grid-cols-1";
 const activitySentenceClassName =
   "min-w-0 text-sm font-extrabold leading-5 text-(--color-text)";
 const activityTitleInputClassName =
-  "min-h-6 w-full min-w-0 border-0 border-b border-transparent bg-transparent px-0 py-0 text-sm font-extrabold leading-5 text-(--color-text) outline-none transition-colors duration-150 placeholder:text-(--color-text-muted) hover:not-disabled:border-(--color-border) focus:border-(--color-route) focus:ring-0 disabled:cursor-default disabled:border-transparent";
+  "min-h-5 w-full min-w-0 border-0 border-b border-transparent bg-transparent px-0 py-0 text-sm font-extrabold leading-5 text-(--color-text) outline-none transition-colors duration-150 placeholder:text-(--color-text-muted) hover:not-disabled:border-(--color-border) focus:border-(--color-route) focus:ring-0 disabled:cursor-default disabled:border-transparent";
 const activityPlaceInputClassName =
   "inline-block min-h-5 min-w-[120px] max-w-full border-0 border-b border-transparent bg-transparent px-0 py-0 text-xs font-bold leading-5 text-(--color-text-muted) outline-none transition-colors duration-150 placeholder:text-(--color-text-muted) hover:not-disabled:border-(--color-border) focus:border-(--color-route) focus:ring-0 disabled:cursor-default disabled:border-transparent";
 const activityActionsClassName =
   "flex shrink-0 flex-wrap items-center justify-end gap-1 max-[760px]:justify-start";
 const activityIconButtonClassName =
-  "inline-flex size-7 items-center justify-center rounded-(--radius-sm) border border-transparent bg-transparent text-(--color-text-muted) transition-colors duration-150 hover:border-(--color-border) hover:bg-(--color-surface) hover:text-(--color-text) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-focus)";
+  "inline-flex size-6 items-center justify-center rounded-(--radius-sm) border border-transparent bg-transparent text-(--color-text-muted) transition-colors duration-150 hover:border-(--color-border) hover:bg-(--color-surface) hover:text-(--color-text) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-focus)";
 const activityMetaClassName =
-  "flex min-w-0 flex-wrap items-center gap-1.5 text-[11px] font-bold leading-4 text-(--color-text-muted)";
+  "flex min-w-0 flex-wrap items-center gap-1 text-[11px] font-bold leading-4 text-(--color-text-muted)";
 const activityPillClassName =
-  "inline-flex min-h-5 max-w-[148px] items-center gap-1 rounded-full border border-(--color-border) bg-(--color-surface-subtle) px-2 text-[11px] font-extrabold leading-4 text-(--color-text-muted)";
+  "inline-flex min-h-5 max-w-[148px] items-center gap-1 rounded-full border border-(--color-border) bg-(--color-surface-subtle) px-1.5 text-[11px] font-extrabold leading-4 text-(--color-text-muted)";
 const activityTypePickerClassName =
-  "!min-h-7 max-w-[132px] rounded-full border-(--color-border) bg-(--color-surface-subtle) px-2 text-[11px]";
+  "!min-h-6 max-w-[124px] rounded-full border-(--color-border) bg-(--color-surface-subtle) px-1.5 text-[11px]";
 const subActivityListClassName =
-  "sub-activity-list mt-2 grid min-w-0 gap-1 border-t border-dashed border-(--color-border) pt-2";
+  "sub-activity-list mt-1.5 grid min-w-0 gap-0.5 border-t border-dashed border-(--color-border) pt-1.5";
 const subActivityLineClassName =
   "sub-activity-line grid min-w-0 grid-cols-[20px_minmax(56px,72px)_minmax(0,1fr)_auto] items-center gap-1.5 rounded-(--radius-sm) px-1.5 py-1 text-xs leading-4 transition-colors duration-150 hover:bg-(--color-surface-subtle) max-[760px]:grid-cols-[20px_minmax(0,1fr)_auto]";
 const subActivityDragClassName =
@@ -267,7 +267,7 @@ const subActivityTitleInputClassName =
 const subActivityActionsClassName =
   "flex min-w-0 shrink-0 items-center justify-end gap-1";
 const addSubActivityButtonClassName =
-  "mt-1 inline-flex min-h-8 w-full items-center justify-center gap-2 rounded-(--radius-sm) border border-dashed border-(--color-border) bg-(--color-surface-subtle) px-3 text-xs font-extrabold text-(--color-route) transition-colors duration-150 hover:border-(--color-route) hover:bg-(--color-route-soft) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-focus) disabled:cursor-not-allowed disabled:opacity-50";
+  "mt-0.5 inline-flex min-h-7 w-full items-center justify-center gap-1.5 rounded-(--radius-sm) border border-dashed border-(--color-border) bg-(--color-surface-subtle) px-2.5 text-xs font-extrabold text-(--color-route) transition-colors duration-150 hover:border-(--color-route) hover:bg-(--color-route-soft) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-focus) disabled:cursor-not-allowed disabled:opacity-50";
 const inlineFieldClassName =
   "inline-row-field min-h-[24px] w-full min-w-0 rounded-(--radius-sm) border border-transparent bg-transparent px-1.5 py-0 text-xs leading-4 text-(--color-text) outline-none transition-[background,border-color,box-shadow] duration-150 placeholder:text-(--color-text-muted) hover:not-read-only:border-(--color-border) hover:not-read-only:bg-(--color-surface) focus:border-(--color-primary-border) focus:bg-(--color-surface) focus:shadow-[0_0_0_2px_rgb(255_196_168_/_0.55)] read-only:cursor-pointer read-only:truncate read-only:px-0 read-only:font-semibold disabled:cursor-not-allowed disabled:text-(--color-text-muted)";
 const inlineOptionPickerButtonClassName = cn(
@@ -1688,9 +1688,16 @@ function DayWeatherChip({
   const sunrise = formatSolarTime(weather?.sunrise);
   const sunset = formatSolarTime(weather?.sunset);
   const hasForecastTemps = typeof high === "number" && typeof low === "number";
+  const hasSolarTimes = Boolean(sunrise && sunset);
+  if (!hasForecastTemps && !hasSolarTimes) return null;
+  const hasCondition = Boolean(weather?.conditionCode && weather.conditionCode !== "unavailable");
   const solarLabel = sunrise && sunset ? `sunrise ${sunrise} sunset ${sunset}` : "";
   const weatherLabel = [
-    hasForecastTemps ? `${condition} ${formatWeatherTemp(high)} ${formatWeatherTemp(low)}` : condition,
+    hasForecastTemps
+      ? `${condition} ${formatWeatherTemp(high)} ${formatWeatherTemp(low)}`
+      : hasCondition
+        ? condition
+        : "",
     solarLabel,
   ].filter(Boolean).join(" ");
   return (
@@ -1706,9 +1713,9 @@ function DayWeatherChip({
         <>
           <strong>{formatWeatherTemp(high)}</strong>{" "}
           <span>{formatWeatherTemp(low)}</span>
-          {sunrise && sunset ? <span>{sunrise}/{sunset}</span> : null}
         </>
-      ) : <span>{condition}</span>}
+      ) : hasCondition ? <span>{condition}</span> : null}
+      {hasSolarTimes ? <span>{sunrise}/{sunset}</span> : null}
     </span>
   );
 }

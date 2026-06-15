@@ -380,6 +380,57 @@ describe("SmartItineraryTable", () => {
     expect(weatherChip).toHaveTextContent("05:46/18:47");
   });
 
+  it("hides pending weather chips until real temperature or solar data exists", () => {
+    renderTable({
+      dailyBriefings: [
+        {
+          ...weatherBriefings[1],
+          date: "2026-06-19",
+          weather: weatherBriefings[1].weather
+            ? {
+                ...weatherBriefings[1].weather,
+                conditionCode: "unavailable",
+                conditionLabel: "Forecast pending",
+                temperatureMaxCelsius: null,
+                temperatureMinCelsius: null,
+                sunrise: null,
+                sunset: null,
+              }
+            : null,
+        },
+      ],
+    });
+
+    expect(screen.queryByLabelText(/Weather for Day 2/i)).not.toBeInTheDocument();
+    expect(screen.queryByText("Forecast pending")).not.toBeInTheDocument();
+  });
+
+  it("shows real solar times even when temperatures are unavailable", () => {
+    renderTable({
+      dailyBriefings: [
+        {
+          ...weatherBriefings[1],
+          date: "2026-06-19",
+          weather: weatherBriefings[1].weather
+            ? {
+                ...weatherBriefings[1].weather,
+                conditionCode: "unavailable",
+                conditionLabel: "Forecast pending",
+                temperatureMaxCelsius: null,
+                temperatureMinCelsius: null,
+                sunrise: "2026-06-19T05:39",
+                sunset: "2026-06-19T19:09",
+              }
+            : null,
+        },
+      ],
+    });
+
+    const weatherChip = screen.getByLabelText(/Weather for Day 2/i);
+    expect(weatherChip).toHaveTextContent("05:39/19:09");
+    expect(weatherChip).not.toHaveTextContent("Forecast pending");
+  });
+
   it("saves custom day titles inline with the daily briefing version", async () => {
     const user = userEvent.setup();
     const onSaveDayTitle = vi.fn();
