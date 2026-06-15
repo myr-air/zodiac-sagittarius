@@ -1,5 +1,5 @@
-import { SagittariusApp } from "@/src/app/SagittariusApp";
+import { AccountApp } from "@/src/account/AccountApp";
 
 export default function PortalPage() {
-  return <SagittariusApp accessMode="account-portal" requireJoin dataSource="api" />;
+  return <AccountApp accessMode="account-portal" />;
 }

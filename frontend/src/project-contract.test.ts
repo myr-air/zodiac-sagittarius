@@ -37,6 +37,7 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "package.json"))).toBe(true);
     expect(existsSync(join(frontendRoot, "app/page.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/app/SagittariusApp.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/account/AccountApp.tsx"))).toBe(true);
     expect(existsSync(join(repoRoot, "backend/Cargo.toml"))).toBe(true);
     expect(existsSync(join(repoRoot, "package.json"))).toBe(false);
 
@@ -121,6 +122,8 @@ describe("Sagittarius project scaffold", () => {
     expect(readFileSync(join(frontendRoot, "app/trips/new/page.tsx"), "utf8")).toContain('accessMode="account-login"');
 
     [
+      "app/access/page.tsx",
+      "app/trips/new/page.tsx",
       "app/trips/page.tsx",
       "app/portal/page.tsx",
       "app/portal/my-trips/page.tsx",
@@ -129,6 +132,23 @@ describe("Sagittarius project scaffold", () => {
       "app/portal/vault/page.tsx",
       "app/portal/settings/page.tsx",
       "app/portal/sign-out/page.tsx",
+      "app/portal/trips/new/page.tsx",
+    ].forEach((routeFile) => {
+      const source = readFileSync(join(frontendRoot, routeFile), "utf8");
+      expect(source).toContain("AccountApp");
+      expect(source).not.toContain("SagittariusApp");
+    });
+
+    [
+      "app/trips/page.tsx",
+      "app/portal/page.tsx",
+      "app/portal/my-trips/page.tsx",
+      "app/portal/explorer/page.tsx",
+      "app/portal/to-dos/page.tsx",
+      "app/portal/vault/page.tsx",
+      "app/portal/settings/page.tsx",
+      "app/portal/sign-out/page.tsx",
+      "app/portal/trips/new/page.tsx",
     ].forEach((routeFile) => {
       expect(readFileSync(join(frontendRoot, routeFile), "utf8")).toContain('accessMode="account-portal"');
     });

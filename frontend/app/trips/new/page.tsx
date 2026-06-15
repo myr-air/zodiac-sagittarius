@@ -1,5 +1,5 @@
-import { SagittariusApp } from "@/src/app/SagittariusApp";
+import { AccountApp } from "@/src/account/AccountApp";
 
 export default function NewTripPage() {
-  return <SagittariusApp accessMode="account-login" requireJoin dataSource="api" />;
+  return <AccountApp accessMode="account-login" />;
 }

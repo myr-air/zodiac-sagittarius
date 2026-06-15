@@ -54,6 +54,10 @@ import {
   type AccountSession,
 } from "@/src/account/api-client";
 import {
+  loadPersistedAccountSession,
+  persistAccountSession,
+} from "@/src/account/session-storage";
+import {
   canTripRole,
   createTripParticipant,
   findSessionMember,
@@ -131,7 +135,6 @@ import type {
 } from "@/src/trip/types";
 
 const localMutationTimestamp = "2026-05-28T00:00:00.000Z";
-const accountSessionStorageKey = "sagittarius-account-session";
 const selectedTripPlanQueryParam = "tripPlanId";
 const selectedTripPlanSessionStoragePrefix = "sagittarius:selected-trip-plan:";
 const workspaceToastClassName =
@@ -6021,47 +6024,6 @@ function isForbidden(caught: unknown): boolean {
 
 function isAuthFailure(caught: unknown): boolean {
   return isUnauthenticated(caught) || isForbidden(caught);
-}
-
-function loadPersistedAccountSession(): AccountSession | null {
-  const storage = getBrowserSessionStorage();
-  if (!storage) return null;
-  const legacyStorage = getBrowserLocalStorage();
-  const rawSession =
-    storage.getItem(accountSessionStorageKey) ??
-    legacyStorage?.getItem(accountSessionStorageKey);
-  if (!rawSession) return null;
-  try {
-    const session = JSON.parse(rawSession) as AccountSession;
-    if (
-      session.kind !== "trusted" ||
-      Date.parse(session.expiresAt) <= Date.now()
-    ) {
-      storage.removeItem(accountSessionStorageKey);
-      legacyStorage?.removeItem(accountSessionStorageKey);
-      return null;
-    }
-    if (legacyStorage?.getItem(accountSessionStorageKey) === rawSession) {
-      storage.setItem(accountSessionStorageKey, rawSession);
-      legacyStorage.removeItem(accountSessionStorageKey);
-    }
-    return session;
-  } catch {
-    storage.removeItem(accountSessionStorageKey);
-    legacyStorage?.removeItem(accountSessionStorageKey);
-    return null;
-  }
-}
-
-function persistAccountSession(session: AccountSession | null) {
-  const storage = getBrowserSessionStorage();
-  if (!storage) return;
-  if (session?.kind === "trusted") {
-    storage.setItem(accountSessionStorageKey, JSON.stringify(session));
-  } else {
-    storage.removeItem(accountSessionStorageKey);
-  }
-  getBrowserLocalStorage()?.removeItem(accountSessionStorageKey);
 }
 
 function persistTripDraft(trip: Trip) {

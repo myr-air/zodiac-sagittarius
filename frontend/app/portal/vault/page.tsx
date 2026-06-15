@@ -1,5 +1,5 @@
-import { SagittariusApp } from "@/src/app/SagittariusApp";
+import { AccountApp } from "@/src/account/AccountApp";
 
 export default function PortalVaultPage() {
-  return <SagittariusApp accessMode="account-portal" portalSection="vault" requireJoin dataSource="api" />;
+  return <AccountApp accessMode="account-portal" portalSection="vault" />;
 }

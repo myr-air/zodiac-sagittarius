@@ -1,5 +1,5 @@
-import { SagittariusApp } from "@/src/app/SagittariusApp";
+import { AccountApp } from "@/src/account/AccountApp";
 
 export default function PortalSignOutPage() {
-  return <SagittariusApp accessMode="account-portal" portalSection="sign-out" requireJoin dataSource="api" />;
+  return <AccountApp accessMode="account-portal" portalSection="sign-out" />;
 }
