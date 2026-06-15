@@ -6,7 +6,7 @@ import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
 import { appRoutes, tripWorkspaceNavItems } from "@/src/routes/app-routes";
 import { decodeTripId } from "@/src/trip/ids";
-import type { PlanningView } from "@/src/trip/planning-view";
+import type { PlanningView } from "@/src/trip/workspace/planning-view";
 import type { Member, Trip } from "@/src/trip/types";
 import { Icon } from "./icons";
 

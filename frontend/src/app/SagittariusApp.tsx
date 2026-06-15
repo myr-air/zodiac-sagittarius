@@ -74,8 +74,8 @@ import {
   deriveManualActivityPathOptions,
   type ItineraryImportApplyTarget,
 } from "@/src/trip/itinerary-paths";
-import type { PlanningView } from "@/src/trip/planning-view";
-import { TripWorkspaceViews } from "@/src/trip/TripWorkspaceViews";
+import type { PlanningView } from "@/src/trip/workspace/planning-view";
+import { TripWorkspaceViews } from "@/src/trip/workspace/TripWorkspaceViews";
 import {
   buildItineraryExport,
   parseItineraryImportDocument,

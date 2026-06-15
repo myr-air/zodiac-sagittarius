@@ -1,4 +1,4 @@
-import { TripWorkspaceApp } from "@/src/trip/TripWorkspaceApp";
+import { TripWorkspaceApp } from "@/src/trip/workspace/TripWorkspaceApp";
 import { decodeTripId } from "@/src/trip/ids";
 
 export default async function TripTimelinePage({ params }: { params: Promise<{ tripId: string }> }) {

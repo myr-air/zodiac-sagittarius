@@ -1,5 +1,5 @@
 import { encodeTripId } from "@/src/trip/ids";
-import type { PlanningView } from "@/src/trip/planning-view";
+import type { PlanningView } from "@/src/trip/workspace/planning-view";
 
 export function encodeReturnTo(path: string): string {
   try {
