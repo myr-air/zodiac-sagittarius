@@ -33,6 +33,10 @@ describe("itinerary import/export JSON", () => {
       },
       items: tripFixture.planItems.map((item) => ({
         id: item.id,
+        pathGroupId: item.pathGroupId,
+        pathId: item.pathId,
+        pathName: item.pathName,
+        pathRole: item.pathRole,
         itemKind: item.itemKind,
         timeMode: item.timeMode,
         parentItemId: item.parentItemId ?? null,
@@ -46,6 +50,7 @@ describe("itinerary import/export JSON", () => {
         endOffsetDays: item.endOffsetDays ?? 0,
         activity: item.activity,
         activityType: item.activityType,
+        activitySubtype: item.activitySubtype ?? null,
         place: item.place,
         linkLabel: item.linkLabel,
         mapLink: item.mapLink,

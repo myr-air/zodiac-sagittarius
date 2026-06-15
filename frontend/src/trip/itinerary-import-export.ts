@@ -33,6 +33,7 @@ export interface ItineraryExportItem {
   endOffsetDays?: number;
   activity: string;
   activityType: ItineraryItem["activityType"];
+  activitySubtype?: ItineraryItem["activitySubtype"];
   place: string;
   linkLabel: string;
   mapLink: string;
@@ -332,6 +333,7 @@ function parseSpreadsheetRows(
       endOffsetDays: timeWindow.endOffsetDays,
       activity: activity || classification.fallbackActivity,
       activityType: classification.activityType,
+      activitySubtype: null,
       place: inferSpreadsheetPlace(activity || classification.fallbackActivity),
       linkLabel: mapLink ? "Map" : "",
       mapLink,
@@ -819,7 +821,8 @@ function parseMoneyHint(value: string): { amount: number; currency: string } | n
   return { amount, currency: rawCurrency === "RMB" ? "CNY" : rawCurrency };
 }
 
-function bookingTypeForImportedItem(item: Pick<ItineraryExportItem, "activityType" | "itemKind">): BookingDoc["type"] {
+function bookingTypeForImportedItem(item: Pick<ItineraryExportItem, "activityType" | "activitySubtype" | "itemKind">): BookingDoc["type"] {
+  if (item.activitySubtype === "flight") return "flight";
   if (item.activityType === "travel" || item.itemKind === "travel") return "public_transport";
   if (item.activityType === "stay" || item.itemKind === "lodging") return "hotel";
   if (item.activityType === "attraction" || item.itemKind === "activity") return "activity_ticket";
@@ -846,6 +849,7 @@ function toExportItem(item: ItineraryItem): ItineraryExportItem {
     endOffsetDays: item.endOffsetDays ?? 0,
     activity: item.activity,
     activityType: item.activityType,
+    activitySubtype: item.activitySubtype ?? null,
     place: item.place,
     linkLabel: item.linkLabel,
     mapLink: item.mapLink,
@@ -1077,6 +1081,7 @@ function parseExportItem(value: unknown): ItineraryExportItem {
     endOffsetDays: item.endOffsetDays === undefined ? 0 : readNumber(item, "endOffsetDays"),
     activity: readString(item, "activity"),
     activityType: readActivityType(item.activityType),
+    activitySubtype: readOptionalActivitySubtype(item.activitySubtype) ?? null,
     place: readString(item, "place"),
     linkLabel: typeof item.linkLabel === "string" ? item.linkLabel : "Map",
     mapLink:
@@ -1189,6 +1194,22 @@ function readActivityType(value: unknown): ItineraryItem["activityType"] {
     value === "experience" ||
     value === "stay" ||
     value === "default"
+  )
+    return value;
+  throw new Error("Unsupported itinerary import file.");
+}
+
+function readOptionalActivitySubtype(value: unknown): ItineraryItem["activitySubtype"] | undefined {
+  if (value === undefined || value === null) return undefined;
+  if (
+    value === "flight" ||
+    value === "train" ||
+    value === "bus" ||
+    value === "taxi" ||
+    value === "ferry" ||
+    value === "walk" ||
+    value === "car" ||
+    value === "shuttle"
   )
     return value;
   throw new Error("Unsupported itinerary import file.");

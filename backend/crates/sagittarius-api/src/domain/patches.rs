@@ -53,6 +53,7 @@ pub struct CreateItineraryItemRequest {
     pub end_offset_days: Option<i32>,
     pub activity: String,
     pub activity_type: String,
+    pub activity_subtype: Option<String>,
     pub place: String,
     pub map_link: Option<String>,
     pub address: Option<String>,
@@ -510,6 +511,9 @@ impl CreateItineraryItemRequest {
             validate_item_priority(priority)?;
         }
         validate_activity_type(&self.activity_type)?;
+        if let Some(activity_subtype) = &self.activity_subtype {
+            validate_activity_subtype(activity_subtype)?;
+        }
         if let Some(path_role) = &self.path_role {
             validate_path_role(path_role)?;
         }
@@ -808,6 +812,8 @@ pub struct ItineraryItemPatch {
     pub duration_minutes: Option<Option<i32>>,
     pub activity: Option<String>,
     pub activity_type: Option<String>,
+    #[serde(default, deserialize_with = "deserialize_nullable_string_patch")]
+    pub activity_subtype: Option<Option<String>>,
     pub place: Option<String>,
     pub map_link: Option<String>,
     #[serde(default, deserialize_with = "deserialize_nullable_string_patch")]
@@ -850,6 +856,9 @@ impl ItineraryItemPatch {
 
         if let Some(activity_type) = &self.activity_type {
             validate_activity_type(activity_type)?;
+        }
+        if let Some(Some(activity_subtype)) = &self.activity_subtype {
+            validate_activity_subtype(activity_subtype)?;
         }
 
         if let Some(path_role) = &self.path_role {
@@ -1020,6 +1029,13 @@ fn validate_activity_type(value: &str) -> Result<(), ServiceError> {
     match value {
         "travel" | "food" | "shopping" | "attraction" | "experience" | "stay" | "default" => Ok(()),
         _ => Err(ServiceError::InvalidRequest("activity_type is invalid")),
+    }
+}
+
+fn validate_activity_subtype(value: &str) -> Result<(), ServiceError> {
+    match value {
+        "flight" | "train" | "bus" | "taxi" | "ferry" | "walk" | "car" | "shuttle" => Ok(()),
+        _ => Err(ServiceError::InvalidRequest("activity_subtype is invalid")),
     }
 }
 

@@ -161,6 +161,7 @@ export type InlineItineraryItemPatch = Partial<
     | "mapLink"
     | "details"
     | "activityType"
+    | "activitySubtype"
     | "isPlanBlock"
     | "itemKind"
     | "timeMode"
@@ -3100,6 +3101,7 @@ function buildActivityTypePatch(
   const detailsWithoutTravelMode = withoutTravelSubtypeDetails(item.details);
   return {
     activityType: nextActivityType,
+    activitySubtype: null,
     details: detailsWithoutTravelMode,
   };
 }
@@ -3112,6 +3114,7 @@ function buildActivitySubtypePatch(
   if (activityType !== "travel") return buildActivityTypePatch(item, activityType);
   return {
     activityType,
+    activitySubtype: subtype as ItineraryItem["activitySubtype"],
     details: {
       ...(item.details ?? {}),
       subtype,
@@ -3212,6 +3215,8 @@ function normalizeTravelSubtype(value: string | null | undefined): TravelSubtype
 
 function travelSubtypeForItem(item: ItineraryItem): TravelSubtype | null {
   if (item.activityType !== "travel") return null;
+  const storedSubtype = normalizeTravelSubtype(item.activitySubtype ?? undefined);
+  if (storedSubtype) return storedSubtype;
   const subtype = readItineraryDetailString(item.details, "subtype");
   const explicitSubtype = normalizeTravelSubtype(subtype);
   if (explicitSubtype) return explicitSubtype;

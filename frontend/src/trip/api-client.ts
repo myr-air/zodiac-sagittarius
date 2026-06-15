@@ -105,6 +105,7 @@ export interface ItineraryItemResponse {
   endOffsetDays?: number;
   activity: string;
   activityType: ItineraryItem["activityType"];
+  activitySubtype?: ItineraryItem["activitySubtype"];
   place: string;
   linkLabel: string;
   mapLink: string;
@@ -316,7 +317,7 @@ export interface PatchTaskApiRequest {
 export interface PatchItineraryItemApiRequest {
   clientMutationId: string;
   expectedVersion: number;
-  patch: Partial<Pick<ItineraryItem, "pathGroupId" | "pathId" | "pathName" | "pathRole" | "parentItemId" | "itemKind" | "timeMode" | "isPlanBlock" | "status" | "priority" | "day" | "sortOrder" | "durationMinutes" | "activity" | "activityType" | "place" | "transportation" | "details" | "note">> & {
+  patch: Partial<Pick<ItineraryItem, "pathGroupId" | "pathId" | "pathName" | "pathRole" | "parentItemId" | "itemKind" | "timeMode" | "isPlanBlock" | "status" | "priority" | "day" | "sortOrder" | "durationMinutes" | "activity" | "activityType" | "activitySubtype" | "place" | "transportation" | "details" | "note">> & {
     startTime?: string | null;
     endTime?: string | null;
     endOffsetDays?: number;
@@ -345,6 +346,7 @@ export interface CreateItineraryItemApiRequest {
   endOffsetDays?: number;
   activity: string;
   activityType: ItineraryItem["activityType"];
+  activitySubtype?: ItineraryItem["activitySubtype"] | null;
   place: string;
   mapLink?: string | null;
   address?: string | null;
@@ -1088,6 +1090,7 @@ function mapItineraryItem(item: ItineraryItemResponse): ItineraryItem {
     priority: item.priority ?? "normal",
     endTime: item.endTime ?? null,
     endOffsetDays: item.endOffsetDays ?? 0,
+    activitySubtype: item.activitySubtype ?? null,
     coordinates: item.coordinates ?? undefined,
     address: item.address ?? undefined,
     details: item.details ?? {},

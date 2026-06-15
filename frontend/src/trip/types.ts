@@ -16,6 +16,7 @@ export type PlanStatus = "main" | "backup" | "draft" | "proposal";
 export type PlanVariantKind = "main" | "backup" | "draft" | "split";
 
 export type ActivityType = "travel" | "food" | "shopping" | "attraction" | "experience" | "stay" | "default";
+export type ActivitySubtype = "flight" | "train" | "bus" | "taxi" | "ferry" | "walk" | "car" | "shuttle";
 export type ItineraryItemKind = "travel" | "activity" | "lodging" | "meal" | "note" | "preparation" | "foodRecommendation";
 export type ItineraryTimeMode = "scheduled" | "flexible";
 export type ItineraryItemStatus = "idea" | "planned" | "booked" | "confirmed" | "done" | "skipped";
@@ -201,6 +202,7 @@ export interface ItineraryItem {
   endOffsetDays?: number;
   activity: string;
   activityType: ActivityType;
+  activitySubtype?: ActivitySubtype | null;
   place: string;
   linkLabel: string;
   mapLink: string;
@@ -503,7 +505,7 @@ export interface PlanCheck {
 export type EditableSuggestionPatch = Partial<
   Pick<
     ItineraryItem,
-    "day" | "startTime" | "activity" | "activityType" | "place" | "mapLink" | "durationMinutes" | "transportation" | "note"
+    "day" | "startTime" | "activity" | "activityType" | "activitySubtype" | "place" | "mapLink" | "durationMinutes" | "transportation" | "note"
   >
 >;
 

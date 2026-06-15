@@ -828,7 +828,7 @@ pub async fn list_itinerary_items(
            coalesce(to_char(start_time, 'HH24:MI'), '') as start_time,
            to_char(end_time, 'HH24:MI') as end_time,
            end_offset_days,
-           activity, activity_type, place, link_label, map_link, address,
+           activity, activity_type, activity_subtype, place, link_label, map_link, address,
            latitude::float8 as latitude, longitude::float8 as longitude,
            duration_minutes, transportation, details, advisories, note, created_by,
            updated_at::text as updated_at, version
@@ -1019,7 +1019,7 @@ pub async fn lock_itinerary_item(
            coalesce(to_char(start_time, 'HH24:MI'), '') as start_time,
            to_char(end_time, 'HH24:MI') as end_time,
            end_offset_days,
-           activity, activity_type, place, link_label, map_link, address,
+           activity, activity_type, activity_subtype, place, link_label, map_link, address,
            latitude::float8 as latitude, longitude::float8 as longitude,
            duration_minutes, transportation, details, advisories, note, created_by,
            updated_at::text as updated_at, version
@@ -1057,15 +1057,16 @@ pub async fn update_itinerary_item(
              duration_minutes = case when $19 then $20 else duration_minutes end,
              activity = coalesce($21, activity),
              activity_type = coalesce($22, activity_type),
-             place = coalesce($23, place),
-             map_link = coalesce($24, map_link),
-             address = case when $25 then $26 else address end,
-             latitude = case when $27 then $28 else latitude end,
-             longitude = case when $29 then $30 else longitude end,
-             transportation = coalesce($31, transportation),
-             details = coalesce($32, details),
-             note = coalesce($33, note),
-             version = $34,
+             activity_subtype = case when $23 then $24 else activity_subtype end,
+             place = coalesce($25, place),
+             map_link = coalesce($26, map_link),
+             address = case when $27 then $28 else address end,
+             latitude = case when $29 then $30 else latitude end,
+             longitude = case when $31 then $32 else longitude end,
+             transportation = coalesce($33, transportation),
+             details = coalesce($34, details),
+             note = coalesce($35, note),
+             version = $36,
              updated_at = now()
          where id = $1 and deleted_at is null
          returning
@@ -1075,7 +1076,7 @@ pub async fn update_itinerary_item(
            coalesce(to_char(start_time, 'HH24:MI'), '') as start_time,
            to_char(end_time, 'HH24:MI') as end_time,
            end_offset_days,
-           activity, activity_type, place, link_label, map_link, address,
+           activity, activity_type, activity_subtype, place, link_label, map_link, address,
            latitude::float8 as latitude, longitude::float8 as longitude,
            duration_minutes, transportation, details, advisories, note, created_by,
            updated_at::text as updated_at, version",
@@ -1102,6 +1103,13 @@ pub async fn update_itinerary_item(
     .bind(patch.duration_minutes.flatten())
     .bind(patch.activity.as_deref())
     .bind(patch.activity_type.as_deref())
+    .bind(patch.activity_subtype.is_some())
+    .bind(
+        patch
+            .activity_subtype
+            .as_ref()
+            .and_then(|value| value.as_deref()),
+    )
     .bind(patch.place.as_deref())
     .bind(patch.map_link.as_deref())
     .bind(patch.address.is_some())
@@ -1145,7 +1153,7 @@ pub async fn update_itinerary_child_path_fields(
            coalesce(to_char(start_time, 'HH24:MI'), '') as start_time,
            to_char(end_time, 'HH24:MI') as end_time,
            end_offset_days,
-           activity, activity_type, place, link_label, map_link, address,
+           activity, activity_type, activity_subtype, place, link_label, map_link, address,
            latitude::float8 as latitude, longitude::float8 as longitude,
            duration_minutes, transportation, details, advisories, note, created_by,
            updated_at::text as updated_at, version",
@@ -1224,15 +1232,15 @@ pub async fn insert_itinerary_item(
            id, trip_id, plan_variant_id, path_group_id, path_id, path_name, path_role,
            parent_item_id, item_kind, time_mode, is_plan_block, status, priority,
            day, sort_order, start_time, end_time, end_offset_days, activity, activity_type,
-           place, map_link, address, latitude, longitude, duration_minutes, transportation,
+           activity_subtype, place, map_link, address, latitude, longitude, duration_minutes, transportation,
            details, note, created_by, version
          )
          values (
            $1, $2, $3, $4, $5, $6, $7,
            $8, $9, $10, $11, $12, $13,
            $14, $15, $16::time, $17::time, $18, $19, $20,
-           $21, $22, $23, $24, $25, $26, $27,
-           $28, $29, $30, 1
+           $21, $22, $23, $24, $25, $26, $27, $28,
+           $29, $30, $31, 1
          )
          returning
            id, trip_id, plan_variant_id, path_group_id, path_id, path_name, path_role,
@@ -1241,7 +1249,7 @@ pub async fn insert_itinerary_item(
            coalesce(to_char(start_time, 'HH24:MI'), '') as start_time,
            to_char(end_time, 'HH24:MI') as end_time,
            end_offset_days,
-           activity, activity_type, place, link_label, map_link, address,
+           activity, activity_type, activity_subtype, place, link_label, map_link, address,
            latitude::float8 as latitude, longitude::float8 as longitude,
            duration_minutes, transportation, details, advisories, note, created_by,
            updated_at::text as updated_at, version",
@@ -1266,6 +1274,7 @@ pub async fn insert_itinerary_item(
     .bind(item.end_offset_days)
     .bind(item.activity)
     .bind(item.activity_type)
+    .bind(item.activity_subtype)
     .bind(item.place)
     .bind(item.map_link)
     .bind(item.address)
@@ -1296,7 +1305,7 @@ pub async fn delete_itinerary_item(
            coalesce(to_char(start_time, 'HH24:MI'), '') as start_time,
            to_char(end_time, 'HH24:MI') as end_time,
            end_offset_days,
-           activity, activity_type, place, link_label, map_link, address,
+           activity, activity_type, activity_subtype, place, link_label, map_link, address,
            latitude::float8 as latitude, longitude::float8 as longitude,
            duration_minutes, transportation, details, advisories, note, created_by,
            updated_at::text as updated_at, version",
@@ -1332,7 +1341,7 @@ pub async fn reorder_itinerary_items(
                coalesce(to_char(start_time, 'HH24:MI'), '') as start_time,
                to_char(end_time, 'HH24:MI') as end_time,
                end_offset_days,
-               activity, activity_type, place, link_label, map_link, address,
+               activity, activity_type, activity_subtype, place, link_label, map_link, address,
                latitude::float8 as latitude, longitude::float8 as longitude,
                duration_minutes, transportation, details, advisories, note, created_by,
                updated_at::text as updated_at, version",

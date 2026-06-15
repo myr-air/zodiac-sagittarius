@@ -939,6 +939,7 @@ describe("SmartItineraryTable", () => {
 
     expect(onUpdateItemInline).toHaveBeenCalledWith("travel-subtype-row", {
       activityType: "travel",
+      activitySubtype: "taxi",
       details: expect.objectContaining({ mode: "bus", subtype: "taxi" }),
     });
   });
@@ -959,6 +960,7 @@ describe("SmartItineraryTable", () => {
       parentItemId: "parent-type-switch",
       activity: "Airport transfer",
       activityType: "travel" as const,
+      activitySubtype: "bus" as const,
       details: {
         ...tripFixture.planItems[1].details,
         mode: "bus",
@@ -996,6 +998,7 @@ describe("SmartItineraryTable", () => {
 
     expect(onUpdateItemInline).toHaveBeenCalledWith("child-type-switch", {
       activityType: "food",
+      activitySubtype: null,
       details: expect.not.objectContaining({ mode: expect.anything() }),
     });
 
@@ -1004,6 +1007,7 @@ describe("SmartItineraryTable", () => {
 
     expect(onUpdateItemInline).toHaveBeenCalledWith("child-type-switch", {
       activityType: "default",
+      activitySubtype: null,
       details: expect.not.objectContaining({ mode: expect.anything() }),
     });
   });

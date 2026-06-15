@@ -4038,6 +4038,7 @@ export function SagittariusApp({
               endOffsetDays: item.endOffsetDays,
               activity: item.activity,
               activityType: item.activityType,
+              activitySubtype: item.activitySubtype ?? null,
               place: item.place,
               mapLink: item.mapLink,
               address: item.address,

@@ -264,6 +264,7 @@ pub async fn create_itinerary_item(
             end_offset_days,
             activity: request.activity.trim(),
             activity_type: request.activity_type.as_str(),
+            activity_subtype: request.activity_subtype.as_deref(),
             place: request.place.trim(),
             map_link: request.map_link.as_deref().unwrap_or("").trim(),
             address: request.address.as_deref(),

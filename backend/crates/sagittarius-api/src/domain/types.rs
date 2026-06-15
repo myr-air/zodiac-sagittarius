@@ -437,6 +437,7 @@ pub struct ItineraryItemSummary {
     pub end_offset_days: i32,
     pub activity: String,
     pub activity_type: String,
+    pub activity_subtype: Option<String>,
     pub place: String,
     pub link_label: String,
     pub map_link: String,
@@ -499,6 +500,8 @@ pub struct ItineraryImportItem {
     pub end_offset_days: i32,
     pub activity: String,
     pub activity_type: String,
+    #[serde(default)]
+    pub activity_subtype: Option<String>,
     pub place: String,
     pub link_label: String,
     pub map_link: String,
