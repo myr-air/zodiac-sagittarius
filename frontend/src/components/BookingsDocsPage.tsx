@@ -82,7 +82,9 @@ const fileRowClassName = "booking-file-row grid min-w-[840px] grid-cols-[minmax(
 const selectedFileRowClassName = "bg-(--color-primary-soft)";
 const lockedRowClassName = "booking-row-locked grid min-h-[46px] grid-cols-[minmax(0,1fr)_auto] items-center gap-2 border-b border-(--color-border) px-3 py-2 text-sm";
 const badgeClassName = "inline-flex w-fit items-center gap-1.5 rounded-full border px-2 py-0.5 text-[11px] font-extrabold capitalize";
-const inspectorClassName = "booking-inspector sticky top-3 grid max-h-[calc(100vh-92px)] content-start gap-3 overflow-auto rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) p-3.5 shadow-[0_1px_0_rgb(15_23_42_/_0.04)] max-[1199px]:static max-[1199px]:max-h-none max-[767px]:rounded-none max-[767px]:border-x-0 max-[767px]:p-3 max-[767px]:shadow-none";
+const inspectorClassName = "booking-inspector sticky top-3 grid max-h-[calc(100vh-92px)] content-start gap-3 overflow-auto rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) p-3.5 shadow-[0_1px_0_rgb(15_23_42_/_0.04)] max-[1199px]:static max-[1199px]:max-h-none max-[767px]:!fixed max-[767px]:inset-x-0 max-[767px]:bottom-0 max-[767px]:top-auto max-[767px]:z-30 max-[767px]:!max-h-[72vh] max-[767px]:rounded-b-none max-[767px]:rounded-t-(--radius-lg) max-[767px]:border-x-0 max-[767px]:border-b-0 max-[767px]:p-3 max-[767px]:shadow-[0_-8px_16px_rgb(15_23_42_/_0.14)] max-[767px]:transition-[transform,opacity] max-[767px]:duration-200 max-[767px]:ease-out motion-reduce:max-[767px]:transition-none";
+const mobileInspectorOpenClassName = "max-[767px]:translate-y-0 max-[767px]:opacity-100 max-[767px]:pointer-events-auto";
+const mobileInspectorClosedClassName = "max-[767px]:translate-y-full max-[767px]:opacity-0 max-[767px]:pointer-events-none";
 const inspectorSectionClassName = "grid gap-2 border-t border-(--color-border) pt-3 text-sm";
 const dialogBackdropClassName = "modal-backdrop fixed inset-0 z-20 grid place-items-center bg-[rgb(15_23_42_/_0.28)] p-4";
 const dialogClassName = "booking-dialog grid max-h-[min(760px,calc(100vh_-_32px))] w-full max-w-[760px] grid-rows-[auto_minmax(0,1fr)] overflow-hidden rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) shadow-[0_10px_18px_rgb(15_23_42_/_0.14)]";
@@ -132,6 +134,7 @@ const bookingCopy = {
     editBooking: "Edit booking",
     deleteBooking: "Delete booking",
     bookingDetails: "Booking details",
+    closeBookingPreview: "Close booking preview",
     noBookingSelected: "No booking selected",
     noNotes: "No notes yet.",
     externalLinks: "External links",
@@ -239,6 +242,7 @@ const bookingCopy = {
     editBooking: "แก้ไขการจอง",
     deleteBooking: "ลบการจอง",
     bookingDetails: "รายละเอียดการจอง",
+    closeBookingPreview: "ปิดตัวอย่างการจอง",
     noBookingSelected: "ยังไม่ได้เลือกการจอง",
     noNotes: "ยังไม่มีโน้ต",
     externalLinks: "ลิงก์ภายนอก",
@@ -324,6 +328,7 @@ export function BookingsDocsPage({
   const [selectedBookingId, setSelectedBookingId] = useState(bookingDocs[0]?.id ?? "");
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<BookingDocStatus | "all">("all");
+  const [mobilePreviewOpen, setMobilePreviewOpen] = useState(false);
   const [dialogBooking, setDialogBooking] = useState<BookingDoc | "new" | null>(null);
   const [deleteBooking, setDeleteBooking] = useState<BookingDoc | null>(null);
   const visibleDocs = useMemo(() => bookingDocs.filter((doc) => canViewBookingDoc(doc, currentMember)), [bookingDocs, currentMember]);
@@ -354,6 +359,11 @@ export function BookingsDocsPage({
     setDeleteBooking(null);
   }
 
+  function selectBooking(bookingDocId: string) {
+    setSelectedBookingId(bookingDocId);
+    setMobilePreviewOpen(true);
+  }
+
   return (
     <section className={pageClassName} aria-label={copy.pageLabel} role="region">
       <PageHeader
@@ -375,7 +385,10 @@ export function BookingsDocsPage({
               type="button"
               className={cn(folderButtonClassName, activeFolderId === folder.id && selectedFolderClassName)}
               key={folder.id}
-              onClick={() => setActiveFolderId(folder.id)}
+              onClick={() => {
+                setActiveFolderId(folder.id);
+                setMobilePreviewOpen(false);
+              }}
               aria-pressed={activeFolderId === folder.id}
               aria-label={copy.folderCount(copy.folders[folder.id].title, folderCounts[folder.id] ?? 0)}
             >
@@ -399,14 +412,24 @@ export function BookingsDocsPage({
                 <input
                   className={searchInputClassName}
                   value={query}
-                  onChange={(event) => setQuery(event.target.value)}
+                  onChange={(event) => {
+                    setQuery(event.target.value);
+                    setMobilePreviewOpen(false);
+                  }}
                   placeholder={copy.searchPlaceholder}
                   type="search"
                 />
               </label>
               <label className="min-w-0">
                 <span className="sr-only">{copy.statusFilter}</span>
-                <select className={filterSelectClassName} value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as BookingDocStatus | "all")}>
+                <select
+                  className={filterSelectClassName}
+                  value={statusFilter}
+                  onChange={(event) => {
+                    setStatusFilter(event.target.value as BookingDocStatus | "all");
+                    setMobilePreviewOpen(false);
+                  }}
+                >
                   <option value="all">{copy.allStatuses}</option>
                   {bookingStatuses.map((status) => <option key={status} value={status}>{formatEnumLabel(status, copy)}</option>)}
                 </select>
@@ -439,7 +462,7 @@ export function BookingsDocsPage({
                 trip={trip}
                 selected={selectedBooking?.id === doc.id}
                 canEdit={canEditBookings}
-                onSelect={() => setSelectedBookingId(doc.id)}
+                onSelect={() => selectBooking(doc.id)}
                 onEdit={() => setDialogBooking(doc)}
                 onDelete={() => setDeleteBooking(doc)}
                 copy={copy}
@@ -466,6 +489,8 @@ export function BookingsDocsPage({
           booking={selectedBooking}
           canEdit={canEditBookings}
           copy={copy}
+          mobileOpen={mobilePreviewOpen && Boolean(selectedBooking)}
+          onClose={() => setMobilePreviewOpen(false)}
           onDelete={() => selectedBooking && setDeleteBooking(selectedBooking)}
           onEdit={() => selectedBooking && setDialogBooking(selectedBooking)}
           relations={selectedRelations}
@@ -550,6 +575,8 @@ function BookingInspector({
   booking,
   canEdit,
   copy,
+  mobileOpen,
+  onClose,
   onDelete,
   onEdit,
   relations,
@@ -557,20 +584,29 @@ function BookingInspector({
   booking: BookingDoc | null;
   canEdit: boolean;
   copy: typeof bookingCopy.en | typeof bookingCopy.th;
+  mobileOpen: boolean;
+  onClose: () => void;
   onDelete: () => void;
   onEdit: () => void;
   relations: ReturnType<typeof findBookingDocRelations> | null;
 }) {
   if (!booking || !relations) {
     return (
-      <section className={inspectorClassName} aria-label={copy.bookingDetails}>
+      <section className={cn(inspectorClassName, mobileInspectorClosedClassName)} aria-label={copy.bookingDetails}>
         <strong className="text-(--color-text)">{copy.noBookingSelected}</strong>
       </section>
     );
   }
 
   return (
-    <section className={inspectorClassName} aria-label={copy.bookingDetails}>
+    <section
+      className={cn(inspectorClassName, mobileOpen ? mobileInspectorOpenClassName : mobileInspectorClosedClassName)}
+      aria-label={copy.bookingDetails}
+    >
+      <div className="hidden max-[767px]:grid max-[767px]:grid-cols-[minmax(0,1fr)_auto] max-[767px]:items-center max-[767px]:gap-2">
+        <span className="mx-auto h-1 w-10 rounded-full bg-(--color-border-strong)" aria-hidden="true" />
+        <IconButton type="button" aria-label={copy.closeBookingPreview} onClick={onClose}><Icon name="x" /></IconButton>
+      </div>
       <div className="grid gap-1">
         <span className={cn(badgeClassName, statusBadgeClassName(booking.status))}>{formatEnumLabel(booking.status, copy)}</span>
         <h2 className="m-0 text-lg font-extrabold text-(--color-text)">{booking.title}</h2>

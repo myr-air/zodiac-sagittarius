@@ -23,7 +23,7 @@ describe("BookingsDocsPage", () => {
     expect(document.querySelector(".bookings-docs-page")).toHaveClass("max-[767px]:px-0", "max-[767px]:gap-0");
     expect(document.querySelector(".booking-folder-rail")).toHaveClass("max-[767px]:grid-cols-7", "max-[767px]:rounded-none", "max-[767px]:shadow-none");
     expect(document.querySelector(".bookings-file-panel")).toHaveClass("max-[767px]:rounded-none", "max-[767px]:shadow-none");
-    expect(document.querySelector(".booking-inspector")).toHaveClass("max-[767px]:rounded-none", "max-[767px]:shadow-none");
+    expect(document.querySelector(".booking-inspector")).toHaveClass("max-[767px]:!fixed", "max-[767px]:translate-y-full");
     expect(screen.getByPlaceholderText("Search bookings, docs, links")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Transport/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Transport/i })).toHaveClass("max-[767px]:grid-cols-1", "max-[767px]:border-b-2");
@@ -33,6 +33,20 @@ describe("BookingsDocsPage", () => {
     expect(screen.getByRole("button", { name: /Select Bangkok to Hong Kong flight/i }).closest(".booking-file-row")).toHaveClass("grid", "min-w-[840px]");
     expect(screen.getByRole("heading", { name: "Bangkok to Hong Kong flight" })).toBeInTheDocument();
     expect(screen.getAllByRole("link", { name: /Open Airline booking/i })[0]).toHaveAttribute("href", "https://example.com/airline/booking/QR349-HK");
+  });
+
+  it("opens the mobile preview as a bottom drawer from the file list", async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    const inspector = document.querySelector(".booking-inspector");
+    expect(inspector).toHaveClass("max-[767px]:translate-y-full");
+
+    await user.click(screen.getByRole("button", { name: /Select Peak Tram tickets/i }));
+    expect(inspector).toHaveClass("max-[767px]:translate-y-0", "max-[767px]:opacity-100");
+
+    await user.click(screen.getByRole("button", { name: "Close booking preview" }));
+    expect(inspector).toHaveClass("max-[767px]:translate-y-full", "max-[767px]:opacity-0");
   });
 
   it("browses booking docs by friendly folders instead of table filters", async () => {

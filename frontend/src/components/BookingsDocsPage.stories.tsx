@@ -66,7 +66,7 @@ async function expectBookingsResponsiveContract(canvasElement: HTMLElement) {
   await expect(canvasElement.querySelector(".bookings-content")).toHaveClass("bookings-content", "max-[767px]:grid-cols-1", "max-[767px]:gap-0");
   await expect(canvasElement.querySelector(".booking-folder-rail")).toHaveClass("booking-folder-rail", "max-[767px]:grid-cols-7", "max-[767px]:rounded-none", "max-[767px]:shadow-none");
   await expect(canvasElement.querySelector(".bookings-file-panel")).toHaveClass("bookings-file-panel", "max-[767px]:rounded-none", "max-[767px]:shadow-none");
-  await expect(canvasElement.querySelector(".booking-inspector")).toHaveClass("booking-inspector", "max-[1199px]:static", "max-[1199px]:max-h-none", "max-[767px]:rounded-none");
+  await expect(canvasElement.querySelector(".booking-inspector")).toHaveClass("booking-inspector", "max-[767px]:!fixed", "max-[767px]:bottom-0", "max-[767px]:transition-[transform,opacity]");
 }
 
 export const Owner: Story = {
