@@ -520,6 +520,23 @@ describe("SmartItineraryTable", () => {
         }),
       ).toBeInTheDocument();
     }
+    expect(itemRows[0]?.querySelector(".activity-cell")).toHaveAttribute(
+      "data-selected",
+      "true",
+    );
+    expect(
+      itemRows[0]?.querySelector(".activity-cell"),
+    ).toHaveClass("data-[selected=true]:bg-(--color-route-soft)");
+    expect(
+      within(itemRows[0]).getByRole("button", {
+        name: /เปิดรายละเอียดของ|Open details for/i,
+      }),
+    ).toHaveClass("size-8");
+    expect(
+      within(itemRows[0]).getByRole("button", {
+        name: /แก้ไขประเภท|Edit type/i,
+      }),
+    ).toHaveClass("!min-h-8", "rounded-(--radius-sm)");
 
     expect(
       screen.queryByRole("region", { name: /รายละเอียดจุดที่เลือก/i }),

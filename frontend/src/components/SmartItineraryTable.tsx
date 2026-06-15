@@ -230,14 +230,14 @@ const itemPlaceholderRowClassName =
 const itemPlaceholderCellClassName =
   "item-placeholder-cell min-w-0 bg-(--color-surface) px-0 py-0 align-top";
 const activityCellClassName =
-  "activity-cell grid min-h-[66px] min-w-0 grid-cols-[66px_minmax(0,1fr)] gap-2 px-2.5 py-1.5 transition-colors duration-150 group-hover/activity:bg-(--color-surface-subtle) max-[640px]:grid-cols-1 max-[640px]:gap-1 max-[640px]:px-2";
+  "activity-cell grid min-h-[66px] min-w-0 grid-cols-[66px_minmax(0,1fr)] gap-2 px-2.5 py-1.5 transition-[background,box-shadow] duration-150 group-hover/activity:bg-(--color-surface-subtle) data-[selected=true]:bg-(--color-route-soft) data-[selected=true]:shadow-[inset_0_0_0_1px_var(--color-route-border)] max-[640px]:grid-cols-1 max-[640px]:gap-1 max-[640px]:px-2";
 const activityTimeRailClassName =
   "flex min-w-0 flex-col gap-0.5 text-[11px] font-extrabold leading-4 text-(--color-text-muted) max-[640px]:flex-row max-[640px]:items-center";
 const activityTimeInputClassName =
   "h-5 w-[54px] border-0 border-b border-dashed border-(--color-border) bg-transparent px-0 text-[11px] font-extrabold leading-4 text-(--color-text) outline-none transition-colors duration-150 focus:border-(--color-route) focus:ring-0 disabled:text-(--color-text-muted)";
 const activityBodyClassName = "min-w-0 space-y-1";
 const activityMainLineClassName =
-  "grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-start gap-2 max-[760px]:grid-cols-1";
+  "grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-start gap-2 max-[760px]:grid-cols-1 max-[760px]:gap-1";
 const activitySentenceClassName =
   "min-w-0 text-sm font-extrabold leading-5 text-(--color-text)";
 const activityTitleInputClassName =
@@ -247,13 +247,13 @@ const activityPlaceInputClassName =
 const activityActionsClassName =
   "flex shrink-0 flex-wrap items-center justify-end gap-1 max-[760px]:justify-start";
 const activityIconButtonClassName =
-  "inline-flex size-6 items-center justify-center rounded-(--radius-sm) border border-transparent bg-transparent text-(--color-text-muted) transition-colors duration-150 hover:border-(--color-border) hover:bg-(--color-surface) hover:text-(--color-text) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-focus)";
+  "inline-flex size-8 items-center justify-center rounded-(--radius-sm) border border-transparent bg-transparent text-(--color-text-muted) transition-colors duration-150 hover:border-(--color-border) hover:bg-(--color-surface) hover:text-(--color-text) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-focus) [&_.icon]:size-4";
 const activityMetaClassName =
   "flex min-w-0 flex-wrap items-center gap-1 text-[11px] font-bold leading-4 text-(--color-text-muted)";
 const activityPillClassName =
   "inline-flex min-h-5 max-w-[148px] items-center gap-1 rounded-full border border-(--color-border) bg-(--color-surface-subtle) px-1.5 text-[11px] font-extrabold leading-4 text-(--color-text-muted)";
 const activityTypePickerClassName =
-  "!min-h-6 max-w-[124px] rounded-full border-(--color-border) bg-(--color-surface-subtle) px-1.5 text-[11px]";
+  "!min-h-8 max-w-[124px] rounded-(--radius-sm) border-(--color-border) bg-(--color-surface-subtle) px-2 text-[11px]";
 const subActivityListClassName =
   "sub-activity-list mt-1.5 grid min-w-0 gap-0.5 border-t border-dashed border-(--color-border) pt-1.5";
 const subActivityLineClassName =
