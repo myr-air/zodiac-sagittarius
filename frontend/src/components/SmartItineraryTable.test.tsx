@@ -104,6 +104,18 @@ function layoutRect(top: number, height: number, width = 120): DOMRect {
   } as DOMRect;
 }
 
+function createDragDataTransfer() {
+  const store = new Map<string, string>();
+  return {
+    dropEffect: "move",
+    effectAllowed: "move",
+    getData: vi.fn((type: string) => store.get(type) ?? ""),
+    setData: vi.fn((type: string, value: string) => {
+      store.set(type, value);
+    }),
+  };
+}
+
 async function openHeaderControls(user: ReturnType<typeof userEvent.setup>) {
   const controlsButton = screen.getByRole("button", { name: "Trip Plan controls" });
   await user.click(controlsButton);
@@ -479,6 +491,87 @@ describe("SmartItineraryTable", () => {
       }),
     );
     expect(onAddSubActivity).toHaveBeenCalledWith("parent-activity");
+  });
+
+  it("reorders only sibling sub-activities within the same parent cell", () => {
+    const onMoveItem = vi.fn();
+    const parentA = {
+      ...tripFixture.planItems[0],
+      id: "parent-a",
+      activity: "Parent A",
+      day: "2026-06-19",
+      sortOrder: 10,
+    };
+    const parentB = {
+      ...tripFixture.planItems[0],
+      id: "parent-b",
+      activity: "Parent B",
+      day: "2026-06-19",
+      sortOrder: 30,
+    };
+    const childA1 = {
+      ...tripFixture.planItems[1],
+      id: "child-a-1",
+      parentItemId: "parent-a",
+      activity: "Child A1",
+      day: "2026-06-19",
+      sortOrder: 11,
+    };
+    const childA2 = {
+      ...tripFixture.planItems[2],
+      id: "child-a-2",
+      parentItemId: "parent-a",
+      activity: "Child A2",
+      day: "2026-06-19",
+      sortOrder: 12,
+    };
+    const childB1 = {
+      ...tripFixture.planItems[3],
+      id: "child-b-1",
+      parentItemId: "parent-b",
+      activity: "Child B1",
+      day: "2026-06-19",
+      sortOrder: 31,
+    };
+
+    renderTable({
+      items: [parentA, childA1, childA2, parentB, childB1],
+      graphItems: [parentA, childA1, childA2, parentB, childB1],
+      selectedItemId: "parent-a",
+      onMoveItem,
+    });
+
+    const childA1Line = document.querySelector<HTMLElement>(
+      '[data-sub-item-id="child-a-1"]',
+    );
+    const childA2Line = document.querySelector<HTMLElement>(
+      '[data-sub-item-id="child-a-2"]',
+    );
+    const childB1Line = document.querySelector<HTMLElement>(
+      '[data-sub-item-id="child-b-1"]',
+    );
+    expect(childA1Line).not.toBeNull();
+    expect(childA2Line).not.toBeNull();
+    expect(childB1Line).not.toBeNull();
+
+    const sameParentDrag = createDragDataTransfer();
+    fireEvent.dragStart(childA1Line as HTMLElement, {
+      dataTransfer: sameParentDrag,
+    });
+    fireEvent.drop(childA2Line as HTMLElement, {
+      dataTransfer: sameParentDrag,
+    });
+    expect(onMoveItem).toHaveBeenCalledWith("child-a-1", "child-a-2");
+
+    onMoveItem.mockClear();
+    const crossParentDrag = createDragDataTransfer();
+    fireEvent.dragStart(childA1Line as HTMLElement, {
+      dataTransfer: crossParentDrag,
+    });
+    fireEvent.drop(childB1Line as HTMLElement, {
+      dataTransfer: crossParentDrag,
+    });
+    expect(onMoveItem).not.toHaveBeenCalled();
   });
 
   it("keeps graph nodes selectable while activity cells remain independent", async () => {

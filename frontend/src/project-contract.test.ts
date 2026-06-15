@@ -195,6 +195,8 @@ describe("Sagittarius project scaffold", () => {
 
     expect(makefile).toContain("TEST_DATABASE_URL ?= postgres://postgres:postgres@127.0.0.1:5432/sagittarius_test");
     expect(makefile).toContain('DATABASE_URL="$(TEST_DATABASE_URL)" cargo test --manifest-path $(BACKEND_MANIFEST)');
+    expect(makefile).toContain("backend-daily-briefings-contract: db-init-test");
+    expect(makefile).toContain('DATABASE_URL="$(TEST_DATABASE_URL)" cargo test --manifest-path $(BACKEND_MANIFEST) -p sagittarius-api --test daily_briefings_contract');
   });
 
   it("keeps incremental database migrations independent in db-init targets", () => {
