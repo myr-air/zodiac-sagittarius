@@ -230,14 +230,14 @@ const itemPlaceholderRowClassName =
 const itemPlaceholderCellClassName =
   "item-placeholder-cell min-w-0 bg-(--color-surface) px-0 py-0 align-top";
 const activityCellClassName =
-  "activity-cell grid min-h-[66px] min-w-0 grid-cols-[66px_minmax(0,1fr)] gap-2 px-2.5 py-1.5 transition-[background,box-shadow] duration-150 group-hover/activity:bg-(--color-surface-subtle) data-[selected=true]:bg-(--color-route-soft) data-[selected=true]:shadow-[inset_0_0_0_1px_var(--color-route-border)] max-[640px]:grid-cols-1 max-[640px]:gap-1 max-[640px]:px-2";
+  "activity-cell grid min-h-[58px] min-w-0 grid-cols-[56px_minmax(0,1fr)] gap-1.5 px-2 py-1.5 transition-[background,box-shadow] duration-150 group-hover/activity:bg-(--color-surface-subtle) data-[selected=true]:bg-(--color-route-soft) data-[selected=true]:shadow-[inset_0_0_0_1px_var(--color-route-border)] max-[360px]:grid-cols-1 max-[360px]:gap-1 max-[360px]:px-2";
 const activityTimeRailClassName =
-  "flex min-w-0 flex-col gap-0.5 text-[11px] font-extrabold leading-4 text-(--color-text-muted) max-[640px]:flex-row max-[640px]:items-center";
+  "flex min-w-0 flex-col gap-0.5 text-[11px] font-extrabold leading-4 text-(--color-text-muted) max-[360px]:flex-row max-[360px]:items-center";
 const activityTimeInputClassName =
   "h-5 w-[54px] border-0 border-b border-dashed border-(--color-border) bg-transparent px-0 text-[11px] font-extrabold leading-4 text-(--color-text) outline-none transition-colors duration-150 focus:border-(--color-route) focus:ring-0 disabled:text-(--color-text-muted)";
 const activityBodyClassName = "min-w-0 space-y-1";
 const activityMainLineClassName =
-  "grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-start gap-2 max-[760px]:grid-cols-1 max-[760px]:gap-1";
+  "grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-start gap-2 max-[420px]:grid-cols-1 max-[420px]:gap-1";
 const activitySentenceClassName =
   "min-w-0 text-sm font-extrabold leading-5 text-(--color-text)";
 const activityTitleInputClassName =
@@ -245,17 +245,19 @@ const activityTitleInputClassName =
 const activityPlaceInputClassName =
   "inline-block min-h-5 min-w-[120px] max-w-full border-0 border-b border-transparent bg-transparent px-0 py-0 text-xs font-bold leading-5 text-(--color-text-muted) outline-none transition-colors duration-150 placeholder:text-(--color-text-muted) hover:not-disabled:border-(--color-border) focus:border-(--color-route) focus:ring-0 disabled:cursor-default disabled:border-transparent";
 const activityActionsClassName =
-  "flex shrink-0 flex-wrap items-center justify-end gap-1 max-[760px]:justify-start";
+  "flex shrink-0 flex-nowrap items-center justify-end gap-0.5 whitespace-nowrap max-[420px]:flex-wrap max-[420px]:justify-start";
 const activityIconButtonClassName =
-  "inline-flex size-8 items-center justify-center rounded-(--radius-sm) border border-transparent bg-transparent text-(--color-text-muted) transition-colors duration-150 hover:border-(--color-border) hover:bg-(--color-surface) hover:text-(--color-text) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-focus) [&_.icon]:size-4";
+  "inline-flex size-7 shrink-0 items-center justify-center rounded-(--radius-sm) border border-transparent bg-transparent text-(--color-text-muted) transition-colors duration-150 hover:border-(--color-border) hover:bg-(--color-surface) hover:text-(--color-text) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-focus) [&_.icon]:size-3.5";
 const activityMetaClassName =
   "flex min-w-0 flex-wrap items-center gap-1 text-[11px] font-bold leading-4 text-(--color-text-muted)";
 const activityPillClassName =
   "inline-flex min-h-5 max-w-[148px] items-center gap-1 rounded-full border border-(--color-border) bg-(--color-surface-subtle) px-1.5 text-[11px] font-extrabold leading-4 text-(--color-text-muted)";
 const activityTypePickerClassName =
-  "!min-h-8 max-w-[124px] rounded-(--radius-sm) border-(--color-border) bg-(--color-surface-subtle) px-2 text-[11px]";
+  "!min-h-7 max-w-[92px] shrink-0 rounded-(--radius-sm) border-(--color-border) bg-(--color-surface-subtle) px-2 text-[11px]";
 const subActivityListClassName =
-  "sub-activity-list mt-1.5 grid min-w-0 gap-0.5 border-t border-dashed border-(--color-border) pt-1.5";
+  "sub-activity-list mt-1.5 grid min-w-0 gap-0.5 border-t border-dashed border-(--color-border) pt-1.5 max-[640px]:hidden";
+const subActivityModalListClassName =
+  "sub-activity-list grid min-w-0 gap-1";
 const subActivityLineClassName =
   "sub-activity-line grid min-w-0 grid-cols-[20px_minmax(56px,72px)_minmax(0,1fr)_auto] items-center gap-1.5 rounded-(--radius-sm) px-1.5 py-1 text-xs leading-4 transition-colors duration-150 hover:bg-(--color-surface-subtle) max-[760px]:grid-cols-[20px_minmax(0,1fr)_auto]";
 const subActivityDragClassName =
@@ -267,7 +269,20 @@ const subActivityTitleInputClassName =
 const subActivityActionsClassName =
   "flex min-w-0 shrink-0 items-center justify-end gap-1";
 const addSubActivityButtonClassName =
-  "mt-0.5 inline-flex min-h-7 w-full items-center justify-center gap-1.5 rounded-(--radius-sm) border border-dashed border-(--color-border) bg-(--color-surface-subtle) px-2.5 text-xs font-extrabold text-(--color-route) transition-colors duration-150 hover:border-(--color-route) hover:bg-(--color-route-soft) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-focus) disabled:cursor-not-allowed disabled:opacity-50";
+  "mt-0.5 inline-flex min-h-6 w-fit items-center justify-center gap-1 rounded-(--radius-sm) border border-transparent bg-transparent px-1.5 text-[11px] font-extrabold text-(--color-route) transition-colors duration-150 hover:border-(--color-route-border) hover:bg-(--color-route-soft) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-focus) disabled:cursor-not-allowed disabled:opacity-50";
+const subActivityToggleButtonClassName =
+  "inline-flex size-7 shrink-0 items-center justify-center rounded-(--radius-sm) border border-transparent bg-transparent text-(--color-text-muted) transition-colors duration-150 hover:border-(--color-route-border) hover:bg-(--color-route-soft) hover:text-(--color-route) aria-[expanded=true]:border-(--color-route-border) aria-[expanded=true]:bg-(--color-route-soft) aria-[expanded=true]:text-(--color-route) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-focus) [&_.icon]:size-3.5";
+const subActivityModalBackdropClassName =
+  "fixed inset-0 z-[70] grid place-items-end bg-[rgb(15_23_42_/_0.32)] p-3";
+const subActivityModalClassName =
+  "grid max-h-[min(520px,calc(100dvh_-_24px))] w-full max-w-[420px] grid-rows-[auto_minmax(0,1fr)] overflow-hidden rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) shadow-[0_14px_34px_rgb(15_23_42_/_0.16)]";
+const subActivityModalHeaderClassName =
+  "grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-start gap-3 border-b border-(--color-border) px-3 py-2.5";
+const subActivityModalTitleClassName =
+  "min-w-0 text-sm font-extrabold leading-5 text-(--color-text) [&_span]:block [&_span]:truncate [&_small]:block [&_small]:text-[11px] [&_small]:font-bold [&_small]:text-(--color-text-muted)";
+const subActivityModalCloseClassName =
+  "inline-flex size-8 items-center justify-center rounded-(--radius-sm) border border-transparent text-(--color-text-muted) hover:border-(--color-border) hover:bg-(--color-surface-subtle) hover:text-(--color-text) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-focus)";
+const subActivityModalBodyClassName = "min-h-0 overflow-auto p-3";
 const inlineFieldClassName =
   "inline-row-field min-h-[24px] w-full min-w-0 rounded-(--radius-sm) border border-transparent bg-transparent px-1.5 py-0 text-xs leading-4 text-(--color-text) outline-none transition-[background,border-color,box-shadow] duration-150 placeholder:text-(--color-text-muted) hover:not-read-only:border-(--color-border) hover:not-read-only:bg-(--color-surface) focus:border-(--color-primary-border) focus:bg-(--color-surface) focus:shadow-[0_0_0_2px_rgb(255_196_168_/_0.55)] read-only:cursor-pointer read-only:truncate read-only:px-0 read-only:font-semibold disabled:cursor-not-allowed disabled:text-(--color-text-muted)";
 const inlineOptionPickerButtonClassName = cn(
@@ -1145,6 +1160,10 @@ function ActivityCell({
   const timeWindow = formatTimeWindow(item);
   const typeOptions = activityTypeOptions(locale);
   const status = item.status ? itemStatusLabel(item.status, locale) : null;
+  const [subActivityModalOpen, setSubActivityModalOpen] = useState(false);
+  const [subActivitiesExpanded, setSubActivitiesExpanded] = useState(false);
+  const showSubActivityToggle =
+    Boolean(onAddSubActivity) || subItems.length > 0;
 
   return (
     <div
@@ -1233,6 +1252,28 @@ function ActivityCell({
                 <Icon name="map" />
               </a>
             ) : null}
+            {showSubActivityToggle ? (
+              <button
+                type="button"
+                className={subActivityToggleButtonClassName}
+                aria-label={`Sub-activities for ${item.activity}`}
+                aria-expanded={subActivitiesExpanded}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  if (
+                    typeof window !== "undefined" &&
+                    typeof window.matchMedia === "function" &&
+                    window.matchMedia("(max-width: 640px)").matches
+                  ) {
+                    setSubActivityModalOpen(true);
+                    return;
+                  }
+                  setSubActivitiesExpanded((current) => !current);
+                }}
+              >
+                <Icon name="list" />
+              </button>
+            ) : null}
             <button
               type="button"
               className={activityIconButtonClassName}
@@ -1297,15 +1338,120 @@ function ActivityCell({
           item={item}
           itineraryLabels={itineraryLabels}
           locale={locale}
+          selected={selected}
           subItems={subItems}
           onAddSubActivity={onAddSubActivity}
           onDeleteItem={onDeleteItem}
           onEditItem={onEditItem}
           onMoveItem={onMoveItem}
           onUpdateItemInline={onUpdateItemInline}
+          visible={subActivitiesExpanded}
         />
+        {subActivityModalOpen ? (
+          <SubActivityModal
+            canEdit={canEdit}
+            item={item}
+            itineraryLabels={itineraryLabels}
+            locale={locale}
+            subItems={subItems}
+            onAddSubActivity={onAddSubActivity}
+            onClose={() => setSubActivityModalOpen(false)}
+            onDeleteItem={onDeleteItem}
+            onEditItem={onEditItem}
+            onMoveItem={onMoveItem}
+            onUpdateItemInline={onUpdateItemInline}
+          />
+        ) : null}
       </div>
     </div>
+  );
+}
+
+function SubActivityModal({
+  canEdit,
+  item,
+  itineraryLabels,
+  locale,
+  onAddSubActivity,
+  onClose,
+  onDeleteItem,
+  onEditItem,
+  onMoveItem,
+  onUpdateItemInline,
+  subItems,
+}: {
+  canEdit: boolean;
+  item: ItineraryItem;
+  itineraryLabels: Messages["itinerary"];
+  locale: Locale;
+  subItems: ItineraryItem[];
+  onAddSubActivity?: (parentItemId: string) => void | Promise<void>;
+  onClose: () => void;
+  onDeleteItem?: (itemId: string) => void;
+  onEditItem?: (itemId: string) => void;
+  onMoveItem: (draggedItemId: string, targetItemId: string) => void;
+  onUpdateItemInline?: (
+    itemId: string,
+    patch: InlineItineraryItemPatch,
+  ) => void | Promise<void>;
+}) {
+  useEffect(() => {
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") onClose();
+    }
+
+    document.addEventListener("keydown", closeOnEscape);
+    return () => document.removeEventListener("keydown", closeOnEscape);
+  }, [onClose]);
+
+  if (typeof document === "undefined") return null;
+
+  return createPortal(
+    <div
+      className={subActivityModalBackdropClassName}
+      role="presentation"
+      onClick={onClose}
+    >
+      <section
+        className={subActivityModalClassName}
+        role="dialog"
+        aria-modal="true"
+        aria-label={`Sub-activities for ${item.activity}`}
+        onClick={(event) => event.stopPropagation()}
+      >
+        <header className={subActivityModalHeaderClassName}>
+          <strong className={subActivityModalTitleClassName}>
+            <span>{item.activity}</span>
+            <small>{itineraryLabels.row.subItemQuick}</small>
+          </strong>
+          <button
+            type="button"
+            className={subActivityModalCloseClassName}
+            aria-label="Close sub-activities"
+            onClick={onClose}
+          >
+            <Icon name="x" />
+          </button>
+        </header>
+        <div className={subActivityModalBodyClassName}>
+          <SubActivityList
+            canEdit={canEdit}
+            item={item}
+            itineraryLabels={itineraryLabels}
+            locale={locale}
+            presentation="modal"
+            selected
+            subItems={subItems}
+            onAddSubActivity={onAddSubActivity}
+            onDeleteItem={onDeleteItem}
+            onEditItem={onEditItem}
+            onMoveItem={onMoveItem}
+            onUpdateItemInline={onUpdateItemInline}
+          />
+        </div>
+      </section>
+    </div>,
+    document.body,
   );
 }
 
@@ -1314,7 +1460,10 @@ function SubActivityList({
   item,
   itineraryLabels,
   locale,
+  presentation = "inline",
+  selected,
   subItems,
+  visible = true,
   onAddSubActivity,
   onDeleteItem,
   onEditItem,
@@ -1325,7 +1474,10 @@ function SubActivityList({
   item: ItineraryItem;
   itineraryLabels: Messages["itinerary"];
   locale: Locale;
+  presentation?: "inline" | "modal";
+  selected: boolean;
   subItems: ItineraryItem[];
+  visible?: boolean;
   onAddSubActivity?: (parentItemId: string) => void | Promise<void>;
   onDeleteItem?: (itemId: string) => void;
   onEditItem?: (itemId: string) => void;
@@ -1336,6 +1488,10 @@ function SubActivityList({
   ) => void | Promise<void>;
 }) {
   const editable = canEdit && Boolean(onUpdateItemInline);
+  const showAddSubActivity = Boolean(onAddSubActivity) && (selected || subItems.length > 0);
+
+  if (presentation === "inline" && !visible) return null;
+  if (subItems.length === 0 && !showAddSubActivity) return null;
 
   function handleDrop(event: DragEvent<HTMLDivElement>, targetItem: ItineraryItem) {
     event.preventDefault();
@@ -1348,7 +1504,13 @@ function SubActivityList({
   }
 
   return (
-    <div className={subActivityListClassName}>
+    <div
+      className={
+        presentation === "modal"
+          ? subActivityModalListClassName
+          : subActivityListClassName
+      }
+    >
       {subItems.map((subItem) => (
         <div
           className={subActivityLineClassName}
@@ -1471,14 +1633,14 @@ function SubActivityList({
           </div>
         </div>
       ))}
-      {onAddSubActivity ? (
+      {showAddSubActivity ? (
         <button
           type="button"
           className={addSubActivityButtonClassName}
           disabled={!canEdit}
           onClick={(event) => {
             event.stopPropagation();
-            void onAddSubActivity(item.id);
+            void onAddSubActivity?.(item.id);
           }}
         >
           <Icon name="plus" className="size-4" />

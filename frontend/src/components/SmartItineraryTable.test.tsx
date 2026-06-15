@@ -526,21 +526,45 @@ describe("SmartItineraryTable", () => {
     );
     expect(
       itemRows[0]?.querySelector(".activity-cell"),
-    ).toHaveClass("data-[selected=true]:bg-(--color-route-soft)");
+    ).toHaveClass(
+      "min-h-[58px]",
+      "grid-cols-[56px_minmax(0,1fr)]",
+      "data-[selected=true]:bg-(--color-route-soft)",
+    );
     expect(
       within(itemRows[0]).getByRole("button", {
         name: /เปิดรายละเอียดของ|Open details for/i,
       }),
-    ).toHaveClass("size-8");
+    ).toHaveClass("size-7");
     expect(
       within(itemRows[0]).getByRole("button", {
         name: /แก้ไขประเภท|Edit type/i,
       }),
-    ).toHaveClass("!min-h-8", "rounded-(--radius-sm)");
+    ).toHaveClass("!min-h-7", "rounded-(--radius-sm)");
+    const subActivityToggle = within(itemRows[0]).getByRole("button", {
+      name: /Sub-activities for/i,
+    });
+    expect(subActivityToggle).toHaveClass("size-7");
+    expect(subActivityToggle).toHaveAttribute("aria-expanded", "false");
+    expect(itemRows[0]?.querySelector(".sub-activity-list")).toBeNull();
+    const rowWithoutSubItems = Array.from(itemRows).find(
+      (row) =>
+        row !== itemRows[0] &&
+        within(row).queryByRole("button", {
+          name: /Add sub-activity|เพิ่มกิจกรรมย่อย/i,
+        }) === null,
+    );
+    expect(rowWithoutSubItems).toBeDefined();
 
     expect(
       screen.queryByRole("region", { name: /รายละเอียดจุดที่เลือก/i }),
     ).not.toBeInTheDocument();
+
+    fireEvent.click(subActivityToggle);
+    expect(subActivityToggle).toHaveAttribute("aria-expanded", "true");
+    expect(itemRows[0]?.querySelector(".sub-activity-list")).toHaveClass(
+      "max-[640px]:hidden",
+    );
   });
 
   it("renders sub-activities inside their parent activity cell", async () => {
@@ -576,6 +600,11 @@ describe("SmartItineraryTable", () => {
     );
     expect(parentRow).not.toBeNull();
     expect(within(parentRow as HTMLElement).getByDisplayValue("Parent route")).toBeInTheDocument();
+    await user.click(
+      within(parentRow as HTMLElement).getByRole("button", {
+        name: /Sub-activities for Parent route/i,
+      }),
+    );
     expect(within(parentRow as HTMLElement).getByDisplayValue("Buy Octopus card")).toBeInTheDocument();
     expect(document.querySelector('[data-item-id="child-activity"]')).not.toBeInTheDocument();
 
@@ -634,6 +663,25 @@ describe("SmartItineraryTable", () => {
       selectedItemId: "parent-a",
       onMoveItem,
     });
+
+    const parentARow = document.querySelector<HTMLElement>(
+      '[data-item-id="parent-a"]',
+    );
+    const parentBRow = document.querySelector<HTMLElement>(
+      '[data-item-id="parent-b"]',
+    );
+    expect(parentARow).not.toBeNull();
+    expect(parentBRow).not.toBeNull();
+    fireEvent.click(
+      within(parentARow as HTMLElement).getByRole("button", {
+        name: /Sub-activities for Parent A/i,
+      }),
+    );
+    fireEvent.click(
+      within(parentBRow as HTMLElement).getByRole("button", {
+        name: /Sub-activities for Parent B/i,
+      }),
+    );
 
     const childA1Line = document.querySelector<HTMLElement>(
       '[data-sub-item-id="child-a-1"]',
