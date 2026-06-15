@@ -20,6 +20,10 @@ describe("BookingsDocsPage", () => {
     expect(document.querySelector(".booking-folder-rail")).toHaveClass("shadow-[0_1px_0_rgb(15_23_42_/_0.04)]");
     expect(document.querySelector(".bookings-file-panel")).toHaveClass("shadow-[0_1px_0_rgb(15_23_42_/_0.04)]");
     expect(document.querySelector(".booking-inspector")).toHaveClass("shadow-[0_1px_0_rgb(15_23_42_/_0.04)]");
+    expect(document.querySelector(".bookings-docs-page")).toHaveClass("max-[767px]:px-0", "max-[767px]:gap-0");
+    expect(document.querySelector(".booking-folder-rail")).toHaveClass("max-[767px]:rounded-none", "max-[767px]:shadow-none");
+    expect(document.querySelector(".bookings-file-panel")).toHaveClass("max-[767px]:rounded-none", "max-[767px]:shadow-none");
+    expect(document.querySelector(".booking-inspector")).toHaveClass("max-[767px]:rounded-none", "max-[767px]:shadow-none");
     expect(screen.getByPlaceholderText("Search bookings, docs, links")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Transport/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Links & files/i })).toBeInTheDocument();
