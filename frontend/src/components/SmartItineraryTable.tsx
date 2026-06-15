@@ -447,7 +447,6 @@ export function SmartItineraryTable({
   bookingDocs = [],
   onDeleteItem,
   onEditItem,
-  onMoveItem,
   onOpenItemDetails,
   onSelectItem,
   onUpdateItemInline,
@@ -979,7 +978,6 @@ export function SmartItineraryTable({
               bookingLinkItems={items}
               onDeleteItem={onDeleteItem}
               onEditItem={onEditItem}
-              onMoveItem={onMoveItem}
               onMoveItemToPath={onMoveItemToPath}
               onOpenItemDetails={onOpenItemDetails}
               onSelectItem={onSelectItem}
@@ -1021,7 +1019,6 @@ function DayGroup({
   onClearDayPath,
   onDeleteItem,
   onEditItem,
-  onMoveItem,
   onMoveItemToPath,
   onOpenItemDetails,
   onSelectItem,
@@ -1063,7 +1060,6 @@ function DayGroup({
   onClearDayPath?: (day: string) => void;
   onDeleteItem?: (itemId: string) => void;
   onEditItem?: (itemId: string) => void;
-  onMoveItem: (draggedItemId: string, targetItemId: string) => void;
   onMoveItemToPath?: (itemId: string, pathId: string) => void;
   onOpenItemDetails: (itemId: string) => void;
   onSelectItem: (itemId: string) => void;
