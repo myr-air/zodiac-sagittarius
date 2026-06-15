@@ -13,30 +13,21 @@ const tasks: TripTask[] = [
 ];
 
 describe("BookingsDocsPage", () => {
-  it("renders booking summaries, folders, ticket cards, and selected booking inspector", () => {
+  it("renders booking folders, a file list, and selected booking inspector", () => {
     renderPage();
 
     expect(screen.getByRole("region", { name: "Bookings & Docs" })).toHaveClass("bookings-docs-page", "bg-transparent");
-    expect(screen.getByText("HKD 8,660").closest(".booking-stat")).toHaveClass(
-      "rounded-(--radius-md)",
-      "shadow-[0_1px_0_rgb(15_23_42_/_0.04)]",
-    );
-    expect(screen.getByText("HKD 8,660").closest(".booking-stat")?.className).not.toContain("0_8px_18px");
-    expect(screen.getByText("HKD 8,660")).toBeInTheDocument();
-    expect(screen.getByText("2 need action")).toBeInTheDocument();
-    expect(document.querySelector(".bookings-panel")).toHaveClass("shadow-[0_1px_0_rgb(15_23_42_/_0.04)]");
+    expect(document.querySelector(".booking-folder-rail")).toHaveClass("shadow-[0_1px_0_rgb(15_23_42_/_0.04)]");
+    expect(document.querySelector(".bookings-file-panel")).toHaveClass("shadow-[0_1px_0_rgb(15_23_42_/_0.04)]");
     expect(document.querySelector(".booking-inspector")).toHaveClass("shadow-[0_1px_0_rgb(15_23_42_/_0.04)]");
+    expect(screen.getByPlaceholderText("Search bookings, docs, links")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Transport/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Transport/i })).toHaveClass("min-h-[72px]");
+    expect(screen.getByRole("button", { name: /Links & files/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Travel docs/i })).toBeInTheDocument();
-    expect(screen.getByRole("region", { name: "Thu, Jun 18" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Select Bangkok to Hong Kong flight/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Select Bangkok to Hong Kong flight/i }).closest(".booking-ticket-card")).toHaveClass(
-      "min-h-[156px]",
-      "shadow-[0_1px_0_rgb(15_23_42_/_0.035)]",
-    );
+    expect(screen.getByRole("button", { name: /Select Bangkok to Hong Kong flight/i }).closest(".booking-file-row")).toHaveClass("grid", "min-w-[840px]");
     expect(screen.getByRole("heading", { name: "Bangkok to Hong Kong flight" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /Open Airline booking/i })).toHaveAttribute("href", "https://example.com/airline/booking/QR349-HK");
+    expect(screen.getAllByRole("link", { name: /Open Airline booking/i })[0]).toHaveAttribute("href", "https://example.com/airline/booking/QR349-HK");
   });
 
   it("browses booking docs by friendly folders instead of table filters", async () => {
@@ -67,6 +58,25 @@ describe("BookingsDocsPage", () => {
     expect(screen.getByRole("button", { name: /Select Bangkok to Hong Kong flight/i })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /Select Explorer Friend passport/i })).not.toBeInTheDocument();
     expect(screen.getAllByText("Locked sensitive record")).toHaveLength(2);
+  });
+
+  it("filters the file list by search text, status, and external-link folder", async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.type(screen.getByPlaceholderText("Search bookings, docs, links"), "Joii");
+    expect(screen.getByRole("button", { name: /Select Tsim Sha Tsui hotel stay/i })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Select Bangkok to Hong Kong flight/i })).not.toBeInTheDocument();
+
+    await user.clear(screen.getByPlaceholderText("Search bookings, docs, links"));
+    await user.selectOptions(screen.getByRole("combobox", { name: "Status" }), "confirmed");
+    expect(screen.getByRole("button", { name: /Select Bangkok to Hong Kong flight/i })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Select Explorer Friend passport/i })).not.toBeInTheDocument();
+
+    await user.selectOptions(screen.getByRole("combobox", { name: "Status" }), "all");
+    await user.click(screen.getByRole("button", { name: /Links & files/i }));
+    expect(screen.getByRole("button", { name: /Select Bangkok to Hong Kong flight/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Select Peak Tram tickets/i })).toBeInTheDocument();
   });
 
   it("submits new booking docs and edits existing records", async () => {
