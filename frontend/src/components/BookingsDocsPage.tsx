@@ -68,9 +68,9 @@ const bookingFolders: Array<{
 
 const pageClassName = "bookings-docs-page grid min-h-full min-w-0 grid-rows-[auto_minmax(0,1fr)] gap-3 bg-transparent px-6 py-[22px] pb-7 max-[767px]:gap-0 max-[767px]:px-0 max-[767px]:py-0";
 const contentClassName = "bookings-content grid min-h-0 grid-cols-[220px_minmax(0,1fr)_330px] gap-3 max-[1199px]:grid-cols-[200px_minmax(0,1fr)] max-[1199px]:[&_.booking-inspector]:col-span-2 max-[767px]:grid-cols-1 max-[767px]:gap-0 max-[767px]:[&_.booking-inspector]:col-span-1";
-const folderRailClassName = "booking-folder-rail grid min-h-0 content-start gap-1 rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) p-2.5 shadow-[0_1px_0_rgb(15_23_42_/_0.04)] max-[767px]:rounded-none max-[767px]:border-x-0 max-[767px]:border-t-0 max-[767px]:p-1.5 max-[767px]:shadow-none";
-const folderButtonClassName = "group grid min-h-10 grid-cols-[28px_minmax(0,1fr)_auto] items-center gap-2 rounded-(--radius-md) border border-transparent bg-transparent px-2 py-1.5 text-left text-sm font-bold text-(--color-text-muted) transition-[background-color,border-color,color] duration-150 hover:bg-(--color-surface-subtle) hover:text-(--color-text) focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary) [&_.icon]:size-4";
-const selectedFolderClassName = "border-(--color-primary-border) bg-(--color-primary-soft) text-(--color-primary-strong)";
+const folderRailClassName = "booking-folder-rail grid min-h-0 content-start gap-1 rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) p-2.5 shadow-[0_1px_0_rgb(15_23_42_/_0.04)] max-[767px]:grid-cols-7 max-[767px]:content-normal max-[767px]:gap-0 max-[767px]:rounded-none max-[767px]:border-x-0 max-[767px]:border-t-0 max-[767px]:p-0 max-[767px]:shadow-none";
+const folderButtonClassName = "group grid min-h-10 grid-cols-[28px_minmax(0,1fr)_auto] items-center gap-2 rounded-(--radius-md) border border-transparent bg-transparent px-2 py-1.5 text-left text-sm font-bold text-(--color-text-muted) transition-[background-color,border-color,color] duration-150 hover:bg-(--color-surface-subtle) hover:text-(--color-text) focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary) [&_.icon]:size-4 max-[767px]:min-h-12 max-[767px]:grid-cols-1 max-[767px]:grid-rows-[20px_14px] max-[767px]:justify-items-center max-[767px]:gap-0 max-[767px]:rounded-none max-[767px]:border-0 max-[767px]:border-b-2 max-[767px]:border-transparent max-[767px]:px-0 max-[767px]:py-2 max-[767px]:text-center";
+const selectedFolderClassName = "border-(--color-primary-border) bg-(--color-primary-soft) text-(--color-primary-strong) max-[767px]:border-b-(--color-primary) max-[767px]:bg-transparent";
 const filePanelClassName = "bookings-file-panel grid min-h-0 grid-rows-[auto_auto_minmax(0,1fr)] rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) shadow-[0_1px_0_rgb(15_23_42_/_0.04)] max-[767px]:rounded-none max-[767px]:border-x-0 max-[767px]:border-t-0 max-[767px]:shadow-none";
 const fileToolbarClassName = "bookings-file-toolbar grid gap-2 border-b border-(--color-border) p-3 max-[767px]:p-2";
 const searchInputClassName = "min-h-10 w-full rounded-(--radius-md) border border-(--color-border) bg-(--color-surface-subtle) px-3 text-sm font-medium text-(--color-text) outline-none transition-colors placeholder:text-(--color-text-subtle) focus:border-(--color-primary) focus:bg-(--color-surface)";
@@ -379,14 +379,14 @@ export function BookingsDocsPage({
               aria-pressed={activeFolderId === folder.id}
               aria-label={copy.folderCount(copy.folders[folder.id].title, folderCounts[folder.id] ?? 0)}
             >
-              <span className="grid size-7 place-items-center rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) text-(--color-primary-strong)">
+              <span className="grid size-7 place-items-center rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) text-(--color-primary-strong) max-[767px]:size-5 max-[767px]:border-0 max-[767px]:bg-transparent">
                 <Icon name={folder.icon} />
               </span>
-              <span className="min-w-0">
+              <span className="min-w-0 max-[767px]:hidden">
                 <strong className="block truncate text-sm font-extrabold">{copy.folders[folder.id].title}</strong>
                 <span className="block truncate text-[11px] font-semibold text-(--color-text-muted)">{copy.folders[folder.id].description}</span>
               </span>
-              <strong className="tabular-nums text-xs text-(--color-text-muted)">{folderCounts[folder.id] ?? 0}</strong>
+              <strong className="tabular-nums text-xs text-(--color-text-muted) max-[767px]:text-[11px]">{folderCounts[folder.id] ?? 0}</strong>
             </button>
           ))}
         </nav>
