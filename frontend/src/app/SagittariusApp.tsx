@@ -91,6 +91,7 @@ import {
   deriveManualActivityPathOptions,
   type ItineraryImportApplyTarget,
 } from "@/src/trip/itinerary-paths";
+import type { PlanningView } from "@/src/trip/planning-view";
 import {
   buildItineraryExport,
   parseItineraryImportDocument,
@@ -189,16 +190,6 @@ const planningMainClassName =
   "planning-main h-full min-h-0 min-w-0 overflow-y-auto scroll-smooth bg-(--color-page) transition-[padding] duration-200 max-[1199px]:h-auto max-[1199px]:min-h-[calc(100dvh-48px)] max-[1199px]:overflow-y-visible max-[1199px]:bg-(--color-surface)";
 const planningMainWithRailClassName = "pr-[380px] max-[1199px]:pr-0";
 
-export type PlanningView =
-  | "overview"
-  | "itinerary"
-  | "map"
-  | "timeline"
-  | "bookings"
-  | "photos"
-  | "members"
-  | "expenses"
-  | "settings";
 type PortalSection =
   | "dashboard"
   | "trips"

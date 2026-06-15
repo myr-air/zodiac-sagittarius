@@ -38,6 +38,8 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "app/page.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/app/SagittariusApp.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/account/AccountApp.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/TripWorkspaceApp.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/planning-view.ts"))).toBe(true);
     expect(existsSync(join(repoRoot, "backend/Cargo.toml"))).toBe(true);
     expect(existsSync(join(repoRoot, "package.json"))).toBe(false);
 
@@ -156,14 +158,33 @@ describe("Sagittarius project scaffold", () => {
     [
       "app/join/page.tsx",
       "app/join/[joinCode]/page.tsx",
-      "app/trips/[tripId]/page.tsx",
-      "app/trips/[tripId]/itinerary/page.tsx",
-      "app/trips/[tripId]/map/page.tsx",
-      "app/trips/[tripId]/timeline/page.tsx",
-      "app/trips/[tripId]/members/page.tsx",
     ].forEach((routeFile) => {
       expect(readFileSync(join(frontendRoot, routeFile), "utf8")).toContain('accessMode="trip-access"');
     });
+
+    const tripWorkspaceRoutes: Record<string, string> = {
+      "app/trips/[tripId]/page.tsx": 'view="overview"',
+      "app/trips/[tripId]/itinerary/page.tsx": 'view="itinerary"',
+      "app/trips/[tripId]/map/page.tsx": 'view="map"',
+      "app/trips/[tripId]/timeline/page.tsx": 'view="timeline"',
+      "app/trips/[tripId]/bookings/page.tsx": 'view="bookings"',
+      "app/trips/[tripId]/photos/page.tsx": 'view="photos"',
+      "app/trips/[tripId]/members/page.tsx": 'view="members"',
+      "app/trips/[tripId]/expenses/page.tsx": 'view="expenses"',
+      "app/trips/[tripId]/settings/page.tsx": 'view="settings"',
+    };
+
+    Object.entries(tripWorkspaceRoutes).forEach(([routeFile, expectedView]) => {
+      const source = readFileSync(join(frontendRoot, routeFile), "utf8");
+      expect(source).toContain("TripWorkspaceApp");
+      expect(source).toContain(expectedView);
+      expect(source).not.toContain("SagittariusApp");
+    });
+
+    expect(readFileSync(join(frontendRoot, "src/components/AppShell.tsx"), "utf8")).toContain("@/src/trip/planning-view");
+    expect(readFileSync(join(frontendRoot, "src/routes/app-routes.ts"), "utf8")).toContain("@/src/trip/planning-view");
+    expect(readFileSync(join(frontendRoot, "src/components/AppShell.tsx"), "utf8")).not.toContain("@/src/app/SagittariusApp");
+    expect(readFileSync(join(frontendRoot, "src/routes/app-routes.ts"), "utf8")).not.toContain("@/src/app/SagittariusApp");
   });
 
   it("keeps the Calm Travel Ops design tokens in globals", () => {

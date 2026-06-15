@@ -1,5 +1,5 @@
-import type { PlanningView } from "@/src/app/SagittariusApp";
 import { encodeTripId } from "@/src/trip/ids";
+import type { PlanningView } from "@/src/trip/planning-view";
 
 export function encodeReturnTo(path: string): string {
   try {

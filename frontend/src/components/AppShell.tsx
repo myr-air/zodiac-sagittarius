@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import type { PlanningView } from "@/src/app/SagittariusApp";
 import { LanguageSwitch } from "@/src/i18n/LanguageSwitch";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
 import { appRoutes, tripWorkspaceNavItems } from "@/src/routes/app-routes";
 import { decodeTripId } from "@/src/trip/ids";
+import type { PlanningView } from "@/src/trip/planning-view";
 import type { Member, Trip } from "@/src/trip/types";
 import { Icon } from "./icons";
 
