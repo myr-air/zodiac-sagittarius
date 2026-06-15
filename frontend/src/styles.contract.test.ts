@@ -183,16 +183,20 @@ describe("Calm Travel Ops CSS contract", () => {
     expect(smartTableSource).toContain("max-[520px]:px-0 max-[520px]:py-0 max-[520px]:pb-0");
     expect(smartTableSource).toContain("max-[520px]:overflow-x-hidden max-[520px]:rounded-none max-[520px]:border-x-0 max-[520px]:shadow-none");
     expect(smartTableSource).toContain("max-[520px]:min-w-full max-[520px]:w-full");
+    expect(smartTableSource).not.toContain("max-[360px]:grid-cols-1");
+    expect(smartTableSource).not.toContain("max-[360px]:col-start-auto");
     expect(smartTableSource).toContain("max-[520px]:w-full max-[520px]:max-w-full");
     expect(smartTableSource).toContain("mobile-activity-line hidden min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-1.5 max-[520px]:grid");
     expect(smartTableSource).toContain("activity-type-picker-mobile");
+    expect(smartTableSource).toContain("max-[520px]:-mt-1.5 max-[520px]:inline-flex");
     expect(smartTableSource).toContain("[&_.inline-option-picker-label]:hidden");
     expect(css).toMatch(/@media \(max-width:\s*520px\)\s*{[\s\S]*?\.table-panel > \.page-header/s);
     expect(css).toMatch(/\.smart-table colgroup\s*{[\s\S]*?display:\s*none;/);
-    expect(css).toMatch(/\.smart-table,[\s\S]*?\.smart-table td\s*{[\s\S]*?display:\s*block;[\s\S]*?width:\s*100%;/);
+    expect(css).toMatch(/\.smart-table,[\s\S]*?\.smart-table td\s*{[\s\S]*?display:\s*block;[\s\S]*?width:\s*100%;[\s\S]*?border-right:\s*0 !important;/);
     expect(css).toMatch(/\.smart-table thead th:first-child,[\s\S]*?\.smart-table \.activity-path-graph-cell\s*{[\s\S]*?display:\s*none;/);
     expect(css).toMatch(/\.smart-table \.day-row,[\s\S]*?\.smart-table \.activity-row,[\s\S]*?\.smart-table \.add-stop-row\s*{[\s\S]*?display:\s*block;[\s\S]*?width:\s*100%;/);
     expect(css).toMatch(/\.smart-table \.activity-row \.item-placeholder-cell,[\s\S]*?display:\s*block;[\s\S]*?width:\s*100% !important;/);
+    expect(css).toMatch(/\.smart-table \.item-placeholder-cell\s*{[\s\S]*?padding:\s*0 !important;[\s\S]*?width:\s*100%;/);
   });
 
 });

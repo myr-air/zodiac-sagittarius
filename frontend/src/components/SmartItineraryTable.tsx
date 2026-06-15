@@ -234,7 +234,7 @@ const itemPlaceholderRowClassName =
 const itemPlaceholderCellClassName =
   "item-placeholder-cell min-w-0 bg-(--color-surface) px-0 py-0 align-top";
 const activityCellClassName =
-  "activity-cell grid min-h-[60px] min-w-0 grid-cols-[64px_112px_minmax(0,1fr)] items-stretch gap-1.5 px-2 py-1 transition-[background,box-shadow] duration-150 group-hover/activity:bg-(--color-surface-subtle) data-[selected=true]:bg-(--color-route-soft) data-[selected=true]:shadow-[inset_0_0_0_1px_var(--color-route-border)] max-[520px]:w-full max-[520px]:grid-cols-[58px_minmax(0,1fr)] max-[520px]:items-start max-[520px]:gap-x-1.5 max-[520px]:gap-y-0 max-[520px]:px-2 max-[520px]:py-1.5 max-[360px]:grid-cols-1";
+  "activity-cell grid min-h-[60px] min-w-0 grid-cols-[64px_112px_minmax(0,1fr)] items-stretch gap-1.5 px-2 py-1 transition-[background,box-shadow] duration-150 group-hover/activity:bg-(--color-surface-subtle) data-[selected=true]:bg-(--color-route-soft) data-[selected=true]:shadow-[inset_0_0_0_1px_var(--color-route-border)] max-[520px]:w-full max-[520px]:grid-cols-[58px_minmax(0,1fr)] max-[520px]:items-start max-[520px]:gap-x-1.5 max-[520px]:gap-y-0 max-[520px]:px-2 max-[520px]:py-1.5";
 const activityTimeRailClassName =
   "flex min-w-0 items-start text-[11px] font-medium leading-4 text-(--color-text-muted) max-[520px]:grid max-[520px]:justify-items-center max-[520px]:pt-0 max-[360px]:items-center";
 const activityTimeButtonClassName =
@@ -244,7 +244,7 @@ const activityTimeEndClassName =
   "block leading-4 font-normal text-(--color-text-muted) group-hover/activity:text-(--color-text-muted)";
 const activityTypeRailClassName =
   "flex min-w-0 items-start justify-start max-[520px]:hidden";
-const activityBodyClassName = "min-w-0 space-y-1 max-[520px]:col-start-2 max-[520px]:w-full max-[520px]:max-w-full max-[360px]:col-start-auto";
+const activityBodyClassName = "min-w-0 space-y-1 max-[520px]:col-start-2 max-[520px]:w-full max-[520px]:max-w-full";
 const activityMainLineClassName =
   "grid min-w-0 grid-cols-1 items-start";
 const activitySentenceClassName =
@@ -274,7 +274,7 @@ const activityTypePickerClassName =
 const activityMobileLineClassName =
   "mobile-activity-line hidden min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-1.5 max-[520px]:grid";
 const activityMobileTypePickerClassName =
-  "activity-type-picker-mobile hidden !min-h-7 !w-7 shrink-0 justify-center rounded-(--radius-sm) border-transparent bg-transparent !px-0 !py-0 text-(--color-text-muted) hover:border-(--color-route-border) hover:bg-(--color-route-soft) hover:text-(--color-route) aria-[expanded=true]:border-(--color-route-border) aria-[expanded=true]:bg-(--color-route-soft) aria-[expanded=true]:text-(--color-route) max-[520px]:mt-0.5 max-[520px]:inline-flex [&_.icon]:size-3.5 [&_.inline-option-picker-label]:hidden [&_.inline-option-picker-caret]:hidden";
+  "activity-type-picker-mobile hidden !min-h-7 !w-7 shrink-0 justify-center rounded-(--radius-sm) border-transparent bg-transparent !px-0 !py-0 text-(--color-text-muted) hover:border-(--color-route-border) hover:bg-(--color-route-soft) hover:text-(--color-route) aria-[expanded=true]:border-(--color-route-border) aria-[expanded=true]:bg-(--color-route-soft) aria-[expanded=true]:text-(--color-route) max-[520px]:-mt-1.5 max-[520px]:inline-flex [&_.icon]:size-3.5 [&_.inline-option-picker-label]:hidden [&_.inline-option-picker-caret]:hidden";
 const activityMobileStatusClassName =
   "shrink-0 max-w-[82px] truncate rounded-full border border-(--color-border) bg-(--color-surface-subtle) px-1.5 text-[10px] font-extrabold leading-5 text-(--color-text-muted)";
 const subActivityListClassName =

@@ -284,6 +284,7 @@ button:disabled,
     display: block;
     width: 100%;
     height: auto !important;
+    border-right: 0 !important;
     box-sizing: border-box;
   }
 
@@ -308,6 +309,7 @@ button:disabled,
   }
 
   .smart-table .item-placeholder-cell {
+    padding: 0 !important;
     width: 100%;
   }
 }
