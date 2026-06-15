@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useRef, useState, type HTMLAttributes } from "react";
+import { useEffect, useId, useRef, useState, type CSSProperties, type HTMLAttributes } from "react";
 import { Icon } from "@/src/components/icons";
 import { cn } from "@/src/lib/cn";
 import { majorCurrencyOptions, normalizeCurrencyCode, type MajorCurrencyCode } from "@/src/trip/currencies";
@@ -27,49 +27,56 @@ const triggerClassName = [
   "language-switch-trigger",
   "inline-flex",
   "min-h-10",
+  "min-w-10",
   "max-w-full",
   "items-center",
   "justify-center",
-  "gap-2",
-  "rounded-(--radius-md)",
-  "border",
-  "border-(--color-border)",
-  "bg-[color-mix(in_srgb,var(--color-surface)_92%,transparent)]",
-  "px-3",
-  "text-[12px]",
-  "font-extrabold",
-  "leading-4",
-  "text-(--color-primary-strong)",
-  "shadow-[0_10px_22px_rgb(15_23_42_/_0.06)]",
-  "transition-[background,border-color,box-shadow]",
-  "duration-150",
-  "hover:border-(--color-primary-border)",
-  "hover:bg-(--color-surface)",
-  "[&_.icon]:size-4",
-];
-
-const menuClassName = [
-  "language-switch-menu",
-  "absolute",
-  "right-0",
-  "top-[calc(100%+8px)]",
-  "z-30",
-  "grid",
-  "w-[min(292px,calc(100vw-24px))]",
-  "max-w-[calc(100vw-24px)]",
-  "gap-2.5",
+  "gap-1.5",
   "rounded-(--radius-md)",
   "border",
   "border-(--color-border)",
   "bg-(--color-surface)",
-  "p-2.5",
-  "shadow-[0_18px_42px_rgb(15_23_42_/_0.16)]",
-  "max-[767px]:left-0",
-  "max-[767px]:right-auto",
+  "px-3",
+  "text-[12px]",
+  "font-extrabold",
+  "leading-4",
+  "text-(--color-text)",
+  "shadow-[0_1px_2px_rgb(15_23_42_/_0.06)]",
+  "transition-[background,border-color,box-shadow]",
+  "duration-150",
+  "hover:border-(--color-primary-border)",
+  "hover:bg-(--color-primary-soft)",
+  "focus-visible:outline-none",
+  "focus-visible:border-(--color-primary)",
+  "focus-visible:ring-2",
+  "focus-visible:ring-[rgb(15_118_110_/_0.16)]",
+  "data-[open=true]:border-(--color-primary-border)",
+  "data-[open=true]:bg-(--color-primary-soft)",
+  "data-[open=true]:text-(--color-primary-strong)",
+  "[&_.icon]:size-[15px]",
 ];
 
+const menuClassName = [
+  "language-switch-menu",
+  "fixed",
+  "z-50",
+  "grid",
+  "w-[min(320px,calc(100vw-24px))]",
+  "max-w-[calc(100vw-24px)]",
+  "gap-3",
+  "rounded-(--radius-md)",
+  "border",
+  "border-(--color-border)",
+  "bg-(--color-surface)",
+  "p-3",
+  "shadow-[0_14px_30px_rgb(15_23_42_/_0.14)]",
+];
+
+const menuHeaderClassName = "grid gap-1 border-b border-(--color-border) pb-2";
+const menuTitleClassName = "text-[13px] font-extrabold leading-5 text-(--color-text)";
+const menuSummaryClassName = "text-[11px] font-bold leading-4 text-(--color-text-muted)";
 const sectionClassName = ["grid", "gap-2"];
-const sectionLabelClassName = "text-[10px] font-black uppercase leading-3 text-(--color-text-muted)";
+const sectionLabelClassName = "text-[11px] font-extrabold leading-4 text-(--color-text-muted)";
 const optionGridClassName = "grid grid-cols-2 gap-2";
 
 const optionClassName = [
@@ -82,16 +89,21 @@ const optionClassName = [
   "rounded-(--radius-md)",
   "border",
   "border-(--color-border)",
-  "bg-(--color-surface-subtle)",
+  "bg-(--color-surface)",
   "px-2.5",
   "text-left",
   "text-[12px]",
   "font-extrabold",
   "text-(--color-text)",
-  "transition-[background,border-color,color]",
+  "shadow-[0_1px_2px_rgb(15_23_42_/_0.04)]",
+  "transition-[background,border-color,color,box-shadow]",
   "duration-150",
   "hover:border-(--color-primary-border)",
   "hover:bg-(--color-primary-soft)",
+  "focus-visible:outline-none",
+  "focus-visible:border-(--color-primary)",
+  "focus-visible:ring-2",
+  "focus-visible:ring-[rgb(15_118_110_/_0.14)]",
 ];
 
 const activeOptionClassName = [
@@ -99,20 +111,28 @@ const activeOptionClassName = [
   "border-(--color-primary-border)",
   "bg-(--color-primary-soft)",
   "text-(--color-primary-strong)",
+  "shadow-none",
   "[&_.language-switch-option-detail]:text-current",
   "[&_.language-switch-option-meta]:text-current",
 ];
 
 const optionDetailClassName = "language-switch-option-detail block truncate text-[11px] font-bold leading-4 text-(--color-text-muted)";
-const optionMetaClassName = "language-switch-option-meta text-[11px] font-black text-(--color-text-muted)";
+const optionMetaClassName = "language-switch-option-meta inline-flex size-5 items-center justify-center rounded-full bg-(--color-surface-subtle) text-[11px] font-black leading-none text-(--color-text-muted)";
 const checkClassName = "text-(--color-primary) opacity-0 data-[active=true]:opacity-100";
+const activeCurrencyIconClassName = "language-switch-option-meta text-(--color-primary) [&_.icon]:size-4";
+const MENU_WIDTH = 320;
+const MENU_GAP = 8;
+const VIEWPORT_MARGIN = 12;
 
 export function LanguageSwitch({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
   const { locale, setLocale, t } = useI18n();
   const [open, setOpen] = useState(false);
   const [currency, setCurrency] = useState<MajorCurrencyCode>("HKD");
+  const [menuStyle, setMenuStyle] = useState<CSSProperties>({ bottom: "auto", left: VIEWPORT_MARGIN, right: "auto", top: 0 });
   const menuId = useId();
   const rootRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
   const activeLanguage = languageOptions.find((option) => option.locale === locale) ?? languageOptions[0];
 
   useEffect(() => {
@@ -124,6 +144,39 @@ export function LanguageSwitch({ className, ...props }: HTMLAttributes<HTMLDivEl
       window.clearTimeout(timeoutId);
     };
   }, []);
+
+  useEffect(() => {
+    if (!open) return;
+
+    function placeMenu() {
+      const trigger = triggerRef.current;
+      if (!trigger) return;
+
+      const rect = trigger.getBoundingClientRect();
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+      const width = Math.min(MENU_WIDTH, viewportWidth - VIEWPORT_MARGIN * 2);
+      const menuHeight = menuRef.current?.offsetHeight ?? 444;
+      const left = Math.min(
+        Math.max(VIEWPORT_MARGIN, rect.right - width),
+        Math.max(VIEWPORT_MARGIN, viewportWidth - width - VIEWPORT_MARGIN),
+      );
+      const hasRoomBelow = rect.bottom + MENU_GAP + menuHeight <= viewportHeight - VIEWPORT_MARGIN;
+      const top = hasRoomBelow
+        ? rect.bottom + MENU_GAP
+        : Math.max(VIEWPORT_MARGIN, rect.top - menuHeight - MENU_GAP);
+
+      setMenuStyle({ bottom: "auto", left, right: "auto", top, width });
+    }
+
+    placeMenu();
+    window.addEventListener("resize", placeMenu);
+    window.addEventListener("scroll", placeMenu, true);
+    return () => {
+      window.removeEventListener("resize", placeMenu);
+      window.removeEventListener("scroll", placeMenu, true);
+    };
+  }, [currency, locale, open]);
 
   useEffect(() => {
     function closeOnOutsidePointer(event: PointerEvent) {
@@ -164,21 +217,28 @@ export function LanguageSwitch({ className, ...props }: HTMLAttributes<HTMLDivEl
   return (
     <div ref={rootRef} className={cn(rootClassName, className)} {...props}>
       <button
+        ref={triggerRef}
         type="button"
         className={cn(triggerClassName)}
+        data-open={open ? "true" : "false"}
         aria-label={t.common.language.currencyLabel}
         aria-expanded={open}
         aria-controls={menuId}
         aria-haspopup="menu"
         onClick={() => setOpen((current) => !current)}
       >
-        <Icon name="wallet" />
+        <Icon name="wallet" className="text-(--color-primary-strong)" />
         <span className="truncate">{activeLanguage.shortLabel} / {currency}</span>
-        <Icon name="chevronRight" className={cn("transition-transform duration-150", open ? "-rotate-90" : "rotate-90")} />
+        <Icon name="chevronRight" className={cn("text-(--color-text-muted) transition-transform duration-150", open ? "-rotate-90" : "rotate-90")} />
       </button>
 
       {open ? (
-        <div id={menuId} className={cn(menuClassName)} role="menu" aria-label={t.common.language.currencyLabel}>
+        <div ref={menuRef} id={menuId} className={cn(menuClassName)} role="menu" aria-label={t.common.language.currencyLabel} style={menuStyle}>
+          <div className={menuHeaderClassName}>
+            <strong className={menuTitleClassName}>{t.common.language.currencyLabel}</strong>
+            <span className={menuSummaryClassName}>{activeLanguage.label} · {currency}</span>
+          </div>
+
           <section className={cn(sectionClassName)} aria-labelledby={`${menuId}-language`}>
             <strong id={`${menuId}-language`} className={sectionLabelClassName}>{t.common.language.label}</strong>
             <div className={optionGridClassName}>
@@ -224,7 +284,13 @@ export function LanguageSwitch({ className, ...props }: HTMLAttributes<HTMLDivEl
                       <span className="block truncate">{option.code}</span>
                       <span className={optionDetailClassName}>{option.label}</span>
                     </span>
-                    <span className={optionMetaClassName}>{option.symbol}</span>
+                    {isActive ? (
+                      <span className={activeCurrencyIconClassName}>
+                        <Icon name="check" />
+                      </span>
+                    ) : (
+                      <span className={optionMetaClassName}>{option.symbol}</span>
+                    )}
                   </button>
                 );
               })}
