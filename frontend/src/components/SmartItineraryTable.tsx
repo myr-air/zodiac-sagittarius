@@ -43,7 +43,6 @@ import {
   dayRouteLabel,
   formatDuration,
   formatThaiDate,
-  formatTimeWindow,
 } from "./itineraryDisplay";
 import { ActivityPathGraphDay } from "./ActivityPathGraphDay";
 
@@ -233,8 +232,8 @@ const activityCellClassName =
   "activity-cell grid min-h-[58px] min-w-0 grid-cols-[56px_minmax(0,1fr)] gap-1.5 px-2 py-1.5 transition-[background,box-shadow] duration-150 group-hover/activity:bg-(--color-surface-subtle) data-[selected=true]:bg-(--color-route-soft) data-[selected=true]:shadow-[inset_0_0_0_1px_var(--color-route-border)] max-[360px]:grid-cols-1 max-[360px]:gap-1 max-[360px]:px-2";
 const activityTimeRailClassName =
   "flex min-w-0 flex-col gap-0.5 text-[11px] font-extrabold leading-4 text-(--color-text-muted) max-[360px]:flex-row max-[360px]:items-center";
-const activityTimeInputClassName =
-  "h-5 w-[54px] border-0 border-b border-dashed border-(--color-border) bg-transparent px-0 text-[11px] font-extrabold leading-4 text-(--color-text) outline-none transition-colors duration-150 focus:border-(--color-route) focus:ring-0 disabled:text-(--color-text-muted)";
+const activityTimeButtonClassName =
+  "activity-time-button inline-flex h-6 w-[54px] items-center justify-start rounded-(--radius-sm) border border-transparent bg-transparent px-1 font-mono text-[11px] font-extrabold leading-4 text-(--color-text) outline-none transition-colors duration-150 hover:border-(--color-route-border) hover:bg-(--color-route-soft) hover:text-(--color-route) focus:border-(--color-route-border) focus:bg-(--color-route-soft) focus:text-(--color-route) focus:ring-2 focus:ring-(--color-focus) disabled:cursor-default disabled:text-(--color-text-muted)";
 const activityBodyClassName = "min-w-0 space-y-1";
 const activityMainLineClassName =
   "grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-start gap-2 max-[420px]:grid-cols-1 max-[420px]:gap-1";
@@ -283,6 +282,31 @@ const subActivityModalTitleClassName =
 const subActivityModalCloseClassName =
   "inline-flex size-8 items-center justify-center rounded-(--radius-sm) border border-transparent text-(--color-text-muted) hover:border-(--color-border) hover:bg-(--color-surface-subtle) hover:text-(--color-text) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-focus)";
 const subActivityModalBodyClassName = "min-h-0 overflow-auto p-3";
+const timeEditModalBackdropClassName =
+  "fixed inset-0 z-[72] grid place-items-end bg-[rgb(15_23_42_/_0.32)] p-3 sm:place-items-center";
+const timeEditModalClassName =
+  "grid w-full max-w-[380px] grid-rows-[auto_auto_auto] overflow-hidden rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) shadow-[0_14px_34px_rgb(15_23_42_/_0.16)]";
+const timeEditModalHeaderClassName =
+  "grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-start gap-3 border-b border-(--color-border) px-3 py-2.5";
+const timeEditModalTitleClassName =
+  "min-w-0 text-sm font-extrabold leading-5 text-(--color-text) [&_span]:block [&_span]:truncate [&_small]:block [&_small]:text-[11px] [&_small]:font-bold [&_small]:text-(--color-text-muted)";
+const timeEditModalBodyClassName = "grid gap-3 px-3 py-3";
+const timeEditFieldsClassName =
+  "grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-2";
+const timeEditFieldClassName =
+  "grid gap-1 text-[11px] font-extrabold leading-4 text-(--color-text-muted)";
+const timeEditInputClassName =
+  "h-9 w-full rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-2 font-mono text-sm font-extrabold text-(--color-text) outline-none transition-[border-color,box-shadow] duration-150 placeholder:text-(--color-text-subtle) focus:border-(--color-route-border) focus:shadow-[0_0_0_2px_rgb(191_219_254_/_0.55)] disabled:cursor-not-allowed disabled:bg-(--color-surface-muted)";
+const timeEditHelperClassName =
+  "text-[11px] font-bold leading-4 text-(--color-text-muted)";
+const timeEditPreviewClassName =
+  "grid gap-1 rounded-(--radius-sm) border border-(--color-route-border) bg-(--color-route-soft) px-2.5 py-2 text-xs text-(--color-route)";
+const timeEditPreviewValueClassName =
+  "font-mono text-sm font-extrabold leading-5 text-(--color-text)";
+const timeEditNextDayClassName =
+  "inline-flex min-h-7 w-fit items-center gap-1 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-2 text-[11px] font-extrabold text-(--color-text-muted) transition-colors duration-150 hover:border-(--color-route-border) hover:bg-(--color-route-soft) hover:text-(--color-route) aria-[pressed=true]:border-(--color-route-border) aria-[pressed=true]:bg-(--color-route-soft) aria-[pressed=true]:text-(--color-route) disabled:cursor-not-allowed disabled:opacity-50";
+const timeEditModalFooterClassName =
+  "flex items-center justify-end gap-2 border-t border-(--color-border) px-3 py-2.5";
 const inlineFieldClassName =
   "inline-row-field min-h-[24px] w-full min-w-0 rounded-(--radius-sm) border border-transparent bg-transparent px-1.5 py-0 text-xs leading-4 text-(--color-text) outline-none transition-[background,border-color,box-shadow] duration-150 placeholder:text-(--color-text-muted) hover:not-read-only:border-(--color-border) hover:not-read-only:bg-(--color-surface) focus:border-(--color-primary-border) focus:bg-(--color-surface) focus:shadow-[0_0_0_2px_rgb(255_196_168_/_0.55)] read-only:cursor-pointer read-only:truncate read-only:px-0 read-only:font-semibold disabled:cursor-not-allowed disabled:text-(--color-text-muted)";
 const inlineOptionPickerButtonClassName = cn(
@@ -1157,7 +1181,6 @@ function ActivityCell({
   ) => void | Promise<void>;
 }) {
   const editable = canEdit && Boolean(onUpdateItemInline);
-  const timeWindow = formatTimeWindow(item);
   const typeOptions = activityTypeOptions(locale);
   const status = item.status ? itemStatusLabel(item.status, locale) : null;
   const [subActivityModalOpen, setSubActivityModalOpen] = useState(false);
@@ -1172,22 +1195,13 @@ function ActivityCell({
       onClick={() => onSelectItem(item.id)}
     >
       <div className={activityTimeRailClassName}>
-        <InlineActivityField
-          ariaLabel={itineraryLabels.row.inlineTime({ activity: item.activity })}
-          className={activityTimeInputClassName}
-          disabled={!editable}
-          inputMode="numeric"
-          key={`${item.id}:startTime:${item.startTime}`}
-          maxLength={5}
-          placeholder="--:--"
-          value={item.startTime}
-          onCommit={(startTime) =>
-            onUpdateItemInline?.(item.id, { startTime })
-          }
+        <ActivityTimeButton
+          editable={editable}
+          item={item}
+          itineraryLabels={itineraryLabels}
+          locale={locale}
+          onSave={(patch) => onUpdateItemInline?.(item.id, patch)}
         />
-        <span className="truncate text-[10px] font-bold text-(--color-text-subtle)">
-          {timeWindow}
-        </span>
       </div>
       <div className={activityBodyClassName}>
         <div className={activityMainLineClassName}>
@@ -1367,6 +1381,250 @@ function ActivityCell({
   );
 }
 
+function ActivityTimeButton({
+  editable,
+  item,
+  itineraryLabels,
+  locale,
+  onSave,
+}: {
+  editable: boolean;
+  item: ItineraryItem;
+  itineraryLabels: Messages["itinerary"];
+  locale: Locale;
+  onSave: (patch: InlineItineraryItemPatch) => void | Promise<void>;
+}) {
+  const [timeEditOpen, setTimeEditOpen] = useState(false);
+  const timeTooltip = formatTimeTooltip(item, locale);
+
+  return (
+    <>
+      <button
+        type="button"
+        aria-label={itineraryLabels.row.inlineTime({ activity: item.activity })}
+        className={activityTimeButtonClassName}
+        disabled={!editable}
+        title={timeTooltip}
+        onClick={(event) => {
+          event.stopPropagation();
+          setTimeEditOpen(true);
+        }}
+      >
+        {item.startTime?.trim() || "--:--"}
+      </button>
+      {timeEditOpen ? (
+        <TimeEditModal
+          item={item}
+          itineraryLabels={itineraryLabels}
+          locale={locale}
+          onClose={() => setTimeEditOpen(false)}
+          onSave={onSave}
+        />
+      ) : null}
+    </>
+  );
+}
+
+function TimeEditModal({
+  item,
+  itineraryLabels,
+  locale,
+  onClose,
+  onSave,
+}: {
+  item: ItineraryItem;
+  itineraryLabels: Messages["itinerary"];
+  locale: Locale;
+  onClose: () => void;
+  onSave: (patch: InlineItineraryItemPatch) => void | Promise<void>;
+}) {
+  const [startTime, setStartTime] = useState(item.startTime ?? "");
+  const [endTime, setEndTime] = useState(item.endTime ?? "");
+  const [endOffsetDays, setEndOffsetDays] = useState(
+    item.endTime ? item.endOffsetDays ?? 0 : 0,
+  );
+  const [saving, setSaving] = useState(false);
+  const startMinutes = parseTimeToMinutes(startTime);
+  const endMinutes = endTime ? parseTimeToMinutes(endTime) : null;
+  const hasValidStart = !startTime || startMinutes !== null;
+  const hasValidEnd = !endTime || endMinutes !== null;
+  const needsStartForEnd = Boolean(endTime && !startTime.trim());
+  const derivedDuration =
+    startMinutes !== null && endMinutes !== null
+      ? Math.max(1, endMinutes + endOffsetDays * 24 * 60 - startMinutes)
+      : null;
+  const timeFormatHint =
+    locale === "th"
+      ? "ใช้รูปแบบ 24 ชั่วโมง เช่น 08:30"
+      : "Use 24-hour time, for example 08:30.";
+  const optionalEndHint =
+    locale === "th"
+      ? "เวลาจบไม่บังคับ ถ้าเว้นว่างจะไม่แสดง duration"
+      : "End time is optional. Leave it blank to hide duration.";
+  const errorMessage =
+    !hasValidStart || !hasValidEnd
+      ? locale === "th"
+        ? "เวลาใช้รูปแบบ HH:MM เช่น 09:30"
+        : "Use HH:MM time, for example 09:30."
+      : needsStartForEnd
+        ? locale === "th"
+          ? "ใส่เวลาเริ่มก่อนใส่เวลาจบ"
+          : "Add a start time before adding an end time."
+      : null;
+  const previewWindow =
+    startTime && endTime && derivedDuration
+      ? formatTimeRangeLabel(startTime, endTime, endOffsetDays)
+      : startTime || "--:--";
+
+  useEffect(() => {
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") onClose();
+    }
+
+    document.addEventListener("keydown", closeOnEscape);
+    return () => document.removeEventListener("keydown", closeOnEscape);
+  }, [onClose]);
+
+  function updateStartTime(nextStartTime: string) {
+    setStartTime(nextStartTime);
+    if (!endTime) return;
+    const nextOffset = endOffsetDaysBetweenTimes(nextStartTime, endTime);
+    setEndOffsetDays(nextOffset);
+  }
+
+  function updateEndTime(nextEndTime: string) {
+    setEndTime(nextEndTime);
+    setEndOffsetDays(nextEndTime ? endOffsetDaysBetweenTimes(startTime, nextEndTime) : 0);
+  }
+
+  async function save(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (saving || errorMessage) return;
+    setSaving(true);
+    try {
+      await onSave({
+        startTime: startTime.trim(),
+        endTime: endTime.trim() || null,
+        endOffsetDays: endTime.trim() ? endOffsetDays : 0,
+        durationMinutes: endTime.trim() ? derivedDuration : null,
+      });
+      onClose();
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  if (typeof document === "undefined") return null;
+
+  return createPortal(
+    <div
+      className={timeEditModalBackdropClassName}
+      role="presentation"
+      onClick={onClose}
+    >
+      <form
+        className={timeEditModalClassName}
+        role="dialog"
+        aria-modal="true"
+        aria-label={itineraryLabels.row.inlineTime({ activity: item.activity })}
+        onClick={(event) => event.stopPropagation()}
+        onSubmit={(event) => void save(event)}
+      >
+        <header className={timeEditModalHeaderClassName}>
+          <strong className={timeEditModalTitleClassName}>
+            <span>{item.activity}</span>
+            <small>{itineraryLabels.row.inlineTime({ activity: item.activity })}</small>
+          </strong>
+          <button
+            type="button"
+            className={subActivityModalCloseClassName}
+            aria-label="Close time editor"
+            onClick={onClose}
+          >
+            <Icon name="x" />
+          </button>
+        </header>
+        <div className={timeEditModalBodyClassName}>
+          <div className={timeEditFieldsClassName}>
+            <label className={timeEditFieldClassName}>
+              <span>{locale === "th" ? "เวลาเริ่ม" : "Start time"}</span>
+              <input
+                className={timeEditInputClassName}
+                inputMode="numeric"
+                maxLength={5}
+                placeholder="08:30"
+                title={timeFormatHint}
+                value={startTime}
+                onChange={(event) => updateStartTime(event.target.value)}
+              />
+            </label>
+            <label className={timeEditFieldClassName}>
+              <span>{locale === "th" ? "เวลาจบ" : "End time"}</span>
+              <input
+                className={timeEditInputClassName}
+                inputMode="numeric"
+                maxLength={5}
+                placeholder="10:00"
+                title={`${timeFormatHint} ${optionalEndHint}`}
+                value={endTime}
+                onChange={(event) => updateEndTime(event.target.value)}
+              />
+            </label>
+          </div>
+          <p className={timeEditHelperClassName}>
+            {timeFormatHint} {optionalEndHint}
+          </p>
+          <button
+            type="button"
+            className={timeEditNextDayClassName}
+            aria-pressed={endOffsetDays > 0}
+            disabled={!endTime}
+            onClick={() => setEndOffsetDays((current) => (current > 0 ? 0 : 1))}
+          >
+            +1 {locale === "th" ? "จบวันถัดไป" : "next day end"}
+          </button>
+          <div className={timeEditPreviewClassName}>
+            <span>{locale === "th" ? "ตัวอย่างที่จะแสดง" : "Display preview"}</span>
+            <strong className={timeEditPreviewValueClassName}>
+              {previewWindow}
+            </strong>
+            {derivedDuration ? (
+              <span>
+                {locale === "th" ? "ระยะเวลา" : "Duration"}:{" "}
+                {formatDuration(derivedDuration, locale)}
+              </span>
+            ) : (
+              <span>{locale === "th" ? "ไม่แสดง duration" : "Duration hidden"}</span>
+            )}
+          </div>
+          {errorMessage ? (
+            <p className="text-xs font-bold text-(--color-danger)" role="alert">
+              {errorMessage}
+            </p>
+          ) : null}
+        </div>
+        <footer className={timeEditModalFooterClassName}>
+          <button
+            type="button"
+            className="inline-flex min-h-8 items-center justify-center rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-3 text-xs font-extrabold text-(--color-text-muted) hover:bg-(--color-surface-subtle) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-focus)"
+            onClick={onClose}
+          >
+            {itineraryLabels.row.durationCancel}
+          </button>
+          <button
+            type="submit"
+            className="inline-flex min-h-8 items-center justify-center rounded-(--radius-sm) border border-(--color-route-border) bg-(--color-route) px-3 text-xs font-extrabold text-white hover:bg-[#1d4ed8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-focus) disabled:cursor-not-allowed disabled:opacity-50"
+            disabled={saving || Boolean(errorMessage)}
+          >
+            {itineraryLabels.row.durationSave}
+          </button>
+        </footer>
+      </form>
+    </div>,
+    document.body,
+  );
+}
+
 function SubActivityModal({
   canEdit,
   item,
@@ -1532,21 +1790,15 @@ function SubActivityList({
           <span className={subActivityDragClassName} aria-hidden="true">
             <Icon name="drag" className="size-4" />
           </span>
-          <InlineActivityField
-            ariaLabel={itineraryLabels.row.inlineTime({
-              activity: subItem.activity,
-            })}
-            className={cn(activityTimeInputClassName, "max-[760px]:hidden")}
-            disabled={!editable}
-            inputMode="numeric"
-            key={`${subItem.id}:startTime:${subItem.startTime}`}
-            maxLength={5}
-            placeholder="--:--"
-            value={subItem.startTime}
-            onCommit={(startTime) =>
-              onUpdateItemInline?.(subItem.id, { startTime })
-            }
-          />
+          <span className="max-[760px]:hidden">
+            <ActivityTimeButton
+              editable={editable}
+              item={subItem}
+              itineraryLabels={itineraryLabels}
+              locale={locale}
+              onSave={(patch) => onUpdateItemInline?.(subItem.id, patch)}
+            />
+          </span>
           <div className={subActivityTextClassName}>
             <InlineActivityField
               ariaLabel={itineraryLabels.row.inlineActivity({
@@ -1758,6 +2010,50 @@ function compareItineraryItems(a: ItineraryItem, b: ItineraryItem): number {
   if (a.sortOrder !== b.sortOrder) return a.sortOrder - b.sortOrder;
   if (a.startTime !== b.startTime) return a.startTime.localeCompare(b.startTime);
   return a.activity.localeCompare(b.activity);
+}
+
+function parseTimeToMinutes(value: string): number | null {
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  const match = /^(\d{2}):(\d{2})$/.exec(trimmed);
+  if (!match) return null;
+  const hour = Number(match[1]);
+  const minute = Number(match[2]);
+  if (hour > 23 || minute > 59) return null;
+  return hour * 60 + minute;
+}
+
+function endOffsetDaysBetweenTimes(startTime: string, endTime: string): number {
+  const start = parseTimeToMinutes(startTime);
+  const end = parseTimeToMinutes(endTime);
+  if (start === null || end === null) return 0;
+  return end <= start ? 1 : 0;
+}
+
+function formatTimeTooltip(
+  item: Pick<ItineraryItem, "startTime" | "endTime" | "endOffsetDays" | "durationMinutes">,
+  locale: Locale,
+): string {
+  const startTime = item.startTime?.trim() || "--:--";
+  const endTime = item.endTime?.trim();
+  const lines = [
+    endTime
+      ? formatTimeRangeLabel(startTime, endTime, item.endOffsetDays ?? 0)
+      : startTime,
+  ];
+  if (endTime && item.durationMinutes) {
+    lines.push(formatDuration(item.durationMinutes, locale));
+  }
+  return lines.join("\n");
+}
+
+function formatTimeRangeLabel(
+  startTime: string,
+  endTime: string,
+  endOffsetDays = 0,
+): string {
+  const endOffset = endOffsetDays > 0 ? ` +${endOffsetDays}` : "";
+  return `${startTime || "--:--"} - ${endTime}${endOffset}`;
 }
 
 function activityTypeOptions(locale: Locale): InlineOptionPickerOption[] {

@@ -567,6 +567,63 @@ describe("SmartItineraryTable", () => {
     );
   });
 
+  it("edits activity start and optional end time in a focused modal", async () => {
+    const user = userEvent.setup();
+    const onUpdateItemInline = vi.fn();
+    const item = {
+      ...tripFixture.planItems[0],
+      id: "time-modal-item",
+      activity: "Harbour transfer",
+      startTime: "08:00",
+      endTime: "09:15",
+      endOffsetDays: 0,
+      durationMinutes: 75,
+    };
+
+    renderTable({
+      items: [item],
+      graphItems: [item],
+      selectedItemId: item.id,
+      onUpdateItemInline,
+    });
+
+    const row = document.querySelector<HTMLTableRowElement>(
+      '[data-item-id="time-modal-item"]',
+    );
+    expect(row).not.toBeNull();
+    const timeButton = within(row as HTMLElement).getByRole("button", {
+      name: /แก้ไขเวลา Harbour transfer/i,
+    });
+    expect(timeButton).toHaveTextContent("08:00");
+    expect(timeButton).toHaveAttribute("title", "08:00 - 09:15\n1 h 15 m");
+    expect(row).toHaveTextContent("08:00");
+    expect(row).not.toHaveTextContent("08:00-09:15");
+
+    await user.click(timeButton);
+
+    const dialog = screen.getByRole("dialog", {
+      name: /แก้ไขเวลา Harbour transfer/i,
+    });
+    expect(within(dialog).getByText(/ตัวอย่างที่จะแสดง/i)).toBeInTheDocument();
+    expect(within(dialog).getByText(/ระยะเวลา: 1 h 15 m/i)).toBeInTheDocument();
+
+    const endInput = within(dialog).getByLabelText("เวลาจบ");
+    await user.clear(endInput);
+    await user.type(endInput, "10:30");
+    expect(within(dialog).getByText(/ระยะเวลา: 2 h 30 m/i)).toBeInTheDocument();
+
+    await user.click(within(dialog).getByRole("button", { name: "บันทึก" }));
+
+    await waitFor(() => {
+      expect(onUpdateItemInline).toHaveBeenCalledWith("time-modal-item", {
+        startTime: "08:00",
+        endTime: "10:30",
+        endOffsetDays: 0,
+        durationMinutes: 150,
+      });
+    });
+  });
+
   it("renders sub-activities inside their parent activity cell", async () => {
     const user = userEvent.setup();
     const onAddSubActivity = vi.fn();
