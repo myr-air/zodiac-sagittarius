@@ -427,6 +427,8 @@ export function SagittariusApp({
     currentView === "overview" ||
     currentView === "itinerary" ||
     currentView === "timeline";
+  const shouldSyncBackendExpenseSummary =
+    currentView === "expenses" || supportsContextRail;
   const activePlanItems = useMemo(
     () =>
       trip.itineraryItems.filter(
@@ -778,6 +780,7 @@ export function SagittariusApp({
       !resolvedApiClient ||
       !isCockpitLoaded ||
       !canViewExpenses ||
+      !shouldSyncBackendExpenseSummary ||
       !selectedTripPlanId
     ) {
       return undefined;
@@ -818,6 +821,7 @@ export function SagittariusApp({
     participantSession,
     resolvedApiClient,
     selectedTripPlanId,
+    shouldSyncBackendExpenseSummary,
   ]);
 
   useEffect(() => {

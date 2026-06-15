@@ -3712,6 +3712,53 @@ describe("Sagittarius cockpit UI", () => {
     expect(apiClient.setMainTripPlan!).not.toHaveBeenCalled();
   }, 45_000);
 
+  for (const workspace of [
+    {
+      view: "settings",
+      regionName: /Trip settings|ตั้งค่าทริป/i,
+    },
+    {
+      view: "photos",
+      regionName: /Photos & Albums|รูปภาพและอัลบั้ม/i,
+    },
+    {
+      view: "bookings",
+      regionName: /Bookings & Docs|การจองและเอกสาร/i,
+    },
+  ] as const) {
+    it(`does not refresh API expense summary from the ${workspace.view} workspace`, async () => {
+      const user = userEvent.setup();
+      const apiTrip = {
+        ...tripWithPlans(),
+        members: [{ ...seedTrip.members[0], claimPasswordHash: null }],
+      };
+      const getExpenseSummary = vi.fn().mockResolvedValue({
+        groupSpend: 0,
+        netByMember: {},
+        currentUserNetLabel: "settled",
+        settlementSuggestions: [],
+      });
+      const apiClient = createApiClientForTrip(apiTrip, {
+        getExpenseSummary,
+      });
+
+      render(
+        <SagittariusApp
+          requireJoin
+          dataSource="api"
+          initialView={workspace.view}
+          apiClient={apiClient}
+        />,
+      );
+      await loginApiTrip(user);
+
+      expect(
+        await screen.findByRole("region", { name: workspace.regionName }),
+      ).toBeInTheDocument();
+      expect(getExpenseSummary).not.toHaveBeenCalled();
+    }, 45_000);
+  }
+
   it("matches existing booking tickets before creating duplicate itinerary tickets", () => {
     const flightItem = seedTrip.itineraryItems.find(
       (item) => item.id === "item-flight-bkk-hkg",
