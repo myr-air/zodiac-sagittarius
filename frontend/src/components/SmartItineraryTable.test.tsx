@@ -944,6 +944,47 @@ describe("SmartItineraryTable", () => {
     });
   });
 
+  it("uses the same travel sub-type patch from the mobile type picker", async () => {
+    const user = userEvent.setup();
+    const onUpdateItemInline = vi.fn();
+    const item = {
+      ...tripFixture.planItems[0],
+      id: "mobile-travel-subtype-row",
+      activity: "Mobile transfer",
+      activityType: "travel" as const,
+      details: {
+        ...tripFixture.planItems[0].details,
+        mode: "bus",
+      },
+    };
+
+    renderTable({
+      items: [item],
+      graphItems: [item],
+      selectedItemId: item.id,
+      onUpdateItemInline,
+    });
+
+    const row = document.querySelector<HTMLTableRowElement>(
+      '[data-item-id="mobile-travel-subtype-row"]',
+    );
+    expect(row).not.toBeNull();
+    const typeButton = within(row as HTMLElement)
+      .getAllByRole("button", { name: /แก้ไขประเภท Mobile transfer/i })
+      .find((button) => button.className.includes("activity-type-picker-mobile"));
+    expect(typeButton).toBeDefined();
+
+    await user.click(typeButton as HTMLElement);
+    expect(screen.getByRole("listbox", { name: /เดินทาง options/i })).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: /แท็กซี่/i }));
+
+    expect(onUpdateItemInline).toHaveBeenCalledWith("mobile-travel-subtype-row", {
+      activityType: "travel",
+      activitySubtype: "taxi",
+      details: expect.objectContaining({ mode: "bus", subtype: "taxi" }),
+    });
+  });
+
   it("lets sub-activities switch from travel to another type and default", async () => {
     const user = userEvent.setup();
     const onUpdateItemInline = vi.fn();

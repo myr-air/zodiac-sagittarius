@@ -1517,21 +1517,13 @@ function ActivityCell({
           locale={locale}
           onSave={(patch) => onUpdateItemInline?.(item.id, patch)}
         />
-        <InlineOptionPicker
-          ariaLabel={itineraryLabels.row.inlineType({
-            activity: item.activity,
-          })}
+        <ActivityTypePicker
           buttonClassName={activityMobileTypePickerClassName}
           disabled={!editable}
-          options={activityTypeOptions(locale)}
-          optionKeyPrefix={`activity-type-mobile-${item.id}`}
-          value={item.activityType}
-          onCommit={(activityType) =>
-            onUpdateItemInline?.(
-              item.id,
-              buildActivityTypePatch(item, activityType),
-            )
-          }
+          item={item}
+          itineraryLabels={itineraryLabels}
+          locale={locale}
+          onUpdateItemInline={onUpdateItemInline}
         />
       </div>
       <div className={activityTypeRailClassName}>
