@@ -3462,6 +3462,21 @@ function formatDecimal(value: number): string {
   return Number.isInteger(value) ? String(value) : value.toFixed(1);
 }
 
+function sideMenuFloatingLeft(
+  menuLeft: number,
+  menuWidth: number,
+  sideMenuWidth: number,
+  viewportWidth: number,
+): number {
+  const margin = 8;
+  const gap = 6;
+  const right = menuLeft + menuWidth + gap;
+  if (right + sideMenuWidth <= viewportWidth - margin) return right;
+  const left = menuLeft - sideMenuWidth - gap;
+  if (left >= margin) return left;
+  return Math.max(margin, viewportWidth - sideMenuWidth - margin);
+}
+
 interface InlineOptionPickerOption {
   icon?: IconName;
   label: string;
@@ -3512,6 +3527,7 @@ function InlineOptionPicker({
     ? subOptionsByValue?.[activeOption.value] ?? []
     : [];
   const hasSideMenu = open && activeSubOptions.length > 0 && Boolean(onCommitSubOption);
+  const sideMenuWidth = Math.max(position.width, 180);
   const sideMenuTop = Math.min(
     Math.max(8, position.top + activeIndex * 34),
     Math.max(8, typeof window === "undefined" ? position.top : window.innerHeight - Math.min(260, activeSubOptions.length * 34 + 8) - 8),
@@ -3519,10 +3535,7 @@ function InlineOptionPicker({
   const sideMenuLeft =
     typeof window === "undefined"
       ? position.left + position.width + 6
-      : Math.min(
-          position.left + position.width + 6,
-          Math.max(8, window.innerWidth - Math.max(position.width, 180) - 8),
-        );
+      : sideMenuFloatingLeft(position.left, position.width, sideMenuWidth, window.innerWidth);
 
   useEffect(() => {
     if (!open) return;
@@ -3713,7 +3726,7 @@ function InlineOptionPicker({
                   style={{
                     left: sideMenuLeft,
                     top: sideMenuTop,
-                    width: Math.max(position.width, 180),
+                    width: sideMenuWidth,
                   }}
                 >
                   {activeSubOptions.map((option) => (
