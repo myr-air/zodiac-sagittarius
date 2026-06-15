@@ -80,40 +80,50 @@ pub async fn resolve_place(
         return Ok(classify_candidates(Vec::new()));
     }
 
-    let query = place_query(&request);
     let country_codes = destination_country_codes(&request.countries);
-    let normalized_query = normalized_destination_query(&query, &country_codes);
-    if let Some(record) = db::queries::find_place_geocode_cache(pool, &normalized_query).await? {
-        return Ok(classify_candidates(vec![candidate_from_cache(record)]));
-    }
-
-    let evidence = brave_place_evidence(&request).await.unwrap_or_default();
-    let candidates = resolve_query_candidates(
-        &query,
-        &request.countries,
-        confidence_for_request(&request),
-        evidence,
-    )
-    .await
-    .unwrap_or_default();
-    let response = classify_candidates(candidates);
-    if response.status == "resolved" {
-        if let Some(candidate) = response.candidates.first() {
-            let _ = db::queries::upsert_place_geocode_cache(
-                pool,
-                &normalized_query,
-                &query,
-                &country_codes,
-                &candidate_display_name(candidate),
-                &candidate.source,
-                candidate.coordinates.lat,
-                candidate.coordinates.lng,
-            )
-            .await;
+    let queries = place_queries(&request);
+    for query in &queries {
+        let normalized_query = normalized_destination_query(query, &country_codes);
+        if let Some(record) = db::queries::find_place_geocode_cache(pool, &normalized_query).await?
+        {
+            return Ok(classify_candidates(vec![candidate_from_cache(record)]));
         }
     }
 
-    Ok(response)
+    let evidence = brave_place_evidence(&request).await.unwrap_or_default();
+    for query in &queries {
+        let candidates = resolve_query_candidates(
+            query,
+            &request.countries,
+            confidence_for_request(&request),
+            evidence.clone(),
+        )
+        .await
+        .unwrap_or_default();
+        let response = classify_candidates(candidates);
+        if response.status == "unresolved" {
+            continue;
+        }
+        if response.status == "resolved" {
+            if let Some(candidate) = response.candidates.first() {
+                let normalized_query = normalized_destination_query(query, &country_codes);
+                let _ = db::queries::upsert_place_geocode_cache(
+                    pool,
+                    &normalized_query,
+                    query,
+                    &country_codes,
+                    &candidate_display_name(candidate),
+                    &candidate.source,
+                    candidate.coordinates.lat,
+                    candidate.coordinates.lng,
+                )
+                .await;
+            }
+        }
+        return Ok(response);
+    }
+
+    Ok(classify_candidates(Vec::new()))
 }
 
 pub async fn resolve_destination_coordinates(
@@ -447,7 +457,7 @@ fn parse_open_meteo_candidates(
 
 async fn brave_place_evidence(request: &ResolvePlaceRequest) -> Option<Vec<String>> {
     let api_key = std::env::var("BRAVE_API_KEY").ok()?;
-    let query = place_query(request);
+    let query = full_place_query(request);
     let response = reqwest::Client::new()
         .get("https://api.search.brave.com/res/v1/web/search")
         .header("X-Subscription-Token", api_key)
@@ -494,17 +504,23 @@ async fn wait_for_nominatim_slot() {
     *last_request = Some(Instant::now());
 }
 
-fn place_query(request: &ResolvePlaceRequest) -> String {
-    [
-        request.activity.clone(),
-        request.place_hint.clone(),
-        request.destination_label.clone(),
-        request.countries.join(" "),
-    ]
-    .join(" ")
-    .split_whitespace()
-    .collect::<Vec<_>>()
-    .join(" ")
+fn place_queries(request: &ResolvePlaceRequest) -> Vec<String> {
+    let mut queries = vec![
+        compact_query(&[&request.place_hint]),
+        compact_query(&[&request.place_hint, &request.destination_label]),
+        full_place_query(request),
+    ];
+    queries.retain(|query| !query.is_empty());
+    queries.dedup();
+    queries
+}
+
+fn full_place_query(request: &ResolvePlaceRequest) -> String {
+    compact_query(&[
+        &request.activity,
+        &request.place_hint,
+        &request.destination_label,
+    ])
 }
 
 fn nominatim_country_codes(countries: &[String]) -> String {
@@ -599,10 +615,17 @@ mod tests {
     }
 
     #[test]
-    fn place_query_combines_activity_hint_destination_and_country_context() {
-        let query = place_query(&request());
+    fn place_queries_prioritize_explicit_place_hint_before_context() {
+        let queries = place_queries(&request());
 
-        assert_eq!(query, "Dim Dim Sum near Elements Hong Kong HK Thailand");
+        assert_eq!(
+            queries,
+            vec![
+                "near Elements".to_string(),
+                "near Elements Hong Kong".to_string(),
+                "Dim Dim Sum near Elements Hong Kong".to_string(),
+            ]
+        );
         assert_eq!(nominatim_country_codes(&request().countries), "hk");
     }
 

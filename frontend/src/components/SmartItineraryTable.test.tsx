@@ -939,7 +939,7 @@ describe("SmartItineraryTable", () => {
 
     expect(onUpdateItemInline).toHaveBeenCalledWith("travel-subtype-row", {
       activityType: "travel",
-      details: expect.objectContaining({ mode: "taxi" }),
+      details: expect.objectContaining({ mode: "bus", subtype: "taxi" }),
     });
   });
 

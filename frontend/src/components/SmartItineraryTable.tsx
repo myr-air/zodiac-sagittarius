@@ -1845,13 +1845,14 @@ function ActivityTypePicker({
         onUpdateItemInline?.(item.id, buildActivityTypePatch(item, activityType))
       }
       onCommitSubOption={(activityType, mode) =>
-        onUpdateItemInline?.(item.id, {
-          activityType: activityType as ItineraryItem["activityType"],
-          details: {
-            ...(item.details ?? {}),
+        onUpdateItemInline?.(
+          item.id,
+          buildActivitySubtypePatch(
+            item,
+            activityType as ItineraryItem["activityType"],
             mode,
-          },
-        })
+          ),
+        )
       }
     />
   );
@@ -3096,12 +3097,35 @@ function buildActivityTypePatch(
   if (nextActivityType === "travel") {
     return { activityType: nextActivityType };
   }
-  const detailsWithoutTravelMode = { ...(item.details ?? {}) };
-  delete detailsWithoutTravelMode.mode;
+  const detailsWithoutTravelMode = withoutTravelSubtypeDetails(item.details);
   return {
     activityType: nextActivityType,
     details: detailsWithoutTravelMode,
   };
+}
+
+function buildActivitySubtypePatch(
+  item: ItineraryItem,
+  activityType: ItineraryItem["activityType"],
+  subtype: string,
+): InlineItineraryItemPatch {
+  if (activityType !== "travel") return buildActivityTypePatch(item, activityType);
+  return {
+    activityType,
+    details: {
+      ...(item.details ?? {}),
+      subtype,
+    },
+  };
+}
+
+function withoutTravelSubtypeDetails(details: ItineraryItem["details"] | null | undefined): ItineraryItem["details"] {
+  const nextDetails = { ...(details ?? {}) };
+  delete nextDetails.subtype;
+  if (normalizeTravelSubtype(readItineraryDetailString(details, "mode"))) {
+    delete nextDetails.mode;
+  }
+  return nextDetails;
 }
 
 type TravelSubtype =
@@ -3188,6 +3212,9 @@ function normalizeTravelSubtype(value: string | null | undefined): TravelSubtype
 
 function travelSubtypeForItem(item: ItineraryItem): TravelSubtype | null {
   if (item.activityType !== "travel") return null;
+  const subtype = readItineraryDetailString(item.details, "subtype");
+  const explicitSubtype = normalizeTravelSubtype(subtype);
+  if (explicitSubtype) return explicitSubtype;
   const mode = readItineraryDetailString(item.details, "mode");
   const explicitMode = normalizeTravelSubtype(mode);
   if (explicitMode) return explicitMode;
