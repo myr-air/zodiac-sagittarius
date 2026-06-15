@@ -269,7 +269,7 @@ fn openrouter_request(
         "messages": [
             {
                 "role": "system",
-                "content": "Convert travel itinerary text into strict Joii itinerary JSON. Return JSON only. Do not invent dates outside the trip window. Use activityType only from travel, food, shopping, attraction, experience, stay."
+                "content": "Convert travel itinerary text into strict Joii itinerary JSON. Return JSON only. Do not invent dates outside the trip window. Use activityType only from travel, food, shopping, attraction, experience, stay, default."
             },
             {
                 "role": "user",
@@ -292,7 +292,7 @@ fn itinerary_conversion_prompt(
     trip_context: &ItineraryImportTrip,
 ) -> String {
     format!(
-        "Return JSON only, with schema {IMPORT_SCHEMA} and version {IMPORT_VERSION}. Convert travel itinerary text into strict Joii itinerary JSON. Do not invent dates outside the trip window. Use activityType only from travel, food, shopping, attraction, experience, stay.\n\nTrip: {} ({}) from {} to {}. Active plan: {}. File name: {}. Content type: {}.\n\nSource text:\n{}",
+        "Return JSON only, with schema {IMPORT_SCHEMA} and version {IMPORT_VERSION}. Convert travel itinerary text into strict Joii itinerary JSON. Do not invent dates outside the trip window. Use activityType only from travel, food, shopping, attraction, experience, stay, default.\n\nTrip: {} ({}) from {} to {}. Active plan: {}. File name: {}. Content type: {}.\n\nSource text:\n{}",
         trip_context.name,
         trip_context.destination_label,
         trip_context.start_date,
@@ -387,7 +387,7 @@ fn itinerary_json_schema() -> Value {
             "endTime": { "type": ["string", "null"] },
             "endOffsetDays": { "type": ["integer", "null"] },
             "activity": { "type": "string" },
-            "activityType": { "enum": ["travel", "food", "shopping", "attraction", "experience", "stay"] },
+            "activityType": { "enum": ["travel", "food", "shopping", "attraction", "experience", "stay", "default"] },
             "place": { "type": "string" },
             "linkLabel": { "type": "string" },
             "mapLink": { "type": "string" },
@@ -687,7 +687,7 @@ fn record_reference_error(
 fn validate_activity_type(value: &str) -> Result<(), ServiceError> {
     if matches!(
         value,
-        "travel" | "food" | "shopping" | "attraction" | "experience" | "stay"
+        "travel" | "food" | "shopping" | "attraction" | "experience" | "stay" | "default"
     ) {
         return Ok(());
     }

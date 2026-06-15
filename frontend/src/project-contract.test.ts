@@ -212,6 +212,7 @@ describe("Sagittarius project scaffold", () => {
     expect(makefile).toContain("backend/migrations/0027_itinerary_hierarchy_time_windows.sql");
     expect(makefile).toContain("backend/migrations/0028_plan_check_trip_plan_scope.sql");
     expect(makefile).toContain("backend/migrations/0029_expense_reminder_trip_plan_scope.sql");
+    expect(makefile).toContain("backend/migrations/0031_itinerary_activity_type_default.sql");
     expect(makefile).toContain("table_name='account_vault_items'");
     expect(makefile).toContain("table_name='trips' AND column_name='countries'");
     expect(makefile).toContain("table_name='itinerary_items' AND column_name='path_id'");
@@ -219,6 +220,7 @@ describe("Sagittarius project scaffold", () => {
     expect(makefile).toContain("table_name='trip_tasks' AND column_name='trip_plan_id'");
     expect(makefile).toContain("table_name='plan_checks' AND column_name='trip_plan_id'");
     expect(makefile).toContain("table_name='expense_reminders' AND column_name='trip_plan_id'");
+    expect(makefile).toContain("pg_get_constraintdef(oid) LIKE '%default%'");
     expect(makefile).not.toMatch(/elif ! \$\(PSQL\)[\s\S]*account_vault_items/);
   });
 
@@ -303,6 +305,7 @@ describe("Sagittarius project scaffold", () => {
     expect(seedE2e).toContain("0027_itinerary_hierarchy_time_windows.sql");
     expect(seedE2e).toContain("0028_plan_check_trip_plan_scope.sql");
     expect(seedE2e).toContain("0029_expense_reminder_trip_plan_scope.sql");
+    expect(seedE2e).toContain("0031_itinerary_activity_type_default.sql");
     for (const script of [
       "scripts/run-local-real-api-e2e.ts",
       "scripts/run-local-real-browser-auth-e2e.ts",

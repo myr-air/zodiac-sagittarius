@@ -555,9 +555,9 @@ describe("SmartItineraryTable", () => {
         name: /แก้ไขประเภท|Edit type/i,
       })[0]?.querySelector(".icon"),
     ).toBeInTheDocument();
-    const subActivityToggle = within(itemRows[0]).getByRole("button", {
+    const subActivityToggle = within(itemRows[0]).getAllByRole("button", {
       name: /Sub-activities for/i,
-    });
+    })[0];
     expect(subActivityToggle).toHaveClass("size-7");
     expect(subActivityToggle).toHaveAttribute("aria-expanded", "false");
     expect(itemRows[0]?.querySelector(".sub-activity-list")).toBeNull();
@@ -843,6 +843,71 @@ describe("SmartItineraryTable", () => {
     });
   });
 
+  it("lets sub-activities switch from travel to another type and default", async () => {
+    const user = userEvent.setup();
+    const onUpdateItemInline = vi.fn();
+    const parent = {
+      ...tripFixture.planItems[0],
+      id: "parent-type-switch",
+      activity: "Parent route",
+      day: "2026-06-19",
+      sortOrder: 10,
+    };
+    const child = {
+      ...tripFixture.planItems[1],
+      id: "child-type-switch",
+      parentItemId: "parent-type-switch",
+      activity: "Airport transfer",
+      activityType: "travel" as const,
+      details: {
+        ...tripFixture.planItems[1].details,
+        mode: "bus",
+      },
+      day: "2026-06-19",
+      sortOrder: 11,
+    };
+
+    renderTable({
+      items: [parent, child],
+      graphItems: [parent, child],
+      selectedItemId: parent.id,
+      onUpdateItemInline,
+    });
+
+    const parentRow = document.querySelector<HTMLTableRowElement>(
+      '[data-item-id="parent-type-switch"]',
+    );
+    expect(parentRow).not.toBeNull();
+    await user.click(
+      within(parentRow as HTMLElement).getAllByRole("button", {
+        name: /Sub-activities for Parent route/i,
+      })[0],
+    );
+    const childLine = within(parentRow as HTMLElement)
+      .getByDisplayValue("Airport transfer")
+      .closest("[data-sub-item-id]");
+    expect(childLine).not.toBeNull();
+
+    const typeButton = within(childLine as HTMLElement).getByRole("button", {
+      name: /แก้ไขประเภท Airport transfer/i,
+    });
+    await user.click(typeButton);
+    await user.click(screen.getByRole("option", { name: /อาหาร/i }));
+
+    expect(onUpdateItemInline).toHaveBeenCalledWith("child-type-switch", {
+      activityType: "food",
+      details: expect.not.objectContaining({ mode: expect.anything() }),
+    });
+
+    await user.click(typeButton);
+    await user.click(screen.getByRole("option", { name: /ทั่วไป/i }));
+
+    expect(onUpdateItemInline).toHaveBeenCalledWith("child-type-switch", {
+      activityType: "default",
+      details: expect.not.objectContaining({ mode: expect.anything() }),
+    });
+  });
+
   it("renders sub-activities inside their parent activity cell", async () => {
     const user = userEvent.setup();
     const onAddSubActivity = vi.fn();
@@ -894,9 +959,9 @@ describe("SmartItineraryTable", () => {
         expect(placeInput).toHaveAttribute("placeholder", "");
       });
     await user.click(
-      within(parentRow as HTMLElement).getByRole("button", {
+      within(parentRow as HTMLElement).getAllByRole("button", {
         name: /Sub-activities for Parent route/i,
-      }),
+      })[0],
     );
     expect(within(parentRow as HTMLElement).getByDisplayValue("Buy Octopus card")).toBeInTheDocument();
     expect(parentRow?.querySelector(".sub-activity-list")).toHaveClass(
@@ -986,14 +1051,14 @@ describe("SmartItineraryTable", () => {
     expect(parentARow).not.toBeNull();
     expect(parentBRow).not.toBeNull();
     fireEvent.click(
-      within(parentARow as HTMLElement).getByRole("button", {
+      within(parentARow as HTMLElement).getAllByRole("button", {
         name: /Sub-activities for Parent A/i,
-      }),
+      })[0],
     );
     fireEvent.click(
-      within(parentBRow as HTMLElement).getByRole("button", {
+      within(parentBRow as HTMLElement).getAllByRole("button", {
         name: /Sub-activities for Parent B/i,
-      }),
+      })[0],
     );
 
     const childA1Line = document.querySelector<HTMLElement>(

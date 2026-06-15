@@ -204,6 +204,9 @@ db-init: db-create
 	@if ! $(PSQL) "$(DATABASE_URL)" -tAc "SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='expense_reminders' AND column_name='trip_plan_id'" | grep -q 1; then \
 	  $(PSQL) -v ON_ERROR_STOP=1 "$(DATABASE_URL)" < backend/migrations/0029_expense_reminder_trip_plan_scope.sql; \
 	fi
+	@if ! $(PSQL) "$(DATABASE_URL)" -tAc "SELECT 1 FROM pg_constraint WHERE conname='itinerary_items_activity_type_check' AND pg_get_constraintdef(oid) LIKE '%default%'" | grep -q 1; then \
+	  $(PSQL) -v ON_ERROR_STOP=1 "$(DATABASE_URL)" < backend/migrations/0031_itinerary_activity_type_default.sql; \
+	fi
 
 db-init-test: db-create-test
 	@if ! $(PSQL) "$(TEST_DATABASE_URL)" -tAc "SELECT 1 FROM information_schema.tables WHERE table_schema='public' AND table_name='trips'" | grep -q 1; then \
@@ -283,6 +286,9 @@ db-init-test: db-create-test
 	fi
 	@if ! $(PSQL) "$(TEST_DATABASE_URL)" -tAc "SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='expense_reminders' AND column_name='trip_plan_id'" | grep -q 1; then \
 	  $(PSQL) -v ON_ERROR_STOP=1 "$(TEST_DATABASE_URL)" < backend/migrations/0029_expense_reminder_trip_plan_scope.sql; \
+	fi
+	@if ! $(PSQL) "$(TEST_DATABASE_URL)" -tAc "SELECT 1 FROM pg_constraint WHERE conname='itinerary_items_activity_type_check' AND pg_get_constraintdef(oid) LIKE '%default%'" | grep -q 1; then \
+	  $(PSQL) -v ON_ERROR_STOP=1 "$(TEST_DATABASE_URL)" < backend/migrations/0031_itinerary_activity_type_default.sql; \
 	fi
 
 db-ensure-psql:

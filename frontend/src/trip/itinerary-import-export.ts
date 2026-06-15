@@ -1187,7 +1187,8 @@ function readActivityType(value: unknown): ItineraryItem["activityType"] {
     value === "shopping" ||
     value === "attraction" ||
     value === "experience" ||
-    value === "stay"
+    value === "stay" ||
+    value === "default"
   )
     return value;
   throw new Error("Unsupported itinerary import file.");

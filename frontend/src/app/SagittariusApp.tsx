@@ -3379,13 +3379,13 @@ export function SagittariusApp({
     ]);
   }
 
-  async function createItineraryNote(itemId: string) {
+  async function createItineraryNote(itemId: string, body: string) {
     if (!canCreateStopNote) return;
     const item = trip.itineraryItems.find((candidate) => candidate.id === itemId);
     if (!item) return;
     await createStopNote({
       itemId: item.id,
-      body: `Planning note for ${item.activity}`,
+      body,
     });
     setContextRailPreferredTab("notes");
     setSelectedItemId(item.id);
@@ -4417,7 +4417,9 @@ export function SagittariusApp({
                   onSaveBookingForItem={saveItineraryBookingTicket}
                   onAddStop={addStop}
                   onAddSubActivity={addSubActivity}
-                  onAddNoteForItem={(itemId) => void createItineraryNote(itemId)}
+                  onAddNoteForItem={(itemId, body) =>
+                    void createItineraryNote(itemId, body)
+                  }
                   onAddTaskForItem={(itemId) => void createItineraryTask(itemId)}
                   onOpenItemDetails={openItemDetails}
                   onSelectItem={selectItem}

@@ -78,8 +78,7 @@ describe("StopDialog", () => {
       />,
     );
 
-    expect(screen.getByLabelText("Plan block")).toBeDisabled();
-    expect(screen.getByLabelText("Plan block")).not.toBeChecked();
+    expect(screen.queryByLabelText("Plan block")).not.toBeInTheDocument();
 
     fireEvent.submit(screen.getByRole("button", { name: "Save changes" }).closest("form")!);
 

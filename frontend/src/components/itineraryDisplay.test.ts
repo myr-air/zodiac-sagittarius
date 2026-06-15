@@ -5,6 +5,8 @@ describe("itinerary display formatting", () => {
   it("labels known route days and activity types", () => {
     expect(activityTypeLabel("food")).toBe("Food");
     expect(activityTypeLabel("food", "th")).toBe("อาหาร");
+    expect(activityTypeLabel("default")).toBe("Default");
+    expect(activityTypeLabel("default", "th")).toBe("ทั่วไป");
     expect(dayRouteLabel("2026-06-18")).toBe("Bangkok -> Hong Kong");
     expect(dayRouteLabel("2025-05-16")).toBe("Hong Kong City Day");
     expect(dayRouteLabel("2025-05-17")).toBe("Hong Kong -> Shenzhen");

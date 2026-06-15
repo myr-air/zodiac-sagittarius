@@ -1018,7 +1018,7 @@ fn validate_hh_mm(value: &str) -> Result<(), ServiceError> {
 
 fn validate_activity_type(value: &str) -> Result<(), ServiceError> {
     match value {
-        "travel" | "food" | "shopping" | "attraction" | "experience" | "stay" => Ok(()),
+        "travel" | "food" | "shopping" | "attraction" | "experience" | "stay" | "default" => Ok(()),
         _ => Err(ServiceError::InvalidRequest("activity_type is invalid")),
     }
 }
@@ -1610,7 +1610,7 @@ mod tests {
         let patch = ItineraryItemPatch {
             start_time: Some(Some("09:30".to_string())),
             duration_minutes: Some(Some(45)),
-            activity_type: Some("experience".to_string()),
+            activity_type: Some("default".to_string()),
             ..ItineraryItemPatch::default()
         };
 

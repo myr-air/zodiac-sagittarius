@@ -15,7 +15,7 @@ export type TripCapability =
 export type PlanStatus = "main" | "backup" | "draft" | "proposal";
 export type PlanVariantKind = "main" | "backup" | "draft" | "split";
 
-export type ActivityType = "travel" | "food" | "shopping" | "attraction" | "experience" | "stay";
+export type ActivityType = "travel" | "food" | "shopping" | "attraction" | "experience" | "stay" | "default";
 export type ItineraryItemKind = "travel" | "activity" | "lodging" | "meal" | "note" | "preparation" | "foodRecommendation";
 export type ItineraryTimeMode = "scheduled" | "flexible";
 export type ItineraryItemStatus = "idea" | "planned" | "booked" | "confirmed" | "done" | "skipped";

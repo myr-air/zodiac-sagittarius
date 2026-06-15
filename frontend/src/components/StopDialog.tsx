@@ -200,9 +200,19 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, initialPare
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-  const title = mode === "create" ? t.stopDialog.titles.create : t.stopDialog.titles.edit;
   const detailLabels = stopDetailLabels(locale);
   const isSubActivity = Boolean(values.parentItemId);
+  const isFocusedEdit = mode === "edit";
+  const title =
+    mode === "create"
+      ? t.stopDialog.titles.create
+      : isSubActivity
+        ? locale === "th"
+          ? "แก้ไข sub-activity"
+          : "Edit sub-activity"
+        : t.stopDialog.titles.edit;
+  const moreDetailsLabel =
+    locale === "th" ? "รายละเอียดเพิ่มเติม" : "More details";
   const derivedDuration =
     values.timeMode === "flexible" || !values.endTime
       ? null
@@ -409,7 +419,7 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, initialPare
 
         <form className={stopFormClassName} onSubmit={handleSubmit}>
           <div className={dialogGridClassName}>
-            {mode === "edit" && dayOptions.length ? (
+            {mode === "edit" && !isSubActivity && dayOptions.length ? (
               <label className={dialogFieldWideClassName} htmlFor={fieldIds.day}>
                 <span>{t.stopDialog.fields.day}</span>
                 <select id={fieldIds.day} value={values.day} onChange={(event) => update("day", event.target.value)}>
@@ -419,7 +429,7 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, initialPare
                 </select>
               </label>
             ) : null}
-            {mode === "edit" && manualPathOptions.length > 1 ? (
+            {mode === "edit" && !isSubActivity && manualPathOptions.length > 1 ? (
               <label className={dialogFieldWideClassName} htmlFor={fieldIds.path}>
                 <span>{t.stopDialog.fields.plan}</span>
                 <select id={fieldIds.path} value={values.pathId ?? "main"} onChange={(event) => update("pathId", event.target.value)}>
@@ -437,54 +447,56 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, initialPare
                 ))}
               </select>
             </label>
-            <details className={advancedDetailsClassName}>
-              <summary>{detailLabels.fields.advanced}</summary>
-              <div className={advancedDetailsGridClassName}>
-                <label htmlFor={fieldIds.itemKind}>
-                  <span>Item kind</span>
-                  <select id={fieldIds.itemKind} value={values.itemKind} onChange={(event) => update("itemKind", event.target.value as ItineraryItemKind)}>
-                    {["travel", "activity", "lodging", "meal", "note", "preparation", "foodRecommendation"].map((option) => (
-                      <option value={option} key={option}>{option}</option>
-                    ))}
-                  </select>
-                </label>
-                <label htmlFor={fieldIds.timeMode}>
-                  <span>Time mode</span>
-                  <select id={fieldIds.timeMode} value={values.timeMode} onChange={(event) => updateTimeMode(event.target.value as ItineraryTimeMode)}>
-                    <option value="scheduled">scheduled</option>
-                    <option value="flexible">flexible</option>
-                  </select>
-                </label>
-                <label htmlFor={fieldIds.status}>
-                  <span>Status</span>
-                  <select id={fieldIds.status} value={values.status} onChange={(event) => update("status", event.target.value as ItineraryItemStatus)}>
-                    {["idea", "planned", "booked", "confirmed", "done", "skipped"].map((option) => (
-                      <option value={option} key={option}>{option}</option>
-                    ))}
-                  </select>
-                </label>
-                <label htmlFor={fieldIds.priority}>
-                  <span>Priority</span>
-                  <select id={fieldIds.priority} value={values.priority} onChange={(event) => update("priority", event.target.value as ItineraryItemPriority)}>
-                    {["low", "normal", "high", "must"].map((option) => (
-                      <option value={option} key={option}>{option}</option>
-                    ))}
-                  </select>
-                </label>
-                <label className={dialogFieldWideClassName} htmlFor={fieldIds.isPlanBlock}>
-                  <span>
-                    <input
-                      id={fieldIds.isPlanBlock}
-                      type="checkbox"
-                      checked={values.isPlanBlock && !isSubActivity}
-                      disabled={isSubActivity}
-                      onChange={(event) => update("isPlanBlock", event.target.checked)}
-                    />
-                    Plan block
-                  </span>
-                </label>
-              </div>
-            </details>
+            {mode === "create" ? (
+              <details className={advancedDetailsClassName}>
+                <summary>{detailLabels.fields.advanced}</summary>
+                <div className={advancedDetailsGridClassName}>
+                  <label htmlFor={fieldIds.itemKind}>
+                    <span>Item kind</span>
+                    <select id={fieldIds.itemKind} value={values.itemKind} onChange={(event) => update("itemKind", event.target.value as ItineraryItemKind)}>
+                      {["travel", "activity", "lodging", "meal", "note", "preparation", "foodRecommendation"].map((option) => (
+                        <option value={option} key={option}>{option}</option>
+                      ))}
+                    </select>
+                  </label>
+                  <label htmlFor={fieldIds.timeMode}>
+                    <span>Time mode</span>
+                    <select id={fieldIds.timeMode} value={values.timeMode} onChange={(event) => updateTimeMode(event.target.value as ItineraryTimeMode)}>
+                      <option value="scheduled">scheduled</option>
+                      <option value="flexible">flexible</option>
+                    </select>
+                  </label>
+                  <label htmlFor={fieldIds.status}>
+                    <span>Status</span>
+                    <select id={fieldIds.status} value={values.status} onChange={(event) => update("status", event.target.value as ItineraryItemStatus)}>
+                      {["idea", "planned", "booked", "confirmed", "done", "skipped"].map((option) => (
+                        <option value={option} key={option}>{option}</option>
+                      ))}
+                    </select>
+                  </label>
+                  <label htmlFor={fieldIds.priority}>
+                    <span>Priority</span>
+                    <select id={fieldIds.priority} value={values.priority} onChange={(event) => update("priority", event.target.value as ItineraryItemPriority)}>
+                      {["low", "normal", "high", "must"].map((option) => (
+                        <option value={option} key={option}>{option}</option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className={dialogFieldWideClassName} htmlFor={fieldIds.isPlanBlock}>
+                    <span>
+                      <input
+                        id={fieldIds.isPlanBlock}
+                        type="checkbox"
+                        checked={values.isPlanBlock && !isSubActivity}
+                        disabled={isSubActivity}
+                        onChange={(event) => update("isPlanBlock", event.target.checked)}
+                      />
+                      Plan block
+                    </span>
+                  </label>
+                </div>
+              </details>
+            ) : null}
             <div
               className={timeWindowGroupClassName}
               role="group"
@@ -529,23 +541,50 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, initialPare
               <span>{t.stopDialog.fields.place}</span>
               <input id={fieldIds.place} value={values.place} onChange={(event) => update("place", event.target.value)} required={detailType !== "transportation"} />
             </label>
-            <label className={dialogFieldWideClassName} htmlFor={fieldIds.mapLink}>
-              <span>{t.stopDialog.fields.mapLink}</span>
-              <input
-                id={fieldIds.mapLink}
-                type="url"
-                inputMode="url"
-                value={values.mapLink ?? ""}
-                onChange={(event) => update("mapLink", event.target.value)}
-                placeholder="https://maps.google.com/... or https://uri.amap.com/..."
-              />
-            </label>
-            <StopDetailFields
-              detailLabels={detailLabels}
-              detailType={detailType}
-              detailValues={detailValues}
-              updateDetail={updateDetail}
-            />
+            {isFocusedEdit ? (
+              <details className={advancedDetailsClassName}>
+                <summary>{moreDetailsLabel}</summary>
+                <div className={advancedDetailsGridClassName}>
+                  <label className={dialogFieldWideClassName} htmlFor={fieldIds.mapLink}>
+                    <span>{t.stopDialog.fields.mapLink}</span>
+                    <input
+                      id={fieldIds.mapLink}
+                      type="url"
+                      inputMode="url"
+                      value={values.mapLink ?? ""}
+                      onChange={(event) => update("mapLink", event.target.value)}
+                      placeholder="https://maps.google.com/... or https://uri.amap.com/..."
+                    />
+                  </label>
+                  <StopDetailFields
+                    detailLabels={detailLabels}
+                    detailType={detailType}
+                    detailValues={detailValues}
+                    updateDetail={updateDetail}
+                  />
+                </div>
+              </details>
+            ) : (
+              <>
+                <label className={dialogFieldWideClassName} htmlFor={fieldIds.mapLink}>
+                  <span>{t.stopDialog.fields.mapLink}</span>
+                  <input
+                    id={fieldIds.mapLink}
+                    type="url"
+                    inputMode="url"
+                    value={values.mapLink ?? ""}
+                    onChange={(event) => update("mapLink", event.target.value)}
+                    placeholder="https://maps.google.com/... or https://uri.amap.com/..."
+                  />
+                </label>
+                <StopDetailFields
+                  detailLabels={detailLabels}
+                  detailType={detailType}
+                  detailValues={detailValues}
+                  updateDetail={updateDetail}
+                />
+              </>
+            )}
             {placeResolution?.state === "ambiguous" ? (
               <div className={dialogFieldWideClassName} aria-label={t.stopDialog.placeResolution.candidates}>
                 <div className={placeCandidateListClassName}>
@@ -571,16 +610,18 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, initialPare
                 {t.stopDialog.placeResolution.unresolved}
               </p>
             ) : null}
-            {detailType === "transportation" ? null : (
+            {!isFocusedEdit && detailType !== "transportation" ? (
               <label className={dialogFieldWideClassName} htmlFor={fieldIds.transportation}>
                 <span>{t.stopDialog.fields.transportation}</span>
                 <input id={fieldIds.transportation} value={values.transportation} onChange={(event) => update("transportation", event.target.value)} />
               </label>
-            )}
-            <label className={dialogFieldWideClassName} htmlFor={fieldIds.note}>
-              <span>{t.stopDialog.fields.note}</span>
-              <textarea id={fieldIds.note} value={values.note} onChange={(event) => update("note", event.target.value)} rows={3} />
-            </label>
+            ) : null}
+            {!isFocusedEdit ? (
+              <label className={dialogFieldWideClassName} htmlFor={fieldIds.note}>
+                <span>{t.stopDialog.fields.note}</span>
+                <textarea id={fieldIds.note} value={values.note} onChange={(event) => update("note", event.target.value)} rows={3} />
+              </label>
+            ) : null}
             {submitError ? (
               <p className={dialogErrorClassName} role="alert">
                 {submitError}

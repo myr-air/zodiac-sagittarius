@@ -243,6 +243,8 @@ button:disabled,
 :where(input, select, textarea):focus,
 :where(input, select, textarea):focus-visible {
   border-color: var(--color-route-border);
+  outline: 0;
+  box-shadow: 0 0 0 4px rgb(191 219 254 / 0.42);
 }
 
 .activity-time-button:focus-visible {

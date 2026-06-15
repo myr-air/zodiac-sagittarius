@@ -553,7 +553,7 @@ components:
         activity:
           type: string
         activityType:
-          enum: [travel, food, shopping, attraction, experience, stay]
+          enum: [travel, food, shopping, attraction, experience, stay, default]
         place:
           type: string
         details:

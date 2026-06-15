@@ -82,7 +82,7 @@ interface SmartItineraryTableProps {
   ) => string | void | Promise<string | void>;
   onAddStop: (day?: string) => void;
   onAddSubActivity?: (parentItemId: string) => void | Promise<void>;
-  onAddNoteForItem?: (itemId: string) => void;
+  onAddNoteForItem?: (itemId: string, body: string) => void | Promise<void>;
   onAddTaskForItem?: (itemId: string) => void;
   onOpenItemDetails: (itemId: string) => void;
   onSelectItem: (itemId: string) => void;
@@ -288,6 +288,8 @@ const activityMobilePlaceInputClassName =
   "min-h-5 w-full min-w-0 truncate border-0 border-b border-transparent bg-transparent px-0 py-0 text-xs font-semibold leading-5 text-(--color-text-muted) outline-none transition-colors duration-150 placeholder:text-(--color-text-muted) hover:not-disabled:border-(--color-border) focus:border-(--color-route) focus:ring-0 disabled:cursor-default disabled:border-transparent";
 const activityActionsClassName =
   "flex shrink-0 flex-nowrap items-center justify-end gap-0.5 whitespace-nowrap max-[1023px]:hidden";
+const activityActionClusterClassName =
+  "flex shrink-0 flex-nowrap items-center justify-end gap-0.5 whitespace-nowrap";
 const activityIconButtonClassName =
   "inline-flex size-7 shrink-0 items-center justify-center rounded-(--radius-sm) border border-transparent bg-transparent text-(--color-text-muted) transition-colors duration-150 hover:border-(--color-border) hover:bg-(--color-surface) hover:text-(--color-text) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-focus) [&_.icon]:size-3.5";
 const activityMetaClassName =
@@ -325,7 +327,7 @@ const subActivityTextClassName =
 const subActivityTitleInputClassName =
   "min-h-5 w-auto min-w-[8ch] max-w-full border-0 border-b border-transparent bg-transparent px-0 py-0 text-xs font-normal leading-4 text-(--color-text) outline-none transition-colors duration-150 [field-sizing:content] hover:not-disabled:border-(--color-border) focus:border-(--color-route) focus:ring-0 disabled:border-transparent";
 const subActivityActionsClassName =
-  "flex min-w-0 shrink-0 items-center justify-end gap-1";
+  "flex min-w-0 shrink-0 flex-nowrap items-center justify-end gap-0.5 whitespace-nowrap";
 const addSubActivityButtonClassName =
   "mt-0.5 inline-flex min-h-6 w-fit items-center justify-center gap-1 rounded-(--radius-sm) border border-transparent bg-transparent px-1.5 text-[11px] font-extrabold text-(--color-route) transition-colors duration-150 hover:border-(--color-route-border) hover:bg-(--color-route-soft) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-focus) disabled:cursor-not-allowed disabled:opacity-50";
 const subActivityToggleButtonClassName =
@@ -426,6 +428,7 @@ export function SmartItineraryTable({
   showAllPaths = false,
   tripName,
   onAddSubActivity,
+  onAddNoteForItem,
   onAddBookingForItem,
   onSaveBookingForItem,
   bookingDocs = [],
@@ -954,6 +957,7 @@ export function SmartItineraryTable({
               onChangeDayPath={onChangeDayPath}
               onClearDayPath={onClearDayPath}
               onAddSubActivity={onAddSubActivity}
+              onAddNoteForItem={onAddNoteForItem}
               onAddBookingForItem={onAddBookingForItem}
               onSaveBookingForItem={onSaveBookingForItem}
               bookingDocs={bookingDocs}
@@ -991,6 +995,7 @@ function DayGroup({
   canEdit,
   collapsed,
   onAddSubActivity,
+  onAddNoteForItem,
   onAddBookingForItem,
   onSaveBookingForItem,
   bookingDocs,
@@ -1024,6 +1029,7 @@ function DayGroup({
   canEdit: boolean;
   collapsed: boolean;
   onAddSubActivity?: (parentItemId: string) => void | Promise<void>;
+  onAddNoteForItem?: (itemId: string, body: string) => void | Promise<void>;
   onAddBookingForItem?: (
     itemId: string,
     template?: ItineraryBookingTemplate,
@@ -1177,6 +1183,7 @@ function DayGroup({
                   selected={selectedItemId === item.id}
                   subItems={childItemsByParentId.get(item.id) ?? []}
                   onAddSubActivity={onAddSubActivity}
+                  onAddNoteForItem={onAddNoteForItem}
                   onAddBookingForItem={onAddBookingForItem}
                   onSaveBookingForItem={onSaveBookingForItem}
                   bookingDocs={bookingDocs}
@@ -1271,6 +1278,7 @@ function ActivityCell({
   selected,
   subItems,
   onAddSubActivity,
+  onAddNoteForItem,
   onAddBookingForItem,
   onSaveBookingForItem,
   bookingDocs,
@@ -1290,6 +1298,7 @@ function ActivityCell({
   bookingDocs: BookingDoc[];
   bookingLinkItems: ItineraryItem[];
   onAddSubActivity?: (parentItemId: string) => void | Promise<void>;
+  onAddNoteForItem?: (itemId: string, body: string) => void | Promise<void>;
   onAddBookingForItem?: (
     itemId: string,
     template?: ItineraryBookingTemplate,
@@ -1311,12 +1320,47 @@ function ActivityCell({
   const [subActivityModalOpen, setSubActivityModalOpen] = useState(false);
   const [subActivitiesExpanded, setSubActivitiesExpanded] = useState(false);
   const [actionsExpanded, setActionsExpanded] = useState(false);
+  const [noteTarget, setNoteTarget] = useState<ItineraryItem | null>(null);
   const showSubActivityToggle =
     Boolean(onAddSubActivity) || subItems.length > 0;
   const actionMenuLabel =
     locale === "th"
       ? `จัดการกิจกรรม ${item.activity}`
       : `Activity actions for ${item.activity}`;
+  function openNoteModal(target: ItineraryItem, compact = false) {
+    if (compact) {
+      setActionsExpanded(false);
+    }
+    setNoteTarget(target);
+  }
+
+  const renderSubActivityButton = (compact = false) =>
+    showSubActivityToggle ? (
+      <button
+        type="button"
+        className={subActivityToggleButtonClassName}
+        aria-label={`Sub-activities for ${item.activity}`}
+        aria-expanded={subActivitiesExpanded}
+        title={`Sub-activities for ${item.activity}`}
+        onClick={(event) => {
+          event.stopPropagation();
+          if (compact) {
+            setActionsExpanded(false);
+          }
+          if (
+            typeof window !== "undefined" &&
+            typeof window.matchMedia === "function" &&
+            window.matchMedia("(max-width: 640px)").matches
+          ) {
+            setSubActivityModalOpen(true);
+            return;
+          }
+          setSubActivitiesExpanded((current) => !current);
+        }}
+      >
+        <Icon name="list" />
+      </button>
+    ) : null;
   const renderActivityActions = (compact = false) => (
     <>
       {item.mapLink ? (
@@ -1337,30 +1381,18 @@ function ActivityCell({
           <Icon name="map" />
         </a>
       ) : null}
-      {showSubActivityToggle ? (
+      {onAddNoteForItem ? (
         <button
           type="button"
-          className={subActivityToggleButtonClassName}
-          aria-label={`Sub-activities for ${item.activity}`}
-          aria-expanded={subActivitiesExpanded}
-          title={`Sub-activities for ${item.activity}`}
+          className={activityIconButtonClassName}
+          aria-label={locale === "th" ? `เพิ่มโน้ต ${item.activity}` : `Add note for ${item.activity}`}
+          title={locale === "th" ? `เพิ่มโน้ต ${item.activity}` : `Add note for ${item.activity}`}
           onClick={(event) => {
             event.stopPropagation();
-            if (compact) {
-              setActionsExpanded(false);
-            }
-            if (
-              typeof window !== "undefined" &&
-              typeof window.matchMedia === "function" &&
-              window.matchMedia("(max-width: 640px)").matches
-            ) {
-              setSubActivityModalOpen(true);
-              return;
-            }
-            setSubActivitiesExpanded((current) => !current);
+            openNoteModal(item, compact);
           }}
         >
-          <Icon name="list" />
+          <Icon name="note" />
         </button>
       ) : null}
       <button
@@ -1451,9 +1483,10 @@ function ActivityCell({
           optionKeyPrefix={`activity-type-mobile-${item.id}`}
           value={item.activityType}
           onCommit={(activityType) =>
-            onUpdateItemInline?.(item.id, {
-              activityType: activityType as ItineraryItem["activityType"],
-            })
+            onUpdateItemInline?.(
+              item.id,
+              buildActivityTypePatch(item, activityType),
+            )
           }
         />
       </div>
@@ -1504,19 +1537,22 @@ function ActivityCell({
             bookingDocs={bookingDocs}
             bookingLinkItems={bookingLinkItems}
           />
-          <button
-            type="button"
-            className={activityTabletActionsClassName}
-            aria-label={actionMenuLabel}
-            aria-expanded={actionsExpanded}
-            title={actionMenuLabel}
-            onClick={(event) => {
-              event.stopPropagation();
-              setActionsExpanded((current) => !current);
-            }}
-          >
-            <Icon name="dots" />
-          </button>
+          <span className={activityActionClusterClassName}>
+            {renderSubActivityButton(true)}
+            <button
+              type="button"
+              className={activityTabletActionsClassName}
+              aria-label={actionMenuLabel}
+              aria-expanded={actionsExpanded}
+              title={actionMenuLabel}
+              onClick={(event) => {
+                event.stopPropagation();
+                setActionsExpanded((current) => !current);
+              }}
+            >
+              <Icon name="dots" />
+            </button>
+          </span>
         </div>
         <div className={activityMetaClassName}>
           <div className={activityMetaStatusClassName}>
@@ -1542,22 +1578,25 @@ function ActivityCell({
               </span>
             ) : null}
           </div>
-          <div className={activityActionsClassName}>
-            {renderActivityActions()}
+          <div className={activityActionClusterClassName}>
+            <span className={activityActionsClassName}>
+              {renderActivityActions()}
+            </span>
+            {renderSubActivityButton()}
+            <button
+              type="button"
+              className={activityTabletActionsClassName}
+              aria-label={actionMenuLabel}
+              aria-expanded={actionsExpanded}
+              title={actionMenuLabel}
+              onClick={(event) => {
+                event.stopPropagation();
+                setActionsExpanded((current) => !current);
+              }}
+            >
+              <Icon name="dots" />
+            </button>
           </div>
-          <button
-            type="button"
-            className={activityTabletActionsClassName}
-            aria-label={actionMenuLabel}
-            aria-expanded={actionsExpanded}
-            title={actionMenuLabel}
-            onClick={(event) => {
-              event.stopPropagation();
-              setActionsExpanded((current) => !current);
-            }}
-          >
-            <Icon name="dots" />
-          </button>
         </div>
         {actionsExpanded ? (
           <div
@@ -1576,6 +1615,8 @@ function ActivityCell({
             locale={locale}
             subItems={subItems}
             onAddSubActivity={onAddSubActivity}
+            onAddNoteForItem={onAddNoteForItem}
+            onOpenNoteForItem={openNoteModal}
             onClose={() => setSubActivityModalOpen(false)}
             onDeleteItem={onDeleteItem}
             onEditItem={onEditItem}
@@ -1595,6 +1636,8 @@ function ActivityCell({
         selected={selected}
         subItems={subItems}
         onAddSubActivity={onAddSubActivity}
+        onAddNoteForItem={onAddNoteForItem}
+        onOpenNoteForItem={openNoteModal}
         onAddBookingForItem={onAddBookingForItem}
         onSaveBookingForItem={onSaveBookingForItem}
         bookingDocs={bookingDocs}
@@ -1604,7 +1647,119 @@ function ActivityCell({
         onUpdateItemInline={onUpdateItemInline}
         visible={subActivitiesExpanded}
       />
+      {noteTarget && onAddNoteForItem ? (
+        <ItineraryNoteModal
+          item={noteTarget}
+          locale={locale}
+          onClose={() => setNoteTarget(null)}
+          onSave={async (body) => {
+            await onAddNoteForItem(noteTarget.id, body);
+            setNoteTarget(null);
+          }}
+        />
+      ) : null}
     </div>
+  );
+}
+
+function ItineraryNoteModal({
+  item,
+  locale,
+  onClose,
+  onSave,
+}: {
+  item: ItineraryItem;
+  locale: Locale;
+  onClose: () => void;
+  onSave: (body: string) => void | Promise<void>;
+}) {
+  const [body, setBody] = useState("");
+  const [saving, setSaving] = useState(false);
+  const title = locale === "th" ? `โน้ตสำหรับ ${item.activity}` : `Note for ${item.activity}`;
+  const subtitle = locale === "th" ? "เก็บรายละเอียดสั้น ๆ ที่เกี่ยวกับ activity นี้" : "Capture a short note tied to this activity.";
+  const placeholder = locale === "th" ? "เช่น นัดเจอกันที่ทางออก A, เตรียมพาสปอร์ต" : "Example: Meet at exit A, keep passports ready";
+
+  useEffect(() => {
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") onClose();
+    }
+    document.addEventListener("keydown", closeOnEscape);
+    return () => document.removeEventListener("keydown", closeOnEscape);
+  }, [onClose]);
+
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const trimmed = body.trim();
+    if (!trimmed || saving) return;
+    setSaving(true);
+    try {
+      await onSave(trimmed);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  if (typeof document === "undefined") return null;
+
+  return createPortal(
+    <div
+      className={ticketModalBackdropClassName}
+      role="presentation"
+      onClick={onClose}
+    >
+      <form
+        className={cn(ticketModalClassName, "max-w-[480px]")}
+        role="dialog"
+        aria-modal="true"
+        aria-label={title}
+        onClick={(event) => event.stopPropagation()}
+        onSubmit={(event) => void submit(event)}
+      >
+        <header className={ticketModalHeaderClassName}>
+          <strong className={ticketModalTitleClassName}>
+            <span>{title}</span>
+            <small>{subtitle}</small>
+          </strong>
+          <button
+            type="button"
+            className={subActivityModalCloseClassName}
+            aria-label={locale === "th" ? "ปิด modal โน้ต" : "Close note modal"}
+            onClick={onClose}
+          >
+            <Icon name="x" />
+          </button>
+        </header>
+        <div className={ticketModalBodyClassName}>
+          <label className={cn(ticketFieldClassName, "col-span-full")}>
+            <span>{locale === "th" ? "โน้ต" : "Note"}</span>
+            <textarea
+              autoFocus
+              value={body}
+              onChange={(event) => setBody(event.target.value)}
+              placeholder={placeholder}
+            />
+          </label>
+        </div>
+        <footer className={ticketModalFooterClassName}>
+          <button
+            type="button"
+            className="inline-flex min-h-9 items-center justify-center rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-3 text-xs font-extrabold text-(--color-text-muted) hover:bg-(--color-surface-subtle) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-focus)"
+            onClick={onClose}
+          >
+            {locale === "th" ? "ยกเลิก" : "Cancel"}
+          </button>
+          <button
+            type="submit"
+            className="inline-flex min-h-9 items-center justify-center gap-1.5 rounded-(--radius-sm) border border-(--color-primary-border) bg-(--color-primary) px-3 text-xs font-extrabold text-white hover:bg-(--color-primary-strong) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-focus) disabled:cursor-not-allowed disabled:opacity-50"
+            disabled={saving || !body.trim()}
+          >
+            <Icon name="note" />
+            {locale === "th" ? "บันทึกโน้ต" : "Save note"}
+          </button>
+        </footer>
+      </form>
+    </div>,
+    document.body,
   );
 }
 
@@ -1640,9 +1795,7 @@ function ActivityTypePicker({
       subOptionsByValue={{ travel: travelSubtypeOptions(locale) }}
       value={item.activityType}
       onCommit={(activityType) =>
-        onUpdateItemInline?.(item.id, {
-          activityType: activityType as ItineraryItem["activityType"],
-        })
+        onUpdateItemInline?.(item.id, buildActivityTypePatch(item, activityType))
       }
       onCommitSubOption={(activityType, mode) =>
         onUpdateItemInline?.(item.id, {
@@ -2345,6 +2498,8 @@ function SubActivityModal({
   itineraryLabels,
   locale,
   onAddSubActivity,
+  onAddNoteForItem,
+  onOpenNoteForItem,
   onAddBookingForItem,
   onSaveBookingForItem,
   bookingDocs,
@@ -2361,6 +2516,8 @@ function SubActivityModal({
   locale: Locale;
   subItems: ItineraryItem[];
   onAddSubActivity?: (parentItemId: string) => void | Promise<void>;
+  onAddNoteForItem?: (itemId: string, body: string) => void | Promise<void>;
+  onOpenNoteForItem?: (item: ItineraryItem, compact?: boolean) => void;
   onAddBookingForItem?: (
     itemId: string,
     template?: ItineraryBookingTemplate,
@@ -2426,6 +2583,8 @@ function SubActivityModal({
             selected
             subItems={subItems}
             onAddSubActivity={onAddSubActivity}
+            onAddNoteForItem={onAddNoteForItem}
+            onOpenNoteForItem={onOpenNoteForItem}
             onAddBookingForItem={onAddBookingForItem}
             onSaveBookingForItem={onSaveBookingForItem}
             bookingDocs={bookingDocs}
@@ -2451,6 +2610,8 @@ function SubActivityList({
   subItems,
   visible = true,
   onAddSubActivity,
+  onAddNoteForItem,
+  onOpenNoteForItem,
   onAddBookingForItem,
   onSaveBookingForItem,
   bookingDocs,
@@ -2468,6 +2629,8 @@ function SubActivityList({
   subItems: ItineraryItem[];
   visible?: boolean;
   onAddSubActivity?: (parentItemId: string) => void | Promise<void>;
+  onAddNoteForItem?: (itemId: string, body: string) => void | Promise<void>;
+  onOpenNoteForItem?: (item: ItineraryItem, compact?: boolean) => void;
   onAddBookingForItem?: (
     itemId: string,
     template?: ItineraryBookingTemplate,
@@ -2568,6 +2731,19 @@ function SubActivityList({
               locale={locale}
               onUpdateItemInline={onUpdateItemInline}
             />
+            {onAddNoteForItem && onOpenNoteForItem ? (
+              <button
+                type="button"
+                className={activityIconButtonClassName}
+                aria-label={locale === "th" ? `เพิ่มโน้ต ${subItem.activity}` : `Add note for ${subItem.activity}`}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onOpenNoteForItem(subItem);
+                }}
+              >
+                <Icon name="note" className="size-4" />
+              </button>
+            ) : null}
             {onEditItem ? (
               <button
                 type="button"
@@ -2787,9 +2963,11 @@ function activityTypeOptions(locale: Locale): InlineOptionPickerOption[] {
     "attraction",
     "experience",
     "stay",
+    "default",
   ];
   const icons: Record<ItineraryItem["activityType"], IconName> = {
     attraction: "location",
+    default: "document",
     experience: "ticket",
     food: "utensils",
     shopping: "wallet",
@@ -2801,6 +2979,22 @@ function activityTypeOptions(locale: Locale): InlineOptionPickerOption[] {
     value: type,
     label: activityTypeLabel(type, locale),
   }));
+}
+
+function buildActivityTypePatch(
+  item: ItineraryItem,
+  activityType: string,
+): InlineItineraryItemPatch {
+  const nextActivityType = activityType as ItineraryItem["activityType"];
+  if (nextActivityType === "travel") {
+    return { activityType: nextActivityType };
+  }
+  const detailsWithoutTravelMode = { ...(item.details ?? {}) };
+  delete detailsWithoutTravelMode.mode;
+  return {
+    activityType: nextActivityType,
+    details: detailsWithoutTravelMode,
+  };
 }
 
 type TravelSubtype =

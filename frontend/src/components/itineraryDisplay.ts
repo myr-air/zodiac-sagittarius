@@ -10,6 +10,7 @@ export function activityTypeLabel(type: ItineraryItem["activityType"], locale: L
       attraction: "Attraction",
       experience: "Experience",
       stay: "Stay",
+      default: "Default",
     },
     th: {
       travel: "เดินทาง",
@@ -18,6 +19,7 @@ export function activityTypeLabel(type: ItineraryItem["activityType"], locale: L
       attraction: "สถานที่",
       experience: "กิจกรรม",
       stay: "ที่พัก",
+      default: "ทั่วไป",
     },
   };
   return labels[locale][type];
