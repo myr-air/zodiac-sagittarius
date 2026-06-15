@@ -16,8 +16,8 @@ describe("PageHeader", () => {
 
     const header = screen.getByRole("banner");
 
-    expect(header).toHaveClass("page-header", "rounded-(--radius-lg)", "isolate", "bg-[color-mix(in_srgb,var(--color-surface)_88%,var(--color-postcard))]", "shadow-[0_6px_8px_rgb(55_47_38_/_0.045)]");
-    expect(header).toHaveClass("min-h-[108px]", "max-[767px]:hidden");
+    expect(header).toHaveClass("page-header", "rounded-(--radius-md)", "isolate", "bg-(--color-surface)", "shadow-[0_1px_0_rgb(15_23_42_/_0.04)]");
+    expect(header).toHaveClass("min-h-[92px]", "max-[1199px]:rounded-none", "max-[767px]:hidden");
     expect(screen.getByRole("heading", { name: "Hong Kong friends trip", level: 2 })).toHaveClass("max-[767px]:hidden");
     expect(screen.getByText("Plan the day without hiding the table.")).toHaveClass("max-[767px]:hidden");
     expect(header.className).not.toContain("bg-[linear-gradient(135deg");
@@ -25,6 +25,6 @@ describe("PageHeader", () => {
     expect(header.className).not.toContain("shadow-[0_12px_30px");
     expect(header.className).not.toContain("shadow-[var(--shadow-panel)]");
     expect(container.querySelector(".page-current-user")?.className).not.toContain("var(--paper-grain)");
-    expect(container.querySelector(".page-current-user")).toHaveClass("bg-[rgb(255_255_255_/_0.72)]", "rounded-(--radius-md)");
+    expect(container.querySelector(".page-current-user")).toHaveClass("bg-(--color-surface-subtle)", "rounded-(--radius-sm)");
   });
 });

@@ -50,11 +50,11 @@ describe("shared UI primitives", () => {
     expect(screen.getByRole("heading", { name: "Itinerary", level: 1 })).toBeInTheDocument();
     expect(screen.getByRole("banner")).toHaveClass(
       "page-header",
-      "min-h-[108px]",
+      "min-h-[92px]",
       "max-[767px]:hidden",
       "overflow-hidden",
-      "bg-[color-mix(in_srgb,var(--color-surface)_88%,var(--color-postcard))]",
-      "shadow-[0_6px_8px_rgb(55_47_38_/_0.045)]",
+      "bg-(--color-surface)",
+      "shadow-[0_1px_0_rgb(15_23_42_/_0.04)]",
     );
     expect(screen.queryByText("Plan")).not.toBeInTheDocument();
 
@@ -94,7 +94,7 @@ describe("shared UI primitives", () => {
     expect(screen.getByText("Aom")).toBeInTheDocument();
     expect(screen.getByText("Current user")).toBeInTheDocument();
     expect(screen.getByText("A")).toHaveStyle({ backgroundColor: "#0f766e" });
-    expect(screen.getByText("Aom").closest(".page-current-user")).toHaveClass("grid", "min-w-[236px]", "bg-[rgb(255_255_255_/_0.72)]");
+    expect(screen.getByText("Aom").closest(".page-current-user")).toHaveClass("grid", "min-w-[220px]", "bg-(--color-surface-subtle)");
   });
 
   it("renders every supported icon branch", () => {

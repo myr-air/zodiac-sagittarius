@@ -17,15 +17,16 @@ describe("BookingsDocsPage", () => {
     renderPage();
 
     expect(screen.getByRole("region", { name: "Bookings & Docs" })).toHaveClass("bookings-docs-page", "bg-transparent");
-    expect(document.querySelector(".booking-docs-header")).toHaveClass("border-b", "bg-(--color-surface)", "grid-cols-[minmax(0,1fr)_auto]", "max-[767px]:hidden");
-    expect(screen.getByRole("heading", { name: "Bookings & Docs" })).toHaveClass("max-[767px]:text-[17px]");
+    expect(document.querySelector(".page-header")).toHaveClass("page-header", "bg-(--color-surface)", "max-[1199px]:rounded-none", "max-[767px]:hidden");
+    expect(document.querySelector(".booking-docs-header-actions")).toHaveClass("max-[1199px]:w-full", "max-[1199px]:justify-items-stretch");
+    expect(screen.getByRole("heading", { name: "Bookings & Docs" })).toHaveClass("text-[24px]", "max-[1199px]:text-[21px]");
     expect(screen.getByText("Hong Kong + Shenzhen Trip")).toHaveClass("max-[767px]:hidden");
     expect(screen.getByText("Demo Traveler")).toBeInTheDocument();
     expect(screen.getByText("Can edit bookings")).toBeInTheDocument();
     expect(document.querySelector(".booking-folder-rail")).toHaveClass("shadow-[0_1px_0_rgb(15_23_42_/_0.04)]");
     expect(document.querySelector(".bookings-file-panel")).toHaveClass("shadow-[0_1px_0_rgb(15_23_42_/_0.04)]");
     expect(document.querySelector(".booking-inspector")).toHaveClass("shadow-[0_1px_0_rgb(15_23_42_/_0.04)]");
-    expect(document.querySelector(".bookings-docs-page")).toHaveClass("max-[1199px]:px-0", "max-[767px]:h-[calc(100dvh-48px)]", "max-[767px]:min-h-[calc(100dvh-48px)]", "max-[767px]:grid-rows-[minmax(0,1fr)]", "max-[767px]:overflow-hidden");
+    expect(document.querySelector(".bookings-docs-page")).toHaveClass("max-[1199px]:px-0", "max-[1199px]:py-0", "max-[767px]:h-[calc(100dvh-48px)]", "max-[767px]:min-h-[calc(100dvh-48px)]", "max-[767px]:grid-rows-[minmax(0,1fr)]", "max-[767px]:overflow-hidden");
     expect(document.querySelector(".bookings-mobile-add-button")).toHaveClass("!hidden", "max-[767px]:!inline-flex", "max-[767px]:right-[60px]");
     expect(document.querySelector(".booking-folder-rail")).toHaveClass("max-[1199px]:grid-cols-7", "max-[1199px]:rounded-none", "max-[1199px]:shadow-none");
     expect(document.querySelector(".bookings-content")).toHaveClass("grid-cols-[192px_minmax(0,1fr)_300px]", "max-[1199px]:grid-cols-1", "max-[1199px]:grid-rows-[auto_minmax(0,1fr)]", "max-[767px]:h-full");
