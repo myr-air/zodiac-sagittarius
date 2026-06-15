@@ -11,7 +11,7 @@ import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
 import { Icon } from "./icons";
 import { formatTripRange, PageHeader } from "./PageHeader";
-import { Badge, Button, IconButton, WorkspacePage, WorkspaceSurface } from "./ui";
+import { Badge, Button, IconButton, Select, WorkspacePage, WorkspaceSurface } from "./ui";
 
 interface TripPhotosPageProps {
   trip: Trip;
@@ -568,22 +568,22 @@ function PhotoAlbumDialog({
             </label>
             <label className={fieldClassName}>
               <span>{copy.providerField}</span>
-              <select value={provider} onChange={(event) => setProvider(event.target.value as TripPhotoAlbumProvider)}>
+              <Select value={provider} onChange={(event) => setProvider(event.target.value as TripPhotoAlbumProvider)}>
                 {providerOptions.map((option) => <option key={option} value={option}>{providerLabel(option, copy)}</option>)}
-              </select>
+              </Select>
             </label>
             <label className={fieldClassName}>
               <span>{copy.accessField}</span>
-              <select value={access} onChange={(event) => setAccess(event.target.value as TripPhotoAlbumAccess)}>
+              <Select value={access} onChange={(event) => setAccess(event.target.value as TripPhotoAlbumAccess)}>
                 {accessOptions.map((option) => <option key={option} value={option}>{accessLabel(option, copy)}</option>)}
-              </select>
+              </Select>
             </label>
             <label className={fieldClassName}>
               <span>{copy.ownerField}</span>
-              <select value={ownerMemberId} onChange={(event) => setOwnerMemberId(event.target.value)}>
+              <Select value={ownerMemberId} onChange={(event) => setOwnerMemberId(event.target.value)}>
                 <option value="">{copy.noOwner}</option>
                 {trip.members.map((member) => <option key={member.id} value={member.id}>{member.displayName}</option>)}
-              </select>
+              </Select>
             </label>
             <label className={fieldClassName}>
               <span>{copy.albumLinkField}</span>
@@ -591,10 +591,10 @@ function PhotoAlbumDialog({
             </label>
             <label className={fieldClassName}>
               <span>{copy.dayField}</span>
-              <select value={day} onChange={(event) => setDay(event.target.value)}>
+              <Select value={day} onChange={(event) => setDay(event.target.value)}>
                 <option value="">{copy.tripLevel}</option>
                 {days.map((candidate) => <option key={candidate} value={candidate}>{candidate}</option>)}
-              </select>
+              </Select>
             </label>
             <label className={fieldClassName}>
               <span>{copy.descriptionField}</span>

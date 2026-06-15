@@ -36,7 +36,7 @@ import {
   weatherGraphicLabel,
   weatherIconForCondition,
 } from "@/src/trip/weather-briefings";
-import { Button } from "./ui";
+import { Button, Select } from "./ui";
 import { Icon, type IconName } from "./icons";
 import { formatTripRange, PageHeader } from "./PageHeader";
 import {
@@ -290,7 +290,7 @@ const activityPlaceInputClassName =
 const activityRouteLineClassName =
   "grid min-w-0 grid-cols-[auto_minmax(0,1fr)_auto_minmax(0,1fr)] items-baseline gap-x-1.5 gap-y-0 text-xs leading-5 text-(--color-text-muted) max-[520px]:grid-cols-[auto_minmax(0,1fr)]";
 const activityRouteLabelClassName =
-  "text-[10px] font-extrabold uppercase text-(--color-text-subtle)";
+  "text-[10px] font-extrabold uppercase text-(--color-text-muted)";
 const activityPlaceLineClassName =
   "grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-baseline gap-1.5 text-xs leading-5 text-(--color-text-muted)";
 const activityMobilePlaceInputClassName =
@@ -741,7 +741,7 @@ export function SmartItineraryTable({
                     >
                       <label className={tripPlanFieldClassName}>
                         <span>{t.itinerary.tripPlans.selectorLabel}</span>
-                        <select
+                        <Select
                           className={tripPlanSelectClassName}
                           value={selectedTripPlanIdForControl}
                           disabled={tripPlanSelectorDisabled}
@@ -759,11 +759,11 @@ export function SmartItineraryTable({
                               )}
                             </option>
                           ))}
-                        </select>
+                        </Select>
                       </label>
                       <label className={tripPlanFieldClassName}>
                         <span>{t.itinerary.tripPlans.statusLabel}</span>
-                        <select
+                        <Select
                           className={tripPlanSelectClassName}
                           value={selectedTripPlanStatus}
                           disabled={tripPlanStatusDisabled}
@@ -786,7 +786,7 @@ export function SmartItineraryTable({
                           <option value="proposal">
                             {t.itinerary.tripPlans.status.proposal}
                           </option>
-                        </select>
+                        </Select>
                       </label>
                       <label className={tripPlanFieldClassName}>
                         <span>{t.itinerary.tripPlans.nameLabel}</span>

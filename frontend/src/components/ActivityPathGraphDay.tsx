@@ -2,6 +2,7 @@ import { cn } from "@/src/lib/cn";
 import { mainItineraryPathId, parseTime, type ItineraryPathOption } from "@/src/trip/itinerary";
 import type { ItineraryItem } from "@/src/trip/types";
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type RefObject } from "react";
+import { Select } from "./ui";
 
 interface ActivityPathGraphDayProps {
   canEdit: boolean;
@@ -110,7 +111,7 @@ export function ActivityPathGraphDay({
                 event.dataTransfer.setData("text/plain", item.id);
               }}
             />
-            <select
+            <Select
               aria-label={`Move ${item.activity} to path`}
               className={pathSelectClassName}
               disabled={!canEdit || !onMoveItemToPath}
@@ -120,7 +121,7 @@ export function ActivityPathGraphDay({
               {[...pathMetaById].map(([id, option]) => (
                 <option key={id} value={id}>{option.name}</option>
               ))}
-            </select>
+            </Select>
           </span>
         );
       })}

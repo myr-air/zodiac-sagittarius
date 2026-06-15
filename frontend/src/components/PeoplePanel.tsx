@@ -1,6 +1,7 @@
 import { cn } from "@/src/lib/cn";
 import type { Member, TripMemberAccessStatus, TripRole } from "@/src/trip/types";
 import { useI18n } from "@/src/i18n/I18nProvider";
+import { Select } from "./ui";
 
 const peopleModuleClassName = "detail-section people-module grid w-full min-w-0 gap-3 rounded-(--radius-md) border border-[color-mix(in_srgb,var(--color-route-border)_48%,var(--color-border))] bg-[linear-gradient(180deg,rgb(255_255_255)_0%,color-mix(in_srgb,var(--color-route-soft)_34%,var(--color-surface))_100%)] p-3.5 shadow-[0_1px_0_rgb(15_23_42_/_0.04)]";
 const peopleHeadingClassName = "m-0 text-[15px] font-extrabold leading-[21px] text-(--color-text)";
@@ -93,7 +94,7 @@ export function PeoplePanel({
             {canManagePeople && (member.role !== "owner" || member.id === currentMemberId) ? (
               <div className={memberControlsClassName}>
                 {member.role !== "owner" ? (
-                  <select
+                  <Select
                     aria-label={`Role for ${member.displayName}`}
                     className={memberRoleSelectClassName}
                     value={member.role}
@@ -102,7 +103,7 @@ export function PeoplePanel({
                     <option value="organizer">{locale === "th" ? "ผู้จัดทริป" : "Organizer"}</option>
                     <option value="traveler">{locale === "th" ? "ผู้ร่วมเดินทาง" : "Traveler"}</option>
                     <option value="viewer">{locale === "th" ? "ผู้ชม" : "Viewer"}</option>
-                  </select>
+                  </Select>
                 ) : null}
                 {canChangePassword ? (
                   <button

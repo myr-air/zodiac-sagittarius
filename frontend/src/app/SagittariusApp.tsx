@@ -39,7 +39,7 @@ import {
   TripSettingsPage,
   type TripSettingsFormValues,
 } from "@/src/components/TripSettingsPage";
-import { Button } from "@/src/components/ui";
+import { Button, Select } from "@/src/components/ui";
 import { Icon } from "@/src/components/icons";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { appRoutes, decodeReturnTo } from "@/src/routes/app-routes";
@@ -4406,7 +4406,7 @@ export function SagittariusApp({
         {!sessionMember ? (
           <label className="sr-only">
             Role preview
-            <select
+            <Select
               value={currentMember.id}
               onChange={(event) => setCurrentMemberId(event.target.value)}
             >
@@ -4415,7 +4415,7 @@ export function SagittariusApp({
                   {member.displayName} ({member.role})
                 </option>
               ))}
-            </select>
+            </Select>
           </label>
         ) : null}
         <div
@@ -6209,7 +6209,7 @@ function ItineraryImportOptionsDialog({
         <div className={importDialogFieldsClassName}>
           <label>
             <span>Target Trip Plan</span>
-            <select
+            <Select
               value={targetTripPlanId}
               onChange={(event) => setTargetTripPlanId(event.target.value)}
             >
@@ -6218,7 +6218,7 @@ function ItineraryImportOptionsDialog({
                   {plan.name}
                 </option>
               ))}
-            </select>
+            </Select>
           </label>
           <label>
             <span>ชื่อ path</span>
@@ -6229,7 +6229,7 @@ function ItineraryImportOptionsDialog({
           </label>
           <label>
             <span>Scope</span>
-            <select
+            <Select
               value={scope}
               onChange={(event) =>
                 setScope(event.target.value as "trip" | "day")
@@ -6237,7 +6237,7 @@ function ItineraryImportOptionsDialog({
             >
               <option value="trip">Whole trip</option>
               <option value="day">This day only</option>
-            </select>
+            </Select>
           </label>
           {scope === "day" ? (
             <label>
@@ -6250,7 +6250,7 @@ function ItineraryImportOptionsDialog({
           ) : null}
           <label>
             <span>Mode</span>
-            <select
+            <Select
               value={mode}
               onChange={(event) =>
                 setMode(
@@ -6262,12 +6262,12 @@ function ItineraryImportOptionsDialog({
               <option value="keep-alternatives">
                 Keep both as alternatives
               </option>
-            </select>
+            </Select>
           </label>
           {recordCount > 0 ? (
             <label>
               <span>Record handling</span>
-              <select
+              <Select
                 value={recordMode}
                 onChange={(event) =>
                   setRecordMode(
@@ -6277,7 +6277,7 @@ function ItineraryImportOptionsDialog({
               >
                 <option value="clone-linked">Clone linked records</option>
                 <option value="activities-only">Activities only</option>
-              </select>
+              </Select>
             </label>
           ) : null}
         </div>

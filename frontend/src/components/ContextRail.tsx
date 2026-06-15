@@ -13,7 +13,7 @@ import type {
 } from "@/src/trip/types";
 import { safeExternalHref } from "@/src/trip/safe-links";
 import { useI18n } from "@/src/i18n/I18nProvider";
-import { Button } from "./ui";
+import { Button, Select } from "./ui";
 import { Icon } from "./icons";
 import {
   activityTypeLabel,
@@ -638,7 +638,7 @@ export function ContextRail({
                       </span>
                       <label className="grid gap-1">
                         <span>{t.contextRail.booking.type}</span>
-                        <select
+                        <Select
                           aria-label={t.contextRail.booking.typeFor({
                             title: bookingDoc.title,
                           })}
@@ -657,7 +657,7 @@ export function ContextRail({
                               {formatBookingDocTypeLabel(type)}
                             </option>
                           ))}
-                        </select>
+                        </Select>
                       </label>
                       <label className="grid gap-1">
                         <span>{t.contextRail.booking.provider}</span>
@@ -954,7 +954,7 @@ export function ContextRail({
             </label>
             <label>
               <span>{t.contextRail.expenses.formPaidBy}</span>
-              <select
+              <Select
                 value={expensePaidBy}
                 disabled={!canEditExpenses}
                 onChange={(event) => setExpensePaidBy(event.target.value)}
@@ -964,11 +964,11 @@ export function ContextRail({
                     {member.displayName}
                   </option>
                 ))}
-              </select>
+              </Select>
             </label>
             <label>
               <span>{t.contextRail.expenses.formCategory}</span>
-              <select
+              <Select
                 value={expenseCategory}
                 disabled={!canEditExpenses}
                 onChange={(event) =>
@@ -989,7 +989,7 @@ export function ContextRail({
                     {category}
                   </option>
                 ))}
-              </select>
+              </Select>
             </label>
             <Button
               type="submit"

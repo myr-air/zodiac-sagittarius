@@ -1,9 +1,20 @@
 import { cloneElement, isValidElement } from "react";
-import type { ButtonHTMLAttributes, FormHTMLAttributes, HTMLAttributes, LabelHTMLAttributes, ReactElement, ReactNode } from "react";
+import type {
+  ButtonHTMLAttributes,
+  FormHTMLAttributes,
+  HTMLAttributes,
+  InputHTMLAttributes,
+  LabelHTMLAttributes,
+  ReactElement,
+  ReactNode,
+  SelectHTMLAttributes,
+  TextareaHTMLAttributes,
+} from "react";
 import { cn } from "@/src/lib/cn";
 
 type ButtonVariant = "primary" | "secondary" | "ghost" | "danger";
 type BadgeTone = "neutral" | "primary" | "route" | "warning" | "success" | "danger";
+type ActionBarAlign = "start" | "end" | "between";
 type WorkspaceSurfaceElement = "section" | "form" | "nav" | "aside" | "div";
 type WorkspaceSurfaceDensity = "normal" | "compact";
 type WorkspacePageKind = "standard" | "workspace";
@@ -142,6 +153,7 @@ const workspaceSurfaceDensityClassNames = {
 
 export const fieldControlClassName = [
   "min-h-10",
+  "w-full",
   "rounded-(--radius-sm)",
   "border",
   "border-(--color-border)",
@@ -157,12 +169,104 @@ export const fieldControlClassName = [
   "disabled:text-(--color-text-muted)",
 ];
 
+export const textAreaControlClassName = [
+  ...fieldControlClassName,
+  "min-h-[88px]",
+  "resize-y",
+  "py-2",
+  "leading-5",
+];
+
 export const fieldStackClassName = [
   "grid",
   "gap-1.5",
   "text-[12px]",
   "font-extrabold",
   "text-(--color-text)",
+];
+
+const actionBarBaseClassName = [
+  "action-bar",
+  "flex",
+  "min-w-0",
+  "flex-wrap",
+  "items-center",
+  "gap-2",
+];
+
+const actionBarAlignClassNames = {
+  start: ["justify-start"],
+  end: ["justify-end"],
+  between: ["justify-between"],
+} satisfies Record<ActionBarAlign, string[]>;
+
+const segmentedControlClassName = [
+  "segmented-control",
+  "inline-flex",
+  "w-fit",
+  "max-w-full",
+  "items-center",
+  "rounded-(--radius-sm)",
+  "border",
+  "border-(--color-border)",
+  "bg-(--color-surface-muted)",
+  "p-0.5",
+];
+
+const segmentedButtonClassName = [
+  "segmented-control__item",
+  "min-h-8",
+  "rounded-[calc(var(--radius-sm)-2px)]",
+  "border-0",
+  "bg-transparent",
+  "px-2.5",
+  "text-xs",
+  "font-extrabold",
+  "text-(--color-text-muted)",
+  "transition-[background,color,box-shadow]",
+  "duration-150",
+  "hover:text-(--color-primary-strong)",
+  "focus-visible:outline",
+  "focus-visible:outline-2",
+  "focus-visible:outline-offset-2",
+  "focus-visible:outline-(--color-primary)",
+  "data-[selected=true]:bg-(--color-surface)",
+  "data-[selected=true]:text-(--color-primary-strong)",
+  "data-[selected=true]:shadow-[0_1px_4px_rgb(15_23_42_/_0.06)]",
+];
+
+const floatingActionButtonClassName = [
+  "floating-action-button",
+  "fixed",
+  "right-4",
+  "bottom-4",
+  "z-[30]",
+  "inline-flex",
+  "min-h-12",
+  "min-w-12",
+  "items-center",
+  "justify-center",
+  "gap-2",
+  "rounded-full",
+  "border",
+  "border-(--color-primary)",
+  "bg-(--color-primary)",
+  "px-4",
+  "text-sm",
+  "font-extrabold",
+  "text-white",
+  "shadow-[0_10px_18px_rgb(15_118_110_/_0.22)]",
+  "transition-[background,border-color,box-shadow,transform]",
+  "duration-150",
+  "hover:bg-(--color-primary-strong)",
+  "focus-visible:outline",
+  "focus-visible:outline-2",
+  "focus-visible:outline-offset-2",
+  "focus-visible:outline-(--color-primary)",
+  "disabled:border-(--color-border)",
+  "disabled:bg-(--color-surface-muted)",
+  "disabled:text-(--color-text-muted)",
+  "disabled:shadow-none",
 ];
 
 export function workspacePageClassName(kind: WorkspacePageKind = "standard", className = ""): string {
@@ -255,6 +359,22 @@ export function FieldLabel({ children, className = "", ...props }: LabelHTMLAttr
   );
 }
 
+export function TextInput({ className = "", ...props }: InputHTMLAttributes<HTMLInputElement>) {
+  return <input className={cn(fieldControlClassName, className)} {...props} />;
+}
+
+export function TextArea({ className = "", ...props }: TextareaHTMLAttributes<HTMLTextAreaElement>) {
+  return <textarea className={cn(textAreaControlClassName, className)} {...props} />;
+}
+
+export function Select({ className = "", children, ...props }: SelectHTMLAttributes<HTMLSelectElement> & { children: ReactNode }) {
+  return (
+    <select className={cn(fieldControlClassName, className)} {...props}>
+      {children}
+    </select>
+  );
+}
+
 export function Button({
   asChild = false,
   children,
@@ -281,6 +401,75 @@ export function IconButton({ children, className = "", ...props }: ButtonHTMLAtt
     <button className={cn(iconButtonBaseClassName, className)} {...props}>
       {children}
     </button>
+  );
+}
+
+export function FloatingActionButton({ children, className = "", ...props }: ButtonHTMLAttributes<HTMLButtonElement> & { children: ReactNode }) {
+  return (
+    <button className={cn(floatingActionButtonClassName, className)} {...props}>
+      {children}
+    </button>
+  );
+}
+
+export function SwapButton({ children, className = "", ...props }: ButtonHTMLAttributes<HTMLButtonElement> & { children: ReactNode }) {
+  return (
+    <IconButton className={cn("swap-button", "rounded-full", className)} {...props}>
+      {children}
+    </IconButton>
+  );
+}
+
+export function ActionBar({
+  align = "end",
+  children,
+  className = "",
+  ...props
+}: HTMLAttributes<HTMLDivElement> & { align?: ActionBarAlign; children: ReactNode }) {
+  return (
+    <div className={cn(actionBarBaseClassName, actionBarAlignClassNames[align], className)} {...props}>
+      {children}
+    </div>
+  );
+}
+
+export function SegmentedControl<TValue extends string>({
+  "aria-label": ariaLabel,
+  className = "",
+  itemClassName = "",
+  onChange,
+  options,
+  selectedItemClassName = "",
+  value,
+}: {
+  "aria-label": string;
+  className?: string;
+  itemClassName?: string;
+  onChange: (value: TValue) => void;
+  options: Array<{ label: ReactNode; value: TValue; disabled?: boolean }>;
+  selectedItemClassName?: string;
+  value: TValue;
+}) {
+  return (
+    <div className={cn(segmentedControlClassName, className)} role="group" aria-label={ariaLabel}>
+      {options.map((option) => (
+        <button
+          aria-pressed={option.value === value}
+          className={cn(
+            segmentedButtonClassName,
+            itemClassName,
+            option.value === value && selectedItemClassName,
+          )}
+          data-selected={option.value === value ? "true" : undefined}
+          disabled={option.disabled}
+          key={option.value}
+          type="button"
+          onClick={() => onChange(option.value)}
+        >
+          {option.label}
+        </button>
+      ))}
+    </div>
   );
 }
 

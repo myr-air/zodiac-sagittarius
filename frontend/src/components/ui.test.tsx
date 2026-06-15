@@ -1,8 +1,26 @@
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 import { Icon } from "./icons";
 import { formatTripRange, PageHeader, PageUserCard } from "./PageHeader";
-import { Badge, Button, FieldLabel, IconButton, Panel, WorkspacePage, WorkspaceSurface, fieldControlClassName, workspacePageClassName } from "./ui";
+import {
+  ActionBar,
+  Badge,
+  Button,
+  FieldLabel,
+  FloatingActionButton,
+  IconButton,
+  Panel,
+  SegmentedControl,
+  Select,
+  SwapButton,
+  TextArea,
+  TextInput,
+  WorkspacePage,
+  WorkspaceSurface,
+  fieldControlClassName,
+  workspacePageClassName,
+} from "./ui";
 
 describe("shared UI primitives", () => {
   it("composes Tailwind defaults, legacy bridge classes, and custom classes", () => {
@@ -75,6 +93,71 @@ describe("shared UI primitives", () => {
     expect(screen.getByRole("navigation", { name: "Folders" })).toHaveClass("p-3.5", "folder-rail");
     expect(screen.getByText("Trip name").closest("label")).toHaveClass("grid", "gap-1.5", "text-(--color-text)");
     expect(screen.getByRole("textbox")).toHaveClass("focus:border-(--color-route-border)", "disabled:bg-(--color-surface-muted)");
+  });
+
+  it("renders shared form controls and action controllers", async () => {
+    const user = userEvent.setup();
+    let selected = "all";
+    const { rerender } = render(
+      <>
+        <FieldLabel>
+          <span>Search</span>
+          <TextInput placeholder="Find stops" />
+        </FieldLabel>
+        <FieldLabel>
+          <span>Status</span>
+          <Select defaultValue="open">
+            <option value="open">Open</option>
+            <option value="done">Done</option>
+          </Select>
+        </FieldLabel>
+        <FieldLabel>
+          <span>Notes</span>
+          <TextArea />
+        </FieldLabel>
+        <ActionBar aria-label="Actions">
+          <Button variant="ghost">Cancel</Button>
+          <Button>Save</Button>
+        </ActionBar>
+        <SegmentedControl
+          aria-label="Filter"
+          value={selected}
+          options={[
+            { value: "all", label: "All" },
+            { value: "mine", label: "Mine" },
+          ]}
+          onChange={(value) => {
+            selected = value;
+          }}
+        />
+        <FloatingActionButton type="button">Add</FloatingActionButton>
+        <SwapButton aria-label="Swap dates">
+          <Icon name="redo" />
+        </SwapButton>
+      </>,
+    );
+
+    expect(screen.getByPlaceholderText("Find stops")).toHaveClass("min-h-10", "w-full", "focus:border-(--color-route-border)");
+    expect(screen.getByRole("combobox", { name: "Status" })).toHaveClass("min-h-10", "w-full", "border-(--color-border)");
+    expect(screen.getByRole("textbox", { name: "Notes" })).toHaveClass("min-h-[88px]", "resize-y");
+    expect(screen.getByLabelText("Actions")).toHaveClass("action-bar", "justify-end");
+    expect(screen.getByRole("button", { name: "Add" })).toHaveClass("floating-action-button", "fixed", "rounded-full");
+    expect(screen.getByRole("button", { name: "Swap dates" })).toHaveClass("swap-button", "icon-button");
+    await user.click(screen.getByRole("button", { name: "Mine" }));
+    expect(selected).toBe("mine");
+
+    rerender(
+      <SegmentedControl
+        aria-label="Filter"
+        value="mine"
+        options={[
+          { value: "all", label: "All" },
+          { value: "mine", label: "Mine" },
+        ]}
+        onChange={() => undefined}
+      />,
+    );
+    expect(screen.getByRole("button", { name: "Mine" })).toHaveAttribute("data-selected", "true");
   });
 
   it("renders page headers with and without optional regions", () => {

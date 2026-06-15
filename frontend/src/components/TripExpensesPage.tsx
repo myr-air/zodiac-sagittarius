@@ -15,7 +15,7 @@ import type { Expense, ExpenseComment, ExpenseLineItem, ExpenseSummary, Member, 
 import { Icon } from "./icons";
 import { TravelMotif } from "./motifs";
 import { formatTripRange, PageHeader } from "./PageHeader";
-import { Button, IconButton } from "./ui";
+import { Button, IconButton, Select } from "./ui";
 
 interface TripExpensesPageProps {
   trip: Trip;
@@ -248,6 +248,7 @@ export function TripExpensesPage({
           <>
             <span><Icon name="calendar" /> {formatTripRange(trip.startDate, trip.endDate, locale)}</span>
             <span><Icon name="users" /> {t.dates.memberCount({ count: trip.members.length })}</span>
+            <span><Icon name="wallet" /> {canEditExpenses ? t.expenses.canEdit : t.expenses.readOnly}</span>
           </>
         )}
         motif={<TravelMotif tone="route" />}
@@ -385,17 +386,17 @@ export function TripExpensesPage({
               </label>
               <label className={fieldClassName}>
                 <span>{t.expenses.filters.category}</span>
-                <select value={categoryFilter} onChange={(event) => setCategoryFilter(event.target.value as "all" | Expense["category"])}>
+                <Select value={categoryFilter} onChange={(event) => setCategoryFilter(event.target.value as "all" | Expense["category"])}>
                   <option value="all">{t.expenses.filters.allCategories}</option>
                   {categories.map((category) => <option key={category} value={category}>{category}</option>)}
-                </select>
+                </Select>
               </label>
               <label className={fieldClassName}>
                 <span>{t.expenses.filters.payer}</span>
-                <select value={payerFilter} onChange={(event) => setPayerFilter(event.target.value)}>
+                <Select value={payerFilter} onChange={(event) => setPayerFilter(event.target.value)}>
                   <option value="all">{t.expenses.filters.allPayers}</option>
                   {trip.members.map((member) => <option key={member.id} value={member.id}>{member.displayName}</option>)}
-                </select>
+                </Select>
               </label>
               <Button type="button" variant="ghost" onClick={clearFilters}>{t.expenses.actions.clearFilters}</Button>
             </div>
@@ -736,7 +737,7 @@ function ExpenseDialog({
             </label>
             <label className={fieldClassName}>
               <span>{t.expenses.fields.currency}</span>
-              <select
+              <Select
                 aria-label={t.expenses.fields.currency}
                 value={currency}
                 onChange={(event) => {
@@ -748,7 +749,7 @@ function ExpenseDialog({
                 {majorCurrencyOptions.map((option) => (
                   <option key={option.code} value={option.code}>{option.code} · {option.label}</option>
                 ))}
-              </select>
+              </Select>
             </label>
             <label className={fieldClassName}>
               <span>{t.expenses.fields.receiptUrl}</span>
@@ -779,20 +780,20 @@ function ExpenseDialog({
             ) : null}
             <label className={fieldClassName}>
               <span>{t.expenses.fields.paidBy}</span>
-              <select value={paidBy} onChange={(event) => setPaidBy(event.target.value)}>
+              <Select value={paidBy} onChange={(event) => setPaidBy(event.target.value)}>
                 {trip.members.map((member) => <option key={member.id} value={member.id}>{member.displayName}</option>)}
-              </select>
+              </Select>
             </label>
             <label className={fieldClassName}>
               <span>{t.expenses.fields.category}</span>
-              <select value={category} onChange={(event) => setCategory(event.target.value as Expense["category"])}>
+              <Select value={category} onChange={(event) => setCategory(event.target.value as Expense["category"])}>
                 {categories.map((candidate) => <option key={candidate} value={candidate}>{candidate}</option>)}
-              </select>
+              </Select>
             </label>
             <div className="grid gap-1.5">
               <label className={fieldClassName}>
                 <span>{t.expenses.fields.tripPlan}</span>
-                <select
+                <Select
                   value={effectiveTripPlanId}
                   disabled={Boolean(linkedItem)}
                   onChange={(event) => setTripPlanId(event.target.value)}
@@ -800,22 +801,22 @@ function ExpenseDialog({
                   {tripPlanOptions.map((plan) => (
                     <option key={plan.id} value={plan.id}>{plan.name}</option>
                   ))}
-                </select>
+                </Select>
               </label>
               {linkedItem ? <span className={balanceMetaClassName}>{t.expenses.dialog.planLockedToLinkedStop}</span> : null}
             </div>
             <label className={fieldClassName}>
               <span>{t.expenses.fields.linkedStop}</span>
-              <select value={itemId} onChange={(event) => changeItemId(event.target.value)}>
+              <Select value={itemId} onChange={(event) => changeItemId(event.target.value)}>
                 <option value="">{t.expenses.fields.noLinkedStop}</option>
                 {trip.itineraryItems.map((item) => <option key={item.id} value={item.id}>{item.activity}</option>)}
-              </select>
+              </Select>
             </label>
             <label className={fieldClassName}>
               <span>{t.expenses.fields.splitMode}</span>
-              <select value={splitMode} onChange={(event) => changeSplitMode(event.target.value as ExpenseSplitMode)}>
+              <Select value={splitMode} onChange={(event) => changeSplitMode(event.target.value as ExpenseSplitMode)}>
                 {splitModes.map((mode) => <option key={mode} value={mode}>{t.expenses.splitModes[mode]}</option>)}
-              </select>
+              </Select>
             </label>
           </div>
 

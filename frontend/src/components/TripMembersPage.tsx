@@ -7,6 +7,7 @@ import { Icon } from "./icons";
 import { TravelMotif } from "./motifs";
 import { formatTripRange, PageHeader } from "./PageHeader";
 import { PeoplePanel } from "./PeoplePanel";
+import { ActionBar, Button, FieldLabel, Select, TextInput, WorkspacePage, WorkspaceSurface } from "./ui";
 
 interface TripMembersPageProps {
   trip: Trip;
@@ -22,7 +23,7 @@ interface TripMembersPageProps {
   onTransferOwnership?: (targetMemberId: string) => void;
 }
 
-const membersPageClassName = "members-page grid min-h-full min-w-0 grid-rows-[auto_minmax(0,1fr)] gap-3 bg-(--color-page) px-6 py-[22px] pb-7 max-[1199px]:min-h-[calc(100dvh-48px)] max-[1199px]:gap-0 max-[1199px]:bg-(--color-surface) max-[1199px]:px-0 max-[1199px]:py-0 max-[1199px]:pb-0";
+const membersPageClassName = "members-page";
 const memberStatGridClassName = "member-stat-grid grid w-full grid-cols-5 gap-3 max-[1199px]:grid-cols-3 max-[1199px]:gap-0 max-[767px]:grid-cols-1";
 const memberStatClassName = "member-stat grid min-h-[126px] min-w-0 content-start gap-2 rounded-(--radius-md) border border-[color-mix(in_srgb,var(--color-route-border)_58%,var(--color-border))] bg-[linear-gradient(145deg,rgb(255_255_255)_0%,color-mix(in_srgb,var(--color-primary-soft)_46%,var(--color-surface))_100%)] p-3.5 shadow-[0_1px_0_rgb(15_23_42_/_0.04)] max-[1199px]:rounded-none max-[1199px]:border-x-0 max-[1199px]:border-t-0 max-[1199px]:shadow-none max-[479px]:min-h-[58px] max-[479px]:grid-cols-[28px_minmax(0,1fr)] [&_.icon]:text-(--color-primary) [&>span]:text-xs [&>span]:font-bold [&>span]:text-(--color-text-muted) [&>strong]:text-2xl [&>strong]:font-extrabold [&>strong]:leading-[30px] [&>strong]:text-(--color-text) [&>strong]:tabular-nums max-[479px]:[&>strong]:col-start-2 max-[479px]:[&>strong]:justify-self-start max-[479px]:[&>strong]:text-xl max-[479px]:[&>strong]:leading-6";
 const fieldGroupClassName = "[&_label]:grid [&_label]:min-w-0 [&_label]:gap-[5px] [&_label>span]:text-[11px] [&_label>span]:font-extrabold [&_label>span]:leading-[15px] [&_label>span]:text-(--color-text-muted) [&_input]:min-h-[34px] [&_input]:w-full [&_input]:rounded-(--radius-sm) [&_input]:border [&_input]:border-(--color-border) [&_input]:bg-(--color-surface) [&_input]:px-2.5 [&_input]:text-xs [&_input]:font-bold [&_input]:text-(--color-text) [&_select]:min-h-[34px] [&_select]:w-full [&_select]:rounded-(--radius-sm) [&_select]:border [&_select]:border-(--color-border) [&_select]:bg-(--color-surface) [&_select]:px-2.5 [&_select]:text-xs [&_select]:font-bold [&_select]:text-(--color-text) [&_input:disabled]:bg-(--color-surface-muted) [&_select:disabled]:bg-(--color-surface-muted) [&_input:disabled]:text-(--color-text-subtle) [&_select:disabled]:text-(--color-text-subtle)";
@@ -30,7 +31,6 @@ const memberCommandBarClassName = "member-command-bar grid min-w-0 gap-3 rounded
 const memberCommandFieldsClassName = cn("member-command-fields grid min-w-0 grid-cols-3 gap-3 max-[1199px]:grid-cols-1", fieldGroupClassName);
 const memberCommandActionsClassName = "member-command-actions flex min-w-0 flex-wrap items-center justify-end gap-2 max-[1199px]:justify-start max-[767px]:w-full max-[767px]:[&>*]:flex-[1_1_180px]";
 const memberCommandMetaClassName = "member-command-meta grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-2 max-[1199px]:grid-cols-1 [&_code]:overflow-hidden [&_code]:rounded-(--radius-sm) [&_code]:border [&_code]:border-(--color-border) [&_code]:bg-(--color-surface-muted) [&_code]:px-[9px] [&_code]:py-[7px] [&_code]:text-xs [&_code]:text-(--color-text-muted) [&_code]:text-ellipsis [&_code]:whitespace-nowrap";
-const memberActionButtonClassName = "inline-flex min-h-10 min-w-0 items-center justify-center gap-2 rounded-(--radius-md) border px-3 text-sm font-extrabold leading-5 transition-[border-color,box-shadow,transform,background,color] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-primary-border)";
 const memberResetButtonClassName = "member-filter-reset border-(--color-border) bg-(--color-surface-subtle) text-(--color-text-muted) hover:border-(--color-primary-border) hover:bg-(--color-primary-soft) hover:text-(--color-primary-strong) max-[767px]:w-full";
 const inviteCopyButtonClassName = "invite-copy-button border-(--color-primary) bg-(--color-primary) text-white hover:-translate-y-px hover:shadow-[0_6px_8px_rgb(15_118_110_/_0.18)] disabled:cursor-not-allowed disabled:border-(--color-border) disabled:bg-(--color-surface-muted) disabled:text-(--color-text-muted) disabled:shadow-none";
 const memberCreateButtonClassName = "member-create-button border-(--color-primary-border) bg-(--color-primary-soft) text-(--color-primary-strong) hover:-translate-y-px hover:border-(--color-primary) hover:shadow-[0_6px_8px_rgb(15_118_110_/_0.12)] disabled:cursor-not-allowed disabled:border-(--color-border) disabled:bg-(--color-surface-muted) disabled:text-(--color-text-muted) disabled:shadow-none";
@@ -211,7 +211,7 @@ export function TripMembersPage({
   }
 
   return (
-    <section className={membersPageClassName} aria-label={t.members.pageLabel}>
+    <WorkspacePage className={membersPageClassName} kind="workspace" aria-label={t.members.pageLabel}>
       <PageHeader
         title={t.members.title}
         subtitle={trip.name}
@@ -252,63 +252,64 @@ export function TripMembersPage({
         </div>
       </section>
 
-      <section className={memberCommandBarClassName} aria-label={t.members.commandBar}>
+      <WorkspaceSurface className={memberCommandBarClassName} aria-label={t.members.commandBar}>
         <div className={memberCommandFieldsClassName}>
-          <label>
+          <FieldLabel>
             <span>{t.members.fields.search}</span>
-            <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder={t.members.fields.searchPlaceholder} />
-          </label>
-          <label>
+            <TextInput value={query} onChange={(event) => setQuery(event.target.value)} placeholder={t.members.fields.searchPlaceholder} />
+          </FieldLabel>
+          <FieldLabel>
             <span>{t.members.fields.role}</span>
-            <select value={roleFilter} onChange={(event) => setRoleFilter(event.target.value as "all" | TripRole)}>
+            <Select value={roleFilter} onChange={(event) => setRoleFilter(event.target.value as "all" | TripRole)}>
               <option value="all">{t.members.filters.allRoles}</option>
               <option value="owner">{t.appShell.roles.owner}</option>
               <option value="organizer">{t.appShell.roles.organizer}</option>
               <option value="traveler">{t.appShell.roles.traveler}</option>
               <option value="viewer">{t.appShell.roles.viewer}</option>
-            </select>
-          </label>
-          <label>
+            </Select>
+          </FieldLabel>
+          <FieldLabel>
             <span>{t.members.fields.status}</span>
-            <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as "all" | "active" | "disabled" | "claimed" | "pending")}>
+            <Select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as "all" | "active" | "disabled" | "claimed" | "pending")}>
               <option value="all">{t.members.filters.allStatuses}</option>
               <option value="active">{t.common.status.active}</option>
               <option value="disabled">{t.common.status.disabled}</option>
               <option value="claimed">{t.join.memberStatus.claimed}</option>
               <option value="pending">{t.common.status.pending}</option>
-            </select>
-          </label>
+            </Select>
+          </FieldLabel>
         </div>
-        <div className={memberCommandActionsClassName}>
-          <button className={cn(memberActionButtonClassName, memberResetButtonClassName)} type="button" onClick={resetFilters}>{t.members.actions.clear}</button>
+        <ActionBar className={memberCommandActionsClassName}>
+          <Button className={cn(memberResetButtonClassName, "w-auto")} variant="ghost" type="button" onClick={resetFilters}>{t.members.actions.clear}</Button>
           {canManagePeople ? (
             <>
-              <button className={cn(memberActionButtonClassName, inviteCopyButtonClassName)} type="button" onClick={copyInviteLink}>
+              <Button className={cn(inviteCopyButtonClassName, "w-auto")} type="button" onClick={copyInviteLink}>
                 <Icon name="copy" />
                 {t.members.actions.copyInvite}
-              </button>
+              </Button>
               {onRotateJoinInviteToken ? (
-                <button className={cn(memberActionButtonClassName, memberCreateButtonClassName)} type="button" disabled={isRotatingInviteToken} onClick={rotateInviteToken}>
+                <Button className={cn(memberCreateButtonClassName, "w-auto")} variant="ghost" type="button" disabled={isRotatingInviteToken} onClick={rotateInviteToken}>
                   <Icon name="key" />
                   {isRotatingInviteToken ? t.members.actions.rotatingInvite : t.members.actions.rotateInvite}
-                </button>
+                </Button>
               ) : null}
-              <button
+              <Button
                 aria-expanded={createPanelOpen}
-                className={cn(memberActionButtonClassName, memberCreateButtonClassName)}
+                className={cn(memberCreateButtonClassName, "w-auto")}
+                variant="ghost"
                 type="button"
                 onClick={() => setCreatePanelOpen((current) => !current)}
               >
                 <Icon name="plus" />
                 {createPanelOpen ? t.members.actions.closeCreate : t.members.actions.openCreate}
-              </button>
+              </Button>
             </>
           ) : (
             <span className={copyFeedbackClassName} data-state={copyState} role="status">
               {t.members.copy.readOnly}
             </span>
           )}
-        </div>
+        </ActionBar>
         {canManagePeople ? (
           <div className={memberCommandMetaClassName}>
             <code>{inviteLink}</code>
@@ -317,23 +318,23 @@ export function TripMembersPage({
             </span>
           </div>
         ) : null}
-      </section>
+      </WorkspaceSurface>
 
       {createPanelOpen ? (
-        <section className={memberCreatePanelClassName} aria-label={t.members.createLabel}>
+        <WorkspaceSurface className={memberCreatePanelClassName} aria-label={t.members.createLabel}>
           <form className={memberCreateFormClassName} onSubmit={submitNewMember}>
-            <label>
+            <FieldLabel>
               <span>{t.members.fields.newName}</span>
-              <input
+              <TextInput
                 disabled={!canManagePeople}
                 value={newMemberName}
                 onChange={(event) => setNewMemberName(event.target.value)}
                 placeholder={t.members.fields.newNamePlaceholder}
               />
-            </label>
-            <label>
+            </FieldLabel>
+            <FieldLabel>
               <span>{t.members.fields.newRole}</span>
-              <select
+              <Select
                 disabled={!canManagePeople}
                 value={newMemberRole}
                 onChange={(event) => setNewMemberRole(event.target.value as Exclude<TripRole, "owner">)}
@@ -341,14 +342,14 @@ export function TripMembersPage({
                 <option value="organizer">{t.appShell.roles.organizer}</option>
                 <option value="traveler">{t.appShell.roles.traveler}</option>
                 <option value="viewer">{t.appShell.roles.viewer}</option>
-              </select>
-            </label>
-            <button className={cn(memberActionButtonClassName, memberCreateButtonClassName)} type="submit" disabled={!canManagePeople || !newMemberName.trim()}>
+              </Select>
+            </FieldLabel>
+            <Button className={cn(memberCreateButtonClassName, "w-auto")} variant="ghost" type="submit" disabled={!canManagePeople || !newMemberName.trim()}>
               <Icon name="check" />
               {t.members.actions.saveMember}
-            </button>
+            </Button>
           </form>
-        </section>
+        </WorkspaceSurface>
       ) : null}
 
       <PeoplePanel
@@ -370,25 +371,25 @@ export function TripMembersPage({
             {memberDialog.kind === "password" ? (
               <>
                 <p className={memberDialogBodyClassName}>{t.members.confirm.passwordPrompt({ name: memberDialog.member.displayName })}</p>
-                <label>
+                <FieldLabel>
                   <span>รหัสผ่านใหม่</span>
-                  <input value={passwordValue} onChange={(event) => setPasswordValue(event.target.value)} type="password" autoComplete="new-password" />
-                </label>
+                  <TextInput value={passwordValue} onChange={(event) => setPasswordValue(event.target.value)} type="password" autoComplete="new-password" />
+                </FieldLabel>
                 {passwordError ? <p className={memberDialogErrorClassName} role="alert">{passwordError}</p> : null}
               </>
             ) : (
               <p className={memberDialogBodyClassName}>{memberDialogBody(memberDialog, t.members.confirm)}</p>
             )}
-            <div className={memberDialogActionsClassName}>
-              <button className={cn(memberActionButtonClassName, memberResetButtonClassName)} type="button" onClick={closeMemberDialog}>ยกเลิก</button>
-              <button className={cn(memberActionButtonClassName, memberCreateButtonClassName)} type="submit">
+            <ActionBar className={memberDialogActionsClassName}>
+              <Button className={cn(memberResetButtonClassName, "w-auto")} variant="ghost" type="button" onClick={closeMemberDialog}>ยกเลิก</Button>
+              <Button className={cn(memberCreateButtonClassName, "w-auto")} variant="ghost" type="submit">
                 {memberDialogConfirmLabel(memberDialog)}
-              </button>
-            </div>
+              </Button>
+            </ActionBar>
           </form>
         </div>
       ) : null}
-    </section>
+    </WorkspacePage>
   );
 }
 

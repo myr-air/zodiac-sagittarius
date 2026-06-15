@@ -7,7 +7,7 @@ import { cn } from "@/src/lib/cn";
 import { formatDayLabel, getTripDates, type ItineraryView } from "@/src/trip/itinerary";
 import { Icon } from "./icons";
 import { formatTripRange, PageUserCard } from "./PageHeader";
-import { Button } from "./ui";
+import { Button, SegmentedControl, Select, TextInput } from "./ui";
 import { WeatherBriefingDrawer } from "./WeatherBriefingDrawer";
 import { WeatherForecastStrip } from "./WeatherForecastStrip";
 
@@ -77,9 +77,8 @@ const overviewHighlightToneClassNames = {
   market: "[--overview-highlight-accent:var(--color-warning-strong)] [--overview-highlight-wash:var(--color-warning-soft)]",
 } satisfies Record<DestinationTone, string>;
 const overviewTaskToolbarClassName = "overview-task-toolbar flex flex-wrap items-center justify-between gap-2";
-const overviewTaskFiltersClassName = "overview-task-filters inline-flex w-fit max-w-full rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-muted) p-0.5";
-const overviewTaskFilterClassName = "overview-task-filter min-h-8 rounded-[calc(var(--radius-sm)-2px)] border-0 bg-transparent px-2.5 text-xs font-extrabold text-(--color-text-muted)";
-const overviewTaskFilterActiveClassName = "overview-task-filter--active bg-(--color-surface) text-(--color-primary-strong) shadow-[0_1px_4px_rgb(15_23_42_/_0.06)]";
+const overviewTaskFiltersClassName = "overview-task-filters";
+const overviewTaskFilterActiveClassName = "overview-task-filter--active";
 const overviewTaskAddButtonClassName = "overview-task-add-button inline-flex min-h-[34px] w-[34px] flex-none items-center justify-center rounded-(--radius-sm) border border-(--color-primary-border) bg-(--color-primary) p-0 text-xl font-extrabold leading-none text-white transition-[background,border-color,box-shadow,transform] duration-200 hover:border-(--color-primary) hover:bg-(--color-primary-strong) hover:shadow-[0_8px_18px_rgb(194_79_22_/_0.18)] active:translate-y-px focus-visible:outline focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[rgb(191_219_254_/_0.72)]";
 const personalTaskFormClassName = "overview-task-form overview-task-form--personal grid grid-cols-[minmax(140px,1fr)_auto] items-end gap-2 [&_button]:min-h-[34px] [&_button]:rounded-(--radius-sm) [&_button]:border [&_button]:border-(--color-primary-border) [&_button]:bg-(--color-primary) [&_button]:px-3 [&_button]:text-xs [&_button]:font-extrabold [&_button]:text-white [&_button:disabled]:border-(--color-border) [&_button:disabled]:bg-(--color-surface-muted) [&_button:disabled]:text-(--color-text-subtle) [&_input]:min-h-[34px] [&_input]:w-full [&_input]:rounded-(--radius-sm) [&_input]:border [&_input]:border-(--color-border) [&_input]:bg-(--color-surface) [&_input]:px-2.5 [&_input]:text-xs [&_input]:font-bold [&_input]:text-(--color-text) [&_label]:grid [&_label]:min-w-0 [&_label]:gap-[5px] [&_label>span]:text-[11px] [&_label>span]:font-extrabold [&_label>span]:leading-[15px] [&_label>span]:text-(--color-text-muted) w-full max-[767px]:grid-cols-1 max-[767px]:[&_button]:w-full";
 const overviewTaskListClassName = "overview-task-list m-0 grid list-none gap-2 p-0 text-[13px] font-semibold leading-5 text-(--color-text-muted)";
@@ -297,11 +296,18 @@ export function OverviewPage({
                 <h2>{t.overview.checklist}</h2>
               </div>
               <div className={overviewTaskToolbarClassName}>
-                <div className={overviewTaskFiltersClassName} role="group" aria-label={t.overview.filters.statusLabel}>
-                  <button className={cn(overviewTaskFilterClassName, taskStatusFilter === "all" && overviewTaskFilterActiveClassName)} type="button" onClick={() => setTaskStatusFilter("all")}>{t.overview.filters.all}</button>
-                  <button className={cn(overviewTaskFilterClassName, taskStatusFilter === "open" && overviewTaskFilterActiveClassName)} type="button" onClick={() => setTaskStatusFilter("open")}>{t.common.status.open}</button>
-                  <button className={cn(overviewTaskFilterClassName, taskStatusFilter === "done" && overviewTaskFilterActiveClassName)} type="button" onClick={() => setTaskStatusFilter("done")}>{t.common.status.done}</button>
-                </div>
+                <SegmentedControl
+                  aria-label={t.overview.filters.statusLabel}
+                  className={overviewTaskFiltersClassName}
+                  selectedItemClassName={overviewTaskFilterActiveClassName}
+                  value={taskStatusFilter}
+                  options={[
+                    { value: "all", label: t.overview.filters.all },
+                    { value: "open", label: t.common.status.open },
+                    { value: "done", label: t.common.status.done },
+                  ]}
+                  onChange={setTaskStatusFilter}
+                />
               </div>
               <form className={personalTaskFormClassName} onSubmit={submitTask}>
                 <label>
@@ -441,16 +447,30 @@ export function OverviewPage({
             <h2>{t.overview.headings.tripChecklist}</h2>
           </div>
           <div className={overviewTaskToolbarClassName}>
-            <div className={overviewTaskFiltersClassName} role="group" aria-label={t.overview.filters.scopeLabel}>
-              <button className={cn(overviewTaskFilterClassName, taskScope === "mine" && overviewTaskFilterActiveClassName)} type="button" onClick={() => setTaskScope("mine")}>{t.overview.filters.mine}</button>
-              <button className={cn(overviewTaskFilterClassName, taskScope === "trip" && overviewTaskFilterActiveClassName)} type="button" onClick={() => setTaskScope("trip")}>{t.overview.filters.trip}</button>
-              <button className={cn(overviewTaskFilterClassName, taskScope === "all" && overviewTaskFilterActiveClassName)} type="button" onClick={() => setTaskScope("all")}>{t.overview.filters.all}</button>
-            </div>
-            <div className={overviewTaskFiltersClassName} role="group" aria-label={t.overview.filters.statusLabel}>
-              <button className={cn(overviewTaskFilterClassName, taskStatusFilter === "all" && overviewTaskFilterActiveClassName)} type="button" onClick={() => setTaskStatusFilter("all")}>{t.overview.filters.allStatuses}</button>
-              <button className={cn(overviewTaskFilterClassName, taskStatusFilter === "open" && overviewTaskFilterActiveClassName)} type="button" onClick={() => setTaskStatusFilter("open")}>{t.overview.filters.open}</button>
-              <button className={cn(overviewTaskFilterClassName, taskStatusFilter === "done" && overviewTaskFilterActiveClassName)} type="button" onClick={() => setTaskStatusFilter("done")}>{t.overview.filters.done}</button>
-            </div>
+            <SegmentedControl
+              aria-label={t.overview.filters.scopeLabel}
+              className={overviewTaskFiltersClassName}
+              selectedItemClassName={overviewTaskFilterActiveClassName}
+              value={taskScope}
+              options={[
+                { value: "mine", label: t.overview.filters.mine },
+                { value: "trip", label: t.overview.filters.trip },
+                { value: "all", label: t.overview.filters.all },
+              ]}
+              onChange={setTaskScope}
+            />
+            <SegmentedControl
+              aria-label={t.overview.filters.statusLabel}
+              className={overviewTaskFiltersClassName}
+              selectedItemClassName={overviewTaskFilterActiveClassName}
+              value={taskStatusFilter}
+              options={[
+                { value: "all", label: t.overview.filters.allStatuses },
+                { value: "open", label: t.overview.filters.open },
+                { value: "done", label: t.overview.filters.done },
+              ]}
+              onChange={setTaskStatusFilter}
+            />
             <button className={overviewTaskAddButtonClassName} type="button" aria-label={t.overview.headings.addChecklist} title={t.overview.headings.addChecklist} onClick={() => setIsTaskDialogOpen(true)}>
               <span aria-hidden="true">+</span>
             </button>
@@ -498,23 +518,23 @@ export function OverviewPage({
               <div className={taskDialogGridClassName}>
                 <label className={dialogFieldWideClassName}>
                   <span>{t.overview.task.titleLabel}</span>
-                  <input value={newTaskTitle} onChange={(event) => setNewTaskTitle(event.target.value)} placeholder={t.overview.task.titlePlaceholder} />
+                  <TextInput value={newTaskTitle} onChange={(event) => setNewTaskTitle(event.target.value)} placeholder={t.overview.task.titlePlaceholder} />
                 </label>
                 <label>
                   <span>{t.overview.task.visibilityLabel}</span>
-                  <select value={newTaskVisibility} onChange={(event) => setNewTaskVisibility(event.target.value as TripTask["visibility"])}>
+                  <Select value={newTaskVisibility} onChange={(event) => setNewTaskVisibility(event.target.value as TripTask["visibility"])}>
                     <option value="private">{t.overview.task.private}</option>
                     <option value="shared">{t.overview.task.shared}</option>
-                  </select>
+                  </Select>
                 </label>
                 <label>
                   <span>{t.overview.task.assigneeLabel}</span>
-                  <select value={newTaskAssigneeId} disabled={newTaskVisibility === "private"} onChange={(event) => setNewTaskAssigneeId(event.target.value)}>
+                  <Select value={newTaskAssigneeId} disabled={newTaskVisibility === "private"} onChange={(event) => setNewTaskAssigneeId(event.target.value)}>
                     <option value="">{t.overview.task.noAssignee}</option>
                     {assignableMembers.map((member) => (
                       <option key={member.id} value={member.id}>{member.displayName}</option>
                     ))}
-                  </select>
+                  </Select>
                 </label>
               </div>
 

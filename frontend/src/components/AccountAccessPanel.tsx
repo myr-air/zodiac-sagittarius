@@ -20,7 +20,7 @@ import type {
 import { appRoutes } from "@/src/routes/app-routes";
 import type { TripApiClient, TripCockpit } from "@/src/trip/api-client";
 import type { Trip, TripCity, TripParticipantSession } from "@/src/trip/types";
-import { Badge, Button } from "./ui";
+import { Badge, Button, FloatingActionButton, Select, SwapButton } from "./ui";
 import { Icon } from "./icons";
 import { DatePickerField } from "./DateTimePickers";
 import { TripJoinGate } from "./TripJoinGate";
@@ -1847,10 +1847,10 @@ function AccountDashboard({
             <div className={accountTwoColClassName}>
               <label>
                 <span>{t.access.portal.vaultCreate.kind}</span>
-                <select value={vaultForm.kind} onChange={(event) => setVaultForm((current) => ({ ...current, kind: event.target.value as "note" | "file" }))}>
+                <Select value={vaultForm.kind} onChange={(event) => setVaultForm((current) => ({ ...current, kind: event.target.value as "note" | "file" }))}>
                   <option value="note">{t.access.portal.vaultCreate.note}</option>
                   <option value="file">{t.access.portal.vaultCreate.file}</option>
-                </select>
+                </Select>
               </label>
               <label>
                 <span>{t.access.portal.vaultCreate.title}</span>
@@ -2325,9 +2325,9 @@ function PortalTripWizard({
                     <Icon name="x" />
                     {wizard.actions.clearDates}
                   </Button>
-                  <button className={tripDateArrowClassName} type="button" onClick={swapTravelDates} aria-label={wizard.actions.swapDates}>
+                  <SwapButton className={tripDateArrowClassName} type="button" onClick={swapTravelDates} aria-label={wizard.actions.swapDates}>
                     <Icon name="route" />
-                  </button>
+                  </SwapButton>
                 </div>
                 <small className={tripCalendarHelperClassName}>
                   <Icon name="route" />
@@ -2435,10 +2435,10 @@ function PortalTripWizard({
                       <Badge tone="primary">{card.nights}</Badge>
                     </article>
                   ))}
-                  <button className={tripMiniAddClassName} type="button" onClick={focusDestinationSearch}>
+                  <FloatingActionButton className={cn(tripMiniAddClassName, "static")} type="button" onClick={focusDestinationSearch}>
                     <Icon name="plus" />
                     {wizard.actions.addDestination}
-                  </button>
+                  </FloatingActionButton>
                 </div>
               </div>
             </div>
@@ -3036,10 +3036,10 @@ function AccountSettingsEditor({
           </label>
           <label>
             <span>{t.access.settings.form.locale}</span>
-            <select value={form.locale} onChange={(event) => setForm((current) => ({ ...current, locale: event.target.value }))} required>
+            <Select value={form.locale} onChange={(event) => setForm((current) => ({ ...current, locale: event.target.value }))} required>
               <option value="th-TH">Thai</option>
               <option value="en-US">English</option>
-            </select>
+            </Select>
           </label>
           <label>
             <span>{t.access.settings.form.timezone}</span>

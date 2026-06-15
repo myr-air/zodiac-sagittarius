@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { expect } from "storybook/test";
 import { Icon } from "./icons";
-import { Button, IconButton } from "./ui";
+import { ActionBar, Button, FloatingActionButton, IconButton, SegmentedControl, Select, SwapButton, TextInput } from "./ui";
 
 const buttonsMeta = {
   title: "Design System/Buttons",
@@ -47,5 +47,46 @@ export const IconOnly: ButtonStory = {
     <IconButton aria-label="เปิดรายละเอียด">
       <Icon name="panel" />
     </IconButton>
+  ),
+};
+
+export const Controls: ButtonStory = {
+  render: () => (
+    <div className="grid w-[min(720px,calc(100vw-32px))] gap-4 rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) p-4">
+      <div className="grid grid-cols-2 gap-3 max-[640px]:grid-cols-1">
+        <label className="grid gap-1.5 text-xs font-extrabold text-(--color-text)">
+          Search
+          <TextInput placeholder="Find booking, stop, or member" />
+        </label>
+        <label className="grid gap-1.5 text-xs font-extrabold text-(--color-text)">
+          Status
+          <Select defaultValue="open">
+            <option value="open">Open</option>
+            <option value="done">Done</option>
+          </Select>
+        </label>
+      </div>
+      <SegmentedControl
+        aria-label="Trip scope"
+        value="trip"
+        options={[
+          { value: "mine", label: "Mine" },
+          { value: "trip", label: "Trip" },
+          { value: "all", label: "All" },
+        ]}
+        onChange={() => undefined}
+      />
+      <ActionBar aria-label="Control actions">
+        <Button variant="ghost">Cancel</Button>
+        <SwapButton aria-label="Swap dates">
+          <Icon name="redo" />
+        </SwapButton>
+        <Button>Save changes</Button>
+      </ActionBar>
+      <FloatingActionButton type="button" className="static justify-self-start">
+        <Icon name="plus" />
+        Add item
+      </FloatingActionButton>
+    </div>
   ),
 };

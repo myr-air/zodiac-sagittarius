@@ -9,7 +9,7 @@ import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
 import { Icon } from "./icons";
 import { formatTripRange, PageHeader } from "./PageHeader";
-import { Button, IconButton, WorkspacePage, WorkspaceSurface } from "./ui";
+import { Button, IconButton, Select, WorkspacePage, WorkspaceSurface } from "./ui";
 import { DateTimePickerField } from "./DateTimePickers";
 
 interface BookingsDocsPageProps {
@@ -794,9 +794,9 @@ function BookingDialog({ booking, copy, trip, tasks, onCancel, onSubmit }: {
         <form className={dialogFormClassName} onSubmit={submit}>
           <div className={dialogGridClassName}>
             <label className={fieldClassName}><span>{copy.titleField}</span><input value={title} onChange={(event) => setTitle(event.target.value)} /></label>
-            <label className={fieldClassName}><span>{copy.typeField}</span><select value={type} onChange={(event) => setType(event.target.value as BookingDocType)}>{bookingTypes.map((item) => <option key={item} value={item}>{formatEnumLabel(item, copy)}</option>)}</select></label>
-            <label className={fieldClassName}><span>{copy.statusField}</span><select value={status} onChange={(event) => setStatus(event.target.value as BookingDocStatus)}>{bookingStatuses.map((item) => <option key={item} value={item}>{formatEnumLabel(item, copy)}</option>)}</select></label>
-            <label className={fieldClassName}><span>{copy.visibilityField}</span><select value={visibility} onChange={(event) => setVisibility(event.target.value as BookingDocVisibility)}>{bookingVisibilities.map((item) => <option key={item} value={item}>{formatEnumLabel(item, copy)}</option>)}</select></label>
+            <label className={fieldClassName}><span>{copy.typeField}</span><Select value={type} onChange={(event) => setType(event.target.value as BookingDocType)}>{bookingTypes.map((item) => <option key={item} value={item}>{formatEnumLabel(item, copy)}</option>)}</Select></label>
+            <label className={fieldClassName}><span>{copy.statusField}</span><Select value={status} onChange={(event) => setStatus(event.target.value as BookingDocStatus)}>{bookingStatuses.map((item) => <option key={item} value={item}>{formatEnumLabel(item, copy)}</option>)}</Select></label>
+            <label className={fieldClassName}><span>{copy.visibilityField}</span><Select value={visibility} onChange={(event) => setVisibility(event.target.value as BookingDocVisibility)}>{bookingVisibilities.map((item) => <option key={item} value={item}>{formatEnumLabel(item, copy)}</option>)}</Select></label>
             <label className={fieldClassName}><span>{copy.providerField}</span><input value={providerName} onChange={(event) => setProviderName(event.target.value)} /></label>
             <label className={fieldClassName}><span>{copy.confirmationCodeField}</span><input value={confirmationCode} onChange={(event) => setConfirmationCode(event.target.value)} /></label>
             <label className={fieldClassName}><span>{copy.startField}</span><DateTimePickerField value={startsAt} onChange={setStartsAt} /></label>

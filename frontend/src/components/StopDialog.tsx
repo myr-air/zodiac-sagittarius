@@ -2,7 +2,7 @@ import { useState, type FormEvent } from "react";
 import type { ActivityType, ItineraryItem, ItineraryItemKind, ItineraryItemPriority, ItineraryItemStatus, ItineraryTimeMode, PlaceResolutionCandidate } from "@/src/trip/types";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { formatDayLabel, getTripDates } from "@/src/trip/itinerary";
-import { Button } from "./ui";
+import { Button, Select } from "./ui";
 import { Icon } from "./icons";
 import { formatDuration, formatThaiDate } from "./itineraryDisplay";
 import { TimePickerField } from "./DateTimePickers";
@@ -422,30 +422,30 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, initialPare
             {mode === "edit" && !isSubActivity && dayOptions.length ? (
               <label className={dialogFieldWideClassName} htmlFor={fieldIds.day}>
                 <span>{t.stopDialog.fields.day}</span>
-                <select id={fieldIds.day} value={values.day} onChange={(event) => update("day", event.target.value)}>
+                <Select id={fieldIds.day} value={values.day} onChange={(event) => update("day", event.target.value)}>
                   {dayOptions.map((day) => (
                     <option value={day} key={day}>{formatDayLabel(day, startDate ?? day, locale)} · {formatThaiDate(day, locale)}</option>
                   ))}
-                </select>
+                </Select>
               </label>
             ) : null}
             {mode === "edit" && !isSubActivity && manualPathOptions.length > 1 ? (
               <label className={dialogFieldWideClassName} htmlFor={fieldIds.path}>
                 <span>{t.stopDialog.fields.plan}</span>
-                <select id={fieldIds.path} value={values.pathId ?? "main"} onChange={(event) => update("pathId", event.target.value)}>
+                <Select id={fieldIds.path} value={values.pathId ?? "main"} onChange={(event) => update("pathId", event.target.value)}>
                   {manualPathOptions.map((option) => (
                     <option value={option.id} key={option.id}>{option.name}</option>
                   ))}
-                </select>
+                </Select>
               </label>
             ) : null}
             <label htmlFor={fieldIds.activityType}>
               <span>{t.stopDialog.fields.type}</span>
-              <select id={fieldIds.activityType} value={detailType} onChange={(event) => updateDetailType(event.target.value as StopDetailType)}>
+              <Select id={fieldIds.activityType} value={detailType} onChange={(event) => updateDetailType(event.target.value as StopDetailType)}>
                 {detailTypeOptions.map((option) => (
                   <option value={option} key={option}>{detailLabels.types[option]}</option>
                 ))}
-              </select>
+              </Select>
             </label>
             {mode === "create" ? (
               <details className={advancedDetailsClassName}>
@@ -453,34 +453,34 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, initialPare
                 <div className={advancedDetailsGridClassName}>
                   <label htmlFor={fieldIds.itemKind}>
                     <span>Item kind</span>
-                    <select id={fieldIds.itemKind} value={values.itemKind} onChange={(event) => update("itemKind", event.target.value as ItineraryItemKind)}>
+                    <Select id={fieldIds.itemKind} value={values.itemKind} onChange={(event) => update("itemKind", event.target.value as ItineraryItemKind)}>
                       {["travel", "activity", "lodging", "meal", "note", "preparation", "foodRecommendation"].map((option) => (
                         <option value={option} key={option}>{option}</option>
                       ))}
-                    </select>
+                    </Select>
                   </label>
                   <label htmlFor={fieldIds.timeMode}>
                     <span>Time mode</span>
-                    <select id={fieldIds.timeMode} value={values.timeMode} onChange={(event) => updateTimeMode(event.target.value as ItineraryTimeMode)}>
+                    <Select id={fieldIds.timeMode} value={values.timeMode} onChange={(event) => updateTimeMode(event.target.value as ItineraryTimeMode)}>
                       <option value="scheduled">scheduled</option>
                       <option value="flexible">flexible</option>
-                    </select>
+                    </Select>
                   </label>
                   <label htmlFor={fieldIds.status}>
                     <span>Status</span>
-                    <select id={fieldIds.status} value={values.status} onChange={(event) => update("status", event.target.value as ItineraryItemStatus)}>
+                    <Select id={fieldIds.status} value={values.status} onChange={(event) => update("status", event.target.value as ItineraryItemStatus)}>
                       {["idea", "planned", "booked", "confirmed", "done", "skipped"].map((option) => (
                         <option value={option} key={option}>{option}</option>
                       ))}
-                    </select>
+                    </Select>
                   </label>
                   <label htmlFor={fieldIds.priority}>
                     <span>Priority</span>
-                    <select id={fieldIds.priority} value={values.priority} onChange={(event) => update("priority", event.target.value as ItineraryItemPriority)}>
+                    <Select id={fieldIds.priority} value={values.priority} onChange={(event) => update("priority", event.target.value as ItineraryItemPriority)}>
                       {["low", "normal", "high", "must"].map((option) => (
                         <option value={option} key={option}>{option}</option>
                       ))}
-                    </select>
+                    </Select>
                   </label>
                   <label className={dialogFieldWideClassName} htmlFor={fieldIds.isPlanBlock}>
                     <span>
