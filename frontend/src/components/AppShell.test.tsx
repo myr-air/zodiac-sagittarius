@@ -36,12 +36,33 @@ describe("AppShell", () => {
       "side-rail",
       "sticky",
       "grid-rows-[70px_1fr_auto_auto]",
+      "data-[collapsed=true]:grid-rows-[84px_1fr_auto_auto]",
+      "max-[1199px]:grid-rows-[70px_1fr_auto_auto]",
       "max-[767px]:sticky",
       "max-[767px]:z-20",
       "max-[767px]:pb-1",
     );
+    expect(container.querySelector(".brand-row")).toHaveClass(
+      "w-full",
+      "box-border",
+      "data-[collapsed=true]:flex-col",
+      "data-[collapsed=true]:justify-center",
+      "max-[1199px]:justify-center",
+      "max-[767px]:flex-row",
+      "max-[767px]:justify-between",
+    );
+    expect(container.querySelector(".rail-toggle")).toHaveClass(
+      "data-[collapsed=true]:min-h-7",
+      "data-[collapsed=true]:w-7",
+      "max-[1199px]:hidden",
+    );
     expect(screen.getByText(seedTrip.name)).toHaveClass("max-[767px]:block", "max-[767px]:truncate");
     expect(container.querySelector(".rail-links")).toHaveClass(
+      "w-full",
+      "box-border",
+      "overflow-x-hidden",
+      "data-[collapsed=true]:px-1.5",
+      "max-[1199px]:px-1.5",
       "max-[767px]:box-border",
       "max-[767px]:w-full",
       "max-[767px]:max-w-full",
