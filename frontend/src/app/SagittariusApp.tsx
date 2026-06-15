@@ -2962,6 +2962,52 @@ export function SagittariusApp({
     return input.title;
   }
 
+  async function unlinkBookingFromItineraryItem(
+    bookingDocId: string,
+    itemId: string,
+  ) {
+    if (!canEditBookings) return;
+    const currentTrip = latestTripRef.current;
+    const bookingDoc = currentTrip.bookingDocs?.find(
+      (candidate) => candidate.id === bookingDocId,
+    );
+    if (!bookingDoc || !bookingDoc.relatedItineraryItemIds.includes(itemId))
+      return;
+    await updateBookingDoc(bookingDoc.id, {
+      type: bookingDoc.type,
+      title: bookingDoc.title,
+      status: bookingDoc.status,
+      visibility: bookingDoc.visibility,
+      ownerMemberId: bookingDoc.ownerMemberId,
+      providerName: bookingDoc.providerName,
+      confirmationCode: bookingDoc.confirmationCode,
+      startsAt: bookingDoc.startsAt,
+      endsAt: bookingDoc.endsAt,
+      timezone: bookingDoc.timezone,
+      priceAmount: bookingDoc.priceAmount,
+      currency: bookingDoc.currency,
+      travelerIds: bookingDoc.travelerIds,
+      externalLinks: bookingDoc.externalLinks,
+      relatedItineraryItemIds: bookingDoc.relatedItineraryItemIds.filter(
+        (relatedItemId) => relatedItemId !== itemId,
+      ),
+      relatedTaskIds: bookingDoc.relatedTaskIds,
+      relatedExpenseIds: bookingDoc.relatedExpenseIds,
+      noteIds: bookingDoc.noteIds,
+      notes: bookingDoc.notes,
+    });
+    const item = latestTripRef.current.itineraryItems.find(
+      (candidate) => candidate.id === itemId,
+    );
+    if (item) {
+      await updateItineraryItemInline(item.id, {
+        details: clearItineraryBookingTicketDetails(item),
+      });
+    }
+    setContextRailPreferredTab("booking");
+    setSelectedItemId(itemId);
+  }
+
   async function updateBookingDoc(
     bookingDocId: string,
     input: BookingDocInput,
@@ -4418,6 +4464,7 @@ export function SagittariusApp({
                   bookingDocs={scopedTripPlanRecords.bookingDocs}
                   onAddBookingForItem={createItineraryBookingDraft}
                   onSaveBookingForItem={saveItineraryBookingTicket}
+                  onUnlinkBookingForItem={unlinkBookingFromItineraryItem}
                   onAddStop={addStop}
                   onAddSubActivity={addSubActivity}
                   onAddNoteForItem={(itemId, body) =>
@@ -5533,6 +5580,16 @@ function syncItineraryDetailsWithBookingTicket(
   if (input.endsAt) nextDetails.ticketEndsAt = input.endsAt;
   else delete nextDetails.ticketEndsAt;
 
+  return nextDetails;
+}
+
+function clearItineraryBookingTicketDetails(item: ItineraryItem): ItineraryItem["details"] {
+  const nextDetails = { ...(item.details ?? {}) };
+  delete nextDetails.provider;
+  delete nextDetails.bookingRef;
+  delete nextDetails.ticketRef;
+  delete nextDetails.ticketStartsAt;
+  delete nextDetails.ticketEndsAt;
   return nextDetails;
 }
 

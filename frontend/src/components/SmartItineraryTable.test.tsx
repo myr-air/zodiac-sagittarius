@@ -479,8 +479,10 @@ describe("SmartItineraryTable", () => {
     expect(titleInput).toHaveAttribute("maxLength", "48");
     expect(titleInput).toHaveValue("Old title");
     expect(titleInput).toHaveClass("border-transparent", "text-[13px]", "font-extrabold");
+    expect(titleInput).toHaveStyle({ width: "12ch" });
     await user.clear(titleInput);
     await user.type(titleInput, "Shenzhen border hop");
+    expect(titleInput).toHaveStyle({ width: "20ch" });
     await user.tab();
 
     await waitFor(() => {
@@ -799,6 +801,99 @@ describe("SmartItineraryTable", () => {
         }),
       );
     });
+  });
+
+  it("unlinks the current activity from an existing ticket without deleting the ticket", async () => {
+    const user = userEvent.setup();
+    const onSaveBookingForItem = vi.fn();
+    const onUnlinkBookingForItem = vi.fn();
+    const flightItem = {
+      ...tripFixture.planItems[0],
+      id: "travel-flight-row",
+      activity: "Airport transfer",
+      activityType: "travel" as const,
+      place: "HKG",
+      startTime: "09:00",
+      endTime: "11:30",
+      details: {
+        ...tripFixture.planItems[0].details,
+        from: "BKK",
+        mode: "flight",
+        to: "HKG",
+      },
+    };
+    const busItem = {
+      ...tripFixture.planItems[1],
+      id: "bus-leg-row",
+      activity: "Terminal shuttle",
+      activityType: "travel" as const,
+      details: {
+        ...tripFixture.planItems[1].details,
+        mode: "bus",
+      },
+    };
+
+    renderTable({
+      items: [flightItem, busItem],
+      graphItems: [flightItem, busItem],
+      selectedItemId: flightItem.id,
+      bookingDocs: [
+        {
+          id: "booking-shared-flight",
+          tripId: tripFixture.trip.id,
+          tripPlanId: tripFixture.trip.activePlanVariantId,
+          type: "flight",
+          title: "CX shared flight ticket",
+          status: "booked",
+          visibility: "shared",
+          ownerMemberId: tripFixture.trip.members[0].id,
+          providerName: "Cathay Pacific",
+          confirmationCode: "CX1234",
+          startsAt: "2026-06-19T09:00:00",
+          endsAt: "2026-06-19T11:30:00",
+          timezone: tripFixture.trip.defaultTimezone,
+          priceAmount: null,
+          currency: null,
+          travelerIds: [tripFixture.trip.members[0].id],
+          externalLinks: [],
+          relatedItineraryItemIds: [flightItem.id, busItem.id],
+          relatedTaskIds: [],
+          relatedExpenseIds: [],
+          noteIds: [],
+          notes: "Shared ticket",
+          createdBy: tripFixture.trip.members[0].id,
+          updatedAt: "2026-05-28T00:00:00.000Z",
+          version: 1,
+        },
+      ],
+      onSaveBookingForItem,
+      onUnlinkBookingForItem,
+    });
+
+    const row = document.querySelector<HTMLTableRowElement>(
+      '[data-item-id="travel-flight-row"]',
+    );
+    expect(row).not.toBeNull();
+    const bookingButton = within(row as HTMLElement).getAllByRole("button", {
+      name: /สร้าง booking draft แบบ เครื่องบิน สำหรับ Airport transfer/i,
+    })[0];
+    expect(bookingButton).toHaveClass("text-(--color-route)");
+
+    await user.click(bookingButton);
+    const dialog = await screen.findByRole("dialog", {
+      name: /ตั๋วสำหรับ Airport transfer/i,
+    });
+
+    expect(within(dialog).getByText("CX shared flight ticket")).toBeInTheDocument();
+    await user.click(within(dialog).getByRole("button", { name: /ยกเลิก link/i }));
+
+    await waitFor(() => {
+      expect(onUnlinkBookingForItem).toHaveBeenCalledWith(
+        "booking-shared-flight",
+        flightItem.id,
+      );
+    });
+    expect(screen.queryByRole("dialog", { name: /ตั๋วสำหรับ Airport transfer/i })).not.toBeInTheDocument();
   });
 
   it("opens travel sub-type options from the type picker and stores the selected mode", async () => {

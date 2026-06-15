@@ -80,6 +80,10 @@ interface SmartItineraryTableProps {
   onSaveBookingForItem?: (
     input: ItineraryBookingTicketInput,
   ) => string | void | Promise<string | void>;
+  onUnlinkBookingForItem?: (
+    bookingDocId: string,
+    itemId: string,
+  ) => void | Promise<void>;
   onAddStop: (day?: string) => void;
   onAddSubActivity?: (parentItemId: string) => void | Promise<void>;
   onAddNoteForItem?: (itemId: string, body: string) => void | Promise<void>;
@@ -227,6 +231,7 @@ const graphColumnMinWidth = 30;
 const graphColumnSidePadding = 9;
 const graphColumnLaneGap = 18;
 const dayTitleMaxLength = 48;
+const dayTitleMinWidthCh = 12;
 const dayGroupClassName = "day-group";
 const daySpacerRowClassName =
   "day-spacer-row [&_td]:!h-3 [&_td]:!border-0 [&_td]:!bg-(--color-page) [&_td]:!p-0";
@@ -239,7 +244,7 @@ const dayToggleClassName =
 const dayOrdinalClassName =
   "day-ordinal shrink-0 text-sm font-extrabold text-(--color-text)";
 const dayTitleInputClassName =
-  "day-title-input min-h-8 min-w-0 max-w-[260px] appearance-none rounded-none border-0 border-b border-solid border-transparent border-x-0 border-t-0 bg-transparent px-0.5 text-[13px] font-extrabold leading-5 text-(--color-text) outline-none shadow-none transition-[border-color,color,max-width] duration-150 placeholder:text-(--color-text-muted) hover:border-(--color-text-muted) hover:text-(--color-text) focus:max-w-[340px] focus:border-(--color-route) focus:border-x-0 focus:border-t-0 focus:text-(--color-text) focus:outline-none focus:shadow-none focus-visible:border-x-0 focus-visible:border-t-0 focus-visible:outline-none focus-visible:shadow-none focus-visible:[box-shadow:none] disabled:pointer-events-none max-[767px]:max-w-[150px] max-[767px]:focus:max-w-[190px] max-[520px]:w-full max-[520px]:max-w-full max-[520px]:focus:max-w-full";
+  "day-title-input min-h-8 min-w-[12ch] max-w-[260px] appearance-none rounded-none border-0 border-b border-solid border-transparent border-x-0 border-t-0 bg-transparent px-0.5 text-[13px] font-extrabold leading-5 text-(--color-text) outline-none shadow-none transition-[border-color,color,max-width] duration-150 placeholder:text-(--color-text-muted) hover:border-(--color-text-muted) hover:text-(--color-text) focus:max-w-[340px] focus:border-(--color-route) focus:border-x-0 focus:border-t-0 focus:text-(--color-text) focus:outline-none focus:shadow-none focus-visible:border-x-0 focus-visible:border-t-0 focus-visible:outline-none focus-visible:shadow-none focus-visible:[box-shadow:none] disabled:pointer-events-none max-[767px]:max-w-[150px] max-[767px]:focus:max-w-[190px] max-[520px]:w-full max-[520px]:max-w-full max-[520px]:focus:max-w-full";
 const dayDateClassName =
   "day-date inline-flex shrink-0 items-center gap-[7px] text-(--color-text-muted)";
 const dayRouteClassName =
@@ -431,6 +436,7 @@ export function SmartItineraryTable({
   onAddNoteForItem,
   onAddBookingForItem,
   onSaveBookingForItem,
+  onUnlinkBookingForItem,
   bookingDocs = [],
   onDeleteItem,
   onEditItem,
@@ -960,6 +966,7 @@ export function SmartItineraryTable({
               onAddNoteForItem={onAddNoteForItem}
               onAddBookingForItem={onAddBookingForItem}
               onSaveBookingForItem={onSaveBookingForItem}
+              onUnlinkBookingForItem={onUnlinkBookingForItem}
               bookingDocs={bookingDocs}
               bookingLinkItems={items}
               onDeleteItem={onDeleteItem}
@@ -998,6 +1005,7 @@ function DayGroup({
   onAddNoteForItem,
   onAddBookingForItem,
   onSaveBookingForItem,
+  onUnlinkBookingForItem,
   bookingDocs,
   bookingLinkItems,
   onChangeDayPath,
@@ -1037,6 +1045,10 @@ function DayGroup({
   onSaveBookingForItem?: (
     input: ItineraryBookingTicketInput,
   ) => string | void | Promise<string | void>;
+  onUnlinkBookingForItem?: (
+    bookingDocId: string,
+    itemId: string,
+  ) => void | Promise<void>;
   onChangeDayPath?: (day: string, pathId: string) => void;
   onClearDayPath?: (day: string) => void;
   onDeleteItem?: (itemId: string) => void;
@@ -1186,6 +1198,7 @@ function DayGroup({
                   onAddNoteForItem={onAddNoteForItem}
                   onAddBookingForItem={onAddBookingForItem}
                   onSaveBookingForItem={onSaveBookingForItem}
+                  onUnlinkBookingForItem={onUnlinkBookingForItem}
                   bookingDocs={bookingDocs}
                   bookingLinkItems={bookingLinkItems}
                   onDeleteItem={onDeleteItem}
@@ -1227,6 +1240,10 @@ function DayTitleEditor({
   const [draft, setDraft] = useState(title.slice(0, dayTitleMaxLength));
   const [sourceTitle, setSourceTitle] = useState(title.slice(0, dayTitleMaxLength));
   const [saving, setSaving] = useState(false);
+  const dynamicWidthCh = Math.max(
+    dayTitleMinWidthCh,
+    Math.min(dayTitleMaxLength, draft.length || defaultTitle.length) + 1,
+  );
 
   async function commit(nextValue: string) {
     if (!canEdit || !onSaveDayTitle || saving) return;
@@ -1253,6 +1270,7 @@ function DayTitleEditor({
       className={dayTitleInputClassName}
       disabled={!canEdit || saving}
       maxLength={dayTitleMaxLength}
+      style={{ width: `${dynamicWidthCh}ch` }}
       title={`${draft.length}/${dayTitleMaxLength}`}
       value={draft}
       onBlur={() => void commit(draft)}
@@ -1281,6 +1299,7 @@ function ActivityCell({
   onAddNoteForItem,
   onAddBookingForItem,
   onSaveBookingForItem,
+  onUnlinkBookingForItem,
   bookingDocs,
   bookingLinkItems,
   onDeleteItem,
@@ -1306,6 +1325,10 @@ function ActivityCell({
   onSaveBookingForItem?: (
     input: ItineraryBookingTicketInput,
   ) => string | void | Promise<string | void>;
+  onUnlinkBookingForItem?: (
+    bookingDocId: string,
+    itemId: string,
+  ) => void | Promise<void>;
   onDeleteItem?: (itemId: string) => void;
   onEditItem?: (itemId: string) => void;
   onOpenItemDetails: (itemId: string) => void;
@@ -1534,6 +1557,7 @@ function ActivityCell({
             locale={locale}
             onAddBookingForItem={onAddBookingForItem}
             onSaveBookingForItem={onSaveBookingForItem}
+            onUnlinkBookingForItem={onUnlinkBookingForItem}
             bookingDocs={bookingDocs}
             bookingLinkItems={bookingLinkItems}
           />
@@ -1563,6 +1587,7 @@ function ActivityCell({
               locale={locale}
               onAddBookingForItem={onAddBookingForItem}
               onSaveBookingForItem={onSaveBookingForItem}
+              onUnlinkBookingForItem={onUnlinkBookingForItem}
               bookingDocs={bookingDocs}
               bookingLinkItems={bookingLinkItems}
             />
@@ -1622,6 +1647,7 @@ function ActivityCell({
             onEditItem={onEditItem}
             onAddBookingForItem={onAddBookingForItem}
             onSaveBookingForItem={onSaveBookingForItem}
+            onUnlinkBookingForItem={onUnlinkBookingForItem}
             bookingDocs={bookingDocs}
             bookingLinkItems={bookingLinkItems}
             onUpdateItemInline={onUpdateItemInline}
@@ -1640,6 +1666,7 @@ function ActivityCell({
         onOpenNoteForItem={openNoteModal}
         onAddBookingForItem={onAddBookingForItem}
         onSaveBookingForItem={onSaveBookingForItem}
+        onUnlinkBookingForItem={onUnlinkBookingForItem}
         bookingDocs={bookingDocs}
         bookingLinkItems={bookingLinkItems}
         onDeleteItem={onDeleteItem}
@@ -1901,6 +1928,7 @@ function ItineraryBookingButton({
   locale,
   onAddBookingForItem,
   onSaveBookingForItem,
+  onUnlinkBookingForItem,
 }: {
   bookingDocs: BookingDoc[];
   bookingLinkItems: ItineraryItem[];
@@ -1914,6 +1942,10 @@ function ItineraryBookingButton({
   onSaveBookingForItem?: (
     input: ItineraryBookingTicketInput,
   ) => string | void | Promise<string | void>;
+  onUnlinkBookingForItem?: (
+    bookingDocId: string,
+    itemId: string,
+  ) => void | Promise<void>;
 }) {
   const [ticketModalOpen, setTicketModalOpen] = useState(false);
   if (!onAddBookingForItem && !onSaveBookingForItem) return null;
@@ -1956,6 +1988,14 @@ function ItineraryBookingButton({
           item={item}
           locale={locale}
           onClose={() => setTicketModalOpen(false)}
+          onUnlink={
+            onUnlinkBookingForItem
+              ? async (bookingDocId) => {
+                  await onUnlinkBookingForItem(bookingDocId, item.id);
+                  setTicketModalOpen(false);
+                }
+              : undefined
+          }
           onSave={async (input) => {
             await onSaveBookingForItem(input);
             setTicketModalOpen(false);
@@ -1973,6 +2013,7 @@ function ItineraryTicketModal({
   locale,
   onClose,
   onSave,
+  onUnlink,
 }: {
   bookingDocs: BookingDoc[];
   bookingLinkItems: ItineraryItem[];
@@ -1980,6 +2021,7 @@ function ItineraryTicketModal({
   locale: Locale;
   onClose: () => void;
   onSave: (input: ItineraryBookingTicketInput) => void | Promise<void>;
+  onUnlink?: (bookingDocId: string) => void | Promise<void>;
 }) {
   const template = bookingTemplateForItem(item);
   const type = bookingDocTypeForItemTemplate(item, template);
@@ -1992,6 +2034,10 @@ function ItineraryTicketModal({
   );
   const initiallyLinked =
     existingCandidates.find((booking) =>
+      booking.relatedItineraryItemIds.includes(item.id),
+    ) ?? null;
+  const currentLinkedBooking =
+    bookingDocs.find((booking) =>
       booking.relatedItineraryItemIds.includes(item.id),
     ) ?? null;
   const defaultTitle = bookingTitleForItem(item, type);
@@ -2030,6 +2076,7 @@ function ItineraryTicketModal({
     uniqueIds([...(initialTicket?.relatedItineraryItemIds ?? []), item.id]),
   );
   const [saving, setSaving] = useState(false);
+  const [unlinking, setUnlinking] = useState(false);
   const copy = ticketModalCopy(locale);
 
   useEffect(() => {
@@ -2062,7 +2109,7 @@ function ItineraryTicketModal({
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const trimmedTitle = title.trim();
-    if (saving || !trimmedTitle) return;
+    if (saving || unlinking || !trimmedTitle) return;
     setSaving(true);
     try {
       await onSave({
@@ -2083,6 +2130,16 @@ function ItineraryTicketModal({
       });
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function unlinkCurrentBooking() {
+    if (!currentLinkedBooking || !onUnlink || saving || unlinking) return;
+    setUnlinking(true);
+    try {
+      await onUnlink(currentLinkedBooking.id);
+    } finally {
+      setUnlinking(false);
     }
   }
 
@@ -2221,21 +2278,37 @@ function ItineraryTicketModal({
           </section>
         </div>
         <footer className={ticketModalFooterClassName}>
-          <button
-            type="button"
-            className="inline-flex min-h-9 items-center justify-center rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-3 text-xs font-extrabold text-(--color-text-muted) hover:bg-(--color-surface-subtle) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-focus)"
-            onClick={onClose}
-          >
-            {copy.cancel}
-          </button>
-          <button
-            type="submit"
-            className="inline-flex min-h-9 items-center justify-center gap-1.5 rounded-(--radius-sm) border border-(--color-route-border) bg-(--color-route) px-3 text-xs font-extrabold text-white hover:bg-[#1d4ed8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-focus) disabled:cursor-not-allowed disabled:opacity-50"
-            disabled={saving || !title.trim() || (mode === "existing" && !selectedBookingId)}
-          >
-            <Icon name="ticket" />
-            {copy.save}
-          </button>
+          <div className="mr-auto min-w-0">
+            {currentLinkedBooking && onUnlink ? (
+              <button
+                type="button"
+                className="inline-flex min-h-9 items-center justify-center gap-1.5 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-3 text-xs font-extrabold text-(--color-text-muted) hover:border-(--color-danger-border) hover:bg-(--color-danger-soft) hover:text-(--color-danger) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-focus) disabled:cursor-not-allowed disabled:opacity-50"
+                disabled={saving || unlinking}
+                onClick={() => void unlinkCurrentBooking()}
+              >
+                <Icon name="x" />
+                {unlinking ? copy.unlinking : copy.unlink}
+              </button>
+            ) : null}
+          </div>
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <button
+              type="button"
+              className="inline-flex min-h-9 items-center justify-center rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-3 text-xs font-extrabold text-(--color-text-muted) hover:bg-(--color-surface-subtle) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-focus)"
+              disabled={unlinking}
+              onClick={onClose}
+            >
+              {copy.cancel}
+            </button>
+            <button
+              type="submit"
+              className="inline-flex min-h-9 items-center justify-center gap-1.5 rounded-(--radius-sm) border border-(--color-route-border) bg-(--color-route) px-3 text-xs font-extrabold text-white hover:bg-[#1d4ed8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-focus) disabled:cursor-not-allowed disabled:opacity-50"
+              disabled={saving || unlinking || !title.trim() || (mode === "existing" && !selectedBookingId)}
+            >
+              <Icon name="ticket" />
+              {copy.save}
+            </button>
+          </div>
         </footer>
       </form>
     </div>,
@@ -2502,6 +2575,7 @@ function SubActivityModal({
   onOpenNoteForItem,
   onAddBookingForItem,
   onSaveBookingForItem,
+  onUnlinkBookingForItem,
   bookingDocs,
   bookingLinkItems,
   onClose,
@@ -2525,6 +2599,10 @@ function SubActivityModal({
   onSaveBookingForItem?: (
     input: ItineraryBookingTicketInput,
   ) => string | void | Promise<string | void>;
+  onUnlinkBookingForItem?: (
+    bookingDocId: string,
+    itemId: string,
+  ) => void | Promise<void>;
   bookingDocs: BookingDoc[];
   bookingLinkItems: ItineraryItem[];
   onClose: () => void;
@@ -2587,6 +2665,7 @@ function SubActivityModal({
             onOpenNoteForItem={onOpenNoteForItem}
             onAddBookingForItem={onAddBookingForItem}
             onSaveBookingForItem={onSaveBookingForItem}
+            onUnlinkBookingForItem={onUnlinkBookingForItem}
             bookingDocs={bookingDocs}
             bookingLinkItems={bookingLinkItems}
             onDeleteItem={onDeleteItem}
@@ -2614,6 +2693,7 @@ function SubActivityList({
   onOpenNoteForItem,
   onAddBookingForItem,
   onSaveBookingForItem,
+  onUnlinkBookingForItem,
   bookingDocs,
   bookingLinkItems,
   onDeleteItem,
@@ -2638,6 +2718,10 @@ function SubActivityList({
   onSaveBookingForItem?: (
     input: ItineraryBookingTicketInput,
   ) => string | void | Promise<string | void>;
+  onUnlinkBookingForItem?: (
+    bookingDocId: string,
+    itemId: string,
+  ) => void | Promise<void>;
   bookingDocs: BookingDoc[];
   bookingLinkItems: ItineraryItem[];
   onDeleteItem?: (itemId: string) => void;
@@ -2720,6 +2804,7 @@ function SubActivityList({
               locale={locale}
               onAddBookingForItem={onAddBookingForItem}
               onSaveBookingForItem={onSaveBookingForItem}
+              onUnlinkBookingForItem={onUnlinkBookingForItem}
               bookingDocs={bookingDocs}
               bookingLinkItems={bookingLinkItems}
             />
@@ -3201,6 +3286,8 @@ function ticketModalCopy(locale: Locale): {
   subtitle: string;
   ticketTitle: string;
   title: (activity: string) => string;
+  unlink: string;
+  unlinking: string;
   useExisting: string;
 } {
   if (locale === "th") {
@@ -3220,6 +3307,8 @@ function ticketModalCopy(locale: Locale): {
       subtitle: "กรอกข้อมูลตั๋ว หรือเลือกตั๋วเดิมเพื่อไม่สร้างซ้ำ",
       ticketTitle: "ชื่อตั๋ว",
       title: (activity) => `ตั๋วสำหรับ ${activity}`,
+      unlink: "ยกเลิก link",
+      unlinking: "กำลังยกเลิก...",
       useExisting: "ใช้ตั๋วเดิม",
     };
   }
@@ -3239,6 +3328,8 @@ function ticketModalCopy(locale: Locale): {
     subtitle: "Enter ticket details or reuse an existing ticket to avoid duplicates.",
     ticketTitle: "Ticket title",
     title: (activity) => `Ticket for ${activity}`,
+    unlink: "Unlink",
+    unlinking: "Unlinking...",
     useExisting: "Use existing",
   };
 }
