@@ -67,7 +67,7 @@ const bookingFolders: Array<{
   { id: "external_links", icon: "cloud" },
 ];
 
-const pageClassName = "bookings-docs-page grid min-h-full min-w-0 grid-rows-[auto_minmax(0,1fr)] gap-3 bg-transparent px-6 py-[22px] pb-7 max-[767px]:h-[calc(100dvh-48px)] max-[767px]:min-h-[calc(100dvh-48px)] max-[767px]:gap-0 max-[767px]:overflow-hidden max-[767px]:px-0 max-[767px]:py-0";
+const pageClassName = "bookings-docs-page grid min-h-full min-w-0 grid-rows-[auto_minmax(0,1fr)] gap-3 bg-transparent px-6 py-[22px] pb-7 max-[1199px]:gap-0 max-[1199px]:px-0 max-[1199px]:pb-0 max-[767px]:h-[calc(100dvh-48px)] max-[767px]:min-h-[calc(100dvh-48px)] max-[767px]:grid-rows-[minmax(0,1fr)] max-[767px]:overflow-hidden max-[767px]:py-0";
 const headerClassName = "booking-docs-header grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-(--color-border) bg-(--color-surface) px-3 py-2.5 max-[767px]:hidden";
 const headerCopyClassName = "grid min-w-0 gap-1";
 const headerTitleRowClassName = "flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1";
@@ -80,27 +80,32 @@ const headerAvatarClassName = "person-avatar !size-7 text-xs";
 const headerUserCopyClassName = "grid min-w-0 gap-0";
 const headerUserNameClassName = "truncate text-xs font-extrabold text-(--color-text)";
 const headerUserLabelClassName = "truncate text-[11px] font-bold text-(--color-text-muted)";
-const mobileAddButtonClassName = "bookings-mobile-add-button hidden max-[767px]:fixed max-[767px]:right-[60px] max-[767px]:top-1.5 max-[767px]:z-[45] max-[767px]:inline-flex max-[767px]:min-h-9 max-[767px]:w-9 max-[767px]:rounded-(--radius-sm) max-[767px]:p-0 max-[767px]:shadow-none";
-const contentClassName = "bookings-content grid min-h-0 grid-cols-[192px_minmax(0,1fr)_300px] gap-3 max-[1199px]:grid-cols-[172px_minmax(0,1fr)] max-[1199px]:[&_.booking-inspector]:col-span-2 max-[767px]:h-full max-[767px]:grid-cols-1 max-[767px]:grid-rows-[auto_minmax(0,1fr)] max-[767px]:gap-0 max-[767px]:[&_.booking-inspector]:col-span-1";
-const folderRailClassName = "booking-folder-rail grid min-h-0 content-start gap-1 rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) p-2.5 shadow-[0_1px_0_rgb(15_23_42_/_0.04)] max-[767px]:grid-cols-7 max-[767px]:content-normal max-[767px]:gap-0 max-[767px]:rounded-none max-[767px]:border-x-0 max-[767px]:border-t-0 max-[767px]:p-0 max-[767px]:shadow-none";
-const folderButtonClassName = "group grid min-h-10 grid-cols-[28px_minmax(0,1fr)_auto] items-center gap-2 rounded-(--radius-md) border border-transparent bg-transparent px-2 py-1.5 text-left text-sm font-bold text-(--color-text-muted) transition-[background-color,border-color,color] duration-150 hover:bg-(--color-surface-subtle) hover:text-(--color-text) focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary) [&_.icon]:size-4 max-[767px]:min-h-10 max-[767px]:grid-cols-1 max-[767px]:grid-rows-[18px_12px] max-[767px]:justify-items-center max-[767px]:gap-0 max-[767px]:rounded-none max-[767px]:border-0 max-[767px]:border-b-2 max-[767px]:border-transparent max-[767px]:px-0 max-[767px]:py-1.5 max-[767px]:text-center";
-const selectedFolderClassName = "border-(--color-primary-border) bg-(--color-primary-soft) text-(--color-primary-strong) max-[767px]:border-b-(--color-primary) max-[767px]:bg-transparent";
-const filePanelClassName = "bookings-file-panel grid min-h-0 grid-rows-[auto_auto_minmax(0,1fr)] rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) shadow-[0_1px_0_rgb(15_23_42_/_0.04)] max-[1199px]:min-h-[520px] max-[767px]:min-h-0 max-[767px]:grid-rows-[auto_auto_minmax(0,1fr)] max-[767px]:rounded-none max-[767px]:border-0 max-[767px]:shadow-none";
-const fileToolbarClassName = "bookings-file-toolbar grid gap-2 border-b border-(--color-border) p-3 max-[767px]:gap-0 max-[767px]:p-0";
+const mobileAddButtonClassName = "bookings-mobile-add-button !hidden max-[767px]:!fixed max-[767px]:right-[60px] max-[767px]:top-1.5 max-[767px]:z-[45] max-[767px]:!inline-flex max-[767px]:min-h-9 max-[767px]:w-9 max-[767px]:rounded-(--radius-sm) max-[767px]:p-0 max-[767px]:shadow-none";
+const contentClassName = "bookings-content grid min-h-0 grid-cols-[192px_minmax(0,1fr)_300px] gap-3 max-[1199px]:grid-cols-1 max-[1199px]:grid-rows-[auto_minmax(0,1fr)] max-[1199px]:gap-0 max-[767px]:h-full max-[767px]:[&_.booking-inspector]:col-span-1";
+const folderRailClassName = "booking-folder-rail grid min-h-0 content-start gap-1 rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) p-2.5 shadow-[0_1px_0_rgb(15_23_42_/_0.04)] max-[1199px]:grid-cols-7 max-[1199px]:content-normal max-[1199px]:gap-0 max-[1199px]:rounded-none max-[1199px]:border-x-0 max-[1199px]:border-t-0 max-[1199px]:p-0 max-[1199px]:shadow-none";
+const folderButtonClassName = "group grid min-h-10 grid-cols-[28px_minmax(0,1fr)_auto] items-center gap-2 rounded-(--radius-md) border border-transparent bg-transparent px-2 py-1.5 text-left text-sm font-bold text-(--color-text-muted) transition-[background-color,border-color,color] duration-150 hover:bg-(--color-surface-subtle) hover:text-(--color-text) focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary) [&_.icon]:size-4 max-[1199px]:min-h-12 max-[1199px]:grid-cols-1 max-[1199px]:grid-rows-[20px_16px] max-[1199px]:justify-items-center max-[1199px]:gap-0 max-[1199px]:rounded-none max-[1199px]:border-0 max-[1199px]:border-b-2 max-[1199px]:border-transparent max-[1199px]:px-0 max-[1199px]:py-1.5 max-[1199px]:text-center max-[767px]:min-h-10 max-[767px]:grid-rows-[18px_12px]";
+const selectedFolderClassName = "border-(--color-primary-border) bg-(--color-primary-soft) text-(--color-primary-strong) max-[1199px]:border-b-(--color-primary) max-[1199px]:bg-transparent";
+const filePanelClassName = "bookings-file-panel grid min-h-0 grid-rows-[auto_auto_minmax(0,1fr)] rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) shadow-[0_1px_0_rgb(15_23_42_/_0.04)] max-[1199px]:min-h-[calc(100dvh-180px)] max-[1199px]:rounded-none max-[1199px]:border-x-0 max-[1199px]:border-t-0 max-[1199px]:shadow-none max-[767px]:h-full max-[767px]:min-h-0 max-[767px]:border-0";
+const fileToolbarClassName = "bookings-file-toolbar grid gap-2 border-b border-(--color-border) p-3 max-[1199px]:px-3 max-[1199px]:py-2 max-[767px]:gap-0 max-[767px]:px-2 max-[767px]:py-2";
+const toolbarControlsClassName = "grid grid-cols-[minmax(0,1fr)_176px] items-center gap-2 max-[767px]:grid-cols-[minmax(0,1fr)_132px] max-[767px]:gap-1.5";
 const searchInputClassName = "min-h-10 w-full rounded-(--radius-md) border border-(--color-border) bg-(--color-surface-subtle) px-3 text-sm font-medium text-(--color-text) outline-none transition-colors placeholder:text-(--color-text-subtle) focus:border-(--color-primary) focus:bg-(--color-surface) max-[767px]:min-h-9";
-const filterSelectClassName = "min-h-9 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) px-2.5 text-xs font-bold text-(--color-text-muted) outline-none focus:border-(--color-primary) max-[767px]:w-full";
-const activeFolderBarClassName = "flex flex-wrap items-center justify-between gap-2 border-b border-(--color-border) px-3 py-2 max-[767px]:px-0 max-[767px]:py-1";
+const statusFilterWrapClassName = "status-filter relative min-w-0";
+const statusFilterButtonClassName = "status-filter-button grid min-h-10 w-full grid-cols-[minmax(0,1fr)_16px] items-center gap-1 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) px-2.5 text-left text-xs font-extrabold text-(--color-text) transition-[background,border-color,color] duration-150 hover:border-(--color-primary-border) hover:bg-(--color-surface-subtle) focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary) aria-[expanded=true]:border-(--color-primary-border) aria-[expanded=true]:bg-(--color-primary-soft) max-[767px]:min-h-9 max-[767px]:px-2";
+const statusFilterMenuClassName = "status-filter-menu absolute right-0 top-[calc(100%+6px)] z-40 grid w-[220px] overflow-hidden rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) p-1 shadow-[0_10px_18px_rgb(15_23_42_/_0.14)] max-[767px]:right-0 max-[767px]:w-[min(220px,calc(100vw-16px))]";
+const statusFilterOptionClassName = "status-filter-option grid min-h-9 w-full grid-cols-[16px_minmax(0,1fr)] items-center gap-2 rounded-(--radius-sm) border-0 bg-transparent px-2 text-left text-xs font-bold text-(--color-text-muted) hover:bg-(--color-surface-subtle) hover:text-(--color-text) focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-(--color-primary)";
+const statusFilterOptionActiveClassName = "bg-(--color-primary-soft) text-(--color-primary-strong)";
+const activeFolderBarClassName = "flex flex-wrap items-center justify-between gap-2 border-b border-(--color-border) px-3 py-2 max-[767px]:px-3 max-[767px]:py-2";
 const activeFolderDescriptionClassName = "text-xs font-semibold text-(--color-text-muted) max-[767px]:hidden";
 const fieldClassName = "grid min-w-0 gap-1.5 [&>span]:text-[11px] [&>span]:font-extrabold [&>span]:text-(--color-text-muted) [&_input]:min-h-10 [&_input]:rounded-(--radius-md) [&_input]:border [&_input]:border-(--color-border) [&_input]:bg-(--color-surface) [&_input]:px-3 [&_input]:text-sm [&_select]:min-h-10 [&_select]:rounded-(--radius-md) [&_select]:border [&_select]:border-(--color-border) [&_select]:bg-(--color-surface) [&_select]:px-3 [&_select]:text-sm [&_textarea]:min-h-[74px] [&_textarea]:resize-y [&_textarea]:rounded-(--radius-md) [&_textarea]:border [&_textarea]:border-(--color-border) [&_textarea]:bg-(--color-surface) [&_textarea]:px-3 [&_textarea]:py-2 [&_textarea]:text-sm";
 const fileListClassName = "booking-file-list min-h-0 overflow-auto";
-const fileHeaderClassName = "sticky top-0 z-[1] grid min-w-[760px] grid-cols-[minmax(220px,1.7fr)_90px_100px_minmax(120px,1fr)_108px_70px] items-center gap-2 border-b border-(--color-border) bg-(--color-surface-subtle) px-3 py-2 text-[11px] font-black text-(--color-text-muted) max-[767px]:px-2";
-const fileRowClassName = "booking-file-row grid min-w-[760px] grid-cols-[minmax(220px,1.7fr)_90px_100px_minmax(120px,1fr)_108px_70px] items-center gap-2 border-b border-(--color-border) px-3 py-2.5 text-left text-sm transition-colors hover:bg-(--color-surface-subtle) focus-within:bg-(--color-primary-soft) max-[767px]:px-2";
+const fileHeaderClassName = "sticky top-0 z-[1] grid min-w-[760px] grid-cols-[minmax(220px,1.7fr)_90px_100px_minmax(120px,1fr)_108px_70px] items-center gap-2 border-b border-(--color-border) bg-(--color-surface-subtle) px-3 py-2 text-[11px] font-black text-(--color-text-muted) max-[1199px]:hidden";
+const fileRowClassName = "booking-file-row grid min-w-[760px] grid-cols-[minmax(220px,1.7fr)_90px_100px_minmax(120px,1fr)_108px_70px] items-center gap-2 border-b border-(--color-border) px-3 py-2.5 text-left text-sm transition-colors hover:bg-(--color-surface-subtle) focus-within:bg-(--color-primary-soft) max-[1199px]:min-w-0 max-[1199px]:grid-cols-[minmax(0,1fr)_auto] max-[1199px]:gap-x-3 max-[1199px]:gap-y-1 max-[1199px]:px-3 max-[1199px]:py-3";
 const selectedFileRowClassName = "bg-(--color-primary-soft)";
 const lockedRowClassName = "booking-row-locked grid min-h-[46px] grid-cols-[minmax(0,1fr)_auto] items-center gap-2 border-b border-(--color-border) px-3 py-2 text-sm";
 const badgeClassName = "inline-flex w-fit items-center gap-1.5 rounded-full border px-2 py-0.5 text-[11px] font-extrabold capitalize";
-const inspectorClassName = "booking-inspector sticky top-3 grid max-h-[calc(100vh-92px)] content-start gap-3 overflow-auto rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) p-3.5 shadow-[0_1px_0_rgb(15_23_42_/_0.04)] max-[1199px]:static max-[1199px]:max-h-none max-[767px]:!fixed max-[767px]:inset-x-0 max-[767px]:bottom-0 max-[767px]:top-auto max-[767px]:z-30 max-[767px]:!max-h-[72vh] max-[767px]:rounded-b-none max-[767px]:rounded-t-(--radius-lg) max-[767px]:border-x-0 max-[767px]:border-b-0 max-[767px]:p-3 max-[767px]:pb-[calc(12px+env(safe-area-inset-bottom))] max-[767px]:shadow-[0_-8px_16px_rgb(15_23_42_/_0.14)] max-[767px]:transition-[transform,opacity] max-[767px]:duration-200 max-[767px]:ease-out motion-reduce:max-[767px]:transition-none";
-const mobileInspectorOpenClassName = "max-[767px]:translate-y-0 max-[767px]:opacity-100 max-[767px]:pointer-events-auto";
-const mobileInspectorClosedClassName = "max-[767px]:translate-y-full max-[767px]:opacity-0 max-[767px]:pointer-events-none";
+const inspectorClassName = "booking-inspector sticky top-3 grid max-h-[calc(100vh-92px)] content-start gap-3 overflow-auto rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) p-3.5 shadow-[0_1px_0_rgb(15_23_42_/_0.04)] max-[1199px]:!fixed max-[1199px]:bottom-0 max-[1199px]:left-[74px] max-[1199px]:right-0 max-[1199px]:top-auto max-[1199px]:z-30 max-[1199px]:!max-h-[72vh] max-[1199px]:rounded-b-none max-[1199px]:rounded-t-(--radius-lg) max-[1199px]:border-x-0 max-[1199px]:border-b-0 max-[1199px]:p-3 max-[1199px]:pb-[calc(12px+env(safe-area-inset-bottom))] max-[1199px]:shadow-[0_-8px_16px_rgb(15_23_42_/_0.14)] max-[1199px]:transition-[transform,opacity] max-[1199px]:duration-200 max-[1199px]:ease-out max-[767px]:left-0 motion-reduce:max-[1199px]:transition-none";
+const mobileInspectorOpenClassName = "max-[1199px]:translate-y-0 max-[1199px]:opacity-100 max-[1199px]:pointer-events-auto";
+const mobileInspectorClosedClassName = "max-[1199px]:translate-y-full max-[1199px]:opacity-0 max-[1199px]:pointer-events-none";
 const inspectorSectionClassName = "grid gap-2 border-t border-(--color-border) pt-3 text-sm";
 const dialogBackdropClassName = "modal-backdrop fixed inset-0 z-20 grid place-items-center bg-[rgb(15_23_42_/_0.28)] p-4";
 const dialogClassName = "booking-dialog grid max-h-[min(760px,calc(100vh_-_32px))] w-full max-w-[760px] grid-rows-[auto_minmax(0,1fr)] overflow-hidden rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) shadow-[0_10px_18px_rgb(15_23_42_/_0.14)]";
@@ -344,6 +349,7 @@ export function BookingsDocsPage({
   const [selectedBookingId, setSelectedBookingId] = useState(bookingDocs[0]?.id ?? "");
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<BookingDocStatus | "all">("all");
+  const [statusMenuOpen, setStatusMenuOpen] = useState(false);
   const [mobilePreviewOpen, setMobilePreviewOpen] = useState(false);
   const [dialogBooking, setDialogBooking] = useState<BookingDoc | "new" | null>(null);
   const [deleteBooking, setDeleteBooking] = useState<BookingDoc | null>(null);
@@ -407,25 +413,26 @@ export function BookingsDocsPage({
               onClick={() => {
                 setActiveFolderId(folder.id);
                 setMobilePreviewOpen(false);
+                setStatusMenuOpen(false);
               }}
               aria-pressed={activeFolderId === folder.id}
               aria-label={copy.folderCount(copy.folders[folder.id].title, folderCounts[folder.id] ?? 0)}
             >
-              <span className="grid size-7 place-items-center rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) text-(--color-primary-strong) max-[767px]:size-5 max-[767px]:border-0 max-[767px]:bg-transparent">
+              <span className="grid size-7 place-items-center rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) text-(--color-primary-strong) max-[1199px]:size-5 max-[1199px]:border-0 max-[1199px]:bg-transparent">
                 <Icon name={folder.icon} />
               </span>
               <span className="min-w-0 max-[767px]:hidden">
-                <strong className="block truncate text-sm font-extrabold">{copy.folders[folder.id].title}</strong>
-                <span className="block truncate text-[11px] font-semibold text-(--color-text-muted)">{copy.folders[folder.id].description}</span>
+                <strong className="block truncate text-sm font-extrabold max-[1199px]:text-[11px] max-[1199px]:leading-4">{copy.folders[folder.id].title}</strong>
+                <span className="block truncate text-[11px] font-semibold text-(--color-text-muted) max-[1199px]:hidden">{copy.folders[folder.id].description}</span>
               </span>
-              <strong className="tabular-nums text-xs text-(--color-text-muted) max-[767px]:text-[11px]">{folderCounts[folder.id] ?? 0}</strong>
+              <strong className="tabular-nums text-xs text-(--color-text-muted) max-[1199px]:text-[11px]">{folderCounts[folder.id] ?? 0}</strong>
             </button>
           ))}
         </nav>
 
         <section className={filePanelClassName} aria-label={copy.fileList}>
           <div className={fileToolbarClassName}>
-            <div className="grid grid-cols-[minmax(0,1fr)_160px_auto] items-center gap-2 max-[767px]:grid-cols-[minmax(0,1fr)_104px] max-[767px]:gap-1.5">
+            <div className={toolbarControlsClassName}>
               <label className="min-w-0">
                 <span className="sr-only">{copy.searchPlaceholder}</span>
                 <input
@@ -434,25 +441,50 @@ export function BookingsDocsPage({
                   onChange={(event) => {
                     setQuery(event.target.value);
                     setMobilePreviewOpen(false);
+                    setStatusMenuOpen(false);
                   }}
                   placeholder={copy.searchPlaceholder}
                   type="search"
                 />
               </label>
-              <label className="min-w-0">
-                <span className="sr-only">{copy.statusFilter}</span>
-                <select
-                  className={filterSelectClassName}
-                  value={statusFilter}
-                  onChange={(event) => {
-                    setStatusFilter(event.target.value as BookingDocStatus | "all");
-                    setMobilePreviewOpen(false);
-                  }}
+              <div className={statusFilterWrapClassName}>
+                <button
+                  aria-controls="booking-status-filter-menu"
+                  aria-expanded={statusMenuOpen}
+                  aria-haspopup="listbox"
+                  aria-label={`${copy.statusFilter}: ${statusFilter === "all" ? copy.allStatuses : formatEnumLabel(statusFilter, copy)}`}
+                  className={statusFilterButtonClassName}
+                  onClick={() => setStatusMenuOpen((current) => !current)}
+                  type="button"
                 >
-                  <option value="all">{copy.allStatuses}</option>
-                  {bookingStatuses.map((status) => <option key={status} value={status}>{formatEnumLabel(status, copy)}</option>)}
-                </select>
-              </label>
+                  <span className="truncate">{statusFilter === "all" ? copy.allStatuses : formatEnumLabel(statusFilter, copy)}</span>
+                  <Icon name="chevronRight" className={cn("size-3.5 transition-transform", statusMenuOpen && "rotate-90")} />
+                </button>
+                {statusMenuOpen ? (
+                  <div className={statusFilterMenuClassName} id="booking-status-filter-menu" role="listbox" aria-label={copy.statusFilter}>
+                    {(["all", ...bookingStatuses] as Array<BookingDocStatus | "all">).map((status) => {
+                      const selected = statusFilter === status;
+                      return (
+                        <button
+                          aria-selected={selected}
+                          className={cn(statusFilterOptionClassName, selected && statusFilterOptionActiveClassName)}
+                          key={status}
+                          onClick={() => {
+                            setStatusFilter(status);
+                            setStatusMenuOpen(false);
+                            setMobilePreviewOpen(false);
+                          }}
+                          role="option"
+                          type="button"
+                        >
+                          <span>{selected ? <Icon name="check" className="size-3.5" /> : null}</span>
+                          <span className="truncate">{status === "all" ? copy.allStatuses : formatEnumLabel(status, copy)}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                ) : null}
+              </div>
             </div>
           </div>
 
@@ -487,7 +519,7 @@ export function BookingsDocsPage({
               />
             ))}
             {!folderDocs.length ? (
-              <div className="grid min-h-[180px] min-w-[720px] place-items-center p-5 text-center">
+              <div className="grid min-h-[180px] min-w-[720px] place-items-center p-5 text-center max-[1199px]:min-w-0 max-[1199px]:w-full max-[767px]:min-h-[220px] max-[767px]:px-4">
                 <div className="grid max-w-[360px] gap-1">
                   <strong className="text-(--color-text)">{copy.emptyTitle}</strong>
                   <span className="text-sm font-medium leading-6 text-(--color-text-muted)">{copy.emptyDetail}</span>
@@ -602,7 +634,7 @@ function BookingFileRow({ doc, copy, trip, selected, canEdit, onSelect, onEdit, 
 
   return (
     <article className={cn(fileRowClassName, selected && selectedFileRowClassName)}>
-      <button type="button" className="grid min-w-0 grid-cols-[34px_minmax(0,1fr)] items-center gap-2 text-left" onClick={onSelect} aria-label={copy.select(doc.title)}>
+      <button type="button" className="grid min-w-0 grid-cols-[34px_minmax(0,1fr)] items-center gap-2 text-left max-[1199px]:col-start-1 max-[1199px]:row-start-1" onClick={onSelect} aria-label={copy.select(doc.title)}>
         <span className={cn("grid size-8 place-items-center rounded-(--radius-sm) border", typeIconClassName(doc.type))}>
           <Icon name={bookingTypeIcon(doc.type)} />
         </span>
@@ -613,11 +645,11 @@ function BookingFileRow({ doc, copy, trip, selected, canEdit, onSelect, onEdit, 
           </span>
         </span>
       </button>
-      <span className="truncate text-xs font-bold tabular-nums text-(--color-text-muted)">{doc.startsAt ? formatDateTime(doc.startsAt) : copy.noDate}</span>
-      <span className="truncate text-xs font-bold text-(--color-text-muted)">{provider}</span>
-      <span className="truncate text-xs font-bold text-(--color-text-muted)">{linkedStop}</span>
-      <span className={cn(badgeClassName, statusBadgeClassName(doc.status))}>{formatEnumLabel(doc.status, copy)}</span>
-      <span className="inline-flex justify-end gap-1">
+      <span className="truncate text-xs font-bold tabular-nums text-(--color-text-muted) max-[1199px]:col-start-1 max-[1199px]:row-start-2 max-[1199px]:pl-[42px]">{doc.startsAt ? formatDateTime(doc.startsAt) : copy.noDate}</span>
+      <span className="truncate text-xs font-bold text-(--color-text-muted) max-[1199px]:col-start-1 max-[1199px]:row-start-3 max-[1199px]:pl-[42px]">{provider}</span>
+      <span className="truncate text-xs font-bold text-(--color-text-muted) max-[1199px]:hidden">{linkedStop}</span>
+      <span className={cn(badgeClassName, statusBadgeClassName(doc.status), "max-[1199px]:col-start-2 max-[1199px]:row-start-1 max-[1199px]:justify-self-end")}>{formatEnumLabel(doc.status, copy)}</span>
+      <span className="inline-flex justify-end gap-1 max-[1199px]:hidden">
         {doc.externalLinks[0] ? (
           <a className="grid size-8 place-items-center rounded-(--radius-sm) text-(--color-primary-strong) hover:bg-(--color-primary-soft)" href={doc.externalLinks[0].url} target="_blank" rel="noreferrer" aria-label={copy.openLink(doc.externalLinks[0].label)}>
             <Icon name="external" />
