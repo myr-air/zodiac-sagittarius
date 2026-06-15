@@ -325,6 +325,56 @@ describe("AccountAccessPanel", () => {
     expect(screen.queryByRole("link", { name: /Open account portal/i })).not.toBeInTheDocument();
   });
 
+  it("shows a service connection message when account password login cannot reach the API", async () => {
+    const user = userEvent.setup();
+    const accountClient = createAccountClient();
+    vi.mocked(accountClient.finishPasswordLogin).mockRejectedValueOnce(new Error("Failed to fetch"));
+    render(
+      <AccountAccessPanel
+        accessMode="account-login"
+        accountClient={accountClient}
+        accountSession={null}
+        trip={seedTrip}
+        onAccountSessionChange={vi.fn()}
+        onAuthenticated={vi.fn()}
+        onTripChange={vi.fn()}
+      />,
+    );
+
+    fireEvent.change(screen.getByLabelText(/Email/i), { target: { value: "aom@example.test" } });
+    fireEvent.change(screen.getByLabelText(/^Password$/i), { target: { value: "account-secret" } });
+    await user.click(authForm().getByRole("button", { name: /^Sign in$/i }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(/Could not reach the login service/i);
+    expect(screen.queryByText(/Could not sign in with that password/i)).not.toBeInTheDocument();
+  });
+
+  it("shows an account credential message when account password login is rejected", async () => {
+    const user = userEvent.setup();
+    const accountClient = createAccountClient();
+    vi.mocked(accountClient.finishPasswordLogin).mockRejectedValueOnce(
+      new TripApiError({ code: "unauthenticated", message: "invalid credentials", status: 401 }),
+    );
+    render(
+      <AccountAccessPanel
+        accessMode="account-login"
+        accountClient={accountClient}
+        accountSession={null}
+        trip={seedTrip}
+        onAccountSessionChange={vi.fn()}
+        onAuthenticated={vi.fn()}
+        onTripChange={vi.fn()}
+      />,
+    );
+
+    fireEvent.change(screen.getByLabelText(/Email/i), { target: { value: "aom@example.test" } });
+    fireEvent.change(screen.getByLabelText(/^Password$/i), { target: { value: "wrong-secret" } });
+    await user.click(authForm().getByRole("button", { name: /^Sign in$/i }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("Email or password is not valid.");
+    expect(screen.queryByText(/Could not sign in with that password/i)).not.toBeInTheDocument();
+  });
+
   it("shows email delivery failures where the registration code message appears", async () => {
     const user = userEvent.setup();
     const accountClient = createAccountClient();

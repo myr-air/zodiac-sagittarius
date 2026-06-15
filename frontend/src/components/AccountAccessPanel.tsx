@@ -343,6 +343,7 @@ interface TripCountryOption {
 
 const ACCESS_ERROR_CODES = {
   accountLoadFailed: "account-load-failed",
+  apiConnectionFailed: "api-connection-failed",
   passkeyRegistrationCredential: "passkey-registration-credential",
   passkeyLoginCredential: "passkey-login-credential",
   passkeyUnsupported: "passkey-unsupported",
@@ -1080,7 +1081,11 @@ function EmailLoginPanel({
       onLoggedIn(session);
       onError(null);
     } catch (caught) {
-      onError(errorMessage(caught, activeFlow === "register" ? t.access.emailLogin.errors.passwordRegisterFailed : t.access.emailLogin.errors.passwordLoginFailed, t.access.messages));
+      onError(
+        activeFlow === "register"
+          ? errorMessage(caught, t.access.emailLogin.errors.passwordRegisterFailed, t.access.messages)
+          : passwordLoginErrorMessage(caught, t.access.emailLogin.errors.passwordLoginFailed, t.access.messages),
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -3158,10 +3163,17 @@ function errorMessage(caught: unknown, fallback: string, labels: Messages["acces
   return localizeAccessError(rawErrorMessage(caught, fallback), labels) ?? fallback;
 }
 
+function passwordLoginErrorMessage(caught: unknown, fallback: string, labels: Messages["access"]["messages"]): string {
+  if (isCredentialFailure(caught)) return fallback;
+  return errorMessage(caught, fallback, labels);
+}
+
 function rawErrorMessage(caught: unknown, fallback: string): string {
   if (isApiLikeError(caught)) return caught.code || String(caught.status);
-  if (caught instanceof Error && caught.message) {
-    const normalized = caught.message.trim();
+  const caughtMessage = errorLikeMessage(caught);
+  if (caughtMessage) {
+    const normalized = caughtMessage.trim();
+    if (isNetworkAccessError(normalized)) return ACCESS_ERROR_CODES.apiConnectionFailed;
     if (normalized) return normalized;
   }
   return fallback;
@@ -3175,16 +3187,40 @@ function localizeAccessError(message: string | null, labels: Messages["access"][
 function friendlyErrorText(message: string, fallback: string | null, labels: Messages["access"]["messages"]): string | null {
   const normalized = message.trim();
   if (normalized === ACCESS_ERROR_CODES.accountLoadFailed) return labels.accountLoadFailed;
+  if (normalized === ACCESS_ERROR_CODES.apiConnectionFailed) return labels.apiConnectionFailed;
   if (normalized === ACCESS_ERROR_CODES.passkeyRegistrationCredential) return labels.passkeyRegistrationCredential;
   if (normalized === ACCESS_ERROR_CODES.passkeyLoginCredential) return labels.passkeyLoginCredential;
   if (normalized === ACCESS_ERROR_CODES.passkeyUnsupported) return labels.passkeyUnsupported;
   if (normalized === "not_found") return labels.notFound;
   if (normalized === "invalid_request") return labels.unauthorized;
   if (normalized === "email_delivery_failed") return labels.emailDeliveryFailed;
+  if (normalized === "request_failed") return labels.serviceUnavailable;
   if (normalized === "404") return labels.notFound;
   if (normalized === "401" || normalized === "403" || normalized === "unauthenticated" || normalized === "unauthorized" || normalized === "forbidden") return labels.unauthorized;
   if (!normalized || /^\d{3}$/.test(normalized)) return fallback;
   return fallback;
+}
+
+function isCredentialFailure(value: unknown): boolean {
+  if (!isApiLikeError(value)) return false;
+  const code = value.code?.trim();
+  return value.status === 401 || value.status === 403 || code === "unauthenticated" || code === "unauthorized" || code === "forbidden";
+}
+
+function errorLikeMessage(value: unknown): string | null {
+  if (value instanceof Error && value.message) return value.message;
+  if (!value || typeof value !== "object" || !("message" in value)) return null;
+  const message = (value as { message?: unknown }).message;
+  return typeof message === "string" ? message : null;
+}
+
+function isNetworkAccessError(message: string): boolean {
+  const normalized = message.toLowerCase();
+  return normalized === "failed to fetch" ||
+    normalized === "load failed" ||
+    normalized === "fetch failed" ||
+    normalized.includes("networkerror") ||
+    normalized.includes("network request failed");
 }
 
 function isApiLikeError(value: unknown): value is { code?: string; status?: number } {
