@@ -335,6 +335,8 @@ const subActivityActionsClassName =
   "flex min-w-0 shrink-0 flex-nowrap items-center justify-end gap-0.5 whitespace-nowrap";
 const addSubActivityButtonClassName =
   "mt-0.5 inline-flex min-h-6 w-fit items-center justify-center gap-1 rounded-(--radius-sm) border border-transparent bg-transparent px-1.5 text-[11px] font-extrabold text-(--color-route) transition-colors duration-150 hover:border-(--color-route-border) hover:bg-(--color-route-soft) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-focus) disabled:cursor-not-allowed disabled:opacity-50";
+const addStopInlineButtonClassName =
+  "inline-flex min-h-8 w-fit items-center justify-center gap-1.5 rounded-(--radius-sm) border border-transparent bg-transparent px-2 text-xs font-extrabold text-(--color-route) transition-colors duration-150 hover:border-(--color-route-border) hover:bg-(--color-route-soft) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-focus) disabled:cursor-not-allowed disabled:opacity-50 [&_.icon]:size-3.5";
 const subActivityToggleButtonClassName =
   "inline-flex size-7 shrink-0 items-center justify-center rounded-(--radius-sm) border border-transparent bg-transparent text-(--color-text-muted) transition-colors duration-150 hover:border-(--color-route-border) hover:bg-(--color-route-soft) hover:text-(--color-route) aria-[expanded=true]:border-(--color-route-border) aria-[expanded=true]:bg-(--color-route-soft) aria-[expanded=true]:text-(--color-route) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-focus) [&_.icon]:size-3.5";
 const subActivityModalBackdropClassName =
@@ -432,6 +434,7 @@ export function SmartItineraryTable({
   dayPathOverrides = {},
   showAllPaths = false,
   tripName,
+  onAddStop,
   onAddSubActivity,
   onAddNoteForItem,
   onAddBookingForItem,
@@ -962,6 +965,7 @@ export function SmartItineraryTable({
               showAllPaths={showAllPaths}
               onChangeDayPath={onChangeDayPath}
               onClearDayPath={onClearDayPath}
+              onAddStop={onAddStop}
               onAddSubActivity={onAddSubActivity}
               onAddNoteForItem={onAddNoteForItem}
               onAddBookingForItem={onAddBookingForItem}
@@ -1001,6 +1005,7 @@ function DayGroup({
   selectedItemId,
   canEdit,
   collapsed,
+  onAddStop,
   onAddSubActivity,
   onAddNoteForItem,
   onAddBookingForItem,
@@ -1036,6 +1041,7 @@ function DayGroup({
   bookingLinkItems: ItineraryItem[];
   canEdit: boolean;
   collapsed: boolean;
+  onAddStop?: (day?: string) => void;
   onAddSubActivity?: (parentItemId: string) => void | Promise<void>;
   onAddNoteForItem?: (itemId: string, body: string) => void | Promise<void>;
   onAddBookingForItem?: (
@@ -1213,7 +1219,18 @@ function DayGroup({
         : null}
       {!collapsed ? (
         <tr className={addStopRowClassName} data-day-drop={group.day}>
-          <td colSpan={showGraph ? 1 : 2} aria-hidden="true" />
+          <td colSpan={showGraph ? 1 : 2}>
+            {canEdit && onAddStop ? (
+              <button
+                type="button"
+                className={addStopInlineButtonClassName}
+                onClick={() => onAddStop(group.day)}
+              >
+                <Icon name="plus" />
+                <span>{itineraryLabels.addStop}</span>
+              </button>
+            ) : null}
+          </td>
         </tr>
       ) : null}
     </tbody>
@@ -1672,7 +1689,7 @@ function ActivityCell({
         onDeleteItem={onDeleteItem}
         onEditItem={onEditItem}
         onUpdateItemInline={onUpdateItemInline}
-        visible={subActivitiesExpanded}
+        visible={subActivitiesExpanded || (selected && subItems.length === 0)}
       />
       {noteTarget && onAddNoteForItem ? (
         <ItineraryNoteModal
@@ -2732,7 +2749,9 @@ function SubActivityList({
   ) => void | Promise<void>;
 }) {
   const editable = canEdit && Boolean(onUpdateItemInline);
-  const showAddSubActivity = Boolean(onAddSubActivity) && (selected || subItems.length > 0);
+  const showAddSubActivity =
+    Boolean(onAddSubActivity) &&
+    (presentation === "modal" || visible || selected || subItems.length > 0);
 
   if (presentation === "inline" && !visible) return null;
   if (subItems.length === 0 && !showAddSubActivity) return null;

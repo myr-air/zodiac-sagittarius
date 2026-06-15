@@ -562,7 +562,12 @@ describe("SmartItineraryTable", () => {
     })[0];
     expect(subActivityToggle).toHaveClass("size-7");
     expect(subActivityToggle).toHaveAttribute("aria-expanded", "false");
-    expect(itemRows[0]?.querySelector(".sub-activity-list")).toBeNull();
+    expect(itemRows[0]?.querySelector(".sub-activity-list")).toBeInTheDocument();
+    expect(
+      within(itemRows[0]).getByRole("button", {
+        name: /Add sub-activity|เพิ่มกิจกรรมย่อย/i,
+      }),
+    ).toBeInTheDocument();
     const rowWithoutSubItems = Array.from(itemRows).find(
       (row) =>
         row !== itemRows[0] &&
@@ -1089,6 +1094,98 @@ describe("SmartItineraryTable", () => {
     expect(onAddSubActivity).toHaveBeenCalledWith("parent-activity");
   });
 
+  it("renders add activity rows for expanded days", async () => {
+    const user = userEvent.setup();
+    const onAddStop = vi.fn();
+
+    renderTable({ onAddStop });
+
+    const addActivityButtons = screen.getAllByRole("button", {
+      name: /เพิ่มสถานที่ \/ กิจกรรม|Add stop/i,
+    });
+    expect(addActivityButtons.length).toBeGreaterThan(0);
+
+    await user.click(addActivityButtons[0]);
+    expect(onAddStop).toHaveBeenCalledWith(tripFixture.planItems[0].day);
+  });
+
+  it("shows an add sub-activity row for a selected activity with no sub-activities", async () => {
+    const user = userEvent.setup();
+    const onAddSubActivity = vi.fn();
+    const parent = {
+      ...tripFixture.planItems[0],
+      id: "empty-sub-parent",
+      activity: "Harbour transfer",
+      day: "2026-06-19",
+      sortOrder: 10,
+    };
+
+    renderTable({
+      items: [parent],
+      graphItems: [parent],
+      selectedItemId: "empty-sub-parent",
+      onAddSubActivity,
+    });
+
+    const parentRow = document.querySelector<HTMLTableRowElement>(
+      '[data-item-id="empty-sub-parent"]',
+    );
+    expect(parentRow).not.toBeNull();
+    expect(parentRow?.querySelector(".sub-activity-list")).toBeInTheDocument();
+
+    await user.click(
+      within(parentRow as HTMLElement).getByRole("button", {
+        name: /Add sub-activity|เพิ่มกิจกรรมย่อย/i,
+      }),
+    );
+    expect(onAddSubActivity).toHaveBeenCalledWith("empty-sub-parent");
+  });
+
+  it("shows an add sub-activity row after expanding an unselected empty activity", async () => {
+    const user = userEvent.setup();
+    const onAddSubActivity = vi.fn();
+    const selectedSibling = {
+      ...tripFixture.planItems[0],
+      id: "selected-sibling",
+      activity: "Selected sibling",
+      day: "2026-06-19",
+      sortOrder: 10,
+    };
+    const parent = {
+      ...tripFixture.planItems[1],
+      id: "unselected-empty-sub-parent",
+      activity: "Bus to Shenzhen",
+      day: "2026-06-19",
+      sortOrder: 20,
+    };
+
+    renderTable({
+      items: [selectedSibling, parent],
+      graphItems: [selectedSibling, parent],
+      selectedItemId: "selected-sibling",
+      onAddSubActivity,
+    });
+
+    const parentRow = document.querySelector<HTMLTableRowElement>(
+      '[data-item-id="unselected-empty-sub-parent"]',
+    );
+    expect(parentRow).not.toBeNull();
+    expect(parentRow?.querySelector(".sub-activity-list")).toBeNull();
+
+    await user.click(
+      within(parentRow as HTMLElement).getAllByRole("button", {
+        name: /Sub-activities for Bus to Shenzhen/i,
+      })[0],
+    );
+
+    await user.click(
+      within(parentRow as HTMLElement).getByRole("button", {
+        name: /Add sub-activity|เพิ่มกิจกรรมย่อย/i,
+      }),
+    );
+    expect(onAddSubActivity).toHaveBeenCalledWith("unselected-empty-sub-parent");
+  });
+
   it("renders sub-activities without inline drag and drop controls", () => {
     const onMoveItem = vi.fn();
     const parentA = {
@@ -1236,16 +1333,16 @@ describe("SmartItineraryTable", () => {
     expect(onSelectItem).toHaveBeenCalledTimes(1);
   });
 
-  it("keeps blank data-day-drop anchors for graph measurement without add buttons", () => {
+  it("keeps data-day-drop anchors for graph measurement with add activity affordances", () => {
     renderTable();
 
     const dayDropAnchors = document.querySelectorAll("[data-day-drop]");
     expect(dayDropAnchors.length).toBeGreaterThan(0);
     expect(
-      screen.queryByRole("button", {
+      screen.getAllByRole("button", {
         name: /เพิ่มสถานที่ \/ กิจกรรม|Add stop or activity/i,
       }),
-    ).not.toBeInTheDocument();
+    ).toHaveLength(dayDropAnchors.length);
   });
 
   it("aligns graph dots with measured blank activity rows", async () => {
