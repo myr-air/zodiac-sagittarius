@@ -10,35 +10,18 @@ import {
 } from "react";
 import { AppShell, resolveViewFromPath } from "@/src/components/AppShell";
 import { AccountAccessPanel } from "@/src/components/AccountAccessPanel";
-import {
-  BookingsDocsPage,
-  type BookingDocInput,
-} from "@/src/components/BookingsDocsPage";
+import type { BookingDocInput } from "@/src/components/BookingsDocsPage";
 import { ContextRail } from "@/src/components/ContextRail";
-import { OverviewPage } from "@/src/components/OverviewPage";
+import type { MapCoordinateResolutionResult } from "@/src/components/RouteMapView";
 import {
-  RouteMapView,
-  type MapCoordinateResolutionResult,
-} from "@/src/components/RouteMapView";
-import {
-  SmartItineraryTable,
   type ItineraryBookingTicketInput,
   type ItineraryBookingTemplate,
   type ItineraryCommitmentSummary,
   type InlineItineraryItemPatch,
 } from "@/src/components/SmartItineraryTable";
 import { StopDialog, type StopFormValues } from "@/src/components/StopDialog";
-import { TimelineView } from "@/src/components/TimelineView";
-import { TripExpensesPage } from "@/src/components/TripExpensesPage";
-import { TripMembersPage } from "@/src/components/TripMembersPage";
-import {
-  TripPhotosPage,
-  type TripPhotoAlbumInput,
-} from "@/src/components/TripPhotosPage";
-import {
-  TripSettingsPage,
-  type TripSettingsFormValues,
-} from "@/src/components/TripSettingsPage";
+import type { TripPhotoAlbumInput } from "@/src/components/TripPhotosPage";
+import type { TripSettingsFormValues } from "@/src/components/TripSettingsPage";
 import { Button, Select } from "@/src/components/ui";
 import { Icon } from "@/src/components/icons";
 import { useI18n } from "@/src/i18n/I18nProvider";
@@ -92,6 +75,7 @@ import {
   type ItineraryImportApplyTarget,
 } from "@/src/trip/itinerary-paths";
 import type { PlanningView } from "@/src/trip/planning-view";
+import { TripWorkspaceViews } from "@/src/trip/TripWorkspaceViews";
 import {
   buildItineraryExport,
   parseItineraryImportDocument,
@@ -4420,186 +4404,173 @@ export function SagittariusApp({
           <div
             className={`${planningMainClassName} ${contextRailOpen && supportsContextRail ? planningMainWithRailClassName : ""}`}
           >
-            {currentView === "settings" ? (
-              <TripSettingsPage
-                canEdit={canManagePeople}
-                currentMember={currentMember}
-                trip={trip}
-                onSave={saveTripSettings}
-              />
-            ) : currentView === "members" ? (
-              <TripMembersPage
-                trip={trip}
-                currentMember={currentMember}
-                canManagePeople={canManagePeople}
-                joinInviteToken={joinInviteToken}
-                onChangeMemberAccessStatus={changeMemberAccessStatus}
-                onChangeMemberPassword={changeMemberPassword}
-                onChangeMemberRole={changeMemberRole}
-                onCreateMember={createMember}
-                onRotateJoinInviteToken={
-                  isApiMode ? rotateJoinInviteToken : undefined
-                }
-                onResetMemberClaim={resetMemberClaim}
-                onTransferOwnership={
+            <TripWorkspaceViews
+              currentView={currentView}
+              settingsProps={{
+                canEdit: canManagePeople,
+                currentMember,
+                trip,
+                onSave: saveTripSettings,
+              }}
+              membersProps={{
+                trip,
+                currentMember,
+                canManagePeople,
+                joinInviteToken,
+                onChangeMemberAccessStatus: changeMemberAccessStatus,
+                onChangeMemberPassword: changeMemberPassword,
+                onChangeMemberRole: changeMemberRole,
+                onCreateMember: createMember,
+                onRotateJoinInviteToken: isApiMode
+                  ? rotateJoinInviteToken
+                  : undefined,
+                onResetMemberClaim: resetMemberClaim,
+                onTransferOwnership:
                   currentMember.role === "owner" &&
                   accountSession &&
                   participantSession &&
                   resolvedApiClient
                     ? transferOwnerToAccountMember
-                    : undefined
-                }
-              />
-            ) : currentView === "bookings" ? (
-              <BookingsDocsPage
-                trip={scopedTripForRecords}
-                tasks={scopedTripPlanRecords.tasks}
-                currentMember={currentMember}
-                bookingDocs={scopedTripPlanRecords.bookingDocs}
-                canEditBookings={canEditBookings}
-                onCreateBookingDoc={async (input) => {
+                    : undefined,
+              }}
+              bookingsProps={{
+                trip: scopedTripForRecords,
+                tasks: scopedTripPlanRecords.tasks,
+                currentMember,
+                bookingDocs: scopedTripPlanRecords.bookingDocs,
+                canEditBookings,
+                onCreateBookingDoc: async (input) => {
                   await createBookingDoc(input);
-                }}
-                onUpdateBookingDoc={updateBookingDoc}
-                onDeleteBookingDoc={deleteBookingDoc}
-              />
-            ) : currentView === "photos" ? (
-              <TripPhotosPage
-                trip={trip}
-                currentMember={currentMember}
-                photoAlbumLinks={trip.photoAlbumLinks ?? []}
-                canEditPhotoAlbums={canEditPhotoAlbums}
-                onCreatePhotoAlbum={createPhotoAlbum}
-                onUpdatePhotoAlbum={updatePhotoAlbum}
-                onDeletePhotoAlbum={deletePhotoAlbum}
-              />
-            ) : currentView === "expenses" ? (
-              <TripExpensesPage
-                trip={scopedTripForRecords}
-                currentMember={currentMember}
-                expenseSummary={expenseSummary}
-                canEditExpenses={canEditExpenses}
-                selectedTripPlanId={selectedTripPlanId}
-                apiBaseUrl={process.env.NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL ?? ""}
-                onCreateExpense={createExpense}
-                onUpdateExpense={updateExpense}
-                onDeleteExpense={deleteExpense}
-                onDuplicateExpenseAsEstimate={duplicateExpenseAsEstimate}
-                onRecordPaybackReminder={recordPaybackReminder}
-              />
-            ) : currentView === "overview" ? (
-              <OverviewPage
-                trip={scopedTripForRecords}
-                currentMemberId={currentMember.id}
-                expenseSummary={expenseSummary}
-                items={planItems}
-                itineraryView={itineraryView}
-                suggestions={scopedSuggestions}
-                tasks={scopedTripPlanRecords.tasks}
-                dailyBriefings={visibleDailyBriefings}
-                onOpenExpenses={openExpensesWorkspace}
-                onCreateTask={createTask}
-                onSaveDailyBriefingOverrides={saveDailyBriefingOverrides}
-                onToggleTaskStatus={toggleTaskStatus}
-              />
-            ) : currentView === "itinerary" ? (
-                <SmartItineraryTable
-                  canRedo={tripState.future.length > 0}
-                  canRestructure={canEdit}
-                  canUndo={tripState.past.length > 0}
-                  contextRailOpen={contextRailOpen}
-                  endDate={trip.endDate}
-                  graphItems={activePlanItems}
-                  items={planItems}
-                  commitmentsByItemId={itineraryCommitmentsByItemId}
-                  dailyBriefings={visibleDailyBriefings}
-                  itineraryView={itineraryView}
-                  pathOptions={pathOptions}
-                  tripPlans={trip.tripPlans ?? trip.planVariants}
-                  selectedTripPlanId={selectedTripPlanId}
-                  mainTripPlanId={trip.mainTripPlanId || trip.activePlanVariantId}
-                  onChangeTripPlan={selectTripPlan}
-                  onSetMainTripPlan={setMainTripPlan}
-                  onChangeTripPlanStatus={updateTripPlanStatus}
-                  onCreateTripPlan={createTripPlan}
-                  onRenameTripPlan={renameTripPlan}
-                  onSaveDayTitle={(date, version, title) =>
-                    saveDailyBriefingOverrides(date, version, { dayTitle: title })
-                  }
-                  tripPlanError={tripPlanError}
-                  isTripPlanBusy={isTripPlanBusy}
-                  role={currentMember.role}
-                  startDate={trip.startDate}
-                  selectedItemId={selectedItemIdForView}
-                  selectedTripPathId={
-                    pathSelection.tripPathId ?? mainItineraryPathId
-                  }
-                  dayPathOverrides={pathSelection.dayPathOverrides ?? {}}
-                  showAllPaths={Boolean(pathSelection.showAll)}
-                  tripName={trip.name}
-                  bookingDocs={scopedTripPlanRecords.bookingDocs}
-                  onAddBookingForItem={createItineraryBookingDraft}
-                  onSaveBookingForItem={saveItineraryBookingTicket}
-                  onUnlinkBookingForItem={unlinkBookingFromItineraryItem}
-                  onAddStop={addStop}
-                  onAddSubActivity={addSubActivity}
-                  onAddNoteForItem={(itemId, body) =>
-                    void createItineraryNote(itemId, body)
-                  }
-                  onAddTaskForItem={(itemId) => void createItineraryTask(itemId)}
-                  onOpenItemDetails={openItemDetails}
-                  onSelectItem={selectItem}
-                  onMoveItem={moveItem}
-                  onMoveItemIntoPlanBlock={moveItemIntoPlanBlock}
-                  onMoveItemToDay={moveItemToDay}
-                  onMoveItemToPath={moveItemToPath}
-                  onUpdateItemInline={updateItineraryItemInline}
-                  onEditItem={editItem}
-                  onDeleteItem={deleteStop}
-                  onExportItinerary={exportItinerary}
-                  onImportItinerary={importItinerary}
-                  onImportItineraryText={importItineraryText}
-                  onChangeTripPath={changeTripPath}
-                  onChangeDayPath={changeDayPath}
-                  onClearDayPath={clearDayPath}
-                  onClearAllDayPaths={clearAllDayPaths}
-                  onToggleShowAllPaths={toggleShowAllPaths}
-                  onRedo={redo}
-                  onToggleContextRail={() =>
-                    setContextRailVisibility(!contextRailOpen)
-                  }
-                  onUndo={undo}
-                />
-            ) : currentView === "map" ? (
-              <RouteMapView
-                countries={trip.countries ?? []}
-                destinationLabel={trip.destinationLabel}
-                endDate={trip.endDate}
-                items={mainPlanItems}
-                itineraryView={mainItineraryView}
-                startDate={trip.startDate}
-                tripName={trip.name}
-                onResolveMissingCoordinates={
+                },
+                onUpdateBookingDoc: updateBookingDoc,
+                onDeleteBookingDoc: deleteBookingDoc,
+              }}
+              photosProps={{
+                trip,
+                currentMember,
+                photoAlbumLinks: trip.photoAlbumLinks ?? [],
+                canEditPhotoAlbums,
+                onCreatePhotoAlbum: createPhotoAlbum,
+                onUpdatePhotoAlbum: updatePhotoAlbum,
+                onDeletePhotoAlbum: deletePhotoAlbum,
+              }}
+              expensesProps={{
+                trip: scopedTripForRecords,
+                currentMember,
+                expenseSummary,
+                canEditExpenses,
+                selectedTripPlanId,
+                apiBaseUrl:
+                  process.env.NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL ?? "",
+                onCreateExpense: createExpense,
+                onUpdateExpense: updateExpense,
+                onDeleteExpense: deleteExpense,
+                onDuplicateExpenseAsEstimate: duplicateExpenseAsEstimate,
+                onRecordPaybackReminder: recordPaybackReminder,
+              }}
+              overviewProps={{
+                trip: scopedTripForRecords,
+                currentMemberId: currentMember.id,
+                expenseSummary,
+                items: planItems,
+                itineraryView,
+                suggestions: scopedSuggestions,
+                tasks: scopedTripPlanRecords.tasks,
+                dailyBriefings: visibleDailyBriefings,
+                onOpenExpenses: openExpensesWorkspace,
+                onCreateTask: createTask,
+                onSaveDailyBriefingOverrides: saveDailyBriefingOverrides,
+                onToggleTaskStatus: toggleTaskStatus,
+              }}
+              itineraryProps={{
+                canRedo: tripState.future.length > 0,
+                canRestructure: canEdit,
+                canUndo: tripState.past.length > 0,
+                contextRailOpen,
+                endDate: trip.endDate,
+                graphItems: activePlanItems,
+                items: planItems,
+                commitmentsByItemId: itineraryCommitmentsByItemId,
+                dailyBriefings: visibleDailyBriefings,
+                itineraryView,
+                pathOptions,
+                tripPlans: trip.tripPlans ?? trip.planVariants,
+                selectedTripPlanId,
+                mainTripPlanId: trip.mainTripPlanId || trip.activePlanVariantId,
+                onChangeTripPlan: selectTripPlan,
+                onSetMainTripPlan: setMainTripPlan,
+                onChangeTripPlanStatus: updateTripPlanStatus,
+                onCreateTripPlan: createTripPlan,
+                onRenameTripPlan: renameTripPlan,
+                onSaveDayTitle: (date, version, title) =>
+                  saveDailyBriefingOverrides(date, version, { dayTitle: title }),
+                tripPlanError,
+                isTripPlanBusy,
+                role: currentMember.role,
+                startDate: trip.startDate,
+                selectedItemId: selectedItemIdForView,
+                selectedTripPathId:
+                  pathSelection.tripPathId ?? mainItineraryPathId,
+                dayPathOverrides: pathSelection.dayPathOverrides ?? {},
+                showAllPaths: Boolean(pathSelection.showAll),
+                tripName: trip.name,
+                bookingDocs: scopedTripPlanRecords.bookingDocs,
+                onAddBookingForItem: createItineraryBookingDraft,
+                onSaveBookingForItem: saveItineraryBookingTicket,
+                onUnlinkBookingForItem: unlinkBookingFromItineraryItem,
+                onAddStop: addStop,
+                onAddSubActivity: addSubActivity,
+                onAddNoteForItem: (itemId, body) =>
+                  void createItineraryNote(itemId, body),
+                onAddTaskForItem: (itemId) => void createItineraryTask(itemId),
+                onOpenItemDetails: openItemDetails,
+                onSelectItem: selectItem,
+                onMoveItem: moveItem,
+                onMoveItemIntoPlanBlock: moveItemIntoPlanBlock,
+                onMoveItemToDay: moveItemToDay,
+                onMoveItemToPath: moveItemToPath,
+                onUpdateItemInline: updateItineraryItemInline,
+                onEditItem: editItem,
+                onDeleteItem: deleteStop,
+                onExportItinerary: exportItinerary,
+                onImportItinerary: importItinerary,
+                onImportItineraryText: importItineraryText,
+                onChangeTripPath: changeTripPath,
+                onChangeDayPath: changeDayPath,
+                onClearDayPath: clearDayPath,
+                onClearAllDayPaths: clearAllDayPaths,
+                onToggleShowAllPaths: toggleShowAllPaths,
+                onRedo: redo,
+                onToggleContextRail: () =>
+                  setContextRailVisibility(!contextRailOpen),
+                onUndo: undo,
+              }}
+              mapProps={{
+                countries: trip.countries ?? [],
+                destinationLabel: trip.destinationLabel,
+                endDate: trip.endDate,
+                items: mainPlanItems,
+                itineraryView: mainItineraryView,
+                startDate: trip.startDate,
+                tripName: trip.name,
+                onResolveMissingCoordinates:
                   canEdit && effectivePlaceResolver
                     ? resolveMissingMapCoordinates
-                    : undefined
-                }
-              />
-            ) : (
-              <TimelineView
-                contextRailOpen={contextRailOpen}
-                endDate={trip.endDate}
-                items={planItems}
-                itineraryView={itineraryView}
-                selectedItemId={selectedItemIdForView}
-                startDate={trip.startDate}
-                tripName={trip.name}
-                onSelectItem={selectItem}
-                onToggleContextRail={() =>
-                  setContextRailVisibility(!contextRailOpen)
-                }
-              />
-            )}
+                    : undefined,
+              }}
+              timelineProps={{
+                contextRailOpen,
+                endDate: trip.endDate,
+                items: planItems,
+                itineraryView,
+                selectedItemId: selectedItemIdForView,
+                startDate: trip.startDate,
+                tripName: trip.name,
+                onSelectItem: selectItem,
+                onToggleContextRail: () =>
+                  setContextRailVisibility(!contextRailOpen),
+              }}
+            />
           </div>
           {itineraryImportError ? (
             <p className={importErrorClassName} role="alert">
