@@ -4,7 +4,6 @@ import {
   useRef,
   useState,
   type CSSProperties,
-  type DragEvent,
   type FormEvent,
 } from "react";
 import { createPortal } from "react-dom";
@@ -271,17 +270,15 @@ const activityPillClassName =
 const activityTypePickerClassName =
   "activity-type-picker !min-h-[52px] h-full w-full max-w-full shrink-0 items-start justify-start rounded-(--radius-sm) border-(--color-border) bg-(--color-surface-subtle) px-2 pt-1 text-left text-[11px] font-medium text-(--color-text-muted) hover:border-(--color-route-border) hover:bg-(--color-route-soft) hover:text-(--color-route) aria-[expanded=true]:border-(--color-route-border) aria-[expanded=true]:bg-(--color-route-soft) aria-[expanded=true]:text-(--color-route) max-[520px]:!min-h-7 max-[520px]:h-7 max-[520px]:px-1.5 max-[520px]:pt-0.5 [&_.icon]:size-3.5 [&_.inline-option-picker-caret]:hidden";
 const subActivityListClassName =
-  "sub-activity-list mt-1.5 grid min-w-0 gap-0.5 border-t border-dashed border-(--color-border) pt-1.5 max-[640px]:hidden";
+  "sub-activity-list col-start-2 col-span-2 mt-1 grid min-w-0 gap-0.5 border-t border-dashed border-(--color-border) pt-1.5 max-[640px]:hidden max-[520px]:col-start-1 max-[520px]:col-span-2 max-[360px]:col-span-1";
 const subActivityModalListClassName =
   "sub-activity-list grid min-w-0 gap-1";
 const subActivityLineClassName =
-  "sub-activity-line grid min-w-0 grid-cols-[20px_minmax(56px,72px)_minmax(0,1fr)_auto] items-center gap-1.5 rounded-(--radius-sm) px-1.5 py-1 text-xs leading-4 transition-colors duration-150 hover:bg-(--color-surface-subtle) max-[760px]:grid-cols-[20px_minmax(0,1fr)_auto]";
-const subActivityDragClassName =
-  "inline-flex size-5 cursor-grab items-center justify-center text-(--color-text-subtle) active:cursor-grabbing";
+  "sub-activity-line grid min-w-0 grid-cols-[minmax(56px,72px)_minmax(0,1fr)_auto] items-center gap-1.5 rounded-(--radius-sm) px-1.5 py-1 text-xs leading-4 transition-colors duration-150 hover:bg-(--color-surface-subtle) max-[760px]:grid-cols-[minmax(0,1fr)_auto]";
 const subActivityTextClassName =
-  "sub-activity-text min-w-0 text-xs font-bold leading-4 text-(--color-text)";
+  "sub-activity-text grid min-w-0 gap-0.5 text-xs font-normal leading-4 text-(--color-text)";
 const subActivityTitleInputClassName =
-  "min-h-5 w-full min-w-0 border-0 border-b border-transparent bg-transparent px-0 py-0 text-xs font-bold leading-4 text-(--color-text) outline-none transition-colors duration-150 hover:not-disabled:border-(--color-border) focus:border-(--color-route) focus:ring-0 disabled:border-transparent";
+  "min-h-5 w-full min-w-0 border-0 border-b border-transparent bg-transparent px-0 py-0 text-xs font-normal leading-4 text-(--color-text) outline-none transition-colors duration-150 hover:not-disabled:border-(--color-border) focus:border-(--color-route) focus:ring-0 disabled:border-transparent";
 const subActivityActionsClassName =
   "flex min-w-0 shrink-0 items-center justify-end gap-1";
 const addSubActivityButtonClassName =
@@ -1092,7 +1089,6 @@ function DayGroup({
                   onAddSubActivity={onAddSubActivity}
                   onDeleteItem={onDeleteItem}
                   onEditItem={onEditItem}
-                  onMoveItem={onMoveItem}
                   onOpenItemDetails={onOpenItemDetails}
                   onSelectItem={onSelectItem}
                   onUpdateItemInline={onUpdateItemInline}
@@ -1183,7 +1179,6 @@ function ActivityCell({
   onAddSubActivity,
   onDeleteItem,
   onEditItem,
-  onMoveItem,
   onOpenItemDetails,
   onSelectItem,
   onUpdateItemInline,
@@ -1197,7 +1192,6 @@ function ActivityCell({
   onAddSubActivity?: (parentItemId: string) => void | Promise<void>;
   onDeleteItem?: (itemId: string) => void;
   onEditItem?: (itemId: string) => void;
-  onMoveItem: (draggedItemId: string, targetItemId: string) => void;
   onOpenItemDetails: (itemId: string) => void;
   onSelectItem: (itemId: string) => void;
   onUpdateItemInline?: (
@@ -1434,20 +1428,6 @@ function ActivityCell({
             {renderActivityActions(true)}
           </div>
         ) : null}
-        <SubActivityList
-          canEdit={canEdit}
-          item={item}
-          itineraryLabels={itineraryLabels}
-          locale={locale}
-          selected={selected}
-          subItems={subItems}
-          onAddSubActivity={onAddSubActivity}
-          onDeleteItem={onDeleteItem}
-          onEditItem={onEditItem}
-          onMoveItem={onMoveItem}
-          onUpdateItemInline={onUpdateItemInline}
-          visible={subActivitiesExpanded}
-        />
         {subActivityModalOpen ? (
           <SubActivityModal
             canEdit={canEdit}
@@ -1459,11 +1439,23 @@ function ActivityCell({
             onClose={() => setSubActivityModalOpen(false)}
             onDeleteItem={onDeleteItem}
             onEditItem={onEditItem}
-            onMoveItem={onMoveItem}
             onUpdateItemInline={onUpdateItemInline}
           />
         ) : null}
       </div>
+      <SubActivityList
+        canEdit={canEdit}
+        item={item}
+        itineraryLabels={itineraryLabels}
+        locale={locale}
+        selected={selected}
+        subItems={subItems}
+        onAddSubActivity={onAddSubActivity}
+        onDeleteItem={onDeleteItem}
+        onEditItem={onEditItem}
+        onUpdateItemInline={onUpdateItemInline}
+        visible={subActivitiesExpanded}
+      />
     </div>
   );
 }
@@ -1726,7 +1718,6 @@ function SubActivityModal({
   onClose,
   onDeleteItem,
   onEditItem,
-  onMoveItem,
   onUpdateItemInline,
   subItems,
 }: {
@@ -1739,7 +1730,6 @@ function SubActivityModal({
   onClose: () => void;
   onDeleteItem?: (itemId: string) => void;
   onEditItem?: (itemId: string) => void;
-  onMoveItem: (draggedItemId: string, targetItemId: string) => void;
   onUpdateItemInline?: (
     itemId: string,
     patch: InlineItineraryItemPatch,
@@ -1795,7 +1785,6 @@ function SubActivityModal({
             onAddSubActivity={onAddSubActivity}
             onDeleteItem={onDeleteItem}
             onEditItem={onEditItem}
-            onMoveItem={onMoveItem}
             onUpdateItemInline={onUpdateItemInline}
           />
         </div>
@@ -1817,7 +1806,6 @@ function SubActivityList({
   onAddSubActivity,
   onDeleteItem,
   onEditItem,
-  onMoveItem,
   onUpdateItemInline,
 }: {
   canEdit: boolean;
@@ -1831,7 +1819,6 @@ function SubActivityList({
   onAddSubActivity?: (parentItemId: string) => void | Promise<void>;
   onDeleteItem?: (itemId: string) => void;
   onEditItem?: (itemId: string) => void;
-  onMoveItem: (draggedItemId: string, targetItemId: string) => void;
   onUpdateItemInline?: (
     itemId: string,
     patch: InlineItineraryItemPatch,
@@ -1842,16 +1829,6 @@ function SubActivityList({
 
   if (presentation === "inline" && !visible) return null;
   if (subItems.length === 0 && !showAddSubActivity) return null;
-
-  function handleDrop(event: DragEvent<HTMLDivElement>, targetItem: ItineraryItem) {
-    event.preventDefault();
-    event.stopPropagation();
-    const draggedItemId = event.dataTransfer.getData("text/plain");
-    const draggedItem = subItems.find((subItem) => subItem.id === draggedItemId);
-    if (!draggedItem || draggedItem.id === targetItem.id) return;
-    if (draggedItem.parentItemId !== item.id || targetItem.parentItemId !== item.id) return;
-    onMoveItem(draggedItem.id, targetItem.id);
-  }
 
   return (
     <div
@@ -1865,23 +1842,8 @@ function SubActivityList({
         <div
           className={subActivityLineClassName}
           data-sub-item-id={subItem.id}
-          draggable={canEdit}
           key={subItem.id}
-          onDragOver={(event) => {
-            if (!canEdit) return;
-            event.preventDefault();
-          }}
-          onDragStart={(event) => {
-            if (!canEdit) return;
-            event.stopPropagation();
-            event.dataTransfer.effectAllowed = "move";
-            event.dataTransfer.setData("text/plain", subItem.id);
-          }}
-          onDrop={(event) => handleDrop(event, subItem)}
         >
-          <span className={subActivityDragClassName} aria-hidden="true">
-            <Icon name="drag" className="size-4" />
-          </span>
           <span className="max-[760px]:hidden">
             <ActivityTimeButton
               editable={editable}
@@ -1909,8 +1871,8 @@ function SubActivityList({
               }
             />
             {subItem.place ? (
-              <span className="inline-flex max-w-full items-baseline gap-1 pl-1 text-(--color-text-muted)">
-                <span>@</span>
+              <span className="flex min-w-0 items-baseline gap-1 text-(--color-text-muted)">
+                <span className="shrink-0 text-(--color-text-muted)">@</span>
                 <InlineActivityField
                   ariaLabel={itineraryLabels.row.inlinePlace({
                     activity: subItem.activity,

@@ -676,6 +676,10 @@ describe("SmartItineraryTable", () => {
       }),
     );
     expect(within(parentRow as HTMLElement).getByDisplayValue("Buy Octopus card")).toBeInTheDocument();
+    expect(parentRow?.querySelector(".sub-activity-list")).toHaveClass(
+      "col-start-2",
+      "col-span-2",
+    );
     expect(document.querySelector('[data-item-id="child-activity"]')).not.toBeInTheDocument();
 
     await user.click(
@@ -686,7 +690,7 @@ describe("SmartItineraryTable", () => {
     expect(onAddSubActivity).toHaveBeenCalledWith("parent-activity");
   });
 
-  it("reorders only sibling sub-activities within the same parent cell", () => {
+  it("renders sub-activities without inline drag and drop controls", () => {
     const onMoveItem = vi.fn();
     const parentA = {
       ...tripFixture.planItems[0],
@@ -766,22 +770,12 @@ describe("SmartItineraryTable", () => {
     expect(childA2Line).not.toBeNull();
     expect(childB1Line).not.toBeNull();
 
-    const sameParentDrag = createDragDataTransfer();
-    fireEvent.dragStart(childA1Line as HTMLElement, {
-      dataTransfer: sameParentDrag,
-    });
+    expect(childA1Line).not.toHaveAttribute("draggable", "true");
+    expect(childA2Line).not.toHaveAttribute("draggable", "true");
+    expect(childB1Line).not.toHaveAttribute("draggable", "true");
+    expect(childA1Line?.querySelector(".cursor-grab")).toBeNull();
     fireEvent.drop(childA2Line as HTMLElement, {
-      dataTransfer: sameParentDrag,
-    });
-    expect(onMoveItem).toHaveBeenCalledWith("child-a-1", "child-a-2");
-
-    onMoveItem.mockClear();
-    const crossParentDrag = createDragDataTransfer();
-    fireEvent.dragStart(childA1Line as HTMLElement, {
-      dataTransfer: crossParentDrag,
-    });
-    fireEvent.drop(childB1Line as HTMLElement, {
-      dataTransfer: crossParentDrag,
+      dataTransfer: createDragDataTransfer(),
     });
     expect(onMoveItem).not.toHaveBeenCalled();
   });
