@@ -128,6 +128,7 @@ export type InlineItineraryItemPatch = Partial<
     | "durationMinutes"
     | "activity"
     | "place"
+    | "details"
     | "activityType"
     | "isPlanBlock"
     | "itemKind"
@@ -169,7 +170,7 @@ const headerControlsGridClassName =
 const tripPlanFieldClassName =
   "grid min-w-0 gap-1 text-[11px] font-extrabold text-(--color-text-muted)";
 const tripPlanSelectClassName =
-  "min-h-10 w-full min-w-0 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-2.5 text-sm font-bold text-(--color-text) outline-none transition-[border-color,box-shadow] duration-150 focus:border-(--color-primary-border) focus:shadow-[0_0_0_2px_rgb(255_196_168_/_0.55)] disabled:cursor-not-allowed disabled:opacity-50";
+  "min-h-10 w-full min-w-0 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-2.5 text-sm font-bold text-(--color-text) outline-none transition-[border-color,box-shadow] duration-150 focus:border-(--color-route-border) focus:shadow-[0_0_0_2px_rgb(191_219_254_/_0.55)] disabled:cursor-not-allowed disabled:opacity-50";
 const tripPlanActionsClassName =
   "grid min-w-0 grid-cols-2 gap-2 max-[640px]:grid-cols-1";
 const tripPlanCreateFormClassName =
@@ -177,7 +178,7 @@ const tripPlanCreateFormClassName =
 const tripPlanNameFieldClassName =
   "grid min-w-0 gap-1 text-[11px] font-extrabold text-(--color-text-muted)";
 const tripPlanNameInputClassName =
-  "min-h-10 w-full min-w-0 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-2.5 text-sm font-bold text-(--color-text) outline-none placeholder:text-(--color-text-muted) focus:border-(--color-primary-border) focus:shadow-[0_0_0_2px_rgb(255_196_168_/_0.55)] disabled:cursor-not-allowed disabled:opacity-50";
+  "min-h-10 w-full min-w-0 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-2.5 text-sm font-bold text-(--color-text) outline-none placeholder:text-(--color-text-muted) focus:border-(--color-route-border) focus:shadow-[0_0_0_2px_rgb(191_219_254_/_0.55)] disabled:cursor-not-allowed disabled:opacity-50";
 const tripPlanButtonClassName =
   "min-h-10 rounded-(--radius-sm) px-3 text-xs font-extrabold";
 const tripPlanSecondaryButtonClassName =
@@ -214,7 +215,7 @@ const dayToggleClassName =
 const dayOrdinalClassName =
   "day-ordinal shrink-0 text-sm font-extrabold text-(--color-text)";
 const dayTitleInputClassName =
-  "day-title-input min-h-8 min-w-0 max-w-[260px] appearance-none rounded-none border-0 border-b border-solid border-transparent border-x-0 border-t-0 bg-transparent px-0.5 text-[13px] font-extrabold leading-5 text-(--color-text) outline-none shadow-none transition-[border-color,color,max-width] duration-150 placeholder:text-(--color-text-muted) hover:border-(--color-text-muted) hover:text-(--color-text) focus:max-w-[340px] focus:border-(--color-primary) focus:border-x-0 focus:border-t-0 focus:text-(--color-text) focus:outline-none focus:shadow-none focus-visible:border-x-0 focus-visible:border-t-0 focus-visible:outline-none focus-visible:shadow-none focus-visible:[box-shadow:none] disabled:pointer-events-none max-[767px]:max-w-[150px] max-[767px]:focus:max-w-[190px] max-[520px]:w-full max-[520px]:max-w-full max-[520px]:focus:max-w-full";
+  "day-title-input min-h-8 min-w-0 max-w-[260px] appearance-none rounded-none border-0 border-b border-solid border-transparent border-x-0 border-t-0 bg-transparent px-0.5 text-[13px] font-extrabold leading-5 text-(--color-text) outline-none shadow-none transition-[border-color,color,max-width] duration-150 placeholder:text-(--color-text-muted) hover:border-(--color-text-muted) hover:text-(--color-text) focus:max-w-[340px] focus:border-(--color-route) focus:border-x-0 focus:border-t-0 focus:text-(--color-text) focus:outline-none focus:shadow-none focus-visible:border-x-0 focus-visible:border-t-0 focus-visible:outline-none focus-visible:shadow-none focus-visible:[box-shadow:none] disabled:pointer-events-none max-[767px]:max-w-[150px] max-[767px]:focus:max-w-[190px] max-[520px]:w-full max-[520px]:max-w-full max-[520px]:focus:max-w-full";
 const dayDateClassName =
   "day-date inline-flex shrink-0 items-center gap-[7px] text-(--color-text-muted)";
 const dayRouteClassName =
@@ -250,9 +251,15 @@ const activityMainLineClassName =
 const activitySentenceClassName =
   "flex min-w-0 items-baseline gap-1 overflow-hidden whitespace-nowrap text-sm font-normal leading-5 text-(--color-text) max-[520px]:block max-[520px]:whitespace-normal";
 const activityTitleInputClassName =
-  "min-h-5 w-auto min-w-[8ch] max-w-[min(44ch,58%)] shrink-0 border-0 border-b border-transparent bg-transparent px-0 py-0 text-sm font-normal leading-5 text-(--color-text) outline-none transition-colors duration-150 [field-sizing:content] placeholder:text-(--color-text-muted) hover:not-disabled:border-(--color-border) focus:border-(--color-route) focus:ring-0 disabled:cursor-default disabled:border-transparent max-[520px]:w-full max-[520px]:max-w-full";
+  "min-h-5 w-full min-w-[8ch] max-w-full shrink-0 border-0 border-b border-transparent bg-transparent px-0 py-0 text-sm font-normal leading-5 text-(--color-text) outline-none transition-colors duration-150 [field-sizing:content] placeholder:text-(--color-text-muted) hover:not-disabled:border-(--color-border) focus:border-(--color-route) focus:ring-0 disabled:cursor-default disabled:border-transparent max-[520px]:w-full max-[520px]:max-w-full";
 const activityPlaceInputClassName =
   "inline-block min-h-5 min-w-[8ch] max-w-full flex-1 border-0 border-b border-transparent bg-transparent px-0 py-0 text-xs font-normal leading-5 text-(--color-text-muted) outline-none transition-colors duration-150 [field-sizing:content] placeholder:text-(--color-text-muted) hover:not-disabled:border-(--color-border) focus:border-(--color-route) focus:ring-0 disabled:cursor-default disabled:border-transparent";
+const activityRouteLineClassName =
+  "grid min-w-0 grid-cols-[auto_minmax(0,1fr)_auto_minmax(0,1fr)] items-baseline gap-x-1.5 gap-y-0 text-xs leading-5 text-(--color-text-muted) max-[520px]:grid-cols-[auto_minmax(0,1fr)]";
+const activityRouteLabelClassName =
+  "text-[10px] font-extrabold uppercase text-(--color-text-subtle)";
+const activityPlaceLineClassName =
+  "grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-baseline gap-1.5 text-xs leading-5 text-(--color-text-muted)";
 const activityMobilePlaceInputClassName =
   "min-h-5 w-full min-w-0 truncate border-0 border-b border-transparent bg-transparent px-0 py-0 text-xs font-semibold leading-5 text-(--color-text-muted) outline-none transition-colors duration-150 placeholder:text-(--color-text-muted) hover:not-disabled:border-(--color-border) focus:border-(--color-route) focus:ring-0 disabled:cursor-default disabled:border-transparent";
 const activityActionsClassName =
@@ -269,6 +276,8 @@ const activityTabletActionLayerClassName =
   "mt-1 hidden min-w-0 flex-wrap items-center justify-end gap-0.5 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-1 py-1 max-[1023px]:flex";
 const activityPillClassName =
   "inline-flex min-h-5 max-w-[148px] items-center gap-1 rounded-full border border-(--color-border) bg-(--color-surface-subtle) px-1.5 text-[11px] font-extrabold leading-4 text-(--color-text-muted)";
+const activityBookingButtonClassName =
+  "inline-flex min-h-5 max-w-[164px] items-center gap-1 rounded-full border border-(--color-route-border) bg-(--color-route-soft) px-1.5 text-[11px] font-extrabold leading-4 text-(--color-route) transition-colors duration-150 hover:border-(--color-primary-border) hover:bg-(--color-primary-soft) hover:text-(--color-primary-strong) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-focus) disabled:cursor-not-allowed disabled:opacity-50 [&_.icon]:size-3.5";
 const activityTypePickerClassName =
   "activity-type-picker !min-h-[52px] h-full w-full max-w-full shrink-0 items-start justify-start rounded-(--radius-sm) border-(--color-border) bg-(--color-surface-subtle) px-2 pt-1 text-left text-[11px] font-medium text-(--color-text-muted) hover:border-(--color-route-border) hover:bg-(--color-route-soft) hover:text-(--color-route) aria-[expanded=true]:border-(--color-route-border) aria-[expanded=true]:bg-(--color-route-soft) aria-[expanded=true]:text-(--color-route) max-[520px]:!min-h-7 max-[520px]:h-7 max-[520px]:px-1.5 max-[520px]:pt-0.5 [&_.icon]:size-3.5 [&_.inline-option-picker-caret]:hidden";
 const activityMobileLineClassName =
@@ -285,8 +294,6 @@ const subActivityLineClassName =
   "sub-activity-line relative grid min-w-0 grid-cols-[86px_minmax(0,1fr)_auto] items-center gap-1.5 rounded-(--radius-sm) px-1.5 py-1 text-xs leading-4 transition-colors duration-150 before:pointer-events-none before:absolute before:left-[-12px] before:top-[18px] before:h-px before:w-3 before:bg-(--color-route-border) hover:bg-(--color-surface-subtle) max-[760px]:grid-cols-[minmax(0,1fr)_auto]";
 const subActivityTextClassName =
   "sub-activity-text grid min-w-0 gap-0.5 text-xs font-normal leading-4 text-(--color-text)";
-const subActivityPlaceLineClassName =
-  "grid min-h-5 min-w-0 grid-cols-[10px_minmax(0,1fr)] items-baseline gap-1 text-(--color-text-muted)";
 const subActivityTitleInputClassName =
   "min-h-5 w-auto min-w-[8ch] max-w-full border-0 border-b border-transparent bg-transparent px-0 py-0 text-xs font-normal leading-4 text-(--color-text) outline-none transition-colors duration-150 [field-sizing:content] hover:not-disabled:border-(--color-border) focus:border-(--color-route) focus:ring-0 disabled:border-transparent";
 const subActivityActionsClassName =
@@ -332,7 +339,7 @@ const timeEditNextDayClassName =
 const timeEditModalFooterClassName =
   "flex items-center justify-end gap-2 border-t border-(--color-border) px-3 py-2.5";
 const inlineFieldClassName =
-  "inline-row-field min-h-[24px] w-full min-w-0 rounded-(--radius-sm) border border-transparent bg-transparent px-1.5 py-0 text-xs leading-4 text-(--color-text) outline-none transition-[background,border-color,box-shadow] duration-150 placeholder:text-(--color-text-muted) hover:not-read-only:border-(--color-border) hover:not-read-only:bg-(--color-surface) focus:border-(--color-primary-border) focus:bg-(--color-surface) focus:shadow-[0_0_0_2px_rgb(255_196_168_/_0.55)] read-only:cursor-pointer read-only:truncate read-only:px-0 read-only:font-semibold disabled:cursor-not-allowed disabled:text-(--color-text-muted)";
+  "inline-row-field min-h-[24px] w-full min-w-0 rounded-(--radius-sm) border border-transparent bg-transparent px-1.5 py-0 text-xs leading-4 text-(--color-text) outline-none transition-[background,border-color,box-shadow] duration-150 placeholder:text-(--color-text-muted) hover:not-read-only:border-(--color-border) hover:not-read-only:bg-(--color-surface) focus:border-(--color-route-border) focus:bg-(--color-surface) focus:shadow-[0_0_0_2px_rgb(191_219_254_/_0.55)] read-only:cursor-pointer read-only:truncate read-only:px-0 read-only:font-semibold disabled:cursor-not-allowed disabled:text-(--color-text-muted)";
 const inlineOptionPickerButtonClassName = cn(
   inlineFieldClassName,
   "inline-option-picker-button inline-flex !min-h-8 items-center justify-between gap-2 text-left font-semibold",
@@ -366,6 +373,7 @@ export function SmartItineraryTable({
   showAllPaths = false,
   tripName,
   onAddSubActivity,
+  onAddBookingForItem,
   onDeleteItem,
   onEditItem,
   onMoveItem,
@@ -891,6 +899,7 @@ export function SmartItineraryTable({
               onChangeDayPath={onChangeDayPath}
               onClearDayPath={onClearDayPath}
               onAddSubActivity={onAddSubActivity}
+              onAddBookingForItem={onAddBookingForItem}
               onDeleteItem={onDeleteItem}
               onEditItem={onEditItem}
               onMoveItem={onMoveItem}
@@ -924,6 +933,7 @@ function DayGroup({
   canEdit,
   collapsed,
   onAddSubActivity,
+  onAddBookingForItem,
   onChangeDayPath,
   onClearDayPath,
   onDeleteItem,
@@ -951,6 +961,10 @@ function DayGroup({
   canEdit: boolean;
   collapsed: boolean;
   onAddSubActivity?: (parentItemId: string) => void | Promise<void>;
+  onAddBookingForItem?: (
+    itemId: string,
+    template?: ItineraryBookingTemplate,
+  ) => string | void | Promise<string | void>;
   onChangeDayPath?: (day: string, pathId: string) => void;
   onClearDayPath?: (day: string) => void;
   onDeleteItem?: (itemId: string) => void;
@@ -1097,6 +1111,7 @@ function DayGroup({
                   selected={selectedItemId === item.id}
                   subItems={childItemsByParentId.get(item.id) ?? []}
                   onAddSubActivity={onAddSubActivity}
+                  onAddBookingForItem={onAddBookingForItem}
                   onDeleteItem={onDeleteItem}
                   onEditItem={onEditItem}
                   onOpenItemDetails={onOpenItemDetails}
@@ -1187,6 +1202,7 @@ function ActivityCell({
   selected,
   subItems,
   onAddSubActivity,
+  onAddBookingForItem,
   onDeleteItem,
   onEditItem,
   onOpenItemDetails,
@@ -1200,6 +1216,10 @@ function ActivityCell({
   selected: boolean;
   subItems: ItineraryItem[];
   onAddSubActivity?: (parentItemId: string) => void | Promise<void>;
+  onAddBookingForItem?: (
+    itemId: string,
+    template?: ItineraryBookingTemplate,
+  ) => string | void | Promise<string | void>;
   onDeleteItem?: (itemId: string) => void;
   onEditItem?: (itemId: string) => void;
   onOpenItemDetails: (itemId: string) => void;
@@ -1210,7 +1230,6 @@ function ActivityCell({
   ) => void | Promise<void>;
 }) {
   const editable = canEdit && Boolean(onUpdateItemInline);
-  const typeOptions = activityTypeOptions(locale);
   const status = item.status ? itemStatusLabel(item.status, locale) : null;
   const [subActivityModalOpen, setSubActivityModalOpen] = useState(false);
   const [subActivitiesExpanded, setSubActivitiesExpanded] = useState(false);
@@ -1351,7 +1370,7 @@ function ActivityCell({
           })}
           buttonClassName={activityMobileTypePickerClassName}
           disabled={!editable}
-          options={typeOptions}
+          options={activityTypeOptions(locale)}
           optionKeyPrefix={`activity-type-mobile-${item.id}`}
           value={item.activityType}
           onCommit={(activityType) =>
@@ -1362,20 +1381,13 @@ function ActivityCell({
         />
       </div>
       <div className={activityTypeRailClassName}>
-        <InlineOptionPicker
-          ariaLabel={itineraryLabels.row.inlineType({
-            activity: item.activity,
-          })}
+        <ActivityTypePicker
           buttonClassName={activityTypePickerClassName}
           disabled={!editable}
-          options={typeOptions}
-          optionKeyPrefix={`activity-type-${item.id}`}
-          value={item.activityType}
-          onCommit={(activityType) =>
-            onUpdateItemInline?.(item.id, {
-              activityType: activityType as ItineraryItem["activityType"],
-            })
-          }
+          item={item}
+          itineraryLabels={itineraryLabels}
+          locale={locale}
+          onUpdateItemInline={onUpdateItemInline}
         />
       </div>
       <div className={activityBodyClassName}>
@@ -1396,41 +1408,22 @@ function ActivityCell({
                 onUpdateItemInline?.(item.id, { activity: activity || item.activity })
               }
             />
-            <span
-              className="inline-flex w-[10px] shrink-0 justify-center text-xs font-bold text-(--color-text-muted) max-[520px]:hidden"
-              aria-hidden="true"
-            >
-              {item.place?.trim() ? "@" : ""}
-            </span>
-            <InlineActivityField
-              ariaLabel={itineraryLabels.row.inlinePlace({
-                activity: item.activity,
-              })}
-              autoSize
-              className={cn(activityPlaceInputClassName, "max-[520px]:hidden")}
-              disabled={!editable}
-              key={`${item.id}:place:${item.place}`}
-              maxLength={90}
-              placeholder=""
-              value={item.place}
-              onCommit={(place) => onUpdateItemInline?.(item.id, { place })}
-            />
           </div>
         </div>
-        <InlineActivityField
-          ariaLabel={itineraryLabels.row.inlinePlace({
-            activity: item.activity,
-          })}
-          className={activityMobilePlaceInputClassName}
-          disabled={!editable}
-          key={`${item.id}:mobile-place:${item.place}`}
-          maxLength={90}
-          placeholder=""
-          value={item.place}
-          onCommit={(place) => onUpdateItemInline?.(item.id, { place })}
+        <ActivityLocationLine
+          editable={editable}
+          item={item}
+          itineraryLabels={itineraryLabels}
+          onUpdateItemInline={onUpdateItemInline}
         />
         <div className={activityMobileLineClassName}>
           {status ? <span className={activityMobileStatusClassName}>{status}</span> : null}
+          <ItineraryBookingButton
+            item={item}
+            itineraryLabels={itineraryLabels}
+            locale={locale}
+            onAddBookingForItem={onAddBookingForItem}
+          />
           <button
             type="button"
             className={activityTabletActionsClassName}
@@ -1448,6 +1441,12 @@ function ActivityCell({
         <div className={activityMetaClassName}>
           <div className={activityMetaStatusClassName}>
             {status ? <span className={activityPillClassName}>{status}</span> : null}
+            <ItineraryBookingButton
+              item={item}
+              itineraryLabels={itineraryLabels}
+              locale={locale}
+              onAddBookingForItem={onAddBookingForItem}
+            />
             {item.durationMinutes ? (
               <span className={activityPillClassName}>
                 <Icon name="clock" className="size-3.5" />
@@ -1497,6 +1496,7 @@ function ActivityCell({
             onClose={() => setSubActivityModalOpen(false)}
             onDeleteItem={onDeleteItem}
             onEditItem={onEditItem}
+            onAddBookingForItem={onAddBookingForItem}
             onUpdateItemInline={onUpdateItemInline}
           />
         ) : null}
@@ -1509,12 +1509,182 @@ function ActivityCell({
         selected={selected}
         subItems={subItems}
         onAddSubActivity={onAddSubActivity}
+        onAddBookingForItem={onAddBookingForItem}
         onDeleteItem={onDeleteItem}
         onEditItem={onEditItem}
         onUpdateItemInline={onUpdateItemInline}
         visible={subActivitiesExpanded}
       />
     </div>
+  );
+}
+
+function ActivityTypePicker({
+  buttonClassName,
+  disabled,
+  item,
+  itineraryLabels,
+  locale,
+  onUpdateItemInline,
+}: {
+  buttonClassName?: string;
+  disabled?: boolean;
+  item: ItineraryItem;
+  itineraryLabels: Messages["itinerary"];
+  locale: Locale;
+  onUpdateItemInline?: (
+    itemId: string,
+    patch: InlineItineraryItemPatch,
+  ) => void | Promise<void>;
+}) {
+  const subtype = travelSubtypeForItem(item);
+  return (
+    <InlineOptionPicker
+      ariaLabel={itineraryLabels.row.inlineType({
+        activity: item.activity,
+      })}
+      buttonClassName={buttonClassName}
+      disabled={disabled}
+      options={activityTypeOptions(locale)}
+      optionKeyPrefix={`activity-type-${item.id}`}
+      selectedSubValue={subtype ?? undefined}
+      subOptionsByValue={{ travel: travelSubtypeOptions(locale) }}
+      value={item.activityType}
+      onCommit={(activityType) =>
+        onUpdateItemInline?.(item.id, {
+          activityType: activityType as ItineraryItem["activityType"],
+        })
+      }
+      onCommitSubOption={(activityType, mode) =>
+        onUpdateItemInline?.(item.id, {
+          activityType: activityType as ItineraryItem["activityType"],
+          details: {
+            ...(item.details ?? {}),
+            mode,
+          },
+        })
+      }
+    />
+  );
+}
+
+function ActivityLocationLine({
+  editable,
+  item,
+  itineraryLabels,
+  onUpdateItemInline,
+}: {
+  editable: boolean;
+  item: ItineraryItem;
+  itineraryLabels: Messages["itinerary"];
+  onUpdateItemInline?: (
+    itemId: string,
+    patch: InlineItineraryItemPatch,
+  ) => void | Promise<void>;
+}) {
+  if (item.activityType === "travel") {
+    const from = readItineraryDetailString(item.details, "from");
+    const to = readItineraryDetailString(item.details, "to") || item.place;
+    return (
+      <div className={activityRouteLineClassName}>
+        <span className={activityRouteLabelClassName}>From</span>
+        <InlineActivityField
+          ariaLabel={`Edit origin ${item.activity}`}
+          autoSize
+          className={activityPlaceInputClassName}
+          disabled={!editable}
+          key={`${item.id}:from:${from}`}
+          maxLength={90}
+          placeholder=""
+          value={from}
+          onCommit={(nextFrom) =>
+            onUpdateItemInline?.(item.id, {
+              details: {
+                ...(item.details ?? {}),
+                from: nextFrom,
+              },
+            })
+          }
+        />
+        <span className={cn(activityRouteLabelClassName, "max-[520px]:col-start-1")}>To</span>
+        <InlineActivityField
+          ariaLabel={itineraryLabels.row.inlinePlace({
+            activity: item.activity,
+          })}
+          autoSize
+          className={activityPlaceInputClassName}
+          disabled={!editable}
+          key={`${item.id}:to:${to}`}
+          maxLength={90}
+          placeholder=""
+          value={to}
+          onCommit={(nextTo) =>
+            onUpdateItemInline?.(item.id, {
+              place: nextTo,
+              details: {
+                ...(item.details ?? {}),
+                to: nextTo,
+              },
+            })
+          }
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className={activityPlaceLineClassName}>
+      <span className={activityRouteLabelClassName}>Place</span>
+      <InlineActivityField
+        ariaLabel={itineraryLabels.row.inlinePlace({
+          activity: item.activity,
+        })}
+        className={cn(activityMobilePlaceInputClassName, "max-[520px]:block")}
+        disabled={!editable}
+        key={`${item.id}:place:${item.place}`}
+        maxLength={90}
+        placeholder=""
+        value={item.place}
+        onCommit={(place) => onUpdateItemInline?.(item.id, { place })}
+      />
+    </div>
+  );
+}
+
+function ItineraryBookingButton({
+  item,
+  itineraryLabels,
+  locale,
+  onAddBookingForItem,
+}: {
+  item: ItineraryItem;
+  itineraryLabels: Messages["itinerary"];
+  locale: Locale;
+  onAddBookingForItem?: (
+    itemId: string,
+    template?: ItineraryBookingTemplate,
+  ) => string | void | Promise<string | void>;
+}) {
+  if (!onAddBookingForItem) return null;
+  const icon = bookingIconForItem(item);
+  const label = itineraryLabels.row.createBookingDraft({
+    activity: item.activity,
+    template: bookingTemplateLabel(item, locale),
+  });
+  return (
+    <button
+      type="button"
+      className={activityBookingButtonClassName}
+      aria-label={label}
+      title={label}
+      onClick={(event) => {
+        event.stopPropagation();
+        void onAddBookingForItem(item.id, bookingTemplateForItem(item));
+      }}
+    >
+      <Icon name={icon} />
+      <span className="min-w-0 truncate">{bookingTemplateLabel(item, locale)}</span>
+    </button>
   );
 }
 
@@ -1773,6 +1943,7 @@ function SubActivityModal({
   itineraryLabels,
   locale,
   onAddSubActivity,
+  onAddBookingForItem,
   onClose,
   onDeleteItem,
   onEditItem,
@@ -1785,6 +1956,10 @@ function SubActivityModal({
   locale: Locale;
   subItems: ItineraryItem[];
   onAddSubActivity?: (parentItemId: string) => void | Promise<void>;
+  onAddBookingForItem?: (
+    itemId: string,
+    template?: ItineraryBookingTemplate,
+  ) => string | void | Promise<string | void>;
   onClose: () => void;
   onDeleteItem?: (itemId: string) => void;
   onEditItem?: (itemId: string) => void;
@@ -1841,6 +2016,7 @@ function SubActivityModal({
             selected
             subItems={subItems}
             onAddSubActivity={onAddSubActivity}
+            onAddBookingForItem={onAddBookingForItem}
             onDeleteItem={onDeleteItem}
             onEditItem={onEditItem}
             onUpdateItemInline={onUpdateItemInline}
@@ -1862,6 +2038,7 @@ function SubActivityList({
   subItems,
   visible = true,
   onAddSubActivity,
+  onAddBookingForItem,
   onDeleteItem,
   onEditItem,
   onUpdateItemInline,
@@ -1875,6 +2052,10 @@ function SubActivityList({
   subItems: ItineraryItem[];
   visible?: boolean;
   onAddSubActivity?: (parentItemId: string) => void | Promise<void>;
+  onAddBookingForItem?: (
+    itemId: string,
+    template?: ItineraryBookingTemplate,
+  ) => string | void | Promise<string | void>;
   onDeleteItem?: (itemId: string) => void;
   onEditItem?: (itemId: string) => void;
   onUpdateItemInline?: (
@@ -1929,26 +2110,12 @@ function SubActivityList({
                 })
               }
             />
-            <span className={subActivityPlaceLineClassName}>
-              <span className="shrink-0 text-(--color-text-muted)" aria-hidden="true">
-                {subItem.place?.trim() ? "@" : ""}
-              </span>
-              <InlineActivityField
-                ariaLabel={itineraryLabels.row.inlinePlace({
-                  activity: subItem.activity,
-                })}
-                autoSize
-                className={cn(activityPlaceInputClassName, "!text-xs")}
-                disabled={!editable}
-                key={`${subItem.id}:place:${subItem.place}`}
-                maxLength={80}
-                placeholder=""
-                value={subItem.place}
-                onCommit={(place) =>
-                  onUpdateItemInline?.(subItem.id, { place })
-                }
-              />
-            </span>
+            <ActivityLocationLine
+              editable={editable}
+              item={subItem}
+              itineraryLabels={itineraryLabels}
+              onUpdateItemInline={onUpdateItemInline}
+            />
           </div>
           <div className={subActivityActionsClassName}>
             {subItem.mapLink ? (
@@ -1963,9 +2130,20 @@ function SubActivityList({
                 <Icon name="map" className="size-4" />
               </a>
             ) : null}
-            <span className={cn(activityPillClassName, "max-[760px]:hidden")}>
-              {activityTypeLabel(subItem.activityType, locale)}
-            </span>
+            <ItineraryBookingButton
+              item={subItem}
+              itineraryLabels={itineraryLabels}
+              locale={locale}
+              onAddBookingForItem={onAddBookingForItem}
+            />
+            <ActivityTypePicker
+              buttonClassName={cn(activityMobileTypePickerClassName, "!inline-flex !w-7 max-[520px]:!inline-flex")}
+              disabled={!editable}
+              item={subItem}
+              itineraryLabels={itineraryLabels}
+              locale={locale}
+              onUpdateItemInline={onUpdateItemInline}
+            />
             {onEditItem ? (
               <button
                 type="button"
@@ -2201,6 +2379,153 @@ function activityTypeOptions(locale: Locale): InlineOptionPickerOption[] {
   }));
 }
 
+type TravelSubtype =
+  | "flight"
+  | "train"
+  | "bus"
+  | "taxi"
+  | "ferry"
+  | "walk"
+  | "car"
+  | "shuttle";
+
+const travelSubtypes: TravelSubtype[] = [
+  "flight",
+  "train",
+  "bus",
+  "taxi",
+  "ferry",
+  "walk",
+  "car",
+  "shuttle",
+];
+
+const travelSubtypeIcons: Record<TravelSubtype, IconName> = {
+  bus: "bus",
+  car: "car",
+  ferry: "ship",
+  flight: "plane",
+  shuttle: "bus",
+  taxi: "car",
+  train: "train",
+  walk: "walk",
+};
+
+function travelSubtypeOptions(locale: Locale): InlineOptionPickerOption[] {
+  const labels: Record<Locale, Record<TravelSubtype, string>> = {
+    en: {
+      bus: "Bus",
+      car: "Car",
+      ferry: "Ferry",
+      flight: "Flight",
+      shuttle: "Shuttle",
+      taxi: "Taxi",
+      train: "Train",
+      walk: "Walk",
+    },
+    th: {
+      bus: "รถบัส",
+      car: "รถยนต์",
+      ferry: "เรือ",
+      flight: "เครื่องบิน",
+      shuttle: "รถรับส่ง",
+      taxi: "แท็กซี่",
+      train: "รถไฟ",
+      walk: "เดิน",
+    },
+  };
+  return travelSubtypes.map((type) => ({
+    icon: travelSubtypeIcons[type],
+    label: labels[locale][type],
+    value: type,
+  }));
+}
+
+function readItineraryDetailString(
+  details: ItineraryItem["details"] | null | undefined,
+  key: string,
+): string {
+  const value = details?.[key];
+  return typeof value === "string" ? value.trim() : "";
+}
+
+function normalizeTravelSubtype(value: string | null | undefined): TravelSubtype | null {
+  const normalized = value?.trim().toLowerCase().replace(/[^a-z]+/g, "_");
+  if (!normalized) return null;
+  if (normalized === "plane" || normalized === "airline") return "flight";
+  if (normalized === "rail" || normalized === "mtr") return "train";
+  if (normalized === "boat" || normalized === "ship") return "ferry";
+  if (normalized === "walking") return "walk";
+  return travelSubtypes.includes(normalized as TravelSubtype)
+    ? (normalized as TravelSubtype)
+    : null;
+}
+
+function travelSubtypeForItem(item: ItineraryItem): TravelSubtype | null {
+  if (item.activityType !== "travel") return null;
+  const mode = readItineraryDetailString(item.details, "mode");
+  const explicitMode = normalizeTravelSubtype(mode);
+  if (explicitMode) return explicitMode;
+  const haystack = `${item.transportation} ${item.activity}`.toLowerCase();
+  if (/\bflight\b|\bplane\b|\bairline\b|เครื่องบิน|สายการบิน|(^|\s)บิน/.test(haystack))
+    return "flight";
+  if (/\btrain\b|\brail\b|\bmtr\b|รถไฟ|ราง|สถานีรถไฟ/.test(haystack)) return "train";
+  if (/\bbus\b|รถบัส|บัส/.test(haystack)) return "bus";
+  if (/\btaxi\b|แท็กซี่/.test(haystack)) return "taxi";
+  if (/\bferry\b|\bboat\b|เรือ|เฟอร์รี่/.test(haystack)) return "ferry";
+  if (/\bwalk\b|\bwalking\b|เดิน/.test(haystack)) return "walk";
+  if (/\bshuttle\b|รถรับส่ง/.test(haystack)) return "shuttle";
+  if (/\bcar\b|\bdrive\b|รถยนต์/.test(haystack)) return "car";
+  return null;
+}
+
+function bookingIconForItem(item: ItineraryItem): IconName {
+  if (item.activityType === "travel") {
+    const subtype = travelSubtypeForItem(item);
+    return subtype ? travelSubtypeIcons[subtype] : "route";
+  }
+  if (item.activityType === "stay") return "home";
+  if (item.activityType === "food") return "utensils";
+  if (item.activityType === "shopping") return "wallet";
+  if (item.activityType === "attraction" || item.activityType === "experience")
+    return "ticket";
+  return "document";
+}
+
+function bookingTemplateForItem(item: ItineraryItem): ItineraryBookingTemplate {
+  const subtype = travelSubtypeForItem(item);
+  if (subtype === "flight") return "flight";
+  if (subtype === "train") return "train";
+  if (item.activityType === "stay") return "hotel";
+  if (item.activityType === "attraction" || item.activityType === "experience")
+    return "activity_ticket";
+  return "recommended";
+}
+
+function bookingTemplateLabel(item: ItineraryItem, locale: Locale): string {
+  const subtype = travelSubtypeForItem(item);
+  if (subtype) {
+    return travelSubtypeOptions(locale).find((option) => option.value === subtype)?.label ?? subtype;
+  }
+  const labels: Record<Locale, Record<ItineraryBookingTemplate, string>> = {
+    en: {
+      activity_ticket: "Ticket",
+      flight: "Flight",
+      hotel: "Hotel",
+      recommended: "Booking",
+      train: "Train",
+    },
+    th: {
+      activity_ticket: "ตั๋ว",
+      flight: "เครื่องบิน",
+      hotel: "ที่พัก",
+      recommended: "การจอง",
+      train: "รถไฟ",
+    },
+  };
+  return labels[locale][bookingTemplateForItem(item)];
+}
+
 function itemStatusLabel(
   status: NonNullable<ItineraryItem["status"]>,
   locale: Locale,
@@ -2397,20 +2722,27 @@ function InlineOptionPicker({
   buttonClassName,
   disabled,
   onCommit,
+  onCommitSubOption,
   optionKeyPrefix = "option",
   options,
+  selectedSubValue,
+  subOptionsByValue,
   value,
 }: {
   ariaLabel: string;
   buttonClassName?: string;
   disabled?: boolean;
   onCommit: (value: string) => void | Promise<void>;
+  onCommitSubOption?: (value: string, subValue: string) => void | Promise<void>;
   optionKeyPrefix?: string;
   options: InlineOptionPickerOption[];
+  selectedSubValue?: string;
+  subOptionsByValue?: Record<string, InlineOptionPickerOption[]>;
   value: string;
 }) {
   const buttonRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  const sideMenuRef = useRef<HTMLDivElement>(null);
   const selectedIndex = Math.max(
     0,
     options.findIndex((option) => option.value === value),
@@ -2424,6 +2756,22 @@ function InlineOptionPicker({
   }>({ left: 0, top: 0, width: 180 });
   const selectedOption =
     options.find((option) => option.value === value) ?? options[0];
+  const activeOption = options[activeIndex] ?? selectedOption;
+  const activeSubOptions = activeOption
+    ? subOptionsByValue?.[activeOption.value] ?? []
+    : [];
+  const hasSideMenu = open && activeSubOptions.length > 0 && Boolean(onCommitSubOption);
+  const sideMenuTop = Math.min(
+    Math.max(8, position.top + activeIndex * 34),
+    Math.max(8, typeof window === "undefined" ? position.top : window.innerHeight - Math.min(260, activeSubOptions.length * 34 + 8) - 8),
+  );
+  const sideMenuLeft =
+    typeof window === "undefined"
+      ? position.left + position.width + 6
+      : Math.min(
+          position.left + position.width + 6,
+          Math.max(8, window.innerWidth - Math.max(position.width, 180) - 8),
+        );
 
   useEffect(() => {
     if (!open) return;
@@ -2462,7 +2810,8 @@ function InlineOptionPicker({
       if (!target) return;
       if (
         buttonRef.current?.contains(target) ||
-        menuRef.current?.contains(target)
+        menuRef.current?.contains(target) ||
+        sideMenuRef.current?.contains(target)
       )
         return;
       setOpen(false);
@@ -2488,6 +2837,12 @@ function InlineOptionPicker({
 
   function commitOption(option: InlineOptionPickerOption) {
     if (option.value !== value) void onCommit(option.value);
+    setOpen(false);
+    buttonRef.current?.focus();
+  }
+
+  function commitSubOption(parentOption: InlineOptionPickerOption, option: InlineOptionPickerOption) {
+    void onCommitSubOption?.(parentOption.value, option.value);
     setOpen(false);
     buttonRef.current?.focus();
   }
@@ -2529,65 +2884,109 @@ function InlineOptionPicker({
       </button>
       {open
         ? createPortal(
-            <div
-              ref={menuRef}
-              className={floatingOptionMenuClassName}
-              role="listbox"
-              aria-label={ariaLabel}
-              aria-activedescendant={`${optionKeyPrefix}-${options[activeIndex]?.value ?? value}`}
-              style={{
-                left: position.left,
-                top: position.top,
-                width: position.width,
-              }}
-              tabIndex={-1}
-              onKeyDown={(event) => {
-                if (event.key === "Escape") {
-                  event.preventDefault();
-                  setOpen(false);
-                  buttonRef.current?.focus();
-                }
-                if (event.key === "ArrowDown") {
-                  event.preventDefault();
-                  setActiveIndex((current) =>
-                    Math.min(options.length - 1, current + 1),
-                  );
-                }
-                if (event.key === "ArrowUp") {
-                  event.preventDefault();
-                  setActiveIndex((current) => Math.max(0, current - 1));
-                }
-                if (event.key === "Enter") {
-                  event.preventDefault();
-                  const option = options[activeIndex];
-                  if (option) commitOption(option);
-                }
-              }}
-            >
-              {options.map((option, index) => (
+            <>
+              <div
+                ref={menuRef}
+                className={floatingOptionMenuClassName}
+                role="listbox"
+                aria-label={ariaLabel}
+                aria-activedescendant={`${optionKeyPrefix}-${options[activeIndex]?.value ?? value}`}
+                style={{
+                  left: position.left,
+                  top: position.top,
+                  width: position.width,
+                }}
+                tabIndex={-1}
+                onKeyDown={(event) => {
+                  if (event.key === "Escape") {
+                    event.preventDefault();
+                    setOpen(false);
+                    buttonRef.current?.focus();
+                  }
+                  if (event.key === "ArrowDown") {
+                    event.preventDefault();
+                    setActiveIndex((current) =>
+                      Math.min(options.length - 1, current + 1),
+                    );
+                  }
+                  if (event.key === "ArrowUp") {
+                    event.preventDefault();
+                    setActiveIndex((current) => Math.max(0, current - 1));
+                  }
+                  if (event.key === "ArrowRight" && activeSubOptions.length > 0 && activeOption) {
+                    event.preventDefault();
+                    commitSubOption(activeOption, activeSubOptions[0]);
+                  }
+                  if (event.key === "Enter") {
+                    event.preventDefault();
+                    const option = options[activeIndex];
+                    if (option) commitOption(option);
+                  }
+                }}
+              >
+                {options.map((option, index) => (
+                  <div
+                    className={floatingOptionButtonClassName}
+                    role="option"
+                    aria-selected={option.value === value}
+                    data-active={index === activeIndex ? "true" : undefined}
+                    id={`${optionKeyPrefix}-${option.value}`}
+                    tabIndex={-1}
+                    key={`${optionKeyPrefix}-${option.value}`}
+                    onMouseEnter={() => setActiveIndex(index)}
+                    onFocus={() => setActiveIndex(index)}
+                    onClick={() => commitOption(option)}
+                  >
+                    <span className="flex min-w-0 items-center gap-2">
+                      {option.icon ? (
+                        <Icon name={option.icon} className="size-3.5" />
+                      ) : null}
+                      <span className="min-w-0 truncate">{option.label}</span>
+                    </span>
+                    <span aria-hidden="true">
+                      {subOptionsByValue?.[option.value]?.length
+                        ? "›"
+                        : option.value === value
+                          ? "✓"
+                          : ""}
+                    </span>
+                  </div>
+                ))}
+              </div>
+              {hasSideMenu && activeOption ? (
                 <div
-                  className={floatingOptionButtonClassName}
-                  role="option"
-                  aria-selected={option.value === value}
-                  data-active={index === activeIndex ? "true" : undefined}
-                  id={`${optionKeyPrefix}-${option.value}`}
-                  tabIndex={-1}
-                  key={`${optionKeyPrefix}-${option.value}`}
-                  onMouseEnter={() => setActiveIndex(index)}
-                  onClick={() => commitOption(option)}
+                  ref={sideMenuRef}
+                  className={cn(floatingOptionMenuClassName, "w-[180px]")}
+                  role="listbox"
+                  aria-label={`${activeOption.label} options`}
+                  style={{
+                    left: sideMenuLeft,
+                    top: sideMenuTop,
+                    width: Math.max(position.width, 180),
+                  }}
                 >
-                  <span className="flex min-w-0 items-center gap-2">
-                    {option.icon ? (
-                      <Icon name={option.icon} className="size-3.5" />
-                    ) : null}
-                    <span className="min-w-0 truncate">{option.label}</span>
-                  </span>
-                  <span aria-hidden="true">
-                    {option.value === value ? "✓" : ""}
-                  </span>
+                  {activeSubOptions.map((option) => (
+                    <button
+                      type="button"
+                      className={floatingOptionButtonClassName}
+                      data-active={option.value === selectedSubValue ? "true" : undefined}
+                      key={`${optionKeyPrefix}-${activeOption.value}-${option.value}`}
+                      onClick={() => commitSubOption(activeOption, option)}
+                    >
+                      <span className="flex min-w-0 items-center gap-2">
+                        {option.icon ? (
+                          <Icon name={option.icon} className="size-3.5" />
+                        ) : null}
+                        <span className="min-w-0 truncate">{option.label}</span>
+                      </span>
+                      <span aria-hidden="true">
+                        {option.value === selectedSubValue ? "✓" : ""}
+                      </span>
+                    </button>
+                  ))}
                 </div>
-              ))}
-            </div>,
+              ) : null}
+            </>,
             document.body,
           )
         : null}

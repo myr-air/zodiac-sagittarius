@@ -16,7 +16,7 @@ const stripClassName =
 const rowClassName =
   "weather-forecast-row flex min-w-0 gap-6 overflow-x-auto whitespace-nowrap pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden max-[767px]:gap-3 max-[767px]:snap-x max-[767px]:snap-mandatory";
 const segmentClassName =
-  "weather-forecast-segment grid min-w-[72px] cursor-pointer gap-2 border-0 bg-transparent p-0 text-center font-inherit text-(--color-text) transition-[opacity,transform,filter] duration-200 hover:-translate-y-0.5 hover:opacity-95 focus-visible:outline focus-visible:outline-3 focus-visible:outline-offset-4 focus-visible:outline-[rgb(194_79_22_/_0.24)] max-[767px]:w-[106px] max-[767px]:shrink-0 max-[767px]:snap-center";
+  "weather-forecast-segment grid min-w-[72px] cursor-pointer gap-2 border-0 bg-transparent p-0 text-center font-inherit text-(--color-text) transition-[opacity,transform,filter] duration-200 hover:-translate-y-0.5 hover:opacity-95 focus-visible:outline focus-visible:outline-3 focus-visible:outline-offset-4 focus-visible:outline-[rgb(191_219_254_/_0.72)] max-[767px]:w-[106px] max-[767px]:shrink-0 max-[767px]:snap-center";
 const selectedClassName = "weather-forecast-segment--selected drop-shadow-[0_10px_18px_rgb(194_79_22_/_0.18)]";
 const dayClassName = "text-[12px] font-black leading-4 inline-flex min-h-6 items-center justify-center rounded-full border border-(--color-border) bg-(--color-surface-subtle) px-2";
 const iconClassName = "weather-forecast-icon text-[30px] leading-none";

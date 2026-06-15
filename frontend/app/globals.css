@@ -235,9 +235,14 @@ button:disabled,
 }
 
 :where(button, a, input, select, textarea):focus-visible {
-  outline: 3px solid color-mix(in srgb, var(--color-primary) 75%, white);
+  outline: 3px solid color-mix(in srgb, var(--color-route) 64%, white);
   outline-offset: 2px;
-  box-shadow: 0 0 0 5px rgb(194 79 22 / 0.15);
+  box-shadow: 0 0 0 5px rgb(191 219 254 / 0.42);
+}
+
+:where(input, select, textarea):focus,
+:where(input, select, textarea):focus-visible {
+  border-color: var(--color-route-border);
 }
 
 .activity-time-button:focus-visible {

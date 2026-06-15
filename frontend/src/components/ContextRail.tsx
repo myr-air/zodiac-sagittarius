@@ -122,9 +122,9 @@ const bookingTaskClassName =
 const bookingDocClassName =
   "stop-booking-doc grid gap-1 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) px-2.5 py-[9px] text-xs [&_strong]:font-extrabold [&_strong]:leading-4 [&_strong]:text-(--color-text) [&_span]:text-[11px] [&_span]:font-bold [&_span]:leading-4 [&_span]:text-(--color-text-muted)";
 const bookingDocTypeSelectClassName =
-  "min-h-8 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-2 text-[11px] font-extrabold text-(--color-text) outline-none focus:border-(--color-primary-border) focus:shadow-[0_0_0_2px_rgb(255_196_168_/_0.55)] disabled:cursor-not-allowed disabled:opacity-60";
+  "min-h-8 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-2 text-[11px] font-extrabold text-(--color-text) outline-none focus:border-(--color-route-border) focus:shadow-[0_0_0_2px_rgb(191_219_254_/_0.55)] disabled:cursor-not-allowed disabled:opacity-60";
 const bookingDocQuickFieldClassName =
-  "min-h-8 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-2 text-[11px] font-bold text-(--color-text) outline-none placeholder:text-(--color-text-muted) focus:border-(--color-primary-border) focus:shadow-[0_0_0_2px_rgb(255_196_168_/_0.55)] disabled:cursor-not-allowed disabled:opacity-60";
+  "min-h-8 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-2 text-[11px] font-bold text-(--color-text) outline-none placeholder:text-(--color-text-muted) focus:border-(--color-route-border) focus:shadow-[0_0_0_2px_rgb(191_219_254_/_0.55)] disabled:cursor-not-allowed disabled:opacity-60";
 const bookingTaskLabelClassName =
   "inline-flex min-w-0 items-center gap-2 [&_input]:size-[15px] [&_input]:accent-[var(--color-primary)] [&_span]:text-xs [&_span]:font-extrabold [&_span]:leading-4 [&_span]:text-(--color-text)";
 const bookingTaskMetaClassName =

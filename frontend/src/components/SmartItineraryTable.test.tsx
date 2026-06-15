@@ -638,6 +638,92 @@ describe("SmartItineraryTable", () => {
     });
   });
 
+  it("shows travel from/to details and creates booking drafts from the mode icon", async () => {
+    const user = userEvent.setup();
+    const onAddBookingForItem = vi.fn();
+    const item = {
+      ...tripFixture.planItems[0],
+      id: "travel-flight-row",
+      activity: "Airport transfer",
+      activityType: "travel" as const,
+      place: "HKG",
+      transportation: "",
+      details: {
+        ...tripFixture.planItems[0].details,
+        from: "BKK",
+        mode: "flight",
+        to: "HKG",
+      },
+    };
+
+    renderTable({
+      items: [item],
+      graphItems: [item],
+      selectedItemId: item.id,
+      onAddBookingForItem,
+    });
+
+    const row = document.querySelector<HTMLTableRowElement>(
+      '[data-item-id="travel-flight-row"]',
+    );
+    expect(row).not.toBeNull();
+    expect(row).toHaveTextContent("From");
+    expect(row).toHaveTextContent("To");
+    expect(row).not.toHaveTextContent("@");
+    expect(within(row as HTMLElement).getByDisplayValue("BKK")).toBeInTheDocument();
+    expect(within(row as HTMLElement).getByDisplayValue("HKG")).toBeInTheDocument();
+
+    await user.click(
+      within(row as HTMLElement).getAllByRole("button", {
+        name: /สร้าง booking draft แบบ เครื่องบิน สำหรับ Airport transfer/i,
+      })[0],
+    );
+
+    expect(onAddBookingForItem).toHaveBeenCalledWith("travel-flight-row", "flight");
+  });
+
+  it("opens travel sub-type options from the type picker and stores the selected mode", async () => {
+    const user = userEvent.setup();
+    const onUpdateItemInline = vi.fn();
+    const item = {
+      ...tripFixture.planItems[0],
+      id: "travel-subtype-row",
+      activity: "Hotel transfer",
+      activityType: "travel" as const,
+      details: {
+        ...tripFixture.planItems[0].details,
+        mode: "bus",
+      },
+    };
+
+    renderTable({
+      items: [item],
+      graphItems: [item],
+      selectedItemId: item.id,
+      onUpdateItemInline,
+    });
+
+    const row = document.querySelector<HTMLTableRowElement>(
+      '[data-item-id="travel-subtype-row"]',
+    );
+    expect(row).not.toBeNull();
+    const typeButton = within(row as HTMLElement)
+      .getAllByRole("button", { name: /แก้ไขประเภท Hotel transfer/i })
+      .find((button) => button.className.includes("activity-type-picker "));
+    expect(typeButton).toBeDefined();
+
+    await user.click(typeButton as HTMLElement);
+    expect(screen.getByRole("listbox", { name: /แก้ไขประเภท Hotel transfer/i })).toBeInTheDocument();
+    expect(screen.getByRole("listbox", { name: /เดินทาง options/i })).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: /แท็กซี่/i }));
+
+    expect(onUpdateItemInline).toHaveBeenCalledWith("travel-subtype-row", {
+      activityType: "travel",
+      details: expect.objectContaining({ mode: "taxi" }),
+    });
+  });
+
   it("renders sub-activities inside their parent activity cell", async () => {
     const user = userEvent.setup();
     const onAddSubActivity = vi.fn();
@@ -663,6 +749,7 @@ describe("SmartItineraryTable", () => {
       id: "child-without-place",
       parentItemId: "parent-activity",
       activity: "Check stored value",
+      activityType: "food" as const,
       place: "",
       day: "2026-06-19",
       sortOrder: 12,

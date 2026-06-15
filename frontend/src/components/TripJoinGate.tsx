@@ -336,7 +336,7 @@ export function TripJoinGate({ trip, apiClient, embedded = false, variant = "def
               <button
                 type="button"
                 className={cn(
-                  "inline-flex w-fit items-center gap-1.5 rounded-full border border-(--color-border) bg-(--color-surface) px-3.5 py-1.5 text-xs font-[850] text-(--color-text-muted) transition-all duration-150 hover:bg-(--color-primary-soft) hover:text-(--color-primary-strong) hover:border-(--color-primary-border) hover:shadow-[0_8px_18px_rgb(194_79_22_/_0.08)] focus-visible:bg-(--color-primary-soft) focus-visible:text-(--color-primary-strong) focus-visible:border-(--color-primary-border)"
+                  "inline-flex w-fit items-center gap-1.5 rounded-full border border-(--color-border) bg-(--color-surface) px-3.5 py-1.5 text-xs font-[850] text-(--color-text-muted) transition-all duration-150 hover:bg-(--color-primary-soft) hover:text-(--color-primary-strong) hover:border-(--color-primary-border) hover:shadow-[0_8px_18px_rgb(194_79_22_/_0.08)] focus-visible:bg-(--color-route-soft) focus-visible:text-(--color-route) focus-visible:border-(--color-route-border)"
                 )}
                 onClick={() => setStep('room')}
               >
