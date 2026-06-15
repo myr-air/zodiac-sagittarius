@@ -478,6 +478,7 @@ describe("SmartItineraryTable", () => {
     const titleInput = screen.getByLabelText("Trip day title for Day 2");
     expect(titleInput).toHaveAttribute("maxLength", "48");
     expect(titleInput).toHaveValue("Old title");
+    expect(titleInput).toHaveClass("border-transparent", "text-[13px]", "font-extrabold");
     await user.clear(titleInput);
     await user.type(titleInput, "Shenzhen border hop");
     await user.tab();

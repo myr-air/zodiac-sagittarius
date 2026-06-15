@@ -174,6 +174,9 @@ describe("Calm Travel Ops CSS contract", () => {
     expect(smartTableSource).toContain("max-[520px]:order-3");
     expect(smartTableSource).toContain("max-[520px]:order-4 max-[520px]:basis-full");
     expect(smartTableSource).toContain("max-[520px]:w-full max-[520px]:max-w-full");
+    expect(smartTableSource).toContain("max-[520px]:hidden");
+    expect(css).toMatch(/\.day-title-input,[\s\S]*?font-size:\s*13px;/);
+    expect(css).toMatch(/\.day-title-input,[\s\S]*?font-weight:\s*800;/);
   });
 
 });

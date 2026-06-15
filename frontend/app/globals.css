@@ -250,6 +250,9 @@ button:disabled,
 .day-title-input:focus,
 .day-title-input:focus-visible {
   appearance: none;
+  color: var(--color-text);
+  font-size: 13px;
+  font-weight: 800;
   outline: 0 !important;
   outline-offset: 0 !important;
   box-shadow: none !important;
