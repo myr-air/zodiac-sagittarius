@@ -13,8 +13,11 @@ interface PageHeaderProps {
   motif?: ReactNode;
 }
 
-const pageHeaderClassName = "page-header relative isolate mb-3 flex min-h-[92px] min-w-0 items-center justify-between justify-self-stretch gap-4 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) px-4 py-3.5 shadow-[0_1px_0_rgb(15_23_42_/_0.04)] max-[1199px]:mb-0 max-[1199px]:min-h-[88px] max-[1199px]:flex-col max-[1199px]:items-start max-[1199px]:rounded-none max-[1199px]:border-x-0 max-[1199px]:border-t-0 max-[1199px]:px-4 max-[1199px]:shadow-none max-[767px]:hidden";
+const pageHeaderClassName = "page-header relative isolate mb-3 flex min-h-[92px] min-w-0 items-center justify-between justify-self-stretch gap-4 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) px-4 py-3.5 shadow-[0_1px_0_rgb(15_23_42_/_0.04)] max-[1199px]:mb-0 max-[1199px]:grid max-[1199px]:min-h-[84px] max-[1199px]:items-center max-[1199px]:gap-3 max-[1199px]:rounded-none max-[1199px]:border-x-0 max-[1199px]:border-t-0 max-[1199px]:px-4 max-[1199px]:py-3 max-[1199px]:shadow-none max-[767px]:hidden";
+const pageHeaderWithAsideClassName = "max-[1199px]:grid-cols-[minmax(0,1fr)_minmax(180px,260px)]";
+const pageHeaderWithoutAsideClassName = "max-[1199px]:grid-cols-1";
 const pageHeaderCopyClassName = "page-header-copy relative z-[1] grid min-w-0 gap-1";
+const pageHeaderAsideClassName = "page-header-aside relative z-[2] min-w-0 justify-self-end max-[1199px]:w-full max-[1199px]:justify-self-stretch";
 const eyebrowClassName = "eyebrow m-0 inline-flex w-fit items-center rounded-full border border-(--color-primary-border) bg-(--color-primary-soft) px-2.5 py-0.5 text-xs font-black leading-4 text-(--color-primary-strong)";
 const titleClassName = "m-0 text-[24px] font-black leading-[31px] text-(--color-text) [text-wrap:balance] max-[1199px]:text-[21px] max-[1199px]:leading-[28px]";
 const subtitleClassName = "m-0 text-sm font-bold leading-5 text-(--color-text-muted) max-[767px]:hidden";
@@ -29,7 +32,7 @@ const userLabelClassName = "text-xs text-(--color-text-muted)";
 
 export function PageHeader({ allowOverflow = false, eyebrow, title, subtitle, description, meta, aside, motif }: PageHeaderProps) {
   return (
-    <header className={cn(pageHeaderClassName, allowOverflow ? "z-[40] overflow-visible" : "overflow-hidden")}>
+    <header className={cn(pageHeaderClassName, aside ? pageHeaderWithAsideClassName : pageHeaderWithoutAsideClassName, allowOverflow ? "z-[40] overflow-visible" : "overflow-hidden")}>
       <div className={pageHeaderCopyClassName}>
         {eyebrow ? <p className={eyebrowClassName}>{eyebrow}</p> : null}
         <h1 className={titleClassName}>{title}</h1>
@@ -38,7 +41,7 @@ export function PageHeader({ allowOverflow = false, eyebrow, title, subtitle, de
         {meta ? <div className={metaClassName}>{meta}</div> : null}
       </div>
       {motif ? <div className={motifClassName}>{motif}</div> : null}
-      {aside}
+      {aside ? <div className={pageHeaderAsideClassName}>{aside}</div> : null}
     </header>
   );
 }

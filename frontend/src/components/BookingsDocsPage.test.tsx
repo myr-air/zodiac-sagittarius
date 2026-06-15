@@ -18,11 +18,11 @@ describe("BookingsDocsPage", () => {
 
     expect(screen.getByRole("region", { name: "Bookings & Docs" })).toHaveClass("bookings-docs-page", "bg-transparent");
     expect(document.querySelector(".page-header")).toHaveClass("page-header", "bg-(--color-surface)", "max-[1199px]:rounded-none", "max-[767px]:hidden");
-    expect(document.querySelector(".booking-docs-header-actions")).toHaveClass("max-[1199px]:w-full", "max-[1199px]:justify-items-stretch");
+    expect(document.querySelector(".booking-docs-header-actions")).toHaveClass("flex", "items-center", "justify-end");
     expect(screen.getByRole("heading", { name: "Bookings & Docs" })).toHaveClass("text-[24px]", "max-[1199px]:text-[21px]");
     expect(screen.getByText("Hong Kong + Shenzhen Trip")).toHaveClass("max-[767px]:hidden");
-    expect(screen.getByText("Demo Traveler")).toBeInTheDocument();
-    expect(screen.getByText("Can edit bookings")).toBeInTheDocument();
+    expect(screen.queryByText("Demo Traveler")).not.toBeInTheDocument();
+    expect(screen.queryByText("Can edit bookings")).not.toBeInTheDocument();
     expect(document.querySelector(".booking-folder-rail")).toHaveClass("shadow-[0_1px_0_rgb(15_23_42_/_0.04)]");
     expect(document.querySelector(".bookings-file-panel")).toHaveClass("shadow-[0_1px_0_rgb(15_23_42_/_0.04)]");
     expect(document.querySelector(".booking-inspector")).toHaveClass("shadow-[0_1px_0_rgb(15_23_42_/_0.04)]");

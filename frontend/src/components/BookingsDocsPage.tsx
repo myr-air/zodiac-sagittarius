@@ -8,7 +8,7 @@ import type { Locale } from "@/src/i18n/types";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
 import { Icon } from "./icons";
-import { formatTripRange, PageHeader, PageUserCard } from "./PageHeader";
+import { formatTripRange, PageHeader } from "./PageHeader";
 import { Button, IconButton } from "./ui";
 import { DateTimePickerField } from "./DateTimePickers";
 
@@ -68,8 +68,8 @@ const bookingFolders: Array<{
 ];
 
 const pageClassName = "bookings-docs-page grid min-h-full min-w-0 grid-rows-[auto_minmax(0,1fr)] gap-3 bg-transparent px-6 py-[22px] pb-7 max-[1199px]:gap-0 max-[1199px]:px-0 max-[1199px]:py-0 max-[1199px]:pb-0 max-[767px]:h-[calc(100dvh-48px)] max-[767px]:min-h-[calc(100dvh-48px)] max-[767px]:grid-rows-[minmax(0,1fr)] max-[767px]:overflow-hidden";
-const headerAsideClassName = "booking-docs-header-actions relative z-[1] grid min-w-0 gap-2 justify-items-end max-[1199px]:w-full max-[1199px]:justify-items-stretch";
-const headerActionRowClassName = "flex min-w-0 flex-wrap items-center justify-end gap-2 max-[1199px]:justify-start";
+const headerAsideClassName = "booking-docs-header-actions flex min-w-0 items-center justify-end gap-2";
+const headerActionRowClassName = "flex min-w-0 flex-wrap items-center justify-end gap-2 max-[1199px]:justify-end";
 const mobileAddButtonClassName = "bookings-mobile-add-button !hidden max-[767px]:!fixed max-[767px]:right-[60px] max-[767px]:top-1.5 max-[767px]:z-[45] max-[767px]:!inline-flex max-[767px]:min-h-9 max-[767px]:w-9 max-[767px]:rounded-(--radius-sm) max-[767px]:p-0 max-[767px]:shadow-none";
 const contentClassName = "bookings-content grid min-h-0 grid-cols-[192px_minmax(0,1fr)_300px] gap-3 max-[1199px]:grid-cols-1 max-[1199px]:grid-rows-[auto_minmax(0,1fr)] max-[1199px]:gap-0 max-[767px]:h-full max-[767px]:[&_.booking-inspector]:col-span-1";
 const folderRailClassName = "booking-folder-rail grid min-h-0 content-start gap-1 rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) p-2.5 shadow-[0_1px_0_rgb(15_23_42_/_0.04)] max-[1199px]:grid-cols-7 max-[1199px]:content-normal max-[1199px]:gap-0 max-[1199px]:rounded-none max-[1199px]:border-x-0 max-[1199px]:border-t-0 max-[1199px]:p-0 max-[1199px]:shadow-none";
@@ -381,7 +381,6 @@ export function BookingsDocsPage({
       <BookingsDocsHeader
         canEditBookings={canEditBookings}
         copy={copy}
-        currentMember={currentMember}
         locale={locale}
         onAddBooking={() => setDialogBooking("new")}
         recordCount={bookingDocs.length}
@@ -567,7 +566,6 @@ export function BookingsDocsPage({
 function BookingsDocsHeader({
   canEditBookings,
   copy,
-  currentMember,
   locale,
   onAddBooking,
   recordCount,
@@ -575,7 +573,6 @@ function BookingsDocsHeader({
 }: {
   canEditBookings: boolean;
   copy: typeof bookingCopy.en | typeof bookingCopy.th;
-  currentMember: Member;
   locale: Locale;
   onAddBooking: () => void;
   recordCount: number;
@@ -591,18 +588,15 @@ function BookingsDocsHeader({
           <span><Icon name="ticket" /> {copy.records(recordCount)}</span>
         </>
       )}
-      aside={(
+      aside={canEditBookings ? (
         <div className={headerAsideClassName}>
-          <PageUserCard color={currentMember.color} name={currentMember.displayName} label={canEditBookings ? copy.canEditBookings : copy.readOnly} />
-          {canEditBookings ? (
-            <div className={headerActionRowClassName}>
-              <Button type="button" onClick={onAddBooking} aria-label={copy.addBooking}>
-                <Icon name="plus" /> <span>{copy.addBooking}</span>
-              </Button>
-            </div>
-          ) : null}
+          <div className={headerActionRowClassName}>
+            <Button type="button" onClick={onAddBooking} aria-label={copy.addBooking}>
+              <Icon name="plus" /> <span>{copy.addBooking}</span>
+            </Button>
+          </div>
         </div>
-      )}
+      ) : null}
     />
   );
 }

@@ -5,7 +5,7 @@ import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
 import { Icon } from "./icons";
 import { TravelMotif } from "./motifs";
-import { formatTripRange, PageHeader, PageUserCard } from "./PageHeader";
+import { formatTripRange, PageHeader } from "./PageHeader";
 import { PeoplePanel } from "./PeoplePanel";
 
 interface TripMembersPageProps {
@@ -222,7 +222,6 @@ export function TripMembersPage({
           </>
         )}
         motif={<TravelMotif tone="sunshine" />}
-        aside={<PageUserCard color={currentMember.color} name={currentMember.displayName} label={canManagePeople ? t.members.canManage : t.members.readOnly} />}
       />
 
       <section className={memberStatGridClassName} aria-label={t.members.summaryLabel}>

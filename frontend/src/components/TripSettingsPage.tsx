@@ -4,9 +4,10 @@ import { useMemo, useState, type FormEvent } from "react";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
 import type { Member, Trip } from "@/src/trip/types";
-import { Button, Badge } from "./ui";
+import { Button } from "./ui";
 import { Icon } from "./icons";
 import { DatePickerField } from "./DateTimePickers";
+import { PageHeader } from "./PageHeader";
 
 export interface TripSettingsFormValues {
   name: string;
@@ -26,10 +27,6 @@ interface TripSettingsPageProps {
 
 const pageClassName = "trip-settings-page min-h-full bg-transparent px-6 py-[22px] pb-7 max-[1199px]:min-h-[calc(100dvh-48px)] max-[1199px]:px-0 max-[1199px]:py-0 max-[1199px]:pb-0";
 const shellClassName = "mx-auto grid max-w-[980px] gap-4 max-[1199px]:max-w-none max-[1199px]:gap-0";
-const headerClassName = "grid gap-3 rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) p-5 shadow-[0_10px_22px_rgb(55_47_38_/_0.045)] max-[1199px]:rounded-none max-[1199px]:border-x-0 max-[1199px]:border-t-0 max-[1199px]:p-4 max-[1199px]:shadow-none max-[767px]:hidden";
-const headerToplineClassName = "flex min-w-0 items-start justify-between gap-3 max-[767px]:flex-wrap";
-const eyebrowClassName = "inline-flex w-fit items-center gap-2 rounded-full border border-(--color-primary-border) bg-(--color-primary-soft) px-3 py-1 text-[11px] font-extrabold text-(--color-primary-strong)";
-const headingClassName = "grid gap-1 [&_h1]:text-[26px] [&_h1]:font-[900] [&_h1]:leading-8 [&_h1]:text-(--color-text) [&_p]:max-w-[620px] [&_p]:text-[13px] [&_p]:leading-5 [&_p]:text-(--color-text-muted)";
 const contentGridClassName = "content-grid grid grid-cols-[minmax(0,1fr)_300px] gap-4 max-[1199px]:grid-cols-1 max-[1199px]:gap-0";
 const cardClassName = "rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) p-4 shadow-[0_10px_22px_rgb(55_47_38_/_0.045)] max-[1199px]:rounded-none max-[1199px]:border-x-0 max-[1199px]:border-t-0 max-[1199px]:shadow-none";
 const formClassName = "grid gap-3.5";
@@ -105,16 +102,12 @@ function TripSettingsPageContent({ canEdit, currentMember, trip, onSave }: TripS
   return (
     <section className={pageClassName} aria-label={t.tripSettings.pageLabel}>
       <div className={shellClassName}>
-        <header className={headerClassName}>
-          <div className={headerToplineClassName}>
-            <div className={headingClassName}>
-              <span className={eyebrowClassName}><Icon name="settings" /> {t.tripSettings.pageLabel}</span>
-              <h1>{t.tripSettings.title}</h1>
-              <p>{t.tripSettings.detail}</p>
-            </div>
-            <Badge tone={canEdit ? "success" : "neutral"}>{t.tripSettings.currentRole({ role: currentMember.role })}</Badge>
-          </div>
-        </header>
+        <PageHeader
+          title={t.tripSettings.title}
+          subtitle={trip.name}
+          description={t.tripSettings.detail}
+          meta={<span><Icon name="settings" /> {t.tripSettings.currentRole({ role: currentMember.role })}</span>}
+        />
 
         <div className={contentGridClassName}>
           <form className={cn(cardClassName, formClassName)} aria-label={t.tripSettings.tripDetails} onSubmit={submitSettings}>

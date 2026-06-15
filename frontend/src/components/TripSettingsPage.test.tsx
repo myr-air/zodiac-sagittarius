@@ -20,14 +20,12 @@ describe("TripSettingsPage", () => {
     expect(page).toHaveClass("trip-settings-page", "bg-transparent");
 
     expect(screen.getByRole("heading", { name: "Trip settings", level: 1 }).closest("header")).toHaveClass(
+      "page-header",
       "bg-(--color-surface)",
-      "shadow-[0_10px_22px_rgb(55_47_38_/_0.045)]",
+      "shadow-[0_1px_0_rgb(15_23_42_/_0.04)]",
       "max-[767px]:hidden",
     );
-    expect(page.querySelector("header span")).toHaveClass(
-      "bg-(--color-primary-soft)",
-      "text-(--color-primary-strong)",
-    );
+    expect(page.querySelector(".page-header-meta")).toHaveClass("[&>span]:bg-(--color-surface-subtle)", "[&>span]:border-(--color-border)");
     expect(screen.getByRole("form", { name: "Trip details" })).toHaveClass("bg-(--color-surface)");
     expect(screen.getByRole("region", { name: "Plan impact" })).toHaveClass("bg-(--color-surface)");
   });

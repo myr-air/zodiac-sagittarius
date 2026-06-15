@@ -10,7 +10,7 @@ import type { Member, Trip, TripPhotoAlbumAccess, TripPhotoAlbumLink, TripPhotoA
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
 import { Icon } from "./icons";
-import { formatTripRange, PageHeader, PageUserCard } from "./PageHeader";
+import { formatTripRange, PageHeader } from "./PageHeader";
 import { Badge, Button, IconButton } from "./ui";
 
 interface TripPhotosPageProps {
@@ -260,7 +260,6 @@ export function TripPhotosPage({
             <span><Icon name="cloud" /> {copy.albumLinks(photoAlbumLinks.length)}</span>
           </>
         )}
-        aside={<PageUserCard color={currentMember.color} name={currentMember.displayName} label={canEditPhotoAlbums ? copy.canAddAlbums : copy.readOnly} />}
       />
 
       <div className={summaryClassName} aria-label={copy.summaryLabel}>

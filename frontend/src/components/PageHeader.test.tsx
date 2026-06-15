@@ -17,7 +17,8 @@ describe("PageHeader", () => {
     const header = screen.getByRole("banner");
 
     expect(header).toHaveClass("page-header", "rounded-(--radius-md)", "isolate", "bg-(--color-surface)", "shadow-[0_1px_0_rgb(15_23_42_/_0.04)]");
-    expect(header).toHaveClass("min-h-[92px]", "max-[1199px]:rounded-none", "max-[767px]:hidden");
+    expect(header).toHaveClass("min-h-[92px]", "max-[1199px]:grid", "max-[1199px]:grid-cols-[minmax(0,1fr)_minmax(180px,260px)]", "max-[1199px]:rounded-none", "max-[767px]:hidden");
+    expect(container.querySelector(".page-header-aside")).toHaveClass("max-[1199px]:w-full", "max-[1199px]:justify-self-stretch");
     expect(screen.getByRole("heading", { name: "Hong Kong friends trip", level: 2 })).toHaveClass("max-[767px]:hidden");
     expect(screen.getByText("Plan the day without hiding the table.")).toHaveClass("max-[767px]:hidden");
     expect(header.className).not.toContain("bg-[linear-gradient(135deg");

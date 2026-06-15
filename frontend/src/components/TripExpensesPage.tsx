@@ -14,7 +14,7 @@ import { fetchMajorExchangeRate, majorCurrencyOptions, normalizeCurrencyCode } f
 import type { Expense, ExpenseComment, ExpenseLineItem, ExpenseSummary, Member, SettlementSuggestion, Trip } from "@/src/trip/types";
 import { Icon } from "./icons";
 import { TravelMotif } from "./motifs";
-import { formatTripRange, PageHeader, PageUserCard } from "./PageHeader";
+import { formatTripRange, PageHeader } from "./PageHeader";
 import { Button, IconButton } from "./ui";
 
 interface TripExpensesPageProps {
@@ -251,7 +251,6 @@ export function TripExpensesPage({
           </>
         )}
         motif={<TravelMotif tone="route" />}
-        aside={<PageUserCard color={currentMember.color} name={currentMember.displayName} label={canEditExpenses ? t.expenses.canEdit : t.expenses.readOnly} />}
       />
 
       <div className={expensesSummaryClassName} aria-label={t.expenses.summaryLabel} role="region">

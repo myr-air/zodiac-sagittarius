@@ -170,6 +170,7 @@ describe("TripMembersPage", () => {
     expect(screen.getByText(/ไม่พบสมาชิกที่ตรงกับตัวกรอง/i)).toBeInTheDocument();
 
     await user.clear(screen.getByLabelText(/ค้นหาสมาชิก/i));
+    await user.selectOptions(screen.getByLabelText(/^สิทธิ์$/i), "all");
     await user.selectOptions(screen.getByLabelText(/^สถานะ$/i), "claimed");
     expect(screen.getByText(/Demo Traveler/i)).toBeInTheDocument();
 
