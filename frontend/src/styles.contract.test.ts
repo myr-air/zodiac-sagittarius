@@ -166,7 +166,7 @@ describe("Calm Travel Ops CSS contract", () => {
     expect(smartTableSource).toContain("item-placeholder-cell min-w-0 bg-(--color-surface)");
     expect(smartTableSource).toContain("activity-cell grid min-h-[60px]");
     expect(smartTableSource).toContain("activityHeaderGridClassName");
-    expect(smartTableSource).toContain("sub-activity-line grid");
+    expect(smartTableSource).toContain("sub-activity-line relative grid");
   });
 
 });

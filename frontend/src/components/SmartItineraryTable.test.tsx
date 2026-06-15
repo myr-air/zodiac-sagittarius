@@ -677,8 +677,14 @@ describe("SmartItineraryTable", () => {
     );
     expect(within(parentRow as HTMLElement).getByDisplayValue("Buy Octopus card")).toBeInTheDocument();
     expect(parentRow?.querySelector(".sub-activity-list")).toHaveClass(
+      "relative",
       "col-start-2",
       "col-span-2",
+      "pl-5",
+    );
+    expect(parentRow?.querySelector(".sub-activity-line")).toHaveClass(
+      "relative",
+      "before:left-[-12px]",
     );
     expect(document.querySelector('[data-item-id="child-activity"]')).not.toBeInTheDocument();
 

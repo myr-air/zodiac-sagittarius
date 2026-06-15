@@ -270,11 +270,11 @@ const activityPillClassName =
 const activityTypePickerClassName =
   "activity-type-picker !min-h-[52px] h-full w-full max-w-full shrink-0 items-start justify-start rounded-(--radius-sm) border-(--color-border) bg-(--color-surface-subtle) px-2 pt-1 text-left text-[11px] font-medium text-(--color-text-muted) hover:border-(--color-route-border) hover:bg-(--color-route-soft) hover:text-(--color-route) aria-[expanded=true]:border-(--color-route-border) aria-[expanded=true]:bg-(--color-route-soft) aria-[expanded=true]:text-(--color-route) max-[520px]:!min-h-7 max-[520px]:h-7 max-[520px]:px-1.5 max-[520px]:pt-0.5 [&_.icon]:size-3.5 [&_.inline-option-picker-caret]:hidden";
 const subActivityListClassName =
-  "sub-activity-list col-start-2 col-span-2 mt-1 grid min-w-0 gap-0.5 border-t border-dashed border-(--color-border) pt-1.5 max-[640px]:hidden max-[520px]:col-start-1 max-[520px]:col-span-2 max-[360px]:col-span-1";
+  "sub-activity-list relative col-start-2 col-span-2 mt-1 grid min-w-0 gap-0.5 border-t border-dashed border-(--color-border) py-1.5 pl-5 before:pointer-events-none before:absolute before:bottom-2 before:left-2 before:top-2 before:w-px before:bg-[linear-gradient(180deg,var(--color-route-border),color-mix(in_srgb,var(--color-route-border)_46%,transparent))] max-[640px]:hidden max-[520px]:col-start-1 max-[520px]:col-span-2 max-[360px]:col-span-1";
 const subActivityModalListClassName =
   "sub-activity-list grid min-w-0 gap-1";
 const subActivityLineClassName =
-  "sub-activity-line grid min-w-0 grid-cols-[minmax(56px,72px)_minmax(0,1fr)_auto] items-center gap-1.5 rounded-(--radius-sm) px-1.5 py-1 text-xs leading-4 transition-colors duration-150 hover:bg-(--color-surface-subtle) max-[760px]:grid-cols-[minmax(0,1fr)_auto]";
+  "sub-activity-line relative grid min-w-0 grid-cols-[minmax(56px,72px)_minmax(0,1fr)_auto] items-center gap-1.5 rounded-(--radius-sm) px-1.5 py-1 text-xs leading-4 transition-colors duration-150 before:pointer-events-none before:absolute before:left-[-12px] before:top-[18px] before:h-px before:w-3 before:bg-(--color-route-border) hover:bg-(--color-surface-subtle) max-[760px]:grid-cols-[minmax(0,1fr)_auto]";
 const subActivityTextClassName =
   "sub-activity-text grid min-w-0 gap-0.5 text-xs font-normal leading-4 text-(--color-text)";
 const subActivityTitleInputClassName =
