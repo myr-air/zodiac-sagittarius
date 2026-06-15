@@ -3712,6 +3712,67 @@ describe("Sagittarius cockpit UI", () => {
     expect(apiClient.setMainTripPlan!).not.toHaveBeenCalled();
   }, 45_000);
 
+  it("waits for a loaded API Trip Plan before refreshing the expense summary", async () => {
+    const user = userEvent.setup();
+    const draftTrip = tripWithPlans();
+    const backendMainPlanId = "018f4e82-3000-7c00-b111-000000000001";
+    const backendBackupPlanId = "018f4e82-3000-7c00-b111-000000000002";
+    const planIdMap = new Map([
+      [draftTrip.activePlanVariantId, backendMainPlanId],
+      ["plan-variant-backup", backendBackupPlanId],
+    ]);
+    const apiTrip = {
+      ...draftTrip,
+      activePlanVariantId: backendMainPlanId,
+      mainTripPlanId: backendMainPlanId,
+      members: [{ ...seedTrip.members[0], claimPasswordHash: null }],
+      planVariants: draftTrip.planVariants.map((plan) => ({
+        ...plan,
+        id: planIdMap.get(plan.id) ?? plan.id,
+      })),
+      tripPlans: draftTrip.tripPlans?.map((plan) => ({
+        ...plan,
+        id: planIdMap.get(plan.id) ?? plan.id,
+      })),
+      itineraryItems: draftTrip.itineraryItems.map((item) => ({
+        ...item,
+        planVariantId: planIdMap.get(item.planVariantId) ?? item.planVariantId,
+      })),
+    };
+    const getExpenseSummary = vi.fn().mockResolvedValue({
+      groupSpend: 42,
+      netByMember: {},
+      currentUserNetLabel: "settled",
+      settlementSuggestions: [],
+    });
+    const apiClient = createApiClientForTrip(apiTrip, {
+      getExpenseSummary,
+    });
+
+    render(
+      <SagittariusApp
+        requireJoin
+        dataSource="api"
+        initialView="itinerary"
+        apiClient={apiClient}
+      />,
+    );
+    await loginApiTrip(user);
+
+    await waitFor(() =>
+      expect(getExpenseSummary).toHaveBeenCalledWith(
+        apiTrip.id,
+        "session-token",
+        backendMainPlanId,
+      ),
+    );
+    expect(getExpenseSummary).not.toHaveBeenCalledWith(
+      apiTrip.id,
+      "session-token",
+      seedTrip.activePlanVariantId,
+    );
+  }, 45_000);
+
   for (const workspace of [
     {
       view: "settings",
