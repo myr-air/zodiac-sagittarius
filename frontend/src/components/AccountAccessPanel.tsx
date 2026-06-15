@@ -63,7 +63,7 @@ const accountToastStackClassName =
 const accountPageClassName =
   "account-page min-h-screen bg-[var(--paper-grain),var(--watercolor-page-wash),var(--color-page)] p-7";
 const accountEntryPageClassName =
-  "account-page--entry grid items-center bg-(--color-page) p-[clamp(18px,4vw,44px)] max-[767px]:items-start max-[767px]:p-[18px]";
+  "account-page--entry grid min-h-[100dvh] items-start overflow-x-clip bg-(--color-page) p-[clamp(18px,4vw,44px)] min-[1100px]:items-center max-[767px]:p-0";
 const accountTripAccessPageClassName =
   "account-page--trip-access grid items-center overflow-x-clip bg-(--color-page) p-[clamp(18px,4vw,42px)] max-[767px]:items-start max-[767px]:p-3.5";
 const accountPortalPageClassName = "account-page--portal overflow-x-clip pt-[18px] max-[767px]:p-3.5";
@@ -74,16 +74,16 @@ const accountPortalShellClassName = "gap-3.5";
 const accountPortalNewTripShellClassName = "!w-[min(100%,1488px)] !gap-0 max-[767px]:!w-full";
 const accountTripAccessShellClassName = "w-[min(100%,1120px)]";
 const accountEntryShellClassName =
-  "account-shell--entry relative w-[min(100%,1240px)] grid-cols-[minmax(610px,1.08fr)_minmax(380px,0.92fr)] grid-rows-[auto_auto_1fr] items-center gap-x-7 gap-y-3.5 max-[767px]:grid-cols-1 max-[767px]:grid-rows-[auto_auto] max-[767px]:gap-3.5";
+  "account-shell--entry relative !w-[min(100%,520px)] grid-cols-1 grid-rows-[auto_auto] items-start gap-3.5 min-[1100px]:!w-[min(100%,1240px)] min-[1100px]:grid-cols-[minmax(560px,1.04fr)_minmax(380px,0.96fr)] min-[1100px]:grid-rows-[auto_auto_1fr] min-[1100px]:items-center min-[1100px]:gap-x-7 max-[767px]:!w-full max-[767px]:gap-0";
 const tripAccessLanguageSwitchClassName =
   "trip-access-language-switch !right-4 !top-4 !z-[5] !m-0 !w-fit !bg-(--color-surface) !shadow-[0_8px_18px_rgb(15_23_42_/_0.06)] max-[767px]:!right-[26px] max-[767px]:!top-[26px]";
 const accessLanguageSwitchClassName = "access-language-switch mt-3.5";
 const accountEntryLanguageSwitchClassName =
-  "account-entry-language-switch !absolute !right-4 !top-4 !z-[2] !m-0 !w-fit !bg-(--color-surface) !shadow-[0_8px_18px_rgb(15_23_42_/_0.06)] max-[767px]:!right-7 max-[767px]:!top-7";
+  "account-entry-language-switch !absolute !right-4 !top-4 !z-[2] !m-0 !w-fit !bg-(--color-surface) !shadow-[0_8px_18px_rgb(15_23_42_/_0.06)] max-[767px]:!right-[18px] max-[767px]:!top-[18px]";
 const backHomeButtonClassName =
   "back-home-button inline-flex items-center gap-1.5 rounded-full border border-(--color-border) bg-[color-mix(in_srgb,var(--color-surface)_88%,transparent)] px-3 py-1.5 text-[0.78rem] font-[850] text-(--color-text-muted) no-underline transition-all duration-150 hover:bg-(--color-primary-soft) hover:text-(--color-primary-strong) hover:border-(--color-primary-border) hover:shadow-[0_8px_18px_rgb(194_79_22_/_0.08)] focus-visible:bg-(--color-primary-soft) focus-visible:text-(--color-primary-strong) focus-visible:border-(--color-primary-border)";
 const accountEntryBackHomeClassName =
-  "account-entry-back-home !absolute !left-11 !top-11 !z-[2] !m-0 !w-fit !bg-(--color-surface) !shadow-[0_8px_18px_rgb(15_23_42_/_0.06)] max-[767px]:!left-7 max-[767px]:!top-7";
+  "account-entry-back-home !absolute !left-11 !top-11 !z-[2] !m-0 !w-fit !bg-(--color-surface) !shadow-[0_8px_18px_rgb(15_23_42_/_0.06)] max-[767px]:!left-[18px] max-[767px]:!top-[18px]";
 const tripAccessBackHomeClassName =
   "trip-access-back-home !absolute !left-4 !top-4 !z-[5] !m-0 !w-fit !bg-(--color-surface) !shadow-[0_8px_18px_rgb(15_23_42_/_0.06)] max-[767px]:!left-[26px] max-[767px]:!top-[26px]";
 const accountHeroClassName =
@@ -139,7 +139,7 @@ const accountModeTabsClassName =
 const accountTabClassName =
   "account-tab inline-flex min-h-[42px] items-center justify-center gap-2 rounded-(--radius-md) border-0 bg-transparent font-extrabold text-(--color-text-muted) transition-[background,color] duration-[180ms] ease-out";
 const accountTabActiveClassName = "account-tab--active bg-(--color-primary-soft) text-(--color-primary-strong)";
-const accountEntryTabsClassName = "account-entry-tabs grid grid-cols-2 gap-0 border-b border-(--color-border) px-[34px] pb-3.5";
+const accountEntryTabsClassName = "account-entry-tabs grid grid-cols-2 gap-0 border-b border-(--color-border) px-[34px] pb-3.5 max-[520px]:px-0";
 const portalNavClassName =
   "portal-nav sticky top-4 grid gap-3.5 rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) p-3 shadow-[var(--shadow-soft)] max-[767px]:static max-[767px]:gap-2.5 max-[767px]:p-2.5";
 const portalNavBrandClassName =
@@ -309,10 +309,10 @@ const accountTwoColClassName =
 const accountSettingsFormClassName = cn(accountFormClassName, "account-settings-form grid gap-3");
 const accountLoginFlowClassName = "account-login-flow grid w-[min(100%,560px)] justify-self-center gap-3";
 const accountEntryLoginFlowClassName =
-  "relative col-start-2 row-start-3 w-[min(100%,520px)] self-start justify-self-center gap-[22px] rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) p-[clamp(24px,3vw,34px)] pt-[70px] shadow-[0_14px_34px_rgb(15_23_42_/_0.1)] max-[767px]:col-start-1 max-[767px]:row-start-1 max-[767px]:mt-[76px] max-[767px]:w-[min(100%,460px)]";
+  "relative row-start-2 w-full self-start justify-self-center gap-[22px] rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) p-[clamp(22px,3vw,34px)] pt-[70px] shadow-[0_14px_34px_rgb(15_23_42_/_0.1)] min-[1100px]:col-start-2 min-[1100px]:row-start-3 min-[1100px]:w-[min(100%,520px)] max-[767px]:row-start-1 max-[767px]:min-h-[100dvh] max-[767px]:rounded-none max-[767px]:border-0 max-[767px]:p-[18px] max-[767px]:pt-[92px] max-[767px]:shadow-none";
 const accountAuthCardClassName = cn(
   accountCardClassName,
-  "account-auth-card !gap-4 !overflow-visible !border-0 !bg-transparent !p-0 !shadow-none",
+  "account-auth-card !gap-4 !overflow-visible !border-0 !bg-transparent !p-0 !shadow-none [&_.button]:min-h-11 [&_.button]:w-full",
   accountFormClassName,
 );
 const accountStepKickerClassName = "account-step-kicker block text-xs font-[850] leading-[18px] text-(--color-text-muted)";
@@ -327,9 +327,9 @@ const accountStepSummaryClassName =
   "account-step-summary grid gap-1 rounded-(--radius-md) border border-(--color-border) bg-(--color-primary-soft) p-3 text-[13px] font-[750] text-(--color-text-muted) [&_strong]:min-w-0 [&_strong]:[overflow-wrap:anywhere] [&_strong]:text-[15px] [&_strong]:text-(--color-primary-strong)";
 const accountFlowSwitchClassName =
   "account-flow-switch m-0 text-center text-[13px] font-[750] text-(--color-text-muted) [&_a]:cursor-pointer [&_a]:border-0 [&_a]:bg-transparent [&_a]:p-0 [&_a]:font-[inherit] [&_a]:font-[850] [&_a]:text-(--color-primary-strong) [&_a]:no-underline [&_a:focus-visible]:underline [&_a:hover]:underline [&_button]:cursor-pointer [&_button]:border-0 [&_button]:bg-transparent [&_button]:p-0 [&_button]:font-[inherit] [&_button]:font-[850] [&_button]:text-(--color-primary-strong) [&_button]:no-underline [&_button:focus-visible]:underline [&_button:hover]:underline";
-const accountAlternateActionsClassName = "account-alternate-actions flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-center text-[13px] font-[800]";
+const accountAlternateActionsClassName = "account-alternate-actions flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-center text-[13px] font-[800] max-[520px]:grid max-[520px]:grid-cols-1";
 const accountTertiaryActionClassName =
-  "account-tertiary-action inline-flex min-h-8 items-center justify-center gap-1.5 rounded-(--radius-sm) border-0 bg-transparent p-0 text-[13px] font-[850] text-(--color-primary-strong) underline-offset-4 transition-colors duration-150 hover:enabled:underline focus-visible:underline disabled:cursor-not-allowed disabled:text-(--color-text-subtle) [&_.icon]:size-4";
+  "account-tertiary-action inline-flex min-h-11 items-center justify-center gap-1.5 rounded-(--radius-sm) border-0 bg-transparent px-2 py-1 text-[13px] font-[850] text-(--color-primary-strong) underline-offset-4 transition-colors duration-150 hover:enabled:underline focus-visible:underline disabled:cursor-not-allowed disabled:text-(--color-text-subtle) [&_.icon]:size-4";
 
 interface TripCountryOption {
   code: string;
