@@ -9,7 +9,7 @@ import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
 import { Icon } from "./icons";
 import { formatTripRange, PageHeader } from "./PageHeader";
-import { Button, IconButton } from "./ui";
+import { Button, IconButton, WorkspacePage, WorkspaceSurface } from "./ui";
 import { DateTimePickerField } from "./DateTimePickers";
 
 interface BookingsDocsPageProps {
@@ -67,15 +67,15 @@ const bookingFolders: Array<{
   { id: "external_links", icon: "cloud" },
 ];
 
-const pageClassName = "bookings-docs-page grid min-h-full min-w-0 grid-rows-[auto_minmax(0,1fr)] gap-3 bg-transparent px-6 py-[22px] pb-7 max-[1199px]:gap-0 max-[1199px]:px-0 max-[1199px]:py-0 max-[1199px]:pb-0 max-[767px]:h-[calc(100dvh-48px)] max-[767px]:min-h-[calc(100dvh-48px)] max-[767px]:grid-rows-[minmax(0,1fr)] max-[767px]:overflow-hidden";
+const pageClassName = "bookings-docs-page max-[767px]:h-[calc(100dvh-48px)] max-[767px]:min-h-[calc(100dvh-48px)] max-[767px]:grid-rows-[minmax(0,1fr)] max-[767px]:overflow-hidden";
 const headerAsideClassName = "booking-docs-header-actions flex min-w-0 items-center justify-end gap-2";
 const headerActionRowClassName = "flex min-w-0 flex-wrap items-center justify-end gap-2 max-[1199px]:justify-end";
-const mobileAddButtonClassName = "bookings-mobile-add-button !hidden max-[767px]:!fixed max-[767px]:right-[60px] max-[767px]:top-1.5 max-[767px]:z-[45] max-[767px]:!inline-flex max-[767px]:min-h-9 max-[767px]:w-9 max-[767px]:rounded-(--radius-sm) max-[767px]:p-0 max-[767px]:shadow-none";
-const contentClassName = "bookings-content grid min-h-0 grid-cols-[192px_minmax(0,1fr)_300px] gap-3 max-[1199px]:grid-cols-1 max-[1199px]:grid-rows-[auto_minmax(0,1fr)] max-[1199px]:gap-0 max-[767px]:h-full max-[767px]:[&_.booking-inspector]:col-span-1";
-const folderRailClassName = "booking-folder-rail grid min-h-0 content-start gap-1 rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) p-2.5 shadow-[0_1px_0_rgb(15_23_42_/_0.04)] max-[1199px]:grid-cols-7 max-[1199px]:content-normal max-[1199px]:gap-0 max-[1199px]:rounded-none max-[1199px]:border-x-0 max-[1199px]:border-t-0 max-[1199px]:p-0 max-[1199px]:shadow-none";
+const mobileAddButtonClassName = "bookings-mobile-add-button !hidden max-[767px]:fixed max-[767px]:!fixed max-[767px]:right-[60px] max-[767px]:top-1.5 max-[767px]:z-[45] max-[767px]:!inline-flex max-[767px]:min-h-9 max-[767px]:w-9 max-[767px]:rounded-(--radius-sm) max-[767px]:p-0 max-[767px]:shadow-none";
+const contentClassName = "bookings-content grid min-h-0 grid-cols-[192px_minmax(0,1fr)_300px] gap-3 max-[1199px]:grid-cols-1 max-[1199px]:grid-rows-[auto_minmax(0,1fr)] max-[1199px]:gap-0 max-[767px]:grid-cols-1 max-[767px]:gap-0 max-[767px]:h-full max-[767px]:[&_.booking-inspector]:col-span-1";
+const folderRailClassName = "booking-folder-rail grid min-h-0 content-start gap-1 max-[1199px]:grid-cols-7 max-[1199px]:content-normal max-[1199px]:gap-0 max-[1199px]:p-0 max-[767px]:grid-cols-7 max-[767px]:rounded-none max-[767px]:shadow-none";
 const folderButtonClassName = "group grid min-h-10 grid-cols-[28px_minmax(0,1fr)_auto] items-center gap-2 rounded-(--radius-md) border border-transparent bg-transparent px-2 py-1.5 text-left text-sm font-bold text-(--color-text-muted) transition-[background-color,border-color,color] duration-150 hover:bg-(--color-surface-subtle) hover:text-(--color-text) focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary) [&_.icon]:size-4 max-[1199px]:min-h-12 max-[1199px]:grid-cols-1 max-[1199px]:grid-rows-[20px_16px] max-[1199px]:justify-items-center max-[1199px]:gap-0 max-[1199px]:rounded-none max-[1199px]:border-0 max-[1199px]:border-b-2 max-[1199px]:border-transparent max-[1199px]:px-0 max-[1199px]:py-1.5 max-[1199px]:text-center max-[767px]:min-h-10 max-[767px]:grid-rows-[18px_12px]";
 const selectedFolderClassName = "border-(--color-primary-border) bg-(--color-primary-soft) text-(--color-primary-strong) max-[1199px]:border-b-(--color-primary) max-[1199px]:bg-transparent";
-const filePanelClassName = "bookings-file-panel grid min-h-0 grid-rows-[auto_auto_minmax(0,1fr)] rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) shadow-[0_1px_0_rgb(15_23_42_/_0.04)] max-[1199px]:min-h-[calc(100dvh-180px)] max-[1199px]:rounded-none max-[1199px]:border-x-0 max-[1199px]:border-t-0 max-[1199px]:shadow-none max-[767px]:h-full max-[767px]:min-h-0 max-[767px]:border-0";
+const filePanelClassName = "bookings-file-panel grid min-h-0 grid-rows-[auto_auto_minmax(0,1fr)] p-0 max-[1199px]:min-h-[calc(100dvh-180px)] max-[767px]:h-full max-[767px]:min-h-0 max-[767px]:grid-rows-[auto_auto_minmax(0,1fr)] max-[767px]:rounded-none max-[767px]:border-0 max-[767px]:shadow-none";
 const fileToolbarClassName = "bookings-file-toolbar grid gap-2 border-b border-(--color-border) p-3 max-[1199px]:px-3 max-[1199px]:py-2 max-[767px]:gap-0 max-[767px]:px-2 max-[767px]:py-2";
 const toolbarControlsClassName = "grid grid-cols-[minmax(0,1fr)_176px] items-center gap-2 max-[767px]:grid-cols-[minmax(0,1fr)_132px] max-[767px]:gap-1.5";
 const searchInputClassName = "min-h-10 w-full rounded-(--radius-md) border border-(--color-border) bg-(--color-surface-subtle) px-3 text-sm font-medium text-(--color-text) outline-none transition-colors placeholder:text-(--color-text-subtle) focus:border-(--color-primary) focus:bg-(--color-surface) max-[767px]:min-h-9";
@@ -89,11 +89,11 @@ const activeFolderDescriptionClassName = "text-xs font-semibold text-(--color-te
 const fieldClassName = "grid min-w-0 gap-1.5 [&>span]:text-[11px] [&>span]:font-extrabold [&>span]:text-(--color-text-muted) [&_input]:min-h-10 [&_input]:rounded-(--radius-md) [&_input]:border [&_input]:border-(--color-border) [&_input]:bg-(--color-surface) [&_input]:px-3 [&_input]:text-sm [&_select]:min-h-10 [&_select]:rounded-(--radius-md) [&_select]:border [&_select]:border-(--color-border) [&_select]:bg-(--color-surface) [&_select]:px-3 [&_select]:text-sm [&_textarea]:min-h-[74px] [&_textarea]:resize-y [&_textarea]:rounded-(--radius-md) [&_textarea]:border [&_textarea]:border-(--color-border) [&_textarea]:bg-(--color-surface) [&_textarea]:px-3 [&_textarea]:py-2 [&_textarea]:text-sm";
 const fileListClassName = "booking-file-list min-h-0 overflow-auto";
 const fileHeaderClassName = "sticky top-0 z-[1] grid min-w-[760px] grid-cols-[minmax(220px,1.7fr)_90px_100px_minmax(120px,1fr)_108px_70px] items-center gap-2 border-b border-(--color-border) bg-(--color-surface-subtle) px-3 py-2 text-[11px] font-black text-(--color-text-muted) max-[1199px]:hidden";
-const fileRowClassName = "booking-file-row grid min-w-[760px] grid-cols-[minmax(220px,1.7fr)_90px_100px_minmax(120px,1fr)_108px_70px] items-center gap-2 border-b border-(--color-border) px-3 py-2.5 text-left text-sm transition-colors hover:bg-(--color-surface-subtle) focus-within:bg-(--color-primary-soft) max-[1199px]:min-w-0 max-[1199px]:grid-cols-[minmax(0,1fr)_auto] max-[1199px]:gap-x-3 max-[1199px]:gap-y-1 max-[1199px]:px-3 max-[1199px]:py-3";
+const fileRowClassName = "booking-file-row booking-ticket-card grid min-w-[760px] grid-cols-[minmax(220px,1.7fr)_90px_100px_minmax(120px,1fr)_108px_70px] items-center gap-2 border-b border-(--color-border) px-3 py-2.5 text-left text-sm transition-colors hover:bg-(--color-surface-subtle) focus-within:bg-(--color-primary-soft) max-[1199px]:min-w-0 max-[1199px]:grid-cols-[minmax(0,1fr)_auto] max-[1199px]:gap-x-3 max-[1199px]:gap-y-1 max-[1199px]:px-3 max-[1199px]:py-3";
 const selectedFileRowClassName = "bg-(--color-primary-soft)";
 const lockedRowClassName = "booking-row-locked grid min-h-[46px] grid-cols-[minmax(0,1fr)_auto] items-center gap-2 border-b border-(--color-border) px-3 py-2 text-sm";
 const badgeClassName = "inline-flex w-fit items-center gap-1.5 rounded-full border px-2 py-0.5 text-[11px] font-extrabold capitalize";
-const inspectorClassName = "booking-inspector sticky top-3 grid max-h-[calc(100vh-92px)] content-start gap-3 overflow-auto rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) p-3.5 shadow-[0_1px_0_rgb(15_23_42_/_0.04)] max-[1199px]:!fixed max-[1199px]:bottom-0 max-[1199px]:left-[74px] max-[1199px]:right-0 max-[1199px]:top-auto max-[1199px]:z-30 max-[1199px]:!max-h-[72vh] max-[1199px]:rounded-b-none max-[1199px]:rounded-t-(--radius-lg) max-[1199px]:border-x-0 max-[1199px]:border-b-0 max-[1199px]:p-3 max-[1199px]:pb-[calc(12px+env(safe-area-inset-bottom))] max-[1199px]:shadow-[0_-8px_16px_rgb(15_23_42_/_0.14)] max-[1199px]:transition-[transform,opacity] max-[1199px]:duration-200 max-[1199px]:ease-out max-[767px]:left-0 motion-reduce:max-[1199px]:transition-none";
+const inspectorClassName = "booking-inspector sticky top-3 grid max-h-[calc(100vh-92px)] content-start gap-3 overflow-auto max-[1199px]:!fixed max-[1199px]:bottom-0 max-[1199px]:left-[74px] max-[1199px]:right-0 max-[1199px]:top-auto max-[1199px]:z-30 max-[1199px]:!max-h-[72vh] max-[1199px]:rounded-b-none max-[1199px]:rounded-t-(--radius-lg) max-[1199px]:border-x-0 max-[1199px]:border-b-0 max-[1199px]:p-3 max-[1199px]:pb-[calc(12px+env(safe-area-inset-bottom))] max-[1199px]:shadow-[0_-8px_16px_rgb(15_23_42_/_0.14)] max-[1199px]:transition-[transform,opacity] max-[1199px]:duration-200 max-[1199px]:ease-out max-[767px]:!fixed max-[767px]:bottom-0 max-[767px]:left-0 max-[767px]:transition-[transform,opacity] motion-reduce:max-[1199px]:transition-none";
 const mobileInspectorOpenClassName = "max-[1199px]:translate-y-0 max-[1199px]:opacity-100 max-[1199px]:pointer-events-auto";
 const mobileInspectorClosedClassName = "max-[1199px]:translate-y-full max-[1199px]:opacity-0 max-[1199px]:pointer-events-none";
 const inspectorSectionClassName = "grid gap-2 border-t border-(--color-border) pt-3 text-sm";
@@ -126,8 +126,9 @@ const bookingCopy = {
     columnStatus: "Status",
     columnOpen: "Open",
     itemCount: (count: number) => `${count} items`,
+    bookingSummary: "Booking summary",
     emptyTitle: "No matching files",
-    emptyDetail: "Try another folder, status, or search term.",
+    emptyDetail: "No items in this view. Try another folder, status, or search term.",
     lockedSensitiveRecord: "Locked sensitive record",
     select: (title: string) => `Select ${title}`,
     noProvider: "No provider",
@@ -234,7 +235,8 @@ const bookingCopy = {
     columnStatus: "สถานะ",
     columnOpen: "เปิด",
     itemCount: (count: number) => `${count} รายการ`,
-    emptyTitle: "ไม่พบไฟล์ที่ตรงกัน",
+    bookingSummary: "สรุปการจอง",
+    emptyTitle: "ไม่มีรายการในมุมมองนี้",
     emptyDetail: "ลองเปลี่ยนโฟลเดอร์ สถานะ หรือคำค้นหา",
     lockedSensitiveRecord: "รายการละเอียดอ่อนถูกล็อก",
     select: (title: string) => `เลือก ${title}`,
@@ -377,7 +379,7 @@ export function BookingsDocsPage({
   }
 
   return (
-    <section className={pageClassName} aria-label={copy.pageLabel} role="region">
+    <WorkspacePage className={pageClassName} kind="workspace" aria-label={copy.pageLabel} role="region">
       <BookingsDocsHeader
         canEditBookings={canEditBookings}
         copy={copy}
@@ -393,7 +395,7 @@ export function BookingsDocsPage({
       ) : null}
 
       <div className={contentClassName}>
-        <nav className={folderRailClassName} aria-label={copy.bookingFolders}>
+        <WorkspaceSurface as="nav" className={folderRailClassName} density="compact" aria-label={copy.bookingFolders}>
           {bookingFolders.map((folder) => (
             <button
               type="button"
@@ -417,9 +419,9 @@ export function BookingsDocsPage({
               <strong className="tabular-nums text-xs text-(--color-text-muted) max-[1199px]:text-[11px]">{folderCounts[folder.id] ?? 0}</strong>
             </button>
           ))}
-        </nav>
+        </WorkspaceSurface>
 
-        <section className={filePanelClassName} aria-label={copy.fileList}>
+        <WorkspaceSurface className={filePanelClassName} aria-label={copy.fileList}>
           <div className={fileToolbarClassName}>
             <div className={toolbarControlsClassName}>
               <label className="min-w-0">
@@ -477,7 +479,7 @@ export function BookingsDocsPage({
             </div>
           </div>
 
-          <div className={activeFolderBarClassName}>
+          <div className={activeFolderBarClassName} aria-label={copy.bookingSummary}>
             <div className="grid gap-0.5">
               <strong className="text-[15px] font-extrabold text-(--color-text)">{activeFolderCopy.title}</strong>
               <span className={activeFolderDescriptionClassName}>{copy.visibleItems(activeFolderCopy.description, folderDocs.length)}</span>
@@ -485,7 +487,7 @@ export function BookingsDocsPage({
             <span className="text-xs font-black text-(--color-text-muted)">{copy.itemCount(folderDocs.length)}</span>
           </div>
 
-          <div className={fileListClassName}>
+          <div className={fileListClassName} aria-label={copy.fileList} tabIndex={0}>
             <div className={fileHeaderClassName} aria-hidden="true">
               <span>{copy.columnName}</span>
               <span>{copy.columnDate}</span>
@@ -522,7 +524,7 @@ export function BookingsDocsPage({
               </div>
             ))}
           </div>
-        </section>
+        </WorkspaceSurface>
 
         <BookingInspector
           booking={selectedBooking}
@@ -559,7 +561,7 @@ export function BookingsDocsPage({
           </section>
         </div>
       ) : null}
-    </section>
+    </WorkspacePage>
   );
 }
 
@@ -669,15 +671,16 @@ function BookingInspector({
 }) {
   if (!booking || !relations) {
     return (
-      <section className={cn(inspectorClassName, mobileInspectorClosedClassName)} aria-label={copy.bookingDetails}>
+      <WorkspaceSurface className={cn(inspectorClassName, mobileInspectorClosedClassName)} density="compact" aria-label={copy.bookingDetails}>
         <strong className="text-(--color-text)">{copy.noBookingSelected}</strong>
-      </section>
+      </WorkspaceSurface>
     );
   }
 
   return (
-    <section
+    <WorkspaceSurface
       className={cn(inspectorClassName, mobileOpen ? mobileInspectorOpenClassName : mobileInspectorClosedClassName)}
+      density="compact"
       aria-label={copy.bookingDetails}
     >
       <div className="hidden max-[767px]:grid max-[767px]:grid-cols-[minmax(0,1fr)_auto] max-[767px]:items-center max-[767px]:gap-2">
@@ -721,7 +724,7 @@ function BookingInspector({
         <span>{copy.notes(relations.notes.length)}</span>
         <span>{relations.travelers.map((member) => member.displayName).join(", ") || copy.noTravelers}</span>
       </div>
-    </section>
+    </WorkspaceSurface>
   );
 }
 

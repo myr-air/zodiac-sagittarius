@@ -4,7 +4,7 @@ import { useMemo, useState, type FormEvent } from "react";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
 import type { Member, Trip } from "@/src/trip/types";
-import { Button } from "./ui";
+import { Button, FieldLabel, WorkspacePage, WorkspaceSurface, fieldControlClassName } from "./ui";
 import { Icon } from "./icons";
 import { DatePickerField } from "./DateTimePickers";
 import { PageHeader } from "./PageHeader";
@@ -25,15 +25,13 @@ interface TripSettingsPageProps {
   onSave: (values: TripSettingsFormValues) => Promise<void>;
 }
 
-const pageClassName = "trip-settings-page min-h-full bg-transparent px-6 py-[22px] pb-7 max-[1199px]:min-h-[calc(100dvh-48px)] max-[1199px]:px-0 max-[1199px]:py-0 max-[1199px]:pb-0";
+const pageClassName = "trip-settings-page";
 const shellClassName = "grid w-full gap-3 max-[1199px]:gap-0";
-const contentGridClassName = "content-grid grid grid-cols-[minmax(0,1fr)_300px] gap-3 max-[1199px]:grid-cols-1 max-[1199px]:gap-0";
-const cardClassName = "rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) p-4 shadow-[0_1px_0_rgb(15_23_42_/_0.04)] max-[1199px]:rounded-none max-[1199px]:border-x-0 max-[1199px]:border-t-0 max-[1199px]:shadow-none";
+const contentGridClassName = "content-grid grid grid-cols-[minmax(0,1fr)_300px] gap-3 max-[1199px]:grid-cols-1 max-[1199px]:gap-0 max-[920px]:grid-cols-1";
 const formClassName = "grid gap-3.5";
 const fieldGridClassName = "field-grid grid grid-cols-2 gap-3 max-[767px]:grid-cols-1";
-const labelClassName = "grid gap-1.5 text-[12px] font-extrabold text-(--color-text)";
-const inputClassName = "min-h-10 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-3 text-[13px] text-(--color-text) outline-none transition-[border-color,box-shadow] focus:border-(--color-route-border) focus:shadow-[0_0_0_3px_rgb(191_219_254_/_0.55)] disabled:bg-(--color-surface-muted) disabled:text-(--color-text-muted)";
-const sideCardClassName = cn(cardClassName, "grid content-start gap-3 bg-(--color-surface)");
+const inputClassName = cn(fieldControlClassName);
+const sideCardClassName = "grid content-start gap-3 bg-(--color-surface)";
 const impactLineClassName = "flex items-start gap-2 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface-subtle) p-3 text-[13px] leading-5 text-(--color-text-muted)";
 const actionRowClassName = "flex items-center justify-end gap-2 pt-1 max-[767px]:grid max-[767px]:grid-cols-1";
 const messageClassName = "text-[13px] font-bold leading-5";
@@ -100,7 +98,7 @@ function TripSettingsPageContent({ canEdit, currentMember, trip, onSave }: TripS
   }
 
   return (
-    <section className={pageClassName} aria-label={t.tripSettings.pageLabel}>
+    <WorkspacePage className={pageClassName} aria-label={t.tripSettings.pageLabel}>
       <div className={shellClassName}>
         <PageHeader
           title={t.tripSettings.title}
@@ -110,9 +108,9 @@ function TripSettingsPageContent({ canEdit, currentMember, trip, onSave }: TripS
         />
 
         <div className={contentGridClassName}>
-          <form className={cn(cardClassName, formClassName)} aria-label={t.tripSettings.tripDetails} onSubmit={submitSettings}>
+          <WorkspaceSurface as="form" className={formClassName} aria-label={t.tripSettings.tripDetails} onSubmit={submitSettings}>
             <h2 className="text-[16px] font-[900] text-(--color-text)">{t.tripSettings.tripDetails}</h2>
-            <label className={labelClassName}>
+            <FieldLabel>
               <span>{t.tripSettings.tripName}</span>
               <input
                 className={inputClassName}
@@ -120,8 +118,8 @@ function TripSettingsPageContent({ canEdit, currentMember, trip, onSave }: TripS
                 value={form.name}
                 onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))}
               />
-            </label>
-            <label className={labelClassName}>
+            </FieldLabel>
+            <FieldLabel>
               <span>{t.tripSettings.destination}</span>
               <input
                 className={inputClassName}
@@ -129,9 +127,9 @@ function TripSettingsPageContent({ canEdit, currentMember, trip, onSave }: TripS
                 value={form.destinationLabel}
                 onChange={(event) => setForm((current) => ({ ...current, destinationLabel: event.target.value }))}
               />
-            </label>
+            </FieldLabel>
             <div className={fieldGridClassName}>
-              <label className={labelClassName}>
+              <FieldLabel>
                 <span>{t.tripSettings.startDate}</span>
                 <DatePickerField
                   className={inputClassName}
@@ -139,8 +137,8 @@ function TripSettingsPageContent({ canEdit, currentMember, trip, onSave }: TripS
                   value={form.startDate}
                   onChange={(value) => setForm((current) => ({ ...current, startDate: value }))}
                 />
-              </label>
-              <label className={labelClassName}>
+              </FieldLabel>
+              <FieldLabel>
                 <span>{t.tripSettings.endDate}</span>
                 <DatePickerField
                   className={inputClassName}
@@ -148,10 +146,10 @@ function TripSettingsPageContent({ canEdit, currentMember, trip, onSave }: TripS
                   value={form.endDate}
                   onChange={(value) => setForm((current) => ({ ...current, endDate: value }))}
                 />
-              </label>
+              </FieldLabel>
             </div>
             <div className={fieldGridClassName}>
-              <label className={labelClassName}>
+              <FieldLabel>
                 <span>{t.tripSettings.partySize}</span>
                 <input
                   className={inputClassName}
@@ -166,8 +164,8 @@ function TripSettingsPageContent({ canEdit, currentMember, trip, onSave }: TripS
                     }))
                   }
                 />
-              </label>
-              <label className={labelClassName}>
+              </FieldLabel>
+              <FieldLabel>
                 <span>{t.tripSettings.defaultTimezone}</span>
                 <input
                   className={inputClassName}
@@ -175,7 +173,7 @@ function TripSettingsPageContent({ canEdit, currentMember, trip, onSave }: TripS
                   value={form.defaultTimezone}
                   onChange={(event) => setForm((current) => ({ ...current, defaultTimezone: event.target.value }))}
                 />
-              </label>
+              </FieldLabel>
             </div>
             {!canEdit ? <p className={cn(messageClassName, errorClassName)}>{t.tripSettings.editLocked}</p> : null}
             {invalidDateRange ? <p className={cn(messageClassName, errorClassName)}>{t.tripSettings.invalidDate}</p> : null}
@@ -186,18 +184,18 @@ function TripSettingsPageContent({ canEdit, currentMember, trip, onSave }: TripS
                 {status === "saving" ? t.tripSettings.saving : t.tripSettings.save}
               </Button>
             </div>
-          </form>
+          </WorkspaceSurface>
 
-          <section className={sideCardClassName} aria-label={t.tripSettings.planImpact}>
+          <WorkspaceSurface className={sideCardClassName} aria-label={t.tripSettings.planImpact}>
             <h2 className="text-[16px] font-[900] text-(--color-text)">{t.tripSettings.planImpact}</h2>
             <div className={impactLineClassName}>
               <Icon name={outsideStopCount ? "warning" : "check"} />
               <span>{outsideStopCount ? t.tripSettings.outsideStops({ count: outsideStopCount }) : t.tripSettings.noImpact}</span>
             </div>
-          </section>
+          </WorkspaceSurface>
         </div>
       </div>
-    </section>
+    </WorkspacePage>
   );
 }
 

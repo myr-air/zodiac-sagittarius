@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { Icon } from "./icons";
 import { formatTripRange, PageHeader, PageUserCard } from "./PageHeader";
-import { Badge, Button, IconButton, Panel } from "./ui";
+import { Badge, Button, FieldLabel, IconButton, Panel, WorkspacePage, WorkspaceSurface, fieldControlClassName, workspacePageClassName } from "./ui";
 
 describe("shared UI primitives", () => {
   it("composes Tailwind defaults, legacy bridge classes, and custom classes", () => {
@@ -42,6 +42,39 @@ describe("shared UI primitives", () => {
     expect(screen.getByText("Ready")).toHaveClass("badge", "badge--neutral", "inline-flex", "rounded-full", "trip-badge");
     expect(screen.getByText("Blocked")).toHaveClass("badge--danger", "text-[#b91c1c]", "bg-(--color-danger-soft)");
     expect(screen.getByRole("button", { name: "Open details" })).toHaveClass("icon-button", "inline-flex", "w-9", "details-toggle-button");
+  });
+
+  it("renders reusable workspace layout, surface, and field primitives", () => {
+    render(
+      <WorkspacePage className="photos-page" kind="workspace" aria-label="Workspace">
+        <WorkspaceSurface as="form" aria-label="Trip details" className="settings-form">
+          <FieldLabel>
+            <span>Trip name</span>
+            <input className={fieldControlClassName.join(" ")} />
+          </FieldLabel>
+        </WorkspaceSurface>
+        <WorkspaceSurface as="nav" aria-label="Folders" density="compact" className="folder-rail">
+          <button type="button">All</button>
+        </WorkspaceSurface>
+      </WorkspacePage>,
+    );
+
+    expect(screen.getByRole("region", { name: "Workspace" })).toHaveClass(
+      "min-h-full",
+      "grid",
+      "grid-rows-[auto_minmax(0,1fr)]",
+      "photos-page",
+    );
+    expect(workspacePageClassName("standard", "trip-settings-page")).toContain("max-[1199px]:min-h-[calc(100dvh-48px)]");
+    expect(screen.getByRole("form", { name: "Trip details" })).toHaveClass(
+      "rounded-(--radius-lg)",
+      "bg-(--color-surface)",
+      "shadow-[0_1px_0_rgb(15_23_42_/_0.04)]",
+      "settings-form",
+    );
+    expect(screen.getByRole("navigation", { name: "Folders" })).toHaveClass("p-3.5", "folder-rail");
+    expect(screen.getByText("Trip name").closest("label")).toHaveClass("grid", "gap-1.5", "text-(--color-text)");
+    expect(screen.getByRole("textbox")).toHaveClass("focus:border-(--color-route-border)", "disabled:bg-(--color-surface-muted)");
   });
 
   it("renders page headers with and without optional regions", () => {

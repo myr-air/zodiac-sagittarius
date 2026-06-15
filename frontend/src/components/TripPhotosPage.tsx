@@ -11,7 +11,7 @@ import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
 import { Icon } from "./icons";
 import { formatTripRange, PageHeader } from "./PageHeader";
-import { Badge, Button, IconButton } from "./ui";
+import { Badge, Button, IconButton, WorkspacePage, WorkspaceSurface } from "./ui";
 
 interface TripPhotosPageProps {
   trip: Trip;
@@ -40,11 +40,11 @@ const providers = ["all", "google_photos", "icloud", "google_drive", "dropbox", 
 const providerOptions = providers.filter((provider) => provider !== "all") as TripPhotoAlbumProvider[];
 const accessOptions = ["view_only", "collaborative", "upload_request"] satisfies TripPhotoAlbumAccess[];
 
-const pageClassName = "trip-photos-page grid min-h-full min-w-0 grid-rows-[auto_auto_minmax(0,1fr)] gap-3 bg-transparent px-6 py-[22px] pb-7 max-[1199px]:min-h-[calc(100dvh-48px)] max-[1199px]:gap-0 max-[1199px]:px-0 max-[1199px]:py-0 max-[1199px]:pb-0";
+const pageClassName = "trip-photos-page grid grid-rows-[auto_auto_minmax(0,1fr)] gap-3 max-[1199px]:gap-0";
 const summaryClassName = "photos-summary grid grid-cols-4 gap-3 max-[1199px]:grid-cols-2 max-[1199px]:gap-0 max-[767px]:grid-cols-1";
 const statClassName = "photos-stat grid min-h-[86px] gap-1 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) p-3.5 shadow-[0_1px_0_rgb(15_23_42_/_0.04)] max-[1199px]:rounded-none max-[1199px]:border-x-0 max-[1199px]:border-t-0 max-[1199px]:shadow-none [&_.icon]:text-(--color-primary) [&>span]:text-xs [&>span]:font-bold [&>span]:text-(--color-text-muted) [&>strong]:text-xl [&>strong]:font-black [&>strong]:text-(--color-text)";
 const contentClassName = "photos-content grid min-h-0 grid-cols-[minmax(0,1fr)_330px] gap-3 max-[1199px]:grid-cols-1 max-[1199px]:gap-0";
-const panelClassName = "photos-panel grid min-h-0 gap-3 rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) p-3.5 shadow-[0_1px_0_rgb(15_23_42_/_0.04)] max-[1199px]:rounded-none max-[1199px]:border-x-0 max-[1199px]:border-t-0 max-[1199px]:shadow-none";
+const panelClassName = "photos-panel grid min-h-0 gap-3";
 const providerGridClassName = "photos-providers grid grid-cols-7 gap-2 max-[1399px]:grid-cols-4 max-[767px]:grid-cols-2";
 const providerButtonClassName = "grid min-h-[76px] content-between gap-2 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) p-3 text-left transition-[background-color,border-color,box-shadow,transform] duration-150 hover:-translate-y-0.5 hover:border-(--color-primary-border) hover:bg-(--color-surface-subtle) focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary)";
 const selectedProviderClassName = "border-(--color-primary-border) bg-(--color-primary-soft) shadow-[0_1px_0_rgb(15_23_42_/_0.04)]";
@@ -52,7 +52,7 @@ const cardGridClassName = "photo-album-grid grid grid-cols-[repeat(auto-fit,minm
 const albumCardClassName = "photo-album-card grid min-h-[214px] grid-rows-[auto_minmax(0,1fr)_auto] gap-3 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) p-3 text-left text-sm shadow-[0_1px_0_rgb(15_23_42_/_0.04)] transition-[background-color,border-color,box-shadow,transform] duration-150 hover:-translate-y-0.5 hover:border-(--color-primary-border) hover:bg-(--color-surface-subtle)";
 const selectedAlbumClassName = "border-(--color-primary-border) bg-(--color-primary-soft) shadow-[0_1px_0_rgb(15_23_42_/_0.04)]";
 const albumCoverClassName = "photo-album-cover min-h-[74px] overflow-hidden rounded-(--radius-md) border border-(--color-border) bg-(--color-surface-subtle) bg-cover bg-center";
-const inspectorClassName = "photos-inspector sticky top-3 grid max-h-[calc(100vh-92px)] content-start gap-3 overflow-auto rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) p-3.5 shadow-[0_1px_0_rgb(15_23_42_/_0.04)] max-[1199px]:static max-[1199px]:max-h-none max-[1199px]:rounded-none max-[1199px]:border-x-0 max-[1199px]:border-t-0 max-[1199px]:shadow-none";
+const inspectorClassName = "photos-inspector sticky top-3 grid max-h-[calc(100vh-92px)] content-start gap-3 overflow-auto max-[1199px]:static max-[1199px]:max-h-none";
 const inspectorSectionClassName = "grid gap-2 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface-subtle) p-2.5 text-sm";
 const dialogBackdropClassName = "modal-backdrop fixed inset-0 z-20 grid place-items-center bg-[rgb(15_23_42_/_0.28)] p-4";
 const dialogClassName = "photos-dialog grid max-h-[min(720px,calc(100vh_-_32px))] w-full max-w-[720px] grid-rows-[auto_minmax(0,1fr)] overflow-hidden rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) shadow-[0_14px_34px_rgb(15_23_42_/_0.16)]";
@@ -250,7 +250,7 @@ export function TripPhotosPage({
   }
 
   return (
-    <section className={pageClassName} aria-label={copy.pageLabel} role="region">
+    <WorkspacePage className={pageClassName} aria-label={copy.pageLabel} role="region">
       <PageHeader
         title={copy.title}
         subtitle={trip.name}
@@ -270,7 +270,7 @@ export function TripPhotosPage({
       </div>
 
       <div className={contentClassName}>
-        <div className={panelClassName}>
+        <WorkspaceSurface as="div" className={panelClassName} density="compact">
           <div className={providerGridClassName} aria-label={copy.providersLabel}>
             {providers.map((provider) => (
               <button
@@ -323,7 +323,7 @@ export function TripPhotosPage({
               </div>
             ) : null}
           </div>
-        </div>
+        </WorkspaceSurface>
 
         <PhotoAlbumInspector album={selectedAlbum} relations={selectedRelations} trip={trip} copy={copy} />
       </div>
@@ -351,7 +351,7 @@ export function TripPhotosPage({
           </div>
         </div>
       ) : null}
-    </section>
+    </WorkspacePage>
   );
 }
 
@@ -442,16 +442,16 @@ function PhotoAlbumInspector({
 }) {
   if (!album) {
     return (
-      <section className={inspectorClassName} aria-label={copy.inspectorLabel}>
+      <WorkspaceSurface className={inspectorClassName} density="compact" aria-label={copy.inspectorLabel}>
         <div className={inspectorSectionClassName}>{copy.selectHint}</div>
-      </section>
+      </WorkspaceSurface>
     );
   }
   const href = safePhotoAlbumHref(album.url);
   const createdBy = trip.members.find((member) => member.id === album.createdBy);
   const linkHost = albumLinkHost(href);
   return (
-    <section className={inspectorClassName} aria-label={copy.inspectorLabel}>
+    <WorkspaceSurface className={inspectorClassName} density="compact" aria-label={copy.inspectorLabel}>
       <div className="grid gap-2">
         <Badge tone={album.access === "collaborative" ? "primary" : album.access === "upload_request" ? "warning" : "route"}>{providerLabel(album.provider, copy)}</Badge>
         <h2 className="m-0 text-xl font-black text-(--color-text)">{album.title}</h2>
@@ -494,7 +494,7 @@ function PhotoAlbumInspector({
           <span key={item.id} className="text-sm">{item.day} · {item.activity}</span>
         )) : <span className="text-(--color-text-muted)">{copy.tripLevel}</span>}
       </div>
-    </section>
+    </WorkspaceSurface>
   );
 }
 
