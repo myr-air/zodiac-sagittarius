@@ -66,6 +66,11 @@ export function resolveItineraryPathItems(items: ItineraryItem[], selection: Iti
 
   const visibleItems: ItineraryItem[] = [];
   for (const groupItems of groups.values()) {
+    if (!itineraryPathGroupHasAlternatives(groupItems)) {
+      visibleItems.push(...groupItems);
+      continue;
+    }
+
     const day = groupItems[0]?.day ?? "";
     const selectedPathId = selection.dayPathOverrides?.[day] || selection.tripPathId || mainItineraryPathId;
     const selected = groupItems.find((item) => itineraryItemPathId(item) === selectedPathId);
@@ -179,6 +184,10 @@ function sortItineraryItems(items: ItineraryItem[]): ItineraryItem[] {
 
 function itineraryPathGroupKey(item: ItineraryItem): string {
   return item.pathGroupId || `${item.day}:${item.startTime}:${item.sortOrder}:${item.id}`;
+}
+
+function itineraryPathGroupHasAlternatives(items: ItineraryItem[]): boolean {
+  return items.some((item) => item.pathRole === "alternative" || Boolean(item.pathId));
 }
 
 function itineraryItemPathId(item: ItineraryItem): string {

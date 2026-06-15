@@ -58,6 +58,43 @@ describe("itinerary planning domain", () => {
     expect(visible.map((item) => item.id)).toEqual(["main-breakfast", "rain-museum"]);
   });
 
+  it("does not collapse imported main rows that accidentally share one path group", () => {
+    const items = [
+      {
+        ...seedTrip.itineraryItems[0],
+        id: "imported-main-flight",
+        day: "2026-06-18",
+        sortOrder: 100,
+        pathGroupId: "path-group-import-batch",
+        pathRole: "main" as const,
+      },
+      {
+        ...seedTrip.itineraryItems[1],
+        id: "imported-main-hotel",
+        day: "2026-06-18",
+        sortOrder: 200,
+        pathGroupId: "path-group-import-batch",
+        pathRole: "main" as const,
+      },
+      {
+        ...seedTrip.itineraryItems[2],
+        id: "imported-main-breakfast",
+        day: "2026-06-19",
+        sortOrder: 100,
+        pathGroupId: "path-group-import-batch",
+        pathRole: "main" as const,
+      },
+    ];
+
+    const visible = resolveItineraryPathItems(items, { tripPathId: "main" });
+
+    expect(visible.map((item) => item.id)).toEqual([
+      "imported-main-flight",
+      "imported-main-hotel",
+      "imported-main-breakfast",
+    ]);
+  });
+
   it("lets day path overrides win over the whole-trip path without deleting rows", () => {
     const mainDinner = {
       ...seedTrip.itineraryItems.find((item) => item.id === "item-temple-street")!,
