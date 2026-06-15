@@ -125,6 +125,8 @@ describe("shared UI primitives", () => {
       "redo",
       "route",
       "settings",
+      "sunrise",
+      "sunset",
       "table",
       "trash",
       "undo",

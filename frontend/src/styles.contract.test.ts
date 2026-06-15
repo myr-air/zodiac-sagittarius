@@ -164,7 +164,8 @@ describe("Calm Travel Ops CSS contract", () => {
     expect(contextRailSource).toContain("shadow-[-28px_0_54px_rgb(15_23_42_/_0.18)]");
     expect(smartTableSource).toContain("item-placeholder-row activity-row");
     expect(smartTableSource).toContain("item-placeholder-cell min-w-0 bg-(--color-surface)");
-    expect(smartTableSource).toContain("activity-cell grid min-h-[58px]");
+    expect(smartTableSource).toContain("activity-cell grid min-h-[60px]");
+    expect(smartTableSource).toContain("activityHeaderGridClassName");
     expect(smartTableSource).toContain("sub-activity-line grid");
   });
 

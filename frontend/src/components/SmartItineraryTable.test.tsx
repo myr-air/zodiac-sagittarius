@@ -386,7 +386,9 @@ describe("SmartItineraryTable", () => {
     const weatherChip = screen.getByLabelText(/Weather for Day 2/i);
     expect(weatherChip.querySelector(".icon")).toBeInTheDocument();
     expect(weatherChip).toHaveTextContent("33° 28°");
-    expect(weatherChip).toHaveTextContent("05:46/18:47");
+    expect(weatherChip).toHaveTextContent("05:46");
+    expect(weatherChip).toHaveTextContent("18:47");
+    expect(weatherChip.querySelectorAll(".icon")).toHaveLength(3);
     expect(weatherChip).toHaveAttribute(
       "title",
       expect.stringContaining("Feels 38° 31°"),
@@ -453,7 +455,8 @@ describe("SmartItineraryTable", () => {
     });
 
     const weatherChip = screen.getByLabelText(/Weather for Day 2/i);
-    expect(weatherChip).toHaveTextContent("05:39/19:09");
+    expect(weatherChip).toHaveTextContent("05:39");
+    expect(weatherChip).toHaveTextContent("19:09");
     expect(weatherChip).not.toHaveTextContent("Forecast pending");
   });
 
@@ -527,8 +530,8 @@ describe("SmartItineraryTable", () => {
     expect(
       itemRows[0]?.querySelector(".activity-cell"),
     ).toHaveClass(
-      "min-h-[58px]",
-      "grid-cols-[56px_84px_minmax(0,1fr)]",
+      "min-h-[60px]",
+      "grid-cols-[64px_112px_minmax(0,1fr)]",
       "data-[selected=true]:bg-(--color-route-soft)",
     );
     expect(
@@ -542,9 +545,9 @@ describe("SmartItineraryTable", () => {
       }),
     ).toHaveClass(
       "activity-type-picker",
-      "!min-h-6",
+      "!min-h-[52px]",
       "rounded-(--radius-sm)",
-      "max-[640px]:[&_.inline-option-picker-label]:sr-only",
+      "[&_.inline-option-picker-caret]:hidden",
     );
     expect(
       within(itemRows[0]).getByRole("button", {
