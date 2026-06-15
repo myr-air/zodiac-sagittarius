@@ -528,7 +528,7 @@ describe("SmartItineraryTable", () => {
       itemRows[0]?.querySelector(".activity-cell"),
     ).toHaveClass(
       "min-h-[58px]",
-      "grid-cols-[56px_minmax(0,1fr)]",
+      "grid-cols-[56px_84px_minmax(0,1fr)]",
       "data-[selected=true]:bg-(--color-route-soft)",
     );
     expect(
@@ -540,7 +540,17 @@ describe("SmartItineraryTable", () => {
       within(itemRows[0]).getByRole("button", {
         name: /แก้ไขประเภท|Edit type/i,
       }),
-    ).toHaveClass("!min-h-7", "rounded-(--radius-sm)");
+    ).toHaveClass(
+      "activity-type-picker",
+      "!min-h-6",
+      "rounded-(--radius-sm)",
+      "max-[640px]:[&_.inline-option-picker-label]:sr-only",
+    );
+    expect(
+      within(itemRows[0]).getByRole("button", {
+        name: /แก้ไขประเภท|Edit type/i,
+      }).querySelector(".icon"),
+    ).toBeInTheDocument();
     const subActivityToggle = within(itemRows[0]).getByRole("button", {
       name: /Sub-activities for/i,
     });

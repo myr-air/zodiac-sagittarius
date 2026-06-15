@@ -36,7 +36,7 @@ import {
   weatherIconForCondition,
 } from "@/src/trip/weather-briefings";
 import { Button } from "./ui";
-import { Icon } from "./icons";
+import { Icon, type IconName } from "./icons";
 import { formatTripRange, PageHeader } from "./PageHeader";
 import {
   activityTypeLabel,
@@ -229,11 +229,13 @@ const itemPlaceholderRowClassName =
 const itemPlaceholderCellClassName =
   "item-placeholder-cell min-w-0 bg-(--color-surface) px-0 py-0 align-top";
 const activityCellClassName =
-  "activity-cell grid min-h-[58px] min-w-0 grid-cols-[56px_minmax(0,1fr)] gap-1.5 px-2 py-1.5 transition-[background,box-shadow] duration-150 group-hover/activity:bg-(--color-surface-subtle) data-[selected=true]:bg-(--color-route-soft) data-[selected=true]:shadow-[inset_0_0_0_1px_var(--color-route-border)] max-[360px]:grid-cols-1 max-[360px]:gap-1 max-[360px]:px-2";
+  "activity-cell grid min-h-[58px] min-w-0 grid-cols-[56px_84px_minmax(0,1fr)] gap-1.5 px-2 py-1.5 transition-[background,box-shadow] duration-150 group-hover/activity:bg-(--color-surface-subtle) data-[selected=true]:bg-(--color-route-soft) data-[selected=true]:shadow-[inset_0_0_0_1px_var(--color-route-border)] max-[360px]:grid-cols-1 max-[360px]:gap-1 max-[360px]:px-2";
 const activityTimeRailClassName =
   "flex min-w-0 flex-col gap-0.5 text-[11px] font-extrabold leading-4 text-(--color-text-muted) max-[360px]:flex-row max-[360px]:items-center";
 const activityTimeButtonClassName =
   "activity-time-button inline-flex h-6 w-[54px] items-center justify-start rounded-(--radius-sm) border border-transparent bg-transparent px-1 font-mono text-[11px] font-extrabold leading-4 text-(--color-text) outline-none transition-colors duration-150 hover:border-(--color-route-border) hover:bg-(--color-route-soft) hover:text-(--color-route) focus:border-(--color-route-border) focus:bg-(--color-route-soft) focus:text-(--color-route) focus:ring-2 focus:ring-(--color-focus) disabled:cursor-default disabled:text-(--color-text-muted)";
+const activityTypeRailClassName =
+  "flex min-w-0 items-start justify-start max-[360px]:items-center";
 const activityBodyClassName = "min-w-0 space-y-1";
 const activityMainLineClassName =
   "grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-start gap-2 max-[420px]:grid-cols-1 max-[420px]:gap-1";
@@ -252,7 +254,7 @@ const activityMetaClassName =
 const activityPillClassName =
   "inline-flex min-h-5 max-w-[148px] items-center gap-1 rounded-full border border-(--color-border) bg-(--color-surface-subtle) px-1.5 text-[11px] font-extrabold leading-4 text-(--color-text-muted)";
 const activityTypePickerClassName =
-  "!min-h-7 max-w-[92px] shrink-0 rounded-(--radius-sm) border-(--color-border) bg-(--color-surface-subtle) px-2 text-[11px]";
+  "activity-type-picker !min-h-6 h-6 w-[82px] max-w-[82px] shrink-0 rounded-(--radius-sm) border-(--color-border) bg-(--color-surface-subtle) px-1.5 text-[11px] font-extrabold text-(--color-text-muted) hover:border-(--color-route-border) hover:bg-(--color-route-soft) hover:text-(--color-route) aria-[expanded=true]:border-(--color-route-border) aria-[expanded=true]:bg-(--color-route-soft) aria-[expanded=true]:text-(--color-route) max-[640px]:w-7 max-[640px]:max-w-7 max-[640px]:justify-center max-[640px]:px-0 max-[640px]:[&_.inline-option-picker-caret]:hidden max-[640px]:[&_.inline-option-picker-label]:sr-only [&_.icon]:size-3.5";
 const subActivityListClassName =
   "sub-activity-list mt-1.5 grid min-w-0 gap-0.5 border-t border-dashed border-(--color-border) pt-1.5 max-[640px]:hidden";
 const subActivityModalListClassName =
@@ -1203,6 +1205,23 @@ function ActivityCell({
           onSave={(patch) => onUpdateItemInline?.(item.id, patch)}
         />
       </div>
+      <div className={activityTypeRailClassName}>
+        <InlineOptionPicker
+          ariaLabel={itineraryLabels.row.inlineType({
+            activity: item.activity,
+          })}
+          buttonClassName={activityTypePickerClassName}
+          disabled={!editable}
+          options={typeOptions}
+          optionKeyPrefix={`activity-type-${item.id}`}
+          value={item.activityType}
+          onCommit={(activityType) =>
+            onUpdateItemInline?.(item.id, {
+              activityType: activityType as ItineraryItem["activityType"],
+            })
+          }
+        />
+      </div>
       <div className={activityBodyClassName}>
         <div className={activityMainLineClassName}>
           <div className={activitySentenceClassName}>
@@ -1239,21 +1258,6 @@ function ActivityCell({
             </span>
           </div>
           <div className={activityActionsClassName}>
-            <InlineOptionPicker
-              ariaLabel={itineraryLabels.row.inlineType({
-                activity: item.activity,
-              })}
-              buttonClassName={activityTypePickerClassName}
-              disabled={!editable}
-              options={typeOptions}
-              optionKeyPrefix={`activity-type-${item.id}`}
-              value={item.activityType}
-              onCommit={(activityType) =>
-                onUpdateItemInline?.(item.id, {
-                  activityType: activityType as ItineraryItem["activityType"],
-                })
-              }
-            />
             {item.mapLink ? (
               <a
                 className={activityIconButtonClassName}
@@ -2065,7 +2069,16 @@ function activityTypeOptions(locale: Locale): InlineOptionPickerOption[] {
     "experience",
     "stay",
   ];
+  const icons: Record<ItineraryItem["activityType"], IconName> = {
+    attraction: "location",
+    experience: "ticket",
+    food: "utensils",
+    shopping: "wallet",
+    stay: "home",
+    travel: "route",
+  };
   return types.map((type) => ({
+    icon: icons[type],
     value: type,
     label: activityTypeLabel(type, locale),
   }));
@@ -2246,6 +2259,7 @@ function formatDecimal(value: number): string {
 }
 
 interface InlineOptionPickerOption {
+  icon?: IconName;
   label: string;
   value: string;
 }
@@ -2369,8 +2383,19 @@ function InlineOptionPicker({
           if (event.key === "Escape") setOpen(false);
         }}
       >
-        <span className="min-w-0 truncate">{selectedOption?.label ?? "—"}</span>
-        <span className={inlineOptionPickerCaretClassName} aria-hidden="true">
+        {selectedOption?.icon ? (
+          <Icon name={selectedOption.icon} className="size-3.5" />
+        ) : null}
+        <span className="inline-option-picker-label min-w-0 truncate">
+          {selectedOption?.label ?? "—"}
+        </span>
+        <span
+          className={cn(
+            inlineOptionPickerCaretClassName,
+            "inline-option-picker-caret",
+          )}
+          aria-hidden="true"
+        >
           ⌄
         </span>
       </button>
@@ -2423,7 +2448,12 @@ function InlineOptionPicker({
                   onMouseEnter={() => setActiveIndex(index)}
                   onClick={() => commitOption(option)}
                 >
-                  <span className="min-w-0 truncate">{option.label}</span>
+                  <span className="flex min-w-0 items-center gap-2">
+                    {option.icon ? (
+                      <Icon name={option.icon} className="size-3.5" />
+                    ) : null}
+                    <span className="min-w-0 truncate">{option.label}</span>
+                  </span>
                   <span aria-hidden="true">
                     {option.value === value ? "✓" : ""}
                   </span>
