@@ -4,10 +4,11 @@ import {
   findBookingDocRelations,
 } from "@/src/trip/booking-docs";
 import type { BookingDoc, BookingDocStatus, BookingDocType, BookingDocVisibility, Member, Trip, TripTask } from "@/src/trip/types";
+import type { Locale } from "@/src/i18n/types";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
 import { Icon } from "./icons";
-import { formatTripRange, PageHeader, PageUserCard } from "./PageHeader";
+import { formatTripRange } from "./PageHeader";
 import { Button, IconButton } from "./ui";
 import { DateTimePickerField } from "./DateTimePickers";
 
@@ -67,6 +68,18 @@ const bookingFolders: Array<{
 ];
 
 const pageClassName = "bookings-docs-page grid min-h-full min-w-0 grid-rows-[auto_minmax(0,1fr)] gap-3 bg-transparent px-6 py-[22px] pb-7 max-[767px]:gap-0 max-[767px]:px-0 max-[767px]:py-0";
+const headerClassName = "booking-docs-header grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-(--color-border) bg-(--color-surface) px-3 py-2.5 max-[767px]:gap-2 max-[767px]:px-3 max-[767px]:py-2";
+const headerCopyClassName = "grid min-w-0 gap-1";
+const headerTitleRowClassName = "flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1";
+const headerTitleClassName = "m-0 text-[20px] font-black leading-7 text-(--color-text) max-[767px]:text-[17px] max-[767px]:leading-6";
+const headerTripClassName = "truncate text-sm font-bold text-(--color-text-muted) max-[767px]:hidden";
+const headerMetaClassName = "flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-xs font-bold text-(--color-text-muted) [&_.icon]:size-3.5 [&_.icon]:text-(--color-primary-strong) [&>span]:inline-flex [&>span]:items-center [&>span]:gap-1";
+const headerActionsClassName = "flex min-w-0 items-center justify-end gap-2";
+const headerUserClassName = "grid min-w-0 grid-cols-[28px_minmax(0,1fr)] items-center gap-2 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface-subtle) px-2 py-1.5 max-[767px]:hidden";
+const headerAvatarClassName = "person-avatar !size-7 text-xs";
+const headerUserCopyClassName = "grid min-w-0 gap-0";
+const headerUserNameClassName = "truncate text-xs font-extrabold text-(--color-text)";
+const headerUserLabelClassName = "truncate text-[11px] font-bold text-(--color-text-muted)";
 const contentClassName = "bookings-content grid min-h-0 grid-cols-[220px_minmax(0,1fr)_330px] gap-3 max-[1199px]:grid-cols-[200px_minmax(0,1fr)] max-[1199px]:[&_.booking-inspector]:col-span-2 max-[767px]:grid-cols-1 max-[767px]:gap-0 max-[767px]:[&_.booking-inspector]:col-span-1";
 const folderRailClassName = "booking-folder-rail grid min-h-0 content-start gap-1 rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) p-2.5 shadow-[0_1px_0_rgb(15_23_42_/_0.04)] max-[767px]:grid-cols-7 max-[767px]:content-normal max-[767px]:gap-0 max-[767px]:rounded-none max-[767px]:border-x-0 max-[767px]:border-t-0 max-[767px]:p-0 max-[767px]:shadow-none";
 const folderButtonClassName = "group grid min-h-10 grid-cols-[28px_minmax(0,1fr)_auto] items-center gap-2 rounded-(--radius-md) border border-transparent bg-transparent px-2 py-1.5 text-left text-sm font-bold text-(--color-text-muted) transition-[background-color,border-color,color] duration-150 hover:bg-(--color-surface-subtle) hover:text-(--color-text) focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary) [&_.icon]:size-4 max-[767px]:min-h-12 max-[767px]:grid-cols-1 max-[767px]:grid-rows-[20px_14px] max-[767px]:justify-items-center max-[767px]:gap-0 max-[767px]:rounded-none max-[767px]:border-0 max-[767px]:border-b-2 max-[767px]:border-transparent max-[767px]:px-0 max-[767px]:py-2 max-[767px]:text-center";
@@ -366,16 +379,14 @@ export function BookingsDocsPage({
 
   return (
     <section className={pageClassName} aria-label={copy.pageLabel} role="region">
-      <PageHeader
-        title={copy.title}
-        subtitle={trip.name}
-        meta={(
-          <>
-            <span><Icon name="calendar" /> {formatTripRange(trip.startDate, trip.endDate, locale)}</span>
-            <span><Icon name="ticket" /> {copy.records(bookingDocs.length)}</span>
-          </>
-        )}
-        aside={<PageUserCard color={currentMember.color} name={currentMember.displayName} label={canEditBookings ? copy.canEditBookings : copy.readOnly} />}
+      <BookingsDocsHeader
+        canEditBookings={canEditBookings}
+        copy={copy}
+        currentMember={currentMember}
+        locale={locale}
+        onAddBooking={() => setDialogBooking("new")}
+        recordCount={bookingDocs.length}
+        trip={trip}
       />
 
       <div className={contentClassName}>
@@ -434,7 +445,6 @@ export function BookingsDocsPage({
                   {bookingStatuses.map((status) => <option key={status} value={status}>{formatEnumLabel(status, copy)}</option>)}
                 </select>
               </label>
-              {canEditBookings ? <Button type="button" onClick={() => setDialogBooking("new")}><Icon name="plus" /> {copy.addBooking}</Button> : null}
             </div>
           </div>
 
@@ -521,6 +531,51 @@ export function BookingsDocsPage({
         </div>
       ) : null}
     </section>
+  );
+}
+
+function BookingsDocsHeader({
+  canEditBookings,
+  copy,
+  currentMember,
+  locale,
+  onAddBooking,
+  recordCount,
+  trip,
+}: {
+  canEditBookings: boolean;
+  copy: typeof bookingCopy.en | typeof bookingCopy.th;
+  currentMember: Member;
+  locale: Locale;
+  onAddBooking: () => void;
+  recordCount: number;
+  trip: Trip;
+}) {
+  return (
+    <header className={headerClassName}>
+      <div className={headerCopyClassName}>
+        <div className={headerTitleRowClassName}>
+          <h1 className={headerTitleClassName}>{copy.title}</h1>
+          <span className={headerTripClassName}>{trip.name}</span>
+        </div>
+        <div className={headerMetaClassName}>
+          <span><Icon name="calendar" /> {formatTripRange(trip.startDate, trip.endDate, locale)}</span>
+          <span><Icon name="ticket" /> {copy.records(recordCount)}</span>
+        </div>
+      </div>
+      <div className={headerActionsClassName}>
+        <div className={headerUserClassName}>
+          <span className={headerAvatarClassName} style={{ backgroundColor: currentMember.color }} aria-hidden="true">
+            {currentMember.displayName.slice(0, 1)}
+          </span>
+          <span className={headerUserCopyClassName}>
+            <strong className={headerUserNameClassName}>{currentMember.displayName}</strong>
+            <span className={headerUserLabelClassName}>{canEditBookings ? copy.canEditBookings : copy.readOnly}</span>
+          </span>
+        </div>
+        {canEditBookings ? <Button type="button" onClick={onAddBooking} aria-label={copy.addBooking}><Icon name="plus" /> <span className="max-[767px]:sr-only">{copy.addBooking}</span></Button> : null}
+      </div>
+    </header>
   );
 }
 

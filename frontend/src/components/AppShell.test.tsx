@@ -48,6 +48,7 @@ describe("AppShell", () => {
       "data-[collapsed=true]:flex-col",
       "data-[collapsed=true]:justify-center",
       "max-[1199px]:justify-center",
+      "max-[767px]:min-h-11",
       "max-[767px]:flex-row",
       "max-[767px]:justify-between",
     );
@@ -56,7 +57,7 @@ describe("AppShell", () => {
       "data-[collapsed=true]:w-7",
       "max-[1199px]:hidden",
     );
-    expect(screen.getByText(seedTrip.name)).toHaveClass("max-[767px]:block", "max-[767px]:truncate");
+    expect(screen.getByText(seedTrip.name)).toHaveClass("hidden");
     expect(container.querySelector(".rail-links")).toHaveClass(
       "w-full",
       "box-border",

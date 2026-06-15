@@ -63,6 +63,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 async function expectBookingsResponsiveContract(canvasElement: HTMLElement) {
+  await expect(canvasElement.querySelector(".booking-docs-header")).toHaveClass("booking-docs-header", "grid-cols-[minmax(0,1fr)_auto]");
   await expect(canvasElement.querySelector(".bookings-content")).toHaveClass("bookings-content", "max-[767px]:grid-cols-1", "max-[767px]:gap-0");
   await expect(canvasElement.querySelector(".booking-folder-rail")).toHaveClass("booking-folder-rail", "max-[767px]:grid-cols-7", "max-[767px]:rounded-none", "max-[767px]:shadow-none");
   await expect(canvasElement.querySelector(".bookings-file-panel")).toHaveClass("bookings-file-panel", "max-[767px]:rounded-none", "max-[767px]:shadow-none");

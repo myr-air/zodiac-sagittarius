@@ -51,6 +51,8 @@ describe("shared UI primitives", () => {
     expect(screen.getByRole("banner")).toHaveClass(
       "page-header",
       "min-h-[108px]",
+      "max-[767px]:rounded-none",
+      "max-[767px]:shadow-none",
       "overflow-hidden",
       "bg-[color-mix(in_srgb,var(--color-surface)_88%,var(--color-postcard))]",
       "shadow-[0_6px_8px_rgb(55_47_38_/_0.045)]",
@@ -75,6 +77,7 @@ describe("shared UI primitives", () => {
     expect(screen.getByText("Plan")).toHaveClass("bg-(--color-primary-soft)", "text-(--color-primary-strong)");
     expect(screen.getByText("Plan").className).not.toContain("uppercase");
     expect(screen.getByRole("heading", { name: "Day one", level: 2 })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Day one", level: 2 })).toHaveClass("max-[767px]:hidden");
     expect(screen.getByText("A compact overview")).toHaveClass("page-header-description");
     expect(screen.getByText("A compact overview")).toHaveClass("max-w-[560px]", "text-(--color-text-muted)");
     expect(screen.getByText("Updated now")).toBeInTheDocument();

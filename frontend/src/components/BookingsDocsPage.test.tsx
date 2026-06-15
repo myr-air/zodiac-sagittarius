@@ -17,6 +17,11 @@ describe("BookingsDocsPage", () => {
     renderPage();
 
     expect(screen.getByRole("region", { name: "Bookings & Docs" })).toHaveClass("bookings-docs-page", "bg-transparent");
+    expect(document.querySelector(".booking-docs-header")).toHaveClass("border-b", "bg-(--color-surface)", "grid-cols-[minmax(0,1fr)_auto]");
+    expect(screen.getByRole("heading", { name: "Bookings & Docs" })).toHaveClass("max-[767px]:text-[17px]");
+    expect(screen.getByText("Hong Kong + Shenzhen Trip")).toHaveClass("max-[767px]:hidden");
+    expect(screen.getByText("Demo Traveler")).toBeInTheDocument();
+    expect(screen.getByText("Can edit bookings")).toBeInTheDocument();
     expect(document.querySelector(".booking-folder-rail")).toHaveClass("shadow-[0_1px_0_rgb(15_23_42_/_0.04)]");
     expect(document.querySelector(".bookings-file-panel")).toHaveClass("shadow-[0_1px_0_rgb(15_23_42_/_0.04)]");
     expect(document.querySelector(".booking-inspector")).toHaveClass("shadow-[0_1px_0_rgb(15_23_42_/_0.04)]");
