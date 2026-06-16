@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import { buildExpenseSummary } from "./expenses";
 import { seedTrip } from "./seed";
 import {
+  appendItineraryItemPlacement,
+  appendItineraryItemToTrip,
   getNowNext,
   buildItineraryCommitmentsByItemId,
   buildItineraryItemDraft,
@@ -540,6 +542,26 @@ describe("itinerary planning domain", () => {
       planVariantId: parentItem.planVariantId,
     });
     expect(child.sortOrder).toBe(parentItem.sortOrder + 10);
+  });
+
+  it("appends itinerary items to trips without branch side effects", () => {
+    const item = {
+      ...seedTrip.itineraryItems[0],
+      id: "item-appended",
+      activity: "Appended item",
+    };
+
+    const nextTrip = appendItineraryItemToTrip(seedTrip, item);
+    const placement = appendItineraryItemPlacement(seedTrip, item);
+
+    expect(nextTrip).not.toBe(seedTrip);
+    expect(nextTrip.itineraryItems.at(-1)).toEqual(item);
+    expect(seedTrip.itineraryItems.some((candidate) => candidate.id === item.id)).toBe(false);
+    expect(placement).toEqual({
+      trip: nextTrip,
+      item,
+      changedExistingItems: [],
+    });
   });
 
   it("replaces one itinerary item without changing other trip records", () => {

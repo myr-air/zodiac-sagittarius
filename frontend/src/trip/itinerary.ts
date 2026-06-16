@@ -98,6 +98,12 @@ export interface BuildItineraryItemDraftOptions {
   updatedAt: string;
 }
 
+export interface ItineraryItemPlacement {
+  trip: Trip;
+  item: ItineraryItem;
+  changedExistingItems: ItineraryItem[];
+}
+
 export function getTripDates(startDate: string, endDate: string): string[] {
   const start = new Date(`${startDate}T00:00:00Z`);
   const end = new Date(`${endDate}T00:00:00Z`);
@@ -193,6 +199,27 @@ export function buildItineraryItemDraft(
     createdBy: options.createdBy,
     updatedAt: options.updatedAt,
     version: 1,
+  };
+}
+
+export function appendItineraryItemToTrip(
+  trip: Trip,
+  item: ItineraryItem,
+): Trip {
+  return {
+    ...trip,
+    itineraryItems: [...trip.itineraryItems, item],
+  };
+}
+
+export function appendItineraryItemPlacement(
+  trip: Trip,
+  item: ItineraryItem,
+): ItineraryItemPlacement {
+  return {
+    trip: appendItineraryItemToTrip(trip, item),
+    item,
+    changedExistingItems: [],
   };
 }
 

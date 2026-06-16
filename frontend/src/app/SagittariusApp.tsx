@@ -110,6 +110,8 @@ import {
   updateLocalExpenseInTrip,
 } from "@/src/trip/expenses";
 import {
+  appendItineraryItemPlacement,
+  appendItineraryItemToTrip,
   buildItineraryCommitmentsByItemId,
   buildItineraryItemDraft,
   buildItineraryView,
@@ -1535,24 +1537,10 @@ export function SagittariusApp({
     );
     const branchPlacement =
       parentItem
-        ? {
-            trip: {
-              ...trip,
-              itineraryItems: [...trip.itineraryItems, draftItem],
-            },
-            item: draftItem,
-            changedExistingItems: [],
-          }
+        ? appendItineraryItemPlacement(trip, draftItem)
         : targetPathId === mainItineraryPathId
         ? applyItemToActivityBranch(trip, draftItem)
-        : {
-            trip: {
-              ...trip,
-              itineraryItems: [...trip.itineraryItems, draftItem],
-            },
-            item: draftItem,
-            changedExistingItems: [],
-          };
+        : appendItineraryItemPlacement(trip, draftItem);
     if (isApiMode && resolvedApiClient && participantSession) {
       const patchedBranchItems = await patchApiItineraryBranchItems({
         apiClient: resolvedApiClient,
@@ -1624,16 +1612,10 @@ export function SagittariusApp({
     commitTrip(
       (current) =>
         parentItem
-          ? {
-              ...current,
-              itineraryItems: [...current.itineraryItems, draftItem],
-            }
+          ? appendItineraryItemToTrip(current, draftItem)
           : targetPathId === mainItineraryPathId
           ? applyItemToActivityBranch(current, draftItem).trip
-          : {
-              ...current,
-              itineraryItems: [...current.itineraryItems, draftItem],
-            },
+          : appendItineraryItemToTrip(current, draftItem),
       draftItem.id,
     );
     setContextRailVisibility(false);
