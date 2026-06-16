@@ -1,3 +1,7 @@
+import type {
+  CreatePhotoAlbumApiRequest,
+  PatchPhotoAlbumApiRequest,
+} from "./api-client";
 import { safeExternalHref } from "./safe-links";
 import type { ItineraryItem, Member, Trip, TripPhotoAlbumAccess, TripPhotoAlbumLink, TripPhotoAlbumProvider } from "./types";
 
@@ -43,6 +47,15 @@ export interface LocalPhotoAlbumUpdateOptions {
   title: string;
   url: string;
   updatedAt: string;
+}
+
+export interface BuildCreatePhotoAlbumRequestOptions {
+  clientMutationId: string;
+}
+
+export interface BuildPatchPhotoAlbumRequestOptions {
+  clientMutationId: string;
+  expectedVersion: number;
 }
 
 export function buildPhotoAlbumSummary(albums: TripPhotoAlbumLink[]): PhotoAlbumSummary {
@@ -92,6 +105,27 @@ export function serializePhotoAlbumInputForApi(input: PhotoAlbumInputForApi) {
     accessNote: input.accessNote?.trim() || null,
     coverUrl: input.coverUrl?.trim() || null,
     day: input.day?.trim() || null,
+  };
+}
+
+export function buildCreatePhotoAlbumRequest(
+  input: PhotoAlbumInputForApi,
+  options: BuildCreatePhotoAlbumRequestOptions,
+): CreatePhotoAlbumApiRequest {
+  return {
+    clientMutationId: options.clientMutationId,
+    ...serializePhotoAlbumInputForApi(input),
+  };
+}
+
+export function buildPatchPhotoAlbumRequest(
+  input: PhotoAlbumInputForApi,
+  options: BuildPatchPhotoAlbumRequestOptions,
+): PatchPhotoAlbumApiRequest {
+  return {
+    clientMutationId: options.clientMutationId,
+    expectedVersion: options.expectedVersion,
+    patch: serializePhotoAlbumInputForApi(input),
   };
 }
 

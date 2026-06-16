@@ -305,6 +305,8 @@ describe("Sagittarius project scaffold", () => {
     expect(sagittariusApp).not.toContain("function bookingDraftDetailsForItineraryItem");
     expect(sagittariusApp).not.toContain("function bookingDraftTimeWindowForItineraryItem");
     expect(sagittariusApp).not.toContain("function createLocalPhotoAlbum");
+    expect(sagittariusApp).not.toContain("function buildCreatePhotoAlbumRequest");
+    expect(sagittariusApp).not.toContain("function buildPatchPhotoAlbumRequest");
     expect(sagittariusApp).not.toContain("function appendPhotoAlbumToTrip");
     expect(sagittariusApp).not.toContain("function replacePhotoAlbumInTrip");
     expect(sagittariusApp).not.toContain("function updateLocalPhotoAlbum");

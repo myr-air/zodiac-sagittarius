@@ -37,10 +37,11 @@ import {
 } from "@/src/trip/api-errors";
 import {
   appendPhotoAlbumToTrip,
+  buildCreatePhotoAlbumRequest,
+  buildPatchPhotoAlbumRequest,
   createLocalPhotoAlbum,
   removePhotoAlbumFromTrip,
   replacePhotoAlbumInTrip,
-  serializePhotoAlbumInputForApi,
   updateLocalPhotoAlbumInTrip,
 } from "@/src/trip/photo-albums";
 import {
@@ -2826,10 +2827,13 @@ export function SagittariusApp({
       const photoAlbum = await resolvedApiClient.createPhotoAlbum(
         trip.id,
         participantSession.sessionToken,
-        {
+        buildCreatePhotoAlbumRequest({
+          ...input,
+          title,
+          url,
+        }, {
           clientMutationId: nextClientMutationId("photo-album-create"),
-          ...serializePhotoAlbumInputForApi({ ...input, title, url }),
-        },
+        }),
       );
       const nextTrip = appendPhotoAlbumToTrip(
         latestTripRef.current,
@@ -2865,11 +2869,10 @@ export function SagittariusApp({
           trip.id,
           albumId,
           participantSession.sessionToken,
-          {
+          buildPatchPhotoAlbumRequest(input, {
             clientMutationId: nextClientMutationId("photo-album-patch"),
             expectedVersion: photoAlbum.version,
-            patch: serializePhotoAlbumInputForApi(input),
-          },
+          }),
         );
         const nextTrip = replacePhotoAlbumInTrip(
           latestTripRef.current,
