@@ -1,6 +1,7 @@
 import { type FormEvent, useEffect, useMemo, useState } from "react";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
+import { slugifyFilePart } from "@/src/lib/file-names";
 import {
   buildExpenseCsv,
   buildExpenseStatement,
@@ -960,13 +961,6 @@ function refundSplits(expense: Expense): Record<string, number> {
 
 function refundAmount(expense: Expense): number {
   return sumShares(refundSplits(expense));
-}
-
-function slugifyFilePart(value: string): string {
-  return value
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "") || "trip";
 }
 
 function formatReminderDate(value: string, locale: string): string {

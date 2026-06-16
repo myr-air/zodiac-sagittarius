@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { Button, Select } from "@/src/components/ui";
+import { slugifyFilePart } from "@/src/lib/file-names";
 import {
   mainItineraryPathId,
   type ItineraryPathOption,
@@ -238,14 +239,4 @@ function buildItineraryImportApplyTarget({
     mode,
     recordMode,
   };
-}
-
-function slugifyFilePart(value: string): string {
-  return (
-    value
-      .trim()
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-|-$/g, "") || "trip"
-  );
 }

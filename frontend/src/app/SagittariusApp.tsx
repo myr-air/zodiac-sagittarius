@@ -21,6 +21,7 @@ import type { TripPhotoAlbumInput } from "@/src/components/TripPhotosPage";
 import type { TripSettingsFormValues } from "@/src/components/TripSettingsPage";
 import { Select } from "@/src/components/ui";
 import { useI18n } from "@/src/i18n/I18nProvider";
+import { slugifyFilePart } from "@/src/lib/file-names";
 import { appRoutes, decodeReturnTo } from "@/src/routes/app-routes";
 import {
   createTripApiClient,
@@ -4713,15 +4714,5 @@ export function replaceSuggestionById(
 ): Suggestion[] {
   return suggestions.map((candidate) =>
     candidate.id === suggestionId ? replacement : candidate,
-  );
-}
-
-function slugifyFilePart(value: string): string {
-  return (
-    value
-      .trim()
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-|-$/g, "") || "trip"
   );
 }

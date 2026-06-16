@@ -38,6 +38,7 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "app/page.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/app/SagittariusApp.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/account/AccountApp.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/lib/file-names.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/TripWorkspaceApp.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/TripWorkspaceDeleteDialog.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/TripWorkspaceFrame.tsx"))).toBe(true);
@@ -288,6 +289,7 @@ describe("Sagittarius project scaffold", () => {
     expect(sagittariusApp).not.toContain("function isUnauthenticated");
     expect(sagittariusApp).not.toContain("function isForbidden");
     expect(sagittariusApp).not.toContain("function isAuthFailure");
+    expect(sagittariusApp).not.toContain("function slugifyFilePart");
     expect(sagittariusApp).not.toContain('from "@/src/components/OverviewPage"');
     expect(sagittariusApp).not.toContain('from "@/src/components/TimelineView"');
 
