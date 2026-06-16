@@ -8,10 +8,8 @@ import {
 } from "react";
 import { AppShell } from "@/src/components/AppShell";
 import { StopDialog } from "@/src/components/StopDialog";
-import type { TripSettingsFormValues } from "@/src/components/TripSettingsPage";
 import { Select } from "@/src/components/ui";
 import { useI18n } from "@/src/i18n/I18nProvider";
-import { slugifyFilePart } from "@/src/lib/file-names";
 import { resolveJoinPostAuthReturnTo } from "@/src/trip/join-return";
 import { appRoutes, decodeReturnTo } from "@/src/trip/workspace/sagittarius-app/support";
 import {
@@ -19,83 +17,33 @@ import {
   type TripApiClient,
   type TripCockpit,
 } from "@/src/trip/api-client";
-import {
-  isAuthFailure,
-  isForbidden,
-  isUnauthenticated,
-} from "@/src/trip/api-errors";
+import { isAuthFailure } from "@/src/trip/api-errors";
 import {
   createAccountApiClient,
-  type AccountSession,
 } from "@/src/account/api-client";
 import {
-  loadPersistedAccountSession,
-  persistAccountSession,
-} from "@/src/account/session-storage";
-import {
   canTripRole,
-  appendTripParticipant,
-  buildCreateMemberRequest,
-  buildPatchMemberAccessStatusRequest,
-  buildPatchMemberPasswordRequest,
-  buildPatchMemberRoleRequest,
   buildUpdatePresenceRequest,
-  createTripParticipant,
   findSessionMember,
   replaceTripParticipant,
-  resetTripParticipantClaim,
-  setTripParticipantPassword,
-  setTripParticipantAccessStatus,
-  updateTripParticipantRole,
 } from "@/src/trip/auth";
 import {
   clearParticipantSession,
   isLocalParticipantSession,
-  loadPersistedParticipantSession,
   persistParticipantSession,
 } from "@/src/trip/participant-session-storage";
 import {
   normalizeTripPlanAliases,
 } from "@/src/trip/trip-plans";
-import { deriveTripCountriesFromDestination } from "@/src/trip/trip-countries";
 import {
   buildItineraryView,
 } from "@/src/trip/itinerary";
 import {
-  shiftItineraryItemsToStartDate,
-} from "@/src/trip/itinerary-time";
-import { buildShiftItineraryItemDayRequest } from "@/src/trip/itinerary-api-requests";
-import {
-  applyTripSettingsToTrip,
-  buildPatchTripSettingsRequest,
-  mergePatchedTripSettings,
-} from "@/src/trip/trip-settings";
-import {
   type PlaceResolver,
   type StopPlaceResolutionState,
 } from "@/src/trip/place-resolution";
-import {
-  applyImportedItemsToItineraryPath,
-  deriveManualActivityPathOptions,
-  type ItineraryImportApplyTarget,
-} from "@/src/trip/itinerary-paths";
+import { deriveManualActivityPathOptions } from "@/src/trip/itinerary-paths";
 import type { PlanningView } from "@/src/trip/workspace/planning-view";
-import {
-  buildImportItineraryRequest,
-  buildImportedItineraryItemCreateRequest,
-  createImportedPlanRecordsViaApi,
-} from "@/src/trip/workspace/itinerary-import-api";
-import {
-  buildImportedPlanRecordsForTripPlan,
-  emptyItineraryExportRecords,
-  mergeApiImportedPlanRecordsIntoTrip,
-  mergeImportedRecordsIntoTripPlan,
-  mergeImportedStopNotes,
-  mergeImportedTasks,
-  pendingItineraryImportFromDocument,
-  shouldUseApiItineraryImport,
-  type PendingItineraryImport,
-} from "@/src/trip/workspace/itinerary-import-model";
 import {
   initialSelectedTripPlanId,
   rememberSelectedTripPlanId,
@@ -119,25 +67,22 @@ import { WorkspaceToast } from "@/src/trip/workspace/WorkspaceToast";
 import {
   useWorkspacePhotoAlbums,
   useWorkspaceBookingCommands,
+  useWorkspaceAccessGate,
+  useWorkspaceItineraryImport,
+  useWorkspaceAdministration,
   useWorkspaceExpenses,
   useWorkspaceItineraryCommands,
   useWorkspaceRecords,
   useWorkspaceTripPlanCommands,
+  useWorkspaceSession,
 } from "./hooks";
-import {
-  buildItineraryExport,
-  parseItineraryImportDocument,
-} from "@/src/trip/itinerary-import-export";
 import { nextClientMutationId } from "@/src/trip/local-ids";
-import { loadPersistedTripDraft } from "@/src/trip/repository";
 import { seedTrip } from "@/src/trip/seed";
 import { TripWorkspaceAccessPanel } from "./access-gate";
 import type {
   ItineraryItem,
   Trip,
-  TripMemberAccessStatus,
   TripParticipantSession,
-  TripRole,
 } from "@/src/trip/types";
 import type { SagittariusAccessMode, SagittariusPortalSection } from "./types";
 
@@ -193,21 +138,11 @@ export function SagittariusApp({
       }),
     [],
   );
-  const [participantSession, setParticipantSession] =
-    useState<TripParticipantSession | null>(null);
   const [isCockpitLoaded, setIsCockpitLoaded] = useState(false);
-  const [sessionRestored, setSessionRestored] = useState(false);
-  const [accessError, setAccessError] = useState<string | null>(null);
-  const [accountSession, setAccountSession] = useState<AccountSession | null>(
-    null,
-  );
-  const [accountSessionLoaded, setAccountSessionLoaded] = useState(false);
   const [accountClaimState, setAccountClaimState] = useState<{
     status: "idle" | "saving";
     message: string | null;
   }>({ status: "idle", message: null });
-  const [accountTripAccessDeniedRouteId, setAccountTripAccessDeniedRouteId] =
-    useState<string | null>(null);
   const [joinInviteToken, setJoinInviteToken] = useState<string | null>(
     initialJoinToken ?? null,
   );
@@ -244,6 +179,27 @@ export function SagittariusApp({
     undo,
     updateApiTrip,
   } = useTripWorkspaceState(initialTrip, setSelectedItemId);
+  const isDataSourceApiMode = dataSource === "api";
+  const {
+    accessError,
+    accountSession,
+    accountSessionLoaded,
+    accountTripAccessDeniedRouteId,
+    changeAccountSession,
+    participantSession,
+    sessionRestored,
+    setAccessError,
+    setParticipantSession,
+  } = useWorkspaceSession({
+    accountClient,
+    initialTrip,
+    isApiMode: isDataSourceApiMode,
+    requireJoin,
+    routeTripId,
+    setCurrentMemberId,
+    setSelectedTripPlanId,
+    setTripState,
+  });
   const [dialogState, setDialogState] = useState<
     | { mode: "create"; day?: string; parentItemId?: string | null }
     | { mode: "edit"; item: ItineraryItem }
@@ -253,11 +209,6 @@ export function SagittariusApp({
     useState<StopPlaceResolutionState>({ state: "idle", candidates: [] });
   const [dialogDeleteItem, setDialogDeleteItem] =
     useState<ItineraryItem | null>(null);
-  const [pendingItineraryImport, setPendingItineraryImport] =
-    useState<PendingItineraryImport | null>(null);
-  const [itineraryImportError, setItineraryImportError] = useState<
-    string | null
-  >(null);
   const [tripPlanError, setTripPlanError] = useState<string | null>(null);
   const [isTripPlanBusy, setIsTripPlanBusy] = useState(false);
   const {
@@ -296,12 +247,6 @@ export function SagittariusApp({
       );
   }, [participantSession, placeResolver, resolvedApiClient, trip.id]);
   const sessionMember = findSessionMember(trip, participantSession);
-  const isAccountOnlyAccessMode =
-    accessMode === "account-login" || accessMode === "account-register";
-  const hasRouteParticipantSession = Boolean(
-    participantSession &&
-    (!routeTripId || participantSession.tripId === routeTripId),
-  );
   const currentMember =
     sessionMember ??
     trip.members.find((member) => member.id === currentMemberId) ??
@@ -330,6 +275,24 @@ export function SagittariusApp({
     currentMember.role,
     "reviewSuggestions",
   );
+  const {
+    canAccessPanel,
+    isAccountTripAccessPending,
+    shouldRedirectUnauthenticatedTripRoute,
+  } = useWorkspaceAccessGate({
+    accessMode,
+    accountSession,
+    accountSessionLoaded,
+    accountTripAccessDeniedRouteId,
+    accessError,
+    isApiMode,
+    isTripLoading,
+    participantSession,
+    routeTripId,
+    requireJoin,
+    sessionMember: Boolean(sessionMember),
+    sessionRestored,
+  });
   const canViewExpenses = canTripRole(currentMember.role, "viewExpenses");
   const canEditExpenses = canTripRole(currentMember.role, "editExpenses");
   const canManagePeople = canTripRole(currentMember.role, "managePeople");
@@ -350,7 +313,7 @@ export function SagittariusApp({
     clearParticipantSession();
     setParticipantSession(null);
     setAccessError("unauthenticated");
-  }, []);
+  }, [setAccessError, setParticipantSession]);
   const {
     backendExpenseSummary,
     refreshBackendExpenseSummary,
@@ -513,109 +476,6 @@ export function SagittariusApp({
   });
 
   useEffect(() => {
-    let cancelled = false;
-    window.queueMicrotask(() => {
-      if (!cancelled) setSessionRestored(false);
-    });
-    const timeout = window.setTimeout(() => {
-      if (cancelled) return;
-      const persistedTrip = loadPersistedTripDraft(normalizeTripPlanAliases);
-      const nextTrip = normalizeTripPlanAliases(persistedTrip ?? initialTrip);
-      const persistedSession = loadPersistedParticipantSession(
-        requireJoin,
-        nextTrip,
-        isApiMode,
-        routeTripId,
-      );
-
-      if (persistedTrip) {
-        setTripState({ trip: nextTrip, past: [], future: [] });
-        setSelectedTripPlanId(resolveSelectedTripPlanId(nextTrip));
-      }
-      if (persistedSession) {
-        setParticipantSession(persistedSession);
-        setCurrentMemberId(persistedSession.memberId);
-      } else {
-        setParticipantSession(null);
-      }
-      setSessionRestored(true);
-    }, 0);
-
-    return () => {
-      cancelled = true;
-      window.clearTimeout(timeout);
-    };
-  }, [initialTrip, isApiMode, requireJoin, routeTripId, setTripState]);
-
-  useEffect(() => {
-    if (accountSessionLoaded) return;
-    const timeout = window.setTimeout(() => {
-      setAccountSession(loadPersistedAccountSession());
-      setAccountSessionLoaded(true);
-    }, 0);
-    return () => window.clearTimeout(timeout);
-  }, [accountSessionLoaded]);
-
-  useEffect(() => {
-    if (!accountSessionLoaded) return;
-    persistAccountSession(accountSession);
-  }, [accountSession, accountSessionLoaded]);
-
-  const changeAccountSession = useCallback((session: AccountSession | null) => {
-    setAccountSession(session);
-    persistAccountSession(session);
-  }, []);
-
-  useEffect(() => {
-    if (
-      !isApiMode ||
-      !routeTripId ||
-      !accountSessionLoaded ||
-      !accountSession ||
-      participantSession
-    )
-      return undefined;
-    let cancelled = false;
-
-    void accountClient
-      .createTripMemberSession(accountSession.sessionToken, routeTripId)
-      .then((session) => {
-        if (cancelled) return;
-        setAccountTripAccessDeniedRouteId(null);
-        setAccessError(null);
-        setParticipantSession(session);
-        setCurrentMemberId(session.memberId);
-        persistParticipantSession(session);
-      })
-      .catch((caught) => {
-        if (cancelled) return;
-        if (isUnauthenticated(caught)) {
-          changeAccountSession(null);
-          setAccessError("unauthenticated");
-          return;
-        }
-        if (isForbidden(caught)) {
-          setAccountTripAccessDeniedRouteId(routeTripId);
-          clearParticipantSession();
-          return;
-        }
-        setAccessError("trip access check failed");
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [
-    accountClient,
-    accountSession,
-    accountSessionLoaded,
-    changeAccountSession,
-    isApiMode,
-    participantSession,
-    routeTripId,
-  ]);
-
-  useEffect(() => {
     if (!isApiMode || !participantSession || !resolvedApiClient)
       return undefined;
     let cancelled = false;
@@ -676,6 +536,8 @@ export function SagittariusApp({
     resetDailyBriefings,
     replaceCockpitFromApi,
     resolvedApiClient,
+    setAccessError,
+    setParticipantSession,
   ]);
 
   useEffect(() => {
@@ -710,24 +572,6 @@ export function SagittariusApp({
     },
     [navigateWorkspacePath, setContextRailVisibility],
   );
-
-  useEffect(() => {
-    if (
-      !requireJoin ||
-      !participantSession ||
-      !sessionMember ||
-      routeTripId ||
-      typeof window === "undefined"
-    )
-      return;
-    if (!window.location.pathname.startsWith(appRoutes.join())) return;
-    const returnToParam = new URLSearchParams(window.location.search).get("rt");
-    const returnTo = returnToParam ? decodeReturnTo(returnToParam) : null;
-    const target =
-      resolveJoinPostAuthReturnTo(returnTo, participantSession.tripId) ??
-      appRoutes.tripOverview(participantSession.tripId);
-    window.location.replace(target);
-  }, [participantSession, requireJoin, routeTripId, sessionMember]);
 
   const {
     addStop,
@@ -815,6 +659,57 @@ export function SagittariusApp({
     selectedTripPlanId,
     setBackendExpenseSummary,
     trip,
+    updateApiTrip,
+  });
+  const {
+    applyPendingItineraryImport,
+    clearPendingItineraryImport,
+    exportItinerary,
+    importItinerary,
+    importItineraryError,
+    importItineraryText,
+    pendingItineraryImport,
+  } = useWorkspaceItineraryImport({
+    apiClient: resolvedApiClient,
+    canEdit,
+    commitTrip,
+    isApiMode,
+    participantSession,
+    planItems,
+    selectedTripPlanId,
+    setBackendExpenseSummary,
+    setContextRailVisibility,
+    setSelectedItemId,
+    setStopNotes,
+    setTasks,
+    stopNotes,
+    tasks,
+    trip,
+    updateApiTrip,
+  });
+  const {
+    changeMemberAccessStatus,
+    changeMemberPassword,
+    changeMemberRole,
+    claimCurrentMemberToAccount,
+    createMember,
+    resetMemberClaim,
+    saveTripSettings,
+    rotateJoinInviteToken,
+    transferOwnerToAccountMember,
+  } = useWorkspaceAdministration({
+    accountClient,
+    accountSession,
+    canManagePeople,
+    commitTrip,
+    currentMemberId,
+    isApiMode,
+    participantSession,
+    resolvedApiClient,
+    setAccountClaimState,
+    setJoinInviteToken,
+    trip,
+    replaceCockpitFromApi,
     updateApiTrip,
   });
 
@@ -910,472 +805,9 @@ export function SagittariusApp({
     resetTrip(nextTrip, { persist: !isApiMode });
   }
 
-  async function claimCurrentMemberToAccount() {
-    if (!accountSession || !participantSession || !resolvedApiClient) return;
-    setAccountClaimState({ status: "saving", message: null });
-    try {
-      await accountClient.claimMember(
-        accountSession.sessionToken,
-        participantSession.tripId,
-        participantSession.memberId,
-        participantSession.sessionToken,
-      );
-      const cockpit = await resolvedApiClient.loadTrip(
-        participantSession.tripId,
-        participantSession.sessionToken,
-      );
-      replaceCockpitFromApi(cockpit);
-      setAccountClaimState({
-        status: "idle",
-        message: "ผูก temp identity เข้ากับ account แล้ว",
-      });
-    } catch (caught) {
-      setAccountClaimState({
-        status: "idle",
-        message:
-          caught instanceof Error ? caught.message : "Claim account ไม่สำเร็จ",
-      });
-    }
-  }
-
-  async function transferOwnerToAccountMember(targetMemberId: string) {
-    if (!accountSession || !participantSession || !resolvedApiClient) return;
-    setAccountClaimState({ status: "saving", message: null });
-    try {
-      await accountClient.transferOwner(
-        accountSession.sessionToken,
-        participantSession.tripId,
-        targetMemberId,
-      );
-      const cockpit = await resolvedApiClient.loadTrip(
-        participantSession.tripId,
-        participantSession.sessionToken,
-      );
-      replaceCockpitFromApi(cockpit);
-      setAccountClaimState({
-        status: "idle",
-        message: "โอนสิทธิ owner แล้ว trip ยังมี owner 1 คนเสมอ",
-      });
-    } catch (caught) {
-      setAccountClaimState({
-        status: "idle",
-        message:
-          caught instanceof Error ? caught.message : "โอน owner ไม่สำเร็จ",
-      });
-    }
-  }
-
-  async function resetMemberClaim(memberId: string) {
-    /* v8 ignore next */
-    if (!canManagePeople) return;
-    if (isApiMode && resolvedApiClient && participantSession) {
-      const member = await resolvedApiClient.resetMemberClaim(
-        trip.id,
-        memberId,
-        participantSession.sessionToken,
-      );
-      commitTrip((current) => replaceTripParticipant(current, member));
-      return;
-    }
-    commitTrip((current) => resetTripParticipantClaim(current, memberId));
-  }
-
-  async function changeMemberRole(
-    memberId: string,
-    role: Exclude<TripRole, "owner">,
-  ) {
-    /* v8 ignore next */
-    if (!canManagePeople) return;
-    if (isApiMode && resolvedApiClient && participantSession) {
-      const member = await resolvedApiClient.patchMember(
-        trip.id,
-        memberId,
-        participantSession.sessionToken,
-        buildPatchMemberRoleRequest(role),
-      );
-      commitTrip((current) => replaceTripParticipant(current, member));
-      return;
-    }
-    commitTrip((current) => updateTripParticipantRole(current, memberId, role));
-  }
-
-  async function changeMemberAccessStatus(
-    memberId: string,
-    accessStatus: TripMemberAccessStatus,
-  ) {
-    /* v8 ignore next */
-    if (!canManagePeople) return;
-    if (isApiMode && resolvedApiClient && participantSession) {
-      const member = await resolvedApiClient.patchMember(
-        trip.id,
-        memberId,
-        participantSession.sessionToken,
-        buildPatchMemberAccessStatusRequest(accessStatus),
-      );
-      commitTrip((current) => replaceTripParticipant(current, member));
-      return;
-    }
-    commitTrip((current) =>
-      setTripParticipantAccessStatus(current, memberId, accessStatus),
-    );
-  }
-
-  async function changeMemberPassword(memberId: string, password: string) {
-    /* v8 ignore next */
-    if (!canManagePeople || memberId !== currentMember.id) return;
-    if (isApiMode && resolvedApiClient && participantSession) {
-      const member = await resolvedApiClient.patchMember(
-        trip.id,
-        memberId,
-        participantSession.sessionToken,
-        buildPatchMemberPasswordRequest(password),
-      );
-      commitTrip((current) => replaceTripParticipant(current, member));
-      return;
-    }
-    commitTrip((current) =>
-      setTripParticipantPassword(current, memberId, password),
-    );
-  }
-
-  async function createMember(input: {
-    displayName: string;
-    role: Exclude<TripRole, "owner">;
-  }) {
-    /* v8 ignore next */
-    if (!canManagePeople) return;
-    if (isApiMode && resolvedApiClient && participantSession) {
-      const member = await resolvedApiClient.createMember(
-        trip.id,
-        participantSession.sessionToken,
-        buildCreateMemberRequest(input, { memberCount: trip.members.length }),
-      );
-      commitTrip((current) => appendTripParticipant(current, member));
-      return;
-    }
-    commitTrip((current) => createTripParticipant(current, input));
-  }
-
-  async function rotateJoinInviteToken() {
-    if (
-      !canManagePeople ||
-      !isApiMode ||
-      !resolvedApiClient ||
-      !participantSession?.sessionToken
-    )
-      return;
-    const response = await resolvedApiClient.rotateJoinInviteToken?.(
-      trip.id,
-      participantSession.sessionToken,
-    );
-    if (!response) return;
-    setJoinInviteToken(response.token);
-  }
-
-  async function saveTripSettings(values: TripSettingsFormValues) {
-    if (!canManagePeople) return;
-    const shiftedItems = shiftItineraryItemsToStartDate(
-      trip.itineraryItems,
-      trip.startDate,
-      values.startDate,
-    );
-    const nextCountries = deriveTripCountriesFromDestination(
-      values.destinationLabel,
-      trip.countries ?? [],
-    );
-
-    if (isApiMode && resolvedApiClient && participantSession) {
-      const patchedTrip = await resolvedApiClient.patchTrip(
-        trip.id,
-        participantSession.sessionToken,
-        buildPatchTripSettingsRequest(
-          { ...values, countries: nextCountries },
-          {
-            clientMutationId: nextClientMutationId("trip-settings"),
-            expectedVersion: trip.version ?? 0,
-          },
-        ),
-      );
-      const changedItems = shiftedItems.filter((shiftedItem) => {
-        const currentItem = trip.itineraryItems.find(
-          (item) => item.id === shiftedItem.id,
-        );
-        return currentItem && currentItem.day !== shiftedItem.day;
-      });
-      const patchedItems = await Promise.all(
-        changedItems.map((item) =>
-          resolvedApiClient.patchItineraryItem(
-            trip.id,
-            item.id,
-            participantSession.sessionToken,
-            buildShiftItineraryItemDayRequest({
-              clientMutationId: nextClientMutationId("itinerary-day-shift"),
-              expectedVersion: item.version,
-              shiftedDay: item.day,
-            }),
-          ),
-        ),
-      );
-      const patchedItemsById = new Map(
-        patchedItems.map((item) => [item.id, item]),
-      );
-      updateApiTrip((current) =>
-        mergePatchedTripSettings(current, patchedTrip, patchedItemsById),
-      );
-      return;
-    }
-
-    commitTrip((current) =>
-      applyTripSettingsToTrip(current, { ...values, countries: nextCountries }),
-    );
-  }
-
-  function exportItinerary() {
-    const document = buildItineraryExport({
-      exportedAt: new Date().toISOString(),
-      items: planItems,
-      stopNotes,
-      tasks,
-      trip,
-    });
-    const blob = new Blob([`${JSON.stringify(document, null, 2)}\n`], {
-      type: "application/json",
-    });
-    const url = URL.createObjectURL(blob);
-    const anchor = window.document.createElement("a");
-    anchor.href = url;
-    anchor.download = `${slugifyFilePart(trip.name)}-itinerary-v1.json`;
-    window.document.body.append(anchor);
-    anchor.click();
-    anchor.remove();
-    URL.revokeObjectURL(url);
-  }
-
-  async function importItinerary(file: File) {
-    /* v8 ignore next */
-    if (!canEdit) return;
-    const content = await file.text();
-    await importItineraryContent({
-      fileName: file.name,
-      contentType: file.type || "text/plain",
-      content,
-      preferApi: true,
-    });
-  }
-
-  async function importItineraryText(content: string, sourceName: string) {
-    /* v8 ignore next */
-    if (!canEdit) return;
-    await importItineraryContent({
-      fileName: sourceName,
-      contentType: "text/plain",
-      content,
-      preferApi: false,
-    });
-  }
-
-  async function importItineraryContent({
-    fileName,
-    contentType,
-    content,
-    preferApi,
-  }: {
-    fileName: string;
-    contentType: string;
-    content: string;
-    preferApi: boolean;
-  }) {
-    try {
-      const document =
-        preferApi &&
-        shouldUseApiItineraryImport({ contentType, fileName }) &&
-        isApiMode &&
-        resolvedApiClient &&
-        participantSession
-          ? await resolvedApiClient.importItinerary(
-              trip.id,
-              participantSession.sessionToken,
-              buildImportItineraryRequest({ fileName, contentType, content }),
-            )
-          : parseItineraryImportDocument(content);
-      setPendingItineraryImport(
-        pendingItineraryImportFromDocument({ document, fileName }),
-      );
-      setItineraryImportError(null);
-    } catch (caught) {
-      setItineraryImportError(
-        caught instanceof Error ? caught.message : "Import itinerary ไม่สำเร็จ",
-      );
-    }
-  }
-
-  async function applyPendingItineraryImport(
-    target: ItineraryImportApplyTarget,
-  ) {
-    if (!pendingItineraryImport) return;
-    try {
-      const previewTrip = applyImportedItemsToItineraryPath(
-        trip,
-        pendingItineraryImport.items,
-        target,
-      );
-      const currentIds = new Set(trip.itineraryItems.map((item) => item.id));
-      const previewIds = new Set(
-        previewTrip.itineraryItems.map((item) => item.id),
-      );
-      const deletedItems = trip.itineraryItems.filter(
-        (item) => !previewIds.has(item.id),
-      );
-      const previewImportedItems = previewTrip.itineraryItems.filter(
-        (item) => !currentIds.has(item.id),
-      );
-      const appliedImportedItems = previewTrip.itineraryItems.slice(
-        -pendingItineraryImport.items.length,
-      );
-
-      if (isApiMode && resolvedApiClient && participantSession) {
-        for (const item of deletedItems) {
-          await resolvedApiClient.deleteItineraryItem(
-            trip.id,
-            item.id,
-            participantSession.sessionToken,
-          );
-        }
-        const createdItems: ItineraryItem[] = [];
-        const createdItemIdsByImportId = new Map<string, string>();
-        const createdItemIdsByPreviewId = new Map<string, string>();
-        for (const item of previewImportedItems) {
-          const importedItem = pendingItineraryImport.items[createdItems.length];
-          const createdItem = await resolvedApiClient.createItineraryItem(
-            trip.id,
-            participantSession.sessionToken,
-            buildImportedItineraryItemCreateRequest({
-              clientMutationId: nextClientMutationId("itinerary-import-create"),
-              createdItemIdsByImportId,
-              createdItemIdsByPreviewId,
-              item,
-            }),
-          );
-          createdItems.push(createdItem);
-          if (importedItem) {
-            createdItemIdsByImportId.set(importedItem.id, createdItem.id);
-          }
-          createdItemIdsByPreviewId.set(item.id, createdItem.id);
-        }
-        const importedPlanRecords = buildImportedPlanRecordsForTripPlan({
-          appliedImportedItems: createdItems,
-          importedItems: pendingItineraryImport.items,
-          records:
-            target.recordMode === "clone-linked"
-              ? pendingItineraryImport.records
-              : emptyItineraryExportRecords(),
-          targetTrip: previewTrip,
-          tripPlanId: target.tripPlanId || trip.activePlanVariantId,
-        });
-        const createdPlanRecords = await createImportedPlanRecordsViaApi({
-          apiClient: resolvedApiClient,
-          nextClientMutationId,
-          sessionToken: participantSession.sessionToken,
-          tripId: trip.id,
-          records: importedPlanRecords,
-        });
-        const deletedIds = new Set(deletedItems.map((item) => item.id));
-        updateApiTrip((current) =>
-          mergeApiImportedPlanRecordsIntoTrip({
-            createdItems,
-            currentTrip: current,
-            deletedItemIds: deletedIds,
-            previewTrip,
-            records: createdPlanRecords,
-          }),
-        );
-        setTasks((current) =>
-          mergeImportedTasks(current, createdPlanRecords),
-        );
-        setStopNotes((current) =>
-          mergeImportedStopNotes(current, createdPlanRecords),
-        );
-        if (createdPlanRecords.expenses.length > 0) {
-          setBackendExpenseSummary({
-            tripPlanId: selectedTripPlanId,
-            summary: await resolvedApiClient.getExpenseSummary(
-              trip.id,
-              participantSession.sessionToken,
-              selectedTripPlanId,
-            ),
-          });
-        }
-        const nextSelectedItemId = createdItems[0]?.id ?? "";
-        setSelectedItemId(nextSelectedItemId);
-        if (!nextSelectedItemId) setContextRailVisibility(false);
-        setPendingItineraryImport(null);
-        return;
-      }
-
-      const nextSelectedItemId = appliedImportedItems[0]?.id ?? "";
-      const importedPlanRecords = buildImportedPlanRecordsForTripPlan({
-        appliedImportedItems,
-        importedItems: pendingItineraryImport.items,
-        records:
-          target.recordMode === "clone-linked"
-            ? pendingItineraryImport.records
-            : emptyItineraryExportRecords(),
-        targetTrip: previewTrip,
-        tripPlanId: target.tripPlanId || trip.activePlanVariantId,
-      });
-      commitTrip(
-        () =>
-          mergeImportedRecordsIntoTripPlan(previewTrip, importedPlanRecords),
-        nextSelectedItemId,
-      );
-      setTasks((current) =>
-        mergeImportedTasks(current, importedPlanRecords),
-      );
-      setStopNotes((current) =>
-        mergeImportedStopNotes(current, importedPlanRecords),
-      );
-      if (!nextSelectedItemId) setContextRailVisibility(false);
-      setPendingItineraryImport(null);
-      setItineraryImportError(null);
-    } catch (caught) {
-      setItineraryImportError(
-        caught instanceof Error ? caught.message : "Import itinerary ไม่สำเร็จ",
-      );
-    }
-  }
-
   function openExpensesWorkspace() {
     navigateWorkspaceView("expenses", appRoutes.tripExpenses(trip.id));
   }
-
-  const isAccountTripAccessPending =
-    requireJoin &&
-    isApiMode &&
-    Boolean(routeTripId) &&
-    !sessionMember &&
-    !accessError &&
-    (!accountSessionLoaded ||
-      Boolean(
-        accountSession && accountTripAccessDeniedRouteId !== routeTripId,
-      ));
-  const shouldRedirectUnauthenticatedTripRoute =
-    sessionRestored &&
-    requireJoin &&
-    Boolean(routeTripId) &&
-    !hasRouteParticipantSession &&
-    !accessError &&
-    !isAccountTripAccessPending &&
-    !isTripLoading &&
-    typeof window !== "undefined" &&
-    !window.location.pathname.includes("iframe.html") &&
-    !("__vitest_browser__" in window);
-
-  useEffect(() => {
-    if (!shouldRedirectUnauthenticatedTripRoute) return;
-    const returnTo = window.location.pathname + window.location.search;
-    const joinHref = appRoutes.join(undefined, returnTo);
-    window.location.replace(joinHref);
-  }, [shouldRedirectUnauthenticatedTripRoute]);
 
   if (
     isAccountTripAccessPending ||
@@ -1384,13 +816,6 @@ export function SagittariusApp({
   ) {
     return <TripAccessLoadingFrame />;
   }
-
-  const canAccessPanel =
-    accessMode === "account-portal" ||
-    isAccountOnlyAccessMode ||
-    (requireJoin &&
-      !sessionMember &&
-      (!routeTripId || accessMode === "trip-access"));
 
   if (canAccessPanel) {
     if (routeTripId && accessMode === "trip-access" && !sessionRestored) {
@@ -1467,7 +892,7 @@ export function SagittariusApp({
         ) : null}
         <TripWorkspaceFrame
           contextRailOpen={contextRailOpen}
-          importError={itineraryImportError}
+          importError={importItineraryError}
           supportsContextRail={supportsContextRail}
           rail={
             <TripWorkspaceRail
@@ -1730,7 +1155,7 @@ export function SagittariusApp({
             tripPlanId={selectedTripPlanId}
             startDate={trip.startDate}
             onApply={(target) => void applyPendingItineraryImport(target)}
-            onClose={() => setPendingItineraryImport(null)}
+            onClose={clearPendingItineraryImport}
           />
         ) : null}
         <TripWorkspaceDeleteDialog

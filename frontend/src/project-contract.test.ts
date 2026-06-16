@@ -56,11 +56,15 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/support/index.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/support/storybook-support.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-photo-albums.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-administration.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-record-state.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-record-actions.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-records.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-access-gate.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-itinerary-commands.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-itinerary-import.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-booking-commands.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-session.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/use-workspace-record-state.ts"))).toBe(false);
     expect(existsSync(join(frontendRoot, "src/app/SagittariusApp.stories.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/TripAccessLoadingFrame.tsx"))).toBe(true);
@@ -120,6 +124,14 @@ describe("Sagittarius project scaffold", () => {
       join(frontendRoot, "src/trip/workspace/sagittarius-app/support/storybook-support.ts"),
       "utf8",
     );
+    const hooksIndex = readFileSync(
+      join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/index.ts"),
+      "utf8",
+    );
+    const workspaceItineraryImportHook = readFileSync(
+      join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-itinerary-import.ts"),
+      "utf8",
+    );
     const supportIndex = readFileSync(
       join(frontendRoot, "src/trip/workspace/sagittarius-app/support/index.ts"),
       "utf8",
@@ -144,10 +156,17 @@ describe("Sagittarius project scaffold", () => {
     expect(storySupport).toContain("export const storyTripId");
     expect(storySupport).toContain("export async function expectWorkspaceView");
     expect(storySupport).toContain("seedTripJoinId");
+    expect(hooksIndex).toContain("useWorkspaceItineraryImport");
+    expect(hooksIndex).toContain("useWorkspaceAdministration");
+    expect(hooksIndex).toContain("useWorkspaceSession");
+    expect(hooksIndex).toContain("useWorkspaceAccessGate");
     expect(sagittariusIndex).toContain("SagittariusApp");
     expect(sagittariusIndex).toContain("SagittariusAppCore");
     expect(sagittariusIndex).toContain("export {");
     expect(sagittariusIndex).toContain("from \"./public-exports\"");
+    expect(workspaceItineraryImportHook).toContain(
+      "export function useWorkspaceItineraryImport",
+    );
     expect(publicExports).toContain("export {");
     expect(publicExports).toContain("bookingTypeForItineraryItem");
     expect(publicExports).toContain("nextLocalTaskId");
@@ -287,6 +306,14 @@ describe("Sagittarius project scaffold", () => {
       "utf8",
     );
     const appFacade = readFileSync(join(frontendRoot, "src/app/SagittariusApp.tsx"), "utf8");
+    const workspaceRecordsHook = readFileSync(
+      join(frontendRoot, "src/trip/workspace/use-trip-workspace-records.ts"),
+      "utf8",
+    );
+    const importHook = readFileSync(
+      join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-itinerary-import.ts"),
+      "utf8",
+    );
     expect(workspaceFacade).toContain("./sagittarius-app");
     expect(appFacade).toContain("@/src/trip/workspace/sagittarius-app");
     expect(appFacade).not.toContain('"use client"');
@@ -296,16 +323,17 @@ describe("Sagittarius project scaffold", () => {
     expect(sagaCore).toContain("@/src/trip/workspace/TripWorkspaceImportDialog");
     expect(sagaCore).toContain("@/src/trip/workspace/TripWorkspaceRail");
     expect(sagaCore).toContain("@/src/trip/workspace/TripWorkspaceViews");
-    expect(sagaCore).toContain("@/src/trip/workspace/itinerary-import-model");
-    expect(sagaCore).toContain("@/src/trip/workspace/itinerary-import-api");
     expect(sagaCore).toContain("@/src/trip/workspace/selected-trip-plan");
-    expect(sagaCore).toContain("@/src/trip/workspace/trip-plan-records");
     expect(sagaCore).toContain("@/src/trip/workspace/use-backend-expense-summary");
     expect(sagaCore).toContain("@/src/trip/workspace/use-daily-briefings");
     expect(sagaCore).toContain("@/src/trip/workspace/use-itinerary-path-workspace");
     expect(sagaCore).toContain("@/src/trip/workspace/use-trip-workspace-records");
     expect(sagaCore).toContain("useWorkspacePhotoAlbums");
     expect(sagaCore).toContain("useWorkspaceRecords");
+    expect(sagaCore).toContain("useWorkspaceAdministration");
+    expect(sagaCore).toContain("useWorkspaceBookingCommands");
+    expect(sagaCore).toContain("useWorkspaceItineraryCommands");
+    expect(sagaCore).toContain("useWorkspaceItineraryImport");
     expect(sagaCore).not.toContain("useWorkspaceRecordState");
     expect(sagaCore).not.toContain("useWorkspaceRecordActions");
     expect(sagaCore).toContain("./hooks");
@@ -336,6 +364,9 @@ describe("Sagittarius project scaffold", () => {
     expect(sagittariusApp).not.toContain("buildFallbackBriefings");
     expect(sagittariusApp).not.toContain("buildPatchDailyBriefingRequest");
     expect(sagittariusApp).not.toContain("useState<{ tripPlanId: string; summary: ExpenseSummary } | null>");
+    expect(importHook).toContain("@/src/trip/workspace/itinerary-import-model");
+    expect(importHook).toContain("@/src/trip/workspace/itinerary-import-api");
+    expect(workspaceRecordsHook).toContain("@/src/trip/workspace/trip-plan-records");
     expect(sagittariusApp).not.toContain("@/src/trip/trip-fixtures");
     expect(sagittariusApp).not.toContain("tripFixtureSuggestions");
     expect(sagittariusApp).not.toContain("tripFixtureTasks");
