@@ -128,7 +128,6 @@ import {
   buildItineraryView,
   buildUpdatedItineraryItem,
   deleteItineraryItemFromTrip,
-  deriveItineraryPathOptions,
   mainItineraryPathId,
   mergeCreatedItineraryItemIntoTrip,
   mergeUpdatedItineraryBranchIntoTrip,
@@ -138,10 +137,7 @@ import {
   normalizeStopHierarchyValues,
   replaceItineraryItem,
   replaceItineraryItems,
-  resolveItineraryPathItems,
   selectedItineraryPathIdForDay,
-  updateItineraryPathSelection,
-  type ItineraryPathSelection,
 } from "@/src/trip/itinerary";
 import {
   buildInlineItineraryItemPatch,
@@ -231,6 +227,7 @@ import { TripWorkspaceImportDialog } from "@/src/trip/workspace/TripWorkspaceImp
 import { TripWorkspaceRail } from "@/src/trip/workspace/TripWorkspaceRail";
 import { TripWorkspaceViews } from "@/src/trip/workspace/TripWorkspaceViews";
 import { TripAccessLoadingFrame } from "@/src/trip/workspace/TripAccessLoadingFrame";
+import { useItineraryPathWorkspace } from "@/src/trip/workspace/use-itinerary-path-workspace";
 import { useTripWorkspaceState } from "@/src/trip/workspace/use-trip-workspace-state";
 import { WorkspaceToast } from "@/src/trip/workspace/WorkspaceToast";
 import {
@@ -456,10 +453,21 @@ export function SagittariusApp({
   >(null);
   const [tripPlanError, setTripPlanError] = useState<string | null>(null);
   const [isTripPlanBusy, setIsTripPlanBusy] = useState(false);
-  const [pathSelection, setPathSelection] = useState<ItineraryPathSelection>({
-    tripPathId: mainItineraryPathId,
-    dayPathOverrides: {},
-  });
+  const {
+    activePlanItems,
+    changeDayPath,
+    changeTripPath,
+    clearAllDayPaths,
+    clearDayPath,
+    dayPathOverrides,
+    mainPlanItems,
+    pathOptions,
+    pathSelection,
+    planItems,
+    selectedTripPathId,
+    showAllPaths,
+    toggleShowAllPaths,
+  } = useItineraryPathWorkspace(trip, selectedTripPlanId);
 
   const tripIdForPath = routeTripId ?? trip.id;
   const effectivePlaceResolver = useMemo<PlaceResolver | null>(() => {
@@ -521,13 +529,6 @@ export function SagittariusApp({
   const hasSelectedBackendExpenseTripPlan = Boolean(
     selectedTripPlanId && tripHasPlan(trip, selectedTripPlanId),
   );
-  const activePlanItems = useMemo(
-    () =>
-      trip.itineraryItems.filter(
-        (item) => item.planVariantId === selectedTripPlanId,
-      ),
-    [selectedTripPlanId, trip.itineraryItems],
-  );
   useEffect(() => {
     if (!sessionRestored && !isApiMode) return;
     let cancelled = false;
@@ -543,27 +544,6 @@ export function SagittariusApp({
       cancelled = true;
     };
   }, [isApiMode, sessionRestored, trip]);
-  const pathOptions = useMemo(
-    () =>
-      deriveItineraryPathOptions(activePlanItems, trip.itineraryPaths ?? []),
-    [activePlanItems, trip.itineraryPaths],
-  );
-  const planItems = useMemo(
-    () => resolveItineraryPathItems(activePlanItems, pathSelection),
-    [activePlanItems, pathSelection],
-  );
-  const mainPlanItems = useMemo(() => {
-    const mainTripPlanId = trip.mainTripPlanId || trip.activePlanVariantId;
-    const items = trip.itineraryItems.filter(
-      (item) => item.planVariantId === mainTripPlanId,
-    );
-    return resolveItineraryPathItems(items, pathSelection);
-  }, [
-    pathSelection,
-    trip.activePlanVariantId,
-    trip.itineraryItems,
-    trip.mainTripPlanId,
-  ]);
   const itineraryView = useMemo(
     () => buildItineraryView(planItems),
     [planItems],
@@ -657,36 +637,6 @@ export function SagittariusApp({
       }),
     [scopedTripPlanRecords],
   );
-
-  function changeTripPath(pathId: string) {
-    setPathSelection((current) =>
-      updateItineraryPathSelection(current, { type: "change-trip-path", pathId }),
-    );
-  }
-
-  function changeDayPath(day: string, pathId: string) {
-    setPathSelection((current) =>
-      updateItineraryPathSelection(current, { type: "change-day-path", day, pathId }),
-    );
-  }
-
-  function clearDayPath(day: string) {
-    setPathSelection((current) =>
-      updateItineraryPathSelection(current, { type: "clear-day-path", day }),
-    );
-  }
-
-  function clearAllDayPaths() {
-    setPathSelection((current) =>
-      updateItineraryPathSelection(current, { type: "clear-all-day-paths" }),
-    );
-  }
-
-  function toggleShowAllPaths(showAll: boolean) {
-    setPathSelection((current) =>
-      updateItineraryPathSelection(current, { type: "toggle-show-all-paths", showAll }),
-    );
-  }
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -3674,10 +3624,9 @@ export function SagittariusApp({
                 role: currentMember.role,
                 startDate: trip.startDate,
                 selectedItemId: selectedItemIdForView,
-                selectedTripPathId:
-                  pathSelection.tripPathId ?? mainItineraryPathId,
-                dayPathOverrides: pathSelection.dayPathOverrides ?? {},
-                showAllPaths: Boolean(pathSelection.showAll),
+                selectedTripPathId,
+                dayPathOverrides,
+                showAllPaths,
                 tripName: trip.name,
                 bookingDocs: scopedTripPlanRecords.bookingDocs,
                 onAddBookingForItem: createItineraryBookingDraft,
@@ -3785,7 +3734,7 @@ export function SagittariusApp({
         ) : null}
         {pendingItineraryImport ? (
           <TripWorkspaceImportDialog
-            currentTripPathId={pathSelection.tripPathId ?? mainItineraryPathId}
+            currentTripPathId={selectedTripPathId}
             importedItems={pendingItineraryImport.items}
             memberId={currentMember.id}
             pathOptions={pathOptions}
