@@ -1,3 +1,4 @@
+import type { PatchTripApiRequest } from "@/src/trip/api-client";
 import type { ItineraryItem, Trip } from "@/src/trip/types";
 import { shiftItineraryItemsToStartDate } from "@/src/trip/itinerary-time";
 
@@ -9,6 +10,26 @@ export interface TripSettingsValues {
   endDate: string;
   partySize: number;
   defaultTimezone: string;
+}
+
+export function buildPatchTripSettingsRequest(
+  values: TripSettingsValues,
+  options: {
+    clientMutationId: string;
+    expectedVersion: number;
+  },
+): PatchTripApiRequest {
+  return {
+    clientMutationId: options.clientMutationId,
+    expectedVersion: options.expectedVersion,
+    name: values.name,
+    destinationLabel: values.destinationLabel,
+    countries: values.countries,
+    startDate: values.startDate,
+    endDate: values.endDate,
+    partySize: values.partySize,
+    defaultTimezone: values.defaultTimezone,
+  };
 }
 
 export function applyTripSettingsToTrip(

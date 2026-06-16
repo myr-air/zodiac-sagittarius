@@ -1,11 +1,42 @@
 import { describe, expect, it } from "vitest";
 import {
   applyTripSettingsToTrip,
+  buildPatchTripSettingsRequest,
   mergePatchedTripSettings,
 } from "@/src/trip/trip-settings";
 import { seedTrip } from "@/src/trip/seed";
 
 describe("trip settings", () => {
+  it("builds API patch requests for trip settings", () => {
+    expect(
+      buildPatchTripSettingsRequest(
+        {
+          name: "Updated trip",
+          destinationLabel: "Tokyo, Japan",
+          countries: ["Japan"],
+          startDate: "2026-06-20",
+          endDate: "2026-06-25",
+          partySize: 4,
+          defaultTimezone: "Asia/Tokyo",
+        },
+        {
+          clientMutationId: "mutation-trip-settings",
+          expectedVersion: 12,
+        },
+      ),
+    ).toEqual({
+      clientMutationId: "mutation-trip-settings",
+      expectedVersion: 12,
+      name: "Updated trip",
+      destinationLabel: "Tokyo, Japan",
+      countries: ["Japan"],
+      startDate: "2026-06-20",
+      endDate: "2026-06-25",
+      partySize: 4,
+      defaultTimezone: "Asia/Tokyo",
+    });
+  });
+
   it("applies local trip settings and shifts itinerary days from the previous start date", () => {
     const nextTrip = applyTripSettingsToTrip(seedTrip, {
       name: "Updated trip",

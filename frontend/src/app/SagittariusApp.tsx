@@ -156,6 +156,7 @@ import {
 } from "@/src/trip/itinerary-api-requests";
 import {
   applyTripSettingsToTrip,
+  buildPatchTripSettingsRequest,
   mergePatchedTripSettings,
 } from "@/src/trip/trip-settings";
 import {
@@ -2349,17 +2350,13 @@ export function SagittariusApp({
       const patchedTrip = await resolvedApiClient.patchTrip(
         trip.id,
         participantSession.sessionToken,
-        {
-          clientMutationId: nextClientMutationId("trip-settings"),
-          expectedVersion: trip.version ?? 0,
-          name: values.name,
-          destinationLabel: values.destinationLabel,
-          countries: nextCountries,
-          startDate: values.startDate,
-          endDate: values.endDate,
-          partySize: values.partySize,
-          defaultTimezone: values.defaultTimezone,
-        },
+        buildPatchTripSettingsRequest(
+          { ...values, countries: nextCountries },
+          {
+            clientMutationId: nextClientMutationId("trip-settings"),
+            expectedVersion: trip.version ?? 0,
+          },
+        ),
       );
       const changedItems = shiftedItems.filter((shiftedItem) => {
         const currentItem = trip.itineraryItems.find(
