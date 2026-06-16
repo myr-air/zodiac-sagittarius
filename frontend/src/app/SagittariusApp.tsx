@@ -14,7 +14,6 @@ import type { MapCoordinateResolutionResult } from "@/src/components/RouteMapVie
 import {
   type ItineraryBookingTicketInput,
   type ItineraryBookingTemplate,
-  type ItineraryCommitmentSummary,
   type InlineItineraryItemPatch,
 } from "@/src/components/SmartItineraryTable";
 import { StopDialog, type StopFormValues } from "@/src/components/StopDialog";
@@ -83,6 +82,7 @@ import {
   upsertExpenseReminder,
 } from "@/src/trip/expenses";
 import {
+  buildItineraryCommitmentsByItemId,
   buildItineraryView,
   deriveItineraryPathOptions,
   mainItineraryPathId,
@@ -4711,48 +4711,6 @@ function getNextChildSortOrder(items: ItineraryItem[], parentItem: ItineraryItem
 
 function normalizeStopHierarchyValues(values: StopFormValues): StopFormValues {
   return values.parentItemId ? { ...values, isPlanBlock: false } : values;
-}
-
-function buildItineraryCommitmentsByItemId({
-  bookingDocs,
-  expenses,
-  stopNotes,
-  tasks,
-}: {
-  bookingDocs: BookingDoc[];
-  expenses: Expense[];
-  stopNotes: StopNote[];
-  tasks: TripTask[];
-}): Record<string, ItineraryCommitmentSummary> {
-  const commitments = new Map<string, ItineraryCommitmentSummary>();
-  const ensure = (itemId: string) => {
-    const current = commitments.get(itemId) ?? {};
-    commitments.set(itemId, current);
-    return current;
-  };
-
-  for (const booking of bookingDocs) {
-    for (const itemId of booking.relatedItineraryItemIds) {
-      const current = ensure(itemId);
-      current.bookingCount = (current.bookingCount ?? 0) + 1;
-    }
-  }
-  for (const expense of expenses) {
-    if (!expense.itineraryItemId) continue;
-    const current = ensure(expense.itineraryItemId);
-    current.expenseCount = (current.expenseCount ?? 0) + 1;
-  }
-  for (const task of tasks) {
-    if (!task.relatedItemId || task.status === "done") continue;
-    const current = ensure(task.relatedItemId);
-    current.openTaskCount = (current.openTaskCount ?? 0) + 1;
-  }
-  for (const note of stopNotes) {
-    const current = ensure(note.itemId);
-    current.noteCount = (current.noteCount ?? 0) + 1;
-  }
-
-  return Object.fromEntries(commitments);
 }
 
 export function replaceSuggestionById(

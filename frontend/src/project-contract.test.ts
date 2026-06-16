@@ -279,6 +279,7 @@ describe("Sagittarius project scaffold", () => {
     expect(sagittariusApp).not.toContain("function serializePhotoAlbumInputForApi");
     expect(sagittariusApp).not.toContain("function deriveTripCountriesFromDestination");
     expect(sagittariusApp).not.toContain("async function patchApiItineraryBranchItems");
+    expect(sagittariusApp).not.toContain("function buildItineraryCommitmentsByItemId");
     expect(sagittariusApp).not.toContain('from "@/src/components/OverviewPage"');
     expect(sagittariusApp).not.toContain('from "@/src/components/TimelineView"');
 

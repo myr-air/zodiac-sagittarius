@@ -21,6 +21,7 @@ import type { Messages } from "@/src/i18n/messages";
 import type { Locale } from "@/src/i18n/types";
 import { cn } from "@/src/lib/cn";
 import {
+  type ItineraryCommitmentSummary,
   formatDayLabel,
   getTripDates,
   groupItemsByDay,
@@ -170,13 +171,6 @@ export type InlineItineraryItemPatch = Partial<
     | "transportation"
   >
 >;
-
-export interface ItineraryCommitmentSummary {
-  bookingCount?: number;
-  expenseCount?: number;
-  noteCount?: number;
-  openTaskCount?: number;
-}
 
 const tablePanelClassName =
   "table-panel grid h-auto min-h-full min-w-0 grid-rows-[auto_minmax(0,1fr)] overflow-visible bg-transparent px-6 py-[22px] pb-7 max-[1199px]:min-h-[calc(100dvh-48px)] max-[1199px]:px-0 max-[1199px]:py-0 max-[1199px]:pb-0 max-[767px]:h-[calc(100dvh-48px)] max-[767px]:overflow-hidden max-[520px]:px-0 max-[520px]:py-0 max-[520px]:pb-0";
