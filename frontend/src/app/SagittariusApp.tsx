@@ -70,6 +70,7 @@ import {
   bookingDocInputForExpenseEstimate,
   bookingTypeForBookingTemplate,
   bookingTypeForItineraryItem,
+  buildPatchBookingDocRequest,
   clearItineraryBookingTicketDetails,
   createLocalBookingDoc,
   findDuplicateBookingDoc,
@@ -2676,14 +2677,13 @@ export function SagittariusApp({
             currentTrip.id,
             bookingDocId,
             participantSession.sessionToken,
-            {
+            buildPatchBookingDocRequest({
+              ...input,
+              title: input.title.trim(),
+            }, {
               clientMutationId: nextClientMutationId("booking-doc-patch"),
               expectedVersion: bookingDoc.version,
-              patch: serializeBookingDocInputForApi({
-                ...input,
-                title: input.title.trim(),
-              }),
-            },
+            }),
           );
           const nextTrip = replaceBookingDocInTrip(
             latestTripRef.current,

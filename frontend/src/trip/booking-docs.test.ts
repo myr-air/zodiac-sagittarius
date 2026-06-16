@@ -8,6 +8,7 @@ import {
   bookingTypeForExpenseEstimate,
   bookingTypeForItineraryItem,
   buildBookingDocsSummary,
+  buildPatchBookingDocRequest,
   canViewBookingDoc,
   clearItineraryBookingTicketDetails,
   createLocalBookingDoc,
@@ -173,6 +174,49 @@ describe("booking docs helpers", () => {
           accessNote: "Shared",
         },
       ],
+    });
+  });
+
+  it("builds patch booking doc API requests", () => {
+    expect(
+      buildPatchBookingDocRequest(
+        {
+          type: "hotel",
+          title: "  Hotel voucher  ",
+          status: "confirmed",
+          visibility: "shared",
+          providerName: " Joii Stay ",
+          confirmationCode: " ABC123 ",
+          startsAt: "2026-06-18T15:00",
+          endsAt: null,
+          timezone: "Asia/Hong_Kong",
+          priceAmount: 1200,
+          currency: " HKD ",
+          travelerIds: ["member-owner"],
+          externalLinks: [],
+          relatedItineraryItemIds: ["item-hotel"],
+          relatedTaskIds: [],
+          relatedExpenseIds: [],
+          noteIds: [],
+          notes: "  Ready  ",
+        },
+        {
+          clientMutationId: "booking-doc-patch-mutation",
+          expectedVersion: 3,
+        },
+      ),
+    ).toMatchObject({
+      clientMutationId: "booking-doc-patch-mutation",
+      expectedVersion: 3,
+      patch: {
+        title: "Hotel voucher",
+        providerName: "Joii Stay",
+        confirmationCode: "ABC123",
+        startsAt: "2026-06-18T15:00:00+08:00",
+        timezone: "Asia/Hong_Kong",
+        currency: "HKD",
+        notes: "Ready",
+      },
     });
   });
 
