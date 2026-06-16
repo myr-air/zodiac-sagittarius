@@ -245,6 +245,8 @@ describe("Sagittarius project scaffold", () => {
     expect(sagittariusApp).not.toContain("navigatedView");
     expect(sagittariusApp).not.toContain("setContextRailMounted");
     expect(sagittariusApp).not.toContain("setSidebarCollapsed");
+    expect(sagittariusApp).not.toContain("setToastDismissed");
+    expect(sagittariusApp).not.toContain("setToastDismissing");
     expect(sagittariusApp).not.toContain("function resolveSelectedTripPlanId");
     expect(sagittariusApp).not.toContain("function rememberSelectedTripPlanId");
     expect(sagittariusApp).not.toContain("function selectTripPlanRecords");

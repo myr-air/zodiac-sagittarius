@@ -387,8 +387,6 @@ export function SagittariusApp({
   const [joinInviteToken, setJoinInviteToken] = useState<string | null>(
     initialJoinToken ?? null,
   );
-  const [toastDismissed, setToastDismissed] = useState(false);
-  const [toastDismissing, setToastDismissing] = useState(false);
   const [suggestions, setSuggestions] = useState<Suggestion[]>(() =>
     tripFixtureSuggestions.map((suggestion) => ({ ...suggestion })),
   );
@@ -405,21 +403,15 @@ export function SagittariusApp({
     contextRailMounted,
     contextRailOpen,
     contextRailPreferredTab,
+    dismissWorkspaceToast,
     setContextRailPreferredTab,
     setContextRailVisibility,
     sidebarCollapsed,
     toggleContextRail,
     toggleSidebarCollapsed,
-  } = useWorkspaceChrome();
-  // Auto-dismiss the workspace toast after 6 s when the session is a join-only (temp) session
-  useEffect(() => {
-    if (!requireJoin || toastDismissed) return;
-    const timer = setTimeout(() => {
-      setToastDismissing(true);
-      setTimeout(() => setToastDismissed(true), 220);
-    }, 6000);
-    return () => clearTimeout(timer);
-  }, [requireJoin, toastDismissed]);
+    toastDismissed,
+    toastDismissing,
+  } = useWorkspaceChrome({ autoDismissToast: requireJoin });
   const [selectedTripPlanId, setSelectedTripPlanId] = useState(() =>
     resolveSelectedTripPlanId(initialTrip),
   );
@@ -3359,10 +3351,7 @@ export function SagittariusApp({
             )}
             dismissing={toastDismissing}
             onClaim={() => void claimCurrentMemberToAccount()}
-            onDismiss={() => {
-              setToastDismissing(true);
-              setTimeout(() => setToastDismissed(true), 220);
-            }}
+            onDismiss={dismissWorkspaceToast}
           />
         ) : null}
         {!sessionMember ? (

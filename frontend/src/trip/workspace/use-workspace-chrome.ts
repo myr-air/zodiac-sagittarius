@@ -2,12 +2,20 @@ import { useCallback, useEffect, useState } from "react";
 
 type ContextRailPreferredTab = "notes" | "booking" | "suggestions";
 
-export function useWorkspaceChrome() {
+interface UseWorkspaceChromeOptions {
+  autoDismissToast: boolean;
+}
+
+export function useWorkspaceChrome({
+  autoDismissToast,
+}: UseWorkspaceChromeOptions) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [contextRailOpen, setContextRailOpen] = useState(false);
   const [contextRailMounted, setContextRailMounted] = useState(false);
   const [contextRailPreferredTab, setContextRailPreferredTab] =
     useState<ContextRailPreferredTab>("notes");
+  const [toastDismissed, setToastDismissed] = useState(false);
+  const [toastDismissing, setToastDismissing] = useState(false);
 
   useEffect(() => {
     if (contextRailOpen) return undefined;
@@ -27,6 +35,17 @@ export function useWorkspaceChrome() {
   const toggleContextRail = useCallback(() => {
     setContextRailVisibility(!contextRailOpen);
   }, [contextRailOpen, setContextRailVisibility]);
+
+  const dismissWorkspaceToast = useCallback(() => {
+    setToastDismissing(true);
+    setTimeout(() => setToastDismissed(true), 220);
+  }, []);
+
+  useEffect(() => {
+    if (!autoDismissToast || toastDismissed) return;
+    const timer = setTimeout(dismissWorkspaceToast, 6000);
+    return () => clearTimeout(timer);
+  }, [autoDismissToast, dismissWorkspaceToast, toastDismissed]);
 
   useEffect(() => {
     if (!contextRailOpen) return undefined;
@@ -52,10 +71,13 @@ export function useWorkspaceChrome() {
     contextRailMounted,
     contextRailOpen,
     contextRailPreferredTab,
+    dismissWorkspaceToast,
     setContextRailPreferredTab,
     setContextRailVisibility,
     sidebarCollapsed,
     toggleContextRail,
     toggleSidebarCollapsed,
+    toastDismissed,
+    toastDismissing,
   };
 }
