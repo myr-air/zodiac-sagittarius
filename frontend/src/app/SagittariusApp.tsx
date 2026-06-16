@@ -118,6 +118,7 @@ import {
   deleteItineraryItemFromTrip,
   deriveItineraryPathOptions,
   mainItineraryPathId,
+  mergeCreatedItineraryItemIntoTrip,
   moveTripItem,
   moveTripItemIntoPlanBlock,
   moveTripItemToDay,
@@ -1581,27 +1582,14 @@ export function SagittariusApp({
           note: values.note,
         },
       );
-      const createdItemWithPath = {
-        ...createdItem,
-        pathGroupId: branchPlacement.item.pathGroupId,
-        pathId: branchPlacement.item.pathId,
-        pathName: branchPlacement.item.pathName,
-        pathRole: branchPlacement.item.pathRole,
-      };
-      const patchedBranchItemsById = new Map(
-        patchedBranchItems.map((item) => [item.id, item]),
-      );
       setTripState((current) => ({
         ...current,
-        trip: {
-          ...current.trip,
-          itineraryItems: [
-            ...current.trip.itineraryItems.map(
-              (item) => patchedBranchItemsById.get(item.id) ?? item,
-            ),
-            createdItemWithPath,
-          ],
-        },
+        trip: mergeCreatedItineraryItemIntoTrip(
+          current.trip,
+          createdItem,
+          branchPlacement,
+          patchedBranchItems,
+        ),
       }));
       setSelectedItemId(createdItem.id);
       setContextRailVisibility(false);

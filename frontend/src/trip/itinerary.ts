@@ -223,6 +223,34 @@ export function appendItineraryItemPlacement(
   };
 }
 
+export function mergeCreatedItineraryItemIntoTrip(
+  trip: Trip,
+  createdItem: ItineraryItem,
+  placement: Pick<ItineraryItemPlacement, "item">,
+  patchedBranchItems: ItineraryItem[],
+): Trip {
+  const createdItemWithPath = {
+    ...createdItem,
+    pathGroupId: placement.item.pathGroupId,
+    pathId: placement.item.pathId,
+    pathName: placement.item.pathName,
+    pathRole: placement.item.pathRole,
+  };
+  const patchedBranchItemsById = new Map(
+    patchedBranchItems.map((item) => [item.id, item]),
+  );
+
+  return {
+    ...trip,
+    itineraryItems: [
+      ...trip.itineraryItems.map(
+        (item) => patchedBranchItemsById.get(item.id) ?? item,
+      ),
+      createdItemWithPath,
+    ],
+  };
+}
+
 export function replaceItineraryItem(current: Trip, updatedItem: ItineraryItem): Trip {
   return {
     ...current,

@@ -16,6 +16,7 @@ import {
   moveTripItemIntoPlanBlock,
   moveTripItemToDay,
   mainItineraryPathId,
+  mergeCreatedItineraryItemIntoTrip,
   normalizeStopHierarchyValues,
   replaceItineraryItem,
   resolveItineraryPathItems,
@@ -561,6 +562,52 @@ describe("itinerary planning domain", () => {
       trip: nextTrip,
       item,
       changedExistingItems: [],
+    });
+  });
+
+  it("merges API-created itinerary items with placement path fields and patched branch items", () => {
+    const patchedExistingItem = {
+      ...seedTrip.itineraryItems[0],
+      activity: "Patched branch item",
+      version: seedTrip.itineraryItems[0].version + 1,
+    };
+    const placementItem = {
+      ...seedTrip.itineraryItems[1],
+      id: "item-created-draft",
+      pathGroupId: "path-group-created",
+      pathId: "path-created",
+      pathName: "Created path",
+      pathRole: "alternative" as const,
+    };
+    const createdItem = {
+      ...placementItem,
+      id: "item-created-api",
+      pathGroupId: undefined,
+      pathId: undefined,
+      pathName: undefined,
+      pathRole: undefined,
+      version: 1,
+    };
+
+    const nextTrip = mergeCreatedItineraryItemIntoTrip(
+      seedTrip,
+      createdItem,
+      { item: placementItem },
+      [patchedExistingItem],
+    );
+
+    expect(
+      nextTrip.itineraryItems.find((item) => item.id === patchedExistingItem.id),
+    ).toMatchObject({
+      activity: "Patched branch item",
+      version: patchedExistingItem.version,
+    });
+    expect(nextTrip.itineraryItems.at(-1)).toMatchObject({
+      id: "item-created-api",
+      pathGroupId: "path-group-created",
+      pathId: "path-created",
+      pathName: "Created path",
+      pathRole: "alternative",
     });
   });
 
