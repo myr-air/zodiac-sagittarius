@@ -7,6 +7,7 @@ import {
   buildItineraryView,
   deriveItineraryPathOptions,
   itineraryItemPathFieldsForTarget,
+  normalizeStopHierarchyValues,
   resolveItineraryPathItems,
   getTripDates,
   getNextChildSortOrder,
@@ -199,6 +200,31 @@ describe("itinerary planning domain", () => {
       pathName: "Plan A",
       pathRole: "alternative",
     });
+  });
+
+  it("normalizes child stop values so nested items cannot remain plan blocks", () => {
+    expect(
+      normalizeStopHierarchyValues({
+        activity: "Nested breakfast",
+        parentItemId: "item-morning",
+        isPlanBlock: true,
+      }),
+    ).toEqual({
+      activity: "Nested breakfast",
+      parentItemId: "item-morning",
+      isPlanBlock: false,
+    });
+  });
+
+  it("preserves top-level stop plan block values", () => {
+    const values = {
+      activity: "Morning plan",
+      parentItemId: null,
+      isPlanBlock: true,
+    };
+
+    expect(normalizeStopHierarchyValues(values)).toBe(values);
+    expect(normalizeStopHierarchyValues(values)).toEqual(values);
   });
 
   it("derives main and named path options from metadata and item fields", () => {

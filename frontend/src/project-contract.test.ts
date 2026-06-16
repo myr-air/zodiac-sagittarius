@@ -286,6 +286,7 @@ describe("Sagittarius project scaffold", () => {
     expect(sagittariusApp).not.toContain("function itineraryItemPathFieldsForTarget");
     expect(sagittariusApp).not.toContain("function getNextSortOrder");
     expect(sagittariusApp).not.toContain("function getNextChildSortOrder");
+    expect(sagittariusApp).not.toContain("function normalizeStopHierarchyValues");
     expect(sagittariusApp).not.toContain("function isUnauthenticated");
     expect(sagittariusApp).not.toContain("function isForbidden");
     expect(sagittariusApp).not.toContain("function isAuthFailure");

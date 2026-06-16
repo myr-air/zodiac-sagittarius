@@ -90,6 +90,12 @@ export function getNextChildSortOrder(items: ItineraryItem[], parentItem: Itiner
   return parentItem.sortOrder + 10;
 }
 
+export function normalizeStopHierarchyValues<T extends { parentItemId?: string | null; isPlanBlock?: boolean }>(
+  values: T,
+): T {
+  return values.parentItemId ? { ...values, isPlanBlock: false } : values;
+}
+
 export function resolveItineraryPathItems(items: ItineraryItem[], selection: ItineraryPathSelection = {}): ItineraryItem[] {
   if (selection.showAll) return sortItineraryItems(items);
 

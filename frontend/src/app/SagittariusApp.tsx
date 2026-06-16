@@ -95,6 +95,7 @@ import {
   getNextSortOrder,
   itineraryItemPathFieldsForTarget,
   mainItineraryPathId,
+  normalizeStopHierarchyValues,
   resolveItineraryPathItems,
   selectedItineraryPathIdForDay,
   type ItineraryPathSelection,
@@ -4701,8 +4702,4 @@ export function SagittariusApp({
       </main>
     </AppShell>
   );
-}
-
-function normalizeStopHierarchyValues(values: StopFormValues): StopFormValues {
-  return values.parentItemId ? { ...values, isPlanBlock: false } : values;
 }
