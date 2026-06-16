@@ -4,16 +4,10 @@ import {
   useCallback,
   useEffect,
   useMemo,
-  useRef,
   useState,
 } from "react";
 import { AppShell } from "@/src/components/AppShell";
-import type { BookingDocInput } from "@/src/components/BookingsDocsPage";
-import {
-  type ItineraryBookingTicketInput,
-  type ItineraryBookingTemplate,
-} from "@/src/components/SmartItineraryTable";
-import { StopDialog, type StopFormValues } from "@/src/components/StopDialog";
+import { StopDialog } from "@/src/components/StopDialog";
 import type { TripSettingsFormValues } from "@/src/components/TripSettingsPage";
 import { Select } from "@/src/components/ui";
 import { useI18n } from "@/src/i18n/I18nProvider";
@@ -22,7 +16,6 @@ import { resolveJoinPostAuthReturnTo } from "@/src/trip/join-return";
 import { appRoutes, decodeReturnTo } from "@/src/trip/workspace/sagittarius-app/support";
 import {
   createTripApiClient,
-  TripApiError,
   type TripApiClient,
   type TripCockpit,
 } from "@/src/trip/api-client";
@@ -56,23 +49,6 @@ import {
   updateTripParticipantRole,
 } from "@/src/trip/auth";
 import {
-  bookingDraftDetailsForItineraryItem,
-  bookingDraftTimeWindowForItineraryItem,
-  bookingDraftTitleForItineraryItem,
-  bookingTypeForBookingTemplate,
-  bookingTypeForItineraryItem,
-  buildCreateBookingDocRequest,
-  buildPatchBookingDocRequest,
-  clearItineraryBookingTicketDetails,
-  createLocalBookingDoc,
-  findDuplicateBookingDoc,
-  removeBookingDocFromTrip,
-  replaceBookingDocInTrip,
-  syncItineraryDetailsWithBookingTicket,
-  updateLocalBookingDocInTrip,
-  uniqueStringIds,
-} from "@/src/trip/booking-docs";
-import {
   clearParticipantSession,
   isLocalParticipantSession,
   loadPersistedParticipantSession,
@@ -88,10 +64,7 @@ import {
 import {
   shiftItineraryItemsToStartDate,
 } from "@/src/trip/itinerary-time";
-import {
-  buildCreateItineraryItemRequest,
-  buildShiftItineraryItemDayRequest,
-} from "@/src/trip/itinerary-api-requests";
+import { buildShiftItineraryItemDayRequest } from "@/src/trip/itinerary-api-requests";
 import {
   applyTripSettingsToTrip,
   buildPatchTripSettingsRequest,
@@ -106,7 +79,6 @@ import {
   deriveManualActivityPathOptions,
   type ItineraryImportApplyTarget,
 } from "@/src/trip/itinerary-paths";
-import { patchApiItineraryBranchItems } from "@/src/trip/itinerary-paths-api";
 import type { PlanningView } from "@/src/trip/workspace/planning-view";
 import {
   buildImportItineraryRequest,
@@ -130,10 +102,6 @@ import {
   resolveSelectedTripPlanId,
   tripHasPlan,
 } from "@/src/trip/workspace/selected-trip-plan";
-import {
-  tripPlanIdForBookingRecord,
-  tripPlanIdForRecord,
-} from "@/src/trip/workspace/trip-plan-records";
 import { TripWorkspaceDeleteDialog } from "@/src/trip/workspace/TripWorkspaceDeleteDialog";
 import { TripWorkspaceFrame } from "@/src/trip/workspace/TripWorkspaceFrame";
 import { TripWorkspaceImportDialog } from "@/src/trip/workspace/TripWorkspaceImportDialog";
@@ -150,6 +118,7 @@ import { useWorkspaceNavigation } from "@/src/trip/workspace/use-workspace-navig
 import { WorkspaceToast } from "@/src/trip/workspace/WorkspaceToast";
 import {
   useWorkspacePhotoAlbums,
+  useWorkspaceBookingCommands,
   useWorkspaceExpenses,
   useWorkspaceItineraryCommands,
   useWorkspaceRecords,
@@ -159,17 +128,11 @@ import {
   buildItineraryExport,
   parseItineraryImportDocument,
 } from "@/src/trip/itinerary-import-export";
-import {
-  nextClientMutationId,
-  nextLocalBookingDocId,
-  nextLocalItemId,
-} from "@/src/trip/local-ids";
+import { nextClientMutationId } from "@/src/trip/local-ids";
 import { loadPersistedTripDraft } from "@/src/trip/repository";
 import { seedTrip } from "@/src/trip/seed";
 import { TripWorkspaceAccessPanel } from "./access-gate";
 import type {
-  BookingDoc,
-  BookingDocType,
   ItineraryItem,
   Trip,
   TripMemberAccessStatus,
@@ -178,7 +141,6 @@ import type {
 } from "@/src/trip/types";
 import type { SagittariusAccessMode, SagittariusPortalSection } from "./types";
 
-const localMutationTimestamp = "2026-05-28T00:00:00.000Z";
 const workspaceShellClassName = "workspace-shell min-w-0 bg-transparent max-[1199px]:min-h-[calc(100dvh-48px)]";
 
 interface SagittariusAppProps {
@@ -231,8 +193,6 @@ export function SagittariusApp({
       }),
     [],
   );
-  const inlineUpdateQueueRef = useRef<Map<string, Promise<void>>>(new Map());
-  const bookingDocUpdateQueueRef = useRef<Map<string, Promise<void>>>(new Map());
   const [participantSession, setParticipantSession] =
     useState<TripParticipantSession | null>(null);
   const [isCockpitLoaded, setIsCockpitLoaded] = useState(false);
@@ -423,27 +383,6 @@ export function SagittariusApp({
     replaceApiTrip,
     setTripState,
     trip,
-  });
-  const {
-    createExpense,
-    deleteExpense,
-    duplicateExpenseAsEstimate,
-    recordPaybackReminder,
-    updateExpense,
-  } = useWorkspaceExpenses({
-    apiClient: resolvedApiClient,
-    canEditBookings,
-    canEditExpenses,
-    commitTrip,
-    createBookingDoc,
-    currentMemberId: currentMember.id,
-    isApiMode,
-    participantSession,
-    refreshBackendExpenseSummary,
-    selectedTripPlanId,
-    setBackendExpenseSummary,
-    trip,
-    updateApiTrip,
   });
 
   useEffect(() => {
@@ -831,6 +770,53 @@ export function SagittariusApp({
     commitTrip,
     updateApiTrip,
   });
+  const {
+    changeBookingDocQuickFields,
+    changeBookingDocType,
+    createBookingDoc,
+    createItineraryBookingDraft,
+    deleteBookingDoc,
+    saveItineraryBookingTicket,
+    unlinkBookingFromItineraryItem,
+    updateBookingDoc,
+  } = useWorkspaceBookingCommands({
+    apiClient: resolvedApiClient,
+    canEditBookings,
+    commitTrip,
+    currentMemberId: currentMember.id,
+    isApiMode,
+    latestTripRef,
+    nextClientMutationId,
+    participantSession,
+    replaceApiTrip,
+    replaceCockpitFromApi,
+    selectedTripPlanId,
+    setContextRailPreferredTab,
+    setSelectedItemId,
+    trip,
+    updateItineraryItemInline,
+  });
+  const {
+    createExpense,
+    deleteExpense,
+    duplicateExpenseAsEstimate,
+    recordPaybackReminder,
+    updateExpense,
+  } = useWorkspaceExpenses({
+    apiClient: resolvedApiClient,
+    canEditBookings,
+    canEditExpenses,
+    commitTrip,
+    createBookingDoc,
+    currentMemberId: currentMember.id,
+    isApiMode,
+    participantSession,
+    refreshBackendExpenseSummary,
+    selectedTripPlanId,
+    setBackendExpenseSummary,
+    trip,
+    updateApiTrip,
+  });
 
   function selectItem(itemId: string) {
     setContextRailPreferredTab("notes");
@@ -1142,416 +1128,6 @@ export function SagittariusApp({
     commitTrip((current) =>
       applyTripSettingsToTrip(current, { ...values, countries: nextCountries }),
     );
-  }
-
-  async function createBookingDoc(input: BookingDocInput): Promise<BookingDoc | null> {
-    if (!canEditBookings) return null;
-    const title = input.title.trim();
-    if (!title) return null;
-    if (isApiMode && resolvedApiClient && participantSession) {
-      const clientMutationId = nextClientMutationId("booking-doc-create");
-      try {
-        const bookingDoc = await resolvedApiClient.createBookingDoc(
-          trip.id,
-          participantSession.sessionToken,
-          buildCreateBookingDocRequest(
-            {
-              ...input,
-              title,
-              tripPlanId:
-                input.tripPlanId ??
-                tripPlanIdForBookingRecord(trip, input, selectedTripPlanId),
-            },
-            { clientMutationId },
-          ),
-        );
-        const nextTrip = {
-          ...latestTripRef.current,
-          bookingDocs: [
-            ...(latestTripRef.current.bookingDocs ?? []),
-            bookingDoc,
-          ],
-        };
-        replaceApiTrip(nextTrip);
-        return bookingDoc;
-      } catch (error) {
-        if (
-          !(error instanceof TripApiError) ||
-          error.code !== "version_conflict"
-        )
-          throw error;
-        const cockpit = await resolvedApiClient.loadTrip(
-          trip.id,
-          participantSession.sessionToken,
-        );
-        replaceCockpitFromApi(cockpit);
-        latestTripRef.current = cockpit.trip;
-      }
-      return null;
-    }
-    const bookingDoc = createLocalBookingDoc(trip, input, {
-      title,
-      tripPlanId:
-        input.tripPlanId ??
-        tripPlanIdForBookingRecord(trip, input, selectedTripPlanId),
-      createdBy: currentMember.id,
-      updatedAt: localMutationTimestamp,
-      nextBookingDocId: nextLocalBookingDocId,
-    });
-    commitTrip((current) => ({
-      ...current,
-      bookingDocs: [...(current.bookingDocs ?? []), bookingDoc],
-    }));
-    return bookingDoc;
-  }
-
-  async function createItineraryBookingDraft(
-    itemId: string,
-    template: ItineraryBookingTemplate = "recommended",
-  ) {
-    if (!canEditBookings) return;
-    const item = trip.itineraryItems.find((candidate) => candidate.id === itemId);
-    if (!item) return;
-    const draftDetails = bookingDraftDetailsForItineraryItem(item);
-    const timeWindow = bookingDraftTimeWindowForItineraryItem(item);
-    const bookingType =
-      template === "recommended"
-        ? bookingTypeForItineraryItem(item)
-        : bookingTypeForBookingTemplate(template);
-    const bookingDocInput: BookingDocInput = {
-      type: bookingType,
-      title: bookingDraftTitleForItineraryItem(item, bookingType),
-      status: "draft",
-      visibility: "shared",
-      ownerMemberId: currentMember.id,
-      providerName: draftDetails.providerName,
-      confirmationCode: draftDetails.confirmationCode,
-      startsAt: timeWindow.startsAt,
-      endsAt: timeWindow.endsAt,
-      timezone: trip.defaultTimezone ?? null,
-      priceAmount: null,
-      currency: null,
-      travelerIds: trip.members.map((member) => member.id),
-      externalLinks: [],
-      relatedItineraryItemIds: [item.id],
-      relatedTaskIds: [],
-      relatedExpenseIds: [],
-      noteIds: [],
-      notes: draftDetails.notes,
-    };
-    const matchingDraft = findDuplicateBookingDoc(
-      latestTripRef.current.bookingDocs ?? [],
-      bookingDocInput,
-    );
-    if (matchingDraft) {
-      setContextRailPreferredTab("booking");
-      setSelectedItemId(item.id);
-      return matchingDraft.title;
-    }
-    const bookingDoc = await createBookingDoc({
-      ...bookingDocInput,
-    });
-    setContextRailPreferredTab("booking");
-    setSelectedItemId(item.id);
-    return bookingDoc?.title;
-  }
-
-  async function saveItineraryBookingTicket(input: ItineraryBookingTicketInput) {
-    if (!canEditBookings) return;
-    const currentTrip = latestTripRef.current;
-    const item = currentTrip.itineraryItems.find(
-      (candidate) => candidate.id === input.itemId,
-    );
-    if (!item) return;
-    const relatedItineraryItemIds = uniqueStringIds([
-      ...input.relatedItineraryItemIds,
-      input.itemId,
-    ]);
-    const explicitBookingDoc = input.bookingDocId
-      ? currentTrip.bookingDocs?.find(
-          (candidate) => candidate.id === input.bookingDocId,
-        )
-      : null;
-    const bookingDocInput: BookingDocInput = {
-      tripPlanId: explicitBookingDoc?.tripPlanId,
-      type: explicitBookingDoc?.type ?? input.type,
-      title: input.title,
-      status: explicitBookingDoc?.status ?? input.status,
-      visibility: explicitBookingDoc?.visibility ?? input.visibility,
-      ownerMemberId: explicitBookingDoc?.ownerMemberId ?? currentMember.id,
-      providerName: input.providerName,
-      confirmationCode: input.confirmationCode,
-      startsAt: input.startsAt,
-      endsAt: input.endsAt,
-      timezone: explicitBookingDoc?.timezone ?? trip.defaultTimezone ?? null,
-      priceAmount: explicitBookingDoc?.priceAmount ?? null,
-      currency: explicitBookingDoc?.currency ?? null,
-      travelerIds:
-        explicitBookingDoc?.travelerIds.length || input.travelerIds.length
-          ? explicitBookingDoc?.travelerIds.length
-            ? explicitBookingDoc.travelerIds
-            : input.travelerIds
-          : trip.members.map((member) => member.id),
-      externalLinks: explicitBookingDoc?.externalLinks ?? [],
-      relatedItineraryItemIds,
-      relatedTaskIds: explicitBookingDoc?.relatedTaskIds ?? [],
-      relatedExpenseIds: explicitBookingDoc?.relatedExpenseIds ?? [],
-      noteIds: explicitBookingDoc?.noteIds ?? [],
-      notes: input.notes,
-    };
-    const existingBookingDoc =
-      explicitBookingDoc ??
-      findDuplicateBookingDoc(currentTrip.bookingDocs ?? [], bookingDocInput);
-
-    if (existingBookingDoc) {
-      await updateBookingDoc(existingBookingDoc.id, bookingDocInput);
-    } else {
-      await createBookingDoc(bookingDocInput);
-    }
-
-    for (const relatedItemId of relatedItineraryItemIds) {
-      const relatedItem = latestTripRef.current.itineraryItems.find(
-        (candidate) => candidate.id === relatedItemId,
-      );
-      if (!relatedItem) continue;
-      const nextDetails = syncItineraryDetailsWithBookingTicket(
-        relatedItem,
-        input,
-      );
-      await updateItineraryItemInline(relatedItem.id, { details: nextDetails });
-    }
-
-    setContextRailPreferredTab("booking");
-    setSelectedItemId(item.id);
-    return input.title;
-  }
-
-  async function unlinkBookingFromItineraryItem(
-    bookingDocId: string,
-    itemId: string,
-  ) {
-    if (!canEditBookings) return;
-    const currentTrip = latestTripRef.current;
-    const bookingDoc = currentTrip.bookingDocs?.find(
-      (candidate) => candidate.id === bookingDocId,
-    );
-    if (!bookingDoc || !bookingDoc.relatedItineraryItemIds.includes(itemId))
-      return;
-    await updateBookingDoc(bookingDoc.id, {
-      type: bookingDoc.type,
-      title: bookingDoc.title,
-      status: bookingDoc.status,
-      visibility: bookingDoc.visibility,
-      ownerMemberId: bookingDoc.ownerMemberId,
-      providerName: bookingDoc.providerName,
-      confirmationCode: bookingDoc.confirmationCode,
-      startsAt: bookingDoc.startsAt,
-      endsAt: bookingDoc.endsAt,
-      timezone: bookingDoc.timezone,
-      priceAmount: bookingDoc.priceAmount,
-      currency: bookingDoc.currency,
-      travelerIds: bookingDoc.travelerIds,
-      externalLinks: bookingDoc.externalLinks,
-      relatedItineraryItemIds: bookingDoc.relatedItineraryItemIds.filter(
-        (relatedItemId) => relatedItemId !== itemId,
-      ),
-      relatedTaskIds: bookingDoc.relatedTaskIds,
-      relatedExpenseIds: bookingDoc.relatedExpenseIds,
-      noteIds: bookingDoc.noteIds,
-      notes: bookingDoc.notes,
-    });
-    const item = latestTripRef.current.itineraryItems.find(
-      (candidate) => candidate.id === itemId,
-    );
-    if (item) {
-      await updateItineraryItemInline(item.id, {
-        details: clearItineraryBookingTicketDetails(item),
-      });
-    }
-    setContextRailPreferredTab("booking");
-    setSelectedItemId(itemId);
-  }
-
-  async function updateBookingDoc(
-    bookingDocId: string,
-    input: BookingDocInput,
-  ) {
-    await queueBookingDocUpdate(bookingDocId, () =>
-      runBookingDocUpdate(bookingDocId, input),
-    );
-  }
-
-  async function queueBookingDocUpdate(
-    bookingDocId: string,
-    update: () => void | Promise<void>,
-  ) {
-    const previousUpdate =
-      bookingDocUpdateQueueRef.current.get(bookingDocId) ?? Promise.resolve();
-    const queuedUpdate = previousUpdate
-      .catch(() => undefined)
-      .then(() => update());
-    bookingDocUpdateQueueRef.current.set(bookingDocId, queuedUpdate);
-    try {
-      await queuedUpdate;
-    } finally {
-      if (bookingDocUpdateQueueRef.current.get(bookingDocId) === queuedUpdate) {
-        bookingDocUpdateQueueRef.current.delete(bookingDocId);
-      }
-    }
-  }
-
-  async function runBookingDocUpdate(
-    bookingDocId: string,
-    input: BookingDocInput,
-  ) {
-    if (!canEditBookings) return;
-    if (isApiMode && resolvedApiClient && participantSession) {
-      for (let attempt = 0; attempt < 2; attempt += 1) {
-        const currentTrip = latestTripRef.current;
-        const bookingDoc = currentTrip.bookingDocs?.find(
-          (candidate) => candidate.id === bookingDocId,
-        );
-        if (!bookingDoc) return;
-        try {
-          const patchedBookingDoc = await resolvedApiClient.patchBookingDoc(
-            currentTrip.id,
-            bookingDocId,
-            participantSession.sessionToken,
-            buildPatchBookingDocRequest({
-              ...input,
-              title: input.title.trim(),
-            }, {
-              clientMutationId: nextClientMutationId("booking-doc-patch"),
-              expectedVersion: bookingDoc.version,
-            }),
-          );
-          const nextTrip = replaceBookingDocInTrip(
-            latestTripRef.current,
-            patchedBookingDoc,
-          );
-          replaceApiTrip(nextTrip);
-          return;
-        } catch (error) {
-          if (
-            !(error instanceof TripApiError) ||
-            error.code !== "version_conflict" ||
-            attempt > 0
-          )
-            throw error;
-          const cockpit = await resolvedApiClient.loadTrip(
-            currentTrip.id,
-            participantSession.sessionToken,
-          );
-          replaceCockpitFromApi(cockpit);
-          latestTripRef.current = cockpit.trip;
-        }
-      }
-      return;
-    }
-    commitTrip((current) =>
-      updateLocalBookingDocInTrip(current, bookingDocId, input, {
-        title: input.title.trim(),
-        updatedAt: localMutationTimestamp,
-      }),
-    );
-  }
-
-  async function changeBookingDocType(
-    bookingDocId: string,
-    type: BookingDocType,
-  ) {
-    const bookingDoc = latestTripRef.current.bookingDocs?.find(
-      (candidate) => candidate.id === bookingDocId,
-    );
-    if (!bookingDoc || bookingDoc.type === type) return;
-    await updateBookingDoc(bookingDoc.id, {
-      type,
-      title: bookingDoc.title,
-      status: bookingDoc.status,
-      visibility: bookingDoc.visibility,
-      ownerMemberId: bookingDoc.ownerMemberId,
-      providerName: bookingDoc.providerName,
-      confirmationCode: bookingDoc.confirmationCode,
-      startsAt: bookingDoc.startsAt,
-      endsAt: bookingDoc.endsAt,
-      timezone: bookingDoc.timezone,
-      priceAmount: bookingDoc.priceAmount,
-      currency: bookingDoc.currency,
-      travelerIds: bookingDoc.travelerIds,
-      externalLinks: bookingDoc.externalLinks,
-      relatedItineraryItemIds: bookingDoc.relatedItineraryItemIds,
-      relatedTaskIds: bookingDoc.relatedTaskIds,
-      relatedExpenseIds: bookingDoc.relatedExpenseIds,
-      noteIds: bookingDoc.noteIds,
-      notes: bookingDoc.notes,
-    });
-  }
-
-  async function changeBookingDocQuickFields(
-    bookingDocId: string,
-    patch: {
-      confirmationCode?: string | null;
-      providerName?: string | null;
-    },
-  ) {
-    await queueBookingDocUpdate(bookingDocId, async () => {
-      const bookingDoc = latestTripRef.current.bookingDocs?.find(
-        (candidate) => candidate.id === bookingDocId,
-      );
-      if (!bookingDoc) return;
-      const providerName =
-        patch.providerName !== undefined
-          ? patch.providerName
-          : bookingDoc.providerName;
-      const confirmationCode =
-        patch.confirmationCode !== undefined
-          ? patch.confirmationCode
-          : bookingDoc.confirmationCode;
-      if (
-        providerName === bookingDoc.providerName &&
-        confirmationCode === bookingDoc.confirmationCode
-      )
-        return;
-      await runBookingDocUpdate(bookingDoc.id, {
-        type: bookingDoc.type,
-        title: bookingDoc.title,
-        status: bookingDoc.status,
-        visibility: bookingDoc.visibility,
-        ownerMemberId: bookingDoc.ownerMemberId,
-        providerName,
-        confirmationCode,
-        startsAt: bookingDoc.startsAt,
-        endsAt: bookingDoc.endsAt,
-        timezone: bookingDoc.timezone,
-        priceAmount: bookingDoc.priceAmount,
-        currency: bookingDoc.currency,
-        travelerIds: bookingDoc.travelerIds,
-        externalLinks: bookingDoc.externalLinks,
-        relatedItineraryItemIds: bookingDoc.relatedItineraryItemIds,
-        relatedTaskIds: bookingDoc.relatedTaskIds,
-        relatedExpenseIds: bookingDoc.relatedExpenseIds,
-        noteIds: bookingDoc.noteIds,
-        notes: bookingDoc.notes,
-      });
-    });
-  }
-
-  async function deleteBookingDoc(bookingDocId: string) {
-    if (!canEditBookings) return;
-    if (isApiMode && resolvedApiClient && participantSession) {
-      await resolvedApiClient.deleteBookingDoc(
-        trip.id,
-        bookingDocId,
-        participantSession.sessionToken,
-      );
-      const nextTrip = removeBookingDocFromTrip(
-        latestTripRef.current,
-        bookingDocId,
-      );
-      replaceApiTrip(nextTrip);
-      return;
-    }
-    commitTrip((current) => removeBookingDocFromTrip(current, bookingDocId));
   }
 
   function exportItinerary() {

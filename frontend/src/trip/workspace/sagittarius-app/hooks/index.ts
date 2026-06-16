@@ -1,4 +1,5 @@
 export { useWorkspaceExpenses } from "./use-workspace-expenses";
+export { useWorkspaceBookingCommands } from "./use-workspace-booking-commands";
 export { useWorkspaceItineraryCommands } from "./use-workspace-itinerary-commands";
 export { useWorkspacePhotoAlbums } from "./use-workspace-photo-albums";
 export { useWorkspaceRecords } from "./use-workspace-records";
