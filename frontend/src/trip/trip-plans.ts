@@ -40,6 +40,33 @@ export function updateTripPlanInTrip(
   });
 }
 
+export function mergePublishedTripPlan(
+  currentTrip: Trip,
+  publishedTrip: Trip,
+  fallbackActivePlanVariantId: string,
+  createdVariant?: PlanVariant,
+): Trip {
+  const variantsById = new Map(
+    currentTrip.planVariants.map((variant) => [variant.id, variant]),
+  );
+  for (const variant of publishedTrip.planVariants) {
+    variantsById.set(variant.id, variant);
+  }
+  if (createdVariant) variantsById.set(createdVariant.id, createdVariant);
+  return normalizeTripPlanAliases({
+    ...currentTrip,
+    activePlanVariantId:
+      publishedTrip.activePlanVariantId || fallbackActivePlanVariantId,
+    mainTripPlanId:
+      publishedTrip.mainTripPlanId ||
+      publishedTrip.activePlanVariantId ||
+      fallbackActivePlanVariantId,
+    planVariants: Array.from(variantsById.values()),
+    tripPlans: publishedTrip.tripPlans ?? Array.from(variantsById.values()),
+    version: publishedTrip.version ?? currentTrip.version,
+  });
+}
+
 export function normalizeTripPlanSummary(
   plan: PlanVariant,
   mainTripPlanId: string,

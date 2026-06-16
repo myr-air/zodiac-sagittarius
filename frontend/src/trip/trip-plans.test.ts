@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   legacyKindForPlanStatus,
+  mergePublishedTripPlan,
   normalizeTripPlanAliases,
   normalizeTripPlanSummary,
   planStatusForLegacyKind,
@@ -83,6 +84,74 @@ describe("trip plans", () => {
       updated.planVariants.find((candidate) => candidate.id === "plan-food"),
     ).toMatchObject({ kind: "split", status: "proposal" });
     expect(updated.tripPlans).toEqual(updated.planVariants);
+  });
+
+  it("merges a published trip plan response into local Trip Plan aliases", () => {
+    const nextTripVersion = (seedTrip.version ?? 1) + 1;
+    const publishedMain = plan({
+      id: "plan-rain",
+      kind: "main",
+      status: "main",
+      name: "Published rain plan",
+      version: 6,
+    });
+    const publishedTrip: Trip = {
+      ...seedTrip,
+      activePlanVariantId: "plan-rain",
+      mainTripPlanId: "plan-rain",
+      planVariants: [publishedMain],
+      tripPlans: [publishedMain],
+      version: nextTripVersion,
+    };
+
+    const merged = mergePublishedTripPlan(seedTrip, publishedTrip, "plan-rain");
+
+    expect(merged.version).toBe(nextTripVersion);
+    expect(merged.mainTripPlanId).toBe("plan-rain");
+    expect(merged.activePlanVariantId).toBe("plan-rain");
+    expect(
+      merged.planVariants.find((candidate) => candidate.id === "plan-rain"),
+    ).toMatchObject({
+      name: "Published rain plan",
+      kind: "main",
+      status: "main",
+      version: 6,
+    });
+    expect(
+      merged.planVariants.find((candidate) => candidate.id === seedTrip.activePlanVariantId),
+    ).toMatchObject({ kind: "backup", status: "backup" });
+    expect(merged.tripPlans).toEqual(merged.planVariants);
+  });
+
+  it("keeps a locally created Trip Plan when the published trip response omits it", () => {
+    const createdVariant = plan({
+      id: "plan-new-local",
+      name: "New local plan",
+      status: "draft",
+    });
+    const publishedTrip: Trip = {
+      ...seedTrip,
+      activePlanVariantId: "",
+      mainTripPlanId: undefined,
+      planVariants: [],
+      tripPlans: undefined,
+      version: undefined,
+    };
+
+    const merged = mergePublishedTripPlan(
+      seedTrip,
+      publishedTrip,
+      createdVariant.id,
+      createdVariant,
+    );
+
+    expect(merged.version).toBe(seedTrip.version);
+    expect(merged.mainTripPlanId).toBe(createdVariant.id);
+    expect(merged.activePlanVariantId).toBe(createdVariant.id);
+    expect(
+      merged.planVariants.find((candidate) => candidate.id === createdVariant.id),
+    ).toMatchObject({ kind: "main", status: "main" });
+    expect(merged.tripPlans).toEqual(merged.planVariants);
   });
 
   it("maps legacy plan kinds and Trip Plan statuses", () => {
