@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { expect, userEvent } from "storybook/test";
 import { tripFixture } from "@/src/trip/trip-fixtures";
-import { ContextRail } from "./ContextRail";
+import { ContextRail } from "@/src/features/itinerary/components";
 
 const noop = () => {};
 const selectedItem =

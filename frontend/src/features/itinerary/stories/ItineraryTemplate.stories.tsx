@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { expect } from "storybook/test";
 import { buildDenseTripFixture, tripFixture } from "@/src/trip/trip-fixtures";
 import type { ItineraryItem } from "@/src/trip/types";
-import { SmartItineraryTable } from "./SmartItineraryTable";
+import { SmartItineraryTable } from "@/src/features/itinerary/components";
 
 const noop = () => {};
 const branchGraphItems: ItineraryItem[] = [
