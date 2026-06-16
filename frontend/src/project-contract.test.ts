@@ -40,6 +40,7 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/account/AccountApp.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/TripWorkspaceApp.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/TripWorkspaceFrame.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/workspace/TripWorkspaceRail.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/TripWorkspaceViews.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/planning-view.ts"))).toBe(true);
     expect(existsSync(join(repoRoot, "backend/Cargo.toml"))).toBe(true);
@@ -190,7 +191,9 @@ describe("Sagittarius project scaffold", () => {
 
     const sagittariusApp = readFileSync(join(frontendRoot, "src/app/SagittariusApp.tsx"), "utf8");
     expect(sagittariusApp).toContain("@/src/trip/workspace/TripWorkspaceFrame");
+    expect(sagittariusApp).toContain("@/src/trip/workspace/TripWorkspaceRail");
     expect(sagittariusApp).toContain("@/src/trip/workspace/TripWorkspaceViews");
+    expect(sagittariusApp).not.toContain('from "@/src/components/ContextRail"');
     expect(sagittariusApp).not.toContain("workspaceGridClassName");
     expect(sagittariusApp).not.toContain("planningMainClassName");
     expect(sagittariusApp).not.toContain('from "@/src/components/OverviewPage"');

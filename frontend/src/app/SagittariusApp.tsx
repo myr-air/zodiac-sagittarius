@@ -11,7 +11,6 @@ import {
 import { AppShell, resolveViewFromPath } from "@/src/components/AppShell";
 import { AccountAccessPanel } from "@/src/components/AccountAccessPanel";
 import type { BookingDocInput } from "@/src/components/BookingsDocsPage";
-import { ContextRail } from "@/src/components/ContextRail";
 import type { MapCoordinateResolutionResult } from "@/src/components/RouteMapView";
 import {
   type ItineraryBookingTicketInput,
@@ -76,6 +75,7 @@ import {
 } from "@/src/trip/itinerary-paths";
 import type { PlanningView } from "@/src/trip/workspace/planning-view";
 import { TripWorkspaceFrame } from "@/src/trip/workspace/TripWorkspaceFrame";
+import { TripWorkspaceRail } from "@/src/trip/workspace/TripWorkspaceRail";
 import { TripWorkspaceViews } from "@/src/trip/workspace/TripWorkspaceViews";
 import {
   buildItineraryExport,
@@ -4395,40 +4395,42 @@ export function SagittariusApp({
           importError={itineraryImportError}
           supportsContextRail={supportsContextRail}
           rail={
-            supportsContextRail && contextRailMounted ? (
-              <ContextRail
-                trip={scopedTripForRecords}
-                selectedItem={selectedItem}
-                suggestions={scopedSuggestions}
-                stopNotes={scopedTripPlanRecords.stopNotes}
-                tasks={scopedTripPlanRecords.tasks}
-                bookingDocs={scopedTripPlanRecords.bookingDocs}
-                currentMember={currentMember}
-                expenseSummary={expenseSummary}
-                canEdit={canEdit}
-                canCreateNote={canCreateStopNote}
-                canCreateSuggestion={canCreateSuggestion}
-                canReviewSuggestions={canReviewSuggestions}
-                canEditExpenses={canEditExpenses}
-                open={contextRailOpen}
-                preferredTab={contextRailPreferredTab}
-                onChangeBookingDocType={changeBookingDocType}
-                onChangeBookingDocQuickFields={changeBookingDocQuickFields}
-                onCreateNote={createStopNote}
-                onCreateExpense={createExpense}
-                onUpdateExpense={updateExpense}
-                onDeleteExpense={deleteExpense}
-                onDeleteNote={deleteStopNote}
-                onEditSelected={() => {
+            <TripWorkspaceRail
+              enabled={supportsContextRail}
+              mounted={contextRailMounted}
+              railProps={{
+                trip: scopedTripForRecords,
+                selectedItem,
+                suggestions: scopedSuggestions,
+                stopNotes: scopedTripPlanRecords.stopNotes,
+                tasks: scopedTripPlanRecords.tasks,
+                bookingDocs: scopedTripPlanRecords.bookingDocs,
+                currentMember,
+                expenseSummary,
+                canEdit,
+                canCreateNote: canCreateStopNote,
+                canCreateSuggestion,
+                canReviewSuggestions,
+                canEditExpenses,
+                open: contextRailOpen,
+                preferredTab: contextRailPreferredTab,
+                onChangeBookingDocType: changeBookingDocType,
+                onChangeBookingDocQuickFields: changeBookingDocQuickFields,
+                onCreateNote: createStopNote,
+                onCreateExpense: createExpense,
+                onUpdateExpense: updateExpense,
+                onDeleteExpense: deleteExpense,
+                onDeleteNote: deleteStopNote,
+                onEditSelected: () => {
                   if (selectedItem) editItem(selectedItem.id);
-                }}
-                onReviewSuggestion={reviewSuggestion}
-                onSuggestSelected={suggestSelectedStop}
-                onToggleTaskStatus={toggleTaskStatus}
-                onUpdateNote={updateStopNote}
-                onClose={() => setContextRailVisibility(false)}
-              />
-            ) : null
+                },
+                onReviewSuggestion: reviewSuggestion,
+                onSuggestSelected: suggestSelectedStop,
+                onToggleTaskStatus: toggleTaskStatus,
+                onUpdateNote: updateStopNote,
+                onClose: () => setContextRailVisibility(false),
+              }}
+            />
           }
         >
             <TripWorkspaceViews
