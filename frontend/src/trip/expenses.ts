@@ -69,6 +69,12 @@ export interface BuildExpenseUpdateDraftOptions<
   ) => string | null | undefined;
 }
 
+export interface ExpenseReminderRequest {
+  from: string;
+  to: string;
+  amountMinor: number;
+}
+
 interface BuildExpenseSplitsInput {
   amount: number;
   memberIds: string[];
@@ -381,6 +387,36 @@ export function buildExpenseStatement({ trip, expenseSummary }: BuildExpenseStat
 export function buildPaybackReminder({ trip, suggestion }: BuildPaybackReminderInput): string {
   const memberNames = new Map(trip.members.map((member) => [member.id, member.displayName]));
   return `${memberName(memberNames, suggestion.from)}, please pay ${memberName(memberNames, suggestion.to)} ${formatMoney(suggestion.amount, suggestion.currency ?? "HKD")} for ${trip.name}. Mark it as paid in Joii after you send it.`;
+}
+
+export function expenseReminderRequestForSuggestion(
+  suggestion: SettlementSuggestion,
+): ExpenseReminderRequest {
+  return {
+    from: suggestion.from,
+    to: suggestion.to,
+    amountMinor: Math.round(suggestion.amount * 100),
+  };
+}
+
+export function recordLocalExpenseReminderInTrip<T extends Pick<Trip, "expenseReminders">>(
+  trip: T,
+  suggestion: SettlementSuggestion,
+  options: {
+    tripPlanId?: string | null;
+    remindedAt: string;
+  },
+): T {
+  return {
+    ...trip,
+    expenseReminders: upsertExpenseReminder(trip.expenseReminders ?? [], {
+      tripPlanId: options.tripPlanId,
+      from: suggestion.from,
+      to: suggestion.to,
+      amount: suggestion.amount,
+      lastRemindedAt: options.remindedAt,
+    }),
+  };
 }
 
 export function upsertExpenseReminder(reminders: ExpenseReminder[], reminder: ExpenseReminder): ExpenseReminder[] {

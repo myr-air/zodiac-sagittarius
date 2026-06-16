@@ -280,6 +280,8 @@ describe("Sagittarius project scaffold", () => {
     expect(sagittariusApp).not.toContain("function appendLocalExpensesToTrip");
     expect(sagittariusApp).not.toContain("function buildExpenseUpdateDraft");
     expect(sagittariusApp).not.toContain("function updateLocalExpenseInTrip");
+    expect(sagittariusApp).not.toContain("function expenseReminderRequestForSuggestion");
+    expect(sagittariusApp).not.toContain("function recordLocalExpenseReminderInTrip");
     expect(sagittariusApp).not.toContain("function TripAccessLoadingFrame");
     expect(sagittariusApp).not.toContain("function WorkspaceToast");
     expect(sagittariusApp).not.toContain("workspaceToastDismissClassName");

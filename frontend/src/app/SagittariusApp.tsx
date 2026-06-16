@@ -91,10 +91,11 @@ import {
   buildExpenseCreateDrafts,
   buildExpenseUpdateDraft,
   buildExpenseSummary,
+  expenseReminderRequestForSuggestion,
   expenseSplitsToMinor,
   filterExpenseRemindersForTripPlan,
+  recordLocalExpenseReminderInTrip,
   updateLocalExpenseInTrip,
-  upsertExpenseReminder,
 } from "@/src/trip/expenses";
 import {
   buildItineraryCommitmentsByItemId,
@@ -3475,7 +3476,7 @@ export function SagittariusApp({
   }
 
   async function recordPaybackReminder(suggestion: SettlementSuggestion) {
-    const amountMinor = Math.round(suggestion.amount * 100);
+    const reminderRequest = expenseReminderRequestForSuggestion(suggestion);
     if (isApiMode && resolvedApiClient && participantSession) {
       setBackendExpenseSummary(
         {
@@ -3485,9 +3486,7 @@ export function SagittariusApp({
             participantSession.sessionToken,
             {
               clientMutationId: nextClientMutationId("expense-reminder"),
-              from: suggestion.from,
-              to: suggestion.to,
-              amountMinor,
+              ...reminderRequest,
             },
             selectedTripPlanId,
           ),
@@ -3495,16 +3494,12 @@ export function SagittariusApp({
       );
       return;
     }
-    commitTrip((current) => ({
-      ...current,
-      expenseReminders: upsertExpenseReminder(current.expenseReminders ?? [], {
+    commitTrip((current) =>
+      recordLocalExpenseReminderInTrip(current, suggestion, {
         tripPlanId: selectedTripPlanId,
-        from: suggestion.from,
-        to: suggestion.to,
-        amount: suggestion.amount,
-        lastRemindedAt: new Date().toISOString(),
+        remindedAt: new Date().toISOString(),
       }),
-    }));
+    );
   }
 
   function exportItinerary() {
