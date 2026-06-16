@@ -4,6 +4,7 @@ import {
   emptyItineraryExportRecords,
   mergeImportedRecordsIntoTripPlan,
   pendingItineraryImportFromDocument,
+  resolveCreatedImportId,
   shouldUseApiItineraryImport,
 } from "./itinerary-import-model";
 import { tripFixture } from "@/src/trip/trip-fixtures";
@@ -44,6 +45,17 @@ describe("itinerary import model", () => {
       items: [],
       records: emptyItineraryExportRecords(),
     });
+  });
+
+  it("resolves ids from created import id maps without changing nullish ids", () => {
+    const firstMap = new Map([["source-task", "created-task"]]);
+    const secondMap = new Map([["source-note", "created-note"]]);
+
+    expect(resolveCreatedImportId(null, [firstMap, secondMap])).toBeNull();
+    expect(resolveCreatedImportId(undefined, [firstMap, secondMap])).toBeUndefined();
+    expect(resolveCreatedImportId("source-task", [firstMap, secondMap])).toBe("created-task");
+    expect(resolveCreatedImportId("source-note", [firstMap, secondMap])).toBe("created-note");
+    expect(resolveCreatedImportId("unmapped", [firstMap, secondMap])).toBe("unmapped");
   });
 
   it("remaps imported linked records to the applied activity ids", () => {

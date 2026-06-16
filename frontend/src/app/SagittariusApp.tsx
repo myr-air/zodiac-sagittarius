@@ -114,6 +114,7 @@ import {
   emptyItineraryExportRecords,
   mergeImportedRecordsIntoTripPlan,
   pendingItineraryImportFromDocument,
+  resolveCreatedImportId,
   shouldUseApiItineraryImport,
   upsertById,
   type PendingItineraryImport,
@@ -4778,18 +4779,6 @@ function buildItineraryCommitmentsByItemId({
   }
 
   return Object.fromEntries(commitments);
-}
-
-function resolveCreatedImportId(
-  id: string | null | undefined,
-  idMaps: Map<string, string>[],
-): string | null | undefined {
-  if (typeof id !== "string") return id;
-  for (const idMap of idMaps) {
-    const mappedId = idMap.get(id);
-    if (mappedId) return mappedId;
-  }
-  return id;
 }
 
 function serializePhotoAlbumInputForApi(input: TripPhotoAlbumInput) {

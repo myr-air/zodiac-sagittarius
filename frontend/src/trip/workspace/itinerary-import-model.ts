@@ -149,6 +149,18 @@ export function mergeImportedRecordsIntoTripPlan(
   };
 }
 
+export function resolveCreatedImportId(
+  id: string | null | undefined,
+  idMaps: Map<string, string>[],
+): string | null | undefined {
+  if (typeof id !== "string") return id;
+  for (const idMap of idMaps) {
+    const mappedId = idMap.get(id);
+    if (mappedId) return mappedId;
+  }
+  return id;
+}
+
 export function upsertById<T extends { id: string }>(
   current: T[],
   next: T[],
