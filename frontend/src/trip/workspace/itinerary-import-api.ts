@@ -1,4 +1,6 @@
 import type {
+  CreateBookingDocApiRequest,
+  CreateExpenseApiRequest,
   CreateItineraryItemApiRequest,
   CreateStopNoteApiRequest,
   CreateTaskApiRequest,
@@ -48,6 +50,19 @@ interface BuildImportedTaskStatusPatchRequestInput {
 interface BuildImportedStopNoteCreateRequestInput {
   clientMutationId: string;
   note: StopNote;
+}
+
+interface BuildImportedExpenseCreateRequestInput {
+  clientMutationId: string;
+  expense: Expense;
+}
+
+interface BuildImportedBookingDocCreateRequestInput {
+  bookingDoc: BookingDoc;
+  clientMutationId: string;
+  expenseIdMap: Map<string, string>;
+  noteIdMap: Map<string, string>;
+  taskIdMap: Map<string, string>;
 }
 
 export interface BuildImportItineraryRequestInput {
@@ -105,6 +120,66 @@ export function buildImportedStopNoteCreateRequest({
     tripPlanId: note.tripPlanId,
     itineraryItemId: note.itemId,
     body: note.body,
+  };
+}
+
+export function buildImportedExpenseCreateRequest({
+  clientMutationId,
+  expense,
+}: BuildImportedExpenseCreateRequestInput): CreateExpenseApiRequest {
+  return {
+    clientMutationId,
+    tripPlanId: expense.tripPlanId,
+    title: expense.title,
+    amountMinor:
+      expense.amountMinor ?? Math.round((expense.amount ?? 0) * 100),
+    currency: expense.currency ?? "HKD",
+    exchangeRateToSettlementCurrency:
+      expense.exchangeRateToSettlementCurrency ?? 1,
+    notes: expense.notes ?? null,
+    receiptUrl: expense.receiptUrl ?? null,
+    lineItems: expense.lineItems ?? [],
+    comments: expense.comments ?? [],
+    paidBy: expense.paidBy,
+    category: expense.category,
+    splits: expenseSplitsToMinor(expense.splits),
+    itineraryItemId: expense.itineraryItemId ?? null,
+  };
+}
+
+export function buildImportedBookingDocCreateRequest({
+  bookingDoc,
+  clientMutationId,
+  expenseIdMap,
+  noteIdMap,
+  taskIdMap,
+}: BuildImportedBookingDocCreateRequestInput): CreateBookingDocApiRequest {
+  return {
+    clientMutationId,
+    tripPlanId: bookingDoc.tripPlanId,
+    type: bookingDoc.type,
+    title: bookingDoc.title,
+    status: bookingDoc.status,
+    visibility: bookingDoc.visibility,
+    ownerMemberId: bookingDoc.ownerMemberId,
+    providerName: bookingDoc.providerName,
+    confirmationCode: bookingDoc.confirmationCode,
+    startsAt: bookingDoc.startsAt,
+    endsAt: bookingDoc.endsAt,
+    timezone: bookingDoc.timezone,
+    priceAmount: bookingDoc.priceAmount,
+    currency: bookingDoc.currency,
+    travelerIds: bookingDoc.travelerIds,
+    externalLinks: bookingDoc.externalLinks,
+    relatedItineraryItemIds: bookingDoc.relatedItineraryItemIds,
+    relatedTaskIds: bookingDoc.relatedTaskIds.map(
+      (taskId) => taskIdMap.get(taskId) ?? taskId,
+    ),
+    relatedExpenseIds: bookingDoc.relatedExpenseIds.map(
+      (expenseId) => expenseIdMap.get(expenseId) ?? expenseId,
+    ),
+    noteIds: bookingDoc.noteIds.map((noteId) => noteIdMap.get(noteId) ?? noteId),
+    notes: bookingDoc.notes,
   };
 }
 
@@ -193,24 +268,16 @@ export async function createImportedPlanRecordsViaApi({
   }
 
   for (const expense of records.expenses) {
-    const createdExpense = await apiClient.createExpense(tripId, sessionToken, {
-      clientMutationId: nextClientMutationId("itinerary-import-expense-create"),
-      tripPlanId: expense.tripPlanId,
-      title: expense.title,
-      amountMinor:
-        expense.amountMinor ?? Math.round((expense.amount ?? 0) * 100),
-      currency: expense.currency ?? "HKD",
-      exchangeRateToSettlementCurrency:
-        expense.exchangeRateToSettlementCurrency ?? 1,
-      notes: expense.notes ?? null,
-      receiptUrl: expense.receiptUrl ?? null,
-      lineItems: expense.lineItems ?? [],
-      comments: expense.comments ?? [],
-      paidBy: expense.paidBy,
-      category: expense.category,
-      splits: expenseSplitsToMinor(expense.splits),
-      itineraryItemId: expense.itineraryItemId ?? null,
-    });
+    const createdExpense = await apiClient.createExpense(
+      tripId,
+      sessionToken,
+      buildImportedExpenseCreateRequest({
+        clientMutationId: nextClientMutationId(
+          "itinerary-import-expense-create",
+        ),
+        expense,
+      }),
+    );
     expenseIdMap.set(expense.id, createdExpense.id);
     createdExpenses.push(createdExpense);
   }
@@ -234,37 +301,15 @@ export async function createImportedPlanRecordsViaApi({
     const createdBookingDoc = await apiClient.createBookingDoc(
       tripId,
       sessionToken,
-      {
+      buildImportedBookingDocCreateRequest({
+        bookingDoc,
         clientMutationId: nextClientMutationId(
           "itinerary-import-booking-create",
         ),
-        tripPlanId: bookingDoc.tripPlanId,
-        type: bookingDoc.type,
-        title: bookingDoc.title,
-        status: bookingDoc.status,
-        visibility: bookingDoc.visibility,
-        ownerMemberId: bookingDoc.ownerMemberId,
-        providerName: bookingDoc.providerName,
-        confirmationCode: bookingDoc.confirmationCode,
-        startsAt: bookingDoc.startsAt,
-        endsAt: bookingDoc.endsAt,
-        timezone: bookingDoc.timezone,
-        priceAmount: bookingDoc.priceAmount,
-        currency: bookingDoc.currency,
-        travelerIds: bookingDoc.travelerIds,
-        externalLinks: bookingDoc.externalLinks,
-        relatedItineraryItemIds: bookingDoc.relatedItineraryItemIds,
-        relatedTaskIds: bookingDoc.relatedTaskIds.map(
-          (taskId) => taskIdMap.get(taskId) ?? taskId,
-        ),
-        relatedExpenseIds: bookingDoc.relatedExpenseIds.map(
-          (expenseId) => expenseIdMap.get(expenseId) ?? expenseId,
-        ),
-        noteIds: bookingDoc.noteIds.map(
-          (noteId) => noteIdMap.get(noteId) ?? noteId,
-        ),
-        notes: bookingDoc.notes,
-      },
+        expenseIdMap,
+        noteIdMap,
+        taskIdMap,
+      }),
     );
     createdBookingDocs.push(createdBookingDoc);
   }

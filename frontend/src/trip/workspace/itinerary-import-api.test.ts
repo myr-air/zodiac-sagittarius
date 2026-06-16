@@ -9,6 +9,8 @@ import type {
 } from "@/src/trip/types";
 import {
   buildImportItineraryRequest,
+  buildImportedBookingDocCreateRequest,
+  buildImportedExpenseCreateRequest,
   buildImportedItineraryItemCreateRequest,
   buildImportedStopNoteCreateRequest,
   buildImportedTaskCreateRequest,
@@ -133,6 +135,62 @@ describe("itinerary import API adapter", () => {
       tripPlanId: "plan-rain",
       itineraryItemId: "item-created",
       body: "Use exit C",
+    });
+  });
+
+  it("builds imported expense and booking-doc API requests", () => {
+    expect(
+      buildImportedExpenseCreateRequest({
+        clientMutationId: "expense-create-mutation",
+        expense,
+      }),
+    ).toEqual({
+      clientMutationId: "expense-create-mutation",
+      tripPlanId: "plan-rain",
+      title: "Museum ticket",
+      amountMinor: 1200,
+      currency: "HKD",
+      exchangeRateToSettlementCurrency: 1,
+      notes: null,
+      receiptUrl: null,
+      lineItems: [],
+      comments: [],
+      paidBy: "member-aom",
+      category: "tickets",
+      splits: { "member-aom": 1200 },
+      itineraryItemId: "item-created",
+    });
+
+    expect(
+      buildImportedBookingDocCreateRequest({
+        bookingDoc,
+        clientMutationId: "booking-create-mutation",
+        expenseIdMap: new Map([[expense.id, "expense-created"]]),
+        noteIdMap: new Map([[note.id, "note-created"]]),
+        taskIdMap: new Map([[task.id, "task-created"]]),
+      }),
+    ).toEqual({
+      clientMutationId: "booking-create-mutation",
+      tripPlanId: "plan-rain",
+      type: "activity_ticket",
+      title: "Museum booking",
+      status: "confirmed",
+      visibility: "shared",
+      ownerMemberId: "member-aom",
+      providerName: "Museum",
+      confirmationCode: "ABC123",
+      startsAt: null,
+      endsAt: null,
+      timezone: "Asia/Hong_Kong",
+      priceAmount: 12,
+      currency: "HKD",
+      travelerIds: ["member-aom"],
+      externalLinks: [],
+      relatedItineraryItemIds: ["item-created"],
+      relatedTaskIds: ["task-created"],
+      relatedExpenseIds: ["expense-created"],
+      noteIds: ["note-created"],
+      notes: "Bring passports",
     });
   });
 
