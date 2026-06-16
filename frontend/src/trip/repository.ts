@@ -1,6 +1,6 @@
 import { seedTrip } from "./seed";
 import type { Trip } from "./types";
-import type { TripStorageDriver } from "./storage";
+import { createBrowserStorageDriver, type TripStorageDriver } from "./storage";
 
 export interface TripRepository {
   loadTrip(): Trip;
@@ -39,3 +39,27 @@ export function createLocalTripRepository(storageKey: string, storage: TripStora
 }
 
 export const tripStorageKey = "sagittarius:trip-draft";
+
+export function loadPersistedTripDraft(
+  normalizeTrip: (trip: Trip) => Trip = (trip) => trip,
+): Trip | null {
+  const storage = createBrowserStorageDriver();
+  const rawTrip = storage.load(tripStorageKey);
+  if (!rawTrip) return null;
+  try {
+    return normalizeTrip(JSON.parse(rawTrip) as Trip);
+  } catch {
+    storage.remove(tripStorageKey);
+    return null;
+  }
+}
+
+export function persistTripDraft(
+  trip: Trip,
+  normalizeTrip: (trip: Trip) => Trip = (nextTrip) => nextTrip,
+) {
+  createBrowserStorageDriver().save(
+    tripStorageKey,
+    JSON.stringify(normalizeTrip(trip)),
+  );
+}

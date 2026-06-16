@@ -221,6 +221,8 @@ describe("Sagittarius project scaffold", () => {
     expect(sagittariusApp).not.toContain("function tripPlanIdForRecord");
     expect(sagittariusApp).not.toContain("function loadPersistedParticipantSession");
     expect(sagittariusApp).not.toContain("function clearParticipantSession");
+    expect(sagittariusApp).not.toContain("function loadPersistedTrip");
+    expect(sagittariusApp).not.toContain("function persistTripDraft");
     expect(sagittariusApp).not.toContain('from "@/src/components/OverviewPage"');
     expect(sagittariusApp).not.toContain('from "@/src/components/TimelineView"');
   });

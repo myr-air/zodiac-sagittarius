@@ -112,7 +112,10 @@ import {
   tripFixtureSuggestions,
   tripFixtureTasks,
 } from "@/src/trip/trip-fixtures";
-import { tripStorageKey } from "@/src/trip/repository";
+import {
+  loadPersistedTripDraft,
+  persistTripDraft,
+} from "@/src/trip/repository";
 import { seedTrip } from "@/src/trip/seed";
 import { decodeTripId } from "@/src/trip/ids";
 import { safeExternalHref } from "@/src/trip/safe-links";
@@ -588,7 +591,7 @@ export function SagittariusApp({
     });
     const timeout = window.setTimeout(() => {
       if (cancelled) return;
-      const persistedTrip = loadPersistedTrip();
+      const persistedTrip = loadPersistedTripDraft(normalizeTripPlanAliases);
       const nextTrip = normalizeTripPlanAliases(persistedTrip ?? initialTrip);
       const persistedSession = loadPersistedParticipantSession(
         requireJoin,
@@ -2342,7 +2345,7 @@ export function SagittariusApp({
   ) {
     setTripState((current) => {
       const nextTrip = normalizeTripPlanAliases(updater(current.trip));
-      persistTripDraft(nextTrip);
+      persistTripDraft(nextTrip, normalizeTripPlanAliases);
       return {
         trip: nextTrip,
         past: [...current.past, current.trip].slice(-20),
@@ -2416,7 +2419,7 @@ export function SagittariusApp({
 
   function replaceTripFromJoin(nextTrip: Trip) {
     const normalizedTrip = normalizeTripPlanAliases(nextTrip);
-    if (!isApiMode) persistTripDraft(normalizedTrip);
+    if (!isApiMode) persistTripDraft(normalizedTrip, normalizeTripPlanAliases);
     setTripState({ trip: normalizedTrip, past: [], future: [] });
   }
 
@@ -5563,27 +5566,6 @@ function TripAccessLoadingFrame() {
   );
 }
 
-function getBrowserLocalStorage(): Storage | null {
-  if (
-    typeof window === "undefined" ||
-    !("localStorage" in window) ||
-    !window.localStorage
-  )
-    return null;
-  return window.localStorage;
-}
-
-function loadPersistedTrip(): Trip | null {
-  const rawTrip = getBrowserLocalStorage()?.getItem(tripStorageKey);
-  if (!rawTrip) return null;
-  try {
-    return normalizeTripPlanAliases(JSON.parse(rawTrip) as Trip);
-  } catch {
-    getBrowserLocalStorage()?.removeItem(tripStorageKey);
-    return null;
-  }
-}
-
 function isUnauthenticated(caught: unknown): boolean {
   return caught instanceof TripApiError && caught.status === 401;
 }
@@ -5594,13 +5576,6 @@ function isForbidden(caught: unknown): boolean {
 
 function isAuthFailure(caught: unknown): boolean {
   return isUnauthenticated(caught) || isForbidden(caught);
-}
-
-function persistTripDraft(trip: Trip) {
-  getBrowserLocalStorage()?.setItem(
-    tripStorageKey,
-    JSON.stringify(normalizeTripPlanAliases(trip)),
-  );
 }
 
 function shiftItineraryItemsToStartDate(
