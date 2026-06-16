@@ -115,6 +115,7 @@ import {
   buildItineraryCommitmentsByItemId,
   buildItineraryItemDraft,
   buildItineraryView,
+  buildUpdatedItineraryItem,
   deleteItineraryItemFromTrip,
   deriveItineraryPathOptions,
   mainItineraryPathId,
@@ -1756,37 +1757,17 @@ export function SagittariusApp({
       return;
     }
     commitTrip((current) => {
-      const updatedItem = {
-        ...dialogState.item,
-        day: editDay,
-        parentItemId: values.parentItemId ?? null,
-        itemKind: values.itemKind,
-        timeMode: values.timeMode,
-        isPlanBlock: values.isPlanBlock,
-        status: values.status,
-        priority: values.priority,
-        startTime: values.startTime,
-        endTime: values.endTime,
-        endOffsetDays: values.endOffsetDays,
-        activity: values.activity,
-        activityType: values.activityType,
-        place: values.place,
-        mapLink: locationFields.mapLink,
-        address: locationFields.address,
-        coordinates: locationFields.coordinates,
-        durationMinutes: values.durationMinutes,
-        transportation: values.transportation,
-        details: values.details,
-        note: values.note,
-        updatedAt: localMutationTimestamp,
-        version: dialogState.item.version + 1,
-      };
-      const tripWithUpdatedItem = {
-        ...current,
-        itineraryItems: current.itineraryItems.map((item) =>
-          item.id === itemId ? updatedItem : item,
-        ),
-      };
+      const updatedItem = buildUpdatedItineraryItem(
+        dialogState.item,
+        { ...values, day: editDay },
+        {
+          address: locationFields.address,
+          coordinates: locationFields.coordinates,
+          mapLink: locationFields.mapLink,
+          updatedAt: localMutationTimestamp,
+        },
+      );
+      const tripWithUpdatedItem = replaceItineraryItem(current, updatedItem);
       const pathPlacement = applyItemToActivityBranch(
         tripWithUpdatedItem,
         updatedItem,

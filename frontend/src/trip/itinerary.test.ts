@@ -8,6 +8,7 @@ import {
   buildItineraryCommitmentsByItemId,
   buildItineraryItemDraft,
   buildItineraryView,
+  buildUpdatedItineraryItem,
   deleteItineraryItemFromTrip,
   deriveItineraryPathOptions,
   itineraryItemPathFieldsForTarget,
@@ -660,6 +661,58 @@ describe("itinerary planning domain", () => {
       activity: "API patched branch change",
       pathId: "path-branch",
       version: patchedBranchItem.version,
+    });
+  });
+
+  it("builds updated itinerary items from local edit values", () => {
+    const item = seedTrip.itineraryItems[0];
+    const updated = buildUpdatedItineraryItem(
+      item,
+      {
+        activity: "Updated local activity",
+        activityType: "food",
+        day: "2026-06-20",
+        details: { reservationName: "Aom" },
+        durationMinutes: 45,
+        endOffsetDays: 1,
+        endTime: "12:30",
+        isPlanBlock: false,
+        itemKind: "meal",
+        note: "Updated note",
+        parentItemId: null,
+        place: "Updated place",
+        priority: "high",
+        startTime: "11:45",
+        status: "booked",
+        timeMode: "scheduled",
+        transportation: "walk",
+      },
+      {
+        address: "Updated address",
+        coordinates: { lat: 22.3, lng: 114.2 },
+        mapLink: "https://maps.example/updated",
+        updatedAt: "2026-06-16T00:00:00.000Z",
+      },
+    );
+
+    expect(updated).toMatchObject({
+      id: item.id,
+      tripId: item.tripId,
+      day: "2026-06-20",
+      parentItemId: null,
+      itemKind: "meal",
+      activity: "Updated local activity",
+      activityType: "food",
+      place: "Updated place",
+      mapLink: "https://maps.example/updated",
+      address: "Updated address",
+      coordinates: { lat: 22.3, lng: 114.2 },
+      durationMinutes: 45,
+      transportation: "walk",
+      details: { reservationName: "Aom" },
+      note: "Updated note",
+      updatedAt: "2026-06-16T00:00:00.000Z",
+      version: item.version + 1,
     });
   });
 

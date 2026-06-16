@@ -98,6 +98,13 @@ export interface BuildItineraryItemDraftOptions {
   updatedAt: string;
 }
 
+export interface BuildUpdatedItineraryItemOptions {
+  address: ItineraryItem["address"];
+  coordinates: ItineraryItem["coordinates"];
+  mapLink: string;
+  updatedAt: string;
+}
+
 export interface ItineraryItemPlacement {
   trip: Trip;
   item: ItineraryItem;
@@ -209,6 +216,38 @@ export function appendItineraryItemToTrip(
   return {
     ...trip,
     itineraryItems: [...trip.itineraryItems, item],
+  };
+}
+
+export function buildUpdatedItineraryItem(
+  item: ItineraryItem,
+  input: BuildItineraryItemDraftInput,
+  options: BuildUpdatedItineraryItemOptions,
+): ItineraryItem {
+  return {
+    ...item,
+    day: input.day,
+    parentItemId: input.parentItemId ?? null,
+    itemKind: input.itemKind,
+    timeMode: input.timeMode,
+    isPlanBlock: input.isPlanBlock,
+    status: input.status,
+    priority: input.priority,
+    startTime: input.startTime,
+    endTime: input.endTime,
+    endOffsetDays: input.endOffsetDays,
+    activity: input.activity,
+    activityType: input.activityType,
+    place: input.place,
+    mapLink: options.mapLink,
+    address: options.address,
+    coordinates: options.coordinates,
+    durationMinutes: input.durationMinutes,
+    transportation: input.transportation,
+    details: input.details,
+    note: input.note,
+    updatedAt: options.updatedAt,
+    version: item.version + 1,
   };
 }
 

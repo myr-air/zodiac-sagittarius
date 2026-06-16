@@ -270,6 +270,7 @@ describe("Sagittarius project scaffold", () => {
     expect(sagittariusApp).not.toContain("function shiftIsoDate");
     expect(sagittariusApp).not.toContain("function itineraryDateTime");
     expect(sagittariusApp).not.toContain("function buildItineraryItemDraft");
+    expect(sagittariusApp).not.toContain("function buildUpdatedItineraryItem");
     expect(sagittariusApp).not.toContain("function appendItineraryItemToTrip");
     expect(sagittariusApp).not.toContain("function appendItineraryItemPlacement");
     expect(sagittariusApp).not.toContain("function mergeCreatedItineraryItemIntoTrip");
