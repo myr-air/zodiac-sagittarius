@@ -53,6 +53,7 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/trip/workspace/selected-trip-plan.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/trip-plan-records.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/local-ids.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/join-return.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/api-errors.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/participant-session-storage.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/trip-plans.ts"))).toBe(true);
@@ -301,6 +302,7 @@ describe("Sagittarius project scaffold", () => {
     expect(sagittariusApp).not.toContain("function isAuthFailure");
     expect(sagittariusApp).not.toContain("function slugifyFilePart");
     expect(sagittariusApp).not.toContain("function replaceSuggestionById");
+    expect(sagittariusApp).not.toContain("function resolveJoinPostAuthReturnTo");
     expect(sagittariusApp).not.toContain('from "@/src/components/OverviewPage"');
     expect(sagittariusApp).not.toContain('from "@/src/components/TimelineView"');
 

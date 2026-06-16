@@ -23,6 +23,7 @@ import { Select } from "@/src/components/ui";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { slugifyFilePart } from "@/src/lib/file-names";
 import { appRoutes, decodeReturnTo } from "@/src/routes/app-routes";
+import { resolveJoinPostAuthReturnTo } from "@/src/trip/join-return";
 import {
   createTripApiClient,
   TripApiError,
@@ -184,7 +185,6 @@ import {
   persistTripDraft,
 } from "@/src/trip/repository";
 import { seedTrip } from "@/src/trip/seed";
-import { decodeTripId } from "@/src/trip/ids";
 import { safeExternalHref } from "@/src/trip/safe-links";
 import { approveSuggestion, replaceSuggestionById } from "@/src/trip/suggestions";
 import type {
@@ -255,22 +255,6 @@ interface SagittariusAppProps {
   portalSection?: PortalSection;
   initialMemberId?: string;
   initialTrip?: Trip;
-}
-
-export function resolveJoinPostAuthReturnTo(
-  returnTo: string | null,
-  tripId: string,
-): string | null {
-  if (!returnTo || !returnTo.startsWith("/")) return null;
-  if (returnTo === appRoutes.trips()) return null;
-
-  if (returnTo.startsWith("/trips/")) {
-    const tripSegment = returnTo.slice("/trips/".length).split(/[/?#]/, 1)[0];
-    const normalizedTripSegment = decodeTripId(tripSegment);
-    if (normalizedTripSegment !== tripId) return null;
-  }
-
-  return returnTo;
 }
 
 export function SagittariusApp({
