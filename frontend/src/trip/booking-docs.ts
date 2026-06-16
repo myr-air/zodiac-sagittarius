@@ -91,6 +91,11 @@ export interface LocalBookingDocOptions {
   nextBookingDocId: (bookingDocs: BookingDoc[]) => string;
 }
 
+export interface LocalBookingDocUpdateOptions {
+  title: string;
+  updatedAt: string;
+}
+
 export interface ExpenseEstimateBookingContext {
   currentMemberId: string;
   defaultTimezone?: string | null;
@@ -240,6 +245,59 @@ export function createLocalBookingDoc(
     createdBy: options.createdBy,
     updatedAt: options.updatedAt,
     version: 1,
+  };
+}
+
+export function replaceBookingDocInTrip<T extends Pick<Trip, "bookingDocs">>(
+  trip: T,
+  bookingDoc: BookingDoc,
+): T {
+  return {
+    ...trip,
+    bookingDocs: (trip.bookingDocs ?? []).map((candidate) =>
+      candidate.id === bookingDoc.id ? bookingDoc : candidate,
+    ),
+  };
+}
+
+export function updateLocalBookingDocInTrip<T extends Pick<Trip, "bookingDocs">>(
+  trip: T,
+  bookingDocId: string,
+  input: BookingDocInputLike,
+  options: LocalBookingDocUpdateOptions,
+): T {
+  return {
+    ...trip,
+    bookingDocs: (trip.bookingDocs ?? []).map((bookingDoc) =>
+      bookingDoc.id === bookingDocId
+        ? {
+            ...bookingDoc,
+            ...input,
+            title: options.title,
+            externalLinks: input.externalLinks.map((link, index) => ({
+              ...link,
+              id:
+                link.id ||
+                bookingDoc.externalLinks[index]?.id ||
+                `link-local-${index + 1}`,
+            })),
+            updatedAt: options.updatedAt,
+            version: bookingDoc.version + 1,
+          }
+        : bookingDoc,
+    ),
+  };
+}
+
+export function removeBookingDocFromTrip<T extends Pick<Trip, "bookingDocs">>(
+  trip: T,
+  bookingDocId: string,
+): T {
+  return {
+    ...trip,
+    bookingDocs: (trip.bookingDocs ?? []).filter(
+      (bookingDoc) => bookingDoc.id !== bookingDocId,
+    ),
   };
 }
 

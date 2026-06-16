@@ -70,8 +70,11 @@ import {
   clearItineraryBookingTicketDetails,
   createLocalBookingDoc,
   findDuplicateBookingDoc,
+  removeBookingDocFromTrip,
+  replaceBookingDocInTrip,
   serializeBookingDocInputForApi,
   syncItineraryDetailsWithBookingTicket,
+  updateLocalBookingDocInTrip,
   uniqueStringIds,
 } from "@/src/trip/booking-docs";
 import {
@@ -2820,13 +2823,10 @@ export function SagittariusApp({
               }),
             },
           );
-          const nextTrip = {
-            ...latestTripRef.current,
-            bookingDocs: (latestTripRef.current.bookingDocs ?? []).map(
-              (candidate) =>
-                candidate.id === bookingDocId ? patchedBookingDoc : candidate,
-            ),
-          };
+          const nextTrip = replaceBookingDocInTrip(
+            latestTripRef.current,
+            patchedBookingDoc,
+          );
           latestTripRef.current = nextTrip;
           setTripState((current) => ({ ...current, trip: nextTrip }));
           return;
@@ -2847,27 +2847,12 @@ export function SagittariusApp({
       }
       return;
     }
-    commitTrip((current) => ({
-      ...current,
-      bookingDocs: (current.bookingDocs ?? []).map((bookingDoc) =>
-        bookingDoc.id === bookingDocId
-          ? {
-              ...bookingDoc,
-              ...input,
-              title: input.title.trim(),
-              externalLinks: input.externalLinks.map((link, index) => ({
-                ...link,
-                id:
-                  link.id ||
-                  bookingDoc.externalLinks[index]?.id ||
-                  `link-local-${index + 1}`,
-              })),
-              updatedAt: localMutationTimestamp,
-              version: bookingDoc.version + 1,
-            }
-          : bookingDoc,
-      ),
-    }));
+    commitTrip((current) =>
+      updateLocalBookingDocInTrip(current, bookingDocId, input, {
+        title: input.title.trim(),
+        updatedAt: localMutationTimestamp,
+      }),
+    );
   }
 
   async function changeBookingDocType(
@@ -2958,22 +2943,15 @@ export function SagittariusApp({
         bookingDocId,
         participantSession.sessionToken,
       );
-      const nextTrip = {
-        ...latestTripRef.current,
-        bookingDocs: (latestTripRef.current.bookingDocs ?? []).filter(
-          (bookingDoc) => bookingDoc.id !== bookingDocId,
-        ),
-      };
+      const nextTrip = removeBookingDocFromTrip(
+        latestTripRef.current,
+        bookingDocId,
+      );
       latestTripRef.current = nextTrip;
       setTripState((current) => ({ ...current, trip: nextTrip }));
       return;
     }
-    commitTrip((current) => ({
-      ...current,
-      bookingDocs: (current.bookingDocs ?? []).filter(
-        (bookingDoc) => bookingDoc.id !== bookingDocId,
-      ),
-    }));
+    commitTrip((current) => removeBookingDocFromTrip(current, bookingDocId));
   }
 
   async function createPhotoAlbum(input: TripPhotoAlbumInput) {
