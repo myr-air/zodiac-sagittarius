@@ -354,7 +354,6 @@ export function useWorkspaceTripPlanCommands({
     setTripPlanError,
     trip,
     tripPlanErrorMessage,
-    trip.id,
     updateApiTrip,
   ]);
 

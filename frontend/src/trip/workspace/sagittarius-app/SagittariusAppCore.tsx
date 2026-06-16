@@ -564,6 +564,22 @@ export function SagittariusApp({
     setSelectedItemId,
     trip,
   });
+
+  const replaceCockpitFromApi = useCallback((cockpit: TripCockpit) => {
+    setTripState({
+      trip: normalizeTripPlanAliases(cockpit.trip),
+      past: [],
+      future: [],
+    });
+    replaceWorkspaceRecords(cockpit);
+    resetBackendExpenseSummary();
+    setIsCockpitLoaded(true);
+  }, [
+    replaceWorkspaceRecords,
+    resetBackendExpenseSummary,
+    setTripState,
+  ]);
+
   const {
     createTripPlan,
     selectTripPlan,
@@ -1518,17 +1534,6 @@ export function SagittariusApp({
 
   function replaceTripFromJoin(nextTrip: Trip) {
     resetTrip(nextTrip, { persist: !isApiMode });
-  }
-
-  function replaceCockpitFromApi(cockpit: TripCockpit) {
-    setTripState({
-      trip: normalizeTripPlanAliases(cockpit.trip),
-      past: [],
-      future: [],
-    });
-    replaceWorkspaceRecords(cockpit);
-    resetBackendExpenseSummary();
-    setIsCockpitLoaded(true);
   }
 
   async function claimCurrentMemberToAccount() {
