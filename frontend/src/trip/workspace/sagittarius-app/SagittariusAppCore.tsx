@@ -93,16 +93,7 @@ import {
   persistParticipantSession,
 } from "@/src/trip/participant-session-storage";
 import {
-  buildCreateTripPlanRequest,
-  buildPatchTripPlanStatusRequest,
-  buildRenameTripPlanRequest,
-  buildSetMainTripPlanRequest,
-  createLocalTripPlan,
-  legacyKindForPlanStatus,
-  mergePublishedTripPlan,
   normalizeTripPlanAliases,
-  setLocalMainTripPlan,
-  updateTripPlanInTrip,
 } from "@/src/trip/trip-plans";
 import { deriveTripCountriesFromDestination } from "@/src/trip/trip-countries";
 import {
@@ -214,6 +205,7 @@ import { useWorkspaceNavigation } from "@/src/trip/workspace/use-workspace-navig
 import { WorkspaceToast } from "@/src/trip/workspace/WorkspaceToast";
 import {
   useWorkspaceRecords,
+  useWorkspaceTripPlanCommands,
 } from "./hooks";
 import {
   buildItineraryExport,
@@ -225,7 +217,6 @@ import {
   nextLocalExpenseId,
   nextLocalItemId,
   nextLocalPhotoAlbumId,
-  nextLocalPlanVariantId,
 } from "@/src/trip/local-ids";
 import { loadPersistedTripDraft } from "@/src/trip/repository";
 import { seedTrip } from "@/src/trip/seed";
@@ -237,7 +228,6 @@ import type {
   ExpenseComment,
   ExpenseLineItem,
   ItineraryItem,
-  PlanStatus,
   SettlementSuggestion,
   Trip,
   TripMemberAccessStatus,
@@ -574,6 +564,31 @@ export function SagittariusApp({
     setSelectedItemId,
     trip,
   });
+  const {
+    createTripPlan,
+    selectTripPlan,
+    setMainTripPlan,
+    updateTripPlanStatus,
+    renameTripPlan,
+  } = useWorkspaceTripPlanCommands({
+    canManageTripPlans,
+    isApiMode,
+    latestTripRef,
+    participantSession,
+    rememberSelectedTripPlanId,
+    replaceCockpitFromApi,
+    resolveSelectedTripPlanId,
+    selectedTripPlanId,
+    setIsTripPlanBusy,
+    setSelectedTripPlanId,
+    setTripPlanError,
+    trip,
+    tripPlanErrorMessage: t.itinerary.tripPlans.error,
+    commitTrip,
+    updateApiTrip,
+    initialSelectedTripPlanId,
+    resolvedApiClient,
+  });
 
   const {
     expenseSummary,
@@ -710,13 +725,7 @@ export function SagittariusApp({
       .loadTrip(participantSession.tripId, participantSession.sessionToken)
       .then((cockpit) => {
         if (cancelled) return;
-        const loadedTripPlanId = resolveSelectedTripPlanId(cockpit.trip);
-        setTripState({ trip: cockpit.trip, past: [], future: [] });
-        setSelectedTripPlanId(loadedTripPlanId);
-        rememberSelectedTripPlanId(cockpit.trip, loadedTripPlanId);
-        replaceWorkspaceRecords(cockpit);
-        resetBackendExpenseSummary();
-        setIsCockpitLoaded(true);
+        replaceCockpitFromApi(cockpit);
       })
       .catch((caught) => {
         if (cancelled) return;
@@ -757,8 +766,8 @@ export function SagittariusApp({
     replaceWorkspaceRecords,
     resetBackendExpenseSummary,
     resetDailyBriefings,
+    replaceCockpitFromApi,
     resolvedApiClient,
-    setTripState,
   ]);
 
   useEffect(() => {
@@ -811,244 +820,6 @@ export function SagittariusApp({
       appRoutes.tripOverview(participantSession.tripId);
     window.location.replace(target);
   }, [participantSession, requireJoin, routeTripId, sessionMember]);
-
-  async function reloadTripPlanConflict(
-    preferredTripPlanId: string | null = selectedTripPlanId,
-  ) {
-    if (!resolvedApiClient || !participantSession) return;
-    const cockpit = await resolvedApiClient.loadTrip(
-      trip.id,
-      participantSession.sessionToken,
-    );
-    replaceCockpitFromApi(cockpit);
-    const reloadedTripPlanId =
-      preferredTripPlanId === null
-        ? initialSelectedTripPlanId(cockpit.trip)
-        : resolveSelectedTripPlanId(cockpit.trip, preferredTripPlanId);
-    setSelectedTripPlanId(reloadedTripPlanId);
-    rememberSelectedTripPlanId(cockpit.trip, reloadedTripPlanId);
-    latestTripRef.current = cockpit.trip;
-  }
-
-  function selectTripPlan(tripPlanId: string): boolean {
-    if (!tripPlanId || !trip.planVariants.some((plan) => plan.id === tripPlanId)) {
-      return false;
-    }
-    setSelectedTripPlanId(tripPlanId);
-    rememberSelectedTripPlanId(trip, tripPlanId);
-    return true;
-  }
-
-  async function setMainTripPlan(tripPlanId: string): Promise<boolean> {
-    const mainTripPlanId = trip.mainTripPlanId || trip.activePlanVariantId;
-    if (!canManageTripPlans || !tripPlanId || tripPlanId === mainTripPlanId) return false;
-    setTripPlanError(null);
-
-    if (isApiMode && resolvedApiClient && participantSession) {
-      setIsTripPlanBusy(true);
-      try {
-        const setMainTripPlan =
-          resolvedApiClient.setMainTripPlan ??
-          resolvedApiClient.publishPlanVariant;
-        const publishedTrip = await setMainTripPlan(
-          trip.id,
-          tripPlanId,
-          participantSession.sessionToken,
-          buildSetMainTripPlanRequest(
-            nextClientMutationId("trip-plan-set-main"),
-          ),
-        );
-        updateApiTrip((current) =>
-          mergePublishedTripPlan(current, publishedTrip, tripPlanId),
-        );
-        setSelectedTripPlanId(tripPlanId);
-        rememberSelectedTripPlanId(publishedTrip, tripPlanId);
-      } catch (error) {
-        if (
-          error instanceof TripApiError &&
-          error.code === "version_conflict"
-        ) {
-          await reloadTripPlanConflict(null);
-          return true;
-        }
-        setTripPlanError(t.itinerary.tripPlans.error);
-        return false;
-      } finally {
-        setIsTripPlanBusy(false);
-      }
-      return true;
-    }
-
-    commitTrip((current) => setLocalMainTripPlan(current, tripPlanId));
-    setSelectedTripPlanId(tripPlanId);
-    rememberSelectedTripPlanId(trip, tripPlanId);
-    return true;
-  }
-
-  async function updateTripPlanStatus(
-    tripPlanId: string,
-    status: Exclude<PlanStatus, "main">,
-  ): Promise<boolean> {
-    if (!canManageTripPlans || !tripPlanId) return false;
-    const currentPlan = trip.planVariants.find((plan) => plan.id === tripPlanId);
-    if (!currentPlan || currentPlan.status === "main") return false;
-    setTripPlanError(null);
-
-    if (isApiMode && resolvedApiClient && participantSession) {
-      setIsTripPlanBusy(true);
-      try {
-        const patchTripPlanMutation =
-          resolvedApiClient.patchTripPlan ??
-          resolvedApiClient.patchPlanVariant;
-        const updatedPlan = await patchTripPlanMutation(
-          trip.id,
-          tripPlanId,
-          participantSession.sessionToken,
-          buildPatchTripPlanStatusRequest(
-            currentPlan,
-            status,
-            nextClientMutationId("trip-plan-status"),
-          ),
-        );
-        updateApiTrip((current) => updateTripPlanInTrip(current, updatedPlan));
-      } catch (error) {
-        if (
-          error instanceof TripApiError &&
-          error.code === "version_conflict"
-        ) {
-          await reloadTripPlanConflict();
-          return true;
-        }
-        setTripPlanError(t.itinerary.tripPlans.error);
-        return false;
-      } finally {
-        setIsTripPlanBusy(false);
-      }
-      return true;
-    }
-
-    commitTrip((current) =>
-      updateTripPlanInTrip(current, {
-        ...currentPlan,
-        kind: legacyKindForPlanStatus(status),
-        status,
-        version: (currentPlan.version ?? 1) + 1,
-      }),
-    );
-    return true;
-  }
-
-  async function renameTripPlan(
-    tripPlanId: string,
-    name: string,
-  ): Promise<boolean> {
-    if (!canManageTripPlans || !tripPlanId) return false;
-    const trimmedName = name.trim();
-    if (!trimmedName) return false;
-    const currentPlan = trip.planVariants.find((plan) => plan.id === tripPlanId);
-    if (!currentPlan || currentPlan.name === trimmedName) return false;
-    setTripPlanError(null);
-
-    if (isApiMode && resolvedApiClient && participantSession) {
-      setIsTripPlanBusy(true);
-      try {
-        const patchTripPlanMutation =
-          resolvedApiClient.patchTripPlan ??
-          resolvedApiClient.patchPlanVariant;
-        const updatedPlan = await patchTripPlanMutation(
-          trip.id,
-          tripPlanId,
-          participantSession.sessionToken,
-          buildRenameTripPlanRequest(
-            currentPlan,
-            trimmedName,
-            nextClientMutationId("trip-plan-rename"),
-          ),
-        );
-        updateApiTrip((current) => updateTripPlanInTrip(current, updatedPlan));
-      } catch (error) {
-        if (
-          error instanceof TripApiError &&
-          error.code === "version_conflict"
-        ) {
-          await reloadTripPlanConflict();
-          return true;
-        }
-        setTripPlanError(t.itinerary.tripPlans.error);
-        return false;
-      } finally {
-        setIsTripPlanBusy(false);
-      }
-      return true;
-    }
-
-    commitTrip((current) =>
-      updateTripPlanInTrip(current, {
-        ...currentPlan,
-        name: trimmedName,
-        version: (currentPlan.version ?? 1) + 1,
-      }),
-    );
-    return true;
-  }
-
-  async function createTripPlan(name: string): Promise<boolean> {
-    if (!canManageTripPlans) return false;
-    const trimmedName = name.trim();
-    if (!trimmedName) return false;
-    setTripPlanError(null);
-
-    if (isApiMode && resolvedApiClient && participantSession) {
-      setIsTripPlanBusy(true);
-      try {
-        const createTripPlanMutation =
-          resolvedApiClient.createTripPlan ??
-          resolvedApiClient.createPlanVariant;
-        const createdVariant = await createTripPlanMutation(
-          trip.id,
-          participantSession.sessionToken,
-          buildCreateTripPlanRequest(
-            trimmedName,
-            nextClientMutationId("trip-plan-create"),
-          ),
-        );
-        updateApiTrip((current) =>
-          updateTripPlanInTrip(current, createdVariant),
-        );
-        setSelectedTripPlanId(createdVariant.id);
-        rememberSelectedTripPlanId(trip, createdVariant.id);
-      } catch (error) {
-        if (
-          error instanceof TripApiError &&
-          error.code === "version_conflict"
-        ) {
-          await reloadTripPlanConflict();
-          return true;
-        }
-        setTripPlanError(t.itinerary.tripPlans.error);
-        return false;
-      } finally {
-        setIsTripPlanBusy(false);
-      }
-      return true;
-    }
-
-    let createdTripPlanId = "";
-    commitTrip((current) => {
-      const result = createLocalTripPlan(
-        current,
-        trimmedName,
-        nextLocalPlanVariantId,
-      );
-      createdTripPlanId = result.tripPlanId;
-      return result.trip;
-    });
-    if (createdTripPlanId) {
-      setSelectedTripPlanId(createdTripPlanId);
-      rememberSelectedTripPlanId(trip, createdTripPlanId);
-    }
-    return true;
-  }
 
   function addStop(day?: string, parentItemId?: string | null) {
     /* v8 ignore next */
