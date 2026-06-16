@@ -175,10 +175,11 @@ import {
   emptyItineraryExportRecords,
   mergeApiImportedPlanRecordsIntoTrip,
   mergeImportedRecordsIntoTripPlan,
+  mergeImportedStopNotes,
+  mergeImportedTasks,
   pendingItineraryImportFromDocument,
   resolveCreatedImportId,
   shouldUseApiItineraryImport,
-  upsertById,
   type PendingItineraryImport,
 } from "@/src/trip/workspace/itinerary-import-model";
 import {
@@ -3606,9 +3607,11 @@ export function SagittariusApp({
           latestTripRef.current = nextTrip;
           return { ...current, trip: nextTrip };
         });
-        setTasks((current) => upsertById(current, createdPlanRecords.tasks));
+        setTasks((current) =>
+          mergeImportedTasks(current, createdPlanRecords),
+        );
         setStopNotes((current) =>
-          upsertById(current, createdPlanRecords.stopNotes),
+          mergeImportedStopNotes(current, createdPlanRecords),
         );
         if (createdPlanRecords.expenses.length > 0) {
           setBackendExpenseSummary({
@@ -3643,9 +3646,11 @@ export function SagittariusApp({
           mergeImportedRecordsIntoTripPlan(previewTrip, importedPlanRecords),
         nextSelectedItemId,
       );
-      setTasks((current) => upsertById(current, importedPlanRecords.tasks));
+      setTasks((current) =>
+        mergeImportedTasks(current, importedPlanRecords),
+      );
       setStopNotes((current) =>
-        upsertById(current, importedPlanRecords.stopNotes),
+        mergeImportedStopNotes(current, importedPlanRecords),
       );
       if (!nextSelectedItemId) setContextRailVisibility(false);
       setPendingItineraryImport(null);

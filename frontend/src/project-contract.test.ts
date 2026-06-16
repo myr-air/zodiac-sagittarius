@@ -230,6 +230,7 @@ describe("Sagittarius project scaffold", () => {
     expect(sagittariusApp).not.toContain("function buildImportedPlanRecordsForTripPlan");
     expect(sagittariusApp).not.toContain("function mergeApiImportedPlanRecordsIntoTrip");
     expect(sagittariusApp).not.toContain("function mergeImportedRecordsIntoTripPlan");
+    expect(sagittariusApp).not.toContain("upsertById");
     expect(sagittariusApp).not.toContain("async function createImportedPlanRecordsViaApi");
     expect(sagittariusApp).not.toContain("function shouldUseApiItineraryImport");
     expect(sagittariusApp).not.toContain("interface PendingItineraryImport");

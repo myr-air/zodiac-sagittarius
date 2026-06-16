@@ -4,6 +4,8 @@ import {
   emptyItineraryExportRecords,
   mergeApiImportedPlanRecordsIntoTrip,
   mergeImportedRecordsIntoTripPlan,
+  mergeImportedStopNotes,
+  mergeImportedTasks,
   pendingItineraryImportFromDocument,
   resolveCreatedImportId,
   shouldUseApiItineraryImport,
@@ -208,5 +210,66 @@ describe("itinerary import model", () => {
     expect(nextTrip.expenses.find((expense) => expense.id === createdExpense.id)).toMatchObject({
       title: "Created import expense",
     });
+  });
+
+  it("merges imported tasks and stop notes by replacing existing ids and appending new records", () => {
+    const existingTask: TripTask = {
+      assigneeId: "member-aom",
+      createdBy: "member-aom",
+      id: "task-existing",
+      kind: "booking",
+      relatedItemId: "item-existing",
+      status: "open",
+      title: "Existing task",
+      tripPlanId: "plan-main",
+      visibility: "shared",
+    };
+    const importedTask: TripTask = {
+      ...existingTask,
+      status: "done",
+      title: "Updated task",
+    };
+    const newTask: TripTask = {
+      ...existingTask,
+      id: "task-new",
+      title: "New task",
+    };
+    const existingNote: StopNote = {
+      authorId: "member-aom",
+      body: "Existing note",
+      createdAt: "2026-06-16T00:00:00.000Z",
+      id: "note-existing",
+      itemId: "item-existing",
+      tripId: tripFixture.trip.id,
+      tripPlanId: "plan-main",
+    };
+    const importedNote: StopNote = {
+      ...existingNote,
+      body: "Updated note",
+    };
+    const newNote: StopNote = {
+      ...existingNote,
+      id: "note-new",
+      body: "New note",
+    };
+
+    expect(
+      mergeImportedTasks([existingTask], {
+        tasks: [importedTask, newTask],
+      }),
+    ).toEqual([
+      expect.objectContaining({ id: "task-existing", title: "Updated task" }),
+      expect.objectContaining({ id: "task-new", title: "New task" }),
+    ]);
+    expect(
+      mergeImportedStopNotes([existingNote], {
+        stopNotes: [importedNote, newNote],
+      }),
+    ).toEqual([
+      expect.objectContaining({ id: "note-existing", body: "Updated note" }),
+      expect.objectContaining({ id: "note-new", body: "New note" }),
+    ]);
+    expect(existingTask.title).toBe("Existing task");
+    expect(existingNote.body).toBe("Existing note");
   });
 });

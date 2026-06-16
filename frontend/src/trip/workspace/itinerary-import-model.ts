@@ -176,6 +176,20 @@ export function mergeApiImportedPlanRecordsIntoTrip({
   };
 }
 
+export function mergeImportedTasks(
+  currentTasks: TripTask[],
+  records: Pick<ImportedPlanRecords, "tasks">,
+): TripTask[] {
+  return upsertById(currentTasks, records.tasks);
+}
+
+export function mergeImportedStopNotes(
+  currentStopNotes: StopNote[],
+  records: Pick<ImportedPlanRecords, "stopNotes">,
+): StopNote[] {
+  return upsertById(currentStopNotes, records.stopNotes);
+}
+
 export function resolveCreatedImportId(
   id: string | null | undefined,
   idMaps: Map<string, string>[],
