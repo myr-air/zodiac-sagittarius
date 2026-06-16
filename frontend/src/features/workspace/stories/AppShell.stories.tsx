@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { expect } from "storybook/test";
 import { tripFixture } from "@/src/trip/trip-fixtures";
-import { AppShell } from "./AppShell";
-import { OverviewPage } from "./OverviewPage";
+import { AppShell } from "@/src/components/AppShell";
+import { OverviewPage } from "@/src/features/itinerary/components";
 
 const meta = {
   title: "Templates/Workspace Shell",

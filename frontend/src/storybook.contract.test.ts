@@ -73,7 +73,7 @@ describe("Storybook template catalog", () => {
       ["features/itinerary/stories/OverviewPage.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty", "AddTaskDialogOpen", "Tablet", "Desktop1024", "Desktop1440", "Mobile"]],
       ["features/itinerary/stories/ItineraryPage.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty", "OverlapConflictWarning", "PlanAExample", "PlanABAlternatives", "BranchGraph", "RequestedPlanExample", "StressPaths", "TableOverflow", "Tablet", "Desktop1024", "Desktop1440", "Mobile", "MobileViewer"]],
       ["features/itinerary/stories/TimelinePage.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty", "Tablet", "Desktop1024", "Desktop1440", "Mobile"]],
-      ["components/MapPage.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty", "LiveMapLoading", "LiveMapFailure", "Tablet", "Desktop1024", "Desktop1440", "Mobile"]],
+      ["features/itinerary/stories/workspace/MapPage.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty", "LiveMapLoading", "LiveMapFailure", "Tablet", "Desktop1024", "Desktop1440", "Mobile"]],
       ["components/MembersPage.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty", "Tablet", "Desktop1024", "Desktop1440", "Mobile"]],
       ["components/ExpensesPage.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty", "AddExpenseDialogOpen", "FilteredLedger", "Tablet", "Desktop1024", "Desktop1440", "Mobile"]],
       ["components/TripPhotosPage.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty", "AddAlbumDialogOpen", "CoverStates", "Tablet", "Desktop1024", "Desktop1440", "Mobile"]],
@@ -146,11 +146,11 @@ describe("Storybook template catalog", () => {
 
   it("documents structural template states for shell and reusable cockpit views", () => {
     const requiredTemplateStates: Array<[string, string[]]> = [
-      ["components/AppShell.stories.tsx", ["Owner", "Traveler", "Viewer", "Mobile", "Tablet", "OwnerThai"]],
-      ["components/OverviewTemplate.stories.tsx", ["Owner", "Traveler", "OwnerThai", "Viewer", "Empty", "Dense"]],
+      ["features/workspace/stories/AppShell.stories.tsx", ["Owner", "Traveler", "Viewer", "Mobile", "Tablet", "OwnerThai"]],
+      ["features/itinerary/stories/workspace/OverviewTemplate.stories.tsx", ["Owner", "Traveler", "OwnerThai", "Viewer", "Empty", "Dense"]],
       ["features/itinerary/stories/ItineraryTemplate.stories.tsx", ["Owner", "OwnerThai", "Viewer", "Traveler", "Dense", "HierarchyBlocks", "HierarchyWarnings", "TableOverflow", "BranchGraph", "PlanAExample", "PlanABAlternatives", "RequestedPlanExample", "StressPaths"]],
       ["features/itinerary/stories/TimelineTemplate.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty"]],
-      ["components/MapTemplate.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty"]],
+      ["features/itinerary/stories/workspace/MapTemplate.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty"]],
       ["components/MembersTemplate.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty"]],
     ];
 

@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { expect } from "storybook/test";
 import { buildDenseTripFixture, buildEmptyTripFixture, tripFixture } from "@/src/trip/trip-fixtures";
 import type { ItineraryItem } from "@/src/trip/types";
-import { RouteMapView } from "./RouteMapView";
+import { RouteMapView } from "@/src/features/itinerary/components";
 
 const meta = {
   title: "Pages/Map",

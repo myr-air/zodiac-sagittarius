@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { expect } from "storybook/test";
 import { buildDenseTripFixture, buildEmptyTripFixture, tripFixture } from "@/src/trip/trip-fixtures";
-import { RouteMapView } from "./RouteMapView";
+import { RouteMapView } from "@/src/features/itinerary/components";
 
 const meta = {
   title: "Templates/Map",
