@@ -261,6 +261,7 @@ import { seedTrip } from "@/src/trip/seed";
 import { safeExternalHref } from "@/src/trip/safe-links";
 import {
   approveSuggestion,
+  buildCreateEditSuggestionRequest,
   createLocalEditSuggestion,
   rejectSuggestionById,
   replaceSuggestionById,
@@ -2263,14 +2264,9 @@ export function SagittariusApp({
       const suggestion = await resolvedApiClient.createSuggestion(
         trip.id,
         participantSession.sessionToken,
-        {
+        buildCreateEditSuggestionRequest(selectedItem, {
           clientMutationId: nextClientMutationId("suggestion-create"),
-          type: "edit",
-          targetItemId: selectedItem.id,
-          planVariantId: selectedItem.planVariantId,
-          proposedPatch: { activity: selectedItem.activity },
-          sourceVersion: selectedItem.version,
-        },
+        }),
       );
       setSuggestions((current) => [...current, suggestion]);
       return;

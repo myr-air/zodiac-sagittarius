@@ -1,3 +1,4 @@
+import type { CreateSuggestionApiRequest } from "./api-client";
 import type { ItineraryItem, Suggestion } from "./types";
 
 export interface LocalEditSuggestionInput {
@@ -23,6 +24,20 @@ export function createLocalEditSuggestion(
     sourceVersion: input.targetItem.version,
     status: "pending",
     createdAt: input.createdAt,
+  };
+}
+
+export function buildCreateEditSuggestionRequest(
+  targetItem: Pick<ItineraryItem, "id" | "activity" | "planVariantId" | "version">,
+  options: { clientMutationId: string },
+): CreateSuggestionApiRequest {
+  return {
+    clientMutationId: options.clientMutationId,
+    type: "edit",
+    targetItemId: targetItem.id,
+    planVariantId: targetItem.planVariantId,
+    proposedPatch: { activity: targetItem.activity },
+    sourceVersion: targetItem.version,
   };
 }
 
