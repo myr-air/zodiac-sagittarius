@@ -83,6 +83,14 @@ export interface BookingDocRelations {
   travelers: Member[];
 }
 
+export interface LocalBookingDocOptions {
+  title: string;
+  tripPlanId: BookingDoc["tripPlanId"];
+  createdBy: string;
+  updatedAt: string;
+  nextBookingDocId: (bookingDocs: BookingDoc[]) => string;
+}
+
 const readySensitiveStatuses = new Set<BookingDocStatus>(["booked", "confirmed", "paid"]);
 
 export function buildBookingDocsSummary(docs: BookingDoc[], _members: Member[], nowIso: string): BookingDocsSummary {
@@ -199,6 +207,29 @@ export function serializeBookingDocInputForApi(
       provider: link.provider?.trim() || null,
       accessNote: link.accessNote?.trim() || null,
     })),
+  };
+}
+
+export function createLocalBookingDoc(
+  trip: Pick<Trip, "id" | "bookingDocs">,
+  input: BookingDocInputLike,
+  options: LocalBookingDocOptions,
+): BookingDoc {
+  const bookingDocs = trip.bookingDocs ?? [];
+
+  return {
+    ...input,
+    id: options.nextBookingDocId(bookingDocs),
+    tripId: trip.id,
+    tripPlanId: options.tripPlanId,
+    title: options.title,
+    externalLinks: input.externalLinks.map((link, index) => ({
+      ...link,
+      id: link.id || `link-local-${index + 1}`,
+    })),
+    createdBy: options.createdBy,
+    updatedAt: options.updatedAt,
+    version: 1,
   };
 }
 

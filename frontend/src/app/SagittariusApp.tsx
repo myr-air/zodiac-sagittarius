@@ -62,6 +62,7 @@ import {
   bookingTypeForExpenseEstimate,
   bookingTypeForItineraryItem,
   clearItineraryBookingTicketDetails,
+  createLocalBookingDoc,
   findDuplicateBookingDoc,
   serializeBookingDocInputForApi,
   syncItineraryDetailsWithBookingTicket,
@@ -2608,22 +2609,15 @@ export function SagittariusApp({
       }
       return null;
     }
-    const bookingDoc: BookingDoc = {
-      id: nextLocalBookingDocId(trip.bookingDocs ?? []),
-      tripId: trip.id,
+    const bookingDoc = createLocalBookingDoc(trip, input, {
+      title,
       tripPlanId:
         input.tripPlanId ??
         tripPlanIdForBookingRecord(trip, input, selectedTripPlanId),
-      ...input,
-      title,
-      externalLinks: input.externalLinks.map((link, index) => ({
-        ...link,
-        id: link.id || `link-local-${index + 1}`,
-      })),
       createdBy: currentMember.id,
       updatedAt: localMutationTimestamp,
-      version: 1,
-    };
+      nextBookingDocId: nextLocalBookingDocId,
+    });
     commitTrip((current) => ({
       ...current,
       bookingDocs: [...(current.bookingDocs ?? []), bookingDoc],

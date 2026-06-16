@@ -262,6 +262,7 @@ describe("Sagittarius project scaffold", () => {
     expect(sagittariusApp).not.toContain("function shiftItineraryItemsToStartDate");
     expect(sagittariusApp).not.toContain("function buildInlineItineraryItemPatch");
     expect(sagittariusApp).not.toContain("function normalizeInlineTimePatch");
+    expect(sagittariusApp).not.toContain("function createLocalBookingDoc");
     expect(sagittariusApp).not.toContain("function serializeBookingDocInputForApi");
     expect(sagittariusApp).not.toContain("function normalizeBookingDocDateTimeForApi");
     expect(sagittariusApp).not.toContain("function bookingTypeForItineraryItem");
