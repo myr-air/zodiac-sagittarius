@@ -93,6 +93,7 @@ import {
 import {
   buildItineraryCommitmentsByItemId,
   buildItineraryView,
+  deleteItineraryItemFromTrip,
   deriveItineraryPathOptions,
   getNextChildSortOrder,
   getNextSortOrder,
@@ -2041,15 +2042,7 @@ export function SagittariusApp({
       );
       setTripState((current) => ({
         ...current,
-        trip: {
-          ...current.trip,
-          itineraryItems: current.trip.itineraryItems.filter(
-            (item) => item.id !== itemId,
-          ),
-          expenses: current.trip.expenses.filter(
-            (expense) => expense.itineraryItemId !== itemId,
-          ),
-        },
+        trip: deleteItineraryItemFromTrip(current.trip, itemId),
       }));
       setSelectedItemId(nextSelectedItemId);
       if (!nextSelectedItemId) setContextRailVisibility(false);
@@ -2059,15 +2052,7 @@ export function SagittariusApp({
       return;
     }
     commitTrip(
-      (current) => ({
-        ...current,
-        itineraryItems: current.itineraryItems.filter(
-          (item) => item.id !== itemId,
-        ),
-        expenses: current.expenses.filter(
-          (expense) => expense.itineraryItemId !== itemId,
-        ),
-      }),
+      (current) => deleteItineraryItemFromTrip(current, itemId),
       nextSelectedItemId,
     );
     if (!nextSelectedItemId) setContextRailVisibility(false);

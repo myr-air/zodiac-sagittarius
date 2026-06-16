@@ -5,6 +5,7 @@ import {
   getNowNext,
   buildItineraryCommitmentsByItemId,
   buildItineraryView,
+  deleteItineraryItemFromTrip,
   deriveItineraryPathOptions,
   itineraryItemPathFieldsForTarget,
   hasDescendantItem,
@@ -429,6 +430,29 @@ describe("itinerary planning domain", () => {
 
     expect(nextTrip.itineraryItems.find((candidate) => candidate.id === item.id)).toEqual(updatedItem);
     expect(nextTrip.itineraryItems).toHaveLength(seedTrip.itineraryItems.length);
+  });
+
+  it("deletes an itinerary item and removes expenses linked to it", () => {
+    const item = seedTrip.itineraryItems[0]!;
+    const linkedExpense = {
+      ...seedTrip.expenses[0]!,
+      id: "expense-linked-item",
+      itineraryItemId: item.id,
+    };
+    const unrelatedExpense = {
+      ...seedTrip.expenses[0]!,
+      id: "expense-unrelated-item",
+      itineraryItemId: "other-item",
+    };
+    const trip = {
+      ...seedTrip,
+      expenses: [linkedExpense, unrelatedExpense],
+    };
+
+    const nextTrip = deleteItineraryItemFromTrip(trip, item.id);
+
+    expect(nextTrip.itineraryItems.some((candidate) => candidate.id === item.id)).toBe(false);
+    expect(nextTrip.expenses).toEqual([unrelatedExpense]);
   });
 
   it("moves an itinerary item before a target and reorders the target day", () => {

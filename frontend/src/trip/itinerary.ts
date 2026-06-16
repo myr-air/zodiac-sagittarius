@@ -113,6 +113,16 @@ export function replaceItineraryItem(current: Trip, updatedItem: ItineraryItem):
   };
 }
 
+export function deleteItineraryItemFromTrip(current: Trip, itemId: string): Trip {
+  return {
+    ...current,
+    itineraryItems: current.itineraryItems.filter((item) => item.id !== itemId),
+    expenses: current.expenses.filter(
+      (expense) => expense.itineraryItemId !== itemId,
+    ),
+  };
+}
+
 export function moveTripItem(
   current: Trip,
   draggedItemId: string,
