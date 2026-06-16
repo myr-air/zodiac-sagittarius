@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
+import { appRoutes } from "@/src/routes/app-routes";
 import { resolveJoinPostAuthReturnTo } from "@/src/trip/join-return";
-import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
 
 describe("join return routes", () => {
   it("only accepts safe post-auth return targets", () => {
@@ -26,9 +26,9 @@ describe("join return routes", () => {
     expect(resolveJoinPostAuthReturnTo("/settings", tripId)).toBe("/settings");
     expect(
       resolveJoinPostAuthReturnTo(
-        appRoutes.tripItinerary("AY9OgFeIfeCkXIpVXRf8LQ"),
+        appRoutes.tripItinerary(tripId),
         tripId,
       ),
-    ).toBe(appRoutes.tripItinerary("AY9OgFeIfeCkXIpVXRf8LQ"));
+    ).toBe(appRoutes.tripItinerary(tripId));
   });
 });

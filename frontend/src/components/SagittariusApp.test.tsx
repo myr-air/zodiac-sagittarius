@@ -32,7 +32,6 @@ import { I18nProvider } from "@/src/i18n/I18nProvider";
 import { renderWithI18n } from "@/src/i18n/test-utils";
 import { tripStorageKey } from "@/src/trip/repository";
 import { seedTrip } from "@/src/trip/seed";
-import { encodeTripId } from "@/src/trip/ids";
 import type {
   ItineraryItem,
   PlanVariant,
@@ -1432,7 +1431,6 @@ describe("Sagittarius cockpit UI", () => {
 
   it("switches trip workspace navigation without reloading the backend cockpit", async () => {
     const user = userEvent.setup();
-    const shortTripId = encodeTripId(seedTrip.id);
     installLocalStorageStub();
     window.sessionStorage.setItem(
       tripParticipantSessionStorageKey,
@@ -1444,7 +1442,7 @@ describe("Sagittarius cockpit UI", () => {
         expiresAt: "2026-06-28T00:00:00.000Z",
       }),
     );
-    window.history.pushState(null, "", tripRoutes.base(shortTripId));
+    window.history.pushState(null, "", appRoutes.tripOverview(seedTrip.id));
     const apiClient = createApiClientForTrip(seedTrip);
 
     render(
@@ -1460,7 +1458,7 @@ describe("Sagittarius cockpit UI", () => {
     await waitFor(() => expect(apiClient.loadTrip).toHaveBeenCalledTimes(1));
     await user.click(screen.getByRole("link", { name: /แผนการเดินทาง/i }));
 
-    expect(window.location.pathname).toBe(tripRoutes.itinerary(shortTripId));
+    expect(window.location.pathname).toBe(appRoutes.tripItinerary(seedTrip.id));
     expect(
       screen.getByRole("link", { name: /แผนการเดินทาง/i }),
     ).toHaveAttribute("aria-current", "page");
@@ -1469,7 +1467,6 @@ describe("Sagittarius cockpit UI", () => {
 
   it("re-syncs workspace active link from popstate without extra loadTrip", async () => {
     installLocalStorageStub();
-    const shortTripId = encodeTripId(seedTrip.id);
     window.sessionStorage.setItem(
       tripParticipantSessionStorageKey,
       JSON.stringify({
@@ -1480,7 +1477,7 @@ describe("Sagittarius cockpit UI", () => {
         expiresAt: "2026-06-28T00:00:00.000Z",
       }),
     );
-    window.history.pushState(null, "", tripRoutes.base(shortTripId));
+    window.history.pushState(null, "", appRoutes.tripOverview(seedTrip.id));
     const apiClient = createApiClientForTrip(seedTrip);
 
     render(
@@ -1500,7 +1497,7 @@ describe("Sagittarius cockpit UI", () => {
     );
 
     act(() => {
-      window.history.pushState(null, "", tripRoutes.itinerary(shortTripId));
+      window.history.pushState(null, "", appRoutes.tripItinerary(seedTrip.id));
       window.dispatchEvent(new PopStateEvent("popstate"));
     });
 
@@ -2923,7 +2920,6 @@ describe("Sagittarius cockpit UI", () => {
   });
 
   it("renders trip members as their own workspace page", () => {
-    const shortTripId = encodeTripId(seedTrip.id);
     render(<SagittariusApp initialView="members" />);
 
     const navigation = screen.getByRole("navigation", {
@@ -2936,7 +2932,7 @@ describe("Sagittarius cockpit UI", () => {
     expect(membersLink).toHaveClass("rail-link--active");
     expect(membersLink).toHaveAttribute(
       "href",
-      tripRoutes.members(shortTripId),
+      appRoutes.tripMembers(seedTrip.id),
     );
     expect(
       screen.getByRole("region", { name: /สมาชิกทริป/i }),
