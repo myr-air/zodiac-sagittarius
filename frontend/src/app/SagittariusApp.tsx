@@ -36,9 +36,12 @@ import {
   isUnauthenticated,
 } from "@/src/trip/api-errors";
 import {
+  appendPhotoAlbumToTrip,
   createLocalPhotoAlbum,
+  removePhotoAlbumFromTrip,
+  replacePhotoAlbumInTrip,
   serializePhotoAlbumInputForApi,
-  updateLocalPhotoAlbum,
+  updateLocalPhotoAlbumInTrip,
 } from "@/src/trip/photo-albums";
 import {
   createAccountApiClient,
@@ -2968,13 +2971,10 @@ export function SagittariusApp({
           ...serializePhotoAlbumInputForApi({ ...input, title, url }),
         },
       );
-      const nextTrip = {
-        ...latestTripRef.current,
-        photoAlbumLinks: [
-          ...(latestTripRef.current.photoAlbumLinks ?? []),
-          photoAlbum,
-        ],
-      };
+      const nextTrip = appendPhotoAlbumToTrip(
+        latestTripRef.current,
+        photoAlbum,
+      );
       latestTripRef.current = nextTrip;
       setTripState((current) => ({ ...current, trip: nextTrip }));
       return;
@@ -2986,10 +2986,7 @@ export function SagittariusApp({
       updatedAt: localMutationTimestamp,
       nextPhotoAlbumId: nextLocalPhotoAlbumId,
     });
-    commitTrip((current) => ({
-      ...current,
-      photoAlbumLinks: [...(current.photoAlbumLinks ?? []), photoAlbum],
-    }));
+    commitTrip((current) => appendPhotoAlbumToTrip(current, photoAlbum));
   }
 
   async function updatePhotoAlbum(
@@ -3014,13 +3011,10 @@ export function SagittariusApp({
             patch: serializePhotoAlbumInputForApi(input),
           },
         );
-        const nextTrip = {
-          ...latestTripRef.current,
-          photoAlbumLinks: (latestTripRef.current.photoAlbumLinks ?? []).map(
-            (candidate) =>
-              candidate.id === albumId ? patchedPhotoAlbum : candidate,
-          ),
-        };
+        const nextTrip = replacePhotoAlbumInTrip(
+          latestTripRef.current,
+          patchedPhotoAlbum,
+        );
         latestTripRef.current = nextTrip;
         setTripState((current) => ({ ...current, trip: nextTrip }));
       } catch (error) {
@@ -3040,18 +3034,13 @@ export function SagittariusApp({
       }
       return;
     }
-    commitTrip((current) => ({
-      ...current,
-      photoAlbumLinks: (current.photoAlbumLinks ?? []).map((album) =>
-        album.id === albumId
-          ? updateLocalPhotoAlbum(album, input, {
-              title: input.title.trim(),
-              url: input.url.trim(),
-              updatedAt: localMutationTimestamp,
-            })
-          : album,
-      ),
-    }));
+    commitTrip((current) =>
+      updateLocalPhotoAlbumInTrip(current, albumId, input, {
+        title: input.title.trim(),
+        url: input.url.trim(),
+        updatedAt: localMutationTimestamp,
+      }),
+    );
   }
 
   async function deletePhotoAlbum(albumId: string) {
@@ -3062,22 +3051,15 @@ export function SagittariusApp({
         albumId,
         participantSession.sessionToken,
       );
-      const nextTrip = {
-        ...latestTripRef.current,
-        photoAlbumLinks: (latestTripRef.current.photoAlbumLinks ?? []).filter(
-          (album) => album.id !== albumId,
-        ),
-      };
+      const nextTrip = removePhotoAlbumFromTrip(
+        latestTripRef.current,
+        albumId,
+      );
       latestTripRef.current = nextTrip;
       setTripState((current) => ({ ...current, trip: nextTrip }));
       return;
     }
-    commitTrip((current) => ({
-      ...current,
-      photoAlbumLinks: (current.photoAlbumLinks ?? []).filter(
-        (album) => album.id !== albumId,
-      ),
-    }));
+    commitTrip((current) => removePhotoAlbumFromTrip(current, albumId));
   }
 
   async function toggleTaskStatus(taskId: string) {

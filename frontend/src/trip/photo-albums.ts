@@ -116,6 +116,28 @@ export function createLocalPhotoAlbum(
   };
 }
 
+export function appendPhotoAlbumToTrip<T extends Pick<Trip, "photoAlbumLinks">>(
+  trip: T,
+  photoAlbum: TripPhotoAlbumLink,
+): T {
+  return {
+    ...trip,
+    photoAlbumLinks: [...(trip.photoAlbumLinks ?? []), photoAlbum],
+  };
+}
+
+export function replacePhotoAlbumInTrip<T extends Pick<Trip, "photoAlbumLinks">>(
+  trip: T,
+  photoAlbum: TripPhotoAlbumLink,
+): T {
+  return {
+    ...trip,
+    photoAlbumLinks: (trip.photoAlbumLinks ?? []).map((candidate) =>
+      candidate.id === photoAlbum.id ? photoAlbum : candidate,
+    ),
+  };
+}
+
 export function updateLocalPhotoAlbum(
   album: TripPhotoAlbumLink,
   input: PhotoAlbumInputForApi,
@@ -130,6 +152,34 @@ export function updateLocalPhotoAlbum(
     accessNote: input.accessNote?.trim() || null,
     updatedAt: options.updatedAt,
     version: album.version + 1,
+  };
+}
+
+export function updateLocalPhotoAlbumInTrip<T extends Pick<Trip, "photoAlbumLinks">>(
+  trip: T,
+  albumId: string,
+  input: PhotoAlbumInputForApi,
+  options: LocalPhotoAlbumUpdateOptions,
+): T {
+  return {
+    ...trip,
+    photoAlbumLinks: (trip.photoAlbumLinks ?? []).map((album) =>
+      album.id === albumId
+        ? updateLocalPhotoAlbum(album, input, options)
+        : album,
+    ),
+  };
+}
+
+export function removePhotoAlbumFromTrip<T extends Pick<Trip, "photoAlbumLinks">>(
+  trip: T,
+  albumId: string,
+): T {
+  return {
+    ...trip,
+    photoAlbumLinks: (trip.photoAlbumLinks ?? []).filter(
+      (album) => album.id !== albumId,
+    ),
   };
 }
 
