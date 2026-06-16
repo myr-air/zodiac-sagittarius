@@ -111,10 +111,8 @@ import {
   buildCreateExpenseRequest,
   buildExpenseCreateDrafts,
   buildExpenseUpdateDraft,
-  buildExpenseSummary,
   buildPatchExpenseRequest,
   buildExpenseReminderRequest,
-  filterExpenseRemindersForTripPlan,
   recordLocalExpenseReminderInTrip,
   removeExpenseFromTrip,
   replaceExpenseInTrip,
@@ -123,7 +121,6 @@ import {
 import {
   appendItineraryItemPlacement,
   appendItineraryItemToTrip,
-  buildItineraryCommitmentsByItemId,
   buildItineraryItemDraft,
   buildItineraryView,
   buildUpdatedItineraryItem,
@@ -217,7 +214,6 @@ import {
   tripHasPlan,
 } from "@/src/trip/workspace/selected-trip-plan";
 import {
-  selectTripPlanRecords,
   tripPlanIdForBookingRecord,
   tripPlanIdForRecord,
 } from "@/src/trip/workspace/trip-plan-records";
@@ -228,6 +224,7 @@ import { TripWorkspaceRail } from "@/src/trip/workspace/TripWorkspaceRail";
 import { TripWorkspaceViews } from "@/src/trip/workspace/TripWorkspaceViews";
 import { TripAccessLoadingFrame } from "@/src/trip/workspace/TripAccessLoadingFrame";
 import { useItineraryPathWorkspace } from "@/src/trip/workspace/use-itinerary-path-workspace";
+import { useTripWorkspaceRecords } from "@/src/trip/workspace/use-trip-workspace-records";
 import { useTripWorkspaceState } from "@/src/trip/workspace/use-trip-workspace-state";
 import { WorkspaceToast } from "@/src/trip/workspace/WorkspaceToast";
 import {
@@ -570,73 +567,22 @@ export function SagittariusApp({
   const selectedDay =
     selectedItem?.day ?? itineraryView.dayGroups[0]?.day ?? trip.startDate;
   const selectedItemIdForView = selectedItem?.id ?? "";
-  const scopedTripPlanRecords = useMemo(
-    () =>
-      selectTripPlanRecords(trip, selectedTripPlanId, {
-        stopNotes,
-        tasks,
-      }),
-    [selectedTripPlanId, stopNotes, tasks, trip],
-  );
-  const expenseSummary = useMemo(
-    () => {
-      if (backendExpenseSummary?.tripPlanId === selectedTripPlanId) {
-        return backendExpenseSummary.summary;
-      }
-
-      return buildExpenseSummary(
-        scopedTripPlanRecords.expenses,
-        currentMember.id,
-        filterExpenseRemindersForTripPlan(
-          trip.expenseReminders ?? [],
-          selectedTripPlanId,
-          trip.mainTripPlanId || trip.activePlanVariantId,
-        ),
-      );
-    },
-    [
-      backendExpenseSummary,
-      currentMember.id,
-      selectedTripPlanId,
-      trip.expenseReminders,
-      trip.mainTripPlanId,
-      trip.activePlanVariantId,
-      scopedTripPlanRecords.expenses,
-    ],
-  );
-  const scopedTripForRecords = useMemo(
-    () => ({
-      ...trip,
-      bookingDocs: scopedTripPlanRecords.bookingDocs,
-      expenses: scopedTripPlanRecords.expenses,
-      itineraryItems: activePlanItems,
-      stopNotes: scopedTripPlanRecords.stopNotes,
-    }),
-    [
-      activePlanItems,
-      scopedTripPlanRecords.bookingDocs,
-      scopedTripPlanRecords.expenses,
-      scopedTripPlanRecords.stopNotes,
-      trip,
-    ],
-  );
-  const scopedSuggestions = useMemo(
-    () =>
-      suggestions.filter(
-        (suggestion) => suggestion.planVariantId === selectedTripPlanId,
-      ),
-    [selectedTripPlanId, suggestions],
-  );
-  const itineraryCommitmentsByItemId = useMemo(
-    () =>
-      buildItineraryCommitmentsByItemId({
-        bookingDocs: scopedTripPlanRecords.bookingDocs,
-        expenses: scopedTripPlanRecords.expenses,
-        stopNotes: scopedTripPlanRecords.stopNotes,
-        tasks: scopedTripPlanRecords.tasks,
-      }),
-    [scopedTripPlanRecords],
-  );
+  const {
+    expenseSummary,
+    itineraryCommitmentsByItemId,
+    scopedSuggestions,
+    scopedTripForRecords,
+    scopedTripPlanRecords,
+  } = useTripWorkspaceRecords({
+    activePlanItems,
+    backendExpenseSummary,
+    currentMemberId: currentMember.id,
+    selectedTripPlanId,
+    stopNotes,
+    suggestions,
+    tasks,
+    trip,
+  });
 
   useEffect(() => {
     if (typeof window === "undefined") return;
