@@ -927,10 +927,7 @@ export function SagittariusApp({
     )
       .then((member) => {
         if (cancelled || !member) return;
-        setTripState((current) => ({
-          ...current,
-          trip: replaceTripParticipant(current.trip, member),
-        }));
+        updateApiTrip((current) => replaceTripParticipant(current, member));
       })
       .catch(() => undefined);
 
@@ -1309,10 +1306,7 @@ export function SagittariusApp({
             expectedVersion: draggedItem.version,
           }),
         );
-        setTripState((current) => ({
-          ...current,
-          trip: replaceItineraryItem(nextTrip, patchedItem),
-        }));
+        replaceApiTrip(replaceItineraryItem(nextTrip, patchedItem));
         setSelectedItemId(draggedItemId);
         return;
       }
@@ -1334,12 +1328,7 @@ export function SagittariusApp({
           },
         ),
       );
-      setTripState((current) => {
-        return {
-          ...current,
-          trip: replaceItineraryItems(current.trip, reorderedItems),
-        };
-      });
+      updateApiTrip((current) => replaceItineraryItems(current, reorderedItems));
       return;
     }
 
@@ -1379,10 +1368,7 @@ export function SagittariusApp({
           expectedVersion: draggedItem.version,
         }),
       );
-      setTripState((current) => ({
-        ...current,
-        trip: replaceItineraryItem(nextTrip, patchedItem),
-      }));
+      replaceApiTrip(replaceItineraryItem(nextTrip, patchedItem));
       setSelectedItemId(draggedItemId);
       return;
     }
@@ -1451,13 +1437,12 @@ export function SagittariusApp({
       const branchPlacementItems = branchPlacement.trip.itineraryItems.filter(
         (item) => changedItemIds.has(item.id),
       );
-      setTripState((current) => ({
-        ...current,
-        trip: replaceItineraryItems(current.trip, [
+      updateApiTrip((current) =>
+        replaceItineraryItems(current, [
           ...branchPlacementItems,
           ...patchedBranchItems,
         ]),
-      }));
+      );
       setSelectedItemId(itemId);
       return;
     }
@@ -1535,15 +1520,14 @@ export function SagittariusApp({
           nextClientMutationId("itinerary-create"),
         ),
       );
-      setTripState((current) => ({
-        ...current,
-        trip: mergeCreatedItineraryItemIntoTrip(
-          current.trip,
+      updateApiTrip((current) =>
+        mergeCreatedItineraryItemIntoTrip(
+          current,
           createdItem,
           branchPlacement,
           patchedBranchItems,
         ),
-      }));
+      );
       setSelectedItemId(createdItem.id);
       setContextRailVisibility(false);
       setDialogState(null);
@@ -1675,15 +1659,14 @@ export function SagittariusApp({
         sessionToken: participantSession.sessionToken,
         tripId: trip.id,
       });
-      setTripState((current) => ({
-        ...current,
-        trip: mergeUpdatedItineraryBranchIntoTrip(
-          current.trip,
+      updateApiTrip((current) =>
+        mergeUpdatedItineraryBranchIntoTrip(
+          current,
           itemId,
           branchPlacement,
           patchedBranchItems,
         ),
-      }));
+      );
       setSelectedItemId(itemId);
       setDialogState(null);
       return;
@@ -1897,10 +1880,7 @@ export function SagittariusApp({
         itemId,
         participantSession.sessionToken,
       );
-      setTripState((current) => ({
-        ...current,
-        trip: deleteItineraryItemFromTrip(current.trip, itemId),
-      }));
+      updateApiTrip((current) => deleteItineraryItemFromTrip(current, itemId));
       setSelectedItemId(nextSelectedItemId);
       if (!nextSelectedItemId) setContextRailVisibility(false);
       setDialogState((current) =>
@@ -2341,14 +2321,9 @@ export function SagittariusApp({
       const patchedItemsById = new Map(
         patchedItems.map((item) => [item.id, item]),
       );
-      setTripState((current) => ({
-        ...current,
-        trip: mergePatchedTripSettings(
-          current.trip,
-          patchedTrip,
-          patchedItemsById,
-        ),
-      }));
+      updateApiTrip((current) =>
+        mergePatchedTripSettings(current, patchedTrip, patchedItemsById),
+      );
       return;
     }
 
