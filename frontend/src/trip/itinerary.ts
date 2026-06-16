@@ -251,6 +251,36 @@ export function mergeCreatedItineraryItemIntoTrip(
   };
 }
 
+export function mergeUpdatedItineraryBranchIntoTrip(
+  trip: Trip,
+  itemId: string,
+  placement: ItineraryItemPlacement,
+  patchedBranchItems: ItineraryItem[],
+): Trip {
+  const patchedBranchItemsById = new Map(
+    patchedBranchItems.map((item) => [item.id, item]),
+  );
+  const changedItemIds = new Set(
+    placement.changedExistingItems.map((item) => item.id),
+  );
+  const branchPlacementItemsById = new Map(
+    placement.trip.itineraryItems
+      .filter((item) => changedItemIds.has(item.id))
+      .map((item) => [item.id, item]),
+  );
+
+  return {
+    ...trip,
+    itineraryItems: trip.itineraryItems.map((item) => {
+      if (patchedBranchItemsById.has(item.id))
+        return patchedBranchItemsById.get(item.id) ?? item;
+      if (branchPlacementItemsById.has(item.id))
+        return branchPlacementItemsById.get(item.id) ?? item;
+      return item.id === itemId ? placement.item : item;
+    }),
+  };
+}
+
 export function replaceItineraryItem(current: Trip, updatedItem: ItineraryItem): Trip {
   return {
     ...current,

@@ -17,6 +17,7 @@ import {
   moveTripItemToDay,
   mainItineraryPathId,
   mergeCreatedItineraryItemIntoTrip,
+  mergeUpdatedItineraryBranchIntoTrip,
   normalizeStopHierarchyValues,
   replaceItineraryItem,
   resolveItineraryPathItems,
@@ -608,6 +609,57 @@ describe("itinerary planning domain", () => {
       pathId: "path-created",
       pathName: "Created path",
       pathRole: "alternative",
+    });
+  });
+
+  it("merges updated itinerary branch placement with patched API items first", () => {
+    const editedItem = {
+      ...seedTrip.itineraryItems[0],
+      activity: "Edited item",
+      pathId: "path-edited",
+    };
+    const branchChangedItem = {
+      ...seedTrip.itineraryItems[1],
+      activity: "Branch placement change",
+      pathId: "path-branch",
+    };
+    const patchedBranchItem = {
+      ...branchChangedItem,
+      activity: "API patched branch change",
+      version: branchChangedItem.version + 1,
+    };
+    const placement = {
+      trip: {
+        ...seedTrip,
+        itineraryItems: seedTrip.itineraryItems.map((item) =>
+          item.id === editedItem.id
+            ? editedItem
+            : item.id === branchChangedItem.id
+            ? branchChangedItem
+            : item,
+        ),
+      },
+      item: editedItem,
+      changedExistingItems: [branchChangedItem],
+    };
+
+    const nextTrip = mergeUpdatedItineraryBranchIntoTrip(
+      seedTrip,
+      editedItem.id,
+      placement,
+      [patchedBranchItem],
+    );
+
+    expect(nextTrip.itineraryItems.find((item) => item.id === editedItem.id)).toMatchObject({
+      activity: "Edited item",
+      pathId: "path-edited",
+    });
+    expect(
+      nextTrip.itineraryItems.find((item) => item.id === branchChangedItem.id),
+    ).toMatchObject({
+      activity: "API patched branch change",
+      pathId: "path-branch",
+      version: patchedBranchItem.version,
     });
   });
 

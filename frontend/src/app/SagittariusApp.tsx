@@ -119,6 +119,7 @@ import {
   deriveItineraryPathOptions,
   mainItineraryPathId,
   mergeCreatedItineraryItemIntoTrip,
+  mergeUpdatedItineraryBranchIntoTrip,
   moveTripItem,
   moveTripItemIntoPlanBlock,
   moveTripItemToDay,
@@ -1741,30 +1742,14 @@ export function SagittariusApp({
         sessionToken: participantSession.sessionToken,
         tripId: trip.id,
       });
-      const patchedBranchItemsById = new Map(
-        patchedBranchItems.map((item) => [item.id, item]),
-      );
-      const branchPlacementItemsById = new Map(
-        branchPlacement.trip.itineraryItems
-          .filter((item) =>
-            branchPlacement.changedExistingItems.some(
-              (changedItem) => changedItem.id === item.id,
-            ),
-          )
-          .map((item) => [item.id, item]),
-      );
       setTripState((current) => ({
         ...current,
-        trip: {
-          ...current.trip,
-          itineraryItems: current.trip.itineraryItems.map((item) => {
-            if (patchedBranchItemsById.has(item.id))
-              return patchedBranchItemsById.get(item.id) ?? item;
-            if (branchPlacementItemsById.has(item.id))
-              return branchPlacementItemsById.get(item.id) ?? item;
-            return item.id === itemId ? branchPlacement.item : item;
-          }),
-        },
+        trip: mergeUpdatedItineraryBranchIntoTrip(
+          current.trip,
+          itemId,
+          branchPlacement,
+          patchedBranchItems,
+        ),
       }));
       setSelectedItemId(itemId);
       setDialogState(null);
