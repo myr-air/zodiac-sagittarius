@@ -1,7 +1,11 @@
 import { useCallback, useRef } from "react";
 import type { Dispatch, MutableRefObject, SetStateAction } from "react";
 import type { BookingDocInput } from "@/src/components/BookingsDocsPage";
-import type { ItineraryBookingTicketInput, ItineraryBookingTemplate } from "@/src/components/SmartItineraryTable";
+import type {
+  InlineItineraryItemPatch,
+  ItineraryBookingTicketInput,
+  ItineraryBookingTemplate,
+} from "@/src/components/SmartItineraryTable";
 import {
   bookingDraftDetailsForItineraryItem,
   bookingDraftTimeWindowForItineraryItem,
@@ -19,12 +23,11 @@ import {
   updateLocalBookingDocInTrip,
   uniqueStringIds,
 } from "@/src/trip/booking-docs";
-import { TripApiError, type TripApiClient } from "@/src/trip/api-client";
+import { TripApiError, type TripApiClient, type TripCockpit } from "@/src/trip/api-client";
 import { nextLocalBookingDocId } from "@/src/trip/local-ids";
 import type {
   BookingDoc,
   BookingDocType,
-  InlineItineraryItemPatch,
   Trip,
   TripParticipantSession,
 } from "@/src/trip/types";
@@ -39,7 +42,7 @@ interface UseWorkspaceBookingCommandsOptions {
   nextClientMutationId: (purpose: string) => string;
   participantSession: TripParticipantSession | null;
   replaceApiTrip: (nextTrip: Trip) => void;
-  replaceCockpitFromApi: (cockpit: { trip: Trip }) => void;
+  replaceCockpitFromApi: (cockpit: TripCockpit) => void;
   selectedTripPlanId: string;
   setContextRailPreferredTab: (tab: "notes" | "booking") => void;
   setSelectedItemId: Dispatch<SetStateAction<string>>;
@@ -307,6 +310,145 @@ export function useWorkspaceBookingCommands({
       );
     },
     [queueBookingDocUpdate, runBookingDocUpdate],
+  );
+
+  const saveItineraryBookingTicket = useCallback(
+    async (input: ItineraryBookingTicketInput) => {
+      if (!canEditBookings) return;
+      const currentTrip = latestTripRef.current;
+      const item = currentTrip.itineraryItems.find(
+        (candidate) => candidate.id === input.itemId,
+      );
+      if (!item) return;
+      const relatedItineraryItemIds = uniqueStringIds([
+        ...input.relatedItineraryItemIds,
+        input.itemId,
+      ]);
+      const explicitBookingDoc = input.bookingDocId
+        ? currentTrip.bookingDocs?.find(
+            (candidate) => candidate.id === input.bookingDocId,
+          )
+        : null;
+      const bookingDocInput: BookingDocInput = {
+        tripPlanId: explicitBookingDoc?.tripPlanId,
+        type: explicitBookingDoc?.type ?? input.type,
+        title: input.title,
+        status: explicitBookingDoc?.status ?? input.status,
+        visibility: explicitBookingDoc?.visibility ?? input.visibility,
+        ownerMemberId: explicitBookingDoc?.ownerMemberId ?? currentMemberId,
+        providerName: input.providerName,
+        confirmationCode: input.confirmationCode,
+        startsAt: input.startsAt,
+        endsAt: input.endsAt,
+        timezone: explicitBookingDoc?.timezone ?? trip.defaultTimezone ?? null,
+        priceAmount: explicitBookingDoc?.priceAmount ?? null,
+        currency: explicitBookingDoc?.currency ?? null,
+        travelerIds:
+          explicitBookingDoc?.travelerIds.length || input.travelerIds.length
+            ? explicitBookingDoc?.travelerIds.length
+              ? explicitBookingDoc.travelerIds
+              : input.travelerIds
+            : trip.members.map((member) => member.id),
+        externalLinks: explicitBookingDoc?.externalLinks ?? [],
+        relatedItineraryItemIds,
+        relatedTaskIds: explicitBookingDoc?.relatedTaskIds ?? [],
+        relatedExpenseIds: explicitBookingDoc?.relatedExpenseIds ?? [],
+        noteIds: explicitBookingDoc?.noteIds ?? [],
+        notes: input.notes,
+      };
+      const existingBookingDoc =
+        explicitBookingDoc ??
+        findDuplicateBookingDoc(currentTrip.bookingDocs ?? [], bookingDocInput);
+
+      if (existingBookingDoc) {
+        await updateBookingDoc(existingBookingDoc.id, bookingDocInput);
+      } else {
+        await createBookingDoc(bookingDocInput);
+      }
+
+      for (const relatedItemId of relatedItineraryItemIds) {
+        const relatedItem = latestTripRef.current.itineraryItems.find(
+          (candidate) => candidate.id === relatedItemId,
+        );
+        if (!relatedItem) continue;
+        const nextDetails = syncItineraryDetailsWithBookingTicket(
+          relatedItem,
+          input,
+        );
+        await updateItineraryItemInline(relatedItem.id, {
+          details: nextDetails,
+        });
+      }
+
+      setContextRailPreferredTab("booking");
+      setSelectedItemId(item.id);
+      return input.title;
+    },
+    [
+      canEditBookings,
+      createBookingDoc,
+      currentMemberId,
+      latestTripRef,
+      setContextRailPreferredTab,
+      setSelectedItemId,
+      trip.defaultTimezone,
+      trip.members,
+      updateBookingDoc,
+      updateItineraryItemInline,
+    ],
+  );
+
+  const unlinkBookingFromItineraryItem = useCallback(
+    async (bookingDocId: string, itemId: string) => {
+      if (!canEditBookings) return;
+      const currentTrip = latestTripRef.current;
+      const bookingDoc = currentTrip.bookingDocs?.find(
+        (candidate) => candidate.id === bookingDocId,
+      );
+      if (!bookingDoc || !bookingDoc.relatedItineraryItemIds.includes(itemId))
+        return;
+      await updateBookingDoc(bookingDoc.id, {
+        type: bookingDoc.type,
+        title: bookingDoc.title,
+        status: bookingDoc.status,
+        visibility: bookingDoc.visibility,
+        ownerMemberId: bookingDoc.ownerMemberId,
+        providerName: bookingDoc.providerName,
+        confirmationCode: bookingDoc.confirmationCode,
+        startsAt: bookingDoc.startsAt,
+        endsAt: bookingDoc.endsAt,
+        timezone: bookingDoc.timezone,
+        priceAmount: bookingDoc.priceAmount,
+        currency: bookingDoc.currency,
+        travelerIds: bookingDoc.travelerIds,
+        externalLinks: bookingDoc.externalLinks,
+        relatedItineraryItemIds: bookingDoc.relatedItineraryItemIds.filter(
+          (relatedItemId) => relatedItemId !== itemId,
+        ),
+        relatedTaskIds: bookingDoc.relatedTaskIds,
+        relatedExpenseIds: bookingDoc.relatedExpenseIds,
+        noteIds: bookingDoc.noteIds,
+        notes: bookingDoc.notes,
+      });
+      const item = latestTripRef.current.itineraryItems.find(
+        (candidate) => candidate.id === itemId,
+      );
+      if (item) {
+        await updateItineraryItemInline(item.id, {
+          details: clearItineraryBookingTicketDetails(item),
+        });
+      }
+      setContextRailPreferredTab("booking");
+      setSelectedItemId(itemId);
+    },
+    [
+      canEditBookings,
+      latestTripRef,
+      setContextRailPreferredTab,
+      setSelectedItemId,
+      updateBookingDoc,
+      updateItineraryItemInline,
+    ],
   );
 
   const changeBookingDocType = useCallback(

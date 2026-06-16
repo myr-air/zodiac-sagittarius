@@ -620,7 +620,6 @@ export function useWorkspaceItineraryCommands({
       setDialogState(null);
     },
     [
-      canEdit,
       commitTrip,
       currentMemberId,
       effectivePlaceResolver,
