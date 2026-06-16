@@ -21,7 +21,7 @@ import {
   travelSubtypeOptions,
   uniqueIds,
   fromDateTimeLocalValue,
-} from "./smart-itinerary-table-helpers";
+} from "../domain";
 
 describe("smart-itinerary-table-helpers", () => {
   it("normalizes time ranges and midnight-overflow offsets", () => {

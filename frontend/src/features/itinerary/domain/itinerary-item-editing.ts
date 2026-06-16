@@ -5,7 +5,15 @@ import { activityTypeLabel, formatDuration } from "@/src/features/itinerary/lib"
 import { type IconName } from "@/src/ui/icons";
 import type { InlineItineraryItemPatch } from "../lib";
 
-type TravelSubtype = "flight" | "train" | "bus" | "taxi" | "ferry" | "walk" | "car" | "shuttle";
+export type TravelSubtype =
+  | "flight"
+  | "train"
+  | "bus"
+  | "taxi"
+  | "ferry"
+  | "walk"
+  | "car"
+  | "shuttle";
 type TicketModalCopy = {
   cancel: string;
   close: string;

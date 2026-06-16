@@ -9,7 +9,7 @@ import {
   buildActivityTypePatch,
   travelSubtypeForItem,
   travelSubtypeOptions,
-    } from "../../smart-itinerary-table-helpers";
+} from "@/src/features/itinerary/domain/itinerary-item-editing";
 
 export function ActivityTypePicker({
   buttonClassName,

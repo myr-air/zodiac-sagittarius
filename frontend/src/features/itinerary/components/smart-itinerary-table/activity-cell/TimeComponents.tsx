@@ -13,7 +13,7 @@ import {
   formatTimeRangeLabel,
   formatTimeTooltip,
   parseTimeToMinutes,
-} from "../../smart-itinerary-table-helpers";
+} from "@/src/features/itinerary/domain/itinerary-item-editing";
 import {
   activityTimeButtonClassName,
   activityTimeEndClassName,

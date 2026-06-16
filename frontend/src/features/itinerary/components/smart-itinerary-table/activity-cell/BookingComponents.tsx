@@ -27,7 +27,7 @@ import {
   toDateTimeLocalValue,
   toggleId,
   uniqueIds,
-} from "../../smart-itinerary-table-helpers";
+} from "@/src/features/itinerary/domain/itinerary-item-editing";
 import {
   activityBookingButtonClassName,
   activityBookingButtonEmptyClassName,
