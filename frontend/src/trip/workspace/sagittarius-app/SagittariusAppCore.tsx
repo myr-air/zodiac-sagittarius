@@ -8,7 +8,6 @@ import {
   useState,
 } from "react";
 import { AppShell } from "@/src/components/AppShell";
-import { AccountAccessPanel } from "@/src/components/AccountAccessPanel";
 import type { BookingDocInput } from "@/src/components/BookingsDocsPage";
 import type { MapCoordinateResolutionResult } from "@/src/components/RouteMapView";
 import {
@@ -62,7 +61,6 @@ import {
   bookingDraftDetailsForItineraryItem,
   bookingDraftTimeWindowForItineraryItem,
   bookingDraftTitleForItineraryItem,
-  bookingDocInputForExpenseEstimate,
   bookingTypeForBookingTemplate,
   bookingTypeForItineraryItem,
   buildCreateBookingDocRequest,
@@ -86,19 +84,6 @@ import {
   normalizeTripPlanAliases,
 } from "@/src/trip/trip-plans";
 import { deriveTripCountriesFromDestination } from "@/src/trip/trip-countries";
-import {
-  appendExpensesToTrip,
-  appendLocalExpensesToTrip,
-  buildCreateExpenseRequest,
-  buildExpenseCreateDrafts,
-  buildExpenseUpdateDraft,
-  buildPatchExpenseRequest,
-  buildExpenseReminderRequest,
-  recordLocalExpenseReminderInTrip,
-  removeExpenseFromTrip,
-  replaceExpenseInTrip,
-  updateLocalExpenseInTrip,
-} from "@/src/trip/expenses";
 import {
   appendItineraryItemPlacement,
   appendItineraryItemToTrip,
@@ -195,6 +180,7 @@ import { useWorkspaceNavigation } from "@/src/trip/workspace/use-workspace-navig
 import { WorkspaceToast } from "@/src/trip/workspace/WorkspaceToast";
 import {
   useWorkspacePhotoAlbums,
+  useWorkspaceExpenses,
   useWorkspaceRecords,
   useWorkspaceTripPlanCommands,
 } from "./hooks";
@@ -205,39 +191,26 @@ import {
 import {
   nextClientMutationId,
   nextLocalBookingDocId,
-  nextLocalExpenseId,
   nextLocalItemId,
 } from "@/src/trip/local-ids";
 import { loadPersistedTripDraft } from "@/src/trip/repository";
 import { seedTrip } from "@/src/trip/seed";
 import { safeExternalHref } from "@/src/trip/safe-links";
+import { TripWorkspaceAccessPanel } from "./access-gate";
 import type {
   BookingDoc,
   BookingDocType,
-  Expense,
-  ExpenseComment,
-  ExpenseLineItem,
   ItineraryItem,
-  SettlementSuggestion,
   Trip,
   TripMemberAccessStatus,
   TripParticipantSession,
   TripRole,
 } from "@/src/trip/types";
+import type { SagittariusAccessMode, SagittariusPortalSection } from "./types";
 
-export {
 const localMutationTimestamp = "2026-05-28T00:00:00.000Z";
 const workspaceShellClassName = "workspace-shell min-w-0 bg-transparent max-[1199px]:min-h-[calc(100dvh-48px)]";
 
-type PortalSection =
-  | "dashboard"
-  | "trips"
-  | "new-trip"
-  | "explorer"
-  | "todos"
-  | "vault"
-  | "settings"
-  | "sign-out";
 interface SagittariusAppProps {
   initialView?: PlanningView;
   requireJoin?: boolean;
@@ -247,14 +220,9 @@ interface SagittariusAppProps {
   routeTripId?: string;
   initialJoinCode?: string;
   initialJoinToken?: string | null;
-  accessMode?:
-    | "combined"
-    | "account-login"
-    | "account-register"
-    | "account-portal"
-    | "trip-access";
+  accessMode?: SagittariusAccessMode;
   accountSuccessRedirectHref?: string;
-  portalSection?: PortalSection;
+  portalSection?: SagittariusPortalSection;
   initialMemberId?: string;
   initialTrip?: Trip;
 }
@@ -485,6 +453,27 @@ export function SagittariusApp({
     replaceApiTrip,
     setTripState,
     trip,
+  });
+  const {
+    createExpense,
+    deleteExpense,
+    duplicateExpenseAsEstimate,
+    recordPaybackReminder,
+    updateExpense,
+  } = useWorkspaceExpenses({
+    apiClient: resolvedApiClient,
+    canEditBookings,
+    canEditExpenses,
+    commitTrip,
+    createBookingDoc,
+    currentMemberId: currentMember.id,
+    isApiMode,
+    participantSession,
+    refreshBackendExpenseSummary,
+    selectedTripPlanId,
+    setBackendExpenseSummary,
+    trip,
+    updateApiTrip,
   });
 
   useEffect(() => {
@@ -2160,156 +2149,6 @@ export function SagittariusApp({
     commitTrip((current) => removeBookingDocFromTrip(current, bookingDocId));
   }
 
-  async function createExpense(input: {
-    itemId: string | null;
-    title: string;
-    amount: number;
-    tripPlanId?: string | null;
-    paidBy: string;
-    category: Expense["category"];
-    currency?: string;
-    exchangeRateToSettlementCurrency?: number;
-    notes?: string;
-    receiptUrl?: string | null;
-    lineItems?: ExpenseLineItem[];
-    comments?: ExpenseComment[];
-    repeatCount?: number;
-    splits?: Record<string, number>;
-  }) {
-    if (!canEditExpenses) return;
-    const expenseDrafts = buildExpenseCreateDrafts(
-      input,
-      trip.members.map((member) => member.id),
-    );
-
-    if (isApiMode && resolvedApiClient && participantSession) {
-      const createdExpenses: Expense[] = [];
-      for (const expenseDraft of expenseDrafts) {
-        const expense = await resolvedApiClient.createExpense(
-          trip.id,
-          participantSession.sessionToken,
-          buildCreateExpenseRequest(expenseDraft, {
-            clientMutationId: nextClientMutationId("expense-create"),
-            tripPlanId: tripPlanIdForRecord(
-              trip,
-              expenseDraft.itemId,
-              expenseDraft.tripPlanId ?? selectedTripPlanId,
-            ),
-          }),
-        );
-        createdExpenses.push(expense);
-      }
-      updateApiTrip((current) => appendExpensesToTrip(current, createdExpenses));
-      await refreshBackendExpenseSummary();
-      return;
-    }
-
-    commitTrip((current) => {
-      return appendLocalExpensesToTrip(current, expenseDrafts, {
-        selectedTripPlanId,
-        nextExpenseId: nextLocalExpenseId,
-        resolveTripPlanId: tripPlanIdForRecord,
-      });
-    });
-  }
-
-  async function deleteExpense(expenseId: string) {
-    if (!canEditExpenses) return;
-    if (isApiMode && resolvedApiClient && participantSession) {
-      await resolvedApiClient.deleteExpense(
-        trip.id,
-        expenseId,
-        participantSession.sessionToken,
-      );
-      updateApiTrip((current) => removeExpenseFromTrip(current, expenseId));
-      await refreshBackendExpenseSummary();
-      return;
-    }
-    commitTrip((current) => removeExpenseFromTrip(current, expenseId));
-  }
-
-  async function updateExpense(input: {
-    expenseId: string;
-    title: string;
-    amount: number;
-    paidBy: string;
-    category: Expense["category"];
-    currency?: string;
-    exchangeRateToSettlementCurrency?: number;
-    notes?: string;
-    receiptUrl?: string | null;
-    lineItems?: ExpenseLineItem[];
-    comments?: ExpenseComment[];
-    itemId?: string | null;
-    tripPlanId?: string | null;
-    splits?: Record<string, number>;
-  }) {
-    if (!canEditExpenses) return;
-    const existing = trip.expenses.find(
-      (expense) => expense.id === input.expenseId,
-    );
-    if (!existing) return;
-    const expenseDraft = buildExpenseUpdateDraft(trip, existing, input, {
-      selectedTripPlanId,
-      resolveTripPlanId: tripPlanIdForRecord,
-    });
-    if (isApiMode && resolvedApiClient && participantSession) {
-      const expense = await resolvedApiClient.patchExpense(
-        trip.id,
-        input.expenseId,
-        participantSession.sessionToken,
-        buildPatchExpenseRequest(expenseDraft, {
-          clientMutationId: nextClientMutationId("expense-patch"),
-          expectedVersion: existing.version ?? 1,
-        }),
-      );
-      updateApiTrip((current) => replaceExpenseInTrip(current, expense));
-      await refreshBackendExpenseSummary();
-      return;
-    }
-    commitTrip((current) => updateLocalExpenseInTrip(current, expenseDraft));
-  }
-
-  async function duplicateExpenseAsEstimate(expense: Expense) {
-    if (!canEditBookings) return;
-    await createBookingDoc(
-      bookingDocInputForExpenseEstimate(expense, {
-        currentMemberId: currentMember.id,
-        defaultTimezone: trip.defaultTimezone,
-        members: trip.members,
-        itineraryItems: trip.itineraryItems,
-        selectedTripPlanId,
-        mainTripPlanId: trip.mainTripPlanId,
-        activePlanVariantId: trip.activePlanVariantId,
-      }),
-    );
-  }
-
-  async function recordPaybackReminder(suggestion: SettlementSuggestion) {
-    if (isApiMode && resolvedApiClient && participantSession) {
-      setBackendExpenseSummary(
-        {
-          tripPlanId: selectedTripPlanId,
-          summary: await resolvedApiClient.recordExpenseReminder(
-            trip.id,
-            participantSession.sessionToken,
-            buildExpenseReminderRequest(suggestion, {
-              clientMutationId: nextClientMutationId("expense-reminder"),
-            }),
-            selectedTripPlanId,
-          ),
-        },
-      );
-      return;
-    }
-    commitTrip((current) =>
-      recordLocalExpenseReminderInTrip(current, suggestion, {
-        tripPlanId: selectedTripPlanId,
-        remindedAt: new Date().toISOString(),
-      }),
-    );
-  }
-
   function exportItinerary() {
     const document = buildItineraryExport({
       exportedAt: new Date().toISOString(),
@@ -2565,78 +2404,20 @@ export function SagittariusApp({
     return <TripAccessLoadingFrame />;
   }
 
-  if (accessMode === "account-portal") {
-    return (
-      <AccountAccessPanel
-        accessMode={accessMode}
-        accountClient={accountClient}
-        accountSession={accountSession}
-        accountSessionLoaded={accountSessionLoaded}
-        accountSuccessRedirectHref={accountSuccessRedirectHref}
-        portalSection={portalSection}
-        apiClient={resolvedApiClient}
-        initialError={accessError}
-        initialJoinCode={initialJoinCode}
-        initialJoinToken={initialJoinToken}
-        trip={trip}
-        onAccountSessionChange={changeAccountSession}
-        onAuthenticated={authenticateParticipant}
-        onCockpitLoaded={replaceCockpitFromApi}
-        onTripChange={replaceTripFromJoin}
-      />
-    );
-  }
+  const canAccessPanel =
+    accessMode === "account-portal" ||
+    isAccountOnlyAccessMode ||
+    (requireJoin &&
+      !sessionMember &&
+      (!routeTripId || accessMode === "trip-access"));
 
-  if (isAccountOnlyAccessMode) {
-    return (
-      <AccountAccessPanel
-        accessMode={accessMode}
-        accountClient={accountClient}
-        accountSession={accountSession}
-        accountSessionLoaded={accountSessionLoaded}
-        accountSuccessRedirectHref={accountSuccessRedirectHref}
-        portalSection={portalSection}
-        apiClient={resolvedApiClient}
-        initialError={accessError}
-        initialJoinCode={initialJoinCode}
-        initialJoinToken={initialJoinToken}
-        onAccountSessionChange={changeAccountSession}
-        onAuthenticated={authenticateParticipant}
-        onCockpitLoaded={replaceCockpitFromApi}
-        onTripChange={replaceTripFromJoin}
-      />
-    );
-  }
-
-  if (requireJoin && !sessionMember) {
-    if (routeTripId && !sessionRestored) {
+  if (canAccessPanel) {
+    if (routeTripId && accessMode === "trip-access" && !sessionRestored) {
       return <TripAccessLoadingFrame />;
     }
-    if (routeTripId && accessMode === "trip-access") {
-      return (
-        <AccountAccessPanel
-          accessMode={accessMode}
-          accountClient={accountClient}
-          accountSession={accountSession}
-          accountSessionLoaded={accountSessionLoaded}
-          accountSuccessRedirectHref={accountSuccessRedirectHref}
-          portalSection={portalSection}
-          apiClient={resolvedApiClient}
-          initialError={accessError}
-          initialJoinCode={initialJoinCode}
-          initialJoinToken={initialJoinToken}
-          onAccountSessionChange={changeAccountSession}
-          onAuthenticated={authenticateParticipant}
-          onCockpitLoaded={replaceCockpitFromApi}
-          onTripChange={replaceTripFromJoin}
-        />
-      );
-    }
-    if (routeTripId) {
-      return <TripAccessLoadingFrame />;
-    }
+
     return (
-      <AccountAccessPanel
+      <TripWorkspaceAccessPanel
         accessMode={accessMode}
         accountClient={accountClient}
         accountSession={accountSession}
@@ -2654,6 +2435,12 @@ export function SagittariusApp({
         onTripChange={replaceTripFromJoin}
       />
     );
+  }
+
+  if (requireJoin && !sessionMember) {
+    if (routeTripId) {
+      return <TripAccessLoadingFrame />;
+    }
   }
 
   return (

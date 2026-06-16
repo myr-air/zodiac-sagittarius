@@ -1,3 +1,4 @@
+export { useWorkspaceExpenses } from "./use-workspace-expenses";
 export { useWorkspacePhotoAlbums } from "./use-workspace-photo-albums";
 export { useWorkspaceRecords } from "./use-workspace-records";
 export { useWorkspaceRecordActions } from "./use-workspace-record-actions";
