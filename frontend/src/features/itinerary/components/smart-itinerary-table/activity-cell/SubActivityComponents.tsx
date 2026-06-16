@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { createPortal } from "react-dom";
 
 import { cn } from "@/src/lib/cn";
@@ -14,6 +13,7 @@ import { ActivityTypePicker } from "./ActivityTypePicker";
 import { InlineActivityField } from "./InlineActivityField";
 import { ItineraryBookingButton } from "./BookingComponents";
 import { ActivityTimeButton } from "./TimeComponents";
+import { useEscapeToClose } from "./use-escape-close";
 import {
   addSubActivityButtonClassName,
   activityIconButtonClassName,
@@ -80,13 +80,7 @@ export function SubActivityModal({
     patch: InlineItineraryItemPatch,
   ) => void | Promise<void>;
 }) {
-  useEffect(() => {
-    function closeOnEscape(event: KeyboardEvent) {
-      if (event.key === "Escape") onClose();
-    }
-    document.addEventListener("keydown", closeOnEscape);
-    return () => document.removeEventListener("keydown", closeOnEscape);
-  }, [onClose]);
+  useEscapeToClose(onClose);
 
   if (typeof document === "undefined") return null;
 

@@ -1,4 +1,4 @@
-import { type FormEvent, useEffect, useState } from "react";
+import { type FormEvent, useState } from "react";
 import { createPortal } from "react-dom";
 
 import { Icon } from "@/src/ui/icons";
@@ -33,6 +33,7 @@ import {
   timeEditPreviewClassName,
   timeEditPreviewValueClassName,
 } from "../../smart-itinerary-table.styles";
+import { useEscapeToClose } from "./use-escape-close";
 
 export function ActivityTimeButton({
   editable,
@@ -134,13 +135,7 @@ export function TimeEditModal({
       ? formatTimeRangeLabel(startTime, endTime, endOffsetDays)
       : startTime || "--:--";
 
-  useEffect(() => {
-    function closeOnEscape(event: KeyboardEvent) {
-      if (event.key === "Escape") onClose();
-    }
-    document.addEventListener("keydown", closeOnEscape);
-    return () => document.removeEventListener("keydown", closeOnEscape);
-  }, [onClose]);
+  useEscapeToClose(onClose);
 
   function updateStartTime(nextStartTime: string) {
     setStartTime(nextStartTime);

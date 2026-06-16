@@ -1,4 +1,4 @@
-import { type FormEvent, useEffect, useState } from "react";
+import { type FormEvent, useState } from "react";
 import { createPortal } from "react-dom";
 import type {
   BookingDoc,
@@ -21,6 +21,7 @@ import { InlineActivityField } from "./activity-cell/InlineActivityField";
 import { ItineraryBookingButton } from "./activity-cell/BookingComponents";
 import { ActivityTimeButton } from "./activity-cell/TimeComponents";
 import { SubActivityList, SubActivityModal } from "./activity-cell/SubActivityComponents";
+import { useEscapeToClose } from "./activity-cell/use-escape-close";
 import {
   itemPlaceholderCellClassName,
   itemPlaceholderRowClassName,
@@ -471,13 +472,7 @@ export function ItineraryNoteModal({
   const subtitle = locale === "th" ? "เก็บรายละเอียดสั้น ๆ ที่เกี่ยวกับ activity นี้" : "Capture a short note tied to this activity.";
   const placeholder = locale === "th" ? "เช่น นัดเจอกันที่ทางออก A, เตรียมพาสปอร์ต" : "Example: Meet at exit A, keep passports ready";
 
-  useEffect(() => {
-    function closeOnEscape(event: KeyboardEvent) {
-      if (event.key === "Escape") onClose();
-    }
-    document.addEventListener("keydown", closeOnEscape);
-    return () => document.removeEventListener("keydown", closeOnEscape);
-  }, [onClose]);
+  useEscapeToClose(onClose);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

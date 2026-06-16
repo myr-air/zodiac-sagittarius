@@ -1,4 +1,4 @@
-import { type FormEvent, useEffect, useState } from "react";
+import { type FormEvent, useState } from "react";
 import { createPortal } from "react-dom";
 
 import { DateTimePickerField } from "@/src/components/DateTimePickers";
@@ -48,6 +48,7 @@ import {
   ticketModeButtonClassName,
   ticketModeToggleClassName,
 } from "../../smart-itinerary-table.styles";
+import { useEscapeToClose } from "./use-escape-close";
 
 export function ItineraryBookingButton({
   bookingDocs,
@@ -208,13 +209,7 @@ export function ItineraryTicketModal({
   const [unlinking, setUnlinking] = useState(false);
   const copy = ticketModalCopy(locale);
 
-  useEffect(() => {
-    function closeOnEscape(event: KeyboardEvent) {
-      if (event.key === "Escape") onClose();
-    }
-    document.addEventListener("keydown", closeOnEscape);
-    return () => document.removeEventListener("keydown", closeOnEscape);
-  }, [onClose]);
+  useEscapeToClose(onClose);
 
   function hydrateTicketFields(booking: BookingDoc | null) {
     setTitle(booking?.title ?? defaultTitle);
