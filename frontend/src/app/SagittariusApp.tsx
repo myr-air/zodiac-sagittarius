@@ -74,6 +74,7 @@ import {
   type ItineraryImportApplyTarget,
 } from "@/src/trip/itinerary-paths";
 import type { PlanningView } from "@/src/trip/workspace/planning-view";
+import { TripWorkspaceDeleteDialog } from "@/src/trip/workspace/TripWorkspaceDeleteDialog";
 import { TripWorkspaceFrame } from "@/src/trip/workspace/TripWorkspaceFrame";
 import { TripWorkspaceRail } from "@/src/trip/workspace/TripWorkspaceRail";
 import { TripWorkspaceViews } from "@/src/trip/workspace/TripWorkspaceViews";
@@ -133,12 +134,6 @@ const workspaceToastDismissClassName =
   "ml-1 grid size-9 shrink-0 place-items-center rounded-full text-(--color-text-muted) transition-colors hover:bg-(--color-surface-subtle) hover:text-(--color-text)";
 const appDeleteModalBackdropClassName =
   "modal-backdrop fixed inset-0 z-[80] grid place-items-center bg-[rgb(15_23_42_/_0.28)] p-5";
-const appDeleteDialogClassName =
-  "delete-confirm-dialog grid w-[min(420px,100%)] gap-3 rounded-(--radius-lg) border border-(--color-danger-border) bg-(--color-surface) p-4 shadow-[0_14px_34px_rgb(15_23_42_/_0.14)]";
-const appDeleteDialogTitleClassName =
-  "m-0 text-base font-extrabold leading-[22px] text-[#991b1b]";
-const appDeleteDialogBodyClassName =
-  "m-0 text-sm font-medium leading-6 text-(--color-text-muted)";
 const appDeleteDialogActionsClassName = "mt-1 flex justify-end gap-2";
 const importDialogClassName =
   "import-options-dialog grid w-[min(520px,100%)] gap-3 rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) p-4 shadow-[0_14px_34px_rgb(15_23_42_/_0.16)]";
@@ -4661,50 +4656,22 @@ export function SagittariusApp({
             onClose={() => setPendingItineraryImport(null)}
           />
         ) : null}
-        {dialogDeleteItem ? (
-          <div className={appDeleteModalBackdropClassName} role="presentation">
-            <section
-              className={appDeleteDialogClassName}
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="app-delete-dialog-title"
-            >
-              <h2
-                className={appDeleteDialogTitleClassName}
-                id="app-delete-dialog-title"
-              >
-                {t.itinerary.row.confirmDeleteTitle({
-                  activity: dialogDeleteItem.activity,
-                })}
-              </h2>
-              <p className={appDeleteDialogBodyClassName}>
-                {t.itinerary.row.confirmDeleteBody({
-                  activity: dialogDeleteItem.activity,
-                })}
-              </p>
-              <div className={appDeleteDialogActionsClassName}>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={() => setDialogDeleteItem(null)}
-                >
-                  {t.itinerary.row.confirmDeleteNo}
-                </Button>
-                <Button
-                  type="button"
-                  variant="danger"
-                  onClick={async () => {
-                    const itemId = dialogDeleteItem.id;
-                    setDialogDeleteItem(null);
-                    await deleteStop(itemId);
-                  }}
-                >
-                  {t.itinerary.row.confirmDeleteYes}
-                </Button>
-              </div>
-            </section>
-          </div>
-        ) : null}
+        <TripWorkspaceDeleteDialog
+          item={dialogDeleteItem}
+          cancelLabel={t.itinerary.row.confirmDeleteNo}
+          confirmLabel={t.itinerary.row.confirmDeleteYes}
+          titleForActivity={(activity) =>
+            t.itinerary.row.confirmDeleteTitle({ activity })
+          }
+          bodyForActivity={(activity) =>
+            t.itinerary.row.confirmDeleteBody({ activity })
+          }
+          onCancel={() => setDialogDeleteItem(null)}
+          onConfirm={async (itemId) => {
+            setDialogDeleteItem(null);
+            await deleteStop(itemId);
+          }}
+        />
       </main>
     </AppShell>
   );
