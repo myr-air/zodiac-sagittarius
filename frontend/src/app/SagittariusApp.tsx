@@ -173,6 +173,7 @@ import { createImportedPlanRecordsViaApi } from "@/src/trip/workspace/itinerary-
 import {
   buildImportedPlanRecordsForTripPlan,
   emptyItineraryExportRecords,
+  mergeApiImportedPlanRecordsIntoTrip,
   mergeImportedRecordsIntoTripPlan,
   pendingItineraryImportFromDocument,
   resolveCreatedImportId,
@@ -3595,21 +3596,13 @@ export function SagittariusApp({
         });
         const deletedIds = new Set(deletedItems.map((item) => item.id));
         setTripState((current) => {
-          const nextTrip = {
-            ...current.trip,
-            itineraryPaths: previewTrip.itineraryPaths,
-            itineraryItems: [
-              ...current.trip.itineraryItems.filter(
-                (item) => !deletedIds.has(item.id),
-              ),
-              ...createdItems,
-            ],
-            bookingDocs: upsertById(
-              current.trip.bookingDocs ?? [],
-              createdPlanRecords.bookingDocs,
-            ),
-            expenses: upsertById(current.trip.expenses, createdPlanRecords.expenses),
-          };
+          const nextTrip = mergeApiImportedPlanRecordsIntoTrip({
+            createdItems,
+            currentTrip: current.trip,
+            deletedItemIds: deletedIds,
+            previewTrip,
+            records: createdPlanRecords,
+          });
           latestTripRef.current = nextTrip;
           return { ...current, trip: nextTrip };
         });
