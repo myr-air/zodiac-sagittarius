@@ -1,5 +1,31 @@
 import type { ItineraryItem, Suggestion } from "./types";
 
+export interface LocalEditSuggestionInput {
+  tripId: string;
+  proposerId: string;
+  targetItem: Pick<ItineraryItem, "id" | "activity" | "planVariantId" | "version">;
+  createdAt: string;
+  nextSuggestionId: (suggestions: Suggestion[]) => string;
+}
+
+export function createLocalEditSuggestion(
+  suggestions: Suggestion[],
+  input: LocalEditSuggestionInput,
+): Suggestion {
+  return {
+    id: input.nextSuggestionId(suggestions),
+    tripId: input.tripId,
+    proposerId: input.proposerId,
+    type: "edit",
+    targetItemId: input.targetItem.id,
+    planVariantId: input.targetItem.planVariantId,
+    proposedPatch: { activity: input.targetItem.activity },
+    sourceVersion: input.targetItem.version,
+    status: "pending",
+    createdAt: input.createdAt,
+  };
+}
+
 export function detectSuggestionConflict(items: ItineraryItem[], suggestion: Suggestion): Suggestion {
   if (suggestion.status !== "pending" || suggestion.type === "add" || !suggestion.targetItemId) return suggestion;
   const target = items.find((item) => item.id === suggestion.targetItemId && item.planVariantId === suggestion.planVariantId);
@@ -30,5 +56,16 @@ export function replaceSuggestionById(
 ): Suggestion[] {
   return suggestions.map((candidate) =>
     candidate.id === suggestionId ? replacement : candidate,
+  );
+}
+
+export function rejectSuggestionById(
+  suggestions: Suggestion[],
+  suggestionId: string,
+): Suggestion[] {
+  return suggestions.map((suggestion) =>
+    suggestion.id === suggestionId
+      ? { ...suggestion, status: "rejected" }
+      : suggestion,
   );
 }

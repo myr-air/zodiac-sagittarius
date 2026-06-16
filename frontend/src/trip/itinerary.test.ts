@@ -28,7 +28,13 @@ import {
   validateItineraryItem,
 } from "./itinerary";
 import { createLocalTripRepository } from "./repository";
-import { approveSuggestion, detectSuggestionConflict, replaceSuggestionById } from "./suggestions";
+import {
+  approveSuggestion,
+  createLocalEditSuggestion,
+  detectSuggestionConflict,
+  rejectSuggestionById,
+  replaceSuggestionById,
+} from "./suggestions";
 import type { Suggestion } from "./types";
 
 describe("itinerary planning domain", () => {
@@ -837,6 +843,31 @@ describe("itinerary planning domain", () => {
     expect(conflicted.status).toBe("conflicted");
     expect(approved.status).toBe("approved");
     expect(approved.items.find((item) => item.id === target.id)?.note).toBe("ขอเลื่อนร้านนี้หลังเช็คอิน");
+  });
+
+  it("builds local edit suggestions and rejects them by id", () => {
+    const target = seedTrip.itineraryItems.find((item) => item.id === "item-dimdim")!;
+    const suggestion = createLocalEditSuggestion([], {
+      tripId: seedTrip.id,
+      proposerId: "member-beam",
+      targetItem: target,
+      createdAt: "2026-05-27T12:00:00.000Z",
+      nextSuggestionId: (suggestions) => `suggestion-local-${suggestions.length + 1}`,
+    });
+
+    expect(suggestion).toEqual({
+      id: "suggestion-local-1",
+      tripId: seedTrip.id,
+      proposerId: "member-beam",
+      type: "edit",
+      targetItemId: target.id,
+      planVariantId: target.planVariantId,
+      proposedPatch: { activity: target.activity },
+      sourceVersion: target.version,
+      status: "pending",
+      createdAt: "2026-05-27T12:00:00.000Z",
+    });
+    expect(rejectSuggestionById([suggestion], suggestion.id)[0].status).toBe("rejected");
   });
 
   it("leaves add, resolved, and missing-target suggestions out of conflict handling", () => {

@@ -253,6 +253,8 @@ describe("Sagittarius project scaffold", () => {
     expect(sagittariusApp).not.toContain("function updateTripPlanInTrip");
     expect(sagittariusApp).not.toContain("function mergePublishedTripPlan");
     expect(sagittariusApp).not.toContain("function createLocalTripPlan");
+    expect(sagittariusApp).not.toContain("function createLocalEditSuggestion");
+    expect(sagittariusApp).not.toContain("function rejectSuggestionById");
     expect(sagittariusApp).not.toContain("function applyTripSettingsToTrip");
     expect(sagittariusApp).not.toContain("function mergePatchedTripSettings");
     expect(sagittariusApp).not.toContain("function normalizeTripPlanSummary");

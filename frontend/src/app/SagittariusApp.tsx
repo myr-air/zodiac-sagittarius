@@ -209,7 +209,12 @@ import {
 } from "@/src/trip/repository";
 import { seedTrip } from "@/src/trip/seed";
 import { safeExternalHref } from "@/src/trip/safe-links";
-import { approveSuggestion, replaceSuggestionById } from "@/src/trip/suggestions";
+import {
+  approveSuggestion,
+  createLocalEditSuggestion,
+  rejectSuggestionById,
+  replaceSuggestionById,
+} from "@/src/trip/suggestions";
 import type {
   BookingDoc,
   BookingDocType,
@@ -2426,18 +2431,13 @@ export function SagittariusApp({
     }
     setSuggestions((current) => [
       ...current,
-      {
-        id: nextLocalSuggestionId(current),
+      createLocalEditSuggestion(current, {
         tripId: trip.id,
         proposerId: currentMember.id,
-        type: "edit",
-        targetItemId: selectedItem.id,
-        planVariantId: selectedItem.planVariantId,
-        proposedPatch: { activity: selectedItem.activity },
-        sourceVersion: selectedItem.version,
-        status: "pending",
+        targetItem: selectedItem,
         createdAt: new Date().toISOString(),
-      },
+        nextSuggestionId: nextLocalSuggestionId,
+      }),
     ]);
   }
 
@@ -3777,13 +3777,7 @@ export function SagittariusApp({
         replaceSuggestionById(current, suggestionId, suggestion),
       );
     } else if (decision === "rejected") {
-      setSuggestions((current) =>
-        current.map((suggestion) =>
-          suggestion.id === suggestionId
-            ? { ...suggestion, status: "rejected" }
-            : suggestion,
-        ),
-      );
+      setSuggestions((current) => rejectSuggestionById(current, suggestionId));
       return;
     } else {
       const suggestion = suggestions.find(
