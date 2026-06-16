@@ -130,6 +130,12 @@ import {
   updateLocalStopNote,
 } from "@/src/trip/stop-notes";
 import {
+  buildTaskCreateDraft,
+  createLocalTask,
+  toggledTaskStatus,
+  toggleLocalTaskStatus,
+} from "@/src/trip/tasks";
+import {
   buildMapLink,
   locationFieldsFromCandidate,
   mapResolutionActivity,
@@ -2444,27 +2450,27 @@ export function SagittariusApp({
     const title = input.title.trim();
     /* v8 ignore next */
     if (!title) return;
-    const visibility = input.visibility;
+    const taskDraft = buildTaskCreateDraft(input, {
+      title,
+      tripPlanId: tripPlanIdForRecord(
+        trip,
+        input.relatedItemId ?? null,
+        selectedTripPlanId,
+      ),
+      currentMemberId: currentMember.id,
+    });
     if (isApiMode && resolvedApiClient && participantSession) {
       const task = await resolvedApiClient.createTask(
         trip.id,
         participantSession.sessionToken,
         {
           clientMutationId: nextClientMutationId("task-create"),
-          title,
-          visibility,
-          kind: "prep",
-          tripPlanId: tripPlanIdForRecord(
-            trip,
-            input.relatedItemId ?? null,
-            selectedTripPlanId,
-          ),
-          /* v8 ignore next */
-          assigneeId:
-            visibility === "shared"
-              ? input.assigneeId || null
-              : currentMember.id,
-          relatedItemId: input.relatedItemId ?? null,
+          title: taskDraft.title,
+          visibility: taskDraft.visibility,
+          kind: taskDraft.kind,
+          tripPlanId: taskDraft.tripPlanId,
+          assigneeId: taskDraft.assigneeId,
+          relatedItemId: taskDraft.relatedItemId,
         },
       );
       setTasks((current) => [...current, task]);
@@ -2472,23 +2478,7 @@ export function SagittariusApp({
     }
     setTasks((current) => [
       ...current,
-      {
-        id: nextLocalTaskId(current),
-        title,
-        status: "open",
-        visibility,
-        kind: "prep",
-        tripPlanId: tripPlanIdForRecord(
-          trip,
-          input.relatedItemId ?? null,
-          selectedTripPlanId,
-        ),
-        createdBy: currentMember.id,
-        /* v8 ignore next */
-        assigneeId:
-          visibility === "shared" ? input.assigneeId || null : currentMember.id,
-        relatedItemId: input.relatedItemId ?? null,
-      },
+      createLocalTask(current, taskDraft, { nextTaskId: nextLocalTaskId }),
     ]);
   }
 
@@ -3152,7 +3142,7 @@ export function SagittariusApp({
           /* v8 ignore next */
           expectedVersion: task.version ?? 1,
           /* v8 ignore next */
-          patch: { status: task.status === "done" ? "open" : "done" },
+          patch: { status: toggledTaskStatus(task) },
         },
       );
       /* v8 ignore next */
@@ -3164,15 +3154,7 @@ export function SagittariusApp({
       return;
     }
     setTasks((current) =>
-      current.map((task) =>
-        task.id === taskId
-          ? {
-              ...task,
-              /* v8 ignore next */
-              status: task.status === "done" ? "open" : "done",
-            }
-          : task,
-      ),
+      toggleLocalTaskStatus(current, taskId),
     );
   }
 

@@ -60,6 +60,7 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/trip/trip-settings.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/trip-countries.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/stop-notes.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/tasks.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/itinerary-time.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/itinerary-paths-api.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/place-resolution.ts"))).toBe(true);
@@ -286,6 +287,10 @@ describe("Sagittarius project scaffold", () => {
     expect(sagittariusApp).not.toContain("function createLocalStopNote");
     expect(sagittariusApp).not.toContain("function updateLocalStopNote");
     expect(sagittariusApp).not.toContain("function deleteLocalStopNote");
+    expect(sagittariusApp).not.toContain("function buildTaskCreateDraft");
+    expect(sagittariusApp).not.toContain("function createLocalTask");
+    expect(sagittariusApp).not.toContain("function toggledTaskStatus");
+    expect(sagittariusApp).not.toContain("function toggleLocalTaskStatus");
     expect(sagittariusApp).not.toContain("function TripAccessLoadingFrame");
     expect(sagittariusApp).not.toContain("function WorkspaceToast");
     expect(sagittariusApp).not.toContain("workspaceToastDismissClassName");
