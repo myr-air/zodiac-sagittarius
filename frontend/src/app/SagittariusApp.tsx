@@ -102,6 +102,7 @@ import {
   replaceItineraryItem,
   resolveItineraryPathItems,
   selectedItineraryPathIdForDay,
+  updateItineraryPathSelection,
   type ItineraryPathSelection,
 } from "@/src/trip/itinerary";
 import {
@@ -591,40 +592,33 @@ export function SagittariusApp({
   );
 
   function changeTripPath(pathId: string) {
-    setPathSelection((current) => ({
-      ...current,
-      tripPathId: pathId,
-      showAll: false,
-    }));
+    setPathSelection((current) =>
+      updateItineraryPathSelection(current, { type: "change-trip-path", pathId }),
+    );
   }
 
   function changeDayPath(day: string, pathId: string) {
-    setPathSelection((current) => ({
-      ...current,
-      showAll: false,
-      dayPathOverrides: {
-        ...(current.dayPathOverrides ?? {}),
-        [day]: pathId === mainItineraryPathId ? undefined : pathId,
-      },
-    }));
+    setPathSelection((current) =>
+      updateItineraryPathSelection(current, { type: "change-day-path", day, pathId }),
+    );
   }
 
   function clearDayPath(day: string) {
-    setPathSelection((current) => ({
-      ...current,
-      dayPathOverrides: {
-        ...(current.dayPathOverrides ?? {}),
-        [day]: undefined,
-      },
-    }));
+    setPathSelection((current) =>
+      updateItineraryPathSelection(current, { type: "clear-day-path", day }),
+    );
   }
 
   function clearAllDayPaths() {
-    setPathSelection((current) => ({ ...current, dayPathOverrides: {} }));
+    setPathSelection((current) =>
+      updateItineraryPathSelection(current, { type: "clear-all-day-paths" }),
+    );
   }
 
   function toggleShowAllPaths(showAll: boolean) {
-    setPathSelection((current) => ({ ...current, showAll }));
+    setPathSelection((current) =>
+      updateItineraryPathSelection(current, { type: "toggle-show-all-paths", showAll }),
+    );
   }
 
   useEffect(() => {

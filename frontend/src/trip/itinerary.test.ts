@@ -11,6 +11,7 @@ import {
   moveTripItem,
   moveTripItemIntoPlanBlock,
   moveTripItemToDay,
+  mainItineraryPathId,
   normalizeStopHierarchyValues,
   replaceItineraryItem,
   resolveItineraryPathItems,
@@ -22,6 +23,7 @@ import {
   formatDayLabel,
   sortItemsForDay,
   selectedItineraryPathIdForDay,
+  updateItineraryPathSelection,
   validateItineraryItem,
 } from "./itinerary";
 import { createLocalTripRepository } from "./repository";
@@ -184,6 +186,79 @@ describe("itinerary planning domain", () => {
         tripPathId: "path-rain",
       }),
     ).toBe("main");
+  });
+
+  it("updates itinerary path selection state with trip, day, and show-all actions", () => {
+    const currentSelection = {
+      tripPathId: "path-rain",
+      dayPathOverrides: { "2026-06-19": "path-food" },
+      showAll: true,
+    };
+
+    expect(
+      updateItineraryPathSelection(currentSelection, {
+        type: "change-trip-path",
+        pathId: "path-slow",
+      }),
+    ).toEqual({
+      tripPathId: "path-slow",
+      dayPathOverrides: { "2026-06-19": "path-food" },
+      showAll: false,
+    });
+    expect(
+      updateItineraryPathSelection(currentSelection, {
+        type: "change-day-path",
+        day: "2026-06-20",
+        pathId: "path-museum",
+      }),
+    ).toEqual({
+      tripPathId: "path-rain",
+      dayPathOverrides: {
+        "2026-06-19": "path-food",
+        "2026-06-20": "path-museum",
+      },
+      showAll: false,
+    });
+    expect(
+      updateItineraryPathSelection(currentSelection, {
+        type: "change-day-path",
+        day: "2026-06-19",
+        pathId: mainItineraryPathId,
+      }),
+    ).toEqual({
+      tripPathId: "path-rain",
+      dayPathOverrides: { "2026-06-19": undefined },
+      showAll: false,
+    });
+    expect(
+      updateItineraryPathSelection(currentSelection, {
+        type: "clear-day-path",
+        day: "2026-06-19",
+      }),
+    ).toEqual({
+      tripPathId: "path-rain",
+      dayPathOverrides: { "2026-06-19": undefined },
+      showAll: true,
+    });
+    expect(
+      updateItineraryPathSelection(currentSelection, {
+        type: "clear-all-day-paths",
+      }),
+    ).toEqual({
+      tripPathId: "path-rain",
+      dayPathOverrides: {},
+      showAll: true,
+    });
+    expect(
+      updateItineraryPathSelection(currentSelection, {
+        type: "toggle-show-all-paths",
+        showAll: false,
+      }),
+    ).toEqual({
+      tripPathId: "path-rain",
+      dayPathOverrides: { "2026-06-19": "path-food" },
+      showAll: false,
+    });
   });
 
   it("builds itinerary path fields for main and alternative targets", () => {

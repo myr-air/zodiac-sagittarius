@@ -15,6 +15,13 @@ export interface ItineraryPathSelection {
   showAll?: boolean;
 }
 
+export type ItineraryPathSelectionAction =
+  | { type: "change-trip-path"; pathId: string }
+  | { type: "change-day-path"; day: string; pathId: string }
+  | { type: "clear-day-path"; day: string }
+  | { type: "clear-all-day-paths" }
+  | { type: "toggle-show-all-paths"; showAll: boolean };
+
 export interface ItineraryPathOption {
   id: string;
   name: string;
@@ -317,6 +324,41 @@ export function resolveItineraryPathItems(items: ItineraryItem[], selection: Iti
   }
 
   return sortItineraryItems(visibleItems);
+}
+
+export function updateItineraryPathSelection(
+  current: ItineraryPathSelection,
+  action: ItineraryPathSelectionAction,
+): ItineraryPathSelection {
+  switch (action.type) {
+    case "change-trip-path":
+      return {
+        ...current,
+        tripPathId: action.pathId,
+        showAll: false,
+      };
+    case "change-day-path":
+      return {
+        ...current,
+        showAll: false,
+        dayPathOverrides: {
+          ...(current.dayPathOverrides ?? {}),
+          [action.day]: action.pathId === mainItineraryPathId ? undefined : action.pathId,
+        },
+      };
+    case "clear-day-path":
+      return {
+        ...current,
+        dayPathOverrides: {
+          ...(current.dayPathOverrides ?? {}),
+          [action.day]: undefined,
+        },
+      };
+    case "clear-all-day-paths":
+      return { ...current, dayPathOverrides: {} };
+    case "toggle-show-all-paths":
+      return { ...current, showAll: action.showAll };
+  }
 }
 
 export function selectedItineraryPathIdForDay(

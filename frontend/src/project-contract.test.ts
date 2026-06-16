@@ -283,6 +283,7 @@ describe("Sagittarius project scaffold", () => {
     expect(sagittariusApp).not.toContain("async function patchApiItineraryBranchItems");
     expect(sagittariusApp).not.toContain("function buildItineraryCommitmentsByItemId");
     expect(sagittariusApp).not.toContain("function selectedItineraryPathIdForDay");
+    expect(sagittariusApp).not.toContain("function updateItineraryPathSelection");
     expect(sagittariusApp).not.toContain("function itineraryItemPathFieldsForTarget");
     expect(sagittariusApp).not.toContain("function getNextSortOrder");
     expect(sagittariusApp).not.toContain("function getNextChildSortOrder");
