@@ -72,6 +72,12 @@ import {
   type ItineraryImportApplyTarget,
 } from "@/src/trip/itinerary-paths";
 import type { PlanningView } from "@/src/trip/workspace/planning-view";
+import {
+  emptyItineraryExportRecords,
+  pendingItineraryImportFromDocument,
+  shouldUseApiItineraryImport,
+  type PendingItineraryImport,
+} from "@/src/trip/workspace/itinerary-import-model";
 import { TripWorkspaceDeleteDialog } from "@/src/trip/workspace/TripWorkspaceDeleteDialog";
 import { TripWorkspaceFrame } from "@/src/trip/workspace/TripWorkspaceFrame";
 import { TripWorkspaceImportDialog } from "@/src/trip/workspace/TripWorkspaceImportDialog";
@@ -135,15 +141,6 @@ const accountClaimMessageClassName = "account-claim-message font-extrabold";
 const portalLoadingCardClassName =
   "account-card portal-loading-card grid min-h-[220px] gap-3.5 rounded-(--radius-lg) border border-(--color-border) bg-[rgb(255_255_255_/_0.94)] p-4 shadow-[var(--shadow-panel)]";
 
-interface PendingItineraryImport {
-  fileName: string;
-  items: ItineraryExportItem[];
-  records: ItineraryExportRecords;
-}
-
-function emptyItineraryExportRecords(): ItineraryExportRecords {
-  return { bookingDocs: [], expenses: [], stopNotes: [], tasks: [] };
-}
 const portalSkeletonBaseClassName =
   "portal-skeleton block overflow-hidden rounded-(--radius-md) bg-[linear-gradient(90deg,var(--color-surface-subtle),rgb(226_232_240_/_0.72),var(--color-surface-subtle))] bg-[length:220%_100%] animate-[portal-skeleton-pulse_1.2s_ease-in-out_infinite] motion-reduce:animate-none";
 const portalSkeletonTitleClassName = `${portalSkeletonBaseClassName} portal-skeleton--title h-7 w-[min(220px,48%)]`;
@@ -3937,38 +3934,15 @@ export function SagittariusApp({
               },
             )
           : parseItineraryImportDocument(content);
-      setPendingItineraryImport({
-        fileName,
-        items: document.items,
-        records: document.records ?? emptyItineraryExportRecords(),
-      });
+      setPendingItineraryImport(
+        pendingItineraryImportFromDocument({ document, fileName }),
+      );
       setItineraryImportError(null);
     } catch (caught) {
       setItineraryImportError(
         caught instanceof Error ? caught.message : "Import itinerary ไม่สำเร็จ",
       );
     }
-  }
-
-  function shouldUseApiItineraryImport({
-    contentType,
-    fileName,
-  }: {
-    contentType: string;
-    fileName: string;
-  }): boolean {
-    const lowerName = fileName.toLowerCase();
-    const lowerType = contentType.toLowerCase();
-    if (
-      lowerType.includes("csv") ||
-      lowerType.includes("tab-separated") ||
-      lowerName.endsWith(".csv") ||
-      lowerName.endsWith(".tsv") ||
-      lowerName.endsWith(".txt")
-    ) {
-      return false;
-    }
-    return true;
   }
 
   async function applyPendingItineraryImport(

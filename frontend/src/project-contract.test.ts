@@ -44,6 +44,7 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/trip/workspace/TripWorkspaceImportDialog.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/TripWorkspaceRail.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/TripWorkspaceViews.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/workspace/itinerary-import-model.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/planning-view.ts"))).toBe(true);
     expect(existsSync(join(repoRoot, "backend/Cargo.toml"))).toBe(true);
     expect(existsSync(join(repoRoot, "package.json"))).toBe(false);
@@ -197,6 +198,7 @@ describe("Sagittarius project scaffold", () => {
     expect(sagittariusApp).toContain("@/src/trip/workspace/TripWorkspaceImportDialog");
     expect(sagittariusApp).toContain("@/src/trip/workspace/TripWorkspaceRail");
     expect(sagittariusApp).toContain("@/src/trip/workspace/TripWorkspaceViews");
+    expect(sagittariusApp).toContain("@/src/trip/workspace/itinerary-import-model");
     expect(sagittariusApp).not.toContain('from "@/src/components/ContextRail"');
     expect(sagittariusApp).not.toContain("workspaceGridClassName");
     expect(sagittariusApp).not.toContain("planningMainClassName");
@@ -204,6 +206,8 @@ describe("Sagittarius project scaffold", () => {
     expect(sagittariusApp).not.toContain("appDeleteDialogTitleClassName");
     expect(sagittariusApp).not.toContain("import-options-dialog");
     expect(sagittariusApp).not.toContain("ItineraryImportOptionsDialog");
+    expect(sagittariusApp).not.toContain("function shouldUseApiItineraryImport");
+    expect(sagittariusApp).not.toContain("interface PendingItineraryImport");
     expect(sagittariusApp).not.toContain('from "@/src/components/OverviewPage"');
     expect(sagittariusApp).not.toContain('from "@/src/components/TimelineView"');
   });
