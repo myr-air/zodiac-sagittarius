@@ -1,6 +1,7 @@
 import type {
   CreateExpenseApiRequest,
   PatchExpenseApiRequest,
+  RecordExpenseReminderApiRequest,
 } from "./api-client";
 import type { Expense, ExpenseComment, ExpenseLineItem, ExpenseReminder, ExpenseSummary, Member, SettlementSuggestion, Trip } from "./types";
 
@@ -77,6 +78,10 @@ export interface ExpenseReminderRequest {
   from: string;
   to: string;
   amountMinor: number;
+}
+
+export interface BuildExpenseReminderRequestOptions {
+  clientMutationId: string;
 }
 
 export interface BuildCreateExpenseRequestOptions {
@@ -489,6 +494,16 @@ export function expenseReminderRequestForSuggestion(
     from: suggestion.from,
     to: suggestion.to,
     amountMinor: Math.round(suggestion.amount * 100),
+  };
+}
+
+export function buildExpenseReminderRequest(
+  suggestion: SettlementSuggestion,
+  options: BuildExpenseReminderRequestOptions,
+): RecordExpenseReminderApiRequest {
+  return {
+    clientMutationId: options.clientMutationId,
+    ...expenseReminderRequestForSuggestion(suggestion),
   };
 }
 

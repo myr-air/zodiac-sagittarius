@@ -319,6 +319,7 @@ describe("Sagittarius project scaffold", () => {
     expect(sagittariusApp).not.toContain("function updateLocalExpenseInTrip");
     expect(sagittariusApp).not.toContain("function removeExpenseFromTrip");
     expect(sagittariusApp).not.toContain("function expenseReminderRequestForSuggestion");
+    expect(sagittariusApp).not.toContain("function buildExpenseReminderRequest");
     expect(sagittariusApp).not.toContain("function recordLocalExpenseReminderInTrip");
     expect(sagittariusApp).not.toContain("function createLocalStopNote");
     expect(sagittariusApp).not.toContain("function appendStopNote");

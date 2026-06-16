@@ -104,7 +104,7 @@ import {
   buildExpenseUpdateDraft,
   buildExpenseSummary,
   buildPatchExpenseRequest,
-  expenseReminderRequestForSuggestion,
+  buildExpenseReminderRequest,
   filterExpenseRemindersForTripPlan,
   recordLocalExpenseReminderInTrip,
   removeExpenseFromTrip,
@@ -3211,7 +3211,6 @@ export function SagittariusApp({
   }
 
   async function recordPaybackReminder(suggestion: SettlementSuggestion) {
-    const reminderRequest = expenseReminderRequestForSuggestion(suggestion);
     if (isApiMode && resolvedApiClient && participantSession) {
       setBackendExpenseSummary(
         {
@@ -3219,10 +3218,9 @@ export function SagittariusApp({
           summary: await resolvedApiClient.recordExpenseReminder(
             trip.id,
             participantSession.sessionToken,
-            {
+            buildExpenseReminderRequest(suggestion, {
               clientMutationId: nextClientMutationId("expense-reminder"),
-              ...reminderRequest,
-            },
+            }),
             selectedTripPlanId,
           ),
         },

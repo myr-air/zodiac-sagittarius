@@ -9,6 +9,7 @@ import {
   buildExpenseUpdateDraft,
   buildItemizedExpenseSplits,
   buildPatchExpenseRequest,
+  buildExpenseReminderRequest,
   expenseReminderRequestForSuggestion,
   expenseSplitsToMinor,
   normalizeExpenseRepeatCount,
@@ -885,6 +886,26 @@ describe("expense money helpers", () => {
         amount: 42.56,
       }),
     ).toEqual({
+      from: "member-beam",
+      to: "member-aom",
+      amountMinor: 4256,
+    });
+  });
+
+  it("builds expense reminder API requests with mutation ids", () => {
+    expect(
+      buildExpenseReminderRequest(
+        {
+          from: "member-beam",
+          to: "member-aom",
+          amount: 42.56,
+        },
+        {
+          clientMutationId: "expense-reminder-mutation",
+        },
+      ),
+    ).toEqual({
+      clientMutationId: "expense-reminder-mutation",
       from: "member-beam",
       to: "member-aom",
       amountMinor: 4256,
