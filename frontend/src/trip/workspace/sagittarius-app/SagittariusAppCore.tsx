@@ -9,11 +9,9 @@ import {
 } from "react";
 import { AppShell } from "@/src/components/AppShell";
 import type { BookingDocInput } from "@/src/components/BookingsDocsPage";
-import type { MapCoordinateResolutionResult } from "@/src/components/RouteMapView";
 import {
   type ItineraryBookingTicketInput,
   type ItineraryBookingTemplate,
-  type InlineItineraryItemPatch,
 } from "@/src/components/SmartItineraryTable";
 import { StopDialog, type StopFormValues } from "@/src/components/StopDialog";
 import type { TripSettingsFormValues } from "@/src/components/TripSettingsPage";
@@ -85,34 +83,13 @@ import {
 } from "@/src/trip/trip-plans";
 import { deriveTripCountriesFromDestination } from "@/src/trip/trip-countries";
 import {
-  appendItineraryItemPlacement,
-  appendItineraryItemToTrip,
-  buildItineraryItemDraft,
   buildItineraryView,
-  buildUpdatedItineraryItem,
-  deleteItineraryItemFromTrip,
-  mainItineraryPathId,
-  mergeCreatedItineraryItemIntoTrip,
-  mergeUpdatedItineraryBranchIntoTrip,
-  moveTripItem,
-  moveTripItemIntoPlanBlock,
-  moveTripItemToDay,
-  normalizeStopHierarchyValues,
-  replaceItineraryItem,
-  replaceItineraryItems,
-  selectedItineraryPathIdForDay,
 } from "@/src/trip/itinerary";
 import {
-  buildInlineItineraryItemPatch,
   shiftItineraryItemsToStartDate,
 } from "@/src/trip/itinerary-time";
 import {
   buildCreateItineraryItemRequest,
-  buildInlineItineraryItemPatchRequest,
-  buildMoveItineraryItemRequest,
-  buildMoveItineraryItemToDayRequest,
-  buildPatchItineraryItemRequest,
-  buildReorderItineraryItemsRequest,
   buildShiftItineraryItemDayRequest,
 } from "@/src/trip/itinerary-api-requests";
 import {
@@ -121,18 +98,11 @@ import {
   mergePatchedTripSettings,
 } from "@/src/trip/trip-settings";
 import {
-  buildMapLink,
-  buildMapPlaceResolutionRequest,
-  locationFieldsFromCandidate,
-  mapResolutionPlaceHint,
-  resolveStopPlace,
   type PlaceResolver,
   type StopPlaceResolutionState,
 } from "@/src/trip/place-resolution";
 import {
   applyImportedItemsToItineraryPath,
-  applyItemToActivityBranch,
-  applyManualActivityPath,
   deriveManualActivityPathOptions,
   type ItineraryImportApplyTarget,
 } from "@/src/trip/itinerary-paths";
@@ -181,6 +151,7 @@ import { WorkspaceToast } from "@/src/trip/workspace/WorkspaceToast";
 import {
   useWorkspacePhotoAlbums,
   useWorkspaceExpenses,
+  useWorkspaceItineraryCommands,
   useWorkspaceRecords,
   useWorkspaceTripPlanCommands,
 } from "./hooks";
@@ -195,7 +166,6 @@ import {
 } from "@/src/trip/local-ids";
 import { loadPersistedTripDraft } from "@/src/trip/repository";
 import { seedTrip } from "@/src/trip/seed";
-import { safeExternalHref } from "@/src/trip/safe-links";
 import { TripWorkspaceAccessPanel } from "./access-gate";
 import type {
   BookingDoc,
@@ -820,28 +790,47 @@ export function SagittariusApp({
     window.location.replace(target);
   }, [participantSession, requireJoin, routeTripId, sessionMember]);
 
-  function addStop(day?: string, parentItemId?: string | null) {
-    /* v8 ignore next */
-    if (!canEdit) return;
-    setStopPlaceResolution({ state: "idle", candidates: [] });
-    setContextRailVisibility(false);
-    setDialogState({ mode: "create", day, parentItemId: parentItemId ?? null });
-  }
-
-  async function addSubActivity(parentItemId: string) {
-    const parentItem = trip.itineraryItems.find((item) => item.id === parentItemId);
-    if (!parentItem) return;
-    if (!parentItem.isPlanBlock) {
-      try {
-        setTripPlanError(null);
-        await updateItineraryItemInline(parentItem.id, { isPlanBlock: true });
-      } catch {
-        setTripPlanError(t.itinerary.tripPlans.error);
-        return;
-      }
-    }
-    addStop(parentItem.day, parentItem.id);
-  }
+  const {
+    addStop,
+    addSubActivity,
+    createStop,
+    deleteStop,
+    moveItem,
+    moveItemIntoPlanBlock,
+    moveItemToDay,
+    moveItemToPath,
+    resolveMissingMapCoordinates,
+    updateItineraryItemInline,
+    updateSelectedStop,
+  } = useWorkspaceItineraryCommands({
+    canEdit,
+    canSaveItineraryErrorMessage: t.itinerary.saveError,
+    currentMemberId: currentMember.id,
+    dialogState,
+    effectivePlaceResolver,
+    isApiMode,
+    latestTripRef,
+    nextClientMutationId,
+    pathOptions,
+    pathSelection,
+    planItems,
+    participantSession,
+    resolvedApiClient,
+    replaceApiTrip,
+    replaceCockpitFromApi,
+    selectedDay,
+    selectedItemId,
+    selectedTripPlanId,
+    setContextRailVisibility,
+    setDialogState,
+    setSelectedItemId,
+    setStopPlaceResolution,
+    setTripPlanError,
+    tripPlanErrorMessage: t.itinerary.tripPlans.error,
+    trip,
+    commitTrip,
+    updateApiTrip,
+  });
 
   function selectItem(itemId: string) {
     setContextRailPreferredTab("notes");
@@ -852,285 +841,6 @@ export function SagittariusApp({
     setContextRailPreferredTab("notes");
     setSelectedItemId(itemId);
     setContextRailVisibility(true);
-  }
-
-  async function moveItem(draggedItemId: string, targetItemId: string) {
-    /* v8 ignore next */
-    if (!canEdit || draggedItemId === targetItemId) return;
-
-    const nextTrip = moveTripItem(
-      trip,
-      draggedItemId,
-      targetItemId,
-      selectedTripPlanId,
-      localMutationTimestamp,
-    );
-    if (!nextTrip) return;
-
-    if (isApiMode && resolvedApiClient && participantSession) {
-      const draggedItem = trip.itineraryItems.find(
-        (item) => item.id === draggedItemId,
-      );
-      const targetItem = nextTrip.itineraryItems.find(
-        (item) => item.id === targetItemId,
-      );
-      if (!draggedItem || !targetItem) return;
-      const movedItem = nextTrip.itineraryItems.find(
-        (item) => item.id === draggedItemId,
-      );
-      if (!movedItem) return;
-      const parentChanged =
-        (draggedItem.parentItemId ?? null) !==
-        (movedItem.parentItemId ?? null);
-      if (draggedItem.day !== movedItem.day || parentChanged) {
-        const patchedItem = await resolvedApiClient.patchItineraryItem(
-          trip.id,
-          draggedItemId,
-          participantSession.sessionToken,
-          buildMoveItineraryItemRequest(movedItem, {
-            clientMutationId: nextClientMutationId("itinerary-day-move"),
-            expectedVersion: draggedItem.version,
-          }),
-        );
-        replaceApiTrip(replaceItineraryItem(nextTrip, patchedItem));
-        setSelectedItemId(draggedItemId);
-        return;
-      }
-      const reorderedDayItems = nextTrip.itineraryItems
-        .filter(
-          (item) =>
-            item.planVariantId === targetItem.planVariantId &&
-            item.day === targetItem.day,
-        );
-      const reorderedItems = await resolvedApiClient.reorderItineraryItems(
-        trip.id,
-        participantSession.sessionToken,
-        buildReorderItineraryItemsRequest(
-          reorderedDayItems,
-          {
-            clientMutationId: nextClientMutationId("itinerary-reorder"),
-            day: targetItem.day,
-            planVariantId: targetItem.planVariantId,
-          },
-        ),
-      );
-      updateApiTrip((current) => replaceItineraryItems(current, reorderedItems));
-      return;
-    }
-
-    commitTrip(() => nextTrip, draggedItemId);
-  }
-
-  async function moveItemIntoPlanBlock(
-    draggedItemId: string,
-    planBlockItemId: string,
-  ) {
-    /* v8 ignore next */
-    if (!canEdit || draggedItemId === planBlockItemId) return;
-    const nextTrip = moveTripItemIntoPlanBlock(
-      trip,
-      draggedItemId,
-      planBlockItemId,
-      selectedTripPlanId,
-      localMutationTimestamp,
-    );
-    if (!nextTrip) return;
-
-    const draggedItem = trip.itineraryItems.find(
-      (item) => item.id === draggedItemId,
-    );
-    const movedItem = nextTrip.itineraryItems.find(
-      (item) => item.id === draggedItemId,
-    );
-    if (!draggedItem || !movedItem) return;
-
-    if (isApiMode && resolvedApiClient && participantSession) {
-      const patchedItem = await resolvedApiClient.patchItineraryItem(
-        trip.id,
-        draggedItemId,
-        participantSession.sessionToken,
-        buildMoveItineraryItemRequest(movedItem, {
-          clientMutationId: nextClientMutationId("itinerary-block-move"),
-          expectedVersion: draggedItem.version,
-        }),
-      );
-      replaceApiTrip(replaceItineraryItem(nextTrip, patchedItem));
-      setSelectedItemId(draggedItemId);
-      return;
-    }
-
-    commitTrip(() => nextTrip, draggedItemId);
-  }
-
-  async function moveItemToDay(draggedItemId: string, targetDay: string) {
-    /* v8 ignore next */
-    if (!canEdit) return;
-
-    const nextTrip = moveTripItemToDay(
-      trip,
-      draggedItemId,
-      targetDay,
-      selectedTripPlanId,
-      localMutationTimestamp,
-    );
-    if (!nextTrip) return;
-
-    if (isApiMode && resolvedApiClient && participantSession) {
-      const draggedItem = trip.itineraryItems.find(
-        (item) => item.id === draggedItemId,
-      );
-      if (!draggedItem) return;
-      await resolvedApiClient.patchItineraryItem(
-        trip.id,
-        draggedItemId,
-        participantSession.sessionToken,
-        buildMoveItineraryItemToDayRequest({
-          clientMutationId: nextClientMutationId("itinerary-day-move"),
-          expectedVersion: draggedItem.version,
-          targetDay,
-        }),
-      );
-      replaceApiTrip(nextTrip);
-      setSelectedItemId(draggedItemId);
-      return;
-    }
-
-    commitTrip(() => nextTrip, draggedItemId);
-  }
-
-  async function moveItemToPath(itemId: string, pathId: string) {
-    /* v8 ignore next */
-    if (!canEdit) return;
-
-    const branchPlacement = applyManualActivityPath(trip, itemId, pathId);
-    if (
-      branchPlacement.trip === trip ||
-      branchPlacement.changedExistingItems.length === 0
-    )
-      return;
-
-    if (isApiMode && resolvedApiClient && participantSession) {
-      const patchedBranchItems = await patchApiItineraryBranchItems({
-        apiClient: resolvedApiClient,
-        items: branchPlacement.changedExistingItems,
-        nextClientMutationId,
-        sessionToken: participantSession.sessionToken,
-        tripId: trip.id,
-      });
-      const changedItemIds = new Set(
-        branchPlacement.changedExistingItems.map((item) => item.id),
-      );
-      const branchPlacementItems = branchPlacement.trip.itineraryItems.filter(
-        (item) => changedItemIds.has(item.id),
-      );
-      updateApiTrip((current) =>
-        replaceItineraryItems(current, [
-          ...branchPlacementItems,
-          ...patchedBranchItems,
-        ]),
-      );
-      setSelectedItemId(itemId);
-      return;
-    }
-
-    commitTrip(() => branchPlacement.trip, itemId);
-  }
-
-  async function createStop(values: StopFormValues) {
-    values = normalizeStopHierarchyValues(values);
-    const day = values.day || selectedDay;
-    setStopPlaceResolution(
-      effectivePlaceResolver && !values.resolvedPlace && !values.saveUnresolved
-        ? { state: "resolving", candidates: [] }
-        : { state: "idle", candidates: [] },
-    );
-    const placeResolution = await resolveStopPlace(
-      { ...values, day },
-      trip,
-      effectivePlaceResolver,
-      nextClientMutationId,
-    );
-    if (placeResolution.state) {
-      setStopPlaceResolution(placeResolution.state);
-      return;
-    }
-    setStopPlaceResolution({ state: "idle", candidates: [] });
-    const locationFields = locationFieldsFromCandidate(
-      placeResolution.candidate,
-      values.place,
-      values.mapLink,
-    );
-    const parentItem = values.parentItemId
-      ? trip.itineraryItems.find((item) => item.id === values.parentItemId)
-      : undefined;
-    const targetPathId = selectedItineraryPathIdForDay(day, pathSelection);
-    const targetPathName = pathOptions.find(
-      (option) => option.id === targetPathId,
-    )?.name;
-    const nextItemId = nextLocalItemId(trip.itineraryItems, "item-new");
-    const draftItem = buildItineraryItemDraft(
-      { ...values, day },
-      {
-        address: locationFields.address,
-        coordinates: locationFields.coordinates,
-        createdBy: currentMember.id,
-        mapLink: locationFields.mapLink,
-        nextItemId,
-        pathId: targetPathId,
-        pathName: targetPathName,
-        planItems,
-        selectedTripPlanId,
-        trip,
-        updatedAt: localMutationTimestamp,
-      },
-    );
-    const branchPlacement =
-      parentItem
-        ? appendItineraryItemPlacement(trip, draftItem)
-        : targetPathId === mainItineraryPathId
-        ? applyItemToActivityBranch(trip, draftItem)
-        : appendItineraryItemPlacement(trip, draftItem);
-    if (isApiMode && resolvedApiClient && participantSession) {
-      const patchedBranchItems = await patchApiItineraryBranchItems({
-        apiClient: resolvedApiClient,
-        items: branchPlacement.changedExistingItems,
-        nextClientMutationId,
-        sessionToken: participantSession.sessionToken,
-        tripId: trip.id,
-      });
-      const createdItem = await resolvedApiClient.createItineraryItem(
-        trip.id,
-        participantSession.sessionToken,
-        buildCreateItineraryItemRequest(
-          branchPlacement.item,
-          nextClientMutationId("itinerary-create"),
-        ),
-      );
-      updateApiTrip((current) =>
-        mergeCreatedItineraryItemIntoTrip(
-          current,
-          createdItem,
-          branchPlacement,
-          patchedBranchItems,
-        ),
-      );
-      setSelectedItemId(createdItem.id);
-      setContextRailVisibility(false);
-      setDialogState(null);
-      return;
-    }
-
-    commitTrip(
-      (current) =>
-        parentItem
-          ? appendItineraryItemToTrip(current, draftItem)
-          : targetPathId === mainItineraryPathId
-          ? applyItemToActivityBranch(current, draftItem).trip
-          : appendItineraryItemToTrip(current, draftItem),
-      draftItem.id,
-    );
-    setContextRailVisibility(false);
-    setDialogState(null);
   }
 
   async function promoteFoodRecommendation(item: ItineraryItem) {
@@ -1162,275 +872,6 @@ export function SagittariusApp({
     });
   }
 
-  async function updateSelectedStop(values: StopFormValues) {
-    /* v8 ignore next */
-    if (dialogState?.mode !== "edit") return;
-    values = normalizeStopHierarchyValues(values);
-    const itemId = dialogState.item.id;
-    const editDay = values.day || dialogState.item.day;
-    const shouldResolvePlace =
-      values.place !== dialogState.item.place ||
-      safeExternalHref(values.mapLink) !==
-        safeExternalHref(dialogState.item.mapLink) ||
-      Boolean(values.resolvedPlace) ||
-      Boolean(values.saveUnresolved);
-    setStopPlaceResolution(
-      shouldResolvePlace &&
-        effectivePlaceResolver &&
-        !values.resolvedPlace &&
-        !values.saveUnresolved
-        ? { state: "resolving", candidates: [] }
-        : { state: "idle", candidates: [] },
-    );
-    const placeResolution = shouldResolvePlace
-      ? await resolveStopPlace(
-          { ...values, day: editDay },
-          trip,
-          effectivePlaceResolver,
-          nextClientMutationId,
-        )
-      : { candidate: null, state: null };
-    if (placeResolution.state) {
-      setStopPlaceResolution(placeResolution.state);
-      return;
-    }
-    setStopPlaceResolution({ state: "idle", candidates: [] });
-    const locationFields = shouldResolvePlace
-      ? locationFieldsFromCandidate(
-          placeResolution.candidate,
-          values.place,
-          values.mapLink,
-        )
-      : {
-          address: dialogState.item.address ?? dialogState.item.place,
-          coordinates: dialogState.item.coordinates,
-          mapLink: dialogState.item.mapLink,
-        };
-    if (isApiMode && resolvedApiClient && participantSession) {
-      const patchedItem = await resolvedApiClient.patchItineraryItem(
-        trip.id,
-        itemId,
-        participantSession.sessionToken,
-        buildPatchItineraryItemRequest(
-          { ...values, day: editDay },
-          {
-            address: locationFields.address,
-            clientMutationId: nextClientMutationId("itinerary-patch"),
-            coordinates: locationFields.coordinates,
-            expectedVersion: dialogState.item.version,
-            mapLink: locationFields.mapLink,
-          },
-        ),
-      );
-      const patchedItemWithDay = {
-        ...patchedItem,
-        day: values.day || patchedItem.day,
-      };
-      const tripWithPatchedItem = replaceItineraryItem(trip, patchedItemWithDay);
-      const pathPlacement = applyItemToActivityBranch(
-        tripWithPatchedItem,
-        patchedItemWithDay,
-      );
-      const branchPlacement = values.pathId
-        ? applyManualActivityPath(
-            pathPlacement.trip,
-            itemId,
-            values.pathId,
-          )
-        : pathPlacement;
-      const patchedBranchItems = await patchApiItineraryBranchItems({
-        apiClient: resolvedApiClient,
-        items: branchPlacement.changedExistingItems,
-        nextClientMutationId,
-        sessionToken: participantSession.sessionToken,
-        tripId: trip.id,
-      });
-      updateApiTrip((current) =>
-        mergeUpdatedItineraryBranchIntoTrip(
-          current,
-          itemId,
-          branchPlacement,
-          patchedBranchItems,
-        ),
-      );
-      setSelectedItemId(itemId);
-      setDialogState(null);
-      return;
-    }
-    commitTrip((current) => {
-      const updatedItem = buildUpdatedItineraryItem(
-        dialogState.item,
-        { ...values, day: editDay },
-        {
-          address: locationFields.address,
-          coordinates: locationFields.coordinates,
-          mapLink: locationFields.mapLink,
-          updatedAt: localMutationTimestamp,
-        },
-      );
-      const tripWithUpdatedItem = replaceItineraryItem(current, updatedItem);
-      const pathPlacement = applyItemToActivityBranch(
-        tripWithUpdatedItem,
-        updatedItem,
-      );
-      return values.pathId
-        ? applyManualActivityPath(
-            pathPlacement.trip,
-            itemId,
-            values.pathId,
-          ).trip
-        : pathPlacement.trip;
-    });
-    setSelectedItemId(itemId);
-    setDialogState(null);
-  }
-
-  async function updateItineraryItemInline(
-    itemId: string,
-    patch: InlineItineraryItemPatch,
-  ) {
-    if (!canEdit) return;
-    const previousUpdate =
-      inlineUpdateQueueRef.current.get(itemId) ?? Promise.resolve();
-    const queuedUpdate = previousUpdate
-      .catch(() => undefined)
-      .then(() => runItineraryItemInlineUpdate(itemId, patch));
-    inlineUpdateQueueRef.current.set(itemId, queuedUpdate);
-    try {
-      await queuedUpdate;
-      setTripPlanError(null);
-    } catch {
-      setTripPlanError(t.itinerary.saveError);
-    } finally {
-      if (inlineUpdateQueueRef.current.get(itemId) === queuedUpdate) {
-        inlineUpdateQueueRef.current.delete(itemId);
-      }
-    }
-  }
-
-  async function runItineraryItemInlineUpdate(
-    itemId: string,
-    patch: InlineItineraryItemPatch,
-  ) {
-    if (isApiMode && resolvedApiClient && participantSession) {
-      let currentTrip = latestTripRef.current;
-      for (let attempt = 0; attempt < 2; attempt += 1) {
-        const item = currentTrip.itineraryItems.find(
-          (candidate) => candidate.id === itemId,
-        );
-        if (!item) return;
-        const nextPatch = buildInlineItineraryItemPatch(item, patch);
-        if (!nextPatch) return;
-        try {
-          const patchedItem = await resolvedApiClient.patchItineraryItem(
-            currentTrip.id,
-            itemId,
-            participantSession.sessionToken,
-            buildInlineItineraryItemPatchRequest(nextPatch, {
-              clientMutationId: nextClientMutationId("itinerary-inline-patch"),
-              expectedVersion: item.version,
-            }),
-          );
-          const nextTrip = replaceItineraryItem(
-            latestTripRef.current,
-            patchedItem,
-          );
-          replaceApiTrip(nextTrip);
-          setSelectedItemId(itemId);
-          return;
-        } catch (error) {
-          if (
-            !(error instanceof TripApiError) ||
-            error.code !== "version_conflict" ||
-            attempt > 0
-          )
-            throw error;
-          const cockpit = await resolvedApiClient.loadTrip(
-            currentTrip.id,
-            participantSession.sessionToken,
-          );
-          replaceCockpitFromApi(cockpit);
-          latestTripRef.current = cockpit.trip;
-          currentTrip = cockpit.trip;
-        }
-      }
-      return;
-    }
-
-    commitTrip((current) => {
-      const item = current.itineraryItems.find(
-        (candidate) => candidate.id === itemId,
-      );
-      if (!item) return current;
-      const nextPatch = buildInlineItineraryItemPatch(item, patch);
-      if (!nextPatch) return current;
-      const updatedItem = {
-        ...item,
-        ...nextPatch,
-        ...(nextPatch.place !== undefined
-          ? {
-              address: nextPatch.place,
-              coordinates: undefined,
-              mapLink: buildMapLink(nextPatch.place),
-            }
-          : {}),
-        updatedAt: localMutationTimestamp,
-        version: item.version + 1,
-      };
-      return {
-        ...current,
-        itineraryItems: current.itineraryItems.map((candidate) =>
-          candidate.id === itemId ? updatedItem : candidate,
-        ),
-      };
-    }, itemId);
-  }
-
-  async function resolveMissingMapCoordinates(itemsToResolve: ItineraryItem[]): Promise<MapCoordinateResolutionResult> {
-    const result: MapCoordinateResolutionResult = {
-      attempted: 0,
-      failed: 0,
-      resolved: 0,
-      skipped: 0,
-    };
-    if (!canEdit || !effectivePlaceResolver) return result;
-    for (const item of itemsToResolve) {
-      if (item.coordinates) continue;
-      result.attempted += 1;
-      const placeHint = mapResolutionPlaceHint(item);
-      if (!placeHint) {
-        result.skipped += 1;
-        continue;
-      }
-      try {
-        const response = await effectivePlaceResolver(
-          buildMapPlaceResolutionRequest(item, trip, {
-            clientMutationId: nextClientMutationId("map-place-resolve"),
-            placeHint,
-          }),
-        );
-        if (response.status !== "resolved") {
-          result.skipped += 1;
-          continue;
-        }
-        const candidate = response.candidates[0];
-        if (!candidate) {
-          result.skipped += 1;
-          continue;
-        }
-        await updateItineraryItemInline(item.id, {
-          address: candidate.address,
-          coordinates: candidate.coordinates,
-          mapLink: candidate.mapLink,
-        });
-        result.resolved += 1;
-      } catch {
-        result.failed += 1;
-      }
-    }
-    return result;
-  }
-
   async function deleteSelectedStop() {
     /* v8 ignore next */
     if (dialogState?.mode !== "edit" || !canEdit) return;
@@ -1447,42 +888,6 @@ export function SagittariusApp({
     }
   }
 
-  async function deleteStop(itemId: string) {
-    if (!canEdit) return;
-    const item = trip.itineraryItems.find(
-      (candidate) => candidate.id === itemId,
-    );
-    if (!item) return;
-    const remainingItems = trip.itineraryItems.filter(
-      (item) => item.id !== itemId,
-    );
-    const nextSelectedItemId =
-      selectedItemId === itemId
-        ? (remainingItems[0]?.id ?? "")
-        : selectedItemId;
-    if (isApiMode && resolvedApiClient && participantSession) {
-      await resolvedApiClient.deleteItineraryItem(
-        trip.id,
-        itemId,
-        participantSession.sessionToken,
-      );
-      updateApiTrip((current) => deleteItineraryItemFromTrip(current, itemId));
-      setSelectedItemId(nextSelectedItemId);
-      if (!nextSelectedItemId) setContextRailVisibility(false);
-      setDialogState((current) =>
-        current?.mode === "edit" && current.item.id === itemId ? null : current,
-      );
-      return;
-    }
-    commitTrip(
-      (current) => deleteItineraryItemFromTrip(current, itemId),
-      nextSelectedItemId,
-    );
-    if (!nextSelectedItemId) setContextRailVisibility(false);
-    setDialogState((current) =>
-      current?.mode === "edit" && current.item.id === itemId ? null : current,
-    );
-  }
 
   function authenticateParticipant(session: TripParticipantSession) {
     setAccessError(null);
