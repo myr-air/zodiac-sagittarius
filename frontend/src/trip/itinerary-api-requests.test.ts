@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { buildCreateItineraryItemRequest } from "./itinerary-api-requests";
+import {
+  buildCreateItineraryItemRequest,
+  buildPatchItineraryItemRequest,
+} from "./itinerary-api-requests";
 import { seedTrip } from "./seed";
 
 describe("itinerary API request builders", () => {
@@ -61,6 +64,64 @@ describe("itinerary API request builders", () => {
       transportation: "MTR",
       details: { ticket: "prebooked" },
       note: "Arrive early",
+    });
+  });
+
+  it("builds patch itinerary item requests from edit values and location fields", () => {
+    expect(
+      buildPatchItineraryItemRequest(
+        {
+          day: "2025-05-18",
+          parentItemId: null,
+          itemKind: "meal",
+          timeMode: "scheduled",
+          isPlanBlock: false,
+          status: "booked",
+          priority: "must",
+          startTime: "19:00",
+          endTime: "20:30",
+          endOffsetDays: 0,
+          activity: "Dinner booking",
+          activityType: "food",
+          place: "Temple Street",
+          durationMinutes: 90,
+          transportation: "Taxi",
+          details: { bookingRef: "DIN-1" },
+          note: "Window table",
+        },
+        {
+          address: "Temple Street Night Market",
+          clientMutationId: "mutation-2",
+          coordinates: undefined,
+          expectedVersion: 7,
+          mapLink: "https://maps.example/temple-street",
+        },
+      ),
+    ).toEqual({
+      clientMutationId: "mutation-2",
+      expectedVersion: 7,
+      patch: {
+        day: "2025-05-18",
+        parentItemId: null,
+        itemKind: "meal",
+        timeMode: "scheduled",
+        isPlanBlock: false,
+        status: "booked",
+        priority: "must",
+        startTime: "19:00",
+        endTime: "20:30",
+        endOffsetDays: 0,
+        activity: "Dinner booking",
+        activityType: "food",
+        place: "Temple Street",
+        mapLink: "https://maps.example/temple-street",
+        address: "Temple Street Night Market",
+        coordinates: null,
+        durationMinutes: 90,
+        transportation: "Taxi",
+        details: { bookingRef: "DIN-1" },
+        note: "Window table",
+      },
     });
   });
 });

@@ -1,5 +1,17 @@
-import type { CreateItineraryItemApiRequest } from "./api-client";
+import type {
+  CreateItineraryItemApiRequest,
+  PatchItineraryItemApiRequest,
+} from "./api-client";
+import type { BuildItineraryItemDraftInput } from "./itinerary";
 import type { ItineraryItem } from "./types";
+
+export interface BuildPatchItineraryItemRequestOptions {
+  address: ItineraryItem["address"];
+  clientMutationId: string;
+  coordinates: ItineraryItem["coordinates"];
+  expectedVersion: number;
+  mapLink: string;
+}
 
 export function buildCreateItineraryItemRequest(
   item: ItineraryItem,
@@ -33,5 +45,37 @@ export function buildCreateItineraryItemRequest(
     transportation: item.transportation,
     details: item.details,
     note: item.note,
+  };
+}
+
+export function buildPatchItineraryItemRequest(
+  input: BuildItineraryItemDraftInput,
+  options: BuildPatchItineraryItemRequestOptions,
+): PatchItineraryItemApiRequest {
+  return {
+    clientMutationId: options.clientMutationId,
+    expectedVersion: options.expectedVersion,
+    patch: {
+      day: input.day,
+      parentItemId: input.parentItemId ?? null,
+      itemKind: input.itemKind,
+      timeMode: input.timeMode,
+      isPlanBlock: input.isPlanBlock,
+      status: input.status,
+      priority: input.priority,
+      startTime: input.startTime,
+      endTime: input.endTime,
+      endOffsetDays: input.endOffsetDays,
+      activity: input.activity,
+      activityType: input.activityType,
+      place: input.place,
+      mapLink: options.mapLink,
+      address: options.address ?? null,
+      coordinates: options.coordinates ?? null,
+      durationMinutes: input.durationMinutes,
+      transportation: input.transportation,
+      details: input.details,
+      note: input.note,
+    },
   };
 }

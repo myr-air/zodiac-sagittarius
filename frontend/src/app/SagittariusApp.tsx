@@ -135,7 +135,10 @@ import {
   buildInlineItineraryItemPatch,
   shiftItineraryItemsToStartDate,
 } from "@/src/trip/itinerary-time";
-import { buildCreateItineraryItemRequest } from "@/src/trip/itinerary-api-requests";
+import {
+  buildCreateItineraryItemRequest,
+  buildPatchItineraryItemRequest,
+} from "@/src/trip/itinerary-api-requests";
 import {
   applyTripSettingsToTrip,
   mergePatchedTripSettings,
@@ -1667,32 +1670,16 @@ export function SagittariusApp({
         trip.id,
         itemId,
         participantSession.sessionToken,
-        {
-          clientMutationId: nextClientMutationId("itinerary-patch"),
-          expectedVersion: dialogState.item.version,
-          patch: {
-            day: editDay,
-            parentItemId: values.parentItemId ?? null,
-            itemKind: values.itemKind,
-            timeMode: values.timeMode,
-            isPlanBlock: values.isPlanBlock,
-            status: values.status,
-            priority: values.priority,
-            startTime: values.startTime,
-            endTime: values.endTime,
-            endOffsetDays: values.endOffsetDays,
-            activity: values.activity,
-            activityType: values.activityType,
-            place: values.place,
-            mapLink: locationFields.mapLink,
+        buildPatchItineraryItemRequest(
+          { ...values, day: editDay },
+          {
             address: locationFields.address,
-            coordinates: locationFields.coordinates ?? null,
-            durationMinutes: values.durationMinutes,
-            transportation: values.transportation,
-            details: values.details,
-            note: values.note,
+            clientMutationId: nextClientMutationId("itinerary-patch"),
+            coordinates: locationFields.coordinates,
+            expectedVersion: dialogState.item.version,
+            mapLink: locationFields.mapLink,
           },
-        },
+        ),
       );
       const tripWithPatchedItem = {
         ...trip,
