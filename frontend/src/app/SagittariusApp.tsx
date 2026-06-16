@@ -81,6 +81,12 @@ import {
   upsertById,
   type PendingItineraryImport,
 } from "@/src/trip/workspace/itinerary-import-model";
+import {
+  initialSelectedTripPlanId,
+  rememberSelectedTripPlanId,
+  resolveSelectedTripPlanId,
+  tripHasPlan,
+} from "@/src/trip/workspace/selected-trip-plan";
 import { TripWorkspaceDeleteDialog } from "@/src/trip/workspace/TripWorkspaceDeleteDialog";
 import { TripWorkspaceFrame } from "@/src/trip/workspace/TripWorkspaceFrame";
 import { TripWorkspaceImportDialog } from "@/src/trip/workspace/TripWorkspaceImportDialog";
@@ -128,8 +134,6 @@ import type {
 } from "@/src/trip/types";
 
 const localMutationTimestamp = "2026-05-28T00:00:00.000Z";
-const selectedTripPlanQueryParam = "tripPlanId";
-const selectedTripPlanSessionStoragePrefix = "sagittarius:selected-trip-plan:";
 const workspaceToastClassName =
   "workspace-toast pointer-events-auto fixed left-1/2 top-5 z-[60] flex w-[min(480px,calc(100vw-32px))] -translate-x-1/2 items-start gap-3 rounded-(--radius-lg) border border-(--color-route-border) bg-(--color-route-soft) px-4 py-3 shadow-[0_10px_22px_rgb(15_23_42_/_0.1)] max-[767px]:top-3";
 const workspaceToastIconClassName = "mt-0.5 shrink-0 text-(--color-route)";
@@ -4979,72 +4983,6 @@ function tripPlanIdForRecord(
   }
   return (
     fallbackTripPlanId || trip.mainTripPlanId || trip.activePlanVariantId || null
-  );
-}
-
-function initialSelectedTripPlanId(trip: Trip): string {
-  return (
-    trip.mainTripPlanId ||
-    trip.activePlanVariantId ||
-    trip.tripPlans?.[0]?.id ||
-    trip.planVariants[0]?.id ||
-    ""
-  );
-}
-
-function resolveSelectedTripPlanId(
-  trip: Trip,
-  preferredTripPlanId?: string | null,
-): string {
-  if (preferredTripPlanId && tripHasPlan(trip, preferredTripPlanId)) {
-    return preferredTripPlanId;
-  }
-  return browserSelectedTripPlanId(trip) ?? initialSelectedTripPlanId(trip);
-}
-
-function browserSelectedTripPlanId(trip: Trip): string | null {
-  if (typeof window === "undefined") return null;
-  const searchParams = new URLSearchParams(window.location.search);
-  const urlTripPlanId = searchParams.get(selectedTripPlanQueryParam);
-  if (urlTripPlanId && tripHasPlan(trip, urlTripPlanId)) return urlTripPlanId;
-
-  const storedTripPlanId = getBrowserSessionStorage()?.getItem(
-    selectedTripPlanStorageKey(trip.id),
-  );
-  if (storedTripPlanId && tripHasPlan(trip, storedTripPlanId)) {
-    return storedTripPlanId;
-  }
-  return null;
-}
-
-function rememberSelectedTripPlanId(trip: Trip, tripPlanId: string) {
-  if (!tripPlanId || typeof window === "undefined") return;
-  getBrowserSessionStorage()?.setItem(
-    selectedTripPlanStorageKey(trip.id),
-    tripPlanId,
-  );
-
-  const searchParams = new URLSearchParams(window.location.search);
-  const defaultTripPlanId = initialSelectedTripPlanId(trip);
-  if (tripPlanId === defaultTripPlanId) {
-    searchParams.delete(selectedTripPlanQueryParam);
-  } else {
-    searchParams.set(selectedTripPlanQueryParam, tripPlanId);
-  }
-  const nextSearch = searchParams.toString();
-  const nextHref = `${window.location.pathname}${nextSearch ? `?${nextSearch}` : ""}${window.location.hash}`;
-  if (nextHref !== `${window.location.pathname}${window.location.search}${window.location.hash}`) {
-    window.history.replaceState(window.history.state, "", nextHref);
-  }
-}
-
-function selectedTripPlanStorageKey(tripId: string): string {
-  return `${selectedTripPlanSessionStoragePrefix}${tripId}`;
-}
-
-function tripHasPlan(trip: Trip, tripPlanId: string): boolean {
-  return [...trip.planVariants, ...(trip.tripPlans ?? [])].some(
-    (plan) => plan.id === tripPlanId,
   );
 }
 
