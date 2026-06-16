@@ -41,6 +41,7 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/trip/workspace/TripWorkspaceApp.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/TripWorkspaceDeleteDialog.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/TripWorkspaceFrame.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/workspace/TripWorkspaceImportDialog.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/TripWorkspaceRail.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/TripWorkspaceViews.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/planning-view.ts"))).toBe(true);
@@ -193,6 +194,7 @@ describe("Sagittarius project scaffold", () => {
     const sagittariusApp = readFileSync(join(frontendRoot, "src/app/SagittariusApp.tsx"), "utf8");
     expect(sagittariusApp).toContain("@/src/trip/workspace/TripWorkspaceDeleteDialog");
     expect(sagittariusApp).toContain("@/src/trip/workspace/TripWorkspaceFrame");
+    expect(sagittariusApp).toContain("@/src/trip/workspace/TripWorkspaceImportDialog");
     expect(sagittariusApp).toContain("@/src/trip/workspace/TripWorkspaceRail");
     expect(sagittariusApp).toContain("@/src/trip/workspace/TripWorkspaceViews");
     expect(sagittariusApp).not.toContain('from "@/src/components/ContextRail"');
@@ -200,6 +202,8 @@ describe("Sagittarius project scaffold", () => {
     expect(sagittariusApp).not.toContain("planningMainClassName");
     expect(sagittariusApp).not.toContain("delete-confirm-dialog");
     expect(sagittariusApp).not.toContain("appDeleteDialogTitleClassName");
+    expect(sagittariusApp).not.toContain("import-options-dialog");
+    expect(sagittariusApp).not.toContain("ItineraryImportOptionsDialog");
     expect(sagittariusApp).not.toContain('from "@/src/components/OverviewPage"');
     expect(sagittariusApp).not.toContain('from "@/src/components/TimelineView"');
   });
