@@ -8,7 +8,7 @@ import { formatTripRange, PageUserCard } from "@/src/components/PageHeader";
 import { Button, SegmentedControl, Select, TextInput } from "@/src/ui";
 import { WeatherBriefingDrawer } from "@/src/components/WeatherBriefingDrawer";
 import { WeatherForecastStrip } from "@/src/components/WeatherForecastStrip";
-import { CockpitCard, HighlightBoard, OverviewFocusList, OverviewHero, OverviewStopList, TaskAssigneeBadge, TripCompletedPostcard, ViewerNextStopPanel } from "./overview/OverviewSections";
+import { CockpitCard, HighlightBoard, OverviewFocusList, OverviewHero, OverviewStopList, TaskAssigneeBadge, TripCompletedPostcard, ViewerNextStopPanel } from "./overview";
 import {
   buildDestinationVisual,
   buildHighlightItems,
