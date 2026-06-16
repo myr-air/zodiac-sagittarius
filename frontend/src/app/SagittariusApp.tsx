@@ -87,6 +87,11 @@ import {
   resolveSelectedTripPlanId,
   tripHasPlan,
 } from "@/src/trip/workspace/selected-trip-plan";
+import {
+  selectTripPlanRecords,
+  tripPlanIdForBookingRecord,
+  tripPlanIdForRecord,
+} from "@/src/trip/workspace/trip-plan-records";
 import { TripWorkspaceDeleteDialog } from "@/src/trip/workspace/TripWorkspaceDeleteDialog";
 import { TripWorkspaceFrame } from "@/src/trip/workspace/TripWorkspaceFrame";
 import { TripWorkspaceImportDialog } from "@/src/trip/workspace/TripWorkspaceImportDialog";
@@ -4968,88 +4973,6 @@ export function nextLocalBookingDocId(bookingDocs: BookingDoc[]): string {
   }
 
   return id;
-}
-
-function tripPlanIdForRecord(
-  trip: Trip,
-  itineraryItemId?: string | null,
-  fallbackTripPlanId?: string | null,
-): string | null {
-  if (itineraryItemId) {
-    const item = trip.itineraryItems.find(
-      (candidate) => candidate.id === itineraryItemId,
-    );
-    if (item?.planVariantId) return item.planVariantId;
-  }
-  return (
-    fallbackTripPlanId || trip.mainTripPlanId || trip.activePlanVariantId || null
-  );
-}
-
-function tripPlanIdForBookingRecord(
-  trip: Trip,
-  input: Pick<BookingDocInput, "relatedItineraryItemIds">,
-  fallbackTripPlanId?: string | null,
-): string | null {
-  for (const itemId of input.relatedItineraryItemIds) {
-    const tripPlanId = tripPlanIdForRecord(trip, itemId);
-    if (tripPlanId) return tripPlanId;
-  }
-  return tripPlanIdForRecord(trip, null, fallbackTripPlanId);
-}
-
-function selectTripPlanRecords(
-  trip: Trip,
-  selectedTripPlanId: string,
-  records: {
-    stopNotes: StopNote[];
-    tasks: TripTask[];
-  },
-): {
-  bookingDocs: BookingDoc[];
-  expenses: Expense[];
-  stopNotes: StopNote[];
-  tasks: TripTask[];
-} {
-  const fallbackTripPlanId =
-    selectedTripPlanId || trip.mainTripPlanId || trip.activePlanVariantId;
-  const itemPlanById = new Map(
-    trip.itineraryItems.map((item) => [item.id, item.planVariantId]),
-  );
-  const belongsToSelectedPlan = (
-    explicitTripPlanId?: string | null,
-    linkedItemIds: Array<string | null | undefined> = [],
-  ) => {
-    if (explicitTripPlanId) return explicitTripPlanId === fallbackTripPlanId;
-
-    for (const itemId of linkedItemIds) {
-      if (!itemId) continue;
-      const itemTripPlanId = itemPlanById.get(itemId);
-      if (itemTripPlanId) return itemTripPlanId === fallbackTripPlanId;
-    }
-
-    return (
-      fallbackTripPlanId === (trip.mainTripPlanId || trip.activePlanVariantId)
-    );
-  };
-
-  return {
-    bookingDocs: (trip.bookingDocs ?? []).filter((bookingDoc) =>
-      belongsToSelectedPlan(
-        bookingDoc.tripPlanId,
-        bookingDoc.relatedItineraryItemIds,
-      ),
-    ),
-    expenses: trip.expenses.filter((expense) =>
-      belongsToSelectedPlan(expense.tripPlanId, [expense.itineraryItemId]),
-    ),
-    stopNotes: records.stopNotes.filter((note) =>
-      belongsToSelectedPlan(note.tripPlanId, [note.itemId]),
-    ),
-    tasks: records.tasks.filter((task) =>
-      belongsToSelectedPlan(task.tripPlanId, [task.relatedItemId]),
-    ),
-  };
 }
 
 async function createImportedPlanRecordsViaApi({
