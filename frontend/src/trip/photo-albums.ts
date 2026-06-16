@@ -31,6 +31,20 @@ export type PhotoAlbumInputForApi = Pick<
     >
   >;
 
+export interface LocalPhotoAlbumCreateOptions {
+  title: string;
+  url: string;
+  createdBy: string;
+  updatedAt: string;
+  nextPhotoAlbumId: (albums: TripPhotoAlbumLink[]) => string;
+}
+
+export interface LocalPhotoAlbumUpdateOptions {
+  title: string;
+  url: string;
+  updatedAt: string;
+}
+
 export function buildPhotoAlbumSummary(albums: TripPhotoAlbumLink[]): PhotoAlbumSummary {
   return {
     total: albums.length,
@@ -78,6 +92,44 @@ export function serializePhotoAlbumInputForApi(input: PhotoAlbumInputForApi) {
     accessNote: input.accessNote?.trim() || null,
     coverUrl: input.coverUrl?.trim() || null,
     day: input.day?.trim() || null,
+  };
+}
+
+export function createLocalPhotoAlbum(
+  trip: Pick<Trip, "id" | "photoAlbumLinks">,
+  input: PhotoAlbumInputForApi,
+  options: LocalPhotoAlbumCreateOptions,
+): TripPhotoAlbumLink {
+  const albums = trip.photoAlbumLinks ?? [];
+
+  return {
+    ...input,
+    id: options.nextPhotoAlbumId(albums),
+    tripId: trip.id,
+    title: options.title,
+    url: options.url,
+    description: input.description?.trim() || null,
+    accessNote: input.accessNote?.trim() || null,
+    createdBy: options.createdBy,
+    updatedAt: options.updatedAt,
+    version: 1,
+  };
+}
+
+export function updateLocalPhotoAlbum(
+  album: TripPhotoAlbumLink,
+  input: PhotoAlbumInputForApi,
+  options: LocalPhotoAlbumUpdateOptions,
+): TripPhotoAlbumLink {
+  return {
+    ...album,
+    ...input,
+    title: options.title,
+    url: options.url,
+    description: input.description?.trim() || null,
+    accessNote: input.accessNote?.trim() || null,
+    updatedAt: options.updatedAt,
+    version: album.version + 1,
   };
 }
 

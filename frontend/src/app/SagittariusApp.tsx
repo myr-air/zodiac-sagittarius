@@ -35,7 +35,11 @@ import {
   isForbidden,
   isUnauthenticated,
 } from "@/src/trip/api-errors";
-import { serializePhotoAlbumInputForApi } from "@/src/trip/photo-albums";
+import {
+  createLocalPhotoAlbum,
+  serializePhotoAlbumInputForApi,
+  updateLocalPhotoAlbum,
+} from "@/src/trip/photo-albums";
 import {
   createAccountApiClient,
   type AccountSession,
@@ -212,7 +216,6 @@ import type {
   TripParticipantSession,
   TripRole,
   TripTask,
-  TripPhotoAlbumLink,
 } from "@/src/trip/types";
 
 export {
@@ -3027,18 +3030,13 @@ export function SagittariusApp({
       setTripState((current) => ({ ...current, trip: nextTrip }));
       return;
     }
-    const photoAlbum: TripPhotoAlbumLink = {
-      id: nextLocalPhotoAlbumId(trip.photoAlbumLinks ?? []),
-      tripId: trip.id,
-      ...input,
+    const photoAlbum = createLocalPhotoAlbum(trip, input, {
       title,
       url,
-      description: input.description?.trim() || null,
-      accessNote: input.accessNote?.trim() || null,
       createdBy: currentMember.id,
       updatedAt: localMutationTimestamp,
-      version: 1,
-    };
+      nextPhotoAlbumId: nextLocalPhotoAlbumId,
+    });
     commitTrip((current) => ({
       ...current,
       photoAlbumLinks: [...(current.photoAlbumLinks ?? []), photoAlbum],
@@ -3097,16 +3095,11 @@ export function SagittariusApp({
       ...current,
       photoAlbumLinks: (current.photoAlbumLinks ?? []).map((album) =>
         album.id === albumId
-          ? {
-              ...album,
-              ...input,
+          ? updateLocalPhotoAlbum(album, input, {
               title: input.title.trim(),
               url: input.url.trim(),
-              description: input.description?.trim() || null,
-              accessNote: input.accessNote?.trim() || null,
               updatedAt: localMutationTimestamp,
-              version: album.version + 1,
-            }
+            })
           : album,
       ),
     }));
