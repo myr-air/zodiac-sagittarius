@@ -56,7 +56,6 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-record-actions.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-records.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/use-workspace-record-state.ts"))).toBe(false);
-    expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/storybook-support.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/app/SagittariusApp.stories.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/TripAccessLoadingFrame.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/WorkspaceToast.tsx"))).toBe(true);
@@ -111,22 +110,18 @@ describe("Sagittarius project scaffold", () => {
       join(frontendRoot, "src/app/SagittariusApp.stories.tsx"),
       "utf8",
     );
-    const storySupportFacade = readFileSync(
-      join(frontendRoot, "src/trip/workspace/sagittarius-app/storybook-support.ts"),
-      "utf8",
-    );
     const supportIndex = readFileSync(
       join(frontendRoot, "src/trip/workspace/sagittarius-app/support/index.ts"),
       "utf8",
     );
 
     expect(stories).toContain("@/src/trip/workspace/sagittarius-app/support");
-    expect(storySupportFacade).toContain("./support/storybook-support");
     expect(supportIndex).toContain('export * from "@/src/routes/app-routes"');
-    expect(supportIndex).toContain('export * from "./storybook-support"');
     expect(supportIndex).toContain('export { portalRoutes, tripRoutes } from "./route-patterns"');
     expect(supportIndex).toContain("route-matchers");
     expect(supportIndex).toContain("portalRoutes");
+    expect(supportIndex).toContain("export const storyTripId");
+    expect(supportIndex).toContain("export async function expectWorkspaceView");
   });
 
   it("keeps project-side routing docs current", () => {
