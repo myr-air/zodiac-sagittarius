@@ -46,9 +46,14 @@ import {
   resetTripParticipantClaim,
   setTripParticipantPassword,
   setTripParticipantAccessStatus,
-  tripParticipantSessionStorageKey,
   updateTripParticipantRole,
 } from "@/src/trip/auth";
+import {
+  clearParticipantSession,
+  isLocalParticipantSession,
+  loadPersistedParticipantSession,
+  persistParticipantSession,
+} from "@/src/trip/participant-session-storage";
 import {
   buildExpenseSplits,
   buildExpenseSummary,
@@ -5568,26 +5573,6 @@ function getBrowserLocalStorage(): Storage | null {
   return window.localStorage;
 }
 
-function getBrowserSessionStorage(): Storage | null {
-  if (
-    typeof window === "undefined" ||
-    !("sessionStorage" in window) ||
-    !window.sessionStorage
-  )
-    return null;
-  return window.sessionStorage;
-}
-
-function getParticipantSessionStorage(): Storage | null {
-  return getBrowserSessionStorage();
-}
-
-function isLocalParticipantSession(
-  session: TripParticipantSession | null,
-): boolean {
-  return session?.sessionToken.startsWith("local-") ?? false;
-}
-
 function loadPersistedTrip(): Trip | null {
   const rawTrip = getBrowserLocalStorage()?.getItem(tripStorageKey);
   if (!rawTrip) return null;
@@ -5597,57 +5582,6 @@ function loadPersistedTrip(): Trip | null {
     getBrowserLocalStorage()?.removeItem(tripStorageKey);
     return null;
   }
-}
-
-function loadPersistedParticipantSession(
-  requireJoin: boolean,
-  trip: Trip,
-  isApiMode = false,
-  routeTripId?: string,
-): TripParticipantSession | null {
-  const storage = getParticipantSessionStorage();
-  if (!requireJoin || !storage) return null;
-  const legacyLocalStorage = getBrowserLocalStorage();
-  const rawSession =
-    storage.getItem(tripParticipantSessionStorageKey) ??
-    legacyLocalStorage?.getItem(tripParticipantSessionStorageKey);
-  if (!rawSession) return null;
-  try {
-    const parsedSession = JSON.parse(rawSession) as TripParticipantSession;
-    if (routeTripId && parsedSession.tripId !== routeTripId) {
-      storage.removeItem(tripParticipantSessionStorageKey);
-      legacyLocalStorage?.removeItem(tripParticipantSessionStorageKey);
-      return null;
-    }
-    if (
-      legacyLocalStorage?.getItem(tripParticipantSessionStorageKey) ===
-      rawSession
-    ) {
-      storage.setItem(tripParticipantSessionStorageKey, rawSession);
-      legacyLocalStorage.removeItem(tripParticipantSessionStorageKey);
-    }
-    /* v8 ignore next */
-    return isApiMode || findSessionMember(trip, parsedSession)
-      ? parsedSession
-      : null;
-  } catch {
-    storage.removeItem(tripParticipantSessionStorageKey);
-    legacyLocalStorage?.removeItem(tripParticipantSessionStorageKey);
-    return null;
-  }
-}
-
-function persistParticipantSession(session: TripParticipantSession) {
-  getParticipantSessionStorage()?.setItem(
-    tripParticipantSessionStorageKey,
-    JSON.stringify(session),
-  );
-  getBrowserLocalStorage()?.removeItem(tripParticipantSessionStorageKey);
-}
-
-function clearParticipantSession() {
-  getParticipantSessionStorage()?.removeItem(tripParticipantSessionStorageKey);
-  getBrowserLocalStorage()?.removeItem(tripParticipantSessionStorageKey);
 }
 
 function isUnauthenticated(caught: unknown): boolean {
