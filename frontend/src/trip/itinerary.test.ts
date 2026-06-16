@@ -21,6 +21,7 @@ import {
   mergeUpdatedItineraryBranchIntoTrip,
   normalizeStopHierarchyValues,
   replaceItineraryItem,
+  replaceItineraryItems,
   resolveItineraryPathItems,
   getTripDates,
   getNextChildSortOrder,
@@ -723,6 +724,28 @@ describe("itinerary planning domain", () => {
     const nextTrip = replaceItineraryItem(seedTrip, updatedItem);
 
     expect(nextTrip.itineraryItems.find((candidate) => candidate.id === item.id)).toEqual(updatedItem);
+    expect(nextTrip.itineraryItems).toHaveLength(seedTrip.itineraryItems.length);
+  });
+
+  it("replaces multiple itinerary items without changing unrelated items", () => {
+    const firstItem = seedTrip.itineraryItems[0]!;
+    const secondItem = seedTrip.itineraryItems[1]!;
+    const updatedFirst = { ...firstItem, activity: "Updated first activity" };
+    const updatedSecond = { ...secondItem, activity: "Updated second activity" };
+
+    const nextTrip = replaceItineraryItems(seedTrip, [
+      updatedFirst,
+      updatedSecond,
+    ]);
+
+    expect(
+      nextTrip.itineraryItems.find((candidate) => candidate.id === firstItem.id),
+    ).toEqual(updatedFirst);
+    expect(
+      nextTrip.itineraryItems.find(
+        (candidate) => candidate.id === secondItem.id,
+      ),
+    ).toEqual(updatedSecond);
     expect(nextTrip.itineraryItems).toHaveLength(seedTrip.itineraryItems.length);
   });
 

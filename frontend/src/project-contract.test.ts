@@ -380,6 +380,7 @@ describe("Sagittarius project scaffold", () => {
     expect(sagittariusApp).not.toContain("function getNextChildSortOrder");
     expect(sagittariusApp).not.toContain("function normalizeStopHierarchyValues");
     expect(sagittariusApp).not.toContain("function replaceItineraryItem");
+    expect(sagittariusApp).not.toContain("function replaceItineraryItems");
     expect(sagittariusApp).not.toContain("function deleteItineraryItemFromTrip");
     expect(sagittariusApp).not.toContain("function moveTripItem");
     expect(sagittariusApp).not.toContain("function moveTripItemToDay");

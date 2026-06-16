@@ -137,6 +137,7 @@ import {
   moveTripItemToDay,
   normalizeStopHierarchyValues,
   replaceItineraryItem,
+  replaceItineraryItems,
   resolveItineraryPathItems,
   selectedItineraryPathIdForDay,
   updateItineraryPathSelection,
@@ -1350,17 +1351,9 @@ export function SagittariusApp({
         ),
       );
       setTripState((current) => {
-        const itemsById = new Map(
-          reorderedItems.map((item) => [item.id, item]),
-        );
         return {
           ...current,
-          trip: {
-            ...current.trip,
-            itineraryItems: current.trip.itineraryItems.map(
-              (item) => itemsById.get(item.id) ?? item,
-            ),
-          },
+          trip: replaceItineraryItems(current.trip, reorderedItems),
         };
       });
       return;
@@ -1468,29 +1461,18 @@ export function SagittariusApp({
         sessionToken: participantSession.sessionToken,
         tripId: trip.id,
       });
-      const patchedBranchItemsById = new Map(
-        patchedBranchItems.map((item) => [item.id, item]),
+      const changedItemIds = new Set(
+        branchPlacement.changedExistingItems.map((item) => item.id),
       );
-      const branchPlacementItemsById = new Map(
-        branchPlacement.trip.itineraryItems
-          .filter((item) =>
-            branchPlacement.changedExistingItems.some(
-              (changedItem) => changedItem.id === item.id,
-            ),
-          )
-          .map((item) => [item.id, item]),
+      const branchPlacementItems = branchPlacement.trip.itineraryItems.filter(
+        (item) => changedItemIds.has(item.id),
       );
       setTripState((current) => ({
         ...current,
-        trip: {
-          ...current.trip,
-          itineraryItems: current.trip.itineraryItems.map(
-            (item) =>
-              patchedBranchItemsById.get(item.id) ??
-              branchPlacementItemsById.get(item.id) ??
-              item,
-          ),
-        },
+        trip: replaceItineraryItems(current.trip, [
+          ...branchPlacementItems,
+          ...patchedBranchItems,
+        ]),
       }));
       setSelectedItemId(itemId);
       return;

@@ -321,10 +321,18 @@ export function mergeUpdatedItineraryBranchIntoTrip(
 }
 
 export function replaceItineraryItem(current: Trip, updatedItem: ItineraryItem): Trip {
+  return replaceItineraryItems(current, [updatedItem]);
+}
+
+export function replaceItineraryItems(
+  current: Trip,
+  updatedItems: ItineraryItem[],
+): Trip {
+  const updatedItemsById = new Map(updatedItems.map((item) => [item.id, item]));
   return {
     ...current,
     itineraryItems: current.itineraryItems.map((item) =>
-      item.id === updatedItem.id ? updatedItem : item,
+      updatedItemsById.get(item.id) ?? item,
     ),
   };
 }
