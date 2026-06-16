@@ -7,7 +7,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { AppShell, resolveViewFromPath } from "@/src/components/AppShell";
+import { AppShell } from "@/src/components/AppShell";
 import { AccountAccessPanel } from "@/src/components/AccountAccessPanel";
 import type { BookingDocInput } from "@/src/components/BookingsDocsPage";
 import type { MapCoordinateResolutionResult } from "@/src/components/RouteMapView";
@@ -226,6 +226,7 @@ import { TripAccessLoadingFrame } from "@/src/trip/workspace/TripAccessLoadingFr
 import { useItineraryPathWorkspace } from "@/src/trip/workspace/use-itinerary-path-workspace";
 import { useTripWorkspaceRecords } from "@/src/trip/workspace/use-trip-workspace-records";
 import { useTripWorkspaceState } from "@/src/trip/workspace/use-trip-workspace-state";
+import { useWorkspaceNavigation } from "@/src/trip/workspace/use-workspace-navigation";
 import { WorkspaceToast } from "@/src/trip/workspace/WorkspaceToast";
 import {
   buildItineraryExport,
@@ -413,7 +414,6 @@ export function SagittariusApp({
     }, 6000);
     return () => clearTimeout(timer);
   }, [requireJoin, toastDismissed]);
-  const [navigatedView, setNavigatedView] = useState<PlanningView | null>(null);
   const [selectedTripPlanId, setSelectedTripPlanId] = useState(() =>
     resolveSelectedTripPlanId(initialTrip),
   );
@@ -466,7 +466,15 @@ export function SagittariusApp({
     toggleShowAllPaths,
   } = useItineraryPathWorkspace(trip, selectedTripPlanId);
 
-  const tripIdForPath = routeTripId ?? trip.id;
+  const {
+    currentView,
+    navigateWorkspacePath,
+    replaceWorkspacePath,
+  } = useWorkspaceNavigation({
+    initialView,
+    routeTripId,
+    tripId: trip.id,
+  });
   const effectivePlaceResolver = useMemo<PlaceResolver | null>(() => {
     if (placeResolver) return placeResolver;
     if (!resolvedApiClient?.resolvePlace || !participantSession) return null;
@@ -477,15 +485,6 @@ export function SagittariusApp({
         request,
       );
   }, [participantSession, placeResolver, resolvedApiClient, trip.id]);
-  const resolveCurrentView = useCallback(() => {
-    if (typeof window === "undefined") return initialView;
-    return resolveViewFromPath(
-      window.location.pathname,
-      tripIdForPath,
-      initialView,
-    );
-  }, [initialView, tripIdForPath]);
-  const currentView = navigatedView ?? resolveCurrentView();
   const sessionMember = findSessionMember(trip, participantSession);
   const isAccountOnlyAccessMode =
     accessMode === "account-login" || accessMode === "account-register";
@@ -583,14 +582,6 @@ export function SagittariusApp({
     tasks,
     trip,
   });
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    const onPopState = () => setNavigatedView(resolveCurrentView());
-    window.addEventListener("popstate", onPopState);
-    return () => window.removeEventListener("popstate", onPopState);
-  }, [resolveCurrentView]);
 
   useEffect(() => {
     let cancelled = false;
@@ -845,13 +836,10 @@ export function SagittariusApp({
 
   const navigateWorkspaceView = useCallback(
     (view: PlanningView, href: string) => {
-      setNavigatedView(view);
+      navigateWorkspacePath(view, href);
       setContextRailVisibility(false);
-      if (typeof window !== "undefined" && window.location.pathname !== href) {
-        window.history.pushState(null, "", href);
-      }
     },
-    [setContextRailVisibility],
+    [navigateWorkspacePath, setContextRailVisibility],
   );
 
   useEffect(() => {
@@ -1840,12 +1828,7 @@ export function SagittariusApp({
         safeReturnTo ??
         (!routeTripId ? appRoutes.tripOverview(session.tripId) : null);
       if (postAuthHref) {
-        window.history.replaceState(null, "", postAuthHref);
-        const postAuthPath = new URL(postAuthHref, window.location.origin)
-          .pathname;
-        setNavigatedView(
-          resolveViewFromPath(postAuthPath, session.tripId, initialView),
-        );
+        replaceWorkspacePath(postAuthHref, session.tripId);
       }
     }
   }
