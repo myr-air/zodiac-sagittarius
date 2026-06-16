@@ -18,6 +18,7 @@ import {
   travelerMemberId,
   viewerMemberId,
 } from "@/src/trip/workspace/sagittarius-app/storybook-support";
+import { portalRoutes, tripRoutes } from "@/src/trip/workspace/sagittarius-app/support/route-patterns";
 
 const meta = {
   title: "Sagittarius/App",
@@ -60,61 +61,61 @@ export const AccountRegister: Story = {
 export const AccountPortal: Story = {
   args: { accessMode: "account-portal", requireJoin: true, dataSource: "api" },
   parameters: {
-    nextjs: { navigation: { pathname: "/portal" } },
+    nextjs: { navigation: { pathname: portalRoutes.base } },
   },
 };
 export const AccountPortalMyTrips: Story = {
   args: { accessMode: "account-portal", portalSection: "trips", requireJoin: true, dataSource: "api" },
   parameters: {
-    nextjs: { navigation: { pathname: "/portal/my-trips" } },
+    nextjs: { navigation: { pathname: portalRoutes.myTrips } },
   },
 };
 export const AccountPortalNewTrip: Story = {
   args: { accessMode: "account-portal", portalSection: "new-trip", requireJoin: true, dataSource: "api" },
   parameters: {
-    nextjs: { navigation: { pathname: "/portal/trips/new" } },
+    nextjs: { navigation: { pathname: portalRoutes.newTrip } },
   },
 };
 export const AccountPortalExplorer: Story = {
   args: { accessMode: "account-portal", portalSection: "explorer", requireJoin: true, dataSource: "api" },
   parameters: {
-    nextjs: { navigation: { pathname: "/portal/explorer" } },
+    nextjs: { navigation: { pathname: portalRoutes.explorer } },
   },
 };
 export const AccountPortalToDos: Story = {
   args: { accessMode: "account-portal", portalSection: "todos", requireJoin: true, dataSource: "api" },
   parameters: {
-    nextjs: { navigation: { pathname: "/portal/to-dos" } },
+    nextjs: { navigation: { pathname: portalRoutes.toDos } },
   },
 };
 export const AccountPortalVault: Story = {
   args: { accessMode: "account-portal", portalSection: "vault", requireJoin: true, dataSource: "api" },
   parameters: {
-    nextjs: { navigation: { pathname: "/portal/vault" } },
+    nextjs: { navigation: { pathname: portalRoutes.vault } },
   },
 };
 export const AccountPortalSettings: Story = {
   args: { accessMode: "account-portal", portalSection: "settings", requireJoin: true, dataSource: "api" },
   parameters: {
-    nextjs: { navigation: { pathname: "/portal/settings" } },
+    nextjs: { navigation: { pathname: portalRoutes.settings } },
   },
 };
 export const AccountPortalSignOut: Story = {
   args: { accessMode: "account-portal", portalSection: "sign-out", requireJoin: true, dataSource: "api" },
   parameters: {
-    nextjs: { navigation: { pathname: "/portal/sign-out" } },
+    nextjs: { navigation: { pathname: portalRoutes.signOut } },
   },
 };
 export const AccountTrips: Story = {
   args: { accessMode: "account-portal", portalSection: "trips", requireJoin: true, dataSource: "api" },
   parameters: {
-    nextjs: { navigation: { pathname: "/trips" } },
+    nextjs: { navigation: { pathname: tripRoutes.tripsBase } },
   },
 };
 export const AccountNewTrip: Story = {
   args: { accessMode: "account-login", requireJoin: true, dataSource: "api" },
   parameters: {
-    nextjs: { navigation: { pathname: "/trips/new" } },
+    nextjs: { navigation: { pathname: tripRoutes.tripsNew } },
   },
 };
 export const TripAccess: Story = {
@@ -132,31 +133,31 @@ export const TripAccessWithJoinCode: Story = {
 export const TripOverviewAccess: Story = {
   args: { accessMode: "trip-access", initialView: "overview", requireJoin: true, dataSource: "api", routeTripId: storyTripId },
   parameters: {
-    nextjs: { navigation: { pathname: `/trips/${storyTripId}` } },
+    nextjs: { navigation: { pathname: tripRoutes.base(storyTripId) } },
   },
 };
 export const TripItineraryAccess: Story = {
   args: { accessMode: "trip-access", initialView: "itinerary", requireJoin: true, dataSource: "api", routeTripId: storyTripId },
   parameters: {
-    nextjs: { navigation: { pathname: `/trips/${storyTripId}/itinerary` } },
+    nextjs: { navigation: { pathname: tripRoutes.itinerary(storyTripId) } },
   },
 };
 export const TripMapAccess: Story = {
   args: { accessMode: "trip-access", initialView: "map", requireJoin: true, dataSource: "api", routeTripId: storyTripId },
   parameters: {
-    nextjs: { navigation: { pathname: `/trips/${storyTripId}/map` } },
+    nextjs: { navigation: { pathname: tripRoutes.map(storyTripId) } },
   },
 };
 export const TripTimelineAccess: Story = {
   args: { accessMode: "trip-access", initialView: "timeline", requireJoin: true, dataSource: "api", routeTripId: storyTripId },
   parameters: {
-    nextjs: { navigation: { pathname: `/trips/${storyTripId}/timeline` } },
+    nextjs: { navigation: { pathname: tripRoutes.timeline(storyTripId) } },
   },
 };
 export const TripMembersAccess: Story = {
   args: { accessMode: "trip-access", initialView: "members", requireJoin: true, dataSource: "api", routeTripId: storyTripId },
   parameters: {
-    nextjs: { navigation: { pathname: `/trips/${storyTripId}/members` } },
+    nextjs: { navigation: { pathname: tripRoutes.members(storyTripId) } },
   },
 };
 export const Owner: Story = {

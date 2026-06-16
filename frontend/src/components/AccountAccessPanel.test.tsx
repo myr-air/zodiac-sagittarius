@@ -16,6 +16,8 @@ import type { TripParticipantSession } from "@/src/trip/types";
 import { TripApiError, type TripApiClient } from "@/src/trip/api-client";
 import { I18nProvider } from "@/src/i18n/I18nProvider";
 import { renderWithI18n } from "@/src/i18n/test-utils";
+import { optionalTrailingSlashPattern } from "@/src/trip/workspace/sagittarius-app/support/route-matchers";
+import { portalRoutes, tripRoutes } from "@/src/trip/workspace/sagittarius-app/support/route-patterns";
 import { AccountAccessPanel } from "./AccountAccessPanel";
 
 function render(ui: ReactElement) {
@@ -618,7 +620,7 @@ describe("AccountAccessPanel", () => {
     expect(await view.findByText("Aom")).toBeInTheDocument();
     expect(view.getByRole("link", { name: /Settings/i })).toHaveAttribute(
       "href",
-      expect.stringMatching(/^\/portal\/settings\/?$/),
+      expect.stringMatching(optionalTrailingSlashPattern(portalRoutes.settings)),
     );
   });
 
@@ -681,31 +683,31 @@ describe("AccountAccessPanel", () => {
     expect(screen.getByRole("navigation", { name: /Portal navigation/i })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Dashboard/i })).toHaveAttribute(
       "href",
-      expect.stringMatching(/^\/portal\/?$/),
+      expect.stringMatching(optionalTrailingSlashPattern(portalRoutes.base)),
     );
     expect(screen.getByRole("link", { name: /My Trips/i })).toHaveAttribute(
       "href",
-      expect.stringMatching(/^\/portal\/my-trips\/?$/),
+      expect.stringMatching(optionalTrailingSlashPattern(portalRoutes.myTrips)),
     );
     expect(screen.getByRole("link", { name: /Explorer/i })).toHaveAttribute(
       "href",
-      expect.stringMatching(/^\/portal\/explorer\/?$/),
+      expect.stringMatching(optionalTrailingSlashPattern(portalRoutes.explorer)),
     );
     expect(screen.getByRole("link", { name: /Trip To-dos/i })).toHaveAttribute(
       "href",
-      expect.stringMatching(/^\/portal\/to-dos\/?$/),
+      expect.stringMatching(optionalTrailingSlashPattern(portalRoutes.toDos)),
     );
     expect(screen.getByRole("link", { name: /Travel Vault/i })).toHaveAttribute(
       "href",
-      expect.stringMatching(/^\/portal\/vault\/?$/),
+      expect.stringMatching(optionalTrailingSlashPattern(portalRoutes.vault)),
     );
     expect(screen.getByRole("link", { name: /^Settings$/i })).toHaveAttribute(
       "href",
-      expect.stringMatching(/^\/portal\/settings\/?$/),
+      expect.stringMatching(optionalTrailingSlashPattern(portalRoutes.settings)),
     );
     expect(screen.getByRole("link", { name: /Sign out/i })).toHaveAttribute(
       "href",
-      expect.stringMatching(/^\/portal\/sign-out\/?$/),
+      expect.stringMatching(optionalTrailingSlashPattern(portalRoutes.signOut)),
     );
     expect(screen.getByText("User data stats and session status.")).toBeInTheDocument();
     expect(accountClient.loadExplorer).toHaveBeenCalledWith("account-session");
@@ -818,7 +820,10 @@ describe("AccountAccessPanel", () => {
     expect(screen.getByText("Start with a shared route, dates, and owner settings.")).toBeInTheDocument();
     expect(
       screen.getAllByRole("link", { name: /Create trip/i }).at(-1),
-    ).toHaveAttribute("href", expect.stringMatching(/^\/portal\/trips\/new\/?$/));
+    ).toHaveAttribute(
+      "href",
+      expect.stringMatching(optionalTrailingSlashPattern(portalRoutes.newTrip)),
+    );
     expect(document.querySelector(".portal-empty-state")).toBeInTheDocument();
     view.unmount();
 
@@ -845,7 +850,7 @@ describe("AccountAccessPanel", () => {
     expect(await screen.findByText("Create a trip to start shared to-dos", {}, { timeout: 3_000 })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Create trip/i })).toHaveAttribute(
       "href",
-      expect.stringMatching(/^\/portal\/trips\/new\/?$/),
+      expect.stringMatching(optionalTrailingSlashPattern(portalRoutes.newTrip)),
     );
   });
 
@@ -878,11 +883,11 @@ describe("AccountAccessPanel", () => {
     expect(travelerTripRow).not.toHaveAttribute("href");
     expect(within(ownerTripRow).getByRole("link", { name: /Open/i })).toHaveAttribute(
       "href",
-      expect.stringMatching(/^\/trips\/trip-id\/?$/),
+      expect.stringMatching(optionalTrailingSlashPattern(tripRoutes.base("trip-id"))),
     );
     expect(within(travelerTripRow).getByRole("link", { name: /Open/i })).toHaveAttribute(
       "href",
-      expect.stringMatching(/^\/trips\/trip-traveler\/?$/),
+      expect.stringMatching(optionalTrailingSlashPattern(tripRoutes.base("trip-traveler"))),
     );
   });
 

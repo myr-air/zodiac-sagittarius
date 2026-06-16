@@ -43,6 +43,8 @@ import type {
   TripTask,
 } from "@/src/trip/types";
 import { appRoutes, encodeReturnTo } from "@/src/routes/app-routes";
+import { optionalTrailingSlashPattern } from "@/src/trip/workspace/sagittarius-app/support/route-matchers";
+import { portalRoutes } from "@/src/trip/workspace/sagittarius-app/support/route-patterns";
 
 function render(ui: ReactElement) {
   const result = renderWithI18n(ui, { locale: "th" });
@@ -1104,7 +1106,10 @@ describe("Sagittarius cockpit UI", () => {
       );
       expect(
         screen.getByRole("link", { name: /^Settings$|^ตั้งค่า$/i }),
-      ).toHaveAttribute("href", expect.stringMatching(/^\/portal\/settings\/?$/));
+      ).toHaveAttribute(
+        "href",
+        expect.stringMatching(optionalTrailingSlashPattern(portalRoutes.settings)),
+      );
       expect(screen.queryByLabelText(/Trip ID/i)).not.toBeInTheDocument();
       expect(
         screen.queryByRole("button", { name: /ส่งรหัส sign-in/i }),
