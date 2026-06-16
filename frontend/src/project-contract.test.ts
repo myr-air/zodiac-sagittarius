@@ -282,6 +282,8 @@ describe("Sagittarius project scaffold", () => {
     expect(sagittariusApp).not.toContain("function buildItineraryCommitmentsByItemId");
     expect(sagittariusApp).not.toContain("function selectedItineraryPathIdForDay");
     expect(sagittariusApp).not.toContain("function itineraryItemPathFieldsForTarget");
+    expect(sagittariusApp).not.toContain("function getNextSortOrder");
+    expect(sagittariusApp).not.toContain("function getNextChildSortOrder");
     expect(sagittariusApp).not.toContain('from "@/src/components/OverviewPage"');
     expect(sagittariusApp).not.toContain('from "@/src/components/TimelineView"');
 
