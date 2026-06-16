@@ -1,3 +1,7 @@
+import type {
+  CreateStopNoteApiRequest,
+  PatchStopNoteApiRequest,
+} from "./api-client";
 import type { StopNote, Trip } from "./types";
 
 export interface LocalStopNoteCreateInput {
@@ -10,6 +14,39 @@ export interface LocalStopNoteCreateOptions {
   authorId: string;
   createdAt: string;
   nextStopNoteId: (notes: StopNote[]) => string;
+}
+
+export interface BuildCreateStopNoteRequestOptions {
+  clientMutationId: string;
+  tripPlanId?: string | null;
+}
+
+export interface BuildPatchStopNoteRequestOptions {
+  clientMutationId: string;
+}
+
+export function buildCreateStopNoteRequest(
+  input: Pick<LocalStopNoteCreateInput, "itemId" | "body">,
+  options: BuildCreateStopNoteRequestOptions,
+): CreateStopNoteApiRequest {
+  return {
+    clientMutationId: options.clientMutationId,
+    itineraryItemId: input.itemId,
+    tripPlanId: options.tripPlanId,
+    body: input.body,
+  };
+}
+
+export function buildPatchStopNoteRequest(
+  note: StopNote,
+  body: string,
+  options: BuildPatchStopNoteRequestOptions,
+): PatchStopNoteApiRequest {
+  return {
+    clientMutationId: options.clientMutationId,
+    expectedVersion: note.version ?? 1,
+    body,
+  };
 }
 
 export function createLocalStopNote(

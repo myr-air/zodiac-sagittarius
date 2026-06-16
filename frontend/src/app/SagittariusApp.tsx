@@ -153,6 +153,8 @@ import {
 } from "@/src/trip/trip-settings";
 import {
   appendStopNote,
+  buildCreateStopNoteRequest,
+  buildPatchStopNoteRequest,
   createLocalStopNoteInList,
   deleteLocalStopNote,
   removeStopNote,
@@ -2950,16 +2952,17 @@ export function SagittariusApp({
       const note = await resolvedApiClient.createStopNote(
         trip.id,
         participantSession.sessionToken,
-        {
-          clientMutationId: nextClientMutationId("stop-note-create"),
-          itineraryItemId: input.itemId,
-          tripPlanId: tripPlanIdForRecord(
-            trip,
-            input.itemId,
-            selectedTripPlanId,
-          ),
-          body,
-        },
+        buildCreateStopNoteRequest(
+          { itemId: input.itemId, body },
+          {
+            clientMutationId: nextClientMutationId("stop-note-create"),
+            tripPlanId: tripPlanIdForRecord(
+              trip,
+              input.itemId,
+              selectedTripPlanId,
+            ),
+          },
+        ),
       );
       setStopNotes((current) => appendStopNote(current, note));
       return;
@@ -3008,11 +3011,9 @@ export function SagittariusApp({
         trip.id,
         input.noteId,
         participantSession.sessionToken,
-        {
+        buildPatchStopNoteRequest(existing, body, {
           clientMutationId: nextClientMutationId("stop-note-patch"),
-          expectedVersion: existing.version ?? 1,
-          body,
-        },
+        }),
       );
       setStopNotes((current) => replaceStopNote(current, note));
       return;

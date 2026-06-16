@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   appendStopNote,
+  buildCreateStopNoteRequest,
+  buildPatchStopNoteRequest,
   createLocalStopNote,
   createLocalStopNoteInList,
   deleteLocalStopNote,
@@ -13,6 +15,26 @@ import type { StopNote, Trip } from "./types";
 const trip = { id: "trip-1" } as Pick<Trip, "id">;
 
 describe("stop note helpers", () => {
+  it("builds API create stop note requests from note input", () => {
+    expect(
+      buildCreateStopNoteRequest(
+        {
+          itemId: "item-peak",
+          body: "Bring jackets.",
+        },
+        {
+          clientMutationId: "mutation-stop-note-create",
+          tripPlanId: "plan-main",
+        },
+      ),
+    ).toEqual({
+      clientMutationId: "mutation-stop-note-create",
+      itineraryItemId: "item-peak",
+      tripPlanId: "plan-main",
+      body: "Bring jackets.",
+    });
+  });
+
   it("builds local stop notes from app-provided context", () => {
     expect(
       createLocalStopNote(
@@ -124,6 +146,32 @@ describe("stop note helpers", () => {
         canEdit: true,
       })[1].body,
     ).toBe("Organizer edit");
+  });
+
+  it("builds API patch stop note requests with version fallback", () => {
+    expect(
+      buildPatchStopNoteRequest(
+        stopNote({ id: "note-versioned", version: 12 }),
+        "Updated note",
+        { clientMutationId: "mutation-stop-note-patch" },
+      ),
+    ).toEqual({
+      clientMutationId: "mutation-stop-note-patch",
+      expectedVersion: 12,
+      body: "Updated note",
+    });
+
+    expect(
+      buildPatchStopNoteRequest(
+        stopNote({ id: "note-unversioned" }),
+        "Fallback version note",
+        { clientMutationId: "mutation-stop-note-patch-fallback" },
+      ),
+    ).toEqual({
+      clientMutationId: "mutation-stop-note-patch-fallback",
+      expectedVersion: 1,
+      body: "Fallback version note",
+    });
   });
 
   it("deletes notes only for the author or members with edit access", () => {

@@ -325,6 +325,8 @@ describe("Sagittarius project scaffold", () => {
     expect(sagittariusApp).not.toContain("function buildExpenseReminderRequest");
     expect(sagittariusApp).not.toContain("function recordLocalExpenseReminderInTrip");
     expect(sagittariusApp).not.toContain("function createLocalStopNote");
+    expect(sagittariusApp).not.toContain("function buildCreateStopNoteRequest");
+    expect(sagittariusApp).not.toContain("function buildPatchStopNoteRequest");
     expect(sagittariusApp).not.toContain("function appendStopNote");
     expect(sagittariusApp).not.toContain("function createLocalStopNoteInList");
     expect(sagittariusApp).not.toContain("function replaceStopNote");
