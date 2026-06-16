@@ -6,6 +6,7 @@ import {
   normalizeTripPlanAliases,
   normalizeTripPlanSummary,
   planStatusForLegacyKind,
+  setLocalMainTripPlan,
   updateTripPlanInTrip,
 } from "@/src/trip/trip-plans";
 import { seedTrip } from "@/src/trip/seed";
@@ -153,6 +154,22 @@ describe("trip plans", () => {
       merged.planVariants.find((candidate) => candidate.id === createdVariant.id),
     ).toMatchObject({ kind: "main", status: "main" });
     expect(merged.tripPlans).toEqual(merged.planVariants);
+  });
+
+  it("sets the local main Trip Plan across aliases and normalized statuses", () => {
+    const updated = setLocalMainTripPlan(seedTrip, "plan-rain");
+
+    expect(updated.activePlanVariantId).toBe("plan-rain");
+    expect(updated.mainTripPlanId).toBe("plan-rain");
+    expect(
+      updated.planVariants.find((candidate) => candidate.id === "plan-rain"),
+    ).toMatchObject({ kind: "main", status: "main" });
+    expect(
+      updated.planVariants.find(
+        (candidate) => candidate.id === seedTrip.activePlanVariantId,
+      ),
+    ).toMatchObject({ kind: "backup", status: "backup" });
+    expect(updated.tripPlans).toEqual(updated.planVariants);
   });
 
   it("creates a local draft Trip Plan in both compatibility aliases", () => {

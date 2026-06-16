@@ -91,6 +91,7 @@ import {
   legacyKindForPlanStatus,
   mergePublishedTripPlan,
   normalizeTripPlanAliases,
+  setLocalMainTripPlan,
   updateTripPlanInTrip,
 } from "@/src/trip/trip-plans";
 import { deriveTripCountriesFromDestination } from "@/src/trip/trip-countries";
@@ -1042,11 +1043,7 @@ export function SagittariusApp({
       return true;
     }
 
-    commitTrip((current) => ({
-      ...current,
-      activePlanVariantId: tripPlanId,
-      mainTripPlanId: tripPlanId,
-    }));
+    commitTrip((current) => setLocalMainTripPlan(current, tripPlanId));
     setSelectedTripPlanId(tripPlanId);
     rememberSelectedTripPlanId(trip, tripPlanId);
     return true;

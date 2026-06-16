@@ -67,6 +67,14 @@ export function mergePublishedTripPlan(
   });
 }
 
+export function setLocalMainTripPlan(trip: Trip, tripPlanId: string): Trip {
+  return normalizeTripPlanAliases({
+    ...trip,
+    activePlanVariantId: tripPlanId,
+    mainTripPlanId: tripPlanId,
+  });
+}
+
 export interface CreateLocalTripPlanResult {
   trip: Trip;
   tripPlanId: string;
