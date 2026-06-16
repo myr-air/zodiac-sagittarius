@@ -70,10 +70,15 @@ import {
   buildItineraryView,
   deriveItineraryPathOptions,
   mainItineraryPathId,
-  parseTime,
   resolveItineraryPathItems,
   type ItineraryPathSelection,
 } from "@/src/trip/itinerary";
+import {
+  itineraryDateTime,
+  normalizeInlineTimePatch,
+  shiftIsoDate,
+  shiftItineraryItemsToStartDate,
+} from "@/src/trip/itinerary-time";
 import {
   applyImportedItemsToItineraryPath,
   applyItemToActivityBranch,
@@ -172,6 +177,7 @@ export {
   nextLocalSuggestionId,
   nextLocalTaskId,
 } from "@/src/trip/local-ids";
+export { normalizeInlineTimePatch } from "@/src/trip/itinerary-time";
 
 const localMutationTimestamp = "2026-05-28T00:00:00.000Z";
 const workspaceToastClassName =
@@ -5186,10 +5192,6 @@ function bookingDraftTimeWindowForItineraryItem(item: ItineraryItem): {
   };
 }
 
-function itineraryDateTime(day: string, time: string): string {
-  return `${day}T${time}:00`;
-}
-
 function readItineraryDetailString(
   details: ItineraryItem["details"] | null | undefined,
   key: string,
@@ -5285,32 +5287,6 @@ function isAuthFailure(caught: unknown): boolean {
   return isUnauthenticated(caught) || isForbidden(caught);
 }
 
-function shiftItineraryItemsToStartDate(
-  items: ItineraryItem[],
-  currentStartDate: string,
-  nextStartDate: string,
-): ItineraryItem[] {
-  const dayShift = daysBetweenIsoDates(currentStartDate, nextStartDate);
-  if (!dayShift) return items;
-  return items.map((item) => ({
-    ...item,
-    day: shiftIsoDate(item.day, dayShift),
-  }));
-}
-
-function daysBetweenIsoDates(from: string, to: string): number {
-  return Math.round(
-    (Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) /
-      86_400_000,
-  );
-}
-
-function shiftIsoDate(value: string, days: number): string {
-  const date = new Date(`${value}T00:00:00Z`);
-  date.setUTCDate(date.getUTCDate() + days);
-  return date.toISOString().slice(0, 10);
-}
-
 function selectedItineraryPathIdForDay(
   day: string,
   selection: ItineraryPathSelection,
@@ -5342,44 +5318,6 @@ function slugifyFilePart(value: string): string {
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-|-$/g, "") || "trip"
   );
-}
-
-export function normalizeInlineTimePatch(
-  item: ItineraryItem,
-  patch: InlineItineraryItemPatch,
-): InlineItineraryItemPatch {
-  const nextPatch: InlineItineraryItemPatch = { ...patch };
-  const hasStartTime = nextPatch.startTime !== undefined;
-  const hasEndTime = nextPatch.endTime !== undefined;
-  const hasEndOffsetDays = nextPatch.endOffsetDays !== undefined;
-  if (!hasStartTime && !hasEndTime && !hasEndOffsetDays) return nextPatch;
-
-  const startTime = hasStartTime ? nextPatch.startTime : item.startTime;
-  const endTime = hasEndTime ? nextPatch.endTime : item.endTime;
-  if (!endTime) {
-    if (hasEndTime) {
-      nextPatch.endOffsetDays = 0;
-      nextPatch.durationMinutes = null;
-    }
-    return nextPatch;
-  }
-
-  const start = parseTime(startTime ?? "");
-  const end = parseTime(endTime);
-  if (start === null || end === null) return nextPatch;
-
-  const minimumEndOffsetDays = end <= start ? 1 : 0;
-  const endOffsetDays = hasEndOffsetDays
-    ? Math.max(nextPatch.endOffsetDays ?? 0, minimumEndOffsetDays)
-    : minimumEndOffsetDays;
-  if (endOffsetDays !== (nextPatch.endOffsetDays ?? item.endOffsetDays ?? 0)) {
-    nextPatch.endOffsetDays = endOffsetDays;
-  }
-  const durationMinutes = end + endOffsetDays * 24 * 60 - start;
-  if (durationMinutes > 0) {
-    nextPatch.durationMinutes = durationMinutes;
-  }
-  return nextPatch;
 }
 
 interface WorkspaceToastProps {

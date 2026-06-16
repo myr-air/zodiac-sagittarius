@@ -52,6 +52,7 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/trip/local-ids.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/participant-session-storage.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/trip-plans.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/itinerary-time.ts"))).toBe(true);
     expect(existsSync(join(repoRoot, "backend/Cargo.toml"))).toBe(true);
     expect(existsSync(join(repoRoot, "package.json"))).toBe(false);
 
@@ -242,8 +243,18 @@ describe("Sagittarius project scaffold", () => {
     expect(sagittariusApp).not.toContain("function normalizeTripPlanSummary");
     expect(sagittariusApp).not.toContain("function planStatusForLegacyKind");
     expect(sagittariusApp).not.toContain("function legacyKindForPlanStatus");
+    expect(sagittariusApp).not.toContain("function daysBetweenIsoDates");
+    expect(sagittariusApp).not.toContain("function shiftIsoDate");
+    expect(sagittariusApp).not.toContain("function itineraryDateTime");
+    expect(sagittariusApp).not.toContain("function shiftItineraryItemsToStartDate");
+    expect(sagittariusApp).not.toContain("function normalizeInlineTimePatch");
     expect(sagittariusApp).not.toContain('from "@/src/components/OverviewPage"');
     expect(sagittariusApp).not.toContain('from "@/src/components/TimelineView"');
+
+    const tripSettingsPage = readFileSync(join(frontendRoot, "src/components/TripSettingsPage.tsx"), "utf8");
+    expect(tripSettingsPage).toContain("@/src/trip/itinerary-time");
+    expect(tripSettingsPage).not.toContain("function daysBetweenIsoDates");
+    expect(tripSettingsPage).not.toContain("function shiftIsoDate");
   });
 
   it("keeps the Calm Travel Ops design tokens in globals", () => {

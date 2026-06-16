@@ -3,6 +3,7 @@
 import { useMemo, useState, type FormEvent } from "react";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
+import { daysBetweenIsoDates, shiftIsoDate } from "@/src/trip/itinerary-time";
 import type { Member, Trip } from "@/src/trip/types";
 import { Button, FieldLabel, WorkspacePage, WorkspaceSurface, fieldControlClassName } from "./ui";
 import { Icon } from "./icons";
@@ -220,14 +221,4 @@ function tripToForm(trip: Trip): TripSettingsFormValues {
     partySize: trip.partySize ?? 1,
     defaultTimezone: trip.defaultTimezone ?? "Asia/Bangkok",
   };
-}
-
-function daysBetweenIsoDates(from: string, to: string): number {
-  return Math.round((Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / 86_400_000);
-}
-
-function shiftIsoDate(value: string, days: number): string {
-  const date = new Date(`${value}T00:00:00Z`);
-  date.setUTCDate(date.getUTCDate() + days);
-  return date.toISOString().slice(0, 10);
 }
