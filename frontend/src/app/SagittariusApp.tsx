@@ -73,6 +73,7 @@ import {
   persistParticipantSession,
 } from "@/src/trip/participant-session-storage";
 import {
+  createLocalTripPlan,
   legacyKindForPlanStatus,
   mergePublishedTripPlan,
   normalizeTripPlanAliases,
@@ -196,7 +197,6 @@ import type {
   ExpenseSummary,
   ItineraryItem,
   PlanStatus,
-  PlanVariant,
   SettlementSuggestion,
   StopNote,
   Suggestion,
@@ -1183,21 +1183,13 @@ export function SagittariusApp({
 
     let createdTripPlanId = "";
     commitTrip((current) => {
-      const variant: PlanVariant = {
-        id: nextLocalPlanVariantId(current.planVariants),
-        tripId: current.id,
-        name: trimmedName,
-        kind: "draft",
-        status: "draft",
-        description: "",
-        version: 1,
-      };
-      createdTripPlanId = variant.id;
-      return {
-        ...current,
-        planVariants: [...current.planVariants, variant],
-        tripPlans: [...(current.tripPlans ?? current.planVariants), variant],
-      };
+      const result = createLocalTripPlan(
+        current,
+        trimmedName,
+        nextLocalPlanVariantId,
+      );
+      createdTripPlanId = result.tripPlanId;
+      return result.trip;
     });
     if (createdTripPlanId) {
       setSelectedTripPlanId(createdTripPlanId);
