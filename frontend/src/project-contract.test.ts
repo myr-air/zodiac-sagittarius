@@ -62,6 +62,7 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/trip/stop-notes.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/tasks.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/itinerary-time.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/itinerary-api-requests.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/itinerary-paths-api.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/place-resolution.ts"))).toBe(true);
     expect(existsSync(join(repoRoot, "backend/Cargo.toml"))).toBe(true);
@@ -277,6 +278,7 @@ describe("Sagittarius project scaffold", () => {
     expect(sagittariusApp).not.toContain("function mergeUpdatedItineraryBranchIntoTrip");
     expect(sagittariusApp).not.toContain("function shiftItineraryItemsToStartDate");
     expect(sagittariusApp).not.toContain("function buildInlineItineraryItemPatch");
+    expect(sagittariusApp).not.toContain("function buildCreateItineraryItemRequest");
     expect(sagittariusApp).not.toContain("function normalizeInlineTimePatch");
     expect(sagittariusApp).not.toContain("function createLocalBookingDoc");
     expect(sagittariusApp).not.toContain("function replaceBookingDocInTrip");

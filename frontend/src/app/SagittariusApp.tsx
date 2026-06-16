@@ -135,6 +135,7 @@ import {
   buildInlineItineraryItemPatch,
   shiftItineraryItemsToStartDate,
 } from "@/src/trip/itinerary-time";
+import { buildCreateItineraryItemRequest } from "@/src/trip/itinerary-api-requests";
 import {
   applyTripSettingsToTrip,
   mergePatchedTripSettings,
@@ -1555,34 +1556,10 @@ export function SagittariusApp({
       const createdItem = await resolvedApiClient.createItineraryItem(
         trip.id,
         participantSession.sessionToken,
-        {
-          clientMutationId: nextClientMutationId("itinerary-create"),
-          planVariantId: parentItem?.planVariantId ?? selectedTripPlanId,
-          pathGroupId: branchPlacement.item.pathGroupId,
-          pathId: branchPlacement.item.pathId,
-          pathName: branchPlacement.item.pathName,
-          pathRole: branchPlacement.item.pathRole,
-          parentItemId: values.parentItemId ?? null,
-          itemKind: values.itemKind,
-          timeMode: values.timeMode,
-          isPlanBlock: values.isPlanBlock,
-          status: values.status,
-          priority: values.priority,
-          day,
-          startTime: values.startTime,
-          endTime: values.endTime,
-          endOffsetDays: values.endOffsetDays,
-          activity: values.activity,
-          activityType: values.activityType,
-          place: values.place,
-          mapLink: locationFields.mapLink,
-          address: locationFields.address,
-          coordinates: locationFields.coordinates,
-          durationMinutes: values.durationMinutes,
-          transportation: values.transportation,
-          details: values.details,
-          note: values.note,
-        },
+        buildCreateItineraryItemRequest(
+          branchPlacement.item,
+          nextClientMutationId("itinerary-create"),
+        ),
       );
       setTripState((current) => ({
         ...current,
