@@ -226,21 +226,6 @@ import type {
 } from "@/src/trip/types";
 
 export {
-  nextClientMutationId,
-  nextLocalBookingDocId,
-  nextLocalItemId,
-  nextLocalPhotoAlbumId,
-  nextLocalPlanVariantId,
-  nextLocalStopNoteId,
-  nextLocalSuggestionId,
-  nextLocalTaskId,
-} from "@/src/trip/local-ids";
-export {
-  bookingTypeForItineraryItem,
-  findDuplicateBookingDoc,
-} from "@/src/trip/booking-docs";
-export { normalizeInlineTimePatch } from "@/src/trip/itinerary-time";
-
 const localMutationTimestamp = "2026-05-28T00:00:00.000Z";
 const workspaceShellClassName = "workspace-shell min-w-0 bg-transparent max-[1199px]:min-h-[calc(100dvh-48px)]";
 

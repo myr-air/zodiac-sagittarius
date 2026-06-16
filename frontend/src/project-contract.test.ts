@@ -47,6 +47,7 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/trip/workspace/TripWorkspaceViews.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/SagittariusApp.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/index.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/public-exports.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/SagittariusAppCore.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/index.ts"))).toBe(true);
@@ -119,6 +120,14 @@ describe("Sagittarius project scaffold", () => {
       join(frontendRoot, "src/trip/workspace/sagittarius-app/support/index.ts"),
       "utf8",
     );
+    const sagittariusIndex = readFileSync(
+      join(frontendRoot, "src/trip/workspace/sagittarius-app/index.ts"),
+      "utf8",
+    );
+    const publicExports = readFileSync(
+      join(frontendRoot, "src/trip/workspace/sagittarius-app/public-exports.ts"),
+      "utf8",
+    );
 
     expect(stories).toContain("@/src/trip/workspace/sagittarius-app/support");
     expect(stories).toContain(
@@ -131,6 +140,14 @@ describe("Sagittarius project scaffold", () => {
     expect(storySupport).toContain("export const storyTripId");
     expect(storySupport).toContain("export async function expectWorkspaceView");
     expect(storySupport).toContain("seedTripJoinId");
+    expect(sagittariusIndex).toContain("SagittariusApp");
+    expect(sagittariusIndex).toContain("SagittariusAppCore");
+    expect(sagittariusIndex).toContain("export {");
+    expect(sagittariusIndex).toContain("from \"./public-exports\"");
+    expect(publicExports).toContain("export {");
+    expect(publicExports).toContain("bookingTypeForItineraryItem");
+    expect(publicExports).toContain("nextLocalTaskId");
+    expect(publicExports).toContain("normalizeInlineTimePatch");
   });
 
   it("keeps project-side routing docs current", () => {
