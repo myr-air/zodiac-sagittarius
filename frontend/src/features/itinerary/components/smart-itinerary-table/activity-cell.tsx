@@ -6,7 +6,6 @@ import type {
 } from "@/src/trip/types";
 import { cn } from "@/src/lib/cn";
 import { Icon } from "@/src/ui/icons";
-import { DateTimePickerField } from "@/src/components/DateTimePickers";
 import type { Locale } from "@/src/i18n/types";
 import type { Messages } from "@/src/i18n/messages";
 import type { InlineItineraryItemPatch } from "../../lib";
@@ -14,25 +13,17 @@ import type {
   ItineraryBookingTemplate,
   ItineraryBookingTicketInput,
 } from "@/src/trip/booking-docs";
-import { InlineOptionPicker } from "../inline-option-picker";
-import { formatDuration } from "@/src/features/itinerary/lib";
-import {
-  activityTypeOptions,
-  buildActivitySubtypePatch,
-  buildActivityTypePatch,
-  travelSubtypeForItem,
-  travelSubtypeOptions,
-} from "../smart-itinerary-table-helpers";
 import { itemStatusLabel } from "../smart-itinerary-table-utils";
+import { formatDuration } from "../../lib";
 import { ActivityLocationLine } from "./activity-cell/ActivityLocationLine";
 import { ActivityTypePicker } from "./activity-cell/ActivityTypePicker";
 import { InlineActivityField } from "./activity-cell/InlineActivityField";
 import { ItineraryBookingButton } from "./activity-cell/BookingComponents";
 import { ActivityTimeButton } from "./activity-cell/TimeComponents";
+import { SubActivityList, SubActivityModal } from "./activity-cell/SubActivityComponents";
 import {
   itemPlaceholderCellClassName,
   itemPlaceholderRowClassName,
-  addSubActivityButtonClassName,
   activityActionClusterClassName,
   activityActionsClassName,
   activityBodyClassName,
@@ -57,21 +48,9 @@ import {
   activityTypePickerClassName,
   activityTypeRailClassName,
   activityMobileTypePickerClassName,
-  subActivityActionsClassName,
-  subActivityLineClassName,
-  subActivityListClassName,
-  subActivityModalBackdropClassName,
-  subActivityModalBodyClassName,
-  subActivityModalClassName,
   subActivityModalCloseClassName,
-  subActivityModalHeaderClassName,
-  subActivityModalListClassName,
-  subActivityModalTitleClassName,
-  subActivityTextClassName,
   subActivityToggleButtonClassName,
-  subActivityTitleInputClassName,
   ticketFieldClassName,
-  ticketFieldGridClassName,
   ticketModalBackdropClassName,
   ticketModalBodyClassName,
   ticketModalClassName,
@@ -80,7 +59,6 @@ import {
   ticketModalTitleClassName,
   activityTabletActionsClassName,
   activityTabletActionLayerClassName,
-  headerControlsSectionClassName,
 } from "../smart-itinerary-table.styles";
 
 export function ActivityCell({
@@ -574,322 +552,6 @@ export function ItineraryNoteModal({
       </form>
     </div>,
     document.body,
-  );
-}
-
-export function SubActivityModal({
-  canEdit,
-  item,
-  itineraryLabels,
-  locale,
-  onAddSubActivity,
-  onAddNoteForItem,
-  onOpenNoteForItem,
-  onAddBookingForItem,
-  onSaveBookingForItem,
-  onUnlinkBookingForItem,
-  bookingDocs,
-  bookingLinkItems,
-  onClose,
-  onDeleteItem,
-  onEditItem,
-  onUpdateItemInline,
-  subItems,
-}: {
-  canEdit: boolean;
-  item: ItineraryItem;
-  itineraryLabels: Messages["itinerary"];
-  locale: Locale;
-  subItems: ItineraryItem[];
-  onAddSubActivity?: (parentItemId: string) => void | Promise<void>;
-  onAddNoteForItem?: (itemId: string, body: string) => void | Promise<void>;
-  onOpenNoteForItem?: (item: ItineraryItem, compact?: boolean) => void;
-  onAddBookingForItem?: (
-    itemId: string,
-    template?: ItineraryBookingTemplate,
-  ) => string | void | Promise<string | void>;
-  onSaveBookingForItem?: (
-    input: ItineraryBookingTicketInput,
-  ) => string | void | Promise<string | void>;
-  onUnlinkBookingForItem?: (
-    bookingDocId: string,
-    itemId: string,
-  ) => void | Promise<void>;
-  bookingDocs: BookingDoc[];
-  bookingLinkItems: ItineraryItem[];
-  onClose: () => void;
-  onDeleteItem?: (itemId: string) => void;
-  onEditItem?: (itemId: string) => void;
-  onUpdateItemInline?: (
-    itemId: string,
-    patch: InlineItineraryItemPatch,
-  ) => void | Promise<void>;
-}) {
-  useEffect(() => {
-    function closeOnEscape(event: KeyboardEvent) {
-      if (event.key === "Escape") onClose();
-    }
-    document.addEventListener("keydown", closeOnEscape);
-    return () => document.removeEventListener("keydown", closeOnEscape);
-  }, [onClose]);
-
-  if (typeof document === "undefined") return null;
-
-  return createPortal(
-    <div
-      className={subActivityModalBackdropClassName}
-      role="presentation"
-      onClick={onClose}
-    >
-      <section
-        className={subActivityModalClassName}
-        role="dialog"
-        aria-modal="true"
-        aria-label={`Sub-activities for ${item.activity}`}
-        onClick={(event) => event.stopPropagation()}
-      >
-        <header className={subActivityModalHeaderClassName}>
-          <strong className={subActivityModalTitleClassName}>
-            <span>{item.activity}</span>
-            <small>{itineraryLabels.row.subItemQuick}</small>
-          </strong>
-          <button
-            type="button"
-            className={subActivityModalCloseClassName}
-            aria-label="Close sub-activities"
-            onClick={onClose}
-          >
-            <Icon name="x" />
-          </button>
-        </header>
-        <div className={subActivityModalBodyClassName}>
-          <SubActivityList
-            canEdit={canEdit}
-            item={item}
-            itineraryLabels={itineraryLabels}
-            locale={locale}
-            presentation="modal"
-            selected
-            subItems={subItems}
-            onAddSubActivity={onAddSubActivity}
-            onAddNoteForItem={onAddNoteForItem}
-            onOpenNoteForItem={onOpenNoteForItem}
-            onAddBookingForItem={onAddBookingForItem}
-            onSaveBookingForItem={onSaveBookingForItem}
-            onUnlinkBookingForItem={onUnlinkBookingForItem}
-            bookingDocs={bookingDocs}
-            bookingLinkItems={bookingLinkItems}
-            onDeleteItem={onDeleteItem}
-            onEditItem={onEditItem}
-            onUpdateItemInline={onUpdateItemInline}
-          />
-        </div>
-      </section>
-    </div>,
-    document.body,
-  );
-}
-
-export function SubActivityList({
-  canEdit,
-  item,
-  itineraryLabels,
-  locale,
-  presentation = "inline",
-  selected,
-  subItems,
-  visible = true,
-  onAddSubActivity,
-  onAddNoteForItem,
-  onOpenNoteForItem,
-  onAddBookingForItem,
-  onSaveBookingForItem,
-  onUnlinkBookingForItem,
-  bookingDocs,
-  bookingLinkItems,
-  onDeleteItem,
-  onEditItem,
-  onUpdateItemInline,
-}: {
-  canEdit: boolean;
-  item: ItineraryItem;
-  itineraryLabels: Messages["itinerary"];
-  locale: Locale;
-  presentation?: "inline" | "modal";
-  selected: boolean;
-  subItems: ItineraryItem[];
-  visible?: boolean;
-  onAddSubActivity?: (parentItemId: string) => void | Promise<void>;
-  onAddNoteForItem?: (itemId: string, body: string) => void | Promise<void>;
-  onOpenNoteForItem?: (item: ItineraryItem, compact?: boolean) => void;
-  onAddBookingForItem?: (
-    itemId: string,
-    template?: ItineraryBookingTemplate,
-  ) => string | void | Promise<string | void>;
-  onSaveBookingForItem?: (
-    input: ItineraryBookingTicketInput,
-  ) => string | void | Promise<string | void>;
-  onUnlinkBookingForItem?: (
-    bookingDocId: string,
-    itemId: string,
-  ) => void | Promise<void>;
-  bookingDocs: BookingDoc[];
-  bookingLinkItems: ItineraryItem[];
-  onDeleteItem?: (itemId: string) => void;
-  onEditItem?: (itemId: string) => void;
-  onUpdateItemInline?: (
-    itemId: string,
-    patch: InlineItineraryItemPatch,
-  ) => void | Promise<void>;
-}) {
-  const editable = canEdit && Boolean(onUpdateItemInline);
-  const showAddSubActivity =
-    Boolean(onAddSubActivity) &&
-    (presentation === "modal" || visible || selected || subItems.length > 0);
-
-  if (presentation === "inline" && !visible) return null;
-  if (subItems.length === 0 && !showAddSubActivity) return null;
-
-  return (
-    <div
-      className={
-        presentation === "modal"
-          ? subActivityModalListClassName
-          : subActivityListClassName
-      }
-    >
-      {subItems.map((subItem) => (
-        <div
-          className={subActivityLineClassName}
-          data-sub-item-id={subItem.id}
-          key={subItem.id}
-        >
-          <span className="max-[760px]:hidden">
-            <ActivityTimeButton
-              editable={editable}
-              item={subItem}
-              itineraryLabels={itineraryLabels}
-              locale={locale}
-              onSave={(patch) => onUpdateItemInline?.(subItem.id, patch)}
-            />
-          </span>
-          <div className={subActivityTextClassName}>
-            <InlineActivityField
-              ariaLabel={itineraryLabels.row.inlineActivity({
-                activity: subItem.activity,
-              })}
-              autoSize
-              className={subActivityTitleInputClassName}
-              disabled={!editable}
-              key={`${subItem.id}:activity:${subItem.activity}`}
-              maxLength={80}
-              placeholder="Sub-activity"
-              value={subItem.activity}
-              onCommit={(activity) =>
-                onUpdateItemInline?.(subItem.id, {
-                  activity: activity || subItem.activity,
-                })
-              }
-            />
-            <ActivityLocationLine
-              editable={editable}
-              item={subItem}
-              itineraryLabels={itineraryLabels}
-              onUpdateItemInline={onUpdateItemInline}
-            />
-          </div>
-          <div className={subActivityActionsClassName}>
-            {subItem.mapLink ? (
-              <a
-                className={activityIconButtonClassName}
-                href={subItem.mapLink}
-                target="_blank"
-                rel="noreferrer"
-                aria-label={`${itineraryLabels.row.mapFallback}: ${subItem.place || subItem.activity}`}
-                onClick={(event) => event.stopPropagation()}
-              >
-                <Icon name="map" className="size-4" />
-              </a>
-            ) : null}
-            <ItineraryBookingButton
-              item={subItem}
-              itineraryLabels={itineraryLabels}
-              locale={locale}
-              onAddBookingForItem={onAddBookingForItem}
-              onSaveBookingForItem={onSaveBookingForItem}
-              onUnlinkBookingForItem={onUnlinkBookingForItem}
-              bookingDocs={bookingDocs}
-              bookingLinkItems={bookingLinkItems}
-            />
-            <ActivityTypePicker
-              buttonClassName={cn(activityMobileTypePickerClassName, "!inline-flex !w-7 max-[520px]:!inline-flex")}
-              disabled={!editable}
-              item={subItem}
-              itineraryLabels={itineraryLabels}
-              locale={locale}
-              onUpdateItemInline={onUpdateItemInline}
-            />
-            {onAddNoteForItem && onOpenNoteForItem ? (
-              <button
-                type="button"
-                className={activityIconButtonClassName}
-                aria-label={locale === "th" ? `เพิ่มโน้ต ${subItem.activity}` : `Add note for ${subItem.activity}`}
-                onClick={(event) => {
-                  event.stopPropagation();
-                  onOpenNoteForItem(subItem);
-                }}
-              >
-                <Icon name="note" className="size-4" />
-              </button>
-            ) : null}
-            {onEditItem ? (
-              <button
-                type="button"
-                className={activityIconButtonClassName}
-                aria-label={itineraryLabels.row.edit({
-                  activity: subItem.activity,
-                })}
-                onClick={(event) => {
-                  event.stopPropagation();
-                  onEditItem(subItem.id);
-                }}
-              >
-                <Icon name="edit" className="size-4" />
-              </button>
-            ) : null}
-            {onDeleteItem ? (
-              <button
-                type="button"
-                className={activityIconButtonClassName}
-                aria-label={itineraryLabels.row.delete({
-                  activity: subItem.activity,
-                })}
-                onClick={(event) => {
-                  event.stopPropagation();
-                  onDeleteItem(subItem.id);
-                }}
-              >
-                <Icon name="trash" className="size-4" />
-              </button>
-            ) : null}
-          </div>
-        </div>
-      ))}
-      {showAddSubActivity ? (
-        <button
-          type="button"
-          className={addSubActivityButtonClassName}
-          disabled={!canEdit}
-          onClick={(event) => {
-            event.stopPropagation();
-            void onAddSubActivity?.(item.id);
-          }}
-        >
-          <Icon name="plus" className="size-4" />
-          {itineraryLabels.row.subItemQuick}
-        </button>
-      ) : null}
-    </div>
   );
 }
 
