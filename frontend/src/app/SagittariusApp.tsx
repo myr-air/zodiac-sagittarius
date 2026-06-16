@@ -28,6 +28,11 @@ import {
   type TripApiClient,
   type TripCockpit,
 } from "@/src/trip/api-client";
+import {
+  isAuthFailure,
+  isForbidden,
+  isUnauthenticated,
+} from "@/src/trip/api-errors";
 import { serializePhotoAlbumInputForApi } from "@/src/trip/photo-albums";
 import {
   createAccountApiClient,
@@ -4709,18 +4714,6 @@ export function replaceSuggestionById(
   return suggestions.map((candidate) =>
     candidate.id === suggestionId ? replacement : candidate,
   );
-}
-
-function isUnauthenticated(caught: unknown): boolean {
-  return caught instanceof TripApiError && caught.status === 401;
-}
-
-function isForbidden(caught: unknown): boolean {
-  return caught instanceof TripApiError && caught.status === 403;
-}
-
-function isAuthFailure(caught: unknown): boolean {
-  return isUnauthenticated(caught) || isForbidden(caught);
 }
 
 function slugifyFilePart(value: string): string {

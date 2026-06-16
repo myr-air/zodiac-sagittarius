@@ -52,6 +52,7 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/trip/workspace/selected-trip-plan.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/trip-plan-records.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/local-ids.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/api-errors.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/participant-session-storage.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/trip-plans.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/trip-countries.ts"))).toBe(true);
@@ -284,6 +285,9 @@ describe("Sagittarius project scaffold", () => {
     expect(sagittariusApp).not.toContain("function itineraryItemPathFieldsForTarget");
     expect(sagittariusApp).not.toContain("function getNextSortOrder");
     expect(sagittariusApp).not.toContain("function getNextChildSortOrder");
+    expect(sagittariusApp).not.toContain("function isUnauthenticated");
+    expect(sagittariusApp).not.toContain("function isForbidden");
+    expect(sagittariusApp).not.toContain("function isAuthFailure");
     expect(sagittariusApp).not.toContain('from "@/src/components/OverviewPage"');
     expect(sagittariusApp).not.toContain('from "@/src/components/TimelineView"');
 
