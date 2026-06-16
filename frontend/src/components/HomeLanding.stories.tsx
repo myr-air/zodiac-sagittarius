@@ -1,13 +1,14 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { expect, within } from "storybook/test";
 import { HomeLanding } from "./HomeLanding";
+import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
 
 const meta = {
   title: "Pages/Home Landing",
   component: HomeLanding,
   parameters: {
     layout: "fullscreen",
-    nextjs: { navigation: { pathname: "/" } },
+    nextjs: { navigation: { pathname: appRoutes.home() } },
   },
 } satisfies Meta<typeof HomeLanding>;
 

@@ -273,7 +273,7 @@ describe("AppShell", () => {
     expect(resolveViewFromPath(appRoutes.tripExpenses(seedTrip.id), seedTrip.id, "overview")).toBe("expenses");
     expect(resolveViewFromPath(tripRoutes.itinerary(seedTrip.id), seedTrip.id, "overview")).toBe("itinerary");
     expect(resolveViewFromPath(tripRoutes.expenses(seedTrip.id), seedTrip.id, "overview")).toBe("expenses");
-    expect(resolveViewFromPath(`/trips/trip%201`, seedTrip.id, "overview")).toBe("overview");
+    expect(resolveViewFromPath(appRoutes.tripOverview(seedTrip.id), seedTrip.id, "overview")).toBe("overview");
   });
 });
 
