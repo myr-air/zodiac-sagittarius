@@ -75,6 +75,7 @@ import {
   type ItineraryImportApplyTarget,
 } from "@/src/trip/itinerary-paths";
 import type { PlanningView } from "@/src/trip/workspace/planning-view";
+import { TripWorkspaceFrame } from "@/src/trip/workspace/TripWorkspaceFrame";
 import { TripWorkspaceViews } from "@/src/trip/workspace/TripWorkspaceViews";
 import {
   buildItineraryExport,
@@ -147,8 +148,6 @@ const importDialogBodyClassName =
   "m-0 text-sm font-medium leading-6 text-(--color-text-muted)";
 const importDialogFieldsClassName =
   "grid gap-3 [&_label]:grid [&_label]:gap-1.5 [&_label>span]:text-xs [&_label>span]:font-bold [&_label>span]:text-(--color-text-muted) [&_input]:min-h-9 [&_input]:rounded-(--radius-sm) [&_input]:border [&_input]:border-(--color-border) [&_input]:bg-(--color-surface) [&_input]:px-2.5 [&_input]:text-sm [&_select]:min-h-9 [&_select]:rounded-(--radius-sm) [&_select]:border [&_select]:border-(--color-border) [&_select]:bg-(--color-surface) [&_select]:px-2.5 [&_select]:text-sm";
-const importErrorClassName =
-  "mx-6 mt-3 rounded-(--radius-sm) border border-(--color-danger-border) bg-(--color-danger-soft) px-3 py-2 text-sm font-bold text-(--color-danger) max-[767px]:mx-3";
 const accountClaimMessageClassName = "account-claim-message font-extrabold";
 const portalLoadingCardClassName =
   "account-card portal-loading-card grid min-h-[220px] gap-3.5 rounded-(--radius-lg) border border-(--color-border) bg-[rgb(255_255_255_/_0.94)] p-4 shadow-[var(--shadow-panel)]";
@@ -168,11 +167,6 @@ const portalSkeletonTitleClassName = `${portalSkeletonBaseClassName} portal-skel
 const portalSkeletonLineClassName = `${portalSkeletonBaseClassName} portal-skeleton--line h-4 w-[min(520px,72%)]`;
 const portalSkeletonBlockClassName = `${portalSkeletonBaseClassName} portal-skeleton--block h-[132px] w-full`;
 const workspaceShellClassName = "workspace-shell min-w-0 bg-transparent max-[1199px]:min-h-[calc(100dvh-48px)]";
-const workspaceGridClassName =
-  "workspace-grid relative grid h-screen min-h-0 grid-cols-[minmax(0,1fr)] overflow-hidden max-[1199px]:h-auto max-[1199px]:grid-cols-1 max-[1199px]:overflow-visible";
-const planningMainClassName =
-  "planning-main h-full min-h-0 min-w-0 overflow-y-auto scroll-smooth bg-(--color-page) transition-[padding] duration-200 max-[1199px]:h-auto max-[1199px]:min-h-[calc(100dvh-48px)] max-[1199px]:overflow-y-visible max-[1199px]:bg-(--color-surface)";
-const planningMainWithRailClassName = "pr-[380px] max-[1199px]:pr-0";
 
 type PortalSection =
   | "dashboard"
@@ -4396,14 +4390,47 @@ export function SagittariusApp({
             </Select>
           </label>
         ) : null}
-        <div
-          className={workspaceGridClassName}
-          data-context-rail={contextRailOpen ? "open" : "closed"}
-          data-command-bar="hidden"
+        <TripWorkspaceFrame
+          contextRailOpen={contextRailOpen}
+          importError={itineraryImportError}
+          supportsContextRail={supportsContextRail}
+          rail={
+            supportsContextRail && contextRailMounted ? (
+              <ContextRail
+                trip={scopedTripForRecords}
+                selectedItem={selectedItem}
+                suggestions={scopedSuggestions}
+                stopNotes={scopedTripPlanRecords.stopNotes}
+                tasks={scopedTripPlanRecords.tasks}
+                bookingDocs={scopedTripPlanRecords.bookingDocs}
+                currentMember={currentMember}
+                expenseSummary={expenseSummary}
+                canEdit={canEdit}
+                canCreateNote={canCreateStopNote}
+                canCreateSuggestion={canCreateSuggestion}
+                canReviewSuggestions={canReviewSuggestions}
+                canEditExpenses={canEditExpenses}
+                open={contextRailOpen}
+                preferredTab={contextRailPreferredTab}
+                onChangeBookingDocType={changeBookingDocType}
+                onChangeBookingDocQuickFields={changeBookingDocQuickFields}
+                onCreateNote={createStopNote}
+                onCreateExpense={createExpense}
+                onUpdateExpense={updateExpense}
+                onDeleteExpense={deleteExpense}
+                onDeleteNote={deleteStopNote}
+                onEditSelected={() => {
+                  if (selectedItem) editItem(selectedItem.id);
+                }}
+                onReviewSuggestion={reviewSuggestion}
+                onSuggestSelected={suggestSelectedStop}
+                onToggleTaskStatus={toggleTaskStatus}
+                onUpdateNote={updateStopNote}
+                onClose={() => setContextRailVisibility(false)}
+              />
+            ) : null
+          }
         >
-          <div
-            className={`${planningMainClassName} ${contextRailOpen && supportsContextRail ? planningMainWithRailClassName : ""}`}
-          >
             <TripWorkspaceViews
               currentView={currentView}
               settingsProps={{
@@ -4571,47 +4598,7 @@ export function SagittariusApp({
                   setContextRailVisibility(!contextRailOpen),
               }}
             />
-          </div>
-          {itineraryImportError ? (
-            <p className={importErrorClassName} role="alert">
-              {itineraryImportError}
-            </p>
-          ) : null}
-          {supportsContextRail && contextRailMounted ? (
-            <ContextRail
-              trip={scopedTripForRecords}
-              selectedItem={selectedItem}
-              suggestions={scopedSuggestions}
-              stopNotes={scopedTripPlanRecords.stopNotes}
-              tasks={scopedTripPlanRecords.tasks}
-              bookingDocs={scopedTripPlanRecords.bookingDocs}
-              currentMember={currentMember}
-              expenseSummary={expenseSummary}
-              canEdit={canEdit}
-              canCreateNote={canCreateStopNote}
-              canCreateSuggestion={canCreateSuggestion}
-              canReviewSuggestions={canReviewSuggestions}
-              canEditExpenses={canEditExpenses}
-              open={contextRailOpen}
-              preferredTab={contextRailPreferredTab}
-              onChangeBookingDocType={changeBookingDocType}
-              onChangeBookingDocQuickFields={changeBookingDocQuickFields}
-              onCreateNote={createStopNote}
-              onCreateExpense={createExpense}
-              onUpdateExpense={updateExpense}
-              onDeleteExpense={deleteExpense}
-              onDeleteNote={deleteStopNote}
-              onEditSelected={() => {
-                if (selectedItem) editItem(selectedItem.id);
-              }}
-              onReviewSuggestion={reviewSuggestion}
-              onSuggestSelected={suggestSelectedStop}
-              onToggleTaskStatus={toggleTaskStatus}
-              onUpdateNote={updateStopNote}
-              onClose={() => setContextRailVisibility(false)}
-            />
-          ) : null}
-        </div>
+        </TripWorkspaceFrame>
         {dialogState ? (
           <StopDialog
             key={
