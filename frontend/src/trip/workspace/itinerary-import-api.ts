@@ -1,5 +1,6 @@
 import type {
   CreateItineraryItemApiRequest,
+  ImportItineraryApiRequest,
   TripApiClient,
 } from "@/src/trip/api-client";
 import { expenseSplitsToMinor } from "@/src/trip/expenses";
@@ -28,6 +29,25 @@ interface BuildImportedItineraryItemCreateRequestInput {
   createdItemIdsByImportId: Map<string, string>;
   createdItemIdsByPreviewId: Map<string, string>;
   item: ItineraryItem;
+}
+
+export interface BuildImportItineraryRequestInput {
+  content: string;
+  contentType?: string;
+  fileName?: string;
+}
+
+export function buildImportItineraryRequest({
+  content,
+  contentType,
+  fileName,
+}: BuildImportItineraryRequestInput): ImportItineraryApiRequest {
+  return {
+    fileName,
+    contentType,
+    mode: "auto",
+    content,
+  };
 }
 
 export function buildImportedItineraryItemCreateRequest({

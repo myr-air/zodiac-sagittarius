@@ -198,6 +198,7 @@ import {
 import { patchApiItineraryBranchItems } from "@/src/trip/itinerary-paths-api";
 import type { PlanningView } from "@/src/trip/workspace/planning-view";
 import {
+  buildImportItineraryRequest,
   buildImportedItineraryItemCreateRequest,
   createImportedPlanRecordsViaApi,
 } from "@/src/trip/workspace/itinerary-import-api";
@@ -3282,12 +3283,7 @@ export function SagittariusApp({
           ? await resolvedApiClient.importItinerary(
               trip.id,
               participantSession.sessionToken,
-              {
-                fileName,
-                contentType,
-                mode: "auto",
-                content,
-              },
+              buildImportItineraryRequest({ fileName, contentType, content }),
             )
           : parseItineraryImportDocument(content);
       setPendingItineraryImport(

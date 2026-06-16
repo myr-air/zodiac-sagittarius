@@ -8,6 +8,7 @@ import type {
   TripTask,
 } from "@/src/trip/types";
 import {
+  buildImportItineraryRequest,
   buildImportedItineraryItemCreateRequest,
   createImportedPlanRecordsViaApi,
 } from "./itinerary-import-api";
@@ -76,6 +77,21 @@ const bookingDoc: BookingDoc = {
 };
 
 describe("itinerary import API adapter", () => {
+  it("builds API import requests for itinerary content", () => {
+    expect(
+      buildImportItineraryRequest({
+        fileName: "plan.json",
+        contentType: "application/json",
+        content: "{\"items\":[]}",
+      }),
+    ).toEqual({
+      fileName: "plan.json",
+      contentType: "application/json",
+      mode: "auto",
+      content: "{\"items\":[]}",
+    });
+  });
+
   it("builds imported itinerary item create requests with remapped parent ids", () => {
     const item: ItineraryItem = {
       activity: "Imported museum",
