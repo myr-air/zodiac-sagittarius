@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { ItineraryItem, ItineraryPathOption, PlanVariant, TripDailyBriefing } from "@/src/trip/types";
+import type { ItineraryItem, PlanVariant, TripDailyBriefing } from "@/src/trip/types";
+import type { ItineraryPathOption } from "@/src/trip/itinerary";
 import {
   buildGraphColumnWidth,
   buildWeatherSummary,
@@ -81,25 +82,29 @@ describe("smart-itinerary-table-utils", () => {
         name: "Split",
         tripId: "trip-1",
         description: "",
-        status: "rejected",
+        status: "proposal",
       } as PlanVariant,
     ];
     const labels = {
       main: "Main",
       proposal: "Proposal",
       draft: "Draft",
+      backup: "Backup",
       split: "Split",
       active: "Active",
       archived: "Archived",
       completed: "Completed",
-      rejected: "Rejected",
     };
-    expect(formatTripPlanOptionLabel(plans[0], labels)).toBe("Split - Rejected");
+    expect(formatTripPlanOptionLabel(plans[0], labels)).toBe("Split - Proposal");
   });
 
   it("builds weather summary details when available", () => {
-    const briefing: TripDailyBriefing = {
-      day: "2026-06-10",
+    const briefing = {
+      tripId: "trip-1",
+      date: "2026-06-10",
+      locationKey: "hkg",
+      locationLabel: "Hong Kong",
+      coordinates: null,
       weather: {
         conditionCode: "sunny",
         temperatureMaxCelsius: 32,
@@ -109,17 +114,37 @@ describe("smart-itinerary-table-utils", () => {
         precipitationSumMm: 2.5,
         precipitationHours: 1.4,
         rainChancePercent: 22,
-        humidityPercent: 72,
         uvIndexMax: 9.8,
         visibilityMinMeters: 12000,
         windSpeedKph: 15.2,
         windGustsKph: 19.9,
+        conditionLabel: "Sunny",
+        cloudCoverMeanPercent: null,
+        dewPointMeanCelsius: null,
+        meta: {
+          source: "test",
+          sourceUrl: null,
+          fetchedAt: null,
+          expiresAt: null,
+          confidence: "high",
+          unavailableReason: null,
+        },
+        sunshineDurationSeconds: null,
+        windDirectionDegrees: null,
+        visibilityMeanMeters: null,
+        daylightDurationSeconds: null,
+        pressureMslMeanHpa: null,
+        humidityPercent: 72,
         sunset: "18:45",
         sunrise: "05:41",
       },
-      pathId: "main",
-      createdAt: "2026-06-10",
+      holiday: null,
+      festival: null,
+      facts: null,
+      outfitAdvice: null,
+      manualOverrides: {},
       version: 1,
+      updatedAt: "2026-06-10",
     } as TripDailyBriefing;
 
     expect(buildWeatherSummary(briefing, "Day 1")).toMatchObject({

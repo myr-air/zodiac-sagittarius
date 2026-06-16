@@ -2,11 +2,10 @@ import type { Locale } from "@/src/i18n/types";
 import type { TripDailyBriefing } from "@/src/trip/types";
 import type {
   ItineraryItem,
-  ItineraryDayGroup,
-  ItineraryPathOption,
   PlanVariant,
   PlanStatus,
 } from "@/src/trip/types";
+import type { ItineraryDayGroup, ItineraryPathOption } from "@/src/trip/itinerary";
 import {
   formatSolarTime,
   formatWeatherTemp,

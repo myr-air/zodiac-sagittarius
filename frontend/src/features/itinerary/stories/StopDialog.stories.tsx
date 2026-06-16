@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { expect } from "storybook/test";
 import type { ItineraryItem } from "@/src/trip/types";
 import { tripFixture } from "@/src/trip/trip-fixtures";
-import { StopDialog } from "./StopDialog";
+import { StopDialog } from "@/src/features/itinerary/components";
 
 const noop = () => {};
 const storyItem = tripFixture.planItems[0];
