@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { tripFixture } from "@/src/trip/trip-fixtures";
 import { renderWithI18n } from "@/src/i18n/test-utils";
-import { ContextRail } from "./ContextRail";
+import { ContextRail } from "@/src/features/itinerary/components";
 
 const selectedItem =
   tripFixture.planItems.find((item) => item.id === "item-dimdim") ??
