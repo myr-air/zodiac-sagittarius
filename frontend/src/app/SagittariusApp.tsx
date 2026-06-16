@@ -142,6 +142,7 @@ import {
   buildMoveItineraryItemToDayRequest,
   buildPatchItineraryItemRequest,
   buildReorderItineraryItemsRequest,
+  buildShiftItineraryItemDayRequest,
 } from "@/src/trip/itinerary-api-requests";
 import {
   applyTripSettingsToTrip,
@@ -2372,11 +2373,11 @@ export function SagittariusApp({
             trip.id,
             item.id,
             participantSession.sessionToken,
-            {
+            buildShiftItineraryItemDayRequest({
               clientMutationId: nextClientMutationId("itinerary-day-shift"),
               expectedVersion: item.version,
-              patch: { day: item.day },
-            },
+              shiftedDay: item.day,
+            }),
           ),
         ),
       );

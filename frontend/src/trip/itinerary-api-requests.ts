@@ -27,6 +27,12 @@ export interface BuildMoveItineraryItemToDayRequestOptions {
   targetDay: string;
 }
 
+export interface BuildShiftItineraryItemDayRequestOptions {
+  clientMutationId: string;
+  expectedVersion: number;
+  shiftedDay: string;
+}
+
 export interface BuildReorderItineraryItemsRequestOptions {
   clientMutationId: string;
   day: string;
@@ -130,6 +136,16 @@ export function buildMoveItineraryItemToDayRequest(
       day: options.targetDay,
       parentItemId: null,
     },
+  };
+}
+
+export function buildShiftItineraryItemDayRequest(
+  options: BuildShiftItineraryItemDayRequestOptions,
+): PatchItineraryItemApiRequest {
+  return {
+    clientMutationId: options.clientMutationId,
+    expectedVersion: options.expectedVersion,
+    patch: { day: options.shiftedDay },
   };
 }
 

@@ -6,6 +6,7 @@ import {
   buildMoveItineraryItemToDayRequest,
   buildPatchItineraryItemRequest,
   buildReorderItineraryItemsRequest,
+  buildShiftItineraryItemDayRequest,
 } from "./itinerary-api-requests";
 import { seedTrip } from "./seed";
 
@@ -166,6 +167,22 @@ describe("itinerary API request builders", () => {
       patch: {
         day: "2025-05-19",
         parentItemId: null,
+      },
+    });
+  });
+
+  it("builds shifted itinerary item day patch requests without changing parent placement", () => {
+    expect(
+      buildShiftItineraryItemDayRequest({
+        clientMutationId: "mutation-7",
+        expectedVersion: 14,
+        shiftedDay: "2025-05-20",
+      }),
+    ).toEqual({
+      clientMutationId: "mutation-7",
+      expectedVersion: 14,
+      patch: {
+        day: "2025-05-20",
       },
     });
   });
