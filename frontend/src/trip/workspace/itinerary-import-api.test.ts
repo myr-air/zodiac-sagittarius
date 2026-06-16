@@ -10,6 +10,9 @@ import type {
 import {
   buildImportItineraryRequest,
   buildImportedItineraryItemCreateRequest,
+  buildImportedStopNoteCreateRequest,
+  buildImportedTaskCreateRequest,
+  buildImportedTaskStatusPatchRequest,
   createImportedPlanRecordsViaApi,
 } from "./itinerary-import-api";
 import type { ImportedPlanRecords } from "./itinerary-import-model";
@@ -89,6 +92,47 @@ describe("itinerary import API adapter", () => {
       contentType: "application/json",
       mode: "auto",
       content: "{\"items\":[]}",
+    });
+  });
+
+  it("builds imported task and stop-note API requests", () => {
+    expect(
+      buildImportedTaskCreateRequest({
+        clientMutationId: "task-create-mutation",
+        task,
+      }),
+    ).toEqual({
+      clientMutationId: "task-create-mutation",
+      tripPlanId: "plan-rain",
+      title: "Confirm tickets",
+      visibility: "shared",
+      kind: "booking",
+      assigneeId: "member-aom",
+      relatedItemId: "item-created",
+    });
+
+    expect(
+      buildImportedTaskStatusPatchRequest({
+        clientMutationId: "task-status-mutation",
+        createdTask: { ...task, id: "task-created", version: 4 },
+        status: "done",
+      }),
+    ).toEqual({
+      clientMutationId: "task-status-mutation",
+      expectedVersion: 4,
+      patch: { status: "done" },
+    });
+
+    expect(
+      buildImportedStopNoteCreateRequest({
+        clientMutationId: "note-create-mutation",
+        note,
+      }),
+    ).toEqual({
+      clientMutationId: "note-create-mutation",
+      tripPlanId: "plan-rain",
+      itineraryItemId: "item-created",
+      body: "Use exit C",
     });
   });
 

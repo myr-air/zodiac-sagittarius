@@ -1,6 +1,9 @@
 import type {
   CreateItineraryItemApiRequest,
+  CreateStopNoteApiRequest,
+  CreateTaskApiRequest,
   ImportItineraryApiRequest,
+  PatchTaskApiRequest,
   TripApiClient,
 } from "@/src/trip/api-client";
 import { expenseSplitsToMinor } from "@/src/trip/expenses";
@@ -31,6 +34,22 @@ interface BuildImportedItineraryItemCreateRequestInput {
   item: ItineraryItem;
 }
 
+interface BuildImportedTaskCreateRequestInput {
+  clientMutationId: string;
+  task: TripTask;
+}
+
+interface BuildImportedTaskStatusPatchRequestInput {
+  clientMutationId: string;
+  createdTask: TripTask;
+  status: TripTask["status"];
+}
+
+interface BuildImportedStopNoteCreateRequestInput {
+  clientMutationId: string;
+  note: StopNote;
+}
+
 export interface BuildImportItineraryRequestInput {
   content: string;
   contentType?: string;
@@ -47,6 +66,45 @@ export function buildImportItineraryRequest({
     contentType,
     mode: "auto",
     content,
+  };
+}
+
+export function buildImportedTaskCreateRequest({
+  clientMutationId,
+  task,
+}: BuildImportedTaskCreateRequestInput): CreateTaskApiRequest {
+  return {
+    clientMutationId,
+    tripPlanId: task.tripPlanId,
+    title: task.title,
+    visibility: task.visibility,
+    kind: task.kind,
+    assigneeId: task.assigneeId,
+    relatedItemId: task.relatedItemId,
+  };
+}
+
+export function buildImportedTaskStatusPatchRequest({
+  clientMutationId,
+  createdTask,
+  status,
+}: BuildImportedTaskStatusPatchRequestInput): PatchTaskApiRequest {
+  return {
+    clientMutationId,
+    expectedVersion: createdTask.version ?? 1,
+    patch: { status },
+  };
+}
+
+export function buildImportedStopNoteCreateRequest({
+  clientMutationId,
+  note,
+}: BuildImportedStopNoteCreateRequestInput): CreateStopNoteApiRequest {
+  return {
+    clientMutationId,
+    tripPlanId: note.tripPlanId,
+    itineraryItemId: note.itemId,
+    body: note.body,
   };
 }
 
@@ -106,27 +164,28 @@ export async function createImportedPlanRecordsViaApi({
   const createdBookingDocs: BookingDoc[] = [];
 
   for (const task of records.tasks) {
-    let createdTask = await apiClient.createTask(tripId, sessionToken, {
-      clientMutationId: nextClientMutationId("itinerary-import-task-create"),
-      tripPlanId: task.tripPlanId,
-      title: task.title,
-      visibility: task.visibility,
-      kind: task.kind,
-      assigneeId: task.assigneeId,
-      relatedItemId: task.relatedItemId,
-    });
+    let createdTask = await apiClient.createTask(
+      tripId,
+      sessionToken,
+      buildImportedTaskCreateRequest({
+        clientMutationId: nextClientMutationId(
+          "itinerary-import-task-create",
+        ),
+        task,
+      }),
+    );
     if (task.status !== createdTask.status) {
       createdTask = await apiClient.patchTask(
         tripId,
         createdTask.id,
         sessionToken,
-        {
+        buildImportedTaskStatusPatchRequest({
           clientMutationId: nextClientMutationId(
             "itinerary-import-task-status",
           ),
-          expectedVersion: createdTask.version ?? 1,
-          patch: { status: task.status },
-        },
+          createdTask,
+          status: task.status,
+        }),
       );
     }
     taskIdMap.set(task.id, createdTask.id);
@@ -157,12 +216,16 @@ export async function createImportedPlanRecordsViaApi({
   }
 
   for (const note of records.stopNotes) {
-    const createdNote = await apiClient.createStopNote(tripId, sessionToken, {
-      clientMutationId: nextClientMutationId("itinerary-import-note-create"),
-      tripPlanId: note.tripPlanId,
-      itineraryItemId: note.itemId,
-      body: note.body,
-    });
+    const createdNote = await apiClient.createStopNote(
+      tripId,
+      sessionToken,
+      buildImportedStopNoteCreateRequest({
+        clientMutationId: nextClientMutationId(
+          "itinerary-import-note-create",
+        ),
+        note,
+      }),
+    );
     noteIdMap.set(note.id, createdNote.id);
     createdStopNotes.push(createdNote);
   }
