@@ -49,6 +49,7 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/trip/workspace/planning-view.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/selected-trip-plan.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/trip-plan-records.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/local-ids.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/participant-session-storage.ts"))).toBe(true);
     expect(existsSync(join(repoRoot, "backend/Cargo.toml"))).toBe(true);
     expect(existsSync(join(repoRoot, "package.json"))).toBe(false);
@@ -226,6 +227,15 @@ describe("Sagittarius project scaffold", () => {
     expect(sagittariusApp).not.toContain("function clearParticipantSession");
     expect(sagittariusApp).not.toContain("function loadPersistedTrip");
     expect(sagittariusApp).not.toContain("function persistTripDraft");
+    expect(sagittariusApp).not.toContain("function nextLocalItemId");
+    expect(sagittariusApp).not.toContain("function nextLocalSuggestionId");
+    expect(sagittariusApp).not.toContain("function nextLocalTaskId");
+    expect(sagittariusApp).not.toContain("function nextLocalStopNoteId");
+    expect(sagittariusApp).not.toContain("function nextLocalBookingDocId");
+    expect(sagittariusApp).not.toContain("function nextLocalPhotoAlbumId");
+    expect(sagittariusApp).not.toContain("function nextLocalPlanVariantId");
+    expect(sagittariusApp).not.toContain("function nextLocalExpenseId");
+    expect(sagittariusApp).not.toContain("function nextClientMutationId");
     expect(sagittariusApp).not.toContain('from "@/src/components/OverviewPage"');
     expect(sagittariusApp).not.toContain('from "@/src/components/TimelineView"');
   });
