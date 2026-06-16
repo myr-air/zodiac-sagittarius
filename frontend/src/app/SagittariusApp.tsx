@@ -928,12 +928,7 @@ export function SagittariusApp({
         if (cancelled || !member) return;
         setTripState((current) => ({
           ...current,
-          trip: {
-            ...current.trip,
-            members: current.trip.members.map((candidate) =>
-              candidate.id === member.id ? member : candidate,
-            ),
-          },
+          trip: replaceTripParticipant(current.trip, member),
         }));
       })
       .catch(() => undefined);
