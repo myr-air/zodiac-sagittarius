@@ -59,6 +59,7 @@ import {
   buildPatchMemberAccessStatusRequest,
   buildPatchMemberPasswordRequest,
   buildPatchMemberRoleRequest,
+  buildUpdatePresenceRequest,
   createTripParticipant,
   findSessionMember,
   replaceTripParticipant,
@@ -917,10 +918,9 @@ export function SagittariusApp({
       resolvedApiClient.updatePresence(
         participantSession.tripId,
         participantSession.sessionToken,
-        {
+        buildUpdatePresenceRequest("online", {
           clientMutationId: nextClientMutationId("presence-online"),
-          presence: "online",
-        },
+        }),
       ),
     )
       .then((member) => {

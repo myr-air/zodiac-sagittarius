@@ -7,6 +7,7 @@ import {
   buildPatchMemberAccessStatusRequest,
   buildPatchMemberPasswordRequest,
   buildPatchMemberRoleRequest,
+  buildUpdatePresenceRequest,
   claimTripParticipant,
   createTripParticipant,
   createTripParticipantSession,
@@ -107,6 +108,12 @@ describe("trip participant auth", () => {
     });
     expect(buildPatchMemberPasswordRequest("new-pin")).toEqual({
       participantPassword: "new-pin",
+    });
+    expect(buildUpdatePresenceRequest("online", {
+      clientMutationId: "mutation-presence-online",
+    })).toEqual({
+      clientMutationId: "mutation-presence-online",
+      presence: "online",
     });
   });
 

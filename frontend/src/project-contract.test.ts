@@ -264,6 +264,7 @@ describe("Sagittarius project scaffold", () => {
     expect(sagittariusApp).not.toContain("function buildPatchMemberRoleRequest");
     expect(sagittariusApp).not.toContain("function buildPatchMemberAccessStatusRequest");
     expect(sagittariusApp).not.toContain("function buildPatchMemberPasswordRequest");
+    expect(sagittariusApp).not.toContain("function buildUpdatePresenceRequest");
     expect(sagittariusApp).not.toContain("function updateTripPlanInTrip");
     expect(sagittariusApp).not.toContain("function mergePublishedTripPlan");
     expect(sagittariusApp).not.toContain("function setLocalMainTripPlan");

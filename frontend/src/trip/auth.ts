@@ -1,6 +1,7 @@
 import type {
   CreateMemberApiRequest,
   PatchMemberApiRequest,
+  UpdatePresenceApiRequest,
 } from "./api-client";
 import type { Member, Trip, TripCapability, TripJoinCredential, TripMemberAccessStatus, TripParticipantSession, TripRole } from "./types";
 
@@ -92,6 +93,16 @@ export function buildPatchMemberPasswordRequest(
   participantPassword: string,
 ): PatchMemberApiRequest {
   return { participantPassword };
+}
+
+export function buildUpdatePresenceRequest(
+  presence: Member["presence"],
+  options: { clientMutationId: string },
+): UpdatePresenceApiRequest {
+  return {
+    clientMutationId: options.clientMutationId,
+    presence,
+  };
 }
 
 export function replaceTripParticipant(trip: Trip, member: Member): Trip {
