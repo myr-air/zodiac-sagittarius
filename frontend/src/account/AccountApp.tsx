@@ -7,7 +7,7 @@ import {
   type AccountApiClient,
   type AccountSession,
 } from "./api-client";
-import { appRoutes } from "@/src/routes/app-routes";
+import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
 import {
   createTripApiClient,
   type TripApiClient,

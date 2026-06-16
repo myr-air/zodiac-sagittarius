@@ -7,6 +7,7 @@ import {
   tripHasPlan,
 } from "./selected-trip-plan";
 import { tripFixture } from "@/src/trip/trip-fixtures";
+import { tripRoutes } from "@/src/trip/workspace/sagittarius-app/support";
 import type { PlanVariant, Trip } from "@/src/trip/types";
 
 function tripWithPlans(): Trip {
@@ -36,7 +37,7 @@ function tripWithPlans(): Trip {
 describe("selected trip plan workspace state", () => {
   beforeEach(() => {
     window.sessionStorage.clear();
-    window.history.replaceState(null, "", "/trips/demo/itinerary");
+    window.history.replaceState(null, "", tripRoutes.itinerary(tripFixture.trip.id));
   });
 
   it("resolves preferred, URL, session, and default trip plan ids in order", () => {
@@ -49,11 +50,11 @@ describe("selected trip plan workspace state", () => {
     window.history.replaceState(
       null,
       "",
-      "/trips/demo/itinerary?tripPlanId=plan-rain",
+      `${tripRoutes.itinerary(tripFixture.trip.id)}?tripPlanId=plan-rain`,
     );
     expect(resolveSelectedTripPlanId(trip)).toBe("plan-rain");
 
-    window.history.replaceState(null, "", "/trips/demo/itinerary");
+    window.history.replaceState(null, "", tripRoutes.itinerary(tripFixture.trip.id));
     window.sessionStorage.setItem(
       selectedTripPlanStorageKey(trip.id),
       "plan-rain",

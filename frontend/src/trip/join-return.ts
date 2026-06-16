@@ -1,11 +1,11 @@
-import { appRoutes, tripRoutes } from "@/src/trip/workspace/sagittarius-app/support";
+import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
 import { decodeTripId } from "@/src/trip/ids";
 
 export function resolveJoinPostAuthReturnTo(
   returnTo: string | null,
   tripId: string,
 ): string | null {
-  const tripsBase = tripRoutes.tripsBase;
+  const tripsBase = appRoutes.trips();
 
   if (!returnTo || !returnTo.startsWith("/")) return null;
   if (returnTo === appRoutes.trips()) return null;

@@ -221,8 +221,8 @@ describe("Storybook template catalog", () => {
     expect(stories).toContain('portalSection: "settings"');
     expect(stories).toContain('portalSection: "sign-out"');
     expect(stories).toContain('initialJoinCode: seedTripJoinId');
-    expect(stories).toContain('pathname: "/join"');
-    expect(stories).toContain('pathname: `/join/${seedTripJoinId}`');
+    expect(stories).toContain("pathname: appRoutes.join()");
+    expect(stories).toContain("pathname: appRoutes.join(seedTripJoinId)");
     expect(stories).toContain('title: "Pages/Account Access"');
     expect(stories).toContain("export const NewTripBuilder");
     expect(stories).toContain("export const NewTripMobile");
