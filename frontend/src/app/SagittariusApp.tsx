@@ -62,8 +62,8 @@ import {
   bookingDraftDetailsForItineraryItem,
   bookingDraftTimeWindowForItineraryItem,
   bookingDraftTitleForItineraryItem,
+  bookingDocInputForExpenseEstimate,
   bookingTypeForBookingTemplate,
-  bookingTypeForExpenseEstimate,
   bookingTypeForItineraryItem,
   clearItineraryBookingTicketDetails,
   createLocalBookingDoc,
@@ -3461,39 +3461,17 @@ export function SagittariusApp({
 
   async function duplicateExpenseAsEstimate(expense: Expense) {
     if (!canEditBookings) return;
-    const sourceTripPlanId =
-      expense.tripPlanId ||
-      selectedTripPlanId ||
-      trip.mainTripPlanId ||
-      trip.activePlanVariantId;
-    const linkedItem = expense.itineraryItemId
-      ? trip.itineraryItems.find((item) => item.id === expense.itineraryItemId)
-      : null;
-    await createBookingDoc({
-      tripPlanId: sourceTripPlanId,
-      type: bookingTypeForExpenseEstimate(expense),
-      title: `Estimate: ${expense.title}`,
-      status: "draft",
-      visibility: "shared",
-      ownerMemberId: currentMember.id,
-      providerName: null,
-      confirmationCode: null,
-      startsAt: null,
-      endsAt: null,
-      timezone: trip.defaultTimezone ?? null,
-      priceAmount: expense.amount,
-      currency: expense.currency ?? "HKD",
-      travelerIds: trip.members.map((member) => member.id),
-      externalLinks: [],
-      relatedItineraryItemIds: linkedItem ? [linkedItem.id] : [],
-      relatedTaskIds: [],
-      relatedExpenseIds: [],
-      noteIds: [],
-      notes: [
-        "Plan estimate copied from an Actual Expense. This does not create or move real money.",
-        `Source actual expense: ${expense.title}`,
-      ].join("\n"),
-    });
+    await createBookingDoc(
+      bookingDocInputForExpenseEstimate(expense, {
+        currentMemberId: currentMember.id,
+        defaultTimezone: trip.defaultTimezone,
+        members: trip.members,
+        itineraryItems: trip.itineraryItems,
+        selectedTripPlanId,
+        mainTripPlanId: trip.mainTripPlanId,
+        activePlanVariantId: trip.activePlanVariantId,
+      }),
+    );
   }
 
   async function recordPaybackReminder(suggestion: SettlementSuggestion) {

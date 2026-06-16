@@ -3,6 +3,7 @@ import {
   bookingDraftDetailsForItineraryItem,
   bookingDraftTimeWindowForItineraryItem,
   bookingDraftTitleForItineraryItem,
+  bookingDocInputForExpenseEstimate,
   bookingTypeForBookingTemplate,
   bookingTypeForExpenseEstimate,
   bookingTypeForItineraryItem,
@@ -266,6 +267,88 @@ describe("booking docs helpers", () => {
     expect(bookingTypeForBookingTemplate("activity_ticket")).toBe("activity_ticket");
     expect(bookingTypeForExpenseEstimate({ category: "stay" } as Expense)).toBe("hotel");
     expect(bookingTypeForExpenseEstimate({ category: "transport" } as Expense)).toBe("public_transport");
+  });
+
+  it("builds booking estimate inputs from actual expenses", () => {
+    const trip = tripFixture(docs);
+
+    expect(
+      bookingDocInputForExpenseEstimate(
+        {
+          id: "expense-hotel",
+          title: "Hotel balance",
+          amount: 4400,
+          currency: "HKD",
+          paidBy: "member-owner",
+          category: "stay",
+          splits: { "member-owner": 2200, "member-traveler": 2200 },
+          itineraryItemId: "item-hotel",
+          tripPlanId: null,
+        },
+        {
+          currentMemberId: "member-owner",
+          defaultTimezone: "Asia/Hong_Kong",
+          members,
+          itineraryItems: trip.itineraryItems,
+          selectedTripPlanId: "plan-selected",
+          mainTripPlanId: "plan-main",
+          activePlanVariantId: "plan-active",
+        },
+      ),
+    ).toEqual({
+      tripPlanId: "plan-selected",
+      type: "hotel",
+      title: "Estimate: Hotel balance",
+      status: "draft",
+      visibility: "shared",
+      ownerMemberId: "member-owner",
+      providerName: null,
+      confirmationCode: null,
+      startsAt: null,
+      endsAt: null,
+      timezone: "Asia/Hong_Kong",
+      priceAmount: 4400,
+      currency: "HKD",
+      travelerIds: members.map((member) => member.id),
+      externalLinks: [],
+      relatedItineraryItemIds: ["item-hotel"],
+      relatedTaskIds: [],
+      relatedExpenseIds: [],
+      noteIds: [],
+      notes: [
+        "Plan estimate copied from an Actual Expense. This does not create or move real money.",
+        "Source actual expense: Hotel balance",
+      ].join("\n"),
+    });
+  });
+
+  it("falls back to trip-level plan and HKD for expense booking estimates", () => {
+    expect(
+      bookingDocInputForExpenseEstimate(
+        {
+          id: "expense-snacks",
+          title: "Snacks",
+          amount: 120,
+          paidBy: "member-owner",
+          category: "food",
+          splits: { "member-owner": 120 },
+          itineraryItemId: "missing-item",
+        },
+        {
+          currentMemberId: "member-owner",
+          members,
+          itineraryItems: [],
+          mainTripPlanId: "plan-main",
+          activePlanVariantId: "plan-active",
+        },
+      ),
+    ).toMatchObject({
+      tripPlanId: "plan-main",
+      type: "other",
+      currency: "HKD",
+      timezone: null,
+      relatedItineraryItemIds: [],
+    });
   });
 
   it("builds booking drafts from itinerary details", () => {

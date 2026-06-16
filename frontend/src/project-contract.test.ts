@@ -271,6 +271,7 @@ describe("Sagittarius project scaffold", () => {
     expect(sagittariusApp).not.toContain("function findDuplicateBookingDoc");
     expect(sagittariusApp).not.toContain("function bookingDraftTitleForItineraryItem");
     expect(sagittariusApp).not.toContain("function bookingTypeForExpenseEstimate");
+    expect(sagittariusApp).not.toContain("function bookingDocInputForExpenseEstimate");
     expect(sagittariusApp).not.toContain("function bookingDraftDetailsForItineraryItem");
     expect(sagittariusApp).not.toContain("function bookingDraftTimeWindowForItineraryItem");
     expect(sagittariusApp).not.toContain("function createLocalPhotoAlbum");
