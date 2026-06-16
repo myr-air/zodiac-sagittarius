@@ -75,6 +75,24 @@ export function normalizeExpenseSplitsFromMinor(splits: Record<string, number>):
   return Object.fromEntries(Object.entries(splits).map(([memberId, shareMinor]) => [memberId, roundMoney(shareMinor / 100)]));
 }
 
+export function normalizeExpenseRepeatCount(value: number | undefined): number {
+  if (!value || !Number.isFinite(value)) return 1;
+  return Math.min(31, Math.max(1, Math.floor(value)));
+}
+
+export function repeatExpenseLineItems(
+  lineItems: ExpenseLineItem[] | undefined,
+  repeatIndex: number,
+  repeatCount: number,
+): ExpenseLineItem[] | undefined {
+  if (!lineItems) return undefined;
+  if (repeatCount <= 1) return lineItems;
+  return lineItems.map((lineItem) => ({
+    ...lineItem,
+    id: `${lineItem.id}-repeat-${repeatIndex + 1}`,
+  }));
+}
+
 export function buildExpenseSummary(
   expenses: Expense[],
   currentMemberId: string,

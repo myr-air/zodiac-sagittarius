@@ -76,6 +76,8 @@ import {
   buildExpenseSummary,
   expenseSplitsToMinor,
   filterExpenseRemindersForTripPlan,
+  normalizeExpenseRepeatCount,
+  repeatExpenseLineItems,
   upsertExpenseReminder,
 } from "@/src/trip/expenses";
 import {
@@ -4698,24 +4700,6 @@ function getNextChildSortOrder(items: ItineraryItem[], parentItem: ItineraryItem
     .map((item) => item.sortOrder);
   if (siblingOrders.length) return Math.max(...siblingOrders) + 10;
   return parentItem.sortOrder + 10;
-}
-
-function normalizeExpenseRepeatCount(value: number | undefined): number {
-  if (!value || !Number.isFinite(value)) return 1;
-  return Math.min(31, Math.max(1, Math.floor(value)));
-}
-
-function repeatExpenseLineItems(
-  lineItems: ExpenseLineItem[] | undefined,
-  repeatIndex: number,
-  repeatCount: number,
-): ExpenseLineItem[] | undefined {
-  if (!lineItems) return undefined;
-  if (repeatCount <= 1) return lineItems;
-  return lineItems.map((lineItem) => ({
-    ...lineItem,
-    id: `${lineItem.id}-repeat-${repeatIndex + 1}`,
-  }));
 }
 
 function deriveTripCountriesFromDestination(

@@ -4,7 +4,9 @@ import {
   buildExpenseSplits,
   buildItemizedExpenseSplits,
   expenseSplitsToMinor,
+  normalizeExpenseRepeatCount,
   normalizeExpenseSplitsFromMinor,
+  repeatExpenseLineItems,
 } from "./expenses";
 import * as expenseHelpers from "./expenses";
 import type { Expense, Trip } from "./types";
@@ -103,6 +105,34 @@ describe("expense money helpers", () => {
       "member-beam": 3333,
       "member-nam": 3333,
     })).toEqual(majorSplits);
+  });
+
+  it("normalizes repeated expense counts to the supported daily range", () => {
+    expect(normalizeExpenseRepeatCount(undefined)).toBe(1);
+    expect(normalizeExpenseRepeatCount(0)).toBe(1);
+    expect(normalizeExpenseRepeatCount(Number.NaN)).toBe(1);
+    expect(normalizeExpenseRepeatCount(2.9)).toBe(2);
+    expect(normalizeExpenseRepeatCount(99)).toBe(31);
+  });
+
+  it("keeps single expense line item ids and suffixes repeated copies", () => {
+    const lineItems = [
+      {
+        id: "line-taxi",
+        title: "Taxi van",
+        amount: 120,
+        participantIds: ["member-aom", "member-beam"],
+      },
+    ];
+
+    expect(repeatExpenseLineItems(undefined, 0, 3)).toBeUndefined();
+    expect(repeatExpenseLineItems(lineItems, 0, 1)).toBe(lineItems);
+    expect(repeatExpenseLineItems(lineItems, 1, 3)).toEqual([
+      {
+        ...lineItems[0],
+        id: "line-taxi-repeat-2",
+      },
+    ]);
   });
 
   it("records settle-up payments without inflating trip spend", () => {

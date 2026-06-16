@@ -271,6 +271,8 @@ describe("Sagittarius project scaffold", () => {
     expect(sagittariusApp).not.toContain("function resolveStopPlace");
     expect(sagittariusApp).not.toContain("function locationFieldsFromCandidate");
     expect(sagittariusApp).not.toContain("function readItineraryDetailString");
+    expect(sagittariusApp).not.toContain("function normalizeExpenseRepeatCount");
+    expect(sagittariusApp).not.toContain("function repeatExpenseLineItems");
     expect(sagittariusApp).not.toContain('from "@/src/components/OverviewPage"');
     expect(sagittariusApp).not.toContain('from "@/src/components/TimelineView"');
 
