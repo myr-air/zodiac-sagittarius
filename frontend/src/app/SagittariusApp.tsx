@@ -223,6 +223,7 @@ import { TripWorkspaceImportDialog } from "@/src/trip/workspace/TripWorkspaceImp
 import { TripWorkspaceRail } from "@/src/trip/workspace/TripWorkspaceRail";
 import { TripWorkspaceViews } from "@/src/trip/workspace/TripWorkspaceViews";
 import { TripAccessLoadingFrame } from "@/src/trip/workspace/TripAccessLoadingFrame";
+import { useDailyBriefings } from "@/src/trip/workspace/use-daily-briefings";
 import { useItineraryPathWorkspace } from "@/src/trip/workspace/use-itinerary-path-workspace";
 import { useTripWorkspaceRecords } from "@/src/trip/workspace/use-trip-workspace-records";
 import { useTripWorkspaceState } from "@/src/trip/workspace/use-trip-workspace-state";
@@ -245,11 +246,6 @@ import {
   nextLocalTaskId,
 } from "@/src/trip/local-ids";
 import {
-  applyDailyBriefingOverrides,
-  buildFallbackBriefings,
-  buildPatchDailyBriefingRequest,
-} from "@/src/trip/weather-briefings";
-import {
   tripFixtureStopNotes,
   tripFixtureSuggestions,
   tripFixtureTasks,
@@ -267,7 +263,6 @@ import {
 import type {
   BookingDoc,
   BookingDocType,
-  DailyBriefingOverrides,
   Expense,
   ExpenseComment,
   ExpenseLineItem,
@@ -278,7 +273,6 @@ import type {
   StopNote,
   Suggestion,
   Trip,
-  TripDailyBriefing,
   TripMemberAccessStatus,
   TripParticipantSession,
   TripRole,
@@ -396,7 +390,6 @@ export function SagittariusApp({
   const [stopNotes, setStopNotes] = useState<StopNote[]>(() =>
     tripFixtureStopNotes.map((note) => ({ ...note })),
   );
-  const [dailyBriefings, setDailyBriefings] = useState<TripDailyBriefing[]>([]);
   const [backendExpenseSummary, setBackendExpenseSummary] =
     useState<{ tripPlanId: string; summary: ExpenseSummary } | null>(null);
   const {
@@ -498,6 +491,17 @@ export function SagittariusApp({
     dataSource === "api" && !isLocalParticipantSession(participantSession);
   const isTripLoading =
     isApiMode && Boolean(participantSession) && !isCockpitLoaded;
+  const {
+    replaceDailyBriefings,
+    resetDailyBriefings,
+    saveDailyBriefingOverrides,
+    visibleDailyBriefings,
+  } = useDailyBriefings({
+    apiClient: resolvedApiClient,
+    isApiMode,
+    participantSession,
+    trip,
+  });
   const canEdit = canTripRole(currentMember.role, "editItinerary");
   const canCreateSuggestion = canTripRole(
     currentMember.role,
@@ -546,12 +550,6 @@ export function SagittariusApp({
     () => buildItineraryView(mainPlanItems),
     [mainPlanItems],
   );
-  const visibleDailyBriefings = useMemo(
-    () =>
-      dailyBriefings.length ? dailyBriefings : buildFallbackBriefings(trip),
-    [dailyBriefings, trip],
-  );
-
   useEffect(() => {
     latestTripRef.current = trip;
   }, [latestTripRef, trip]);
@@ -692,7 +690,7 @@ export function SagittariusApp({
     void Promise.resolve().then(() => {
       if (cancelled) return;
       setIsCockpitLoaded(false);
-      setDailyBriefings([]);
+      resetDailyBriefings();
     });
 
     void resolvedApiClient
@@ -715,12 +713,12 @@ export function SagittariusApp({
           clearParticipantSession();
           setParticipantSession(null);
           setAccessError("unauthenticated");
-          setDailyBriefings([]);
+          resetDailyBriefings();
           setIsCockpitLoaded(false);
           return;
         }
         setAccessError("trip load failed");
-        setDailyBriefings([]);
+        resetDailyBriefings();
         setIsCockpitLoaded(false);
       });
 
@@ -731,17 +729,24 @@ export function SagittariusApp({
       )
       .then((briefings) => {
         if (cancelled) return;
-        setDailyBriefings(briefings);
+        replaceDailyBriefings(briefings);
       })
       .catch(() => {
         if (cancelled) return;
-        setDailyBriefings([]);
+        resetDailyBriefings();
       });
 
     return () => {
       cancelled = true;
     };
-  }, [isApiMode, participantSession, resolvedApiClient, setTripState]);
+  }, [
+    isApiMode,
+    participantSession,
+    replaceDailyBriefings,
+    resetDailyBriefings,
+    resolvedApiClient,
+    setTripState,
+  ]);
 
   useEffect(() => {
     if (
@@ -1746,34 +1751,6 @@ export function SagittariusApp({
     if (!nextSelectedItemId) setContextRailVisibility(false);
     setDialogState((current) =>
       current?.mode === "edit" && current.item.id === itemId ? null : current,
-    );
-  }
-
-  async function saveDailyBriefingOverrides(
-    date: string,
-    version: number,
-    overrides: DailyBriefingOverrides,
-  ) {
-    if (isApiMode && resolvedApiClient && participantSession) {
-      const patched = await resolvedApiClient.patchDailyBriefing(
-        trip.id,
-        date,
-        participantSession.sessionToken,
-        buildPatchDailyBriefingRequest(overrides, {
-          clientMutationId: nextClientMutationId("daily-briefing"),
-          expectedVersion: version,
-        }),
-      );
-      setDailyBriefings((current) =>
-        current.map((briefing) =>
-          briefing.date === date ? patched : briefing,
-        ),
-      );
-      return;
-    }
-
-    setDailyBriefings((current) =>
-      applyDailyBriefingOverrides(current, trip, date, overrides),
     );
   }
 

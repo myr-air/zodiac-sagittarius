@@ -221,6 +221,7 @@ describe("Sagittarius project scaffold", () => {
     expect(sagittariusApp).toContain("@/src/trip/workspace/itinerary-import-api");
     expect(sagittariusApp).toContain("@/src/trip/workspace/selected-trip-plan");
     expect(sagittariusApp).toContain("@/src/trip/workspace/trip-plan-records");
+    expect(sagittariusApp).toContain("@/src/trip/workspace/use-daily-briefings");
     expect(sagittariusApp).toContain("@/src/trip/workspace/use-itinerary-path-workspace");
     expect(sagittariusApp).toContain("@/src/trip/workspace/use-trip-workspace-records");
     expect(sagittariusApp).toContain("@/src/trip/workspace/use-trip-workspace-state");
@@ -247,6 +248,8 @@ describe("Sagittarius project scaffold", () => {
     expect(sagittariusApp).not.toContain("setSidebarCollapsed");
     expect(sagittariusApp).not.toContain("setToastDismissed");
     expect(sagittariusApp).not.toContain("setToastDismissing");
+    expect(sagittariusApp).not.toContain("buildFallbackBriefings");
+    expect(sagittariusApp).not.toContain("buildPatchDailyBriefingRequest");
     expect(sagittariusApp).not.toContain("function resolveSelectedTripPlanId");
     expect(sagittariusApp).not.toContain("function rememberSelectedTripPlanId");
     expect(sagittariusApp).not.toContain("function selectTripPlanRecords");
