@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   buildCreateItineraryItemRequest,
+  buildInlineItineraryItemPatchRequest,
   buildMoveItineraryItemRequest,
   buildMoveItineraryItemToDayRequest,
   buildPatchItineraryItemRequest,
@@ -200,6 +201,31 @@ describe("itinerary API request builders", () => {
       planVariantId: "plan-main",
       day: "2025-05-18",
       itemIds: ["earlier", "tie-breaker", "later"],
+    });
+  });
+
+  it("builds inline itinerary item patch requests with place map fields", () => {
+    expect(
+      buildInlineItineraryItemPatchRequest(
+        {
+          activity: "Late lunch",
+          place: "Central Market",
+        },
+        {
+          clientMutationId: "mutation-6",
+          expectedVersion: 12,
+        },
+      ),
+    ).toEqual({
+      clientMutationId: "mutation-6",
+      expectedVersion: 12,
+      patch: {
+        activity: "Late lunch",
+        place: "Central Market",
+        address: "Central Market",
+        coordinates: null,
+        mapLink: "https://maps.google.com/?q=Central%20Market",
+      },
     });
   });
 });

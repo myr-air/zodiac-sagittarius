@@ -278,6 +278,7 @@ describe("Sagittarius project scaffold", () => {
     expect(sagittariusApp).not.toContain("function mergeUpdatedItineraryBranchIntoTrip");
     expect(sagittariusApp).not.toContain("function shiftItineraryItemsToStartDate");
     expect(sagittariusApp).not.toContain("function buildInlineItineraryItemPatch");
+    expect(sagittariusApp).not.toContain("function buildInlineItineraryItemPatchRequest");
     expect(sagittariusApp).not.toContain("function buildCreateItineraryItemRequest");
     expect(sagittariusApp).not.toContain("function buildPatchItineraryItemRequest");
     expect(sagittariusApp).not.toContain("function buildMoveItineraryItemRequest");

@@ -137,6 +137,7 @@ import {
 } from "@/src/trip/itinerary-time";
 import {
   buildCreateItineraryItemRequest,
+  buildInlineItineraryItemPatchRequest,
   buildMoveItineraryItemRequest,
   buildMoveItineraryItemToDayRequest,
   buildPatchItineraryItemRequest,
@@ -1779,20 +1780,10 @@ export function SagittariusApp({
             currentTrip.id,
             itemId,
             participantSession.sessionToken,
-            {
+            buildInlineItineraryItemPatchRequest(nextPatch, {
               clientMutationId: nextClientMutationId("itinerary-inline-patch"),
               expectedVersion: item.version,
-              patch: {
-                ...nextPatch,
-                ...(nextPatch.place !== undefined
-                  ? {
-                      address: nextPatch.place,
-                      coordinates: null,
-                      mapLink: buildMapLink(nextPatch.place),
-                    }
-                  : {}),
-              },
-            },
+            }),
           );
           const nextTrip = {
             ...latestTripRef.current,

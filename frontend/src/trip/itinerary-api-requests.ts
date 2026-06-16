@@ -4,6 +4,8 @@ import type {
   ReorderItineraryItemsApiRequest,
 } from "./api-client";
 import type { BuildItineraryItemDraftInput } from "./itinerary";
+import type { InlineItineraryTimePatch } from "./itinerary-time";
+import { buildMapLink } from "./place-resolution";
 import type { ItineraryItem } from "./types";
 
 export interface BuildPatchItineraryItemRequestOptions {
@@ -29,6 +31,11 @@ export interface BuildReorderItineraryItemsRequestOptions {
   clientMutationId: string;
   day: string;
   planVariantId: string;
+}
+
+export interface BuildInlineItineraryItemPatchRequestOptions {
+  clientMutationId: string;
+  expectedVersion: number;
 }
 
 export function buildCreateItineraryItemRequest(
@@ -141,5 +148,25 @@ export function buildReorderItineraryItemsRequest(
           a.sortOrder - b.sortOrder || a.startTime.localeCompare(b.startTime),
       )
       .map((item) => item.id),
+  };
+}
+
+export function buildInlineItineraryItemPatchRequest(
+  patch: InlineItineraryTimePatch,
+  options: BuildInlineItineraryItemPatchRequestOptions,
+): PatchItineraryItemApiRequest {
+  return {
+    clientMutationId: options.clientMutationId,
+    expectedVersion: options.expectedVersion,
+    patch: {
+      ...patch,
+      ...(patch.place !== undefined
+        ? {
+            address: patch.place,
+            coordinates: null,
+            mapLink: buildMapLink(patch.place),
+          }
+        : {}),
+    },
   };
 }
