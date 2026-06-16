@@ -359,6 +359,7 @@ describe("Sagittarius project scaffold", () => {
     expect(sagittariusApp).not.toContain("workspaceToastDismissClassName");
     expect(sagittariusApp).not.toContain("portalLoadingCardClassName");
     expect(sagittariusApp).not.toContain("function buildMapLink");
+    expect(sagittariusApp).not.toContain("function buildMapPlaceResolutionRequest");
     expect(sagittariusApp).not.toContain("function mapResolutionPlaceHint");
     expect(sagittariusApp).not.toContain("function mapResolutionActivity");
     expect(sagittariusApp).not.toContain("function resolveStopPlace");

@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import {
+  buildMapPlaceResolutionRequest,
   buildMapLink,
   locationFieldsFromCandidate,
   mapResolutionActivity,
@@ -42,6 +43,37 @@ describe("place resolution helpers", () => {
 
     expect(mapResolutionPlaceHint(item)).toBe("HKG");
     expect(mapResolutionActivity(item)).toBe("Airport transfer from BKK to HKG");
+  });
+
+  it("builds map place resolution requests for itinerary rows", () => {
+    const item = {
+      ...seedTrip.itineraryItems[0],
+      activity: "Airport transfer",
+      activityType: "travel",
+      day: "2026-06-18",
+      place: "Hong Kong Airport",
+      details: { from: "BKK", to: "HKG" },
+    } as ItineraryItem;
+
+    expect(
+      buildMapPlaceResolutionRequest(item, seedTrip, {
+        clientMutationId: "mutation-map-place-resolve",
+        placeHint: "HKG",
+      }),
+    ).toEqual({
+      clientMutationId: "mutation-map-place-resolve",
+      activity: "Airport transfer from BKK to HKG",
+      placeHint: "HKG",
+      destinationLabel: seedTrip.destinationLabel,
+      countries: Array.from(
+        new Set(
+          [seedTrip.originCountryCode, ...(seedTrip.countries ?? [])].filter(
+            (country): country is string => Boolean(country),
+          ),
+        ),
+      ),
+      day: "2026-06-18",
+    });
   });
 
   it("uses explicit map links or candidate fields for location updates", () => {

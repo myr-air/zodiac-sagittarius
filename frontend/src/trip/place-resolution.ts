@@ -51,6 +51,27 @@ export function mapResolutionActivity(item: ItineraryItem): string {
   ]);
 }
 
+export function buildMapPlaceResolutionRequest(
+  item: ItineraryItem,
+  trip: Pick<Trip, "countries" | "destinationLabel" | "originCountryCode">,
+  options: { clientMutationId: string; placeHint: string },
+): PlaceResolutionRequest {
+  return {
+    clientMutationId: options.clientMutationId,
+    activity: mapResolutionActivity(item),
+    placeHint: options.placeHint,
+    destinationLabel: trip.destinationLabel,
+    countries: Array.from(
+      new Set(
+        [trip.originCountryCode, ...(trip.countries ?? [])].filter(
+          (country): country is string => Boolean(country),
+        ),
+      ),
+    ),
+    day: item.day,
+  };
+}
+
 export async function resolveStopPlace(
   values: StopPlaceResolutionValues,
   trip: Trip,

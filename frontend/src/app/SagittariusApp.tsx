@@ -181,8 +181,8 @@ import {
 } from "@/src/trip/tasks";
 import {
   buildMapLink,
+  buildMapPlaceResolutionRequest,
   locationFieldsFromCandidate,
-  mapResolutionActivity,
   mapResolutionPlaceHint,
   resolveStopPlace,
   type PlaceResolver,
@@ -1879,20 +1879,12 @@ export function SagittariusApp({
         continue;
       }
       try {
-        const response = await effectivePlaceResolver({
-          clientMutationId: nextClientMutationId("map-place-resolve"),
-          activity: mapResolutionActivity(item),
-          placeHint,
-          destinationLabel: trip.destinationLabel,
-          countries: Array.from(
-            new Set(
-              [trip.originCountryCode, ...(trip.countries ?? [])].filter(
-                (country): country is string => Boolean(country),
-              ),
-            ),
-          ),
-          day: item.day,
-        });
+        const response = await effectivePlaceResolver(
+          buildMapPlaceResolutionRequest(item, trip, {
+            clientMutationId: nextClientMutationId("map-place-resolve"),
+            placeHint,
+          }),
+        );
         if (response.status !== "resolved") {
           result.skipped += 1;
           continue;
