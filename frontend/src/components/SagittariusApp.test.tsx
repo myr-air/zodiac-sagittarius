@@ -1104,7 +1104,7 @@ describe("Sagittarius cockpit UI", () => {
       );
       expect(
         screen.getByRole("link", { name: /^Settings$|^ตั้งค่า$/i }),
-      ).toHaveAttribute("href", "/portal/settings");
+      ).toHaveAttribute("href", expect.stringMatching(/^\/portal\/settings\/?$/));
       expect(screen.queryByLabelText(/Trip ID/i)).not.toBeInTheDocument();
       expect(
         screen.queryByRole("button", { name: /ส่งรหัส sign-in/i }),

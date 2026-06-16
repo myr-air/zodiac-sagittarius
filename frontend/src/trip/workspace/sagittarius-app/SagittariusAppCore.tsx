@@ -741,7 +741,10 @@ export function SagittariusApp({
       .loadTrip(participantSession.tripId, participantSession.sessionToken)
       .then((cockpit) => {
         if (cancelled) return;
+        const loadedTripPlanId = resolveSelectedTripPlanId(cockpit.trip);
         replaceCockpitFromApi(cockpit);
+        setSelectedTripPlanId(loadedTripPlanId);
+        rememberSelectedTripPlanId(cockpit.trip, loadedTripPlanId);
       })
       .catch((caught) => {
         if (cancelled) return;

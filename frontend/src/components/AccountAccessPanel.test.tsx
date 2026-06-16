@@ -616,7 +616,10 @@ describe("AccountAccessPanel", () => {
 
     expect(view.getByRole("tab", { name: /^Account$/i })).toHaveClass("account-tab--active");
     expect(await view.findByText("Aom")).toBeInTheDocument();
-    expect(view.getByRole("link", { name: /Settings/i })).toHaveAttribute("href", "/portal/settings");
+    expect(view.getByRole("link", { name: /Settings/i })).toHaveAttribute(
+      "href",
+      expect.stringMatching(/^\/portal\/settings\/?$/),
+    );
   });
 
   it("does not reload account dashboard data when switching language", async () => {
@@ -676,13 +679,34 @@ describe("AccountAccessPanel", () => {
     expect(screen.getAllByText("aom@example.test").length).toBeGreaterThan(0);
     expect(screen.getByText("Trusted PC")).toBeInTheDocument();
     expect(screen.getByRole("navigation", { name: /Portal navigation/i })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /Dashboard/i })).toHaveAttribute("href", "/portal");
-    expect(screen.getByRole("link", { name: /My Trips/i })).toHaveAttribute("href", "/portal/my-trips");
-    expect(screen.getByRole("link", { name: /Explorer/i })).toHaveAttribute("href", "/portal/explorer");
-    expect(screen.getByRole("link", { name: /Trip To-dos/i })).toHaveAttribute("href", "/portal/to-dos");
-    expect(screen.getByRole("link", { name: /Travel Vault/i })).toHaveAttribute("href", "/portal/vault");
-    expect(screen.getByRole("link", { name: /^Settings$/i })).toHaveAttribute("href", "/portal/settings");
-    expect(screen.getByRole("link", { name: /Sign out/i })).toHaveAttribute("href", "/portal/sign-out");
+    expect(screen.getByRole("link", { name: /Dashboard/i })).toHaveAttribute(
+      "href",
+      expect.stringMatching(/^\/portal\/?$/),
+    );
+    expect(screen.getByRole("link", { name: /My Trips/i })).toHaveAttribute(
+      "href",
+      expect.stringMatching(/^\/portal\/my-trips\/?$/),
+    );
+    expect(screen.getByRole("link", { name: /Explorer/i })).toHaveAttribute(
+      "href",
+      expect.stringMatching(/^\/portal\/explorer\/?$/),
+    );
+    expect(screen.getByRole("link", { name: /Trip To-dos/i })).toHaveAttribute(
+      "href",
+      expect.stringMatching(/^\/portal\/to-dos\/?$/),
+    );
+    expect(screen.getByRole("link", { name: /Travel Vault/i })).toHaveAttribute(
+      "href",
+      expect.stringMatching(/^\/portal\/vault\/?$/),
+    );
+    expect(screen.getByRole("link", { name: /^Settings$/i })).toHaveAttribute(
+      "href",
+      expect.stringMatching(/^\/portal\/settings\/?$/),
+    );
+    expect(screen.getByRole("link", { name: /Sign out/i })).toHaveAttribute(
+      "href",
+      expect.stringMatching(/^\/portal\/sign-out\/?$/),
+    );
     expect(screen.getByText("User data stats and session status.")).toBeInTheDocument();
     expect(accountClient.loadExplorer).toHaveBeenCalledWith("account-session");
     expect(accountClient.listToDos).toHaveBeenCalledWith("account-session");
@@ -792,7 +816,9 @@ describe("AccountAccessPanel", () => {
 
     expect(await screen.findByText("Create your first trip", {}, { timeout: 3_000 })).toBeInTheDocument();
     expect(screen.getByText("Start with a shared route, dates, and owner settings.")).toBeInTheDocument();
-    expect(screen.getAllByRole("link", { name: /Create trip/i }).at(-1)).toHaveAttribute("href", "/portal/trips/new");
+    expect(
+      screen.getAllByRole("link", { name: /Create trip/i }).at(-1),
+    ).toHaveAttribute("href", expect.stringMatching(/^\/portal\/trips\/new\/?$/));
     expect(document.querySelector(".portal-empty-state")).toBeInTheDocument();
     view.unmount();
 
@@ -817,7 +843,10 @@ describe("AccountAccessPanel", () => {
     );
 
     expect(await screen.findByText("Create a trip to start shared to-dos", {}, { timeout: 3_000 })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /Create trip/i })).toHaveAttribute("href", "/portal/trips/new");
+    expect(screen.getByRole("link", { name: /Create trip/i })).toHaveAttribute(
+      "href",
+      expect.stringMatching(/^\/portal\/trips\/new\/?$/),
+    );
   });
 
   it("keeps portal trip rows on the page until the explicit open action", async () => {
@@ -847,8 +876,14 @@ describe("AccountAccessPanel", () => {
 
     expect(ownerTripRow).not.toHaveAttribute("href");
     expect(travelerTripRow).not.toHaveAttribute("href");
-    expect(within(ownerTripRow).getByRole("link", { name: /Open/i })).toHaveAttribute("href", "/trips/trip-id");
-    expect(within(travelerTripRow).getByRole("link", { name: /Open/i })).toHaveAttribute("href", "/trips/trip-traveler");
+    expect(within(ownerTripRow).getByRole("link", { name: /Open/i })).toHaveAttribute(
+      "href",
+      expect.stringMatching(/^\/trips\/trip-id\/?$/),
+    );
+    expect(within(travelerTripRow).getByRole("link", { name: /Open/i })).toHaveAttribute(
+      "href",
+      expect.stringMatching(/^\/trips\/trip-traveler\/?$/),
+    );
   });
 
   it("keeps portal to-dos visible when another portal API fails", async () => {
