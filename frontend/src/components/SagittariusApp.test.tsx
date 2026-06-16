@@ -246,7 +246,7 @@ describe("Sagittarius cockpit UI", () => {
   beforeEach(() => {
     installLocalStorageStub();
     installSessionStorageStub();
-    window.history.pushState(null, "", "/");
+    window.history.pushState(null, "", appRoutes.home());
   });
 
   it("generates collision-free local ids and falls back when randomUUID is unavailable", () => {
