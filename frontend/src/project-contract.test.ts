@@ -55,6 +55,7 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/trip/participant-session-storage.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/trip-plans.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/itinerary-time.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/place-resolution.ts"))).toBe(true);
     expect(existsSync(join(repoRoot, "backend/Cargo.toml"))).toBe(true);
     expect(existsSync(join(repoRoot, "package.json"))).toBe(false);
 
@@ -264,6 +265,12 @@ describe("Sagittarius project scaffold", () => {
     expect(sagittariusApp).not.toContain("function WorkspaceToast");
     expect(sagittariusApp).not.toContain("workspaceToastDismissClassName");
     expect(sagittariusApp).not.toContain("portalLoadingCardClassName");
+    expect(sagittariusApp).not.toContain("function buildMapLink");
+    expect(sagittariusApp).not.toContain("function mapResolutionPlaceHint");
+    expect(sagittariusApp).not.toContain("function mapResolutionActivity");
+    expect(sagittariusApp).not.toContain("function resolveStopPlace");
+    expect(sagittariusApp).not.toContain("function locationFieldsFromCandidate");
+    expect(sagittariusApp).not.toContain("function readItineraryDetailString");
     expect(sagittariusApp).not.toContain('from "@/src/components/OverviewPage"');
     expect(sagittariusApp).not.toContain('from "@/src/components/TimelineView"');
 

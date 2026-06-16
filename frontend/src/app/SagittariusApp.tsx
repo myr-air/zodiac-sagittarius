@@ -90,6 +90,15 @@ import {
   shiftItineraryItemsToStartDate,
 } from "@/src/trip/itinerary-time";
 import {
+  buildMapLink,
+  locationFieldsFromCandidate,
+  mapResolutionActivity,
+  mapResolutionPlaceHint,
+  resolveStopPlace,
+  type PlaceResolver,
+  type StopPlaceResolutionState,
+} from "@/src/trip/place-resolution";
+import {
   applyImportedItemsToItineraryPath,
   applyItemToActivityBranch,
   applyManualActivityPath,
@@ -165,9 +174,6 @@ import type {
   ItineraryItem,
   PlanStatus,
   PlanVariant,
-  PlaceResolutionCandidate,
-  PlaceResolutionRequest,
-  PlaceResolutionResponse,
   SettlementSuggestion,
   StopNote,
   Suggestion,
@@ -207,14 +213,6 @@ type PortalSection =
   | "vault"
   | "settings"
   | "sign-out";
-type PlaceResolver = (
-  request: PlaceResolutionRequest,
-) => Promise<PlaceResolutionResponse>;
-type StopPlaceResolutionState = {
-  state: "idle" | "resolving" | "ambiguous" | "unresolved";
-  candidates: PlaceResolutionCandidate[];
-};
-
 interface SagittariusAppProps {
   initialView?: PlanningView;
   requireJoin?: boolean;
@@ -1487,6 +1485,7 @@ export function SagittariusApp({
       { ...values, day },
       trip,
       effectivePlaceResolver,
+      nextClientMutationId,
     );
     if (placeResolution.state) {
       setStopPlaceResolution(placeResolution.state);
@@ -1911,6 +1910,7 @@ export function SagittariusApp({
           { ...values, day: editDay },
           trip,
           effectivePlaceResolver,
+          nextClientMutationId,
         )
       : { candidate: null, state: null };
     if (placeResolution.state) {
@@ -4700,33 +4700,6 @@ function getNextChildSortOrder(items: ItineraryItem[], parentItem: ItineraryItem
   return parentItem.sortOrder + 10;
 }
 
-function buildMapLink(place: string): string {
-  /* v8 ignore next */
-  return place ? `https://maps.google.com/?q=${encodeURIComponent(place)}` : "";
-}
-
-function mapResolutionPlaceHint(item: ItineraryItem): string {
-  if (item.activityType === "travel") {
-    return (
-      readItineraryDetailString(item.details, "to") ||
-      item.place ||
-      readItineraryDetailString(item.details, "from")
-    ).trim();
-  }
-  return item.place.trim();
-}
-
-function mapResolutionActivity(item: ItineraryItem): string {
-  if (item.activityType !== "travel") return item.activity;
-  const from = readItineraryDetailString(item.details, "from");
-  const to = readItineraryDetailString(item.details, "to") || item.place;
-  return compactText([item.activity, from ? `from ${from}` : "", to ? `to ${to}` : ""]);
-}
-
-function compactText(parts: string[]): string {
-  return parts.join(" ").split(/\s+/).filter(Boolean).join(" ");
-}
-
 function normalizeExpenseRepeatCount(value: number | undefined): number {
   if (!value || !Number.isFinite(value)) return 1;
   return Math.min(31, Math.max(1, Math.floor(value)));
@@ -4775,63 +4748,6 @@ function deriveTripCountriesFromDestination(
   );
   const uniqueCountries = Array.from(new Set(countries));
   return uniqueCountries.length ? uniqueCountries : fallbackCountries;
-}
-
-async function resolveStopPlace(
-  values: StopFormValues,
-  trip: Trip,
-  resolver: PlaceResolver | null,
-): Promise<{
-  candidate: PlaceResolutionCandidate | null;
-  state: StopPlaceResolutionState | null;
-}> {
-  if (values.resolvedPlace)
-    return { candidate: values.resolvedPlace, state: null };
-  if (safeExternalHref(values.mapLink))
-    return { candidate: null, state: null };
-  if (values.saveUnresolved || !resolver)
-    return { candidate: null, state: null };
-  try {
-    const response = await resolver({
-      clientMutationId: nextClientMutationId("place-resolve"),
-      activity: values.activity,
-      placeHint: values.place,
-      destinationLabel: trip.destinationLabel,
-      countries: trip.countries ?? [],
-      day: values.day,
-    });
-    if (response.status === "resolved") {
-      return { candidate: response.candidates[0] ?? null, state: null };
-    }
-    if (response.status === "ambiguous") {
-      return {
-        candidate: null,
-        state: { state: "ambiguous", candidates: response.candidates },
-      };
-    }
-    return { candidate: null, state: { state: "unresolved", candidates: [] } };
-  } catch {
-    return { candidate: null, state: { state: "unresolved", candidates: [] } };
-  }
-}
-
-function locationFieldsFromCandidate(
-  candidate: PlaceResolutionCandidate | null,
-  place: string,
-  mapLink?: string | null,
-) {
-  const explicitMapLink = safeExternalHref(mapLink);
-  return candidate
-    ? {
-        address: candidate.address,
-        coordinates: candidate.coordinates,
-        mapLink: explicitMapLink || candidate.mapLink,
-      }
-    : {
-        address: place,
-        coordinates: undefined,
-        mapLink: explicitMapLink || buildMapLink(place),
-      };
 }
 
 function normalizeStopHierarchyValues(values: StopFormValues): StopFormValues {
@@ -4890,14 +4806,6 @@ function resolveCreatedImportId(
     if (mappedId) return mappedId;
   }
   return id;
-}
-
-function readItineraryDetailString(
-  details: ItineraryItem["details"] | null | undefined,
-  key: string,
-): string {
-  const value = details?.[key];
-  return typeof value === "string" ? value.trim() : "";
 }
 
 function serializePhotoAlbumInputForApi(input: TripPhotoAlbumInput) {
