@@ -19,6 +19,12 @@ export interface BuildMoveItineraryItemRequestOptions {
   expectedVersion: number;
 }
 
+export interface BuildMoveItineraryItemToDayRequestOptions {
+  clientMutationId: string;
+  expectedVersion: number;
+  targetDay: string;
+}
+
 export interface BuildReorderItineraryItemsRequestOptions {
   clientMutationId: string;
   day: string;
@@ -103,6 +109,19 @@ export function buildMoveItineraryItemRequest(
       day: movedItem.day,
       parentItemId: movedItem.parentItemId ?? null,
       sortOrder: movedItem.sortOrder,
+    },
+  };
+}
+
+export function buildMoveItineraryItemToDayRequest(
+  options: BuildMoveItineraryItemToDayRequestOptions,
+): PatchItineraryItemApiRequest {
+  return {
+    clientMutationId: options.clientMutationId,
+    expectedVersion: options.expectedVersion,
+    patch: {
+      day: options.targetDay,
+      parentItemId: null,
     },
   };
 }

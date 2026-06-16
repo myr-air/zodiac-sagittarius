@@ -138,6 +138,7 @@ import {
 import {
   buildCreateItineraryItemRequest,
   buildMoveItineraryItemRequest,
+  buildMoveItineraryItemToDayRequest,
   buildPatchItineraryItemRequest,
   buildReorderItineraryItemsRequest,
 } from "@/src/trip/itinerary-api-requests";
@@ -1419,11 +1420,11 @@ export function SagittariusApp({
         trip.id,
         draggedItemId,
         participantSession.sessionToken,
-        {
+        buildMoveItineraryItemToDayRequest({
           clientMutationId: nextClientMutationId("itinerary-day-move"),
           expectedVersion: draggedItem.version,
-          patch: { day: targetDay, parentItemId: null },
-        },
+          targetDay,
+        }),
       );
       setTripState((current) => ({ ...current, trip: nextTrip }));
       setSelectedItemId(draggedItemId);

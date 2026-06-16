@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildCreateItineraryItemRequest,
   buildMoveItineraryItemRequest,
+  buildMoveItineraryItemToDayRequest,
   buildPatchItineraryItemRequest,
   buildReorderItineraryItemsRequest,
 } from "./itinerary-api-requests";
@@ -147,6 +148,23 @@ describe("itinerary API request builders", () => {
         day: "2025-05-18",
         parentItemId: "plan-block-1",
         sortOrder: 250,
+      },
+    });
+  });
+
+  it("builds move itinerary item to day patch requests", () => {
+    expect(
+      buildMoveItineraryItemToDayRequest({
+        clientMutationId: "mutation-5",
+        expectedVersion: 9,
+        targetDay: "2025-05-19",
+      }),
+    ).toEqual({
+      clientMutationId: "mutation-5",
+      expectedVersion: 9,
+      patch: {
+        day: "2025-05-19",
+        parentItemId: null,
       },
     });
   });
