@@ -99,6 +99,7 @@ import { deriveTripCountriesFromDestination } from "@/src/trip/trip-countries";
 import {
   appendExpensesToTrip,
   appendLocalExpensesToTrip,
+  buildCreateExpenseRequest,
   buildExpenseCreateDrafts,
   buildExpenseUpdateDraft,
   buildExpenseSummary,
@@ -3076,27 +3077,14 @@ export function SagittariusApp({
         const expense = await resolvedApiClient.createExpense(
           trip.id,
           participantSession.sessionToken,
-          {
+          buildCreateExpenseRequest(expenseDraft, {
             clientMutationId: nextClientMutationId("expense-create"),
-            title: expenseDraft.title,
-            amountMinor: Math.round(expenseDraft.amount * 100),
-            currency: expenseDraft.currency ?? "HKD",
-            exchangeRateToSettlementCurrency:
-              expenseDraft.exchangeRateToSettlementCurrency ?? 1,
-            notes: expenseDraft.notes ?? "",
-            receiptUrl: expenseDraft.receiptUrl ?? null,
-            lineItems: expenseDraft.lineItems,
-            comments: expenseDraft.comments ?? [],
             tripPlanId: tripPlanIdForRecord(
               trip,
               expenseDraft.itemId,
               expenseDraft.tripPlanId ?? selectedTripPlanId,
             ),
-            paidBy: expenseDraft.paidBy,
-            category: expenseDraft.category,
-            splits: expenseSplitsToMinor(expenseDraft.splits),
-            itineraryItemId: expenseDraft.itemId,
-          },
+          }),
         );
         createdExpenses.push(expense);
       }

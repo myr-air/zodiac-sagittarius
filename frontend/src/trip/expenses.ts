@@ -1,3 +1,4 @@
+import type { CreateExpenseApiRequest } from "./api-client";
 import type { Expense, ExpenseComment, ExpenseLineItem, ExpenseReminder, ExpenseSummary, Member, SettlementSuggestion, Trip } from "./types";
 
 export type ExpenseSplitMode = "equal" | "exact" | "shares" | "percentage" | "itemized";
@@ -73,6 +74,11 @@ export interface ExpenseReminderRequest {
   from: string;
   to: string;
   amountMinor: number;
+}
+
+export interface BuildCreateExpenseRequestOptions {
+  clientMutationId: string;
+  tripPlanId?: string | null;
 }
 
 interface BuildExpenseSplitsInput {
@@ -231,6 +237,29 @@ export function appendExpensesToTrip<T extends Pick<Trip, "expenses">>(
   return {
     ...trip,
     expenses: [...trip.expenses, ...expenses],
+  };
+}
+
+export function buildCreateExpenseRequest(
+  draft: ExpenseCreateDraft,
+  options: BuildCreateExpenseRequestOptions,
+): CreateExpenseApiRequest {
+  return {
+    clientMutationId: options.clientMutationId,
+    title: draft.title,
+    amountMinor: Math.round(draft.amount * 100),
+    currency: draft.currency ?? "HKD",
+    exchangeRateToSettlementCurrency:
+      draft.exchangeRateToSettlementCurrency ?? 1,
+    notes: draft.notes ?? "",
+    receiptUrl: draft.receiptUrl ?? null,
+    lineItems: draft.lineItems,
+    comments: draft.comments ?? [],
+    tripPlanId: options.tripPlanId,
+    paidBy: draft.paidBy,
+    category: draft.category,
+    splits: expenseSplitsToMinor(draft.splits),
+    itineraryItemId: draft.itemId,
   };
 }
 

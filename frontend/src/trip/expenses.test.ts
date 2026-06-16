@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   appendExpensesToTrip,
   appendLocalExpensesToTrip,
+  buildCreateExpenseRequest,
   buildExpenseCreateDrafts,
   buildExpenseSummary,
   buildExpenseSplits,
@@ -254,6 +255,47 @@ describe("expense money helpers", () => {
       splits: { "member-aom": 44.2, "member-beam": 44.2 },
       itineraryItemId: null,
       version: 1,
+    });
+  });
+
+  it("builds create expense API requests from expense drafts", () => {
+    expect(
+      buildCreateExpenseRequest(
+        {
+          itemId: "item-lunch",
+          title: "Dim sum lunch",
+          amount: 120.45,
+          currency: undefined,
+          exchangeRateToSettlementCurrency: undefined,
+          notes: undefined,
+          receiptUrl: undefined,
+          lineItems: undefined,
+          comments: undefined,
+          tripPlanId: "plan-draft",
+          paidBy: "member-aom",
+          category: "food",
+          splits: { "member-aom": 60.23, "member-beam": 60.22 },
+        },
+        {
+          clientMutationId: "expense-create-mutation",
+          tripPlanId: "plan-resolved",
+        },
+      ),
+    ).toEqual({
+      clientMutationId: "expense-create-mutation",
+      title: "Dim sum lunch",
+      amountMinor: 12045,
+      currency: "HKD",
+      exchangeRateToSettlementCurrency: 1,
+      notes: "",
+      receiptUrl: null,
+      lineItems: undefined,
+      comments: [],
+      tripPlanId: "plan-resolved",
+      paidBy: "member-aom",
+      category: "food",
+      splits: { "member-aom": 6023, "member-beam": 6022 },
+      itineraryItemId: "item-lunch",
     });
   });
 

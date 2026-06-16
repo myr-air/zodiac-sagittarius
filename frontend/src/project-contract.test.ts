@@ -310,6 +310,7 @@ describe("Sagittarius project scaffold", () => {
     expect(sagittariusApp).not.toContain("function updateLocalPhotoAlbumInTrip");
     expect(sagittariusApp).not.toContain("function removePhotoAlbumFromTrip");
     expect(sagittariusApp).not.toContain("function buildExpenseCreateDrafts");
+    expect(sagittariusApp).not.toContain("function buildCreateExpenseRequest");
     expect(sagittariusApp).not.toContain("function appendExpensesToTrip");
     expect(sagittariusApp).not.toContain("function appendLocalExpensesToTrip");
     expect(sagittariusApp).not.toContain("function buildExpenseUpdateDraft");
