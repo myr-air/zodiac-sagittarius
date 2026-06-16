@@ -1045,15 +1045,9 @@ export function SagittariusApp({
             nextClientMutationId("trip-plan-set-main"),
           ),
         );
-        setTripState((current) => {
-          const nextTrip = mergePublishedTripPlan(
-            current.trip,
-            publishedTrip,
-            tripPlanId,
-          );
-          latestTripRef.current = nextTrip;
-          return { ...current, trip: nextTrip };
-        });
+        updateApiTrip((current) =>
+          mergePublishedTripPlan(current, publishedTrip, tripPlanId),
+        );
         setSelectedTripPlanId(tripPlanId);
         rememberSelectedTripPlanId(publishedTrip, tripPlanId);
       } catch (error) {
@@ -1103,11 +1097,7 @@ export function SagittariusApp({
             nextClientMutationId("trip-plan-status"),
           ),
         );
-        setTripState((current) => {
-          const nextTrip = updateTripPlanInTrip(current.trip, updatedPlan);
-          latestTripRef.current = nextTrip;
-          return { ...current, trip: nextTrip };
-        });
+        updateApiTrip((current) => updateTripPlanInTrip(current, updatedPlan));
       } catch (error) {
         if (
           error instanceof TripApiError &&
@@ -1162,11 +1152,7 @@ export function SagittariusApp({
             nextClientMutationId("trip-plan-rename"),
           ),
         );
-        setTripState((current) => {
-          const nextTrip = updateTripPlanInTrip(current.trip, updatedPlan);
-          latestTripRef.current = nextTrip;
-          return { ...current, trip: nextTrip };
-        });
+        updateApiTrip((current) => updateTripPlanInTrip(current, updatedPlan));
       } catch (error) {
         if (
           error instanceof TripApiError &&
@@ -1213,11 +1199,9 @@ export function SagittariusApp({
             nextClientMutationId("trip-plan-create"),
           ),
         );
-        setTripState((current) => {
-          const nextTrip = updateTripPlanInTrip(current.trip, createdVariant);
-          latestTripRef.current = nextTrip;
-          return { ...current, trip: nextTrip };
-        });
+        updateApiTrip((current) =>
+          updateTripPlanInTrip(current, createdVariant),
+        );
         setSelectedTripPlanId(createdVariant.id);
         rememberSelectedTripPlanId(trip, createdVariant.id);
       } catch (error) {
@@ -1434,7 +1418,7 @@ export function SagittariusApp({
           targetDay,
         }),
       );
-      setTripState((current) => ({ ...current, trip: nextTrip }));
+      replaceApiTrip(nextTrip);
       setSelectedItemId(draggedItemId);
       return;
     }
@@ -1782,8 +1766,7 @@ export function SagittariusApp({
             latestTripRef.current,
             patchedItem,
           );
-          latestTripRef.current = nextTrip;
-          setTripState((current) => ({ ...current, trip: nextTrip }));
+          replaceApiTrip(nextTrip);
           setSelectedItemId(itemId);
           return;
         } catch (error) {
@@ -1977,6 +1960,19 @@ export function SagittariusApp({
       };
     });
     if (nextSelectedItemId) setSelectedItemId(nextSelectedItemId);
+  }
+
+  function replaceApiTrip(nextTrip: Trip) {
+    latestTripRef.current = nextTrip;
+    setTripState((current) => ({ ...current, trip: nextTrip }));
+  }
+
+  function updateApiTrip(updater: (current: Trip) => Trip) {
+    setTripState((current) => {
+      const nextTrip = updater(current.trip);
+      latestTripRef.current = nextTrip;
+      return { ...current, trip: nextTrip };
+    });
   }
 
   function undo() {
@@ -2389,8 +2385,7 @@ export function SagittariusApp({
             bookingDoc,
           ],
         };
-        latestTripRef.current = nextTrip;
-        setTripState((current) => ({ ...current, trip: nextTrip }));
+        replaceApiTrip(nextTrip);
         return bookingDoc;
       } catch (error) {
         if (
@@ -2647,8 +2642,7 @@ export function SagittariusApp({
             latestTripRef.current,
             patchedBookingDoc,
           );
-          latestTripRef.current = nextTrip;
-          setTripState((current) => ({ ...current, trip: nextTrip }));
+          replaceApiTrip(nextTrip);
           return;
         } catch (error) {
           if (
@@ -2767,8 +2761,7 @@ export function SagittariusApp({
         latestTripRef.current,
         bookingDocId,
       );
-      latestTripRef.current = nextTrip;
-      setTripState((current) => ({ ...current, trip: nextTrip }));
+      replaceApiTrip(nextTrip);
       return;
     }
     commitTrip((current) => removeBookingDocFromTrip(current, bookingDocId));
@@ -2795,8 +2788,7 @@ export function SagittariusApp({
         latestTripRef.current,
         photoAlbum,
       );
-      latestTripRef.current = nextTrip;
-      setTripState((current) => ({ ...current, trip: nextTrip }));
+      replaceApiTrip(nextTrip);
       return;
     }
     const photoAlbum = createLocalPhotoAlbum(trip, input, {
@@ -2834,8 +2826,7 @@ export function SagittariusApp({
           latestTripRef.current,
           patchedPhotoAlbum,
         );
-        latestTripRef.current = nextTrip;
-        setTripState((current) => ({ ...current, trip: nextTrip }));
+        replaceApiTrip(nextTrip);
       } catch (error) {
         if (
           error instanceof TripApiError &&
@@ -2874,8 +2865,7 @@ export function SagittariusApp({
         latestTripRef.current,
         albumId,
       );
-      latestTripRef.current = nextTrip;
-      setTripState((current) => ({ ...current, trip: nextTrip }));
+      replaceApiTrip(nextTrip);
       return;
     }
     commitTrip((current) => removePhotoAlbumFromTrip(current, albumId));
@@ -3042,10 +3032,7 @@ export function SagittariusApp({
         );
         createdExpenses.push(expense);
       }
-      setTripState((current) => ({
-        ...current,
-        trip: appendExpensesToTrip(current.trip, createdExpenses),
-      }));
+      updateApiTrip((current) => appendExpensesToTrip(current, createdExpenses));
       setBackendExpenseSummary(
         {
           tripPlanId: selectedTripPlanId,
@@ -3076,10 +3063,7 @@ export function SagittariusApp({
         expenseId,
         participantSession.sessionToken,
       );
-      setTripState((current) => ({
-        ...current,
-        trip: removeExpenseFromTrip(current.trip, expenseId),
-      }));
+      updateApiTrip((current) => removeExpenseFromTrip(current, expenseId));
       setBackendExpenseSummary(
         {
           tripPlanId: selectedTripPlanId,
@@ -3130,10 +3114,7 @@ export function SagittariusApp({
           expectedVersion: existing.version ?? 1,
         }),
       );
-      setTripState((current) => ({
-        ...current,
-        trip: replaceExpenseInTrip(current.trip, expense),
-      }));
+      updateApiTrip((current) => replaceExpenseInTrip(current, expense));
       setBackendExpenseSummary(
         {
           tripPlanId: selectedTripPlanId,
@@ -3339,17 +3320,15 @@ export function SagittariusApp({
           records: importedPlanRecords,
         });
         const deletedIds = new Set(deletedItems.map((item) => item.id));
-        setTripState((current) => {
-          const nextTrip = mergeApiImportedPlanRecordsIntoTrip({
+        updateApiTrip((current) =>
+          mergeApiImportedPlanRecordsIntoTrip({
             createdItems,
-            currentTrip: current.trip,
+            currentTrip: current,
             deletedItemIds: deletedIds,
             previewTrip,
             records: createdPlanRecords,
-          });
-          latestTripRef.current = nextTrip;
-          return { ...current, trip: nextTrip };
-        });
+          }),
+        );
         setTasks((current) =>
           mergeImportedTasks(current, createdPlanRecords),
         );
