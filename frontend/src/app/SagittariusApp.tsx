@@ -137,7 +137,9 @@ import {
 } from "@/src/trip/itinerary-time";
 import {
   buildCreateItineraryItemRequest,
+  buildMoveItineraryItemRequest,
   buildPatchItineraryItemRequest,
+  buildReorderItineraryItemsRequest,
 } from "@/src/trip/itinerary-api-requests";
 import {
   applyTripSettingsToTrip,
@@ -1301,15 +1303,10 @@ export function SagittariusApp({
           trip.id,
           draggedItemId,
           participantSession.sessionToken,
-          {
+          buildMoveItineraryItemRequest(movedItem, {
             clientMutationId: nextClientMutationId("itinerary-day-move"),
             expectedVersion: draggedItem.version,
-            patch: {
-              day: movedItem.day,
-              parentItemId: movedItem.parentItemId ?? null,
-              sortOrder: movedItem.sortOrder,
-            },
-          },
+          }),
         );
         setTripState((current) => ({
           ...current,
@@ -1318,26 +1315,23 @@ export function SagittariusApp({
         setSelectedItemId(draggedItemId);
         return;
       }
-      const orderedIds = nextTrip.itineraryItems
+      const reorderedDayItems = nextTrip.itineraryItems
         .filter(
           (item) =>
             item.planVariantId === targetItem.planVariantId &&
             item.day === targetItem.day,
-        )
-        .sort(
-          (a, b) =>
-            a.sortOrder - b.sortOrder || a.startTime.localeCompare(b.startTime),
-        )
-        .map((item) => item.id);
+        );
       const reorderedItems = await resolvedApiClient.reorderItineraryItems(
         trip.id,
         participantSession.sessionToken,
-        {
-          clientMutationId: nextClientMutationId("itinerary-reorder"),
-          planVariantId: targetItem.planVariantId,
-          day: targetItem.day,
-          itemIds: orderedIds,
-        },
+        buildReorderItineraryItemsRequest(
+          reorderedDayItems,
+          {
+            clientMutationId: nextClientMutationId("itinerary-reorder"),
+            day: targetItem.day,
+            planVariantId: targetItem.planVariantId,
+          },
+        ),
       );
       setTripState((current) => {
         const itemsById = new Map(
@@ -1387,15 +1381,10 @@ export function SagittariusApp({
         trip.id,
         draggedItemId,
         participantSession.sessionToken,
-        {
+        buildMoveItineraryItemRequest(movedItem, {
           clientMutationId: nextClientMutationId("itinerary-block-move"),
           expectedVersion: draggedItem.version,
-          patch: {
-            day: movedItem.day,
-            parentItemId: movedItem.parentItemId ?? null,
-            sortOrder: movedItem.sortOrder,
-          },
-        },
+        }),
       );
       setTripState((current) => ({
         ...current,

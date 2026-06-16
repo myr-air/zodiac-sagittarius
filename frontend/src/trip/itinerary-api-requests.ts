@@ -1,6 +1,7 @@
 import type {
   CreateItineraryItemApiRequest,
   PatchItineraryItemApiRequest,
+  ReorderItineraryItemsApiRequest,
 } from "./api-client";
 import type { BuildItineraryItemDraftInput } from "./itinerary";
 import type { ItineraryItem } from "./types";
@@ -11,6 +12,17 @@ export interface BuildPatchItineraryItemRequestOptions {
   coordinates: ItineraryItem["coordinates"];
   expectedVersion: number;
   mapLink: string;
+}
+
+export interface BuildMoveItineraryItemRequestOptions {
+  clientMutationId: string;
+  expectedVersion: number;
+}
+
+export interface BuildReorderItineraryItemsRequestOptions {
+  clientMutationId: string;
+  day: string;
+  planVariantId: string;
 }
 
 export function buildCreateItineraryItemRequest(
@@ -77,5 +89,38 @@ export function buildPatchItineraryItemRequest(
       details: input.details,
       note: input.note,
     },
+  };
+}
+
+export function buildMoveItineraryItemRequest(
+  movedItem: Pick<ItineraryItem, "day" | "parentItemId" | "sortOrder">,
+  options: BuildMoveItineraryItemRequestOptions,
+): PatchItineraryItemApiRequest {
+  return {
+    clientMutationId: options.clientMutationId,
+    expectedVersion: options.expectedVersion,
+    patch: {
+      day: movedItem.day,
+      parentItemId: movedItem.parentItemId ?? null,
+      sortOrder: movedItem.sortOrder,
+    },
+  };
+}
+
+export function buildReorderItineraryItemsRequest(
+  dayItems: Pick<ItineraryItem, "id" | "sortOrder" | "startTime">[],
+  options: BuildReorderItineraryItemsRequestOptions,
+): ReorderItineraryItemsApiRequest {
+  return {
+    clientMutationId: options.clientMutationId,
+    planVariantId: options.planVariantId,
+    day: options.day,
+    itemIds: dayItems
+      .slice()
+      .sort(
+        (a, b) =>
+          a.sortOrder - b.sortOrder || a.startTime.localeCompare(b.startTime),
+      )
+      .map((item) => item.id),
   };
 }
