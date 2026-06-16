@@ -50,8 +50,8 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/SagittariusAppCore.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/index.ts"))).toBe(true);
-    expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-record-state.ts"))).toBe(true);
-    expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-record-actions.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-record-state.ts"))).toBe(false);
+    expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-record-actions.ts"))).toBe(false);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-records.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/use-workspace-record-state.ts"))).toBe(false);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/storybook-support.ts"))).toBe(true);
