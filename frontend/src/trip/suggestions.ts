@@ -22,3 +22,13 @@ export function approveSuggestion(items: ItineraryItem[], suggestion: Suggestion
 
   return { status: "approved", suggestion: { ...checked, status: "approved" }, items };
 }
+
+export function replaceSuggestionById(
+  suggestions: Suggestion[],
+  suggestionId: string,
+  replacement: Suggestion,
+): Suggestion[] {
+  return suggestions.map((candidate) =>
+    candidate.id === suggestionId ? replacement : candidate,
+  );
+}

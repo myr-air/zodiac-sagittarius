@@ -19,7 +19,6 @@ import {
   nextLocalSuggestionId,
   nextLocalTaskId,
   normalizeInlineTimePatch,
-  replaceSuggestionById,
 } from "@/src/app/SagittariusApp";
 import {
   TripApiError,
@@ -29,6 +28,7 @@ import {
 } from "@/src/trip/api-client";
 import { tripParticipantSessionStorageKey } from "@/src/trip/auth";
 import { normalizeExpenseSplitsFromMinor } from "@/src/trip/expenses";
+import { replaceSuggestionById } from "@/src/trip/suggestions";
 import { I18nProvider } from "@/src/i18n/I18nProvider";
 import { renderWithI18n } from "@/src/i18n/test-utils";
 import { tripStorageKey } from "@/src/trip/repository";

@@ -19,7 +19,8 @@ import {
   validateItineraryItem,
 } from "./itinerary";
 import { createLocalTripRepository } from "./repository";
-import { approveSuggestion, detectSuggestionConflict } from "./suggestions";
+import { approveSuggestion, detectSuggestionConflict, replaceSuggestionById } from "./suggestions";
+import type { Suggestion } from "./types";
 
 describe("itinerary planning domain", () => {
   const tripDates = getTripDates(seedTrip.startDate, seedTrip.endDate);
@@ -592,6 +593,22 @@ describe("itinerary planning domain", () => {
       suggestion: { status: "conflicted" },
     });
     expect(detectSuggestionConflict(seedTrip.itineraryItems, { ...baseSuggestion, status: "approved" })).toMatchObject({ status: "approved" });
+  });
+
+  it("replaces one suggestion by id without changing the rest of the queue", () => {
+    expect(
+      replaceSuggestionById(
+        [
+          { id: "suggestion-a", status: "pending" },
+          { id: "suggestion-b", status: "pending" },
+        ] as Suggestion[],
+        "suggestion-b",
+        { id: "suggestion-b", status: "approved" } as Suggestion,
+      ),
+    ).toEqual([
+      { id: "suggestion-a", status: "pending" },
+      { id: "suggestion-b", status: "approved" },
+    ]);
   });
 
   it("summarizes owed, owing, and settled expense states", () => {

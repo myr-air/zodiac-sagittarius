@@ -290,6 +290,7 @@ describe("Sagittarius project scaffold", () => {
     expect(sagittariusApp).not.toContain("function isForbidden");
     expect(sagittariusApp).not.toContain("function isAuthFailure");
     expect(sagittariusApp).not.toContain("function slugifyFilePart");
+    expect(sagittariusApp).not.toContain("function replaceSuggestionById");
     expect(sagittariusApp).not.toContain('from "@/src/components/OverviewPage"');
     expect(sagittariusApp).not.toContain('from "@/src/components/TimelineView"');
 

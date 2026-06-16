@@ -178,7 +178,7 @@ import {
 import { seedTrip } from "@/src/trip/seed";
 import { decodeTripId } from "@/src/trip/ids";
 import { safeExternalHref } from "@/src/trip/safe-links";
-import { approveSuggestion } from "@/src/trip/suggestions";
+import { approveSuggestion, replaceSuggestionById } from "@/src/trip/suggestions";
 import type {
   BookingDoc,
   BookingDocType,
@@ -4705,14 +4705,4 @@ export function SagittariusApp({
 
 function normalizeStopHierarchyValues(values: StopFormValues): StopFormValues {
   return values.parentItemId ? { ...values, isPlanBlock: false } : values;
-}
-
-export function replaceSuggestionById(
-  suggestions: Suggestion[],
-  suggestionId: string,
-  replacement: Suggestion,
-): Suggestion[] {
-  return suggestions.map((candidate) =>
-    candidate.id === suggestionId ? replacement : candidate,
-  );
 }
