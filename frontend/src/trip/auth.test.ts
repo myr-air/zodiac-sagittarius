@@ -2,12 +2,14 @@ import { describe, expect, it } from "vitest";
 import { seedTrip } from "./seed";
 import {
   canTripRole,
+  appendTripParticipant,
   claimTripParticipant,
   createTripParticipant,
   createTripParticipantSession,
   findSessionMember,
   hashLocalSecret,
   linkTripParticipantToUser,
+  replaceTripParticipant,
   resetTripParticipantClaim,
   setTripParticipantPassword,
   setTripParticipantAccessStatus,
@@ -79,6 +81,26 @@ describe("trip participant auth", () => {
     expect(existing.members.at(-1)).toMatchObject({ id: "member-nam-2", displayName: "Nam", role: "traveler", accessStatus: "active" });
     expect(fallback.members.at(-1)).toMatchObject({ id: "member-member", displayName: "!!!", role: "viewer" });
     expect(blank).toBe(fallback);
+  });
+
+  it("replaces and appends participants from API responses", () => {
+    const replacement = {
+      ...seedTrip.members.find((member) => member.id === "member-beam")!,
+      displayName: "Beam updated",
+    };
+    const replaced = replaceTripParticipant(seedTrip, replacement);
+    const appended = appendTripParticipant(seedTrip, {
+      id: "member-new",
+      displayName: "New friend",
+      role: "traveler",
+      presence: "offline",
+      color: "#111827",
+    });
+
+    expect(replaced.members.find((member) => member.id === "member-beam")).toBe(replacement);
+    expect(replaced.members.find((member) => member.id === "member-aom")).toBe(seedTrip.members.find((member) => member.id === "member-aom"));
+    expect(appended.members).toHaveLength(seedTrip.members.length + 1);
+    expect(appended.members.at(-1)?.id).toBe("member-new");
   });
 
   it("maps roles to trip capabilities", () => {

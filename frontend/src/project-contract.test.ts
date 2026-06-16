@@ -240,6 +240,8 @@ describe("Sagittarius project scaffold", () => {
     expect(sagittariusApp).not.toContain("function clearParticipantSession");
     expect(sagittariusApp).not.toContain("function loadPersistedTrip");
     expect(sagittariusApp).not.toContain("function persistTripDraft");
+    expect(sagittariusApp).not.toContain("function replaceTripParticipant");
+    expect(sagittariusApp).not.toContain("function appendTripParticipant");
     expect(sagittariusApp).not.toContain("function nextLocalItemId");
     expect(sagittariusApp).not.toContain("function nextLocalSuggestionId");
     expect(sagittariusApp).not.toContain("function nextLocalTaskId");

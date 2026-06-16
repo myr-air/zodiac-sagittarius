@@ -50,9 +50,11 @@ import {
 } from "@/src/account/session-storage";
 import {
   canTripRole,
+  appendTripParticipant,
   createTripParticipant,
   findSessionMember,
   nextTripMemberColor,
+  replaceTripParticipant,
   resetTripParticipantClaim,
   setTripParticipantPassword,
   setTripParticipantAccessStatus,
@@ -2280,12 +2282,7 @@ export function SagittariusApp({
         memberId,
         participantSession.sessionToken,
       );
-      commitTrip((current) => ({
-        ...current,
-        members: current.members.map((candidate) =>
-          candidate.id === memberId ? member : candidate,
-        ),
-      }));
+      commitTrip((current) => replaceTripParticipant(current, member));
       return;
     }
     commitTrip((current) => resetTripParticipantClaim(current, memberId));
@@ -2304,12 +2301,7 @@ export function SagittariusApp({
         participantSession.sessionToken,
         { role },
       );
-      commitTrip((current) => ({
-        ...current,
-        members: current.members.map((candidate) =>
-          candidate.id === memberId ? member : candidate,
-        ),
-      }));
+      commitTrip((current) => replaceTripParticipant(current, member));
       return;
     }
     commitTrip((current) => updateTripParticipantRole(current, memberId, role));
@@ -2328,12 +2320,7 @@ export function SagittariusApp({
         participantSession.sessionToken,
         { accessStatus },
       );
-      commitTrip((current) => ({
-        ...current,
-        members: current.members.map((candidate) =>
-          candidate.id === memberId ? member : candidate,
-        ),
-      }));
+      commitTrip((current) => replaceTripParticipant(current, member));
       return;
     }
     commitTrip((current) =>
@@ -2351,12 +2338,7 @@ export function SagittariusApp({
         participantSession.sessionToken,
         { participantPassword: password },
       );
-      commitTrip((current) => ({
-        ...current,
-        members: current.members.map((candidate) =>
-          candidate.id === memberId ? member : candidate,
-        ),
-      }));
+      commitTrip((current) => replaceTripParticipant(current, member));
       return;
     }
     commitTrip((current) =>
@@ -2380,10 +2362,7 @@ export function SagittariusApp({
           color: nextTripMemberColor(trip.members.length),
         },
       );
-      commitTrip((current) => ({
-        ...current,
-        members: [...current.members, member],
-      }));
+      commitTrip((current) => appendTripParticipant(current, member));
       return;
     }
     commitTrip((current) => createTripParticipant(current, input));

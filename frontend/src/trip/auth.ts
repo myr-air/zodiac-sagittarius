@@ -61,6 +61,22 @@ export function createTripParticipant(trip: Trip, input: { displayName: string; 
   };
 }
 
+export function replaceTripParticipant(trip: Trip, member: Member): Trip {
+  return {
+    ...trip,
+    members: trip.members.map((candidate) =>
+      candidate.id === member.id ? member : candidate,
+    ),
+  };
+}
+
+export function appendTripParticipant(trip: Trip, member: Member): Trip {
+  return {
+    ...trip,
+    members: [...trip.members, member],
+  };
+}
+
 export function updateTripParticipantRole(trip: Trip, memberId: string, role: Exclude<TripRole, "owner">): Trip {
   return {
     ...trip,
