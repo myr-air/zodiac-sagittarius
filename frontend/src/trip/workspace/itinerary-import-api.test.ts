@@ -3,10 +3,14 @@ import type { TripApiClient } from "@/src/trip/api-client";
 import type {
   BookingDoc,
   Expense,
+  ItineraryItem,
   StopNote,
   TripTask,
 } from "@/src/trip/types";
-import { createImportedPlanRecordsViaApi } from "./itinerary-import-api";
+import {
+  buildImportedItineraryItemCreateRequest,
+  createImportedPlanRecordsViaApi,
+} from "./itinerary-import-api";
 import type { ImportedPlanRecords } from "./itinerary-import-model";
 
 const task: TripTask = {
@@ -72,6 +76,81 @@ const bookingDoc: BookingDoc = {
 };
 
 describe("itinerary import API adapter", () => {
+  it("builds imported itinerary item create requests with remapped parent ids", () => {
+    const item: ItineraryItem = {
+      activity: "Imported museum",
+      activityType: "attraction",
+      address: "100 Museum Road",
+      coordinates: { lat: 22.3, lng: 114.17 },
+      createdBy: "member-aom",
+      day: "2026-06-19",
+      details: { source: "import" },
+      durationMinutes: 75,
+      endOffsetDays: 0,
+      endTime: "11:15",
+      id: "preview-child",
+      itemKind: "activity",
+      linkLabel: "แผนที่",
+      mapLink: "https://maps.example/museum",
+      note: "Use group entrance",
+      parentItemId: "preview-parent",
+      pathGroupId: "path-group-import",
+      pathId: "path-rain",
+      pathName: "Rain plan",
+      pathRole: "alternative",
+      place: "Museum",
+      planVariantId: "plan-rain",
+      priority: "high",
+      sortOrder: 200,
+      startTime: "10:00",
+      status: "planned",
+      timeMode: "scheduled",
+      transportation: "MTR",
+      tripId: "trip-demo",
+      updatedAt: "2026-06-16T00:00:00.000Z",
+      version: 1,
+    };
+
+    expect(
+      buildImportedItineraryItemCreateRequest({
+        clientMutationId: "itinerary-import-create-mutation",
+        createdItemIdsByImportId: new Map(),
+        createdItemIdsByPreviewId: new Map([
+          ["preview-parent", "created-parent"],
+        ]),
+        item,
+      }),
+    ).toEqual({
+      clientMutationId: "itinerary-import-create-mutation",
+      planVariantId: "plan-rain",
+      pathGroupId: "path-group-import",
+      pathId: "path-rain",
+      pathName: "Rain plan",
+      pathRole: "alternative",
+      parentItemId: "created-parent",
+      itemKind: "activity",
+      timeMode: "scheduled",
+      isPlanBlock: undefined,
+      status: "planned",
+      priority: "high",
+      day: "2026-06-19",
+      startTime: "10:00",
+      endTime: "11:15",
+      endOffsetDays: 0,
+      activity: "Imported museum",
+      activityType: "attraction",
+      activitySubtype: null,
+      place: "Museum",
+      mapLink: "https://maps.example/museum",
+      address: "100 Museum Road",
+      coordinates: { lat: 22.3, lng: 114.17 },
+      durationMinutes: 75,
+      transportation: "MTR",
+      details: { source: "import" },
+      note: "Use group entrance",
+    });
+  });
+
   it("creates imported records and remaps linked booking relations", async () => {
     const createdTask: TripTask = {
       ...task,

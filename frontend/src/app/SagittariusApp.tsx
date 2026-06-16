@@ -182,7 +182,10 @@ import {
 } from "@/src/trip/itinerary-paths";
 import { patchApiItineraryBranchItems } from "@/src/trip/itinerary-paths-api";
 import type { PlanningView } from "@/src/trip/workspace/planning-view";
-import { createImportedPlanRecordsViaApi } from "@/src/trip/workspace/itinerary-import-api";
+import {
+  buildImportedItineraryItemCreateRequest,
+  createImportedPlanRecordsViaApi,
+} from "@/src/trip/workspace/itinerary-import-api";
 import {
   buildImportedPlanRecordsForTripPlan,
   emptyItineraryExportRecords,
@@ -191,7 +194,6 @@ import {
   mergeImportedStopNotes,
   mergeImportedTasks,
   pendingItineraryImportFromDocument,
-  resolveCreatedImportId,
   shouldUseApiItineraryImport,
   type PendingItineraryImport,
 } from "@/src/trip/workspace/itinerary-import-model";
@@ -3385,38 +3387,12 @@ export function SagittariusApp({
           const createdItem = await resolvedApiClient.createItineraryItem(
             trip.id,
             participantSession.sessionToken,
-            {
+            buildImportedItineraryItemCreateRequest({
               clientMutationId: nextClientMutationId("itinerary-import-create"),
-              planVariantId: item.planVariantId,
-              pathGroupId: item.pathGroupId,
-              pathId: item.pathId,
-              pathName: item.pathName,
-              pathRole: item.pathRole,
-              parentItemId: resolveCreatedImportId(item.parentItemId, [
-                createdItemIdsByImportId,
-                createdItemIdsByPreviewId,
-              ]),
-              itemKind: item.itemKind,
-              timeMode: item.timeMode,
-              isPlanBlock: item.isPlanBlock,
-              status: item.status,
-              priority: item.priority,
-              day: item.day,
-              startTime: item.startTime,
-              endTime: item.endTime,
-              endOffsetDays: item.endOffsetDays,
-              activity: item.activity,
-              activityType: item.activityType,
-              activitySubtype: item.activitySubtype ?? null,
-              place: item.place,
-              mapLink: item.mapLink,
-              address: item.address,
-              coordinates: item.coordinates,
-              durationMinutes: item.durationMinutes,
-              transportation: item.transportation,
-              details: item.details,
-              note: item.note,
-            },
+              createdItemIdsByImportId,
+              createdItemIdsByPreviewId,
+              item,
+            }),
           );
           createdItems.push(createdItem);
           if (importedItem) {
