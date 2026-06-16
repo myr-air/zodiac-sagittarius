@@ -197,7 +197,10 @@ import {
   nextLocalSuggestionId,
   nextLocalTaskId,
 } from "@/src/trip/local-ids";
-import { buildFallbackBriefings } from "@/src/trip/weather-briefings";
+import {
+  applyDailyBriefingOverrides,
+  buildFallbackBriefings,
+} from "@/src/trip/weather-briefings";
 import {
   tripFixtureStopNotes,
   tripFixtureSuggestions,
@@ -2112,15 +2115,7 @@ export function SagittariusApp({
     }
 
     setDailyBriefings((current) =>
-      (current.length ? current : buildFallbackBriefings(trip)).map((briefing) =>
-        briefing.date === date
-          ? {
-              ...briefing,
-              manualOverrides: { ...briefing.manualOverrides, ...overrides },
-              version: briefing.version + 1,
-            }
-          : briefing,
-      ),
+      applyDailyBriefingOverrides(current, trip, date, overrides),
     );
   }
 

@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
-import type { TripDailyBriefing } from "./types";
-import { briefingsForStrip, thaiWeekdayTone, weatherGraphicLabel } from "./weather-briefings";
+import type { Trip, TripDailyBriefing } from "./types";
+import {
+  applyDailyBriefingOverrides,
+  briefingsForStrip,
+  thaiWeekdayTone,
+  weatherGraphicLabel,
+} from "./weather-briefings";
 
 const briefing = (date: string, high: number | null, low: number | null): TripDailyBriefing => ({
   tripId: "trip-1",
@@ -46,4 +51,55 @@ describe("weather briefings", () => {
     expect(weatherGraphicLabel("rain")).toBe("Rain");
     expect(weatherGraphicLabel("unknown-code")).toBe("Weather");
   });
+
+  it("applies daily briefing overrides and increments the briefing version", () => {
+    expect(
+      applyDailyBriefingOverrides(
+        [briefing("2026-07-11", 33, 28)],
+        tripFixture(),
+        "2026-07-11",
+        { dayTitle: "Peak day", outfitAdvice: "Bring a light rain shell." },
+      )[0],
+    ).toMatchObject({
+      date: "2026-07-11",
+      manualOverrides: {
+        dayTitle: "Peak day",
+        outfitAdvice: "Bring a light rain shell.",
+      },
+      version: 2,
+    });
+  });
+
+  it("creates fallback briefings before applying local overrides", () => {
+    expect(
+      applyDailyBriefingOverrides([], tripFixture(), "2026-07-12", {
+        festivalNote: "Check ferry crowd before leaving.",
+      }).find((item) => item.date === "2026-07-12"),
+    ).toMatchObject({
+      locationLabel: "Hong Kong",
+      manualOverrides: expect.objectContaining({
+        festivalNote: "Check ferry crowd before leaving.",
+      }),
+      version: 2,
+    });
+  });
 });
+
+function tripFixture(): Trip {
+  return {
+    id: "trip-1",
+    joinId: "JOIN",
+    joinPasswordHash: "hash",
+    name: "Hong Kong",
+    destinationLabel: "Hong Kong",
+    startDate: "2026-07-11",
+    endDate: "2026-07-12",
+    activePlanVariantId: "plan-main",
+    planVariants: [
+      { id: "plan-main", tripId: "trip-1", name: "Main", kind: "main", description: "" },
+    ],
+    members: [],
+    itineraryItems: [],
+    expenses: [],
+  };
+}

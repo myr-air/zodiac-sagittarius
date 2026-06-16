@@ -1,6 +1,6 @@
 import { getTripDates } from "./itinerary";
 import type { IconName } from "@/src/components/icons";
-import type { ItineraryItem, Trip, TripDailyBriefing } from "./types";
+import type { DailyBriefingOverrides, ItineraryItem, Trip, TripDailyBriefing } from "./types";
 
 export interface ThaiWeekdayTone {
   name: "sunday" | "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday";
@@ -148,4 +148,22 @@ export function buildFallbackBriefings(trip: Trip): TripDailyBriefing[] {
     const fallbackLabel = stop?.place?.trim() ? stop.place : trip.destinationLabel;
     return fallbackWeatherBriefing(trip.id, date, fallbackLabel, fallbackKey, stop?.coordinates ?? null);
   });
+}
+
+export function applyDailyBriefingOverrides(
+  briefings: TripDailyBriefing[],
+  trip: Trip,
+  date: string,
+  overrides: DailyBriefingOverrides,
+): TripDailyBriefing[] {
+  return (briefings.length ? briefings : buildFallbackBriefings(trip)).map(
+    (briefing) =>
+      briefing.date === date
+        ? {
+            ...briefing,
+            manualOverrides: { ...briefing.manualOverrides, ...overrides },
+            version: briefing.version + 1,
+          }
+        : briefing,
+  );
 }
