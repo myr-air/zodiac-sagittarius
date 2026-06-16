@@ -224,6 +224,16 @@ export function appendLocalExpensesToTrip<T extends Pick<Trip, "id" | "expenses"
   return { ...trip, expenses };
 }
 
+export function appendExpensesToTrip<T extends Pick<Trip, "expenses">>(
+  trip: T,
+  expenses: Expense[],
+): T {
+  return {
+    ...trip,
+    expenses: [...trip.expenses, ...expenses],
+  };
+}
+
 export function buildExpenseUpdateDraft<
   T extends Pick<Trip, "members" | "itineraryItems" | "mainTripPlanId" | "activePlanVariantId">,
 >(
@@ -272,6 +282,18 @@ export function buildExpenseUpdateDraft<
   };
 }
 
+export function replaceExpenseInTrip<T extends Pick<Trip, "expenses">>(
+  trip: T,
+  expense: Expense,
+): T {
+  return {
+    ...trip,
+    expenses: trip.expenses.map((candidate) =>
+      candidate.id === expense.id ? expense : candidate,
+    ),
+  };
+}
+
 export function updateLocalExpenseInTrip<T extends Pick<Trip, "expenses">>(
   trip: T,
   draft: ExpenseUpdateDraft,
@@ -301,6 +323,16 @@ export function updateLocalExpenseInTrip<T extends Pick<Trip, "expenses">>(
           }
         : expense,
     ),
+  };
+}
+
+export function removeExpenseFromTrip<T extends Pick<Trip, "expenses">>(
+  trip: T,
+  expenseId: string,
+): T {
+  return {
+    ...trip,
+    expenses: trip.expenses.filter((expense) => expense.id !== expenseId),
   };
 }
 

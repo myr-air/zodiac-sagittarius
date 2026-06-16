@@ -95,6 +95,7 @@ import {
 } from "@/src/trip/trip-plans";
 import { deriveTripCountriesFromDestination } from "@/src/trip/trip-countries";
 import {
+  appendExpensesToTrip,
   appendLocalExpensesToTrip,
   buildExpenseCreateDrafts,
   buildExpenseUpdateDraft,
@@ -103,6 +104,8 @@ import {
   expenseSplitsToMinor,
   filterExpenseRemindersForTripPlan,
   recordLocalExpenseReminderInTrip,
+  removeExpenseFromTrip,
+  replaceExpenseInTrip,
   updateLocalExpenseInTrip,
 } from "@/src/trip/expenses";
 import {
@@ -3249,10 +3252,7 @@ export function SagittariusApp({
       }
       setTripState((current) => ({
         ...current,
-        trip: {
-          ...current.trip,
-          expenses: [...current.trip.expenses, ...createdExpenses],
-        },
+        trip: appendExpensesToTrip(current.trip, createdExpenses),
       }));
       setBackendExpenseSummary(
         {
@@ -3286,12 +3286,7 @@ export function SagittariusApp({
       );
       setTripState((current) => ({
         ...current,
-        trip: {
-          ...current.trip,
-          expenses: current.trip.expenses.filter(
-            (expense) => expense.id !== expenseId,
-          ),
-        },
+        trip: removeExpenseFromTrip(current.trip, expenseId),
       }));
       setBackendExpenseSummary(
         {
@@ -3305,10 +3300,7 @@ export function SagittariusApp({
       );
       return;
     }
-    commitTrip((current) => ({
-      ...current,
-      expenses: current.expenses.filter((expense) => expense.id !== expenseId),
-    }));
+    commitTrip((current) => removeExpenseFromTrip(current, expenseId));
   }
 
   async function updateExpense(input: {
@@ -3362,12 +3354,7 @@ export function SagittariusApp({
       );
       setTripState((current) => ({
         ...current,
-        trip: {
-          ...current.trip,
-          expenses: current.trip.expenses.map((candidate) =>
-            candidate.id === input.expenseId ? expense : candidate,
-          ),
-        },
+        trip: replaceExpenseInTrip(current.trip, expense),
       }));
       setBackendExpenseSummary(
         {

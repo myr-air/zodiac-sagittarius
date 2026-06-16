@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  appendExpensesToTrip,
   appendLocalExpensesToTrip,
   buildExpenseCreateDrafts,
   buildExpenseSummary,
@@ -12,6 +13,8 @@ import {
   normalizeExpenseSplitsFromMinor,
   repeatExpenseLineItems,
   recordLocalExpenseReminderInTrip,
+  removeExpenseFromTrip,
+  replaceExpenseInTrip,
   updateLocalExpenseInTrip,
 } from "./expenses";
 import * as expenseHelpers from "./expenses";
@@ -372,6 +375,49 @@ describe("expense money helpers", () => {
       version: 4,
     });
     expect(nextTrip.expenses[1]).toBe(trip.expenses[1]);
+  });
+
+  it("appends, replaces, and removes expenses in trip collections", () => {
+    const trip = {
+      expenses: [
+        {
+          id: "expense-taxi",
+          title: "Taxi",
+          amount: 80,
+          paidBy: "member-aom",
+          category: "transport",
+          splits: { "member-aom": 80 },
+        },
+      ],
+    } as Pick<Trip, "expenses">;
+    const dinner = {
+      id: "expense-dinner",
+      title: "Dinner",
+      amount: 120,
+      paidBy: "member-beam",
+      category: "food",
+      splits: { "member-aom": 60, "member-beam": 60 },
+    } satisfies Expense;
+
+    const appended = appendExpensesToTrip(trip, [dinner]);
+    expect(appended.expenses.map((expense) => expense.id)).toEqual([
+      "expense-taxi",
+      "expense-dinner",
+    ]);
+    expect(trip.expenses.map((expense) => expense.id)).toEqual(["expense-taxi"]);
+
+    const replaced = replaceExpenseInTrip(appended, {
+      ...dinner,
+      title: "Dinner updated",
+    });
+    expect(replaced.expenses.find((expense) => expense.id === "expense-dinner")).toMatchObject({
+      id: "expense-dinner",
+      title: "Dinner updated",
+    });
+
+    expect(removeExpenseFromTrip(replaced, "expense-taxi").expenses).toEqual([
+      expect.objectContaining({ id: "expense-dinner" }),
+    ]);
   });
 
   it("records settle-up payments without inflating trip spend", () => {
