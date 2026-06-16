@@ -17,13 +17,12 @@ import {
   type InlineItineraryItemPatch,
 } from "@/src/components/SmartItineraryTable";
 import { StopDialog, type StopFormValues } from "@/src/components/StopDialog";
-import type { TripPhotoAlbumInput } from "@/src/components/TripPhotosPage";
 import type { TripSettingsFormValues } from "@/src/components/TripSettingsPage";
 import { Select } from "@/src/components/ui";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { slugifyFilePart } from "@/src/lib/file-names";
-import { appRoutes, decodeReturnTo } from "@/src/routes/app-routes";
 import { resolveJoinPostAuthReturnTo } from "@/src/trip/join-return";
+import { appRoutes, decodeReturnTo } from "@/src/trip/workspace/sagittarius-app/support";
 import {
   createTripApiClient,
   TripApiError,
@@ -35,15 +34,6 @@ import {
   isForbidden,
   isUnauthenticated,
 } from "@/src/trip/api-errors";
-import {
-  appendPhotoAlbumToTrip,
-  buildCreatePhotoAlbumRequest,
-  buildPatchPhotoAlbumRequest,
-  createLocalPhotoAlbum,
-  removePhotoAlbumFromTrip,
-  replacePhotoAlbumInTrip,
-  updateLocalPhotoAlbumInTrip,
-} from "@/src/trip/photo-albums";
 import {
   createAccountApiClient,
   type AccountSession,
@@ -204,6 +194,7 @@ import { useWorkspaceChrome } from "@/src/trip/workspace/use-workspace-chrome";
 import { useWorkspaceNavigation } from "@/src/trip/workspace/use-workspace-navigation";
 import { WorkspaceToast } from "@/src/trip/workspace/WorkspaceToast";
 import {
+  useWorkspacePhotoAlbums,
   useWorkspaceRecords,
   useWorkspaceTripPlanCommands,
 } from "./hooks";
@@ -216,7 +207,6 @@ import {
   nextLocalBookingDocId,
   nextLocalExpenseId,
   nextLocalItemId,
-  nextLocalPhotoAlbumId,
 } from "@/src/trip/local-ids";
 import { loadPersistedTripDraft } from "@/src/trip/repository";
 import { seedTrip } from "@/src/trip/seed";
@@ -494,6 +484,22 @@ export function SagittariusApp({
     participantSession,
     selectedTripPlanId,
     tripId: trip.id,
+  });
+  const {
+    createPhotoAlbum,
+    deletePhotoAlbum,
+    updatePhotoAlbum,
+  } = useWorkspacePhotoAlbums({
+    apiClient: resolvedApiClient,
+    canEditPhotoAlbums,
+    commitTrip,
+    currentMemberId: currentMember.id,
+    isApiMode,
+    latestTripRef,
+    participantSession,
+    replaceApiTrip,
+    setTripState,
+    trip,
   });
 
   useEffect(() => {
@@ -831,7 +837,7 @@ export function SagittariusApp({
       typeof window === "undefined"
     )
       return;
-    if (!window.location.pathname.startsWith("/join")) return;
+    if (!window.location.pathname.startsWith(appRoutes.join())) return;
     const returnToParam = new URLSearchParams(window.location.search).get("rt");
     const returnTo = returnToParam ? decodeReturnTo(returnToParam) : null;
     const target =
@@ -2167,110 +2173,6 @@ export function SagittariusApp({
       return;
     }
     commitTrip((current) => removeBookingDocFromTrip(current, bookingDocId));
-  }
-
-  async function createPhotoAlbum(input: TripPhotoAlbumInput) {
-    if (!canEditPhotoAlbums) return;
-    const title = input.title.trim();
-    const url = input.url.trim();
-    if (!title || !url) return;
-    if (isApiMode && resolvedApiClient && participantSession) {
-      const photoAlbum = await resolvedApiClient.createPhotoAlbum(
-        trip.id,
-        participantSession.sessionToken,
-        buildCreatePhotoAlbumRequest({
-          ...input,
-          title,
-          url,
-        }, {
-          clientMutationId: nextClientMutationId("photo-album-create"),
-        }),
-      );
-      const nextTrip = appendPhotoAlbumToTrip(
-        latestTripRef.current,
-        photoAlbum,
-      );
-      replaceApiTrip(nextTrip);
-      return;
-    }
-    const photoAlbum = createLocalPhotoAlbum(trip, input, {
-      title,
-      url,
-      createdBy: currentMember.id,
-      updatedAt: localMutationTimestamp,
-      nextPhotoAlbumId: nextLocalPhotoAlbumId,
-    });
-    commitTrip((current) => appendPhotoAlbumToTrip(current, photoAlbum));
-  }
-
-  async function updatePhotoAlbum(
-    albumId: string,
-    input: TripPhotoAlbumInput,
-  ) {
-    if (!canEditPhotoAlbums) return;
-    if (isApiMode && resolvedApiClient && participantSession) {
-      const currentTrip = latestTripRef.current;
-      const photoAlbum = currentTrip.photoAlbumLinks?.find(
-        (candidate) => candidate.id === albumId,
-      );
-      if (!photoAlbum) return;
-      try {
-        const patchedPhotoAlbum = await resolvedApiClient.patchPhotoAlbum(
-          trip.id,
-          albumId,
-          participantSession.sessionToken,
-          buildPatchPhotoAlbumRequest(input, {
-            clientMutationId: nextClientMutationId("photo-album-patch"),
-            expectedVersion: photoAlbum.version,
-          }),
-        );
-        const nextTrip = replacePhotoAlbumInTrip(
-          latestTripRef.current,
-          patchedPhotoAlbum,
-        );
-        replaceApiTrip(nextTrip);
-      } catch (error) {
-        if (
-          error instanceof TripApiError &&
-          error.code === "version_conflict"
-        ) {
-          const latest = await resolvedApiClient.loadTrip(
-            trip.id,
-            participantSession.sessionToken,
-          );
-          latestTripRef.current = latest.trip;
-          setTripState({ trip: latest.trip, past: [], future: [] });
-          return;
-        }
-        throw error;
-      }
-      return;
-    }
-    commitTrip((current) =>
-      updateLocalPhotoAlbumInTrip(current, albumId, input, {
-        title: input.title.trim(),
-        url: input.url.trim(),
-        updatedAt: localMutationTimestamp,
-      }),
-    );
-  }
-
-  async function deletePhotoAlbum(albumId: string) {
-    if (!canEditPhotoAlbums) return;
-    if (isApiMode && resolvedApiClient && participantSession) {
-      await resolvedApiClient.deletePhotoAlbum(
-        trip.id,
-        albumId,
-        participantSession.sessionToken,
-      );
-      const nextTrip = removePhotoAlbumFromTrip(
-        latestTripRef.current,
-        albumId,
-      );
-      replaceApiTrip(nextTrip);
-      return;
-    }
-    commitTrip((current) => removePhotoAlbumFromTrip(current, albumId));
   }
 
   async function createExpense(input: {

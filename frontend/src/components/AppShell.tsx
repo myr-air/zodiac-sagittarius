@@ -4,11 +4,11 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { LanguageSwitch } from "@/src/i18n/LanguageSwitch";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
-import { appRoutes, tripWorkspaceNavItems } from "@/src/routes/app-routes";
 import { decodeTripId } from "@/src/trip/ids";
 import type { PlanningView } from "@/src/trip/workspace/planning-view";
 import type { Member, Trip } from "@/src/trip/types";
 import { Icon } from "./icons";
+import { appRoutes, tripWorkspaceNavItems } from "@/src/trip/workspace/sagittarius-app/support";
 
 interface AppShellProps {
   activeView: PlanningView;
@@ -23,17 +23,19 @@ interface AppShellProps {
 
 export function resolveViewFromPath(pathname: string, tripId: string, initialView: PlanningView): PlanningView {
   const normalizedPath = pathname.replace(/\/+$/, "");
+  const tripsPrefix = appRoutes.trips();
 
-  if (!normalizedPath.startsWith("/trips/")) return initialView;
+  if (!normalizedPath.startsWith(`${tripsPrefix}/`)) return initialView;
 
-  const rawTripSegment = normalizedPath.slice("/trips/".length).split("/")[0];
+  const rawTripSegment = normalizedPath.slice(`${tripsPrefix}/`.length).split("/")[0];
   const decodedTripSegment = decodeTripId(rawTripSegment);
   if (decodedTripSegment !== tripId) return initialView;
 
-  if (normalizedPath === `/trips/${rawTripSegment}`) return initialView;
-  if (!normalizedPath.startsWith(`/trips/${rawTripSegment}/`)) return initialView;
+  const scopedTripPath = `${tripsPrefix}/${rawTripSegment}`;
+  if (normalizedPath === scopedTripPath) return initialView;
+  if (!normalizedPath.startsWith(`${scopedTripPath}/`)) return initialView;
 
-  const viewSegment = normalizedPath.slice(`/trips/${rawTripSegment}/`.length).split("/")[0];
+  const viewSegment = normalizedPath.slice(`${scopedTripPath}/`.length).split("/")[0];
 
   if (viewSegment === "itinerary") return "itinerary";
   if (viewSegment === "map") return "map";

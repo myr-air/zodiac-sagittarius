@@ -1,3 +1,4 @@
+export { useWorkspacePhotoAlbums } from "./use-workspace-photo-albums";
 export { useWorkspaceRecords } from "./use-workspace-records";
 export { useWorkspaceRecordActions } from "./use-workspace-record-actions";
 export { useWorkspaceRecordState } from "./use-workspace-record-state";

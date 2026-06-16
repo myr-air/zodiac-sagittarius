@@ -2,6 +2,7 @@ import { act, fireEvent, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { renderWithI18n } from "@/src/i18n/test-utils";
+import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
 import { seedTrip } from "@/src/trip/seed";
 import { TripMembersPage } from "./TripMembersPage";
 
@@ -59,7 +60,7 @@ describe("TripMembersPage", () => {
     await act(async () => {
       await Promise.resolve();
     });
-    expect(writeText).toHaveBeenCalledWith(expect.stringContaining("/join/HK-SZ-2025"));
+    expect(writeText).toHaveBeenCalledWith(expect.stringContaining(appRoutes.join("HK-SZ-2025")));
     expect(screen.getByRole("status")).toHaveTextContent("คัดลอกแล้ว");
 
     fireEvent.click(screen.getByRole("button", { name: /รีเซ็ตรหัสผ่าน Travel Mate/i }));

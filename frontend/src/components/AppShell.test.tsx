@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { renderWithI18n } from "@/src/i18n/test-utils";
 import { seedTrip } from "@/src/trip/seed";
-import { encodeTripId } from "@/src/trip/ids";
+import { appRoutes, tripRoutes } from "@/src/trip/workspace/sagittarius-app/support";
 import { AppShell, resolveViewFromPath } from "./AppShell";
 
 installLocalStorageStub();
@@ -214,7 +214,7 @@ describe("AppShell", () => {
   });
 
   it("links workspace navigation to the active trip route scope", async () => {
-    const shortTripId = encodeTripId(seedTrip.id);
+    const overviewPath = appRoutes.tripOverview(seedTrip.id);
     renderWithI18n(
       <AppShell
         activeView="itinerary"
@@ -229,15 +229,15 @@ describe("AppShell", () => {
     );
 
     await screen.findByRole("link", { name: /ภาพรวม/ });
-    expect(screen.getByRole("link", { name: /ภาพรวม/ })).toHaveAttribute("href", `/trips/${shortTripId}`);
-    expect(screen.getByRole("link", { name: /แผนการเดินทาง/ })).toHaveAttribute("href", `/trips/${shortTripId}/itinerary`);
-    expect(screen.getByRole("link", { name: /แผนที่/ })).toHaveAttribute("href", `/trips/${shortTripId}/map`);
-    expect(screen.getByRole("link", { name: /ไทม์ไลน์/ })).toHaveAttribute("href", `/trips/${shortTripId}/timeline`);
-    expect(screen.getByRole("link", { name: /ตั๋วและเอกสาร/ })).toHaveAttribute("href", `/trips/${shortTripId}/bookings`);
-    expect(screen.getByRole("link", { name: /รูปภาพ/ })).toHaveAttribute("href", `/trips/${shortTripId}/photos`);
-    expect(screen.getByRole("link", { name: /สมาชิก/ })).toHaveAttribute("href", `/trips/${shortTripId}/members`);
-    expect(screen.getByRole("link", { name: /ค่าใช้จ่าย/ })).toHaveAttribute("href", `/trips/${shortTripId}/expenses`);
-    expect(screen.getByRole("link", { name: /^ตั้งค่า$/ })).toHaveAttribute("href", `/trips/${shortTripId}/settings`);
+    expect(screen.getByRole("link", { name: /ภาพรวม/ })).toHaveAttribute("href", overviewPath);
+    expect(screen.getByRole("link", { name: /แผนการเดินทาง/ })).toHaveAttribute("href", appRoutes.tripItinerary(seedTrip.id));
+    expect(screen.getByRole("link", { name: /แผนที่/ })).toHaveAttribute("href", appRoutes.tripMap(seedTrip.id));
+    expect(screen.getByRole("link", { name: /ไทม์ไลน์/ })).toHaveAttribute("href", appRoutes.tripTimeline(seedTrip.id));
+    expect(screen.getByRole("link", { name: /ตั๋วและเอกสาร/ })).toHaveAttribute("href", appRoutes.tripBookings(seedTrip.id));
+    expect(screen.getByRole("link", { name: /รูปภาพ/ })).toHaveAttribute("href", appRoutes.tripPhotos(seedTrip.id));
+    expect(screen.getByRole("link", { name: /สมาชิก/ })).toHaveAttribute("href", appRoutes.tripMembers(seedTrip.id));
+    expect(screen.getByRole("link", { name: /ค่าใช้จ่าย/ })).toHaveAttribute("href", appRoutes.tripExpenses(seedTrip.id));
+    expect(screen.getByRole("link", { name: /^ตั้งค่า$/ })).toHaveAttribute("href", appRoutes.tripSettings(seedTrip.id));
     expect(screen.queryByText("Trip ID 018f4e")).not.toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "ดูสรุปรายละเอียด" })).not.toBeInTheDocument();
   });
@@ -257,23 +257,22 @@ describe("AppShell", () => {
     );
 
     expect(screen.getByRole("navigation", { name: /Joii planning navigation/i })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /Overview/i })).toHaveAttribute("href", `/trips/${encodeTripId(seedTrip.id)}`);
+    expect(screen.getByRole("link", { name: /Overview/i })).toHaveAttribute("href", appRoutes.tripOverview(seedTrip.id));
     expect(screen.getByText("Traveler")).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Language and currency" }));
     await user.click(screen.getByRole("menuitemradio", { name: "ภาษาไทย" }));
 
     expect(screen.getByRole("navigation", { name: /เมนูวางแผน Joii/i })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /ภาพรวม/i })).toHaveAttribute("href", `/trips/${encodeTripId(seedTrip.id)}`);
+    expect(screen.getByRole("link", { name: /ภาพรวม/i })).toHaveAttribute("href", appRoutes.tripOverview(seedTrip.id));
     expect(screen.getByText("ผู้ร่วมเดินทาง")).toBeInTheDocument();
   });
 
   it("decodes short trip IDs in route path when resolving active view", () => {
-    const shortTripId = encodeTripId(seedTrip.id);
-
-    expect(resolveViewFromPath(`/trips/${shortTripId}/itinerary`, seedTrip.id, "overview")).toBe("itinerary");
-    expect(resolveViewFromPath(`/trips/${shortTripId}/expenses`, seedTrip.id, "overview")).toBe("expenses");
-    expect(resolveViewFromPath(`/trips/${seedTrip.id}/itinerary`, seedTrip.id, "overview")).toBe("itinerary");
+    expect(resolveViewFromPath(appRoutes.tripItinerary(seedTrip.id), seedTrip.id, "overview")).toBe("itinerary");
+    expect(resolveViewFromPath(appRoutes.tripExpenses(seedTrip.id), seedTrip.id, "overview")).toBe("expenses");
+    expect(resolveViewFromPath(tripRoutes.itinerary(seedTrip.id), seedTrip.id, "overview")).toBe("itinerary");
+    expect(resolveViewFromPath(tripRoutes.expenses(seedTrip.id), seedTrip.id, "overview")).toBe("expenses");
     expect(resolveViewFromPath(`/trips/trip%201`, seedTrip.id, "overview")).toBe("overview");
   });
 });

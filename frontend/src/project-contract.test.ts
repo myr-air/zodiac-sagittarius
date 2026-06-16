@@ -50,6 +50,8 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/SagittariusAppCore.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/index.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/support/index.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-photo-albums.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-record-state.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-record-actions.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-records.ts"))).toBe(true);
@@ -109,8 +111,22 @@ describe("Sagittarius project scaffold", () => {
       join(frontendRoot, "src/app/SagittariusApp.stories.tsx"),
       "utf8",
     );
+    const storySupportFacade = readFileSync(
+      join(frontendRoot, "src/trip/workspace/sagittarius-app/storybook-support.ts"),
+      "utf8",
+    );
+    const supportIndex = readFileSync(
+      join(frontendRoot, "src/trip/workspace/sagittarius-app/support/index.ts"),
+      "utf8",
+    );
 
-    expect(stories).toContain("storybook-support");
+    expect(stories).toContain("@/src/trip/workspace/sagittarius-app/support");
+    expect(storySupportFacade).toContain("./support/storybook-support");
+    expect(supportIndex).toContain('export * from "@/src/routes/app-routes"');
+    expect(supportIndex).toContain('export * from "./storybook-support"');
+    expect(supportIndex).toContain('export { portalRoutes, tripRoutes } from "./route-patterns"');
+    expect(supportIndex).toContain("route-matchers");
+    expect(supportIndex).toContain("portalRoutes");
   });
 
   it("keeps project-side routing docs current", () => {
@@ -263,6 +279,7 @@ describe("Sagittarius project scaffold", () => {
     expect(sagaCore).toContain("@/src/trip/workspace/use-daily-briefings");
     expect(sagaCore).toContain("@/src/trip/workspace/use-itinerary-path-workspace");
     expect(sagaCore).toContain("@/src/trip/workspace/use-trip-workspace-records");
+    expect(sagaCore).toContain("useWorkspacePhotoAlbums");
     expect(sagaCore).toContain("useWorkspaceRecords");
     expect(sagaCore).not.toContain("useWorkspaceRecordState");
     expect(sagaCore).not.toContain("useWorkspaceRecordActions");
@@ -393,6 +410,10 @@ describe("Sagittarius project scaffold", () => {
     expect(sagittariusApp).not.toContain("function updateLocalPhotoAlbum");
     expect(sagittariusApp).not.toContain("function updateLocalPhotoAlbumInTrip");
     expect(sagittariusApp).not.toContain("function removePhotoAlbumFromTrip");
+    expect(sagittariusApp).not.toContain('from "@/src/trip/photo-albums"');
+    expect(sagittariusApp).not.toContain("async function createPhotoAlbum");
+    expect(sagittariusApp).not.toContain("async function updatePhotoAlbum");
+    expect(sagittariusApp).not.toContain("async function deletePhotoAlbum");
     expect(sagittariusApp).not.toContain("function buildExpenseCreateDrafts");
     expect(sagittariusApp).not.toContain("function buildCreateExpenseRequest");
     expect(sagittariusApp).not.toContain("function buildPatchExpenseRequest");

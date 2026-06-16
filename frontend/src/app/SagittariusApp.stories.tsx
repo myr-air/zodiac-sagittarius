@@ -13,12 +13,14 @@ import {
   expectPhotosView,
   expectSettingsView,
   expectTimelineView,
+  portalRoutes,
   seedTripJoinId,
   storyTripId,
+  appRoutes,
+  tripRoutes,
   travelerMemberId,
   viewerMemberId,
-} from "@/src/trip/workspace/sagittarius-app/storybook-support";
-import { portalRoutes, tripRoutes } from "@/src/trip/workspace/sagittarius-app/support/route-patterns";
+} from "@/src/trip/workspace/sagittarius-app/support";
 
 const meta = {
   title: "Sagittarius/App",
@@ -37,25 +39,25 @@ export const ApiJoin: Story = { args: { accessMode: "trip-access", requireJoin: 
 export const JoinWithSeedCredentials: Story = {
   args: { accessMode: "trip-access", requireJoin: true, dataSource: "api", initialJoinCode: seedTripJoinId },
   parameters: {
-    nextjs: { navigation: { pathname: "/join" } },
+    nextjs: { navigation: { pathname: appRoutes.join() } },
   },
 };
 export const PublicEntry: Story = {
   args: { accessMode: "account-login", requireJoin: true, dataSource: "api" },
   parameters: {
-    nextjs: { navigation: { pathname: "/" } },
+    nextjs: { navigation: { pathname: appRoutes.home() } },
   },
 };
 export const AccountLogin: Story = {
   args: { accessMode: "account-login", requireJoin: true, dataSource: "api" },
   parameters: {
-    nextjs: { navigation: { pathname: "/access", query: { mode: "sign-in" } } },
+    nextjs: { navigation: { pathname: appRoutes.access("sign-in") } },
   },
 };
 export const AccountRegister: Story = {
   args: { accessMode: "account-register", requireJoin: true, dataSource: "api" },
   parameters: {
-    nextjs: { navigation: { pathname: "/access", query: { mode: "register" } } },
+    nextjs: { navigation: { pathname: appRoutes.access("register") } },
   },
 };
 export const AccountPortal: Story = {
@@ -121,13 +123,13 @@ export const AccountNewTrip: Story = {
 export const TripAccess: Story = {
   args: { accessMode: "trip-access", requireJoin: true, dataSource: "api" },
   parameters: {
-    nextjs: { navigation: { pathname: "/join" } },
+    nextjs: { navigation: { pathname: appRoutes.join() } },
   },
 };
 export const TripAccessWithJoinCode: Story = {
   args: { accessMode: "trip-access", requireJoin: true, dataSource: "api", initialJoinCode: seedTripJoinId },
   parameters: {
-    nextjs: { navigation: { pathname: `/join/${seedTripJoinId}` } },
+    nextjs: { navigation: { pathname: appRoutes.join(seedTripJoinId) } },
   },
 };
 export const TripOverviewAccess: Story = {

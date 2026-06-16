@@ -5,7 +5,7 @@ import Link from "next/link";
 import { LanguageSwitch } from "@/src/i18n/LanguageSwitch";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
-import { appRoutes } from "@/src/routes/app-routes";
+import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
 import { Icon } from "./icons";
 
 const workflowStepMeta = [
@@ -186,7 +186,7 @@ export function HomeLanding() {
               {landing.actions.login}
             </Link>
           </div>
-          <Link className={cn(homePrimaryButtonClassName, "max-[420px]:col-span-full")} href="/join">
+          <Link className={cn(homePrimaryButtonClassName, "max-[420px]:col-span-full")} href={appRoutes.join()}>
             {landing.actions.tripAccess}
             <Icon name="key" />
           </Link>
@@ -212,7 +212,7 @@ export function HomeLanding() {
               {landing.actions.startPlanning}
               <Icon name="route" />
             </Link>
-            <Link className={cn(homeSecondaryButtonClassName, homeLargeButtonClassName)} href="/join">
+            <Link className={cn(homeSecondaryButtonClassName, homeLargeButtonClassName)} href={appRoutes.join()}>
               {landing.actions.joinTrip}
               <Icon name="key" />
             </Link>
@@ -365,7 +365,7 @@ export function HomeLanding() {
 
         <div className={homeFooterLinksClassName}>
           <Link className={homeFooterLinkClassName} href={appRoutes.login()}>{landing.actions.login}</Link>
-          <Link className={homeFooterLinkClassName} href="/join">{landing.actions.tripAccess}</Link>
+          <Link className={homeFooterLinkClassName} href={appRoutes.join()}>{landing.actions.tripAccess}</Link>
           <Link className={homeFooterLinkClassName} href={appRoutes.register()}>{landing.actions.createAccount}</Link>
           <a className={homeFooterLinkClassName} href="https://github.com/GLINCKER/thesvg" target="_blank" rel="noreferrer">
             <Image src="/icons/github-thesvg.svg" alt="" width={16} height={16} />

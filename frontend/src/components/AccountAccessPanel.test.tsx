@@ -16,8 +16,11 @@ import type { TripParticipantSession } from "@/src/trip/types";
 import { TripApiError, type TripApiClient } from "@/src/trip/api-client";
 import { I18nProvider } from "@/src/i18n/I18nProvider";
 import { renderWithI18n } from "@/src/i18n/test-utils";
-import { optionalTrailingSlashPattern } from "@/src/trip/workspace/sagittarius-app/support/route-matchers";
-import { portalRoutes, tripRoutes } from "@/src/trip/workspace/sagittarius-app/support/route-patterns";
+import {
+  optionalTrailingSlashPattern,
+  portalRoutes,
+  tripRoutes,
+} from "@/src/trip/workspace/sagittarius-app/support";
 import { AccountAccessPanel } from "./AccountAccessPanel";
 
 function render(ui: ReactElement) {

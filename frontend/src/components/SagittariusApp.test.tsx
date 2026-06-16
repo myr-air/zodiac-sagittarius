@@ -42,9 +42,13 @@ import type {
   TripDailyBriefing,
   TripTask,
 } from "@/src/trip/types";
-import { appRoutes, encodeReturnTo } from "@/src/routes/app-routes";
-import { optionalTrailingSlashPattern } from "@/src/trip/workspace/sagittarius-app/support/route-matchers";
-import { portalRoutes } from "@/src/trip/workspace/sagittarius-app/support/route-patterns";
+import {
+  optionalTrailingSlashPattern,
+  portalRoutes,
+  appRoutes,
+  encodeReturnTo,
+  tripRoutes,
+} from "@/src/trip/workspace/sagittarius-app/support";
 
 function render(ui: ReactElement) {
   const result = renderWithI18n(ui, { locale: "th" });
@@ -776,10 +780,10 @@ describe("Sagittarius cockpit UI", () => {
       .spyOn(window.history, "replaceState")
       .mockImplementation(() => undefined);
     const originalLocation = window.location;
-    const safeReturnTo = `/trips/${encodeTripId(seedTrip.id)}/itinerary`;
+    const safeReturnTo = appRoutes.tripItinerary(seedTrip.id);
     const locationMock = {
       ...originalLocation,
-      pathname: "/join",
+      pathname: appRoutes.join(),
       search: `?rt=${encodeURIComponent(encodeReturnTo(safeReturnTo))}`,
       replace: vi.fn(),
     };
@@ -1417,7 +1421,7 @@ describe("Sagittarius cockpit UI", () => {
       ).toContain("transient-account-session");
       expect(storage.getItem(tripParticipantSessionStorageKey)).toBeNull();
       expect(locationMock.replace).not.toHaveBeenCalledWith(
-        expect.stringContaining("/join"),
+        expect.stringContaining(appRoutes.join()),
       );
     } finally {
       locationSpy.mockRestore();
@@ -1440,7 +1444,7 @@ describe("Sagittarius cockpit UI", () => {
         expiresAt: "2026-06-28T00:00:00.000Z",
       }),
     );
-    window.history.pushState(null, "", `/trips/${shortTripId}`);
+    window.history.pushState(null, "", tripRoutes.base(shortTripId));
     const apiClient = createApiClientForTrip(seedTrip);
 
     render(
@@ -1456,7 +1460,7 @@ describe("Sagittarius cockpit UI", () => {
     await waitFor(() => expect(apiClient.loadTrip).toHaveBeenCalledTimes(1));
     await user.click(screen.getByRole("link", { name: /แผนการเดินทาง/i }));
 
-    expect(window.location.pathname).toBe(`/trips/${shortTripId}/itinerary`);
+    expect(window.location.pathname).toBe(tripRoutes.itinerary(shortTripId));
     expect(
       screen.getByRole("link", { name: /แผนการเดินทาง/i }),
     ).toHaveAttribute("aria-current", "page");
@@ -1476,7 +1480,7 @@ describe("Sagittarius cockpit UI", () => {
         expiresAt: "2026-06-28T00:00:00.000Z",
       }),
     );
-    window.history.pushState(null, "", `/trips/${shortTripId}`);
+    window.history.pushState(null, "", tripRoutes.base(shortTripId));
     const apiClient = createApiClientForTrip(seedTrip);
 
     render(
@@ -1496,7 +1500,7 @@ describe("Sagittarius cockpit UI", () => {
     );
 
     act(() => {
-      window.history.pushState(null, "", `/trips/${shortTripId}/itinerary`);
+      window.history.pushState(null, "", tripRoutes.itinerary(shortTripId));
       window.dispatchEvent(new PopStateEvent("popstate"));
     });
 
@@ -2210,7 +2214,7 @@ describe("Sagittarius cockpit UI", () => {
     const originalLocation = window.location;
     const locationMock = {
       ...originalLocation,
-      pathname: "/join",
+      pathname: appRoutes.join(),
       search: "",
       replace: replaceMock,
     };
@@ -2240,7 +2244,7 @@ describe("Sagittarius cockpit UI", () => {
 
     await waitFor(() =>
       expect(replaceMock).toHaveBeenCalledWith(
-        `/trips/${encodeTripId(seedTrip.id)}`,
+        appRoutes.tripOverview(seedTrip.id),
       ),
     );
     await waitFor(() =>
@@ -2259,8 +2263,8 @@ describe("Sagittarius cockpit UI", () => {
     const originalLocation = window.location;
     const locationMock = {
       ...originalLocation,
-      pathname: "/join",
-      search: `?rt=${encodeURIComponent(encodeReturnTo("/trips"))}`,
+      pathname: appRoutes.join(),
+      search: `?rt=${encodeURIComponent(encodeReturnTo(appRoutes.trips()))}`,
       replace: replaceMock,
     };
     const locationSpy = vi
@@ -2289,7 +2293,7 @@ describe("Sagittarius cockpit UI", () => {
 
     await waitFor(() =>
       expect(replaceMock).toHaveBeenCalledWith(
-        `/trips/${encodeTripId(seedTrip.id)}`,
+        appRoutes.tripOverview(seedTrip.id),
       ),
     );
     await waitFor(() =>
@@ -2357,7 +2361,7 @@ describe("Sagittarius cockpit UI", () => {
     const originalLocation = window.location;
     const locationMock = {
       ...originalLocation,
-      pathname: "/trips/018fc9c4-9cf0-7384-93ee-9bdc9c8d8f99",
+      pathname: tripRoutes.base("018fc9c4-9cf0-7384-93ee-9bdc9c8d8f99"),
       search: "",
       replace: replaceMock,
     };
@@ -2389,7 +2393,7 @@ describe("Sagittarius cockpit UI", () => {
 
     await waitFor(() =>
       expect(replaceMock).toHaveBeenCalledWith(
-        `/join?rt=${encodeURIComponent(encodeReturnTo("/trips/018fc9c4-9cf0-7384-93ee-9bdc9c8d8f99"))}`,
+        appRoutes.join(undefined, tripRoutes.base("018fc9c4-9cf0-7384-93ee-9bdc9c8d8f99")),
       ),
     );
     expect(apiClient.loadTrip).not.toHaveBeenCalled();
@@ -2932,7 +2936,7 @@ describe("Sagittarius cockpit UI", () => {
     expect(membersLink).toHaveClass("rail-link--active");
     expect(membersLink).toHaveAttribute(
       "href",
-      `/trips/${shortTripId}/members`,
+      tripRoutes.members(shortTripId),
     );
     expect(
       screen.getByRole("region", { name: /สมาชิกทริป/i }),
@@ -3086,7 +3090,7 @@ describe("Sagittarius cockpit UI", () => {
     await user.click(screen.getByRole("button", { name: /คัดลอกลิงก์เชิญ/i }));
 
     expect(writeText).toHaveBeenCalledWith(
-      expect.stringContaining("/join/HK-SZ-2025"),
+      expect.stringContaining(appRoutes.join("HK-SZ-2025")),
     );
     expect(screen.getByText(/คัดลอกแล้ว/i)).toBeInTheDocument();
   });
@@ -3304,7 +3308,11 @@ describe("Sagittarius cockpit UI", () => {
   });
 
   it("keeps the map on the main Trip Plan when a backup plan is selected elsewhere", () => {
-    window.history.replaceState(null, "", "/trips/trip-seed/map?tripPlanId=plan-variant-backup");
+    window.history.replaceState(
+      null,
+      "",
+      `${tripRoutes.map("trip-seed")}?tripPlanId=plan-variant-backup`,
+    );
     const trip = {
       ...tripWithPlans(),
       itineraryItems: tripWithPlans().itineraryItems.map((item) =>

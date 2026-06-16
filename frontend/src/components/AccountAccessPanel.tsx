@@ -17,7 +17,7 @@ import type {
   AccountVaultItemSummary,
   EmailLoginStartResponse,
 } from "@/src/account/api-client";
-import { appRoutes } from "@/src/routes/app-routes";
+import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
 import type { TripApiClient, TripCockpit } from "@/src/trip/api-client";
 import type { Trip, TripCity, TripParticipantSession } from "@/src/trip/types";
 import { Badge, Button, FloatingActionButton, Select, SwapButton } from "./ui";
