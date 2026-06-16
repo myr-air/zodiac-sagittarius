@@ -248,6 +248,16 @@ describe("Sagittarius project scaffold", () => {
     expect(sagittariusApp).not.toContain("function itineraryDateTime");
     expect(sagittariusApp).not.toContain("function shiftItineraryItemsToStartDate");
     expect(sagittariusApp).not.toContain("function normalizeInlineTimePatch");
+    expect(sagittariusApp).not.toContain("function serializeBookingDocInputForApi");
+    expect(sagittariusApp).not.toContain("function normalizeBookingDocDateTimeForApi");
+    expect(sagittariusApp).not.toContain("function bookingTypeForItineraryItem");
+    expect(sagittariusApp).not.toContain("function syncItineraryDetailsWithBookingTicket");
+    expect(sagittariusApp).not.toContain("function clearItineraryBookingTicketDetails");
+    expect(sagittariusApp).not.toContain("function findDuplicateBookingDoc");
+    expect(sagittariusApp).not.toContain("function bookingDraftTitleForItineraryItem");
+    expect(sagittariusApp).not.toContain("function bookingTypeForExpenseEstimate");
+    expect(sagittariusApp).not.toContain("function bookingDraftDetailsForItineraryItem");
+    expect(sagittariusApp).not.toContain("function bookingDraftTimeWindowForItineraryItem");
     expect(sagittariusApp).not.toContain('from "@/src/components/OverviewPage"');
     expect(sagittariusApp).not.toContain('from "@/src/components/TimelineView"');
 

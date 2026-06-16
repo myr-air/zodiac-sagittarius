@@ -1,9 +1,20 @@
 import { describe, expect, it } from "vitest";
 import {
+  bookingDraftDetailsForItineraryItem,
+  bookingDraftTimeWindowForItineraryItem,
+  bookingDraftTitleForItineraryItem,
+  bookingTypeForBookingTemplate,
+  bookingTypeForExpenseEstimate,
+  bookingTypeForItineraryItem,
   buildBookingDocsSummary,
   canViewBookingDoc,
+  clearItineraryBookingTicketDetails,
   filterBookingDocs,
+  findDuplicateBookingDoc,
   findBookingDocRelations,
+  serializeBookingDocInputForApi,
+  syncItineraryDetailsWithBookingTicket,
+  uniqueStringIds,
 } from "./booking-docs";
 import type { BookingDoc, Expense, ItineraryItem, Member, StopNote, Trip } from "./types";
 
@@ -108,6 +119,175 @@ describe("booking docs helpers", () => {
     expect(relations.expenses.map((expense) => expense.id)).toEqual(["expense-flight"]);
     expect(relations.notes.map((note) => note.id)).toEqual(["note-flight"]);
     expect(relations.travelers.map((member) => member.id)).toEqual(["member-owner", "member-traveler"]);
+  });
+
+  it("serializes booking input for API patches", () => {
+    expect(
+      serializeBookingDocInputForApi({
+        type: "flight",
+        title: "  Morning flight  ",
+        status: "draft",
+        visibility: "shared",
+        providerName: "  Airline  ",
+        confirmationCode: "  ABC123  ",
+        startsAt: "2026-06-18T09:00",
+        endsAt: "2026-06-18T12:00",
+        timezone: "Asia/Bangkok",
+        priceAmount: null,
+        currency: " HKD ",
+        travelerIds: ["member-owner"],
+        externalLinks: [
+          {
+            id: "not-a-uuid",
+            label: "  Voucher  ",
+            url: " https://example.com/voucher ",
+            provider: " Drive ",
+            accessNote: " Shared ",
+          },
+        ],
+        relatedItineraryItemIds: ["item-flight"],
+        relatedTaskIds: [],
+        relatedExpenseIds: [],
+        noteIds: [],
+        notes: "  Check in online  ",
+      }),
+    ).toMatchObject({
+      title: "Morning flight",
+      startsAt: "2026-06-18T09:00:00+07:00",
+      endsAt: "2026-06-18T12:00:00+07:00",
+      providerName: "Airline",
+      confirmationCode: "ABC123",
+      timezone: "Asia/Bangkok",
+      currency: "HKD",
+      notes: "Check in online",
+      externalLinks: [
+        {
+          label: "Voucher",
+          url: "https://example.com/voucher",
+          provider: "Drive",
+          accessNote: "Shared",
+        },
+      ],
+    });
+  });
+
+  it("classifies itinerary rows and expense estimates into booking types", () => {
+    const baseItem = itineraryItem("item-transfer", "รถรับส่งไปสนามบิน", "2026-06-18");
+
+    expect(
+      bookingTypeForItineraryItem({
+        ...baseItem,
+        activity: "บินไปฮ่องกง",
+        transportation: "เครื่องบิน",
+      }),
+    ).toBe("flight");
+    expect(
+      bookingTypeForItineraryItem({
+        ...baseItem,
+        activity: "นั่งรถไฟเข้าเมือง",
+        transportation: "รถไฟ",
+      }),
+    ).toBe("train");
+    expect(
+      bookingTypeForItineraryItem({
+        ...baseItem,
+        activity: "เช็คอินโรงแรม",
+        activityType: "experience",
+        itemKind: "activity",
+        transportation: "",
+      }),
+    ).toBe("hotel");
+    expect(bookingTypeForBookingTemplate("activity_ticket")).toBe("activity_ticket");
+    expect(bookingTypeForExpenseEstimate({ category: "stay" } as Expense)).toBe("hotel");
+    expect(bookingTypeForExpenseEstimate({ category: "transport" } as Expense)).toBe("public_transport");
+  });
+
+  it("builds booking drafts from itinerary details", () => {
+    const item = {
+      ...itineraryItem("item-ticket", "Peak Tram", "2026-06-18"),
+      activityType: "attraction",
+      place: "The Peak",
+      startTime: "10:30",
+      endTime: "12:00",
+      details: {
+        provider: "Peak Tram",
+        bookingRef: "PK-123",
+        entryWindow: "Enter before noon",
+        costNote: "Group ticket",
+      },
+    } as ItineraryItem;
+
+    expect(bookingDraftTitleForItineraryItem(item, "activity_ticket")).toBe(
+      "Peak Tram ticket draft",
+    );
+    expect(bookingDraftDetailsForItineraryItem(item)).toEqual({
+      providerName: "Peak Tram",
+      confirmationCode: "PK-123",
+      notes: "Draft from itinerary: The Peak\nEnter before noon\nGroup ticket",
+    });
+    expect(bookingDraftTimeWindowForItineraryItem(item)).toEqual({
+      startsAt: "2026-06-18T10:30:00",
+      endsAt: "2026-06-18T12:00:00",
+    });
+  });
+
+  it("matches duplicate booking docs by normalized title, time, type, and itinerary item", () => {
+    const duplicateTicket = bookingDoc({
+      id: "booking-duplicate",
+      type: "flight",
+      title: "BKK to HKG flight",
+      startsAt: "2026-06-18T09:00:00+07:00",
+      relatedItineraryItemIds: ["item-flight"],
+    });
+
+    expect(
+      findDuplicateBookingDoc([duplicateTicket], {
+        type: "flight",
+        title: " bkk to hkg flight ",
+        status: "draft",
+        visibility: "shared",
+        startsAt: "2026-06-18T09:00+07:00",
+        endsAt: null,
+        travelerIds: [],
+        externalLinks: [],
+        relatedItineraryItemIds: ["item-flight"],
+        relatedTaskIds: [],
+        relatedExpenseIds: [],
+        noteIds: [],
+      }),
+    ).toBe(duplicateTicket);
+  });
+
+  it("syncs and clears itinerary booking ticket details", () => {
+    const item = itineraryItem("item-flight", "BKK to HKG flight", "2026-06-18");
+    const details = syncItineraryDetailsWithBookingTicket(item, {
+      itemId: item.id,
+      template: "flight",
+      type: "flight",
+      title: "BKK to HKG flight ticket",
+      status: "draft",
+      visibility: "shared",
+      providerName: "Cathay",
+      confirmationCode: "CX123",
+      startsAt: "2026-06-18T09:00:00+07:00",
+      endsAt: "2026-06-18T12:55:00+08:00",
+      travelerIds: ["member-owner"],
+      relatedItineraryItemIds: [item.id],
+      notes: null,
+    });
+
+    expect(details).toMatchObject({
+      mode: "flight",
+      provider: "Cathay",
+      bookingRef: "CX123",
+      ticketRef: "CX123",
+      ticketStartsAt: "2026-06-18T09:00:00+07:00",
+      ticketEndsAt: "2026-06-18T12:55:00+08:00",
+    });
+    expect(
+      clearItineraryBookingTicketDetails({ ...item, details }),
+    ).not.toHaveProperty("bookingRef");
+    expect(uniqueStringIds(["a", "b", "a", ""])).toEqual(["a", "b"]);
   });
 });
 
