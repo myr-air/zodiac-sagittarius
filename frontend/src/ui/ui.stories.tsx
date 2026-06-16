@@ -1,7 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { expect } from "storybook/test";
-import { Icon } from "./icons";
-import { ActionBar, Button, FloatingActionButton, IconButton, SegmentedControl, Select, SwapButton, TextInput } from "./ui";
+import { ActionBar, Button, FloatingActionButton, Icon, IconButton, SegmentedControl, Select, SwapButton, TextInput } from "@/src/ui";
 
 const buttonsMeta = {
   title: "Design System/Buttons",

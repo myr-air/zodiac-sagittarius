@@ -1,12 +1,6 @@
-export type SagittariusPortalSection =
-  | "dashboard"
-  | "trips"
-  | "new-trip"
-  | "explorer"
-  | "todos"
-  | "vault"
-  | "settings"
-  | "sign-out";
+import type { PortalSection } from "@/src/shared/portal";
+
+export type SagittariusPortalSection = PortalSection;
 
 export type SagittariusAccessMode =
   | "combined"

@@ -6,8 +6,8 @@ import type {
   Trip,
   ValidationWarning,
 } from "./types";
-
-export const mainItineraryPathId = "main";
+import { itineraryItemPathId, humanizePathId, mainItineraryPathId } from "./itinerary-path-identifiers";
+export { mainItineraryPathId, itineraryItemPathId, humanizePathId } from "./itinerary-path-identifiers";
 
 export interface ItineraryPathSelection {
   tripPathId?: string;
@@ -755,20 +755,6 @@ function itineraryPathGroupKey(item: ItineraryItem): string {
 
 function itineraryPathGroupHasAlternatives(items: ItineraryItem[]): boolean {
   return items.some((item) => item.pathRole === "alternative" || Boolean(item.pathId));
-}
-
-function itineraryItemPathId(item: ItineraryItem): string {
-  if (item.pathRole === "alternative") return item.pathId || item.id;
-  return mainItineraryPathId;
-}
-
-function humanizePathId(pathId: string): string {
-  return pathId
-    .replace(/^path-/, "")
-    .split(/[-_\s]+/)
-    .filter(Boolean)
-    .map((part) => part.slice(0, 1).toUpperCase() + part.slice(1))
-    .join(" ") || pathId;
 }
 
 function generatedDayFromPathId(pathId: string): string | null {

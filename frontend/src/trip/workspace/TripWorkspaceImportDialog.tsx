@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { Button, Select } from "@/src/components/ui";
+import { Button, Select } from "@/src/ui";
 import { slugifyFilePart } from "@/src/lib/file-names";
 import {
   mainItineraryPathId,

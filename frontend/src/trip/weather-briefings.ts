@@ -1,5 +1,5 @@
 import { getTripDates } from "./itinerary";
-import type { IconName } from "@/src/components/icons";
+import type { IconName } from "@/src/ui/icons";
 import type { PatchDailyBriefingApiRequest } from "./api-client";
 import type { DailyBriefingOverrides, ItineraryItem, Trip, TripDailyBriefing } from "./types";
 

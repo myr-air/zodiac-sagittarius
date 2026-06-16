@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, useState, type CSSProperties, type HTMLAttributes } from "react";
-import { Icon } from "@/src/components/icons";
+import { Icon } from "@/src/ui/icons";
 import { cn } from "@/src/lib/cn";
 import { majorCurrencyOptions, normalizeCurrencyCode, type MajorCurrencyCode } from "@/src/trip/currencies";
 import { useI18n } from "./I18nProvider";

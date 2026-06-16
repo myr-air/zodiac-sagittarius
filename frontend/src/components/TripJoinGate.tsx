@@ -1,8 +1,8 @@
 "use client";
 
 import { Fragment, FormEvent, useEffect, useMemo, useRef, useState } from "react";
-import { Icon } from "./icons";
-import { Badge, Button } from "./ui";
+import { Icon } from "@/src/ui/icons";
+import { Badge, Button } from "@/src/ui";
 import { LanguageSwitch } from "@/src/i18n/LanguageSwitch";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import type { Messages } from "@/src/i18n/messages";

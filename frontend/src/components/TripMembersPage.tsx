@@ -3,11 +3,11 @@ import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
 import type { Member, Trip, TripMemberAccessStatus, TripRole } from "@/src/trip/types";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
-import { Icon } from "./icons";
+import { Icon } from "@/src/ui/icons";
 import { TravelMotif } from "./motifs";
 import { formatTripRange, PageHeader } from "./PageHeader";
 import { PeoplePanel } from "./PeoplePanel";
-import { ActionBar, Button, FieldLabel, Select, TextInput, WorkspacePage, WorkspaceSurface } from "./ui";
+import { ActionBar, Button, FieldLabel, Select, TextInput, WorkspacePage, WorkspaceSurface } from "@/src/ui";
 
 interface TripMembersPageProps {
   trip: Trip;

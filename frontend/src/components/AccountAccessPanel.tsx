@@ -20,14 +20,15 @@ import type {
 import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
 import type { TripApiClient, TripCockpit } from "@/src/trip/api-client";
 import type { Trip, TripCity, TripParticipantSession } from "@/src/trip/types";
-import { Badge, Button, FloatingActionButton, Select, SwapButton } from "./ui";
-import { Icon } from "./icons";
+import { Badge, Button, FloatingActionButton, Select, SwapButton } from "@/src/ui";
+import { Icon } from "@/src/ui/icons";
 import { DatePickerField } from "./DateTimePickers";
 import { TripJoinGate } from "./TripJoinGate";
 import { LanguageSwitch } from "@/src/i18n/LanguageSwitch";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import type { Messages } from "@/src/i18n/messages";
 import { cn } from "@/src/lib/cn";
+import type { PortalSection } from "@/src/shared/portal";
 
 interface AccountAccessPanelProps {
   accessMode?: "combined" | "account-login" | "account-register" | "account-portal" | "trip-access";
@@ -50,7 +51,6 @@ interface AccountAccessPanelProps {
 type AccessMode = "account" | "temp";
 type AuthFlow = "login" | "register";
 type AuthTransitionDirection = "forward" | "back" | "mode";
-type PortalSection = "dashboard" | "trips" | "new-trip" | "explorer" | "todos" | "vault" | "settings" | "sign-out";
 type TripContinent = "all" | "asia" | "europe" | "north-america" | "south-america" | "oceania" | "africa";
 
 const accountEmailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

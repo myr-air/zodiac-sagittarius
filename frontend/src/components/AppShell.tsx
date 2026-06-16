@@ -7,7 +7,7 @@ import { cn } from "@/src/lib/cn";
 import { decodeTripId } from "@/src/trip/ids";
 import type { PlanningView } from "@/src/trip/workspace/planning-view";
 import type { Member, Trip } from "@/src/trip/types";
-import { Icon } from "./icons";
+import { Icon } from "@/src/ui/icons";
 import { appRoutes, tripWorkspaceNavItems } from "@/src/trip/workspace/sagittarius-app/support";
 
 interface AppShellProps {

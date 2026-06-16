@@ -1,6 +1,7 @@
-import { mainItineraryPathId, parseTime } from "./itinerary";
+import { parseTime } from "./itinerary";
 import type { ItineraryExportItem } from "./itinerary-import-export";
 import type { ItineraryItem, ItineraryPath, ItineraryPathScope, Trip } from "./types";
+import { itineraryItemPathId, mainItineraryPathId } from "./itinerary-path-identifiers";
 
 export interface ItineraryImportApplyTarget {
   memberId: string;
@@ -225,10 +226,6 @@ function buildActivityBranchPlacement(
     item,
     changedExistingItems,
   };
-}
-
-function itineraryItemPathId(item: ItineraryItem): string {
-  return item.pathRole === "alternative" ? item.pathId ?? item.id : mainItineraryPathId;
 }
 
 function pathFieldsForManualTarget(day: string, pathId: string): Pick<ItineraryItem, "pathId" | "pathName" | "pathRole"> {

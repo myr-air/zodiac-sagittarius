@@ -1,7 +1,7 @@
 "use client";
 
 import type { ComponentProps } from "react";
-import { ContextRail } from "@/src/components/ContextRail";
+import { ContextRail } from "@/src/features/itinerary/components";
 
 type ContextRailProps = ComponentProps<typeof ContextRail>;
 

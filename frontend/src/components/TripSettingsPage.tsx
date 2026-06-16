@@ -5,8 +5,8 @@ import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
 import { daysBetweenIsoDates, shiftIsoDate } from "@/src/trip/itinerary-time";
 import type { Member, Trip } from "@/src/trip/types";
-import { Button, FieldLabel, WorkspacePage, WorkspaceSurface, fieldControlClassName } from "./ui";
-import { Icon } from "./icons";
+import { Button, FieldLabel, WorkspacePage, WorkspaceSurface, fieldControlClassName } from "@/src/ui";
+import { Icon } from "@/src/ui/icons";
 import { DatePickerField } from "./DateTimePickers";
 import { PageHeader } from "./PageHeader";
 

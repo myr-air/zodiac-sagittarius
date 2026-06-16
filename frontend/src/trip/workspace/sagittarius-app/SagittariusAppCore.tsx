@@ -7,8 +7,8 @@ import {
   useState,
 } from "react";
 import { AppShell } from "@/src/components/AppShell";
-import { StopDialog } from "@/src/components/StopDialog";
-import { Select } from "@/src/components/ui";
+import { StopDialog } from "@/src/features/itinerary/components";
+import { Select } from "@/src/ui";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { resolveJoinPostAuthReturnTo } from "@/src/trip/join-return";
 import { appRoutes, decodeReturnTo } from "@/src/trip/workspace/sagittarius-app/support";

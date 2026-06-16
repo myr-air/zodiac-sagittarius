@@ -2,7 +2,7 @@ import type { Locale } from "@/src/i18n/types";
 import { cn } from "@/src/lib/cn";
 import type { TripDailyBriefing } from "@/src/trip/types";
 import { briefingsForStrip, formatSolarTime, formatWeatherTemp, thaiWeekdayTone, weatherGraphicLabel, weatherIconForCondition } from "@/src/trip/weather-briefings";
-import { Icon } from "./icons";
+import { Icon } from "@/src/ui/icons";
 
 interface WeatherForecastStripProps {
   briefings: TripDailyBriefing[];

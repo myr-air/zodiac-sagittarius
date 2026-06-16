@@ -1,7 +1,7 @@
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
 import type { Member, Suggestion } from "@/src/trip/types";
-import { Icon } from "./icons";
+import { Icon } from "@/src/ui/icons";
 
 const panelClassName = "detail-section suggestion-module grid gap-1.5 border-b border-(--color-border) px-4 py-2.5";
 const titleRowClassName = "module-title-row flex items-center justify-between gap-2.5";

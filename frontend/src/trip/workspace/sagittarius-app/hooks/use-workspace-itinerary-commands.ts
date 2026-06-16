@@ -52,9 +52,9 @@ import {
   nextClientMutationId as nextClientMutationIdFactory,
   nextLocalItemId,
 } from "@/src/trip/local-ids";
-import type { MapCoordinateResolutionResult } from "@/src/components/RouteMapView";
-import type { InlineItineraryItemPatch } from "@/src/components/SmartItineraryTable";
-import type { StopFormValues } from "@/src/components/StopDialog";
+import type { MapCoordinateResolutionResult } from "@/src/features/itinerary/components";
+import type { InlineItineraryItemPatch } from "@/src/features/itinerary/lib";
+import type { StopFormValues } from "@/src/features/itinerary/components";
 import type {
   ItineraryItem,
   Trip,

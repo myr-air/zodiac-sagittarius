@@ -63,6 +63,8 @@ export interface ItineraryBookingTicketInputLike {
   notes?: string | null;
 }
 
+export type ItineraryBookingTicketInput = ItineraryBookingTicketInputLike;
+
 export interface BookingDocsSummary {
   totalCostByCurrency: Record<string, number>;
   needsActionCount: number;

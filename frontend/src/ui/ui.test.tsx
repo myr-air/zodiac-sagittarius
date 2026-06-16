@@ -1,8 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
-import { Icon } from "./icons";
-import { formatTripRange, PageHeader, PageUserCard } from "./PageHeader";
+import { formatTripRange, PageHeader, PageUserCard } from "@/src/components/PageHeader";
 import {
   ActionBar,
   Badge,
@@ -20,7 +19,8 @@ import {
   WorkspaceSurface,
   fieldControlClassName,
   workspacePageClassName,
-} from "./ui";
+  Icon,
+} from "@/src/ui";
 
 describe("shared UI primitives", () => {
   it("composes Tailwind defaults, legacy bridge classes, and custom classes", () => {

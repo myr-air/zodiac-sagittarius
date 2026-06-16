@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import type { ApiVersionInfo, WebVersionInfo } from "@/src/app-version";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
-import { Icon } from "./icons";
+import { Icon } from "@/src/ui/icons";
 
 interface AboutAppPageProps {
   webVersion: WebVersionInfo;

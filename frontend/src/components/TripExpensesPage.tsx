@@ -13,10 +13,10 @@ import {
 } from "@/src/trip/expenses";
 import { fetchMajorExchangeRate, majorCurrencyOptions, normalizeCurrencyCode } from "@/src/trip/currencies";
 import type { Expense, ExpenseComment, ExpenseLineItem, ExpenseSummary, Member, SettlementSuggestion, Trip } from "@/src/trip/types";
-import { Icon } from "./icons";
+import { Icon } from "@/src/ui/icons";
 import { TravelMotif } from "./motifs";
 import { formatTripRange, PageHeader } from "./PageHeader";
-import { Button, IconButton, Select } from "./ui";
+import { Button, IconButton, Select } from "@/src/ui";
 
 interface TripExpensesPageProps {
   trip: Trip;

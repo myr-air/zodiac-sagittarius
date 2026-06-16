@@ -7,9 +7,9 @@ import type { BookingDoc, BookingDocStatus, BookingDocType, BookingDocVisibility
 import type { Locale } from "@/src/i18n/types";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
-import { Icon } from "./icons";
+import { Icon } from "@/src/ui/icons";
 import { formatTripRange, PageHeader } from "./PageHeader";
-import { Button, IconButton, Select, WorkspacePage, WorkspaceSurface } from "./ui";
+import { Button, IconButton, Select, WorkspacePage, WorkspaceSurface } from "@/src/ui";
 import { DateTimePickerField } from "./DateTimePickers";
 
 interface BookingsDocsPageProps {

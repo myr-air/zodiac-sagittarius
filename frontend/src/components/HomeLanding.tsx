@@ -6,7 +6,7 @@ import { LanguageSwitch } from "@/src/i18n/LanguageSwitch";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
 import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
-import { Icon } from "./icons";
+import { Icon } from "@/src/ui/icons";
 
 const workflowStepMeta = [
   {

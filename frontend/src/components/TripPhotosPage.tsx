@@ -9,9 +9,9 @@ import {
 import type { Member, Trip, TripPhotoAlbumAccess, TripPhotoAlbumLink, TripPhotoAlbumProvider } from "@/src/trip/types";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
-import { Icon } from "./icons";
+import { Icon } from "@/src/ui/icons";
 import { formatTripRange, PageHeader } from "./PageHeader";
-import { Badge, Button, IconButton, Select, WorkspacePage, WorkspaceSurface } from "./ui";
+import { Badge, Button, IconButton, Select, WorkspacePage, WorkspaceSurface } from "@/src/ui";
 
 interface TripPhotosPageProps {
   trip: Trip;

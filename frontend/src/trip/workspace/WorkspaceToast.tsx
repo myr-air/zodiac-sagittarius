@@ -1,6 +1,6 @@
 import type { AccountSession } from "@/src/account/api-client";
-import { Icon } from "@/src/components/icons";
-import { Button } from "@/src/components/ui";
+import { Icon } from "@/src/ui/icons";
+import { Button } from "@/src/ui";
 
 const workspaceToastClassName =
   "workspace-toast pointer-events-auto fixed left-1/2 top-5 z-[60] flex w-[min(480px,calc(100vw-32px))] -translate-x-1/2 items-start gap-3 rounded-(--radius-lg) border border-(--color-route-border) bg-(--color-route-soft) px-4 py-3 shadow-[0_10px_22px_rgb(15_23_42_/_0.1)] max-[767px]:top-3";

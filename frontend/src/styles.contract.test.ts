@@ -5,9 +5,18 @@ import { describe, expect, it } from "vitest";
 describe("Calm Travel Ops CSS contract", () => {
   const css = readFileSync("app/globals.css", "utf8");
   const accountSource = readFileSync("src/components/AccountAccessPanel.tsx", "utf8");
-  const activityPathGraphSource = readFileSync("src/components/ActivityPathGraphDay.tsx", "utf8");
-  const contextRailSource = readFileSync("src/components/ContextRail.tsx", "utf8");
-  const smartTableSource = readFileSync("src/components/SmartItineraryTable.tsx", "utf8");
+  const activityPathGraphSource = readFileSync(
+    "src/features/itinerary/components/ActivityPathGraphDay.tsx",
+    "utf8",
+  );
+  const contextRailSource = readFileSync(
+    "src/features/itinerary/components/ContextRail.tsx",
+    "utf8",
+  );
+  const smartTableSource = readFileSync(
+    "src/features/itinerary/components/SmartItineraryTable.tsx",
+    "utf8",
+  );
   const motifSource = readFileSync("src/components/motifs.tsx", "utf8");
   const motifStories = readFileSync("src/components/motifs.stories.tsx", "utf8");
   const tripWorkspaceFrameSource = readFileSync("src/trip/workspace/TripWorkspaceFrame.tsx", "utf8");

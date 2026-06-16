@@ -18,6 +18,7 @@ import {
   loadPersistedAccountSession,
   persistAccountSession,
 } from "./session-storage";
+import type { PortalSection } from "@/src/shared/portal";
 
 export type AccountAppAccessMode =
   | "account-login"
@@ -25,14 +26,7 @@ export type AccountAppAccessMode =
   | "account-portal";
 
 export type AccountAppPortalSection =
-  | "dashboard"
-  | "trips"
-  | "new-trip"
-  | "explorer"
-  | "todos"
-  | "vault"
-  | "settings"
-  | "sign-out";
+  PortalSection;
 
 interface AccountAppProps {
   accessMode: AccountAppAccessMode;

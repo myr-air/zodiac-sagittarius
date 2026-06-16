@@ -2,7 +2,7 @@ import { type FormEvent, useState } from "react";
 import type { Locale } from "@/src/i18n/types";
 import type { DailyBriefingOverrides, TextBriefingBlock, TripDailyBriefing } from "@/src/trip/types";
 import { formatSolarTime } from "@/src/trip/weather-briefings";
-import { Button } from "./ui";
+import { Button } from "@/src/ui";
 
 interface WeatherBriefingDrawerProps {
   briefing: TripDailyBriefing | null;

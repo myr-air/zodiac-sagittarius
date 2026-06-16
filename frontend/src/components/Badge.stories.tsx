@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { expect } from "storybook/test";
-import { Badge, Panel } from "./ui";
+import { Badge, Panel } from "@/src/ui";
 
 const meta = {
   title: "Design System/Badges",

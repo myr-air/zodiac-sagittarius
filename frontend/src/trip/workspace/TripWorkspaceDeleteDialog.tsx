@@ -1,4 +1,4 @@
-import { Button } from "@/src/components/ui";
+import { Button } from "@/src/ui";
 
 const deleteModalBackdropClassName =
   "modal-backdrop fixed inset-0 z-[80] grid place-items-center bg-[rgb(15_23_42_/_0.28)] p-5";

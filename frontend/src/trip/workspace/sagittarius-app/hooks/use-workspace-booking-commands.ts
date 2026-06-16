@@ -1,12 +1,10 @@
 import { useCallback, useRef } from "react";
 import type { Dispatch, MutableRefObject, SetStateAction } from "react";
 import type { BookingDocInput } from "@/src/components/BookingsDocsPage";
-import type {
-  InlineItineraryItemPatch,
-  ItineraryBookingTicketInput,
-  ItineraryBookingTemplate,
-} from "@/src/components/SmartItineraryTable";
+import type { InlineItineraryItemPatch } from "@/src/features/itinerary/lib";
 import {
+  type ItineraryBookingTemplate,
+  type ItineraryBookingTicketInput,
   bookingDraftDetailsForItineraryItem,
   bookingDraftTimeWindowForItineraryItem,
   bookingDraftTitleForItineraryItem,

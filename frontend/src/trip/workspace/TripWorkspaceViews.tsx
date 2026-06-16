@@ -2,10 +2,7 @@
 
 import type { ComponentProps } from "react";
 import { BookingsDocsPage } from "@/src/components/BookingsDocsPage";
-import { OverviewPage } from "@/src/components/OverviewPage";
-import { RouteMapView } from "@/src/components/RouteMapView";
-import { SmartItineraryTable } from "@/src/components/SmartItineraryTable";
-import { TimelineView } from "@/src/components/TimelineView";
+import { OverviewPage, RouteMapView, SmartItineraryTable, TimelineView } from "@/src/features/itinerary/components";
 import { TripExpensesPage } from "@/src/components/TripExpensesPage";
 import { TripMembersPage } from "@/src/components/TripMembersPage";
 import { TripPhotosPage } from "@/src/components/TripPhotosPage";
