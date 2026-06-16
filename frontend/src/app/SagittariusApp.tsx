@@ -109,6 +109,7 @@ import {
   deriveManualActivityPathOptions,
   type ItineraryImportApplyTarget,
 } from "@/src/trip/itinerary-paths";
+import { patchApiItineraryBranchItems } from "@/src/trip/itinerary-paths-api";
 import type { PlanningView } from "@/src/trip/workspace/planning-view";
 import { createImportedPlanRecordsViaApi } from "@/src/trip/workspace/itinerary-import-api";
 import {
@@ -1441,12 +1442,13 @@ export function SagittariusApp({
       return;
 
     if (isApiMode && resolvedApiClient && participantSession) {
-      const patchedBranchItems = await patchApiItineraryBranchItems(
-        branchPlacement.changedExistingItems,
-        resolvedApiClient,
-        trip.id,
-        participantSession.sessionToken,
-      );
+      const patchedBranchItems = await patchApiItineraryBranchItems({
+        apiClient: resolvedApiClient,
+        items: branchPlacement.changedExistingItems,
+        nextClientMutationId,
+        sessionToken: participantSession.sessionToken,
+        tripId: trip.id,
+      });
       const patchedBranchItemsById = new Map(
         patchedBranchItems.map((item) => [item.id, item]),
       );
@@ -1578,12 +1580,13 @@ export function SagittariusApp({
             changedExistingItems: [],
           };
     if (isApiMode && resolvedApiClient && participantSession) {
-      const patchedBranchItems = await patchApiItineraryBranchItems(
-        branchPlacement.changedExistingItems,
-        resolvedApiClient,
-        trip.id,
-        participantSession.sessionToken,
-      );
+      const patchedBranchItems = await patchApiItineraryBranchItems({
+        apiClient: resolvedApiClient,
+        items: branchPlacement.changedExistingItems,
+        nextClientMutationId,
+        sessionToken: participantSession.sessionToken,
+        tripId: trip.id,
+      });
       const createdItem = await resolvedApiClient.createItineraryItem(
         trip.id,
         participantSession.sessionToken,
@@ -1985,12 +1988,13 @@ export function SagittariusApp({
             values.pathId,
           )
         : pathPlacement;
-      const patchedBranchItems = await patchApiItineraryBranchItems(
-        branchPlacement.changedExistingItems,
-        resolvedApiClient,
-        trip.id,
-        participantSession.sessionToken,
-      );
+      const patchedBranchItems = await patchApiItineraryBranchItems({
+        apiClient: resolvedApiClient,
+        items: branchPlacement.changedExistingItems,
+        nextClientMutationId,
+        sessionToken: participantSession.sessionToken,
+        tripId: trip.id,
+      });
       const patchedBranchItemsById = new Map(
         patchedBranchItems.map((item) => [item.id, item]),
       );
@@ -4749,34 +4753,6 @@ function buildItineraryCommitmentsByItemId({
   }
 
   return Object.fromEntries(commitments);
-}
-
-async function patchApiItineraryBranchItems(
-  items: ItineraryItem[],
-  apiClient: TripApiClient,
-  tripId: string,
-  sessionToken: string,
-): Promise<ItineraryItem[]> {
-  const patchedItems: ItineraryItem[] = [];
-  const changedItemIds = new Set(items.map((item) => item.id));
-  const itemsToPatch = items.filter(
-    (item) => !item.parentItemId || !changedItemIds.has(item.parentItemId),
-  );
-  for (const item of itemsToPatch) {
-    patchedItems.push(
-      await apiClient.patchItineraryItem(tripId, item.id, sessionToken, {
-        clientMutationId: nextClientMutationId("itinerary-branch"),
-        expectedVersion: item.version,
-        patch: {
-          pathGroupId: item.pathGroupId,
-          pathId: item.pathId,
-          pathName: item.pathName,
-          pathRole: item.pathRole,
-        },
-      }),
-    );
-  }
-  return patchedItems;
 }
 
 export function replaceSuggestionById(

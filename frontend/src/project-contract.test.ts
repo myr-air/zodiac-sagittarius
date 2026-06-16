@@ -56,6 +56,7 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/trip/trip-plans.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/trip-countries.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/itinerary-time.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/itinerary-paths-api.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/place-resolution.ts"))).toBe(true);
     expect(existsSync(join(repoRoot, "backend/Cargo.toml"))).toBe(true);
     expect(existsSync(join(repoRoot, "package.json"))).toBe(false);
@@ -277,6 +278,7 @@ describe("Sagittarius project scaffold", () => {
     expect(sagittariusApp).not.toContain("function resolveCreatedImportId");
     expect(sagittariusApp).not.toContain("function serializePhotoAlbumInputForApi");
     expect(sagittariusApp).not.toContain("function deriveTripCountriesFromDestination");
+    expect(sagittariusApp).not.toContain("async function patchApiItineraryBranchItems");
     expect(sagittariusApp).not.toContain('from "@/src/components/OverviewPage"');
     expect(sagittariusApp).not.toContain('from "@/src/components/TimelineView"');
 
