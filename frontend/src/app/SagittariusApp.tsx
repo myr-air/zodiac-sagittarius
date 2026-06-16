@@ -92,6 +92,10 @@ import {
   persistParticipantSession,
 } from "@/src/trip/participant-session-storage";
 import {
+  buildCreateTripPlanRequest,
+  buildPatchTripPlanStatusRequest,
+  buildRenameTripPlanRequest,
+  buildSetMainTripPlanRequest,
   createLocalTripPlan,
   legacyKindForPlanStatus,
   mergePublishedTripPlan,
@@ -1037,7 +1041,9 @@ export function SagittariusApp({
           trip.id,
           tripPlanId,
           participantSession.sessionToken,
-          { clientMutationId: nextClientMutationId("trip-plan-set-main") },
+          buildSetMainTripPlanRequest(
+            nextClientMutationId("trip-plan-set-main"),
+          ),
         );
         setTripState((current) => {
           const nextTrip = mergePublishedTripPlan(
@@ -1091,11 +1097,11 @@ export function SagittariusApp({
           trip.id,
           tripPlanId,
           participantSession.sessionToken,
-          {
-            clientMutationId: nextClientMutationId("trip-plan-status"),
-            expectedVersion: currentPlan.version ?? 1,
-            patch: { status },
-          },
+          buildPatchTripPlanStatusRequest(
+            currentPlan,
+            status,
+            nextClientMutationId("trip-plan-status"),
+          ),
         );
         setTripState((current) => {
           const nextTrip = updateTripPlanInTrip(current.trip, updatedPlan);
@@ -1150,11 +1156,11 @@ export function SagittariusApp({
           trip.id,
           tripPlanId,
           participantSession.sessionToken,
-          {
-            clientMutationId: nextClientMutationId("trip-plan-rename"),
-            expectedVersion: currentPlan.version ?? 1,
-            patch: { name: trimmedName },
-          },
+          buildRenameTripPlanRequest(
+            currentPlan,
+            trimmedName,
+            nextClientMutationId("trip-plan-rename"),
+          ),
         );
         setTripState((current) => {
           const nextTrip = updateTripPlanInTrip(current.trip, updatedPlan);
@@ -1202,13 +1208,10 @@ export function SagittariusApp({
         const createdVariant = await createTripPlanMutation(
           trip.id,
           participantSession.sessionToken,
-          {
-            clientMutationId: nextClientMutationId("trip-plan-create"),
-            name: trimmedName,
-            status: "draft",
-            creationMode: "blank",
-            description: "",
-          },
+          buildCreateTripPlanRequest(
+            trimmedName,
+            nextClientMutationId("trip-plan-create"),
+          ),
         );
         setTripState((current) => {
           const nextTrip = updateTripPlanInTrip(current.trip, createdVariant);
