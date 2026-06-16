@@ -2,6 +2,11 @@ import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { expect } from "storybook/test";
 import { SagittariusApp } from "@/src/app/SagittariusApp";
 import {
+  portalRoutes,
+  appRoutes,
+  tripRoutes,
+} from "@/src/trip/workspace/sagittarius-app/support";
+import {
   denseTrip,
   emptyTrip,
   expectBookingsView,
@@ -13,14 +18,11 @@ import {
   expectPhotosView,
   expectSettingsView,
   expectTimelineView,
-  portalRoutes,
   seedTripJoinId,
   storyTripId,
-  appRoutes,
-  tripRoutes,
   travelerMemberId,
   viewerMemberId,
-} from "@/src/trip/workspace/sagittarius-app/support";
+} from "@/src/trip/workspace/sagittarius-app/support/storybook-support";
 
 const meta = {
   title: "Sagittarius/App",

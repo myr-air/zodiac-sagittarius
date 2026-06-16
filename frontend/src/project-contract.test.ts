@@ -51,6 +51,7 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/index.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/support/index.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/support/storybook-support.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-photo-albums.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-record-state.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-record-actions.ts"))).toBe(true);
@@ -110,18 +111,26 @@ describe("Sagittarius project scaffold", () => {
       join(frontendRoot, "src/app/SagittariusApp.stories.tsx"),
       "utf8",
     );
+    const storySupport = readFileSync(
+      join(frontendRoot, "src/trip/workspace/sagittarius-app/support/storybook-support.ts"),
+      "utf8",
+    );
     const supportIndex = readFileSync(
       join(frontendRoot, "src/trip/workspace/sagittarius-app/support/index.ts"),
       "utf8",
     );
 
     expect(stories).toContain("@/src/trip/workspace/sagittarius-app/support");
+    expect(stories).toContain(
+      "@/src/trip/workspace/sagittarius-app/support/storybook-support",
+    );
     expect(supportIndex).toContain('export * from "@/src/routes/app-routes"');
     expect(supportIndex).toContain('export { portalRoutes, tripRoutes } from "./route-patterns"');
     expect(supportIndex).toContain("route-matchers");
     expect(supportIndex).toContain("portalRoutes");
-    expect(supportIndex).toContain("export const storyTripId");
-    expect(supportIndex).toContain("export async function expectWorkspaceView");
+    expect(storySupport).toContain("export const storyTripId");
+    expect(storySupport).toContain("export async function expectWorkspaceView");
+    expect(storySupport).toContain("seedTripJoinId");
   });
 
   it("keeps project-side routing docs current", () => {
