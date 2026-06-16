@@ -287,6 +287,11 @@ describe("Sagittarius project scaffold", () => {
     expect(sagittariusApp).not.toContain("function getNextSortOrder");
     expect(sagittariusApp).not.toContain("function getNextChildSortOrder");
     expect(sagittariusApp).not.toContain("function normalizeStopHierarchyValues");
+    expect(sagittariusApp).not.toContain("function replaceItineraryItem");
+    expect(sagittariusApp).not.toContain("function moveTripItem");
+    expect(sagittariusApp).not.toContain("function moveTripItemToDay");
+    expect(sagittariusApp).not.toContain("function moveTripItemIntoPlanBlock");
+    expect(sagittariusApp).not.toContain("function hasDescendantItem");
     expect(sagittariusApp).not.toContain("function isUnauthenticated");
     expect(sagittariusApp).not.toContain("function isForbidden");
     expect(sagittariusApp).not.toContain("function isAuthFailure");
