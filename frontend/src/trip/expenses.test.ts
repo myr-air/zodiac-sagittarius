@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
+  appendLocalExpensesToTrip,
+  buildExpenseCreateDrafts,
   buildExpenseSummary,
   buildExpenseSplits,
   buildItemizedExpenseSplits,
@@ -133,6 +135,119 @@ describe("expense money helpers", () => {
         id: "line-taxi-repeat-2",
       },
     ]);
+  });
+
+  it("builds repeated expense create drafts with shared split policy", () => {
+    const drafts = buildExpenseCreateDrafts(
+      {
+        itemId: "item-lunch",
+        title: "Dim sum lunch",
+        amount: 120,
+        currency: "HKD",
+        paidBy: "member-aom",
+        category: "food",
+        repeatCount: 2,
+        lineItems: [
+          {
+            id: "line-table",
+            title: "Table set",
+            amount: 120,
+            participantIds: ["member-aom", "member-beam"],
+          },
+        ],
+      },
+      ["member-aom", "member-beam"],
+    );
+
+    expect(drafts).toEqual([
+      expect.objectContaining({
+        title: "Dim sum lunch (1/2)",
+        splits: { "member-aom": 60, "member-beam": 60 },
+        lineItems: [
+          {
+            id: "line-table-repeat-1",
+            title: "Table set",
+            amount: 120,
+            participantIds: ["member-aom", "member-beam"],
+          },
+        ],
+      }),
+      expect.objectContaining({
+        title: "Dim sum lunch (2/2)",
+        splits: { "member-aom": 60, "member-beam": 60 },
+        lineItems: [
+          {
+            id: "line-table-repeat-2",
+            title: "Table set",
+            amount: 120,
+            participantIds: ["member-aom", "member-beam"],
+          },
+        ],
+      }),
+    ]);
+    expect(drafts[0].splits).toBe(drafts[1].splits);
+  });
+
+  it("appends local expenses with record defaults and resolved trip plan ids", () => {
+    const trip = {
+      id: "trip-1",
+      expenses: [
+        {
+          id: "expense-existing",
+          tripId: "trip-1",
+          title: "Existing",
+          amount: 10,
+          paidBy: "member-aom",
+          splits: { "member-aom": 10 },
+          category: "food",
+        },
+      ],
+      itineraryItems: [],
+      mainTripPlanId: "plan-main",
+      activePlanVariantId: "plan-main",
+    } as Pick<Trip, "id" | "expenses" | "itineraryItems" | "mainTripPlanId" | "activePlanVariantId">;
+
+    const nextTrip = appendLocalExpensesToTrip(
+      trip,
+      [
+        {
+          itemId: null,
+          tripPlanId: null,
+          title: "Taxi",
+          amount: 88.4,
+          paidBy: "member-beam",
+          category: "transport",
+          splits: { "member-aom": 44.2, "member-beam": 44.2 },
+        },
+      ],
+      {
+        selectedTripPlanId: "plan-selected",
+        nextExpenseId: (expenses) => `expense-local-${expenses.length + 1}`,
+        resolveTripPlanId: (_trip, _recordId, preferredTripPlanId) => preferredTripPlanId ?? "plan-main",
+      },
+    );
+
+    expect(nextTrip).not.toBe(trip);
+    expect(nextTrip.expenses).toHaveLength(2);
+    expect(nextTrip.expenses[1]).toMatchObject({
+      id: "expense-local-2",
+      tripId: "trip-1",
+      title: "Taxi",
+      amount: 88.4,
+      amountMinor: 8840,
+      currency: "HKD",
+      exchangeRateToSettlementCurrency: 1,
+      notes: "",
+      receiptUrl: null,
+      lineItems: [],
+      comments: [],
+      tripPlanId: "plan-selected",
+      paidBy: "member-beam",
+      category: "transport",
+      splits: { "member-aom": 44.2, "member-beam": 44.2 },
+      itineraryItemId: null,
+      version: 1,
+    });
   });
 
   it("records settle-up payments without inflating trip spend", () => {

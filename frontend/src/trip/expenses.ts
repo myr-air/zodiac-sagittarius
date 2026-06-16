@@ -2,6 +2,39 @@ import type { Expense, ExpenseComment, ExpenseLineItem, ExpenseReminder, Expense
 
 export type ExpenseSplitMode = "equal" | "exact" | "shares" | "percentage" | "itemized";
 
+export interface ExpenseInputLike {
+  itemId: string | null;
+  title: string;
+  amount: number;
+  tripPlanId?: string | null;
+  paidBy: string;
+  category: Expense["category"];
+  currency?: string;
+  exchangeRateToSettlementCurrency?: number;
+  notes?: string;
+  receiptUrl?: string | null;
+  lineItems?: ExpenseLineItem[];
+  comments?: ExpenseComment[];
+  repeatCount?: number;
+  splits?: Record<string, number>;
+}
+
+export type ExpenseCreateDraft = Omit<ExpenseInputLike, "repeatCount" | "splits"> & {
+  splits: Record<string, number>;
+};
+
+export interface AppendLocalExpensesOptions<
+  T extends Pick<Trip, "id" | "expenses" | "itineraryItems" | "mainTripPlanId" | "activePlanVariantId">,
+> {
+  selectedTripPlanId?: string | null;
+  nextExpenseId: (expenses: Expense[]) => string;
+  resolveTripPlanId: (
+    trip: T,
+    recordId: string | null | undefined,
+    preferredTripPlanId?: string | null,
+  ) => string | null | undefined;
+}
+
 interface BuildExpenseSplitsInput {
   amount: number;
   memberIds: string[];
@@ -91,6 +124,64 @@ export function repeatExpenseLineItems(
     ...lineItem,
     id: `${lineItem.id}-repeat-${repeatIndex + 1}`,
   }));
+}
+
+export function buildExpenseCreateDrafts(input: ExpenseInputLike, memberIds: string[]): ExpenseCreateDraft[] {
+  const repeatCount = normalizeExpenseRepeatCount(input.repeatCount);
+  const splits =
+    input.splits ??
+    buildExpenseSplits({
+      amount: input.amount,
+      memberIds,
+      mode: "equal",
+    });
+
+  return Array.from({ length: repeatCount }, (_, index) => ({
+    ...input,
+    title:
+      repeatCount > 1
+        ? `${input.title} (${index + 1}/${repeatCount})`
+        : input.title,
+    lineItems: repeatExpenseLineItems(input.lineItems, index, repeatCount),
+    splits,
+  }));
+}
+
+export function appendLocalExpensesToTrip<T extends Pick<Trip, "id" | "expenses" | "itineraryItems" | "mainTripPlanId" | "activePlanVariantId">>(
+  trip: T,
+  drafts: ExpenseCreateDraft[],
+  options: AppendLocalExpensesOptions<T>,
+): T {
+  const expenses = [...trip.expenses];
+
+  for (const draft of drafts) {
+    expenses.push({
+      id: options.nextExpenseId(expenses),
+      tripId: trip.id,
+      title: draft.title,
+      amount: draft.amount,
+      amountMinor: Math.round(draft.amount * 100),
+      currency: draft.currency ?? "HKD",
+      exchangeRateToSettlementCurrency:
+        draft.exchangeRateToSettlementCurrency ?? 1,
+      notes: draft.notes ?? "",
+      receiptUrl: draft.receiptUrl ?? null,
+      lineItems: draft.lineItems ?? [],
+      comments: draft.comments ?? [],
+      tripPlanId: options.resolveTripPlanId(
+        trip,
+        draft.itemId,
+        draft.tripPlanId ?? options.selectedTripPlanId,
+      ),
+      paidBy: draft.paidBy,
+      category: draft.category,
+      splits: draft.splits,
+      itineraryItemId: draft.itemId,
+      version: 1,
+    });
+  }
+
+  return { ...trip, expenses };
 }
 
 export function buildExpenseSummary(

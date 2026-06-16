@@ -87,12 +87,12 @@ import {
 } from "@/src/trip/trip-plans";
 import { deriveTripCountriesFromDestination } from "@/src/trip/trip-countries";
 import {
+  appendLocalExpensesToTrip,
+  buildExpenseCreateDrafts,
   buildExpenseSplits,
   buildExpenseSummary,
   expenseSplitsToMinor,
   filterExpenseRemindersForTripPlan,
-  normalizeExpenseRepeatCount,
-  repeatExpenseLineItems,
   upsertExpenseReminder,
 } from "@/src/trip/expenses";
 import {
@@ -3286,49 +3286,37 @@ export function SagittariusApp({
     splits?: Record<string, number>;
   }) {
     if (!canEditExpenses) return;
-    const repeatCount = normalizeExpenseRepeatCount(input.repeatCount);
-    const splits =
-      input.splits ??
-      buildExpenseSplits({
-        amount: input.amount,
-        memberIds: trip.members.map((member) => member.id),
-        mode: "equal",
-      });
-    const repeatedInputs = Array.from({ length: repeatCount }, (_, index) => ({
-      ...input,
-      title:
-        repeatCount > 1
-          ? `${input.title} (${index + 1}/${repeatCount})`
-          : input.title,
-      lineItems: repeatExpenseLineItems(input.lineItems, index, repeatCount),
-    }));
+    const expenseDrafts = buildExpenseCreateDrafts(
+      input,
+      trip.members.map((member) => member.id),
+    );
 
     if (isApiMode && resolvedApiClient && participantSession) {
       const createdExpenses: Expense[] = [];
-      for (const repeatedInput of repeatedInputs) {
+      for (const expenseDraft of expenseDrafts) {
         const expense = await resolvedApiClient.createExpense(
           trip.id,
           participantSession.sessionToken,
           {
             clientMutationId: nextClientMutationId("expense-create"),
-            title: repeatedInput.title,
-            amountMinor: Math.round(repeatedInput.amount * 100),
-            currency: repeatedInput.currency ?? "HKD",
+            title: expenseDraft.title,
+            amountMinor: Math.round(expenseDraft.amount * 100),
+            currency: expenseDraft.currency ?? "HKD",
             exchangeRateToSettlementCurrency:
-              repeatedInput.exchangeRateToSettlementCurrency ?? 1,
-            notes: repeatedInput.notes ?? "",
-            receiptUrl: repeatedInput.receiptUrl ?? null,
-            lineItems: repeatedInput.lineItems,
-            comments: repeatedInput.comments ?? [],
+              expenseDraft.exchangeRateToSettlementCurrency ?? 1,
+            notes: expenseDraft.notes ?? "",
+            receiptUrl: expenseDraft.receiptUrl ?? null,
+            lineItems: expenseDraft.lineItems,
+            comments: expenseDraft.comments ?? [],
             tripPlanId: tripPlanIdForRecord(
               trip,
-              repeatedInput.itemId,
-              repeatedInput.tripPlanId ?? selectedTripPlanId,
+              expenseDraft.itemId,
+              expenseDraft.tripPlanId ?? selectedTripPlanId,
             ),
-            paidBy: repeatedInput.paidBy,
-            category: repeatedInput.category,
-            splits: expenseSplitsToMinor(splits),
-            itineraryItemId: repeatedInput.itemId,
+            paidBy: expenseDraft.paidBy,
+            category: expenseDraft.category,
+            splits: expenseSplitsToMinor(expenseDraft.splits),
+            itineraryItemId: expenseDraft.itemId,
           },
         );
         createdExpenses.push(expense);
@@ -3354,34 +3342,11 @@ export function SagittariusApp({
     }
 
     commitTrip((current) => {
-      const expenses = [...current.expenses];
-      for (const repeatedInput of repeatedInputs) {
-        expenses.push({
-          id: nextLocalExpenseId(expenses),
-          tripId: current.id,
-          title: repeatedInput.title,
-          amount: repeatedInput.amount,
-          amountMinor: Math.round(repeatedInput.amount * 100),
-          currency: repeatedInput.currency ?? "HKD",
-          exchangeRateToSettlementCurrency:
-            repeatedInput.exchangeRateToSettlementCurrency ?? 1,
-          notes: repeatedInput.notes ?? "",
-          receiptUrl: repeatedInput.receiptUrl ?? null,
-          lineItems: repeatedInput.lineItems ?? [],
-          comments: repeatedInput.comments ?? [],
-          tripPlanId: tripPlanIdForRecord(
-            current,
-            repeatedInput.itemId,
-            repeatedInput.tripPlanId ?? selectedTripPlanId,
-          ),
-          paidBy: repeatedInput.paidBy,
-          category: repeatedInput.category,
-          splits,
-          itineraryItemId: repeatedInput.itemId,
-          version: 1,
-        });
-      }
-      return { ...current, expenses };
+      return appendLocalExpensesToTrip(current, expenseDrafts, {
+        selectedTripPlanId,
+        nextExpenseId: nextLocalExpenseId,
+        resolveTripPlanId: tripPlanIdForRecord,
+      });
     });
   }
 

@@ -275,6 +275,8 @@ describe("Sagittarius project scaffold", () => {
     expect(sagittariusApp).not.toContain("function bookingDraftTimeWindowForItineraryItem");
     expect(sagittariusApp).not.toContain("function createLocalPhotoAlbum");
     expect(sagittariusApp).not.toContain("function updateLocalPhotoAlbum");
+    expect(sagittariusApp).not.toContain("function buildExpenseCreateDrafts");
+    expect(sagittariusApp).not.toContain("function appendLocalExpensesToTrip");
     expect(sagittariusApp).not.toContain("function TripAccessLoadingFrame");
     expect(sagittariusApp).not.toContain("function WorkspaceToast");
     expect(sagittariusApp).not.toContain("workspaceToastDismissClassName");
