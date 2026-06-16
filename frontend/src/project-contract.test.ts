@@ -51,6 +51,7 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/trip/workspace/trip-plan-records.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/local-ids.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/participant-session-storage.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/trip-plans.ts"))).toBe(true);
     expect(existsSync(join(repoRoot, "backend/Cargo.toml"))).toBe(true);
     expect(existsSync(join(repoRoot, "package.json"))).toBe(false);
 
@@ -236,6 +237,11 @@ describe("Sagittarius project scaffold", () => {
     expect(sagittariusApp).not.toContain("function nextLocalPlanVariantId");
     expect(sagittariusApp).not.toContain("function nextLocalExpenseId");
     expect(sagittariusApp).not.toContain("function nextClientMutationId");
+    expect(sagittariusApp).not.toContain("function normalizeTripPlanAliases");
+    expect(sagittariusApp).not.toContain("function updateTripPlanInTrip");
+    expect(sagittariusApp).not.toContain("function normalizeTripPlanSummary");
+    expect(sagittariusApp).not.toContain("function planStatusForLegacyKind");
+    expect(sagittariusApp).not.toContain("function legacyKindForPlanStatus");
     expect(sagittariusApp).not.toContain('from "@/src/components/OverviewPage"');
     expect(sagittariusApp).not.toContain('from "@/src/components/TimelineView"');
   });

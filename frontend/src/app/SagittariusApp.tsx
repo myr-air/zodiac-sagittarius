@@ -55,6 +55,11 @@ import {
   persistParticipantSession,
 } from "@/src/trip/participant-session-storage";
 import {
+  legacyKindForPlanStatus,
+  normalizeTripPlanAliases,
+  updateTripPlanInTrip,
+} from "@/src/trip/trip-plans";
+import {
   buildExpenseSplits,
   buildExpenseSummary,
   expenseSplitsToMinor,
@@ -4830,74 +4835,8 @@ function locationFieldsFromCandidate(
       };
 }
 
-function normalizeTripPlanAliases(trip: Trip): Trip {
-  const plansById = new Map<string, PlanVariant>();
-  for (const plan of trip.tripPlans ?? []) plansById.set(plan.id, plan);
-  for (const variant of trip.planVariants) plansById.set(variant.id, variant);
-
-  const plans = Array.from(plansById.values());
-  const mainTripPlanId =
-    trip.mainTripPlanId || trip.activePlanVariantId || plans[0]?.id || "";
-  const normalizedPlans = plans.map((plan) =>
-    normalizeTripPlanSummary(plan, mainTripPlanId),
-  );
-
-  return {
-    ...trip,
-    activePlanVariantId: mainTripPlanId,
-    mainTripPlanId,
-    planVariants: normalizedPlans,
-    tripPlans: normalizedPlans,
-  };
-}
-
-function updateTripPlanInTrip(trip: Trip, updatedPlan: PlanVariant): Trip {
-  const existingPlans = trip.tripPlans ?? trip.planVariants;
-  const hasPlan = trip.planVariants.some((plan) => plan.id === updatedPlan.id);
-  const mergePlan = (plan: PlanVariant) =>
-    plan.id === updatedPlan.id ? { ...plan, ...updatedPlan } : plan;
-  return normalizeTripPlanAliases({
-    ...trip,
-    planVariants: hasPlan
-      ? trip.planVariants.map(mergePlan)
-      : [...trip.planVariants, updatedPlan],
-    tripPlans: existingPlans.some((plan) => plan.id === updatedPlan.id)
-      ? existingPlans.map(mergePlan)
-      : [...existingPlans, updatedPlan],
-  });
-}
-
-function normalizeTripPlanSummary(
-  plan: PlanVariant,
-  mainTripPlanId: string,
-): PlanVariant {
-  const status =
-    plan.id === mainTripPlanId
-      ? "main"
-      : plan.status === "main"
-        ? "backup"
-        : plan.status ?? planStatusForLegacyKind(plan.kind);
-  return {
-    ...plan,
-    kind: legacyKindForPlanStatus(status),
-    status,
-  };
-}
-
 function normalizeStopHierarchyValues(values: StopFormValues): StopFormValues {
   return values.parentItemId ? { ...values, isPlanBlock: false } : values;
-}
-
-function planStatusForLegacyKind(
-  kind: PlanVariant["kind"],
-): NonNullable<PlanVariant["status"]> {
-  return kind === "split" ? "proposal" : kind;
-}
-
-function legacyKindForPlanStatus(
-  status: NonNullable<PlanVariant["status"]>,
-): PlanVariant["kind"] {
-  return status === "proposal" ? "split" : status;
 }
 
 function buildItineraryCommitmentsByItemId({
