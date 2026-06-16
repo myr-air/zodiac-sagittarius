@@ -125,6 +125,11 @@ import {
   mergePatchedTripSettings,
 } from "@/src/trip/trip-settings";
 import {
+  createLocalStopNote,
+  deleteLocalStopNote,
+  updateLocalStopNote,
+} from "@/src/trip/stop-notes";
+import {
   buildMapLink,
   locationFieldsFromCandidate,
   mapResolutionActivity,
@@ -3195,15 +3200,24 @@ export function SagittariusApp({
     }
     setStopNotes((current) => [
       ...current,
-      {
-        id: nextLocalStopNoteId(current),
-        tripId: trip.id,
-        tripPlanId: tripPlanIdForRecord(trip, input.itemId, selectedTripPlanId),
-        itemId: input.itemId,
-        authorId: currentMember.id,
-        body,
-        createdAt: new Date().toISOString(),
-      },
+      createLocalStopNote(
+        trip,
+        current,
+        {
+          itemId: input.itemId,
+          tripPlanId: tripPlanIdForRecord(
+            trip,
+            input.itemId,
+            selectedTripPlanId,
+          ),
+          body,
+        },
+        {
+          authorId: currentMember.id,
+          createdAt: new Date().toISOString(),
+          nextStopNoteId: nextLocalStopNoteId,
+        },
+      ),
     ]);
   }
 
@@ -3243,12 +3257,10 @@ export function SagittariusApp({
       return;
     }
     setStopNotes((current) =>
-      current.map((note) =>
-        note.id === input.noteId &&
-        (note.authorId === currentMember.id || canEdit)
-          ? { ...note, body }
-          : note,
-      ),
+      updateLocalStopNote(current, input.noteId, body, {
+        currentMemberId: currentMember.id,
+        canEdit,
+      }),
     );
   }
 
@@ -3263,11 +3275,10 @@ export function SagittariusApp({
       return;
     }
     setStopNotes((current) =>
-      current.filter(
-        (note) =>
-          note.id !== noteId ||
-          (note.authorId !== currentMember.id && !canEdit),
-      ),
+      deleteLocalStopNote(current, noteId, {
+        currentMemberId: currentMember.id,
+        canEdit,
+      }),
     );
   }
 
