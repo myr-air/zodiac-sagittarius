@@ -89,10 +89,11 @@ import { deriveTripCountriesFromDestination } from "@/src/trip/trip-countries";
 import {
   appendLocalExpensesToTrip,
   buildExpenseCreateDrafts,
-  buildExpenseSplits,
+  buildExpenseUpdateDraft,
   buildExpenseSummary,
   expenseSplitsToMinor,
   filterExpenseRemindersForTripPlan,
+  updateLocalExpenseInTrip,
   upsertExpenseReminder,
 } from "@/src/trip/expenses";
 import {
@@ -3406,23 +3407,10 @@ export function SagittariusApp({
       (expense) => expense.id === input.expenseId,
     );
     if (!existing) return;
-    const amountMinor = Math.round(input.amount * 100);
-    const splits =
-      input.splits ??
-      buildExpenseSplits({
-        amount: input.amount,
-        memberIds: trip.members.map((member) => member.id),
-        mode: "equal",
-      });
-    const itineraryItemId =
-      input.itemId === undefined
-        ? (existing.itineraryItemId ?? null)
-        : input.itemId;
-    const tripPlanId = tripPlanIdForRecord(
-      trip,
-      itineraryItemId,
-      input.tripPlanId ?? existing.tripPlanId ?? selectedTripPlanId,
-    );
+    const expenseDraft = buildExpenseUpdateDraft(trip, existing, input, {
+      selectedTripPlanId,
+      resolveTripPlanId: tripPlanIdForRecord,
+    });
     if (isApiMode && resolvedApiClient && participantSession) {
       const expense = await resolvedApiClient.patchExpense(
         trip.id,
@@ -3431,22 +3419,20 @@ export function SagittariusApp({
         {
           clientMutationId: nextClientMutationId("expense-patch"),
           expectedVersion: existing.version ?? 1,
-          title: input.title,
-          amountMinor,
-          currency: input.currency ?? existing.currency ?? "HKD",
+          title: expenseDraft.title,
+          amountMinor: expenseDraft.amountMinor,
+          currency: expenseDraft.currency,
           exchangeRateToSettlementCurrency:
-            input.exchangeRateToSettlementCurrency ??
-            existing.exchangeRateToSettlementCurrency ??
-            1,
-          notes: input.notes ?? existing.notes ?? "",
-          receiptUrl: input.receiptUrl ?? existing.receiptUrl ?? null,
-          lineItems: input.lineItems ?? existing.lineItems ?? [],
-          comments: input.comments ?? existing.comments ?? [],
-          tripPlanId,
-          paidBy: input.paidBy,
-          category: input.category,
-          splits: expenseSplitsToMinor(splits),
-          itineraryItemId,
+            expenseDraft.exchangeRateToSettlementCurrency,
+          notes: expenseDraft.notes,
+          receiptUrl: expenseDraft.receiptUrl,
+          lineItems: expenseDraft.lineItems,
+          comments: expenseDraft.comments,
+          tripPlanId: expenseDraft.tripPlanId,
+          paidBy: expenseDraft.paidBy,
+          category: expenseDraft.category,
+          splits: expenseSplitsToMinor(expenseDraft.splits),
+          itineraryItemId: expenseDraft.itineraryItemId,
         },
       );
       setTripState((current) => ({
@@ -3470,34 +3456,7 @@ export function SagittariusApp({
       );
       return;
     }
-    commitTrip((current) => ({
-      ...current,
-      expenses: current.expenses.map((expense) =>
-        expense.id === input.expenseId
-          ? {
-              ...expense,
-              title: input.title,
-              amount: input.amount,
-              amountMinor,
-              currency: input.currency ?? expense.currency,
-              exchangeRateToSettlementCurrency:
-                input.exchangeRateToSettlementCurrency ??
-                expense.exchangeRateToSettlementCurrency ??
-                1,
-              notes: input.notes ?? expense.notes ?? "",
-              receiptUrl: input.receiptUrl ?? expense.receiptUrl ?? null,
-              lineItems: input.lineItems ?? expense.lineItems ?? [],
-              comments: input.comments ?? expense.comments ?? [],
-              tripPlanId,
-              paidBy: input.paidBy,
-              category: input.category,
-              splits,
-              itineraryItemId,
-              version: (expense.version ?? 1) + 1,
-            }
-          : expense,
-      ),
-    }));
+    commitTrip((current) => updateLocalExpenseInTrip(current, expenseDraft));
   }
 
   async function duplicateExpenseAsEstimate(expense: Expense) {
