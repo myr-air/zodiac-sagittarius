@@ -4,11 +4,10 @@ export {
   ActivityTimeButton,
   ActivityTypePicker,
   InlineActivityField,
-  ItineraryBookingButton,
   ItineraryNoteModal,
-  ItineraryTicketModal,
   SubActivityList,
   SubActivityModal,
   TimeEditModal,
 } from "./activity-cell";
 
+export { ItineraryBookingButton, ItineraryTicketModal } from "./activity-cell/BookingComponents";
