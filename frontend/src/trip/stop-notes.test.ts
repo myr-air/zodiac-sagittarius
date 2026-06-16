@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
+  appendStopNote,
   createLocalStopNote,
+  createLocalStopNoteInList,
   deleteLocalStopNote,
+  removeStopNote,
+  replaceStopNote,
   updateLocalStopNote,
 } from "./stop-notes";
 import type { StopNote, Trip } from "./types";
@@ -34,6 +38,62 @@ describe("stop note helpers", () => {
       body: "Bring jackets for the peak tram queue.",
       createdAt: "2026-06-18T10:00:00.000Z",
     });
+  });
+
+  it("appends, creates, replaces, and removes stop notes in app state lists", () => {
+    const notes = [
+      stopNote({ id: "note-existing", body: "Original existing note" }),
+    ];
+    const created = createLocalStopNoteInList(
+      trip,
+      notes,
+      {
+        itemId: "item-peak",
+        tripPlanId: "plan-main",
+        body: "Bring jackets.",
+      },
+      {
+        authorId: "member-aom",
+        createdAt: "2026-06-18T10:00:00.000Z",
+        nextStopNoteId: (currentNotes) => `note-local-${currentNotes.length + 1}`,
+      },
+    );
+
+    expect(created).toEqual([
+      expect.objectContaining({
+        id: "note-existing",
+        body: "Original existing note",
+      }),
+      expect.objectContaining({ id: "note-local-2", body: "Bring jackets." }),
+    ]);
+    expect(notes).toEqual([
+      expect.objectContaining({
+        id: "note-existing",
+        body: "Original existing note",
+      }),
+    ]);
+
+    expect(appendStopNote(notes, stopNote({ id: "note-manual" }))).toEqual([
+      expect.objectContaining({ id: "note-existing" }),
+      expect.objectContaining({ id: "note-manual" }),
+    ]);
+
+    expect(
+      replaceStopNote(
+        created,
+        stopNote({ id: "note-existing", body: "Updated existing note" }),
+      ),
+    ).toEqual([
+      expect.objectContaining({
+        id: "note-existing",
+        body: "Updated existing note",
+      }),
+      expect.objectContaining({ id: "note-local-2", body: "Bring jackets." }),
+    ]);
+
+    expect(removeStopNote(created, "note-existing")).toEqual([
+      expect.objectContaining({ id: "note-local-2" }),
+    ]);
   });
 
   it("updates notes only for the author or members with edit access", () => {

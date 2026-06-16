@@ -29,6 +29,25 @@ export function createLocalStopNote(
   };
 }
 
+export function appendStopNote(notes: StopNote[], note: StopNote): StopNote[] {
+  return [...notes, note];
+}
+
+export function createLocalStopNoteInList(
+  trip: Pick<Trip, "id">,
+  notes: StopNote[],
+  input: LocalStopNoteCreateInput,
+  options: LocalStopNoteCreateOptions,
+): StopNote[] {
+  return appendStopNote(notes, createLocalStopNote(trip, notes, input, options));
+}
+
+export function replaceStopNote(notes: StopNote[], note: StopNote): StopNote[] {
+  return notes.map((candidate) =>
+    candidate.id === note.id ? note : candidate,
+  );
+}
+
 export function updateLocalStopNote(
   notes: StopNote[],
   noteId: string,
@@ -44,6 +63,10 @@ export function updateLocalStopNote(
       ? { ...note, body }
       : note,
   );
+}
+
+export function removeStopNote(notes: StopNote[], noteId: string): StopNote[] {
+  return notes.filter((note) => note.id !== noteId);
 }
 
 export function deleteLocalStopNote(

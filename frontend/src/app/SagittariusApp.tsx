@@ -133,8 +133,11 @@ import {
   mergePatchedTripSettings,
 } from "@/src/trip/trip-settings";
 import {
-  createLocalStopNote,
+  appendStopNote,
+  createLocalStopNoteInList,
   deleteLocalStopNote,
+  removeStopNote,
+  replaceStopNote,
   updateLocalStopNote,
 } from "@/src/trip/stop-notes";
 import {
@@ -3110,12 +3113,11 @@ export function SagittariusApp({
           body,
         },
       );
-      setStopNotes((current) => [...current, note]);
+      setStopNotes((current) => appendStopNote(current, note));
       return;
     }
-    setStopNotes((current) => [
-      ...current,
-      createLocalStopNote(
+    setStopNotes((current) =>
+      createLocalStopNoteInList(
         trip,
         current,
         {
@@ -3133,7 +3135,7 @@ export function SagittariusApp({
           nextStopNoteId: nextLocalStopNoteId,
         },
       ),
-    ]);
+    );
   }
 
   async function createItineraryNote(itemId: string, body: string) {
@@ -3164,11 +3166,7 @@ export function SagittariusApp({
           body,
         },
       );
-      setStopNotes((current) =>
-        current.map((candidate) =>
-          candidate.id === input.noteId ? note : candidate,
-        ),
-      );
+      setStopNotes((current) => replaceStopNote(current, note));
       return;
     }
     setStopNotes((current) =>
@@ -3186,7 +3184,7 @@ export function SagittariusApp({
         noteId,
         participantSession.sessionToken,
       );
-      setStopNotes((current) => current.filter((note) => note.id !== noteId));
+      setStopNotes((current) => removeStopNote(current, noteId));
       return;
     }
     setStopNotes((current) =>
