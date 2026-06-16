@@ -246,6 +246,7 @@ import {
 import {
   applyDailyBriefingOverrides,
   buildFallbackBriefings,
+  buildPatchDailyBriefingRequest,
 } from "@/src/trip/weather-briefings";
 import {
   tripFixtureStopNotes,
@@ -1978,11 +1979,10 @@ export function SagittariusApp({
         trip.id,
         date,
         participantSession.sessionToken,
-        {
+        buildPatchDailyBriefingRequest(overrides, {
           clientMutationId: nextClientMutationId("daily-briefing"),
           expectedVersion: version,
-          ...overrides,
-        },
+        }),
       );
       setDailyBriefings((current) =>
         current.map((briefing) =>

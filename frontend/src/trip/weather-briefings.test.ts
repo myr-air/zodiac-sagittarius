@@ -3,6 +3,7 @@ import type { Trip, TripDailyBriefing } from "./types";
 import {
   applyDailyBriefingOverrides,
   briefingsForStrip,
+  buildPatchDailyBriefingRequest,
   thaiWeekdayTone,
   weatherGraphicLabel,
 } from "./weather-briefings";
@@ -67,6 +68,28 @@ describe("weather briefings", () => {
         outfitAdvice: "Bring a light rain shell.",
       },
       version: 2,
+    });
+  });
+
+  it("builds API patch requests for daily briefing overrides", () => {
+    expect(
+      buildPatchDailyBriefingRequest(
+        {
+          dayTitle: "Peak day",
+          outfitAdvice: "Bring a light rain shell.",
+          festivalNote: null,
+        },
+        {
+          clientMutationId: "mutation-daily-briefing",
+          expectedVersion: 4,
+        },
+      ),
+    ).toEqual({
+      clientMutationId: "mutation-daily-briefing",
+      expectedVersion: 4,
+      dayTitle: "Peak day",
+      outfitAdvice: "Bring a light rain shell.",
+      festivalNote: null,
     });
   });
 
