@@ -4,13 +4,14 @@ import { describe, expect, it } from "vitest";
 
 describe("Calm Travel Ops CSS contract", () => {
   const css = readFileSync("app/globals.css", "utf8");
-  const appSource = readFileSync("src/app/SagittariusApp.tsx", "utf8");
   const accountSource = readFileSync("src/components/AccountAccessPanel.tsx", "utf8");
   const activityPathGraphSource = readFileSync("src/components/ActivityPathGraphDay.tsx", "utf8");
   const contextRailSource = readFileSync("src/components/ContextRail.tsx", "utf8");
   const smartTableSource = readFileSync("src/components/SmartItineraryTable.tsx", "utf8");
   const motifSource = readFileSync("src/components/motifs.tsx", "utf8");
   const motifStories = readFileSync("src/components/motifs.stories.tsx", "utf8");
+  const tripWorkspaceFrameSource = readFileSync("src/trip/workspace/TripWorkspaceFrame.tsx", "utf8");
+  const workspaceToastSource = readFileSync("src/trip/workspace/WorkspaceToast.tsx", "utf8");
   const sourceFiles = collectSourceFiles("src").filter((file) => !file.endsWith(".test.ts") && !file.endsWith(".test.tsx"));
 
   it("keeps Tailwind available while preserving global design tokens", () => {
@@ -66,8 +67,8 @@ describe("Calm Travel Ops CSS contract", () => {
     expect(activityPathGraphSource).toContain("activity-path-graph-node absolute");
     expect(activityPathGraphSource).toContain("size-9");
     expect(activityPathGraphSource).toContain("before:size-3");
-    expect(appSource).toContain("workspaceToastDismissClassName");
-    expect(appSource).toContain("grid size-9 shrink-0");
+    expect(workspaceToastSource).toContain("workspaceToastDismissClassName");
+    expect(workspaceToastSource).toContain("grid size-9 shrink-0");
     expect(contextRailSource).toContain("noteActionButtonClassName");
     expect(contextRailSource).toContain("inline-grid size-8");
     expect(contextRailSource).toContain("inspectorCloseButtonClassName");
@@ -96,13 +97,13 @@ describe("Calm Travel Ops CSS contract", () => {
   it("contains horizontal scrolling to the smart table viewport", () => {
     expect(css).toMatch(/body\s*{[^}]*overflow-x:\s*hidden/s);
     expect(css).not.toMatch(/body\s*{[^}]*padding:\s*28px/s);
-    expect(appSource).toContain("planning-main h-full min-h-0 min-w-0 overflow-y-auto");
+    expect(tripWorkspaceFrameSource).toContain("planning-main h-full min-h-0 min-w-0 overflow-y-auto");
     expect(smartTableSource).toContain("table-scroll m-0 h-auto min-h-0 w-full max-w-full overflow-x-auto");
     expect(smartTableSource).toContain("smart-table w-full min-w-[520px] table-fixed border-collapse");
   });
 
   it("keeps vertical scrolling on the planning shell instead of nesting table scrollbars", () => {
-    expect(appSource).toContain("planning-main h-full min-h-0 min-w-0 overflow-y-auto");
+    expect(tripWorkspaceFrameSource).toContain("planning-main h-full min-h-0 min-w-0 overflow-y-auto");
     expect(smartTableSource).toContain("table-panel grid h-auto min-h-full min-w-0");
     expect(smartTableSource).toContain("overflow-visible bg-transparent");
     expect(smartTableSource).toContain("table-scroll m-0 h-auto min-h-0");
@@ -135,14 +136,14 @@ describe("Calm Travel Ops CSS contract", () => {
   });
 
   it("locks the reference cockpit dimensions for pixel QA", () => {
-    expect(appSource).toContain("workspace-grid relative grid h-screen");
-    expect(appSource).toContain("grid-cols-[minmax(0,1fr)]");
+    expect(tripWorkspaceFrameSource).toContain("workspace-grid relative grid h-screen");
+    expect(tripWorkspaceFrameSource).toContain("grid-cols-[minmax(0,1fr)]");
     expect(contextRailSource).toContain("context-rail absolute right-0 top-0");
     expect(contextRailSource).toContain("w-[380px]");
   });
 
   it("overlays the right context rail instead of shrinking the table", () => {
-    expect(appSource).toContain("workspace-grid relative grid");
+    expect(tripWorkspaceFrameSource).toContain("workspace-grid relative grid");
     expect(contextRailSource).toContain("context-rail absolute right-0 top-0");
     expect(contextRailSource).toContain("max-[1199px]:static");
   });

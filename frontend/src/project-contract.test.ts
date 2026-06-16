@@ -44,6 +44,8 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/trip/workspace/TripWorkspaceImportDialog.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/TripWorkspaceRail.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/TripWorkspaceViews.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/workspace/TripAccessLoadingFrame.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/workspace/WorkspaceToast.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/itinerary-import-model.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/itinerary-import-api.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/planning-view.ts"))).toBe(true);
@@ -258,6 +260,10 @@ describe("Sagittarius project scaffold", () => {
     expect(sagittariusApp).not.toContain("function bookingTypeForExpenseEstimate");
     expect(sagittariusApp).not.toContain("function bookingDraftDetailsForItineraryItem");
     expect(sagittariusApp).not.toContain("function bookingDraftTimeWindowForItineraryItem");
+    expect(sagittariusApp).not.toContain("function TripAccessLoadingFrame");
+    expect(sagittariusApp).not.toContain("function WorkspaceToast");
+    expect(sagittariusApp).not.toContain("workspaceToastDismissClassName");
+    expect(sagittariusApp).not.toContain("portalLoadingCardClassName");
     expect(sagittariusApp).not.toContain('from "@/src/components/OverviewPage"');
     expect(sagittariusApp).not.toContain('from "@/src/components/TimelineView"');
 

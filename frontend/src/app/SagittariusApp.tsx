@@ -20,8 +20,7 @@ import {
 import { StopDialog, type StopFormValues } from "@/src/components/StopDialog";
 import type { TripPhotoAlbumInput } from "@/src/components/TripPhotosPage";
 import type { TripSettingsFormValues } from "@/src/components/TripSettingsPage";
-import { Button, Select } from "@/src/components/ui";
-import { Icon } from "@/src/components/icons";
+import { Select } from "@/src/components/ui";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { appRoutes, decodeReturnTo } from "@/src/routes/app-routes";
 import {
@@ -124,6 +123,8 @@ import { TripWorkspaceFrame } from "@/src/trip/workspace/TripWorkspaceFrame";
 import { TripWorkspaceImportDialog } from "@/src/trip/workspace/TripWorkspaceImportDialog";
 import { TripWorkspaceRail } from "@/src/trip/workspace/TripWorkspaceRail";
 import { TripWorkspaceViews } from "@/src/trip/workspace/TripWorkspaceViews";
+import { TripAccessLoadingFrame } from "@/src/trip/workspace/TripAccessLoadingFrame";
+import { WorkspaceToast } from "@/src/trip/workspace/WorkspaceToast";
 import {
   buildItineraryExport,
   parseItineraryImportDocument,
@@ -195,23 +196,6 @@ export {
 export { normalizeInlineTimePatch } from "@/src/trip/itinerary-time";
 
 const localMutationTimestamp = "2026-05-28T00:00:00.000Z";
-const workspaceToastClassName =
-  "workspace-toast pointer-events-auto fixed left-1/2 top-5 z-[60] flex w-[min(480px,calc(100vw-32px))] -translate-x-1/2 items-start gap-3 rounded-(--radius-lg) border border-(--color-route-border) bg-(--color-route-soft) px-4 py-3 shadow-[0_10px_22px_rgb(15_23_42_/_0.1)] max-[767px]:top-3";
-const workspaceToastIconClassName = "mt-0.5 shrink-0 text-(--color-route)";
-const workspaceToastBodyClassName =
-  "min-w-0 flex-1 [&_span]:block [&_span]:text-[12.5px] [&_span]:leading-5 [&_span]:text-(--color-text-muted) [&_strong]:text-[13.5px] [&_strong]:font-[850] [&_strong]:text-(--color-route)";
-const workspaceToastActionsClassName = "flex shrink-0 items-center gap-2";
-const workspaceToastDismissClassName =
-  "ml-1 grid size-9 shrink-0 place-items-center rounded-full text-(--color-text-muted) transition-colors hover:bg-(--color-surface-subtle) hover:text-(--color-text)";
-const accountClaimMessageClassName = "account-claim-message font-extrabold";
-const portalLoadingCardClassName =
-  "account-card portal-loading-card grid min-h-[220px] gap-3.5 rounded-(--radius-lg) border border-(--color-border) bg-[rgb(255_255_255_/_0.94)] p-4 shadow-[var(--shadow-panel)]";
-
-const portalSkeletonBaseClassName =
-  "portal-skeleton block overflow-hidden rounded-(--radius-md) bg-[linear-gradient(90deg,var(--color-surface-subtle),rgb(226_232_240_/_0.72),var(--color-surface-subtle))] bg-[length:220%_100%] animate-[portal-skeleton-pulse_1.2s_ease-in-out_infinite] motion-reduce:animate-none";
-const portalSkeletonTitleClassName = `${portalSkeletonBaseClassName} portal-skeleton--title h-7 w-[min(220px,48%)]`;
-const portalSkeletonLineClassName = `${portalSkeletonBaseClassName} portal-skeleton--line h-4 w-[min(520px,72%)]`;
-const portalSkeletonBlockClassName = `${portalSkeletonBaseClassName} portal-skeleton--block h-[132px] w-full`;
 const workspaceShellClassName = "workspace-shell min-w-0 bg-transparent max-[1199px]:min-h-[calc(100dvh-48px)]";
 
 type PortalSection =
@@ -4391,12 +4375,6 @@ export function SagittariusApp({
               setToastDismissing(true);
               setTimeout(() => setToastDismissed(true), 220);
             }}
-            className={workspaceToastClassName}
-            iconClassName={workspaceToastIconClassName}
-            bodyClassName={workspaceToastBodyClassName}
-            actionsClassName={workspaceToastActionsClassName}
-            dismissClassName={workspaceToastDismissClassName}
-            messageClassName={accountClaimMessageClassName}
           />
         ) : null}
         {!sessionMember ? (
@@ -4972,22 +4950,6 @@ export function replaceSuggestionById(
   );
 }
 
-function TripAccessLoadingFrame() {
-  return (
-    <main
-      className="account-page account-page--portal"
-      aria-busy="true"
-      aria-label="Opening trip"
-    >
-      <section className={portalLoadingCardClassName}>
-        <span className={portalSkeletonTitleClassName} />
-        <span className={portalSkeletonLineClassName} />
-        <span className={portalSkeletonBlockClassName} />
-      </section>
-    </main>
-  );
-}
-
 function isUnauthenticated(caught: unknown): boolean {
   return caught instanceof TripApiError && caught.status === 401;
 }
@@ -5030,90 +4992,5 @@ function slugifyFilePart(value: string): string {
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-|-$/g, "") || "trip"
-  );
-}
-
-interface WorkspaceToastProps {
-  accountSession: AccountSession | null;
-  memberUserId: string | null | undefined;
-  claimState: { status: "idle" | "saving"; message: string | null };
-  canClaim: boolean;
-  dismissing: boolean;
-  onClaim: () => void;
-  onDismiss: () => void;
-  className: string;
-  iconClassName: string;
-  bodyClassName: string;
-  actionsClassName: string;
-  dismissClassName: string;
-  messageClassName: string;
-}
-
-function WorkspaceToast({
-  accountSession,
-  memberUserId,
-  claimState,
-  canClaim,
-  dismissing,
-  onClaim,
-  onDismiss,
-  className,
-  iconClassName,
-  bodyClassName,
-  actionsClassName,
-  dismissClassName,
-  messageClassName,
-}: WorkspaceToastProps) {
-  const isClaimed = Boolean(accountSession && memberUserId);
-  const title = isClaimed
-    ? "เชื่อมต่อ account แล้ว"
-    : accountSession
-      ? "ผูกตัวตนกับ account"
-      : "เข้าแบบ temp";
-  const detail = isClaimed
-    ? "ตัวตนนี้ผูกกับ account แล้ว"
-    : accountSession
-      ? "ผูกตัวตน temp นี้กับ account เพื่อเก็บประวัติและสถิติ"
-      : "เข้าสู่ระบบจากหน้า access เพื่อผูก identity นี้กับ account ภายหลัง";
-
-  return (
-    <div
-      className={className}
-      data-dismissing={dismissing ? "true" : undefined}
-      role="status"
-      aria-live="polite"
-    >
-      <span className={iconClassName} aria-hidden="true">
-        <Icon name={isClaimed ? "check" : "clock"} />
-      </span>
-      <div className={bodyClassName}>
-        <strong>{title}</strong>
-        <span>{detail}</span>
-        {claimState.message ? (
-          <span className={messageClassName}>{claimState.message}</span>
-        ) : null}
-      </div>
-      <div className={actionsClassName}>
-        {canClaim ? (
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={onClaim}
-            disabled={claimState.status === "saving"}
-          >
-            <Icon name="check" />
-            ผูกตัวตน
-          </Button>
-        ) : null}
-        <button
-          type="button"
-          className={dismissClassName}
-          aria-label="ปิดการแจ้งเตือน"
-          onClick={onDismiss}
-        >
-          <Icon name="x" />
-        </button>
-      </div>
-    </div>
   );
 }
