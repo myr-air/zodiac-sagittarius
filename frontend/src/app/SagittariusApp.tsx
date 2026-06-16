@@ -55,9 +55,12 @@ import {
 import {
   canTripRole,
   appendTripParticipant,
+  buildCreateMemberRequest,
+  buildPatchMemberAccessStatusRequest,
+  buildPatchMemberPasswordRequest,
+  buildPatchMemberRoleRequest,
   createTripParticipant,
   findSessionMember,
-  nextTripMemberColor,
   replaceTripParticipant,
   resetTripParticipantClaim,
   setTripParticipantPassword,
@@ -2169,7 +2172,7 @@ export function SagittariusApp({
         trip.id,
         memberId,
         participantSession.sessionToken,
-        { role },
+        buildPatchMemberRoleRequest(role),
       );
       commitTrip((current) => replaceTripParticipant(current, member));
       return;
@@ -2188,7 +2191,7 @@ export function SagittariusApp({
         trip.id,
         memberId,
         participantSession.sessionToken,
-        { accessStatus },
+        buildPatchMemberAccessStatusRequest(accessStatus),
       );
       commitTrip((current) => replaceTripParticipant(current, member));
       return;
@@ -2206,7 +2209,7 @@ export function SagittariusApp({
         trip.id,
         memberId,
         participantSession.sessionToken,
-        { participantPassword: password },
+        buildPatchMemberPasswordRequest(password),
       );
       commitTrip((current) => replaceTripParticipant(current, member));
       return;
@@ -2226,11 +2229,7 @@ export function SagittariusApp({
       const member = await resolvedApiClient.createMember(
         trip.id,
         participantSession.sessionToken,
-        {
-          displayName: input.displayName,
-          role: input.role,
-          color: nextTripMemberColor(trip.members.length),
-        },
+        buildCreateMemberRequest(input, { memberCount: trip.members.length }),
       );
       commitTrip((current) => appendTripParticipant(current, member));
       return;

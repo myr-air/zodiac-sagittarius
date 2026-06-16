@@ -3,6 +3,10 @@ import { seedTrip } from "./seed";
 import {
   canTripRole,
   appendTripParticipant,
+  buildCreateMemberRequest,
+  buildPatchMemberAccessStatusRequest,
+  buildPatchMemberPasswordRequest,
+  buildPatchMemberRoleRequest,
   claimTripParticipant,
   createTripParticipant,
   createTripParticipantSession,
@@ -81,6 +85,29 @@ describe("trip participant auth", () => {
     expect(existing.members.at(-1)).toMatchObject({ id: "member-nam-2", displayName: "Nam", role: "traveler", accessStatus: "active" });
     expect(fallback.members.at(-1)).toMatchObject({ id: "member-member", displayName: "!!!", role: "viewer" });
     expect(blank).toBe(fallback);
+  });
+
+  it("builds member API create and patch requests", () => {
+    expect(
+      buildCreateMemberRequest(
+        { displayName: "New friend", role: "traveler" },
+        { memberCount: 2 },
+      ),
+    ).toEqual({
+      displayName: "New friend",
+      role: "traveler",
+      color: "#f97316",
+    });
+
+    expect(buildPatchMemberRoleRequest("organizer")).toEqual({
+      role: "organizer",
+    });
+    expect(buildPatchMemberAccessStatusRequest("disabled")).toEqual({
+      accessStatus: "disabled",
+    });
+    expect(buildPatchMemberPasswordRequest("new-pin")).toEqual({
+      participantPassword: "new-pin",
+    });
   });
 
   it("replaces and appends participants from API responses", () => {

@@ -1,3 +1,7 @@
+import type {
+  CreateMemberApiRequest,
+  PatchMemberApiRequest,
+} from "./api-client";
 import type { Member, Trip, TripCapability, TripJoinCredential, TripMemberAccessStatus, TripParticipantSession, TripRole } from "./types";
 
 export const seedTripJoinId = "HK-SZ-2025";
@@ -59,6 +63,35 @@ export function createTripParticipant(trip: Trip, input: { displayName: string; 
       },
     ],
   };
+}
+
+export function buildCreateMemberRequest(
+  input: { displayName: string; role: Exclude<TripRole, "owner"> },
+  options: { memberCount: number },
+): CreateMemberApiRequest {
+  return {
+    displayName: input.displayName,
+    role: input.role,
+    color: nextTripMemberColor(options.memberCount),
+  };
+}
+
+export function buildPatchMemberRoleRequest(
+  role: Exclude<TripRole, "owner">,
+): PatchMemberApiRequest {
+  return { role };
+}
+
+export function buildPatchMemberAccessStatusRequest(
+  accessStatus: TripMemberAccessStatus,
+): PatchMemberApiRequest {
+  return { accessStatus };
+}
+
+export function buildPatchMemberPasswordRequest(
+  participantPassword: string,
+): PatchMemberApiRequest {
+  return { participantPassword };
 }
 
 export function replaceTripParticipant(trip: Trip, member: Member): Trip {
