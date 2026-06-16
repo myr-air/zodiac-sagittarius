@@ -1,4 +1,7 @@
-import type { CreateExpenseApiRequest } from "./api-client";
+import type {
+  CreateExpenseApiRequest,
+  PatchExpenseApiRequest,
+} from "./api-client";
 import type { Expense, ExpenseComment, ExpenseLineItem, ExpenseReminder, ExpenseSummary, Member, SettlementSuggestion, Trip } from "./types";
 
 export type ExpenseSplitMode = "equal" | "exact" | "shares" | "percentage" | "itemized";
@@ -79,6 +82,11 @@ export interface ExpenseReminderRequest {
 export interface BuildCreateExpenseRequestOptions {
   clientMutationId: string;
   tripPlanId?: string | null;
+}
+
+export interface BuildPatchExpenseRequestOptions {
+  clientMutationId: string;
+  expectedVersion: number;
 }
 
 interface BuildExpenseSplitsInput {
@@ -260,6 +268,30 @@ export function buildCreateExpenseRequest(
     category: draft.category,
     splits: expenseSplitsToMinor(draft.splits),
     itineraryItemId: draft.itemId,
+  };
+}
+
+export function buildPatchExpenseRequest(
+  draft: ExpenseUpdateDraft,
+  options: BuildPatchExpenseRequestOptions,
+): PatchExpenseApiRequest {
+  return {
+    clientMutationId: options.clientMutationId,
+    expectedVersion: options.expectedVersion,
+    title: draft.title,
+    amountMinor: draft.amountMinor,
+    currency: draft.currency,
+    exchangeRateToSettlementCurrency:
+      draft.exchangeRateToSettlementCurrency,
+    notes: draft.notes,
+    receiptUrl: draft.receiptUrl,
+    lineItems: draft.lineItems,
+    comments: draft.comments,
+    tripPlanId: draft.tripPlanId,
+    paidBy: draft.paidBy,
+    category: draft.category,
+    splits: expenseSplitsToMinor(draft.splits),
+    itineraryItemId: draft.itineraryItemId,
   };
 }
 

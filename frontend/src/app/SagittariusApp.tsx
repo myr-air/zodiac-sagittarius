@@ -103,8 +103,8 @@ import {
   buildExpenseCreateDrafts,
   buildExpenseUpdateDraft,
   buildExpenseSummary,
+  buildPatchExpenseRequest,
   expenseReminderRequestForSuggestion,
-  expenseSplitsToMinor,
   filterExpenseRemindersForTripPlan,
   recordLocalExpenseReminderInTrip,
   removeExpenseFromTrip,
@@ -3171,24 +3171,10 @@ export function SagittariusApp({
         trip.id,
         input.expenseId,
         participantSession.sessionToken,
-        {
+        buildPatchExpenseRequest(expenseDraft, {
           clientMutationId: nextClientMutationId("expense-patch"),
           expectedVersion: existing.version ?? 1,
-          title: expenseDraft.title,
-          amountMinor: expenseDraft.amountMinor,
-          currency: expenseDraft.currency,
-          exchangeRateToSettlementCurrency:
-            expenseDraft.exchangeRateToSettlementCurrency,
-          notes: expenseDraft.notes,
-          receiptUrl: expenseDraft.receiptUrl,
-          lineItems: expenseDraft.lineItems,
-          comments: expenseDraft.comments,
-          tripPlanId: expenseDraft.tripPlanId,
-          paidBy: expenseDraft.paidBy,
-          category: expenseDraft.category,
-          splits: expenseSplitsToMinor(expenseDraft.splits),
-          itineraryItemId: expenseDraft.itineraryItemId,
-        },
+        }),
       );
       setTripState((current) => ({
         ...current,

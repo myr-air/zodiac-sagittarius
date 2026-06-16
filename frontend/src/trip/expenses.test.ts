@@ -8,6 +8,7 @@ import {
   buildExpenseSplits,
   buildExpenseUpdateDraft,
   buildItemizedExpenseSplits,
+  buildPatchExpenseRequest,
   expenseReminderRequestForSuggestion,
   expenseSplitsToMinor,
   normalizeExpenseRepeatCount,
@@ -361,6 +362,50 @@ describe("expense money helpers", () => {
       category: "transport",
       splits: { "member-aom": 49.75, "member-beam": 49.75 },
       itineraryItemId: "item-old",
+    });
+  });
+
+  it("builds patch expense API requests from update drafts", () => {
+    expect(
+      buildPatchExpenseRequest(
+        {
+          expenseId: "expense-lunch",
+          title: "Dim sum lunch",
+          amount: 120.45,
+          amountMinor: 12045,
+          currency: "HKD",
+          exchangeRateToSettlementCurrency: 1,
+          notes: "Paid at counter",
+          receiptUrl: null,
+          lineItems: [],
+          comments: [],
+          tripPlanId: "plan-rain",
+          paidBy: "member-aom",
+          category: "food",
+          splits: { "member-aom": 60.23, "member-beam": 60.22 },
+          itineraryItemId: "item-lunch",
+        },
+        {
+          clientMutationId: "expense-patch-mutation",
+          expectedVersion: 4,
+        },
+      ),
+    ).toEqual({
+      clientMutationId: "expense-patch-mutation",
+      expectedVersion: 4,
+      title: "Dim sum lunch",
+      amountMinor: 12045,
+      currency: "HKD",
+      exchangeRateToSettlementCurrency: 1,
+      notes: "Paid at counter",
+      receiptUrl: null,
+      lineItems: [],
+      comments: [],
+      tripPlanId: "plan-rain",
+      paidBy: "member-aom",
+      category: "food",
+      splits: { "member-aom": 6023, "member-beam": 6022 },
+      itineraryItemId: "item-lunch",
     });
   });
 
