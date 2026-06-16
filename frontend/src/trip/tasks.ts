@@ -1,3 +1,7 @@
+import type {
+  CreateTaskApiRequest,
+  PatchTaskApiRequest,
+} from "./api-client";
 import type { TripTask } from "./types";
 
 export interface TaskCreateInputLike {
@@ -16,6 +20,14 @@ export interface TaskCreateDraft {
   createdBy: string;
   assigneeId?: string | null;
   relatedItemId?: string | null;
+}
+
+export interface BuildCreateTaskRequestOptions {
+  clientMutationId: string;
+}
+
+export interface BuildToggleTaskStatusRequestOptions {
+  clientMutationId: string;
 }
 
 export function buildTaskCreateDraft(
@@ -38,6 +50,32 @@ export function buildTaskCreateDraft(
         ? input.assigneeId || null
         : options.currentMemberId,
     relatedItemId: input.relatedItemId ?? null,
+  };
+}
+
+export function buildCreateTaskRequest(
+  draft: TaskCreateDraft,
+  options: BuildCreateTaskRequestOptions,
+): CreateTaskApiRequest {
+  return {
+    clientMutationId: options.clientMutationId,
+    title: draft.title,
+    visibility: draft.visibility,
+    kind: draft.kind,
+    tripPlanId: draft.tripPlanId,
+    assigneeId: draft.assigneeId,
+    relatedItemId: draft.relatedItemId,
+  };
+}
+
+export function buildToggleTaskStatusRequest(
+  task: TripTask,
+  options: BuildToggleTaskStatusRequestOptions,
+): PatchTaskApiRequest {
+  return {
+    clientMutationId: options.clientMutationId,
+    expectedVersion: task.version ?? 1,
+    patch: { status: toggledTaskStatus(task) },
   };
 }
 

@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
   appendTask,
+  buildCreateTaskRequest,
   buildTaskCreateDraft,
+  buildToggleTaskStatusRequest,
   createLocalTask,
   createLocalTaskInList,
   replaceTask,
@@ -85,6 +87,36 @@ describe("task helpers", () => {
     });
   });
 
+  it("builds API create task requests from task drafts", () => {
+    const draft = buildTaskCreateDraft(
+      {
+        title: "Book hotel",
+        visibility: "shared",
+        assigneeId: "member-beam",
+        relatedItemId: "item-hotel",
+      },
+      {
+        title: "Book hotel",
+        tripPlanId: "plan-main",
+        currentMemberId: "member-aom",
+      },
+    );
+
+    expect(
+      buildCreateTaskRequest(draft, {
+        clientMutationId: "mutation-task-create",
+      }),
+    ).toEqual({
+      clientMutationId: "mutation-task-create",
+      title: "Book hotel",
+      visibility: "shared",
+      kind: "prep",
+      tripPlanId: "plan-main",
+      assigneeId: "member-beam",
+      relatedItemId: "item-hotel",
+    });
+  });
+
   it("appends, creates, and replaces tasks in app state lists", () => {
     const tasks = [task({ id: "task-existing", title: "Book hotel" })];
     const draft = buildTaskCreateDraft(
@@ -132,6 +164,30 @@ describe("task helpers", () => {
       expect.objectContaining({ id: "task-open", status: "done" }),
       expect.objectContaining({ id: "task-done", status: "done" }),
     ]);
+  });
+
+  it("builds API patch requests for toggled task status", () => {
+    expect(
+      buildToggleTaskStatusRequest(
+        task({ id: "task-open", status: "open", version: 7 }),
+        { clientMutationId: "mutation-task-patch" },
+      ),
+    ).toEqual({
+      clientMutationId: "mutation-task-patch",
+      expectedVersion: 7,
+      patch: { status: "done" },
+    });
+
+    expect(
+      buildToggleTaskStatusRequest(
+        task({ id: "task-unversioned", status: "done" }),
+        { clientMutationId: "mutation-task-patch-fallback" },
+      ),
+    ).toEqual({
+      clientMutationId: "mutation-task-patch-fallback",
+      expectedVersion: 1,
+      patch: { status: "open" },
+    });
   });
 });
 

@@ -332,11 +332,13 @@ describe("Sagittarius project scaffold", () => {
     expect(sagittariusApp).not.toContain("function removeStopNote");
     expect(sagittariusApp).not.toContain("function deleteLocalStopNote");
     expect(sagittariusApp).not.toContain("function buildTaskCreateDraft");
+    expect(sagittariusApp).not.toContain("function buildCreateTaskRequest");
     expect(sagittariusApp).not.toContain("function createLocalTask");
     expect(sagittariusApp).not.toContain("function appendTask");
     expect(sagittariusApp).not.toContain("function createLocalTaskInList");
     expect(sagittariusApp).not.toContain("function replaceTask");
     expect(sagittariusApp).not.toContain("function toggledTaskStatus");
+    expect(sagittariusApp).not.toContain("function buildToggleTaskStatusRequest");
     expect(sagittariusApp).not.toContain("function toggleLocalTaskStatus");
     expect(sagittariusApp).not.toContain("function TripAccessLoadingFrame");
     expect(sagittariusApp).not.toContain("function WorkspaceToast");

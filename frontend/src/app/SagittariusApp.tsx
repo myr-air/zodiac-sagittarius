@@ -161,10 +161,11 @@ import {
 } from "@/src/trip/stop-notes";
 import {
   appendTask,
+  buildCreateTaskRequest,
   buildTaskCreateDraft,
+  buildToggleTaskStatusRequest,
   createLocalTaskInList,
   replaceTask,
-  toggledTaskStatus,
   toggleLocalTaskStatus,
 } from "@/src/trip/tasks";
 import {
@@ -2304,15 +2305,9 @@ export function SagittariusApp({
       const task = await resolvedApiClient.createTask(
         trip.id,
         participantSession.sessionToken,
-        {
+        buildCreateTaskRequest(taskDraft, {
           clientMutationId: nextClientMutationId("task-create"),
-          title: taskDraft.title,
-          visibility: taskDraft.visibility,
-          kind: taskDraft.kind,
-          tripPlanId: taskDraft.tripPlanId,
-          assigneeId: taskDraft.assigneeId,
-          relatedItemId: taskDraft.relatedItemId,
-        },
+        }),
       );
       setTasks((current) => appendTask(current, task));
       return;
@@ -2934,13 +2929,9 @@ export function SagittariusApp({
         trip.id,
         taskId,
         participantSession.sessionToken,
-        {
+        buildToggleTaskStatusRequest(task, {
           clientMutationId: nextClientMutationId("task-patch"),
-          /* v8 ignore next */
-          expectedVersion: task.version ?? 1,
-          /* v8 ignore next */
-          patch: { status: toggledTaskStatus(task) },
-        },
+        }),
       );
       /* v8 ignore next */
       setTasks((current) => replaceTask(current, nextTask));
