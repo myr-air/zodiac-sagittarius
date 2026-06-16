@@ -4,6 +4,7 @@ import { seedTrip } from "./seed";
 import {
   getNowNext,
   buildItineraryCommitmentsByItemId,
+  buildItineraryItemDraft,
   buildItineraryView,
   deleteItineraryItemFromTrip,
   deriveItineraryPathOptions,
@@ -426,6 +427,119 @@ describe("itinerary planning domain", () => {
         sortOrder: 900,
       },
     ], parentItem)).toBe(230);
+  });
+
+  it("builds new itinerary item drafts with target path fields", () => {
+    const nextItem = buildItineraryItemDraft(
+      {
+        activity: "Museum",
+        activityType: "attraction",
+        day: "2026-06-19",
+        details: { ticket: "onsite" },
+        durationMinutes: 90,
+        endOffsetDays: 0,
+        endTime: null,
+        isPlanBlock: false,
+        itemKind: "activity",
+        note: "Buy ticket",
+        parentItemId: null,
+        place: "Central",
+        priority: "normal",
+        startTime: "10:00",
+        status: "planned",
+        timeMode: "scheduled",
+        transportation: "MTR",
+      },
+      {
+        address: "Central, Hong Kong",
+        coordinates: { lat: 22.281, lng: 114.159 },
+        createdBy: "member-aom",
+        mapLink: "https://maps.example/museum",
+        nextItemId: "item-local-1",
+        pathId: "path-rain-day",
+        pathName: "Rain day",
+        planItems: seedTrip.itineraryItems,
+        selectedTripPlanId: seedTrip.activePlanVariantId,
+        trip: seedTrip,
+        updatedAt: "2026-06-16T00:00:00.000Z",
+      },
+    );
+
+    expect(nextItem).toMatchObject({
+      id: "item-local-1",
+      tripId: seedTrip.id,
+      planVariantId: seedTrip.activePlanVariantId,
+      pathGroupId: "path-group-item-local-1",
+      pathId: "path-rain-day",
+      pathName: "Rain day",
+      pathRole: "alternative",
+      parentItemId: null,
+      linkLabel: "แผนที่",
+      mapLink: "https://maps.example/museum",
+      address: "Central, Hong Kong",
+      createdBy: "member-aom",
+      updatedAt: "2026-06-16T00:00:00.000Z",
+      version: 1,
+    });
+    expect(nextItem.sortOrder).toBeGreaterThan(0);
+  });
+
+  it("builds child itinerary item drafts by inheriting the parent path", () => {
+    const parentItem = {
+      ...seedTrip.itineraryItems[0],
+      pathGroupId: "path-group-parent",
+      pathId: "path-parent",
+      pathName: "Parent path",
+      pathRole: "alternative" as const,
+    };
+    const trip = {
+      ...seedTrip,
+      itineraryItems: [parentItem, ...seedTrip.itineraryItems.slice(1)],
+    };
+    const child = buildItineraryItemDraft(
+      {
+        activity: "Coffee stop",
+        activityType: "food",
+        day: parentItem.day,
+        details: {},
+        durationMinutes: 30,
+        endOffsetDays: 0,
+        endTime: null,
+        isPlanBlock: false,
+        itemKind: "meal",
+        note: "",
+        parentItemId: parentItem.id,
+        place: "Cafe",
+        priority: "normal",
+        startTime: "11:00",
+        status: "planned",
+        timeMode: "scheduled",
+        transportation: "walk",
+      },
+      {
+        address: "Cafe address",
+        coordinates: undefined,
+        createdBy: "member-aom",
+        mapLink: "https://maps.example/cafe",
+        nextItemId: "item-child",
+        pathId: mainItineraryPathId,
+        planItems: trip.itineraryItems,
+        selectedTripPlanId: seedTrip.activePlanVariantId,
+        trip,
+        updatedAt: "2026-06-16T00:00:00.000Z",
+      },
+    );
+
+    expect(child).toMatchObject({
+      id: "item-child",
+      parentItemId: parentItem.id,
+      pathGroupId: "path-group-parent",
+      pathId: "path-parent",
+      pathName: "Parent path",
+      pathRole: "alternative",
+      planVariantId: parentItem.planVariantId,
+    });
+    expect(child.sortOrder).toBe(parentItem.sortOrder + 10);
   });
 
   it("replaces one itinerary item without changing other trip records", () => {

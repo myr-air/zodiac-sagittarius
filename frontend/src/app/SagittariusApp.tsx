@@ -111,12 +111,10 @@ import {
 } from "@/src/trip/expenses";
 import {
   buildItineraryCommitmentsByItemId,
+  buildItineraryItemDraft,
   buildItineraryView,
   deleteItineraryItemFromTrip,
   deriveItineraryPathOptions,
-  getNextChildSortOrder,
-  getNextSortOrder,
-  itineraryItemPathFieldsForTarget,
   mainItineraryPathId,
   moveTripItem,
   moveTripItemIntoPlanBlock,
@@ -1519,53 +1517,22 @@ export function SagittariusApp({
       (option) => option.id === targetPathId,
     )?.name;
     const nextItemId = nextLocalItemId(trip.itineraryItems, "item-new");
-    const sortOrder = parentItem
-      ? getNextChildSortOrder(planItems, parentItem)
-      : getNextSortOrder(planItems, day);
-    const pathFields = parentItem
-      ? {
-          pathGroupId: parentItem.pathGroupId,
-          pathId: parentItem.pathId,
-          pathName: parentItem.pathName,
-          pathRole: parentItem.pathRole ?? "main",
-        }
-      : itineraryItemPathFieldsForTarget(
-          `path-group-${nextItemId}`,
-          targetPathId,
-          targetPathName,
-        );
-    const draftItem: ItineraryItem = {
-      id: nextItemId,
-      tripId: trip.id,
-      planVariantId: parentItem?.planVariantId ?? selectedTripPlanId,
-      ...pathFields,
-      parentItemId: values.parentItemId ?? null,
-      itemKind: values.itemKind,
-      timeMode: values.timeMode,
-      isPlanBlock: values.isPlanBlock,
-      status: values.status,
-      priority: values.priority,
-      day,
-      sortOrder,
-      startTime: values.startTime,
-      endTime: values.endTime,
-      endOffsetDays: values.endOffsetDays,
-      activity: values.activity,
-      activityType: values.activityType,
-      place: values.place,
-      linkLabel: "แผนที่",
-      mapLink: locationFields.mapLink,
-      address: locationFields.address,
-      coordinates: locationFields.coordinates,
-      durationMinutes: values.durationMinutes,
-      transportation: values.transportation,
-      details: values.details,
-      advisories: [],
-      note: values.note,
-      createdBy: currentMember.id,
-      updatedAt: localMutationTimestamp,
-      version: 1,
-    };
+    const draftItem = buildItineraryItemDraft(
+      { ...values, day },
+      {
+        address: locationFields.address,
+        coordinates: locationFields.coordinates,
+        createdBy: currentMember.id,
+        mapLink: locationFields.mapLink,
+        nextItemId,
+        pathId: targetPathId,
+        pathName: targetPathName,
+        planItems,
+        selectedTripPlanId,
+        trip,
+        updatedAt: localMutationTimestamp,
+      },
+    );
     const branchPlacement =
       parentItem
         ? {

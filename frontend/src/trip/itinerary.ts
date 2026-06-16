@@ -63,6 +63,41 @@ interface BuildItineraryCommitmentsInput {
   tasks: Array<{ relatedItemId?: string | null; status: string }>;
 }
 
+export type BuildItineraryItemDraftInput = Pick<
+    ItineraryItem,
+    | "activity"
+    | "activityType"
+    | "day"
+    | "details"
+    | "durationMinutes"
+    | "endOffsetDays"
+    | "endTime"
+    | "isPlanBlock"
+    | "itemKind"
+    | "note"
+    | "parentItemId"
+    | "place"
+    | "priority"
+    | "startTime"
+    | "status"
+    | "timeMode"
+    | "transportation"
+  >;
+
+export interface BuildItineraryItemDraftOptions {
+  address: string;
+  coordinates: ItineraryItem["coordinates"];
+  createdBy: string;
+  mapLink: string;
+  nextItemId: string;
+  pathName?: string;
+  pathId: string;
+  planItems: ItineraryItem[];
+  selectedTripPlanId: string;
+  trip: Pick<Trip, "id" | "itineraryItems">;
+  updatedAt: string;
+}
+
 export function getTripDates(startDate: string, endDate: string): string[] {
   const start = new Date(`${startDate}T00:00:00Z`);
   const end = new Date(`${endDate}T00:00:00Z`);
@@ -102,6 +137,63 @@ export function normalizeStopHierarchyValues<T extends { parentItemId?: string |
   values: T,
 ): T {
   return values.parentItemId ? { ...values, isPlanBlock: false } : values;
+}
+
+export function buildItineraryItemDraft(
+  input: BuildItineraryItemDraftInput,
+  options: BuildItineraryItemDraftOptions,
+): ItineraryItem {
+  const parentItem = input.parentItemId
+    ? options.trip.itineraryItems.find((item) => item.id === input.parentItemId)
+    : undefined;
+  const sortOrder = parentItem
+    ? getNextChildSortOrder(options.planItems, parentItem)
+    : getNextSortOrder(options.planItems, input.day);
+  const pathFields = parentItem
+    ? {
+        pathGroupId: parentItem.pathGroupId,
+        pathId: parentItem.pathId,
+        pathName: parentItem.pathName,
+        pathRole: parentItem.pathRole ?? "main",
+      }
+    : itineraryItemPathFieldsForTarget(
+        `path-group-${options.nextItemId}`,
+        options.pathId,
+        options.pathName,
+      );
+
+  return {
+    id: options.nextItemId,
+    tripId: options.trip.id,
+    planVariantId: parentItem?.planVariantId ?? options.selectedTripPlanId,
+    ...pathFields,
+    parentItemId: input.parentItemId ?? null,
+    itemKind: input.itemKind,
+    timeMode: input.timeMode,
+    isPlanBlock: input.isPlanBlock,
+    status: input.status,
+    priority: input.priority,
+    day: input.day,
+    sortOrder,
+    startTime: input.startTime,
+    endTime: input.endTime,
+    endOffsetDays: input.endOffsetDays,
+    activity: input.activity,
+    activityType: input.activityType,
+    place: input.place,
+    linkLabel: "แผนที่",
+    mapLink: options.mapLink,
+    address: options.address,
+    coordinates: options.coordinates,
+    durationMinutes: input.durationMinutes,
+    transportation: input.transportation,
+    details: input.details,
+    advisories: [],
+    note: input.note,
+    createdBy: options.createdBy,
+    updatedAt: options.updatedAt,
+    version: 1,
+  };
 }
 
 export function replaceItineraryItem(current: Trip, updatedItem: ItineraryItem): Trip {
