@@ -11,4 +11,4 @@ export {
   nextLocalStopNoteId,
   nextLocalSuggestionId,
   nextLocalTaskId,
-} from "@/src/trip/workspace/sagittarius-app";
+} from "./sagittarius-app";

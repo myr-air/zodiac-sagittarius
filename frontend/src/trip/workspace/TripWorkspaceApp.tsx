@@ -1,4 +1,4 @@
-import { SagittariusApp } from "@/src/app/SagittariusApp";
+import { SagittariusApp } from "@/src/trip/workspace/SagittariusApp";
 import type { PlanningView } from "./planning-view";
 
 interface TripWorkspaceAppProps {

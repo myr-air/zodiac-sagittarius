@@ -1,8 +1,23 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { expect } from "storybook/test";
-import { seedTripJoinId } from "@/src/trip/auth";
-import { buildDenseTripFixture, buildEmptyTripFixture, tripFixture } from "@/src/trip/trip-fixtures";
-import { SagittariusApp } from "./SagittariusApp";
+import { SagittariusApp } from "@/src/app/SagittariusApp";
+import {
+  denseTrip,
+  emptyTrip,
+  expectBookingsView,
+  expectExpensesView,
+  expectItineraryView,
+  expectMapView,
+  expectMembersView,
+  expectOverviewView,
+  expectPhotosView,
+  expectSettingsView,
+  expectTimelineView,
+  seedTripJoinId,
+  storyTripId,
+  travelerMemberId,
+  viewerMemberId,
+} from "@/src/trip/workspace/sagittarius-app/storybook-support";
 
 const meta = {
   title: "Sagittarius/App",
@@ -15,67 +30,6 @@ const meta = {
 export default meta;
 
 type Story = StoryObj<typeof meta>;
-const storyTripId = "trip-1";
-const travelerMemberId = tripFixture.currentMembers.traveler.id;
-const viewerMemberId = tripFixture.currentMembers.viewer.id;
-const denseTrip = buildDenseTripFixture();
-const emptyTrip = buildEmptyTripFixture();
-
-async function expectWorkspaceView(
-  canvasElement: HTMLElement,
-  viewClassName: string,
-) {
-  await expect(canvasElement.querySelector(".workspace-shell")).toBeInTheDocument();
-  await expect(canvasElement.querySelector(".workspace-grid")).toHaveClass("grid-cols-[minmax(0,1fr)]");
-  await expect(canvasElement.querySelector(".planning-main")).toBeInTheDocument();
-  await expect(canvasElement.querySelector(viewClassName)).toBeInTheDocument();
-}
-
-async function expectOverviewView({ canvasElement }: { canvasElement: HTMLElement }) {
-  await expectWorkspaceView(canvasElement, ".overview-page");
-}
-
-async function expectItineraryView({ canvasElement }: { canvasElement: HTMLElement }) {
-  await expectWorkspaceView(canvasElement, ".table-panel");
-  await expect(canvasElement.querySelector(".table-scroll")).toHaveClass("overflow-x-auto");
-  await expect(canvasElement.querySelector(".smart-table")).toHaveClass("min-w-[520px]");
-  await expect(canvasElement.querySelector(".item-placeholder-cell")).toBeInTheDocument();
-}
-
-async function expectTimelineView({ canvasElement }: { canvasElement: HTMLElement }) {
-  await expectWorkspaceView(canvasElement, ".timeline-panel");
-  await expect(canvasElement.querySelector(".timeline-grid")).toBeInTheDocument();
-}
-
-async function expectMapView({ canvasElement }: { canvasElement: HTMLElement }) {
-  await expectWorkspaceView(canvasElement, ".route-map-panel");
-  await expect(canvasElement.querySelector(".route-map-canvas")).toBeInTheDocument();
-}
-
-async function expectMembersView({ canvasElement }: { canvasElement: HTMLElement }) {
-  await expectWorkspaceView(canvasElement, ".members-page");
-  await expect(canvasElement.querySelector(".member-command-bar")).toBeInTheDocument();
-}
-
-async function expectExpensesView({ canvasElement }: { canvasElement: HTMLElement }) {
-  await expectWorkspaceView(canvasElement, ".expenses-page");
-  await expect(canvasElement.querySelector(".expenses-content")).toBeInTheDocument();
-}
-
-async function expectBookingsView({ canvasElement }: { canvasElement: HTMLElement }) {
-  await expectWorkspaceView(canvasElement, ".bookings-docs-page");
-  await expect(canvasElement.querySelector(".bookings-content")).toBeInTheDocument();
-}
-
-async function expectPhotosView({ canvasElement }: { canvasElement: HTMLElement }) {
-  await expectWorkspaceView(canvasElement, ".trip-photos-page");
-  await expect(canvasElement.querySelector(".photos-content")).toBeInTheDocument();
-}
-
-async function expectSettingsView({ canvasElement }: { canvasElement: HTMLElement }) {
-  await expectWorkspaceView(canvasElement, ".trip-settings-page");
-  await expect(canvasElement.querySelector("form[aria-label]")).toBeInTheDocument();
-}
 
 export const Cockpit: Story = {};
 export const ApiJoin: Story = { args: { accessMode: "trip-access", requireJoin: true, dataSource: "api" } };

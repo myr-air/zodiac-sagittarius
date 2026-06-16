@@ -45,6 +45,17 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/trip/workspace/TripWorkspaceImportDialog.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/TripWorkspaceRail.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/TripWorkspaceViews.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/workspace/SagittariusApp.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/index.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/SagittariusAppCore.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/index.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-record-state.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-record-actions.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-records.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/use-workspace-record-state.ts"))).toBe(false);
+    expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/storybook-support.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/app/SagittariusApp.stories.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/TripAccessLoadingFrame.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/WorkspaceToast.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/itinerary-import-model.ts"))).toBe(true);
@@ -91,6 +102,15 @@ describe("Sagittarius project scaffold", () => {
     expect(packageJson.scripts?.storybook).toContain("storybook dev");
     expect(packageJson.scripts?.["build-storybook"]).toContain("storybook build");
     expect(readFileSync(join(frontendRoot, ".storybook/main.ts"), "utf8")).toContain("@storybook/nextjs-vite");
+  });
+
+  it("splits Sagittarius story fixtures and asserts via shared storybook support", () => {
+    const stories = readFileSync(
+      join(frontendRoot, "src/app/SagittariusApp.stories.tsx"),
+      "utf8",
+    );
+
+    expect(stories).toContain("storybook-support");
   });
 
   it("keeps project-side routing docs current", () => {
@@ -208,39 +228,59 @@ describe("Sagittarius project scaffold", () => {
 
     expect(readFileSync(join(frontendRoot, "src/components/AppShell.tsx"), "utf8")).toContain("@/src/trip/workspace/planning-view");
     expect(readFileSync(join(frontendRoot, "src/routes/app-routes.ts"), "utf8")).toContain("@/src/trip/workspace/planning-view");
+    expect(readFileSync(join(frontendRoot, "src/trip/workspace/TripWorkspaceApp.tsx"), "utf8")).toContain(
+      "@/src/trip/workspace/SagittariusApp",
+    );
+    expect(readFileSync(join(frontendRoot, "src/trip/workspace/TripWorkspaceApp.tsx"), "utf8")).not.toContain(
+      "@/src/app/SagittariusApp",
+    );
     expect(readFileSync(join(frontendRoot, "src/components/AppShell.tsx"), "utf8")).not.toContain("@/src/app/SagittariusApp");
     expect(readFileSync(join(frontendRoot, "src/routes/app-routes.ts"), "utf8")).not.toContain("@/src/app/SagittariusApp");
 
-    const sagittariusApp = readFileSync(join(frontendRoot, "src/app/SagittariusApp.tsx"), "utf8");
-    expect(sagittariusApp).toContain("@/src/trip/workspace/TripWorkspaceDeleteDialog");
-    expect(sagittariusApp).toContain("@/src/trip/workspace/TripWorkspaceFrame");
-    expect(sagittariusApp).toContain("@/src/trip/workspace/TripWorkspaceImportDialog");
-    expect(sagittariusApp).toContain("@/src/trip/workspace/TripWorkspaceRail");
-    expect(sagittariusApp).toContain("@/src/trip/workspace/TripWorkspaceViews");
-    expect(sagittariusApp).toContain("@/src/trip/workspace/itinerary-import-model");
-    expect(sagittariusApp).toContain("@/src/trip/workspace/itinerary-import-api");
-    expect(sagittariusApp).toContain("@/src/trip/workspace/selected-trip-plan");
-    expect(sagittariusApp).toContain("@/src/trip/workspace/trip-plan-records");
-    expect(sagittariusApp).toContain("@/src/trip/workspace/use-backend-expense-summary");
-    expect(sagittariusApp).toContain("@/src/trip/workspace/use-daily-briefings");
-    expect(sagittariusApp).toContain("@/src/trip/workspace/use-itinerary-path-workspace");
-    expect(sagittariusApp).toContain("@/src/trip/workspace/use-trip-workspace-records");
-    expect(sagittariusApp).toContain("@/src/trip/workspace/use-trip-workspace-state");
-    expect(sagittariusApp).toContain("@/src/trip/workspace/use-workspace-chrome");
-    expect(sagittariusApp).toContain("@/src/trip/workspace/use-workspace-navigation");
-    expect(sagittariusApp).not.toContain('from "@/src/components/ContextRail"');
-    expect(sagittariusApp).not.toContain("workspaceGridClassName");
-    expect(sagittariusApp).not.toContain("planningMainClassName");
-    expect(sagittariusApp).not.toContain("delete-confirm-dialog");
-    expect(sagittariusApp).not.toContain("appDeleteDialogTitleClassName");
-    expect(sagittariusApp).not.toContain("import-options-dialog");
-    expect(sagittariusApp).not.toContain("ItineraryImportOptionsDialog");
-    expect(sagittariusApp).not.toContain("function buildImportedPlanRecordsForTripPlan");
-    expect(sagittariusApp).not.toContain("function mergeApiImportedPlanRecordsIntoTrip");
-    expect(sagittariusApp).not.toContain("function mergeImportedRecordsIntoTripPlan");
-    expect(sagittariusApp).not.toContain("function buildImportedItineraryItemCreateRequest");
-    expect(sagittariusApp).not.toContain("upsertById");
-    expect(sagittariusApp).not.toContain("async function createImportedPlanRecordsViaApi");
+    const sagaCore = readFileSync(
+      join(frontendRoot, "src/trip/workspace/sagittarius-app/SagittariusAppCore.tsx"),
+      "utf8",
+    );
+    const workspaceFacade = readFileSync(
+      join(frontendRoot, "src/trip/workspace/SagittariusApp.tsx"),
+      "utf8",
+    );
+    const appFacade = readFileSync(join(frontendRoot, "src/app/SagittariusApp.tsx"), "utf8");
+    expect(workspaceFacade).toContain("./sagittarius-app");
+    expect(appFacade).toContain("@/src/trip/workspace/sagittarius-app");
+    expect(appFacade).not.toContain('"use client"');
+    const sagittariusApp = sagaCore;
+    expect(sagaCore).toContain("@/src/trip/workspace/TripWorkspaceDeleteDialog");
+    expect(sagaCore).toContain("@/src/trip/workspace/TripWorkspaceFrame");
+    expect(sagaCore).toContain("@/src/trip/workspace/TripWorkspaceImportDialog");
+    expect(sagaCore).toContain("@/src/trip/workspace/TripWorkspaceRail");
+    expect(sagaCore).toContain("@/src/trip/workspace/TripWorkspaceViews");
+    expect(sagaCore).toContain("@/src/trip/workspace/itinerary-import-model");
+    expect(sagaCore).toContain("@/src/trip/workspace/itinerary-import-api");
+    expect(sagaCore).toContain("@/src/trip/workspace/selected-trip-plan");
+    expect(sagaCore).toContain("@/src/trip/workspace/trip-plan-records");
+    expect(sagaCore).toContain("@/src/trip/workspace/use-backend-expense-summary");
+    expect(sagaCore).toContain("@/src/trip/workspace/use-daily-briefings");
+    expect(sagaCore).toContain("@/src/trip/workspace/use-itinerary-path-workspace");
+    expect(sagaCore).toContain("@/src/trip/workspace/use-trip-workspace-records");
+    expect(sagaCore).toContain("useWorkspaceRecords");
+    expect(sagaCore).toContain("./hooks");
+    expect(sagaCore).toContain("@/src/trip/workspace/use-trip-workspace-state");
+    expect(sagaCore).toContain("@/src/trip/workspace/use-workspace-chrome");
+    expect(sagaCore).toContain("@/src/trip/workspace/use-workspace-navigation");
+    expect(sagaCore).not.toContain('from "@/src/components/ContextRail"');
+    expect(sagaCore).not.toContain("workspaceGridClassName");
+    expect(sagaCore).not.toContain("planningMainClassName");
+    expect(sagaCore).not.toContain("delete-confirm-dialog");
+    expect(sagaCore).not.toContain("appDeleteDialogTitleClassName");
+    expect(sagaCore).not.toContain("import-options-dialog");
+    expect(sagaCore).not.toContain("ItineraryImportOptionsDialog");
+    expect(sagaCore).not.toContain("function buildImportedPlanRecordsForTripPlan");
+    expect(sagaCore).not.toContain("function mergeApiImportedPlanRecordsIntoTrip");
+    expect(sagaCore).not.toContain("function mergeImportedRecordsIntoTripPlan");
+    expect(sagaCore).not.toContain("function buildImportedItineraryItemCreateRequest");
+    expect(sagaCore).not.toContain("upsertById");
+    expect(sagaCore).not.toContain("async function createImportedPlanRecordsViaApi");
     expect(sagittariusApp).not.toContain("function shouldUseApiItineraryImport");
     expect(sagittariusApp).not.toContain("interface PendingItineraryImport");
     expect(sagittariusApp).not.toContain("resolveViewFromPath");
@@ -252,6 +292,10 @@ describe("Sagittarius project scaffold", () => {
     expect(sagittariusApp).not.toContain("buildFallbackBriefings");
     expect(sagittariusApp).not.toContain("buildPatchDailyBriefingRequest");
     expect(sagittariusApp).not.toContain("useState<{ tripPlanId: string; summary: ExpenseSummary } | null>");
+    expect(sagittariusApp).not.toContain("@/src/trip/trip-fixtures");
+    expect(sagittariusApp).not.toContain("tripFixtureSuggestions");
+    expect(sagittariusApp).not.toContain("tripFixtureTasks");
+    expect(sagittariusApp).not.toContain("tripFixtureStopNotes");
     expect(sagittariusApp).not.toContain("function resolveSelectedTripPlanId");
     expect(sagittariusApp).not.toContain("function rememberSelectedTripPlanId");
     expect(sagittariusApp).not.toContain("function selectTripPlanRecords");
