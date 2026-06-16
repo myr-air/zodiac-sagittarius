@@ -45,6 +45,7 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/trip/workspace/TripWorkspaceRail.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/TripWorkspaceViews.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/itinerary-import-model.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/workspace/itinerary-import-api.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/planning-view.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/selected-trip-plan.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/trip-plan-records.ts"))).toBe(true);
@@ -202,6 +203,7 @@ describe("Sagittarius project scaffold", () => {
     expect(sagittariusApp).toContain("@/src/trip/workspace/TripWorkspaceRail");
     expect(sagittariusApp).toContain("@/src/trip/workspace/TripWorkspaceViews");
     expect(sagittariusApp).toContain("@/src/trip/workspace/itinerary-import-model");
+    expect(sagittariusApp).toContain("@/src/trip/workspace/itinerary-import-api");
     expect(sagittariusApp).toContain("@/src/trip/workspace/selected-trip-plan");
     expect(sagittariusApp).toContain("@/src/trip/workspace/trip-plan-records");
     expect(sagittariusApp).not.toContain('from "@/src/components/ContextRail"');
@@ -213,6 +215,7 @@ describe("Sagittarius project scaffold", () => {
     expect(sagittariusApp).not.toContain("ItineraryImportOptionsDialog");
     expect(sagittariusApp).not.toContain("function buildImportedPlanRecordsForTripPlan");
     expect(sagittariusApp).not.toContain("function mergeImportedRecordsIntoTripPlan");
+    expect(sagittariusApp).not.toContain("async function createImportedPlanRecordsViaApi");
     expect(sagittariusApp).not.toContain("function shouldUseApiItineraryImport");
     expect(sagittariusApp).not.toContain("interface PendingItineraryImport");
     expect(sagittariusApp).not.toContain("function resolveSelectedTripPlanId");
