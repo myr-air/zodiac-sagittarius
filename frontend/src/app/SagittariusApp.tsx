@@ -1686,17 +1686,14 @@ export function SagittariusApp({
           },
         ),
       );
-      const tripWithPatchedItem = {
-        ...trip,
-        itineraryItems: trip.itineraryItems.map((item) =>
-          item.id === itemId
-            ? { ...patchedItem, day: values.day || patchedItem.day }
-            : item,
-        ),
+      const patchedItemWithDay = {
+        ...patchedItem,
+        day: values.day || patchedItem.day,
       };
+      const tripWithPatchedItem = replaceItineraryItem(trip, patchedItemWithDay);
       const pathPlacement = applyItemToActivityBranch(
         tripWithPatchedItem,
-        { ...patchedItem, day: values.day || patchedItem.day },
+        patchedItemWithDay,
       );
       const branchPlacement = values.pathId
         ? applyManualActivityPath(
@@ -1799,13 +1796,10 @@ export function SagittariusApp({
               expectedVersion: item.version,
             }),
           );
-          const nextTrip = {
-            ...latestTripRef.current,
-            itineraryItems: latestTripRef.current.itineraryItems.map(
-              (candidate) =>
-                candidate.id === itemId ? patchedItem : candidate,
-            ),
-          };
+          const nextTrip = replaceItineraryItem(
+            latestTripRef.current,
+            patchedItem,
+          );
           latestTripRef.current = nextTrip;
           setTripState((current) => ({ ...current, trip: nextTrip }));
           setSelectedItemId(itemId);
