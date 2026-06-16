@@ -226,6 +226,7 @@ import { TripAccessLoadingFrame } from "@/src/trip/workspace/TripAccessLoadingFr
 import { useItineraryPathWorkspace } from "@/src/trip/workspace/use-itinerary-path-workspace";
 import { useTripWorkspaceRecords } from "@/src/trip/workspace/use-trip-workspace-records";
 import { useTripWorkspaceState } from "@/src/trip/workspace/use-trip-workspace-state";
+import { useWorkspaceChrome } from "@/src/trip/workspace/use-workspace-chrome";
 import { useWorkspaceNavigation } from "@/src/trip/workspace/use-workspace-navigation";
 import { WorkspaceToast } from "@/src/trip/workspace/WorkspaceToast";
 import {
@@ -400,11 +401,16 @@ export function SagittariusApp({
   const [dailyBriefings, setDailyBriefings] = useState<TripDailyBriefing[]>([]);
   const [backendExpenseSummary, setBackendExpenseSummary] =
     useState<{ tripPlanId: string; summary: ExpenseSummary } | null>(null);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [contextRailOpen, setContextRailOpen] = useState(false);
-  const [contextRailMounted, setContextRailMounted] = useState(false);
-  const [contextRailPreferredTab, setContextRailPreferredTab] =
-    useState<"notes" | "booking" | "suggestions">("notes");
+  const {
+    contextRailMounted,
+    contextRailOpen,
+    contextRailPreferredTab,
+    setContextRailPreferredTab,
+    setContextRailVisibility,
+    sidebarCollapsed,
+    toggleContextRail,
+    toggleSidebarCollapsed,
+  } = useWorkspaceChrome();
   // Auto-dismiss the workspace toast after 6 s when the session is a join-only (temp) session
   useEffect(() => {
     if (!requireJoin || toastDismissed) return;
@@ -823,17 +829,6 @@ export function SagittariusApp({
     };
   }, [isApiMode, participantSession, resolvedApiClient, updateApiTrip]);
 
-  useEffect(() => {
-    if (contextRailOpen) return undefined;
-    const timeout = window.setTimeout(() => setContextRailMounted(false), 900);
-    return () => window.clearTimeout(timeout);
-  }, [contextRailOpen]);
-
-  const setContextRailVisibility = useCallback((open: boolean) => {
-    if (open) setContextRailMounted(true);
-    setContextRailOpen(open);
-  }, []);
-
   const navigateWorkspaceView = useCallback(
     (view: PlanningView, href: string) => {
       navigateWorkspacePath(view, href);
@@ -859,26 +854,6 @@ export function SagittariusApp({
       appRoutes.tripOverview(participantSession.tripId);
     window.location.replace(target);
   }, [participantSession, requireJoin, routeTripId, sessionMember]);
-
-  useEffect(() => {
-    if (!contextRailOpen) return undefined;
-
-    function closeContextRailFromOutside(event: Event) {
-      if (!(event.target instanceof Element)) return;
-      if (event.target.closest(".context-rail")) return;
-      if (event.target.closest(".page-header, .side-rail")) return;
-      if (event.target.closest('[role="dialog"]')) return;
-      if (event.target.closest(".data-row")) return;
-      setContextRailVisibility(false);
-    }
-
-    document.addEventListener("pointerdown", closeContextRailFromOutside);
-    document.addEventListener("click", closeContextRailFromOutside);
-    return () => {
-      document.removeEventListener("pointerdown", closeContextRailFromOutside);
-      document.removeEventListener("click", closeContextRailFromOutside);
-    };
-  }, [contextRailOpen, setContextRailVisibility]);
 
   async function reloadTripPlanConflict(
     preferredTripPlanId: string | null = selectedTripPlanId,
@@ -3371,7 +3346,7 @@ export function SagittariusApp({
       }
       onNavigateView={navigateWorkspaceView}
       trip={trip}
-      onToggleCollapsed={() => setSidebarCollapsed((current) => !current)}
+      onToggleCollapsed={toggleSidebarCollapsed}
     >
       <main className={workspaceShellClassName}>
         {requireJoin && !toastDismissed ? (
@@ -3584,8 +3559,7 @@ export function SagittariusApp({
                 onClearAllDayPaths: clearAllDayPaths,
                 onToggleShowAllPaths: toggleShowAllPaths,
                 onRedo: redo,
-                onToggleContextRail: () =>
-                  setContextRailVisibility(!contextRailOpen),
+                onToggleContextRail: toggleContextRail,
                 onUndo: undo,
               }}
               mapProps={{
@@ -3610,8 +3584,7 @@ export function SagittariusApp({
                 startDate: trip.startDate,
                 tripName: trip.name,
                 onSelectItem: selectItem,
-                onToggleContextRail: () =>
-                  setContextRailVisibility(!contextRailOpen),
+                onToggleContextRail: toggleContextRail,
               }}
             />
         </TripWorkspaceFrame>

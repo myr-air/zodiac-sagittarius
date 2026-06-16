@@ -224,6 +224,7 @@ describe("Sagittarius project scaffold", () => {
     expect(sagittariusApp).toContain("@/src/trip/workspace/use-itinerary-path-workspace");
     expect(sagittariusApp).toContain("@/src/trip/workspace/use-trip-workspace-records");
     expect(sagittariusApp).toContain("@/src/trip/workspace/use-trip-workspace-state");
+    expect(sagittariusApp).toContain("@/src/trip/workspace/use-workspace-chrome");
     expect(sagittariusApp).toContain("@/src/trip/workspace/use-workspace-navigation");
     expect(sagittariusApp).not.toContain('from "@/src/components/ContextRail"');
     expect(sagittariusApp).not.toContain("workspaceGridClassName");
@@ -242,6 +243,8 @@ describe("Sagittarius project scaffold", () => {
     expect(sagittariusApp).not.toContain("interface PendingItineraryImport");
     expect(sagittariusApp).not.toContain("resolveViewFromPath");
     expect(sagittariusApp).not.toContain("navigatedView");
+    expect(sagittariusApp).not.toContain("setContextRailMounted");
+    expect(sagittariusApp).not.toContain("setSidebarCollapsed");
     expect(sagittariusApp).not.toContain("function resolveSelectedTripPlanId");
     expect(sagittariusApp).not.toContain("function rememberSelectedTripPlanId");
     expect(sagittariusApp).not.toContain("function selectTripPlanRecords");
