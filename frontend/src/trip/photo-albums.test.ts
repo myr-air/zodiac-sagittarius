@@ -5,6 +5,7 @@ import {
   findPhotoAlbumRelations,
   safePhotoAlbumCoverHref,
   safePhotoAlbumHref,
+  serializePhotoAlbumInputForApi,
 } from "./photo-albums";
 import type { ItineraryItem, Member, Trip, TripPhotoAlbumLink } from "./types";
 
@@ -80,6 +81,53 @@ describe("photo album helpers", () => {
     expect(safePhotoAlbumCoverHref("https://images.example.test/cover.jpg")).toBe("https://images.example.test/cover.jpg");
     expect(safePhotoAlbumCoverHref("//evil.example.test/cover.jpg")).toBeNull();
     expect(safePhotoAlbumCoverHref("javascript:alert(1)")).toBeNull();
+  });
+
+  it("serializes photo album form values for the API boundary", () => {
+    expect(
+      serializePhotoAlbumInputForApi({
+        access: "collaborative",
+        accessNote: "  Everyone can add photos  ",
+        coverUrl: "  https://images.example.test/cover.jpg  ",
+        day: "  2026-06-18  ",
+        description: "  Shared album  ",
+        ownerMemberId: "member-owner",
+        provider: "google_photos",
+        relatedItineraryItemIds: ["item-peak"],
+        title: "  Peak album  ",
+        url: "  https://photos.app.goo.gl/example  ",
+      }),
+    ).toEqual({
+      access: "collaborative",
+      accessNote: "Everyone can add photos",
+      coverUrl: "https://images.example.test/cover.jpg",
+      day: "2026-06-18",
+      description: "Shared album",
+      ownerMemberId: "member-owner",
+      provider: "google_photos",
+      relatedItineraryItemIds: ["item-peak"],
+      title: "Peak album",
+      url: "https://photos.app.goo.gl/example",
+    });
+
+    expect(
+      serializePhotoAlbumInputForApi({
+        access: "view_only",
+        accessNote: " ",
+        coverUrl: "",
+        day: "",
+        description: " ",
+        provider: "custom",
+        relatedItineraryItemIds: [],
+        title: "Album",
+        url: "https://example.test",
+      }),
+    ).toMatchObject({
+      accessNote: null,
+      coverUrl: null,
+      day: null,
+      description: null,
+    });
   });
 
   it("finds owner and itinerary relations for the inspector", () => {

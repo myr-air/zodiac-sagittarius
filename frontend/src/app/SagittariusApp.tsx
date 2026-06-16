@@ -29,6 +29,7 @@ import {
   type TripApiClient,
   type TripCockpit,
 } from "@/src/trip/api-client";
+import { serializePhotoAlbumInputForApi } from "@/src/trip/photo-albums";
 import {
   createAccountApiClient,
   type AccountSession,
@@ -4779,18 +4780,6 @@ function buildItineraryCommitmentsByItemId({
   }
 
   return Object.fromEntries(commitments);
-}
-
-function serializePhotoAlbumInputForApi(input: TripPhotoAlbumInput) {
-  return {
-    ...input,
-    title: input.title.trim(),
-    url: input.url.trim(),
-    description: input.description?.trim() || null,
-    accessNote: input.accessNote?.trim() || null,
-    coverUrl: input.coverUrl?.trim() || null,
-    day: input.day?.trim() || null,
-  };
 }
 
 async function patchApiItineraryBranchItems(

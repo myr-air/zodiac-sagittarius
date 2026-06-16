@@ -20,6 +20,17 @@ export interface PhotoAlbumRelations {
   itineraryItems: ItineraryItem[];
 }
 
+export type PhotoAlbumInputForApi = Pick<
+  TripPhotoAlbumLink,
+  "access" | "provider" | "relatedItineraryItemIds" | "title" | "url"
+> &
+  Partial<
+    Pick<
+      TripPhotoAlbumLink,
+      "accessNote" | "coverUrl" | "day" | "description" | "ownerMemberId"
+    >
+  >;
+
 export function buildPhotoAlbumSummary(albums: TripPhotoAlbumLink[]): PhotoAlbumSummary {
   return {
     total: albums.length,
@@ -56,6 +67,18 @@ export function safePhotoAlbumCoverHref(value: string | null | undefined): strin
   if (!trimmed) return null;
   if (trimmed.startsWith("/") && !trimmed.startsWith("//")) return trimmed;
   return safePhotoAlbumHref(trimmed);
+}
+
+export function serializePhotoAlbumInputForApi(input: PhotoAlbumInputForApi) {
+  return {
+    ...input,
+    title: input.title.trim(),
+    url: input.url.trim(),
+    description: input.description?.trim() || null,
+    accessNote: input.accessNote?.trim() || null,
+    coverUrl: input.coverUrl?.trim() || null,
+    day: input.day?.trim() || null,
+  };
 }
 
 export function findPhotoAlbumRelations(album: TripPhotoAlbumLink, trip: Trip): PhotoAlbumRelations {
