@@ -206,6 +206,8 @@ describe("Sagittarius project scaffold", () => {
     expect(sagittariusApp).not.toContain("appDeleteDialogTitleClassName");
     expect(sagittariusApp).not.toContain("import-options-dialog");
     expect(sagittariusApp).not.toContain("ItineraryImportOptionsDialog");
+    expect(sagittariusApp).not.toContain("function buildImportedPlanRecordsForTripPlan");
+    expect(sagittariusApp).not.toContain("function mergeImportedRecordsIntoTripPlan");
     expect(sagittariusApp).not.toContain("function shouldUseApiItineraryImport");
     expect(sagittariusApp).not.toContain("interface PendingItineraryImport");
     expect(sagittariusApp).not.toContain('from "@/src/components/OverviewPage"');
