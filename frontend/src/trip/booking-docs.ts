@@ -1,4 +1,7 @@
-import type { PatchBookingDocApiRequest } from "./api-client";
+import type {
+  CreateBookingDocApiRequest,
+  PatchBookingDocApiRequest,
+} from "./api-client";
 import type {
   BookingDoc,
   BookingDocStatus,
@@ -95,6 +98,10 @@ export interface LocalBookingDocOptions {
 export interface LocalBookingDocUpdateOptions {
   title: string;
   updatedAt: string;
+}
+
+export interface BuildCreateBookingDocRequestOptions {
+  clientMutationId: string;
 }
 
 export interface BuildPatchBookingDocRequestOptions {
@@ -228,6 +235,16 @@ export function serializeBookingDocInputForApi(
       provider: link.provider?.trim() || null,
       accessNote: link.accessNote?.trim() || null,
     })),
+  };
+}
+
+export function buildCreateBookingDocRequest(
+  input: BookingDocInputLike & { tripPlanId?: string | null },
+  options: BuildCreateBookingDocRequestOptions,
+): CreateBookingDocApiRequest {
+  return {
+    clientMutationId: options.clientMutationId,
+    ...serializeBookingDocInputForApi(input),
   };
 }
 

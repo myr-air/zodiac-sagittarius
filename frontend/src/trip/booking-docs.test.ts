@@ -8,6 +8,7 @@ import {
   bookingTypeForExpenseEstimate,
   bookingTypeForItineraryItem,
   buildBookingDocsSummary,
+  buildCreateBookingDocRequest,
   buildPatchBookingDocRequest,
   canViewBookingDoc,
   clearItineraryBookingTicketDetails,
@@ -217,6 +218,44 @@ describe("booking docs helpers", () => {
         currency: "HKD",
         notes: "Ready",
       },
+    });
+  });
+
+  it("builds create booking doc API requests", () => {
+    expect(
+      buildCreateBookingDocRequest(
+        {
+          type: "activity_ticket",
+          title: "  Museum tickets  ",
+          status: "draft",
+          visibility: "shared",
+          providerName: " Museum ",
+          confirmationCode: null,
+          startsAt: "2026-06-19T10:00",
+          endsAt: null,
+          timezone: "Asia/Hong_Kong",
+          priceAmount: null,
+          currency: null,
+          travelerIds: ["member-owner"],
+          externalLinks: [],
+          relatedItineraryItemIds: ["item-museum"],
+          relatedTaskIds: [],
+          relatedExpenseIds: [],
+          noteIds: [],
+          notes: "  Buy online  ",
+          tripPlanId: "plan-rain",
+        },
+        {
+          clientMutationId: "booking-doc-create-mutation",
+        },
+      ),
+    ).toMatchObject({
+      clientMutationId: "booking-doc-create-mutation",
+      title: "Museum tickets",
+      providerName: "Museum",
+      startsAt: "2026-06-19T10:00:00+08:00",
+      notes: "Buy online",
+      tripPlanId: "plan-rain",
     });
   });
 

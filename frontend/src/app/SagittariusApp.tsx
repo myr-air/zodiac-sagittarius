@@ -70,13 +70,13 @@ import {
   bookingDocInputForExpenseEstimate,
   bookingTypeForBookingTemplate,
   bookingTypeForItineraryItem,
+  buildCreateBookingDocRequest,
   buildPatchBookingDocRequest,
   clearItineraryBookingTicketDetails,
   createLocalBookingDoc,
   findDuplicateBookingDoc,
   removeBookingDocFromTrip,
   replaceBookingDocInTrip,
-  serializeBookingDocInputForApi,
   syncItineraryDetailsWithBookingTicket,
   updateLocalBookingDocInTrip,
   uniqueStringIds,
@@ -2414,16 +2414,16 @@ export function SagittariusApp({
         const bookingDoc = await resolvedApiClient.createBookingDoc(
           trip.id,
           participantSession.sessionToken,
-          {
-            clientMutationId,
-            ...serializeBookingDocInputForApi({
+          buildCreateBookingDocRequest(
+            {
               ...input,
               title,
               tripPlanId:
                 input.tripPlanId ??
                 tripPlanIdForBookingRecord(trip, input, selectedTripPlanId),
-            }),
-          },
+            },
+            { clientMutationId },
+          ),
         );
         const nextTrip = {
           ...latestTripRef.current,
