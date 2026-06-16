@@ -223,6 +223,7 @@ import { TripWorkspaceImportDialog } from "@/src/trip/workspace/TripWorkspaceImp
 import { TripWorkspaceRail } from "@/src/trip/workspace/TripWorkspaceRail";
 import { TripWorkspaceViews } from "@/src/trip/workspace/TripWorkspaceViews";
 import { TripAccessLoadingFrame } from "@/src/trip/workspace/TripAccessLoadingFrame";
+import { useBackendExpenseSummary } from "@/src/trip/workspace/use-backend-expense-summary";
 import { useDailyBriefings } from "@/src/trip/workspace/use-daily-briefings";
 import { useItineraryPathWorkspace } from "@/src/trip/workspace/use-itinerary-path-workspace";
 import { useTripWorkspaceRecords } from "@/src/trip/workspace/use-trip-workspace-records";
@@ -266,7 +267,6 @@ import type {
   Expense,
   ExpenseComment,
   ExpenseLineItem,
-  ExpenseSummary,
   ItineraryItem,
   PlanStatus,
   SettlementSuggestion,
@@ -390,8 +390,6 @@ export function SagittariusApp({
   const [stopNotes, setStopNotes] = useState<StopNote[]>(() =>
     tripFixtureStopNotes.map((note) => ({ ...note })),
   );
-  const [backendExpenseSummary, setBackendExpenseSummary] =
-    useState<{ tripPlanId: string; summary: ExpenseSummary } | null>(null);
   const {
     contextRailMounted,
     contextRailOpen,
@@ -527,6 +525,28 @@ export function SagittariusApp({
   const hasSelectedBackendExpenseTripPlan = Boolean(
     selectedTripPlanId && tripHasPlan(trip, selectedTripPlanId),
   );
+  const handleBackendExpenseAuthFailure = useCallback(() => {
+    clearParticipantSession();
+    setParticipantSession(null);
+    setAccessError("unauthenticated");
+  }, []);
+  const {
+    backendExpenseSummary,
+    refreshBackendExpenseSummary,
+    resetBackendExpenseSummary,
+    setBackendExpenseSummary,
+  } = useBackendExpenseSummary({
+    apiClient: resolvedApiClient,
+    canViewExpenses,
+    enabled: shouldSyncBackendExpenseSummary,
+    hasSelectedTripPlan: hasSelectedBackendExpenseTripPlan,
+    isApiMode,
+    isCockpitLoaded,
+    onUnauthenticated: handleBackendExpenseAuthFailure,
+    participantSession,
+    selectedTripPlanId,
+    tripId: trip.id,
+  });
   useEffect(() => {
     if (!sessionRestored && !isApiMode) return;
     let cancelled = false;
@@ -704,7 +724,7 @@ export function SagittariusApp({
         setSuggestions(cockpit.suggestions);
         setTasks(cockpit.tasks);
         setStopNotes(cockpit.stopNotes);
-        setBackendExpenseSummary(null);
+        resetBackendExpenseSummary();
         setIsCockpitLoaded(true);
       })
       .catch((caught) => {
@@ -743,62 +763,10 @@ export function SagittariusApp({
     isApiMode,
     participantSession,
     replaceDailyBriefings,
+    resetBackendExpenseSummary,
     resetDailyBriefings,
     resolvedApiClient,
     setTripState,
-  ]);
-
-  useEffect(() => {
-    if (
-      !isApiMode ||
-      !participantSession ||
-      !resolvedApiClient ||
-      !isCockpitLoaded ||
-      !canViewExpenses ||
-      !shouldSyncBackendExpenseSummary ||
-      !hasSelectedBackendExpenseTripPlan ||
-      !selectedTripPlanId
-    ) {
-      return undefined;
-    }
-    if (backendExpenseSummary?.tripPlanId === selectedTripPlanId) {
-      return undefined;
-    }
-
-    let cancelled = false;
-    void Promise.resolve(
-      resolvedApiClient.getExpenseSummary(
-        participantSession.tripId,
-        participantSession.sessionToken,
-        selectedTripPlanId,
-      ),
-    )
-      .then((summary) => {
-        if (cancelled || !summary) return;
-        setBackendExpenseSummary({ tripPlanId: selectedTripPlanId, summary });
-      })
-      .catch((caught) => {
-        if (cancelled) return;
-        if (isAuthFailure(caught)) {
-          clearParticipantSession();
-          setParticipantSession(null);
-          setAccessError("unauthenticated");
-        }
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [
-    backendExpenseSummary?.tripPlanId,
-    canViewExpenses,
-    isApiMode,
-    isCockpitLoaded,
-    hasSelectedBackendExpenseTripPlan,
-    participantSession,
-    resolvedApiClient,
-    selectedTripPlanId,
-    shouldSyncBackendExpenseSummary,
   ]);
 
   useEffect(() => {
@@ -1798,7 +1766,7 @@ export function SagittariusApp({
     setSuggestions(cockpit.suggestions);
     setTasks(cockpit.tasks);
     setStopNotes(cockpit.stopNotes);
-    setBackendExpenseSummary(null);
+    resetBackendExpenseSummary();
     setIsCockpitLoaded(true);
   }
 
@@ -2774,16 +2742,7 @@ export function SagittariusApp({
         createdExpenses.push(expense);
       }
       updateApiTrip((current) => appendExpensesToTrip(current, createdExpenses));
-      setBackendExpenseSummary(
-        {
-          tripPlanId: selectedTripPlanId,
-          summary: await resolvedApiClient.getExpenseSummary(
-            trip.id,
-            participantSession.sessionToken,
-            selectedTripPlanId,
-          ),
-        },
-      );
+      await refreshBackendExpenseSummary();
       return;
     }
 
@@ -2805,16 +2764,7 @@ export function SagittariusApp({
         participantSession.sessionToken,
       );
       updateApiTrip((current) => removeExpenseFromTrip(current, expenseId));
-      setBackendExpenseSummary(
-        {
-          tripPlanId: selectedTripPlanId,
-          summary: await resolvedApiClient.getExpenseSummary(
-            trip.id,
-            participantSession.sessionToken,
-            selectedTripPlanId,
-          ),
-        },
-      );
+      await refreshBackendExpenseSummary();
       return;
     }
     commitTrip((current) => removeExpenseFromTrip(current, expenseId));
@@ -2856,16 +2806,7 @@ export function SagittariusApp({
         }),
       );
       updateApiTrip((current) => replaceExpenseInTrip(current, expense));
-      setBackendExpenseSummary(
-        {
-          tripPlanId: selectedTripPlanId,
-          summary: await resolvedApiClient.getExpenseSummary(
-            trip.id,
-            participantSession.sessionToken,
-            selectedTripPlanId,
-          ),
-        },
-      );
+      await refreshBackendExpenseSummary();
       return;
     }
     commitTrip((current) => updateLocalExpenseInTrip(current, expenseDraft));
