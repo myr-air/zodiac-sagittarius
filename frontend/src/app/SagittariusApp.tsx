@@ -114,6 +114,10 @@ import {
   shiftItineraryItemsToStartDate,
 } from "@/src/trip/itinerary-time";
 import {
+  applyTripSettingsToTrip,
+  mergePatchedTripSettings,
+} from "@/src/trip/trip-settings";
+import {
   buildMapLink,
   locationFieldsFromCandidate,
   mapResolutionActivity,
@@ -2544,42 +2548,18 @@ export function SagittariusApp({
       );
       setTripState((current) => ({
         ...current,
-        trip: {
-          ...current.trip,
-          name: patchedTrip.name,
-          destinationLabel: patchedTrip.destinationLabel,
-          countries: patchedTrip.countries,
-          startDate: patchedTrip.startDate,
-          endDate: patchedTrip.endDate,
-          partySize: patchedTrip.partySize,
-          defaultTimezone: patchedTrip.defaultTimezone,
-          activePlanVariantId:
-            patchedTrip.activePlanVariantId || current.trip.activePlanVariantId,
-          itineraryItems: current.trip.itineraryItems.map(
-            (item) => patchedItemsById.get(item.id) ?? item,
-          ),
-          version: patchedTrip.version,
-        },
+        trip: mergePatchedTripSettings(
+          current.trip,
+          patchedTrip,
+          patchedItemsById,
+        ),
       }));
       return;
     }
 
-    commitTrip((current) => ({
-      ...current,
-      name: values.name,
-      destinationLabel: values.destinationLabel,
-      countries: nextCountries,
-      startDate: values.startDate,
-      endDate: values.endDate,
-      partySize: values.partySize,
-      defaultTimezone: values.defaultTimezone,
-      itineraryItems: shiftItineraryItemsToStartDate(
-        current.itineraryItems,
-        current.startDate,
-        values.startDate,
-      ),
-      version: (current.version ?? 0) + 1,
-    }));
+    commitTrip((current) =>
+      applyTripSettingsToTrip(current, { ...values, countries: nextCountries }),
+    );
   }
 
   async function createBookingDoc(input: BookingDocInput): Promise<BookingDoc | null> {

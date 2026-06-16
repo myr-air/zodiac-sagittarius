@@ -57,6 +57,7 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/trip/api-errors.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/participant-session-storage.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/trip-plans.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/trip-settings.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/trip-countries.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/itinerary-time.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/itinerary-paths-api.ts"))).toBe(true);
@@ -250,6 +251,8 @@ describe("Sagittarius project scaffold", () => {
     expect(sagittariusApp).not.toContain("function updateTripPlanInTrip");
     expect(sagittariusApp).not.toContain("function mergePublishedTripPlan");
     expect(sagittariusApp).not.toContain("function createLocalTripPlan");
+    expect(sagittariusApp).not.toContain("function applyTripSettingsToTrip");
+    expect(sagittariusApp).not.toContain("function mergePatchedTripSettings");
     expect(sagittariusApp).not.toContain("function normalizeTripPlanSummary");
     expect(sagittariusApp).not.toContain("function planStatusForLegacyKind");
     expect(sagittariusApp).not.toContain("function legacyKindForPlanStatus");
