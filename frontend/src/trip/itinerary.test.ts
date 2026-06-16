@@ -6,12 +6,14 @@ import {
   buildItineraryCommitmentsByItemId,
   buildItineraryView,
   deriveItineraryPathOptions,
+  itineraryItemPathFieldsForTarget,
   resolveItineraryPathItems,
   getTripDates,
   groupItemsByDay,
   parseTime,
   formatDayLabel,
   sortItemsForDay,
+  selectedItineraryPathIdForDay,
   validateItineraryItem,
 } from "./itinerary";
 import { createLocalTripRepository } from "./repository";
@@ -151,6 +153,49 @@ describe("itinerary planning domain", () => {
       "main-route",
       "slow-route",
     ]);
+  });
+
+  it("selects the effective itinerary path for a day", () => {
+    expect(
+      selectedItineraryPathIdForDay("2026-06-19", {
+        tripPathId: "path-rain",
+        dayPathOverrides: { "2026-06-19": "path-food" },
+      }),
+    ).toBe("path-food");
+    expect(
+      selectedItineraryPathIdForDay("2026-06-20", {
+        tripPathId: "path-rain",
+        dayPathOverrides: { "2026-06-19": "path-food" },
+      }),
+    ).toBe("path-rain");
+    expect(selectedItineraryPathIdForDay("2026-06-20", {})).toBe("main");
+    expect(
+      selectedItineraryPathIdForDay("2026-06-20", {
+        showAll: true,
+        tripPathId: "path-rain",
+      }),
+    ).toBe("main");
+  });
+
+  it("builds itinerary path fields for main and alternative targets", () => {
+    expect(
+      itineraryItemPathFieldsForTarget("path-group-breakfast", "main"),
+    ).toEqual({
+      pathGroupId: "path-group-breakfast",
+      pathRole: "main",
+    });
+    expect(
+      itineraryItemPathFieldsForTarget(
+        "path-group-breakfast",
+        "path-2026-06-19-sub-a",
+        "Plan A",
+      ),
+    ).toEqual({
+      pathGroupId: "path-group-breakfast",
+      pathId: "path-2026-06-19-sub-a",
+      pathName: "Plan A",
+      pathRole: "alternative",
+    });
   });
 
   it("derives main and named path options from metadata and item fields", () => {

@@ -107,6 +107,29 @@ export function resolveItineraryPathItems(items: ItineraryItem[], selection: Iti
   return sortItineraryItems(visibleItems);
 }
 
+export function selectedItineraryPathIdForDay(
+  day: string,
+  selection: ItineraryPathSelection,
+): string {
+  if (selection.showAll) return mainItineraryPathId;
+  return (
+    selection.dayPathOverrides?.[day] ||
+    selection.tripPathId ||
+    mainItineraryPathId
+  );
+}
+
+export function itineraryItemPathFieldsForTarget(
+  pathGroupId: string,
+  pathId: string,
+  pathName?: string,
+): Pick<ItineraryItem, "pathGroupId" | "pathId" | "pathName" | "pathRole"> {
+  if (pathId === mainItineraryPathId) {
+    return { pathGroupId, pathRole: "main" };
+  }
+  return { pathGroupId, pathId, pathName, pathRole: "alternative" };
+}
+
 export function deriveItineraryPathOptions(items: ItineraryItem[], paths: ItineraryPath[] = []): ItineraryPathOption[] {
   const options = new Map<string, ItineraryPathOption>();
   options.set(mainItineraryPathId, { id: mainItineraryPathId, name: "Main", scope: "trip" });

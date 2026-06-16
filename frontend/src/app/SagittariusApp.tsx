@@ -85,8 +85,10 @@ import {
   buildItineraryCommitmentsByItemId,
   buildItineraryView,
   deriveItineraryPathOptions,
+  itineraryItemPathFieldsForTarget,
   mainItineraryPathId,
   resolveItineraryPathItems,
+  selectedItineraryPathIdForDay,
   type ItineraryPathSelection,
 } from "@/src/trip/itinerary";
 import {
@@ -4733,29 +4735,6 @@ function isForbidden(caught: unknown): boolean {
 
 function isAuthFailure(caught: unknown): boolean {
   return isUnauthenticated(caught) || isForbidden(caught);
-}
-
-function selectedItineraryPathIdForDay(
-  day: string,
-  selection: ItineraryPathSelection,
-): string {
-  if (selection.showAll) return mainItineraryPathId;
-  return (
-    selection.dayPathOverrides?.[day] ||
-    selection.tripPathId ||
-    mainItineraryPathId
-  );
-}
-
-function itineraryItemPathFieldsForTarget(
-  pathGroupId: string,
-  pathId: string,
-  pathName?: string,
-): Pick<ItineraryItem, "pathGroupId" | "pathId" | "pathName" | "pathRole"> {
-  if (pathId === mainItineraryPathId) {
-    return { pathGroupId, pathRole: "main" };
-  }
-  return { pathGroupId, pathId, pathName, pathRole: "alternative" };
 }
 
 function slugifyFilePart(value: string): string {

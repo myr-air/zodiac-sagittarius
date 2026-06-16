@@ -280,6 +280,8 @@ describe("Sagittarius project scaffold", () => {
     expect(sagittariusApp).not.toContain("function deriveTripCountriesFromDestination");
     expect(sagittariusApp).not.toContain("async function patchApiItineraryBranchItems");
     expect(sagittariusApp).not.toContain("function buildItineraryCommitmentsByItemId");
+    expect(sagittariusApp).not.toContain("function selectedItineraryPathIdForDay");
+    expect(sagittariusApp).not.toContain("function itineraryItemPathFieldsForTarget");
     expect(sagittariusApp).not.toContain('from "@/src/components/OverviewPage"');
     expect(sagittariusApp).not.toContain('from "@/src/components/TimelineView"');
 
