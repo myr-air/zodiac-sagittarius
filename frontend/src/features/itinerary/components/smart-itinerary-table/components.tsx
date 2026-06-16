@@ -17,9 +17,9 @@ import { Icon } from "@/src/ui/icons";
 import { DateTimePickerField } from "@/src/components/DateTimePickers";
 import type { Locale } from "@/src/i18n/types";
 import type { Messages } from "@/src/i18n/messages";
-import type { InlineItineraryItemPatch } from "../lib";
-import { ActivityPathGraphDay } from "./ActivityPathGraphDay";
-import { InlineOptionPicker } from "./inline-option-picker";
+import type { InlineItineraryItemPatch } from "../../lib";
+import { ActivityPathGraphDay } from "../ActivityPathGraphDay";
+import { InlineOptionPicker } from "../inline-option-picker";
 import {
   dayRouteLabel,
   formatDuration,
@@ -53,13 +53,13 @@ import {
   travelSubtypeOptions,
   toggleId,
   uniqueIds,
-} from "./smart-itinerary-table-helpers";
+} from "../smart-itinerary-table-helpers";
 import {
   buildWeatherTooltip,
   itemStatusLabel,
   groupChildItemsByParent,
   groupTopLevelItems,
-} from "./smart-itinerary-table-utils";
+} from "../smart-itinerary-table-utils";
 import {
   itemPlaceholderCellClassName,
   itemPlaceholderRowClassName,
@@ -156,7 +156,7 @@ import {
   activityTabletActionsClassName,
   activityTabletActionLayerClassName,
   headerControlsSectionClassName,
-} from "./smart-itinerary-table.styles";
+} from "../smart-itinerary-table.styles";
 
 export function DayGroup({
   graphColumnWidth,
