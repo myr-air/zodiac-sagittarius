@@ -61,6 +61,26 @@ export function createLocalTask(
   };
 }
 
+export function appendTask(tasks: TripTask[], task: TripTask): TripTask[] {
+  return [...tasks, task];
+}
+
+export function createLocalTaskInList(
+  tasks: TripTask[],
+  draft: TaskCreateDraft,
+  options: {
+    nextTaskId: (tasks: TripTask[]) => string;
+  },
+): TripTask[] {
+  return appendTask(tasks, createLocalTask(tasks, draft, options));
+}
+
+export function replaceTask(tasks: TripTask[], task: TripTask): TripTask[] {
+  return tasks.map((candidate) =>
+    candidate.id === task.id ? task : candidate,
+  );
+}
+
 export function toggledTaskStatus(task: Pick<TripTask, "status">): TripTask["status"] {
   return task.status === "done" ? "open" : "done";
 }

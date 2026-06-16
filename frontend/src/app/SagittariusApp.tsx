@@ -138,8 +138,10 @@ import {
   updateLocalStopNote,
 } from "@/src/trip/stop-notes";
 import {
+  appendTask,
   buildTaskCreateDraft,
-  createLocalTask,
+  createLocalTaskInList,
+  replaceTask,
   toggledTaskStatus,
   toggleLocalTaskStatus,
 } from "@/src/trip/tasks";
@@ -2453,13 +2455,14 @@ export function SagittariusApp({
           relatedItemId: taskDraft.relatedItemId,
         },
       );
-      setTasks((current) => [...current, task]);
+      setTasks((current) => appendTask(current, task));
       return;
     }
-    setTasks((current) => [
-      ...current,
-      createLocalTask(current, taskDraft, { nextTaskId: nextLocalTaskId }),
-    ]);
+    setTasks((current) =>
+      createLocalTaskInList(current, taskDraft, {
+        nextTaskId: nextLocalTaskId,
+      }),
+    );
   }
 
   async function createItineraryTask(itemId: string) {
@@ -3080,11 +3083,7 @@ export function SagittariusApp({
         },
       );
       /* v8 ignore next */
-      setTasks((current) =>
-        current.map((candidate) =>
-          candidate.id === taskId ? nextTask : candidate,
-        ),
-      );
+      setTasks((current) => replaceTask(current, nextTask));
       return;
     }
     setTasks((current) =>

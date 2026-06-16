@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
+  appendTask,
   buildTaskCreateDraft,
   createLocalTask,
+  createLocalTaskInList,
+  replaceTask,
   toggledTaskStatus,
   toggleLocalTaskStatus,
 } from "./tasks";
@@ -80,6 +83,41 @@ describe("task helpers", () => {
       assigneeId: null,
       relatedItemId: null,
     });
+  });
+
+  it("appends, creates, and replaces tasks in app state lists", () => {
+    const tasks = [task({ id: "task-existing", title: "Book hotel" })];
+    const draft = buildTaskCreateDraft(
+      { title: "Book ferry", visibility: "shared" },
+      {
+        title: "Book ferry",
+        tripPlanId: "plan-main",
+        currentMemberId: "member-aom",
+      },
+    );
+    const created = createLocalTaskInList(tasks, draft, {
+      nextTaskId: (currentTasks) => `task-local-${currentTasks.length + 1}`,
+    });
+
+    expect(created).toEqual([
+      expect.objectContaining({ id: "task-existing", title: "Book hotel" }),
+      expect.objectContaining({ id: "task-local-2", title: "Book ferry" }),
+    ]);
+    expect(tasks).toEqual([
+      expect.objectContaining({ id: "task-existing", title: "Book hotel" }),
+    ]);
+
+    expect(appendTask(tasks, task({ id: "task-manual", title: "Manual task" }))).toEqual([
+      expect.objectContaining({ id: "task-existing" }),
+      expect.objectContaining({ id: "task-manual", title: "Manual task" }),
+    ]);
+
+    expect(
+      replaceTask(created, task({ id: "task-existing", title: "Updated hotel" })),
+    ).toEqual([
+      expect.objectContaining({ id: "task-existing", title: "Updated hotel" }),
+      expect.objectContaining({ id: "task-local-2", title: "Book ferry" }),
+    ]);
   });
 
   it("toggles task status for one local task", () => {
