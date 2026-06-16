@@ -42,7 +42,7 @@ import { formatTripRange, PageHeader } from "@/src/components/PageHeader";
 import { dayRouteLabel, formatDuration, formatThaiDate } from "@/src/features/itinerary/lib";
 import type { InlineItineraryItemPatch } from "../lib";
 import { InlineOptionPicker } from "./inline-option-picker";
-import { DayGroup } from "./smart-itinerary-table/components";
+import { DayGroup } from "./smart-itinerary-table/day-group";
 import type {
   ItineraryBookingTemplate,
   ItineraryBookingTicketInput,
