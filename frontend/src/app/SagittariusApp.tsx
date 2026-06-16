@@ -231,6 +231,7 @@ import { TripWorkspaceImportDialog } from "@/src/trip/workspace/TripWorkspaceImp
 import { TripWorkspaceRail } from "@/src/trip/workspace/TripWorkspaceRail";
 import { TripWorkspaceViews } from "@/src/trip/workspace/TripWorkspaceViews";
 import { TripAccessLoadingFrame } from "@/src/trip/workspace/TripAccessLoadingFrame";
+import { useTripWorkspaceState } from "@/src/trip/workspace/use-trip-workspace-state";
 import { WorkspaceToast } from "@/src/trip/workspace/WorkspaceToast";
 import {
   buildItineraryExport,
@@ -257,10 +258,7 @@ import {
   tripFixtureSuggestions,
   tripFixtureTasks,
 } from "@/src/trip/trip-fixtures";
-import {
-  loadPersistedTripDraft,
-  persistTripDraft,
-} from "@/src/trip/repository";
+import { loadPersistedTripDraft } from "@/src/trip/repository";
 import { seedTrip } from "@/src/trip/seed";
 import { safeExternalHref } from "@/src/trip/safe-links";
 import {
@@ -373,16 +371,6 @@ export function SagittariusApp({
       }),
     [],
   );
-  const [tripState, setTripState] = useState<{
-    trip: Trip;
-    past: Trip[];
-    future: Trip[];
-  }>(() => ({
-    trip: normalizeTripPlanAliases(initialTrip),
-    past: [],
-    future: [],
-  }));
-  const latestTripRef = useRef(tripState.trip);
   const inlineUpdateQueueRef = useRef<Map<string, Promise<void>>>(new Map());
   const bookingDocUpdateQueueRef = useRef<Map<string, Promise<void>>>(new Map());
   const [participantSession, setParticipantSession] =
@@ -439,6 +427,19 @@ export function SagittariusApp({
     initialMemberId ?? initialTrip.members[0].id,
   );
   const [selectedItemId, setSelectedItemId] = useState("item-dimdim");
+  const {
+    canRedo,
+    canUndo,
+    commitTrip,
+    latestTripRef,
+    redo,
+    replaceApiTrip,
+    resetTrip,
+    setTripState,
+    trip,
+    undo,
+    updateApiTrip,
+  } = useTripWorkspaceState(initialTrip, setSelectedItemId);
   const [dialogState, setDialogState] = useState<
     | { mode: "create"; day?: string; parentItemId?: string | null }
     | { mode: "edit"; item: ItineraryItem }
@@ -460,7 +461,6 @@ export function SagittariusApp({
     dayPathOverrides: {},
   });
 
-  const trip = tripState.trip;
   const tripIdForPath = routeTripId ?? trip.id;
   const effectivePlaceResolver = useMemo<PlaceResolver | null>(() => {
     if (placeResolver) return placeResolver;
@@ -580,7 +580,7 @@ export function SagittariusApp({
 
   useEffect(() => {
     latestTripRef.current = trip;
-  }, [trip]);
+  }, [latestTripRef, trip]);
 
   /* v8 ignore next */
   const selectedItem =
@@ -729,7 +729,7 @@ export function SagittariusApp({
       cancelled = true;
       window.clearTimeout(timeout);
     };
-  }, [initialTrip, isApiMode, requireJoin, routeTripId]);
+  }, [initialTrip, isApiMode, requireJoin, routeTripId, setTripState]);
 
   useEffect(() => {
     if (accountSessionLoaded) return;
@@ -856,7 +856,7 @@ export function SagittariusApp({
     return () => {
       cancelled = true;
     };
-  }, [isApiMode, participantSession, resolvedApiClient]);
+  }, [isApiMode, participantSession, resolvedApiClient, setTripState]);
 
   useEffect(() => {
     if (
@@ -934,7 +934,7 @@ export function SagittariusApp({
     return () => {
       cancelled = true;
     };
-  }, [isApiMode, participantSession, resolvedApiClient]);
+  }, [isApiMode, participantSession, resolvedApiClient, updateApiTrip]);
 
   useEffect(() => {
     if (contextRailOpen) return undefined;
@@ -1926,61 +1926,6 @@ export function SagittariusApp({
     );
   }
 
-  function commitTrip(
-    updater: (current: Trip) => Trip,
-    nextSelectedItemId?: string,
-  ) {
-    setTripState((current) => {
-      const nextTrip = normalizeTripPlanAliases(updater(current.trip));
-      persistTripDraft(nextTrip, normalizeTripPlanAliases);
-      return {
-        trip: nextTrip,
-        past: [...current.past, current.trip].slice(-20),
-        future: [],
-      };
-    });
-    if (nextSelectedItemId) setSelectedItemId(nextSelectedItemId);
-  }
-
-  function replaceApiTrip(nextTrip: Trip) {
-    latestTripRef.current = nextTrip;
-    setTripState((current) => ({ ...current, trip: nextTrip }));
-  }
-
-  function updateApiTrip(updater: (current: Trip) => Trip) {
-    setTripState((current) => {
-      const nextTrip = updater(current.trip);
-      latestTripRef.current = nextTrip;
-      return { ...current, trip: nextTrip };
-    });
-  }
-
-  function undo() {
-    setTripState((current) => {
-      const previous = current.past.at(-1);
-      /* v8 ignore next */
-      if (!previous) return current;
-      return {
-        trip: previous,
-        past: current.past.slice(0, -1),
-        future: [current.trip, ...current.future].slice(0, 20),
-      };
-    });
-  }
-
-  function redo() {
-    setTripState((current) => {
-      const next = current.future[0];
-      /* v8 ignore next */
-      if (!next) return current;
-      return {
-        trip: next,
-        past: [...current.past, current.trip].slice(-20),
-        future: current.future.slice(1),
-      };
-    });
-  }
-
   function authenticateParticipant(session: TripParticipantSession) {
     setAccessError(null);
     setParticipantSession(session);
@@ -2018,9 +1963,7 @@ export function SagittariusApp({
   }
 
   function replaceTripFromJoin(nextTrip: Trip) {
-    const normalizedTrip = normalizeTripPlanAliases(nextTrip);
-    if (!isApiMode) persistTripDraft(normalizedTrip, normalizeTripPlanAliases);
-    setTripState({ trip: normalizedTrip, past: [], future: [] });
+    resetTrip(nextTrip, { persist: !isApiMode });
   }
 
   function replaceCockpitFromApi(cockpit: TripCockpit) {
@@ -3705,9 +3648,9 @@ export function SagittariusApp({
                 onToggleTaskStatus: toggleTaskStatus,
               }}
               itineraryProps={{
-                canRedo: tripState.future.length > 0,
+                canRedo,
                 canRestructure: canEdit,
-                canUndo: tripState.past.length > 0,
+                canUndo,
                 contextRailOpen,
                 endDate: trip.endDate,
                 graphItems: activePlanItems,

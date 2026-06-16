@@ -221,6 +221,7 @@ describe("Sagittarius project scaffold", () => {
     expect(sagittariusApp).toContain("@/src/trip/workspace/itinerary-import-api");
     expect(sagittariusApp).toContain("@/src/trip/workspace/selected-trip-plan");
     expect(sagittariusApp).toContain("@/src/trip/workspace/trip-plan-records");
+    expect(sagittariusApp).toContain("@/src/trip/workspace/use-trip-workspace-state");
     expect(sagittariusApp).not.toContain('from "@/src/components/ContextRail"');
     expect(sagittariusApp).not.toContain("workspaceGridClassName");
     expect(sagittariusApp).not.toContain("planningMainClassName");
@@ -244,6 +245,8 @@ describe("Sagittarius project scaffold", () => {
     expect(sagittariusApp).not.toContain("function clearParticipantSession");
     expect(sagittariusApp).not.toContain("function loadPersistedTrip");
     expect(sagittariusApp).not.toContain("function persistTripDraft");
+    expect(sagittariusApp).not.toContain("past: Trip[]");
+    expect(sagittariusApp).not.toContain("future: Trip[]");
     expect(sagittariusApp).not.toContain("function replaceTripParticipant");
     expect(sagittariusApp).not.toContain("function appendTripParticipant");
     expect(sagittariusApp).not.toContain("function nextLocalItemId");
