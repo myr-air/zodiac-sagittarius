@@ -93,3 +93,34 @@ export function normalizeInlineTimePatch(
   }
   return nextPatch;
 }
+
+export function buildInlineItineraryItemPatch(
+  item: ItineraryItem,
+  patch: InlineItineraryTimePatch,
+): InlineItineraryTimePatch | null {
+  const nextPatch = normalizeInlineTimePatch(item, patch);
+  if (nextPatch.activity !== undefined)
+    nextPatch.activity = nextPatch.activity.trim();
+  if (nextPatch.place !== undefined)
+    nextPatch.place = nextPatch.place.trim();
+  if (nextPatch.transportation !== undefined)
+    nextPatch.transportation = nextPatch.transportation.trim();
+  if (
+    nextPatch.durationMinutes !== undefined &&
+    nextPatch.durationMinutes !== null
+  )
+    nextPatch.durationMinutes = Math.max(
+      1,
+      Math.round(Number(nextPatch.durationMinutes) || 1),
+    );
+  if (nextPatch.activity !== undefined && nextPatch.activity.length === 0)
+    return null;
+  if (nextPatch.place !== undefined && nextPatch.place.length === 0)
+    return null;
+  const changedPatch = Object.fromEntries(
+    Object.entries(nextPatch).filter(
+      ([key, value]) => item[key as keyof InlineItineraryTimePatch] !== value,
+    ),
+  ) as InlineItineraryTimePatch;
+  return Object.keys(changedPatch).length > 0 ? changedPatch : null;
+}

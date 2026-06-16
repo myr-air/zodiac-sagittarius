@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildInlineItineraryItemPatch,
   daysBetweenIsoDates,
   itineraryDateTime,
   normalizeInlineTimePatch,
@@ -80,5 +81,47 @@ describe("itinerary time helpers", () => {
       endOffsetDays: 0,
       durationMinutes: null,
     });
+  });
+
+  it("builds changed inline patches with trimmed text and clamped duration", () => {
+    const item = {
+      ...seedTrip.itineraryItems[0],
+      activity: "Breakfast",
+      place: "Central",
+      transportation: "MTR",
+      durationMinutes: 30,
+    };
+
+    expect(
+      buildInlineItineraryItemPatch(item, {
+        activity: "  Brunch  ",
+        place: "  Sheung Wan  ",
+        transportation: "  Taxi  ",
+        durationMinutes: 0.4,
+      }),
+    ).toEqual({
+      activity: "Brunch",
+      place: "Sheung Wan",
+      transportation: "Taxi",
+      durationMinutes: 1,
+    });
+  });
+
+  it("rejects empty required inline activity and place edits", () => {
+    const item = seedTrip.itineraryItems[0]!;
+
+    expect(buildInlineItineraryItemPatch(item, { activity: "   " })).toBeNull();
+    expect(buildInlineItineraryItemPatch(item, { place: "   " })).toBeNull();
+  });
+
+  it("returns null when an inline patch does not change the item", () => {
+    const item = seedTrip.itineraryItems[0]!;
+
+    expect(
+      buildInlineItineraryItemPatch(item, {
+        activity: item.activity,
+        place: item.place,
+      }),
+    ).toBeNull();
   });
 });

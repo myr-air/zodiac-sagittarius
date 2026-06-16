@@ -108,7 +108,7 @@ import {
   type ItineraryPathSelection,
 } from "@/src/trip/itinerary";
 import {
-  normalizeInlineTimePatch,
+  buildInlineItineraryItemPatch,
   shiftItineraryItemsToStartDate,
 } from "@/src/trip/itinerary-time";
 import {
@@ -1879,37 +1879,6 @@ export function SagittariusApp({
     itemId: string,
     patch: InlineItineraryItemPatch,
   ) {
-    function buildInlinePatch(
-      item: ItineraryItem,
-    ): InlineItineraryItemPatch | null {
-      const nextPatch = normalizeInlineTimePatch(item, patch);
-      if (nextPatch.activity !== undefined)
-        nextPatch.activity = nextPatch.activity.trim();
-      if (nextPatch.place !== undefined)
-        nextPatch.place = nextPatch.place.trim();
-      if (nextPatch.transportation !== undefined)
-        nextPatch.transportation = nextPatch.transportation.trim();
-      if (
-        nextPatch.durationMinutes !== undefined &&
-        nextPatch.durationMinutes !== null
-      )
-        nextPatch.durationMinutes = Math.max(
-          1,
-          Math.round(Number(nextPatch.durationMinutes) || 1),
-        );
-      if (nextPatch.activity !== undefined && nextPatch.activity.length === 0)
-        return null;
-      if (nextPatch.place !== undefined && nextPatch.place.length === 0)
-        return null;
-      const changedPatch = Object.fromEntries(
-        Object.entries(nextPatch).filter(
-          ([key, value]) =>
-            item[key as keyof InlineItineraryItemPatch] !== value,
-        ),
-      ) as InlineItineraryItemPatch;
-      return Object.keys(changedPatch).length > 0 ? changedPatch : null;
-    }
-
     if (isApiMode && resolvedApiClient && participantSession) {
       let currentTrip = latestTripRef.current;
       for (let attempt = 0; attempt < 2; attempt += 1) {
@@ -1917,7 +1886,7 @@ export function SagittariusApp({
           (candidate) => candidate.id === itemId,
         );
         if (!item) return;
-        const nextPatch = buildInlinePatch(item);
+        const nextPatch = buildInlineItineraryItemPatch(item, patch);
         if (!nextPatch) return;
         try {
           const patchedItem = await resolvedApiClient.patchItineraryItem(
@@ -1974,7 +1943,7 @@ export function SagittariusApp({
         (candidate) => candidate.id === itemId,
       );
       if (!item) return current;
-      const nextPatch = buildInlinePatch(item);
+      const nextPatch = buildInlineItineraryItemPatch(item, patch);
       if (!nextPatch) return current;
       const updatedItem = {
         ...item,
