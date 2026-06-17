@@ -12,6 +12,7 @@ import { cn } from "@/src/lib/cn";
 import { Icon } from "@/src/ui/icons";
 import { formatTripRange, PageHeader } from "@/src/shared/components/page-header";
 import { Badge, Button, IconButton, Select, WorkspacePage, WorkspaceSurface } from "@/src/ui";
+import * as photoStyles from "./TripPhotosPage.styles";
 
 interface TripPhotosPageProps {
   trip: Trip;
@@ -40,28 +41,6 @@ const providers = ["all", "google_photos", "icloud", "google_drive", "dropbox", 
 const providerOptions = providers.filter((provider) => provider !== "all") as TripPhotoAlbumProvider[];
 const accessOptions = ["view_only", "collaborative", "upload_request"] satisfies TripPhotoAlbumAccess[];
 
-const pageClassName = "trip-photos-page grid grid-rows-[auto_auto_minmax(0,1fr)] gap-3 max-[1199px]:gap-0";
-const summaryClassName = "photos-summary grid grid-cols-4 gap-3 max-[1199px]:grid-cols-2 max-[1199px]:gap-0 max-[767px]:grid-cols-1";
-const statClassName = "photos-stat grid min-h-[86px] gap-1 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) p-3.5 shadow-[0_1px_0_rgb(15_23_42_/_0.04)] max-[1199px]:rounded-none max-[1199px]:border-x-0 max-[1199px]:border-t-0 max-[1199px]:shadow-none [&_.icon]:text-(--color-primary) [&>span]:text-xs [&>span]:font-bold [&>span]:text-(--color-text-muted) [&>strong]:text-xl [&>strong]:font-black [&>strong]:text-(--color-text)";
-const contentClassName = "photos-content grid min-h-0 grid-cols-[minmax(0,1fr)_330px] gap-3 max-[1199px]:grid-cols-1 max-[1199px]:gap-0";
-const panelClassName = "photos-panel grid min-h-0 gap-3";
-const providerGridClassName = "photos-providers grid grid-cols-7 gap-2 max-[1399px]:grid-cols-4 max-[767px]:grid-cols-2";
-const providerButtonClassName = "grid min-h-[76px] content-between gap-2 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) p-3 text-left transition-[background-color,border-color,box-shadow,transform] duration-150 hover:-translate-y-0.5 hover:border-(--color-primary-border) hover:bg-(--color-surface-subtle) focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary)";
-const selectedProviderClassName = "border-(--color-primary-border) bg-(--color-primary-soft) shadow-[0_1px_0_rgb(15_23_42_/_0.04)]";
-const cardGridClassName = "photo-album-grid grid grid-cols-[repeat(auto-fit,minmax(270px,1fr))] gap-2";
-const albumCardClassName = "photo-album-card grid min-h-[214px] grid-rows-[auto_minmax(0,1fr)_auto] gap-3 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) p-3 text-left text-sm shadow-[0_1px_0_rgb(15_23_42_/_0.04)] transition-[background-color,border-color,box-shadow,transform] duration-150 hover:-translate-y-0.5 hover:border-(--color-primary-border) hover:bg-(--color-surface-subtle)";
-const selectedAlbumClassName = "border-(--color-primary-border) bg-(--color-primary-soft) shadow-[0_1px_0_rgb(15_23_42_/_0.04)]";
-const albumCoverClassName = "photo-album-cover min-h-[74px] overflow-hidden rounded-(--radius-md) border border-(--color-border) bg-(--color-surface-subtle) bg-cover bg-center";
-const inspectorClassName = "photos-inspector sticky top-3 grid max-h-[calc(100vh-92px)] content-start gap-3 overflow-auto max-[1199px]:static max-[1199px]:max-h-none";
-const inspectorSectionClassName = "grid gap-2 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface-subtle) p-2.5 text-sm";
-const dialogBackdropClassName = "modal-backdrop fixed inset-0 z-20 grid place-items-center bg-[rgb(15_23_42_/_0.28)] p-4";
-const dialogClassName = "photos-dialog grid max-h-[min(720px,calc(100vh_-_32px))] w-full max-w-[720px] grid-rows-[auto_minmax(0,1fr)] overflow-hidden rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) shadow-[0_14px_34px_rgb(15_23_42_/_0.16)]";
-const dialogHeaderClassName = "grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-(--color-border) px-4 py-3 [&_h2]:m-0 [&_h2]:text-lg [&_h2]:font-extrabold";
-const dialogFormClassName = "grid min-h-0 gap-3 overflow-y-auto p-4";
-const dialogGridClassName = "grid grid-cols-2 gap-3 max-[767px]:grid-cols-1";
-const fieldClassName = "grid min-w-0 gap-1.5 [&>span]:text-[11px] [&>span]:font-extrabold [&>span]:text-(--color-text-muted) [&_input]:min-h-10 [&_input]:rounded-(--radius-md) [&_input]:border [&_input]:border-(--color-border) [&_input]:bg-(--color-surface) [&_input]:px-3 [&_input]:text-sm [&_select]:min-h-10 [&_select]:rounded-(--radius-md) [&_select]:border [&_select]:border-(--color-border) [&_select]:bg-(--color-surface) [&_select]:px-3 [&_select]:text-sm [&_textarea]:min-h-[74px] [&_textarea]:resize-y [&_textarea]:rounded-(--radius-md) [&_textarea]:border [&_textarea]:border-(--color-border) [&_textarea]:bg-(--color-surface) [&_textarea]:px-3 [&_textarea]:py-2 [&_textarea]:text-sm";
-const dialogActionsClassName = "flex flex-wrap items-center justify-end gap-2 border-t border-(--color-border) pt-3";
-const deleteDialogClassName = "delete-confirm-dialog grid w-[min(420px,100%)] gap-3 rounded-(--radius-lg) border border-(--color-danger-border) bg-(--color-surface) p-4 shadow-[0_14px_34px_rgb(15_23_42_/_0.14)]";
 const photoCopy = {
   en: {
     pageLabel: "Photos & Albums",
@@ -250,7 +229,7 @@ export function TripPhotosPage({
   }
 
   return (
-    <WorkspacePage className={pageClassName} aria-label={copy.pageLabel} role="region">
+    <WorkspacePage className={photoStyles.pageClassName} aria-label={copy.pageLabel} role="region">
       <PageHeader
         title={copy.title}
         subtitle={trip.name}
@@ -262,21 +241,21 @@ export function TripPhotosPage({
         )}
       />
 
-      <div className={summaryClassName} aria-label={copy.summaryLabel}>
+      <div className={photoStyles.summaryClassName} aria-label={copy.summaryLabel}>
         <SummaryStat icon="cloud" label={copy.savedDestinations} value={copy.albums(summary.total)} />
         <SummaryStat icon="users" label={copy.sharedUploads} value={copy.collaborative(summary.collaborative)} />
         <SummaryStat icon="import" label={copy.uploadRequests} value={copy.requests(summary.uploadRequests)} />
         <SummaryStat icon="warning" label={copy.needsAccessNote} value={copy.missing(summary.missingAccessNotes)} />
       </div>
 
-      <div className={contentClassName}>
-        <WorkspaceSurface as="div" className={panelClassName} density="compact">
-          <div className={providerGridClassName} aria-label={copy.providersLabel}>
+      <div className={photoStyles.contentClassName}>
+        <WorkspaceSurface as="div" className={photoStyles.panelClassName} density="compact">
+          <div className={photoStyles.providerGridClassName} aria-label={copy.providersLabel}>
             {providers.map((provider) => (
               <button
                 key={provider}
                 type="button"
-                className={cn(providerButtonClassName, activeProvider === provider && selectedProviderClassName)}
+                className={cn(photoStyles.providerButtonClassName, activeProvider === provider && photoStyles.selectedProviderClassName)}
                 onClick={() => setActiveProvider(provider)}
                 aria-pressed={activeProvider === provider}
                 aria-label={copy.providerCount(providerLabel(provider, copy), providerCounts[provider] ?? 0)}
@@ -300,7 +279,7 @@ export function TripPhotosPage({
             {canEditPhotoAlbums ? <Button type="button" onClick={() => setDialogAlbum("new")}><Icon name="plus" /> {copy.addAlbum}</Button> : null}
           </div>
 
-          <div className={cardGridClassName} aria-label={copy.albumLinksLabel}>
+          <div className={photoStyles.cardGridClassName} aria-label={copy.albumLinksLabel}>
             {visibleAlbums.map((album) => (
               <PhotoAlbumCard
                 key={album.id}
@@ -340,11 +319,11 @@ export function TripPhotosPage({
       ) : null}
 
       {deleteAlbum ? (
-        <div className={dialogBackdropClassName}>
-          <div className={deleteDialogClassName} role="dialog" aria-modal="true" aria-label={copy.deleteAlbum}>
+        <div className={photoStyles.dialogBackdropClassName}>
+          <div className={photoStyles.deleteDialogClassName} role="dialog" aria-modal="true" aria-label={copy.deleteAlbum}>
             <h2 className="m-0 text-lg font-extrabold text-(--color-text)">{copy.deleteAlbum}</h2>
             <p className="m-0 text-sm font-medium leading-6 text-(--color-text-muted)">{copy.deletePrompt(deleteAlbum.title)}</p>
-            <div className={dialogActionsClassName}>
+            <div className={photoStyles.dialogActionsClassName}>
               <Button type="button" variant="ghost" onClick={() => setDeleteAlbum(null)}>{copy.cancel}</Button>
               <Button type="button" variant="danger" onClick={() => void confirmDelete()}>{copy.deleteAlbum}</Button>
             </div>
@@ -357,7 +336,7 @@ export function TripPhotosPage({
 
 function SummaryStat({ icon, label, value }: { icon: Parameters<typeof Icon>[0]["name"]; label: string; value: string }) {
   return (
-    <div className={statClassName}>
+    <div className={photoStyles.statClassName}>
       <Icon name={icon} />
       <span>{label}</span>
       <strong>{value}</strong>
@@ -388,11 +367,11 @@ function PhotoAlbumCard({
   const owner = trip.members.find((member) => member.id === album.ownerMemberId);
   const coverHref = safePhotoAlbumCoverHref(album.coverUrl);
   return (
-    <article className={cn(albumCardClassName, selected && selectedAlbumClassName)}>
+    <article className={cn(photoStyles.albumCardClassName, selected && photoStyles.selectedAlbumClassName)}>
       <button type="button" className="grid min-w-0 gap-2 text-left" onClick={onSelect} aria-label={copy.selectAlbum(album.title)}>
         <span
           aria-label={copy.coverFor(album.title)}
-          className={albumCoverClassName}
+          className={photoStyles.albumCoverClassName}
           role="img"
           style={coverHref ? { backgroundImage: `url(${coverHref})` } : undefined}
         />
@@ -442,8 +421,8 @@ function PhotoAlbumInspector({
 }) {
   if (!album) {
     return (
-      <WorkspaceSurface className={inspectorClassName} density="compact" aria-label={copy.inspectorLabel}>
-        <div className={inspectorSectionClassName}>{copy.selectHint}</div>
+      <WorkspaceSurface className={photoStyles.inspectorClassName} density="compact" aria-label={copy.inspectorLabel}>
+        <div className={photoStyles.inspectorSectionClassName}>{copy.selectHint}</div>
       </WorkspaceSurface>
     );
   }
@@ -451,13 +430,13 @@ function PhotoAlbumInspector({
   const createdBy = trip.members.find((member) => member.id === album.createdBy);
   const linkHost = albumLinkHost(href);
   return (
-    <WorkspaceSurface className={inspectorClassName} density="compact" aria-label={copy.inspectorLabel}>
+    <WorkspaceSurface className={photoStyles.inspectorClassName} density="compact" aria-label={copy.inspectorLabel}>
       <div className="grid gap-2">
         <Badge tone={album.access === "collaborative" ? "primary" : album.access === "upload_request" ? "warning" : "route"}>{providerLabel(album.provider, copy)}</Badge>
         <h2 className="m-0 text-xl font-black text-(--color-text)">{album.title}</h2>
         <span className="text-sm font-semibold leading-6 text-(--color-text-muted)">{copy.externalProviderNote}</span>
       </div>
-      <div className={inspectorSectionClassName}>
+      <div className={photoStyles.inspectorSectionClassName}>
         <div className="flex min-w-0 items-center justify-between gap-2">
           <span className="min-w-0 truncate text-xs font-black text-(--color-text-muted)">{linkHost ?? copy.blockedLink}</span>
           {href ? (
@@ -478,17 +457,17 @@ function PhotoAlbumInspector({
           <strong className="text-[#b91c1c]">{copy.unsafeLinkBlocked}</strong>
         )}
       </div>
-      <div className={inspectorSectionClassName}>
+      <div className={photoStyles.inspectorSectionClassName}>
         <strong className="text-(--color-text)">{copy.access}</strong>
         <span>{accessLabel(album.access, copy)}</span>
         <span className="text-(--color-text-muted)">{album.accessNote || copy.noAccessNote}</span>
       </div>
-      <div className={inspectorSectionClassName}>
+      <div className={photoStyles.inspectorSectionClassName}>
         <strong className="text-(--color-text)">{copy.owner}</strong>
         <span>{relations?.owner?.displayName ?? copy.noOwnerAssigned}</span>
         <span className="text-xs text-(--color-text-muted)">{copy.createdBy(createdBy?.displayName ?? album.createdBy)}</span>
       </div>
-      <div className={inspectorSectionClassName}>
+      <div className={photoStyles.inspectorSectionClassName}>
         <strong className="text-(--color-text)">{copy.relatedStops}</strong>
         {relations?.itineraryItems.length ? relations.itineraryItems.map((item) => (
           <span key={item.id} className="text-sm">{item.day} · {item.activity}</span>
@@ -554,53 +533,53 @@ function PhotoAlbumDialog({
   }
 
   return (
-    <div className={dialogBackdropClassName}>
-      <div className={dialogClassName} role="dialog" aria-modal="true" aria-label={album ? copy.editAlbumDialog : copy.addAlbumDialog}>
-        <div className={dialogHeaderClassName}>
+    <div className={photoStyles.dialogBackdropClassName}>
+      <div className={photoStyles.dialogClassName} role="dialog" aria-modal="true" aria-label={album ? copy.editAlbumDialog : copy.addAlbumDialog}>
+        <div className={photoStyles.dialogHeaderClassName}>
           <h2>{album ? copy.editAlbumDialog : copy.addAlbumDialog}</h2>
           <IconButton type="button" aria-label={copy.close} onClick={onCancel}><Icon name="x" /></IconButton>
         </div>
-        <form className={dialogFormClassName} onSubmit={(event) => void handleSubmit(event)}>
-          <div className={dialogGridClassName}>
-            <label className={fieldClassName}>
+        <form className={photoStyles.dialogFormClassName} onSubmit={(event) => void handleSubmit(event)}>
+          <div className={photoStyles.dialogGridClassName}>
+            <label className={photoStyles.fieldClassName}>
               <span>{copy.titleField}</span>
               <input value={title} onChange={(event) => setTitle(event.target.value)} required />
             </label>
-            <label className={fieldClassName}>
+            <label className={photoStyles.fieldClassName}>
               <span>{copy.providerField}</span>
               <Select value={provider} onChange={(event) => setProvider(event.target.value as TripPhotoAlbumProvider)}>
                 {providerOptions.map((option) => <option key={option} value={option}>{providerLabel(option, copy)}</option>)}
               </Select>
             </label>
-            <label className={fieldClassName}>
+            <label className={photoStyles.fieldClassName}>
               <span>{copy.accessField}</span>
               <Select value={access} onChange={(event) => setAccess(event.target.value as TripPhotoAlbumAccess)}>
                 {accessOptions.map((option) => <option key={option} value={option}>{accessLabel(option, copy)}</option>)}
               </Select>
             </label>
-            <label className={fieldClassName}>
+            <label className={photoStyles.fieldClassName}>
               <span>{copy.ownerField}</span>
               <Select value={ownerMemberId} onChange={(event) => setOwnerMemberId(event.target.value)}>
                 <option value="">{copy.noOwner}</option>
                 {trip.members.map((member) => <option key={member.id} value={member.id}>{member.displayName}</option>)}
               </Select>
             </label>
-            <label className={fieldClassName}>
+            <label className={photoStyles.fieldClassName}>
               <span>{copy.albumLinkField}</span>
               <input value={url} onChange={(event) => setUrl(event.target.value)} required />
             </label>
-            <label className={fieldClassName}>
+            <label className={photoStyles.fieldClassName}>
               <span>{copy.dayField}</span>
               <Select value={day} onChange={(event) => setDay(event.target.value)}>
                 <option value="">{copy.tripLevel}</option>
                 {days.map((candidate) => <option key={candidate} value={candidate}>{candidate}</option>)}
               </Select>
             </label>
-            <label className={fieldClassName}>
+            <label className={photoStyles.fieldClassName}>
               <span>{copy.descriptionField}</span>
               <textarea value={description} onChange={(event) => setDescription(event.target.value)} />
             </label>
-            <label className={fieldClassName}>
+            <label className={photoStyles.fieldClassName}>
               <span>{copy.accessNoteField}</span>
               <textarea value={accessNote} onChange={(event) => setAccessNote(event.target.value)} />
             </label>
@@ -616,7 +595,7 @@ function PhotoAlbumDialog({
               ))}
             </div>
           </fieldset>
-          <div className={dialogActionsClassName}>
+          <div className={photoStyles.dialogActionsClassName}>
             <Button type="button" variant="ghost" onClick={onCancel}>{copy.cancel}</Button>
             <Button type="submit">{copy.saveAlbum}</Button>
           </div>
