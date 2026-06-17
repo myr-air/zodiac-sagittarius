@@ -2,6 +2,7 @@ import { buildEmptyTripFixture, buildDenseTripFixture, tripFixture } from "@/src
 import type { ItineraryItem } from "@/src/trip/types";
 import type { SmartItineraryTable } from "@/src/features/itinerary/components";
 import type { ItineraryPathOption } from "@/src/trip/itinerary";
+import { defaultSmartItineraryPathOptions } from "@/src/features/itinerary/testing/fixtures/itinerary-items";
 
 export type SmartItineraryStoryArgs = Parameters<typeof SmartItineraryTable>[0];
 
@@ -10,10 +11,10 @@ const day = tripFixture.trip.startDate;
 const noop = () => {};
 
 export const defaultPathOptions = [
-  { id: "main", name: "Main", scope: "trip" as const },
-  { id: "path-plan-1", name: "Plan 1", scope: "trip" as const },
-  { id: "path-rain", name: "Rain plan", scope: "day" as const, day },
-] as const satisfies ItineraryPathOption[];
+  ...defaultSmartItineraryPathOptions.map((option) =>
+    option.scope === "day" ? { ...option, day } : option,
+  ),
+] satisfies ReadonlyArray<ItineraryPathOption>;
 
 export const ownerStoryArgs: SmartItineraryStoryArgs = {
   endDate: tripFixture.trip.endDate,
