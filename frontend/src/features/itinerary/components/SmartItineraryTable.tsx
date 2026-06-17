@@ -1,4 +1,3 @@
-import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import type {
   BookingDoc,
   ItineraryItem,
@@ -8,43 +7,27 @@ import type {
   TripRole,
 } from "@/src/trip/types";
 import { useI18n } from "@/src/i18n/I18nProvider";
-import type { Locale } from "@/src/i18n/types";
 import {
   type ItineraryCommitmentSummary,
-  formatDayLabel,
-  getTripDates,
-  groupItemsByDay,
   mainItineraryPathId,
-  type ItineraryDayGroup,
   type ItineraryPathOption,
   type ItineraryView,
+  type ItineraryDayGroup,
 } from "@/src/trip/itinerary";
-import { canTripRole } from "@/src/trip/auth";
-import { itineraryItemPathId } from "@/src/trip/itinerary-path-identifiers";
 import { Icon } from "@/src/ui/icons";
 import { formatTripRange, PageHeader } from "@/src/components/PageHeader";
 import { formatDuration } from "@/src/features/itinerary/lib";
 import type { InlineItineraryItemPatch } from "../lib";
 import { DayGroup } from "./smart-itinerary-table/day-group";
 import { SmartItineraryTableHeaderControls } from "./smart-itinerary-table/SmartItineraryTableHeaderControls";
+import { SmartItineraryTableHead } from "./smart-itinerary-table/SmartItineraryTableHead";
 import type {
   ItineraryBookingTemplate,
   ItineraryBookingTicketInput,
 } from "@/src/trip/booking-docs";
-import {
-  dedupePathOptions,
-  buildGraphColumnWidth,
-  formatSelectedPlanLabel,
-  groupGraphItemsByDay,
-  mergeTripDayGroups,
-} from "./smart-itinerary-table-utils";
+import { useSmartItineraryTableState } from "./smart-itinerary-table/hooks/useSmartItineraryTableState";
 
 import {
-  activityHeaderActivityClassName,
-  activityHeaderGridClassName,
-  graphColumnLaneGap,
-  graphColumnMinWidth,
-  graphColumnSidePadding,
   smartTableClassName,
   tablePanelClassName,
   tableScrollClassName,
@@ -167,86 +150,36 @@ export function SmartItineraryTable({
   onToggleShowAllPaths,
 }: SmartItineraryTableProps) {
   const { locale, t } = useI18n();
-  const allDisplayItems = graphItems ?? items;
-  const filterOptions = dedupePathOptions(pathOptions, allDisplayItems);
-  const canEdit = role === "owner" || role === "organizer" || role === "traveler";
-  const canManageTripPlans = canTripRole(role, "manageTripPlans");
-  const canRestructureItems = canEdit && canRestructure;
-  const [selectedPathIds, setSelectedPathIds] = useState<string[]>(() =>
-    filterOptions.map((option) => option.id),
-  );
-  const [collapsedDays, setCollapsedDays] = useState<string[]>([]);
-  const knownFilterIdsRef = useRef<string[]>(
-    filterOptions.map((option) => option.id),
-  );
-  const selectedPathIdSet = new Set(selectedPathIds);
-  const displayItems = allDisplayItems.filter((item) =>
-    selectedPathIdSet.has(itineraryItemPathId(item)),
-  );
-  const selectedFilterLabel = formatSelectedPlanLabel(
+  const {
+    canEdit,
+    canManageTripPlans,
+    canRestructureItems,
+    collapsedDays,
+    groups,
+    graphItemsByDay,
+    dailyBriefingsByDate,
     filterOptions,
     selectedPathIds,
-    t.itinerary.filters.selectedCount,
-    t.itinerary.filters.selectedNames,
-  );
-  const displayDayGroups = groupItemsByDay(displayItems);
-  const groups = mergeTripDayGroups(
-    displayDayGroups,
+    graphColumnWidth,
+    warningCount,
+    totalMinutes,
+    toggleDay,
+    togglePlanFilter,
+    selectedFilterLabel,
+    smartTableStyle,
+  } = useSmartItineraryTableState({
+    pathOptions,
+    items,
+    graphItems,
+    role,
     startDate,
     endDate,
-    getTripDates(startDate, endDate),
-  );
-  const dailyBriefingsByDate = useMemo(
-    () => new Map(dailyBriefings.map((briefing) => [briefing.date, briefing])),
-    [dailyBriefings],
-  );
-  const graphItemsByDay = groupGraphItemsByDay(displayItems);
-  const warningCount =
-    itineraryView?.warningCount ??
-    displayDayGroups.reduce((total, group) => total + group.warningCount, 0);
-  const totalMinutes = displayItems.reduce(
-    (total, item) => total + (item.durationMinutes ?? 0),
-    0,
-  );
-  const graphColumnWidth = buildGraphColumnWidth(
-    displayItems,
-    graphColumnMinWidth,
-    graphColumnSidePadding,
-    graphColumnLaneGap,
-  );
-  const smartTableStyle = {
-    "--graph-column-width": `${graphColumnWidth}px`,
-  } as CSSProperties;
-  useEffect(() => {
-    setSelectedPathIds((current) => {
-      const optionIds = filterOptions.map((option) => option.id);
-      const previousOptionIds = knownFilterIdsRef.current;
-      const nextIds = optionIds.filter(
-        (id) => current.includes(id) || !previousOptionIds.includes(id),
-      );
-      knownFilterIdsRef.current = optionIds;
-      return nextIds.length === current.length &&
-        nextIds.every((id, index) => id === current[index])
-        ? current
-        : nextIds;
-    });
-  }, [filterOptions]);
-
-  function toggleDay(day: string) {
-    setCollapsedDays((current) =>
-      current.includes(day)
-        ? current.filter((item) => item !== day)
-        : [...current, day],
-    );
-  }
-
-  function togglePlanFilter(pathId: string) {
-    setSelectedPathIds((current) =>
-      current.includes(pathId)
-        ? current.filter((item) => item !== pathId)
-        : [...current, pathId],
-    );
-  }
+    dailyBriefings,
+    itineraryView,
+    selectedCountLabel: t.itinerary.filters.selectedCount,
+    selectedNamesLabel: t.itinerary.filters.selectedNames,
+    canRestructure,
+  });
 
   return (
     <section
@@ -316,25 +249,9 @@ export function SmartItineraryTable({
             <col style={{ width: graphColumnWidth }} />
             <col />
           </colgroup>
-          <thead>
-            <tr>
-              <th>
-                <span className="sr-only">Path graph</span>
-              </th>
-              <th>
-                <span className="sr-only">Activity</span>
-                <div className={activityHeaderGridClassName} aria-hidden="true">
-                  <span>{t.itinerary.headers.time}</span>
-                  <span>{t.itinerary.headers.type}</span>
-                  <span className={activityHeaderActivityClassName}>
-                    <span>{t.itinerary.headers.activity}</span>
-                    <span>{t.itinerary.headers.actions}</span>
-                  </span>
-                </div>
-              </th>
-            </tr>
-          </thead>
-          {groups.map((group, groupIndex) => (
+          <SmartItineraryTableHead labels={t.itinerary.headers}
+          />
+          {groups.map((group: ItineraryDayGroup, groupIndex: number) => (
             <DayGroup
               canEdit={canRestructureItems}
               collapsed={collapsedDays.includes(group.day)}
