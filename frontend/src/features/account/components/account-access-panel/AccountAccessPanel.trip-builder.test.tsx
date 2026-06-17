@@ -1,14 +1,10 @@
 import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { seedTrip } from "@/src/trip/seed";
-import { AccountAccessPanel } from "./AccountAccessPanel";
 import {
-  createAccountClient,
   createTripApiClient,
-  createTrustedAccountSession,
   installLocalStorageStub,
-  render,
+  renderTripBuilder,
   selectDestinationCity,
 } from "./account-access-panel-test-utils";
 
@@ -24,20 +20,7 @@ describe("AccountAccessPanel trip builder", () => {
 
   it("allows replacing the default owner display name in the trip builder", async () => {
     const user = userEvent.setup();
-    const accountClient = createAccountClient();
-
-    render(
-      <AccountAccessPanel
-        accessMode="account-portal"
-        accountClient={accountClient}
-        accountSession={createTrustedAccountSession()}
-        portalSection="new-trip"
-        trip={seedTrip}
-        onAccountSessionChange={vi.fn()}
-        onAuthenticated={vi.fn()}
-        onTripChange={vi.fn()}
-      />,
-    );
+    renderTripBuilder();
 
     fireEvent.change(await screen.findByLabelText(/Trip name/i), { target: { value: "Osaka Round Trip" } });
     await selectDestinationCity(user, "Tokyo", /^Tokyo, Japan$/i);
@@ -52,20 +35,7 @@ describe("AccountAccessPanel trip builder", () => {
 
   it("keeps a live visual trip preview in sync with the builder form", async () => {
     const user = userEvent.setup();
-    const accountClient = createAccountClient();
-
-    render(
-      <AccountAccessPanel
-        accessMode="account-portal"
-        accountClient={accountClient}
-        accountSession={createTrustedAccountSession()}
-        portalSection="new-trip"
-        trip={seedTrip}
-        onAccountSessionChange={vi.fn()}
-        onAuthenticated={vi.fn()}
-        onTripChange={vi.fn()}
-      />,
-    );
+    renderTripBuilder();
 
     fireEvent.change(await screen.findByLabelText(/Trip name/i), { target: { value: "Osaka Round Trip" } });
     await selectDestinationCity(user, "Tokyo", /^Tokyo, Japan$/i);
@@ -84,20 +54,7 @@ describe("AccountAccessPanel trip builder", () => {
 
   it("separates destination metadata in the selected cards and draft summary", async () => {
     const user = userEvent.setup();
-    const accountClient = createAccountClient();
-
-    render(
-      <AccountAccessPanel
-        accessMode="account-portal"
-        accountClient={accountClient}
-        accountSession={createTrustedAccountSession()}
-        portalSection="new-trip"
-        trip={seedTrip}
-        onAccountSessionChange={vi.fn()}
-        onAuthenticated={vi.fn()}
-        onTripChange={vi.fn()}
-      />,
-    );
+    renderTripBuilder();
 
     fireEvent.change(await screen.findByLabelText(/Trip name/i), { target: { value: "ทริปกล่องสุ่ม" } });
     await selectDestinationCity(user, "Shenzhen", /^Shenzhen, China$/i);
@@ -114,20 +71,7 @@ describe("AccountAccessPanel trip builder", () => {
 
   it("uses selected non-Japan destination cities in destination cards", async () => {
     const user = userEvent.setup();
-    const accountClient = createAccountClient();
-
-    render(
-      <AccountAccessPanel
-        accessMode="account-portal"
-        accountClient={accountClient}
-        accountSession={createTrustedAccountSession()}
-        portalSection="new-trip"
-        trip={seedTrip}
-        onAccountSessionChange={vi.fn()}
-        onAuthenticated={vi.fn()}
-        onTripChange={vi.fn()}
-      />,
-    );
+    renderTripBuilder();
 
     fireEvent.change(await screen.findByLabelText(/Trip name/i), { target: { value: "China Spring Food Trip" } });
     await selectDestinationCity(user, "Beijing", /^Beijing, China$/i);
@@ -142,20 +86,7 @@ describe("AccountAccessPanel trip builder", () => {
 
   it("does not add Osaka or Kyoto as selected destination cards when Tokyo is the chosen city", async () => {
     const user = userEvent.setup();
-    const accountClient = createAccountClient();
-
-    render(
-      <AccountAccessPanel
-        accessMode="account-portal"
-        accountClient={accountClient}
-        accountSession={createTrustedAccountSession()}
-        portalSection="new-trip"
-        trip={seedTrip}
-        onAccountSessionChange={vi.fn()}
-        onAuthenticated={vi.fn()}
-        onTripChange={vi.fn()}
-      />,
-    );
+    renderTripBuilder();
 
     await selectDestinationCity(user, "Tokyo", /^Tokyo, Japan$/i);
     await user.type(screen.getByLabelText(/Add city or stop/i), "Tokyo");
@@ -170,20 +101,7 @@ describe("AccountAccessPanel trip builder", () => {
 
   it("lets users add city-level destinations without using the map picker", async () => {
     const user = userEvent.setup();
-    const accountClient = createAccountClient();
-
-    render(
-      <AccountAccessPanel
-        accessMode="account-portal"
-        accountClient={accountClient}
-        accountSession={createTrustedAccountSession()}
-        portalSection="new-trip"
-        trip={seedTrip}
-        onAccountSessionChange={vi.fn()}
-        onAuthenticated={vi.fn()}
-        onTripChange={vi.fn()}
-      />,
-    );
+    const { accountClient } = renderTripBuilder();
 
     fireEvent.change(await screen.findByLabelText(/Trip name/i), { target: { value: "Hong Kong May Route" } });
     expect(screen.queryByRole("button", { name: /Pick on map/i })).not.toBeInTheDocument();
@@ -222,20 +140,7 @@ describe("AccountAccessPanel trip builder", () => {
 
   it("uses city-first destinations, hides inspiration, and previews an origin-to-destination flight", async () => {
     const user = userEvent.setup();
-    const accountClient = createAccountClient();
-
-    render(
-      <AccountAccessPanel
-        accessMode="account-portal"
-        accountClient={accountClient}
-        accountSession={createTrustedAccountSession()}
-        portalSection="new-trip"
-        trip={seedTrip}
-        onAccountSessionChange={vi.fn()}
-        onAuthenticated={vi.fn()}
-        onTripChange={vi.fn()}
-      />,
-    );
+    renderTripBuilder();
 
     fireEvent.change(await screen.findByLabelText(/Trip name/i), { target: { value: "Tokyo Food Run" } });
     expect(screen.getByRole("button", { name: /Language and currency/i })).toBeInTheDocument();
@@ -253,20 +158,7 @@ describe("AccountAccessPanel trip builder", () => {
 
   it("uses a smart route calendar with auto-swap, tour colors, and clear dates", async () => {
     const user = userEvent.setup();
-    const accountClient = createAccountClient();
-
-    render(
-      <AccountAccessPanel
-        accessMode="account-portal"
-        accountClient={accountClient}
-        accountSession={createTrustedAccountSession()}
-        portalSection="new-trip"
-        trip={seedTrip}
-        onAccountSessionChange={vi.fn()}
-        onAuthenticated={vi.fn()}
-        onTripChange={vi.fn()}
-      />,
-    );
+    renderTripBuilder();
 
     const calendar = screen.getByRole("group", { name: /Route trip calendar/i });
     await user.click(within(calendar).getByRole("button", { name: /Clear dates/i }));
@@ -285,20 +177,7 @@ describe("AccountAccessPanel trip builder", () => {
   });
 
   it("generates route-aware join credentials without a draft invite token", async () => {
-    const accountClient = createAccountClient();
-
-    render(
-      <AccountAccessPanel
-        accessMode="account-portal"
-        accountClient={accountClient}
-        accountSession={createTrustedAccountSession()}
-        portalSection="new-trip"
-        trip={seedTrip}
-        onAccountSessionChange={vi.fn()}
-        onAuthenticated={vi.fn()}
-        onTripChange={vi.fn()}
-      />,
-    );
+    renderTripBuilder();
 
     fireEvent.change(await screen.findByLabelText(/Trip name/i), { target: { value: "Hong Kong May Route" } });
     fireEvent.change(screen.getByLabelText(/Search destination cities/i), { target: { value: "Hong Kong" } });
@@ -317,27 +196,13 @@ describe("AccountAccessPanel trip builder", () => {
 
   it("shows a copyable email-ready invite link after create succeeds", async () => {
     const user = userEvent.setup();
-    const accountClient = createAccountClient();
     const apiClient = createTripApiClient();
     const writeText = vi.fn().mockResolvedValue(undefined);
     Object.defineProperty(navigator, "clipboard", {
       configurable: true,
       value: { writeText },
     });
-
-    render(
-      <AccountAccessPanel
-        accessMode="account-portal"
-        accountClient={accountClient}
-        apiClient={apiClient}
-        accountSession={createTrustedAccountSession()}
-        portalSection="new-trip"
-        trip={seedTrip}
-        onAccountSessionChange={vi.fn()}
-        onAuthenticated={vi.fn()}
-        onTripChange={vi.fn()}
-      />,
-    );
+    renderTripBuilder({ apiClient });
 
     fireEvent.change(await screen.findByLabelText(/Trip name/i), { target: { value: "Hong Kong May Route" } });
     await selectDestinationCity(user, "Hong Kong", /^Hong Kong, Hong Kong$/i);
@@ -352,20 +217,7 @@ describe("AccountAccessPanel trip builder", () => {
   });
 
   it("renders a flight-route fallback with city badges in the ticket map", async () => {
-    const accountClient = createAccountClient();
-
-    render(
-      <AccountAccessPanel
-        accessMode="account-portal"
-        accountClient={accountClient}
-        accountSession={createTrustedAccountSession()}
-        portalSection="new-trip"
-        trip={seedTrip}
-        onAccountSessionChange={vi.fn()}
-        onAuthenticated={vi.fn()}
-        onTripChange={vi.fn()}
-      />,
-    );
+    renderTripBuilder();
 
     fireEvent.change(await screen.findByLabelText(/Search destination cities/i), { target: { value: "Hong Kong" } });
     fireEvent.click(screen.getByRole("button", { name: /^Hong Kong, Hong Kong$/i }));
@@ -378,20 +230,7 @@ describe("AccountAccessPanel trip builder", () => {
   });
 
   it("keeps the ticket preview sticky on desktop and shows workflow steps on smaller viewports", async () => {
-    const accountClient = createAccountClient();
-
-    render(
-      <AccountAccessPanel
-        accessMode="account-portal"
-        accountClient={accountClient}
-        accountSession={createTrustedAccountSession()}
-        portalSection="new-trip"
-        trip={seedTrip}
-        onAccountSessionChange={vi.fn()}
-        onAuthenticated={vi.fn()}
-        onTripChange={vi.fn()}
-      />,
-    );
+    renderTripBuilder();
 
     const preview = screen.getByRole("region", { name: /Live trip preview/i });
     const createTripStatus = screen.getByRole("group", { name: /Create trip status/i });
@@ -422,20 +261,7 @@ describe("AccountAccessPanel trip builder", () => {
   });
 
   it("uses localized English copy in the trip builder without Thai fallback text", async () => {
-    const accountClient = createAccountClient();
-
-    render(
-      <AccountAccessPanel
-        accessMode="account-portal"
-        accountClient={accountClient}
-        accountSession={createTrustedAccountSession()}
-        portalSection="new-trip"
-        trip={seedTrip}
-        onAccountSessionChange={vi.fn()}
-        onAuthenticated={vi.fn()}
-        onTripChange={vi.fn()}
-      />,
-    );
+    renderTripBuilder();
 
     const wizard = screen.getByRole("form", { name: /Create trip/i });
     expect(within(wizard).getByText(/Build the trip plan and invite friends when it is ready/i)).toBeInTheDocument();
@@ -445,20 +271,7 @@ describe("AccountAccessPanel trip builder", () => {
   });
 
   it("shows draft invite readiness without a boarding-pass barcode before the trip is created", async () => {
-    const accountClient = createAccountClient();
-
-    render(
-      <AccountAccessPanel
-        accessMode="account-portal"
-        accountClient={accountClient}
-        accountSession={createTrustedAccountSession()}
-        portalSection="new-trip"
-        trip={seedTrip}
-        onAccountSessionChange={vi.fn()}
-        onAuthenticated={vi.fn()}
-        onTripChange={vi.fn()}
-      />,
-    );
+    renderTripBuilder();
 
     const preview = screen.getByRole("region", { name: /Live trip preview/i });
     expect(within(preview).getByText(/Invite link appears after create/i)).toBeInTheDocument();
@@ -468,20 +281,7 @@ describe("AccountAccessPanel trip builder", () => {
 
   it("shows one mobile trip creation step at a time with preview last", async () => {
     const user = userEvent.setup();
-    const accountClient = createAccountClient();
-
-    render(
-      <AccountAccessPanel
-        accessMode="account-portal"
-        accountClient={accountClient}
-        accountSession={createTrustedAccountSession()}
-        portalSection="new-trip"
-        trip={seedTrip}
-        onAccountSessionChange={vi.fn()}
-        onAuthenticated={vi.fn()}
-        onTripChange={vi.fn()}
-      />,
-    );
+    renderTripBuilder();
 
     const tripStep = screen.getByRole("region", { name: /Trip details step/i });
     const placeStep = screen.getByRole("region", { name: /Destination step/i });
@@ -524,21 +324,8 @@ describe("AccountAccessPanel trip builder", () => {
 
   it("does not create a trip when submitting before the review step", async () => {
     const user = userEvent.setup();
-    const accountClient = createAccountClient();
     const onAuthenticated = vi.fn();
-
-    render(
-      <AccountAccessPanel
-        accessMode="account-portal"
-        accountClient={accountClient}
-        accountSession={createTrustedAccountSession()}
-        portalSection="new-trip"
-        trip={seedTrip}
-        onAccountSessionChange={vi.fn()}
-        onAuthenticated={onAuthenticated}
-        onTripChange={vi.fn()}
-      />,
-    );
+    const { accountClient } = renderTripBuilder({ onAuthenticated });
 
     fireEvent.change(await screen.findByLabelText(/Trip name/i), { target: { value: "Osaka Round Trip" } });
     await user.keyboard("{Enter}");
@@ -550,20 +337,7 @@ describe("AccountAccessPanel trip builder", () => {
 
   it("does not create a trip on the same click that enters review", async () => {
     const user = userEvent.setup();
-    const accountClient = createAccountClient();
-
-    render(
-      <AccountAccessPanel
-        accessMode="account-portal"
-        accountClient={accountClient}
-        accountSession={createTrustedAccountSession()}
-        portalSection="new-trip"
-        trip={seedTrip}
-        onAccountSessionChange={vi.fn()}
-        onAuthenticated={vi.fn()}
-        onTripChange={vi.fn()}
-      />,
-    );
+    const { accountClient } = renderTripBuilder();
 
     fireEvent.change(await screen.findByLabelText(/Trip name/i), { target: { value: "Osaka Round Trip" } });
     await selectDestinationCity(user, "Tokyo", /^Tokyo, Japan$/i);
@@ -576,20 +350,7 @@ describe("AccountAccessPanel trip builder", () => {
 
   it("uses selected cities as the new trip destination scope", async () => {
     const user = userEvent.setup();
-    const accountClient = createAccountClient();
-
-    render(
-      <AccountAccessPanel
-        accessMode="account-portal"
-        accountClient={accountClient}
-        accountSession={createTrustedAccountSession()}
-        portalSection="new-trip"
-        trip={seedTrip}
-        onAccountSessionChange={vi.fn()}
-        onAuthenticated={vi.fn()}
-        onTripChange={vi.fn()}
-      />,
-    );
+    const { accountClient } = renderTripBuilder();
 
     fireEvent.change(await screen.findByLabelText(/Trip name/i), { target: { value: "Japan Korea Sprint" } });
     await selectDestinationCity(user, "Tokyo", /^Tokyo, Japan$/i);
@@ -616,20 +377,7 @@ describe("AccountAccessPanel trip builder", () => {
 
   it("lets visible trip builder controls update destinations and dates", async () => {
     const user = userEvent.setup();
-    const accountClient = createAccountClient();
-
-    render(
-      <AccountAccessPanel
-        accessMode="account-portal"
-        accountClient={accountClient}
-        accountSession={createTrustedAccountSession()}
-        portalSection="new-trip"
-        trip={seedTrip}
-        onAccountSessionChange={vi.fn()}
-        onAuthenticated={vi.fn()}
-        onTripChange={vi.fn()}
-      />,
-    );
+    renderTripBuilder();
 
     fireEvent.change(await screen.findByLabelText(/Trip name/i), { target: { value: "Japan Korea Sprint" } });
     await selectDestinationCity(user, "Tokyo", /^Tokyo, Japan$/i);
@@ -656,25 +404,12 @@ describe("AccountAccessPanel trip builder", () => {
 
   it("copies the generated join code from the preview share strip", async () => {
     const user = userEvent.setup();
-    const accountClient = createAccountClient();
     const writeText = vi.fn().mockResolvedValue(undefined);
     Object.defineProperty(navigator, "clipboard", {
       configurable: true,
       value: { writeText },
     });
-
-    render(
-      <AccountAccessPanel
-        accessMode="account-portal"
-        accountClient={accountClient}
-        accountSession={createTrustedAccountSession()}
-        portalSection="new-trip"
-        trip={seedTrip}
-        onAccountSessionChange={vi.fn()}
-        onAuthenticated={vi.fn()}
-        onTripChange={vi.fn()}
-      />,
-    );
+    renderTripBuilder();
 
     fireEvent.change(await screen.findByLabelText(/Trip name/i), { target: { value: "Osaka Round Trip" } });
     await selectDestinationCity(user, "Tokyo", /^Tokyo, Japan$/i);

@@ -15,7 +15,7 @@ import { I18nProvider } from "@/src/i18n/I18nProvider";
 import { renderWithI18n } from "@/src/i18n/test-utils";
 import { TripApiClient } from "@/src/trip/api-client";
 import { seedTrip } from "@/src/trip/seed";
-import type { TripParticipantSession } from "@/src/trip/types";
+import type { Trip, TripParticipantSession } from "@/src/trip/types";
 import { AccountAccessPanel } from "./AccountAccessPanel";
 
 export function render(ui: ReactElement) {
@@ -92,6 +92,42 @@ export function AccountHarness({
       onTripChange={vi.fn()}
     />
   );
+}
+
+export function renderTripBuilder({
+  accountClient = createAccountClient(),
+  apiClient,
+  onAccountSessionChange = vi.fn(),
+  onAuthenticated = vi.fn(),
+  onTripChange = vi.fn(),
+}: {
+  accountClient?: AccountApiClient;
+  apiClient?: TripApiClient;
+  onAccountSessionChange?: (session: AccountSession | null) => void;
+  onAuthenticated?: (session: TripParticipantSession) => void;
+  onTripChange?: (trip: Trip) => void;
+} = {}) {
+  const result = render(
+    <AccountAccessPanel
+      accessMode="account-portal"
+      accountClient={accountClient}
+      apiClient={apiClient}
+      accountSession={createTrustedAccountSession()}
+      portalSection="new-trip"
+      trip={seedTrip}
+      onAccountSessionChange={onAccountSessionChange}
+      onAuthenticated={onAuthenticated}
+      onTripChange={onTripChange}
+    />,
+  );
+
+  return {
+    ...result,
+    accountClient,
+    onAccountSessionChange,
+    onAuthenticated,
+    onTripChange,
+  };
 }
 
 export function createAccountClient(): AccountApiClient {
