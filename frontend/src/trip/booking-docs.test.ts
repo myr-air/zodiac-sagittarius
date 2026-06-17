@@ -4,6 +4,7 @@ import {
   bookingDraftTimeWindowForItineraryItem,
   bookingDraftTitleForItineraryItem,
   bookingDocInputForExpenseEstimate,
+  bookingDocInputFromRecord,
   bookingTypeForBookingTemplate,
   bookingTypeForExpenseEstimate,
   bookingTypeForItineraryItem,
@@ -376,6 +377,22 @@ describe("booking docs helpers", () => {
       externalLinks: [{ id: "link-local-1", label: "Vault" }],
     });
     expect(removedTrip.bookingDocs?.map((doc) => doc.id)).toEqual([docs[1].id]);
+  });
+
+  it("projects booking records back into editable input with explicit overrides", () => {
+    expect(bookingDocInputFromRecord(docs[0], {
+      confirmationCode: null,
+      providerName: "Updated Airline",
+      relatedItineraryItemIds: ["item-flight"],
+      type: "train",
+    })).toEqual(expect.objectContaining({
+      confirmationCode: null,
+      providerName: "Updated Airline",
+      relatedItineraryItemIds: ["item-flight"],
+      title: docs[0].title,
+      tripPlanId: docs[0].tripPlanId,
+      type: "train",
+    }));
   });
 
   it("classifies itinerary rows and expense estimates into booking types", () => {

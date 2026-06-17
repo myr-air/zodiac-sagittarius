@@ -8,6 +8,7 @@ import {
   bookingDraftDetailsForItineraryItem,
   bookingDraftTimeWindowForItineraryItem,
   bookingDraftTitleForItineraryItem,
+  bookingDocInputFromRecord,
   bookingTypeForBookingTemplate,
   bookingTypeForItineraryItem,
   buildCreateBookingDocRequest,
@@ -405,29 +406,11 @@ export function useWorkspaceBookingCommands({
       );
       if (!bookingDoc || !bookingDoc.relatedItineraryItemIds.includes(itemId))
         return;
-      await updateBookingDoc(bookingDoc.id, {
-        type: bookingDoc.type,
-        title: bookingDoc.title,
-        status: bookingDoc.status,
-        visibility: bookingDoc.visibility,
-        ownerMemberId: bookingDoc.ownerMemberId,
-        providerName: bookingDoc.providerName,
-        confirmationCode: bookingDoc.confirmationCode,
-        startsAt: bookingDoc.startsAt,
-        endsAt: bookingDoc.endsAt,
-        timezone: bookingDoc.timezone,
-        priceAmount: bookingDoc.priceAmount,
-        currency: bookingDoc.currency,
-        travelerIds: bookingDoc.travelerIds,
-        externalLinks: bookingDoc.externalLinks,
+      await updateBookingDoc(bookingDoc.id, bookingDocInputFromRecord(bookingDoc, {
         relatedItineraryItemIds: bookingDoc.relatedItineraryItemIds.filter(
           (relatedItemId) => relatedItemId !== itemId,
         ),
-        relatedTaskIds: bookingDoc.relatedTaskIds,
-        relatedExpenseIds: bookingDoc.relatedExpenseIds,
-        noteIds: bookingDoc.noteIds,
-        notes: bookingDoc.notes,
-      });
+      }));
       const item = latestTripRef.current.itineraryItems.find(
         (candidate) => candidate.id === itemId,
       );
@@ -455,27 +438,9 @@ export function useWorkspaceBookingCommands({
         (candidate) => candidate.id === bookingDocId,
       );
       if (!bookingDoc || bookingDoc.type === type) return;
-      await updateBookingDoc(bookingDoc.id, {
+      await updateBookingDoc(bookingDoc.id, bookingDocInputFromRecord(bookingDoc, {
         type,
-        title: bookingDoc.title,
-        status: bookingDoc.status,
-        visibility: bookingDoc.visibility,
-        ownerMemberId: bookingDoc.ownerMemberId,
-        providerName: bookingDoc.providerName,
-        confirmationCode: bookingDoc.confirmationCode,
-        startsAt: bookingDoc.startsAt,
-        endsAt: bookingDoc.endsAt,
-        timezone: bookingDoc.timezone,
-        priceAmount: bookingDoc.priceAmount,
-        currency: bookingDoc.currency,
-        travelerIds: bookingDoc.travelerIds,
-        externalLinks: bookingDoc.externalLinks,
-        relatedItineraryItemIds: bookingDoc.relatedItineraryItemIds,
-        relatedTaskIds: bookingDoc.relatedTaskIds,
-        relatedExpenseIds: bookingDoc.relatedExpenseIds,
-        noteIds: bookingDoc.noteIds,
-        notes: bookingDoc.notes,
-      });
+      }));
     },
     [latestTripRef, updateBookingDoc],
   );
@@ -506,27 +471,10 @@ export function useWorkspaceBookingCommands({
           confirmationCode === bookingDoc.confirmationCode
         )
           return;
-        await runBookingDocUpdate(bookingDoc.id, {
-          type: bookingDoc.type,
-          title: bookingDoc.title,
-          status: bookingDoc.status,
-          visibility: bookingDoc.visibility,
-          ownerMemberId: bookingDoc.ownerMemberId,
+        await runBookingDocUpdate(bookingDoc.id, bookingDocInputFromRecord(bookingDoc, {
           providerName,
           confirmationCode,
-          startsAt: bookingDoc.startsAt,
-          endsAt: bookingDoc.endsAt,
-          timezone: bookingDoc.timezone,
-          priceAmount: bookingDoc.priceAmount,
-          currency: bookingDoc.currency,
-          travelerIds: bookingDoc.travelerIds,
-          externalLinks: bookingDoc.externalLinks,
-          relatedItineraryItemIds: bookingDoc.relatedItineraryItemIds,
-          relatedTaskIds: bookingDoc.relatedTaskIds,
-          relatedExpenseIds: bookingDoc.relatedExpenseIds,
-          noteIds: bookingDoc.noteIds,
-          notes: bookingDoc.notes,
-        });
+        }));
       });
     },
     [queueBookingDocUpdate, runBookingDocUpdate, latestTripRef],
