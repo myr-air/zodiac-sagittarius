@@ -8,16 +8,14 @@ import { Button, Select, TextInput } from "@/src/ui";
 import { WeatherBriefingDrawer } from "@/src/components/WeatherBriefingDrawer";
 import { WeatherForecastStrip } from "@/src/components/WeatherForecastStrip";
 import { CockpitCard, HighlightBoard, OverviewHero } from "./overview";
-import { OverviewTaskList, type OverviewTaskListLabels } from "./overview/OverviewTaskList";
+import { type OverviewTaskListLabels } from "./overview/OverviewTaskList";
 import {
   dialogFieldWideClassName,
   overviewReadinessChipsClassName,
   modalBackdropClassName,
   overviewCockpitClassName,
   overviewGridClassName,
-  overviewHealthGridClassName,
   overviewPageClassName,
-  overviewPanelClassName,
   overviewUndoToastClassName,
   taskDialogActionsClassName,
   taskDialogClassName,
