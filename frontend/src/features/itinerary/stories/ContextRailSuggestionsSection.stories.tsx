@@ -25,10 +25,9 @@ export const Editable: Story = {
     await expect(
       canvas.getByRole("region", { name: /Suggestion review/i }),
     ).toBeInTheDocument();
-    await expect(
-      canvas.getByRole("button", { name: /Approve/ }),
-    ).toBeInTheDocument();
-    await userEvent.click(canvas.getByRole("button", { name: /Approve/ }));
+    const approveButtons = canvas.getAllByRole("button", { name: /Approve/ });
+    await expect(approveButtons[0]).toBeInTheDocument();
+    await userEvent.click(approveButtons[0]);
   },
 };
 
