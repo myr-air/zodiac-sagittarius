@@ -1,10 +1,11 @@
 import { useState, type FormEvent } from "react";
-import type { ItineraryItem, ItineraryItemKind, ItineraryItemPriority, ItineraryItemStatus, ItineraryTimeMode, PlaceResolutionCandidate } from "@/src/trip/types";
+import type { ItineraryItem, ItineraryTimeMode, PlaceResolutionCandidate } from "@/src/trip/types";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { formatDayLabel, getTripDates } from "@/src/trip/itinerary";
 import { Button, Select } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import { formatThaiDate } from "@/src/features/itinerary/lib";
+import { StopDialogAdvancedFields } from "./stop-dialog/StopDialogAdvancedFields";
 import { StopDialogDetails } from "./stop-dialog/StopDialogDetails";
 import { StopDialogTimeWindow } from "./stop-dialog/StopDialogTimeWindow";
 import {
@@ -309,54 +310,13 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, initialPare
               </Select>
             </label>
             {mode === "create" ? (
-              <details className={advancedDetailsClassName}>
-                <summary>{detailLabels.fields.advanced}</summary>
-                <div className={advancedDetailsGridClassName}>
-                  <label htmlFor={stopDialogFieldIds.itemKind}>
-                    <span>Item kind</span>
-                    <Select id={stopDialogFieldIds.itemKind} value={values.itemKind} onChange={(event) => update("itemKind", event.target.value as ItineraryItemKind)}>
-                      {["travel", "activity", "lodging", "meal", "note", "preparation", "foodRecommendation"].map((option) => (
-                        <option value={option} key={option}>{option}</option>
-                      ))}
-                    </Select>
-                  </label>
-                  <label htmlFor={stopDialogFieldIds.timeMode}>
-                    <span>Time mode</span>
-                    <Select id={stopDialogFieldIds.timeMode} value={values.timeMode} onChange={(event) => updateTimeMode(event.target.value as ItineraryTimeMode)}>
-                      <option value="scheduled">scheduled</option>
-                      <option value="flexible">flexible</option>
-                    </Select>
-                  </label>
-                  <label htmlFor={stopDialogFieldIds.status}>
-                    <span>Status</span>
-                    <Select id={stopDialogFieldIds.status} value={values.status} onChange={(event) => update("status", event.target.value as ItineraryItemStatus)}>
-                      {["idea", "planned", "booked", "confirmed", "done", "skipped"].map((option) => (
-                        <option value={option} key={option}>{option}</option>
-                      ))}
-                    </Select>
-                  </label>
-                  <label htmlFor={stopDialogFieldIds.priority}>
-                    <span>Priority</span>
-                    <Select id={stopDialogFieldIds.priority} value={values.priority} onChange={(event) => update("priority", event.target.value as ItineraryItemPriority)}>
-                      {["low", "normal", "high", "must"].map((option) => (
-                        <option value={option} key={option}>{option}</option>
-                      ))}
-                    </Select>
-                  </label>
-                  <label className={dialogFieldWideClassName} htmlFor={stopDialogFieldIds.isPlanBlock}>
-                    <span>
-                      <input
-                        id={stopDialogFieldIds.isPlanBlock}
-                        type="checkbox"
-                        checked={values.isPlanBlock && !isSubActivity}
-                        disabled={isSubActivity}
-                        onChange={(event) => update("isPlanBlock", event.target.checked)}
-                      />
-                      Plan block
-                    </span>
-                  </label>
-                </div>
-              </details>
+              <StopDialogAdvancedFields
+                advancedLabel={detailLabels.fields.advanced}
+                isSubActivity={isSubActivity}
+                values={values}
+                onUpdate={update}
+                onUpdateTimeMode={updateTimeMode}
+              />
             ) : null}
             <StopDialogTimeWindow
               activity={values.activity}
