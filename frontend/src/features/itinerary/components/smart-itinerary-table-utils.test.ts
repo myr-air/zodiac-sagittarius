@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { PlanVariant, TripDailyBriefing } from "@/src/trip/types";
 import type { ItineraryPathOption } from "@/src/trip/itinerary";
-import { buildItineraryItem } from "./fixtures/itinerary-items";
+import { buildItineraryItem } from "@/src/features/itinerary/testing/fixtures/itinerary-items";
 import {
   buildGraphColumnWidth,
   buildWeatherSummary,

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { BookingDoc, ItineraryItemDetails } from "@/src/trip/types";
-import { buildItineraryItem } from "./fixtures/itinerary-items";
+import { buildItineraryItem } from "@/src/features/itinerary/testing/fixtures/itinerary-items";
 import {
   activityTypeOptions,
   bookingDocTypeForItemTemplate,
