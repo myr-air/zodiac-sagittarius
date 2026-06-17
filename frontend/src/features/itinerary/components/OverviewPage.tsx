@@ -8,11 +8,11 @@ import { formatTripRange, PageUserCard } from "@/src/components/PageHeader";
 import { Button, SegmentedControl, Select, TextInput } from "@/src/ui";
 import { WeatherBriefingDrawer } from "@/src/components/WeatherBriefingDrawer";
 import { WeatherForecastStrip } from "@/src/components/WeatherForecastStrip";
-import { CockpitCard, HighlightBoard, OverviewFocusList, OverviewHero, OverviewStopList, TripCompletedPostcard, ViewerNextStopPanel } from "./overview";
+import { CockpitCard, HighlightBoard, OverviewFocusList, OverviewHero, OverviewStopList, ViewerNextStopPanel } from "./overview";
 import { OverviewTaskList, type OverviewTaskListLabels } from "./overview/OverviewTaskList";
+import { OverviewFocusSection } from "./overview/OverviewFocusSection";
 import {
   overviewMutedClassName,
-  overviewNextStopClassName,
 } from "./overview/overview.styles";
 import {
   dialogFieldWideClassName,
@@ -247,28 +247,21 @@ export function OverviewPage({
       <div className={overviewGridClassName}>
         {isTravelerLens ? (
           <>
-            <section className={cn(overviewPanelClassName, overviewPanelWideClassName)} aria-label={t.overview.sections.todayFocus}>
-              <div className={overviewPanelTitleClassName}>
-                <Icon name="route" />
-                <h2>{focusTodayHeading}</h2>
-              </div>
-              {isCompleted ? (
-                <TripCompletedPostcard trip={trip} items={items} groupSpendLabel={groupSpendLabel} locale={locale} />
-              ) : (
-                <>
-                  {nextStop ? (
-                    <div className={overviewNextStopClassName}>
-                      <strong>{nextStop.activity}</strong>
-                      <span>{formatDayLabel(nextStop.day, trip.startDate, locale)} · {nextStop.startTime} · {nextStop.place}</span>
-                      <p>{travelerNextStopDetail(nextStop, t.overview.focusDetails.travelerFallback)}</p>
-                    </div>
-                  ) : (
-                    <p className={overviewMutedClassName}>{t.overview.empty.itinerary}</p>
-                  )}
-                  <OverviewFocusList items={nextDayItems} startDate={trip.startDate} locale={locale} label={t.overview.sections.todayFocusStops} />
-                </>
-              )}
-            </section>
+            <OverviewFocusSection
+              ariaLabel={t.overview.sections.todayFocus}
+              heading={focusTodayHeading}
+              trip={trip}
+              items={items}
+              nextStop={nextStop}
+              nextDayItems={nextDayItems}
+              startDate={trip.startDate}
+              locale={locale}
+              groupSpendLabel={groupSpendLabel}
+              isCompleted={isCompleted}
+              focusListLabel={t.overview.sections.todayFocusStops}
+              detailFallback={nextStop ? travelerNextStopDetail(nextStop, t.overview.focusDetails.travelerFallback) : t.overview.focusDetails.travelerFallback}
+              emptyText={t.overview.empty.itinerary}
+            />
 
             <section className={cn(overviewPanelClassName, overviewPanelWideClassName)} aria-label={t.overview.sections.travelerHighlights}>
               <div className={overviewPanelTitleClassName}>
@@ -380,28 +373,21 @@ export function OverviewPage({
 
         {isManagerLens ? (
           <>
-            <section className={cn(overviewPanelClassName, overviewPanelWideClassName)} aria-label={t.overview.sections.todayFocus}>
-          <div className={overviewPanelTitleClassName}>
-            <Icon name="route" />
-            <h2>{focusTodayHeading}</h2>
-          </div>
-          {isCompleted ? (
-            <TripCompletedPostcard trip={trip} items={items} groupSpendLabel={groupSpendLabel} locale={locale} />
-          ) : (
-            <>
-              {nextStop ? (
-                <div className={overviewNextStopClassName}>
-                  <strong>{nextStop.activity}</strong>
-                  <span>{formatDayLabel(nextStop.day, trip.startDate, locale)} · {nextStop.startTime} · {nextStop.place}</span>
-                  <p>{managerNextStopDetail(nextStop, t.overview.focusDetails.managerFallback)}</p>
-                </div>
-              ) : (
-                <p className={overviewMutedClassName}>{t.overview.empty.itinerary}</p>
-              )}
-              <OverviewFocusList items={nextDayItems} startDate={trip.startDate} locale={locale} label={t.overview.sections.todayFocusStops} />
-            </>
-          )}
-            </section>
+            <OverviewFocusSection
+              ariaLabel={t.overview.sections.todayFocus}
+              heading={focusTodayHeading}
+              trip={trip}
+              items={items}
+              nextStop={nextStop}
+              nextDayItems={nextDayItems}
+              startDate={trip.startDate}
+              locale={locale}
+              groupSpendLabel={groupSpendLabel}
+              isCompleted={isCompleted}
+              focusListLabel={t.overview.sections.todayFocusStops}
+              detailFallback={nextStop ? managerNextStopDetail(nextStop, t.overview.focusDetails.managerFallback) : t.overview.focusDetails.managerFallback}
+              emptyText={t.overview.empty.itinerary}
+            />
 
             <section className={cn(overviewPanelClassName, overviewPanelHealthClassName)} aria-label={t.overview.sections.readiness}>
           <div className={overviewPanelTitleClassName}>
