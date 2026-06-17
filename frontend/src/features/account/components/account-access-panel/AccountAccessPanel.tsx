@@ -63,6 +63,7 @@ import { PortalCreatedTripShare, type CreatedTripShare } from "./portal-created-
 import { PortalDashboardSection } from "./portal-dashboard-section";
 import { PortalExplorerSection } from "./portal-explorer-section";
 import { PortalSettingsSection } from "./portal-settings-section";
+import { PortalSignOutSection } from "./portal-sign-out-section";
 import { PortalTodosSection } from "./portal-todos-section";
 import { PortalTripsSection } from "./portal-trips-section";
 import { PortalTripWizard } from "./portal-trip-wizard";
@@ -1204,13 +1205,9 @@ function AccountDashboard({
           />
         ) : null}
 
-        {portalSection === "sign-out" ? <section className={portalProfileCardClassName} id="portal-sign-out">
-          <PanelHeading icon="x" title={t.access.portal.sections.signOut.title} detail={t.access.portal.sections.signOut.detail} />
-          <Button type="button" variant="secondary" onClick={() => void onLogout()}>
-            <Icon name="x" />
-            {t.access.dashboard.logout}
-          </Button>
-        </section> : null}
+        {portalSection === "sign-out" ? (
+          <PortalSignOutSection className={portalProfileCardClassName} onLogout={onLogout} />
+        ) : null}
       </div>
     </div>
   );
