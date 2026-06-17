@@ -8,36 +8,25 @@ import type {
 } from "@/src/trip/types";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import {
-  type ItineraryCommitmentSummary,
   mainItineraryPathId,
   type ItineraryPathOption,
   type ItineraryView,
-  type ItineraryDayGroup,
 } from "@/src/trip/itinerary";
 import { PageHeader } from "@/src/components/PageHeader";
 import type { InlineItineraryItemPatch } from "../lib";
-import { DayGroup } from "./smart-itinerary-table/day-group";
 import { SmartItineraryTableHeaderControls } from "./smart-itinerary-table/SmartItineraryTableHeaderControls";
 import { SmartItineraryTableMeta } from "./smart-itinerary-table/SmartItineraryTableMeta";
-import { SmartItineraryTableHead } from "./smart-itinerary-table/SmartItineraryTableHead";
+import { SmartItineraryTableBody } from "./smart-itinerary-table/SmartItineraryTableBody";
 import type {
   ItineraryBookingTemplate,
   ItineraryBookingTicketInput,
 } from "@/src/trip/booking-docs";
 import { useSmartItineraryTableState } from "./smart-itinerary-table/hooks/useSmartItineraryTableState";
 
-import {
-  smartTableClassName,
-  tablePanelClassName,
-  tableScrollClassName,
-} from "./smart-itinerary-table.styles";
+import { tablePanelClassName, tableScrollClassName } from "./smart-itinerary-table.styles";
 
 interface SmartItineraryTableProps {
-  canRedo: boolean;
   canRestructure?: boolean;
-  canUndo: boolean;
-  commitmentsByItemId?: Record<string, ItineraryCommitmentSummary>;
-  contextRailOpen: boolean;
   endDate: string;
   graphItems?: ItineraryItem[];
   items: ItineraryItem[];
@@ -53,7 +42,6 @@ interface SmartItineraryTableProps {
   itineraryView?: ItineraryView;
   pathOptions?: ItineraryPathOption[];
   selectedItemId: string;
-  selectedTripPathId?: string;
   dayPathOverrides?: Record<string, string | undefined>;
   showAllPaths?: boolean;
   tripName: string;
@@ -71,12 +59,8 @@ interface SmartItineraryTableProps {
   onAddStop: (day?: string) => void;
   onAddSubActivity?: (parentItemId: string) => void | Promise<void>;
   onAddNoteForItem?: (itemId: string, body: string) => void | Promise<void>;
-  onAddTaskForItem?: (itemId: string) => void;
   onOpenItemDetails: (itemId: string) => void;
   onSelectItem: (itemId: string) => void;
-  onMoveItem: (draggedItemId: string, targetItemId: string) => void;
-  onMoveItemIntoPlanBlock: (draggedItemId: string, planBlockItemId: string) => void;
-  onMoveItemToDay: (draggedItemId: string, targetDay: string) => void;
   onMoveItemToPath?: (itemId: string, pathId: string) => void;
   onUpdateItemInline?: (
     itemId: string,
@@ -84,9 +68,6 @@ interface SmartItineraryTableProps {
   ) => void | Promise<void>;
   onEditItem?: (itemId: string) => void;
   onDeleteItem?: (itemId: string) => void;
-  onExportItinerary: () => void;
-  onImportItinerary: (file: File) => void;
-  onImportItineraryText?: (content: string, sourceName: string) => void | Promise<void>;
   onChangeTripPlan: (tripPlanId: string) => boolean | void | Promise<boolean | void>;
   onChangeTripPlanStatus: (
     tripPlanId: string,
@@ -96,14 +77,9 @@ interface SmartItineraryTableProps {
   onCreateTripPlan: (name: string) => boolean | void | Promise<boolean | void>;
   onRenameTripPlan: (tripPlanId: string, name: string) => boolean | void | Promise<boolean | void>;
   onSaveDayTitle?: (date: string, version: number, title: string | null) => void | Promise<void>;
-  onChangeTripPath?: (pathId: string) => void;
   onChangeDayPath?: (day: string, pathId: string) => void;
   onClearDayPath?: (day: string) => void;
-  onClearAllDayPaths?: () => void;
   onToggleShowAllPaths?: (showAll: boolean) => void;
-  onRedo: () => void;
-  onToggleContextRail: () => void;
-  onUndo: () => void;
 }
 
 export function SmartItineraryTable({
@@ -232,52 +208,41 @@ export function SmartItineraryTable({
         tabIndex={0}
         aria-label={t.itinerary.scrollLabel}
       >
-        <table className={smartTableClassName} style={smartTableStyle}>
-          <caption className="sr-only">{t.itinerary.caption}</caption>
-          <colgroup>
-            <col style={{ width: graphColumnWidth }} />
-            <col />
-          </colgroup>
-          <SmartItineraryTableHead labels={t.itinerary.headers}
-          />
-          {groups.map((group: ItineraryDayGroup, groupIndex: number) => (
-            <DayGroup
-              canEdit={canRestructureItems}
-              collapsed={collapsedDays.includes(group.day)}
-              graphColumnWidth={graphColumnWidth}
-              graphItems={graphItemsByDay.get(group.day) ?? []}
-              group={group}
-              hasTopSpacer={groupIndex > 0}
-              itineraryLabels={t.itinerary}
-              locale={locale}
-              key={group.day}
-              dailyBriefing={dailyBriefingsByDate.get(group.day) ?? null}
-              selectedItemId={selectedItemId}
-              startDate={startDate}
-              pathOptions={pathOptions}
-              dayPathOverride={dayPathOverrides[group.day]}
-              showAllPaths={showAllPaths}
-              onChangeDayPath={onChangeDayPath}
-              onClearDayPath={onClearDayPath}
-              onAddStop={onAddStop}
-              onAddSubActivity={onAddSubActivity}
-              onAddNoteForItem={onAddNoteForItem}
-              onAddBookingForItem={onAddBookingForItem}
-              onSaveBookingForItem={onSaveBookingForItem}
-              onUnlinkBookingForItem={onUnlinkBookingForItem}
-              bookingDocs={bookingDocs}
-              bookingLinkItems={items}
-              onDeleteItem={onDeleteItem}
-              onEditItem={onEditItem}
-              onMoveItemToPath={onMoveItemToPath}
-              onOpenItemDetails={onOpenItemDetails}
-              onSelectItem={onSelectItem}
-              onSaveDayTitle={onSaveDayTitle}
-              onUpdateItemInline={onUpdateItemInline}
-              onToggleDay={toggleDay}
-            />
-          ))}
-        </table>
+        <SmartItineraryTableBody
+          canRestructureItems={canRestructureItems}
+          collapsedDays={collapsedDays}
+          groups={groups}
+          graphItemsByDay={graphItemsByDay}
+          dailyBriefingsByDate={dailyBriefingsByDate}
+          pathOptions={pathOptions}
+          dayPathOverrides={dayPathOverrides}
+          showAllPaths={showAllPaths}
+          smartTableStyle={smartTableStyle}
+          graphColumnWidth={graphColumnWidth}
+          itineraryLabels={t.itinerary}
+          locale={locale}
+          startDate={startDate}
+          selectedItemId={selectedItemId}
+          bookingDocs={bookingDocs}
+          bookingLinkItems={items}
+          onAddStop={onAddStop}
+          onAddSubActivity={onAddSubActivity}
+          onAddNoteForItem={onAddNoteForItem}
+          onAddBookingForItem={onAddBookingForItem}
+          onSaveBookingForItem={onSaveBookingForItem}
+          onUnlinkBookingForItem={onUnlinkBookingForItem}
+          onDeleteItem={onDeleteItem}
+          onEditItem={onEditItem}
+          onMoveItemToPath={onMoveItemToPath}
+          onOpenItemDetails={onOpenItemDetails}
+          onSelectItem={onSelectItem}
+          onSaveDayTitle={onSaveDayTitle}
+          onUpdateItemInline={onUpdateItemInline}
+          onToggleDay={toggleDay}
+          onChangeDayPath={onChangeDayPath}
+          onClearDayPath={onClearDayPath}
+          tHeaders={t.itinerary.headers}
+        />
       </div>
     </section>
   );

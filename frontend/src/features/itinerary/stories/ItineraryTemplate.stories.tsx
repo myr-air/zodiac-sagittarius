@@ -242,9 +242,6 @@ type Story = StoryObj<typeof meta>;
 
 export const Owner: Story = {
   args: {
-    canRedo: false,
-    canUndo: false,
-    contextRailOpen: false,
     endDate: tripFixture.trip.endDate,
     items: tripFixture.planItems,
     tripPlans: tripFixture.trip.planVariants,
@@ -260,32 +257,21 @@ export const Owner: Story = {
     role: "owner",
     startDate: tripFixture.trip.startDate,
     selectedItemId: "item-dimdim",
-    selectedTripPathId: "path-plan-1",
     dayPathOverrides: { "2026-06-19": "path-rain" },
     showAllPaths: false,
     tripName: tripFixture.trip.name,
     onAddStop: noop,
     onOpenItemDetails: noop,
     onSelectItem: noop,
-    onMoveItem: noop,
-    onMoveItemIntoPlanBlock: noop,
-    onMoveItemToDay: noop,
     onMoveItemToPath: noop,
-    onExportItinerary: noop,
-    onImportItinerary: noop,
     onChangeTripPlan: noop,
     onChangeTripPlanStatus: noop,
     onSetMainTripPlan: noop,
     onCreateTripPlan: noop,
     onRenameTripPlan: noop,
-    onChangeTripPath: noop,
     onChangeDayPath: noop,
     onClearDayPath: noop,
-    onClearAllDayPaths: noop,
     onToggleShowAllPaths: noop,
-    onRedo: noop,
-    onToggleContextRail: noop,
-    onUndo: noop,
   },
   play: async ({ canvas }) => {
     await expect(canvas.getByRole("button", { name: "Trip Plan controls" })).toBeEnabled();
@@ -319,7 +305,6 @@ export const HierarchyBlocks: Story = {
     items: hierarchyBlockItems,
     graphItems: hierarchyBlockItems,
     selectedItemId: "story-flight-block",
-    selectedTripPathId: "main",
     dayPathOverrides: {},
   },
   play: async ({ canvas }) => {
@@ -380,7 +365,6 @@ export const HierarchyWarnings: Story = {
       },
     ],
     selectedItemId: "story-child-under-plain-parent",
-    selectedTripPathId: "main",
     dayPathOverrides: {},
   },
   play: async ({ canvas, canvasElement }) => {

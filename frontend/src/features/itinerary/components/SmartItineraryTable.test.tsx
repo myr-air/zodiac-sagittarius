@@ -11,10 +11,7 @@ function renderTable(
   overrides: Partial<Parameters<typeof SmartItineraryTable>[0]> = {},
 ) {
   const props: Parameters<typeof SmartItineraryTable>[0] = {
-    canRedo: false,
     canRestructure: true,
-    canUndo: false,
-    contextRailOpen: false,
     endDate: tripFixture.trip.endDate,
     items: tripFixture.planItems,
     tripPlans: tripFixture.trip.planVariants,
@@ -30,7 +27,6 @@ function renderTable(
       { id: "path-plan-1", name: "Plan 1", scope: "trip" },
       { id: "path-rain", name: "Rain plan", scope: "day", day: "2026-06-19" },
     ],
-    selectedTripPathId: "main",
     dayPathOverrides: {},
     showAllPaths: false,
     tripName: tripFixture.trip.name,
@@ -38,18 +34,12 @@ function renderTable(
     onAddStop: vi.fn(),
     onOpenItemDetails: vi.fn(),
     onSelectItem: vi.fn(),
-    onMoveItem: vi.fn(),
-    onMoveItemIntoPlanBlock: vi.fn(),
-    onMoveItemToDay: vi.fn(),
     onMoveItemToPath: vi.fn(),
     onAddSubActivity: vi.fn(),
     onAddNoteForItem: vi.fn(),
-    onAddTaskForItem: vi.fn(),
     onUpdateItemInline: vi.fn(),
     onEditItem: vi.fn(),
     onDeleteItem: vi.fn(),
-    onExportItinerary: vi.fn(),
-    onImportItinerary: vi.fn(),
     onChangeTripPlan: vi.fn(),
     onChangeTripPlanStatus: vi.fn(),
     onSetMainTripPlan: vi.fn(),
@@ -58,9 +48,6 @@ function renderTable(
     onChangeDayPath: vi.fn(),
     onClearDayPath: vi.fn(),
     onToggleShowAllPaths: vi.fn(),
-    onRedo: vi.fn(),
-    onToggleContextRail: vi.fn(),
-    onUndo: vi.fn(),
     ...overrides,
   };
   renderWithI18n(<SmartItineraryTable {...props} />, { locale: "th" });
@@ -128,10 +115,7 @@ describe("SmartItineraryTable", () => {
       <>
         <LanguageSwitch />
         <SmartItineraryTable
-          canRedo={false}
           canRestructure
-          canUndo={false}
-          contextRailOpen={false}
           endDate={tripFixture.trip.endDate}
           items={tripFixture.planItems}
           tripPlans={tripFixture.trip.planVariants}
@@ -146,19 +130,11 @@ describe("SmartItineraryTable", () => {
           onAddStop={vi.fn()}
           onOpenItemDetails={vi.fn()}
           onSelectItem={vi.fn()}
-          onMoveItem={vi.fn()}
-          onMoveItemIntoPlanBlock={vi.fn()}
-          onMoveItemToDay={vi.fn()}
-          onExportItinerary={vi.fn()}
-          onImportItinerary={vi.fn()}
           onChangeTripPlan={vi.fn()}
           onChangeTripPlanStatus={vi.fn()}
           onSetMainTripPlan={vi.fn()}
           onCreateTripPlan={vi.fn()}
           onRenameTripPlan={vi.fn()}
-          onRedo={vi.fn()}
-          onToggleContextRail={vi.fn()}
-          onUndo={vi.fn()}
         />
       </>,
     );
@@ -1232,7 +1208,6 @@ describe("SmartItineraryTable", () => {
   });
 
   it("renders sub-activities without inline drag and drop controls", () => {
-    const onMoveItem = vi.fn();
     const parentA = {
       ...tripFixture.planItems[0],
       id: "parent-a",
@@ -1276,7 +1251,6 @@ describe("SmartItineraryTable", () => {
       items: [parentA, childA1, childA2, parentB, childB1],
       graphItems: [parentA, childA1, childA2, parentB, childB1],
       selectedItemId: "parent-a",
-      onMoveItem,
     });
 
     const parentARow = document.querySelector<HTMLElement>(
@@ -1318,7 +1292,6 @@ describe("SmartItineraryTable", () => {
     fireEvent.drop(childA2Line as HTMLElement, {
       dataTransfer: createDragDataTransfer(),
     });
-    expect(onMoveItem).not.toHaveBeenCalled();
   });
 
   it("keeps graph nodes selectable while activity cells remain independent", async () => {
