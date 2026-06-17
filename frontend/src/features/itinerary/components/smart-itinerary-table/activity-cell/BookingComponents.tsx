@@ -17,18 +17,11 @@ import {
   bookingIconForItem,
   bookingTemplateForItem,
   bookingTemplateLabel,
-  bookingTitleForItem,
   formatBookingSummary,
-  fromDateTimeLocalValue,
-  itineraryDateTimeValue,
   ticketModalCopy,
-  ticketNotesForItem,
-  toDateTimeLocalValue,
 } from "@/src/features/itinerary/domain/itinerary-item-editing";
 import {
-  readItineraryDetailString,
   toggleId,
-  uniqueIds,
 } from "@/src/features/itinerary/lib";
 import {
   activityBookingButtonClassName,
@@ -51,6 +44,13 @@ import {
   ticketModeToggleClassName,
 } from "../../smart-itinerary-table.styles";
 import { useEscapeToClose } from "./use-escape-close";
+import {
+  buildTicketFormValues,
+  buildTicketSubmitInput,
+  findLinkedTicket,
+  findTicketCandidates,
+  type TicketFormMode,
+} from "./booking-ticket-form";
 
 export function ItineraryBookingButton({
   bookingDocs,
@@ -157,23 +157,10 @@ export function ItineraryTicketModal({
 }) {
   const template = bookingTemplateForItem(item);
   const type = bookingDocTypeForItemTemplate(item, template);
-  const existingCandidates = bookingDocs.filter(
-    (booking) =>
-      booking.relatedItineraryItemIds.includes(item.id) ||
-      booking.type === type ||
-      (type === "public_transport" &&
-        ["flight", "train", "public_transport"].includes(booking.type)),
-  );
-  const initiallyLinked =
-    existingCandidates.find((booking) =>
-      booking.relatedItineraryItemIds.includes(item.id),
-    ) ?? null;
-  const currentLinkedBooking =
-    bookingDocs.find((booking) =>
-      booking.relatedItineraryItemIds.includes(item.id),
-    ) ?? null;
-  const defaultTitle = bookingTitleForItem(item, type);
-  const [mode, setMode] = useState<"existing" | "new">(
+  const existingCandidates = findTicketCandidates(bookingDocs, item, type);
+  const initiallyLinked = findLinkedTicket(existingCandidates, item.id);
+  const currentLinkedBooking = findLinkedTicket(bookingDocs, item.id);
+  const [mode, setMode] = useState<TicketFormMode>(
     initiallyLinked ? "existing" : "new",
   );
   const [selectedBookingId, setSelectedBookingId] = useState(
@@ -182,30 +169,22 @@ export function ItineraryTicketModal({
   const selectedBooking =
     existingCandidates.find((booking) => booking.id === selectedBookingId) ??
     null;
-  const initialTicket = mode === "existing" ? selectedBooking : null;
-  const [title, setTitle] = useState(initialTicket?.title ?? defaultTitle);
-  const [providerName, setProviderName] = useState(
-    initialTicket?.providerName ??
-      readItineraryDetailString(item.details, "provider") ??
-      "",
-  );
+  const initialValues = buildTicketFormValues({
+    booking: mode === "existing" ? selectedBooking : null,
+    item,
+    locale,
+    type,
+  });
+  const [title, setTitle] = useState(initialValues.title);
+  const [providerName, setProviderName] = useState(initialValues.providerName);
   const [confirmationCode, setConfirmationCode] = useState(
-    initialTicket?.confirmationCode ??
-      readItineraryDetailString(item.details, "bookingRef") ??
-      readItineraryDetailString(item.details, "ticketRef") ??
-      "",
+    initialValues.confirmationCode,
   );
-  const [startsAt, setStartsAt] = useState(
-    toDateTimeLocalValue(initialTicket?.startsAt ?? itineraryDateTimeValue(item.day, item.startTime)),
-  );
-  const [endsAt, setEndsAt] = useState(
-    toDateTimeLocalValue(initialTicket?.endsAt ?? itineraryDateTimeValue(item.day, item.endTime ?? "")),
-  );
-  const [notes, setNotes] = useState(
-    initialTicket?.notes ?? ticketNotesForItem(item, locale),
-  );
-  const [relatedItineraryItemIds, setRelatedItineraryItemIds] = useState(() =>
-    uniqueIds([...(initialTicket?.relatedItineraryItemIds ?? []), item.id]),
+  const [startsAt, setStartsAt] = useState(initialValues.startsAt);
+  const [endsAt, setEndsAt] = useState(initialValues.endsAt);
+  const [notes, setNotes] = useState(initialValues.notes);
+  const [relatedItineraryItemIds, setRelatedItineraryItemIds] = useState(
+    initialValues.relatedItineraryItemIds,
   );
   const [saving, setSaving] = useState(false);
   const [unlinking, setUnlinking] = useState(false);
@@ -214,22 +193,14 @@ export function ItineraryTicketModal({
   useEscapeToClose(onClose);
 
   function hydrateTicketFields(booking: BookingDoc | null) {
-    setTitle(booking?.title ?? defaultTitle);
-    setProviderName(
-      booking?.providerName ??
-        readItineraryDetailString(item.details, "provider") ??
-        "",
-    );
-    setConfirmationCode(
-      booking?.confirmationCode ??
-        readItineraryDetailString(item.details, "bookingRef") ??
-        readItineraryDetailString(item.details, "ticketRef") ??
-        "",
-    );
-    setStartsAt(toDateTimeLocalValue(booking?.startsAt ?? itineraryDateTimeValue(item.day, item.startTime)));
-    setEndsAt(toDateTimeLocalValue(booking?.endsAt ?? itineraryDateTimeValue(item.day, item.endTime ?? "")));
-    setNotes(booking?.notes ?? ticketNotesForItem(item, locale));
-    setRelatedItineraryItemIds(uniqueIds([...(booking?.relatedItineraryItemIds ?? []), item.id]));
+    const nextValues = buildTicketFormValues({ booking, item, locale, type });
+    setTitle(nextValues.title);
+    setProviderName(nextValues.providerName);
+    setConfirmationCode(nextValues.confirmationCode);
+    setStartsAt(nextValues.startsAt);
+    setEndsAt(nextValues.endsAt);
+    setNotes(nextValues.notes);
+    setRelatedItineraryItemIds(nextValues.relatedItineraryItemIds);
   }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -238,22 +209,25 @@ export function ItineraryTicketModal({
     if (saving || unlinking || !trimmedTitle) return;
     setSaving(true);
     try {
-      await onSave({
-        bookingDocId: mode === "existing" ? selectedBookingId : null,
-        itemId: item.id,
-        template,
-        type: selectedBooking?.type ?? type,
-        title: trimmedTitle,
-        status: selectedBooking?.status ?? "draft",
-        visibility: selectedBooking?.visibility ?? "shared",
-        providerName: providerName.trim() || null,
-        confirmationCode: confirmationCode.trim() || null,
-        startsAt: fromDateTimeLocalValue(startsAt),
-        endsAt: fromDateTimeLocalValue(endsAt),
-        travelerIds: selectedBooking?.travelerIds ?? [],
-        relatedItineraryItemIds: uniqueIds([...relatedItineraryItemIds, item.id]),
-        notes: notes.trim() || null,
-      });
+      await onSave(
+        buildTicketSubmitInput({
+          item,
+          mode,
+          selectedBooking,
+          selectedBookingId,
+          template,
+          type,
+          values: {
+            title: trimmedTitle,
+            providerName,
+            confirmationCode,
+            startsAt,
+            endsAt,
+            notes,
+            relatedItineraryItemIds,
+          },
+        }),
+      );
     } finally {
       setSaving(false);
     }
