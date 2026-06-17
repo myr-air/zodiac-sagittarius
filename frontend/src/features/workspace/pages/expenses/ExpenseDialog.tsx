@@ -1,7 +1,6 @@
-import { type FormEvent, useEffect, useState } from "react";
+import { type FormEvent, useCallback, useState } from "react";
 import { useI18n } from "@/src/i18n/I18nProvider";
-import type { ExpenseSplitMode } from "@/src/trip/expenses";
-import { fetchMajorExchangeRate, normalizeCurrencyCode } from "@/src/trip/currencies";
+import { normalizeCurrencyCode } from "@/src/trip/currencies";
 import type { Expense, ExpenseComment, Member, Trip } from "@/src/trip/types";
 import { Button, IconButton } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
@@ -9,19 +8,15 @@ import { ExpenseCommentsSection } from "./components/ExpenseCommentsSection";
 import { ExpenseDetailsFields } from "./components/ExpenseDetailsFields";
 import { ExpenseDialogSummary } from "./components/ExpenseDialogSummary";
 import { ExpenseSplitFields } from "./components/ExpenseSplitFields";
+import { useExpenseExchangeRateAutofill } from "./hooks/useExpenseExchangeRateAutofill";
+import { useExpenseSplitEditor } from "./hooks/useExpenseSplitEditor";
 import * as expenseStyles from "./TripExpensesPage.styles";
 import {
   calculateExpenseDialogState,
   canSubmitExpenseDialog,
-  emptyExpenseLineItem,
-  expenseSplitValuesForMode,
-  initialExpenseLineItems,
-  initialExpenseSplitValues,
   initialExpenseTripPlanId,
-  type EditableExpenseLineItem,
 } from "./expense-dialog-support";
 import type { ExpenseInput, ExpenseUpdateInput } from "./expense-page-types";
-import { formatExchangeRateInput } from "./expense-page-support";
 
 interface ExpenseDialogProps {
   expense: Expense | null;
@@ -62,59 +57,35 @@ export function ExpenseDialog({
   const [category, setCategory] = useState<Expense["category"]>(expense?.category ?? "transport");
   const [itemId, setItemId] = useState(expense?.itineraryItemId ?? "");
   const [tripPlanId, setTripPlanId] = useState(initialExpenseTripPlanId({ expense, selectedTripPlanId, trip }));
-  const [splitMode, setSplitMode] = useState<ExpenseSplitMode>(expense?.lineItems?.length ? "itemized" : expense ? "exact" : "equal");
-  const [splitValues, setSplitValues] = useState<Record<string, string>>(initialExpenseSplitValues(trip.members, expense));
-  const [lineItems, setLineItems] = useState<EditableExpenseLineItem[]>(initialExpenseLineItems(expense, trip.members));
+  const splitEditor = useExpenseSplitEditor({ expense, members: trip.members });
   const calculatedState = calculateExpenseDialogState({
     amount,
     currency,
     exchangeRate,
     expense,
-    lineItems,
+    lineItems: splitEditor.lineItems,
     members: trip.members,
     repeatCount,
     settlementCurrency,
-    splitMode,
-    splitValues,
+    splitMode: splitEditor.splitMode,
+    splitValues: splitEditor.splitValues,
   });
   const canSubmitExpense = canSubmitExpenseDialog({ isSaving, state: calculatedState, title });
   const linkedItem = itemId ? (trip.itineraryItems.find((item) => item.id === itemId) ?? null) : null;
   const effectiveTripPlanId = linkedItem?.planVariantId ?? tripPlanId;
   const tripPlanOptions = trip.tripPlans ?? trip.planVariants;
 
-  useEffect(() => {
-    let cancelled = false;
-    if (!calculatedState.needsExchangeRate || exchangeRateTouched) return;
-
-    fetchMajorExchangeRate(calculatedState.normalizedCurrency, normalizeCurrencyCode(settlementCurrency), {
-      backendBaseUrl: apiBaseUrl,
-    })
-      .then((quote) => {
-        if (!cancelled && quote) {
-          setExchangeRate(formatExchangeRateInput(quote.rate));
-        }
-      })
-      .catch(() => {
-        // Keep manual exchange-rate entry available when the provider is offline.
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [apiBaseUrl, exchangeRateTouched, calculatedState.needsExchangeRate, calculatedState.normalizedCurrency, settlementCurrency]);
-
-  function changeSplitMode(nextMode: ExpenseSplitMode) {
-    setSplitMode(nextMode);
-    if (nextMode === "exact") {
-      setSplitValues(expenseSplitValuesForMode(trip.members, "0"));
-    } else if (nextMode === "shares") {
-      setSplitValues(expenseSplitValuesForMode(trip.members, "1"));
-    } else if (nextMode === "percentage") {
-      setSplitValues(expenseSplitValuesForMode(trip.members, "0"));
-    } else if (nextMode === "itemized" && !lineItems.length) {
-      setLineItems([emptyExpenseLineItem(trip.members, 1)]);
-    }
-  }
+  const autofillExchangeRate = useCallback((nextExchangeRate: string) => {
+    setExchangeRate(nextExchangeRate);
+  }, []);
+  useExpenseExchangeRateAutofill({
+    apiBaseUrl,
+    exchangeRateTouched,
+    needsExchangeRate: calculatedState.needsExchangeRate,
+    normalizedCurrency: calculatedState.normalizedCurrency,
+    settlementCurrency,
+    onExchangeRateChange: autofillExchangeRate,
+  });
 
   function changeCurrency(nextCurrency: string) {
     setCurrency(normalizeCurrencyCode(nextCurrency));
@@ -125,24 +96,6 @@ export function ExpenseDialog({
   function changeExchangeRate(nextExchangeRate: string) {
     setExchangeRateTouched(true);
     setExchangeRate(nextExchangeRate);
-  }
-
-  function updateLineItem(index: number, patch: Partial<EditableExpenseLineItem>) {
-    setLineItems((current) => current.map((lineItem, candidateIndex) => (candidateIndex === index ? { ...lineItem, ...patch } : lineItem)));
-  }
-
-  function toggleLineParticipant(index: number, memberId: string) {
-    setLineItems((current) => current.map((lineItem, candidateIndex) => {
-      if (candidateIndex !== index) return lineItem;
-      const participantIds = lineItem.participantIds.includes(memberId)
-        ? lineItem.participantIds.filter((participantId) => participantId !== memberId)
-        : [...lineItem.participantIds, memberId];
-      return { ...lineItem, participantIds };
-    }));
-  }
-
-  function addLineItem() {
-    setLineItems((current) => [...current, emptyExpenseLineItem(trip.members, current.length + 1)]);
   }
 
   function addComment() {
@@ -185,7 +138,7 @@ export function ExpenseDialog({
     };
     if (notes.trim()) input.notes = notes.trim();
     if (receiptUrl.trim()) input.receiptUrl = receiptUrl.trim();
-    if (splitMode === "itemized") input.lineItems = calculatedState.validLineItems;
+    if (splitEditor.splitMode === "itemized") input.lineItems = calculatedState.validLineItems;
     if (comments.length) input.comments = comments;
     setIsSaving(true);
     try {
@@ -224,7 +177,7 @@ export function ExpenseDialog({
             receiptUrl={receiptUrl}
             repeatCount={repeatCount}
             settlementCurrency={settlementCurrency}
-            splitMode={splitMode}
+            splitMode={splitEditor.splitMode}
             title={title}
             trip={trip}
             tripPlanOptions={tripPlanOptions}
@@ -238,21 +191,21 @@ export function ExpenseDialog({
             onPaidByChange={setPaidBy}
             onReceiptUrlChange={setReceiptUrl}
             onRepeatCountChange={setRepeatCount}
-            onSplitModeChange={changeSplitMode}
+            onSplitModeChange={splitEditor.changeSplitMode}
             onTitleChange={setTitle}
             onTripPlanIdChange={setTripPlanId}
           />
 
           <ExpenseSplitFields
-            splitMode={splitMode}
+            splitMode={splitEditor.splitMode}
             members={trip.members}
-            lineItems={lineItems}
-            splitValues={splitValues}
+            lineItems={splitEditor.lineItems}
+            splitValues={splitEditor.splitValues}
             copy={t.expenses}
-            onAddLineItem={addLineItem}
-            onToggleLineParticipant={toggleLineParticipant}
-            onUpdateLineItem={updateLineItem}
-            onUpdateSplitValue={(memberId, value) => setSplitValues((current) => ({ ...current, [memberId]: value }))}
+            onAddLineItem={splitEditor.addLineItem}
+            onToggleLineParticipant={splitEditor.toggleLineParticipant}
+            onUpdateLineItem={splitEditor.updateLineItem}
+            onUpdateSplitValue={splitEditor.updateSplitValue}
           />
 
           {expense ? (
