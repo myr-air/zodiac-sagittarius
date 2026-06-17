@@ -4,6 +4,13 @@ import type { ItineraryBookingTemplate } from "@/src/trip/booking-docs";
 import { activityTypeLabel, formatDuration } from "@/src/features/itinerary/lib";
 import { type IconName } from "@/src/ui/icons";
 import type { InlineItineraryItemPatch } from "../lib";
+import {
+  fromDateTimeLocalValue,
+  itineraryDateTimeValue,
+  endOffsetDaysBetweenTimes,
+  parseTimeToMinutes,
+  toDateTimeLocalValue,
+} from "../lib/itinerary-time";
 
 export type TravelSubtype =
   | "flight"
@@ -57,17 +64,6 @@ const activityTypeIcons: Record<ItineraryItem["activityType"], IconName> = {
   stay: "home",
   travel: "route",
 };
-
-function parseTimeToMinutes(value: string): number | null {
-  const trimmed = value.trim();
-  if (!trimmed) return null;
-  const match = /^(\d{2}):(\d{2})$/.exec(trimmed);
-  if (!match) return null;
-  const hour = Number(match[1]);
-  const minute = Number(match[2]);
-  if (hour > 23 || minute > 59) return null;
-  return hour * 60 + minute;
-}
 
 function formatTimeRangeLabel(startTime: string, endTime: string, endOffsetDays = 0): string {
   const endOffset = endOffsetDays > 0 ? ` +${endOffsetDays}` : "";
@@ -341,32 +337,12 @@ function ticketModalCopy(locale: Locale): TicketModalCopy {
   };
 }
 
-function itineraryDateTimeValue(day: string, time: string | null | undefined): string | null {
-  const trimmed = time?.trim();
-  return trimmed ? `${day}T${trimmed}` : null;
-}
-
-function toDateTimeLocalValue(value: string | null | undefined): string {
-  return value ? value.slice(0, 16) : "";
-}
-
-function fromDateTimeLocalValue(value: string): string | null {
-  return value.trim() || null;
-}
-
 function formatBookingSummary(booking: BookingDoc, items: ItineraryItem[]): string {
   const linkedNames = booking.relatedItineraryItemIds
     .map((id) => items.find((item) => item.id === id)?.activity)
     .filter((value): value is string => Boolean(value));
   const provider = booking.providerName ? `${booking.providerName} · ` : "";
   return `${provider}${linkedNames.length ? linkedNames.join(", ") : booking.status}`;
-}
-
-function endOffsetDaysBetweenTimes(startTime: string, endTime: string): number {
-  const start = parseTimeToMinutes(startTime);
-  const end = parseTimeToMinutes(endTime);
-  if (start === null || end === null) return 0;
-  return end <= start ? 1 : 0;
 }
 
 function formatTimeTooltip(

@@ -1,4 +1,9 @@
 import type { ActivityType, ItineraryItem, ItineraryItemKind } from "@/src/trip/types";
+import {
+  endOffsetDaysBetweenTimes,
+  minutesToTime,
+  parseTimeToMinutes,
+} from "@/src/features/itinerary/lib/itinerary-time";
 
 export type StopDetailType = "transportation" | "stay" | "experience" | "task";
 
@@ -219,14 +224,14 @@ export function itemKindForStopDetailType(detailType: StopDetailType): Itinerary
 }
 
 export function addMinutesToTime(stopStartTime: string, durationMinutes: number): string {
-  const start = timeToMinutes(stopStartTime);
+  const start = parseTimeToMinutes(stopStartTime);
   if (start === null) return "";
   const total = (start + durationMinutes) % (24 * 60);
   return minutesToTime(total);
 }
 
 export function endWindowFromDuration(stopStartTime: string, durationMinutes: number): { endOffsetDays: number; endTime: string } | null {
-  const start = timeToMinutes(stopStartTime);
+  const start = parseTimeToMinutes(stopStartTime);
   if (start === null) return null;
   const total = start + Math.max(1, durationMinutes);
   return {
@@ -235,20 +240,13 @@ export function endWindowFromDuration(stopStartTime: string, durationMinutes: nu
   };
 }
 
-export function endOffsetDaysBetweenTimes(startTime: string, endTime: string): number {
-  const start = timeToMinutes(startTime);
-  const end = timeToMinutes(endTime);
-  if (start === null || end === null) return 0;
-  return end <= start ? 1 : 0;
-}
-
 export function durationBetweenTimes(
   startTime: string,
   endTime: string,
   endOffsetDays = endOffsetDaysBetweenTimes(startTime, endTime),
 ): number | null {
-  const start = timeToMinutes(startTime);
-  const end = timeToMinutes(endTime);
+  const start = parseTimeToMinutes(startTime);
+  const end = parseTimeToMinutes(endTime);
   if (start === null || end === null) return null;
   const duration = end + endOffsetDays * 24 * 60 - start;
   return Math.max(1, duration);
@@ -312,21 +310,6 @@ function trimmedStopDetailValues(values: StopDetailValues): StopDetailValues {
   ) as StopDetailValues;
 }
 
-export function timeToMinutes(value: string): number | null {
-  const match = /^(\d{2}):(\d{2})$/.exec(value);
-  if (!match) return null;
-  const hour = Number(match[1]);
-  const minute = Number(match[2]);
-  if (hour > 23 || minute > 59) return null;
-  return hour * 60 + minute;
-}
-
-export function minutesToTime(value: number): string {
-  const hour = Math.floor(value / 60);
-  const minute = value % 60;
-  return `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
-}
-
 function normalizeClockTime(hourText: string, minuteText: string, meridiem?: string): string | null {
   let hour = Number(hourText);
   const minute = Number(minuteText);
@@ -340,3 +323,5 @@ function normalizeClockTime(hourText: string, minuteText: string, meridiem?: str
   if (hour > 23) return null;
   return `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
 }
+
+export { endOffsetDaysBetweenTimes, parseTimeToMinutes as timeToMinutes };
