@@ -1,15 +1,22 @@
 import { type FormEvent, useEffect, useMemo, useState } from "react";
-import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
 import type { Member, Trip, TripMemberAccessStatus, TripRole } from "@/src/trip/types";
 import { useI18n } from "@/src/i18n/I18nProvider";
-import { cn } from "@/src/lib/cn";
 import { Icon } from "@/src/ui/icons";
 import { formatTripRange, PageHeader } from "@/src/shared/components/page-header";
 import { PeoplePanel } from "@/src/shared/components/people-panel";
 import { TravelMotif } from "@/src/shared/components/travel-motifs";
-import { ActionBar, Button, FieldLabel, TextInput, WorkspacePage } from "@/src/ui";
+import { WorkspacePage } from "@/src/ui";
 import { MemberManagementControls } from "./components/MemberManagementControls";
 import { MemberSummaryStats } from "./components/MemberSummaryStats";
+import { MemberTaskDialog, type MemberTaskDialogState } from "./components/MemberTaskDialog";
+import {
+  buildInviteLink,
+  filterTripMembers,
+  memberSummaryCounts,
+  type MemberRoleFilter,
+  type MemberStatusFilter,
+  visibleTripMembers,
+} from "./TripMembersPage.support";
 import * as memberStyles from "./TripMembersPage.styles";
 
 interface TripMembersPageProps {
@@ -26,12 +33,6 @@ interface TripMembersPageProps {
   onTransferOwnership?: (targetMemberId: string) => void;
 }
 
-type MemberTaskDialogState =
-  | { kind: "reset"; member: Member }
-  | { kind: "access"; member: Member; accessStatus: TripMemberAccessStatus; actionLabel: string }
-  | { kind: "transfer"; member: Member }
-  | { kind: "password"; member: Member };
-
 export function TripMembersPage({
   trip,
   currentMember,
@@ -47,8 +48,8 @@ export function TripMembersPage({
 }: TripMembersPageProps) {
   const { locale, t } = useI18n();
   const [query, setQuery] = useState("");
-  const [roleFilter, setRoleFilter] = useState<"all" | TripRole>("all");
-  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "disabled" | "claimed" | "pending">("all");
+  const [roleFilter, setRoleFilter] = useState<MemberRoleFilter>("all");
+  const [statusFilter, setStatusFilter] = useState<MemberStatusFilter>("all");
   const [copyState, setCopyState] = useState<"idle" | "copied" | "error">("idle");
   const [isRotatingInviteToken, setIsRotatingInviteToken] = useState(false);
   const [createPanelOpen, setCreatePanelOpen] = useState(false);
@@ -57,28 +58,12 @@ export function TripMembersPage({
   const [memberDialog, setMemberDialog] = useState<MemberTaskDialogState | null>(null);
   const [passwordValue, setPasswordValue] = useState("");
   const [passwordError, setPasswordError] = useState<string | null>(null);
-  const visibleMembers = trip.members.filter((member) => member.id !== "member-viewer");
-  const activeMembers = visibleMembers.filter((member) => member.accessStatus !== "disabled").length;
-  const joinedMembers = visibleMembers.filter((member) => isMemberJoined(member, currentMember.id)).length;
-  const disabledMembers = visibleMembers.length - activeMembers;
-  const pendingMembers = visibleMembers.length - joinedMembers;
+  const visibleMembers = useMemo(() => visibleTripMembers(trip.members), [trip.members]);
+  const summaryStats = useMemo(() => memberSummaryCounts(visibleMembers, currentMember.id), [currentMember.id, visibleMembers]);
   const inviteLink = buildInviteLink(trip.joinId, joinInviteToken);
   const filteredMembers = useMemo(
     () =>
-      visibleMembers.filter((member) => {
-        const normalizedQuery = query.trim().toLocaleLowerCase();
-        const matchesQuery = normalizedQuery.length === 0 || member.displayName.toLocaleLowerCase().includes(normalizedQuery);
-        const matchesRole = roleFilter === "all" || member.role === roleFilter;
-        /* v8 ignore next */
-        const matchesStatus =
-          statusFilter === "all" ||
-          (statusFilter === "active" && member.accessStatus !== "disabled") ||
-          (statusFilter === "disabled" && member.accessStatus === "disabled") ||
-          (statusFilter === "claimed" && isMemberJoined(member, currentMember.id)) ||
-          (statusFilter === "pending" && !isMemberJoined(member, currentMember.id));
-
-        return matchesQuery && matchesRole && matchesStatus;
-      }),
+      filterTripMembers({ currentMemberId: currentMember.id, members: visibleMembers, query, roleFilter, statusFilter }),
     [currentMember.id, query, roleFilter, statusFilter, visibleMembers],
   );
 
@@ -208,13 +193,7 @@ export function TripMembersPage({
 
       <MemberSummaryStats
         labels={t.members.stats}
-        stats={{
-          active: activeMembers,
-          disabled: disabledMembers,
-          joined: joinedMembers,
-          pending: pendingMembers,
-          total: visibleMembers.length,
-        }}
+        stats={summaryStats}
         summaryLabel={t.members.summaryLabel}
       />
 
@@ -255,61 +234,16 @@ export function TripMembersPage({
         onTransferOwnership={onTransferOwnership ? confirmTransferOwnership : undefined}
       />
       {memberDialog ? (
-        <div className={memberStyles.memberDialogBackdropClassName} role="presentation">
-          <form className={memberStyles.memberDialogClassName} role="dialog" aria-modal="true" aria-labelledby="member-task-dialog-title" onSubmit={submitMemberDialog}>
-            <h2 className={memberStyles.memberDialogTitleClassName} id="member-task-dialog-title">{memberDialogTitle(memberDialog)}</h2>
-            {memberDialog.kind === "password" ? (
-              <>
-                <p className={memberStyles.memberDialogBodyClassName}>{t.members.confirm.passwordPrompt({ name: memberDialog.member.displayName })}</p>
-                <FieldLabel>
-                  <span>รหัสผ่านใหม่</span>
-                  <TextInput value={passwordValue} onChange={(event) => setPasswordValue(event.target.value)} type="password" autoComplete="new-password" />
-                </FieldLabel>
-                {passwordError ? <p className={memberStyles.memberDialogErrorClassName} role="alert">{passwordError}</p> : null}
-              </>
-            ) : (
-              <p className={memberStyles.memberDialogBodyClassName}>{memberDialogBody(memberDialog, t.members.confirm)}</p>
-            )}
-            <ActionBar className={memberStyles.memberDialogActionsClassName}>
-              <Button className={cn(memberStyles.memberResetButtonClassName, "w-auto")} variant="ghost" type="button" onClick={closeMemberDialog}>ยกเลิก</Button>
-              <Button className={cn(memberStyles.memberCreateButtonClassName, "w-auto")} variant="ghost" type="submit">
-                {memberDialogConfirmLabel(memberDialog)}
-              </Button>
-            </ActionBar>
-          </form>
-        </div>
+        <MemberTaskDialog
+          dialog={memberDialog}
+          labels={t.members.confirm}
+          passwordError={passwordError}
+          passwordValue={passwordValue}
+          onCancel={closeMemberDialog}
+          onPasswordChange={setPasswordValue}
+          onSubmit={submitMemberDialog}
+        />
       ) : null}
     </WorkspacePage>
   );
-}
-
-function memberDialogTitle(dialog: MemberTaskDialogState): string {
-  if (dialog.kind === "reset") return `รีเซ็ตตัวตน ${dialog.member.displayName}`;
-  if (dialog.kind === "access") return `${dialog.actionLabel} ${dialog.member.displayName}`;
-  if (dialog.kind === "transfer") return `โอน owner ให้ ${dialog.member.displayName}`;
-  return `เปลี่ยนรหัสผ่าน ${dialog.member.displayName}`;
-}
-
-function memberDialogBody(dialog: Exclude<MemberTaskDialogState, { kind: "password" }>, labels: ReturnType<typeof useI18n>["t"]["members"]["confirm"]): string {
-  if (dialog.kind === "reset") return labels.resetClaim({ name: dialog.member.displayName });
-  if (dialog.kind === "access") return labels.access({ action: dialog.actionLabel, name: dialog.member.displayName });
-  return labels.transferOwner({ name: dialog.member.displayName });
-}
-
-function memberDialogConfirmLabel(dialog: MemberTaskDialogState): string {
-  if (dialog.kind === "reset") return "รีเซ็ตตัวตน";
-  if (dialog.kind === "transfer") return "โอน owner";
-  if (dialog.kind === "password") return "บันทึกรหัสผ่าน";
-  return "ยืนยัน";
-}
-
-function isMemberJoined(member: Member, currentMemberId: string): boolean {
-  return Boolean(member.claimPasswordHash) || member.id === currentMemberId;
-}
-
-function buildInviteLink(joinId: string, token?: string | null): string {
-  /* v8 ignore next */
-  const baseUrl = typeof window === "undefined" ? "" : window.location.origin;
-  if (token) return `${baseUrl}${appRoutes.join()}?token=${encodeURIComponent(token)}`;
-  return `${baseUrl}${appRoutes.join(joinId)}`;
 }

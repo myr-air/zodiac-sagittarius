@@ -4,11 +4,10 @@ import { cn } from "@/src/lib/cn";
 import type { TripRole } from "@/src/trip/types";
 import { ActionBar, Button, FieldLabel, Select, TextInput, WorkspaceSurface } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
+import type { MemberRoleFilter, MemberStatusFilter } from "../TripMembersPage.support";
 import * as memberStyles from "../TripMembersPage.styles";
 
 type MemberLabels = ReturnType<typeof useI18n>["t"];
-type MemberRoleFilter = "all" | TripRole;
-type MemberStatusFilter = "all" | "active" | "disabled" | "claimed" | "pending";
 
 interface MemberManagementControlsProps {
   canManagePeople: boolean;
