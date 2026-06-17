@@ -1,16 +1,10 @@
 import { formatMoney } from "@/src/trip/expenses";
 import * as expenseStyles from "../TripExpensesPage.styles";
+import type { ExpenseDialogCalculatedState } from "../expense-dialog-support";
 
 interface ExpenseDialogSummaryProps {
-  amount: number;
-  currency: string;
-  exchangeRate: number;
-  hasValidExchangeRate: boolean;
-  invalidItemizedLines: boolean;
-  needsExchangeRate: boolean;
+  calculation: ExpenseDialogCalculatedState;
   settlementCurrency: string;
-  splitMismatch: boolean;
-  splitTotal: number;
   copy: {
     exchangeRateRequired: string;
     itemizedRequired: string;
@@ -21,24 +15,20 @@ interface ExpenseDialogSummaryProps {
 }
 
 export function ExpenseDialogSummary({
-  amount,
-  currency,
-  exchangeRate,
-  hasValidExchangeRate,
-  invalidItemizedLines,
-  needsExchangeRate,
+  calculation,
   settlementCurrency,
-  splitMismatch,
-  splitTotal,
   copy,
 }: ExpenseDialogSummaryProps) {
   return (
-    <p className={splitMismatch ? expenseStyles.warningClassName : expenseStyles.balanceMetaClassName}>
-      {copy.splitTotal({ total: formatMoney(splitTotal, currency), amount: formatMoney(Number.isFinite(amount) ? amount : 0, currency) })}
-      {splitMismatch ? ` ${copy.mismatch}` : ""}
-      {invalidItemizedLines ? ` ${copy.itemizedRequired}` : ""}
-      {needsExchangeRate && hasValidExchangeRate ? ` ${copy.settleValue({ amount: formatMoney(amount * exchangeRate, settlementCurrency) })}` : ""}
-      {needsExchangeRate && !hasValidExchangeRate ? ` ${copy.exchangeRateRequired}` : ""}
+    <p className={calculation.splitMismatch ? expenseStyles.warningClassName : expenseStyles.balanceMetaClassName}>
+      {copy.splitTotal({
+        total: formatMoney(calculation.splitTotal, calculation.normalizedCurrency),
+        amount: formatMoney(Number.isFinite(calculation.amountNumber) ? calculation.amountNumber : 0, calculation.normalizedCurrency),
+      })}
+      {calculation.splitMismatch ? ` ${copy.mismatch}` : ""}
+      {calculation.invalidItemizedLines ? ` ${copy.itemizedRequired}` : ""}
+      {calculation.needsExchangeRate && calculation.hasValidExchangeRate ? ` ${copy.settleValue({ amount: formatMoney(calculation.amountNumber * calculation.exchangeRateNumber, settlementCurrency) })}` : ""}
+      {calculation.needsExchangeRate && !calculation.hasValidExchangeRate ? ` ${copy.exchangeRateRequired}` : ""}
     </p>
   );
 }

@@ -1,10 +1,6 @@
 import { type FormEvent, useEffect, useState } from "react";
 import { useI18n } from "@/src/i18n/I18nProvider";
-import {
-  buildExpenseSplits,
-  buildItemizedExpenseSplits,
-  type ExpenseSplitMode,
-} from "@/src/trip/expenses";
+import type { ExpenseSplitMode } from "@/src/trip/expenses";
 import { fetchMajorExchangeRate, normalizeCurrencyCode } from "@/src/trip/currencies";
 import type { Expense, ExpenseComment, Member, Trip } from "@/src/trip/types";
 import { Button, IconButton } from "@/src/ui";
@@ -15,17 +11,17 @@ import { ExpenseDialogSummary } from "./components/ExpenseDialogSummary";
 import { ExpenseSplitFields } from "./components/ExpenseSplitFields";
 import * as expenseStyles from "./TripExpensesPage.styles";
 import {
+  calculateExpenseDialogState,
+  canSubmitExpenseDialog,
   emptyExpenseLineItem,
   expenseSplitValuesForMode,
   initialExpenseLineItems,
   initialExpenseSplitValues,
   initialExpenseTripPlanId,
-  parseExpenseLineItems,
-  validExpenseLineItems,
   type EditableExpenseLineItem,
 } from "./expense-dialog-support";
 import type { ExpenseInput, ExpenseUpdateInput } from "./expense-page-types";
-import { formatExchangeRateInput, sumShares } from "./expense-page-support";
+import { formatExchangeRateInput } from "./expense-page-support";
 
 interface ExpenseDialogProps {
   expense: Expense | null;
@@ -69,33 +65,28 @@ export function ExpenseDialog({
   const [splitMode, setSplitMode] = useState<ExpenseSplitMode>(expense?.lineItems?.length ? "itemized" : expense ? "exact" : "equal");
   const [splitValues, setSplitValues] = useState<Record<string, string>>(initialExpenseSplitValues(trip.members, expense));
   const [lineItems, setLineItems] = useState<EditableExpenseLineItem[]>(initialExpenseLineItems(expense, trip.members));
-  const amountNumber = Number(amount);
-  const exchangeRateNumber = Number(exchangeRate);
-  const repeatCountNumber = Number(repeatCount);
-  const hasValidRepeatCount = Boolean(expense) || (Number.isInteger(repeatCountNumber) && repeatCountNumber >= 1 && repeatCountNumber <= 31);
-  const normalizedCurrency = normalizeCurrencyCode(currency);
-  const needsExchangeRate = normalizedCurrency !== normalizeCurrencyCode(settlementCurrency);
-  const hasValidExchangeRate = !needsExchangeRate || (Number.isFinite(exchangeRateNumber) && exchangeRateNumber > 0);
-  const parsedSplitValues = Object.fromEntries(trip.members.map((member) => [member.id, Number(splitValues[member.id] || 0)]));
-  const parsedLineItems = parseExpenseLineItems(lineItems);
-  const validLineItems = validExpenseLineItems(parsedLineItems);
-  const splits = Number.isFinite(amountNumber) && amountNumber >= 0
-    ? splitMode === "itemized"
-      ? buildItemizedExpenseSplits({ lineItems: validLineItems, memberIds: trip.members.map((member) => member.id) })
-      : buildExpenseSplits({ amount: amountNumber, memberIds: trip.members.map((member) => member.id), mode: splitMode, valuesByMember: parsedSplitValues })
-    : {};
-  const splitTotal = sumShares(splits);
-  const splitMismatch = (splitMode === "exact" || splitMode === "percentage" || splitMode === "itemized") && Math.abs(splitTotal - amountNumber) > 0.01;
-  const invalidItemizedLines = splitMode === "itemized" && (!validLineItems.length || validLineItems.length !== lineItems.length);
+  const calculatedState = calculateExpenseDialogState({
+    amount,
+    currency,
+    exchangeRate,
+    expense,
+    lineItems,
+    members: trip.members,
+    repeatCount,
+    settlementCurrency,
+    splitMode,
+    splitValues,
+  });
+  const canSubmitExpense = canSubmitExpenseDialog({ isSaving, state: calculatedState, title });
   const linkedItem = itemId ? (trip.itineraryItems.find((item) => item.id === itemId) ?? null) : null;
   const effectiveTripPlanId = linkedItem?.planVariantId ?? tripPlanId;
   const tripPlanOptions = trip.tripPlans ?? trip.planVariants;
 
   useEffect(() => {
     let cancelled = false;
-    if (!needsExchangeRate || exchangeRateTouched) return;
+    if (!calculatedState.needsExchangeRate || exchangeRateTouched) return;
 
-    fetchMajorExchangeRate(normalizedCurrency, normalizeCurrencyCode(settlementCurrency), {
+    fetchMajorExchangeRate(calculatedState.normalizedCurrency, normalizeCurrencyCode(settlementCurrency), {
       backendBaseUrl: apiBaseUrl,
     })
       .then((quote) => {
@@ -110,7 +101,7 @@ export function ExpenseDialog({
     return () => {
       cancelled = true;
     };
-  }, [apiBaseUrl, exchangeRateTouched, needsExchangeRate, normalizedCurrency, settlementCurrency]);
+  }, [apiBaseUrl, exchangeRateTouched, calculatedState.needsExchangeRate, calculatedState.normalizedCurrency, settlementCurrency]);
 
   function changeSplitMode(nextMode: ExpenseSplitMode) {
     setSplitMode(nextMode);
@@ -180,21 +171,21 @@ export function ExpenseDialog({
   async function submitExpense(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const trimmedTitle = title.trim();
-    if (isSaving || !trimmedTitle || !Number.isFinite(amountNumber) || amountNumber <= 0 || splitMismatch || !hasValidExchangeRate || invalidItemizedLines || !hasValidRepeatCount) return;
+    if (!canSubmitExpense) return;
     const input: ExpenseInput = {
       itemId: itemId || null,
       tripPlanId: effectiveTripPlanId || null,
       title: trimmedTitle,
-      amount: amountNumber,
-      currency: normalizedCurrency,
-      exchangeRateToSettlementCurrency: needsExchangeRate ? exchangeRateNumber : 1,
+      amount: calculatedState.amountNumber,
+      currency: calculatedState.normalizedCurrency,
+      exchangeRateToSettlementCurrency: calculatedState.needsExchangeRate ? calculatedState.exchangeRateNumber : 1,
       paidBy,
       category,
-      splits,
+      splits: calculatedState.splits,
     };
     if (notes.trim()) input.notes = notes.trim();
     if (receiptUrl.trim()) input.receiptUrl = receiptUrl.trim();
-    if (splitMode === "itemized") input.lineItems = validLineItems;
+    if (splitMode === "itemized") input.lineItems = calculatedState.validLineItems;
     if (comments.length) input.comments = comments;
     setIsSaving(true);
     try {
@@ -202,7 +193,7 @@ export function ExpenseDialog({
         await onUpdateExpense({ ...input, expenseId: expense.id });
         return;
       }
-      if (repeatCountNumber > 1) input.repeatCount = repeatCountNumber;
+      if (calculatedState.repeatCountNumber > 1) input.repeatCount = calculatedState.repeatCountNumber;
       await onCreateExpense(input);
     } finally {
       setIsSaving(false);
@@ -226,8 +217,8 @@ export function ExpenseDialog({
             expense={expense}
             itemId={itemId}
             linkedItem={linkedItem}
-            needsExchangeRate={needsExchangeRate}
-            normalizedCurrency={normalizedCurrency}
+            needsExchangeRate={calculatedState.needsExchangeRate}
+            normalizedCurrency={calculatedState.normalizedCurrency}
             notes={notes}
             paidBy={paidBy}
             receiptUrl={receiptUrl}
@@ -276,21 +267,14 @@ export function ExpenseDialog({
           ) : null}
 
           <ExpenseDialogSummary
-            amount={amountNumber}
-            currency={normalizedCurrency}
-            exchangeRate={exchangeRateNumber}
-            hasValidExchangeRate={hasValidExchangeRate}
-            invalidItemizedLines={invalidItemizedLines}
-            needsExchangeRate={needsExchangeRate}
+            calculation={calculatedState}
             settlementCurrency={settlementCurrency}
-            splitMismatch={splitMismatch}
-            splitTotal={splitTotal}
             copy={t.expenses.dialog}
           />
 
           <div className={expenseStyles.dialogActionsClassName}>
             <Button type="button" variant="ghost" onClick={onClose}>{t.common.actions.cancel}</Button>
-            <Button type="submit" disabled={isSaving || !title.trim() || !Number.isFinite(amountNumber) || amountNumber <= 0 || splitMismatch || !hasValidExchangeRate || invalidItemizedLines || !hasValidRepeatCount}>
+            <Button type="submit" disabled={!canSubmitExpense}>
               {t.expenses.actions.saveExpense}
             </Button>
           </div>
