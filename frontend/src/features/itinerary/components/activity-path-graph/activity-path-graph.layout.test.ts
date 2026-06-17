@@ -1,7 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 import { buildFallbackGraphLayout, collectGraphMeasurementElements, measureRenderedGraphLayout } from "./activity-path-graph.layout";
 import { mainItineraryPathId } from "@/src/trip/itinerary";
-import type { ItineraryItem, ItineraryItemKind, ItineraryItemPriority, ItineraryTimeMode } from "@/src/trip/types";
+import type { ItineraryItem } from "@/src/trip/types";
+import { makeItineraryGraphItem } from "./activity-path-graph.test-fixtures";
 
 function makeRect(left: number, top: number, width = 100, height = 40): DOMRect {
   return {
@@ -20,41 +21,18 @@ function makeRect(left: number, top: number, width = 100, height = 40): DOMRect 
 }
 
 const item: ItineraryItem = {
-  id: "item-a",
-  tripId: "trip-id",
-  planVariantId: "plan-id",
-  day: "2026-06-19",
-  sortOrder: 100,
-  startTime: "09:00",
-  endTime: null,
-  endOffsetDays: 0,
-  activity: "Activity A",
-  activityType: "travel",
-  place: "Location",
-  linkLabel: "",
-  mapLink: "",
-  transportation: "Walk",
-  details: {},
-  durationMinutes: 45,
-  note: "",
-  createdBy: "user",
-  updatedAt: "2026-06-01T00:00:00.000Z",
-  version: 1,
-  status: "planned",
-  priority: "normal" as ItineraryItemPriority,
-  timeMode: "scheduled" as ItineraryTimeMode,
-  itemKind: "travel" as ItineraryItemKind,
-  isPlanBlock: false,
-  pathGroupId: "group-a",
-  pathRole: "main",
-  address: "",
-  coordinates: undefined,
-  parentItemId: null,
+  ...makeItineraryGraphItem({
+    id: "item-a",
+    activity: "Activity A",
+    place: "Location",
+    pathGroupId: "group-a",
+    pathId: "path-a",
+  }),
 };
-const duplicateItem: ItineraryItem = {
-  ...item,
+const duplicateItem: ItineraryItem = makeItineraryGraphItem({
   id: "item-b",
-};
+  pathGroupId: "group-b",
+});
 
 function mockRect(target: Element, rect: DOMRect) {
   vi.spyOn(target, "getBoundingClientRect").mockReturnValue(rect);

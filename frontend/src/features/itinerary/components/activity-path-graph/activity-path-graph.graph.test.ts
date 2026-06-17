@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { mainItineraryPathId, type ItineraryPathOption } from "@/src/trip/itinerary";
 import { laneColors } from "./activity-path-graph.styles";
 import type { ItineraryItem } from "@/src/trip/types";
+import { makeItineraryGraphItem } from "./activity-path-graph.test-fixtures";
 import {
   buildEdgePath,
   buildGraphEdges,
@@ -15,43 +16,18 @@ const itemForNode = (
   pathId?: string,
   pathRole: "main" | "alternative" = "main",
   day = "2026-06-19",
-) => ({
-  id,
-  tripId: "trip-id",
-  planVariantId: "plan-id",
-  day,
-  sortOrder: 100,
-  startTime: "09:00",
-  endTime: null,
-  endOffsetDays: 0,
-  activity: `Activity ${id}`,
-  activityType: "travel",
-  place: `Location ${id}`,
-  linkLabel: "",
-  mapLink: "",
-  transportation: "Transit",
-  details: {},
-  durationMinutes: 45,
-  note: "",
-  createdBy: "user",
-  updatedAt: "2026-06-01T00:00:00.000Z",
-  version: 1,
-  status: "planned",
-  priority: "standard",
-  timeMode: "local",
-  itemKind: "stop",
-  isPlanBlock: false,
-  pathGroupId: `group-${id}`,
-  pathId,
-  pathName: pathId ? `Name ${pathId}` : undefined,
-  pathRole,
-  address: "",
-  coordinates: null,
-  parentItemId: null,
-  advisoryNotes: [],
-  link: "",
-  notes: [],
-} as unknown as ItineraryItem);
+): ItineraryItem =>
+  makeItineraryGraphItem({
+    id,
+    day,
+    activity: `Activity ${id}`,
+    place: `Location ${id}`,
+    transportation: "Transit",
+    pathGroupId: `group-${id}`,
+    pathId,
+    pathName: pathId ? `Name ${pathId}` : "Main",
+    pathRole,
+  }) as ItineraryItem;
 
 describe("activity-path-graph.graph", () => {
   it("builds path metadata with visible day-trip filtering", () => {
@@ -119,3 +95,4 @@ describe("activity-path-graph.graph", () => {
     });
   });
 });
+
