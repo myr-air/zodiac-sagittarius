@@ -37,8 +37,6 @@ import {
 import { AuthHighlights, AuthTravelCollage } from "./account-entry-hero";
 import {
   PanelHeading,
-  PortalEmptyState,
-  PortalListSkeleton,
   PortalStatSkeleton,
   Stat,
 } from "./account-portal-primitives";
@@ -60,7 +58,6 @@ import {
   normalizedTripForm,
 } from "./account-trip-wizard-support";
 import { AccountPortalNav } from "./account-portal-nav";
-import { PortalList, PortalListRow } from "./account-portal-list";
 import { AccountPortalLoadingFrame } from "./account-portal-loading-frame";
 import { AccountSettingsEditor } from "./account-settings-editor";
 import { AccountAuthFlowSwitch, AccountAuthRouteTabs, type AuthFlow } from "./account-auth-chrome";
@@ -69,6 +66,7 @@ import { StatusMessage } from "./account-status-message";
 import { PortalCreatedTripShare, type CreatedTripShare } from "./portal-created-trip-share";
 import { PortalExplorerSection } from "./portal-explorer-section";
 import { PortalTodosSection } from "./portal-todos-section";
+import { PortalTripsSection } from "./portal-trips-section";
 import { PortalTripWizard } from "./portal-trip-wizard";
 import { PortalVaultSection } from "./portal-vault-section";
 
@@ -1141,52 +1139,16 @@ function AccountDashboard({
           </div>
         </section> : null}
 
-        {portalSection === "trips" ? <section className={portalHistoryCardClassName} id="portal-trips">
-          <div className={portalSectionToplineClassName}>
-            <PanelHeading
-              icon="calendar"
-              title={t.access.portal.sections.trips.title}
-              detail={isLoading ? t.access.dashboard.history.loading : t.access.dashboard.history.visibleTrips({ count: trips.length })}
-            />
-            <Button asChild>
-              <Link href={appRoutes.portalNewTrip()}>
-                <Icon name="plus" />
-                Create trip
-              </Link>
-            </Button>
-          </div>
-          {isLoading && !trips.length ? (
-            <PortalListSkeleton rows={2} />
-          ) : trips.length ? (
-            <PortalList>
-              {trips.map((trip) => (
-                <PortalListRow
-                  key={trip.id}
-                  icon="location"
-                  title={trip.name}
-                  detail={`${trip.destinationLabel} · ${trip.startDate} - ${trip.endDate}`}
-                  badge={<Badge tone={trip.isOwner ? "success" : "neutral"}>{trip.isOwner ? t.access.dashboard.history.owner : t.appShell.roles[trip.role]}</Badge>}
-                  action={
-                    <Button asChild variant="secondary">
-                      <Link href={appRoutes.tripOverview(trip.id)}>
-                        <Icon name="chevronRight" />
-                        Open
-                      </Link>
-                    </Button>
-                  }
-                />
-              ))}
-            </PortalList>
-          ) : (
-            <PortalEmptyState
-              actionHref={appRoutes.portalNewTrip()}
-              actionLabel={t.access.portal.emptyStates.trips.action}
-              detail={t.access.portal.emptyStates.trips.detail}
-              icon="plus"
-              title={t.access.portal.emptyStates.trips.title}
-            />
-          )}
-        </section> : null}
+        {portalSection === "trips" ? (
+          <PortalTripsSection
+            classNames={{
+              section: portalHistoryCardClassName,
+              topline: portalSectionToplineClassName,
+            }}
+            isLoading={isLoading}
+            trips={trips}
+          />
+        ) : null}
 
         {portalSection === "new-trip" ? <section className={cn(portalHistoryCardClassName, portalNewTripCardClassName)} id="portal-new-trip">
           <div className={tripBuilderTopbarClassName} style={{ position: "relative", zIndex: 100 }}>
