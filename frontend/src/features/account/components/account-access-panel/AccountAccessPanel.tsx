@@ -37,8 +37,6 @@ import {
 import { AuthHighlights, AuthTravelCollage } from "./account-entry-hero";
 import {
   PanelHeading,
-  PortalStatSkeleton,
-  Stat,
 } from "./account-portal-primitives";
 import {
   ACCESS_ERROR_CODES,
@@ -64,6 +62,7 @@ import { AccountAuthFlowSwitch, AccountAuthRouteTabs, type AuthFlow } from "./ac
 import { accessLanguageSwitchClassName, accountEntryLanguageSwitchClassName } from "./account-panel-shared-styles";
 import { StatusMessage } from "./account-status-message";
 import { PortalCreatedTripShare, type CreatedTripShare } from "./portal-created-trip-share";
+import { PortalDashboardSection } from "./portal-dashboard-section";
 import { PortalExplorerSection } from "./portal-explorer-section";
 import { PortalTodosSection } from "./portal-todos-section";
 import { PortalTripsSection } from "./portal-trips-section";
@@ -1037,8 +1036,6 @@ function AccountDashboard({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [createdTripShare, setCreatedTripShare] = useState<CreatedTripShare | null>(null);
   const [hasCopiedCreatedInvite, setHasCopiedCreatedInvite] = useState(false);
-  const sessionKindLabel = accountSession.kind === "trusted" ? t.access.dashboard.sessionKinds.trusted : t.access.dashboard.sessionKinds.temporary;
-
   async function submitTrip(overrideForm?: AccountTripCreateRequest) {
     setIsSubmitting(true);
     try {
@@ -1113,31 +1110,20 @@ function AccountDashboard({
       <AccountPortalNav activeSection={activePortalSection} email={settings?.profile.primaryEmail ?? t.access.dashboard.noEmail} />
 
       <div className={portalContentClassName}>
-        {portalSection === "dashboard" ? <section className={portalProfileCardClassName} id="portal-dashboard">
-          <PanelHeading icon="home" title={t.access.portal.sections.dashboard.title} detail={t.access.portal.sections.dashboard.detail} />
-          <div className={accountProfileRowClassName}>
-            <span className={accountAvatarClassName} style={{ backgroundColor: settings?.profile.avatarColor ?? "#c2410c" }} aria-hidden="true">
-              {(settings?.profile.displayName ?? t.access.dashboard.fallbackName).slice(0, 1)}
-            </span>
-            <div>
-              <strong>{settings?.profile.displayName ?? t.access.dashboard.fallbackName}</strong>
-              <span>{settings?.profile.primaryEmail ?? t.access.dashboard.noEmail}</span>
-            </div>
-            <Badge tone={accountSession.kind === "trusted" ? "success" : "warning"}>{sessionKindLabel}</Badge>
-          </div>
-          <div className={accountStatGridClassName}>
-            {isLoading && !stats ? (
-              <PortalStatSkeleton />
-            ) : (
-              <>
-                <Stat label={t.access.dashboard.stats.trips} value={stats?.tripsTotal ?? 0} />
-                <Stat label={t.access.dashboard.stats.owned} value={stats?.tripsOwned ?? 0} />
-                <Stat label={t.access.dashboard.stats.active} value={stats?.activeTrips ?? 0} />
-                <Stat label={t.access.dashboard.stats.claims} value={stats?.tempClaimsCompleted ?? 0} />
-              </>
-            )}
-          </div>
-        </section> : null}
+        {portalSection === "dashboard" ? (
+          <PortalDashboardSection
+            accountSession={accountSession}
+            classNames={{
+              avatar: accountAvatarClassName,
+              profileRow: accountProfileRowClassName,
+              section: portalProfileCardClassName,
+              statGrid: accountStatGridClassName,
+            }}
+            isLoading={isLoading}
+            settings={settings}
+            stats={stats}
+          />
+        ) : null}
 
         {portalSection === "trips" ? (
           <PortalTripsSection
