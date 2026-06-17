@@ -1,5 +1,5 @@
 import type { ItineraryPathOption } from "@/src/trip/itinerary";
-import { mainItineraryPathName } from "@/src/trip/itinerary-path-identifiers";
+import { mainItineraryPathId, mainItineraryPathName } from "@/src/trip/itinerary-path-identifiers";
 import {
   pathIdPlanA as pathIdFixtureStoryA,
   pathIdPlanB as pathIdFixtureStoryB,
@@ -13,7 +13,7 @@ import {
 
 export const itineraryFixtureDay = "2026-06-19" as const;
 
-export const pathIdMain = "main" as const;
+export const pathIdMain = mainItineraryPathId;
 export const pathIdPlanA = "plan-a" as const;
 export const pathIdPlanB = "plan-b" as const;
 export const pathIdPlanC = "plan-c" as const;
