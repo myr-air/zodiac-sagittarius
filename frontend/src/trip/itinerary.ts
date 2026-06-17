@@ -4,6 +4,11 @@ import type {
   Trip,
   ValidationWarning,
 } from "./types";
+import {
+  compareItineraryItemsWithinDay,
+  orderHierarchyItemsForDay,
+  sortItineraryItemsByDayAndHierarchy,
+} from "./itinerary-item-ordering";
 import { itineraryItemPathFieldsForTarget } from "./itinerary-path-selection";
 export {
   type ItineraryPathOption,
@@ -518,7 +523,7 @@ export function hasDescendantItem(
 }
 
 export function buildItineraryView(items: ItineraryItem[]): ItineraryView {
-  const sortedItems = sortItineraryItems(items);
+  const sortedItems = sortItineraryItemsByDayAndHierarchy(items);
 
   const dayBuckets = new Map<string, ItineraryItem[]>();
   for (const item of sortedItems) {
@@ -604,21 +609,6 @@ export function buildItineraryCommitmentsByItemId({
   }
 
   return Object.fromEntries(commitments);
-}
-
-function sortItineraryItems(items: ItineraryItem[]): ItineraryItem[] {
-  const byDay = new Map<string, ItineraryItem[]>();
-  for (const item of items) {
-    byDay.set(item.day, [...(byDay.get(item.day) ?? []), item]);
-  }
-
-  return Array.from(byDay.keys())
-    .sort()
-    .flatMap((day) =>
-      orderHierarchyItemsForDay(
-        (byDay.get(day) ?? []).slice().sort(compareItineraryItemsWithinDay),
-      ),
-    );
 }
 
 export function groupItemsByDay(items: ItineraryItem[]): ItineraryDayGroup[] {
@@ -820,52 +810,6 @@ export function getTimeWindowInterval(
     return null;
   }
   return { item, start, end: start + item.durationMinutes };
-}
-
-function compareItineraryItemsWithinDay(a: ItineraryItem, b: ItineraryItem): number {
-  const aFlexible = a.timeMode === "flexible";
-  const bFlexible = b.timeMode === "flexible";
-  if (aFlexible !== bFlexible) return aFlexible ? 1 : -1;
-
-  if (!aFlexible) {
-    const aTime = parseTime(a.startTime);
-    const bTime = parseTime(b.startTime);
-    if (aTime !== null && bTime !== null && aTime !== bTime) return aTime - bTime;
-    if (aTime !== null && bTime === null) return -1;
-    if (aTime === null && bTime !== null) return 1;
-  }
-
-  return a.sortOrder - b.sortOrder || a.startTime.localeCompare(b.startTime) || a.id.localeCompare(b.id);
-}
-
-function orderHierarchyItemsForDay(sortedDayItems: ItineraryItem[]): ItineraryItem[] {
-  const ids = new Set(sortedDayItems.map((item) => item.id));
-  const childrenByParentId = new Map<string, ItineraryItem[]>();
-  for (const item of sortedDayItems) {
-    if (!item.parentItemId || !ids.has(item.parentItemId)) continue;
-    childrenByParentId.set(item.parentItemId, [
-      ...(childrenByParentId.get(item.parentItemId) ?? []),
-      item,
-    ]);
-  }
-
-  const ordered: ItineraryItem[] = [];
-  const emitted = new Set<string>();
-  for (const item of sortedDayItems) {
-    if (item.parentItemId && ids.has(item.parentItemId)) continue;
-    ordered.push(item);
-    emitted.add(item.id);
-    for (const child of childrenByParentId.get(item.id) ?? []) {
-      ordered.push(child);
-      emitted.add(child.id);
-    }
-  }
-
-  for (const item of sortedDayItems) {
-    if (!emitted.has(item.id)) ordered.push(item);
-  }
-
-  return ordered;
 }
 
 export function parseTime(value: string): number | null {
