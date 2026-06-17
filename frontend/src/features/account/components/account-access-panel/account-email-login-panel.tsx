@@ -8,7 +8,6 @@ import { cn } from "@/src/lib/cn";
 import {
   arrayBufferToBase64Url,
   errorMessage,
-  formatDateTime,
   getPasskeyCredential,
   passwordLoginErrorMessage,
 } from "./account-auth-support";
@@ -30,6 +29,12 @@ import {
   EmailLoginPasswordStep,
   EmailLoginSetupStep,
 } from "./account-email-login-step-content";
+import {
+  emailLoginStepHeading,
+  emailLoginStepProgress,
+  resolveEmailLoginVisualStep,
+  type EmailLoginAuthStep,
+} from "./account-email-login-step-meta";
 import { PanelHeading } from "./account-portal-primitives";
 import { StatusMessage } from "./account-status-message";
 
@@ -62,7 +67,7 @@ export function EmailLoginPanel({
   const [displayName, setDisplayName] = useState("");
   const [homeBase, setHomeBase] = useState("");
   const [trustDevice, setTrustDevice] = useState(true);
-  const [authStep, setAuthStep] = useState<"email" | "methods" | "password" | "setup">("email");
+  const [authStep, setAuthStep] = useState<EmailLoginAuthStep>("email");
   const [transitionDirection, setTransitionDirection] = useState<AuthTransitionDirection>("forward");
   const [challenge, setChallenge] = useState<EmailLoginStartResponse | null>(null);
   const [verifiedRegistrationSession, setVerifiedRegistrationSession] = useState<AccountSession | null>(null);
@@ -282,10 +287,18 @@ export function EmailLoginPanel({
     window.history.replaceState(null, "", nextHref);
   }
 
-  const visualStep = challenge ? "otp" : authStep;
+  const visualStep = resolveEmailLoginVisualStep(authStep, Boolean(challenge));
+  const stepProgress = emailLoginStepProgress(activeFlow, visualStep);
   const stepLabel = activeFlow === "register"
-    ? t.access.emailLogin.stepRegister({ current: visualStep === "email" ? 1 : visualStep === "otp" ? 2 : 3, total: 3 })
-    : t.access.emailLogin.stepLogin({ current: visualStep === "otp" ? 2 : 1, total: 2 });
+    ? t.access.emailLogin.stepRegister(stepProgress)
+    : t.access.emailLogin.stepLogin(stepProgress);
+  const stepHeading = emailLoginStepHeading({
+    activeFlow,
+    authStep,
+    challengeExpiresAt: challenge?.expiresAt,
+    locale,
+    messages: t.access.emailLogin,
+  });
 
   const trustDeviceFields = (
     <AccountTrustDeviceField checked={trustDevice} label={t.access.emailLogin.trustDevice} onChange={setTrustDevice} />
@@ -306,19 +319,9 @@ export function EmailLoginPanel({
         {formError ? <StatusMessage id={formErrorId} tone="danger">{formError}</StatusMessage> : null}
         <div className={cn(accountStepStageClassName, accountStepStageDirectionClassNames[transitionDirection])} key={visualStep}>
           <PanelHeading
-            icon={challenge ? "settings" : authStep === "password" ? "key" : "users"}
-            title={challenge ? t.access.emailLogin.verifyTitle : authStep === "setup" ? t.access.emailLogin.setupTitle : authStep === "methods" ? t.access.emailLogin.methodTitle : authStep === "password" ? t.access.emailLogin.passwordTitle : activeFlow === "register" ? t.access.emailLogin.registerCredentialsTitle : t.access.emailLogin.loginCredentialsTitle}
-            detail={
-              challenge
-                ? t.access.emailLogin.expiresAt({ value: formatDateTime(challenge.expiresAt, locale) })
-                : authStep === "setup"
-                  ? t.access.emailLogin.setupDetail
-                  : authStep === "methods"
-                    ? t.access.emailLogin.methodDetail
-                    : authStep === "password"
-                      ? activeFlow === "register" ? t.access.emailLogin.registerPasswordDetail : t.access.emailLogin.passwordDetail
-                      : activeFlow === "register" ? t.access.emailLogin.registerCredentialsDetail : t.access.emailLogin.loginCredentialsDetail
-            }
+            icon={stepHeading.icon}
+            title={stepHeading.title}
+            detail={stepHeading.detail}
           />
           {challenge ? (
             <EmailLoginOtpStep
