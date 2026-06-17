@@ -7,28 +7,14 @@ import { Icon } from "@/src/ui/icons";
 import { TravelMotif } from "@/src/components/motifs";
 import { formatTripRange, PageHeader } from "@/src/components/PageHeader";
 import {
-  activeMapDayFilterButtonClassName,
-  mapDayFilterButtonClassName,
-  mapDayFilterClassName,
-  mapDaySwatchClassName,
   mapSourceNoteClassName,
-  routeDayColors,
   routeLiveMapClassName,
   routeLiveMapPendingClassName,
   routeMapCanvasClassName,
-  routeMapFallbackClassName,
   routeMapLayoutClassName,
   routeMapPanelClassName,
-  routeMapPathClassName,
-  routeMapPathShadowClassName,
   routeMapRetryButtonClassName,
   routeMapStatusClassName,
-  routeMapSvgClassName,
-  routeMarkerClassName,
-  routeStopListClassName,
-  routeStopListCopyClassName,
-  routeStopListIndexClassName,
-  routeStopListItemClassName,
   unresolvedPanelActionsClassName,
   unresolvedPanelButtonClassName,
   unresolvedPanelClassName,
@@ -37,10 +23,6 @@ import {
   unresolvedPanelItemTitleClassName,
   unresolvedPanelListClassName,
   unresolvedPanelStatusClassName,
-  mapZoneBayClassName,
-  mapZoneClassName,
-  mapZoneHongKongClassName,
-  mapZoneShenzhenClassName,
   maxAllDaysCoordinateResolutionBatch,
 } from "./route-map.config";
 import {
@@ -50,19 +32,16 @@ import {
   buildRoutePoints,
   cleanupRouteLayers,
   dayColorFor,
-  dayFilterStyle,
   fallbackRouteViewport,
   fitLiveRoute,
   getRouteCenter,
   hasCoordinates,
-  markerStyle,
-  routeLineStyle,
   removeMapChromeFromTabOrder,
   synchronizeRouteLayers,
-  RouteDayGroup,
-  RoutePoint,
   type DayFilter,
 } from "./route-map.utils";
+import { RouteMapDayFilter } from "./RouteMapDayFilter";
+import { StaticRouteFallback } from "./StaticRouteFallback";
 
 interface RouteMapViewProps {
   countries?: string[];
@@ -314,29 +293,13 @@ export function RouteMapView({
 
       <div className={routeMapLayoutClassName}>
         <div className={routeMapCanvasClassName} data-live-map-state={liveMapState} aria-label={t.map.canvasLabel}>
-          <div className={mapDayFilterClassName} aria-label={t.map.filterLabel}>
-            <button
-              type="button"
-              className={cn(mapDayFilterButtonClassName, activeDay === "all" && activeMapDayFilterButtonClassName)}
-              aria-pressed={activeDay === "all"}
-              onClick={() => setActiveDay("all")}
-            >
-              {t.map.allDays}
-            </button>
-            {routeDayGroups.map((group) => (
-              <button
-                type="button"
-                className={cn(mapDayFilterButtonClassName, activeDay === group.day && activeMapDayFilterButtonClassName)}
-                aria-pressed={activeDay === group.day}
-                key={group.day}
-                style={dayFilterStyle(group.color)}
-                onClick={() => setActiveDay(group.day)}
-              >
-                <span className={mapDaySwatchClassName} aria-hidden="true" />
-                {group.label}
-              </button>
-            ))}
-          </div>
+          <RouteMapDayFilter
+            activeDay={activeDay}
+            allDaysLabel={t.map.allDays}
+            filterLabel={t.map.filterLabel}
+            routeDayGroups={routeDayGroups}
+            onChange={setActiveDay}
+          />
 
           {liveMapState !== "ready" ? (
             <StaticRouteFallback
@@ -423,62 +386,6 @@ export function RouteMapView({
 export function liveMapStatusText(state: "idle" | "loading" | "ready" | "error", loadingLabel = "Loading map from OpenFreeMap", errorLabel = "Could not load the live map. Showing the fallback route diagram."): string {
   if (state === "error") return errorLabel;
   return loadingLabel;
-}
-
-function StaticRouteFallback({
-  routeDayGroups,
-  routePoints,
-  stopListLabel,
-}: {
-  routeDayGroups: RouteDayGroup[];
-  routePoints: RoutePoint[];
-  stopListLabel: string;
-}) {
-  return (
-    <div className={routeMapFallbackClassName}>
-      <span className={cn(mapZoneClassName, mapZoneHongKongClassName)}>Hong Kong</span>
-      <span className={cn(mapZoneClassName, mapZoneShenzhenClassName)}>Shenzhen</span>
-      <span className={cn(mapZoneClassName, mapZoneBayClassName)}>Victoria Harbour</span>
-      <svg className={routeMapSvgClassName} viewBox="0 0 100 100" aria-hidden="true" focusable="false">
-        {routeDayGroups.map((group) => {
-          if (group.points.length < 2) return null;
-          const pathPoints = group.points.map((point) => `${point.x},${point.y}`).join(" ");
-          return (
-            <g key={group.day} style={routeLineStyle(group.color)}>
-              <polyline className={routeMapPathShadowClassName} pathLength={1} points={pathPoints} />
-              <polyline className={routeMapPathClassName} pathLength={1} points={pathPoints} />
-            </g>
-          );
-        })}
-      </svg>
-      {routePoints.map((point, index) => (
-        <span
-          className={routeMarkerClassName}
-          style={markerStyle(point, index, dayColorFor(point.item.day, routeDayGroups))}
-          aria-hidden="true"
-          key={point.item.id}
-        >
-          <span>{index + 1}</span>
-        </span>
-      ))}
-      {routePoints.length > 0 ? (
-        <ol className={routeStopListClassName} aria-label={stopListLabel} tabIndex={0}>
-          {routePoints.slice(0, 8).map((point, index) => (
-            <li className={routeStopListItemClassName} key={point.item.id}>
-              <span
-                className={routeStopListIndexClassName}
-                style={routeLineStyle(dayColorFor(point.item.day, routeDayGroups))}
-                aria-hidden="true"
-              >
-                {index + 1}
-              </span>
-              <span className={routeStopListCopyClassName}>{point.item.activity}</span>
-            </li>
-          ))}
-        </ol>
-      ) : null}
-    </div>
-  );
 }
 
 export {

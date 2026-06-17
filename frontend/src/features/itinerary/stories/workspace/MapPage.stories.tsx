@@ -17,8 +17,8 @@ type Story = StoryObj<typeof meta>;
 
 async function expectMapResponsiveContract(canvasElement: HTMLElement) {
   await expect(canvasElement.querySelector(".route-map-panel")).toHaveClass("route-map-panel", "grid");
-  await expect(canvasElement.querySelector(".route-map-layout")).toHaveClass("route-map-layout", "max-[767px]:border-0", "max-[767px]:p-0");
-  await expect(canvasElement.querySelector(".route-map-canvas")).toHaveClass("route-map-canvas", "max-[767px]:h-[min(68dvh,620px)]", "max-[767px]:min-h-[440px]");
+  await expect(canvasElement.querySelector(".route-map-layout")).toHaveClass("route-map-layout", "max-[1199px]:border-0", "max-[1199px]:p-0");
+  await expect(canvasElement.querySelector(".route-map-canvas")).toHaveClass("route-map-canvas", "max-[1199px]:min-h-[calc(100dvh-168px)]", "max-[767px]:h-[calc(100dvh-48px)]");
   await expect(canvasElement.querySelector(".route-stop-list")).toHaveClass("route-stop-list", "max-[767px]:hidden");
 }
 
