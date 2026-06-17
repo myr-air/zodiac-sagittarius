@@ -9,8 +9,8 @@ import {
   suggestionItemBaseClassName,
   suggestionItemToneClassNames,
   suggestionListClassName,
-} from "../context-rail.styles";
-import { memberDisplayName, suggestionLabel } from "../context-rail.utils";
+} from "./context-rail.styles";
+import { memberDisplayName, suggestionLabel } from "./context-rail.utils";
 import { Icon } from "@/src/ui/icons";
 
 interface ContextRailSuggestionsSectionProps {

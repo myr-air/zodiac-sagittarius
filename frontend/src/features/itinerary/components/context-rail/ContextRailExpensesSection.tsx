@@ -13,7 +13,7 @@ import {
   moduleListClassName,
   noteActionButtonClassName,
   noteActionsClassName,
-} from "../context-rail.styles";
+} from "./context-rail.styles";
 
 interface ContextRailExpensesSectionProps {
   selectedItemId?: string;

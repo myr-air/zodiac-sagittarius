@@ -6,28 +6,26 @@ import { Button, Select } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import { formatDuration, formatThaiDate } from "@/src/features/itinerary/lib";
 import { TimePickerField } from "@/src/components/DateTimePickers";
-
-type StopDetailType = "transportation" | "stay" | "experience" | "task";
-
-interface StopDetailValues {
-  bookingRef: string;
-  budgetNote: string;
-  costNote: string;
-  detail: string;
-  destination: string;
-  entryWindow: string;
-  meal: string;
-  meetingPoint: string;
-  mode: string;
-  mustSee: string;
-  mustTry: string;
-  origin: string;
-  provider: string;
-  reservationName: string;
-  targetItems: string;
-  taxRefundNote: string;
-  ticketRef: string;
-}
+import { StopDialogDetails } from "./stop-dialog/StopDialogDetails";
+import {
+  type StopDetailType,
+  type StopDetailValues,
+  addMinutesToTime,
+  buildStructuredStopDetails,
+  detailTypeFromItem,
+  durationBetweenTimes,
+  endOffsetDaysBetweenTimes,
+  endWindowFromDuration,
+  emptyStopDetailValues,
+  itemKindForStopDetailType,
+  parseRouteActivity,
+  readStringDetail,
+  resolveStopActivityType,
+  stopDialogDetailTypeOptions,
+  stopDialogFieldIds,
+  stopDetailLabels,
+  structuredStopDetailValues,
+} from "./stop-dialog/stop-dialog.utils";
 
 export interface StopFormValues {
   day: string;
@@ -73,13 +71,7 @@ interface StopDialogProps {
   startDate?: string;
 }
 
-const detailTypeOptions: StopDetailType[] = ["transportation", "stay", "experience", "task"];
-const detailTypeToActivityType: Record<StopDetailType, ActivityType> = {
-  experience: "experience",
-  stay: "stay",
-  task: "experience",
-  transportation: "travel",
-};
+const detailTypeOptions: StopDetailType[] = stopDialogDetailTypeOptions;
 const modalBackdropClassName = "modal-backdrop fixed inset-0 z-[70] grid place-items-center bg-[rgb(15_23_42_/_0.28)] p-5 max-[767px]:items-end max-[767px]:p-2.5";
 const stopDialogClassName = "stop-dialog max-h-[calc(100vh-40px)] w-[min(620px,100%)] overflow-auto rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) shadow-[0_14px_34px_rgb(15_23_42_/_0.16)]";
 const dialogTitleRowClassName = "dialog-title-row grid min-h-[54px] grid-cols-[minmax(0,1fr)_34px] items-center gap-3 border-b border-(--color-border) px-4 [&_button]:grid [&_button]:size-[34px] [&_button]:rotate-180 [&_button]:place-items-center [&_button]:border-0 [&_button]:bg-transparent [&_button]:text-(--color-text-muted) [&_h2]:m-0 [&_h2]:text-base [&_h2]:font-extrabold [&_h2]:leading-[22px] [&_h2]:text-[#0f172a]";
@@ -103,62 +95,6 @@ const placeCandidateButtonClassName = "place-candidate-button grid gap-1 rounded
 const dialogWarningClassName = "dialog-warning col-span-full rounded-(--radius-sm) border border-(--color-warning-border) bg-(--color-warning-soft) px-3 py-2 text-sm font-bold leading-5 text-(--color-warning-strong)";
 const dialogErrorClassName = "dialog-error col-span-full rounded-(--radius-sm) border border-(--color-danger-border) bg-(--color-danger-soft) px-3 py-2 text-sm font-bold text-(--color-danger)";
 
-const fieldIds = {
-  activity: "stop-activity",
-  activityType: "stop-activity-type",
-  bookingRef: "stop-booking-ref",
-  budgetNote: "stop-budget-note",
-  costNote: "stop-cost-note",
-  day: "stop-day",
-  detail: "stop-detail",
-  destination: "stop-destination",
-  path: "stop-path",
-  derivedDuration: "stop-derived-duration",
-  endOffsetDays: "stop-end-offset-days",
-  endTime: "stop-end-time",
-  entryWindow: "stop-entry-window",
-  meal: "stop-meal",
-  meetingPoint: "stop-meeting-point",
-  mode: "stop-mode",
-  mustSee: "stop-must-see",
-  mustTry: "stop-must-try",
-  mapLink: "stop-map-link",
-  note: "stop-note",
-  origin: "stop-origin",
-  place: "stop-place",
-  provider: "stop-provider",
-  reservationName: "stop-reservation-name",
-  startTime: "stop-start-time",
-  targetItems: "stop-target-items",
-  taxRefundNote: "stop-tax-refund-note",
-  ticketRef: "stop-ticket-ref",
-  transportation: "stop-transportation",
-  itemKind: "stop-item-kind",
-  timeMode: "stop-time-mode",
-  isPlanBlock: "stop-is-plan-block",
-  status: "stop-status",
-  priority: "stop-priority",
-};
-
-const emptyDetailValues: StopDetailValues = {
-  bookingRef: "",
-  budgetNote: "",
-  costNote: "",
-  detail: "",
-  destination: "",
-  entryWindow: "",
-  meal: "",
-  meetingPoint: "",
-  mode: "",
-  mustSee: "",
-  mustTry: "",
-  origin: "",
-  provider: "",
-  reservationName: "",
-  targetItems: "",
-  taxRefundNote: "",
-  ticketRef: "",
-};
 
 export function StopDialog({ mode, endDate, initialDay, initialItem, initialParentItemId = null, manualPathOptions = [], onClose, onDelete, onPromoteFoodRecommendation, onSubmit, placeResolution, startDate }: StopDialogProps) {
   const { locale, t } = useI18n();
@@ -192,8 +128,8 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, initialPare
   }));
   const [detailType, setDetailType] = useState<StopDetailType>(() => detailTypeFromItem(initialItem));
   const [detailValues, setDetailValues] = useState<StopDetailValues>(() => ({
-    ...emptyDetailValues,
-    ...structuredDetailValues(initialItem?.details),
+    ...emptyStopDetailValues,
+    ...structuredStopDetailValues(initialItem?.details),
     mode: readStringDetail(initialItem?.details?.mode) || initialItem?.transportation || "",
   }));
   const [selectedCandidate, setSelectedCandidate] = useState<PlaceResolutionCandidate | undefined>();
@@ -303,11 +239,11 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, initialPare
   function updateDetailType(nextDetailType: StopDetailType) {
     setDetailType(nextDetailType);
     setValues((current) => {
-      const nextActivityType = resolveActivityType(nextDetailType, current.activityType);
+      const nextActivityType = resolveStopActivityType(nextDetailType, current.activityType);
       return {
         ...current,
         activityType: nextActivityType,
-        itemKind: itemKindForDetailType(nextDetailType),
+        itemKind: itemKindForStopDetailType(nextDetailType),
         isPlanBlock:
           nextDetailType === "transportation" && !current.parentItemId
             ? true
@@ -364,7 +300,7 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, initialPare
     return {
       ...values,
       activity: values.activity.trim(),
-      activityType: resolveActivityType(detailType, values.activityType),
+      activityType: resolveStopActivityType(detailType, values.activityType),
       isPlanBlock: values.parentItemId ? false : values.isPlanBlock,
       startTime: values.timeMode === "flexible" ? "" : values.startTime,
       endTime: values.timeMode === "flexible" ? null : values.endTime,
@@ -420,9 +356,9 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, initialPare
         <form className={stopFormClassName} onSubmit={handleSubmit}>
           <div className={dialogGridClassName}>
             {mode === "edit" && !isSubActivity && dayOptions.length ? (
-              <label className={dialogFieldWideClassName} htmlFor={fieldIds.day}>
+              <label className={dialogFieldWideClassName} htmlFor={stopDialogFieldIds.day}>
                 <span>{t.stopDialog.fields.day}</span>
-                <Select id={fieldIds.day} value={values.day} onChange={(event) => update("day", event.target.value)}>
+                <Select id={stopDialogFieldIds.day} value={values.day} onChange={(event) => update("day", event.target.value)}>
                   {dayOptions.map((day) => (
                     <option value={day} key={day}>{formatDayLabel(day, startDate ?? day, locale)} · {formatThaiDate(day, locale)}</option>
                   ))}
@@ -430,18 +366,18 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, initialPare
               </label>
             ) : null}
             {mode === "edit" && !isSubActivity && manualPathOptions.length > 1 ? (
-              <label className={dialogFieldWideClassName} htmlFor={fieldIds.path}>
+              <label className={dialogFieldWideClassName} htmlFor={stopDialogFieldIds.path}>
                 <span>{t.stopDialog.fields.plan}</span>
-                <Select id={fieldIds.path} value={values.pathId ?? "main"} onChange={(event) => update("pathId", event.target.value)}>
+                <Select id={stopDialogFieldIds.path} value={values.pathId ?? "main"} onChange={(event) => update("pathId", event.target.value)}>
                   {manualPathOptions.map((option) => (
                     <option value={option.id} key={option.id}>{option.name}</option>
                   ))}
                 </Select>
               </label>
             ) : null}
-            <label htmlFor={fieldIds.activityType}>
+            <label htmlFor={stopDialogFieldIds.activityType}>
               <span>{t.stopDialog.fields.type}</span>
-              <Select id={fieldIds.activityType} value={detailType} onChange={(event) => updateDetailType(event.target.value as StopDetailType)}>
+              <Select id={stopDialogFieldIds.activityType} value={detailType} onChange={(event) => updateDetailType(event.target.value as StopDetailType)}>
                 {detailTypeOptions.map((option) => (
                   <option value={option} key={option}>{detailLabels.types[option]}</option>
                 ))}
@@ -451,41 +387,41 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, initialPare
               <details className={advancedDetailsClassName}>
                 <summary>{detailLabels.fields.advanced}</summary>
                 <div className={advancedDetailsGridClassName}>
-                  <label htmlFor={fieldIds.itemKind}>
+                  <label htmlFor={stopDialogFieldIds.itemKind}>
                     <span>Item kind</span>
-                    <Select id={fieldIds.itemKind} value={values.itemKind} onChange={(event) => update("itemKind", event.target.value as ItineraryItemKind)}>
+                    <Select id={stopDialogFieldIds.itemKind} value={values.itemKind} onChange={(event) => update("itemKind", event.target.value as ItineraryItemKind)}>
                       {["travel", "activity", "lodging", "meal", "note", "preparation", "foodRecommendation"].map((option) => (
                         <option value={option} key={option}>{option}</option>
                       ))}
                     </Select>
                   </label>
-                  <label htmlFor={fieldIds.timeMode}>
+                  <label htmlFor={stopDialogFieldIds.timeMode}>
                     <span>Time mode</span>
-                    <Select id={fieldIds.timeMode} value={values.timeMode} onChange={(event) => updateTimeMode(event.target.value as ItineraryTimeMode)}>
+                    <Select id={stopDialogFieldIds.timeMode} value={values.timeMode} onChange={(event) => updateTimeMode(event.target.value as ItineraryTimeMode)}>
                       <option value="scheduled">scheduled</option>
                       <option value="flexible">flexible</option>
                     </Select>
                   </label>
-                  <label htmlFor={fieldIds.status}>
+                  <label htmlFor={stopDialogFieldIds.status}>
                     <span>Status</span>
-                    <Select id={fieldIds.status} value={values.status} onChange={(event) => update("status", event.target.value as ItineraryItemStatus)}>
+                    <Select id={stopDialogFieldIds.status} value={values.status} onChange={(event) => update("status", event.target.value as ItineraryItemStatus)}>
                       {["idea", "planned", "booked", "confirmed", "done", "skipped"].map((option) => (
                         <option value={option} key={option}>{option}</option>
                       ))}
                     </Select>
                   </label>
-                  <label htmlFor={fieldIds.priority}>
+                  <label htmlFor={stopDialogFieldIds.priority}>
                     <span>Priority</span>
-                    <Select id={fieldIds.priority} value={values.priority} onChange={(event) => update("priority", event.target.value as ItineraryItemPriority)}>
+                    <Select id={stopDialogFieldIds.priority} value={values.priority} onChange={(event) => update("priority", event.target.value as ItineraryItemPriority)}>
                       {["low", "normal", "high", "must"].map((option) => (
                         <option value={option} key={option}>{option}</option>
                       ))}
                     </Select>
                   </label>
-                  <label className={dialogFieldWideClassName} htmlFor={fieldIds.isPlanBlock}>
+                  <label className={dialogFieldWideClassName} htmlFor={stopDialogFieldIds.isPlanBlock}>
                     <span>
                       <input
-                        id={fieldIds.isPlanBlock}
+                        id={stopDialogFieldIds.isPlanBlock}
                         type="checkbox"
                         checked={values.isPlanBlock && !isSubActivity}
                         disabled={isSubActivity}
@@ -502,18 +438,18 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, initialPare
               role="group"
               aria-label={locale === "th" ? "ช่วงเวลา" : "Time window"}
             >
-              <label htmlFor={fieldIds.startTime}>
+              <label htmlFor={stopDialogFieldIds.startTime}>
                 <span>{t.stopDialog.fields.startTime}</span>
-                <TimePickerField id={fieldIds.startTime} value={values.startTime} onChange={updateStartTime} required={values.timeMode !== "flexible"} />
+                <TimePickerField id={stopDialogFieldIds.startTime} value={values.startTime} onChange={updateStartTime} required={values.timeMode !== "flexible"} />
               </label>
-              <label htmlFor={fieldIds.endTime}>
+              <label htmlFor={stopDialogFieldIds.endTime}>
                 <span>{t.stopDialog.fields.endTime}</span>
-                <TimePickerField id={fieldIds.endTime} value={values.endTime ?? ""} onChange={updateEndTime} />
+                <TimePickerField id={stopDialogFieldIds.endTime} value={values.endTime ?? ""} onChange={updateEndTime} />
               </label>
-              <label className={nextDayToggleLabelClassName} htmlFor={fieldIds.endOffsetDays}>
+              <label className={nextDayToggleLabelClassName} htmlFor={stopDialogFieldIds.endOffsetDays}>
                 <span>{locale === "th" ? "ข้ามวัน" : "Next day"}</span>
                 <button
-                  id={fieldIds.endOffsetDays}
+                  id={stopDialogFieldIds.endOffsetDays}
                   className={nextDayToggleButtonClassName}
                   type="button"
                   aria-label={`Toggle next-day end ${values.activity || "activity"}`}
@@ -524,8 +460,8 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, initialPare
                   +1
                 </button>
               </label>
-              <div className={durationSummaryClassName} aria-labelledby={fieldIds.derivedDuration}>
-                <span id={fieldIds.derivedDuration}>{t.itinerary.headers.duration}</span>
+              <div className={durationSummaryClassName} aria-labelledby={stopDialogFieldIds.derivedDuration}>
+                <span id={stopDialogFieldIds.derivedDuration}>{t.itinerary.headers.duration}</span>
                 {derivedDuration ? (
                   <strong>{formatDuration(derivedDuration, locale)}</strong>
                 ) : (
@@ -533,22 +469,22 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, initialPare
                 )}
               </div>
             </div>
-            <label className={dialogFieldWideClassName} htmlFor={fieldIds.activity}>
+            <label className={dialogFieldWideClassName} htmlFor={stopDialogFieldIds.activity}>
               <span>{t.stopDialog.fields.activity}</span>
-              <input id={fieldIds.activity} value={values.activity} onChange={(event) => updateActivity(event.target.value)} required />
+              <input id={stopDialogFieldIds.activity} value={values.activity} onChange={(event) => updateActivity(event.target.value)} required />
             </label>
-            <label className={dialogFieldWideClassName} htmlFor={fieldIds.place}>
+            <label className={dialogFieldWideClassName} htmlFor={stopDialogFieldIds.place}>
               <span>{t.stopDialog.fields.place}</span>
-              <input id={fieldIds.place} value={values.place} onChange={(event) => update("place", event.target.value)} required={detailType !== "transportation"} />
+              <input id={stopDialogFieldIds.place} value={values.place} onChange={(event) => update("place", event.target.value)} required={detailType !== "transportation"} />
             </label>
             {isFocusedEdit ? (
               <details className={advancedDetailsClassName}>
                 <summary>{moreDetailsLabel}</summary>
                 <div className={advancedDetailsGridClassName}>
-                  <label className={dialogFieldWideClassName} htmlFor={fieldIds.mapLink}>
+                  <label className={dialogFieldWideClassName} htmlFor={stopDialogFieldIds.mapLink}>
                     <span>{t.stopDialog.fields.mapLink}</span>
                     <input
-                      id={fieldIds.mapLink}
+                      id={stopDialogFieldIds.mapLink}
                       type="url"
                       inputMode="url"
                       value={values.mapLink ?? ""}
@@ -556,7 +492,7 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, initialPare
                       placeholder="https://maps.google.com/... or https://uri.amap.com/..."
                     />
                   </label>
-                  <StopDetailFields
+                  <StopDialogDetails
                     detailLabels={detailLabels}
                     detailType={detailType}
                     detailValues={detailValues}
@@ -566,10 +502,10 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, initialPare
               </details>
             ) : (
               <>
-                <label className={dialogFieldWideClassName} htmlFor={fieldIds.mapLink}>
+                <label className={dialogFieldWideClassName} htmlFor={stopDialogFieldIds.mapLink}>
                   <span>{t.stopDialog.fields.mapLink}</span>
                   <input
-                    id={fieldIds.mapLink}
+                    id={stopDialogFieldIds.mapLink}
                     type="url"
                     inputMode="url"
                     value={values.mapLink ?? ""}
@@ -577,7 +513,7 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, initialPare
                     placeholder="https://maps.google.com/... or https://uri.amap.com/..."
                   />
                 </label>
-                <StopDetailFields
+                <StopDialogDetails
                   detailLabels={detailLabels}
                   detailType={detailType}
                   detailValues={detailValues}
@@ -611,15 +547,15 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, initialPare
               </p>
             ) : null}
             {!isFocusedEdit && detailType !== "transportation" ? (
-              <label className={dialogFieldWideClassName} htmlFor={fieldIds.transportation}>
+              <label className={dialogFieldWideClassName} htmlFor={stopDialogFieldIds.transportation}>
                 <span>{t.stopDialog.fields.transportation}</span>
-                <input id={fieldIds.transportation} value={values.transportation} onChange={(event) => update("transportation", event.target.value)} />
+                <input id={stopDialogFieldIds.transportation} value={values.transportation} onChange={(event) => update("transportation", event.target.value)} />
               </label>
             ) : null}
             {!isFocusedEdit ? (
-              <label className={dialogFieldWideClassName} htmlFor={fieldIds.note}>
+              <label className={dialogFieldWideClassName} htmlFor={stopDialogFieldIds.note}>
                 <span>{t.stopDialog.fields.note}</span>
-                <textarea id={fieldIds.note} value={values.note} onChange={(event) => update("note", event.target.value)} rows={3} />
+                <textarea id={stopDialogFieldIds.note} value={values.note} onChange={(event) => update("note", event.target.value)} rows={3} />
               </label>
             ) : null}
             {submitError ? (
@@ -651,311 +587,4 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, initialPare
       </section>
     </div>
   );
-}
-
-function StopDetailFields({
-  detailLabels,
-  detailType,
-  detailValues,
-  updateDetail,
-}: {
-  detailLabels: ReturnType<typeof stopDetailLabels>;
-  detailType: StopDetailType;
-  detailValues: StopDetailValues;
-  updateDetail: <K extends keyof StopDetailValues>(key: K, value: StopDetailValues[K]) => void;
-}) {
-  if (detailType === "transportation") {
-    return (
-      <>
-        <DetailInput id={fieldIds.origin} label={detailLabels.fields.origin} value={detailValues.origin} onChange={(value) => updateDetail("origin", value)} />
-        <DetailInput id={fieldIds.destination} label={detailLabels.fields.destination} value={detailValues.destination} onChange={(value) => updateDetail("destination", value)} />
-        <DetailInput id={fieldIds.mode} label={detailLabels.fields.mode} value={detailValues.mode} onChange={(value) => updateDetail("mode", value)} />
-        <DetailInput id={fieldIds.ticketRef} label={detailLabels.fields.ticketRef} value={detailValues.ticketRef} onChange={(value) => updateDetail("ticketRef", value)} />
-        <DetailInput id={fieldIds.costNote} label={detailLabels.fields.costNote} value={detailValues.costNote} onChange={(value) => updateDetail("costNote", value)} />
-      </>
-    );
-  }
-
-  if (detailType === "stay") {
-    return (
-      <>
-        <DetailInput id={fieldIds.entryWindow} label={detailLabels.fields.checkWindow} value={detailValues.entryWindow} onChange={(value) => updateDetail("entryWindow", value)} />
-        <DetailInput id={fieldIds.bookingRef} label={detailLabels.fields.bookingRef} value={detailValues.bookingRef} onChange={(value) => updateDetail("bookingRef", value)} />
-        <DetailInput id={fieldIds.detail} label={detailLabels.fields.luggageDetail} value={detailValues.detail} onChange={(value) => updateDetail("detail", value)} />
-      </>
-    );
-  }
-
-  if (detailType === "task") {
-    return (
-      <>
-        <DetailInput id={fieldIds.detail} label={detailLabels.fields.detail} value={detailValues.detail} onChange={(value) => updateDetail("detail", value)} />
-        <DetailInput id={fieldIds.meetingPoint} label={detailLabels.fields.relatedPlace} value={detailValues.meetingPoint} onChange={(value) => updateDetail("meetingPoint", value)} />
-      </>
-    );
-  }
-
-  return (
-    <>
-      <DetailInput id={fieldIds.provider} label={detailLabels.fields.provider} value={detailValues.provider} onChange={(value) => updateDetail("provider", value)} />
-      <DetailInput id={fieldIds.meetingPoint} label={detailLabels.fields.meetingPoint} value={detailValues.meetingPoint} onChange={(value) => updateDetail("meetingPoint", value)} />
-      <DetailInput id={fieldIds.bookingRef} label={detailLabels.fields.bookingRef} value={detailValues.bookingRef} onChange={(value) => updateDetail("bookingRef", value)} />
-    </>
-  );
-}
-
-function DetailInput({ id, label, onChange, value }: { id: string; label: string; onChange: (value: string) => void; value: string }) {
-  return (
-    <label htmlFor={id}>
-      <span>{label}</span>
-      <input id={id} value={value} onChange={(event) => onChange(event.target.value)} />
-    </label>
-  );
-}
-
-function buildStructuredStopDetails(detailType: StopDetailType, detailValues: StopDetailValues): Record<string, unknown> {
-  const details = trimmedDetailValues(detailValues);
-  const nextDetails: Record<string, unknown> = { kind: detailType };
-
-  for (const key of detailKeysForType(detailType)) {
-    const value = details[key];
-    if (value) nextDetails[key] = value;
-  }
-  return nextDetails;
-}
-
-function detailKeysForType(detailType: StopDetailType): Array<keyof StopDetailValues> {
-  if (detailType === "transportation") {
-    return ["origin", "destination", "mode", "ticketRef", "costNote"];
-  }
-  if (detailType === "stay") {
-    return ["entryWindow", "bookingRef", "detail"];
-  }
-  if (detailType === "task") {
-    return ["detail", "meetingPoint"];
-  }
-  return ["provider", "meetingPoint", "bookingRef"];
-}
-
-function readStringDetail(value: unknown): string {
-  return typeof value === "string" ? value : "";
-}
-
-function structuredDetailValues(details: Record<string, unknown> | undefined): Partial<StopDetailValues> {
-  if (!details) return {};
-  return Object.fromEntries(
-    Object.keys(emptyDetailValues)
-      .map((key) => [key, readStringDetail(details[key])] as const)
-      .filter(([, value]) => value),
-  ) as Partial<StopDetailValues>;
-}
-
-function trimmedDetailValues(values: StopDetailValues): StopDetailValues {
-  return Object.fromEntries(
-    Object.entries(values).map(([key, value]) => [key, value.trim()]),
-  ) as StopDetailValues;
-}
-
-function detailTypeFromActivityType(activityType: ActivityType): StopDetailType {
-  if (activityType === "travel") return "transportation";
-  if (activityType === "stay") return "stay";
-  return "experience";
-}
-
-function detailTypeFromItem(item: ItineraryItem | undefined): StopDetailType {
-  const rawKind = item?.details?.kind;
-  if (
-    rawKind === "transportation" ||
-    rawKind === "stay" ||
-    rawKind === "experience" ||
-    rawKind === "task"
-  ) {
-    return rawKind;
-  }
-  return detailTypeFromActivityType(item?.activityType ?? "experience");
-}
-
-function resolveActivityType(
-  detailType: StopDetailType,
-  currentActivityType: ActivityType,
-): ActivityType {
-  if (detailType === "transportation" || detailType === "stay") {
-    return detailTypeToActivityType[detailType];
-  }
-  if (detailType === "experience") {
-    return currentActivityType === "travel" || currentActivityType === "stay"
-      ? "experience"
-      : currentActivityType;
-  }
-  return "experience";
-}
-
-function itemKindForDetailType(detailType: StopDetailType): ItineraryItemKind {
-  if (detailType === "transportation") return "travel";
-  if (detailType === "stay") return "lodging";
-  if (detailType === "task") return "note";
-  return "activity";
-}
-
-function addMinutesToTime(startTime: string, durationMinutes: number): string {
-  const start = timeToMinutes(startTime);
-  if (start === null) return "";
-  const total = (start + durationMinutes) % (24 * 60);
-  return minutesToTime(total);
-}
-
-function endWindowFromDuration(
-  startTime: string,
-  durationMinutes: number,
-): { endOffsetDays: number; endTime: string } | null {
-  const start = timeToMinutes(startTime);
-  if (start === null) return null;
-  const total = start + Math.max(1, durationMinutes);
-  return {
-    endTime: minutesToTime(total % (24 * 60)),
-    endOffsetDays: Math.floor(total / (24 * 60)),
-  };
-}
-
-function endOffsetDaysBetweenTimes(startTime: string, endTime: string): number {
-  const start = timeToMinutes(startTime);
-  const end = timeToMinutes(endTime);
-  if (start === null || end === null) return 0;
-  return end <= start ? 1 : 0;
-}
-
-function durationBetweenTimes(
-  startTime: string,
-  endTime: string,
-  endOffsetDays = endOffsetDaysBetweenTimes(startTime, endTime),
-): number | null {
-  const start = timeToMinutes(startTime);
-  const end = timeToMinutes(endTime);
-  if (start === null || end === null) return null;
-  const duration = end + endOffsetDays * 24 * 60 - start;
-  return Math.max(1, duration);
-}
-
-function parseRouteActivity(value: string): { destination: string; durationMinutes?: number; origin: string; startTime?: string } | null {
-  const match = /^\s*(.+?)\s*(?:->|→)\s*(.+?)(?:\s*\((.*?)\))?\s*$/.exec(value);
-  if (!match) return null;
-  const origin = match[1]?.trim();
-  const destination = match[2]?.trim();
-  if (!origin || !destination) return null;
-  const timeRange = parseTimeRange(match[3] ?? "");
-
-  return {
-    destination,
-    durationMinutes: timeRange?.durationMinutes,
-    origin,
-    startTime: timeRange?.startTime,
-  };
-}
-
-function parseTimeRange(value: string): { durationMinutes: number; startTime: string } | null {
-  const match = /(\d{1,2})[.:](\d{2})\s*(am|pm)?\s*[-–]\s*(\d{1,2})[.:](\d{2})\s*(am|pm)?/i.exec(value);
-  if (!match) return null;
-  const startTime = normalizeClockTime(match[1], match[2], match[3] || match[6]);
-  const endTime = normalizeClockTime(match[4], match[5], match[6] || match[3]);
-  if (!startTime || !endTime) return null;
-  const durationMinutes = durationBetweenTimes(startTime, endTime);
-  if (durationMinutes === null) return null;
-  return { durationMinutes, startTime };
-}
-
-function normalizeClockTime(hourText: string, minuteText: string, meridiem?: string): string | null {
-  let hour = Number(hourText);
-  const minute = Number(minuteText);
-  if (!Number.isInteger(hour) || !Number.isInteger(minute) || minute > 59) return null;
-  if (meridiem) {
-    const normalizedMeridiem = meridiem.toLowerCase();
-    if (hour < 1 || hour > 12) return null;
-    if (normalizedMeridiem === "pm" && hour < 12) hour += 12;
-    if (normalizedMeridiem === "am" && hour === 12) hour = 0;
-  }
-  if (hour > 23) return null;
-  return `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
-}
-
-function timeToMinutes(value: string): number | null {
-  const match = /^(\d{2}):(\d{2})$/.exec(value);
-  if (!match) return null;
-  const hour = Number(match[1]);
-  const minute = Number(match[2]);
-  if (hour > 23 || minute > 59) return null;
-  return hour * 60 + minute;
-}
-
-function minutesToTime(value: number): string {
-  const hour = Math.floor(value / 60);
-  const minute = value % 60;
-  return `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
-}
-
-function stopDetailLabels(locale: "en" | "th") {
-  if (locale === "th") {
-    return {
-      types: {
-        experience: "กิจกรรม / สถานที่",
-        stay: "ที่พัก",
-        task: "โน้ต / สิ่งที่ต้องทำ",
-        transportation: "การเดินทางแบบเป็นช่วง",
-      },
-      fields: {
-        advanced: "ตัวเลือกเพิ่มเติม",
-        bookingRef: "เลขจอง / booking",
-        budgetNote: "งบ / ค่าใช้จ่าย",
-        checkWindow: "เวลาเช็กอิน / เช็กเอาต์",
-        costNote: "ค่าใช้จ่าย",
-        destination: "ถึง",
-        detail: "รายละเอียด",
-        entryWindow: "รอบ / ช่วงเวลา",
-        luggageDetail: "กระเป๋า / รายละเอียด",
-        meal: "มื้ออาหาร",
-        meetingPoint: "จุดนัดพบ",
-        mode: "โดย",
-        mustSee: "จุดที่ต้องดู",
-        mustTry: "เมนูที่ต้องลอง",
-        origin: "จาก",
-        provider: "ผู้ให้บริการ",
-        relatedPlace: "สถานที่เกี่ยวข้อง",
-        reservationName: "ชื่อจอง",
-        targetItems: "ของที่อยากซื้อ",
-        taxRefundNote: "tax refund",
-        ticketRef: "ตั๋ว / pass",
-      },
-    };
-  }
-
-  return {
-    types: {
-      experience: "Activity / place",
-      stay: "Stay",
-      task: "Note / task",
-      transportation: "Journey",
-    },
-    fields: {
-      advanced: "More options",
-      bookingRef: "Booking ref",
-      budgetNote: "Budget note",
-      checkWindow: "Check-in / out",
-      costNote: "Cost / spend note",
-      destination: "To",
-      detail: "Detail",
-      entryWindow: "Round / time slot",
-      luggageDetail: "Bag / luggage detail",
-      meal: "Meal",
-      meetingPoint: "Meeting point",
-      mode: "By",
-      mustSee: "Must see",
-      mustTry: "Must try",
-      origin: "From",
-      provider: "Provider",
-      relatedPlace: "Related place",
-      reservationName: "Reservation name",
-      targetItems: "Target items",
-      taxRefundNote: "Tax refund note",
-      ticketRef: "Ticket / pass",
-    },
-  };
 }

@@ -2,7 +2,7 @@ import { FormEvent, useState } from "react";
 import { Button } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import { useI18n } from "@/src/i18n/I18nProvider";
-import { memberDisplayName } from "../context-rail.utils";
+import { memberDisplayName } from "./context-rail.utils";
 import type {
   ItineraryItem,
   Member,
@@ -27,7 +27,7 @@ import {
   noteHeaderClassName,
   noteItemClassName,
   moduleListClassName,
-} from "../context-rail.styles";
+} from "./context-rail.styles";
 
 interface ContextRailNotesSectionProps {
   itemId: ItineraryItem["id"] | undefined;

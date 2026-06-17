@@ -20,7 +20,7 @@ import { ContextRailBookingSection } from "./context-rail/ContextRailBookingSect
 import { ContextRailExpensesSection } from "./context-rail/ContextRailExpensesSection";
 import { ContextRailNotesSection } from "./context-rail/ContextRailNotesSection";
 import { ContextRailSuggestionsSection } from "./context-rail/ContextRailSuggestionsSection";
-import { ContextRailTab } from "./context-rail.utils";
+import { ContextRailTab } from "./context-rail/context-rail.utils";
 import {
   conflictRowClassName,
   conflictSummaryClassName,
@@ -47,7 +47,7 @@ import {
   mapRoadTwoClassName,
   mapWaterClassName,
   railInspectorClassName,
-} from "./context-rail.styles";
+} from "./context-rail/context-rail.styles";
 
 interface ContextRailProps {
   trip: Trip;

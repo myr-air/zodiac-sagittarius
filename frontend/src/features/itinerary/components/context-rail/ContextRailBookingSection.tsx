@@ -20,9 +20,9 @@ import {
   detailSectionClassName,
   emptyWarningClassName,
   moduleListClassName,
-} from "../context-rail.styles";
-import { bookingDocTypeOptions, taskKindLabel } from "../context-rail.utils";
-import { formatBookingDocTypeLabel } from "../context-rail.utils";
+} from "./context-rail.styles";
+import { bookingDocTypeOptions, taskKindLabel } from "./context-rail.utils";
+import { formatBookingDocTypeLabel } from "./context-rail.utils";
 
 interface ContextRailBookingSectionProps {
   advisories: NonNullable<ItineraryItem["advisories"]>;
