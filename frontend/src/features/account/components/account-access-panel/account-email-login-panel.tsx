@@ -1,25 +1,14 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
-import type { AccountApiClient, AccountSession, EmailLoginStartResponse } from "@/src/account/api-client";
-import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
-import { useI18n } from "@/src/i18n/I18nProvider";
+import type { AccountApiClient, AccountSession } from "@/src/account/api-client";
 import { cn } from "@/src/lib/cn";
-import {
-  arrayBufferToBase64Url,
-  errorMessage,
-  getPasskeyCredential,
-  passwordLoginErrorMessage,
-} from "./account-auth-support";
 import { AccountAuthFlowSwitch, AccountAuthRouteTabs, type AuthFlow } from "./account-auth-chrome";
 import {
-  accountEmailPattern,
   accountEntryLoginFlowClassName,
   accountLoginFlowClassName,
   accountStepKickerClassName,
   accountStepStageClassName,
   accountStepStageDirectionClassNames,
-  type AuthTransitionDirection,
 } from "./account-email-login-styles";
 import { AccountTrustDeviceField } from "./account-email-login-fields";
 import {
@@ -29,14 +18,9 @@ import {
   EmailLoginPasswordStep,
   EmailLoginSetupStep,
 } from "./account-email-login-step-content";
-import {
-  emailLoginStepHeading,
-  emailLoginStepProgress,
-  resolveEmailLoginVisualStep,
-  type EmailLoginAuthStep,
-} from "./account-email-login-step-meta";
 import { PanelHeading } from "./account-portal-primitives";
 import { StatusMessage } from "./account-status-message";
+import { useEmailLoginPanelState } from "./use-email-login-panel-state";
 
 interface EmailLoginPanelProps {
   accountClient: AccountApiClient;
@@ -59,249 +43,61 @@ export function EmailLoginPanel({
   onLoggedIn,
   showRouteTabs = false,
 }: EmailLoginPanelProps) {
-  const { locale, t } = useI18n();
-  const activeFlow = flow;
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [code, setCode] = useState("");
-  const [displayName, setDisplayName] = useState("");
-  const [homeBase, setHomeBase] = useState("");
-  const [trustDevice, setTrustDevice] = useState(true);
-  const [authStep, setAuthStep] = useState<EmailLoginAuthStep>("email");
-  const [transitionDirection, setTransitionDirection] = useState<AuthTransitionDirection>("forward");
-  const [challenge, setChallenge] = useState<EmailLoginStartResponse | null>(null);
-  const [verifiedRegistrationSession, setVerifiedRegistrationSession] = useState<AccountSession | null>(null);
-  const [resendCooldown, setResendCooldown] = useState(0);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const normalizedEmail = email.trim();
-  const isEmailValid = accountEmailPattern.test(normalizedEmail);
-  const isEmailInvalid = normalizedEmail.length > 0 && !isEmailValid;
-  const passwordReady = password.length >= 8;
-  const isPasswordInvalid = password.length > 0 && !passwordReady;
-  const otpReady = /^\d{6}$/.test(code);
-  const emailInputId = `account-${activeFlow}-email`;
-  const emailHintId = `${emailInputId}-hint`;
-  const passwordInputId = `account-${activeFlow}-password`;
-  const passwordHintId = `${passwordInputId}-hint`;
-  const codeInputId = `account-${activeFlow}-code`;
-  const codeHintId = `${codeInputId}-hint`;
-  const formErrorId = `account-${activeFlow}-error`;
-  const passwordAutocomplete = activeFlow === "register" ? "new-password" : "current-password";
-
-  useEffect(() => {
-    if (!challenge || resendCooldown <= 0) return undefined;
-    const timer = window.setInterval(() => {
-      setResendCooldown((current) => Math.max(0, current - 1));
-    }, 1000);
-    return () => window.clearInterval(timer);
-  }, [challenge, resendCooldown]);
-
-  async function submitEmail(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (!isEmailValid || !passwordReady) return;
-    onError(null);
-    if (activeFlow === "register") {
-      await requestEmailCode();
-      return;
-    }
-    await signInWithPassword();
-  }
-
-  async function submitPassword(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (activeFlow === "register") {
-      await requestEmailCode();
-      return;
-    }
-    await signInWithPassword();
-  }
-
-  async function requestEmailCode() {
-    if (!isEmailValid || (activeFlow === "register" && !passwordReady)) return;
-    setIsSubmitting(true);
-    try {
-      const nextChallenge = await accountClient.startEmailLogin(normalizedEmail);
-      setTransitionDirection("forward");
-      setChallenge(nextChallenge);
-      setResendCooldown(30);
-      onError(null);
-    } catch (caught) {
-      onError(errorMessage(caught, t.access.emailLogin.errors.startFailed, t.access.messages));
-    } finally {
-      setIsSubmitting(false);
-    }
-  }
-
-  async function submitCode(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (!challenge || !otpReady) return;
-    setIsSubmitting(true);
-    try {
-      const session = await accountClient.finishEmailLogin({
-        challengeId: challenge.challengeId,
-        code,
-        trustDevice: activeFlow === "login" ? trustDevice : true,
-        deviceLabel: "",
-      });
-      if (activeFlow === "register") {
-        setVerifiedRegistrationSession(session);
-        goToStep("setup");
-        setChallenge(null);
-        setCode("");
-        onError(null);
-        return;
-      }
-      onLoggedIn(session);
-    } catch (caught) {
-      onError(errorMessage(caught, t.access.emailLogin.errors.invalidCode, t.access.messages));
-    } finally {
-      setIsSubmitting(false);
-    }
-  }
-
-  async function submitSetup(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (!verifiedRegistrationSession || !passwordReady) return;
-    setIsSubmitting(true);
-    try {
-      const session = await accountClient.finishPasswordLogin({
-        flow: "register",
-        email: normalizedEmail,
-        password,
-        trustDevice: true,
-        deviceLabel: "",
-      });
-      await accountClient.updateSettings(session.sessionToken, {
-        displayName: displayName.trim() || normalizedEmail.split("@")[0] || t.access.dashboard.fallbackName,
-        avatarColor: "#c2410c",
-        locale,
-        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC",
-      });
-      onLoggedIn(session);
-      onError(null);
-    } catch (caught) {
-      onError(errorMessage(caught, t.access.emailLogin.errors.passwordRegisterFailed, t.access.messages));
-    } finally {
-      setIsSubmitting(false);
-    }
-  }
-
-  async function signInWithPassword() {
-    if (!isEmailValid || !passwordReady) return;
-    setIsSubmitting(true);
-    try {
-      const session = await accountClient.finishPasswordLogin({
-        flow: activeFlow,
-        email: normalizedEmail,
-        password,
-        trustDevice: activeFlow === "login" ? trustDevice : true,
-        deviceLabel: "",
-      });
-      onLoggedIn(session);
-      onError(null);
-    } catch (caught) {
-      onError(
-        activeFlow === "register"
-          ? errorMessage(caught, t.access.emailLogin.errors.passwordRegisterFailed, t.access.messages)
-          : passwordLoginErrorMessage(caught, t.access.emailLogin.errors.passwordLoginFailed, t.access.messages),
-      );
-    } finally {
-      setIsSubmitting(false);
-    }
-  }
-
-  async function signInWithPasskey() {
-    if (!isEmailValid) return;
-    setIsSubmitting(true);
-    try {
-      const loginStart = await accountClient.startPasskeyLogin(normalizedEmail);
-      const credential = await getPasskeyCredential(loginStart.challenge, loginStart.allowCredentials.map((credential) => credential.credentialId));
-      const session = await accountClient.finishPasskeyLogin({
-        challengeId: loginStart.challengeId,
-        credentialId: arrayBufferToBase64Url(credential.rawId),
-        clientDataJson: arrayBufferToBase64Url(credential.response.clientDataJSON),
-        authenticatorData: arrayBufferToBase64Url(credential.response.authenticatorData),
-        signature: arrayBufferToBase64Url(credential.response.signature),
-        trustDevice: activeFlow === "login" ? trustDevice : false,
-        deviceLabel: "",
-      });
-      onLoggedIn(session);
-      onError(null);
-    } catch (caught) {
-      onError(errorMessage(caught, t.access.emailLogin.errors.passkeyLoginFailed, t.access.messages));
-    } finally {
-      setIsSubmitting(false);
-    }
-  }
-
-  function resetChallenge() {
-    setChallenge(null);
-    setCode("");
-    setPassword("");
-    setResendCooldown(0);
-    goToStep("email", "back");
-    onError(null);
-  }
-
-  function changeEmail() {
-    resetEntryState("back");
-  }
-
-  function resetEntryState(direction: AuthTransitionDirection = "back") {
-    setChallenge(null);
-    setCode("");
-    setPassword("");
-    setDisplayName("");
-    setHomeBase("");
-    setResendCooldown(0);
-    setVerifiedRegistrationSession(null);
-    goToStep("email", direction);
-    onError(null);
-  }
-
-  function showPasswordStep() {
-    setPassword("");
-    goToStep("password");
-    onError(null);
-  }
-
-  function chooseMethods() {
-    goToStep("methods", "back");
-    onError(null);
-  }
-
-  function goToStep(nextStep: typeof authStep, direction: AuthTransitionDirection = "forward") {
-    setTransitionDirection(direction);
-    setAuthStep(nextStep);
-  }
-
-  function updateCode(value: string) {
-    setCode(value.replace(/\D/g, "").slice(0, 6));
-  }
-
-  function switchFlow(nextFlow: AuthFlow) {
-    if (nextFlow === activeFlow) return;
-    onFlowChange?.(nextFlow);
-    resetEntryState("mode");
-    const nextHref = nextFlow === "register" ? appRoutes.register() : appRoutes.login();
-    window.history.replaceState(null, "", nextHref);
-  }
-
-  const visualStep = resolveEmailLoginVisualStep(authStep, Boolean(challenge));
-  const stepProgress = emailLoginStepProgress(activeFlow, visualStep);
-  const stepLabel = activeFlow === "register"
-    ? t.access.emailLogin.stepRegister(stepProgress)
-    : t.access.emailLogin.stepLogin(stepProgress);
-  const stepHeading = emailLoginStepHeading({
+  const {
     activeFlow,
     authStep,
-    challengeExpiresAt: challenge?.expiresAt,
-    locale,
-    messages: t.access.emailLogin,
+    challenge,
+    code,
+    codeHintId,
+    codeInputId,
+    displayName,
+    email,
+    emailHintId,
+    emailInputId,
+    emailLoginMessages,
+    formErrorId,
+    homeBase,
+    isEmailInvalid,
+    isEmailValid,
+    isPasswordInvalid,
+    isSubmitting,
+    normalizedEmail,
+    otpReady,
+    password,
+    passwordAutocomplete,
+    passwordHintId,
+    passwordInputId,
+    passwordReady,
+    resendCooldown,
+    stepHeading,
+    stepLabel,
+    transitionDirection,
+    trustDevice,
+    visualStep,
+    changeEmail,
+    chooseMethods,
+    requestEmailCode,
+    resetChallenge,
+    setDisplayName,
+    setEmail,
+    setHomeBase,
+    setPassword,
+    setTrustDevice,
+    showPasswordStep,
+    signInWithPasskey,
+    submitForm,
+    switchFlow,
+    updateCode,
+  } = useEmailLoginPanelState({
+    accountClient,
+    activeFlow: flow,
+    onError,
+    onFlowChange,
+    onLoggedIn,
   });
 
   const trustDeviceFields = (
-    <AccountTrustDeviceField checked={trustDevice} label={t.access.emailLogin.trustDevice} onChange={setTrustDevice} />
+    <AccountTrustDeviceField checked={trustDevice} label={emailLoginMessages.trustDevice} onChange={setTrustDevice} />
   );
 
   return (
@@ -313,7 +109,7 @@ export function EmailLoginPanel({
         aria-busy={isSubmitting}
         aria-describedby={formError ? formErrorId : undefined}
         className={authCardClassName}
-        onSubmit={authStep === "setup" ? submitSetup : challenge ? submitCode : authStep === "password" ? submitPassword : submitEmail}
+        onSubmit={submitForm}
       >
         <span className={accountStepKickerClassName}>{stepLabel}</span>
         {formError ? <StatusMessage id={formErrorId} tone="danger">{formError}</StatusMessage> : null}
@@ -332,14 +128,14 @@ export function EmailLoginPanel({
               disabledResend={!isEmailValid || (activeFlow === "register" && !passwordReady) || isSubmitting || resendCooldown > 0}
               isSubmitting={isSubmitting}
               labels={{
-                changeEmail: t.access.emailLogin.changeEmail,
-                resendCode: t.access.emailLogin.resendCode,
-                resendCooldown: (seconds) => t.access.emailLogin.resendCooldown({ seconds }),
-                sentCodeTo: t.access.emailLogin.sentCodeTo,
-                signInAccount: t.access.emailLogin.signInAccount,
-                verificationCode: t.access.emailLogin.verificationCode,
-                verificationCodeHint: t.access.emailLogin.verificationCodeHint,
-                verifyEmail: t.access.emailLogin.verifyEmail,
+                changeEmail: emailLoginMessages.changeEmail,
+                resendCode: emailLoginMessages.resendCode,
+                resendCooldown: (seconds) => emailLoginMessages.resendCooldown({ seconds }),
+                sentCodeTo: emailLoginMessages.sentCodeTo,
+                signInAccount: emailLoginMessages.signInAccount,
+                verificationCode: emailLoginMessages.verificationCode,
+                verificationCodeHint: emailLoginMessages.verificationCodeHint,
+                verifyEmail: emailLoginMessages.verifyEmail,
               }}
               normalizedEmail={normalizedEmail}
               onChangeCode={updateCode}
@@ -355,20 +151,20 @@ export function EmailLoginPanel({
               disabledAlternateActions={!isEmailValid || isSubmitting}
               disabledPrimary={!isEmailValid || !passwordReady || isSubmitting}
               email={email}
-              emailHint={isEmailInvalid ? t.access.emailLogin.emailInvalidHint : t.access.emailLogin.emailHint}
+              emailHint={isEmailInvalid ? emailLoginMessages.emailInvalidHint : emailLoginMessages.emailHint}
               emailHintId={emailHintId}
               emailInputId={emailInputId}
               isEmailInvalid={isEmailInvalid}
               isPasswordInvalid={isPasswordInvalid}
               labels={{
-                alternateSignInOptions: t.access.emailLogin.alternateSignInOptions,
-                createWithPassword: t.access.emailLogin.createWithPassword,
-                email: t.access.emailLogin.email,
-                password: t.access.emailLogin.password,
-                passwordHint: t.access.emailLogin.passwordHint,
-                signInAccount: t.access.emailLogin.signInAccount,
-                usePasskeyInstead: t.access.emailLogin.usePasskeyInstead,
-                useSignInCodeInstead: t.access.emailLogin.useSignInCodeInstead,
+                alternateSignInOptions: emailLoginMessages.alternateSignInOptions,
+                createWithPassword: emailLoginMessages.createWithPassword,
+                email: emailLoginMessages.email,
+                password: emailLoginMessages.password,
+                passwordHint: emailLoginMessages.passwordHint,
+                signInAccount: emailLoginMessages.signInAccount,
+                usePasskeyInstead: emailLoginMessages.usePasskeyInstead,
+                useSignInCodeInstead: emailLoginMessages.useSignInCodeInstead,
               }}
               onEmailChange={setEmail}
               onPasswordChange={setPassword}
@@ -385,14 +181,14 @@ export function EmailLoginPanel({
               activeFlow={activeFlow}
               isSubmitting={isSubmitting}
               labels={{
-                changeEmail: t.access.emailLogin.changeEmail,
-                createFor: t.access.emailLogin.createFor,
-                createWithPassword: t.access.emailLogin.createWithPassword,
-                sendRegisterCode: t.access.emailLogin.sendRegisterCode,
-                sendSignInCode: t.access.emailLogin.sendSignInCode,
-                signInAs: t.access.emailLogin.signInAs,
-                signInWithPasskey: t.access.emailLogin.signInWithPasskey,
-                signInWithPassword: t.access.emailLogin.signInWithPassword,
+                changeEmail: emailLoginMessages.changeEmail,
+                createFor: emailLoginMessages.createFor,
+                createWithPassword: emailLoginMessages.createWithPassword,
+                sendRegisterCode: emailLoginMessages.sendRegisterCode,
+                sendSignInCode: emailLoginMessages.sendSignInCode,
+                signInAs: emailLoginMessages.signInAs,
+                signInWithPasskey: emailLoginMessages.signInWithPasskey,
+                signInWithPassword: emailLoginMessages.signInWithPassword,
               }}
               normalizedEmail={normalizedEmail}
               onChangeEmail={changeEmail}
@@ -406,10 +202,10 @@ export function EmailLoginPanel({
               homeBase={homeBase}
               isSubmitting={isSubmitting}
               labels={{
-                createFor: t.access.emailLogin.createFor,
-                displayName: t.access.emailLogin.displayName,
-                finishSetup: t.access.emailLogin.finishSetup,
-                homeBase: t.access.emailLogin.homeBase,
+                createFor: emailLoginMessages.createFor,
+                displayName: emailLoginMessages.displayName,
+                finishSetup: emailLoginMessages.finishSetup,
+                homeBase: emailLoginMessages.homeBase,
               }}
               normalizedEmail={normalizedEmail}
               onDisplayNameChange={setDisplayName}
@@ -421,14 +217,14 @@ export function EmailLoginPanel({
               isPasswordInvalid={isPasswordInvalid}
               isSubmitting={isSubmitting}
               labels={{
-                changeEmail: t.access.emailLogin.changeEmail,
-                chooseAnotherMethod: t.access.emailLogin.chooseAnotherMethod,
-                continueToOtp: t.access.emailLogin.continueToOtp,
-                createFor: t.access.emailLogin.createFor,
-                password: t.access.emailLogin.password,
-                passwordHint: t.access.emailLogin.passwordHint,
-                signInAs: t.access.emailLogin.signInAs,
-                signInWithPassword: t.access.emailLogin.signInWithPassword,
+                changeEmail: emailLoginMessages.changeEmail,
+                chooseAnotherMethod: emailLoginMessages.chooseAnotherMethod,
+                continueToOtp: emailLoginMessages.continueToOtp,
+                createFor: emailLoginMessages.createFor,
+                password: emailLoginMessages.password,
+                passwordHint: emailLoginMessages.passwordHint,
+                signInAs: emailLoginMessages.signInAs,
+                signInWithPassword: emailLoginMessages.signInWithPassword,
               }}
               normalizedEmail={normalizedEmail}
               onChangeEmail={changeEmail}
