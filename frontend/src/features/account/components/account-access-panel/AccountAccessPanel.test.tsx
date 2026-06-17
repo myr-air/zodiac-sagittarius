@@ -17,6 +17,7 @@ import {
   createTrustedAccountSession,
   installLocalStorageStub,
   render,
+  renderAccountAccessPanel,
   stubCredentials,
   switchToThai,
 } from "./account-access-panel-test-utils";
@@ -73,22 +74,13 @@ describe("AccountAccessPanel", () => {
   it("does not reload account dashboard data when switching language", async () => {
     const user = userEvent.setup();
     const accountClient = createAccountClient();
-    render(
-      <AccountAccessPanel
-        accountClient={accountClient}
-        accountSession={createTrustedAccountSession({
+    renderAccountAccessPanel({ accountClient, accountSession: createTrustedAccountSession({
           userId: "11111111-1111-1111-1111-111111111111",
           sessionToken: "playwright-account-session",
           trustedDeviceId: "device-1",
           createdAt: "2026-05-30T10:00:00.000Z",
           expiresAt: "2030-01-01T10:00:00.000Z",
-        })}
-        trip={seedTrip}
-        onAccountSessionChange={vi.fn()}
-        onAuthenticated={vi.fn()}
-        onTripChange={vi.fn()}
-      />,
-    );
+        }) });
 
     expect(await screen.findByText("Aom", {}, { timeout: 3_000 })).toBeInTheDocument();
     expect(accountClient.loadSettings).toHaveBeenCalledTimes(1);
@@ -195,18 +187,7 @@ describe("AccountAccessPanel", () => {
   });
 
   it("marks vault cloud providers as unavailable instead of enabled fake actions", async () => {
-    render(
-      <AccountAccessPanel
-        accessMode="account-portal"
-        accountClient={createAccountClient()}
-        accountSession={createTrustedAccountSession()}
-        portalSection="vault"
-        trip={seedTrip}
-        onAccountSessionChange={vi.fn()}
-        onAuthenticated={vi.fn()}
-        onTripChange={vi.fn()}
-      />,
-    );
+    renderAccountAccessPanel({ accessMode: "account-portal", accountSession: createTrustedAccountSession(), portalSection: "vault" });
 
     for (const provider of ["Google Drive", "iCloud", "Dropbox", "OneDrive"]) {
       const providerButton = await screen.findByRole("button", { name: new RegExp(`${provider}.*link paste only`, "i") });
@@ -251,18 +232,7 @@ describe("AccountAccessPanel", () => {
     expect(document.querySelector(".portal-empty-state")).toBeInTheDocument();
     view.unmount();
 
-    render(
-      <AccountAccessPanel
-        accessMode="account-portal"
-        accountClient={accountClient}
-        accountSession={createTrustedAccountSession()}
-        portalSection="todos"
-        trip={seedTrip}
-        onAccountSessionChange={vi.fn()}
-        onAuthenticated={vi.fn()}
-        onTripChange={vi.fn()}
-      />,
-    );
+    renderAccountAccessPanel({ accessMode: "account-portal", accountClient, accountSession: createTrustedAccountSession(), portalSection: "todos" });
 
     expect(await screen.findByText("Create a trip to start shared to-dos", {}, { timeout: 3_000 })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Create trip/i })).toHaveAttribute(
@@ -273,18 +243,7 @@ describe("AccountAccessPanel", () => {
 
   it("keeps portal trip rows on the page until the explicit open action", async () => {
     const accountClient = createAccountClient();
-    render(
-      <AccountAccessPanel
-        accessMode="account-portal"
-        accountClient={accountClient}
-        accountSession={createTrustedAccountSession()}
-        portalSection="trips"
-        trip={seedTrip}
-        onAccountSessionChange={vi.fn()}
-        onAuthenticated={vi.fn()}
-        onTripChange={vi.fn()}
-      />,
-    );
+    renderAccountAccessPanel({ accessMode: "account-portal", accountClient, accountSession: createTrustedAccountSession(), portalSection: "trips" });
 
     const ownerTripRow = (await screen.findByText("Seoul Spring")).closest(".account-trip-row") as HTMLElement;
     const travelerTripRow = screen.getByText("Taipei Shared").closest(".account-trip-row") as HTMLElement;
@@ -305,18 +264,7 @@ describe("AccountAccessPanel", () => {
     const accountClient = createAccountClient();
     vi.mocked(accountClient.listVault).mockRejectedValueOnce(new Error("account-load-failed"));
 
-    render(
-      <AccountAccessPanel
-        accessMode="account-portal"
-        accountClient={accountClient}
-        accountSession={createTrustedAccountSession()}
-        portalSection="todos"
-        trip={seedTrip}
-        onAccountSessionChange={vi.fn()}
-        onAuthenticated={vi.fn()}
-        onTripChange={vi.fn()}
-      />,
-    );
+    renderAccountAccessPanel({ accessMode: "account-portal", accountClient, accountSession: createTrustedAccountSession(), portalSection: "todos" });
 
     expect(await screen.findByText("Book train", {}, { timeout: 3_000 })).toBeInTheDocument();
     expect(screen.getByText("Could not load account data.")).toBeInTheDocument();
@@ -332,18 +280,7 @@ describe("AccountAccessPanel", () => {
       status: 401,
     }));
 
-    render(
-      <AccountAccessPanel
-        accessMode="account-portal"
-        accountClient={accountClient}
-        accountSession={createTrustedAccountSession()}
-        portalSection="dashboard"
-        trip={seedTrip}
-        onAccountSessionChange={onAccountSessionChange}
-        onAuthenticated={vi.fn()}
-        onTripChange={vi.fn()}
-      />,
-    );
+    renderAccountAccessPanel({ accessMode: "account-portal", accountClient, accountSession: createTrustedAccountSession(), portalSection: "dashboard", onAccountSessionChange });
 
     await waitFor(() => expect(onAccountSessionChange).toHaveBeenCalledWith(null));
   });
@@ -354,16 +291,7 @@ describe("AccountAccessPanel", () => {
     const onAccountSessionChange = vi.fn();
     const credentials = stubCredentials();
 
-    render(
-      <AccountAccessPanel
-        accountClient={accountClient}
-        accountSession={null}
-        trip={seedTrip}
-        onAccountSessionChange={onAccountSessionChange}
-        onAuthenticated={vi.fn()}
-        onTripChange={vi.fn()}
-      />,
-    );
+    renderAccountAccessPanel({ accountClient, onAccountSessionChange });
 
     await user.click(screen.getByRole("tab", { name: /^Account$/i }));
     fireEvent.change(screen.getByLabelText(/Email/i), { target: { value: "aom@example.test" } });
@@ -396,17 +324,7 @@ describe("AccountAccessPanel", () => {
     const accountClient = createAccountClient();
     const onAccountSessionChange = vi.fn();
 
-    render(
-      <AccountAccessPanel
-        accountClient={accountClient}
-        accountSession={createTrustedAccountSession()}
-        portalSection="settings"
-        trip={seedTrip}
-        onAccountSessionChange={onAccountSessionChange}
-        onAuthenticated={vi.fn()}
-        onTripChange={vi.fn()}
-      />,
-    );
+    renderAccountAccessPanel({ accountClient, accountSession: createTrustedAccountSession(), portalSection: "settings", onAccountSessionChange });
 
     await user.click(screen.getByRole("tab", { name: /^Account$/i }));
     const currentDeviceRow = (await screen.findByText("Current MacBook")).closest(".account-device-row") as HTMLElement;
