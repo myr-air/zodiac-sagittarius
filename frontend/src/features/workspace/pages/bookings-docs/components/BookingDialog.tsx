@@ -10,11 +10,11 @@ import {
   bookingVisibilities,
   type BookingCopy,
   formatEnumLabel,
-} from "./BookingsDocsPage.copy";
-import * as bookingStyles from "./BookingsDocsPage.styles";
-import type { BookingDocInput } from "./BookingsDocsPage.types";
+} from "../BookingsDocsPage.copy";
+import * as bookingStyles from "../BookingsDocsPage.styles";
+import type { BookingDocInput } from "../BookingsDocsPage.types";
 import { CheckboxGroup } from "./CheckboxGroup";
-import { fromDateTimeLocalValue, toDateTimeLocalValue, toggleId } from "./bookings-docs-page-support";
+import { fromDateTimeLocalValue, toDateTimeLocalValue, toggleId } from "../bookings-docs-page-support";
 
 interface BookingDialogProps {
   booking: BookingDoc | null;

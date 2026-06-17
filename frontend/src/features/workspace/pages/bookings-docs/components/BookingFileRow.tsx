@@ -2,15 +2,15 @@ import type { BookingDoc, Trip } from "@/src/trip/types";
 import { cn } from "@/src/lib/cn";
 import { IconButton } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
-import { type BookingCopy, formatEnumLabel } from "./BookingsDocsPage.copy";
-import * as bookingStyles from "./BookingsDocsPage.styles";
+import { type BookingCopy, formatEnumLabel } from "../BookingsDocsPage.copy";
+import * as bookingStyles from "../BookingsDocsPage.styles";
 import {
   bookingDocLinkedContext,
   bookingTypeIcon,
   formatDateTime,
   statusBadgeClassName,
   typeIconClassName,
-} from "./bookings-docs-page-support";
+} from "../bookings-docs-page-support";
 
 interface BookingFileRowProps {
   doc: BookingDoc;

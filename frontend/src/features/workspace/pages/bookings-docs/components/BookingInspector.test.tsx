@@ -2,9 +2,9 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { findBookingDocRelations } from "@/src/trip/booking-docs";
 import { seedTrip } from "@/src/trip/seed";
-import { bookingCopy } from "./BookingsDocsPage.copy";
+import { bookingCopy } from "../BookingsDocsPage.copy";
 import { BookingInspector } from "./BookingInspector";
-import { bookingDocTestTasks } from "./bookings-docs-test-fixtures";
+import { bookingDocTestTasks } from "../bookings-docs-test-fixtures";
 
 describe("BookingInspector", () => {
   it("renders an empty inspector when no booking is selected", () => {

@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { seedTrip } from "@/src/trip/seed";
-import { bookingCopy } from "./BookingsDocsPage.copy";
+import { bookingCopy } from "../BookingsDocsPage.copy";
 import { BookingsDocsHeader } from "./BookingsDocsHeader";
 
 describe("BookingsDocsHeader", () => {
