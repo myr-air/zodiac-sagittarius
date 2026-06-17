@@ -11,6 +11,7 @@ import { WeatherForecastStrip } from "@/src/components/WeatherForecastStrip";
 import { CockpitCard, HighlightBoard, OverviewFocusList, OverviewHero, OverviewStopList, ViewerNextStopPanel } from "./overview";
 import { OverviewTaskList, type OverviewTaskListLabels } from "./overview/OverviewTaskList";
 import { OverviewFocusSection } from "./overview/OverviewFocusSection";
+import { OverviewExpenseShortcut } from "./overview/OverviewExpenseShortcut";
 import {
   overviewMutedClassName,
 } from "./overview/overview.styles";
@@ -22,7 +23,6 @@ import {
   overviewGridClassName,
   overviewHealthGridClassName,
   overviewPageClassName,
-  overviewPanelButtonClassName,
   overviewPanelClassName,
   overviewPanelHealthClassName,
   overviewPanelTitleClassName,
@@ -307,23 +307,22 @@ export function OverviewPage({
               />
             </section>
 
-            <button className={cn(overviewPanelClassName, overviewPanelButtonClassName)} type="button" onClick={openExpenses}>
-              <div className={overviewPanelTitleClassName}>
-                <Icon name="wallet" />
-                <h2 id="overview-traveler-budget-title">{t.overview.expenses}</h2>
-              </div>
-              <strong>{expenseSummary.currentUserNetLabel}</strong>
-              <span>{t.overview.money.settlementSuggestions({ count: expenseSummary.settlementSuggestions.length })}</span>
-            </button>
-
-            <button className={cn(overviewPanelClassName, overviewPanelButtonClassName)} type="button" aria-label={t.overview.generalExpense} onClick={openExpenses}>
-              <div className={overviewPanelTitleClassName}>
-                <Icon name="plus" />
-                <h2>{t.overview.generalExpense}</h2>
-              </div>
-              <strong>{t.overview.money.generalExamples}</strong>
-              <span>{t.overview.money.generalDetail}</span>
-            </button>
+            <OverviewExpenseShortcut
+              icon="wallet"
+              title={t.overview.expenses}
+              value={expenseSummary.currentUserNetLabel}
+              detail={t.overview.money.settlementSuggestions({ count: expenseSummary.settlementSuggestions.length })}
+              titleId="overview-traveler-budget-title"
+              onClick={openExpenses}
+            />
+            <OverviewExpenseShortcut
+              icon="plus"
+              title={t.overview.generalExpense}
+              value={t.overview.money.generalExamples}
+              detail={t.overview.money.generalDetail}
+              ariaLabel={t.overview.generalExpense}
+              onClick={openExpenses}
+            />
           </>
         ) : null}
 
@@ -351,23 +350,22 @@ export function OverviewPage({
               />
             </section>
 
-            <button className={cn(overviewPanelClassName, overviewPanelButtonClassName)} type="button" onClick={openExpenses}>
-              <div className={overviewPanelTitleClassName}>
-                <Icon name="wallet" />
-                <h2 id="overview-viewer-budget-title">{t.overview.headings.overallBudget}</h2>
-              </div>
-              <strong>HK${expenseSummary.groupSpend.toLocaleString("en-HK")}</strong>
-              <span>{t.overview.money.overallSummary}</span>
-            </button>
-
-            <button className={cn(overviewPanelClassName, overviewPanelButtonClassName)} type="button" aria-label={t.overview.generalExpense} onClick={openExpenses}>
-              <div className={overviewPanelTitleClassName}>
-                <Icon name="plus" />
-                <h2>{t.overview.generalExpense}</h2>
-              </div>
-              <strong>{t.overview.money.generalExamples}</strong>
-              <span>{t.overview.money.generalDetail}</span>
-            </button>
+            <OverviewExpenseShortcut
+              icon="wallet"
+              title={t.overview.headings.overallBudget}
+              value={`HK$${expenseSummary.groupSpend.toLocaleString("en-HK")}`}
+              detail={t.overview.money.overallSummary}
+              titleId="overview-viewer-budget-title"
+              onClick={openExpenses}
+            />
+            <OverviewExpenseShortcut
+              icon="plus"
+              title={t.overview.generalExpense}
+              value={t.overview.money.generalExamples}
+              detail={t.overview.money.generalDetail}
+              ariaLabel={t.overview.generalExpense}
+              onClick={openExpenses}
+            />
           </>
         ) : null}
 
@@ -401,14 +399,14 @@ export function OverviewPage({
           </div>
             </section>
 
-            <button className={cn(overviewPanelClassName, overviewPanelButtonClassName)} type="button" aria-label={t.overview.generalExpense} onClick={openExpenses}>
-          <div className={overviewPanelTitleClassName}>
-            <Icon name="plus" />
-            <h2>{t.overview.generalExpense}</h2>
-          </div>
-          <strong>{t.overview.money.generalExamples}</strong>
-          <span>{t.overview.money.generalDetail}</span>
-            </button>
+            <OverviewExpenseShortcut
+              icon="plus"
+              title={t.overview.generalExpense}
+              value={t.overview.money.generalExamples}
+              detail={t.overview.money.generalDetail}
+              ariaLabel={t.overview.generalExpense}
+              onClick={openExpenses}
+            />
 
             <section className={cn(overviewPanelClassName, overviewTaskPanelClassName)} aria-label={t.overview.sections.tripChecklist}>
           <div className={overviewPanelTitleClassName}>
