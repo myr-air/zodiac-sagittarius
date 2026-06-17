@@ -12,6 +12,26 @@ import {
   buildInitialStopFormValues,
   buildStopSubmitValues,
 } from "./stop-dialog/stop-dialog.form";
+import {
+  advancedDetailsClassName,
+  advancedDetailsGridClassName,
+  dialogActionsClassName,
+  dialogErrorClassName,
+  dialogFieldWideClassName,
+  dialogGridClassName,
+  dialogPrimaryActionsClassName,
+  dialogTitleRowClassName,
+  dialogWarningClassName,
+  durationSummaryClassName,
+  modalBackdropClassName,
+  nextDayToggleButtonClassName,
+  nextDayToggleLabelClassName,
+  placeCandidateButtonClassName,
+  placeCandidateListClassName,
+  stopDialogClassName,
+  stopFormClassName,
+  timeWindowGroupClassName,
+} from "./stop-dialog/stop-dialog.styles";
 import type { StopFormValues, StopManualPathOption } from "./stop-dialog/stop-dialog.types";
 import {
   type StopDetailType,
@@ -46,29 +66,6 @@ interface StopDialogProps {
 }
 
 const detailTypeOptions: StopDetailType[] = stopDialogDetailTypeOptions;
-const modalBackdropClassName = "modal-backdrop fixed inset-0 z-[70] grid place-items-center bg-[rgb(15_23_42_/_0.28)] p-5 max-[767px]:items-end max-[767px]:p-2.5";
-const stopDialogClassName = "stop-dialog max-h-[calc(100vh-40px)] w-[min(620px,100%)] overflow-auto rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) shadow-[0_14px_34px_rgb(15_23_42_/_0.16)]";
-const dialogTitleRowClassName = "dialog-title-row grid min-h-[54px] grid-cols-[minmax(0,1fr)_34px] items-center gap-3 border-b border-(--color-border) px-4 [&_button]:grid [&_button]:size-[34px] [&_button]:rotate-180 [&_button]:place-items-center [&_button]:border-0 [&_button]:bg-transparent [&_button]:text-(--color-text-muted) [&_h2]:m-0 [&_h2]:text-base [&_h2]:font-extrabold [&_h2]:leading-[22px] [&_h2]:text-[#0f172a]";
-const stopFormClassName = "stop-form grid gap-4 p-4";
-const dialogGridClassName = "dialog-grid grid grid-cols-2 gap-3 max-[767px]:grid-cols-1 [&_input]:min-h-[38px] [&_input]:w-full [&_input]:rounded-(--radius-sm) [&_input]:border [&_input]:border-(--color-border-strong) [&_input]:bg-(--color-surface) [&_input]:px-2.5 [&_input]:py-2 [&_input]:text-[13px] [&_input]:text-(--color-text) [&_label]:grid [&_label]:min-w-0 [&_label]:gap-1.5 [&_label>span]:text-xs [&_label>span]:font-bold [&_label>span]:text-(--color-text-muted) [&_select]:min-h-[38px] [&_select]:w-full [&_select]:rounded-(--radius-sm) [&_select]:border [&_select]:border-(--color-border-strong) [&_select]:bg-(--color-surface) [&_select]:px-2.5 [&_select]:py-2 [&_select]:text-[13px] [&_select]:text-(--color-text) [&_textarea]:min-h-[38px] [&_textarea]:w-full [&_textarea]:resize-y [&_textarea]:rounded-(--radius-sm) [&_textarea]:border [&_textarea]:border-(--color-border-strong) [&_textarea]:bg-(--color-surface) [&_textarea]:px-2.5 [&_textarea]:py-2 [&_textarea]:text-[13px] [&_textarea]:text-(--color-text)";
-const dialogFieldWideClassName = "dialog-field-wide col-span-full";
-const timeWindowGroupClassName =
-  "time-window-group col-span-full grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto_minmax(132px,auto)] items-end gap-3 max-[767px]:grid-cols-1";
-const nextDayToggleLabelClassName =
-  "next-day-toggle-label !flex min-w-[72px] flex-col gap-1.5";
-const nextDayToggleButtonClassName =
-  "inline-flex min-h-[38px] min-w-[58px] items-center justify-center rounded-(--radius-sm) border border-(--color-border-strong) bg-(--color-surface) px-2 text-xs font-extrabold text-(--color-text-muted) transition-[background,border-color,color] duration-150 hover:enabled:border-(--color-route-border) hover:enabled:bg-(--color-route-soft) hover:enabled:text-(--color-route) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-focus) disabled:cursor-not-allowed disabled:opacity-50 aria-pressed:border-(--color-primary-border) aria-pressed:bg-(--color-primary-soft) aria-pressed:text-(--color-primary-strong)";
-const durationSummaryClassName =
-  "duration-summary grid min-h-[38px] min-w-0 content-center gap-0.5 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) px-2.5 py-1.5 text-xs text-(--color-text-muted) [&_strong]:text-sm [&_strong]:font-extrabold [&_strong]:leading-5 [&_strong]:text-(--color-text) [&_span]:font-bold";
-const advancedDetailsClassName = "advanced-stop-fields col-span-full rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) px-3 py-2 [&_summary]:cursor-pointer [&_summary]:text-xs [&_summary]:font-extrabold [&_summary]:text-(--color-text-muted)";
-const advancedDetailsGridClassName = "mt-3 grid grid-cols-2 gap-3 max-[767px]:grid-cols-1";
-const dialogActionsClassName = "dialog-actions grid grid-cols-[auto_1fr_auto] items-center gap-2.5 max-[767px]:grid-cols-1";
-const dialogPrimaryActionsClassName = "dialog-primary-actions flex justify-end gap-2.5 max-[767px]:grid";
-const placeCandidateListClassName = "place-candidate-list grid gap-2";
-const placeCandidateButtonClassName = "place-candidate-button grid gap-1 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-3 py-2 text-left text-xs text-(--color-text) transition-[border-color,box-shadow] hover:border-(--color-primary) focus-visible:border-(--color-primary) focus-visible:outline-none aria-pressed:border-(--color-primary) aria-pressed:shadow-[0_0_0_2px_rgb(153_246_228_/_0.42)] [&_strong]:text-sm [&_strong]:font-extrabold [&_span]:text-(--color-text-muted)";
-const dialogWarningClassName = "dialog-warning col-span-full rounded-(--radius-sm) border border-(--color-warning-border) bg-(--color-warning-soft) px-3 py-2 text-sm font-bold leading-5 text-(--color-warning-strong)";
-const dialogErrorClassName = "dialog-error col-span-full rounded-(--radius-sm) border border-(--color-danger-border) bg-(--color-danger-soft) px-3 py-2 text-sm font-bold text-(--color-danger)";
-
 
 export function StopDialog({ mode, endDate, initialDay, initialItem, initialParentItemId = null, manualPathOptions = [], onClose, onDelete, onPromoteFoodRecommendation, onSubmit, placeResolution, startDate }: StopDialogProps) {
   const { locale, t } = useI18n();
