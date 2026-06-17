@@ -27,7 +27,12 @@ import {
   type TripCityOption,
   type TripWizardStepId,
 } from "./account-trip-wizard-support";
-import { TripWizardDatesStep, TripWizardDestinationStep } from "./portal-trip-wizard-form-sections";
+import {
+  TripWizardDatesStep,
+  TripWizardDestinationStep,
+  TripWizardInviteStep,
+  TripWizardReviewSummary,
+} from "./portal-trip-wizard-form-sections";
 import { TripWizardMobileStepActions, TripWizardWorkflowNav } from "./portal-trip-wizard-mobile-controls";
 import { PortalTripWizardPreview } from "./portal-trip-wizard-preview";
 import * as wizardStyles from "./portal-trip-wizard-styles";
@@ -292,61 +297,27 @@ export function PortalTripWizard({
                 wizard={wizard}
               />
 
-              <section className={mobileStepClassName("invite", wizardStyles.tripStepSectionCompactClassName)} role="region" aria-label={tripWizardSteps[3].regionLabel} data-mobile-active={activeMobileStep === "invite" ? "true" : "false"}>
-                <details className={wizardStyles.tripAccessPanelClassName} {...(activeMobileStep === "invite" ? { open: true } : {})}>
-                  <summary>
-                    <span>{wizard.steps.invite.title}</span>
-                    <strong>{effectiveOwnerDisplayName || defaultOwnerDisplayName}</strong>
-                  </summary>
-                  <label>
-                    <span>{t.access.dashboard.createTrip.labels.ownerDisplayName}</span>
-                    <input
-                      value={effectiveOwnerDisplayName}
-                      onChange={(event) => {
-                        setHasEditedOwnerDisplayName(true);
-                        onChange((current) => ({ ...current, ownerDisplayName: event.target.value }));
-                      }}
-                      autoComplete="name"
-                      required
-                    />
-                    <small>{wizard.helper.ownerDefault}</small>
-                  </label>
-                  <div className={wizardStyles.tripGeneratedAccessClassName}>
-                    <label>
-                      <span>{t.access.dashboard.createTrip.labels.joinId}</span>
-                      <input value={generatedJoinId} readOnly />
-                      <small>{wizard.helper.joinIdHint}</small>
-                    </label>
-                    <label>
-                      <span>{t.access.dashboard.createTrip.labels.joinPassword}</span>
-                      <input value={generatedJoinPassword} readOnly />
-                    </label>
-                    <Button type="button" variant="secondary" onClick={regenerateCredentials}>
-                      <Icon name="route" />
-                      {wizard.actions.regenerate}
-                    </Button>
-                  </div>
-                </details>
-              </section>
+              <TripWizardInviteStep
+                activeMobileStep={activeMobileStep}
+                defaultOwnerDisplayName={defaultOwnerDisplayName}
+                effectiveOwnerDisplayName={effectiveOwnerDisplayName}
+                generatedJoinId={generatedJoinId}
+                generatedJoinPassword={generatedJoinPassword}
+                mobileStepClassName={mobileStepClassName}
+                onOwnerDisplayNameChange={(value) => {
+                  setHasEditedOwnerDisplayName(true);
+                  onChange((current) => ({ ...current, ownerDisplayName: value }));
+                }}
+                onRegenerateCredentials={regenerateCredentials}
+                t={t}
+                wizard={wizard}
+              />
 
-              <div className={wizardStyles.tripAccessNoteClassName}>
-                <Icon name="key" />
-                <span>{wizard.helper.postCreateEditable}</span>
-              </div>
-              <div className={wizardStyles.tripTicketReviewClassName}>
-                <div>
-                  <span>{wizard.review.trip}</span>
-                  <strong>{tripForm.name || wizard.empty.newTrip}</strong>
-                </div>
-                <div>
-                  <span>{wizard.review.destinations}</span>
-                  <strong>{destinationSummary}</strong>
-                </div>
-                <div>
-                  <span>{wizard.review.dates}</span>
-                  <strong>{tripForm.startDate && tripForm.endDate ? `${tripForm.startDate} - ${tripForm.endDate}` : wizard.empty.missingDates}</strong>
-                </div>
-              </div>
+              <TripWizardReviewSummary
+                destinationSummary={destinationSummary}
+                tripForm={tripForm}
+                wizard={wizard}
+              />
             </div>
           </div>
         </div>
