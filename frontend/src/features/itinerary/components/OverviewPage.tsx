@@ -4,9 +4,8 @@ import { useI18n } from "@/src/i18n/I18nProvider";
 import { formatDayLabel, getTripDates, type ItineraryView } from "@/src/trip/itinerary";
 import { Icon } from "@/src/ui/icons";
 import { formatTripRange, PageUserCard } from "@/src/shared/components/page-header";
+import { WeatherBriefingDrawer, WeatherForecastStrip } from "@/src/shared/components/weather";
 import { Button, Select, TextInput } from "@/src/ui";
-import { WeatherBriefingDrawer } from "@/src/components/WeatherBriefingDrawer";
-import { WeatherForecastStrip } from "@/src/components/WeatherForecastStrip";
 import { CockpitCard, HighlightBoard, OverviewHero } from "./overview";
 import { type OverviewTaskListLabels } from "./overview/OverviewTaskList";
 import {

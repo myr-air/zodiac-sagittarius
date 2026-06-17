@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { expect, userEvent } from "storybook/test";
 import { buildDenseTripFixture, buildEmptyTripFixture, tripFixture } from "@/src/trip/trip-fixtures";
-import { weatherBriefings } from "@/src/components/WeatherBriefing.fixtures";
 import { OverviewPage } from "@/src/features/itinerary/components";
+import { weatherBriefings } from "@/src/shared/components/weather";
 
 const meta = {
   title: "Pages/Overview",

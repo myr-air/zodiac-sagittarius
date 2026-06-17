@@ -4,16 +4,14 @@ import { describe, expect, it, vi } from "vitest";
 import { LanguageSwitch } from "@/src/i18n/LanguageSwitch";
 import { renderWithI18n } from "@/src/i18n/test-utils";
 import { tripFixture } from "@/src/trip/trip-fixtures";
-import { weatherBriefings } from "@/src/components/WeatherBriefing.fixtures";
 import { SmartItineraryTable } from "@/src/features/itinerary/components";
 import {
-  createDragDataTransfer,
-  buildBookingDoc,
   defaultPathOptionsForPanel,
   pathIdStoryPlanA,
   openHeaderControls,
   renderSmartItineraryTable,
 } from "@/src/features/itinerary/testing";
+import { weatherBriefings } from "@/src/shared/components/weather";
 
 const renderTable = renderSmartItineraryTable;
 
