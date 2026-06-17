@@ -3,15 +3,13 @@
 import { Dispatch, FormEvent, SetStateAction, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import type { AccountTripCreateRequest } from "@/src/account/api-client";
-import { DatePickerField } from "@/src/shared/components/date-time-pickers";
 import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
 import type { TripCity } from "@/src/trip/types";
-import { Badge, Button, SwapButton } from "@/src/ui";
+import { Badge, Button } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
 import {
-  citySuggestions,
   customTripCity,
   destinationRouteCode,
   formatPreviewTravelDate,
@@ -29,7 +27,7 @@ import {
   type TripCityOption,
   type TripWizardStepId,
 } from "./account-trip-wizard-support";
-import { DestinationCardMeta } from "./destination-card-meta";
+import { TripWizardDatesStep, TripWizardDestinationStep } from "./portal-trip-wizard-form-sections";
 import { TripWizardMobileStepActions, TripWizardWorkflowNav } from "./portal-trip-wizard-mobile-controls";
 import { PortalTripWizardPreview } from "./portal-trip-wizard-preview";
 import * as wizardStyles from "./portal-trip-wizard-styles";
@@ -71,7 +69,6 @@ export function PortalTripWizard({
   const generatedJoinPassword = tripForm.joinPassword.match(/^[A-Z0-9]{4}-[A-Z0-9]{4}$/) ? tripForm.joinPassword : generateJoinPassword();
   const accessComplete = Boolean(effectiveOwnerDisplayName.trim() && generatedJoinId.trim() && generatedJoinPassword.match(/^[A-Z0-9]{4}-[A-Z0-9]{4}$/));
   const canSubmit = Boolean(tripForm.name.trim()) && destinationComplete && datesComplete && accessComplete;
-  const suggestedCities = citySuggestions(cityQuery || countryQuery, selectedDestinationCities);
   const destinationSummary = selectedDestinationNames.length ? selectedDestinationNames.join(", ") : wizard.empty.destinationSummary;
   const currencySummary = selectedCountryNames.length ? uniqueList(selectedCountryNames.map((countryName) => tripCountryOptions.find((country) => country.name === countryName)?.currency ?? "").filter(Boolean)).join(", ") || wizard.empty.currencyByCity : wizard.empty.currency;
   const previewTripName = tripForm.name.trim() || wizard.empty.untitledTrip;
@@ -258,144 +255,42 @@ export function PortalTripWizard({
                 </label>
               </section>
 
-              <section className={mobileStepClassName("place")} role="region" aria-label={tripWizardSteps[1].regionLabel} data-mobile-active={activeMobileStep === "place" ? "true" : "false"}>
-                <div className={wizardStyles.tripStepHeadingClassName}>
-                  <strong>{wizard.steps.place.title}</strong>
-                  <span>{wizard.steps.place.detail}</span>
-                </div>
-                <div className={wizardStyles.tripCountryPickerClassName}>
-                  <label className={wizardStyles.tripCountrySearchClassName}>
-                    <span>{wizard.fields.originCity}</span>
-                    <input aria-label={wizard.fields.originCity} value={tripForm.originLabel} readOnly />
-                  </label>
-                  <div className={wizardStyles.tripCountrySearchClassName}>
-                    <label>
-                      <span className="sr-only">{wizard.fields.searchDestinationCities}</span>
-                      <input
-                        aria-label={wizard.fields.searchDestinationCities}
-                        ref={destinationSearchRef}
-                        value={cityQuery}
-                        onChange={(event) => setCityQuery(event.target.value)}
-                        placeholder={wizard.placeholders.destinationSearch}
-                      />
-                    </label>
-                    {suggestedCities.length ? (
-                      <div className={wizardStyles.tripCountrySuggestionsClassName} aria-label="Destination city suggestions">
-                        {suggestedCities.map((city) => (
-                          <button type="button" key={`${city.city}-${city.countryCode}`} aria-label={`${city.city}, ${city.country}`} onClick={() => selectDestinationCity(city)}>
-                            <strong>{city.city}</strong>
-                            <span>{city.country} · {city.countryCode} · {city.timezone}</span>
-                          </button>
-                        ))}
-                      </div>
-                    ) : null}
-                  </div>
-                  {selectedCityNames.length ? (
-                    <div className={wizardStyles.tripFormDestinationRowClassName} aria-label="Selected destinations">
-                      {destinationCards.map((card) => (
-                        <article key={card.title} className={wizardStyles.tripMiniDestinationClassName}>
-                          <span className={wizardStyles.tripPlaceThumbClassName} aria-hidden="true" />
-                          <div>
-                            <strong>{card.title}</strong>
-                            <DestinationCardMeta detail={card.detail} meta={card.meta} />
-                          </div>
-                          <button type="button" aria-label={`Remove ${card.title}`} onClick={() => removeCityStop(card.title)}>
-                            <Icon name="x" />
-                          </button>
-                        </article>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className={wizardStyles.tripSelectedCountriesClassName} aria-label="Selected destinations">
-                      <span>{wizard.empty.selectedDestinations}</span>
-                    </div>
-                  )}
-                  <div className={wizardStyles.tripCityEntryClassName}>
-                    <label>
-                      <span>{wizard.fields.addCityManually}</span>
-                      <input
-                        aria-label={wizard.fields.addCityOrStop}
-                        value={countryQuery}
-                        onChange={(event) => setCountryQuery(event.target.value)}
-                        placeholder={wizard.placeholders.manualCity}
-                      />
-                    </label>
-                    <Button type="button" variant="secondary" onClick={addCityStop} disabled={!countryQuery.trim()}>
-                      <Icon name="plus" />
-                      {wizard.actions.addCity}
-                    </Button>
-                  </div>
-                </div>
-              </section>
+              <TripWizardDestinationStep
+                activeMobileStep={activeMobileStep}
+                cityQuery={cityQuery}
+                countryQuery={countryQuery}
+                destinationCards={destinationCards}
+                destinationSearchRef={destinationSearchRef}
+                mobileStepClassName={mobileStepClassName}
+                onAddCityStop={addCityStop}
+                onCityQueryChange={setCityQuery}
+                onCountryQueryChange={setCountryQuery}
+                onRemoveCityStop={removeCityStop}
+                onSelectDestinationCity={selectDestinationCity}
+                selectedCityNames={selectedCityNames}
+                selectedDestinationCities={selectedDestinationCities}
+                tripForm={tripForm}
+                wizard={wizard}
+              />
 
-              <section className={mobileStepClassName("dates")} role="region" aria-label={tripWizardSteps[2].regionLabel} data-mobile-active={activeMobileStep === "dates" ? "true" : "false"}>
-                <div className={wizardStyles.tripStepHeadingClassName}>
-                  <strong>{wizard.steps.dates.title}</strong>
-                  <span>{wizard.steps.dates.detail}</span>
-                </div>
-                <fieldset className={wizardStyles.tripRouteCalendarClassName} role="group" aria-label={wizard.fields.routeCalendar}>
-                  <legend>{wizard.fields.routeCalendar}</legend>
-                  <div className={wizardStyles.tripCalendarSummaryClassName}>
-                    <label>
-                      <span>{wizard.fields.depart}</span>
-                      <DatePickerField aria-label={t.access.dashboard.createTrip.labels.startDate} value={tripForm.startDate} onChange={updateStartDate} />
-                    </label>
-                    <label>
-                      <span>{wizard.fields.return}</span>
-                      <DatePickerField aria-label={t.access.dashboard.createTrip.labels.endDate} value={tripForm.endDate} onChange={updateEndDate} />
-                    </label>
-                  </div>
-                  <div className={wizardStyles.tripCalendarSummaryClassName}>
-                    <label>
-                      <span>{wizard.fields.partySize}</span>
-                      <input
-                        type="number"
-                        min={1}
-                        max={99}
-                        value={tripForm.partySize ?? 1}
-                        onChange={(event) => onChange((current) => ({ ...current, partySize: Math.max(1, Number(event.target.value) || 1) }))}
-                      />
-                    </label>
-                    <label>
-                      <span>{wizard.fields.defaultTimezone}</span>
-                      <input
-                        value={tripForm.defaultTimezone || selectedDestinationCities[0]?.timezone || "Asia/Bangkok"}
-                        onChange={(event) => onChange((current) => ({ ...current, defaultTimezone: event.target.value }))}
-                      />
-                    </label>
-                  </div>
-                  <strong>{previewStartDate} - {previewEndDate}</strong>
-                  <div className={wizardStyles.tripCalendarGridClassName}>
-                    {calendarDays.map((day) => (
-                      <button
-                        type="button"
-                        key={day.value}
-                        aria-label={`${day.tourDay ? `Tour day ${day.tourDay}. ` : ""}Select ${day.label} as ${selectingDateStep} date`}
-                        aria-pressed={day.value === tripForm.startDate || day.value === tripForm.endDate}
-                        data-in-range={day.inRange ? "true" : "false"}
-                        data-date-state={day.dateState}
-                        data-tour-tone={day.tourTone}
-                        onClick={() => selectCalendarDate(day.value)}
-                      >
-                        {day.day}
-                      </button>
-                    ))}
-                  </div>
-                  <div className={wizardStyles.tripCalendarFooterClassName}>
-                    <Button type="button" variant="secondary" onClick={clearTravelDates}>
-                      <Icon name="x" />
-                      {wizard.actions.clearDates}
-                    </Button>
-                    <SwapButton className={wizardStyles.tripDateArrowClassName} type="button" onClick={swapTravelDates} aria-label={wizard.actions.swapDates}>
-                      <Icon name="route" />
-                    </SwapButton>
-                  </div>
-                  <small className={wizardStyles.tripCalendarHelperClassName}>
-                    <Icon name="route" />
-                    <span>{wizard.helper.datesWindow}</span>
-                  </small>
-                </fieldset>
-              </section>
+              <TripWizardDatesStep
+                activeMobileStep={activeMobileStep}
+                calendarDays={calendarDays}
+                mobileStepClassName={mobileStepClassName}
+                onChange={onChange}
+                onClearTravelDates={clearTravelDates}
+                onSelectCalendarDate={selectCalendarDate}
+                onSwapTravelDates={swapTravelDates}
+                onUpdateEndDate={updateEndDate}
+                onUpdateStartDate={updateStartDate}
+                previewEndDate={previewEndDate}
+                previewStartDate={previewStartDate}
+                selectedDestinationCities={selectedDestinationCities}
+                selectingDateStep={selectingDateStep}
+                t={t}
+                tripForm={tripForm}
+                wizard={wizard}
+              />
 
               <section className={mobileStepClassName("invite", wizardStyles.tripStepSectionCompactClassName)} role="region" aria-label={tripWizardSteps[3].regionLabel} data-mobile-active={activeMobileStep === "invite" ? "true" : "false"}>
                 <details className={wizardStyles.tripAccessPanelClassName} {...(activeMobileStep === "invite" ? { open: true } : {})}>
