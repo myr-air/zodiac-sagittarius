@@ -1,5 +1,6 @@
 import { createPortal } from "react-dom";
 import { type ReactElement, useEffect, useRef, useState } from "react";
+import { useDismissOnOutside } from "@/src/shared/hooks/use-dismiss-on-outside";
 import { Icon, type IconName } from "@/src/ui/icons";
 import { cn } from "@/src/lib/cn";
 
@@ -119,26 +120,11 @@ export function InlineOptionPicker({
     };
   }, [open, options.length]);
 
-  useEffect(() => {
-    if (!open) return;
-    function closeOnOutside(event: MouseEvent | TouchEvent) {
-      const target = event.target as Node | null;
-      if (!target) return;
-      if (
-        buttonRef.current?.contains(target) ||
-        menuRef.current?.contains(target) ||
-        sideMenuRef.current?.contains(target)
-      )
-        return;
-      setOpen(false);
-    }
-    document.addEventListener("mousedown", closeOnOutside);
-    document.addEventListener("touchstart", closeOnOutside);
-    return () => {
-      document.removeEventListener("mousedown", closeOnOutside);
-      document.removeEventListener("touchstart", closeOnOutside);
-    };
-  }, [open]);
+  useDismissOnOutside({
+    enabled: open,
+    onDismiss: () => setOpen(false),
+    triggerRefs: [buttonRef, menuRef, sideMenuRef],
+  });
 
   useEffect(() => {
     if (!open) return;

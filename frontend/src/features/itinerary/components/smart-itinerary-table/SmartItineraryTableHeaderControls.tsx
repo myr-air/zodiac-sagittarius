@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useDismissOnOutside } from "@/src/shared/hooks/use-dismiss-on-outside";
 import type { PlanStatus, PlanVariant } from "@/src/trip/types";
 import { Button, Select } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
@@ -141,31 +142,15 @@ export function SmartItineraryTableHeaderControls({
     return () => window.clearTimeout(timeoutId);
   }, [headerControlsExpanded, renderHeaderControls]);
 
-  useEffect(() => {
-    if (!headerControlsExpanded) return;
-
-    function closeOnOutside(event: MouseEvent | TouchEvent) {
-      const target = event.target as Node | null;
-      if (!target) return;
-      if (headerControlsRef.current?.contains(target)) return;
-      setHeaderControlsExpanded(false);
-    }
-
-    function closeOnEscape(event: KeyboardEvent) {
-      if (event.key !== "Escape") return;
+  useDismissOnOutside({
+    enabled: headerControlsExpanded,
+    onDismiss: () => setHeaderControlsExpanded(false),
+    triggerRefs: [headerControlsRef],
+    onEscape: () => {
       setHeaderControlsExpanded(false);
       headerControlsButtonRef.current?.focus();
-    }
-
-    document.addEventListener("mousedown", closeOnOutside);
-    document.addEventListener("touchstart", closeOnOutside);
-    document.addEventListener("keydown", closeOnEscape);
-    return () => {
-      document.removeEventListener("mousedown", closeOnOutside);
-      document.removeEventListener("touchstart", closeOnOutside);
-      document.removeEventListener("keydown", closeOnEscape);
-    };
-  }, [headerControlsExpanded]);
+    },
+  });
 
   async function submitNewTripPlan(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
