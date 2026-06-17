@@ -8,6 +8,7 @@ import { formatThaiDate } from "@/src/features/itinerary/lib";
 import { StopDialogActions } from "./stop-dialog/StopDialogActions";
 import { StopDialogAdvancedFields } from "./stop-dialog/StopDialogAdvancedFields";
 import { StopDialogDetails } from "./stop-dialog/StopDialogDetails";
+import { StopDialogPlaceResolution } from "./stop-dialog/StopDialogPlaceResolution";
 import { StopDialogTimeWindow } from "./stop-dialog/StopDialogTimeWindow";
 import {
   buildInitialStopDetailValues,
@@ -21,10 +22,7 @@ import {
   dialogFieldWideClassName,
   dialogGridClassName,
   dialogTitleRowClassName,
-  dialogWarningClassName,
   modalBackdropClassName,
-  placeCandidateButtonClassName,
-  placeCandidateListClassName,
   stopDialogClassName,
   stopFormClassName,
 } from "./stop-dialog/stop-dialog.styles";
@@ -386,30 +384,18 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, initialPare
                 />
               </>
             )}
-            {placeResolution?.state === "ambiguous" ? (
-              <div className={dialogFieldWideClassName} aria-label={t.stopDialog.placeResolution.candidates}>
-                <div className={placeCandidateListClassName}>
-                  {placeResolution.candidates.map((candidate) => (
-                    <button
-                      type="button"
-                      className={placeCandidateButtonClassName}
-                      key={`${candidate.source}:${candidate.name}:${candidate.address}`}
-                      aria-label={t.stopDialog.actions.chooseCandidate({ name: candidate.name })}
-                      aria-pressed={selectedCandidate?.mapLink === candidate.mapLink}
-                      onClick={() => setSelectedCandidate(candidate)}
-                    >
-                      <strong>{candidate.name}</strong>
-                      <span>{candidate.address}</span>
-                      <span>{candidate.source} · {Math.round(candidate.confidence * 100)}%</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            ) : null}
-            {placeResolution?.state === "unresolved" ? (
-              <p className={dialogWarningClassName} role="alert">
-                {t.stopDialog.placeResolution.unresolved}
-              </p>
+            {placeResolution ? (
+              <StopDialogPlaceResolution
+                candidates={placeResolution.candidates}
+                candidateListLabel={t.stopDialog.placeResolution.candidates}
+                chooseCandidateLabel={(name) =>
+                  t.stopDialog.actions.chooseCandidate({ name })
+                }
+                selectedCandidate={selectedCandidate}
+                state={placeResolution.state}
+                unresolvedMessage={t.stopDialog.placeResolution.unresolved}
+                onSelectCandidate={setSelectedCandidate}
+              />
             ) : null}
             {!isFocusedEdit && detailType !== "transportation" ? (
               <label className={dialogFieldWideClassName} htmlFor={stopDialogFieldIds.transportation}>
