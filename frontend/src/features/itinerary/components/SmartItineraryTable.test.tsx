@@ -6,6 +6,12 @@ import { renderWithI18n } from "@/src/i18n/test-utils";
 import { tripFixture } from "@/src/trip/trip-fixtures";
 import { weatherBriefings } from "@/src/components/WeatherBriefing.fixtures";
 import { SmartItineraryTable } from "@/src/features/itinerary/components";
+import {
+  buildBookingDoc,
+  defaultSmartItineraryPathOptions,
+  defaultDayPathOptions,
+  defaultPathOptionsForPanel,
+} from "./fixtures/itinerary-items";
 
 function renderTable(
   overrides: Partial<Parameters<typeof SmartItineraryTable>[0]> = {},
@@ -22,11 +28,7 @@ function renderTable(
     role: "owner",
     startDate: tripFixture.trip.startDate,
     selectedItemId: tripFixture.planItems[0].id,
-    pathOptions: [
-      { id: "main", name: "Main", scope: "trip" },
-      { id: "path-plan-1", name: "Plan 1", scope: "trip" },
-      { id: "path-rain", name: "Rain plan", scope: "day", day: "2026-06-19" },
-    ],
+    pathOptions: [...defaultSmartItineraryPathOptions],
     dayPathOverrides: {},
     showAllPaths: false,
     tripName: tripFixture.trip.name,
@@ -288,16 +290,7 @@ describe("SmartItineraryTable", () => {
     renderTable({
       onChangeDayPath,
       onToggleShowAllPaths,
-      pathOptions: [
-        { id: "main", name: "Main", scope: "trip" },
-        { id: "path-plan-1", name: "Plan 1", scope: "trip" },
-        {
-          id: "path-2026-06-19-sub-a",
-          name: "Plan A",
-          scope: "day",
-          day: "2026-06-19",
-        },
-      ],
+      pathOptions: [...defaultPathOptionsForPanel],
     });
 
     expect(screen.getByRole("button", { name: "Trip Plan controls" })).toBeInTheDocument();
@@ -700,33 +693,24 @@ describe("SmartItineraryTable", () => {
       graphItems: [flightItem, busItem],
       selectedItemId: flightItem.id,
       bookingDocs: [
-        {
+        buildBookingDoc({
           id: "booking-shared-flight",
           tripId: tripFixture.trip.id,
           tripPlanId: tripFixture.trip.activePlanVariantId,
           type: "flight",
           title: "CX shared flight ticket",
           status: "booked",
-          visibility: "shared",
           ownerMemberId: tripFixture.trip.members[0].id,
           providerName: "Cathay Pacific",
           confirmationCode: "CX1234",
           startsAt: "2026-06-19T09:00:00",
           endsAt: "2026-06-19T11:30:00",
           timezone: tripFixture.trip.defaultTimezone,
-          priceAmount: null,
-          currency: null,
           travelerIds: [tripFixture.trip.members[0].id],
-          externalLinks: [],
           relatedItineraryItemIds: [busItem.id],
-          relatedTaskIds: [],
-          relatedExpenseIds: [],
-          noteIds: [],
           notes: "Shared ticket",
           createdBy: tripFixture.trip.members[0].id,
-          updatedAt: "2026-05-28T00:00:00.000Z",
-          version: 1,
-        },
+        }),
       ],
       onSaveBookingForItem,
     });
@@ -819,33 +803,24 @@ describe("SmartItineraryTable", () => {
       graphItems: [flightItem, busItem],
       selectedItemId: flightItem.id,
       bookingDocs: [
-        {
+        buildBookingDoc({
           id: "booking-shared-flight",
           tripId: tripFixture.trip.id,
           tripPlanId: tripFixture.trip.activePlanVariantId,
           type: "flight",
           title: "CX shared flight ticket",
           status: "booked",
-          visibility: "shared",
           ownerMemberId: tripFixture.trip.members[0].id,
           providerName: "Cathay Pacific",
           confirmationCode: "CX1234",
           startsAt: "2026-06-19T09:00:00",
           endsAt: "2026-06-19T11:30:00",
           timezone: tripFixture.trip.defaultTimezone,
-          priceAmount: null,
-          currency: null,
           travelerIds: [tripFixture.trip.members[0].id],
-          externalLinks: [],
           relatedItineraryItemIds: [flightItem.id, busItem.id],
-          relatedTaskIds: [],
-          relatedExpenseIds: [],
-          noteIds: [],
           notes: "Shared ticket",
           createdBy: tripFixture.trip.members[0].id,
-          updatedAt: "2026-05-28T00:00:00.000Z",
-          version: 1,
-        },
+        }),
       ],
       onSaveBookingForItem,
       onUnlinkBookingForItem,
@@ -1321,15 +1296,7 @@ describe("SmartItineraryTable", () => {
       graphItems: [mainItem, alternativeItem],
       selectedItemId: "graph-main",
       onSelectItem,
-      pathOptions: [
-        { id: "main", name: "Main", scope: "trip" },
-        {
-          id: "path-2026-06-19-sub-a",
-          name: "Plan A",
-          scope: "day",
-          day: "2026-06-19",
-        },
-      ],
+      pathOptions: [...defaultDayPathOptions],
     });
 
     expect(
@@ -1432,15 +1399,7 @@ describe("SmartItineraryTable", () => {
       graphItems: [mainItem],
       selectedItemId: "graph-main",
       onMoveItemToPath,
-      pathOptions: [
-        { id: "main", name: "Main", scope: "trip" },
-        {
-          id: "path-2026-06-19-sub-a",
-          name: "Plan A",
-          scope: "day",
-          day: "2026-06-19",
-        },
-      ],
+      pathOptions: [...defaultDayPathOptions],
     });
 
     await user.selectOptions(
@@ -1459,15 +1418,7 @@ describe("SmartItineraryTable", () => {
       role: "viewer",
       selectedItemId: "graph-main",
       onMoveItemToPath,
-      pathOptions: [
-        { id: "main", name: "Main", scope: "trip" },
-        {
-          id: "path-2026-06-19-sub-a",
-          name: "Plan A",
-          scope: "day",
-          day: "2026-06-19",
-        },
-      ],
+      pathOptions: [...defaultDayPathOptions],
     });
     expect(screen.getByRole("button", { name: /Graph main on Main/i })).toHaveAttribute(
       "draggable",

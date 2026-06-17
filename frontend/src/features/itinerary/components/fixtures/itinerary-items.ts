@@ -1,9 +1,63 @@
 import type {
+  BookingDoc,
   ItineraryItem,
   ItineraryItemKind,
   ItineraryItemPriority,
   ItineraryTimeMode,
 } from "@/src/trip/types";
+import type { ItineraryPathOption } from "@/src/trip/itinerary";
+
+export const defaultSmartItineraryPathOptions = [
+  { id: "main", name: "Main", scope: "trip" },
+  { id: "path-plan-1", name: "Plan 1", scope: "trip" },
+  { id: "path-rain", name: "Rain plan", scope: "day", day: "2026-06-19" },
+] as const satisfies ReadonlyArray<ItineraryPathOption>;
+
+export const defaultPathOptionsForPanel = [
+  { id: "main", name: "Main", scope: "trip" },
+  { id: "path-plan-1", name: "Plan 1", scope: "trip" },
+  { id: "path-2026-06-19-sub-a", name: "Plan A", scope: "day", day: "2026-06-19" },
+] as const satisfies ReadonlyArray<ItineraryPathOption>;
+
+export const defaultDayPathOptions = [
+  { id: "main", name: "Main", scope: "trip" },
+  {
+    id: "path-2026-06-19-sub-a",
+    name: "Plan A",
+    scope: "day",
+    day: "2026-06-19",
+  },
+] as const satisfies ReadonlyArray<ItineraryPathOption>;
+
+export function buildBookingDoc(
+  overrides: Partial<BookingDoc> & Pick<BookingDoc, "id" | "type" | "title">,
+): BookingDoc {
+  return {
+    tripId: "trip-id",
+    tripPlanId: null,
+    status: "draft",
+    visibility: "shared",
+    ownerMemberId: null,
+    providerName: null,
+    confirmationCode: null,
+    startsAt: null,
+    endsAt: null,
+    timezone: null,
+    priceAmount: null,
+    currency: null,
+    travelerIds: [],
+    externalLinks: [],
+    relatedItineraryItemIds: [],
+    relatedTaskIds: [],
+    relatedExpenseIds: [],
+    noteIds: [],
+    notes: null,
+    createdBy: "system",
+    updatedAt: "2026-06-01T00:00:00.000Z",
+    version: 1,
+    ...overrides,
+  };
+}
 
 const defaultItem: Readonly<ItineraryItem> = {
   id: "item-id",
@@ -45,4 +99,3 @@ export function buildItineraryItem(overrides: Partial<ItineraryItem> = {}): Itin
     ...overrides,
   };
 }
-

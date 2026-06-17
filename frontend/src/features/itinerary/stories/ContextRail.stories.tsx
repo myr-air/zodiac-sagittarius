@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { expect, userEvent } from "storybook/test";
 import { tripFixture } from "@/src/trip/trip-fixtures";
 import { ContextRail } from "@/src/features/itinerary/components";
+import { buildBookingDoc } from "@/src/features/itinerary/components/fixtures/itinerary-items";
 
 const noop = () => {};
 const selectedItem =
@@ -67,33 +68,22 @@ export const BookingTab: Story = {
   args: {
     ...baseArgs,
     bookingDocs: [
-      {
+      buildBookingDoc({
         id: "story-booking-dimdim",
         tripId: tripFixture.trip.id,
         tripPlanId: selectedItem.planVariantId,
         type: "activity_ticket",
         title: "Dim Dim Sum reservation",
         status: "booked",
-        visibility: "shared",
         ownerMemberId: tripFixture.currentMembers.owner.id,
         providerName: "Dim Dim Sum",
         confirmationCode: "DDS-42",
-        startsAt: null,
-        endsAt: null,
         timezone: "Asia/Hong_Kong",
-        priceAmount: null,
-        currency: null,
         travelerIds: [tripFixture.currentMembers.owner.id],
-        externalLinks: [],
         relatedItineraryItemIds: [selectedItem.id],
-        relatedTaskIds: [],
-        relatedExpenseIds: [],
-        noteIds: [],
         notes: "Window table",
         createdBy: tripFixture.currentMembers.owner.id,
-        updatedAt: "2026-06-10T00:00:00.000Z",
-        version: 1,
-      },
+      }),
     ],
   },
   play: async ({ canvas }) => {

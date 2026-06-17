@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import { tripFixture } from "@/src/trip/trip-fixtures";
 import { renderWithI18n } from "@/src/i18n/test-utils";
 import { ContextRail } from "@/src/features/itinerary/components";
+import { buildBookingDoc } from "./fixtures/itinerary-items";
 
 const selectedItem =
   tripFixture.planItems.find((item) => item.id === "item-dimdim") ??
@@ -130,60 +131,34 @@ describe("ContextRail", () => {
       onChangeBookingDocType,
       onChangeBookingDocQuickFields,
       bookingDocs: [
-        {
+        buildBookingDoc({
           id: "booking-dimdim-1",
           tripId: tripFixture.trip.id,
           tripPlanId: selectedItem.planVariantId,
           type: "activity_ticket",
           title: "Dim Dim Sum reservation",
           status: "booked",
-          visibility: "shared",
           ownerMemberId: tripFixture.currentMembers.owner.id,
           providerName: "Dim Dim Sum",
           confirmationCode: "DDS-42",
-          startsAt: null,
-          endsAt: null,
           timezone: "Asia/Hong_Kong",
-          priceAmount: null,
-          currency: null,
           travelerIds: [tripFixture.currentMembers.owner.id],
-          externalLinks: [],
           relatedItineraryItemIds: [selectedItem.id],
-          relatedTaskIds: [],
-          relatedExpenseIds: [],
-          noteIds: [],
           notes: "Window table",
           createdBy: tripFixture.currentMembers.owner.id,
-          updatedAt: "2026-06-10T00:00:00.000Z",
-          version: 1,
-        },
-        {
+        }),
+        buildBookingDoc({
           id: "booking-other-1",
           tripId: tripFixture.trip.id,
           tripPlanId: selectedItem.planVariantId,
           type: "other",
           title: "Other stop ticket",
           status: "booked",
-          visibility: "shared",
           ownerMemberId: tripFixture.currentMembers.owner.id,
-          providerName: null,
-          confirmationCode: null,
-          startsAt: null,
-          endsAt: null,
           timezone: "Asia/Hong_Kong",
-          priceAmount: null,
-          currency: null,
-          travelerIds: [],
-          externalLinks: [],
           relatedItineraryItemIds: ["other-item"],
-          relatedTaskIds: [],
-          relatedExpenseIds: [],
-          noteIds: [],
-          notes: null,
           createdBy: tripFixture.currentMembers.owner.id,
-          updatedAt: "2026-06-10T00:00:00.000Z",
-          version: 1,
-        },
+        }),
       ],
     });
 
