@@ -41,7 +41,6 @@ import {
 import {
   ACCESS_ERROR_CODES,
   arrayBufferToBase64Url,
-  createPasskeyCredential,
   errorMessage,
   formatDateTime,
   getPasskeyCredential,
@@ -57,13 +56,13 @@ import {
 } from "./account-trip-wizard-support";
 import { AccountPortalNav } from "./account-portal-nav";
 import { AccountPortalLoadingFrame } from "./account-portal-loading-frame";
-import { AccountSettingsEditor } from "./account-settings-editor";
 import { AccountAuthFlowSwitch, AccountAuthRouteTabs, type AuthFlow } from "./account-auth-chrome";
 import { accessLanguageSwitchClassName, accountEntryLanguageSwitchClassName } from "./account-panel-shared-styles";
 import { StatusMessage } from "./account-status-message";
 import { PortalCreatedTripShare, type CreatedTripShare } from "./portal-created-trip-share";
 import { PortalDashboardSection } from "./portal-dashboard-section";
 import { PortalExplorerSection } from "./portal-explorer-section";
+import { PortalSettingsSection } from "./portal-settings-section";
 import { PortalTodosSection } from "./portal-todos-section";
 import { PortalTripsSection } from "./portal-trips-section";
 import { PortalTripWizard } from "./portal-trip-wizard";
@@ -1075,29 +1074,6 @@ function AccountDashboard({
     }
   }
 
-  async function registerPasskey() {
-    if (!settings) return;
-    try {
-      const registrationStart = await accountClient.startPasskeyRegistration(accountSession.sessionToken);
-      const credential = await createPasskeyCredential(registrationStart.challenge, settings);
-      const passkey = await accountClient.finishPasskeyRegistration(accountSession.sessionToken, {
-        challengeId: registrationStart.challengeId,
-        credentialId: arrayBufferToBase64Url(credential.rawId),
-        clientDataJson: arrayBufferToBase64Url(credential.response.clientDataJSON),
-        attestationObject: arrayBufferToBase64Url(credential.response.attestationObject),
-        nickname: `${settings.profile.displayName} passkey`,
-      });
-      onSettingsChanged({
-        ...settings,
-        passkeys: [passkey, ...settings.passkeys.filter((candidate) => candidate.id !== passkey.id)],
-      });
-      onMessage(t.access.settings.messages.passkeyCreated);
-      onError(null);
-    } catch (caught) {
-      onError(errorMessage(caught, t.access.settings.messages.passkeyFailed, t.access.messages));
-    }
-  }
-
   const activePortalSection = portalSection === "new-trip" ? "trips" : portalSection;
   const currentPortalSectionIndex = portalSectionOrder.indexOf(portalSection);
 
@@ -1205,41 +1181,28 @@ function AccountDashboard({
           />
         ) : null}
 
-        {portalSection === "settings" ? <section className={portalSettingsCardClassName} id="portal-settings">
-          <PanelHeading icon="settings" title={t.access.settings.title} detail={t.access.settings.detail} />
-          {settings ? (
-            <AccountSettingsEditor
-              accountClient={accountClient}
-              accountSession={accountSession}
-              classNames={{
-                avatar: accountAvatarClassName,
-                deviceList: accountDeviceListClassName,
-                deviceRow: accountDeviceRowClassName,
-                empty: accountEmptyClassName,
-                profilePreview: settingsProfilePreviewClassName,
-                settingsForm: accountSettingsFormClassName,
-                settingsGrid: accountSettingsGridClassName,
-                twoCol: accountTwoColClassName,
-              }}
-              settings={settings}
-              onError={onError}
-              onMessage={onMessage}
-              onSessionCleared={onSessionCleared}
-              onSettingsChanged={onSettingsChanged}
-            />
-          ) : (
-            <p className={accountEmptyClassName}>{t.access.settings.loading}</p>
-          )}
-          <Button
-            type="button"
-            variant="secondary"
-            disabled={!settings}
-            onClick={() => void registerPasskey()}
-          >
-            <Icon name="key" />
-            {t.access.settings.startPasskeySetup}
-          </Button>
-        </section> : null}
+        {portalSection === "settings" ? (
+          <PortalSettingsSection
+            accountClient={accountClient}
+            accountSession={accountSession}
+            classNames={{
+              avatar: accountAvatarClassName,
+              deviceList: accountDeviceListClassName,
+              deviceRow: accountDeviceRowClassName,
+              empty: accountEmptyClassName,
+              profilePreview: settingsProfilePreviewClassName,
+              section: portalSettingsCardClassName,
+              settingsForm: accountSettingsFormClassName,
+              settingsGrid: accountSettingsGridClassName,
+              twoCol: accountTwoColClassName,
+            }}
+            settings={settings}
+            onError={onError}
+            onMessage={onMessage}
+            onSessionCleared={onSessionCleared}
+            onSettingsChanged={onSettingsChanged}
+          />
+        ) : null}
 
         {portalSection === "sign-out" ? <section className={portalProfileCardClassName} id="portal-sign-out">
           <PanelHeading icon="x" title={t.access.portal.sections.signOut.title} detail={t.access.portal.sections.signOut.detail} />
