@@ -1,4 +1,4 @@
-type RouteViewport = {
+export type RouteViewport = {
   center: [number, number];
   zoom: number;
 };
