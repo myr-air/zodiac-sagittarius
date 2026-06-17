@@ -3,6 +3,7 @@ export { useWorkspaceExpenses } from "./use-workspace-expenses";
 export { useWorkspaceBookingCommands } from "./use-workspace-booking-commands";
 export { useWorkspaceAccessGate } from "./use-workspace-access-gate";
 export { useWorkspaceItineraryCommands } from "./use-workspace-itinerary-commands";
+export { useWorkspaceItineraryUiActions } from "./use-workspace-itinerary-ui-actions";
 export { useWorkspaceItineraryImport } from "./use-workspace-itinerary-import";
 export { useWorkspacePhotoAlbums } from "./use-workspace-photo-albums";
 export { useWorkspaceRecords } from "./use-workspace-records";

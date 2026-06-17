@@ -69,6 +69,7 @@ import {
   useWorkspaceBookingCommands,
   useWorkspaceAccessGate,
   useWorkspaceItineraryImport,
+  useWorkspaceItineraryUiActions,
   useWorkspaceAdministration,
   useWorkspaceExpenses,
   useWorkspaceItineraryCommands,
@@ -79,7 +80,7 @@ import {
 import { nextClientMutationId } from "@/src/trip/local-ids";
 import { seedTrip } from "@/src/trip/seed";
 import { TripWorkspaceAccessPanel } from "./access-gate";
-import { buildPromotedFoodRecommendationStop } from "./promote-food-recommendation";
+import type { ItineraryDialogState } from "./hooks/itinerary-dialog-state";
 import type {
   ItineraryItem,
   Trip,
@@ -197,11 +198,7 @@ export function SagittariusApp({
     setSelectedTripPlanId,
     setTripState,
   });
-  const [dialogState, setDialogState] = useState<
-    | { mode: "create"; day?: string; parentItemId?: string | null }
-    | { mode: "edit"; item: ItineraryItem }
-    | null
-  >(null);
+  const [dialogState, setDialogState] = useState<ItineraryDialogState>(null);
   const [stopPlaceResolution, setStopPlaceResolution] =
     useState<StopPlaceResolutionState>({ state: "idle", candidates: [] });
   const [dialogDeleteItem, setDialogDeleteItem] =
@@ -700,40 +697,24 @@ export function SagittariusApp({
     updateApiTrip,
   });
 
-  function selectItem(itemId: string) {
-    setContextRailPreferredTab("notes");
-    setSelectedItemId(itemId);
-  }
-
-  function openItemDetails(itemId: string) {
-    setContextRailPreferredTab("notes");
-    setSelectedItemId(itemId);
-    setContextRailVisibility(true);
-  }
-
-  async function promoteFoodRecommendation(item: ItineraryItem) {
-    if (!canEdit) return;
-    const promotedStop = buildPromotedFoodRecommendationStop(item);
-    if (!promotedStop) return;
-    await createStop(promotedStop);
-  }
-
-  async function deleteSelectedStop() {
-    /* v8 ignore next */
-    if (dialogState?.mode !== "edit" || !canEdit) return;
-    setDialogDeleteItem(dialogState.item);
-  }
-
-  function editItem(itemId: string) {
-    const item = trip.itineraryItems.find(
-      (candidate) => candidate.id === itemId,
-    );
-    if (item) {
-      setStopPlaceResolution({ state: "idle", candidates: [] });
-      setDialogState({ mode: "edit", item });
-    }
-  }
-
+  const {
+    deleteSelectedStop,
+    editItem,
+    openItemDetails,
+    promoteFoodRecommendation,
+    selectItem,
+  } = useWorkspaceItineraryUiActions({
+    canEdit,
+    createStop,
+    dialogState,
+    setContextRailPreferredTab,
+    setContextRailVisibility,
+    setDialogDeleteItem,
+    setDialogState,
+    setSelectedItemId,
+    setStopPlaceResolution,
+    trip,
+  });
 
   function authenticateParticipant(session: TripParticipantSession) {
     setAccessError(null);
