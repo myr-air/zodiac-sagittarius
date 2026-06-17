@@ -28,16 +28,18 @@ import {
   type StopDetailType,
   type StopDetailValues,
   detailTypeFromItem,
-  durationBetweenTimes,
-  endOffsetDaysBetweenTimes,
-  endWindowFromDuration,
   itemKindForStopDetailType,
-  parseRouteActivity,
   resolveStopActivityType,
   stopDialogDetailTypeOptions,
   stopDialogFieldIds,
   stopDetailLabels,
 } from "./stop-dialog/stop-dialog.utils";
+import {
+  durationBetweenTimes,
+  endOffsetDaysBetweenTimes,
+  endWindowFromDuration,
+  parseRouteActivity,
+} from "./stop-dialog/stop-dialog-time";
 
 export type { StopFormValues, StopManualPathOption } from "./stop-dialog/stop-dialog.types";
 

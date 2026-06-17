@@ -3,9 +3,6 @@ import { describe, expect, it } from "vitest";
 import {
   buildStructuredStopDetails,
   detailTypeFromItem,
-  durationBetweenTimes,
-  endOffsetDaysBetweenTimes,
-  parseRouteActivity,
   resolveStopActivityType,
   stopDialogFieldIds,
   stopDialogDetailTypeOptions,
@@ -80,20 +77,6 @@ describe("stop dialog utils", () => {
         ticketRef: "",
       }),
     ).toEqual({ kind: "transportation", origin: "DMK", destination: "HK", mode: "taxi", costNote: "paid" });
-  });
-
-  it("computes duration between times across day boundary", () => {
-    expect(durationBetweenTimes("23:00", "01:00", 1)).toBe(120);
-    expect(endOffsetDaysBetweenTimes("23:00", "01:00")).toBe(1);
-  });
-
-  it("parses route syntax with optional time window", () => {
-    expect(parseRouteActivity("DMK -> HKG (8.00am - 11.30am)")).toMatchObject({
-      origin: "DMK",
-      destination: "HKG",
-      startTime: "08:00",
-      durationMinutes: 210,
-    });
   });
 
   it("extracts detail strings and ignores non-string values", () => {

@@ -3,13 +3,13 @@ import type { StopFormValues } from "./stop-dialog.types";
 import {
   type StopDetailType,
   type StopDetailValues,
-  addMinutesToTime,
   buildStructuredStopDetails,
   emptyStopDetailValues,
   readStringDetail,
   resolveStopActivityType,
   structuredStopDetailValues,
 } from "./stop-dialog.utils";
+import { addMinutesToTime } from "./stop-dialog-time";
 
 export function buildInitialStopFormValues({
   initialDay,
