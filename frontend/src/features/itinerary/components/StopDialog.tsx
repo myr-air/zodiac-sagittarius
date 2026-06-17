@@ -4,9 +4,9 @@ import { useI18n } from "@/src/i18n/I18nProvider";
 import { formatDayLabel, getTripDates } from "@/src/trip/itinerary";
 import { Button, Select } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
-import { formatDuration, formatThaiDate } from "@/src/features/itinerary/lib";
-import { TimePickerField } from "@/src/components/DateTimePickers";
+import { formatThaiDate } from "@/src/features/itinerary/lib";
 import { StopDialogDetails } from "./stop-dialog/StopDialogDetails";
+import { StopDialogTimeWindow } from "./stop-dialog/StopDialogTimeWindow";
 import {
   buildInitialStopDetailValues,
   buildInitialStopFormValues,
@@ -22,15 +22,11 @@ import {
   dialogPrimaryActionsClassName,
   dialogTitleRowClassName,
   dialogWarningClassName,
-  durationSummaryClassName,
   modalBackdropClassName,
-  nextDayToggleButtonClassName,
-  nextDayToggleLabelClassName,
   placeCandidateButtonClassName,
   placeCandidateListClassName,
   stopDialogClassName,
   stopFormClassName,
-  timeWindowGroupClassName,
 } from "./stop-dialog/stop-dialog.styles";
 import type { StopFormValues, StopManualPathOption } from "./stop-dialog/stop-dialog.types";
 import {
@@ -362,42 +358,23 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, initialPare
                 </div>
               </details>
             ) : null}
-            <div
-              className={timeWindowGroupClassName}
-              role="group"
-              aria-label={locale === "th" ? "ช่วงเวลา" : "Time window"}
-            >
-              <label htmlFor={stopDialogFieldIds.startTime}>
-                <span>{t.stopDialog.fields.startTime}</span>
-                <TimePickerField id={stopDialogFieldIds.startTime} value={values.startTime} onChange={updateStartTime} required={values.timeMode !== "flexible"} />
-              </label>
-              <label htmlFor={stopDialogFieldIds.endTime}>
-                <span>{t.stopDialog.fields.endTime}</span>
-                <TimePickerField id={stopDialogFieldIds.endTime} value={values.endTime ?? ""} onChange={updateEndTime} />
-              </label>
-              <label className={nextDayToggleLabelClassName} htmlFor={stopDialogFieldIds.endOffsetDays}>
-                <span>{locale === "th" ? "ข้ามวัน" : "Next day"}</span>
-                <button
-                  id={stopDialogFieldIds.endOffsetDays}
-                  className={nextDayToggleButtonClassName}
-                  type="button"
-                  aria-label={`Toggle next-day end ${values.activity || "activity"}`}
-                  aria-pressed={values.endOffsetDays > 0}
-                  disabled={values.timeMode === "flexible" || !values.endTime}
-                  onClick={toggleNextDayEnd}
-                >
-                  +1
-                </button>
-              </label>
-              <div className={durationSummaryClassName} aria-labelledby={stopDialogFieldIds.derivedDuration}>
-                <span id={stopDialogFieldIds.derivedDuration}>{t.itinerary.headers.duration}</span>
-                {derivedDuration ? (
-                  <strong>{formatDuration(derivedDuration, locale)}</strong>
-                ) : (
-                  <strong>{locale === "th" ? "ไม่ระบุ" : "Not set"}</strong>
-                )}
-              </div>
-            </div>
+            <StopDialogTimeWindow
+              activity={values.activity}
+              derivedDuration={derivedDuration}
+              durationLabel={t.itinerary.headers.duration}
+              endLabel={t.stopDialog.fields.endTime}
+              endOffsetDays={values.endOffsetDays}
+              endTime={values.endTime}
+              locale={locale}
+              nextDayLabel={locale === "th" ? "ข้ามวัน" : "Next day"}
+              notSetLabel={locale === "th" ? "ไม่ระบุ" : "Not set"}
+              startLabel={t.stopDialog.fields.startTime}
+              startTime={values.startTime}
+              timeMode={values.timeMode}
+              onEndTimeChange={updateEndTime}
+              onStartTimeChange={updateStartTime}
+              onToggleNextDayEnd={toggleNextDayEnd}
+            />
             <label className={dialogFieldWideClassName} htmlFor={stopDialogFieldIds.activity}>
               <span>{t.stopDialog.fields.activity}</span>
               <input id={stopDialogFieldIds.activity} value={values.activity} onChange={(event) => updateActivity(event.target.value)} required />
