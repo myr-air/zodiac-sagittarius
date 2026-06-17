@@ -7,7 +7,6 @@ import type {
   AccountSession,
   AccountExplorerSummary,
   AccountSettings,
-  AccountSettingsUpdateRequest,
   AccountTodoSummary,
   AccountTripCreateRequest,
   AccountTripStats,
@@ -59,7 +58,6 @@ import {
   isUnauthenticated,
   localizeAccessError,
   passwordLoginErrorMessage,
-  profileToForm,
   rawErrorMessage,
 } from "./account-auth-support";
 import {
@@ -69,6 +67,7 @@ import {
   normalizedTripForm,
 } from "./account-trip-wizard-support";
 import { AccountPortalNav } from "./account-portal-nav";
+import { AccountSettingsEditor } from "./account-settings-editor";
 import { PortalTripWizard } from "./portal-trip-wizard";
 
 interface AccountAccessPanelProps {
@@ -1505,6 +1504,16 @@ function AccountDashboard({
             <AccountSettingsEditor
               accountClient={accountClient}
               accountSession={accountSession}
+              classNames={{
+                avatar: accountAvatarClassName,
+                deviceList: accountDeviceListClassName,
+                deviceRow: accountDeviceRowClassName,
+                empty: accountEmptyClassName,
+                profilePreview: settingsProfilePreviewClassName,
+                settingsForm: accountSettingsFormClassName,
+                settingsGrid: accountSettingsGridClassName,
+                twoCol: accountTwoColClassName,
+              }}
               settings={settings}
               onError={onError}
               onMessage={onMessage}
@@ -1541,148 +1550,6 @@ function readPreviousPortalSectionIndex(fallbackIndex: number): number {
   if (typeof window === "undefined") return fallbackIndex;
   const storedIndex = Number(window.sessionStorage.getItem(portalSectionStorageKey));
   return Number.isFinite(storedIndex) ? storedIndex : fallbackIndex;
-}
-
-function AccountSettingsEditor({
-  accountClient,
-  accountSession,
-  onError,
-  onMessage,
-  onSessionCleared,
-  onSettingsChanged,
-  settings,
-}: {
-  accountClient: AccountApiClient;
-  accountSession: AccountSession;
-  onError: (message: string | null) => void;
-  onMessage: (message: string | null) => void;
-  onSessionCleared: () => void;
-  onSettingsChanged: (settings: AccountSettings) => void;
-  settings: AccountSettings;
-}) {
-  const { locale, t } = useI18n();
-  const [form, setForm] = useState<AccountSettingsUpdateRequest>(() => profileToForm(settings));
-  const [isSaving, setIsSaving] = useState(false);
-  const [revokingDeviceId, setRevokingDeviceId] = useState<string | null>(null);
-
-  async function submitSettings(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setIsSaving(true);
-    try {
-      const nextSettings = await accountClient.updateSettings(accountSession.sessionToken, form);
-      onSettingsChanged(nextSettings);
-      setForm(profileToForm(nextSettings));
-      onMessage(t.access.settings.messages.saved);
-      onError(null);
-    } catch (caught) {
-      onError(errorMessage(caught, t.access.settings.messages.saveFailed, t.access.messages));
-    } finally {
-      setIsSaving(false);
-    }
-  }
-
-  async function revokeDevice(deviceId: string) {
-    setRevokingDeviceId(deviceId);
-    try {
-      await accountClient.revokeTrustedDevice(accountSession.sessionToken, deviceId);
-      if (accountSession.trustedDeviceId === deviceId) {
-        onSessionCleared();
-        onMessage(t.access.settings.messages.currentDeviceRevoked);
-        onError(null);
-        return;
-      }
-      const nextSettings = await accountClient.loadSettings(accountSession.sessionToken);
-      onSettingsChanged(nextSettings);
-      onMessage(t.access.settings.messages.deviceRevoked);
-      onError(null);
-    } catch (caught) {
-      onError(errorMessage(caught, t.access.settings.messages.revokeFailed, t.access.messages));
-    } finally {
-      setRevokingDeviceId(null);
-    }
-  }
-
-  return (
-    <>
-      <div className={settingsProfilePreviewClassName}>
-        <span className={accountAvatarClassName} style={{ backgroundColor: form.avatarColor }} aria-hidden="true">
-          {form.displayName.slice(0, 1) || "A"}
-        </span>
-        <div>
-          <strong>{form.displayName}</strong>
-          <span>{settings.profile.primaryEmail ?? t.access.dashboard.noEmail}</span>
-        </div>
-      </div>
-      <form className={accountSettingsFormClassName} onSubmit={submitSettings}>
-        <div className={accountTwoColClassName}>
-          <label>
-            <span>{t.access.settings.form.displayName}</span>
-            <input value={form.displayName} onChange={(event) => setForm((current) => ({ ...current, displayName: event.target.value }))} required />
-          </label>
-          <label>
-            <span>{t.access.settings.form.avatarColor}</span>
-            <input
-              value={form.avatarColor}
-              onChange={(event) => setForm((current) => ({ ...current, avatarColor: event.target.value }))}
-              pattern="#[0-9a-fA-F]{6}"
-              type="color"
-              required
-            />
-          </label>
-          <label>
-            <span>{t.access.settings.form.locale}</span>
-            <Select value={form.locale} onChange={(event) => setForm((current) => ({ ...current, locale: event.target.value }))} required>
-              <option value="th-TH">Thai</option>
-              <option value="en-US">English</option>
-            </Select>
-          </label>
-          <label>
-            <span>{t.access.settings.form.timezone}</span>
-            <input value={form.timezone} onChange={(event) => setForm((current) => ({ ...current, timezone: event.target.value }))} required />
-          </label>
-          <label>
-            <span>Home city</span>
-            <input value={form.homeCity ?? ""} onChange={(event) => setForm((current) => ({ ...current, homeCity: event.target.value }))} placeholder="Bangkok" />
-          </label>
-          <label>
-            <span>Home country</span>
-            <input value={form.homeCountry ?? ""} onChange={(event) => setForm((current) => ({ ...current, homeCountry: event.target.value }))} placeholder="Thailand" />
-          </label>
-        </div>
-        <Button type="submit" disabled={isSaving}>
-          <Icon name="check" />
-          {t.access.settings.form.save}
-        </Button>
-      </form>
-
-      <div className={accountSettingsGridClassName}>
-        <SettingLine label={t.access.settings.passkeys} value={`${settings.passkeys.length}`} />
-        <SettingLine label={t.access.settings.trustedDevices} value={`${settings.trustedDevices.length}`} />
-      </div>
-
-      <div className={accountDeviceListClassName} aria-label={t.access.settings.trustedDevicesLabel}>
-        {settings.trustedDevices.length ? (
-          settings.trustedDevices.map((device) => (
-            <div className={accountDeviceRowClassName} key={device.id}>
-              <div>
-                <strong>{device.label}</strong>
-                <span>
-                  {device.userAgent || t.access.settings.unknownBrowser} ·{" "}
-                  {device.lastSeenAt ? formatDateTime(device.lastSeenAt, locale) : formatDateTime(device.createdAt, locale)}
-                </span>
-              </div>
-              <Button type="button" variant="secondary" onClick={() => void revokeDevice(device.id)} disabled={revokingDeviceId === device.id}>
-                <Icon name="x" />
-                {t.access.settings.revoke}
-              </Button>
-            </div>
-          ))
-        ) : (
-          <p className={accountEmptyClassName}>{t.access.settings.noTrustedDevices}</p>
-        )}
-      </div>
-    </>
-  );
 }
 
 function StatusMessage({ children, id, tone }: { children: ReactNode; id?: string; tone: "danger" | "success" }) {
