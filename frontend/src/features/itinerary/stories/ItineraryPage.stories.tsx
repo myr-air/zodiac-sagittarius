@@ -26,7 +26,6 @@ import {
 } from "./itinerary-story-fixtures";
 import { pathNamePlanC } from "@/src/trip/testing/itinerary-path-fixtures";
 
-const noop = () => {};
 const onStoryChangeDayPath = fn();
 const onStoryMoveItemToPath = fn();
 const onStoryToggleShowAllPaths = fn();
