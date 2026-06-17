@@ -61,6 +61,7 @@ import {
   normalizedTripForm,
 } from "./account-trip-wizard-support";
 import { AccountPortalNav } from "./account-portal-nav";
+import { PortalList, PortalListRow } from "./account-portal-list";
 import { AccountPortalLoadingFrame } from "./account-portal-loading-frame";
 import { AccountSettingsEditor } from "./account-settings-editor";
 import { AccountAuthFlowSwitch, AccountAuthRouteTabs, type AuthFlow } from "./account-auth-chrome";
@@ -153,11 +154,6 @@ const portalSectionToplineClassName =
   "portal-section-topline flex min-w-0 items-start justify-between gap-3 max-[767px]:flex-wrap [&_.account-panel-heading]:flex-auto [&>.button]:max-[767px]:w-full [&>button]:max-[767px]:w-full";
 const accountProfileRowClassName =
   "account-profile-row flex min-w-0 items-center gap-3 max-[767px]:flex-wrap max-[767px]:items-start [&>.badge]:ml-auto max-[767px]:[&>.badge]:ml-0 [&>div]:max-[767px]:min-w-0 [&_span]:text-[13px] [&_span]:leading-5 [&_span]:text-(--color-text-muted) max-[767px]:[&_span]:[overflow-wrap:anywhere] [&_strong]:block [&_strong]:text-(--color-text)";
-const accountTripListClassName = "account-trip-list grid gap-2";
-const accountTripRowClassName =
-  "account-trip-row flex min-h-[62px] min-w-0 items-center gap-3 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface-subtle) p-2.5 text-inherit no-underline transition-[border-color,background] duration-[180ms] ease-out hover:border-[color-mix(in_srgb,var(--color-primary)_32%,var(--color-border))] hover:bg-[color-mix(in_srgb,var(--color-primary-soft)_52%,var(--color-surface))] focus-visible:border-[color-mix(in_srgb,var(--color-primary)_32%,var(--color-border))] focus-visible:bg-[color-mix(in_srgb,var(--color-primary-soft)_52%,var(--color-surface))] focus-visible:outline-none max-[767px]:flex-wrap max-[767px]:items-start [&>.badge]:ml-auto max-[767px]:[&>.badge]:ml-0 [&>div]:max-[767px]:min-w-0 [&_span]:text-[13px] [&_span]:leading-5 [&_span]:text-(--color-text-muted) max-[767px]:[&_span]:[overflow-wrap:anywhere] [&_strong]:block [&_strong]:text-(--color-text)";
-const accountTripIconClassName =
-  "account-trip-icon grid size-9 shrink-0 place-items-center rounded-(--radius-md) bg-(--color-primary-soft) text-(--color-primary-strong)";
 const accountEmptyClassName = "account-empty text-[13px] leading-5 text-(--color-text-muted)";
 const settingsProfilePreviewClassName = "settings-profile-preview grid grid-cols-[46px_minmax(0,1fr)] items-center gap-3 rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface-subtle) p-3.5 [&_span]:block [&_span]:text-[13px] [&_span]:leading-5 [&_span]:text-(--color-text-muted) [&_strong]:block [&_strong]:text-(--color-text)";
 const portalSearchClassName =
@@ -1174,24 +1170,25 @@ function AccountDashboard({
           {isLoading && !trips.length ? (
             <PortalListSkeleton rows={2} />
           ) : trips.length ? (
-            <div className={accountTripListClassName}>
+            <PortalList>
               {trips.map((trip) => (
-                <article className={accountTripRowClassName} key={trip.id}>
-                  <span className={accountTripIconClassName} aria-hidden="true"><Icon name="location" /></span>
-                  <div>
-                    <strong>{trip.name}</strong>
-                    <span>{trip.destinationLabel} · {trip.startDate} - {trip.endDate}</span>
-                  </div>
-                  <Badge tone={trip.isOwner ? "success" : "neutral"}>{trip.isOwner ? t.access.dashboard.history.owner : t.appShell.roles[trip.role]}</Badge>
-                  <Button asChild variant="secondary">
-                    <Link href={appRoutes.tripOverview(trip.id)}>
-                      <Icon name="chevronRight" />
-                      Open
-                    </Link>
-                  </Button>
-                </article>
+                <PortalListRow
+                  key={trip.id}
+                  icon="location"
+                  title={trip.name}
+                  detail={`${trip.destinationLabel} · ${trip.startDate} - ${trip.endDate}`}
+                  badge={<Badge tone={trip.isOwner ? "success" : "neutral"}>{trip.isOwner ? t.access.dashboard.history.owner : t.appShell.roles[trip.role]}</Badge>}
+                  action={
+                    <Button asChild variant="secondary">
+                      <Link href={appRoutes.tripOverview(trip.id)}>
+                        <Icon name="chevronRight" />
+                        Open
+                      </Link>
+                    </Button>
+                  }
+                />
               ))}
-            </div>
+            </PortalList>
           ) : (
             <PortalEmptyState
               actionHref={appRoutes.portalNewTrip()}
@@ -1273,18 +1270,17 @@ function AccountDashboard({
             ))}
           </div>
           {explorerTrips.length ? (
-            <div className={accountTripListClassName}>
+            <PortalList>
               {explorerTrips.map((trip) => (
-                <article className={accountTripRowClassName} key={trip.id}>
-                  <span className={accountTripIconClassName} aria-hidden="true"><Icon name="map" /></span>
-                  <div>
-                    <strong>{trip.name}</strong>
-                    <span>{trip.destinationLabel} · {trip.startDate} - {trip.endDate}</span>
-                  </div>
-                  <Badge tone={trip.isOwner ? "success" : "neutral"}>{trip.isOwner ? "Owned" : "Shared"}</Badge>
-                </article>
+                <PortalListRow
+                  key={trip.id}
+                  icon="map"
+                  title={trip.name}
+                  detail={`${trip.destinationLabel} · ${trip.startDate} - ${trip.endDate}`}
+                  badge={<Badge tone={trip.isOwner ? "success" : "neutral"}>{trip.isOwner ? "Owned" : "Shared"}</Badge>}
+                />
               ))}
-            </div>
+            </PortalList>
           ) : (
             <PortalEmptyState
               actionHref={appRoutes.portalNewTrip()}
@@ -1301,18 +1297,17 @@ function AccountDashboard({
           {isLoading && !todos.length ? (
             <PortalListSkeleton rows={1} />
           ) : todos.length ? (
-            <div className={accountTripListClassName}>
+            <PortalList>
               {todos.map((todo) => (
-                <article className={accountTripRowClassName} key={todo.id}>
-                  <span className={accountTripIconClassName} aria-hidden="true"><Icon name="list" /></span>
-                  <div>
-                    <strong>{todo.title}</strong>
-                    <span>{todo.tripName} · {todo.visibility} · {todo.kind ?? "prep"}</span>
-                  </div>
-                  <Badge tone={todo.status === "done" ? "success" : "warning"}>{todo.status}</Badge>
-                </article>
+                <PortalListRow
+                  key={todo.id}
+                  icon="list"
+                  title={todo.title}
+                  detail={`${todo.tripName} · ${todo.visibility} · ${todo.kind ?? "prep"}`}
+                  badge={<Badge tone={todo.status === "done" ? "success" : "warning"}>{todo.status}</Badge>}
+                />
               ))}
-            </div>
+            </PortalList>
           ) : (
             <PortalEmptyState
               actionHref={appRoutes.portalNewTrip()}
@@ -1331,9 +1326,6 @@ function AccountDashboard({
             classNames={{
               empty: accountEmptyClassName,
               form: accountSettingsFormClassName,
-              icon: accountTripIconClassName,
-              list: accountTripListClassName,
-              row: accountTripRowClassName,
               section: portalFeatureCardClassName,
               twoCol: accountTwoColClassName,
             }}

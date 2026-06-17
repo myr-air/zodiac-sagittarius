@@ -11,14 +11,12 @@ import { Badge, Button, Select } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { errorMessage } from "./account-auth-support";
+import { PortalList, PortalListRow } from "./account-portal-list";
 import { PanelHeading, PortalListSkeleton } from "./account-portal-primitives";
 
 interface PortalVaultSectionClassNames {
   empty: string;
   form: string;
-  icon: string;
-  list: string;
-  row: string;
   section: string;
   twoCol: string;
 }
@@ -126,18 +124,17 @@ export function PortalVaultSection({
       {isLoading && !vaultItems.length ? (
         <PortalListSkeleton rows={1} />
       ) : vaultItems.length ? (
-        <div className={classNames.list}>
+        <PortalList>
           {vaultItems.map((item) => (
-            <article className={classNames.row} key={`${item.source}-${item.id}`}>
-              <span className={classNames.icon} aria-hidden="true"><Icon name={item.kind === "file" ? "document" : "note"} /></span>
-              <div>
-                <strong>{item.title}</strong>
-                <span>{item.tripName ?? t.access.portal.vaultCreate.personal} · {item.detail}</span>
-              </div>
-              <Badge tone={item.kind === "file" ? "neutral" : "success"}>{item.kind}</Badge>
-            </article>
+            <PortalListRow
+              key={`${item.source}-${item.id}`}
+              icon={item.kind === "file" ? "document" : "note"}
+              title={item.title}
+              detail={`${item.tripName ?? t.access.portal.vaultCreate.personal} · ${item.detail}`}
+              badge={<Badge tone={item.kind === "file" ? "neutral" : "success"}>{item.kind}</Badge>}
+            />
           ))}
-        </div>
+        </PortalList>
       ) : (
         <p className={classNames.empty}>{t.access.portal.sections.vault.empty}</p>
       )}
