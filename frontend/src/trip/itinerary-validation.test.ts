@@ -17,8 +17,8 @@ describe("itinerary validation", () => {
       startTime: "09:00",
       durationMinutes: 120,
       endTime: null,
-      endOffsetDays: null,
-      timeMode: "fixed" as const,
+      endOffsetDays: 0,
+      timeMode: "scheduled" as const,
       parentItemId: null,
     };
     const second = {
@@ -27,8 +27,8 @@ describe("itinerary validation", () => {
       startTime: "10:00",
       durationMinutes: 30,
       endTime: null,
-      endOffsetDays: null,
-      timeMode: "fixed" as const,
+      endOffsetDays: 0,
+      timeMode: "scheduled" as const,
       parentItemId: null,
     };
     const parentOnly = {
@@ -37,8 +37,8 @@ describe("itinerary validation", () => {
       startTime: "12:00",
       durationMinutes: 30,
       endTime: null,
-      endOffsetDays: null,
-      timeMode: "fixed" as const,
+      endOffsetDays: 0,
+      timeMode: "scheduled" as const,
       parentItemId: "unrelated-parent",
     };
 
@@ -54,7 +54,7 @@ describe("itinerary validation", () => {
       startTime: "09:00",
       durationMinutes: 60,
       endTime: null,
-      endOffsetDays: null,
+      endOffsetDays: 0,
       timeMode: "flexible" as const,
     };
     const invalidTime = {
@@ -63,8 +63,8 @@ describe("itinerary validation", () => {
       startTime: "25:00",
       durationMinutes: 60,
       endTime: null,
-      endOffsetDays: null,
-      timeMode: "fixed" as const,
+      endOffsetDays: 0,
+      timeMode: "scheduled" as const,
     };
 
     expect(getTimeWindowInterval(flexible)).toBeNull();
@@ -80,7 +80,7 @@ describe("itinerary validation", () => {
       durationMinutes: null,
       mapLink: "",
       transportation: "",
-      timeMode: "fixed" as const,
+      timeMode: "scheduled" as const,
     };
     expect(validateItemFields(item).map((warning) => warning.code)).toEqual(
       expect.arrayContaining(["missing-start-time", "missing-duration", "missing-map-link", "missing-transportation"]),
@@ -95,10 +95,10 @@ describe("itinerary validation", () => {
       startTime: "09:00",
       durationMinutes: 30,
       endTime: null,
-      endOffsetDays: null,
+      endOffsetDays: 0,
       isPlanBlock: true,
       parentItemId: null,
-      timeMode: "fixed" as const,
+      timeMode: "scheduled" as const,
     };
     const child = {
       ...base,
@@ -107,9 +107,9 @@ describe("itinerary validation", () => {
       startTime: "10:00",
       durationMinutes: 120,
       endTime: null,
-      endOffsetDays: null,
+      endOffsetDays: 0,
       parentItemId: "validation-parent",
-      timeMode: "fixed" as const,
+      timeMode: "scheduled" as const,
     };
 
     const warnings = validateHierarchyFields(child, [parent, child]);

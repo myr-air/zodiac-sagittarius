@@ -13,7 +13,7 @@ describe("itinerary item ordering", () => {
       id: "day-one-morning",
       day: "2026-06-17",
       startTime: "09:00",
-      timeMode: "fixed" as const,
+      timeMode: "scheduled" as const,
       sortOrder: 300,
     };
     const dayOneEarly = {
@@ -21,7 +21,7 @@ describe("itinerary item ordering", () => {
       id: "day-one-early",
       day: "2026-06-17",
       startTime: "08:00",
-      timeMode: "fixed" as const,
+      timeMode: "scheduled" as const,
       sortOrder: 100,
     };
     const dayOneFlexible = {
@@ -37,7 +37,7 @@ describe("itinerary item ordering", () => {
       id: "day-two-main",
       day: "2026-06-18",
       startTime: "07:30",
-      timeMode: "fixed" as const,
+      timeMode: "scheduled" as const,
       sortOrder: 100,
     };
 
@@ -62,7 +62,7 @@ describe("itinerary item ordering", () => {
       id: "parent-activity",
       day: "2026-06-18",
       startTime: "09:00",
-      timeMode: "fixed" as const,
+      timeMode: "scheduled" as const,
       sortOrder: 100,
     };
     const child = {
@@ -71,7 +71,7 @@ describe("itinerary item ordering", () => {
       day: "2026-06-18",
       parentItemId: "parent-activity",
       startTime: "10:00",
-      timeMode: "fixed" as const,
+      timeMode: "scheduled" as const,
       sortOrder: 500,
     };
     const sibling = {
@@ -79,7 +79,7 @@ describe("itinerary item ordering", () => {
       id: "sibling-activity",
       day: "2026-06-18",
       startTime: "11:00",
-      timeMode: "fixed" as const,
+      timeMode: "scheduled" as const,
       sortOrder: 200,
     };
 

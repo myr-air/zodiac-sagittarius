@@ -144,7 +144,7 @@ export const ActivityForm: Story = {
     await expect(canvas.getByLabelText("Provider")).toHaveValue("Central Market");
     await expect(canvas.getByLabelText("Meeting point")).toHaveValue("South entrance");
     await expect(canvas.getByLabelText("Booking ref")).toHaveValue("Lunch shortlist");
-    await expect(canvas.getByLabelText("Transportation")).toBeVisible();
+    await expect(canvas.queryByLabelText("Transportation")).not.toBeInTheDocument();
   },
 };
 
@@ -239,7 +239,7 @@ export const NoteTaskForm: Story = {
     await expect(canvas.getByLabelText("Type")).toHaveValue("task");
     await expect(canvas.getByLabelText("Detail")).toHaveValue("Check passenger names before ticket issue");
     await expect(canvas.getByLabelText("Related place")).toHaveValue("Shared booking sheet");
-    await expect(canvas.getByText("More options")).toBeVisible();
+    await expect(canvas.getByText("More details")).toBeVisible();
   },
 };
 

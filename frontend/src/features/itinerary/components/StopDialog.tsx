@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import type { ActivityType, ItineraryItem, ItineraryItemKind, ItineraryItemPriority, ItineraryItemStatus, ItineraryTimeMode, PlaceResolutionCandidate } from "@/src/trip/types";
+import type { ItineraryItem, ItineraryItemKind, ItineraryItemPriority, ItineraryItemStatus, ItineraryTimeMode, PlaceResolutionCandidate } from "@/src/trip/types";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { formatDayLabel, getTripDates } from "@/src/trip/itinerary";
 import { Button, Select } from "@/src/ui";
@@ -8,53 +8,27 @@ import { formatDuration, formatThaiDate } from "@/src/features/itinerary/lib";
 import { TimePickerField } from "@/src/components/DateTimePickers";
 import { StopDialogDetails } from "./stop-dialog/StopDialogDetails";
 import {
+  buildInitialStopDetailValues,
+  buildInitialStopFormValues,
+  buildStopSubmitValues,
+} from "./stop-dialog/stop-dialog.form";
+import type { StopFormValues, StopManualPathOption } from "./stop-dialog/stop-dialog.types";
+import {
   type StopDetailType,
   type StopDetailValues,
-  addMinutesToTime,
-  buildStructuredStopDetails,
   detailTypeFromItem,
   durationBetweenTimes,
   endOffsetDaysBetweenTimes,
   endWindowFromDuration,
-  emptyStopDetailValues,
   itemKindForStopDetailType,
   parseRouteActivity,
-  readStringDetail,
   resolveStopActivityType,
   stopDialogDetailTypeOptions,
   stopDialogFieldIds,
   stopDetailLabels,
-  structuredStopDetailValues,
 } from "./stop-dialog/stop-dialog.utils";
 
-export interface StopFormValues {
-  day: string;
-  pathId?: string;
-  parentItemId?: string | null;
-  itemKind: ItineraryItemKind;
-  timeMode: ItineraryTimeMode;
-  isPlanBlock: boolean;
-  status: ItineraryItemStatus;
-  priority: ItineraryItemPriority;
-  startTime: string;
-  endTime: string | null;
-  endOffsetDays: number;
-  activity: string;
-  activityType: ActivityType;
-  place: string;
-  mapLink?: string;
-  durationMinutes: number | null;
-  transportation: string;
-  details: Record<string, unknown>;
-  note: string;
-  resolvedPlace?: PlaceResolutionCandidate;
-  saveUnresolved?: boolean;
-}
-
-export interface StopManualPathOption {
-  id: string;
-  name: string;
-}
+export type { StopFormValues, StopManualPathOption } from "./stop-dialog/stop-dialog.types";
 
 interface StopDialogProps {
   mode: "create" | "edit";
@@ -99,39 +73,18 @@ const dialogErrorClassName = "dialog-error col-span-full rounded-(--radius-sm) b
 export function StopDialog({ mode, endDate, initialDay, initialItem, initialParentItemId = null, manualPathOptions = [], onClose, onDelete, onPromoteFoodRecommendation, onSubmit, placeResolution, startDate }: StopDialogProps) {
   const { locale, t } = useI18n();
   const dayOptions = startDate && endDate ? getTripDates(startDate, endDate) : [];
-  const [values, setValues] = useState<StopFormValues>(() => ({
-    day: initialItem?.day ?? initialDay ?? startDate ?? "",
-    pathId: initialItem?.pathRole === "alternative" ? initialItem.pathId : "main",
-    parentItemId: initialItem?.parentItemId ?? initialParentItemId,
-    itemKind: initialItem?.itemKind ?? "activity",
-    timeMode: initialItem?.timeMode ?? "scheduled",
-    isPlanBlock: initialItem?.isPlanBlock ?? false,
-    status: initialItem?.status ?? "idea",
-    priority: initialItem?.priority ?? "normal",
-    startTime: initialItem?.startTime ?? "16:30",
-    endTime: initialItem
-      ? (initialItem.endTime ??
-        addMinutesToTime(
-          initialItem.startTime,
-          Math.max(1, Number(initialItem.durationMinutes ?? 45) || 1),
-        ))
-      : null,
-    endOffsetDays: initialItem?.endOffsetDays ?? 0,
-    activity: initialItem?.activity ?? "",
-    activityType: initialItem?.activityType ?? "experience",
-    place: initialItem?.place ?? "",
-    mapLink: initialItem?.mapLink ?? "",
-    durationMinutes: initialItem?.durationMinutes ?? null,
-    transportation: initialItem?.transportation ?? "",
-    details: initialItem?.details ?? {},
-    note: initialItem?.note ?? "",
-  }));
+  const [values, setValues] = useState<StopFormValues>(() =>
+    buildInitialStopFormValues({
+      initialDay,
+      initialItem,
+      initialParentItemId,
+      startDate,
+    }),
+  );
   const [detailType, setDetailType] = useState<StopDetailType>(() => detailTypeFromItem(initialItem));
-  const [detailValues, setDetailValues] = useState<StopDetailValues>(() => ({
-    ...emptyStopDetailValues,
-    ...structuredStopDetailValues(initialItem?.details),
-    mode: readStringDetail(initialItem?.details?.mode) || initialItem?.transportation || "",
-  }));
+  const [detailValues, setDetailValues] = useState<StopDetailValues>(() =>
+    buildInitialStopDetailValues(initialItem),
+  );
   const [selectedCandidate, setSelectedCandidate] = useState<PlaceResolutionCandidate | undefined>();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -292,34 +245,13 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, initialPare
   }
 
   function buildSubmitValues(saveUnresolved: boolean): StopFormValues {
-    const details = buildStructuredStopDetails(detailType, detailValues);
-    const nextPlace = detailType === "transportation"
-      ? values.place || readStringDetail(details.destination) || readStringDetail(details.origin)
-      : values.place;
-
-    return {
-      ...values,
-      activity: values.activity.trim(),
-      activityType: resolveStopActivityType(detailType, values.activityType),
-      isPlanBlock: values.parentItemId ? false : values.isPlanBlock,
-      startTime: values.timeMode === "flexible" ? "" : values.startTime,
-      endTime: values.timeMode === "flexible" ? null : values.endTime,
-      endOffsetDays:
-        values.timeMode === "flexible" || !values.endTime
-          ? 0
-          : values.endOffsetDays,
-      durationMinutes:
-        values.timeMode === "flexible" || !values.endTime
-          ? null
-          : Math.max(1, Number(values.durationMinutes) || 1),
-      details,
-      place: nextPlace.trim(),
-      mapLink: values.mapLink?.trim() ?? "",
-      transportation: values.transportation.trim(),
-      note: values.note.trim(),
-      resolvedPlace: saveUnresolved ? undefined : selectedCandidate,
+    return buildStopSubmitValues({
+      detailType,
+      detailValues,
       saveUnresolved,
-    };
+      selectedCandidate,
+      values,
+    });
   }
 
   async function submitValues(saveUnresolved: boolean) {
