@@ -20,10 +20,7 @@ import {
   headerControlsTitleClassName,
   pageHeaderActionsClassName,
   pageHeaderNoteClassName,
-  pathFilterOptionClassName,
-  pathFilterPanelClassName,
   pathFilterSummaryClassName,
-  showAllPathsToggleClassName,
   tripPlanActionsClassName,
   tripPlanButtonClassName,
   tripPlanCreateFormClassName,
@@ -33,6 +30,7 @@ import {
   tripPlanSecondaryButtonClassName,
   tripPlanSelectClassName,
 } from "../smart-itinerary-table.styles";
+import { SmartItineraryTablePathFilters } from "./SmartItineraryTablePathFilters";
 
 type FilterOption = { id: string; name: string };
 
@@ -382,38 +380,15 @@ export function SmartItineraryTableHeaderControls({
                 </div>
               ) : null}
             </div>
-            <div className={headerControlsSectionClassName}>
-              <div className={headerControlsSectionHeaderClassName}>
-                <strong>{itineraryLabels.filters.panelLabel}</strong>
-                <span className={pathFilterSummaryClassName}>{selectedFilterLabel}</span>
-              </div>
-              <label className={showAllPathsToggleClassName}>
-                <input
-                  type="checkbox"
-                  checked={showAllPaths}
-                  disabled={!onChangeShowAllPaths}
-                  onChange={(event) => onChangeShowAllPaths?.(event.target.checked)}
-                />
-                <span>{itineraryLabels.filters.showAllPaths}</span>
-              </label>
-              <div
-                className={pathFilterPanelClassName}
-                id="itinerary-plan-filters"
-                role="region"
-                aria-label={itineraryLabels.filters.panelLabel}
-              >
-                {filterOptions.map((option) => (
-                  <label className={pathFilterOptionClassName} key={option.id}>
-                    <input
-                      type="checkbox"
-                      checked={selectedPathIds.has(option.id)}
-                      onChange={() => onTogglePathFilter(option.id)}
-                    />
-                    <span>{option.name}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
+            <SmartItineraryTablePathFilters
+              filterOptions={filterOptions}
+              itineraryLabels={itineraryLabels}
+              onChangeShowAllPaths={onChangeShowAllPaths}
+              onTogglePathFilter={onTogglePathFilter}
+              selectedFilterLabel={selectedFilterLabel}
+              selectedPathIds={selectedPathIds}
+              showAllPaths={showAllPaths}
+            />
           </div>
         </div>
       ) : null}
