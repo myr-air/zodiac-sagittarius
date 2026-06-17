@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { AccountAccessPanel } from "@/src/components/AccountAccessPanel";
+import { AccountAccessPanel } from "@/src/features/account/components/account-access-panel";
 import {
   createAccountApiClient,
   type AccountApiClient,

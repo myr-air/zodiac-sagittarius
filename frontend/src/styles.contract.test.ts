@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 
 describe("Calm Travel Ops CSS contract", () => {
   const css = readFileSync("app/globals.css", "utf8");
-  const accountSource = readFileSync("src/components/AccountAccessPanel.tsx", "utf8");
+  const accountSource = readFileSync("src/features/account/components/account-access-panel/AccountAccessPanel.tsx", "utf8");
   const activityPathGraphSource = readSourceFiles([
     "src/features/itinerary/components/ActivityPathGraphDay.tsx",
     ...collectRuntimeSourceFiles("src/features/itinerary/components/activity-path-graph"),

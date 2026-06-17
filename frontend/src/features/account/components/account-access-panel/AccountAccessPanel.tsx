@@ -23,7 +23,7 @@ import type { Trip, TripCity, TripParticipantSession } from "@/src/trip/types";
 import { Badge, Button, FloatingActionButton, Select, SwapButton } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import { DatePickerField } from "@/src/shared/components/date-time-pickers";
-import { TripJoinGate } from "./TripJoinGate";
+import { TripJoinGate } from "@/src/components/TripJoinGate";
 import { LanguageSwitch } from "@/src/i18n/LanguageSwitch";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import type { Messages } from "@/src/i18n/messages";

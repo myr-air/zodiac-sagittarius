@@ -1,4 +1,4 @@
-import { AccountAccessPanel } from "@/src/components/AccountAccessPanel";
+import { AccountAccessPanel } from "@/src/features/account/components/account-access-panel";
 import type {
   Trip,
   TripParticipantSession,
