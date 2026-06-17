@@ -3,7 +3,7 @@ import {
   type ItineraryItem,
   type TripDailyBriefing,
 } from "@/src/trip/types";
-import { formatDayLabel, mainItineraryPathId, type ItineraryPathOption } from "@/src/trip/itinerary";
+import { formatDayLabel, itineraryPathOptionsForDay, mainItineraryPathId, type ItineraryPathOption } from "@/src/trip/itinerary";
 import { Icon } from "@/src/ui/icons";
 import type { Locale } from "@/src/i18n/types";
 import type { Messages } from "@/src/i18n/messages";
@@ -117,12 +117,7 @@ export function DayGroup({
   const dayA11yLabel = formatDayLabel(group.day, startDate, "en");
   const defaultDayTitle = dayRouteLabel(group.day, locale);
   const dayTitle = dailyBriefing?.manualOverrides.dayTitle?.trim() || defaultDayTitle;
-  const dayPathOptions = pathOptions.filter(
-    (option) =>
-      option.id === "main" ||
-      option.scope === "trip" ||
-      option.day === group.day,
-  );
+  const dayPathOptions = itineraryPathOptionsForDay(pathOptions, group.day);
   const hasAlternativePathOptions = dayPathOptions.some(
     (option) => option.id !== mainItineraryPathId,
   );

@@ -645,6 +645,17 @@ export function deriveItineraryPathOptions(items: ItineraryItem[], paths: Itiner
   return Array.from(options.values());
 }
 
+export function itineraryPathOptionsForDay(
+  pathOptions: ItineraryPathOption[],
+  day: string,
+): ItineraryPathOption[] {
+  return pathOptions.filter((option) =>
+    option.id === mainItineraryPathId ||
+    option.scope === "trip" ||
+    option.day === day
+  );
+}
+
 export function buildItineraryView(items: ItineraryItem[]): ItineraryView {
   const sortedItems = sortItineraryItems(items);
 

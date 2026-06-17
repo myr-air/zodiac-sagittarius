@@ -32,6 +32,7 @@ import {
   sortItemsForDay,
   selectedItineraryPathIdForDay,
   updateItineraryPathSelection,
+  itineraryPathOptionsForDay,
   validateItineraryItem,
 } from "./itinerary";
 import { createLocalTripRepository } from "./repository";
@@ -359,6 +360,26 @@ describe("itinerary planning domain", () => {
     expect(deriveItineraryPathOptions([planAItem])).toEqual([
       { id: "main", name: "Main", scope: "trip" },
       { id: "path-2026-06-19-sub-a", name: "Plan A", scope: "day", day: "2026-06-19" },
+    ]);
+  });
+
+  it("filters path options to visible day scope", () => {
+    const options: Parameters<typeof itineraryPathOptionsForDay>[0] = [
+      { id: "main", name: "Main", scope: "trip" },
+      { id: "plan-a", name: "Plan A", scope: "trip", day: "2026-06-19" },
+      { id: "plan-b", name: "Plan B", scope: "day", day: "2026-06-19" },
+      { id: "day-plan", name: "Day Plan", scope: "day", day: "2026-06-20" },
+    ];
+
+    expect(itineraryPathOptionsForDay(options, "2026-06-19")).toEqual([
+      { id: "main", name: "Main", scope: "trip" },
+      { id: "plan-a", name: "Plan A", scope: "trip", day: "2026-06-19" },
+      { id: "plan-b", name: "Plan B", scope: "day", day: "2026-06-19" },
+    ]);
+    expect(itineraryPathOptionsForDay(options, "2026-06-20")).toEqual([
+      { id: "main", name: "Main", scope: "trip" },
+      { id: "plan-a", name: "Plan A", scope: "trip", day: "2026-06-19" },
+      { id: "day-plan", name: "Day Plan", scope: "day", day: "2026-06-20" },
     ]);
   });
 
