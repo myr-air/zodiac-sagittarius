@@ -19,11 +19,8 @@ import { activityTypeLabel, formatDuration, formatEndTime } from "@/src/features
 import { ContextRailBookingSection } from "./context-rail/ContextRailBookingSection";
 import { ContextRailExpensesSection } from "./context-rail/ContextRailExpensesSection";
 import { ContextRailNotesSection } from "./context-rail/ContextRailNotesSection";
-import {
-  ContextRailTab,
-  memberDisplayName,
-  suggestionLabel,
-} from "./context-rail.utils";
+import { ContextRailSuggestionsSection } from "./context-rail/ContextRailSuggestionsSection";
+import { ContextRailTab } from "./context-rail.utils";
 import {
   conflictRowClassName,
   conflictSummaryClassName,
@@ -50,11 +47,6 @@ import {
   mapRoadTwoClassName,
   mapWaterClassName,
   railInspectorClassName,
-  suggestionActionButtonClassName,
-  suggestionActionsClassName,
-  suggestionItemBaseClassName,
-  suggestionItemToneClassNames,
-  suggestionListClassName,
 } from "./context-rail.styles";
 
 interface ContextRailProps {
@@ -361,86 +353,12 @@ export function ContextRail({
             ) : null}
 
             {activeTab === "suggestions" ? (
-              <section
-                className={`${detailSectionClassName} suggestion-module`}
-                aria-label={t.contextRail.suggestions.label}
-              >
-                <div className="module-title-row flex items-center justify-between gap-2.5">
-                  <h3 className={detailHeadingClassName}>
-                    {t.contextRail.suggestions.title({
-                      count: selectedSuggestions.length,
-                    })}
-                  </h3>
-                  <span>
-                    {canReviewSuggestions
-                      ? t.contextRail.suggestions.pending
-                      : t.contextRail.suggestions.readOnly}
-                  </span>
-                </div>
-                <div className={suggestionListClassName}>
-                  {selectedSuggestions.map((suggestion) => {
-                    const proposer = trip.members.find(
-                      (member) => member.id === suggestion.proposerId,
-                    );
-                    const label = suggestionLabel(
-                      suggestion,
-                      t.contextRail.suggestions.fallback,
-                    );
-                    return (
-                      <article
-                        className={`${suggestionItemBaseClassName} ${suggestion.status === "conflicted" ? suggestionItemToneClassNames.conflicted : suggestionItemToneClassNames.pending}`}
-                        key={suggestion.id}
-                      >
-                        <Icon
-                          name={
-                            suggestion.status === "conflicted"
-                              ? "alertCircle"
-                              : "check"
-                          }
-                        />
-                        <div>
-                          <strong>{label}</strong>
-                          <span>
-                            {t.contextRail.suggestions.suggestedUpdate({
-                              name: memberDisplayName(
-                                proposer,
-                                t.appShell.roles.traveler,
-                              ),
-                            })}
-                          </span>
-                          {canReviewSuggestions ? (
-                            <div className={suggestionActionsClassName}>
-                              <button
-                                className={suggestionActionButtonClassName}
-                                type="button"
-                                onClick={() =>
-                                  onReviewSuggestion(suggestion.id, "approved")
-                                }
-                              >
-                                {t.contextRail.suggestions.approve({ label })}
-                              </button>
-                              <button
-                                className={suggestionActionButtonClassName}
-                                type="button"
-                                onClick={() =>
-                                  onReviewSuggestion(suggestion.id, "rejected")
-                                }
-                              >
-                                {t.contextRail.suggestions.reject({ label })}
-                              </button>
-                            </div>
-                          ) : null}
-                        </div>
-                      </article>
-                    );
-                  })}
-                  {!selectedSuggestions.length ? (
-                    <p className={emptyWarningClassName}>
-                      {t.contextRail.suggestions.empty}
-                    </p>
-                  ) : null}
-                </div>
-              </section>
+              <ContextRailSuggestionsSection
+                suggestions={selectedSuggestions}
+                tripMembers={trip.members}
+                canReviewSuggestions={canReviewSuggestions}
+                onReviewSuggestion={onReviewSuggestion}
+              />
             ) : null}
 
             <section
