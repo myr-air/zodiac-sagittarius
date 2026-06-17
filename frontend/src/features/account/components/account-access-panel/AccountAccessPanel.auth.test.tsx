@@ -1,15 +1,13 @@
 import { act, fireEvent, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { seedTrip } from "@/src/trip/seed";
 import { TripApiError } from "@/src/trip/api-client";
-import { AccountAccessPanel } from "./AccountAccessPanel";
 import {
   authForm,
   createAccountClient,
   createTrustedAccountSession,
   installLocalStorageStub,
-  render,
+  renderAccountAccessPanel,
   switchToThai,
 } from "./account-access-panel-test-utils";
 
@@ -26,16 +24,7 @@ describe("AccountAccessPanel auth access", () => {
   it("keeps temp access as the fast default while exposing account login", async () => {
     const user = userEvent.setup();
     const accountClient = createAccountClient();
-    render(
-      <AccountAccessPanel
-        accountClient={accountClient}
-        accountSession={null}
-        trip={seedTrip}
-        onAccountSessionChange={vi.fn()}
-        onAuthenticated={vi.fn()}
-        onTripChange={vi.fn()}
-      />,
-    );
+    renderAccountAccessPanel({ accountClient });
 
     expect(screen.getByRole("tab", { name: /Temp access/i })).toHaveClass("account-tab--active");
     expect(screen.getByRole("heading", { name: /Enter trip room/i })).toBeInTheDocument();
@@ -88,17 +77,7 @@ describe("AccountAccessPanel auth access", () => {
       return intervalCallbacks.length as unknown as ReturnType<typeof window.setInterval>;
     });
     vi.spyOn(window, "clearInterval").mockImplementation(() => undefined);
-    render(
-      <AccountAccessPanel
-        accessMode="account-login"
-        accountClient={accountClient}
-        accountSession={null}
-        trip={seedTrip}
-        onAccountSessionChange={vi.fn()}
-        onAuthenticated={vi.fn()}
-        onTripChange={vi.fn()}
-      />,
-    );
+    renderAccountAccessPanel({ accessMode: "account-login", accountClient });
 
     await act(async () => {
       fireEvent.change(screen.getByLabelText(/Email/i), { target: { value: "aom@example.test" } });
@@ -115,17 +94,7 @@ describe("AccountAccessPanel auth access", () => {
   });
 
   it("eager-loads only the above-fold auth collage image", () => {
-    render(
-      <AccountAccessPanel
-        accessMode="account-login"
-        accountClient={createAccountClient()}
-        accountSession={null}
-        trip={seedTrip}
-        onAccountSessionChange={vi.fn()}
-        onAuthenticated={vi.fn()}
-        onTripChange={vi.fn()}
-      />,
-    );
+    renderAccountAccessPanel({ accessMode: "account-login" });
 
     expect(screen.getByAltText("Krabi beach lagoon with limestone cliffs and a longtail boat")).toHaveAttribute("loading", "eager");
     expect(screen.getByAltText("Kyoto traditional street with wooden houses and a pagoda")).toHaveAttribute("loading", "lazy");
@@ -133,17 +102,7 @@ describe("AccountAccessPanel auth access", () => {
 
   it("requires a valid email format before continuing", async () => {
     const user = userEvent.setup();
-    render(
-      <AccountAccessPanel
-        accessMode="account-login"
-        accountClient={createAccountClient()}
-        accountSession={null}
-        trip={seedTrip}
-        onAccountSessionChange={vi.fn()}
-        onAuthenticated={vi.fn()}
-        onTripChange={vi.fn()}
-      />,
-    );
+    renderAccountAccessPanel({ accessMode: "account-login" });
 
     const emailInput = screen.getByLabelText(/Email/i);
     const passwordInput = screen.getByLabelText(/^Password$/i);
@@ -178,17 +137,7 @@ describe("AccountAccessPanel auth access", () => {
   it("keeps registration code delivery behind the primary password step", async () => {
     const user = userEvent.setup();
     const accountClient = createAccountClient();
-    render(
-      <AccountAccessPanel
-        accessMode="account-register"
-        accountClient={accountClient}
-        accountSession={null}
-        trip={seedTrip}
-        onAccountSessionChange={vi.fn()}
-        onAuthenticated={vi.fn()}
-        onTripChange={vi.fn()}
-      />,
-    );
+    renderAccountAccessPanel({ accessMode: "account-register", accountClient });
 
     const emailInput = screen.getByLabelText(/Email/i);
     const passwordInput = screen.getByLabelText(/^Password$/i);
@@ -215,17 +164,7 @@ describe("AccountAccessPanel auth access", () => {
   it("sanitizes email one-time codes and waits for six digits before submitting", async () => {
     const user = userEvent.setup();
     const accountClient = createAccountClient();
-    render(
-      <AccountAccessPanel
-        accessMode="account-login"
-        accountClient={accountClient}
-        accountSession={null}
-        trip={seedTrip}
-        onAccountSessionChange={vi.fn()}
-        onAuthenticated={vi.fn()}
-        onTripChange={vi.fn()}
-      />,
-    );
+    renderAccountAccessPanel({ accessMode: "account-login", accountClient });
 
     fireEvent.change(screen.getByLabelText(/Email/i), { target: { value: "aom@example.test" } });
     await user.click(screen.getByRole("button", { name: /Use sign-in code instead/i }));
@@ -265,17 +204,7 @@ describe("AccountAccessPanel auth access", () => {
     const user = userEvent.setup();
     const accountClient = createAccountClient();
     const onAccountSessionChange = vi.fn();
-    render(
-      <AccountAccessPanel
-        accessMode="account-login"
-        accountClient={accountClient}
-        accountSession={null}
-        trip={seedTrip}
-        onAccountSessionChange={onAccountSessionChange}
-        onAuthenticated={vi.fn()}
-        onTripChange={vi.fn()}
-      />,
-    );
+    renderAccountAccessPanel({ accessMode: "account-login", accountClient, onAccountSessionChange });
 
     fireEvent.change(screen.getByLabelText(/Email/i), { target: { value: "aom@example.test" } });
     fireEvent.change(screen.getByLabelText(/^Password$/i), { target: { value: "account-secret" } });
@@ -296,17 +225,7 @@ describe("AccountAccessPanel auth access", () => {
     const user = userEvent.setup();
     const accountClient = createAccountClient();
     vi.mocked(accountClient.finishPasswordLogin).mockRejectedValueOnce(new Error("Failed to fetch"));
-    render(
-      <AccountAccessPanel
-        accessMode="account-login"
-        accountClient={accountClient}
-        accountSession={null}
-        trip={seedTrip}
-        onAccountSessionChange={vi.fn()}
-        onAuthenticated={vi.fn()}
-        onTripChange={vi.fn()}
-      />,
-    );
+    renderAccountAccessPanel({ accessMode: "account-login", accountClient });
 
     fireEvent.change(screen.getByLabelText(/Email/i), { target: { value: "aom@example.test" } });
     fireEvent.change(screen.getByLabelText(/^Password$/i), { target: { value: "account-secret" } });
@@ -322,17 +241,7 @@ describe("AccountAccessPanel auth access", () => {
     vi.mocked(accountClient.finishPasswordLogin).mockRejectedValueOnce(
       new TripApiError({ code: "unauthenticated", message: "invalid credentials", status: 401 }),
     );
-    render(
-      <AccountAccessPanel
-        accessMode="account-login"
-        accountClient={accountClient}
-        accountSession={null}
-        trip={seedTrip}
-        onAccountSessionChange={vi.fn()}
-        onAuthenticated={vi.fn()}
-        onTripChange={vi.fn()}
-      />,
-    );
+    renderAccountAccessPanel({ accessMode: "account-login", accountClient });
 
     fireEvent.change(screen.getByLabelText(/Email/i), { target: { value: "aom@example.test" } });
     fireEvent.change(screen.getByLabelText(/^Password$/i), { target: { value: "wrong-secret" } });
@@ -353,17 +262,7 @@ describe("AccountAccessPanel auth access", () => {
       }),
     );
 
-    render(
-      <AccountAccessPanel
-        accessMode="account-register"
-        accountClient={accountClient}
-        accountSession={null}
-        trip={seedTrip}
-        onAccountSessionChange={vi.fn()}
-        onAuthenticated={vi.fn()}
-        onTripChange={vi.fn()}
-      />,
-    );
+    renderAccountAccessPanel({ accessMode: "account-register", accountClient });
 
     fireEvent.change(screen.getByLabelText(/Email/i), { target: { value: "mai@example.test" } });
     fireEvent.change(await screen.findByLabelText(/Password/i), { target: { value: "account-secret" } });
@@ -375,16 +274,7 @@ describe("AccountAccessPanel auth access", () => {
 
   it("separates passkey access from email verification with a key icon", async () => {
     const user = userEvent.setup();
-    render(
-      <AccountAccessPanel
-        accountClient={createAccountClient()}
-        accountSession={null}
-        trip={seedTrip}
-        onAccountSessionChange={vi.fn()}
-        onAuthenticated={vi.fn()}
-        onTripChange={vi.fn()}
-      />,
-    );
+    renderAccountAccessPanel();
 
     await user.click(screen.getByRole("tab", { name: /^Account$/i }));
 
@@ -395,17 +285,7 @@ describe("AccountAccessPanel auth access", () => {
   });
 
   it("renders account login without exposing trip access tabs on the login path", () => {
-    render(
-      <AccountAccessPanel
-        accessMode="account-login"
-        accountClient={createAccountClient()}
-        accountSession={null}
-        trip={seedTrip}
-        onAccountSessionChange={vi.fn()}
-        onAuthenticated={vi.fn()}
-        onTripChange={vi.fn()}
-      />,
-    );
+    renderAccountAccessPanel({ accessMode: "account-login" });
 
     expect(screen.queryByRole("tablist", { name: /Access mode/i })).not.toBeInTheDocument();
     expect(screen.getByRole("main", { name: /Account sign in/i })).toBeInTheDocument();
@@ -424,22 +304,15 @@ describe("AccountAccessPanel auth access", () => {
   });
 
   it("keeps login entry errors inline with the auth form", () => {
-    render(
-      <AccountAccessPanel
-        accessMode="account-login"
-        accountClient={createAccountClient()}
-        accountSession={createTrustedAccountSession({
-          userId: "stale-user",
-          sessionToken: "stale-account-session",
-          trustedDeviceId: "device-stale",
-        })}
-        initialError="unauthorized"
-        trip={seedTrip}
-        onAccountSessionChange={vi.fn()}
-        onAuthenticated={vi.fn()}
-        onTripChange={vi.fn()}
-      />,
-    );
+    renderAccountAccessPanel({
+      accessMode: "account-login",
+      accountSession: createTrustedAccountSession({
+        userId: "stale-user",
+        sessionToken: "stale-account-session",
+        trustedDeviceId: "device-stale",
+      }),
+      initialError: "unauthorized",
+    });
 
     expect(screen.getByRole("main", { name: /Account sign in/i })).toBeInTheDocument();
     expect(screen.getByLabelText(/Email/i)).toBeInTheDocument();
@@ -451,17 +324,7 @@ describe("AccountAccessPanel auth access", () => {
   });
 
   it("renders account registration as a separate account entry path", () => {
-    render(
-      <AccountAccessPanel
-        accessMode="account-register"
-        accountClient={createAccountClient()}
-        accountSession={null}
-        trip={seedTrip}
-        onAccountSessionChange={vi.fn()}
-        onAuthenticated={vi.fn()}
-        onTripChange={vi.fn()}
-      />,
-    );
+    renderAccountAccessPanel({ accessMode: "account-register" });
 
     expect(screen.queryByRole("tablist", { name: /Access mode/i })).not.toBeInTheDocument();
     const entryPage = document.querySelector(".account-page--entry");
@@ -491,17 +354,7 @@ describe("AccountAccessPanel auth access", () => {
     const accountClient = createAccountClient();
     const onAccountSessionChange = vi.fn();
 
-    render(
-      <AccountAccessPanel
-        accessMode="account-register"
-        accountClient={accountClient}
-        accountSession={null}
-        trip={seedTrip}
-        onAccountSessionChange={onAccountSessionChange}
-        onAuthenticated={vi.fn()}
-        onTripChange={vi.fn()}
-      />,
-    );
+    renderAccountAccessPanel({ accessMode: "account-register", accountClient, onAccountSessionChange });
 
     fireEvent.change(screen.getByLabelText(/Email/i), { target: { value: "new-aom@example.test" } });
     fireEvent.change(screen.getByLabelText(/^Password$/i), { target: { value: "account-secret" } });
@@ -523,17 +376,7 @@ describe("AccountAccessPanel auth access", () => {
   });
 
   it("renders trip access without exposing account login tabs on the join path", () => {
-    render(
-      <AccountAccessPanel
-        accessMode="trip-access"
-        accountClient={createAccountClient()}
-        accountSession={null}
-        trip={seedTrip}
-        onAccountSessionChange={vi.fn()}
-        onAuthenticated={vi.fn()}
-        onTripChange={vi.fn()}
-      />,
-    );
+    renderAccountAccessPanel({ accessMode: "trip-access" });
 
     expect(screen.queryByRole("tablist", { name: /Access mode/i })).not.toBeInTheDocument();
     const tripAccessPage = screen.getByRole("main", { name: /Trip access/i });

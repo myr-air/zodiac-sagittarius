@@ -16,7 +16,9 @@ import { renderWithI18n } from "@/src/i18n/test-utils";
 import { TripApiClient } from "@/src/trip/api-client";
 import { seedTrip } from "@/src/trip/seed";
 import type { Trip, TripParticipantSession } from "@/src/trip/types";
+import type { PortalSection } from "@/src/shared/portal";
 import { AccountAccessPanel } from "./AccountAccessPanel";
+import type { AccountAccessMode } from "./account-access-panel-support";
 
 export function render(ui: ReactElement) {
   const result = renderWithI18n(ui, { locale: "en" });
@@ -92,6 +94,62 @@ export function AccountHarness({
       onTripChange={vi.fn()}
     />
   );
+}
+
+export function renderAccountAccessPanel({
+  accessMode,
+  accountClient = createAccountClient(),
+  accountSession = null,
+  apiClient,
+  initialError,
+  initialJoinCode,
+  initialJoinToken,
+  onAccountSessionChange = vi.fn(),
+  onAuthenticated = vi.fn(),
+  onCockpitLoaded,
+  onTripChange = vi.fn(),
+  portalSection,
+  trip = seedTrip,
+}: {
+  accessMode?: AccountAccessMode;
+  accountClient?: AccountApiClient;
+  accountSession?: AccountSession | null;
+  apiClient?: TripApiClient;
+  initialError?: string | null;
+  initialJoinCode?: string;
+  initialJoinToken?: string | null;
+  onAccountSessionChange?: (session: AccountSession | null) => void;
+  onAuthenticated?: (session: TripParticipantSession) => void;
+  onCockpitLoaded?: (cockpit: Awaited<ReturnType<TripApiClient["loadTrip"]>>) => void;
+  onTripChange?: (trip: Trip) => void;
+  portalSection?: PortalSection;
+  trip?: Trip;
+} = {}) {
+  const result = render(
+    <AccountAccessPanel
+      accessMode={accessMode}
+      accountClient={accountClient}
+      accountSession={accountSession}
+      apiClient={apiClient}
+      initialError={initialError}
+      initialJoinCode={initialJoinCode}
+      initialJoinToken={initialJoinToken}
+      portalSection={portalSection}
+      trip={trip}
+      onAccountSessionChange={onAccountSessionChange}
+      onAuthenticated={onAuthenticated}
+      onCockpitLoaded={onCockpitLoaded}
+      onTripChange={onTripChange}
+    />,
+  );
+
+  return {
+    ...result,
+    accountClient,
+    onAccountSessionChange,
+    onAuthenticated,
+    onTripChange,
+  };
 }
 
 export function renderTripBuilder({
