@@ -1,8 +1,20 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { expect, fn, userEvent, within } from "storybook/test";
-import { buildDenseTripFixture, buildEmptyTripFixture, tripFixture } from "@/src/trip/trip-fixtures";
+import { tripFixture } from "@/src/trip/trip-fixtures";
 import type { ItineraryItem } from "@/src/trip/types";
 import { SmartItineraryTable } from "@/src/features/itinerary/components";
+import {
+  branchGraphItemsBase,
+  planAExampleItemsBase,
+  planABAlternativeItemsBase,
+  requestedPlanExampleItemsBase,
+  stressPathItemsBase,
+  windowOnlyDurationItemBase,
+  withStoryPrefix,
+  buildOwnerStoryArgs,
+  denseTripFixture,
+  emptyTripFixture,
+} from "./itinerary-story-fixtures";
 
 const noop = () => {};
 const onStoryChangeDayPath = fn();
@@ -10,187 +22,12 @@ const onStoryMoveItemToPath = fn();
 const onStoryToggleShowAllPaths = fn();
 const onStoryUpdateItemInline = fn();
 const onStoryInlineQuickEdit = fn();
-const pageBranchGraphItems: ItineraryItem[] = [
-  {
-    ...tripFixture.planItems[0],
-    id: "page-graph-main",
-    day: "2026-06-19",
-    startTime: "08:00",
-    durationMinutes: 45,
-    sortOrder: 100,
-    activity: "Dim Sum morning",
-    pathGroupId: "page-path-group-morning",
-    pathRole: "main",
-  },
-  {
-    ...tripFixture.planItems[1],
-    id: "page-graph-rain",
-    day: "2026-06-19",
-    startTime: "08:20",
-    durationMinutes: 80,
-    sortOrder: 200,
-    activity: "Rain museum",
-    pathGroupId: "page-path-group-morning",
-    pathId: "path-rain",
-    pathName: "Rain plan",
-    pathRole: "alternative",
-  },
-  {
-    ...tripFixture.planItems[2],
-    id: "page-graph-late",
-    day: "2026-06-19",
-    startTime: "09:45",
-    durationMinutes: 45,
-    sortOrder: 300,
-    activity: "Late coffee",
-    pathGroupId: "page-path-group-morning",
-    pathId: "path-2026-06-19-sub-a",
-    pathName: "Plan A",
-    pathRole: "alternative",
-  },
-  {
-    ...tripFixture.planItems[3],
-    id: "page-graph-lunch",
-    day: "2026-06-19",
-    startTime: "11:15",
-    durationMinutes: 60,
-    sortOrder: 400,
-    activity: "Central lunch",
-    pathRole: "main",
-  },
-];
-const pagePlanAExampleItems: ItineraryItem[] = [
-  {
-    ...tripFixture.planItems[0],
-    id: "page-plan-a-main-breakfast",
-    day: "2026-06-19",
-    startTime: "08:00",
-    durationMinutes: 75,
-    sortOrder: 100,
-    activity: "Harbour breakfast",
-    place: "Main checkpoint",
-    pathRole: "main",
-  },
-  {
-    ...tripFixture.planItems[1],
-    id: "page-plan-a-museum",
-    day: "2026-06-19",
-    startTime: "08:15",
-    durationMinutes: 60,
-    sortOrder: 200,
-    activity: "Plan A museum stop",
-    place: "Plan A checkpoint",
-    pathId: "path-2026-06-19-sub-a",
-    pathName: "Plan A",
-    pathRole: "alternative",
-  },
-  {
-    ...tripFixture.planItems[2],
-    id: "page-plan-a-cafe",
-    day: "2026-06-19",
-    startTime: "09:45",
-    durationMinutes: 45,
-    sortOrder: 300,
-    activity: "Plan A cafe backup",
-    place: "Plan A checkpoint",
-    pathId: "path-2026-06-19-sub-a",
-    pathName: "Plan A",
-    pathRole: "alternative",
-  },
-  {
-    ...tripFixture.planItems[3],
-    id: "page-plan-a-main-lunch",
-    day: "2026-06-19",
-    startTime: "11:00",
-    durationMinutes: 60,
-    sortOrder: 400,
-    activity: "Main lunch",
-    place: "Main checkpoint",
-    pathRole: "main",
-  },
-];
-const pageWindowOnlyDurationItems: ItineraryItem[] = [
-  {
-    ...tripFixture.planItems[0],
-    id: "page-window-only-duration",
-    day: "2026-06-19",
-    startTime: "09:00",
-    endTime: "10:45",
-    endOffsetDays: 0,
-    durationMinutes: null,
-    sortOrder: 100,
-    activity: "Window only duration",
-    place: "Main checkpoint",
-    pathRole: "main",
-  },
-];
-const pagePlanABAlternativeItems: ItineraryItem[] = [
-  ["page-plan-ab-main-breakfast", "08:00", 60, 100, "Harbour breakfast", "Main", undefined, "main"],
-  ["page-plan-ab-a-gallery", "10:00", 75, 200, "Plan A gallery route", "Plan A", "path-2026-06-19-sub-a", "alternative"],
-  ["page-plan-ab-b-harbour", "14:00", 90, 300, "Plan B harbour route", "Plan B", "path-2026-06-19-sub-b", "alternative"],
-  ["page-plan-ab-main-dinner", "18:00", 75, 400, "Main dinner meet-up", "Main", undefined, "main"],
-].map(([id, startTime, durationMinutes, sortOrder, activity, pathName, pathId, pathRole]) => ({
-  ...tripFixture.planItems[0],
-  id: id as string,
-  day: "2026-06-19",
-  startTime: startTime as string,
-  durationMinutes: durationMinutes as number,
-  sortOrder: sortOrder as number,
-  activity: activity as string,
-  activityType: "experience",
-  place: `${pathName} checkpoint`,
-  pathGroupId: "page-plan-ab-clean-branch",
-  pathId: pathId as string | undefined,
-  pathName: pathId ? pathName as string : undefined,
-  pathRole: pathRole as ItineraryItem["pathRole"],
-}));
-const pageRequestedPlanExampleItems: ItineraryItem[] = [
-  ["page-requested-main-0800", "08:00", 60, 100, "Main 08:00 block", undefined, undefined, "main"],
-  ["page-requested-main-0900", "09:00", 120, 200, "Main 09:00 block", undefined, undefined, "main"],
-  ["page-requested-plan-a-0900", "09:00", 30, 210, "Plan A 09:00 branch", "path-2026-06-19-sub-a", "Plan A", "alternative"],
-  ["page-requested-plan-a-1000", "10:00", 60, 300, "Plan A 10:00 follow up", "path-2026-06-19-sub-a", "Plan A", "alternative"],
-  ["page-requested-main-1100", "11:00", 60, 400, "Main 11:00 block", undefined, undefined, "main"],
-  ["page-requested-main-1200", "12:00", 180, 500, "Main 12:00 block", undefined, undefined, "main"],
-  ["page-requested-plan-a-1230", "12:30", 60, 510, "Plan A 12:30 branch", "path-2026-06-19-sub-a", "Plan A", "alternative"],
-  ["page-requested-main-1600", "16:00", 60, 600, "Main 16:00 block", undefined, undefined, "main"],
-].map(([id, startTime, durationMinutes, sortOrder, activity, pathId, pathName, pathRole]) => ({
-  ...tripFixture.planItems[0],
-  id: id as string,
-  day: "2026-06-19",
-  startTime: startTime as string,
-  durationMinutes: durationMinutes as number,
-  sortOrder: sortOrder as number,
-  activity: activity as string,
-  activityType: "experience",
-  place: pathName ? `${pathName} checkpoint` : "Main checkpoint",
-  pathId: pathId as string | undefined,
-  pathName: pathName as string | undefined,
-  pathRole: pathRole as ItineraryItem["pathRole"],
-}));
-const pageStressPathItems: ItineraryItem[] = [
-  ["page-stress-0800-main", "08:00", 75, 100, "Harbour breakfast", "Main", undefined, "main"],
-  ["page-stress-0805-a", "08:05", 90, 110, "Museum sprint", "Plan A", "path-2026-06-19-sub-a", "alternative"],
-  ["page-stress-0810-b", "08:10", 70, 120, "Market photo walk", "Plan B", "path-2026-06-19-sub-b", "alternative"],
-  ["page-stress-0815-c", "08:15", 85, 130, "Ferry slow route", "Plan C", "path-2026-06-19-sub-c", "alternative"],
-  ["page-stress-1000-main", "10:00", 60, 200, "Peak tram queue", "Main", undefined, "main"],
-  ["page-stress-1005-a", "10:05", 65, 210, "Indoor tram backup", "Plan A", "path-2026-06-19-sub-a", "alternative"],
-  ["page-stress-1010-b", "10:10", 80, 220, "Bus scenic route", "Plan B", "path-2026-06-19-sub-b", "alternative"],
-  ["page-stress-1015-c", "10:15", 55, 230, "Taxi direct route", "Plan C", "path-2026-06-19-sub-c", "alternative"],
-].map(([id, startTime, durationMinutes, sortOrder, activity, pathName, pathId, pathRole]) => ({
-  ...tripFixture.planItems[0],
-  id: id as string,
-  day: "2026-06-19",
-  startTime: startTime as string,
-  durationMinutes: durationMinutes as number,
-  sortOrder: sortOrder as number,
-  activity: activity as string,
-  activityType: "experience",
-  place: `${pathName} checkpoint`,
-  pathGroupId: `page-stress-group-${Math.floor((sortOrder as number) / 100)}`,
-  pathId: pathId as string | undefined,
-  pathName: pathId ? pathName as string : undefined,
-  pathRole: pathRole as ItineraryItem["pathRole"],
-}));
+const pageBranchGraphItems: ItineraryItem[] = withStoryPrefix(branchGraphItemsBase, "page");
+const pagePlanAExampleItems: ItineraryItem[] = withStoryPrefix(planAExampleItemsBase, "page");
+const pageWindowOnlyDurationItems: ItineraryItem[] = withStoryPrefix(windowOnlyDurationItemBase, "page");
+const pagePlanABAlternativeItems: ItineraryItem[] = withStoryPrefix(planABAlternativeItemsBase, "page");
+const pageRequestedPlanExampleItems: ItineraryItem[] = withStoryPrefix(requestedPlanExampleItemsBase, "page");
+const pageStressPathItems: ItineraryItem[] = withStoryPrefix(stressPathItemsBase, "page");
 
 const meta = {
   title: "Pages/Itinerary",
@@ -209,38 +46,12 @@ async function expectItineraryResponsiveContract(canvasElement: HTMLElement) {
 }
 
 export const Owner: Story = {
-  args: {
-    endDate: tripFixture.trip.endDate,
-    items: tripFixture.planItems,
-    tripPlans: tripFixture.trip.planVariants,
-    selectedTripPlanId: tripFixture.trip.activePlanVariantId,
-    mainTripPlanId: tripFixture.trip.mainTripPlanId ?? tripFixture.trip.activePlanVariantId,
-    tripPlanError: null,
-    isTripPlanBusy: false,
-    pathOptions: [
-      { id: "main", name: "Main", scope: "trip" },
-      { id: "path-plan-1", name: "Plan 1", scope: "trip" },
-      { id: "path-rain", name: "Rain plan", scope: "day", day: "2026-06-19" },
-    ],
-    role: "owner",
-    startDate: tripFixture.trip.startDate,
-    selectedItemId: "item-dimdim",
-    dayPathOverrides: { "2026-06-19": "path-rain" },
-    showAllPaths: false,
-    tripName: tripFixture.trip.name,
-    onAddStop: noop,
-    onOpenItemDetails: noop,
-    onSelectItem: noop,
-    onMoveItemToPath: noop,
-    onChangeTripPlan: noop,
-    onChangeTripPlanStatus: noop,
-    onSetMainTripPlan: noop,
-    onCreateTripPlan: noop,
-    onRenameTripPlan: noop,
-    onChangeDayPath: noop,
-    onClearDayPath: noop,
-    onToggleShowAllPaths: noop,
-  },
+  args: buildOwnerStoryArgs({
+    onMoveItemToPath: onStoryMoveItemToPath,
+    onChangeDayPath: onStoryChangeDayPath,
+    onToggleShowAllPaths: onStoryToggleShowAllPaths,
+    onUpdateItemInline: onStoryUpdateItemInline,
+  }),
   play: async ({ canvas, canvasElement }) => {
     await expectItineraryResponsiveContract(canvasElement);
     await expect(canvas.getByRole("button", { name: "Trip Plan controls" })).toBeEnabled();
@@ -314,7 +125,7 @@ export const Traveler: Story = {
 export const Dense: Story = {
   args: {
     ...Owner.args,
-    items: buildDenseTripFixture().itineraryItems,
+    items: denseTripFixture.itineraryItems,
     selectedItemId: "",
   },
 };
@@ -322,7 +133,7 @@ export const Dense: Story = {
 export const Empty: Story = {
   args: {
     ...Owner.args,
-    items: buildEmptyTripFixture().itineraryItems,
+    items: emptyTripFixture.itineraryItems,
     selectedItemId: "",
   },
 };
